@@ -83,36 +83,37 @@
 #    with the very valuable collaboration from David Dominguez (david.dominguez@comillas.edu) and Alejandro Rodriguez (argallego@comillas.edu), our local Python gurus
 
 #%% libraries
+import os
 import time
 import setuptools
 import builtins
 from   pyomo.environ import ConcreteModel
+from openTEPES import InputData
 
 StartTime = time.time()
 
-def run_openTEPES(Case,Solv):
+builtins.CaseName = '9n'
+builtins.SolvName = 'glpk'
 
-    # builtins.CaseName = '9n'                               # To select the case
-    builtins.CaseName = Case  # To select the case
-    builtins.SolvName = Solv  # To select the case
+# builtins.CaseName = '9n'                               # To select the case
 
-    #%% model declaration
-    builtins.mTEPES = ConcreteModel('Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 1.7.15 - September 4, 2020')
+#%% model declaration
+builtins.mTEPES = ConcreteModel('Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 1.7.15 - September 4, 2020')
 
-    import openTEPES_InputData
-    # InputData
+# import openTEPES_InputData
+InputData(CaseName, mTEPES)
 
-    import openTEPES_ModelFormulation
-
-    mTEPES.write('openTEPES_'+CaseName+'.lp', io_options={'symbolic_solver_labels': True})  # create lp-format file
-
-    WritingLPFileTime = time.time() - StartTime
-    StartTime         = time.time()
-    print('Writing LP file                       ... ', round(WritingLPFileTime), 's')
-
-    import openTEPES_ProblemSolving
-
-    import openTEPES_OutputResults
-
-    TotalTime = time.time() - StartTime
-    print('Total time                            ... ', round(TotalTime), 's')
+# import openTEPES_ModelFormulation
+#
+#     mTEPES.write('openTEPES_'+CaseName+'.lp', io_options={'symbolic_solver_labels': True})  # create lp-format file
+#
+#     WritingLPFileTime = time.time() - StartTime
+#     StartTime         = time.time()
+#     print('Writing LP file                       ... ', round(WritingLPFileTime), 's')
+#
+#     import openTEPES_ProblemSolving
+#
+#     import openTEPES_OutputResults
+#
+#     TotalTime = time.time() - StartTime
+#     print('Total time                            ... ', round(TotalTime), 's')
