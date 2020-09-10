@@ -32,7 +32,6 @@ print('Writing LP file                       ... ', round(WritingLPFileTime), 's
 
 # import openTEPES_ProblemSolving
 ProblemSolving(mTEPES)
-ProblemSolving(mTEPES)
 
 #     import openTEPES_OutputResults
 #
