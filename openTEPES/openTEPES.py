@@ -90,24 +90,29 @@ from   pyomo.environ import ConcreteModel
 
 StartTime = time.time()
 
-builtins.CaseName = '9n'                               # To select the case
+def run_openTEPES(Case,Solv):
 
-#%% model declaration
-builtins.mTEPES = ConcreteModel('Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 1.7.15 - September 4, 2020')
+    # builtins.CaseName = '9n'                               # To select the case
+    builtins.CaseName = Case  # To select the case
+    builtins.SolvName = Solv  # To select the case
 
-import openTEPES_InputData
+    #%% model declaration
+    builtins.mTEPES = ConcreteModel('Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 1.7.15 - September 4, 2020')
 
-import openTEPES_ModelFormulation
+    import openTEPES_InputData
+    # InputData
 
-mTEPES.write('openTEPES_'+CaseName+'.lp', io_options={'symbolic_solver_labels': True})  # create lp-format file
+    import openTEPES_ModelFormulation
 
-WritingLPFileTime = time.time() - StartTime
-StartTime         = time.time()
-print('Writing LP file                       ... ', round(WritingLPFileTime), 's')
+    mTEPES.write('openTEPES_'+CaseName+'.lp', io_options={'symbolic_solver_labels': True})  # create lp-format file
 
-import openTEPES_ProblemSolving
+    WritingLPFileTime = time.time() - StartTime
+    StartTime         = time.time()
+    print('Writing LP file                       ... ', round(WritingLPFileTime), 's')
 
-import openTEPES_OutputResults
+    import openTEPES_ProblemSolving
 
-TotalTime = time.time() - StartTime
-print('Total time                            ... ', round(TotalTime), 's')
+    import openTEPES_OutputResults
+
+    TotalTime = time.time() - StartTime
+    print('Total time                            ... ', round(TotalTime), 's')

@@ -3,3 +3,6 @@
 __version__ = '0.1.0'
 __author__ = 'Erik Alvarez <erikfilias@gmail.com>'
 __all__ = []
+
+from .openTEPES import run_openTEPES
+# from .openTEPES import run_openTEPES

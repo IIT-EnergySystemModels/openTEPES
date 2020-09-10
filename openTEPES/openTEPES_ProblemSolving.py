@@ -11,7 +11,7 @@ StartTime = time.time()
 
 #%% solving the problem
 # Solver = SolverFactory('gurobi')                                                       # select solver
-Solver = SolverFactory('glpk')                                                       # select solver
+Solver = SolverFactory(SolvName)                                                       # select solver
 # Solver.options['LogFile'       ] = CaseName+'/openTEPES_'+CaseName+'.log'
 # # Solver.options['IISFile'     ] = CaseName+'/openTEPES_'+CaseName+'.ilp'              # should be uncommented to show results of IIS
 # Solver.options['Method'        ] = 2                                                   # barrier method
