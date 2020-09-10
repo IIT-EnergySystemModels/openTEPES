@@ -8,3 +8,4 @@ __all__ = []
 from .openTEPES_InputData import InputData
 from .openTEPES_ModelFormulation import ModelFormulation
 from .openTEPES_ProblemSolving import ProblemSolving
+from .openTEPES_OutputResults import OutputResults

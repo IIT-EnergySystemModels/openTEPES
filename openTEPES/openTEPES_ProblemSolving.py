@@ -7,7 +7,7 @@ from   pyomo.environ import Suffix
 
 print('Problem solving         ****')
 
-def ProblemSolving(mTEPES):
+def ProblemSolving(SolvName, mTEPES):
     StartTime = time.time()
 
     #%% solving the problem
