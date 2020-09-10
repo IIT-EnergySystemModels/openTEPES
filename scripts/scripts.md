@@ -1,1 +1,0 @@
-# Pon aquí scripts
