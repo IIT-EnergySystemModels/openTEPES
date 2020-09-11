@@ -190,117 +190,117 @@ def OutputResults(CaseName, mTEPES):
     StartTime          = time.time()
     print('Writing output results                ... ', round(WritingResultsTime), 's')
 
-    #%% plotting the network in a map
-    import geopandas
-    import cartopy.crs as ccrs
-    from   cartopy.io import shapereader
-
-    # take data from http://www.naturalearthdata.com/
-    df = geopandas.read_file(shapereader.natural_earth(resolution='10m', category='cultural', name='admin_0_countries'))
-    polyAT = df.loc[df['ADMIN'] == 'Austria'       ]['geometry'].values[0]
-    polyBE = df.loc[df['ADMIN'] == 'Belgium'       ]['geometry'].values[0]
-    polyBG = df.loc[df['ADMIN'] == 'Bulgaria'      ]['geometry'].values[0]
-    polyCH = df.loc[df['ADMIN'] == 'Croatia'       ]['geometry'].values[0]
-    polyCY = df.loc[df['ADMIN'] == 'Cyprus'        ]['geometry'].values[0]
-    polyCZ = df.loc[df['ADMIN'] == 'Czechia'       ]['geometry'].values[0]
-    polyDK = df.loc[df['ADMIN'] == 'Denmark'       ]['geometry'].values[0]
-    polyEE = df.loc[df['ADMIN'] == 'Estonia'       ]['geometry'].values[0]
-    polyFI = df.loc[df['ADMIN'] == 'Finland'       ]['geometry'].values[0]
-    polyFR = df.loc[df['ADMIN'] == 'France'        ]['geometry'].values[0]
-    polyDE = df.loc[df['ADMIN'] == 'Germany'       ]['geometry'].values[0]
-    polyEL = df.loc[df['ADMIN'] == 'Greece'        ]['geometry'].values[0]
-    polyHU = df.loc[df['ADMIN'] == 'Hungary'       ]['geometry'].values[0]
-    polyIE = df.loc[df['ADMIN'] == 'Ireland'       ]['geometry'].values[0]
-    polyIT = df.loc[df['ADMIN'] == 'Italy'         ]['geometry'].values[0]
-    polyLV = df.loc[df['ADMIN'] == 'Latvia'        ]['geometry'].values[0]
-    polyLT = df.loc[df['ADMIN'] == 'Lithuania'     ]['geometry'].values[0]
-    polyLU = df.loc[df['ADMIN'] == 'Luxembourg'    ]['geometry'].values[0]
-    polyMT = df.loc[df['ADMIN'] == 'Malta'         ]['geometry'].values[0]
-    polyNL = df.loc[df['ADMIN'] == 'Netherlands'   ]['geometry'].values[0]
-    polyPL = df.loc[df['ADMIN'] == 'Poland'        ]['geometry'].values[0]
-    polyPT = df.loc[df['ADMIN'] == 'Portugal'      ]['geometry'].values[0]
-    polyRO = df.loc[df['ADMIN'] == 'Romania'       ]['geometry'].values[0]
-    polySK = df.loc[df['ADMIN'] == 'Slovakia'      ]['geometry'].values[0]
-    polySI = df.loc[df['ADMIN'] == 'Slovenia'      ]['geometry'].values[0]
-    polyES = df.loc[df['ADMIN'] == 'Spain'         ]['geometry'].values[0]
-    polySE = df.loc[df['ADMIN'] == 'Sweden'        ]['geometry'].values[0]
-    polyUK = df.loc[df['ADMIN'] == 'United Kingdom']['geometry'].values[0]
-
-    fg = plt.axes(projection=ccrs.PlateCarree())
-    fg.set_extent((min(mTEPES.pNodeLon.values())-2, max(mTEPES.pNodeLon.values())+2, min(mTEPES.pNodeLat.values())-2, max(mTEPES.pNodeLat.values())+2), crs=ccrs.PlateCarree())
-
-    fg.add_geometries([polyAT], crs=ccrs.PlateCarree(), facecolor='C0', edgecolor='0.5')
-    fg.add_geometries([polyBE], crs=ccrs.PlateCarree(), facecolor='C1', edgecolor='0.5')
-    fg.add_geometries([polyBG], crs=ccrs.PlateCarree(), facecolor='C2', edgecolor='0.5')
-    fg.add_geometries([polyCH], crs=ccrs.PlateCarree(), facecolor='C3', edgecolor='0.5')
-    fg.add_geometries([polyCY], crs=ccrs.PlateCarree(), facecolor='C4', edgecolor='0.5')
-    fg.add_geometries([polyCZ], crs=ccrs.PlateCarree(), facecolor='C5', edgecolor='0.5')
-    fg.add_geometries([polyDK], crs=ccrs.PlateCarree(), facecolor='C6', edgecolor='0.5')
-    fg.add_geometries([polyEE], crs=ccrs.PlateCarree(), facecolor='C7', edgecolor='0.5')
-    fg.add_geometries([polyFI], crs=ccrs.PlateCarree(), facecolor='C8', edgecolor='0.5')
-    fg.add_geometries([polyFR], crs=ccrs.PlateCarree(), facecolor='C9', edgecolor='0.5')
-    fg.add_geometries([polyDE], crs=ccrs.PlateCarree(), facecolor='C0', edgecolor='0.5')
-    fg.add_geometries([polyEL], crs=ccrs.PlateCarree(), facecolor='C1', edgecolor='0.5')
-    fg.add_geometries([polyHU], crs=ccrs.PlateCarree(), facecolor='C2', edgecolor='0.5')
-    fg.add_geometries([polyIE], crs=ccrs.PlateCarree(), facecolor='C3', edgecolor='0.5')
-    fg.add_geometries([polyIT], crs=ccrs.PlateCarree(), facecolor='C4', edgecolor='0.5')
-    fg.add_geometries([polyLV], crs=ccrs.PlateCarree(), facecolor='C5', edgecolor='0.5')
-    fg.add_geometries([polyLT], crs=ccrs.PlateCarree(), facecolor='C6', edgecolor='0.5')
-    fg.add_geometries([polyLU], crs=ccrs.PlateCarree(), facecolor='C7', edgecolor='0.5')
-    fg.add_geometries([polyMT], crs=ccrs.PlateCarree(), facecolor='C8', edgecolor='0.5')
-    fg.add_geometries([polyNL], crs=ccrs.PlateCarree(), facecolor='C9', edgecolor='0.5')
-    fg.add_geometries([polyPL], crs=ccrs.PlateCarree(), facecolor='C1', edgecolor='0.5')
-    fg.add_geometries([polyPT], crs=ccrs.PlateCarree(), facecolor='C2', edgecolor='0.5')
-    fg.add_geometries([polyRO], crs=ccrs.PlateCarree(), facecolor='C3', edgecolor='0.5')
-    fg.add_geometries([polySK], crs=ccrs.PlateCarree(), facecolor='C4', edgecolor='0.5')
-    fg.add_geometries([polySI], crs=ccrs.PlateCarree(), facecolor='C5', edgecolor='0.5')
-    fg.add_geometries([polyES], crs=ccrs.PlateCarree(), facecolor='C0', edgecolor='0.5')
-    fg.add_geometries([polySE], crs=ccrs.PlateCarree(), facecolor='C7', edgecolor='0.5')
-    fg.add_geometries([polyUK], crs=ccrs.PlateCarree(), facecolor='C8', edgecolor='0.5')
-
-    # node name
-    for nd in mTEPES.nd:
-        plt.annotate(nd, [mTEPES.pNodeLon[nd], mTEPES.pNodeLat[nd]])
-
-    #%% colors of the lines according to the ENTSO-E color code
-    # existing lines
-    for ni,nf,cc,lt in mTEPES.le*mTEPES.lt and mTEPES.pLineType:
-       if lt == 'AC':
-          if mTEPES.pLineVoltage[ni,nf,cc] > 700 and mTEPES.pLineVoltage[ni,nf,cc] <= 900:
-              plt.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='blue'   , linewidth=1  , marker='o', linestyle='solid' , transform=ccrs.PlateCarree())
-          if mTEPES.pLineVoltage[ni,nf,cc] > 500 and mTEPES.pLineVoltage[ni,nf,cc] <= 700:
-              plt.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='#ff8000', linewidth=1  , marker='o', linestyle='solid' , transform=ccrs.PlateCarree())
-          if mTEPES.pLineVoltage[ni,nf,cc] > 350 and mTEPES.pLineVoltage[ni,nf,cc] <= 500:
-              plt.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='red'    , linewidth=0.5, marker='o', linestyle='solid' , transform=ccrs.PlateCarree())
-          if mTEPES.pLineVoltage[ni,nf,cc] > 290 and mTEPES.pLineVoltage[ni,nf,cc] <= 350:
-              plt.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='green'  , linewidth=0.2, marker='o', linestyle='solid' , transform=ccrs.PlateCarree())
-          if mTEPES.pLineVoltage[ni,nf,cc] > 200 and mTEPES.pLineVoltage[ni,nf,cc] <= 290:
-              plt.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='green'  , linewidth=0.2, marker='o', linestyle='solid' , transform=ccrs.PlateCarree())
-       else:
-           plt.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='magenta', linewidth=0.5, marker='o', linestyle='solid' , transform=ccrs.PlateCarree())
-    # candidate lines
-    for ni,nf,cc,lt in mTEPES.lc*mTEPES.lt and mTEPES.pLineType:
-        if lt == 'AC':
-            if mTEPES.pLineVoltage[ni,nf,cc] > 700 and mTEPES.pLineVoltage[ni,nf,cc] <= 900:
-                plt.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='blue'   , linewidth=1  , marker='o', linestyle='dashed', transform=ccrs.PlateCarree())
-            if mTEPES.pLineVoltage[ni,nf,cc] > 500 and mTEPES.pLineVoltage[ni,nf,cc] <= 700:
-                plt.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='#ff8000', linewidth=1  , marker='o', linestyle='dashed', transform=ccrs.PlateCarree())
-            if mTEPES.pLineVoltage[ni,nf,cc] > 350 and mTEPES.pLineVoltage[ni,nf,cc] <= 500:
-                plt.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='red'    , linewidth=0.5, marker='o', linestyle='dashed', transform=ccrs.PlateCarree())
-            if mTEPES.pLineVoltage[ni,nf,cc] > 290 and mTEPES.pLineVoltage[ni,nf,cc] <= 350:
-                plt.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='green'  , linewidth=0.2, marker='o', linestyle='dashed', transform=ccrs.PlateCarree())
-            if mTEPES.pLineVoltage[ni,nf,cc] > 200 and mTEPES.pLineVoltage[ni,nf,cc] <= 290:
-                plt.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='green'  , linewidth=0.2, marker='o', linestyle='dashed', transform=ccrs.PlateCarree())
-        else:
-            plt.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='magenta', linewidth=0.5, marker='o', linestyle='dashed', transform=ccrs.PlateCarree())
-
-    # line NTC
-    for ni,nf,cc in mTEPES.la:
-        plt.annotate(round(mTEPES.pLineNTC[ni,nf,cc]*1e3), [(mTEPES.pNodeLon[ni]+mTEPES.pNodeLon[nf])/2, (mTEPES.pNodeLat[ni]+mTEPES.pNodeLat[nf])/2])
-
-    plt.title('openTEPES/' + CaseName+' Network Map')
-    # plt.show()
-    plt.savefig('openTEPES/' + CaseName+'/oT_Map_Network_'+CaseName+'.png', bbox_inches=None, dpi=600)
+    # #%% plotting the network in a map
+    # import geopandas
+    # import cartopy.crs as ccrs
+    # from   cartopy.io import shapereader
+    #
+    # # take data from http://www.naturalearthdata.com/
+    # df = geopandas.read_file(shapereader.natural_earth(resolution='10m', category='cultural', name='admin_0_countries'))
+    # polyAT = df.loc[df['ADMIN'] == 'Austria'       ]['geometry'].values[0]
+    # polyBE = df.loc[df['ADMIN'] == 'Belgium'       ]['geometry'].values[0]
+    # polyBG = df.loc[df['ADMIN'] == 'Bulgaria'      ]['geometry'].values[0]
+    # polyCH = df.loc[df['ADMIN'] == 'Croatia'       ]['geometry'].values[0]
+    # polyCY = df.loc[df['ADMIN'] == 'Cyprus'        ]['geometry'].values[0]
+    # polyCZ = df.loc[df['ADMIN'] == 'Czechia'       ]['geometry'].values[0]
+    # polyDK = df.loc[df['ADMIN'] == 'Denmark'       ]['geometry'].values[0]
+    # polyEE = df.loc[df['ADMIN'] == 'Estonia'       ]['geometry'].values[0]
+    # polyFI = df.loc[df['ADMIN'] == 'Finland'       ]['geometry'].values[0]
+    # polyFR = df.loc[df['ADMIN'] == 'France'        ]['geometry'].values[0]
+    # polyDE = df.loc[df['ADMIN'] == 'Germany'       ]['geometry'].values[0]
+    # polyEL = df.loc[df['ADMIN'] == 'Greece'        ]['geometry'].values[0]
+    # polyHU = df.loc[df['ADMIN'] == 'Hungary'       ]['geometry'].values[0]
+    # polyIE = df.loc[df['ADMIN'] == 'Ireland'       ]['geometry'].values[0]
+    # polyIT = df.loc[df['ADMIN'] == 'Italy'         ]['geometry'].values[0]
+    # polyLV = df.loc[df['ADMIN'] == 'Latvia'        ]['geometry'].values[0]
+    # polyLT = df.loc[df['ADMIN'] == 'Lithuania'     ]['geometry'].values[0]
+    # polyLU = df.loc[df['ADMIN'] == 'Luxembourg'    ]['geometry'].values[0]
+    # polyMT = df.loc[df['ADMIN'] == 'Malta'         ]['geometry'].values[0]
+    # polyNL = df.loc[df['ADMIN'] == 'Netherlands'   ]['geometry'].values[0]
+    # polyPL = df.loc[df['ADMIN'] == 'Poland'        ]['geometry'].values[0]
+    # polyPT = df.loc[df['ADMIN'] == 'Portugal'      ]['geometry'].values[0]
+    # polyRO = df.loc[df['ADMIN'] == 'Romania'       ]['geometry'].values[0]
+    # polySK = df.loc[df['ADMIN'] == 'Slovakia'      ]['geometry'].values[0]
+    # polySI = df.loc[df['ADMIN'] == 'Slovenia'      ]['geometry'].values[0]
+    # polyES = df.loc[df['ADMIN'] == 'Spain'         ]['geometry'].values[0]
+    # polySE = df.loc[df['ADMIN'] == 'Sweden'        ]['geometry'].values[0]
+    # polyUK = df.loc[df['ADMIN'] == 'United Kingdom']['geometry'].values[0]
+    #
+    # fg = plt.axes(projection=ccrs.PlateCarree())
+    # fg.set_extent((min(mTEPES.pNodeLon.values())-2, max(mTEPES.pNodeLon.values())+2, min(mTEPES.pNodeLat.values())-2, max(mTEPES.pNodeLat.values())+2), crs=ccrs.PlateCarree())
+    #
+    # fg.add_geometries([polyAT], crs=ccrs.PlateCarree(), facecolor='C0', edgecolor='0.5')
+    # fg.add_geometries([polyBE], crs=ccrs.PlateCarree(), facecolor='C1', edgecolor='0.5')
+    # fg.add_geometries([polyBG], crs=ccrs.PlateCarree(), facecolor='C2', edgecolor='0.5')
+    # fg.add_geometries([polyCH], crs=ccrs.PlateCarree(), facecolor='C3', edgecolor='0.5')
+    # fg.add_geometries([polyCY], crs=ccrs.PlateCarree(), facecolor='C4', edgecolor='0.5')
+    # fg.add_geometries([polyCZ], crs=ccrs.PlateCarree(), facecolor='C5', edgecolor='0.5')
+    # fg.add_geometries([polyDK], crs=ccrs.PlateCarree(), facecolor='C6', edgecolor='0.5')
+    # fg.add_geometries([polyEE], crs=ccrs.PlateCarree(), facecolor='C7', edgecolor='0.5')
+    # fg.add_geometries([polyFI], crs=ccrs.PlateCarree(), facecolor='C8', edgecolor='0.5')
+    # fg.add_geometries([polyFR], crs=ccrs.PlateCarree(), facecolor='C9', edgecolor='0.5')
+    # fg.add_geometries([polyDE], crs=ccrs.PlateCarree(), facecolor='C0', edgecolor='0.5')
+    # fg.add_geometries([polyEL], crs=ccrs.PlateCarree(), facecolor='C1', edgecolor='0.5')
+    # fg.add_geometries([polyHU], crs=ccrs.PlateCarree(), facecolor='C2', edgecolor='0.5')
+    # fg.add_geometries([polyIE], crs=ccrs.PlateCarree(), facecolor='C3', edgecolor='0.5')
+    # fg.add_geometries([polyIT], crs=ccrs.PlateCarree(), facecolor='C4', edgecolor='0.5')
+    # fg.add_geometries([polyLV], crs=ccrs.PlateCarree(), facecolor='C5', edgecolor='0.5')
+    # fg.add_geometries([polyLT], crs=ccrs.PlateCarree(), facecolor='C6', edgecolor='0.5')
+    # fg.add_geometries([polyLU], crs=ccrs.PlateCarree(), facecolor='C7', edgecolor='0.5')
+    # fg.add_geometries([polyMT], crs=ccrs.PlateCarree(), facecolor='C8', edgecolor='0.5')
+    # fg.add_geometries([polyNL], crs=ccrs.PlateCarree(), facecolor='C9', edgecolor='0.5')
+    # fg.add_geometries([polyPL], crs=ccrs.PlateCarree(), facecolor='C1', edgecolor='0.5')
+    # fg.add_geometries([polyPT], crs=ccrs.PlateCarree(), facecolor='C2', edgecolor='0.5')
+    # fg.add_geometries([polyRO], crs=ccrs.PlateCarree(), facecolor='C3', edgecolor='0.5')
+    # fg.add_geometries([polySK], crs=ccrs.PlateCarree(), facecolor='C4', edgecolor='0.5')
+    # fg.add_geometries([polySI], crs=ccrs.PlateCarree(), facecolor='C5', edgecolor='0.5')
+    # fg.add_geometries([polyES], crs=ccrs.PlateCarree(), facecolor='C0', edgecolor='0.5')
+    # fg.add_geometries([polySE], crs=ccrs.PlateCarree(), facecolor='C7', edgecolor='0.5')
+    # fg.add_geometries([polyUK], crs=ccrs.PlateCarree(), facecolor='C8', edgecolor='0.5')
+    #
+    # # node name
+    # for nd in mTEPES.nd:
+    #     plt.annotate(nd, [mTEPES.pNodeLon[nd], mTEPES.pNodeLat[nd]])
+    #
+    # #%% colors of the lines according to the ENTSO-E color code
+    # # existing lines
+    # for ni,nf,cc,lt in mTEPES.le*mTEPES.lt and mTEPES.pLineType:
+    #    if lt == 'AC':
+    #       if mTEPES.pLineVoltage[ni,nf,cc] > 700 and mTEPES.pLineVoltage[ni,nf,cc] <= 900:
+    #           plt.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='blue'   , linewidth=1  , marker='o', linestyle='solid' , transform=ccrs.PlateCarree())
+    #       if mTEPES.pLineVoltage[ni,nf,cc] > 500 and mTEPES.pLineVoltage[ni,nf,cc] <= 700:
+    #           plt.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='#ff8000', linewidth=1  , marker='o', linestyle='solid' , transform=ccrs.PlateCarree())
+    #       if mTEPES.pLineVoltage[ni,nf,cc] > 350 and mTEPES.pLineVoltage[ni,nf,cc] <= 500:
+    #           plt.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='red'    , linewidth=0.5, marker='o', linestyle='solid' , transform=ccrs.PlateCarree())
+    #       if mTEPES.pLineVoltage[ni,nf,cc] > 290 and mTEPES.pLineVoltage[ni,nf,cc] <= 350:
+    #           plt.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='green'  , linewidth=0.2, marker='o', linestyle='solid' , transform=ccrs.PlateCarree())
+    #       if mTEPES.pLineVoltage[ni,nf,cc] > 200 and mTEPES.pLineVoltage[ni,nf,cc] <= 290:
+    #           plt.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='green'  , linewidth=0.2, marker='o', linestyle='solid' , transform=ccrs.PlateCarree())
+    #    else:
+    #        plt.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='magenta', linewidth=0.5, marker='o', linestyle='solid' , transform=ccrs.PlateCarree())
+    # # candidate lines
+    # for ni,nf,cc,lt in mTEPES.lc*mTEPES.lt and mTEPES.pLineType:
+    #     if lt == 'AC':
+    #         if mTEPES.pLineVoltage[ni,nf,cc] > 700 and mTEPES.pLineVoltage[ni,nf,cc] <= 900:
+    #             plt.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='blue'   , linewidth=1  , marker='o', linestyle='dashed', transform=ccrs.PlateCarree())
+    #         if mTEPES.pLineVoltage[ni,nf,cc] > 500 and mTEPES.pLineVoltage[ni,nf,cc] <= 700:
+    #             plt.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='#ff8000', linewidth=1  , marker='o', linestyle='dashed', transform=ccrs.PlateCarree())
+    #         if mTEPES.pLineVoltage[ni,nf,cc] > 350 and mTEPES.pLineVoltage[ni,nf,cc] <= 500:
+    #             plt.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='red'    , linewidth=0.5, marker='o', linestyle='dashed', transform=ccrs.PlateCarree())
+    #         if mTEPES.pLineVoltage[ni,nf,cc] > 290 and mTEPES.pLineVoltage[ni,nf,cc] <= 350:
+    #             plt.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='green'  , linewidth=0.2, marker='o', linestyle='dashed', transform=ccrs.PlateCarree())
+    #         if mTEPES.pLineVoltage[ni,nf,cc] > 200 and mTEPES.pLineVoltage[ni,nf,cc] <= 290:
+    #             plt.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='green'  , linewidth=0.2, marker='o', linestyle='dashed', transform=ccrs.PlateCarree())
+    #     else:
+    #         plt.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='magenta', linewidth=0.5, marker='o', linestyle='dashed', transform=ccrs.PlateCarree())
+    #
+    # # line NTC
+    # for ni,nf,cc in mTEPES.la:
+    #     plt.annotate(round(mTEPES.pLineNTC[ni,nf,cc]*1e3), [(mTEPES.pNodeLon[ni]+mTEPES.pNodeLon[nf])/2, (mTEPES.pNodeLat[ni]+mTEPES.pNodeLat[nf])/2])
+    #
+    # plt.title('openTEPES/' + CaseName+' Network Map')
+    # # plt.show()
+    # plt.savefig('openTEPES/' + CaseName+'/oT_Map_Network_'+CaseName+'.png', bbox_inches=None, dpi=600)
 
     PlottingNetMapsTime = time.time() - StartTime
     print('Plotting network maps                 ... ', round(PlottingNetMapsTime), 's')
