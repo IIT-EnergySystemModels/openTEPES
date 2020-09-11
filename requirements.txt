@@ -4,3 +4,5 @@ pyomo==5.7
 geopandas==0.8.1
 networkx==2.5
 psutil==5.7.2
+matplotlib
+ipopt
