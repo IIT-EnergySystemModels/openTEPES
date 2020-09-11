@@ -1,3 +1,4 @@
+NumPy 1.10
 cartopy==0.18.0
 geopandas==0.8.1
 glpk==4.65
