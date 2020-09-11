@@ -93,120 +93,120 @@ def InputData(CaseName,mTEPES):
     mTEPES.znar = Set(initialize=dictSets['znar'], ordered=False, doc='zone to area'  )
     mTEPES.arrg = Set(initialize=dictSets['arrg'], ordered=False, doc='area to region')
 
-    #%% parameters
-    pIndBinGenInvest    = dfOption   ['IndBinGenInvest'][0].astype('int')                                                                # Indicator of binary generation expansion decisions, 0 continuous - 1 binary
-    pIndBinNetInvest    = dfOption   ['IndBinNetInvest'][0].astype('int')                                                                # Indicator of binary network    expansion decisions, 0 continuous - 1 binary
-    pIndBinGenOperat    = dfOption   ['IndBinGenOperat'][0].astype('int')                                                                # Indicator of binary generation operation decisions, 0 continuous - 1 binary
-    pIndNetLosses       = dfOption   ['IndNetLosses'   ][0].astype('int')                                                                # Indicator of network losses,                        0 lossless   - 1 ohmic losses
-    pENSCost            = dfParameter['ENSCost'        ][0] * 1e-3                                                                       # cost of energy not served           [MEUR/GWh]
-    pCO2Cost            = dfParameter['CO2Cost'        ][0]                                                                              # cost of CO2 emission                [EUR/CO2 ton]
-    pSBase              = dfParameter['SBase'          ][0] * 1e-3                                                                       # base power                          [GW]
-    pReferenceNode      = dfParameter['ReferenceNode'  ][0]                                                                              # reference node
-    pTimeStep           = dfParameter['TimeStep'       ][0].astype('int')                                                                # duration of the unit time step      [h]
-
-    pScenProb           = dfScenario          ['Probability'  ]                                                                          # probabilities of scenarios          [p.u.]
-    pDuration           = dfDuration          ['Duration'     ] * pTimeStep                                                              # duration of load levels             [h]
-    pDemand             = dfDemand            [list(mTEPES.nd)] * 1e-3                                                                   # demand                              [GW]
-    pOperReserveUp      = dfUpOperatingReserve[list(mTEPES.ar)] * 1e-3                                                                   # upward   operating reserve          [GW]
-    pOperReserveDw      = dfDwOperatingReserve[list(mTEPES.ar)] * 1e-3                                                                   # downward operating reserve          [GW]
-    pVariableMaxPower   = dfVariableMaxPower  [list(mTEPES.gg)] * 1e-3                                                                   # dynamic variable maximum power      [GW]
-    pVariableMinStorage = dfVariableMinStorage[list(mTEPES.gg)] * 1e-3                                                                   # dynamic variable minimum storage    [TWh]
-    pVariableMaxStorage = dfVariableMaxStorage[list(mTEPES.gg)] * 1e-3                                                                   # dynamic variable maximum storage    [TWh]
-    pEnergyInflows      = dfEnergyInflows     [list(mTEPES.gg)] * 1e-3                                                                   # dynamic energy inflows              [GW]
-
-    # compute the demand as the mean over the time step load levels and assign it to active load levels. Idem for operating reserve, variable max power, variable min and max storage and inflows
-    pDemand             = pDemand.rolling            (pTimeStep).mean()
-    pOperReserveUp      = pOperReserveUp.rolling     (pTimeStep).mean()
-    pOperReserveDw      = pOperReserveDw.rolling     (pTimeStep).mean()
-    pVariableMaxPower   = pVariableMaxPower.rolling  (pTimeStep).mean()
-    pVariableMinStorage = pVariableMinStorage.rolling(pTimeStep).mean()
-    pVariableMaxStorage = pVariableMaxStorage.rolling(pTimeStep).mean()
-    pEnergyInflows      = pEnergyInflows.rolling     (pTimeStep).mean()
-
-    pDemand.fillna            (0, inplace=True)
-    pOperReserveUp.fillna     (0, inplace=True)
-    pOperReserveDw.fillna     (0, inplace=True)
-    pVariableMaxPower.fillna  (0, inplace=True)
-    pVariableMinStorage.fillna(0, inplace=True)
-    pVariableMaxStorage.fillna(0, inplace=True)
-    pEnergyInflows.fillna     (0, inplace=True)
-
-    if pTimeStep > 1:
-        # assign duration 0 to load levels not being considered, active load levels are at the end of every pTimeStep
-        for i in range(pTimeStep-2,-1,-1):
-            pDuration[range(i,len(mTEPES.nn),pTimeStep)] = 0
-
-    #%% generation parameters
-    pGenToNode         = dfGeneration  ['Node'                ]                                                                            # generator location in node
-    pGenToTechnology   = dfGeneration  ['Technology'          ]                                                                            # generator association to technology
-    pMustRun           = dfGeneration  ['MustRun'             ]                                                                            # must-run unit                       [Yes]
-    pRatedMinPower     = dfGeneration  ['MinimumPower'        ] * 1e-3 * (1-dfGeneration['EFOR'])                                          # rated minimum power                 [GW]
-    pRatedMaxPower     = dfGeneration  ['MaximumPower'        ] * 1e-3 * (1-dfGeneration['EFOR'])                                          # rated maximum power                 [GW]
-    pLinearVarCost     = dfGeneration  ['LinearTerm'          ] * 1e-3 * dfGeneration['FuelCost'] + dfGeneration['OMVariableCost'] * 1e-3  # linear   term variable cost         [MEUR/GWh]
-    pConstantVarCost   = dfGeneration  ['ConstantTerm'        ] * 1e-6 * dfGeneration['FuelCost']                                          # constant term variable cost         [MEUR/h]
-    pStartUpCost       = dfGeneration  ['StartUpCost'         ]                                                                            # startup  cost                       [MEUR]
-    pShutDownCost      = dfGeneration  ['ShutDownCost'        ]                                                                            # shutdown cost                       [MEUR]
-    pRampUp            = dfGeneration  ['RampUp'              ] * 1e-3                                                                     # ramp up   rate                      [GW/h]
-    pRampDw            = dfGeneration  ['RampDown'            ] * 1e-3                                                                     # ramp down rate                      [GW/h]
-    pCO2EmissionRate   = dfGeneration  ['CO2EmissionRate'     ] * 1e-3                                                                     # emission  rate                      [t CO2/MWh]
-    pUpTime            = dfGeneration  ['UpTime'              ]                                                                            # minimum up   time                   [h]
-    pDwTime            = dfGeneration  ['DownTime'            ]                                                                            # minimum down time                   [h]
-    pGenFixedCost      = dfGeneration  ['FixedCost'           ] *        dfGeneration['FixedChargeRate']                                   # generation fixed cost               [MEUR]
-    pIndBinUnitInvest  = dfGeneration  ['BinaryInvestment'    ]                                                                            # binary unit investment decision     [Yes]
-    pMaxCharge         = dfGeneration  ['MaximumCharge'       ] * 1e-3                                                                     # maximum ESS charge                  [GW]
-    pInitialInventory  = dfGeneration  ['InitialStorage'      ] * 1e-3                                                                     # initial ESS storage                 [TWh]
-    pRatedMinStorage   = dfGeneration  ['MinimumStorage'      ] * 1e-3                                                                     # minimum ESS storage                 [TWh]
-    pRatedMaxStorage   = dfGeneration  ['MaximumStorage'      ] * 1e-3                                                                     # maximum ESS storage                 [TWh]
-    pEfficiency        = dfGeneration  ['Efficiency'          ]                                                                            #         ESS efficiency              [p.u.]
-    pStorageType       = dfGeneration  ['StorageType'         ]                                                                            #         ESS type
-    pRMaxReactivePower = dfGeneration  ['MaximumReactivePower'] * 1e-3                                                                     # rated maximum reactive power        [Gvar]
-
-    pNodeLat           = dfNodeLocation['Latitude'            ]                                                                            # node latitude                       [º]
-    pNodeLon           = dfNodeLocation['Longitude'           ]                                                                            # node longitude                      [º]
-
-    pLineType          = dfNetwork     ['LineType'            ]                                                                            # line type
-    pLineVoltage       = dfNetwork     ['Voltage'             ]                                                                            # line voltage                        [kV]
-    pLineLossFactor    = dfNetwork     ['LossFactor'          ]                                                                            # loss factor                         [p.u.]
-    pLineR             = dfNetwork     ['Resistance'          ]                                                                            # resistance                          [p.u.]
-    pLineX             = dfNetwork     ['Reactance'           ]                                                                            # reactance                           [p.u.]
-    pLineBsh           = dfNetwork     ['Susceptance'         ]                                                                            # susceptance                         [p.u.]
-    pLineTAP           = dfNetwork     ['Tap'                 ]                                                                            # tap changer                         [p.u.]
-    pLineNTC           = dfNetwork     ['TTC'                 ] * 1e-3 * dfNetwork['SecurityFactor' ]                                      # net transfer capacity               [GW]
-    pNetFixedCost      = dfNetwork     ['FixedCost'           ] *        dfNetwork['FixedChargeRate']                                      # network    fixed cost               [MEUR]
-    pIndBinLineInvest  = dfNetwork     ['BinaryInvestment'    ]                                                                            # binary line    investment decision  [Yes]
-
-    ReadingDataTime = time.time() - StartTime
-    StartTime       = time.time()
-    print('Reading    input data                 ... ', round(ReadingDataTime), 's')
-
-    #%% defining subsets: active load levels (n,n2), thermal units (t), RES units (r), ESS units (es), candidate gen units (gc), candidate ESS units (ec), all the lines (la), candidate lines (lc), candidate DC lines (cd), existing DC lines (cd), lines with losses (ll), reference node (rf), and reactive generating units (gq)
-    mTEPES.n  = Set(initialize=mTEPES.nn,                     ordered=True , doc='load levels'        , filter=lambda mTEPES,nn      :  nn        in mTEPES.nn and pDuration         [nn] >  0)
-    mTEPES.n2 = Set(initialize=mTEPES.nn,                     ordered=True , doc='load levels'        , filter=lambda mTEPES,nn      :  nn        in mTEPES.nn and pDuration         [nn] >  0)
-    mTEPES.g  = Set(initialize=mTEPES.gg,                     ordered=False, doc='generating    units', filter=lambda mTEPES,gg      :  gg        in mTEPES.gg and pRatedMaxPower    [gg] >  0)
-    mTEPES.t  = Set(initialize=mTEPES.g ,                     ordered=False, doc='thermal       units', filter=lambda mTEPES,g       :  g         in mTEPES.g  and pLinearVarCost    [g ] >  0)
-    mTEPES.r  = Set(initialize=mTEPES.g ,                     ordered=False, doc='RES           units', filter=lambda mTEPES,g       :  g         in mTEPES.g  and pLinearVarCost    [g ] == 0 and pRatedMaxStorage[g] == 0)
-    mTEPES.es = Set(initialize=mTEPES.g ,                     ordered=False, doc='ESS           units', filter=lambda mTEPES,g       :  g         in mTEPES.g  and                                 pRatedMaxStorage[g] >  0)
-    mTEPES.gc = Set(initialize=mTEPES.g ,                     ordered=False, doc='candidate     units', filter=lambda mTEPES,g       :  g         in mTEPES.g  and pGenFixedCost     [g ] >  0)
-    mTEPES.ec = Set(initialize=mTEPES.es,                     ordered=False, doc='candidate ESS units', filter=lambda mTEPES,es      :  es        in mTEPES.es and pGenFixedCost     [es] >  0)
-    mTEPES.br = Set(initialize=mTEPES.ni*mTEPES.nf,           ordered=False, doc='all branches       ', filter=lambda mTEPES,ni,nf   : (ni,nf)    in               pLineX                     )
-    mTEPES.la = Set(initialize=mTEPES.ni*mTEPES.nf*mTEPES.cc, ordered=False, doc='all           lines', filter=lambda mTEPES,ni,nf,cc: (ni,nf,cc) in               pLineX                     )
-    mTEPES.lc = Set(initialize=mTEPES.la,                     ordered=False, doc='candidate     lines', filter=lambda mTEPES,*la     :  la        in mTEPES.la and pNetFixedCost     [la] >  0)
-    mTEPES.cd = Set(initialize=mTEPES.la,                     ordered=False, doc='           DC lines', filter=lambda mTEPES,*la     :  la        in mTEPES.la and pNetFixedCost     [la] >  0 and pLineType[la] == 'DC')
-    mTEPES.ed = Set(initialize=mTEPES.la,                     ordered=False, doc='           DC lines', filter=lambda mTEPES,*la     :  la        in mTEPES.la and pNetFixedCost     [la] == 0 and pLineType[la] == 'DC')
-    mTEPES.ll = Set(initialize=mTEPES.la,                     ordered=False, doc='loss          lines', filter=lambda mTEPES,*la     :  la        in mTEPES.la and pLineLossFactor   [la] >  0 and pIndNetLosses >   0  )
-    mTEPES.rf = Set(initialize=mTEPES.nd,                     ordered=True , doc='reference node'     , filter=lambda mTEPES,nd      :  nd        in               pReferenceNode             )
-    mTEPES.gq = Set(initialize=mTEPES.gg,                     ordered=False, doc='gen  reactive units', filter=lambda mTEPES,gg      :  gg        in mTEPES.gg and pRMaxReactivePower[gg] >  0)
-
-    # non-RES units, they can contribute to the operating reserve and can be committed
-    mTEPES.nr = mTEPES.g - mTEPES.r
-
-    # existing lines (le)
-    mTEPES.le = mTEPES.la - mTEPES.lc
-
-    # AC existing and candidate lines (lca and lea) and all of them (laa)
-    mTEPES.lea = mTEPES.le  - mTEPES.ed
-    mTEPES.lca = mTEPES.lc  - mTEPES.cd
-    mTEPES.laa = mTEPES.lea | mTEPES.lca
+    # #%% parameters
+    # pIndBinGenInvest    = dfOption   ['IndBinGenInvest'][0].astype('int')                                                                # Indicator of binary generation expansion decisions, 0 continuous - 1 binary
+    # pIndBinNetInvest    = dfOption   ['IndBinNetInvest'][0].astype('int')                                                                # Indicator of binary network    expansion decisions, 0 continuous - 1 binary
+    # pIndBinGenOperat    = dfOption   ['IndBinGenOperat'][0].astype('int')                                                                # Indicator of binary generation operation decisions, 0 continuous - 1 binary
+    # pIndNetLosses       = dfOption   ['IndNetLosses'   ][0].astype('int')                                                                # Indicator of network losses,                        0 lossless   - 1 ohmic losses
+    # pENSCost            = dfParameter['ENSCost'        ][0] * 1e-3                                                                       # cost of energy not served           [MEUR/GWh]
+    # pCO2Cost            = dfParameter['CO2Cost'        ][0]                                                                              # cost of CO2 emission                [EUR/CO2 ton]
+    # pSBase              = dfParameter['SBase'          ][0] * 1e-3                                                                       # base power                          [GW]
+    # pReferenceNode      = dfParameter['ReferenceNode'  ][0]                                                                              # reference node
+    # pTimeStep           = dfParameter['TimeStep'       ][0].astype('int')                                                                # duration of the unit time step      [h]
+    #
+    # pScenProb           = dfScenario          ['Probability'  ]                                                                          # probabilities of scenarios          [p.u.]
+    # pDuration           = dfDuration          ['Duration'     ] * pTimeStep                                                              # duration of load levels             [h]
+    # pDemand             = dfDemand            [list(mTEPES.nd)] * 1e-3                                                                   # demand                              [GW]
+    # pOperReserveUp      = dfUpOperatingReserve[list(mTEPES.ar)] * 1e-3                                                                   # upward   operating reserve          [GW]
+    # pOperReserveDw      = dfDwOperatingReserve[list(mTEPES.ar)] * 1e-3                                                                   # downward operating reserve          [GW]
+    # pVariableMaxPower   = dfVariableMaxPower  [list(mTEPES.gg)] * 1e-3                                                                   # dynamic variable maximum power      [GW]
+    # pVariableMinStorage = dfVariableMinStorage[list(mTEPES.gg)] * 1e-3                                                                   # dynamic variable minimum storage    [TWh]
+    # pVariableMaxStorage = dfVariableMaxStorage[list(mTEPES.gg)] * 1e-3                                                                   # dynamic variable maximum storage    [TWh]
+    # pEnergyInflows      = dfEnergyInflows     [list(mTEPES.gg)] * 1e-3                                                                   # dynamic energy inflows              [GW]
+    #
+    # # compute the demand as the mean over the time step load levels and assign it to active load levels. Idem for operating reserve, variable max power, variable min and max storage and inflows
+    # pDemand             = pDemand.rolling            (pTimeStep).mean()
+    # pOperReserveUp      = pOperReserveUp.rolling     (pTimeStep).mean()
+    # pOperReserveDw      = pOperReserveDw.rolling     (pTimeStep).mean()
+    # pVariableMaxPower   = pVariableMaxPower.rolling  (pTimeStep).mean()
+    # pVariableMinStorage = pVariableMinStorage.rolling(pTimeStep).mean()
+    # pVariableMaxStorage = pVariableMaxStorage.rolling(pTimeStep).mean()
+    # pEnergyInflows      = pEnergyInflows.rolling     (pTimeStep).mean()
+    #
+    # pDemand.fillna            (0, inplace=True)
+    # pOperReserveUp.fillna     (0, inplace=True)
+    # pOperReserveDw.fillna     (0, inplace=True)
+    # pVariableMaxPower.fillna  (0, inplace=True)
+    # pVariableMinStorage.fillna(0, inplace=True)
+    # pVariableMaxStorage.fillna(0, inplace=True)
+    # pEnergyInflows.fillna     (0, inplace=True)
+    #
+    # if pTimeStep > 1:
+    #     # assign duration 0 to load levels not being considered, active load levels are at the end of every pTimeStep
+    #     for i in range(pTimeStep-2,-1,-1):
+    #         pDuration[range(i,len(mTEPES.nn),pTimeStep)] = 0
+    #
+    # #%% generation parameters
+    # pGenToNode         = dfGeneration  ['Node'                ]                                                                            # generator location in node
+    # pGenToTechnology   = dfGeneration  ['Technology'          ]                                                                            # generator association to technology
+    # pMustRun           = dfGeneration  ['MustRun'             ]                                                                            # must-run unit                       [Yes]
+    # pRatedMinPower     = dfGeneration  ['MinimumPower'        ] * 1e-3 * (1-dfGeneration['EFOR'])                                          # rated minimum power                 [GW]
+    # pRatedMaxPower     = dfGeneration  ['MaximumPower'        ] * 1e-3 * (1-dfGeneration['EFOR'])                                          # rated maximum power                 [GW]
+    # pLinearVarCost     = dfGeneration  ['LinearTerm'          ] * 1e-3 * dfGeneration['FuelCost'] + dfGeneration['OMVariableCost'] * 1e-3  # linear   term variable cost         [MEUR/GWh]
+    # pConstantVarCost   = dfGeneration  ['ConstantTerm'        ] * 1e-6 * dfGeneration['FuelCost']                                          # constant term variable cost         [MEUR/h]
+    # pStartUpCost       = dfGeneration  ['StartUpCost'         ]                                                                            # startup  cost                       [MEUR]
+    # pShutDownCost      = dfGeneration  ['ShutDownCost'        ]                                                                            # shutdown cost                       [MEUR]
+    # pRampUp            = dfGeneration  ['RampUp'              ] * 1e-3                                                                     # ramp up   rate                      [GW/h]
+    # pRampDw            = dfGeneration  ['RampDown'            ] * 1e-3                                                                     # ramp down rate                      [GW/h]
+    # pCO2EmissionRate   = dfGeneration  ['CO2EmissionRate'     ] * 1e-3                                                                     # emission  rate                      [t CO2/MWh]
+    # pUpTime            = dfGeneration  ['UpTime'              ]                                                                            # minimum up   time                   [h]
+    # pDwTime            = dfGeneration  ['DownTime'            ]                                                                            # minimum down time                   [h]
+    # pGenFixedCost      = dfGeneration  ['FixedCost'           ] *        dfGeneration['FixedChargeRate']                                   # generation fixed cost               [MEUR]
+    # pIndBinUnitInvest  = dfGeneration  ['BinaryInvestment'    ]                                                                            # binary unit investment decision     [Yes]
+    # pMaxCharge         = dfGeneration  ['MaximumCharge'       ] * 1e-3                                                                     # maximum ESS charge                  [GW]
+    # pInitialInventory  = dfGeneration  ['InitialStorage'      ] * 1e-3                                                                     # initial ESS storage                 [TWh]
+    # pRatedMinStorage   = dfGeneration  ['MinimumStorage'      ] * 1e-3                                                                     # minimum ESS storage                 [TWh]
+    # pRatedMaxStorage   = dfGeneration  ['MaximumStorage'      ] * 1e-3                                                                     # maximum ESS storage                 [TWh]
+    # pEfficiency        = dfGeneration  ['Efficiency'          ]                                                                            #         ESS efficiency              [p.u.]
+    # pStorageType       = dfGeneration  ['StorageType'         ]                                                                            #         ESS type
+    # pRMaxReactivePower = dfGeneration  ['MaximumReactivePower'] * 1e-3                                                                     # rated maximum reactive power        [Gvar]
+    #
+    # pNodeLat           = dfNodeLocation['Latitude'            ]                                                                            # node latitude                       [º]
+    # pNodeLon           = dfNodeLocation['Longitude'           ]                                                                            # node longitude                      [º]
+    #
+    # pLineType          = dfNetwork     ['LineType'            ]                                                                            # line type
+    # pLineVoltage       = dfNetwork     ['Voltage'             ]                                                                            # line voltage                        [kV]
+    # pLineLossFactor    = dfNetwork     ['LossFactor'          ]                                                                            # loss factor                         [p.u.]
+    # pLineR             = dfNetwork     ['Resistance'          ]                                                                            # resistance                          [p.u.]
+    # pLineX             = dfNetwork     ['Reactance'           ]                                                                            # reactance                           [p.u.]
+    # pLineBsh           = dfNetwork     ['Susceptance'         ]                                                                            # susceptance                         [p.u.]
+    # pLineTAP           = dfNetwork     ['Tap'                 ]                                                                            # tap changer                         [p.u.]
+    # pLineNTC           = dfNetwork     ['TTC'                 ] * 1e-3 * dfNetwork['SecurityFactor' ]                                      # net transfer capacity               [GW]
+    # pNetFixedCost      = dfNetwork     ['FixedCost'           ] *        dfNetwork['FixedChargeRate']                                      # network    fixed cost               [MEUR]
+    # pIndBinLineInvest  = dfNetwork     ['BinaryInvestment'    ]                                                                            # binary line    investment decision  [Yes]
+    #
+    # ReadingDataTime = time.time() - StartTime
+    # StartTime       = time.time()
+    # print('Reading    input data                 ... ', round(ReadingDataTime), 's')
+    #
+    # #%% defining subsets: active load levels (n,n2), thermal units (t), RES units (r), ESS units (es), candidate gen units (gc), candidate ESS units (ec), all the lines (la), candidate lines (lc), candidate DC lines (cd), existing DC lines (cd), lines with losses (ll), reference node (rf), and reactive generating units (gq)
+    # mTEPES.n  = Set(initialize=mTEPES.nn,                     ordered=True , doc='load levels'        , filter=lambda mTEPES,nn      :  nn        in mTEPES.nn and pDuration         [nn] >  0)
+    # mTEPES.n2 = Set(initialize=mTEPES.nn,                     ordered=True , doc='load levels'        , filter=lambda mTEPES,nn      :  nn        in mTEPES.nn and pDuration         [nn] >  0)
+    # mTEPES.g  = Set(initialize=mTEPES.gg,                     ordered=False, doc='generating    units', filter=lambda mTEPES,gg      :  gg        in mTEPES.gg and pRatedMaxPower    [gg] >  0)
+    # mTEPES.t  = Set(initialize=mTEPES.g ,                     ordered=False, doc='thermal       units', filter=lambda mTEPES,g       :  g         in mTEPES.g  and pLinearVarCost    [g ] >  0)
+    # mTEPES.r  = Set(initialize=mTEPES.g ,                     ordered=False, doc='RES           units', filter=lambda mTEPES,g       :  g         in mTEPES.g  and pLinearVarCost    [g ] == 0 and pRatedMaxStorage[g] == 0)
+    # mTEPES.es = Set(initialize=mTEPES.g ,                     ordered=False, doc='ESS           units', filter=lambda mTEPES,g       :  g         in mTEPES.g  and                                 pRatedMaxStorage[g] >  0)
+    # mTEPES.gc = Set(initialize=mTEPES.g ,                     ordered=False, doc='candidate     units', filter=lambda mTEPES,g       :  g         in mTEPES.g  and pGenFixedCost     [g ] >  0)
+    # mTEPES.ec = Set(initialize=mTEPES.es,                     ordered=False, doc='candidate ESS units', filter=lambda mTEPES,es      :  es        in mTEPES.es and pGenFixedCost     [es] >  0)
+    # mTEPES.br = Set(initialize=mTEPES.ni*mTEPES.nf,           ordered=False, doc='all branches       ', filter=lambda mTEPES,ni,nf   : (ni,nf)    in               pLineX                     )
+    # mTEPES.la = Set(initialize=mTEPES.ni*mTEPES.nf*mTEPES.cc, ordered=False, doc='all           lines', filter=lambda mTEPES,ni,nf,cc: (ni,nf,cc) in               pLineX                     )
+    # mTEPES.lc = Set(initialize=mTEPES.la,                     ordered=False, doc='candidate     lines', filter=lambda mTEPES,*la     :  la        in mTEPES.la and pNetFixedCost     [la] >  0)
+    # mTEPES.cd = Set(initialize=mTEPES.la,                     ordered=False, doc='           DC lines', filter=lambda mTEPES,*la     :  la        in mTEPES.la and pNetFixedCost     [la] >  0 and pLineType[la] == 'DC')
+    # mTEPES.ed = Set(initialize=mTEPES.la,                     ordered=False, doc='           DC lines', filter=lambda mTEPES,*la     :  la        in mTEPES.la and pNetFixedCost     [la] == 0 and pLineType[la] == 'DC')
+    # mTEPES.ll = Set(initialize=mTEPES.la,                     ordered=False, doc='loss          lines', filter=lambda mTEPES,*la     :  la        in mTEPES.la and pLineLossFactor   [la] >  0 and pIndNetLosses >   0  )
+    # mTEPES.rf = Set(initialize=mTEPES.nd,                     ordered=True , doc='reference node'     , filter=lambda mTEPES,nd      :  nd        in               pReferenceNode             )
+    # mTEPES.gq = Set(initialize=mTEPES.gg,                     ordered=False, doc='gen  reactive units', filter=lambda mTEPES,gg      :  gg        in mTEPES.gg and pRMaxReactivePower[gg] >  0)
+    #
+    # # non-RES units, they can contribute to the operating reserve and can be committed
+    # mTEPES.nr = mTEPES.g - mTEPES.r
+    #
+    # # existing lines (le)
+    # mTEPES.le = mTEPES.la - mTEPES.lc
+    #
+    # # AC existing and candidate lines (lca and lea) and all of them (laa)
+    # mTEPES.lea = mTEPES.le  - mTEPES.ed
+    # mTEPES.lca = mTEPES.lc  - mTEPES.cd
+    # mTEPES.laa = mTEPES.lea | mTEPES.lca
 
     # # # input lines
     # # mTEPES.lin = Set(initialize=mTEPES.nf*mTEPES.ni*mTEPES.cc, doc='input line', filter=lambda mTEPES,nf,ni,cc: (ni,nf,cc) in mTEPES.la)
