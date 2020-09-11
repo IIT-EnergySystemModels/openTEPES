@@ -1,0 +1,8 @@
+cartopy==0.18.0
+geopandas==0.8.1
+glpk==4.65
+networkx==2.5
+numpy==1.19.1
+pandas==1.1.1
+psutil==5.7.2
+pyomo==5.7
