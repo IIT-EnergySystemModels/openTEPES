@@ -1,5 +1,5 @@
 # Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 1.7.15 - September 4, 2020
-
+import os
 import time
 import math
 import pandas        as pd
@@ -10,21 +10,22 @@ print('Input data                  ****')
 
 def InputData(CaseName,mTEPES):
     StartTime = time.time()
+    CWD = os.getcwd()
     #%% reading data from CSV
-    dfOption             = pd.read_csv('openTEPES/' + CaseName+'/oT_Data_Option_'                  +CaseName+'.csv', index_col=[0    ])
-    dfParameter          = pd.read_csv('openTEPES/' + CaseName+'/oT_Data_Parameter_'               +CaseName+'.csv', index_col=[0    ])
-    dfScenario           = pd.read_csv('openTEPES/' + CaseName+'/oT_Data_Scenario_'                +CaseName+'.csv', index_col=[0    ])
-    dfDuration           = pd.read_csv('openTEPES/' + CaseName+'/oT_Data_Duration_'                +CaseName+'.csv', index_col=[0    ])
-    dfDemand             = pd.read_csv('openTEPES/' + CaseName+'/oT_Data_Demand_'                  +CaseName+'.csv', index_col=[0,1,2])
-    dfUpOperatingReserve = pd.read_csv('openTEPES/' + CaseName+'/oT_Data_UpwardOperatingReserve_'  +CaseName+'.csv', index_col=[0,1,2])
-    dfDwOperatingReserve = pd.read_csv('openTEPES/' + CaseName+'/oT_Data_DownwardOperatingReserve_'+CaseName+'.csv', index_col=[0,1,2])
-    dfGeneration         = pd.read_csv('openTEPES/' + CaseName+'/oT_Data_Generation_'              +CaseName+'.csv', index_col=[0    ])
-    dfVariableMaxPower   = pd.read_csv('openTEPES/' + CaseName+'/oT_Data_VariableGeneration_'      +CaseName+'.csv', index_col=[0,1,2])
-    dfVariableMinStorage = pd.read_csv('openTEPES/' + CaseName+'/oT_Data_MinimumStorage_'          +CaseName+'.csv', index_col=[0,1,2])
-    dfVariableMaxStorage = pd.read_csv('openTEPES/' + CaseName+'/oT_Data_MaximumStorage_'          +CaseName+'.csv', index_col=[0,1,2])
-    dfEnergyInflows      = pd.read_csv('openTEPES/' + CaseName+'/oT_Data_EnergyInflows_'           +CaseName+'.csv', index_col=[0,1,2])
-    dfNodeLocation       = pd.read_csv('openTEPES/' + CaseName+'/oT_Data_NodeLocation_'            +CaseName+'.csv', index_col=[0    ])
-    dfNetwork            = pd.read_csv('openTEPES/' + CaseName+'/oT_Data_Network_'                 +CaseName+'.csv', index_col=[0,1,2])
+    dfOption             = pd.read_csv(CWS + '/openTEPES/' + CaseName+'/oT_Data_Option_'                  +CaseName+'.csv', index_col=[0    ])
+    dfParameter          = pd.read_csv(CWS + '/openTEPES/' + CaseName+'/oT_Data_Parameter_'               +CaseName+'.csv', index_col=[0    ])
+    dfScenario           = pd.read_csv(CWS + '/openTEPES/' + CaseName+'/oT_Data_Scenario_'                +CaseName+'.csv', index_col=[0    ])
+    dfDuration           = pd.read_csv(CWS + '/openTEPES/' + CaseName+'/oT_Data_Duration_'                +CaseName+'.csv', index_col=[0    ])
+    dfDemand             = pd.read_csv(CWS + '/openTEPES/' + CaseName+'/oT_Data_Demand_'                  +CaseName+'.csv', index_col=[0,1,2])
+    dfUpOperatingReserve = pd.read_csv(CWS + '/openTEPES/' + CaseName+'/oT_Data_UpwardOperatingReserve_'  +CaseName+'.csv', index_col=[0,1,2])
+    dfDwOperatingReserve = pd.read_csv(CWS + '/openTEPES/' + CaseName+'/oT_Data_DownwardOperatingReserve_'+CaseName+'.csv', index_col=[0,1,2])
+    dfGeneration         = pd.read_csv(CWS + '/openTEPES/' + CaseName+'/oT_Data_Generation_'              +CaseName+'.csv', index_col=[0    ])
+    dfVariableMaxPower   = pd.read_csv(CWS + '/openTEPES/' + CaseName+'/oT_Data_VariableGeneration_'      +CaseName+'.csv', index_col=[0,1,2])
+    dfVariableMinStorage = pd.read_csv(CWS + '/openTEPES/' + CaseName+'/oT_Data_MinimumStorage_'          +CaseName+'.csv', index_col=[0,1,2])
+    dfVariableMaxStorage = pd.read_csv(CWS + '/openTEPES/' + CaseName+'/oT_Data_MaximumStorage_'          +CaseName+'.csv', index_col=[0,1,2])
+    dfEnergyInflows      = pd.read_csv(CWS + '/openTEPES/' + CaseName+'/oT_Data_EnergyInflows_'           +CaseName+'.csv', index_col=[0,1,2])
+    dfNodeLocation       = pd.read_csv(CWS + '/openTEPES/' + CaseName+'/oT_Data_NodeLocation_'            +CaseName+'.csv', index_col=[0    ])
+    dfNetwork            = pd.read_csv(CWS + '/openTEPES/' + CaseName+'/oT_Data_Network_'                 +CaseName+'.csv', index_col=[0,1,2])
 
     # substitute NaN by 0
     dfOption.fillna            (0, inplace=True)
@@ -55,22 +56,22 @@ def InputData(CaseName,mTEPES):
 
     #%% reading the sets
     dictSets = DataPortal()
-    dictSets.load(filename='openTEPES/' + CaseName+'/oT_Dict_Scenario_'    +CaseName+'.csv', set='sc'  , format='set')
-    dictSets.load(filename='openTEPES/' + CaseName+'/oT_Dict_Period_'      +CaseName+'.csv', set='p'   , format='set')
-    dictSets.load(filename='openTEPES/' + CaseName+'/oT_Dict_LoadLevel_'   +CaseName+'.csv', set='n'   , format='set')
-    dictSets.load(filename='openTEPES/' + CaseName+'/oT_Dict_Generation_'  +CaseName+'.csv', set='g'   , format='set')
-    dictSets.load(filename='openTEPES/' + CaseName+'/oT_Dict_Technology_'  +CaseName+'.csv', set='gt'  , format='set')
-    dictSets.load(filename='openTEPES/' + CaseName+'/oT_Dict_Storage_'     +CaseName+'.csv', set='st'  , format='set')
-    dictSets.load(filename='openTEPES/' + CaseName+'/oT_Dict_Node_'        +CaseName+'.csv', set='nd'  , format='set')
-    dictSets.load(filename='openTEPES/' + CaseName+'/oT_Dict_Zone_'        +CaseName+'.csv', set='zn'  , format='set')
-    dictSets.load(filename='openTEPES/' + CaseName+'/oT_Dict_Area_'        +CaseName+'.csv', set='ar'  , format='set')
-    dictSets.load(filename='openTEPES/' + CaseName+'/oT_Dict_Region_'      +CaseName+'.csv', set='rg'  , format='set')
-    dictSets.load(filename='openTEPES/' + CaseName+'/oT_Dict_Circuit_'     +CaseName+'.csv', set='cc'  , format='set')
-    dictSets.load(filename='openTEPES/' + CaseName+'/oT_Dict_Line_'        +CaseName+'.csv', set='lt'  , format='set')
+    dictSets.load(filename=CWD + '/openTEPES/' + CaseName+'/oT_Dict_Scenario_'    +CaseName+'.csv', set='sc'  , format='set')
+    dictSets.load(filename=CWD + '/openTEPES/' + CaseName+'/oT_Dict_Period_'      +CaseName+'.csv', set='p'   , format='set')
+    dictSets.load(filename=CWD + '/openTEPES/' + CaseName+'/oT_Dict_LoadLevel_'   +CaseName+'.csv', set='n'   , format='set')
+    dictSets.load(filename=CWD + '/openTEPES/' + CaseName+'/oT_Dict_Generation_'  +CaseName+'.csv', set='g'   , format='set')
+    dictSets.load(filename=CWD + '/openTEPES/' + CaseName+'/oT_Dict_Technology_'  +CaseName+'.csv', set='gt'  , format='set')
+    dictSets.load(filename=CWD + '/openTEPES/' + CaseName+'/oT_Dict_Storage_'     +CaseName+'.csv', set='st'  , format='set')
+    dictSets.load(filename=CWD + '/openTEPES/' + CaseName+'/oT_Dict_Node_'        +CaseName+'.csv', set='nd'  , format='set')
+    dictSets.load(filename=CWD + '/openTEPES/' + CaseName+'/oT_Dict_Zone_'        +CaseName+'.csv', set='zn'  , format='set')
+    dictSets.load(filename=CWD + '/openTEPES/' + CaseName+'/oT_Dict_Area_'        +CaseName+'.csv', set='ar'  , format='set')
+    dictSets.load(filename=CWD + '/openTEPES/' + CaseName+'/oT_Dict_Region_'      +CaseName+'.csv', set='rg'  , format='set')
+    dictSets.load(filename=CWD + '/openTEPES/' + CaseName+'/oT_Dict_Circuit_'     +CaseName+'.csv', set='cc'  , format='set')
+    dictSets.load(filename=CWD + '/openTEPES/' + CaseName+'/oT_Dict_Line_'        +CaseName+'.csv', set='lt'  , format='set')
 
-    dictSets.load(filename='openTEPES/' + CaseName+'/oT_Dict_NodeToZone_'  +CaseName+'.csv', set='ndzn', format='set')
-    dictSets.load(filename='openTEPES/' + CaseName+'/oT_Dict_ZoneToArea_'  +CaseName+'.csv', set='znar', format='set')
-    dictSets.load(filename='openTEPES/' + CaseName+'/oT_Dict_AreaToRegion_'+CaseName+'.csv', set='arrg', format='set')
+    dictSets.load(filename=CWD + '/openTEPES/' + CaseName+'/oT_Dict_NodeToZone_'  +CaseName+'.csv', set='ndzn', format='set')
+    dictSets.load(filename=CWD + '/openTEPES/' + CaseName+'/oT_Dict_ZoneToArea_'  +CaseName+'.csv', set='znar', format='set')
+    dictSets.load(filename=CWD + '/openTEPES/' + CaseName+'/oT_Dict_AreaToRegion_'+CaseName+'.csv', set='arrg', format='set')
 
     mTEPES.sc   = Set(initialize=dictSets['sc'],   ordered=True,  doc='scenarios'     )
     mTEPES.p    = Set(initialize=dictSets['p' ],   ordered=True,  doc='periods'       )
