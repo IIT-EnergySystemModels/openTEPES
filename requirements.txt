@@ -2,6 +2,6 @@ numpy==1.19.1
 pandas==1.1.1
 pyomo==5.7
 geopandas==0.8.1
-glpk==0.4.5
+glpk==0.4.4
 networkx==2.5
 psutil==5.7.2
