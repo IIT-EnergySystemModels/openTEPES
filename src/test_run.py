@@ -31,11 +31,11 @@ WritingLPFileTime = time.time() - StartTime
 StartTime         = time.time()
 print('Writing LP file                       ... ', round(WritingLPFileTime), 's')
 
-# import openTEPES_ProblemSolving
-ProblemSolving(SolvName, mTEPES)
-
-# import openTEPES_OutputResults
-OutputResults(CaseName, mTEPES)
+# # import openTEPES_ProblemSolving
+# ProblemSolving(SolvName, mTEPES)
+#
+# # import openTEPES_OutputResults
+# OutputResults(CaseName, mTEPES)
 
 TotalTime = time.time() - StartTime
 print('Total time                            ... ', round(TotalTime), 's')
