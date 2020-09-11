@@ -23,13 +23,13 @@ mTEPES = ConcreteModel('Open Generation and Transmission Operation and Expansion
 # import openTEPES_InputData
 InputData(CaseName, mTEPES)
 
-# import openTEPES_ModelFormulation
-ModelFormulation(mTEPES)
-mTEPES.write('openTEPES_'+CaseName+'.lp', io_options={'symbolic_solver_labels': True})  # create lp-format file
-
-WritingLPFileTime = time.time() - StartTime
-StartTime         = time.time()
-print('Writing LP file                       ... ', round(WritingLPFileTime), 's')
+# # import openTEPES_ModelFormulation
+# ModelFormulation(mTEPES)
+# mTEPES.write('openTEPES_'+CaseName+'.lp', io_options={'symbolic_solver_labels': True})  # create lp-format file
+#
+# WritingLPFileTime = time.time() - StartTime
+# StartTime         = time.time()
+# print('Writing LP file                       ... ', round(WritingLPFileTime), 's')
 
 # # import openTEPES_ProblemSolving
 # ProblemSolving(SolvName, mTEPES)
