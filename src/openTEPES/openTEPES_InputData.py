@@ -24,7 +24,8 @@ def InputData(CaseName, mTEPES):
     dfDuration = pd.read_csv(
         Data_Path + '/oT_Data_Duration_' + CaseName + '.csv', index_col=[0])
     dfDemand = pd.read_csv(
-        Data_Path + '/oT_Data_Demand_' + CaseName + '.csv', index_col=[0, 1, 2])
+        Data_Path + '/oT_Data_Demand_'
+        + CaseName + '.csv', index_col=[0, 1, 2])
     dfUpOperatingReserve = pd.read_csv(
         Data_Path + '/oT_Data_UpwardOperatingReserve_'
         + CaseName + '.csv', index_col=[0, 1, 2])
