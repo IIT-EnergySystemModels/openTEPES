@@ -3,7 +3,8 @@ import os
 import time
 import math
 import pandas as pd
-from pyomo.environ import DataPortal, Set, Param, Var, Binary, NonNegativeReals, Reals, UnitInterval, Boolean
+from pyomo.environ import DataPortal, Set, Param, Var
+from pyomo.environ import Binary, NonNegativeReals, Reals, UnitInterval, Boolean
 
 print('Input data                  ****')
 
