@@ -26,9 +26,11 @@ def InputData(CaseName, mTEPES):
     dfDemand = pd.read_csv(
         Data_Path + '/oT_Data_Demand_' + CaseName+'.csv', index_col=[0, 1, 2])
     dfUpOperatingReserve = pd.read_csv(
-        Data_Path + '/oT_Data_UpwardOperatingReserve_' + CaseName+'.csv', index_col=[0, 1, 2])
+        Data_Path + '/oT_Data_UpwardOperatingReserve_'
+        + CaseName +'.csv', index_col=[0, 1, 2])
     dfDwOperatingReserve = pd.read_csv(
-        Data_Path + '/oT_Data_DownwardOperatingReserve_'+CaseName+'.csv', index_col=[0, 1, 2])
+        Data_Path + '/oT_Data_DownwardOperatingReserve_'
+        + CaseName +'.csv', index_col=[0, 1, 2])
     dfGeneration = pd.read_csv(
         Data_Path + '/oT_Data_Generation_' + CaseName+'.csv', index_col=[0])
     dfVariableMaxPower = pd.read_csv(
