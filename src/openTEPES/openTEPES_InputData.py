@@ -14,10 +14,14 @@ def InputData(CaseName, mTEPES):
     CWD = os.getcwd()
     Data_Path = CWD + '/src/openTEPES/' + CaseName
     # %% reading data from CSV
-    dfOption = pd.read_csv(Data_Path + '/oT_Data_Option_' + CaseName+'.csv', index_col=[0])
-    dfParameter = pd.read_csv(Data_Path + '/oT_Data_Parameter_' + CaseName+'.csv', index_col=[0])
-    dfScenario = pd.read_csv(Data_Path + '/oT_Data_Scenario_' + CaseName+'.csv', index_col=[0])
-    dfDuration = pd.read_csv(Data_Path + '/oT_Data_Duration_' + CaseName+'.csv', index_col=[0])
+    dfOption = pd.read_csv(Data_Path + '/oT_Data_Option_' +
+                           CaseName+'.csv', index_col=[0])
+    dfParameter = pd.read_csv(
+        Data_Path + '/oT_Data_Parameter_' + CaseName+'.csv', index_col=[0])
+    dfScenario = pd.read_csv(
+        Data_Path + '/oT_Data_Scenario_' + CaseName+'.csv', index_col=[0])
+    dfDuration = pd.read_csv(
+        Data_Path + '/oT_Data_Duration_' + CaseName+'.csv', index_col=[0])
     dfDemand = pd.read_csv(CWD + '/src/openTEPES/' + CaseName +
                            '/oT_Data_Demand_' + CaseName+'.csv', index_col=[0, 1, 2])
     dfUpOperatingReserve = pd.read_csv(CWD + '/src/openTEPES/' + CaseName +
