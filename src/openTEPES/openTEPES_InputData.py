@@ -280,7 +280,7 @@ def InputData(CaseName, mTEPES):
     mTEPES.n2 = Set(initialize=mTEPES.nn,                     ordered=True,
                     doc='load levels', filter=lambda mTEPES, nn:  nn in mTEPES.nn and pDuration[nn] > 0)
     mTEPES.g = Set(initialize=mTEPES.gg,                     ordered=False, doc='generating    units',
-                   filter=lambda mTEPES, gg:  gg in mTEPES.gg and pRatedMaxPower[gg] > 0)
+                   filter=lambda mTEPES, gg:  gg in mTEPES.gg and pRatedMaxPower[gg] >= 0)
     mTEPES.t = Set(initialize=mTEPES.g,                     ordered=False, doc='thermal       units',
                    filter=lambda mTEPES, g:  g in mTEPES.g and pLinearVarCost[g] > 0)
     mTEPES.r = Set(initialize=mTEPES.g,                     ordered=False, doc='RES           units',
@@ -687,6 +687,7 @@ def InputData(CaseName, mTEPES):
         if pMustRun[nr] == 1:
             mTEPES.vCommitment[sc, p, n, nr].fix(1)
 
+    print(pMustRun)
     mTEPES.pMustRun = Param(mTEPES.gg, within=Boolean,
                             initialize=pMustRun.to_dict())
 
