@@ -2,10 +2,12 @@
 import os
 import time
 import setuptools
-# import builtins
+
 from   pyomo.environ import ConcreteModel
 from openTEPES import InputData
-
+CWD = os.getcwd()
+Test_Path = CWD + '\\src\\openTEPES'
+os.chdir(Test_Path)
 
 StartTime = time.time()
 
