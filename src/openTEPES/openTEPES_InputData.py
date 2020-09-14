@@ -599,14 +599,16 @@ def InputData(CaseName, mTEPES):
                              doc='total system variable cost                     [MEUR]')
     mTEPES.vTotalECost = Var(within=NonNegativeReals,
                              doc='total system emission cost                     [MEUR]')
-    mTEPES.vTotalOutput          = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.g, within=NonNegativeReals, bounds=lambda mTEPES, sc, p, n, g: (0, mTEPES.pMaxPower        [sc, p, n, g]),                       doc='total output of the unit                         [GW]')
+    mTEPES.vTotalOutput = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.g, within=NonNegativeReals, bounds=lambda mTEPES, sc, p, n, g: (
+        0, mTEPES.pMaxPower[sc, p, n, g]),                       doc='total output of the unit                         [GW]')
     mTEPES.vOutput2ndBlock = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=NonNegativeReals, bounds=lambda mTEPES, sc, p, n, nr: (
         0, mTEPES.pMaxPower2ndBlock[sc, p, n, nr]),                       doc='second block of the unit                         [GW]')
     mTEPES.vReserveUp = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=NonNegativeReals, bounds=lambda mTEPES, sc, p, n, nr: (
         0, mTEPES.pMaxPower2ndBlock[sc, p, n, nr]),                       doc='upward   operating reserve                       [GW]')
     mTEPES.vReserveDown = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=NonNegativeReals, bounds=lambda mTEPES, sc, p, n, nr: (
         0, mTEPES.pMaxPower2ndBlock[sc, p, n, nr]),                       doc='downward operating reserve                       [GW]')
-    mTEPES.vESSInventory         = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es, within=NonNegativeReals, bounds=lambda mTEPES, sc, p, n, es: (mTEPES.pMinStorage[sc, p, n, es], mTEPES.pMaxStorage[sc, p, n, es]), doc='ESS inventory                                   [TWh]')
+    mTEPES.vESSInventory = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es, within=NonNegativeReals, bounds=lambda mTEPES, sc, p, n, es: (
+        mTEPES.pMinStorage[sc, p, n, es], mTEPES.pMaxStorage[sc, p, n, es]), doc='ESS inventory                                   [TWh]')
     mTEPES.vESSSpillage = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es, within=NonNegativeReals,
                               doc='ESS spillage                                    [TWh]')
     mTEPES.vESSCharge = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es, within=NonNegativeReals, bounds=lambda mTEPES, sc, p, n, es: (
@@ -659,7 +661,8 @@ def InputData(CaseName, mTEPES):
         0, 0.5*mTEPES.pLineLossFactor[ll]*mTEPES.pLineNTC[ll]),     doc='half line losses                                 [GW]')
     mTEPES.vFlow = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=Reals,            bounds=lambda mTEPES, sc, p, n, *
                        la: (-mTEPES.pLineNTC[la], mTEPES.pLineNTC[la]),                 doc='flow                                             [GW]')
-    mTEPES.vTheta = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nd, within=Reals,            bounds=lambda mTEPES, sc, p, n, nd: (-mTEPES.pMaxTheta[sc, p, n, nd], mTEPES.pMaxTheta[sc, p, n, nd]), doc='voltage angle                                   [rad]')
+    mTEPES.vTheta = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nd, within=Reals,            bounds=lambda mTEPES, sc, p, n, nd: (
+        -mTEPES.pMaxTheta[sc, p, n, nd], mTEPES.pMaxTheta[sc, p, n, nd]), doc='voltage angle                                   [rad]')
 
     for nr in mTEPES.nr:
         if pMustRun[nr] == 'Yes' or pMustRun[nr] == 'YES' or pMustRun[nr] == 'yes' or pMustRun[nr] == 'Y' or pMustRun[nr] == 'y':
