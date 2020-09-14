@@ -98,7 +98,7 @@ from openTEPES_OutputResults import OutputResults
 
 StartTime = time.time()
 
-CaseName = '9n'
+CaseName = 'MAF2025'
 SolverName = 'gurobi'
 CWD = os.getcwd()
 # %% model declaration
