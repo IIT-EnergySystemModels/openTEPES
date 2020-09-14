@@ -104,9 +104,9 @@ def ModelFormulation(mTEPES):
 
     def eESSInventory(mTEPES, sc, p, n, es):
         if mTEPES.n.ord(n) == mTEPES.pCycleTimeStep[es]:
-            return mTEPES.pIniInventory[sc, p, n, es]                                          + sum(mTEPES.pDuration[n2]*1e-3*(mTEPES.pEnergyInflows[sc, p, n2, es] - mTEPES.vTotalOutput[sc, p, n2, es] + mTEPES.pEfficiency[es]*mTEPES.vESSCharge[sc, p, n2, es]) for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pCycleTimeStep[es]:mTEPES.n.ord(n)]) == mTEPES.vESSInventory[sc, p, n, es] + mTEPES.vESSSpillage[sc, p, n, es]
+            return mTEPES.pIniInventory[sc, p, n, es] + sum(mTEPES.pDuration[n2]*1e-3*(mTEPES.pEnergyInflows[sc, p, n2, es] - mTEPES.vTotalOutput[sc, p, n2, es] + mTEPES.pEfficiency[es]*mTEPES.vESSCharge[sc, p, n2, es]) for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pCycleTimeStep[es]:mTEPES.n.ord(n)]) == mTEPES.vESSInventory[sc, p, n, es] + mTEPES.vESSSpillage[sc, p, n, es]
         elif mTEPES.n.ord(n) > mTEPES.pCycleTimeStep[es] and mTEPES.n.ord(n) % mTEPES.pCycleTimeStep[es] == 0:
-            return mTEPES.vESSInventory[sc, p, mTEPES.n.prev(n, mTEPES.pCycleTimeStep[es]), es] + sum(mTEPES.pDuration[n2]*1e-3*(mTEPES.pEnergyInflows[sc, p, n2, es] - mTEPES.vTotalOutput[sc, p, n2, es] + mTEPES.pEfficiency[es]*mTEPES.vESSCharge[sc, p, n2, es]) for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pCycleTimeStep[es]:mTEPES.n.ord(n)]) == mTEPES.vESSInventory[sc, p, n, es] + mTEPES.vESSSpillage[sc, p, n,es]
+            return mTEPES.vESSInventory[sc, p, mTEPES.n.prev(n, mTEPES.pCycleTimeStep[es]), es] + sum(mTEPES.pDuration[n2]*1e-3*(mTEPES.pEnergyInflows[sc, p, n2, es] - mTEPES.vTotalOutput[sc, p, n2, es] + mTEPES.pEfficiency[es]*mTEPES.vESSCharge[sc, p, n2, es]) for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pCycleTimeStep[es]:mTEPES.n.ord(n)]) == mTEPES.vESSInventory[sc, p, n, es] + mTEPES.vESSSpillage[sc, p, n, es]
         else:
             return Constraint.Skip
     mTEPES.eESSInventory = Constraint(
