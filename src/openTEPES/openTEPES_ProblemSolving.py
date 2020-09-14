@@ -1,14 +1,14 @@
 # Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 1.7.16 - September 11, 2020
-
+import os
 import time
 import psutil
 from pyomo.opt import SolverFactory
 from pyomo.environ import Suffix
 
 
-def ProblemSolving(CaseName, SolverName, mTEPES):
+def ProblemSolving(CaseName, SolverName, mTEPES, CWD):
     print('Problem solving             ****')
-
+    os.chdir(CWD)
     StartTime = time.time()
 
     # %% solving the problem
