@@ -87,7 +87,7 @@
 
 import time
 import setuptools
-import os
+# import os
 
 from pyomo.environ import ConcreteModel
 
