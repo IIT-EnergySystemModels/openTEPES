@@ -58,37 +58,22 @@ def InputData(CaseName, mTEPES):
 
     # %% reading the sets
     dictSets = DataPortal()
-    dictSets.load(filename='oT_Dict_Scenario_' +
-                  CaseName+'.csv', set='sc', format='set')
-    dictSets.load(filename='oT_Dict_Period_' +
-                  CaseName+'.csv', set='p', format='set')
-    dictSets.load(filename='oT_Dict_LoadLevel_' +
-                  CaseName+'.csv', set='n', format='set')
-    dictSets.load(filename='oT_Dict_Generation_' +
-                  CaseName+'.csv', set='g', format='set')
-    dictSets.load(filename='oT_Dict_Technology_' +
-                  CaseName+'.csv', set='gt', format='set')
-    dictSets.load(filename='oT_Dict_Storage_' +
-                  CaseName+'.csv', set='st', format='set')
-    dictSets.load(filename='oT_Dict_Node_' +
-                  CaseName+'.csv', set='nd', format='set')
-    dictSets.load(filename='oT_Dict_Zone_' +
-                  CaseName+'.csv', set='zn', format='set')
-    dictSets.load(filename='oT_Dict_Area_' +
-                  CaseName+'.csv', set='ar', format='set')
-    dictSets.load(filename='oT_Dict_Region_' +
-                  CaseName+'.csv', set='rg', format='set')
-    dictSets.load(filename='oT_Dict_Circuit_' +
-                  CaseName+'.csv', set='cc', format='set')
-    dictSets.load(filename='oT_Dict_Line_' +
-                  CaseName+'.csv', set='lt', format='set')
+    dictSets.load(filename='oT_Dict_Scenario_' + CaseName+'.csv', set='sc', format='set')
+    dictSets.load(filename='oT_Dict_Period_' + CaseName+'.csv', set='p', format='set')
+    dictSets.load(filename='oT_Dict_LoadLevel_' + CaseName+'.csv', set='n', format='set')
+    dictSets.load(filename='oT_Dict_Generation_' + CaseName+'.csv', set='g', format='set')
+    dictSets.load(filename='oT_Dict_Technology_' + CaseName+'.csv', set='gt', format='set')
+    dictSets.load(filename='oT_Dict_Storage_' + CaseName+'.csv', set='st', format='set')
+    dictSets.load(filename='oT_Dict_Node_' + CaseName+'.csv', set='nd', format='set')
+    dictSets.load(filename='oT_Dict_Zone_' + CaseName+'.csv', set='zn', format='set')
+    dictSets.load(filename='oT_Dict_Area_' + CaseName+'.csv', set='ar', format='set')
+    dictSets.load(filename='oT_Dict_Region_' + CaseName+'.csv', set='rg', format='set')
+    dictSets.load(filename='oT_Dict_Circuit_' + CaseName+'.csv', set='cc', format='set')
+    dictSets.load(filename='oT_Dict_Line_' + CaseName+'.csv', set='lt', format='set')
 
-    dictSets.load(filename='oT_Dict_NodeToZone_' +
-                  CaseName+'.csv', set='ndzn', format='set')
-    dictSets.load(filename='oT_Dict_ZoneToArea_' +
-                  CaseName+'.csv', set='znar', format='set')
-    dictSets.load(filename='oT_Dict_AreaToRegion_' +
-                  CaseName+'.csv', set='arrg', format='set')
+    dictSets.load(filename='oT_Dict_NodeToZone_' + CaseName+'.csv', set='ndzn', format='set')
+    dictSets.load(filename='oT_Dict_ZoneToArea_' + CaseName+'.csv', set='znar', format='set')
+    dictSets.load(filename='oT_Dict_AreaToRegion_' + CaseName+'.csv', set='arrg', format='set')
 
     mTEPES.sc = Set(initialize=dictSets['sc'],
                     ordered=True,  doc='scenarios')
