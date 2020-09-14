@@ -2,16 +2,20 @@
 
 import time
 import math
+import os
 import pandas as pd
 from pyomo.environ import DataPortal, Set, Param, Var, Binary, NonNegativeReals, Reals, UnitInterval, Boolean
 
 
 def InputData(CaseName, mTEPES):
     print('Input data                  ****')
-
+    CWD = os.getcwd()
+    Data_Path = CWD + '\\' + CaseName
+    os.chdir(Data_Path)
+    print(os.getcwd())
     StartTime = time.time()
     # %% reading data from CSV
-    dfOption = pd.read_csv(CaseName+'/oT_Data_Option_' +
+    dfOption = pd.read_csv('oT_Data_Option_' +
                            CaseName+'.csv', index_col=[0])
     dfParameter = pd.read_csv(
         CaseName+'/oT_Data_Parameter_' + CaseName+'.csv', index_col=[0])
