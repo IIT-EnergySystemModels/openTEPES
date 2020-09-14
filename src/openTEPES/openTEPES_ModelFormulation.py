@@ -1,11 +1,12 @@
-# Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 1.7.15 - September 4, 2020
+# Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 1.7.16 - September 11, 2020
 
 import time
 from   collections   import defaultdict
 from   pyomo.environ import Constraint, Objective, minimize
 
-print('Model formulation           ****')
 def ModelFormulation(mTEPES):
+    print('Model formulation           ****')
+
     StartTime = time.time()
 
     def eTotalFCost(mTEPES):
@@ -245,19 +246,19 @@ def ModelFormulation(mTEPES):
     print('eInstalNetCap2        ... ', len(mTEPES.eInstalNetCap2), ' rows')
 
     def eKirchhoff2ndLawExst(mTEPES,sc,p,n,ni,nf,cc):
-        return mTEPES.vFlow[sc,p,n,ni,nf,cc] / mTEPES.pBigMFlow[ni,nf,cc] == (mTEPES.vTheta[sc,p,n,ni] - mTEPES.vTheta[sc,p,n,nf]) / mTEPES.pLineX[ni,nf,cc] / mTEPES.pBigMFlow[ni,nf,cc] * mTEPES.pSBase
+        return mTEPES.vFlow[sc,p,n,ni,nf,cc] / mTEPES.pBigMFlow[ni,nf,cc] - (mTEPES.vTheta[sc,p,n,ni] - mTEPES.vTheta[sc,p,n,nf]) / mTEPES.pLineX[ni,nf,cc] / mTEPES.pBigMFlow[ni,nf,cc] * mTEPES.pSBase == 0
     mTEPES.eKirchhoff2ndLawExst = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.lea, rule=eKirchhoff2ndLawExst, doc='flow for each AC existing  line [rad]')
 
     print('eKirchhoff2ndLawExst  ... ', len(mTEPES.eKirchhoff2ndLawExst), ' rows')
 
     def eKirchhoff2ndLawCnd1(mTEPES,sc,p,n,ni,nf,cc):
-        return mTEPES.vFlow[sc,p,n,ni,nf,cc] / mTEPES.pBigMFlow[ni,nf,cc] -  (mTEPES.vTheta[sc,p,n,ni] - mTEPES.vTheta[sc,p,n,nf]) / mTEPES.pLineX[ni,nf,cc] / mTEPES.pBigMFlow[ni,nf,cc] * mTEPES.pSBase >= - 1 + mTEPES.vNetworkInvest[ni,nf,cc]
+        return mTEPES.vFlow[sc,p,n,ni,nf,cc] / mTEPES.pBigMFlow[ni,nf,cc] - (mTEPES.vTheta[sc,p,n,ni] - mTEPES.vTheta[sc,p,n,nf]) / mTEPES.pLineX[ni,nf,cc] / mTEPES.pBigMFlow[ni,nf,cc] * mTEPES.pSBase >= - 1 + mTEPES.vNetworkInvest[ni,nf,cc]
     mTEPES.eKirchhoff2ndLawCnd1 = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.lca, rule=eKirchhoff2ndLawCnd1, doc='flow for each AC candidate line [rad]')
 
     print('eKirchhoff2ndLawCnd1  ... ', len(mTEPES.eKirchhoff2ndLawCnd1), ' rows')
 
     def eKirchhoff2ndLawCnd2(mTEPES,sc,p,n,ni,nf,cc):
-        return mTEPES.vFlow[sc,p,n,ni,nf,cc] / mTEPES.pBigMFlow[ni,nf,cc] -  (mTEPES.vTheta[sc,p,n,ni] - mTEPES.vTheta[sc,p,n,nf]) / mTEPES.pLineX[ni,nf,cc] / mTEPES.pBigMFlow[ni,nf,cc] * mTEPES.pSBase <=   1 - mTEPES.vNetworkInvest[ni,nf,cc]
+        return mTEPES.vFlow[sc,p,n,ni,nf,cc] / mTEPES.pBigMFlow[ni,nf,cc] - (mTEPES.vTheta[sc,p,n,ni] - mTEPES.vTheta[sc,p,n,nf]) / mTEPES.pLineX[ni,nf,cc] / mTEPES.pBigMFlow[ni,nf,cc] * mTEPES.pSBase <=   1 - mTEPES.vNetworkInvest[ni,nf,cc]
     mTEPES.eKirchhoff2ndLawCnd2 = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.lca, rule=eKirchhoff2ndLawCnd2, doc='flow for each AC candidate line [rad]')
 
     print('eKirchhoff2ndLawCnd2  ... ', len(mTEPES.eKirchhoff2ndLawCnd2), ' rows')
