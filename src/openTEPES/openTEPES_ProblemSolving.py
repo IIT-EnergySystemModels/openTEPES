@@ -56,9 +56,12 @@ def ProblemSolving(CaseName, SolverName, mTEPES):
                     mTEPES.vNetworkInvest[lc].fix(mTEPES.vNetworkInvest[lc]())
         if mTEPES.pIndBinGenOperat:
             for sc, p, n, t in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.t:
-                mTEPES.vCommitment[sc, p, n, t].fix(mTEPES.vCommitment[sc, p, n, t]())
-                mTEPES.vStartUp   [sc, p, n, t].fix(mTEPES.vStartUp   [sc, p, n, t]())
-                mTEPES.vShutDown  [sc, p, n, t].fix(mTEPES.vShutDown  [sc, p, n, t]())
+                mTEPES.vCommitment[sc, p, n, t].fix(
+                    mTEPES.vCommitment[sc, p, n, t]())
+                mTEPES.vStartUp[sc, p, n, t].fix(
+                    mTEPES.vStartUp[sc, p, n, t]())
+                mTEPES.vShutDown[sc, p, n, t].fix(
+                    mTEPES.vShutDown[sc, p, n, t]())
         # introduced to show results of the dual variables
         Solver.options['relax_integrality'] = 1
         if SolverName == 'gurobi':
