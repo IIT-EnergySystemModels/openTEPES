@@ -87,6 +87,7 @@
 
 import time
 import setuptools
+import os
 
 from pyomo.environ import ConcreteModel
 
@@ -108,7 +109,10 @@ InputData(CaseName, mTEPES)
 
 ModelFormulation(mTEPES)
 
-mTEPES.write(CaseName+'/openTEPES_'+CaseName+'.lp',
+CWD = os.getcwd()
+Data_Path = CWD + '\\' + CaseName
+os.chdir(Data_Path)
+mTEPES.write('openTEPES_'+CaseName+'.lp',
              io_options={'symbolic_solver_labels': True})  # create lp-format file
 
 WritingLPFileTime = time.time() - StartTime
