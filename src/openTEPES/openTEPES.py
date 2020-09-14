@@ -98,9 +98,9 @@ from openTEPES_OutputResults import OutputResults
 
 StartTime = time.time()
 
-CaseName   = '9n'
+CaseName = '9n'
 SolverName = 'gurobi'
-CWD        = os.getcwd()
+CWD = os.getcwd()
 # %% model declaration
 mTEPES = ConcreteModel(
     'Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 1.7.16 - September 11, 2020')
