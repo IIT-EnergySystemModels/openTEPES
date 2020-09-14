@@ -109,9 +109,6 @@ InputData(CaseName, mTEPES)
 
 ModelFormulation(mTEPES)
 
-# CWD = os.getcwd()
-# Data_Path = CWD + '\\' + CaseName
-# os.chdir(Data_Path)
 mTEPES.write('openTEPES_'+CaseName+'.lp',
              io_options={'symbolic_solver_labels': True})  # create lp-format file
 
