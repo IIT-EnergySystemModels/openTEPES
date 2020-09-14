@@ -10,7 +10,7 @@ from pyomo.environ import DataPortal, Set, Param, Var, Binary, NonNegativeReals,
 def InputData(CaseName, mTEPES):
     print('Input data                  ****')
     CWD = os.getcwd()
-    Data_Path = CWD + '\\' + CaseName
+    Data_Path = CWD + '/' + CaseName
     os.chdir(Data_Path)
     StartTime = time.time()
     # %% reading data from CSV
