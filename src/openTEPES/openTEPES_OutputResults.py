@@ -73,11 +73,12 @@ def OutputResults(CaseName, mTEPES):
         ['Scenario', 'Period', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(CaseName+'/oT_Result_GenerationOutput_' + CaseName+'.csv', sep=',')
 
     if len(mTEPES.r):
-        OutputResults = pd.Series(data=[(mTEPES.pMaxPower[sc, p, n, r]-mTEPES.vTotalOutput[sc, p, n, r]())*1e3 for sc, p, n, r in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.r], index=pd.MultiIndex.from_tuples(list(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.r)))
+        OutputResults = pd.Series(data=[(mTEPES.pMaxPower[sc, p, n, r]-mTEPES.vTotalOutput[sc, p, n, r]())*1e3 for sc, p, n,
+                                        r in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.r], index=pd.MultiIndex.from_tuples(list(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.r)))
         OutputResults.to_frame(name='MW').reset_index().pivot_table(index=['level_0', 'level_1', 'level_2'], columns='level_3', values='MW').rename_axis(
             ['Scenario', 'Period', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(CaseName+'/oT_Result_RESCurtailment_' + CaseName+'.csv', sep=',')
 
-    OutputResults = pd.Series(data=[mTEPES.vTotalOutput[sc, p, n, g]()*mTEPES.pDuration[n] for sc, p, n, g in mTEPES.sc * \
+    OutputResults = pd.Series(data=[mTEPES.vTotalOutput[sc, p, n, g]()*mTEPES.pDuration[n] for sc, p, n, g in mTEPES.sc *
                                     mTEPES.p*mTEPES.n*mTEPES.g], index=pd.MultiIndex.from_tuples(list(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.g)))
     OutputResults.to_frame(name='GWh').reset_index().pivot_table(index=['level_0', 'level_1', 'level_2'],    columns='level_3', values='GWh').rename_axis(
         ['Scenario', 'Period', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(CaseName+'/oT_Result_GenerationEnergy_' + CaseName+'.csv', sep=',')
@@ -209,7 +210,8 @@ def OutputResults(CaseName, mTEPES):
     OutputResults.to_csv(
         CaseName+'/oT_Result_NetworkFlow_'+CaseName+'.csv', sep=',')
 
-    OutputResults = pd.Series(data=[abs(mTEPES.vFlow[sc, p, n, ni, nf, cc]()/mTEPES.pLineNTC[ni, nf, cc]) for sc, p, n, ni, nf, cc in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.la], index= pd.MultiIndex.from_tuples(list(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.la)))
+    OutputResults = pd.Series(data=[abs(mTEPES.vFlow[sc, p, n, ni, nf, cc]()/mTEPES.pLineNTC[ni, nf, cc]) for sc, p, n, ni, nf,
+                                    cc in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.la], index=pd.MultiIndex.from_tuples(list(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.la)))
     OutputResults.index.names = ['Scenario', 'Period',
                                  'LoadLevel', 'InitialNode', 'FinalNode', 'Circuit']
     OutputResults = pd.pivot_table(OutputResults.to_frame(name='pu'), values='pu', index=[

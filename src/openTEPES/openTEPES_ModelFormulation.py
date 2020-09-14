@@ -15,11 +15,11 @@ def ModelFormulation(mTEPES):
         rule=eTotalFCost, doc='total system fixed    cost [MEUR]')
 
     def eTotalVCost(mTEPES):
-        return mTEPES.vTotalVCost == (sum(mTEPES.pScenProb[sc] * mTEPES.pDuration[n] * mTEPES.pENSCost             * mTEPES.vENS        [sc, p, n, nd] for sc, p, n, nd in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.nd) +
+        return mTEPES.vTotalVCost == (sum(mTEPES.pScenProb[sc] * mTEPES.pDuration[n] * mTEPES.pENSCost * mTEPES.vENS[sc, p, n, nd] for sc, p, n, nd in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.nd) +
                                       sum(mTEPES.pScenProb[sc] * mTEPES.pDuration[n] * mTEPES.pLinearVarCost[nr] * mTEPES.vTotalOutput[sc, p, n, nr] +
                                           mTEPES.pScenProb[sc] * mTEPES.pDuration[n] * mTEPES.pConstantVarCost[nr] * mTEPES.vCommitment[sc, p, n, nr] +
-                                          mTEPES.pScenProb[sc] * mTEPES.pStartUpCost[nr] * mTEPES.vStartUp    [sc, p, n, nr] +
-                                          mTEPES.pScenProb[sc]                       * mTEPES.pShutDownCost   [nr] * mTEPES.vShutDown   [sc, p, n, nr] for sc, p, n, nr in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.nr) )
+                                          mTEPES.pScenProb[sc] * mTEPES.pStartUpCost[nr] * mTEPES.vStartUp[sc, p, n, nr] +
+                                          mTEPES.pScenProb[sc] * mTEPES.pShutDownCost[nr] * mTEPES.vShutDown[sc, p, n, nr] for sc, p, n, nr in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.nr))
     mTEPES.eTotalVCost = Constraint(
         rule=eTotalVCost, doc='total system variable cost [MEUR]')
 
@@ -63,7 +63,7 @@ def ModelFormulation(mTEPES):
     # %%
     def eOperReserveUp(mTEPES, sc, p, n, ar):
         if mTEPES.pOperReserveUp[sc, p, n, ar]:
-            return sum(mTEPES.vReserveUp  [sc, p, n, nr] for nr in mTEPES.nr if (ar, nr) in mTEPES.a2g) + sum(mTEPES.vESSReserveUp  [sc, p, n,es] for es in mTEPES.es if (ar,es) in mTEPES.a2g) >= mTEPES.pOperReserveUp[sc,p,n,ar]
+            return sum(mTEPES.vReserveUp[sc, p, n, nr] for nr in mTEPES.nr if (ar, nr) in mTEPES.a2g) + sum(mTEPES.vESSReserveUp  [sc, p, n, es] for es in mTEPES.es if (ar, es) in mTEPES.a2g) >= mTEPES.pOperReserveUp[sc, p, n, ar]
         else:
             return Constraint.Skip
     mTEPES.eOperReserveUp = Constraint(
@@ -73,7 +73,7 @@ def ModelFormulation(mTEPES):
 
     def eOperReserveDw(mTEPES, sc, p, n, ar):
         if mTEPES.pOperReserveDw[sc, p, n, ar]:
-            return sum(mTEPES.vReserveDown[sc, p, n, nr] for nr in mTEPES.nr if (ar, nr) in mTEPES.a2g) + sum(mTEPES.vESSReserveDown[sc, p, n,es] for es in mTEPES.es if (ar,es) in mTEPES.a2g) >= mTEPES.pOperReserveDw[sc,p,n,ar]
+            return sum(mTEPES.vReserveDown[sc, p, n, nr] for nr in mTEPES.nr if (ar, nr) in mTEPES.a2g) + sum(mTEPES.vESSReserveDown[sc, p, n, es] for es in mTEPES.es if (ar, es) in mTEPES.a2g) >= mTEPES.pOperReserveDw[sc, p, n, ar]
         else:
             return Constraint.Skip
     mTEPES.eOperReserveDw = Constraint(
@@ -94,9 +94,9 @@ def ModelFormulation(mTEPES):
         loutl[ni].append((nf, cc))
 
     def eBalance(mTEPES, sc, p, n, nd):
-        return (sum(mTEPES.vTotalOutput[sc, p, n, g] for g in mTEPES.g if (nd, g) in mTEPES.n2g) - sum(mTEPES.vESSCharge[sc, p, n,es] for es in mTEPES.es if (nd,es) in mTEPES.n2g) + mTEPES.vENS[sc,p,n,nd] == mTEPES.pDemand[sc,p,n,nd] +
-                sum(mTEPES.vLineLosses[sc, p, n, nd, lout ] for lout  in loutl[nd]) + sum(mTEPES.vFlow[sc, p, n,nd,lout ] for lout  in lout[nd]) +
-                sum(mTEPES.vLineLosses[sc, p, n, ni, nd, cc] for ni, cc in linl [nd]) - sum(mTEPES.vFlow[sc,p,n,ni,nd,cc] for ni,cc in lin [nd]))
+        return (sum(mTEPES.vTotalOutput[sc, p, n, g] for g in mTEPES.g if (nd, g) in mTEPES.n2g) - sum(mTEPES.vESSCharge[sc, p, n, es] for es in mTEPES.es if (nd, es) in mTEPES.n2g) + mTEPES.vENS[sc, p, n, nd] == mTEPES.pDemand[sc, p,n,nd] +
+                sum(mTEPES.vLineLosses[sc, p, n, nd, lout] for lout in loutl[nd]) + sum(mTEPES.vFlow[sc, p, n, nd, lout] for lout in lout[nd]) +
+                sum(mTEPES.vLineLosses[sc, p, n, ni, nd, cc] for ni, cc in linl [nd]) - sum(mTEPES.vFlow[sc, p, n, ni, nd, cc] for ni, cc in lin [nd]))
     mTEPES.eBalance = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n,
                                  mTEPES.nd, rule=eBalance, doc='load generation balance [GW]')
 
@@ -104,9 +104,9 @@ def ModelFormulation(mTEPES):
 
     def eESSInventory(mTEPES, sc, p, n, es):
         if mTEPES.n.ord(n) == mTEPES.pCycleTimeStep[es]:
-            return mTEPES.pIniInventory[sc, p, n, es]                                          + sum(mTEPES.pDuration[n2]*1e-3*(mTEPES.pEnergyInflows[sc, p, n2, es] - mTEPES.vTotalOutput[sc,p,n2,es] + mTEPES.pEfficiency[es]*mTEPES.vESSCharge[sc,p,n2,es]) for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pCycleTimeStep[es]:mTEPES.n.ord(n)]) == mTEPES.vESSInventory[sc,p,n,es] + mTEPES.vESSSpillage[sc,p,n,es]
+            return mTEPES.pIniInventory[sc, p, n, es]                                          + sum(mTEPES.pDuration[n2]*1e-3*(mTEPES.pEnergyInflows[sc, p, n2, es] - mTEPES.vTotalOutput[sc, p, n2, es] + mTEPES.pEfficiency[es]*mTEPES.vESSCharge[sc, p, n2, es]) for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pCycleTimeStep[es]:mTEPES.n.ord(n)]) == mTEPES.vESSInventory[sc,p,n,es] + mTEPES.vESSSpillage[sc,p,n,es]
         elif mTEPES.n.ord(n) > mTEPES.pCycleTimeStep[es] and mTEPES.n.ord(n) % mTEPES.pCycleTimeStep[es] == 0:
-            return mTEPES.vESSInventory[sc, p, mTEPES.n.prev(n, mTEPES.pCycleTimeStep[es]), es] + sum(mTEPES.pDuration[n2]*1e-3*(mTEPES.pEnergyInflows[sc, p, n2,es] - mTEPES.vTotalOutput[sc,p,n2,es] + mTEPES.pEfficiency[es]*mTEPES.vESSCharge[sc,p,n2,es]) for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pCycleTimeStep[es]:mTEPES.n.ord(n)]) == mTEPES.vESSInventory[sc,p,n,es] + mTEPES.vESSSpillage[sc,p,n,es]
+            return mTEPES.vESSInventory[sc, p, mTEPES.n.prev(n, mTEPES.pCycleTimeStep[es]), es] + sum(mTEPES.pDuration[n2]*1e-3*(mTEPES.pEnergyInflows[sc, p, n2, es] - mTEPES.vTotalOutput[sc, p, n2, es] + mTEPES.pEfficiency[es]*mTEPES.vESSCharge[sc, p, n2,es]) for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pCycleTimeStep[es]:mTEPES.n.ord(n)]) == mTEPES.vESSInventory[sc,p,n,es] + mTEPES.vESSSpillage[sc,p,n,es]
         else:
             return Constraint.Skip
     mTEPES.eESSInventory = Constraint(
@@ -121,8 +121,8 @@ def ModelFormulation(mTEPES):
 
     # %%
     def eMaxOutput2ndBlock(mTEPES, sc, p, n, nr):
-        if sum(mTEPES.pOperReserveUp[sc, p, n, ar] for ar in mTEPES.ar if (ar, nr) in mTEPES.a2g) and mTEPES.pMaxPower2ndBlock[sc, p, n,nr]:
-            return (mTEPES.vOutput2ndBlock[sc, p, n, nr] + mTEPES.vReserveUp  [sc, p, n, nr]) / mTEPES.pMaxPower2ndBlock[sc,p,n,nr] <= mTEPES.vCommitment[sc,p,n,nr]
+        if sum(mTEPES.pOperReserveUp[sc, p, n, ar] for ar in mTEPES.ar if (ar, nr) in mTEPES.a2g) and mTEPES.pMaxPower2ndBlock[sc, p, n, nr]:
+            return (mTEPES.vOutput2ndBlock[sc, p, n, nr] + mTEPES.vReserveUp  [sc, p, n, nr]) / mTEPES.pMaxPower2ndBlock[sc, p, n, nr] <= mTEPES.vCommitment[sc, p, n, nr]
         else:
             return Constraint.Skip
     mTEPES.eMaxOutput2ndBlock = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr,
@@ -132,8 +132,8 @@ def ModelFormulation(mTEPES):
         mTEPES.eMaxOutput2ndBlock), ' rows')
 
     def eMinOutput2ndBlock(mTEPES, sc, p, n, nr):
-        if sum(mTEPES.pOperReserveDw[sc, p, n, ar] for ar in mTEPES.ar if (ar, nr) in mTEPES.a2g) and mTEPES.pMaxPower2ndBlock[sc, p, n,nr]:
-            return (mTEPES.vOutput2ndBlock[sc, p, n, nr] - mTEPES.vReserveDown[sc, p, n, nr]) / mTEPES.pMaxPower2ndBlock[sc,p,n,nr] >= 0
+        if sum(mTEPES.pOperReserveDw[sc, p, n, ar] for ar in mTEPES.ar if (ar, nr) in mTEPES.a2g) and mTEPES.pMaxPower2ndBlock[sc, p, n, nr]:
+            return (mTEPES.vOutput2ndBlock[sc, p, n, nr] - mTEPES.vReserveDown[sc, p, n, nr]) / mTEPES.pMaxPower2ndBlock[sc, p, n, nr] >= 0
         else:
             return Constraint.Skip
     mTEPES.eMinOutput2ndBlock = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr,
@@ -155,7 +155,7 @@ def ModelFormulation(mTEPES):
 
     def eMinCharge(mTEPES, sc, p, n, es):
         if sum(mTEPES.pOperReserveDw[sc, p, n, ar] for ar in mTEPES.ar if (ar, es) in mTEPES.a2g and mTEPES.pMaxCharge[es]):
-            return (mTEPES.vESSCharge[sc, p, n, es] - mTEPES.vESSReserveUp  [sc, p, n, es]) / mTEPES.pMaxCharge[es] >= 0
+            return (mTEPES.vESSCharge[sc, p, n, es] - mTEPES.vESSReserveUp[sc, p, n, es]) / mTEPES.pMaxCharge[es] >= 0
         else:
             return Constraint.Skip
     mTEPES.eMinCharge = Constraint(
@@ -172,7 +172,7 @@ def ModelFormulation(mTEPES):
 
     def eChargeDischarge(mTEPES, sc, p, n, es):
         if mTEPES.pMaxCharge[es]:
-            return (mTEPES.vOutput2ndBlock[sc, p, n, es] + mTEPES.vReserveUp[sc, p, n, es]) / mTEPES.pMaxPower2ndBlock[sc, p, n, es] + (mTEPES.vESSCharge[sc, p, n, es] - mTEPES.vESSReserveUp[sc,p,n,es]) / mTEPES.pMaxCharge[es] <= 1
+            return (mTEPES.vOutput2ndBlock[sc, p, n, es] + mTEPES.vReserveUp[sc, p, n, es]) / mTEPES.pMaxPower2ndBlock[sc, p, n, es] + (mTEPES.vESSCharge[sc, p, n, es] - mTEPES.vESSReserveUp[sc, p, n, es]) / mTEPES.pMaxCharge[es] <= 1
         else:
             return Constraint.Skip
     mTEPES.eChargeDischarge = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es,
@@ -184,7 +184,7 @@ def ModelFormulation(mTEPES):
         if mTEPES.pMinPower[sc, p, n, nr] == 0:
             return mTEPES.vTotalOutput[sc, p, n, nr] == mTEPES.vOutput2ndBlock[sc, p, n, nr]
         else:
-            return mTEPES.vTotalOutput[sc, p, n, nr] / mTEPES.pMinPower[sc, p, n, nr] == mTEPES.vCommitment[sc, p, n, nr] + mTEPES.vOutput2ndBlock[sc, p, n, nr] / mTEPES.pMinPower[sc,p,n,nr]
+            return mTEPES.vTotalOutput[sc, p, n, nr] / mTEPES.pMinPower[sc, p, n, nr] == mTEPES.vCommitment[sc, p, n, nr] + mTEPES.vOutput2ndBlock[sc, p, n, nr] / mTEPES.pMinPower[sc, p, n, nr]
     mTEPES.eTotalOutput = Constraint(
         mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, rule=eTotalOutput, doc='total output of a unit [GW]')
 
@@ -208,9 +208,9 @@ def ModelFormulation(mTEPES):
     # %%
     def eRampUp(mTEPES, sc, p, n, t):
         if mTEPES.pRampUp[t] and mTEPES.pRampUp[t] < mTEPES.pMaxPower2ndBlock[sc, p, n, t] and n == mTEPES.n.first():
-            return (mTEPES.vOutput2ndBlock[sc, p, n, t] - max(mTEPES.pInitialOutput[t]-mTEPES.pMinPower[sc, p, n, t], 0) + mTEPES.vReserveUp  [sc, p, n, t]) / mTEPES.pDuration[n] / mTEPES.pRampUp[t] <=   mTEPES.vCommitment[sc, p, n,t] - mTEPES.vStartUp[sc,p,n,t]
+            return (mTEPES.vOutput2ndBlock[sc, p, n, t] - max(mTEPES.pInitialOutput[t]-mTEPES.pMinPower[sc, p, n, t], 0) + mTEPES.vReserveUp[sc, p, n, t]) / mTEPES.pDuration[n] / mTEPES.pRampUp[t] <= mTEPES.vCommitment[sc, p, n, t] - mTEPES.vStartUp[sc, p, n, t]
         elif mTEPES.pRampUp[t] and mTEPES.pRampUp[t] < mTEPES.pMaxPower2ndBlock[sc, p, n, t]:
-            return (mTEPES.vOutput2ndBlock[sc, p, n, t] - mTEPES.vOutput2ndBlock[sc, p, mTEPES.n.prev(n), t]            + mTEPES.vReserveUp  [sc, p, n, t]) / mTEPES.pDuration[n] / mTEPES.pRampUp[t] <=   mTEPES.vCommitment[sc, p, n, t] - mTEPES.vStartUp[sc,p,n,t]
+            return (mTEPES.vOutput2ndBlock[sc, p, n, t] - mTEPES.vOutput2ndBlock[sc, p, mTEPES.n.prev(n), t] + mTEPES.vReserveUp[sc, p, n, t]) / mTEPES.pDuration[n] / mTEPES.pRampUp[t] <= mTEPES.vCommitment[sc, p, n, t] - mTEPES.vStartUp[sc, p, n, t]
         else:
             return Constraint.Skip
     mTEPES.eRampUp = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n,
@@ -220,9 +220,9 @@ def ModelFormulation(mTEPES):
 
     def eRampDw(mTEPES, sc, p, n, t):
         if mTEPES.pRampDw[t] and mTEPES.pRampDw[t] < mTEPES.pMaxPower2ndBlock[sc, p, n, t] and n == mTEPES.n.first():
-            return (mTEPES.vOutput2ndBlock[sc, p, n, t] - max(mTEPES.pInitialOutput[t]-mTEPES.pMinPower[sc, p, n, t], 0) - mTEPES.vReserveDown[sc, p, n, t]) / mTEPES.pDuration[n] / mTEPES.pRampDw[t] >= - mTEPES.pInitialUC[t]                                                                                           + mTEPES.vShutDown[sc, p, n,t]
+            return (mTEPES.vOutput2ndBlock[sc, p, n, t] - max(mTEPES.pInitialOutput[t]-mTEPES.pMinPower[sc, p, n, t], 0) - mTEPES.vReserveDown[sc, p, n, t]) / mTEPES.pDuration[n] / mTEPES.pRampDw[t] >= - mTEPES.pInitialUC[t] + mTEPES.vShutDown[sc, p, n, t]
         elif mTEPES.pRampDw[t] and mTEPES.pRampDw[t] < mTEPES.pMaxPower2ndBlock[sc, p, n, t]:
-            return (mTEPES.vOutput2ndBlock[sc, p, n, t] - mTEPES.vOutput2ndBlock[sc, p, mTEPES.n.prev(n), t]            - mTEPES.vReserveDown[sc, p, n, t]) / mTEPES.pDuration[n] / mTEPES.pRampDw[t] >= - mTEPES.vCommitment[sc, p, mTEPES.n.prev(n), t] + mTEPES.vShutDown[sc,p,n,t]
+            return (mTEPES.vOutput2ndBlock[sc, p, n, t] - mTEPES.vOutput2ndBlock[sc, p, mTEPES.n.prev(n), t] - mTEPES.vReserveDown[sc, p, n, t]) / mTEPES.pDuration[n] / mTEPES.pRampDw[t] >= - mTEPES.vCommitment[sc, p, mTEPES.n.prev(n), t] + mTEPES.vShutDown[sc, p, n, t]
         else:
             return Constraint.Skip
     mTEPES.eRampDw = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n,
@@ -277,7 +277,7 @@ def ModelFormulation(mTEPES):
     print('eInstalNetCap2        ... ', len(mTEPES.eInstalNetCap2), ' rows')
 
     def eKirchhoff2ndLawExst(mTEPES, sc, p, n, ni, nf, cc):
-        return mTEPES.vFlow[sc, p, n, ni, nf, cc] / mTEPES.pBigMFlow[ni, nf, cc] - (mTEPES.vTheta[sc, p, n, ni] - mTEPES.vTheta[sc, p, n,nf]) / mTEPES.pLineX[ni,nf,cc] / mTEPES.pBigMFlow[ni,nf,cc] * mTEPES.pSBase == 0
+        return mTEPES.vFlow[sc, p, n, ni, nf, cc] / mTEPES.pBigMFlow[ni, nf, cc] - (mTEPES.vTheta[sc, p, n, ni] - mTEPES.vTheta[sc, p, n, nf]) / mTEPES.pLineX[ni, nf, cc] / mTEPES.pBigMFlow[ni, nf, cc] * mTEPES.pSBase == 0
     mTEPES.eKirchhoff2ndLawExst = Constraint(
         mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.lea, rule=eKirchhoff2ndLawExst, doc='flow for each AC existing  line [rad]')
 
@@ -285,7 +285,7 @@ def ModelFormulation(mTEPES):
         mTEPES.eKirchhoff2ndLawExst), ' rows')
 
     def eKirchhoff2ndLawCnd1(mTEPES, sc, p, n, ni, nf, cc):
-        return mTEPES.vFlow[sc, p, n, ni, nf, cc] / mTEPES.pBigMFlow[ni, nf, cc] - (mTEPES.vTheta[sc, p, n, ni] - mTEPES.vTheta[sc, p, n,nf]) / mTEPES.pLineX[ni,nf,cc] / mTEPES.pBigMFlow[ni,nf,cc] * mTEPES.pSBase >= - 1 + mTEPES.vNetworkInvest[ni,nf,cc]
+        return mTEPES.vFlow[sc, p, n, ni, nf, cc] / mTEPES.pBigMFlow[ni, nf, cc] - (mTEPES.vTheta[sc, p, n, ni] - mTEPES.vTheta[sc, p, n, nf]) / mTEPES.pLineX[ni, nf, cc] / mTEPES.pBigMFlow[ni, nf, cc] * mTEPES.pSBase >= - 1 + mTEPES.vNetworkInvest[ni, nf,cc]
     mTEPES.eKirchhoff2ndLawCnd1 = Constraint(
         mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.lca, rule=eKirchhoff2ndLawCnd1, doc='flow for each AC candidate line [rad]')
 
@@ -293,7 +293,7 @@ def ModelFormulation(mTEPES):
         mTEPES.eKirchhoff2ndLawCnd1), ' rows')
 
     def eKirchhoff2ndLawCnd2(mTEPES, sc, p, n, ni, nf, cc):
-        return mTEPES.vFlow[sc, p, n, ni, nf, cc] / mTEPES.pBigMFlow[ni, nf, cc] - (mTEPES.vTheta[sc, p, n, ni] - mTEPES.vTheta[sc, p, n,nf]) / mTEPES.pLineX[ni,nf,cc] / mTEPES.pBigMFlow[ni,nf,cc] * mTEPES.pSBase <=   1 - mTEPES.vNetworkInvest[ni,nf,cc]
+        return mTEPES.vFlow[sc, p, n, ni, nf, cc] / mTEPES.pBigMFlow[ni, nf, cc] - (mTEPES.vTheta[sc, p, n, ni] - mTEPES.vTheta[sc, p, n, nf]) / mTEPES.pLineX[ni, nf, cc] / mTEPES.pBigMFlow[ni, nf, cc] * mTEPES.pSBase <=   1 - mTEPES.vNetworkInvest[ni, nf,cc]
     mTEPES.eKirchhoff2ndLawCnd2 = Constraint(
         mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.lca, rule=eKirchhoff2ndLawCnd2, doc='flow for each AC candidate line [rad]')
 
@@ -310,7 +310,7 @@ def ModelFormulation(mTEPES):
 
     def eLineLosses2(mTEPES, sc, p, n, ni, nf, cc):
         if mTEPES.pIndNetLosses:
-            return mTEPES.vLineLosses[sc, p, n, ni, nf, cc] >=   0.5 * mTEPES.pLineLossFactor[ni, nf, cc] * mTEPES.vFlow[sc, p, n, ni, nf, cc]
+            return mTEPES.vLineLosses[sc, p, n, ni, nf, cc] >= 0.5 * mTEPES.pLineLossFactor[ni, nf, cc] * mTEPES.vFlow[sc, p, n, ni, nf, cc]
     mTEPES.eLineLosses2 = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.ll,
                                      rule=eLineLosses2, doc='ohmic losses for all the lines [GW]')
 
