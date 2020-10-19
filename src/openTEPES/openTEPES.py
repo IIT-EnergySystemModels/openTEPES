@@ -83,35 +83,38 @@
 
 #    with the very valuable collaboration from David Dominguez (david.dominguez@comillas.edu) and Alejandro Rodriguez (argallego@comillas.edu), our local Python gurus
 
-#%% libraries
+# %% libraries
 
 import time
 import setuptools
 
-from   pyomo.environ import ConcreteModel
+from pyomo.environ import ConcreteModel
 
-from openTEPES_InputData        import InputData
+from openTEPES_InputData import InputData
 from openTEPES_ModelFormulation import ModelFormulation
-from openTEPES_ProblemSolving   import ProblemSolving
-from openTEPES_OutputResults    import OutputResults
+from openTEPES_ProblemSolving import ProblemSolving
+from openTEPES_OutputResults import OutputResults
 
 StartTime = time.time()
 
-CaseName   = '9n'
+CaseName = '9n'
 SolverName = 'gurobi'
 
-#%% model declaration
-mTEPES = ConcreteModel('Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 1.7.17 - October 13, 2020')
+# %% model declaration
+mTEPES = ConcreteModel(
+    'Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 1.7.17 - October 13, 2020')
 
 InputData(CaseName, mTEPES)
 
 ModelFormulation(mTEPES)
 
-mTEPES.write(CaseName+'/openTEPES_'+CaseName+'.lp', io_options={'symbolic_solver_labels': True})  # create lp-format file
+mTEPES.write(CaseName+'/openTEPES_'+CaseName+'.lp',
+             io_options={'symbolic_solver_labels': True})  # create lp-format file
 
 WritingLPFileTime = time.time() - StartTime
-StartTime         = time.time()
-print('Writing LP file                       ... ', round(WritingLPFileTime), 's')
+StartTime = time.time()
+print('Writing LP file                       ... ',
+      round(WritingLPFileTime), 's')
 
 ProblemSolving(CaseName, SolverName, mTEPES)
 
