@@ -1,0 +1,11 @@
+InitialNode,FinalNode,cac1
+Bilbao,Valladolid,0
+Caceres,Madrid,0
+Caceres,Sevilla,0
+Caceres,Valladolid,0
+Cadiz,Sevilla,1
+Cartagena,Valencia,0
+Madrid,Bilbao,0
+Madrid,Valladolid,0
+Sevilla,Valladolid,0
+Valencia,Madrid,0

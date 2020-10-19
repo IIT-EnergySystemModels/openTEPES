@@ -65,7 +65,7 @@
 # make it effectively proprietary.  To prevent this, the GPL assures that
 # patents cannot be used to render the program non-free.
 
-# Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 1.7.16 - September 11, 2020
+# Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 1.7.17 - October 13, 2020
 # simplicity and transparency in power systems planning
 
 # Developed by
@@ -83,41 +83,37 @@
 
 #    with the very valuable collaboration from David Dominguez (david.dominguez@comillas.edu) and Alejandro Rodriguez (argallego@comillas.edu), our local Python gurus
 
-# %% libraries
+#%% libraries
 
 import time
 import setuptools
-import os
 
-from pyomo.environ import ConcreteModel
+from   pyomo.environ import ConcreteModel
 
-from openTEPES_InputData import InputData
+from openTEPES_InputData        import InputData
 from openTEPES_ModelFormulation import ModelFormulation
-from openTEPES_ProblemSolving import ProblemSolving
-from openTEPES_OutputResults import OutputResults
+from openTEPES_ProblemSolving   import ProblemSolving
+from openTEPES_OutputResults    import OutputResults
 
 StartTime = time.time()
 
-CaseName = 'MAF2025'
+CaseName   = '9n'
 SolverName = 'gurobi'
-CWD = os.getcwd()
-# %% model declaration
-mTEPES = ConcreteModel(
-    'Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 1.7.16 - September 11, 2020')
+
+#%% model declaration
+mTEPES = ConcreteModel('Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 1.7.17 - October 13, 2020')
 
 InputData(CaseName, mTEPES)
 
 ModelFormulation(mTEPES)
 
-mTEPES.write('openTEPES_'+CaseName+'.lp',
-             io_options={'symbolic_solver_labels': True})  # create lp-format file
+mTEPES.write(CaseName+'/openTEPES_'+CaseName+'.lp', io_options={'symbolic_solver_labels': True})  # create lp-format file
 
 WritingLPFileTime = time.time() - StartTime
-StartTime = time.time()
-print('Writing LP file                       ... ',
-      round(WritingLPFileTime), 's')
+StartTime         = time.time()
+print('Writing LP file                       ... ', round(WritingLPFileTime), 's')
 
-ProblemSolving(CaseName, SolverName, mTEPES, CWD)
+ProblemSolving(CaseName, SolverName, mTEPES)
 
 OutputResults(CaseName, mTEPES)
 
