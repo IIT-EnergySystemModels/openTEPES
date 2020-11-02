@@ -1,4 +1,4 @@
-# Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 1.7.17 - October 13, 2020
+# Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 1.7.19 - October 29, 2020
 
 import time
 import math
@@ -92,34 +92,36 @@ def InputData(CaseName,mTEPES):
     mTEPES.arrg = Set(initialize=dictSets['arrg'], ordered=False, doc='area to region')
 
     #%% parameters
-    pIndBinGenInvest    = dfOption   ['IndBinGenInvest'][0].astype('int')                                                                # Indicator of binary generation expansion decisions, 0 continuous - 1 binary
-    pIndBinNetInvest    = dfOption   ['IndBinNetInvest'][0].astype('int')                                                                # Indicator of binary network    expansion decisions, 0 continuous - 1 binary
-    pIndBinGenOperat    = dfOption   ['IndBinGenOperat'][0].astype('int')                                                                # Indicator of binary generation operation decisions, 0 continuous - 1 binary
-    pIndNetLosses       = dfOption   ['IndNetLosses'   ][0].astype('int')                                                                # Indicator of network losses,                        0 lossless   - 1 ohmic losses
-    pENSCost            = dfParameter['ENSCost'        ][0] * 1e-3                                                                       # cost of energy not served           [MEUR/GWh]
-    pCO2Cost            = dfParameter['CO2Cost'        ][0]                                                                              # cost of CO2 emission                [EUR/CO2 ton]
-    pSBase              = dfParameter['SBase'          ][0] * 1e-3                                                                       # base power                          [GW]
-    pReferenceNode      = dfParameter['ReferenceNode'  ][0]                                                                              # reference node
-    pTimeStep           = dfParameter['TimeStep'       ][0].astype('int')                                                                # duration of the unit time step      [h]
+    pIndBinGenInvest     = dfOption   ['IndBinGenInvest'    ][0].astype('int')                                                                # Indicator of binary generation expansion decisions, 0 continuous - 1 binary
+    pIndBinNetInvest     = dfOption   ['IndBinNetInvest'    ][0].astype('int')                                                                # Indicator of binary network    expansion decisions, 0 continuous - 1 binary
+    pIndBinGenOperat     = dfOption   ['IndBinGenOperat'    ][0].astype('int')                                                                # Indicator of binary generation operation decisions, 0 continuous - 1 binary
+    pIndNetLosses        = dfOption   ['IndNetLosses'       ][0].astype('int')                                                                # Indicator of network losses,                        0 lossless   - 1 ohmic losses
+    pENSCost             = dfParameter['ENSCost'            ][0] * 1e-3                                                                       # cost of energy not served           [MEUR/GWh]
+    pCO2Cost             = dfParameter['CO2Cost'            ][0]                                                                              # cost of CO2 emission                [EUR/CO2 ton]
+    pUpReserveActivation = dfParameter['UpReserveActivation'][0]                                                                              # upward   reserve activation         [p.u.]
+    pDwReserveActivation = dfParameter['DwReserveActivation'][0]                                                                              # downward reserve activation         [p.u.]
+    pSBase               = dfParameter['SBase'              ][0] * 1e-3                                                                       # base power                          [GW]
+    pReferenceNode       = dfParameter['ReferenceNode'      ][0]                                                                              # reference node
+    pTimeStep            = dfParameter['TimeStep'           ][0].astype('int')                                                                # duration of the unit time step      [h]
 
-    pScenProb           = dfScenario          ['Probability'  ]                                                                          # probabilities of scenarios          [p.u.]
-    pDuration           = dfDuration          ['Duration'     ] * pTimeStep                                                              # duration of load levels             [h]
-    pDemand             = dfDemand            [list(mTEPES.nd)] * 1e-3                                                                   # demand                              [GW]
-    pOperReserveUp      = dfUpOperatingReserve[list(mTEPES.ar)] * 1e-3                                                                   # upward   operating reserve          [GW]
-    pOperReserveDw      = dfDwOperatingReserve[list(mTEPES.ar)] * 1e-3                                                                   # downward operating reserve          [GW]
-    pVariableMaxPower   = dfVariableMaxPower  [list(mTEPES.gg)] * 1e-3                                                                   # dynamic variable maximum power      [GW]
-    pVariableMinStorage = dfVariableMinStorage[list(mTEPES.gg)] * 1e-3                                                                   # dynamic variable minimum storage    [TWh]
-    pVariableMaxStorage = dfVariableMaxStorage[list(mTEPES.gg)] * 1e-3                                                                   # dynamic variable maximum storage    [TWh]
-    pEnergyInflows      = dfEnergyInflows     [list(mTEPES.gg)] * 1e-3                                                                   # dynamic energy inflows              [GW]
+    pScenProb            = dfScenario          ['Probability'  ]                                                                          # probabilities of scenarios          [p.u.]
+    pDuration            = dfDuration          ['Duration'     ] * pTimeStep                                                              # duration of load levels             [h]
+    pDemand              = dfDemand            [list(mTEPES.nd)] * 1e-3                                                                   # demand                              [GW]
+    pOperReserveUp       = dfUpOperatingReserve[list(mTEPES.ar)] * 1e-3                                                                   # upward   operating reserve          [GW]
+    pOperReserveDw       = dfDwOperatingReserve[list(mTEPES.ar)] * 1e-3                                                                   # downward operating reserve          [GW]
+    pVariableMaxPower    = dfVariableMaxPower  [list(mTEPES.gg)] * 1e-3                                                                   # dynamic variable maximum power      [GW]
+    pVariableMinStorage  = dfVariableMinStorage[list(mTEPES.gg)] * 1e-3                                                                   # dynamic variable minimum storage    [TWh]
+    pVariableMaxStorage  = dfVariableMaxStorage[list(mTEPES.gg)] * 1e-3                                                                   # dynamic variable maximum storage    [TWh]
+    pEnergyInflows       = dfEnergyInflows     [list(mTEPES.gg)] * 1e-3                                                                   # dynamic energy inflows              [GW]
 
     # compute the demand as the mean over the time step load levels and assign it to active load levels. Idem for operating reserve, variable max power, variable min and max storage and inflows
-    pDemand             = pDemand.rolling            (pTimeStep).mean()
-    pOperReserveUp      = pOperReserveUp.rolling     (pTimeStep).mean()
-    pOperReserveDw      = pOperReserveDw.rolling     (pTimeStep).mean()
-    pVariableMaxPower   = pVariableMaxPower.rolling  (pTimeStep).mean()
-    pVariableMinStorage = pVariableMinStorage.rolling(pTimeStep).mean()
-    pVariableMaxStorage = pVariableMaxStorage.rolling(pTimeStep).mean()
-    pEnergyInflows      = pEnergyInflows.rolling     (pTimeStep).mean()
+    pDemand              = pDemand.rolling            (pTimeStep).mean()
+    pOperReserveUp       = pOperReserveUp.rolling     (pTimeStep).mean()
+    pOperReserveDw       = pOperReserveDw.rolling     (pTimeStep).mean()
+    pVariableMaxPower    = pVariableMaxPower.rolling  (pTimeStep).mean()
+    pVariableMinStorage  = pVariableMinStorage.rolling(pTimeStep).mean()
+    pVariableMaxStorage  = pVariableMaxStorage.rolling(pTimeStep).mean()
+    pEnergyInflows       = pEnergyInflows.rolling     (pTimeStep).mean()
 
     pDemand.fillna            (0, inplace=True)
     pOperReserveUp.fillna     (0, inplace=True)
@@ -351,6 +353,8 @@ def InputData(CaseName,mTEPES):
     pIniInventory    [pIniInventory     < pEpsilon*1e-3] = 0
     pInitialInventory[pInitialInventory < pEpsilon*1e-3] = 0
 
+    mTEPES.pMeanDemandPerNode = pDemand.mean()
+
     # BigM maximum flow to be used in the Kirchhoff's 2nd law disjunctive constraint
     pBigMFlow = pLineNTC*0
     for lea in mTEPES.lea:
@@ -378,15 +382,17 @@ def InputData(CaseName,mTEPES):
     # this option avoids a warning in the following assignments
     pd.options.mode.chained_assignment = None
 
-    mTEPES.pIndBinGenInvest      = Param(initialize=pIndBinGenInvest, within=Boolean, mutable=True)
-    mTEPES.pIndBinNetInvest      = Param(initialize=pIndBinNetInvest, within=Boolean, mutable=True)
-    mTEPES.pIndBinGenOperat      = Param(initialize=pIndBinGenOperat, within=Boolean, mutable=True)
-    mTEPES.pIndNetLosses         = Param(initialize=pIndNetLosses   , within=Boolean, mutable=True)
+    mTEPES.pIndBinGenInvest      = Param(initialize=pIndBinGenInvest    , within=Boolean, mutable=True)
+    mTEPES.pIndBinNetInvest      = Param(initialize=pIndBinNetInvest    , within=Boolean, mutable=True)
+    mTEPES.pIndBinGenOperat      = Param(initialize=pIndBinGenOperat    , within=Boolean, mutable=True)
+    mTEPES.pIndNetLosses         = Param(initialize=pIndNetLosses       , within=Boolean, mutable=True)
 
-    mTEPES.pENSCost              = Param(initialize=pENSCost        , within=NonNegativeReals)
-    mTEPES.pCO2Cost              = Param(initialize=pCO2Cost        , within=NonNegativeReals)
-    mTEPES.pSBase                = Param(initialize=pSBase          , within=NonNegativeReals)
-    mTEPES.pTimeStep             = Param(initialize=pTimeStep       , within=NonNegativeReals)
+    mTEPES.pENSCost              = Param(initialize=pENSCost            , within=NonNegativeReals)
+    mTEPES.pCO2Cost              = Param(initialize=pCO2Cost            , within=NonNegativeReals)
+    mTEPES.pUpReserveActivation  = Param(initialize=pUpReserveActivation, within=NonNegativeReals)
+    mTEPES.pDwReserveActivation  = Param(initialize=pDwReserveActivation, within=NonNegativeReals)
+    mTEPES.pSBase                = Param(initialize=pSBase              , within=NonNegativeReals)
+    mTEPES.pTimeStep             = Param(initialize=pTimeStep           , within=NonNegativeReals)
 
     mTEPES.pDemand               = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nd, initialize=pDemand.stack().to_dict()          , within=NonNegativeReals, doc='Demand'                       )
     mTEPES.pScenProb             = Param(mTEPES.scc,                               initialize=pScenProb.to_dict()                , within=NonNegativeReals, doc='Probability'                  )
