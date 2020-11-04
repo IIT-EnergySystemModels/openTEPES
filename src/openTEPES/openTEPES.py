@@ -97,7 +97,7 @@ from openTEPES_OutputResults import OutputResults
 
 StartTime = time.time()
 
-CaseName = '9n'
+CaseName = 'MAF2025'
 SolverName = 'gurobi'
 
 # %% model declaration
@@ -118,7 +118,7 @@ print('Writing LP file                       ... ',
 
 ProblemSolving(CaseName, SolverName, mTEPES)
 
-OutputResults(CaseName, mTEPES)
+# OutputResults(CaseName, mTEPES)
 
 TotalTime = time.time() - StartTime
 print('Total time                            ... ', round(TotalTime), 's')
