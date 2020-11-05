@@ -457,35 +457,18 @@ def InputData(CaseName, mTEPES):
     pMaxTheta = pDemand*0 + math.pi/2
 
     # drop load levels with duration 0
-    pDemand                 = pDemand.iloc[pDemand.index.drop(mTEPES.sc*mTEPES.p*mTEPES.n)]
-    pOperReserveUp          = pOperReserveUp.iloc[pOperReserveUp.index.drop(list(mTEPES.sc * mTEPES.p * mTEPES.n * mTEPES.ar))]
-    pOperReserveDw          = pOperReserveDw.iloc[pOperReserveDw.index.drop(list(mTEPES.sc * mTEPES.p * mTEPES.n * mTEPES.ar))]
-    pMinPower               = pMinPower.iloc[pMinPower.index.drop(list(mTEPES.sc * mTEPES.p * mTEPES.n))]
-    pMaxPower               = pMaxPower.iloc[pMaxPower.index.drop(list(mTEPES.sc * mTEPES.p * mTEPES.n))]
-    pMaxPower2ndBlock       = pMaxPower2ndBlock.iloc[pMaxPower2ndBlock.index.drop(list(mTEPES.sc * mTEPES.p * mTEPES.n))]
-    pEnergyInflows          = pEnergyInflows.iloc[pEnergyInflows.index.drop(list(mTEPES.sc * mTEPES.p * mTEPES.n))]
-    pMinStorage             = pMinStorage.iloc[pMinStorage.index.drop(list(mTEPES.sc * mTEPES.p * mTEPES.n))]
-    pMaxStorage             = pMaxStorage.iloc[pMaxStorage.index.drop(list(mTEPES.sc * mTEPES.p * mTEPES.n))]
-    pIniInventory           = pIniInventory.iloc[pIniInventory.index.drop(list(mTEPES.sc * mTEPES.p * mTEPES.n))]
-    pMaxTheta               = pMaxTheta.iloc[pMaxTheta.index.drop(list(mTEPES.sc * mTEPES.p * mTEPES.n))]
-    pDuration               = pDuration.iloc[pDuration.index.drop(list(mTEPES.n))]
-
-    SettingUpDataTime = time.time() - StartTime
-    StartTime = time.time()
-    print('Setting up input data                 ... ',
-          round(SettingUpDataTime), 's')
-    # pDemand = pDemand.loc[list(mTEPES.sc * mTEPES.p * mTEPES.n)]
-    # pOperReserveUp = pOperReserveUp.loc[list(mTEPES.sc * mTEPES.p * mTEPES.n * mTEPES.ar)]
-    # pOperReserveDw = pOperReserveDw.loc[list(mTEPES.sc * mTEPES.p * mTEPES.n * mTEPES.ar)]
-    # pMinPower = pMinPower.loc[list(mTEPES.sc * mTEPES.p * mTEPES.n)]
-    # pMaxPower = pMaxPower.loc[list(mTEPES.sc * mTEPES.p * mTEPES.n)]
-    # pMaxPower2ndBlock = pMaxPower2ndBlock.loc[list(mTEPES.sc * mTEPES.p * mTEPES.n)]
-    # pEnergyInflows = pEnergyInflows.loc[list(mTEPES.sc * mTEPES.p * mTEPES.n)]
-    # pMinStorage = pMinStorage.loc[list(mTEPES.sc * mTEPES.p * mTEPES.n)]
-    # pMaxStorage = pMaxStorage.loc[list(mTEPES.sc * mTEPES.p * mTEPES.n)]
-    # pIniInventory = pIniInventory.loc[list(mTEPES.sc * mTEPES.p * mTEPES.n)]
-    # pMaxTheta = pMaxTheta.loc[list(mTEPES.sc * mTEPES.p * mTEPES.n)]
-    # pDuration = pDuration.loc[list(mTEPES.n)]
+    pDemand = pDemand.loc[list(mTEPES.sc * mTEPES.p * mTEPES.n)]
+    pOperReserveUp = pOperReserveUp.loc[list(mTEPES.sc * mTEPES.p * mTEPES.n * mTEPES.ar)]
+    pOperReserveDw = pOperReserveDw.loc[list(mTEPES.sc * mTEPES.p * mTEPES.n * mTEPES.ar)]
+    pMinPower = pMinPower.loc[list(mTEPES.sc * mTEPES.p * mTEPES.n)]
+    pMaxPower = pMaxPower.loc[list(mTEPES.sc * mTEPES.p * mTEPES.n)]
+    pMaxPower2ndBlock = pMaxPower2ndBlock.loc[list(mTEPES.sc * mTEPES.p * mTEPES.n)]
+    pEnergyInflows = pEnergyInflows.loc[list(mTEPES.sc * mTEPES.p * mTEPES.n)]
+    pMinStorage = pMinStorage.loc[list(mTEPES.sc * mTEPES.p * mTEPES.n)]
+    pMaxStorage = pMaxStorage.loc[list(mTEPES.sc * mTEPES.p * mTEPES.n)]
+    pIniInventory = pIniInventory.loc[list(mTEPES.sc * mTEPES.p * mTEPES.n)]
+    pMaxTheta = pMaxTheta.loc[list(mTEPES.sc * mTEPES.p * mTEPES.n)]
+    pDuration = pDuration.loc[list(mTEPES.n)]
 
     # this option avoids a warning in the following assignments
     pd.options.mode.chained_assignment = None
@@ -504,8 +487,7 @@ def InputData(CaseName, mTEPES):
     mTEPES.pSBase = Param(initialize=pSBase, within=NonNegativeReals)
     mTEPES.pTimeStep = Param(initialize=pTimeStep, within=NonNegativeReals)
 
-    mTEPES.pDemand = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nd, initialize=pDemand.stack(
-    ).to_dict(), within=NonNegativeReals, doc='Demand')
+    mTEPES.pDemand = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nd, initialize=pDemand.stack().to_dict(), within=NonNegativeReals, doc='Demand')
     mTEPES.pScenProb = Param(mTEPES.scc,                               initialize=pScenProb.to_dict(
     ), within=NonNegativeReals, doc='Probability')
     mTEPES.pDuration = Param(mTEPES.n,            initialize=pDuration.to_dict(
