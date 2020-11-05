@@ -1,7 +1,0 @@
-caso MAF2025
-Diferencias entre nodos de FR, IT, LU entre demanda, generación y conexiones
-LUV1, LUB1, LUF1
-ITCO, ITCN, ITSC, etc.
-FR00, FR15
-NOM0, NON0
-Modelado de la hidráulica

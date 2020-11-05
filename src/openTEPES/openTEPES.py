@@ -106,19 +106,19 @@ mTEPES = ConcreteModel(
 
 InputData(CaseName, mTEPES)
 
-# ModelFormulation(mTEPES)
-#
-# mTEPES.write(CaseName+'/openTEPES_'+CaseName+'.lp',
-#              io_options={'symbolic_solver_labels': True})  # create lp-format file
-#
-# WritingLPFileTime = time.time() - StartTime
-# StartTime = time.time()
-# print('Writing LP file                       ... ',
-#       round(WritingLPFileTime), 's')
-#
-# ProblemSolving(CaseName, SolverName, mTEPES)
-#
-# # OutputResults(CaseName, mTEPES)
-#
-# TotalTime = time.time() - StartTime
-# print('Total time                            ... ', round(TotalTime), 's')
+ModelFormulation(mTEPES)
+
+mTEPES.write(CaseName+'/openTEPES_'+CaseName+'.lp',
+             io_options={'symbolic_solver_labels': True})  # create lp-format file
+
+WritingLPFileTime = time.time() - StartTime
+StartTime = time.time()
+print('Writing LP file                       ... ',
+      round(WritingLPFileTime), 's')
+
+ProblemSolving(CaseName, SolverName, mTEPES)
+
+# OutputResults(CaseName, mTEPES)
+
+TotalTime = time.time() - StartTime
+print('Total time                            ... ', round(TotalTime), 's')
