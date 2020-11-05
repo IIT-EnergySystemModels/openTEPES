@@ -3,7 +3,7 @@
 import time
 import math
 import pandas as pd
-from pyomo.environ import DataPortal, Set, Param, Var, Binary, NonNegativeReals, Reals, UnitInterval, Boolean
+from pyomo.environ import DataPortal, Set, Param, Var, Binary, NonNegativeReals, Reals, UnitInterval, Boolean, Any
 
 
 def InputData(CaseName, mTEPES):
@@ -255,7 +255,7 @@ def InputData(CaseName, mTEPES):
     # resistance                          [p.u.]
     pLineR = dfNetwork['Resistance']
     # reactance                           [p.u.]
-    pLineX = dfNetwork['Reactance']
+    pLineX = dfNetwork['Reactance'].sort_index()
     # susceptance                         [p.u.]
     pLineBsh = dfNetwork['Susceptance']
     # tap changer                         [p.u.]
@@ -309,39 +309,15 @@ def InputData(CaseName, mTEPES):
     # mTEPES.lil = Set(initialize=mTEPES.nf*mTEPES.ni*mTEPES.cc, doc='input line', filter=lambda mTEPES,nf,ni,cc: (ni,nf,cc) in mTEPES.ll)
 
     # replacing string values by numerical values
-    # these instructions give a warning eliminated with warnings function
-    # import warnings
-    # with warnings.catch_warnings():
-    #     warnings.simplefilter(action='ignore', category=FutureWarning)
-    #     pIndBinUnitInvest[pIndBinUnitInvest == 'Yes'] = 1
-    #     pIndBinUnitInvest[pIndBinUnitInvest == 'YES'] = 1
-    #     pIndBinUnitInvest[pIndBinUnitInvest == 'Y'  ] = 1
-    #     pIndBinUnitInvest[pIndBinUnitInvest == 'y'  ] = 1
-    #     pIndBinLineInvest[pIndBinLineInvest == 'Yes'] = 1
-    #     pIndBinLineInvest[pIndBinLineInvest == 'YES'] = 1
-    #     pIndBinLineInvest[pIndBinLineInvest == 'Y'  ] = 1
-    #     pIndBinLineInvest[pIndBinLineInvest == 'y'  ] = 1
-    # pIndBinUnitInvest[pIndBinUnitInvest == 'Yes'] = 1
-    # pIndBinUnitInvest[pIndBinUnitInvest == 'YES'] = 1
-    # pIndBinUnitInvest[pIndBinUnitInvest == 'Y'  ] = 1
-    # pIndBinUnitInvest[pIndBinUnitInvest == 'y'  ] = 1
-    # pIndBinLineInvest[pIndBinLineInvest == 'Yes'] = 1
-    # pIndBinLineInvest[pIndBinLineInvest == 'YES'] = 1
-    # pIndBinLineInvest[pIndBinLineInvest == 'Y'  ] = 1
-    # pIndBinLineInvest[pIndBinLineInvest == 'y'  ] = 1
+    idxDict = dict()
+    idxDict[0] = 0.0
+    idxDict['Yes'] = 1
+    idxDict['YES'] = 1
+    idxDict['Y'] = 1
+    idxDict['y'] = 1
 
-    # these sentences give a warning when there is no value in the corresponding column
-    pIndBinUnitInvest = pIndBinUnitInvest.where(pIndBinUnitInvest != 'Yes', 1)
-    pIndBinUnitInvest = pIndBinUnitInvest.where(pIndBinUnitInvest != 'YES', 1)
-    pIndBinUnitInvest = pIndBinUnitInvest.where(pIndBinUnitInvest != 'Y', 1)
-    pIndBinUnitInvest = pIndBinUnitInvest.where(pIndBinUnitInvest != 'y', 1)
-    pIndBinLineInvest = pIndBinLineInvest.where(pIndBinLineInvest != 'Yes', 1)
-    pIndBinLineInvest = pIndBinLineInvest.where(pIndBinLineInvest != 'YES', 1)
-    pIndBinLineInvest = pIndBinLineInvest.where(pIndBinLineInvest != 'Y', 1)
-    pIndBinLineInvest = pIndBinLineInvest.where(pIndBinLineInvest != 'y', 1)
-
-    # pIndBinUnitInvest = pIndBinUnitInvest.replace({'Yes': 1, 'YES': 1, 'Y': 1, 'y': 1})
-    # pIndBinLineInvest = pIndBinLineInvest.replace({'Yes': 1, 'YES': 1, 'Y': 1, 'y': 1})
+    pIndBinUnitInvest = pIndBinUnitInvest.map(idxDict)
+    pIndBinLineInvest = pIndBinLineInvest.map(idxDict)
 
     # line type
     pLineType = pLineType.reset_index()
@@ -448,7 +424,8 @@ def InputData(CaseName, mTEPES):
         if pStorageType[es] == 'Yearly':
             pCycleTimeStep[es] = int(8736/pTimeStep)
 
-    mTEPES.pStorageType = Set(mTEPES.es*mTEPES.st, initialize=pStorageType)
+    pStorageType = pStorageType[pStorageType.index.isin(mTEPES.es)]
+    mTEPES.pStorageType = Param(mTEPES.es, initialize=pStorageType.to_dict(), within=Any)
 
     # values < 1e-5 times the maximum system demand are converted to 0
     # these parameters are in GW
