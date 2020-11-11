@@ -1,2 +1,2 @@
-,ENSCost,PNSCost,CO2Cost,SBase,ReferenceNode,TimeStep
-Parameters,10000,10000,5,100,Mantaro_220_kV,1
+,ENSCost,CO2Cost,SBase,ReferenceNode,TimeStep
+Parameters,10000,25,100,Mantaro_220_kV,1
