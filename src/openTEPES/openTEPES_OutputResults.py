@@ -378,6 +378,10 @@ def OutputResults(CaseName, mTEPES):
     fg.add_geometries([polyUK], crs=ccrs.PlateCarree(), facecolor='C8', edgecolor='0.5')
 
     # node name
+    font = {'family': 'normal',
+            # 'weight': 'bold',
+            'size': 5}
+    plt.rc('font', **font)
     for nd in mTEPES.nd:
         plt.annotate(nd, [mTEPES.pNodeLon[nd], mTEPES.pNodeLat[nd]])
 
