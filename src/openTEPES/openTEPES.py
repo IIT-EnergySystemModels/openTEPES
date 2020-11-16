@@ -97,8 +97,8 @@ from openTEPES_OutputResults    import OutputResults
 
 StartTime = time.time()
 
-CaseName   = '9n' \
-             ''
+CaseName   = '9n'
+
 SolverName = 'gurobi'
 
 #%% model declaration
@@ -120,3 +120,7 @@ OutputResults(CaseName, mTEPES)
 
 TotalTime = time.time() - StartTime
 print('Total time                            ... ', round(TotalTime), 's')
+
+
+# if __name__ == '__main__':
+#     setLabelExample()

@@ -1,2 +1,2 @@
 ,ENSCost,CO2Cost,UpReserveActivation,DwReserveActivation,SBase,ReferenceNode,TimeStep
-Parameters,10000,25,0.25,0.3,100,Mantaro_220_kV,4
+Parameters,10000,25,0.25,0.3,100,Mantaro_220_kV,16
