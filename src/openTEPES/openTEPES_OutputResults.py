@@ -409,10 +409,6 @@ def OutputResults(CaseName, mTEPES):
     # # fg.add_geometries([polyPE], crs=ccrs.PlateCarree(), facecolor='C9', edgecolor='0.5')
 
     # node name
-    # font = {'family': 'normal',
-    #         # 'weight': 'bold',
-    #         'size': 5}
-    # plt.rc('font', **font)
     for nd in mTEPES.nd:
         # plt.annotate(nd, [mTEPES.pNodeLon[nd], mTEPES.pNodeLat[nd]])
         # Add text 25 pixels to the left of the volcano.
