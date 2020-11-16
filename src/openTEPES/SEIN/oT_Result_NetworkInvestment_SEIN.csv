@@ -174,11 +174,11 @@ Huayucachi_60_kV,Huancayo_60_kV,0,0.0,0.0,0.0
 Huayucachi_60_kV,PIndustrial_60_kV,0,0.0,0.0,0.0
 Huinco_220_kV,Carapongo_220_kV,0,0.0,0.0,0.0
 Ica_220_kV,Nazca_220_kV,0,0.0,0.0,0.0
-Ilo3_138_kV,IloELS_138_kV,0,0.009933841023652334,0.0024188853864226425,0.05010095785493012
+Ilo3_138_kV,IloELS_138_kV,0,0.004665563843008342,0.0,0.057788120421999684
 Ilo3_220_kV,Ilo2_220_kV,0,0.0,0.0,0.0
 Ilo3_220_kV,Ilo3_138_kV,0,0.0,0.0,0.0
 Ilo3_220_kV,TiaMaria_220_kV,0,0.0,0.0,0.0
-IloELS_138_kV,SPCC_138_kV,0,0.0,0.0,0.11694433465248796
+IloELS_138_kV,SPCC_138_kV,0,0.0,0.0,0.11694433465037646
 Independencia_220_kV,Aceros_220_kV,0,0.0,0.0,0.0
 Independencia_220_kV,Ica_220_kV,0,0.0,0.0,0.0
 Independencia_220_kV,Independencia_60_kV,0,0.0,0.0,0.0
@@ -360,7 +360,7 @@ Socabaya_220_kV,Yarabamba_220_kV,0,0.0,0.0,0.0
 Suriray_220_kV,Abancay_220_kV,0,0.0,0.0,0.0
 Suriray_220_kV,Cotaruse_220_kV,0,0.0,0.0,0.0
 Suriray_220_kV,Kayra_220_kV,0,0.0,0.0,0.0
-Suriray_220_kV,Suriray_138_kV,0,0.0,0.13843731339730964,0.41216364026140284
+Suriray_220_kV,Suriray_138_kV,0,0.1384373114805475,0.41216363834461434,0.0
 Talara_220_kV,Parinhas_220_kV,0,0.0,0.0,0.0
 Tambo40_500_kV,Tambo60_500_kV,0,0.0,0.0,0.0
 Tarapoto_138_kV,Moyobamba_138_kV,0,0.0,0.0,0.0
