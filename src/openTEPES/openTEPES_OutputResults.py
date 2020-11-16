@@ -313,75 +313,93 @@ def OutputResults(CaseName, mTEPES):
     import geopandas
     import cartopy.crs as ccrs
     from   cartopy.io import shapereader
+    import cartopy.io.img_tiles as cimgt
 
-    # take data from http://www.naturalearthdata.com/
-    df = geopandas.read_file(shapereader.natural_earth(resolution='10m', category='cultural', name='admin_0_countries'))
-    polyAT = df.loc[df['ADMIN'] == 'Austria'       ]['geometry'].values[0]
-    polyBE = df.loc[df['ADMIN'] == 'Belgium'       ]['geometry'].values[0]
-    polyBG = df.loc[df['ADMIN'] == 'Bulgaria'      ]['geometry'].values[0]
-    polyCH = df.loc[df['ADMIN'] == 'Croatia'       ]['geometry'].values[0]
-    polyCY = df.loc[df['ADMIN'] == 'Cyprus'        ]['geometry'].values[0]
-    polyCZ = df.loc[df['ADMIN'] == 'Czechia'       ]['geometry'].values[0]
-    polyDK = df.loc[df['ADMIN'] == 'Denmark'       ]['geometry'].values[0]
-    polyEE = df.loc[df['ADMIN'] == 'Estonia'       ]['geometry'].values[0]
-    polyFI = df.loc[df['ADMIN'] == 'Finland'       ]['geometry'].values[0]
-    polyFR = df.loc[df['ADMIN'] == 'France'        ]['geometry'].values[0]
-    polyDE = df.loc[df['ADMIN'] == 'Germany'       ]['geometry'].values[0]
-    polyEL = df.loc[df['ADMIN'] == 'Greece'        ]['geometry'].values[0]
-    polyHU = df.loc[df['ADMIN'] == 'Hungary'       ]['geometry'].values[0]
-    polyIE = df.loc[df['ADMIN'] == 'Ireland'       ]['geometry'].values[0]
-    polyIT = df.loc[df['ADMIN'] == 'Italy'         ]['geometry'].values[0]
-    polyLV = df.loc[df['ADMIN'] == 'Latvia'        ]['geometry'].values[0]
-    polyLT = df.loc[df['ADMIN'] == 'Lithuania'     ]['geometry'].values[0]
-    polyLU = df.loc[df['ADMIN'] == 'Luxembourg'    ]['geometry'].values[0]
-    polyMT = df.loc[df['ADMIN'] == 'Malta'         ]['geometry'].values[0]
-    polyNL = df.loc[df['ADMIN'] == 'Netherlands'   ]['geometry'].values[0]
-    polyPL = df.loc[df['ADMIN'] == 'Poland'        ]['geometry'].values[0]
-    polyPT = df.loc[df['ADMIN'] == 'Portugal'      ]['geometry'].values[0]
-    polyRO = df.loc[df['ADMIN'] == 'Romania'       ]['geometry'].values[0]
-    polySK = df.loc[df['ADMIN'] == 'Slovakia'      ]['geometry'].values[0]
-    polySI = df.loc[df['ADMIN'] == 'Slovenia'      ]['geometry'].values[0]
-    polyES = df.loc[df['ADMIN'] == 'Spain'         ]['geometry'].values[0]
-    polySE = df.loc[df['ADMIN'] == 'Sweden'        ]['geometry'].values[0]
-    polyUK = df.loc[df['ADMIN'] == 'United Kingdom']['geometry'].values[0]
+    # Create a Stamen terrain background instance.
+    stamen_terrain = cimgt.Stamen('terrain-background')
 
-    fg = plt.axes(projection=ccrs.PlateCarree())
-    fg.set_extent((min(mTEPES.pNodeLon.values())-2, max(mTEPES.pNodeLon.values())+2, min(mTEPES.pNodeLat.values())-2, max(mTEPES.pNodeLat.values())+2), crs=ccrs.PlateCarree())
+    fig = plt.figure()
 
-    fg.add_geometries([polyAT], crs=ccrs.PlateCarree(), facecolor='C0', edgecolor='0.5')
-    fg.add_geometries([polyBE], crs=ccrs.PlateCarree(), facecolor='C1', edgecolor='0.5')
-    fg.add_geometries([polyBG], crs=ccrs.PlateCarree(), facecolor='C2', edgecolor='0.5')
-    fg.add_geometries([polyCH], crs=ccrs.PlateCarree(), facecolor='C3', edgecolor='0.5')
-    fg.add_geometries([polyCY], crs=ccrs.PlateCarree(), facecolor='C4', edgecolor='0.5')
-    fg.add_geometries([polyCZ], crs=ccrs.PlateCarree(), facecolor='C5', edgecolor='0.5')
-    fg.add_geometries([polyDK], crs=ccrs.PlateCarree(), facecolor='C6', edgecolor='0.5')
-    fg.add_geometries([polyEE], crs=ccrs.PlateCarree(), facecolor='C7', edgecolor='0.5')
-    fg.add_geometries([polyFI], crs=ccrs.PlateCarree(), facecolor='C8', edgecolor='0.5')
-    fg.add_geometries([polyFR], crs=ccrs.PlateCarree(), facecolor='C9', edgecolor='0.5')
-    fg.add_geometries([polyDE], crs=ccrs.PlateCarree(), facecolor='C0', edgecolor='0.5')
-    fg.add_geometries([polyEL], crs=ccrs.PlateCarree(), facecolor='C1', edgecolor='0.5')
-    fg.add_geometries([polyHU], crs=ccrs.PlateCarree(), facecolor='C2', edgecolor='0.5')
-    fg.add_geometries([polyIE], crs=ccrs.PlateCarree(), facecolor='C3', edgecolor='0.5')
-    fg.add_geometries([polyIT], crs=ccrs.PlateCarree(), facecolor='C4', edgecolor='0.5')
-    fg.add_geometries([polyLV], crs=ccrs.PlateCarree(), facecolor='C5', edgecolor='0.5')
-    fg.add_geometries([polyLT], crs=ccrs.PlateCarree(), facecolor='C6', edgecolor='0.5')
-    fg.add_geometries([polyLU], crs=ccrs.PlateCarree(), facecolor='C7', edgecolor='0.5')
-    fg.add_geometries([polyMT], crs=ccrs.PlateCarree(), facecolor='C8', edgecolor='0.5')
-    fg.add_geometries([polyNL], crs=ccrs.PlateCarree(), facecolor='C9', edgecolor='0.5')
-    fg.add_geometries([polyPL], crs=ccrs.PlateCarree(), facecolor='C1', edgecolor='0.5')
-    fg.add_geometries([polyPT], crs=ccrs.PlateCarree(), facecolor='C2', edgecolor='0.5')
-    fg.add_geometries([polyRO], crs=ccrs.PlateCarree(), facecolor='C3', edgecolor='0.5')
-    fg.add_geometries([polySK], crs=ccrs.PlateCarree(), facecolor='C4', edgecolor='0.5')
-    fg.add_geometries([polySI], crs=ccrs.PlateCarree(), facecolor='C5', edgecolor='0.5')
-    fg.add_geometries([polyES], crs=ccrs.PlateCarree(), facecolor='C0', edgecolor='0.5')
-    fg.add_geometries([polySE], crs=ccrs.PlateCarree(), facecolor='C7', edgecolor='0.5')
-    fg.add_geometries([polyUK], crs=ccrs.PlateCarree(), facecolor='C8', edgecolor='0.5')
+    # Create a GeoAxes in the tile's projection.
+    ax = fig.add_subplot(1, 1, 1, projection=stamen_terrain.crs)
+
+    # Limit the extent of the map to a small longitude/latitude range.
+    ax.set_extent([-22, -15, 63, 65], crs=ccrs.Geodetic())
+
+    # Add the Stamen data at zoom level 8.
+    ax.add_image(stamen_terrain, 8)
+
+    # # take data from http://www.naturalearthdata.com/
+    # df = geopandas.read_file(shapereader.natural_earth(resolution='10m', category='cultural', name='admin_0_countries'))
+    # polyPE = df.loc[df['ADMIN'] == 'Peru']['geometry'].values[0]
+    # polyAT = df.loc[df['ADMIN'] == 'Austria'       ]['geometry'].values[0]
+    # polyBE = df.loc[df['ADMIN'] == 'Belgium'       ]['geometry'].values[0]
+    # polyBG = df.loc[df['ADMIN'] == 'Bulgaria'      ]['geometry'].values[0]
+    # polyCH = df.loc[df['ADMIN'] == 'Croatia'       ]['geometry'].values[0]
+    # polyCY = df.loc[df['ADMIN'] == 'Cyprus'        ]['geometry'].values[0]
+    # polyCZ = df.loc[df['ADMIN'] == 'Czechia'       ]['geometry'].values[0]
+    # polyDK = df.loc[df['ADMIN'] == 'Denmark'       ]['geometry'].values[0]
+    # polyEE = df.loc[df['ADMIN'] == 'Estonia'       ]['geometry'].values[0]
+    # polyFI = df.loc[df['ADMIN'] == 'Finland'       ]['geometry'].values[0]
+    # polyFR = df.loc[df['ADMIN'] == 'France'        ]['geometry'].values[0]
+    # polyDE = df.loc[df['ADMIN'] == 'Germany'       ]['geometry'].values[0]
+    # polyEL = df.loc[df['ADMIN'] == 'Greece'        ]['geometry'].values[0]
+    # polyHU = df.loc[df['ADMIN'] == 'Hungary'       ]['geometry'].values[0]
+    # polyIE = df.loc[df['ADMIN'] == 'Ireland'       ]['geometry'].values[0]
+    # polyIT = df.loc[df['ADMIN'] == 'Italy'         ]['geometry'].values[0]
+    # polyLV = df.loc[df['ADMIN'] == 'Latvia'        ]['geometry'].values[0]
+    # polyLT = df.loc[df['ADMIN'] == 'Lithuania'     ]['geometry'].values[0]
+    # polyLU = df.loc[df['ADMIN'] == 'Luxembourg'    ]['geometry'].values[0]
+    # polyMT = df.loc[df['ADMIN'] == 'Malta'         ]['geometry'].values[0]
+    # polyNL = df.loc[df['ADMIN'] == 'Netherlands'   ]['geometry'].values[0]
+    # polyPL = df.loc[df['ADMIN'] == 'Poland'        ]['geometry'].values[0]
+    # polyPT = df.loc[df['ADMIN'] == 'Portugal'      ]['geometry'].values[0]
+    # polyRO = df.loc[df['ADMIN'] == 'Romania'       ]['geometry'].values[0]
+    # polySK = df.loc[df['ADMIN'] == 'Slovakia'      ]['geometry'].values[0]
+    # polySI = df.loc[df['ADMIN'] == 'Slovenia'      ]['geometry'].values[0]
+    # polyES = df.loc[df['ADMIN'] == 'Spain'         ]['geometry'].values[0]
+    # polySE = df.loc[df['ADMIN'] == 'Sweden'        ]['geometry'].values[0]
+    # polyUK = df.loc[df['ADMIN'] == 'United Kingdom']['geometry'].values[0]
+    #
+    # fg = plt.axes(projection=ccrs.PlateCarree())
+    # fg.stock_img()
+    # fg.set_extent((min(mTEPES.pNodeLon.values())-2, max(mTEPES.pNodeLon.values())+2, min(mTEPES.pNodeLat.values())-2, max(mTEPES.pNodeLat.values())+2), crs=ccrs.PlateCarree())
+    #
+    # # fg.add_geometries([polyAT], crs=ccrs.PlateCarree(), facecolor='C0', edgecolor='0.5')
+    # # fg.add_geometries([polyBE], crs=ccrs.PlateCarree(), facecolor='C1', edgecolor='0.5')
+    # # fg.add_geometries([polyBG], crs=ccrs.PlateCarree(), facecolor='C2', edgecolor='0.5')
+    # # fg.add_geometries([polyCH], crs=ccrs.PlateCarree(), facecolor='C3', edgecolor='0.5')
+    # # fg.add_geometries([polyCY], crs=ccrs.PlateCarree(), facecolor='C4', edgecolor='0.5')
+    # # fg.add_geometries([polyCZ], crs=ccrs.PlateCarree(), facecolor='C5', edgecolor='0.5')
+    # # fg.add_geometries([polyDK], crs=ccrs.PlateCarree(), facecolor='C6', edgecolor='0.5')
+    # # fg.add_geometries([polyEE], crs=ccrs.PlateCarree(), facecolor='C7', edgecolor='0.5')
+    # # fg.add_geometries([polyFI], crs=ccrs.PlateCarree(), facecolor='C8', edgecolor='0.5')
+    # # fg.add_geometries([polyFR], crs=ccrs.PlateCarree(), facecolor='C9', edgecolor='0.5')
+    # # fg.add_geometries([polyDE], crs=ccrs.PlateCarree(), facecolor='C0', edgecolor='0.5')
+    # # fg.add_geometries([polyEL], crs=ccrs.PlateCarree(), facecolor='C1', edgecolor='0.5')
+    # # fg.add_geometries([polyHU], crs=ccrs.PlateCarree(), facecolor='C2', edgecolor='0.5')
+    # # fg.add_geometries([polyIE], crs=ccrs.PlateCarree(), facecolor='C3', edgecolor='0.5')
+    # # fg.add_geometries([polyIT], crs=ccrs.PlateCarree(), facecolor='C4', edgecolor='0.5')
+    # # fg.add_geometries([polyLV], crs=ccrs.PlateCarree(), facecolor='C5', edgecolor='0.5')
+    # # fg.add_geometries([polyLT], crs=ccrs.PlateCarree(), facecolor='C6', edgecolor='0.5')
+    # # fg.add_geometries([polyLU], crs=ccrs.PlateCarree(), facecolor='C7', edgecolor='0.5')
+    # # fg.add_geometries([polyMT], crs=ccrs.PlateCarree(), facecolor='C8', edgecolor='0.5')
+    # # fg.add_geometries([polyNL], crs=ccrs.PlateCarree(), facecolor='C9', edgecolor='0.5')
+    # # fg.add_geometries([polyPL], crs=ccrs.PlateCarree(), facecolor='C1', edgecolor='0.5')
+    # # fg.add_geometries([polyPT], crs=ccrs.PlateCarree(), facecolor='C2', edgecolor='0.5')
+    # # fg.add_geometries([polyRO], crs=ccrs.PlateCarree(), facecolor='C3', edgecolor='0.5')
+    # # fg.add_geometries([polySK], crs=ccrs.PlateCarree(), facecolor='C4', edgecolor='0.5')
+    # # fg.add_geometries([polySI], crs=ccrs.PlateCarree(), facecolor='C5', edgecolor='0.5')
+    # # fg.add_geometries([polyES], crs=ccrs.PlateCarree(), facecolor='C0', edgecolor='0.5')
+    # # fg.add_geometries([polySE], crs=ccrs.PlateCarree(), facecolor='C7', edgecolor='0.5')
+    # # fg.add_geometries([polyUK], crs=ccrs.PlateCarree(), facecolor='C8', edgecolor='0.5')
+    # # fg.add_geometries([polyPE], crs=ccrs.PlateCarree(), facecolor='C9', edgecolor='0.5')
 
     # node name
-    font = {'family': 'normal',
-            # 'weight': 'bold',
-            'size': 5}
-    plt.rc('font', **font)
+    # font = {'family': 'normal',
+    #         # 'weight': 'bold',
+    #         'size': 5}
+    # plt.rc('font', **font)
     for nd in mTEPES.nd:
         plt.annotate(nd, [mTEPES.pNodeLon[nd], mTEPES.pNodeLat[nd]])
 
