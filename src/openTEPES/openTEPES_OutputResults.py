@@ -330,9 +330,9 @@ def OutputResults(CaseName, mTEPES):
     ax.set_extent((min(mTEPES.pNodeLon.values()) - 2, max(mTEPES.pNodeLon.values()) + 2,
                    min(mTEPES.pNodeLat.values()) - 2, max(mTEPES.pNodeLat.values()) + 2), crs=ccrs.Geodetic())
 
-    ax.add_feature(cfeature.BORDERS, linewidth=0.5)
+    ax.add_feature(cfeature.BORDERS, linewidth=1)
     # Add the Stamen data at zoom level 8.
-    ax.add_image(stamen_terrain, 141)
+    ax.add_image(stamen_terrain, 8)
 
     # Use the cartopy interface to create a matplotlib transform object
     # for the Geodetic coordinate system. We will use this along with
@@ -413,12 +413,12 @@ def OutputResults(CaseName, mTEPES):
     #         'size': 5}
     # plt.rc('font', **font)
     for nd in mTEPES.nd:
-        plt.annotate(nd, [mTEPES.pNodeLon[nd], mTEPES.pNodeLat[nd]])
-        # # Add text 25 pixels to the left of the volcano.
-        # ax.text(mTEPES.pNodeLon[nd], mTEPES.pNodeLat[nd], nd,
-        #         verticalalignment='center', horizontalalignment='right',
-        #         transform=text_transform,
-        #         bbox=dict(facecolor='sandybrown', alpha=0.4, boxstyle='round'))
+        # plt.annotate(nd, [mTEPES.pNodeLon[nd], mTEPES.pNodeLat[nd]])
+        # Add text 25 pixels to the left of the volcano.
+        ax.text(mTEPES.pNodeLon[nd], mTEPES.pNodeLat[nd], nd, fontsize=5,
+                verticalalignment='center', horizontalalignment='right',
+                transform=text_transform,
+                bbox=dict(facecolor='sandybrown', alpha=0.5, boxstyle='round'))
 
     #%% colors of the lines according to the ENTSO-E color code
     # existing lines
