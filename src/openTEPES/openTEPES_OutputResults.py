@@ -314,6 +314,7 @@ def OutputResults(CaseName, mTEPES):
     import cartopy.crs as ccrs
     from   cartopy.io import shapereader
     import cartopy.io.img_tiles as cimgt
+    import cartopy.feature as cfeature
     from matplotlib.transforms import offset_copy
 
     # Create a Stamen terrain background instance.
@@ -329,8 +330,9 @@ def OutputResults(CaseName, mTEPES):
     ax.set_extent((min(mTEPES.pNodeLon.values()) - 2, max(mTEPES.pNodeLon.values()) + 2,
                    min(mTEPES.pNodeLat.values()) - 2, max(mTEPES.pNodeLat.values()) + 2), crs=ccrs.Geodetic())
 
+    ax.add_feature(cfeature.BORDERS, linewidth=0.5)
     # Add the Stamen data at zoom level 8.
-    ax.add_image(stamen_terrain, 8)
+    ax.add_image(stamen_terrain, 141)
 
     # Use the cartopy interface to create a matplotlib transform object
     # for the Geodetic coordinate system. We will use this along with
@@ -423,43 +425,43 @@ def OutputResults(CaseName, mTEPES):
     for ni,nf,cc,lt in mTEPES.le*mTEPES.lt and mTEPES.pLineType:
        if lt == 'AC':
           if mTEPES.pLineVoltage[ni,nf,cc] > 700 and mTEPES.pLineVoltage[ni,nf,cc] <= 900:
-              plt.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='blue'   , linewidth=1  , marker='o', linestyle='solid', markersize=0.5,
+              plt.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='blue'   , linewidth=1  , marker='o', linestyle='solid', markersize=0.1,
             alpha=0.7 , transform=ccrs.PlateCarree())
           if mTEPES.pLineVoltage[ni,nf,cc] > 500 and mTEPES.pLineVoltage[ni,nf,cc] <= 700:
-              plt.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='#ff8000', linewidth=1  , marker='o', linestyle='solid', markersize=0.5,
+              plt.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='#ff8000', linewidth=1  , marker='o', linestyle='solid', markersize=0.1,
             alpha=0.7 , transform=ccrs.PlateCarree())
           if mTEPES.pLineVoltage[ni,nf,cc] > 350 and mTEPES.pLineVoltage[ni,nf,cc] <= 500:
-              plt.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='red'    , linewidth=0.5, marker='o', linestyle='solid', markersize=0.5,
+              plt.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='red'    , linewidth=0.5, marker='o', linestyle='solid', markersize=0.1,
             alpha=0.7 , transform=ccrs.PlateCarree())
           if mTEPES.pLineVoltage[ni,nf,cc] > 290 and mTEPES.pLineVoltage[ni,nf,cc] <= 350:
-              plt.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='green'  , linewidth=0.2, marker='o', linestyle='solid', markersize=0.5,
+              plt.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='green'  , linewidth=0.2, marker='o', linestyle='solid', markersize=0.1,
             alpha=0.7 , transform=ccrs.PlateCarree())
           if mTEPES.pLineVoltage[ni,nf,cc] > 200 and mTEPES.pLineVoltage[ni,nf,cc] <= 290:
-              plt.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='green'  , linewidth=0.2, marker='o', linestyle='solid', markersize=0.5,
+              plt.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='green'  , linewidth=0.2, marker='o', linestyle='solid', markersize=0.1,
             alpha=0.7 , transform=ccrs.PlateCarree())
        else:
-           plt.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='magenta', linewidth=0.5, marker='o', linestyle='solid', markersize=0.5,
+           plt.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='magenta', linewidth=0.5, marker='o', linestyle='solid', markersize=0.1,
             alpha=0.7 , transform=ccrs.PlateCarree())
     # candidate lines
     for ni,nf,cc,lt in mTEPES.lc*mTEPES.lt and mTEPES.pLineType:
         if lt == 'AC':
             if mTEPES.pLineVoltage[ni,nf,cc] > 700 and mTEPES.pLineVoltage[ni,nf,cc] <= 900:
-                plt.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='blue'   , linewidth=1  , marker='o', linestyle='dashed', markersize=0.5,
+                plt.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='blue'   , linewidth=1  , marker='o', linestyle='dashed', markersize=0.1,
             alpha=0.7, transform=ccrs.PlateCarree())
             if mTEPES.pLineVoltage[ni,nf,cc] > 500 and mTEPES.pLineVoltage[ni,nf,cc] <= 700:
-                plt.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='#ff8000', linewidth=1  , marker='o', linestyle='dashed', markersize=0.5,
+                plt.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='#ff8000', linewidth=1  , marker='o', linestyle='dashed', markersize=0.1,
             alpha=0.7, transform=ccrs.PlateCarree())
             if mTEPES.pLineVoltage[ni,nf,cc] > 350 and mTEPES.pLineVoltage[ni,nf,cc] <= 500:
-                plt.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='red'    , linewidth=0.5, marker='o', linestyle='dashed', markersize=0.5,
+                plt.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='red'    , linewidth=0.5, marker='o', linestyle='dashed', markersize=0.1,
             alpha=0.7, transform=ccrs.PlateCarree())
             if mTEPES.pLineVoltage[ni,nf,cc] > 290 and mTEPES.pLineVoltage[ni,nf,cc] <= 350:
-                plt.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='green'  , linewidth=0.2, marker='o', linestyle='dashed', markersize=0.5,
+                plt.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='green'  , linewidth=0.2, marker='o', linestyle='dashed', markersize=0.1,
             alpha=0.7, transform=ccrs.PlateCarree())
             if mTEPES.pLineVoltage[ni,nf,cc] > 200 and mTEPES.pLineVoltage[ni,nf,cc] <= 290:
-                plt.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='green'  , linewidth=0.2, marker='o', linestyle='dashed', markersize=0.5,
+                plt.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='green'  , linewidth=0.2, marker='o', linestyle='dashed', markersize=0.1,
             alpha=0.7, transform=ccrs.PlateCarree())
         else:
-            plt.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='magenta', linewidth=0.5, marker='o', linestyle='dashed', markersize=0.5,
+            plt.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='magenta', linewidth=0.5, marker='o', linestyle='dashed', markersize=0.1,
             alpha=0.7, transform=ccrs.PlateCarree())
 
     # line NTC
