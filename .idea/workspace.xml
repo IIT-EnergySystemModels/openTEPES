@@ -7,9 +7,24 @@
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
+  <component name="DatabaseView">
+    <option name="SHOW_INTERMEDIATE" value="true" />
+    <option name="GROUP_DATA_SOURCES" value="true" />
+    <option name="GROUP_SCHEMA" value="true" />
+    <option name="GROUP_CONTENTS" value="false" />
+    <option name="SORT_POSITIONED" value="false" />
+    <option name="SHOW_EMPTY_GROUPS" value="false" />
+    <option name="AUTO_SCROLL_FROM_SOURCE" value="false" />
+    <option name="HIDDEN_KINDS">
+      <set />
+    </option>
+    <expand />
+    <select />
+  </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="JupyterTrust" id="15401f25-200e-4de5-ab01-0f1cc0d30ae9" />
   <component name="ProjectId" id="1jm1ojPuKK1Y2UywcdD3c12DVhL" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -27,7 +42,7 @@
     <property name="node.js.selected.package.eslint" value="(autodetect)" />
     <property name="node.js.selected.package.tslint" value="(autodetect)" />
   </component>
-  <component name="RunManager" selected="Python.openTEPES">
+  <component name="RunManager" selected="Python.saving_credentials">
     <configuration name="openTEPES" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="openTEPES" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -51,9 +66,6 @@
       <module name="openTEPES" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
       <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="D:/Universidad Pontificia Comillas/EU H2020 OpenENTRANCE - CS3/0.Guidelines" />
       <option name="IS_MODULE_SDK" value="false" />
@@ -71,9 +83,10 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.openTEPES" />
         <item itemvalue="Python.saving_credentials" />
         <item itemvalue="Python.openTEPES" />
+        <item itemvalue="Python.openTEPES" />
+        <item itemvalue="Python.saving_credentials" />
         <item itemvalue="Python.openTEPES" />
       </list>
     </recent_temporary>
@@ -101,7 +114,7 @@
       <option name="presentableId" value="Default" />
       <updated>1604394629534</updated>
       <workItem from="1604394638964" duration="20719000" />
-      <workItem from="1605521617173" duration="11734000" />
+      <workItem from="1605521617173" duration="32954000" />
     </task>
     <servers />
   </component>
