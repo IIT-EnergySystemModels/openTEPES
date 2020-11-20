@@ -359,12 +359,11 @@ def OutputResults(CaseName, mTEPES):
               ax.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='green'  , linewidth=0.4, marker='o', linestyle='solid' , transform=ccrs.PlateCarree())
           if mTEPES.pLineVoltage[ni, nf, cc] > 50 and mTEPES.pLineVoltage[ni, nf, cc] <= 200:
               ax.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='#ff6300', linewidth=0.4, marker='o', linestyle='solid', transform=ccrs.PlateCarree())
-       # else:
-       #     ax.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='magenta', linewidth=1, marker='o', linestyle='solid' , transform=ccrs.PlateCarree())
+       else:
+           ax.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='magenta', linewidth=1, marker='o', linestyle='solid' , transform=ccrs.PlateCarree())
     # candidate lines
     for ni,nf,cc,lt in mTEPES.lc*mTEPES.lt:
         if lt == 'AC' and mTEPES.vNetworkInvest[ni,nf,cc]() > 0:
-            print(mTEPES.vNetworkInvest[ni,nf,cc]())
             if mTEPES.pLineVoltage[ni,nf,cc] > 700 and mTEPES.pLineVoltage[ni,nf,cc] <= 900:
                 ax.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='blue'   , linewidth=2  , marker='o', linestyle='dashed', transform=ccrs.PlateCarree())
             if mTEPES.pLineVoltage[ni,nf,cc] > 500 and mTEPES.pLineVoltage[ni,nf,cc] <= 700:
@@ -377,8 +376,8 @@ def OutputResults(CaseName, mTEPES):
                 ax.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='green'  , linewidth=0.4, marker='o', linestyle='dashed', transform=ccrs.PlateCarree())
             if mTEPES.pLineVoltage[ni, nf, cc] > 50 and mTEPES.pLineVoltage[ni, nf, cc] <= 200:
                 ax.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='#ff6300', linewidth=0.4, marker='o', linestyle='dashed', transform=ccrs.PlateCarree())
-        # else:
-        #     ax.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='magenta', linewidth=1, marker='o', linestyle='dashed', transform=ccrs.PlateCarree())
+        else:
+            ax.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='magenta', linewidth=1, marker='o', linestyle='dashed', transform=ccrs.PlateCarree())
 
     # # line NTC
     # for ni,nf,cc in mTEPES.la:
