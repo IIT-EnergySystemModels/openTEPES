@@ -1,4 +1,4 @@
-# Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 1.7.21 - November 11, 2020
+# Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 1.7.23 - November 18, 2020
 
 import time
 from   collections   import defaultdict
@@ -61,13 +61,13 @@ def ModelFormulation(mTEPES):
 
     #%%
     def eOperReserveUp(mTEPES,sc,p,n,ar):
-        return sum(mTEPES.vReserveUp  [sc,p,n,nr] for nr in mTEPES.nr if (ar,nr) in mTEPES.a2g) + sum(mTEPES.vESSReserveUp  [sc,p,n,es] for es in mTEPES.es if (ar,es) in mTEPES.a2g) >= mTEPES.pOperReserveUp[sc,p,n,ar]
+        return sum(mTEPES.vReserveUp  [sc,p,n,op] for op in mTEPES.op if (ar,op) in mTEPES.a2g) + sum(mTEPES.vESSReserveUp  [sc,p,n,es] for es in mTEPES.es if (ar,es) in mTEPES.a2g) >= mTEPES.pOperReserveUp[sc,p,n,ar]
     mTEPES.eOperReserveUp = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.ar, rule=eOperReserveUp, doc='up   operating reserve [GW]')
 
     print('eOperReserveUp        ... ', len(mTEPES.eOperReserveUp), ' rows')
 
     def eOperReserveDw(mTEPES,sc,p,n,ar):
-        return sum(mTEPES.vReserveDown[sc,p,n,nr] for nr in mTEPES.nr if (ar,nr) in mTEPES.a2g) + sum(mTEPES.vESSReserveDown[sc,p,n,es] for es in mTEPES.es if (ar,es) in mTEPES.a2g) >= mTEPES.pOperReserveDw[sc,p,n,ar]
+        return sum(mTEPES.vReserveDown[sc,p,n,op] for op in mTEPES.op if (ar,op) in mTEPES.a2g) + sum(mTEPES.vESSReserveDown[sc,p,n,es] for es in mTEPES.es if (ar,es) in mTEPES.a2g) >= mTEPES.pOperReserveDw[sc,p,n,ar]
     mTEPES.eOperReserveDw = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.ar, rule=eOperReserveDw, doc='down operating reserve [GW]')
 
     print('eOperReserveDw        ... ', len(mTEPES.eOperReserveDw), ' rows')

@@ -1,4 +1,4 @@
-# Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 1.7.21 - November 11, 2020
+# Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 1.7.23 - November 18, 2020
 
 import time
 import pandas as pd
@@ -81,7 +81,7 @@ def OutputResults(CaseName, mTEPES):
         MeanESSTechnologyOutput = -OutputResults.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).mean()
         NetESSTechnologyOutput = pd.Series([0.]*len(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.gt), index=pd.MultiIndex.from_tuples(list(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.gt)))
         for sc,p,n,gt in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.gt:
-            NetESSTechnologyOutput[sc,p,n,gt] = ESSTechnologyOutput[sc,p,n,gt] - MeanESSTechnologyOutput[gt]
+            NetESSTechnologyOutput[sc,p,n,gt] = MeanESSTechnologyOutput[gt] - ESSTechnologyOutput[sc,p,n,gt]
         NetESSTechnologyOutput.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(CaseName+'/oT_Result_FlexibilityESSTechnology_'+CaseName+'.csv', sep=',')
 
         OutputResults = pd.Series(data=[-mTEPES.vESSTotalCharge   [sc,p,n,es]()*mTEPES.pDuration[n] for sc,p,n,es in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.es], index=pd.MultiIndex.from_tuples(list(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.es)))
@@ -98,7 +98,7 @@ def OutputResults(CaseName, mTEPES):
         ESSTechnologyEnergy.reset_index(level=3, inplace=True)
         ESSTechnologyEnergy.groupby(['level_3']).sum().plot(kind='pie', subplots=True, shadow=False, startangle=90,
                                         figsize=(15, 10), autopct='%1.1f%%')
-        plt.legend(list(mTEPES.gt), title='Energy Consumption', loc='center left', bbox_to_anchor=(1, 0, 0.5, 1))
+        plt.legend(title='Energy Consumption', loc='center left', bbox_to_anchor=(1, 0, 0.5, 1))
         # plt.show()
         plt.savefig(CaseName+'/oT_Plot_ESSTechnologyEnergy_'+CaseName+'.png', bbox_inches=None, dpi=600)
 
@@ -132,7 +132,8 @@ def OutputResults(CaseName, mTEPES):
         NetTechnologyOutput[sc,p,n,gt] = TechnologyOutput[sc,p,n,gt] - MeanTechnologyOutput[gt]
     NetTechnologyOutput.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(CaseName+'/oT_Result_FlexibilityTechnology_'+CaseName+'.csv', sep=',')
 
-    OutputResults = pd.Series(data=[sum(mTEPES.pDemand[sc,p,n,nd]*1e3 for nd in mTEPES.nd) - sum(mTEPES.pMeanDemandPerNode[nd]*1e3 for nd in mTEPES.nd) for sc,p,n in mTEPES.sc*mTEPES.p*mTEPES.n], index=pd.MultiIndex.from_tuples(list(mTEPES.sc*mTEPES.p*mTEPES.n)))
+    MeanDemand = pd.Series(data=[sum(mTEPES.pDemand[sc,p,n,nd] for nd in mTEPES.nd)*1e3 for sc,p,n in mTEPES.sc*mTEPES.p*mTEPES.n], index=pd.MultiIndex.from_tuples(list(mTEPES.sc*mTEPES.p*mTEPES.n))).mean()
+    OutputResults = pd.Series(data=[sum(mTEPES.pDemand[sc,p,n,nd] for nd in mTEPES.nd)*1e3 - MeanDemand for sc,p,n in mTEPES.sc*mTEPES.p*mTEPES.n], index=pd.MultiIndex.from_tuples(list(mTEPES.sc*mTEPES.p*mTEPES.n)))
     OutputResults.to_frame(name='Demand').reset_index().pivot_table(index=['level_0','level_1','level_2']).rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(CaseName+'/oT_Result_FlexibilityDemand_'   +CaseName+'.csv', sep=',')
 
     for sc,p in mTEPES.sc*mTEPES.p:
@@ -151,6 +152,7 @@ def OutputResults(CaseName, mTEPES):
     # takes a long time
     OutputResults = pd.Series(data=[mTEPES.vTotalOutput[sc,p,n,g]()*mTEPES.pDuration[n] for sc,p,n,g in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.g ], index=pd.MultiIndex.from_tuples(list(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.g )))
     OutputResults = pd.Series(data=[OutputResults[sc,p,n].filter(mTEPES.t2g[gt]).sum() for sc,p,n,gt in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.gt], index=pd.MultiIndex.from_tuples(list(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.gt)))
+    OutputResults.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='GWh').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(CaseName+'/oT_Result_TechnologyEnergy_'+CaseName+'.csv', sep=',')
 
     TechnologyEnergy = OutputResults.to_frame(name='GWh')
 
@@ -159,24 +161,23 @@ def OutputResults(CaseName, mTEPES):
 
     TechnologyEnergy.groupby(['level_3']).sum().plot(kind='pie', subplots=True, shadow=False, startangle=-40,
                                                         figsize=(15, 10), autopct='%1.1f%%', pctdistance=0.85)
-    plt.legend(list(mTEPES.gt), title='Energy Generation', loc='center left', bbox_to_anchor=(1, 0, 0.5, 1))
+    plt.legend(title='Energy Generation', loc='center left', bbox_to_anchor=(1, 0, 0.5, 1))
 
     centre_circle = plt.Circle((0, 0), 0.70, fc='white')
     fig = plt.gcf()
     fig.gca().add_artist(centre_circle)
+
     # plt.show()
-    plt.savefig(CaseName + '/oT_Plot_TechnologyEnergy_' + CaseName + '.png', bbox_inches=None, dpi=600)
+    plt.savefig(CaseName+'/oT_Plot_TechnologyEnergy_'+CaseName+'.png', bbox_inches=None, dpi=600)
 
     # OutputResults = pd.Series(data=[mTEPES.vTotalOutput[sc,p,n,g]()*mTEPES.pDuration[n] for sc,p,n,g in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.g ], index=pd.MultiIndex.from_tuples(list(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.g )))
     # OutputResults = pd.Series(data=[OutputResults[sc,p,n].filter(mTEPES.t2g[gt]).sum()/mTEPES.pRatedMaxPower.filter(mTEPES.t2g[gt]).sum() for sc,p,n,gt in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.gt], index=pd.MultiIndex.from_tuples(list(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.gt)))
     # OutputResults.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='GWh').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(CaseName+'/oT_Result_TechnologyUtilization_'+CaseName+'.csv', sep=',')
 
     #%% outputting the network operation
-    OutputResults = pd.DataFrame.from_dict(mTEPES.vFlow.extract_values(), orient='index', columns=[str(mTEPES.vFlow)])
-    OutputResults *= 1e3
-    OutputResults.index = pd.MultiIndex.from_tuples(OutputResults.index)
+    OutputResults = pd.Series(data=[mTEPES.vFlow[sc,p,n,ni,nf,cc]()*1e3 for sc,p,n,ni,nf,cc in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.la], index= pd.MultiIndex.from_tuples(list(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.la)))
     OutputResults.index.names = ['Scenario','Period','LoadLevel','InitialNode','FinalNode','Circuit']
-    OutputResults = pd.pivot_table(OutputResults, values=str(mTEPES.vFlow), index=['Scenario','Period','LoadLevel'], columns=['InitialNode','FinalNode','Circuit'], fill_value=0)
+    OutputResults = pd.pivot_table(OutputResults.to_frame(name='pu'), values='pu', index=['Scenario','Period','LoadLevel'], columns=['InitialNode','FinalNode','Circuit'], fill_value=0)
     OutputResults.index.names = [None] * len(OutputResults.index.names)
     OutputResults.to_csv(CaseName+'/oT_Result_NetworkFlow_'+CaseName+'.csv', sep=',')
 
@@ -187,24 +188,21 @@ def OutputResults(CaseName, mTEPES):
     OutputResults.to_csv(CaseName+'/oT_Result_NetworkUtilization_'+CaseName+'.csv', sep=',')
 
     if mTEPES.pIndNetLosses:
-        OutputResults = pd.DataFrame.from_dict(mTEPES.vLineLosses.extract_values(), orient='index', columns=[str(mTEPES.vLineLosses)])
-        OutputResults *= 1e3
-        OutputResults.index = pd.MultiIndex.from_tuples(OutputResults.index)
+        OutputResults = pd.Series(data=[mTEPES.vLineLosses[sc,p,n,ni,nf,cc]() for sc,p,n,ni,nf,cc in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.la], index= pd.MultiIndex.from_tuples(list(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.la)))
         OutputResults.index.names = ['Scenario','Period','LoadLevel','InitialNode','FinalNode','Circuit']
-        OutputResults = pd.pivot_table(OutputResults, values=str(mTEPES.vLineLosses), index=['Scenario','Period','LoadLevel'], columns=['InitialNode','FinalNode','Circuit'], fill_value=0)
+        OutputResults = pd.pivot_table(OutputResults.to_frame(name='pu'), values='pu', index=['Scenario','Period','LoadLevel'], columns=['InitialNode','FinalNode','Circuit'], fill_value=0)
         OutputResults.index.names = [None] * len(OutputResults.index.names)
         OutputResults.to_csv(CaseName+'/oT_Result_NetworkLosses_'+CaseName+'.csv', sep=',')
 
-    OutputResults = pd.DataFrame.from_dict(mTEPES.vTheta.extract_values(), orient='index', columns=[str(mTEPES.vTheta)])
-    OutputResults.index = pd.MultiIndex.from_tuples(OutputResults.index)
-    OutputResults.index.names = ['Scenario','Period','LoadLevel','Node']
-    pd.pivot_table(OutputResults, values=str(mTEPES.vTheta), index=['Scenario','Period','LoadLevel'], columns=['Node'], fill_value=0).to_csv(CaseName+'/oT_Result_NetworkAngle_'+CaseName+'.csv', sep=',')
+    OutputResults = pd.Series(data=[mTEPES.vTheta[sc,p,n,nd]()                   for sc,p,n,nd in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.nd], index=pd.MultiIndex.from_tuples(list(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.nd)))
+    OutputResults.to_frame(name='rad').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='rad').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(CaseName+'/oT_Result_NetworkAngle_'+CaseName+'.csv', sep=',')
 
-    OutputResults = pd.DataFrame.from_dict(mTEPES.vENS.extract_values(), orient='index', columns=[str(mTEPES.vENS)])
-    OutputResults *= 1e3
-    OutputResults.index = pd.MultiIndex.from_tuples(OutputResults.index)
-    OutputResults.index.names = ['Scenario','Period','LoadLevel','Node']
-    pd.pivot_table(OutputResults, values=str(mTEPES.vENS), index=['Scenario','Period','LoadLevel'], columns=['Node'], fill_value=0).to_csv(CaseName+'/oT_Result_NetworkPNS_'+CaseName+'.csv', sep=',')
+    OutputResults = pd.Series(data=[mTEPES.vENS[sc,p,n,nd]()*1e3                 for sc,p,n,nd in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.nd], index=pd.MultiIndex.from_tuples(list(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.nd)))
+    OutputResults.to_frame(name='MW' ).reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW' ).rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(CaseName+'/oT_Result_NetworkPNS_'+CaseName+'.csv', sep=',')
+
+    MeanENS = pd.Series(data=[sum(mTEPES.vENS[sc,p,n,nd]() for nd in mTEPES.nd)*1e3 for sc,p,n in mTEPES.sc*mTEPES.p*mTEPES.n], index=pd.MultiIndex.from_tuples(list(mTEPES.sc*mTEPES.p*mTEPES.n))).mean()
+    OutputResults = pd.Series(data=[sum(mTEPES.vENS[sc,p,n,nd]()*1e3 for nd in mTEPES.nd) - MeanENS for sc,p,n in mTEPES.sc*mTEPES.p*mTEPES.n], index=pd.MultiIndex.from_tuples(list(mTEPES.sc*mTEPES.p*mTEPES.n)))
+    OutputResults.to_frame(name='PNS').reset_index().pivot_table(index=['level_0','level_1','level_2']).rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(CaseName+'/oT_Result_FlexibilityPNS_'   +CaseName+'.csv', sep=',')
 
     OutputResults = pd.Series(data=[mTEPES.vENS[sc,p,n,nd]()*mTEPES.pDuration[n] for sc,p,n,nd in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.nd], index=pd.MultiIndex.from_tuples(list(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.nd)))
     OutputResults.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='GWh').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(CaseName+'/oT_Result_NetworkENS_'+CaseName+'.csv', sep=',')
@@ -347,42 +345,45 @@ def OutputResults(CaseName, mTEPES):
 
     #%% colors of the lines according to the ENTSO-E color code
     # existing lines
-    for ni,nf,cc,lt in mTEPES.le*mTEPES.lt and mTEPES.pLineType:
+    for ni,nf,cc,lt in mTEPES.le*mTEPES.lt:
        if lt == 'AC':
           if mTEPES.pLineVoltage[ni,nf,cc] > 700 and mTEPES.pLineVoltage[ni,nf,cc] <= 900:
-              plt.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='blue'   , linewidth=1  , marker='o', linestyle='solid', transform=ccrs.PlateCarree())
+              ax.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='blue'   , linewidth=2  , marker='o', linestyle='solid' , transform=ccrs.PlateCarree())
           if mTEPES.pLineVoltage[ni,nf,cc] > 500 and mTEPES.pLineVoltage[ni,nf,cc] <= 700:
-              plt.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='#ff8000', linewidth=1  , marker='o', linestyle='solid', transform=ccrs.PlateCarree())
+              ax.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='#ff8000', linewidth=2  , marker='o', linestyle='solid' , transform=ccrs.PlateCarree())
           if mTEPES.pLineVoltage[ni,nf,cc] > 350 and mTEPES.pLineVoltage[ni,nf,cc] <= 500:
-              plt.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='red'    , linewidth=0.5, marker='o', linestyle='solid', transform=ccrs.PlateCarree())
+              ax.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='red'    , linewidth=1, marker='o', linestyle='solid' , transform=ccrs.PlateCarree())
           if mTEPES.pLineVoltage[ni,nf,cc] > 290 and mTEPES.pLineVoltage[ni,nf,cc] <= 350:
-              plt.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='green'  , linewidth=0.2, marker='o', linestyle='solid', transform=ccrs.PlateCarree())
+              ax.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='green'  , linewidth=0.4, marker='o', linestyle='solid' , transform=ccrs.PlateCarree())
           if mTEPES.pLineVoltage[ni,nf,cc] > 200 and mTEPES.pLineVoltage[ni,nf,cc] <= 290:
-              plt.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='green'  , linewidth=0.2, marker='o', linestyle='solid', transform=ccrs.PlateCarree())
+              ax.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='green'  , linewidth=0.4, marker='o', linestyle='solid' , transform=ccrs.PlateCarree())
+          if mTEPES.pLineVoltage[ni, nf, cc] > 50 and mTEPES.pLineVoltage[ni, nf, cc] <= 200:
+              ax.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='#ff6300', linewidth=0.4, marker='o', linestyle='solid', transform=ccrs.PlateCarree())
        else:
-           plt.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='magenta', linewidth=0.5, marker='o', linestyle='solid', transform=ccrs.PlateCarree())
+           ax.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='magenta', linewidth=1, marker='o', linestyle='solid' , transform=ccrs.PlateCarree())
     # candidate lines
-    for ni,nf,cc,lt in mTEPES.lc*mTEPES.lt and mTEPES.pLineType:
-        if lt == 'AC':
+    for ni,nf,cc,lt in mTEPES.lc*mTEPES.lt:
+        if lt == 'AC' and mTEPES.vNetworkInvest[ni,nf,cc]() > 0:
             if mTEPES.pLineVoltage[ni,nf,cc] > 700 and mTEPES.pLineVoltage[ni,nf,cc] <= 900:
-                plt.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='blue'   , linewidth=1  , marker='o', linestyle='dashed', transform=ccrs.PlateCarree())
+                ax.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='blue'   , linewidth=2  , marker='o', linestyle='dashed', transform=ccrs.PlateCarree())
             if mTEPES.pLineVoltage[ni,nf,cc] > 500 and mTEPES.pLineVoltage[ni,nf,cc] <= 700:
-                plt.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='#ff8000', linewidth=1  , marker='o', linestyle='dashed', transform=ccrs.PlateCarree())
+                ax.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='#ff8000', linewidth=2  , marker='o', linestyle='dashed', transform=ccrs.PlateCarree())
             if mTEPES.pLineVoltage[ni,nf,cc] > 350 and mTEPES.pLineVoltage[ni,nf,cc] <= 500:
-                plt.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='red'    , linewidth=0.5, marker='o', linestyle='dashed', transform=ccrs.PlateCarree())
+                ax.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='red'    , linewidth=1, marker='o', linestyle='dashed', transform=ccrs.PlateCarree())
             if mTEPES.pLineVoltage[ni,nf,cc] > 290 and mTEPES.pLineVoltage[ni,nf,cc] <= 350:
-                plt.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='green'  , linewidth=0.2, marker='o', linestyle='dashed', transform=ccrs.PlateCarree())
+                ax.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='green'  , linewidth=0.4, marker='o', linestyle='dashed', transform=ccrs.PlateCarree())
             if mTEPES.pLineVoltage[ni,nf,cc] > 200 and mTEPES.pLineVoltage[ni,nf,cc] <= 290:
-                plt.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='green'  , linewidth=0.2, marker='o', linestyle='dashed', transform=ccrs.PlateCarree())
+                ax.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='green'  , linewidth=0.4, marker='o', linestyle='dashed', transform=ccrs.PlateCarree())
+            if mTEPES.pLineVoltage[ni, nf, cc] > 50 and mTEPES.pLineVoltage[ni, nf, cc] <= 200:
+                ax.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='#ff6300', linewidth=0.4, marker='o', linestyle='dashed', transform=ccrs.PlateCarree())
         else:
-            plt.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='magenta', linewidth=0.5, marker='o', linestyle='dashed', transform=ccrs.PlateCarree())
+            ax.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='magenta', linewidth=1, marker='o', linestyle='dashed', transform=ccrs.PlateCarree())
 
-    # line NTC
-    for ni,nf,cc in mTEPES.la:
-        plt.annotate(round(mTEPES.pLineNTC[ni,nf,cc]*1e3), [(mTEPES.pNodeLon[ni]+mTEPES.pNodeLon[nf])/2, (mTEPES.pNodeLat[ni]+mTEPES.pNodeLat[nf])/2])
+    # # line NTC
+    # for ni,nf,cc in mTEPES.la:
+    #     ax.annotate(round(mTEPES.pLineNTC[ni,nf,cc]*1e3), [(mTEPES.pNodeLon[ni]+mTEPES.pNodeLon[nf])/2, (mTEPES.pNodeLat[ni]+mTEPES.pNodeLat[nf])/2])
 
     plt.title(CaseName+' Network Map')
-
     # # Place a legend to the right of this smaller subplot.
     # plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
     # plt.show()

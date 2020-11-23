@@ -65,7 +65,7 @@
 # make it effectively proprietary.  To prevent this, the GPL assures that
 # patents cannot be used to render the program non-free.
 
-# Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 1.7.21 - November 11, 2020
+# Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 1.7.23 - November 18, 2020
 # simplicity and transparency in power systems planning
 
 # Developed by
@@ -98,11 +98,10 @@ from openTEPES_OutputResults    import OutputResults
 StartTime = time.time()
 
 CaseName   = '9n'
-
 SolverName = 'gurobi'
 
 #%% model declaration
-mTEPES = ConcreteModel('Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 1.7.21 - November 11, 2020')
+mTEPES = ConcreteModel('Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 1.7.23 - November 18, 2020')
 
 InputData(CaseName, mTEPES)
 
@@ -120,7 +119,3 @@ OutputResults(CaseName, mTEPES)
 
 TotalTime = time.time() - StartTime
 print('Total time                            ... ', round(TotalTime), 's')
-
-
-# if __name__ == '__main__':
-#     setLabelExample()

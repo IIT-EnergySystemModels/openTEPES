@@ -1,4 +1,4 @@
-# Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 1.7.21 - November 11, 2020
+# Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 1.7.23 - November 18, 2020
 
 import time
 import math
@@ -179,6 +179,7 @@ def InputData(CaseName,mTEPES):
     pLineX              = dfNetwork     ['Reactance'           ].sort_index()                                                               # reactance                           [p.u.]
     pLineBsh            = dfNetwork     ['Susceptance'         ]                                                                            # susceptance                         [p.u.]
     pLineTAP            = dfNetwork     ['Tap'                 ]                                                                            # tap changer                         [p.u.]
+    pConverter          = dfNetwork     ['Converter'           ]                                                                            # converter station                   [Yes]
     pLineNTC            = dfNetwork     ['TTC'                 ] * 1e-3 * dfNetwork['SecurityFactor' ]                                      # net transfer capacity               [GW]
     pNetFixedCost       = dfNetwork     ['FixedCost'           ] *        dfNetwork['FixedChargeRate']                                      # network    fixed cost               [MEUR]
     pIndBinLineInvest   = dfNetwork     ['BinaryInvestment'    ]                                                                            # binary line    investment decision  [Yes]
@@ -206,8 +207,11 @@ def InputData(CaseName,mTEPES):
     mTEPES.rf = Set(initialize=mTEPES.nd,                     ordered=True , doc='reference node'     , filter=lambda mTEPES,nd      :  nd        in                pReferenceNode             )
     mTEPES.gq = Set(initialize=mTEPES.gg,                     ordered=False, doc='gen  reactive units', filter=lambda mTEPES,gg      :  gg        in mTEPES.gg  and pRMaxReactivePower[gg] >  0)
 
-    # non-RES units, they can contribute to the operating reserve and can be committed
+    # non-RES units, they can be committed
     mTEPES.nr = mTEPES.g - mTEPES.r
+
+    # operating reserve units, they can contribute to the operating reserve and are not ESS
+    mTEPES.op = mTEPES.nr - mTEPES.es
 
     # existing lines (le)
     mTEPES.le = mTEPES.la - mTEPES.lc
@@ -342,8 +346,6 @@ def InputData(CaseName,mTEPES):
     pIniInventory    [pIniInventory     < pEpsilon*1e-3] = 0
     pInitialInventory[pInitialInventory < pEpsilon*1e-3] = 0
 
-    mTEPES.pMeanDemandPerNode = pDemand.mean()
-
     # BigM maximum flow to be used in the Kirchhoff's 2nd law disjunctive constraint
     pBigMFlow = pLineNTC*0
     for lea in mTEPES.lea:
@@ -419,6 +421,7 @@ def InputData(CaseName,mTEPES):
     mTEPES.pLineX                = Param(                               mTEPES.la, initialize=pLineX.to_dict()                   , within=NonNegativeReals, doc='Reactance'                    )
     mTEPES.pLineBsh              = Param(                               mTEPES.la, initialize=pLineBsh.to_dict()                 , within=NonNegativeReals, doc='Susceptance',                 mutable=True)
     mTEPES.pLineTAP              = Param(                               mTEPES.la, initialize=pLineTAP.to_dict()                 , within=NonNegativeReals, doc='Tap changer',                 mutable=True)
+    mTEPES.pConverter            = Param(                               mTEPES.la, initialize=pConverter.to_dict()               , within=NonNegativeReals, doc='Converter'                    )
     mTEPES.pLineVoltage          = Param(                               mTEPES.la, initialize=pLineVoltage.to_dict()             , within=NonNegativeReals, doc='Voltage'                      )
     mTEPES.pLineNTC              = Param(                               mTEPES.la, initialize=pLineNTC.to_dict()                 , within=NonNegativeReals, doc='NTC'                          )
     mTEPES.pNetFixedCost         = Param(                               mTEPES.la, initialize=pNetFixedCost.to_dict()            , within=NonNegativeReals, doc='Network fixed cost'           )
