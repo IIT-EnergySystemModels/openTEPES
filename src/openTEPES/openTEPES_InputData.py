@@ -285,11 +285,17 @@ def InputData(CaseName,mTEPES):
     pVariableMaxPower   = pVariableMaxPower.reindex(sorted(pVariableMaxPower.columns), axis=1)
     pMinPower           = pMinPower.reindex        (sorted(pMinPower.columns        ), axis=1)
     pMaxPower           = pMaxPower.reindex        (sorted(pMaxPower.columns        ), axis=1)
-
     pMinPower           = pVariableMinPower.where(pVariableMinPower > pMinPower, other=pMinPower)
     pMaxPower           = pVariableMaxPower.where(pVariableMaxPower < pMaxPower, other=pMaxPower)
     pMaxPower2ndBlock   = pMaxPower - pMinPower
 
+    pVariableMinPower = pVariableMinPower.replace(float('nan'), 0)
+    pVariableMaxPower = pVariableMaxPower.replace(float('nan'), 0)
+    for sc, p, n, r in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.r:
+        if pMaxPower.loc[sc, p, n][r] > pVariableMaxPower.loc[sc, p, n][r]:
+            pMaxPower.loc[sc, p, n][r] = pVariableMaxPower.loc[sc, p, n][r]
+        if pMinPower.loc[sc, p, n][r] < pVariableMinPower.loc[sc, p, n][r]:
+            pMinPower.loc[sc, p, n][r] = pVariableMinPower.loc[sc, p, n][r]
     # minimum and maximum variable storage capacity
     pVariableMinStorage = pVariableMinStorage.replace(0, float('nan'))
     pVariableMaxStorage = pVariableMaxStorage.replace(0, float('nan'))
