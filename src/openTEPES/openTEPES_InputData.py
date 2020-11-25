@@ -183,6 +183,8 @@ def InputData(CaseName,mTEPES):
     pLineNTC            = dfNetwork     ['TTC'                 ] * 1e-3 * dfNetwork['SecurityFactor' ]                                      # net transfer capacity               [GW]
     pNetFixedCost       = dfNetwork     ['FixedCost'           ] *        dfNetwork['FixedChargeRate']                                      # network    fixed cost               [MEUR]
     pIndBinLineInvest   = dfNetwork     ['BinaryInvestment'    ]                                                                            # binary line    investment decision  [Yes]
+    pAngMin             = dfNetwork     ['AngMin'              ] * 3.14159265359 / 180                                                      # Min phase angle difference          [rad]
+    pAngMax             = dfNetwork     ['AngMax'              ] * 3.14159265359 / 180
 
     ReadingDataTime = time.time() - StartTime
     StartTime       = time.time()
@@ -206,9 +208,11 @@ def InputData(CaseName,mTEPES):
     mTEPES.ll = Set(initialize=mTEPES.la,                     ordered=False, doc='loss          lines', filter=lambda mTEPES,*la     :  la        in mTEPES.la  and pLineLossFactor   [la] >  0 and pIndNetLosses >   0  )
     mTEPES.rf = Set(initialize=mTEPES.nd,                     ordered=True , doc='reference node'     , filter=lambda mTEPES,nd      :  nd        in                pReferenceNode             )
     mTEPES.gq = Set(initialize=mTEPES.gg,                     ordered=False, doc='gen  reactive units', filter=lambda mTEPES,gg      :  gg        in mTEPES.gg  and pRMaxReactivePower[gg] >  0)
+    mTEPES.sq = Set(initialize=mTEPES.gg,                     ordered=False, doc='Syn  reactive units', filter=lambda mTEPES,gg      :  gg        in mTEPES.gg  and pRMaxReactivePower[gg] >  0 and pGenToTechnology[gg] == 'SynchronousCondenser')
 
     # non-RES units, they can be committed
     mTEPES.nr = mTEPES.g - mTEPES.r
+    mTEPES.tq = mTEPES.gq - mTEPES.sq
 
     # operating reserve units, they can contribute to the operating reserve and are not ESS
     mTEPES.op = mTEPES.nr - mTEPES.es
@@ -289,11 +293,6 @@ def InputData(CaseName,mTEPES):
     pMaxPower           = pVariableMaxPower.where(pVariableMaxPower < pMaxPower, other=pMaxPower)
     pMaxPower2ndBlock   = pMaxPower - pMinPower
 
-    pVariableMinPower = pVariableMinPower.replace(float('nan'), 0)
-    pVariableMaxPower = pVariableMaxPower.replace(float('nan'), 0)
-    for r in mTEPES.r:
-        pMinPower[r] = pVariableMinPower[r].where(pVariableMinPower[r] > pMinPower[r], other=pMinPower[r])
-        pMaxPower[r] = pVariableMaxPower[r].where(pVariableMaxPower[r] < pMaxPower[r], other=pMaxPower[r])
     # minimum and maximum variable storage capacity
     pVariableMinStorage = pVariableMinStorage.replace(0, float('nan'))
     pVariableMaxStorage = pVariableMaxStorage.replace(0, float('nan'))
@@ -432,6 +431,8 @@ def InputData(CaseName,mTEPES):
     mTEPES.pIndBinLineInvest     = Param(                               mTEPES.la, initialize=pIndBinLineInvest.to_dict()        , within=NonNegativeReals, doc='Binary investment decision'   )
     mTEPES.pBigMFlow             = Param(                               mTEPES.la, initialize=pBigMFlow.to_dict()                , within=NonNegativeReals, doc='Maximum capacity',            mutable=True)
     mTEPES.pMaxTheta             = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nd, initialize=pMaxTheta.stack().to_dict()        , within=NonNegativeReals, doc='Maximum voltage angle',       mutable=True)
+    mTEPES.pAngMin               = Param(                               mTEPES.la, initialize=pAngMin.to_dict()                  , within=Reals,            doc='Minimum phase angle diff',    mutable=True)
+    mTEPES.pAngMax               = Param(                               mTEPES.la, initialize=pAngMax.to_dict()                  , within=Reals,            doc='Maximum phase angle diff',    mutable=True)
 
     #%% variables
     mTEPES.vTotalFCost           = Var(                                          within=NonNegativeReals,                                                                                               doc='total system fixed                   cost      [MEUR]')
@@ -506,7 +507,7 @@ def InputData(CaseName,mTEPES):
             pSystemOutput           += mTEPES.pInitialOutput[g]
 
     # thermal and variable units ordered by increasing variable operation cost
-    if len(mTEPES.gq) > 0:
+    if len(mTEPES.tq) > 0:
         mTEPES.go = pLinearOperCost.sort_values().index.drop(list(mTEPES.gq))
     else:
         mTEPES.go = pLinearOperCost.sort_values().index
