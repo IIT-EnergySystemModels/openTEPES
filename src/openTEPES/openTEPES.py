@@ -65,7 +65,7 @@
 # make it effectively proprietary.  To prevent this, the GPL assures that
 # patents cannot be used to render the program non-free.
 
-# Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 1.7.23 - November 18, 2020
+# Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 1.7.24 - November 30, 2020
 # simplicity and transparency in power systems planning
 
 # Developed by
@@ -95,13 +95,13 @@ from openTEPES_ModelFormulation import ModelFormulation
 from openTEPES_ProblemSolving   import ProblemSolving
 from openTEPES_OutputResults    import OutputResults
 
-StartTime = time.time()
+InitialTime = time.time()
 
 CaseName   = '9n'
 SolverName = 'gurobi'
 
 #%% model declaration
-mTEPES = ConcreteModel('Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 1.7.23 - November 18, 2020')
+mTEPES = ConcreteModel('Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 1.7.24 - November 30, 2020')
 
 InputData(CaseName, mTEPES)
 
@@ -109,6 +109,7 @@ ModelFormulation(mTEPES)
 
 mTEPES.write(CaseName+'/openTEPES_'+CaseName+'.lp', io_options={'symbolic_solver_labels': True})  # create lp-format file
 
+StartTime = time.time()
 WritingLPFileTime = time.time() - StartTime
 StartTime         = time.time()
 print('Writing LP file                       ... ', round(WritingLPFileTime), 's')
@@ -117,5 +118,5 @@ ProblemSolving(CaseName, SolverName, mTEPES)
 
 OutputResults(CaseName, mTEPES)
 
-TotalTime = time.time() - StartTime
+TotalTime = time.time() - InitialTime
 print('Total time                            ... ', round(TotalTime), 's')

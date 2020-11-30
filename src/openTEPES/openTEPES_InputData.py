@@ -1,4 +1,4 @@
-# Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 1.7.23 - November 18, 2020
+# Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 1.7.24 - November 30, 2020
 
 import time
 import math
@@ -10,21 +10,21 @@ def InputData(CaseName,mTEPES):
 
     StartTime = time.time()
     #%% reading data from CSV
-    dfOption             = pd.read_csv(CaseName+'/oT_Data_Option_'                  +CaseName+'.csv', index_col=[0    ])
-    dfParameter          = pd.read_csv(CaseName+'/oT_Data_Parameter_'               +CaseName+'.csv', index_col=[0    ])
-    dfScenario           = pd.read_csv(CaseName+'/oT_Data_Scenario_'                +CaseName+'.csv', index_col=[0    ])
-    dfDuration           = pd.read_csv(CaseName+'/oT_Data_Duration_'                +CaseName+'.csv', index_col=[0    ])
-    dfDemand             = pd.read_csv(CaseName+'/oT_Data_Demand_'                  +CaseName+'.csv', index_col=[0,1,2])
-    dfUpOperatingReserve = pd.read_csv(CaseName+'/oT_Data_UpwardOperatingReserve_'  +CaseName+'.csv', index_col=[0,1,2])
-    dfDwOperatingReserve = pd.read_csv(CaseName+'/oT_Data_DownwardOperatingReserve_'+CaseName+'.csv', index_col=[0,1,2])
-    dfGeneration         = pd.read_csv(CaseName+'/oT_Data_Generation_'              +CaseName+'.csv', index_col=[0    ])
-    dfVariableMinPower   = pd.read_csv(CaseName+'/oT_Data_VariableMinGeneration_'   +CaseName+'.csv', index_col=[0,1,2])
-    dfVariableMaxPower   = pd.read_csv(CaseName+'/oT_Data_VariableMaxGeneration_'   +CaseName+'.csv', index_col=[0,1,2])
-    dfVariableMinStorage = pd.read_csv(CaseName+'/oT_Data_MinimumStorage_'          +CaseName+'.csv', index_col=[0,1,2])
-    dfVariableMaxStorage = pd.read_csv(CaseName+'/oT_Data_MaximumStorage_'          +CaseName+'.csv', index_col=[0,1,2])
-    dfEnergyInflows      = pd.read_csv(CaseName+'/oT_Data_EnergyInflows_'           +CaseName+'.csv', index_col=[0,1,2])
-    dfNodeLocation       = pd.read_csv(CaseName+'/oT_Data_NodeLocation_'            +CaseName+'.csv', index_col=[0    ])
-    dfNetwork            = pd.read_csv(CaseName+'/oT_Data_Network_'                 +CaseName+'.csv', index_col=[0,1,2])
+    dfOption             = pd.read_csv(CaseName+'/oT_Data_Option_'               +CaseName+'.csv', index_col=[0    ])
+    dfParameter          = pd.read_csv(CaseName+'/oT_Data_Parameter_'            +CaseName+'.csv', index_col=[0    ])
+    dfScenario           = pd.read_csv(CaseName+'/oT_Data_Scenario_'             +CaseName+'.csv', index_col=[0    ])
+    dfDuration           = pd.read_csv(CaseName+'/oT_Data_Duration_'             +CaseName+'.csv', index_col=[0    ])
+    dfDemand             = pd.read_csv(CaseName+'/oT_Data_Demand_'               +CaseName+'.csv', index_col=[0,1,2])
+    dfUpOperatingReserve = pd.read_csv(CaseName+'/oT_Data_OperatingReserveUp_'   +CaseName+'.csv', index_col=[0,1,2])
+    dfDwOperatingReserve = pd.read_csv(CaseName+'/oT_Data_OperatingReserveDown_' +CaseName+'.csv', index_col=[0,1,2])
+    dfGeneration         = pd.read_csv(CaseName+'/oT_Data_Generation_'           +CaseName+'.csv', index_col=[0    ])
+    dfVariableMinPower   = pd.read_csv(CaseName+'/oT_Data_VariableMinGeneration_'+CaseName+'.csv', index_col=[0,1,2])
+    dfVariableMaxPower   = pd.read_csv(CaseName+'/oT_Data_VariableMaxGeneration_'+CaseName+'.csv', index_col=[0,1,2])
+    dfVariableMinStorage = pd.read_csv(CaseName+'/oT_Data_MinimumStorage_'       +CaseName+'.csv', index_col=[0,1,2])
+    dfVariableMaxStorage = pd.read_csv(CaseName+'/oT_Data_MaximumStorage_'       +CaseName+'.csv', index_col=[0,1,2])
+    dfEnergyInflows      = pd.read_csv(CaseName+'/oT_Data_EnergyInflows_'        +CaseName+'.csv', index_col=[0,1,2])
+    dfNodeLocation       = pd.read_csv(CaseName+'/oT_Data_NodeLocation_'         +CaseName+'.csv', index_col=[0    ])
+    dfNetwork            = pd.read_csv(CaseName+'/oT_Data_Network_'              +CaseName+'.csv', index_col=[0,1,2])
 
     # substitute NaN by 0
     dfOption.fillna            (0, inplace=True)
@@ -183,8 +183,8 @@ def InputData(CaseName,mTEPES):
     pLineNTC            = dfNetwork     ['TTC'                 ] * 1e-3 * dfNetwork['SecurityFactor' ]                                      # net transfer capacity               [GW]
     pNetFixedCost       = dfNetwork     ['FixedCost'           ] *        dfNetwork['FixedChargeRate']                                      # network    fixed cost               [MEUR]
     pIndBinLineInvest   = dfNetwork     ['BinaryInvestment'    ]                                                                            # binary line    investment decision  [Yes]
-    pAngMin             = dfNetwork     ['AngMin'              ] * 3.14159265359 / 180                                                      # Min phase angle difference          [rad]
-    pAngMax             = dfNetwork     ['AngMax'              ] * 3.14159265359 / 180
+    pAngMin             = dfNetwork     ['AngMin'              ] * math.pi / 180                                                            # Min phase angle difference          [rad]
+    pAngMax             = dfNetwork     ['AngMax'              ] * math.pi / 180                                                            # Max phase angle difference          [rad]
 
     ReadingDataTime = time.time() - StartTime
     StartTime       = time.time()
@@ -212,6 +212,8 @@ def InputData(CaseName,mTEPES):
 
     # non-RES units, they can be committed
     mTEPES.nr = mTEPES.g - mTEPES.r
+
+    # machines able to provide reactive power
     mTEPES.tq = mTEPES.gq - mTEPES.sq
 
     # operating reserve units, they can contribute to the operating reserve and are not ESS
@@ -277,7 +279,15 @@ def InputData(CaseName,mTEPES):
     mTEPES.r2g = Set(initialize=mTEPES.rg*mTEPES.g, doc='region to generator', filter=lambda mTEPES,rg,g: (rg,g) in mTEPES.rg*mTEPES.g and pRegion2Gen.loc[rg,g]['Y/N'] == 1)
 
     #%% inverse index generator to technology
-    mTEPES.t2g = pGenToTechnology.reset_index().set_index('Technology').set_axis(['Generator'], axis=1, inplace=False)['Generator']
+    # mTEPES.t2g = pGenToTechnology.reset_index().set_index('Technology').set_axis(['Generator'], axis=1, inplace=False)['Generator']
+    pTechnologyToGen = pGenToTechnology.reset_index().set_index('Technology').set_axis(['Generator'], axis=1, inplace=False)[['Generator']]
+    pTechnologyToGen = pTechnologyToGen.loc[pTechnologyToGen['Generator'].isin(mTEPES.g)]
+
+    pTechnology2Gen = pTechnologyToGen.reset_index()
+    pTechnology2Gen['Y/N'] = 1
+    pTechnology2Gen = pTechnology2Gen.set_index(['Technology','Generator'])['Y/N']
+
+    mTEPES.t2g = Set(initialize=mTEPES.gt*mTEPES.g, doc='technology to generator', filter=lambda mTEPES,gt,g: (gt,g) in pTechnology2Gen)
 
     # minimum and maximum variable power
     pVariableMinPower   = pVariableMinPower.replace(0, float('nan'))
