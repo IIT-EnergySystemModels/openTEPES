@@ -1,7 +1,6 @@
 #%% libraries
 import os
 import time
-import setuptools
 
 from   pyomo.environ import ConcreteModel
 from openTEPES import InputData
