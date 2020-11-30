@@ -1,9 +1,12 @@
-#%% libraries
+"""Libraries."""
+
 import os
+
 import time
 
-from   pyomo.environ import ConcreteModel
 import openTEPES as oT
+from pyomo.environ import ConcreteModel
+
 
 CWD = os.getcwd()
 Test_Path = CWD + '/src/openTEPES'
@@ -13,7 +16,7 @@ StartTime = time.time()
 
 CaseName = '9n'
 
-#%% model declaration
+# model declaration
 mTEPES = ConcreteModel()
 
 oT.InputData(CaseName, mTEPES)

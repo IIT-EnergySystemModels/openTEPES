@@ -5,7 +5,7 @@ import math
 import pandas        as pd
 from   pyomo.environ import DataPortal, Set, Param, Var, Binary, NonNegativeReals, Reals, UnitInterval, Boolean, Any
 
-def InputData(CaseName,mTEPES):
+def InputData(CaseName, mTEPES):
     print('Input data                  ****')
 
     StartTime = time.time()
@@ -142,7 +142,7 @@ def InputData(CaseName,mTEPES):
         for i in range(pTimeStep-2,-1,-1):
             pDuration[range(i,len(mTEPES.nn),pTimeStep)] = 0
 
-    #%% generation parameters
+    # generation parameters
     pGenToNode          = dfGeneration  ['Node'                ]                                                                            # generator location in node
     pGenToTechnology    = dfGeneration  ['Technology'          ]                                                                            # generator association to technology
     pMustRun            = dfGeneration  ['MustRun'             ]                                                                            # must-run unit                       [Yes]
