@@ -3,7 +3,8 @@ import os
 import time
 
 from   pyomo.environ import ConcreteModel
-from openTEPES import InputData
+import openTEPES as oT
+
 CWD = os.getcwd()
 Test_Path = CWD + '/src/openTEPES'
 os.chdir(Test_Path)
@@ -15,7 +16,7 @@ CaseName = '9n'
 #%% model declaration
 mTEPES = ConcreteModel()
 
-InputData(CaseName, mTEPES)
+oT.InputData(CaseName, mTEPES)
 
 TotalTime = time.time() - StartTime
 print('Total time                            ... ', round(TotalTime), 's')
