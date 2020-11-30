@@ -15,7 +15,7 @@ CaseName = '9n'
 #%% model declaration
 mTEPES = ConcreteModel()
 
-# InputData(CaseName, mTEPES)
+InputData(CaseName, mTEPES)
 
 TotalTime = time.time() - StartTime
 print('Total time                            ... ', round(TotalTime), 's')
