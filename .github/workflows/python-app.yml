@@ -28,9 +28,9 @@ jobs:
     - name: Lint with flake8
       run: |
         flake8
-    - name: Lint with flake8
+    - name: Lint with PyLint
       run: |
         pylint src tests openTEPES
     - name: Test with pytest
       run: |
-        pytest src
+        pytest tests/
