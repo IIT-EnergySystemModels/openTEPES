@@ -1,9 +1,16 @@
-# Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 1.7.24 - November 30, 2020
+"""Input data.
+
+Open Generation and Transmission Operation and Expansion Planning Model with
+RES and ESS (openTEPES) - Version 1.7.24 - November 30, 2020
+"""
 
 import time
+
 import math
-import pandas        as pd
-from   pyomo.environ import DataPortal, Set, Param, Var, Binary, NonNegativeReals, Reals, UnitInterval, Boolean, Any
+
+import pandas as pd
+
+from pyomo.environ import DataPortal, Set, Param, Var, Binary, NonNegativeReals, Reals, UnitInterval, Boolean, Any
 
 def InputData(CaseName, mTEPES):
     print('Input data                  ****')
