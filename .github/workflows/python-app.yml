@@ -3,34 +3,48 @@
 
 name: Python application
 
-on:
-  push:
-    branches: [ '**' ]
-  pull_request:
-    branches: [ '**' ]
+on: [push, pull_request]
 
 jobs:
   build:
 
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: [3.5, 3.6, 3.7, 3.8, 3.9, pypy3]
+        exclude:
+          # sqlite3 exit handling seems to get in the way
+          - os: macos-latest
+            python-version: pypy3
+          # doesn't support passing in bytestrings to os.scandir
+          - os: windows-latest
+            python-version: pypy3
+          # path encoding
+          - os: windows-latest
+            python-version: 3.5
+          # path encoding
+          - os: macos-latest
+            python-version: 3.5
+      fail-fast: false
 
     steps:
     - uses: actions/checkout@v2
-    - name: Set up Python 3.8
-      uses: actions/setup-python@v1
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
       with:
-        python-version: 3.8
+        python-version: ${{ matrix.python-version }}
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip
+        python -m pip install pip --upgrade
         pip install -r requirements.txt --upgrade
-        pip install flake8 pytest pylint mypy
+        pip install flake8 pytest pylint mypy --upgrade
     - name: Lint with flake8
       run: |
         flake8
     - name: Lint with PyLint
       run: |
-        pylint src tests openTEPES
-    - name: Test with pytest
+        pylint examples tests open_tepes
+    - name: Test with Pytest
       run: |
         pytest tests/
