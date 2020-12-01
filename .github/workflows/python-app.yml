@@ -39,6 +39,9 @@ jobs:
         python -m pip install pip --upgrade
         pip install -r requirements.txt --upgrade
         pip install flake8 pytest pylint mypy --upgrade
+    - name: Typing checks
+      run: |
+        mypy examples tests open_tepes
     - name: Lint with flake8
       run: |
         flake8
@@ -47,4 +50,4 @@ jobs:
         pylint examples tests open_tepes
     - name: Test with Pytest
       run: |
-        pytest tests/
+        pytest -vv tests/
