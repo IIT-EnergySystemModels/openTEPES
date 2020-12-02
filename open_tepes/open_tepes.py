@@ -1,5 +1,4 @@
 import time
-import setuptools
 
 from pyomo.environ import ConcreteModel
 
