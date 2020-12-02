@@ -1,0 +1,31 @@
+.. openTEPES documentation master file, created by Andres Ramos
+
+Download
+========
+The **openTEPES** has been developped using `Python 3.7.9 <https://www.python.org/>`_ and `Pyomo 5.7.1 <http://www.pyomo.org/>`_ and it uses `Gurobi 9.1.0 <https://www.gurobi.com/>`_ as commercial MIP solver for which a free academic license is available.
+It uses Pyomo so that it is independent of the preferred solver. You can alternatively use one of the free solvers `SCIP <https://scip.zib.de/>`_, `GLPK 4.65 <https://www.gnu.org/software/glpk/>`_
+and `CBC <https://github.com/coin-or/Cbc>`_. List the serial solver interfaces under Pyomo with this call::
+
+  pyomo help -s
+
+Besides, it also requires the following packages:
+
+- `Pandas <https://pandas.pydata.org/>`_ for inputting data and outputting results
+- `time <https://docs.python.org/3/library/time.html>`_ for time-related functions
+- `Matplotlib <https://matplotlib.org/>`_, `GeoPandas <http://geopandas.org/>`_, `Cartopy <https://scitools.org.uk/cartopy/docs/latest/#>`_ for plotting the network map
+
+Cases
+-----
+Here, you have the input files of a small case study of `9 nodes <../9n.zip>`_.
+
+Code
+----
+
+The **openTEPES** code is provided under the `GNU General Public License <https://www.gnu.org/licenses/gpl-3.0.html>`_:
+
+- the code can't become part of a closed-source commercial software product
+- any future changes and improvements to the code remain free and open
+
+Source code can be downloaded from `HERE <../openTEPES.zip>`_ or from `GitHub <https://github.com/IIT-EnergySystemModels/openTEPES>`_.
+
+This model is a work in progress and will be updated accordingly. If you want to subscribe to the **openTEPES** model updates send an email to andres.ramos@comillas.edu
