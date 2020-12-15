@@ -9,16 +9,35 @@ def OutputResults(CaseName, mTEPES):
 
     StartTime = time.time()
 
+    # sub-functions
+    def oT_make_dataframe(_var):
+        return pd.DataFrame.from_dict(_var.extract_values(), orient='index', columns=[str(_var)])
+
+    def oT_make_series(_var, _sets, _factor):
+        return pd.Series(data=[_var[sc, p, n, i]() * _factor for sc, p, n, i in _sets],
+                         index=pd.MultiIndex.from_tuples(list(_sets)))
+
+    def oT_make_pivot_table(_file, _var, _idx, _col, _val, _mod):
+        if _mod == 0:
+            return pd.pivot_table(_file, values=str(_var), index=_idx, columns=[_col], fill_value=0)
+        else:
+            return pd.pivot_table(_file, values=_val, index=_idx, columns=[_col])
+
+    def oT_write_csv(_file, _case, _name):
+        return _file.to_csv(_case + _name + _case + '.csv', sep=',')
+
     #%% outputting the investment decisions
     if len(mTEPES.gc):
-        OutputToFile = pd.DataFrame.from_dict(mTEPES.vGenerationInvest.extract_values(), orient='index', columns=[str(mTEPES.vGenerationInvest)])
+        OutputToFile = oT_make_dataframe(mTEPES.vGenerationInvest)
         OutputToFile.index.names = ['Generator']
-        OutputToFile.to_csv(CaseName+'/oT_Result_GenerationInvestment_'+CaseName+'.csv', index=True, header=True)
+        oT_write_csv(OutputToFile, CaseName, '/oT_Result_GenerationInvestment_')
+
     if len(mTEPES.lc):
-        OutputToFile = pd.DataFrame.from_dict(mTEPES.vNetworkInvest.extract_values(), orient='index', columns=[str(mTEPES.vNetworkInvest)])
+        OutputToFile = oT_make_dataframe(mTEPES.vNetworkInvest)
         OutputToFile.index = pd.MultiIndex.from_tuples(OutputToFile.index)
-        OutputToFile.index.names = ['InitialNode','FinalNode','Circuit']
-        pd.pivot_table(OutputToFile, values=str(mTEPES.vNetworkInvest), index=['InitialNode','FinalNode'], columns=['Circuit'], fill_value=0).to_csv(CaseName+'/oT_Result_NetworkInvestment_'+CaseName+'.csv', sep=',')
+        OutputToFile.index.names = ['InitialNode', 'FinalNode', 'Circuit']
+        OutputToFile = oT_make_pivot_table(OutputToFile, mTEPES.vNetworkInvest, ['InitialNode', 'FinalNode'], 'Circuit', '', 0)
+        oT_write_csv(OutputToFile, CaseName, '/oT_Result_NetworkInvestment_')
 
     #%% outputting the generation operation
     OutputToFile = pd.Series(data=[mTEPES.vCommitment[sc,p,n,nr]() for sc,p,n,nr in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.t], index=pd.MultiIndex.from_tuples(list(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.t)))
@@ -48,27 +67,27 @@ def OutputResults(CaseName, mTEPES):
         OutputToFile = OutputToFile.fillna(0)
         OutputToFile.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(CaseName+'/oT_Result_GenerationReserveDown_'   +CaseName+'.csv', sep=',')
         
-        OutputToFile = pd.Series(data=[sum(OutputToFile[sc,p,n,nr] for nr in mTEPES.nr if (gt,nr) in mTEPES.t2g)*1e3 for sc,p,n,gt in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.gt], index=pd.MultiIndex.from_tuples(list(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.gt)))
+        OutputToFile = pd.Series(data=[sum(OutputToFile[sc,p,n,nr] for nr in mTEPES.nr if (gt,nr) in mTEPES.t2g) for sc,p,n,gt in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.gt], index=pd.MultiIndex.from_tuples(list(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.gt)))
         OutputToFile.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(CaseName+'/oT_Result_TechnologyReserveDown_'+CaseName+'.csv', sep=',')
         
         OutputToFile = pd.Series(data=[mTEPES.vESSReserveDown[sc,p,n,es]()*1e3 for sc,p,n,es in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.es], index=pd.MultiIndex.from_tuples(list(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.es)))
         OutputToFile = OutputToFile.fillna(0)
         OutputToFile.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(CaseName+'/oT_Result_ESSGenerationReserveDown_'+CaseName+'.csv', sep=',')
         
-        OutputToFile = pd.Series(data=[sum(OutputToFile[sc,p,n,es] for es in mTEPES.es if (gt,es) in mTEPES.t2g)*1e3 for sc,p,n,gt in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.gt], index=pd.MultiIndex.from_tuples(list(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.gt)))
+        OutputToFile = pd.Series(data=[sum(OutputToFile[sc,p,n,es] for es in mTEPES.es if (gt,es) in mTEPES.t2g) for sc,p,n,gt in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.gt], index=pd.MultiIndex.from_tuples(list(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.gt)))
         OutputToFile.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(CaseName+'/oT_Result_ESSTechnologyReserveDown_'+CaseName+'.csv', sep=',')
 
     OutputToFile = pd.Series(data=[mTEPES.vTotalOutput[sc,p,n,g]()*1e3                                  for sc,p,n,g in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.g], index=pd.MultiIndex.from_tuples(list(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.g)))
     OutputToFile.to_frame(name='MW ').reset_index().pivot_table(index=['level_0','level_1','level_2'],    columns='level_3', values='MW ').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(CaseName+'/oT_Result_GenerationOutput_'   +CaseName+'.csv', sep=',')
 
     if len(mTEPES.r):
-        OutputToFile = pd.Series(data=[(mTEPES.pMaxPower[sc,p,n,r]-mTEPES.vTotalOutput[sc,p,n,r]())*1e3 for sc,p,n,r  in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.r ], index=pd.MultiIndex.from_tuples(list(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.r )))
+        OutputToFile = pd.Series(data=[(mTEPES.pMaxPower[sc,p,n,r]-mTEPES.vTotalOutput[sc,p,n,r]())*1e3 for sc,p,n,r in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.r ], index=pd.MultiIndex.from_tuples(list(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.r )))
         OutputToFile.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW'  ).rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(CaseName+'/oT_Result_RESCurtailment_'    +CaseName+'.csv', sep=',')
 
-        OutputToFile = pd.Series(data=[(mTEPES.pMaxPower[sc,p,n,r]-mTEPES.vTotalOutput[sc,p,n,r]())*mTEPES.pDuration[n] for sc,p,n,r  in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.r ], index=pd.MultiIndex.from_tuples(list(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.r )))
+        OutputToFile = pd.Series(data=[(mTEPES.pMaxPower[sc,p,n,r]-mTEPES.vTotalOutput[sc,p,n,r]())*mTEPES.pDuration[n] for sc,p,n,r in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.r ], index=pd.MultiIndex.from_tuples(list(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.r )))
         OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='GWh').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(CaseName+'/oT_Result_RESCurtailmentEnergy_'    +CaseName+'.csv', sep=',')
 
-        OutputToFile = pd.Series(data=[sum(OutputToFile[sc,p,n,r] for r in mTEPES.r if (gt,r) in mTEPES.t2g)*1e3 for sc,p,n,gt in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.gt], index=pd.MultiIndex.from_tuples(list(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.gt)))
+        OutputToFile = pd.Series(data=[sum(OutputToFile[sc,p,n,r] for r in mTEPES.r if (gt,r) in mTEPES.t2g) for sc,p,n,gt in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.gt], index=pd.MultiIndex.from_tuples(list(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.gt)))
         OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='GWh').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(CaseName+'/oT_Result_RESTechnologyCurtailment_'+CaseName+'.csv', sep=',')
 
     OutputToFile = pd.Series(data=[mTEPES.vTotalOutput[sc,p,n,g]()*mTEPES.pDuration[n]                  for sc,p,n,g  in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.g ], index=pd.MultiIndex.from_tuples(list(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.g )))
@@ -95,7 +114,7 @@ def OutputResults(CaseName, mTEPES):
         OutputToFile = pd.Series(data=[-mTEPES.vESSTotalCharge   [sc,p,n,es]()*mTEPES.pDuration[n] for sc,p,n,es in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.es], index=pd.MultiIndex.from_tuples(list(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.es)))
         OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='GWh').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(CaseName+'/oT_Result_ESSChargeEnergy_'    +CaseName+'.csv', sep=',')
 
-        OutputToFile = pd.Series(data=[sum(OutputToFile[sc,p,n,es] for es in mTEPES.es if (gt,es) in mTEPES.t2g)*1e3 for sc,p,n,gt in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.gt], index=pd.MultiIndex.from_tuples(list(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.gt)))
+        OutputToFile = pd.Series(data=[sum(OutputToFile[sc,p,n,es] for es in mTEPES.es if (gt,es) in mTEPES.t2g) for sc,p,n,gt in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.gt], index=pd.MultiIndex.from_tuples(list(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.gt)))
         OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='GWh').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(CaseName+'/oT_Result_ESSTechnologyEnergy_'+CaseName+'.csv', sep=',')
 
         OutputToFile *= -1
@@ -151,8 +170,8 @@ def OutputResults(CaseName, mTEPES):
         # plt.show()
         plt.savefig(CaseName+'/oT_Plot_TechnologyOutput_'+sc+'_'+p+'_'+CaseName+'.png', bbox_inches=None, dpi=600)
 
-    OutputToFile = pd.Series(data=[mTEPES.vTotalOutput[sc,p,n,g]()*mTEPES.pDuration[n] for sc,p,n,g in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.g ], index=pd.MultiIndex.from_tuples(list(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.g )))
-    OutputToFile = pd.Series(data=[sum(OutputToFile[sc,p,n,g] for g in mTEPES.g if (gt,g) in mTEPES.t2g)*1e3 for sc,p,n,gt in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.gt], index=pd.MultiIndex.from_tuples(list(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.gt)))
+    OutputToFile = pd.Series(data=[mTEPES.vTotalOutput[sc,p,n,g]()*mTEPES.pDuration[n]*1e3 for sc,p,n,g in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.g ], index=pd.MultiIndex.from_tuples(list(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.g )))
+    OutputToFile = pd.Series(data=[sum(OutputToFile[sc,p,n,g] for g in mTEPES.g if (gt,g) in mTEPES.t2g) for sc,p,n,gt in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.gt], index=pd.MultiIndex.from_tuples(list(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.gt)))
     OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='GWh').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(CaseName+'/oT_Result_TechnologyEnergy_'+CaseName+'.csv', sep=',')
 
     TechnologyEnergy = OutputToFile.to_frame(name='GWh')
@@ -173,7 +192,7 @@ def OutputResults(CaseName, mTEPES):
     #%% outputting the network operation
     OutputToFile = pd.Series(data=[mTEPES.vFlow[sc,p,n,ni,nf,cc]()*1e3 for sc,p,n,ni,nf,cc in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.la], index= pd.MultiIndex.from_tuples(list(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.la)))
     OutputToFile.index.names = ['Scenario','Period','LoadLevel','InitialNode','FinalNode','Circuit']
-    OutputToFile = pd.pivot_table(OutputToFile.to_frame(name='pu'), values='pu', index=['Scenario','Period','LoadLevel'], columns=['InitialNode','FinalNode','Circuit'], fill_value=0)
+    OutputToFile = pd.pivot_table(OutputToFile.to_frame(name='MW'), values='MW', index=['Scenario','Period','LoadLevel'], columns=['InitialNode','FinalNode','Circuit'], fill_value=0)
     OutputToFile.index.names = [None] * len(OutputToFile.index.names)
     OutputToFile.to_csv(CaseName+'/oT_Result_NetworkFlow_'+CaseName+'.csv', sep=',')
 
@@ -223,7 +242,7 @@ def OutputResults(CaseName, mTEPES):
 
     #%% outputting the up operating reserve marginal
     OutputToFile = pd.Series(data=[mTEPES.dual[mTEPES.eOperReserveUp[sc,p,n,ar]]*1e3/mTEPES.pScenProb[sc]/mTEPES.pDuration[n] for sc,p,n,ar in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.ar], index=pd.MultiIndex.from_tuples(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.ar))
-    OutputToFile.to_frame(name='UORM').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='UORM').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(CaseName+'/oT_Result_MarginalUpOperatingReserve_'+CaseName+'.csv', sep=',')
+    OutputToFile.to_frame(name='UORM').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='UORM').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(CaseName+'/oT_Result_MarginalOperatingReserveUp_'+CaseName+'.csv', sep=',')
 
     MarginalUpOperatingReserve = OutputToFile.loc[:,:]
 
@@ -237,11 +256,11 @@ def OutputResults(CaseName, mTEPES):
     fg.legend()
     plt.tight_layout()
     # plt.show()
-    plt.savefig(CaseName+'/oT_Plot_MarginalUpwardOperatingReserve_'+CaseName+'.png', bbox_inches=None, dpi=600)
+    plt.savefig(CaseName+'/oT_Plot_MarginalOperatingReserveUpward_'+CaseName+'.png', bbox_inches=None, dpi=600)
 
     #%% outputting the down operating reserve marginal
     OutputToFile = pd.Series(data=[mTEPES.dual[mTEPES.eOperReserveDw[sc,p,n,ar]]*1e3/mTEPES.pScenProb[sc]/mTEPES.pDuration[n] for sc,p,n,ar in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.ar], index=pd.MultiIndex.from_tuples(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.ar))
-    OutputToFile.to_frame(name='DORM').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='DORM').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(CaseName+'/oT_Result_MarginalDownOperatingReserve_'+CaseName+'.csv', sep=',')
+    OutputToFile.to_frame(name='DORM').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='DORM').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(CaseName+'/oT_Result_MarginalOperatingReserveDown_'+CaseName+'.csv', sep=',')
 
     MarginalDwOperatingReserve = OutputToFile.loc[:,:]
 
@@ -255,7 +274,7 @@ def OutputResults(CaseName, mTEPES):
     fg.legend()
     plt.tight_layout()
     # plt.show()
-    plt.savefig(CaseName+'/oT_Plot_MarginalDownwardOperatingReserve_'+CaseName+'.png', bbox_inches=None, dpi=600)
+    plt.savefig(CaseName+'/oT_Plot_MarginalOperatingReserveDownward_'+CaseName+'.png', bbox_inches=None, dpi=600)
 
     #%% outputting the water values
     OutputToFile = pd.Series(data=[mTEPES.dual[mTEPES.eESSInventory[sc,p,n,es]]/mTEPES.pScenProb[sc]/mTEPES.pDuration[n] for sc,p,n,es in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.es if mTEPES.n.ord(n) % mTEPES.pCycleTimeStep[es] == 0], index=pd.MultiIndex.from_tuples([(sc,p,n,es) for sc,p,n,es in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.es if mTEPES.n.ord(n) % mTEPES.pCycleTimeStep[es] == 0]))

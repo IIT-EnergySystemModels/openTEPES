@@ -25,7 +25,7 @@ def ModelFormulation(mTEPES):
     mTEPES.eTotalCCost = Constraint(rule=eTotalCCost, doc='system variable consumption operation cost [MEUR]')
 
     def eTotalRCost(mTEPES):
-        return mTEPES.vTotalRCost == sum(mTEPES.pScenProb[sc] * mTEPES.pDuration[n] * mTEPES.pENSCost * mTEPES.vENS[sc,p,n,nd] for sc,p,n,nd in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.nd)
+        return mTEPES.vTotalRCost == sum(mTEPES.pScenProb[sc] * mTEPES.pDuration[n] * mTEPES.pENSCost             * mTEPES.vENS           [sc,p,n,nd] for sc,p,n,nd in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.nd)
     mTEPES.eTotalRCost = Constraint(rule=eTotalRCost, doc='system reliability cost [MEUR]')
 
     def eTotalECost(mTEPES):
