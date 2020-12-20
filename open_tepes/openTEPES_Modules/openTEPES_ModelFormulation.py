@@ -1,4 +1,4 @@
-# Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 1.7.24 - November 30,, 2020
+# Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 1.7.25 - December 17, 2020
 
 import time
 from   collections   import defaultdict
@@ -14,10 +14,11 @@ def ModelFormulation(mTEPES):
     mTEPES.eTotalFCost = Constraint(rule=eTotalFCost, doc='system fixed    cost [MEUR]')
 
     def eTotalGCost(mTEPES):
-        return mTEPES.vTotalGCost == (sum(mTEPES.pScenProb[sc] * mTEPES.pDuration[n] * mTEPES.pLinearVarCost  [nr] * mTEPES.vTotalOutput   [sc,p,n,nr]                                                         +
-                                          mTEPES.pScenProb[sc] * mTEPES.pDuration[n] * mTEPES.pConstantVarCost[nr] * mTEPES.vCommitment    [sc,p,n,nr]                                                         +
-                                          mTEPES.pScenProb[sc]                       * mTEPES.pStartUpCost    [nr] * mTEPES.vStartUp       [sc,p,n,nr]                                                         +
-                                          mTEPES.pScenProb[sc]                       * mTEPES.pShutDownCost   [nr] * mTEPES.vShutDown      [sc,p,n,nr] for sc,p,n,nr in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.nr) )
+        return mTEPES.vTotalGCost == (sum(mTEPES.pScenProb[sc] * mTEPES.pDuration[n] * mTEPES.pLinearVarCost  [nr] * mTEPES.vTotalOutput[sc,p,n,nr]                                                         +
+                                          mTEPES.pScenProb[sc] * mTEPES.pDuration[n] * mTEPES.pConstantVarCost[nr] * mTEPES.vCommitment [sc,p,n,nr]                                                         +
+                                          mTEPES.pScenProb[sc]                       * mTEPES.pStartUpCost    [nr] * mTEPES.vStartUp    [sc,p,n,nr]                                                         +
+                                          mTEPES.pScenProb[sc]                       * mTEPES.pShutDownCost   [nr] * mTEPES.vShutDown   [sc,p,n,nr] for sc,p,n,nr in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.nr) +
+                                      sum(mTEPES.pScenProb[sc] * mTEPES.pDuration[n] * mTEPES.pLinearOMCost   [ r] * mTEPES.vTotalOutput[sc,p,n, r] for sc,p,n, r in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.r ) )
     mTEPES.eTotalGCost = Constraint(rule=eTotalGCost, doc='system variable generation operation cost [MEUR]')
 
     def eTotalCCost(mTEPES):
@@ -41,17 +42,23 @@ def ModelFormulation(mTEPES):
     print('Generating objective function         ... ', round(GeneratingOFTime), 's')
 
     #%% constraints
+    def eInstalGenConm(mTEPES,sc,p,n,gc):
+        if gc == mTEPES.nr:
+            return mTEPES.vCommitment[sc,p,n,gc] <= mTEPES.vGenerationInvest[gc]
+        else:
+            return Constraint.Skip
+    mTEPES.eInstalGenConm = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.gc, rule=eInstalGenConm, doc='commitment  if installed unit [p.u.]')
+
+    print('eInstalGenConm        ... ', len(mTEPES.eInstalGenConm), ' rows')
+
     def eInstalGenCap(mTEPES,sc,p,n,gc):
-        return mTEPES.vCommitment[sc,p,n,gc] <= mTEPES.vGenerationInvest[gc]
-    mTEPES.eInstalGenCap = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.gc, rule=eInstalGenCap, doc='commitment  if installed unit [p.u.]')
+        if mTEPES.pMaxPower[sc,p,n,gc]:
+            return mTEPES.vTotalOutput   [sc,p,n,gc] / mTEPES.pMaxPower[sc,p,n,gc] <= mTEPES.vGenerationInvest[gc]
+        else:
+            return mTEPES.vTotalOutput   [sc,p,n,gc]                               <= 0.0
+    mTEPES.eInstalGenCap = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.gc, rule=eInstalGenCap, doc='output      if installed gen unit [p.u.]')
 
     print('eInstalGenCap         ... ', len(mTEPES.eInstalGenCap), ' rows')
-
-    def eInstalGenESS(mTEPES,sc,p,n,ec):
-        return mTEPES.vTotalOutput   [sc,p,n,ec] / mTEPES.pMaxPower[sc,p,n,ec] <= mTEPES.vGenerationInvest[ec]
-    mTEPES.eInstalGenESS = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.ec, rule=eInstalGenESS, doc='output      if installed ESS unit [p.u.]')
-
-    print('eInstalGenESS         ... ', len(mTEPES.eInstalGenESS), ' rows')
 
     def eInstalConESS(mTEPES,sc,p,n,ec):
         return mTEPES.vESSTotalCharge[sc,p,n,ec] / mTEPES.pMaxCharge      [ec] <= mTEPES.vGenerationInvest[ec]
@@ -61,13 +68,13 @@ def ModelFormulation(mTEPES):
 
     #%%
     def eOperReserveUp(mTEPES,sc,p,n,ar):
-        return sum(mTEPES.vReserveUp  [sc,p,n,op] for op in mTEPES.op if (ar,op) in mTEPES.a2g) + sum(mTEPES.vESSReserveUp  [sc,p,n,es] for es in mTEPES.es if (ar,es) in mTEPES.a2g) == mTEPES.pOperReserveUp[sc,p,n,ar]
+        return sum(mTEPES.vReserveUp  [sc,p,n,nr] for nr in mTEPES.nr if (ar,nr) in mTEPES.a2g) + sum(mTEPES.vESSReserveUp  [sc,p,n,es] for es in mTEPES.es if (ar,es) in mTEPES.a2g) == mTEPES.pOperReserveUp[sc,p,n,ar]
     mTEPES.eOperReserveUp = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.ar, rule=eOperReserveUp, doc='up   operating reserve [GW]')
 
     print('eOperReserveUp        ... ', len(mTEPES.eOperReserveUp), ' rows')
 
     def eOperReserveDw(mTEPES,sc,p,n,ar):
-        return sum(mTEPES.vReserveDown[sc,p,n,op] for op in mTEPES.op if (ar,op) in mTEPES.a2g) + sum(mTEPES.vESSReserveDown[sc,p,n,es] for es in mTEPES.es if (ar,es) in mTEPES.a2g) == mTEPES.pOperReserveDw[sc,p,n,ar]
+        return sum(mTEPES.vReserveDown[sc,p,n,nr] for nr in mTEPES.nr if (ar,nr) in mTEPES.a2g) + sum(mTEPES.vESSReserveDown[sc,p,n,es] for es in mTEPES.es if (ar,es) in mTEPES.a2g) == mTEPES.pOperReserveDw[sc,p,n,ar]
     mTEPES.eOperReserveDw = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.ar, rule=eOperReserveDw, doc='down operating reserve [GW]')
 
     print('eOperReserveDw        ... ', len(mTEPES.eOperReserveDw), ' rows')
@@ -94,12 +101,12 @@ def ModelFormulation(mTEPES):
 
     def eESSInventory(mTEPES,sc,p,n,es):
         if mTEPES.n.ord(n) == mTEPES.pCycleTimeStep[es]:
-            return mTEPES.pIniInventory[sc,p,n,es]                                          + sum(mTEPES.pDuration[n2]*1e-3*(mTEPES.pEnergyInflows[sc,p,n2,es] - mTEPES.vTotalOutput[sc,p,n2,es] + mTEPES.pEfficiency[es]*mTEPES.vESSTotalCharge[sc,p,n2,es]) for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pCycleTimeStep[es]:mTEPES.n.ord(n)]) == mTEPES.vESSInventory[sc,p,n,es] + mTEPES.vESSSpillage[sc,p,n,es]
-        elif mTEPES.n.ord(n) >  mTEPES.pCycleTimeStep[es] and mTEPES.n.ord(n) % mTEPES.pCycleTimeStep[es] == 0:
-            return mTEPES.vESSInventory[sc,p,mTEPES.n.prev(n,mTEPES.pCycleTimeStep[es]),es] + sum(mTEPES.pDuration[n2]*1e-3*(mTEPES.pEnergyInflows[sc,p,n2,es] - mTEPES.vTotalOutput[sc,p,n2,es] + mTEPES.pEfficiency[es]*mTEPES.vESSTotalCharge[sc,p,n2,es]) for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pCycleTimeStep[es]:mTEPES.n.ord(n)]) == mTEPES.vESSInventory[sc,p,n,es] + mTEPES.vESSSpillage[sc,p,n,es]
+            return mTEPES.pIniInventory[sc,p,n,es]                                          + sum(mTEPES.pDuration[n2]*(mTEPES.pEnergyInflows[sc,p,n2,es] - mTEPES.vTotalOutput[sc,p,n2,es] + mTEPES.pEfficiency[es]*mTEPES.vESSTotalCharge[sc,p,n2,es]) for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pCycleTimeStep[es]:mTEPES.n.ord(n)]) == mTEPES.vESSInventory[sc,p,n,es] + mTEPES.vESSSpillage[sc,p,n,es]
+        elif mTEPES.n.ord(n) > mTEPES.pCycleTimeStep[es] and mTEPES.n.ord(n) % mTEPES.pCycleTimeStep[es] == 0:
+            return mTEPES.vESSInventory[sc,p,mTEPES.n.prev(n,mTEPES.pCycleTimeStep[es]),es] + sum(mTEPES.pDuration[n2]*(mTEPES.pEnergyInflows[sc,p,n2,es] - mTEPES.vTotalOutput[sc,p,n2,es] + mTEPES.pEfficiency[es]*mTEPES.vESSTotalCharge[sc,p,n2,es]) for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pCycleTimeStep[es]:mTEPES.n.ord(n)]) == mTEPES.vESSInventory[sc,p,n,es] + mTEPES.vESSSpillage[sc,p,n,es]
         else:
             return Constraint.Skip
-    mTEPES.eESSInventory = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es, rule=eESSInventory, doc='ESS inventory balance [TWh]')
+    mTEPES.eESSInventory = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es, rule=eESSInventory, doc='ESS inventory balance [GWh]')
 
     print('eESSInventory         ... ', len(mTEPES.eESSInventory), ' rows')
 
@@ -162,25 +169,32 @@ def ModelFormulation(mTEPES):
     print('eChargeDischarge      ... ', len(mTEPES.eChargeDischarge), ' rows')
 
     def eTotalOutput(mTEPES,sc,p,n,nr):
-        if mTEPES.pMinPower[sc,p,n,nr] == 0:
+        if mTEPES.pMinPower[sc,p,n,nr] == 0 and mTEPES.pMaxPower[sc,p,n,nr] > 0 and mTEPES.pMaxPower2ndBlock[sc,p,n,nr] > 0:
             return mTEPES.vTotalOutput[sc,p,n,nr]                               ==                                  mTEPES.vOutput2ndBlock[sc,p,n,nr] + mTEPES.pUpReserveActivation * mTEPES.vReserveUp[sc,p,n,nr] - mTEPES.pDwReserveActivation * mTEPES.vReserveDown[sc,p,n,nr]
-        else:
+        elif                                    mTEPES.pMaxPower[sc,p,n,nr] > 0 and mTEPES.pMaxPower2ndBlock[sc,p,n,nr] > 0:
             return mTEPES.vTotalOutput[sc,p,n,nr] / mTEPES.pMinPower[sc,p,n,nr] == mTEPES.vCommitment[sc,p,n,nr] + (mTEPES.vOutput2ndBlock[sc,p,n,nr] + mTEPES.pUpReserveActivation * mTEPES.vReserveUp[sc,p,n,nr] - mTEPES.pDwReserveActivation * mTEPES.vReserveDown[sc,p,n,nr]) / mTEPES.pMinPower[sc,p,n,nr]
+        else:
+            return Constraint.Skip
     mTEPES.eTotalOutput = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, rule=eTotalOutput, doc='total output of a unit [GW]')
 
     print('eTotalOutput          ... ', len(mTEPES.eTotalOutput), ' rows')
 
     def eESSTotalCharge(mTEPES,sc,p,n,es):
-        return mTEPES.vESSTotalCharge[sc,p,n,es] ==  mTEPES.vESSCharge[sc,p,n,es] + mTEPES.pUpReserveActivation * mTEPES.vESSReserveDown[sc,p,n,es] - mTEPES.pDwReserveActivation * mTEPES.vESSReserveUp[sc,p,n,es]
+        if mTEPES.pMaxCharge[es] > 0:
+            return mTEPES.vESSTotalCharge[sc,p,n,es] == mTEPES.vESSCharge[sc,p,n,es] + mTEPES.pUpReserveActivation * mTEPES.vESSReserveDown[sc,p,n,es] - mTEPES.pDwReserveActivation * mTEPES.vESSReserveUp[sc,p,n,es]
+        else:
+            return Constraint.Skip
     mTEPES.eESSTotalCharge = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es, rule=eESSTotalCharge, doc='total charge of a ESS unit [GW]')
 
     print('eESSTotalCharge       ... ', len(mTEPES.eESSTotalCharge), ' rows')
 
     def eUCStrShut(mTEPES,sc,p,n,nr):
-        if n == mTEPES.n.first():
+        if n == mTEPES.n.first() and mTEPES.pMustRun[nr] == 0 and mTEPES.pMinPower[sc,p,n,nr] > 0:
             return mTEPES.vCommitment[sc,p,n,nr] - mTEPES.pInitialUC[nr]                        == mTEPES.vStartUp[sc,p,n,nr] - mTEPES.vShutDown[sc,p,n,nr]
-        else:
+        elif                         mTEPES.pMustRun[nr] == 0 and mTEPES.pMinPower[sc,p,n,nr] > 0:
             return mTEPES.vCommitment[sc,p,n,nr] - mTEPES.vCommitment[sc,p,mTEPES.n.prev(n),nr] == mTEPES.vStartUp[sc,p,n,nr] - mTEPES.vShutDown[sc,p,n,nr]
+        else:
+            return Constraint.Skip
     mTEPES.eUCStrShut = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, rule=eUCStrShut, doc='relation among commitment startup and shutdown')
 
     print('eUCStrShut            ... ', len(mTEPES.eUCStrShut), ' rows')
