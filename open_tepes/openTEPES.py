@@ -90,7 +90,7 @@ from   pyomo.environ import ConcreteModel
 import openTEPES_Modules as oT_Mod
 
 CaseName       = '9n'                                     # To select the case
-SolverName     = 'gurobi'
+SolverName     = 'glpk'
 
 # Writing the LP format
 pIndWriteLP = 1
@@ -99,8 +99,7 @@ pIndWriteLP = 1
 pIndOutputResults = 0
 
 # model declaration
-mTEPES = ConcreteModel('Open Generation and Transmission Operation and Expansion Planning Model '
-                       'with RES and ESS (openTEPES) - Version 1.7.24 - November 30, 2020')
+mTEPES = ConcreteModel('Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 1.7.25 - December 17, 2020')
 
 
 def plain_run(CaseName, mTEPES, pIndWriteLP, pIndOutputResults):
