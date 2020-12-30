@@ -99,7 +99,8 @@ pIndWriteLP = 1
 pIndOutputResults = 0
 
 # model declaration
-mTEPES = ConcreteModel('Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 1.7.26 - December 28, 2020')
+mTEPES = ConcreteModel(
+    'Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 1.7.26 - December 28, 2020')
 
 
 def plain_run(CaseName, mTEPES, pIndWriteLP, pIndOutputResults):
