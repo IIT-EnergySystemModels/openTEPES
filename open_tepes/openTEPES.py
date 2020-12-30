@@ -66,7 +66,7 @@
 # patents cannot be used to render the program non-free.
 
 # Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES)
-# - Version 1.7.24 - November 30, 2020
+# - Version 1.7.26 - December 28, 2020
 # simplicity and transparency in power systems planning
 
 # Developed by
@@ -99,7 +99,7 @@ pIndWriteLP = 1
 pIndOutputResults = 0
 
 # model declaration
-mTEPES = ConcreteModel('Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 1.7.25 - December 17, 2020')
+mTEPES = ConcreteModel('Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 1.7.26 - December 28, 2020')
 
 
 def plain_run(CaseName, mTEPES, pIndWriteLP, pIndOutputResults):
