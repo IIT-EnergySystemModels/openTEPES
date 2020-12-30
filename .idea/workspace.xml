@@ -50,7 +50,7 @@
     <property name="node.js.selected.package.tslint" value="(autodetect)" />
     <property name="settings.editor.selected.configurable" value="preferences.updates" />
   </component>
-  <component name="RunManager" selected="Python.plotly_example">
+  <component name="RunManager" selected="Python.openTEPES_advanced">
     <configuration default="true" type="PythonConfigurationType" factoryName="Python">
       <module name="openTEPES" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -118,6 +118,9 @@
       <module name="openTEPES" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
       <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../../openTEPES_PRO/openTEPES" />
       <option name="IS_MODULE_SDK" value="false" />
@@ -157,10 +160,10 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.plotly_example" />
-        <item itemvalue="Python.plotly_example" />
         <item itemvalue="Python.openTEPES_advanced" />
         <item itemvalue="Python.openTEPES_advanced" />
+        <item itemvalue="Python.plotly_example" />
+        <item itemvalue="Python.plotly_example" />
         <item itemvalue="Python.openTEPES_advanced" />
       </list>
     </recent_temporary>
@@ -192,7 +195,8 @@
       <workItem from="1606118568903" duration="37352000" />
       <workItem from="1607510588230" duration="32000" />
       <workItem from="1607510931101" duration="8589000" />
-      <workItem from="1607600004486" duration="17822000" />
+      <workItem from="1607600004486" duration="26746000" />
+      <workItem from="1609327541221" duration="5529000" />
     </task>
     <servers />
   </component>
@@ -204,14 +208,16 @@
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state x="740" y="274" key="FileChooserDialogImpl/0.0.1920.1040@0.0.1920.1040" timestamp="1604496825808" />
-    <state width="968" height="528" key="XDebugger.FullValuePopup" timestamp="1607702467388">
-      <screen x="0" y="0" width="1920" height="1040" />
+    <state width="1291" height="528" key="XDebugger.FullValuePopup" timestamp="1609237266176">
+      <screen x="0" y="0" width="2560" height="1040" />
     </state>
     <state width="968" height="528" key="XDebugger.FullValuePopup/0.0.1920.1040@0.0.1920.1040" timestamp="1607702467388" />
-    <state x="0" y="0" key="com.intellij.ide.util.TipDialog" timestamp="1607600019094">
-      <screen x="0" y="0" width="1920" height="1040" />
+    <state width="1291" height="528" key="XDebugger.FullValuePopup/0.0.2560.1040@0.0.2560.1040" timestamp="1609237266176" />
+    <state x="0" y="0" key="com.intellij.ide.util.TipDialog" timestamp="1609327544154">
+      <screen x="0" y="0" width="2560" height="1040" />
     </state>
     <state x="0" y="0" key="com.intellij.ide.util.TipDialog/0.0.1920.1040@0.0.1920.1040" timestamp="1607600019094" />
+    <state x="0" y="0" key="com.intellij.ide.util.TipDialog/0.0.2560.1040@0.0.2560.1040" timestamp="1609327544154" />
     <state x="623" y="225" width="672" height="678" key="search.everywhere.popup" timestamp="1606319510872">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
