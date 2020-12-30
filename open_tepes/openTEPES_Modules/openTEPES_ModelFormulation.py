@@ -1,4 +1,4 @@
-# Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 1.7.25 - December 17, 2020
+# Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 1.7.26 - December 28, 2020
 
 import time
 from   collections   import defaultdict
@@ -68,16 +68,47 @@ def ModelFormulation(mTEPES):
 
     #%%
     def eOperReserveUp(mTEPES,sc,p,n,ar):
-        return sum(mTEPES.vReserveUp  [sc,p,n,nr] for nr in mTEPES.nr if (ar,nr) in mTEPES.a2g) + sum(mTEPES.vESSReserveUp  [sc,p,n,es] for es in mTEPES.es if (ar,es) in mTEPES.a2g) == mTEPES.pOperReserveUp[sc,p,n,ar]
+        if mTEPES.pOperReserveUp[sc,p,n,ar] and sum(1 for nr in mTEPES.nr if (ar,nr) in mTEPES.a2g) + sum(1 for es in mTEPES.es if (ar,es) in mTEPES.a2g):
+            return sum(mTEPES.vReserveUp  [sc,p,n,nr] for nr in mTEPES.nr if (ar,nr) in mTEPES.a2g) + sum(mTEPES.vESSReserveUp  [sc,p,n,es] for es in mTEPES.es if (ar,es) in mTEPES.a2g) == mTEPES.pOperReserveUp[sc,p,n,ar]
+        else:
+            return Constraint.Skip
     mTEPES.eOperReserveUp = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.ar, rule=eOperReserveUp, doc='up   operating reserve [GW]')
 
     print('eOperReserveUp        ... ', len(mTEPES.eOperReserveUp), ' rows')
 
     def eOperReserveDw(mTEPES,sc,p,n,ar):
-        return sum(mTEPES.vReserveDown[sc,p,n,nr] for nr in mTEPES.nr if (ar,nr) in mTEPES.a2g) + sum(mTEPES.vESSReserveDown[sc,p,n,es] for es in mTEPES.es if (ar,es) in mTEPES.a2g) == mTEPES.pOperReserveDw[sc,p,n,ar]
+        if mTEPES.pOperReserveDw[sc,p,n,ar] and sum(1 for nr in mTEPES.nr if (ar,nr) in mTEPES.a2g) + sum(1 for es in mTEPES.es if (ar,es) in mTEPES.a2g):
+            return sum(mTEPES.vReserveDown[sc,p,n,nr] for nr in mTEPES.nr if (ar,nr) in mTEPES.a2g) + sum(mTEPES.vESSReserveDown[sc,p,n,es] for es in mTEPES.es if (ar,es) in mTEPES.a2g) == mTEPES.pOperReserveDw[sc,p,n,ar]
+        else:
+            return Constraint.Skip
     mTEPES.eOperReserveDw = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.ar, rule=eOperReserveDw, doc='down operating reserve [GW]')
 
     print('eOperReserveDw        ... ', len(mTEPES.eOperReserveDw), ' rows')
+
+    #%%
+    def eReserveUpIfEnergy(mTEPES,sc,p,n,es):
+        return mTEPES.vReserveUp  [sc,p,n,es] <=                                  mTEPES.vESSInventory[sc,p,n,es]  / mTEPES.pDuration[n]
+    mTEPES.eReserveUpIfEnergy = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es, rule=eReserveUpIfEnergy, doc='up   operating reserve if energy available [GW]')
+
+    print('eReserveUpIfEnergy    ... ', len(mTEPES.eReserveUpIfEnergy), ' rows')
+
+    def eReserveDwIfEnergy(mTEPES,sc,p,n,es):
+        return mTEPES.vReserveDown[sc,p,n,es] <= (mTEPES.pMaxStorage[sc,p,n,es] - mTEPES.vESSInventory[sc,p,n,es]) / mTEPES.pDuration[n]
+    mTEPES.eReserveDwIfEnergy = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es, rule=eReserveDwIfEnergy, doc='down operating reserve if energy available [GW]')
+
+    print('eReserveDwIfEnergy    ... ', len(mTEPES.eReserveDwIfEnergy), ' rows')
+
+    def eESSReserveUpIfEnergy(mTEPES,sc,p,n,es):
+        return mTEPES.vESSReserveUp  [sc,p,n,es] <= (mTEPES.pMaxStorage[sc,p,n,es] - mTEPES.vESSInventory[sc,p,n,es]) / mTEPES.pDuration[n]
+    mTEPES.eESSReserveUpIfEnergy = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es, rule=eESSReserveUpIfEnergy, doc='up   operating reserve if energy available [GW]')
+
+    print('eESSReserveUpIfEnergy ... ', len(mTEPES.eESSReserveUpIfEnergy), ' rows')
+
+    def eESSReserveDwIfEnergy(mTEPES,sc,p,n,es):
+        return mTEPES.vESSReserveDown[sc,p,n,es] <=                                  mTEPES.vESSInventory[sc,p,n,es]  / mTEPES.pDuration[n]
+    mTEPES.eESSReserveDwIfEnergy = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es, rule=eESSReserveDwIfEnergy, doc='down operating reserve if energy available [GW]')
+
+    print('eESSReserveDwIfEnergy ... ', len(mTEPES.eESSReserveDwIfEnergy), ' rows')
 
     # incoming and outgoing lines (lin) (lout)
     lin   = defaultdict(list)
@@ -91,6 +122,7 @@ def ModelFormulation(mTEPES):
         linl [nf].append((ni,cc))
         loutl[ni].append((nf,cc))
 
+    #%%
     def eBalance(mTEPES,sc,p,n,nd):
         return (sum(mTEPES.vTotalOutput[sc,p,n,g] for g in mTEPES.g if (nd,g) in mTEPES.n2g) - sum(mTEPES.vESSTotalCharge[sc,p,n,es] for es in mTEPES.es if (nd,es) in mTEPES.n2g) + mTEPES.vENS[sc,p,n,nd] == mTEPES.pDemand[sc,p,n,nd] +
                 sum(mTEPES.vLineLosses[sc,p,n,nd,lout ] for lout  in loutl[nd]) + sum(mTEPES.vFlow[sc,p,n,nd,lout ] for lout  in lout[nd]) +
@@ -255,31 +287,31 @@ def ModelFormulation(mTEPES):
 
     #%%
     def eInstalNetCap1(mTEPES,sc,p,n,ni,nf,cc):
-        return mTEPES.vFlow[sc,p,n,ni,nf,cc] / mTEPES.pLineNTC[ni,nf,cc] >= - mTEPES.vNetworkInvest[ni,nf,cc]
+        return mTEPES.vFlow[sc,p,n,ni,nf,cc] / max(mTEPES.pLineNTCBck[ni,nf,cc],mTEPES.pLineNTCFrw[ni,nf,cc]) >= - mTEPES.vNetworkInvest[ni,nf,cc]
     mTEPES.eInstalNetCap1 = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.lc, rule=eInstalNetCap1, doc='maximum flow by installed network capacity [p.u.]')
 
     print('eInstalNetCap1        ... ', len(mTEPES.eInstalNetCap1), ' rows')
 
     def eInstalNetCap2(mTEPES,sc,p,n,ni,nf,cc):
-        return mTEPES.vFlow[sc,p,n,ni,nf,cc] / mTEPES.pLineNTC[ni,nf,cc] <=   mTEPES.vNetworkInvest[ni,nf,cc]
+        return mTEPES.vFlow[sc,p,n,ni,nf,cc] / max(mTEPES.pLineNTCBck[ni,nf,cc],mTEPES.pLineNTCFrw[ni,nf,cc]) <=   mTEPES.vNetworkInvest[ni,nf,cc]
     mTEPES.eInstalNetCap2 = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.lc, rule=eInstalNetCap2, doc='maximum flow by installed network capacity [p.u.]')
 
     print('eInstalNetCap2        ... ', len(mTEPES.eInstalNetCap2), ' rows')
 
     def eKirchhoff2ndLawExst(mTEPES,sc,p,n,ni,nf,cc):
-        return mTEPES.vFlow[sc,p,n,ni,nf,cc] / mTEPES.pBigMFlow[ni,nf,cc] - (mTEPES.vTheta[sc,p,n,ni] - mTEPES.vTheta[sc,p,n,nf]) / mTEPES.pLineX[ni,nf,cc] / mTEPES.pBigMFlow[ni,nf,cc] * mTEPES.pSBase == 0
+        return mTEPES.vFlow[sc,p,n,ni,nf,cc] / max(mTEPES.pBigMFlowBck[ni,nf,cc](),mTEPES.pBigMFlowFrw[ni,nf,cc]()) - (mTEPES.vTheta[sc,p,n,ni] - mTEPES.vTheta[sc,p,n,nf]) / mTEPES.pLineX[ni,nf,cc] / max(mTEPES.pBigMFlowBck[ni,nf,cc](),mTEPES.pBigMFlowFrw[ni,nf,cc]()) * mTEPES.pSBase == 0
     mTEPES.eKirchhoff2ndLawExst = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.lea, rule=eKirchhoff2ndLawExst, doc='flow for each AC existing  line [rad]')
 
     print('eKirchhoff2ndLawExst  ... ', len(mTEPES.eKirchhoff2ndLawExst), ' rows')
 
     def eKirchhoff2ndLawCnd1(mTEPES,sc,p,n,ni,nf,cc):
-        return mTEPES.vFlow[sc,p,n,ni,nf,cc] / mTEPES.pBigMFlow[ni,nf,cc] - (mTEPES.vTheta[sc,p,n,ni] - mTEPES.vTheta[sc,p,n,nf]) / mTEPES.pLineX[ni,nf,cc] / mTEPES.pBigMFlow[ni,nf,cc] * mTEPES.pSBase >= - 1 + mTEPES.vNetworkInvest[ni,nf,cc]
+        return mTEPES.vFlow[sc,p,n,ni,nf,cc] / mTEPES.pBigMFlowBck[ni,nf,cc] - (mTEPES.vTheta[sc,p,n,ni] - mTEPES.vTheta[sc,p,n,nf]) / mTEPES.pLineX[ni,nf,cc] / mTEPES.pBigMFlowBck[ni,nf,cc] * mTEPES.pSBase >= - 1 + mTEPES.vNetworkInvest[ni,nf,cc]
     mTEPES.eKirchhoff2ndLawCnd1 = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.lca, rule=eKirchhoff2ndLawCnd1, doc='flow for each AC candidate line [rad]')
 
     print('eKirchhoff2ndLawCnd1  ... ', len(mTEPES.eKirchhoff2ndLawCnd1), ' rows')
 
     def eKirchhoff2ndLawCnd2(mTEPES,sc,p,n,ni,nf,cc):
-        return mTEPES.vFlow[sc,p,n,ni,nf,cc] / mTEPES.pBigMFlow[ni,nf,cc] - (mTEPES.vTheta[sc,p,n,ni] - mTEPES.vTheta[sc,p,n,nf]) / mTEPES.pLineX[ni,nf,cc] / mTEPES.pBigMFlow[ni,nf,cc] * mTEPES.pSBase <=   1 - mTEPES.vNetworkInvest[ni,nf,cc]
+        return mTEPES.vFlow[sc,p,n,ni,nf,cc] / mTEPES.pBigMFlowFrw[ni,nf,cc] - (mTEPES.vTheta[sc,p,n,ni] - mTEPES.vTheta[sc,p,n,nf]) / mTEPES.pLineX[ni,nf,cc] / mTEPES.pBigMFlowFrw[ni,nf,cc] * mTEPES.pSBase <=   1 - mTEPES.vNetworkInvest[ni,nf,cc]
     mTEPES.eKirchhoff2ndLawCnd2 = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.lca, rule=eKirchhoff2ndLawCnd2, doc='flow for each AC candidate line [rad]')
 
     print('eKirchhoff2ndLawCnd2  ... ', len(mTEPES.eKirchhoff2ndLawCnd2), ' rows')
