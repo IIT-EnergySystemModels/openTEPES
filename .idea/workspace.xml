@@ -162,9 +162,9 @@
       <list>
         <item itemvalue="Python.openTEPES_advanced" />
         <item itemvalue="Python.openTEPES_advanced" />
-        <item itemvalue="Python.plotly_example" />
-        <item itemvalue="Python.plotly_example" />
         <item itemvalue="Python.openTEPES_advanced" />
+        <item itemvalue="Python.plotly_example" />
+        <item itemvalue="Python.plotly_example" />
       </list>
     </recent_temporary>
   </component>
@@ -196,7 +196,8 @@
       <workItem from="1607510588230" duration="32000" />
       <workItem from="1607510931101" duration="8589000" />
       <workItem from="1607600004486" duration="26746000" />
-      <workItem from="1609327541221" duration="7070000" />
+      <workItem from="1609327541221" duration="9401000" />
+      <workItem from="1609866984764" duration="1806000" />
     </task>
     <servers />
   </component>
@@ -213,10 +214,10 @@
     </state>
     <state width="968" height="528" key="XDebugger.FullValuePopup/0.0.1920.1040@0.0.1920.1040" timestamp="1607702467388" />
     <state width="1291" height="528" key="XDebugger.FullValuePopup/0.0.2560.1040@0.0.2560.1040" timestamp="1609237266176" />
-    <state x="0" y="0" key="com.intellij.ide.util.TipDialog" timestamp="1609327544154">
-      <screen x="0" y="0" width="2560" height="1040" />
+    <state x="0" y="0" key="com.intellij.ide.util.TipDialog" timestamp="1609866984794">
+      <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state x="0" y="0" key="com.intellij.ide.util.TipDialog/0.0.1920.1040@0.0.1920.1040" timestamp="1607600019094" />
+    <state x="0" y="0" key="com.intellij.ide.util.TipDialog/0.0.1920.1040@0.0.1920.1040" timestamp="1609866984794" />
     <state x="0" y="0" key="com.intellij.ide.util.TipDialog/0.0.2560.1040@0.0.2560.1040" timestamp="1609327544154" />
     <state x="623" y="225" width="672" height="678" key="search.everywhere.popup" timestamp="1606319510872">
       <screen x="0" y="0" width="1920" height="1040" />
