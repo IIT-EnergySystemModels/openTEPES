@@ -65,8 +65,7 @@
 # make it effectively proprietary.  To prevent this, the GPL assures that
 # patents cannot be used to render the program non-free.
 
-# Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES)
-# - Version 1.7.26 - December 28, 2020
+# Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 1.7.28 - January 8, 2021
 # simplicity and transparency in power systems planning
 
 # Developed by
@@ -79,58 +78,45 @@
 #    28015 Madrid, Spain
 #    Andres.Ramos@comillas.edu
 #    Erik.Alvarez@comillas.edu
+#    Sara.Lumbreras@comillas.edu
 #    https://pascua.iit.comillas.edu/aramos/Ramos_CV.htm
 
-#    with the very valuable collaboration from David Dominguez (david.dominguez@comillas.edu)
-#    and Alejandro Rodriguez (argallego@comillas.edu), our local Python gurus
+#    with the very valuable collaboration from David Dominguez (david.dominguez@comillas.edu) and Alejandro Rodriguez (argallego@comillas.edu), our local Python gurus
 
-# libraries
+#%% libraries
+
 import time
+import setuptools
+
 from   pyomo.environ import ConcreteModel
-import openTEPES_Modules as oT_Mod
 
-CaseName       = '9n'                                     # To select the case
-SolverName     = 'glpk'
+from openTEPES_InputData        import InputData
+from openTEPES_ModelFormulation import ModelFormulation
+from openTEPES_ProblemSolving   import ProblemSolving
+from openTEPES_OutputResults    import OutputResults
 
-# Writing the LP format
-pIndWriteLP = 1
+InitialTime = time.time()
 
-# print Results
-pIndOutputResults = 0
+CaseName   = '9n'
+SolverName = 'gurobi'
 
-# model declaration
-mTEPES = ConcreteModel(
-    'Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 1.7.26 - December 28, 2020')
+#%% model declaration
+mTEPES = ConcreteModel('Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 1.7.28 - January 8, 2021')
 
+InputData(CaseName, mTEPES)
 
-def plain_run(CaseName, mTEPES, pIndWriteLP, pIndOutputResults):
+ModelFormulation(mTEPES)
 
-    InitialTime = time.time()
+mTEPES.write(CaseName+'/openTEPES_'+CaseName+'.lp', io_options={'symbolic_solver_labels': True})  # create lp-format file
 
-    # Call InputData function
-    oT_Mod.InputData(CaseName, mTEPES)
-    # Call ModelFormulation function
-    oT_Mod.ModelFormulation(mTEPES)
+StartTime = time.time()
+WritingLPFileTime = time.time() - StartTime
+StartTime         = time.time()
+print('Writing LP file                       ... ', round(WritingLPFileTime), 's')
 
-    if pIndWriteLP == 1:
-        StartTime = time.time()
-        # Create lp-format file
-        mTEPES.write(CaseName + '/openTEPES_'+CaseName+'.lp', io_options={'symbolic_solver_labels': True})
+ProblemSolving(CaseName, SolverName, mTEPES)
 
-        WritingLPFileTime = time.time() - StartTime
-        StartTime = time.time()
-        print('Writing LP file                       ... ', round(WritingLPFileTime), 's')
+OutputResults(CaseName, mTEPES)
 
-    # Call ProblemSolving function
-    oT_Mod.ProblemSolving(CaseName, SolverName, mTEPES)
-
-    if pIndOutputResults == 1:
-        # Call OutputResults function
-        oT_Mod.OutputResults(CaseName, mTEPES)
-
-    TotalTime = time.time() - InitialTime
-    print('Total time                            ... ', round(TotalTime), 's')
-
-
-if __name__ == "__main__":
-    plain_run(CaseName, mTEPES, pIndWriteLP)
+TotalTime = time.time() - InitialTime
+print('Total time                            ... ', round(TotalTime), 's')
