@@ -192,7 +192,7 @@ def OutputResults(CaseName, mTEPES):
     for ar in mTEPES.ar:
         if len(mTEPES.ar) > 1:
             OutputToFile = pd.Series(data=[mTEPES.vTotalOutput[sc,p,n,g]()*mTEPES.pDuration[n] for sc,p,n,g in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.g ], index=pd.MultiIndex.from_tuples(list(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.g )))
-            OutputToFile = pd.Series(data=[sum(OutputToFile[sc,p,n,g] for g in mTEPES.g if (ar,g) if mTEPES.a2g and (gt,g) in mTEPES.t2g) for sc,p,n,gt in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.gt], index=pd.MultiIndex.from_tuples(list(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.gt)))
+            OutputToFile = pd.Series(data=[sum(OutputToFile[sc,p,n,g] for g in mTEPES.g if (ar,g) in mTEPES.a2g and (gt,g) in mTEPES.t2g) for sc,p,n,gt in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.gt], index=pd.MultiIndex.from_tuples(list(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.gt)))
             OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='GWh').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(CaseName+'/oT_Result_TechnologyEnergy_'+ar+'_'+CaseName+'.csv', sep=',')
 
             TechnologyEnergy = OutputToFile.to_frame(name='')
@@ -220,7 +220,7 @@ def OutputResults(CaseName, mTEPES):
     OutputToFile.to_csv(CaseName+'/oT_Result_NetworkUtilization_'+CaseName+'.csv', sep=',')
 
     if mTEPES.pIndNetLosses:
-        OutputToFile = pd.Series(data=[mTEPES.vLineLosses[sc,p,n,ni,nf,cc]() for sc,p,n,ni,nf,cc in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.la], index= pd.MultiIndex.from_tuples(list(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.la)))
+        OutputToFile = pd.Series(data=[mTEPES.vLineLosses[sc,p,n,ni,nf,cc]() for sc,p,n,ni,nf,cc in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.ll], index= pd.MultiIndex.from_tuples(list(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.ll)))
         OutputToFile.index.names = ['Scenario','Period','LoadLevel','InitialNode','FinalNode','Circuit']
         OutputToFile = pd.pivot_table(OutputToFile.to_frame(name='pu'), values='pu', index=['Scenario','Period','LoadLevel'], columns=['InitialNode','FinalNode','Circuit'], fill_value=0.0)
         OutputToFile.index.names = [None] * len(OutputToFile.index.names)
@@ -392,8 +392,8 @@ def OutputResults(CaseName, mTEPES):
 
     #%% colors of the lines according to the ENTSO-E color code
     # existing lines
-    for ni,nf,cc,lt in mTEPES.le*mTEPES.lt:
-        if (ni,nf,cc,lt) in mTEPES.pLineType and lt == 'AC':
+    for ni,nf,cc in mTEPES.le:
+        if (ni,nf,cc) in mTEPES.lea:
             if mTEPES.pLineVoltage[ni,nf,cc] > 700 and mTEPES.pLineVoltage[ni,nf,cc] <= 900:
                 ax.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='blue'   , linewidth=2  , marker='o', linestyle='solid', transform=ccrs.PlateCarree())
             if mTEPES.pLineVoltage[ni,nf,cc] > 500 and mTEPES.pLineVoltage[ni,nf,cc] <= 700:
@@ -409,8 +409,8 @@ def OutputResults(CaseName, mTEPES):
         else:
             ax.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='magenta', linewidth=1  , marker='o', linestyle='solid', transform=ccrs.PlateCarree())
     # candidate lines
-    for ni,nf,cc,lt in mTEPES.lc*mTEPES.lt:
-        if (ni,nf,cc,lt) in mTEPES.pLineType and lt == 'AC' and mTEPES.vNetworkInvest[ni,nf,cc]() > 0:
+    for ni,nf,cc in mTEPES.lc:
+        if (ni,nf,cc) in mTEPES.lca and mTEPES.vNetworkInvest[ni,nf,cc]() > 0:
             if mTEPES.pLineVoltage[ni,nf,cc] > 700 and mTEPES.pLineVoltage[ni,nf,cc] <= 900:
                 ax.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='blue'   , linewidth=2  , marker='o', linestyle='dashed', transform=ccrs.PlateCarree())
             if mTEPES.pLineVoltage[ni,nf,cc] > 500 and mTEPES.pLineVoltage[ni,nf,cc] <= 700:
