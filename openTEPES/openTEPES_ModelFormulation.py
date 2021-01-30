@@ -1,4 +1,4 @@
-# Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 1.7.28 - January 8, 2021
+# Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 1.7.29 - January 30, 2021
 
 import time
 from   collections   import defaultdict
@@ -256,22 +256,22 @@ def ModelFormulation(mTEPES):
     print('Generating generation constraints     ... ', round(GeneratingGenConsTime), 's')
 
     #%%
-    def eRampUp(mTEPES,sc,p,n,t):
-        if   mTEPES.pRampUp[t] and mTEPES.pRampUp[t] < mTEPES.pMaxPower2ndBlock[sc,p,n,t] and n == mTEPES.n.first():
-            return (- max(mTEPES.pInitialOutput[t] - mTEPES.pMinPower[sc,p,n,t],0)                                                                 + mTEPES.vOutput2ndBlock[sc,p,n,t] + mTEPES.pUpReserveActivation * mTEPES.vReserveUp  [sc,p,n,t] + mTEPES.vReserveUp  [sc,p,n,t]) / mTEPES.pDuration[n] / mTEPES.pRampUp[t] <=   mTEPES.vCommitment[sc,p,n,t] - mTEPES.vStartUp[sc,p,n,t]
-        elif mTEPES.pRampUp[t] and mTEPES.pRampUp[t] < mTEPES.pMaxPower2ndBlock[sc,p,n,t]:
-            return (- mTEPES.vOutput2ndBlock[sc,p,mTEPES.n.prev(n),t] - mTEPES.pUpReserveActivation * mTEPES.vReserveUp  [sc,p,mTEPES.n.prev(n),t] + mTEPES.vOutput2ndBlock[sc,p,n,t] + mTEPES.pUpReserveActivation * mTEPES.vReserveUp  [sc,p,n,t] + mTEPES.vReserveUp  [sc,p,n,t]) / mTEPES.pDuration[n] / mTEPES.pRampUp[t] <=   mTEPES.vCommitment[sc,p,n,t] - mTEPES.vStartUp[sc,p,n,t]
+    def eRampUp(mTEPES,sc,p,n,nr):
+        if   mTEPES.pRampUp[t] and mTEPES.pRampUp[t] < mTEPES.pMaxPower2ndBlock[sc,p,n,nr] and n == mTEPES.n.first():
+            return (- max(mTEPES.pInitialOutput[t] - mTEPES.pMinPower[sc,p,n,nr],0)                                                                  + mTEPES.vOutput2ndBlock[sc,p,n,nr] + mTEPES.pUpReserveActivation * mTEPES.vReserveUp  [sc,p,n,nr] + mTEPES.vReserveUp  [sc,p,n,nr]) / mTEPES.pDuration[n] / mTEPES.pRampUp[t] <=   mTEPES.vCommitment[sc,p,n,nr] - mTEPES.vStartUp[sc,p,n,nr]
+        elif mTEPES.pRampUp[t] and mTEPES.pRampUp[t] < mTEPES.pMaxPower2ndBlock[sc,p,n,nr]:
+            return (- mTEPES.vOutput2ndBlock[sc,p,mTEPES.n.prev(n),nr] - mTEPES.pUpReserveActivation * mTEPES.vReserveUp  [sc,p,mTEPES.n.prev(n),nr] + mTEPES.vOutput2ndBlock[sc,p,n,nr] + mTEPES.pUpReserveActivation * mTEPES.vReserveUp  [sc,p,n,nr] + mTEPES.vReserveUp  [sc,p,n,nr]) / mTEPES.pDuration[n] / mTEPES.pRampUp[t] <=   mTEPES.vCommitment[sc,p,n,nr] - mTEPES.vStartUp[sc,p,n,nr]
         else:
             return Constraint.Skip
     mTEPES.eRampUp = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.t, rule=eRampUp, doc='maximum ramp up   [p.u.]')
 
     print('eRampUp               ... ', len(mTEPES.eRampUp), ' rows')
 
-    def eRampDw(mTEPES,sc,p,n,t):
-        if   mTEPES.pRampDw[t] and mTEPES.pRampDw[t] < mTEPES.pMaxPower2ndBlock[sc,p,n,t] and n == mTEPES.n.first():
-            return (- max(mTEPES.pInitialOutput[t] - mTEPES.pMinPower[sc,p,n,t],0)                                                                 + mTEPES.vOutput2ndBlock[sc,p,n,t] - mTEPES.pDwReserveActivation * mTEPES.vReserveDown[sc,p,n,t] - mTEPES.vReserveDown[sc,p,n,t]) / mTEPES.pDuration[n] / mTEPES.pRampDw[t] >= - mTEPES.pInitialUC[t]                                                                                           + mTEPES.vShutDown[sc,p,n,t]
-        elif mTEPES.pRampDw[t] and mTEPES.pRampDw[t] < mTEPES.pMaxPower2ndBlock[sc,p,n,t]:
-            return (- mTEPES.vOutput2ndBlock[sc,p,mTEPES.n.prev(n),t] + mTEPES.pDwReserveActivation * mTEPES.vReserveDown[sc,p,mTEPES.n.prev(n),t] + mTEPES.vOutput2ndBlock[sc,p,n,t] - mTEPES.pDwReserveActivation * mTEPES.vReserveDown[sc,p,n,t] - mTEPES.vReserveDown[sc,p,n,t]) / mTEPES.pDuration[n] / mTEPES.pRampDw[t] >= - mTEPES.vCommitment[sc,p,mTEPES.n.prev(n),t] + mTEPES.vShutDown[sc,p,n,t]
+    def eRampDw(mTEPES,sc,p,n,nr):
+        if   mTEPES.pRampDw[t] and mTEPES.pRampDw[t] < mTEPES.pMaxPower2ndBlock[sc,p,n,nr] and n == mTEPES.n.first():
+            return (- max(mTEPES.pInitialOutput[t] - mTEPES.pMinPower[sc,p,n,nr],0)                                                                  + mTEPES.vOutput2ndBlock[sc,p,n,nr] - mTEPES.pDwReserveActivation * mTEPES.vReserveDown[sc,p,n,nr] - mTEPES.vReserveDown[sc,p,n,nr]) / mTEPES.pDuration[n] / mTEPES.pRampDw[t] >= - mTEPES.pInitialUC[t]                                                                                           + mTEPES.vShutDown[sc,p,n,nr]
+        elif mTEPES.pRampDw[t] and mTEPES.pRampDw[t] < mTEPES.pMaxPower2ndBlock[sc,p,n,nr]:
+            return (- mTEPES.vOutput2ndBlock[sc,p,mTEPES.n.prev(n),nr] + mTEPES.pDwReserveActivation * mTEPES.vReserveDown[sc,p,mTEPES.n.prev(n),nr] + mTEPES.vOutput2ndBlock[sc,p,n,nr] - mTEPES.pDwReserveActivation * mTEPES.vReserveDown[sc,p,n,nr] - mTEPES.vReserveDown[sc,p,n,nr]) / mTEPES.pDuration[n] / mTEPES.pRampDw[t] >= - mTEPES.vCommitment[sc,p,mTEPES.n.prev(n),nr] + mTEPES.vShutDown[sc,p,n,nr]
         else:
             return Constraint.Skip
     mTEPES.eRampDw = Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.t, rule=eRampDw, doc='maximum ramp down [p.u.]')

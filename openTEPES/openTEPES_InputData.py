@@ -1,4 +1,4 @@
-# Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 1.7.28 - January 8, 2021
+# Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 1.7.29 - January 30, 2021
 
 import time
 import math
@@ -95,17 +95,17 @@ def InputData(CaseName,mTEPES):
     mTEPES.arrg = Set(initialize=dictSets['arrg'], ordered=False, doc='area to region')
 
     #%% parameters
-    pIndBinGenInvest     = dfOption   ['IndBinGenInvest'    ][0].astype('int')                                                                # Indicator of binary generation expansion decisions, 0 continuous - 1 binary
-    pIndBinNetInvest     = dfOption   ['IndBinNetInvest'    ][0].astype('int')                                                                # Indicator of binary network    expansion decisions, 0 continuous - 1 binary
-    pIndBinGenOperat     = dfOption   ['IndBinGenOperat'    ][0].astype('int')                                                                # Indicator of binary generation operation decisions, 0 continuous - 1 binary
-    pIndNetLosses        = dfOption   ['IndNetLosses'       ][0].astype('int')                                                                # Indicator of network losses,                        0 lossless   - 1 ohmic losses
-    pENSCost             = dfParameter['ENSCost'            ][0] * 1e-3                                                                       # cost of energy not served           [MEUR/GWh]
-    pCO2Cost             = dfParameter['CO2Cost'            ][0]                                                                              # cost of CO2 emission                [EUR/t CO2]
-    pUpReserveActivation = dfParameter['UpReserveActivation'][0]                                                                              # upward   reserve activation         [p.u.]
-    pDwReserveActivation = dfParameter['DwReserveActivation'][0]                                                                              # downward reserve activation         [p.u.]
-    pSBase               = dfParameter['SBase'              ][0] * 1e-3                                                                       # base power                          [GW]
-    pReferenceNode       = dfParameter['ReferenceNode'      ][0]                                                                              # reference node
-    pTimeStep            = dfParameter['TimeStep'           ][0].astype('int')                                                                # duration of the unit time step      [h]
+    pIndBinGenInvest     = dfOption   ['IndBinGenInvest'    ][0].astype('int')                                                            # Indicator of binary generation expansion decisions, 0 continuous - 1 binary
+    pIndBinNetInvest     = dfOption   ['IndBinNetInvest'    ][0].astype('int')                                                            # Indicator of binary network    expansion decisions, 0 continuous - 1 binary
+    pIndBinGenOperat     = dfOption   ['IndBinGenOperat'    ][0].astype('int')                                                            # Indicator of binary generation operation decisions, 0 continuous - 1 binary
+    pIndNetLosses        = dfOption   ['IndNetLosses'       ][0].astype('int')                                                            # Indicator of network losses,                        0 lossless   - 1 ohmic losses
+    pENSCost             = dfParameter['ENSCost'            ][0] * 1e-3                                                                   # cost of energy not served           [MEUR/GWh]
+    pCO2Cost             = dfParameter['CO2Cost'            ][0]                                                                          # cost of CO2 emission                [EUR/t CO2]
+    pUpReserveActivation = dfParameter['UpReserveActivation'][0]                                                                          # upward   reserve activation         [p.u.]
+    pDwReserveActivation = dfParameter['DwReserveActivation'][0]                                                                          # downward reserve activation         [p.u.]
+    pSBase               = dfParameter['SBase'              ][0] * 1e-3                                                                   # base power                          [GW]
+    pReferenceNode       = dfParameter['ReferenceNode'      ][0]                                                                          # reference node
+    pTimeStep            = dfParameter['TimeStep'           ][0].astype('int')                                                            # duration of the unit time step      [h]
 
     pScenProb            = dfScenario          ['Probability'  ]                                                                          # probabilities of scenarios          [p.u.]
     pDuration            = dfDuration          ['Duration'     ] * pTimeStep                                                              # duration of load levels             [h]
