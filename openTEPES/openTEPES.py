@@ -65,7 +65,7 @@
 # make it effectively proprietary.  To prevent this, the GPL assures that
 # patents cannot be used to render the program non-free.
 
-# Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 1.7.29 - January 30, 2021
+# Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 2.0.0 - February 9, 2021
 # simplicity and transparency in power systems planning
 
 # Developed by
@@ -91,7 +91,8 @@ import setuptools
 from   pyomo.environ import ConcreteModel
 
 from openTEPES_InputData        import InputData
-from openTEPES_ModelFormulation import ModelFormulation
+from openTEPES_ModelFormulation import InvestmentModelFormulation
+from openTEPES_ModelFormulation import OperationModelFormulation
 from openTEPES_ProblemSolving   import ProblemSolving
 from openTEPES_OutputResults    import OutputResults
 
@@ -101,11 +102,12 @@ CaseName   = '9n'
 SolverName = 'gurobi'
 
 #%% model declaration
-mTEPES = ConcreteModel('Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 1.7.29 - January 30, 2021')
+mTEPES = ConcreteModel('Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 2.0.0 - February 9, 2021')
 
 InputData(CaseName, mTEPES)
 
-ModelFormulation(mTEPES)
+InvestmentModelFormulation(mTEPES)
+OperationModelFormulation(mTEPES)
 
 mTEPES.write(CaseName+'/openTEPES_'+CaseName+'.lp', io_options={'symbolic_solver_labels': True})  # create lp-format file
 
