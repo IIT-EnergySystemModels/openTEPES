@@ -1,4 +1,4 @@
-# Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 7, 2021
+# Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 14, 2021
 
 import time
 import pandas as pd
@@ -307,7 +307,7 @@ def OutputResults(CaseName, mTEPES):
 
     #%% outputting the water values
     if len(mTEPES.es):
-        OutputToFile = pd.Series(data=[mTEPES.dual[mTEPES.eESSInventory[sc,p,n,es]]/mTEPES.pScenProb[sc]/mTEPES.pDuration[n] for sc,p,n,es in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.es if mTEPES.n.ord(n) % mTEPES.pCycleTimeStep[es] == 0], index=pd.MultiIndex.from_tuples([(sc,p,n,es) for sc,p,n,es in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.es if mTEPES.n.ord(n) % mTEPES.pCycleTimeStep[es] == 0]))
+        OutputToFile = pd.Series(data=[mTEPES.dual[mTEPES.eESSInventory[sc,p,n,es]]*1e3/mTEPES.pScenProb[sc]/mTEPES.pDuration[n] for sc,p,n,es in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.es if mTEPES.n.ord(n) % mTEPES.pCycleTimeStep[es] == 0], index=pd.MultiIndex.from_tuples([(sc,p,n,es) for sc,p,n,es in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.es if mTEPES.n.ord(n) % mTEPES.pCycleTimeStep[es] == 0]))
         OutputToFile.to_frame(name='WaterValue').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='WaterValue').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(CaseName+'/oT_Result_WaterValue_'+CaseName+'.csv', sep=',')
 
         WaterValue = OutputToFile.loc[:,:]

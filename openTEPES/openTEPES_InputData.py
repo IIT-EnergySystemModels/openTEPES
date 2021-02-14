@@ -1,4 +1,4 @@
-# Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 7, 2021
+# Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 14, 2021
 
 import time
 import math
@@ -519,9 +519,9 @@ def InputData(CaseName,mTEPES):
         # if no max power, no total output
         if mTEPES.pMaxPower[sc,p,n,g] == 0.0:
             mTEPES.vTotalOutput[sc,p,n,g].fix(0.0)
-    for sc,p,n,r  in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.r :
-        if mTEPES.pMinPower[sc,p,n,r] == mTEPES.pMaxPower[sc,p,n,r] and mTEPES.pLinearOMCost[r] == 0.0:
-            mTEPES.vTotalOutput[sc,p,n,r].fix(mTEPES.pMaxPower[sc,p,n,r])
+    #for sc,p,n,r  in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.r :
+    #    if mTEPES.pMinPower[sc,p,n,r] == mTEPES.pMaxPower[sc,p,n,r] and mTEPES.pLinearOMCost[r] == 0.0:
+    #        mTEPES.vTotalOutput[sc,p,n,r].fix(mTEPES.pMaxPower[sc,p,n,r])
 
     for sc,p,n,nr in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.nr:
         # must run units or units with no minimum power are always committed and must produce at least their minimum output
