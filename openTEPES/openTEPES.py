@@ -88,11 +88,12 @@
 import time
 import setuptools
 
-from   pyomo.environ import ConcreteModel
+from   pyomo.environ import ConcreteModel, Set
 
 from openTEPES_InputData        import InputData
-from openTEPES_ModelFormulation import InvestmentModelFormulation
-from openTEPES_ModelFormulation import OperationModelFormulation
+from openTEPES_ModelFormulation import InvestmentModelObjective
+from openTEPES_ModelFormulation import OperationModelObjective
+from openTEPES_ModelFormulation import OperationModelConstraints
 from openTEPES_ProblemSolving   import ProblemSolving
 from openTEPES_OutputResults    import OutputResults
 
@@ -112,8 +113,8 @@ InputData(CaseName, mTEPES)
 
 # investment model objective function
 # operation  model objective function
-oTM.InvestmentModelObjective(mTEPES)
-oTM.OperationModelObjective (mTEPES)
+InvestmentModelObjective(mTEPES)
+OperationModelObjective (mTEPES)
 
 # iterative model formulation for each stage of a year
 for sc,p,st in mTEPES.sc*mTEPES.p*range(1,int(sum(mTEPES.pDuration.values())/pStageDuration+1)):
@@ -128,7 +129,7 @@ for sc,p,st in mTEPES.sc*mTEPES.p*range(1,int(sum(mTEPES.pDuration.values())/pSt
     mTEPES.n  = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in list(mTEPES.pDuration) and mTEPES.nn.ord(nn) > (st-1)*pStageDuration and mTEPES.nn.ord(nn) <= st*pStageDuration)
     mTEPES.n2 = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in list(mTEPES.pDuration) and mTEPES.nn.ord(nn) > (st-1)*pStageDuration and mTEPES.nn.ord(nn) <= st*pStageDuration)
     # formulation of the operation constraints by stage
-    oTM.OperationModelConstraints(mTEPES, st)
+    OperationModelConstraints(mTEPES, st)
 
 mTEPES.write(CaseName+'/openTEPES_'+CaseName+'.lp', io_options={'symbolic_solver_labels': True})  # create lp-format file
 
