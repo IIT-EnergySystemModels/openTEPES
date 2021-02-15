@@ -291,8 +291,8 @@ def OutputResults(CaseName, mTEPES):
 
         #%% outputting the down operating reserve marginal
         if sum(mTEPES.pOperReserveDw[sc,p,n,ar] for sc,p,n,ar in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.ar):
-            OutputToFile = pd.Series(data=[mTEPES.dual[mTEPES.eOperReserveDw[sc,p,n,ar]]*1e3/mTEPES.pScenProb[sc]/mTEPES.pDuration[n] for sc,p,n,ar in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.ar if mTEPES.pOperReserveDw[sc,p,n,ar] and sum(1 for nr in mTEPES.nr if (ar,nr) in mTEPES.a2g) + sum(1 for es in mTEPES.es if (ar,es) in mTEPES.a2g)], index=pd.MultiIndex.from_tuples(mTEPES.eOperReserveDw))
-            OutputToFile.to_frame(name='DORM').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='DORM').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(CaseName+'/oT_Result_MarginalOperatingReserveDown_'+CaseName+'.csv', sep=',')
+            OutputToFile = pd.Series(data=[mTEPES.dual[getattr(mTEPES, 'eOperReserveDw_stage'+str(st))[sc,p,n,ar]]*1e3/mTEPES.pScenProb[sc]/mTEPES.pDuration[n] for sc,p,n,ar in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.ar if mTEPES.pOperReserveDw[sc,p,n,ar] and sum(1 for nr in mTEPES.nr if (ar,nr) in mTEPES.a2g) + sum(1 for es in mTEPES.es if (ar,es) in mTEPES.a2g)], index=pd.MultiIndex.from_tuples(getattr(mTEPES, 'eOperReserveDw_stage'+str(st))))
+            OutputToFile.to_frame(name='DORM').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='DORM').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(CaseName+'/oT_Result_MarginalOperatingReserveDown_'+str(sc)+'_'+str(p)+'_'+str(st)+'_'+CaseName+'.csv', sep=',')
 
             MarginalDwOperatingReserve = OutputToFile.loc[:,:]
 
@@ -307,7 +307,7 @@ def OutputResults(CaseName, mTEPES):
             fg.legend()
             plt.tight_layout()
             # plt.show()
-            plt.savefig(CaseName+'/oT_Plot_MarginalOperatingReserveDownward_'+CaseName+'.png', bbox_inches=None, dpi=600)
+            plt.savefig(CaseName+'/oT_Plot_MarginalOperatingReserveDownward_'+str(sc)+'_'+str(p)+'_'+str(st)+'_'+CaseName+'.png', bbox_inches=None, dpi=600)
 
         #%% outputting the water values
         if len(mTEPES.es):
