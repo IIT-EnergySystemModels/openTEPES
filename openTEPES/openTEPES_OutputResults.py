@@ -351,7 +351,7 @@ def OutputResults(CaseName, mTEPES):
     OutputToFile = pd.Series(data=[mTEPES.pScenProb[sc] * mTEPES.pDuration[n] * mTEPES.pENSCost         * mTEPES.vENS        [sc,p,n,nd]()  for sc,p,n,nd in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.nd], index=pd.MultiIndex.from_tuples(list(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.nd)))
     OutputToFile.to_frame(name='MEUR').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MEUR').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(CaseName+'/oT_Result_ReliabilityCost_'+CaseName+'.csv', sep=',')
 
-    OutputToFile = pd.Series(data=[mTEPES.dual[mTEPES.eBalance[sc,p,n,nd]]/mTEPES.pScenProb[sc] * mTEPES.vTotalOutput[sc,p,n,g]() for sc,p,n,nd,g in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.n2g], index=pd.MultiIndex.from_tuples(list(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.n2g)))
+    OutputToFile = pd.Series(data=[mTEPES.dual[getattr(mTEPES, 'eBalance_stage'+str(st))[sc,p,n,nd]]/mTEPES.pScenProb[sc] * mTEPES.vTotalOutput[sc,p,n,g]() for sc,p,n,nd,g in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.n2g], index=pd.MultiIndex.from_tuples(list(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.n2g)))
     OutputToFile.to_frame(name='MEUR').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_4', values='MEUR').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(CaseName+'/oT_Result_GenerationEnergyRevenue_'+CaseName+'.csv', sep=',')
 
     # if sum(mTEPES.pOperReserveUp[sc,p,n,ar]+mTEPES.pOperReserveDw[sc,p,n,ar] for sc,p,n,ar in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.ar):
