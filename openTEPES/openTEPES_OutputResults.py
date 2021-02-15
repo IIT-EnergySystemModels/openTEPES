@@ -247,8 +247,10 @@ def OutputResults(CaseName, mTEPES):
         lout[ni].append((nf,cc))
 
     #%% outputting the LSRMC
-    OutputToFile = pd.Series(data=[mTEPES.dual[mTEPES.eBalance[sc,p,n,nd]]*1e3/mTEPES.pScenProb[sc]/mTEPES.pDuration[n] for sc,p,n,nd in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.nd if sum(1 for g in mTEPES.g if (nd,g) in mTEPES.n2g) + sum(1 for lout in lout[nd]) + sum(1 for ni,cc in lin[nd])], index=pd.MultiIndex.from_tuples(mTEPES.eBalance))
-    OutputToFile.to_frame(name='LSRMC').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='LSRMC').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(CaseName+'/oT_Result_LSRMC_'+CaseName+'.csv', sep=',')
+    pStageDuration = 8736
+    for sc, p, st in mTEPES.sc * mTEPES.p * range(1, int(sum(mTEPES.pDuration.values()) / pStageDuration + 1)):
+        OutputToFile = pd.Series(data=[mTEPES.dual[getattr(mTEPES, 'eBalance_stage'+str(st))[sc,p,n,nd]]*1e3/mTEPES.pScenProb[sc]/mTEPES.pDuration[n] for n,nd in mTEPES.n*mTEPES.nd if sum(1 for g in mTEPES.g if (nd,g) in mTEPES.n2g) + sum(1 for lout in lout[nd]) + sum(1 for ni,cc in lin[nd])], index=pd.MultiIndex.from_tuples(getattr(mTEPES, 'eBalance_stage'+str(st))))
+        OutputToFile.to_frame(name='LSRMC').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='LSRMC').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(CaseName+'/oT_Result_LSRMC_'+CaseName+'.csv', sep=',')
 
     LSRMC = OutputToFile.loc[:,:]
 
