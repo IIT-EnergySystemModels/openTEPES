@@ -311,8 +311,8 @@ def OutputResults(CaseName, mTEPES):
 
         #%% outputting the water values
         if len(mTEPES.es):
-            OutputToFile = pd.Series(data=[mTEPES.dual[mTEPES.eESSInventory[sc,p,n,es]]*1e3/mTEPES.pScenProb[sc]/mTEPES.pDuration[n] for sc,p,n,es in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.es if mTEPES.n.ord(n) % mTEPES.pCycleTimeStep[es] == 0], index=pd.MultiIndex.from_tuples([(sc,p,n,es) for sc,p,n,es in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.es if mTEPES.n.ord(n) % mTEPES.pCycleTimeStep[es] == 0]))
-            OutputToFile.to_frame(name='WaterValue').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='WaterValue').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(CaseName+'/oT_Result_WaterValue_'+CaseName+'.csv', sep=',')
+            OutputToFile = pd.Series(data=[mTEPES.dual[getattr(mTEPES, 'eESSInventory_stage'+str(st))[sc,p,n,es]]*1e3/mTEPES.pScenProb[sc]/mTEPES.pDuration[n] for sc,p,n,es in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.es if mTEPES.n.ord(n) % mTEPES.pCycleTimeStep[es] == 0], index=pd.MultiIndex.from_tuples([(sc,p,n,es) for sc,p,n,es in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.es if mTEPES.n.ord(n) % mTEPES.pCycleTimeStep[es] == 0]))
+            OutputToFile.to_frame(name='WaterValue').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='WaterValue').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(CaseName+'/oT_Result_WaterValue_'+str(sc)+'_'+str(p)+'_'+str(st)+'_'+CaseName+'.csv', sep=',')
 
             WaterValue = OutputToFile.loc[:,:]
 
@@ -326,7 +326,7 @@ def OutputResults(CaseName, mTEPES):
             fg.legend()
             plt.tight_layout()
             # plt.show()
-            plt.savefig(CaseName+'/oT_Plot_WaterValue_'+CaseName+'.png', bbox_inches=None, dpi=600)
+            plt.savefig(CaseName+'/oT_Plot_WaterValue_'+str(sc)+'_'+str(p)+'_'+str(st)+'_'+CaseName+'.png', bbox_inches=None, dpi=600)
 
     WritingResultsTime = time.time() - StartTime
     StartTime          = time.time()
