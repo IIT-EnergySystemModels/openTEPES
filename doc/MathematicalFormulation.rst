@@ -45,7 +45,7 @@ They are written in capital letters.
 ==================  ====================================================  =======
 **Demand**                                                       
 ------------------  ----------------------------------------------------  -------
-:math:`D_{ωpni}`    Demand in each node                                   GW
+:math:`D^ω_{pni}`   Demand in each node                                   GW
 :math:`DUR_n`       Duration of each load level                           h
 :math:`CENS`        Cost of energy not served. Value of Lost Load (VoLL)  €/MWh
 ==================  ====================================================  =======
@@ -53,15 +53,15 @@ They are written in capital letters.
 ==================  ====================================================  =======
 **Scenarios**                                                       
 ------------------  ----------------------------------------------------  -------
-:math:`P_ω`         Probability of each scenario                          p.u.
+:math:`P^ω`         Probability of each scenario                          p.u.
 ==================  ====================================================  =======
 
-=============================  ========================================================  ====
+==============================  ========================================================  ====
 **Operating reserves**                                         
------------------------------  --------------------------------------------------------  ----
-:math:`URA, DRA`               Upward and downward reserve activation                    p.u.
-:math:`UR_{ωpna}, DR_{ωpna}`   Upward and downward operating reserves for each area      GW
-=============================  ========================================================  ====
+------------------------------  --------------------------------------------------------  ----
+:math:`URA, DRA`                Upward and downward reserve activation                    p.u.
+:math:`UR^ω_{pna}, DR^ω_{pna}`  Upward and downward operating reserves for each area      GW
+==============================  ========================================================  ====
 
 =========================================  ============================================================================================  ============
 **Generation system**   
@@ -76,8 +76,8 @@ They are written in capital letters.
 :math:`CSU_g, CSD_g`                       Startup and shutdown cost of a committed unit                                                 M€
 :math:`\tau_e`                             Characteristic duration of the ESS (e.g., 24 h, 168 h, 672 h -for daily, weekly, monthly-)    h
 :math:`EF_e`                               Efficiency of the pump/turbine cycle of a hydro power plant or charge/discharge of a battery  p.u.
-:math:`I_e`                                Capacity of an ESS (e.g., hydro power plant)                                                  TWh
-:math:`EI_{ωpng}`                          Energy inflows of an ESS (e.g., hydro power plant)                                            TWh
+:math:`I_e`                                Capacity of an ESS (e.g., hydro power plant)                                                  GWh
+:math:`EI^ω_{png}`                         Energy inflows of an ESS (e.g., hydro power plant)                                            GWh
 =========================================  ============================================================================================  ============
 
 =========================================  =================================================================================================================  ====
@@ -90,6 +90,8 @@ They are written in capital letters.
 :math:`S_B`                                Base power                                                                                                         GW
 =========================================  =================================================================================================================  ====
 
+The net transfer capacity of a transmission line can be different in each direction. However, here it is presented as equal for simplicity.
+
 Variables
 ---------
 
@@ -98,30 +100,30 @@ They are written in lower letters.
 ===================  ==================  ===
 **Demand**                             
 -------------------  ------------------  ---
-:math:`ens_{ωpni}`   Energy not served   GW
+:math:`ens^ω_{pni}`   Energy not served   GW
 ===================  ==================  ===
 
-=======================================  ==========================================================================  =====
+==========================================  ==========================================================================  =====
 **Generation system**   
----------------------------------------  --------------------------------------------------------------------------  -----
-:math:`icg_g`                            Candidate generator or ESS installed or not                                 {0,1}
-:math:`gp_{ωpng}, gc_{ωpng}`             Generator output (discharge if an ESS) and consumption (charge if an ESS)   GW
-:math:`p_{ωpng}`                         Generator output of the second block (i.e., above the minimum load)         GW
-:math:`c_{ωpne}`                         Generator charge                                                            GW
-:math:`ur_{ωpng}, dr_{ωpng}`             Upward and downward operating reserves of a committed unit                  GW
-:math:`ur_{ωpne}, dr_{ωpne}`             Upward and downward operating reserves of an ESS                            GW
-:math:`i_{ωpne}`                         ESS stored energy (inventory)                                               TWh
-:math:`s_{ωpne}`                         ESS spilled energy                                                          TWh
-:math:`uc_{ωpng}, su_{ωpng}, sd_{ωpng}`  Commitment, startup and shutdown of generation unit per load level          {0,1}
-=======================================  ==========================================================================  =====
+------------------------------------------  --------------------------------------------------------------------------  -----
+:math:`icg_g`                               Candidate generator or ESS installed or not                                 {0,1}
+:math:`gp^ω_{png}, gc^ω_{png}`              Generator output (discharge if an ESS) and consumption (charge if an ESS)   GW
+:math:`p^ω_{png}`                           Generator output of the second block (i.e., above the minimum load)         GW
+:math:`c^ω_{pne}`                           Generator charge                                                            GW
+:math:`ur^ω_{png}, dr^ω_{png}`              Upward and downward operating reserves of a non-renewable generating unit   GW
+:math:`ur'^ω_{pne}, dr'^ω_{pne}`            Upward and downward operating reserves of an ESS consumption unit           GW
+:math:`i^ω_{pne}`                           ESS stored energy (inventory)                                               GWh
+:math:`s^ω_{pne}`                           ESS spilled energy                                                          GWh
+:math:`uc^ω_{png}, su^ω_{png}, sd^ω_{png}`  Commitment, startup and shutdown of generation unit per load level          {0,1}
+==========================================  ==========================================================================  =====
 
 ========================  ================================  =====
 **Transmission system** 
 ------------------------  --------------------------------  -----
 :math:`ict_{ijc}`         Candidate line installed or not   {0,1}
-:math:`f_{ωpnijc}`        Flow through a line               GW
-:math:`l_{ωpnijc}`        Half ohmic losses of a line       GW
-:math:`θ_{ωpni}`          Voltage angle of a node           rad
+:math:`f^ω_{pnijc}`       Flow through a line               GW
+:math:`l^ω_{pnijc}`       Half ohmic losses of a line       GW
+:math:`θ^ω_{pni}`         Voltage angle of a node           rad
 ========================  ================================  =====
 
 Equations
@@ -131,48 +133,59 @@ Equations
 
 Generation, storage and network investment cost [M€]
 
-:math:`\sum_g {CFG_g icg_g} + \sum_{ijc}{CFT_{ijc} ict_{ijc}}`
+:math:`\sum_g {CFG_g icg_g} + \sum_{ijc}{CFT_{ijc} ict_{ijc}} +`
 
 Generation operation cost [M€]
 
-:math:`\sum_{ωpng}{[P_ω DUR_n (CV_g gp_{ωpng} + CF_g uc_{ωpng}) + CSU_g su_{ωpng} + CSD_g sd_{ωpng}]}`
+:math:`\sum_{ωpng}{[P^ω DUR_n (CV_g gp^ω_{png} + CF_g uc^ω_{png}) + CSU_g su^ω_{png} + CSD_g sd^ω_{png}]} +`
 
 Variable consumption operation cost [M€]
 
-:math:`\sum_{ωpne}{[P_ω DUR_n (CV_e gc_{ωpne}]}`
+:math:`\sum_{ωpne}{P^ω DUR_n CV_e gc^ω_{pne}} +`
 
 Reliability cost [M€]
 
-:math:`\sum_{ωpni}{P_ωDUR_n CENS ens_{ωpni}}`
+:math:`\sum_{ωpni}{P^ω DUR_n CENS ens^ω_{pni}}`
 
 **Constraints**
 
 Commitment decision bounded by investment decision for candidate committed units (all except the VRES units) [p.u.]
 
-:math:`uc_{ωpng} \leq icg_g \quad \forall ωpng, g \in CG`
+:math:`uc^ω_{png} \leq icg_g \quad \forall ωpng, g \in CG`
 
 Output and consumption bounded by investment decision for candidate ESS [p.u.]
 
-:math:`\frac{gp_{ωpne}}{\overline{GP}_e} \leq icg_e \quad \forall ωpne, e \in CE`
+:math:`\frac{gp^ω_{pne}}{\overline{GP}_e} \leq icg_e \quad \forall ωpne, e \in CE`
 
-:math:`\frac{gc_{ωpne}}{\overline{GC}_e} \leq icg_e \quad \forall ωpne, e \in CE`
+:math:`\frac{gc^ω_{pne}}{\overline{GC}_e} \leq icg_e \quad \forall ωpne, e \in CE`
 
 Balance of generation and demand at each node with ohmic losses [GW]
 
-:math:`\sum_{g \in i} gp_{ωpng} - \sum_{e \in i} gc_{ωpne} + ens_{ωpni} = D_{ωpni} +`
-:math:`+ \sum_{jc} l_{ωpnijc} + \sum_{jc} l_{ωpnjic} + \sum_{jc} f_{ωpnijc} - \sum_{jc} f_{ωpnjic} \quad \forall ωpni`
+:math:`\sum_{g \in i} gp^ω_{png} - \sum_{e \in i} gc^ω_{pne} + ens^ω_{pni} = D^ω_{pni} + \sum_{jc} l^ω_{pnijc} + \sum_{jc} l^ω_{pnjic} + \sum_{jc} f^ω_{pnijc} - \sum_{jc} f^ω_{pnjic} \quad \forall ωpni`
 
-Upward and downward operating reserves provided by generators and ESS for each area [GW]
+Upward and downward operating reserves provided by non-renewable generators, and ESS when charging for each area [GW]
 
-:math:`\sum_{g \in a} ur_{ωpng} + \sum_{e \in a} ur_{ωpne} = UR_{ωpna} \quad \forall ωpna`
+:math:`\sum_{g \in a} ur^ω_{png} + \sum_{e \in a} ur'^ω_{pne} = UR^ω_{pna} \quad \forall ωpna`
 
-:math:`\sum_{g \in a} dr_{ωpng} + \sum_{e \in a} dr_{ωpne} = DR_{ωpna} \quad \forall ωpna`
+:math:`\sum_{g \in a} dr^ω_{png} + \sum_{e \in a} dr'^ω_{pne} = DR^ω_{pna} \quad \forall ωpna`
 
 VRES units (i.e., those with linear variable cost equal to 0 and no storage capacity) do not contribute to the the operating reserves.
 
-ESS energy inventory (only for load levels multiple of 24, 168 or 672 h depending on the ESS type) [TWh]
+Operating reserves from ESS can only be provided if enough energy is available for producing 
 
-:math:`i_{ωp,n-\tau_e,e} + \sum_{n' = n+\nu-\tau_e}^{n} DUR_n (EI_{ωpne} - gp_{ωpne} + EF_e gc_{ωpne}) = i_{ωpne} + s_{ωpne} \quad \forall ωpne`
+:math:`ur^ω_{pne} \leq \frac{      i^ω_{pne}}{DUR_n} \quad \forall ωpne`
+
+:math:`dr^ω_{pne} \leq \frac{I_e - i^ω_{pne}}{DUR_n} \quad \forall ωpne`
+
+or for storing
+
+:math:`ur'^ω_{pne} \leq \frac{I_e - i^ω_{pne}}{DUR_n} \quad \forall ωpne`
+
+:math:`dr'^ω_{pne} \leq \frac{      i^ω_{pne}}{DUR_n} \quad \forall ωpne`
+
+ESS energy inventory (only for load levels multiple of 24, 168 or 672 h depending on the ESS type) [GWh]
+
+:math:`i^ω_{p,n-\tau_e,e} + \sum_{n' = n+\nu-\tau_e}^{n} DUR_n' (EI^ω_{pn'e} - gp^ω_{pn'e} + EF_e gc^ω_{pn'e}) = i^ω_{pne} + s^ω_{pne} \quad \forall ωpne`
 
 Maximum and minimum output of the second block of a committed unit (all except the VRES units) [p.u.]
 
@@ -184,90 +197,94 @@ Maximum and minimum output of the second block of a committed unit (all except t
 
 * G. Morales-España, J.M. Latorre, and A. Ramos "Tight and Compact MILP Formulation for the Thermal Unit Commitment Problem" IEEE Transactions on Power Systems 28 (4): 4897-4908, Nov 2013. `10.1109/TPWRS.2013.2251373 <http://dx.doi.org/10.1109/TPWRS.2013.2251373>`_
 
-:math:`\frac{p_{ωpng} + URA \: ur_{ωpng} + ur_{ωpng}}{\overline{GP}_g - \underline{GP}_g} \leq uc_{ωpng} \quad \forall ωpng`
+:math:`\frac{p^ω_{png} + URA \: ur^ω_{png} + ur^ω_{png}}{\overline{GP}_g - \underline{GP}_g} \leq uc^ω_{png} \quad \forall ωpng`
 
-:math:`\frac{p_{ωpng} - DRA \: dr_{ωpng} - dr_{ωpng}}{\overline{GP}_g - \underline{GP}_g} \geq 0         \quad \forall ωpng`
+:math:`\frac{p^ω_{png} - DRA \: dr^ω_{png} - dr^ω_{png}}{\overline{GP}_g - \underline{GP}_g} \geq 0          \quad \forall ωpng`
 
 Maximum and minimum charge of an ESS [p.u.]
 
-:math:`\frac{c_{ωpne} + URA \: dr_{ωpne} + dr_{ωpne}}{\overline{GC}_e} \leq 1 \quad \forall ωpne`
+:math:`\frac{c^ω_{pne} + URA \: dr'^ω_{pne} + dr'^ω_{pne}}{\overline{GC}_e} \leq 1 \quad \forall ωpne`
 
-:math:`\frac{c_{ωpne} - DRA \: ur_{ωpne} - ur_{ωpne}}{\overline{GC}_e} \geq 0 \quad \forall ωpne`
+:math:`\frac{c^ω_{pne} - DRA \: ur'^ω_{pne} - ur'^ω_{pne}}{\overline{GC}_e} \geq 0 \quad \forall ωpne`
 
 Incompatibility between charge and discharge of an ESS [p.u.]
 
-:math:`\frac{p_{ωpne} + URA \: ur_{ωpne} + ur_{ωpng}}{\overline{GP}_e - \underline{GP}_e} + \frac{c_{ωpne} + URA \: dr_{ωpne} + dr_{ωpne}}{\overline{GC}_e} \leq 1 \quad \forall ωpne, e \in CE`
+:math:`\frac{p^ω_{pne} + URA \: ur'^ω_{pne} + ur^ω_{png}}{\overline{GP}_e - \underline{GP}_e} + \frac{c^ω_{pne} + URA \: dr'^ω_{pne} + dr'^ω_{pne}}{\overline{GC}_e} \leq 1 \quad \forall ωpne, e \in CE`
 
 Total output of a committed unit (all except the VRES units) [GW]
 
-:math:`\frac{gp_{ωpng}}{\underline{GP}_g} = uc_{ωpng} + \frac{p_{ωpng} + URA \: ur_{ωpng} - DRA \: dr_{ωpng}}{\underline{GP}_g} \quad \forall ωpng`
+:math:`\frac{gp^ω_{png}}{\underline{GP}_g} = uc^ω_{png} + \frac{p^ω_{png} + URA \: ur^ω_{png} - DRA \: dr^ω_{png}}{\underline{GP}_g} \quad \forall ωpng`
 
 Total charge of an ESS unit [GW]
 
-:math:`gc_{ωpne} = c_{ωpne} + URA \: dr_{ωpne} - DRA \: ur_{ωpne} \quad \forall ωpne, e \in CE`
+:math:`gc^ω_{pne} = c^ω_{pne} + URA \: dr'^ω_{pne} - DRA \: ur'^ω_{pne} \quad \forall ωpne, e \in CE`
 
 Logical relation between commitment, startup and shutdown status of committed unit (all except the VRES units) [p.u.]
 
-:math:`uc_{ωpng} - uc_{ωp,n-\nu,g} = su_{ωpng} - sd_{ωpng} \quad \forall ωpng`
+:math:`uc^ω_{png} - uc_^ω{p,n-\nu,g} = su^ω_{png} - sd^ω_{png} \quad \forall ωpng`
 
 Initial commitment of the units is determined by the model based on the merit order loading, including the VRES and ESS units.
 
-Maximum ramp up and ramp down for the second block of a thermal unit [p.u.]
+Maximum ramp up and ramp down for the second block of a non renewable (thermal, hydro) unit [p.u.]
 
 - P. Damcı-Kurt, S. Küçükyavuz, D. Rajan, and A. Atamtürk, “A polyhedral study of production ramping,” Math. Program., vol. 158, no. 1–2, pp. 175–205, Jul. 2016. `10.1007/s10107-015-0919-9 <https://doi.org/10.1007/s10107-015-0919-9>`_
 
-:math:`\frac{- p_{ωp,n-\nu,t} - URA \: ur_{ωp,n-\nu,t} + p_{ωpnt} + URA \: ur_{ωpnt} + ur_{ωpnt}}{DUR_n RU_t} \leq   uc_{ωpnt}       - su_{ωpnt} \quad \forall ωpnt`
+:math:`\frac{- p^ω_{p,n-\nu,t} - URA \: ur^ω_{p,n-\nu,t} + p^ω_{pnt} + URA \: ur^ω_{pnt} + ur^ω_{pnt}}{DUR_n RU_t} \leq   uc^ω_{pnt}       - su^ω_{pnt} \quad \forall ωpnt`
 
-:math:`\frac{- p_{ωp,n-\nu,t} + DRA \: dr_{ωp,n-\nu,t} + p_{ωpnt} - DRA \: dr_{ωpnt} - dr_{ωpnt}}{DUR_n RD_t} \geq - uc_{ωp,n-\nu,t} + sd_{ωpnt} \quad \forall ωpnt`
+:math:`\frac{- p^ω_{p,n-\nu,t} + DRA \: dr^ω_{p,n-\nu,t} + p^ω_{pnt} - DRA \: dr^ω_{pnt} - dr^ω_{pnt}}{DUR_n RD_t} \geq - uc^ω_{p,n-\nu,t} + sd^ω_{pnt} \quad \forall ωpnt`
 
 Minimum up time and down time of thermal unit [h]
 
 - D. Rajan and S. Takriti, “Minimum up/down polytopes of the unit commitment problem with start-up costs,” IBM, New York, Technical Report RC23628, 2005. https://pdfs.semanticscholar.org/b886/42e36b414d5929fed48593d0ac46ae3e2070.pdf
 
-:math:`\sum_{n'=n+\nu-TU_t}^n su_{ωpn't} \leq     uc_{ωpnt} \quad \forall ωpnt`
+:math:`\sum_{n'=n+\nu-TU_t}^n su^ω_{pn't} \leq     uc^ω_{pnt} \quad \forall ωpnt`
 
-:math:`\sum_{n'=n+\nu-TD_t}^n sd_{ωpn't} \leq 1 - uc_{ωpnt} \quad \forall ωpnt`
+:math:`\sum_{n'=n+\nu-TD_t}^n sd^ω_{pn't} \leq 1 - uc^ω_{pnt} \quad \forall ωpnt`
 
-Transfer capacity in candidate transmission lines [p.u.]
+Flow limit in candidate transmission lines [p.u.]
 
-:math:`- ict_{ijc} \leq \frac{f_{ωpnijc}}{\overline{F}_{ijc}} \leq ict_{ijc} \quad \forall ωpnijc, ijc \in CL`
+:math:`- ict_{ijc} \leq \frac{f^ω_{pnijc}}{\overline{F}_{ijc}} \leq ict_{ijc} \quad \forall ωpnijc, ijc \in CL`
 
 DC Power flow for existing and candidate AC-type lines (Kirchhoff's second law) [rad]
 
-:math:`\frac{f_{ωpnijc}}{\overline{F}'_{ijc}} = (\theta_{ωpni} - \theta_{ωpnj})\frac{S_B}{X_{ijc}\overline{F}'_{ijc}} \quad \forall ωpnijc, ijc \in EL`
+:math:`\frac{f^ω_{pnijc}}{\overline{F}'_{ijc}} = (\theta^ω_{pni} - \theta^ω_{pnj})\frac{S_B}{X_{ijc}\overline{F}'_{ijc}} \quad \forall ωpnijc, ijc \in EL`
 
-:math:`-1+ict_{ijc} \leq \frac{f_{ωpnijc}}{\overline{F}'_{ijc}} - (\theta_{ωpni} - \theta_{ωpnj})\frac{S_B}{X_{ijc}\overline{F}'_{ijc}} \leq 1-ict_{ijc} \quad \forall ωpnijc, ijc \in CL`
+:math:`-1+ict_{ijc} \leq \frac{f^ω_{pnijc}}{\overline{F}'_{ijc}} - (\theta^ω_{pni} - \theta^ω_{pnj})\frac{S_B}{X_{ijc}\overline{F}'_{ijc}} \leq 1-ict_{ijc} \quad \forall ωpnijc, ijc \in CL`
 
 Half ohmic losses are linearly approximated as a function of the flow [GW]
 
-:math:`- \frac{L_{ijc}}{2} f_{ωpnijc} \leq l_{ωpnijc} \geq \frac{L_{ijc}}{2} f_{ωpnijc} \quad \forall ωpnijc`
+:math:`- \frac{L_{ijc}}{2} f^ω_{pnijc} \leq l^ω_{pnijc} \geq \frac{L_{ijc}}{2} f^ω_{pnijc} \quad \forall ωpnijc`
 
 Bounds on generation variables [GW]
 
-:math:`0 \leq gp_{ωpng} \leq \overline{GP}_g                    \quad \forall ωpng`
+:math:`0 \leq gp^ω_{png} \leq \overline{GP}_g                    \quad \forall ωpng`
 
-:math:`0 \leq qc_{ωpne} \leq \overline{GC}_e                    \quad \forall ωpne`
+:math:`0 \leq qc^ω_{pne} \leq \overline{GC}_e                    \quad \forall ωpne`
 
-:math:`0 \leq ur_{ωpng} \leq \overline{CP}_g - \underline{GP}_g \quad \forall ωpng`
+:math:`0 \leq ur^ω_{png} \leq \overline{CP}_g - \underline{GP}_g \quad \forall ωpng`
 
-:math:`0 \leq dr_{ωpng} \leq \overline{CP}_g - \underline{GP}_g \quad \forall ωpng`
+:math:`0 \leq ur'^ω_{pne} \leq \overline{CP}_e - \underline{GP}_e \quad \forall ωpne`
 
-:math:`0 \leq  p_{ωpng} \leq \overline{GP}_g - \underline{GP}_g \quad \forall ωpng`
+:math:`0 \leq dr^ω_{png} \leq \overline{CP}_g - \underline{GP}_g \quad \forall ωpng`
 
-:math:`0 \leq  c_{ωpne} \leq \overline{GC}_e                    \quad \forall ωpne`
+:math:`0 \leq dr'^ω_{pne} \leq \overline{CP}_e - \underline{GP}_e \quad \forall ωpne`
 
-:math:`0 \leq  i_{ωpne} \leq I_e                                \quad \forall ωpne`
+:math:`0 \leq  p^ω_{png} \leq \overline{GP}_g - \underline{GP}_g \quad \forall ωpng`
 
-:math:`0 \leq  s_{ωpne}                                         \quad \forall ωpne`
+:math:`0 \leq  c^ω_{pne} \leq \overline{GC}_e                    \quad \forall ωpne`
 
-:math:`0 \leq ens_{ωpni} \leq D_{ωpni}                          \quad \forall ωpni`
+:math:`0 \leq  i^ω_{pne} \leq I_e                                \quad \forall ωpne`
+
+:math:`0 \leq  s^ω_{pne}                                         \quad \forall ωpne`
+
+:math:`0 \leq ens^ω_{pni} \leq D^ω_{pni}                          \quad \forall ωpni`
 
 Bounds on network variables [GW]
 
-:math:`0 \leq l_{ωpnijc} \leq \frac{L_{ijc}}{2} \overline{F}_{ijc} \quad \forall ωpnijc`
+:math:`0 \leq l^ω_{pnijc} \leq \frac{L_{ijc}}{2} \overline{F}_{ijc} \quad \forall ωpnijc`
 
-:math:`- \overline{F}_{ijc} \leq f_{ωpnijc} \leq \overline{F}_{ijc} \quad \forall ωpnijc, ijc \in EL`
+:math:`- \overline{F}_{ijc} \leq f^ω_{pnijc} \leq \overline{F}_{ijc} \quad \forall ωpnijc, ijc \in EL`
 
 Voltage angle of the reference node fixed to 0 for each scenario, period, and load level [rad]
 
-:math:`\theta_{ωpn,node_{ref}} = 0` 
+:math:`\theta^ω_{pn,node_{ref}} = 0` 
