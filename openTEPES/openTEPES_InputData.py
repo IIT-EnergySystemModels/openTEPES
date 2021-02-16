@@ -1,4 +1,4 @@
-# Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 14, 2021
+# Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 16, 2021
 
 import time
 import math
@@ -461,10 +461,10 @@ def InputData(CaseName,mTEPES):
 
     #%% variables
     mTEPES.vTotalFCost           = Var(                                          within=NonNegativeReals,                                                                                                doc='total system fixed                   cost      [MEUR]')
-    mTEPES.vTotalGCost           = Var(mTEPES.sc, mTEPES.p,                      within=NonNegativeReals,                                                                                                doc='total variable generation  operation cost      [MEUR]')
-    mTEPES.vTotalCCost           = Var(mTEPES.sc, mTEPES.p,                      within=NonNegativeReals,                                                                                                doc='total variable consumption operation cost      [MEUR]')
-    mTEPES.vTotalECost           = Var(mTEPES.sc, mTEPES.p,                      within=NonNegativeReals,                                                                                                doc='total system emission                cost      [MEUR]')
-    mTEPES.vTotalRCost           = Var(mTEPES.sc, mTEPES.p,                      within=NonNegativeReals,                                                                                                doc='total system reliability             cost      [MEUR]')
+    mTEPES.vTotalGCost           = Var(mTEPES.sc, mTEPES.p, mTEPES.n,            within=NonNegativeReals,                                                                                                doc='total variable generation  operation cost      [MEUR]')
+    mTEPES.vTotalCCost           = Var(mTEPES.sc, mTEPES.p, mTEPES.n,            within=NonNegativeReals,                                                                                                doc='total variable consumption operation cost      [MEUR]')
+    mTEPES.vTotalECost           = Var(mTEPES.sc, mTEPES.p, mTEPES.n,            within=NonNegativeReals,                                                                                                doc='total system emission                cost      [MEUR]')
+    mTEPES.vTotalRCost           = Var(mTEPES.sc, mTEPES.p, mTEPES.n,            within=NonNegativeReals,                                                                                                doc='total system reliability             cost      [MEUR]')
     mTEPES.vTotalOutput          = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.g , within=NonNegativeReals, bounds=lambda mTEPES,sc,p,n,g : (0.0,mTEPES.pMaxPower        [sc,p,n,g ]),                     doc='total output of the unit                         [GW]')
     mTEPES.vOutput2ndBlock       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=NonNegativeReals, bounds=lambda mTEPES,sc,p,n,nr: (0.0,mTEPES.pMaxPower2ndBlock[sc,p,n,nr]),                     doc='second block of the unit                         [GW]')
     mTEPES.vReserveUp            = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=NonNegativeReals, bounds=lambda mTEPES,sc,p,n,nr: (0.0,mTEPES.pMaxPower2ndBlock[sc,p,n,nr]),                     doc='upward   operating reserve                       [GW]')

@@ -1,11 +1,13 @@
-# Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 14, 2021
+# Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 16, 2021
 
 import time
 import pandas as pd
 from   collections   import defaultdict
 import matplotlib.pyplot as plt
+import pyomo.environ as pyo
+from   pyomo.environ import Set
 
-def OutputResults(CaseName, mTEPES):
+def OutputResults(CaseName, mTEPES, pStageDuration):
     print('Output results              ****')
 
     StartTime = time.time()
@@ -247,86 +249,94 @@ def OutputResults(CaseName, mTEPES):
         lout[ni].append((nf,cc))
 
     #%% outputting the LSRMC
-    pStageDuration = 8736
-    for sc, p, st in mTEPES.sc * mTEPES.p * range(1, int(sum(mTEPES.pDuration.values()) / pStageDuration + 1)):
-        OutputToFile = pd.Series(data=[mTEPES.dual[getattr(mTEPES, 'eBalance_stage'+str(st))[sc,p,n,nd]]*1e3/mTEPES.pScenProb[sc]/mTEPES.pDuration[n] for n,nd in mTEPES.n*mTEPES.nd if sum(1 for g in mTEPES.g if (nd,g) in mTEPES.n2g) + sum(1 for lout in lout[nd]) + sum(1 for ni,cc in lin[nd])], index=pd.MultiIndex.from_tuples(getattr(mTEPES, 'eBalance_stage'+str(st))))
-        OutputToFile.to_frame(name='LSRMC').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='LSRMC').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(CaseName+'/oT_Result_LSRMC_'+str(sc)+'_'+str(p)+'_'+str(st)+'_'+CaseName+'.csv', sep=',')
+    for st in range(1,int(sum(mTEPES.pDuration.values())/pStageDuration+1)):
+        mTEPES.del_component(mTEPES.n)
+        mTEPES.n = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in list(mTEPES.pDuration) and mTEPES.nn.ord(nn) > (st-1)*pStageDuration and mTEPES.nn.ord(nn) <= st*pStageDuration)
+        OutputToFile = pd.Series(data=[mTEPES.dual[getattr(mTEPES, 'eBalance_stage'+str(st))[sc,p,n,nd]]*1e3/mTEPES.pScenProb[sc]/mTEPES.pDuration[n] for sc,p,n,nd in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.nd if sum(1 for g in mTEPES.g if (nd,g) in mTEPES.n2g) + sum(1 for lout in lout[nd]) + sum(1 for ni,cc in lin[nd])], index=pd.MultiIndex.from_tuples(getattr(mTEPES, 'eBalance_stage'+str(st))))
+    OutputToFile.to_frame(name='LSRMC').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='LSRMC').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(CaseName+'/oT_Result_LSRMC_'+CaseName+'.csv', sep=',')
 
-        LSRMC = OutputToFile.loc[:,:]
+    LSRMC = OutputToFile.loc[:,:]
+
+    fig, fg = plt.subplots()
+    for nd in mTEPES.nd:
+        if sum(1 for g in mTEPES.g if (nd,g) in mTEPES.n2g) + sum(1 for lout in lout[nd]) + sum(1 for ni,cc in lin[nd]):
+            fg.plot(range(len(LSRMC[:,:,:,nd])), LSRMC[:,:,:,nd], label=nd)
+    fg.set(xlabel='Time Steps', ylabel='EUR/MWh')
+    fg.set_ybound(lower=0, upper=100)
+    plt.title('LSRMC')
+    fg.tick_params(axis='x', rotation=90)
+    fg.legend()
+    plt.tight_layout()
+    # plt.show()
+    plt.savefig(CaseName+'/oT_Plot_LSRMC_'+CaseName+'.png', bbox_inches=None, dpi=600)
+
+    #%% outputting the up operating reserve marginal
+    if sum(mTEPES.pOperReserveUp[sc,p,n,ar] for sc,p,n,ar in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.ar):
+        for st in range(1,int(sum(mTEPES.pDuration.values())/pStageDuration+1)):
+            mTEPES.del_component(mTEPES.n)
+            mTEPES.n = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in list(mTEPES.pDuration) and mTEPES.nn.ord(nn) > (st-1)*pStageDuration and mTEPES.nn.ord(nn) <= st*pStageDuration)
+            OutputToFile = pd.Series(data=[mTEPES.dual[getattr(mTEPES, 'eOperReserveUp_stage'+str(st))[sc,p,n,ar]]*1e3/mTEPES.pScenProb[sc]/mTEPES.pDuration[n] for sc,p,n,ar in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.ar if mTEPES.pOperReserveUp[sc,p,n,ar] and sum(1 for nr in mTEPES.nr if (ar,nr) in mTEPES.a2g) + sum(1 for es in mTEPES.es if (ar,es) in mTEPES.a2g)], index=pd.MultiIndex.from_tuples(getattr(mTEPES, 'eOperReserveUp_stage'+str(st))))
+        OutputToFile.to_frame(name='UORM').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='UORM').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(CaseName+'/oT_Result_MarginalOperatingReserveUp_'+CaseName+'.csv', sep=',')
+
+        MarginalUpOperatingReserve = OutputToFile.loc[:,:]
 
         fig, fg = plt.subplots()
-        for nd in mTEPES.nd:
-            if sum(1 for g in mTEPES.g if (nd,g) in mTEPES.n2g) + sum(1 for lout in lout[nd]) + sum(1 for ni,cc in lin[nd]):
-                fg.plot(range(len(LSRMC[:,:,:,nd])), LSRMC[:,:,:,nd], label=nd)
-        fg.set(xlabel='Time Steps', ylabel='EUR/MWh')
+        for ar in mTEPES.ar:
+            if sum(mTEPES.pOperReserveUp[sc,p,n,ar] for sc,p,n in mTEPES.sc*mTEPES.p*mTEPES.n):
+                fg.plot(range(len(MarginalUpOperatingReserve[:,:,:,ar])), MarginalUpOperatingReserve[:,:,:,ar], label=ar)
+        fg.set(xlabel='Time Steps', ylabel='EUR/MW')
         fg.set_ybound(lower=0, upper=100)
-        plt.title('LSRMC')
+        plt.title('Upward Operating Reserve Marginal')
         fg.tick_params(axis='x', rotation=90)
         fg.legend()
         plt.tight_layout()
         # plt.show()
-        plt.savefig(CaseName+'/oT_Plot_LSRMC_'+str(sc)+'_'+str(p)+'_'+str(st)+'_'+CaseName+'.png', bbox_inches=None, dpi=600)
+        plt.savefig(CaseName+'/oT_Plot_MarginalOperatingReserveUpward_'+CaseName+'.png', bbox_inches=None, dpi=600)
 
-    #%% outputting the up operating reserve marginal
-    pStageDuration = 8736
-    for sc, p, st in mTEPES.sc * mTEPES.p * range(1, int(sum(mTEPES.pDuration.values()) / pStageDuration + 1)):
-        if sum(mTEPES.pOperReserveUp[sc,p,n,ar] for sc,p,n,ar in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.ar):
-            OutputToFile = pd.Series(data=[mTEPES.dual[getattr(mTEPES, 'eOperReserveUp_stage'+str(st))[sc,p,n,ar]]*1e3/mTEPES.pScenProb[sc]/mTEPES.pDuration[n] for sc,p,n,ar in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.ar if mTEPES.pOperReserveUp[sc,p,n,ar] and sum(1 for nr in mTEPES.nr if (ar,nr) in mTEPES.a2g) + sum(1 for es in mTEPES.es if (ar,es) in mTEPES.a2g)], index=pd.MultiIndex.from_tuples(getattr(mTEPES, 'eOperReserveUp_stage'+str(st))))
-            OutputToFile.to_frame(name='UORM').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='UORM').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(CaseName+'/oT_Result_MarginalOperatingReserveUp_'+str(sc)+'_'+str(p)+'_'+str(st)+'_'+CaseName+'.csv', sep=',')
-
-            MarginalUpOperatingReserve = OutputToFile.loc[:,:]
-
-            fig, fg = plt.subplots()
-            for ar in mTEPES.ar:
-                if sum(mTEPES.pOperReserveUp[sc,p,n,ar] for sc,p,n in mTEPES.sc*mTEPES.p*mTEPES.n):
-                    fg.plot(range(len(MarginalUpOperatingReserve[:,:,:,ar])), MarginalUpOperatingReserve[:,:,:,ar], label=ar)
-            fg.set(xlabel='Time Steps', ylabel='EUR/MW')
-            fg.set_ybound(lower=0, upper=100)
-            plt.title('Upward Operating Reserve Marginal')
-            fg.tick_params(axis='x', rotation=90)
-            fg.legend()
-            plt.tight_layout()
-            # plt.show()
-            plt.savefig(CaseName+'/oT_Plot_MarginalOperatingReserveUpward_'+str(sc)+'_'+str(p)+'_'+str(st)+'_'+CaseName+'.png', bbox_inches=None, dpi=600)
-
-        #%% outputting the down operating reserve marginal
-        if sum(mTEPES.pOperReserveDw[sc,p,n,ar] for sc,p,n,ar in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.ar):
+    #%% outputting the down operating reserve marginal
+    if sum(mTEPES.pOperReserveDw[sc,p,n,ar] for sc,p,n,ar in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.ar):
+        for st in range(1,int(sum(mTEPES.pDuration.values())/pStageDuration+1)):
+            mTEPES.del_component(mTEPES.n)
+            mTEPES.n = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in list(mTEPES.pDuration) and mTEPES.nn.ord(nn) > (st-1)*pStageDuration and mTEPES.nn.ord(nn) <= st*pStageDuration)
             OutputToFile = pd.Series(data=[mTEPES.dual[getattr(mTEPES, 'eOperReserveDw_stage'+str(st))[sc,p,n,ar]]*1e3/mTEPES.pScenProb[sc]/mTEPES.pDuration[n] for sc,p,n,ar in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.ar if mTEPES.pOperReserveDw[sc,p,n,ar] and sum(1 for nr in mTEPES.nr if (ar,nr) in mTEPES.a2g) + sum(1 for es in mTEPES.es if (ar,es) in mTEPES.a2g)], index=pd.MultiIndex.from_tuples(getattr(mTEPES, 'eOperReserveDw_stage'+str(st))))
-            OutputToFile.to_frame(name='DORM').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='DORM').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(CaseName+'/oT_Result_MarginalOperatingReserveDown_'+str(sc)+'_'+str(p)+'_'+str(st)+'_'+CaseName+'.csv', sep=',')
+        OutputToFile.to_frame(name='DORM').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='DORM').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(CaseName+'/oT_Result_MarginalOperatingReserveDown_'+CaseName+'.csv', sep=',')
 
-            MarginalDwOperatingReserve = OutputToFile.loc[:,:]
+        MarginalDwOperatingReserve = OutputToFile.loc[:,:]
 
-            fig, fg = plt.subplots()
-            for ar in mTEPES.ar:
-                if sum(mTEPES.pOperReserveDw[sc,p,n,ar] for sc,p,n in mTEPES.sc*mTEPES.p*mTEPES.n):
-                    fg.plot(range(len(MarginalDwOperatingReserve[:,:,:,ar])), MarginalDwOperatingReserve[:,:,:,ar], label=ar)
-            fg.set(xlabel='Time Steps', ylabel='EUR/MW')
-            fg.set_ybound(lower=0, upper=100)
-            plt.title('Downward Operating Reserve Marginal')
-            fg.tick_params(axis='x', rotation=90)
-            fg.legend()
-            plt.tight_layout()
-            # plt.show()
-            plt.savefig(CaseName+'/oT_Plot_MarginalOperatingReserveDownward_'+str(sc)+'_'+str(p)+'_'+str(st)+'_'+CaseName+'.png', bbox_inches=None, dpi=600)
+        fig, fg = plt.subplots()
+        for ar in mTEPES.ar:
+            if sum(mTEPES.pOperReserveDw[sc,p,n,ar] for sc,p,n in mTEPES.sc*mTEPES.p*mTEPES.n):
+                fg.plot(range(len(MarginalDwOperatingReserve[:,:,:,ar])), MarginalDwOperatingReserve[:,:,:,ar], label=ar)
+        fg.set(xlabel='Time Steps', ylabel='EUR/MW')
+        fg.set_ybound(lower=0, upper=100)
+        plt.title('Downward Operating Reserve Marginal')
+        fg.tick_params(axis='x', rotation=90)
+        fg.legend()
+        plt.tight_layout()
+        # plt.show()
+        plt.savefig(CaseName+'/oT_Plot_MarginalOperatingReserveDownward_'+CaseName+'.png', bbox_inches=None, dpi=600)
 
-        #%% outputting the water values
-        if len(mTEPES.es):
-            OutputToFile = pd.Series(data=[mTEPES.dual[getattr(mTEPES, 'eESSInventory_stage'+str(st))[sc,p,n,es]]*1e3/mTEPES.pScenProb[sc]/mTEPES.pDuration[n] for sc,p,n,es in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.es if mTEPES.n.ord(n) % mTEPES.pCycleTimeStep[es] == 0], index=pd.MultiIndex.from_tuples([(sc,p,n,es) for sc,p,n,es in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.es if mTEPES.n.ord(n) % mTEPES.pCycleTimeStep[es] == 0]))
-            OutputToFile.to_frame(name='WaterValue').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='WaterValue').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(CaseName+'/oT_Result_WaterValue_'+str(sc)+'_'+str(p)+'_'+str(st)+'_'+CaseName+'.csv', sep=',')
+    #%% outputting the water values
+    if len(mTEPES.es):
+        for st in range(1,int(sum(mTEPES.pDuration.values())/pStageDuration+1)):
+            mTEPES.del_component(mTEPES.n)
+            mTEPES.n = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in list(mTEPES.pDuration) and mTEPES.nn.ord(nn) > (st-1)*pStageDuration and mTEPES.nn.ord(nn) <= st*pStageDuration)
+            OutputToFile = pd.Series(data=[mTEPES.dual[getattr(mTEPES, 'eESSInventory_stage'+str(st))[sc,p,n,es]]*1e3/mTEPES.pScenProb[sc]/mTEPES.pDuration[n] for sc,p,n,es in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.es if mTEPES.n.ord(n) % mTEPES.pCycleTimeStep[es] == 0], index=pd.MultiIndex.from_tuples(getattr(mTEPES, 'eESSInventory_stage'+str(st))))
+        OutputToFile.to_frame(name='WaterValue').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='WaterValue').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(CaseName+'/oT_Result_WaterValue_'+CaseName+'.csv', sep=',')
 
-            WaterValue = OutputToFile.loc[:,:]
+        WaterValue = OutputToFile.loc[:,:]
 
-            fig, fg = plt.subplots()
-            for es in mTEPES.es:
-                fg.plot(range(len(WaterValue[:,:,:,es])), WaterValue[:,:,:,es], label=es)
-            fg.set(xlabel='Time Steps', ylabel='EUR/MWh')
-            fg.set_ybound(lower=0, upper=100)
-            plt.title('Water Value')
-            fg.tick_params(axis='x', rotation=90)
-            fg.legend()
-            plt.tight_layout()
-            # plt.show()
-            plt.savefig(CaseName+'/oT_Plot_WaterValue_'+str(sc)+'_'+str(p)+'_'+str(st)+'_'+CaseName+'.png', bbox_inches=None, dpi=600)
+        fig, fg = plt.subplots()
+        for es in mTEPES.es:
+            fg.plot(range(len(WaterValue[:,:,:,es])), WaterValue[:,:,:,es], label=es)
+        fg.set(xlabel='Time Steps', ylabel='EUR/MWh')
+        fg.set_ybound(lower=0, upper=100)
+        plt.title('Water Value')
+        fg.tick_params(axis='x', rotation=90)
+        fg.legend()
+        plt.tight_layout()
+        # plt.show()
+        plt.savefig(CaseName+'/oT_Plot_WaterValue_'+CaseName+'.png', bbox_inches=None, dpi=600)
 
     WritingResultsTime = time.time() - StartTime
     StartTime          = time.time()
@@ -351,7 +361,10 @@ def OutputResults(CaseName, mTEPES):
     OutputToFile = pd.Series(data=[mTEPES.pScenProb[sc] * mTEPES.pDuration[n] * mTEPES.pENSCost         * mTEPES.vENS        [sc,p,n,nd]()  for sc,p,n,nd in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.nd], index=pd.MultiIndex.from_tuples(list(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.nd)))
     OutputToFile.to_frame(name='MEUR').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MEUR').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(CaseName+'/oT_Result_ReliabilityCost_'+CaseName+'.csv', sep=',')
 
-    OutputToFile = pd.Series(data=[mTEPES.dual[getattr(mTEPES, 'eBalance_stage'+str(st))[sc,p,n,nd]]/mTEPES.pScenProb[sc] * mTEPES.vTotalOutput[sc,p,n,g]() for sc,p,n,nd,g in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.n2g], index=pd.MultiIndex.from_tuples(list(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.n2g)))
+    for st in range(1,int(sum(mTEPES.pDuration.values())/pStageDuration+1)):
+        mTEPES.del_component(mTEPES.n)
+        mTEPES.n = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in list(mTEPES.pDuration) and mTEPES.nn.ord(nn) > (st-1)*pStageDuration and mTEPES.nn.ord(nn) <= st*pStageDuration)
+        OutputToFile = pd.Series(data=[mTEPES.dual[getattr(mTEPES, 'eBalance_stage'+str(st))[sc,p,n,nd]]/mTEPES.pScenProb[sc] * mTEPES.vTotalOutput[sc,p,n,g]() for sc,p,n,nd,g in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.n2g], index=pd.MultiIndex.from_tuples(list(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.n2g)))
     OutputToFile.to_frame(name='MEUR').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_4', values='MEUR').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(CaseName+'/oT_Result_GenerationEnergyRevenue_'+CaseName+'.csv', sep=',')
 
     # if sum(mTEPES.pOperReserveUp[sc,p,n,ar]+mTEPES.pOperReserveDw[sc,p,n,ar] for sc,p,n,ar in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.ar):

@@ -1,16 +1,16 @@
-# Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 14, 2021
+# Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 16, 2021
 
 import time
 from   collections   import defaultdict
 from   pyomo.environ import Set, Constraint, Objective, Block, minimize
 
-def InvestmentModelObjective(mTEPES):
-    print('Investment model objective   ****')
+def InvestmentModelFormulation(mTEPES):
+    print('Investment model formulation ****')
 
     StartTime = time.time()
 
     def eTotalTCost(mTEPES):
-        return mTEPES.vTotalFCost + sum(mTEPES.pScenProb[sc] * (mTEPES.vTotalGCost[sc,p] + mTEPES.vTotalCCost[sc,p] + mTEPES.vTotalECost[sc,p] + mTEPES.vTotalRCost[sc,p]) for sc,p in mTEPES.sc*mTEPES.p)
+        return mTEPES.vTotalFCost + sum(mTEPES.pScenProb[sc] * (mTEPES.vTotalGCost[sc,p,n] + mTEPES.vTotalCCost[sc,p,n] + mTEPES.vTotalECost[sc,p,n] + mTEPES.vTotalRCost[sc,p,n]) for sc,p,n in mTEPES.sc*mTEPES.p*mTEPES.n)
     mTEPES.eTotalTCost = Objective(rule=eTotalTCost, sense=minimize, doc='total system cost [MEUR]')
 
     def eTotalFCost(mTEPES):
@@ -21,37 +21,34 @@ def InvestmentModelObjective(mTEPES):
     StartTime        = time.time()
     print('Generating investment o.f.            ... ', round(GeneratingOFTime), 's')
 
-def OperationModelObjective(mTEPES):
-    print('Operation  model objective   ****')
+def OperationModelFormulation(mTEPES, st):
+    print('Operation  model formulation ****')
 
     StartTime = time.time()
 
-    def eTotalGCost(mTEPES,sc,p):
-        return mTEPES.vTotalGCost[sc,p] == (sum(mTEPES.pLinearVarCost  [nr] * mTEPES.pDuration[n] * mTEPES.vTotalOutput[sc,p,n,nr]                                 +
-                                                mTEPES.pConstantVarCost[nr] * mTEPES.pDuration[n] * mTEPES.vCommitment [sc,p,n,nr]                                 +
-                                                mTEPES.pStartUpCost    [nr] *                       mTEPES.vStartUp    [sc,p,n,nr]                                 +
-                                                mTEPES.pShutDownCost   [nr] *                       mTEPES.vShutDown   [sc,p,n,nr] for n,nr in mTEPES.n*mTEPES.nr) +
-                                            sum(mTEPES.pLinearOMCost   [ r] * mTEPES.pDuration[n] * mTEPES.vTotalOutput[sc,p,n, r] for n, r in mTEPES.n*mTEPES.r ) )
-    mTEPES.eTotalGCost = Constraint(mTEPES.sc, mTEPES.p, rule=eTotalGCost, doc='system variable generation operation cost [MEUR]')
+    def eTotalGCost(mTEPES,sc,p,n):
+        return mTEPES.vTotalGCost[sc,p,n] == (sum(mTEPES.pLinearVarCost  [nr] * mTEPES.pDuration[n] * mTEPES.vTotalOutput[sc,p,n,nr]                      +
+                                                  mTEPES.pConstantVarCost[nr] * mTEPES.pDuration[n] * mTEPES.vCommitment [sc,p,n,nr]                      +
+                                                  mTEPES.pStartUpCost    [nr] *                       mTEPES.vStartUp    [sc,p,n,nr]                      +
+                                                  mTEPES.pShutDownCost   [nr] *                       mTEPES.vShutDown   [sc,p,n,nr] for nr in mTEPES.nr) +
+                                              sum(mTEPES.pLinearOMCost   [ r] * mTEPES.pDuration[n] * mTEPES.vTotalOutput[sc,p,n, r] for  r in mTEPES.r ) )
+    setattr(mTEPES, 'eTotalGCost_stage'+str(st), Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, rule=eTotalGCost, doc='system variable generation operation cost [MEUR]'))
 
-    def eTotalCCost(mTEPES,sc,p):
-        return mTEPES.vTotalCCost[sc,p] == sum(mTEPES.pLinearVarCost  [es] * mTEPES.vESSTotalCharge[sc,p,n,es] for sc,p,n,es in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.es)
-    mTEPES.eTotalCCost = Constraint(mTEPES.sc, mTEPES.p, rule=eTotalCCost, doc='system variable consumption operation cost [MEUR]')
+    def eTotalCCost(mTEPES,sc,p,n):
+        return mTEPES.vTotalCCost[sc,p,n] == sum(mTEPES.pLinearVarCost  [es] * mTEPES.pDuration[n] * mTEPES.vESSTotalCharge[sc,p,n,es] for es in mTEPES.es)
+    setattr(mTEPES, 'eTotalCCost_stage'+str(st), Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, rule=eTotalCCost, doc='system variable consumption operation cost [MEUR]'))
 
-    def eTotalRCost(mTEPES,sc,p):
-        return mTEPES.vTotalRCost[sc,p] == sum(mTEPES.pENSCost             * mTEPES.vENS           [sc,p,n,nd] for sc,p,n,nd in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.nd)
-    mTEPES.eTotalRCost = Constraint(mTEPES.sc, mTEPES.p, rule=eTotalRCost, doc='system reliability cost [MEUR]')
+    def eTotalRCost(mTEPES,sc,p,n):
+        return mTEPES.vTotalRCost[sc,p,n] == sum(mTEPES.pENSCost             * mTEPES.pDuration[n] * mTEPES.vENS           [sc,p,n,nd] for nd in mTEPES.nd)
+    setattr(mTEPES, 'eTotalRCost_stage'+str(st), Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, rule=eTotalRCost, doc='system reliability cost [MEUR]'))
 
-    def eTotalECost(mTEPES,sc,p):
-        return mTEPES.vTotalECost[sc,p] == sum(mTEPES.pCO2EmissionCost[nr] * mTEPES.vTotalOutput[sc,p,n,nr] for sc,p,n,nr in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.nr)
-    mTEPES.eTotalECost = Constraint(mTEPES.sc, mTEPES.p, rule=eTotalECost, doc='system emission cost [MEUR]')
+    def eTotalECost(mTEPES,sc,p,n):
+        return mTEPES.vTotalECost[sc,p,n] == sum(mTEPES.pCO2EmissionCost[nr] * mTEPES.pDuration[n] * mTEPES.vTotalOutput   [sc,p,n,nr] for nr in mTEPES.nr)
+    setattr(mTEPES, 'eTotalECost_stage'+str(st), Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, rule=eTotalECost, doc='system emission cost [MEUR]'))
 
     GeneratingOFTime = time.time() - StartTime
     StartTime        = time.time()
     print('Generating operation  o.f.            ... ', round(GeneratingOFTime), 's')
-
-def OperationModelConstraints(mTEPES, st):
-    print('Operation  model constraints ****')
 
     StartTime = time.time()
 
