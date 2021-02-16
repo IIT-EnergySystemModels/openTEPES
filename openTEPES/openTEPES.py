@@ -65,7 +65,7 @@
 # make it effectively proprietary.  To prevent this, the GPL assures that
 # patents cannot be used to render the program non-free.
 
-# Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 2.0.1 - February 14, 2021
+# Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 2.0.2 - February 16, 2021
 # simplicity and transparency in power systems planning
 
 # Developed by
@@ -91,9 +91,8 @@ import setuptools
 from   pyomo.environ import ConcreteModel, Set
 
 from openTEPES_InputData        import InputData
-from openTEPES_ModelFormulation import InvestmentModelObjective
-from openTEPES_ModelFormulation import OperationModelObjective
-from openTEPES_ModelFormulation import OperationModelConstraints
+from openTEPES_ModelFormulation import InvestmentModelFormulation
+from openTEPES_ModelFormulation import OperationModelFormulation
 from openTEPES_ProblemSolving   import ProblemSolving
 from openTEPES_OutputResults    import OutputResults
 
@@ -102,25 +101,24 @@ InitialTime = time.time()
 CaseName   = '9n'
 SolverName = 'gurobi'
 
-# duration of the stage (weekly -168- or monthly -672- or trimonthly -2184- is what makes sense from a system operation point of view
+# duration of the stage (weekly -168-, monthly -672-, quarterly -2184-, semesterly -4358-, or annualy -8736- is what makes sense from a system operation point of view)
 # this value must be larger or equal than the shortest duration of any storage type (e.g., weekly)
-pStageDuration = 8736
+# consecutive stages are not tied between them
+pStageDuration = 4368
 
 #%% model declaration
-mTEPES = ConcreteModel('Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 2.0.1 - February 14, 2021')
+mTEPES = ConcreteModel('Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 2.0.2 - February 16, 2021')
 
 InputData(CaseName, mTEPES)
 
 # investment model objective function
-# operation  model objective function
-InvestmentModelObjective(mTEPES)
-OperationModelObjective (mTEPES)
+InvestmentModelFormulation(mTEPES)
 
 # iterative model formulation for each stage of a year
 for sc,p,st in mTEPES.sc*mTEPES.p*range(1,int(sum(mTEPES.pDuration.values())/pStageDuration+1)):
     # activate only scenario to formulate
-    # mTEPES.del_component(mTEPES.sc)
-    # mTEPES.sc = Set(initialize=mTEPES.scc, ordered=True, doc='scenarios', filter=lambda mTEPES,scc: scc in mTEPES.scc and mTEEPS.pScenProb[scc] > 0.0)
+    mTEPES.del_component(mTEPES.sc)
+    mTEPES.sc = Set(initialize=mTEPES.scc, ordered=True, doc='scenarios', filter=lambda mTEPES,scc: scc in mTEPES.scc and mTEPES.pScenProb[scc] > 0.0)
     # activate only period to formulate
     # mTEPES.del_component(mTEPES.p)
     # activate only load levels of this stage
@@ -128,19 +126,18 @@ for sc,p,st in mTEPES.sc*mTEPES.p*range(1,int(sum(mTEPES.pDuration.values())/pSt
     mTEPES.del_component(mTEPES.n2)
     mTEPES.n  = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in list(mTEPES.pDuration) and mTEPES.nn.ord(nn) > (st-1)*pStageDuration and mTEPES.nn.ord(nn) <= st*pStageDuration)
     mTEPES.n2 = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in list(mTEPES.pDuration) and mTEPES.nn.ord(nn) > (st-1)*pStageDuration and mTEPES.nn.ord(nn) <= st*pStageDuration)
-    # formulation of the operation constraints by stage
-    OperationModelConstraints(mTEPES, st)
-
-mTEPES.write(CaseName+'/openTEPES_'+CaseName+'.lp', io_options={'symbolic_solver_labels': True})  # create lp-format file
+    # operation model objective function and constraints by stage
+    OperationModelFormulation(mTEPES, st)
 
 StartTime = time.time()
+mTEPES.write(CaseName+'/openTEPES_'+CaseName+'.lp', io_options={'symbolic_solver_labels': True})  # create lp-format file
 WritingLPFileTime = time.time() - StartTime
 StartTime         = time.time()
 print('Writing LP file                       ... ', round(WritingLPFileTime), 's')
 
 ProblemSolving(CaseName, SolverName, mTEPES)
 
-OutputResults(CaseName, mTEPES)
+OutputResults(CaseName, mTEPES, pStageDuration)
 
 TotalTime = time.time() - InitialTime
 print('Total time                            ... ', round(TotalTime), 's')
