@@ -1,4 +1,4 @@
-# Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 1.7.29 - January 30, 2021
+# Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 17, 2021
 
 import time
 import math
@@ -75,6 +75,7 @@ def InputData(CaseName,mTEPES):
     dictSets.load(filename=CaseName+'/oT_Dict_AreaToRegion_'+CaseName+'.csv', set='arrg', format='set')
 
     mTEPES.scc  = Set(initialize=dictSets['sc'],   ordered=True,  doc='scenarios'     )
+    mTEPES.pp   = Set(initialize=dictSets['p' ],   ordered=True,  doc='periods'       )
     mTEPES.p    = Set(initialize=dictSets['p' ],   ordered=True,  doc='periods'       )
     mTEPES.nn   = Set(initialize=dictSets['n' ],   ordered=True,  doc='load levels'   )
     mTEPES.gg   = Set(initialize=dictSets['g' ],   ordered=False, doc='units'         )
@@ -106,6 +107,7 @@ def InputData(CaseName,mTEPES):
     pSBase               = dfParameter['SBase'              ][0] * 1e-3                                                                   # base power                          [GW]
     pReferenceNode       = dfParameter['ReferenceNode'      ][0]                                                                          # reference node
     pTimeStep            = dfParameter['TimeStep'           ][0].astype('int')                                                            # duration of the unit time step      [h]
+    pStageDuration       = dfParameter['StageDuration'      ][0].astype('int')                                                            # duration of each stage              [h]
 
     pScenProb            = dfScenario          ['Probability'  ]                                                                          # probabilities of scenarios          [p.u.]
     pDuration            = dfDuration          ['Duration'     ] * pTimeStep                                                              # duration of load levels             [h]
@@ -409,6 +411,7 @@ def InputData(CaseName,mTEPES):
     mTEPES.pDwReserveActivation  = Param(initialize=pDwReserveActivation, within=NonNegativeReals)
     mTEPES.pSBase                = Param(initialize=pSBase              , within=NonNegativeReals)
     mTEPES.pTimeStep             = Param(initialize=pTimeStep           , within=NonNegativeReals)
+    mTEPES.pStageDuration        = Param(initialize=pStageDuration      , within=NonNegativeReals)
 
     mTEPES.pDemand               = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nd, initialize=pDemand.stack().to_dict()          , within=NonNegativeReals, doc='Demand'                       )
     mTEPES.pScenProb             = Param(mTEPES.scc,                               initialize=pScenProb.to_dict()                , within=NonNegativeReals, doc='Probability'                  )
@@ -461,10 +464,10 @@ def InputData(CaseName,mTEPES):
 
     #%% variables
     mTEPES.vTotalFCost           = Var(                                          within=NonNegativeReals,                                                                                                doc='total system fixed                   cost      [MEUR]')
-    mTEPES.vTotalGCost           = Var(                                          within=NonNegativeReals,                                                                                                doc='total variable generation  operation cost      [MEUR]')
-    mTEPES.vTotalCCost           = Var(                                          within=NonNegativeReals,                                                                                                doc='total variable consumption operation cost      [MEUR]')
-    mTEPES.vTotalECost           = Var(                                          within=NonNegativeReals,                                                                                                doc='total system emission                cost      [MEUR]')
-    mTEPES.vTotalRCost           = Var(                                          within=NonNegativeReals,                                                                                                doc='total system reliability             cost      [MEUR]')
+    mTEPES.vTotalGCost           = Var(mTEPES.sc, mTEPES.p, mTEPES.n,            within=NonNegativeReals,                                                                                                doc='total variable generation  operation cost      [MEUR]')
+    mTEPES.vTotalCCost           = Var(mTEPES.sc, mTEPES.p, mTEPES.n,            within=NonNegativeReals,                                                                                                doc='total variable consumption operation cost      [MEUR]')
+    mTEPES.vTotalECost           = Var(mTEPES.sc, mTEPES.p, mTEPES.n,            within=NonNegativeReals,                                                                                                doc='total system emission                cost      [MEUR]')
+    mTEPES.vTotalRCost           = Var(mTEPES.sc, mTEPES.p, mTEPES.n,            within=NonNegativeReals,                                                                                                doc='total system reliability             cost      [MEUR]')
     mTEPES.vTotalOutput          = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.g , within=NonNegativeReals, bounds=lambda mTEPES,sc,p,n,g : (0.0,mTEPES.pMaxPower        [sc,p,n,g ]),                     doc='total output of the unit                         [GW]')
     mTEPES.vOutput2ndBlock       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=NonNegativeReals, bounds=lambda mTEPES,sc,p,n,nr: (0.0,mTEPES.pMaxPower2ndBlock[sc,p,n,nr]),                     doc='second block of the unit                         [GW]')
     mTEPES.vReserveUp            = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=NonNegativeReals, bounds=lambda mTEPES,sc,p,n,nr: (0.0,mTEPES.pMaxPower2ndBlock[sc,p,n,nr]),                     doc='upward   operating reserve                       [GW]')
@@ -519,12 +522,13 @@ def InputData(CaseName,mTEPES):
         # if no max power, no total output
         if mTEPES.pMaxPower[sc,p,n,g] == 0.0:
             mTEPES.vTotalOutput[sc,p,n,g].fix(0.0)
-        if mTEPES.pMinPower[sc,p,n,g] == mTEPES.pMaxPower[sc,p,n,g]:
-            mTEPES.vTotalOutput[sc,p,n,g].fix(mTEPES.pMaxPower[sc,p,n,g])
+    #for sc,p,n,r  in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.r :
+    #    if mTEPES.pMinPower[sc,p,n,r] == mTEPES.pMaxPower[sc,p,n,r] and mTEPES.pLinearOMCost[r] == 0.0:
+    #        mTEPES.vTotalOutput[sc,p,n,r].fix(mTEPES.pMaxPower[sc,p,n,r])
 
     for sc,p,n,nr in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.nr:
         # must run units or units with no minimum power are always committed and must produce at least their minimum output
-        if mTEPES.pMustRun[nr] == 1 or mTEPES.pMinPower[sc,p,n,nr] == 0.0:
+        if mTEPES.pMustRun[nr] == 1 or (mTEPES.pMinPower[sc,p,n,nr] == 0.0 and mTEPES.pConstantVarCost[nr] == 0.0):
             mTEPES.vCommitment[sc,p,n,nr].fix(1)
             mTEPES.vStartUp   [sc,p,n,nr].fix(0)
             mTEPES.vShutDown  [sc,p,n,nr].fix(0)
@@ -557,15 +561,15 @@ def InputData(CaseName,mTEPES):
                 mTEPES.vESSReserveDown[sc,p,n,es].fix(0.0)
 
     # fix the must-run units and their output
-    mTEPES.pInitialOutput = pd.Series([0.0]*len(mTEPES.gg), dfGeneration.index)
-    mTEPES.pInitialUC     = pd.Series([0.0]*len(mTEPES.gg), dfGeneration.index)
+    mTEPES.pInitialOutput = pd.Series([0.0]*len(mTEPES.nr), index=list(mTEPES.nr))
+    mTEPES.pInitialUC     = pd.Series([0.0]*len(mTEPES.nr), index=list(mTEPES.nr))
     pSystemOutput  = 0.0
     n1 = next(iter(mTEPES.sc*mTEPES.p*mTEPES.n))
-    for g in mTEPES.g:
-        if pSystemOutput < sum(mTEPES.pDemand[n1,nd] for nd in mTEPES.nd) and mTEPES.pMustRun[g] == 1:
-            mTEPES.pInitialOutput[g] = mTEPES.pMaxPower[n1,g]
-            mTEPES.pInitialUC    [g] = 1
-            pSystemOutput           += mTEPES.pInitialOutput[g]
+    for nr in mTEPES.nr:
+        if pSystemOutput < sum(mTEPES.pDemand[n1,nd] for nd in mTEPES.nd) and mTEPES.pMustRun[nr] == 1:
+            mTEPES.pInitialOutput[nr] = mTEPES.pMaxPower[n1,nr]
+            mTEPES.pInitialUC    [nr] = 1
+            pSystemOutput            += mTEPES.pInitialOutput[nr]
 
     # thermal and variable units ordered by increasing variable operation cost
     if len(mTEPES.tq) > 0:
