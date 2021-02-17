@@ -19,25 +19,25 @@ It determines automatically optimal expansion plans that satisfy simultaneously 
   - Period: one year
   - Load level: 2030-01-01T00:00:00+01:00 to 2030-12-30T23:00:00+01:00
 
-  The time division allows a flexible representation of the periods for evaluating the system operation. For example, by a set of non-chronological isolated snapshots or
-  by 2920 periods of three hours or by the 8760 hours of the year.
+  The time division allows a flexible representation of the periods for evaluating the system operation. Additionally, it can be run with chronological periods of several consecutive hours (bi-hourly, tri-hourly resolution)
+  to allow decreasing the computational burden without accuracy loss.
 
 - **Stochastic**: several stochastic parameters that can influence the optimal generation and transmission expansion decisions are considered. The model considers stochastic
-  short-term yearly uncertainties (scenarios) related to the system operation. The operation scenarios are associated with renewable energy sources and electricity demand.
+  medium-term yearly uncertainties (scenarios) related to the system operation. These operation scenarios are associated with renewable energy sources and electricity demand.
   
-Multicriteria: the objective function incorporates some of the main quantifiable objectives: **generation and transmission investment cost (CAPEX)** and **expected variable operation costs (including generation emission cost) (system OPEX)**.
+The objective function incorporates the two main quantifiable costs: **generation and transmission investment cost (CAPEX)** and **expected variable operation costs (including generation emission and reliability costs) (system OPEX)**.
   
-The model formulates an optimization problem including generation and network binary investment decisions and operation decisions.
+The model formulates a stochastic optimization problem including generation and network binary investment decisions and operation decisions (commitment, startup and shutdown decisions are also binary).
 
 The operation model is a **network constrained unit commitment (NCUC)** based on a **tight and compact** formulation including operating reserves with a
 **DC power flow (DCPF)**. Network ohmic losses are considered proportional to the line flow. It considers different **energy storage systems (ESS)**, e.g., pumped-storage hydro,
-battery, etc. It allows analyzing the trade-off between the investment in generation/transmission and the use of storage capacity. 
+battery, etc. It allows analyzing the trade-off between the investment in generation/transmission and the investment or use of storage capacity. 
 
 The main results of the model can be structured in these topics:
   
 - **Investment**: investment decisions and cost
-- **Operation**: the output of different units and technologies (thermal, storage hydro, pumped-storage hydro, RES), RES curtailment, line flows, line ohmic losses, node voltage angles
-- **Emissions**: CO2
+- **Operation**: the output of different units and aggregation by technologies (thermal, storage hydro, pumped-storage hydro, RES), RES curtailment, line flows, line ohmic losses, node voltage angles
+- **Emissions**: CO2 emissions by unit
 - **Marginal**: Locational Short-Run Marginal Costs (LSRMC)
 
-A careful implementation has been done to avoid numerical problems by scaling parameters, variables and equations of the optimization problem allowing the model to be used for large-scale cases.
+A careful implementation has been done to avoid numerical problems by scaling parameters, variables and equations of the optimization problem allowing the model to be used for large-scale cases, e.g., the European system with hourly detail.

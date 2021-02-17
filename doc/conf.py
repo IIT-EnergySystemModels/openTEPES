@@ -8,14 +8,13 @@
 # -- Project information -----------------------------------------------------
 
 project = 'openTEPES'
-copyright = '2020, Universidad Pontificia Comillas. '
+copyright = '2021, Universidad Pontificia Comillas'
 author = 'Andres Ramos'
 
 # The short X.Y version
-version = 'version 1.7.24'
+version = 'version 2.0.2'
 # The full version, including alpha/beta/rc tags
 release = ''
-
 
 # -- General configuration ---------------------------------------------------
 
@@ -84,15 +83,16 @@ html_static_path = []
 # 'searchbox.html']``.
 #
 # html_sidebars = {}
-html_theme = 'sphinx_rtd_theme'
-html_title = 'version 1.7.24'
+html_theme = 'alabaster'
+html_title = 'version 2.0.2'
 html_logo  = '../openTEPES.png'
 html_last_updated_fmt = ''
 html_show_sphinx = False
 html_theme_options = {
     'analytics_id': 'UA-515200-2',  #  Provided by Google in your dashboard
-    'logo_only': True,
-	'style_nav_header_background': '#003594',
+    'description': 'version 2.0.2',
+    'page_width': 'auto',
+    'font_family': 'Calibri'
 }
 html_js_files = [
     '../custom.js',

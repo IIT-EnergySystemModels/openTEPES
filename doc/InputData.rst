@@ -3,6 +3,8 @@
 Input Data
 ==========
 
+All the input files must be located in a folder with the name of the case study.
+
 Dictionaries. Sets
 ------------------
 The dictionaries include all the possible elements of the corresponding sets included in the optimization problem
@@ -14,7 +16,7 @@ File                        Description
 ``oT_Dict_Period.csv``      Period (e.g., y2030)
 ``oT_Dict_LoadLevel.csv``   Load level (e.g., 2030-01-01T00:00:00+01:00 to 2030-12-30T23:00:00+01:00). Load levels with duration 0 are ignored
 ``oT_Dict_Generation.csv``  Generation units (thermal, ESS and variable)
-``oT_Dict_Technology.csv``  Generation technologies
+``oT_Dict_Technology.csv``  Generation technologies. The technology order is used in the temporal result plot.
 ``oT_Dict_Storage.csv``     ESS type (daily < 12 h, weekly < 40 h, monthly > 60 h)
 ``oT_Dict_Node.csv``        Nodes
 ``oT_Dict_Zone.csv``        Zones
@@ -41,20 +43,21 @@ This is the list of the input data files and their brief description.
 =========================================  ==========================================================================================================
 File                                       Description
 =========================================  ==========================================================================================================
-``oT_Data_Option.csv``                     Options of the **openTEPES** model
+``oT_Data_Option.csv``                     Options of use of the **openTEPES** model
 ``oT_Data_Parameter.csv``                  General system parameters
 ``oT_Data_Scenario.csv``                   Short-term uncertainties
-``oT_Data_NodeLocation.csv``               Node location in latitude and longitude
+``oT_Data_Duration.csv``                   Duration of the load levels
 ``oT_Data_Demand.csv``                     Demand
 ``oT_Data_OperatingReserveUp.csv``         Upward operating reserves (include aFRR, mFRR and RR for electricity balancing from ENTSO-E)
 ``oT_Data_OperatingReserveDown.csv``       Downward operating reserves (include aFRR, mFRR and RR for electricity balancing from ENTSO-E)
-``oT_Data_Duration.csv``                   Duration of the load levels
 ``oT_Data_Generation.csv``                 Generation data
+``oT_Data_VariableMaxGeneration.csv``      Variable maximum power generation by load level
+``oT_Data_VariableMinGeneration.csv``      Variable minimum power generation by load level
+``oT_Data_EnergyInflows.csv``              Energy inflows for the ESS
 ``oT_Data_MaximumStorage.csv``             Maximum storage of the ESS by load level
 ``oT_Data_MinimumStorage.csv``             Minimum storage of the ESS by load level
 ``oT_Data_Network.csv``                    Network data
-``oT_Data_VariableMinGeneration.csv``      Variable minimum power generation by load level
-``oT_Data_VariableMaxGeneration.csv``      Variable maximum power generation by load level
+``oT_Data_NodeLocation.csv``               Node location in latitude and longitude
 =========================================  ==========================================================================================================
 
 Options
@@ -64,10 +67,10 @@ A description of the options included in the file ``oT_Data_Option.csv`` follows
 ================  ============================================================================
 File              Description                                                                 
 ================  ============================================================================
-IndBinGenInvest   Indicator of binary generation expansion decisions, 0 continuous - 1 binary 
-IndBinNetInvest   Indicator of binary network    expansion decisions, 0 continuous - 1 binary 
-IndBinGenOperat   Indicator of binary generation operation decisions, 0 continuous - 1 binary 
-IndNetLosses      Indicator of network losses, 0 lossless - 1 ohmic losses                    
+IndBinGenInvest   Indicator of binary generation expansion decisions, {0 continuous, 1 binary} 
+IndBinNetInvest   Indicator of binary network    expansion decisions, {0 continuous, 1 binary} 
+IndBinGenOperat   Indicator of binary generation operation decisions, {0 continuous, 1 binary} 
+IndNetLosses      Indicator of network losses, {0 lossless, 1 ohmic losses}
 ================  ============================================================================
 
 Parameters
@@ -101,17 +104,18 @@ Identifier      Header        Description
 Scenario        Probability   Probability of the scenario  p.u.
 ==============  ============  ===========================  ====
 
-Node location
--------------
+Duration
+--------
 
-A description of the data included in the file ``oT_Data_NodeLocation.csv`` follows:
+A description of the data included in the file ``oT_Data_Duration.csv`` follows:
 
-==============  ============  ================  ==
-Identifier      Header        Description
-==============  ============  ================  ==
-Node            Latitude      Node latitude     º
-Node            Longitude     Node longitude    º
-==============  ============  ================  ==
+==============  ==========  ==========  ========  ===================================================================  ==
+Identifier      Identifier  Identifier  Header    Description
+==============  ==========  ==========  ========  ===================================================================  ==
+Scenario        Period      Load level  Duration  Duration of the load level. Load levels with duration 0 are ignored  h
+==============  ==========  ==========  ========  ===================================================================  ==
+
+It is a simple way to use isolated snapshots or representative days or just the first three months instead of all the hours of a year to simplify the optimization problem.
 
 Demand
 ------
@@ -142,19 +146,6 @@ These operating reserves must include Automatic Frequency Restoration Reserves (
 
 Internally, all the values below 1e-5 times the maximum system demand will be converted into 0 by the model.
 
-Duration
---------
-
-A description of the data included in the file ``oT_Data_Duration.csv`` follows:
-
-==============  ==========  ==========  ========  ===================================================================  ==
-Identifier      Identifier  Identifier  Header    Description
-==============  ==========  ==========  ========  ===================================================================  ==
-Scenario        Period      Load level  Duration  Duration of the load level. Load levels with duration 0 are ignored  h
-==============  ==========  ==========  ========  ===================================================================  ==
-
-It is a simple way to use isolated snapshots or representative days or just the first three months instead of all the hours of a year to simplify the optimization problem.
-
 Generation
 ----------
 A description of the data included for each generating unit in the file ``oT_Data_Generation.csv`` follows:
@@ -162,7 +153,7 @@ A description of the data included for each generating unit in the file ``oT_Dat
 ====================  =======================================================================================  ============================
 Header                Description                                                                             
 ====================  =======================================================================================  ============================  
-Node                  Location of the generator at the node                                                   
+Node                  Name of the node where generator is located                                                  
 Technology            Technology of the generator (nuclear, coal, CCGT, OCGT, ESS, etc.)                       
 StorageType           Storage type (daily, weekly, monthly, etc.)                                              Daily/Weekly/Monthly
 MustRun               Must-run unit                                                                            Yes/No
@@ -170,7 +161,7 @@ MaximumPower          Maximum power output (discharge for ESS units)            
 MinimumPower          Minimum power output                                                                     MW
 MaximumReactivePower  Maximum reactive power output (discharge for ESS units) (not used in the plain version)  MW
 MinimumReactivePower  Minimum reactive power output (not used in the plain version)                            MW
-MaximumCharge         Maximum charge when storing energy the ESS unit                                          MW
+MaximumCharge         Maximum charge when the ESS unit is storing energy                                       MW
 InitialStorage        Initial energy stored at the first instant of the time scope                             GWh
 MaximumStorage        Maximum energy that can be stored by the ESS unit                                        GWh
 MinimumStorage        Minimum energy that can be stored by the ESS unit                                        GWh
@@ -192,10 +183,29 @@ FixedChargeRate       Fixed charge rate to annualize the overnight investment co
 BinaryInvestment      Binary unit investment decision                                                          Yes/No
 ====================  =======================================================================================  ============================
 
-EFOR is used to reduce the maximum and minimum power of the unit. For hydro units it can be used to reduce their maximum power by the head effect. It doesn't reduce the maximum charge.
+A generator with operation cost (sum of the fuel and emission cost, excluding O&M cost) > 0 is considered a thermal unit. If the unit has no operation cost and its maximum storage = 0,
+it is considered a renewable unit. If its maximum storage is > 0 is considered an ESS.
 
-Those generators or ESS with fixed cost > 0 are considered candidate and can be installed or not. A generator with linear variable costs > 0 is considered a thermal unit. If its maximum storage > 0 is considered an ESS.
+Must-run non-renewable units are always committed, i.e., their commitment decision is equal to 1. All must-run units are forced to produce at least their minimum output.
 
+EFOR is used to reduce the maximum and minimum power of the unit. For hydro units it can be used to reduce their maximum power by the water head effect. It does not reduce the maximum charge.
+
+Those generators or ESS with fixed cost > 0 are considered candidate and can be installed or not.
+
+Variable generation
+-----------------------
+
+A description of the data included in the files ``oT_Data_VariableMaxGeneration.csv`` and ``oT_Data_VariableMinGeneration.csv`` follows:
+
+==============  ==========  ==========  =========  ============================================================  ==
+Identifier      Identifier  Identifier  Header     Description
+==============  ==========  ==========  =========  ============================================================  ==
+Scenario        Period      Load level  Generator  Maximum (minimum) power generation of the unit by load level  MW
+==============  ==========  ==========  =========  ============================================================  ==
+
+To force a generator to produce 0 a lower value (e.g., 0.1 MW) strictly > 0, but not 0 (in which case the value will be ignored), must be introduced.
+
+Internally, all the values below 1e-5 times the maximum system demand will be converted into 0 by the model.
 
 Energy inflows
 --------------
@@ -208,20 +218,7 @@ Identifier      Identifier  Identifier  Header     Description
 Scenario        Period      Load level  Generator  Energy inflows by load level   MW
 ==============  ==========  ==========  =========  =============================  ==
 
-Internally, all the values below 1e-5 times the maximum system demand will be converted into 0 by the model.
-
-Variable generation
------------------------
-
-A description of the data included in the files ``oT_Data_VariableMinGeneration.csv`` and ``oT_Data_VariableMaxGeneration.csv`` follows:
-
-==============  ==========  ==========  =========  ===========================================================  ==
-Identifier      Identifier  Identifier  Header     Description
-==============  ==========  ==========  =========  ===========================================================  ==
-Scenario        Period      Load level  Generator  Minimum/maximum power generation of the unit by load level   MW
-==============  ==========  ==========  =========  ===========================================================  ==
-
-To force a generator to produce 0 a lower value (e.g., 0.1 MW) strictly > 0, but not 0 (in which case the value will be ignored), must be introduced.
+If you have daily inflows data just input the daily amount at the first hour of every day if the reservoirs have daily or weekly storage capacity.
 
 Internally, all the values below 1e-5 times the maximum system demand will be converted into 0 by the model.
 
@@ -256,11 +253,26 @@ AngMax             Maximum angle difference (not used in the plain version)     
 AngMin             Minimum angle difference (not used in the plain version)                                      º
 Tap                Tap changer (not used in the plain version)                                                   p.u.
 Converter          Converter station (not used in the plain version)                                             Yes/No
-TTC                Total transfer capacity (maximum permissible thermal load)                                    MW
+TTC                Total transfer capacity (maximum permissible thermal load) in forward  direction              MW
+TTCBck             Total transfer capacity (maximum permissible thermal load) in backward direction              MW
 SecurityFactor     Security factor to consider approximately N-1 contingencies. NTC = TTC x SecurityFactor       p.u.
 FixedCost          Overnight investment (capital) cost                                                           M€
 FixedChargeRate    Fixed charge rate to annualize the overnight investment cost                                  p.u.
 BinaryInvestment   Binary line/circuit investment decision                                                       Yes/No
 =================  ============================================================================================  ======
 
+If TTCBck is left empty or is equal to 0 it is substituted by the TTC in the model.
+
 Those lines with fixed cost > 0 are considered candidate and can be installed or not.
+
+Node location
+-------------
+
+A description of the data included in the file ``oT_Data_NodeLocation.csv`` follows:
+
+==============  ============  ================  ==
+Identifier      Header        Description
+==============  ============  ================  ==
+Node            Latitude      Node latitude     º
+Node            Longitude     Node longitude    º
+==============  ============  ================  ==
