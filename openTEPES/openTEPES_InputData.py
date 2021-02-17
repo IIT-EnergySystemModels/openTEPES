@@ -1,4 +1,4 @@
-# Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 16, 2021
+# Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 17, 2021
 
 import time
 import math
@@ -75,6 +75,7 @@ def InputData(CaseName,mTEPES):
     dictSets.load(filename=CaseName+'/oT_Dict_AreaToRegion_'+CaseName+'.csv', set='arrg', format='set')
 
     mTEPES.scc  = Set(initialize=dictSets['sc'],   ordered=True,  doc='scenarios'     )
+    mTEPES.pp   = Set(initialize=dictSets['p' ],   ordered=True,  doc='periods'       )
     mTEPES.p    = Set(initialize=dictSets['p' ],   ordered=True,  doc='periods'       )
     mTEPES.nn   = Set(initialize=dictSets['n' ],   ordered=True,  doc='load levels'   )
     mTEPES.gg   = Set(initialize=dictSets['g' ],   ordered=False, doc='units'         )
@@ -106,6 +107,7 @@ def InputData(CaseName,mTEPES):
     pSBase               = dfParameter['SBase'              ][0] * 1e-3                                                                   # base power                          [GW]
     pReferenceNode       = dfParameter['ReferenceNode'      ][0]                                                                          # reference node
     pTimeStep            = dfParameter['TimeStep'           ][0].astype('int')                                                            # duration of the unit time step      [h]
+    pStageDuration       = dfParameter['StageDuration'      ][0].astype('int')                                                            # duration of each stage              [h]
 
     pScenProb            = dfScenario          ['Probability'  ]                                                                          # probabilities of scenarios          [p.u.]
     pDuration            = dfDuration          ['Duration'     ] * pTimeStep                                                              # duration of load levels             [h]
@@ -409,6 +411,7 @@ def InputData(CaseName,mTEPES):
     mTEPES.pDwReserveActivation  = Param(initialize=pDwReserveActivation, within=NonNegativeReals)
     mTEPES.pSBase                = Param(initialize=pSBase              , within=NonNegativeReals)
     mTEPES.pTimeStep             = Param(initialize=pTimeStep           , within=NonNegativeReals)
+    mTEPES.pStageDuration        = Param(initialize=pStageDuration      , within=NonNegativeReals)
 
     mTEPES.pDemand               = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nd, initialize=pDemand.stack().to_dict()          , within=NonNegativeReals, doc='Demand'                       )
     mTEPES.pScenProb             = Param(mTEPES.scc,                               initialize=pScenProb.to_dict()                , within=NonNegativeReals, doc='Probability'                  )
