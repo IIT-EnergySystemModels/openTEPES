@@ -1,4 +1,4 @@
-# Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 16, 2021
+# Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 21, 2021
 
 import time
 import math
@@ -75,6 +75,7 @@ def InputData(CaseName,mTEPES):
     dictSets.load(filename=CaseName+'/oT_Dict_AreaToRegion_'+CaseName+'.csv', set='arrg', format='set')
 
     mTEPES.scc  = Set(initialize=dictSets['sc'],   ordered=True,  doc='scenarios'     )
+    mTEPES.pp   = Set(initialize=dictSets['p' ],   ordered=True,  doc='periods'       )
     mTEPES.p    = Set(initialize=dictSets['p' ],   ordered=True,  doc='periods'       )
     mTEPES.nn   = Set(initialize=dictSets['n' ],   ordered=True,  doc='load levels'   )
     mTEPES.gg   = Set(initialize=dictSets['g' ],   ordered=False, doc='units'         )
@@ -106,6 +107,7 @@ def InputData(CaseName,mTEPES):
     pSBase               = dfParameter['SBase'              ][0] * 1e-3                                                                   # base power                          [GW]
     pReferenceNode       = dfParameter['ReferenceNode'      ][0]                                                                          # reference node
     pTimeStep            = dfParameter['TimeStep'           ][0].astype('int')                                                            # duration of the unit time step      [h]
+    pStageDuration       = dfParameter['StageDuration'      ][0].astype('int')                                                            # duration of each stage              [h]
 
     pScenProb            = dfScenario          ['Probability'  ]                                                                          # probabilities of scenarios          [p.u.]
     pDuration            = dfDuration          ['Duration'     ] * pTimeStep                                                              # duration of load levels             [h]
@@ -209,8 +211,9 @@ def InputData(CaseName,mTEPES):
     mTEPES.es = Set(initialize=mTEPES.g ,                     ordered=False, doc='ESS           units', filter=lambda mTEPES,g       :  g         in mTEPES.g   and                                   pRatedMaxStorage[g] >  0.0)
     mTEPES.gc = Set(initialize=mTEPES.g ,                     ordered=False, doc='candidate     units', filter=lambda mTEPES,g       :  g         in mTEPES.g   and pGenFixedCost     [g ] >  0.0)
     mTEPES.ec = Set(initialize=mTEPES.es,                     ordered=False, doc='candidate ESS units', filter=lambda mTEPES,es      :  es        in mTEPES.es  and pGenFixedCost     [es] >  0.0)
-    mTEPES.br = Set(initialize=mTEPES.ni*mTEPES.nf,           ordered=False, doc='all branches       ', filter=lambda mTEPES,ni,nf   : (ni,nf)    in                pLineX                       )
-    mTEPES.la = Set(initialize=mTEPES.ni*mTEPES.nf*mTEPES.cc, ordered=False, doc='all           lines', filter=lambda mTEPES,ni,nf,cc: (ni,nf,cc) in                pLineX                       )
+    mTEPES.br = Set(initialize=mTEPES.ni*mTEPES.nf,           ordered=False, doc='all branches       ', filter=lambda mTEPES,ni,nf   : (ni,nf)    in                pLineType                    )
+    mTEPES.ln = Set(initialize=mTEPES.ni*mTEPES.nf*mTEPES.cc, ordered=False, doc='all input     lines', filter=lambda mTEPES,ni,nf,cc: (ni,nf,cc) in                pLineType                    )
+    mTEPES.la = Set(initialize=mTEPES.ni*mTEPES.nf*mTEPES.cc, ordered=False, doc='all real      lines', filter=lambda mTEPES,ni,nf,cc: (ni,nf,cc) in                pLineX                        and pLineNTCFrw[ni,nf,cc] > 0.0 and pLineNTCBck[ni,nf,cc] > 0.0)
     mTEPES.lc = Set(initialize=mTEPES.la,                     ordered=False, doc='candidate     lines', filter=lambda mTEPES,*la     :  la        in mTEPES.la  and pNetFixedCost     [la] >  0.0)
     mTEPES.cd = Set(initialize=mTEPES.la,                     ordered=False, doc='           DC lines', filter=lambda mTEPES,*la     :  la        in mTEPES.la  and pNetFixedCost     [la] >  0.0 and pLineType[la] == 'DC')
     mTEPES.ed = Set(initialize=mTEPES.la,                     ordered=False, doc='           DC lines', filter=lambda mTEPES,*la     :  la        in mTEPES.la  and pNetFixedCost     [la] == 0.0 and pLineType[la] == 'DC')
@@ -337,13 +340,11 @@ def InputData(CaseName,mTEPES):
     pCycleTimeStep = (pUpTime*0).astype('int')
     for es in mTEPES.es:
         if  pStorageType[es] == 'Daily'  :
-            pCycleTimeStep[es] = int(  24/pTimeStep)
+            pCycleTimeStep[es] = 1
         if  pStorageType[es] == 'Weekly' :
-            pCycleTimeStep[es] = int( 168/pTimeStep)
+            pCycleTimeStep[es] = int( 24/pTimeStep)
         if  pStorageType[es] == 'Monthly':
-            pCycleTimeStep[es] = int( 672/pTimeStep)
-        if  pStorageType[es] == 'Yearly' :
-            pCycleTimeStep[es] = int(8736/pTimeStep)
+            pCycleTimeStep[es] = int(168/pTimeStep)
 
     pStorageType = pStorageType[pStorageType.index.isin(mTEPES.es)]
     mTEPES.pStorageType = Param(mTEPES.es, initialize=pStorageType.to_dict(), within=Any)
@@ -409,6 +410,7 @@ def InputData(CaseName,mTEPES):
     mTEPES.pDwReserveActivation  = Param(initialize=pDwReserveActivation, within=NonNegativeReals)
     mTEPES.pSBase                = Param(initialize=pSBase              , within=NonNegativeReals)
     mTEPES.pTimeStep             = Param(initialize=pTimeStep           , within=NonNegativeReals)
+    mTEPES.pStageDuration        = Param(initialize=pStageDuration      , within=NonNegativeReals)
 
     mTEPES.pDemand               = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nd, initialize=pDemand.stack().to_dict()          , within=NonNegativeReals, doc='Demand'                       )
     mTEPES.pScenProb             = Param(mTEPES.scc,                               initialize=pScenProb.to_dict()                , within=NonNegativeReals, doc='Probability'                  )
@@ -442,22 +444,22 @@ def InputData(CaseName,mTEPES):
     mTEPES.pCycleTimeStep        = Param(                               mTEPES.gg, initialize=pCycleTimeStep.to_dict()           , within=NonNegativeReals, doc='ESS Storage cycle'            )
     mTEPES.pIniInventory         = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.gg, initialize=pIniInventory.stack().to_dict()    , within=NonNegativeReals, doc='ESS Initial storage',         mutable=True)
 
-    mTEPES.pLineLossFactor       = Param(                               mTEPES.la, initialize=pLineLossFactor.to_dict()          , within=NonNegativeReals, doc='Loss factor'                  )
-    mTEPES.pLineR                = Param(                               mTEPES.la, initialize=pLineR.to_dict()                   , within=NonNegativeReals, doc='Resistance'                   )
-    mTEPES.pLineX                = Param(                               mTEPES.la, initialize=pLineX.to_dict()                   , within=NonNegativeReals, doc='Reactance'                    )
-    mTEPES.pLineBsh              = Param(                               mTEPES.la, initialize=pLineBsh.to_dict()                 , within=NonNegativeReals, doc='Susceptance',                 mutable=True)
-    mTEPES.pLineTAP              = Param(                               mTEPES.la, initialize=pLineTAP.to_dict()                 , within=NonNegativeReals, doc='Tap changer',                 mutable=True)
-    mTEPES.pConverter            = Param(                               mTEPES.la, initialize=pConverter.to_dict()               , within=NonNegativeReals, doc='Converter'                    )
-    mTEPES.pLineVoltage          = Param(                               mTEPES.la, initialize=pLineVoltage.to_dict()             , within=NonNegativeReals, doc='Voltage'                      )
-    mTEPES.pLineNTCFrw           = Param(                               mTEPES.la, initialize=pLineNTCFrw.to_dict()              , within=NonNegativeReals, doc='NTC forward'                  )
-    mTEPES.pLineNTCBck           = Param(                               mTEPES.la, initialize=pLineNTCBck.to_dict()              , within=NonNegativeReals, doc='NTC backward'                 )
-    mTEPES.pNetFixedCost         = Param(                               mTEPES.la, initialize=pNetFixedCost.to_dict()            , within=NonNegativeReals, doc='Network fixed cost'           )
-    mTEPES.pIndBinLineInvest     = Param(                               mTEPES.la, initialize=pIndBinLineInvest.to_dict()        , within=NonNegativeReals, doc='Binary investment decision'   )
-    mTEPES.pBigMFlowBck          = Param(                               mTEPES.la, initialize=pBigMFlowBck.to_dict()             , within=NonNegativeReals, doc='Maximum backward capacity',   mutable=True)
-    mTEPES.pBigMFlowFrw          = Param(                               mTEPES.la, initialize=pBigMFlowFrw.to_dict()             , within=NonNegativeReals, doc='Maximum forward  capacity',   mutable=True)
+    mTEPES.pLineLossFactor       = Param(                               mTEPES.ln, initialize=pLineLossFactor.to_dict()          , within=NonNegativeReals, doc='Loss factor'                  )
+    mTEPES.pLineR                = Param(                               mTEPES.ln, initialize=pLineR.to_dict()                   , within=NonNegativeReals, doc='Resistance'                   )
+    mTEPES.pLineX                = Param(                               mTEPES.ln, initialize=pLineX.to_dict()                   , within=NonNegativeReals, doc='Reactance'                    )
+    mTEPES.pLineBsh              = Param(                               mTEPES.ln, initialize=pLineBsh.to_dict()                 , within=NonNegativeReals, doc='Susceptance',                 mutable=True)
+    mTEPES.pLineTAP              = Param(                               mTEPES.ln, initialize=pLineTAP.to_dict()                 , within=NonNegativeReals, doc='Tap changer',                 mutable=True)
+    mTEPES.pConverter            = Param(                               mTEPES.ln, initialize=pConverter.to_dict()               , within=NonNegativeReals, doc='Converter'                    )
+    mTEPES.pLineVoltage          = Param(                               mTEPES.ln, initialize=pLineVoltage.to_dict()             , within=NonNegativeReals, doc='Voltage'                      )
+    mTEPES.pLineNTCFrw           = Param(                               mTEPES.ln, initialize=pLineNTCFrw.to_dict()              , within=NonNegativeReals, doc='NTC forward'                  )
+    mTEPES.pLineNTCBck           = Param(                               mTEPES.ln, initialize=pLineNTCBck.to_dict()              , within=NonNegativeReals, doc='NTC backward'                 )
+    mTEPES.pNetFixedCost         = Param(                               mTEPES.ln, initialize=pNetFixedCost.to_dict()            , within=NonNegativeReals, doc='Network fixed cost'           )
+    mTEPES.pIndBinLineInvest     = Param(                               mTEPES.ln, initialize=pIndBinLineInvest.to_dict()        , within=NonNegativeReals, doc='Binary investment decision'   )
+    mTEPES.pBigMFlowBck          = Param(                               mTEPES.ln, initialize=pBigMFlowBck.to_dict()             , within=NonNegativeReals, doc='Maximum backward capacity',   mutable=True)
+    mTEPES.pBigMFlowFrw          = Param(                               mTEPES.ln, initialize=pBigMFlowFrw.to_dict()             , within=NonNegativeReals, doc='Maximum forward  capacity',   mutable=True)
     mTEPES.pMaxTheta             = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nd, initialize=pMaxTheta.stack().to_dict()        , within=NonNegativeReals, doc='Maximum voltage angle',       mutable=True)
-    mTEPES.pAngMin               = Param(                               mTEPES.la, initialize=pAngMin.to_dict()                  , within=Reals,            doc='Minimum phase angle diff',    mutable=True)
-    mTEPES.pAngMax               = Param(                               mTEPES.la, initialize=pAngMax.to_dict()                  , within=Reals,            doc='Maximum phase angle diff',    mutable=True)
+    mTEPES.pAngMin               = Param(                               mTEPES.ln, initialize=pAngMin.to_dict()                  , within=Reals,            doc='Minimum phase angle diff',    mutable=True)
+    mTEPES.pAngMax               = Param(                               mTEPES.ln, initialize=pAngMax.to_dict()                  , within=Reals,            doc='Maximum phase angle diff',    mutable=True)
 
     #%% variables
     mTEPES.vTotalFCost           = Var(                                          within=NonNegativeReals,                                                                                                doc='total system fixed                   cost      [MEUR]')
@@ -588,7 +590,7 @@ def InputData(CaseName,mTEPES):
     for sc,p,es in mTEPES.sc*mTEPES.p*mTEPES.es:
         mTEPES.vESSInventory[sc,p,mTEPES.n.last(),es].fix(pInitialInventory[es])
 
-    # fixing the ESS inventory at the end of the following pCycleTimeStep (weekly, yearly), i.e., for daily ESS is fixed at the end of the week, for weekly/monthly ESS is fixed at the end of the year
+    # fixing the ESS inventory at the end of the following pCycleTimeStep (daily, weekly, monthly), i.e., for daily ESS is fixed at the end of the week, for weekly/monthly ESS is fixed at the end of the year
     for sc,p,n,es in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.es:
          if pStorageType[es] == 'Daily'   and mTEPES.n.ord(n) % int( 168/pTimeStep) == 0:
              mTEPES.vESSInventory[sc,p,n,es].fix(pInitialInventory[es])
