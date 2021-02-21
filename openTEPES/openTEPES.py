@@ -65,7 +65,8 @@
 # make it effectively proprietary.  To prevent this, the GPL assures that
 # patents cannot be used to render the program non-free.
 
-# Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 2.0.3 - February 17, 2021
+# Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 2.0.4 - February 21, 2021
+# simplicity and transparency in power systems planning
 
 # Developed by
 
@@ -100,13 +101,8 @@ InitialTime = time.time()
 CaseName   = '9n'
 SolverName = 'gurobi'
 
-# duration of the stage (weekly -168-, monthly -672-, quarterly -2184-, semesterly -4358-, or annualy -8736- is what makes sense from a system operation point of view)
-# this value must be larger or equal than the shortest duration of any storage type (e.g., weekly)
-# consecutive stages are not tied between them
-pStageDuration = 4368
-
 #%% model declaration
-mTEPES = ConcreteModel('Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 2.0.3 - February 17, 2021')
+mTEPES = ConcreteModel('Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 2.0.4 - February 21, 2021')
 
 InputData(CaseName, mTEPES)
 
