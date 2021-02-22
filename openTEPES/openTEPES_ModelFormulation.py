@@ -1,4 +1,4 @@
-# Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 16, 2021
+# Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 21, 2021
 
 import time
 from   collections   import defaultdict
@@ -35,16 +35,22 @@ def OperationModelFormulation(mTEPES, st):
     setattr(mTEPES, 'eTotalGCost_stage'+str(st), Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, rule=eTotalGCost, doc='system variable generation operation cost [MEUR]'))
 
     def eTotalCCost(mTEPES,sc,p,n):
-        return mTEPES.vTotalCCost[sc,p,n] == sum(mTEPES.pLinearVarCost  [es] * mTEPES.pDuration[n] * mTEPES.vESSTotalCharge[sc,p,n,es] for es in mTEPES.es)
+        if sum(mTEPES.pLinearVarCost  [es] for es in mTEPES.es):
+            return mTEPES.vTotalCCost[sc,p,n] == sum(mTEPES.pLinearVarCost  [es] * mTEPES.pDuration[n] * mTEPES.vESSTotalCharge[sc,p,n,es] for es in mTEPES.es)
+        else:
+            return Constraint.Skip
     setattr(mTEPES, 'eTotalCCost_stage'+str(st), Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, rule=eTotalCCost, doc='system variable consumption operation cost [MEUR]'))
+
+    def eTotalECost(mTEPES,sc,p,n):
+        if sum(mTEPES.pCO2EmissionCost[nr] for nr in mTEPES.nr):
+            return mTEPES.vTotalECost[sc,p,n] == sum(mTEPES.pCO2EmissionCost[nr] * mTEPES.pDuration[n] * mTEPES.vTotalOutput   [sc,p,n,nr] for nr in mTEPES.nr)
+        else:
+            return Constraint.Skip
+    setattr(mTEPES, 'eTotalECost_stage'+str(st), Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, rule=eTotalECost, doc='system emission cost [MEUR]'))
 
     def eTotalRCost(mTEPES,sc,p,n):
         return mTEPES.vTotalRCost[sc,p,n] == sum(mTEPES.pENSCost             * mTEPES.pDuration[n] * mTEPES.vENS           [sc,p,n,nd] for nd in mTEPES.nd)
     setattr(mTEPES, 'eTotalRCost_stage'+str(st), Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, rule=eTotalRCost, doc='system reliability cost [MEUR]'))
-
-    def eTotalECost(mTEPES,sc,p,n):
-        return mTEPES.vTotalECost[sc,p,n] == sum(mTEPES.pCO2EmissionCost[nr] * mTEPES.pDuration[n] * mTEPES.vTotalOutput   [sc,p,n,nr] for nr in mTEPES.nr)
-    setattr(mTEPES, 'eTotalECost_stage'+str(st), Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, rule=eTotalECost, doc='system emission cost [MEUR]'))
 
     GeneratingOFTime = time.time() - StartTime
     StartTime        = time.time()
