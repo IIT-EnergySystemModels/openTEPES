@@ -55,12 +55,12 @@
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$USER_HOME$/Desktop/Andres" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../../openTEPES_PRO/openTEPES" />
       <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$USER_HOME$/Desktop/Andres/openTEPES_advanced.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/../../openTEPES_PRO/openTEPES/openTEPES_advanced.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="true" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -71,6 +71,7 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.openTEPES_advanced" />
         <item itemvalue="Python.openTEPES_advanced" />
         <item itemvalue="Python.openTEPES" />
       </list>
@@ -87,7 +88,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1608486297499</updated>
-      <workItem from="1613397251678" duration="8071000" />
+      <workItem from="1613397251678" duration="9826000" />
     </task>
     <servers />
   </component>
