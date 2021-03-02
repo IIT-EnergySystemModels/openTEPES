@@ -22,7 +22,7 @@ setup(
     name="openTEPES",
     version="2.0.7",
     description="Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES)",
-    scripts=["openTEPES.py"],
+    scripts=["openTEPES/openTEPES.py"],
     author_email="andres.ramos@comillas.edu",
     url="https://github.com/IIT-EnergySystemModels/openTEPES",
     install_requires=install_requires,
