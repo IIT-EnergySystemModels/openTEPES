@@ -21,9 +21,9 @@ install_requires = [
 
 setup(
     name="openTEPES",
-    version="2.0.9",
+    version="2.0.10",
     description="Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES)",
-    scripts=glob.glob("scripts/openTEPES*.py"),
+    scripts=["scripts/openTEPES*.py"],
     author_email="andres.ramos@comillas.edu",
     url="https://github.com/IIT-EnergySystemModels/openTEPES",
     install_requires=install_requires,
