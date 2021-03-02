@@ -3,8 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="70fc96e0-bc3b-4530-a009-091403d9cfdb" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/openTEPES/openTEPES.py" beforeDir="false" afterPath="$PROJECT_DIR$/openTEPES/openTEPES.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/setup.cfg" beforeDir="false" afterPath="$PROJECT_DIR$/setup.cfg" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -54,7 +52,7 @@
     <property name="node.js.selected.package.tslint" value="(autodetect)" />
     <property name="settings.editor.selected.configurable" value="preferences.updates" />
   </component>
-  <component name="RunManager" selected="Python.openTEPES_advanced">
+  <component name="RunManager" selected="Python.openTEPES">
     <configuration default="true" type="PythonConfigurationType" factoryName="Python">
       <module name="openTEPES" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -81,16 +79,13 @@
       <module name="openTEPES" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/openTEPES" />
-      <option name="IS_MODULE_SDK" value="true" />
+      <option name="SDK_HOME" value="C:\Users\erik_\miniconda3\python.exe" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/venv/Lib/site-packages/openTEPES" />
+      <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/openTEPES/openTEPES.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/venv/Lib/site-packages/openTEPES/openTEPES.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="true" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -165,13 +160,32 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="transform_results" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="openTEPES" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="C:\Users\erik_\miniconda3\python.exe" />
+      <option name="WORKING_DIRECTORY" value="$USER_HOME$/OneDrive - Universidad Pontificia Comillas/openTEPES/Transforming_IAMC_format" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$USER_HOME$/OneDrive - Universidad Pontificia Comillas/openTEPES/Transforming_IAMC_format/transform_results.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.openTEPES" />
+        <item itemvalue="Python.transform_results" />
         <item itemvalue="Python.openTEPES_advanced" />
         <item itemvalue="Python.openTEPES_advanced" />
         <item itemvalue="Python.openTEPES_advanced" />
-        <item itemvalue="Python.plotly_example" />
-        <item itemvalue="Python.plotly_example" />
       </list>
     </recent_temporary>
   </component>
@@ -207,7 +221,7 @@
       <workItem from="1609327541221" duration="9401000" />
       <workItem from="1609866984764" duration="1806000" />
       <workItem from="1614680383283" duration="3914000" />
-      <workItem from="1614690959850" duration="2477000" />
+      <workItem from="1614690959850" duration="4478000" />
     </task>
     <servers />
   </component>
