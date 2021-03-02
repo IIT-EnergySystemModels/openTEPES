@@ -1,4 +1,5 @@
 from setuptools import setup
+import glob
 #
 # def local_scheme(version):
 #     return ""
