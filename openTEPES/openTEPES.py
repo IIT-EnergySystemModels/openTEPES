@@ -99,7 +99,7 @@ from openTEPES_OutputResults    import OutputResults
 InitialTime = time.time()
 
 CaseName   = '9n'
-SolverName = 'gurobi'
+SolverName = 'glpk'
 
 #%% model declaration
 mTEPES = ConcreteModel('Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 2.0.6 - February 23, 2021')
