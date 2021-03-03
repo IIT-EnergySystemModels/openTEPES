@@ -24,5 +24,5 @@ setup(
     install_requires=install_requires,
     extras_require={
         'interactive': ['glpk', 'cartopy'], },
-    packages=find_packages(["openTEPES"]),
+    packages=["openTEPES"],
 )
