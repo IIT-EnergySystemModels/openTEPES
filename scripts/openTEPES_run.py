@@ -90,12 +90,18 @@ import os
 from openTEPES.openTEPES import routine
 
 parser = argparse.ArgumentParser(description='Introducing main parameters.')
-parser.add_argument('--case', dest='param1')
-parser.add_argument('--dir', dest='param2')
-parser.add_argument('--solver', dest='param3')
-
-args = parser.parse_args()
+parser.add_argument('--case', type=str, default="9n")
+parser.add_argument('--dir', type=str, default=r"C:\Users\erik_\Documentos\GitHub\openTEPES\input")
+parser.add_argument('--solver', type=str, default="gurobi")
 
 if __name__ == "__main__":
-    _case_ = os.path.join(args.param2, args.param1)
-    routine(_case_, args.param3)
+    args = parser.parse_args()
+    print(args.case)
+    print(args.dir)
+    print(args.solver)
+    import sys
+    print(sys.argv)
+    print(args)
+    sys.exit()
+    _case_ = os.path.join(args.dir, args.case)
+    routine(_case_, args.solver)
