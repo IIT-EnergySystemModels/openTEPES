@@ -18,11 +18,15 @@ setup(
     name="openTEPES",
     version="2.0.12",
     description="Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES)",
-    scripts=["scripts/openTEPES_run.py"],
+    # scripts=["scripts/openTEPES_run.py"],
     author_email="andres.ramos@comillas.edu",
     url="https://github.com/IIT-EnergySystemModels/openTEPES",
     install_requires=install_requires,
     extras_require={
         'interactive': ['glpk', 'cartopy'], },
     packages=["openTEPES"],
+    entry_points={
+        "console_scripts": [
+            "openTEPES = openTEPES.__main__:main"
+        ]}
 )

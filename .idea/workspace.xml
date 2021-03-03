@@ -2,8 +2,13 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="70fc96e0-bc3b-4530-a009-091403d9cfdb" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/openTEPES/__main__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/openTEPES.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/openTEPES.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/openTEPES_run.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/openTEPES_run.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/openTEPES/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/openTEPES/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/openTEPES_run.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/setup.py" beforeDir="false" afterPath="$PROJECT_DIR$/setup.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -44,14 +49,19 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/openTEPES" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.detected.package.tslint" value="true" />
     <property name="node.js.path.for.package.eslint" value="project" />
     <property name="node.js.path.for.package.tslint" value="project" />
     <property name="node.js.selected.package.eslint" value="(autodetect)" />
     <property name="node.js.selected.package.tslint" value="(autodetect)" />
-    <property name="settings.editor.selected.configurable" value="preferences.updates" />
+    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\erik_\Documentos\GitHub\openTEPES\openTEPES" />
+    </key>
   </component>
   <component name="RunManager" selected="Python.openTEPES">
     <configuration default="true" type="PythonConfigurationType" factoryName="Python">
@@ -231,7 +241,8 @@
       <workItem from="1614690959850" duration="10000000" />
       <workItem from="1614710388208" duration="3662000" />
       <workItem from="1614765996108" duration="3114000" />
-      <workItem from="1614781179654" duration="1943000" />
+      <workItem from="1614781179654" duration="3075000" />
+      <workItem from="1614794817333" duration="1172000" />
     </task>
     <servers />
   </component>
@@ -249,25 +260,5 @@
       </map>
     </option>
     <option name="oldMeFiltersMigrated" value="true" />
-  </component>
-  <component name="WindowStateProjectService">
-    <state x="740" y="274" key="FileChooserDialogImpl" timestamp="1604496825808">
-      <screen x="0" y="0" width="1920" height="1040" />
-    </state>
-    <state x="740" y="274" key="FileChooserDialogImpl/0.0.1920.1040@0.0.1920.1040" timestamp="1604496825808" />
-    <state width="1291" height="528" key="XDebugger.FullValuePopup" timestamp="1609237266176">
-      <screen x="0" y="0" width="2560" height="1040" />
-    </state>
-    <state width="968" height="528" key="XDebugger.FullValuePopup/0.0.1920.1040@0.0.1920.1040" timestamp="1607702467388" />
-    <state width="1291" height="528" key="XDebugger.FullValuePopup/0.0.2560.1040@0.0.2560.1040" timestamp="1609237266176" />
-    <state x="0" y="0" key="com.intellij.ide.util.TipDialog" timestamp="1609866984794">
-      <screen x="0" y="0" width="1920" height="1040" />
-    </state>
-    <state x="0" y="0" key="com.intellij.ide.util.TipDialog/0.0.1920.1040@0.0.1920.1040" timestamp="1609866984794" />
-    <state x="0" y="0" key="com.intellij.ide.util.TipDialog/0.0.2560.1040@0.0.2560.1040" timestamp="1609327544154" />
-    <state x="623" y="225" width="672" height="678" key="search.everywhere.popup" timestamp="1606319510872">
-      <screen x="0" y="0" width="1920" height="1040" />
-    </state>
-    <state x="623" y="225" width="672" height="678" key="search.everywhere.popup/0.0.1920.1040@0.0.1920.1040" timestamp="1606319510872" />
   </component>
 </project>
