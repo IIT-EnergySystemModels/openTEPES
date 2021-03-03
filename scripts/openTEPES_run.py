@@ -91,9 +91,13 @@ import setuptools
 from   pyomo.environ import ConcreteModel, Set
 
 from openTEPES import openTEPES_InputData
+from openTEPES.openTEPES_InputData import InputData
 from openTEPES import openTEPES_ModelFormulation
+from openTEPES.openTEPES_ModelFormulation import InvestmentModelFormulation, OperationModelFormulation
 from openTEPES import openTEPES_OutputResults
+from openTEPES.openTEPES_OutputResults import OutputResults
 from openTEPES import openTEPES_ProblemSolving
+from openTEPES.openTEPES_ProblemSolving import ProblemSolving
 
 InitialTime = time.time()
 
