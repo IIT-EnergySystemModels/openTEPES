@@ -89,10 +89,10 @@ import time
 
 from   pyomo.environ import ConcreteModel, Set
 
-from .openTEPES_InputData import InputData
-from .openTEPES_ModelFormulation import InvestmentModelFormulation, OperationModelFormulation
-from .openTEPES_OutputResults import OutputResults
-from .openTEPES_ProblemSolving import ProblemSolving
+from openTEPES_InputData import InputData
+from openTEPES_ModelFormulation import InvestmentModelFormulation, OperationModelFormulation
+from openTEPES_OutputResults import OutputResults
+from openTEPES_ProblemSolving import ProblemSolving
 
 
 def routine(CaseName, SolverName):

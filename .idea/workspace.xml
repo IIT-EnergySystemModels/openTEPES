@@ -2,8 +2,13 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="70fc96e0-bc3b-4530-a009-091403d9cfdb" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/openTEPES/__main__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/openTEPES.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/openTEPES.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/openTEPES/openTEPES.py" beforeDir="false" afterPath="$PROJECT_DIR$/openTEPES/openTEPES.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/openTEPES/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/openTEPES/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/openTEPES_run.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/setup.py" beforeDir="false" afterPath="$PROJECT_DIR$/setup.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -237,7 +242,7 @@
       <workItem from="1614710388208" duration="3662000" />
       <workItem from="1614765996108" duration="3114000" />
       <workItem from="1614781179654" duration="3075000" />
-      <workItem from="1614794817333" duration="1977000" />
+      <workItem from="1614794817333" duration="1172000" />
     </task>
     <servers />
   </component>
