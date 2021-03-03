@@ -5,8 +5,8 @@ __author__ = 'Erik Alvarez <ealvarezq@comillas.edu>'
 __all__ = []
 
 
-from openTEPES.openTEPES_InputData import InputData
-from opeNTEPES.openTEPES_ModelFormulation import InvestmentModelFormulation
-from openTEPES.openTEPES_ModelFormulation import OperationModelFormulation
-from openTEPES.openTEPES_OutputResults import OutputResults
-from openTEPES.openTEPES_ProblemSolving import ProblemSolving
+from .openTEPES_InputData import InputData
+from .openTEPES_ModelFormulation import InvestmentModelFormulation
+from .openTEPES_ModelFormulation import OperationModelFormulation
+from .openTEPES_OutputResults import OutputResults
+from .openTEPES_ProblemSolving import ProblemSolving
