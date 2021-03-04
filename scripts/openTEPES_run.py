@@ -121,4 +121,4 @@ if __name__ == "__main__":
     print(sys.argv)
     print(args)
     routine(args.case, args.dir, args.solver)
-    input()
+    sys.exit("Running Process Finished...")
