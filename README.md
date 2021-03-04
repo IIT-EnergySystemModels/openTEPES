@@ -101,8 +101,6 @@ Then, the `results` should be written in the folder whois called with the case n
     routine(<case>, <dir>, <solver>)
 
   6. Fire up IPython (`ipython3`) and run the scripts from there using the run command: `run openTEPES_run`.
-  
-## Expected Results
 
 ## Screenshots
 
