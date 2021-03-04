@@ -13,13 +13,17 @@ install_requires = [
     "pyomo",
     "psutil",
 ]
+with open("README.md", "r", encoding="utf-8") as fh:
+    long_description = fh.read()
 
 setup(
     name="openTEPES",
-    version="2.0.13",
+    version="2.0.16",
     description="Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES)",
     scripts=["scripts/openTEPES_run.py"],
     author_email="andres.ramos@comillas.edu",
+    long_description=long_description,
+    long_description_content_type="text/markdown",
     url="https://github.com/IIT-EnergySystemModels/openTEPES",
     install_requires=install_requires,
     extras_require={
