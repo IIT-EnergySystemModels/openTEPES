@@ -86,7 +86,6 @@
 #%% libraries
 
 import argparse
-import os
 from openTEPES.openTEPES import routine
 CASE = "9n"
 parser = argparse.ArgumentParser(description='Introducing main parameters.')
@@ -101,13 +100,12 @@ if __name__ == "__main__":
         if args.case == "":
             args.case = CASE
     args.dir = input("Input Dir Name: ")
-    args.dir = input("Input Dir Name: ")
+    args.solver = input("Input Dir Name: ")
     print(args.case)
     print(args.dir)
     print(args.solver)
     import sys
     print(sys.argv)
     print(args)
-    _case_ = os.path.join(args.dir, args.case)
-    routine(_case_, args.solver)
+    routine(args.case, args.dir, args.solver)
     input()
