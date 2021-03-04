@@ -18,7 +18,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="openTEPES",
-    version="2.0.17",
+    version="2.0.18",
     description="Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES)",
     scripts=["scripts/openTEPES_run.py"],
     author_email="andres.ramos@comillas.edu",
