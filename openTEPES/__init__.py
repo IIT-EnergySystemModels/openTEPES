@@ -13,7 +13,7 @@
         >>> oT.routine("9n", "C:\\Users\\UserName\\Documents\\GitHub\\openTEPES", "glpk")
 """
 
-__version__ = '0.1.0'
+__version__ = '2.1.0'
 __author__ = 'Erik Alvarez <ealvarezq@comillas.edu>'
 __all__ = []
 

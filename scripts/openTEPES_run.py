@@ -84,23 +84,36 @@
 #    with the very valuable collaboration from David Dominguez (david.dominguez@comillas.edu) and Alejandro Rodriguez (argallego@comillas.edu), our local Python gurus
 
 #%% libraries
-
 import argparse
+import os
+# import pkg_resources
 from openTEPES.openTEPES import routine
+import openTEPES
 CASE = "9n"
 parser = argparse.ArgumentParser(description='Introducing main parameters.')
 parser.add_argument('--case', type=str, default=None)
-parser.add_argument('--dir', type=str, default=r"C:\Users\erik_\Documentos\GitHub\openTEPES\input")
-parser.add_argument('--solver', type=str, default="gurobi")
+parser.add_argument('--dir', type=str, default=None)
+parser.add_argument('--solver', type=str, default=None)
+
+# DIR = pkg_resources.resource_stream(__name__, CASE)
+# DIR = os.path.join(DIR, CASE)
+DIR = os.path.dirname(openTEPES.__file__)
+SOLVER = "glpk"
 
 if __name__ == "__main__":
     args = parser.parse_args()
     if args.case is None:
-        args.case = input("Input Case Name ({}): ".format(CASE))
+        args.case = input("Input Case Name (Default<-{}): ".format(CASE))
         if args.case == "":
             args.case = CASE
-    args.dir = input("Input Dir Name: ")
-    args.solver = input("Input Dir Name: ")
+    if args.dir is None:
+        args.dir = input("Input Dir Name (Default<-{}): ".format(DIR))
+        if args.dir == "":
+            args.dir = DIR
+    if args.solver is None:
+        args.solver = input("Input Solver Name (Default<-{}): ".format(SOLVER))
+        if args.solver == "":
+            args.solver = SOLVER
     print(args.case)
     print(args.dir)
     print(args.solver)

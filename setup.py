@@ -25,4 +25,6 @@ setup(
     extras_require={
         'interactive': ['glpk', 'cartopy'], },
     packages=["openTEPES"],
+    include_package_data=True,
+    package_data={'': ['openTEPES/9n/*.csv']},
 )
