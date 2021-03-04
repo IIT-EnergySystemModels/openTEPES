@@ -133,7 +133,7 @@ def routine(CaseName, DirName, SolverName):
     StartTime         = time.time()
     print('Writing LP file                       ... ', round(WritingLPFileTime), 's')
 
-    ProblemSolving(CaseName, SolverName, mTEPES)
+    ProblemSolving(CaseName, DirName, SolverName, mTEPES)
 
     mTEPES.del_component(mTEPES.sc)
     mTEPES.del_component(mTEPES.p )

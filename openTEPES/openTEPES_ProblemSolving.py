@@ -1,19 +1,20 @@
 # Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 7, 2021
 
 import time
+import os
 import psutil
 from   pyomo.opt     import SolverFactory
 from   pyomo.environ import Suffix
 
-def ProblemSolving(CaseName, SolverName, mTEPES):
+def ProblemSolving(CaseName, DirName, SolverName, mTEPES):
     print('Problem solving             ****')
-
+    _path = os.path.join(DirName, CaseName)
     StartTime = time.time()
 
     #%% solving the problem
     Solver = SolverFactory(SolverName)                                                       # select solver
     if SolverName == 'gurobi':
-        Solver.options['LogFile'       ] = CaseName+'/openTEPES_'+CaseName+'.log'
+        Solver.options['LogFile'       ] = _path+'/openTEPES_'+CaseName+'.log'
         # Solver.options['IISFile'     ] = CaseName+'/openTEPES_'+CaseName+'.ilp'              # should be uncommented to show results of IIS
         Solver.options['Method'        ] = 2                                                   # barrier method
         Solver.options['Presolve'      ] = 2
