@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import pyomo.environ as pyo
 from   pyomo.environ import Set
 
-def OutputResults(CaseName, Dirname, mTEPES):
+def OutputResults(CaseName, DirName, mTEPES):
     print('Output results              ****')
     _path = os.path.join(DirName, CaseName)
     StartTime = time.time()
