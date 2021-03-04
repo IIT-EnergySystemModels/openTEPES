@@ -1,4 +1,7 @@
-"""openTEPES - Transmission expansion planning model"""
+"""openTEPES - Transmission expansion planning model
+
+
+"""
 
 __version__ = '0.1.0'
 __author__ = 'Erik Alvarez <ealvarezq@comillas.edu>'

@@ -96,7 +96,7 @@ from openTEPES.openTEPES_OutputResults import OutputResults
 from openTEPES.openTEPES_ProblemSolving import ProblemSolving
 
 
-def routine(CaseName, SolverName):
+def routine(CaseName, DirName, SolverName):
 
     InitialTime = time.time()
 
@@ -106,7 +106,7 @@ def routine(CaseName, SolverName):
     #%% model declaration
     mTEPES = ConcreteModel('Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 2.0.6 - February 23, 2021')
 
-    InputData(CaseName, mTEPES)
+    InputData(CaseName, DirName, mTEPES)
 
     # investment model objective function
     InvestmentModelFormulation(mTEPES)
@@ -143,7 +143,7 @@ def routine(CaseName, SolverName):
     mTEPES.p  = Set(initialize=mTEPES.pp , ordered=True, doc='periods'                                                                                 )
     mTEPES.n  = Set(initialize=mTEPES.nn , ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in list(mTEPES.pDuration)                    )
 
-    OutputResults(CaseName, mTEPES)
+    OutputResults(CaseName, DirName, mTEPES)
 
     TotalTime = time.time() - InitialTime
     print('Total time                            ... ', round(TotalTime), 's')
