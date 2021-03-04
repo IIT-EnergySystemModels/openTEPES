@@ -38,75 +38,74 @@ The main results of the model can be structured in these topics:
 
 - **Marginal:** Locational Short-Run Marginal Costs (LSRMC)
 
-A careful implementation has been done to avoid numerical problems by scaling parameters, variables and equations of the optimization problem alowing the model to be used for large-scale cases.
+A careful implementation has been done to avoid numerical problems by scaling parameters, variables and equations of the optimization problem allowing the model to be used for large-scale cases.
 
 ## Installation
 
-There are 2 ways to get all required packages under Windows. We recommend using the Python distribution Anaconda. If you don't want to use it or already have an existing Python (version 3.6 **recommended**, 2.7 is supported as well) installation, you can also download the required packages by yourself..
+There are 2 ways to get all required packages under Windows. We recommend using the Python distribution Anaconda. If you don't want to use it or already have an existing Python (version 3.8 **recommended**, 2.7 is supported as well) installation, you can also download the required packages by yourself.
 
 ### Anaconda/Miniconda (recommended)
 
-  1. **[Anaconda (Python 3)](http://continuum.io/downloads)/[Miniconda](https://docs.conda.io/en/latest/miniconda.html)**. Choose the 64-bit installer if possible.
-     During the installation procedure, keep both checkboxes "modify PATH" and "register Python" selected! If only higher Python versions are available, you can switch to a specific Python Version by typing `conda install python=<version>`
-  2. **Packages and Solver**: [GLPK](http://winglpk.sourceforge.net/).
-     1. Download the [environment file](https://github.com/tum-ens/urbs/blob/master/urbs-env.yml).
-     2. Launch a new command prompt (Windows: Win+R, type "cmd", Enter)
-     3. Install it via conda by `conda env create -f urbs-env.yml`.
-     4. Each time you open a new terminal for running urbs, you can activate the environment by `conda activate urbs`.
+  1. **[Anaconda (Python 3)](https://www.anaconda.com/products/individual)/[Miniconda](https://docs.conda.io/en/latest/miniconda.html)**. Choose the 64-bit installer if possible.
+     During the installation procedure, keep both checkboxes "modify the PATH" and "register Python" selected! If only higher Python versions are available, you can switch to a specific Python Version by typing `conda install python=<version>`
+     1. **Remark:** if Anaconda or Miniconda was installed previously, please check that python is registered in the environment variables.
+  2. **Packages and Solver**:
+     1. Launch a new command prompt (Windows: Win+R, type "cmd", Enter)
+     2. Install [GLPK](http://winglpk.sourceforge.net/) and [Cartopy](https://pypi.org/project/Cartopy/) via conda by `conda install glpk cartopy`.
+     3. Install openTEPES via pip by `pip install openTEPES`.
 
 Continue at [Get Started](#get-started).
 
-### Manually (the hard way)
-
-For all packages, best take the latest release or release candidate version. Both 32 bit and 64 bit versions work, though 64 bit is recommended. The list of packages can be found in the [environment file](https://github.com/tum-ens/urbs/blob/master/urbs-env.yml).
+### GitHub Repository (the hard way)
+1. Clone the [openTEPES](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master) repository. 
+2. Launch the command prompt (Windows: Win+R, type "cmd", Enter), or the Anaconda prompt
+3. Set up the path by `cd "C:\Users\<username>\...\openTEPES"`. (Note that the path is where the repository was cloned.)
+4. Install openTEPES via pip by `pip install -e .`.
   
 ## Get started
 
 ### Developers
-Once installation is complete, finally [install git (for version control)](http://git-scm.com/). **Remark:** at step "Adjusting your PATH environment", select "Run Git from the Windows Command Prompt".
+By cloning the [openTEPES](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master) repository, you can create branches and propose pull-request. Any help will be very appreciated.
 
-Then, in a directory of your choice, clone this repository by:
-
-    git clone https://github.com/tum-ens/urbs.git
-    
-Continue like the users after they downloaded the zip file. 
+Continue like the users for a simple way of executions. 
 
 ### Users
 
-If you are not planning on developing urbs, pick the [latest release](https://github.com/tum-ens/urbs/releases) and download the zip file.
+If you are not planning on developing, please follows the instructions of the [Installation](#installation).
 
-In the downloaded directory, open a execute the runme script by using the following on the command prompt (Windows) or Terminal (Linux). (Depending on what your standard python version is, you might need to call `python3` instead of `python`.):
+Once installation is complete, [openTEPES](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master) can be executed in a test mode by using a command prompt. 
+In the directory of your choice, open and execute the openTEPES_run.py script by using the following on the command prompt (Windows) or Terminal (Linux). (Depending on what your standard python version is, you might need to call `python3` instead of `python`.):
  
-    python runme.py
+    python openTEPES_run.py
+or,
+ 
+    openTEPES_run.py
+Then, three parameters (case, dir, and solver) will be asked for.
 
-Some minutes later, the subfolder `result` should contain plots and summary spreadsheets for multiple optimised energy supply scenarios, whose definitions are contained in the run script (watch out for `def scenario` lines). *Not working at the moment:* To get a graphical and tabular summary over all scenarios, execute
+**Remark:** at this step only press enter for each input and openTEPES will be executed with the default parameters.
+   
+After this in a directory of your choice, make a copy of the [9n](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master) or [sSEP](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master) case to create a new case of your choice but using the current format of the CSV files.
+A proper execution by `openTEPES_run.py` can be made by introducing the new case and the directory of your choice. Note that the solver is `glpk` by default, but it can be changed by other solvers that pyomo supports.
 
-    python comp.py
+Then, the `results` should be written in the folder whois called with the case name. The results contain plots and summary spreadsheets for multiple optimised energy scenarios, periods and load levels as well as the investment decisions.
 
-and look at the new files `result/mimo-example-.../comparison.xlsx` and `result/mimo-example-.../comparison.png` for a quick comparison. This script parses the summary spreadsheets for all scenarios.
+## Tips
 
-## Next steps and tips
+  1. A complete documentation of the openTEPES model can be found at https://pascua.iit.comillas.edu/aramos/openTEPES/index.html#, which presents the mathematical formulation, inputs and expected results. 
+  2. Try adding/modifying the `TimeStep` in `oT_Data_Parameter_<case>.csv` and see their effect on results.
+  3. Using `0` or `1`, the optimization options can be activated or deactivated in `oT_Data_Option_<case>.csv`.
+  4. If you need a nice python editor, think about using [PyCharm](https://www.jetbrains.com/pycharm/download). It has many features including project management, etc.
+  5. Creating a new script `script.py`, and write the following: 
+      
+    from openTEPES.openTEPES import routine
+    routine(<case>, <dir>, <solver>)
 
-  1. Head over to the tutorial at http://urbs.readthedocs.io, which goes through runme.py step by step. 
-  2. Read the source code of `runme.py` and `comp.py`. 
-  3. Try adding/modifying scenarios in `scenarios.py` and see their effect on results.
-  4. If you need a nice python editor, think about using [PyCharm](https://www.jetbrains.com/pycharm/download). It has many features including easy Git integration, package management, etc.
-  5. Fire up IPython (`ipython3`) and run the scripts from there using the run command: `run runme` and `run comp`. Then use `whos` and inspect the workspace afterwards (`whos`). See what you can do (analyses, plotting) with the DataFrames. Take the `urbs.get_constants`, `urbs.get_timeseries` and `urbs.plot` functions as inspriation and the [Pandas docs](http://pandas.pydata.org/pandas-docs/stable/) as reference.
+  6. Fire up IPython (`ipython3`) and run the scripts from there using the run command: `run openTEPES_run`.
   
-## Further reading
+## Expected Results
 
-  - If you do not know anything about the command line, read [Command Line Crash Course](https://learnpythonthehardway.org/book/appendixa.html). Python programs are scripts that are executed from the command line, similar to MATLAB scripts that are executed from the MATLAB command prompt.
-  - If you do not know Python, try one of the following ressources:
-    * The official [Python Tutorial](https://docs.python.org/3/tutorial/index.html) walks you through the language's basic features.
-    * [Learn Python the Hard Way](https://learnpythonthehardway.org/book/preface.html). It is meant for programming beginners.
-  - The book [Python for Data Analysis](http://shop.oreilly.com/product/0636920023784.do) best summarises the capabilities of the packages installed here. It starts with IPython, then adds NumPy, slowly fades to pandas and then shows first basic, then advanced data conversion and analysis recipes. Visualisation with matplotlib is given its own chapter, both with and without pandas.
-  - For a huge buffet of appetizers showing the capabilities of Python for scientific computing, I recommend browsing this [gallery of interesting IPython Notebooks](https://github.com/ipython/ipython/wiki/A-gallery-of-interesting-IPython-Notebooks).
-  
-## Example uses
+## Screenshots
 
-  - Branch [1node](https://github.com/ojdo/urbs/tree/1node) in the forked repository [ojdo/urbs](https://github.com/ojdo/urbs) shows a small example of a real-world usage of the model. It includes a [`scenario_generator`](https://github.com/ojdo/urbs/blob/dfa9cf0ad7b03289bf7c64d79ea93c7886a00a96/run1node.py#L10-L37) function in its run script, which is useful for extensive parameter sweeps.
-  - Branch [1house](https://github.com/ojdo/urbs/tree/1house) in the forked repository [ojdo/urbs](https://github.com/ojdo/urbs) shows another (newer) example of a small-scale application of the model. It demonstrates the use for two demand commodities (electricity and heat) for a single consumer (a single site named 'house'). It also shows how to create a very customized comparison script:
-  
-<a href="https://raw.githubusercontent.com/ojdo/urbs/1house/img/comparison.png"><img src="https://raw.githubusercontent.com/ojdo/urbs/1house/img/comparison.png" alt="Comparison plot in example study 1house."></a>
-  
-  - Branch [haag15](https://github.com/ojdo/urbs/tree/haag15) in the forked repository [ojdo/urbs](https://github.com/ojdo/urbs) shows a larger example of a real-world use. Its input file contains a town divided into 12 regions, 12 process types, and 2 demand commodities (electricity and heat) . Patience and RAM (64 GB or more) is needed to run these scenarios with 8760 timesteps. The branch also contains three IPython notebooks that are used for result analysis and coupling to model [rivus](https://github.com/tum-ens/rivus).
+<a href="doc/img/oT_Plot_MapNetwork_9n.png"><img src="doc/img/oT_Plot_MapNetwork_9n.png" alt="Network map with investment decisions." style="width:400px"></a>
+
+<a href="doc/img/oT_Plot_TechnologyOutput_sc01_y2030_9n.png"><img src="doc/img/oT_Plot_TechnologyOutput_sc01_y2030_9n.png" alt="Power generation output by technology considering 8736 load levels for a year." style="width:400px"></a>

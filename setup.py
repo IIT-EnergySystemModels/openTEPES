@@ -18,7 +18,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="openTEPES",
-    version="2.0.16",
+    version="2.0.17",
     description="Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES)",
     scripts=["scripts/openTEPES_run.py"],
     author_email="andres.ramos@comillas.edu",
@@ -29,6 +29,7 @@ setup(
     extras_require={
         'interactive': ['glpk', 'cartopy'], },
     packages=["openTEPES"],
+    package_dir={'openTEPES': 'openTEPES'},
     include_package_data=True,
-    package_data={'': ['openTEPES/9n/*.csv']},
+    package_data={'openTEPES': ['9n/*.csv']},
 )
