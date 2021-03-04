@@ -51,8 +51,8 @@ There are 2 ways to get all required packages under Windows. We recommend using 
      1. **Remark:** if Anaconda or Miniconda was installed previously, please check that python is registered in the environment variables.
   2. **Packages and Solver**:
      1. Launch a new command prompt (Windows: Win+R, type "cmd", Enter)
-     2. Install [GLPK](http://winglpk.sourceforge.net/) and [Cartopy](https://pypi.org/project/Cartopy/) via conda by `conda install glpk cartopy`.
-     3. Install openTEPES via pip by `pip install openTEPES`.
+     2. Install [GLPK](http://winglpk.sourceforge.net/) and [Cartopy](https://pypi.org/project/Cartopy/) via conda by `conda install glpk cartopy`
+     3. Install openTEPES via pip by `pip install openTEPES`
 
 Continue at [Get Started](#get-started).
 
@@ -100,7 +100,7 @@ Then, the `results` should be written in the folder whois called with the case n
     from openTEPES.openTEPES import routine
     routine(<case>, <dir>, <solver>)
 
-  6. Fire up IPython (`ipython3`) and run the scripts from there using the run command: `run openTEPES_run`.
+  6. Fire up IPython (`ipython3`) and run the scripts from there using the run command: `run openTEPES_run`
 
 ## Screenshots
 
