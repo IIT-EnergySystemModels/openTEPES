@@ -2,29 +2,30 @@
 
 import time
 import math
+import os
 import pandas        as pd
 from   pyomo.environ import DataPortal, Set, Param, Var, Binary, NonNegativeReals, Reals, UnitInterval, Boolean, Any
 
-def InputData(CaseName,mTEPES):
+def InputData(CaseName,DirName, mTEPES):
     print('Input data                  ****')
-
+    _path = os.path.join(DirName, CaseName)
     StartTime = time.time()
     #%% reading data from CSV
-    dfOption             = pd.read_csv(CaseName+'/oT_Data_Option_'               +CaseName+'.csv', index_col=[0    ])
-    dfParameter          = pd.read_csv(CaseName+'/oT_Data_Parameter_'            +CaseName+'.csv', index_col=[0    ])
-    dfScenario           = pd.read_csv(CaseName+'/oT_Data_Scenario_'             +CaseName+'.csv', index_col=[0    ])
-    dfDuration           = pd.read_csv(CaseName+'/oT_Data_Duration_'             +CaseName+'.csv', index_col=[0    ])
-    dfDemand             = pd.read_csv(CaseName+'/oT_Data_Demand_'               +CaseName+'.csv', index_col=[0,1,2])
-    dfUpOperatingReserve = pd.read_csv(CaseName+'/oT_Data_OperatingReserveUp_'   +CaseName+'.csv', index_col=[0,1,2])
-    dfDwOperatingReserve = pd.read_csv(CaseName+'/oT_Data_OperatingReserveDown_' +CaseName+'.csv', index_col=[0,1,2])
-    dfGeneration         = pd.read_csv(CaseName+'/oT_Data_Generation_'           +CaseName+'.csv', index_col=[0    ])
-    dfVariableMinPower   = pd.read_csv(CaseName+'/oT_Data_VariableMinGeneration_'+CaseName+'.csv', index_col=[0,1,2])
-    dfVariableMaxPower   = pd.read_csv(CaseName+'/oT_Data_VariableMaxGeneration_'+CaseName+'.csv', index_col=[0,1,2])
-    dfVariableMinStorage = pd.read_csv(CaseName+'/oT_Data_MinimumStorage_'       +CaseName+'.csv', index_col=[0,1,2])
-    dfVariableMaxStorage = pd.read_csv(CaseName+'/oT_Data_MaximumStorage_'       +CaseName+'.csv', index_col=[0,1,2])
-    dfEnergyInflows      = pd.read_csv(CaseName+'/oT_Data_EnergyInflows_'        +CaseName+'.csv', index_col=[0,1,2])
-    dfNodeLocation       = pd.read_csv(CaseName+'/oT_Data_NodeLocation_'         +CaseName+'.csv', index_col=[0    ])
-    dfNetwork            = pd.read_csv(CaseName+'/oT_Data_Network_'              +CaseName+'.csv', index_col=[0,1,2])
+    dfOption             = pd.read_csv(_path+'/oT_Data_Option_'               +CaseName+'.csv', index_col=[0    ])
+    dfParameter          = pd.read_csv(_path+'/oT_Data_Parameter_'            +CaseName+'.csv', index_col=[0    ])
+    dfScenario           = pd.read_csv(_path+'/oT_Data_Scenario_'             +CaseName+'.csv', index_col=[0    ])
+    dfDuration           = pd.read_csv(_path+'/oT_Data_Duration_'             +CaseName+'.csv', index_col=[0    ])
+    dfDemand             = pd.read_csv(_path+'/oT_Data_Demand_'               +CaseName+'.csv', index_col=[0,1,2])
+    dfUpOperatingReserve = pd.read_csv(_path+'/oT_Data_OperatingReserveUp_'   +CaseName+'.csv', index_col=[0,1,2])
+    dfDwOperatingReserve = pd.read_csv(_path+'/oT_Data_OperatingReserveDown_' +CaseName+'.csv', index_col=[0,1,2])
+    dfGeneration         = pd.read_csv(_path+'/oT_Data_Generation_'           +CaseName+'.csv', index_col=[0    ])
+    dfVariableMinPower   = pd.read_csv(_path+'/oT_Data_VariableMinGeneration_'+CaseName+'.csv', index_col=[0,1,2])
+    dfVariableMaxPower   = pd.read_csv(_path+'/oT_Data_VariableMaxGeneration_'+CaseName+'.csv', index_col=[0,1,2])
+    dfVariableMinStorage = pd.read_csv(_path+'/oT_Data_MinimumStorage_'       +CaseName+'.csv', index_col=[0,1,2])
+    dfVariableMaxStorage = pd.read_csv(_path+'/oT_Data_MaximumStorage_'       +CaseName+'.csv', index_col=[0,1,2])
+    dfEnergyInflows      = pd.read_csv(_path+'/oT_Data_EnergyInflows_'        +CaseName+'.csv', index_col=[0,1,2])
+    dfNodeLocation       = pd.read_csv(_path+'/oT_Data_NodeLocation_'         +CaseName+'.csv', index_col=[0    ])
+    dfNetwork            = pd.read_csv(_path+'/oT_Data_Network_'              +CaseName+'.csv', index_col=[0,1,2])
 
     # substitute NaN by 0
     dfOption.fillna            (0  , inplace=True)
@@ -57,22 +58,22 @@ def InputData(CaseName,mTEPES):
 
     #%% reading the sets
     dictSets = DataPortal()
-    dictSets.load(filename=CaseName+'/oT_Dict_Scenario_'    +CaseName+'.csv', set='sc'  , format='set')
-    dictSets.load(filename=CaseName+'/oT_Dict_Period_'      +CaseName+'.csv', set='p'   , format='set')
-    dictSets.load(filename=CaseName+'/oT_Dict_LoadLevel_'   +CaseName+'.csv', set='n'   , format='set')
-    dictSets.load(filename=CaseName+'/oT_Dict_Generation_'  +CaseName+'.csv', set='g'   , format='set')
-    dictSets.load(filename=CaseName+'/oT_Dict_Technology_'  +CaseName+'.csv', set='gt'  , format='set')
-    dictSets.load(filename=CaseName+'/oT_Dict_Storage_'     +CaseName+'.csv', set='st'  , format='set')
-    dictSets.load(filename=CaseName+'/oT_Dict_Node_'        +CaseName+'.csv', set='nd'  , format='set')
-    dictSets.load(filename=CaseName+'/oT_Dict_Zone_'        +CaseName+'.csv', set='zn'  , format='set')
-    dictSets.load(filename=CaseName+'/oT_Dict_Area_'        +CaseName+'.csv', set='ar'  , format='set')
-    dictSets.load(filename=CaseName+'/oT_Dict_Region_'      +CaseName+'.csv', set='rg'  , format='set')
-    dictSets.load(filename=CaseName+'/oT_Dict_Circuit_'     +CaseName+'.csv', set='cc'  , format='set')
-    dictSets.load(filename=CaseName+'/oT_Dict_Line_'        +CaseName+'.csv', set='lt'  , format='set')
+    dictSets.load(filename=_path+'/oT_Dict_Scenario_'    +CaseName+'.csv', set='sc'  , format='set')
+    dictSets.load(filename=_path+'/oT_Dict_Period_'      +CaseName+'.csv', set='p'   , format='set')
+    dictSets.load(filename=_path+'/oT_Dict_LoadLevel_'   +CaseName+'.csv', set='n'   , format='set')
+    dictSets.load(filename=_path+'/oT_Dict_Generation_'  +CaseName+'.csv', set='g'   , format='set')
+    dictSets.load(filename=_path+'/oT_Dict_Technology_'  +CaseName+'.csv', set='gt'  , format='set')
+    dictSets.load(filename=_path+'/oT_Dict_Storage_'     +CaseName+'.csv', set='st'  , format='set')
+    dictSets.load(filename=_path+'/oT_Dict_Node_'        +CaseName+'.csv', set='nd'  , format='set')
+    dictSets.load(filename=_path+'/oT_Dict_Zone_'        +CaseName+'.csv', set='zn'  , format='set')
+    dictSets.load(filename=_path+'/oT_Dict_Area_'        +CaseName+'.csv', set='ar'  , format='set')
+    dictSets.load(filename=_path+'/oT_Dict_Region_'      +CaseName+'.csv', set='rg'  , format='set')
+    dictSets.load(filename=_path+'/oT_Dict_Circuit_'     +CaseName+'.csv', set='cc'  , format='set')
+    dictSets.load(filename=_path+'/oT_Dict_Line_'        +CaseName+'.csv', set='lt'  , format='set')
 
-    dictSets.load(filename=CaseName+'/oT_Dict_NodeToZone_'  +CaseName+'.csv', set='ndzn', format='set')
-    dictSets.load(filename=CaseName+'/oT_Dict_ZoneToArea_'  +CaseName+'.csv', set='znar', format='set')
-    dictSets.load(filename=CaseName+'/oT_Dict_AreaToRegion_'+CaseName+'.csv', set='arrg', format='set')
+    dictSets.load(filename=_path+'/oT_Dict_NodeToZone_'  +CaseName+'.csv', set='ndzn', format='set')
+    dictSets.load(filename=_path+'/oT_Dict_ZoneToArea_'  +CaseName+'.csv', set='znar', format='set')
+    dictSets.load(filename=_path+'/oT_Dict_AreaToRegion_'+CaseName+'.csv', set='arrg', format='set')
 
     mTEPES.scc  = Set(initialize=dictSets['sc'],   ordered=True,  doc='scenarios'     )
     mTEPES.pp   = Set(initialize=dictSets['p' ],   ordered=True,  doc='periods'       )

@@ -1,6 +1,0 @@
-numpy
-pandas
-pyomo
-psutil
-matplotlib
-cartopy
