@@ -64,7 +64,7 @@ Continue at [Get Started](#get-started).
 1. Clone the [openTEPES](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master) repository. 
 2. Launch the command prompt (Windows: Win+R, type "cmd", Enter), or the Anaconda prompt
 3. Set up the path by `cd "C:\Users\<username>\...\openTEPES"`. (Note that the path is where the repository was cloned.)
-4. Install openTEPES via pip by `pip install -e .`.
+4. Install openTEPES via pip by `pip install .`.
   
 ## Get started
 
