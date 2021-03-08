@@ -1,4 +1,8 @@
 # openTEPES
+<p align="center">
+  <img width="345" height="195" src="https://github.com/IIT-EnergySystemModels/openTEPES/blob/master/doc/img/openTEPES_img.png">
+</p>
+
 **Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES)**
 
 *Simplicity and Transparency in Power Systems Planning*
