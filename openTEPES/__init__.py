@@ -13,8 +13,8 @@
         >>> oT.routine("9n", "C:\\Users\\UserName\\Documents\\GitHub\\openTEPES", "glpk")
 """
 
-__version__ = '2.0.18'
-
+__version__ = '2.0.21'
+from .openTEPES_run import main
 from .openTEPES import *
 from .openTEPES_InputData import *
 from .openTEPES_ModelFormulation import *

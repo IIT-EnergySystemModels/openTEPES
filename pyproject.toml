@@ -13,6 +13,11 @@ classifiers = [
 "Programming Language :: Python :: 3.8",]
 requires-python = ">=3.8"
 description-file = "README.md"
+requires = ["pyomo>=5.7.3",
+  "matplotlib>=3.3.4",
+  "numpy>=1.20.1",
+  "pandas>=1.2.3",
+  "psutil>=5.8.0"]
 
 [tool.flit.scripts]
-scripts = "scripts.openTEPES_run:main"
+openTEPES_run = "openTEPES:main"
