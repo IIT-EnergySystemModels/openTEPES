@@ -1,6 +1,5 @@
-<div style="width:150px; height:100px">
-![openTEPES](doc/img/openTEPES_img.png)
-</div>
+![center](doc/img/openTEPES_img.png)
+
 **Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES)**
 
 *Simplicity and Transparency in Power Systems Planning*
