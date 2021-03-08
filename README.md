@@ -1,8 +1,6 @@
-# openTEPES
-<p align="center">
-  <img width="345" height="195" src="https://github.com/IIT-EnergySystemModels/openTEPES/blob/master/doc/img/openTEPES_img.png">
-</p>
-
+<div style="width:150px; height:100px">
+![openTEPES](doc/img/openTEPES_img.png)
+</div>
 **Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES)**
 
 *Simplicity and Transparency in Power Systems Planning*
@@ -102,7 +100,5 @@ Then, the `results` should be written in the folder whois called with the case n
     execution(<case>, <dir>, <solver>)
 
 ## Screenshots
-
-<a href="doc/img/oT_Plot_MapNetwork_9n.png"><img src="doc/img/oT_Plot_MapNetwork_9n.png" alt="Network map with investment decisions." style="width:400px"></a>
-
-<a href="doc/img/oT_Plot_TechnologyOutput_sc01_y2030_9n.png"><img src="doc/img/oT_Plot_TechnologyOutput_sc01_y2030_9n.png" alt="Power generation output by technology considering 8736 load levels for a year." style="width:400px"></a>
+![center](doc/img/oT_Plot_MapNetwork_9n.png "Network map with investment decisions.")
+![center](doc/img/oT_Plot_TechnologyOutput_sc01_y2030_9n.png "Power generation output by technology considering 8736 load levels for a year.")
