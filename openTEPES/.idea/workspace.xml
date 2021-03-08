@@ -1,11 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="d4dd45eb-503b-4f17-ab9c-dccb2af69f51" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/../README.md" beforeDir="false" afterPath="$PROJECT_DIR$/../README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/__init__.py" afterDir="false" />
-    </list>
+    <list default="true" id="d4dd45eb-503b-4f17-ab9c-dccb2af69f51" name="Default Changelist" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -37,9 +33,6 @@
       <module name="openTEPES" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
       <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$USER_HOME$/Desktop/Files" />
       <option name="IS_MODULE_SDK" value="false" />
@@ -124,10 +117,10 @@
     <recent_temporary>
       <list>
         <item itemvalue="Python.TestPy" />
+        <item itemvalue="Python.TestPy" />
         <item itemvalue="Python.Tool_openTEPES_TO_IAMC" />
         <item itemvalue="Python.openTEPES_advanced" />
         <item itemvalue="Python.openTEPES_advanced" />
-        <item itemvalue="Python.openTEPES" />
       </list>
     </recent_temporary>
   </component>
@@ -144,7 +137,7 @@
       <updated>1608486297499</updated>
       <workItem from="1613397251678" duration="9826000" />
       <workItem from="1615193243511" duration="9567000" />
-      <workItem from="1615203687638" duration="7382000" />
+      <workItem from="1615203687638" duration="8050000" />
     </task>
     <servers />
   </component>
