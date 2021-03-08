@@ -87,7 +87,7 @@
 import argparse
 import os
 # import pkg_resources
-from openTEPES.openTEPES import routine
+from openTEPES.openTEPES import execution
 import openTEPES
 CASE = "9n"
 parser = argparse.ArgumentParser(description='Introducing main parameters.')
@@ -100,7 +100,8 @@ parser.add_argument('--solver', type=str, default=None)
 DIR = os.path.dirname(openTEPES.__file__)
 SOLVER = "glpk"
 
-if __name__ == "__main__":
+
+def main():
     args = parser.parse_args()
     if args.case is None:
         args.case = input("Input Case Name (Default<-{}): ".format(CASE))
@@ -120,5 +121,9 @@ if __name__ == "__main__":
     import sys
     print(sys.argv)
     print(args)
-    routine(args.case, args.dir, args.solver)
+    execution(args.case, args.dir, args.solver)
     sys.exit("Running Process Finished...")
+
+
+if __name__ == "__main__":
+    main()
