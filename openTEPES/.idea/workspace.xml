@@ -2,7 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="d4dd45eb-503b-4f17-ab9c-dccb2af69f51" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/../README.md" beforeDir="false" afterPath="$PROJECT_DIR$/../README.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../scripts/openTEPES_run.py" beforeDir="false" afterPath="$PROJECT_DIR$/../scripts/openTEPES_run.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -35,6 +37,9 @@
       <module name="openTEPES" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
       <option name="SDK_HOME" value="C:\Users\ealvarezq\AppData\Local\Continuum\miniconda3\python.exe" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
       <option name="IS_MODULE_SDK" value="false" />
@@ -54,6 +59,9 @@
       <module name="openTEPES" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
       <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../../openTEPES_PRO/openTEPES" />
       <option name="IS_MODULE_SDK" value="false" />
@@ -89,6 +97,7 @@
       <option name="presentableId" value="Default" />
       <updated>1608486297499</updated>
       <workItem from="1613397251678" duration="9826000" />
+      <workItem from="1615193243511" duration="293000" />
     </task>
     <servers />
   </component>

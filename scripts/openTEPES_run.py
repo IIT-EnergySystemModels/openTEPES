@@ -87,7 +87,7 @@
 import argparse
 import os
 # import pkg_resources
-from openTEPES.openTEPES import routine
+from openTEPES.openTEPES import execution
 import openTEPES
 CASE = "9n"
 parser = argparse.ArgumentParser(description='Introducing main parameters.')
@@ -120,5 +120,5 @@ if __name__ == "__main__":
     import sys
     print(sys.argv)
     print(args)
-    routine(args.case, args.dir, args.solver)
+    execution(args.case, args.dir, args.solver)
     sys.exit("Running Process Finished...")

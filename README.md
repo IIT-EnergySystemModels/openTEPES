@@ -102,7 +102,7 @@ Then, the `results` should be written in the folder whois called with the case n
   5. Creating a new script `script.py`, and write the following: 
       
     from openTEPES.openTEPES import routine
-    routine(<case>, <dir>, <solver>)
+    execution(<case>, <dir>, <solver>)
 
   6. Fire up IPython (`ipython3`) and run the scripts from there using the run command: `run openTEPES_run`
 
