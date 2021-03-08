@@ -80,16 +80,13 @@ If you are not planning on developing, please follows the instructions of the [I
 Once installation is complete, [openTEPES](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master) can be executed in a test mode by using a command prompt. 
 In the directory of your choice, open and execute the openTEPES_run.py script by using the following on the command prompt (Windows) or Terminal (Linux). (Depending on what your standard python version is, you might need to call `python3` instead of `python`.):
  
-    python openTEPES_run.py
-or,
- 
-    openTEPES_run.py
+    openTEPES_run
 Then, three parameters (case, dir, and solver) will be asked for.
 
 **Remark:** at this step only press enter for each input and openTEPES will be executed with the default parameters.
    
-After this in a directory of your choice, make a copy of the [9n](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master) or [sSEP](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master) case to create a new case of your choice but using the current format of the CSV files.
-A proper execution by `openTEPES_run.py` can be made by introducing the new case and the directory of your choice. Note that the solver is `glpk` by default, but it can be changed by other solvers that pyomo supports.
+After this in a directory of your choice, make a copy of the [9n](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/9n) or [sSEP](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/sSEP) case to create a new case of your choice but using the current format of the CSV files.
+A proper execution by `openTEPES_run` can be made by introducing the new case and the directory of your choice. Note that the solver is `glpk` by default, but it can be changed by other solvers that pyomo supports.
 
 Then, the `results` should be written in the folder whois called with the case name. The results contain plots and summary spreadsheets for multiple optimised energy scenarios, periods and load levels as well as the investment decisions.
 
@@ -101,10 +98,8 @@ Then, the `results` should be written in the folder whois called with the case n
   4. If you need a nice python editor, think about using [PyCharm](https://www.jetbrains.com/pycharm/download). It has many features including project management, etc.
   5. Creating a new script `script.py`, and write the following: 
       
-    from openTEPES.openTEPES import routine
+    from openTEPES.openTEPES import execution
     execution(<case>, <dir>, <solver>)
-
-  6. Fire up IPython (`ipython3`) and run the scripts from there using the run command: `run openTEPES_run`
 
 ## Screenshots
 
