@@ -77,21 +77,24 @@ Parameters
 ----------
 A description of the system parameters included in the file ``oT_Data_Parameter.csv`` follows:
 
-====================  =================================================================================================  ================
+====================  =============================================================================================================  ================
 File                  Description                                                                              
-====================  =================================================================================================  ================
-ENSCost               Cost of energy not served. Cost of load curtailment. Value of Lost Load (VoLL)                     €/MWh   
-PNSCost               Cost of power not served associated with the deficit in operating reserve by load level            €/MW   
-CO2Cost               Cost of CO2 emissions                                                                              €/t CO2
-UpReserveActivation   Upward reserve activation (proportion of upward operating reserve deployed to produce energy)      p.u.
-DwReserveActivation   Downward reserve activation (proportion of downward operating reserve deployed to produce energy)  p.u.
-Sbase                 Base power used in the DCLF                                                                        MW   
-ReferenceNode         Reference node used in the DCLF      
-TimeStep              Duration of the time step for the load levels (hourly, bi-hourly, trihourly, etc.).                h
-====================  =================================================================================================  ================
+====================  =============================================================================================================  ================
+ENSCost               Cost of energy not served. Cost of load curtailment. Value of Lost Load (VoLL)                                 €/MWh   
+PNSCost               Cost of power not served associated with the deficit in operating reserve by load level                        €/MW   
+CO2Cost               Cost of CO2 emissions                                                                                          €/t CO2
+UpReserveActivation   Upward reserve activation (proportion of upward operating reserve deployed to produce energy)                  p.u.
+DwReserveActivation   Downward reserve activation (proportion of downward operating reserve deployed to produce energy)              p.u.
+Sbase                 Base power used in the DCLF                                                                                    MW   
+ReferenceNode         Reference node used in the DCLF                                                                               
+TimeStep              Duration of the time step for the load levels (hourly, bi-hourly, trihourly, etc.).                            h
+StageDuration         Duration of the stage (weekly -168-, monthly -672-, quarterly -2184-, semesterly -4368-, or annually -8736-).  h
+====================  =============================================================================================================  ================
 
 A time step greater than one hour it is a convenient way to reduce the load levels of the time scope. The moving average of the demand, upward and downward operating reserves, variable generation and ESS energy inflows over
 the time step load levels is assigned to active load levels (e.g., the mean value of the three hours is associated to the third hour in a trihourly time step).
+
+The stage duration must be larger or equal than the shortest duration of any storage type (e.g., weekly) and multiple of it. Consecutive stages are not tied between them.
 
 Scenario
 --------
@@ -183,6 +186,10 @@ FixedChargeRate       Fixed charge rate to annualize the overnight investment co
 BinaryInvestment      Binary unit investment decision                                                          Yes/No
 ====================  =======================================================================================  ============================
 
+Daily storage type is assessed every time step, weekly storage type is assessed at the end of every day, and monthly storage type is assessed at the end of every week. Storage cycle is one time step, one day, and one week, respectively.
+The ESS inventory level at the end of a large storage cycle is fixed to its initial value, i.e., the inventory of a daily storage type (evaluated on a time step basis) is fixed at the end of the week,
+the inventory of weekly/monthly storage is fixed at the end of the year.
+
 A generator with operation cost (sum of the fuel and emission cost, excluding O&M cost) > 0 is considered a thermal unit. If the unit has no operation cost and its maximum storage = 0,
 it is considered a renewable unit. If its maximum storage is > 0 is considered an ESS.
 
@@ -261,7 +268,9 @@ FixedChargeRate    Fixed charge rate to annualize the overnight investment cost 
 BinaryInvestment   Binary line/circuit investment decision                                                       Yes/No
 =================  ============================================================================================  ======
 
-If TTCBck is left empty or is equal to 0 it is substituted by the TTC in the model.
+Depending on the voltage lines are plotted with different colors (blue > 700 kV, orange between 500 and 700 kV, red between 350 and 500 kV, green between 200 and 350 kV, and orange below 200 kV.
+
+If there is no data for TTCBck, i.e., TTCBck is left empty or is equal to 0, it is substituted by the TTC in the code.
 
 Those lines with fixed cost > 0 are considered candidate and can be installed or not.
 
