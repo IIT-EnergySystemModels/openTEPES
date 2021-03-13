@@ -6,7 +6,7 @@ import psutil
 from   pyomo.opt     import SolverFactory
 from   pyomo.environ import Suffix
 
-def ProblemSolving(CaseName, DirName, SolverName, mTEPES):
+def ProblemSolving(DirName, CaseName, SolverName, mTEPES):
     print('Problem solving             ****')
     _path = os.path.join(DirName, CaseName)
     StartTime = time.time()
@@ -15,7 +15,7 @@ def ProblemSolving(CaseName, DirName, SolverName, mTEPES):
     Solver = SolverFactory(SolverName)                                                       # select solver
     if SolverName == 'gurobi':
         Solver.options['LogFile'       ] = _path+'/openTEPES_'+CaseName+'.log'
-        # Solver.options['IISFile'     ] = CaseName+'/openTEPES_'+CaseName+'.ilp'              # should be uncommented to show results of IIS
+        # Solver.options['IISFile'     ] = _path+'/openTEPES_'+CaseName+'.ilp'              # should be uncommented to show results of IIS
         Solver.options['Method'        ] = 2                                                   # barrier method
         Solver.options['Presolve'      ] = 2
         Solver.options['Crossover'     ] = 0
