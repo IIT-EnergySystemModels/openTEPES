@@ -65,7 +65,7 @@
 # make it effectively proprietary.  To prevent this, the GPL assures that
 # patents cannot be used to render the program non-free.
 
-# Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 2.0.6 - February 23, 2021
+# Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 2.1.0 - March 13, 2021
 # simplicity and transparency in power systems planning
 
 # Developed by
@@ -91,21 +91,21 @@ import setuptools
 
 from   pyomo.environ import ConcreteModel, Set
 
-from openTEPES.openTEPES_InputData import InputData
+from openTEPES.openTEPES_InputData        import InputData
 from openTEPES.openTEPES_ModelFormulation import InvestmentModelFormulation, OperationModelFormulation
-from openTEPES.openTEPES_OutputResults import OutputResults
-from openTEPES.openTEPES_ProblemSolving import ProblemSolving
+from openTEPES.openTEPES_ProblemSolving   import ProblemSolving
+from openTEPES.openTEPES_OutputResults    import OutputResults
 
 
-def execution(CaseName, DirName, SolverName):
+def execution(DirName, CaseName, SolverName):
 
     InitialTime = time.time()
     _path = os.path.join(DirName, CaseName)
 
     #%% model declaration
-    mTEPES = ConcreteModel('Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 2.0.6 - February 23, 2021')
+    mTEPES = ConcreteModel('Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 2.1.0 - March 13, 2021')
 
-    InputData(CaseName, DirName, mTEPES)
+    InputData(DirName, CaseName, mTEPES)
 
     # investment model objective function
     InvestmentModelFormulation(mTEPES)
@@ -133,7 +133,7 @@ def execution(CaseName, DirName, SolverName):
     StartTime         = time.time()
     print('Writing LP file                       ... ', round(WritingLPFileTime), 's')
 
-    ProblemSolving(CaseName, DirName, SolverName, mTEPES)
+    ProblemSolving(DirName, CaseName, SolverName, mTEPES)
 
     mTEPES.del_component(mTEPES.sc)
     mTEPES.del_component(mTEPES.p )
@@ -142,7 +142,7 @@ def execution(CaseName, DirName, SolverName):
     mTEPES.p  = Set(initialize=mTEPES.pp , ordered=True, doc='periods'                                                                                 )
     mTEPES.n  = Set(initialize=mTEPES.nn , ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in list(mTEPES.pDuration)                    )
 
-    OutputResults(CaseName, DirName, mTEPES)
+    OutputResults(DirName, CaseName, mTEPES)
 
     TotalTime = time.time() - InitialTime
     print('Total time                            ... ', round(TotalTime), 's')

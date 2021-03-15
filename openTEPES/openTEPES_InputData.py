@@ -6,7 +6,7 @@ import os
 import pandas        as pd
 from   pyomo.environ import DataPortal, Set, Param, Var, Binary, NonNegativeReals, Reals, UnitInterval, Boolean, Any
 
-def InputData(CaseName,DirName, mTEPES):
+def InputData(DirName, CaseName, mTEPES):
     print('Input data                  ****')
     _path = os.path.join(DirName, CaseName)
     StartTime = time.time()

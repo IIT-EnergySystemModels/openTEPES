@@ -9,7 +9,7 @@ import pyomo.environ as pyo
 from   pyomo.environ import Set
 
 
-def OutputResults(CaseName, DirName, mTEPES):
+def OutputResults(DirName, CaseName, mTEPES):
     print('Output results              ****')
     _path = os.path.join(DirName, CaseName)
     StartTime = time.time()
