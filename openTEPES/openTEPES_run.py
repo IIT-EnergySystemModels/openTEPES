@@ -103,14 +103,14 @@ SOLVER = "glpk"
 
 def main():
     args = parser.parse_args()
-    if args.case is None:
-        args.case = input("Input Case Name (Default {}): ".format(CASE))
-        if args.case == "":
-            args.case = CASE
     if args.dir is None:
         args.dir = input("Input Dir Name (Default {}): ".format(DIR))
         if args.dir == "":
             args.dir = DIR
+    if args.case is None:
+        args.case = input("Input Case Name (Default {}): ".format(CASE))
+        if args.case == "":
+            args.case = CASE
     if args.solver is None:
         args.solver = input("Input Solver Name (Default {}): ".format(SOLVER))
         if args.solver == "":
@@ -121,7 +121,7 @@ def main():
     import sys
     print(sys.argv)
     print(args)
-    execution(args.case, args.dir, args.solver)
+    execution(args.dir, args.case, args.solver)
     sys.exit("Running Process Finished...")
 
 
