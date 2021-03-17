@@ -76,15 +76,15 @@ There are 2 ways to get all required packages under Windows. We recommend using 
 
 Miniconda (recommended)
 =======================
-  1. `Miniconda <https://docs.conda.io/en/latest/miniconda.html>`_. Choose the 64-bit installer if possible.
-     During the installation procedure, keep both checkboxes "modify the PATH" and "register Python" selected! If only higher Python versions are available, you can switch to a specific Python Version by typing ``conda install python=<version>``
-     
-     1. **Remark:** if Anaconda or Miniconda was installed previously, please check that python is registered in the environment variables.
-  2. **Packages and Solver**:
+1. `Miniconda <https://docs.conda.io/en/latest/miniconda.html>`_. Choose the 64-bit installer if possible.
+
+   1. During the installation procedure, keep both checkboxes "modify the PATH" and "register Python" selected! If only higher Python versions are available, you can switch to a specific Python Version by typing ``conda install python=<version>`` 
+   2. **Remark:** if Anaconda or Miniconda was installed previously, please check that python is registered in the environment variables.
+2. **Packages and Solver**:
   
-     1. Launch a new command prompt (Windows: Win+R, type "cmd", Enter)
-     2. Install `GLPK <http://winglpk.sourceforge.net/>`_ and `Cartopy <https://pypi.org/project/Cartopy/>`_ via conda by ``conda install glpk cartopy``
-     3. Install openTEPES via pip by ``pip install openTEPES``
+   1. Launch a new command prompt (Windows: Win+R, type "cmd", Enter)
+   2. Install `GLPK <http://winglpk.sourceforge.net/>`_ and `Cartopy <https://pypi.org/project/Cartopy/>`_ via conda by ``conda install glpk cartopy``
+   3. Install openTEPES via pip by ``pip install openTEPES``
 
 Continue at `Get Started <#get-started>`_.
 
@@ -121,7 +121,7 @@ Then, three parameters (case, dir, and solver) will be asked for.
 **Remark:** at this step only press enter for each input and openTEPES will be executed with the default parameters.
 
 After this in a directory of your choice, make a copy of the `9n <https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/9n>`_ or `sSEP <https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/sSEP>`_ case to create a new case of your choice but using the current format of the CSV files.
-A proper execution by ``openTEPES_Main`` can be made by introducing the new case and the directory of your choice. Note that the solver is **glpk** by default, but it can be changed by other solvers that pyomo supports (e.g., gurobi, mosek, knitro, etc.).
+A proper execution by ``openTEPES_Main`` can be made by introducing the new case and the directory of your choice. Note that the solver is **glpk** by default, but it can be changed by other solvers that pyomo supports (e.g., gurobi, mosek).
 
 Then, the **results** should be written in the folder who is called with the case name. The results contain plots and summary spreadsheets for multiple optimised energy scenarios, periods and load levels as well as the investment decisions.
 
@@ -134,10 +134,10 @@ Then, the **results** should be written in the folder who is called with the cas
 Tips
 ###########
 
-  1. A complete documentation of the openTEPES model can be found at https://pascua.iit.comillas.edu/aramos/openTEPES/index.html#, which presents the mathematical formulation, input data and output results.
-  2. Try modifying the **TimeStep** in **oT_Data_Parameter_<case>.csv** and see their effect on results.
-  3. Using **0** or **1**, the optimization options can be activated or deactivated in **oT_Data_Option_<case>.csv**.
-  4. If you need a nice python editor, think about using `PyCharm <https://www.jetbrains.com/pycharm/download>`_. It has many features including project management, etc.
+1. A complete documentation of the openTEPES model can be found at https://pascua.iit.comillas.edu/aramos/openTEPES/index.html#, which presents the mathematical formulation, input data and output results.
+2. Try modifying the **TimeStep** in **oT_Data_Parameter_<case>.csv** and see their effect on results.
+3. Using **0** or **1**, the optimization options can be activated or deactivated in **oT_Data_Option_<case>.csv**.
+4. If you need a nice python editor, think about using `PyCharm <https://www.jetbrains.com/pycharm/download>`_. It has many features including project management, etc.
 
 ################
 Expected Results
