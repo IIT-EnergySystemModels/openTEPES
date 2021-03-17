@@ -92,7 +92,7 @@ import setuptools
 from   pyomo.environ import ConcreteModel, Set
 
 from openTEPES.openTEPES_InputData        import InputData
-from openTEPES.openTEPES_ModelFormulation import InvestmentModelFormulation, OperationModelFormulation
+from openTEPES.openTEPES_ModelFormulation import InvestmentModelFormulation, GenerationOperationModelFormulation, NetworkOperationModelFormulation
 from openTEPES.openTEPES_ProblemSolving   import ProblemSolving
 from openTEPES.openTEPES_OutputResults    import OutputResults
 
@@ -125,7 +125,8 @@ def execution(DirName, CaseName, SolverName):
         mTEPES.n2 = Set(initialize=mTEPES.nn , ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in list(mTEPES.pDuration) and mTEPES.nn.ord(nn) > (st-1)*mTEPES.pStageDuration and mTEPES.nn.ord(nn) <= st*mTEPES.pStageDuration)
 
         # operation model objective function and constraints by stage
-        OperationModelFormulation(mTEPES, st)
+        GenerationOperationModelFormulation(mTEPES, st)
+        NetworkOperationModelFormulation   (mTEPES, st)
 
     StartTime = time.time()
     mTEPES.write(_path+'/openTEPES_'+CaseName+'.lp', io_options={'symbolic_solver_labels': True})  # create lp-format file
