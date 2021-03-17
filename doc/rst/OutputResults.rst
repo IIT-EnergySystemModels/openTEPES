@@ -5,15 +5,15 @@ Output Results
 
 A map of the transmission network and the energy share of different technologies is plotted (access to internet is required to download the underlying map).
 
-.. image:: /../imagenes/oT_Map_Network_sSEP.png
+.. image:: /../img/oT_Map_Network_sSEP.png
    :scale: 40%
    :align: center
 
-.. image:: /../imagenes/oT_Map_Network_MAF2030.png
+.. image:: /../img/oT_Map_Network_MAF2030.png
    :scale: 40%
    :align: center
 
-.. image:: /../imagenes/oT_Plot_TechnologyEnergy_ES_MAF2030.png
+.. image:: /../img/oT_Plot_TechnologyEnergy_ES_MAF2030.png
    :scale: 6%
    :align: center
 
