@@ -3,11 +3,11 @@
 openTEPES Documentation
 =======================
 
-.. image:: ../img/Escudo.png
+.. image:: /../img/Escudo.png
    :scale: 66%
    :align: right
 
-.. image:: ../img/logoIIT.gif
+.. image:: /../img/logoIIT.gif
    :scale: 100%
    :align: right
 
