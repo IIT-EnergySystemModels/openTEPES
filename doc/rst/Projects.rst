@@ -9,7 +9,7 @@ The model has being used in these research projects:
   `L. Olmos <https://www.iit.comillas.edu/people/olmos>`_, `S. Lumbreras <https://www.iit.comillas.edu/people/slumbreras>`_, `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_,
   `E. Alvarez <https://www.iit.comillas.edu/people/ealvarezq>`_
   
-.. image:: /../img/open-entrance_logo.png
+.. image:: ../img/open-entrance_logo.png
    :scale: 40%
    :align: center
 
