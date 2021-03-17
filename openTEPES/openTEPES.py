@@ -94,7 +94,7 @@ from   pyomo.environ import ConcreteModel, Set
 from openTEPES.openTEPES_InputData        import InputData
 from openTEPES.openTEPES_ModelFormulation import InvestmentModelFormulation, GenerationOperationModelFormulation, NetworkOperationModelFormulation
 from openTEPES.openTEPES_ProblemSolving   import ProblemSolving
-from openTEPES.openTEPES_OutputResults    import OutputResults
+from openTEPES.openTEPES_OutputResults    import *
 
 
 def openTEPES_run(DirName, CaseName, SolverName):
@@ -143,7 +143,14 @@ def openTEPES_run(DirName, CaseName, SolverName):
     mTEPES.p  = Set(initialize=mTEPES.pp , ordered=True, doc='periods'                                                                                 )
     mTEPES.n  = Set(initialize=mTEPES.nn , ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in list(mTEPES.pDuration)                    )
 
-    OutputResults(DirName, CaseName, mTEPES)
+    InvestmentResults(DirName, CaseName, mTEPES)
+    GenerationOperationResults(DirName, CaseName, mTEPES)
+    ESSOperationResults(DirName, CaseName, mTEPES)
+    FlexibilityResults(DirName, CaseName, mTEPES)
+    NetworkOperationResults(DirName, CaseName, mTEPES)
+    MarginalResults(DirName, CaseName, mTEPES)
+    EconomicResults(DirName, CaseName, mTEPES)
+    NetworkMapResults(DirName, CaseName, mTEPES)
 
     TotalTime = time.time() - InitialTime
     print('Total time                            ... ', round(TotalTime), 's')
