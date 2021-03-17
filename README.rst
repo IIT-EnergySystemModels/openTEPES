@@ -128,6 +128,7 @@ Then, the **results** should be written in the folder who is called with the cas
 **Note that** there is an alternative way to run the model by creating a new script **script.py**, and write the following:
 
     ``from openTEPES.openTEPES import openTEPES_run``
+    
     ``openTEPES_run(<case>, <dir>, <solver>)``
 
 ###########
