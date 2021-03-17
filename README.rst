@@ -68,7 +68,6 @@ The main results of the model can be structured in these topics:
 
 A careful implementation has been done to avoid numerical problems by scaling parameters, variables and equations of the optimization problem allowing the model to be used for large-scale cases, e.g., the European system with hourly detail.
 
-###########
 Installation
 ###########
 There are 2 ways to get all required packages under Windows. We recommend using the Python distribution Anaconda. If you don't want to use it or already have an existing Python (version 3.8 **recommended**, 2.7 is supported as well) installation, you can also download the required packages by yourself.
@@ -96,7 +95,7 @@ GitHub Repository (the hard way)
 3. Set up the path by ``cd "C:\Users\<username>\...\openTEPES"``. (Note that the path is where the repository was cloned.)
 4. Install openTEPES via pip by ``pip install .``
 
-###########
+
 Get started
 ###########
 
@@ -131,7 +130,6 @@ Then, the **results** should be written in the folder who is called with the cas
     
     ``openTEPES_run(<case>, <dir>, <solver>)``
 
-###########
 Tips
 ###########
 
@@ -140,7 +138,6 @@ Tips
 3. Using **0** or **1**, the optimization options can be activated or deactivated in **oT_Data_Option_<case>.csv**.
 4. If you need a nice python editor, think about using `PyCharm <https://www.jetbrains.com/pycharm/download>`_. It has many features including project management, etc.
 
-################
 Expected Results
 ################
 .. image:: https://github.com/IIT-EnergySystemModels/openTEPES/blob/master/doc/img/oT_Plot_MapNetwork_9n.png
