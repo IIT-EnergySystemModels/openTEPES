@@ -13,7 +13,11 @@
 .. image:: https://img.shields.io/pypi/pyversions/openTEPES.svg
    :target: https://pypi.python.org/pypi/openTEPES
    :alt: versions
-    
+
+.. image:: https://img.shields.io/readthedocs/opentepes
+   :target: https://opentepes.readthedocs.io/en/latest/index.html
+   :alt: docs
+
 .. image:: https://img.shields.io/badge/License-GPL%20v3-blue.svg
    :target: https://github.com/IIT-EnergySystemModels/openTEPES/blob/master/LICENSE
    :alt: GPL
