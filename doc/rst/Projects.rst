@@ -16,7 +16,7 @@ The model has being used in these research projects:
 - `Analysis of the expansion and operation of the Spanish electricity system for a 2030-2050 time horizon <https://www.iit.comillas.edu/proyectos/mostrar_proyecto.php.en?nombre_abreviado=IBD_ANALISIS_H2030-50>`_, developed for **Iberdrola**,
   aims at evaluating the potential and role that each generation, storage and consumption technology can play in the future mix of the Spanish electricity system.
   `M. Rivier <https://www.iit.comillas.edu/people/michel>`_, `T. Gómez <https://www.iit.comillas.edu/people/tomas>`_, `A. Sánchez <https://www.iit.comillas.edu/people/alvaro>`_,
-  `F. Martín <https://www.iit.comillas.edu/people/fmartin>`_, `J.P. Chaves <https://www.iit.comillas.edu/people/jchaves>`_, `T. Gerres <https://www.iit.comillas.edu/people/tgerres>`_, 
+  `F. Martín <https://www.iit.comillas.edu/people/fmartin>`_, `T. Freire <https://www.iit.comillas.edu/people/tfreire>`_, `J.P. Chaves <https://www.iit.comillas.edu/people/jchaves>`_, `T. Gerres <https://www.iit.comillas.edu/people/tgerres>`_, 
   `S. Huclin <https://www.iit.comillas.edu/people/shuclin>`_, `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_
 
 - `Assessment of the storage needs for the Spanish electric system in a horizon 2020-2050 with large share of renewables <https://www.iit.comillas.edu/proyectos/mostrar_proyecto.php.en?nombre_abreviado=IDAE_Almacenamiento>`_, developed for 

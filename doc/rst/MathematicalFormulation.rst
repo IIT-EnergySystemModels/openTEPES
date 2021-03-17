@@ -221,7 +221,7 @@ Total charge of an ESS unit [GW]
 
 Logical relation between commitment, startup and shutdown status of committed unit (all except the VRES units) [p.u.]
 
-:math:`uc^ω_{png} - uc_^ω{p,n-\nu,g} = su^ω_{png} - sd^ω_{png} \quad \forall ωpng`
+:math:`uc^ω_{png} - uc^ω_{p,n-\nu,g} = su^ω_{png} - sd^ω_{png} \quad \forall ωpng`
 
 Initial commitment of the units is determined by the model based on the merit order loading, including the VRES and ESS units.
 

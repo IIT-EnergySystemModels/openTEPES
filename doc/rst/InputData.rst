@@ -7,7 +7,7 @@ All the input files must be located in a folder with the name of the case study.
 
 Dictionaries. Sets
 ------------------
-The dictionaries include all the possible elements of the corresponding sets included in the optimization problem
+The dictionaries include all the possible elements of the corresponding sets included in the optimization problem. You can't use non-English characters (e.g., ó, º)
 
 ==========================  ===================================================================================================================
 File                        Description
@@ -94,7 +94,8 @@ StageDuration         Duration of the stage (weekly -168-, monthly -672-, quarte
 A time step greater than one hour it is a convenient way to reduce the load levels of the time scope. The moving average of the demand, upward and downward operating reserves, variable generation and ESS energy inflows over
 the time step load levels is assigned to active load levels (e.g., the mean value of the three hours is associated to the third hour in a trihourly time step).
 
-The stage duration must be larger or equal than the shortest duration of any storage type (e.g., weekly) and multiple of it. Consecutive stages are not tied between them.
+The stage duration must be larger or equal than the shortest duration of any storage type (e.g., weekly) and multiple of it. Consecutive stages are not tied between them. consequently, the objective function
+must be a bit lower.
 
 Scenario
 --------
@@ -268,7 +269,7 @@ FixedChargeRate    Fixed charge rate to annualize the overnight investment cost 
 BinaryInvestment   Binary line/circuit investment decision                                                       Yes/No
 =================  ============================================================================================  ======
 
-Depending on the voltage lines are plotted with different colors (blue > 700 kV, orange between 500 and 700 kV, red between 350 and 500 kV, green between 200 and 350 kV, and orange below 200 kV.
+Depending on the voltage lines are plotted with different colors (blue > 700 kV, orange between 500 and 700 kV, red between 350 and 500 kV, green between 200 and 350 kV, and orange < 200 kV).
 
 If there is no data for TTCBck, i.e., TTCBck is left empty or is equal to 0, it is substituted by the TTC in the code.
 
