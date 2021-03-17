@@ -1,4 +1,53 @@
-![](https://github.com/IIT-EnergySystemModels/openTEPES/blob/master/doc/img/openTEPES_img.png)
+
+.. image:: https://github.com/IIT-EnergySystemModels/openTEPES/blob/master/doc/img/openTEPES_img.png
+   :target: https://pascua.iit.comillas.edu/aramos/openTEPES/index.html
+   :alt: logo
+
+|
+
+.. image:: https://badge.fury.io/py/pandapower.svg
+   :target: https://pypi.python.org/pypi/pandapower
+   :alt: PyPI
+   
+.. image:: https://img.shields.io/pypi/pyversions/pandapower.svg
+   :target: https://pypi.python.org/pypi/pandapower
+   :alt: versions
+
+.. image:: https://readthedocs.org/projects/pandapower/badge/
+   :target: http://pandapower.readthedocs.io/
+   :alt: docs
+    
+.. image:: https://travis-ci.org/e2nIEE/pandapower.svg?branch=master
+   :target: https://travis-ci.org/e2nIEE/pandapower/branches
+   :alt: travis
+
+.. image:: https://codecov.io/gh/e2nIEE/pandapower/branch/master/graph/badge.svg
+   :target: https://codecov.io/github/e2nIEE/pandapower?branch=master
+   :alt: codecov
+    
+.. image:: https://api.codacy.com/project/badge/Grade/e2ce960935fd4f96b4be4dff9a0c76e3
+   :target: https://app.codacy.com/gh/e2nIEE/pandapower?branch=master
+   :alt: codacy
+    
+.. image:: https://img.shields.io/badge/License-BSD%203--Clause-blue.svg
+   :target: https://github.com/e2nIEE/pandapower/blob/master/LICENSE
+   :alt: BSD
+
+.. image:: https://pepy.tech/badge/pandapower
+   :target: https://pepy.tech/project/pandapower
+   :alt: pepy
+
+.. image:: https://mybinder.org/badge_logo.svg
+   :target: https://mybinder.org/v2/gh/e2nIEE/pandapower/master?filepath=tutorials
+   :alt: binder
+ 
+
+
+
+  
+pandapower is an easy to use network calculation program aimed to automate the analysis and optimization of power systems. It uses the data analysis library `pandas <http://pandas.pydata.org>`_ and is compatible with the commonly used MATPOWER / PYPOWER case format. pandapower allows using different solvers including an improved Newton-Raphson power flow implementation, all `PYPOWER <https://pypi.python.org/pypi/PYPOWER>`_ solvers, and the `PowerModels.jl <https://github.com/lanl-ansi/PowerModels.jl/>`_ library.
+
+More information about pandapower can be found on `www.pandapower.org <https://www.pandapower.org/>`_:
 
 **Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES)**
 
@@ -19,7 +68,7 @@ It determines automatically optimal expansion plans that satisfy simultaneously 
 - **Static**: the scope of the model corresponds to a single year at a long-term horizon, 2030 or 2040 for example.
 
   It represents hierarchically the different time scopes to take decisions in an electric system:
-  
+
   - Period: one year
   - Load level: 2030-01-01T00:00:00+01:00 to 2030-12-30T23:00:00+01:00
 
@@ -28,17 +77,17 @@ It determines automatically optimal expansion plans that satisfy simultaneously 
 
 - **Stochastic**: several stochastic parameters that can influence the optimal generation and transmission expansion decisions are considered. The model considers stochastic
   medium-term yearly uncertainties (scenarios) related to the system operation. These operation scenarios are associated with renewable energy sources and electricity demand.
-  
+
 The objective function incorporates the two main quantifiable costs: **generation and transmission investment cost (CAPEX)** and **expected variable operation costs (including generation emission and reliability costs) (system OPEX)**.
-  
+
 The model formulates a stochastic optimization problem including generation and network binary investment decisions and operation decisions (commitment, startup and shutdown decisions are also binary).
 
 The operation model is a **network constrained unit commitment (NCUC)** based on a **tight and compact** formulation including operating reserves with a
 **DC power flow (DCPF)**. Network ohmic losses are considered proportional to the line flow. It considers different **energy storage systems (ESS)**, e.g., pumped-storage hydro,
-battery, etc. It allows analyzing the trade-off between the investment in generation/transmission and the investment or use of storage capacity. 
+battery, etc. It allows analyzing the trade-off between the investment in generation/transmission and the investment or use of storage capacity.
 
 The main results of the model can be structured in these topics:
-  
+
 - **Investment**: investment decisions and cost
 - **Operation**: the output of different units and aggregation by technologies (thermal, storage hydro, pumped-storage hydro, RES), RES curtailment, line flows, line ohmic losses, node voltage angles
 - **Emissions**: CO2 emissions by unit
@@ -63,23 +112,23 @@ There are 2 ways to get all required packages under Windows. We recommend using 
 Continue at [Get Started](#get-started).
 
 ### GitHub Repository (the hard way)
-1. Clone the [openTEPES](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master) repository. 
+1. Clone the [openTEPES](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master) repository.
 2. Launch the command prompt (Windows: Win+R, type "cmd", Enter), or the Anaconda prompt
 3. Set up the path by `cd "C:\Users\<username>\...\openTEPES"`. (Note that the path is where the repository was cloned.)
 4. Install openTEPES via pip by `pip install .`.
-  
+
 ## Get started
 
 ### Developers
 By cloning the [openTEPES](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master) repository, you can create branches and propose pull-request. Any help will be very appreciated.
 
-Continue like the users for a simple way of executions. 
+Continue like the users for a simple way of executions.
 
 ### Users
 
 If you are not planning on developing, please follows the instructions of the [Installation](#installation).
 
-Once installation is complete, [openTEPES](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master) can be executed in a test mode by using a command prompt. 
+Once installation is complete, [openTEPES](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master) can be executed in a test mode by using a command prompt.
 In the directory of your choice, open and execute the openTEPES_run.py script by using the following on the command prompt (Windows) or Terminal (Linux). (Depending on what your standard python version is, you might need to call `python3` instead of `python`.):
 
      openTEPES_Main
@@ -87,7 +136,7 @@ In the directory of your choice, open and execute the openTEPES_run.py script by
 Then, three parameters (case, dir, and solver) will be asked for.
 
 **Remark:** at this step only press enter for each input and openTEPES will be executed with the default parameters.
-   
+
 After this in a directory of your choice, make a copy of the [9n](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/9n) or [sSEP](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/sSEP) case to create a new case of your choice but using the current format of the CSV files.
 A proper execution by `openTEPES_Main` can be made by introducing the new case and the directory of your choice. Note that the solver is `glpk` by default, but it can be changed by other solvers that pyomo supports.
 
@@ -96,11 +145,11 @@ Then, the `results` should be written in the folder who is called with the case 
 **Note that** there is an alternative way to run the model by creating a new script `script.py`, and write the following:
 
     from openTEPES.openTEPES import openTEPES_run
-    openTEPES_run(<case>, <dir>, <solver>) 
+    openTEPES_run(<case>, <dir>, <solver>)
 
 ## Tips
 
-  1. A complete documentation of the openTEPES model can be found at https://pascua.iit.comillas.edu/aramos/openTEPES/index.html#, which presents the mathematical formulation, input data and output results. 
+  1. A complete documentation of the openTEPES model can be found at https://pascua.iit.comillas.edu/aramos/openTEPES/index.html#, which presents the mathematical formulation, input data and output results.
   2. Try adding/modifying the `TimeStep` in `oT_Data_Parameter_<case>.csv` and see their effect on results.
   3. Using `0` or `1`, the optimization options can be activated or deactivated in `oT_Data_Option_<case>.csv`.
   4. If you need a nice python editor, think about using [PyCharm](https://www.jetbrains.com/pycharm/download). It has many features including project management, etc.
