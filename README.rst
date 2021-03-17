@@ -22,12 +22,6 @@
    :target: https://pepy.tech/project/openTEPES
    :alt: pepy
 
-
-  
-pandapower is an easy to use network calculation program aimed to automate the analysis and optimization of power systems. It uses the data analysis library `pandas <http://pandas.pydata.org>`_ and is compatible with the commonly used MATPOWER / PYPOWER case format. pandapower allows using different solvers including an improved Newton-Raphson power flow implementation, all `PYPOWER <https://pypi.python.org/pypi/PYPOWER>`_ solvers, and the `PowerModels.jl <https://github.com/lanl-ansi/PowerModels.jl/>`_ library.
-
-More information about pandapower can be found on `www.pandapower.org <https://www.pandapower.org/>`_:
-
 **Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES)**
 
 *Simplicity and Transparency in Power Systems Planning*
@@ -125,11 +119,11 @@ Then, three parameters (case, dir, and solver) will be asked for.
 **Remark:** at this step only press enter for each input and openTEPES will be executed with the default parameters.
 
 After this in a directory of your choice, make a copy of the `9n <https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/9n>`_ or `sSEP <https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/sSEP>`_ case to create a new case of your choice but using the current format of the CSV files.
-A proper execution by ``openTEPES_Main`` can be made by introducing the new case and the directory of your choice. Note that the solver is `glpk` by default, but it can be changed by other solvers that pyomo supports (e.g., gurobi, mosek, knitro, etc.).
+A proper execution by ``openTEPES_Main`` can be made by introducing the new case and the directory of your choice. Note that the solver is **glpk** by default, but it can be changed by other solvers that pyomo supports (e.g., gurobi, mosek, knitro, etc.).
 
-Then, the `results` should be written in the folder who is called with the case name. The results contain plots and summary spreadsheets for multiple optimised energy scenarios, periods and load levels as well as the investment decisions.
+Then, the **results** should be written in the folder who is called with the case name. The results contain plots and summary spreadsheets for multiple optimised energy scenarios, periods and load levels as well as the investment decisions.
 
-**Note that** there is an alternative way to run the model by creating a new script `script.py`, and write the following:
+**Note that** there is an alternative way to run the model by creating a new script **script.py**, and write the following:
 
     ``from openTEPES.openTEPES import openTEPES_run``
     ``openTEPES_run(<case>, <dir>, <solver>)``
@@ -139,8 +133,8 @@ Tips
 ###########
 
   1. A complete documentation of the openTEPES model can be found at https://pascua.iit.comillas.edu/aramos/openTEPES/index.html#, which presents the mathematical formulation, input data and output results.
-  2. Try adding/modifying the `TimeStep` in `oT_Data_Parameter_<case>.csv` and see their effect on results.
-  3. Using `0` or `1`, the optimization options can be activated or deactivated in `oT_Data_Option_<case>.csv`.
+  2. Try modifying the **TimeStep** in **oT_Data_Parameter_<case>.csv** and see their effect on results.
+  3. Using **0** or **1**, the optimization options can be activated or deactivated in **oT_Data_Option_<case>.csv**.
   4. If you need a nice python editor, think about using `PyCharm <https://www.jetbrains.com/pycharm/download>`_. It has many features including project management, etc.
 
 ################
