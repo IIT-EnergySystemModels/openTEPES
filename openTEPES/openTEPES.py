@@ -97,7 +97,7 @@ from openTEPES.openTEPES_ProblemSolving   import ProblemSolving
 from openTEPES.openTEPES_OutputResults    import OutputResults
 
 
-def execution(DirName, CaseName, SolverName):
+def openTEPES_run(DirName, CaseName, SolverName):
 
     InitialTime = time.time()
     _path = os.path.join(DirName, CaseName)
