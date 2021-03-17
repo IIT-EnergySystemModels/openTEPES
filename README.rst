@@ -78,8 +78,10 @@ Miniconda (recommended)
 =======================
   1. `Miniconda <https://docs.conda.io/en/latest/miniconda.html>`_. Choose the 64-bit installer if possible.
      During the installation procedure, keep both checkboxes "modify the PATH" and "register Python" selected! If only higher Python versions are available, you can switch to a specific Python Version by typing ``conda install python=<version>``
+     
      1. **Remark:** if Anaconda or Miniconda was installed previously, please check that python is registered in the environment variables.
   2. **Packages and Solver**:
+  
      1. Launch a new command prompt (Windows: Win+R, type "cmd", Enter)
      2. Install `GLPK <http://winglpk.sourceforge.net/>`_ and `Cartopy <https://pypi.org/project/Cartopy/>`_ via conda by ``conda install glpk cartopy``
      3. Install openTEPES via pip by ``pip install openTEPES``
