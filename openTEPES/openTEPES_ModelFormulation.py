@@ -21,7 +21,7 @@ def InvestmentModelFormulation(mTEPES):
     StartTime        = time.time()
     print('Generating investment o.f.            ... ', round(GeneratingOFTime), 's')
 
-def OperationModelFormulation(mTEPES, st):
+def GenerationOperationModelFormulation(mTEPES, st):
     print('Operation  model formulation ****')
 
     StartTime = time.time()
@@ -321,6 +321,11 @@ def OperationModelFormulation(mTEPES, st):
     GeneratingMinUDTime = time.time() - StartTime
     StartTime           = time.time()
     print('Generating minimum up/down time       ... ', round(GeneratingMinUDTime), 's')
+
+def NetworkOperationModelFormulation(mTEPES, st):
+    print('Netw oper  model formulation ****')
+
+    StartTime = time.time()
 
     #%%
     def eInstalNetCap1(mTEPES,sc,p,n,ni,nf,cc):
