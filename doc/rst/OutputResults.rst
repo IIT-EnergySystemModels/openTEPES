@@ -355,14 +355,6 @@ Identifier    Identifier  Identifier  Header      Description
 Scenario      Period      Load level  Pump        Operation cost for the consumption [M€]
 ============  ==========  ==========  ==========  ==========================================
 
-File ``oT_Result_GenerationEnergyRevenue.csv``
-
-============  ==========  ==========  ==========  ==========================================
-Identifier    Identifier  Identifier  Header      Description
-============  ==========  ==========  ==========  ==========================================
-Scenario      Period      Load level  Generator   Operation revenues for the generation [M€]
-============  ==========  ==========  ==========  ==========================================
-
 File ``oT_Result_GenerationEmissionCost.csv``
 
 ============  ==========  ==========  ==========  ==========================================
@@ -378,6 +370,54 @@ Identifier    Identifier  Identifier  Header      Description
 ============  ==========  ==========  ==========  ==========================================
 Scenario      Period      Load level  Node        Reliability cost (cost of the ENS) [M€]
 ============  ==========  ==========  ==========  ==========================================
+
+File ``oT_Result_GenerationEnergyRevenue.csv``
+
+============  ==========  ==========  ==========  ==========================================
+Identifier    Identifier  Identifier  Header      Description
+============  ==========  ==========  ==========  ==========================================
+Scenario      Period      Load level  Generator   Operation revenues for the generation [M€]
+============  ==========  ==========  ==========  ==========================================
+
+File ``oT_Result_ChargeEnergyRevenue.csv``
+
+============  ==========  ==========  ==============  ==================================================
+Identifier    Identifier  Identifier  Header          Description
+============  ==========  ==========  ==============  ==================================================
+Scenario      Period      Load level  ESS Generator   Operation revenues for the consumption/charge [M€]
+============  ==========  ==========  ==============  ==================================================
+
+File ``oT_Result_OperatingReserveUpRevenue.csv``
+
+============  ==========  ==========  ==========  ==========================================================
+Identifier    Identifier  Identifier  Header      Description
+============  ==========  ==========  ==========  ==========================================================
+Scenario      Period      Load level  Generator   Operation revenues from the upward operating reserve [M€]
+============  ==========  ==========  ==========  ==========================================================
+
+File ``oT_Result_ESSOperatingReserveUpRevenue.csv``
+
+============  ==========  ==========  ==============  ==========================================================
+Identifier    Identifier  Identifier  Header          Description
+============  ==========  ==========  ==============  ==========================================================
+Scenario      Period      Load level  ESS Generator   Operation revenues from the upward operating reserve [M€]
+============  ==========  ==========  ==============  ==========================================================
+
+File ``oT_Result_OperatingReserveDwRevenue.csv``
+
+============  ==========  ==========  ==========  ===========================================================
+Identifier    Identifier  Identifier  Header      Description
+============  ==========  ==========  ==========  ===========================================================
+Scenario      Period      Load level  Generator   Operation revenues from the downward operating reserve [M€]
+============  ==========  ==========  ==========  ===========================================================
+
+File ``oT_Result_ESSOperatingReserveDwRevenue.csv``
+
+============  ==========  ==========  ==============  ===========================================================
+Identifier    Identifier  Identifier  Header          Description
+============  ==========  ==========  ==============  ===========================================================
+Scenario      Period      Load level  ESS Generator   Operation revenues from the downward operating reserve [M€]
+============  ==========  ==========  ==============  ===========================================================
 
 File ``oT_Result_FlexibilityDemand.csv``
 

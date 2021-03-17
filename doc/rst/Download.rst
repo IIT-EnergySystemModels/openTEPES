@@ -2,9 +2,9 @@
 
 Download
 ========
-The **openTEPES** has been developed using `Python 3.7.9 <https://www.python.org/>`_ and `Pyomo 5.7.3 <http://www.pyomo.org/>`_ and it uses `Gurobi 9.1.0 <https://www.gurobi.com/>`_ as commercial MIP solver for which a free academic license is available.
+The **openTEPES** has been developed using `Python 3.8.8 <https://www.python.org/>`_ and `Pyomo 5.7.3 <http://www.pyomo.org/>`_ and it uses `Gurobi 9.1.1 <https://www.gurobi.com/>`_ as commercial MIP solver for which a free academic license is available.
 It uses Pyomo so that it is independent of the preferred solver. You can alternatively use one of the free solvers `SCIP <https://scip.zib.de/>`_, `GLPK 4.65 <https://www.gnu.org/software/glpk/>`_
-and `CBC 2.10.3 <https://github.com/coin-or/Cbc>`_. List the serial solver interfaces under Pyomo with this call::
+and `CBC 2.10.5 <https://github.com/coin-or/Cbc>`_. List the serial solver interfaces under Pyomo with this call::
 
   pyomo help -s
 
@@ -27,6 +27,6 @@ The **openTEPES** code is provided under the `GNU General Public License <https:
 - the code can't become part of a closed-source commercial software product
 - any future changes and improvements to the code remain free and open
 
-Source code can be downloaded from `HERE <../openTEPES.zip>`_ or from `GitHub <https://github.com/IIT-EnergySystemModels/openTEPES>`_.
+Source code can be downloaded from `GitHub <https://github.com/IIT-EnergySystemModels/openTEPES>`_ or installed with `pip <https://pypi.org/project/openTEPES/>`_
 
 This model is a work in progress and will be updated accordingly. If you want to subscribe to the **openTEPES** model updates send an email to andres.ramos@comillas.edu

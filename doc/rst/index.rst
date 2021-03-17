@@ -18,6 +18,8 @@ openTEPES Documentation
 The **openTEPES** model has been developed at the `Instituto de Investigación Tecnológica (IIT) <https://www.iit.comillas.edu/index.php.en>`_ of
 the `Universidad Pontificia Comillas <https://www.comillas.edu/en/>`_.
 
+**DOI**: `10.24433/CO.8709849.v1 <https://doi.org/10.24433/CO.8709849.v1>`_
+
 Index
 =====
 
