@@ -3,11 +3,11 @@
 Contact Us
 ==========
 
-.. image:: /../imagenes/Escudo.png
+.. image:: /../img/Escudo.png
    :scale: 66%
    :align: right
 
-.. image:: /../imagenes/logoIIT.gif
+.. image:: /../img/logoIIT.gif
    :scale: 100%
    :align: right
 
