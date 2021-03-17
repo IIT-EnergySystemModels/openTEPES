@@ -50,9 +50,9 @@ A careful implementation has been done to avoid numerical problems by scaling pa
 
 There are 2 ways to get all required packages under Windows. We recommend using the Python distribution Anaconda. If you don't want to use it or already have an existing Python (version 3.8 **recommended**, 2.7 is supported as well) installation, you can also download the required packages by yourself.
 
-### Anaconda/Miniconda (recommended)
+### Miniconda (recommended)
 
-  1. **[Anaconda (Python 3)](https://www.anaconda.com/products/individual)/[Miniconda](https://docs.conda.io/en/latest/miniconda.html)**. Choose the 64-bit installer if possible.
+  1. **[Miniconda](https://docs.conda.io/en/latest/miniconda.html)**. Choose the 64-bit installer if possible.
      During the installation procedure, keep both checkboxes "modify the PATH" and "register Python" selected! If only higher Python versions are available, you can switch to a specific Python Version by typing `conda install python=<version>`
      1. **Remark:** if Anaconda or Miniconda was installed previously, please check that python is registered in the environment variables.
   2. **Packages and Solver**:
@@ -82,16 +82,21 @@ If you are not planning on developing, please follows the instructions of the [I
 Once installation is complete, [openTEPES](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master) can be executed in a test mode by using a command prompt. 
 In the directory of your choice, open and execute the openTEPES_run.py script by using the following on the command prompt (Windows) or Terminal (Linux). (Depending on what your standard python version is, you might need to call `python3` instead of `python`.):
 
-     openTEPES_run
+     openTEPES_Main
 
 Then, three parameters (case, dir, and solver) will be asked for.
 
 **Remark:** at this step only press enter for each input and openTEPES will be executed with the default parameters.
    
 After this in a directory of your choice, make a copy of the [9n](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/9n) or [sSEP](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/sSEP) case to create a new case of your choice but using the current format of the CSV files.
-A proper execution by `openTEPES_run` can be made by introducing the new case and the directory of your choice. Note that the solver is `glpk` by default, but it can be changed by other solvers that pyomo supports.
+A proper execution by `openTEPES_Main` can be made by introducing the new case and the directory of your choice. Note that the solver is `glpk` by default, but it can be changed by other solvers that pyomo supports.
 
-Then, the `results` should be written in the folder whois called with the case name. The results contain plots and summary spreadsheets for multiple optimised energy scenarios, periods and load levels as well as the investment decisions.
+Then, the `results` should be written in the folder who is called with the case name. The results contain plots and summary spreadsheets for multiple optimised energy scenarios, periods and load levels as well as the investment decisions.
+
+**Note that** there is an alternative way to run the model by creating a new script `script.py`, and write the following:
+
+    from openTEPES.openTEPES import openTEPES_run
+    openTEPES_run(<case>, <dir>, <solver>) 
 
 ## Tips
 
@@ -99,10 +104,6 @@ Then, the `results` should be written in the folder whois called with the case n
   2. Try adding/modifying the `TimeStep` in `oT_Data_Parameter_<case>.csv` and see their effect on results.
   3. Using `0` or `1`, the optimization options can be activated or deactivated in `oT_Data_Option_<case>.csv`.
   4. If you need a nice python editor, think about using [PyCharm](https://www.jetbrains.com/pycharm/download). It has many features including project management, etc.
-  5. Creating a new script `script.py`, and write the following: 
-      
-    from openTEPES.openTEPES import execution
-    execution(<case>, <dir>, <solver>)
 
 ## Screenshots
 ![](https://github.com/IIT-EnergySystemModels/openTEPES/blob/master/doc/img/oT_Plot_MapNetwork_9n.png "Network map with investment decisions.")
