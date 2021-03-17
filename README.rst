@@ -2,46 +2,25 @@
 .. image:: https://github.com/IIT-EnergySystemModels/openTEPES/blob/master/doc/img/openTEPES_img.png
    :target: https://pascua.iit.comillas.edu/aramos/openTEPES/index.html
    :alt: logo
+   :align: center
 
 |
 
-.. image:: https://badge.fury.io/py/pandapower.svg
-   :target: https://pypi.python.org/pypi/pandapower
-   :alt: PyPI
+.. image:: https://badge.fury.io/py/openTEPES.svg
+    :target: https://badge.fury.io/py/openTEPES
+    :alt: PyPI
    
-.. image:: https://img.shields.io/pypi/pyversions/pandapower.svg
-   :target: https://pypi.python.org/pypi/pandapower
+.. image:: https://img.shields.io/pypi/pyversions/openTEPES.svg
+   :target: https://pypi.python.org/pypi/openTEPES
    :alt: versions
-
-.. image:: https://readthedocs.org/projects/pandapower/badge/
-   :target: http://pandapower.readthedocs.io/
-   :alt: docs
     
-.. image:: https://travis-ci.org/e2nIEE/pandapower.svg?branch=master
-   :target: https://travis-ci.org/e2nIEE/pandapower/branches
-   :alt: travis
+.. image:: https://img.shields.io/badge/License-GPL%20v3-blue.svg
+   :target: https://github.com/IIT-EnergySystemModels/openTEPES/blob/master/LICENSE
+   :alt: GPL
 
-.. image:: https://codecov.io/gh/e2nIEE/pandapower/branch/master/graph/badge.svg
-   :target: https://codecov.io/github/e2nIEE/pandapower?branch=master
-   :alt: codecov
-    
-.. image:: https://api.codacy.com/project/badge/Grade/e2ce960935fd4f96b4be4dff9a0c76e3
-   :target: https://app.codacy.com/gh/e2nIEE/pandapower?branch=master
-   :alt: codacy
-    
-.. image:: https://img.shields.io/badge/License-BSD%203--Clause-blue.svg
-   :target: https://github.com/e2nIEE/pandapower/blob/master/LICENSE
-   :alt: BSD
-
-.. image:: https://pepy.tech/badge/pandapower
-   :target: https://pepy.tech/project/pandapower
+.. image:: https://pepy.tech/badge/openTEPES
+   :target: https://pepy.tech/project/openTEPES
    :alt: pepy
-
-.. image:: https://mybinder.org/badge_logo.svg
-   :target: https://mybinder.org/v2/gh/e2nIEE/pandapower/master?filepath=tutorials
-   :alt: binder
- 
-
 
 
   
@@ -53,7 +32,7 @@ More information about pandapower can be found on `www.pandapower.org <https://w
 
 *Simplicity and Transparency in Power Systems Planning*
 
-The openTEPES model has been developed at the [Instituto de Investigación Tecnológica (IIT)](https://www.iit.comillas.edu/index.php.en) of the [Universidad Pontificia Comillas](https://www.comillas.edu/en/).
+The openTEPES model has been developed at the `Instituto de Investigación Tecnológica (IIT) <https://www.iit.comillas.edu/index.php.en>`_ of the `Universidad Pontificia Comillas <https://www.comillas.edu/en/>`_.
 
 **openTEPES** determines the investment plans of new facilities (generators, ESS and lines)
 for supplying the forecasted demand at minimum cost. Tactical planning is concerned with time horizons of 10-20 years. Its objective is to evaluate the future generation, storage and network needs.
@@ -95,65 +74,88 @@ The main results of the model can be structured in these topics:
 
 A careful implementation has been done to avoid numerical problems by scaling parameters, variables and equations of the optimization problem allowing the model to be used for large-scale cases, e.g., the European system with hourly detail.
 
-## Installation
-
+###########
+Instalation
+###########
 There are 2 ways to get all required packages under Windows. We recommend using the Python distribution Anaconda. If you don't want to use it or already have an existing Python (version 3.8 **recommended**, 2.7 is supported as well) installation, you can also download the required packages by yourself.
 
-### Miniconda (recommended)
 
-  1. **[Miniconda](https://docs.conda.io/en/latest/miniconda.html)**. Choose the 64-bit installer if possible.
-     During the installation procedure, keep both checkboxes "modify the PATH" and "register Python" selected! If only higher Python versions are available, you can switch to a specific Python Version by typing `conda install python=<version>`
+Miniconda (recommended)
+=======================
+  1. `Miniconda <https://docs.conda.io/en/latest/miniconda.html>`_. Choose the 64-bit installer if possible.
+     During the installation procedure, keep both checkboxes "modify the PATH" and "register Python" selected! If only higher Python versions are available, you can switch to a specific Python Version by typing ``conda install python=<version>``
      1. **Remark:** if Anaconda or Miniconda was installed previously, please check that python is registered in the environment variables.
   2. **Packages and Solver**:
      1. Launch a new command prompt (Windows: Win+R, type "cmd", Enter)
-     2. Install [GLPK](http://winglpk.sourceforge.net/) and [Cartopy](https://pypi.org/project/Cartopy/) via conda by `conda install glpk cartopy`
-     3. Install openTEPES via pip by `pip install openTEPES`
+     2. Install `GLPK <http://winglpk.sourceforge.net/>`_ and `Cartopy <https://pypi.org/project/Cartopy/>`_ via conda by ``conda install glpk cartopy``
+     3. Install openTEPES via pip by ``pip install openTEPES``
 
-Continue at [Get Started](#get-started).
+Continue at `Get Started <#get-started>`_.
 
-### GitHub Repository (the hard way)
-1. Clone the [openTEPES](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master) repository.
+
+GitHub Repository (the hard way)
+================================
+1. Clone the `openTEPES <https://github.com/IIT-EnergySystemModels/openTEPES/tree/master>`_ repository.
 2. Launch the command prompt (Windows: Win+R, type "cmd", Enter), or the Anaconda prompt
-3. Set up the path by `cd "C:\Users\<username>\...\openTEPES"`. (Note that the path is where the repository was cloned.)
-4. Install openTEPES via pip by `pip install .`.
+3. Set up the path by ``cd "C:\Users\<username>\...\openTEPES"``. (Note that the path is where the repository was cloned.)
+4. Install openTEPES via pip by ``pip install .``
 
-## Get started
+###########
+Get started
+###########
 
-### Developers
-By cloning the [openTEPES](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master) repository, you can create branches and propose pull-request. Any help will be very appreciated.
+Developers
+==========
+By cloning the `openTEPES <https://github.com/IIT-EnergySystemModels/openTEPES/tree/master>`_ repository, you can create branches and propose pull-request. Any help will be very appreciated.
 
 Continue like the users for a simple way of executions.
 
-### Users
+Users
+=====
 
 If you are not planning on developing, please follows the instructions of the [Installation](#installation).
 
-Once installation is complete, [openTEPES](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master) can be executed in a test mode by using a command prompt.
+Once installation is complete, `openTEPES <https://github.com/IIT-EnergySystemModels/openTEPES/tree/master>`_ can be executed in a test mode by using a command prompt.
 In the directory of your choice, open and execute the openTEPES_run.py script by using the following on the command prompt (Windows) or Terminal (Linux). (Depending on what your standard python version is, you might need to call `python3` instead of `python`.):
 
-     openTEPES_Main
+     ``openTEPES_Main``
 
 Then, three parameters (case, dir, and solver) will be asked for.
 
 **Remark:** at this step only press enter for each input and openTEPES will be executed with the default parameters.
 
-After this in a directory of your choice, make a copy of the [9n](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/9n) or [sSEP](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/sSEP) case to create a new case of your choice but using the current format of the CSV files.
-A proper execution by `openTEPES_Main` can be made by introducing the new case and the directory of your choice. Note that the solver is `glpk` by default, but it can be changed by other solvers that pyomo supports.
+After this in a directory of your choice, make a copy of the `9n <https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/9n>`_ or `sSEP <https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/sSEP>`_ case to create a new case of your choice but using the current format of the CSV files.
+A proper execution by ``openTEPES_Main`` can be made by introducing the new case and the directory of your choice. Note that the solver is `glpk` by default, but it can be changed by other solvers that pyomo supports (e.g., gurobi, mosek, knitro, etc.).
 
 Then, the `results` should be written in the folder who is called with the case name. The results contain plots and summary spreadsheets for multiple optimised energy scenarios, periods and load levels as well as the investment decisions.
 
 **Note that** there is an alternative way to run the model by creating a new script `script.py`, and write the following:
 
-    from openTEPES.openTEPES import openTEPES_run
-    openTEPES_run(<case>, <dir>, <solver>)
+    ``from openTEPES.openTEPES import openTEPES_run``
+    ``openTEPES_run(<case>, <dir>, <solver>)``
 
-## Tips
+###########
+Tips
+###########
 
   1. A complete documentation of the openTEPES model can be found at https://pascua.iit.comillas.edu/aramos/openTEPES/index.html#, which presents the mathematical formulation, input data and output results.
   2. Try adding/modifying the `TimeStep` in `oT_Data_Parameter_<case>.csv` and see their effect on results.
   3. Using `0` or `1`, the optimization options can be activated or deactivated in `oT_Data_Option_<case>.csv`.
-  4. If you need a nice python editor, think about using [PyCharm](https://www.jetbrains.com/pycharm/download). It has many features including project management, etc.
+  4. If you need a nice python editor, think about using `PyCharm <https://www.jetbrains.com/pycharm/download>`_. It has many features including project management, etc.
 
-## Screenshots
-![](https://github.com/IIT-EnergySystemModels/openTEPES/blob/master/doc/img/oT_Plot_MapNetwork_9n.png "Network map with investment decisions.")
-![](https://github.com/IIT-EnergySystemModels/openTEPES/blob/master/doc/img/oT_Plot_TechnologyOutput_sc01_y2030_9n.png "Power generation output by technology considering 8736 load levels for a year.")
+################
+Expected Results
+################
+.. image:: https://github.com/IIT-EnergySystemModels/openTEPES/blob/master/doc/img/oT_Plot_MapNetwork_9n.png
+  :height: 109 px
+  :width: 126 px
+  :scale: 10 %
+  :align: center
+  :alt: Network map with investment decisions
+  
+.. image:: https://github.com/IIT-EnergySystemModels/openTEPES/blob/master/doc/img/oT_Plot_TechnologyOutput_sc01_y2030_9n.png
+  :height: 109 px
+  :width: 126 px
+  :scale: 10 %
+  :align: center
+  :alt: Power generation output by technology considering 8736 load levels for a year
