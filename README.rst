@@ -1,5 +1,5 @@
 
-.. image:: https://github.com/IIT-EnergySystemModels/openTEPES/blob/master/doc/img/openTEPES.png?raw=true
+.. image:: https://raw.githubusercontent.com/IIT-EnergySystemModels/openTEPES/1e6d907114d2e89a7114ef58dead3c55bc6e7d50/doc/img/openTEPES.png
    :target: https://pascua.iit.comillas.edu/aramos/openTEPES/index.html
    :alt: logo
    :align: center
@@ -144,7 +144,7 @@ Tips
 
 Expected Results
 ################
-.. image:: https://github.com/IIT-EnergySystemModels/openTEPES/blob/master/doc/img/oT_Map_Network_MAF2030.png?raw=true
+.. image:: https://raw.githubusercontent.com/IIT-EnergySystemModels/openTEPES/0a99909cb2001e43627f3df6974f400f3886e899/doc/img/oT_Map_Network_MAF2030.png
   :height: 109 px
   :width: 126 px
   :scale: 10 %
