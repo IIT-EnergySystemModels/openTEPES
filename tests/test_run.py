@@ -5,7 +5,7 @@ from openTEPES.openTEPES import openTEPES_run
 
 CWD = os.getcwd()
 TEST_PATH = CWD + '/openTEPES'
-os.chdir(TEST_PATH)
+# os.chdir(TEST_PATH)
 CASE = "9n"
 # parser = argparse.ArgumentParser(description='Introducing main parameters.')
 # parser.add_argument('--case', type=str, default=None)
