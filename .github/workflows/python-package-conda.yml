@@ -20,7 +20,8 @@ jobs:
         echo $CONDA/bin >> $GITHUB_PATH
     - name: Install dependencies
       run: |
-        conda install pyomo matplotlib numpy pandas psutil glpk cartopy
+        conda install glpk cartopy
+        pip install pyomo matplotlib numpy pandas psutil
     - name: Lint with flake8
       run: |
         conda install flake8
