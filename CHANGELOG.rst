@@ -1,6 +1,8 @@
 Change Log
 =============
 
+[2.1.0] - 2021-03-18
+----------------------
 - [CHANGED] using README.rst instead of README.md
 - [CHANGED] split openTEPES_ModelFormulation.py in multiple functions related to investment and operating constraints
 - [CHANGED] split openTEPES_OutputResults.py in multiple functions related to investment and operating variables
