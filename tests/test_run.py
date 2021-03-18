@@ -1,7 +1,8 @@
 # import argparse
 import os
 # from openTEPES.openTEPES import openTEPES_run
-import openTEPES.openTEPES as oT
+# import openTEPES.openTEPES as oT
+import openTEPES.openTEPES.openTEPES as oT
 import openTEPES
 
 CWD = os.getcwd()
@@ -18,8 +19,8 @@ DIR = os.path.dirname(openTEPES.__file__)
 SOLVER = "glpk"
 
 
-def test_openTEPES(dir, case, solver):
-    assert oT.openTEPES_run(dir, case, solver)
+def test_openTEPES(dirc, case, solver):
+    assert oT.openTEPES_run(dirc, case, solver)
 
 
 if __name__ == "__main__":
