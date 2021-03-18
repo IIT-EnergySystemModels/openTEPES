@@ -1,27 +1,27 @@
-"""Libraries."""
-
+# import argparse
 import os
-
-import time
-
-from pyomo.environ import ConcreteModel
-
-import open_tepes.input_data as input_data
-
+# from openTEPES.openTEPES import openTEPES_run
+# import openTEPES.openTEPES as oT
+import openTEPES.openTEPES as oT
+# import openTEPES
 
 CWD = os.getcwd()
-TEST_PATH = CWD + '/open_tepes'
+TEST_PATH = CWD + '/openTEPES'
 os.chdir(TEST_PATH)
 
-START_TIME = time.time()
+CASE = "9n"
+# parser = argparse.ArgumentParser(description='Introducing main parameters.')
+# parser.add_argument('--case', type=str, default=None)
+# parser.add_argument('--dir', type=str, default=None)
+# parser.add_argument('--solver', type=str, default=None)
+# DIR = os.path.dirname(openTEPES.__file__)
+DIR = TEST_PATH
+SOLVER = "glpk"
 
-CASE_NAME = '9n'
 
-# model declaration
-M_TEPES = ConcreteModel()
+def test_openTEPES(dirc, case, solver):
+    assert oT.openTEPES_run(dirc, case, solver)
 
-# from .openTEPES import run_openTEPES
-input_data.InputData(CASE_NAME, M_TEPES)
 
-TOTAL_TIME = time.time() - START_TIME
-print('Total time                            ... ', round(TOTAL_TIME), 's')
+if __name__ == "__main__":
+    test_openTEPES(DIR, CASE, SOLVER)
