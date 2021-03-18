@@ -1,6 +1,8 @@
 Change Log
 =============
 
+- [FIXED] fixing https://pascua.iit.comillas.edu/aramos/openTEPES/index.html# in README.rst 
+
 [2.1.0] - 2021-03-18
 ----------------------
 - [CHANGED] using README.rst instead of README.md
