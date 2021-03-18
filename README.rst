@@ -145,8 +145,6 @@ Tips
 Expected Results
 ################
 .. image:: https://raw.githubusercontent.com/IIT-EnergySystemModels/openTEPES/0a99909cb2001e43627f3df6974f400f3886e899/doc/img/oT_Map_Network_MAF2030.png
-  :height: 109 px
-  :width: 126 px
   :scale: 50 %
   :align: center
   :alt: Network map with investment decisions
