@@ -3,7 +3,7 @@ import os
 # from openTEPES.openTEPES import openTEPES_run
 # import openTEPES.openTEPES as oT
 import openTEPES.openTEPES.openTEPES as oT
-import openTEPES
+# import openTEPES
 
 CWD = os.getcwd()
 TEST_PATH = CWD + '/openTEPES'
@@ -14,8 +14,8 @@ CASE = "9n"
 # parser.add_argument('--case', type=str, default=None)
 # parser.add_argument('--dir', type=str, default=None)
 # parser.add_argument('--solver', type=str, default=None)
-DIR = os.path.dirname(openTEPES.__file__)
-# DIR = TEST_PATH
+# DIR = os.path.dirname(openTEPES.__file__)
+DIR = TEST_PATH
 SOLVER = "glpk"
 
 
