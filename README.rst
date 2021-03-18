@@ -150,10 +150,3 @@ Expected Results
   :scale: 10 %
   :align: center
   :alt: Network map with investment decisions
-  
-.. image:: https://github.com/IIT-EnergySystemModels/openTEPES/blob/master/doc/img/oUC_TechnologyOutput_scen1_16g.png
-  :height: 109 px
-  :width: 126 px
-  :scale: 10 %
-  :align: center
-  :alt: Power generation output by technology considering 8736 load levels for a year
