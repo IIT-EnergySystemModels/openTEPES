@@ -89,7 +89,7 @@ import time
 import os
 import setuptools
 
-from   pyomo.environ import ConcreteModel, Set
+from pyomo.environ import ConcreteModel, Set
 
 from openTEPES.openTEPES_InputData        import InputData
 from openTEPES.openTEPES_ModelFormulation import InvestmentModelFormulation, GenerationOperationModelFormulation, NetworkOperationModelFormulation
