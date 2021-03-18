@@ -16,5 +16,10 @@ DIR = os.path.dirname(openTEPES.__file__)
 # DIR = TEST_PATH
 SOLVER = "glpk"
 
-openTEPES_run(DIR, CASE, SOLVER)
 
+def test_openTEPES(dir, case, solver):
+    assert openTEPES_run(dir, case, solver)
+
+
+if __name__ == "__main__":
+    test_openTEPES(DIR, CASE, SOLVER)
