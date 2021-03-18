@@ -1,4 +1,4 @@
-# Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 21, 2021
+# Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 18, 2021
 
 import time
 from   collections   import defaultdict
@@ -24,7 +24,7 @@ def InvestmentModelFormulation(mTEPES):
 
 
 def GenerationOperationModelFormulation(mTEPES, st):
-    print('Operation  model formulation ****')
+    print('Genr oper  model formulation ****')
 
     StartTime = time.time()
 
