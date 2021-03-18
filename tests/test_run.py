@@ -1,27 +1,40 @@
-"""Libraries."""
-
+import argparse
 import os
+from openTEPES.openTEPES import openTEPES_run
+import openTEPES
+CASE = "9n"
+parser = argparse.ArgumentParser(description='Introducing main parameters.')
+parser.add_argument('--case', type=str, default=None)
+parser.add_argument('--dir', type=str, default=None)
+parser.add_argument('--solver', type=str, default=None)
 
-import time
-
-from pyomo.environ import ConcreteModel
-
-import open_tepes.input_data as input_data
+DIR = os.path.dirname(openTEPES.__file__)
+SOLVER = "glpk"
 
 
-CWD = os.getcwd()
-TEST_PATH = CWD + '/open_tepes'
-os.chdir(TEST_PATH)
+def main():
+    args = parser.parse_args()
+    if args.dir is None:
+        args.dir = input("Input Dir Name (Default {}): ".format(DIR))
+        if args.dir == "":
+            args.dir = DIR
+    if args.case is None:
+        args.case = input("Input Case Name (Default {}): ".format(CASE))
+        if args.case == "":
+            args.case = CASE
+    if args.solver is None:
+        args.solver = input("Input Solver Name (Default {}): ".format(SOLVER))
+        if args.solver == "":
+            args.solver = SOLVER
+    print(args.case)
+    print(args.dir)
+    print(args.solver)
+    import sys
+    print(sys.argv)
+    print(args)
+    openTEPES_run(args.dir, args.case, args.solver)
+    sys.exit("Running Process Finished...")
 
-START_TIME = time.time()
 
-CASE_NAME = '9n'
-
-# model declaration
-M_TEPES = ConcreteModel()
-
-# from .openTEPES import run_openTEPES
-input_data.InputData(CASE_NAME, M_TEPES)
-
-TOTAL_TIME = time.time() - START_TIME
-print('Total time                            ... ', round(TOTAL_TIME), 's')
+if __name__ == "__main__":
+    main()
