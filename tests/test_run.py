@@ -1,6 +1,6 @@
 # import argparse
 import os
-from openTEPES.openTEPES.openTEPES import openTEPES_run
+# from openTEPES.openTEPES.openTEPES import openTEPES_run
 import openTEPES
 
 # CWD = os.getcwd()
