@@ -27,13 +27,13 @@ jobs:
         pip install flake8 pytest pylint mypy --upgrade
     - name: Typing checks
       run: |
-        mypy examples tests openTEPES
+        mypy tests openTEPES
     - name: Lint with flake8
       run: |
         flake8
     - name: Lint with PyLint
       run: |
-        pylint examples tests openTEPES
+        pylint tests openTEPES
     - name: Test with Pytest
       run: |
         pytest -vv tests/
