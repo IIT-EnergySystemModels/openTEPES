@@ -144,14 +144,14 @@ Tips
 
 Expected Results
 ################
-.. image:: https://github.com/IIT-EnergySystemModels/openTEPES/blob/master/doc/img/oT_Plot_MapNetwork_9n.png
+.. image:: https://github.com/IIT-EnergySystemModels/openTEPES/blob/master/doc/img/oT_Map_Network_MAF2030.png
   :height: 109 px
   :width: 126 px
   :scale: 10 %
   :align: center
   :alt: Network map with investment decisions
   
-.. image:: https://github.com/IIT-EnergySystemModels/openTEPES/blob/master/doc/img/oT_Plot_TechnologyOutput_sc01_y2030_9n.png
+.. image:: https://github.com/IIT-EnergySystemModels/openTEPES/blob/master/doc/img/oUC_TechnologyOutput_scen1_16g.png
   :height: 109 px
   :width: 126 px
   :scale: 10 %
