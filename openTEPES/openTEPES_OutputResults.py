@@ -1,4 +1,4 @@
-# Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 11, 2021
+# Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 18, 2021
 
 import time
 import os
@@ -10,7 +10,6 @@ from   pyomo.environ import Set
 
 def InvestmentResults(DirName, CaseName, mTEPES):
     #%% outputting the investment decisions
-    print('Investment results          ****')
     _path = os.path.join(DirName, CaseName)
     StartTime = time.time()
 
@@ -30,7 +29,6 @@ def InvestmentResults(DirName, CaseName, mTEPES):
 
 def GenerationOperationResults(DirName, CaseName, mTEPES):
     #%% outputting the generation operation
-    print('Gen operation results       ****')
     _path = os.path.join(DirName, CaseName)
     StartTime = time.time()
 
@@ -100,7 +98,6 @@ def GenerationOperationResults(DirName, CaseName, mTEPES):
 
 def ESSOperationResults(DirName, CaseName, mTEPES):
     # %% outputting the ESS operation
-    print('ESS operation results       ****')
     _path = os.path.join(DirName, CaseName)
     StartTime = time.time()
 
@@ -215,7 +212,6 @@ def ESSOperationResults(DirName, CaseName, mTEPES):
 
 def FlexibilityResults(DirName, CaseName, mTEPES):
     # %% outputting the flexibility
-    print('Flexibility results         ****')
     _path = os.path.join(DirName, CaseName)
     StartTime = time.time()
 
@@ -254,7 +250,6 @@ def FlexibilityResults(DirName, CaseName, mTEPES):
 
 def NetworkOperationResults(DirName, CaseName, mTEPES):
     # %% outputting the network operation
-    print('Net operation results       ****')
     _path = os.path.join(DirName, CaseName)
     StartTime = time.time()
 
@@ -292,7 +287,6 @@ def NetworkOperationResults(DirName, CaseName, mTEPES):
 
 def MarginalResults(DirName, CaseName, mTEPES):
     #%% outputting the up operating reserve marginal
-    print('Marginal results            ****')
     _path = os.path.join(DirName, CaseName)
     StartTime = time.time()
 
@@ -402,11 +396,10 @@ def MarginalResults(DirName, CaseName, mTEPES):
 
     WritingResultsTime = time.time() - StartTime
     StartTime = time.time()
-    print('Writing network operation results     ... ', round(WritingResultsTime), 's')
+    print('Writing marginal information results  ... ', round(WritingResultsTime), 's')
 
 def EconomicResults(DirName, CaseName, mTEPES):
     # %% outputting the system costs and revenues
-    print('Economic results            ****')
     _path = os.path.join(DirName, CaseName)
     StartTime = time.time()
 
@@ -488,7 +481,6 @@ def EconomicResults(DirName, CaseName, mTEPES):
 
 def NetworkMapResults(DirName, CaseName, mTEPES):
     #%% plotting the network in a map
-    print('Network map results         ****')
     _path = os.path.join(DirName, CaseName)
     StartTime = time.time()
 
