@@ -2,7 +2,7 @@
 import os
 # from openTEPES.openTEPES import openTEPES_run
 # import openTEPES.openTEPES as oT
-import openTEPES.openTEPES.openTEPES as oT
+import openTEPES.openTEPES as oT
 # import openTEPES
 
 CWD = os.getcwd()
