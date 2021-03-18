@@ -1,13 +1,15 @@
 # import argparse
 import os
-# from openTEPES.openTEPES.openTEPES import openTEPES_run
-import openTEPES
 
 CWD = os.getcwd()
 TEST_PATH = CWD + '/openTEPES'
 os.chdir(TEST_PATH)
 
 print(os.path.abspath(os.path.join(CWD, os.pardir)))
+
+from openTEPES.openTEPES.openTEPES import openTEPES_run
+import openTEPES
+
 
 CASE = "9n"
 # parser = argparse.ArgumentParser(description='Introducing main parameters.')
