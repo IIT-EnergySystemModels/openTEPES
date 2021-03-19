@@ -5,8 +5,8 @@ import os
 import openTEPES.openTEPES as oT
 # import openTEPES
 
-# CWD = os.getcwd()
-# TEST_PATH = CWD + '/openTEPES'
+CWD = os.getcwd()
+TEST_PATH = CWD + '/openTEPES'
 # os.chdir(TEST_PATH)
 
 CASE = "9n"
