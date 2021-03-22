@@ -19,6 +19,9 @@ A map of the transmission network and the energy share of different technologies
 
 Besides, the csv files used for outputting the results are briefly described in the following items.
 
+Investment
+----------
+
 File ``oT_Result_GenerationInvestment.csv``
 
 ============  ==========  ==============================================================
@@ -34,6 +37,9 @@ Identifier    Identifier  Identifier  Header  Description
 ============  ==========  ==========  ======  ==========================================
 Initial node  Final node  Circuit     p.u.    Network investment decision
 ============  ==========  ==========  ======  ==========================================
+
+Generation operation
+--------------------
 
 File ``oT_Result_GenerationCommitment.csv``
 
@@ -51,7 +57,7 @@ Identifier    Identifier  Identifier  Header      Description
 Scenario      Period      Load level  Generator   Startup decision [p.u.]
 ============  ==========  ==========  ==========  ==========================================
 
-file ``oT_Result_GenerationShutDown.csv``
+File ``oT_Result_GenerationShutDown.csv``
 
 ============  ==========  ==========  ==========  ==========================================
 Identifier    Identifier  Identifier  Header      Description
@@ -76,14 +82,6 @@ Scenario      Period      Load level  Generator   Upward operating reserve [MW]
 ============  ==========  ==========  ==========  ==========================================
 
 File ``oT_Result_GenerationReserveDown.csv``
-
-============  ==========  ==========  ==========  ==========================================
-Identifier    Identifier  Identifier  Header      Description
-============  ==========  ==========  ==========  ==========================================
-Scenario      Period      Load level  Generator   Downward operating reserve [MW]
-============  ==========  ==========  ==========  ==========================================
-
-File ``oT_Result_ESSGenerationReserveDown.csv``
 
 ============  ==========  ==========  ==========  ==========================================
 Identifier    Identifier  Identifier  Header      Description
@@ -179,6 +177,9 @@ Identifier    Identifier  Identifier  Header       Description
 Scenario      Period      Load level  Technology   Curtailed energy of VRES [GWh]
 ============  ==========  ==========  ===========  ==========================================
 
+ESS operation
+-------------
+
 File ``oT_Result_ESSChargeOutput.csv``
 
 ============  ==========  ==========  ==========  ==========================================
@@ -219,6 +220,14 @@ Identifier    Identifier  Identifier  Header      Description
 Scenario      Period      Load level  Technology  Energy (charge in ESS) per area [GWh]
 ============  ==========  ==========  ==========  ==========================================
 
+File ``oT_Result_ESSGenerationReserveDown.csv``
+
+============  ==========  ==========  ==========  ==========================================
+Identifier    Identifier  Identifier  Header      Description
+============  ==========  ==========  ==========  ==========================================
+Scenario      Period      Load level  Generator   Downward operating reserve [MW]
+============  ==========  ==========  ==========  ==========================================
+
 File ``oT_Result_TechnologyReserveUp.csv``
 
 ============  ==========  ==========  ==========  ==========================================
@@ -250,6 +259,9 @@ Identifier    Identifier  Identifier  Header      Description
 ============  ==========  ==========  ==========  ==========================================
 Scenario      Period      Load level  Generator   Spilled energy in ESS [GWh]
 ============  ==========  ==========  ==========  ==========================================
+
+Network operation
+-----------------
 
 File ``oT_Result_NetworkFlow.csv``
 
@@ -299,6 +311,9 @@ Identifier    Identifier  Identifier  Header      Description
 Scenario      Period      Load level  Node        Energy not served by node [GWh]
 ============  ==========  ==========  ==========  ==========================================
 
+Marginal information
+--------------------
+
 File ``oT_Result_LSRMC.csv``
 
 ============  ==========  ==========  ==========  ==========================================
@@ -330,6 +345,9 @@ Identifier    Identifier  Identifier  Header      Description
 ============  ==========  ==========  ==========  =================================================
 Scenario      Period      Load level  Area        Marginal of the downward operating reserve [€/MW]
 ============  ==========  ==========  ==========  =================================================
+
+Economic
+--------
 
 File ``oT_Result_GenerationOandMCost.csv``
 
@@ -418,6 +436,9 @@ Identifier    Identifier  Identifier  Header          Description
 ============  ==========  ==========  ==============  ===========================================================
 Scenario      Period      Load level  ESS Generator   Operation revenues from the downward operating reserve [M€]
 ============  ==========  ==========  ==============  ===========================================================
+
+Flexibility
+-----------
 
 File ``oT_Result_FlexibilityDemand.csv``
 
