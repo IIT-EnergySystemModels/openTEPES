@@ -57,7 +57,7 @@ Identifier    Identifier  Identifier  Header      Description
 Scenario      Period      Load level  Generator   Startup decision [p.u.]
 ============  ==========  ==========  ==========  ==========================================
 
-file ``oT_Result_GenerationShutDown.csv``
+File ``oT_Result_GenerationShutDown.csv``
 
 ============  ==========  ==========  ==========  ==========================================
 Identifier    Identifier  Identifier  Header      Description
