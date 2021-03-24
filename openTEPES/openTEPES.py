@@ -154,3 +154,5 @@ def openTEPES_run(DirName, CaseName, SolverName):
 
     TotalTime = time.time() - InitialTime
     print('Total time                            ... ', round(TotalTime), 's')
+
+    return mTEPES
