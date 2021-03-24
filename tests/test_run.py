@@ -16,12 +16,12 @@ CASE = "9n"
 # parser.add_argument('--solver', type=str, default=None)
 # DIR = os.path.dirname(openTEPES.__file__)
 DIR = TEST_PATH
-SOLVER = "glpk"
+SOLVER = "gurobi"
+
+oT.openTEPES_run(DIR, CASE, SOLVER)
+# def test_openTEPES():
+#     assert mTEPES == oT.openTEPES_run(DIR, CASE, SOLVER)
 
 
-def test_openTEPES(dirc, case, solver):
-    assert oT.openTEPES_run(dirc, case, solver)
-
-
-if __name__ == "__main__":
-    test_openTEPES(DIR, CASE, SOLVER)
+# if __name__ == "__main__":
+#     test_openTEPES(DIR, CASE, SOLVER)
