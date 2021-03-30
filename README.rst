@@ -1,5 +1,5 @@
 
-.. image:: https://github.com/IIT-EnergySystemModels/openTEPES/blob/master/doc/img/openTEPES_img.png
+.. image:: https://raw.githubusercontent.com/IIT-EnergySystemModels/openTEPES/1e6d907114d2e89a7114ef58dead3c55bc6e7d50/doc/img/openTEPES.png
    :target: https://pascua.iit.comillas.edu/aramos/openTEPES/index.html
    :alt: logo
    :align: center
@@ -137,16 +137,14 @@ Then, the **results** should be written in the folder who is called with the cas
 Tips
 ####
 
-1. A complete documentation of the openTEPES model can be found at https://pascua.iit.comillas.edu/aramos/openTEPES/index.html#, which presents the mathematical formulation, input data and output results.
+1. A complete documentation of the openTEPES model can be found at `<https://pascua.iit.comillas.edu/aramos/openTEPES/index.html#>`_, which presents the mathematical formulation, input data and output results.
 2. Try modifying the **TimeStep** in **oT_Data_Parameter_<case>.csv** and see their effect on results.
 3. Using **0** or **1**, the optimization options can be activated or deactivated in **oT_Data_Option_<case>.csv**.
 4. If you need a nice python editor, think about using `PyCharm <https://www.jetbrains.com/pycharm/download>`_. It has many features including project management, etc.
 
 Expected Results
 ################
-.. image:: https://github.com/IIT-EnergySystemModels/openTEPES/blob/master/doc/img/oT_Map_Network_MAF2030.png
-  :height: 109 px
-  :width: 126 px
-  :scale: 10 %
+.. image:: https://raw.githubusercontent.com/IIT-EnergySystemModels/openTEPES/0a99909cb2001e43627f3df6974f400f3886e899/doc/img/oT_Map_Network_MAF2030.png
+  :scale: 50 %
   :align: center
   :alt: Network map with investment decisions
