@@ -23,7 +23,7 @@ def ProblemSolving(DirName, CaseName, SolverName, mTEPES):
         Solver.options['Threads'       ] = int((psutil.cpu_count(logical=True) + psutil.cpu_count(logical=False))/2)
         Solver.options['TimeLimit'     ] =    18000
         Solver.options['IterationLimit'] = 18000000
-    if mTEPES.pIndBinGenInvest*len(mTEPES.gc) + mTEPES.pIndBinNetInvest*len(mTEPES.lc) + mTEPES.pIndBinGenOperat() == 0:
+    if mTEPES.pIndBinGenInvest*len(mTEPES.gc) + mTEPES.pIndBinNetInvest*len(mTEPES.lc) + mTEPES.pIndBinGenOperat() + mTEPES.pIndBinLineSwitch() + mTEPES.pIndBinLineOperat() == 0:
         if SolverName == 'gurobi':
             Solver.options['relax_integrality'] =  1                                       # introduced to show results of the dual variables
             Solver.options['Crossover'        ] = -1
