@@ -95,8 +95,8 @@ StageDuration         Duration of the stage (weekly -168-, monthly -672-, quarte
 A time step greater than one hour it is a convenient way to reduce the load levels of the time scope. The moving average of the demand, upward and downward operating reserves, variable generation and ESS energy inflows over
 the time step load levels is assigned to active load levels (e.g., the mean value of the three hours is associated to the third hour in a trihourly time step).
 
-The stage duration must be larger or equal than the shortest duration of any storage type (e.g., weekly) and multiple of it. Consecutive stages are not tied between them. consequently, the objective function
-must be a bit lower.
+The stage duration must be larger or equal than the shortest duration of any storage type or any outflows type (both given in the generation data) and multiple of it. Consecutive stages are not tied between them.
+Consequently, the objective function must be a bit lower.
 
 Scenario
 --------
@@ -164,7 +164,7 @@ StorageType           Storage type based on storage capacity (daily, weekly, mon
 OutflowsType          Outflows type based on the demand extracted from the storage (hourly, daily, weekly, monthly, yearly, etc.)          Hourly/Daily/Weekly/Monthly/Yearly
 MustRun               Must-run unit                                                                                                        Yes/No
 MaximumPower          Maximum power output (discharge for ESS units)                                                                       MW
-MinimumPower          Minimum power output                                                                                                 MW
+MinimumPower          Minimum power output (i.e., minimum stable load in the case of a thermal power plant)                                MW
 MaximumReactivePower  Maximum reactive power output (discharge for ESS units) (not used in the plain version)                              MW
 MinimumReactivePower  Minimum reactive power output (not used in the plain version)                                                        MW
 MaximumCharge         Maximum charge when the ESS unit is storing energy                                                                   MW
