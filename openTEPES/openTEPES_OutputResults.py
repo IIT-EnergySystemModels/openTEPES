@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import pyomo.environ as pyo
 from   pyomo.environ import Set
 
+
 def InvestmentResults(DirName, CaseName, mTEPES):
     #%% outputting the investment decisions
     _path = os.path.join(DirName, CaseName)
@@ -26,6 +27,7 @@ def InvestmentResults(DirName, CaseName, mTEPES):
     WritingResultsTime = time.time() - StartTime
     StartTime          = time.time()
     print('Writing investment results            ... ', round(WritingResultsTime), 's')
+
 
 def GenerationOperationResults(DirName, CaseName, mTEPES):
     #%% outputting the generation operation
@@ -95,6 +97,7 @@ def GenerationOperationResults(DirName, CaseName, mTEPES):
     WritingResultsTime = time.time() - StartTime
     StartTime          = time.time()
     print('Writing generation operation results  ... ', round(WritingResultsTime), 's')
+
 
 def ESSOperationResults(DirName, CaseName, mTEPES):
     # %% outputting the ESS operation
@@ -210,6 +213,7 @@ def ESSOperationResults(DirName, CaseName, mTEPES):
     StartTime = time.time()
     print('Writing ESS operation results         ... ', round(WritingResultsTime), 's')
 
+
 def FlexibilityResults(DirName, CaseName, mTEPES):
     # %% outputting the flexibility
     _path = os.path.join(DirName, CaseName)
@@ -248,6 +252,7 @@ def FlexibilityResults(DirName, CaseName, mTEPES):
     StartTime = time.time()
     print('Writing flexibility results           ... ', round(WritingResultsTime), 's')
 
+
 def NetworkOperationResults(DirName, CaseName, mTEPES):
     # %% outputting the network operation
     _path = os.path.join(DirName, CaseName)
@@ -284,6 +289,7 @@ def NetworkOperationResults(DirName, CaseName, mTEPES):
     WritingResultsTime = time.time() - StartTime
     StartTime = time.time()
     print('Writing network operation results     ... ', round(WritingResultsTime), 's')
+
 
 def MarginalResults(DirName, CaseName, mTEPES):
     #%% outputting the up operating reserve marginal
@@ -398,6 +404,7 @@ def MarginalResults(DirName, CaseName, mTEPES):
     StartTime = time.time()
     print('Writing marginal information results  ... ', round(WritingResultsTime), 's')
 
+
 def EconomicResults(DirName, CaseName, mTEPES):
     # %% outputting the system costs and revenues
     _path = os.path.join(DirName, CaseName)
@@ -478,6 +485,7 @@ def EconomicResults(DirName, CaseName, mTEPES):
     WritingResultsTime = time.time() - StartTime
     StartTime          = time.time()
     print('Writing economic results              ... ', round(WritingResultsTime), 's')
+
 
 def NetworkMapResults(DirName, CaseName, mTEPES):
     #%% plotting the network in a map
