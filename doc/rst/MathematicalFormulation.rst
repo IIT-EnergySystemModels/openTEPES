@@ -63,22 +63,24 @@ They are written in capital letters.
 :math:`UR^ω_{pna}, DR^ω_{pna}`  Upward and downward operating reserves for each area      GW
 ==============================  ========================================================  ====
 
-=========================================  ============================================================================================  ============
+=========================================  ===============================================================================================  ============
 **Generation system**   
------------------------------------------  --------------------------------------------------------------------------------------------  ------------
-:math:`CFG_g`                              Annualized fixed cost of a candidate generator                                                M€ 
-:math:`\underline{GP}_g, \overline{GP}_g`  Minimum load and maximum output of a generator                                                GW
-:math:`\overline{GC}_e`                    Maximum consumption of an ESS                                                                 GW
-:math:`CF_g, CV_g`                         Fixed and variable cost of a generator. Variable cost includes fuel, O&M and emission cost    €/h, €/MWh
-:math:`CV_e`                               Variable cost of an ESS when charging                                                         €/MWh
-:math:`RU_t, RD_t`                         Ramp up and ramp down of a thermal unit                                                       MW/h
-:math:`TU_t, TD_t`                         Minimum uptime and downtime of a thermal unit                                                 h
-:math:`CSU_g, CSD_g`                       Startup and shutdown cost of a committed unit                                                 M€
-:math:`\tau_e`                             Characteristic duration of the ESS (e.g., 24 h, 168 h, 672 h -for daily, weekly, monthly-)    h
-:math:`EF_e`                               Efficiency of the pump/turbine cycle of a hydro power plant or charge/discharge of a battery  p.u.
-:math:`I_e`                                Capacity of an ESS (e.g., hydro power plant)                                                  GWh
-:math:`EI^ω_{png}`                         Energy inflows of an ESS (e.g., hydro power plant)                                            GWh
-=========================================  ============================================================================================  ============
+-----------------------------------------  -----------------------------------------------------------------------------------------------  ------------
+:math:`CFG_g`                              Annualized fixed cost of a candidate generator                                                   M€ 
+:math:`\underline{GP}_g, \overline{GP}_g`  Minimum load and maximum output of a generator                                                   GW
+:math:`\overline{GC}_e`                    Maximum consumption of an ESS                                                                    GW
+:math:`CF_g, CV_g`                         Fixed and variable cost of a generator. Variable cost includes fuel, O&M and emission cost       €/h, €/MWh
+:math:`CV_e`                               Variable cost of an ESS when charging                                                            €/MWh
+:math:`RU_g, RD_g`                         Ramp up/down of a non-renewable unit or maximum discharge/charge rate for ESS discharge/charge   MW/h
+:math:`TU_t, TD_t`                         Minimum uptime and downtime of a thermal unit                                                    h
+:math:`CSU_g, CSD_g`                       Startup and shutdown cost of a committed unit                                                    M€
+:math:`\tau_e`                             Storage cycle of the ESS (e.g., 1, 24, 168 h -for daily, weekly, monthly-)                       h
+:math:`\rho_e`                             Outflows cycle of the ESS (e.g., 1, 24, 168 h -for hourly, daily, weekly, monthly, yearly-)      h
+:math:`EF_e`                               Efficiency of the pump/turbine cycle of a hydro power plant or charge/discharge of a battery     p.u.
+:math:`I_e`                                Capacity of an ESS (e.g., hydro power plant)                                                     GWh
+:math:`EI^ω_{png}`                         Energy inflows of an ESS (e.g., hydro power plant)                                               GWh
+:math:`EO^ω_{png}`                         Energy outflows of an ESS (e.g., H2, EV, hydro power plant)                                      GWh
+=========================================  ===============================================================================================  ============
 
 =========================================  =================================================================================================================  ====
 **Transmission system**   
@@ -108,6 +110,7 @@ They are written in lower letters.
 ------------------------------------------  --------------------------------------------------------------------------  -----
 :math:`icg_g`                               Candidate generator or ESS installed or not                                 {0,1}
 :math:`gp^ω_{png}, gc^ω_{png}`              Generator output (discharge if an ESS) and consumption (charge if an ESS)   GW
+:math:`go^ω_{png}`                          Generator outflows of an ESS                                                GW
 :math:`p^ω_{png}`                           Generator output of the second block (i.e., above the minimum load)         GW
 :math:`c^ω_{pne}`                           Generator charge                                                            GW
 :math:`ur^ω_{png}, dr^ω_{png}`              Upward and downward operating reserves of a non-renewable generating unit   GW
@@ -149,6 +152,8 @@ Reliability cost [M€]
 
 **Constraints**
 
+**Generation operation**
+
 Commitment decision bounded by investment decision for candidate committed units (all except the VRES units) [p.u.]
 
 :math:`uc^ω_{png} \leq icg_g \quad \forall ωpng, g \in CG`
@@ -183,9 +188,13 @@ or for storing
 
 :math:`dr'^ω_{pne} \leq \frac{      i^ω_{pne}}{DUR_n} \quad \forall ωpne`
 
-ESS energy inventory (only for load levels multiple of 24, 168 or 672 h depending on the ESS type) [GWh]
+ESS energy inventory (only for load levels multiple of 1, 24, 168 h depending on the ESS storage type) [GWh]
 
-:math:`i^ω_{p,n-\tau_e,e} + \sum_{n' = n+\nu-\tau_e}^{n} DUR_n' (EI^ω_{pn'e} - gp^ω_{pn'e} + EF_e gc^ω_{pn'e}) = i^ω_{pne} + s^ω_{pne} \quad \forall ωpne`
+:math:`i^ω_{p,n-\frac{\tau_e}{\nu},e} + \sum_{n' = n-\frac{\tau_e}{\nu}}^{n} DUR_n' (EI^ω_{pn'e} - go^ω_{pn'e} - gp^ω_{pn'e} + EF_e gc^ω_{pn'e}) = i^ω_{pne} + s^ω_{pne} \quad \forall ωpne`
+
+ESS outflows (only for load levels multiple of 1, 24, 168, 672, and 8736 h depending on the ESS outflows cycle) must be satisfied [GWh]
+
+:math:`\sum_{n' = n-\frac{\tau_e}{\rho_e}}^{n} go^ω_{pn'e} = EO^ω_{pne} \quad \forall ωpne`
 
 Maximum and minimum output of the second block of a committed unit (all except the VRES units) [p.u.]
 
@@ -225,13 +234,19 @@ Logical relation between commitment, startup and shutdown status of committed un
 
 Initial commitment of the units is determined by the model based on the merit order loading, including the VRES and ESS units.
 
-Maximum ramp up and ramp down for the second block of a non renewable (thermal, hydro) unit [p.u.]
+Maximum ramp up and ramp down for the second block of a non-renewable (thermal, hydro) unit [p.u.]
 
 - P. Damcı-Kurt, S. Küçükyavuz, D. Rajan, and A. Atamtürk, “A polyhedral study of production ramping,” Math. Program., vol. 158, no. 1–2, pp. 175–205, Jul. 2016. `10.1007/s10107-015-0919-9 <https://doi.org/10.1007/s10107-015-0919-9>`_
 
-:math:`\frac{- p^ω_{p,n-\nu,t} - URA \: ur^ω_{p,n-\nu,t} + p^ω_{pnt} + URA \: ur^ω_{pnt} + ur^ω_{pnt}}{DUR_n RU_t} \leq   uc^ω_{pnt}       - su^ω_{pnt} \quad \forall ωpnt`
+:math:`\frac{- p^ω_{p,n-\nu,g} - URA \: ur^ω_{p,n-\nu,g} + p^ω_{png} + URA \: ur^ω_{png} + ur^ω_{png}}{DUR_n RU_g} \leq   uc^ω_{png}       - su^ω_{png} \quad \forall ωpng`
 
-:math:`\frac{- p^ω_{p,n-\nu,t} + DRA \: dr^ω_{p,n-\nu,t} + p^ω_{pnt} - DRA \: dr^ω_{pnt} - dr^ω_{pnt}}{DUR_n RD_t} \geq - uc^ω_{p,n-\nu,t} + sd^ω_{pnt} \quad \forall ωpnt`
+:math:`\frac{- p^ω_{p,n-\nu,g} + DRA \: dr^ω_{p,n-\nu,g} + p^ω_{png} - DRA \: dr^ω_{png} - dr^ω_{png}}{DUR_n RD_g} \geq - uc^ω_{p,n-\nu,g} + sd^ω_{png} \quad \forall ωpng`
+
+Maximum ramp down and ramp up for the charge of an ESS [p.u.]
+
+:math:`\frac{- c^ω_{p,n-\nu,e} - URA \: dr^ω_{p,n-\nu,e} + c^ω_{pne} + URA \: dr^ω_{pne} + dr^ω_{pne}}{DUR_n RD_e} \leq   1 \quad \forall ωpne`
+
+:math:`\frac{- c^ω_{p,n-\nu,e} + DRA \: ur^ω_{p,n-\nu,e} + c^ω_{pne} - DRA \: ur^ω_{pne} - ur^ω_{pne}}{DUR_n RU_e} \geq - 1 \quad \forall ωpne`
 
 Minimum up time and down time of thermal unit [h]
 
@@ -240,6 +255,8 @@ Minimum up time and down time of thermal unit [h]
 :math:`\sum_{n'=n+\nu-TU_t}^n su^ω_{pn't} \leq     uc^ω_{pnt} \quad \forall ωpnt`
 
 :math:`\sum_{n'=n+\nu-TD_t}^n sd^ω_{pn't} \leq 1 - uc^ω_{pnt} \quad \forall ωpnt`
+
+**Network operation**
 
 Flow limit in candidate transmission lines [p.u.]
 

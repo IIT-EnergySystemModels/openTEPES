@@ -1,10 +1,12 @@
-# Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 18, 2021
+""" Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES)- March 30, 2021
+"""
 
 import time
 import math
 import os
 import pandas        as pd
 from   pyomo.environ import DataPortal, Set, Param, Var, Binary, NonNegativeReals, Reals, UnitInterval, Boolean, Any
+
 
 def InputData(DirName, CaseName, mTEPES):
     print('Input data                  ****')
@@ -24,6 +26,7 @@ def InputData(DirName, CaseName, mTEPES):
     dfVariableMinStorage = pd.read_csv(_path+'/oT_Data_MinimumStorage_'       +CaseName+'.csv', index_col=[0,1,2])
     dfVariableMaxStorage = pd.read_csv(_path+'/oT_Data_MaximumStorage_'       +CaseName+'.csv', index_col=[0,1,2])
     dfEnergyInflows      = pd.read_csv(_path+'/oT_Data_EnergyInflows_'        +CaseName+'.csv', index_col=[0,1,2])
+    dfEnergyOutflows     = pd.read_csv(_path+'/oT_Data_EnergyOutflows_'       +CaseName+'.csv', index_col=[0,1,2])
     dfNodeLocation       = pd.read_csv(_path+'/oT_Data_NodeLocation_'         +CaseName+'.csv', index_col=[0    ])
     dfNetwork            = pd.read_csv(_path+'/oT_Data_Network_'              +CaseName+'.csv', index_col=[0,1,2])
 
@@ -41,6 +44,7 @@ def InputData(DirName, CaseName, mTEPES):
     dfVariableMinStorage.fillna(0.0, inplace=True)
     dfVariableMaxStorage.fillna(0.0, inplace=True)
     dfEnergyInflows.fillna     (0.0, inplace=True)
+    dfEnergyOutflows.fillna    (0.0, inplace=True)
     dfNodeLocation.fillna      (0.0, inplace=True)
     dfNetwork.fillna           (0.0, inplace=True)
 
@@ -54,6 +58,7 @@ def InputData(DirName, CaseName, mTEPES):
     print('Minimum storage              \n', dfVariableMinStorage.describe())
     print('Maximum storage              \n', dfVariableMaxStorage.describe())
     print('Energy inflows               \n', dfEnergyInflows.describe()     )
+    print('Energy outflows              \n', dfEnergyOutflows.describe()    )
     print('Network                      \n', dfNetwork.describe()           )
 
     #%% reading the sets
@@ -112,7 +117,7 @@ def InputData(DirName, CaseName, mTEPES):
 
     pScenProb            = dfScenario          ['Probability'  ]                                                                          # probabilities of scenarios          [p.u.]
     pDuration            = dfDuration          ['Duration'     ] * pTimeStep                                                              # duration of load levels             [h]
-    pDemand              = dfDemand            [list(mTEPES.nd)] * 1e-3                                                                   # demand                              [GW]
+    pDemand              = dfDemand            [list(mTEPES.nd)] * 1e-3                                                                   #           demand                    [GW]
     pOperReserveUp       = dfUpOperatingReserve[list(mTEPES.ar)] * 1e-3                                                                   # upward   operating reserve          [GW]
     pOperReserveDw       = dfDwOperatingReserve[list(mTEPES.ar)] * 1e-3                                                                   # downward operating reserve          [GW]
     pVariableMinPower    = dfVariableMinPower  [list(mTEPES.gg)] * 1e-3                                                                   # dynamic variable minimum power      [GW]
@@ -120,6 +125,7 @@ def InputData(DirName, CaseName, mTEPES):
     pVariableMinStorage  = dfVariableMinStorage[list(mTEPES.gg)]                                                                          # dynamic variable minimum storage    [GWh]
     pVariableMaxStorage  = dfVariableMaxStorage[list(mTEPES.gg)]                                                                          # dynamic variable maximum storage    [GWh]
     pEnergyInflows       = dfEnergyInflows     [list(mTEPES.gg)] * 1e-3                                                                   # dynamic energy inflows              [GW]
+    pEnergyOutflows      = dfEnergyOutflows    [list(mTEPES.gg)] * 1e-3                                                                   # dynamic energy outflows             [GW]
 
     # compute the demand as the mean over the time step load levels and assign it to active load levels. Idem for operating reserve, variable max power, variable min and max storage and inflows
     if pTimeStep > 1:
@@ -131,6 +137,7 @@ def InputData(DirName, CaseName, mTEPES):
         pVariableMinStorage = pVariableMinStorage.rolling(pTimeStep).mean()
         pVariableMaxStorage = pVariableMaxStorage.rolling(pTimeStep).mean()
         pEnergyInflows      = pEnergyInflows.rolling     (pTimeStep).mean()
+        pEnergyOutflows     = pEnergyOutflows.rolling    (pTimeStep).mean()
 
     pDemand.fillna            (0.0, inplace=True)
     pOperReserveUp.fillna     (0.0, inplace=True)
@@ -140,6 +147,7 @@ def InputData(DirName, CaseName, mTEPES):
     pVariableMinStorage.fillna(0.0, inplace=True)
     pVariableMaxStorage.fillna(0.0, inplace=True)
     pEnergyInflows.fillna     (0.0, inplace=True)
+    pEnergyOutflows.fillna    (0.0, inplace=True)
 
     if pTimeStep > 1:
         # assign duration 0 to load levels not being considered, active load levels are at the end of every pTimeStep
@@ -169,7 +177,8 @@ def InputData(DirName, CaseName, mTEPES):
     pRatedMinStorage    = dfGeneration  ['MinimumStorage'      ]                                                                            # minimum ESS storage                         [GWh]
     pRatedMaxStorage    = dfGeneration  ['MaximumStorage'      ]                                                                            # maximum ESS storage                         [GWh]
     pEfficiency         = dfGeneration  ['Efficiency'          ]                                                                            #         ESS efficiency                      [p.u.]
-    pStorageType        = dfGeneration  ['StorageType'         ]                                                                            #         ESS type
+    pStorageType        = dfGeneration  ['StorageType'         ]                                                                            #         ESS storage  type
+    pOutflowsType       = dfGeneration  ['OutflowsType'        ]                                                                            #         ESS outflows type
     pRMaxReactivePower  = dfGeneration  ['MaximumReactivePower'] * 1e-3                                                                     # rated maximum reactive power                [Gvar]
 
     pLinearOperCost     = pLinearFuelCost + pCO2EmissionCost
@@ -338,17 +347,33 @@ def InputData(DirName, CaseName, mTEPES):
     pDwTime = round(pDwTime/pTimeStep).astype('int')
 
     #%% definition of the time-steps leap to observe the stored energy at ESS
-    pCycleTimeStep = (pUpTime*0).astype('int')
+    pCycleTimeStep    = (pUpTime*0).astype('int')
+    pOutflowsTimeStep = (pUpTime*0).astype('int')
     for es in mTEPES.es:
-        if  pStorageType[es] == 'Daily'  :
+        if  pStorageType  [es] == 'Daily'  :
             pCycleTimeStep[es] = 1
-        if  pStorageType[es] == 'Weekly' :
+        if  pStorageType  [es] == 'Weekly' :
             pCycleTimeStep[es] = int( 24/pTimeStep)
-        if  pStorageType[es] == 'Monthly':
+        if  pStorageType  [es] == 'Monthly':
             pCycleTimeStep[es] = int(168/pTimeStep)
 
-    pStorageType = pStorageType[pStorageType.index.isin(mTEPES.es)]
-    mTEPES.pStorageType = Param(mTEPES.es, initialize=pStorageType.to_dict(), within=Any)
+        if  pOutflowsType    [es] == 'Hourly' :
+            pOutflowsTimeStep[es] =    1
+        if  pOutflowsType    [es] == 'Daily'  :
+            pOutflowsTimeStep[es] =   24/pTimeStep
+        if  pOutflowsType    [es] == 'Weekly' :
+            pOutflowsTimeStep[es] =  168/pTimeStep
+        if  pOutflowsType    [es] == 'Monthly':
+            pOutflowsTimeStep[es] =  672/pTimeStep
+        if  pOutflowsType    [es] == 'Yearly' :
+            pOutflowsTimeStep[es] = 8736/pTimeStep
+
+        pCycleTimeStep[es] = min(pCycleTimeStep[es], pOutflowsTimeStep[es])
+
+    # pStorageType = pStorageType[pStorageType.index.isin(mTEPES.es)]
+    # mTEPES.pStorageType = Param(mTEPES.es, initialize=pStorageType.to_dict(), within=Any)
+    pOutflowsType = pOutflowsType[pOutflowsType.index.isin(mTEPES.es)]
+    mTEPES.pOutflowsType = Param(mTEPES.es, initialize=pOutflowsType.to_dict(), within=Any, doc='ESS Outflows type')
 
     # drop load levels with duration 0
     pDuration         = pDuration.loc        [list(                   mTEPES.n          )]
@@ -359,6 +384,7 @@ def InputData(DirName, CaseName, mTEPES):
     pMaxPower         = pMaxPower.loc        [list(mTEPES.sc*mTEPES.p*mTEPES.n          )]
     pMaxPower2ndBlock = pMaxPower2ndBlock.loc[list(mTEPES.sc*mTEPES.p*mTEPES.n          )]
     pEnergyInflows    = pEnergyInflows.loc   [list(mTEPES.sc*mTEPES.p*mTEPES.n          )]
+    pEnergyOutflows   = pEnergyOutflows.loc  [list(mTEPES.sc*mTEPES.p*mTEPES.n          )]
     pMinStorage       = pMinStorage.loc      [list(mTEPES.sc*mTEPES.p*mTEPES.n          )]
     pMaxStorage       = pMaxStorage.loc      [list(mTEPES.sc*mTEPES.p*mTEPES.n          )]
     pIniInventory     = pIniInventory.loc    [list(mTEPES.sc*mTEPES.p*mTEPES.n          )]
@@ -374,6 +400,7 @@ def InputData(DirName, CaseName, mTEPES):
     pMaxPower2ndBlock[pMaxPower2ndBlock < pEpsilon] = 0.0
     pMaxCharge       [pMaxCharge        < pEpsilon] = 0.0
     pEnergyInflows   [pEnergyInflows    < pEpsilon/pTimeStep] = 0.0
+    pEnergyOutflows  [pEnergyOutflows   < pEpsilon/pTimeStep] = 0.0
     pLineNTCFrw      [pLineNTCFrw       < pEpsilon] = 0.0
     pLineNTCBck      [pLineNTCBck       < pEpsilon] = 0.0
 
@@ -424,6 +451,7 @@ def InputData(DirName, CaseName, mTEPES):
     mTEPES.pMaxPower             = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.gg, initialize=pMaxPower.stack().to_dict()        , within=NonNegativeReals, doc='Maximum power'                )
     mTEPES.pMaxPower2ndBlock     = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.gg, initialize=pMaxPower2ndBlock.stack().to_dict(), within=NonNegativeReals, doc='Second block'                 )
     mTEPES.pEnergyInflows        = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.gg, initialize=pEnergyInflows.stack().to_dict()   , within=NonNegativeReals, doc='Energy inflows'               )
+    mTEPES.pEnergyOutflows       = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.gg, initialize=pEnergyOutflows.stack().to_dict()  , within=NonNegativeReals, doc='Energy outflows'              )
     mTEPES.pMinStorage           = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.gg, initialize=pMinStorage.stack().to_dict()      , within=NonNegativeReals, doc='ESS Minimum stoarage capacity')
     mTEPES.pMaxStorage           = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.gg, initialize=pMaxStorage.stack().to_dict()      , within=NonNegativeReals, doc='ESS Maximum stoarage capacity')
 
@@ -443,6 +471,7 @@ def InputData(DirName, CaseName, mTEPES):
     mTEPES.pIndBinUnitInvest     = Param(                               mTEPES.gg, initialize=pIndBinUnitInvest.to_dict()        , within=NonNegativeReals, doc='Binary investment decision'   )
     mTEPES.pEfficiency           = Param(                               mTEPES.gg, initialize=pEfficiency.to_dict()              , within=NonNegativeReals, doc='Round-trip efficiency'        )
     mTEPES.pCycleTimeStep        = Param(                               mTEPES.gg, initialize=pCycleTimeStep.to_dict()           , within=NonNegativeReals, doc='ESS Storage cycle'            )
+    mTEPES.pOutflowsTimeStep     = Param(                               mTEPES.gg, initialize=pOutflowsTimeStep.to_dict()        , within=NonNegativeReals, doc='ESS Outflows cycle'           )
     mTEPES.pIniInventory         = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.gg, initialize=pIniInventory.stack().to_dict()    , within=NonNegativeReals, doc='ESS Initial storage',         mutable=True)
 
     mTEPES.pLineLossFactor       = Param(                               mTEPES.ln, initialize=pLineLossFactor.to_dict()          , within=NonNegativeReals, doc='Loss factor'                  )
@@ -472,6 +501,7 @@ def InputData(DirName, CaseName, mTEPES):
     mTEPES.vOutput2ndBlock       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=NonNegativeReals, bounds=lambda mTEPES,sc,p,n,nr: (0.0,mTEPES.pMaxPower2ndBlock[sc,p,n,nr]),                     doc='second block of the unit                         [GW]')
     mTEPES.vReserveUp            = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=NonNegativeReals, bounds=lambda mTEPES,sc,p,n,nr: (0.0,mTEPES.pMaxPower2ndBlock[sc,p,n,nr]),                     doc='upward   operating reserve                       [GW]')
     mTEPES.vReserveDown          = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=NonNegativeReals, bounds=lambda mTEPES,sc,p,n,nr: (0.0,mTEPES.pMaxPower2ndBlock[sc,p,n,nr]),                     doc='downward operating reserve                       [GW]')
+    mTEPES.vEnergyOutflows       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.g , within=NonNegativeReals, bounds=lambda mTEPES,sc,p,n,g : (0.0,mTEPES.pMaxPower        [sc,p,n,g ]),                     doc='total outflows of the unit                       [GW]')
     mTEPES.vESSInventory         = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es, within=NonNegativeReals, bounds=lambda mTEPES,sc,p,n,es: (mTEPES.pMinStorage[sc,p,n,es],mTEPES.pMaxStorage[sc,p,n,es]), doc='ESS inventory                                   [GWh]')
     mTEPES.vESSSpillage          = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es, within=NonNegativeReals,                                                                                                doc='ESS spillage                                    [GWh]')
     mTEPES.vESSTotalCharge       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es, within=NonNegativeReals, bounds=lambda mTEPES,sc,p,n,es: (0.0,mTEPES.pMaxCharge       [es]       ),                     doc='ESS total charge power                           [GW]')
