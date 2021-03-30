@@ -258,13 +258,21 @@ Minimum up time and down time of thermal unit [h]
 
 **Network operation**
 
+Logic relation between transmission investment and switching {0,1}
+
+:math:`ost^{ω}_{pnijc} \leq ict_{ijc} \quad \forall ωpnijc, ijc \in CL`
+
+:math:`ost^{ω}_{pnijc} \leq swt^{ω}_{pnijc} \quad \forall ωpnijc, ijc \in CL`
+
+:math:`swt^{ω}_{pnijc} + ict_{ijc} - 1 \leq ost^{ω}_{pnijc} \quad \forall ωpnijc, ijc \in CL`
+
+:math:`ost^{ω}_{pnijc} = swt^{ω}_{pnijc} \quad \forall ωpnijc, ijc \in EL`
+
 Flow limit in candidate transmission lines [p.u.]
 
-:math:`- ict_{ijc} \leq \frac{f^ω_{pnijc}}{\overline{F}_{ijc}} \leq ict_{ijc} \quad \forall ωpnijc, ijc \in CL`
+:math:`- ost_{ijc} \leq \frac{f^ω_{pnijc}}{\overline{F}_{ijc}} \leq ost_{ijc} \quad \forall ωpnijc`
 
 DC Power flow for existing and candidate AC-type lines (Kirchhoff's second law) [rad]
-
-:math:`\frac{f^ω_{pnijc}}{\overline{F}'_{ijc}} = (\theta^ω_{pni} - \theta^ω_{pnj})\frac{S_B}{X_{ijc}\overline{F}'_{ijc}} \quad \forall ωpnijc, ijc \in EL`
 
 :math:`-1+ict_{ijc} \leq \frac{f^ω_{pnijc}}{\overline{F}'_{ijc}} - (\theta^ω_{pni} - \theta^ω_{pnj})\frac{S_B}{X_{ijc}\overline{F}'_{ijc}} \leq 1-ict_{ijc} \quad \forall ωpnijc, ijc \in CL`
 
