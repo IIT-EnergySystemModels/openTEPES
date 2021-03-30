@@ -7,7 +7,7 @@ All the input files must be located in a folder with the name of the case study.
 
 Dictionaries. Sets
 ------------------
-The dictionaries include all the possible elements of the corresponding sets included in the optimization problem. You can't use non-English characters (e.g., ó, º)
+The dictionaries include all the possible elements of the corresponding sets included in the optimization problem. **You can't use non-English characters (e.g., ó, º)**
 
 ==========================  ===================================================================================================================
 File                        Description
@@ -48,12 +48,13 @@ File                                       Description
 ``oT_Data_Scenario.csv``                   Short-term uncertainties
 ``oT_Data_Duration.csv``                   Duration of the load levels
 ``oT_Data_Demand.csv``                     Demand
-``oT_Data_OperatingReserveUp.csv``         Upward operating reserves (include aFRR, mFRR and RR for electricity balancing from ENTSO-E)
+``oT_Data_OperatingReserveUp.csv``         Upward   operating reserves (include aFRR, mFRR and RR for electricity balancing from ENTSO-E)
 ``oT_Data_OperatingReserveDown.csv``       Downward operating reserves (include aFRR, mFRR and RR for electricity balancing from ENTSO-E)
 ``oT_Data_Generation.csv``                 Generation data
 ``oT_Data_VariableMaxGeneration.csv``      Variable maximum power generation by load level
 ``oT_Data_VariableMinGeneration.csv``      Variable minimum power generation by load level
 ``oT_Data_EnergyInflows.csv``              Energy inflows for the ESS
+``oT_Data_EnergyOutflows.csv``             Energy outflows from an ESS for H2 production or EV mobility or irrigation
 ``oT_Data_MaximumStorage.csv``             Maximum storage of the ESS by load level
 ``oT_Data_MinimumStorage.csv``             Minimum storage of the ESS by load level
 ``oT_Data_Network.csv``                    Network data
@@ -154,40 +155,43 @@ Generation
 ----------
 A description of the data included for each generating unit in the file ``oT_Data_Generation.csv`` follows:
 
-====================  =======================================================================================  ============================
+====================  ===================================================================================================================  ============================
 Header                Description                                                                             
-====================  =======================================================================================  ============================  
+====================  ===================================================================================================================  ============================  
 Node                  Name of the node where generator is located                                                  
 Technology            Technology of the generator (nuclear, coal, CCGT, OCGT, ESS, etc.)                       
-StorageType           Storage type (daily, weekly, monthly, etc.)                                              Daily/Weekly/Monthly
-MustRun               Must-run unit                                                                            Yes/No
-MaximumPower          Maximum power output (discharge for ESS units)                                           MW
-MinimumPower          Minimum power output                                                                     MW
-MaximumReactivePower  Maximum reactive power output (discharge for ESS units) (not used in the plain version)  MW
-MinimumReactivePower  Minimum reactive power output (not used in the plain version)                            MW
-MaximumCharge         Maximum charge when the ESS unit is storing energy                                       MW
-InitialStorage        Initial energy stored at the first instant of the time scope                             GWh
-MaximumStorage        Maximum energy that can be stored by the ESS unit                                        GWh
-MinimumStorage        Minimum energy that can be stored by the ESS unit                                        GWh
-Efficiency            Round-trip efficiency in the charge/discharge cycle                                      p.u.
-EFOR                  Equivalent Forced Outage Rate                                                            p.u.
-RampUp                Ramp up   rate                                                                           MW/h
-RampDown              Ramp down rate                                                                           MW/h
-UpTime                Minimum uptime                                                                           h
-DownTime              Minimum downtime                                                                         h
-FuelCost              Fuel cost                                                                                €/Mcal
-LinearTerm            Linear term (slope) of the heat rate straight line                                       Mcal/MWh
-ConstantTerm          Constant term (intercept) of the heat rate straight line                                 Mcal/h
-OMVariableCost        O&M variable cost                                                                        €/MWh
-StartUpCost           Startup  cost                                                                            M€
-ShutDownCost          Shutdown cost                                                                            M€
-CO2EmissionRate       CO2 emission rate                                                                        t CO2/MWh
-FixedCost             Overnight investment (capital) cost                                                      M€
-FixedChargeRate       Fixed charge rate to annualize the overnight investment cost                             p.u.
-BinaryInvestment      Binary unit investment decision                                                          Yes/No
-====================  =======================================================================================  ============================
+StorageType           Storage type based on storage capacity (daily, weekly, monthly, etc.)                                                Daily/Weekly/Monthly
+OutflowsType          Outflows type based on the demand extracted from the storage (hourly, daily, weekly, monthly, yearly, etc.)          Hourly/Daily/Weekly/Monthly/Yearly
+MustRun               Must-run unit                                                                                                        Yes/No
+MaximumPower          Maximum power output (discharge for ESS units)                                                                       MW
+MinimumPower          Minimum power output                                                                                                 MW
+MaximumReactivePower  Maximum reactive power output (discharge for ESS units) (not used in the plain version)                              MW
+MinimumReactivePower  Minimum reactive power output (not used in the plain version)                                                        MW
+MaximumCharge         Maximum charge when the ESS unit is storing energy                                                                   MW
+InitialStorage        Initial energy stored at the first instant of the time scope                                                         GWh
+MaximumStorage        Maximum energy that can be stored by the ESS unit                                                                    GWh
+MinimumStorage        Minimum energy that can be stored by the ESS unit                                                                    GWh
+Efficiency            Round-trip efficiency in the charge/discharge cycle                                                                  p.u.
+EFOR                  Equivalent Forced Outage Rate                                                                                        p.u.
+RampUp                Ramp up   rate for generating units or maximum discharge rate for ESS discharge                                      MW/h
+RampDown              Ramp down rate for generating units or maximum    charge rate for ESS    charge                                      MW/h
+UpTime                Minimum uptime                                                                                                       h
+DownTime              Minimum downtime                                                                                                     h
+FuelCost              Fuel cost                                                                                                            €/Mcal
+LinearTerm            Linear term (slope) of the heat rate straight line                                                                   Mcal/MWh
+ConstantTerm          Constant term (intercept) of the heat rate straight line                                                             Mcal/h
+OMVariableCost        O&M variable cost                                                                                                    €/MWh
+StartUpCost           Startup  cost                                                                                                        M€
+ShutDownCost          Shutdown cost                                                                                                        M€
+CO2EmissionRate       CO2 emission rate                                                                                                    t CO2/MWh
+FixedCost             Overnight investment (capital) cost                                                                                  M€
+FixedChargeRate       Fixed charge rate to annualize the overnight investment cost                                                         p.u.
+BinaryInvestment      Binary unit investment decision                                                                                      Yes/No
+====================  ===================================================================================================================  ============================
 
-Daily storage type is assessed every time step, weekly storage type is assessed at the end of every day, and monthly storage type is assessed at the end of every week. Storage cycle is one time step, one day, and one week, respectively.
+Daily storage type means that the inventory is assessed every time step, weekly storage type is assessed at the end of every day, and monthly storage type is assessed at the end of every week.
+Outflows type represents the interval when the demand extracted from the storage needs to be satisfied.
+The storage cycle is the minimum between the inventory assessment period and the outflows period. It can be one time step, one day, and one week.
 The ESS inventory level at the end of a large storage cycle is fixed to its initial value, i.e., the inventory of a daily storage type (evaluated on a time step basis) is fixed at the end of the week,
 the inventory of weekly/monthly storage is fixed at the end of the year.
 
@@ -226,7 +230,22 @@ Identifier      Identifier  Identifier  Header     Description
 Scenario        Period      Load level  Generator  Energy inflows by load level   MW
 ==============  ==========  ==========  =========  =============================  ==
 
-If you have daily inflows data just input the daily amount at the first hour of every day if the reservoirs have daily or weekly storage capacity.
+If you have daily inflows data just input the daily amount at the first hour of every day if the ESS have daily or weekly storage capacity.
+
+Internally, all the values below 1e-5 times the maximum system demand will be converted into 0 by the model.
+
+Energy outflows
+---------------
+
+A description of the data included in the file ``oT_Data_EnergyOutflows.csv`` follows:
+
+==============  ==========  ==========  =========  ==============================  ==
+Identifier      Identifier  Identifier  Header     Description
+==============  ==========  ==========  =========  ==============================  ==
+Scenario        Period      Load level  Generator  Energy outflows by load level   MW
+==============  ==========  ==========  =========  ==============================  ==
+
+If you have daily/weekly/monthly/yearly outflows data just input the daily/weekly/monthly/yearly amount at the first hour of every day/week/month/year.
 
 Internally, all the values below 1e-5 times the maximum system demand will be converted into 0 by the model.
 
