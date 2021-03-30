@@ -65,14 +65,16 @@ Options
 ----------
 A description of the options included in the file ``oT_Data_Option.csv`` follows:
 
-================  ============================================================================
+================  ===============================================================================
 File              Description                                                                 
-================  ============================================================================
+================  ===============================================================================
 IndBinGenInvest   Indicator of binary generation expansion decisions, {0 continuous, 1 binary} 
 IndBinNetInvest   Indicator of binary network    expansion decisions, {0 continuous, 1 binary} 
 IndBinGenOperat   Indicator of binary generation operation decisions, {0 continuous, 1 binary} 
 IndNetLosses      Indicator of network losses, {0 lossless, 1 ohmic losses}
-================  ============================================================================
+IndBinLineSwitch  Indicator of binary transmission switching decisions, {0 continuous, 1 binary}
+IndBinLineOperat  Indicator of binary line operation resulting decision, {0 continuous, 1 binary}
+================  ===============================================================================
 
 Parameters
 ----------
@@ -286,6 +288,9 @@ SecurityFactor     Security factor to consider approximately N-1 contingencies. 
 FixedCost          Overnight investment (capital) cost                                                           M€
 FixedChargeRate    Fixed charge rate to annualize the overnight investment cost                                  p.u.
 BinaryInvestment   Binary line/circuit investment decision                                                       Yes/No
+BinarySwitch       Definition if the transmission line is able to switch on/off                                  {0,1}
+SwOnTime           Minimum switch-on time                                                                        h
+SwOffTime          Minimum switch-off time                                                                       h
 =================  ============================================================================================  ======
 
 Depending on the voltage lines are plotted with different colors (blue > 700 kV, orange between 500 and 700 kV, red between 350 and 500 kV, green between 200 and 350 kV, and orange < 200 kV).
