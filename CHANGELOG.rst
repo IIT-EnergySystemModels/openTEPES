@@ -1,6 +1,7 @@
 Change Log
 =============
 
+- [CHANGED] Addition of the sequence of decisions and operation (TEP + transmission switching)
 - [FIXED] fixing `<https://pascua.iit.comillas.edu/aramos/openTEPES/index.html#>`_ in README.rst 
 
 [2.1.0] - 2021-03-18
