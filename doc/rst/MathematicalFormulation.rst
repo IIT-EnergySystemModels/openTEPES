@@ -120,14 +120,16 @@ They are written in lower letters.
 :math:`uc^ω_{png}, su^ω_{png}, sd^ω_{png}`  Commitment, startup and shutdown of generation unit per load level          {0,1}
 ==========================================  ==========================================================================  =====
 
-========================  ================================  =====
+========================  ========================================  =====
 **Transmission system** 
-------------------------  --------------------------------  -----
-:math:`ict_{ijc}`         Candidate line installed or not   {0,1}
-:math:`f^ω_{pnijc}`       Flow through a line               GW
-:math:`l^ω_{pnijc}`       Half ohmic losses of a line       GW
-:math:`θ^ω_{pni}`         Voltage angle of a node           rad
-========================  ================================  =====
+------------------------  ----------------------------------------  -----
+:math:`ict_{ijc}`         Candidate line installed or not           {0,1}
+:math:`swt^ω_{pnijc}`     Decision to switch or not a line          {0,1}
+:math:`ost^ω_{pnijc}`     Resulting decision of the state of a line {0,1}
+:math:`f^ω_{pnijc}`       Flow through a line                       GW
+:math:`l^ω_{pnijc}`       Half ohmic losses of a line               GW
+:math:`θ^ω_{pni}`         Voltage angle of a node                   rad
+========================  ========================================  =====
 
 Equations
 ---------
@@ -258,15 +260,23 @@ Minimum up time and down time of thermal unit [h]
 
 **Network operation**
 
-Flow limit in candidate transmission lines [p.u.]
+Logic relation between transmission investment and switching {0,1}
 
-:math:`- ict_{ijc} \leq \frac{f^ω_{pnijc}}{\overline{F}_{ijc}} \leq ict_{ijc} \quad \forall ωpnijc, ijc \in CL`
+:math:`ost^{ω}_{pnijc} \leq ict_{ijc} \quad \forall ωpnijc, ijc \in CL`
+
+:math:`ost^{ω}_{pnijc} \leq swt^{ω}_{pnijc} \quad \forall ωpnijc, ijc \in CL`
+
+:math:`swt^{ω}_{pnijc} + ict_{ijc} - 1 \leq ost^{ω}_{pnijc} \quad \forall ωpnijc, ijc \in CL`
+
+:math:`ost^{ω}_{pnijc} = swt^{ω}_{pnijc} \quad \forall ωpnijc, ijc \in EL`
+
+Flow limit in transmission lines [p.u.]
+
+:math:`- ost^{ω}_{pnijc} \leq \frac{f^ω_{pnijc}}{\overline{F}_{ijc}} \leq ost^{ω}_{pnijc} \quad \forall ωpnijc`
 
 DC Power flow for existing and candidate AC-type lines (Kirchhoff's second law) [rad]
 
-:math:`\frac{f^ω_{pnijc}}{\overline{F}'_{ijc}} = (\theta^ω_{pni} - \theta^ω_{pnj})\frac{S_B}{X_{ijc}\overline{F}'_{ijc}} \quad \forall ωpnijc, ijc \in EL`
-
-:math:`-1+ict_{ijc} \leq \frac{f^ω_{pnijc}}{\overline{F}'_{ijc}} - (\theta^ω_{pni} - \theta^ω_{pnj})\frac{S_B}{X_{ijc}\overline{F}'_{ijc}} \leq 1-ict_{ijc} \quad \forall ωpnijc, ijc \in CL`
+:math:`-1+ost^{ω}_{pnijc} \leq \frac{f^ω_{pnijc}}{\overline{F}'_{ijc}} - (\theta^ω_{pni} - \theta^ω_{pnj})\frac{S_B}{X_{ijc}\overline{F}'_{ijc}} \leq 1-ost^{ω}_{pnijc} \quad \forall ωpnijc`
 
 Half ohmic losses are linearly approximated as a function of the flow [GW]
 
@@ -274,26 +284,26 @@ Half ohmic losses are linearly approximated as a function of the flow [GW]
 
 Bounds on generation variables [GW]
 
-:math:`0 \leq gp^ω_{png} \leq \overline{GP}_g                    \quad \forall ωpng`
+:math:`0 \leq gp^ω_{png} \leq \overline{GP}_g                     \quad \forall ωpng`
+ 
+:math:`0 \leq qc^ω_{pne} \leq \overline{GC}_e                     \quad \forall ωpne`
 
-:math:`0 \leq qc^ω_{pne} \leq \overline{GC}_e                    \quad \forall ωpne`
-
-:math:`0 \leq ur^ω_{png} \leq \overline{CP}_g - \underline{GP}_g \quad \forall ωpng`
+:math:`0 \leq ur^ω_{png} \leq \overline{CP}_g - \underline{GP}_g  \quad \forall ωpng`
 
 :math:`0 \leq ur'^ω_{pne} \leq \overline{CP}_e - \underline{GP}_e \quad \forall ωpne`
 
-:math:`0 \leq dr^ω_{png} \leq \overline{CP}_g - \underline{GP}_g \quad \forall ωpng`
+:math:`0 \leq dr^ω_{png} \leq \overline{CP}_g - \underline{GP}_g  \quad \forall ωpng`
 
 :math:`0 \leq dr'^ω_{pne} \leq \overline{CP}_e - \underline{GP}_e \quad \forall ωpne`
 
-:math:`0 \leq  p^ω_{png} \leq \overline{GP}_g - \underline{GP}_g \quad \forall ωpng`
+:math:`0 \leq  p^ω_{png} \leq \overline{GP}_g - \underline{GP}_g  \quad \forall ωpng`
 
-:math:`0 \leq  c^ω_{pne} \leq \overline{GC}_e                    \quad \forall ωpne`
+:math:`0 \leq  c^ω_{pne} \leq \overline{GC}_e                     \quad \forall ωpne`
 
-:math:`0 \leq  i^ω_{pne} \leq I_e                                \quad \forall ωpne`
+:math:`0 \leq  i^ω_{pne} \leq I_e                                 \quad \forall ωpne`
 
-:math:`0 \leq  s^ω_{pne}                                         \quad \forall ωpne`
-
+:math:`0 \leq  s^ω_{pne}                                          \quad \forall ωpne`
+ 
 :math:`0 \leq ens^ω_{pni} \leq D^ω_{pni}                          \quad \forall ωpni`
 
 Bounds on network variables [GW]
