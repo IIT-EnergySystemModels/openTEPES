@@ -89,6 +89,7 @@ They are written in capital letters.
 :math:`\overline{F}_{ijc}`                 Net transfer capacity (total transfer capacity multiplied by the security coefficient) of a transmission line      GW  
 :math:`\overline{F}'_{ijc}`                Maximum flow used in the Kirchhoff's 2nd law constraint (e.g., disjunctive constraint for the candidate AC lines)  GW
 :math:`L_{ijc}, X_{ijc}`                   Loss factor and reactance of a transmission line                                                                   p.u.
+:math:`SON_{ijc}, SOF_{ijc}`               Minimum switch-on and switch-off status of a line                                                                  h
 :math:`S_B`                                Base power                                                                                                         GW
 =========================================  =================================================================================================================  ====
 
@@ -120,16 +121,16 @@ They are written in lower letters.
 :math:`uc^ω_{png}, su^ω_{png}, sd^ω_{png}`  Commitment, startup and shutdown of generation unit per load level          {0,1}
 ==========================================  ==========================================================================  =====
 
-========================  ========================================  =====
+======================================================  =================================================================  =====
 **Transmission system** 
-------------------------  ----------------------------------------  -----
-:math:`ict_{ijc}`         Candidate line installed or not           {0,1}
-:math:`swt^ω_{pnijc}`     Decision to switch or not a line          {0,1}
-:math:`ost^ω_{pnijc}`     Resulting decision of the state of a line {0,1}
-:math:`f^ω_{pnijc}`       Flow through a line                       GW
-:math:`l^ω_{pnijc}`       Half ohmic losses of a line               GW
-:math:`θ^ω_{pni}`         Voltage angle of a node                   rad
-========================  ========================================  =====
+------------------------------------------------------  -----------------------------------------------------------------  -----
+:math:`ict_{ijc}`                                       Candidate line installed or not                                    {0,1}
+:math:`swt^ω_{pnijc}, son^ω_{pnijc}, sof^ω_{pnijc}`     Decision to switching, switch-on and switch-off of a line          {0,1}
+:math:`ost^ω_{pnijc}`                                   Resulting decision of the state of a line                          {0,1}
+:math:`f^ω_{pnijc}`                                     Flow through a line                                                GW
+:math:`l^ω_{pnijc}`                                     Half ohmic losses of a line                                        GW
+:math:`θ^ω_{pni}`                                       Voltage angle of a node                                            rad
+======================================================  =================================================================  =====
 
 Equations
 ---------
@@ -270,7 +271,19 @@ Logic relation between transmission investment and switching {0,1}
 
 :math:`ost^{ω}_{pnijc} = swt^{ω}_{pnijc} \quad \forall ωpnijc, ijc \in EL`
 
-Flow limit in candidate transmission lines [p.u.]
+Logical relation between switching state, switch-on and switch-off status of a line [p.u.]
+
+:math:`swt^ω_{pnijc} - swt^ω_{p,n-\nu,ijc} = son^ω_{pnijc} - sof^ω_{pnijc} \quad \forall ωpnijc`
+
+The initial status of the lines is pre-defined as plugged-in.
+
+Minimum switch-on and switch-off state of a line [h]
+
+:math:`\sum_{n'=n+\nu-SON_{ijc}}^n son^ω_{pn'ijc} \leq     swt^ω_{pnijc} \quad \forall ωpnijc`
+
+:math:`\sum_{n'=n+\nu-SOF_{ijc}}^n sof^ω_{pn'ijc} \leq 1 - swt^ω_{pnijc} \quad \forall ωpnijc`
+
+Flow limit in transmission lines [p.u.]
 
 :math:`- ost^{ω}_{pnijc} \leq \frac{f^ω_{pnijc}}{\overline{F}_{ijc}} \leq ost^{ω}_{pnijc} \quad \forall ωpnijc`
 
