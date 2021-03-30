@@ -370,10 +370,13 @@ def InputData(DirName, CaseName, mTEPES):
 
         pCycleTimeStep[es] = min(pCycleTimeStep[es], pOutflowsTimeStep[es])
 
+    # the stage duration is the maximum between the defined stage duration and the storage type and the outflows type for any ESS to avoid breaking the energy outflows constraints
+    pStageDuration = max(pStageDuration, pCycleTimeStep.max(), pOutflowsTimeStep.max())
+
     # pStorageType = pStorageType[pStorageType.index.isin(mTEPES.es)]
-    # mTEPES.pStorageType = Param(mTEPES.es, initialize=pStorageType.to_dict(), within=Any)
-    pOutflowsType = pOutflowsType[pOutflowsType.index.isin(mTEPES.es)]
-    mTEPES.pOutflowsType = Param(mTEPES.es, initialize=pOutflowsType.to_dict(), within=Any, doc='ESS Outflows type')
+    # mTEPES.pStorageType = Param(mTEPES.es, initialize=pStorageType.to_dict(),   within=Any, doc='ESS storage type')
+    # pOutflowsType = pOutflowsType[pOutflowsType.index.isin(mTEPES.es)]
+    # mTEPES.pOutflowsType = Param(mTEPES.es, initialize=pOutflowsType.to_dict(), within=Any, doc='ESS outflows type')
 
     # drop load levels with duration 0
     pDuration         = pDuration.loc        [list(                   mTEPES.n          )]
