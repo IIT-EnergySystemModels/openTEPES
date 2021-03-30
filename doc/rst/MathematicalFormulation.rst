@@ -120,14 +120,16 @@ They are written in lower letters.
 :math:`uc^ω_{png}, su^ω_{png}, sd^ω_{png}`  Commitment, startup and shutdown of generation unit per load level          {0,1}
 ==========================================  ==========================================================================  =====
 
-========================  ================================  =====
+========================  ========================================  =====
 **Transmission system** 
-------------------------  --------------------------------  -----
-:math:`ict_{ijc}`         Candidate line installed or not   {0,1}
-:math:`f^ω_{pnijc}`       Flow through a line               GW
-:math:`l^ω_{pnijc}`       Half ohmic losses of a line       GW
-:math:`θ^ω_{pni}`         Voltage angle of a node           rad
-========================  ================================  =====
+------------------------  ----------------------------------------  -----
+:math:`ict_{ijc}`         Candidate line installed or not           {0,1}
+:math:`swt^ω_{pnijc}`     Decision to switch or not a line          {0,1}
+:math:`ost^ω_{pnijc}`     Resulting decision of the state of a line {0,1}
+:math:`f^ω_{pnijc}`       Flow through a line                       GW
+:math:`l^ω_{pnijc}`       Half ohmic losses of a line               GW
+:math:`θ^ω_{pni}`         Voltage angle of a node                   rad
+========================  ========================================  =====
 
 Equations
 ---------
@@ -270,11 +272,11 @@ Logic relation between transmission investment and switching {0,1}
 
 Flow limit in candidate transmission lines [p.u.]
 
-:math:`- ost_{ijc} \leq \frac{f^ω_{pnijc}}{\overline{F}_{ijc}} \leq ost_{ijc} \quad \forall ωpnijc`
+:math:`- ost^{ω}_{pnijc} \leq \frac{f^ω_{pnijc}}{\overline{F}_{ijc}} \leq ost^{ω}_{pnijc} \quad \forall ωpnijc`
 
 DC Power flow for existing and candidate AC-type lines (Kirchhoff's second law) [rad]
 
-:math:`-1+ict_{ijc} \leq \frac{f^ω_{pnijc}}{\overline{F}'_{ijc}} - (\theta^ω_{pni} - \theta^ω_{pnj})\frac{S_B}{X_{ijc}\overline{F}'_{ijc}} \leq 1-ict_{ijc} \quad \forall ωpnijc, ijc \in CL`
+:math:`-1+ost^{ω}_{pnijc} \leq \frac{f^ω_{pnijc}}{\overline{F}'_{ijc}} - (\theta^ω_{pni} - \theta^ω_{pnj})\frac{S_B}{X_{ijc}\overline{F}'_{ijc}} \leq 1-ost^{ω}_{pnijc} \quad \forall ωpnijc`
 
 Half ohmic losses are linearly approximated as a function of the flow [GW]
 
