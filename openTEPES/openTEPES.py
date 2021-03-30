@@ -65,7 +65,7 @@
 # make it effectively proprietary.  To prevent this, the GPL assures that
 # patents cannot be used to render the program non-free.
 
-# Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 2.1.0 - March 13, 2021
+# Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 2.2.0 - March 30, 2021
 # simplicity and transparency in power systems planning
 
 # Developed by
@@ -103,7 +103,7 @@ def openTEPES_run(DirName, CaseName, SolverName):
     _path = os.path.join(DirName, CaseName)
 
     #%% model declaration
-    mTEPES = ConcreteModel('Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 2.1.0 - March 13, 2021')
+    mTEPES = ConcreteModel('Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 2.2.0 - March 30, 2021')
 
     InputData(DirName, CaseName, mTEPES)
 
