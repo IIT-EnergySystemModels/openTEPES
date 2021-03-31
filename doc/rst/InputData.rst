@@ -292,7 +292,7 @@ SwOnTime           Minimum switch-on time                                       
 SwOffTime          Minimum switch-off time                                                                       h
 =================  ============================================================================================  ======
 
-Depending on the voltage lines are plotted with different colors (blue > 700 kV, orange between 500 and 700 kV, red between 350 and 500 kV, green between 200 and 350 kV, and orange < 200 kV).
+Depending on the voltage lines are plotted with different colors (orange < 200 kV, 200 < green < 350 kV, 350 < red < 500 kV, 500 < orange < 700 kV, blue > 700 kV).
 
 If there is no data for TTCBck, i.e., TTCBck is left empty or is equal to 0, it is substituted by the TTC in the code.
 
