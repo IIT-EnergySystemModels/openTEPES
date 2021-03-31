@@ -2,8 +2,8 @@
 
 
     Args:
-        case: Name of the folder where the CSV files of the case are found
-        dir: Main path where the case folder can be found
+        case:   Name of the folder where the CSV files of the case are found
+        dir:    Main path where the case folder can be found
         solver: Name of the solver
 
     Returns:

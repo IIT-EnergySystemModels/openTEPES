@@ -10,7 +10,7 @@ from pyomo.environ import ConcreteModel, Set
 from openTEPES.openTEPES_InputData        import InputData
 from openTEPES.openTEPES_ModelFormulation import InvestmentModelFormulation, GenerationOperationModelFormulation, NetworkOperationModelFormulation
 from openTEPES.openTEPES_ProblemSolving   import ProblemSolving
-from openTEPES.openTEPES_OutputResults    import *
+from openTEPES.openTEPES_OutputResults    import InvestmentResults, GenerationOperationResults, ESSOperationResults, FlexibilityResults, NetworkOperationResults, MarginalResults, EconomicResults, NetworkMapResults
 
 
 def openTEPES_run(DirName, CaseName, SolverName):
