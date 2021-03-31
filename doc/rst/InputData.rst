@@ -287,7 +287,7 @@ SecurityFactor     Security factor to consider approximately N-1 contingencies. 
 FixedCost          Overnight investment (capital) cost                                                           M€
 FixedChargeRate    Fixed charge rate to annualize the overnight investment cost                                  p.u.
 BinaryInvestment   Binary line/circuit investment decision                                                       Yes/No
-BinarySwitch       Definition if the transmission line is able to switch on/off                                  {0,1}
+BinarySwitching    Definition if the transmission line is able to switch on/off                                  {0,1}
 SwOnTime           Minimum switch-on time                                                                        h
 SwOffTime          Minimum switch-off time                                                                       h
 =================  ============================================================================================  ======
