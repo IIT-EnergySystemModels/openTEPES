@@ -7,7 +7,7 @@ Change Log
 [2.2.0] - 2021-03-31
 ----------------------
 - [CHANGED] introduction of Power-to-X in ESS. Modifies the Generation file and introduces a new EnergyOutflows file
-- [CHANGED] introduction of switching decision for transmission lines
+- [CHANGED] introduction of switching decision for transmission lines. Modifies the Option file and introduces a new column BinarySwitching in Network file
 
 [2.1.0] - 2021-03-18
 ----------------------
