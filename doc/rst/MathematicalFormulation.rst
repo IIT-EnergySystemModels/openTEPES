@@ -89,7 +89,7 @@ They are written in capital letters.
 :math:`\overline{F}_{ijc}`                 Net transfer capacity (total transfer capacity multiplied by the security coefficient) of a transmission line      GW  
 :math:`\overline{F}'_{ijc}`                Maximum flow used in the Kirchhoff's 2nd law constraint (e.g., disjunctive constraint for the candidate AC lines)  GW
 :math:`L_{ijc}, X_{ijc}`                   Loss factor and reactance of a transmission line                                                                   p.u.
-:math:`SON_{ijc}, SOF_{ijc}`               Minimum switch-on and switch-off status of a line                                                                  h
+:math:`SON_{ijc}, SOF_{ijc}`               Minimum switch-on and switch-off state of a line                                                                   h
 :math:`S_B`                                Base power                                                                                                         GW
 =========================================  =================================================================================================================  ====
 
@@ -126,7 +126,6 @@ They are written in lower letters.
 ------------------------------------------------------  -----------------------------------------------------------------  -----
 :math:`ict_{ijc}`                                       Candidate line installed or not                                    {0,1}
 :math:`swt^ω_{pnijc}, son^ω_{pnijc}, sof^ω_{pnijc}`     Switching state, switch-on and switch-off of a line                {0,1}
-:math:`sst^ω_{pnijc}`                                   Switching state of a line                                          {0,1}
 :math:`f^ω_{pnijc}`                                     Flow through a line                                                GW
 :math:`l^ω_{pnijc}`                                     Half ohmic losses of a line                                        GW
 :math:`θ^ω_{pni}`                                       Voltage angle of a node                                            rad
@@ -261,15 +260,9 @@ Minimum up time and down time of thermal unit [h]
 
 **Network operation**
 
-Logic relation between transmission investment and switching {0,1}
+Logical relation between transmission investment and switching {0,1}
 
-:math:`sst^{ω}_{pnijc} \leq ict_{ijc}                       \quad \forall ωpnijc, ijc \in CL`
-
-:math:`sst^{ω}_{pnijc} \leq swt^{ω}_{pnijc}                 \quad \forall ωpnijc, ijc \in CL`
-
-:math:`swt^{ω}_{pnijc} + ict_{ijc} - 1 \leq sst^{ω}_{pnijc} \quad \forall ωpnijc, ijc \in CL`
-
-:math:`sst^{ω}_{pnijc} = swt^{ω}_{pnijc}                    \quad \forall ωpnijc, ijc \in EL`
+:math:`swt^{ω}_{pnijc} \leq ict_{ijc} \quad \forall ωpnijc, ijc \in CL`
 
 Logical relation between switching state, switch-on and switch-off status of a line [p.u.]
 
