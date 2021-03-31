@@ -106,8 +106,7 @@ def InputData(DirName, CaseName, mTEPES):
     pIndBinNetInvest     = dfOption   ['IndBinNetInvest'    ][0].astype('int')                                                            # Indicator of binary network    expansion decisions, 0 continuous - 1 binary
     pIndBinGenOperat     = dfOption   ['IndBinGenOperat'    ][0].astype('int')                                                            # Indicator of binary generation operation decisions, 0 continuous - 1 binary
     pIndNetLosses        = dfOption   ['IndNetLosses'       ][0].astype('int')                                                            # Indicator of network losses,                        0 lossless   - 1 ohmic losses
-    pIndBinLineSwitch    = dfOption   ['IndBinLineSwitch'   ][0].astype('int')                                                            # Indicator of binary switching decisions,            0 continuous - 1 binary
-    pIndBinLineOperat    = dfOption   ['IndBinLineOperat'   ][0].astype('int')                                                            # Indicator of binary line operation decisions,       0 continuous - 1 binary
+    pIndBinLineCommit    = dfOption   ['IndBinLineCommit'   ][0].astype('int')                                                            # Indicator of binary switching decisions,            0 continuous - 1 binary
     pENSCost             = dfParameter['ENSCost'            ][0] * 1e-3                                                                   # cost of energy not served           [MEUR/GWh]
     pCO2Cost             = dfParameter['CO2Cost'            ][0]                                                                          # cost of CO2 emission                [EUR/t CO2]
     pUpReserveActivation = dfParameter['UpReserveActivation'][0]                                                                          # upward   reserve activation         [p.u.]
@@ -201,7 +200,7 @@ def InputData(DirName, CaseName, mTEPES):
     pLineNTCBck         = dfNetwork     ['TTCBck'              ] * 1e-3 * dfNetwork['SecurityFactor' ]                                      # net transfer capacity in backward direction [GW]
     pNetFixedCost       = dfNetwork     ['FixedCost'           ] *        dfNetwork['FixedChargeRate']                                      # network    fixed cost                       [MEUR]
     pIndBinLineInvest   = dfNetwork     ['BinaryInvestment'    ]                                                                            # binary line    investment decision          [Yes]
-    pIndBinSwitch       = dfNetwork     ['BinarySwitch'        ]                                                                            # binary line    switching  decision          [Yes]
+    pIndBinSwitching    = dfNetwork     ['BinarySwitching'     ]                                                                            # binary line    switching  decision          [Yes]
     pSwitchOnTime       = dfNetwork     ['SwOnTime'            ]                                                                            # minimum on time                             [h]
     pSwitchOffTime      = dfNetwork     ['SwOnTime'            ]                                                                            # minimum off time                            [h]
     pAngMin             = dfNetwork     ['AngMin'              ] * math.pi / 180                                                            # Min phase angle difference                  [rad]
@@ -265,6 +264,7 @@ def InputData(DirName, CaseName, mTEPES):
 
     pIndBinUnitInvest = pIndBinUnitInvest.map(idxDict)
     pIndBinLineInvest = pIndBinLineInvest.map(idxDict)
+    pIndBinSwitching  = pIndBinSwitching.map(idxDict)
 
     # line type
     pLineType = pLineType.reset_index()
@@ -439,8 +439,7 @@ def InputData(DirName, CaseName, mTEPES):
     mTEPES.pIndBinNetInvest      = Param(initialize=pIndBinNetInvest    , within=Boolean, mutable=True)
     mTEPES.pIndBinGenOperat      = Param(initialize=pIndBinGenOperat    , within=Boolean, mutable=True)
     mTEPES.pIndNetLosses         = Param(initialize=pIndNetLosses       , within=Boolean, mutable=True)
-    mTEPES.pIndBinLineSwitch     = Param(initialize=pIndBinLineSwitch   , within=Boolean, mutable=True)
-    mTEPES.pIndBinLineOperat     = Param(initialize=pIndBinLineOperat   , within=Boolean, mutable=True)
+    mTEPES.pIndBinLineCommit     = Param(initialize=pIndBinLineCommit   , within=Boolean, mutable=True)
 
     mTEPES.pENSCost              = Param(initialize=pENSCost            , within=NonNegativeReals)
     mTEPES.pCO2Cost              = Param(initialize=pCO2Cost            , within=NonNegativeReals)
@@ -497,7 +496,7 @@ def InputData(DirName, CaseName, mTEPES):
     mTEPES.pIndBinLineInvest     = Param(                               mTEPES.ln, initialize=pIndBinLineInvest.to_dict()        , within=NonNegativeReals, doc='Binary investment decision'   )
     mTEPES.pSwOnTime             = Param(                               mTEPES.ln, initialize=pSwitchOnTime.to_dict()            , within=NonNegativeReals, doc='Minimum Switch On Time'       )
     mTEPES.pSwOffTime            = Param(                               mTEPES.ln, initialize=pSwitchOffTime.to_dict()           , within=NonNegativeReals, doc='Minimum Switch Off Time'      )
-    mTEPES.pIndBinSwitch         = Param(                               mTEPES.ln, initialize=pIndBinSwitch.to_dict()            , within=NonNegativeReals, doc='Switch decision'              )
+    mTEPES.pIndBinSwitching      = Param(                               mTEPES.ln, initialize=pIndBinSwitching.to_dict()            , within=NonNegativeReals, doc='Switch decision'              )
     mTEPES.pBigMFlowBck          = Param(                               mTEPES.ln, initialize=pBigMFlowBck.to_dict()             , within=NonNegativeReals, doc='Maximum backward capacity',   mutable=True)
     mTEPES.pBigMFlowFrw          = Param(                               mTEPES.ln, initialize=pBigMFlowFrw.to_dict()             , within=NonNegativeReals, doc='Maximum forward  capacity',   mutable=True)
     mTEPES.pMaxTheta             = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nd, initialize=pMaxTheta.stack().to_dict()        , within=NonNegativeReals, doc='Maximum voltage angle',       mutable=True)
@@ -542,19 +541,14 @@ def InputData(DirName, CaseName, mTEPES):
     else:
         mTEPES.vNetworkInvest    = Var(                               mTEPES.lc, within=Binary,                                                                                                          doc='network    investment decision exists in a year {0,1}')
 
-    if mTEPES.pIndBinLineSwitch == 0:
-        mTEPES.vLineSwitch       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=UnitInterval,                                                                                                    doc='line switching decision exists in a year [0,1]'       )
+    if mTEPES.pIndBinLineCommit == 0:
+        mTEPES.vLineCommit       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=UnitInterval,                                                                                                    doc='line switching decision exists in a year [0,1]'       )
         mTEPES.vLineOnState      = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=UnitInterval,                                                                                                    doc='on state    of the line                         [0,1]')
         mTEPES.vLineOffState     = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=UnitInterval,                                                                                                    doc='off state   of the line                         [0,1]')
     else:
-        mTEPES.vLineSwitch       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=Binary,                                                                                                          doc='line switching decision exists in a year {0,1}'       )
+        mTEPES.vLineCommit       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=Binary,                                                                                                          doc='line switching decision exists in a year {0,1}'       )
         mTEPES.vLineOnState      = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=Binary,                                                                                                          doc='on state    of the line                         {0,1}')
         mTEPES.vLineOffState     = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=Binary,                                                                                                          doc='off state   of the line                         {0,1}')
-
-    if mTEPES.pIndBinLineOperat == 0:
-        mTEPES.vLineCommit       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=UnitInterval,                                                                                                    doc='line state decision  [0,1]'                           )
-    else:
-        mTEPES.vLineCommit       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=Binary,                                                                                                          doc='line state decision  {0,1}'                           )
 
     # relax binary condition in generation and network investment decisions
     for gc in mTEPES.gc:
@@ -564,8 +558,8 @@ def InputData(DirName, CaseName, mTEPES):
         if mTEPES.pIndBinNetInvest != 0 and pIndBinLineInvest[lc] == 0:
             mTEPES.vNetworkInvest   [lc].domain = UnitInterval
     for sc,p,n,ni,nf,cc in list(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.la):
-        if pIndBinSwitch[ni,nf,cc] == 0:
-            mTEPES.vLineSwitch      [sc,p,n,ni,nf,cc].fix(1.0)
+        if pIndBinSwitching[ni,nf,cc] == 0:
+            mTEPES.vLineCommit      [sc,p,n,ni,nf,cc].fix(1.0)
 
 
     mTEPES.vLineLosses           = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.ll, within=NonNegativeReals, bounds=lambda mTEPES,sc,p,n,*ll: (0.0,0.5*mTEPES.pLineLossFactor[ll]*max(mTEPES.pLineNTCBck[ll],mTEPES.pLineNTCFrw[ll])), doc='half line losses                                 [GW]')

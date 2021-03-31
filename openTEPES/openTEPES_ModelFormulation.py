@@ -363,34 +363,16 @@ def NetworkOperationModelFormulation(mTEPES, st):
     StartTime = time.time()
 
     #%%
-    def eLineState_X_C(mTEPES,sc,p,n,ni,nf,cc):
+    def eLineStateCand(mTEPES,sc,p,n,ni,nf,cc):
         return mTEPES.vLineCommit[sc,p,n,ni,nf,cc] <= mTEPES.vNetworkInvest[ni,nf,cc]
-    setattr(mTEPES, 'eLineState_X_C_stage' + str(st), Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.lca, rule=eLineState_X_C, doc='Logic relation between investment and operation in candidates'))
+    setattr(mTEPES, 'eLineStateCand_stage' + str(st), Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.lca, rule=eLineStateCand, doc='Logic relation between investment and operation in candidates'))
 
-    print('eLineState_X_C        ... ', len(getattr(mTEPES, 'eLineState_X_C_stage'+str(st))), ' rows')
-
-    def eLineState_Y_C(mTEPES,sc,p,n,ni,nf,cc):
-        return mTEPES.vLineCommit[sc,p,n,ni,nf,cc] <= mTEPES.vLineSwitch[sc,p,n,ni,nf,cc]
-    setattr(mTEPES, 'eLineState_Y_C_stage' + str(st), Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.lca, rule=eLineState_Y_C, doc='Logic relation between switching and operation in candidates'))
-
-    print('eLineState_Y_C        ... ', len(getattr(mTEPES, 'eLineState_Y_C_stage'+str(st))), ' rows')
-
-    def eLineState_XY_C(mTEPES,sc,p,n,ni,nf,cc):
-        return mTEPES.vLineCommit[sc,p,n,ni,nf,cc] >= mTEPES.vNetworkInvest[ni,nf,cc] + mTEPES.vLineSwitch[sc,p,n,ni,nf,cc] - 1
-    setattr(mTEPES, 'eLineState_XY_C_stage' + str(st), Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.lca, rule=eLineState_XY_C, doc='Logic relation between switching and operation in candidates'))
-
-    print('eLineState_XY_C        ... ', len(getattr(mTEPES, 'eLineState_XY_C_stage'+str(st))), ' rows')
-
-    def eLineState_Y_E(mTEPES,sc,p,n,ni,nf,cc):
-        return mTEPES.vLineCommit[sc,p,n,ni,nf,cc] == mTEPES.vLineSwitch[sc,p,n,ni,nf,cc]
-    setattr(mTEPES, 'eLineState_Y_E_stage' + str(st), Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.lea, rule=eLineState_Y_E, doc='Logic relation between switching and operation in existing line'))
-
-    print('eLineState_Y_E         ... ', len(getattr(mTEPES, 'eLineState_Y_E_stage'+str(st))), ' rows')
+    print('eLineStateCand        ... ', len(getattr(mTEPES, 'eLineStateCand_stage' + str(st))), ' rows')
 
     def eSWOnOff(mTEPES,sc,p,n,ni,nf,cc):
-        if n == mTEPES.n.first() and mTEPES.pIndBinSwitch[ni,nf,cc] == 1:
-            return mTEPES.vLineSwitch[sc,p,n,ni,nf,cc] - mTEPES.pInitialSwitch[ni,nf,cc] == mTEPES.vLineOnState[sc,p,n,ni,nf,cc] - mTEPES.vLineOffState[sc,p,n,ni,nf,cc]
-        elif n != mTEPES.n.first() and mTEPES.pIndBinSwitch[ni,nf,cc] == 1:
+        if n == mTEPES.n.first() and mTEPES.pIndBinSwitching[ni,nf,cc] == 1:
+            return mTEPES.vLineSwitch[sc,p,n,ni,nf,cc] - mTEPES.pInitialSwitch[ni,nf,cc]                    == mTEPES.vLineOnState[sc,p,n,ni,nf,cc] - mTEPES.vLineOffState[sc,p,n,ni,nf,cc]
+        elif n != mTEPES.n.first() and mTEPES.pIndBinSwitching[ni,nf,cc] == 1:
             return mTEPES.vLineSwitch[sc,p,n,ni,nf,cc] - mTEPES.vLineSwitch[sc,p,mTEPES.n.prev(n),ni,nf,cc] == mTEPES.vLineOnState[sc,p,n,ni,nf,cc] - mTEPES.vLineOffState[sc,p,n,ni,nf,cc]
         else:
             return Constraint.Skip
@@ -403,8 +385,8 @@ def NetworkOperationModelFormulation(mTEPES, st):
     print('Switching Logic Relation              ... ', round(SwitchingLogicRelation), 's')
 
     def eMinSwOnState(mTEPES,sc,p,n,ni,nf,cc):
-        if mTEPES.pSwOnTime[ni,nf,cc] > 1 and mTEPES.n.ord(n) >= mTEPES.pSwOnTime[ni,nf,cc]:
-            return sum(mTEPES.vLineOnState [sc,p,n2,ni,nf,cc] for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pSwOnTime[ni,nf,cc]:mTEPES.n.ord(n)]) <=     mTEPES.vLineSwitch[sc,p,n,ni,nf,cc]
+        if mTEPES.pIndBinSwitching[ni,nf,cc] == 1 and mTEPES.pSwOnTime[ni,nf,cc] > 1 and mTEPES.n.ord(n) >= mTEPES.pSwOnTime[ni,nf,cc]:
+            return sum(mTEPES.vLineOnState [sc,p,n2,ni,nf,cc] for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pSwOnTime[ni,nf,cc]:mTEPES.n.ord(n)]) <=     mTEPES.vLineCommit[sc,p,n,ni,nf,cc]
         else:
             return Constraint.Skip
     setattr(mTEPES, 'eMinSwOnState_stage'+str(st), Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, rule=eMinSwOnState, doc='minimum switch on state [h]'))
@@ -412,8 +394,8 @@ def NetworkOperationModelFormulation(mTEPES, st):
     print('eMinSwOnState         ... ', len(getattr(mTEPES, 'eMinSwOnState_stage'+str(st))), ' rows')
 
     def eMinSwOffState(mTEPES,sc,p,n,ni,nf,cc):
-        if mTEPES.pSwOffTime[ni,nf,cc] > 1 and mTEPES.n.ord(n) >= mTEPES.pSwOffTime[ni,nf,cc]:
-            return sum(mTEPES.vLineOffState[sc,p,n2,ni,nf,cc] for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pSwOffTime[ni,nf,cc]:mTEPES.n.ord(n)]) <= 1 - mTEPES.vLineSwitch[sc,p,n,ni,nf,cc]
+        if mTEPES.pIndBinSwitching[ni,nf,cc] == 1 and mTEPES.pSwOffTime[ni,nf,cc] > 1 and mTEPES.n.ord(n) >= mTEPES.pSwOffTime[ni,nf,cc]:
+            return sum(mTEPES.vLineOffState[sc,p,n2,ni,nf,cc] for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pSwOffTime[ni,nf,cc]:mTEPES.n.ord(n)]) <= 1 - mTEPES.vLineCommit[sc,p,n,ni,nf,cc]
         else:
             return Constraint.Skip
     setattr(mTEPES, 'eMinSwOffState_stage'+str(st), Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, rule=eMinSwOffState, doc='minimum switch off state [h]'))
