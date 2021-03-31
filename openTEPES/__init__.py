@@ -1,5 +1,5 @@
 """ Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 31, 2021
-"""
+
 
     Args:
         case: Name of the folder where the CSV files of the case are found
