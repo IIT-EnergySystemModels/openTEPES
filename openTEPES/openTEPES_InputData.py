@@ -552,9 +552,9 @@ def InputData(DirName, CaseName, mTEPES):
         mTEPES.vLineOffState     = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=Binary,                                                                                                          doc='off state   of the line                         {0,1}')
 
     if mTEPES.pIndBinLineOperat == 0:
-        mTEPES.vLineOperat       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=UnitInterval,                                                                                                    doc='line state decision  [0,1]'                           )
+        mTEPES.vLineCommit       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=UnitInterval,                                                                                                    doc='line state decision  [0,1]'                           )
     else:
-        mTEPES.vLineOperat       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=Binary,                                                                                                          doc='line state decision  {0,1}'                           )
+        mTEPES.vLineCommit       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=Binary,                                                                                                          doc='line state decision  {0,1}'                           )
 
     # relax binary condition in generation and network investment decisions
     for gc in mTEPES.gc:
