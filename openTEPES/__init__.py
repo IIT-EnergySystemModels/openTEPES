@@ -1,4 +1,5 @@
-"""Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS.
+""" Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 31, 2021
+"""
 
     Args:
         case: Name of the folder where the CSV files of the case are found
@@ -13,7 +14,7 @@
         >>> oT.routine("9n", "C:\\Users\\UserName\\Documents\\GitHub\\openTEPES", "glpk")
 """
 
-__version__ = '2.1.0'
+__version__ = '2.2.0'
 from .openTEPES_Main import main
 from .openTEPES import *
 from .openTEPES_InputData import *
