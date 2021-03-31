@@ -65,7 +65,7 @@
 # make it effectively proprietary.  To prevent this, the GPL assures that
 # patents cannot be used to render the program non-free.
 
-# Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 2.2.0 - March 20, 2021
+# Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 2.2.0 - March 31, 2021
 # simplicity and transparency in power systems planning
 
 # Developed by
@@ -89,10 +89,11 @@ import os
 # import pkg_resources
 from openTEPES.openTEPES import openTEPES_run
 import openTEPES
+
 CASE = '9n'
 parser = argparse.ArgumentParser(description='Introducing main parameters...')
-parser.add_argument('--case', type=str,   default=None)
-parser.add_argument('--dir', type=str,    default=None)
+parser.add_argument('--case',   type=str, default=None)
+parser.add_argument('--dir',    type=str, default=None)
 parser.add_argument('--solver', type=str, default=None)
 
 # DIR = pkg_resources.resource_stream(__name__, CASE)

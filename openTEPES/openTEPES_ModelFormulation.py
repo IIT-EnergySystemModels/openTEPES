@@ -1,4 +1,4 @@
-""" Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES)- March 30, 2021
+""" Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 31, 2021
 """
 
 import time
@@ -361,25 +361,31 @@ def NetworkOperationModelFormulation(mTEPES, st):
     print('Netw oper  model formulation ****')
 
     StartTime = time.time()
+
     #%%
-    # if len(mTEPES.lc) != 0 and len(mTEPES.pIndBinSwitch) != 0:
     def eLineState_X_C(mTEPES,sc,p,n,ni,nf,cc):
         return mTEPES.vLineCommit[sc,p,n,ni,nf,cc] <= mTEPES.vNetworkInvest[ni,nf,cc]
     setattr(mTEPES, 'eLineState_X_C_stage' + str(st), Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.lca, rule=eLineState_X_C, doc='Logic relation between investment and operation in candidates'))
+
+    print('eLineState_X_C        ... ', len(getattr(mTEPES, 'eLineState_X_C_stage'+str(st))), ' rows')
 
     def eLineState_Y_C(mTEPES,sc,p,n,ni,nf,cc):
         return mTEPES.vLineCommit[sc,p,n,ni,nf,cc] <= mTEPES.vLineSwitch[sc,p,n,ni,nf,cc]
     setattr(mTEPES, 'eLineState_Y_C_stage' + str(st), Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.lca, rule=eLineState_Y_C, doc='Logic relation between switching and operation in candidates'))
 
+    print('eLineState_Y_C        ... ', len(getattr(mTEPES, 'eLineState_Y_C_stage'+str(st))), ' rows')
+
     def eLineState_XY_C(mTEPES,sc,p,n,ni,nf,cc):
         return mTEPES.vLineCommit[sc,p,n,ni,nf,cc] >= mTEPES.vNetworkInvest[ni,nf,cc] + mTEPES.vLineSwitch[sc,p,n,ni,nf,cc] - 1
     setattr(mTEPES, 'eLineState_XY_C_stage' + str(st), Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.lca, rule=eLineState_XY_C, doc='Logic relation between switching and operation in candidates'))
+
+    print('eLineState_XY_C        ... ', len(getattr(mTEPES, 'eLineState_XY_C_stage'+str(st))), ' rows')
 
     def eLineState_Y_E(mTEPES,sc,p,n,ni,nf,cc):
         return mTEPES.vLineCommit[sc,p,n,ni,nf,cc] == mTEPES.vLineSwitch[sc,p,n,ni,nf,cc]
     setattr(mTEPES, 'eLineState_Y_E_stage' + str(st), Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.lea, rule=eLineState_Y_E, doc='Logic relation between switching and operation in existing line'))
 
-
+    print('eLineState_Y_E         ... ', len(getattr(mTEPES, 'eLineState_Y_E_stage'+str(st))), ' rows')
 
     def eSWOnOff(mTEPES,sc,p,n,ni,nf,cc):
         if n == mTEPES.n.first() and mTEPES.pIndBinSwitch[ni,nf,cc] == 1:
@@ -388,10 +394,9 @@ def NetworkOperationModelFormulation(mTEPES, st):
             return mTEPES.vLineSwitch[sc,p,n,ni,nf,cc] - mTEPES.vLineSwitch[sc,p,mTEPES.n.prev(n),ni,nf,cc] == mTEPES.vLineOnState[sc,p,n,ni,nf,cc] - mTEPES.vLineOffState[sc,p,n,ni,nf,cc]
         else:
             return Constraint.Skip
-
     setattr(mTEPES, 'eSWOnOff_stage' + str(st), Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, rule=eSWOnOff, doc='relation among switching decision activate and deactivate state'))
 
-    print('eSWOnOff              ... ', len(getattr(mTEPES, 'eSWOnOff_stage' + str(st))), ' rows')
+    print('eSWOnOff              ... ', len(getattr(mTEPES, 'eSWOnOff_stage'+str(st))), ' rows')
 
     SwitchingLogicRelation = time.time() - StartTime
     StartTime              = time.time()

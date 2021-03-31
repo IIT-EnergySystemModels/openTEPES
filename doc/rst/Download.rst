@@ -17,7 +17,7 @@ Besides, it also requires the following packages:
 
 Cases
 -----
-Here, you have the input files of a small case study of `9 nodes <../9n.zip>`_ and another one to a `small Spanish system <../sSEP.zip>`_.
+Here, you have the input files of a small case study of `9 nodes <https://pascua.iit.comillas.edu/aramos/9n.zip>`_ and another one to a `small Spanish system <https://pascua.iit.comillas.edu/aramos/sSEP.zip>`_.
 
 Code
 ----

@@ -53,8 +53,8 @@ File                                       Description
 ``oT_Data_Generation.csv``                 Generation data
 ``oT_Data_VariableMaxGeneration.csv``      Variable maximum power generation by load level
 ``oT_Data_VariableMinGeneration.csv``      Variable minimum power generation by load level
-``oT_Data_EnergyInflows.csv``              Energy inflows for the ESS
-``oT_Data_EnergyOutflows.csv``             Energy outflows from an ESS for H2 production or EV mobility or irrigation
+``oT_Data_EnergyInflows.csv``              Energy inflows to the ESS
+``oT_Data_EnergyOutflows.csv``             Energy outflows from an ESS for Power-to-X (H2 production or EV mobility or irrigation)
 ``oT_Data_MaximumStorage.csv``             Maximum storage of the ESS by load level
 ``oT_Data_MinimumStorage.csv``             Minimum storage of the ESS by load level
 ``oT_Data_Network.csv``                    Network data
@@ -90,8 +90,8 @@ UpReserveActivation   Upward reserve activation (proportion of upward operating 
 DwReserveActivation   Downward reserve activation (proportion of downward operating reserve deployed to produce energy)              p.u.
 Sbase                 Base power used in the DCLF                                                                                    MW   
 ReferenceNode         Reference node used in the DCLF                                                                               
-TimeStep              Duration of the time step for the load levels (hourly, bi-hourly, trihourly, etc.).                            h
-StageDuration         Duration of the stage (weekly -168-, monthly -672-, quarterly -2184-, semesterly -4368-, or annually -8736-).  h
+TimeStep              Duration of the time step for the load levels (hourly, bi-hourly, trihourly, etc.)                             h
+StageDuration         Duration of the stage (weekly -168-, monthly -672-, quarterly -2184-, semesterly -4368-, or annually -8736-)   h
 ====================  =============================================================================================================  ================
 
 A time step greater than one hour it is a convenient way to reduce the load levels of the time scope. The moving average of the demand, upward and downward operating reserves, variable generation and ESS energy inflows over
@@ -157,9 +157,9 @@ Generation
 ----------
 A description of the data included for each generating unit in the file ``oT_Data_Generation.csv`` follows:
 
-====================  ===================================================================================================================  ============================
+====================  ===================================================================================================================  ===================================
 Header                Description                                                                             
-====================  ===================================================================================================================  ============================  
+====================  ===================================================================================================================  ===================================
 Node                  Name of the node where generator is located                                                  
 Technology            Technology of the generator (nuclear, coal, CCGT, OCGT, ESS, etc.)                       
 StorageType           Storage type based on storage capacity (daily, weekly, monthly, etc.)                                                Daily/Weekly/Monthly
@@ -189,10 +189,10 @@ CO2EmissionRate       CO2 emission rate                                         
 FixedCost             Overnight investment (capital) cost                                                                                  M€
 FixedChargeRate       Fixed charge rate to annualize the overnight investment cost                                                         p.u.
 BinaryInvestment      Binary unit investment decision                                                                                      Yes/No
-====================  ===================================================================================================================  ============================
+====================  ===================================================================================================================  ===================================
 
-Daily storage type means that the inventory is assessed every time step, weekly storage type is assessed at the end of every day, and monthly storage type is assessed at the end of every week.
-Outflows type represents the interval when the demand extracted from the storage needs to be satisfied.
+Daily storage type means that the ESS inventory is assessed every time step, weekly storage type is assessed at the end of every day, and monthly storage type is assessed at the end of every week.
+Outflows type represents the interval when the energy extracted from the storage needs to be satisfied.
 The storage cycle is the minimum between the inventory assessment period and the outflows period. It can be one time step, one day, and one week.
 The ESS inventory level at the end of a large storage cycle is fixed to its initial value, i.e., the inventory of a daily storage type (evaluated on a time step basis) is fixed at the end of the week,
 the inventory of weekly/monthly storage is fixed at the end of the year.
