@@ -256,7 +256,7 @@ def InputData(DirName, CaseName, mTEPES):
 
     # replacing string values by numerical values
     idxDict = dict()
-    idxDict[0] = 0
+    idxDict[0    ] = 0
     idxDict['Yes'] = 1
     idxDict['YES'] = 1
     idxDict['Y'  ] = 1
@@ -264,7 +264,7 @@ def InputData(DirName, CaseName, mTEPES):
 
     pIndBinUnitInvest = pIndBinUnitInvest.map(idxDict)
     pIndBinLineInvest = pIndBinLineInvest.map(idxDict)
-    pIndBinSwitching  = pIndBinSwitching.map(idxDict)
+    pIndBinSwitching  = pIndBinSwitching.map (idxDict)
 
     # line type
     pLineType = pLineType.reset_index()
@@ -494,9 +494,9 @@ def InputData(DirName, CaseName, mTEPES):
     mTEPES.pLineNTCBck           = Param(                               mTEPES.ln, initialize=pLineNTCBck.to_dict()              , within=NonNegativeReals, doc='NTC backward'                 )
     mTEPES.pNetFixedCost         = Param(                               mTEPES.ln, initialize=pNetFixedCost.to_dict()            , within=NonNegativeReals, doc='Network fixed cost'           )
     mTEPES.pIndBinLineInvest     = Param(                               mTEPES.ln, initialize=pIndBinLineInvest.to_dict()        , within=NonNegativeReals, doc='Binary investment decision'   )
-    mTEPES.pSwOnTime             = Param(                               mTEPES.ln, initialize=pSwitchOnTime.to_dict()            , within=NonNegativeReals, doc='Minimum Switch On Time'       )
-    mTEPES.pSwOffTime            = Param(                               mTEPES.ln, initialize=pSwitchOffTime.to_dict()           , within=NonNegativeReals, doc='Minimum Switch Off Time'      )
-    mTEPES.pIndBinSwitching      = Param(                               mTEPES.ln, initialize=pIndBinSwitching.to_dict()            , within=NonNegativeReals, doc='Switch decision'              )
+    mTEPES.pSwOnTime             = Param(                               mTEPES.ln, initialize=pSwitchOnTime.to_dict()            , within=NonNegativeReals, doc='Minimum switching on  time'   )
+    mTEPES.pSwOffTime            = Param(                               mTEPES.ln, initialize=pSwitchOffTime.to_dict()           , within=NonNegativeReals, doc='Minimum switching off time'   )
+    mTEPES.pIndBinSwitching      = Param(                               mTEPES.ln, initialize=pIndBinSwitching.to_dict()         , within=NonNegativeReals, doc='Switching decision'           )
     mTEPES.pBigMFlowBck          = Param(                               mTEPES.ln, initialize=pBigMFlowBck.to_dict()             , within=NonNegativeReals, doc='Maximum backward capacity',   mutable=True)
     mTEPES.pBigMFlowFrw          = Param(                               mTEPES.ln, initialize=pBigMFlowFrw.to_dict()             , within=NonNegativeReals, doc='Maximum forward  capacity',   mutable=True)
     mTEPES.pMaxTheta             = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nd, initialize=pMaxTheta.stack().to_dict()        , within=NonNegativeReals, doc='Maximum voltage angle',       mutable=True)
@@ -557,10 +557,13 @@ def InputData(DirName, CaseName, mTEPES):
     for lc in mTEPES.lc:
         if mTEPES.pIndBinNetInvest != 0 and pIndBinLineInvest[lc] == 0:
             mTEPES.vNetworkInvest   [lc].domain = UnitInterval
-    for sc,p,n,ni,nf,cc in list(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.la):
-        if pIndBinSwitching[ni,nf,cc] == 0:
-            mTEPES.vLineCommit      [sc,p,n,ni,nf,cc].fix(1.0)
 
+    # by default existing AC and DC lines are always committed
+    for sc,p,n,ni,nf,cc in list(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.le):
+        if mTEPES.pIndBinSwitching[ni,nf,cc] == 0:
+            mTEPES.vLineCommit  [sc,p,n,ni,nf,cc].fix(1)
+            mTEPES.vLineOnState [sc,p,n,ni,nf,cc].fix(0)
+            mTEPES.vLineOffState[sc,p,n,ni,nf,cc].fix(0)
 
     mTEPES.vLineLosses           = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.ll, within=NonNegativeReals, bounds=lambda mTEPES,sc,p,n,*ll: (0.0,0.5*mTEPES.pLineLossFactor[ll]*max(mTEPES.pLineNTCBck[ll],mTEPES.pLineNTCFrw[ll])), doc='half line losses                                 [GW]')
     mTEPES.vFlow                 = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=Reals,            bounds=lambda mTEPES,sc,p,n,*la: (-mTEPES.pLineNTCBck[la],mTEPES.pLineNTCFrw[la]),                                        doc='flow                                             [GW]')

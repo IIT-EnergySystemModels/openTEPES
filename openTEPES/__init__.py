@@ -15,9 +15,9 @@
 """
 
 __version__ = '2.2.0'
-from .openTEPES_Main import main
-from .openTEPES import *
-from .openTEPES_InputData import *
+from .openTEPES_Main             import main
+from .openTEPES                  import *
+from .openTEPES_InputData        import *
 from .openTEPES_ModelFormulation import *
-from .openTEPES_OutputResults import *
-from .openTEPES_ProblemSolving import *
+from .openTEPES_OutputResults    import *
+from .openTEPES_ProblemSolving   import *
