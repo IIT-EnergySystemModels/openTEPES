@@ -30,7 +30,7 @@ The objective function incorporates the two main quantifiable costs: **generatio
 The model formulates a stochastic optimization problem including generation and network binary investment decisions and operation decisions (commitment, startup and shutdown decisions are also binary).
 
 The operation model is a **network constrained unit commitment (NCUC)** based on a **tight and compact** formulation including operating reserves with a
-**DC power flow (DCPF)**. Network ohmic losses are considered proportional to the line flow. It considers different **energy storage systems (ESS)**, e.g., pumped-storage hydro,
+**DC power flow (DCPF)** including **line switching** decisions. Network ohmic losses are considered proportional to the line flow. It considers different **energy storage systems (ESS)**, e.g., pumped-storage hydro,
 battery, etc. It allows analyzing the trade-off between the investment in generation/transmission and the investment or use of storage capacity. 
 
 The main results of the model can be structured in these topics:
@@ -38,6 +38,6 @@ The main results of the model can be structured in these topics:
 - **Investment**: investment decisions and cost
 - **Operation**: the output of different units and aggregation by technologies (thermal, storage hydro, pumped-storage hydro, RES), RES curtailment, line flows, line ohmic losses, node voltage angles
 - **Emissions**: CO2 emissions by unit
-- **Marginal**: Locational Short-Run Marginal Costs (LSRMC)
+- **Marginal**: Locational Short-Run Marginal Costs (LSRMC), water value
 
 A careful implementation has been done to avoid numerical problems by scaling parameters, variables and equations of the optimization problem allowing the model to be used for large-scale cases, e.g., the European system with hourly detail.
