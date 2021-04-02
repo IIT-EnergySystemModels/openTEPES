@@ -7,7 +7,7 @@ from   pyomo.environ import Set, Constraint, Objective, Block, minimize
 
 
 def InvestmentModelFormulation(mTEPES):
-    print('Investment model formulation ****')
+    print('Investment model formulation           ****')
 
     StartTime = time.time()
 
@@ -25,7 +25,7 @@ def InvestmentModelFormulation(mTEPES):
 
 
 def GenerationOperationModelFormulation(mTEPES, st):
-    print('Genr oper  model formulation ****')
+    print('Generation operation model formulation ****')
 
     StartTime = time.time()
 
@@ -358,7 +358,7 @@ def GenerationOperationModelFormulation(mTEPES, st):
 
 
 def NetworkDecisionModelFormulation(mTEPES, st):
-    print('Netw decis model formulation ****')
+    print('Network decision model formulation     ****')
 
     StartTime = time.time()
     #%%
@@ -411,7 +411,7 @@ def NetworkDecisionModelFormulation(mTEPES, st):
 
 
 def NetworkOperationModelFormulation(mTEPES, st):
-    print('Netw oper  model formulation ****')
+    print('Network operation model formulation    ****')
 
     StartTime = time.time()
     #%%

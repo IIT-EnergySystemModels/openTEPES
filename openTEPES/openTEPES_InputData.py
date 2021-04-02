@@ -9,7 +9,8 @@ from   pyomo.environ import DataPortal, Set, Param, Var, Binary, NonNegativeReal
 
 
 def InputData(DirName, CaseName, mTEPES):
-    print('Input data                  ****')
+    print('Input data                             ****')
+
     _path = os.path.join(DirName, CaseName)
     StartTime = time.time()
     #%% reading data from CSV
@@ -213,7 +214,7 @@ def InputData(DirName, CaseName, mTEPES):
 
     ReadingDataTime = time.time() - StartTime
     StartTime       = time.time()
-    print('Reading    input data                 ... ', round(ReadingDataTime), 's')
+    print('Reading    input data                  ... ', round(ReadingDataTime), 's')
 
     #%% defining subsets: active load levels (n,n2), thermal units (t), RES units (r), ESS units (es), candidate gen units (gc), candidate ESS units (ec), all the lines (la), candidate lines (lc), candidate DC lines (cd), existing DC lines (cd), lines with losses (ll), reference node (rf), and reactive generating units (gq)
     mTEPES.sc = Set(initialize=mTEPES.scc,                    ordered=True , doc='scenarios'          , filter=lambda mTEPES,scc     :  scc       in mTEPES.scc and pScenProb        [scc] >  0.0)
@@ -378,11 +379,6 @@ def InputData(DirName, CaseName, mTEPES):
     # the stage duration is the maximum between the defined stage duration and the storage type and the outflows type for any ESS to avoid breaking the energy outflows constraints
     pStageDuration = max(pStageDuration, pCycleTimeStep.max(), pOutflowsTimeStep.max())
 
-    # pStorageType = pStorageType[pStorageType.index.isin(mTEPES.es)]
-    # mTEPES.pStorageType = Param(mTEPES.es, initialize=pStorageType.to_dict(),   within=Any, doc='ESS storage type')
-    # pOutflowsType = pOutflowsType[pOutflowsType.index.isin(mTEPES.es)]
-    # mTEPES.pOutflowsType = Param(mTEPES.es, initialize=pOutflowsType.to_dict(), within=Any, doc='ESS outflows type')
-
     # drop load levels with duration 0
     pDuration         = pDuration.loc        [list(                   mTEPES.n          )]
     pDemand           = pDemand.loc          [list(mTEPES.sc*mTEPES.p*mTEPES.n          )]
@@ -513,7 +509,7 @@ def InputData(DirName, CaseName, mTEPES):
     mTEPES.vOutput2ndBlock       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=NonNegativeReals, bounds=lambda mTEPES,sc,p,n,nr: (0.0,mTEPES.pMaxPower2ndBlock[sc,p,n,nr]),                     doc='second block of the unit                         [GW]')
     mTEPES.vReserveUp            = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=NonNegativeReals, bounds=lambda mTEPES,sc,p,n,nr: (0.0,mTEPES.pMaxPower2ndBlock[sc,p,n,nr]),                     doc='upward   operating reserve                       [GW]')
     mTEPES.vReserveDown          = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=NonNegativeReals, bounds=lambda mTEPES,sc,p,n,nr: (0.0,mTEPES.pMaxPower2ndBlock[sc,p,n,nr]),                     doc='downward operating reserve                       [GW]')
-    mTEPES.vEnergyOutflows       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.g , within=NonNegativeReals, bounds=lambda mTEPES,sc,p,n,g : (0.0,mTEPES.pMaxPower        [sc,p,n,g ]),                     doc='total outflows of the unit                       [GW]')
+    mTEPES.vEnergyOutflows       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.g , within=NonNegativeReals, bounds=lambda mTEPES,sc,p,n,g : (0.0,mTEPES.pMaxPower        [sc,p,n,g ]),                     doc='total outflows of the ESS unit                   [GW]')
     mTEPES.vESSInventory         = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es, within=NonNegativeReals, bounds=lambda mTEPES,sc,p,n,es: (mTEPES.pMinStorage[sc,p,n,es],mTEPES.pMaxStorage[sc,p,n,es]), doc='ESS inventory                                   [GWh]')
     mTEPES.vESSSpillage          = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es, within=NonNegativeReals,                                                                                                doc='ESS spillage                                    [GWh]')
     mTEPES.vESSTotalCharge       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es, within=NonNegativeReals, bounds=lambda mTEPES,sc,p,n,es: (0.0,mTEPES.pMaxCharge       [es]       ),                     doc='ESS total charge power                           [GW]')
@@ -677,4 +673,4 @@ def InputData(DirName, CaseName, mTEPES):
 
     SettingUpDataTime = time.time() - StartTime
     StartTime         = time.time()
-    print('Setting up input data                 ... ', round(SettingUpDataTime), 's')
+    print('Setting up input data                  ... ', round(SettingUpDataTime), 's')
