@@ -4,6 +4,10 @@ Change Log
 - [CHANGED] Addition of the sequence of decisions and operation (TEP + transmission switching)
 - [FIXED] fixing `<https://pascua.iit.comillas.edu/aramos/openTEPES/index.html#>`_ in README.rst 
 
+[2.2.1] - 2021-04-02
+----------------------
+- [CHANGED] added three new output files for line commitment, switch on and off
+
 [2.2.0] - 2021-03-31
 ----------------------
 - [CHANGED] introduction of Power-to-X in ESS. Modifies the Generation file and introduces a new EnergyOutflows file

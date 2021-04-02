@@ -1,4 +1,4 @@
-""" Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 31, 2021
+""" Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 2, 2021
 """
 
 import time
@@ -8,7 +8,7 @@ import setuptools
 from pyomo.environ import ConcreteModel, Set
 
 from openTEPES.openTEPES_InputData        import InputData
-from openTEPES.openTEPES_ModelFormulation import InvestmentModelFormulation, GenerationOperationModelFormulation, NetworkOperationModelFormulation
+from openTEPES.openTEPES_ModelFormulation import InvestmentModelFormulation, GenerationOperationModelFormulation, NetworkDecisionModelFormulation, NetworkOperationModelFormulation
 from openTEPES.openTEPES_ProblemSolving   import ProblemSolving
 from openTEPES.openTEPES_OutputResults    import InvestmentResults, GenerationOperationResults, ESSOperationResults, FlexibilityResults, NetworkOperationResults, MarginalResults, EconomicResults, NetworkMapResults
 
@@ -19,7 +19,7 @@ def openTEPES_run(DirName, CaseName, SolverName):
     _path = os.path.join(DirName, CaseName)
 
     #%% model declaration
-    mTEPES = ConcreteModel('Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 2.2.0 - March 31, 2021')
+    mTEPES = ConcreteModel('Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 2.2.1 - April 2, 2021')
 
     InputData(DirName, CaseName, mTEPES)
 
@@ -43,6 +43,7 @@ def openTEPES_run(DirName, CaseName, SolverName):
         # operation model objective function and constraints by stage
         GenerationOperationModelFormulation(mTEPES, st)
         NetworkOperationModelFormulation   (mTEPES, st)
+        NetworkDecisionModelFormulation    (mTEPES, st)
 
     StartTime = time.time()
     mTEPES.write(_path+'/openTEPES_'+CaseName+'.lp', io_options={'symbolic_solver_labels': True})  # create lp-format file

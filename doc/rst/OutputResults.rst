@@ -263,13 +263,37 @@ Scenario      Period      Load level  Generator   Spilled energy in ESS [GWh]
 Network operation
 -----------------
 
+File ``oT_Result_NetworkCommitment.csv``
+
+============  ==========  ==========  ============  ==========  =========  ==========================
+Identifier    Identifier  Identifier  Header        Header      Header     Description
+============  ==========  ==========  ============  ==========  =========  ==========================
+Scenario      Period      Load level  Initial node  Final node  Circuit    Commitment decision [p.u.]
+============  ==========  ==========  ============  ==========  =========  ==========================
+
+File ``oT_Result_NetworkSwitchOn.csv``
+
+============  ==========  ==========  ============  ==========  =========  ==========================
+Identifier    Identifier  Identifier  Header        Header      Header     Description
+============  ==========  ==========  ============  ==========  =========  ==========================
+Scenario      Period      Load level  Initial node  Final node  Circuit    Switch on decision [p.u.]
+============  ==========  ==========  ============  ==========  =========  ==========================
+
+File ``oT_Result_NetworkSwitchOff.csv``
+
+============  ==========  ==========  ============  ==========  =========  ==========================
+Identifier    Identifier  Identifier  Header        Header      Header     Description
+============  ==========  ==========  ============  ==========  =========  ==========================
+Scenario      Period      Load level  Initial node  Final node  Circuit    Switch off decision [p.u.]
+============  ==========  ==========  ============  ==========  =========  ==========================
+
 File ``oT_Result_NetworkFlow.csv``
 
-============  ==========  ==========  ============  ==========================================
+============  ==========  ==========  ============  ==========  =========  =======================
 Identifier    Identifier  Identifier  Header        Header      Header      Description
-============  ==========  ==========  ============  ==========================================
+============  ==========  ==========  ============  ==========  =========  =======================
 Scenario      Period      Load level  Initial node  Final node  Circuit     Line flow [MW]
-============  ==========  ==========  ============  ==========================================
+============  ==========  ==========  ============  ==========  =========  =======================
 
 File ``oT_Result_NetworkUtilization.csv``
 
