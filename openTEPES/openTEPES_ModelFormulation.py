@@ -1,4 +1,4 @@
-""" Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 31, 2021
+""" Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 2, 2021
 """
 
 import time
@@ -357,54 +357,40 @@ def GenerationOperationModelFormulation(mTEPES, st):
     print('Generating minimum up/down time       ... ', round(GeneratingMinUDTime), 's')
 
 
-def NetworkOperationModelFormulation(mTEPES, st):
-    print('Netw oper  model formulation ****')
+def NetworkDecisionModelFormulation(mTEPES, st):
+    print('Netw decis model formulation ****')
 
     StartTime = time.time()
-
     #%%
-    def eLineState_X_C(mTEPES,sc,p,n,ni,nf,cc):
-        return mTEPES.vLineCommit[sc,p,n,ni,nf,cc] <= mTEPES.vNetworkInvest[ni,nf,cc]
-    setattr(mTEPES, 'eLineState_X_C_stage' + str(st), Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.lca, rule=eLineState_X_C, doc='Logic relation between investment and operation in candidates'))
+    def eLineStateCand(mTEPES,sc,p,n,ni,nf,cc):
+        if   mTEPES.pIndBinSwitching[ni,nf,cc] == 1:
+            return mTEPES.vLineCommit[sc,p,n,ni,nf,cc] <= mTEPES.vNetworkInvest[ni,nf,cc]
+        elif mTEPES.pIndBinSwitching[ni,nf,cc] == 0:
+            return mTEPES.vLineCommit[sc,p,n,ni,nf,cc] == mTEPES.vNetworkInvest[ni,nf,cc]
+        else:
+            return Constraint.Skip
+    setattr(mTEPES, 'eLineStateCand_stage' + str(st), Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.lc, rule=eLineStateCand, doc='logical relation between investment and operation in candidates'))
 
-    print('eLineState_X_C        ... ', len(getattr(mTEPES, 'eLineState_X_C_stage'+str(st))), ' rows')
-
-    def eLineState_Y_C(mTEPES,sc,p,n,ni,nf,cc):
-        return mTEPES.vLineCommit[sc,p,n,ni,nf,cc] <= mTEPES.vLineSwitch[sc,p,n,ni,nf,cc]
-    setattr(mTEPES, 'eLineState_Y_C_stage' + str(st), Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.lca, rule=eLineState_Y_C, doc='Logic relation between switching and operation in candidates'))
-
-    print('eLineState_Y_C        ... ', len(getattr(mTEPES, 'eLineState_Y_C_stage'+str(st))), ' rows')
-
-    def eLineState_XY_C(mTEPES,sc,p,n,ni,nf,cc):
-        return mTEPES.vLineCommit[sc,p,n,ni,nf,cc] >= mTEPES.vNetworkInvest[ni,nf,cc] + mTEPES.vLineSwitch[sc,p,n,ni,nf,cc] - 1
-    setattr(mTEPES, 'eLineState_XY_C_stage' + str(st), Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.lca, rule=eLineState_XY_C, doc='Logic relation between switching and operation in candidates'))
-
-    print('eLineState_XY_C        ... ', len(getattr(mTEPES, 'eLineState_XY_C_stage'+str(st))), ' rows')
-
-    def eLineState_Y_E(mTEPES,sc,p,n,ni,nf,cc):
-        return mTEPES.vLineCommit[sc,p,n,ni,nf,cc] == mTEPES.vLineSwitch[sc,p,n,ni,nf,cc]
-    setattr(mTEPES, 'eLineState_Y_E_stage' + str(st), Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.lea, rule=eLineState_Y_E, doc='Logic relation between switching and operation in existing line'))
-
-    print('eLineState_Y_E         ... ', len(getattr(mTEPES, 'eLineState_Y_E_stage'+str(st))), ' rows')
+    print('eLineStateCand        ... ', len(getattr(mTEPES, 'eLineStateCand_stage' + str(st))), ' rows')
 
     def eSWOnOff(mTEPES,sc,p,n,ni,nf,cc):
-        if n == mTEPES.n.first() and mTEPES.pIndBinSwitch[ni,nf,cc] == 1:
-            return mTEPES.vLineSwitch[sc,p,n,ni,nf,cc] - mTEPES.pInitialSwitch[ni,nf,cc] == mTEPES.vLineOnState[sc,p,n,ni,nf,cc] - mTEPES.vLineOffState[sc,p,n,ni,nf,cc]
-        elif n != mTEPES.n.first() and mTEPES.pIndBinSwitch[ni,nf,cc] == 1:
-            return mTEPES.vLineSwitch[sc,p,n,ni,nf,cc] - mTEPES.vLineSwitch[sc,p,mTEPES.n.prev(n),ni,nf,cc] == mTEPES.vLineOnState[sc,p,n,ni,nf,cc] - mTEPES.vLineOffState[sc,p,n,ni,nf,cc]
+        if   n == mTEPES.n.first() and mTEPES.pIndBinSwitching[ni,nf,cc] == 1:
+            return mTEPES.vLineCommit[sc,p,n,ni,nf,cc] - mTEPES.pInitialSwitch[ni,nf,cc]                    == mTEPES.vLineOnState[sc,p,n,ni,nf,cc] - mTEPES.vLineOffState[sc,p,n,ni,nf,cc]
+        elif n != mTEPES.n.first() and mTEPES.pIndBinSwitching[ni,nf,cc] == 1:
+            return mTEPES.vLineCommit[sc,p,n,ni,nf,cc] - mTEPES.vLineCommit[sc,p,mTEPES.n.prev(n),ni,nf,cc] == mTEPES.vLineOnState[sc,p,n,ni,nf,cc] - mTEPES.vLineOffState[sc,p,n,ni,nf,cc]
         else:
             return Constraint.Skip
     setattr(mTEPES, 'eSWOnOff_stage' + str(st), Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, rule=eSWOnOff, doc='relation among switching decision activate and deactivate state'))
 
     print('eSWOnOff              ... ', len(getattr(mTEPES, 'eSWOnOff_stage'+str(st))), ' rows')
 
-    SwitchingLogicRelation = time.time() - StartTime
-    StartTime              = time.time()
-    print('Switching Logic Relation              ... ', round(SwitchingLogicRelation), 's')
+    SwitchingLogicalRelation = time.time() - StartTime
+    StartTime                = time.time()
+    print('Switching logical relation            ... ', round(SwitchingLogicalRelation), 's')
 
     def eMinSwOnState(mTEPES,sc,p,n,ni,nf,cc):
-        if mTEPES.pSwOnTime[ni,nf,cc] > 1 and mTEPES.n.ord(n) >= mTEPES.pSwOnTime[ni,nf,cc]:
-            return sum(mTEPES.vLineOnState [sc,p,n2,ni,nf,cc] for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pSwOnTime[ni,nf,cc]:mTEPES.n.ord(n)]) <=     mTEPES.vLineSwitch[sc,p,n,ni,nf,cc]
+        if mTEPES.pIndBinSwitching[ni,nf,cc] == 1 and mTEPES.pSwOnTime [ni,nf,cc] > 1 and mTEPES.n.ord(n) >= mTEPES.pSwOnTime [ni,nf,cc]:
+            return sum(mTEPES.vLineOnState [sc,p,n2,ni,nf,cc] for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pSwOnTime [ni,nf,cc]:mTEPES.n.ord(n)]) <=    mTEPES.vLineCommit[sc,p,n,ni,nf,cc]
         else:
             return Constraint.Skip
     setattr(mTEPES, 'eMinSwOnState_stage'+str(st), Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, rule=eMinSwOnState, doc='minimum switch on state [h]'))
@@ -412,8 +398,8 @@ def NetworkOperationModelFormulation(mTEPES, st):
     print('eMinSwOnState         ... ', len(getattr(mTEPES, 'eMinSwOnState_stage'+str(st))), ' rows')
 
     def eMinSwOffState(mTEPES,sc,p,n,ni,nf,cc):
-        if mTEPES.pSwOffTime[ni,nf,cc] > 1 and mTEPES.n.ord(n) >= mTEPES.pSwOffTime[ni,nf,cc]:
-            return sum(mTEPES.vLineOffState[sc,p,n2,ni,nf,cc] for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pSwOffTime[ni,nf,cc]:mTEPES.n.ord(n)]) <= 1 - mTEPES.vLineSwitch[sc,p,n,ni,nf,cc]
+        if mTEPES.pIndBinSwitching[ni,nf,cc] == 1 and mTEPES.pSwOffTime[ni,nf,cc] > 1 and mTEPES.n.ord(n) >= mTEPES.pSwOffTime[ni,nf,cc]:
+            return sum(mTEPES.vLineOffState[sc,p,n2,ni,nf,cc] for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pSwOffTime[ni,nf,cc]:mTEPES.n.ord(n)]) <= 1 - mTEPES.vLineCommit[sc,p,n,ni,nf,cc]
         else:
             return Constraint.Skip
     setattr(mTEPES, 'eMinSwOffState_stage'+str(st), Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, rule=eMinSwOffState, doc='minimum switch off state [h]'))
@@ -421,31 +407,62 @@ def NetworkOperationModelFormulation(mTEPES, st):
     print('eMinSwOffState        ... ', len(getattr(mTEPES, 'eMinSwOffState_stage'+str(st))), ' rows')
 
     SwitchingMinStateTime = time.time() - StartTime
-    StartTime           = time.time()
     print('Switching minimum on/off state        ... ', round(SwitchingMinStateTime), 's')
 
+
+def NetworkOperationModelFormulation(mTEPES, st):
+    print('Netw oper  model formulation ****')
+
+    StartTime = time.time()
     #%%
-    def eNetCap1(mTEPES,sc,p,n,ni,nf,cc):
+    def eExistNetCap1(mTEPES,sc,p,n,ni,nf,cc):
+        if mTEPES.pIndBinSwitching[ni,nf,cc] == 1:
+            return mTEPES.vFlow[sc,p,n,ni,nf,cc] / max(mTEPES.pLineNTCBck[ni,nf,cc],mTEPES.pLineNTCFrw[ni,nf,cc]) >= - mTEPES.vLineCommit[sc,p,n,ni,nf,cc]
+        else:
+            return Constraint.Skip
+    setattr(mTEPES, 'eExistNetCap1_stage'+str(st), Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.le, rule=eExistNetCap1, doc='maximum flow by existing network capacity [p.u.]'))
+
+    print('eExistNetCap1         ... ', len(getattr(mTEPES, 'eExistNetCap1_stage'+str(st))), ' rows')
+
+    def eExistNetCap2(mTEPES,sc,p,n,ni,nf,cc):
+        if mTEPES.pIndBinSwitching[ni, nf, cc] == 1:
+            return mTEPES.vFlow[sc,p,n,ni,nf,cc] / max(mTEPES.pLineNTCBck[ni,nf,cc],mTEPES.pLineNTCFrw[ni,nf,cc]) <=   mTEPES.vLineCommit[sc,p,n,ni,nf,cc]
+        else:
+            return Constraint.Skip
+    setattr(mTEPES, 'eExistNetCap2_stage'+str(st), Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.le, rule=eExistNetCap2, doc='maximum flow by existing network capacity [p.u.]'))
+
+    print('eExistNetCap2         ... ', len(getattr(mTEPES, 'eExistNetCap2_stage'+str(st))), ' rows')
+
+    def eCandNetCap1(mTEPES,sc,p,n,ni,nf,cc):
         return mTEPES.vFlow[sc,p,n,ni,nf,cc] / max(mTEPES.pLineNTCBck[ni,nf,cc],mTEPES.pLineNTCFrw[ni,nf,cc]) >= - mTEPES.vLineCommit[sc,p,n,ni,nf,cc]
-    setattr(mTEPES, 'eNetCap1_stage'+str(st), Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, rule=eNetCap1, doc='maximum flow by installed or existing network capacity [p.u.]'))
+    setattr(mTEPES, 'eCandNetCap1_stage'+str(st), Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.lc, rule=eCandNetCap1, doc='maximum flow by installed network capacity [p.u.]'))
 
-    print('eNetCap1              ... ', len(getattr(mTEPES, 'eNetCap1_stage'+str(st))), ' rows')
+    print('eCandNetCap1          ... ', len(getattr(mTEPES, 'eCandNetCap1_stage'+str(st))), ' rows')
 
-    def eNetCap2(mTEPES,sc,p,n,ni,nf,cc):
+    def eCandNetCap2(mTEPES,sc,p,n,ni,nf,cc):
         return mTEPES.vFlow[sc,p,n,ni,nf,cc] / max(mTEPES.pLineNTCBck[ni,nf,cc],mTEPES.pLineNTCFrw[ni,nf,cc]) <=   mTEPES.vLineCommit[sc,p,n,ni,nf,cc]
-    setattr(mTEPES, 'eNetCap2_stage'+str(st), Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, rule=eNetCap2, doc='maximum flow by installed or existing network capacity [p.u.]'))
+    setattr(mTEPES, 'eCandNetCap2_stage'+str(st), Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.lc, rule=eCandNetCap2, doc='maximum flow by installed network capacity [p.u.]'))
 
-    print('eNetCap2              ... ', len(getattr(mTEPES, 'eNetCap2_stage'+str(st))), ' rows')
+    print('eCandNetCap2          ... ', len(getattr(mTEPES, 'eCandNetCap2_stage'+str(st))), ' rows')
 
+    #%%
     def eKirchhoff2ndLawCnd1(mTEPES,sc,p,n,ni,nf,cc):
-        return mTEPES.vFlow[sc,p,n,ni,nf,cc] / mTEPES.pBigMFlowBck[ni,nf,cc] - (mTEPES.vTheta[sc,p,n,ni] - mTEPES.vTheta[sc,p,n,nf]) / mTEPES.pLineX[ni,nf,cc] / mTEPES.pBigMFlowBck[ni,nf,cc] * mTEPES.pSBase >= - 1 + mTEPES.vLineCommit[sc,p,n,ni,nf,cc]
-    setattr(mTEPES, 'eKirchhoff2ndLawCnd1_stage'+str(st), Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, rule=eKirchhoff2ndLawCnd1, doc='flow for each AC candidate line [rad]'))
+        if   mTEPES.pIndBinSwitching[ni,nf,cc] == 0:
+            return mTEPES.vFlow[sc,p,n,ni,nf,cc] / mTEPES.pBigMFlowBck[ni,nf,cc] - (mTEPES.vTheta[sc,p,n,ni] - mTEPES.vTheta[sc,p,n,nf]) / mTEPES.pLineX[ni,nf,cc] / mTEPES.pBigMFlowBck[ni,nf,cc] * mTEPES.pSBase == 0.0
+        elif mTEPES.pIndBinSwitching[ni,nf,cc] == 1:
+            return mTEPES.vFlow[sc,p,n,ni,nf,cc] / mTEPES.pBigMFlowBck[ni,nf,cc] - (mTEPES.vTheta[sc,p,n,ni] - mTEPES.vTheta[sc,p,n,nf]) / mTEPES.pLineX[ni,nf,cc] / mTEPES.pBigMFlowBck[ni,nf,cc] * mTEPES.pSBase >= - 1 + mTEPES.vLineCommit[sc,p,n,ni,nf,cc]
+        else:
+            return Constraint.Skip
+    setattr(mTEPES, 'eKirchhoff2ndLawCnd1_stage'+str(st), Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.laa, rule=eKirchhoff2ndLawCnd1, doc='flow for each AC candidate line [rad]'))
 
     print('eKirchhoff2ndLawCnd1  ... ', len(getattr(mTEPES, 'eKirchhoff2ndLawCnd1_stage'+str(st))), ' rows')
 
     def eKirchhoff2ndLawCnd2(mTEPES,sc,p,n,ni,nf,cc):
-        return mTEPES.vFlow[sc,p,n,ni,nf,cc] / mTEPES.pBigMFlowFrw[ni,nf,cc] - (mTEPES.vTheta[sc,p,n,ni] - mTEPES.vTheta[sc,p,n,nf]) / mTEPES.pLineX[ni,nf,cc] / mTEPES.pBigMFlowFrw[ni,nf,cc] * mTEPES.pSBase <=   1 - mTEPES.vLineCommit[sc,p,n,ni,nf,cc]
-    setattr(mTEPES, 'eKirchhoff2ndLawCnd2_stage'+str(st), Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, rule=eKirchhoff2ndLawCnd2, doc='flow for each AC candidate line [rad]'))
+        if mTEPES.pIndBinSwitching[ni,nf,cc] == 1:
+            return mTEPES.vFlow[sc,p,n,ni,nf,cc] / mTEPES.pBigMFlowFrw[ni,nf,cc] - (mTEPES.vTheta[sc,p,n,ni] - mTEPES.vTheta[sc,p,n,nf]) / mTEPES.pLineX[ni,nf,cc] / mTEPES.pBigMFlowFrw[ni,nf,cc] * mTEPES.pSBase <=   1 - mTEPES.vLineCommit[sc,p,n,ni,nf,cc]
+        else:
+            return Constraint.Skip
+    setattr(mTEPES, 'eKirchhoff2ndLawCnd2_stage'+str(st), Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.laa, rule=eKirchhoff2ndLawCnd2, doc='flow for each AC candidate line [rad]'))
 
     print('eKirchhoff2ndLawCnd2  ... ', len(getattr(mTEPES, 'eKirchhoff2ndLawCnd2_stage'+str(st))), ' rows')
 
