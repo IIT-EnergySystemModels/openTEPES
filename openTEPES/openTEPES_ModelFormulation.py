@@ -367,6 +367,8 @@ def NetworkDecisionModelFormulation(mTEPES, st):
             return mTEPES.vLineCommit[sc,p,n,ni,nf,cc] <= mTEPES.vNetworkInvest[ni,nf,cc]
         elif mTEPES.pIndBinSwitching[ni,nf,cc] == 0:
             return mTEPES.vLineCommit[sc,p,n,ni,nf,cc] == mTEPES.vNetworkInvest[ni,nf,cc]
+        else:
+            return Constraint.Skip
     setattr(mTEPES, 'eLineStateCand_stage' + str(st), Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.lc, rule=eLineStateCand, doc='logical relation between investment and operation in candidates'))
 
     print('eLineStateCand        ... ', len(getattr(mTEPES, 'eLineStateCand_stage' + str(st))), ' rows')
@@ -413,24 +415,37 @@ def NetworkOperationModelFormulation(mTEPES, st):
 
     StartTime = time.time()
     #%%
-    def eNetCap1(mTEPES,sc,p,n,ni,nf,cc):
+    def eExistNetCap1(mTEPES,sc,p,n,ni,nf,cc):
         if mTEPES.pIndBinSwitching[ni,nf,cc] == 1:
             return mTEPES.vFlow[sc,p,n,ni,nf,cc] / max(mTEPES.pLineNTCBck[ni,nf,cc],mTEPES.pLineNTCFrw[ni,nf,cc]) >= - mTEPES.vLineCommit[sc,p,n,ni,nf,cc]
         else:
             return Constraint.Skip
-    setattr(mTEPES, 'eNetCap1_stage'+str(st), Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, rule=eNetCap1, doc='maximum flow by installed or existing network capacity [p.u.]'))
+    setattr(mTEPES, 'eExistNetCap1_stage'+str(st), Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.le, rule=eExistNetCap1, doc='maximum flow by existing network capacity [p.u.]'))
 
-    print('eNetCap1              ... ', len(getattr(mTEPES, 'eNetCap1_stage'+str(st))), ' rows')
+    print('eExistNetCap1         ... ', len(getattr(mTEPES, 'eExistNetCap1_stage'+str(st))), ' rows')
 
-    def eNetCap2(mTEPES,sc,p,n,ni,nf,cc):
-        if mTEPES.pIndBinSwitching[ni,nf,cc] == 1:
+    def eExistNetCap2(mTEPES,sc,p,n,ni,nf,cc):
+        if mTEPES.pIndBinSwitching[ni, nf, cc] == 1:
             return mTEPES.vFlow[sc,p,n,ni,nf,cc] / max(mTEPES.pLineNTCBck[ni,nf,cc],mTEPES.pLineNTCFrw[ni,nf,cc]) <=   mTEPES.vLineCommit[sc,p,n,ni,nf,cc]
         else:
             return Constraint.Skip
-    setattr(mTEPES, 'eNetCap2_stage'+str(st), Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, rule=eNetCap2, doc='maximum flow by installed or existing network capacity [p.u.]'))
+    setattr(mTEPES, 'eExistNetCap2_stage'+str(st), Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.le, rule=eExistNetCap2, doc='maximum flow by existing network capacity [p.u.]'))
 
-    print('eNetCap2              ... ', len(getattr(mTEPES, 'eNetCap2_stage'+str(st))), ' rows')
+    print('eExistNetCap2         ... ', len(getattr(mTEPES, 'eExistNetCap2_stage'+str(st))), ' rows')
 
+    def eCandNetCap1(mTEPES,sc,p,n,ni,nf,cc):
+        return mTEPES.vFlow[sc,p,n,ni,nf,cc] / max(mTEPES.pLineNTCBck[ni,nf,cc],mTEPES.pLineNTCFrw[ni,nf,cc]) >= - mTEPES.vLineCommit[sc,p,n,ni,nf,cc]
+    setattr(mTEPES, 'eCandNetCap1_stage'+str(st), Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.lc, rule=eCandNetCap1, doc='maximum flow by installed network capacity [p.u.]'))
+
+    print('eCandNetCap1          ... ', len(getattr(mTEPES, 'eCandNetCap1_stage'+str(st))), ' rows')
+
+    def eCandNetCap2(mTEPES,sc,p,n,ni,nf,cc):
+        return mTEPES.vFlow[sc,p,n,ni,nf,cc] / max(mTEPES.pLineNTCBck[ni,nf,cc],mTEPES.pLineNTCFrw[ni,nf,cc]) <=   mTEPES.vLineCommit[sc,p,n,ni,nf,cc]
+    setattr(mTEPES, 'eCandNetCap2_stage'+str(st), Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.lc, rule=eCandNetCap2, doc='maximum flow by installed network capacity [p.u.]'))
+
+    print('eCandNetCap2          ... ', len(getattr(mTEPES, 'eCandNetCap2_stage'+str(st))), ' rows')
+
+    #%%
     def eKirchhoff2ndLawCnd1(mTEPES,sc,p,n,ni,nf,cc):
         if   mTEPES.pIndBinSwitching[ni,nf,cc] == 0:
             return mTEPES.vFlow[sc,p,n,ni,nf,cc] / mTEPES.pBigMFlowBck[ni,nf,cc] - (mTEPES.vTheta[sc,p,n,ni] - mTEPES.vTheta[sc,p,n,nf]) / mTEPES.pLineX[ni,nf,cc] / mTEPES.pBigMFlowBck[ni,nf,cc] * mTEPES.pSBase == 0.0
