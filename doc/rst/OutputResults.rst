@@ -180,6 +180,22 @@ Scenario      Period      Load level  Technology   Curtailed energy of VRES [GWh
 ESS operation
 -------------
 
+File ``oT_Result_GenerationOutflows.csv``
+
+============  ==========  ==========  ==========  ==========================================
+Identifier    Identifier  Identifier  Header      Description
+============  ==========  ==========  ==========  ==========================================
+Scenario      Period      Load level  Generator   Outflows power in ESS [MW]
+============  ==========  ==========  ==========  ==========================================
+
+File ``oT_Result_TechnologyOutflows.csv``
+
+============  ==========  ==========  ==========  ==========================================
+Identifier    Identifier  Identifier  Header      Description
+============  ==========  ==========  ==========  ==========================================
+Scenario      Period      Load level  Technology  Outflows power in ESS [MW]
+============  ==========  ==========  ==========  ==========================================
+
 File ``oT_Result_ESSChargeOutput.csv``
 
 ============  ==========  ==========  ==========  ==========================================
@@ -194,6 +210,22 @@ File ``oT_Result_ESSTechnologyOutput.csv``
 Identifier    Identifier  Identifier  Header      Description
 ============  ==========  ==========  ==========  ==========================================
 Scenario      Period      Load level  Technology  Charged power in ESS [MW]
+============  ==========  ==========  ==========  ==========================================
+
+File ``oT_Result_GenerationOutflowsEnergy.csv``
+
+============  ==========  ==========  ==========  ==========================================
+Identifier    Identifier  Identifier  Header      Description
+============  ==========  ==========  ==========  ==========================================
+Scenario      Period      Load level  Generator   Outflows energy in ESS [GWh]
+============  ==========  ==========  ==========  ==========================================
+
+File ``oT_Result_TechnologyOutflowsEnergy.csv``
+
+============  ==========  ==========  ==========  ==========================================
+Identifier    Identifier  Identifier  Header      Description
+============  ==========  ==========  ==========  ==========================================
+Scenario      Period      Load level  Technology  Energy (Outflows in ESS) [GWh]
 ============  ==========  ==========  ==========  ==========================================
 
 File ``oT_Result_ESSChargeEnergy.csv``

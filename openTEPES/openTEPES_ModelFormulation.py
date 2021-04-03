@@ -1,4 +1,4 @@
-""" Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 2, 2021
+""" Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 3, 2021
 """
 
 import time
@@ -21,7 +21,7 @@ def InvestmentModelFormulation(mTEPES):
 
     GeneratingOFTime = time.time() - StartTime
     StartTime        = time.time()
-    print('Generating investment o.f.            ... ', round(GeneratingOFTime), 's')
+    print('Generating investment o.f.             ... ', round(GeneratingOFTime), 's')
 
 
 def GenerationOperationModelFormulation(mTEPES, st):
@@ -57,7 +57,7 @@ def GenerationOperationModelFormulation(mTEPES, st):
 
     GeneratingOFTime = time.time() - StartTime
     StartTime        = time.time()
-    print('Generating operation  o.f.            ... ', round(GeneratingOFTime), 's')
+    print('Generating operation  o.f.             ... ', round(GeneratingOFTime), 's')
 
     StartTime = time.time()
 
@@ -179,7 +179,7 @@ def GenerationOperationModelFormulation(mTEPES, st):
 
     GeneratingRBITime = time.time() - StartTime
     StartTime         = time.time()
-    print('Generating reserves/balance/inventory ... ', round(GeneratingRBITime), 's')
+    print('Generating reserves/balance/inventory  ... ', round(GeneratingRBITime), 's')
 
     #%%
     def eMaxCharge(mTEPES,sc,p,n,es):
@@ -282,7 +282,7 @@ def GenerationOperationModelFormulation(mTEPES, st):
 
     GeneratingGenConsTime = time.time() - StartTime
     StartTime             = time.time()
-    print('Generating generation constraints     ... ', round(GeneratingGenConsTime), 's')
+    print('Generating generation constraints      ... ', round(GeneratingGenConsTime), 's')
 
     #%%
     def eRampUp(mTEPES,sc,p,n,nr):
@@ -331,7 +331,7 @@ def GenerationOperationModelFormulation(mTEPES, st):
 
     GeneratingRampsTime = time.time() - StartTime
     StartTime           = time.time()
-    print('Generating ramps   up/down            ... ', round(GeneratingRampsTime), 's')
+    print('Generating ramps   up/down             ... ', round(GeneratingRampsTime), 's')
 
     #%%
     def eMinUpTime(mTEPES,sc,p,n,t):
@@ -354,7 +354,7 @@ def GenerationOperationModelFormulation(mTEPES, st):
 
     GeneratingMinUDTime = time.time() - StartTime
     StartTime           = time.time()
-    print('Generating minimum up/down time       ... ', round(GeneratingMinUDTime), 's')
+    print('Generating minimum up/down time        ... ', round(GeneratingMinUDTime), 's')
 
 
 def NetworkDecisionModelFormulation(mTEPES, st):
@@ -365,10 +365,8 @@ def NetworkDecisionModelFormulation(mTEPES, st):
     def eLineStateCand(mTEPES,sc,p,n,ni,nf,cc):
         if   mTEPES.pIndBinSwitching[ni,nf,cc] == 1:
             return mTEPES.vLineCommit[sc,p,n,ni,nf,cc] <= mTEPES.vNetworkInvest[ni,nf,cc]
-        elif mTEPES.pIndBinSwitching[ni,nf,cc] == 0:
-            return mTEPES.vLineCommit[sc,p,n,ni,nf,cc] == mTEPES.vNetworkInvest[ni,nf,cc]
         else:
-            return Constraint.Skip
+            return mTEPES.vLineCommit[sc,p,n,ni,nf,cc] == mTEPES.vNetworkInvest[ni,nf,cc]
     setattr(mTEPES, 'eLineStateCand_stage' + str(st), Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.lc, rule=eLineStateCand, doc='logical relation between investment and operation in candidates'))
 
     print('eLineStateCand        ... ', len(getattr(mTEPES, 'eLineStateCand_stage' + str(st))), ' rows')
@@ -386,7 +384,7 @@ def NetworkDecisionModelFormulation(mTEPES, st):
 
     SwitchingLogicalRelation = time.time() - StartTime
     StartTime                = time.time()
-    print('Switching logical relation            ... ', round(SwitchingLogicalRelation), 's')
+    print('Switching logical relation             ... ', round(SwitchingLogicalRelation), 's')
 
     def eMinSwOnState(mTEPES,sc,p,n,ni,nf,cc):
         if mTEPES.pIndBinSwitching[ni,nf,cc] == 1 and mTEPES.pSwOnTime [ni,nf,cc] > 1 and mTEPES.n.ord(n) >= mTEPES.pSwOnTime [ni,nf,cc]:
@@ -407,7 +405,7 @@ def NetworkDecisionModelFormulation(mTEPES, st):
     print('eMinSwOffState        ... ', len(getattr(mTEPES, 'eMinSwOffState_stage'+str(st))), ' rows')
 
     SwitchingMinStateTime = time.time() - StartTime
-    print('Switching minimum on/off state        ... ', round(SwitchingMinStateTime), 's')
+    print('Switching minimum on/off state         ... ', round(SwitchingMinStateTime), 's')
 
 
 def NetworkOperationModelFormulation(mTEPES, st):
@@ -425,7 +423,7 @@ def NetworkOperationModelFormulation(mTEPES, st):
     print('eExistNetCap1         ... ', len(getattr(mTEPES, 'eExistNetCap1_stage'+str(st))), ' rows')
 
     def eExistNetCap2(mTEPES,sc,p,n,ni,nf,cc):
-        if mTEPES.pIndBinSwitching[ni, nf, cc] == 1:
+        if mTEPES.pIndBinSwitching[ni,nf,cc] == 1:
             return mTEPES.vFlow[sc,p,n,ni,nf,cc] / max(mTEPES.pLineNTCBck[ni,nf,cc],mTEPES.pLineNTCFrw[ni,nf,cc]) <=   mTEPES.vLineCommit[sc,p,n,ni,nf,cc]
         else:
             return Constraint.Skip
@@ -447,12 +445,10 @@ def NetworkOperationModelFormulation(mTEPES, st):
 
     #%%
     def eKirchhoff2ndLawCnd1(mTEPES,sc,p,n,ni,nf,cc):
-        if   mTEPES.pIndBinSwitching[ni,nf,cc] == 0:
-            return mTEPES.vFlow[sc,p,n,ni,nf,cc] / mTEPES.pBigMFlowBck[ni,nf,cc] - (mTEPES.vTheta[sc,p,n,ni] - mTEPES.vTheta[sc,p,n,nf]) / mTEPES.pLineX[ni,nf,cc] / mTEPES.pBigMFlowBck[ni,nf,cc] * mTEPES.pSBase == 0.0
-        elif mTEPES.pIndBinSwitching[ni,nf,cc] == 1:
+        if   mTEPES.pIndBinSwitching[ni,nf,cc] == 1:
             return mTEPES.vFlow[sc,p,n,ni,nf,cc] / mTEPES.pBigMFlowBck[ni,nf,cc] - (mTEPES.vTheta[sc,p,n,ni] - mTEPES.vTheta[sc,p,n,nf]) / mTEPES.pLineX[ni,nf,cc] / mTEPES.pBigMFlowBck[ni,nf,cc] * mTEPES.pSBase >= - 1 + mTEPES.vLineCommit[sc,p,n,ni,nf,cc]
         else:
-            return Constraint.Skip
+            return mTEPES.vFlow[sc,p,n,ni,nf,cc] / mTEPES.pBigMFlowBck[ni,nf,cc] - (mTEPES.vTheta[sc,p,n,ni] - mTEPES.vTheta[sc,p,n,nf]) / mTEPES.pLineX[ni,nf,cc] / mTEPES.pBigMFlowBck[ni,nf,cc] * mTEPES.pSBase == 0.0
     setattr(mTEPES, 'eKirchhoff2ndLawCnd1_stage'+str(st), Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.laa, rule=eKirchhoff2ndLawCnd1, doc='flow for each AC candidate line [rad]'))
 
     print('eKirchhoff2ndLawCnd1  ... ', len(getattr(mTEPES, 'eKirchhoff2ndLawCnd1_stage'+str(st))), ' rows')
@@ -482,4 +478,4 @@ def NetworkOperationModelFormulation(mTEPES, st):
 
     GeneratingNetConsTime = time.time() - StartTime
     StartTime             = time.time()
-    print('Generating network    constraints     ... ', round(GeneratingNetConsTime), 's')
+    print('Generating network    constraints      ... ', round(GeneratingNetConsTime), 's')

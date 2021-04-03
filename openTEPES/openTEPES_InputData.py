@@ -1,4 +1,4 @@
-""" Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 2, 2021
+""" Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 3, 2021
 """
 
 import time
@@ -214,7 +214,7 @@ def InputData(DirName, CaseName, mTEPES):
 
     ReadingDataTime = time.time() - StartTime
     StartTime       = time.time()
-    print('Reading    input data                  ... ', round(ReadingDataTime), 's')
+    print('Reading    input data                   ... ', round(ReadingDataTime), 's')
 
     #%% defining subsets: active load levels (n,n2), thermal units (t), RES units (r), ESS units (es), candidate gen units (gc), candidate ESS units (ec), all the lines (la), candidate lines (lc), candidate DC lines (cd), existing DC lines (cd), lines with losses (ll), reference node (rf), and reactive generating units (gq)
     mTEPES.sc = Set(initialize=mTEPES.scc,                    ordered=True , doc='scenarios'          , filter=lambda mTEPES,scc     :  scc       in mTEPES.scc and pScenProb        [scc] >  0.0)

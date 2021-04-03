@@ -1,4 +1,4 @@
-""" Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 2, 2021
+""" Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 3, 2021
 """
 
 import time
@@ -64,6 +64,6 @@ def ProblemSolving(DirName, CaseName, SolverName, mTEPES, pIndPowerFlow):
 
     SolvingTime = time.time() - StartTime
     StartTime   = time.time()
-    print('Solving                               ... ', round(SolvingTime), 's')
+    print('Solving                                ... ', round(SolvingTime), 's')
 
-    print('Total system cost [MEUR]                  ', mTEPES.eTotalTCost.expr())
+    print('Total system cost [MEUR]                   ', mTEPES.eTotalTCost.expr())
