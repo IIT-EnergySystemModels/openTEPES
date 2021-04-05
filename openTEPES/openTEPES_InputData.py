@@ -1,4 +1,4 @@
-""" Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 3, 2021
+""" Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 5, 2021
 """
 
 import time
@@ -214,7 +214,7 @@ def InputData(DirName, CaseName, mTEPES):
 
     ReadingDataTime = time.time() - StartTime
     StartTime       = time.time()
-    print('Reading    input data                   ... ', round(ReadingDataTime), 's')
+    print('Reading    input data                  ... ', round(ReadingDataTime), 's')
 
     #%% defining subsets: active load levels (n,n2), thermal units (t), RES units (r), ESS units (es), candidate gen units (gc), candidate ESS units (ec), all the lines (la), candidate lines (lc), candidate DC lines (cd), existing DC lines (cd), lines with losses (ll), reference node (rf), and reactive generating units (gq)
     mTEPES.sc = Set(initialize=mTEPES.scc,                    ordered=True , doc='scenarios'          , filter=lambda mTEPES,scc     :  scc       in mTEPES.scc and pScenProb        [scc] >  0.0)
@@ -258,6 +258,10 @@ def InputData(DirName, CaseName, mTEPES):
     # replacing string values by numerical values
     idxDict = dict()
     idxDict[0    ] = 0
+    idxDict['No' ] = 0
+    idxDict['NO' ] = 0
+    idxDict['N'  ] = 0
+    idxDict['n'  ] = 0
     idxDict['Yes'] = 1
     idxDict['YES'] = 1
     idxDict['Y'  ] = 1
@@ -412,7 +416,8 @@ def InputData(DirName, CaseName, mTEPES):
     pMinStorage      [pMinStorage       < pEpsilon] = 0.0
     pMaxStorage      [pMaxStorage       < pEpsilon] = 0.0
     pIniInventory    [pIniInventory     < pEpsilon] = 0.0
-    pInitialInventory[pInitialInventory < pEpsilon] = 0.0
+
+    pInitialInventory = pInitialInventory.where(pInitialInventory > pEpsilon, other= 0.0)
 
     # BigM maximum flow to be used in the Kirchhoff's 2nd law disjunctive constraint
     pBigMFlowBck = pLineNTCBck*0.0
