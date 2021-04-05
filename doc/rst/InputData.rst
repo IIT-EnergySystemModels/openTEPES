@@ -85,7 +85,7 @@ File                  Description
 ENSCost               Cost of energy not served. Cost of load curtailment. Value of Lost Load (VoLL)                                 €/MWh   
 PNSCost               Cost of power not served associated with the deficit in operating reserve by load level                        €/MW   
 CO2Cost               Cost of CO2 emissions                                                                                          €/t CO2
-UpReserveActivation   Upward reserve activation (proportion of upward operating reserve deployed to produce energy)                  p.u.
+UpReserveActivation   Upward   reserve activation (proportion of upward   operating reserve deployed to produce energy)              p.u.
 DwReserveActivation   Downward reserve activation (proportion of downward operating reserve deployed to produce energy)              p.u.
 Sbase                 Base power used in the DCLF                                                                                    MW   
 ReferenceNode         Reference node used in the DCLF                                                                               
@@ -231,6 +231,8 @@ Identifier      Identifier  Identifier  Header     Description
 Scenario        Period      Load level  Generator  Energy inflows by load level   MW
 ==============  ==========  ==========  =========  =============================  ==
 
+All the generators must be defined as columns of these files.
+
 If you have daily inflows data just input the daily amount at the first hour of every day if the ESS have daily or weekly storage capacity.
 
 Internally, all the values below 1e-5 times the maximum system demand will be converted into 0 by the model.
@@ -245,6 +247,10 @@ Identifier      Identifier  Identifier  Header     Description
 ==============  ==========  ==========  =========  ==============================  ==
 Scenario        Period      Load level  Generator  Energy outflows by load level   MW
 ==============  ==========  ==========  =========  ==============================  ==
+
+All the generators must be defined as columns of these files.
+
+These energy outflows can be used to represent the energy extracted from an ESS to produce H2 from electrolyzers, to move EV or as hydro outflows for irrigation.
 
 If you have daily/weekly/monthly/yearly outflows data just input the daily/weekly/monthly/yearly amount at the first hour of every day/week/month/year.
 
@@ -262,6 +268,8 @@ Scenario        Period      Load level  Generator  Maximum (minimum) storage of 
 ==============  ==========  ==========  =========  ====================================================  ===
 
 All the generators must be defined as columns of these files.
+
+For example, these data can be used for defining the operating guide (rule) curves for the reservoirs.
 
 Transmission network
 --------------------

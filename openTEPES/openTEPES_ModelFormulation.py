@@ -357,8 +357,8 @@ def GenerationOperationModelFormulation(mTEPES, st):
     print('Generating minimum up/down time        ... ', round(GeneratingMinUDTime), 's')
 
 
-def NetworkDecisionModelFormulation(mTEPES, st):
-    print('Network decision model formulation     ****')
+def NetworkSwitchingModelFormulation(mTEPES, st):
+    print('Network switching model formulation    ****')
 
     StartTime = time.time()
     #%%
