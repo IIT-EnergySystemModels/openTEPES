@@ -49,7 +49,7 @@ def openTEPES_run(DirName, CaseName, SolverName):
     mTEPES.write(_path+'/openTEPES_'+CaseName+'.lp', io_options={'symbolic_solver_labels': True})  # create lp-format file
     WritingLPFileTime = time.time() - StartTime
     StartTime         = time.time()
-    print('Writing LP file                       ... ', round(WritingLPFileTime), 's')
+    print('Writing LP file                        ... ', round(WritingLPFileTime), 's')
 
     ProblemSolving(DirName, CaseName, SolverName, mTEPES)
 
@@ -70,6 +70,6 @@ def openTEPES_run(DirName, CaseName, SolverName):
     NetworkMapResults         (DirName, CaseName, mTEPES)
 
     TotalTime = time.time() - InitialTime
-    print('Total time                            ... ', round(TotalTime), 's')
+    print('Total time                             ... ', round(TotalTime), 's')
 
     return mTEPES
