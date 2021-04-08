@@ -32,7 +32,7 @@
 
 The openTEPES model has been developed at the `Instituto de Investigación Tecnológica (IIT) <https://www.iit.comillas.edu/index.php.en>`_ of the `Universidad Pontificia Comillas <https://www.comillas.edu/en/>`_.
 
-**openTEPES** determines the investment plans of new facilities (generators, ESS and lines)
+**(openTEPES)** determines the investment plans of new facilities (generators, ESS and lines)
 for supplying the forecasted demand at minimum cost. Tactical planning is concerned with time horizons of 10-20 years. Its objective is to evaluate the future generation, storage and network needs.
 The main results are the guidelines for the future structure of the generation and transmission systems.
 
@@ -57,18 +57,18 @@ It determines automatically optimal expansion plans that satisfy simultaneously 
 
 The objective function incorporates the two main quantifiable costs: **generation and transmission investment cost (CAPEX)** and **expected variable operation costs (including generation emission and reliability costs) (system OPEX)**.
 
-The model formulates a stochastic optimization problem including generation and network binary investment decisions and operation decisions (commitment, startup and shutdown decisions are also binary).
+The model formulates a stochastic optimization problem including generation and network binary investment decisions, generation operation decisions (commitment, startup and shutdown decisions are also binary) and line switching decisions.
 
 The operation model is a **network constrained unit commitment (NCUC)** based on a **tight and compact** formulation including operating reserves with a
-**DC power flow (DCPF)**. Network ohmic losses are considered proportional to the line flow. It considers different **energy storage systems (ESS)**, e.g., pumped-storage hydro,
+**DC power flow (DCPF)** including **line switching** decisions. Network ohmic losses are considered proportional to the line flow. It considers different **energy storage systems (ESS)**, e.g., pumped-storage hydro,
 battery, etc. It allows analyzing the trade-off between the investment in generation/transmission and the investment or use of storage capacity.
 
 The main results of the model can be structured in these topics:
 
 - **Investment**: investment decisions and cost
-- **Operation**: the output of different units and aggregation by technologies (thermal, storage hydro, pumped-storage hydro, RES), RES curtailment, line flows, line ohmic losses, node voltage angles
+- **Operation**: output of different units and aggregation by technologies (thermal, storage hydro, pumped-storage hydro, RES), RES curtailment, line flows, line ohmic losses, node voltage angles
 - **Emissions**: CO2 emissions by unit
-- **Marginal**: Locational Short-Run Marginal Costs (LSRMC)
+- **Marginal**: Locational Short-Run Marginal Costs (LSRMC), water value
 
 A careful implementation has been done to avoid numerical problems by scaling parameters, variables and equations of the optimization problem allowing the model to be used for large-scale cases, e.g., the European system with hourly detail.
 
