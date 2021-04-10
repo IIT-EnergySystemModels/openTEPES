@@ -4,6 +4,10 @@ Change Log
 - [CHANGED] Addition of the sequence of decisions and operation (TEP + transmission switching)
 - [FIXED] fixing `<https://pascua.iit.comillas.edu/aramos/openTEPES/index.html#>`_ in README.rst 
 
+[2.2.4] - 2021-04-10
+--------------------
+- [FIXED] fix line switch off constraint
+
 [2.2.3] - 2021-04-07
 --------------------
 - [FIXED] determine the commitment and output of generating units at the beginning of each stage
