@@ -1,4 +1,4 @@
-""" Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 7, 2021
+""" Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 10, 2021
 """
 
 import time
@@ -373,7 +373,7 @@ def NetworkSwitchingModelFormulation(mTEPES, st):
 
     def eSWOnOff(mTEPES,sc,p,n,ni,nf,cc):
         if   n == mTEPES.n.first() and mTEPES.pIndBinSwitching[ni,nf,cc] == 1:
-            return mTEPES.vLineCommit[sc,p,n,ni,nf,cc] - mTEPES.pInitialSwitch[ni,nf,cc]                    == mTEPES.vLineOnState[sc,p,n,ni,nf,cc] - mTEPES.vLineOffState[sc,p,n,ni,nf,cc]
+            return mTEPES.vLineCommit[sc,p,n,ni,nf,cc] - mTEPES.pInitialSwitch[sc,p,n,ni,nf,cc]             == mTEPES.vLineOnState[sc,p,n,ni,nf,cc] - mTEPES.vLineOffState[sc,p,n,ni,nf,cc]
         elif n != mTEPES.n.first() and mTEPES.pIndBinSwitching[ni,nf,cc] == 1:
             return mTEPES.vLineCommit[sc,p,n,ni,nf,cc] - mTEPES.vLineCommit[sc,p,mTEPES.n.prev(n),ni,nf,cc] == mTEPES.vLineOnState[sc,p,n,ni,nf,cc] - mTEPES.vLineOffState[sc,p,n,ni,nf,cc]
         else:
