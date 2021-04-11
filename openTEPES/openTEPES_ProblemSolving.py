@@ -53,17 +53,6 @@ def ProblemSolving(DirName, CaseName, SolverName, mTEPES):
                 mTEPES.vCommitment[sc,p,n,t].fix(mTEPES.vCommitment[sc,p,n,t]())
                 mTEPES.vStartUp   [sc,p,n,t].fix(mTEPES.vStartUp   [sc,p,n,t]())
                 mTEPES.vShutDown  [sc,p,n,t].fix(mTEPES.vShutDown  [sc,p,n,t]())
-        for sc,p,n,ni,nf,cc in list(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.le):
-            if mTEPES.pIndBinSwitching[ni,nf,cc] == 1:
-                mTEPES.vLineCommit[sc,p,n,ni,nf,cc].fix(mTEPES.vLineCommit[sc,p,n,ni,nf,cc]())
-                mTEPES.vLineOnState[sc,p,n,ni,nf,cc].fix(mTEPES.vLineOnState[sc,p,n,ni,nf,cc]())
-                mTEPES.vLineOffState[sc,p,n,ni,nf,cc].fix(mTEPES.vLineOffState[sc,p,n,ni,nf,cc]())
-        for sc,p,n,ni,nf,cc in list(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.lc):
-            if mTEPES.pIndBinSwitching[ni,nf,cc] == 1:
-                mTEPES.vLineCommit[sc,p,n,ni,nf,cc].fix(mTEPES.vLineCommit[sc,p,n,ni,nf,cc]())
-            else:
-                mTEPES.vLineCommit[sc,p,n,ni,nf,cc].fix(mTEPES.vNetworkInvest[ni,nf,cc]())
-
         Solver.options['relax_integrality'] =  1                                             # introduced to show results of the dual variables
         if SolverName == 'gurobi':
             Solver.options['Crossover'        ] = -1
@@ -73,6 +62,6 @@ def ProblemSolving(DirName, CaseName, SolverName, mTEPES):
 
     SolvingTime = time.time() - StartTime
     StartTime   = time.time()
-    print('Solving                                ... ', round(SolvingTime), 's')
+    print('Solving                                 ... ', round(SolvingTime), 's')
 
-    print('Total system cost [MEUR]                   ', mTEPES.eTotalTCost.expr())
+    print('Total system cost [MEUR]                    ', mTEPES.eTotalTCost.expr())

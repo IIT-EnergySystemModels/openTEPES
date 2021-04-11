@@ -73,15 +73,15 @@ def GenerationOperationModelFormulation(mTEPES, st):
 
     def eInstalGenCap(mTEPES,sc,p,n,gc):
         if mTEPES.pMaxPower[sc,p,n,gc]:
-            return mTEPES.vTotalOutput   [sc,p,n,gc] / mTEPES.pMaxPower[sc,p,n,gc] <= mTEPES.vGenerationInvest[gc]
+            return mTEPES.vTotalOutput[sc,p,n,gc] / mTEPES.pMaxPower[sc,p,n,gc] <= mTEPES.vGenerationInvest[gc]
         else:
-            return mTEPES.vTotalOutput   [sc,p,n,gc]                               <= 0.0
+            return mTEPES.vTotalOutput[sc,p,n,gc]                               <= 0.0
     setattr(mTEPES, 'eInstalGenCap_stage'+str(st), Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.gc, rule=eInstalGenCap, doc='output      if installed gen unit [p.u.]'))
 
     print('eInstalGenCap         ... ', len(getattr(mTEPES, 'eInstalGenCap_stage'+str(st))), ' rows')
 
     def eInstalConESS(mTEPES,sc,p,n,ec):
-        return mTEPES.vESSTotalCharge[sc,p,n,ec] / mTEPES.pMaxCharge      [ec] <= mTEPES.vGenerationInvest[ec]
+        return mTEPES.vESSTotalCharge [sc,p,n,ec] / mTEPES.pMaxCharge      [ec] <= mTEPES.vGenerationInvest[ec]
     setattr(mTEPES, 'eInstalConESS_stage'+str(st), Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.ec, rule=eInstalConESS, doc='consumption if installed ESS unit [p.u.]'))
 
     print('eInstalConESS         ... ', len(getattr(mTEPES, 'eInstalConESS_stage'+str(st))), ' rows')
