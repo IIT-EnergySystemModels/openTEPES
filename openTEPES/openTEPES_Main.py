@@ -90,25 +90,23 @@ import os
 from openTEPES.openTEPES import openTEPES_run
 import openTEPES
 
-CASE = '9n'
 parser = argparse.ArgumentParser(description='Introducing main parameters...')
 parser.add_argument('--case',   type=str, default=None)
 parser.add_argument('--dir',    type=str, default=None)
 parser.add_argument('--solver', type=str, default=None)
 
-# DIR = pkg_resources.resource_stream(__name__, CASE)
-# DIR = os.path.join(DIR, CASE)
-DIR = os.path.dirname(openTEPES.__file__)
+DIR    = os.path.dirname(openTEPES.__file__)
+CASE   = '9n'
 SOLVER = 'glpk'
 
 def main():
     args = parser.parse_args()
     if args.dir is None:
-        args.dir = input('Input Dir Name (Default {}): '.format(DIR))
+        args.dir    = input('Input Dir    Name (Default {}): '.format(DIR))
         if args.dir == '':
             args.dir = DIR
     if args.case is None:
-        args.case = input('Input Case Name (Default {}): '.format(CASE))
+        args.case   = input('Input Case   Name (Default {}): '.format(CASE))
         if args.case == '':
             args.case = CASE
     if args.solver is None:
