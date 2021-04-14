@@ -1,4 +1,4 @@
-""" Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 7, 2021
+""" Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 13, 2021
 """
 
 import time
@@ -586,8 +586,8 @@ def InputData(DirName, CaseName, mTEPES):
     #        mTEPES.vTotalOutput[sc,p,n,r].fix(mTEPES.pMaxPower[sc,p,n,r])
 
     for sc,p,n,nr in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.nr:
-        # must run units or units with no minimum power are always committed and must produce at least their minimum output
-        if mTEPES.pMustRun[nr] == 1 or (mTEPES.pMinPower[sc,p,n,nr] == 0.0 and mTEPES.pConstantVarCost[nr] == 0.0):
+        # must run units or units with no minimum power or ESS units are always committed and must produce at least their minimum output
+        if mTEPES.pMustRun[nr] == 1 or (mTEPES.pMinPower[sc,p,n,nr] == 0.0 and mTEPES.pConstantVarCost[nr] == 0.0) or nr in mTEPES.es:
             mTEPES.vCommitment     [sc,p,n,nr].fix(1)
             mTEPES.vStartUp        [sc,p,n,nr].fix(0)
             mTEPES.vShutDown       [sc,p,n,nr].fix(0)
@@ -621,14 +621,12 @@ def InputData(DirName, CaseName, mTEPES):
     mTEPES.pInitialSwitch = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.ln, initialize=pInitialSwitch.stack().to_dict(), within=Boolean,          doc='line initial switching',  mutable=True)
 
     for sc,p,st in mTEPES.scc*mTEPES.pp*range(1,int(sum(mTEPES.pDuration.values())/mTEPES.pStageDuration+1)):
-        # activate only scenario to formulate
+        # activate only scenario, period and load levels to formulate
         mTEPES.del_component(mTEPES.sc)
-        mTEPES.sc = Set(initialize=mTEPES.scc, ordered=True, doc='scenarios'  , filter=lambda mTEPES,scc: scc in  mTEPES.scc and sc == scc and mTEPES.pScenProb[scc] > 0.0)
-        # activate only period to formulate
         mTEPES.del_component(mTEPES.p )
-        mTEPES.p  = Set(initialize=mTEPES.pp , ordered=True, doc='periods'    , filter=lambda mTEPES,pp : pp  in p  == pp                                                 )
-        # activate only load levels of this stage
         mTEPES.del_component(mTEPES.n )
+        mTEPES.sc = Set(initialize=mTEPES.scc, ordered=True, doc='scenarios',   filter=lambda mTEPES,scc: scc in  mTEPES.scc and sc == scc and mTEPES.pScenProb[scc] > 0.0)
+        mTEPES.p  = Set(initialize=mTEPES.pp , ordered=True, doc='periods',     filter=lambda mTEPES,pp : pp  in                 p  == pp                                 )
         mTEPES.n  = Set(initialize=mTEPES.nn , ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in list(mTEPES.pDuration) and mTEPES.nn.ord(nn) > (st-1)*mTEPES.pStageDuration and mTEPES.nn.ord(nn) <= st*mTEPES.pStageDuration)
 
         # commit the units and their output at the first load level of each stage
