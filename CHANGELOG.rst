@@ -4,6 +4,10 @@ Change Log
 - [CHANGED] Addition of the sequence of decisions and operation (TEP + transmission switching)
 - [FIXED] fixing `<https://pascua.iit.comillas.edu/aramos/openTEPES/index.html#>`_ in README.rst 
 
+[2.2.5] - 2021-04-14
+--------------------
+- [FIXED] fix commitment,startup and shutdown decisions of hydro units
+
 [2.2.4] - 2021-04-10
 --------------------
 - [FIXED] fix line switch off constraint
