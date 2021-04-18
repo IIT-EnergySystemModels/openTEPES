@@ -1,4 +1,5 @@
-""" Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 13, 2021
+"""
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 18, 2021
 """
 
 import time
@@ -223,7 +224,7 @@ def InputData(DirName, CaseName, mTEPES):
     mTEPES.g  = Set(initialize=mTEPES.gg,                     ordered=False, doc='generating    units', filter=lambda mTEPES,gg      :  gg        in mTEPES.gg  and pRatedMaxPower    [gg] >  0.0)
     mTEPES.t  = Set(initialize=mTEPES.g ,                     ordered=False, doc='thermal       units', filter=lambda mTEPES,g       :  g         in mTEPES.g   and pLinearOperCost   [g ] >  0.0)
     mTEPES.r  = Set(initialize=mTEPES.g ,                     ordered=False, doc='RES           units', filter=lambda mTEPES,g       :  g         in mTEPES.g   and pLinearOperCost   [g ] == 0.0 and pRatedMaxStorage[g] == 0.0)
-    mTEPES.es = Set(initialize=mTEPES.g ,                     ordered=False, doc='ESS           units', filter=lambda mTEPES,g       :  g         in mTEPES.g   and                                   pRatedMaxStorage[g] >  0.0)
+    mTEPES.es = Set(initialize=mTEPES.g ,                     ordered=False, doc='ESS           units', filter=lambda mTEPES,g       :  g         in mTEPES.g   and                                   pRatedMaxStorage[g] >  0.0 and pEnergyInflows[g].sum() > 0.0)
     mTEPES.gc = Set(initialize=mTEPES.g ,                     ordered=False, doc='candidate     units', filter=lambda mTEPES,g       :  g         in mTEPES.g   and pGenFixedCost     [g ] >  0.0)
     mTEPES.ec = Set(initialize=mTEPES.es,                     ordered=False, doc='candidate ESS units', filter=lambda mTEPES,es      :  es        in mTEPES.es  and pGenFixedCost     [es] >  0.0)
     mTEPES.br = Set(initialize=mTEPES.ni*mTEPES.nf,           ordered=False, doc='all branches       ', filter=lambda mTEPES,ni,nf   : (ni,nf)    in                pLineType                    )
@@ -689,6 +690,12 @@ def InputData(DirName, CaseName, mTEPES):
                 mTEPES.vESSReserveUp  [sc,p,n,es].fix(0.0)
             if mTEPES.pOperReserveDw  [sc,p,n,ar] ==  0.0:
                 mTEPES.vESSReserveDown[sc,p,n,es].fix(0.0)
+
+    # if there are no energy outflows no variable is needed
+    for es in mTEPES.es:
+        if sum(mTEPES.pEnergyOutflows[sc,p,n,es] for sc,p,n in mTEPES.sc*mTEPES.p*mTEPES.n) == 0:
+            for sc,p,n in mTEPES.sc*mTEPES.p*mTEPES.n:
+                mTEPES.vEnergyOutflows[sc,p,n,es].fix(0.0)
 
     # fixing the voltage angle of the reference node for each scenario, period, and load level
     for sc,p,n in mTEPES.sc*mTEPES.p*mTEPES.n:
