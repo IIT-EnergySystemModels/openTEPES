@@ -1,4 +1,5 @@
-""" Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 10, 2021
+"""
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 18, 2021
 """
 
 import time
@@ -19,7 +20,7 @@ def openTEPES_run(DirName, CaseName, SolverName):
     _path = os.path.join(DirName, CaseName)
 
     #%% model declaration
-    mTEPES = ConcreteModel('Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 2.2.4 - April 10, 2021')
+    mTEPES = ConcreteModel('Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 2.2.5 - April 18, 2021')
 
     InputData(DirName, CaseName, mTEPES)
 
@@ -68,6 +69,6 @@ def openTEPES_run(DirName, CaseName, SolverName):
     NetworkMapResults         (DirName, CaseName, mTEPES)
 
     TotalTime = time.time() - InitialTime
-    print('Total time                              ... ', round(TotalTime), 's')
+    print('Total time                             ... ', round(TotalTime), 's')
 
     return mTEPES
