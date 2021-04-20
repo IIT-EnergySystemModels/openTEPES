@@ -5,26 +5,48 @@ Input Data
 
 All the input files must be located in a folder with the name of the case study.
 
+Acronyms
+--------
+
+==========  ====================================================================
+Acronym     Description
+==========  ====================================================================
+AC          Alternating Current
+aFRR        Automatic Frequency Restoration Reserve
+CCGT        Combined Cycle Gas Turbine
+DC          Direct Current
+DCPF        DC Power Flow
+EFOR        Equivalente Forced Outage Rate
+ENTSO-E     European Network of Transmission System Operators for Electricity
+ESS         Energy Storage System
+EV          Electric Vehicle
+mFRR        Manual Frequency Restoration Reserve
+NTC         Network Transfer Capacity
+OCGT        Open Cycle Gas Turbine
+RR          Replacement Reserve
+TTC         Total Transfer Capacity
+==========  ====================================================================
+
 Dictionaries. Sets
 ------------------
 The dictionaries include all the possible elements of the corresponding sets included in the optimization problem. **You can't use non-English characters (e.g., ó, º)**
 
-==========================  ===================================================================================================================
+==========================  =====================================================================================================================================================================
 File                        Description
-==========================  ===================================================================================================================
+==========================  =====================================================================================================================================================================
 ``oT_Dict_Scenario.csv``    Scenario. Short-term uncertainties (scenarios) (e.g., s001 to s100)
 ``oT_Dict_Period.csv``      Period (e.g., y2030)
 ``oT_Dict_LoadLevel.csv``   Load level (e.g., 2030-01-01T00:00:00+01:00 to 2030-12-30T23:00:00+01:00). Load levels with duration 0 are ignored
-``oT_Dict_Generation.csv``  Generation units (thermal, ESS and variable)
+``oT_Dict_Generation.csv``  Generation units (thermal -nuclear, CCGT, OCGT, coal-, ESS -hydro, pumped-hydro storage, battery- and VRES -wind onshore and offshore, solar PV, solar thermal-)
 ``oT_Dict_Technology.csv``  Generation technologies. The technology order is used in the temporal result plot.
-``oT_Dict_Storage.csv``     ESS type (daily < 12 h, weekly < 40 h, monthly > 60 h)
+``oT_Dict_Storage.csv``     ESS storage type (daily < 12 h, weekly < 40 h, monthly > 60 h)
 ``oT_Dict_Node.csv``        Nodes
 ``oT_Dict_Zone.csv``        Zones
 ``oT_Dict_Area.csv``        Areas
 ``oT_Dict_Region.csv``      Regions
 ``oT_Dict_Circuit.csv``     Circuits
-``oT_Dict_Line.csv``        Line type {AC, DC}
-==========================  ===================================================================================================================
+``oT_Dict_Line.csv``        Line type (AC, DC)
+==========================  =====================================================================================================================================================================
 
 Geographical location of nodes, zones, areas, regions
 
@@ -53,7 +75,7 @@ File                                       Description
 ``oT_Data_Generation.csv``                 Generation data
 ``oT_Data_VariableMaxGeneration.csv``      Variable maximum power generation by load level
 ``oT_Data_VariableMinGeneration.csv``      Variable minimum power generation by load level
-``oT_Data_EnergyInflows.csv``              Energy inflows to the ESS
+``oT_Data_EnergyInflows.csv``              Energy inflows to an ESS
 ``oT_Data_EnergyOutflows.csv``             Energy outflows from an ESS for Power-to-X (H2 production or EV mobility or irrigation)
 ``oT_Data_MaximumStorage.csv``             Maximum storage of the ESS by load level
 ``oT_Data_MinimumStorage.csv``             Minimum storage of the ESS by load level
@@ -87,14 +109,14 @@ PNSCost               Cost of power not served associated with the deficit in op
 CO2Cost               Cost of CO2 emissions                                                                                          €/t CO2
 UpReserveActivation   Upward   reserve activation (proportion of upward   operating reserve deployed to produce energy)              p.u.
 DwReserveActivation   Downward reserve activation (proportion of downward operating reserve deployed to produce energy)              p.u.
-Sbase                 Base power used in the DCLF                                                                                    MW   
-ReferenceNode         Reference node used in the DCLF                                                                               
+Sbase                 Base power used in the DCPF                                                                                    MW
+ReferenceNode         Reference node used in the DCPF
 TimeStep              Duration of the time step for the load levels (hourly, bi-hourly, trihourly, etc.)                             h
 StageDuration         Duration of the stage (weekly -168-, monthly -672-, quarterly -2184-, semesterly -4368-, or annually -8736-)   h
 ====================  =============================================================================================================  ================
 
-A time step greater than one hour it is a convenient way to reduce the load levels of the time scope. The moving average of the demand, upward and downward operating reserves, variable generation and ESS energy inflows over
-the time step load levels is assigned to active load levels (e.g., the mean value of the three hours is associated to the third hour in a trihourly time step).
+A time step greater than one hour it is a convenient way to reduce the load levels of the time scope. The moving average of the demand, upward and downward operating reserves, variable generation and ESS energy inflows/outflows
+over the time step load levels is assigned to active load levels (e.g., the mean value of the three hours is associated to the third hour in a trihourly time step).
 
 The stage duration must be larger or equal than the shortest duration of any storage type or any outflows type (both given in the generation data) and multiple of it. Consecutive stages are not tied between them.
 Consequently, the objective function must be a bit lower.
@@ -160,15 +182,15 @@ A description of the data included for each generating unit in the file ``oT_Dat
 Header                Description                                                                             
 ====================  ===================================================================================================================  ===================================
 Node                  Name of the node where generator is located                                                  
-Technology            Technology of the generator (nuclear, coal, CCGT, OCGT, ESS, etc.)                       
+Technology            Technology of the generator (nuclear, coal, CCGT, OCGT, ESS, solar, wind, biomass, etc.)
 StorageType           Storage type based on storage capacity (daily, weekly, monthly, etc.)                                                Daily/Weekly/Monthly
 OutflowsType          Outflows type based on the demand extracted from the storage (hourly, daily, weekly, monthly, yearly, etc.)          Hourly/Daily/Weekly/Monthly/Yearly
 MustRun               Must-run unit                                                                                                        Yes/No
-MaximumPower          Maximum power output (discharge for ESS units)                                                                       MW
+MaximumPower          Maximum power output (generation/discharge for ESS units)                                                            MW
 MinimumPower          Minimum power output (i.e., minimum stable load in the case of a thermal power plant)                                MW
-MaximumReactivePower  Maximum reactive power output (discharge for ESS units) (not used in the plain version)                              MW
-MinimumReactivePower  Minimum reactive power output (not used in the plain version)                                                        MW
-MaximumCharge         Maximum charge when the ESS unit is storing energy                                                                   MW
+MaximumReactivePower  Maximum reactive power output (discharge for ESS units) (not used in the this version)                               MW
+MinimumReactivePower  Minimum reactive power output (not used in the this version)                                                         MW
+MaximumCharge         Maximum consumption/charge when the ESS unit is storing energy                                                       MW
 InitialStorage        Initial energy stored at the first instant of the time scope                                                         GWh
 MaximumStorage        Maximum energy that can be stored by the ESS unit                                                                    GWh
 MinimumStorage        Minimum energy that can be stored by the ESS unit                                                                    GWh
@@ -216,7 +238,8 @@ Identifier      Identifier  Identifier  Header     Description
 Scenario        Period      Load level  Generator  Maximum (minimum) power generation of the unit by load level  MW
 ==============  ==========  ==========  =========  ============================================================  ==
 
-To force a generator to produce 0 a lower value (e.g., 0.1 MW) strictly > 0, but not 0 (in which case the value will be ignored), must be introduced.
+To force a generator to produce 0 a lower value (e.g., 0.1 MW) strictly > 0, but not 0 (in which case the value will be ignored), must be introduced. This is needed to limit the solar production at night, for example.
+It can be used also for upperbounding and/or lowerbounding the output of any generator (e.g., run-of-the-river hydro, wind).
 
 Internally, all the values below 1e-5 times the maximum system demand will be converted into 0 by the model.
 
@@ -282,13 +305,13 @@ Header             Description
 LineType           Line type {AC, DC, Transformer, Converter}  
 Voltage            Line voltage (e.g., 400, 220 kV, 220/400 kV if transformer). Used only for plotting purposes  kV
 LossFactor         Transmission losses equal to the line flow times this factor                                  p.u.
-Resistance         Resistance (not used in the plain version)                                                    p.u.
+Resistance         Resistance (not used in the this version)                                                     p.u.
 Reactance          Reactance. Lines must have a reactance different from 0 to be considered                      p.u.
-Susceptance        Susceptance (not used in the plain version)                                                   p.u.
-AngMax             Maximum angle difference (not used in the plain version)                                      º
-AngMin             Minimum angle difference (not used in the plain version)                                      º
-Tap                Tap changer (not used in the plain version)                                                   p.u.
-Converter          Converter station (not used in the plain version)                                             Yes/No
+Susceptance        Susceptance (not used in the this version)                                                    p.u.
+AngMax             Maximum angle difference (not used in the this version)                                       º
+AngMin             Minimum angle difference (not used in the this version)                                       º
+Tap                Tap changer (not used in the this version)                                                    p.u.
+Converter          Converter station (not used in the this version)                                              Yes/No
 TTC                Total transfer capacity (maximum permissible thermal load) in forward  direction              MW
 TTCBck             Total transfer capacity (maximum permissible thermal load) in backward direction              MW
 SecurityFactor     Security factor to consider approximately N-1 contingencies. NTC = TTC x SecurityFactor       p.u.
