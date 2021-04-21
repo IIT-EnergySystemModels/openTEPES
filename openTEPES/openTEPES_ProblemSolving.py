@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 20, 2021
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 21, 2021
 """
 
 import time
@@ -62,7 +62,6 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES):
         SolverResults.write()                                                                  # summary of the solver results
 
     SolvingTime = time.time() - StartTime
-    StartTime   = time.time()
-    print('Soultion time                           ... ', round(SolvingTime), 's')
+    print('Solution time                           ... ', round(SolvingTime), 's')
 
     print('Total system cost [MEUR]                    ', OptModel.eTotalTCost.expr())
