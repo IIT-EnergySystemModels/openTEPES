@@ -8,7 +8,7 @@ import setuptools
 
 from pyomo.environ import ConcreteModel, Set
 
-from openTEPES.openTEPES_InputData        import InputData
+from openTEPES.openTEPES_InputData        import InputData, SettingUpVariables
 from openTEPES.openTEPES_ModelFormulation import InvestmentModelFormulation, GenerationOperationModelFormulation, NetworkSwitchingModelFormulation, NetworkOperationModelFormulation
 from openTEPES.openTEPES_ProblemSolving   import ProblemSolving
 from openTEPES.openTEPES_OutputResults    import InvestmentResults, GenerationOperationResults, ESSOperationResults, FlexibilityResults, NetworkOperationResults, MarginalResults, EconomicResults, NetworkMapResults
@@ -24,7 +24,11 @@ def openTEPES_run(DirName, CaseName, SolverName):
 
     pIndLogConsole = 1
 
+    # Define sets and parameters
     InputData(DirName, CaseName, mTEPES)
+
+    # Define variables
+    SettingUpVariables(mTEPES, mTEPES)
 
     # investment model objective function
     InvestmentModelFormulation(mTEPES, mTEPES, pIndLogConsole)
