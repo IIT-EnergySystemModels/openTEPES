@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 18, 2021
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 20, 2021
 """
 
 import time
@@ -20,12 +20,14 @@ def openTEPES_run(DirName, CaseName, SolverName):
     _path = os.path.join(DirName, CaseName)
 
     #%% model declaration
-    mTEPES = ConcreteModel('Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 2.2.5 - April 18, 2021')
+    mTEPES = ConcreteModel('Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 2.3.0 - April 20, 2021')
+
+    pIndLogConsole
 
     InputData(DirName, CaseName, mTEPES)
 
     # investment model objective function
-    InvestmentModelFormulation(mTEPES)
+    InvestmentModelFormulation(mTEPES, mTEPES, pIndLogConsole)
 
     # iterative model formulation for each stage of a year
     for sc,p,st in mTEPES.sc*mTEPES.p*range(1,int(sum(mTEPES.pDuration.values())/mTEPES.pStageDuration+1)):
@@ -40,9 +42,9 @@ def openTEPES_run(DirName, CaseName, SolverName):
         mTEPES.n2 = Set(initialize=mTEPES.nn , ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in list(mTEPES.pDuration) and mTEPES.nn.ord(nn) > (st-1)*mTEPES.pStageDuration and mTEPES.nn.ord(nn) <= st*mTEPES.pStageDuration)
 
         # operation model objective function and constraints by stage
-        GenerationOperationModelFormulation(mTEPES, st)
-        NetworkSwitchingModelFormulation   (mTEPES, st)
-        NetworkOperationModelFormulation   (mTEPES, st)
+        GenerationOperationModelFormulation(mTEPES, mTEPES, pIndLogConsole, st)
+        NetworkSwitchingModelFormulation   (mTEPES, mTEPES, pIndLogConsole, st)
+        NetworkOperationModelFormulation   (mTEPES, mTEPES, pIndLogConsole, st)
 
     StartTime         = time.time()
     mTEPES.write(_path+'/openTEPES_'+CaseName+'.lp', io_options={'symbolic_solver_labels': True})  # create lp-format file
@@ -50,7 +52,7 @@ def openTEPES_run(DirName, CaseName, SolverName):
     StartTime         = time.time()
     print('Writing LP file                        ... ', round(WritingLPFileTime), 's')
 
-    ProblemSolving(DirName, CaseName, SolverName, mTEPES)
+    ProblemSolving(DirName, CaseName, SolverName, mTEPES, mTEPES)
 
     mTEPES.del_component(mTEPES.sc)
     mTEPES.del_component(mTEPES.p )
@@ -59,14 +61,14 @@ def openTEPES_run(DirName, CaseName, SolverName):
     mTEPES.p  = Set(initialize=mTEPES.pp , ordered=True, doc='periods'                                                                                 )
     mTEPES.n  = Set(initialize=mTEPES.nn , ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in list(mTEPES.pDuration)                    )
 
-    InvestmentResults         (DirName, CaseName, mTEPES)
-    GenerationOperationResults(DirName, CaseName, mTEPES)
-    ESSOperationResults       (DirName, CaseName, mTEPES)
-    FlexibilityResults        (DirName, CaseName, mTEPES)
-    NetworkOperationResults   (DirName, CaseName, mTEPES)
-    MarginalResults           (DirName, CaseName, mTEPES)
-    EconomicResults           (DirName, CaseName, mTEPES)
-    NetworkMapResults         (DirName, CaseName, mTEPES)
+    InvestmentResults         (DirName, CaseName, mTEPES, mTEPES)
+    GenerationOperationResults(DirName, CaseName, mTEPES, mTEPES)
+    ESSOperationResults       (DirName, CaseName, mTEPES, mTEPES)
+    FlexibilityResults        (DirName, CaseName, mTEPES, mTEPES)
+    NetworkOperationResults   (DirName, CaseName, mTEPES, mTEPES)
+    MarginalResults           (DirName, CaseName, mTEPES, mTEPES)
+    EconomicResults           (DirName, CaseName, mTEPES, mTEPES)
+    NetworkMapResults         (DirName, CaseName, mTEPES, mTEPES)
 
     TotalTime = time.time() - InitialTime
     print('Total time                             ... ', round(TotalTime), 's')

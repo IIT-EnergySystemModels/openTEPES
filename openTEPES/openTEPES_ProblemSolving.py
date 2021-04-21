@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 18, 2021
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 20, 2021
 """
 
 import time
@@ -8,7 +8,7 @@ import psutil
 from   pyomo.opt     import SolverFactory
 from   pyomo.environ import Suffix
 
-def ProblemSolving(DirName, CaseName, SolverName, mTEPES):
+def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES):
     print('Problem solving                        ****')
     _path = os.path.join(DirName, CaseName)
     StartTime = time.time()
@@ -29,8 +29,8 @@ def ProblemSolving(DirName, CaseName, SolverName, mTEPES):
         if SolverName == 'gurobi':
             Solver.options['relax_integrality'] =  1                                       # introduced to show results of the dual variables
             Solver.options['Crossover'        ] = -1
-        mTEPES.dual = Suffix(direction=Suffix.IMPORT)
-    SolverResults = Solver.solve(mTEPES, tee=True, report_timing=True)                     # tee=True displays the log of the solver
+        OptModel.dual = Suffix(direction=Suffix.IMPORT)
+    SolverResults = Solver.solve(OptModel, tee=True, report_timing=True)                     # tee=True displays the log of the solver
     SolverResults.write()                                                                  # summary of the solver results
 
     #%% fix values of binary variables to get dual variables and solve it again
@@ -39,30 +39,30 @@ def ProblemSolving(DirName, CaseName, SolverName, mTEPES):
     if mTEPES.pIndBinGenInvest*len(mTEPES.gc) + mTEPES.pIndBinNetInvest*len(mTEPES.lc) + mTEPES.pIndBinGenOperat():
         if mTEPES.pIndBinGenInvest*len(mTEPES.gc):
             for gc in mTEPES.gc:
-                if  mTEPES.vGenerationInvest[gc]() <= pEpsilon:
-                    mTEPES.vGenerationInvest[gc].fix(0)
+                if  OptModel.vGenerationInvest[gc]() <= pEpsilon:
+                    OptModel.vGenerationInvest[gc].fix(0)
                 else:
-                    mTEPES.vGenerationInvest[gc].fix(mTEPES.vGenerationInvest[gc]())
+                    OptModel.vGenerationInvest[gc].fix(OptModel.vGenerationInvest[gc]())
         if mTEPES.pIndBinNetInvest*len(mTEPES.lc):
             for lc in mTEPES.lc:
-                if  mTEPES.vNetworkInvest   [lc]() <= pEpsilon:
-                    mTEPES.vNetworkInvest   [lc].fix(0)
+                if  OptModel.vNetworkInvest   [lc]() <= pEpsilon:
+                    OptModel.vNetworkInvest   [lc].fix(0)
                 else:
-                    mTEPES.vNetworkInvest   [lc].fix(mTEPES.vNetworkInvest[lc]())
+                    OptModel.vNetworkInvest   [lc].fix(OptModel.vNetworkInvest[lc]())
         if mTEPES.pIndBinGenOperat:
             for sc,p,n,t in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.t:
-                mTEPES.vCommitment[sc,p,n,t].fix(mTEPES.vCommitment[sc,p,n,t]())
-                mTEPES.vStartUp   [sc,p,n,t].fix(mTEPES.vStartUp   [sc,p,n,t]())
-                mTEPES.vShutDown  [sc,p,n,t].fix(mTEPES.vShutDown  [sc,p,n,t]())
+                OptModel.vCommitment[sc,p,n,t].fix(OptModel.vCommitment[sc,p,n,t]())
+                OptModel.vStartUp   [sc,p,n,t].fix(OptModel.vStartUp   [sc,p,n,t]())
+                OptModel.vShutDown  [sc,p,n,t].fix(OptModel.vShutDown  [sc,p,n,t]())
         Solver.options['relax_integrality'] =  1                                             # introduced to show results of the dual variables
         if SolverName == 'gurobi':
             Solver.options['Crossover'        ] = -1
-        mTEPES.dual   = Suffix(direction=Suffix.IMPORT)
-        SolverResults = Solver.solve(mTEPES, warmstart=True, tee=False, report_timing=True)  # tee=True displays the log of the solver
-        SolverResults.write()                                                                # summary of the solver results
+        OptModel.dual   = Suffix(direction=Suffix.IMPORT)
+        SolverResults = Solver.solve(OptModel, warmstart=True, tee=False, report_timing=True)  # tee=True displays the log of the solver
+        SolverResults.write()                                                                  # summary of the solver results
 
     SolvingTime = time.time() - StartTime
     StartTime   = time.time()
-    print('Solving                                 ... ', round(SolvingTime), 's')
+    print('Soultion time                           ... ', round(SolvingTime), 's')
 
-    print('Total system cost [MEUR]                    ', mTEPES.eTotalTCost.expr())
+    print('Total system cost [MEUR]                    ', OptModel.eTotalTCost.expr())

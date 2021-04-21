@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 18, 2021
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 20, 2021
 """
 
 import time
@@ -14,6 +14,7 @@ def InputData(DirName, CaseName, mTEPES):
 
     _path = os.path.join(DirName, CaseName)
     StartTime = time.time()
+
     #%% reading data from CSV
     dfOption             = pd.read_csv(_path+'/oT_Data_Option_'               +CaseName+'.csv', index_col=[0    ])
     dfParameter          = pd.read_csv(_path+'/oT_Data_Parameter_'            +CaseName+'.csv', index_col=[0    ])
@@ -437,6 +438,7 @@ def InputData(DirName, CaseName, mTEPES):
     # this option avoids a warning in the following assignments
     pd.options.mode.chained_assignment = None
 
+    # %% parameters
     mTEPES.pIndBinGenInvest      = Param(initialize=pIndBinGenInvest    , within=Boolean, doc='Indicator of binary generation investment decisions', mutable=True)
     mTEPES.pIndBinGenOperat      = Param(initialize=pIndBinGenOperat    , within=Boolean, doc='Indicator of binary generation operation  decisions', mutable=True)
     mTEPES.pIndBinNetInvest      = Param(initialize=pIndBinNetInvest    , within=Boolean, doc='Indicator of binary network    investment decisions', mutable=True)
@@ -466,7 +468,11 @@ def InputData(DirName, CaseName, mTEPES):
     mTEPES.pMinStorage           = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.gg, initialize=pMinStorage.stack().to_dict()      , within=NonNegativeReals, doc='ESS Minimum stoarage capacity')
     mTEPES.pMaxStorage           = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.gg, initialize=pMaxStorage.stack().to_dict()      , within=NonNegativeReals, doc='ESS Maximum stoarage capacity')
 
+    pMustRun = pMustRun.map(idxDict)
+    mTEPES.pMustRun = Param(mTEPES.gg, within=Any, initialize=pMustRun.to_dict())
+
     mTEPES.pRatedMaxPower        = Param(                               mTEPES.gg, initialize=pRatedMaxPower.to_dict()           , within=NonNegativeReals, doc='Rated maximum power'          )
+    mTEPES.pLinearOperCost       = Param(                               mTEPES.gg, initialize=pLinearOperCost.to_dict()          , within=NonNegativeReals, doc='Linear   variable cost'       )
     mTEPES.pLinearVarCost        = Param(                               mTEPES.gg, initialize=pLinearVarCost.to_dict()           , within=NonNegativeReals, doc='Linear   variable cost'       )
     mTEPES.pLinearOMCost         = Param(                               mTEPES.gg, initialize=pLinearOMCost.to_dict()            , within=NonNegativeReals, doc='Linear   O&M      cost'       )
     mTEPES.pConstantVarCost      = Param(                               mTEPES.gg, initialize=pConstantVarCost.to_dict()         , within=NonNegativeReals, doc='Constant variable cost'       )
@@ -484,6 +490,8 @@ def InputData(DirName, CaseName, mTEPES):
     mTEPES.pCycleTimeStep        = Param(                               mTEPES.gg, initialize=pCycleTimeStep.to_dict()           , within=NonNegativeReals, doc='ESS Storage cycle'            )
     mTEPES.pOutflowsTimeStep     = Param(                               mTEPES.gg, initialize=pOutflowsTimeStep.to_dict()        , within=NonNegativeReals, doc='ESS Outflows cycle'           )
     mTEPES.pIniInventory         = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.gg, initialize=pIniInventory.stack().to_dict()    , within=NonNegativeReals, doc='ESS Initial storage',         mutable=True)
+    mTEPES.pInitialInventory     = Param(                               mTEPES.gg, initialize=pInitialInventory.to_dict()        , within=NonNegativeReals, doc='ESS Initial storage without loadlevels'   )
+    mTEPES.pStorageType          = Param(                               mTEPES.gg, initialize=pStorageType.to_dict()             , within=Any             , doc='ESS Storage type'             )
 
     mTEPES.pLineLossFactor       = Param(                               mTEPES.ln, initialize=pLineLossFactor.to_dict()          , within=NonNegativeReals, doc='Loss factor'                  )
     mTEPES.pLineR                = Param(                               mTEPES.ln, initialize=pLineR.to_dict()                   , within=NonNegativeReals, doc='Resistance'                   )
@@ -505,121 +513,129 @@ def InputData(DirName, CaseName, mTEPES):
     mTEPES.pAngMin               = Param(                               mTEPES.ln, initialize=pAngMin.to_dict()                  , within=Reals,            doc='Minimum phase angle diff',    mutable=True)
     mTEPES.pAngMax               = Param(                               mTEPES.ln, initialize=pAngMax.to_dict()                  , within=Reals,            doc='Maximum phase angle diff',    mutable=True)
 
-    #%% variables
-    mTEPES.vTotalFCost           = Var(                                          within=NonNegativeReals,                                                                                                doc='total system fixed                   cost      [MEUR]')
-    mTEPES.vTotalGCost           = Var(mTEPES.sc, mTEPES.p, mTEPES.n,            within=NonNegativeReals,                                                                                                doc='total variable generation  operation cost      [MEUR]')
-    mTEPES.vTotalCCost           = Var(mTEPES.sc, mTEPES.p, mTEPES.n,            within=NonNegativeReals,                                                                                                doc='total variable consumption operation cost      [MEUR]')
-    mTEPES.vTotalECost           = Var(mTEPES.sc, mTEPES.p, mTEPES.n,            within=NonNegativeReals,                                                                                                doc='total system emission                cost      [MEUR]')
-    mTEPES.vTotalRCost           = Var(mTEPES.sc, mTEPES.p, mTEPES.n,            within=NonNegativeReals,                                                                                                doc='total system reliability             cost      [MEUR]')
-    mTEPES.vTotalOutput          = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.g , within=NonNegativeReals, bounds=lambda mTEPES,sc,p,n,g : (0.0,mTEPES.pMaxPower        [sc,p,n,g ]),                     doc='total output of the unit                         [GW]')
-    mTEPES.vOutput2ndBlock       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=NonNegativeReals, bounds=lambda mTEPES,sc,p,n,nr: (0.0,mTEPES.pMaxPower2ndBlock[sc,p,n,nr]),                     doc='second block of the unit                         [GW]')
-    mTEPES.vReserveUp            = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=NonNegativeReals, bounds=lambda mTEPES,sc,p,n,nr: (0.0,mTEPES.pMaxPower2ndBlock[sc,p,n,nr]),                     doc='upward   operating reserve                       [GW]')
-    mTEPES.vReserveDown          = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=NonNegativeReals, bounds=lambda mTEPES,sc,p,n,nr: (0.0,mTEPES.pMaxPower2ndBlock[sc,p,n,nr]),                     doc='downward operating reserve                       [GW]')
-    mTEPES.vEnergyOutflows       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.g , within=NonNegativeReals, bounds=lambda mTEPES,sc,p,n,g : (0.0,mTEPES.pMaxPower        [sc,p,n,g ]),                     doc='total outflows of the ESS unit                   [GW]')
-    mTEPES.vESSInventory         = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es, within=NonNegativeReals, bounds=lambda mTEPES,sc,p,n,es: (mTEPES.pMinStorage[sc,p,n,es],mTEPES.pMaxStorage[sc,p,n,es]), doc='ESS inventory                                   [GWh]')
-    mTEPES.vESSSpillage          = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es, within=NonNegativeReals,                                                                                                doc='ESS spillage                                    [GWh]')
-    mTEPES.vESSTotalCharge       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es, within=NonNegativeReals, bounds=lambda mTEPES,sc,p,n,es: (0.0,mTEPES.pMaxCharge       [es]       ),                     doc='ESS total charge power                           [GW]')
-    mTEPES.vESSCharge            = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es, within=NonNegativeReals, bounds=lambda mTEPES,sc,p,n,es: (0.0,mTEPES.pMaxCharge       [es]       ),                     doc='ESS charge power                                 [GW]')
-    mTEPES.vESSReserveUp         = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es, within=NonNegativeReals, bounds=lambda mTEPES,sc,p,n,es: (0.0,mTEPES.pMaxCharge       [es]       ),                     doc='ESS upward   operating reserve                   [GW]')
-    mTEPES.vESSReserveDown       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es, within=NonNegativeReals, bounds=lambda mTEPES,sc,p,n,es: (0.0,mTEPES.pMaxCharge       [es]       ),                     doc='ESS downward operating reserve                   [GW]')
-    mTEPES.vENS                  = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nd, within=NonNegativeReals, bounds=lambda mTEPES,sc,p,n,nd: (0.0,mTEPES.pDemand          [sc,p,n,nd]),                     doc='energy not served in node                        [GW]')
-
-    if mTEPES.pIndBinGenOperat == 0:
-        mTEPES.vCommitment       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=UnitInterval,                                                                                                    doc='commitment of the unit                          [0,1]')
-        mTEPES.vStartUp          = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=UnitInterval,                                                                                                    doc='startup    of the unit                          [0,1]')
-        mTEPES.vShutDown         = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=UnitInterval,                                                                                                    doc='shutdown   of the unit                          [0,1]')
-    else:
-        mTEPES.vCommitment       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=Binary,                                                                                                          doc='commitment of the unit                          {0,1}')
-        mTEPES.vStartUp          = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=Binary,                                                                                                          doc='startup    of the unit                          {0,1}')
-        mTEPES.vShutDown         = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=Binary,                                                                                                          doc='shutdown   of the unit                          {0,1}')
-
-    if mTEPES.pIndBinGenInvest == 0:
-        mTEPES.vGenerationInvest = Var(                               mTEPES.gc, within=UnitInterval,                                                                                                    doc='generation investment decision exists in a year [0,1]')
-    else:
-        mTEPES.vGenerationInvest = Var(                               mTEPES.gc, within=Binary,                                                                                                          doc='generation investment decision exists in a year {0,1}')
-
-    if mTEPES.pIndBinNetInvest == 0:
-        mTEPES.vNetworkInvest    = Var(                               mTEPES.lc, within=UnitInterval,                                                                                                    doc='network    investment decision exists in a year [0,1]')
-    else:
-        mTEPES.vNetworkInvest    = Var(                               mTEPES.lc, within=Binary,                                                                                                          doc='network    investment decision exists in a year {0,1}')
-
-    if mTEPES.pIndBinLineCommit == 0:
-        mTEPES.vLineCommit       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=UnitInterval,                                                                                                    doc='line switching decision exists in a year [0,1]'       )
-        mTEPES.vLineOnState      = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=UnitInterval,                                                                                                    doc='on state    of the line                         [0,1]')
-        mTEPES.vLineOffState     = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=UnitInterval,                                                                                                    doc='off state   of the line                         [0,1]')
-    else:
-        mTEPES.vLineCommit       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=Binary,                                                                                                          doc='line switching decision exists in a year {0,1}'       )
-        mTEPES.vLineOnState      = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=Binary,                                                                                                          doc='on state    of the line                         {0,1}')
-        mTEPES.vLineOffState     = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=Binary,                                                                                                          doc='off state   of the line                         {0,1}')
-
-    # relax binary condition in generation and network investment decisions
-    for gc in mTEPES.gc:
-        if mTEPES.pIndBinGenInvest != 0 and pIndBinUnitInvest[gc] == 0:
-            mTEPES.vGenerationInvest[gc].domain = UnitInterval
-    for lc in mTEPES.lc:
-        if mTEPES.pIndBinNetInvest != 0 and pIndBinLineInvest[lc] == 0:
-            mTEPES.vNetworkInvest   [lc].domain = UnitInterval
-
-    # by default existing AC and DC lines are always committed
-    for sc,p,n,ni,nf,cc in list(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.le):
-        if mTEPES.pIndBinSwitching[ni,nf,cc] == 0:
-            mTEPES.vLineCommit  [sc,p,n,ni,nf,cc].fix(1)
-            mTEPES.vLineOnState [sc,p,n,ni,nf,cc].fix(0)
-            mTEPES.vLineOffState[sc,p,n,ni,nf,cc].fix(0)
-
-    mTEPES.vLineLosses           = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.ll, within=NonNegativeReals, bounds=lambda mTEPES,sc,p,n,*ll: (0.0,0.5*mTEPES.pLineLossFactor[ll]*max(mTEPES.pLineNTCBck[ll],mTEPES.pLineNTCFrw[ll])), doc='half line losses                                 [GW]')
-    mTEPES.vFlow                 = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=Reals,            bounds=lambda mTEPES,sc,p,n,*la: (-mTEPES.pLineNTCBck[la],mTEPES.pLineNTCFrw[la]),                                        doc='flow                                             [GW]')
-    mTEPES.vTheta                = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nd, within=Reals,            bounds=lambda mTEPES,sc,p,n, nd: (-mTEPES.pMaxTheta[sc,p,n,nd],mTEPES.pMaxTheta[sc,p,n,nd]),                              doc='voltage angle                                   [rad]')
-
-    # fix the must-run units and their output
-    pMustRun = pMustRun.map(idxDict)
-    mTEPES.pMustRun = Param(mTEPES.gg, within=Any, initialize=pMustRun.to_dict())
-
-    for sc,p,n,g  in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.g :
-        # must run units must produce at least their minimum output
-        if mTEPES.pMustRun[g] == 1:
-            mTEPES.vTotalOutput[sc,p,n,g].setlb(mTEPES.pMinPower[sc,p,n,g])
-        # if no max power, no total output
-        if mTEPES.pMaxPower[sc,p,n,g] == 0.0:
-            mTEPES.vTotalOutput[sc,p,n,g].fix(0.0)
-    #for sc,p,n,r  in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.r :
-    #    if mTEPES.pMinPower[sc,p,n,r] == mTEPES.pMaxPower[sc,p,n,r] and mTEPES.pLinearOMCost[r] == 0.0:
-    #        mTEPES.vTotalOutput[sc,p,n,r].fix(mTEPES.pMaxPower[sc,p,n,r])
-
-    for sc,p,n,nr in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.nr:
-        # must run units or units with no minimum power or ESS units are always committed and must produce at least their minimum output
-        if mTEPES.pMustRun[nr] == 1 or (mTEPES.pMinPower[sc,p,n,nr] == 0.0 and mTEPES.pConstantVarCost[nr] == 0.0) or nr in mTEPES.es:
-            mTEPES.vCommitment     [sc,p,n,nr].fix(1)
-            mTEPES.vStartUp        [sc,p,n,nr].fix(0)
-            mTEPES.vShutDown       [sc,p,n,nr].fix(0)
-        # if min and max power coincide there are neither second block, nor operating reserve
-        if mTEPES.pMaxPower2ndBlock[sc,p,n,nr] ==  0.0:
-            mTEPES.vOutput2ndBlock [sc,p,n,nr].fix(0.0)
-            mTEPES.vReserveUp      [sc,p,n,nr].fix(0.0)
-            mTEPES.vReserveDown    [sc,p,n,nr].fix(0.0)
-
-    for sc,p,n,es in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.es:
-        # ESS with no charge capacity or not storage capacity can't charge
-        if mTEPES.pMaxCharge[es] == 0.0 or mTEPES.pMaxStorage[sc,p,n,es] == 0.0:
-            mTEPES.vESSTotalCharge[sc,p,n,es].fix(0.0)
-            mTEPES.vESSCharge     [sc,p,n,es].fix(0.0)
-            mTEPES.vESSReserveUp  [sc,p,n,es].fix(0.0)
-            mTEPES.vESSReserveDown[sc,p,n,es].fix(0.0)
-
-    # thermal and RES units ordered by increasing variable operation cost, excluding reactive generating units
-    if len(mTEPES.tq) > 0:
-        mTEPES.go = pLinearOperCost.sort_values().index.drop(list(mTEPES.gq))
-    else:
-        mTEPES.go = pLinearOperCost.sort_values().index
-
     # initialize generation output, unit commitment and line switching
     pInitialOutput = pd.DataFrame([[0.0]*len(mTEPES.gg)]*len(mTEPES.sc*mTEPES.p*mTEPES.n), index=pd.MultiIndex.from_tuples(mTEPES.sc*mTEPES.p*mTEPES.n), columns=list(mTEPES.gg))
     pInitialUC     = pd.DataFrame([[0  ]*len(mTEPES.gg)]*len(mTEPES.sc*mTEPES.p*mTEPES.n), index=pd.MultiIndex.from_tuples(mTEPES.sc*mTEPES.p*mTEPES.n), columns=list(mTEPES.gg))
     pInitialSwitch = pd.DataFrame([[0  ]*len(mTEPES.ln)]*len(mTEPES.sc*mTEPES.p*mTEPES.n), index=pd.MultiIndex.from_tuples(mTEPES.sc*mTEPES.p*mTEPES.n), columns=list(mTEPES.la))
 
-    mTEPES.pInitialOutput = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.gg, initialize=pInitialOutput.stack().to_dict(), within=NonNegativeReals, doc='unit initial output',     mutable=True)
-    mTEPES.pInitialUC     = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.gg, initialize=pInitialUC.stack().to_dict(),     within=Boolean,          doc='unit initial commitment', mutable=True)
-    mTEPES.pInitialSwitch = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.ln, initialize=pInitialSwitch.stack().to_dict(), within=Boolean,          doc='line initial switching',  mutable=True)
+    mTEPES.pInitialOutput        = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.gg, initialize=pInitialOutput.stack().to_dict()   , within=NonNegativeReals, doc='unit initial output',         mutable=True)
+    mTEPES.pInitialUC            = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.gg, initialize=pInitialUC.stack().to_dict()       , within=Boolean,          doc='unit initial commitment',     mutable=True)
+    mTEPES.pInitialSwitch        = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.ln, initialize=pInitialSwitch.stack().to_dict()   , within=Boolean,          doc='line initial switching',      mutable=True)
+
+    SettingUpDataTime = time.time() - StartTime
+    print('Setting up input data                  ... ', round(SettingUpDataTime), 's')
+
+
+def SettingUpVariables(OptModel, mTEPES):
+
+    StartTime = time.time()
+
+    #%% variables
+    OptModel.vTotalFCost           = Var(                                          within=NonNegativeReals,                                                                                                  doc='total system fixed                   cost      [MEUR]')
+    OptModel.vTotalGCost           = Var(mTEPES.sc, mTEPES.p, mTEPES.n,            within=NonNegativeReals,                                                                                                  doc='total variable generation  operation cost      [MEUR]')
+    OptModel.vTotalCCost           = Var(mTEPES.sc, mTEPES.p, mTEPES.n,            within=NonNegativeReals,                                                                                                  doc='total variable consumption operation cost      [MEUR]')
+    OptModel.vTotalECost           = Var(mTEPES.sc, mTEPES.p, mTEPES.n,            within=NonNegativeReals,                                                                                                  doc='total system emission                cost      [MEUR]')
+    OptModel.vTotalRCost           = Var(mTEPES.sc, mTEPES.p, mTEPES.n,            within=NonNegativeReals,                                                                                                  doc='total system reliability             cost      [MEUR]')
+    OptModel.vTotalOutput          = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.g , within=NonNegativeReals, bounds=lambda OptModel,sc,p,n,g : (0.0,mTEPES.pMaxPower        [sc,p,n,g ]),                     doc='total output of the unit                         [GW]')
+    OptModel.vOutput2ndBlock       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=NonNegativeReals, bounds=lambda OptModel,sc,p,n,nr: (0.0,mTEPES.pMaxPower2ndBlock[sc,p,n,nr]),                     doc='second block of the unit                         [GW]')
+    OptModel.vReserveUp            = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=NonNegativeReals, bounds=lambda OptModel,sc,p,n,nr: (0.0,mTEPES.pMaxPower2ndBlock[sc,p,n,nr]),                     doc='upward   operating reserve                       [GW]')
+    OptModel.vReserveDown          = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=NonNegativeReals, bounds=lambda OptModel,sc,p,n,nr: (0.0,mTEPES.pMaxPower2ndBlock[sc,p,n,nr]),                     doc='downward operating reserve                       [GW]')
+    OptModel.vEnergyOutflows       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.g , within=NonNegativeReals, bounds=lambda OptModel,sc,p,n,g : (0.0,mTEPES.pMaxPower        [sc,p,n,g ]),                     doc='total outflows of the ESS unit                   [GW]')
+    OptModel.vESSInventory         = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es, within=NonNegativeReals, bounds=lambda OptModel,sc,p,n,es: (mTEPES.pMinStorage[sc,p,n,es],mTEPES.pMaxStorage[sc,p,n,es]), doc='ESS inventory                                   [GWh]')
+    OptModel.vESSSpillage          = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es, within=NonNegativeReals,                                                                                                  doc='ESS spillage                                    [GWh]')
+    OptModel.vESSTotalCharge       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es, within=NonNegativeReals, bounds=lambda OptModel,sc,p,n,es: (0.0,mTEPES.pMaxCharge       [es]       ),                     doc='ESS total charge power                           [GW]')
+    OptModel.vESSCharge            = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es, within=NonNegativeReals, bounds=lambda OptModel,sc,p,n,es: (0.0,mTEPES.pMaxCharge       [es]       ),                     doc='ESS charge power                                 [GW]')
+    OptModel.vESSReserveUp         = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es, within=NonNegativeReals, bounds=lambda OptModel,sc,p,n,es: (0.0,mTEPES.pMaxCharge       [es]       ),                     doc='ESS upward   operating reserve                   [GW]')
+    OptModel.vESSReserveDown       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es, within=NonNegativeReals, bounds=lambda OptModel,sc,p,n,es: (0.0,mTEPES.pMaxCharge       [es]       ),                     doc='ESS downward operating reserve                   [GW]')
+    OptModel.vENS                  = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nd, within=NonNegativeReals, bounds=lambda OptModel,sc,p,n,nd: (0.0,mTEPES.pDemand          [sc,p,n,nd]),                     doc='energy not served in node                        [GW]')
+
+    if mTEPES.pIndBinGenOperat == 0:
+        OptModel.vCommitment       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=UnitInterval,                                                                                                      doc='commitment of the unit                          [0,1]')
+        OptModel.vStartUp          = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=UnitInterval,                                                                                                      doc='startup    of the unit                          [0,1]')
+        OptModel.vShutDown         = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=UnitInterval,                                                                                                      doc='shutdown   of the unit                          [0,1]')
+    else:
+        OptModel.vCommitment       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=Binary,                                                                                                            doc='commitment of the unit                          {0,1}')
+        OptModel.vStartUp          = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=Binary,                                                                                                            doc='startup    of the unit                          {0,1}')
+        OptModel.vShutDown         = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=Binary,                                                                                                            doc='shutdown   of the unit                          {0,1}')
+
+    if mTEPES.pIndBinGenInvest == 0:
+        OptModel.vGenerationInvest = Var(                               mTEPES.gc, within=UnitInterval,                                                                                                      doc='generation investment decision exists in a year [0,1]')
+    else:
+        OptModel.vGenerationInvest = Var(                               mTEPES.gc, within=Binary,                                                                                                            doc='generation investment decision exists in a year {0,1}')
+
+    if mTEPES.pIndBinNetInvest == 0:
+        OptModel.vNetworkInvest    = Var(                               mTEPES.lc, within=UnitInterval,                                                                                                      doc='network    investment decision exists in a year [0,1]')
+    else:
+        OptModel.vNetworkInvest    = Var(                               mTEPES.lc, within=Binary,                                                                                                            doc='network    investment decision exists in a year {0,1}')
+
+    if mTEPES.pIndBinLineCommit == 0:
+        OptModel.vLineCommit       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=UnitInterval,                                                                                                      doc='line switching decision exists in a year [0,1]'       )
+        OptModel.vLineOnState      = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=UnitInterval,                                                                                                      doc='on state    of the line                         [0,1]')
+        OptModel.vLineOffState     = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=UnitInterval,                                                                                                      doc='off state   of the line                         [0,1]')
+    else:
+        OptModel.vLineCommit       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=Binary,                                                                                                            doc='line switching decision exists in a year {0,1}'       )
+        OptModel.vLineOnState      = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=Binary,                                                                                                            doc='on state    of the line                         {0,1}')
+        OptModel.vLineOffState     = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=Binary,                                                                                                            doc='off state   of the line                         {0,1}')
+
+    # relax binary condition in generation and network investment decisions
+    for gc in mTEPES.gc:
+        if mTEPES.pIndBinGenInvest != 0 and mTEPES.pIndBinUnitInvest[gc] == 0:
+            OptModel.vGenerationInvest[gc].domain = UnitInterval
+    for ec in mTEPES.ec:
+        if mTEPES.pIndBinGenInvest != 0 and mTEPES.pIndBinUnitInvest[ec] == 0:
+            OptModel.vGenerationInvest[ec].domain = UnitInterval
+    for lc in mTEPES.lc:
+        if mTEPES.pIndBinNetInvest != 0 and mTEPES.pIndBinLineInvest[lc] == 0:
+            OptModel.vNetworkInvest   [lc].domain = UnitInterval
+
+    # by default existing AC and DC lines are always committed
+    for sc,p,n,ni,nf,cc in list(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.le):
+        if mTEPES.pIndBinSwitching[ni,nf,cc] == 0:
+            OptModel.vLineCommit  [sc,p,n,ni,nf,cc].fix(1)
+            OptModel.vLineOnState [sc,p,n,ni,nf,cc].fix(0)
+            OptModel.vLineOffState[sc,p,n,ni,nf,cc].fix(0)
+
+    OptModel.vLineLosses           = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.ll, within=NonNegativeReals, bounds=lambda OptModel,sc,p,n,*ll: (0.0,0.5*mTEPES.pLineLossFactor[ll]*max(mTEPES.pLineNTCBck[ll],mTEPES.pLineNTCFrw[ll])), doc='half line losses                                 [GW]')
+    OptModel.vFlow                 = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=Reals,            bounds=lambda OptModel,sc,p,n,*la: (-mTEPES.pLineNTCBck[la],mTEPES.pLineNTCFrw[la]),                                        doc='flow                                             [GW]')
+    OptModel.vTheta                = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nd, within=Reals,            bounds=lambda OptModel,sc,p,n, nd: (-mTEPES.pMaxTheta[sc,p,n,nd],mTEPES.pMaxTheta[sc,p,n,nd]),                              doc='voltage angle                                   [rad]')
+
+    # fix the must-run units and their output
+    for sc,p,n,g  in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.g :
+        # must run units must produce at least their minimum output
+        if mTEPES.pMustRun[g] == 1:
+            OptModel.vTotalOutput[sc,p,n,g].setlb(mTEPES.pMinPower[sc,p,n,g])
+        # if no max power, no total output
+        if mTEPES.pMaxPower[sc,p,n,g] == 0.0:
+            OptModel.vTotalOutput[sc,p,n,g].fix(0.0)
+    #for sc,p,n,r  in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.r :
+    #    if mTEPES.pMinPower[sc,p,n,r] == mTEPES.pMaxPower[sc,p,n,r] and mTEPES.pLinearOMCost[r] == 0.0:
+    #        OptModel.vTotalOutput[sc,p,n,r].fix(mTEPES.pMaxPower[sc,p,n,r])
+
+    for sc,p,n,nr in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.nr:
+        # must run units or units with no minimum power or ESS units are always committed and must produce at least their minimum output
+        if mTEPES.pMustRun[nr] == 1 or (mTEPES.pMinPower[sc,p,n,nr] == 0.0 and mTEPES.pConstantVarCost[nr] == 0.0) or nr in mTEPES.es:
+            OptModel.vCommitment     [sc,p,n,nr].fix(1)
+            OptModel.vStartUp        [sc,p,n,nr].fix(0)
+            OptModel.vShutDown       [sc,p,n,nr].fix(0)
+        # if min and max power coincide there are neither second block, nor operating reserve
+        if mTEPES.pMaxPower2ndBlock[sc,p,n,nr] ==  0.0:
+            OptModel.vOutput2ndBlock [sc,p,n,nr].fix(0.0)
+            OptModel.vReserveUp      [sc,p,n,nr].fix(0.0)
+            OptModel.vReserveDown    [sc,p,n,nr].fix(0.0)
+
+    for sc,p,n,es in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.es:
+        # ESS with no charge capacity or not storage capacity can't charge
+        if mTEPES.pMaxCharge[es] == 0.0 or mTEPES.pMaxStorage[sc,p,n,es] == 0.0:
+            OptModel.vESSTotalCharge[sc,p,n,es].fix(0.0)
+            OptModel.vESSCharge     [sc,p,n,es].fix(0.0)
+            OptModel.vESSReserveUp  [sc,p,n,es].fix(0.0)
+            OptModel.vESSReserveDown[sc,p,n,es].fix(0.0)
+
+    # thermal and RES units ordered by increasing variable operation cost, excluding reactive generating units
+    if len(mTEPES.tq) > 0:
+        mTEPES.go = [k for k in sorted(mTEPES.pLinearVarCost, key=mTEPES.pLinearVarCost.__getitem__) if k not in list(mTEPES.gq)]
+    else:
+        mTEPES.go = [k for k in sorted(mTEPES.pLinearVarCost, key=mTEPES.pLinearVarCost.__getitem__)]
 
     for sc,p,st in mTEPES.scc*mTEPES.pp*range(1,int(sum(mTEPES.pDuration.values())/mTEPES.pStageDuration+1)):
         # activate only scenario, period and load levels to formulate
@@ -657,55 +673,57 @@ def InputData(DirName, CaseName, mTEPES):
                 mTEPES.pInitialSwitch[n1,la] = 1
 
         # fixing the ESS inventory at the last load level
+        # pInitialInventory = pd.DataFrame.from_dict(mTEPES.pInitialInventory, orient='index', columns=['Value'])
         for sc,p,es in mTEPES.sc*mTEPES.p*mTEPES.es:
-            mTEPES.vESSInventory[sc,p,mTEPES.n.last(),es].fix(pInitialInventory[es])
+            # OptModel.vESSInventory[sc,p,mTEPES.n.last(),es].fix(pInitialInventory['Value'][es])
+            OptModel.vESSInventory[sc, p, mTEPES.n.last(), es].fix(mTEPES.pInitialInventory[es])
 
     # activate all the scenarios, periods and load levels again
     mTEPES.del_component(mTEPES.sc)
     mTEPES.del_component(mTEPES.p )
     mTEPES.del_component(mTEPES.n )
-    mTEPES.sc = Set(initialize=mTEPES.scc, ordered=True, doc='scenarios',   filter=lambda mTEPES,scc: scc in mTEPES.scc and pScenProb[scc] > 0.0)
+    mTEPES.sc = Set(initialize=mTEPES.scc, ordered=True, doc='scenarios',   filter=lambda mTEPES,scc: scc in mTEPES.scc and mTEPES.pScenProb[scc] > 0.0)
     mTEPES.p  = Set(initialize=mTEPES.pp,  ordered=True, doc='periods',     filter=lambda mTEPES,pp : pp  in p == pp                            )
     mTEPES.n  = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in list(mTEPES.pDuration)             )
 
     # fixing the ESS inventory at the end of the following pCycleTimeStep (daily, weekly, monthly), i.e., for daily ESS is fixed at the end of the week, for weekly/monthly ESS is fixed at the end of the year
     for sc,p,n,es in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.es:
-         if pStorageType[es] == 'Daily'   and mTEPES.n.ord(n) % int( 168/pTimeStep) == 0:
-             mTEPES.vESSInventory[sc,p,n,es].fix(pInitialInventory[es])
-         if pStorageType[es] == 'Weekly'  and mTEPES.n.ord(n) % int(8736/pTimeStep) == 0:
-             mTEPES.vESSInventory[sc,p,n,es].fix(pInitialInventory[es])
-         if pStorageType[es] == 'Monthly' and mTEPES.n.ord(n) % int(8736/pTimeStep) == 0:
-             mTEPES.vESSInventory[sc,p,n,es].fix(pInitialInventory[es])
+         if mTEPES.pStorageType[es] == 'Daily'   and mTEPES.n.ord(n) % int( 168/mTEPES.pTimeStep()) == 0:
+             # OptModel.vESSInventory[sc,p,n,es].fix(pInitialInventory['Value'][es])
+             OptModel.vESSInventory[sc, p, n, es].fix(mTEPES.pInitialInventory[es])
+         if mTEPES.pStorageType[es] == 'Weekly'  and mTEPES.n.ord(n) % int(8736/mTEPES.pTimeStep()) == 0:
+             OptModel.vESSInventory[sc,p,n,es].fix(mTEPES.pInitialInventory[es])
+         if mTEPES.pStorageType[es] == 'Monthly' and mTEPES.n.ord(n) % int(8736/mTEPES.pTimeStep()) == 0:
+             OptModel.vESSInventory[sc,p,n,es].fix(mTEPES.pInitialInventory[es])
 
     # if no operating reserve is required no variables are needed
     for sc,p,n,ar,nr in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.ar*mTEPES.nr:
         if (ar,nr) in mTEPES.a2g:
             if mTEPES.pOperReserveUp  [sc,p,n,ar] ==  0.0:
-                mTEPES.vReserveUp     [sc,p,n,nr].fix(0.0)
+                OptModel.vReserveUp     [sc,p,n,nr].fix(0.0)
             if mTEPES.pOperReserveDw  [sc,p,n,ar] ==  0.0:
-                mTEPES.vReserveDown   [sc,p,n,nr].fix(0.0)
+                OptModel.vReserveDown   [sc,p,n,nr].fix(0.0)
     for sc,p,n,ar,es in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.ar*mTEPES.es:
         if (ar,es) in mTEPES.a2g:
             if mTEPES.pOperReserveUp  [sc,p,n,ar] ==  0.0:
-                mTEPES.vESSReserveUp  [sc,p,n,es].fix(0.0)
+                OptModel.vESSReserveUp  [sc,p,n,es].fix(0.0)
             if mTEPES.pOperReserveDw  [sc,p,n,ar] ==  0.0:
-                mTEPES.vESSReserveDown[sc,p,n,es].fix(0.0)
+                OptModel.vESSReserveDown[sc,p,n,es].fix(0.0)
 
     # if there are no energy outflows no variable is needed
     for es in mTEPES.es:
         if sum(mTEPES.pEnergyOutflows[sc,p,n,es] for sc,p,n in mTEPES.sc*mTEPES.p*mTEPES.n) == 0:
             for sc,p,n in mTEPES.sc*mTEPES.p*mTEPES.n:
-                mTEPES.vEnergyOutflows[sc,p,n,es].fix(0.0)
+                OptModel.vEnergyOutflows[sc,p,n,es].fix(0.0)
 
     # fixing the voltage angle of the reference node for each scenario, period, and load level
     for sc,p,n in mTEPES.sc*mTEPES.p*mTEPES.n:
-        mTEPES.vTheta[sc,p,n,mTEPES.rf.first()].fix(0.0)
+        OptModel.vTheta[sc,p,n,mTEPES.rf.first()].fix(0.0)
 
     # fixing the ENS in nodes with no demand
     for sc,p,n,nd in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.nd:
         if mTEPES.pDemand[sc,p,n,nd] ==  0.0:
-            mTEPES.vENS  [sc,p,n,nd].fix(0.0)
+            OptModel.vENS  [sc,p,n,nd].fix(0.0)
 
-    SettingUpDataTime = time.time() - StartTime
-    StartTime         = time.time()
-    print('Setting up input data                  ... ', round(SettingUpDataTime), 's')
+    SettingUpVariablesTime = time.time() - StartTime
+    print('Setting up variables                   ... ', round(SettingUpVariablesTime), 's')
