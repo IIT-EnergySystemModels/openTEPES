@@ -22,7 +22,7 @@ def openTEPES_run(DirName, CaseName, SolverName):
     #%% model declaration
     mTEPES = ConcreteModel('Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 2.3.0 - April 20, 2021')
 
-    pIndLogConsole
+    pIndLogConsole = 1
 
     InputData(DirName, CaseName, mTEPES)
 
