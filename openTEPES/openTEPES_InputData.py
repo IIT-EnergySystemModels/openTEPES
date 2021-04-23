@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 20, 2021
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 23, 2021
 """
 
 import time
@@ -331,7 +331,6 @@ def InputData(DirName, CaseName, mTEPES):
     pMaxPower           = pMaxPower.reindex        (sorted(pMaxPower.columns        ), axis=1)
     pMinPower           = pVariableMinPower.where(pVariableMinPower > pMinPower, other=pMinPower)
     pMaxPower           = pVariableMaxPower.where(pVariableMaxPower < pMaxPower, other=pMaxPower)
-    pMaxPower2ndBlock   = pMaxPower - pMinPower
 
     # minimum and maximum variable storage capacity
     pVariableMinStorage = pVariableMinStorage.replace(0.0, float('nan'))
@@ -363,7 +362,7 @@ def InputData(DirName, CaseName, mTEPES):
     pOutflowsTimeStep = (pUpTime*0).astype('int')
     for es in mTEPES.es:
         if  pStorageType  [es] == 'Daily'  :
-            pCycleTimeStep[es] = 1
+            pCycleTimeStep[es] =       1
         if  pStorageType  [es] == 'Weekly' :
             pCycleTimeStep[es] = int( 24/pTimeStep)
         if  pStorageType  [es] == 'Monthly':
@@ -392,7 +391,6 @@ def InputData(DirName, CaseName, mTEPES):
     pOperReserveDw    = pOperReserveDw.loc   [list(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.ar)]
     pMinPower         = pMinPower.loc        [list(mTEPES.sc*mTEPES.p*mTEPES.n          )]
     pMaxPower         = pMaxPower.loc        [list(mTEPES.sc*mTEPES.p*mTEPES.n          )]
-    pMaxPower2ndBlock = pMaxPower2ndBlock.loc[list(mTEPES.sc*mTEPES.p*mTEPES.n          )]
     pEnergyInflows    = pEnergyInflows.loc   [list(mTEPES.sc*mTEPES.p*mTEPES.n          )]
     pEnergyOutflows   = pEnergyOutflows.loc  [list(mTEPES.sc*mTEPES.p*mTEPES.n          )]
     pMinStorage       = pMinStorage.loc      [list(mTEPES.sc*mTEPES.p*mTEPES.n          )]
@@ -407,7 +405,6 @@ def InputData(DirName, CaseName, mTEPES):
     pOperReserveDw   [pOperReserveDw    < pEpsilon] = 0.0
     pMinPower        [pMinPower         < pEpsilon] = 0.0
     pMaxPower        [pMaxPower         < pEpsilon] = 0.0
-    pMaxPower2ndBlock[pMaxPower2ndBlock < pEpsilon] = 0.0
     pMaxCharge       [pMaxCharge        < pEpsilon] = 0.0
     pEnergyInflows   [pEnergyInflows    < pEpsilon/pTimeStep] = 0.0
     pEnergyOutflows  [pEnergyOutflows   < pEpsilon/pTimeStep] = 0.0
@@ -418,6 +415,8 @@ def InputData(DirName, CaseName, mTEPES):
     pMinStorage      [pMinStorage       < pEpsilon] = 0.0
     pMaxStorage      [pMaxStorage       < pEpsilon] = 0.0
     pIniInventory    [pIniInventory     < pEpsilon] = 0.0
+
+    pMaxPower2ndBlock   = pMaxPower - pMinPower
 
     pInitialInventory = pInitialInventory.where(pInitialInventory > pEpsilon, other= 0.0)
 
@@ -614,22 +613,24 @@ def SettingUpVariables(OptModel, mTEPES):
     for sc,p,n,nr in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.nr:
         # must run units or units with no minimum power or ESS units are always committed and must produce at least their minimum output
         if mTEPES.pMustRun[nr] == 1 or (mTEPES.pMinPower[sc,p,n,nr] == 0.0 and mTEPES.pConstantVarCost[nr] == 0.0) or nr in mTEPES.es:
-            OptModel.vCommitment     [sc,p,n,nr].fix(1)
-            OptModel.vStartUp        [sc,p,n,nr].fix(0)
-            OptModel.vShutDown       [sc,p,n,nr].fix(0)
+            OptModel.vCommitment    [sc,p,n,nr].fix(1)
+            OptModel.vStartUp       [sc,p,n,nr].fix(0)
+            OptModel.vShutDown      [sc,p,n,nr].fix(0)
         # if min and max power coincide there are neither second block, nor operating reserve
-        if mTEPES.pMaxPower2ndBlock[sc,p,n,nr] ==  0.0:
-            OptModel.vOutput2ndBlock [sc,p,n,nr].fix(0.0)
-            OptModel.vReserveUp      [sc,p,n,nr].fix(0.0)
-            OptModel.vReserveDown    [sc,p,n,nr].fix(0.0)
+        if  mTEPES.pMaxPower2ndBlock[sc,p,n,nr] ==  0.0:
+            OptModel.vOutput2ndBlock[sc,p,n,nr].fix(0.0)
+            OptModel.vReserveUp     [sc,p,n,nr].fix(0.0)
+            OptModel.vReserveDown   [sc,p,n,nr].fix(0.0)
 
     for sc,p,n,es in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.es:
         # ESS with no charge capacity or not storage capacity can't charge
-        if mTEPES.pMaxCharge[es] == 0.0 or mTEPES.pMaxStorage[sc,p,n,es] == 0.0:
+        if mTEPES.pMaxCharge[es] == 0.0:
             OptModel.vESSTotalCharge[sc,p,n,es].fix(0.0)
             OptModel.vESSCharge     [sc,p,n,es].fix(0.0)
             OptModel.vESSReserveUp  [sc,p,n,es].fix(0.0)
             OptModel.vESSReserveDown[sc,p,n,es].fix(0.0)
+        if mTEPES.pMaxStorage[sc,p,n,es] == 0.0:
+            OptModel.vESSInventory  [sc,p,n,es].fix(0.0)
 
     # thermal and RES units ordered by increasing variable operation cost, excluding reactive generating units
     if len(mTEPES.tq) > 0:
@@ -699,15 +700,15 @@ def SettingUpVariables(OptModel, mTEPES):
     # if no operating reserve is required no variables are needed
     for sc,p,n,ar,nr in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.ar*mTEPES.nr:
         if (ar,nr) in mTEPES.a2g:
-            if mTEPES.pOperReserveUp  [sc,p,n,ar] ==  0.0:
+            if mTEPES.pOperReserveUp    [sc,p,n,ar] ==  0.0:
                 OptModel.vReserveUp     [sc,p,n,nr].fix(0.0)
-            if mTEPES.pOperReserveDw  [sc,p,n,ar] ==  0.0:
+            if mTEPES.pOperReserveDw    [sc,p,n,ar] ==  0.0:
                 OptModel.vReserveDown   [sc,p,n,nr].fix(0.0)
     for sc,p,n,ar,es in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.ar*mTEPES.es:
         if (ar,es) in mTEPES.a2g:
-            if mTEPES.pOperReserveUp  [sc,p,n,ar] ==  0.0:
+            if mTEPES.pOperReserveUp    [sc,p,n,ar] ==  0.0:
                 OptModel.vESSReserveUp  [sc,p,n,es].fix(0.0)
-            if mTEPES.pOperReserveDw  [sc,p,n,ar] ==  0.0:
+            if mTEPES.pOperReserveDw    [sc,p,n,ar] ==  0.0:
                 OptModel.vESSReserveDown[sc,p,n,es].fix(0.0)
 
     # if there are no energy outflows no variable is needed

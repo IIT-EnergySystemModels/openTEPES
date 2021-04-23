@@ -4,6 +4,10 @@ Change Log
 - [CHANGED] Addition of the sequence of decisions and operation (TEP + transmission switching)
 - [FIXED] fixing `<https://pascua.iit.comillas.edu/aramos/openTEPES/index.html#>`_ in README.rst 
 
+[2.3.1] - 2021-04-23
+--------------------
+- [CHANGED] avoid superfluous equations
+
 [2.3.0] - 2021-04-20
 --------------------
 - [CHANGED] separate model data and optimization model
