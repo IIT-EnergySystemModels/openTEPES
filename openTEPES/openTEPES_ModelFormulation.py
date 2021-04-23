@@ -249,7 +249,7 @@ def GenerationOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, st):
         print('eESSTotalCharge       ... ', len(getattr(OptModel, 'eESSTotalCharge_stage'+str(st))), ' rows')
 
     def eEnergyOutflows(OptModel,sc,p,n,es):
-        if mTEPES.n.ord(n) % mTEPES.pOutflowsTimeStep[es] == 0 and sum(mTEPES.pEnergyOutflows[sc,p,n2,es] for sc,p,n2 in mTEPES.sc*mTEPES.p*mTEPES.n2):
+        if mTEPES.n.ord(n) % mTEPES.pOutflowsTimeStep[es] == 0 and sum(mTEPES.pEnergyOutflows[sc,p,n2,es] for n2 in mTEPES.n2):
             return sum(OptModel.vEnergyOutflows[sc,p,n2,es] for n2 in list(mTEPES.n2)[mTEPES.n.ord(n) - int(mTEPES.pOutflowsTimeStep[es]/mTEPES.pCycleTimeStep[es]):mTEPES.n.ord(n)]) == sum(mTEPES.pEnergyOutflows[sc,p,n2,es] for n2 in list(mTEPES.n2)[mTEPES.n.ord(n) - mTEPES.pOutflowsTimeStep[es]:mTEPES.n.ord(n)])
         else:
             return Constraint.Skip
