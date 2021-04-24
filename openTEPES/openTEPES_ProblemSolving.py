@@ -63,6 +63,6 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES):
         SolverResults.write()                                                                  # summary of the solver results
 
     SolvingTime = time.time() - StartTime
-    print('Solution time                           ... ', round(SolvingTime), 's')
+    print('Solution time                          ... ', round(SolvingTime), 's')
 
-    print('Total system cost [MEUR]                    ', OptModel.eTotalTCost.expr())
+    print('Total system cost [MEUR]                   ', OptModel.eTotalTCost.expr())

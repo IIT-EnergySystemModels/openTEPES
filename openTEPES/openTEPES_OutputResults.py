@@ -28,7 +28,7 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES):
 
     WritingResultsTime = time.time() - StartTime
     StartTime          = time.time()
-    print('Writing investment           results    ... ', round(WritingResultsTime), 's')
+    print('Writing investment           results   ... ', round(WritingResultsTime), 's')
 
 
 def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES):
@@ -135,7 +135,7 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES):
 
     WritingResultsTime = time.time() - StartTime
     StartTime          = time.time()
-    print('Writing generation operation results    ... ', round(WritingResultsTime), 's')
+    print('Writing generation operation results   ... ', round(WritingResultsTime), 's')
 
 
 def ESSOperationResults(DirName, CaseName, OptModel, mTEPES):
@@ -227,7 +227,7 @@ def ESSOperationResults(DirName, CaseName, OptModel, mTEPES):
 
     WritingResultsTime = time.time() - StartTime
     StartTime = time.time()
-    print('Writing ESS        operation results    ... ', round(WritingResultsTime), 's')
+    print('Writing ESS        operation results   ... ', round(WritingResultsTime), 's')
 
 
 def FlexibilityResults(DirName, CaseName, OptModel, mTEPES):
@@ -263,7 +263,7 @@ def FlexibilityResults(DirName, CaseName, OptModel, mTEPES):
 
     WritingResultsTime = time.time() - StartTime
     StartTime = time.time()
-    print('Writing flexibility          results    ... ', round(WritingResultsTime), 's')
+    print('Writing flexibility          results   ... ', round(WritingResultsTime), 's')
 
 
 def NetworkOperationResults(DirName, CaseName, OptModel, mTEPES):
@@ -317,7 +317,7 @@ def NetworkOperationResults(DirName, CaseName, OptModel, mTEPES):
 
     WritingResultsTime = time.time() - StartTime
     StartTime = time.time()
-    print('Writing network    operation results    ... ', round(WritingResultsTime), 's')
+    print('Writing network    operation results   ... ', round(WritingResultsTime), 's')
 
 
 def MarginalResults(DirName, CaseName, OptModel, mTEPES):
@@ -431,7 +431,7 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES):
 
     WritingResultsTime = time.time() - StartTime
     StartTime = time.time()
-    print('Writing marginal information results    ... ', round(WritingResultsTime), 's')
+    print('Writing marginal information results   ... ', round(WritingResultsTime), 's')
 
 
 def EconomicResults(DirName, CaseName, OptModel, mTEPES):
@@ -513,7 +513,7 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES):
 
     WritingResultsTime = time.time() - StartTime
     StartTime          = time.time()
-    print('Writing economic             results    ... ', round(WritingResultsTime), 's')
+    print('Writing economic             results   ... ', round(WritingResultsTime), 's')
 
 
 def NetworkMapResults(DirName, CaseName, OptModel, mTEPES):
