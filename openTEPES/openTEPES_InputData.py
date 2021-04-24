@@ -57,7 +57,7 @@ def InputData(DirName, CaseName, mTEPES):
 
     # show some statistics of the data
     print('Demand                       \n', dfDemand.describe()            )
-    print('Upward operating reserves    \n', dfUpOperatingReserve.describe())
+    print('Upward   operating reserves  \n', dfUpOperatingReserve.describe())
     print('Downward operating reserves  \n', dfDwOperatingReserve.describe())
     print('Generation                   \n', dfGeneration.describe()        )
     print('Variable minimum generation  \n', dfVariableMinPower.describe()  )
@@ -174,8 +174,8 @@ def InputData(DirName, CaseName, mTEPES):
     pGenToNode          = dfGeneration  ['Node'                ]                                                                            # generator location in node
     pGenToTechnology    = dfGeneration  ['Technology'          ]                                                                            # generator association to technology
     pMustRun            = dfGeneration  ['MustRun'             ]                                                                            # must-run unit                               [Yes]
-    pRatedMinPower      = dfGeneration  ['MinimumPower'        ] * 1e-3 * (1-dfGeneration['EFOR'])                                          # rated minimum power                         [GW]
-    pRatedMaxPower      = dfGeneration  ['MaximumPower'        ] * 1e-3 * (1-dfGeneration['EFOR'])                                          # rated maximum power                         [GW]
+    pRatedMinPower      = dfGeneration  ['MinimumPower'        ] * 1e-3 * (1.0-dfGeneration['EFOR'])                                        # rated minimum power                         [GW]
+    pRatedMaxPower      = dfGeneration  ['MaximumPower'        ] * 1e-3 * (1.0-dfGeneration['EFOR'])                                        # rated maximum power                         [GW]
     pLinearFuelCost     = dfGeneration  ['LinearTerm'          ] * 1e-3 * dfGeneration['FuelCost']                                          # fuel     term variable cost                 [MEUR/GWh]
     pLinearOMCost       = dfGeneration  ['OMVariableCost'      ] * 1e-3                                                                     # O&M      term variable cost                 [MEUR/GWh]
     pConstantVarCost    = dfGeneration  ['ConstantTerm'        ] * 1e-6 * dfGeneration['FuelCost']                                          # constant term variable cost                 [MEUR/h]
@@ -337,36 +337,36 @@ def InputData(DirName, CaseName, mTEPES):
     pVariableMaxPower   = pVariableMaxPower.replace(0.0, float('nan'))
     pMinPower           = pd.DataFrame([pRatedMinPower]*len(pVariableMinPower.index), index=pd.MultiIndex.from_tuples(pVariableMinPower.index), columns=pRatedMinPower.index)
     pMaxPower           = pd.DataFrame([pRatedMaxPower]*len(pVariableMaxPower.index), index=pd.MultiIndex.from_tuples(pVariableMaxPower.index), columns=pRatedMaxPower.index)
-    pVariableMinPower   = pVariableMinPower.reindex(sorted(pVariableMinPower.columns), axis=1)
-    pVariableMaxPower   = pVariableMaxPower.reindex(sorted(pVariableMaxPower.columns), axis=1)
     pMinPower           = pMinPower.reindex        (sorted(pMinPower.columns        ), axis=1)
     pMaxPower           = pMaxPower.reindex        (sorted(pMaxPower.columns        ), axis=1)
-    pMinPower           = pVariableMinPower.where(pVariableMinPower > pMinPower, other=pMinPower)
-    pMaxPower           = pVariableMaxPower.where(pVariableMaxPower < pMaxPower, other=pMaxPower)
+    pVariableMinPower   = pVariableMinPower.reindex(sorted(pVariableMinPower.columns), axis=1)
+    pVariableMaxPower   = pVariableMaxPower.reindex(sorted(pVariableMaxPower.columns), axis=1)
+    pMinPower           = pVariableMinPower.where         (pVariableMinPower > pMinPower, other=pMinPower)
+    pMaxPower           = pVariableMaxPower.where         (pVariableMaxPower < pMaxPower, other=pMaxPower)
 
     # minimum and maximum variable charge
     pVariableMinCharge  = pVariableMinCharge.replace(0.0, float('nan'))
     pVariableMaxCharge  = pVariableMaxCharge.replace(0.0, float('nan'))
     pMinCharge          = pd.DataFrame([pRatedMinCharge]*len(pVariableMinCharge.index), index=pd.MultiIndex.from_tuples(pVariableMinCharge.index), columns=pRatedMinCharge.index)
     pMaxCharge          = pd.DataFrame([pRatedMaxCharge]*len(pVariableMaxCharge.index), index=pd.MultiIndex.from_tuples(pVariableMaxCharge.index), columns=pRatedMaxCharge.index)
-    pVariableMinCharge  = pVariableMinCharge.reindex(sorted(pVariableMinCharge.columns), axis=1)
-    pVariableMaxCharge  = pVariableMaxCharge.reindex(sorted(pVariableMaxCharge.columns), axis=1)
     pMinCharge          = pMinCharge.reindex        (sorted(pMinCharge.columns        ), axis=1)
     pMaxCharge          = pMaxCharge.reindex        (sorted(pMaxCharge.columns        ), axis=1)
-    pMinCharge          = pVariableMinCharge.where(pVariableMinCharge > pMinCharge, other=pMinCharge)
-    pMaxCharge          = pVariableMaxCharge.where(pVariableMaxCharge < pMaxCharge, other=pMaxCharge)
+    pVariableMinCharge  = pVariableMinCharge.reindex(sorted(pVariableMinCharge.columns), axis=1)
+    pVariableMaxCharge  = pVariableMaxCharge.reindex(sorted(pVariableMaxCharge.columns), axis=1)
+    pMinCharge          = pVariableMinCharge.where         (pVariableMinCharge > pMinCharge, other=pMinCharge)
+    pMaxCharge          = pVariableMaxCharge.where         (pVariableMaxCharge < pMaxCharge, other=pMaxCharge)
 
     # minimum and maximum variable storage capacity
     pVariableMinStorage = pVariableMinStorage.replace(0.0, float('nan'))
     pVariableMaxStorage = pVariableMaxStorage.replace(0.0, float('nan'))
     pMinStorage         = pd.DataFrame([pRatedMinStorage]*len(pVariableMinStorage.index), index=pd.MultiIndex.from_tuples(pVariableMinStorage.index), columns=pRatedMinStorage.index)
     pMaxStorage         = pd.DataFrame([pRatedMaxStorage]*len(pVariableMaxStorage.index), index=pd.MultiIndex.from_tuples(pVariableMaxStorage.index), columns=pRatedMaxStorage.index)
-    pVariableMinStorage = pVariableMinStorage.reindex(sorted(pVariableMinStorage.columns), axis=1)
     pMinStorage         = pMinStorage.reindex        (sorted(pMinStorage.columns        ), axis=1)
-    pVariableMaxStorage = pVariableMaxStorage.reindex(sorted(pVariableMaxStorage.columns), axis=1)
     pMaxStorage         = pMaxStorage.reindex        (sorted(pMaxStorage.columns        ), axis=1)
-    pMinStorage         = pVariableMinStorage.where(pVariableMinStorage > pMinStorage, other=pMinStorage)
-    pMaxStorage         = pVariableMaxStorage.where(pVariableMaxStorage < pMaxStorage, other=pMaxStorage)
+    pVariableMinStorage = pVariableMinStorage.reindex(sorted(pVariableMinStorage.columns), axis=1)
+    pVariableMaxStorage = pVariableMaxStorage.reindex(sorted(pVariableMaxStorage.columns), axis=1)
+    pMinStorage         = pVariableMinStorage.where         (pVariableMinStorage > pMinStorage, other=pMinStorage)
+    pMaxStorage         = pVariableMaxStorage.where         (pVariableMaxStorage < pMaxStorage, other=pMaxStorage)
 
     # parameter that allows the initial inventory to change with load level
     pIniInventory       = pd.DataFrame([pInitialInventory]*len(pVariableMinStorage.index), index=pd.MultiIndex.from_tuples(pVariableMinStorage.index), columns=pInitialInventory.index)
@@ -563,18 +563,18 @@ def SettingUpVariables(OptModel, mTEPES):
     OptModel.vTotalCCost           = Var(mTEPES.sc, mTEPES.p, mTEPES.n,            within=NonNegativeReals,                                                                                                  doc='total variable consumption operation cost      [MEUR]')
     OptModel.vTotalECost           = Var(mTEPES.sc, mTEPES.p, mTEPES.n,            within=NonNegativeReals,                                                                                                  doc='total system emission                cost      [MEUR]')
     OptModel.vTotalRCost           = Var(mTEPES.sc, mTEPES.p, mTEPES.n,            within=NonNegativeReals,                                                                                                  doc='total system reliability             cost      [MEUR]')
-    OptModel.vTotalOutput          = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.g , within=NonNegativeReals, bounds=lambda OptModel,sc,p,n,g : (0.0,mTEPES.pMaxPower        [sc,p,n,g ]),                     doc='total output of the unit                         [GW]')
-    OptModel.vOutput2ndBlock       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=NonNegativeReals, bounds=lambda OptModel,sc,p,n,nr: (0.0,mTEPES.pMaxPower2ndBlock[sc,p,n,nr]),                     doc='second block of the unit                         [GW]')
-    OptModel.vReserveUp            = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=NonNegativeReals, bounds=lambda OptModel,sc,p,n,nr: (0.0,mTEPES.pMaxPower2ndBlock[sc,p,n,nr]),                     doc='upward   operating reserve                       [GW]')
-    OptModel.vReserveDown          = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=NonNegativeReals, bounds=lambda OptModel,sc,p,n,nr: (0.0,mTEPES.pMaxPower2ndBlock[sc,p,n,nr]),                     doc='downward operating reserve                       [GW]')
-    OptModel.vEnergyOutflows       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.g , within=NonNegativeReals, bounds=lambda OptModel,sc,p,n,g : (0.0,mTEPES.pMaxPower        [sc,p,n,g ]),                     doc='total outflows of the ESS unit                   [GW]')
+    OptModel.vTotalOutput          = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.g , within=NonNegativeReals, bounds=lambda OptModel,sc,p,n,g : (0.0,mTEPES.pMaxPower         [sc,p,n,g ]),                    doc='total output of the unit                         [GW]')
+    OptModel.vOutput2ndBlock       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=NonNegativeReals, bounds=lambda OptModel,sc,p,n,nr: (0.0,mTEPES.pMaxPower2ndBlock [sc,p,n,nr]),                    doc='second block of the unit                         [GW]')
+    OptModel.vReserveUp            = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=NonNegativeReals, bounds=lambda OptModel,sc,p,n,nr: (0.0,mTEPES.pMaxPower2ndBlock [sc,p,n,nr]),                    doc='upward   operating reserve                       [GW]')
+    OptModel.vReserveDown          = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=NonNegativeReals, bounds=lambda OptModel,sc,p,n,nr: (0.0,mTEPES.pMaxPower2ndBlock [sc,p,n,nr]),                    doc='downward operating reserve                       [GW]')
+    OptModel.vEnergyOutflows       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.g , within=NonNegativeReals, bounds=lambda OptModel,sc,p,n,g : (0.0,mTEPES.pMaxPower         [sc,p,n,g ]),                    doc='total outflows of the ESS unit                   [GW]')
     OptModel.vESSInventory         = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es, within=NonNegativeReals, bounds=lambda OptModel,sc,p,n,es: (mTEPES.pMinStorage[sc,p,n,es],mTEPES.pMaxStorage[sc,p,n,es]), doc='ESS inventory                                   [GWh]')
     OptModel.vESSSpillage          = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es, within=NonNegativeReals,                                                                                                  doc='ESS spillage                                    [GWh]')
-    OptModel.vESSTotalCharge       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es, within=NonNegativeReals, bounds=lambda OptModel,sc,p,n,es: (0.0,mTEPES.pMaxCharge       [sc,p,n,es]),                     doc='ESS total charge power                           [GW]')
-    OptModel.vESSCharge            = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es, within=NonNegativeReals, bounds=lambda OptModel,sc,p,n,es: (0.0,mTEPES.pMaxCharge       [sc,p,n,es]),                     doc='ESS       charge power                           [GW]')
-    OptModel.vESSReserveUp         = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es, within=NonNegativeReals, bounds=lambda OptModel,sc,p,n,es: (0.0,mTEPES.pMaxCharge       [sc,p,n,es]),                     doc='ESS upward   operating reserve                   [GW]')
-    OptModel.vESSReserveDown       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es, within=NonNegativeReals, bounds=lambda OptModel,sc,p,n,es: (0.0,mTEPES.pMaxCharge       [sc,p,n,es]),                     doc='ESS downward operating reserve                   [GW]')
-    OptModel.vENS                  = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nd, within=NonNegativeReals, bounds=lambda OptModel,sc,p,n,nd: (0.0,mTEPES.pDemand          [sc,p,n,nd]),                     doc='energy not served in node                        [GW]')
+    OptModel.vESSTotalCharge       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es, within=NonNegativeReals, bounds=lambda OptModel,sc,p,n,es: (0.0,mTEPES.pMaxCharge        [sc,p,n,es]),                    doc='ESS total charge power                           [GW]')
+    OptModel.vCharge2ndBlock       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es, within=NonNegativeReals, bounds=lambda OptModel,sc,p,n,es: (0.0,mTEPES.pMaxCharge2ndBlock[sc,p,n,es]),                    doc='ESS       charge power                           [GW]')
+    OptModel.vESSReserveUp         = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es, within=NonNegativeReals, bounds=lambda OptModel,sc,p,n,es: (0.0,mTEPES.pMaxCharge2ndBlock[sc,p,n,es]),                    doc='ESS upward   operating reserve                   [GW]')
+    OptModel.vESSReserveDown       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es, within=NonNegativeReals, bounds=lambda OptModel,sc,p,n,es: (0.0,mTEPES.pMaxCharge2ndBlock[sc,p,n,es]),                    doc='ESS downward operating reserve                   [GW]')
+    OptModel.vENS                  = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nd, within=NonNegativeReals, bounds=lambda OptModel,sc,p,n,nd: (0.0,mTEPES.pDemand           [sc,p,n,nd]),                    doc='energy not served in node                        [GW]')
 
     if mTEPES.pIndBinGenOperat == 0:
         OptModel.vCommitment       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=UnitInterval,                                                                                                      doc='commitment of the unit                          [0,1]')
@@ -654,7 +654,8 @@ def SettingUpVariables(OptModel, mTEPES):
         # ESS with no charge capacity or not storage capacity can't charge
         if mTEPES.pMaxCharge[sc,p,n,es] == 0.0:
             OptModel.vESSTotalCharge[sc,p,n,es].fix(0.0)
-            OptModel.vESSCharge     [sc,p,n,es].fix(0.0)
+        if mTEPES.pMaxCharge2ndBlock[sc,p,n,es] == 0.0:
+            OptModel.vCharge2ndBlock[sc,p,n,es].fix(0.0)
             OptModel.vESSReserveUp  [sc,p,n,es].fix(0.0)
             OptModel.vESSReserveDown[sc,p,n,es].fix(0.0)
         if mTEPES.pMaxStorage[sc,p,n,es] == 0.0:
