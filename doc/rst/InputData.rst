@@ -193,6 +193,7 @@ MinimumPower          Minimum power output (i.e., minimum stable load in the cas
 MaximumReactivePower  Maximum reactive power output (discharge for ESS units) (not used in the this version)                               MW
 MinimumReactivePower  Minimum reactive power output (not used in the this version)                                                         MW
 MaximumCharge         Maximum consumption/charge when the ESS unit is storing energy                                                       MW
+MinimumCharge         Minimum consumption/charge when the ESS unit is storing energy                                                       MW
 InitialStorage        Initial energy stored at the first instant of the time scope                                                         GWh
 MaximumStorage        Maximum energy that can be stored by the ESS unit                                                                    GWh
 MinimumStorage        Minimum energy that can be stored by the ESS unit                                                                    GWh
