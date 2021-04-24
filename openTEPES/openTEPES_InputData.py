@@ -596,11 +596,11 @@ def SettingUpVariables(OptModel, mTEPES):
         OptModel.vNetworkInvest    = Var(                               mTEPES.lc, within=Binary,                                                                                                            doc='network    investment decision exists in a year {0,1}')
 
     if mTEPES.pIndBinLineCommit == 0:
-        OptModel.vLineCommit       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=UnitInterval,                                                                                                      doc='line switching decision exists in a year [0,1]'       )
+        OptModel.vLineCommit       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=UnitInterval,                                                                                                      doc='line switching decision exists in a year        [0,1]')
         OptModel.vLineOnState      = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=UnitInterval,                                                                                                      doc='on state    of the line                         [0,1]')
         OptModel.vLineOffState     = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=UnitInterval,                                                                                                      doc='off state   of the line                         [0,1]')
     else:
-        OptModel.vLineCommit       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=Binary,                                                                                                            doc='line switching decision exists in a year {0,1}'       )
+        OptModel.vLineCommit       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=Binary,                                                                                                            doc='line switching decision exists in a year        {0,1}')
         OptModel.vLineOnState      = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=Binary,                                                                                                            doc='on state    of the line                         {0,1}')
         OptModel.vLineOffState     = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=Binary,                                                                                                            doc='off state   of the line                         {0,1}')
 
