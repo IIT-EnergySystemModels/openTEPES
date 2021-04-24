@@ -7,6 +7,7 @@ Change Log
 [2.4.0] - 2021-04-24
 --------------------
 - [CHANGED] new input files VariableMaxConsumption and VariableMinConsumption and MininmumCharge column in Generation file
+- [CHANGED] change names of MaximumStorage (MinimumStorage) files to VariableMaxStorage (VariableMinStorage)
 
 [2.3.1] - 2021-04-23
 --------------------

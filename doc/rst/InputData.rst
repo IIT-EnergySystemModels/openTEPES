@@ -79,8 +79,8 @@ File                                       Description
 ``oT_Data_VariableMinConsumption.csv``     Variable minimum power consumption by load level
 ``oT_Data_EnergyInflows.csv``              Energy inflows to an ESS
 ``oT_Data_EnergyOutflows.csv``             Energy outflows from an ESS for Power-to-X (H2 production or EV mobility or irrigation)
-``oT_Data_MaximumStorage.csv``             Maximum storage of the ESS by load level
-``oT_Data_MinimumStorage.csv``             Minimum storage of the ESS by load level
+``oT_Data_VariableMaxStorage.csv``         Maximum storage of the ESS by load level
+``oT_Data_VariableMinStorage.csv``         Minimum storage of the ESS by load level
 ``oT_Data_Network.csv``                    Network data
 ``oT_Data_NodeLocation.csv``               Node location in latitude and longitude
 =========================================  ==========================================================================================================
@@ -301,7 +301,7 @@ Internally, all the values below 1e-5 times the maximum system demand will be co
 Variable maximum and minimum storage
 ---------------------------------------------
 
-A description of the data included in the files ``oT_Data_MaximumStorage.csv`` and ``oT_Data_MinimumStorage.csv`` follows:
+A description of the data included in the files ``oT_Data_VariableMaxStorage.csv`` and ``oT_Data_VariableMinStorage.csv`` follows:
 
 ==============  ==========  ==========  =========  ====================================================  ===
 Identifier      Identifier  Identifier  Header     Description
