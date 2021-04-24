@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 23, 2021
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 24, 2021
 """
 
 import time
@@ -16,22 +16,24 @@ def InputData(DirName, CaseName, mTEPES):
     StartTime = time.time()
 
     #%% reading data from CSV
-    dfOption             = pd.read_csv(_path+'/oT_Data_Option_'               +CaseName+'.csv', index_col=[0    ])
-    dfParameter          = pd.read_csv(_path+'/oT_Data_Parameter_'            +CaseName+'.csv', index_col=[0    ])
-    dfScenario           = pd.read_csv(_path+'/oT_Data_Scenario_'             +CaseName+'.csv', index_col=[0    ])
-    dfDuration           = pd.read_csv(_path+'/oT_Data_Duration_'             +CaseName+'.csv', index_col=[0    ])
-    dfDemand             = pd.read_csv(_path+'/oT_Data_Demand_'               +CaseName+'.csv', index_col=[0,1,2])
-    dfUpOperatingReserve = pd.read_csv(_path+'/oT_Data_OperatingReserveUp_'   +CaseName+'.csv', index_col=[0,1,2])
-    dfDwOperatingReserve = pd.read_csv(_path+'/oT_Data_OperatingReserveDown_' +CaseName+'.csv', index_col=[0,1,2])
-    dfGeneration         = pd.read_csv(_path+'/oT_Data_Generation_'           +CaseName+'.csv', index_col=[0    ])
-    dfVariableMinPower   = pd.read_csv(_path+'/oT_Data_VariableMinGeneration_'+CaseName+'.csv', index_col=[0,1,2])
-    dfVariableMaxPower   = pd.read_csv(_path+'/oT_Data_VariableMaxGeneration_'+CaseName+'.csv', index_col=[0,1,2])
-    dfVariableMinStorage = pd.read_csv(_path+'/oT_Data_MinimumStorage_'       +CaseName+'.csv', index_col=[0,1,2])
-    dfVariableMaxStorage = pd.read_csv(_path+'/oT_Data_MaximumStorage_'       +CaseName+'.csv', index_col=[0,1,2])
-    dfEnergyInflows      = pd.read_csv(_path+'/oT_Data_EnergyInflows_'        +CaseName+'.csv', index_col=[0,1,2])
-    dfEnergyOutflows     = pd.read_csv(_path+'/oT_Data_EnergyOutflows_'       +CaseName+'.csv', index_col=[0,1,2])
-    dfNodeLocation       = pd.read_csv(_path+'/oT_Data_NodeLocation_'         +CaseName+'.csv', index_col=[0    ])
-    dfNetwork            = pd.read_csv(_path+'/oT_Data_Network_'              +CaseName+'.csv', index_col=[0,1,2])
+    dfOption             = pd.read_csv(_path+'/oT_Data_Option_'                +CaseName+'.csv', index_col=[0    ])
+    dfParameter          = pd.read_csv(_path+'/oT_Data_Parameter_'             +CaseName+'.csv', index_col=[0    ])
+    dfScenario           = pd.read_csv(_path+'/oT_Data_Scenario_'              +CaseName+'.csv', index_col=[0    ])
+    dfDuration           = pd.read_csv(_path+'/oT_Data_Duration_'              +CaseName+'.csv', index_col=[0    ])
+    dfDemand             = pd.read_csv(_path+'/oT_Data_Demand_'                +CaseName+'.csv', index_col=[0,1,2])
+    dfUpOperatingReserve = pd.read_csv(_path+'/oT_Data_OperatingReserveUp_'    +CaseName+'.csv', index_col=[0,1,2])
+    dfDwOperatingReserve = pd.read_csv(_path+'/oT_Data_OperatingReserveDown_'  +CaseName+'.csv', index_col=[0,1,2])
+    dfGeneration         = pd.read_csv(_path+'/oT_Data_Generation_'            +CaseName+'.csv', index_col=[0    ])
+    dfVariableMinPower   = pd.read_csv(_path+'/oT_Data_VariableMinGeneration_' +CaseName+'.csv', index_col=[0,1,2])
+    dfVariableMaxPower   = pd.read_csv(_path+'/oT_Data_VariableMaxGeneration_' +CaseName+'.csv', index_col=[0,1,2])
+    dfVariableMinCharge  = pd.read_csv(_path+'/oT_Data_VariableMinConsumption_'+CaseName+'.csv', index_col=[0,1,2])
+    dfVariableMaxCharge  = pd.read_csv(_path+'/oT_Data_VariableMaxConsumption_'+CaseName+'.csv', index_col=[0,1,2])
+    dfVariableMinStorage = pd.read_csv(_path+'/oT_Data_MinimumStorage_'        +CaseName+'.csv', index_col=[0,1,2])
+    dfVariableMaxStorage = pd.read_csv(_path+'/oT_Data_MaximumStorage_'        +CaseName+'.csv', index_col=[0,1,2])
+    dfEnergyInflows      = pd.read_csv(_path+'/oT_Data_EnergyInflows_'         +CaseName+'.csv', index_col=[0,1,2])
+    dfEnergyOutflows     = pd.read_csv(_path+'/oT_Data_EnergyOutflows_'        +CaseName+'.csv', index_col=[0,1,2])
+    dfNodeLocation       = pd.read_csv(_path+'/oT_Data_NodeLocation_'          +CaseName+'.csv', index_col=[0    ])
+    dfNetwork            = pd.read_csv(_path+'/oT_Data_Network_'               +CaseName+'.csv', index_col=[0,1,2])
 
     # substitute NaN by 0
     dfOption.fillna            (0  , inplace=True)
@@ -44,6 +46,8 @@ def InputData(DirName, CaseName, mTEPES):
     dfGeneration.fillna        (0.0, inplace=True)
     dfVariableMinPower.fillna  (0.0, inplace=True)
     dfVariableMaxPower.fillna  (0.0, inplace=True)
+    dfVariableMinCharge.fillna (0.0, inplace=True)
+    dfVariableMaxCharge.fillna (0.0, inplace=True)
     dfVariableMinStorage.fillna(0.0, inplace=True)
     dfVariableMaxStorage.fillna(0.0, inplace=True)
     dfEnergyInflows.fillna     (0.0, inplace=True)
@@ -58,8 +62,10 @@ def InputData(DirName, CaseName, mTEPES):
     print('Generation                   \n', dfGeneration.describe()        )
     print('Variable minimum generation  \n', dfVariableMinPower.describe()  )
     print('Variable maximum generation  \n', dfVariableMaxPower.describe()  )
-    print('Minimum storage              \n', dfVariableMinStorage.describe())
-    print('Maximum storage              \n', dfVariableMaxStorage.describe())
+    print('Variable minimum consumption \n', dfVariableMinCharge.describe() )
+    print('Variable maximum consumption \n', dfVariableMaxCharge.describe() )
+    print('Variable minimum storage     \n', dfVariableMinStorage.describe())
+    print('Variable minimum storage     \n', dfVariableMaxStorage.describe())
     print('Energy inflows               \n', dfEnergyInflows.describe()     )
     print('Energy outflows              \n', dfEnergyOutflows.describe()    )
     print('Network                      \n', dfNetwork.describe()           )
@@ -126,6 +132,8 @@ def InputData(DirName, CaseName, mTEPES):
     pOperReserveDw       = dfDwOperatingReserve[list(mTEPES.ar)] * 1e-3                                                                   # downward operating reserve          [GW]
     pVariableMinPower    = dfVariableMinPower  [list(mTEPES.gg)] * 1e-3                                                                   # dynamic variable minimum power      [GW]
     pVariableMaxPower    = dfVariableMaxPower  [list(mTEPES.gg)] * 1e-3                                                                   # dynamic variable maximum power      [GW]
+    pVariableMinCharge   = dfVariableMinCharge [list(mTEPES.gg)] * 1e-3                                                                   # dynamic variable minimum charge     [GW]
+    pVariableMaxCharge   = dfVariableMaxCharge [list(mTEPES.gg)] * 1e-3                                                                   # dynamic variable maximum charge     [GW]
     pVariableMinStorage  = dfVariableMinStorage[list(mTEPES.gg)]                                                                          # dynamic variable minimum storage    [GWh]
     pVariableMaxStorage  = dfVariableMaxStorage[list(mTEPES.gg)]                                                                          # dynamic variable maximum storage    [GWh]
     pEnergyInflows       = dfEnergyInflows     [list(mTEPES.gg)] * 1e-3                                                                   # dynamic energy inflows              [GW]
@@ -138,6 +146,8 @@ def InputData(DirName, CaseName, mTEPES):
         pOperReserveDw      = pOperReserveDw.rolling     (pTimeStep).mean()
         pVariableMinPower   = pVariableMinPower.rolling  (pTimeStep).mean()
         pVariableMaxPower   = pVariableMaxPower.rolling  (pTimeStep).mean()
+        pVariableMinCharge  = pVariableMinCharge.rolling (pTimeStep).mean()
+        pVariableMaxCharge  = pVariableMaxCharge.rolling (pTimeStep).mean()
         pVariableMinStorage = pVariableMinStorage.rolling(pTimeStep).mean()
         pVariableMaxStorage = pVariableMaxStorage.rolling(pTimeStep).mean()
         pEnergyInflows      = pEnergyInflows.rolling     (pTimeStep).mean()
@@ -148,6 +158,8 @@ def InputData(DirName, CaseName, mTEPES):
     pOperReserveDw.fillna     (0.0, inplace=True)
     pVariableMinPower.fillna  (0.0, inplace=True)
     pVariableMaxPower.fillna  (0.0, inplace=True)
+    pVariableMinCharge.fillna (0.0, inplace=True)
+    pVariableMaxCharge.fillna (0.0, inplace=True)
     pVariableMinStorage.fillna(0.0, inplace=True)
     pVariableMaxStorage.fillna(0.0, inplace=True)
     pEnergyInflows.fillna     (0.0, inplace=True)
@@ -176,10 +188,11 @@ def InputData(DirName, CaseName, mTEPES):
     pDwTime             = dfGeneration  ['DownTime'            ]                                                                            # minimum down time                           [h]
     pGenFixedCost       = dfGeneration  ['FixedCost'           ] *        dfGeneration['FixedChargeRate']                                   # generation fixed cost                       [MEUR]
     pIndBinUnitInvest   = dfGeneration  ['BinaryInvestment'    ]                                                                            # binary unit investment decision             [Yes]
-    pMaxCharge          = dfGeneration  ['MaximumCharge'       ] * 1e-3                                                                     # maximum ESS charge                          [GW]
+    pRatedMinCharge     = dfGeneration  ['MinimumCharge'       ] * 1e-3                                                                     # rated minimum ESS charge                    [GW]
+    pRatedMaxCharge     = dfGeneration  ['MaximumCharge'       ] * 1e-3                                                                     # rated maximum ESS charge                    [GW]
     pInitialInventory   = dfGeneration  ['InitialStorage'      ]                                                                            # initial ESS storage                         [GWh]
-    pRatedMinStorage    = dfGeneration  ['MinimumStorage'      ]                                                                            # minimum ESS storage                         [GWh]
-    pRatedMaxStorage    = dfGeneration  ['MaximumStorage'      ]                                                                            # maximum ESS storage                         [GWh]
+    pRatedMinStorage    = dfGeneration  ['MinimumStorage'      ]                                                                            # rated minimum ESS storage                   [GWh]
+    pRatedMaxStorage    = dfGeneration  ['MaximumStorage'      ]                                                                            # rated maximum ESS storage                   [GWh]
     pEfficiency         = dfGeneration  ['Efficiency'          ]                                                                            #         ESS efficiency                      [p.u.]
     pStorageType        = dfGeneration  ['StorageType'         ]                                                                            #         ESS storage  type
     pOutflowsType       = dfGeneration  ['OutflowsType'        ]                                                                            #         ESS outflows type
@@ -324,7 +337,6 @@ def InputData(DirName, CaseName, mTEPES):
     pVariableMaxPower   = pVariableMaxPower.replace(0.0, float('nan'))
     pMinPower           = pd.DataFrame([pRatedMinPower]*len(pVariableMinPower.index), index=pd.MultiIndex.from_tuples(pVariableMinPower.index), columns=pRatedMinPower.index)
     pMaxPower           = pd.DataFrame([pRatedMaxPower]*len(pVariableMaxPower.index), index=pd.MultiIndex.from_tuples(pVariableMaxPower.index), columns=pRatedMaxPower.index)
-
     pVariableMinPower   = pVariableMinPower.reindex(sorted(pVariableMinPower.columns), axis=1)
     pVariableMaxPower   = pVariableMaxPower.reindex(sorted(pVariableMaxPower.columns), axis=1)
     pMinPower           = pMinPower.reindex        (sorted(pMinPower.columns        ), axis=1)
@@ -332,18 +344,27 @@ def InputData(DirName, CaseName, mTEPES):
     pMinPower           = pVariableMinPower.where(pVariableMinPower > pMinPower, other=pMinPower)
     pMaxPower           = pVariableMaxPower.where(pVariableMaxPower < pMaxPower, other=pMaxPower)
 
+    # minimum and maximum variable charge
+    pVariableMinCharge  = pVariableMinCharge.replace(0.0, float('nan'))
+    pVariableMaxCharge  = pVariableMaxCharge.replace(0.0, float('nan'))
+    pMinCharge          = pd.DataFrame([pRatedMinCharge]*len(pVariableMinCharge.index), index=pd.MultiIndex.from_tuples(pVariableMinCharge.index), columns=pRatedMinCharge.index)
+    pMaxCharge          = pd.DataFrame([pRatedMaxCharge]*len(pVariableMaxCharge.index), index=pd.MultiIndex.from_tuples(pVariableMaxCharge.index), columns=pRatedMaxCharge.index)
+    pVariableMinCharge  = pVariableMinCharge.reindex(sorted(pVariableMinCharge.columns), axis=1)
+    pVariableMaxCharge  = pVariableMaxCharge.reindex(sorted(pVariableMaxCharge.columns), axis=1)
+    pMinCharge          = pMinCharge.reindex        (sorted(pMinCharge.columns        ), axis=1)
+    pMaxCharge          = pMaxCharge.reindex        (sorted(pMaxCharge.columns        ), axis=1)
+    pMinCharge          = pVariableMinCharge.where(pVariableMinCharge > pMinCharge, other=pMinCharge)
+    pMaxCharge          = pVariableMaxCharge.where(pVariableMaxCharge < pMaxCharge, other=pMaxCharge)
+
     # minimum and maximum variable storage capacity
     pVariableMinStorage = pVariableMinStorage.replace(0.0, float('nan'))
     pVariableMaxStorage = pVariableMaxStorage.replace(0.0, float('nan'))
     pMinStorage         = pd.DataFrame([pRatedMinStorage]*len(pVariableMinStorage.index), index=pd.MultiIndex.from_tuples(pVariableMinStorage.index), columns=pRatedMinStorage.index)
     pMaxStorage         = pd.DataFrame([pRatedMaxStorage]*len(pVariableMaxStorage.index), index=pd.MultiIndex.from_tuples(pVariableMaxStorage.index), columns=pRatedMaxStorage.index)
-
     pVariableMinStorage = pVariableMinStorage.reindex(sorted(pVariableMinStorage.columns), axis=1)
     pMinStorage         = pMinStorage.reindex        (sorted(pMinStorage.columns        ), axis=1)
-
     pVariableMaxStorage = pVariableMaxStorage.reindex(sorted(pVariableMaxStorage.columns), axis=1)
     pMaxStorage         = pMaxStorage.reindex        (sorted(pMaxStorage.columns        ), axis=1)
-
     pMinStorage         = pVariableMinStorage.where(pVariableMinStorage > pMinStorage, other=pMinStorage)
     pMaxStorage         = pVariableMaxStorage.where(pVariableMaxStorage < pMaxStorage, other=pMaxStorage)
 
@@ -391,6 +412,8 @@ def InputData(DirName, CaseName, mTEPES):
     pOperReserveDw    = pOperReserveDw.loc   [list(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.ar)]
     pMinPower         = pMinPower.loc        [list(mTEPES.sc*mTEPES.p*mTEPES.n          )]
     pMaxPower         = pMaxPower.loc        [list(mTEPES.sc*mTEPES.p*mTEPES.n          )]
+    pMinCharge        = pMinCharge.loc       [list(mTEPES.sc*mTEPES.p*mTEPES.n          )]
+    pMaxCharge        = pMaxCharge.loc       [list(mTEPES.sc*mTEPES.p*mTEPES.n          )]
     pEnergyInflows    = pEnergyInflows.loc   [list(mTEPES.sc*mTEPES.p*mTEPES.n          )]
     pEnergyOutflows   = pEnergyOutflows.loc  [list(mTEPES.sc*mTEPES.p*mTEPES.n          )]
     pMinStorage       = pMinStorage.loc      [list(mTEPES.sc*mTEPES.p*mTEPES.n          )]
@@ -400,23 +423,25 @@ def InputData(DirName, CaseName, mTEPES):
     # values < 1e-5 times the maximum system demand are converted to 0
     # these parameters are in GW
     pEpsilon = pDemand.max().sum()*1e-5
-    pDemand          [pDemand           < pEpsilon] = 0.0
-    pOperReserveUp   [pOperReserveUp    < pEpsilon] = 0.0
-    pOperReserveDw   [pOperReserveDw    < pEpsilon] = 0.0
-    pMinPower        [pMinPower         < pEpsilon] = 0.0
-    pMaxPower        [pMaxPower         < pEpsilon] = 0.0
-    pMaxCharge       [pMaxCharge        < pEpsilon] = 0.0
-    pEnergyInflows   [pEnergyInflows    < pEpsilon/pTimeStep] = 0.0
-    pEnergyOutflows  [pEnergyOutflows   < pEpsilon/pTimeStep] = 0.0
-    pLineNTCFrw      [pLineNTCFrw       < pEpsilon] = 0.0
-    pLineNTCBck      [pLineNTCBck       < pEpsilon] = 0.0
+    pDemand          [pDemand         < pEpsilon] = 0.0
+    pOperReserveUp   [pOperReserveUp  < pEpsilon] = 0.0
+    pOperReserveDw   [pOperReserveDw  < pEpsilon] = 0.0
+    pMinPower        [pMinPower       < pEpsilon] = 0.0
+    pMaxPower        [pMaxPower       < pEpsilon] = 0.0
+    pMinCharge       [pMinCharge      < pEpsilon] = 0.0
+    pMaxCharge       [pMaxCharge      < pEpsilon] = 0.0
+    pEnergyInflows   [pEnergyInflows  < pEpsilon/pTimeStep] = 0.0
+    pEnergyOutflows  [pEnergyOutflows < pEpsilon/pTimeStep] = 0.0
+    pLineNTCFrw      [pLineNTCFrw     < pEpsilon] = 0.0
+    pLineNTCBck      [pLineNTCBck     < pEpsilon] = 0.0
 
     # these parameters are in GWh
-    pMinStorage      [pMinStorage       < pEpsilon] = 0.0
-    pMaxStorage      [pMaxStorage       < pEpsilon] = 0.0
-    pIniInventory    [pIniInventory     < pEpsilon] = 0.0
+    pMinStorage      [pMinStorage     < pEpsilon] = 0.0
+    pMaxStorage      [pMaxStorage     < pEpsilon] = 0.0
+    pIniInventory    [pIniInventory   < pEpsilon] = 0.0
 
-    pMaxPower2ndBlock   = pMaxPower - pMinPower
+    pMaxPower2ndBlock  = pMaxPower  - pMinPower
+    pMaxCharge2ndBlock = pMaxCharge - pMinCharge
 
     pInitialInventory = pInitialInventory.where(pInitialInventory > pEpsilon, other= 0.0)
 
@@ -452,74 +477,77 @@ def InputData(DirName, CaseName, mTEPES):
     mTEPES.pTimeStep             = Param(initialize=pTimeStep           , within=NonNegativeReals)
     mTEPES.pStageDuration        = Param(initialize=pStageDuration      , within=NonNegativeReals)
 
-    mTEPES.pDemand               = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nd, initialize=pDemand.stack().to_dict()          , within=NonNegativeReals, doc='Demand'                       )
-    mTEPES.pScenProb             = Param(mTEPES.scc,                               initialize=pScenProb.to_dict()                , within=NonNegativeReals, doc='Probability'                  )
-    mTEPES.pDuration             = Param(                     mTEPES.n,            initialize=pDuration.to_dict()                , within=NonNegativeReals, doc='Duration'                     )
-    mTEPES.pNodeLon              = Param(                               mTEPES.nd, initialize=pNodeLon.to_dict()                 ,                          doc='Longitude'                    )
-    mTEPES.pNodeLat              = Param(                               mTEPES.nd, initialize=pNodeLat.to_dict()                 ,                          doc='Latitude'                     )
-    mTEPES.pOperReserveUp        = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.ar, initialize=pOperReserveUp.stack().to_dict()   , within=NonNegativeReals, doc='Upward   operating reserve'   )
-    mTEPES.pOperReserveDw        = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.ar, initialize=pOperReserveDw.stack().to_dict()   , within=NonNegativeReals, doc='Downward operating reserve'   )
-    mTEPES.pMinPower             = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.gg, initialize=pMinPower.stack().to_dict()        , within=NonNegativeReals, doc='Minimum power'                )
-    mTEPES.pMaxPower             = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.gg, initialize=pMaxPower.stack().to_dict()        , within=NonNegativeReals, doc='Maximum power'                )
-    mTEPES.pMaxPower2ndBlock     = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.gg, initialize=pMaxPower2ndBlock.stack().to_dict(), within=NonNegativeReals, doc='Second block'                 )
-    mTEPES.pEnergyInflows        = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.gg, initialize=pEnergyInflows.stack().to_dict()   , within=NonNegativeReals, doc='Energy inflows'               )
-    mTEPES.pEnergyOutflows       = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.gg, initialize=pEnergyOutflows.stack().to_dict()  , within=NonNegativeReals, doc='Energy outflows'              )
-    mTEPES.pMinStorage           = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.gg, initialize=pMinStorage.stack().to_dict()      , within=NonNegativeReals, doc='ESS Minimum stoarage capacity')
-    mTEPES.pMaxStorage           = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.gg, initialize=pMaxStorage.stack().to_dict()      , within=NonNegativeReals, doc='ESS Maximum stoarage capacity')
+    mTEPES.pDemand               = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nd, initialize=pDemand.stack().to_dict()           , within=NonNegativeReals, doc='Demand'                       )
+    mTEPES.pScenProb             = Param(mTEPES.scc,                               initialize=pScenProb.to_dict()                 , within=NonNegativeReals, doc='Probability'                  )
+    mTEPES.pDuration             = Param(                     mTEPES.n,            initialize=pDuration.to_dict()                 , within=NonNegativeReals, doc='Duration'                     )
+    mTEPES.pNodeLon              = Param(                               mTEPES.nd, initialize=pNodeLon.to_dict()                  ,                          doc='Longitude'                    )
+    mTEPES.pNodeLat              = Param(                               mTEPES.nd, initialize=pNodeLat.to_dict()                  ,                          doc='Latitude'                     )
+    mTEPES.pOperReserveUp        = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.ar, initialize=pOperReserveUp.stack().to_dict()    , within=NonNegativeReals, doc='Upward   operating reserve'   )
+    mTEPES.pOperReserveDw        = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.ar, initialize=pOperReserveDw.stack().to_dict()    , within=NonNegativeReals, doc='Downward operating reserve'   )
+    mTEPES.pMinPower             = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.gg, initialize=pMinPower.stack().to_dict()         , within=NonNegativeReals, doc='Minimum power'                )
+    mTEPES.pMaxPower             = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.gg, initialize=pMaxPower.stack().to_dict()         , within=NonNegativeReals, doc='Maximum power'                )
+    mTEPES.pMinCharge            = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.gg, initialize=pMinCharge.stack().to_dict()        , within=NonNegativeReals, doc='Minimum charge'               )
+    mTEPES.pMaxCharge            = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.gg, initialize=pMaxCharge.stack().to_dict()        , within=NonNegativeReals, doc='Maximum charge'               )
+    mTEPES.pMaxPower2ndBlock     = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.gg, initialize=pMaxPower2ndBlock.stack().to_dict() , within=NonNegativeReals, doc='Second block power'           )
+    mTEPES.pMaxCharge2ndBlock    = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.gg, initialize=pMaxCharge2ndBlock.stack().to_dict(), within=NonNegativeReals, doc='Second block charge'          )
+    mTEPES.pEnergyInflows        = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.gg, initialize=pEnergyInflows.stack().to_dict()    , within=NonNegativeReals, doc='Energy inflows'               )
+    mTEPES.pEnergyOutflows       = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.gg, initialize=pEnergyOutflows.stack().to_dict()   , within=NonNegativeReals, doc='Energy outflows'              )
+    mTEPES.pMinStorage           = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.gg, initialize=pMinStorage.stack().to_dict()       , within=NonNegativeReals, doc='ESS Minimum stoarage capacity')
+    mTEPES.pMaxStorage           = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.gg, initialize=pMaxStorage.stack().to_dict()       , within=NonNegativeReals, doc='ESS Maximum stoarage capacity')
 
     pMustRun = pMustRun.map(idxDict)
     mTEPES.pMustRun = Param(mTEPES.gg, within=Any, initialize=pMustRun.to_dict())
 
-    mTEPES.pRatedMaxPower        = Param(                               mTEPES.gg, initialize=pRatedMaxPower.to_dict()           , within=NonNegativeReals, doc='Rated maximum power'          )
-    mTEPES.pLinearOperCost       = Param(                               mTEPES.gg, initialize=pLinearOperCost.to_dict()          , within=NonNegativeReals, doc='Linear   variable cost'       )
-    mTEPES.pLinearVarCost        = Param(                               mTEPES.gg, initialize=pLinearVarCost.to_dict()           , within=NonNegativeReals, doc='Linear   variable cost'       )
-    mTEPES.pLinearOMCost         = Param(                               mTEPES.gg, initialize=pLinearOMCost.to_dict()            , within=NonNegativeReals, doc='Linear   O&M      cost'       )
-    mTEPES.pConstantVarCost      = Param(                               mTEPES.gg, initialize=pConstantVarCost.to_dict()         , within=NonNegativeReals, doc='Constant variable cost'       )
-    mTEPES.pCO2EmissionCost      = Param(                               mTEPES.gg, initialize=pCO2EmissionCost.to_dict()         , within=NonNegativeReals, doc='CO2 Emission      cost'       )
-    mTEPES.pStartUpCost          = Param(                               mTEPES.gg, initialize=pStartUpCost.to_dict()             , within=NonNegativeReals, doc='Startup  cost'                )
-    mTEPES.pShutDownCost         = Param(                               mTEPES.gg, initialize=pShutDownCost.to_dict()            , within=NonNegativeReals, doc='Shutdown cost'                )
-    mTEPES.pRampUp               = Param(                               mTEPES.gg, initialize=pRampUp.to_dict()                  , within=NonNegativeReals, doc='Ramp up   rate'               )
-    mTEPES.pRampDw               = Param(                               mTEPES.gg, initialize=pRampDw.to_dict()                  , within=NonNegativeReals, doc='Ramp down rate'               )
-    mTEPES.pUpTime               = Param(                               mTEPES.gg, initialize=pUpTime.to_dict()                  , within=NonNegativeReals, doc='Up   time'                    )
-    mTEPES.pDwTime               = Param(                               mTEPES.gg, initialize=pDwTime.to_dict()                  , within=NonNegativeReals, doc='Down time'                    )
-    mTEPES.pMaxCharge            = Param(                               mTEPES.gg, initialize=pMaxCharge.to_dict()               , within=NonNegativeReals, doc='Maximum charge power'         )
-    mTEPES.pGenFixedCost         = Param(                               mTEPES.gg, initialize=pGenFixedCost.to_dict()            , within=NonNegativeReals, doc='Generation fixed cost'        )
-    mTEPES.pIndBinUnitInvest     = Param(                               mTEPES.gg, initialize=pIndBinUnitInvest.to_dict()        , within=NonNegativeReals, doc='Binary investment decision'   )
-    mTEPES.pEfficiency           = Param(                               mTEPES.gg, initialize=pEfficiency.to_dict()              , within=NonNegativeReals, doc='Round-trip efficiency'        )
-    mTEPES.pCycleTimeStep        = Param(                               mTEPES.gg, initialize=pCycleTimeStep.to_dict()           , within=NonNegativeReals, doc='ESS Storage cycle'            )
-    mTEPES.pOutflowsTimeStep     = Param(                               mTEPES.gg, initialize=pOutflowsTimeStep.to_dict()        , within=NonNegativeReals, doc='ESS Outflows cycle'           )
-    mTEPES.pIniInventory         = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.gg, initialize=pIniInventory.stack().to_dict()    , within=NonNegativeReals, doc='ESS Initial storage',         mutable=True)
-    mTEPES.pInitialInventory     = Param(                               mTEPES.gg, initialize=pInitialInventory.to_dict()        , within=NonNegativeReals, doc='ESS Initial storage without loadlevels'   )
-    mTEPES.pStorageType          = Param(                               mTEPES.gg, initialize=pStorageType.to_dict()             , within=Any             , doc='ESS Storage type'             )
+    mTEPES.pRatedMaxPower        = Param(                               mTEPES.gg, initialize=pRatedMaxPower.to_dict()            , within=NonNegativeReals, doc='Rated maximum power'          )
+    mTEPES.pLinearOperCost       = Param(                               mTEPES.gg, initialize=pLinearOperCost.to_dict()           , within=NonNegativeReals, doc='Linear   variable cost'       )
+    mTEPES.pLinearVarCost        = Param(                               mTEPES.gg, initialize=pLinearVarCost.to_dict()            , within=NonNegativeReals, doc='Linear   variable cost'       )
+    mTEPES.pLinearOMCost         = Param(                               mTEPES.gg, initialize=pLinearOMCost.to_dict()             , within=NonNegativeReals, doc='Linear   O&M      cost'       )
+    mTEPES.pConstantVarCost      = Param(                               mTEPES.gg, initialize=pConstantVarCost.to_dict()          , within=NonNegativeReals, doc='Constant variable cost'       )
+    mTEPES.pCO2EmissionCost      = Param(                               mTEPES.gg, initialize=pCO2EmissionCost.to_dict()          , within=NonNegativeReals, doc='CO2 Emission      cost'       )
+    mTEPES.pStartUpCost          = Param(                               mTEPES.gg, initialize=pStartUpCost.to_dict()              , within=NonNegativeReals, doc='Startup  cost'                )
+    mTEPES.pShutDownCost         = Param(                               mTEPES.gg, initialize=pShutDownCost.to_dict()             , within=NonNegativeReals, doc='Shutdown cost'                )
+    mTEPES.pRampUp               = Param(                               mTEPES.gg, initialize=pRampUp.to_dict()                   , within=NonNegativeReals, doc='Ramp up   rate'               )
+    mTEPES.pRampDw               = Param(                               mTEPES.gg, initialize=pRampDw.to_dict()                   , within=NonNegativeReals, doc='Ramp down rate'               )
+    mTEPES.pUpTime               = Param(                               mTEPES.gg, initialize=pUpTime.to_dict()                   , within=NonNegativeReals, doc='Up   time'                    )
+    mTEPES.pDwTime               = Param(                               mTEPES.gg, initialize=pDwTime.to_dict()                   , within=NonNegativeReals, doc='Down time'                    )
+    mTEPES.pRatedMaxCharge       = Param(                               mTEPES.gg, initialize=pRatedMaxCharge.to_dict()           , within=NonNegativeReals, doc='Rated maximum charge'         )
+    mTEPES.pGenFixedCost         = Param(                               mTEPES.gg, initialize=pGenFixedCost.to_dict()             , within=NonNegativeReals, doc='Generation fixed cost'        )
+    mTEPES.pIndBinUnitInvest     = Param(                               mTEPES.gg, initialize=pIndBinUnitInvest.to_dict()         , within=NonNegativeReals, doc='Binary investment decision'   )
+    mTEPES.pEfficiency           = Param(                               mTEPES.gg, initialize=pEfficiency.to_dict()               , within=NonNegativeReals, doc='Round-trip efficiency'        )
+    mTEPES.pCycleTimeStep        = Param(                               mTEPES.gg, initialize=pCycleTimeStep.to_dict()            , within=NonNegativeReals, doc='ESS Storage cycle'            )
+    mTEPES.pOutflowsTimeStep     = Param(                               mTEPES.gg, initialize=pOutflowsTimeStep.to_dict()         , within=NonNegativeReals, doc='ESS Outflows cycle'           )
+    mTEPES.pIniInventory         = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.gg, initialize=pIniInventory.stack().to_dict()     , within=NonNegativeReals, doc='ESS Initial storage',         mutable=True)
+    mTEPES.pInitialInventory     = Param(                               mTEPES.gg, initialize=pInitialInventory.to_dict()         , within=NonNegativeReals, doc='ESS Initial storage without loadlevels'   )
+    mTEPES.pStorageType          = Param(                               mTEPES.gg, initialize=pStorageType.to_dict()              , within=Any             , doc='ESS Storage type'             )
 
-    mTEPES.pLineLossFactor       = Param(                               mTEPES.ln, initialize=pLineLossFactor.to_dict()          , within=NonNegativeReals, doc='Loss factor'                  )
-    mTEPES.pLineR                = Param(                               mTEPES.ln, initialize=pLineR.to_dict()                   , within=NonNegativeReals, doc='Resistance'                   )
-    mTEPES.pLineX                = Param(                               mTEPES.ln, initialize=pLineX.to_dict()                   , within=NonNegativeReals, doc='Reactance'                    )
-    mTEPES.pLineBsh              = Param(                               mTEPES.ln, initialize=pLineBsh.to_dict()                 , within=NonNegativeReals, doc='Susceptance',                 mutable=True)
-    mTEPES.pLineTAP              = Param(                               mTEPES.ln, initialize=pLineTAP.to_dict()                 , within=NonNegativeReals, doc='Tap changer',                 mutable=True)
-    mTEPES.pConverter            = Param(                               mTEPES.ln, initialize=pConverter.to_dict()               , within=NonNegativeReals, doc='Converter'                    )
-    mTEPES.pLineVoltage          = Param(                               mTEPES.ln, initialize=pLineVoltage.to_dict()             , within=NonNegativeReals, doc='Voltage'                      )
-    mTEPES.pLineNTCFrw           = Param(                               mTEPES.ln, initialize=pLineNTCFrw.to_dict()              , within=NonNegativeReals, doc='NTC forward'                  )
-    mTEPES.pLineNTCBck           = Param(                               mTEPES.ln, initialize=pLineNTCBck.to_dict()              , within=NonNegativeReals, doc='NTC backward'                 )
-    mTEPES.pNetFixedCost         = Param(                               mTEPES.ln, initialize=pNetFixedCost.to_dict()            , within=NonNegativeReals, doc='Network fixed cost'           )
-    mTEPES.pIndBinLineInvest     = Param(                               mTEPES.ln, initialize=pIndBinLineInvest.to_dict()        , within=NonNegativeReals, doc='Binary investment decision'   )
-    mTEPES.pSwOnTime             = Param(                               mTEPES.ln, initialize=pSwitchOnTime.to_dict()            , within=NonNegativeReals, doc='Minimum switching on  time'   )
-    mTEPES.pSwOffTime            = Param(                               mTEPES.ln, initialize=pSwitchOffTime.to_dict()           , within=NonNegativeReals, doc='Minimum switching off time'   )
-    mTEPES.pIndBinSwitching      = Param(                               mTEPES.ln, initialize=pIndBinSwitching.to_dict()         , within=NonNegativeReals, doc='Switching decision'           )
-    mTEPES.pBigMFlowBck          = Param(                               mTEPES.ln, initialize=pBigMFlowBck.to_dict()             , within=NonNegativeReals, doc='Maximum backward capacity',   mutable=True)
-    mTEPES.pBigMFlowFrw          = Param(                               mTEPES.ln, initialize=pBigMFlowFrw.to_dict()             , within=NonNegativeReals, doc='Maximum forward  capacity',   mutable=True)
-    mTEPES.pMaxTheta             = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nd, initialize=pMaxTheta.stack().to_dict()        , within=NonNegativeReals, doc='Maximum voltage angle',       mutable=True)
-    mTEPES.pAngMin               = Param(                               mTEPES.ln, initialize=pAngMin.to_dict()                  , within=Reals,            doc='Minimum phase angle diff',    mutable=True)
-    mTEPES.pAngMax               = Param(                               mTEPES.ln, initialize=pAngMax.to_dict()                  , within=Reals,            doc='Maximum phase angle diff',    mutable=True)
+    mTEPES.pLineLossFactor       = Param(                               mTEPES.ln, initialize=pLineLossFactor.to_dict()           , within=NonNegativeReals, doc='Loss factor'                  )
+    mTEPES.pLineR                = Param(                               mTEPES.ln, initialize=pLineR.to_dict()                    , within=NonNegativeReals, doc='Resistance'                   )
+    mTEPES.pLineX                = Param(                               mTEPES.ln, initialize=pLineX.to_dict()                    , within=NonNegativeReals, doc='Reactance'                    )
+    mTEPES.pLineBsh              = Param(                               mTEPES.ln, initialize=pLineBsh.to_dict()                  , within=NonNegativeReals, doc='Susceptance',                 mutable=True)
+    mTEPES.pLineTAP              = Param(                               mTEPES.ln, initialize=pLineTAP.to_dict()                  , within=NonNegativeReals, doc='Tap changer',                 mutable=True)
+    mTEPES.pConverter            = Param(                               mTEPES.ln, initialize=pConverter.to_dict()                , within=NonNegativeReals, doc='Converter'                    )
+    mTEPES.pLineVoltage          = Param(                               mTEPES.ln, initialize=pLineVoltage.to_dict()              , within=NonNegativeReals, doc='Voltage'                      )
+    mTEPES.pLineNTCFrw           = Param(                               mTEPES.ln, initialize=pLineNTCFrw.to_dict()               , within=NonNegativeReals, doc='NTC forward'                  )
+    mTEPES.pLineNTCBck           = Param(                               mTEPES.ln, initialize=pLineNTCBck.to_dict()               , within=NonNegativeReals, doc='NTC backward'                 )
+    mTEPES.pNetFixedCost         = Param(                               mTEPES.ln, initialize=pNetFixedCost.to_dict()             , within=NonNegativeReals, doc='Network fixed cost'           )
+    mTEPES.pIndBinLineInvest     = Param(                               mTEPES.ln, initialize=pIndBinLineInvest.to_dict()         , within=NonNegativeReals, doc='Binary investment decision'   )
+    mTEPES.pSwOnTime             = Param(                               mTEPES.ln, initialize=pSwitchOnTime.to_dict()             , within=NonNegativeReals, doc='Minimum switching on  time'   )
+    mTEPES.pSwOffTime            = Param(                               mTEPES.ln, initialize=pSwitchOffTime.to_dict()            , within=NonNegativeReals, doc='Minimum switching off time'   )
+    mTEPES.pIndBinSwitching      = Param(                               mTEPES.ln, initialize=pIndBinSwitching.to_dict()          , within=NonNegativeReals, doc='Switching decision'           )
+    mTEPES.pBigMFlowBck          = Param(                               mTEPES.ln, initialize=pBigMFlowBck.to_dict()              , within=NonNegativeReals, doc='Maximum backward capacity',   mutable=True)
+    mTEPES.pBigMFlowFrw          = Param(                               mTEPES.ln, initialize=pBigMFlowFrw.to_dict()              , within=NonNegativeReals, doc='Maximum forward  capacity',   mutable=True)
+    mTEPES.pMaxTheta             = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nd, initialize=pMaxTheta.stack().to_dict()         , within=NonNegativeReals, doc='Maximum voltage angle',       mutable=True)
+    mTEPES.pAngMin               = Param(                               mTEPES.ln, initialize=pAngMin.to_dict()                   , within=Reals,            doc='Minimum phase angle diff',    mutable=True)
+    mTEPES.pAngMax               = Param(                               mTEPES.ln, initialize=pAngMax.to_dict()                   , within=Reals,            doc='Maximum phase angle diff',    mutable=True)
 
     # initialize generation output, unit commitment and line switching
     pInitialOutput = pd.DataFrame([[0.0]*len(mTEPES.gg)]*len(mTEPES.sc*mTEPES.p*mTEPES.n), index=pd.MultiIndex.from_tuples(mTEPES.sc*mTEPES.p*mTEPES.n), columns=list(mTEPES.gg))
     pInitialUC     = pd.DataFrame([[0  ]*len(mTEPES.gg)]*len(mTEPES.sc*mTEPES.p*mTEPES.n), index=pd.MultiIndex.from_tuples(mTEPES.sc*mTEPES.p*mTEPES.n), columns=list(mTEPES.gg))
-    pInitialSwitch = pd.DataFrame([[0  ]*len(mTEPES.ln)]*len(mTEPES.sc*mTEPES.p*mTEPES.n), index=pd.MultiIndex.from_tuples(mTEPES.sc*mTEPES.p*mTEPES.n), columns=list(mTEPES.la))
+    pInitialSwitch = pd.DataFrame([[0  ]*len(mTEPES.ln)]*len(mTEPES.sc*mTEPES.p*mTEPES.n), index=pd.MultiIndex.from_tuples(mTEPES.sc*mTEPES.p*mTEPES.n), columns=list(mTEPES.ln))
 
-    mTEPES.pInitialOutput        = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.gg, initialize=pInitialOutput.stack().to_dict()   , within=NonNegativeReals, doc='unit initial output',         mutable=True)
-    mTEPES.pInitialUC            = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.gg, initialize=pInitialUC.stack().to_dict()       , within=Boolean,          doc='unit initial commitment',     mutable=True)
-    mTEPES.pInitialSwitch        = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.ln, initialize=pInitialSwitch.stack().to_dict()   , within=Boolean,          doc='line initial switching',      mutable=True)
+    mTEPES.pInitialOutput        = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.gg, initialize=pInitialOutput.stack().to_dict()    , within=NonNegativeReals, doc='unit initial output',         mutable=True)
+    mTEPES.pInitialUC            = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.gg, initialize=pInitialUC.stack().to_dict()        , within=Boolean,          doc='unit initial commitment',     mutable=True)
+    mTEPES.pInitialSwitch        = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.ln, initialize=pInitialSwitch.stack().to_dict()    , within=Boolean,          doc='line initial switching',      mutable=True)
 
     SettingUpDataTime = time.time() - StartTime
     print('Setting up input data                  ... ', round(SettingUpDataTime), 's')
@@ -542,10 +570,10 @@ def SettingUpVariables(OptModel, mTEPES):
     OptModel.vEnergyOutflows       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.g , within=NonNegativeReals, bounds=lambda OptModel,sc,p,n,g : (0.0,mTEPES.pMaxPower        [sc,p,n,g ]),                     doc='total outflows of the ESS unit                   [GW]')
     OptModel.vESSInventory         = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es, within=NonNegativeReals, bounds=lambda OptModel,sc,p,n,es: (mTEPES.pMinStorage[sc,p,n,es],mTEPES.pMaxStorage[sc,p,n,es]), doc='ESS inventory                                   [GWh]')
     OptModel.vESSSpillage          = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es, within=NonNegativeReals,                                                                                                  doc='ESS spillage                                    [GWh]')
-    OptModel.vESSTotalCharge       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es, within=NonNegativeReals, bounds=lambda OptModel,sc,p,n,es: (0.0,mTEPES.pMaxCharge       [es]       ),                     doc='ESS total charge power                           [GW]')
-    OptModel.vESSCharge            = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es, within=NonNegativeReals, bounds=lambda OptModel,sc,p,n,es: (0.0,mTEPES.pMaxCharge       [es]       ),                     doc='ESS charge power                                 [GW]')
-    OptModel.vESSReserveUp         = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es, within=NonNegativeReals, bounds=lambda OptModel,sc,p,n,es: (0.0,mTEPES.pMaxCharge       [es]       ),                     doc='ESS upward   operating reserve                   [GW]')
-    OptModel.vESSReserveDown       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es, within=NonNegativeReals, bounds=lambda OptModel,sc,p,n,es: (0.0,mTEPES.pMaxCharge       [es]       ),                     doc='ESS downward operating reserve                   [GW]')
+    OptModel.vESSTotalCharge       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es, within=NonNegativeReals, bounds=lambda OptModel,sc,p,n,es: (0.0,mTEPES.pMaxCharge       [sc,p,n,es]),                     doc='ESS total charge power                           [GW]')
+    OptModel.vESSCharge            = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es, within=NonNegativeReals, bounds=lambda OptModel,sc,p,n,es: (0.0,mTEPES.pMaxCharge       [sc,p,n,es]),                     doc='ESS       charge power                           [GW]')
+    OptModel.vESSReserveUp         = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es, within=NonNegativeReals, bounds=lambda OptModel,sc,p,n,es: (0.0,mTEPES.pMaxCharge       [sc,p,n,es]),                     doc='ESS upward   operating reserve                   [GW]')
+    OptModel.vESSReserveDown       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es, within=NonNegativeReals, bounds=lambda OptModel,sc,p,n,es: (0.0,mTEPES.pMaxCharge       [sc,p,n,es]),                     doc='ESS downward operating reserve                   [GW]')
     OptModel.vENS                  = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nd, within=NonNegativeReals, bounds=lambda OptModel,sc,p,n,nd: (0.0,mTEPES.pDemand          [sc,p,n,nd]),                     doc='energy not served in node                        [GW]')
 
     if mTEPES.pIndBinGenOperat == 0:
@@ -624,7 +652,7 @@ def SettingUpVariables(OptModel, mTEPES):
 
     for sc,p,n,es in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.es:
         # ESS with no charge capacity or not storage capacity can't charge
-        if mTEPES.pMaxCharge[es] == 0.0:
+        if mTEPES.pMaxCharge[sc,p,n,es] == 0.0:
             OptModel.vESSTotalCharge[sc,p,n,es].fix(0.0)
             OptModel.vESSCharge     [sc,p,n,es].fix(0.0)
             OptModel.vESSReserveUp  [sc,p,n,es].fix(0.0)

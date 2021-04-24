@@ -73,8 +73,10 @@ File                                       Description
 ``oT_Data_OperatingReserveUp.csv``         Upward   operating reserves (include aFRR, mFRR and RR for electricity balancing from ENTSO-E)
 ``oT_Data_OperatingReserveDown.csv``       Downward operating reserves (include aFRR, mFRR and RR for electricity balancing from ENTSO-E)
 ``oT_Data_Generation.csv``                 Generation data
-``oT_Data_VariableMaxGeneration.csv``      Variable maximum power generation by load level
-``oT_Data_VariableMinGeneration.csv``      Variable minimum power generation by load level
+``oT_Data_VariableMaxGeneration.csv``      Variable maximum power generation  by load level
+``oT_Data_VariableMinGeneration.csv``      Variable minimum power generation  by load level
+``oT_Data_VariableMaxConsumption.csv``     Variable maximum power consumption by load level
+``oT_Data_VariableMinConsumption.csv``     Variable minimum power consumption by load level
 ``oT_Data_EnergyInflows.csv``              Energy inflows to an ESS
 ``oT_Data_EnergyOutflows.csv``             Energy outflows from an ESS for Power-to-X (H2 production or EV mobility or irrigation)
 ``oT_Data_MaximumStorage.csv``             Maximum storage of the ESS by load level
@@ -228,7 +230,7 @@ EFOR is used to reduce the maximum and minimum power of the unit. For hydro unit
 Those generators or ESS with fixed cost > 0 are considered candidate and can be installed or not.
 
 Variable generation
------------------------
+-------------------
 
 A description of the data included in the files ``oT_Data_VariableMaxGeneration.csv`` and ``oT_Data_VariableMinGeneration.csv`` follows:
 
@@ -239,7 +241,23 @@ Scenario        Period      Load level  Generator  Maximum (minimum) power gener
 ==============  ==========  ==========  =========  ============================================================  ==
 
 To force a generator to produce 0 a lower value (e.g., 0.1 MW) strictly > 0, but not 0 (in which case the value will be ignored), must be introduced. This is needed to limit the solar production at night, for example.
-It can be used also for upperbounding and/or lowerbounding the output of any generator (e.g., run-of-the-river hydro, wind).
+It can be used also for upper-bounding and/or lower-bounding the output of any generator (e.g., run-of-the-river hydro, wind).
+
+Internally, all the values below 1e-5 times the maximum system demand will be converted into 0 by the model.
+
+Variable consumption
+--------------------
+
+A description of the data included in the files ``oT_Data_VariableMaxConsumption.csv`` and ``oT_Data_VariableMinConsumption.csv`` follows:
+
+==============  ==========  ==========  =========  =============================================================  ==
+Identifier      Identifier  Identifier  Header     Description
+==============  ==========  ==========  =========  =============================================================  ==
+Scenario        Period      Load level  Generator  Maximum (minimum) power consumption of the unit by load level  MW
+==============  ==========  ==========  =========  =============================================================  ==
+
+To force a ESS to consume 0 a lower value (e.g., 0.1 MW) strictly > 0, but not 0 (in which case the value will be ignored), must be introduced.
+It can be used also for upper-bounding and/or lower-bounding the consumption of any ESS (e.g., pumped-hydro storage, battery).
 
 Internally, all the values below 1e-5 times the maximum system demand will be converted into 0 by the model.
 

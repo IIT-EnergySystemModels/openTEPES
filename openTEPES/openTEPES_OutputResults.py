@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 20, 2021
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 24, 2021
 """
 
 import time
@@ -28,7 +28,7 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES):
 
     WritingResultsTime = time.time() - StartTime
     StartTime          = time.time()
-    print('Writing investment           results   ... ', round(WritingResultsTime), 's')
+    print('Writing           investment results   ... ', round(WritingResultsTime), 's')
 
 
 def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES):
@@ -227,7 +227,7 @@ def ESSOperationResults(DirName, CaseName, OptModel, mTEPES):
 
     WritingResultsTime = time.time() - StartTime
     StartTime = time.time()
-    print('Writing ESS        operation results   ... ', round(WritingResultsTime), 's')
+    print('Writing        ESS operation results   ... ', round(WritingResultsTime), 's')
 
 
 def FlexibilityResults(DirName, CaseName, OptModel, mTEPES):
@@ -263,7 +263,7 @@ def FlexibilityResults(DirName, CaseName, OptModel, mTEPES):
 
     WritingResultsTime = time.time() - StartTime
     StartTime = time.time()
-    print('Writing flexibility          results   ... ', round(WritingResultsTime), 's')
+    print('Writing          flexibility results   ... ', round(WritingResultsTime), 's')
 
 
 def NetworkOperationResults(DirName, CaseName, OptModel, mTEPES):
@@ -317,7 +317,7 @@ def NetworkOperationResults(DirName, CaseName, OptModel, mTEPES):
 
     WritingResultsTime = time.time() - StartTime
     StartTime = time.time()
-    print('Writing network    operation results   ... ', round(WritingResultsTime), 's')
+    print('Writing    network operation results   ... ', round(WritingResultsTime), 's')
 
 
 def MarginalResults(DirName, CaseName, OptModel, mTEPES):
@@ -513,7 +513,7 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES):
 
     WritingResultsTime = time.time() - StartTime
     StartTime          = time.time()
-    print('Writing economic             results   ... ', round(WritingResultsTime), 's')
+    print('Writing             economic results   ... ', round(WritingResultsTime), 's')
 
 
 def NetworkMapResults(DirName, CaseName, OptModel, mTEPES):
@@ -603,4 +603,4 @@ def NetworkMapResults(DirName, CaseName, OptModel, mTEPES):
     plt.savefig(_path+'/oT_Plot_MapNetwork_'+CaseName+'.png', bbox_inches=None, dpi=1200)
 
     PlottingNetMapsTime = time.time() - StartTime
-    print('Plotting network maps                   ... ', round(PlottingNetMapsTime), 's')
+    print('Plotting network maps                  ... ', round(PlottingNetMapsTime), 's')
