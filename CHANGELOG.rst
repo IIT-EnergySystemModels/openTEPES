@@ -6,7 +6,7 @@ Change Log
 
 [2.4.0] - 2021-04-24
 --------------------
-- [CHANGED] new input files VariableMaxConsumption and VariableMinConsumption
+- [CHANGED] new input files VariableMaxConsumption and VariableMinConsumption and MininmumCharge column in Generation file
 
 [2.3.1] - 2021-04-23
 --------------------
