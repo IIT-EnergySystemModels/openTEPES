@@ -65,7 +65,7 @@
 # make it effectively proprietary.  To prevent this, the GPL assures that
 # patents cannot be used to render the program non-free.
 
-# Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 2.3.0 - April 20, 2021
+# Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 2.4.0 - April 24, 2021
 # simplicity and transparency in power systems planning
 
 # Developed by
@@ -120,7 +120,7 @@ def main():
     print(sys.argv)
     print(args)
     openTEPES_run(args.dir, args.case, args.solver)
-    sys.exit('Running Process Finished...')
+    sys.exit('End of the run                         ...')
 
 if __name__ == '__main__':
     main()
