@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 24, 2021
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 25, 2021
 """
 
 import time
@@ -32,10 +32,10 @@ def GenerationOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, st):
 
     def eTotalGCost(OptModel,sc,p,n):
         return OptModel.vTotalGCost[sc,p,n] == (sum(mTEPES.pLinearVarCost  [nr] * mTEPES.pDuration[n] * OptModel.vTotalOutput[sc,p,n,nr]                      +
-                                                  mTEPES.pConstantVarCost[nr] * mTEPES.pDuration[n] * OptModel.vCommitment [sc,p,n,nr]                      +
-                                                  mTEPES.pStartUpCost    [nr] *                       OptModel.vStartUp    [sc,p,n,nr]                      +
-                                                  mTEPES.pShutDownCost   [nr] *                       OptModel.vShutDown   [sc,p,n,nr] for nr in mTEPES.nr) +
-                                              sum(mTEPES.pLinearOMCost   [ r] * mTEPES.pDuration[n] * OptModel.vTotalOutput[sc,p,n, r] for  r in mTEPES.r ) )
+                                                    mTEPES.pConstantVarCost[nr] * mTEPES.pDuration[n] * OptModel.vCommitment [sc,p,n,nr]                      +
+                                                    mTEPES.pStartUpCost    [nr] *                       OptModel.vStartUp    [sc,p,n,nr]                      +
+                                                    mTEPES.pShutDownCost   [nr] *                       OptModel.vShutDown   [sc,p,n,nr] for nr in mTEPES.nr) +
+                                                sum(mTEPES.pLinearOMCost   [ r] * mTEPES.pDuration[n] * OptModel.vTotalOutput[sc,p,n, r] for  r in mTEPES.r ) )
     setattr(OptModel, 'eTotalGCost_stage'+str(st), Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, rule=eTotalGCost, doc='system variable generation operation cost [MEUR]'))
 
     def eTotalCCost(OptModel,sc,p,n):
@@ -53,7 +53,7 @@ def GenerationOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, st):
     setattr(OptModel, 'eTotalECost_stage'+str(st), Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, rule=eTotalECost, doc='system emission cost [MEUR]'))
 
     def eTotalRCost(OptModel,sc,p,n):
-        return OptModel.vTotalRCost[sc,p,n] == sum(mTEPES.pENSCost             * mTEPES.pDuration[n] * OptModel.vENS           [sc,p,n,nd] for nd in mTEPES.nd)
+        return     OptModel.vTotalRCost[sc,p,n] == sum(mTEPES.pENSCost             * mTEPES.pDuration[n] * OptModel.vENS           [sc,p,n,nd] for nd in mTEPES.nd)
     setattr(OptModel, 'eTotalRCost_stage'+str(st), Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, rule=eTotalRCost, doc='system reliability cost [MEUR]'))
 
     GeneratingOFTime = time.time() - StartTime
@@ -239,8 +239,10 @@ def GenerationOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, st):
         print('eChargeDischarge      ... ', len(getattr(OptModel, 'eChargeDischarge_stage'+str(st))), ' rows')
 
     def eESSTotalCharge(OptModel,sc,p,n,es):
-        if mTEPES.pMaxCharge[sc,p,n,es]:
-            return OptModel.vESSTotalCharge[sc,p,n,es] == OptModel.vCharge2ndBlock[sc,p,n,es] + mTEPES.pUpReserveActivation * OptModel.vESSReserveDown[sc,p,n,es] - mTEPES.pDwReserveActivation * OptModel.vESSReserveUp[sc,p,n,es]
+        if   mTEPES.pMaxCharge[sc,p,n,es] and mTEPES.pMaxCharge2ndBlock[sc,p,n,es] and mTEPES.pMinCharge[sc,p,n,es] == 0.0:
+            return OptModel.vESSTotalCharge[sc,p,n,es]                                ==      OptModel.vCharge2ndBlock[sc,p,n,es] + mTEPES.pUpReserveActivation * OptModel.vESSReserveDown[sc,p,n,es] - mTEPES.pDwReserveActivation * OptModel.vESSReserveUp[sc,p,n,es]
+        elif mTEPES.pMaxCharge[sc,p,n,es] and mTEPES.pMaxCharge2ndBlock[sc,p,n,es]:
+            return OptModel.vESSTotalCharge[sc,p,n,es] / mTEPES.pMinCharge[sc,p,n,es] == 1 + (OptModel.vCharge2ndBlock[sc,p,n,nr] + mTEPES.pUpReserveActivation * OptModel.vESSReserveDown[sc,p,n,es] - mTEPES.pDwReserveActivation * OptModel.vESSReserveUp[sc,p,n,es]) / mTEPES.pMinCharge[sc,p,n,es]
         else:
             return Constraint.Skip
     setattr(OptModel, 'eESSTotalCharge_stage'+str(st), Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es, rule=eESSTotalCharge, doc='total charge of an ESS unit [GW]'))
@@ -280,9 +282,9 @@ def GenerationOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, st):
         print('eMinOutput2ndBlock    ... ', len(getattr(OptModel, 'eMinOutput2ndBlock_stage'+str(st))), ' rows')
 
     def eTotalOutput(OptModel,sc,p,n,nr):
-        if mTEPES.pMinPower[sc,p,n,nr] == 0.0 and mTEPES.pMaxPower[sc,p,n,nr] and mTEPES.pMaxPower2ndBlock[sc,p,n,nr]:
+        if   mTEPES.pMaxPower[sc,p,n,nr] and mTEPES.pMaxPower2ndBlock[sc,p,n,nr] and mTEPES.pMinPower[sc,p,n,nr] == 0.0:
             return OptModel.vTotalOutput[sc,p,n,nr]                               ==                                    OptModel.vOutput2ndBlock[sc,p,n,nr] + mTEPES.pUpReserveActivation * OptModel.vReserveUp[sc,p,n,nr] - mTEPES.pDwReserveActivation * OptModel.vReserveDown[sc,p,n,nr]
-        elif                                      mTEPES.pMaxPower[sc,p,n,nr] and mTEPES.pMaxPower2ndBlock[sc,p,n,nr]:
+        elif mTEPES.pMaxPower[sc,p,n,nr] and mTEPES.pMaxPower2ndBlock[sc,p,n,nr]:
             return OptModel.vTotalOutput[sc,p,n,nr] / mTEPES.pMinPower[sc,p,n,nr] == OptModel.vCommitment[sc,p,n,nr] + (OptModel.vOutput2ndBlock[sc,p,n,nr] + mTEPES.pUpReserveActivation * OptModel.vReserveUp[sc,p,n,nr] - mTEPES.pDwReserveActivation * OptModel.vReserveDown[sc,p,n,nr]) / mTEPES.pMinPower[sc,p,n,nr]
         else:
             return Constraint.Skip
@@ -302,9 +304,6 @@ def GenerationOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, st):
 
     if pIndLogConsole == 1:
         print('eUCStrShut            ... ', len(getattr(OptModel, 'eUCStrShut_stage'+str(st))), ' rows')
-
-    if pIndLogConsole == 1:
-        print('eTotalOutput          ... ', len(getattr(OptModel, 'eTotalOutput_stage'+str(st))), ' rows')
 
     GeneratingGenConsTime = time.time() - StartTime
     StartTime             = time.time()

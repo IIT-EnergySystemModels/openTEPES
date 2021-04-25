@@ -68,7 +68,7 @@ They are written in capital letters.
 -----------------------------------------  -----------------------------------------------------------------------------------------------  ------------
 :math:`CFG_g`                              Annualized fixed cost of a candidate generator                                                   M€ 
 :math:`\underline{GP}_g, \overline{GP}_g`  Minimum load and maximum output of a generator                                                   GW
-:math:`\overline{GC}_e`                    Maximum consumption of an ESS                                                                    GW
+:math:`\underline{GC}_e, \overline{GC}_e`  Minimum and maximum consumption of an ESS                                                        GW
 :math:`CF_g, CV_g`                         Fixed and variable cost of a generator. Variable cost includes fuel, O&M and emission cost       €/h, €/MWh
 :math:`CV_e`                               Variable cost of an ESS when charging                                                            €/MWh
 :math:`RU_g, RD_g`                         Ramp up/down of a non-renewable unit or maximum discharge/charge rate for ESS discharge/charge   MW/h
@@ -214,9 +214,9 @@ Maximum and minimum output of the second block of a committed unit (all except t
 
 Maximum and minimum charge of an ESS [p.u.]
 
-:math:`\frac{c^ω_{pne} + URA \: dr'^ω_{pne} + dr'^ω_{pne}}{\overline{GC}_e} \leq 1 \quad \forall ωpne`
+:math:`\frac{c^ω_{pne} + URA \: dr'^ω_{pne} + dr'^ω_{pne}}{\overline{GC}_e - \underline{GC}_e} \leq 1 \quad \forall ωpne`
 
-:math:`\frac{c^ω_{pne} - DRA \: ur'^ω_{pne} - ur'^ω_{pne}}{\overline{GC}_e} \geq 0 \quad \forall ωpne`
+:math:`\frac{c^ω_{pne} - DRA \: ur'^ω_{pne} - ur'^ω_{pne}}{\overline{GC}_e - \underline{GC}_e} \geq 0 \quad \forall ωpne`
 
 Incompatibility between charge and discharge of an ESS [p.u.]
 
@@ -228,7 +228,7 @@ Total output of a committed unit (all except the VRES units) [GW]
 
 Total charge of an ESS unit [GW]
 
-:math:`gc^ω_{pne} = c^ω_{pne} + URA \: dr'^ω_{pne} - DRA \: ur'^ω_{pne} \quad \forall ωpne, e \in CE`
+:math:`\frac{gc^ω_{pne}}{\underline{GC}_e} = 1 + \frac{c^ω_{pne} + URA \: ur'^ω_{pne} - DRA \: dr'^ω_{pne}}{\underline{GC}_e} \quad \forall ωpne, e \in CE`
 
 Logical relation between commitment, startup and shutdown status of committed unit (all except the VRES units) [p.u.]
 
