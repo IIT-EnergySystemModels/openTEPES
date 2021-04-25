@@ -65,7 +65,7 @@ def InputData(DirName, CaseName, mTEPES):
     print('Variable minimum consumption \n', dfVariableMinCharge.describe() )
     print('Variable maximum consumption \n', dfVariableMaxCharge.describe() )
     print('Variable minimum storage     \n', dfVariableMinStorage.describe())
-    print('Variable minimum storage     \n', dfVariableMaxStorage.describe())
+    print('Variable maximum storage     \n', dfVariableMaxStorage.describe())
     print('Energy inflows               \n', dfEnergyInflows.describe()     )
     print('Energy outflows              \n', dfEnergyOutflows.describe()    )
     print('Network                      \n', dfNetwork.describe()           )
