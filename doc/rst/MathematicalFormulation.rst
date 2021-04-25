@@ -115,7 +115,7 @@ They are written in lower letters.
 :math:`p^ω_{png}`                           Generator output of the second block (i.e., above the minimum load)         GW
 :math:`c^ω_{pne}`                           Generator charge                                                            GW
 :math:`ur^ω_{png}, dr^ω_{png}`              Upward and downward operating reserves of a non-renewable generating unit   GW
-:math:`ur'^ω_{pne}, dr'^ω_{pne}`            Upward and downward operating reserves of an ESS consumption unit           GW
+:math:`ur'^ω_{pne}, dr'^ω_{pne}`            Upward and downward operating reserves of an ESS as a consumption unit      GW
 :math:`i^ω_{pne}`                           ESS stored energy (inventory)                                               GWh
 :math:`s^ω_{pne}`                           ESS spilled energy                                                          GWh
 :math:`uc^ω_{png}, su^ω_{png}, sd^ω_{png}`  Commitment, startup and shutdown of generation unit per load level          {0,1}
@@ -226,7 +226,7 @@ Total output of a committed unit (all except the VRES units) [GW]
 
 :math:`\frac{gp^ω_{png}}{\underline{GP}_g} = uc^ω_{png} + \frac{p^ω_{png} + URA \: ur^ω_{png} - DRA \: dr^ω_{png}}{\underline{GP}_g} \quad \forall ωpng`
 
-Total charge of an ESS unit [GW]
+Total charge of an ESS [GW]
 
 :math:`\frac{gc^ω_{pne}}{\underline{GC}_e} = 1 + \frac{c^ω_{pne} + URA \: ur'^ω_{pne} - DRA \: dr'^ω_{pne}}{\underline{GC}_e} \quad \forall ωpne, e \in CE`
 
