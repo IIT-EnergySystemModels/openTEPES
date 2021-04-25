@@ -242,7 +242,7 @@ def GenerationOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, st):
         if   mTEPES.pMaxCharge[sc,p,n,es] and mTEPES.pMaxCharge2ndBlock[sc,p,n,es] and mTEPES.pMinCharge[sc,p,n,es] == 0.0:
             return OptModel.vESSTotalCharge[sc,p,n,es]                                ==      OptModel.vCharge2ndBlock[sc,p,n,es] + mTEPES.pUpReserveActivation * OptModel.vESSReserveDown[sc,p,n,es] - mTEPES.pDwReserveActivation * OptModel.vESSReserveUp[sc,p,n,es]
         elif mTEPES.pMaxCharge[sc,p,n,es] and mTEPES.pMaxCharge2ndBlock[sc,p,n,es]:
-            return OptModel.vESSTotalCharge[sc,p,n,es] / mTEPES.pMinCharge[sc,p,n,es] == 1 + (OptModel.vCharge2ndBlock[sc,p,n,nr] + mTEPES.pUpReserveActivation * OptModel.vESSReserveDown[sc,p,n,es] - mTEPES.pDwReserveActivation * OptModel.vESSReserveUp[sc,p,n,es]) / mTEPES.pMinCharge[sc,p,n,es]
+            return OptModel.vESSTotalCharge[sc,p,n,es] / mTEPES.pMinCharge[sc,p,n,es] == 1 + (OptModel.vCharge2ndBlock[sc,p,n,es] + mTEPES.pUpReserveActivation * OptModel.vESSReserveDown[sc,p,n,es] - mTEPES.pDwReserveActivation * OptModel.vESSReserveUp[sc,p,n,es]) / mTEPES.pMinCharge[sc,p,n,es]
         else:
             return Constraint.Skip
     setattr(OptModel, 'eESSTotalCharge_stage'+str(st), Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es, rule=eESSTotalCharge, doc='total charge of an ESS unit [GW]'))
