@@ -438,31 +438,35 @@ def InputData(DirName, CaseName, mTEPES):
     # small values are converted to 0
     for a2 in mTEPES.ar:
         # values < 1e-5 times the maximum demand for each area (an area is related to operating reserves procurement, i.e., country) are converted to 0
-        pEpsilon = pDemand[[nd for nd,ar in mTEPES.ndar if ar == a2]].sum(axis=1).max()*1e-5
+        pEpsilon        = pDemand        [[nd for nd,a2 in mTEPES.ndar]].sum(axis=1).max()*1e-5
         # values < 1e-5 times the maximum system demand are converted to 0
-        # pEpsilon = pDemand.sum(axis=1).max()*1e-5
+        # pEpsilon      = pDemand.sum(axis=1).max()*1e-5
 
         # these parameters are in GW
-        pDemand          [pDemand        [[nd for nd,ar in mTEPES.ndar if ar == a2]] < pEpsilon] = 0.0
-        pOperReserveUp   [pOperReserveUp [[a2]]                                      < pEpsilon] = 0.0
-        pOperReserveDw   [pOperReserveDw [[a2]]                                      < pEpsilon] = 0.0
-        pMinPower        [pMinPower      [[g  for ar,g  in mTEPES.a2g  if ar == a2]] < pEpsilon] = 0.0
-        pMaxPower        [pMaxPower      [[g  for ar,g  in mTEPES.a2g  if ar == a2]] < pEpsilon] = 0.0
-        pMinCharge       [pMinCharge     [[es for ar,es in mTEPES.a2g  if ar == a2]] < pEpsilon] = 0.0
-        pMaxCharge       [pMaxCharge     [[es for ar,es in mTEPES.a2g  if ar == a2]] < pEpsilon] = 0.0
-        pEnergyInflows   [pEnergyInflows [[es for ar,es in mTEPES.a2g  if ar == a2]] < pEpsilon/pTimeStep] = 0.0
-        pEnergyOutflows  [pEnergyOutflows[[es for ar,es in mTEPES.a2g  if ar == a2]] < pEpsilon/pTimeStep] = 0.0
+        pDemand          [pDemand        [[nd for nd,a2 in mTEPES.ndar]] < pEpsilon] = 0.0
+        pOperReserveUp   [pOperReserveUp [[                         a2]] < pEpsilon] = 0.0
+        pOperReserveDw   [pOperReserveDw [[                         a2]] < pEpsilon] = 0.0
+        pMinPower        [pMinPower      [[g  for a2,g  in mTEPES.a2g ]] < pEpsilon] = 0.0
+        pMaxPower        [pMaxPower      [[g  for a2,g  in mTEPES.a2g ]] < pEpsilon] = 0.0
+        pMinCharge       [pMinCharge     [[es for a2,es in mTEPES.a2g ]] < pEpsilon] = 0.0
+        pMaxCharge       [pMaxCharge     [[es for a2,es in mTEPES.a2g ]] < pEpsilon] = 0.0
+        pEnergyInflows   [pEnergyInflows [[es for a2,es in mTEPES.a2g ]] < pEpsilon/pTimeStep] = 0.0
+        pEnergyOutflows  [pEnergyOutflows[[es for a2,es in mTEPES.a2g ]] < pEpsilon/pTimeStep] = 0.0
 
         # these parameters are in GWh
-        pMinStorage      [pMinStorage    [[es for ar,es in mTEPES.a2g  if ar == a2]] < pEpsilon] = 0.0
-        pMaxStorage      [pMaxStorage    [[es for ar,es in mTEPES.a2g  if ar == a2]] < pEpsilon] = 0.0
-        pIniInventory    [pIniInventory  [[es for ar,es in mTEPES.a2g  if ar == a2]] < pEpsilon] = 0.0
+        pMinStorage      [pMinStorage    [[es for a2,es in mTEPES.a2g ]] < pEpsilon] = 0.0
+        pMaxStorage      [pMaxStorage    [[es for a2,es in mTEPES.a2g ]] < pEpsilon] = 0.0
+        pIniInventory    [pIniInventory  [[es for a2,es in mTEPES.a2g ]] < pEpsilon] = 0.0
 
         # these parameters are in GW
-        pLineNTCFrw       = pLineNTCFrw.where      (pLineNTCFrw      [[(ni,nf,cc) for ni,nf,cc,ar in mTEPES.laar if ar == a2]] > pEpsilon, other=0.0)
-        pLineNTCBck       = pLineNTCBck.where      (pLineNTCBck      [[(ni,nf,cc) for ni,nf,cc,ar in mTEPES.laar if ar == a2]] > pEpsilon, other=0.0)
-
-        pInitialInventory = pInitialInventory.where(pInitialInventory[[es         for ar,es       in mTEPES.a2g  if ar == a2]] > pEpsilon, other=0.0)
+        for ni,nf,cc,a2 in mTEPES.laar:
+            if  pLineNTCFrw[ni,nf,cc] < pEpsilon:
+                pLineNTCFrw[ni,nf,cc] = 0.0
+            if  pLineNTCBck[ni,nf,cc] < pEpsilon:
+                pLineNTCBck[ni,nf,cc] = 0.0
+        for a2,es in mTEPES.a2g:
+            if  pInitialInventory[es] < pEpsilon:
+                pInitialInventory[es] = 0.0
 
     pMaxPower2ndBlock  = pMaxPower  - pMinPower
     pMaxCharge2ndBlock = pMaxCharge - pMinCharge
@@ -725,9 +729,7 @@ def SettingUpVariables(OptModel, mTEPES):
                 mTEPES.pInitialSwitch[n1,la] = 1
 
         # fixing the ESS inventory at the last load level
-        # pInitialInventory = pd.DataFrame.from_dict(mTEPES.pInitialInventory, orient='index', columns=['Value'])
         for sc,p,es in mTEPES.sc*mTEPES.p*mTEPES.es:
-            # OptModel.vESSInventory[sc,p,mTEPES.n.last(),es].fix(pInitialInventory['Value'][es])
             OptModel.vESSInventory[sc, p, mTEPES.n.last(), es].fix(mTEPES.pInitialInventory[es])
 
     # activate all the scenarios, periods and load levels again
