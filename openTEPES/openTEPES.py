@@ -42,8 +42,8 @@ def openTEPES_run(DirName, CaseName, SolverName):
         mTEPES.del_component(mTEPES.n2)
         mTEPES.sc = Set(initialize=mTEPES.scc, ordered=True, doc='scenarios'  , filter=lambda mTEPES,scc: scc in mTEPES.scc and sc == scc and mTEPES.pScenProb[scc] > 0.0)
         mTEPES.p  = Set(initialize=mTEPES.pp , ordered=True, doc='periods'    , filter=lambda mTEPES,pp : pp  in                p  == pp                                 )
-        mTEPES.n  = Set(initialize=mTEPES.nn , ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in list(mTEPES.pDuration) and mTEPES.nn.ord(nn) > (st-1)*mTEPES.pStageDuration and mTEPES.nn.ord(nn) <= st*mTEPES.pStageDuration)
-        mTEPES.n2 = Set(initialize=mTEPES.nn , ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in list(mTEPES.pDuration) and mTEPES.nn.ord(nn) > (st-1)*mTEPES.pStageDuration and mTEPES.nn.ord(nn) <= st*mTEPES.pStageDuration)
+        mTEPES.n  = Set(initialize=mTEPES.nn , ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in mTEPES.pDuration and mTEPES.nn.ord(nn) > (st-1)*mTEPES.pStageDuration and mTEPES.nn.ord(nn) <= st*mTEPES.pStageDuration)
+        mTEPES.n2 = Set(initialize=mTEPES.nn , ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in mTEPES.pDuration and mTEPES.nn.ord(nn) > (st-1)*mTEPES.pStageDuration and mTEPES.nn.ord(nn) <= st*mTEPES.pStageDuration)
 
         # operation model objective function and constraints by stage
         GenerationOperationModelFormulation(mTEPES, mTEPES, pIndLogConsole, st)
@@ -63,7 +63,7 @@ def openTEPES_run(DirName, CaseName, SolverName):
     mTEPES.del_component(mTEPES.n )
     mTEPES.sc = Set(initialize=mTEPES.scc, ordered=True, doc='scenarios',   filter=lambda mTEPES,scc: scc in mTEPES.scc and mTEPES.pScenProb[scc] > 0.0)
     mTEPES.p  = Set(initialize=mTEPES.pp , ordered=True, doc='periods'                                                                                 )
-    mTEPES.n  = Set(initialize=mTEPES.nn , ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in list(mTEPES.pDuration)                    )
+    mTEPES.n  = Set(initialize=mTEPES.nn , ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in mTEPES.pDuration                          )
 
     InvestmentResults         (DirName, CaseName, mTEPES, mTEPES)
     GenerationOperationResults(DirName, CaseName, mTEPES, mTEPES)
