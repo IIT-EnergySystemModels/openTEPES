@@ -117,11 +117,13 @@ TimeStep              Duration of the time step for the load levels (hourly, bi-
 StageDuration         Duration of the stage (weekly -168-, monthly -672-, quarterly -2184-, semesterly -4368-, or annually -8736-)   h
 ====================  =============================================================================================================  ================
 
-A time step greater than one hour it is a convenient way to reduce the load levels of the time scope. The moving average of the demand, upward and downward operating reserves, variable generation and ESS energy inflows/outflows
+A time step greater than one hour it is a convenient way to reduce the load levels of the time scope. The moving average of the demand, upward/downward operating reserves, variable generation/consumption/storage and ESS energy inflows/outflows
 over the time step load levels is assigned to active load levels (e.g., the mean value of the three hours is associated to the third hour in a trihourly time step).
 
 The stage duration must be larger or equal than the shortest duration of any storage type or any outflows type (both given in the generation data) and multiple of it. Consecutive stages are not tied between them.
 Consequently, the objective function must be a bit lower.
+
+The initial inventory of the ESSs is also fixed at the beginning and end of each stage. For example, inventory level on January 1st at 0 h is set for December 31st at 24 h in case of a single stage or June 30th at 24 h and July 1st at 0 h in case of two stages.
 
 Scenario
 --------
