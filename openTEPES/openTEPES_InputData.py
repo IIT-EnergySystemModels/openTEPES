@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 26, 2021
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 28, 2021
 """
 
 import time
@@ -434,6 +434,9 @@ def InputData(DirName, CaseName, mTEPES):
     pMinStorage       = pMinStorage.loc      [mTEPES.sc*mTEPES.p*mTEPES.n          ]
     pMaxStorage       = pMaxStorage.loc      [mTEPES.sc*mTEPES.p*mTEPES.n          ]
     pIniInventory     = pIniInventory.loc    [mTEPES.sc*mTEPES.p*mTEPES.n          ]
+
+    pLineNTCFrw = pd.DataFrame(pLineNTCFrw, index=pd.MultiIndex.from_tuples(pLineNTCFrw.index), columns=['NTCFrw']).transpose()
+    pLineNTCBck = pd.DataFrame(pLineNTCBck, index=pd.MultiIndex.from_tuples(pLineNTCBck.index), columns=['NTCBck']).transpose()
 
     # small values are converted to 0
     for a2 in mTEPES.ar:
