@@ -435,9 +435,6 @@ def InputData(DirName, CaseName, mTEPES):
     pMaxStorage       = pMaxStorage.loc      [mTEPES.sc*mTEPES.p*mTEPES.n          ]
     pIniInventory     = pIniInventory.loc    [mTEPES.sc*mTEPES.p*mTEPES.n          ]
 
-    pLineNTCFrw = pd.DataFrame(pLineNTCFrw, index=pd.MultiIndex.from_tuples(pLineNTCFrw.index), columns=['NTCFrw']).transpose()
-    pLineNTCBck = pd.DataFrame(pLineNTCBck, index=pd.MultiIndex.from_tuples(pLineNTCBck.index), columns=['NTCBck']).transpose()
-
     # small values are converted to 0
     for a2 in mTEPES.ar:
         # values < 1e-5 times the maximum demand for each area (an area is related to operating reserves procurement, i.e., country) are converted to 0
@@ -462,12 +459,10 @@ def InputData(DirName, CaseName, mTEPES):
         pIniInventory    [pIniInventory  [[es for ar,es in mTEPES.a2g  if ar == a2]] < pEpsilon] = 0.0
 
         # these parameters are in GW
-        pLineNTCFrw      [pLineNTCFrw    [[(ni,nf,cc) for ni,nf,cc,ar in mTEPES.laar if ar == a2]] < pEpsilon] = 0.0
-        pLineNTCBck      [pLineNTCBck    [[(ni,nf,cc) for ni,nf,cc,ar in mTEPES.laar if ar == a2]] < pEpsilon] = 0.0
+        pLineNTCFrw       = pLineNTCFrw.where      (pLineNTCFrw      [[(ni,nf,cc) for ni,nf,cc,ar in mTEPES.laar if ar == a2]] > pEpsilon, other=0.0)
+        pLineNTCBck       = pLineNTCBck.where      (pLineNTCBck      [[(ni,nf,cc) for ni,nf,cc,ar in mTEPES.laar if ar == a2]] > pEpsilon, other=0.0)
 
-        pInitialInventory = pInitialInventory.where(pInitialInventory[[es for ar,es in mTEPES.a2g  if ar == a2]] > pEpsilon, other= 0.0)
-
-    pInitialInventory = pInitialInventory.where(pInitialInventory > pEpsilon, other= 0.0)
+        pInitialInventory = pInitialInventory.where(pInitialInventory[[es         for ar,es       in mTEPES.a2g  if ar == a2]] > pEpsilon, other=0.0)
 
     pMaxPower2ndBlock  = pMaxPower  - pMinPower
     pMaxCharge2ndBlock = pMaxCharge - pMinCharge
