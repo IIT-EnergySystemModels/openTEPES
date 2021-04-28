@@ -465,7 +465,7 @@ def InputData(DirName, CaseName, mTEPES):
             if  pLineNTCBck[ni,nf,cc] < pEpsilon:
                 pLineNTCBck[ni,nf,cc] = 0.0
         for a2,es in mTEPES.a2g:
-            if  pInitialInventory[es] < pEpsilon:
+            if  pInitialInventory[es] < pEpsilon and es in mTEPES.es:
                 pInitialInventory[es] = 0.0
 
     pMaxPower2ndBlock  = pMaxPower  - pMinPower
