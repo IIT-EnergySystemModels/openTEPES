@@ -325,7 +325,7 @@ def GenerationOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, st):
 
     def eRampDw(OptModel,sc,p,n,nr):
         if   mTEPES.pRampDw[nr] and mTEPES.pRampDw[nr] < mTEPES.pMaxPower2ndBlock[sc,p,n,nr] and n == mTEPES.n.first():
-            return (- max(mTEPES.pInitialOutput[sc,p,n,nr]() - mTEPES.pMinPower[sc,p,n,nr],0.0)                                                          + OptModel.vOutput2ndBlock[sc,p,n,nr] - mTEPES.pDwReserveActivation * OptModel.vReserveDown[sc,p,n,nr] - OptModel.vReserveDown[sc,p,n,nr]) / mTEPES.pDuration[n] / mTEPES.pRampDw[nr] >= - mTEPES.pInitialUC[sc,p,n,nr]                                                                                           + OptModel.vShutDown[sc,p,n,nr]
+            return (- max(mTEPES.pInitialOutput[sc,p,n,nr]() - mTEPES.pMinPower[sc,p,n,nr],0.0)                                                          + OptModel.vOutput2ndBlock[sc,p,n,nr] - mTEPES.pDwReserveActivation * OptModel.vReserveDown[sc,p,n,nr] - OptModel.vReserveDown[sc,p,n,nr]) / mTEPES.pDuration[n] / mTEPES.pRampDw[nr] >= - mTEPES.pInitialUC[sc,p,n,nr]                   + OptModel.vShutDown[sc,p,n,nr]
         elif mTEPES.pRampDw[nr] and mTEPES.pRampDw[nr] < mTEPES.pMaxPower2ndBlock[sc,p,n,nr]:
             return (- OptModel.vOutput2ndBlock[sc,p,mTEPES.n.prev(n),nr] + mTEPES.pDwReserveActivation * OptModel.vReserveDown[sc,p,mTEPES.n.prev(n),nr] + OptModel.vOutput2ndBlock[sc,p,n,nr] - mTEPES.pDwReserveActivation * OptModel.vReserveDown[sc,p,n,nr] - OptModel.vReserveDown[sc,p,n,nr]) / mTEPES.pDuration[n] / mTEPES.pRampDw[nr] >= - OptModel.vCommitment[sc,p,mTEPES.n.prev(n),nr] + OptModel.vShutDown[sc,p,n,nr]
         else:

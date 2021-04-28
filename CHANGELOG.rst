@@ -4,6 +4,11 @@ Change Log
 - [CHANGED] Addition of the sequence of decisions and operation (TEP + transmission switching)
 - [FIXED] fixing `<https://pascua.iit.comillas.edu/aramos/openTEPES/index.html#>`_ in README.rst 
 
+[2.4.1] - 2021-04-28
+--------------------
+- [CHANGED] very small parameters -> 0 depending on the area
+- [CHANGED] avoid use of list if not needed
+
 [2.4.0] - 2021-04-24
 --------------------
 - [CHANGED] new input files VariableMaxConsumption and VariableMinConsumption and MininmumCharge column in Generation file
