@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 25, 2021
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 29, 2021
 """
 
 import time
@@ -294,9 +294,9 @@ def GenerationOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, st):
         print('eTotalOutput          ... ', len(getattr(OptModel, 'eTotalOutput_stage'+str(st))), ' rows')
 
     def eUCStrShut(OptModel,sc,p,n,nr):
-        if n == mTEPES.n.first() and mTEPES.pMustRun[nr] == 0 and mTEPES.pMinPower[sc,p,n,nr] and nr not in mTEPES.es:
-            return OptModel.vCommitment[sc,p,n,nr] - mTEPES.pInitialUC[sc,p,n,nr]                 == OptModel.vStartUp[sc,p,n,nr] - OptModel.vShutDown[sc,p,n,nr]
-        elif                         mTEPES.pMustRun[nr] == 0 and mTEPES.pMinPower[sc,p,n,nr] and nr not in mTEPES.es:
+        if   mTEPES.pMustRun[nr] == 0 and (mTEPES.pMinPower[sc,p,n,nr] or mTEPES.pConstantVarCost[nr]) and nr not in mTEPES.es and n == mTEPES.n.first():
+            return OptModel.vCommitment[sc,p,n,nr] - mTEPES.pInitialUC[sc,p,n,nr]                   == OptModel.vStartUp[sc,p,n,nr] - OptModel.vShutDown[sc,p,n,nr]
+        elif mTEPES.pMustRun[nr] == 0 and (mTEPES.pMinPower[sc,p,n,nr] or mTEPES.pConstantVarCost[nr]) and nr not in mTEPES.es:
             return OptModel.vCommitment[sc,p,n,nr] - OptModel.vCommitment[sc,p,mTEPES.n.prev(n),nr] == OptModel.vStartUp[sc,p,n,nr] - OptModel.vShutDown[sc,p,n,nr]
         else:
             return Constraint.Skip

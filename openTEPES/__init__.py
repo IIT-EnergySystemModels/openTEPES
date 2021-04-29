@@ -15,7 +15,7 @@ Open Generation and Transmission Operation and Expansion Planning Model with RES
         >>> oT.routine("9n", "C:\\Users\\UserName\\Documents\\GitHub\\openTEPES", "glpk")
 """
 
-__version__ = '2.4.1'
+__version__ = '2.4.2'
 
 from .openTEPES_Main             import main
 from .openTEPES                  import *

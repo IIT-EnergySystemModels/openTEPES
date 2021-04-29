@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 28, 2021
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 29, 2021
 """
 
 import time
@@ -603,13 +603,13 @@ def SettingUpVariables(OptModel, mTEPES):
     OptModel.vENS                  = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nd, within=NonNegativeReals, bounds=lambda OptModel,sc,p,n,nd: (0.0,mTEPES.pDemand           [sc,p,n,nd]),                    doc='energy not served in node                        [GW]')
 
     if mTEPES.pIndBinGenOperat == 0:
-        OptModel.vCommitment       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=UnitInterval,                                                                                                      doc='commitment of the unit                          [0,1]')
-        OptModel.vStartUp          = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=UnitInterval,                                                                                                      doc='startup    of the unit                          [0,1]')
-        OptModel.vShutDown         = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=UnitInterval,                                                                                                      doc='shutdown   of the unit                          [0,1]')
+        OptModel.vCommitment       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=UnitInterval,     initialize=0.0,                                                                                  doc='commitment of the unit                          [0,1]')
+        OptModel.vStartUp          = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=UnitInterval,     initialize=0.0,                                                                                  doc='startup    of the unit                          [0,1]')
+        OptModel.vShutDown         = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=UnitInterval,     initialize=0.0,                                                                                  doc='shutdown   of the unit                          [0,1]')
     else:
-        OptModel.vCommitment       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=Binary,                                                                                                            doc='commitment of the unit                          {0,1}')
-        OptModel.vStartUp          = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=Binary,                                                                                                            doc='startup    of the unit                          {0,1}')
-        OptModel.vShutDown         = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=Binary,                                                                                                            doc='shutdown   of the unit                          {0,1}')
+        OptModel.vCommitment       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=Binary,           initialize=0.0,                                                                                  doc='commitment of the unit                          {0,1}')
+        OptModel.vStartUp          = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=Binary,           initialize=0.0,                                                                                  doc='startup    of the unit                          {0,1}')
+        OptModel.vShutDown         = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=Binary,           initialize=0.0,                                                                                  doc='shutdown   of the unit                          {0,1}')
 
     if mTEPES.pIndBinGenInvest == 0:
         OptModel.vGenerationInvest = Var(                               mTEPES.gc, within=UnitInterval,                                                                                                      doc='generation investment decision exists in a year [0,1]')
