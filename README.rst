@@ -112,7 +112,7 @@ Continue like the users for a simple way of executions.
 Users
 =====
 
-If you are not planning on developing, please follows the instructions of the [Installation](#installation).
+If you are not planning on developing, please follows the instructions of the `Installation <#installation>`_.
 
 Once installation is complete, `openTEPES <https://github.com/IIT-EnergySystemModels/openTEPES/tree/master>`_ can be executed in a test mode by using a command prompt.
 In the directory of your choice, open and execute the openTEPES_run.py script by using the following on the command prompt (Windows) or Terminal (Linux). (Depending on what your standard python version is, you might need to call `python3` instead of `python`.):
