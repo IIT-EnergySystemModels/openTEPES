@@ -437,16 +437,17 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES):
 
     # %% Reduced cost for NetworkCommitment
     mTEPES.las = Set(initialize=mTEPES.ni * mTEPES.nf * mTEPES.cc, ordered=False, doc='all real lines with switching decision', filter=lambda mTEPES, ni, nf, cc: (ni, nf, cc) in mTEPES.pLineX and mTEPES.pIndBinSwitching[ni, nf, cc] > 0.0)
-    for st in mTEPES.st:
+    if len(mTEPES.las):
+        for st in mTEPES.st:
+            mTEPES.del_component(mTEPES.n)
+            mTEPES.n = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES, nn: nn in mTEPES.pDuration and (st, nn) in mTEPES.s2n)
+            OutputToFile = pd.Series(data=[OptModel.rc[OptModel.vLineCommit[sc, p, n, ni, nf, cc]] for sc, p, n, ni, nf, cc in mTEPES.sc * mTEPES.p * mTEPES.n * mTEPES.las], index=pd.MultiIndex.from_tuples(list(mTEPES.sc * mTEPES.p * mTEPES.n * mTEPES.las)))
         mTEPES.del_component(mTEPES.n)
-        mTEPES.n = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES, nn: nn in mTEPES.pDuration and (st, nn) in mTEPES.s2n)
-        OutputToFile = pd.Series(data=[OptModel.rc[OptModel.vLineCommit[sc, p, n, ni, nf, cc]] for sc, p, n, ni, nf, cc in mTEPES.sc * mTEPES.p * mTEPES.n * mTEPES.las], index=pd.MultiIndex.from_tuples(list(mTEPES.sc * mTEPES.p * mTEPES.n * mTEPES.las)))
-    mTEPES.del_component(mTEPES.n)
-    mTEPES.n = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES, nn: nn in mTEPES.pDuration)
-    OutputToFile.index.names = ['Scenario','Period','LoadLevel','InitialNode','FinalNode','Circuit']
-    OutputToFile = pd.pivot_table(OutputToFile.to_frame(name='p.u.'), values='p.u.', index=['Scenario','Period','LoadLevel'], columns=['InitialNode','FinalNode','Circuit'], fill_value=0.0)
-    OutputToFile.index.names = [None] * len(OutputToFile.index.names)
-    OutputToFile.to_csv(_path+'/oT_Result_NetworkCommitment_ReducedCost_' +CaseName+'.csv', sep=',')
+        mTEPES.n = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES, nn: nn in mTEPES.pDuration)
+        OutputToFile.index.names = ['Scenario','Period','LoadLevel','InitialNode','FinalNode','Circuit']
+        OutputToFile = pd.pivot_table(OutputToFile.to_frame(name='p.u.'), values='p.u.', index=['Scenario','Period','LoadLevel'], columns=['InitialNode','FinalNode','Circuit'], fill_value=0.0)
+        OutputToFile.index.names = [None] * len(OutputToFile.index.names)
+        OutputToFile.to_csv(_path+'/oT_Result_NetworkCommitment_ReducedCost_' +CaseName+'.csv', sep=',')
 
     WritingResultsTime = time.time() - StartTime
     StartTime = time.time()
