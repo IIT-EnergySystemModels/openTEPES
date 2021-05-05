@@ -13,18 +13,22 @@ Acronym     Description
 ==========  ====================================================================
 AC          Alternating Current
 aFRR        Automatic Frequency Restoration Reserve
+BESS        Battery Energy Storage System
 CCGT        Combined Cycle Gas Turbine
 DC          Direct Current
 DCPF        DC Power Flow
-EFOR        Equivalente Forced Outage Rate
+EFOR        Equivalent Forced Outage Rate
 ENTSO-E     European Network of Transmission System Operators for Electricity
 ESS         Energy Storage System
 EV          Electric Vehicle
 mFRR        Manual Frequency Restoration Reserve
 NTC         Network Transfer Capacity
 OCGT        Open Cycle Gas Turbine
+PHS         Pumped-hydro Storage
+PV          Photovoltaics
 RR          Replacement Reserve
 TTC         Total Transfer Capacity
+VRES        Variable Renewable Energy Sources
 ==========  ====================================================================
 
 Dictionaries. Sets
@@ -36,8 +40,9 @@ File                        Description
 ==========================  =====================================================================================================================================================================
 ``oT_Dict_Scenario.csv``    Scenario. Short-term uncertainties (scenarios) (e.g., s001 to s100)
 ``oT_Dict_Period.csv``      Period (e.g., y2030)
+``oT_Dict_Stage.csv``       Stage. Set of load levels grouped under an stage
 ``oT_Dict_LoadLevel.csv``   Load level (e.g., 2030-01-01T00:00:00+01:00 to 2030-12-30T23:00:00+01:00). Load levels with duration 0 are ignored
-``oT_Dict_Generation.csv``  Generation units (thermal -nuclear, CCGT, OCGT, coal-, ESS -hydro, pumped-hydro storage, battery- and VRES -wind onshore and offshore, solar PV, solar thermal-)
+``oT_Dict_Generation.csv``  Generation units (thermal -nuclear, CCGT, OCGT, coal-, ESS -hydro, pumped-hydro storage PHS, battery BESS- and VRES -wind onshore and offshore, solar PV, solar thermal-)
 ``oT_Dict_Technology.csv``  Generation technologies. The technology order is used in the temporal result plot.
 ``oT_Dict_Storage.csv``     ESS storage type (daily < 12 h, weekly < 40 h, monthly > 60 h)
 ``oT_Dict_Node.csv``        Nodes
@@ -68,6 +73,7 @@ File                                       Description
 ``oT_Data_Option.csv``                     Options of use of the **openTEPES** model
 ``oT_Data_Parameter.csv``                  General system parameters
 ``oT_Data_Scenario.csv``                   Short-term uncertainties
+``oT_Data_Stage.csv``                      Stages
 ``oT_Data_Duration.csv``                   Duration of the load levels
 ``oT_Data_Demand.csv``                     Demand
 ``oT_Data_OperatingReserveUp.csv``         Upward   operating reserves (include aFRR, mFRR and RR for electricity balancing from ENTSO-E)
@@ -114,17 +120,10 @@ DwReserveActivation   Downward reserve activation (proportion of downward operat
 Sbase                 Base power used in the DCPF                                                                                    MW
 ReferenceNode         Reference node used in the DCPF
 TimeStep              Duration of the time step for the load levels (hourly, bi-hourly, trihourly, etc.)                             h
-StageDuration         Duration of the stage (weekly -168-, monthly -672-, quarterly -2184-, semesterly -4368-, or annually -8736-)   h
 ====================  =============================================================================================================  ================
 
 A time step greater than one hour it is a convenient way to reduce the load levels of the time scope. The moving average of the demand, upward/downward operating reserves, variable generation/consumption/storage and ESS energy inflows/outflows
 over the time step load levels is assigned to active load levels (e.g., the mean value of the three hours is associated to the third hour in a trihourly time step).
-
-The stage duration must be larger or equal than the shortest duration of any storage type or any outflows type (both given in the generation data) and multiple of it. Consecutive stages are not tied between them.
-Consequently, the objective function must be a bit lower.
-
-The initial inventory of the ESSs is also fixed at the beginning and end of each stage. For example, the initial inventory level is set for the 8736 h in case of a single stage or for the hours 4368 and 4369
-(end of the first stage and beginning of the second stage) in case of two stages.
 
 Scenario
 --------
@@ -137,6 +136,17 @@ Identifier      Header        Description
 Scenario        Probability   Probability of the scenario  p.u.
 ==============  ============  ===========================  ====
 
+Stage
+-----
+
+A description of the data included in the file ``oT_Data_Stage.csv`` follows:
+
+==============  ============  =====================
+Identifier      Header        Description
+==============  ============  =====================
+Scenario        Weight        Weight of each stage
+==============  ============  =====================
+
 Duration
 --------
 
@@ -146,9 +156,16 @@ A description of the data included in the file ``oT_Data_Duration.csv`` follows:
 Identifier      Identifier  Identifier  Header    Description
 ==============  ==========  ==========  ========  ===================================================================  ==
 Scenario        Period      Load level  Duration  Duration of the load level. Load levels with duration 0 are ignored  h
+Scenario        Period      Load level  Stage     Assignment of the load level to a stage
 ==============  ==========  ==========  ========  ===================================================================  ==
 
 It is a simple way to use isolated snapshots or representative days or just the first three months instead of all the hours of a year to simplify the optimization problem.
+
+The stage duration as sum of the duration of all the load levels must be larger or equal than the shortest duration of any storage type or any outflows type (both given in the generation data) and multiple of it.
+Consecutive stages are not tied between them. Consequently, the objective function must be a bit lower.
+
+The initial storage of the ESSs is also fixed at the beginning and end of each stage. For example, the initial storage level is set for the 8736 hours in case of a single stage or for the hours 4368 and 4369
+(end of the first stage and beginning of the second stage) in case of two stages each with 4368 hours.
 
 Demand
 ------
@@ -223,6 +240,9 @@ Outflows type represents the interval when the energy extracted from the storage
 The storage cycle is the minimum between the inventory assessment period and the outflows period. It can be one time step, one day, and one week.
 The ESS inventory level at the end of a large storage cycle is fixed to its initial value, i.e., the inventory of a daily storage type (evaluated on a time step basis) is fixed at the end of the week,
 the inventory of weekly/monthly storage is fixed at the end of the year.
+
+The initial storage of the ESSs is also fixed at the beginning and end of each stage. For example, the initial inventory level is set for the 8736 h in case of a single stage or for the hours 4368 and 4369
+(end of the first stage and beginning of the second stage) in case of two stages.
 
 A generator with operation cost (sum of the fuel and emission cost, excluding O&M cost) > 0 is considered a thermal unit. If the unit has no operation cost and its maximum storage = 0,
 it is considered a renewable unit. If its maximum storage is > 0 is considered an ESS.

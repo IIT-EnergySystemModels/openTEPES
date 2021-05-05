@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 29, 2021
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 4, 2021
 """
 
 import time
@@ -19,6 +19,7 @@ def InputData(DirName, CaseName, mTEPES):
     dfOption             = pd.read_csv(_path+'/oT_Data_Option_'                +CaseName+'.csv', index_col=[0    ])
     dfParameter          = pd.read_csv(_path+'/oT_Data_Parameter_'             +CaseName+'.csv', index_col=[0    ])
     dfScenario           = pd.read_csv(_path+'/oT_Data_Scenario_'              +CaseName+'.csv', index_col=[0    ])
+    dfStage              = pd.read_csv(_path+'/oT_Data_Stage_'                 +CaseName+'.csv', index_col=[0    ])
     dfDuration           = pd.read_csv(_path+'/oT_Data_Duration_'              +CaseName+'.csv', index_col=[0    ])
     dfDemand             = pd.read_csv(_path+'/oT_Data_Demand_'                +CaseName+'.csv', index_col=[0,1,2])
     dfUpOperatingReserve = pd.read_csv(_path+'/oT_Data_OperatingReserveUp_'    +CaseName+'.csv', index_col=[0,1,2])
@@ -39,6 +40,7 @@ def InputData(DirName, CaseName, mTEPES):
     dfOption.fillna            (0  , inplace=True)
     dfParameter.fillna         (0.0, inplace=True)
     dfScenario.fillna          (0.0, inplace=True)
+    dfStage.fillna             (0.0, inplace=True)
     dfDuration.fillna          (0  , inplace=True)
     dfDemand.fillna            (0.0, inplace=True)
     dfUpOperatingReserve.fillna(0.0, inplace=True)
@@ -74,10 +76,11 @@ def InputData(DirName, CaseName, mTEPES):
     dictSets = DataPortal()
     dictSets.load(filename=_path+'/oT_Dict_Scenario_'    +CaseName+'.csv', set='sc'  , format='set')
     dictSets.load(filename=_path+'/oT_Dict_Period_'      +CaseName+'.csv', set='p'   , format='set')
+    dictSets.load(filename=_path+'/oT_Dict_Stage_'       +CaseName+'.csv', set='st'  , format='set')
     dictSets.load(filename=_path+'/oT_Dict_LoadLevel_'   +CaseName+'.csv', set='n'   , format='set')
     dictSets.load(filename=_path+'/oT_Dict_Generation_'  +CaseName+'.csv', set='g'   , format='set')
     dictSets.load(filename=_path+'/oT_Dict_Technology_'  +CaseName+'.csv', set='gt'  , format='set')
-    dictSets.load(filename=_path+'/oT_Dict_Storage_'     +CaseName+'.csv', set='st'  , format='set')
+    dictSets.load(filename=_path+'/oT_Dict_Storage_'     +CaseName+'.csv', set='et'  , format='set')
     dictSets.load(filename=_path+'/oT_Dict_Node_'        +CaseName+'.csv', set='nd'  , format='set')
     dictSets.load(filename=_path+'/oT_Dict_Zone_'        +CaseName+'.csv', set='zn'  , format='set')
     dictSets.load(filename=_path+'/oT_Dict_Area_'        +CaseName+'.csv', set='ar'  , format='set')
@@ -92,10 +95,11 @@ def InputData(DirName, CaseName, mTEPES):
     mTEPES.scc  = Set(initialize=dictSets['sc'],   ordered=True,  doc='scenarios'     )
     mTEPES.pp   = Set(initialize=dictSets['p' ],   ordered=True,  doc='periods'       )
     mTEPES.p    = Set(initialize=dictSets['p' ],   ordered=True,  doc='periods'       )
+    mTEPES.stt  = Set(initialize=dictSets['st'],   ordered=True,  doc='stages'        )
     mTEPES.nn   = Set(initialize=dictSets['n' ],   ordered=True,  doc='load levels'   )
     mTEPES.gg   = Set(initialize=dictSets['g' ],   ordered=False, doc='units'         )
     mTEPES.gt   = Set(initialize=dictSets['gt'],   ordered=False, doc='technologies'  )
-    mTEPES.st   = Set(initialize=dictSets['st'],   ordered=False, doc='ESS types'     )
+    mTEPES.et   = Set(initialize=dictSets['et'],   ordered=False, doc='ESS types'     )
     mTEPES.nd   = Set(initialize=dictSets['nd'],   ordered=False, doc='nodes'         )
     mTEPES.ni   = Set(initialize=dictSets['nd'],   ordered=False, doc='nodes'         )
     mTEPES.nf   = Set(initialize=dictSets['nd'],   ordered=False, doc='nodes'         )
@@ -123,10 +127,12 @@ def InputData(DirName, CaseName, mTEPES):
     pSBase               = dfParameter['SBase'              ][0] * 1e-3                                                                   # base power                          [GW]
     pReferenceNode       = dfParameter['ReferenceNode'      ][0]                                                                          # reference node
     pTimeStep            = dfParameter['TimeStep'           ][0].astype('int')                                                            # duration of the unit time step      [h]
-    pStageDuration       = dfParameter['StageDuration'      ][0].astype('int')                                                            # duration of each stage              [h]
+    # pStageDuration       = dfParameter['StageDuration'      ][0].astype('int')                                                            # duration of each stage              [h]
 
     pScenProb            = dfScenario ['Probability'        ]                                                                             # probabilities of scenarios          [p.u.]
+    pStageWeight         = dfStage    ['Weight'             ]                                                                             # weights of stages                   [p.u.]
     pDuration            = dfDuration ['Duration'           ]    * pTimeStep                                                              # duration of load levels             [h]
+    pLevelToStage        = dfDuration ['Stage'              ]                                                                             # load levels assignment to stages
     pDemand              = dfDemand               [mTEPES.nd]    * 1e-3                                                                   #           demand                    [GW]
     pOperReserveUp       = dfUpOperatingReserve   [mTEPES.ar]    * 1e-3                                                                   # upward   operating reserve          [GW]
     pOperReserveDw       = dfDwOperatingReserve   [mTEPES.ar]    * 1e-3                                                                   # downward operating reserve          [GW]
@@ -190,9 +196,9 @@ def InputData(DirName, CaseName, mTEPES):
     pIndBinUnitInvest   = dfGeneration  ['BinaryInvestment'    ]                                                                            # binary unit investment decision             [Yes]
     pRatedMinCharge     = dfGeneration  ['MinimumCharge'       ] * 1e-3                                                                     # rated minimum ESS charge                    [GW]
     pRatedMaxCharge     = dfGeneration  ['MaximumCharge'       ] * 1e-3                                                                     # rated maximum ESS charge                    [GW]
-    pInitialInventory   = dfGeneration  ['InitialStorage'      ]                                                                            # initial ESS storage                         [GWh]
     pRatedMinStorage    = dfGeneration  ['MinimumStorage'      ]                                                                            # rated minimum ESS storage                   [GWh]
     pRatedMaxStorage    = dfGeneration  ['MaximumStorage'      ]                                                                            # rated maximum ESS storage                   [GWh]
+    pInitialInventory   = dfGeneration  ['InitialStorage'      ]                                                                            # initial       ESS storage                   [GWh]
     pEfficiency         = dfGeneration  ['Efficiency'          ]                                                                            #         ESS efficiency                      [p.u.]
     pStorageType        = dfGeneration  ['StorageType'         ]                                                                            #         ESS storage  type
     pOutflowsType       = dfGeneration  ['OutflowsType'        ]                                                                            #         ESS outflows type
@@ -233,6 +239,7 @@ def InputData(DirName, CaseName, mTEPES):
 
     #%% defining subsets: active load levels (n,n2), thermal units (t), RES units (r), ESS units (es), candidate gen units (gc), candidate ESS units (ec), all the lines (la), candidate lines (lc), candidate DC lines (cd), existing DC lines (cd), lines with losses (ll), reference node (rf), and reactive generating units (gq)
     mTEPES.sc = Set(initialize=mTEPES.scc,                    ordered=True , doc='scenarios'          , filter=lambda mTEPES,scc     :  scc       in mTEPES.scc and pScenProb        [scc] >  0.0)
+    mTEPES.st = Set(initialize=mTEPES.stt,                    ordered=True , doc='stages'             , filter=lambda mTEPES,stt     :  stt       in mTEPES.stt and pStageWeight     [stt] >  0.0)
     mTEPES.n  = Set(initialize=mTEPES.nn,                     ordered=True , doc='load levels'        , filter=lambda mTEPES,nn      :  nn        in mTEPES.nn  and pDuration         [nn] >  0  )
     mTEPES.n2 = Set(initialize=mTEPES.nn,                     ordered=True , doc='load levels'        , filter=lambda mTEPES,nn      :  nn        in mTEPES.nn  and pDuration         [nn] >  0  )
     mTEPES.g  = Set(initialize=mTEPES.gg,                     ordered=False, doc='generating    units', filter=lambda mTEPES,gg      :  gg        in mTEPES.gg  and pRatedMaxPower    [gg] >  0.0)
@@ -307,6 +314,16 @@ def InputData(DirName, CaseName, mTEPES):
     pLineType = pLineType.set_index(['level_0','level_1','level_2','LineType'])['Y/N']
 
     mTEPES.pLineType = Set(initialize=mTEPES.la*mTEPES.lt, doc='line type', filter=lambda mTEPES,ni,nf,cc,lt: (ni,nf,cc,lt) in pLineType)
+
+    #%% inverse index node to generator
+    pStageToLevel = pLevelToStage.reset_index().set_index('Stage').set_axis(['LoadLevel'], axis=1, inplace=False)[['LoadLevel']]
+    pStageToLevel = pStageToLevel.loc[pStageToLevel['LoadLevel'].isin(mTEPES.n)]
+
+    pStage2Level = pStageToLevel.reset_index()
+    pStage2Level['Y/N'] = 1
+    pStage2Level = pStage2Level.set_index(['Stage','LoadLevel'])['Y/N']
+
+    mTEPES.s2n = Set(initialize=mTEPES.st*mTEPES.n, doc='load level to stage', filter=lambda mTEPES,st,n: (st,n) in pStage2Level)
 
     #%% inverse index node to generator
     pNodeToGen = pGenToNode.reset_index().set_index('Node').set_axis(['Generator'], axis=1, inplace=False)[['Generator']]
@@ -418,7 +435,7 @@ def InputData(DirName, CaseName, mTEPES):
         pCycleTimeStep[es] = min(pCycleTimeStep[es], pOutflowsTimeStep[es])
 
     # the stage duration is the maximum between the defined stage duration and the storage type and the outflows type for any ESS to avoid breaking the energy outflows constraints
-    pStageDuration = max(pStageDuration, pCycleTimeStep.max(), pOutflowsTimeStep.max())
+    # pStageDuration = max(pStageDuration, pCycleTimeStep.max(), pOutflowsTimeStep.max())
 
     # drop load levels with duration 0
     pDuration         = pDuration.loc        [                   mTEPES.n          ]
@@ -501,10 +518,11 @@ def InputData(DirName, CaseName, mTEPES):
     mTEPES.pDwReserveActivation  = Param(initialize=pDwReserveActivation, within=NonNegativeReals)
     mTEPES.pSBase                = Param(initialize=pSBase              , within=NonNegativeReals)
     mTEPES.pTimeStep             = Param(initialize=pTimeStep           , within=NonNegativeReals)
-    mTEPES.pStageDuration        = Param(initialize=pStageDuration      , within=NonNegativeReals)
+    # mTEPES.pStageDuration        = Param(initialize=pStageDuration      , within=NonNegativeReals)
 
     mTEPES.pDemand               = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nd, initialize=pDemand.stack().to_dict()           , within=NonNegativeReals, doc='Demand'                       )
     mTEPES.pScenProb             = Param(mTEPES.scc,                               initialize=pScenProb.to_dict()                 , within=NonNegativeReals, doc='Probability'                  )
+    mTEPES.pStageWeight          = Param(mTEPES.stt,                               initialize=pStageWeight.to_dict()              , within=NonNegativeReals, doc='Stage weight'                 )
     mTEPES.pDuration             = Param(                     mTEPES.n,            initialize=pDuration.to_dict()                 , within=NonNegativeReals, doc='Duration'                     )
     mTEPES.pNodeLon              = Param(                               mTEPES.nd, initialize=pNodeLon.to_dict()                  ,                          doc='Longitude'                    )
     mTEPES.pNodeLat              = Param(                               mTEPES.nd, initialize=pNodeLat.to_dict()                  ,                          doc='Latitude'                     )
@@ -688,57 +706,63 @@ def SettingUpVariables(OptModel, mTEPES):
             OptModel.vESSInventory  [sc,p,n,es].fix(0.0)
 
     # thermal and RES units ordered by increasing variable operation cost, excluding reactive generating units
-    if len(mTEPES.tq) > 0:
+    if len(mTEPES.tq):
         mTEPES.go = [k for k in sorted(mTEPES.pLinearVarCost, key=mTEPES.pLinearVarCost.__getitem__) if k not in mTEPES.gq]
     else:
         mTEPES.go = [k for k in sorted(mTEPES.pLinearVarCost, key=mTEPES.pLinearVarCost.__getitem__)]
 
-    for sc,p,st in mTEPES.scc*mTEPES.pp*range(1,int(sum(mTEPES.pDuration.values())/mTEPES.pStageDuration+1)):
+    for sc,p,st in mTEPES.scc*mTEPES.pp*mTEPES.stt:
         # activate only scenario, period and load levels to formulate
         mTEPES.del_component(mTEPES.sc)
         mTEPES.del_component(mTEPES.p )
+        mTEPES.del_component(mTEPES.st)
         mTEPES.del_component(mTEPES.n )
-        mTEPES.sc = Set(initialize=mTEPES.scc, ordered=True, doc='scenarios',   filter=lambda mTEPES,scc: scc in  mTEPES.scc and sc == scc and mTEPES.pScenProb[scc] > 0.0)
-        mTEPES.p  = Set(initialize=mTEPES.pp , ordered=True, doc='periods',     filter=lambda mTEPES,pp : pp  in                 p  == pp                                 )
-        mTEPES.n  = Set(initialize=mTEPES.nn , ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in mTEPES.pDuration and mTEPES.nn.ord(nn) > (st-1)*mTEPES.pStageDuration and mTEPES.nn.ord(nn) <= st*mTEPES.pStageDuration)
+        mTEPES.sc = Set(initialize=mTEPES.scc, ordered=True, doc='scenarios',   filter=lambda mTEPES,scc: scc in mTEPES.scc and sc == scc and mTEPES.pScenProb   [scc])
+        mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in mTEPES.stt and st == stt and mTEPES.pStageWeight[stt] and sum(1 for (st,nn) in mTEPES.s2n))
+        mTEPES.p  = Set(initialize=mTEPES.pp , ordered=True, doc='periods',     filter=lambda mTEPES,pp : pp  in                p  == pp                              )
+        mTEPES.n  = Set(initialize=mTEPES.nn , ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in mTEPES.pDuration and (st,nn) in mTEPES.s2n           )
 
-        # commit the units and their output at the first load level of each stage
-        pSystemOutput = 0.0
-        n1 = next(iter(mTEPES.sc*mTEPES.p*mTEPES.n))
-        for nr in mTEPES.nr:
-            if pSystemOutput < sum(mTEPES.pDemand[n1,nd] for nd in mTEPES.nd) and mTEPES.pMustRun[nr] == 1:
-                mTEPES.pInitialOutput[n1,nr] = mTEPES.pMaxPower[n1,nr]
-                mTEPES.pInitialUC    [n1,nr] = 1
-                pSystemOutput               += mTEPES.pInitialOutput[n1,nr]()
+        if len(mTEPES.n):
+            # determine the first load level of each stage
+            n1 = next(iter(mTEPES.sc * mTEPES.p * mTEPES.n))
+            # commit the units and their output at the first load level of each stage
+            pSystemOutput = 0.0
+            for nr in mTEPES.nr:
+                if pSystemOutput < sum(mTEPES.pDemand[n1,nd] for nd in mTEPES.nd) and mTEPES.pMustRun[nr] == 1:
+                    mTEPES.pInitialOutput[n1,nr] = mTEPES.pMaxPower[n1,nr]
+                    mTEPES.pInitialUC    [n1,nr] = 1
+                    pSystemOutput               += mTEPES.pInitialOutput[n1,nr]()
 
-        # determine the initial committed units and their output at the first load level of each stage
-        for go in mTEPES.go:
-            if pSystemOutput < sum(mTEPES.pDemand[n1,nd] for nd in mTEPES.nd) and mTEPES.pMustRun[go] != 1:
-                if go in mTEPES.r:
-                    mTEPES.pInitialOutput[n1,go] = mTEPES.pMaxPower[n1,go]
+            # determine the initial committed units and their output at the first load level of each stage
+            for go in mTEPES.go:
+                if pSystemOutput < sum(mTEPES.pDemand[n1,nd] for nd in mTEPES.nd) and mTEPES.pMustRun[go] != 1:
+                    if go in mTEPES.r:
+                        mTEPES.pInitialOutput[n1,go] = mTEPES.pMaxPower[n1,go]
+                    else:
+                        mTEPES.pInitialOutput[n1,go] = mTEPES.pMinPower[n1,go]
+                    mTEPES.pInitialUC[n1,go] = 1
+                    pSystemOutput = pSystemOutput + mTEPES.pInitialOutput[n1,go]()
+
+            # determine the initial committed lines
+            for la in mTEPES.la:
+                if la in mTEPES.lc:
+                    mTEPES.pInitialSwitch[n1,la] = 0
                 else:
-                    mTEPES.pInitialOutput[n1,go] = mTEPES.pMinPower[n1,go]
-                mTEPES.pInitialUC[n1,go] = 1
-                pSystemOutput = pSystemOutput + mTEPES.pInitialOutput[n1,go]()
+                    mTEPES.pInitialSwitch[n1,la] = 1
 
-        # determine the initial committed lines
-        for la in mTEPES.la:
-            if la in mTEPES.lc:
-                mTEPES.pInitialSwitch[n1,la] = 0
-            else:
-                mTEPES.pInitialSwitch[n1,la] = 1
-
-        # fixing the ESS inventory at the last load level
-        for sc,p,es in mTEPES.sc*mTEPES.p*mTEPES.es:
-            OptModel.vESSInventory[sc, p, mTEPES.n.last(), es].fix(mTEPES.pInitialInventory[es])
+            # fixing the ESS inventory at the last load level
+            for sc,p,es in mTEPES.sc*mTEPES.p*mTEPES.es:
+                OptModel.vESSInventory[sc,p,mTEPES.n.last(),es].fix(mTEPES.pInitialInventory[es])
 
     # activate all the scenarios, periods and load levels again
     mTEPES.del_component(mTEPES.sc)
     mTEPES.del_component(mTEPES.p )
+    mTEPES.del_component(mTEPES.st)
     mTEPES.del_component(mTEPES.n )
-    mTEPES.sc = Set(initialize=mTEPES.scc, ordered=True, doc='scenarios',   filter=lambda mTEPES,scc: scc in mTEPES.scc and mTEPES.pScenProb[scc] > 0.0)
-    mTEPES.p  = Set(initialize=mTEPES.pp,  ordered=True, doc='periods',     filter=lambda mTEPES,pp : pp  in p == pp                                   )
-    mTEPES.n  = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in mTEPES.pDuration                          )
+    mTEPES.sc = Set(initialize=mTEPES.scc, ordered=True, doc='scenarios',   filter=lambda mTEPES,scc: scc in mTEPES.scc and mTEPES.pScenProb   [scc])
+    mTEPES.p  = Set(initialize=mTEPES.pp,  ordered=True, doc='periods',     filter=lambda mTEPES,pp : pp  in p == pp                                )
+    mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in mTEPES.stt and mTEPES.pStageWeight[stt] and sum(1 for (stt,nn) in mTEPES.s2n))
+    mTEPES.n  = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in mTEPES.pDuration                       )
 
     # fixing the ESS inventory at the end of the following pCycleTimeStep (daily, weekly, monthly), i.e., for daily ESS is fixed at the end of the week, for weekly/monthly ESS is fixed at the end of the year
     for sc,p,n,es in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.es:

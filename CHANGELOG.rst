@@ -4,10 +4,14 @@ Change Log
 - [CHANGED] Addition of the sequence of decisions and operation (TEP + transmission switching)
 - [FIXED] fixing `<https://pascua.iit.comillas.edu/aramos/openTEPES/index.html#>`_ in README.rst 
 
+[2.5.0] - 2021-04-29
+--------------------
+- [CHANGED] generalize the definition of stages to allow using representative stages (weeks, days, etc.)
+
 [2.4.2] - 2021-04-29
 --------------------
 - [CHANGED] initialize shutdown variable
-- [CHANGED] fix error in conditions to formulate the relationship between UC, startup and shutdown
+- [FIXED] fix error in conditions to formulate the relationship between UC, startup and shutdown
 
 [2.4.1] - 2021-04-28
 --------------------

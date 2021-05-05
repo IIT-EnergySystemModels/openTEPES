@@ -14,7 +14,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES):
     StartTime = time.time()
 
     #%% solving the problem
-    Solver = SolverFactory(SolverName)                                                       # select solver
+    Solver = SolverFactory(SolverName, solver_io="mps")                                                       # select solver
     if SolverName == 'gurobi':
         Solver.options['LogFile'       ] = _path+'/openTEPES_'+CaseName+'.log'
         # Solver.options['IISFile'     ] = _path+'/openTEPES_'+CaseName+'.ilp'               # should be uncommented to show results of IIS
@@ -30,7 +30,9 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES):
         if SolverName == 'gurobi':
             Solver.options['Crossover'    ] = -1
         OptModel.dual = Suffix(direction=Suffix.IMPORT)
-    SolverResults = Solver.solve(OptModel, tee=False, report_timing=True)                # tee=True displays the log of the solver
+        OptModel.rc   = Suffix(direction=Suffix.IMPORT)
+    SolverResults = Solver.solve(OptModel, tee=False, report_timing=True)               # tee=True displays the log of the solver
+    assert str(SolverResults.solver.termination_condition) == "optimal"
     SolverResults.write()                                                                # summary of the solver results
 
     #%% fix values of binary variables to get dual variables and solve it again
