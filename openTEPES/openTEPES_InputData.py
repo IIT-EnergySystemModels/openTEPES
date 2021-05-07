@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 4, 2021
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 7, 2021
 """
 
 import time
@@ -324,6 +324,10 @@ def InputData(DirName, CaseName, mTEPES):
     pStage2Level = pStage2Level.set_index(['Stage','LoadLevel'])['Y/N']
 
     mTEPES.s2n = Set(initialize=mTEPES.st*mTEPES.n, doc='load level to stage', filter=lambda mTEPES,st,n: (st,n) in pStage2Level)
+
+    mTEPES.pLoadLevelWeight = Param(mTEPES.n, initialize=0.0, within=NonNegativeReals, doc='Load level weight', mutable=True)
+    for st,n in mTEPES.s2n:
+        mTEPES.pLoadLevelWeight[n] = pStageWeight[st]
 
     #%% inverse index node to generator
     pNodeToGen = pGenToNode.reset_index().set_index('Node').set_axis(['Generator'], axis=1, inplace=False)[['Generator']]

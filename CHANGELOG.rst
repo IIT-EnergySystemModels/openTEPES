@@ -4,6 +4,10 @@ Change Log
 - [CHANGED] Addition of the sequence of decisions and operation (TEP + transmission switching)
 - [FIXED] fixing `<https://pascua.iit.comillas.edu/aramos/openTEPES/index.html#>`_ in README.rst 
 
+[2.5.1] - 2021-05-07
+--------------------
+- [FIXED] introduction of stage weight in the operation variable cost
+
 [2.5.0] - 2021-04-29
 --------------------
 - [CHANGED] generalize the definition of stages to allow using representative stages (weeks, days, etc.)

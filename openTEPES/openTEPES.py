@@ -20,7 +20,7 @@ def openTEPES_run(DirName, CaseName, SolverName):
     _path = os.path.join(DirName, CaseName)
 
     #%% model declaration
-    mTEPES = ConcreteModel('Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 2.5.0 - April 29, 2021')
+    mTEPES = ConcreteModel('Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 2.5.1 - May 7, 2021')
 
     pIndLogConsole = 1
 

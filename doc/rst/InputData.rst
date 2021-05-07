@@ -147,6 +147,8 @@ Identifier      Header        Description
 Scenario        Weight        Weight of each stage
 ==============  ============  =====================
 
+This weight allows the definition of equivalent periods (e.g., one equivalent week with a weight of 52).
+
 Duration
 --------
 
