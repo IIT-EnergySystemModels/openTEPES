@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 7, 2021
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 11, 2021
 """
 
 import time
@@ -366,7 +366,7 @@ def GenerationOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, st):
 
     #%%
     def eMinUpTime(OptModel,sc,p,n,t):
-        if mTEPES.pUpTime[t] > 1 and mTEPES.n.ord(n) >= mTEPES.pUpTime[t]:
+        if mTEPES.pMustRun[nr] == 0 and (mTEPES.pMinPower[sc,p,n,nr] or mTEPES.pConstantVarCost[nr]) and nr not in mTEPES.es and mTEPES.pUpTime[t] > 1 and mTEPES.n.ord(n) >= mTEPES.pUpTime[t]:
             return sum(OptModel.vStartUp [sc,p,n2,t] for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pUpTime[t]:mTEPES.n.ord(n)]) <=     OptModel.vCommitment[sc,p,n,t]
         else:
             return Constraint.Skip
@@ -376,7 +376,7 @@ def GenerationOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, st):
         print('eMinUpTime            ... ', len(getattr(OptModel, 'eMinUpTime_'+st)), ' rows')
 
     def eMinDownTime(OptModel,sc,p,n,t):
-        if mTEPES.pDwTime[t] > 1 and mTEPES.n.ord(n) >= mTEPES.pDwTime[t]:
+        if mTEPES.pMustRun[nr] == 0 and (mTEPES.pMinPower[sc,p,n,nr] or mTEPES.pConstantVarCost[nr]) and nr not in mTEPES.es and mTEPES.pDwTime[t] > 1 and mTEPES.n.ord(n) >= mTEPES.pDwTime[t]:
             return sum(OptModel.vShutDown[sc,p,n2,t] for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pDwTime[t]:mTEPES.n.ord(n)]) <= 1 - OptModel.vCommitment[sc,p,n,t]
         else:
             return Constraint.Skip
