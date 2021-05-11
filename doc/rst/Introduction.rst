@@ -39,5 +39,7 @@ The main results of the model can be structured in these topics:
 - **Operation**: output of different units and aggregation by technologies (thermal, storage hydro, pumped-storage hydro, RES), RES curtailment, line flows, line ohmic losses, node voltage angles
 - **Emissions**: CO2 emissions by unit
 - **Marginal**: Locational Short-Run Marginal Costs (LSRMC), water value
+- **Economic**: operation, emission and reliability costs and revenues from operation and operating reserves
+- **Flexibility**: flexibility provided by demand, by the different generation and consumption technologies, and by power not served
 
 A careful implementation has been done to avoid numerical problems by scaling parameters, variables and equations of the optimization problem allowing the model to be used for large-scale cases, e.g., the European system with hourly detail.
