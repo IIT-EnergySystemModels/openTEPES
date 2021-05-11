@@ -147,7 +147,8 @@ Identifier      Header        Description
 Scenario        Weight        Weight of each stage
 ==============  ============  =====================
 
-This weight allows the definition of equivalent periods (e.g., one equivalent week with a weight of 52).
+This weight allows the definition of equivalent (representative) periods (e.g., one representative week with a weight of 52). Stages are not mathematically connected between them, i.e., no constraints link the operation
+at different stages.
 
 Duration
 --------
@@ -166,8 +167,8 @@ It is a simple way to use isolated snapshots or representative days or just the 
 The stage duration as sum of the duration of all the load levels must be larger or equal than the shortest duration of any storage type or any outflows type (both given in the generation data) and multiple of it.
 Consecutive stages are not tied between them. Consequently, the objective function must be a bit lower.
 
-The initial storage of the ESSs is also fixed at the beginning and end of each stage. For example, the initial storage level is set for the 8736 hours in case of a single stage or for the hours 4368 and 4369
-(end of the first stage and beginning of the second stage) in case of two stages each with 4368 hours.
+The initial storage of the ESSs is also fixed at the beginning and end of each stage. For example, the initial storage level is set for the hour 8736 in case of a single stage or for the hours 4368 and 4369
+(end of the first stage and beginning of the second stage) in case of two stages, each with 4368 hours.
 
 Demand
 ------
@@ -243,8 +244,8 @@ The storage cycle is the minimum between the inventory assessment period and the
 The ESS inventory level at the end of a large storage cycle is fixed to its initial value, i.e., the inventory of a daily storage type (evaluated on a time step basis) is fixed at the end of the week,
 the inventory of weekly/monthly storage is fixed at the end of the year.
 
-The initial storage of the ESSs is also fixed at the beginning and end of each stage. For example, the initial inventory level is set for the 8736 h in case of a single stage or for the hours 4368 and 4369
-(end of the first stage and beginning of the second stage) in case of two stages.
+The initial storage of the ESSs is also fixed at the beginning and end of each stage. For example, the initial storage level is set for the hour 8736 in case of a single stage or for the hours 4368 and 4369
+(end of the first stage and beginning of the second stage) in case of two stages, each with 4368 hours.
 
 A generator with operation cost (sum of the fuel and emission cost, excluding O&M cost) > 0 is considered a thermal unit. If the unit has no operation cost and its maximum storage = 0,
 it is considered a renewable unit. If its maximum storage is > 0 is considered an ESS.
