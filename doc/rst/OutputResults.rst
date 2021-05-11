@@ -415,7 +415,7 @@ File ``oT_Result_NetworkInvestment_ReducedCost.csv``
 ============  ==========  ==========  =====================================================
 Identifier    Identifier  Identifier  Description
 ============  ==========  ==========  =====================================================
-Initial node  Fina node   Circuit     Reduced costs of network investment decisions [M€]
+Initial node  Final node  Circuit     Reduced costs of network investment decisions [M€]
 ============  ==========  ==========  =====================================================
 
 File ``oT_Result_NetworkCommitment_ReducedCost.csv``
@@ -423,7 +423,7 @@ File ``oT_Result_NetworkCommitment_ReducedCost.csv``
 ============  ==========  ==========  =====================================================
 Identifier    Identifier  Identifier  Description
 ============  ==========  ==========  =====================================================
-Initial node  Fina node   Circuit     Reduced costs of network switching decisions [M€]
+Initial node  Final node  Circuit     Reduced costs of network switching decisions [M€]
 ============  ==========  ==========  =====================================================
 
 Economic
