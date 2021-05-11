@@ -136,6 +136,8 @@ Identifier      Header        Description
 Scenario        Probability   Probability of the scenario  p.u.
 ==============  ============  ===========================  ====
 
+For example, the scenarios can be used for obtaining the GEP+TEP considering hydro inflows uncertainty represented by means of three scenarios (wet, dry and average), or two VRES scenarios (windy/cloudy and calm/sunny).
+
 Stage
 -----
 
