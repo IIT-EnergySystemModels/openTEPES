@@ -255,8 +255,8 @@ EFOR is used to reduce the maximum and minimum power of the unit. For hydro unit
 
 Those generators or ESS with fixed cost > 0 are considered candidate and can be installed or not.
 
-Variable generation
--------------------
+Variable maximum and minimum generation
+---------------------------------------
 
 A description of the data included in the files ``oT_Data_VariableMaxGeneration.csv`` and ``oT_Data_VariableMinGeneration.csv`` follows:
 
@@ -271,8 +271,8 @@ It can be used also for upper-bounding and/or lower-bounding the output of any g
 
 Internally, all the values below 1e-5 times the maximum system demand will be converted into 0 by the model.
 
-Variable consumption
---------------------
+Variable maximum and minimum consumption
+----------------------------------------
 
 A description of the data included in the files ``oT_Data_VariableMaxConsumption.csv`` and ``oT_Data_VariableMinConsumption.csv`` follows:
 
