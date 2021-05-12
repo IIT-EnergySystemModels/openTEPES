@@ -4,18 +4,17 @@ Research projects
 =================
 The model has being used in these research projects:
 
-- `Open ENergy TRansition ANalyses for a low-carbon Economy (openENTRANCE) <https://openentrance.eu/>`_, developed for the **European Union**,
-  aims at developing, using and disseminating an open, transparent and integrated modelling platform for assessing low-carbon transition pathways in Europe. May 2019 - April 2023.
+- `Open ENergy TRansition ANalyses for a low-carbon Economy (openENTRANCE) <https://openentrance.eu/>`_, developed for the **European Union**. May 2019 - April 2023.
   `L. Olmos <https://www.iit.comillas.edu/people/olmos>`_, `S. Lumbreras <https://www.iit.comillas.edu/people/slumbreras>`_, `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_,
-  `E. Alvarez <https://www.iit.comillas.edu/people/ealvarezq>`_
+  `E. Alvarez <https://www.iit.comillas.edu/people/ealvarezq>`_.
+  It aims at developing, using and disseminating an open, transparent and integrated modelling platform for assessing low-carbon transition pathways in Europe.
   
 .. image:: ../img/open-entrance_logo.png
    :scale: 40%
    :align: center
 
 - `Analysis of the expansion and operation of the Spanish electricity system for a 2030-2050 time horizon <https://www.iit.comillas.edu/proyectos/mostrar_proyecto.php.en?nombre_abreviado=IBD_ANALISIS_H2030-50>`_, developed for **Iberdrola**.
-   January 2019 - December 2021.
-  `M. Rivier <https://www.iit.comillas.edu/people/michel>`_, `T. Gómez <https://www.iit.comillas.edu/people/tomas>`_, `A. Sánchez <https://www.iit.comillas.edu/people/alvaro>`_,
+  January 2019 - December 2021. `M. Rivier <https://www.iit.comillas.edu/people/michel>`_, `T. Gómez <https://www.iit.comillas.edu/people/tomas>`_, `A. Sánchez <https://www.iit.comillas.edu/people/alvaro>`_,
   `F. Martín <https://www.iit.comillas.edu/people/fmartin>`_, `T. Freire <https://www.iit.comillas.edu/people/tfreire>`_, `J.P. Chaves <https://www.iit.comillas.edu/people/jchaves>`_, `T. Gerres <https://www.iit.comillas.edu/people/tgerres>`_,
   `S. Huclin <https://www.iit.comillas.edu/people/shuclin>`_, `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_.
 
@@ -48,6 +47,6 @@ The model has being used in these research projects:
   `S. Lumbreras <https://www.iit.comillas.edu/people/slumbreras>`_, `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `L. Olmos <https://www.iit.comillas.edu/people/olmos>`_,
   `C. Mateo <https://www.iit.comillas.edu/people/cmateo>`_
 
-It aims at providing the knowledge to inform the development of future energy and climate policies at national and European levels. In support of this aim, ECEMF proposes a range of activities to achieve five objectives and meet the four challenges set out in the call text.
+  It aims at providing the knowledge to inform the development of future energy and climate policies at national and European levels. In support of this aim, ECEMF proposes a range of activities to achieve five objectives and meet the four challenges set out in the call text.
   ECEMF’s programme of events and novel IT-based communications channel will enable researchers to identify and co-develop the most pressing policy-relevant research questions with a range of stakeholders to meet ambitious European energy and climate policy goals,
   in particular the European Green Deal and the transformation to a climate neutral society.
