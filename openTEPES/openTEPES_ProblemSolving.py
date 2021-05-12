@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 25, 2021
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 12, 2021
 """
 
 import time
@@ -21,6 +21,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES):
         Solver.options['Method'        ] = 2                                                 # barrier method
         Solver.options['Presolve'      ] = 2
         Solver.options['Crossover'     ] = 0
+        Solver.options['BarConvTol'    ] = 1e-9
         Solver.options['MIPGap'        ] = 0.025
         Solver.options['Threads'       ] = int((psutil.cpu_count(logical=True) + psutil.cpu_count(logical=False))/2)
         Solver.options['TimeLimit'     ] =    18000
@@ -33,7 +34,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES):
         OptModel.rc   = Suffix(direction=Suffix.IMPORT)
     SolverResults = Solver.solve(OptModel, tee=False, report_timing=True)               # tee=True displays the log of the solver
     assert str(SolverResults.solver.termination_condition) == "optimal"
-    SolverResults.write()                                                                # summary of the solver results
+    SolverResults.write()                                                              # summary of the solver results
 
     #%% fix values of binary variables to get dual variables and solve it again
     # investment decision values < 1e-5 are converted to 0
