@@ -236,7 +236,7 @@ StartUpCost           Startup  cost                                             
 ShutDownCost          Shutdown cost                                                                                                        M€
 CO2EmissionRate       CO2 emission rate                                                                                                    t CO2/MWh
 FixedCost             Overnight investment (capital) cost                                                                                  M€
-FixedChargeRate       Fixed charge rate to annualize the overnight investment cost                                                         p.u.
+FixedChargeRate       Fixed-charge rate to annualize the overnight investment cost                                                         p.u.
 BinaryInvestment      Binary unit investment decision                                                                                      Yes/No
 ====================  ===================================================================================================================  ===================================
 
@@ -363,7 +363,7 @@ TTC                Total transfer capacity (maximum permissible thermal load) in
 TTCBck             Total transfer capacity (maximum permissible thermal load) in backward direction              MW
 SecurityFactor     Security factor to consider approximately N-1 contingencies. NTC = TTC x SecurityFactor       p.u.
 FixedCost          Overnight investment (capital) cost                                                           M€
-FixedChargeRate    Fixed charge rate to annualize the overnight investment cost                                  p.u.
+FixedChargeRate    Fixed-charge rate to annualize the overnight investment cost                                  p.u.
 BinaryInvestment   Binary line/circuit investment decision                                                       Yes/No
 BinarySwitching    Definition if the transmission line is able to switch on/off                                  Yes/No
 SwOnTime           Minimum switch-on time                                                                        h
