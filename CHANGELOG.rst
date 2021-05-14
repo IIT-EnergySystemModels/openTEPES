@@ -4,6 +4,10 @@ Change Log
 - [CHANGED] Addition of the sequence of decisions and operation (TEP + transmission switching)
 - [FIXED] fixing `<https://pascua.iit.comillas.edu/aramos/openTEPES/index.html#>`_ in README.rst 
 
+[2.5.3] - 2021-05-14
+--------------------
+- [FIXED] fix output results of storage utilization
+
 [2.5.2] - 2021-05-11
 --------------------
 - [CHANGED] new ESS inventory utilization result file
