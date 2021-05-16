@@ -459,25 +459,25 @@ def InputData(DirName, CaseName, mTEPES):
     # small values are converted to 0
     for a2 in mTEPES.ar:
         # values < 1e-5 times the maximum demand for each area (an area is related to operating reserves procurement, i.e., country) are converted to 0
-        pEpsilon        = pDemand        [[nd for nd,a2 in mTEPES.ndar]].sum(axis=1).max()*1e-5
+        pEpsilon      = pDemand        [[nd for nd,a2 in mTEPES.ndar]].sum(axis=1).max()*1e-5
         # values < 1e-5 times the maximum system demand are converted to 0
-        # pEpsilon      = pDemand.sum(axis=1).max()*1e-5
+        # pEpsilon    = pDemand.sum(axis=1).max()*1e-5
 
         # these parameters are in GW
-        pDemand          [pDemand        [[nd for nd,a2 in mTEPES.ndar]] < pEpsilon] = 0.0
-        pOperReserveUp   [pOperReserveUp [[                         a2]] < pEpsilon] = 0.0
-        pOperReserveDw   [pOperReserveDw [[                         a2]] < pEpsilon] = 0.0
-        pMinPower        [pMinPower      [[g  for a2,g  in mTEPES.a2g ]] < pEpsilon] = 0.0
-        pMaxPower        [pMaxPower      [[g  for a2,g  in mTEPES.a2g ]] < pEpsilon] = 0.0
-        pMinCharge       [pMinCharge     [[es for a2,es in mTEPES.a2g ]] < pEpsilon] = 0.0
-        pMaxCharge       [pMaxCharge     [[es for a2,es in mTEPES.a2g ]] < pEpsilon] = 0.0
-        pEnergyInflows   [pEnergyInflows [[es for a2,es in mTEPES.a2g ]] < pEpsilon/pTimeStep] = 0.0
-        pEnergyOutflows  [pEnergyOutflows[[es for a2,es in mTEPES.a2g ]] < pEpsilon/pTimeStep] = 0.0
+        pDemand        [pDemand        [[nd for nd,a2 in mTEPES.ndar]] < pEpsilon] = 0.0
+        pOperReserveUp [pOperReserveUp [[                         a2]] < pEpsilon] = 0.0
+        pOperReserveDw [pOperReserveDw [[                         a2]] < pEpsilon] = 0.0
+        pMinPower      [pMinPower      [[g  for a2,g  in mTEPES.a2g ]] < pEpsilon] = 0.0
+        pMaxPower      [pMaxPower      [[g  for a2,g  in mTEPES.a2g ]] < pEpsilon] = 0.0
+        pMinCharge     [pMinCharge     [[es for a2,es in mTEPES.a2g ]] < pEpsilon] = 0.0
+        pMaxCharge     [pMaxCharge     [[es for a2,es in mTEPES.a2g ]] < pEpsilon] = 0.0
+        pEnergyInflows [pEnergyInflows [[es for a2,es in mTEPES.a2g ]] < pEpsilon/pTimeStep] = 0.0
+        pEnergyOutflows[pEnergyOutflows[[es for a2,es in mTEPES.a2g ]] < pEpsilon/pTimeStep] = 0.0
 
         # these parameters are in GWh
-        pMinStorage      [pMinStorage    [[es for a2,es in mTEPES.a2g ]] < pEpsilon] = 0.0
-        pMaxStorage      [pMaxStorage    [[es for a2,es in mTEPES.a2g ]] < pEpsilon] = 0.0
-        pIniInventory    [pIniInventory  [[es for a2,es in mTEPES.a2g ]] < pEpsilon] = 0.0
+        pMinStorage    [pMinStorage    [[es for a2,es in mTEPES.a2g ]] < pEpsilon] = 0.0
+        pMaxStorage    [pMaxStorage    [[es for a2,es in mTEPES.a2g ]] < pEpsilon] = 0.0
+        pIniInventory  [pIniInventory  [[es for a2,es in mTEPES.a2g ]] < pEpsilon] = 0.0
 
         # these parameters are in GW
         for ni,nf,cc,a2 in mTEPES.laar:
@@ -489,8 +489,15 @@ def InputData(DirName, CaseName, mTEPES):
             if  pInitialInventory[es] < pEpsilon and es in mTEPES.es:
                 pInitialInventory[es] = 0.0
 
-    pMaxPower2ndBlock  = pMaxPower  - pMinPower
-    pMaxCharge2ndBlock = pMaxCharge - pMinCharge
+        pMaxPower2ndBlock  = pMaxPower  - pMinPower
+        pMaxCharge2ndBlock = pMaxCharge - pMinCharge
+
+        pMaxPower2ndBlock [pMaxPower2ndBlock [[es for a2, es in mTEPES.a2g]] < pEpsilon] = 0.0
+        pMaxCharge2ndBlock[pMaxCharge2ndBlock[[es for a2, es in mTEPES.a2g]] < pEpsilon] = 0.0
+
+    # replace < 0.0 by 0.0
+    pMaxPower2ndBlock  = pMaxPower2ndBlock.where (pMaxPower2ndBlock  > 0.0, other=0.0)
+    pMaxCharge2ndBlock = pMaxCharge2ndBlock.where(pMaxCharge2ndBlock > 0.0, other=0.0)
 
     # BigM maximum flow to be used in the Kirchhoff's 2nd law disjunctive constraint
     pBigMFlowBck = pLineNTCBck*0.0
