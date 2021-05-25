@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 8, 2021
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 25, 2021
 """
 
 import time
@@ -250,7 +250,7 @@ def InputData(DirName, CaseName, mTEPES):
     mTEPES.ec = Set(initialize=mTEPES.es,                     ordered=False, doc='candidate ESS units', filter=lambda mTEPES,es      :  es        in mTEPES.es  and pGenFixedCost     [es] >  0.0)
     mTEPES.br = Set(initialize=mTEPES.ni*mTEPES.nf,           ordered=False, doc='all branches       ', filter=lambda mTEPES,ni,nf   : (ni,nf)    in                pLineType                    )
     mTEPES.ln = Set(initialize=mTEPES.ni*mTEPES.nf*mTEPES.cc, ordered=False, doc='all input     lines', filter=lambda mTEPES,ni,nf,cc: (ni,nf,cc) in                pLineType                    )
-    mTEPES.la = Set(initialize=mTEPES.ni*mTEPES.nf*mTEPES.cc, ordered=False, doc='all real      lines', filter=lambda mTEPES,ni,nf,cc: (ni,nf,cc) in                pLineX                        and pLineNTCFrw[ni,nf,cc] > 0.0 and pLineNTCBck[ni,nf,cc] > 0.0)
+    mTEPES.la = Set(initialize=mTEPES.ln,                     ordered=False, doc='all real      lines', filter=lambda mTEPES,*ln     :  ln        in mTEPES.ln  and pLineX            [ln] >  0.0 and pLineNTCFrw[ln] > 0.0 and pLineNTCBck[ln] > 0.0)
     mTEPES.lc = Set(initialize=mTEPES.la,                     ordered=False, doc='candidate     lines', filter=lambda mTEPES,*la     :  la        in mTEPES.la  and pNetFixedCost     [la] >  0.0)
     mTEPES.cd = Set(initialize=mTEPES.la,                     ordered=False, doc='           DC lines', filter=lambda mTEPES,*la     :  la        in mTEPES.la  and pNetFixedCost     [la] >  0.0 and pLineType[la] == 'DC')
     mTEPES.ed = Set(initialize=mTEPES.la,                     ordered=False, doc='           DC lines', filter=lambda mTEPES,*la     :  la        in mTEPES.la  and pNetFixedCost     [la] == 0.0 and pLineType[la] == 'DC')
