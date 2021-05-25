@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 8, 2021
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 25, 2021
 """
 
 import time
@@ -250,7 +250,7 @@ def InputData(DirName, CaseName, mTEPES):
     mTEPES.ec = Set(initialize=mTEPES.es,                     ordered=False, doc='candidate ESS units', filter=lambda mTEPES,es      :  es        in mTEPES.es  and pGenFixedCost     [es] >  0.0)
     mTEPES.br = Set(initialize=mTEPES.ni*mTEPES.nf,           ordered=False, doc='all branches       ', filter=lambda mTEPES,ni,nf   : (ni,nf)    in                pLineType                    )
     mTEPES.ln = Set(initialize=mTEPES.ni*mTEPES.nf*mTEPES.cc, ordered=False, doc='all input     lines', filter=lambda mTEPES,ni,nf,cc: (ni,nf,cc) in                pLineType                    )
-    mTEPES.la = Set(initialize=mTEPES.ni*mTEPES.nf*mTEPES.cc, ordered=False, doc='all real      lines', filter=lambda mTEPES,ni,nf,cc: (ni,nf,cc) in                pLineX                        and pLineNTCFrw[ni,nf,cc] > 0.0 and pLineNTCBck[ni,nf,cc] > 0.0)
+    mTEPES.la = Set(initialize=mTEPES.ln,                     ordered=False, doc='all real      lines', filter=lambda mTEPES,*ln     :  ln        in mTEPES.ln  and pLineX            [ln] >  0.0 and pLineNTCFrw[ln] > 0.0 and pLineNTCBck[ln] > 0.0)
     mTEPES.lc = Set(initialize=mTEPES.la,                     ordered=False, doc='candidate     lines', filter=lambda mTEPES,*la     :  la        in mTEPES.la  and pNetFixedCost     [la] >  0.0)
     mTEPES.cd = Set(initialize=mTEPES.la,                     ordered=False, doc='           DC lines', filter=lambda mTEPES,*la     :  la        in mTEPES.la  and pNetFixedCost     [la] >  0.0 and pLineType[la] == 'DC')
     mTEPES.ed = Set(initialize=mTEPES.la,                     ordered=False, doc='           DC lines', filter=lambda mTEPES,*la     :  la        in mTEPES.la  and pNetFixedCost     [la] == 0.0 and pLineType[la] == 'DC')
@@ -459,25 +459,25 @@ def InputData(DirName, CaseName, mTEPES):
     # small values are converted to 0
     for a2 in mTEPES.ar:
         # values < 1e-5 times the maximum demand for each area (an area is related to operating reserves procurement, i.e., country) are converted to 0
-        pEpsilon        = pDemand        [[nd for nd,a2 in mTEPES.ndar]].sum(axis=1).max()*1e-5
+        pEpsilon      = pDemand        [[nd for nd,a2 in mTEPES.ndar]].sum(axis=1).max()*1e-5
         # values < 1e-5 times the maximum system demand are converted to 0
-        # pEpsilon      = pDemand.sum(axis=1).max()*1e-5
+        # pEpsilon    = pDemand.sum(axis=1).max()*1e-5
 
         # these parameters are in GW
-        pDemand          [pDemand        [[nd for nd,a2 in mTEPES.ndar]] < pEpsilon] = 0.0
-        pOperReserveUp   [pOperReserveUp [[                         a2]] < pEpsilon] = 0.0
-        pOperReserveDw   [pOperReserveDw [[                         a2]] < pEpsilon] = 0.0
-        pMinPower        [pMinPower      [[g  for a2,g  in mTEPES.a2g ]] < pEpsilon] = 0.0
-        pMaxPower        [pMaxPower      [[g  for a2,g  in mTEPES.a2g ]] < pEpsilon] = 0.0
-        pMinCharge       [pMinCharge     [[es for a2,es in mTEPES.a2g ]] < pEpsilon] = 0.0
-        pMaxCharge       [pMaxCharge     [[es for a2,es in mTEPES.a2g ]] < pEpsilon] = 0.0
-        pEnergyInflows   [pEnergyInflows [[es for a2,es in mTEPES.a2g ]] < pEpsilon/pTimeStep] = 0.0
-        pEnergyOutflows  [pEnergyOutflows[[es for a2,es in mTEPES.a2g ]] < pEpsilon/pTimeStep] = 0.0
+        pDemand        [pDemand        [[nd for nd,a2 in mTEPES.ndar]] < pEpsilon] = 0.0
+        pOperReserveUp [pOperReserveUp [[                         a2]] < pEpsilon] = 0.0
+        pOperReserveDw [pOperReserveDw [[                         a2]] < pEpsilon] = 0.0
+        pMinPower      [pMinPower      [[g  for a2,g  in mTEPES.a2g ]] < pEpsilon] = 0.0
+        pMaxPower      [pMaxPower      [[g  for a2,g  in mTEPES.a2g ]] < pEpsilon] = 0.0
+        pMinCharge     [pMinCharge     [[es for a2,es in mTEPES.a2g ]] < pEpsilon] = 0.0
+        pMaxCharge     [pMaxCharge     [[es for a2,es in mTEPES.a2g ]] < pEpsilon] = 0.0
+        pEnergyInflows [pEnergyInflows [[es for a2,es in mTEPES.a2g ]] < pEpsilon/pTimeStep] = 0.0
+        pEnergyOutflows[pEnergyOutflows[[es for a2,es in mTEPES.a2g ]] < pEpsilon/pTimeStep] = 0.0
 
         # these parameters are in GWh
-        pMinStorage      [pMinStorage    [[es for a2,es in mTEPES.a2g ]] < pEpsilon] = 0.0
-        pMaxStorage      [pMaxStorage    [[es for a2,es in mTEPES.a2g ]] < pEpsilon] = 0.0
-        pIniInventory    [pIniInventory  [[es for a2,es in mTEPES.a2g ]] < pEpsilon] = 0.0
+        pMinStorage    [pMinStorage    [[es for a2,es in mTEPES.a2g ]] < pEpsilon] = 0.0
+        pMaxStorage    [pMaxStorage    [[es for a2,es in mTEPES.a2g ]] < pEpsilon] = 0.0
+        pIniInventory  [pIniInventory  [[es for a2,es in mTEPES.a2g ]] < pEpsilon] = 0.0
 
         # these parameters are in GW
         for ni,nf,cc,a2 in mTEPES.laar:
@@ -489,8 +489,15 @@ def InputData(DirName, CaseName, mTEPES):
             if  pInitialInventory[es] < pEpsilon and es in mTEPES.es:
                 pInitialInventory[es] = 0.0
 
-    pMaxPower2ndBlock  = pMaxPower  - pMinPower
-    pMaxCharge2ndBlock = pMaxCharge - pMinCharge
+        pMaxPower2ndBlock  = pMaxPower  - pMinPower
+        pMaxCharge2ndBlock = pMaxCharge - pMinCharge
+
+        pMaxPower2ndBlock [pMaxPower2ndBlock [[es for a2, es in mTEPES.a2g]] < pEpsilon] = 0.0
+        pMaxCharge2ndBlock[pMaxCharge2ndBlock[[es for a2, es in mTEPES.a2g]] < pEpsilon] = 0.0
+
+    # replace < 0.0 by 0.0
+    pMaxPower2ndBlock  = pMaxPower2ndBlock.where (pMaxPower2ndBlock  > 0.0, other=0.0)
+    pMaxCharge2ndBlock = pMaxCharge2ndBlock.where(pMaxCharge2ndBlock > 0.0, other=0.0)
 
     # BigM maximum flow to be used in the Kirchhoff's 2nd law disjunctive constraint
     pBigMFlowBck = pLineNTCBck*0.0
