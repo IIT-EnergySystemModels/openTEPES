@@ -57,10 +57,10 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES):
                 OptModel.vStartUp   [sc,p,n,nr].fix(OptModel.vStartUp   [sc,p,n,nr]())
                 OptModel.vShutDown  [sc,p,n,nr].fix(OptModel.vShutDown  [sc,p,n,nr]())
         if mTEPES.pIndBinLineCommit*len(mTEPES.la):
-            for sc,p,n,la in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.la:
-                OptModel.vLineCommit  [sc,p,n,la].fix(OptModel.vLineCommit  [sc,p,n,la]())
-                OptModel.vLineOnState [sc,p,n,la].fix(OptModel.vLineOnState [sc,p,n,la]())
-                OptModel.vLineOffState[sc,p,n,la].fix(OptModel.vLineOffState[sc,p,n,la]())
+            for sc,p,n,ni,nf,cc in list(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.la):
+                OptModel.vLineCommit  [sc,p,n,ni,nf,cc].fix(OptModel.vLineCommit  [sc,p,n,ni,nf,cc]())
+                OptModel.vLineOnState [sc,p,n,ni,nf,cc].fix(OptModel.vLineOnState [sc,p,n,ni,nf,cc]())
+                OptModel.vLineOffState[sc,p,n,ni,nf,cc].fix(OptModel.vLineOffState[sc,p,n,ni,nf,cc]())
         Solver.options['relax_integrality'] =  1                                               # introduced to show results of the dual variables
         if SolverName == 'gurobi':
             Solver.options['Crossover'    ] = -1
