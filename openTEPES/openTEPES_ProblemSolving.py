@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 12, 2021
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 25, 2021
 """
 
 import time
@@ -58,7 +58,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES):
                 OptModel.vStartUp   [sc,p,n,nr].fix(OptModel.vStartUp   [sc,p,n,nr]())
                 OptModel.vShutDown  [sc,p,n,nr].fix(OptModel.vShutDown  [sc,p,n,nr]())
         if mTEPES.pIndBinLineCommit*len(mTEPES.la):
-            for sc,p,n,ni,nf,cc in list(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.la):
+            for sc,p,n,ni,nf,cc in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.la:
                 OptModel.vLineCommit  [sc,p,n,ni,nf,cc].fix(OptModel.vLineCommit  [sc,p,n,ni,nf,cc]())
                 OptModel.vLineOnState [sc,p,n,ni,nf,cc].fix(OptModel.vLineOnState [sc,p,n,ni,nf,cc]())
                 OptModel.vLineOffState[sc,p,n,ni,nf,cc].fix(OptModel.vLineOffState[sc,p,n,ni,nf,cc]())
