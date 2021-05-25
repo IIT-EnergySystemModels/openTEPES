@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 16, 2021
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 25, 2021
 """
 
 import time
