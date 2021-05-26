@@ -28,7 +28,7 @@ PHS         Pumped-hydro Storage
 PV          Photovoltaics
 RR          Replacement Reserve
 TTC         Total Transfer Capacity
-VRES        Variable Renewable Energy Sources
+VRE         Variable Renewable Energy
 ==========  ====================================================================
 
 Dictionaries. Sets
@@ -42,7 +42,7 @@ File                        Description
 ``oT_Dict_Period.csv``      Period (e.g., y2030)
 ``oT_Dict_Stage.csv``       Stage. Set of load levels grouped under an stage
 ``oT_Dict_LoadLevel.csv``   Load level (e.g., 2030-01-01T00:00:00+01:00 to 2030-12-30T23:00:00+01:00). Load levels with duration 0 are ignored
-``oT_Dict_Generation.csv``  Generation units (thermal -nuclear, CCGT, OCGT, coal-, ESS -hydro, pumped-hydro storage PHS, battery BESS- and VRES -wind onshore and offshore, solar PV, solar thermal-)
+``oT_Dict_Generation.csv``  Generation units (thermal -nuclear, CCGT, OCGT, coal-, ESS -hydro, pumped-hydro storage PHS, battery BESS- and VRE -wind onshore and offshore, solar PV, solar thermal-)
 ``oT_Dict_Technology.csv``  Generation technologies. The technology order is used in the temporal result plot.
 ``oT_Dict_Storage.csv``     ESS storage type (daily < 12 h, weekly < 40 h, monthly > 60 h)
 ``oT_Dict_Node.csv``        Nodes
@@ -136,7 +136,7 @@ Identifier      Header        Description
 Scenario        Probability   Probability of the scenario  p.u.
 ==============  ============  ===========================  ====
 
-For example, the scenarios can be used for obtaining the GEP+TEP considering hydro inflows uncertainty represented by means of three scenarios (wet, dry and average), or two VRES scenarios (windy/cloudy and calm/sunny).
+For example, the scenarios can be used for obtaining the GEP+TEP considering hydro inflows uncertainty represented by means of three scenarios (wet, dry and average), or two VRE scenarios (windy/cloudy and calm/sunny).
 
 Stage
 -----
