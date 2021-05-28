@@ -63,6 +63,12 @@ They are written in capital letters.
 :math:`UR^ω_{pna}, DR^ω_{pna}`  Upward and downward operating reserves for each area      GW
 ==============================  ========================================================  ====
 
+==============================  ========================================================  ====
+**System inertia**
+------------------------------  --------------------------------------------------------  ----
+:math:`SI^ω_{pna}`              System inertia for each area                              s
+==============================  ========================================================  ====
+
 =========================================  ===============================================================================================  ============
 **Generation system**   
 -----------------------------------------  -----------------------------------------------------------------------------------------------  ------------
@@ -76,6 +82,7 @@ They are written in capital letters.
 :math:`CSU_g, CSD_g`                       Startup and shutdown cost of a committed unit                                                    M€
 :math:`\tau_e`                             Storage cycle of the ESS (e.g., 1, 24, 168 h -for daily, weekly, monthly-)                       h
 :math:`\rho_e`                             Outflows cycle of the ESS (e.g., 1, 24, 168 h -for hourly, daily, weekly, monthly, yearly-)      h
+:math:'GI_g'                               Generator inertia                                                                                s
 :math:`EF_e`                               Efficiency of the pump/turbine cycle of a hydro power plant or charge/discharge of a battery     p.u.
 :math:`I_e`                                Capacity of an ESS (e.g., hydro power plant)                                                     GWh
 :math:`EI^ω_{png}`                         Energy inflows of an ESS (e.g., hydro power plant)                                               GWh
@@ -169,6 +176,10 @@ Output and consumption bounded by investment decision for candidate ESS [p.u.]
 Balance of generation and demand at each node with ohmic losses [GW]
 
 :math:`\sum_{g \in i} gp^ω_{png} - \sum_{e \in i} gc^ω_{pne} + ens^ω_{pni} = D^ω_{pni} + \sum_{jc} l^ω_{pnijc} + \sum_{jc} l^ω_{pnjic} + \sum_{jc} f^ω_{pnijc} - \sum_{jc} f^ω_{pnjic} \quad \forall ωpni`
+
+System inertia for each area [s]
+
+:math:`\sum_{g \in a} GI_g uc^ω_{png} \geq SI^ω_{pna} \quad \forall ωpna`
 
 Upward and downward operating reserves provided by non-renewable generators, and ESS when charging for each area [GW]
 
