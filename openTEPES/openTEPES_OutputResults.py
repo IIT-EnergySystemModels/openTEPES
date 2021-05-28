@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 25, 2021
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 27, 2021
 """
 
 import time
@@ -445,7 +445,7 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES):
         OutputToFile.to_frame(name='p.u.').to_csv(_path + '/oT_Result_NetworkInvestment_ReducedCost_'+CaseName+'.csv', sep=',')
 
     # %% Reduced cost for NetworkCommitment
-    mTEPES.las = Set(initialize=mTEPES.ni*mTEPES.nf*mTEPES.cc, ordered=False, doc='all real lines with switching decision', filter=lambda mTEPES,ni,nf,cc: (ni,nf,cc) in mTEPES.pLineX and mTEPES.pIndBinSwitching[ni,nf,cc])
+    mTEPES.las = Set(initialize=mTEPES.ni*mTEPES.nf*mTEPES.cc, ordered=False, doc='all real lines with switching decision', filter=lambda mTEPES,ni,nf,cc: (ni,nf,cc) in mTEPES.pLineX and mTEPES.pLineSwitching[ni,nf,cc])
     if len(mTEPES.las) and not ReducedCostActivation:
         for st in mTEPES.st:
             mTEPES.del_component(mTEPES.n)

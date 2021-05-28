@@ -76,6 +76,7 @@ File                                       Description
 ``oT_Data_Stage.csv``                      Stages
 ``oT_Data_Duration.csv``                   Duration of the load levels
 ``oT_Data_Demand.csv``                     Demand
+``oT_Data_Inertia.csv``                    System inertia by area
 ``oT_Data_OperatingReserveUp.csv``         Upward   operating reserves (include aFRR, mFRR and RR for electricity balancing from ENTSO-E)
 ``oT_Data_OperatingReserveDown.csv``       Downward operating reserves (include aFRR, mFRR and RR for electricity balancing from ENTSO-E)
 ``oT_Data_Generation.csv``                 Generation data
@@ -185,6 +186,21 @@ Scenario        Period      Load level  Node    Power demand of the node for eac
 
 Internally, all the values below 1e-5 times the maximum system demand will be converted into 0 by the model.
 
+System inertia
+--------------
+
+A description of the data included in the files ``oT_Data_Inertia.csv`` follows:
+
+==============  ==========  ==========  ======  ================================================  ==
+Identifier      Identifier  Identifier  Header  Description
+==============  ==========  ==========  ======  ================================================  ==
+Scenario        Period      Load level  Area    System inertia of the area for each load level    s
+==============  ==========  ==========  ======  ================================================  ==
+
+Given that the system inertia depends on the area, it can be sensible to assign an area as a country, for example.
+
+Internally, all the values below 1e-5 times the maximum system demand will be converted into 0 by the model.
+
 Upward and downward operating reserves
 --------------------------------------
 
@@ -223,6 +239,7 @@ InitialStorage        Initial energy stored at the first instant of the time sco
 MaximumStorage        Maximum energy that can be stored by the ESS unit                                                                    GWh
 MinimumStorage        Minimum energy that can be stored by the ESS unit                                                                    GWh
 Efficiency            Round-trip efficiency in the charge/discharge cycle                                                                  p.u.
+Inertia               Unit inertia constant                                                                                                s
 EFOR                  Equivalent Forced Outage Rate                                                                                        p.u.
 RampUp                Ramp up   rate for generating units or maximum discharge rate for ESS discharge                                      MW/h
 RampDown              Ramp down rate for generating units or maximum    charge rate for ESS    charge                                      MW/h
@@ -350,6 +367,7 @@ A description of the circuit (initial node, final node, circuit) data included i
 Header             Description
 =================  ============================================================================================  ======
 LineType           Line type {AC, DC, Transformer, Converter}  
+Switching          The transmission line is able to switch on/off                                                Yes/No
 Voltage            Line voltage (e.g., 400, 220 kV, 220/400 kV if transformer). Used only for plotting purposes  kV
 LossFactor         Transmission losses equal to the line flow times this factor                                  p.u.
 Resistance         Resistance (not used in the this version)                                                     p.u.
@@ -365,7 +383,6 @@ SecurityFactor     Security factor to consider approximately N-1 contingencies. 
 FixedCost          Overnight investment (capital) cost                                                           M€
 FixedChargeRate    Fixed-charge rate to annualize the overnight investment cost                                  p.u.
 BinaryInvestment   Binary line/circuit investment decision                                                       Yes/No
-BinarySwitching    Definition if the transmission line is able to switch on/off                                  Yes/No
 SwOnTime           Minimum switch-on time                                                                        h
 SwOffTime          Minimum switch-off time                                                                       h
 =================  ============================================================================================  ======

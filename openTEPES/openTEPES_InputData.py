@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 25, 2021
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 27, 2021
 """
 
 import time
@@ -22,6 +22,7 @@ def InputData(DirName, CaseName, mTEPES):
     dfStage              = pd.read_csv(_path+'/oT_Data_Stage_'                 +CaseName+'.csv', index_col=[0    ])
     dfDuration           = pd.read_csv(_path+'/oT_Data_Duration_'              +CaseName+'.csv', index_col=[0    ])
     dfDemand             = pd.read_csv(_path+'/oT_Data_Demand_'                +CaseName+'.csv', index_col=[0,1,2])
+    dfInertia            = pd.read_csv(_path+'/oT_Data_Inertia_'               +CaseName+'.csv', index_col=[0,1,2])
     dfUpOperatingReserve = pd.read_csv(_path+'/oT_Data_OperatingReserveUp_'    +CaseName+'.csv', index_col=[0,1,2])
     dfDwOperatingReserve = pd.read_csv(_path+'/oT_Data_OperatingReserveDown_'  +CaseName+'.csv', index_col=[0,1,2])
     dfGeneration         = pd.read_csv(_path+'/oT_Data_Generation_'            +CaseName+'.csv', index_col=[0    ])
@@ -43,6 +44,7 @@ def InputData(DirName, CaseName, mTEPES):
     dfStage.fillna             (0.0, inplace=True)
     dfDuration.fillna          (0  , inplace=True)
     dfDemand.fillna            (0.0, inplace=True)
+    dfInertia.fillna           (0.0, inplace=True)
     dfUpOperatingReserve.fillna(0.0, inplace=True)
     dfDwOperatingReserve.fillna(0.0, inplace=True)
     dfGeneration.fillna        (0.0, inplace=True)
@@ -58,19 +60,20 @@ def InputData(DirName, CaseName, mTEPES):
     dfNetwork.fillna           (0.0, inplace=True)
 
     # show some statistics of the data
-    print('Demand                       \n', dfDemand.describe()            )
+    print('Demand                       \n', dfDemand.describe            ())
+    print('Inertia                      \n', dfInertia.describe           ())
     print('Upward   operating reserves  \n', dfUpOperatingReserve.describe())
     print('Downward operating reserves  \n', dfDwOperatingReserve.describe())
-    print('Generation                   \n', dfGeneration.describe()        )
-    print('Variable minimum generation  \n', dfVariableMinPower.describe()  )
-    print('Variable maximum generation  \n', dfVariableMaxPower.describe()  )
-    print('Variable minimum consumption \n', dfVariableMinCharge.describe() )
-    print('Variable maximum consumption \n', dfVariableMaxCharge.describe() )
+    print('Generation                   \n', dfGeneration.describe        ())
+    print('Variable minimum generation  \n', dfVariableMinPower.describe  ())
+    print('Variable maximum generation  \n', dfVariableMaxPower.describe  ())
+    print('Variable minimum consumption \n', dfVariableMinCharge.describe ())
+    print('Variable maximum consumption \n', dfVariableMaxCharge.describe ())
     print('Variable minimum storage     \n', dfVariableMinStorage.describe())
     print('Variable maximum storage     \n', dfVariableMaxStorage.describe())
-    print('Energy inflows               \n', dfEnergyInflows.describe()     )
-    print('Energy outflows              \n', dfEnergyOutflows.describe()    )
-    print('Network                      \n', dfNetwork.describe()           )
+    print('Energy inflows               \n', dfEnergyInflows.describe     ())
+    print('Energy outflows              \n', dfEnergyOutflows.describe    ())
+    print('Network                      \n', dfNetwork.describe           ())
 
     #%% reading the sets
     dictSets = DataPortal()
@@ -133,7 +136,8 @@ def InputData(DirName, CaseName, mTEPES):
     pStageWeight         = dfStage    ['Weight'             ]                                                                             # weights of stages                   [p.u.]
     pDuration            = dfDuration ['Duration'           ]    * pTimeStep                                                              # duration of load levels             [h]
     pLevelToStage        = dfDuration ['Stage'              ]                                                                             # load levels assignment to stages
-    pDemand              = dfDemand               [mTEPES.nd]    * 1e-3                                                                   #           demand                    [GW]
+    pDemand              = dfDemand               [mTEPES.nd]    * 1e-3                                                                   # demand                              [GW]
+    pSystemInertia       = dfInertia              [mTEPES.ar]                                                                             # inertia                             [s]
     pOperReserveUp       = dfUpOperatingReserve   [mTEPES.ar]    * 1e-3                                                                   # upward   operating reserve          [GW]
     pOperReserveDw       = dfDwOperatingReserve   [mTEPES.ar]    * 1e-3                                                                   # downward operating reserve          [GW]
     pVariableMinPower    = dfVariableMinPower     [mTEPES.gg]    * 1e-3                                                                   # dynamic variable minimum power      [GW]
@@ -148,6 +152,7 @@ def InputData(DirName, CaseName, mTEPES):
     # compute the demand as the mean over the time step load levels and assign it to active load levels. Idem for operating reserve, variable max power, variable min and max storage and inflows
     if pTimeStep > 1:
         pDemand             = pDemand.rolling            (pTimeStep).mean()
+        pSystemInertia      = pSystemInertia.rolling     (pTimeStep).mean()
         pOperReserveUp      = pOperReserveUp.rolling     (pTimeStep).mean()
         pOperReserveDw      = pOperReserveDw.rolling     (pTimeStep).mean()
         pVariableMinPower   = pVariableMinPower.rolling  (pTimeStep).mean()
@@ -160,6 +165,7 @@ def InputData(DirName, CaseName, mTEPES):
         pEnergyOutflows     = pEnergyOutflows.rolling    (pTimeStep).mean()
 
     pDemand.fillna            (0.0, inplace=True)
+    pSystemInertia.fillna     (0.0, inplace=True)
     pOperReserveUp.fillna     (0.0, inplace=True)
     pOperReserveDw.fillna     (0.0, inplace=True)
     pVariableMinPower.fillna  (0.0, inplace=True)
@@ -180,6 +186,7 @@ def InputData(DirName, CaseName, mTEPES):
     pGenToNode          = dfGeneration  ['Node'                ]                                                                            # generator location in node
     pGenToTechnology    = dfGeneration  ['Technology'          ]                                                                            # generator association to technology
     pMustRun            = dfGeneration  ['MustRun'             ]                                                                            # must-run unit                               [Yes]
+    pInertia            = dfGeneration  ['Inertia'             ]                                                                            # inertia constant                            [s]
     pRatedMinPower      = dfGeneration  ['MinimumPower'        ] * 1e-3 * (1.0-dfGeneration['EFOR'])                                        # rated minimum power                         [GW]
     pRatedMaxPower      = dfGeneration  ['MaximumPower'        ] * 1e-3 * (1.0-dfGeneration['EFOR'])                                        # rated maximum power                         [GW]
     pLinearFuelCost     = dfGeneration  ['LinearTerm'          ] * 1e-3 * dfGeneration['FuelCost']                                          # fuel     term variable cost                 [MEUR/GWh]
@@ -211,6 +218,7 @@ def InputData(DirName, CaseName, mTEPES):
     pNodeLon            = dfNodeLocation['Longitude'           ]                                                                            # node longitude                              [º]
 
     pLineType           = dfNetwork     ['LineType'            ]                                                                            # line type
+    pLineSwitching      = dfNetwork     ['Switching'           ]                                                                            # line switching decision                     [Yes]
     pLineVoltage        = dfNetwork     ['Voltage'             ]                                                                            # line voltage                                [kV]
     pLineLossFactor     = dfNetwork     ['LossFactor'          ]                                                                            # loss     factor                             [p.u.]
     pLineR              = dfNetwork     ['Resistance'          ]                                                                            # resistance                                  [p.u.]
@@ -222,7 +230,6 @@ def InputData(DirName, CaseName, mTEPES):
     pLineNTCBck         = dfNetwork     ['TTCBck'              ] * 1e-3 * dfNetwork['SecurityFactor' ]                                      # net transfer capacity in backward direction [GW]
     pNetFixedCost       = dfNetwork     ['FixedCost'           ] *        dfNetwork['FixedChargeRate']                                      # network    fixed cost                       [MEUR]
     pIndBinLineInvest   = dfNetwork     ['BinaryInvestment'    ]                                                                            # binary line    investment decision          [Yes]
-    pIndBinSwitching    = dfNetwork     ['BinarySwitching'     ]                                                                            # binary line    switching  decision          [Yes]
     pSwitchOnTime       = dfNetwork     ['SwOnTime'            ]                                                                            # minimum on time                             [h]
     pSwitchOffTime      = dfNetwork     ['SwOnTime'            ]                                                                            # minimum off time                            [h]
     pAngMin             = dfNetwork     ['AngMin'              ] * math.pi / 180                                                            # Min phase angle difference                  [rad]
@@ -297,16 +304,19 @@ def InputData(DirName, CaseName, mTEPES):
     idxDict[0    ] = 0
     idxDict['No' ] = 0
     idxDict['NO' ] = 0
+    idxDict['no' ] = 0
     idxDict['N'  ] = 0
     idxDict['n'  ] = 0
     idxDict['Yes'] = 1
     idxDict['YES'] = 1
+    idxDict['yes'] = 1
     idxDict['Y'  ] = 1
     idxDict['y'  ] = 1
 
     pIndBinUnitInvest = pIndBinUnitInvest.map(idxDict)
     pIndBinLineInvest = pIndBinLineInvest.map(idxDict)
-    pIndBinSwitching  = pIndBinSwitching.map (idxDict)
+    pMustRun          = pMustRun.map         (idxDict)
+    pLineSwitching    = pLineSwitching.map   (idxDict)
 
     # line type
     pLineType = pLineType.reset_index()
@@ -444,6 +454,7 @@ def InputData(DirName, CaseName, mTEPES):
     # drop load levels with duration 0
     pDuration         = pDuration.loc        [                   mTEPES.n          ]
     pDemand           = pDemand.loc          [mTEPES.sc*mTEPES.p*mTEPES.n          ]
+    pSystemInertia    = pSystemInertia.loc   [mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.ar]
     pOperReserveUp    = pOperReserveUp.loc   [mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.ar]
     pOperReserveDw    = pOperReserveDw.loc   [mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.ar]
     pMinPower         = pMinPower.loc        [mTEPES.sc*mTEPES.p*mTEPES.n          ]
@@ -465,6 +476,7 @@ def InputData(DirName, CaseName, mTEPES):
 
         # these parameters are in GW
         pDemand        [pDemand        [[nd for nd,a2 in mTEPES.ndar]] < pEpsilon] = 0.0
+        pSystemInertia [pSystemInertia [[                         a2]] < pEpsilon] = 0.0
         pOperReserveUp [pOperReserveUp [[                         a2]] < pEpsilon] = 0.0
         pOperReserveDw [pOperReserveDw [[                         a2]] < pEpsilon] = 0.0
         pMinPower      [pMinPower      [[g  for a2,g  in mTEPES.a2g ]] < pEpsilon] = 0.0
@@ -537,6 +549,7 @@ def InputData(DirName, CaseName, mTEPES):
     mTEPES.pDuration             = Param(                     mTEPES.n,            initialize=pDuration.to_dict()                 , within=NonNegativeReals, doc='Duration'                     )
     mTEPES.pNodeLon              = Param(                               mTEPES.nd, initialize=pNodeLon.to_dict()                  ,                          doc='Longitude'                    )
     mTEPES.pNodeLat              = Param(                               mTEPES.nd, initialize=pNodeLat.to_dict()                  ,                          doc='Latitude'                     )
+    mTEPES.pSystemInertia        = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.ar, initialize=pSystemInertia.stack().to_dict()    , within=NonNegativeReals, doc='System inertia'               )
     mTEPES.pOperReserveUp        = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.ar, initialize=pOperReserveUp.stack().to_dict()    , within=NonNegativeReals, doc='Upward   operating reserve'   )
     mTEPES.pOperReserveDw        = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.ar, initialize=pOperReserveDw.stack().to_dict()    , within=NonNegativeReals, doc='Downward operating reserve'   )
     mTEPES.pMinPower             = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.gg, initialize=pMinPower.stack().to_dict()         , within=NonNegativeReals, doc='Minimum power'                )
@@ -549,11 +562,9 @@ def InputData(DirName, CaseName, mTEPES):
     mTEPES.pEnergyOutflows       = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.gg, initialize=pEnergyOutflows.stack().to_dict()   , within=NonNegativeReals, doc='Energy outflows'              )
     mTEPES.pMinStorage           = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.gg, initialize=pMinStorage.stack().to_dict()       , within=NonNegativeReals, doc='ESS Minimum stoarage capacity')
     mTEPES.pMaxStorage           = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.gg, initialize=pMaxStorage.stack().to_dict()       , within=NonNegativeReals, doc='ESS Maximum stoarage capacity')
-
-    pMustRun = pMustRun.map(idxDict)
-    mTEPES.pMustRun = Param(mTEPES.gg, within=Any, initialize=pMustRun.to_dict())
-
     mTEPES.pRatedMaxPower        = Param(                               mTEPES.gg, initialize=pRatedMaxPower.to_dict()            , within=NonNegativeReals, doc='Rated maximum power'          )
+    mTEPES.pMustRun              = Param(                               mTEPES.gg, initialize=pMustRun.to_dict()                  , within=Boolean         , doc='must-run unit'                )
+    mTEPES.pInertia              = Param(                               mTEPES.gg, initialize=pInertia.to_dict()                  , within=NonNegativeReals, doc='unit inertia constant'        )
     mTEPES.pLinearOperCost       = Param(                               mTEPES.gg, initialize=pLinearOperCost.to_dict()           , within=NonNegativeReals, doc='Linear   variable cost'       )
     mTEPES.pLinearVarCost        = Param(                               mTEPES.gg, initialize=pLinearVarCost.to_dict()            , within=NonNegativeReals, doc='Linear   variable cost'       )
     mTEPES.pLinearOMCost         = Param(                               mTEPES.gg, initialize=pLinearOMCost.to_dict()             , within=NonNegativeReals, doc='Linear   O&M      cost'       )
@@ -567,7 +578,7 @@ def InputData(DirName, CaseName, mTEPES):
     mTEPES.pDwTime               = Param(                               mTEPES.gg, initialize=pDwTime.to_dict()                   , within=NonNegativeReals, doc='Down time'                    )
     mTEPES.pRatedMaxCharge       = Param(                               mTEPES.gg, initialize=pRatedMaxCharge.to_dict()           , within=NonNegativeReals, doc='Rated maximum charge'         )
     mTEPES.pGenFixedCost         = Param(                               mTEPES.gg, initialize=pGenFixedCost.to_dict()             , within=NonNegativeReals, doc='Generation fixed cost'        )
-    mTEPES.pIndBinUnitInvest     = Param(                               mTEPES.gg, initialize=pIndBinUnitInvest.to_dict()         , within=NonNegativeReals, doc='Binary investment decision'   )
+    mTEPES.pIndBinUnitInvest     = Param(                               mTEPES.gg, initialize=pIndBinUnitInvest.to_dict()         , within=Boolean         , doc='Binary investment decision'   )
     mTEPES.pEfficiency           = Param(                               mTEPES.gg, initialize=pEfficiency.to_dict()               , within=NonNegativeReals, doc='Round-trip efficiency'        )
     mTEPES.pCycleTimeStep        = Param(                               mTEPES.gg, initialize=pCycleTimeStep.to_dict()            , within=NonNegativeReals, doc='ESS Storage cycle'            )
     mTEPES.pOutflowsTimeStep     = Param(                               mTEPES.gg, initialize=pOutflowsTimeStep.to_dict()         , within=NonNegativeReals, doc='ESS Outflows cycle'           )
@@ -585,10 +596,10 @@ def InputData(DirName, CaseName, mTEPES):
     mTEPES.pLineNTCFrw           = Param(                               mTEPES.ln, initialize=pLineNTCFrw.to_dict()               , within=NonNegativeReals, doc='NTC forward'                  )
     mTEPES.pLineNTCBck           = Param(                               mTEPES.ln, initialize=pLineNTCBck.to_dict()               , within=NonNegativeReals, doc='NTC backward'                 )
     mTEPES.pNetFixedCost         = Param(                               mTEPES.ln, initialize=pNetFixedCost.to_dict()             , within=NonNegativeReals, doc='Network fixed cost'           )
-    mTEPES.pIndBinLineInvest     = Param(                               mTEPES.ln, initialize=pIndBinLineInvest.to_dict()         , within=NonNegativeReals, doc='Binary investment decision'   )
+    mTEPES.pIndBinLineInvest     = Param(                               mTEPES.ln, initialize=pIndBinLineInvest.to_dict()         , within=Boolean         , doc='Binary investment decision'   )
     mTEPES.pSwOnTime             = Param(                               mTEPES.ln, initialize=pSwitchOnTime.to_dict()             , within=NonNegativeReals, doc='Minimum switching on  time'   )
     mTEPES.pSwOffTime            = Param(                               mTEPES.ln, initialize=pSwitchOffTime.to_dict()            , within=NonNegativeReals, doc='Minimum switching off time'   )
-    mTEPES.pIndBinSwitching      = Param(                               mTEPES.ln, initialize=pIndBinSwitching.to_dict()          , within=NonNegativeReals, doc='Switching decision'           )
+    mTEPES.pLineSwitching        = Param(                               mTEPES.ln, initialize=pLineSwitching.to_dict()            , within=Boolean         , doc='Switching decision'           )
     mTEPES.pBigMFlowBck          = Param(                               mTEPES.ln, initialize=pBigMFlowBck.to_dict()              , within=NonNegativeReals, doc='Maximum backward capacity',   mutable=True)
     mTEPES.pBigMFlowFrw          = Param(                               mTEPES.ln, initialize=pBigMFlowFrw.to_dict()              , within=NonNegativeReals, doc='Maximum forward  capacity',   mutable=True)
     mTEPES.pMaxTheta             = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nd, initialize=pMaxTheta.stack().to_dict()         , within=NonNegativeReals, doc='Maximum voltage angle',       mutable=True)
@@ -636,9 +647,9 @@ def SettingUpVariables(OptModel, mTEPES):
         OptModel.vStartUp          = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=UnitInterval,     initialize=0.0,                                                                                  doc='startup    of the unit                          [0,1]')
         OptModel.vShutDown         = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=UnitInterval,     initialize=0.0,                                                                                  doc='shutdown   of the unit                          [0,1]')
     else:
-        OptModel.vCommitment       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=Binary,           initialize=0.0,                                                                                  doc='commitment of the unit                          {0,1}')
-        OptModel.vStartUp          = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=Binary,           initialize=0.0,                                                                                  doc='startup    of the unit                          {0,1}')
-        OptModel.vShutDown         = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=Binary,           initialize=0.0,                                                                                  doc='shutdown   of the unit                          {0,1}')
+        OptModel.vCommitment       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=Binary,           initialize=0  ,                                                                                  doc='commitment of the unit                          {0,1}')
+        OptModel.vStartUp          = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=Binary,           initialize=0  ,                                                                                  doc='startup    of the unit                          {0,1}')
+        OptModel.vShutDown         = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=Binary,           initialize=0  ,                                                                                  doc='shutdown   of the unit                          {0,1}')
 
     if mTEPES.pIndBinGenInvest == 0:
         OptModel.vGenerationInvest = Var(                               mTEPES.gc, within=UnitInterval,                                                                                                      doc='generation investment decision exists in a year [0,1]')
@@ -655,9 +666,9 @@ def SettingUpVariables(OptModel, mTEPES):
         OptModel.vLineOnState      = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=UnitInterval,      initialize=0.0,                                                                                 doc='on state    of the line                         [0,1]')
         OptModel.vLineOffState     = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=UnitInterval,      initialize=0.0,                                                                                 doc='off state   of the line                         [0,1]')
     else:
-        OptModel.vLineCommit       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=Binary,            initialize=0.0,                                                                                 doc='line switching decision exists in a year        {0,1}')
-        OptModel.vLineOnState      = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=Binary,            initialize=0.0,                                                                                 doc='on state    of the line                         {0,1}')
-        OptModel.vLineOffState     = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=Binary,            initialize=0.0,                                                                                 doc='off state   of the line                         {0,1}')
+        OptModel.vLineCommit       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=Binary,            initialize=0  ,                                                                                 doc='line switching decision exists in a year        {0,1}')
+        OptModel.vLineOnState      = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=Binary,            initialize=0  ,                                                                                 doc='on state    of the line                         {0,1}')
+        OptModel.vLineOffState     = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=Binary,            initialize=0  ,                                                                                 doc='off state   of the line                         {0,1}')
 
     # relax binary condition in generation and network investment decisions
     for gc in mTEPES.gc:
@@ -670,9 +681,9 @@ def SettingUpVariables(OptModel, mTEPES):
         if mTEPES.pIndBinNetInvest != 0 and mTEPES.pIndBinLineInvest[lc] == 0:
             OptModel.vNetworkInvest   [lc].domain = UnitInterval
 
-    # by default existing AC and DC lines are always committed
+    # existing lines are always committed if no decision is modeled
     for sc,p,n,ni,nf,cc in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.le:
-        if mTEPES.pIndBinSwitching[ni,nf,cc] == 0:
+        if mTEPES.pLineSwitching[ni,nf,cc] == 0:
             OptModel.vLineCommit  [sc,p,n,ni,nf,cc].fix(1)
             OptModel.vLineOnState [sc,p,n,ni,nf,cc].fix(0)
             OptModel.vLineOffState[sc,p,n,ni,nf,cc].fix(0)

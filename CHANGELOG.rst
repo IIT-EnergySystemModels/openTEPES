@@ -4,6 +4,11 @@ Change Log
 - [CHANGED] Addition of the sequence of decisions and operation (TEP + transmission switching)
 - [FIXED] fixing `<https://pascua.iit.comillas.edu/aramos/openTEPES/index.html#>`_ in README.rst 
 
+[2.6.0] - 2021-05-27
+--------------------
+- [CHANGED] new inertia constraint for each area
+- [FIXED] change column BinarySwitching by Switching in network data meaning that line is able to switch or not
+
 [2.5.3] - 2021-05-14
 --------------------
 - [FIXED] fix output results of storage utilization
