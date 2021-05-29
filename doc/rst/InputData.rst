@@ -231,8 +231,8 @@ OutflowsType          Outflows type based on the demand extracted from the stora
 MustRun               Must-run unit                                                                                                        Yes/No
 MaximumPower          Maximum power output (generation/discharge for ESS units)                                                            MW
 MinimumPower          Minimum power output (i.e., minimum stable load in the case of a thermal power plant)                                MW
-MaximumReactivePower  Maximum reactive power output (discharge for ESS units) (not used in the this version)                               MW
-MinimumReactivePower  Minimum reactive power output (not used in the this version)                                                         MW
+MaximumReactivePower  Maximum reactive power output (discharge for ESS units) (not used in this version)                                   MW
+MinimumReactivePower  Minimum reactive power output (not used in this version)                                                             MW
 MaximumCharge         Maximum consumption/charge when the ESS unit is storing energy                                                       MW
 MinimumCharge         Minimum consumption/charge when the ESS unit is storing energy                                                       MW
 InitialStorage        Initial energy stored at the first instant of the time scope                                                         GWh
@@ -370,13 +370,13 @@ LineType           Line type {AC, DC, Transformer, Converter}
 Switching          The transmission line is able to switch on/off                                                Yes/No
 Voltage            Line voltage (e.g., 400, 220 kV, 220/400 kV if transformer). Used only for plotting purposes  kV
 LossFactor         Transmission losses equal to the line flow times this factor                                  p.u.
-Resistance         Resistance (not used in the this version)                                                     p.u.
+Resistance         Resistance (not used in this version)                                                         p.u.
 Reactance          Reactance. Lines must have a reactance different from 0 to be considered                      p.u.
-Susceptance        Susceptance (not used in the this version)                                                    p.u.
-AngMax             Maximum angle difference (not used in the this version)                                       º
-AngMin             Minimum angle difference (not used in the this version)                                       º
-Tap                Tap changer (not used in the this version)                                                    p.u.
-Converter          Converter station (not used in the this version)                                              Yes/No
+Susceptance        Susceptance (not used in this version)                                                        p.u.
+AngMax             Maximum angle difference (not used in this version)                                           º
+AngMin             Minimum angle difference (not used in this version)                                           º
+Tap                Tap changer (not used in this version)                                                        p.u.
+Converter          Converter station (not used in this version)                                                  Yes/No
 TTC                Total transfer capacity (maximum permissible thermal load) in forward  direction              MW
 TTCBck             Total transfer capacity (maximum permissible thermal load) in backward direction              MW
 SecurityFactor     Security factor to consider approximately N-1 contingencies. NTC = TTC x SecurityFactor       p.u.
