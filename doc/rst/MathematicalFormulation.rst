@@ -69,25 +69,25 @@ They are written in capital letters.
 :math:`SI^ω_{pna}`              System inertia for each area                              s
 ==============================  ========================================================  ====
 
-=========================================  ===============================================================================================  ============
+=====================================================  ===============================================================================================  ============
 **Generation system**   
------------------------------------------  -----------------------------------------------------------------------------------------------  ------------
-:math:`CFG_g`                              Annualized fixed cost of a candidate generator                                                   M€ 
-:math:`\underline{GP}_g, \overline{GP}_g`  Minimum load and maximum output of a generator                                                   GW
-:math:`\underline{GC}_e, \overline{GC}_e`  Minimum and maximum consumption of an ESS                                                        GW
-:math:`CF_g, CV_g`                         Fixed and variable cost of a generator. Variable cost includes fuel, O&M and emission cost       €/h, €/MWh
-:math:`CV_e`                               Variable cost of an ESS when charging                                                            €/MWh
-:math:`RU_g, RD_g`                         Ramp up/down of a non-renewable unit or maximum discharge/charge rate for ESS discharge/charge   MW/h
-:math:`TU_t, TD_t`                         Minimum uptime and downtime of a thermal unit                                                    h
-:math:`CSU_g, CSD_g`                       Startup and shutdown cost of a committed unit                                                    M€
-:math:`\tau_e`                             Storage cycle of the ESS (e.g., 1, 24, 168 h -for daily, weekly, monthly-)                       h
-:math:`\rho_e`                             Outflows cycle of the ESS (e.g., 1, 24, 168 h -for hourly, daily, weekly, monthly, yearly-)      h
-:math:'GI_g'                               Generator inertia                                                                                s
-:math:`EF_e`                               Efficiency of the pump/turbine cycle of a hydro power plant or charge/discharge of a battery     p.u.
-:math:`I_e`                                Capacity of an ESS (e.g., hydro power plant)                                                     GWh
-:math:`EI^ω_{png}`                         Energy inflows of an ESS (e.g., hydro power plant)                                               GWh
-:math:`EO^ω_{png}`                         Energy outflows of an ESS (e.g., H2, EV, hydro power plant)                                      GWh
-=========================================  ===============================================================================================  ============
+-----------------------------------------------------  -----------------------------------------------------------------------------------------------  ------------
+:math:`CFG_g`                                          Annualized fixed cost of a candidate generator                                                   M€
+:math:`\underline{GP}^w_{png}, \overline{GP}^w_{png}`  Minimum load and maximum output of a generator                                                   GW
+:math:`\underline{GC}^w_{pne}, \overline{GC}^w_{pne}`  Minimum and maximum consumption of an ESS                                                        GW
+:math:`CF_g, CV_g`                                     Fixed and variable cost of a generator. Variable cost includes fuel, O&M and emission cost       €/h, €/MWh
+:math:`CV_e`                                           Variable cost of an ESS when charging                                                            €/MWh
+:math:`RU_g, RD_g`                                     Ramp up/down of a non-renewable unit or maximum discharge/charge rate for ESS discharge/charge   MW/h
+:math:`TU_t, TD_t`                                     Minimum uptime and downtime of a thermal unit                                                    h
+:math:`CSU_g, CSD_g`                                   Startup and shutdown cost of a committed unit                                                    M€
+:math:`\tau_e`                                         Storage cycle of the ESS (e.g., 1, 24, 168 h -for daily, weekly, monthly-)                       h
+:math:`\rho_e`                                         Outflows cycle of the ESS (e.g., 1, 24, 168 h -for hourly, daily, weekly, monthly, yearly-)      h
+:math:'GI_g'                                           Generator inertia                                                                                s
+:math:`EF_e`                                           Efficiency of the pump/turbine cycle of a hydro power plant or charge/discharge of a battery     p.u.
+:math:`I_e`                                            Capacity of an ESS (e.g., hydro power plant)                                                     GWh
+:math:`EI^ω_{png}`                                     Energy inflows of an ESS (e.g., hydro power plant)                                               GWh
+:math:`EO^ω_{png}`                                     Energy outflows of an ESS (e.g., H2, EV, hydro power plant)                                      GWh
+=====================================================  ===============================================================================================  ============
 
 =========================================  =================================================================================================================  ====
 **Transmission system**   
@@ -169,9 +169,9 @@ Commitment decision bounded by investment decision for candidate committed units
 
 Output and consumption bounded by investment decision for candidate ESS [p.u.]
 
-:math:`\frac{gp^ω_{pne}}{\overline{GP}_e} \leq icg_e \quad \forall ωpne, e \in CE`
+:math:`\frac{gp^ω_{pne}}{\overline{GP}^w_{pne}} \leq icg_e \quad \forall ωpne, e \in CE`
 
-:math:`\frac{gc^ω_{pne}}{\overline{GC}_e} \leq icg_e \quad \forall ωpne, e \in CE`
+:math:`\frac{gc^ω_{pne}}{\overline{GP}^w_{pne}} \leq icg_e \quad \forall ωpne, e \in CE`
 
 Balance of generation and demand at each node with ohmic losses [GW]
 
@@ -219,27 +219,27 @@ Maximum and minimum output of the second block of a committed unit (all except t
 
 * G. Morales-España, J.M. Latorre, and A. Ramos "Tight and Compact MILP Formulation for the Thermal Unit Commitment Problem" IEEE Transactions on Power Systems 28 (4): 4897-4908, Nov 2013. `10.1109/TPWRS.2013.2251373 <http://dx.doi.org/10.1109/TPWRS.2013.2251373>`_
 
-:math:`\frac{p^ω_{png} + URA \: ur^ω_{png} + ur^ω_{png}}{\overline{GP}_g - \underline{GP}_g} \leq uc^ω_{png} \quad \forall ωpng`
+:math:`\frac{p^ω_{png} + URA \: ur^ω_{png} + ur^ω_{png}}{\overline{GP}^w_{png} - \underline{GP}^w_{png}} \leq uc^ω_{png} \quad \forall ωpng`
 
-:math:`\frac{p^ω_{png} - DRA \: dr^ω_{png} - dr^ω_{png}}{\overline{GP}_g - \underline{GP}_g} \geq 0          \quad \forall ωpng`
+:math:`\frac{p^ω_{png} - DRA \: dr^ω_{png} - dr^ω_{png}}{\overline{GP}^w_{png} - \underline{GP}^w_{png}} \geq 0          \quad \forall ωpng`
 
 Maximum and minimum charge of an ESS [p.u.]
 
-:math:`\frac{c^ω_{pne} + URA \: dr'^ω_{pne} + dr'^ω_{pne}}{\overline{GC}_e - \underline{GC}_e} \leq 1 \quad \forall ωpne`
+:math:`\frac{c^ω_{pne} + URA \: dr'^ω_{pne} + dr'^ω_{pne}}{\overline{GP}^w_{pne} - \underline{GC}^w_{pne}} \leq 1 \quad \forall ωpne`
 
-:math:`\frac{c^ω_{pne} - DRA \: ur'^ω_{pne} - ur'^ω_{pne}}{\overline{GC}_e - \underline{GC}_e} \geq 0 \quad \forall ωpne`
+:math:`\frac{c^ω_{pne} - DRA \: ur'^ω_{pne} - ur'^ω_{pne}}{\overline{GP}^w_{pne} - \underline{GC}^w_{pne}} \geq 0 \quad \forall ωpne`
 
 Incompatibility between charge and discharge of an ESS [p.u.]
 
-:math:`\frac{p^ω_{pne} + URA \: ur'^ω_{pne} + ur^ω_{png}}{\overline{GP}_e - \underline{GP}_e} + \frac{c^ω_{pne} + URA \: dr'^ω_{pne} + dr'^ω_{pne}}{\overline{GC}_e} \leq 1 \quad \forall ωpne, e \in CE`
+:math:`\frac{p^ω_{pne} + URA \: ur'^ω_{pne} + ur^ω_{png}}{\overline{GP}^w_{pne} - \underline{GP}^w_{pne}} + \frac{c^ω_{pne} + URA \: dr'^ω_{pne} + dr'^ω_{pne}}{\overline{GP}^w_{pne}} \leq 1 \quad \forall ωpne, e \in CE`
 
 Total output of a committed unit (all except the VRES units) [GW]
 
-:math:`\frac{gp^ω_{png}}{\underline{GP}_g} = uc^ω_{png} + \frac{p^ω_{png} + URA \: ur^ω_{png} - DRA \: dr^ω_{png}}{\underline{GP}_g} \quad \forall ωpng`
+:math:`\frac{gp^ω_{png}}{\underline{GP}^w_{png}} = uc^ω_{png} + \frac{p^ω_{png} + URA \: ur^ω_{png} - DRA \: dr^ω_{png}}{\underline{GP}^w_{png}} \quad \forall ωpng`
 
 Total charge of an ESS [GW]
 
-:math:`\frac{gc^ω_{pne}}{\underline{GC}_e} = 1 + \frac{c^ω_{pne} + URA \: ur'^ω_{pne} - DRA \: dr'^ω_{pne}}{\underline{GC}_e} \quad \forall ωpne, e \in CE`
+:math:`\frac{gc^ω_{pne}}{\underline{GC}^w_{pne}} = 1 + \frac{c^ω_{pne} + URA \: ur'^ω_{pne} - DRA \: dr'^ω_{pne}}{\underline{GC}^w_{pne}} \quad \forall ωpne, e \in CE`
 
 Logical relation between commitment, startup and shutdown status of committed unit (all except the VRES units) [p.u.]
 
@@ -301,21 +301,21 @@ Half ohmic losses are linearly approximated as a function of the flow [GW]
 
 Bounds on generation variables [GW]
 
-:math:`0 \leq gp^ω_{png} \leq \overline{GP}_g                     \quad \forall ωpng`
+:math:`\underline{GP}^w_{png} \leq gp^ω_{png} \leq \overline{GP}^w_{png}                     \quad \forall ωpng`
 
-:math:`0 \leq qc^ω_{pne} \leq \overline{GC}_e                     \quad \forall ωpne`
+:math:`\underline{GP}^w_{pne} \leq qc^ω_{pne} \leq \overline{GP}^w_{pne}                     \quad \forall ωpne`
 
-:math:`0 \leq ur^ω_{png} \leq \overline{CP}_g - \underline{GP}_g  \quad \forall ωpng`
+:math:`0 \leq ur^ω_{png} \leq \overline{GP}^w_{png} - \underline{GP}^w_{png}  \quad \forall ωpng`
 
-:math:`0 \leq ur'^ω_{pne} \leq \overline{CP}_e - \underline{GP}_e \quad \forall ωpne`
+:math:`0 \leq ur'^ω_{pne} \leq \overline{GC}^w_{pne} - \underline{GC}^w_{pne} \quad \forall ωpne`
 
-:math:`0 \leq dr^ω_{png} \leq \overline{CP}_g - \underline{GP}_g  \quad \forall ωpng`
+:math:`0 \leq dr^ω_{png} \leq \overline{GP}^w_{png} - \underline{GP}^w_{png}  \quad \forall ωpng`
 
-:math:`0 \leq dr'^ω_{pne} \leq \overline{CP}_e - \underline{GP}_e \quad \forall ωpne`
+:math:`0 \leq dr'^ω_{pne} \leq \overline{GC}^w_{pne} - \underline{GC}^w_{pne} \quad \forall ωpne`
 
-:math:`0 \leq  p^ω_{png} \leq \overline{GP}_g - \underline{GP}_g  \quad \forall ωpng`
+:math:`0 \leq  p^ω_{png} \leq \overline{GP}^w_{png} - \underline{GP}^w_{png}  \quad \forall ωpng`
 
-:math:`0 \leq  c^ω_{pne} \leq \overline{GC}_e                     \quad \forall ωpne`
+:math:`0 \leq  c^ω_{pne} \leq \overline{GP}^w_{pne}                     \quad \forall ωpne`
 
 :math:`0 \leq  i^ω_{pne} \leq I_e                                 \quad \forall ωpne`
 
