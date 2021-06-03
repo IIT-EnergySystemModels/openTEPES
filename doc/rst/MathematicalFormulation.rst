@@ -84,7 +84,7 @@ They are written in capital letters.
 :math:`\rho_e`                                         Outflows cycle of the ESS (e.g., 1, 24, 168 h -for hourly, daily, weekly, monthly, yearly-)      h
 :math:`GI_g`                                           Generator inertia                                                                                s
 :math:`EF_e`                                           Efficiency of the pump/turbine cycle of a hydro power plant or charge/discharge of a battery     p.u.
-:math:`I_e`                                            Capacity of an ESS (e.g., hydro power plant)                                                     GWh
+:math:`I^w_{pne}`                                      Capacity of an ESS (e.g., hydro power plant)                                                     GWh
 :math:`EI^ω_{png}`                                     Energy inflows of an ESS (e.g., hydro power plant)                                               GWh
 :math:`EO^ω_{png}`                                     Energy outflows of an ESS (e.g., H2, EV, hydro power plant)                                      GWh
 =====================================================  ===============================================================================================  ============
@@ -193,11 +193,11 @@ Operating reserves from ESS can only be provided if enough energy is available f
 
 :math:`ur^ω_{pne} \leq \frac{      i^ω_{pne}}{DUR_n} \quad \forall ωpne`
 
-:math:`dr^ω_{pne} \leq \frac{I_e - i^ω_{pne}}{DUR_n} \quad \forall ωpne`
+:math:`dr^ω_{pne} \leq \frac{I^w_{pne} - i^ω_{pne}}{DUR_n} \quad \forall ωpne`
 
 or for storing
 
-:math:`ur'^ω_{pne} \leq \frac{I_e - i^ω_{pne}}{DUR_n} \quad \forall ωpne`
+:math:`ur'^ω_{pne} \leq \frac{I^w_{pne} - i^ω_{pne}}{DUR_n} \quad \forall ωpne`
 
 :math:`dr'^ω_{pne} \leq \frac{      i^ω_{pne}}{DUR_n} \quad \forall ωpne`
 
@@ -211,7 +211,7 @@ ESS outflows (only for load levels multiple of 1, 24, 168, 672, and 8736 h depen
 
 Maximum and minimum output of the second block of a committed unit (all except the VRES units) [p.u.]
 
-* D.A. Tejada-Arango, S. Lumbreras, P. Sánchez-Martín, and A. Ramos "Which Unit-Commitment Formulation is Best? A Systematic Comparison" IEEE Transactions on Power Systems 35 (4): 2926-2936, Jul 2020 `10.1109/TPWRS.2019.2962024 <https://doi.org/10.1109/TPWRS.2019.2962024>`_
+* D. A. Tejada-Arango, S. Lumbreras, P. Sánchez-Martín, and A. Ramos "Which Unit-Commitment Formulation is Best? A Systematic Comparison" IEEE Transactions on Power Systems 35 (4): 2926-2936, Jul 2020 `10.1109/TPWRS.2019.2962024 <https://doi.org/10.1109/TPWRS.2019.2962024>`_
 
 * C. Gentile, G. Morales-España, and A. Ramos "A tight MIP formulation of the unit commitment problem with start-up and shut-down constraints" EURO Journal on Computational Optimization 5 (1), 177-201, Mar 2017. `10.1007/s13675-016-0066-y <http://dx.doi.org/10.1007/s13675-016-0066-y>`_
 
@@ -317,7 +317,7 @@ Bounds on generation variables [GW]
 
 :math:`0 \leq  c^ω_{pne} \leq \overline{GP}^w_{pne}                     \quad \forall ωpne`
 
-:math:`0 \leq  i^ω_{pne} \leq I_e                                 \quad \forall ωpne`
+:math:`0 \leq  i^ω_{pne} \leq I^w_{pne}                                 \quad \forall ωpne`
 
 :math:`0 \leq  s^ω_{pne}                                          \quad \forall ωpne`
 
