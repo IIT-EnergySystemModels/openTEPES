@@ -289,11 +289,11 @@ Minimum switch-on and switch-off state of a line [h]
 
 Flow limit in transmission lines [p.u.]
 
-:math:`- sst^{ω}_{pnijc} \leq \frac{f^ω_{pnijc}}{\overline{F}_{ijc}} \leq sst^{ω}_{pnijc} \quad \forall ωpnijc`
+:math:`- swt^{ω}_{pnijc} \leq \frac{f^ω_{pnijc}}{\overline{F}_{ijc}} \leq swt^{ω}_{pnijc} \quad \forall ωpnijc`
 
 DC Power flow for existing and candidate AC-type lines (Kirchhoff's second law) [rad]
 
-:math:`-1+sst^{ω}_{pnijc} \leq \frac{f^ω_{pnijc}}{\overline{F}'_{ijc}} - (\theta^ω_{pni} - \theta^ω_{pnj})\frac{S_B}{X_{ijc}\overline{F}'_{ijc}} \leq 1-sst^{ω}_{pnijc} \quad \forall ωpnijc`
+:math:`-1+swt^{ω}_{pnijc} \leq \frac{f^ω_{pnijc}}{\overline{F}'_{ijc}} - (\theta^ω_{pni} - \theta^ω_{pnj})\frac{S_B}{X_{ijc}\overline{F}'_{ijc}} \leq 1-swt^{ω}_{pnijc} \quad \forall ωpnijc`
 
 Half ohmic losses are linearly approximated as a function of the flow [GW]
 
