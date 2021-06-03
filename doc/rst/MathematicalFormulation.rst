@@ -301,9 +301,9 @@ Half ohmic losses are linearly approximated as a function of the flow [GW]
 
 Bounds on generation variables [GW]
 
-:math:`\underline{GP}^w_{png} \leq gp^ω_{png} \leq \overline{GP}^w_{png}                     \quad \forall ωpng`
+:math:`0 \leq gp^ω_{png} \leq \overline{GP}^w_{png}                     \quad \forall ωpng`
 
-:math:`\underline{GP}^w_{pne} \leq qc^ω_{pne} \leq \overline{GP}^w_{pne}                     \quad \forall ωpne`
+:math:`0 \leq qc^ω_{pne} \leq \overline{GP}^w_{pne}                     \quad \forall ωpne`
 
 :math:`0 \leq ur^ω_{png} \leq \overline{GP}^w_{png} - \underline{GP}^w_{png}  \quad \forall ωpng`
 
