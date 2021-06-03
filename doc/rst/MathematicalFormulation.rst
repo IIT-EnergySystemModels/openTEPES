@@ -82,7 +82,7 @@ They are written in capital letters.
 :math:`CSU_g, CSD_g`                                   Startup and shutdown cost of a committed unit                                                    M€
 :math:`\tau_e`                                         Storage cycle of the ESS (e.g., 1, 24, 168 h -for daily, weekly, monthly-)                       h
 :math:`\rho_e`                                         Outflows cycle of the ESS (e.g., 1, 24, 168 h -for hourly, daily, weekly, monthly, yearly-)      h
-:math:'GI_g'                                           Generator inertia                                                                                s
+:math:`GI_g`                                           Generator inertia                                                                                s
 :math:`EF_e`                                           Efficiency of the pump/turbine cycle of a hydro power plant or charge/discharge of a battery     p.u.
 :math:`I_e`                                            Capacity of an ESS (e.g., hydro power plant)                                                     GWh
 :math:`EI^ω_{png}`                                     Energy inflows of an ESS (e.g., hydro power plant)                                               GWh
