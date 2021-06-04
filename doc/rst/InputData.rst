@@ -22,7 +22,7 @@ ENTSO-E     European Network of Transmission System Operators for Electricity
 ESS         Energy Storage System
 EV          Electric Vehicle
 mFRR        Manual Frequency Restoration Reserve
-NTC         Network Transfer Capacity
+NTC         Net Transfer Capacity
 OCGT        Open Cycle Gas Turbine
 PHS         Pumped-hydro Storage
 PV          Photovoltaics
