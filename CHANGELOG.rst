@@ -4,6 +4,10 @@ Change Log
 - [CHANGED] Addition of the sequence of decisions and operation (TEP + transmission switching)
 - [FIXED] fixing `<https://pascua.iit.comillas.edu/aramos/openTEPES/index.html#>`_ in README.rst 
 
+[2.6.1] - 2021-06-14
+--------------------
+- [FIXED] error in output results due to stage weight
+
 [2.6.0] - 2021-05-27
 --------------------
 - [CHANGED] new inertia constraint for each area
