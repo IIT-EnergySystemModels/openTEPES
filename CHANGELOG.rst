@@ -6,6 +6,7 @@ Change Log
 
 [2.6.1] - 2021-06-14
 --------------------
+- [CHANGED] line length added in network input file
 - [FIXED] error in output results due to stage weight
 
 [2.6.0] - 2021-05-27

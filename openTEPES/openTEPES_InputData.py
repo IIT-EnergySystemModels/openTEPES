@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 27, 2021
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 14, 2021
 """
 
 import time
@@ -218,6 +218,7 @@ def InputData(DirName, CaseName, mTEPES):
     pNodeLon            = dfNodeLocation['Longitude'           ]                                                                            # node longitude                              [º]
 
     pLineType           = dfNetwork     ['LineType'            ]                                                                            # line type
+    pLineLength         = dfNetwork     ['Length'              ]                                                                            # line length                                 [km]
     pLineSwitching      = dfNetwork     ['Switching'           ]                                                                            # line switching decision                     [Yes]
     pLineVoltage        = dfNetwork     ['Voltage'             ]                                                                            # line voltage                                [kV]
     pLineLossFactor     = dfNetwork     ['LossFactor'          ]                                                                            # loss     factor                             [p.u.]
@@ -230,8 +231,8 @@ def InputData(DirName, CaseName, mTEPES):
     pLineNTCBck         = dfNetwork     ['TTCBck'              ] * 1e-3 * dfNetwork['SecurityFactor' ]                                      # net transfer capacity in backward direction [GW]
     pNetFixedCost       = dfNetwork     ['FixedCost'           ] *        dfNetwork['FixedChargeRate']                                      # network    fixed cost                       [MEUR]
     pIndBinLineInvest   = dfNetwork     ['BinaryInvestment'    ]                                                                            # binary line    investment decision          [Yes]
-    pSwitchOnTime       = dfNetwork     ['SwOnTime'            ]                                                                            # minimum on time                             [h]
-    pSwitchOffTime      = dfNetwork     ['SwOnTime'            ]                                                                            # minimum off time                            [h]
+    pSwitchOnTime       = dfNetwork     ['SwOnTime'            ]                                                                            # minimum on  time                            [h]
+    pSwitchOffTime      = dfNetwork     ['SwOffTime'           ]                                                                            # minimum off time                            [h]
     pAngMin             = dfNetwork     ['AngMin'              ] * math.pi / 180                                                            # Min phase angle difference                  [rad]
     pAngMax             = dfNetwork     ['AngMax'              ] * math.pi / 180                                                            # Max phase angle difference                  [rad]
 
@@ -239,6 +240,10 @@ def InputData(DirName, CaseName, mTEPES):
     pLineNTCBck     = pLineNTCBck.where(pLineNTCBck > 0.0, other=pLineNTCFrw)
     # replace pLineNTCFrw = 0.0 by pLineNTCBck
     pLineNTCFrw     = pLineNTCFrw.where(pLineNTCFrw > 0.0, other=pLineNTCBck)
+
+    # minimum up and down time converted to an integer number of time steps
+    pSwitchOnTime  = round(pSwitchOnTime /pTimeStep).astype('int')
+    pSwitchOffTime = round(pSwitchOffTime/pTimeStep).astype('int')
 
     ReadingDataTime = time.time() - StartTime
     StartTime       = time.time()
@@ -592,6 +597,7 @@ def InputData(DirName, CaseName, mTEPES):
     mTEPES.pLineBsh              = Param(                               mTEPES.ln, initialize=pLineBsh.to_dict()                  , within=NonNegativeReals, doc='Susceptance',                 mutable=True)
     mTEPES.pLineTAP              = Param(                               mTEPES.ln, initialize=pLineTAP.to_dict()                  , within=NonNegativeReals, doc='Tap changer',                 mutable=True)
     mTEPES.pConverter            = Param(                               mTEPES.ln, initialize=pConverter.to_dict()                , within=NonNegativeReals, doc='Converter'                    )
+    mTEPES.pLineLength           = Param(                               mTEPES.ln, initialize=pLineLength.to_dict()               , within=NonNegativeReals, doc='Length'                       )
     mTEPES.pLineVoltage          = Param(                               mTEPES.ln, initialize=pLineVoltage.to_dict()              , within=NonNegativeReals, doc='Voltage'                      )
     mTEPES.pLineNTCFrw           = Param(                               mTEPES.ln, initialize=pLineNTCFrw.to_dict()               , within=NonNegativeReals, doc='NTC forward'                  )
     mTEPES.pLineNTCBck           = Param(                               mTEPES.ln, initialize=pLineNTCBck.to_dict()               , within=NonNegativeReals, doc='NTC backward'                 )

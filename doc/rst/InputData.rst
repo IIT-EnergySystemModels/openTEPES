@@ -369,6 +369,7 @@ Header             Description
 LineType           Line type {AC, DC, Transformer, Converter}  
 Switching          The transmission line is able to switch on/off                                                Yes/No
 Voltage            Line voltage (e.g., 400, 220 kV, 220/400 kV if transformer). Used only for plotting purposes  kV
+Length             Line length (only used for reporting purposes)                                                km
 LossFactor         Transmission losses equal to the line flow times this factor                                  p.u.
 Resistance         Resistance (not used in this version)                                                         p.u.
 Reactance          Reactance. Lines must have a reactance different from 0 to be considered                      p.u.
