@@ -224,7 +224,7 @@ A description of the data included for each generating unit in the file ``oT_Dat
 ====================  ===================================================================================================================  ===================================
 Header                Description                                                                             
 ====================  ===================================================================================================================  ===================================
-Node                  Name of the node where generator is located                                                  
+Node                  Name of the node where generator is located. If left empty, the generator is ignored
 Technology            Technology of the generator (nuclear, coal, CCGT, OCGT, ESS, solar, wind, biomass, etc.)
 StorageType           Storage type based on storage capacity (daily, weekly, monthly, etc.)                                                Daily/Weekly/Monthly
 OutflowsType          Outflows type based on the demand extracted from the storage (hourly, daily, weekly, monthly, yearly, etc.)          Hourly/Daily/Weekly/Monthly/Yearly
