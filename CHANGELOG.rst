@@ -4,6 +4,11 @@ Change Log
 - [CHANGED] Addition of the sequence of decisions and operation (TEP + transmission switching)
 - [FIXED] fixing `<https://pascua.iit.comillas.edu/aramos/openTEPES/index.html#>`_ in README.rst 
 
+[2.6.2] - 2021-06-18
+--------------------
+- [CHANGED] updated for pyomo 6.0
+- [CHANGED] if not defined length computed as geographical distance
+
 [2.6.1] - 2021-06-14
 --------------------
 - [CHANGED] line length added in network input file

@@ -37,7 +37,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES):
         Solver.options['Threads'       ] = int((psutil.cpu_count(logical=True) + psutil.cpu_count(logical=False))/2)
         Solver.options['TimeLimit'     ] =    18000
         Solver.options['IterationLimit'] = 18000000
-    if mTEPES.pIndBinGenInvest*len(mTEPES.gc) + mTEPES.pIndBinNetInvest*len(mTEPES.lc) + mTEPES.pIndBinGenOperat*len(mTEPES.nr) + mTEPES.pIndBinLineCommit*len(mTEPES.la) == 0:
+    if mTEPES.pIndBinGenInvest()*len(mTEPES.gc) + mTEPES.pIndBinNetInvest()*len(mTEPES.lc) + mTEPES.pIndBinGenOperat()*len(mTEPES.nr) + mTEPES.pIndBinLineCommit()*len(mTEPES.la) == 0:
         Solver.options['relax_integrality'] =  1
         if SolverName == 'gurobi':
             Solver.options['Crossover'    ] = -1
@@ -49,19 +49,19 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES):
 
     #%% fix values of binary variables to get dual variables and solve it again
     # investment decision values are rounded to the nearest integer
-    if mTEPES.pIndBinGenInvest*len(mTEPES.gc) + mTEPES.pIndBinNetInvest*len(mTEPES.lc) + mTEPES.pIndBinGenOperat*len(mTEPES.nr) + mTEPES.pIndBinLineCommit*len(mTEPES.la):
-        if mTEPES.pIndBinGenInvest*len(mTEPES.gc):
+    if mTEPES.pIndBinGenInvest()*len(mTEPES.gc) + mTEPES.pIndBinNetInvest()*len(mTEPES.lc) + mTEPES.pIndBinGenOperat()*len(mTEPES.nr) + mTEPES.pIndBinLineCommit()*len(mTEPES.la):
+        if mTEPES.pIndBinGenInvest()*len(mTEPES.gc):
             for gc in mTEPES.gc:
                 OptModel.vGenerationInvest[gc].fix(round(OptModel.vGenerationInvest[gc]()))
-        if mTEPES.pIndBinNetInvest*len(mTEPES.lc):
+        if mTEPES.pIndBinNetInvest()*len(mTEPES.lc):
             for lc in mTEPES.lc:
                 OptModel.vNetworkInvest   [lc].fix(round(OptModel.vNetworkInvest[lc]()))
-        if mTEPES.pIndBinGenOperat*len(mTEPES.nr):
+        if mTEPES.pIndBinGenOperat()*len(mTEPES.nr):
             for sc,p,n,nr in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.nr:
                 OptModel.vCommitment[sc,p,n,nr].fix(round(OptModel.vCommitment[sc,p,n,nr]()))
                 OptModel.vStartUp   [sc,p,n,nr].fix(round(OptModel.vStartUp   [sc,p,n,nr]()))
                 OptModel.vShutDown  [sc,p,n,nr].fix(round(OptModel.vShutDown  [sc,p,n,nr]()))
-        if mTEPES.pIndBinLineCommit*len(mTEPES.la):
+        if mTEPES.pIndBinLineCommit()*len(mTEPES.la):
             for sc,p,n,ni,nf,cc in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.la:
                 if mTEPES.pLineSwitching[ni,nf,cc] == 1:
                     OptModel.vLineCommit  [sc,p,n,ni,nf,cc].fix(round(OptModel.vLineCommit  [sc,p,n,ni,nf,cc]()))
@@ -72,7 +72,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES):
             Solver.options['Crossover'    ] = -1
         OptModel.dual = Suffix(direction=Suffix.IMPORT)
         OptModel.rc   = Suffix(direction=Suffix.IMPORT)
-        SolverResults = Solver.solve(OptModel, tee=True, report_timing=True, warmstart=True)  # tee=True displays the log of the solver
+        SolverResults = Solver.solve(OptModel, tee=True, report_timing=True, warmstart=True)   # tee=True displays the log of the solver
         SolverResults.write()                                                                  # summary of the solver results
 
     SolvingTime = time.time() - StartTime

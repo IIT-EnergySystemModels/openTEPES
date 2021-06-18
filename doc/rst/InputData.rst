@@ -363,30 +363,30 @@ Transmission network
 
 A description of the circuit (initial node, final node, circuit) data included in the file ``oT_Data_Network.csv`` follows:
 
-=================  ============================================================================================  ======
+=================  ================================================================================================  ======
 Header             Description
-=================  ============================================================================================  ======
-LineType           Line type {AC, DC, Transformer, Converter}  
-Switching          The transmission line is able to switch on/off                                                Yes/No
-Voltage            Line voltage (e.g., 400, 220 kV, 220/400 kV if transformer). Used only for plotting purposes  kV
-Length             Line length (only used for reporting purposes)                                                km
-LossFactor         Transmission losses equal to the line flow times this factor                                  p.u.
-Resistance         Resistance (not used in this version)                                                         p.u.
-Reactance          Reactance. Lines must have a reactance different from 0 to be considered                      p.u.
-Susceptance        Susceptance (not used in this version)                                                        p.u.
-AngMax             Maximum angle difference (not used in this version)                                           º
-AngMin             Minimum angle difference (not used in this version)                                           º
-Tap                Tap changer (not used in this version)                                                        p.u.
-Converter          Converter station (not used in this version)                                                  Yes/No
-TTC                Total transfer capacity (maximum permissible thermal load) in forward  direction              MW
-TTCBck             Total transfer capacity (maximum permissible thermal load) in backward direction              MW
-SecurityFactor     Security factor to consider approximately N-1 contingencies. NTC = TTC x SecurityFactor       p.u.
-FixedCost          Overnight investment (capital) cost                                                           M€
-FixedChargeRate    Fixed-charge rate to annualize the overnight investment cost                                  p.u.
-BinaryInvestment   Binary line/circuit investment decision                                                       Yes/No
-SwOnTime           Minimum switch-on time                                                                        h
-SwOffTime          Minimum switch-off time                                                                       h
-=================  ============================================================================================  ======
+=================  ================================================================================================  ======
+LineType           Line type {AC, DC, Transformer, Converter}
+Switching          The transmission line is able to switch on/off                                                    Yes/No
+Voltage            Line voltage (e.g., 400, 220 kV, 220/400 kV if transformer). Used only for plotting purposes      kV
+Length             Line length (only used for reporting purposes). If not defined computed as geographical distance  km
+LossFactor         Transmission losses equal to the line flow times this factor                                      p.u.
+Resistance         Resistance (not used in this version)                                                             p.u.
+Reactance          Reactance. Lines must have a reactance different from 0 to be considered                          p.u.
+Susceptance        Susceptance (not used in this version)                                                            p.u.
+AngMax             Maximum angle difference (not used in this version)                                               º
+AngMin             Minimum angle difference (not used in this version)                                               º
+Tap                Tap changer (not used in this version)                                                            p.u.
+Converter          Converter station (not used in this version)                                                      Yes/No
+TTC                Total transfer capacity (maximum permissible thermal load) in forward  direction                  MW
+TTCBck             Total transfer capacity (maximum permissible thermal load) in backward direction                  MW
+SecurityFactor     Security factor to consider approximately N-1 contingencies. NTC = TTC x SecurityFactor           p.u.
+FixedCost          Overnight investment (capital) cost                                                               M€
+FixedChargeRate    Fixed-charge rate to annualize the overnight investment cost                                      p.u.
+BinaryInvestment   Binary line/circuit investment decision                                                           Yes/No
+SwOnTime           Minimum switch-on time                                                                            h
+SwOffTime          Minimum switch-off time                                                                           h
+=================  ================================================================================================  ======
 
 Depending on the voltage lines are plotted with different colors (orange < 200 kV, 200 < green < 350 kV, 350 < red < 500 kV, 500 < orange < 700 kV, blue > 700 kV).
 

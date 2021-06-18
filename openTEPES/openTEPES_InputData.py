@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 15, 2021
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 18, 2021
 """
 
 import time
@@ -597,7 +597,7 @@ def InputData(DirName, CaseName, mTEPES):
     mTEPES.pLineBsh              = Param(                               mTEPES.ln, initialize=pLineBsh.to_dict()                  , within=NonNegativeReals, doc='Susceptance',                 mutable=True)
     mTEPES.pLineTAP              = Param(                               mTEPES.ln, initialize=pLineTAP.to_dict()                  , within=NonNegativeReals, doc='Tap changer',                 mutable=True)
     mTEPES.pConverter            = Param(                               mTEPES.ln, initialize=pConverter.to_dict()                , within=NonNegativeReals, doc='Converter'                    )
-    mTEPES.pLineLength           = Param(                               mTEPES.ln, initialize=pLineLength.to_dict()               , within=NonNegativeReals, doc='Length'                       )
+    mTEPES.pLineLength           = Param(                               mTEPES.ln, initialize=pLineLength.to_dict()               , within=NonNegativeReals, doc='Length',                      mutable=True)
     mTEPES.pLineVoltage          = Param(                               mTEPES.ln, initialize=pLineVoltage.to_dict()              , within=NonNegativeReals, doc='Voltage'                      )
     mTEPES.pLineNTCFrw           = Param(                               mTEPES.ln, initialize=pLineNTCFrw.to_dict()               , within=NonNegativeReals, doc='NTC forward'                  )
     mTEPES.pLineNTCBck           = Param(                               mTEPES.ln, initialize=pLineNTCBck.to_dict()               , within=NonNegativeReals, doc='NTC backward'                 )
@@ -609,8 +609,12 @@ def InputData(DirName, CaseName, mTEPES):
     mTEPES.pBigMFlowBck          = Param(                               mTEPES.ln, initialize=pBigMFlowBck.to_dict()              , within=NonNegativeReals, doc='Maximum backward capacity',   mutable=True)
     mTEPES.pBigMFlowFrw          = Param(                               mTEPES.ln, initialize=pBigMFlowFrw.to_dict()              , within=NonNegativeReals, doc='Maximum forward  capacity',   mutable=True)
     mTEPES.pMaxTheta             = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nd, initialize=pMaxTheta.stack().to_dict()         , within=NonNegativeReals, doc='Maximum voltage angle',       mutable=True)
-    mTEPES.pAngMin               = Param(                               mTEPES.ln, initialize=pAngMin.to_dict()                   , within=Reals,            doc='Minimum phase angle diff',    mutable=True)
-    mTEPES.pAngMax               = Param(                               mTEPES.ln, initialize=pAngMax.to_dict()                   , within=Reals,            doc='Maximum phase angle diff',    mutable=True)
+    mTEPES.pAngMin               = Param(                               mTEPES.ln, initialize=pAngMin.to_dict()                   , within=Reals,            doc='Minimum phase   angle diff',  mutable=True)
+    mTEPES.pAngMax               = Param(                               mTEPES.ln, initialize=pAngMax.to_dict()                   , within=Reals,            doc='Maximum phase   angle diff',  mutable=True)
+
+    # if line length = 0 changed to geographical distance
+    for ni,nf,cc in mTEPES.la:
+        mTEPES.pLineLength[ni,nf,cc] = 6371 * 2 * math.asin(math.sqrt(math.pow(math.sin((mTEPES.pNodeLat[nf]-mTEPES.pNodeLat[ni])*math.pi/180/2),2) + math.cos(mTEPES.pNodeLat[ni]*math.pi/180)*math.cos(mTEPES.pNodeLat[nf]*math.pi/180)*math.pow(math.sin((mTEPES.pNodeLon[nf]-mTEPES.pNodeLon[ni])*math.pi/180/2),2)))
 
     # initialize generation output, unit commitment and line switching
     pInitialOutput = pd.DataFrame([[0.0]*len(mTEPES.gg)]*len(mTEPES.sc*mTEPES.p*mTEPES.n), index=pd.MultiIndex.from_tuples(mTEPES.sc*mTEPES.p*mTEPES.n), columns=list(mTEPES.gg))
@@ -648,7 +652,7 @@ def SettingUpVariables(OptModel, mTEPES):
     OptModel.vESSReserveDown       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es, within=NonNegativeReals, bounds=lambda OptModel,sc,p,n,es: (0.0,mTEPES.pMaxCharge2ndBlock[sc,p,n,es]),                    doc='ESS downward operating reserve                   [GW]')
     OptModel.vENS                  = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nd, within=NonNegativeReals, bounds=lambda OptModel,sc,p,n,nd: (0.0,mTEPES.pDemand           [sc,p,n,nd]),                    doc='energy not served in node                        [GW]')
 
-    if mTEPES.pIndBinGenOperat == 0:
+    if mTEPES.pIndBinGenOperat() == 0:
         OptModel.vCommitment       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=UnitInterval,     initialize=0.0,                                                                                  doc='commitment of the unit                          [0,1]')
         OptModel.vStartUp          = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=UnitInterval,     initialize=0.0,                                                                                  doc='startup    of the unit                          [0,1]')
         OptModel.vShutDown         = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=UnitInterval,     initialize=0.0,                                                                                  doc='shutdown   of the unit                          [0,1]')
@@ -657,17 +661,17 @@ def SettingUpVariables(OptModel, mTEPES):
         OptModel.vStartUp          = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=Binary,           initialize=0  ,                                                                                  doc='startup    of the unit                          {0,1}')
         OptModel.vShutDown         = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=Binary,           initialize=0  ,                                                                                  doc='shutdown   of the unit                          {0,1}')
 
-    if mTEPES.pIndBinGenInvest == 0:
+    if mTEPES.pIndBinGenInvest() == 0:
         OptModel.vGenerationInvest = Var(                               mTEPES.gc, within=UnitInterval,                                                                                                      doc='generation investment decision exists in a year [0,1]')
     else:
         OptModel.vGenerationInvest = Var(                               mTEPES.gc, within=Binary,                                                                                                            doc='generation investment decision exists in a year {0,1}')
 
-    if mTEPES.pIndBinNetInvest == 0:
+    if mTEPES.pIndBinNetInvest() == 0:
         OptModel.vNetworkInvest    = Var(                               mTEPES.lc, within=UnitInterval,                                                                                                      doc='network    investment decision exists in a year [0,1]')
     else:
         OptModel.vNetworkInvest    = Var(                               mTEPES.lc, within=Binary,                                                                                                            doc='network    investment decision exists in a year {0,1}')
 
-    if mTEPES.pIndBinLineCommit == 0:
+    if mTEPES.pIndBinLineCommit() == 0:
         OptModel.vLineCommit       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=UnitInterval,      initialize=0.0,                                                                                 doc='line switching decision exists in a year        [0,1]')
         OptModel.vLineOnState      = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=UnitInterval,      initialize=0.0,                                                                                 doc='on state    of the line                         [0,1]')
         OptModel.vLineOffState     = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=UnitInterval,      initialize=0.0,                                                                                 doc='off state   of the line                         [0,1]')
@@ -678,13 +682,13 @@ def SettingUpVariables(OptModel, mTEPES):
 
     # relax binary condition in generation and network investment decisions
     for gc in mTEPES.gc:
-        if mTEPES.pIndBinGenInvest != 0 and mTEPES.pIndBinUnitInvest[gc] == 0:
+        if mTEPES.pIndBinGenInvest() != 0 and mTEPES.pIndBinUnitInvest[gc] == 0:
             OptModel.vGenerationInvest[gc].domain = UnitInterval
     for ec in mTEPES.ec:
-        if mTEPES.pIndBinGenInvest != 0 and mTEPES.pIndBinUnitInvest[ec] == 0:
+        if mTEPES.pIndBinGenInvest() != 0 and mTEPES.pIndBinUnitInvest[ec] == 0:
             OptModel.vGenerationInvest[ec].domain = UnitInterval
     for lc in mTEPES.lc:
-        if mTEPES.pIndBinNetInvest != 0 and mTEPES.pIndBinLineInvest[lc] == 0:
+        if mTEPES.pIndBinNetInvest() != 0 and mTEPES.pIndBinLineInvest[lc] == 0:
             OptModel.vNetworkInvest   [lc].domain = UnitInterval
 
     # existing lines are always committed if no decision is modeled

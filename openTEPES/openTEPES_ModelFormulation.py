@@ -518,7 +518,7 @@ def NetworkOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, st):
         print('eKirchhoff2ndLaw2  ... ', len(getattr(OptModel, 'eKirchhoff2ndLaw2_'+st)), ' rows')
 
     def eLineLosses1(OptModel,sc,p,n,ni,nf,cc):
-        if mTEPES.pIndNetLosses and len(mTEPES.ll):
+        if mTEPES.pIndNetLosses() and len(mTEPES.ll):
             return OptModel.vLineLosses[sc,p,n,ni,nf,cc] >= - 0.5 * mTEPES.pLineLossFactor[ni,nf,cc] * OptModel.vFlow[sc,p,n,ni,nf,cc]
         else:
             return Constraint.Skip
@@ -528,7 +528,7 @@ def NetworkOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, st):
         print('eLineLosses1          ... ', len(getattr(OptModel, 'eLineLosses1_'+st)), ' rows')
 
     def eLineLosses2(OptModel,sc,p,n,ni,nf,cc):
-        if mTEPES.pIndNetLosses and len(mTEPES.ll):
+        if mTEPES.pIndNetLosses() and len(mTEPES.ll):
             return OptModel.vLineLosses[sc,p,n,ni,nf,cc] >=   0.5 * mTEPES.pLineLossFactor[ni,nf,cc] * OptModel.vFlow[sc,p,n,ni,nf,cc]
         else:
             return Constraint.Skip
