@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 27, 2021
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 20, 2021
 """
 
 import time
@@ -65,7 +65,7 @@ def GenerationOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, st):
 
     #%% constraints
     def eInstalGenComm(OptModel,sc,p,n,gc):
-        if gc == mTEPES.nr:
+        if gc in mTEPES.nr and gc not in mTEPES.es and mTEPES.pMustRun[gc] == 0 and (mTEPES.pMinPower[sc,p,n,gc] > 0.0 or mTEPES.pConstantVarCost[gc] > 0.0):
             return OptModel.vCommitment[sc,p,n,gc] <= OptModel.vGenerationInvest[gc]
         else:
             return Constraint.Skip

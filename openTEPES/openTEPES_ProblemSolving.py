@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 27, 2021
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 20, 2021
 """
 
 import time
@@ -31,12 +31,12 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES):
         Solver.options['Method'        ] = 2                                                 # barrier method
         Solver.options['Presolve'      ] = 2
         Solver.options['Crossover'     ] = 0
-        Solver.options['BarConvTol'    ] = 1e-9
+        # Solver.options['BarConvTol'    ] = 1e-9
         # Solver.options['BarQCPConvTol' ] = 0.025
-        Solver.options['MIPGap'        ] = 0.025
+        Solver.options['MIPGap'        ] = 0.01
         Solver.options['Threads'       ] = int((psutil.cpu_count(logical=True) + psutil.cpu_count(logical=False))/2)
-        Solver.options['TimeLimit'     ] =    18000
-        Solver.options['IterationLimit'] = 18000000
+        Solver.options['TimeLimit'     ] =    7200
+        Solver.options['IterationLimit'] = 7200000
     if mTEPES.pIndBinGenInvest()*len(mTEPES.gc) + mTEPES.pIndBinNetInvest()*len(mTEPES.lc) + mTEPES.pIndBinGenOperat()*len(mTEPES.nr) + mTEPES.pIndBinLineCommit()*len(mTEPES.la) == 0:
         Solver.options['relax_integrality'] =  1
         if SolverName == 'gurobi':

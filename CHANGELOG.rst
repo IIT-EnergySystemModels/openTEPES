@@ -4,6 +4,10 @@ Change Log
 - [CHANGED] Addition of the sequence of decisions and operation (TEP + transmission switching)
 - [FIXED] fixing `<https://pascua.iit.comillas.edu/aramos/openTEPES/index.html#>`_ in README.rst 
 
+[2.6.3] - 2021-06-20
+--------------------
+- [FIXED] typo in investment constraint in model formulation
+
 [2.6.2] - 2021-06-18
 --------------------
 - [CHANGED] updated for pyomo 6.0
