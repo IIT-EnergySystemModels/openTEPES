@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 18, 2021
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 21, 2021
 """
 
 import time
@@ -19,12 +19,15 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES):
     if len(mTEPES.gc):
         OutputToFile = pd.DataFrame.from_dict(OptModel.vGenerationInvest.extract_values(), orient='index', columns=[str(OptModel.vGenerationInvest)])
         OutputToFile.index.names = ['Generator']
-        OutputToFile.to_csv(_path+'/oT_Result_GenerationInvestment_'+CaseName+'.csv', index=True, header=True)
+        OutputToFile = OutputToFile.reset_index()
+        OutputToFile.rename(columns={'vGenerationInvest': 'Investment Decision'}).to_csv(_path+'/oT_Result_GenerationInvestment_'+CaseName+'.csv', index=False, sep=',')
     if len(mTEPES.lc):
         OutputToFile = pd.DataFrame.from_dict(OptModel.vNetworkInvest.extract_values(),    orient='index', columns=[str(OptModel.vNetworkInvest)])
         OutputToFile.index = pd.MultiIndex.from_tuples(OutputToFile.index)
         OutputToFile.index.names = ['InitialNode','FinalNode','Circuit']
-        pd.pivot_table(OutputToFile, values=str(OptModel.vNetworkInvest), index=['InitialNode','FinalNode'], columns=['Circuit'], fill_value=0.0).to_csv(_path+'/oT_Result_NetworkInvestment_'+CaseName+'.csv', sep=',')
+        OutputToFile = OutputToFile.reset_index()
+        OutputToFile.rename(columns={'vNetworkInvest': 'Investment Decision'}).to_csv(_path + '/oT_Result_NetworkInvestment_' + CaseName + '.csv', index=False, sep=',')
+
 
     WritingResultsTime = time.time() - StartTime
     StartTime          = time.time()
