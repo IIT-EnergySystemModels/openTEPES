@@ -64,6 +64,7 @@ def GenerationOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, st):
     StartTime = time.time()
 
     #%% constraints
+
     def eInstalGenComm(OptModel,sc,p,n,gc):
         if gc in mTEPES.nr and gc not in mTEPES.es and mTEPES.pMustRun[gc] == 0 and (mTEPES.pMinPower[sc,p,n,gc] > 0.0 or mTEPES.pConstantVarCost[gc] > 0.0):
             return OptModel.vCommitment[sc,p,n,gc] <= OptModel.vGenerationInvest[gc]
@@ -90,6 +91,17 @@ def GenerationOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, st):
 
     if pIndLogConsole == 1:
         print('eInstalConESS         ... ', len(getattr(OptModel, 'eInstalConESS_'+st)), ' rows')
+
+    def eAdequacyReserveMargin(OptModel,ar):
+        if mTEPES.pReserveMargin[ar] and sum(1 for g in mTEPES.g if (ar,g) in mTEPES.a2g):
+            return ((sum(                                  mTEPES.pRatedMaxPower[g ] * mTEPES.pAvailability[g ] / (1.0-mTEPES.pEFOR[g ]) for g  in mTEPES.g  if (ar,g ) in mTEPES.a2g and g not in mTEPES.gc) +
+                     sum(OptModel.vGenerationInvest [gc] * mTEPES.pRatedMaxPower[gc] * mTEPES.pAvailability[gc] / (1.0-mTEPES.pEFOR[gc]) for gc in mTEPES.gc if (ar,gc) in mTEPES.a2g                       ) ) >= mTEPES.pPeakDemand[ar] * mTEPES.pReserveMargin[ar])
+        else:
+            return Constraint.Skip
+    setattr(OptModel, 'eAdequacyReserveMargin_'+st, Constraint(mTEPES.ar, rule=eAdequacyReserveMargin, doc='system adequacy reserve margin [p.u.]'))
+
+    if pIndLogConsole == 1:
+        print('eAdequacyReserveMargin... ', len(getattr(OptModel, 'eAdequacyReserveMargin_'+st)), ' rows')
 
     def eSystemInertia(OptModel,sc,p,n,ar):
         if mTEPES.pSystemInertia[sc,p,n,ar] and sum(1 for nr in mTEPES.nr if (ar,nr) in mTEPES.a2g) + sum(1 for es in mTEPES.es if (ar,es) in mTEPES.a2g):

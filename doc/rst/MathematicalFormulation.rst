@@ -46,6 +46,7 @@ They are written in capital letters.
 **Demand**                                                       
 ------------------  ----------------------------------------------------  -------
 :math:`D^ω_{pni}`   Demand in each node                                   GW
+:math:`PD_a`        Peak demand in each area                              GW
 :math:`DUR_n`       Duration of each load level                           h
 :math:`CENS`        Cost of energy not served. Value of Lost Load (VoLL)  €/MWh
 ==================  ====================================================  =======
@@ -64,30 +65,38 @@ They are written in capital letters.
 ==============================  ========================================================  ====
 
 ==============================  ========================================================  ====
+**Adequacy system reserve margin**
+------------------------------  --------------------------------------------------------  ----
+:math:`RM_a`                    Adequacy system reserve margin for each area              p.u.
+==============================  ========================================================  ====
+
+==============================  ========================================================  ====
 **System inertia**
 ------------------------------  --------------------------------------------------------  ----
 :math:`SI^ω_{pna}`              System inertia for each area                              s
 ==============================  ========================================================  ====
 
-=====================================================  ===============================================================================================  ============
+=====================================================  ========================================================================================================  ============
 **Generation system**   
------------------------------------------------------  -----------------------------------------------------------------------------------------------  ------------
-:math:`CFG_g`                                          Annualized fixed cost of a candidate generator                                                   M€
-:math:`\underline{GP}^w_{png}, \overline{GP}^w_{png}`  Minimum load and maximum output of a generator                                                   GW
-:math:`\underline{GC}^w_{pne}, \overline{GC}^w_{pne}`  Minimum and maximum consumption of an ESS                                                        GW
-:math:`CF_g, CV_g`                                     Fixed and variable cost of a generator. Variable cost includes fuel, O&M and emission cost       €/h, €/MWh
-:math:`CV_e`                                           Variable cost of an ESS when charging                                                            €/MWh
-:math:`RU_g, RD_g`                                     Ramp up/down of a non-renewable unit or maximum discharge/charge rate for ESS discharge/charge   MW/h
-:math:`TU_t, TD_t`                                     Minimum uptime and downtime of a thermal unit                                                    h
-:math:`CSU_g, CSD_g`                                   Startup and shutdown cost of a committed unit                                                    M€
-:math:`\tau_e`                                         Storage cycle of the ESS (e.g., 1, 24, 168 h -for daily, weekly, monthly-)                       h
-:math:`\rho_e`                                         Outflows cycle of the ESS (e.g., 1, 24, 168 h -for hourly, daily, weekly, monthly, yearly-)      h
-:math:`GI_g`                                           Generator inertia                                                                                s
-:math:`EF_e`                                           Efficiency of the pump/turbine cycle of a hydro power plant or charge/discharge of a battery     p.u.
-:math:`I^w_{pne}`                                      Capacity of an ESS (e.g., hydro power plant)                                                     GWh
-:math:`EI^ω_{png}`                                     Energy inflows of an ESS (e.g., hydro power plant)                                               GWh
-:math:`EO^ω_{png}`                                     Energy outflows of an ESS (e.g., H2, EV, hydro power plant)                                      GWh
-=====================================================  ===============================================================================================  ============
+-----------------------------------------------------  --------------------------------------------------------------------------------------------------------  ------------
+:math:`CFG_g`                                          Annualized fixed cost of a candidate generator                                                            M€
+:math:`A_g`                                            Availability of each generator for adequacy reserve margin                                                p.u.
+:math:`\underline{GP}_g, \overline{GP}_g`              Rated minimum load and maximum output of a generator                                                      GW
+:math:`\underline{GP}^w_{png}, \overline{GP}^w_{png}`  Minimum load and maximum output of a generator                                                            GW
+:math:`\underline{GC}^w_{pne}, \overline{GC}^w_{pne}`  Minimum and maximum consumption of an ESS                                                                 GW
+:math:`CF_g, CV_g`                                     Fixed and variable cost of a generator. Variable cost includes fuel, O&M and emission cost                €/h, €/MWh
+:math:`CV_e`                                           Variable cost of an ESS when charging                                                                     €/MWh
+:math:`RU_g, RD_g`                                     Ramp up/down of a non-renewable unit or maximum discharge/charge rate for ESS discharge/charge            MW/h
+:math:`TU_t, TD_t`                                     Minimum uptime and downtime of a thermal unit                                                             h
+:math:`CSU_g, CSD_g`                                   Startup and shutdown cost of a committed unit                                                             M€
+:math:`\tau_e`                                         Storage cycle of the ESS (e.g., 1, 24, 168 h -for daily, weekly, monthly-)                                h
+:math:`\rho_e`                                         Outflows cycle of the ESS (e.g., 1, 24, 168 h -for hourly, daily, weekly, monthly, yearly-)               h
+:math:`GI_g`                                           Generator inertia                                                                                         s
+:math:`EF_e`                                           Round-trip efficiency of the pump/turbine cycle of a hydro power plant or charge/discharge of a battery   p.u.
+:math:`I^w_{pne}`                                      Capacity of an ESS (e.g., hydro power plant)                                                              GWh
+:math:`EI^ω_{png}`                                     Energy inflows of an ESS (e.g., hydro power plant)                                                        GWh
+:math:`EO^ω_{png}`                                     Energy outflows of an ESS (e.g., H2, EV, hydro power plant)                                               GWh
+=====================================================  ========================================================================================================  ============
 
 =========================================  =================================================================================================================  ====
 **Transmission system**   
@@ -172,6 +181,10 @@ Output and consumption bounded by investment decision for candidate ESS [p.u.]
 :math:`\frac{gp^ω_{pne}}{\overline{GP}^w_{pne}} \leq icg_e \quad \forall ωpne, e \in CE`
 
 :math:`\frac{gc^ω_{pne}}{\overline{GP}^w_{pne}} \leq icg_e \quad \forall ωpne, e \in CE`
+
+Adequacy system reserve margin [p.u.]
+
+:math:`\sum_{g \in a, EG} \overline{GP}_g A_g + \sum_{g \in a, CG} icg_g  \overline{GP}_g A_g \qeq PD_a RM_a \quad \forall a`
 
 Balance of generation and demand at each node with ohmic losses [GW]
 

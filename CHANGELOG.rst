@@ -7,6 +7,9 @@ Change Log
 [2.6.4] - 2021-06-23
 --------------------
 - [FIXED] typo in equation formulating the total output of a unit
+- [CHANGED] introduce binary commitment option for each unit
+- [CHANGED] introduce adequacy reserve margin for each area
+- [CHANGED] introduce availability for each unit
 
 [2.6.3] - 2021-06-20
 --------------------

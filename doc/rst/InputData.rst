@@ -74,6 +74,7 @@ File                                       Description
 ``oT_Data_Parameter.csv``                  General system parameters
 ``oT_Data_Scenario.csv``                   Short-term uncertainties
 ``oT_Data_Stage.csv``                      Stages
+``oT_Data_ReserveMargin.csv``              Adequacy reserve margin
 ``oT_Data_Duration.csv``                   Duration of the load levels
 ``oT_Data_Demand.csv``                     Demand
 ``oT_Data_Inertia.csv``                    System inertia by area
@@ -153,6 +154,17 @@ Scenario        Weight        Weight of each stage
 This weight allows the definition of equivalent (representative) periods (e.g., one representative week with a weight of 52). Stages are not mathematically connected between them, i.e., no constraints link the operation
 at different stages.
 
+Adequacy reserve margin
+-----------------------
+
+A description of the data included in the file ``oT_Data_ReserveMargin.csv`` follows:
+
+==============  =============  ======================================
+Identifier      Header         Description
+==============  =============  ======================================
+Scenario        ReserveMargin  Adequacy reserve margin for each area
+==============  =============  ======================================
+
 Duration
 --------
 
@@ -228,6 +240,7 @@ Node                  Name of the node where generator is located. If left empty
 Technology            Technology of the generator (nuclear, coal, CCGT, OCGT, ESS, solar, wind, biomass, etc.)
 StorageType           Storage type based on storage capacity (daily, weekly, monthly, etc.)                                                Daily/Weekly/Monthly
 OutflowsType          Outflows type based on the demand extracted from the storage (hourly, daily, weekly, monthly, yearly, etc.)          Hourly/Daily/Weekly/Monthly/Yearly
+BinaryCommitment      Binary unit commitment decision                                                                                      Yes/No
 MustRun               Must-run unit                                                                                                        Yes/No
 MaximumPower          Maximum power output (generation/discharge for ESS units)                                                            MW
 MinimumPower          Minimum power output (i.e., minimum stable load in the case of a thermal power plant)                                MW
@@ -239,6 +252,7 @@ InitialStorage        Initial energy stored at the first instant of the time sco
 MaximumStorage        Maximum energy that can be stored by the ESS unit                                                                    GWh
 MinimumStorage        Minimum energy that can be stored by the ESS unit                                                                    GWh
 Efficiency            Round-trip efficiency in the charge/discharge cycle                                                                  p.u.
+Availability          Unit availability for system adequacy reserve margin                                                                 p.u.
 Inertia               Unit inertia constant                                                                                                s
 EFOR                  Equivalent Forced Outage Rate                                                                                        p.u.
 RampUp                Ramp up   rate for generating units or maximum discharge rate for ESS discharge                                      MW/h
@@ -270,6 +284,8 @@ A generator with operation cost (sum of the fuel and emission cost, excluding O&
 it is considered a renewable unit. If its maximum storage is > 0 is considered an ESS.
 
 Must-run non-renewable units are always committed, i.e., their commitment decision is equal to 1. All must-run units are forced to produce at least their minimum output.
+
+If unit availability is left 0 or empty is changed to 1. For declaring a unit non contributing to system adequacy reserve margin, put the availability equal to a very small number.
 
 EFOR is used to reduce the maximum and minimum power of the unit. For hydro units it can be used to reduce their maximum power by the water head effect. It does not reduce the maximum charge.
 
@@ -363,30 +379,30 @@ Transmission network
 
 A description of the circuit (initial node, final node, circuit) data included in the file ``oT_Data_Network.csv`` follows:
 
-=================  ================================================================================================  ======
+=================  ===============================================================================================================  ======
 Header             Description
-=================  ================================================================================================  ======
+=================  ===============================================================================================================  ======
 LineType           Line type {AC, DC, Transformer, Converter}
-Switching          The transmission line is able to switch on/off                                                    Yes/No
-Voltage            Line voltage (e.g., 400, 220 kV, 220/400 kV if transformer). Used only for plotting purposes      kV
-Length             Line length (only used for reporting purposes). If not defined computed as geographical distance  km
-LossFactor         Transmission losses equal to the line flow times this factor                                      p.u.
-Resistance         Resistance (not used in this version)                                                             p.u.
-Reactance          Reactance. Lines must have a reactance different from 0 to be considered                          p.u.
-Susceptance        Susceptance (not used in this version)                                                            p.u.
-AngMax             Maximum angle difference (not used in this version)                                               º
-AngMin             Minimum angle difference (not used in this version)                                               º
-Tap                Tap changer (not used in this version)                                                            p.u.
-Converter          Converter station (not used in this version)                                                      Yes/No
-TTC                Total transfer capacity (maximum permissible thermal load) in forward  direction                  MW
-TTCBck             Total transfer capacity (maximum permissible thermal load) in backward direction                  MW
-SecurityFactor     Security factor to consider approximately N-1 contingencies. NTC = TTC x SecurityFactor           p.u.
-FixedCost          Overnight investment (capital) cost                                                               M€
-FixedChargeRate    Fixed-charge rate to annualize the overnight investment cost                                      p.u.
-BinaryInvestment   Binary line/circuit investment decision                                                           Yes/No
-SwOnTime           Minimum switch-on time                                                                            h
-SwOffTime          Minimum switch-off time                                                                           h
-=================  ================================================================================================  ======
+Switching          The transmission line is able to switch on/off                                                                   Yes/No
+Voltage            Line voltage (e.g., 400, 220 kV, 220/400 kV if transformer). Used only for plotting purposes                     kV
+Length             Line length (only used for reporting purposes). If not defined, computed as 1.1 times the geographical distance  km
+LossFactor         Transmission losses equal to the line flow times this factor                                                     p.u.
+Resistance         Resistance (not used in this version)                                                                            p.u.
+Reactance          Reactance. Lines must have a reactance different from 0 to be considered                                         p.u.
+Susceptance        Susceptance (not used in this version)                                                                           p.u.
+AngMax             Maximum angle difference (not used in this version)                                                              º
+AngMin             Minimum angle difference (not used in this version)                                                              º
+Tap                Tap changer (not used in this version)                                                                           p.u.
+Converter          Converter station (not used in this version)                                                                     Yes/No
+TTC                Total transfer capacity (maximum permissible thermal load) in forward  direction                                 MW
+TTCBck             Total transfer capacity (maximum permissible thermal load) in backward direction                                 MW
+SecurityFactor     Security factor to consider approximately N-1 contingencies. NTC = TTC x SecurityFactor                          p.u.
+FixedCost          Overnight investment (capital) cost                                                                              M€
+FixedChargeRate    Fixed-charge rate to annualize the overnight investment cost                                                     p.u.
+BinaryInvestment   Binary line/circuit investment decision                                                                          Yes/No
+SwOnTime           Minimum switch-on time                                                                                           h
+SwOffTime          Minimum switch-off time                                                                                          h
+=================  ===============================================================================================================  ======
 
 Depending on the voltage lines are plotted with different colors (orange < 200 kV, 200 < green < 350 kV, 350 < red < 500 kV, 500 < orange < 700 kV, blue > 700 kV).
 

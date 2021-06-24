@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 18, 2021
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 23, 2021
 """
 
 import time
@@ -21,6 +21,7 @@ def InputData(DirName, CaseName, mTEPES):
     dfScenario           = pd.read_csv(_path+'/oT_Data_Scenario_'              +CaseName+'.csv', index_col=[0    ])
     dfStage              = pd.read_csv(_path+'/oT_Data_Stage_'                 +CaseName+'.csv', index_col=[0    ])
     dfDuration           = pd.read_csv(_path+'/oT_Data_Duration_'              +CaseName+'.csv', index_col=[0    ])
+    dfReserveMargin      = pd.read_csv(_path+'/oT_Data_ReserveMargin_'         +CaseName+'.csv', index_col=[0    ])
     dfDemand             = pd.read_csv(_path+'/oT_Data_Demand_'                +CaseName+'.csv', index_col=[0,1,2])
     dfInertia            = pd.read_csv(_path+'/oT_Data_Inertia_'               +CaseName+'.csv', index_col=[0,1,2])
     dfUpOperatingReserve = pd.read_csv(_path+'/oT_Data_OperatingReserveUp_'    +CaseName+'.csv', index_col=[0,1,2])
@@ -43,6 +44,7 @@ def InputData(DirName, CaseName, mTEPES):
     dfScenario.fillna          (0.0, inplace=True)
     dfStage.fillna             (0.0, inplace=True)
     dfDuration.fillna          (0  , inplace=True)
+    dfReserveMargin.fillna     (0.0, inplace=True)
     dfDemand.fillna            (0.0, inplace=True)
     dfInertia.fillna           (0.0, inplace=True)
     dfUpOperatingReserve.fillna(0.0, inplace=True)
@@ -60,6 +62,7 @@ def InputData(DirName, CaseName, mTEPES):
     dfNetwork.fillna           (0.0, inplace=True)
 
     # show some statistics of the data
+    print('Reserve margin               \n', dfReserveMargin.describe     ())
     print('Demand                       \n', dfDemand.describe            ())
     print('Inertia                      \n', dfInertia.describe           ())
     print('Upward   operating reserves  \n', dfUpOperatingReserve.describe())
@@ -132,10 +135,11 @@ def InputData(DirName, CaseName, mTEPES):
     pTimeStep            = dfParameter['TimeStep'           ][0].astype('int')                                                            # duration of the unit time step      [h]
     # pStageDuration       = dfParameter['StageDuration'      ][0].astype('int')                                                            # duration of each stage              [h]
 
-    pScenProb            = dfScenario ['Probability'        ]                                                                             # probabilities of scenarios          [p.u.]
-    pStageWeight         = dfStage    ['Weight'             ]                                                                             # weights of stages                   [p.u.]
-    pDuration            = dfDuration ['Duration'           ]    * pTimeStep                                                              # duration of load levels             [h]
-    pLevelToStage        = dfDuration ['Stage'              ]                                                                             # load levels assignment to stages
+    pScenProb            = dfScenario     ['Probability'    ]                                                                             # probabilities of scenarios          [p.u.]
+    pStageWeight         = dfStage        ['Weight'         ]                                                                             # weights of stages                   [p.u.]
+    pDuration            = dfDuration     ['Duration'       ]    * pTimeStep                                                              # duration of load levels             [h]
+    pReserveMargin       = dfReserveMargin['ReserveMargin'  ]                                                                             # adequacy reserve margin             [p.u.]
+    pLevelToStage        = dfDuration     ['Stage'          ]                                                                             # load levels assignment to stages
     pDemand              = dfDemand               [mTEPES.nd]    * 1e-3                                                                   # demand                              [GW]
     pSystemInertia       = dfInertia              [mTEPES.ar]                                                                             # inertia                             [s]
     pOperReserveUp       = dfUpOperatingReserve   [mTEPES.ar]    * 1e-3                                                                   # upward   operating reserve          [GW]
@@ -185,13 +189,17 @@ def InputData(DirName, CaseName, mTEPES):
     #%% generation parameters
     pGenToNode          = dfGeneration  ['Node'                ]                                                                            # generator location in node
     pGenToTechnology    = dfGeneration  ['Technology'          ]                                                                            # generator association to technology
+    pIndBinUnitInvest   = dfGeneration  ['BinaryInvestment'    ]                                                                            # binary unit investment decision             [Yes]
+    pIndBinUnitCommit   = dfGeneration  ['BinaryCommitment'    ]                                                                            # binary unit commitment decision             [Yes]
     pMustRun            = dfGeneration  ['MustRun'             ]                                                                            # must-run unit                               [Yes]
     pInertia            = dfGeneration  ['Inertia'             ]                                                                            # inertia constant                            [s]
+    pAvailability       = dfGeneration  ['Availability'        ]                                                                            # unit availability for adequacy              [p.u.]
+    pEFOR               = dfGeneration  ['EFOR'                ]                                                                            # EFOR                                        [p.u.]
     pRatedMinPower      = dfGeneration  ['MinimumPower'        ] * 1e-3 * (1.0-dfGeneration['EFOR'])                                        # rated minimum power                         [GW]
     pRatedMaxPower      = dfGeneration  ['MaximumPower'        ] * 1e-3 * (1.0-dfGeneration['EFOR'])                                        # rated maximum power                         [GW]
-    pLinearFuelCost     = dfGeneration  ['LinearTerm'          ] * 1e-3 * dfGeneration['FuelCost']                                          # fuel     term variable cost                 [MEUR/GWh]
+    pLinearFuelCost     = dfGeneration  ['LinearTerm'          ] * 1e-3 *      dfGeneration['FuelCost']                                     # fuel     term variable cost                 [MEUR/GWh]
     pLinearOMCost       = dfGeneration  ['OMVariableCost'      ] * 1e-3                                                                     # O&M      term variable cost                 [MEUR/GWh]
-    pConstantVarCost    = dfGeneration  ['ConstantTerm'        ] * 1e-6 * dfGeneration['FuelCost']                                          # constant term variable cost                 [MEUR/h]
+    pConstantVarCost    = dfGeneration  ['ConstantTerm'        ] * 1e-6 *      dfGeneration['FuelCost']                                     # constant term variable cost                 [MEUR/h]
     pStartUpCost        = dfGeneration  ['StartUpCost'         ]                                                                            # startup  cost                               [MEUR]
     pShutDownCost       = dfGeneration  ['ShutDownCost'        ]                                                                            # shutdown cost                               [MEUR]
     pRampUp             = dfGeneration  ['RampUp'              ] * 1e-3                                                                     # ramp up   rate                              [GW/h]
@@ -200,13 +208,12 @@ def InputData(DirName, CaseName, mTEPES):
     pUpTime             = dfGeneration  ['UpTime'              ]                                                                            # minimum up   time                           [h]
     pDwTime             = dfGeneration  ['DownTime'            ]                                                                            # minimum down time                           [h]
     pGenFixedCost       = dfGeneration  ['FixedCost'           ] *        dfGeneration['FixedChargeRate']                                   # generation fixed cost                       [MEUR]
-    pIndBinUnitInvest   = dfGeneration  ['BinaryInvestment'    ]                                                                            # binary unit investment decision             [Yes]
     pRatedMinCharge     = dfGeneration  ['MinimumCharge'       ] * 1e-3                                                                     # rated minimum ESS charge                    [GW]
     pRatedMaxCharge     = dfGeneration  ['MaximumCharge'       ] * 1e-3                                                                     # rated maximum ESS charge                    [GW]
     pRatedMinStorage    = dfGeneration  ['MinimumStorage'      ]                                                                            # rated minimum ESS storage                   [GWh]
     pRatedMaxStorage    = dfGeneration  ['MaximumStorage'      ]                                                                            # rated maximum ESS storage                   [GWh]
     pInitialInventory   = dfGeneration  ['InitialStorage'      ]                                                                            # initial       ESS storage                   [GWh]
-    pEfficiency         = dfGeneration  ['Efficiency'          ]                                                                            #         ESS efficiency                      [p.u.]
+    pEfficiency         = dfGeneration  ['Efficiency'          ]                                                                            #         ESS round-trip efficiency           [p.u.]
     pStorageType        = dfGeneration  ['StorageType'         ]                                                                            #         ESS storage  type
     pOutflowsType       = dfGeneration  ['OutflowsType'        ]                                                                            #         ESS outflows type
     pRMaxReactivePower  = dfGeneration  ['MaximumReactivePower'] * 1e-3                                                                     # rated maximum reactive power                [Gvar]
@@ -319,6 +326,7 @@ def InputData(DirName, CaseName, mTEPES):
     idxDict['y'  ] = 1
 
     pIndBinUnitInvest = pIndBinUnitInvest.map(idxDict)
+    pIndBinUnitCommit = pIndBinUnitCommit.map(idxDict)
     pIndBinLineInvest = pIndBinLineInvest.map(idxDict)
     pMustRun          = pMustRun.map         (idxDict)
     pLineSwitching    = pLineSwitching.map   (idxDict)
@@ -473,11 +481,13 @@ def InputData(DirName, CaseName, mTEPES):
     pIniInventory     = pIniInventory.loc    [mTEPES.sc*mTEPES.p*mTEPES.n          ]
 
     # small values are converted to 0
+    pPeakDemand = pd.Series(data=[0.0 for ar in mTEPES.ar], index=mTEPES.ar)
     for a2 in mTEPES.ar:
         # values < 1e-5 times the maximum demand for each area (an area is related to operating reserves procurement, i.e., country) are converted to 0
-        pEpsilon      = pDemand        [[nd for nd,a2 in mTEPES.ndar]].sum(axis=1).max()*1e-5
+        pPeakDemand[a2] = pDemand        [[nd for nd,a2 in mTEPES.ndar]].sum(axis=1).max()
+        pEpsilon        = pPeakDemand[a2]*2.5e-5
         # values < 1e-5 times the maximum system demand are converted to 0
-        # pEpsilon    = pDemand.sum(axis=1).max()*1e-5
+        # pEpsilon      = pDemand.sum(axis=1).max()*1e-5
 
         # these parameters are in GW
         pDemand        [pDemand        [[nd for nd,a2 in mTEPES.ndar]] < pEpsilon] = 0.0
@@ -548,6 +558,8 @@ def InputData(DirName, CaseName, mTEPES):
     mTEPES.pTimeStep             = Param(initialize=pTimeStep           , within=NonNegativeReals)
     # mTEPES.pStageDuration        = Param(initialize=pStageDuration      , within=NonNegativeReals)
 
+    mTEPES.pReserveMargin        = Param(                               mTEPES.ar, initialize=pReserveMargin.to_dict()            , within=NonNegativeReals, doc='Adequacy reserve margin'      )
+    mTEPES.pPeakDemand           = Param(                               mTEPES.ar, initialize=pPeakDemand.to_dict()               , within=NonNegativeReals, doc='Peak demand'                  )
     mTEPES.pDemand               = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nd, initialize=pDemand.stack().to_dict()           , within=NonNegativeReals, doc='Demand'                       )
     mTEPES.pScenProb             = Param(mTEPES.scc,                               initialize=pScenProb.to_dict()                 , within=NonNegativeReals, doc='Probability'                  )
     mTEPES.pStageWeight          = Param(mTEPES.stt,                               initialize=pStageWeight.to_dict()              , within=NonNegativeReals, doc='Stage weight'                 )
@@ -570,6 +582,8 @@ def InputData(DirName, CaseName, mTEPES):
     mTEPES.pRatedMaxPower        = Param(                               mTEPES.gg, initialize=pRatedMaxPower.to_dict()            , within=NonNegativeReals, doc='Rated maximum power'          )
     mTEPES.pMustRun              = Param(                               mTEPES.gg, initialize=pMustRun.to_dict()                  , within=Boolean         , doc='must-run unit'                )
     mTEPES.pInertia              = Param(                               mTEPES.gg, initialize=pInertia.to_dict()                  , within=NonNegativeReals, doc='unit inertia constant'        )
+    mTEPES.pAvailability         = Param(                               mTEPES.gg, initialize=pAvailability.to_dict()             , within=NonNegativeReals, doc='unit availability',           mutable=True)
+    mTEPES.pEFOR                 = Param(                               mTEPES.gg, initialize=pEFOR.to_dict()                     , within=NonNegativeReals, doc='EFOR'                         )
     mTEPES.pLinearOperCost       = Param(                               mTEPES.gg, initialize=pLinearOperCost.to_dict()           , within=NonNegativeReals, doc='Linear   variable cost'       )
     mTEPES.pLinearVarCost        = Param(                               mTEPES.gg, initialize=pLinearVarCost.to_dict()            , within=NonNegativeReals, doc='Linear   variable cost'       )
     mTEPES.pLinearOMCost         = Param(                               mTEPES.gg, initialize=pLinearOMCost.to_dict()             , within=NonNegativeReals, doc='Linear   O&M      cost'       )
@@ -584,6 +598,7 @@ def InputData(DirName, CaseName, mTEPES):
     mTEPES.pRatedMaxCharge       = Param(                               mTEPES.gg, initialize=pRatedMaxCharge.to_dict()           , within=NonNegativeReals, doc='Rated maximum charge'         )
     mTEPES.pGenFixedCost         = Param(                               mTEPES.gg, initialize=pGenFixedCost.to_dict()             , within=NonNegativeReals, doc='Generation fixed cost'        )
     mTEPES.pIndBinUnitInvest     = Param(                               mTEPES.gg, initialize=pIndBinUnitInvest.to_dict()         , within=Boolean         , doc='Binary investment decision'   )
+    mTEPES.pIndBinUnitCommit     = Param(                               mTEPES.gg, initialize=pIndBinUnitCommit.to_dict()         , within=Boolean         , doc='Binary commitment decision'   )
     mTEPES.pEfficiency           = Param(                               mTEPES.gg, initialize=pEfficiency.to_dict()               , within=NonNegativeReals, doc='Round-trip efficiency'        )
     mTEPES.pCycleTimeStep        = Param(                               mTEPES.gg, initialize=pCycleTimeStep.to_dict()            , within=NonNegativeReals, doc='ESS Storage cycle'            )
     mTEPES.pOutflowsTimeStep     = Param(                               mTEPES.gg, initialize=pOutflowsTimeStep.to_dict()         , within=NonNegativeReals, doc='ESS Outflows cycle'           )
@@ -612,9 +627,15 @@ def InputData(DirName, CaseName, mTEPES):
     mTEPES.pAngMin               = Param(                               mTEPES.ln, initialize=pAngMin.to_dict()                   , within=Reals,            doc='Minimum phase   angle diff',  mutable=True)
     mTEPES.pAngMax               = Param(                               mTEPES.ln, initialize=pAngMax.to_dict()                   , within=Reals,            doc='Maximum phase   angle diff',  mutable=True)
 
+    # if unit availability = 0 changed to 1
+    for g in mTEPES.g:
+        if  mTEPES.pAvailability[g]() == 0.0:
+            mTEPES.pAvailability[g]   =  1.0
+
     # if line length = 0 changed to geographical distance
     for ni,nf,cc in mTEPES.la:
-        mTEPES.pLineLength[ni,nf,cc] = 6371 * 2 * math.asin(math.sqrt(math.pow(math.sin((mTEPES.pNodeLat[nf]-mTEPES.pNodeLat[ni])*math.pi/180/2),2) + math.cos(mTEPES.pNodeLat[ni]*math.pi/180)*math.cos(mTEPES.pNodeLat[nf]*math.pi/180)*math.pow(math.sin((mTEPES.pNodeLon[nf]-mTEPES.pNodeLon[ni])*math.pi/180/2),2)))
+        if  mTEPES.pLineLength[ni,nf,cc]() == 0.0:
+            mTEPES.pLineLength[ni,nf,cc]   =  1.1 * 6371 * 2 * math.asin(math.sqrt(math.pow(math.sin((mTEPES.pNodeLat[nf]-mTEPES.pNodeLat[ni])*math.pi/180/2),2) + math.cos(mTEPES.pNodeLat[ni]*math.pi/180)*math.cos(mTEPES.pNodeLat[nf]*math.pi/180)*math.pow(math.sin((mTEPES.pNodeLon[nf]-mTEPES.pNodeLon[ni])*math.pi/180/2),2)))
 
     # initialize generation output, unit commitment and line switching
     pInitialOutput = pd.DataFrame([[0.0]*len(mTEPES.gg)]*len(mTEPES.sc*mTEPES.p*mTEPES.n), index=pd.MultiIndex.from_tuples(mTEPES.sc*mTEPES.p*mTEPES.n), columns=list(mTEPES.gg))
@@ -652,15 +673,6 @@ def SettingUpVariables(OptModel, mTEPES):
     OptModel.vESSReserveDown       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es, within=NonNegativeReals, bounds=lambda OptModel,sc,p,n,es: (0.0,mTEPES.pMaxCharge2ndBlock[sc,p,n,es]),                    doc='ESS downward operating reserve                   [GW]')
     OptModel.vENS                  = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nd, within=NonNegativeReals, bounds=lambda OptModel,sc,p,n,nd: (0.0,mTEPES.pDemand           [sc,p,n,nd]),                    doc='energy not served in node                        [GW]')
 
-    if mTEPES.pIndBinGenOperat() == 0:
-        OptModel.vCommitment       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=UnitInterval,     initialize=0.0,                                                                                  doc='commitment of the unit                          [0,1]')
-        OptModel.vStartUp          = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=UnitInterval,     initialize=0.0,                                                                                  doc='startup    of the unit                          [0,1]')
-        OptModel.vShutDown         = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=UnitInterval,     initialize=0.0,                                                                                  doc='shutdown   of the unit                          [0,1]')
-    else:
-        OptModel.vCommitment       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=Binary,           initialize=0  ,                                                                                  doc='commitment of the unit                          {0,1}')
-        OptModel.vStartUp          = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=Binary,           initialize=0  ,                                                                                  doc='startup    of the unit                          {0,1}')
-        OptModel.vShutDown         = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=Binary,           initialize=0  ,                                                                                  doc='shutdown   of the unit                          {0,1}')
-
     if mTEPES.pIndBinGenInvest() == 0:
         OptModel.vGenerationInvest = Var(                               mTEPES.gc, within=UnitInterval,                                                                                                      doc='generation investment decision exists in a year [0,1]')
     else:
@@ -670,6 +682,15 @@ def SettingUpVariables(OptModel, mTEPES):
         OptModel.vNetworkInvest    = Var(                               mTEPES.lc, within=UnitInterval,                                                                                                      doc='network    investment decision exists in a year [0,1]')
     else:
         OptModel.vNetworkInvest    = Var(                               mTEPES.lc, within=Binary,                                                                                                            doc='network    investment decision exists in a year {0,1}')
+
+    if mTEPES.pIndBinGenOperat() == 0:
+        OptModel.vCommitment       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=UnitInterval,     initialize=0.0,                                                                                  doc='commitment of the unit                          [0,1]')
+        OptModel.vStartUp          = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=UnitInterval,     initialize=0.0,                                                                                  doc='startup    of the unit                          [0,1]')
+        OptModel.vShutDown         = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=UnitInterval,     initialize=0.0,                                                                                  doc='shutdown   of the unit                          [0,1]')
+    else:
+        OptModel.vCommitment       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=Binary,           initialize=0  ,                                                                                  doc='commitment of the unit                          {0,1}')
+        OptModel.vStartUp          = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=Binary,           initialize=0  ,                                                                                  doc='startup    of the unit                          {0,1}')
+        OptModel.vShutDown         = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=Binary,           initialize=0  ,                                                                                  doc='shutdown   of the unit                          {0,1}')
 
     if mTEPES.pIndBinLineCommit() == 0:
         OptModel.vLineCommit       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=UnitInterval,      initialize=0.0,                                                                                 doc='line switching decision exists in a year        [0,1]')
@@ -690,6 +711,13 @@ def SettingUpVariables(OptModel, mTEPES):
     for lc in mTEPES.lc:
         if mTEPES.pIndBinNetInvest() != 0 and mTEPES.pIndBinLineInvest[lc] == 0:
             OptModel.vNetworkInvest   [lc].domain = UnitInterval
+
+    # relax binary condition in unit generation, startup and shutdown decisions
+    for sc,p,n,nr in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.nr:
+        if mTEPES.pIndBinUnitCommit[nr] == 0:
+            OptModel.vCommitment[sc,p,n,nr].domain = UnitInterval
+            OptModel.vStartUp   [sc,p,n,nr].domain = UnitInterval
+            OptModel.vShutDown  [sc,p,n,nr].domain = UnitInterval
 
     # existing lines are always committed if no decision is modeled
     for sc,p,n,ni,nf,cc in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.le:
