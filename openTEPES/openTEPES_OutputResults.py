@@ -26,7 +26,7 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES):
         OutputToFile.index = pd.MultiIndex.from_tuples(OutputToFile.index)
         OutputToFile.index.names = ['InitialNode','FinalNode','Circuit']
         OutputToFile = OutputToFile.reset_index()
-        OutputToFile.rename(columns={'vNetworkInvest': 'Investment Decision'}).to_csv(_path+'/oT_Result_NetworkInvestment_'+CaseName+'.csv', index=False, sep=',')
+        OutputToFile.rename(columns={'vNetworkInvest': 'Investment Decision'}).to_csv(_path + '/oT_Result_NetworkInvestment_' + CaseName + '.csv', index=False, sep=',')
 
 
     WritingResultsTime = time.time() - StartTime
