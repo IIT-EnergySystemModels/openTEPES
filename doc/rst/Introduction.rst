@@ -6,8 +6,8 @@ The *Open Generation and Transmission Operation and Expansion Planning Model wit
 for supplying the forecasted demand at minimum cost. Tactical planning is concerned with time horizons of 10-20 years. Its objective is to evaluate the future generation, storage and network needs.
 The main results are the guidelines for the future structure of the generation and transmission systems.
 
-The **openTEPES** model presents a decision support system for defining the generation and transmission expansion plan of a large-scale electric system at a tactical level,
-defined as a set of generation and network investment decisions for future years. The expansion candidate, generators, ESS and lines, are pre-defined by the user, so the model determines
+The **openTEPES** model presents a decision support system for defining the generation, storage, and transmission expansion plan of a large-scale electric system at a tactical level,
+defined as a set of generation,storage, and network investment decisions for future years. The expansion candidate, generators, storage, and lines are pre-defined by the user, so the model determines
 the optimal decisions among those specified by the user.
 
 It determines automatically optimal expansion plans that satisfy simultaneously several attributes. Its main characteristics are:
@@ -22,24 +22,24 @@ It determines automatically optimal expansion plans that satisfy simultaneously 
   The time division allows a flexible representation of the periods for evaluating the system operation. Additionally, it can be run with chronological periods of several consecutive hours (bi-hourly, tri-hourly resolution)
   to allow decreasing the computational burden without accuracy loss.
 
-- **Stochastic**: several stochastic parameters that can influence the optimal generation and transmission expansion decisions are considered. The model considers stochastic
-  medium-term yearly uncertainties (scenarios) related to the system operation. These operation scenarios are associated with renewable energy sources and electricity demand.
+- **Stochastic**: several stochastic parameters that can influence the optimal generation, storage, and transmission expansion decisions are considered. The model considers stochastic
+  medium-term yearly uncertainties (scenarios) related to the system operation. These operation scenarios are associated with renewable energy sources, energy inflows and outflows, operating reserves, inertia, and electricity demand.
   
-The objective function incorporates the two main quantifiable costs: **generation and transmission investment cost (CAPEX)** and **expected variable operation costs (including generation emission and reliability costs) (system OPEX)**.
+The objective function incorporates the two main quantifiable costs: **generation, storage, and transmission investment cost (CAPEX)** and **expected variable operation costs (including generation, consumption, emission, and reliability costs) (system OPEX)**.
   
-The model formulates a stochastic optimization problem including generation and network binary investment decisions, generation operation decisions (commitment, startup and shutdown decisions are also binary) and line switching decisions.
+The model formulates a two-stage stochastic optimization problem including generation, storage, and network binary investment decisions, generation operation decisions (commitment, startup and shutdown decisions are also binary) and line switching decisions.
 
-The operation model is a **network constrained unit commitment (NCUC)** based on a **tight and compact** formulation including operating reserves with a
-**DC power flow (DCPF)** including **line switching** decisions. Network ohmic losses are considered proportional to the line flow. It considers different **energy storage systems (ESS)**, e.g., pumped-storage hydro,
-battery, etc. It allows analyzing the trade-off between the investment in generation/transmission and the investment or use of storage capacity. 
+The operation model is a **network constrained unit commitment (NCUC)** based on a **tight and compact** formulation including **operating reserves** with a
+**DC power flow (DCPF)** including **line switching** decisions. **Network ohmic losses** are considered proportional to the line flow. It considers different **energy storage systems (ESS)**, e.g., pumped-hydro storage,
+battery, etc. It allows analyzing the trade-off between the investment in generation/transmission and the investment or use of storage capacity.
 
 The main results of the model can be structured in these topics:
   
 - **Investment**: investment decisions and cost
-- **Operation**: output of different units and aggregation by technologies (thermal, storage hydro, pumped-storage hydro, RES), RES curtailment, line flows, line ohmic losses, node voltage angles
+- **Operation**: unit commitment, startup, and shutdown of non-renewable units, output of different units and aggregation by technologies (thermal, storage hydro, pumped-hydro storage, RES), RES curtailment, line flows, line ohmic losses, node voltage angles, upward and downward operating reserves
 - **Emissions**: CO2 emissions by unit
 - **Marginal**: Locational Short-Run Marginal Costs (LSRMC), water value
-- **Economic**: operation, emission and reliability costs and revenues from operation and operating reserves
+- **Economic**: operation, emission, and reliability costs and revenues from operation and operating reserves
 - **Flexibility**: flexibility provided by demand, by the different generation and consumption technologies, and by power not served
 
 A careful implementation has been done to avoid numerical problems by scaling parameters, variables and equations of the optimization problem allowing the model to be used for large-scale cases, e.g., the European system with hourly detail.

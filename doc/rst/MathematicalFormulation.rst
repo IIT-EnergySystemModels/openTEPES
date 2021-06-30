@@ -90,7 +90,7 @@ They are written in capital letters.
 :math:`TU_t, TD_t`                                     Minimum uptime and downtime of a thermal unit                                                             h
 :math:`CSU_g, CSD_g`                                   Startup and shutdown cost of a committed unit                                                             M€
 :math:`\tau_e`                                         Storage cycle of the ESS (e.g., 1, 24, 168 h -for daily, weekly, monthly-)                                h
-:math:`\rho_e`                                         Outflows cycle of the ESS (e.g., 1, 24, 168 h -for hourly, daily, weekly, monthly, yearly-)               h
+:math:`\rho_e`                                         Outflow cycle of the ESS (e.g., 1, 24, 168 h -for hourly, daily, weekly, monthly, yearly-)                h
 :math:`GI_g`                                           Generator inertia                                                                                         s
 :math:`EF_e`                                           Round-trip efficiency of the pump/turbine cycle of a hydro power plant or charge/discharge of a battery   p.u.
 :math:`I^w_{pne}`                                      Capacity of an ESS (e.g., hydro power plant)                                                              GWh
@@ -218,7 +218,7 @@ ESS energy inventory (only for load levels multiple of 1, 24, 168 h depending on
 
 :math:`i^ω_{p,n-\frac{\tau_e}{\nu},e} + \sum_{n' = n-\frac{\tau_e}{\nu}}^{n} DUR_n' (EI^ω_{pn'e} - go^ω_{pn'e} - gp^ω_{pn'e} + EF_e gc^ω_{pn'e}) = i^ω_{pne} + s^ω_{pne} \quad \forall ωpne`
 
-ESS outflows (only for load levels multiple of 1, 24, 168, 672, and 8736 h depending on the ESS outflows cycle) must be satisfied [GWh]
+ESS outflows (only for load levels multiple of 1, 24, 168, 672, and 8736 h depending on the ESS outflow cycle) must be satisfied [GWh]
 
 :math:`\sum_{n' = n-\frac{\tau_e}{\rho_e}}^{n} go^ω_{pn'e} = EO^ω_{pne} \quad \forall ωpne`
 

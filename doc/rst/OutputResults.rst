@@ -281,7 +281,7 @@ File ``oT_Result_ESSInventory.csv``
 ============  ==========  ==========  =========  ==============================================================================================
 Identifier    Identifier  Identifier  Header     Description
 ============  ==========  ==========  =========  ==============================================================================================
-Scenario      Period      Load level  Generator  Stored energy (SoC in batteries, reservoir energy in pumped-storage hydro power plants) [GWh]
+Scenario      Period      Load level  Generator  Stored energy (SoC in batteries, reservoir energy in pumped-hydro storage power plants) [GWh]
 ============  ==========  ==========  =========  ==============================================================================================
 
 File ``oT_Result_ESSInventoryUtilization.csv``
