@@ -10,6 +10,7 @@ Change Log
 - [CHANGED] introduce binary commitment option for each unit
 - [CHANGED] introduce adequacy reserve margin for each area
 - [CHANGED] introduce availability for each unit
+- [FIXED] sign of the operating reserve constraints
 
 [2.6.3] - 2021-06-20
 --------------------

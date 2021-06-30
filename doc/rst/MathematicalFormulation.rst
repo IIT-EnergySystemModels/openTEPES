@@ -184,7 +184,7 @@ Output and consumption bounded by investment decision for candidate ESS [p.u.]
 
 Adequacy system reserve margin [p.u.]
 
-:math:`\sum_{g \in a, EG} \overline{GP}_g A_g + \sum_{g \in a, CG} icg_g  \overline{GP}_g A_g \qeq PD_a RM_a \quad \forall a`
+:math:`\sum_{g \in a, EG} \overline{GP}_g A_g + \sum_{g \in a, CG} icg_g  \overline{GP}_g A_g \geq PD_a RM_a \quad \forall a`
 
 Balance of generation and demand at each node with ohmic losses [GW]
 
@@ -196,9 +196,9 @@ System inertia for each area [s]
 
 Upward and downward operating reserves provided by non-renewable generators, and ESS when charging for each area [GW]
 
-:math:`\sum_{g \in a} ur^ω_{png} + \sum_{e \in a} ur'^ω_{pne} = UR^ω_{pna} \quad \forall ωpna`
+:math:`\sum_{g \in a} ur^ω_{png} + \sum_{e \in a} ur'^ω_{pne} \geq UR^ω_{pna} \quad \forall ωpna`
 
-:math:`\sum_{g \in a} dr^ω_{png} + \sum_{e \in a} dr'^ω_{pne} = DR^ω_{pna} \quad \forall ωpna`
+:math:`\sum_{g \in a} dr^ω_{png} + \sum_{e \in a} dr'^ω_{pne} \geq DR^ω_{pna} \quad \forall ωpna`
 
 VRES units (i.e., those with linear variable cost equal to 0 and no storage capacity) do not contribute to the the operating reserves.
 
