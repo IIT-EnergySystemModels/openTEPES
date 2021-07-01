@@ -6,9 +6,8 @@ The *Open Generation and Transmission Operation and Expansion Planning Model wit
 for supplying the forecasted demand at minimum cost. Tactical planning is concerned with time horizons of 10-20 years. Its objective is to evaluate the future generation, storage and network needs.
 The main results are the guidelines for the future structure of the generation and transmission systems.
 
-The **openTEPES** model presents a decision support system for defining the generation, storage, and transmission expansion plan of a **large-scale** electric system at a tactical level,
-defined as a set of generation,storage, and network investment decisions for future years. The expansion candidate, generators, storage, and lines are pre-defined by the user, so the model determines
-the optimal decisions among those specified by the user.
+The **openTEPES** model presents a decision support system for defining the generation, storage, and transmission expansion plan (GEP+SEP+TEP) of a **large-scale electric system** at a tactical level,
+defined as a set of generation, storage, and network investment decisions for future years. The expansion candidates are pre-defined by the user, so the model determines the optimal decisions among those specified by the user.
 
 It determines automatically optimal expansion plans that satisfy simultaneously several attributes. Its main characteristics are:
 
@@ -17,9 +16,9 @@ It determines automatically optimal expansion plans that satisfy simultaneously 
   It represents hierarchically the different time scopes to take decisions in an electric system:
   
   - Period: one year
-  - Load level: 2030-01-01T00:00:00+01:00 to 2030-12-30T23:00:00+01:00
+  - Load level: one hour, e.g., 2030-01-01T00:00:00+01:00 to 2030-12-30T23:00:00+01:00
 
-  The time division allows a flexible representation of the periods for evaluating the system operation. Additionally, it can be run with chronological periods of several consecutive hours (bi-hourly, tri-hourly resolution)
+  The time division allows a flexible representation of the periods for evaluating the system operation. Moreover, it can be run with chronological periods of several consecutive hours (bi-hourly, tri-hourly resolution)
   to allow decreasing the computational burden without accuracy loss.
 
 - **Stochastic**: several stochastic parameters that can influence the optimal generation, storage, and transmission expansion decisions are considered. The model considers stochastic
