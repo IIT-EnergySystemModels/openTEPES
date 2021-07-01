@@ -46,15 +46,15 @@ File                        Description
 ``oT_Dict_Generation.csv``  Generation units (thermal -nuclear, CCGT, OCGT, coal-, ESS -hydro, pumped-hydro storage PHS, battery BESS, electric vehicle EV, demand response DR- and VRE -wind onshore and offshore, solar PV, solar thermal-)
 ``oT_Dict_Technology.csv``  Generation technologies. The technology order is used in the temporal result plot.
 ``oT_Dict_Storage.csv``     ESS storage type (daily < 12 h, weekly < 40 h, monthly > 60 h)
-``oT_Dict_Node.csv``        Nodes
-``oT_Dict_Zone.csv``        Zones
-``oT_Dict_Area.csv``        Areas
+``oT_Dict_Node.csv``        Nodes. A node belongs to a zone.
+``oT_Dict_Zone.csv``        Zones. A zone belongs to an area.
+``oT_Dict_Area.csv``        Areas. An area belongs to a region. Long-term adequacy, inertia and operating reserves are associated to areas.
 ``oT_Dict_Region.csv``      Regions
 ``oT_Dict_Circuit.csv``     Circuits
 ``oT_Dict_Line.csv``        Line type (AC, DC)
 ==========================  ===================================================================================================================================================================================================================
 
-Geographical location of nodes, zones, areas, regions
+Geographical location of nodes, zones, areas, regions.
 
 ============================  ============  ============================
 File                          Dictionary    Description
