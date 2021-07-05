@@ -292,7 +292,7 @@ Logical relation between switching state, switch-on and switch-off status of a l
 
 :math:`swt^ω_{pnijc} - swt^ω_{p,n-\nu,ijc} = son^ω_{pnijc} - sof^ω_{pnijc} \quad \forall ωpnijc`
 
-The initial status of the lines is pre-defined as plugged-in.
+The initial status of the lines is pre-defined as switched on.
 
 Minimum switch-on and switch-off state of a line [h]
 
