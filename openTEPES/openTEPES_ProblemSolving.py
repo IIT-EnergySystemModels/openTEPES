@@ -31,6 +31,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES):
         Solver.options['Method'        ] = 2                                                 # barrier method
         Solver.options['Presolve'      ] = 2
         Solver.options['Crossover'     ] = 0
+        Solver.options['RINS'          ] = 100
         # Solver.options['BarConvTol'    ] = 1e-9
         # Solver.options['BarQCPConvTol' ] = 0.025
         Solver.options['MIPGap'        ] = 0.01

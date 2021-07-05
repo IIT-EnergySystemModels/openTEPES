@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 23, 2021
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 4, 2021
 """
 
 import time
@@ -287,9 +287,11 @@ def InputData(DirName, CaseName, mTEPES):
     # existing lines (le)
     mTEPES.le = mTEPES.la - mTEPES.lc
 
-    # AC existing and candidate lines (lca and lea) and all of them (laa)
-    mTEPES.lea = mTEPES.le  - mTEPES.ed
-    mTEPES.lca = mTEPES.lc  - mTEPES.cd
+    # define AC existing  lines and non-switchable lines
+    mTEPES.lea = Set(initialize=mTEPES.le, ordered=False, doc='AC existing lines and non-switchable lines', filter=lambda mTEPES,*le: le in mTEPES.le and pLineSwitching[le] == 0 and not pLineType[le] == 'DC')
+    # define AC candidate lines and     switchable lines
+    mTEPES.lca = Set(initialize=mTEPES.la, ordered=False, doc='AC existing lines and non-switchable lines', filter=lambda mTEPES,*la: la in mTEPES.la and pLineSwitching[la] == 1 and not pLineType[la] == 'DC' or pNetFixedCost[la] > 0.0)
+
     mTEPES.laa = mTEPES.lea | mTEPES.lca
 
     # # input lines
@@ -547,7 +549,7 @@ def InputData(DirName, CaseName, mTEPES):
     mTEPES.pIndBinGenInvest      = Param(initialize=pIndBinGenInvest    , within=Boolean, doc='Indicator of binary generation investment decisions', mutable=True)
     mTEPES.pIndBinGenOperat      = Param(initialize=pIndBinGenOperat    , within=Boolean, doc='Indicator of binary generation operation  decisions', mutable=True)
     mTEPES.pIndBinNetInvest      = Param(initialize=pIndBinNetInvest    , within=Boolean, doc='Indicator of binary network    investment decisions', mutable=True)
-    mTEPES.pIndBinLineCommit     = Param(initialize=pIndBinLineCommit   , within=Boolean, doc='Indicator of binary network    switicing  decisions', mutable=True)
+    mTEPES.pIndBinLineCommit     = Param(initialize=pIndBinLineCommit   , within=Boolean, doc='Indicator of binary network    switching  decisions', mutable=True)
     mTEPES.pIndNetLosses         = Param(initialize=pIndNetLosses       , within=Boolean, doc='Indicator of binary network ohmic losses',            mutable=True)
 
     mTEPES.pENSCost              = Param(initialize=pENSCost            , within=NonNegativeReals)

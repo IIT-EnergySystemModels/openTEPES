@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 23, 2021
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 4, 2021
 """
 
 import time
@@ -428,9 +428,9 @@ def NetworkSwitchingModelFormulation(OptModel, mTEPES, pIndLogConsole, st):
         print('eLineStateCand        ... ', len(getattr(OptModel, 'eLineStateCand_' + str(st))), ' rows')
 
     def eSWOnOff(OptModel,sc,p,n,ni,nf,cc):
-        if   mTEPES.pLineSwitching[ni,nf,cc] == 1 and n == mTEPES.n.first():
+        if   mTEPES.pLineSwitching[ni,nf,cc] == 1 and (mTEPES.pSwOnTime[ni,nf,cc] > 1 or mTEPES.pSwOffTime[ni,nf,cc] > 1) and n == mTEPES.n.first():
             return OptModel.vLineCommit[sc,p,n,ni,nf,cc] - mTEPES.pInitialSwitch[sc,p,n,ni,nf,cc]               == OptModel.vLineOnState[sc,p,n,ni,nf,cc] - OptModel.vLineOffState[sc,p,n,ni,nf,cc]
-        elif mTEPES.pLineSwitching[ni,nf,cc] == 1:
+        elif mTEPES.pLineSwitching[ni,nf,cc] == 1 and (mTEPES.pSwOnTime[ni,nf,cc] > 1 or mTEPES.pSwOffTime[ni,nf,cc] > 1):
             return OptModel.vLineCommit[sc,p,n,ni,nf,cc] - OptModel.vLineCommit[sc,p,mTEPES.n.prev(n),ni,nf,cc] == OptModel.vLineOnState[sc,p,n,ni,nf,cc] - OptModel.vLineOffState[sc,p,n,ni,nf,cc]
         else:
             return Constraint.Skip
@@ -479,7 +479,7 @@ def NetworkOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, st):
             return OptModel.vFlow[sc,p,n,ni,nf,cc] / max(mTEPES.pLineNTCBck[ni,nf,cc],mTEPES.pLineNTCFrw[ni,nf,cc]) >= - OptModel.vLineCommit[sc,p,n,ni,nf,cc]
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eExistNetCap1_'+st, Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.le, rule=eExistNetCap1, doc='maximum flow by existing network capacity [p.u.]'))
+    setattr(OptModel, 'eExistNetCap1_'+st, Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, rule=eExistNetCap1, doc='maximum flow by existing network capacity [p.u.]'))
 
     if pIndLogConsole == 1:
         print('eExistNetCap1         ... ', len(getattr(OptModel, 'eExistNetCap1_'+st)), ' rows')
@@ -489,28 +489,14 @@ def NetworkOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, st):
             return OptModel.vFlow[sc,p,n,ni,nf,cc] / max(mTEPES.pLineNTCBck[ni,nf,cc],mTEPES.pLineNTCFrw[ni,nf,cc]) <=   OptModel.vLineCommit[sc,p,n,ni,nf,cc]
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eExistNetCap2_'+st, Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.le, rule=eExistNetCap2, doc='maximum flow by existing network capacity [p.u.]'))
+    setattr(OptModel, 'eExistNetCap2_'+st, Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, rule=eExistNetCap2, doc='maximum flow by existing network capacity [p.u.]'))
 
     if pIndLogConsole == 1:
         print('eExistNetCap2         ... ', len(getattr(OptModel, 'eExistNetCap2_'+st)), ' rows')
 
-    def eCandNetCap1(OptModel,sc,p,n,ni,nf,cc):
-        return OptModel.vFlow[sc,p,n,ni,nf,cc] / max(mTEPES.pLineNTCBck[ni,nf,cc],mTEPES.pLineNTCFrw[ni,nf,cc]) >= - OptModel.vLineCommit[sc,p,n,ni,nf,cc]
-    setattr(OptModel, 'eCandNetCap1_'+st, Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.lc, rule=eCandNetCap1, doc='maximum flow by installed network capacity [p.u.]'))
-
-    if pIndLogConsole == 1:
-        print('eCandNetCap1          ... ', len(getattr(OptModel, 'eCandNetCap1_'+st)), ' rows')
-
-    def eCandNetCap2(OptModel,sc,p,n,ni,nf,cc):
-        return OptModel.vFlow[sc,p,n,ni,nf,cc] / max(mTEPES.pLineNTCBck[ni,nf,cc],mTEPES.pLineNTCFrw[ni,nf,cc]) <=   OptModel.vLineCommit[sc,p,n,ni,nf,cc]
-    setattr(OptModel, 'eCandNetCap2_'+st, Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.lc, rule=eCandNetCap2, doc='maximum flow by installed network capacity [p.u.]'))
-
-    if pIndLogConsole == 1:
-        print('eCandNetCap2          ... ', len(getattr(OptModel, 'eCandNetCap2_'+st)), ' rows')
-
     #%%
     def eKirchhoff2ndLaw1(OptModel,sc,p,n,ni,nf,cc):
-        if mTEPES.pLineSwitching[ni,nf,cc] == 1 or (ni,nf,cc) in mTEPES.lca:
+        if (ni,nf,cc) in mTEPES.lca:
             return OptModel.vFlow[sc,p,n,ni,nf,cc] / mTEPES.pBigMFlowBck[ni,nf,cc] - (OptModel.vTheta[sc,p,n,ni] - OptModel.vTheta[sc,p,n,nf]) / mTEPES.pLineX[ni,nf,cc] / mTEPES.pBigMFlowBck[ni,nf,cc] * mTEPES.pSBase >= - 1 + OptModel.vLineCommit[sc,p,n,ni,nf,cc]
         else:
             return OptModel.vFlow[sc,p,n,ni,nf,cc] / mTEPES.pBigMFlowBck[ni,nf,cc] - (OptModel.vTheta[sc,p,n,ni] - OptModel.vTheta[sc,p,n,nf]) / mTEPES.pLineX[ni,nf,cc] / mTEPES.pBigMFlowBck[ni,nf,cc] * mTEPES.pSBase ==   0
@@ -520,7 +506,7 @@ def NetworkOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, st):
         print('eKirchhoff2ndLaw1  ... ', len(getattr(OptModel, 'eKirchhoff2ndLaw1_'+st)), ' rows')
 
     def eKirchhoff2ndLaw2(OptModel,sc,p,n,ni,nf,cc):
-        if mTEPES.pLineSwitching[ni,nf,cc] == 1 or (ni,nf,cc) in mTEPES.lca:
+        if (ni,nf,cc) in mTEPES.lca:
             return OptModel.vFlow[sc,p,n,ni,nf,cc] / mTEPES.pBigMFlowFrw[ni,nf,cc] - (OptModel.vTheta[sc,p,n,ni] - OptModel.vTheta[sc,p,n,nf]) / mTEPES.pLineX[ni,nf,cc] / mTEPES.pBigMFlowFrw[ni,nf,cc] * mTEPES.pSBase <=   1 - OptModel.vLineCommit[sc,p,n,ni,nf,cc]
         else:
             return Constraint.Skip
