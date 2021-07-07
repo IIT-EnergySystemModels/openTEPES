@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 4, 2021
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 7, 2021
 """
 
 import time
@@ -20,6 +20,7 @@ def InputData(DirName, CaseName, mTEPES):
     dfParameter          = pd.read_csv(_path+'/oT_Data_Parameter_'             +CaseName+'.csv', index_col=[0    ])
     dfScenario           = pd.read_csv(_path+'/oT_Data_Scenario_'              +CaseName+'.csv', index_col=[0    ])
     dfStage              = pd.read_csv(_path+'/oT_Data_Stage_'                 +CaseName+'.csv', index_col=[0    ])
+    dfSwitchingStage     = pd.read_csv(_path+'/oT_Data_SwitchingStage_'        +CaseName+'.csv', index_col=[0,1,2,3])
     dfDuration           = pd.read_csv(_path+'/oT_Data_Duration_'              +CaseName+'.csv', index_col=[0    ])
     dfReserveMargin      = pd.read_csv(_path+'/oT_Data_ReserveMargin_'         +CaseName+'.csv', index_col=[0    ])
     dfDemand             = pd.read_csv(_path+'/oT_Data_Demand_'                +CaseName+'.csv', index_col=[0,1,2])
@@ -43,6 +44,7 @@ def InputData(DirName, CaseName, mTEPES):
     dfParameter.fillna         (0.0, inplace=True)
     dfScenario.fillna          (0.0, inplace=True)
     dfStage.fillna             (0.0, inplace=True)
+    dfSwitchingStage.fillna    (0.0, inplace=True)
     dfDuration.fillna          (0  , inplace=True)
     dfReserveMargin.fillna     (0.0, inplace=True)
     dfDemand.fillna            (0.0, inplace=True)
@@ -80,45 +82,47 @@ def InputData(DirName, CaseName, mTEPES):
 
     #%% reading the sets
     dictSets = DataPortal()
-    dictSets.load(filename=_path+'/oT_Dict_Scenario_'    +CaseName+'.csv', set='sc'  , format='set')
-    dictSets.load(filename=_path+'/oT_Dict_Period_'      +CaseName+'.csv', set='p'   , format='set')
-    dictSets.load(filename=_path+'/oT_Dict_Stage_'       +CaseName+'.csv', set='st'  , format='set')
-    dictSets.load(filename=_path+'/oT_Dict_LoadLevel_'   +CaseName+'.csv', set='n'   , format='set')
-    dictSets.load(filename=_path+'/oT_Dict_Generation_'  +CaseName+'.csv', set='g'   , format='set')
-    dictSets.load(filename=_path+'/oT_Dict_Technology_'  +CaseName+'.csv', set='gt'  , format='set')
-    dictSets.load(filename=_path+'/oT_Dict_Storage_'     +CaseName+'.csv', set='et'  , format='set')
-    dictSets.load(filename=_path+'/oT_Dict_Node_'        +CaseName+'.csv', set='nd'  , format='set')
-    dictSets.load(filename=_path+'/oT_Dict_Zone_'        +CaseName+'.csv', set='zn'  , format='set')
-    dictSets.load(filename=_path+'/oT_Dict_Area_'        +CaseName+'.csv', set='ar'  , format='set')
-    dictSets.load(filename=_path+'/oT_Dict_Region_'      +CaseName+'.csv', set='rg'  , format='set')
-    dictSets.load(filename=_path+'/oT_Dict_Circuit_'     +CaseName+'.csv', set='cc'  , format='set')
-    dictSets.load(filename=_path+'/oT_Dict_Line_'        +CaseName+'.csv', set='lt'  , format='set')
+    dictSets.load(filename=_path+'/oT_Dict_Scenario_'      +CaseName+'.csv', set='sc'  , format='set')
+    dictSets.load(filename=_path+'/oT_Dict_Period_'        +CaseName+'.csv', set='p'   , format='set')
+    dictSets.load(filename=_path+'/oT_Dict_Stage_'         +CaseName+'.csv', set='st'  , format='set')
+    dictSets.load(filename=_path+'/oT_Dict_SwitchingStage_'+CaseName+'.csv', set='ss'  , format='set')
+    dictSets.load(filename=_path+'/oT_Dict_LoadLevel_'     +CaseName+'.csv', set='n'   , format='set')
+    dictSets.load(filename=_path+'/oT_Dict_Generation_'    +CaseName+'.csv', set='g'   , format='set')
+    dictSets.load(filename=_path+'/oT_Dict_Technology_'    +CaseName+'.csv', set='gt'  , format='set')
+    dictSets.load(filename=_path+'/oT_Dict_Storage_'       +CaseName+'.csv', set='et'  , format='set')
+    dictSets.load(filename=_path+'/oT_Dict_Node_'          +CaseName+'.csv', set='nd'  , format='set')
+    dictSets.load(filename=_path+'/oT_Dict_Zone_'          +CaseName+'.csv', set='zn'  , format='set')
+    dictSets.load(filename=_path+'/oT_Dict_Area_'          +CaseName+'.csv', set='ar'  , format='set')
+    dictSets.load(filename=_path+'/oT_Dict_Region_'        +CaseName+'.csv', set='rg'  , format='set')
+    dictSets.load(filename=_path+'/oT_Dict_Circuit_'       +CaseName+'.csv', set='cc'  , format='set')
+    dictSets.load(filename=_path+'/oT_Dict_Line_'          +CaseName+'.csv', set='lt'  , format='set')
 
-    dictSets.load(filename=_path+'/oT_Dict_NodeToZone_'  +CaseName+'.csv', set='ndzn', format='set')
-    dictSets.load(filename=_path+'/oT_Dict_ZoneToArea_'  +CaseName+'.csv', set='znar', format='set')
-    dictSets.load(filename=_path+'/oT_Dict_AreaToRegion_'+CaseName+'.csv', set='arrg', format='set')
+    dictSets.load(filename=_path+'/oT_Dict_NodeToZone_'    +CaseName+'.csv', set='ndzn', format='set')
+    dictSets.load(filename=_path+'/oT_Dict_ZoneToArea_'    +CaseName+'.csv', set='znar', format='set')
+    dictSets.load(filename=_path+'/oT_Dict_AreaToRegion_'  +CaseName+'.csv', set='arrg', format='set')
 
-    mTEPES.scc  = Set(initialize=dictSets['sc'],   ordered=True,  doc='scenarios'     )
-    mTEPES.pp   = Set(initialize=dictSets['p' ],   ordered=True,  doc='periods'       )
-    mTEPES.p    = Set(initialize=dictSets['p' ],   ordered=True,  doc='periods'       )
-    mTEPES.stt  = Set(initialize=dictSets['st'],   ordered=True,  doc='stages'        )
-    mTEPES.nn   = Set(initialize=dictSets['n' ],   ordered=True,  doc='load levels'   )
-    mTEPES.gg   = Set(initialize=dictSets['g' ],   ordered=False, doc='units'         )
-    mTEPES.gt   = Set(initialize=dictSets['gt'],   ordered=False, doc='technologies'  )
-    mTEPES.et   = Set(initialize=dictSets['et'],   ordered=False, doc='ESS types'     )
-    mTEPES.nd   = Set(initialize=dictSets['nd'],   ordered=False, doc='nodes'         )
-    mTEPES.ni   = Set(initialize=dictSets['nd'],   ordered=False, doc='nodes'         )
-    mTEPES.nf   = Set(initialize=dictSets['nd'],   ordered=False, doc='nodes'         )
-    mTEPES.zn   = Set(initialize=dictSets['zn'],   ordered=False, doc='zones'         )
-    mTEPES.ar   = Set(initialize=dictSets['ar'],   ordered=False, doc='areas'         )
-    mTEPES.rg   = Set(initialize=dictSets['rg'],   ordered=False, doc='regions'       )
-    mTEPES.cc   = Set(initialize=dictSets['cc'],   ordered=False, doc='circuits'      )
-    mTEPES.c2   = Set(initialize=dictSets['cc'],   ordered=False, doc='circuits'      )
-    mTEPES.lt   = Set(initialize=dictSets['lt'],   ordered=False, doc='line types'    )
+    mTEPES.scc  = Set(initialize=dictSets['sc'],   ordered=True,  doc='scenarios'       )
+    mTEPES.pp   = Set(initialize=dictSets['p' ],   ordered=True,  doc='periods'         )
+    mTEPES.p    = Set(initialize=dictSets['p' ],   ordered=True,  doc='periods'         )
+    mTEPES.stt  = Set(initialize=dictSets['st'],   ordered=True,  doc='stages'          )
+    mTEPES.sws  = Set(initialize=dictSets['ss'],   ordered=True,  doc='switching stages')
+    mTEPES.nn   = Set(initialize=dictSets['n' ],   ordered=True,  doc='load levels'     )
+    mTEPES.gg   = Set(initialize=dictSets['g' ],   ordered=False, doc='units'           )
+    mTEPES.gt   = Set(initialize=dictSets['gt'],   ordered=False, doc='technologies'    )
+    mTEPES.et   = Set(initialize=dictSets['et'],   ordered=False, doc='ESS types'       )
+    mTEPES.nd   = Set(initialize=dictSets['nd'],   ordered=False, doc='nodes'           )
+    mTEPES.ni   = Set(initialize=dictSets['nd'],   ordered=False, doc='nodes'           )
+    mTEPES.nf   = Set(initialize=dictSets['nd'],   ordered=False, doc='nodes'           )
+    mTEPES.zn   = Set(initialize=dictSets['zn'],   ordered=False, doc='zones'           )
+    mTEPES.ar   = Set(initialize=dictSets['ar'],   ordered=False, doc='areas'           )
+    mTEPES.rg   = Set(initialize=dictSets['rg'],   ordered=False, doc='regions'         )
+    mTEPES.cc   = Set(initialize=dictSets['cc'],   ordered=False, doc='circuits'        )
+    mTEPES.c2   = Set(initialize=dictSets['cc'],   ordered=False, doc='circuits'        )
+    mTEPES.lt   = Set(initialize=dictSets['lt'],   ordered=False, doc='line types'      )
 
-    mTEPES.ndzn = Set(initialize=dictSets['ndzn'], ordered=False, doc='node to zone'  )
-    mTEPES.znar = Set(initialize=dictSets['znar'], ordered=False, doc='zone to area'  )
-    mTEPES.arrg = Set(initialize=dictSets['arrg'], ordered=False, doc='area to region')
+    mTEPES.ndzn = Set(initialize=dictSets['ndzn'], ordered=False, doc='node to zone'    )
+    mTEPES.znar = Set(initialize=dictSets['znar'], ordered=False, doc='zone to area'    )
+    mTEPES.arrg = Set(initialize=dictSets['arrg'], ordered=False, doc='area to region'  )
 
     #%% parameters
     pIndBinGenInvest     = dfOption   ['IndBinGenInvest'    ][0].astype('int')                                                            # Indicator of binary generation expansion decisions, 0 continuous - 1 binary
@@ -126,6 +130,7 @@ def InputData(DirName, CaseName, mTEPES):
     pIndBinGenOperat     = dfOption   ['IndBinGenOperat'    ][0].astype('int')                                                            # Indicator of binary generation operation decisions, 0 continuous - 1 binary
     pIndNetLosses        = dfOption   ['IndNetLosses'       ][0].astype('int')                                                            # Indicator of network losses,                        0 lossless   - 1 ohmic losses
     pIndBinLineCommit    = dfOption   ['IndBinLineCommit'   ][0].astype('int')                                                            # Indicator of binary switching decisions,            0 continuous - 1 binary
+    pIndSwitchingStage   = dfOption   ['IndSwitchingStage'  ][0].astype('int')                                                            # Indicator to use switching stage decisions,         0 No         - 1 Yes
     pENSCost             = dfParameter['ENSCost'            ][0] * 1e-3                                                                   # cost of energy not served           [MEUR/GWh]
     pCO2Cost             = dfParameter['CO2Cost'            ][0]                                                                          # cost of CO2 emission                [EUR/t CO2]
     pUpReserveActivation = dfParameter['UpReserveActivation'][0]                                                                          # upward   reserve activation         [p.u.]
@@ -135,11 +140,12 @@ def InputData(DirName, CaseName, mTEPES):
     pTimeStep            = dfParameter['TimeStep'           ][0].astype('int')                                                            # duration of the unit time step      [h]
     # pStageDuration       = dfParameter['StageDuration'      ][0].astype('int')                                                            # duration of each stage              [h]
 
-    pScenProb            = dfScenario     ['Probability'    ]                                                                             # probabilities of scenarios          [p.u.]
-    pStageWeight         = dfStage        ['Weight'         ]                                                                             # weights of stages                   [p.u.]
-    pDuration            = dfDuration     ['Duration'       ]    * pTimeStep                                                              # duration of load levels             [h]
-    pReserveMargin       = dfReserveMargin['ReserveMargin'  ]                                                                             # adequacy reserve margin             [p.u.]
-    pLevelToStage        = dfDuration     ['Stage'          ]                                                                             # load levels assignment to stages
+    pScenProb            = dfScenario      ['Probability'   ]                                                                             # probabilities of scenarios          [p.u.]
+    pStageWeight         = dfStage         ['Weight'        ]                                                                             # weights of stages                   [p.u.]
+    pSwitchingStage      = dfSwitchingStage['SwitchingStage']                                                                             # switching  stage
+    pDuration            = dfDuration      ['Duration'      ]    * pTimeStep                                                              # duration of load levels             [h]
+    pReserveMargin       = dfReserveMargin ['ReserveMargin' ]                                                                             # adequacy reserve margin             [p.u.]
+    pLevelToStage        = dfDuration      ['Stage'         ]                                                                             # load levels assignment to stages
     pDemand              = dfDemand               [mTEPES.nd]    * 1e-3                                                                   # demand                              [GW]
     pSystemInertia       = dfInertia              [mTEPES.ar]                                                                             # inertia                             [s]
     pOperReserveUp       = dfUpOperatingReserve   [mTEPES.ar]    * 1e-3                                                                   # upward   operating reserve          [GW]
@@ -259,6 +265,7 @@ def InputData(DirName, CaseName, mTEPES):
     #%% defining subsets: active load levels (n,n2), thermal units (t), RES units (r), ESS units (es), candidate gen units (gc), candidate ESS units (ec), all the lines (la), candidate lines (lc), candidate DC lines (cd), existing DC lines (cd), lines with losses (ll), reference node (rf), and reactive generating units (gq)
     mTEPES.sc = Set(initialize=mTEPES.scc,                    ordered=True , doc='scenarios'          , filter=lambda mTEPES,scc     :  scc       in mTEPES.scc and pScenProb        [scc] >  0.0)
     mTEPES.st = Set(initialize=mTEPES.stt,                    ordered=True , doc='stages'             , filter=lambda mTEPES,stt     :  stt       in mTEPES.stt and pStageWeight     [stt] >  0.0)
+    mTEPES.ss = Set(initialize=mTEPES.sws,                    ordered=True , doc='switching stages'   , filter=lambda mTEPES,sws     :  sws       in mTEPES.sws                                  )
     mTEPES.n  = Set(initialize=mTEPES.nn,                     ordered=True , doc='load levels'        , filter=lambda mTEPES,nn      :  nn        in mTEPES.nn  and pDuration         [nn] >  0  )
     mTEPES.n2 = Set(initialize=mTEPES.nn,                     ordered=True , doc='load levels'        , filter=lambda mTEPES,nn      :  nn        in mTEPES.nn  and pDuration         [nn] >  0  )
     mTEPES.g  = Set(initialize=mTEPES.gg,                     ordered=False, doc='generating    units', filter=lambda mTEPES,gg      :  gg        in mTEPES.gg  and pRatedMaxPower    [gg] >  0.0 and pGenToNode.reset_index().set_index(['index']).isin(mTEPES.nd)['Node'][gg])  # excludes generators with empty node
@@ -288,9 +295,9 @@ def InputData(DirName, CaseName, mTEPES):
     mTEPES.le = mTEPES.la - mTEPES.lc
 
     # define AC existing  lines and non-switchable lines
-    mTEPES.lea = Set(initialize=mTEPES.le, ordered=False, doc='AC existing lines and non-switchable lines', filter=lambda mTEPES,*le: le in mTEPES.le and pLineSwitching[le] == 0 and not pLineType[le] == 'DC')
+    mTEPES.lea = Set(initialize=mTEPES.le, ordered=False, doc='AC existing  lines and non-switchable lines', filter=lambda mTEPES,*le: le in mTEPES.le and pLineSwitching[le] == 0 and not pLineType[le] == 'DC')
     # define AC candidate lines and     switchable lines
-    mTEPES.lca = Set(initialize=mTEPES.la, ordered=False, doc='AC existing lines and non-switchable lines', filter=lambda mTEPES,*la: la in mTEPES.la and pLineSwitching[la] == 1 and not pLineType[la] == 'DC' or pNetFixedCost[la] > 0.0)
+    mTEPES.lca = Set(initialize=mTEPES.la, ordered=False, doc='AC candidate lines and     switchable lines', filter=lambda mTEPES,*la: la in mTEPES.la and pLineSwitching[la] == 1 and not pLineType[la] == 'DC' or pNetFixedCost[la] > 0.0)
 
     mTEPES.laa = mTEPES.lea | mTEPES.lca
 
@@ -299,14 +306,14 @@ def InputData(DirName, CaseName, mTEPES):
     # mTEPES.lil = Set(initialize=mTEPES.nf*mTEPES.ni*mTEPES.cc, doc='input line', filter=lambda mTEPES,nf,ni,cc: (ni,nf,cc) in mTEPES.ll)
 
     # assigning a node to an area
-    pNode2Area = pd.DataFrame(0, dtype=int, index=pd.MultiIndex.from_tuples(mTEPES.nd*mTEPES.ar, names=('node', 'area')), columns=['Y/N'])
+    pNode2Area = pd.DataFrame(0, dtype=int, index=pd.MultiIndex.from_tuples(mTEPES.nd*mTEPES.ar, names=('Node', 'Area')), columns=['Y/N'])
     for nd,zn,ar in mTEPES.ndzn*mTEPES.ar:
         if (zn,ar) in mTEPES.znar:
             pNode2Area.loc[nd,ar] = 1
     mTEPES.ndar = Set(initialize=mTEPES.nd*mTEPES.ar, doc='node to area', filter=lambda mTEPES,nd,ar: (nd,ar) in mTEPES.nd*mTEPES.ar and pNode2Area.loc[nd,ar]['Y/N'] == 1)
 
     # assigning a line to an area. Both nodes are in the same area. Cross-area lines not included
-    pLine2Area = pd.DataFrame(0, dtype=int, index=pd.MultiIndex.from_tuples(mTEPES.la*mTEPES.ar, names=('nodei', 'nodef', 'circuit', 'area')), columns=['Y/N'])
+    pLine2Area = pd.DataFrame(0, dtype=int, index=pd.MultiIndex.from_tuples(mTEPES.la*mTEPES.ar, names=('InitialNode', 'FinalNode', 'Circuit', 'Area')), columns=['Y/N'])
     for ni,nf,cc,ar in mTEPES.la*mTEPES.ar:
         if (ni,ar) in mTEPES.ndar:
             if (nf,ar) in mTEPES.ndar:
@@ -334,39 +341,41 @@ def InputData(DirName, CaseName, mTEPES):
     pLineSwitching    = pLineSwitching.map   (idxDict)
 
     # line type
-    pLineType = pLineType.reset_index()
-    pLineType['Y/N'] = 1
-    pLineType = pLineType.set_index(['level_0','level_1','level_2','LineType'])['Y/N']
+    pLineType = pLineType.reset_index().set_index(['level_0','level_1','level_2','LineType'])
 
-    mTEPES.pLineType = Set(initialize=mTEPES.la*mTEPES.lt, doc='line type', filter=lambda mTEPES,ni,nf,cc,lt: (ni,nf,cc,lt) in pLineType)
+    mTEPES.pLineType = Set(initialize=pLineType.index, doc='line type')
 
-    #%% inverse index node to generator
+    #%% inverse index load level to stage
     pStageToLevel = pLevelToStage.reset_index().set_index('Stage').set_axis(['LoadLevel'], axis=1, inplace=False)[['LoadLevel']]
     pStageToLevel = pStageToLevel.loc[pStageToLevel['LoadLevel'].isin(mTEPES.n)]
+    pStage2Level  = pStageToLevel.reset_index().set_index(['Stage','LoadLevel'])
 
-    pStage2Level = pStageToLevel.reset_index()
-    pStage2Level['Y/N'] = 1
-    pStage2Level = pStage2Level.set_index(['Stage','LoadLevel'])['Y/N']
-
-    mTEPES.s2n = Set(initialize=mTEPES.st*mTEPES.n, doc='load level to stage', filter=lambda mTEPES,st,n: (st,n) in pStage2Level)
+    mTEPES.s2n = Set(initialize=pStage2Level.index, doc='load level to stage')
 
     mTEPES.pLoadLevelWeight = Param(mTEPES.n, initialize=0.0, within=NonNegativeReals, doc='Load level weight', mutable=True)
     for st,n in mTEPES.s2n:
         mTEPES.pLoadLevelWeight[n] = pStageWeight[st]
 
+    #%% inverse index load level to switching stage
+    pSwStageToLevel = pSwitchingStage.reset_index().set_index('SwitchingStage').set_axis(['LoadLevel', 'InitialNode', 'FinalNode', 'Circuit'], axis=1, inplace=False)[['LoadLevel', 'InitialNode', 'FinalNode', 'Circuit']]
+    pSwStageToLevel = pSwStageToLevel.loc[pSwStageToLevel['LoadLevel'].isin(mTEPES.n)]
+    pSwStage2Level  = pSwStageToLevel.reset_index().set_index(['SwitchingStage', 'LoadLevel', 'InitialNode', 'FinalNode', 'Circuit'])
+
+    mTEPES.ss2n = Set(initialize=pSwStage2Level.index, doc='load level to switching stage          ')
+
+    # pSwStageToLine = pSwStageToLevel.reset_index().drop(['LoadLevel'], axis=1).drop_duplicates().set_index(['SwitchingStage', 'InitialNode', 'FinalNode', 'Circuit'])
+    # mTEPES.ssla = Set(initialize=pSwStageToLine.index, doc='switching stage and its respective line')
+
     #%% inverse index node to generator
     pNodeToGen = pGenToNode.reset_index().set_index('Node').set_axis(['Generator'], axis=1, inplace=False)[['Generator']]
     pNodeToGen = pNodeToGen.loc[pNodeToGen['Generator'].isin(mTEPES.g)]
+    pNode2Gen  = pNodeToGen.reset_index().set_index(['Node', 'Generator'])
 
-    pNode2Gen = pNodeToGen.reset_index()
-    pNode2Gen['Y/N'] = 1
-    pNode2Gen = pNode2Gen.set_index(['Node','Generator'])['Y/N']
+    mTEPES.n2g = Set(initialize=pNode2Gen.index, doc='node   to generator')
 
-    mTEPES.n2g = Set(initialize=mTEPES.nd*mTEPES.g, doc='node   to generator', filter=lambda mTEPES,nd,g: (nd,g) in pNode2Gen)
-
-    pZone2Gen   = pd.DataFrame(0, dtype=int, index=pd.MultiIndex.from_tuples(mTEPES.zn*mTEPES.g, names=('zone',  'generator')), columns=['Y/N'])
-    pArea2Gen   = pd.DataFrame(0, dtype=int, index=pd.MultiIndex.from_tuples(mTEPES.ar*mTEPES.g, names=('area',  'generator')), columns=['Y/N'])
-    pRegion2Gen = pd.DataFrame(0, dtype=int, index=pd.MultiIndex.from_tuples(mTEPES.rg*mTEPES.g, names=('region','generator')), columns=['Y/N'])
+    pZone2Gen   = pd.DataFrame(0, dtype=int, index=pd.MultiIndex.from_tuples(mTEPES.zn*mTEPES.g, names=('Zone',   'Generator')), columns=['Y/N'])
+    pArea2Gen   = pd.DataFrame(0, dtype=int, index=pd.MultiIndex.from_tuples(mTEPES.ar*mTEPES.g, names=('Area',   'Generator')), columns=['Y/N'])
+    pRegion2Gen = pd.DataFrame(0, dtype=int, index=pd.MultiIndex.from_tuples(mTEPES.rg*mTEPES.g, names=('Region', 'Generator')), columns=['Y/N'])
 
     for nd,g in mTEPES.n2g:
         for zn in mTEPES.zn:
@@ -386,12 +395,9 @@ def InputData(DirName, CaseName, mTEPES):
     #%% inverse index generator to technology
     pTechnologyToGen = pGenToTechnology.reset_index().set_index('Technology').set_axis(['Generator'], axis=1, inplace=False)[['Generator']]
     pTechnologyToGen = pTechnologyToGen.loc[pTechnologyToGen['Generator'].isin(mTEPES.g)]
+    pTechnology2Gen  = pTechnologyToGen.reset_index().set_index(['Technology', 'Generator'])
 
-    pTechnology2Gen = pTechnologyToGen.reset_index()
-    pTechnology2Gen['Y/N'] = 1
-    pTechnology2Gen = pTechnology2Gen.set_index(['Technology','Generator'])['Y/N']
-
-    mTEPES.t2g = Set(initialize=mTEPES.gt*mTEPES.g, doc='technology to generator', filter=lambda mTEPES,gt,g: (gt,g) in pTechnology2Gen)
+    mTEPES.t2g = Set(initialize=pTechnology2Gen.index, doc='technology to generator')
 
     # minimum and maximum variable power
     pVariableMinPower   = pVariableMinPower.replace(0.0, float('nan'))
@@ -546,18 +552,19 @@ def InputData(DirName, CaseName, mTEPES):
     pd.options.mode.chained_assignment = None
 
     # %% parameters
-    mTEPES.pIndBinGenInvest      = Param(initialize=pIndBinGenInvest    , within=Boolean, doc='Indicator of binary generation investment decisions', mutable=True)
-    mTEPES.pIndBinGenOperat      = Param(initialize=pIndBinGenOperat    , within=Boolean, doc='Indicator of binary generation operation  decisions', mutable=True)
-    mTEPES.pIndBinNetInvest      = Param(initialize=pIndBinNetInvest    , within=Boolean, doc='Indicator of binary network    investment decisions', mutable=True)
-    mTEPES.pIndBinLineCommit     = Param(initialize=pIndBinLineCommit   , within=Boolean, doc='Indicator of binary network    switching  decisions', mutable=True)
-    mTEPES.pIndNetLosses         = Param(initialize=pIndNetLosses       , within=Boolean, doc='Indicator of binary network ohmic losses',            mutable=True)
+    mTEPES.pIndBinGenInvest      = Param(initialize=pIndBinGenInvest     , within=Boolean, doc='Indicator of binary generation investment decisions', mutable=True)
+    mTEPES.pIndBinGenOperat      = Param(initialize=pIndBinGenOperat     , within=Boolean, doc='Indicator of binary generation operation  decisions', mutable=True)
+    mTEPES.pIndBinNetInvest      = Param(initialize=pIndBinNetInvest     , within=Boolean, doc='Indicator of binary network    investment decisions', mutable=True)
+    mTEPES.pIndBinLineCommit     = Param(initialize=pIndBinLineCommit    , within=Boolean, doc='Indicator of binary network    switching  decisions', mutable=True)
+    mTEPES.pIndSwitchingStage    = Param(initialize=pIndSwitchingStage   , within=Boolean, doc='Indicator to use switching stages',                   mutable=True)
+    mTEPES.pIndNetLosses         = Param(initialize=pIndNetLosses        , within=Boolean, doc='Indicator of binary network ohmic losses',            mutable=True)
 
-    mTEPES.pENSCost              = Param(initialize=pENSCost            , within=NonNegativeReals)
-    mTEPES.pCO2Cost              = Param(initialize=pCO2Cost            , within=NonNegativeReals)
-    mTEPES.pUpReserveActivation  = Param(initialize=pUpReserveActivation, within=NonNegativeReals)
-    mTEPES.pDwReserveActivation  = Param(initialize=pDwReserveActivation, within=NonNegativeReals)
-    mTEPES.pSBase                = Param(initialize=pSBase              , within=NonNegativeReals)
-    mTEPES.pTimeStep             = Param(initialize=pTimeStep           , within=NonNegativeReals)
+    mTEPES.pENSCost              = Param(initialize=pENSCost             , within=NonNegativeReals)
+    mTEPES.pCO2Cost              = Param(initialize=pCO2Cost             , within=NonNegativeReals)
+    mTEPES.pUpReserveActivation  = Param(initialize=pUpReserveActivation , within=NonNegativeReals)
+    mTEPES.pDwReserveActivation  = Param(initialize=pDwReserveActivation , within=NonNegativeReals)
+    mTEPES.pSBase                = Param(initialize=pSBase               , within=NonNegativeReals)
+    mTEPES.pTimeStep             = Param(initialize=pTimeStep            , within=NonNegativeReals)
     # mTEPES.pStageDuration        = Param(initialize=pStageDuration      , within=NonNegativeReals)
 
     mTEPES.pReserveMargin        = Param(                               mTEPES.ar, initialize=pReserveMargin.to_dict()            , within=NonNegativeReals, doc='Adequacy reserve margin'      )
@@ -695,13 +702,17 @@ def SettingUpVariables(OptModel, mTEPES):
         OptModel.vShutDown         = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=Binary,           initialize=0  ,                                                                                  doc='shutdown   of the unit                          {0,1}')
 
     if mTEPES.pIndBinLineCommit() == 0:
-        OptModel.vLineCommit       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=UnitInterval,      initialize=0.0,                                                                                 doc='line switching decision exists in a year        [0,1]')
-        OptModel.vLineOnState      = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=UnitInterval,      initialize=0.0,                                                                                 doc='on state    of the line                         [0,1]')
-        OptModel.vLineOffState     = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=UnitInterval,      initialize=0.0,                                                                                 doc='off state   of the line                         [0,1]')
+        OptModel.vLineCommit         = Var(mTEPES.sc, mTEPES.p, mTEPES.n,  mTEPES.la, within=UnitInterval,    initialize=0.0,                                                                                  doc='line switching      of the line                 [0,1]')
+        OptModel.vLineOnState        = Var(mTEPES.sc, mTEPES.p, mTEPES.n,  mTEPES.la, within=UnitInterval,    initialize=0.0,                                                                                  doc='switching on  state of the line                 [0,1]')
+        OptModel.vLineOffState       = Var(mTEPES.sc, mTEPES.p, mTEPES.n,  mTEPES.la, within=UnitInterval,    initialize=0.0,                                                                                  doc='switching off state of the line                 [0,1]')
+        if mTEPES.pIndSwitchingStage() == 1:
+            OptModel.vSwitchingStage = Var(mTEPES.sc, mTEPES.p, mTEPES.ss, mTEPES.la, within=UnitInterval,    initialize=0.0,                                                                                  doc='line switching      of the line per stage       [0,1]')
     else:
-        OptModel.vLineCommit       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=Binary,            initialize=0  ,                                                                                 doc='line switching decision exists in a year        {0,1}')
-        OptModel.vLineOnState      = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=Binary,            initialize=0  ,                                                                                 doc='on state    of the line                         {0,1}')
-        OptModel.vLineOffState     = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=Binary,            initialize=0  ,                                                                                 doc='off state   of the line                         {0,1}')
+        OptModel.vLineCommit         = Var(mTEPES.sc, mTEPES.p, mTEPES.n,  mTEPES.la, within=Binary,          initialize=0  ,                                                                                  doc='line switching      of the line                 {0,1}')
+        OptModel.vLineOnState        = Var(mTEPES.sc, mTEPES.p, mTEPES.n,  mTEPES.la, within=Binary,          initialize=0  ,                                                                                  doc='switching on  state of the line                 {0,1}')
+        OptModel.vLineOffState       = Var(mTEPES.sc, mTEPES.p, mTEPES.n,  mTEPES.la, within=Binary,          initialize=0  ,                                                                                  doc='switching off state of the line                 {0,1}')
+        if mTEPES.pIndSwitchingStage() == 1:
+            OptModel.vSwitchingStage = Var(mTEPES.sc, mTEPES.p, mTEPES.ss, mTEPES.la, within=Binary,          initialize=0  ,                                                                                  doc='line switching      of the line per stage       {0,1}')
 
     # relax binary condition in generation and network investment decisions
     for gc in mTEPES.gc:
@@ -724,9 +735,12 @@ def SettingUpVariables(OptModel, mTEPES):
     # existing lines are always committed if no decision is modeled
     for sc,p,n,ni,nf,cc in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.le:
         if mTEPES.pLineSwitching[ni,nf,cc] == 0:
-            OptModel.vLineCommit  [sc,p,n,ni,nf,cc].fix(1)
-            OptModel.vLineOnState [sc,p,n,ni,nf,cc].fix(0)
-            OptModel.vLineOffState[sc,p,n,ni,nf,cc].fix(0)
+            OptModel.vLineCommit    [sc,p,n ,ni,nf,cc].fix(1)
+            OptModel.vLineOnState   [sc,p,n ,ni,nf,cc].fix(0)
+            OptModel.vLineOffState  [sc,p,n ,ni,nf,cc].fix(0)
+    for sc,p,ss,ni,nf,cc in mTEPES.sc*mTEPES.p*mTEPES.ss*mTEPES.le:
+        if mTEPES.pLineSwitching[ni,nf,cc] == 0:
+            OptModel.vSwitchingStage[sc,p,ss,ni,nf,cc].fix(1)
 
     OptModel.vLineLosses           = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.ll, within=NonNegativeReals, bounds=lambda OptModel,sc,p,n,*ll: (0.0,0.5*mTEPES.pLineLossFactor[ll]*max(mTEPES.pLineNTCBck[ll],mTEPES.pLineNTCFrw[ll])), doc='half line losses                                 [GW]')
     OptModel.vFlow                 = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=Reals,            bounds=lambda OptModel,sc,p,n,*la: (-mTEPES.pLineNTCBck[la],mTEPES.pLineNTCFrw[la]),                                        doc='flow                                             [GW]')

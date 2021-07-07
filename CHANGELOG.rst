@@ -4,6 +4,10 @@ Change Log
 - [CHANGED] Addition of the sequence of decisions and operation (TEP + transmission switching)
 - [FIXED] fixing `<https://pascua.iit.comillas.edu/aramos/openTEPES/index.html#>`_ in README.rst 
 
+[3.1.0] - 2021-07-07
+--------------------
+- [CHANGED] definition of switching stages with dict and data to allow less granularity in switching decisions
+
 [2.6.5] - 2021-07-04
 --------------------
 - [FIXED] typos in line switching equations and redefinition of lea and lca sets

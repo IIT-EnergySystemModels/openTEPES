@@ -36,23 +36,24 @@ Dictionaries. Sets
 ------------------
 The dictionaries include all the possible elements of the corresponding sets included in the optimization problem. **You can't use non-English characters (e.g., ó, º)**
 
-==========================  ===================================================================================================================================================================================================================
-File                        Description
-==========================  ===================================================================================================================================================================================================================
-``oT_Dict_Scenario.csv``    Scenario. Short-term uncertainties (scenarios) (e.g., s001 to s100)
-``oT_Dict_Period.csv``      Period (e.g., y2030)
-``oT_Dict_Stage.csv``       Stage. Set of load levels grouped under an stage
-``oT_Dict_LoadLevel.csv``   Load level (e.g., 2030-01-01T00:00:00+01:00 to 2030-12-30T23:00:00+01:00). Load levels with duration 0 are ignored
-``oT_Dict_Generation.csv``  Generation units (thermal -nuclear, CCGT, OCGT, coal-, ESS -hydro, pumped-hydro storage PHS, battery BESS, electric vehicle EV, demand response DR- and VRE -wind onshore and offshore, solar PV, solar thermal-)
-``oT_Dict_Technology.csv``  Generation technologies. The technology order is used in the temporal result plot.
-``oT_Dict_Storage.csv``     ESS storage type (daily < 12 h, weekly < 40 h, monthly > 60 h)
-``oT_Dict_Node.csv``        Nodes. A node belongs to a zone.
-``oT_Dict_Zone.csv``        Zones. A zone belongs to an area.
-``oT_Dict_Area.csv``        Areas. An area belongs to a region. Long-term adequacy, inertia and operating reserves are associated to areas.
-``oT_Dict_Region.csv``      Regions
-``oT_Dict_Circuit.csv``     Circuits
-``oT_Dict_Line.csv``        Line type (AC, DC)
-==========================  ===================================================================================================================================================================================================================
+=============================  ===================================================================================================================================================================================================================
+File                           Description
+=============================  ===================================================================================================================================================================================================================
+``oT_Dict_Scenario.csv``       Scenario. Short-term uncertainties (scenarios) (e.g., s001 to s100)
+``oT_Dict_Period.csv``         Period (e.g., y2030)
+``oT_Dict_Stage.csv``          Stage
+``oT_Dict_SwitchingStage.csv`` Switching stage
+``oT_Dict_LoadLevel.csv``      Load level (e.g., 2030-01-01T00:00:00+01:00 to 2030-12-30T23:00:00+01:00). Load levels with duration 0 are ignored
+``oT_Dict_Generation.csv``     Generation units (thermal -nuclear, CCGT, OCGT, coal-, ESS -hydro, pumped-hydro storage PHS, battery BESS, electric vehicle EV, demand response DR- and VRE -wind onshore and offshore, solar PV, solar thermal-)
+``oT_Dict_Technology.csv``     Generation technologies. The technology order is used in the temporal result plot.
+``oT_Dict_Storage.csv``        ESS storage type (daily < 12 h, weekly < 40 h, monthly > 60 h)
+``oT_Dict_Node.csv``           Nodes. A node belongs to a zone.
+``oT_Dict_Zone.csv``           Zones. A zone belongs to an area.
+``oT_Dict_Area.csv``           Areas. An area belongs to a region. Long-term adequacy, inertia and operating reserves are associated to areas.
+``oT_Dict_Region.csv``         Regions
+``oT_Dict_Circuit.csv``        Circuits
+``oT_Dict_Line.csv``           Line type (AC, DC)
+=============================  ===================================================================================================================================================================================================================
 
 Geographical location of nodes, zones, areas, regions.
 
@@ -75,6 +76,7 @@ File                                       Description
 ``oT_Data_Parameter.csv``                  General system parameters
 ``oT_Data_Scenario.csv``                   Short-term uncertainties
 ``oT_Data_Stage.csv``                      Stages
+``oT_Data_SwitchingStage.csv``             Line switching stages
 ``oT_Data_ReserveMargin.csv``              Adequacy reserve margin
 ``oT_Data_Duration.csv``                   Duration of the load levels
 ``oT_Data_Demand.csv``                     Demand
@@ -154,6 +156,20 @@ Scenario        Weight        Weight of each stage
 
 This weight allows the definition of equivalent (representative) periods (e.g., one representative week with a weight of 52). Stages are not mathematically connected between them, i.e., no constraints link the operation
 at different stages.
+
+Line switching stage
+--------------------
+
+A description of the data included in the file ``oT_Data_SwitchingStage.csv`` follows:
+
+==========  ============  ==========  ========  ==================================================
+Identifier  Header        Header      Header    Description
+==========  ============  ==========  ========  ==================================================
+Load level  Initial node  Final node  Circuit   Assignment of each load level to a switching stage
+==========  ============  ==========  ========  ==================================================
+
+This switching stage allows the definition of load levels assigned to a single stage and, consequently, the model will force to decide the same line switching decisions for all the load levels simultaneously. This is done
+independently for each line.
 
 Adequacy reserve margin
 -----------------------

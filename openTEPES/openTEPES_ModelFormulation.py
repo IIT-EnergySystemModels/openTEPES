@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 4, 2021
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 7, 2021
 """
 
 import time
@@ -426,6 +426,16 @@ def NetworkSwitchingModelFormulation(OptModel, mTEPES, pIndLogConsole, st):
 
     if pIndLogConsole == 1:
         print('eLineStateCand        ... ', len(getattr(OptModel, 'eLineStateCand_' + str(st))), ' rows')
+
+    def eLineSwtStageToLevel(OptModel,sc,p,ss,n,ni,nf,cc):
+        if mTEPES.pLineSwitching[ni,nf,cc] == 1 and mTEPES.pIndSwitchingStage() == 1:
+            return OptModel.vLineCommit[sc,p,n,ni,nf,cc] == OptModel.vSwitchingStage[sc,p,ss,ni,nf,cc]
+        else:
+            return Constraint.Skip
+    setattr(OptModel, 'eLineSwtStageToLevel_'+st, Constraint(mTEPES.sc, mTEPES.p, mTEPES.ss2n, rule=eLineSwtStageToLevel, doc='constraints between line commitment per load level and per stage'))
+
+    if pIndLogConsole == 1:
+        print('eLineSwtStageToLevel  ... ', len(getattr(OptModel, 'eLineSwtStageToLevel_'+st)), ' rows')
 
     def eSWOnOff(OptModel,sc,p,n,ni,nf,cc):
         if   mTEPES.pLineSwitching[ni,nf,cc] == 1 and (mTEPES.pSwOnTime[ni,nf,cc] > 1 or mTEPES.pSwOffTime[ni,nf,cc] > 1) and n == mTEPES.n.first():
