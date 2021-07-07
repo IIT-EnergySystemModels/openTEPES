@@ -738,9 +738,10 @@ def SettingUpVariables(OptModel, mTEPES):
             OptModel.vLineCommit    [sc,p,n ,ni,nf,cc].fix(1)
             OptModel.vLineOnState   [sc,p,n ,ni,nf,cc].fix(0)
             OptModel.vLineOffState  [sc,p,n ,ni,nf,cc].fix(0)
-    for sc,p,ss,ni,nf,cc in mTEPES.sc*mTEPES.p*mTEPES.ss*mTEPES.le:
-        if mTEPES.pLineSwitching[ni,nf,cc] == 0:
-            OptModel.vSwitchingStage[sc,p,ss,ni,nf,cc].fix(1)
+    if mTEPES.pIndSwitchingStage() == 1:
+        for sc,p,ss,ni,nf,cc in mTEPES.sc*mTEPES.p*mTEPES.ss*mTEPES.le:
+            if mTEPES.pLineSwitching[ni,nf,cc] == 0:
+                OptModel.vSwitchingStage[sc,p,ss,ni,nf,cc].fix(1)
 
     OptModel.vLineLosses           = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.ll, within=NonNegativeReals, bounds=lambda OptModel,sc,p,n,*ll: (0.0,0.5*mTEPES.pLineLossFactor[ll]*max(mTEPES.pLineNTCBck[ll],mTEPES.pLineNTCFrw[ll])), doc='half line losses                                 [GW]')
     OptModel.vFlow                 = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=Reals,            bounds=lambda OptModel,sc,p,n,*la: (-mTEPES.pLineNTCBck[la],mTEPES.pLineNTCFrw[la]),                                        doc='flow                                             [GW]')
