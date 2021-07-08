@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 7, 2021
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 8, 2021
 """
 
 import time
@@ -16,28 +16,28 @@ def InputData(DirName, CaseName, mTEPES):
     StartTime = time.time()
 
     #%% reading data from CSV
-    dfOption             = pd.read_csv(_path+'/oT_Data_Option_'                +CaseName+'.csv', index_col=[0    ])
-    dfParameter          = pd.read_csv(_path+'/oT_Data_Parameter_'             +CaseName+'.csv', index_col=[0    ])
-    dfScenario           = pd.read_csv(_path+'/oT_Data_Scenario_'              +CaseName+'.csv', index_col=[0    ])
-    dfStage              = pd.read_csv(_path+'/oT_Data_Stage_'                 +CaseName+'.csv', index_col=[0    ])
+    dfOption             = pd.read_csv(_path+'/oT_Data_Option_'                +CaseName+'.csv', index_col=[0      ])
+    dfParameter          = pd.read_csv(_path+'/oT_Data_Parameter_'             +CaseName+'.csv', index_col=[0      ])
+    dfScenario           = pd.read_csv(_path+'/oT_Data_Scenario_'              +CaseName+'.csv', index_col=[0      ])
+    dfStage              = pd.read_csv(_path+'/oT_Data_Stage_'                 +CaseName+'.csv', index_col=[0      ])
     dfSwitchingStage     = pd.read_csv(_path+'/oT_Data_SwitchingStage_'        +CaseName+'.csv', index_col=[0,1,2,3])
-    dfDuration           = pd.read_csv(_path+'/oT_Data_Duration_'              +CaseName+'.csv', index_col=[0    ])
-    dfReserveMargin      = pd.read_csv(_path+'/oT_Data_ReserveMargin_'         +CaseName+'.csv', index_col=[0    ])
-    dfDemand             = pd.read_csv(_path+'/oT_Data_Demand_'                +CaseName+'.csv', index_col=[0,1,2])
-    dfInertia            = pd.read_csv(_path+'/oT_Data_Inertia_'               +CaseName+'.csv', index_col=[0,1,2])
-    dfUpOperatingReserve = pd.read_csv(_path+'/oT_Data_OperatingReserveUp_'    +CaseName+'.csv', index_col=[0,1,2])
-    dfDwOperatingReserve = pd.read_csv(_path+'/oT_Data_OperatingReserveDown_'  +CaseName+'.csv', index_col=[0,1,2])
-    dfGeneration         = pd.read_csv(_path+'/oT_Data_Generation_'            +CaseName+'.csv', index_col=[0    ])
-    dfVariableMinPower   = pd.read_csv(_path+'/oT_Data_VariableMinGeneration_' +CaseName+'.csv', index_col=[0,1,2])
-    dfVariableMaxPower   = pd.read_csv(_path+'/oT_Data_VariableMaxGeneration_' +CaseName+'.csv', index_col=[0,1,2])
-    dfVariableMinCharge  = pd.read_csv(_path+'/oT_Data_VariableMinConsumption_'+CaseName+'.csv', index_col=[0,1,2])
-    dfVariableMaxCharge  = pd.read_csv(_path+'/oT_Data_VariableMaxConsumption_'+CaseName+'.csv', index_col=[0,1,2])
-    dfVariableMinStorage = pd.read_csv(_path+'/oT_Data_VariableMinStorage_'    +CaseName+'.csv', index_col=[0,1,2])
-    dfVariableMaxStorage = pd.read_csv(_path+'/oT_Data_VariableMaxStorage_'    +CaseName+'.csv', index_col=[0,1,2])
-    dfEnergyInflows      = pd.read_csv(_path+'/oT_Data_EnergyInflows_'         +CaseName+'.csv', index_col=[0,1,2])
-    dfEnergyOutflows     = pd.read_csv(_path+'/oT_Data_EnergyOutflows_'        +CaseName+'.csv', index_col=[0,1,2])
-    dfNodeLocation       = pd.read_csv(_path+'/oT_Data_NodeLocation_'          +CaseName+'.csv', index_col=[0    ])
-    dfNetwork            = pd.read_csv(_path+'/oT_Data_Network_'               +CaseName+'.csv', index_col=[0,1,2])
+    dfDuration           = pd.read_csv(_path+'/oT_Data_Duration_'              +CaseName+'.csv', index_col=[0      ])
+    dfReserveMargin      = pd.read_csv(_path+'/oT_Data_ReserveMargin_'         +CaseName+'.csv', index_col=[0      ])
+    dfDemand             = pd.read_csv(_path+'/oT_Data_Demand_'                +CaseName+'.csv', index_col=[0,1,2  ])
+    dfInertia            = pd.read_csv(_path+'/oT_Data_Inertia_'               +CaseName+'.csv', index_col=[0,1,2  ])
+    dfUpOperatingReserve = pd.read_csv(_path+'/oT_Data_OperatingReserveUp_'    +CaseName+'.csv', index_col=[0,1,2  ])
+    dfDwOperatingReserve = pd.read_csv(_path+'/oT_Data_OperatingReserveDown_'  +CaseName+'.csv', index_col=[0,1,2  ])
+    dfGeneration         = pd.read_csv(_path+'/oT_Data_Generation_'            +CaseName+'.csv', index_col=[0      ])
+    dfVariableMinPower   = pd.read_csv(_path+'/oT_Data_VariableMinGeneration_' +CaseName+'.csv', index_col=[0,1,2  ])
+    dfVariableMaxPower   = pd.read_csv(_path+'/oT_Data_VariableMaxGeneration_' +CaseName+'.csv', index_col=[0,1,2  ])
+    dfVariableMinCharge  = pd.read_csv(_path+'/oT_Data_VariableMinConsumption_'+CaseName+'.csv', index_col=[0,1,2  ])
+    dfVariableMaxCharge  = pd.read_csv(_path+'/oT_Data_VariableMaxConsumption_'+CaseName+'.csv', index_col=[0,1,2  ])
+    dfVariableMinStorage = pd.read_csv(_path+'/oT_Data_VariableMinStorage_'    +CaseName+'.csv', index_col=[0,1,2  ])
+    dfVariableMaxStorage = pd.read_csv(_path+'/oT_Data_VariableMaxStorage_'    +CaseName+'.csv', index_col=[0,1,2  ])
+    dfEnergyInflows      = pd.read_csv(_path+'/oT_Data_EnergyInflows_'         +CaseName+'.csv', index_col=[0,1,2  ])
+    dfEnergyOutflows     = pd.read_csv(_path+'/oT_Data_EnergyOutflows_'        +CaseName+'.csv', index_col=[0,1,2  ])
+    dfNodeLocation       = pd.read_csv(_path+'/oT_Data_NodeLocation_'          +CaseName+'.csv', index_col=[0      ])
+    dfNetwork            = pd.read_csv(_path+'/oT_Data_Network_'               +CaseName+'.csv', index_col=[0,1,2  ])
 
     # substitute NaN by 0
     dfOption.fillna            (0  , inplace=True)
@@ -294,13 +294,6 @@ def InputData(DirName, CaseName, mTEPES):
     # existing lines (le)
     mTEPES.le = mTEPES.la - mTEPES.lc
 
-    # define AC existing  lines and non-switchable lines
-    mTEPES.lea = Set(initialize=mTEPES.le, ordered=False, doc='AC existing  lines and non-switchable lines', filter=lambda mTEPES,*le: le in mTEPES.le and pLineSwitching[le] == 0 and not pLineType[le] == 'DC')
-    # define AC candidate lines and     switchable lines
-    mTEPES.lca = Set(initialize=mTEPES.la, ordered=False, doc='AC candidate lines and     switchable lines', filter=lambda mTEPES,*la: la in mTEPES.la and pLineSwitching[la] == 1 and not pLineType[la] == 'DC' or pNetFixedCost[la] > 0.0)
-
-    mTEPES.laa = mTEPES.lea | mTEPES.lca
-
     # # input lines
     # mTEPES.lin = Set(initialize=mTEPES.nf*mTEPES.ni*mTEPES.cc, doc='input line', filter=lambda mTEPES,nf,ni,cc: (ni,nf,cc) in mTEPES.la)
     # mTEPES.lil = Set(initialize=mTEPES.nf*mTEPES.ni*mTEPES.cc, doc='input line', filter=lambda mTEPES,nf,ni,cc: (ni,nf,cc) in mTEPES.ll)
@@ -340,6 +333,13 @@ def InputData(DirName, CaseName, mTEPES):
     pMustRun          = pMustRun.map         (idxDict)
     pLineSwitching    = pLineSwitching.map   (idxDict)
 
+    # define AC existing  lines     non-switchable
+    mTEPES.lea = Set(initialize=mTEPES.le, ordered=False, doc='AC existing  lines and non-switchable lines', filter=lambda mTEPES,*le: le in mTEPES.le and  pLineSwitching[le] == 0                             and not pLineType[le] == 'DC')
+    # define AC candidate lines and     switchable lines
+    mTEPES.lca = Set(initialize=mTEPES.la, ordered=False, doc='AC candidate lines and     switchable lines', filter=lambda mTEPES,*la: la in mTEPES.la and (pLineSwitching[la] == 1 or pNetFixedCost[la] > 0.0) and not pLineType[la] == 'DC')
+
+    mTEPES.laa = mTEPES.lea | mTEPES.lca
+
     # line type
     pLineType = pLineType.reset_index().set_index(['level_0','level_1','level_2','LineType'])
 
@@ -362,9 +362,6 @@ def InputData(DirName, CaseName, mTEPES):
     pSwStage2Level  = pSwStageToLevel.reset_index().set_index(['SwitchingStage', 'LoadLevel', 'InitialNode', 'FinalNode', 'Circuit'])
 
     mTEPES.ss2n = Set(initialize=pSwStage2Level.index, doc='load level to switching stage          ')
-
-    # pSwStageToLine = pSwStageToLevel.reset_index().drop(['LoadLevel'], axis=1).drop_duplicates().set_index(['SwitchingStage', 'InitialNode', 'FinalNode', 'Circuit'])
-    # mTEPES.ssla = Set(initialize=pSwStageToLine.index, doc='switching stage and its respective line')
 
     #%% inverse index node to generator
     pNodeToGen = pGenToNode.reset_index().set_index('Node').set_axis(['Generator'], axis=1, inplace=False)[['Generator']]
@@ -702,17 +699,17 @@ def SettingUpVariables(OptModel, mTEPES):
         OptModel.vShutDown         = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=Binary,           initialize=0  ,                                                                                  doc='shutdown   of the unit                          {0,1}')
 
     if mTEPES.pIndBinLineCommit() == 0:
-        OptModel.vLineCommit         = Var(mTEPES.sc, mTEPES.p, mTEPES.n,  mTEPES.la, within=UnitInterval,    initialize=0.0,                                                                                  doc='line switching      of the line                 [0,1]')
-        OptModel.vLineOnState        = Var(mTEPES.sc, mTEPES.p, mTEPES.n,  mTEPES.la, within=UnitInterval,    initialize=0.0,                                                                                  doc='switching on  state of the line                 [0,1]')
-        OptModel.vLineOffState       = Var(mTEPES.sc, mTEPES.p, mTEPES.n,  mTEPES.la, within=UnitInterval,    initialize=0.0,                                                                                  doc='switching off state of the line                 [0,1]')
+        OptModel.vLineCommit         = Var(mTEPES.sc, mTEPES.p, mTEPES.n,  mTEPES.la, within=UnitInterval,  initialize=0.0,                                                                                  doc='line switching      of the line                 [0,1]')
+        OptModel.vLineOnState        = Var(mTEPES.sc, mTEPES.p, mTEPES.n,  mTEPES.la, within=UnitInterval,  initialize=0.0,                                                                                  doc='switching on  state of the line                 [0,1]')
+        OptModel.vLineOffState       = Var(mTEPES.sc, mTEPES.p, mTEPES.n,  mTEPES.la, within=UnitInterval,  initialize=0.0,                                                                                  doc='switching off state of the line                 [0,1]')
         if mTEPES.pIndSwitchingStage() == 1:
-            OptModel.vSwitchingStage = Var(mTEPES.sc, mTEPES.p, mTEPES.ss, mTEPES.la, within=UnitInterval,    initialize=0.0,                                                                                  doc='line switching      of the line per stage       [0,1]')
+            OptModel.vSwitchingStage = Var(mTEPES.sc, mTEPES.p, mTEPES.ss, mTEPES.la, within=UnitInterval,  initialize=0.0,                                                                                  doc='line switching      of the line per stage       [0,1]')
     else:
-        OptModel.vLineCommit         = Var(mTEPES.sc, mTEPES.p, mTEPES.n,  mTEPES.la, within=Binary,          initialize=0  ,                                                                                  doc='line switching      of the line                 {0,1}')
-        OptModel.vLineOnState        = Var(mTEPES.sc, mTEPES.p, mTEPES.n,  mTEPES.la, within=Binary,          initialize=0  ,                                                                                  doc='switching on  state of the line                 {0,1}')
-        OptModel.vLineOffState       = Var(mTEPES.sc, mTEPES.p, mTEPES.n,  mTEPES.la, within=Binary,          initialize=0  ,                                                                                  doc='switching off state of the line                 {0,1}')
+        OptModel.vLineCommit         = Var(mTEPES.sc, mTEPES.p, mTEPES.n,  mTEPES.la, within=Binary,        initialize=0  ,                                                                                  doc='line switching      of the line                 {0,1}')
+        OptModel.vLineOnState        = Var(mTEPES.sc, mTEPES.p, mTEPES.n,  mTEPES.la, within=Binary,        initialize=0  ,                                                                                  doc='switching on  state of the line                 {0,1}')
+        OptModel.vLineOffState       = Var(mTEPES.sc, mTEPES.p, mTEPES.n,  mTEPES.la, within=Binary,        initialize=0  ,                                                                                  doc='switching off state of the line                 {0,1}')
         if mTEPES.pIndSwitchingStage() == 1:
-            OptModel.vSwitchingStage = Var(mTEPES.sc, mTEPES.p, mTEPES.ss, mTEPES.la, within=Binary,          initialize=0  ,                                                                                  doc='line switching      of the line per stage       {0,1}')
+            OptModel.vSwitchingStage = Var(mTEPES.sc, mTEPES.p, mTEPES.ss, mTEPES.la, within=Binary,        initialize=0  ,                                                                                  doc='line switching      of the line per stage       {0,1}')
 
     # relax binary condition in generation and network investment decisions
     for gc in mTEPES.gc:
