@@ -13,11 +13,14 @@ Acronym     Description
 ==========  ====================================================================
 AC          Alternating Current
 aFRR        Automatic Frequency Restoration Reserve
+AWE         Alkaline Water Electrolyzer
 BESS        Battery Energy Storage System
 CCGT        Combined Cycle Gas Turbine
 DR          Demand Response
 DC          Direct Current
 DCPF        DC Power Flow
+DR          Demand Response
+DSM         Demand-Side Management
 EFOR        Equivalent Forced Outage Rate
 ENTSO-E     European Network of Transmission System Operators for Electricity
 ESS         Energy Storage System
@@ -44,7 +47,7 @@ File                           Description
 ``oT_Dict_Stage.csv``          Stage
 ``oT_Dict_SwitchingStage.csv`` Switching stage
 ``oT_Dict_LoadLevel.csv``      Load level (e.g., 2030-01-01T00:00:00+01:00 to 2030-12-30T23:00:00+01:00). Load levels with duration 0 are ignored
-``oT_Dict_Generation.csv``     Generation units (thermal -nuclear, CCGT, OCGT, coal-, ESS -hydro, pumped-hydro storage PHS, battery BESS, electric vehicle EV, demand response DR- and VRE -wind onshore and offshore, solar PV, solar thermal-)
+``oT_Dict_Generation.csv``     Generation units (thermal -nuclear, CCGT, OCGT, coal-, ESS -hydro, pumped-hydro storage PHS, battery BESS, electric vehicle EV, demand response DR, alkaline water electrolyzer AWE- and VRE -wind onshore and offshore, solar PV, solar thermal-)
 ``oT_Dict_Technology.csv``     Generation technologies. The technology order is used in the temporal result plot.
 ``oT_Dict_Storage.csv``        ESS storage type (daily < 12 h, weekly < 40 h, monthly > 60 h)
 ``oT_Dict_Node.csv``           Nodes. A node belongs to a zone.
@@ -100,15 +103,15 @@ Options
 ----------
 A description of the options included in the file ``oT_Data_Option.csv`` follows:
 
-==================  ===============================================================================
+==================  ====================================================  =============================
 File                Description
-==================  ===============================================================================
-IndBinGenInvest     Indicator of binary generation   expansion decisions, {0 continuous, 1 binary}
-IndBinNetInvest     Indicator of binary network      expansion decisions, {0 continuous, 1 binary}
-IndBinGenCommit     Indicator of binary generation   operation decisions, {0 continuous, 1 binary}
-IndBinLineCommit    Indicator of binary transmission switching decisions, {0 continuous, 1 binary}
-IndNetLosses        Indicator of network losses,                      {0 lossless, 1 ohmic losses}
-==================  ===============================================================================
+==================  ====================================================  =============================
+IndBinGenInvest     Indicator of binary generation   expansion decisions  {0 continuous, 1 binary}
+IndBinNetInvest     Indicator of binary network      expansion decisions  {0 continuous, 1 binary}
+IndBinGenCommit     Indicator of binary generation   operation decisions  {0 continuous, 1 binary}
+IndBinLineCommit    Indicator of binary transmission switching decisions  {0 continuous, 1 binary}
+IndNetLosses        Indicator of network losses                           {0 lossless, 1 ohmic losses}
+==================  ====================================================  =============================
 
 Parameters
 ----------
