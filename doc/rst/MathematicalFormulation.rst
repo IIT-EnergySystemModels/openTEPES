@@ -18,7 +18,7 @@ Here we present the mathematical formulation of the optimization problem solved 
 
 Indices
 -------
-==============  ========================================================
+==============  ========================================================================
 :math:`ω`       Scenario
 :math:`p`       Period
 :math:`n`       Load level
@@ -34,8 +34,8 @@ Indices
 :math:`ijc`     Line (initial node, final node, circuit)
 :math:`EG, CG`  Set of existing and candidate generators
 :math:`EE, CE`  Set of existing and candidate ESS
-:math:`EL, CL`  Set of existing and candidate lines
-==============  ========================================================
+:math:`EL, CL`  Set of existing and non-switchable, and candidate and switchable lines
+==============  ========================================================================
 
 Parameters
 ----------
@@ -304,19 +304,21 @@ Flow limit in transmission lines [p.u.]
 
 :math:`- swt^{ω}_{pnijc} \leq \frac{f^ω_{pnijc}}{\overline{F}_{ijc}} \leq swt^{ω}_{pnijc} \quad \forall ωpnijc`
 
-DC Power flow for existing and candidate AC-type lines (Kirchhoff's second law) [rad]
+DC Power flow for existing and non-switchable, and candidate and switchable AC-type lines (Kirchhoff's second law) [rad]
 
-:math:`-1+swt^{ω}_{pnijc} \leq \frac{f^ω_{pnijc}}{\overline{F}'_{ijc}} - (\theta^ω_{pni} - \theta^ω_{pnj})\frac{S_B}{X_{ijc}\overline{F}'_{ijc}} \leq 1-swt^{ω}_{pnijc} \quad \forall ωpnijc`
+:math:`                        \frac{f^ω_{pnijc}}{\overline{F}'_{ijc}} - (\theta^ω_{pni} - \theta^ω_{pnj})\frac{S_B}{X_{ijc}\overline{F}'_{ijc}} = 0 \quad \forall ωpnijc, ijc \in EL`
+
+:math:`-1+swt^{ω}_{pnijc} \leq \frac{f^ω_{pnijc}}{\overline{F}'_{ijc}} - (\theta^ω_{pni} - \theta^ω_{pnj})\frac{S_B}{X_{ijc}\overline{F}'_{ijc}} \leq 1-swt^{ω}_{pnijc} \quad \forall ωpnijc, ijc \in CL`
 
 Half ohmic losses are linearly approximated as a function of the flow [GW]
 
 :math:`- \frac{L_{ijc}}{2} f^ω_{pnijc} \leq l^ω_{pnijc} \geq \frac{L_{ijc}}{2} f^ω_{pnijc} \quad \forall ωpnijc`
 
-Bounds on generation variables [GW]
+**Bounds on generation variables** [GW]
 
-:math:`0 \leq gp^ω_{png} \leq \overline{GP}^w_{png}                     \quad \forall ωpng`
+:math:`0 \leq gp^ω_{png} \leq \overline{GP}^w_{png}                           \quad \forall ωpng`
 
-:math:`0 \leq qc^ω_{pne} \leq \overline{GP}^w_{pne}                     \quad \forall ωpne`
+:math:`0 \leq qc^ω_{pne} \leq \overline{GP}^w_{pne}                           \quad \forall ωpne`
 
 :math:`0 \leq ur^ω_{png} \leq \overline{GP}^w_{png} - \underline{GP}^w_{png}  \quad \forall ωpng`
 
@@ -328,15 +330,15 @@ Bounds on generation variables [GW]
 
 :math:`0 \leq  p^ω_{png} \leq \overline{GP}^w_{png} - \underline{GP}^w_{png}  \quad \forall ωpng`
 
-:math:`0 \leq  c^ω_{pne} \leq \overline{GP}^w_{pne}                     \quad \forall ωpne`
+:math:`0 \leq  c^ω_{pne} \leq \overline{GP}^w_{pne}                           \quad \forall ωpne`
 
-:math:`0 \leq  i^ω_{pne} \leq I^w_{pne}                                 \quad \forall ωpne`
+:math:`0 \leq  i^ω_{pne} \leq I^w_{pne}                                       \quad \forall ωpne`
 
-:math:`0 \leq  s^ω_{pne}                                          \quad \forall ωpne`
+:math:`0 \leq  s^ω_{pne}                                                      \quad \forall ωpne`
 
-:math:`0 \leq ens^ω_{pni} \leq D^ω_{pni}                          \quad \forall ωpni`
+:math:`0 \leq ens^ω_{pni} \leq D^ω_{pni}                                      \quad \forall ωpni`
 
-Bounds on network variables [GW]
+**Bounds on network variables** [GW]
 
 :math:`0 \leq l^ω_{pnijc} \leq \frac{L_{ijc}}{2} \overline{F}_{ijc}  \quad \forall ωpnijc`
 
