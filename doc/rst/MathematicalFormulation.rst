@@ -306,7 +306,7 @@ Flow limit in transmission lines [p.u.]
 
 DC Power flow for existing and non-switchable, and candidate and switchable AC-type lines (Kirchhoff's second law) [rad]
 
-:math:`                        \frac{f^ω_{pnijc}}{\overline{F}'_{ijc}} - (\theta^ω_{pni} - \theta^ω_{pnj})\frac{S_B}{X_{ijc}\overline{F}'_{ijc}} = 0 \quad \forall ωpnijc, ijc \in EL`
+:math:`frac{f^ω_{pnijc}}{\overline{F}'_{ijc}} - (\theta^ω_{pni} - \theta^ω_{pnj})\frac{S_B}{X_{ijc}\overline{F}'_{ijc}} = 0 \quad \forall ωpnijc, ijc \in EL`
 
 :math:`-1+swt^{ω}_{pnijc} \leq \frac{f^ω_{pnijc}}{\overline{F}'_{ijc}} - (\theta^ω_{pni} - \theta^ω_{pnj})\frac{S_B}{X_{ijc}\overline{F}'_{ijc}} \leq 1-swt^{ω}_{pnijc} \quad \forall ωpnijc, ijc \in CL`
 
