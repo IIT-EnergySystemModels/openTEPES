@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 9, 2021
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 12, 2021
 """
 
 import time
@@ -485,7 +485,7 @@ def NetworkOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, st):
     StartTime = time.time()
     #%%
     def eExistNetCap1(OptModel,sc,p,n,ni,nf,cc):
-        if mTEPES.pLineSwitching[ni,nf,cc] == 1:
+        if (ni,nf,cc) in mTEPES.lc or mTEPES.pLineSwitching[ni,nf,cc] == 1:
             return OptModel.vFlow[sc,p,n,ni,nf,cc] / max(mTEPES.pLineNTCBck[ni,nf,cc],mTEPES.pLineNTCFrw[ni,nf,cc]) >= - OptModel.vLineCommit[sc,p,n,ni,nf,cc]
         else:
             return Constraint.Skip
@@ -495,7 +495,7 @@ def NetworkOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, st):
         print('eExistNetCap1         ... ', len(getattr(OptModel, 'eExistNetCap1_'+st)), ' rows')
 
     def eExistNetCap2(OptModel,sc,p,n,ni,nf,cc):
-        if mTEPES.pLineSwitching[ni,nf,cc] == 1:
+        if (ni,nf,cc) in mTEPES.lc or mTEPES.pLineSwitching[ni,nf,cc] == 1:
             return OptModel.vFlow[sc,p,n,ni,nf,cc] / max(mTEPES.pLineNTCBck[ni,nf,cc],mTEPES.pLineNTCFrw[ni,nf,cc]) <=   OptModel.vLineCommit[sc,p,n,ni,nf,cc]
         else:
             return Constraint.Skip
