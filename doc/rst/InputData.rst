@@ -286,7 +286,7 @@ OMVariableCost        O&M variable cost                                         
 StartUpCost           Startup  cost                                                                                                        M€
 ShutDownCost          Shutdown cost                                                                                                        M€
 CO2EmissionRate       CO2 emission rate                                                                                                    t CO2/MWh
-FixedCost             Overnight investment (capital) cost                                                                                  M€
+FixedCost             Overnight investment (capital and fixed O&M) cost                                                                    M€
 FixedChargeRate       Fixed-charge rate to annualize the overnight investment cost                                                         p.u.
 BinaryInvestment      Binary unit investment decision                                                                                      Yes/No
 ====================  ===================================================================================================================  ===================================
@@ -417,7 +417,7 @@ Converter          Converter station (not used in this version)                 
 TTC                Total transfer capacity (maximum permissible thermal load) in forward  direction                                 MW
 TTCBck             Total transfer capacity (maximum permissible thermal load) in backward direction                                 MW
 SecurityFactor     Security factor to consider approximately N-1 contingencies. NTC = TTC x SecurityFactor                          p.u.
-FixedCost          Overnight investment (capital) cost                                                                              M€
+FixedCost          Overnight investment (capital and fixed O&M) cost                                                                M€
 FixedChargeRate    Fixed-charge rate to annualize the overnight investment cost                                                     p.u.
 BinaryInvestment   Binary line/circuit investment decision                                                                          Yes/No
 SwOnTime           Minimum switch-on time                                                                                           h
