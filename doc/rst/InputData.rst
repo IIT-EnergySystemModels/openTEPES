@@ -16,7 +16,6 @@ aFRR        Automatic Frequency Restoration Reserve
 AWE         Alkaline Water Electrolyzer
 BESS        Battery Energy Storage System
 CCGT        Combined Cycle Gas Turbine
-DR          Demand Response
 DC          Direct Current
 DCPF        DC Power Flow
 DR          Demand Response
