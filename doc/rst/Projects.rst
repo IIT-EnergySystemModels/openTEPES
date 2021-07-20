@@ -20,6 +20,14 @@ The model has being used in these research projects:
 
     It aims at assessing, from a technical and economic point of view, the daily, weekly and seasonal storage needs for the Spanish electricity system in the 2020-2050 horizon.
 
+- Flexible Energy System for the Efficient Integration of New Decarbonisation Technologies, developed for **Iberdrola**.
+  October 2020 - December 2023.
+  `M. Rivier <https://www.iit.comillas.edu/people/michel>`_, `T. Gómez <https://www.iit.comillas.edu/people/tomas>`_, `A. Sánchez <https://www.iit.comillas.edu/people/alvaro>`_,
+  `F. Martín <https://www.iit.comillas.edu/people/fmartin>`_, `T. Freire <https://www.iit.comillas.edu/people/tfreire>`_, `J.P. Chaves <https://www.iit.comillas.edu/people/jchaves>`_,
+  `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_
+
+    It aims at improving the description of the Spanish energy system in model TIMES-SINERGIA, from the technologies considered or a higher time resolution to the detailed modeling of the power sector, such as the inclusion of transmission constraints.
+
 - `Improving energy system modelling tools and capacity <https://www.iit.comillas.edu/proyectos/mostrar_proyecto.php.en?nombre_abreviado=REFORMS>`_, developed for the **European Commission**.
   October 2020 - June 2022.
   `S. Lumbreras <https://www.iit.comillas.edu/people/slumbreras>`_, `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `P. Linares <https://www.iit.comillas.edu/people/pedrol>`_,
