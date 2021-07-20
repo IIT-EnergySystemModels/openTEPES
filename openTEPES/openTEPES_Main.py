@@ -88,8 +88,6 @@ import argparse
 import os
 # import pkg_resources
 from .openTEPES import openTEPES_run
-# from openTEPES.openTEPES import openTEPES_run
-# import openTEPES
 
 parser = argparse.ArgumentParser(description='Introducing main parameters...')
 parser.add_argument('--case',   type=str, default=None)
