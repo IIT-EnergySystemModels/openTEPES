@@ -26,7 +26,8 @@ The model has being used in these research projects:
   `F. Martín <https://www.iit.comillas.edu/people/fmartin>`_, `T. Freire <https://www.iit.comillas.edu/people/tfreire>`_, `J.P. Chaves <https://www.iit.comillas.edu/people/jchaves>`_,
   `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_
 
-    It aims at improving the description of the Spanish energy system in model TIMES-SINERGIA, from the technologies considered or a higher time resolution to the detailed modeling of the power sector, such as the inclusion of transmission constraints.
+    It aims at investigating new technologies and simulation models in the field of renewable generation, storage systems and flexible demand management and operation of the distribution network.
+    A 100% renewable and decarbonised energy mix is sought, effectively integrated into the electrical system of the future in a flexible, efficient and safe way.
 
 - `Improving energy system modelling tools and capacity <https://www.iit.comillas.edu/proyectos/mostrar_proyecto.php.en?nombre_abreviado=REFORMS>`_, developed for the **European Commission**.
   October 2020 - June 2022.
