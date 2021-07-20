@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="d4dd45eb-503b-4f17-ab9c-dccb2af69f51" name="Default Changelist" comment="" />
+    <list default="true" id="d4dd45eb-503b-4f17-ab9c-dccb2af69f51" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -29,7 +31,7 @@
     <property name="node.js.selected.package.tslint" value="(autodetect)" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PythonContentEntriesConfigurable" />
   </component>
-  <component name="RunManager" selected="Python.aaa">
+  <component name="RunManager" selected="Python.openTEPES_Main">
     <configuration name="Tool_openTEPES_TO_IAMC" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="openTEPES" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -100,16 +102,13 @@
       <module name="openTEPES" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="C:\ProgramData\Miniconda3\python.exe" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../../openTEPES_PRO/openTEPES" />
+      <option name="SDK_HOME" value="C:\Users\ealvarezq\Miniconda3\python.exe" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
       <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/../../openTEPES_PRO/openTEPES/openTEPES_Main.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/openTEPES_Main.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="true" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -126,11 +125,11 @@
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.openTEPES_Main" />
         <item itemvalue="Python.aaa" />
         <item itemvalue="Python.openTEPES_Main" />
         <item itemvalue="Python.aaa" />
         <item itemvalue="Python.Tool_openTEPES_TO_IAMC" />
-        <item itemvalue="Python.openTEPES_Main" />
       </list>
     </recent_temporary>
   </component>
@@ -149,10 +148,11 @@
       <workItem from="1615193243511" duration="9567000" />
       <workItem from="1615203687638" duration="11680000" />
       <workItem from="1616582738379" duration="2663000" />
+      <workItem from="1626793682008" duration="65000" />
     </task>
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
-    <option name="version" value="1" />
+    <option name="version" value="3" />
   </component>
 </project>
