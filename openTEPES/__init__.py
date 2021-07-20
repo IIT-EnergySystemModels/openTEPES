@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 28, 2021
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 23, 2021
 
 
     Args:
@@ -14,8 +14,6 @@ Open Generation and Transmission Operation and Expansion Planning Model with RES
         >>> import openTEPES as oT
         >>> oT.routine("9n", "C:\\Users\\UserName\\Documents\\GitHub\\openTEPES", "glpk")
 """
-
-__version__ = '2.5.1'
 
 from .openTEPES_Main             import main
 from .openTEPES                  import *

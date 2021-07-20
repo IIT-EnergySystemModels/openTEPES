@@ -2,8 +2,8 @@
 
 Download
 ========
-The **openTEPES** has been developed using `Python 3.9.4 <https://www.python.org/>`_ and `Pyomo 5.7.3 <http://www.pyomo.org/>`_ and it uses `Gurobi 9.1.2 <https://www.gurobi.com/>`_ as commercial MIP solver for which a free academic license is available.
-It uses Pyomo so that it is independent of the preferred solver. You can alternatively use one of the free solvers `SCIP <https://scip.zib.de/>`_, `GLPK 4.65 <https://www.gnu.org/software/glpk/>`_
+The **openTEPES** has been developed using `Python 3.9.4 <https://www.python.org/>`_ and `Pyomo 6.0.1 <https://pyomo.readthedocs.io/en/stable/>`_ and it uses `Gurobi 9.1.2 <https://www.gurobi.com/products/gurobi-optimizer/>`_ as commercial MIP solver for which a free academic license is available.
+It uses Pyomo so that it is independent of the preferred solver. You can alternatively use one of the free solvers `SCIP 7.0.3 <https://scip.zib.de/>`_, `GLPK 4.65 <https://www.gnu.org/software/glpk/>`_
 and `CBC 2.10.5 <https://github.com/coin-or/Cbc>`_. List the serial solver interfaces under Pyomo with this call::
 
   pyomo help -s
@@ -11,7 +11,6 @@ and `CBC 2.10.5 <https://github.com/coin-or/Cbc>`_. List the serial solver inter
 Besides, it also requires the following packages:
 
 - `Pandas <https://pandas.pydata.org/>`_ for inputting data and outputting results
-- `time <https://docs.python.org/3/library/time.html>`_ for time-related functions
 - `psutil <https://pypi.org/project/psutil/>`_ for detecting the number of CPUs
 - `Matplotlib <https://matplotlib.org/>`_, `Cartopy <https://scitools.org.uk/cartopy/docs/latest/#>`_ for plotting the network map
 

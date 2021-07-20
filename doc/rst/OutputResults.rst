@@ -281,8 +281,16 @@ File ``oT_Result_ESSInventory.csv``
 ============  ==========  ==========  =========  ==============================================================================================
 Identifier    Identifier  Identifier  Header     Description
 ============  ==========  ==========  =========  ==============================================================================================
-Scenario      Period      Load level  Generator  Stored energy (SoC in batteries, reservoir energy in pumped-storage hydro power plants) [GWh]
+Scenario      Period      Load level  Generator  Stored energy (SoC in batteries, reservoir energy in pumped-hydro storage power plants) [GWh]
 ============  ==========  ==========  =========  ==============================================================================================
+
+File ``oT_Result_ESSInventoryUtilization.csv``
+
+============  ==========  ==========  =========  =================================================================
+Identifier    Identifier  Identifier  Header     Description
+============  ==========  ==========  =========  =================================================================
+Scenario      Period      Load level  Generator  ESS utilization (i.e., ratio between usage and capacity) [p.u.]
+============  ==========  ==========  =========  =================================================================
 
 File ``oT_Result_ESSSpillage.csv``
 
@@ -329,11 +337,11 @@ Scenario      Period      Load level  Initial node  Final node  Circuit     Line
 
 File ``oT_Result_NetworkUtilization.csv``
 
-============  ==========  ==========  ============  ==========  ==========  =======================
+============  ==========  ==========  ============  ==========  ==========  ================================================================
 Identifier    Identifier  Identifier  Header        Header      Header      Description
-============  ==========  ==========  ============  ==========  ==========  =======================
-Scenario      Period      Load level  Initial node  Final node  Circuit     Line utilization [p.u.]
-============  ==========  ==========  ============  ==========  ==========  =======================
+============  ==========  ==========  ============  ==========  ==========  ================================================================
+Scenario      Period      Load level  Initial node  Final node  Circuit     Line utilization (i.e., ratio between flow and capacity) [p.u.]
+============  ==========  ==========  ============  ==========  ==========  ================================================================
 
 File ``oT_Result_NetworkLosses.csv``
 
@@ -401,6 +409,22 @@ Identifier    Identifier  Identifier  Header      Description
 ============  ==========  ==========  ==========  =================================================
 Scenario      Period      Load level  Area        Marginal of the downward operating reserve [€/MW]
 ============  ==========  ==========  ==========  =================================================
+
+File ``oT_Result_NetworkInvestment_ReducedCost.csv``
+
+============  ==========  ==========  =====================================================
+Identifier    Identifier  Identifier  Description
+============  ==========  ==========  =====================================================
+Initial node  Final node  Circuit     Reduced costs of network investment decisions [M€]
+============  ==========  ==========  =====================================================
+
+File ``oT_Result_NetworkCommitment_ReducedCost.csv``
+
+============  ==========  ==========  =====================================================
+Identifier    Identifier  Identifier  Description
+============  ==========  ==========  =====================================================
+Initial node  Final node  Circuit     Reduced costs of network switching decisions [M€]
+============  ==========  ==========  =====================================================
 
 Economic
 --------

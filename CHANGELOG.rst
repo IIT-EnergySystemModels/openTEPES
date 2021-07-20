@@ -4,6 +4,57 @@ Change Log
 - [CHANGED] Addition of the sequence of decisions and operation (TEP + transmission switching)
 - [FIXED] fixing `<https://pascua.iit.comillas.edu/aramos/openTEPES/index.html#>`_ in README.rst 
 
+[3.1.2] - 2021-07-12
+--------------------
+- [FIXED] fix typo in network investment constraint to include candidate lines
+
+[3.1.1] - 2021-07-08
+--------------------
+- [FIXED] change location of lea and lca computation
+
+[3.1.0] - 2021-07-07
+--------------------
+- [CHANGED] definition of switching stages with dict and data files to allow less granularity in switching decisions
+
+[2.6.5] - 2021-07-04
+--------------------
+- [FIXED] typos in line switching equations and redefinition of lea and lca sets
+
+[2.6.4] - 2021-06-23
+--------------------
+- [FIXED] typo in equation formulating the total output of a unit
+- [CHANGED] introduce binary commitment option for each unit
+- [CHANGED] introduce adequacy reserve margin for each area
+- [CHANGED] introduce availability for each unit
+
+[2.6.3] - 2021-06-20
+--------------------
+- [FIXED] typo in investment constraint in model formulation
+
+[2.6.2] - 2021-06-18
+--------------------
+- [CHANGED] updated for pyomo 6.0
+- [CHANGED] if not defined length computed as geographical distance
+
+[2.6.1] - 2021-06-14
+--------------------
+- [CHANGED] line length added in network input file
+- [FIXED] error in output results due to stage weight
+
+[2.6.0] - 2021-05-27
+--------------------
+- [CHANGED] new inertia constraint for each area
+- [FIXED] change column BinarySwitching by Switching in network data meaning that line is able to switch or not
+
+[2.5.3] - 2021-05-14
+--------------------
+- [FIXED] fix output results of storage utilization
+
+[2.5.2] - 2021-05-11
+--------------------
+- [CHANGED] new ESS inventory utilization result file
+- [FIXED] protection against stage with no load levels
+
 [2.5.1] - 2021-05-07
 --------------------
 - [FIXED] introduction of stage weight in the operation variable cost
