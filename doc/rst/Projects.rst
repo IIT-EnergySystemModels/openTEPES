@@ -20,7 +20,7 @@ The model has being used in these research projects:
 
     It aims at assessing, from a technical and economic point of view, the daily, weekly and seasonal storage needs for the Spanish electricity system in the 2020-2050 horizon.
 
-- Flexible Energy System for the Efficient Integration of New Decarbonisation Technologies, developed for **Iberdrola**.
+- FlexEner. New Energy System 100 % Renewable, Flexible and Robust for the Integration of New Technologies in Generation, Network and Demand, developed for **Iberdrola**.
   October 2020 - December 2023.
   `M. Rivier <https://www.iit.comillas.edu/people/michel>`_, `T. Gómez <https://www.iit.comillas.edu/people/tomas>`_, `A. Sánchez <https://www.iit.comillas.edu/people/alvaro>`_,
   `F. Martín <https://www.iit.comillas.edu/people/fmartin>`_, `T. Freire <https://www.iit.comillas.edu/people/tfreire>`_, `J.P. Chaves <https://www.iit.comillas.edu/people/jchaves>`_,
