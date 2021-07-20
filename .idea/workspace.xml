@@ -3,6 +3,8 @@
   <component name="ChangeListManager">
     <list default="true" id="70fc96e0-bc3b-4530-a009-091403d9cfdb" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/openTEPES/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/openTEPES/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/openTEPES/openTEPES_Main.py" beforeDir="false" afterPath="$PROJECT_DIR$/openTEPES/openTEPES_Main.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -43,7 +45,7 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../openTEPES_PRO/openTEPES/openTEPES_Modules/openTEPES_ModelFormulation.py" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.detected.package.tslint" value="true" />
     <property name="node.js.path.for.package.eslint" value="project" />
@@ -53,7 +55,7 @@
     <property name="settings.editor.selected.configurable" value="editor.preferences.fonts.default" />
     <property name="two.files.diff.last.used.file" value="$PROJECT_DIR$/../openTEPES_PRO/openTEPES/openTEPES_Modules/openTEPES_ModelFormulation.py" />
   </component>
-  <component name="RunManager" selected="Python.openTEPES_run">
+  <component name="RunManager" selected="Python.openTEPES_Main">
     <configuration default="true" type="PythonConfigurationType" factoryName="Python">
       <module name="openTEPES" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -98,6 +100,25 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="openTEPES_Main" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="openTEPES" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="C:\Users\ealvarezq\Miniconda3\python.exe" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/openTEPES" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/openTEPES/openTEPES_Main.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="openTEPES_run" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="openTEPES" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -113,28 +134,6 @@
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/openTEPES_run.py" />
       <option name="PARAMETERS" value="--case 9h" />
-      <option name="SHOW_COMMAND_LINE" value="true" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="plotly_example" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="openTEPES" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../../openTEPES_PRO/openTEPES" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/../../openTEPES_PRO/openTEPES/plotly_example.py" />
-      <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="true" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
@@ -189,15 +188,15 @@
     <list>
       <item itemvalue="Python.openTEPES" />
       <item itemvalue="Python.openTEPES_run" />
-      <item itemvalue="Python.plotly_example" />
       <item itemvalue="Python.saving_credentials" />
       <item itemvalue="Python.transform_results" />
+      <item itemvalue="Python.openTEPES_Main" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.openTEPES_Main" />
         <item itemvalue="Python.openTEPES_run" />
         <item itemvalue="Python.openTEPES_run" />
-        <item itemvalue="Python.openTEPES" />
         <item itemvalue="Python.openTEPES" />
         <item itemvalue="Python.openTEPES" />
       </list>
@@ -245,6 +244,7 @@
       <workItem from="1620730151613" duration="365000" />
       <workItem from="1620735448086" duration="52000" />
       <workItem from="1620737356149" duration="31000" />
+      <workItem from="1626793839397" duration="398000" />
     </task>
     <servers />
   </component>
