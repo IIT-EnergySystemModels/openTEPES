@@ -215,7 +215,7 @@ Identifier      Identifier  Identifier  Header  Description
 Scenario        Period      Load level  Node    Power demand of the node for each load level  MW
 ==============  ==========  ==========  ======  ============================================  ==
 
-Internally, all the values below 1e-5 times the maximum system demand will be converted into 0 by the model.
+Internally, all the values below 2.5e-5 times the maximum system demand of each area will be converted into 0 by the model.
 
 System inertia
 --------------
@@ -230,7 +230,7 @@ Scenario        Period      Load level  Area    System inertia of the area for e
 
 Given that the system inertia depends on the area, it can be sensible to assign an area as a country, for example.
 
-Internally, all the values below 1e-5 times the maximum system demand will be converted into 0 by the model.
+Internally, all the values below 2.5e-5 times the maximum system demand of each area will be converted into 0 by the model.
 
 Upward and downward operating reserves
 --------------------------------------
@@ -246,7 +246,7 @@ Scenario        Period      Load level  Area    Upward/downward operating reserv
 Given that the operating reserves depend on the area, it can be sensible to assign an area as a country, for example.
 These operating reserves must include Automatic Frequency Restoration Reserves (aFRR), Manual Frequency Restoration Reserves (mFRR) and Replacement Reserves (RR) for electricity balancing from ENTSO-E.
 
-Internally, all the values below 1e-5 times the maximum system demand will be converted into 0 by the model.
+Internally, all the values below 2.5e-5 times the maximum system demand of each area will be converted into 0 by the model.
 
 Generation
 ----------
@@ -324,7 +324,7 @@ Scenario        Period      Load level  Generator  Maximum (minimum) power gener
 To force a generator to produce 0 a lower value (e.g., 0.1 MW) strictly > 0, but not 0 (in which case the value will be ignored), must be introduced. This is needed to limit the solar production at night, for example.
 It can be used also for upper-bounding and/or lower-bounding the output of any generator (e.g., run-of-the-river hydro, wind).
 
-Internally, all the values below 1e-5 times the maximum system demand will be converted into 0 by the model.
+Internally, all the values below 2.5e-5 times the maximum system demand of each area will be converted into 0 by the model.
 
 Variable maximum and minimum consumption
 ----------------------------------------
@@ -340,7 +340,7 @@ Scenario        Period      Load level  Generator  Maximum (minimum) power consu
 To force a ESS to consume 0 a lower value (e.g., 0.1 MW) strictly > 0, but not 0 (in which case the value will be ignored), must be introduced.
 It can be used also for upper-bounding and/or lower-bounding the consumption of any ESS (e.g., pumped-hydro storage, battery).
 
-Internally, all the values below 1e-5 times the maximum system demand will be converted into 0 by the model.
+Internally, all the values below 2.5e-5 times the maximum system demand of each area will be converted into 0 by the model.
 
 Energy inflows
 --------------
@@ -357,7 +357,7 @@ All the generators must be defined as columns of these files.
 
 If you have daily inflows data just input the daily amount at the first hour of every day if the ESS have daily or weekly storage capacity.
 
-Internally, all the values below 1e-5 times the maximum system demand will be converted into 0 by the model.
+Internally, all the values below 2.5e-5 times the maximum system demand of each area will be converted into 0 by the model.
 
 Energy outflows
 ---------------
@@ -376,7 +376,7 @@ These energy outflows can be used to represent the energy extracted from an ESS 
 
 If you have daily/weekly/monthly/yearly outflows data just input the daily/weekly/monthly/yearly amount at the first hour of every day/week/month/year.
 
-Internally, all the values below 1e-5 times the maximum system demand will be converted into 0 by the model.
+Internally, all the values below 2.5e-5 times the maximum system demand of each area will be converted into 0 by the model.
 
 Variable maximum and minimum storage
 ---------------------------------------------
