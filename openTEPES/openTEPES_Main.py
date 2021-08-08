@@ -81,31 +81,34 @@
 #    Sara.Lumbreras@comillas.edu
 #    https://pascua.iit.comillas.edu/aramos/Ramos_CV.htm
 
-#    with the very valuable collaboration from David Dominguez (david.dominguez@comillas.edu) and Alejandro Rodriguez (argallego@comillas.edu), our local Python gurus
+# with the very valuable collaboration from David Dominguez
+# (david.dominguez@comillas.edu) and Alejandro Rodriguez
+# (argallego@comillas.edu), our local Python gurus
 
-#%% libraries
+# %% libraries
 import argparse
 import os
 # import pkg_resources
 from .openTEPES import openTEPES_run
 
 parser = argparse.ArgumentParser(description='Introducing main parameters...')
-parser.add_argument('--case',   type=str, default=None)
-parser.add_argument('--dir',    type=str, default=None)
+parser.add_argument('--case', type=str, default=None)
+parser.add_argument('--dir', type=str, default=None)
 parser.add_argument('--solver', type=str, default=None)
 
-DIR    = os.path.dirname(__file__)
-CASE   = '9n'
+DIR = os.path.dirname(__file__)
+CASE = '9n'
 SOLVER = 'glpk'
+
 
 def main():
     args = parser.parse_args()
     if args.dir is None:
-        args.dir    = input('Input Dir    Name (Default {}): '.format(DIR))
+        args.dir = input('Input Dir    Name (Default {}): '.format(DIR))
         if args.dir == '':
             args.dir = DIR
     if args.case is None:
-        args.case   = input('Input Case   Name (Default {}): '.format(CASE))
+        args.case = input('Input Case   Name (Default {}): '.format(CASE))
         if args.case == '':
             args.case = CASE
     if args.solver is None:
@@ -120,6 +123,7 @@ def main():
     print(args)
     openTEPES_run(args.dir, args.case, args.solver)
     sys.exit('End of the run                         ...')
+
 
 if __name__ == '__main__':
     main()
