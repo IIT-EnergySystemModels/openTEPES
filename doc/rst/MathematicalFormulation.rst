@@ -23,7 +23,7 @@ Indices
 :math:`p`       Period
 :math:`n`       Load level
 :math:`\nu`     Time step. Duration of each load level (e.g., 2 h, 3 h)
-:math:`g`       Generator (thermal or hydro unit or ESS)
+:math:`g`       Generator (thermal or hydro unit or energy storage system)
 :math:`t`       Thermal unit
 :math:`e`       Energy Storage System (ESS)
 :math:`i, j`    Node
@@ -266,13 +266,13 @@ Maximum ramp up and ramp down for the second block of a non-renewable (thermal, 
 
 :math:`\frac{- p^ω_{p,n-\nu,g} - dr^ω_{p,n-\nu,g} + p^ω_{png} + ur^ω_{png}}{DUR_n RU_g} \leq   uc^ω_{png}       - su^ω_{png} \quad \forall ωpng`
 
-:math:`\frac{- p^ω_{p,n-\nu,g} + dr^ω_{p,n-\nu,g} + p^ω_{png} - dr^ω_{png}}{DUR_n RD_g} \geq - uc^ω_{p,n-\nu,g} + sd^ω_{png} \quad \forall ωpng`
+:math:`\frac{- p^ω_{p,n-\nu,g} + ur^ω_{p,n-\nu,g} + p^ω_{png} - dr^ω_{png}}{DUR_n RD_g} \geq - uc^ω_{p,n-\nu,g} + sd^ω_{png} \quad \forall ωpng`
 
 Maximum ramp down and ramp up for the charge of an ESS [p.u.]
 
-:math:`\frac{- c^ω_{p,n-\nu,e} - dr^ω_{p,n-\nu,e} + c^ω_{pne} + dr^ω_{pne}}{DUR_n RD_e} \leq   1 \quad \forall ωpne`
+:math:`\frac{- c^ω_{p,n-\nu,e} - ur^ω_{p,n-\nu,e} + c^ω_{pne} + dr^ω_{pne}}{DUR_n RD_e} \leq   1 \quad \forall ωpne`
 
-:math:`\frac{- c^ω_{p,n-\nu,e} + ur^ω_{p,n-\nu,e} + c^ω_{pne} - ur^ω_{pne}}{DUR_n RU_e} \geq - 1 \quad \forall ωpne`
+:math:`\frac{- c^ω_{p,n-\nu,e} + dr^ω_{p,n-\nu,e} + c^ω_{pne} - ur^ω_{pne}}{DUR_n RU_e} \geq - 1 \quad \forall ωpne`
 
 Minimum up time and down time of thermal unit [h]
 
