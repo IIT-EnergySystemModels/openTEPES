@@ -232,19 +232,19 @@ Maximum and minimum output of the second block of a committed unit (all except t
 
 * G. Morales-España, J.M. Latorre, and A. Ramos "Tight and Compact MILP Formulation for the Thermal Unit Commitment Problem" IEEE Transactions on Power Systems 28 (4): 4897-4908, Nov 2013. `10.1109/TPWRS.2013.2251373 <http://dx.doi.org/10.1109/TPWRS.2013.2251373>`_
 
-:math:`\frac{p^ω_{png} + URA \: ur^ω_{png} + ur^ω_{png}}{\overline{GP}^w_{png} - \underline{GP}^w_{png}} \leq uc^ω_{png} \quad \forall ωpng`
+:math:`\frac{p^ω_{png} + ur^ω_{png}}{\overline{GP}^w_{png} - \underline{GP}^w_{png}} \leq uc^ω_{png} \quad \forall ωpng`
 
-:math:`\frac{p^ω_{png} - DRA \: dr^ω_{png} - dr^ω_{png}}{\overline{GP}^w_{png} - \underline{GP}^w_{png}} \geq 0          \quad \forall ωpng`
+:math:`\frac{p^ω_{png} - dr^ω_{png}}{\overline{GP}^w_{png} - \underline{GP}^w_{png}} \geq 0          \quad \forall ωpng`
 
 Maximum and minimum charge of an ESS [p.u.]
 
-:math:`\frac{c^ω_{pne} + URA \: dr'^ω_{pne} + dr'^ω_{pne}}{\overline{GP}^w_{pne} - \underline{GC}^w_{pne}} \leq 1 \quad \forall ωpne`
+:math:`\frac{c^ω_{pne} + dr'^ω_{pne}}{\overline{GP}^w_{pne} - \underline{GC}^w_{pne}} \leq 1 \quad \forall ωpne`
 
-:math:`\frac{c^ω_{pne} - DRA \: ur'^ω_{pne} - ur'^ω_{pne}}{\overline{GP}^w_{pne} - \underline{GC}^w_{pne}} \geq 0 \quad \forall ωpne`
+:math:`\frac{c^ω_{pne} - ur'^ω_{pne}}{\overline{GP}^w_{pne} - \underline{GC}^w_{pne}} \geq 0 \quad \forall ωpne`
 
 Incompatibility between charge and discharge of an ESS [p.u.]
 
-:math:`\frac{p^ω_{pne} + URA \: ur'^ω_{pne} + ur^ω_{png}}{\overline{GP}^w_{pne} - \underline{GP}^w_{pne}} + \frac{c^ω_{pne} + URA \: dr'^ω_{pne} + dr'^ω_{pne}}{\overline{GP}^w_{pne}} \leq 1 \quad \forall ωpne, e \in CE`
+:math:`\frac{p^ω_{pne} + URA \: ur'^ω_{pne}}{\overline{GP}^w_{pne} - \underline{GP}^w_{pne}} + \frac{c^ω_{pne} + DRA \: dr'^ω_{pne}}{\overline{GP}^w_{pne}} \leq 1 \quad \forall ωpne, e \in CE`
 
 Total output of a committed unit (all except the VRES units) [GW]
 
@@ -264,15 +264,15 @@ Maximum ramp up and ramp down for the second block of a non-renewable (thermal, 
 
 - P. Damcı-Kurt, S. Küçükyavuz, D. Rajan, and A. Atamtürk, “A polyhedral study of production ramping,” Math. Program., vol. 158, no. 1–2, pp. 175–205, Jul. 2016. `10.1007/s10107-015-0919-9 <https://doi.org/10.1007/s10107-015-0919-9>`_
 
-:math:`\frac{- p^ω_{p,n-\nu,g} - URA \: ur^ω_{p,n-\nu,g} + p^ω_{png} + URA \: ur^ω_{png} + ur^ω_{png}}{DUR_n RU_g} \leq   uc^ω_{png}       - su^ω_{png} \quad \forall ωpng`
+:math:`\frac{- p^ω_{p,n-\nu,g} - dr^ω_{p,n-\nu,g} + p^ω_{png} + ur^ω_{png}}{DUR_n RU_g} \leq   uc^ω_{png}       - su^ω_{png} \quad \forall ωpng`
 
-:math:`\frac{- p^ω_{p,n-\nu,g} + DRA \: dr^ω_{p,n-\nu,g} + p^ω_{png} - DRA \: dr^ω_{png} - dr^ω_{png}}{DUR_n RD_g} \geq - uc^ω_{p,n-\nu,g} + sd^ω_{png} \quad \forall ωpng`
+:math:`\frac{- p^ω_{p,n-\nu,g} + dr^ω_{p,n-\nu,g} + p^ω_{png} - dr^ω_{png}}{DUR_n RD_g} \geq - uc^ω_{p,n-\nu,g} + sd^ω_{png} \quad \forall ωpng`
 
 Maximum ramp down and ramp up for the charge of an ESS [p.u.]
 
-:math:`\frac{- c^ω_{p,n-\nu,e} - URA \: dr^ω_{p,n-\nu,e} + c^ω_{pne} + URA \: dr^ω_{pne} + dr^ω_{pne}}{DUR_n RD_e} \leq   1 \quad \forall ωpne`
+:math:`\frac{- c^ω_{p,n-\nu,e} - dr^ω_{p,n-\nu,e} + c^ω_{pne} + dr^ω_{pne}}{DUR_n RD_e} \leq   1 \quad \forall ωpne`
 
-:math:`\frac{- c^ω_{p,n-\nu,e} + DRA \: ur^ω_{p,n-\nu,e} + c^ω_{pne} - DRA \: ur^ω_{pne} - ur^ω_{pne}}{DUR_n RU_e} \geq - 1 \quad \forall ωpne`
+:math:`\frac{- c^ω_{p,n-\nu,e} + ur^ω_{p,n-\nu,e} + c^ω_{pne} - ur^ω_{pne}}{DUR_n RU_e} \geq - 1 \quad \forall ωpne`
 
 Minimum up time and down time of thermal unit [h]
 
