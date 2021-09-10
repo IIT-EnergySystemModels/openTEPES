@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 12, 2021
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 10, 2021
 """
 
 import time
@@ -20,7 +20,7 @@ def openTEPES_run(DirName, CaseName, SolverName):
     _path = os.path.join(DirName, CaseName)
 
     #%% model declaration
-    mTEPES = ConcreteModel('Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 3.1.2 - July 12, 2021')
+    mTEPES = ConcreteModel('Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 3.1.3 - September 10, 2021')
 
     pIndLogConsole = 1
 
