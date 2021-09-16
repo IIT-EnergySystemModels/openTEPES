@@ -84,7 +84,7 @@ They are written in capital letters.
 :math:`\underline{GP}_g, \overline{GP}_g`              Rated minimum load and maximum output of a generator                                                      GW
 :math:`\underline{GP}^w_{png}, \overline{GP}^w_{png}`  Minimum load and maximum output of a generator                                                            GW
 :math:`\underline{GC}^w_{pne}, \overline{GC}^w_{pne}`  Minimum and maximum consumption of an ESS                                                                 GW
-:math:`CF_g, CV_g`                                     Fixed and variable cost of a generator. Variable cost includes fuel, O&M and emission cost                €/h, €/MWh
+:math:`CF_g, CV_g`                                     Fixed (no load) and variable cost of a generator. Variable cost includes fuel, O&M and emission cost      €/h, €/MWh
 :math:`CV_e`                                           Variable cost of an ESS when charging                                                                     €/MWh
 :math:`RU_g, RD_g`                                     Ramp up/down of a non-renewable unit or maximum discharge/charge rate for ESS discharge/charge            MW/h
 :math:`TU_t, TD_t`                                     Minimum uptime and downtime of a thermal unit                                                             h
