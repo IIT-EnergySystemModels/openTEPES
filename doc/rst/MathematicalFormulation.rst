@@ -238,13 +238,13 @@ Maximum and minimum output of the second block of a committed unit (all except t
 
 Maximum and minimum charge of an ESS [p.u.]
 
-:math:`\frac{c^ω_{pne} + dr'^ω_{pne}}{\overline{GP}^w_{pne} - \underline{GC}^w_{pne}} \leq 1 \quad \forall ωpne`
+:math:`\frac{c^ω_{pne} + dr'^ω_{pne}}{\overline{GC}^w_{pne} - \underline{GC}^w_{pne}} \leq 1 \quad \forall ωpne`
 
-:math:`\frac{c^ω_{pne} - ur'^ω_{pne}}{\overline{GP}^w_{pne} - \underline{GC}^w_{pne}} \geq 0 \quad \forall ωpne`
+:math:`\frac{c^ω_{pne} - ur'^ω_{pne}}{\overline{GC}^w_{pne} - \underline{GC}^w_{pne}} \geq 0 \quad \forall ωpne`
 
 Incompatibility between charge and discharge of an ESS [p.u.]
 
-:math:`\frac{p^ω_{pne} + URA \: ur'^ω_{pne}}{\overline{GP}^w_{pne} - \underline{GP}^w_{pne}} + \frac{c^ω_{pne} + DRA \: dr'^ω_{pne}}{\overline{GP}^w_{pne}} \leq 1 \quad \forall ωpne, e \in CE`
+:math:`\frac{p^ω_{pne} + URA \: ur'^ω_{pne}}{\overline{GP}^w_{pne} - \underline{GP}^w_{pne}} + \frac{c^ω_{pne} + DRA \: dr'^ω_{pne}}{\overline{GC}^w_{pne} - \underline{GC}^w_{pne}} \leq 1 \quad \forall ωpne, e \in CE`
 
 Total output of a committed unit (all except the VRES units) [GW]
 
