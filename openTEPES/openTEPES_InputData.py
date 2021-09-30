@@ -284,8 +284,8 @@ def InputData(DirName, CaseName, mTEPES):
     mTEPES.rf = Set(initialize=mTEPES.nd,                     ordered=True , doc='reference node'     , filter=lambda mTEPES,nd      :  nd        in                pReferenceNode               )
     mTEPES.gq = Set(initialize=mTEPES.gg,                     ordered=False, doc='gen  reactive units', filter=lambda mTEPES,gg      :  gg        in mTEPES.gg  and pRMaxReactivePower[gg] >  0.0)
     mTEPES.sq = Set(initialize=mTEPES.gg,                     ordered=False, doc='syn  reactive units', filter=lambda mTEPES,gg      :  gg        in mTEPES.gg  and pRMaxReactivePower[gg] >  0.0 and pGenToTechnology[gg] == 'SynchronousCondenser')
-    mTEPES.sqc= Set(initialize=mTEPES.sq,                     ordered=False, doc='cand syn reactive  '                                                                                           )
-    mTEPES.shc= Set(initialize=mTEPES.sq,                     ordered=False, doc='cand shunts        '                                                                                           )
+    mTEPES.sqc= Set(initialize=mTEPES.sq,                     ordered=False, doc='syn  reactive cand '                                                                                           )
+    mTEPES.shc= Set(initialize=mTEPES.sq,                     ordered=False, doc='shunt         cand '                                                                                           )
 
     # non-RES units, they can be committed and also contribute to the operating reserves
     mTEPES.nr = mTEPES.g - mTEPES.r

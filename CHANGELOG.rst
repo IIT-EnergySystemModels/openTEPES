@@ -4,6 +4,10 @@ Change Log
 - [CHANGED] Addition of the sequence of decisions and operation (TEP + transmission switching)
 - [FIXED] fixing `<https://pascua.iit.comillas.edu/aramos/openTEPES/index.html#>`_ in README.rst 
 
+[3.1.4] - 2021-09-30
+--------------------
+- [FIXED] fix initialization of synchronous condenser and shunt candidate
+
 [3.1.3] - 2021-09-10
 --------------------
 - [FIXED] fix in some equations the activation of the operating reserves
