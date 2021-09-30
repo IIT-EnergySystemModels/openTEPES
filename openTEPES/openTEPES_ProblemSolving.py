@@ -78,9 +78,9 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES):
 
     SolvingTime = time.time() - StartTime
     print('Solution time                          ... ', round(SolvingTime), 's')
-    print('Total system cost              [MEUR]      ', OptModel.eTotalTCost.expr())
-    print('Total investment cost          [MEUR]      ', OptModel.vTotalFCost())
-    print('Total generation cost          [MEUR]      ', sum(mTEPES.pScenProb[sc] * (OptModel.vTotalGCost[sc,p,n]()) for sc,p,n in mTEPES.sc*mTEPES.p*mTEPES.n))
-    print('Total consumption cost         [MEUR]      ', sum(mTEPES.pScenProb[sc] * (OptModel.vTotalCCost[sc,p,n]()) for sc,p,n in mTEPES.sc*mTEPES.p*mTEPES.n))
-    print('Total emission cost            [MEUR]      ', sum(mTEPES.pScenProb[sc] * (OptModel.vTotalECost[sc,p,n]()) for sc,p,n in mTEPES.sc*mTEPES.p*mTEPES.n))
-    print('Total reliability cost         [MEUR]      ', sum(mTEPES.pScenProb[sc] * (OptModel.vTotalRCost[sc,p,n]()) for sc,p,n in mTEPES.sc*mTEPES.p*mTEPES.n))
+    print('Total system      cost [MEUR]              ', OptModel.eTotalTCost.expr())
+    print('Total investment  cost [MEUR]              ', OptModel.vTotalFCost())
+    print('Total generation  cost [MEUR]              ', sum(mTEPES.pScenProb[sc] * (OptModel.vTotalGCost[sc,p,n]()) for sc,p,n in mTEPES.sc*mTEPES.p*mTEPES.n))
+    print('Total consumption cost [MEUR]              ', sum(mTEPES.pScenProb[sc] * (OptModel.vTotalCCost[sc,p,n]()) for sc,p,n in mTEPES.sc*mTEPES.p*mTEPES.n))
+    print('Total emission    cost [MEUR]              ', sum(mTEPES.pScenProb[sc] * (OptModel.vTotalECost[sc,p,n]()) for sc,p,n in mTEPES.sc*mTEPES.p*mTEPES.n))
+    print('Total reliability cost [MEUR]              ', sum(mTEPES.pScenProb[sc] * (OptModel.vTotalRCost[sc,p,n]()) for sc,p,n in mTEPES.sc*mTEPES.p*mTEPES.n))
