@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 30, 2021
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 22, 2021
 """
 
 import time
@@ -326,6 +326,26 @@ def GenerationOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, st):
 
     if pIndLogConsole == 1:
         print('eUCStrShut            ... ', len(getattr(OptModel, 'eUCStrShut_'+st)), ' rows')
+
+    def eMaxCommitment(OptModel,sc,p,n,nr):
+        if sum(1 for g in mTEPES.nr if (nr,g) in mTEPES.g2g or (g,nr) in mTEPES.g2g):
+            return OptModel.vCommitment[sc,p,n,nr] <= OptModel.vMaxCommitment[nr]
+        else:
+            return Constraint.Skip
+    setattr(OptModel, 'eMaxCommitment_'+st, Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, rule=eMaxCommitment, doc='maximum of all the commitments'))
+
+    if pIndLogConsole == 1:
+        print('eMaxCommitment        ... ', len(getattr(OptModel, 'eMaxCommitment_'+st)), ' rows')
+
+    def eExclusiveGens(OptModel,nr):
+        if sum(1 for g in mTEPES.nr if (nr,g) in mTEPES.g2g):
+            return OptModel.vMaxCommitment[nr] + sum(OptModel.vMaxCommitment[g] for g in mTEPES.nr if (nr,g) in mTEPES.g2g) <= 1
+        else:
+            return Constraint.Skip
+    setattr(OptModel, 'eExclusiveGens_'+st, Constraint(mTEPES.nr, rule=eExclusiveGens, doc='mutually exclusive generators'))
+
+    if pIndLogConsole == 1:
+        print('eExclusiveGens        ... ', len(getattr(OptModel, 'eExclusiveGens_'+st)), ' rows')
 
     GeneratingGenConsTime = time.time() - StartTime
     StartTime             = time.time()

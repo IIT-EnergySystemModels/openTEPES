@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 30, 2021
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 22, 2021
 """
 
 import time
@@ -195,6 +195,7 @@ def InputData(DirName, CaseName, mTEPES):
     #%% generation parameters
     pGenToNode          = dfGeneration  ['Node'                ]                                                                            # generator location in node
     pGenToTechnology    = dfGeneration  ['Technology'          ]                                                                            # generator association to technology
+    pGenToExclusiveGen  = dfGeneration  ['MutuallyExclusive'   ]                                                                            # mutually exclusive generator
     pIndBinUnitInvest   = dfGeneration  ['BinaryInvestment'    ]                                                                            # binary unit investment decision             [Yes]
     pIndBinUnitCommit   = dfGeneration  ['BinaryCommitment'    ]                                                                            # binary unit commitment decision             [Yes]
     pMustRun            = dfGeneration  ['MustRun'             ]                                                                            # must-run unit                               [Yes]
@@ -397,6 +398,13 @@ def InputData(DirName, CaseName, mTEPES):
     pTechnology2Gen  = pTechnologyToGen.reset_index().set_index(['Technology', 'Generator'])
 
     mTEPES.t2g = Set(initialize=pTechnology2Gen.index, doc='technology to generator')
+
+    #%% inverse index generator to mutually exclusive generator
+    pExclusiveGenToGen = pGenToExclusiveGen.reset_index().set_index('MutuallyExclusive').set_axis(['Generator'], axis=1, inplace=False)[['Generator']]
+    pExclusiveGenToGen = pExclusiveGenToGen.loc[pExclusiveGenToGen['Generator'].isin(mTEPES.g)]
+    pExclusiveGen2Gen  = pExclusiveGenToGen.reset_index().set_index(['MutuallyExclusive', 'Generator'])
+
+    mTEPES.g2g = Set(initialize=pExclusiveGen2Gen.index, doc='mutually exclusive generator to generator')
 
     # minimum and maximum variable power
     pVariableMinPower   = pVariableMinPower.replace(0.0, float('nan'))
@@ -731,12 +739,15 @@ def SettingUpVariables(OptModel, mTEPES):
             OptModel.vStartUp   [sc,p,n,nr].domain = UnitInterval
             OptModel.vShutDown  [sc,p,n,nr].domain = UnitInterval
 
+    # maximum value of time step commitment for mutually exclusive non-renewable generators
+    OptModel.vMaxCommitment = Var(mTEPES.nr, within=Binary, initialize=0, doc='maximum commitment of the unit                  {0,1}')
+
     # existing lines are always committed if no decision is modeled
     for sc,p,n,ni,nf,cc in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.le:
         if mTEPES.pLineSwitching[ni,nf,cc] == 0:
-            OptModel.vLineCommit    [sc,p,n ,ni,nf,cc].fix(1)
-            OptModel.vLineOnState   [sc,p,n ,ni,nf,cc].fix(0)
-            OptModel.vLineOffState  [sc,p,n ,ni,nf,cc].fix(0)
+            OptModel.vLineCommit    [sc,p,n,ni,nf,cc].fix(1)
+            OptModel.vLineOnState   [sc,p,n,ni,nf,cc].fix(0)
+            OptModel.vLineOffState  [sc,p,n,ni,nf,cc].fix(0)
     if mTEPES.pIndSwitchingStage() == 1:
         for sc,p,ss,ni,nf,cc in mTEPES.sc*mTEPES.p*mTEPES.ss*mTEPES.le:
             if mTEPES.pLineSwitching[ni,nf,cc] == 0:
