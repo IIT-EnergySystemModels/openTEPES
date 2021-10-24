@@ -533,7 +533,7 @@ def NetworkOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, st):
     setattr(OptModel, 'eKirchhoff2ndLaw1_'+st, Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.laa, rule=eKirchhoff2ndLaw1, doc='flow for each AC candidate line [rad]'))
 
     if pIndLogConsole == 1:
-        print('eKirchhoff2ndLaw1  ... ', len(getattr(OptModel, 'eKirchhoff2ndLaw1_'+st)), ' rows')
+        print('eKirchhoff2ndLaw1     ... ', len(getattr(OptModel, 'eKirchhoff2ndLaw1_'+st)), ' rows')
 
     def eKirchhoff2ndLaw2(OptModel,sc,p,n,ni,nf,cc):
         if (ni,nf,cc) in mTEPES.lca:
@@ -543,7 +543,7 @@ def NetworkOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, st):
     setattr(OptModel, 'eKirchhoff2ndLaw2_'+st, Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.laa, rule=eKirchhoff2ndLaw2, doc='flow for each AC candidate line [rad]'))
 
     if pIndLogConsole == 1:
-        print('eKirchhoff2ndLaw2  ... ', len(getattr(OptModel, 'eKirchhoff2ndLaw2_'+st)), ' rows')
+        print('eKirchhoff2ndLaw2     ... ', len(getattr(OptModel, 'eKirchhoff2ndLaw2_'+st)), ' rows')
 
     def eLineLosses1(OptModel,sc,p,n,ni,nf,cc):
         if mTEPES.pIndNetLosses() and len(mTEPES.ll):
