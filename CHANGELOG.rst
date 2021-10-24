@@ -7,6 +7,7 @@ Change Log
 [4.1.0] - 2021-10-22
 --------------------
 - [CHANGED] introduction of mutually exclusive generator in generation file
+- [CHANGED] Using TimeStep of 4 instead of 2 in Cases 9n and sSEP
 
 [3.1.5] - 2021-10-15
 --------------------
