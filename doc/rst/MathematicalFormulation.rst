@@ -259,11 +259,15 @@ Logical relation between commitment, startup and shutdown status of a committed 
 
 :math:`uc^ω_{png} - uc^ω_{p,n-\nu,g} = su^ω_{png} - sd^ω_{png} \quad \forall ωpng`
 
-Maximum commitment of a committed unit (all except the VRES units) [p.u.]
+Maximum commitment of a committable unit (all except the VRES units) [p.u.]
 
 :math:`uc^ω_{png} \leq uc'_g \quad \forall ωpng`
 
-Mutually exclusive :math:`g` and :math:`g'` non-renewable units (all except the VRES units) [p.u.]
+Maximum commitment of an ESS [p.u.]
+
+:math:`\sum_{wpn} \frac{gp^ω_{pne}}{\overline{GP}_e} \leq uc'_e \quad \forall ωpne`
+
+Mutually exclusive :math:`g` and :math:`g'` non-renewable units (e.g., thermal and ESS, all except the VRES units) [p.u.]
 
 :math:`uc'_g + uc'_{g'} \leq 1 \quad \forall g, g'`
 
