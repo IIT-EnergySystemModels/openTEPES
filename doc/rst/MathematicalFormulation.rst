@@ -265,7 +265,7 @@ Maximum commitment of a committed unit (all except the VRES units) [p.u.]
 
 Mutually exclusive :math:`g` and :math:`g'` non-renewable units (all except the VRES units) [p.u.]
 
-:math:`uc'_g + uc'_{g'} \leq uc' \quad \forall g, g'`
+:math:`uc'_g + uc'_{g'} \leq 1 \quad \forall g, g'`
 
 Initial commitment of the units is determined by the model based on the merit order loading, including the VRES and ESS units.
 
