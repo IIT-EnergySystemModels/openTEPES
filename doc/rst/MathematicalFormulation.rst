@@ -135,6 +135,7 @@ They are written in lower letters.
 :math:`i^ω_{pne}`                           ESS stored energy (inventory)                                               GWh
 :math:`s^ω_{pne}`                           ESS spilled energy                                                          GWh
 :math:`uc^ω_{png}, su^ω_{png}, sd^ω_{png}`  Commitment, startup and shutdown of generation unit per load level          {0,1}
+:math:`uc'_g`                               Maximum commitment of a generation unit for all the load levels             {0,1}
 ==========================================  ==========================================================================  =====
 
 ======================================================  =================================================================  =====
@@ -254,9 +255,17 @@ Total charge of an ESS [GW]
 
 :math:`\frac{gc^ω_{pne}}{\underline{GC}^w_{pne}} = 1 + \frac{c^ω_{pne} + URA \: ur'^ω_{pne} - DRA \: dr'^ω_{pne}}{\underline{GC}^w_{pne}} \quad \forall ωpne, e \in CE`
 
-Logical relation between commitment, startup and shutdown status of committed unit (all except the VRES units) [p.u.]
+Logical relation between commitment, startup and shutdown status of a committed unit (all except the VRES units) [p.u.]
 
 :math:`uc^ω_{png} - uc^ω_{p,n-\nu,g} = su^ω_{png} - sd^ω_{png} \quad \forall ωpng`
+
+Maximum commitment of a committed unit (all except the VRES units) [p.u.]
+
+:math:`uc^ω_{png} \leq uc'_g \quad \forall ωpng`
+
+Mutually exclusive :math:`g` and :math:`g'` non-renewable units (all except the VRES units) [p.u.]
+
+:math:`uc'_g + sum_{g'} uc'_{g'} \leq uc' \quad \forall g, g'`
 
 Initial commitment of the units is determined by the model based on the merit order loading, including the VRES and ESS units.
 
