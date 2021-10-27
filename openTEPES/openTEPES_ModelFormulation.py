@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 25, 2021
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 26, 2021
 """
 
 import time
@@ -338,11 +338,11 @@ def GenerationOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, st):
         print('eMaxCommitment        ... ', len(getattr(OptModel, 'eMaxCommitment_'+st)), ' rows')
 
     def eMaxCommitESS(OptModel,sc,p,n,es):
-        if   sum(1 for g in mTEPES.es if (es,g) in mTEPES.g2g or (g,es) in mTEPES.g2g) and mTEPES.pMaxPower[sc,p,n,es]:
-            return sum(OptModel.vTotalOutput[sc,p,n,es]/mTEPES.pMaxPower[sc,p,n,es] for sc,p,n in mTEPES.sc*mTEPES.p*mTEPES.n) <= OptModel.vMaxCommitment[es]
+        if sum(1 for g in mTEPES.es if (es,g) in mTEPES.g2g or (g,es) in mTEPES.g2g) and mTEPES.pMaxPower[sc,p,n,es]:
+            return OptModel.vTotalOutput[sc,p,n,es]/mTEPES.pMaxPower[sc,p,n,es] <= OptModel.vMaxCommitment[es]
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eMaxCommitESS_'+st, Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es, rule=eMaxCommitESS, doc='maximum of all the commitments'))
+    setattr(OptModel, 'eMaxCommitESS_'+st, Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es, rule=eMaxCommitESS, doc='maximum of all the ESS per unit outputs'))
 
     if pIndLogConsole == 1:
         print('eMaxCommitESS         ... ', len(getattr(OptModel, 'eMaxCommitESS_'+st)), ' rows')

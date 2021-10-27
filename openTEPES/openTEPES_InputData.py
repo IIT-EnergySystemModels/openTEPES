@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 22, 2021
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 26, 2021
 """
 
 import time
@@ -404,7 +404,7 @@ def InputData(DirName, CaseName, mTEPES):
     pExclusiveGenToGen = pExclusiveGenToGen.loc[pExclusiveGenToGen['Generator'].isin(mTEPES.g)]
     pExclusiveGen2Gen  = pExclusiveGenToGen.reset_index().set_index(['MutuallyExclusive', 'Generator'])
 
-    mTEPES.g2g = Set(initialize=pExclusiveGen2Gen.index, doc='mutually exclusive generator to generator')
+    mTEPES.g2g = Set(initialize=pExclusiveGen2Gen.index, doc='mutually exclusive generator to generator', filter=lambda mTEPES,gg,g: (gg,g) in mTEPES.gg*mTEPES.g)
 
     # minimum and maximum variable power
     pVariableMinPower   = pVariableMinPower.replace(0.0, float('nan'))
@@ -771,7 +771,8 @@ def SettingUpVariables(OptModel, mTEPES):
 
     for sc,p,n,nr in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.nr:
         # must run units or units with no minimum power or ESS units are always committed and must produce at least their minimum output
-        if mTEPES.pMustRun[nr] == 1 or (mTEPES.pMinPower[sc,p,n,nr] == 0.0 and mTEPES.pConstantVarCost[nr] == 0.0) or nr in mTEPES.es:
+        # not applicable to mutually exclusive units
+        if (mTEPES.pMustRun[nr] == 1 or (mTEPES.pMinPower[sc,p,n,nr] == 0.0 and mTEPES.pConstantVarCost[nr] == 0.0) or nr in mTEPES.es) and sum(1 for g in mTEPES.nr if (nr,g) in mTEPES.g2g or (g,nr) in mTEPES.g2g) == 0:
             OptModel.vCommitment    [sc,p,n,nr].fix(1)
             OptModel.vStartUp       [sc,p,n,nr].fix(0)
             OptModel.vShutDown      [sc,p,n,nr].fix(0)

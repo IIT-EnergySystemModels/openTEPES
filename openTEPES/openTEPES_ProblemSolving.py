@@ -38,7 +38,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES):
         Solver.options['Threads'       ] = int((psutil.cpu_count(logical=True) + psutil.cpu_count(logical=False))/2)
         Solver.options['TimeLimit'     ] =    7200
         Solver.options['IterationLimit'] = 7200000
-    if mTEPES.pIndBinGenInvest()*len(mTEPES.gc) + mTEPES.pIndBinNetInvest()*len(mTEPES.lc) + mTEPES.pIndBinGenOperat()*len(mTEPES.nr) + mTEPES.pIndBinLineCommit()*len(mTEPES.la) == 0:
+    if mTEPES.pIndBinGenInvest()*len(mTEPES.gc) + mTEPES.pIndBinNetInvest()*len(mTEPES.lc) + mTEPES.pIndBinGenOperat()*len(mTEPES.nr) + mTEPES.pIndBinLineCommit()*len(mTEPES.la) + len(mTEPES.g2g) == 0:
         Solver.options['relax_integrality'] =  1
         if SolverName == 'gurobi':
             Solver.options['Crossover'    ] = -1
@@ -50,7 +50,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES):
 
     #%% fix values of binary variables to get dual variables and solve it again
     # investment decision values are rounded to the nearest integer
-    if mTEPES.pIndBinGenInvest()*len(mTEPES.gc) + mTEPES.pIndBinNetInvest()*len(mTEPES.lc) + mTEPES.pIndBinGenOperat()*len(mTEPES.nr) + mTEPES.pIndBinLineCommit()*len(mTEPES.la):
+    if mTEPES.pIndBinGenInvest()*len(mTEPES.gc) + mTEPES.pIndBinNetInvest()*len(mTEPES.lc) + mTEPES.pIndBinGenOperat()*len(mTEPES.nr) + mTEPES.pIndBinLineCommit()*len(mTEPES.la) + len(mTEPES.g2g):
         if mTEPES.pIndBinGenInvest()*len(mTEPES.gc):
             for gc in mTEPES.gc:
                 OptModel.vGenerationInvest[gc].fix(round(OptModel.vGenerationInvest[gc]()))
@@ -68,6 +68,10 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES):
                     OptModel.vLineCommit  [sc,p,n,ni,nf,cc].fix(round(OptModel.vLineCommit  [sc,p,n,ni,nf,cc]()))
                     OptModel.vLineOnState [sc,p,n,ni,nf,cc].fix(round(OptModel.vLineOnState [sc,p,n,ni,nf,cc]()))
                     OptModel.vLineOffState[sc,p,n,ni,nf,cc].fix(round(OptModel.vLineOffState[sc,p,n,ni,nf,cc]()))
+        if len(mTEPES.g2g):
+            for nr in mTEPES.nr:
+                if sum(1 for g in mTEPES.nr if (nr,g) in mTEPES.g2g or (g,nr) in mTEPES.g2g):
+                    OptModel.vMaxCommitment[nr].fix(round(OptModel.vMaxCommitment[nr]()))
         Solver.options['relax_integrality'] =  1                                               # introduced to show results of the dual variables
         if SolverName == 'gurobi':
             Solver.options['Crossover'    ] = -1

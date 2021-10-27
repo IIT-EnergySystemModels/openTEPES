@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 15, 2021
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 27, 2021
 """
 
 import time
@@ -27,7 +27,6 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES):
         OutputToFile.index.names = ['InitialNode','FinalNode','Circuit']
         OutputToFile = OutputToFile.reset_index()
         OutputToFile.rename(columns={'vNetworkInvest': 'Investment Decision'}).to_csv(_path + '/oT_Result_NetworkInvestment_' + CaseName + '.csv', index=False, sep=',')
-
 
     WritingResultsTime = time.time() - StartTime
     StartTime          = time.time()
@@ -222,7 +221,7 @@ def ESSOperationResults(DirName, CaseName, OptModel, mTEPES):
         for sc,p in mTEPES.sc*mTEPES.p:
             fig, fg = plt.subplots()
             fg.stackplot(range(len(mTEPES.n)),  TechnologyCharge.loc[sc,p,:,:].values.reshape(len(mTEPES.n),len(mTEPES.gt)).transpose().tolist(), labels=mTEPES.gt)
-            # fg.stackplot(range(len(mTEPES.n)), -TechnologyCharge.loc[sc,p,:,:].values.reshape(len(mTEPES.n),len(mTEPES.gt)).transpose().tolist(), labels=list(mTEPES.gt))
+            # fg.stackplot(range(len(mTEPES.n)), -TechnologyCharge.loc[sc,p,:,:].values.reshape(len(mTEPES.n),len(mTEPES.gt)).transpose().tolist(), labels=mTEPES.gt)
             # fg.plot     (range(len(mTEPES.n)),  pDemand.sum(axis=1)*1e3, label='Demand', linewidth=0.2, color='k')
             fg.set(xlabel='Time Steps', ylabel='MW')
             plt.title(sc+' '+p)
@@ -366,6 +365,25 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES):
     plt.tight_layout()
     # plt.show()
     plt.savefig(_path+'/oT_Plot_LSRMC_'+CaseName+'.png', bbox_inches=None, dpi=600)
+
+    if sum(mTEPES.pReserveMargin[ar] for ar in mTEPES.ar):
+        OutputToFile = pd.Series(data=[OptModel.dual[getattr(OptModel, 'eAdequacyReserveMargin_'+st)[ar]] for st,ar in mTEPES.st*mTEPES.ar if mTEPES.pReserveMargin[ar] and sum(1 for nr in mTEPES.nr if (ar,nr) in mTEPES.a2g) + sum(1 for es in mTEPES.es if (ar,es) in mTEPES.a2g)], index=pd.MultiIndex.from_tuples(list(mTEPES.st*list(getattr(OptModel, 'eAdequacyReserveMargin_'+st)))))
+        OutputToFile.to_frame(name='RM').reset_index().pivot_table(index=['level_0'], columns=['level_1'], values='RM').rename_axis(['Stage'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_MarginalReserveMargin_'+CaseName+'.csv', sep=',')
+
+        #MarginalReserveMargin = OutputToFile.loc[:,:]
+
+        # fig, fg = plt.subplots()
+        # for ar in mTEPES.ar:
+        #     if mTEPES.pReserveMargin[ar]:
+        #         fg.plot(range(len(MarginalReserveMargin[ar])), MarginalReserveMargin[ar], label=ar)
+        # fg.set(xlabel='Areas', ylabel='MEUR')
+        # fg.set_ybound(lower=0, upper=100)
+        # plt.title('Reserve Margin Marginal')
+        # fg.tick_params(axis='x', rotation=90)
+        # fg.legend()
+        # plt.tight_layout()
+        # # plt.show()
+        # plt.savefig(_path+'/oT_Plot_MarginalReserveMargin_'+CaseName+'.png', bbox_inches=None, dpi=600)
 
     if sum(mTEPES.pOperReserveUp[sc,p,n,ar] for sc,p,n,ar in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.ar):
         AppendData = []

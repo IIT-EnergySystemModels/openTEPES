@@ -4,6 +4,10 @@ Change Log
 - [CHANGED] Addition of the sequence of decisions and operation (TEP + transmission switching)
 - [FIXED] fixing `<https://pascua.iit.comillas.edu/aramos/openTEPES/index.html#>`_ in README.rst
 
+[4.1.1] - 2021-10-27
+--------------------
+- [FIXED] adding mutually exclusive formulation for ESS, add output results of reserve margin
+
 [4.1.0] - 2021-10-22
 --------------------
 - [CHANGED] introduction of mutually exclusive generator in generation file
