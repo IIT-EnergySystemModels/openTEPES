@@ -89,7 +89,7 @@ Miniconda (recommended)
    2. Install `GLPK <http://winglpk.sourceforge.net/>`_ and `Cartopy <https://pypi.org/project/Cartopy/>`_ via conda by ``conda install -c conda-forge glpk cartopy``
    3. Install openTEPES via pip by ``pip install openTEPES``
 
-Continue at `Get Started <#get-started>`_.
+Continue at `Get Started <#get-started>`_ and see the `Tips <#tips>`_.
 
 
 GitHub Repository (the hard way)
@@ -141,6 +141,7 @@ Tips
 2. Try modifying the **TimeStep** in **oT_Data_Parameter_<case>.csv** and see their effect on results.
 3. Using **0** or **1**, the optimization options can be activated or deactivated in **oT_Data_Option_<case>.csv**.
 4. If you need a nice python editor, think about using `PyCharm <https://www.jetbrains.com/pycharm/download>`_. It has many features including project management, etc.
+5. We also suggest the use of `Gurobi <https://www.gurobi.com/academia/academic-program-and-licenses/>`_ (for Academics and Researchers) as a solver to deal with MIP and LP problems instead of GLPK. 
 
 Expected Results
 ################
