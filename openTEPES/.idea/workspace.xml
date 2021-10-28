@@ -20,7 +20,7 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../../openTEPES_PRO/openTEPES/openTEPES_Main.py" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../../openTEPES_PRO/openTEPES/openTEPES_Modules/openTEPES_ProblemSolving.py" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.detected.package.tslint" value="true" />
     <property name="node.js.path.for.package.eslint" value="project" />
@@ -28,6 +28,7 @@
     <property name="node.js.selected.package.eslint" value="(autodetect)" />
     <property name="node.js.selected.package.tslint" value="(autodetect)" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PythonContentEntriesConfigurable" />
+    <property name="two.files.diff.last.used.file" value="$PROJECT_DIR$/../../openTEPES_PRO/openTEPES/openTEPES_Modules/openTEPES_ProblemSolving.py" />
   </component>
   <component name="RunManager" selected="Python.openTEPES_Main">
     <configuration name="Tool_openTEPES_TO_IAMC" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
@@ -153,7 +154,7 @@
       <workItem from="1635100218303" duration="107000" />
       <workItem from="1635100762261" duration="50000" />
       <workItem from="1635343315948" duration="2621000" />
-      <workItem from="1635410601258" duration="4693000" />
+      <workItem from="1635410601258" duration="4756000" />
     </task>
     <servers />
   </component>
