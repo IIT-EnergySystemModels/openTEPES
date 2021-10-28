@@ -24,7 +24,8 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES):
     mTEPES.n  = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in                mTEPES.pDuration        )
 
     #%% solving the problem
-    Solver = SolverFactory(SolverName, solver_io='mps')                                      # select solver
+    # Solver = SolverFactory(SolverName, solver_io='mps')                                      # select solver
+    Solver = SolverFactory(SolverName)                                                         # select solver
     if SolverName == 'gurobi':
         Solver.options['LogFile'       ] = _path+'/openTEPES_'+CaseName+'.log'
         # Solver.options['IISFile'     ] = _path+'/openTEPES_'+CaseName+'.ilp'               # should be uncommented to show results of IIS
