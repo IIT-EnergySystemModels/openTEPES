@@ -40,8 +40,8 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES):
         Solver.options['TimeLimit'     ] =    7200
         Solver.options['IterationLimit'] = 7200000
     if mTEPES.pIndBinGenInvest()*len(mTEPES.gc) + mTEPES.pIndBinNetInvest()*len(mTEPES.lc) + mTEPES.pIndBinGenOperat()*len(mTEPES.nr) + mTEPES.pIndBinLineCommit()*len(mTEPES.la) + len(mTEPES.g2g) == 0:
+        Solver.options['relax_integrality'] = 1
         if SolverName == 'gurobi':
-            Solver.options['relax_integrality'] = 1
             Solver.options['Crossover'    ] = -1
         OptModel.dual = Suffix(direction=Suffix.IMPORT)
         OptModel.rc   = Suffix(direction=Suffix.IMPORT)
