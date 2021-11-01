@@ -99,6 +99,25 @@ GitHub Repository (the hard way)
 3. Set up the path by ``cd "C:\Users\<username>\...\openTEPES"``. (Note that the path is where the repository was cloned.)
 4. Install openTEPES via pip by ``pip install .``
 
+Solvers
+###########
+
+GLPK
+================================
+As an easy option for installation, we have the free and open-source `GLPK <https://www.gnu.org/software/glpk/>`_ solver. However, it takes too much memory for large-scale problems. It can be installed using: ``conda install -c conda-forge glpk``.
+
+CBC
+================================
+The `CBC <https://projects.coin-or.org/Cbc>`_ is our recommendation if you want a free and open-source solver. For Windows users, the effective way to install the CBC solver is about downloading the binaries from `here <https://www.coin-or.org/download/binary/Cbc/Cbc-2.10-win64-msvc15-md.zip>`_, copy and paste the *cbc.exe* file to the PATH that is the "bin" directory of the Anaconda or Miniconda environment.
+
+Gurobi
+================================
+Our another recomendation is the use  `Gurobi <https://www.gurobi.com/>`_ solver. However, it is commercial solver but most effective than GPLK and CBC for large-scale problems. 
+As a commercial solver it needs a license that is free of charge for academic usage by signing up in `Gurobi webpage <https://pages.gurobi.com/registration/>`_. After that download the last version of the `Gurobi optimizer <https://www.gurobi.com/downloads/gurobi-optimizer-eula/>`_. Install Gurobi using the downloaded executable and ask for an academic or paid commercial license. Active the license in your computer using the ``grbgetkey`` command (you need to be in the university domain if you are installing an academic license).
+
+Mosek
+================================
+Another alternative is the  `Mosek <https://www.mosek.com/>`_ solver. Note that it is a commercial solver and you need a license for it. Mosek is a good alternative to deal with QPs, SOCPs, and SDPs problems. You only need to use ``conda install -c mosek mosek`` for installation and request a license (academic or paid-commercial). To request the academic one, you can request `here <https://www.mosek.com/products/academic-licenses/>`_. Moreover, Mosek brings a `license guide <https://docs.mosek.com/9.2/licensing/index.html>`_. But if you are request an academic license, you will receive the license by email, and you only need to locate it in the following path ``C:\Users\(your user)\mosek`` in your computer.
 
 Get started
 ###########
