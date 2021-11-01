@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 30, 2021
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 31, 2021
 """
 
 import time
@@ -73,8 +73,8 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES):
             for nr in mTEPES.nr:
                 if sum(1 for g in mTEPES.nr if (nr,g) in mTEPES.g2g or (g,nr) in mTEPES.g2g):
                     OptModel.vMaxCommitment[nr].fix(round(OptModel.vMaxCommitment[nr]()))
-        Solver.options['relax_integrality'] =  1                                               # introduced to show results of the dual variables
         if SolverName == 'gurobi':
+            Solver.options['relax_integrality'] = 1  # introduced to show results of the dual variables
             Solver.options['Crossover'    ] = -1
         OptModel.dual = Suffix(direction=Suffix.IMPORT)
         OptModel.rc   = Suffix(direction=Suffix.IMPORT)
