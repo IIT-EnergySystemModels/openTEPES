@@ -1,2 +1,2 @@
 ,ENSCost,CO2Cost,SBase,ReferenceNode,TimeStep,UpReserveActivation,DwReserveActivation,StageDuration
-Parameters,10000,50,100,Valladolid,2,0.25,0.3,2160
+Parameters,10000,50,100,Valladolid,4,0.25,0.3,8736
