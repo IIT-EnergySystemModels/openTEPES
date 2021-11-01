@@ -265,11 +265,11 @@ Maximum commitment of a committable unit (all except the VRES units) [p.u.] (``e
 
 :math:`uc^ω_{png} \leq uc'_g \quad \forall ωpng`
 
-Maximum commitment of an ESS [p.u.] (``eMaxCommitESS``)
+Maximum commitment of any unit [p.u.] (``eMaxCommitGen``)
 
-:math:`\sum_{wpn} \frac{gp^ω_{pne}}{\overline{GP}_e} \leq uc'_e \quad \forall ωpne`
+:math:`\sum_{ωpn} \frac{gp^ω_{png}}{\overline{GP}_g} \leq uc'_g \quad \forall ωpng`
 
-Mutually exclusive :math:`g` and :math:`g'` non-renewable units (e.g., thermal and ESS, all except the VRES units) [p.u.] (``eExclusiveGens``)
+Mutually exclusive :math:`g` and :math:`g'` units (e.g., thermal, ESS, VRES units) [p.u.] (``eExclusiveGens``)
 
 :math:`uc'_g + uc'_{g'} \leq 1 \quad \forall g, g'`
 

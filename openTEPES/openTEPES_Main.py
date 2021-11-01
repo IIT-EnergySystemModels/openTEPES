@@ -65,7 +65,7 @@
 # make it effectively proprietary.  To prevent this, the GPL assures that
 # patents cannot be used to render the program non-free.
 
-# Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.1.2 - October 28, 2021
+# Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.1.3 - October 31, 2021
 # simplicity and transparency in power systems planning
 
 # Developed by

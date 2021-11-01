@@ -32,7 +32,7 @@
 
 The openTEPES model has been developed at the `Instituto de Investigación Tecnológica (IIT) <https://www.iit.comillas.edu/index.php.en>`_ of the `Universidad Pontificia Comillas <https://www.comillas.edu/en/>`_.
 
-**(openTEPES)** determines the investment plans of new facilities (generators, ESS and lines)
+**openTEPES** determines the investment plans of new facilities (generators, ESS and lines)
 for supplying the forecasted demand at minimum cost. Tactical planning is concerned with time horizons of 10-20 years. Its objective is to evaluate the future generation, storage and network needs.
 The main results are the guidelines for the future structure of the generation and transmission systems.
 
