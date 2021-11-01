@@ -111,7 +111,7 @@ def GenerationOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, st):
     setattr(OptModel, 'eSystemInertia_'+st, Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.ar, rule=eSystemInertia, doc='system inertia [s]'))
 
     if pIndLogConsole == 1:
-        print('eSystemInertia           ... ', len(getattr(OptModel, 'eSystemInertia_'+st)), ' rows')
+        print('eSystemInertia        ... ', len(getattr(OptModel, 'eSystemInertia_'+st)), ' rows')
 
     #%%
     def eOperReserveUp(OptModel,sc,p,n,ar):
