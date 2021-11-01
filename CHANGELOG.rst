@@ -4,6 +4,10 @@ Change Log
 - [CHANGED] Addition of the sequence of decisions and operation (TEP + transmission switching)
 - [FIXED] fixing `<https://pascua.iit.comillas.edu/aramos/openTEPES/index.html#>`_ in README.rst
 
+[4.1.3] - 2021-10-31
+--------------------
+- [FIXED] Generalization of the maximum commitment and mutually exclusive constraints
+
 [4.1.2] - 2021-10-28
 --------------------
 - [FIXED] Removing option when the solver is called in ProblemSolving
