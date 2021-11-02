@@ -73,14 +73,6 @@ Identifier    Identifier  Identifier  Header      Description
 Scenario      Period      Load level  Generator   Upward operating reserve [MW]
 ============  ==========  ==========  ==========  ==========================================
 
-File ``oT_Result_ESSGenerationReserveUp.csv``
-
-============  ==========  ==========  ==========  ==========================================
-Identifier    Identifier  Identifier  Header      Description
-============  ==========  ==========  ==========  ==========================================
-Scenario      Period      Load level  Generator   Upward operating reserve [MW]
-============  ==========  ==========  ==========  ==========================================
-
 File ``oT_Result_GenerationReserveDown.csv``
 
 ============  ==========  ==========  ==========  ==========================================
@@ -177,6 +169,22 @@ Identifier    Identifier  Identifier  Header       Description
 Scenario      Period      Load level  Technology   Curtailed energy of VRES [GWh]
 ============  ==========  ==========  ===========  ==========================================
 
+File ``oT_Result_TechnologyReserveUp.csv``
+
+============  ==========  ==========  ==========  ==========================================
+Identifier    Identifier  Identifier  Header      Description
+============  ==========  ==========  ==========  ==========================================
+Scenario      Period      Load level  Technology  Upward operating reserve [MW]
+============  ==========  ==========  ==========  ==========================================
+
+File ``oT_Result_TechnologyReserveDown.csv``
+
+============  ==========  ==========  ==========  ==========================================
+Identifier    Identifier  Identifier  Header      Description
+============  ==========  ==========  ==========  ==========================================
+Scenario      Period      Load level  Technology  Downward operating reserve [MW]
+============  ==========  ==========  ==========  ==========================================
+
 ESS operation
 -------------
 
@@ -252,28 +260,20 @@ Identifier    Identifier  Identifier  Header      Description
 Scenario      Period      Load level  Technology  Energy (charge in ESS) per area [GWh]
 ============  ==========  ==========  ==========  ==========================================
 
+File ``oT_Result_ESSGenerationReserveUp.csv``
+
+============  ==========  ==========  ==========  ==========================================
+Identifier    Identifier  Identifier  Header      Description
+============  ==========  ==========  ==========  ==========================================
+Scenario      Period      Load level  Generator   Upward operating reserve [MW]
+============  ==========  ==========  ==========  ==========================================
+
 File ``oT_Result_ESSGenerationReserveDown.csv``
 
 ============  ==========  ==========  ==========  ==========================================
 Identifier    Identifier  Identifier  Header      Description
 ============  ==========  ==========  ==========  ==========================================
 Scenario      Period      Load level  Generator   Downward operating reserve [MW]
-============  ==========  ==========  ==========  ==========================================
-
-File ``oT_Result_TechnologyReserveUp.csv``
-
-============  ==========  ==========  ==========  ==========================================
-Identifier    Identifier  Identifier  Header      Description
-============  ==========  ==========  ==========  ==========================================
-Scenario      Period      Load level  Technology  Upward operating reserve [MW]
-============  ==========  ==========  ==========  ==========================================
-
-File ``oT_Result_TechnologyReserveDown.csv``
-
-============  ==========  ==========  ==========  ==========================================
-Identifier    Identifier  Identifier  Header      Description
-============  ==========  ==========  ==========  ==========================================
-Scenario      Period      Load level  Technology  Downward operating reserve [MW]
 ============  ==========  ==========  ==========  ==========================================
 
 File ``oT_Result_ESSInventory.csv``
