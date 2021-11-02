@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 27, 2021
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 28, 2021
 """
 
 import time
@@ -9,6 +9,7 @@ from   collections   import defaultdict
 import matplotlib.pyplot as plt
 import pyomo.environ as pyo
 from   pyomo.environ import Set
+import numpy as np
 
 
 def InvestmentResults(DirName, CaseName, OptModel, mTEPES):
@@ -17,16 +18,40 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES):
     StartTime = time.time()
 
     if len(mTEPES.gc):
-        OutputToFile = pd.DataFrame.from_dict(OptModel.vGenerationInvest.extract_values(), orient='index', columns=[str(OptModel.vGenerationInvest)])
-        OutputToFile.index.names = ['Generator']
-        OutputToFile = OutputToFile.reset_index()
-        OutputToFile.rename(columns={'vGenerationInvest': 'Investment Decision'}).to_csv(_path+'/oT_Result_GenerationInvestment_'+CaseName+'.csv', index=False, sep=',')
+        OutputToFile = pd.Series(data=[mTEPES.pRatedMaxPower[gc]*OptModel.vGenerationInvest[gc]() for gc in mTEPES.gc], index=pd.Index(mTEPES.gc))
+        OutputToFile *= 1e3
+        OutputToFile = OutputToFile.fillna(0)
+        OutputToFile.to_frame(name='MW').reset_index().rename(columns={'index': 'Generating unit'}).to_csv(_path+'/oT_Result_GenerationInvestment_'+CaseName+'.csv', sep=',', index=False)
+      
+        OutputToFile = pd.Series(data=[sum(OutputToFile[gc] for gc in mTEPES.gc if (gt,gc) in mTEPES.t2g) for gt in mTEPES.gt], index=pd.Index(mTEPES.gt))
+        OutputToFile.to_frame(name='MW').reset_index().rename(columns={'index': 'Technology'     }).to_csv(_path+'/oT_Result_TechnologyInvestment_'+CaseName+'.csv', sep=',', index=False)
+        TechInv = OutputToFile.to_frame(name='MW').reset_index().rename(columns={'index': 'Technology'     }) 
+        TechInv.replace(0,np.nan,inplace=True)
+        TechInv = TechInv.dropna()
+        
+        x = np.arange(len(TechInv['MW']))     
+        fig, ax = plt.subplots()
+
+        ax.set_ylabel('MW')
+        ax.set_title('Capacity Investment')
+        ax.set_xticks(x)
+        ax.set_xticklabels(TechInv['Technology'])
+        
+        pps = ax.bar(x, [int(i) for i in TechInv['MW']])
+        for p in pps:
+           height = p.get_height()
+           ax.annotate('{}'.format(height),xy=(p.get_x() + p.get_width()/2, height), xytext=(0, 0), textcoords="offset points", ha='center', va='bottom')
+        fig.autofmt_xdate()
+        plt.savefig(_path+'/oT_Plot_TechnologyInvestment_'+CaseName+'.png', bbox_inches=None, dpi=600)
+
     if len(mTEPES.lc):
+        
         OutputToFile = pd.DataFrame.from_dict(OptModel.vNetworkInvest.extract_values(),    orient='index', columns=[str(OptModel.vNetworkInvest)])
         OutputToFile.index = pd.MultiIndex.from_tuples(OutputToFile.index)
         OutputToFile.index.names = ['InitialNode','FinalNode','Circuit']
         OutputToFile = OutputToFile.reset_index()
         OutputToFile.rename(columns={'vNetworkInvest': 'Investment Decision'}).to_csv(_path + '/oT_Result_NetworkInvestment_' + CaseName + '.csv', index=False, sep=',')
+
 
     WritingResultsTime = time.time() - StartTime
     StartTime          = time.time()
@@ -93,12 +118,52 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES):
 
         OutputToFile = pd.Series(data=[sum(OutputToFile[sc,p,n,r] for r in mTEPES.r if (gt,r) in mTEPES.t2g)         for sc,p,n,gt in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.gt], index=pd.MultiIndex.from_tuples(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.gt))
         OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='GWh').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_RESTechnologyCurtailment_'+CaseName+'.csv', sep=',')
-
+        TechCurt = OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='GWh').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1)
+        TechCurt.replace(0,np.nan,inplace=True)
+        TechCurt = TechCurt.dropna(axis=1, how='all')
+        
+        x = np.arange(len(TechCurt.columns))      
+        fig, ax = plt.subplots()
+    
+        ax.set_ylabel('GWh')
+        ax.set_title('Curtailment')
+        ax.set_xticks(x)
+        ax.set_xticklabels(TechCurt.columns)
+        
+        pps = ax.bar(x, round(TechCurt.sum(0),2))
+        for p in pps:
+           height = p.get_height()
+           ax.annotate('{}'.format(height),xy=(p.get_x() + p.get_width()/2, height), xytext=(0, 0), textcoords="offset points", ha='center', va='bottom')
+        fig.autofmt_xdate()
+        plt.savefig(_path+'/oT_Plot_TechnologyCurtailment_'+CaseName+'.png', bbox_inches=None, dpi=600)
+    
     OutputToFile = pd.Series(data=[OptModel.vTotalOutput[sc,p,n,g ]()*mTEPES.pDuration[n]*mTEPES.pLoadLevelWeight[n]() for sc,p,n,g  in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.g ], index=pd.MultiIndex.from_tuples(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.g ))
     OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_2'],   columns='level_3', values='GWh').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_GenerationEnergy_'  +CaseName+'.csv', sep=',')
 
     OutputToFile = pd.Series(data=[OptModel.vTotalOutput[sc,p,n,nr]()*mTEPES.pDuration[n]*mTEPES.pLoadLevelWeight[n]()*mTEPES.pCO2EmissionCost[nr]/mTEPES.pCO2Cost() for sc,p,n,nr in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.nr], index=pd.MultiIndex.from_tuples(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.nr))
     OutputToFile.to_frame(name='tCO2').reset_index().pivot_table(index=['level_0','level_1','level_2'],   columns='level_3', values='tCO2').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_GenerationEmission_'+CaseName+'.csv', sep=',')
+    
+    OutputToFile = pd.Series(data=[sum(OutputToFile[sc,p,n,nr] for nr in mTEPES.nr if (gt,nr) in mTEPES.t2g) for sc,p,n,gt in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.gt], index=pd.MultiIndex.from_tuples(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.gt))
+    #OutputToFile*= 1e3 
+    OutputToFile.to_frame(name='tCO2').reset_index().pivot_table(index=['level_0','level_1','level_2'],   columns='level_3', values='tCO2').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_GenerationEmission_'+CaseName+'.csv', sep=',') 
+    TechCO2 = OutputToFile.to_frame(name='tCO2').reset_index().pivot_table(index=['level_0','level_1','level_2'],   columns='level_3', values='tCO2').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1)
+    TechCO2.replace(0,np.nan,inplace=True)
+    TechCO2 = TechCO2.dropna(axis=1, how='all')
+    
+    x = np.arange(len(TechCO2.columns))      
+    fig, ax = plt.subplots()
+
+    ax.set_ylabel('Mt CO2')
+    ax.set_title('Emmisions')
+    ax.set_xticks(x)
+    ax.set_xticklabels(TechCO2.columns)
+    
+    pps = ax.bar(x, round(TechCO2.sum(0),2))
+    for p in pps:
+       height = p.get_height()
+       ax.annotate('{}'.format(height),xy=(p.get_x() + p.get_width()/2, height), xytext=(0, 0), textcoords="offset points", ha='center', va='bottom')
+    fig.autofmt_xdate()
+    plt.savefig(_path+'/oT_Plot_Emissions_'+CaseName+'.png', bbox_inches=None, dpi=600)
 
     OutputToFile = pd.Series(data=[sum(OptModel.vTotalOutput[sc,p,n,g]() for g in mTEPES.g if (gt,g) in mTEPES.t2g)*1e3 for sc,p,n,gt in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.gt], index=pd.MultiIndex.from_tuples(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.gt))
     OutputToFile.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_TechnologyOutput_'+CaseName+'.csv', sep=',')
@@ -132,6 +197,7 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES):
             centre_circle = plt.Circle((0, 0), 0.60, fc='white')
             fg = plt.gcf()
             fg.gca().add_artist(centre_circle)
+            fg.autofmt_xdate()
             # plt.show()
             plt.savefig(_path+'/oT_Plot_TechnologyEnergy_'+ar+'_'+CaseName+'.png', bbox_inches=None, dpi=600)
 
