@@ -154,7 +154,7 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES):
     fig, ax = plt.subplots()
 
     ax.set_ylabel('Mt CO2')
-    ax.set_title('Emmisions')
+    ax.set_title('Emissions')
     ax.set_xticks(x)
     ax.set_xticklabels(TechCO2.columns)
     
