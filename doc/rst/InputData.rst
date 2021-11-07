@@ -414,8 +414,8 @@ AngMax             Maximum angle difference (not used in this version)          
 AngMin             Minimum angle difference (not used in this version)                                                              º
 Tap                Tap changer (not used in this version)                                                                           p.u.
 Converter          Converter station (not used in this version)                                                                     Yes/No
-TTC                Total transfer capacity (maximum permissible thermal load) in forward  direction                                 MW
-TTCBck             Total transfer capacity (maximum permissible thermal load) in backward direction                                 MW
+TTC                Total transfer capacity (maximum permissible thermal load) in forward  direction. Static line rating             MW
+TTCBck             Total transfer capacity (maximum permissible thermal load) in backward direction. Static line rating             MW
 SecurityFactor     Security factor to consider approximately N-1 contingencies. NTC = TTC x SecurityFactor                          p.u.
 FixedCost          Overnight investment (capital and fixed O&M) cost                                                                M€
 FixedChargeRate    Fixed-charge rate to annualize the overnight investment cost                                                     p.u.
