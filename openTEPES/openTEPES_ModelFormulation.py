@@ -17,7 +17,7 @@ def InvestmentModelFormulation(OptModel, mTEPES, pIndLogConsole):
     OptModel.eTotalTCost = Objective(rule=eTotalTCost, sense=minimize, doc='total system cost [MEUR]')
 
     def eTotalFCost(OptModel):
-       return OptModel.vTotalFCost == sum(mTEPES.pGenFixedCost[gc] * OptModel.vGenerationInvest[gc] for gc in mTEPES.gc) + sum(mTEPES.pNetFixedCost[lc] * OptModel.vNetworkInvest[lc] for lc in mTEPES.lc)
+       return OptModel.vTotalFCost == sum(mTEPES.pGenFixedCost[gc] * OptModel.vGenerationInvest[gc] for gc in mTEPES.gc) + sum(mTEPES.pGenRetireCost[gd] * OptModel.vGenerationRetire[gd] for gd in mTEPES.gd) + sum(mTEPES.pNetFixedCost[lc] * OptModel.vNetworkInvest[lc] for lc in mTEPES.lc)
     OptModel.eTotalFCost = Constraint(rule=eTotalFCost, doc='system fixed    cost [MEUR]')
 
     GeneratingOFTime = time.time() - StartTime
