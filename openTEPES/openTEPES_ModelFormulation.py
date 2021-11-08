@@ -17,7 +17,7 @@ def InvestmentModelFormulation(OptModel, mTEPES, pIndLogConsole):
     OptModel.eTotalTCost = Objective(rule=eTotalTCost, sense=minimize, doc='total system cost [MEUR]')
 
     def eTotalFCost(OptModel):
-       return OptModel.vTotalFCost == sum(mTEPES.pGenFixedCost[gc] * OptModel.vGenerationInvest[gc] for gc in mTEPES.gc) + sum(mTEPES.pGenRetireCost[gd] * OptModel.vGenerationRetire[gd] for gd in mTEPES.gd) + sum(mTEPES.pNetFixedCost[lc] * OptModel.vNetworkInvest[lc] for lc in mTEPES.lc)
+       return OptModel.vTotalFCost == sum(mTEPES.pGenInvestCost[gc] * OptModel.vGenerationInvest[gc] for gc in mTEPES.gc) + sum(mTEPES.pGenRetireCost[gd] * OptModel.vGenerationRetire[gd] for gd in mTEPES.gd) + sum(mTEPES.pNetFixedCost[lc] * OptModel.vNetworkInvest[lc] for lc in mTEPES.lc)
     OptModel.eTotalFCost = Constraint(rule=eTotalFCost, doc='system fixed    cost [MEUR]')
 
     GeneratingOFTime = time.time() - StartTime
@@ -70,7 +70,7 @@ def GenerationOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, st):
             return OptModel.vCommitment[sc,p,n,gc] <= OptModel.vGenerationInvest[gc]
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eInstalGenComm_'+st, Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.gc, rule=eInstalGenComm, doc='commitment  if installed unit [p.u.]'))
+    setattr(OptModel, 'eInstalGenComm_'+st, Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.gc, rule=eInstalGenComm, doc='commitment       if installed unit [p.u.]'))
 
     if pIndLogConsole == 1:
         print('eInstalGenComm        ... ', len(getattr(OptModel, 'eInstalGenComm_'+st)), ' rows')
@@ -80,22 +80,43 @@ def GenerationOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, st):
             return OptModel.vTotalOutput[sc,p,n,gc] / mTEPES.pMaxPower[sc,p,n,gc] <= OptModel.vGenerationInvest[gc]
         else:
             return OptModel.vTotalOutput[sc,p,n,gc]                               <= 0.0
-    setattr(OptModel, 'eInstalGenCap_'+st, Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.gc, rule=eInstalGenCap, doc='output      if installed gen unit [p.u.]'))
+    setattr(OptModel, 'eInstalGenCap_'+st, Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.gc, rule=eInstalGenCap, doc='output         if installed gen unit [p.u.]'))
 
     if pIndLogConsole == 1:
         print('eInstalGenCap         ... ', len(getattr(OptModel, 'eInstalGenCap_'+st)), ' rows')
 
     def eInstalConESS(OptModel,sc,p,n,ec):
         return OptModel.vESSTotalCharge [sc,p,n,ec] / mTEPES.pMaxCharge[sc,p,n,ec] <= OptModel.vGenerationInvest[ec]
-    setattr(OptModel, 'eInstalConESS_'+st, Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.ec, rule=eInstalConESS, doc='consumption if installed ESS unit [p.u.]'))
+    setattr(OptModel, 'eInstalConESS_'+st, Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.ec, rule=eInstalConESS, doc='consumption    if installed ESS unit [p.u.]'))
 
     if pIndLogConsole == 1:
         print('eInstalConESS         ... ', len(getattr(OptModel, 'eInstalConESS_'+st)), ' rows')
 
+    def eUninstalGenComm(OptModel,sc,p,n,gd):
+        if gd in mTEPES.nr and gd not in mTEPES.es and mTEPES.pMustRun[gd] == 0 and (mTEPES.pMinPower[sc,p,n,gd] > 0.0 or mTEPES.pConstantVarCost[gd] > 0.0):
+            return OptModel.vCommitment[sc,p,n,gd] <= 1 - OptModel.vGenerationRetire[gd]
+        else:
+            return Constraint.Skip
+    setattr(OptModel, 'eUninstalGenComm_'+st, Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.gd, rule=eUninstalGenComm, doc='commitment if uninstalled unit [p.u.]'))
+
+    if pIndLogConsole == 1:
+        print('eUninstalGenComm      ... ', len(getattr(OptModel, 'eUninstalGenComm_'+st)), ' rows')
+
+    def eUninstalGenCap(OptModel,sc,p,n,gd):
+        if mTEPES.pMaxPower[sc,p,n,gd]:
+            return OptModel.vTotalOutput[sc,p,n,gd] / mTEPES.pMaxPower[sc,p,n,gd] <= 1 - OptModel.vGenerationRetire[gd]
+        else:
+            return OptModel.vTotalOutput[sc,p,n,gd]                               <= 0.0
+    setattr(OptModel, 'eUninstalGenCap_'+st, Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.gd, rule=eUninstalGenCap, doc='output   if uninstalled gen unit [p.u.]'))
+
+    if pIndLogConsole == 1:
+        print('eUninstalGenCap       ... ', len(getattr(OptModel, 'eUninstalGenCap_'+st)), ' rows')
+
     def eAdequacyReserveMargin(OptModel,ar):
         if mTEPES.pReserveMargin[ar] and sum(1 for g in mTEPES.g if (ar,g) in mTEPES.a2g):
-            return ((sum(                                 mTEPES.pRatedMaxPower[g ] * mTEPES.pAvailability[g ] / (1.0-mTEPES.pEFOR[g ]) for g  in mTEPES.g  if (ar,g ) in mTEPES.a2g and g not in mTEPES.gc) +
-                     sum(OptModel.vGenerationInvest[gc] * mTEPES.pRatedMaxPower[gc] * mTEPES.pAvailability[gc] / (1.0-mTEPES.pEFOR[gc]) for gc in mTEPES.gc if (ar,gc) in mTEPES.a2g                       ) ) >= mTEPES.pPeakDemand[ar] * mTEPES.pReserveMargin[ar])
+            return ((sum(                                    mTEPES.pRatedMaxPower[g ] * mTEPES.pAvailability[g ] / (1.0-mTEPES.pEFOR[g ]) for g  in mTEPES.g  if (ar,g ) in mTEPES.a2g and g not in (mTEPES.gc or mTEPES.gd)) +
+                     sum(OptModel.vGenerationInvest[gc]    * mTEPES.pRatedMaxPower[gc] * mTEPES.pAvailability[gc] / (1.0-mTEPES.pEFOR[gc]) for gc in mTEPES.gc if (ar,gc) in mTEPES.a2g                                      ) +
+                     sum((1-OptModel.vGenerationRetire[gd]) * mTEPES.pRatedMaxPower[gd] * mTEPES.pAvailability[gd] / (1.0-mTEPES.pEFOR[gd]) for gd in mTEPES.gd if (ar,gd) in mTEPES.a2g                                      ) ) >= mTEPES.pPeakDemand[ar] * mTEPES.pReserveMargin[ar])
         else:
             return Constraint.Skip
     setattr(OptModel, 'eAdequacyReserveMargin_'+st, Constraint(mTEPES.ar, rule=eAdequacyReserveMargin, doc='system adequacy reserve margin [p.u.]'))
@@ -456,16 +477,6 @@ def NetworkSwitchingModelFormulation(OptModel, mTEPES, pIndLogConsole, st):
 
     if pIndLogConsole == 1:
         print('eLineStateCand        ... ', len(getattr(OptModel, 'eLineStateCand_' + str(st))), ' rows')
-
-    def eLineSwtStageToLevel(OptModel,sc,p,ss,n,ni,nf,cc):
-        if mTEPES.pLineSwitching[ni,nf,cc] == 1 and mTEPES.pIndSwitchingStage() == 1:
-            return OptModel.vLineCommit[sc,p,n,ni,nf,cc] == OptModel.vSwitchingStage[sc,p,ss,ni,nf,cc]
-        else:
-            return Constraint.Skip
-    setattr(OptModel, 'eLineSwtStageToLevel_'+st, Constraint(mTEPES.sc, mTEPES.p, mTEPES.ss2n, rule=eLineSwtStageToLevel, doc='constraints between line commitment per load level and per stage'))
-
-    if pIndLogConsole == 1:
-        print('eLineSwtStageToLevel  ... ', len(getattr(OptModel, 'eLineSwtStageToLevel_'+st)), ' rows')
 
     def eSWOnOff(OptModel,sc,p,n,ni,nf,cc):
         if   mTEPES.pLineSwitching[ni,nf,cc] == 1 and (mTEPES.pSwOnTime[ni,nf,cc] > 1 or mTEPES.pSwOffTime[ni,nf,cc] > 1) and n == mTEPES.n.first():
