@@ -42,6 +42,33 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES):
         fig.autofmt_xdate()
         plt.savefig(_path+'/oT_Plot_TechnologyInvestment_'+CaseName+'.png', bbox_inches=None, dpi=600)
 
+    if len(mTEPES.gd):
+        OutputToFile = pd.Series(data=[mTEPES.pRatedMaxPower[gd]*OptModel.vGenerationRetire[gd]() for gd in mTEPES.gd], index=pd.Index(mTEPES.gd))
+        OutputToFile *= 1e3
+        OutputToFile = OutputToFile.fillna(0)
+        OutputToFile.to_frame(name='MW').reset_index().rename(columns={'index': 'Generating unit'}).to_csv(_path+'/oT_Result_GenerationRetirement_'+CaseName+'.csv', sep=',', index=False)
+
+        OutputToFile = pd.Series(data=[sum(OutputToFile[gd] for gd in mTEPES.gd if (gt,gd) in mTEPES.t2g) for gt in mTEPES.gt], index=pd.Index(mTEPES.gt))
+        OutputToFile.to_frame(name='MW').reset_index().rename(columns={'index': 'Technology'     }).to_csv(_path+'/oT_Result_TechnologyDecommisioning_'+CaseName+'.csv', sep=',', index=False)
+        TechDecom = OutputToFile.to_frame(name='MW').reset_index().rename(columns={'index': 'Technology'     })
+        TechDecom.replace(0.0, float('nan'))
+        TechDecom = TechDecom.dropna()
+
+        x = range(0, len(TechDecom['MW'])-1)
+        fig, ax = plt.subplots()
+
+        ax.set_ylabel('MW')
+        ax.set_title('Capacity Retired')
+        ax.set_xticks(x)
+        ax.set_xticklabels(TechDecom['Technology'])
+
+        pps = ax.bar(x, [int(i) for i in TechDecom['MW']])
+        for p in pps:
+           height = p.get_height()
+           ax.annotate('{}'.format(height),xy=(p.get_x() + p.get_width()/2, height), xytext=(0, 0), textcoords="offset points", ha='center', va='bottom')
+        fig.autofmt_xdate()
+        plt.savefig(_path+'/oT_Plot_TechnologyRetirement_'+CaseName+'.png', bbox_inches=None, dpi=600)
+
     if len(mTEPES.lc):
         
         OutputToFile = pd.DataFrame.from_dict(OptModel.vNetworkInvest.extract_values(),    orient='index', columns=[str(OptModel.vNetworkInvest)])
