@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 28, 2021
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 08, 2021
 """
 
 import time
@@ -7,9 +7,7 @@ import os
 import pandas as pd
 from   collections   import defaultdict
 import matplotlib.pyplot as plt
-import pyomo.environ as pyo
 from   pyomo.environ import Set
-import numpy as np
 
 
 def InvestmentResults(DirName, CaseName, OptModel, mTEPES):
@@ -26,10 +24,10 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES):
         OutputToFile = pd.Series(data=[sum(OutputToFile[gc] for gc in mTEPES.gc if (gt,gc) in mTEPES.t2g) for gt in mTEPES.gt], index=pd.Index(mTEPES.gt))
         OutputToFile.to_frame(name='MW').reset_index().rename(columns={'index': 'Technology'     }).to_csv(_path+'/oT_Result_TechnologyInvestment_'+CaseName+'.csv', sep=',', index=False)
         TechInv = OutputToFile.to_frame(name='MW').reset_index().rename(columns={'index': 'Technology'     }) 
-        TechInv.replace(0,np.nan,inplace=True)
+        TechInv.replace(0.0, float('nan'))
         TechInv = TechInv.dropna()
         
-        x = np.arange(len(TechInv['MW']))     
+        x = range(0, len(TechInv['MW'])-1)
         fig, ax = plt.subplots()
 
         ax.set_ylabel('MW')
@@ -119,10 +117,10 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES):
         OutputToFile = pd.Series(data=[sum(OutputToFile[sc,p,n,r] for r in mTEPES.r if (gt,r) in mTEPES.t2g)         for sc,p,n,gt in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.gt], index=pd.MultiIndex.from_tuples(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.gt))
         OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='GWh').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_RESTechnologyCurtailment_'+CaseName+'.csv', sep=',')
         TechCurt = OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='GWh').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1)
-        TechCurt.replace(0,np.nan,inplace=True)
+        TechCurt.replace(0.0, float('nan'))
         TechCurt = TechCurt.dropna(axis=1, how='all')
         
-        x = np.arange(len(TechCurt.columns))      
+        x = range(0, len(TechCurt.columns)-1)
         fig, ax = plt.subplots()
     
         ax.set_ylabel('GWh')
@@ -147,10 +145,10 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES):
     #OutputToFile*= 1e3 
     OutputToFile.to_frame(name='tCO2').reset_index().pivot_table(index=['level_0','level_1','level_2'],   columns='level_3', values='tCO2').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_GenerationEmission_'+CaseName+'.csv', sep=',') 
     TechCO2 = OutputToFile.to_frame(name='tCO2').reset_index().pivot_table(index=['level_0','level_1','level_2'],   columns='level_3', values='tCO2').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1)
-    TechCO2.replace(0,np.nan,inplace=True)
+    TechCO2.replace(0.0, float('nan'))
     TechCO2 = TechCO2.dropna(axis=1, how='all')
     
-    x = np.arange(len(TechCO2.columns))      
+    x = range(0, len(TechCO2.columns)-1)
     fig, ax = plt.subplots()
 
     ax.set_ylabel('Mt CO2')
