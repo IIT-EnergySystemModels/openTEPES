@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 31, 2021
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 08, 2021
 """
 
 import time
@@ -37,8 +37,8 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES):
         # Solver.options['BarQCPConvTol' ] = 0.025
         Solver.options['MIPGap'        ] = 0.01
         Solver.options['Threads'       ] = int((psutil.cpu_count(logical=True) + psutil.cpu_count(logical=False))/2)
-        Solver.options['TimeLimit'     ] =    14400
-        Solver.options['IterationLimit'] = 14400000
+        Solver.options['TimeLimit'     ] =    144000
+        Solver.options['IterationLimit'] = 144000000
     if mTEPES.pIndBinGenInvest()*len(mTEPES.gc) + mTEPES.pIndBinNetInvest()*len(mTEPES.lc) + mTEPES.pIndBinGenOperat()*len(mTEPES.nr) + mTEPES.pIndBinLineCommit()*len(mTEPES.la) + len(mTEPES.g2g) == 0:
         if SolverName == 'gurobi' or SolverName == 'mosek':
             Solver.options['relax_integrality'] =  1  # introduced to show results of the dual variables
@@ -51,10 +51,13 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES):
 
     #%% fix values of binary variables to get dual variables and solve it again
     # investment decision values are rounded to the nearest integer
-    if mTEPES.pIndBinGenInvest()*len(mTEPES.gc) + mTEPES.pIndBinNetInvest()*len(mTEPES.lc) + mTEPES.pIndBinGenOperat()*len(mTEPES.nr) + mTEPES.pIndBinLineCommit()*len(mTEPES.la) + len(mTEPES.g2g):
+    if mTEPES.pIndBinGenInvest()*len(mTEPES.gc) + mTEPES.pIndBinGenRetire()*len(mTEPES.gd) + mTEPES.pIndBinNetInvest()*len(mTEPES.lc) + mTEPES.pIndBinGenOperat()*len(mTEPES.nr) + mTEPES.pIndBinLineCommit()*len(mTEPES.la) + len(mTEPES.g2g):
         if mTEPES.pIndBinGenInvest()*len(mTEPES.gc):
             for gc in mTEPES.gc:
                 OptModel.vGenerationInvest[gc].fix(round(OptModel.vGenerationInvest[gc]()))
+        if mTEPES.pIndBinGenRetire()*len(mTEPES.gd):
+            for gd in mTEPES.gd:
+                OptModel.vGenerationRetire[gd].fix(round(OptModel.vGenerationRetire[gd]()))
         if mTEPES.pIndBinNetInvest()*len(mTEPES.lc):
             for lc in mTEPES.lc:
                 OptModel.vNetworkInvest   [lc].fix(round(OptModel.vNetworkInvest[lc]()))
