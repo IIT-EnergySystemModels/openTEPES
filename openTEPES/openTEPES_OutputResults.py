@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 08, 2021
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 09, 2021
 """
 
 import time
@@ -27,7 +27,7 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES):
         TechInv.replace(0.0, float('nan'))
         TechInv = TechInv.dropna()
         
-        x = range(0, len(TechInv['MW'])-1)
+        x = range(0, len(TechInv['MW']))
         fig, ax = plt.subplots()
 
         ax.set_ylabel('MW')
@@ -54,7 +54,7 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES):
         TechDecom.replace(0.0, float('nan'))
         TechDecom = TechDecom.dropna()
 
-        x = range(0, len(TechDecom['MW'])-1)
+        x = range(0, len(TechDecom['MW']))
         fig, ax = plt.subplots()
 
         ax.set_ylabel('MW')
@@ -147,7 +147,7 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES):
         TechCurt.replace(0.0, float('nan'))
         TechCurt = TechCurt.dropna(axis=1, how='all')
         
-        x = range(0, len(TechCurt.columns)-1)
+        x = range(0, len(TechCurt.columns))
         fig, ax = plt.subplots()
     
         ax.set_ylabel('GWh')
@@ -175,7 +175,7 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES):
     TechCO2.replace(0.0, float('nan'))
     TechCO2 = TechCO2.dropna(axis=1, how='all')
     
-    x = range(0, len(TechCO2.columns)-1)
+    x = range(0, len(TechCO2.columns))
     fig, ax = plt.subplots()
 
     ax.set_ylabel('Mt CO2')
