@@ -9,7 +9,7 @@
 .. image:: https://badge.fury.io/py/openTEPES.svg
     :target: https://badge.fury.io/py/openTEPES
     :alt: PyPI
-   
+
 .. image:: https://img.shields.io/pypi/pyversions/openTEPES.svg
    :target: https://pypi.python.org/pypi/openTEPES
    :alt: versions
@@ -81,10 +81,10 @@ Miniconda (recommended)
 =======================
 1. `Miniconda <https://docs.conda.io/en/latest/miniconda.html>`_. Choose the 64-bit installer if possible.
 
-   1. During the installation procedure, keep both checkboxes "modify the PATH" and "register Python" selected! If only higher Python versions are available, you can switch to a specific Python Version by typing ``conda install python=<version>`` 
+   1. During the installation procedure, keep both checkboxes "modify the PATH" and "register Python" selected! If only higher Python versions are available, you can switch to a specific Python Version by typing ``conda install python=<version>``
    2. **Remark:** if Anaconda or Miniconda was installed previously, please check that python is registered in the environment variables.
 2. **Packages and Solver**:
-  
+
    1. Launch a new command prompt (Windows: Win+R, type "cmd", Enter)
    2. Install `GLPK <http://winglpk.sourceforge.net/>`_ and `Cartopy <https://pypi.org/project/Cartopy/>`_ via conda by ``conda install -c conda-forge glpk cartopy``
    3. Install openTEPES via pip by ``pip install openTEPES``
@@ -108,11 +108,11 @@ As an easy option for installation, we have the free and open-source `GLPK solve
 
 CBC
 ================================
-The `CBC solver <https://github.com/coin-or/Cbc>`_ is our recommendation if you want a free and open-source solver. For Windows users, the effective way to install the CBC solver is downloading the binaries from `here <https://www.coin-or.org/download/binary/Cbc/Cbc-2.10.5-x86_64-w64-mingw32.zip>`_, copy and paste the *cbc.exe* file to the PATH that is the "bin" directory of the Anaconda or Miniconda environment.
+The `CBC solver <https://github.com/coin-or/Cbc>`_ is our recommendation if you want a free and open-source solver. For Windows users, the effective way to install the CBC solver is downloading the binaries from `this link <https://www.coin-or.org/download/binary/Cbc/Cbc-2.10.5-x86_64-w64-mingw32.zip>`_, copy and paste the *cbc.exe* file to the PATH that is the "bin" directory of the Anaconda or Miniconda environment.
 
 Gurobi
 ================================
-Our another recomendation is the use  `Gurobi solver <https://www.gurobi.com/>`_. However, it is commercial solver but most powerful than GPLK and CBC for large-scale problems. 
+Our another recomendation is the use  `Gurobi solver <https://www.gurobi.com/>`_. However, it is commercial solver but most powerful than GPLK and CBC for large-scale problems.
 As a commercial solver it needs a license that is free of charge for academic usage by signing up in `Gurobi webpage <https://pages.gurobi.com/registration/>`_. After downloading the latest version of the `Gurobi optimizer <https://www.gurobi.com/downloads/gurobi-optimizer-eula/>`_. Install Gurobi using the downloaded executable and ask for an academic or commercial license. Active the license in your computer using the ``grbgetkey`` command (you need to be in the university domain if you are installing an academic license).
 
 Mosek
@@ -150,7 +150,7 @@ Then, the **results** should be written in the folder who is called with the cas
 **Note that** there is an alternative way to run the model by creating a new script **script.py**, and write the following:
 
     ``from openTEPES.openTEPES import openTEPES_run``
-    
+
     ``openTEPES_run(<case>, <dir>, <solver>)``
 
 Tips
@@ -160,7 +160,7 @@ Tips
 2. Try modifying the **TimeStep** in **oT_Data_Parameter_<case>.csv** and see their effect on results.
 3. Using **0** or **1**, the optimization options can be activated or deactivated in **oT_Data_Option_<case>.csv**.
 4. If you need a nice python editor, think about using `PyCharm <https://www.jetbrains.com/pycharm/download>`_. It has many features including project management, etc.
-5. We also suggest the use of `Gurobi <https://www.gurobi.com/academia/academic-program-and-licenses/>`_ (for Academics and Researchers) as a solver to deal with MIP and LP problems instead of GLPK. 
+5. We also suggest the use of `Gurobi <https://www.gurobi.com/academia/academic-program-and-licenses/>`_ (for Academics and Researchers) as a solver to deal with MIP and LP problems instead of GLPK.
 
 Expected Results
 ################
