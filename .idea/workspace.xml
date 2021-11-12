@@ -100,9 +100,6 @@
       <module name="openTEPES" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
       <option name="SDK_HOME" value="C:\Users\ealvarezq\Miniconda3\python.exe" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/openTEPES" />
       <option name="IS_MODULE_SDK" value="false" />
@@ -246,6 +243,7 @@
       <workItem from="1626793839397" duration="2307000" />
       <workItem from="1635765244950" duration="1238000" />
       <workItem from="1635782917153" duration="2000" />
+      <workItem from="1636708980760" duration="51000" />
     </task>
     <servers />
   </component>
