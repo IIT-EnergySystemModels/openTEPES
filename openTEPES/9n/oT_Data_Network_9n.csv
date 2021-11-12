@@ -1,4 +1,4 @@
-,,,LineType,Switching,Voltage,Length,LossFactor,Reactance,TTC,TTCBck,SecurityFactor,FixedCost,FixedChargeRate,BinaryInvestment,SwOnTime,SwOffTime,Resistance,Susceptance,Tap,Converter,AngMin,AngMax
+,,,LineType,Switching,Voltage,Length,LossFactor,Reactance,TTC,TTCBck,SecurityFactor,FixedInvestmentCost,FixedChargeRate,BinaryInvestment,SwOnTime,SwOffTime,Resistance,Susceptance,Tap,Converter,AngMin,AngMax
 Node_1,Node_6,ac1,AC,,400,,0.02,0.02,1000,,0.67,,,,,,,,,,,
 Node_2,Node_3,ac1,AC,,400,,0.02,0.03,1000,,0.67,,,,,,,,,,,
 Node_2,Node_6,ac1,AC,,400,,0.02,0.04,1000,,0.67,,,,,,,,,,,

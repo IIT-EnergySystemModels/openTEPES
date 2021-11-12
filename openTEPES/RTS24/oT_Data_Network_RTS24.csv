@@ -1,4 +1,4 @@
-,,,Length,LineType,Voltage,LossFactor,Resistance,Reactance,Susceptance,Tap,TTC,TTCBck,SecurityFactor,FixedCost,FixedChargeRate,BinaryInvestment,Switching,SwOnTime,SwOffTime,Converter,AngMin,AngMax
+,,,Length,LineType,Voltage,LossFactor,Resistance,Reactance,Susceptance,Tap,TTC,TTCBck,SecurityFactor,FixedInvestmentCost,FixedChargeRate,BinaryInvestment,Switching,SwOnTime,SwOffTime,Converter,AngMin,AngMax
 N_101,N_102,eac1,4.82802,AC,138,0.01,0.0026,0.0139,,1,175,,0.67,,,,,,,,-1.570796327,1.570796327
 N_101,N_103,eac1,88.5137,AC,138,0.01,0.0546,0.2112,,1,175,,0.67,,,,,,,,-1.570796327,1.570796327
 N_101,N_105,eac1,35.40548,AC,138,0.01,0.0218,0.0845,,1,175,,0.67,,,,,,,,-1.570796327,1.570796327

@@ -4,6 +4,11 @@ Change Log
 - [CHANGED] Addition of the sequence of decisions and operation (TEP + transmission switching)
 - [FIXED] fixing `<https://pascua.iit.comillas.edu/aramos/openTEPES/index.html#>`_ in README.rst
 
+[4.2.0] - 2021-11-11
+--------------------
+- [CHANGED] introduction of a retirement cost to allow retirement decisions
+- [CHANGED] elimination of line switching states
+
 [4.1.3] - 2021-10-31
 --------------------
 - [FIXED] Generalization of the maximum commitment and mutually exclusive constraints

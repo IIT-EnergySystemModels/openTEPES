@@ -44,7 +44,6 @@ File                           Description
 ``oT_Dict_Scenario.csv``       Scenario. Short-term uncertainties (scenarios) (e.g., s001 to s100)
 ``oT_Dict_Period.csv``         Period (e.g., y2030)
 ``oT_Dict_Stage.csv``          Stage
-``oT_Dict_SwitchingStage.csv`` Switching stage
 ``oT_Dict_LoadLevel.csv``      Load level (e.g., 2030-01-01T00:00:00+01:00 to 2030-12-30T23:00:00+01:00). Load levels with duration 0 are ignored
 ``oT_Dict_Generation.csv``     Generation units (thermal -nuclear, CCGT, OCGT, coal-, ESS -hydro, pumped-hydro storage PHS, battery BESS, electric vehicle EV, demand response DR, alkaline water electrolyzer AWE- and VRE -wind onshore and offshore, solar PV, solar thermal-)
 ``oT_Dict_Technology.csv``     Generation technologies. The technology order is used in the temporal result plot.
@@ -78,7 +77,6 @@ File                                       Description
 ``oT_Data_Parameter.csv``                  General system parameters
 ``oT_Data_Scenario.csv``                   Short-term uncertainties
 ``oT_Data_Stage.csv``                      Stages
-``oT_Data_SwitchingStage.csv``             Line switching stages
 ``oT_Data_ReserveMargin.csv``              Adequacy reserve margin
 ``oT_Data_Duration.csv``                   Duration of the load levels
 ``oT_Data_Demand.csv``                     Demand
@@ -102,15 +100,16 @@ Options
 ----------
 A description of the options included in the file ``oT_Data_Option.csv`` follows:
 
-==================  ====================================================  =============================
-File                Description
-==================  ====================================================  =============================
-IndBinGenInvest     Indicator of binary generation   expansion decisions  {0 continuous, 1 binary}
-IndBinNetInvest     Indicator of binary network      expansion decisions  {0 continuous, 1 binary}
-IndBinGenCommit     Indicator of binary generation   operation decisions  {0 continuous, 1 binary}
-IndBinLineCommit    Indicator of binary transmission switching decisions  {0 continuous, 1 binary}
-IndNetLosses        Indicator of network losses                           {0 lossless, 1 ohmic losses}
-==================  ====================================================  =============================
+===================  ====================================================  =============================
+File                 Description
+===================  ====================================================  =============================
+IndBinGenInvest      Indicator of binary generation   expansion decisions  {0 continuous, 1 binary}
+IndBinGenRetirement  Indicator of binary generation   expansion decisions  {0 continuous, 1 binary}
+IndBinNetInvest      Indicator of binary network      expansion decisions  {0 continuous, 1 binary}
+IndBinGenCommit      Indicator of binary generation   operation decisions  {0 continuous, 1 binary}
+IndBinLineCommit     Indicator of binary transmission switching decisions  {0 continuous, 1 binary}
+IndNetLosses         Indicator of network losses                           {0 lossless, 1 ohmic losses}
+===================  ====================================================  =============================
 
 Parameters
 ----------
@@ -158,20 +157,6 @@ Scenario        Weight        Weight of each stage
 
 This weight allows the definition of equivalent (representative) periods (e.g., one representative week with a weight of 52). Stages are not mathematically connected between them, i.e., no constraints link the operation
 at different stages.
-
-Line switching stage
---------------------
-
-A description of the data included in the file ``oT_Data_SwitchingStage.csv`` follows:
-
-==========  ============  ==========  ========  ==================================================
-Identifier  Header        Header      Header    Description
-==========  ============  ==========  ========  ==================================================
-Load level  Initial node  Final node  Circuit   Assignment of each load level to a switching stage
-==========  ============  ==========  ========  ==================================================
-
-This switching stage allows the definition of load levels assigned to a single stage and, consequently, the model will force to decide the same line switching decisions for all the load levels simultaneously. This is done
-independently for each line.
 
 Adequacy reserve margin
 -----------------------
@@ -258,9 +243,9 @@ Header                Description
 Node                  Name of the node where generator is located. If left empty, the generator is ignored
 Technology            Technology of the generator (nuclear, coal, CCGT, OCGT, ESS, solar, wind, biomass, etc.)
 MutuallyExclusive     Mutually exclusive generator. Only exclusion in one direction is needed
+BinaryCommitment      Binary unit commitment decision                                                                                      Yes/No
 StorageType           Storage type based on storage capacity (daily, weekly, monthly, etc.)                                                Daily/Weekly/Monthly
 OutflowsType          Outflows type based on the demand extracted from the storage (hourly, daily, weekly, monthly, yearly, etc.)          Hourly/Daily/Weekly/Monthly/Yearly
-BinaryCommitment      Binary unit commitment decision                                                                                      Yes/No
 MustRun               Must-run unit                                                                                                        Yes/No
 MaximumPower          Maximum power output (generation/discharge for ESS units)                                                            MW
 MinimumPower          Minimum power output (i.e., minimum stable load in the case of a thermal power plant)                                MW
@@ -286,9 +271,11 @@ OMVariableCost        O&M variable cost                                         
 StartUpCost           Startup  cost                                                                                                        M€
 ShutDownCost          Shutdown cost                                                                                                        M€
 CO2EmissionRate       CO2 emission rate                                                                                                    t CO2/MWh
-FixedCost             Overnight investment (capital and fixed O&M) cost                                                                    M€
+FixedInvestmentCost   Overnight investment (capital and fixed O&M) cost                                                                    M€
+FixedRetirementCost   Overnight retirement (capital and fixed O&M) cost                                                                    M€
 FixedChargeRate       Fixed-charge rate to annualize the overnight investment cost                                                         p.u.
 BinaryInvestment      Binary unit investment decision                                                                                      Yes/No
+BinaryRetirement      Binary unit retirement decision                                                                                      Yes/No
 ====================  ===================================================================================================================  ===================================
 
 Daily storage type means that the ESS inventory is assessed every time step, weekly storage type is assessed at the end of every day, and monthly storage type is assessed at the end of every week.
@@ -399,30 +386,30 @@ Transmission network
 
 A description of the circuit (initial node, final node, circuit) data included in the file ``oT_Data_Network.csv`` follows:
 
-=================  ===============================================================================================================  ======
-Header             Description
-=================  ===============================================================================================================  ======
-LineType           Line type {AC, DC, Transformer, Converter}
-Switching          The transmission line is able to switch on/off                                                                   Yes/No
-Voltage            Line voltage (e.g., 400, 220 kV, 220/400 kV if transformer). Used only for plotting purposes                     kV
-Length             Line length (only used for reporting purposes). If not defined, computed as 1.1 times the geographical distance  km
-LossFactor         Transmission losses equal to the line flow times this factor                                                     p.u.
-Resistance         Resistance (not used in this version)                                                                            p.u.
-Reactance          Reactance. Lines must have a reactance different from 0 to be considered                                         p.u.
-Susceptance        Susceptance (not used in this version)                                                                           p.u.
-AngMax             Maximum angle difference (not used in this version)                                                              º
-AngMin             Minimum angle difference (not used in this version)                                                              º
-Tap                Tap changer (not used in this version)                                                                           p.u.
-Converter          Converter station (not used in this version)                                                                     Yes/No
-TTC                Total transfer capacity (maximum permissible thermal load) in forward  direction. Static line rating             MW
-TTCBck             Total transfer capacity (maximum permissible thermal load) in backward direction. Static line rating             MW
-SecurityFactor     Security factor to consider approximately N-1 contingencies. NTC = TTC x SecurityFactor                          p.u.
-FixedCost          Overnight investment (capital and fixed O&M) cost                                                                M€
-FixedChargeRate    Fixed-charge rate to annualize the overnight investment cost                                                     p.u.
-BinaryInvestment   Binary line/circuit investment decision                                                                          Yes/No
-SwOnTime           Minimum switch-on time                                                                                           h
-SwOffTime          Minimum switch-off time                                                                                          h
-=================  ===============================================================================================================  ======
+===================  ===============================================================================================================  ======
+Header               Description
+===================  ===============================================================================================================  ======
+LineType             Line type {AC, DC, Transformer, Converter}
+Switching            The transmission line is able to switch on/off                                                                   Yes/No
+Voltage              Line voltage (e.g., 400, 220 kV, 220/400 kV if transformer). Used only for plotting purposes                     kV
+Length               Line length (only used for reporting purposes). If not defined, computed as 1.1 times the geographical distance  km
+LossFactor           Transmission losses equal to the line flow times this factor                                                     p.u.
+Resistance           Resistance (not used in this version)                                                                            p.u.
+Reactance            Reactance. Lines must have a reactance different from 0 to be considered                                         p.u.
+Susceptance          Susceptance (not used in this version)                                                                           p.u.
+AngMax               Maximum angle difference (not used in this version)                                                              º
+AngMin               Minimum angle difference (not used in this version)                                                              º
+Tap                  Tap changer (not used in this version)                                                                           p.u.
+Converter            Converter station (not used in this version)                                                                     Yes/No
+TTC                  Total transfer capacity (maximum permissible thermal load) in forward  direction. Static line rating             MW
+TTCBck               Total transfer capacity (maximum permissible thermal load) in backward direction. Static line rating             MW
+SecurityFactor       Security factor to consider approximately N-1 contingencies. NTC = TTC x SecurityFactor                          p.u.
+FixedInvestmentCost  Overnight investment (capital and fixed O&M) cost                                                                M€
+FixedChargeRate      Fixed-charge rate to annualize the overnight investment cost                                                     p.u.
+BinaryInvestment     Binary line/circuit investment decision                                                                          Yes/No
+SwOnTime             Minimum switch-on time                                                                                           h
+SwOffTime            Minimum switch-off time                                                                                          h
+===================  ===============================================================================================================  ======
 
 Depending on the voltage lines are plotted with different colors (orange < 200 kV, 200 < green < 350 kV, 350 < red < 500 kV, 500 < orange < 700 kV, blue > 700 kV).
 
