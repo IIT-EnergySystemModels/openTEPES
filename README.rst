@@ -102,11 +102,11 @@ GitHub Repository (the hard way)
 Solvers
 ###########
 
-GLPK
+Glpk
 ================================
 As an easy option for installation, we have the free and open-source `GLPK <https://www.gnu.org/software/glpk/>`_ solver. However, it takes too much time for large-scale problems. It can be installed using: ``conda install -c conda-forge glpk``.
 
-CBC
+Cbc
 ================================
 The `CBC <https://github.com/coin-or/Cbc>`_ is our recommendation if you want a free and open-source solver. For Windows users, the effective way to install the CBC solver is downloading the binaries from `here <https://www.coin-or.org/download/binary/Cbc/Cbc-2.10.5-x86_64-w64-mingw32.zip>`_, copy and paste the *cbc.exe* file to the PATH that is the "bin" directory of the Anaconda or Miniconda environment.
 
