@@ -531,8 +531,8 @@ def InputData(DirName, CaseName, mTEPES):
         pMaxPower2ndBlock  = pMaxPower  - pMinPower
         pMaxCharge2ndBlock = pMaxCharge - pMinCharge
 
-        pMaxPower2ndBlock [pMaxPower2ndBlock [[es for a2, es in mTEPES.a2g]] < pEpsilon] = 0.0
-        pMaxCharge2ndBlock[pMaxCharge2ndBlock[[es for a2, es in mTEPES.a2g]] < pEpsilon] = 0.0
+        pMaxPower2ndBlock [pMaxPower2ndBlock [[es for es in mTEPES.es if (a2,es) in mTEPES.a2g]] < pEpsilon] = 0.0
+        pMaxCharge2ndBlock[pMaxCharge2ndBlock[[es for es in mTEPES.es if (a2,es) in mTEPES.a2g]] < pEpsilon] = 0.0
 
     # replace < 0.0 by 0.0
     pMaxPower2ndBlock  = pMaxPower2ndBlock.where (pMaxPower2ndBlock  > 0.0, other=0.0)
