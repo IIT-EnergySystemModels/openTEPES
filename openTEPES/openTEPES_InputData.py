@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 08, 2021
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 16, 2021
 """
 
 import time
@@ -502,21 +502,21 @@ def InputData(DirName, CaseName, mTEPES):
         # pEpsilon      = pDemand.sum(axis=1).max()*1e-5
 
         # these parameters are in GW
-        pDemand        [pDemand        [[nd for nd,a2 in mTEPES.ndar]] < pEpsilon] = 0.0
-        pSystemInertia [pSystemInertia [[                         a2]] < pEpsilon] = 0.0
-        pOperReserveUp [pOperReserveUp [[                         a2]] < pEpsilon] = 0.0
-        pOperReserveDw [pOperReserveDw [[                         a2]] < pEpsilon] = 0.0
-        pMinPower      [pMinPower      [[g  for a2,g  in mTEPES.a2g ]] < pEpsilon] = 0.0
-        pMaxPower      [pMaxPower      [[g  for a2,g  in mTEPES.a2g ]] < pEpsilon] = 0.0
-        pMinCharge     [pMinCharge     [[es for a2,es in mTEPES.a2g ]] < pEpsilon] = 0.0
-        pMaxCharge     [pMaxCharge     [[es for a2,es in mTEPES.a2g ]] < pEpsilon] = 0.0
-        pEnergyInflows [pEnergyInflows [[es for a2,es in mTEPES.a2g ]] < pEpsilon/pTimeStep] = 0.0
-        pEnergyOutflows[pEnergyOutflows[[es for a2,es in mTEPES.a2g ]] < pEpsilon/pTimeStep] = 0.0
+        pDemand        [pDemand        [[nd for nd in mTEPES.nd if (nd,a2) in mTEPES.ndar]] < pEpsilon] = 0.0
+        pSystemInertia [pSystemInertia [[                                              a2]] < pEpsilon] = 0.0
+        pOperReserveUp [pOperReserveUp [[                                              a2]] < pEpsilon] = 0.0
+        pOperReserveDw [pOperReserveDw [[                                              a2]] < pEpsilon] = 0.0
+        pMinPower      [pMinPower      [[g  for  g in mTEPES.g  if (a2,g)  in mTEPES.a2g ]] < pEpsilon] = 0.0
+        pMaxPower      [pMaxPower      [[g  for  g in mTEPES.g  if (a2,g)  in mTEPES.a2g ]] < pEpsilon] = 0.0
+        pMinCharge     [pMinCharge     [[es for es in mTEPES.es if (a2,es) in mTEPES.a2g ]] < pEpsilon] = 0.0
+        pMaxCharge     [pMaxCharge     [[es for es in mTEPES.es if (a2,es) in mTEPES.a2g ]] < pEpsilon] = 0.0
+        pEnergyInflows [pEnergyInflows [[es for es in mTEPES.es if (a2,es) in mTEPES.a2g ]] < pEpsilon/pTimeStep] = 0.0
+        pEnergyOutflows[pEnergyOutflows[[es for es in mTEPES.es if (a2,es) in mTEPES.a2g ]] < pEpsilon/pTimeStep] = 0.0
 
         # these parameters are in GWh
-        pMinStorage    [pMinStorage    [[es for a2,es in mTEPES.a2g ]] < pEpsilon] = 0.0
-        pMaxStorage    [pMaxStorage    [[es for a2,es in mTEPES.a2g ]] < pEpsilon] = 0.0
-        pIniInventory  [pIniInventory  [[es for a2,es in mTEPES.a2g ]] < pEpsilon] = 0.0
+        pMinStorage    [pMinStorage    [[es for es in mTEPES.es if (a2,es) in mTEPES.a2g ]] < pEpsilon] = 0.0
+        pMaxStorage    [pMaxStorage    [[es for es in mTEPES.es if (a2,es) in mTEPES.a2g ]] < pEpsilon] = 0.0
+        pIniInventory  [pIniInventory  [[es for es in mTEPES.es if (a2,es) in mTEPES.a2g ]] < pEpsilon] = 0.0
 
         # these parameters are in GW
         for ni,nf,cc,a2 in mTEPES.laar:
