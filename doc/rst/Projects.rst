@@ -14,7 +14,7 @@ The model has being used in these research projects:
     in particular the European Green Deal and the transformation to a climate neutral society.
 
 .. image:: ../img/ECEMF.png
-   :scale: 40%
+   :scale: 5%
    :align: center
 
 - `Assessment of the storage needs for the Spanish electric system in a horizon 2020-2050 with large share of renewables <https://www.iit.comillas.edu/proyectos/mostrar_proyecto.php.en?nombre_abreviado=IDAE_Almacenamiento>`_, developed for
