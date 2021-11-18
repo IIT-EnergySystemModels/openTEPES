@@ -13,6 +13,10 @@ The model has being used in these research projects:
     ECEMF’s programme of events and novel IT-based communications channel will enable researchers to identify and co-develop the most pressing policy-relevant research questions with a range of stakeholders to meet ambitious European energy and climate policy goals,
     in particular the European Green Deal and the transformation to a climate neutral society.
 
+.. image:: ../img/ECEMF.png
+   :scale: 40%
+   :align: center
+
 - `Assessment of the storage needs for the Spanish electric system in a horizon 2020-2050 with large share of renewables <https://www.iit.comillas.edu/proyectos/mostrar_proyecto.php.en?nombre_abreviado=IDAE_Almacenamiento>`_, developed for
   the **Instituto para la Diversificación y Ahorro de la Energía (IDAE)**. January 2021 - March 2022.
   `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `P. Linares <https://www.iit.comillas.edu/people/pedrol>`_, `J.P. Chaves <https://www.iit.comillas.edu/people/jchaves>`_,
