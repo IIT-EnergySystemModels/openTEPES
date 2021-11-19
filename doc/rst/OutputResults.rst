@@ -276,6 +276,22 @@ Identifier    Identifier  Identifier  Header      Description
 Scenario      Period      Load level  Generator   Downward operating reserve [MW]
 ============  ==========  ==========  ==========  ==========================================
 
+File ``oT_Result_ESSTechnologyReserveUp.csv``
+
+============  ==========  ==========  ==========  ==========================================
+Identifier    Identifier  Identifier  Header      Description
+============  ==========  ==========  ==========  ==========================================
+Scenario      Period      Load level  Technology  Upward operating reserve [MW]
+============  ==========  ==========  ==========  ==========================================
+
+File ``oT_Result_ESSTechnologyReserveDown.csv``
+
+============  ==========  ==========  ==========  ==========================================
+Identifier    Identifier  Identifier  Header      Description
+============  ==========  ==========  ==========  ==========================================
+Scenario      Period      Load level  Technology  Downward operating reserve [MW]
+============  ==========  ==========  ==========  ==========================================
+
 File ``oT_Result_ESSInventory.csv``
 
 ============  ==========  ==========  =========  ==============================================================================================
@@ -378,6 +394,14 @@ Scenario      Period      Load level  Node        Energy not served by node [GWh
 Marginal information
 --------------------
 
+File ``oT_Result_MarginalReserveMargin.csv``
+
+============  ==========  ==========  ==========  =================================================
+Identifier    Identifier  Identifier  Header      Description
+============  ==========  ==========  ==========  =================================================
+Scenario      Period      Load level  Area        Marginal of the reserve margin [€/MW]
+============  ==========  ==========  ==========  =================================================
+
 File ``oT_Result_LSRMC.csv``
 
 ============  ==========  ==========  ==========  ==========================================
@@ -428,6 +452,14 @@ Initial node  Final node  Circuit     Reduced costs of network switching decisio
 
 Economic
 --------
+
+File ``oT_Result_CostSummary.csv``
+
+============  ==========================================
+Identifier    Description
+============  ==========================================
+Cost type     Type of cost [M€]
+============  ==========================================
 
 File ``oT_Result_GenerationOandMCost.csv``
 
