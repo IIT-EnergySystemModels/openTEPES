@@ -665,7 +665,7 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES):
             mTEPES.n = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.pDuration and (st,nn) in mTEPES.s2n)
             if len(mTEPES.n):
                 OutputToGenRev    = pd.Series(data=[OptModel.dual[getattr(OptModel, 'eBalance_'+st)[sc,p,n,nd]]/mTEPES.pScenProb[sc] * OptModel.vTotalOutput   [sc,p,n,ec]() for sc,p,n,nd,ec in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.n2g if ec in mTEPES.ec], index=pd.MultiIndex.from_tuples([(sc,p,n,nd,ec) for sc,p,n,nd,ec in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.n2g if ec in mTEPES.ec]))
-                OutputChargeRev   = pd.Series(data=[OptModel.dual[getattr(OptModel, 'eBalance_'+st)[sc,p,n,nd]]/mTEPES.pScenProb[sc] * OptModel.vESSTotalCharge[sc,p,n,ec]() for sc,p,n,nd,ec in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.n2g if es in mTEPES.ec], index=pd.MultiIndex.from_tuples([(sc,p,n,nd,ec) for sc,p,n,nd,ec in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.n2g if ec in mTEPES.ec]))
+                OutputChargeRev   = pd.Series(data=[OptModel.dual[getattr(OptModel, 'eBalance_'+st)[sc,p,n,nd]]/mTEPES.pScenProb[sc] * OptModel.vESSTotalCharge[sc,p,n,ec]() for sc,p,n,nd,ec in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.n2g if ec in mTEPES.ec], index=pd.MultiIndex.from_tuples([(sc,p,n,nd,ec) for sc,p,n,nd,ec in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.n2g if ec in mTEPES.ec]))
             GenRev.append(OutputToGenRev)
             ChargeRev.append(OutputChargeRev)
         mTEPES.del_component(mTEPES.n)
