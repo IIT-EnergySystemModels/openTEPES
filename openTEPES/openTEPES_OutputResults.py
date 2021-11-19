@@ -458,11 +458,6 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES):
     if sum(mTEPES.pReserveMargin[ar] for ar in mTEPES.ar):
         OutputToFile = pd.Series(data=[OptModel.dual[getattr(OptModel, 'eAdequacyReserveMargin_'+st)[ar]] for st,ar in mTEPES.st*mTEPES.ar if mTEPES.pReserveMargin[ar] and sum(1 for nr in mTEPES.nr if (ar,nr) in mTEPES.a2g) + sum(1 for es in mTEPES.es if (ar,es) in mTEPES.a2g)], index=pd.MultiIndex.from_tuples(list(mTEPES.st*list(getattr(OptModel, 'eAdequacyReserveMargin_'+st)))))
         OutputToFile.to_frame(name='RM').reset_index().pivot_table(index=['level_0'], columns=['level_1'], values='RM').rename_axis(['Stage'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_MarginalReserveMargin_'+CaseName+'.csv', sep=',')
-        if len(mTEPES.ec):
-            ResRev = pd.Series(data=[OptModel.dual[getattr(OptModel, 'eAdequacyReserveMargin_'+st)[ar]]*mTEPES.pRatedMaxPower[ec]*mTEPES.pAvailability[ec]()/1e3 for st,ar,ec in mTEPES.st*mTEPES.ar*mTEPES.ec if mTEPES.pReserveMargin[ar] and (ar,ec) in mTEPES.a2g], index=pd.MultiIndex.from_tuples(mTEPES.st*mTEPES.ar*mTEPES.ec))
-            ResRev = ResRev.to_frame(name='MEUR').reset_index().pivot_table(index=['level_0','level_1'], columns='level_2', values='MEUR').rename_axis(['Stages','Areas'], axis=0).rename_axis([None], axis=1).sum(axis=0)
-        else:
-            ResRev = pd.Series(data=[0.0 for ec in mTEPES.ec], index=mTEPES.ec)
 
         #MarginalReserveMargin = OutputToFile.loc[:,:]
 
@@ -662,6 +657,15 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES):
     else:
         GenRev = pd.Series(data=[0.0 for ec in mTEPES.ec], index=mTEPES.ec)
         ChargeRev = pd.Series(data=[0.0 for ec in mTEPES.ec], index=mTEPES.ec)
+
+    if sum(mTEPES.pReserveMargin[ar] for ar in mTEPES.ar):
+        if len(mTEPES.ec):
+            ResRev = pd.Series(data=[OptModel.dual[getattr(OptModel, 'eAdequacyReserveMargin_'+st)[ar]]*mTEPES.pRatedMaxPower[ec]*mTEPES.pAvailability[ec]()/1e3 for st,ar,ec in mTEPES.st*mTEPES.ar*mTEPES.ec if mTEPES.pReserveMargin[ar] and (ar,ec) in mTEPES.a2g], index=pd.MultiIndex.from_tuples(mTEPES.st*mTEPES.ar*mTEPES.ec))
+            ResRev = ResRev.to_frame(name='MEUR').reset_index().pivot_table(index=['level_0','level_1'], columns='level_2', values='MEUR').rename_axis(['Stages','Areas'], axis=0).rename_axis([None], axis=1).sum(axis=0)
+        else:
+            ResRev = pd.Series(data=[0.0 for ec in mTEPES.ec], index=mTEPES.ec)
+    else:
+        ResRev = pd.Series(data=[0.0 for ec in mTEPES.ec], index=mTEPES.ec)
 
     if sum(mTEPES.pOperReserveUp[sc,p,n,ar] for sc,p,n,ar in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.ar):
         if len([(sc,p,n,ar,nr) for sc,p,n,ar,nr in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.a2g if mTEPES.pOperReserveUp[sc,p,n,ar] and nr in mTEPES.nr]):
