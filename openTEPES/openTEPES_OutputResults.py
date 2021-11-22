@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 19, 2021
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 20, 2021
 """
 
 import time
@@ -712,6 +712,17 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES):
             mTEPES.n = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.pDuration)
             AppendData = pd.concat(AppendData)
             AppendData.to_frame(name='MEUR').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_4', values='MEUR').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_ESSOperatingReserveUpRevenue_'+CaseName+'.csv', sep=',')
+        if len([(sc,p,n,ar,ec) for sc,p,n,ar,ec in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.a2g if mTEPES.pOperReserveUp[sc,p,n,ar] and ec in mTEPES.ec]):
+            AppendData = []
+            for st in mTEPES.st:
+                mTEPES.del_component(mTEPES.n)
+                mTEPES.n = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.pDuration and (st,nn) in mTEPES.s2n)
+                if len(mTEPES.n):
+                    OutputToFile = pd.Series(data=[OptModel.dual[getattr(OptModel, 'eOperReserveUp_'+st)[sc,p,n,ar]]*1e3/mTEPES.pScenProb[sc]*OptModel.vESSReserveUp[sc,p,n,ec]() for sc,p,n,ar,ec in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.a2g if mTEPES.pOperReserveUp[sc,p,n,ar] and ec in mTEPES.ec], index=pd.MultiIndex.from_tuples([(sc,p,n,ar,ec) for sc,p,n,ar,ec in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.a2g if mTEPES.pOperReserveUp[sc,p,n,ar] and ec in mTEPES.ec]))
+                AppendData.append(OutputToFile)
+            mTEPES.del_component(mTEPES.n)
+            mTEPES.n = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.pDuration)
+            AppendData = pd.concat(AppendData)
             UpRev = AppendData.to_frame('MEUR').reset_index().pivot_table(index=['level_0', 'level_1', 'level_2'], columns='level_4', values='MEUR').rename_axis(['Scenario', 'Period', 'LoadLevel'], axis=0).rename_axis([None], axis=1).sum(axis=0)
         else:
             UpRev = pd.Series(data=[0.0 for ec in mTEPES.ec], index=mTEPES.ec)
@@ -744,6 +755,17 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES):
             mTEPES.n = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.pDuration)
             AppendData = pd.concat(AppendData)
             AppendData.to_frame(name='MEUR').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_4', values='MEUR').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_ESSOperatingReserveDwRevenue_'+CaseName+'.csv', sep=',')
+        if len([(sc,p,n,ar,ec) for sc,p,n,ar,ec in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.a2g if mTEPES.pOperReserveUp[sc,p,n,ar] and ec in mTEPES.ec]):
+            AppendData = []
+            for st in mTEPES.st:
+                mTEPES.del_component(mTEPES.n)
+                mTEPES.n = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.pDuration and (st,nn) in mTEPES.s2n)
+                if len(mTEPES.n):
+                    OutputToFile = pd.Series(data=[OptModel.dual[getattr(OptModel, 'eOperReserveDw_'+st)[sc,p,n,ar]]*1e3/mTEPES.pScenProb[sc]*OptModel.vESSReserveDown[sc,p,n,ec]() for sc,p,n,ar,ec in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.a2g if mTEPES.pOperReserveDw[sc,p,n,ar] and ec in mTEPES.ec], index=pd.MultiIndex.from_tuples([(sc,p,n,ar,ec) for sc,p,n,ar,ec in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.a2g if mTEPES.pOperReserveDw[sc,p,n,ar] and ec in mTEPES.ec]))
+                AppendData.append(OutputToFile)
+            mTEPES.del_component(mTEPES.n)
+            mTEPES.n = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.pDuration)
+            AppendData = pd.concat(AppendData)
             DwRev = AppendData.to_frame('MEUR').reset_index().pivot_table(index=['level_0', 'level_1', 'level_2'], columns='level_4', values='MEUR').rename_axis(['Scenario', 'Period', 'LoadLevel'], axis=0).rename_axis([None], axis=1).sum(axis=0)
         else:
             DwRev = pd.Series(data=[0.0 for ec in mTEPES.ec], index=mTEPES.ec)
@@ -756,7 +778,6 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES):
     CostRecoveryESS.to_csv(_path + '/oT_Result_ESSCostRecovery_' + CaseName + '.csv', index=True, sep=',')
 
     WritingResultsTime = time.time() - StartTime
-    StartTime          = time.time()
     print('Writing             economic results   ... ', round(WritingResultsTime), 's')
 
 
