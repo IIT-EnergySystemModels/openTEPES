@@ -410,6 +410,8 @@ Identifier    Identifier  Identifier  Header      Description
 Scenario      Period      Load level  Node        Locational Short-Mun Marginal Cost [€/MWh]
 ============  ==========  ==========  ==========  ==========================================
 
+These marginal costs are obtained after discretizing the investment decisions to the nearest binary variable.
+
 File ``oT_Result_WaterValue.csv``
 
 ============  ==========  ==========  ==========  ================================================

@@ -60,7 +60,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES):
                 OptModel.vGenerationRetire[gd].fix(round(OptModel.vGenerationRetire[gd]()))
         if mTEPES.pIndBinNetInvest()*len(mTEPES.lc):
             for lc in mTEPES.lc:
-                OptModel.vNetworkInvest   [lc].fix(round(OptModel.vNetworkInvest[lc]()))
+                OptModel.vNetworkInvest   [lc].fix(round(OptModel.vNetworkInvest   [lc]()))
         if mTEPES.pIndBinGenOperat()*len(mTEPES.nr):
             for sc,p,n,nr in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.nr:
                 OptModel.vCommitment[sc,p,n,nr].fix(round(OptModel.vCommitment[sc,p,n,nr]()))
