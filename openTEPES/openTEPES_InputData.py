@@ -192,7 +192,7 @@ def InputData(DirName, CaseName, mTEPES):
     pGenToTechnology    = dfGeneration  ['Technology'            ]                                                                            # generator association to technology
     pGenToExclusiveGen  = dfGeneration  ['MutuallyExclusive'     ]                                                                            # mutually exclusive generator
     pIndBinUnitInvest   = dfGeneration  ['BinaryInvestment'      ]                                                                            # binary unit investment      decision        [Yes]
-    pIndBinUnitRetire    = dfGeneration ['BinaryRetirement'      ]                                                                            # binary unit retirement decision             [Yes]
+    pIndBinUnitRetire   = dfGeneration  ['BinaryRetirement'      ]                                                                            # binary unit retirement decision             [Yes]
     pIndBinUnitCommit   = dfGeneration  ['BinaryCommitment'      ]                                                                            # binary unit commitment decision             [Yes]
     pMustRun            = dfGeneration  ['MustRun'               ]                                                                            # must-run unit                               [Yes]
     pInertia            = dfGeneration  ['Inertia'               ]                                                                            # inertia constant                            [s]
@@ -230,7 +230,7 @@ def InputData(DirName, CaseName, mTEPES):
 
     pLineType           = dfNetwork     ['LineType'              ]                                                                            # line type
     pLineLength         = dfNetwork     ['Length'                ]                                                                            # line length                                 [km]
-    pLineSwitching      = dfNetwork     ['Switching'             ]                                                                            # line switching decision                     [Yes]
+    pLineSwitching      = dfNetwork     ['Switching'             ]                                                                            # binary line switching decision              [Yes]
     pLineVoltage        = dfNetwork     ['Voltage'               ]                                                                            # line voltage                                [kV]
     pLineLossFactor     = dfNetwork     ['LossFactor'            ]                                                                            # loss     factor                             [p.u.]
     pLineR              = dfNetwork     ['Resistance'            ]                                                                            # resistance                                  [p.u.]
@@ -563,7 +563,7 @@ def InputData(DirName, CaseName, mTEPES):
 
     # %% parameters
     mTEPES.pIndBinGenInvest      = Param(initialize=pIndBinGenInvest     , within=Boolean, doc='Indicator of binary generation investment   decisions', mutable=True)
-    mTEPES.pIndBinGenRetire      = Param(initialize=pIndBinGenRetire     , within=Boolean, doc='Indicator of binary generation retirement decisions'  , mutable=True)
+    mTEPES.pIndBinGenRetire      = Param(initialize=pIndBinGenRetire     , within=Boolean, doc='Indicator of binary generation retirement   decisions', mutable=True)
     mTEPES.pIndBinGenOperat      = Param(initialize=pIndBinGenOperat     , within=Boolean, doc='Indicator of binary generation operation    decisions', mutable=True)
     mTEPES.pIndBinNetInvest      = Param(initialize=pIndBinNetInvest     , within=Boolean, doc='Indicator of binary network    investment   decisions', mutable=True)
     mTEPES.pIndBinLineCommit     = Param(initialize=pIndBinLineCommit    , within=Boolean, doc='Indicator of binary network    switching    decisions', mutable=True)
