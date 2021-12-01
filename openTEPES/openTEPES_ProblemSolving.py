@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 08, 2021
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - December 01, 2021
 """
 
 import time
@@ -49,33 +49,63 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES):
     assert str(SolverResults.solver.termination_condition) == 'optimal'
     SolverResults.write()                                                              # summary of the solver results
 
+    # mTEPES.pIndBinUnitInvest     = Param(                               mTEPES.gg, initialize=pIndBinUnitInvest.to_dict()         , within=Boolean         , doc='Binary investment decision'     )
+    # mTEPES.pIndBinUnitRetire     = Param(                               mTEPES.gg, initialize=pIndBinUnitRetire.to_dict()         , within=Boolean         , doc='Binary retirement decision'     )
+    # mTEPES.pIndBinUnitCommit     = Param(                               mTEPES.gg, initialize=pIndBinUnitCommit.to_dict()         , within=Boolean         , doc='Binary commitment decision'     )
+    # mTEPES.pIndBinLineInvest     = Param(                               mTEPES.ln, initialize=pIndBinLineInvest.to_dict()         , within=Boolean         , doc='Binary investment decision'     )
+    # mTEPES.pIndBinLineSwitch     = Param(                               mTEPES.ln, initialize=pIndBinLineSwitch.to_dict()            , within=Boolean         , doc='Binary switching  decision'     )
+
     #%% fix values of binary variables to get dual variables and solve it again
     # investment decision values are rounded to the nearest integer
     if mTEPES.pIndBinGenInvest()*len(mTEPES.gc) + mTEPES.pIndBinGenRetire()*len(mTEPES.gd) + mTEPES.pIndBinNetInvest()*len(mTEPES.lc) + mTEPES.pIndBinGenOperat()*len(mTEPES.nr) + mTEPES.pIndBinLineCommit()*len(mTEPES.la) + len(mTEPES.g2g):
         if mTEPES.pIndBinGenInvest()*len(mTEPES.gc):
             for gc in mTEPES.gc:
-                OptModel.vGenerationInvest[gc].fix(round(OptModel.vGenerationInvest[gc]()))
+                if mTEPES.pIndBinUnitInvest[gc] != 0:
+                    OptModel.vGenerationInvest[gc].fix(round(OptModel.vGenerationInvest[gc]()))
+                else:
+                    OptModel.vGenerationInvest[gc].fix(      OptModel.vGenerationInvest[gc]())
+        if mTEPES.pIndBinGenInvest()*len(mTEPES.ec):
+            for ec in mTEPES.ec:
+                if mTEPES.pIndBinUnitInvest[ec] != 0:
+                    OptModel.vGenerationInvest[ec].fix(round(OptModel.vGenerationInvest[ec]()))
+                else:
+                    OptModel.vGenerationInvest[ec].fix(      OptModel.vGenerationInvest[ec]())
         if mTEPES.pIndBinGenRetire()*len(mTEPES.gd):
             for gd in mTEPES.gd:
-                OptModel.vGenerationRetire[gd].fix(round(OptModel.vGenerationRetire[gd]()))
+                if mTEPES.pIndBinUnitRetire[gd] != 0:
+                    OptModel.vGenerationRetire[gd].fix(round(OptModel.vGenerationRetire[gd]()))
+                else:
+                    OptModel.vGenerationRetire[gd].fix(      OptModel.vGenerationRetire[gd]())
         if mTEPES.pIndBinNetInvest()*len(mTEPES.lc):
             for lc in mTEPES.lc:
-                OptModel.vNetworkInvest   [lc].fix(round(OptModel.vNetworkInvest   [lc]()))
+                if mTEPES.pIndBinLineInvest[lc] != 0:
+                    OptModel.vNetworkInvest   [lc].fix(round(OptModel.vNetworkInvest   [lc]()))
+                else:
+                    OptModel.vNetworkInvest   [lc].fix(      OptModel.vNetworkInvest   [lc]())
         if mTEPES.pIndBinGenOperat()*len(mTEPES.nr):
             for sc,p,n,nr in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.nr:
-                OptModel.vCommitment[sc,p,n,nr].fix(round(OptModel.vCommitment[sc,p,n,nr]()))
-                OptModel.vStartUp   [sc,p,n,nr].fix(round(OptModel.vStartUp   [sc,p,n,nr]()))
-                OptModel.vShutDown  [sc,p,n,nr].fix(round(OptModel.vShutDown  [sc,p,n,nr]()))
+                if mTEPES.pIndBinUnitCommit[nr] != 0:
+                    OptModel.vCommitment[sc,p,n,nr].fix(round(OptModel.vCommitment[sc,p,n,nr]()))
+                    OptModel.vStartUp   [sc,p,n,nr].fix(round(OptModel.vStartUp   [sc,p,n,nr]()))
+                    OptModel.vShutDown  [sc,p,n,nr].fix(round(OptModel.vShutDown  [sc,p,n,nr]()))
+                else:
+                    OptModel.vCommitment[sc,p,n,nr].fix(      OptModel.vCommitment[sc,p,n,nr]())
+                    OptModel.vStartUp   [sc,p,n,nr].fix(      OptModel.vStartUp   [sc,p,n,nr]())
+                    OptModel.vShutDown  [sc,p,n,nr].fix(      OptModel.vShutDown  [sc,p,n,nr]())
         if mTEPES.pIndBinLineCommit()*len(mTEPES.la):
             for sc,p,n,ni,nf,cc in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.la:
-                if mTEPES.pLineSwitching[ni,nf,cc] == 1:
+                if mTEPES.pIndBinLineSwitch[ni,nf,cc] != 0:
                     OptModel.vLineCommit  [sc,p,n,ni,nf,cc].fix(round(OptModel.vLineCommit  [sc,p,n,ni,nf,cc]()))
                     OptModel.vLineOnState [sc,p,n,ni,nf,cc].fix(round(OptModel.vLineOnState [sc,p,n,ni,nf,cc]()))
                     OptModel.vLineOffState[sc,p,n,ni,nf,cc].fix(round(OptModel.vLineOffState[sc,p,n,ni,nf,cc]()))
+                else:
+                    OptModel.vLineCommit  [sc,p,n,ni,nf,cc].fix(      OptModel.vLineCommit  [sc,p,n,ni,nf,cc]())
+                    OptModel.vLineOnState [sc,p,n,ni,nf,cc].fix(      OptModel.vLineOnState [sc,p,n,ni,nf,cc]())
+                    OptModel.vLineOffState[sc,p,n,ni,nf,cc].fix(      OptModel.vLineOffState[sc,p,n,ni,nf,cc]())
         if len(mTEPES.g2g):
             for nr in mTEPES.nr:
                 if sum(1 for g in mTEPES.nr if (nr,g) in mTEPES.g2g or (g,nr) in mTEPES.g2g):
-                    OptModel.vMaxCommitment[nr].fix(round(OptModel.vMaxCommitment[nr]()))
+                    OptModel.vMaxCommitment[nr].fix(OptModel.vMaxCommitment[nr]())
         if SolverName == 'gurobi' or SolverName == 'mosek':
             Solver.options['relax_integrality'] =  1  # introduced to show results of the dual variables
             Solver.options['Crossover'        ] = -1
