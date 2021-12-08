@@ -315,7 +315,7 @@ Minimum switch-on and switch-off state of a line [h] (``eMinSwOnState``) (``eMin
 
 :math:`\sum_{n'=n+\nu-SOF_{ijc}}^n sof^ω_{pn'ijc} \leq 1 - swt^ω_{pnijc} \quad \forall ωpnijc`
 
-Flow limit in transmission lines [p.u.] (``eExistNetCap1``) (``eExistNetCap2``)
+Flow limit in transmission lines [p.u.] (``eNetCapacity1``) (``eNetCapacity2``)
 
 :math:`- swt^{ω}_{pnijc} \leq \frac{f^ω_{pnijc}}{\overline{F}_{ijc}} \leq swt^{ω}_{pnijc} \quad \forall ωpnijc`
 

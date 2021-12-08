@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - December 01, 2021
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - December 08, 2021
 """
 
 import time
@@ -315,6 +315,7 @@ def InputData(DirName, CaseName, mTEPES):
     # replacing string values by numerical values
     idxDict = dict()
     idxDict[0    ] = 0
+    idxDict[0.0  ] = 0
     idxDict['No' ] = 0
     idxDict['NO' ] = 0
     idxDict['no' ] = 0

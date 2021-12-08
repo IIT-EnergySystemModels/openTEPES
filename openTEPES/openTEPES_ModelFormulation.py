@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - December 01, 2021
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - December 08, 2021
 """
 
 import time
@@ -525,25 +525,25 @@ def NetworkOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, st):
 
     StartTime = time.time()
     #%%
-    def eExistNetCap1(OptModel,sc,p,n,ni,nf,cc):
+    def eNetCapacity1(OptModel,sc,p,n,ni,nf,cc):
         if (ni,nf,cc) in mTEPES.lc or mTEPES.pIndBinLineSwitch[ni,nf,cc] == 1:
             return OptModel.vFlow[sc,p,n,ni,nf,cc] / max(mTEPES.pLineNTCBck[ni,nf,cc],mTEPES.pLineNTCFrw[ni,nf,cc]) >= - OptModel.vLineCommit[sc,p,n,ni,nf,cc]
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eExistNetCap1_'+st, Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, rule=eExistNetCap1, doc='maximum flow by existing network capacity [p.u.]'))
+    setattr(OptModel, 'eNetCapacity1_'+st, Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, rule=eNetCapacity1, doc='maximum flow by existing network capacity [p.u.]'))
 
     if pIndLogConsole == 1:
-        print('eExistNetCap1         ... ', len(getattr(OptModel, 'eExistNetCap1_'+st)), ' rows')
+        print('eNetCapacity1         ... ', len(getattr(OptModel, 'eNetCapacity1_'+st)), ' rows')
 
-    def eExistNetCap2(OptModel,sc,p,n,ni,nf,cc):
+    def eNetCapacity2(OptModel,sc,p,n,ni,nf,cc):
         if (ni,nf,cc) in mTEPES.lc or mTEPES.pIndBinLineSwitch[ni,nf,cc] == 1:
             return OptModel.vFlow[sc,p,n,ni,nf,cc] / max(mTEPES.pLineNTCBck[ni,nf,cc],mTEPES.pLineNTCFrw[ni,nf,cc]) <=   OptModel.vLineCommit[sc,p,n,ni,nf,cc]
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eExistNetCap2_'+st, Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, rule=eExistNetCap2, doc='maximum flow by existing network capacity [p.u.]'))
+    setattr(OptModel, 'eNetCapacity2_'+st, Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, rule=eNetCapacity2, doc='maximum flow by existing network capacity [p.u.]'))
 
     if pIndLogConsole == 1:
-        print('eExistNetCap2         ... ', len(getattr(OptModel, 'eExistNetCap2_'+st)), ' rows')
+        print('eNetCapacity2         ... ', len(getattr(OptModel, 'eNetCapacity2_'+st)), ' rows')
 
     #%%
     def eKirchhoff2ndLaw1(OptModel,sc,p,n,ni,nf,cc):
