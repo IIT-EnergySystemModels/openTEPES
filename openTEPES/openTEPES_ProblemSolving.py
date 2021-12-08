@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - December 01, 2021
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - December 08, 2021
 """
 
 import time
@@ -49,14 +49,9 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES):
     assert str(SolverResults.solver.termination_condition) == 'optimal'
     SolverResults.write()                                                              # summary of the solver results
 
-    # mTEPES.pIndBinUnitInvest     = Param(                               mTEPES.gg, initialize=pIndBinUnitInvest.to_dict()         , within=Boolean         , doc='Binary investment decision'     )
-    # mTEPES.pIndBinUnitRetire     = Param(                               mTEPES.gg, initialize=pIndBinUnitRetire.to_dict()         , within=Boolean         , doc='Binary retirement decision'     )
-    # mTEPES.pIndBinUnitCommit     = Param(                               mTEPES.gg, initialize=pIndBinUnitCommit.to_dict()         , within=Boolean         , doc='Binary commitment decision'     )
-    # mTEPES.pIndBinLineInvest     = Param(                               mTEPES.ln, initialize=pIndBinLineInvest.to_dict()         , within=Boolean         , doc='Binary investment decision'     )
-    # mTEPES.pIndBinLineSwitch     = Param(                               mTEPES.ln, initialize=pIndBinLineSwitch.to_dict()            , within=Boolean         , doc='Binary switching  decision'     )
-
-    #%% fix values of binary variables to get dual variables and solve it again
-    # investment decision values are rounded to the nearest integer
+    #%% fix values of somes variables to get duals and solve it again
+    # binary/continuous investment decisions are fixed to their optimal values
+    # binary            operation  decisions are fixed to their optimal values
     if mTEPES.pIndBinGenInvest()*len(mTEPES.gc) + mTEPES.pIndBinGenRetire()*len(mTEPES.gd) + mTEPES.pIndBinNetInvest()*len(mTEPES.lc) + mTEPES.pIndBinGenOperat()*len(mTEPES.nr) + mTEPES.pIndBinLineCommit()*len(mTEPES.la) + len(mTEPES.g2g):
         if mTEPES.pIndBinGenInvest()*len(mTEPES.gc):
             for gc in mTEPES.gc:
@@ -88,20 +83,12 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES):
                     OptModel.vCommitment[sc,p,n,nr].fix(round(OptModel.vCommitment[sc,p,n,nr]()))
                     OptModel.vStartUp   [sc,p,n,nr].fix(round(OptModel.vStartUp   [sc,p,n,nr]()))
                     OptModel.vShutDown  [sc,p,n,nr].fix(round(OptModel.vShutDown  [sc,p,n,nr]()))
-                else:
-                    OptModel.vCommitment[sc,p,n,nr].fix(      OptModel.vCommitment[sc,p,n,nr]())
-                    OptModel.vStartUp   [sc,p,n,nr].fix(      OptModel.vStartUp   [sc,p,n,nr]())
-                    OptModel.vShutDown  [sc,p,n,nr].fix(      OptModel.vShutDown  [sc,p,n,nr]())
         if mTEPES.pIndBinLineCommit()*len(mTEPES.la):
             for sc,p,n,ni,nf,cc in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.la:
                 if mTEPES.pIndBinLineSwitch[ni,nf,cc] != 0:
                     OptModel.vLineCommit  [sc,p,n,ni,nf,cc].fix(round(OptModel.vLineCommit  [sc,p,n,ni,nf,cc]()))
                     OptModel.vLineOnState [sc,p,n,ni,nf,cc].fix(round(OptModel.vLineOnState [sc,p,n,ni,nf,cc]()))
                     OptModel.vLineOffState[sc,p,n,ni,nf,cc].fix(round(OptModel.vLineOffState[sc,p,n,ni,nf,cc]()))
-                else:
-                    OptModel.vLineCommit  [sc,p,n,ni,nf,cc].fix(      OptModel.vLineCommit  [sc,p,n,ni,nf,cc]())
-                    OptModel.vLineOnState [sc,p,n,ni,nf,cc].fix(      OptModel.vLineOnState [sc,p,n,ni,nf,cc]())
-                    OptModel.vLineOffState[sc,p,n,ni,nf,cc].fix(      OptModel.vLineOffState[sc,p,n,ni,nf,cc]())
         if len(mTEPES.g2g):
             for nr in mTEPES.nr:
                 if sum(1 for g in mTEPES.nr if (nr,g) in mTEPES.g2g or (g,nr) in mTEPES.g2g):

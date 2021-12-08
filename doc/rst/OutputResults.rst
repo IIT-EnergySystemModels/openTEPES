@@ -410,7 +410,8 @@ Identifier    Identifier  Identifier  Header      Description
 Scenario      Period      Load level  Node        Locational Short-Mun Marginal Cost [€/MWh]
 ============  ==========  ==========  ==========  ==========================================
 
-These marginal costs are obtained after discretizing the investment decisions to the nearest binary variable.
+These marginal costs are obtained after fixing the binary and continuous investment decisions and the binary operation decisions to their optimal values.
+Remember that binary decisions are not affected by marginal changes.
 
 File ``oT_Result_WaterValue.csv``
 
