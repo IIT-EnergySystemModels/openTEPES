@@ -731,9 +731,6 @@ def SettingUpVariables(OptModel, mTEPES):
     for gc in mTEPES.gc:
         if mTEPES.pIndBinGenInvest() != 0 and mTEPES.pIndBinUnitInvest[gc] == 0:
             OptModel.vGenerationInvest[gc].domain = UnitInterval
-    for ec in mTEPES.ec:
-        if mTEPES.pIndBinGenInvest() != 0 and mTEPES.pIndBinUnitInvest[ec] == 0:
-            OptModel.vGenerationInvest[ec].domain = UnitInterval
     for lc in mTEPES.lc:
         if mTEPES.pIndBinNetInvest() != 0 and mTEPES.pIndBinLineInvest[lc] == 0:
             OptModel.vNetworkInvest   [lc].domain = UnitInterval

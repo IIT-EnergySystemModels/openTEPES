@@ -59,12 +59,6 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES):
                     OptModel.vGenerationInvest[gc].fix(round(OptModel.vGenerationInvest[gc]()))
                 else:
                     OptModel.vGenerationInvest[gc].fix(      OptModel.vGenerationInvest[gc]())
-        if mTEPES.pIndBinGenInvest()*len(mTEPES.ec):
-            for ec in mTEPES.ec:
-                if mTEPES.pIndBinUnitInvest[ec] != 0:
-                    OptModel.vGenerationInvest[ec].fix(round(OptModel.vGenerationInvest[ec]()))
-                else:
-                    OptModel.vGenerationInvest[ec].fix(      OptModel.vGenerationInvest[ec]())
         if mTEPES.pIndBinGenRetire()*len(mTEPES.gd):
             for gd in mTEPES.gd:
                 if mTEPES.pIndBinUnitRetire[gd] != 0:
