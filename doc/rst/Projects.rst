@@ -6,7 +6,7 @@ The model has being used in these research projects:
 
 - `Impact of the electric vehicle in the electricity markets in 2030 <https://www.iit.comillas.edu/proyectos/mostrar_proyecto.php.en?nombre_abreviado=REPSOL_VE>`_, developed for **Repsol**.
   November 2021 - February 2022.  `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_,
-  `F. Martín <https://www.iit.comillas.edu/people/fmartin>`_, `P. Frías <https://www.iit.comillas.edu/people/pablof>`_, `J.P. Chaves <https://www.iit.comillas.edu/people/jchaves>`_, `P. Linares <https://www.iit.comillas.edu/people/pedrol>`_,
+  `P. Frías <https://www.iit.comillas.edu/people/pablof>`_, `J.P. Chaves <https://www.iit.comillas.edu/people/jchaves>`_, `P. Linares <https://www.iit.comillas.edu/people/pedrol>`_,
   `J.J. Valentín <https://www.iit.comillas.edu/people/jjvalentin>`_
 
     It aims at analyzing the impact on the electricity markets of the mainland Spanish system of the high penetration of electric vehicles in a 2030 scenario.
