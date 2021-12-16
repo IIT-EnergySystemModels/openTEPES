@@ -443,6 +443,8 @@ def InputData(DirName, CaseName, mTEPES):
     pVariableMaxStorage = pVariableMaxStorage.reindex(sorted(pVariableMaxStorage.columns), axis=1)
     pMinStorage         = pVariableMinStorage.where         (pVariableMinStorage > pMinStorage, other=pMinStorage)
     pMaxStorage         = pVariableMaxStorage.where         (pVariableMaxStorage < pMaxStorage, other=pMaxStorage)
+    pMinStorage         = pMinStorage.where                 (pMinStorage         > 0.0,         other=0.0)
+    pMaxStorage         = pMaxStorage.where                 (pMaxStorage         > 0.0,         other=0.0)
 
     # parameter that allows the initial inventory to change with load level
     pIniInventory       = pd.DataFrame([pInitialInventory]*len(pVariableMinStorage.index), index=pd.MultiIndex.from_tuples(pVariableMinStorage.index), columns=pInitialInventory.index)
