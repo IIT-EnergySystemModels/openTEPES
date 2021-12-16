@@ -545,10 +545,6 @@ def InputData(DirName, CaseName, mTEPES):
     pMaxPower2ndBlock  = pMaxPower2ndBlock.where (pMaxPower2ndBlock  > 0.0, other=0.0)
     pMaxCharge2ndBlock = pMaxCharge2ndBlock.where(pMaxCharge2ndBlock > 0.0, other=0.0)
 
-    # power ramps must be <= second block
-    pRampUp = pRampUp.where(pRampUp < pMaxPower2ndBlock, other=pMaxPower2ndBlock)
-    pRampDw = pRampDw.where(pRampDw < pMaxPower2ndBlock, other=pMaxPower2ndBlock)
-
     # BigM maximum flow to be used in the Kirchhoff's 2nd law disjunctive constraint
     pBigMFlowBck = pLineNTCBck*0.0
     pBigMFlowFrw = pLineNTCFrw*0.0
@@ -812,6 +808,10 @@ def SettingUpVariables(OptModel, mTEPES):
         mTEPES.go = [k for k in sorted(mTEPES.pLinearVarCost, key=mTEPES.pLinearVarCost.__getitem__) if k not in mTEPES.gq]
     else:
         mTEPES.go = [k for k in sorted(mTEPES.pLinearVarCost, key=mTEPES.pLinearVarCost.__getitem__)]
+
+    for sc,p,n,es in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.es:
+        if mTEPES.pMaxPower[sc,p,n,es] == 0.0:
+            OptModel.vEnergyOutflows[sc,p,n,es].fix(mTEPES.pEnergyOutflows[sc,p,n,es])
 
     for sc,p,st in mTEPES.scc*mTEPES.pp*mTEPES.stt:
         # activate only scenario, period and load levels to formulate
