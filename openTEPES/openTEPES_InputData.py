@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - December 08, 2021
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - December 16, 2021
 """
 
 import time
@@ -415,6 +415,8 @@ def InputData(DirName, CaseName, mTEPES):
     pVariableMaxPower   = pVariableMaxPower.reindex(sorted(pVariableMaxPower.columns), axis=1)
     pMinPower           = pVariableMinPower.where         (pVariableMinPower > pMinPower, other=pMinPower)
     pMaxPower           = pVariableMaxPower.where         (pVariableMaxPower < pMaxPower, other=pMaxPower)
+    pMinPower           = pMinPower.where                 (pMinPower         > 0.0,       other=0.0)
+    pMaxPower           = pMaxPower.where                 (pMaxPower         > 0.0,       other=0.0)
 
     # minimum and maximum variable charge
     pVariableMinCharge  = pVariableMinCharge.replace(0.0, float('nan'))
@@ -427,6 +429,8 @@ def InputData(DirName, CaseName, mTEPES):
     pVariableMaxCharge  = pVariableMaxCharge.reindex(sorted(pVariableMaxCharge.columns), axis=1)
     pMinCharge          = pVariableMinCharge.where         (pVariableMinCharge > pMinCharge, other=pMinCharge)
     pMaxCharge          = pVariableMaxCharge.where         (pVariableMaxCharge < pMaxCharge, other=pMaxCharge)
+    pMinCharge          = pMinCharge.where                 (pMinCharge         > 0.0,        other=0.0)
+    pMaxCharge          = pMaxCharge.where                 (pMaxCharge         > 0.0,        other=0.0)
 
     # minimum and maximum variable storage capacity
     pVariableMinStorage = pVariableMinStorage.replace(0.0, float('nan'))
