@@ -4,6 +4,10 @@ Change Log
 - [CHANGED] Addition of the sequence of decisions and operation (TEP + transmission switching)
 - [FIXED] fixing `<https://pascua.iit.comillas.edu/aramos/openTEPES/index.html#>`_ in README.rst
 
+[4.2.3] - 2021-12-17
+--------------------
+- [FIX] plots associated to ESS technologies
+
 [4.2.2] - 2021-12-08
 --------------------
 - [FIX] assessment of the locational short-run marginal costs

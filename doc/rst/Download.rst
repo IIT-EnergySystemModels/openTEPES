@@ -13,6 +13,7 @@ Besides, it also requires the following packages:
 - `Pandas <https://pandas.pydata.org/>`_ for inputting data and outputting results
 - `psutil <https://pypi.org/project/psutil/>`_ for detecting the number of CPUs
 - `Matplotlib <https://matplotlib.org/>`_, `Cartopy <https://scitools.org.uk/cartopy/docs/latest/#>`_ for plotting the network map
+- `Altair <https://altair-viz.github.io/#>`_, for plotting results
 
 Cases
 -----

@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - December 16, 2021
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - December 17, 2021
 """
 
 import time
@@ -294,15 +294,15 @@ def InputData(DirName, CaseName, mTEPES):
     mTEPES.le = mTEPES.la - mTEPES.lc
 
     # # input lines
-    # mTEPES.lin = Set(initialize=mTEPES.nf*mTEPES.ni*mTEPES.cc, doc='input line', filter=lambda mTEPES,nf,ni,cc: (ni,nf,cc) in mTEPES.la)
-    # mTEPES.lil = Set(initialize=mTEPES.nf*mTEPES.ni*mTEPES.cc, doc='input line', filter=lambda mTEPES,nf,ni,cc: (ni,nf,cc) in mTEPES.ll)
+    # mTEPES.lin = Set(initialize=mTEPES.nf*mTEPES.ni*mTEPES.cc, ordered=False, doc='input line', filter=lambda mTEPES,nf,ni,cc: (ni,nf,cc) in mTEPES.la)
+    # mTEPES.lil = Set(initialize=mTEPES.nf*mTEPES.ni*mTEPES.cc, ordered=False, doc='input line', filter=lambda mTEPES,nf,ni,cc: (ni,nf,cc) in mTEPES.ll)
 
     # assigning a node to an area
     pNode2Area = pd.DataFrame(0, dtype=int, index=pd.MultiIndex.from_tuples(mTEPES.nd*mTEPES.ar, names=('Node', 'Area')), columns=['Y/N'])
     for nd,zn,ar in mTEPES.ndzn*mTEPES.ar:
         if (zn,ar) in mTEPES.znar:
             pNode2Area.loc[nd,ar] = 1
-    mTEPES.ndar = Set(initialize=mTEPES.nd*mTEPES.ar, doc='node to area', filter=lambda mTEPES,nd,ar: (nd,ar) in mTEPES.nd*mTEPES.ar and pNode2Area.loc[nd,ar]['Y/N'] == 1)
+    mTEPES.ndar = Set(initialize=mTEPES.nd*mTEPES.ar, ordered=False, doc='node to area', filter=lambda mTEPES,nd,ar: (nd,ar) in mTEPES.nd*mTEPES.ar and pNode2Area.loc[nd,ar]['Y/N'] == 1)
 
     # assigning a line to an area. Both nodes are in the same area. Cross-area lines not included
     pLine2Area = pd.DataFrame(0, dtype=int, index=pd.MultiIndex.from_tuples(mTEPES.la*mTEPES.ar, names=('InitialNode', 'FinalNode', 'Circuit', 'Area')), columns=['Y/N'])
@@ -310,7 +310,7 @@ def InputData(DirName, CaseName, mTEPES):
         if (ni,ar) in mTEPES.ndar:
             if (nf,ar) in mTEPES.ndar:
                 pLine2Area.loc[ni,nf,cc,ar] = 1
-    mTEPES.laar = Set(initialize=mTEPES.la*mTEPES.ar, doc='line to area', filter=lambda mTEPES,ni,nf,cc,ar: (ni,nf,cc,ar) in mTEPES.la*mTEPES.ar and pLine2Area.loc[ni,nf,cc,ar]['Y/N'] == 1)
+    mTEPES.laar = Set(initialize=mTEPES.la*mTEPES.ar, ordered=False, doc='line to area', filter=lambda mTEPES,ni,nf,cc,ar: (ni,nf,cc,ar) in mTEPES.la*mTEPES.ar and pLine2Area.loc[ni,nf,cc,ar]['Y/N'] == 1)
 
     # replacing string values by numerical values
     idxDict = dict()
@@ -351,14 +351,14 @@ def InputData(DirName, CaseName, mTEPES):
     # line type
     pLineType = pLineType.reset_index().set_index(['level_0','level_1','level_2','LineType'])
 
-    mTEPES.pLineType = Set(initialize=pLineType.index, doc='line type')
+    mTEPES.pLineType = Set(initialize=pLineType.index, ordered=False, doc='line type')
 
     #%% inverse index load level to stage
     pStageToLevel = pLevelToStage.reset_index().set_index('Stage').set_axis(['LoadLevel'], axis=1, inplace=False)[['LoadLevel']]
     pStageToLevel = pStageToLevel.loc[pStageToLevel['LoadLevel'].isin(mTEPES.n)]
     pStage2Level  = pStageToLevel.reset_index().set_index(['Stage','LoadLevel'])
 
-    mTEPES.s2n = Set(initialize=pStage2Level.index, doc='load level to stage')
+    mTEPES.s2n = Set(initialize=pStage2Level.index, ordered=False, doc='load level to stage')
 
     mTEPES.pLoadLevelWeight = Param(mTEPES.n, initialize=0.0, within=NonNegativeReals, doc='Load level weight', mutable=True)
     for st,n in mTEPES.s2n:
@@ -369,7 +369,7 @@ def InputData(DirName, CaseName, mTEPES):
     pNodeToGen = pNodeToGen.loc[pNodeToGen['Generator'].isin(mTEPES.g)]
     pNode2Gen  = pNodeToGen.reset_index().set_index(['Node', 'Generator'])
 
-    mTEPES.n2g = Set(initialize=pNode2Gen.index, doc='node   to generator')
+    mTEPES.n2g = Set(initialize=pNode2Gen.index, ordered=False, doc='node   to generator')
 
     pZone2Gen   = pd.DataFrame(0, dtype=int, index=pd.MultiIndex.from_tuples(mTEPES.zn*mTEPES.g, names=('Zone',   'Generator')), columns=['Y/N'])
     pArea2Gen   = pd.DataFrame(0, dtype=int, index=pd.MultiIndex.from_tuples(mTEPES.ar*mTEPES.g, names=('Area',   'Generator')), columns=['Y/N'])
@@ -386,23 +386,26 @@ def InputData(DirName, CaseName, mTEPES):
                     if (nd,zn) in mTEPES.ndzn and (zn,ar) in mTEPES.znar and (zn,rg) in mTEPES.arrg:
                         pRegion2Gen.loc[rg,g] = 1
 
-    mTEPES.z2g = Set(initialize=mTEPES.zn*mTEPES.g, doc='zone   to generator', filter=lambda mTEPES,zn,g: (zn,g) in mTEPES.zn*mTEPES.g and pZone2Gen.loc  [zn,g]['Y/N'] == 1)
-    mTEPES.a2g = Set(initialize=mTEPES.ar*mTEPES.g, doc='area   to generator', filter=lambda mTEPES,ar,g: (ar,g) in mTEPES.ar*mTEPES.g and pArea2Gen.loc  [ar,g]['Y/N'] == 1)
-    mTEPES.r2g = Set(initialize=mTEPES.rg*mTEPES.g, doc='region to generator', filter=lambda mTEPES,rg,g: (rg,g) in mTEPES.rg*mTEPES.g and pRegion2Gen.loc[rg,g]['Y/N'] == 1)
+    mTEPES.z2g = Set(initialize=mTEPES.zn*mTEPES.g, ordered=False, doc='zone   to generator', filter=lambda mTEPES,zn,g: (zn,g) in mTEPES.zn*mTEPES.g and pZone2Gen.loc  [zn,g]['Y/N'] == 1)
+    mTEPES.a2g = Set(initialize=mTEPES.ar*mTEPES.g, ordered=False, doc='area   to generator', filter=lambda mTEPES,ar,g: (ar,g) in mTEPES.ar*mTEPES.g and pArea2Gen.loc  [ar,g]['Y/N'] == 1)
+    mTEPES.r2g = Set(initialize=mTEPES.rg*mTEPES.g, ordered=False, doc='region to generator', filter=lambda mTEPES,rg,g: (rg,g) in mTEPES.rg*mTEPES.g and pRegion2Gen.loc[rg,g]['Y/N'] == 1)
 
     #%% inverse index generator to technology
     pTechnologyToGen = pGenToTechnology.reset_index().set_index('Technology').set_axis(['Generator'], axis=1, inplace=False)[['Generator']]
     pTechnologyToGen = pTechnologyToGen.loc[pTechnologyToGen['Generator'].isin(mTEPES.g)]
     pTechnology2Gen  = pTechnologyToGen.reset_index().set_index(['Technology', 'Generator'])
 
-    mTEPES.t2g = Set(initialize=pTechnology2Gen.index, doc='technology to generator')
+    mTEPES.t2g = Set(initialize=pTechnology2Gen.index, ordered=False, doc='technology to generator')
+
+    # ESS technologies
+    mTEPES.ot = Set(initialize=mTEPES.gt, ordered=False, doc='storage technologies', filter=lambda mTEPES,gt: gt in mTEPES.gt and sum(1 for es in mTEPES.es if (gt,es) in mTEPES.t2g))
 
     #%% inverse index generator to mutually exclusive generator
     pExclusiveGenToGen = pGenToExclusiveGen.reset_index().set_index('MutuallyExclusive').set_axis(['Generator'], axis=1, inplace=False)[['Generator']]
     pExclusiveGenToGen = pExclusiveGenToGen.loc[pExclusiveGenToGen['Generator'].isin(mTEPES.g)]
     pExclusiveGen2Gen  = pExclusiveGenToGen.reset_index().set_index(['MutuallyExclusive', 'Generator'])
 
-    mTEPES.g2g = Set(initialize=pExclusiveGen2Gen.index, doc='mutually exclusive generator to generator', filter=lambda mTEPES,gg,g: (gg,g) in mTEPES.gg*mTEPES.g)
+    mTEPES.g2g = Set(initialize=pExclusiveGen2Gen.index, ordered=False, doc='mutually exclusive generator to generator', filter=lambda mTEPES,gg,g: (gg,g) in mTEPES.gg*mTEPES.g)
 
     # minimum and maximum variable power
     pVariableMinPower   = pVariableMinPower.replace(0.0, float('nan'))
