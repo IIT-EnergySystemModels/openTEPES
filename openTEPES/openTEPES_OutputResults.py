@@ -5,7 +5,6 @@ Open Generation and Transmission Operation and Expansion Planning Model with RES
 import time
 import os
 import pandas as pd
-import altair as alt
 from   collections   import defaultdict
 import matplotlib.pyplot as plt
 from   pyomo.environ import Set
@@ -267,16 +266,17 @@ def ESSOperationResults(DirName, CaseName, OptModel, mTEPES):
         OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='GWh').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_ESSTechnologyEnergy_'+CaseName+'.csv', sep=',')
 
         OutputToFile *= -1
-        ESSTechnologyEnergy = OutputToFile.to_frame(name='')
-        ESSTechnologyEnergy[''] = (ESSTechnologyEnergy[''] / ESSTechnologyEnergy[''].sum()) * 100
-        ESSTechnologyEnergy.reset_index(level=3, inplace=True)
-        ESSTechnologyEnergy.groupby(['level_3']).sum().plot(kind='pie', subplots=True, shadow=False, startangle=90, figsize=(15, 10), autopct='%1.1f%%', title='ESS Energy Consumption', legend=False)
-        # plt.legend(title='Energy Consumption', loc='center left', bbox_to_anchor=(1, 0, 0.5, 1))
-        centre_circle = plt.Circle((0, 0), 0.60, fc='white')
-        fg = plt.gcf()
-        fg.gca().add_artist(centre_circle)
-        # plt.show()
-        plt.savefig(_path+'/oT_Plot_ESSTechnologyEnergy_'+CaseName+'.png', bbox_inches=None, dpi=600)
+        if OutputToFile.sum() < 0:
+            ESSTechnologyEnergy = OutputToFile.to_frame(name='')
+            ESSTechnologyEnergy[''] = (ESSTechnologyEnergy[''] / ESSTechnologyEnergy[''].sum()) * 100
+            ESSTechnologyEnergy.reset_index(level=3, inplace=True)
+            ESSTechnologyEnergy.groupby(['level_3']).sum().plot(kind='pie', subplots=True, shadow=False, startangle=90, figsize=(15, 10), autopct='%1.1f%%', title='ESS Energy Consumption', legend=False)
+            # plt.legend(title='Energy Consumption', loc='center left', bbox_to_anchor=(1, 0, 0.5, 1))
+            centre_circle = plt.Circle((0, 0), 0.60, fc='white')
+            fg = plt.gcf()
+            fg.gca().add_artist(centre_circle)
+            # plt.show()
+            plt.savefig(_path+'/oT_Plot_ESSTechnologyEnergy_'+CaseName+'.png', bbox_inches=None, dpi=600)
 
         for ar in mTEPES.ar:
             if len(mTEPES.ar) > 1:
@@ -285,16 +285,17 @@ def ESSOperationResults(DirName, CaseName, OptModel, mTEPES):
                 OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='GWh').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_ESSTechnologyEnergy_'+ar+'_'+CaseName+'.csv', sep=',')
 
                 OutputToFile *= -1
-                ESSTechnologyEnergy = OutputToFile.to_frame(name='')
-                ESSTechnologyEnergy[''] = (ESSTechnologyEnergy[''] / ESSTechnologyEnergy[''].sum()) * 100
-                ESSTechnologyEnergy.reset_index(level=3, inplace=True)
-                ESSTechnologyEnergy.groupby(['level_3']).sum().plot(kind='pie', subplots=True, shadow=False, startangle=90, figsize=(15, 10), autopct='%1.1f%%', title='ESS Energy Consumption in '+ar, legend=False)
-                # plt.legend(title='Energy Consumption', loc='center left', bbox_to_anchor=(1, 0, 0.5, 1))
-                centre_circle = plt.Circle((0, 0), 0.60, fc='white')
-                fg = plt.gcf()
-                fg.gca().add_artist(centre_circle)
-                # plt.show()
-                plt.savefig(_path+'/oT_Plot_ESSTechnologyEnergy_'+ar+'_'+CaseName+'.png', bbox_inches=None, dpi=600)
+                if OutputToFile.sum() < 0:
+                    ESSTechnologyEnergy = OutputToFile.to_frame(name='')
+                    ESSTechnologyEnergy[''] = (ESSTechnologyEnergy[''] / ESSTechnologyEnergy[''].sum()) * 100
+                    ESSTechnologyEnergy.reset_index(level=3, inplace=True)
+                    ESSTechnologyEnergy.groupby(['level_3']).sum().plot(kind='pie', subplots=True, shadow=False, startangle=90, figsize=(15, 10), autopct='%1.1f%%', title='ESS Energy Consumption in '+ar, legend=False)
+                    # plt.legend(title='Energy Consumption', loc='center left', bbox_to_anchor=(1, 0, 0.5, 1))
+                    centre_circle = plt.Circle((0, 0), 0.60, fc='white')
+                    fg = plt.gcf()
+                    fg.gca().add_artist(centre_circle)
+                    # plt.show()
+                    plt.savefig(_path+'/oT_Plot_ESSTechnologyEnergy_'+ar+'_'+CaseName+'.png', bbox_inches=None, dpi=600)
 
         OutputToFile = pd.Series(data=[OptModel.vESSInventory[sc,p,n,es]()                               for sc,p,n,es in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.es],                                                                                       index=pd.MultiIndex.from_tuples(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.es))
         OutputToFile = OutputToFile.fillna(0.0)
