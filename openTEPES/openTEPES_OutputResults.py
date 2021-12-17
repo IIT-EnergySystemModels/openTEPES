@@ -153,27 +153,20 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES):
         TechCurt = OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='GWh').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).sum(axis=0).to_frame(name="GWh")
         TechCurt = TechCurt[(TechCurt[['GWh']] != 0).all(axis=1)]
 
-        # x = range(len(TechCurt.index))
-        # fig, ax = plt.subplots()
-        #
-        # ax.set_ylabel('GWh')
-        # ax.set_title('Curtailment')
-        # ax.set_xticks(x)
-        # ax.set_xticklabels(TechCurt.index)
-        #
-        # pps = ax.bar(x, [int(i) for i in TechCurt['GWh']])
-        # for p in pps:
-        #    height = p.get_height()
-        #    ax.annotate('{:.1f}%'.format(100 * round(height,2)/round(TechCurt.sum(0)['GWh'],2)),xy=(p.get_x() + p.get_width()/2, height), xytext=(0, 0), textcoords="offset points", ha='center', va='bottom')
-        # fig.autofmt_xdate()
-        # plt.savefig(_path+'/oT_Plot_TechnologyCurtailment_'+CaseName+'.png', bbox_inches=None, dpi=600)
+        x = range(len(TechCurt.index))
+        fig, ax = plt.subplots()
 
-        TechCurt = TechCurt.reset_index()
-        TechCurt.rename({'index': 'Technologies'}, axis=1, inplace=True)
-        # Define and build the chart
-        chart = alt.Chart(TechCurt).mark_bar().encode(x='Technologies', y='GWh')
-        # Saving the chart as html file
-        chart.save(_path + '/oT_Plot_TechnologyCurtailment_'+CaseName+'.html', embed_options={'renderer':'svg'})
+        ax.set_ylabel('GWh')
+        ax.set_title('Curtailment')
+        ax.set_xticks(x)
+        ax.set_xticklabels(TechCurt.index)
+
+        pps = ax.bar(x, [int(i) for i in TechCurt['GWh']])
+        for p in pps:
+           height = p.get_height()
+           ax.annotate('{:.1f}%'.format(100 * round(height,2)/round(TechCurt.sum(0)['GWh'],2)),xy=(p.get_x() + p.get_width()/2, height), xytext=(0, 0), textcoords="offset points", ha='center', va='bottom')
+        fig.autofmt_xdate()
+        plt.savefig(_path+'/oT_Plot_TechnologyCurtailment_'+CaseName+'.png', bbox_inches=None, dpi=600)
 
     OutputToFile = pd.Series(data=[OptModel.vTotalOutput[sc,p,n,g ]()*mTEPES.pDuration[n]*mTEPES.pLoadLevelWeight[n]() for sc,p,n,g  in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.g ], index=pd.MultiIndex.from_tuples(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.g ))
     OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_2'],   columns='level_3', values='GWh').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_GenerationEnergy_'  +CaseName+'.csv', sep=',')
