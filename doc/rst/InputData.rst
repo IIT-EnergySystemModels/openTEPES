@@ -267,7 +267,7 @@ DownTime              Minimum downtime                                          
 FuelCost              Fuel cost                                                                                                            €/Mcal
 LinearTerm            Linear term (slope) of the heat rate straight line                                                                   Mcal/MWh
 ConstantTerm          Constant term (intercept) of the heat rate straight line                                                             Mcal/h
-OMVariableCost        O&M variable cost                                                                                                    €/MWh
+OMVariableCost        Variable O&M cost                                                                                                    €/MWh
 StartUpCost           Startup  cost                                                                                                        M€
 ShutDownCost          Shutdown cost                                                                                                        M€
 CO2EmissionRate       CO2 emission rate                                                                                                    t CO2/MWh
