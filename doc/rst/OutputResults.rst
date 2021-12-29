@@ -137,12 +137,12 @@ Identifier    Identifier  Identifier  Header      Description
 Scenario      Period      Load level  Technology  Consumption (charge in ESS) [MW]
 ============  ==========  ==========  ==========  ==========================================
 
-File ``oT_Result_RESTechnologyCurtailment.csv``
+File ``oT_Result_RESTechnologyCurtailmentEnergy.csv``
 
 ============  ==========  ==========  ==============  ==========================================
 Identifier    Identifier  Identifier  Header          Description
 ============  ==========  ==========  ==============  ==========================================
-Scenario      Period      Load level  Technology      Curtailed power of VRES [MW]
+Scenario      Period      Load level  Technology      Curtailed energy of VRES [GWh]
 ============  ==========  ==========  ==============  ==========================================
 
 File ``oT_Result_TechnologyEnergy.csv``
