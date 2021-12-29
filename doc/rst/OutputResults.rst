@@ -67,19 +67,19 @@ Scenario      Period      Load level  Generator   Shutdown decision [p.u.]
 
 File ``oT_Result_GenerationReserveUp.csv``
 
-============  ==========  ==========  ==========  ==========================================
+============  ==========  ==========  ==========  ===============================================
 Identifier    Identifier  Identifier  Header      Description
-============  ==========  ==========  ==========  ==========================================
-Scenario      Period      Load level  Generator   Upward operating reserve [MW]
-============  ==========  ==========  ==========  ==========================================
+============  ==========  ==========  ==========  ===============================================
+Scenario      Period      Load level  Generator   Upward operating reserve of each generator [MW]
+============  ==========  ==========  ==========  ===============================================
 
 File ``oT_Result_GenerationReserveDown.csv``
 
-============  ==========  ==========  ==========  ==========================================
+============  ==========  ==========  ==========  =================================================
 Identifier    Identifier  Identifier  Header      Description
-============  ==========  ==========  ==========  ==========================================
-Scenario      Period      Load level  Generator   Downward operating reserve [MW]
-============  ==========  ==========  ==========  ==========================================
+============  ==========  ==========  ==========  =================================================
+Scenario      Period      Load level  Generator   Downward operating reserve of each generator [MW]
+============  ==========  ==========  ==========  =================================================
 
 File ``oT_Result_GenerationOutput.csv``
 
@@ -260,21 +260,21 @@ Identifier    Identifier  Identifier  Header      Description
 Scenario      Period      Load level  Technology  Energy (charge in ESS) per area [GWh]
 ============  ==========  ==========  ==========  ==========================================
 
-File ``oT_Result_ESSGenerationReserveUp.csv``
+File ``oT_Result_ESSChargeReserveUp.csv``
 
-============  ==========  ==========  ==========  ==========================================
+============  ==========  ==========  ==========  =================================================
 Identifier    Identifier  Identifier  Header      Description
-============  ==========  ==========  ==========  ==========================================
-Scenario      Period      Load level  Generator   Upward operating reserve [MW]
-============  ==========  ==========  ==========  ==========================================
+============  ==========  ==========  ==========  =================================================
+Scenario      Period      Load level  Generator   Upward operating reserve of each pump/charge [MW]
+============  ==========  ==========  ==========  =================================================
 
-File ``oT_Result_ESSGenerationReserveDown.csv``
+File ``oT_Result_ESSChargeReserveDown.csv``
 
-============  ==========  ==========  ==========  ==========================================
+============  ==========  ==========  ==========  ===================================================
 Identifier    Identifier  Identifier  Header      Description
-============  ==========  ==========  ==========  ==========================================
-Scenario      Period      Load level  Generator   Downward operating reserve [MW]
-============  ==========  ==========  ==========  ==========================================
+============  ==========  ==========  ==========  ===================================================
+Scenario      Period      Load level  Generator   Downward operating reserve of each pump/charge [MW]
+============  ==========  ==========  ==========  ===================================================
 
 File ``oT_Result_ESSTechnologyReserveUp.csv``
 
