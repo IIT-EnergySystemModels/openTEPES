@@ -1,13 +1,90 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - December 17, 2021
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - December 30, 2021
 """
 
 import time
 import os
 import pandas as pd
+import altair as alt
 from   collections   import defaultdict
 import matplotlib.pyplot as plt
 from   pyomo.environ import Set
+
+
+# Definition of Pie plots
+def PiePlots(df, Category, Value):
+    OutputToPlot          = df.groupby(['level_3']).sum()
+    OutputToPlot          = OutputToPlot.reset_index().rename(columns={'level_3': Category, '': Value})
+    OutputToPlot[Value]   = round(OutputToPlot[Value], 1)
+    OutputToPlot          = OutputToPlot[(OutputToPlot[[Value]] != 0).all(axis=1)]
+    OutputToPlot['Label'] = [OutputToPlot[Category][i] + ': ' + str(OutputToPlot[Value][i]) for i in OutputToPlot.index]
+    ComposedCategory      = Category + ':N'
+    ComposedValue         = Value    + ':Q'
+
+    base  = alt.Chart(OutputToPlot).encode(theta=alt.Theta(ComposedValue, stack=True), color=alt.Color(ComposedCategory, legend=alt.Legend(title=Category))).properties(width=800, height=800)
+    pie   = base.mark_arc(outerRadius=240)
+    text  = base.mark_text(radius=300, size=15).encode(text='Label:N')
+    chart = pie + text
+
+    return chart
+
+
+# Definition of Area plots
+def AreaPlots(scenario, period, df, Category, X, Y, OperationType):
+    Results = df.loc[scenario,period,:,:]
+    Results = Results.reset_index().rename(columns={'level_0': X, 'level_1': Category, 0: Y})
+    # # Change the format of the LoadLevel
+    Results[X] = Results[X].str[:19]
+    Results[X] = (Results[X] + '+01:00')
+    Results[X] = pd.to_datetime(Results[X])
+    Results[X] = Results[X].dt.strftime('%m-%d %H:%M+01:00')
+    # Composed Names
+    C_C = Category + ':N'
+    C_X = 'monthdate('   + X + '):T'
+    if OperationType == 'average':
+        C_Y = 'average(' + Y + '):Q'
+    else:
+        C_Y = 'sum('     + Y + '):Q'
+
+    # Define and build the chart
+    alt.data_transformers.disable_max_rows()
+    interval = alt.selection_interval(encodings=['x'])
+
+    base  = alt.Chart(Results).mark_area().encode(x=alt.X(C_X, axis=alt.Axis(title='')), y=alt.Y(C_Y, axis=alt.Axis(title=Y)), color=C_C)
+    chart = base.encode(x=alt.X(C_X, axis=alt.Axis(title=''), scale=alt.Scale(domain=interval.ref()))).properties(width=1200, height=450)
+    view  = base.add_selection(interval).properties(width=1200, height=50)
+    plot  = chart & view
+
+    return plot
+
+
+# Definition of Circle plots
+def CirclePlots(scenario, period, df, Category, X, Y, OperationType):
+    Results = df.loc[scenario,period,:,:]
+    Results = Results.reset_index().rename(columns={'level_0': X, 'level_1': Category, 0: Y})
+    # # Change the format of the LoadLevel
+    Results[X] = Results[X].str[:19]
+    Results[X] = (Results[X] + '+01:00')
+    Results[X] = pd.to_datetime(Results[X])
+    Results[X] = Results[X].dt.strftime('%m-%d %H:%M+01:00')
+    # Composed Names
+    C_C = Category + ':N'
+    C_X = 'monthdate('   + X + '):T'
+    if OperationType == 'average':
+        C_Y = 'average(' + Y + '):Q'
+    else:
+        C_Y = 'sum('     + Y + '):Q'
+
+    # Define and build the chart
+    alt.data_transformers.disable_max_rows()
+    interval = alt.selection_interval(encodings=['x'])
+
+    base  = alt.Chart(Results).mark_line().encode(x=alt.X(C_X, axis=alt.Axis(title='')), y=alt.Y(C_Y, axis=alt.Axis(title=Y)), color=C_C)
+    chart = base.encode(x=alt.X(C_X, axis=alt.Axis(title=''), scale=alt.Scale(domain=interval.ref()))).properties(width=1200, height=450)
+    view  = base.add_selection(interval).properties(width=1200, height=50)
+    plot  = chart & view
+
+    return plot
 
 
 def InvestmentResults(DirName, CaseName, OptModel, mTEPES):
@@ -26,21 +103,8 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES):
         TechInv = OutputToFile.to_frame(name='MW').reset_index().rename(columns={'index': 'Technology'     })
         TechInv = TechInv[(TechInv[['MW']] != 0).all(axis=1)]
 
-
-        x = range(len(TechInv['MW']))
-        fig, ax = plt.subplots()
-
-        ax.set_ylabel('MW')
-        ax.set_title('Capacity Investment')
-        ax.set_xticks(x)
-        ax.set_xticklabels(TechInv['Technology'])
-
-        pps = ax.bar(x, [int(i) for i in TechInv['MW']])
-        for p in pps:
-           height = p.get_height()
-           ax.annotate('{}'.format(height),xy=(p.get_x() + p.get_width()/2, height), xytext=(0, 0), textcoords="offset points", ha='center', va='bottom')
-        fig.autofmt_xdate()
-        plt.savefig(_path+'/oT_Plot_TechnologyInvestment_'+CaseName+'.png', bbox_inches=None, dpi=600)
+        chart = alt.Chart(TechInv).mark_bar().encode(alt.X('Technology:O', axis=alt.Axis(title='Technology')), alt.Y('sum(MW):Q', axis=alt.Axis(title='MW'))).properties(width=600, height=400)
+        chart.save(_path+'/oT_Plot_TechnologyInvestment_'+CaseName+'.html', embed_options={'renderer':'svg'})
 
     if len(mTEPES.gd):
         OutputToFile = pd.Series(data=[mTEPES.pRatedMaxPower[gd]*OptModel.vGenerationRetire[gd]() for gd in mTEPES.gd], index=pd.Index(mTEPES.gd))
@@ -53,30 +117,47 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES):
         TechDecom = OutputToFile.to_frame(name='MW').reset_index().rename(columns={'index': 'Technology'     })
         TechDecom = TechDecom[(TechDecom[['MW']] != 0).all(axis=1)]
 
-
-        x = range(len(TechDecom['MW']))
-        fig, ax = plt.subplots()
-
-        ax.set_ylabel('MW')
-        ax.set_title('Capacity Retired')
-        ax.set_xticks(x)
-        ax.set_xticklabels(TechDecom['Technology'])
-
-        pps = ax.bar(x, [int(i) for i in TechDecom['MW']])
-        for p in pps:
-           height = p.get_height()
-           ax.annotate('{}'.format(height),xy=(p.get_x() + p.get_width()/2, height), xytext=(0, 0), textcoords="offset points", ha='center', va='bottom')
-        fig.autofmt_xdate()
-        plt.savefig(_path+'/oT_Plot_TechnologyRetirement_'+CaseName+'.png', bbox_inches=None, dpi=600)
+        chart = alt.Chart(TechDecom).mark_bar().encode(alt.X('Technology:O', axis=alt.Axis(title='Technology')), alt.Y('sum(MW):Q', axis=alt.Axis(title='MW'))).properties(width=600, height=400)
+        chart.save(_path+'/oT_Plot_TechnologyRetirement_'+CaseName+'.html', embed_options={'renderer':'svg'})
 
     if len(mTEPES.lc):
-
-        OutputToFile = pd.DataFrame.from_dict(OptModel.vNetworkInvest.extract_values(),    orient='index', columns=[str(OptModel.vNetworkInvest)])
+        OutputToFile = pd.DataFrame.from_dict(OptModel.vNetworkInvest.extract_values(), orient='index', columns=[str(OptModel.vNetworkInvest)])
         OutputToFile.index = pd.MultiIndex.from_tuples(OutputToFile.index)
         OutputToFile.index.names = ['InitialNode','FinalNode','Circuit']
         OutputToFile = OutputToFile.reset_index()
         OutputToFile.rename(columns={'vNetworkInvest': 'Investment Decision'}).to_csv(_path + '/oT_Result_NetworkInvestment_' + CaseName + '.csv', index=False, sep=',')
 
+        OutputResults_1 = pd.Series(data=[lt for ni,nf,cc,lt in mTEPES.lc*mTEPES.lt if (ni,nf,cc,lt) in mTEPES.pLineType], index=pd.Index(mTEPES.lc))
+        OutputResults_1 = OutputResults_1.to_frame(name='LineType')
+        OutputResults_2 = pd.Series(data=[mTEPES.pLineNTCFrw[ni,nf,cc]*1e3 for ni,nf,cc in mTEPES.lc], index=pd.Index(mTEPES.lc))
+        OutputResults_2 = OutputResults_2.to_frame(name='MW')
+        OutputResults_3 = OutputToFile.set_index(['InitialNode', 'FinalNode', 'Circuit'])
+        OutputResults   = pd.concat([OutputResults_1, OutputResults_2, OutputResults_3], axis=1)
+        OutputResults.index.names = ['InitialNode','FinalNode','Circuit']
+        OutputResults   = OutputResults.reset_index().groupby(['LineType', 'MW']).sum().rename(columns={'vNetworkInvest': 'Investment Decision'})
+        OutputResults   = OutputResults.reset_index()
+        OutputResults['MW'] = round(OutputResults['MW'], 2)
+
+        chart = alt.Chart(OutputResults).mark_bar().encode(x='LineType:O', y='sum(Investment Decision):Q', color='LineType:N', column='MW:N')
+        chart.save(_path+'/oT_Plot_NetworkInvestment_'+CaseName+'.html', embed_options={'renderer':'svg'})
+
+        OutputToFile = pd.Series(data=[(OptModel.vNetworkInvest[ni,nf,cc]()*mTEPES.pLineNTCFrw[ni,nf,cc]*1e3)/mTEPES.pLineLength[ni,nf,cc]() for ni,nf,cc in mTEPES.lc], index= pd.MultiIndex.from_tuples(list(mTEPES.lc)))
+        OutputToFile = OutputToFile.to_frame(name='MW-km')
+        OutputToFile.to_csv(_path + '/oT_Result_NetworkInvestment_MW-km_' + CaseName + '.csv', sep=',')
+
+        OutputResults_1 = pd.Series(data=[lt for ni,nf,cc,lt in mTEPES.lc*mTEPES.lt if (ni,nf,cc,lt) in mTEPES.pLineType], index=pd.Index(mTEPES.lc))
+        OutputResults_1 = OutputResults_1.to_frame(name='LineType')
+        OutputResults_2 = pd.Series(data=[mTEPES.pLineNTCFrw[ni,nf,cc]*1e3 for ni,nf,cc in mTEPES.lc], index=pd.Index(mTEPES.lc))
+        OutputResults_2 = OutputResults_2.to_frame(name='MW')
+        OutputResults_3 = OutputToFile
+        OutputResults   = pd.concat([OutputResults_1, OutputResults_2, OutputResults_3], axis=1)
+        OutputResults.index.names = ['InitialNode','FinalNode','Circuit']
+        OutputResults   = OutputResults.reset_index().groupby(['LineType', 'MW']).sum()
+        OutputResults   = OutputResults.reset_index()
+        OutputResults['MW'] = round(OutputResults['MW'], 2)
+
+        chart = alt.Chart(OutputResults).mark_bar().encode(x='LineType:O', y='sum(MW-km):Q', color='LineType:N', column='MW:N')
+        chart.save(_path+'/oT_Plot_NetworkInvestment_MW-km_'+CaseName+'.html', embed_options={'renderer':'svg'})
 
     WritingResultsTime = time.time() - StartTime
     StartTime          = time.time()
@@ -108,7 +189,7 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES):
             OutputToFile = pd.Series(data=[OptModel.vESSReserveUp  [sc,p,n,es]() for sc,p,n,es in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.es], index=pd.MultiIndex.from_tuples(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.es))
             OutputToFile *= 1e3
             OutputToFile = OutputToFile.fillna(0.0)
-            OutputToFile.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_ESSGenerationReserveUp_'+CaseName+'.csv', sep=',')
+            OutputToFile.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_ESSChargeReserveUp_'+CaseName+'.csv', sep=',')
 
             OutputToFile = pd.Series(data=[sum(OutputToFile[sc,p,n,es] for es in mTEPES.es if (ot,es) in mTEPES.t2g) for sc,p,n,ot in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.ot], index=pd.MultiIndex.from_tuples(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.ot))
             OutputToFile.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_ESSTechnologyReserveUp_'+CaseName+'.csv', sep=',')
@@ -126,7 +207,7 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES):
             OutputToFile = pd.Series(data=[OptModel.vESSReserveDown[sc,p,n,es]() for sc,p,n,es in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.es], index=pd.MultiIndex.from_tuples(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.es))
             OutputToFile *= 1e3
             OutputToFile = OutputToFile.fillna(0.0)
-            OutputToFile.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_ESSGenerationReserveDown_'+CaseName+'.csv', sep=',')
+            OutputToFile.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_ESSChargeReserveDown_'+CaseName+'.csv', sep=',')
 
             OutputToFile = pd.Series(data=[sum(OutputToFile[sc,p,n,es] for es in mTEPES.es if (ot,es) in mTEPES.t2g) for sc,p,n,ot in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.ot], index=pd.MultiIndex.from_tuples(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.ot))
             OutputToFile.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_ESSTechnologyReserveDown_'+CaseName+'.csv', sep=',')
@@ -147,52 +228,35 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES):
                 OutputToFile[sc,p,n,r] = OutputToFile[sc,p,n,r] * OptModel.vGenerationInvest[r]()
         OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='GWh').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_RESCurtailmentEnergy_'    +CaseName+'.csv', sep=',')
 
-        OutputToFile = pd.Series(data=[sum(OutputToFile[sc,p,n,r] for r in mTEPES.r if (gt,r) in mTEPES.t2g)         for sc,p,n,gt in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.gt], index=pd.MultiIndex.from_tuples(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.gt))
-        OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='GWh').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_RESTechnologyCurtailment_'+CaseName+'.csv', sep=',')
-        TechCurt = OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='GWh').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).sum(axis=0).to_frame(name="GWh")
+        OutputToFile = pd.Series(data=[sum(OutputToFile[sc,p,n,r] for r in mTEPES.r if (rt,r) in mTEPES.t2g) for sc,p,n,rt in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.rt], index=pd.MultiIndex.from_tuples(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.rt))
+        OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='GWh').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_RESTechnologyCurtailmentEnergy_'+CaseName+'.csv', sep=',')
+        TechCurt = OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='GWh').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).sum(axis=0).to_frame(name='GWh')
         TechCurt = TechCurt[(TechCurt[['GWh']] != 0).all(axis=1)]
 
-        x = range(len(TechCurt.index))
-        fig, ax = plt.subplots()
+        TechCurt = TechCurt.reset_index()
+        TechCurt.rename({'index': 'Technologies'}, axis=1, inplace=True)
 
-        ax.set_ylabel('GWh')
-        ax.set_title('Curtailment')
-        ax.set_xticks(x)
-        ax.set_xticklabels(TechCurt.index)
-
-        pps = ax.bar(x, [int(i) for i in TechCurt['GWh']])
-        for p in pps:
-           height = p.get_height()
-           ax.annotate('{:.1f}%'.format(100 * round(height,2)/round(TechCurt.sum(0)['GWh'],2)),xy=(p.get_x() + p.get_width()/2, height), xytext=(0, 0), textcoords="offset points", ha='center', va='bottom')
-        fig.autofmt_xdate()
-        plt.savefig(_path+'/oT_Plot_TechnologyCurtailment_'+CaseName+'.png', bbox_inches=None, dpi=600)
+        chart = alt.Chart(TechCurt).mark_bar().encode(x='Technologies', y='GWh').properties(width=600, height=400)
+        chart.save(_path + '/oT_Plot_TechnologyCurtailment_'+CaseName+'.html', embed_options={'renderer':'svg'})
 
     OutputToFile = pd.Series(data=[OptModel.vTotalOutput[sc,p,n,g ]()*mTEPES.pDuration[n]*mTEPES.pLoadLevelWeight[n]() for sc,p,n,g  in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.g ], index=pd.MultiIndex.from_tuples(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.g ))
     OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_2'],   columns='level_3', values='GWh').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_GenerationEnergy_'  +CaseName+'.csv', sep=',')
 
     OutputToFile = pd.Series(data=[OptModel.vTotalOutput[sc,p,n,nr]()*mTEPES.pDuration[n]*mTEPES.pLoadLevelWeight[n]()*mTEPES.pCO2EmissionCost[nr]/mTEPES.pCO2Cost() for sc,p,n,nr in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.nr], index=pd.MultiIndex.from_tuples(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.nr))
-    OutputToFile.to_frame(name='tCO2').reset_index().pivot_table(index=['level_0','level_1','level_2'],   columns='level_3', values='tCO2').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_GenerationEmission_'+CaseName+'.csv', sep=',')
+    OutputToFile.to_frame(name='MtCO2').reset_index().pivot_table(index=['level_0','level_1','level_2'],   columns='level_3', values='MtCO2').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_GenerationEmission_'+CaseName+'.csv', sep=',')
 
     OutputToFile = pd.Series(data=[sum(OutputToFile[sc,p,n,nr] for nr in mTEPES.nr if (gt,nr) in mTEPES.t2g) for sc,p,n,gt in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.gt], index=pd.MultiIndex.from_tuples(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.gt))
     #OutputToFile*= 1e3
-    OutputToFile.to_frame(name='tCO2').reset_index().pivot_table(index=['level_0','level_1','level_2'],   columns='level_3', values='tCO2').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_GenerationEmission_'+CaseName+'.csv', sep=',')
-    TechCO2 = OutputToFile.to_frame(name='tCO2').reset_index().pivot_table(index=['level_0','level_1','level_2'],   columns='level_3', values='tCO2').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).sum(axis=0).to_frame(name="tCO2")
-    TechCO2 = TechCO2[(TechCO2[['tCO2']] != 0).all(axis=1)]
+    OutputToFile.to_frame(name='MtCO2').reset_index().pivot_table(index=['level_0','level_1','level_2'],   columns='level_3', values='MtCO2').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_TechnologyEmission_'+CaseName+'.csv', sep=',')
+    TechCO2 = OutputToFile.to_frame(name='MtCO2').reset_index().pivot_table(index=['level_0','level_1','level_2'],   columns='level_3', values='MtCO2').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).sum(axis=0).to_frame(name='MtCO2')
+    TechCO2 = TechCO2[(TechCO2[['MtCO2']] != 0).all(axis=1)]
 
-    x = range(len(TechCO2.index))
-    fig, ax = plt.subplots()
+    if len(TechCO2) > 0:
+        TechCO2 = TechCO2.reset_index()
+        TechCO2.rename({'index': 'Technologies'}, axis=1, inplace=True)
 
-    ax.set_ylabel('Mt CO2')
-    ax.set_title('Emissions')
-    ax.set_xticks(x)
-    ax.set_xticklabels(TechCO2.index)
-
-    pps = ax.bar(x, round(TechCO2['tCO2'],2))
-    for p in pps:
-       height = p.get_height()
-       ax.annotate('{}'.format(height),xy=(p.get_x() + p.get_width()/2, height), xytext=(0, 0), textcoords="offset points", ha='center', va='bottom')
-    fig.autofmt_xdate()
-    plt.savefig(_path+'/oT_Plot_Emissions_'+CaseName+'.png', bbox_inches=None, dpi=600)
+        chart = alt.Chart(TechCO2).mark_bar().encode(x='Technologies', y='MtCO2').properties(width=600, height=400)
+        chart.save(_path + '/oT_Plot_Emissions_'+CaseName+'.html', embed_options={'renderer': 'svg'})
 
     OutputToFile = pd.Series(data=[sum(OptModel.vTotalOutput[sc,p,n,g]() for g in mTEPES.g if (gt,g) in mTEPES.t2g)*1e3 for sc,p,n,gt in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.gt], index=pd.MultiIndex.from_tuples(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.gt))
     OutputToFile.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_TechnologyOutput_'+CaseName+'.csv', sep=',')
@@ -204,13 +268,9 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES):
     TechnologyEnergy = OutputToFile.to_frame(name='')
     TechnologyEnergy[''] = (TechnologyEnergy[''] / TechnologyEnergy[''].sum()) * 100
     TechnologyEnergy.reset_index(level=3, inplace=True)
-    TechnologyEnergy.groupby(['level_3']).sum().plot(kind='pie', subplots=True, shadow=False, startangle=-40, figsize=(15, 10), autopct='%1.1f%%', pctdistance=0.85, title='Energy Generation', legend=False)
-    # plt.legend(loc='center left', bbox_to_anchor=(1, 0, 0.5, 1))
-    centre_circle = plt.Circle((0, 0), 0.60, fc='white')
-    fg = plt.gcf()
-    fg.gca().add_artist(centre_circle)
-    # plt.show()
-    plt.savefig(_path+'/oT_Plot_TechnologyEnergy_'+CaseName+'.png', bbox_inches=None, dpi=600)
+
+    chart = PiePlots(TechnologyEnergy, 'Technology', '%')
+    chart.save(_path + '/oT_Plot_TechnologyEnergy_' + CaseName + '.html', embed_options={'renderer': 'svg'})
 
     for ar in mTEPES.ar:
         if len(mTEPES.ar) > 1:
@@ -221,14 +281,9 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES):
             TechnologyEnergy = OutputToFile.to_frame(name='')
             TechnologyEnergy[''] = (TechnologyEnergy[''] / TechnologyEnergy[''].sum()) * 100
             TechnologyEnergy.reset_index(level=3, inplace=True)
-            TechnologyEnergy.groupby(['level_3']).sum().plot(kind='pie', subplots=True, shadow=False, startangle=-40, figsize=(15, 10), autopct='%1.1f%%', pctdistance=0.85, title='Energy Generation in '+ar, legend=False)
-            # plt.legend(loc='center left', bbox_to_anchor=(1, 0, 0.5, 1))
-            centre_circle = plt.Circle((0, 0), 0.60, fc='white')
-            fg = plt.gcf()
-            fg.gca().add_artist(centre_circle)
-            fg.autofmt_xdate()
-            # plt.show()
-            plt.savefig(_path+'/oT_Plot_TechnologyEnergy_'+ar+'_'+CaseName+'.png', bbox_inches=None, dpi=600)
+
+            chart = PiePlots(TechnologyEnergy, 'Technology', '%')
+            chart.save(_path+'/oT_Plot_TechnologyEnergy_'+ar+'_'+CaseName+'.html', embed_options={'renderer': 'svg'})
 
     WritingResultsTime = time.time() - StartTime
     StartTime          = time.time()
@@ -270,13 +325,9 @@ def ESSOperationResults(DirName, CaseName, OptModel, mTEPES):
             ESSTechnologyEnergy = OutputToFile.to_frame(name='')
             ESSTechnologyEnergy[''] = (ESSTechnologyEnergy[''] / ESSTechnologyEnergy[''].sum()) * 100
             ESSTechnologyEnergy.reset_index(level=3, inplace=True)
-            ESSTechnologyEnergy.groupby(['level_3']).sum().plot(kind='pie', subplots=True, shadow=False, startangle=90, figsize=(15, 10), autopct='%1.1f%%', title='ESS Energy Consumption', legend=False)
-            # plt.legend(title='Energy Consumption', loc='center left', bbox_to_anchor=(1, 0, 0.5, 1))
-            centre_circle = plt.Circle((0, 0), 0.60, fc='white')
-            fg = plt.gcf()
-            fg.gca().add_artist(centre_circle)
-            # plt.show()
-            plt.savefig(_path+'/oT_Plot_ESSTechnologyEnergy_'+CaseName+'.png', bbox_inches=None, dpi=600)
+
+            chart = PiePlots(ESSTechnologyEnergy, 'Technology', '%')
+            chart.save(_path+'/oT_Plot_ESSTechnologyEnergy_'+CaseName+'.html', embed_options={'renderer': 'svg'})
 
         for ar in mTEPES.ar:
             if len(mTEPES.ar) > 1:
@@ -289,13 +340,9 @@ def ESSOperationResults(DirName, CaseName, OptModel, mTEPES):
                     ESSTechnologyEnergy = OutputToFile.to_frame(name='')
                     ESSTechnologyEnergy[''] = (ESSTechnologyEnergy[''] / ESSTechnologyEnergy[''].sum()) * 100
                     ESSTechnologyEnergy.reset_index(level=3, inplace=True)
-                    ESSTechnologyEnergy.groupby(['level_3']).sum().plot(kind='pie', subplots=True, shadow=False, startangle=90, figsize=(15, 10), autopct='%1.1f%%', title='ESS Energy Consumption in '+ar, legend=False)
-                    # plt.legend(title='Energy Consumption', loc='center left', bbox_to_anchor=(1, 0, 0.5, 1))
-                    centre_circle = plt.Circle((0, 0), 0.60, fc='white')
-                    fg = plt.gcf()
-                    fg.gca().add_artist(centre_circle)
-                    # plt.show()
-                    plt.savefig(_path+'/oT_Plot_ESSTechnologyEnergy_'+ar+'_'+CaseName+'.png', bbox_inches=None, dpi=600)
+
+                    chart = PiePlots(ESSTechnologyEnergy, 'Technology', '%')
+                    chart.save(_path+'/oT_Plot_ESSTechnologyEnergy_'+ar+'_'+CaseName+'.html', embed_options={'renderer': 'svg'})
 
         OutputToFile = pd.Series(data=[OptModel.vESSInventory[sc,p,n,es]()                               for sc,p,n,es in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.es],                                                                                       index=pd.MultiIndex.from_tuples(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.es))
         OutputToFile = OutputToFile.fillna(0.0)
@@ -316,17 +363,8 @@ def ESSOperationResults(DirName, CaseName, OptModel, mTEPES):
         TechnologyCharge = OutputToFile.loc[:,:,:,:]
 
         for sc,p in mTEPES.sc*mTEPES.p:
-            fig, fg = plt.subplots()
-            fg.stackplot(range(len(mTEPES.n)),  TechnologyCharge.loc[sc,p,:,:].values.reshape(len(mTEPES.n),len(mTEPES.ot)).transpose().tolist(), labels=mTEPES.ot)
-            # fg.stackplot(range(len(mTEPES.n)), -TechnologyCharge.loc[sc,p,:,:].values.reshape(len(mTEPES.n),len(mTEPES.gt)).transpose().tolist(), labels=mTEPES.gt)
-            # fg.plot     (range(len(mTEPES.n)),  pDemand.sum(axis=1)*1e3, label='Demand', linewidth=0.2, color='k')
-            fg.set(xlabel='Time Steps', ylabel='MW')
-            plt.title(sc+' '+p)
-            fg.tick_params(axis='x', rotation=90)
-            fg.legend()
-            plt.tight_layout()
-            # plt.show()
-            plt.savefig(_path+'/oT_Plot_TechnologyCharge_'+sc+'_'+p+'_'+CaseName+'.png', bbox_inches=None, dpi=600)
+            chart = AreaPlots(sc, p, TechnologyCharge, 'Technology', 'LoadLevel', 'MW', 'sum')
+            chart.save(_path + '/oT_Plot_TechnologyCharge_'+sc+'_'+p+'_'+CaseName+'.html', embed_options={'renderer': 'svg'})
 
     WritingResultsTime = time.time() - StartTime
     StartTime = time.time()
@@ -450,18 +488,9 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES):
 
     LSRMC = OutputToFile.loc[:,:]
 
-    fig, fg = plt.subplots()
-    for nd in mTEPES.nd:
-        if sum(1 for g in mTEPES.g if (nd,g) in mTEPES.n2g) + sum(1 for lout in lout[nd]) + sum(1 for ni,cc in lin[nd]):
-            fg.plot(range(len(LSRMC[:,:,:,nd])), LSRMC[:,:,:,nd], label=nd)
-    fg.set(xlabel='Time Steps', ylabel='EUR/MWh')
-    fg.set_ybound(lower=0, upper=100)
-    plt.title('LSRMC')
-    fg.tick_params(axis='x', rotation=90)
-    fg.legend()
-    plt.tight_layout()
-    # plt.show()
-    plt.savefig(_path+'/oT_Plot_LSRMC_'+CaseName+'.png', bbox_inches=None, dpi=600)
+    for sc,p in mTEPES.sc*mTEPES.p:
+        chart = CirclePlots(sc, p, LSRMC, 'Node', 'LoadLevel', 'EUR/MWh', 'average')
+        chart.save(_path + '/oT_Plot_LSRMC_'+sc+'_'+p+'_'+CaseName+'.html', embed_options={'renderer': 'svg'})
 
     if sum(mTEPES.pReserveMargin[ar] for ar in mTEPES.ar):
         OutputToFile = pd.Series(data=[OptModel.dual[getattr(OptModel, 'eAdequacyReserveMargin_'+st)[ar]] for st,ar in mTEPES.st*mTEPES.ar if mTEPES.pReserveMargin[ar] and sum(1 for nr in mTEPES.nr if (ar,nr) in mTEPES.a2g) + sum(1 for es in mTEPES.es if (ar,es) in mTEPES.a2g)], index=pd.MultiIndex.from_tuples(list(mTEPES.st*list(getattr(OptModel, 'eAdequacyReserveMargin_'+st)))))
@@ -497,18 +526,9 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES):
 
         MarginalUpOperatingReserve = OutputToFile.loc[:,:]
 
-        fig, fg = plt.subplots()
-        for ar in mTEPES.ar:
-            if sum(mTEPES.pOperReserveUp[sc,p,n,ar] for sc,p,n in mTEPES.sc*mTEPES.p*mTEPES.n):
-                fg.plot(range(len(MarginalUpOperatingReserve[:,:,:,ar])), MarginalUpOperatingReserve[:,:,:,ar], label=ar)
-        fg.set(xlabel='Time Steps', ylabel='EUR/MW')
-        fg.set_ybound(lower=0, upper=100)
-        plt.title('Upward Operating Reserve Marginal')
-        fg.tick_params(axis='x', rotation=90)
-        fg.legend()
-        plt.tight_layout()
-        # plt.show()
-        plt.savefig(_path+'/oT_Plot_MarginalOperatingReserveUpward_'+CaseName+'.png', bbox_inches=None, dpi=600)
+        for sc,p in mTEPES.sc*mTEPES.p:
+            chart = CirclePlots(sc, p, MarginalUpOperatingReserve, 'Area', 'LoadLevel', 'EUR/MW', 'sum')
+            chart.save(_path + '/oT_Plot_MarginalOperatingReserveUpward_'+sc+'_'+p+'_'+CaseName+'.html', embed_options={'renderer': 'svg'})
 
     #%% outputting the down operating reserve marginal
     if sum(mTEPES.pOperReserveDw[sc,p,n,ar] for sc,p,n,ar in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.ar):
@@ -526,18 +546,9 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES):
 
         MarginalDwOperatingReserve = OutputToFile.loc[:,:]
 
-        fig, fg = plt.subplots()
-        for ar in mTEPES.ar:
-            if sum(mTEPES.pOperReserveDw[sc,p,n,ar] for sc,p,n in mTEPES.sc*mTEPES.p*mTEPES.n):
-                fg.plot(range(len(MarginalDwOperatingReserve[:,:,:,ar])), MarginalDwOperatingReserve[:,:,:,ar], label=ar)
-        fg.set(xlabel='Time Steps', ylabel='EUR/MW')
-        fg.set_ybound(lower=0, upper=100)
-        plt.title('Downward Operating Reserve Marginal')
-        fg.tick_params(axis='x', rotation=90)
-        fg.legend()
-        plt.tight_layout()
-        # plt.show()
-        plt.savefig(_path+'/oT_Plot_MarginalOperatingReserveDownward_'+CaseName+'.png', bbox_inches=None, dpi=600)
+        for sc,p in mTEPES.sc*mTEPES.p:
+            chart = CirclePlots(sc, p, MarginalDwOperatingReserve, 'Area', 'LoadLevel', 'EUR/MW', 'sum')
+            chart.save(_path + '/oT_Plot_MarginalOperatingReserveDownward_'+sc+'_'+p+'_'+CaseName+'.html', embed_options={'renderer': 'svg'})
 
     #%% outputting the water values
     if len(mTEPES.es):
@@ -555,17 +566,9 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES):
 
         WaterValue = OutputToFile.loc[:,:]
 
-        fig, fg = plt.subplots()
-        for es in mTEPES.es:
-            fg.plot(range(len(WaterValue[:,:,:,es])), WaterValue[:,:,:,es], label=es)
-        fg.set(xlabel='Time Steps', ylabel='EUR/MWh')
-        fg.set_ybound(lower=0, upper=100)
-        plt.title('Water Value')
-        fg.tick_params(axis='x', rotation=90)
-        fg.legend()
-        plt.tight_layout()
-        # plt.show()
-        plt.savefig(_path+'/oT_Plot_WaterValue_'+CaseName+'.png', bbox_inches=None, dpi=600)
+        for sc,p in mTEPES.sc*mTEPES.p:
+            chart = CirclePlots(sc, p, WaterValue, 'Unit', 'LoadLevel', 'EUR/MWh', 'average')
+            chart.save(_path + '/oT_Plot_WaterValue_'+sc+'_'+p+'_'+CaseName+'.html', embed_options={'renderer': 'svg'})
 
     #%% Reduced cost for NetworkInvestment
     ReducedCostActivation = mTEPES.pIndBinGenInvest()*len(mTEPES.gc) + mTEPES.pIndBinNetInvest()*len(mTEPES.lc) + mTEPES.pIndBinGenOperat()*len(mTEPES.nr) + mTEPES.pIndBinLineCommit()*len(mTEPES.la)
@@ -603,13 +606,13 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES):
     StartTime = time.time()
 
     SysCost     = OptModel.eTotalTCost.expr()
-    GenInvCost  = sum(mTEPES.pGenInvestCost[gc] * OptModel.vGenerationInvest[gc]() for gc in mTEPES.gc)
-    GenRetCost  = sum(mTEPES.pGenRetireCost[gd] * OptModel.vGenerationRetire[gd]() for gd in mTEPES.gd)
-    NetInvCost  = sum(mTEPES.pNetFixedCost [lc] * OptModel.vNetworkInvest   [lc]() for lc in mTEPES.lc)
-    GenCost     = sum(mTEPES.pScenProb[sc] * OptModel.vTotalGCost[sc,p,n]() for sc,p,n in mTEPES.sc*mTEPES.p*mTEPES.n)
-    ConCost     = sum(mTEPES.pScenProb[sc] * OptModel.vTotalCCost[sc,p,n]() for sc,p,n in mTEPES.sc*mTEPES.p*mTEPES.n)
-    EmiCost     = sum(mTEPES.pScenProb[sc] * OptModel.vTotalECost[sc,p,n]() for sc,p,n in mTEPES.sc*mTEPES.p*mTEPES.n)
-    RelCost     = sum(mTEPES.pScenProb[sc] * OptModel.vTotalRCost[sc,p,n]() for sc,p,n in mTEPES.sc*mTEPES.p*mTEPES.n)
+    GenInvCost  = sum(mTEPES.pGenInvestCost[gc] * OptModel.vGenerationInvest[gc]() for gc     in mTEPES.gc)
+    GenRetCost  = sum(mTEPES.pGenRetireCost[gd] * OptModel.vGenerationRetire[gd]() for gd     in mTEPES.gd)
+    NetInvCost  = sum(mTEPES.pNetFixedCost [lc] * OptModel.vNetworkInvest   [lc]() for lc     in mTEPES.lc)
+    GenCost     = sum(mTEPES.pScenProb[sc]      * OptModel.vTotalGCost  [sc,p,n]() for sc,p,n in mTEPES.sc*mTEPES.p*mTEPES.n)
+    ConCost     = sum(mTEPES.pScenProb[sc]      * OptModel.vTotalCCost  [sc,p,n]() for sc,p,n in mTEPES.sc*mTEPES.p*mTEPES.n)
+    EmiCost     = sum(mTEPES.pScenProb[sc]      * OptModel.vTotalECost  [sc,p,n]() for sc,p,n in mTEPES.sc*mTEPES.p*mTEPES.n)
+    RelCost     = sum(mTEPES.pScenProb[sc]      * OptModel.vTotalRCost  [sc,p,n]() for sc,p,n in mTEPES.sc*mTEPES.p*mTEPES.n)
     Costs       = {'':['System Cost', 'Generation Investment Cost', 'Generation Retirement Cost', 'Network Investment Cost', 'Generation Cost', 'Consumption Cost', 'Emissions Cost', 'Reliability Cost'], 'MEUR': [SysCost, GenInvCost, GenRetCost, NetInvCost, GenCost, ConCost, EmiCost, RelCost]}
     CostSummary = pd.DataFrame(Costs)
     CostSummary.to_csv(_path+'/oT_Result_CostSummary_'   +CaseName+'.csv', sep=',', index=False)
@@ -618,18 +621,18 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES):
                                     mTEPES.pScenProb[sc] * mTEPES.pLoadLevelWeight[n]() * mTEPES.pDuration[n] * mTEPES.pConstantVarCost[nr] * OptModel.vCommitment [sc,p,n,nr]() +
                                     mTEPES.pScenProb[sc] * mTEPES.pLoadLevelWeight[n]()                       * mTEPES.pStartUpCost    [nr] * OptModel.vStartUp    [sc,p,n,nr]() +
                                     mTEPES.pScenProb[sc] * mTEPES.pLoadLevelWeight[n]()                       * mTEPES.pShutDownCost   [nr] * OptModel.vShutDown   [sc,p,n,nr]()) for sc,p,n,nr in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.nr], index=pd.MultiIndex.from_tuples(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.nr))
-    OutputToFile.to_frame(name='MEUR').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MEUR').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_GenerationOperationCost_'   +CaseName+'.csv', sep=',')
+    OutputToFile.to_frame(name='MEUR').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MEUR').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_GenerationCostOperation_'   +CaseName+'.csv', sep=',')
 
     if len(mTEPES.r):
         OutputToFile = pd.Series(data=[mTEPES.pScenProb[sc] * mTEPES.pDuration[n] * mTEPES.pLoadLevelWeight[n]() * mTEPES.pLinearOMCost [ r] * OptModel.vTotalOutput   [sc,p,n, r]() for sc,p,n, r in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.r ], index=pd.MultiIndex.from_tuples(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.r ))
-        OutputToFile.to_frame(name='MEUR').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MEUR').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_GenerationOandMCost_'   +CaseName+'.csv', sep=',')
+        OutputToFile.to_frame(name='MEUR').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MEUR').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_GenerationCostOandM_'   +CaseName+'.csv', sep=',')
 
     if len(mTEPES.es):
         OutputToFile = pd.Series(data=[mTEPES.pScenProb[sc] * mTEPES.pDuration[n] * mTEPES.pLoadLevelWeight[n]() * mTEPES.pLinearVarCost[es] * OptModel.vESSTotalCharge[sc,p,n,es]() for sc,p,n,es in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.es], index=pd.MultiIndex.from_tuples(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.es))
-        OutputToFile.to_frame(name='MEUR').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MEUR').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_ChargeOperationCost_'+CaseName+'.csv', sep=',')
+        OutputToFile.to_frame(name='MEUR').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MEUR').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_ChargeCostOperation_'+CaseName+'.csv', sep=',')
 
     OutputToFile = pd.Series(data=[mTEPES.pScenProb[sc] * mTEPES.pDuration[n] * mTEPES.pLoadLevelWeight[n]() * mTEPES.pCO2EmissionCost[nr] * OptModel.vTotalOutput[sc,p,n,nr]() for sc,p,n,nr in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.nr], index=pd.MultiIndex.from_tuples(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.nr))
-    OutputToFile.to_frame(name='MEUR').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MEUR').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_GenerationEmissionCost_'+CaseName+'.csv', sep=',')
+    OutputToFile.to_frame(name='MEUR').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MEUR').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_GenerationCostEmission_'+CaseName+'.csv', sep=',')
 
     OutputToFile = pd.Series(data=[mTEPES.pScenProb[sc] * mTEPES.pDuration[n] * mTEPES.pLoadLevelWeight[n]() * mTEPES.pENSCost()           * OptModel.vENS        [sc,p,n,nd]() for sc,p,n,nd in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.nd], index=pd.MultiIndex.from_tuples(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.nd))
     OutputToFile.to_frame(name='MEUR').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MEUR').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_ReliabilityCost_'+CaseName+'.csv', sep=',')
@@ -644,7 +647,7 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES):
     mTEPES.del_component(mTEPES.n)
     mTEPES.n = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.pDuration)
     AppendData = pd.concat(AppendData)
-    AppendData.to_frame(name='MEUR').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_4', values='MEUR').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_GenerationEnergyRevenue_'+CaseName+'.csv', sep=',')
+    AppendData.to_frame(name='MEUR').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_4', values='MEUR').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_RevenueEnergyGeneration_'+CaseName+'.csv', sep=',')
 
     if len(mTEPES.es):
         AppendData = []
@@ -657,17 +660,17 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES):
         mTEPES.del_component(mTEPES.n)
         mTEPES.n = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.pDuration)
         AppendData = pd.concat(AppendData)
-        AppendData.to_frame(name='MEUR').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_4', values='MEUR').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_ChargeEnergyRevenue_'+CaseName+'.csv', sep=',')
+        AppendData.to_frame(name='MEUR').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_4', values='MEUR').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_RevenueEnergyCharge_'+CaseName+'.csv', sep=',')
 
-    if len(mTEPES.ec):
+    if len(mTEPES.gc):
         GenRev     = []
         ChargeRev  = []
         for st in mTEPES.st:
             mTEPES.del_component(mTEPES.n)
             mTEPES.n = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.pDuration and (st,nn) in mTEPES.s2n)
             if len(mTEPES.n):
-                OutputToGenRev    = pd.Series(data=[OptModel.dual[getattr(OptModel, 'eBalance_'+st)[sc,p,n,nd]]/mTEPES.pScenProb[sc] * OptModel.vTotalOutput   [sc,p,n,ec]() for sc,p,n,nd,ec in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.n2g if ec in mTEPES.ec], index=pd.MultiIndex.from_tuples([(sc,p,n,nd,ec) for sc,p,n,nd,ec in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.n2g if ec in mTEPES.ec]))
-                OutputChargeRev   = pd.Series(data=[OptModel.dual[getattr(OptModel, 'eBalance_'+st)[sc,p,n,nd]]/mTEPES.pScenProb[sc] * OptModel.vESSTotalCharge[sc,p,n,ec]() for sc,p,n,nd,ec in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.n2g if ec in mTEPES.ec], index=pd.MultiIndex.from_tuples([(sc,p,n,nd,ec) for sc,p,n,nd,ec in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.n2g if ec in mTEPES.ec]))
+                OutputToGenRev    = pd.Series(data=[OptModel.dual[getattr(OptModel, 'eBalance_'+st)[sc,p,n,nd]]/mTEPES.pScenProb[sc] * OptModel.vTotalOutput   [sc,p,n,gc]() for sc,p,n,nd,gc in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.n2g if gc in mTEPES.gc], index=pd.MultiIndex.from_tuples([(sc,p,n,nd,gc) for sc,p,n,nd,gc in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.n2g if gc in mTEPES.gc]))
+                OutputChargeRev   = pd.Series(data=[OptModel.dual[getattr(OptModel, 'eBalance_'+st)[sc,p,n,nd]]/mTEPES.pScenProb[sc] * OptModel.vESSTotalCharge[sc,p,n,gc]() for sc,p,n,nd,gc in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.n2g if gc in mTEPES.gc], index=pd.MultiIndex.from_tuples([(sc,p,n,nd,gc) for sc,p,n,nd,gc in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.n2g if gc in mTEPES.gc]))
             GenRev.append(OutputToGenRev)
             ChargeRev.append(OutputChargeRev)
         mTEPES.del_component(mTEPES.n)
@@ -675,19 +678,19 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES):
         GenRev    = pd.concat(GenRev)
         ChargeRev = pd.concat(ChargeRev)
         GenRev    = GenRev.to_frame(name='MEUR').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_4', values='MEUR').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).sum(axis=0)
-        ChargeRev = ChargeRev.to_frame('MEUR').reset_index().pivot_table(index=['level_0', 'level_1', 'level_2'], columns='level_4', values='MEUR').rename_axis(['Scenario', 'Period', 'LoadLevel'], axis=0).rename_axis([None], axis=1).sum(axis=0)
+        ChargeRev = ChargeRev.to_frame('MEUR').reset_index().pivot_table(  index=['level_0','level_1','level_2'], columns='level_4', values='MEUR').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).sum(axis=0)
     else:
-        GenRev = pd.Series(data=[0.0 for ec in mTEPES.ec], index=mTEPES.ec)
-        ChargeRev = pd.Series(data=[0.0 for ec in mTEPES.ec], index=mTEPES.ec)
+        GenRev    = pd.Series(data=[0.0 for gc in mTEPES.gc], index=mTEPES.gc)
+        ChargeRev = pd.Series(data=[0.0 for gc in mTEPES.gc], index=mTEPES.gc)
 
     if sum(mTEPES.pReserveMargin[ar] for ar in mTEPES.ar):
-        if len(mTEPES.ec):
-            ResRev = pd.Series(data=[OptModel.dual[getattr(OptModel, 'eAdequacyReserveMargin_'+st)[ar]]*mTEPES.pRatedMaxPower[ec]*mTEPES.pAvailability[ec]()/1e3 for st,ar,ec in mTEPES.st*mTEPES.ar*mTEPES.ec if mTEPES.pReserveMargin[ar] and (ar,ec) in mTEPES.a2g], index=pd.MultiIndex.from_tuples(mTEPES.st*mTEPES.ar*mTEPES.ec))
+        if len(mTEPES.gc):
+            ResRev = pd.Series(data=[OptModel.dual[getattr(OptModel, 'eAdequacyReserveMargin_'+st)[ar]]*mTEPES.pRatedMaxPower[gc]*mTEPES.pAvailability[gc]()/1e3 for st,ar,gc in mTEPES.st*mTEPES.ar*mTEPES.gc if mTEPES.pReserveMargin[ar] and (ar,gc) in mTEPES.a2g], index=pd.MultiIndex.from_tuples(mTEPES.st*mTEPES.ar*mTEPES.gc))
             ResRev = ResRev.to_frame(name='MEUR').reset_index().pivot_table(index=['level_0','level_1'], columns='level_2', values='MEUR').rename_axis(['Stages','Areas'], axis=0).rename_axis([None], axis=1).sum(axis=0)
         else:
-            ResRev = pd.Series(data=[0.0 for ec in mTEPES.ec], index=mTEPES.ec)
+            ResRev = pd.Series(data=[0.0 for gc in mTEPES.gc], index=mTEPES.gc)
     else:
-        ResRev = pd.Series(data=[0.0 for ec in mTEPES.ec], index=mTEPES.ec)
+        ResRev     = pd.Series(data=[0.0 for gc in mTEPES.gc], index=mTEPES.gc)
 
     if sum(mTEPES.pOperReserveUp[sc,p,n,ar] for sc,p,n,ar in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.ar):
         if len([(sc,p,n,ar,nr) for sc,p,n,ar,nr in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.a2g if mTEPES.pOperReserveUp[sc,p,n,ar] and nr in mTEPES.nr]):
@@ -701,7 +704,7 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES):
             mTEPES.del_component(mTEPES.n)
             mTEPES.n = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.pDuration)
             AppendData = pd.concat(AppendData)
-            AppendData.to_frame(name='MEUR').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_4', values='MEUR').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_OperatingReserveUpRevenue_'+CaseName+'.csv', sep=',')
+            AppendData.to_frame(name='MEUR').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_4', values='MEUR').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_RevenueOperatingReserveUp_'+CaseName+'.csv', sep=',')
         if len([(sc,p,n,ar,es) for sc,p,n,ar,es in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.a2g if mTEPES.pOperReserveUp[sc,p,n,ar] and es in mTEPES.es]):
             AppendData = []
             for st in mTEPES.st:
@@ -713,24 +716,23 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES):
             mTEPES.del_component(mTEPES.n)
             mTEPES.n = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.pDuration)
             AppendData = pd.concat(AppendData)
-            AppendData.to_frame(name='MEUR').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_4', values='MEUR').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_ESSOperatingReserveUpRevenue_'+CaseName+'.csv', sep=',')
-        if len([(sc,p,n,ar,ec) for sc,p,n,ar,ec in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.a2g if mTEPES.pOperReserveUp[sc,p,n,ar] and ec in mTEPES.ec]):
+            AppendData.to_frame(name='MEUR').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_4', values='MEUR').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_RevenueOperatingReserveUpESS_'+CaseName+'.csv', sep=',')
+        if len([(sc,p,n,ar,gc) for sc,p,n,ar,gc in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.a2g if mTEPES.pOperReserveUp[sc,p,n,ar] and gc in mTEPES.gc]):
             AppendData = []
             for st in mTEPES.st:
                 mTEPES.del_component(mTEPES.n)
                 mTEPES.n = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.pDuration and (st,nn) in mTEPES.s2n)
                 if len(mTEPES.n):
-                    OutputToFile = pd.Series(data=[OptModel.dual[getattr(OptModel, 'eOperReserveUp_'+st)[sc,p,n,ar]]*1e3/mTEPES.pScenProb[sc]*OptModel.vESSReserveUp[sc,p,n,ec]() for sc,p,n,ar,ec in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.a2g if mTEPES.pOperReserveUp[sc,p,n,ar] and ec in mTEPES.ec], index=pd.MultiIndex.from_tuples([(sc,p,n,ar,ec) for sc,p,n,ar,ec in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.a2g if mTEPES.pOperReserveUp[sc,p,n,ar] and ec in mTEPES.ec]))
+                    OutputToFile = pd.Series(data=[OptModel.dual[getattr(OptModel, 'eOperReserveUp_'+st)[sc,p,n,ar]]*1e3/mTEPES.pScenProb[sc]*OptModel.vESSReserveUp[sc,p,n,gc]() for sc,p,n,ar,gc in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.a2g if mTEPES.pOperReserveUp[sc,p,n,ar] and gc in mTEPES.gc], index=pd.MultiIndex.from_tuples([(sc,p,n,ar,gc) for sc,p,n,ar,gc in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.a2g if mTEPES.pOperReserveUp[sc,p,n,ar] and gc in mTEPES.gc]))
                 AppendData.append(OutputToFile)
             mTEPES.del_component(mTEPES.n)
             mTEPES.n = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.pDuration)
             AppendData = pd.concat(AppendData)
             UpRev = AppendData.to_frame('MEUR').reset_index().pivot_table(index=['level_0', 'level_1', 'level_2'], columns='level_4', values='MEUR').rename_axis(['Scenario', 'Period', 'LoadLevel'], axis=0).rename_axis([None], axis=1).sum(axis=0)
         else:
-            UpRev = pd.Series(data=[0.0 for ec in mTEPES.ec], index=mTEPES.ec)
+            UpRev = pd.Series(data=[0.0 for gc in mTEPES.gc], index=mTEPES.gc)
     else:
-        UpRev = pd.Series(data=[0.0 for ec in mTEPES.ec], index=mTEPES.ec)
-
+        UpRev     = pd.Series(data=[0.0 for gc in mTEPES.gc], index=mTEPES.gc)
 
     if sum(mTEPES.pOperReserveDw[sc,p,n,ar] for sc,p,n,ar in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.ar):
         if len([(sc,p,n,ar,nr) for sc,p,n,ar,nr in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.a2g if mTEPES.pOperReserveUp[sc,p,n,ar] and nr in mTEPES.nr]):
@@ -744,7 +746,7 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES):
             mTEPES.del_component(mTEPES.n)
             mTEPES.n = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.pDuration)
             AppendData = pd.concat(AppendData)
-            AppendData.to_frame(name='MEUR').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_4', values='MEUR').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_OperatingReserveDwRevenue_'+CaseName+'.csv', sep=',')
+            AppendData.to_frame(name='MEUR').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_4', values='MEUR').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_RevenueOperatingReserveDw_'+CaseName+'.csv', sep=',')
         if len([(sc,p,n,ar,es) for sc,p,n,ar,es in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.a2g if mTEPES.pOperReserveUp[sc,p,n,ar] and es in mTEPES.es]):
             AppendData = []
             for st in mTEPES.st:
@@ -756,28 +758,28 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES):
             mTEPES.del_component(mTEPES.n)
             mTEPES.n = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.pDuration)
             AppendData = pd.concat(AppendData)
-            AppendData.to_frame(name='MEUR').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_4', values='MEUR').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_ESSOperatingReserveDwRevenue_'+CaseName+'.csv', sep=',')
-        if len([(sc,p,n,ar,ec) for sc,p,n,ar,ec in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.a2g if mTEPES.pOperReserveUp[sc,p,n,ar] and ec in mTEPES.ec]):
+            AppendData.to_frame(name='MEUR').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_4', values='MEUR').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_RevenueOperatingReserveDwESS_'+CaseName+'.csv', sep=',')
+        if len([(sc,p,n,ar,gc) for sc,p,n,ar,gc in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.a2g if mTEPES.pOperReserveUp[sc,p,n,ar] and gc in mTEPES.gc]):
             AppendData = []
             for st in mTEPES.st:
                 mTEPES.del_component(mTEPES.n)
                 mTEPES.n = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.pDuration and (st,nn) in mTEPES.s2n)
                 if len(mTEPES.n):
-                    OutputToFile = pd.Series(data=[OptModel.dual[getattr(OptModel, 'eOperReserveDw_'+st)[sc,p,n,ar]]*1e3/mTEPES.pScenProb[sc]*OptModel.vESSReserveDown[sc,p,n,ec]() for sc,p,n,ar,ec in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.a2g if mTEPES.pOperReserveDw[sc,p,n,ar] and ec in mTEPES.ec], index=pd.MultiIndex.from_tuples([(sc,p,n,ar,ec) for sc,p,n,ar,ec in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.a2g if mTEPES.pOperReserveDw[sc,p,n,ar] and ec in mTEPES.ec]))
+                    OutputToFile = pd.Series(data=[OptModel.dual[getattr(OptModel, 'eOperReserveDw_'+st)[sc,p,n,ar]]*1e3/mTEPES.pScenProb[sc]*OptModel.vESSReserveDown[sc,p,n,gc]() for sc,p,n,ar,gc in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.a2g if mTEPES.pOperReserveDw[sc,p,n,ar] and gc in mTEPES.gc], index=pd.MultiIndex.from_tuples([(sc,p,n,ar,gc) for sc,p,n,ar,gc in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.a2g if mTEPES.pOperReserveDw[sc,p,n,ar] and gc in mTEPES.gc]))
                 AppendData.append(OutputToFile)
             mTEPES.del_component(mTEPES.n)
             mTEPES.n = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.pDuration)
             AppendData = pd.concat(AppendData)
             DwRev = AppendData.to_frame('MEUR').reset_index().pivot_table(index=['level_0', 'level_1', 'level_2'], columns='level_4', values='MEUR').rename_axis(['Scenario', 'Period', 'LoadLevel'], axis=0).rename_axis([None], axis=1).sum(axis=0)
         else:
-            DwRev = pd.Series(data=[0.0 for ec in mTEPES.ec], index=mTEPES.ec)
+            DwRev = pd.Series(data=[0.0 for gc in mTEPES.gc], index=mTEPES.gc)
     else:
-        DwRev = pd.Series(data=[0.0 for ec in mTEPES.ec], index=mTEPES.ec)
+        DwRev     = pd.Series(data=[0.0 for gc in mTEPES.gc], index=mTEPES.gc)
 
-    InvCost = pd.Series(data=[mTEPES.pGenInvestCost[ec] for ec in mTEPES.ec], index= pd.Index(mTEPES.ec))
-    Balance = pd.Series(data=[GenRev[ec]+ChargeRev[ec]+UpRev[ec]+DwRev[ec]+ResRev[ec]-InvCost[ec] for ec in mTEPES.ec], index= pd.Index(mTEPES.ec))
+    InvCost = pd.Series(data=[mTEPES.pGenInvestCost[gc] for gc in mTEPES.gc], index= pd.Index(mTEPES.gc))
+    Balance = pd.Series(data=[GenRev[gc]+ChargeRev[gc]+UpRev[gc]+DwRev[gc]+ResRev[gc]-InvCost[gc] for gc in mTEPES.gc], index= pd.Index(mTEPES.gc))
     CostRecoveryESS = pd.concat([GenRev,ChargeRev,UpRev,DwRev,ResRev,InvCost,Balance], axis=1, keys=['Generation revenue [MEUR]','Consumption revenue [MEUR]','Up reserve revenue [MEUR]','Down reserve revenue [MEUR]','Reserve capacity revenue [MEUR]','Investment Cost [MEUR]','Balance [MEUR]'])
-    CostRecoveryESS.to_csv(_path + '/oT_Result_ESSCostRecovery_' + CaseName + '.csv', index=True, sep=',')
+    CostRecoveryESS.to_csv(_path + '/oT_Result_CostRecovery_' + CaseName + '.csv', index=True, sep=',')
 
     WritingResultsTime = time.time() - StartTime
     print('Writing             economic results   ... ', round(WritingResultsTime), 's')

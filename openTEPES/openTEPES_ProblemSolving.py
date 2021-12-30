@@ -37,8 +37,8 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES):
         # Solver.options['BarQCPConvTol' ] = 0.025
         Solver.options['MIPGap'        ] = 0.01
         Solver.options['Threads'       ] = int((psutil.cpu_count(logical=True) + psutil.cpu_count(logical=False))/2)
-        Solver.options['TimeLimit'     ] =    144000
-        Solver.options['IterationLimit'] = 144000000
+        Solver.options['TimeLimit'     ] =    7200
+        Solver.options['IterationLimit'] = 7200000
     if mTEPES.pIndBinGenInvest()*len(mTEPES.gc) + mTEPES.pIndBinNetInvest()*len(mTEPES.lc) + mTEPES.pIndBinGenOperat()*len(mTEPES.nr) + mTEPES.pIndBinLineCommit()*len(mTEPES.la) + len(mTEPES.g2g) == 0:
         if SolverName == 'gurobi' or SolverName == 'mosek':
             Solver.options['relax_integrality'] =  1  # introduced to show results of the dual variables

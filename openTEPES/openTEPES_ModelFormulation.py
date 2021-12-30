@@ -114,8 +114,8 @@ def GenerationOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, st):
 
     def eAdequacyReserveMargin(OptModel,ar):
         if mTEPES.pReserveMargin[ar] and sum(1 for g in mTEPES.g if (ar,g) in mTEPES.a2g):
-            return ((sum(                                    mTEPES.pRatedMaxPower[g ] * mTEPES.pAvailability[g ] / (1.0-mTEPES.pEFOR[g ]) for g  in mTEPES.g  if (ar,g ) in mTEPES.a2g and g not in (mTEPES.gc or mTEPES.gd)) +
-                     sum(OptModel.vGenerationInvest[gc]    * mTEPES.pRatedMaxPower[gc] * mTEPES.pAvailability[gc] / (1.0-mTEPES.pEFOR[gc]) for gc in mTEPES.gc if (ar,gc) in mTEPES.a2g                                      ) +
+            return ((sum(                                     mTEPES.pRatedMaxPower[g ] * mTEPES.pAvailability[g ] / (1.0-mTEPES.pEFOR[g ]) for g  in mTEPES.g  if (ar,g ) in mTEPES.a2g and g not in (mTEPES.gc or mTEPES.gd)) +
+                     sum(OptModel.vGenerationInvest[gc]     * mTEPES.pRatedMaxPower[gc] * mTEPES.pAvailability[gc] / (1.0-mTEPES.pEFOR[gc]) for gc in mTEPES.gc if (ar,gc) in mTEPES.a2g                                      ) +
                      sum((1-OptModel.vGenerationRetire[gd]) * mTEPES.pRatedMaxPower[gd] * mTEPES.pAvailability[gd] / (1.0-mTEPES.pEFOR[gd]) for gd in mTEPES.gd if (ar,gd) in mTEPES.a2g                                      ) ) >= mTEPES.pPeakDemand[ar] * mTEPES.pReserveMargin[ar])
         else:
             return Constraint.Skip
@@ -126,7 +126,7 @@ def GenerationOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, st):
 
     def eSystemInertia(OptModel,sc,p,n,ar):
         if mTEPES.pSystemInertia[sc,p,n,ar] and sum(1 for nr in mTEPES.nr if (ar,nr) in mTEPES.a2g) + sum(1 for es in mTEPES.es if (ar,es) in mTEPES.a2g):
-            return sum(OptModel.vCommitment[sc,p,n,nr] * mTEPES.pInertia[nr] for nr in mTEPES.nr if (ar,nr) in mTEPES.a2g) >= mTEPES.pSystemInertia[sc,p,n,ar]
+            return sum(OptModel.vTotalOutput[sc,p,n,nr] * mTEPES.pInertia[nr] / mTEPES.pMaxPower[sc,p,n,nr] for nr in mTEPES.nr if mTEPES.pMaxPower[sc,p,n,nr] and (ar,nr) in mTEPES.a2g) >= mTEPES.pSystemInertia[sc,p,n,ar]
         else:
             return Constraint.Skip
     setattr(OptModel, 'eSystemInertia_'+st, Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.ar, rule=eSystemInertia, doc='system inertia [s]'))

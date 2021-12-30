@@ -4,6 +4,12 @@ Change Log
 - [CHANGED] Addition of the sequence of decisions and operation (TEP + transmission switching)
 - [FIXED] fixing `<https://pascua.iit.comillas.edu/aramos/openTEPES/index.html#>`_ in README.rst
 
+[4.2.4] - 2021-12-30
+--------------------
+- [FIX] inertia constraints
+- [FIX] typos in output results
+- [CHANGED] introduce html plots based on Altair
+
 [4.2.3] - 2021-12-17
 --------------------
 - [FIX] plots associated to ESS technologies
