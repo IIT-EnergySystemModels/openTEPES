@@ -204,7 +204,7 @@ Identifier    Identifier  Identifier  Header      Description
 Scenario      Period      Load level  Technology  Outflows power in ESS [MW]
 ============  ==========  ==========  ==========  ==========================================
 
-File ``oT_Result_ESSChargeOutput.csv``
+File ``oT_Result_ChargeOutput.csv``
 
 ============  ==========  ==========  ==========  ==========================================
 Identifier    Identifier  Identifier  Header      Description
@@ -212,7 +212,7 @@ Identifier    Identifier  Identifier  Header      Description
 Scenario      Period      Load level  Generator   Charged power in ESS [MW]
 ============  ==========  ==========  ==========  ==========================================
 
-File ``oT_Result_ESSTechnologyOutput.csv``
+File ``oT_Result_TechnologyOutputESS.csv``
 
 ============  ==========  ==========  ==========  ==========================================
 Identifier    Identifier  Identifier  Header      Description
@@ -236,7 +236,7 @@ Identifier    Identifier  Identifier  Header      Description
 Scenario      Period      Load level  Technology  Energy (Outflows in ESS) [GWh]
 ============  ==========  ==========  ==========  ==========================================
 
-File ``oT_Result_ESSChargeEnergy.csv``
+File ``oT_Result_ChargeEnergy.csv``
 
 ============  ==========  ==========  ==========  ==========================================
 Identifier    Identifier  Identifier  Header      Description
@@ -244,7 +244,7 @@ Identifier    Identifier  Identifier  Header      Description
 Scenario      Period      Load level  Generator   Charged energy in ESS [GWh]
 ============  ==========  ==========  ==========  ==========================================
 
-File ``oT_Result_ESSTechnologyEnergy.csv``
+File ``oT_Result_TechnologyEnergyESS.csv``
 
 ============  ==========  ==========  ==========  ==========================================
 Identifier    Identifier  Identifier  Header      Description
@@ -252,7 +252,7 @@ Identifier    Identifier  Identifier  Header      Description
 Scenario      Period      Load level  Technology  Energy (charge in ESS) [GWh]
 ============  ==========  ==========  ==========  ==========================================
 
-File ``oT_Result_ESSTechnologyEnergy_AreaName.csv``
+File ``oT_Result_TechnologyEnergyESS_AreaName.csv``
 
 ============  ==========  ==========  ==========  ==========================================
 Identifier    Identifier  Identifier  Header      Description
@@ -260,7 +260,7 @@ Identifier    Identifier  Identifier  Header      Description
 Scenario      Period      Load level  Technology  Energy (charge in ESS) per area [GWh]
 ============  ==========  ==========  ==========  ==========================================
 
-File ``oT_Result_ESSChargeReserveUp.csv``
+File ``oT_Result_ChargeReserveUp.csv``
 
 ============  ==========  ==========  ==========  =================================================
 Identifier    Identifier  Identifier  Header      Description
@@ -268,7 +268,7 @@ Identifier    Identifier  Identifier  Header      Description
 Scenario      Period      Load level  Generator   Upward operating reserve of each pump/charge [MW]
 ============  ==========  ==========  ==========  =================================================
 
-File ``oT_Result_ESSChargeReserveDown.csv``
+File ``oT_Result_ChargeReserveDown.csv``
 
 ============  ==========  ==========  ==========  ===================================================
 Identifier    Identifier  Identifier  Header      Description
@@ -276,7 +276,7 @@ Identifier    Identifier  Identifier  Header      Description
 Scenario      Period      Load level  Generator   Downward operating reserve of each pump/charge [MW]
 ============  ==========  ==========  ==========  ===================================================
 
-File ``oT_Result_ESSTechnologyReserveUp.csv``
+File ``oT_Result_TechnologyReserveUpESS.csv``
 
 ============  ==========  ==========  ==========  ==========================================
 Identifier    Identifier  Identifier  Header      Description
@@ -284,7 +284,7 @@ Identifier    Identifier  Identifier  Header      Description
 Scenario      Period      Load level  Technology  Upward operating reserve [MW]
 ============  ==========  ==========  ==========  ==========================================
 
-File ``oT_Result_ESSTechnologyReserveDown.csv``
+File ``oT_Result_TechnologyReserveDownESS.csv``
 
 ============  ==========  ==========  ==========  ==========================================
 Identifier    Identifier  Identifier  Header      Description
@@ -292,7 +292,7 @@ Identifier    Identifier  Identifier  Header      Description
 Scenario      Period      Load level  Technology  Downward operating reserve [MW]
 ============  ==========  ==========  ==========  ==========================================
 
-File ``oT_Result_ESSInventory.csv``
+File ``oT_Result_Inventory.csv``
 
 ============  ==========  ==========  =========  ==============================================================================================
 Identifier    Identifier  Identifier  Header     Description
@@ -300,7 +300,7 @@ Identifier    Identifier  Identifier  Header     Description
 Scenario      Period      Load level  Generator  Stored energy (SoC in batteries, reservoir energy in pumped-hydro storage power plants) [GWh]
 ============  ==========  ==========  =========  ==============================================================================================
 
-File ``oT_Result_ESSInventoryUtilization.csv``
+File ``oT_Result_InventoryUtilization.csv``
 
 ============  ==========  ==========  =========  =================================================================
 Identifier    Identifier  Identifier  Header     Description
@@ -308,7 +308,7 @@ Identifier    Identifier  Identifier  Header     Description
 Scenario      Period      Load level  Generator  ESS utilization (i.e., ratio between usage and capacity) [p.u.]
 ============  ==========  ==========  =========  =================================================================
 
-File ``oT_Result_ESSSpillage.csv``
+File ``oT_Result_Spillage.csv``
 
 ============  ==========  ==========  ==========  ==========================================
 Identifier    Identifier  Identifier  Header      Description
