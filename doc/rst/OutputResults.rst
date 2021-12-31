@@ -62,6 +62,14 @@ Identifier    Identifier  Identifier  Header  Description
 Initial node  Final node  Circuit     p.u.    Network investment decision
 ============  ==========  ==========  ======  =============================
 
+File ``oT_Result_NetworkInvestment_MWkm.csv``
+
+============  ==========  ==========  ======  ===========================
+Identifier    Identifier  Identifier  Header  Description
+============  ==========  ==========  ======  ===========================
+Initial node  Final node  Circuit     MW-km   Network investment
+============  ==========  ==========  ======  ===========================
+
 Generation operation
 --------------------
 
@@ -145,6 +153,14 @@ Identifier    Identifier  Identifier  Header      Description
 Scenario      Period      Load level  Generator   CO2 emission [Mt CO2]
 ============  ==========  ==========  ==========  =================================
 
+File ``oT_Result_TechnologyEmission.csv``
+
+============  ==========  ==========  ==========  =================================
+Identifier    Identifier  Identifier  Header      Description
+============  ==========  ==========  ==========  =================================
+Scenario      Period      Load level  Technology   CO2 emission [Mt CO2]
+============  ==========  ==========  ==========  =================================
+
 File ``oT_Result_TechnologyOutput.csv``
 
 ============  ==========  ==========  ==========  =================================
@@ -185,7 +201,7 @@ Identifier    Identifier  Identifier  Header      Description
 Scenario      Period      Load level  Technology  Energy (discharge in ESS) per area [GWh]
 ============  ==========  ==========  ==========  ==========================================
 
-File ``oT_Result_TechnologyEnergyCurtailment.csv``
+File ``oT_Result_TechnologyCurtailmentEnergy.csv``
 
 ============  ==========  ==========  ===========  ==========================================
 Identifier    Identifier  Identifier  Header       Description
@@ -418,6 +434,7 @@ Scenario      Period      Load level  Node        Energy not served by node [GWh
 Marginal information
 --------------------
 
+
 File ``oT_Result_MarginalReserveMargin.csv``
 
 ============  ==========  ==========  ==========  =================================================
@@ -611,7 +628,7 @@ Identifier    Identifier  Identifier  Header      Description
 Scenario      Period      Load level  Technology  Technology variation wrt its mean value [MW]
 ============  ==========  ==========  ==========  ================================================
 
-File ``oT_Result_FlexibilityESSTechnology.csv``
+File ``oT_Result_FlexibilityTechnologyESS.csv``
 
 ============  ==========  ==========  ==========  ================================================
 Identifier    Identifier  Identifier  Header      Description
