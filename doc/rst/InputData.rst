@@ -115,18 +115,20 @@ Parameters
 ----------
 A description of the system parameters included in the file ``oT_Data_Parameter.csv`` follows:
 
-====================  =============================================================================================================  ================
+====================  =============================================================================================================  =========
 File                  Description                                                                              
-====================  =============================================================================================================  ================
+====================  =============================================================================================================  =========
 ENSCost               Cost of energy not served. Cost of load curtailment. Value of Lost Load (VoLL)                                 €/MWh   
 PNSCost               Cost of power not served associated with the deficit in operating reserve by load level                        €/MW   
 CO2Cost               Cost of CO2 emissions                                                                                          €/t CO2
 UpReserveActivation   Upward   reserve activation (proportion of upward   operating reserve deployed to produce energy)              p.u.
 DwReserveActivation   Downward reserve activation (proportion of downward operating reserve deployed to produce energy)              p.u.
+MinRatioDwUp          Minimum ratio downward to upward operating reserves                                                            p.u.
+MaxRatioDwUp          Maximum ratio downward to upward operating reserves                                                            p.u.
 Sbase                 Base power used in the DCPF                                                                                    MW
 ReferenceNode         Reference node used in the DCPF
 TimeStep              Duration of the time step for the load levels (hourly, bi-hourly, trihourly, etc.)                             h
-====================  =============================================================================================================  ================
+====================  =============================================================================================================  =========
 
 A time step greater than one hour it is a convenient way to reduce the load levels of the time scope. The moving average of the demand, upward/downward operating reserves, variable generation/consumption/storage and ESS energy inflows/outflows
 over the time step load levels is assigned to active load levels (e.g., the mean value of the three hours is associated to the third hour in a trihourly time step).
@@ -244,6 +246,7 @@ Node                  Name of the node where generator is located. If left empty
 Technology            Technology of the generator (nuclear, coal, CCGT, OCGT, ESS, solar, wind, biomass, etc.)
 MutuallyExclusive     Mutually exclusive generator. Only exclusion in one direction is needed
 BinaryCommitment      Binary unit commitment decision                                                                                      Yes/No
+OperatingReserve      Contribution to operating reserve                                                                                    Yes/No
 StorageType           Storage type based on storage capacity (daily, weekly, monthly, etc.)                                                Daily/Weekly/Monthly
 OutflowsType          Outflows type based on the demand extracted from the storage (hourly, daily, weekly, monthly, yearly, etc.)          Hourly/Daily/Weekly/Monthly/Yearly
 MustRun               Must-run unit                                                                                                        Yes/No
@@ -287,8 +290,8 @@ the inventory of weekly/monthly storage is fixed at the end of the year.
 The initial storage of the ESSs is also fixed at the beginning and end of each stage. For example, the initial storage level is set for the hour 8736 in case of a single stage or for the hours 4368 and 4369
 (end of the first stage and beginning of the second stage) in case of two stages, each with 4368 hours.
 
-A generator with operation cost (sum of the fuel and emission cost, excluding O&M cost) > 0 is considered a thermal unit. If the unit has no operation cost and its maximum storage = 0,
-it is considered a renewable unit. If its maximum storage is > 0 is considered an ESS.
+A generator with operation cost (sum of the fuel and emission cost, excluding O&M cost) > 0 is considered a non-renewable unit. If the unit has no operation cost and its maximum storage = 0,
+it is considered a renewable unit. If its maximum storage is > 0, with or without operation cost, is considered an ESS.
 
 Must-run non-renewable units are always committed, i.e., their commitment decision is equal to 1. All must-run units are forced to produce at least their minimum output.
 

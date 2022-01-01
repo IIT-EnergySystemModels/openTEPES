@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - December 28, 2021
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - December 31, 2021
 """
 
 import time
@@ -131,6 +131,8 @@ def InputData(DirName, CaseName, mTEPES):
     pCO2Cost             = dfParameter['CO2Cost'            ][0]                                                                          # cost of CO2 emission                [EUR/t CO2]
     pUpReserveActivation = dfParameter['UpReserveActivation'][0]                                                                          # upward   reserve activation         [p.u.]
     pDwReserveActivation = dfParameter['DwReserveActivation'][0]                                                                          # downward reserve activation         [p.u.]
+    pMinRatioDwUp        = dfParameter['MinRatioDwUp'       ][0]                                                                          # minimum ratio down up operating reserves [p.u.]
+    pMaxRatioDwUp        = dfParameter['MaxRatioDwUp'       ][0]                                                                          # maximum ratio down up operating reserves [p.u.]
     pSBase               = dfParameter['SBase'              ][0] * 1e-3                                                                   # base power                          [GW]
     pReferenceNode       = dfParameter['ReferenceNode'      ][0]                                                                          # reference node
     pTimeStep            = dfParameter['TimeStep'           ][0].astype('int')                                                            # duration of the unit time step      [h]
@@ -191,9 +193,10 @@ def InputData(DirName, CaseName, mTEPES):
     pGenToNode          = dfGeneration  ['Node'                  ]                                                                            # generator location in node
     pGenToTechnology    = dfGeneration  ['Technology'            ]                                                                            # generator association to technology
     pGenToExclusiveGen  = dfGeneration  ['MutuallyExclusive'     ]                                                                            # mutually exclusive generator
-    pIndBinUnitInvest   = dfGeneration  ['BinaryInvestment'      ]                                                                            # binary unit investment      decision        [Yes]
+    pIndBinUnitInvest   = dfGeneration  ['BinaryInvestment'      ]                                                                            # binary unit investment decision             [Yes]
     pIndBinUnitRetire   = dfGeneration  ['BinaryRetirement'      ]                                                                            # binary unit retirement decision             [Yes]
     pIndBinUnitCommit   = dfGeneration  ['BinaryCommitment'      ]                                                                            # binary unit commitment decision             [Yes]
+    pIndOperReserve     = dfGeneration  ['OperatingReserve'      ]                                                                            # contribution to operating reserve           [Yes]
     pMustRun            = dfGeneration  ['MustRun'               ]                                                                            # must-run unit                               [Yes]
     pInertia            = dfGeneration  ['Inertia'               ]                                                                            # inertia constant                            [s]
     pAvailability       = dfGeneration  ['Availability'          ]                                                                            # unit availability for adequacy              [p.u.]
@@ -203,6 +206,7 @@ def InputData(DirName, CaseName, mTEPES):
     pLinearFuelCost     = dfGeneration  ['LinearTerm'            ] * 1e-3 *      dfGeneration['FuelCost']                                     # fuel     term variable cost                 [MEUR/GWh]
     pLinearOMCost       = dfGeneration  ['OMVariableCost'        ] * 1e-3                                                                     # O&M      term variable cost                 [MEUR/GWh]
     pConstantVarCost    = dfGeneration  ['ConstantTerm'          ] * 1e-6 *      dfGeneration['FuelCost']                                     # constant term variable cost                 [MEUR/h]
+    pOperReserveCost    = dfGeneration  ['OperReserveCost'       ] * 1e-3                                                                     # operating reserve      cost                 [MEUR/GW]
     pStartUpCost        = dfGeneration  ['StartUpCost'           ]                                                                            # startup  cost                               [MEUR]
     pShutDownCost       = dfGeneration  ['ShutDownCost'          ]                                                                            # shutdown cost                               [MEUR]
     pRampUp             = dfGeneration  ['RampUp'                ] * 1e-3                                                                     # ramp up   rate                              [GW/h]
@@ -330,8 +334,9 @@ def InputData(DirName, CaseName, mTEPES):
     pIndBinUnitInvest = pIndBinUnitInvest.map(idxDict)
     pIndBinUnitRetire  = pIndBinUnitRetire.map(idxDict)
     pIndBinUnitCommit = pIndBinUnitCommit.map(idxDict)
-    pIndBinLineInvest = pIndBinLineInvest.map(idxDict)
+    pIndOperReserve   = pIndOperReserve.map  (idxDict)
     pMustRun          = pMustRun.map         (idxDict)
+    pIndBinLineInvest = pIndBinLineInvest.map(idxDict)
     pIndBinLineSwitch = pIndBinLineSwitch.map(idxDict)
 
     # define AC existing  lines     non-switchable
@@ -584,6 +589,8 @@ def InputData(DirName, CaseName, mTEPES):
     mTEPES.pCO2Cost              = Param(initialize=pCO2Cost             , within=NonNegativeReals)
     mTEPES.pUpReserveActivation  = Param(initialize=pUpReserveActivation , within=NonNegativeReals)
     mTEPES.pDwReserveActivation  = Param(initialize=pDwReserveActivation , within=NonNegativeReals)
+    mTEPES.pMinRatioDwUp         = Param(initialize=pMinRatioDwUp        , within=NonNegativeReals)
+    mTEPES.pMaxRatioDwUp         = Param(initialize=pMaxRatioDwUp        , within=NonNegativeReals)
     mTEPES.pSBase                = Param(initialize=pSBase               , within=NonNegativeReals)
     mTEPES.pTimeStep             = Param(initialize=pTimeStep            , within=NonNegativeReals)
     # mTEPES.pStageDuration        = Param(initialize=pStageDuration      , within=NonNegativeReals)
@@ -618,6 +625,7 @@ def InputData(DirName, CaseName, mTEPES):
     mTEPES.pLinearVarCost        = Param(                               mTEPES.gg, initialize=pLinearVarCost.to_dict()            , within=NonNegativeReals, doc='Linear   variable cost'         )
     mTEPES.pLinearOMCost         = Param(                               mTEPES.gg, initialize=pLinearOMCost.to_dict()             , within=NonNegativeReals, doc='Linear   O&M      cost'         )
     mTEPES.pConstantVarCost      = Param(                               mTEPES.gg, initialize=pConstantVarCost.to_dict()          , within=NonNegativeReals, doc='Constant variable cost'         )
+    mTEPES.pOperReserveCost      = Param(                               mTEPES.gg, initialize=pOperReserveCost.to_dict()          , within=NonNegativeReals, doc='Operating reserve cost'         )
     mTEPES.pCO2EmissionCost      = Param(                               mTEPES.gg, initialize=pCO2EmissionCost.to_dict()          , within=NonNegativeReals, doc='CO2 Emission      cost'         )
     mTEPES.pStartUpCost          = Param(                               mTEPES.gg, initialize=pStartUpCost.to_dict()              , within=NonNegativeReals, doc='Startup  cost'                  )
     mTEPES.pShutDownCost         = Param(                               mTEPES.gg, initialize=pShutDownCost.to_dict()             , within=NonNegativeReals, doc='Shutdown cost'                  )
@@ -631,6 +639,7 @@ def InputData(DirName, CaseName, mTEPES):
     mTEPES.pIndBinUnitInvest     = Param(                               mTEPES.gg, initialize=pIndBinUnitInvest.to_dict()         , within=Boolean         , doc='Binary investment decision'     )
     mTEPES.pIndBinUnitRetire     = Param(                               mTEPES.gg, initialize=pIndBinUnitRetire.to_dict()         , within=Boolean         , doc='Binary retirement decision'     )
     mTEPES.pIndBinUnitCommit     = Param(                               mTEPES.gg, initialize=pIndBinUnitCommit.to_dict()         , within=Boolean         , doc='Binary commitment decision'     )
+    mTEPES.pIndOperReserve       = Param(                               mTEPES.gg, initialize=pIndOperReserve.to_dict()           , within=Boolean         , doc='Indicator of operating reserve' )
     mTEPES.pEfficiency           = Param(                               mTEPES.gg, initialize=pEfficiency.to_dict()               , within=NonNegativeReals, doc='Round-trip efficiency'          )
     mTEPES.pCycleTimeStep        = Param(                               mTEPES.gg, initialize=pCycleTimeStep.to_dict()            , within=NonNegativeReals, doc='ESS Storage cycle'              )
     mTEPES.pOutflowsTimeStep     = Param(                               mTEPES.gg, initialize=pOutflowsTimeStep.to_dict()         , within=NonNegativeReals, doc='ESS Outflows cycle'             )

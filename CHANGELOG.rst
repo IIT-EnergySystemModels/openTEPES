@@ -4,6 +4,10 @@ Change Log
 - [CHANGED] Addition of the sequence of decisions and operation (TEP + transmission switching)
 - [FIXED] fixing `<https://pascua.iit.comillas.edu/aramos/openTEPES/index.html#>`_ in README.rst
 
+[4.3.0] - 2021-12-31
+--------------------
+- [CHANGED] improved representation of operating reserves
+
 [4.2.4] - 2021-12-30
 --------------------
 - [FIX] inertia constraints

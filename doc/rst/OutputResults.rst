@@ -537,6 +537,14 @@ Identifier    Identifier  Identifier  Header      Description
 Scenario      Period      Load level  Pump        Operation cost for the consumption [M€]
 ============  ==========  ==========  ==========  ==========================================
 
+File ``oT_Result_GenerationCostOperReserve.csv``
+
+============  ==========  ==========  ==========  ==============================================
+Identifier    Identifier  Identifier  Header      Description
+============  ==========  ==========  ==========  ==============================================
+Scenario      Period      Load level  Generator   Operation reserve cost for the generation [M€]
+============  ==========  ==========  ==========  ==============================================
+
 File ``oT_Result_GenerationCostEmission.csv``
 
 ============  ==========  ==========  ==========  ==========================================

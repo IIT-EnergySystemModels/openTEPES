@@ -57,12 +57,13 @@ They are written in capital letters.
 :math:`P^ω`         Probability of each scenario                          p.u.
 ==================  ====================================================  =======
 
-==============================  ========================================================  ====
+========================================  ==================================================================  ====
 **Operating reserves**                                         
-------------------------------  --------------------------------------------------------  ----
-:math:`URA, DRA`                Upward and downward reserve activation                    p.u.
-:math:`UR^ω_{pna}, DR^ω_{pna}`  Upward and downward operating reserves for each area      GW
-==============================  ========================================================  ====
+----------------------------------------  ------------------------------------------------------------------  ----
+:math:`URA, DRA`                          Upward and downward reserve activation                              p.u.
+:math:`\underline{DUR}, \overline{DUR}`   Minimum and maximum ratios downward to upward operating reserves    p.u.
+:math:`UR^ω_{pna}, DR^ω_{pna}`            Upward and downward operating reserves for each area                GW
+========================================  ==================================================================  ====
 
 ==============================  ========================================================  ====
 **Adequacy system reserve margin**
@@ -202,6 +203,12 @@ Upward and downward operating reserves provided by non-renewable generators, and
 :math:`\sum_{g \in a} ur^ω_{png} + \sum_{e \in a} ur'^ω_{pne} = UR^ω_{pna} \quad \forall ωpna`
 
 :math:`\sum_{g \in a} dr^ω_{png} + \sum_{e \in a} dr'^ω_{pne} = DR^ω_{pna} \quad \forall ωpna`
+
+Ratio between downward and upward operating reserves provided by non-renewable generators, and ESS when charging for each area [GW] (``eReserveMinRatioDwUp``) (``eReserveMaxRatioDwUp``) (``eReserveMinRatioDwUpESS``) (``eReserveMaxRatioDwUpESS``)
+
+:math:`\underline{DUR} ur^ω_{png} \leq dr^ω_{png} \leq \overline{DUR} ur^ω_{png} \quad \forall ωpng`
+
+:math:`\underline{DUR} ur'^ω_{pne} \leq dr'^ω_{pne} \leq \overline{DUR} ur'^ω_{pne} \quad \forall ωpne`
 
 VRES units (i.e., those with linear variable cost equal to 0 and no storage capacity) do not contribute to the the operating reserves.
 
