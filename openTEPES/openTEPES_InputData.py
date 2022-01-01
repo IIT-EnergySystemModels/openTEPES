@@ -196,7 +196,7 @@ def InputData(DirName, CaseName, mTEPES):
     pIndBinUnitInvest   = dfGeneration  ['BinaryInvestment'      ]                                                                            # binary unit investment decision             [Yes]
     pIndBinUnitRetire   = dfGeneration  ['BinaryRetirement'      ]                                                                            # binary unit retirement decision             [Yes]
     pIndBinUnitCommit   = dfGeneration  ['BinaryCommitment'      ]                                                                            # binary unit commitment decision             [Yes]
-    pIndOperReserve     = dfGeneration  ['OperatingReserve'      ]                                                                            # contribution to operating reserve           [Yes]
+    pIndOperReserve     = dfGeneration  ['NoOperatingReserve'    ]                                                                            # no contribution to operating reserve        [Yes]
     pMustRun            = dfGeneration  ['MustRun'               ]                                                                            # must-run unit                               [Yes]
     pInertia            = dfGeneration  ['Inertia'               ]                                                                            # inertia constant                            [s]
     pAvailability       = dfGeneration  ['Availability'          ]                                                                            # unit availability for adequacy              [p.u.]
