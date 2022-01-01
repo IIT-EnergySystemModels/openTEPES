@@ -206,9 +206,9 @@ Upward and downward operating reserves provided by non-renewable generators, and
 
 Ratio between downward and upward operating reserves provided by non-renewable generators, and ESS when charging for each area [GW] (``eReserveMinRatioDwUp``) (``eReserveMaxRatioDwUp``) (``eRsrvMinRatioDwUpESS``) (``eRsrvMaxRatioDwUpESS``)
 
-:math:`\underline{DtUR} ur^ω_{png} \leq dr^ω_{png} \leq \overline{DtUR} ur^ω_{png} \quad \forall ωpng`
+:math:`\underline{DtUR} \, ur^ω_{png} \leq dr^ω_{png} \leq \overline{DtUR} \, ur^ω_{png} \quad \forall ωpng`
 
-:math:`\underline{DtUR} ur'^ω_{pne} \leq dr'^ω_{pne} \leq \overline{DtUR} ur'^ω_{pne} \quad \forall ωpne`
+:math:`\underline{DtUR} \, ur'^ω_{pne} \leq dr'^ω_{pne} \leq \overline{DtUR} \, ur'^ω_{pne} \quad \forall ωpne`
 
 VRES units (i.e., those with linear variable cost equal to 0 and no storage capacity) do not contribute to the the operating reserves.
 
