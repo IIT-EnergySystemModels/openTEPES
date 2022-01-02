@@ -165,7 +165,7 @@ def GenerationOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, st):
             return OptModel.vReserveDown[sc,p,n,nr] >= OptModel.vReserveUp[sc,p,n,nr] * mTEPES.pMinRatioDwUp
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eReserveMinRatioDwUp'+st, Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, rule=eReserveMinRatioDwUp, doc='minimum ratio down to up operating reserve [GW]'))
+    setattr(OptModel, 'eReserveMinRatioDwUp_'+st, Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, rule=eReserveMinRatioDwUp, doc='minimum ratio down to up operating reserve [GW]'))
 
     if pIndLogConsole == 1:
         print('eReserveMinRatioDwUp  ... ', len(getattr(OptModel, 'eReserveMinRatioDwUp_'+st)), ' rows')
@@ -176,7 +176,7 @@ def GenerationOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, st):
             return OptModel.vReserveDown[sc,p,n,nr] <= OptModel.vReserveUp[sc,p,n,nr] * mTEPES.pMaxRatioDwUp
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eReserveMaxRatioDwUp'+st, Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, rule=eReserveMaxRatioDwUp, doc='maximum ratio down to up operating reserve [GW]'))
+    setattr(OptModel, 'eReserveMaxRatioDwUp_'+st, Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, rule=eReserveMaxRatioDwUp, doc='maximum ratio down to up operating reserve [GW]'))
 
     if pIndLogConsole == 1:
         print('eReserveMaxRatioDwUp  ... ', len(getattr(OptModel, 'eReserveMaxRatioDwUp_'+st)), ' rows')
@@ -187,7 +187,7 @@ def GenerationOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, st):
             return OptModel.vESSReserveDown[sc,p,n,es] >= OptModel.vESSReserveUp[sc,p,n,es] * mTEPES.pMinRatioDwUp
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eRsrvMinRatioDwUpESS'+st, Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es, rule=eRsrvMinRatioDwUpESS, doc='minimum ratio down to up operating reserve [GW]'))
+    setattr(OptModel, 'eRsrvMinRatioDwUpESS_'+st, Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es, rule=eRsrvMinRatioDwUpESS, doc='minimum ratio down to up operating reserve [GW]'))
 
     if pIndLogConsole == 1:
         print('eRsrvMinRatioDwUpESS  ... ', len(getattr(OptModel, 'eRsrvMinRatioDwUpESS_'+st)), ' rows')
@@ -198,7 +198,7 @@ def GenerationOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, st):
             return OptModel.vESSReserveDown[sc,p,n,es] <= OptModel.vESSReserveUp[sc,p,n,es] * mTEPES.pMaxRatioDwUp
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eRsrvMaxRatioDwUpESS'+st, Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es, rule=eRsrvMaxRatioDwUpESS, doc='maximum ratio down to up operating reserve [GW]'))
+    setattr(OptModel, 'eRsrvMaxRatioDwUpESS_'+st, Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es, rule=eRsrvMaxRatioDwUpESS, doc='maximum ratio down to up operating reserve [GW]'))
 
     if pIndLogConsole == 1:
         print('eRsrvMaxRatioDwUpESS  ... ', len(getattr(OptModel, 'eRsrvMaxRatioDwUpESS_'+st)), ' rows')
