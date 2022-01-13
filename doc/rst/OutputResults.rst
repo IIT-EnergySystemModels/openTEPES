@@ -409,11 +409,11 @@ Scenario      Period      Load level  Initial node  Final node  Circuit     Line
 
 File ``oT_Result_NetworkAngle.csv``
 
-============  ==========  ==========  ============  ============  =========  =======================
-Identifier    Identifier  Identifier  Header        Header        Header     Description
-============  ==========  ==========  ============  ============  =========  =======================
-Scenario      Period      Load level  Initial node  Final node    Circuit    Voltage angle [rad]
-============  ==========  ==========  ============  ============  =========  =======================
+============  ==========  ==========  =========  =======================
+Identifier    Identifier  Identifier  Header     Description
+============  ==========  ==========  =========  =======================
+Scenario      Period      Load level  Node       Voltage angle [rad]
+============  ==========  ==========  =========  =======================
 
 File ``oT_Result_NetworkPNS.csv``
 
