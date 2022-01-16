@@ -417,7 +417,7 @@ SwOffTime            Minimum switch-off time                                    
 
 Depending on the voltage lines are plotted with different colors (orange < 200 kV, 200 < green < 350 kV, 350 < red < 500 kV, 500 < orange < 700 kV, blue > 700 kV).
 
-If there is no data for TTCBck, i.e., TTCBck is left empty or is equal to 0, it is substituted by the TTC in the code.
+If there is no data for TTCBck, i.e., TTCBck is left empty or is equal to 0, it is substituted by the TTC in the code. Internally, all the TTC and TTCBck values below 2.5e-5 times the maximum system demand of each area will be converted into 0 by the model.
 
 Those lines with fixed cost > 0 are considered candidate and can be installed or not.
 
