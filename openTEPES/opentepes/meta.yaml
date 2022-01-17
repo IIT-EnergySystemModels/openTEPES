@@ -1,0 +1,54 @@
+{% set name = "openTEPES" %}
+{% set version = "4.3.0" %}
+
+package:
+  name: "{{ name|lower }}"
+  version: "{{ version }}"
+
+source:
+  url: "https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz"
+  sha256: 09f81bc96c577357ae5acf60c29526ed11e4dde047d18c204ddd47051b06eba0
+
+build:
+  number: 0
+  entry_points:
+    - openTEPES_Main = openTEPES:main
+  script: "{{ PYTHON }} -m pip install . -vv"
+
+requirements:
+  host:
+    - altair >=4.2.0
+    - matplotlib >=3.3.4
+    - numpy >=1.20.1
+    - pandas >=1.2.3
+    - pip
+    - psutil >=5.8.0
+    - pyomo >=5.7.3
+    - python
+  run:
+    - altair >=4.2.0
+    - matplotlib >=3.3.4
+    - numpy >=1.20.1
+    - pandas >=1.2.3
+    - psutil >=5.8.0
+    - pyomo >=5.7.3
+    - python
+
+test:
+  imports:
+    - openTEPES
+  commands:
+    - openTEPES_Main --help
+
+about:
+  home: "https://pascua.iit.comillas.edu/aramos/openTEPES/index.html"
+  license: "GNU General Public v3 or later (GPLv3+)"
+  license_family: GPL3
+  license_file: 
+  summary: "Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES)"
+  doc_url: 
+  dev_url: 
+
+extra:
+  recipe-maintainers:
+    - your-github-id-here
