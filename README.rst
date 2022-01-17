@@ -162,6 +162,13 @@ Tips
 4. If you need a nice python editor, think about using `PyCharm <https://www.jetbrains.com/pycharm/download>`_. It has many features including project management, etc.
 5. We also suggest the use of `Gurobi <https://www.gurobi.com/academia/academic-program-and-licenses/>`_ (for Academics and Researchers) as a solver to deal with MIP and LP problems instead of GLPK.
 
+Run the Tutorial
+####
+It can be run in Binder: 
+
+.. image:: https://mybinder.org/badge_logo.svg
+  :target: https://mybinder.org/v2/gh/IIT-EnergySystemModels/openTEPES-tutorial/HEAD
+
 Expected Results
 ################
 .. image:: https://raw.githubusercontent.com/IIT-EnergySystemModels/openTEPES/0a99909cb2001e43627f3df6974f400f3886e899/doc/img/oT_Map_Network_MAF2030.png
