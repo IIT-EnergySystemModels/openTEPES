@@ -26,6 +26,9 @@
    :target: https://pepy.tech/project/openTEPES
    :alt: pepy
 
+.. image:: https://mybinder.org/badge_logo.svg
+  :target: https://mybinder.org/v2/gh/IIT-EnergySystemModels/openTEPES-tutorial/HEAD
+
 **Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES)**
 
 *Simplicity and Transparency in Power Systems Planning*
@@ -161,6 +164,13 @@ Tips
 3. Using **0** or **1**, the optimization options can be activated or deactivated in **oT_Data_Option_<case>.csv**.
 4. If you need a nice python editor, think about using `PyCharm <https://www.jetbrains.com/pycharm/download>`_. It has many features including project management, etc.
 5. We also suggest the use of `Gurobi <https://www.gurobi.com/academia/academic-program-and-licenses/>`_ (for Academics and Researchers) as a solver to deal with MIP and LP problems instead of GLPK.
+
+Run the Tutorial
+####
+It can be run in Binder: 
+
+.. image:: https://mybinder.org/badge_logo.svg
+  :target: https://mybinder.org/v2/gh/IIT-EnergySystemModels/openTEPES-tutorial/HEAD
 
 Expected Results
 ################
