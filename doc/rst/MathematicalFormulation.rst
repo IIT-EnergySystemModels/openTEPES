@@ -196,7 +196,7 @@ Balance of generation and demand at each node with ohmic losses [GW] (``eBalance
 
 System inertia for each area [s] (``eSystemInertia``)
 
-:math:`\sum_{g \in a} GI_g uc^ω_{png} \geq SI^ω_{pna} \quad \forall ωpna`
+:math:`\sum_{g \in a} \frac{GI_g}{\overline{GP}_g} gp^ω_{png} \geq SI^ω_{pna} \quad \forall ωpna`
 
 Upward and downward operating reserves provided by non-renewable generators, and ESS when charging for each area [GW] (``eOperReserveUp``) (``eOperReserveDw``)
 

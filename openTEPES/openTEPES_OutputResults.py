@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - January 03, 2022
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - January 12, 2022
 """
 
 import time
@@ -664,9 +664,11 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES):
                 OutputToGenRev       = pd.Series(data=[OptModel.dual[getattr(OptModel, 'eBalance_'+st)[sc,p,n,nd]]/mTEPES.pScenProb[sc] * OptModel.vTotalOutput   [sc,p,n,gc]() for sc,p,n,nd,gc in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.n2g if gc in mTEPES.gc], index=pd.MultiIndex.from_tuples([(sc,p,n,nd,gc) for sc,p,n,nd,gc in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.n2g if gc in mTEPES.gc]))
                 OutputChargeRevESS   = pd.Series(data=[OptModel.dual[getattr(OptModel, 'eBalance_'+st)[sc,p,n,nd]]/mTEPES.pScenProb[sc] * OptModel.vESSTotalCharge[sc,p,n,gc]() for sc,p,n,nd,gc in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.n2g if gc in mTEPES.gc for ot in mTEPES.ot if (ot,gc) in mTEPES.t2g], index=pd.MultiIndex.from_tuples([(sc,p,n,nd,gc) for sc,p,n,nd,gc in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.n2g if gc in mTEPES.gc for ot in mTEPES.ot if (ot,gc) in mTEPES.t2g]))
                 OutputChargeRevRES   = pd.Series(data=[OptModel.dual[getattr(OptModel, 'eBalance_'+st)[sc,p,n,nd]]/mTEPES.pScenProb[sc] * 0 for sc,p,n,nd,gc in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.n2g if gc in mTEPES.gc for rt in mTEPES.rt if (rt,gc) in mTEPES.t2g], index=pd.MultiIndex.from_tuples([(sc,p,n,nd,gc) for sc,p,n,nd,gc in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.n2g if gc in mTEPES.gc for rt in mTEPES.rt if (rt,gc) in mTEPES.t2g]))
+                OutputChargeRevThr   = pd.Series(data=[OptModel.dual[getattr(OptModel, 'eBalance_'+st)[sc,p,n,nd]]/mTEPES.pScenProb[sc] * 0 for sc,p,n,nd,gc in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.n2g if gc in mTEPES.gc for ot in mTEPES.ot if (ot,gc) not in mTEPES.t2g], index=pd.MultiIndex.from_tuples([(sc,p,n,nd,gc) for sc,p,n,nd,gc in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.n2g if gc in mTEPES.gc for ot in mTEPES.ot if (ot,gc) not in mTEPES.t2g]))
             GenRev.append   (OutputToGenRev    )
             ChargeRev.append(OutputChargeRevESS)
             ChargeRev.append(OutputChargeRevRES)
+            ChargeRev.append(OutputChargeRevThr)
         mTEPES.del_component(mTEPES.n)
         mTEPES.n = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.pDuration)
         GenRev    = pd.concat(GenRev)
