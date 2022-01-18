@@ -89,7 +89,7 @@ Miniconda (recommended)
 2. **Packages and Solver**:
 
    1. Launch a new command prompt (Windows: Win+R, type "cmd", Enter)
-   2. Install `GLPK <http://winglpk.sourceforge.net/>`_ and `Cartopy <https://pypi.org/project/Cartopy/>`_ via conda by ``conda install -c conda-forge glpk cartopy``
+   2. Install `GLPK <https://www.gnu.org/software/glpk/>`_ and `Cartopy <https://pypi.org/project/Cartopy/>`_ via conda by ``conda install -c conda-forge glpk cartopy``
    3. Install openTEPES via pip by ``pip install openTEPES``
 
 Continue at `Get Started <#get-started>`_ and see the `Tips <#tips>`_.
