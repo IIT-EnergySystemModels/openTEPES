@@ -166,7 +166,8 @@ Tips
 5. We also suggest the use of `Gurobi <https://www.gurobi.com/academia/academic-program-and-licenses/>`_ (for Academics and Researchers) as a solver to deal with MIP and LP problems instead of GLPK.
 
 Run the Tutorial
-####
+################
+
 It can be run in Binder: 
 
 .. image:: https://mybinder.org/badge_logo.svg
