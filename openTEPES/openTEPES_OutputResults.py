@@ -62,7 +62,7 @@ def AreaPlots(scenario, period, df, Category, X, Y, OperationType):
 
 
 # Definition of Circle plots
-def CirclePlots(scenario, period, df, Category, X, Y, OperationType):
+def LinePlots(scenario, period, df, Category, X, Y, OperationType):
     Results = df.loc[scenario,period,:,:]
     Results = Results.reset_index().rename(columns={'level_0': X, 'level_1': Category, 0: Y})
     # # Change the format of the LoadLevel
@@ -263,7 +263,13 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES):
 
     OutputToFile = pd.Series(data=[sum(OptModel.vTotalOutput[sc,p,n,g]() for g in mTEPES.g if (gt,g) in mTEPES.t2g)*1e3 for sc,p,n,gt in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.gt], index=pd.MultiIndex.from_tuples(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.gt))
     OutputToFile.to_frame(name='MW' ).reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_TechnologyOutput_'+CaseName+'.csv', sep=',')
-
+    
+    TechnologyOutput = OutputToFile.loc[:,:,:,:]
+    
+    for sc,p in mTEPES.sc*mTEPES.p:
+        chart = AreaPlots(sc, p, TechnologyOutput, 'Technology', 'LoadLevel', 'MW', 'sum')
+        chart.save(_path+'/oT_Plot_TechnologyOutput_'+sc+'_'+p+'_'+CaseName+'.html', embed_options={'renderer': 'svg'})
+    
     OutputToFile = pd.Series(data=[OptModel.vTotalOutput[sc,p,n,g]()*mTEPES.pDuration[n]*mTEPES.pLoadLevelWeight[n]() for sc,p,n,g in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.g ], index=pd.MultiIndex.from_tuples(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.g ))
     OutputToFile = pd.Series(data=[sum(OutputToFile[sc,p,n,g] for g in mTEPES.g if (gt,g) in mTEPES.t2g) for sc,p,n,gt in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.gt], index=pd.MultiIndex.from_tuples(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.gt))
     OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='GWh').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_TechnologyEnergy_'+CaseName+'.csv', sep=',')
@@ -492,7 +498,7 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES):
     LSRMC = OutputToFile.loc[:,:]
 
     for sc,p in mTEPES.sc*mTEPES.p:
-        chart = CirclePlots(sc, p, LSRMC, 'Node', 'LoadLevel', 'EUR/MWh', 'average')
+        chart = LinePlots(sc, p, LSRMC, 'Node', 'LoadLevel', 'EUR/MWh', 'average')
         chart.save(_path+'/oT_Plot_LSRMC_'+sc+'_'+p+'_'+CaseName+'.html', embed_options={'renderer': 'svg'})
 
     if sum(mTEPES.pReserveMargin[ar] for ar in mTEPES.ar):
@@ -515,7 +521,7 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES):
         MarginalUpOperatingReserve = OutputToFile.loc[:,:]
 
         for sc,p in mTEPES.sc*mTEPES.p:
-            chart = CirclePlots(sc, p, MarginalUpOperatingReserve, 'Area', 'LoadLevel', 'EUR/MW', 'sum')
+            chart = LinePlots(sc, p, MarginalUpOperatingReserve, 'Area', 'LoadLevel', 'EUR/MW', 'sum')
             chart.save(_path+'/oT_Plot_MarginalOperatingReserveUpward_'+sc+'_'+p+'_'+CaseName+'.html', embed_options={'renderer': 'svg'})
 
     #%% outputting the down operating reserve marginal
@@ -535,7 +541,7 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES):
         MarginalDwOperatingReserve = OutputToFile.loc[:,:]
 
         for sc,p in mTEPES.sc*mTEPES.p:
-            chart = CirclePlots(sc, p, MarginalDwOperatingReserve, 'Area', 'LoadLevel', 'EUR/MW', 'sum')
+            chart = LinePlots(sc, p, MarginalDwOperatingReserve, 'Area', 'LoadLevel', 'EUR/MW', 'sum')
             chart.save(_path+'/oT_Plot_MarginalOperatingReserveDownward_'+sc+'_'+p+'_'+CaseName+'.html', embed_options={'renderer': 'svg'})
 
     #%% outputting the water values
@@ -555,7 +561,7 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES):
         WaterValue = OutputToFile.loc[:,:]
 
         for sc,p in mTEPES.sc*mTEPES.p:
-            chart = CirclePlots(sc, p, WaterValue, 'Unit', 'LoadLevel', 'EUR/MWh', 'average')
+            chart = LinePlots(sc, p, WaterValue, 'Unit', 'LoadLevel', 'EUR/MWh', 'average')
             chart.save(_path+'/oT_Plot_WaterValue_'+sc+'_'+p+'_'+CaseName+'.html', embed_options={'renderer': 'svg'})
 
     #%% Reduced cost for NetworkInvestment
