@@ -14,15 +14,30 @@ from .openTEPES_ProblemSolving   import ProblemSolving
 from .openTEPES_OutputResults    import InvestmentResults, GenerationOperationResults, ESSOperationResults, FlexibilityResults, NetworkOperationResults, MarginalResults, EconomicResults, NetworkMapResults
 
 
-def openTEPES_run(DirName, CaseName, SolverName):
+def openTEPES_run(DirName, CaseName, SolverName, pIndLogConsole):
 
     InitialTime = time.time()
     _path = os.path.join(DirName, CaseName)
 
+    #%% replacing string values by numerical values
+    idxDict = dict()
+    idxDict[0    ] = 0
+    idxDict[0.0  ] = 0
+    idxDict['No' ] = 0
+    idxDict['NO' ] = 0
+    idxDict['no' ] = 0
+    idxDict['N'  ] = 0
+    idxDict['n'  ] = 0
+    idxDict['Yes'] = 1
+    idxDict['YES'] = 1
+    idxDict['yes'] = 1
+    idxDict['Y'  ] = 1
+    idxDict['y'  ] = 1
+
     #%% model declaration
     mTEPES = ConcreteModel('Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.3.0 - December 31, 2021')
 
-    pIndLogConsole = 1
+    pIndLogConsole = pIndLogConsole.map(idxDict)
 
     # Define sets and parameters
     InputData(DirName, CaseName, mTEPES, pIndLogConsole)
