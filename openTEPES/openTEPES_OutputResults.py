@@ -787,6 +787,7 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES):
 def NetworkMapResults(DirName, CaseName, OptModel, mTEPES):
     # %% plotting the network in a map
     _path = os.path.join(DirName, CaseName)
+    DIR   = os.path.dirname(__file__)
     StartTime = time.time()
 
     # Sub functions
@@ -910,7 +911,7 @@ def NetworkMapResults(DirName, CaseName, OptModel, mTEPES):
         pos_dict[iata] = (x[index], y[index])
 
     # Setting up the figure
-    token = open("erikfilias.mapbox_token").read()
+    token = open(DIR + '/erikfilias.mapbox_token').read()
 
     fig = go.Figure()
 
