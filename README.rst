@@ -167,7 +167,8 @@ Tips
 
 Run the Tutorial
 ####
-It can be run in Binder: 
+
+It can be run in Binder:
 
 .. image:: https://mybinder.org/badge_logo.svg
   :target: https://mybinder.org/v2/gh/IIT-EnergySystemModels/openTEPES-tutorial/HEAD
