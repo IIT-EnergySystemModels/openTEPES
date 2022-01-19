@@ -65,7 +65,7 @@
 # make it effectively proprietary.  To prevent this, the GPL assures that
 # patents cannot be used to render the program non-free.
 
-# Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.3.0 - December 31, 2021
+# Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.3.1 - January 19, 2021
 # simplicity and transparency in power systems planning
 
 # Developed by
@@ -93,10 +93,13 @@ parser = argparse.ArgumentParser(description='Introducing main parameters...')
 parser.add_argument('--case',   type=str, default=None)
 parser.add_argument('--dir',    type=str, default=None)
 parser.add_argument('--solver', type=str, default=None)
+parser.add_argument('--log', type=str, default=None)
 
 DIR    = os.path.dirname(__file__)
 CASE   = '9n'
 SOLVER = 'glpk'
+LOG = 'Yes'
+
 
 def main():
     args = parser.parse_args()
@@ -112,13 +115,17 @@ def main():
         args.solver = input('Input Solver Name (Default {}): '.format(SOLVER))
         if args.solver == '':
             args.solver = SOLVER
+    if args.log is None:
+        args.log = input('Would you like to show all the logs? (Default {}): '.format(LOG))
+        if args.log == '':
+            args.log = LOG
     print(args.case)
     print(args.dir)
     print(args.solver)
     import sys
     print(sys.argv)
     print(args)
-    openTEPES_run(args.dir, args.case, args.solver)
+    openTEPES_run(args.dir, args.case, args.solver, args.log)
     sys.exit('End of the run                         ...')
 
 if __name__ == '__main__':

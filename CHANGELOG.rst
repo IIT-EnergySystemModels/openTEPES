@@ -4,6 +4,11 @@ Change Log
 - [CHANGED] Addition of the sequence of decisions and operation (TEP + transmission switching)
 - [FIXED] fixing `<https://pascua.iit.comillas.edu/aramos/openTEPES/index.html#>`_ in README.rst
 
+[4.3.1] - 2022-01-19
+--------------------
+- [CHANGED] improved network marp representation in html
+- [CHANGED] console log as option in input data
+
 [4.3.0] - 2021-12-31
 --------------------
 - [CHANGED] improved representation of operating reserves
