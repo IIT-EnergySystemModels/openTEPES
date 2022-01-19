@@ -899,7 +899,7 @@ def NetworkMapResults(DirName, CaseName, OptModel, mTEPES):
 
     sc = list(mTEPES.sc)[0]
     p = list(mTEPES.p)[0]
-    n = list(mTEPES.n)[mTEPES.pTimeStep()]
+    n = list(mTEPES.n)[0]
 
     loc_df, line_df = oT_selecting_data(sc, p, n)
 
