@@ -41,7 +41,7 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../openTEPES_PRO/README.rst" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.detected.package.tslint" value="true" />
     <property name="node.js.path.for.package.eslint" value="project" />
@@ -49,7 +49,7 @@
     <property name="node.js.selected.package.eslint" value="(autodetect)" />
     <property name="node.js.selected.package.tslint" value="(autodetect)" />
     <property name="settings.editor.selected.configurable" value="editor.preferences.fonts.default" />
-    <property name="two.files.diff.last.used.file" value="$PROJECT_DIR$/../openTEPES_PRO/openTEPES/openTEPES_Modules/openTEPES_ModelFormulation.py" />
+    <property name="two.files.diff.last.used.file" value="$PROJECT_DIR$/../openTEPES_PRO/README.rst" />
   </component>
   <component name="RunManager" selected="Python.openTEPES_Main">
     <configuration default="true" type="PythonConfigurationType" factoryName="Python">
@@ -247,6 +247,7 @@
       <workItem from="1635765244950" duration="1238000" />
       <workItem from="1635782917153" duration="2000" />
       <workItem from="1636708980760" duration="51000" />
+      <workItem from="1642609641434" duration="301000" />
     </task>
     <servers />
   </component>
