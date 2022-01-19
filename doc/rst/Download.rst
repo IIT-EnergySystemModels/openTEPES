@@ -16,7 +16,7 @@ Besides, it also requires the following packages:
 
 Cases
 -----
-Here, you have the input files of a `small case study of 9 nodes <https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/9n>`_, another one like a `small Spanish system <https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/sSEP>`_ and a `modified RTS24 case study <https://pascua.iit.comillas.edu/aramos/RTS24.zip>`_.
+Here, you have the input files of a `small case study of 9 nodes <https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/9n>`_, another one like a `small Spanish system <https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/sSEP>`_ and a `modified RTS24 case study <https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/RTS24>`_.
 
 Code
 ----
