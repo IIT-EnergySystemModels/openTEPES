@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - January 12, 2022
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - January 19, 2022
 """
 
 import time
@@ -811,13 +811,13 @@ def NetworkMapResults(DirName, CaseName, OptModel, mTEPES):
 
         loc_df = pd.Series(data=[mTEPES.pNodeLat[i] for i in mTEPES.nd], index=mTEPES.nd).to_frame(name='Lat')
         loc_df['Lon'   ] =  0.0
-        loc_df['Node'  ] =  0.0
+        loc_df['Zone'  ] =  0.0
         loc_df['Demand'] =  0.0
         loc_df['Size'  ] = 15.0
 
-        for nd, zn in mTEPES.ndzn:
+        for nd,zn in mTEPES.ndzn:
             loc_df['Lon'   ][nd] = mTEPES.pNodeLon[nd]
-            loc_df['Node'  ][nd] = nd
+            loc_df['Zone'  ][nd] = zn
             loc_df['Demand'][nd] = mTEPES.pDemand[sc,p,n,nd]*1e3
 
         loc_df = loc_df.reset_index().rename(columns={'Type': 'Scenario'}, inplace=False)
@@ -916,7 +916,7 @@ def NetworkMapResults(DirName, CaseName, OptModel, mTEPES):
     fig = go.Figure()
 
     # Add nodes
-    fig.add_trace(go.Scattermapbox(lat=loc_df['Lat'], lon=loc_df['Lon'], mode='markers', marker=go.scattermapbox.Marker(size=loc_df['Size']*10, sizeref=1.1, sizemode='area', color='LightSkyBlue',), hoverinfo='text', text='<br>Node: '+loc_df['index']+'<br>[Lon, Lat]: '+'('+loc_df['Lon'].astype(str)+', '+loc_df['Lat'].astype(str)+')'+'<br>Node: '+loc_df['Node']+'<br>Demand: '+loc_df['Demand'].astype(str)+' MW',))
+    fig.add_trace(go.Scattermapbox(lat=loc_df['Lat'], lon=loc_df['Lon'], mode='markers', marker=go.scattermapbox.Marker(size=loc_df['Size']*10, sizeref=1.1, sizemode='area', color='LightSkyBlue',), hoverinfo='text', text='<br>Zone: '+loc_df['index']+'<br>[Lon, Lat]: '+'('+loc_df['Lon'].astype(str)+', '+loc_df['Lat'].astype(str)+')'+'<br>Zone: '+loc_df['Zone']+'<br>Demand: '+loc_df['Demand'].astype(str)+' MW',))
 
     # Add edges
     for ni, nf, cc in mTEPES.la:
