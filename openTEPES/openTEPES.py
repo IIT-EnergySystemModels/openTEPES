@@ -37,7 +37,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndLogConsole):
     #%% model declaration
     mTEPES = ConcreteModel('Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.3.0 - December 31, 2021')
 
-    pIndLogConsole = pIndLogConsole.map(idxDict)
+    pIndLogConsole = [j for i,j in idxDict.items() if i == pIndLogConsole]
 
     # Define sets and parameters
     InputData(DirName, CaseName, mTEPES, pIndLogConsole)
