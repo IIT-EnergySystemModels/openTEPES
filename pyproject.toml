@@ -18,6 +18,8 @@ requires = ["pyomo>=5.7.3",
   "numpy>=1.20.1",
   "pandas>=1.2.3",
   "altair>=4.2.0",
+  "plotly>=5.1.0",
+  "colour>=0.1.5",
   "psutil>=5.8.0"]
 
 [tool.flit.scripts]
