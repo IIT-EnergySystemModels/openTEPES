@@ -911,7 +911,7 @@ def NetworkMapResults(DirName, CaseName, OptModel, mTEPES):
         pos_dict[iata] = (x[index], y[index])
 
     # Setting up the figure
-    token = open(DIR + '/erikfilias.mapbox_token').read()
+    token = open(DIR + '/openTEPES.mapbox_token').read()
 
     fig = go.Figure()
 
