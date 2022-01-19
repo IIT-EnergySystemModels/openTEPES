@@ -6,9 +6,12 @@ import time
 import os
 import pandas as pd
 import altair as alt
-from   collections   import defaultdict
+import plotly.io as pio
+import plotly.graph_objs as go
 import matplotlib.pyplot as plt
+from   collections   import defaultdict
 from   pyomo.environ import Set
+from   colour        import Color
 
 
 # Definition of Pie plots
@@ -782,90 +785,151 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES):
 
 
 def NetworkMapResults(DirName, CaseName, OptModel, mTEPES):
-    #%% plotting the network in a map
+    # %% plotting the network in a map
     _path = os.path.join(DirName, CaseName)
     StartTime = time.time()
 
-    import cartopy.crs          as ccrs
-    import cartopy.io.img_tiles as cimgt
-    import cartopy.feature      as cfeature
-    from matplotlib.transforms import offset_copy
+    # Sub functions
+    mTEPES.del_component(mTEPES.sc)
+    mTEPES.del_component(mTEPES.p )
+    mTEPES.del_component(mTEPES.st)
+    mTEPES.del_component(mTEPES.n )
+    mTEPES.sc = Set(initialize=mTEPES.scc, ordered=True, doc='scenarios',   filter=lambda mTEPES,scc: scc in mTEPES.scc and mTEPES.pScenProb   [scc])
+    mTEPES.p  = Set(initialize=mTEPES.pp,  ordered=True, doc='periods',     filter=lambda mTEPES,pp : pp                                            )
+    mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in mTEPES.stt and mTEPES.pStageWeight[stt] and sum(1 for (stt, nn) in mTEPES.s2n))
+    mTEPES.n  = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in                mTEPES.pDuration        )
 
-    # Create a Stamen terrain background instance.
-    stamen_terrain = cimgt.Stamen('terrain-background')
+    def oT_make_series(_var, _sets, _factor):
+        return pd.Series(data=[_var[sc, p, n, ni, nf, cc]()*_factor for sc, p, n, ni, nf, cc in _sets],
+                         index=pd.MultiIndex.from_tuples(list(_sets)))
 
-    fig = plt.figure()
 
-    # Create a GeoAxes in the tile's projection.
-    ax = fig.add_subplot(1, 1, 1, projection=stamen_terrain.crs)
+    def oT_selecting_data(sc, p, n):
+        # Nodes data
+        pio.renderers.default = 'chrome'
 
-    # Limit the extent of the map to a small longitude/latitude range.
-    ax.set_extent((min(mTEPES.pNodeLon.values()) - 2, max(mTEPES.pNodeLon.values()) + 2,
-                   min(mTEPES.pNodeLat.values()) - 2, max(mTEPES.pNodeLat.values()) + 2), crs=ccrs.Geodetic())
+        loc_df = pd.Series(data=[mTEPES.pNodeLat[i] for i in mTEPES.nd], index=mTEPES.nd).to_frame(name='Lat')
+        loc_df['Lon'] = 0.0
+        loc_df['Zone'] = 0.0
+        loc_df['Demand'] = 0.0
+        loc_df['Size'] = 15.0
 
-    ax.add_feature(cfeature.BORDERS, linewidth=1  )
-    ax.add_feature(cfeature.STATES,  linewidth=0.1)
-    # Add the Stamen data at zoom level 8.
-    ax.add_image(stamen_terrain, 8)
+        for nd, zn in mTEPES.ndzn:
+            loc_df['Lon'][nd]  = mTEPES.pNodeLon[nd]
+            loc_df['Zone'][nd] = zn
+            loc_df['Demand'][nd] = mTEPES.pDemand[sc, p, n, nd]*1e3
 
-    # Use the cartopy interface to create a matplotlib transform object
-    # for the Geodetic coordinate system. We will use this along with
-    # matplotlib's offset_copy function to define a coordinate system which
-    # translates the text by 25 pixels to the left.
-    geodetic_transform = ccrs.Geodetic()._as_mpl_transform(ax)
-    text_transform = offset_copy(geodetic_transform, units='dots', x=-10)
+        loc_df = loc_df.reset_index().rename(columns={'Type': 'Scenario'}, inplace=False)
 
-    # node name
-    for nd in mTEPES.nd:
-        # plt.annotate(nd, [mTEPES.pNodeLon[nd], mTEPES.pNodeLat[nd]])
-        # Add text 25 pixels to the left of each node.
-        ax.text(mTEPES.pNodeLon[nd], mTEPES.pNodeLat[nd], nd, fontsize=8, verticalalignment='center', horizontalalignment='right', transform=text_transform, bbox=dict(facecolor='sandybrown', alpha=0.5, boxstyle='round'))
+        # Edges data
+        OutputToFile = oT_make_series(OptModel.vFlow, mTEPES.sc * mTEPES.p * mTEPES.n * mTEPES.la, 1e3)
+        OutputToFile.index.names = ['Scenario', 'Period', 'LoadLevel', 'InitialNode', 'FinalNode', 'Circuit']
+        OutputToFile = OutputToFile.to_frame(name='MW')
 
-    #%% colors of the lines according to the ENTSO-E color code
-    # existing lines
-    for ni,nf,cc in mTEPES.le:
-        if (ni,nf,cc) in mTEPES.lea:
-            if mTEPES.pLineVoltage[ni,nf,cc] > 700 and mTEPES.pLineVoltage[ni,nf,cc] <= 900:
-                ax.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='blue'   , linewidth=2  , marker='o', linestyle='solid', transform=ccrs.PlateCarree())
-            if mTEPES.pLineVoltage[ni,nf,cc] > 500 and mTEPES.pLineVoltage[ni,nf,cc] <= 700:
-                ax.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='#ff8000', linewidth=2  , marker='o', linestyle='solid', transform=ccrs.PlateCarree())
-            if mTEPES.pLineVoltage[ni,nf,cc] > 350 and mTEPES.pLineVoltage[ni,nf,cc] <= 500:
-                ax.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='red'    , linewidth=1  , marker='o', linestyle='solid', transform=ccrs.PlateCarree())
-            if mTEPES.pLineVoltage[ni,nf,cc] > 290 and mTEPES.pLineVoltage[ni,nf,cc] <= 350:
-                ax.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='green'  , linewidth=0.4, marker='o', linestyle='solid', transform=ccrs.PlateCarree())
-            if mTEPES.pLineVoltage[ni,nf,cc] > 200 and mTEPES.pLineVoltage[ni,nf,cc] <= 290:
-                ax.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='green'  , linewidth=0.4, marker='o', linestyle='solid', transform=ccrs.PlateCarree())
-            if                                         mTEPES.pLineVoltage[ni,nf,cc] <= 200:
-                ax.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='#ff6300', linewidth=0.4, marker='o', linestyle='solid', transform=ccrs.PlateCarree())
-        else:
-            ax.plot    ([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='magenta', linewidth=1  , marker='o', linestyle='solid', transform=ccrs.PlateCarree())
-    # candidate lines
-    for ni,nf,cc in mTEPES.lc:
-        if (ni,nf,cc) in mTEPES.lca and OptModel.vNetworkInvest[ni,nf,cc]() > 0:
-            if mTEPES.pLineVoltage[ni,nf,cc] > 700 and mTEPES.pLineVoltage[ni,nf,cc] <= 900:
-                ax.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='blue'   , linewidth=2  , marker='o', linestyle='dashed', transform=ccrs.PlateCarree())
-            if mTEPES.pLineVoltage[ni,nf,cc] > 500 and mTEPES.pLineVoltage[ni,nf,cc] <= 700:
-                ax.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='#ff8000', linewidth=2  , marker='o', linestyle='dashed', transform=ccrs.PlateCarree())
-            if mTEPES.pLineVoltage[ni,nf,cc] > 350 and mTEPES.pLineVoltage[ni,nf,cc] <= 500:
-                ax.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='red'    , linewidth=1  , marker='o', linestyle='dashed', transform=ccrs.PlateCarree())
-            if mTEPES.pLineVoltage[ni,nf,cc] > 290 and mTEPES.pLineVoltage[ni,nf,cc] <= 350:
-                ax.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='green'  , linewidth=0.4, marker='o', linestyle='dashed', transform=ccrs.PlateCarree())
-            if mTEPES.pLineVoltage[ni,nf,cc] > 200 and mTEPES.pLineVoltage[ni,nf,cc] <= 290:
-                ax.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='green'  , linewidth=0.4, marker='o', linestyle='dashed', transform=ccrs.PlateCarree())
-            if                                         mTEPES.pLineVoltage[ni,nf,cc] <= 200:
-                ax.plot([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='#ff6300', linewidth=0.4, marker='o', linestyle='dashed', transform=ccrs.PlateCarree())
-        else:
-            ax.plot    ([mTEPES.pNodeLon[ni], mTEPES.pNodeLon[nf]], [mTEPES.pNodeLat[ni], mTEPES.pNodeLat[nf]], color='magenta', linewidth=1  , marker='o', linestyle='dashed', transform=ccrs.PlateCarree())
+        line_df = pd.Series(data=[mTEPES.pLineNTCFrw[i]*1e3 for i in mTEPES.la], index=pd.MultiIndex.from_tuples(list(mTEPES.la))).to_frame(name='NTC')
+        line_df['vFlow'] = 0.0
+        line_df['utilization'] = 0.0
+        line_df['color'] = 0.0
+        line_df['voltage'] = 0.0
+        line_df['width'] = 0.0
+        line_df['lon'] = 0.0
+        line_df['lat'] = 0.0
+        line_df['ni'] = 0.0
+        line_df['nf'] = 0.0
+        line_df['cc'] = 0.0
 
-    # # line NTC
-    # for ni,nf,cc in mTEPES.la:
-    #     ax.annotate(round(mTEPES.pLineNTC[ni,nf,cc]*1e3), [(mTEPES.pNodeLon[ni]+mTEPES.pNodeLon[nf])/2, (mTEPES.pNodeLat[ni]+mTEPES.pNodeLat[nf])/2])
+        line_df = line_df.groupby(level=[0, 1]).sum()
+        ncolors = 11
+        colors = list(Color('lightgreen').range_to(Color('darkred'), ncolors))
+        colors = ['rgb' + str(x.rgb) for x in colors]
 
-    plt.title('Network Map')
-    # # Place a legend to the right of this smaller subplot.
-    # plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
-    # plt.show()
-    plt.savefig(_path+'/oT_Plot_MapNetwork_'+CaseName+'.png', bbox_inches=None, dpi=1200)
+        for ni, nf, cc in mTEPES.la:
+            line_df['vFlow'][ni, nf] += OutputToFile['MW'][sc, p, n, ni, nf, cc]
+            line_df['utilization'][ni, nf] = abs(line_df['vFlow'][ni, nf]/line_df['NTC'][ni, nf])*100
+            line_df['lon'][ni, nf] = (mTEPES.pNodeLon[ni]+mTEPES.pNodeLon[nf]) * 0.5
+            line_df['lat'][ni, nf] = (mTEPES.pNodeLat[ni] + mTEPES.pNodeLat[nf]) * 0.5
+            line_df['ni'][ni, nf] = ni
+            line_df['nf'][ni, nf] = nf
+            line_df['cc'][ni, nf] += 1
+
+            if 0.0 <= line_df['utilization'][ni, nf] <= 10.0:
+                line_df['color'][ni, nf] = colors[0]
+            if 10.0 < line_df['utilization'][ni, nf] <= 20.0:
+                line_df['color'][ni, nf] = colors[1]
+            if 20.0 < line_df['utilization'][ni, nf] <= 30.0:
+                line_df['color'][ni, nf] = colors[2]
+            if 30.0 < line_df['utilization'][ni, nf] <= 40.0:
+                line_df['color'][ni, nf] = colors[3]
+            if 40.0 < line_df['utilization'][ni, nf] <= 50.0:
+                line_df['color'][ni, nf] = colors[4]
+            if 50.0 < line_df['utilization'][ni, nf] <= 60.0:
+                line_df['color'][ni, nf] = colors[5]
+            if 60.0 < line_df['utilization'][ni, nf] <= 70.0:
+                line_df['color'][ni, nf] = colors[6]
+            if 70.0 < line_df['utilization'][ni, nf] <= 80.0:
+                line_df['color'][ni, nf] = colors[7]
+            if 80.0 < line_df['utilization'][ni, nf] <= 90.0:
+                line_df['color'][ni, nf] = colors[8]
+            if 90.0 < line_df['utilization'][ni, nf] <= 100.0:
+                line_df['color'][ni, nf] = colors[9]
+            if 100.0 < line_df['utilization'][ni, nf]:
+                line_df['color'][ni, nf] = colors[10]
+
+            line_df['voltage'][ni, nf] = mTEPES.pLineVoltage[ni, nf, cc]
+            if 700 < line_df['voltage'][ni, nf] <= 900:
+                line_df['width'][ni, nf] = 4
+            elif 500 < line_df['voltage'][ni, nf] <= 700:
+                line_df['width'][ni, nf] = 3
+            elif 350 < line_df['voltage'][ni, nf] <= 500:
+                line_df['width'][ni, nf] = 2.5
+            elif 290 < line_df['voltage'][ni, nf] <= 350:
+                line_df['width'][ni, nf] = 2
+            elif 200 < line_df['voltage'][ni, nf] <= 290:
+                line_df['width'][ni, nf] = 1.5
+            elif 50 < line_df['voltage'][ni, nf] <= 200:
+                line_df['width'][ni, nf] = 1
+            else:
+                line_df['width'][ni, nf] = 0.5
+
+        # Rounding to decimals
+        line_df = line_df.round(decimals=2)
+
+        return loc_df, line_df
+
+    sc = list(mTEPES.sc)[0]
+    p = list(mTEPES.p)[0]
+    n = list(mTEPES.n)[mTEPES.pTimeStep()]
+
+    loc_df, line_df = oT_selecting_data(sc, p, n)
+
+    # Making the network
+    # Get node position dict
+    x, y = loc_df['Lon'].values, loc_df['Lat'].values
+    pos_dict = {}
+    for index, iata in enumerate(loc_df['index']):
+        pos_dict[iata] = (x[index], y[index])
+
+    # Setting up the figure
+    token = open("erikfilias.mapbox_token").read()
+
+    fig = go.Figure()
+
+    # Add nodes
+    fig.add_trace(go.Scattermapbox(lat=loc_df['Lat'], lon=loc_df['Lon'], mode='markers', marker=go.scattermapbox.Marker(size=loc_df['Size']*10, sizeref=1.1, sizemode="area", color='LightSkyBlue',), hoverinfo='text', text='<br>Node: ' + loc_df['index'] + '<br>[Lon, Lat]: ' + '(' + loc_df['Lon'].astype(str) + ', ' + loc_df['Lat'].astype(str) + ')' + '<br>Zone: ' + loc_df['Zone'] + '<br>Demand: ' + loc_df['Demand'].astype(str) + ' MW',))
+
+    # Add edges
+    for ni, nf, cc in mTEPES.la:
+        fig.add_trace(go.Scattermapbox(lon=[pos_dict[ni][0], pos_dict[nf][0]], lat=[pos_dict[ni][1], pos_dict[nf][1]], mode='lines+markers', marker=dict(size=0, showscale=True, colorbar={'title': 'Utilization [%]', 'titleside': 'top', 'thickness': 8, 'ticksuffix': '%'}, colorscale=[[0, 'lightgreen'], [1, 'darkred']], cmin=0, cmax=100,), line=dict(width=line_df['width'][ni, nf], color=line_df['color'][ni, nf]), opacity=1, hoverinfo='text', textposition='middle center',))
+
+    # Add legends related to the lines
+    fig.add_trace(go.Scattermapbox(lat=line_df['lat'], lon=line_df['lon'], mode='markers', marker=go.scattermapbox.Marker(size=20, sizeref=1.1, sizemode="area", color='LightSkyBlue',), opacity=0, hoverinfo='text', text='<br>Line: ' + line_df['ni'] + ' --> ' + line_df['nf'] + '<br># Of circuits: ' + line_df['cc'].astype(str) + '<br>Total NTC: ' + line_df['NTC'].astype(str) + '<br>Power flow: ' + line_df['vFlow'].astype(str) + '<br>Utilization [%]: ' + line_df['utilization'].astype(str),))
+
+    # Setting up the layout
+    fig.update_layout(title={'text': "Power Network: " + str(CaseName) + '<br>Scenario: ' + str(sc) + '; Period: ' + str(p) + '; LoadLevel: ' + str(n), 'x': 0.5, 'xanchor': 'center', 'yanchor': 'top'}, font=dict(size=14), hovermode='closest', geo=dict(projection_type='azimuthal equal area', showland=True,), mapbox=dict(style="dark", accesstoken=token, bearing=0, center=dict(lat=(loc_df['Lat'].max()+loc_df['Lat'].min())*0.5, lon=(loc_df['Lon'].max()+loc_df['Lon'].min())*0.5), pitch=0, zoom=5), showlegend=False,)
+
+    print('Saving the power grid.......status: ok')
+    # Show in browser and writing the figure
+    fig.write_html(_path + '/oT_Plot_MapNetwork_' + CaseName + '.html')
 
     PlottingNetMapsTime = time.time() - StartTime
     print('Plotting network maps                  ... ', round(PlottingNetMapsTime), 's')
