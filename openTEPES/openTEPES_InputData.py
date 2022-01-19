@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - December 31, 2021
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - January 19, 2022
 """
 
 import time
@@ -9,7 +9,7 @@ import pandas        as pd
 from   pyomo.environ import DataPortal, Set, Param, Var, Binary, NonNegativeReals, Reals, UnitInterval, Boolean, Any
 
 
-def InputData(DirName, CaseName, mTEPES):
+def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     print('Input data                             ****')
 
     _path = os.path.join(DirName, CaseName)
@@ -62,21 +62,22 @@ def InputData(DirName, CaseName, mTEPES):
     dfNetwork.fillna           (0.0, inplace=True)
 
     # show some statistics of the data
-    print('Reserve margin               \n', dfReserveMargin.describe     ())
-    print('Demand                       \n', dfDemand.describe            ())
-    print('Inertia                      \n', dfInertia.describe           ())
-    print('Upward   operating reserves  \n', dfUpOperatingReserve.describe())
-    print('Downward operating reserves  \n', dfDwOperatingReserve.describe())
-    print('Generation                   \n', dfGeneration.describe        ())
-    print('Variable minimum generation  \n', dfVariableMinPower.describe  ())
-    print('Variable maximum generation  \n', dfVariableMaxPower.describe  ())
-    print('Variable minimum consumption \n', dfVariableMinCharge.describe ())
-    print('Variable maximum consumption \n', dfVariableMaxCharge.describe ())
-    print('Variable minimum storage     \n', dfVariableMinStorage.describe())
-    print('Variable maximum storage     \n', dfVariableMaxStorage.describe())
-    print('Energy inflows               \n', dfEnergyInflows.describe     ())
-    print('Energy outflows              \n', dfEnergyOutflows.describe    ())
-    print('Network                      \n', dfNetwork.describe           ())
+    if pIndLogConsole == 1:
+        print('Reserve margin               \n', dfReserveMargin.describe     ())
+        print('Demand                       \n', dfDemand.describe            ())
+        print('Inertia                      \n', dfInertia.describe           ())
+        print('Upward   operating reserves  \n', dfUpOperatingReserve.describe())
+        print('Downward operating reserves  \n', dfDwOperatingReserve.describe())
+        print('Generation                   \n', dfGeneration.describe        ())
+        print('Variable minimum generation  \n', dfVariableMinPower.describe  ())
+        print('Variable maximum generation  \n', dfVariableMaxPower.describe  ())
+        print('Variable minimum consumption \n', dfVariableMinCharge.describe ())
+        print('Variable maximum consumption \n', dfVariableMaxCharge.describe ())
+        print('Variable minimum storage     \n', dfVariableMinStorage.describe())
+        print('Variable maximum storage     \n', dfVariableMaxStorage.describe())
+        print('Energy inflows               \n', dfEnergyInflows.describe     ())
+        print('Energy outflows              \n', dfEnergyOutflows.describe    ())
+        print('Network                      \n', dfNetwork.describe           ())
 
     #%% reading the sets
     dictSets = DataPortal()

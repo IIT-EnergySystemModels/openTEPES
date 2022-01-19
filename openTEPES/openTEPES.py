@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - December 31, 2021
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - January 19, 2022
 """
 
 import time
@@ -25,7 +25,7 @@ def openTEPES_run(DirName, CaseName, SolverName):
     pIndLogConsole = 1
 
     # Define sets and parameters
-    InputData(DirName, CaseName, mTEPES)
+    InputData(DirName, CaseName, mTEPES, pIndLogConsole)
 
     # Define variables
     SettingUpVariables(mTEPES, mTEPES)
