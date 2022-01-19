@@ -928,8 +928,7 @@ def NetworkMapResults(DirName, CaseName, OptModel, mTEPES):
     # Setting up the layout
     fig.update_layout(title={'text': "Power Network: " + str(CaseName) + '<br>Scenario: ' + str(sc) + '; Period: ' + str(p) + '; LoadLevel: ' + str(n), 'x': 0.5, 'xanchor': 'center', 'yanchor': 'top'}, font=dict(size=14), hovermode='closest', geo=dict(projection_type='azimuthal equal area', showland=True,), mapbox=dict(style="dark", accesstoken=token, bearing=0, center=dict(lat=(loc_df['Lat'].max()+loc_df['Lat'].min())*0.5, lon=(loc_df['Lon'].max()+loc_df['Lon'].min())*0.5), pitch=0, zoom=5), showlegend=False,)
 
-    print('Saving the power grid.......status: ok')
-    # Show in browser and writing the figure
+    # Saving the figure
     fig.write_html(_path + '/oT_Plot_MapNetwork_' + CaseName + '.html')
 
     PlottingNetMapsTime = time.time() - StartTime
