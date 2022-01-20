@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - December 08, 2021
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - January 20, 2021
 """
 
 import time
@@ -8,7 +8,7 @@ import psutil
 from   pyomo.opt     import SolverFactory
 from   pyomo.environ import Suffix, Set
 
-def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES):
+def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConsole):
     print('Problem solving                        ****')
     _path = os.path.join(DirName, CaseName)
     StartTime = time.time()
@@ -45,7 +45,10 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES):
             Solver.options['Crossover'        ] = -1
         OptModel.dual = Suffix(direction=Suffix.IMPORT)
         OptModel.rc   = Suffix(direction=Suffix.IMPORT)
-    SolverResults = Solver.solve(OptModel, tee=True, report_timing=True)               # tee=True displays the log of the solver
+    if pIndLogConsole == 1:
+        SolverResults = Solver.solve(OptModel, tee=True , report_timing=True )               # tee=True displays the log of the solver
+    else:
+        SolverResults = Solver.solve(OptModel, tee=False, report_timing=False)
     assert str(SolverResults.solver.termination_condition) == 'optimal'
     SolverResults.write()                                                              # summary of the solver results
 
@@ -92,7 +95,10 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES):
             Solver.options['Crossover'        ] = -1
         OptModel.dual = Suffix(direction=Suffix.IMPORT)
         OptModel.rc   = Suffix(direction=Suffix.IMPORT)
-        SolverResults = Solver.solve(OptModel, tee=True, report_timing=True, warmstart=True)   # tee=True displays the log of the solver
+        if pIndLogConsole == 1:
+            SolverResults = Solver.solve(OptModel, tee=True , report_timing=True , warmstart=True)   # tee=True displays the log of the solver
+        else:
+            SolverResults = Solver.solve(OptModel, tee=False, report_timing=False, warmstart=True)
         SolverResults.write()                                                                  # summary of the solver results
 
     SolvingTime = time.time() - StartTime
