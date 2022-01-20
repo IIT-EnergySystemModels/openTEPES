@@ -6,7 +6,7 @@ Change Log
 
 [4.3.2rc1] - 2022-01-20 - release candidate
 --------------------
-- [FIXED] Legend in nodes in the MapNetwork
+- [FIXED] Legend in nodes in the network map
 - [CHANGED] Use of the CBC as a recommended solver instead of GLPK
 - [CHANGED] Adding pIndLogConsole in openTEPES_ProblemSolving.py
 
