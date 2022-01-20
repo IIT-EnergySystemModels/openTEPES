@@ -116,7 +116,7 @@ def main():
         if args.solver == '':
             args.solver = SOLVER
     if args.log is None:
-        args.log = input('Would you like to show all the logs? (Default {}): '.format(LOG))
+        args.log = input('Would you like to write log information (seconds and rows) to console? (Default {}): '.format(LOG))
         if args.log == '':
             args.log = LOG
     print(args.case)
