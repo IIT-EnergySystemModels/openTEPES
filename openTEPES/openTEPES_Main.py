@@ -97,7 +97,7 @@ parser.add_argument('--log', type=str, default=None)
 
 DIR    = os.path.dirname(__file__)
 CASE   = '9n'
-SOLVER = 'glpk'
+SOLVER = 'cbc'
 LOG    = 'Yes'
 
 
