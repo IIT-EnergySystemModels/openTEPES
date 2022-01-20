@@ -73,7 +73,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndLogConsole):
     StartTime         = time.time()
     print('Writing LP file                        ... ', round(WritingLPFileTime), 's')
 
-    ProblemSolving(DirName, CaseName, SolverName, mTEPES, mTEPES)
+    ProblemSolving(DirName, CaseName, SolverName, mTEPES, mTEPES, pIndLogConsole)
 
     mTEPES.del_component(mTEPES.sc)
     mTEPES.del_component(mTEPES.p )
