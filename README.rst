@@ -89,7 +89,7 @@ Miniconda (recommended)
 2. **Packages and Solver**:
 
    1. Launch a new command prompt (Windows: Win+R, type "cmd", Enter)
-   2. Install `GLPK <https://www.gnu.org/software/glpk/>`_ and `Cartopy <https://pypi.org/project/Cartopy/>`_ via conda by ``conda install -c conda-forge glpk cartopy``
+   2. Install `CBC solver <https://github.com/coin-or/Cbc>`_ via conda by ``conda install -c conda-forge coincbc``
    3. Install openTEPES via pip by ``pip install openTEPES``
 
 Continue at `Get Started <#get-started>`_ and see the `Tips <#tips>`_.
@@ -111,7 +111,7 @@ As an easy option for installation, we have the free and open-source `GLPK solve
 
 CBC
 ================================
-The `CBC solver <https://github.com/coin-or/Cbc>`_ is our recommendation if you want a free and open-source solver. For Windows users, the effective way to install the CBC solver is downloading the binaries from `this link <https://www.coin-or.org/download/binary/Cbc/Cbc-2.10.5-x86_64-w64-mingw32.zip>`_, copy and paste the *cbc.exe* file to the PATH that is the "bin" directory of the Anaconda or Miniconda environment.
+The `CBC solver <https://github.com/coin-or/Cbc>`_ is our recommendation if you want a free and open-source solver. For Windows users, the effective way to install the CBC solver is downloading the binaries from `this link <https://www.coin-or.org/download/binary/Cbc/Cbc-2.10.5-x86_64-w64-mingw32.zip>`_, copy and paste the *cbc.exe* file to the PATH that is the "bin" directory of the Anaconda or Miniconda environment. It can be installed using: ``conda install -c conda-forge coincbc``.
 
 Gurobi
 ================================
