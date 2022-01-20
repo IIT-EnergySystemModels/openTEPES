@@ -12,7 +12,7 @@ Change Log
 
 [4.3.1] - 2022-01-19
 --------------------
-- [CHANGED] improved network marp representation in html
+- [CHANGED] improved network map representation in html
 - [CHANGED] console log as option in input data
 
 [4.3.0] - 2021-12-31
