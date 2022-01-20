@@ -8,6 +8,7 @@ Change Log
 --------------------
 - [FIXED] Legend in nodes in the MapNetwork
 - [CHANGED] Use of the CBC as a recommended solver instead of GLPK
+- [CHANGED] Adding pIndLogConsole in openTEPES_ProblemSolving.py
 
 [4.3.1] - 2022-01-19
 --------------------
