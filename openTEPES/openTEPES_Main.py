@@ -93,7 +93,7 @@ parser = argparse.ArgumentParser(description='Introducing main parameters...')
 parser.add_argument('--case',   type=str, default=None)
 parser.add_argument('--dir',    type=str, default=None)
 parser.add_argument('--solver', type=str, default=None)
-parser.add_argument('--log', type=str, default=None)
+parser.add_argument('--log',    type=str, default=None)
 
 DIR    = os.path.dirname(__file__)
 CASE   = '9n'
