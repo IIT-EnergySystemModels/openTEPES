@@ -3,8 +3,8 @@ Change Log
 
 [4.3.2] - 2022-01-24
 --------------------
-- [Fixed] LSRMC plot
-- [CHANGED] New condition To use Gurobi or Mosek in the ProblemSolving
+- [Fixed] Append function updated to cumulate all stages before plotting the LSRMC
+- [CHANGED] Condition updated in ProblemSolving to use Gurobi or Mosek 
 
 [4.3.2rc1] - 2022-01-20 - release candidate
 --------------------
