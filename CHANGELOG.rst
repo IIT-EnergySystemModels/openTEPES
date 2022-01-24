@@ -1,10 +1,7 @@
 Change Log
 =============
 
-- [CHANGED] Addition of the sequence of decisions and operation (TEP + transmission switching)
-- [FIXED] fixing `<https://pascua.iit.comillas.edu/aramos/openTEPES/index.html#>`_ in README.rst
-
-[4.3.1] - 2022-01-19
+[4.3.2] - 2022-01-24
 --------------------
 - [Fixed] LSRMC plot
 - [CHANGED] New condition To use Gurobi or Mosek in the ProblemSolving
