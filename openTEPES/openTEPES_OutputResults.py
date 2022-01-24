@@ -495,7 +495,7 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES):
     AppendData = pd.concat(AppendData)
     AppendData.to_frame(name='LSRMC').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='LSRMC').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_LSRMC_'+CaseName+'.csv', sep=',')
 
-    LSRMC = OutputToFile.loc[:,:]
+    LSRMC = AppendData.loc[:,:,:,:]
 
     for sc,p in mTEPES.sc*mTEPES.p:
         chart = LinePlots(sc, p, LSRMC, 'Node', 'LoadLevel', 'EUR/MWh', 'average')
