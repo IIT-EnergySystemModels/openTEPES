@@ -4,7 +4,7 @@ Change Log
 - [CHANGED] Addition of the sequence of decisions and operation (TEP + transmission switching)
 - [FIXED] fixing `<https://pascua.iit.comillas.edu/aramos/openTEPES/index.html#>`_ in README.rst
 
-[4.3.2rc1] - 2022-01-20 - release candidate
+[4.3.2] - 2022-01-24 - release candidate
 --------------------
 - [FIXED] Legend in nodes in the network map
 - [CHANGED] Use of the CBC as a recommended solver instead of GLPK
