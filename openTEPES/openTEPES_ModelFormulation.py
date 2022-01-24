@@ -39,7 +39,7 @@ def GenerationOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, st):
                                                     mTEPES.pLoadLevelWeight[n] *                       mTEPES.pOperReserveCost[nr] * OptModel.vReserveDown   [sc,p,n,nr] for nr in mTEPES.nr) +
                                                 sum(mTEPES.pLoadLevelWeight[n] *                       mTEPES.pOperReserveCost[es] * OptModel.vESSReserveUp  [sc,p,n,es]                      +
                                                     mTEPES.pLoadLevelWeight[n] *                       mTEPES.pOperReserveCost[es] * OptModel.vESSReserveDown[sc,p,n,es] for es in mTEPES.es) +
-                                                sum(mTEPES.pLoadLevelWeight[n] * mTEPES.pDuration[n] * mTEPES.pLinearOMCost   [ r] * OptModel.vTotalOutput   [sc,p,n, r] for  r in mTEPES.r ) )
+                                                sum(mTEPES.pLoadLevelWeight[n] * mTEPES.pDuration[n] * mTEPES.pLinearOMCost   [r ] * OptModel.vTotalOutput   [sc,p,n,r ] for r   in mTEPES.r ) )
     setattr(OptModel, 'eTotalGCost_'+st, Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, rule=eTotalGCost, doc='system variable generation operation cost [MEUR]'))
 
     def eTotalCCost(OptModel,sc,p,n):
