@@ -45,10 +45,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
             Solver.options['Crossover'        ] = -1
         OptModel.dual = Suffix(direction=Suffix.IMPORT)
         OptModel.rc   = Suffix(direction=Suffix.IMPORT)
-    if pIndLogConsole == 1:
-        SolverResults = Solver.solve(OptModel, tee=True , report_timing=True )               # tee=True displays the log of the solver
-    else:
-        SolverResults = Solver.solve(OptModel, tee=False, report_timing=False)
+    SolverResults = Solver.solve(OptModel, tee=True , report_timing=True )               # tee=True displays the log of the solver
     assert str(SolverResults.solver.termination_condition) == 'optimal'
     SolverResults.write()                                                              # summary of the solver results
 
@@ -95,10 +92,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
             Solver.options['Crossover'        ] = -1
         OptModel.dual = Suffix(direction=Suffix.IMPORT)
         OptModel.rc   = Suffix(direction=Suffix.IMPORT)
-        if pIndLogConsole == 1:
-            SolverResults = Solver.solve(OptModel, tee=True , report_timing=True , warmstart=True)   # tee=True displays the log of the solver
-        else:
-            SolverResults = Solver.solve(OptModel, tee=False, report_timing=False, warmstart=True)
+        SolverResults = Solver.solve(OptModel, tee=True , report_timing=True , warmstart=True)   # tee=True displays the log of the solver
         SolverResults.write()                                                                  # summary of the solver results
 
     SolvingTime = time.time() - StartTime
