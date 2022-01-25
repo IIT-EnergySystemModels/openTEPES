@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="70fc96e0-bc3b-4530-a009-091403d9cfdb" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/openTEPES/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/openTEPES/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -43,7 +43,7 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../openTEPES_PRO/README.rst" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../openTEPES_PRO/openTEPES/openTEPES_Modules/openTEPES_ModelFormulation.py" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.detected.package.tslint" value="true" />
     <property name="node.js.path.for.package.eslint" value="project" />
@@ -51,7 +51,7 @@
     <property name="node.js.selected.package.eslint" value="(autodetect)" />
     <property name="node.js.selected.package.tslint" value="(autodetect)" />
     <property name="settings.editor.selected.configurable" value="editor.preferences.fonts.default" />
-    <property name="two.files.diff.last.used.file" value="$PROJECT_DIR$/../openTEPES_PRO/README.rst" />
+    <property name="two.files.diff.last.used.file" value="$PROJECT_DIR$/../openTEPES_PRO/openTEPES/openTEPES_Modules/openTEPES_ModelFormulation.py" />
   </component>
   <component name="RunManager" selected="Python.openTEPES_Main">
     <configuration default="true" type="PythonConfigurationType" factoryName="Python">
@@ -251,7 +251,7 @@
       <workItem from="1636708980760" duration="51000" />
       <workItem from="1642609641434" duration="1559000" />
       <workItem from="1642689150134" duration="1013000" />
-      <workItem from="1643053970249" duration="302000" />
+      <workItem from="1643053970249" duration="1352000" />
     </task>
     <servers />
   </component>
