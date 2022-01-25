@@ -67,11 +67,12 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndLogConsole):
         NetworkSwitchingModelFormulation   (mTEPES, mTEPES, pIndLogConsole, st)
         NetworkOperationModelFormulation   (mTEPES, mTEPES, pIndLogConsole, st)
 
-    StartTime         = time.time()
-    mTEPES.write(_path+'/openTEPES_'+CaseName+'.lp', io_options={'symbolic_solver_labels': True})  # create lp-format file
-    WritingLPFileTime = time.time() - StartTime
-    StartTime         = time.time()
-    print('Writing LP file                        ... ', round(WritingLPFileTime), 's')
+    if pIndLogConsole == 1:
+        StartTime         = time.time()
+        mTEPES.write(_path+'/openTEPES_'+CaseName+'.lp', io_options={'symbolic_solver_labels': True})  # create lp-format file
+        WritingLPFileTime = time.time() - StartTime
+        StartTime         = time.time()
+        print('Writing LP file                        ... ', round(WritingLPFileTime), 's')
 
     ProblemSolving(DirName, CaseName, SolverName, mTEPES, mTEPES, pIndLogConsole)
 
