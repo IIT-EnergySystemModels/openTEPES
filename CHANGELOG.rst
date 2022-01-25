@@ -1,9 +1,13 @@
 Change Log
 =============
 
+[4.3.3] - 2022-01-25
+--------------------
+- [CHANGED] always present the solver log file
+
 [4.3.2] - 2022-01-24
 --------------------
-- [Fixed] Append function updated to cumulate all stages before plotting the LSRMC
+- [FIXED] Append function updated to cumulate all stages before plotting the LSRMC
 - [CHANGED] Condition updated in ProblemSolving to use Gurobi or Mosek 
 
 [4.3.2] - 2022-01-24 - release candidate
@@ -23,21 +27,21 @@ Change Log
 
 [4.2.4] - 2021-12-30
 --------------------
-- [FIX] inertia constraints
-- [FIX] typos in output results
+- [FIXED] inertia constraints
+- [FIXED] typos in output results
 - [CHANGED] introduce html plots based on Altair
 
 [4.2.3] - 2021-12-17
 --------------------
-- [FIX] plots associated to ESS technologies
+- [FIXED] plots associated to ESS technologies
 
 [4.2.2] - 2021-12-08
 --------------------
-- [FIX] assessment of the locational short-run marginal costs
+- [FIXED] assessment of the locational short-run marginal costs
 
 [4.2.1] - 2021-12-01
 --------------------
-- [FIX] assessment of the locational short-run marginal costs
+- [FIXED] assessment of the locational short-run marginal costs
 
 [4.2.0] - 2021-11-11
 --------------------
