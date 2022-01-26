@@ -3,7 +3,8 @@ Change Log
 
 [4.3.3] - 2022-01-25
 --------------------
-- [CHANGED] always present the solver log file
+- [CHANGED] Permanent presence of the solver log file
+- [CHANGED] LP-file writing depends of the pIndLogConsole
 
 [4.3.2] - 2022-01-24
 --------------------
