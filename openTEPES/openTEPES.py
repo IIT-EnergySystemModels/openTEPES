@@ -14,7 +14,7 @@ from .openTEPES_ProblemSolving   import ProblemSolving
 from .openTEPES_OutputResults    import InvestmentResults, GenerationOperationResults, ESSOperationResults, FlexibilityResults, NetworkOperationResults, MarginalResults, EconomicResults, NetworkMapResults
 
 
-def openTEPES_run(DirName, CaseName, SolverName, Log):
+def openTEPES_run(DirName, CaseName, SolverName, pIndLogConsole):
 
     InitialTime = time.time()
     _path = os.path.join(DirName, CaseName)
