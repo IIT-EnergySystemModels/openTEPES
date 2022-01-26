@@ -14,7 +14,7 @@ from .openTEPES_ProblemSolving   import ProblemSolving
 from .openTEPES_OutputResults    import InvestmentResults, GenerationOperationResults, ESSOperationResults, FlexibilityResults, NetworkOperationResults, MarginalResults, EconomicResults, NetworkMapResults
 
 
-def openTEPES_run(DirName, CaseName, SolverName, pIndLogConsole):
+def openTEPES_run(DirName, CaseName, SolverName, Log):
 
     InitialTime = time.time()
     _path = os.path.join(DirName, CaseName)
@@ -37,7 +37,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndLogConsole):
     #%% model declaration
     mTEPES = ConcreteModel('Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.3.3 - January 25, 2022')
 
-    pIndLogConsole = [j for i, j in idxDict.items() if i == pIndLogConsole]
+    pIndLogConsole = [j for i, j in idxDict.items() if i == pIndLogConsole][0]
 
     # Define sets and parameters
     InputData(DirName, CaseName, mTEPES, pIndLogConsole)
