@@ -1,6 +1,10 @@
 Change Log
 =============
 
+[4.3.4] - 2022-01-27
+--------------------
+- [FIXED] fix computation of log console option
+
 [4.3.3] - 2022-01-25
 --------------------
 - [CHANGED] Permanent presence of the solver log file
