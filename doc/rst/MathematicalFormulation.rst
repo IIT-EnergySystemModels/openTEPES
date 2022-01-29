@@ -40,7 +40,7 @@ Indices
 Parameters
 ----------
 
-They are written in capital letters.
+They are written in **uppercase** letters.
 
 ==================  ====================================================  =======
 **Demand**                                                       
@@ -83,8 +83,8 @@ They are written in capital letters.
 :math:`CFG_g`                                          Annualized fixed cost of a candidate generator                                                            M€
 :math:`A_g`                                            Availability of each generator for adequacy reserve margin                                                p.u.
 :math:`\underline{GP}_g, \overline{GP}_g`              Rated minimum load and maximum output of a generator                                                      GW
-:math:`\underline{GP}^w_{png}, \overline{GP}^w_{png}`  Minimum load and maximum output of a generator                                                            GW
-:math:`\underline{GC}^w_{pne}, \overline{GC}^w_{pne}`  Minimum and maximum consumption of an ESS                                                                 GW
+:math:`\underline{GP}^ω_{png}, \overline{GP}^ω_{png}`  Minimum load and maximum output of a generator                                                            GW
+:math:`\underline{GC}^ω_{pne}, \overline{GC}^ω_{pne}`  Minimum and maximum consumption of an ESS                                                                 GW
 :math:`CF_g, CV_g`                                     Fixed (no load) and variable cost of a generator. Variable cost includes fuel, O&M and emission cost      €/h, €/MWh
 :math:`CV_e`                                           Variable cost of an ESS when charging                                                                     €/MWh
 :math:`RU_g, RD_g`                                     Ramp up/down of a non-renewable unit or maximum discharge/charge rate for ESS discharge/charge            MW/h
@@ -94,7 +94,7 @@ They are written in capital letters.
 :math:`\rho_e`                                         Outflow cycle of the ESS (e.g., 1, 24, 168 h -for hourly, daily, weekly, monthly, yearly-)                h
 :math:`GI_g`                                           Generator inertia                                                                                         s
 :math:`EF_e`                                           Round-trip efficiency of the pump/turbine cycle of a hydro power plant or charge/discharge of a battery   p.u.
-:math:`I^w_{pne}`                                      Capacity of an ESS (e.g., hydro power plant)                                                              GWh
+:math:`I^ω_{pne}`                                      Capacity of an ESS (e.g., hydro power plant)                                                              GWh
 :math:`EI^ω_{png}`                                     Energy inflows of an ESS (e.g., hydro power plant)                                                        GWh
 :math:`EO^ω_{png}`                                     Energy outflows of an ESS (e.g., H2, EV, hydro power plant)                                               GWh
 =====================================================  ========================================================================================================  ============
@@ -115,7 +115,7 @@ The net transfer capacity of a transmission line can be different in each direct
 Variables
 ---------
 
-They are written in lower letters.
+They are written in **lowercase** letters.
 
 ===================  ==================  ===
 **Demand**                             
@@ -182,9 +182,9 @@ Commitment decision bounded by investment decision for candidate committed units
 
 Output and consumption bounded by investment decision for candidate ESS [p.u.] (``eInstalGenCap``) (``eInstalConESS``)
 
-:math:`\frac{gp^ω_{pne}}{\overline{GP}^w_{pne}} \leq icg_e \quad \forall ωpne, e \in CE`
+:math:`\frac{gp^ω_{pne}}{\overline{GP}^ω_{pne}} \leq icg_e \quad \forall ωpne, e \in CE`
 
-:math:`\frac{gc^ω_{pne}}{\overline{GP}^w_{pne}} \leq icg_e \quad \forall ωpne, e \in CE`
+:math:`\frac{gc^ω_{pne}}{\overline{GP}^ω_{pne}} \leq icg_e \quad \forall ωpne, e \in CE`
 
 Adequacy system reserve margin [p.u.] (``eAdequacyReserveMargin``)
 
@@ -216,11 +216,11 @@ Operating reserves from ESS can only be provided if enough energy is available f
 
 :math:`ur^ω_{pne} \leq \frac{      i^ω_{pne}}{DUR_n} \quad \forall ωpne`
 
-:math:`dr^ω_{pne} \leq \frac{I^w_{pne} - i^ω_{pne}}{DUR_n} \quad \forall ωpne`
+:math:`dr^ω_{pne} \leq \frac{I^ω_{pne} - i^ω_{pne}}{DUR_n} \quad \forall ωpne`
 
 or for storing [GW] (``eESSReserveUpIfEnergy``) (``eESSReserveDwIfEnergy``)
 
-:math:`ur'^ω_{pne} \leq \frac{I^w_{pne} - i^ω_{pne}}{DUR_n} \quad \forall ωpne`
+:math:`ur'^ω_{pne} \leq \frac{I^ω_{pne} - i^ω_{pne}}{DUR_n} \quad \forall ωpne`
 
 :math:`dr'^ω_{pne} \leq \frac{      i^ω_{pne}}{DUR_n} \quad \forall ωpne`
 
@@ -242,27 +242,27 @@ Maximum and minimum output of the second block of a committed unit (all except t
 
 * G. Morales-España, J.M. Latorre, and A. Ramos "Tight and Compact MILP Formulation for the Thermal Unit Commitment Problem" IEEE Transactions on Power Systems 28 (4): 4897-4908, Nov 2013. `10.1109/TPWRS.2013.2251373 <http://dx.doi.org/10.1109/TPWRS.2013.2251373>`_
 
-:math:`\frac{p^ω_{png} + ur^ω_{png}}{\overline{GP}^w_{png} - \underline{GP}^w_{png}} \leq uc^ω_{png} \quad \forall ωpng`
+:math:`\frac{p^ω_{png} + ur^ω_{png}}{\overline{GP}^ω_{png} - \underline{GP}^ω_{png}} \leq uc^ω_{png} \quad \forall ωpng`
 
-:math:`\frac{p^ω_{png} - dr^ω_{png}}{\overline{GP}^w_{png} - \underline{GP}^w_{png}} \geq 0          \quad \forall ωpng`
+:math:`\frac{p^ω_{png} - dr^ω_{png}}{\overline{GP}^ω_{png} - \underline{GP}^ω_{png}} \geq 0          \quad \forall ωpng`
 
 Maximum and minimum charge of an ESS [p.u.] (``eMaxCharge``) (``eMinCharge``)
 
-:math:`\frac{c^ω_{pne} + dr'^ω_{pne}}{\overline{GC}^w_{pne} - \underline{GC}^w_{pne}} \leq 1 \quad \forall ωpne`
+:math:`\frac{c^ω_{pne} + dr'^ω_{pne}}{\overline{GC}^ω_{pne} - \underline{GC}^ω_{pne}} \leq 1 \quad \forall ωpne`
 
-:math:`\frac{c^ω_{pne} - ur'^ω_{pne}}{\overline{GC}^w_{pne} - \underline{GC}^w_{pne}} \geq 0 \quad \forall ωpne`
+:math:`\frac{c^ω_{pne} - ur'^ω_{pne}}{\overline{GC}^ω_{pne} - \underline{GC}^ω_{pne}} \geq 0 \quad \forall ωpne`
 
 Incompatibility between charge and discharge of an ESS [p.u.] (``eChargeDischarge``)
 
-:math:`\frac{p^ω_{pne} + URA \: ur'^ω_{pne}}{\overline{GP}^w_{pne} - \underline{GP}^w_{pne}} + \frac{c^ω_{pne} + DRA \: dr'^ω_{pne}}{\overline{GC}^w_{pne} - \underline{GC}^w_{pne}} \leq 1 \quad \forall ωpne, e \in CE`
+:math:`\frac{p^ω_{pne} + URA \: ur'^ω_{pne}}{\overline{GP}^ω_{pne} - \underline{GP}^ω_{pne}} + \frac{c^ω_{pne} + DRA \: dr'^ω_{pne}}{\overline{GC}^ω_{pne} - \underline{GC}^ω_{pne}} \leq 1 \quad \forall ωpne, e \in CE`
 
 Total output of a committed unit (all except the VRES units) [GW] (``eTotalOutput``)
 
-:math:`\frac{gp^ω_{png}}{\underline{GP}^w_{png}} = uc^ω_{png} + \frac{p^ω_{png} + URA \: ur^ω_{png} - DRA \: dr^ω_{png}}{\underline{GP}^w_{png}} \quad \forall ωpng`
+:math:`\frac{gp^ω_{png}}{\underline{GP}^ω_{png}} = uc^ω_{png} + \frac{p^ω_{png} + URA \: ur^ω_{png} - DRA \: dr^ω_{png}}{\underline{GP}^ω_{png}} \quad \forall ωpng`
 
 Total charge of an ESS [GW] (``eESSTotalCharge``)
 
-:math:`\frac{gc^ω_{pne}}{\underline{GC}^w_{pne}} = 1 + \frac{c^ω_{pne} + URA \: ur'^ω_{pne} - DRA \: dr'^ω_{pne}}{\underline{GC}^w_{pne}} \quad \forall ωpne, e \in CE`
+:math:`\frac{gc^ω_{pne}}{\underline{GC}^ω_{pne}} = 1 + \frac{c^ω_{pne} + URA \: ur'^ω_{pne} - DRA \: dr'^ω_{pne}}{\underline{GC}^ω_{pne}} \quad \forall ωpne, e \in CE`
 
 Logical relation between commitment, startup and shutdown status of a committed unit (all except the VRES units) [p.u.] (``eUCStrShut``)
 
@@ -338,23 +338,23 @@ Half ohmic losses are linearly approximated as a function of the flow [GW] (``eL
 
 **Bounds on generation variables** [GW]
 
-:math:`0 \leq gp^ω_{png} \leq \overline{GP}^w_{png}                           \quad \forall ωpng`
+:math:`0 \leq gp^ω_{png} \leq \overline{GP}^ω_{png}                           \quad \forall ωpng`
 
-:math:`0 \leq qc^ω_{pne} \leq \overline{GP}^w_{pne}                           \quad \forall ωpne`
+:math:`0 \leq qc^ω_{pne} \leq \overline{GP}^ω_{pne}                           \quad \forall ωpne`
 
-:math:`0 \leq ur^ω_{png} \leq \overline{GP}^w_{png} - \underline{GP}^w_{png}  \quad \forall ωpng`
+:math:`0 \leq ur^ω_{png} \leq \overline{GP}^ω_{png} - \underline{GP}^ω_{png}  \quad \forall ωpng`
 
-:math:`0 \leq ur'^ω_{pne} \leq \overline{GC}^w_{pne} - \underline{GC}^w_{pne} \quad \forall ωpne`
+:math:`0 \leq ur'^ω_{pne} \leq \overline{GC}^ω_{pne} - \underline{GC}^ω_{pne} \quad \forall ωpne`
 
-:math:`0 \leq dr^ω_{png} \leq \overline{GP}^w_{png} - \underline{GP}^w_{png}  \quad \forall ωpng`
+:math:`0 \leq dr^ω_{png} \leq \overline{GP}^ω_{png} - \underline{GP}^ω_{png}  \quad \forall ωpng`
 
-:math:`0 \leq dr'^ω_{pne} \leq \overline{GC}^w_{pne} - \underline{GC}^w_{pne} \quad \forall ωpne`
+:math:`0 \leq dr'^ω_{pne} \leq \overline{GC}^ω_{pne} - \underline{GC}^ω_{pne} \quad \forall ωpne`
 
-:math:`0 \leq  p^ω_{png} \leq \overline{GP}^w_{png} - \underline{GP}^w_{png}  \quad \forall ωpng`
+:math:`0 \leq  p^ω_{png} \leq \overline{GP}^ω_{png} - \underline{GP}^ω_{png}  \quad \forall ωpng`
 
-:math:`0 \leq  c^ω_{pne} \leq \overline{GP}^w_{pne}                           \quad \forall ωpne`
+:math:`0 \leq  c^ω_{pne} \leq \overline{GP}^ω_{pne}                           \quad \forall ωpne`
 
-:math:`0 \leq  i^ω_{pne} \leq I^w_{pne}                                       \quad \forall ωpne`
+:math:`0 \leq  i^ω_{pne} \leq I^ω_{pne}                                       \quad \forall ωpne`
 
 :math:`0 \leq  s^ω_{pne}                                                      \quad \forall ωpne`
 
