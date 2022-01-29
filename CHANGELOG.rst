@@ -1,6 +1,10 @@
 Change Log
 =============
 
+[4.3.5] - 2022-01-29
+--------------------
+- [FIXED] fix computation of dual variables of operating reserves
+
 [4.3.4] - 2022-01-27
 --------------------
 - [FIXED] fix computation of log console option
