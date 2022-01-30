@@ -159,6 +159,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
 
     # compute the demand as the mean over the time step load levels and assign it to active load levels. Idem for operating reserve, variable max power, variable min and max storage and inflows
     if pTimeStep > 1:
+        # pDemand.transform(lambda x: np.convolve(x, [.25, 0.25, 0.25, 0.25], 'same'), axis=1)
         pDemand             = pDemand.rolling            (pTimeStep).mean()
         pSystemInertia      = pSystemInertia.rolling     (pTimeStep).mean()
         pOperReserveUp      = pOperReserveUp.rolling     (pTimeStep).mean()
@@ -269,7 +270,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.st = Set(initialize=mTEPES.stt,                    ordered=True , doc='stages'               , filter=lambda mTEPES,stt     :  stt       in mTEPES.stt and pStageWeight     [stt] >  0.0)
     mTEPES.n  = Set(initialize=mTEPES.nn,                     ordered=True , doc='load levels'          , filter=lambda mTEPES,nn      :  nn        in mTEPES.nn  and pDuration         [nn] >  0  )
     mTEPES.n2 = Set(initialize=mTEPES.nn,                     ordered=True , doc='load levels'          , filter=lambda mTEPES,nn      :  nn        in mTEPES.nn  and pDuration         [nn] >  0  )
-    mTEPES.g  = Set(initialize=mTEPES.gg,                     ordered=False, doc='generating      units', filter=lambda mTEPES,gg      :  gg        in mTEPES.gg  and pRatedMaxPower    [gg] >  0.0 and pGenToNode.reset_index().set_index(['index']).isin(mTEPES.nd)['Node'][gg])  # excludes generators with empty node
+    mTEPES.g  = Set(initialize=mTEPES.gg,                     ordered=False, doc='generating      units', filter=lambda mTEPES,gg      :  gg        in mTEPES.gg  and (pRatedMaxPower   [gg] >  0.0 or  pRatedMaxCharge[gg] >  0.0) and pGenToNode.reset_index().set_index(['index']).isin(mTEPES.nd)['Node'][gg])  # excludes generators with empty node
     mTEPES.t  = Set(initialize=mTEPES.g ,                     ordered=False, doc='thermal         units', filter=lambda mTEPES,g       :  g         in mTEPES.g   and pLinearOperCost   [g ] >  0.0)
     mTEPES.r  = Set(initialize=mTEPES.g ,                     ordered=False, doc='RES             units', filter=lambda mTEPES,g       :  g         in mTEPES.g   and pLinearOperCost   [g ] == 0.0 and pRatedMaxStorage[g] == 0.0)
     mTEPES.es = Set(initialize=mTEPES.g ,                     ordered=False, doc='ESS             units', filter=lambda mTEPES,g       :  g         in mTEPES.g   and                                   pRatedMaxStorage[g] >  0.0)
@@ -333,7 +334,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     idxDict['y'  ] = 1
 
     pIndBinUnitInvest = pIndBinUnitInvest.map(idxDict)
-    pIndBinUnitRetire  = pIndBinUnitRetire.map(idxDict)
+    pIndBinUnitRetire = pIndBinUnitRetire.map(idxDict)
     pIndBinUnitCommit = pIndBinUnitCommit.map(idxDict)
     pIndOperReserve   = pIndOperReserve.map  (idxDict)
     pMustRun          = pMustRun.map         (idxDict)
@@ -645,7 +646,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.pCycleTimeStep        = Param(                               mTEPES.gg, initialize=pCycleTimeStep.to_dict()            , within=NonNegativeReals, doc='ESS Storage cycle'              )
     mTEPES.pOutflowsTimeStep     = Param(                               mTEPES.gg, initialize=pOutflowsTimeStep.to_dict()         , within=NonNegativeReals, doc='ESS Outflows cycle'             )
     mTEPES.pIniInventory         = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.gg, initialize=pIniInventory.stack().to_dict()     , within=NonNegativeReals, doc='ESS Initial storage',         mutable=True)
-    mTEPES.pInitialInventory     = Param(                               mTEPES.gg, initialize=pInitialInventory.to_dict()         , within=NonNegativeReals, doc='ESS Initial storage without loadlevels'   )
+    mTEPES.pInitialInventory     = Param(                               mTEPES.gg, initialize=pInitialInventory.to_dict()         , within=NonNegativeReals, doc='ESS Initial storage without load levels'  )
     mTEPES.pStorageType          = Param(                               mTEPES.gg, initialize=pStorageType.to_dict()              , within=Any             , doc='ESS Storage type'               )
 
     mTEPES.pLineLossFactor       = Param(                               mTEPES.ln, initialize=pLineLossFactor.to_dict()           , within=NonNegativeReals, doc='Loss factor'                    )
