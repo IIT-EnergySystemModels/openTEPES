@@ -77,27 +77,27 @@ They are written in **uppercase** letters.
 :math:`SI^ω_{pna}`              System inertia for each area                              s
 ==============================  ========================================================  ====
 
-=====================================================  ========================================================================================================  ============
+=====================================================  ========================================================================================================================  ============
 **Generation system**   
------------------------------------------------------  --------------------------------------------------------------------------------------------------------  ------------
-:math:`CFG_g`                                          Annualized fixed cost of a candidate generator                                                            M€
-:math:`A_g`                                            Availability of each generator for adequacy reserve margin                                                p.u.
-:math:`\underline{GP}_g, \overline{GP}_g`              Rated minimum load and maximum output of a generator                                                      GW
-:math:`\underline{GP}^ω_{png}, \overline{GP}^ω_{png}`  Minimum load and maximum output of a generator                                                            GW
-:math:`\underline{GC}^ω_{pne}, \overline{GC}^ω_{pne}`  Minimum and maximum consumption of an ESS                                                                 GW
-:math:`CF_g, CV_g`                                     Fixed (no load) and variable cost of a generator. Variable cost includes fuel, O&M and emission cost      €/h, €/MWh
-:math:`CV_e`                                           Variable cost of an ESS when charging                                                                     €/MWh
-:math:`RU_g, RD_g`                                     Ramp up/down of a non-renewable unit or maximum discharge/charge rate for ESS discharge/charge            MW/h
-:math:`TU_t, TD_t`                                     Minimum uptime and downtime of a thermal unit                                                             h
-:math:`CSU_g, CSD_g`                                   Startup and shutdown cost of a committed unit                                                             M€
-:math:`\tau_e`                                         Storage cycle of the ESS (e.g., 1, 24, 168 h -for daily, weekly, monthly-)                                h
-:math:`\rho_e`                                         Outflow cycle of the ESS (e.g., 1, 24, 168 h -for hourly, daily, weekly, monthly, yearly-)                h
-:math:`GI_g`                                           Generator inertia                                                                                         s
-:math:`EF_e`                                           Round-trip efficiency of the pump/turbine cycle of a hydro power plant or charge/discharge of a battery   p.u.
-:math:`I^ω_{pne}`                                      Capacity of an ESS (e.g., hydro power plant)                                                              GWh
-:math:`EI^ω_{png}`                                     Energy inflows of an ESS (e.g., hydro power plant)                                                        GWh
-:math:`EO^ω_{png}`                                     Energy outflows of an ESS (e.g., H2, EV, hydro power plant)                                               GWh
-=====================================================  ========================================================================================================  ============
+-----------------------------------------------------  ------------------------------------------------------------------------------------------------------------------------  ------------
+:math:`CFG_g`                                          Annualized fixed cost of a candidate generator                                                                            M€
+:math:`A_g`                                            Availability of each generator for adequacy reserve margin                                                                p.u.
+:math:`\underline{GP}_g, \overline{GP}_g`              Rated minimum load and maximum output of a generator                                                                      GW
+:math:`\underline{GP}^ω_{png}, \overline{GP}^ω_{png}`  Minimum load and maximum output of a generator                                                                            GW
+:math:`\underline{GC}^ω_{pne}, \overline{GC}^ω_{pne}`  Minimum and maximum consumption of an ESS                                                                                 GW
+:math:`CF_g, CV_g`                                     Fixed (no load) and variable cost of a generator. Variable cost includes fuel, O&M and emission cost                      €/h, €/MWh
+:math:`CV_e`                                           Variable cost of an ESS when charging                                                                                     €/MWh
+:math:`RU_g, RD_g`                                     Ramp up/down of a non-renewable unit or maximum discharge/charge rate for ESS discharge/charge                            MW/h
+:math:`TU_t, TD_t`                                     Minimum uptime and downtime of a thermal unit                                                                             h
+:math:`CSU_g, CSD_g`                                   Startup and shutdown cost of a committed unit                                                                             M€
+:math:`\tau_e`                                         Storage cycle of the ESS (e.g., 1, 24, 168 h -for daily, weekly, monthly-)                                                h
+:math:`\rho_e`                                         Outflow cycle of the ESS (e.g., 1, 24, 168 h -for hourly, daily, weekly, monthly, yearly-)                                h
+:math:`GI_g`                                           Generator inertia                                                                                                         s
+:math:`EF_e`                                           Round-trip efficiency of the pump/turbine cycle of a pumped-storage hydro power plant or charge/discharge of a battery    p.u.
+:math:`I^ω_{pne}`                                      Capacity of an ESS (e.g., hydro power plant)                                                                              GWh
+:math:`EI^ω_{png}`                                     Energy inflows of an ESS (e.g., hydro power plant)                                                                        GWh
+:math:`EO^ω_{png}`                                     Energy outflows of an ESS (e.g., H2, EV, hydro power plant)                                                               GWh
+=====================================================  ========================================================================================================================  ============
 
 =========================================  =================================================================================================================  ====
 **Transmission system**   
