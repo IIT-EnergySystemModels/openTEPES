@@ -3,6 +3,8 @@ Change Log
 
 [4.3.5] - 2022-01-29
 --------------------
+- [FIXED] detect ESS that only pump/charge
+- [FIXED] exclude contribution to operating reserves of units with NoOperatingReserves=yes
 - [FIXED] fix computation of dual variables of operating reserves
 
 [4.3.4] - 2022-01-27
