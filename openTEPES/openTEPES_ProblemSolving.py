@@ -46,7 +46,8 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
         OptModel.dual = Suffix(direction=Suffix.IMPORT)
         OptModel.rc   = Suffix(direction=Suffix.IMPORT)
     SolverResults = Solver.solve(OptModel, tee=True , report_timing=True )               # tee=True displays the log of the solver
-    assert str(SolverResults.solver.termination_condition) == 'optimal'
+    print('Termination Condition: ', SolverResults.solver.termination_condition)
+    assert (str(SolverResults.solver.termination_condition) == 'optimal' or str(SolverResults.solver.termination_condition) == 'maxTimeLimit' or str(SolverResults.solver.termination_condition) == 'maxIterations')
     SolverResults.write()                                                              # summary of the solver results
 
     #%% fix values of somes variables to get duals and solve it again
