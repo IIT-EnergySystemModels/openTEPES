@@ -4,6 +4,7 @@ Change Log
 [4.3.6] - 2022-02-01 - release candidate
 --------------------
 - [CHANGED] change modeling of units not contributing to operating reserves
+- [CHANGED] change on the assessment of the termination condition
 
 [4.3.5] - 2022-01-29
 --------------------
