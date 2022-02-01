@@ -1,6 +1,10 @@
 Change Log
 =============
 
+[4.3.6] - 2022-02-01
+--------------------
+- [CHANGED] change modeling of units not contributing to operating reserves
+
 [4.3.5] - 2022-01-29
 --------------------
 - [FIXED] detect ESS that only pump/charge

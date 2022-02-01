@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - January 19, 2022
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 01, 2022
 """
 
 import time
@@ -806,16 +806,22 @@ def SettingUpVariables(OptModel, mTEPES):
             OptModel.vOutput2ndBlock[sc,p,n,nr].fix(0.0)
             OptModel.vReserveUp     [sc,p,n,nr].fix(0.0)
             OptModel.vReserveDown   [sc,p,n,nr].fix(0.0)
+        if  mTEPES.pIndOperReserve  [       nr] !=  0.0:
+            OptModel.vReserveUp     [sc,p,n,nr].fix(0.0)
+            OptModel.vReserveDown   [sc,p,n,nr].fix(0.0)
 
     for sc,p,n,es in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.es:
         # ESS with no charge capacity or not storage capacity can't charge
-        if mTEPES.pMaxCharge[sc,p,n,es] == 0.0:
+        if mTEPES.pMaxCharge        [sc,p,n,es] == 0.0:
             OptModel.vESSTotalCharge[sc,p,n,es].fix(0.0)
         if mTEPES.pMaxCharge2ndBlock[sc,p,n,es] == 0.0:
             OptModel.vCharge2ndBlock[sc,p,n,es].fix(0.0)
             OptModel.vESSReserveUp  [sc,p,n,es].fix(0.0)
             OptModel.vESSReserveDown[sc,p,n,es].fix(0.0)
-        if mTEPES.pMaxStorage[sc,p,n,es] == 0.0:
+        if  mTEPES.pIndOperReserve  [       es] !=  0.0:
+            OptModel.vESSReserveUp  [sc,p,n,es].fix(0.0)
+            OptModel.vESSReserveDown[sc,p,n,es].fix(0.0)
+        if mTEPES.pMaxStorage       [sc,p,n,es] == 0.0:
             OptModel.vESSInventory  [sc,p,n,es].fix(0.0)
 
     # thermal and RES units ordered by increasing variable operation cost, excluding reactive generating units
