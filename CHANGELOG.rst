@@ -1,7 +1,7 @@
 Change Log
 =============
 
-[4.3.6] - 2022-02-01
+[4.3.6] - 2022-02-01 - release candidate
 --------------------
 - [CHANGED] change modeling of units not contributing to operating reserves
 
