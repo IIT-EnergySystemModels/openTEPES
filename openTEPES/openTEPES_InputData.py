@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 01, 2022
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 02, 2022
 """
 
 import time
@@ -159,7 +159,6 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
 
     # compute the demand as the mean over the time step load levels and assign it to active load levels. Idem for operating reserve, variable max power, variable min and max storage and inflows
     if pTimeStep > 1:
-        # pDemand.transform(lambda x: np.convolve(x, [.25, 0.25, 0.25, 0.25], 'same'), axis=1)
         pDemand             = pDemand.rolling            (pTimeStep).mean()
         pSystemInertia      = pSystemInertia.rolling     (pTimeStep).mean()
         pOperReserveUp      = pOperReserveUp.rolling     (pTimeStep).mean()
@@ -279,7 +278,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.ec = Set(initialize=mTEPES.es,                     ordered=False, doc='candidate   ESS units', filter=lambda mTEPES,es      :  es        in mTEPES.es  and pGenInvestCost    [es] >  0.0)
     mTEPES.br = Set(initialize=mTEPES.ni*mTEPES.nf,           ordered=False, doc='all branches         ', filter=lambda mTEPES,ni,nf   : (ni,nf)    in                pLineType                    )
     mTEPES.ln = Set(initialize=mTEPES.ni*mTEPES.nf*mTEPES.cc, ordered=False, doc='all input       lines', filter=lambda mTEPES,ni,nf,cc: (ni,nf,cc) in                pLineType                    )
-    mTEPES.la = Set(initialize=mTEPES.ln,                     ordered=False, doc='all real        lines', filter=lambda mTEPES,*ln     :  ln        in mTEPES.ln  and pLineX            [ln] >  0.0 and pLineNTCFrw[ln] > 0.0 and pLineNTCBck[ln] > 0.0)
+    mTEPES.la = Set(initialize=mTEPES.ln,                     ordered=False, doc='all real        lines', filter=lambda mTEPES,*ln     :  ln        in mTEPES.ln  and pLineX            [ln] != 0.0 and pLineNTCFrw[ln] > 0.0 and pLineNTCBck[ln] > 0.0)
     mTEPES.lc = Set(initialize=mTEPES.la,                     ordered=False, doc='candidate       lines', filter=lambda mTEPES,*la     :  la        in mTEPES.la  and pNetFixedCost     [la] >  0.0)
     mTEPES.cd = Set(initialize=mTEPES.la,                     ordered=False, doc='             DC lines', filter=lambda mTEPES,*la     :  la        in mTEPES.la  and pNetFixedCost     [la] >  0.0 and pLineType[la] == 'DC')
     mTEPES.ed = Set(initialize=mTEPES.la,                     ordered=False, doc='             DC lines', filter=lambda mTEPES,*la     :  la        in mTEPES.la  and pNetFixedCost     [la] == 0.0 and pLineType[la] == 'DC')
@@ -510,47 +509,54 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pMaxStorage       = pMaxStorage.loc      [mTEPES.sc*mTEPES.p*mTEPES.n          ]
     pIniInventory     = pIniInventory.loc    [mTEPES.sc*mTEPES.p*mTEPES.n          ]
 
+    # separate positive and negative demands to avoid converting negative values to 0
+    pDemandPos          = pDemand.where         (pDemand >= 0.0, other=0.0)
+    pDemandNeg          = pDemand.where         (pDemand <  0.0, other=0.0)
     # small values are converted to 0
-    pPeakDemand = pd.Series(data=[0.0 for ar in mTEPES.ar], index=mTEPES.ar)
-    for a2 in mTEPES.ar:
+    pPeakDemand         = pd.Series(data=[0.0 for ar in mTEPES.ar], index=mTEPES.ar)
+    for ar in mTEPES.ar:
         # values < 1e-5 times the maximum demand for each area (an area is related to operating reserves procurement, i.e., country) are converted to 0
-        pPeakDemand[a2] = pDemand      [[nd for nd in mTEPES.nd if (nd,a2) in mTEPES.ndar]].sum(axis=1).max()
-        pEpsilon        = pPeakDemand[a2]*2.5e-5
+        pPeakDemand[ar] = pDemand      [[nd for nd in mTEPES.nd if (nd,ar) in mTEPES.ndar]].sum(axis=1).max()
+        pEpsilon        = pPeakDemand[ar]*2.5e-5
         # values < 1e-5 times the maximum system demand are converted to 0
         # pEpsilon      = pDemand.sum(axis=1).max()*1e-5
 
         # these parameters are in GW
-        pDemand        [pDemand        [[nd for nd in mTEPES.nd if (nd,a2) in mTEPES.ndar]] < pEpsilon] = 0.0
-        pSystemInertia [pSystemInertia [[                                              a2]] < pEpsilon] = 0.0
-        pOperReserveUp [pOperReserveUp [[                                              a2]] < pEpsilon] = 0.0
-        pOperReserveDw [pOperReserveDw [[                                              a2]] < pEpsilon] = 0.0
-        pMinPower      [pMinPower      [[g  for  g in mTEPES.g  if (a2,g)  in mTEPES.a2g ]] < pEpsilon] = 0.0
-        pMaxPower      [pMaxPower      [[g  for  g in mTEPES.g  if (a2,g)  in mTEPES.a2g ]] < pEpsilon] = 0.0
-        pMinCharge     [pMinCharge     [[es for es in mTEPES.es if (a2,es) in mTEPES.a2g ]] < pEpsilon] = 0.0
-        pMaxCharge     [pMaxCharge     [[es for es in mTEPES.es if (a2,es) in mTEPES.a2g ]] < pEpsilon] = 0.0
-        pEnergyInflows [pEnergyInflows [[es for es in mTEPES.es if (a2,es) in mTEPES.a2g ]] < pEpsilon/pTimeStep] = 0.0
-        pEnergyOutflows[pEnergyOutflows[[es for es in mTEPES.es if (a2,es) in mTEPES.a2g ]] < pEpsilon/pTimeStep] = 0.0
+        pDemandPos     [pDemandPos     [[nd for nd in mTEPES.nd if (nd,ar) in mTEPES.ndar]] <  pEpsilon] = 0.0
+        pDemandNeg     [pDemandNeg     [[nd for nd in mTEPES.nd if (nd,ar) in mTEPES.ndar]] > -pEpsilon] = 0.0
+        pSystemInertia [pSystemInertia [[                                              ar]] <  pEpsilon] = 0.0
+        pOperReserveUp [pOperReserveUp [[                                              ar]] <  pEpsilon] = 0.0
+        pOperReserveDw [pOperReserveDw [[                                              ar]] <  pEpsilon] = 0.0
+        pMinPower      [pMinPower      [[g  for  g in mTEPES.g  if (ar,g)  in mTEPES.a2g ]] <  pEpsilon] = 0.0
+        pMaxPower      [pMaxPower      [[g  for  g in mTEPES.g  if (ar,g)  in mTEPES.a2g ]] <  pEpsilon] = 0.0
+        pMinCharge     [pMinCharge     [[es for es in mTEPES.es if (ar,es) in mTEPES.a2g ]] <  pEpsilon] = 0.0
+        pMaxCharge     [pMaxCharge     [[es for es in mTEPES.es if (ar,es) in mTEPES.a2g ]] <  pEpsilon] = 0.0
+        pEnergyInflows [pEnergyInflows [[es for es in mTEPES.es if (ar,es) in mTEPES.a2g ]] <  pEpsilon/pTimeStep] = 0.0
+        pEnergyOutflows[pEnergyOutflows[[es for es in mTEPES.es if (ar,es) in mTEPES.a2g ]] <  pEpsilon/pTimeStep] = 0.0
+
+        # merging positive and negative values of the demand
+        pDemand         = pDemandPos.where      (pDemandPos >= 0.0, other=pDemandNeg)
 
         # these parameters are in GWh
-        pMinStorage    [pMinStorage    [[es for es in mTEPES.es if (a2,es) in mTEPES.a2g ]] < pEpsilon] = 0.0
-        pMaxStorage    [pMaxStorage    [[es for es in mTEPES.es if (a2,es) in mTEPES.a2g ]] < pEpsilon] = 0.0
-        pIniInventory  [pIniInventory  [[es for es in mTEPES.es if (a2,es) in mTEPES.a2g ]] < pEpsilon] = 0.0
+        pMinStorage    [pMinStorage    [[es for es in mTEPES.es if (ar,es) in mTEPES.a2g ]] <  pEpsilon] = 0.0
+        pMaxStorage    [pMaxStorage    [[es for es in mTEPES.es if (ar,es) in mTEPES.a2g ]] <  pEpsilon] = 0.0
+        pIniInventory  [pIniInventory  [[es for es in mTEPES.es if (ar,es) in mTEPES.a2g ]] <  pEpsilon] = 0.0
 
         # these parameters are in GW
-        for ni,nf,cc,a2 in mTEPES.laar:
+        for ni,nf,cc,ar in mTEPES.laar:
             if  pLineNTCFrw[ni,nf,cc] < pEpsilon:
                 pLineNTCFrw[ni,nf,cc] = 0.0
             if  pLineNTCBck[ni,nf,cc] < pEpsilon:
                 pLineNTCBck[ni,nf,cc] = 0.0
-        for a2,es in mTEPES.a2g:
+        for ar,es in mTEPES.a2g:
             if  pInitialInventory[es] < pEpsilon and es in mTEPES.es:
                 pInitialInventory[es] = 0.0
 
         pMaxPower2ndBlock  = pMaxPower  - pMinPower
         pMaxCharge2ndBlock = pMaxCharge - pMinCharge
 
-        pMaxPower2ndBlock [pMaxPower2ndBlock [[es for es in mTEPES.es if (a2,es) in mTEPES.a2g]] < pEpsilon] = 0.0
-        pMaxCharge2ndBlock[pMaxCharge2ndBlock[[es for es in mTEPES.es if (a2,es) in mTEPES.a2g]] < pEpsilon] = 0.0
+        pMaxPower2ndBlock [pMaxPower2ndBlock [[es for es in mTEPES.es if (ar,es) in mTEPES.a2g]] < pEpsilon] = 0.0
+        pMaxCharge2ndBlock[pMaxCharge2ndBlock[[es for es in mTEPES.es if (ar,es) in mTEPES.a2g]] < pEpsilon] = 0.0
 
     # replace < 0.0 by 0.0
     pMaxPower2ndBlock  = pMaxPower2ndBlock.where (pMaxPower2ndBlock  > 0.0, other=0.0)
@@ -599,7 +605,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
 
     mTEPES.pReserveMargin        = Param(                               mTEPES.ar, initialize=pReserveMargin.to_dict()            , within=NonNegativeReals, doc='Adequacy reserve margin'        )
     mTEPES.pPeakDemand           = Param(                               mTEPES.ar, initialize=pPeakDemand.to_dict()               , within=NonNegativeReals, doc='Peak demand'                    )
-    mTEPES.pDemand               = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nd, initialize=pDemand.stack().to_dict()           , within=NonNegativeReals, doc='Demand'                         )
+    mTEPES.pDemand               = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nd, initialize=pDemand.stack().to_dict()           , within=           Reals, doc='Demand'                         )
     mTEPES.pScenProb             = Param(mTEPES.scc,                               initialize=pScenProb.to_dict()                 , within=NonNegativeReals, doc='Probability'                    )
     mTEPES.pStageWeight          = Param(mTEPES.stt,                               initialize=pStageWeight.to_dict()              , within=NonNegativeReals, doc='Stage weight'                   )
     mTEPES.pDuration             = Param(                     mTEPES.n,            initialize=pDuration.to_dict()                 , within=NonNegativeReals, doc='Duration'                       )
@@ -651,7 +657,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
 
     mTEPES.pLineLossFactor       = Param(                               mTEPES.ln, initialize=pLineLossFactor.to_dict()           , within=NonNegativeReals, doc='Loss factor'                    )
     mTEPES.pLineR                = Param(                               mTEPES.ln, initialize=pLineR.to_dict()                    , within=NonNegativeReals, doc='Resistance'                     )
-    mTEPES.pLineX                = Param(                               mTEPES.ln, initialize=pLineX.to_dict()                    , within=NonNegativeReals, doc='Reactance'                      )
+    mTEPES.pLineX                = Param(                               mTEPES.ln, initialize=pLineX.to_dict()                    , within=           Reals, doc='Reactance'                      )
     mTEPES.pLineBsh              = Param(                               mTEPES.ln, initialize=pLineBsh.to_dict()                  , within=NonNegativeReals, doc='Susceptance',                 mutable=True)
     mTEPES.pLineTAP              = Param(                               mTEPES.ln, initialize=pLineTAP.to_dict()                  , within=NonNegativeReals, doc='Tap changer',                 mutable=True)
     mTEPES.pLineLength           = Param(                               mTEPES.ln, initialize=pLineLength.to_dict()               , within=NonNegativeReals, doc='Length',                      mutable=True)
@@ -713,7 +719,7 @@ def SettingUpVariables(OptModel, mTEPES):
     OptModel.vCharge2ndBlock       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es, within=NonNegativeReals, bounds=lambda OptModel,sc,p,n,es: (0.0,mTEPES.pMaxCharge2ndBlock[sc,p,n,es]),                    doc='ESS       charge power                           [GW]')
     OptModel.vESSReserveUp         = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es, within=NonNegativeReals, bounds=lambda OptModel,sc,p,n,es: (0.0,mTEPES.pMaxCharge2ndBlock[sc,p,n,es]),                    doc='ESS upward   operating reserve                   [GW]')
     OptModel.vESSReserveDown       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es, within=NonNegativeReals, bounds=lambda OptModel,sc,p,n,es: (0.0,mTEPES.pMaxCharge2ndBlock[sc,p,n,es]),                    doc='ESS downward operating reserve                   [GW]')
-    OptModel.vENS                  = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nd, within=NonNegativeReals, bounds=lambda OptModel,sc,p,n,nd: (0.0,mTEPES.pDemand           [sc,p,n,nd]),                    doc='energy not served in node                        [GW]')
+    OptModel.vENS                  = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nd, within=NonNegativeReals, bounds=lambda OptModel,sc,p,n,nd: (0.0,max(0.0,mTEPES.pDemand   [sc,p,n,nd])),                   doc='energy not served in node                        [GW]')
 
     if mTEPES.pIndBinGenInvest() == 0:
         OptModel.vGenerationInvest = Var(                               mTEPES.gc, within=UnitInterval,                                                                                                      doc='generation      investment decision exists in a year [0,1]')
@@ -922,7 +928,7 @@ def SettingUpVariables(OptModel, mTEPES):
 
     # fixing the ENS in nodes with no demand
     for sc,p,n,nd in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.nd:
-        if mTEPES.pDemand[sc,p,n,nd] ==  0.0:
+        if mTEPES.pDemand[sc,p,n,nd] == 0.0:
             OptModel.vENS  [sc,p,n,nd].fix(0.0)
 
     SettingUpVariablesTime = time.time() - StartTime
