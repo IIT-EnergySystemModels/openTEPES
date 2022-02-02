@@ -45,7 +45,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
             Solver.options['Crossover'        ] = -1
         OptModel.dual = Suffix(direction=Suffix.IMPORT)
         OptModel.rc   = Suffix(direction=Suffix.IMPORT)
-    SolverResults = Solver.solve(OptModel, tee=True , report_timing=True )               # tee=True displays the log of the solver
+    SolverResults = Solver.solve(OptModel, tee=True , report_timing=True )             # tee=True displays the log of the solver
     print('Termination Condition: ', SolverResults.solver.termination_condition)
     assert (str(SolverResults.solver.termination_condition) == 'optimal' or str(SolverResults.solver.termination_condition) == 'maxTimeLimit' or str(SolverResults.solver.termination_condition) == 'maxIterations')
     SolverResults.write()                                                              # summary of the solver results
