@@ -202,7 +202,8 @@ Identifier      Identifier  Identifier  Header  Description
 Scenario        Period      Load level  Node    Power demand of the node for each load level  MW
 ==============  ==========  ==========  ======  ============================================  ==
 
-Internally, all the values below 2.5e-5 times the maximum system demand of each area will be converted into 0 by the model.
+The demand can be negative for the (transmission) nodes where there is (renewable) generation in lower voltage levels. This negative demand is equivalent to generate that power amount in this node.
+Internally, all the values below if positive demand (or above if negative demand) 2.5e-5 times the maximum system demand of each area will be converted into 0 by the model.
 
 System inertia
 --------------
@@ -418,6 +419,8 @@ SwOffTime            Minimum switch-off time                                    
 Depending on the voltage lines are plotted with different colors (orange < 200 kV, 200 < green < 350 kV, 350 < red < 500 kV, 500 < orange < 700 kV, blue > 700 kV).
 
 If there is no data for TTCBck, i.e., TTCBck is left empty or is equal to 0, it is substituted by the TTC in the code. Internally, all the TTC and TTCBck values below 2.5e-5 times the maximum system demand of each area will be converted into 0 by the model.
+
+Reactance can take a negative value as a result of the approximation of three-winding transformers. No Kirchhoff's second law disjunctive constraint is formulated for a circuit with negative reactance.
 
 Those lines with fixed cost > 0 are considered candidate and can be installed or not.
 
