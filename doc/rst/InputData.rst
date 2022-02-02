@@ -240,48 +240,48 @@ Generation
 ----------
 A description of the data included for each generating unit in the file ``oT_Data_Generation.csv`` follows:
 
-====================  ===================================================================================================================  ===================================
-Header                Description                                                                             
-====================  ===================================================================================================================  ===================================
+====================  ======================================================================================================================  ===================================
+Header                Description
+====================  ======================================================================================================================  ===================================
 Node                  Name of the node where generator is located. If left empty, the generator is ignored
 Technology            Technology of the generator (nuclear, coal, CCGT, OCGT, ESS, solar, wind, biomass, etc.)
 MutuallyExclusive     Mutually exclusive generator. Only exclusion in one direction is needed
-BinaryCommitment      Binary unit commitment decision                                                                                      Yes/No
-NoOperatingReserve    No contribution to operating reserve. Yes if the unit doesn't contribute to the operating reserve                    Yes/No
-StorageType           Storage type based on storage capacity (daily, weekly, monthly, etc.)                                                Daily/Weekly/Monthly
-OutflowsType          Outflows type based on the demand extracted from the storage (hourly, daily, weekly, monthly, yearly, etc.)          Hourly/Daily/Weekly/Monthly/Yearly
-MustRun               Must-run unit                                                                                                        Yes/No
-MaximumPower          Maximum power output (generation/discharge for ESS units)                                                            MW
-MinimumPower          Minimum power output (i.e., minimum stable load in the case of a thermal power plant)                                MW
-MaximumReactivePower  Maximum reactive power output (discharge for ESS units) (not used in this version)                                   MW
-MinimumReactivePower  Minimum reactive power output (not used in this version)                                                             MW
-MaximumCharge         Maximum consumption/charge when the ESS unit is storing energy                                                       MW
-MinimumCharge         Minimum consumption/charge when the ESS unit is storing energy                                                       MW
-InitialStorage        Initial energy stored at the first instant of the time scope                                                         GWh
-MaximumStorage        Maximum energy that can be stored by the ESS unit                                                                    GWh
-MinimumStorage        Minimum energy that can be stored by the ESS unit                                                                    GWh
-Efficiency            of the pump/turbine cycle of a pumped-storage hydro power plant or charge/discharge of a battery                     p.u.
-Availability          Unit availability for system adequacy reserve margin                                                                 p.u.
-Inertia               Unit inertia constant                                                                                                s
-EFOR                  Equivalent Forced Outage Rate                                                                                        p.u.
-RampUp                Ramp up   rate for generating units or maximum discharge rate for ESS discharge                                      MW/h
-RampDown              Ramp down rate for generating units or maximum    charge rate for ESS    charge                                      MW/h
-UpTime                Minimum uptime                                                                                                       h
-DownTime              Minimum downtime                                                                                                     h
-FuelCost              Fuel cost                                                                                                            €/Mcal
-LinearTerm            Linear term (slope) of the heat rate straight line                                                                   Mcal/MWh
-ConstantTerm          Constant term (intercept) of the heat rate straight line                                                             Mcal/h
-OMVariableCost        Variable O&M cost                                                                                                    €/MWh
-OperReserveCost       Operating reserve cost                                                                                               €/MW
-StartUpCost           Startup  cost                                                                                                        M€
-ShutDownCost          Shutdown cost                                                                                                        M€
-CO2EmissionRate       CO2 emission rate                                                                                                    t CO2/MWh
-FixedInvestmentCost   Overnight investment (capital and fixed O&M) cost                                                                    M€
-FixedRetirementCost   Overnight retirement (capital and fixed O&M) cost                                                                    M€
-FixedChargeRate       Fixed-charge rate to annualize the overnight investment cost                                                         p.u.
-BinaryInvestment      Binary unit investment decision                                                                                      Yes/No
-BinaryRetirement      Binary unit retirement decision                                                                                      Yes/No
-====================  ===================================================================================================================  ===================================
+BinaryCommitment      Binary unit commitment decision                                                                                         Yes/No
+NoOperatingReserve    No contribution to operating reserve. Yes if the unit doesn't contribute to the operating reserve                       Yes/No
+StorageType           Storage type based on storage capacity (daily, weekly, monthly, etc.)                                                   Daily/Weekly/Monthly
+OutflowsType          Outflows type based on the demand extracted from the storage (hourly, daily, weekly, monthly, yearly, etc.)             Hourly/Daily/Weekly/Monthly/Yearly
+MustRun               Must-run unit                                                                                                           Yes/No
+MaximumPower          Maximum power output (generation/discharge for ESS units)                                                               MW
+MinimumPower          Minimum power output (i.e., minimum stable load in the case of a thermal power plant)                                   MW
+MaximumReactivePower  Maximum reactive power output (discharge for ESS units) (not used in this version)                                      MW
+MinimumReactivePower  Minimum reactive power output (not used in this version)                                                                MW
+MaximumCharge         Maximum consumption/charge when the ESS unit is storing energy                                                          MW
+MinimumCharge         Minimum consumption/charge when the ESS unit is storing energy                                                          MW
+InitialStorage        Initial energy stored at the first instant of the time scope                                                            GWh
+MaximumStorage        Maximum energy that can be stored by the ESS unit                                                                       GWh
+MinimumStorage        Minimum energy that can be stored by the ESS unit                                                                       GWh
+Efficiency            Round-trip efficiency of the pump/turbine cycle of a pumped-storage hydro power plant or charge/discharge of a battery  p.u.
+Availability          Unit availability for system adequacy reserve margin                                                                    p.u.
+Inertia               Unit inertia constant                                                                                                   s
+EFOR                  Equivalent Forced Outage Rate                                                                                           p.u.
+RampUp                Ramp up   rate for generating units or maximum discharge rate for ESS discharge                                         MW/h
+RampDown              Ramp down rate for generating units or maximum    charge rate for ESS    charge                                         MW/h
+UpTime                Minimum uptime                                                                                                          h
+DownTime              Minimum downtime                                                                                                        h
+FuelCost              Fuel cost                                                                                                               €/Mcal
+LinearTerm            Linear term (slope) of the heat rate straight line                                                                      Mcal/MWh
+ConstantTerm          Constant term (intercept) of the heat rate straight line                                                                Mcal/h
+OMVariableCost        Variable O&M cost                                                                                                       €/MWh
+OperReserveCost       Operating reserve cost                                                                                                  €/MW
+StartUpCost           Startup  cost                                                                                                           M€
+ShutDownCost          Shutdown cost                                                                                                           M€
+CO2EmissionRate       CO2 emission rate                                                                                                       t CO2/MWh
+FixedInvestmentCost   Overnight investment (capital and fixed O&M) cost                                                                       M€
+FixedRetirementCost   Overnight retirement (capital and fixed O&M) cost                                                                       M€
+FixedChargeRate       Fixed-charge rate to annualize the overnight investment cost                                                            p.u.
+BinaryInvestment      Binary unit investment decision                                                                                         Yes/No
+BinaryRetirement      Binary unit retirement decision                                                                                         Yes/No
+====================  ======================================================================================================================  ===================================
 
 Daily storage type means that the ESS inventory is assessed every time step, weekly storage type is assessed at the end of every day, and monthly storage type is assessed at the end of every week.
 Outflows type represents the interval when the energy extracted from the storage needs to be satisfied.
