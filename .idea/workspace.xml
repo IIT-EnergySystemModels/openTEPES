@@ -2,8 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="70fc96e0-bc3b-4530-a009-091403d9cfdb" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/CHANGELOG.rst" beforeDir="false" afterPath="$PROJECT_DIR$/CHANGELOG.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/openTEPES/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/openTEPES/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -257,7 +256,7 @@
       <workItem from="1643220872500" duration="25000" />
       <workItem from="1643220903473" duration="314000" />
       <workItem from="1643276671495" duration="299000" />
-      <workItem from="1643736765470" duration="68000" />
+      <workItem from="1643736765470" duration="1388000" />
     </task>
     <servers />
   </component>
