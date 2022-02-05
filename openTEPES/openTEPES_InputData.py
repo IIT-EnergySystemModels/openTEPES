@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 02, 2022
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 05, 2022
 """
 
 import time
@@ -128,34 +128,34 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pIndBinGenOperat     = dfOption   ['IndBinGenOperat'    ][0].astype('int')                                                            # Indicator of binary generation operation decisions, 0 continuous - 1 binary
     pIndBinLineCommit    = dfOption   ['IndBinLineCommit'   ][0].astype('int')                                                            # Indicator of binary network    switching decisions, 0 continuous - 1 binary
     pIndNetLosses        = dfOption   ['IndNetLosses'       ][0].astype('int')                                                            # Indicator of network losses,                        0 lossless   - 1 ohmic losses
-    pENSCost             = dfParameter['ENSCost'            ][0] * 1e-3                                                                   # cost of energy not served           [MEUR/GWh]
-    pCO2Cost             = dfParameter['CO2Cost'            ][0]                                                                          # cost of CO2 emission                [EUR/t CO2]
-    pUpReserveActivation = dfParameter['UpReserveActivation'][0]                                                                          # upward   reserve activation         [p.u.]
-    pDwReserveActivation = dfParameter['DwReserveActivation'][0]                                                                          # downward reserve activation         [p.u.]
+    pENSCost             = dfParameter['ENSCost'            ][0] * 1e-3                                                                   # cost of energy not served                [MEUR/GWh]
+    pCO2Cost             = dfParameter['CO2Cost'            ][0]                                                                          # cost of CO2 emission                     [EUR/t CO2]
+    pUpReserveActivation = dfParameter['UpReserveActivation'][0]                                                                          # upward   reserve activation              [p.u.]
+    pDwReserveActivation = dfParameter['DwReserveActivation'][0]                                                                          # downward reserve activation              [p.u.]
     pMinRatioDwUp        = dfParameter['MinRatioDwUp'       ][0]                                                                          # minimum ratio down up operating reserves [p.u.]
     pMaxRatioDwUp        = dfParameter['MaxRatioDwUp'       ][0]                                                                          # maximum ratio down up operating reserves [p.u.]
-    pSBase               = dfParameter['SBase'              ][0] * 1e-3                                                                   # base power                          [GW]
+    pSBase               = dfParameter['SBase'              ][0] * 1e-3                                                                   # base power                               [GW]
     pReferenceNode       = dfParameter['ReferenceNode'      ][0]                                                                          # reference node
-    pTimeStep            = dfParameter['TimeStep'           ][0].astype('int')                                                            # duration of the unit time step      [h]
-    # pStageDuration       = dfParameter['StageDuration'      ][0].astype('int')                                                            # duration of each stage              [h]
+    pTimeStep            = dfParameter['TimeStep'           ][0].astype('int')                                                            # duration of the unit time step           [h]
+    # pStageDuration       = dfParameter['StageDuration'      ][0].astype('int')                                                          # duration of each stage                   [h]
 
-    pScenProb            = dfScenario     ['Probability'   ]                                                                              # probabilities of scenarios          [p.u.]
-    pStageWeight         = dfStage        ['Weight'        ]                                                                              # weights of stages                   [p.u.]
-    pDuration            = dfDuration     ['Duration'      ]    * pTimeStep                                                               # duration of load levels             [h]
-    pReserveMargin       = dfReserveMargin['ReserveMargin' ]                                                                              # minimum adequacy reserve margin     [p.u.]
+    pScenProb            = dfScenario     ['Probability'   ]                                                                              # probabilities of scenarios               [p.u.]
+    pStageWeight         = dfStage        ['Weight'        ]                                                                              # weights of stages                        [p.u.]
+    pDuration            = dfDuration     ['Duration'      ]    * pTimeStep                                                               # duration of load levels                  [h]
+    pReserveMargin       = dfReserveMargin['ReserveMargin' ]                                                                              # minimum adequacy reserve margin          [p.u.]
     pLevelToStage        = dfDuration     ['Stage'         ]                                                                              # load levels assignment to stages
-    pDemand              = dfDemand               [mTEPES.nd]    * 1e-3                                                                   # demand                              [GW]
-    pSystemInertia       = dfInertia              [mTEPES.ar]                                                                             # inertia                             [s]
-    pOperReserveUp       = dfUpOperatingReserve   [mTEPES.ar]    * 1e-3                                                                   # upward   operating reserve          [GW]
-    pOperReserveDw       = dfDwOperatingReserve   [mTEPES.ar]    * 1e-3                                                                   # downward operating reserve          [GW]
-    pVariableMinPower    = dfVariableMinPower     [mTEPES.gg]    * 1e-3                                                                   # dynamic variable minimum power      [GW]
-    pVariableMaxPower    = dfVariableMaxPower     [mTEPES.gg]    * 1e-3                                                                   # dynamic variable maximum power      [GW]
-    pVariableMinCharge   = dfVariableMinCharge    [mTEPES.gg]    * 1e-3                                                                   # dynamic variable minimum charge     [GW]
-    pVariableMaxCharge   = dfVariableMaxCharge    [mTEPES.gg]    * 1e-3                                                                   # dynamic variable maximum charge     [GW]
-    pVariableMinStorage  = dfVariableMinStorage   [mTEPES.gg]                                                                             # dynamic variable minimum storage    [GWh]
-    pVariableMaxStorage  = dfVariableMaxStorage   [mTEPES.gg]                                                                             # dynamic variable maximum storage    [GWh]
-    pEnergyInflows       = dfEnergyInflows        [mTEPES.gg]    * 1e-3                                                                   # dynamic energy inflows              [GW]
-    pEnergyOutflows      = dfEnergyOutflows       [mTEPES.gg]    * 1e-3                                                                   # dynamic energy outflows             [GW]
+    pDemand              = dfDemand               [mTEPES.nd]    * 1e-3                                                                   # demand                                   [GW]
+    pSystemInertia       = dfInertia              [mTEPES.ar]                                                                             # inertia                                  [s]
+    pOperReserveUp       = dfUpOperatingReserve   [mTEPES.ar]    * 1e-3                                                                   # upward   operating reserve               [GW]
+    pOperReserveDw       = dfDwOperatingReserve   [mTEPES.ar]    * 1e-3                                                                   # downward operating reserve               [GW]
+    pVariableMinPower    = dfVariableMinPower     [mTEPES.gg]    * 1e-3                                                                   # dynamic variable minimum power           [GW]
+    pVariableMaxPower    = dfVariableMaxPower     [mTEPES.gg]    * 1e-3                                                                   # dynamic variable maximum power           [GW]
+    pVariableMinCharge   = dfVariableMinCharge    [mTEPES.gg]    * 1e-3                                                                   # dynamic variable minimum charge          [GW]
+    pVariableMaxCharge   = dfVariableMaxCharge    [mTEPES.gg]    * 1e-3                                                                   # dynamic variable maximum charge          [GW]
+    pVariableMinStorage  = dfVariableMinStorage   [mTEPES.gg]                                                                             # dynamic variable minimum storage         [GWh]
+    pVariableMaxStorage  = dfVariableMaxStorage   [mTEPES.gg]                                                                             # dynamic variable maximum storage         [GWh]
+    pEnergyInflows       = dfEnergyInflows        [mTEPES.gg]    * 1e-3                                                                   # dynamic energy inflows                   [GW]
+    pEnergyOutflows      = dfEnergyOutflows       [mTEPES.gg]    * 1e-3                                                                   # dynamic energy outflows                  [GW]
 
     # compute the demand as the mean over the time step load levels and assign it to active load levels. Idem for operating reserve, variable max power, variable min and max storage and inflows
     if pTimeStep > 1:
@@ -236,7 +236,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pLineType           = dfNetwork     ['LineType'              ]                                                                            # line type
     pLineLength         = dfNetwork     ['Length'                ]                                                                            # line length                                 [km]
     pLineVoltage        = dfNetwork     ['Voltage'               ]                                                                            # line voltage                                [kV]
-    pLineLossFactor     = dfNetwork     ['LossFactor'            ]                                                                            # loss     factor                             [p.u.]
+    pLineLossFactor     = dfNetwork     ['LossFactor'            ]                                                                            # loss factor                                 [p.u.]
     pLineR              = dfNetwork     ['Resistance'            ]                                                                            # resistance                                  [p.u.]
     pLineX              = dfNetwork     ['Reactance'             ].sort_index()                                                               # reactance                                   [p.u.]
     pLineBsh            = dfNetwork     ['Susceptance'           ]                                                                            # susceptance                                 [p.u.]
@@ -595,10 +595,10 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
 
     mTEPES.pENSCost              = Param(initialize=pENSCost             , within=NonNegativeReals)
     mTEPES.pCO2Cost              = Param(initialize=pCO2Cost             , within=NonNegativeReals)
-    mTEPES.pUpReserveActivation  = Param(initialize=pUpReserveActivation , within=NonNegativeReals)
-    mTEPES.pDwReserveActivation  = Param(initialize=pDwReserveActivation , within=NonNegativeReals)
-    mTEPES.pMinRatioDwUp         = Param(initialize=pMinRatioDwUp        , within=NonNegativeReals)
-    mTEPES.pMaxRatioDwUp         = Param(initialize=pMaxRatioDwUp        , within=NonNegativeReals)
+    mTEPES.pUpReserveActivation  = Param(initialize=pUpReserveActivation , within=UnitInterval    )
+    mTEPES.pDwReserveActivation  = Param(initialize=pDwReserveActivation , within=UnitInterval    )
+    mTEPES.pMinRatioDwUp         = Param(initialize=pMinRatioDwUp        , within=UnitInterval    )
+    mTEPES.pMaxRatioDwUp         = Param(initialize=pMaxRatioDwUp        , within=UnitInterval    )
     mTEPES.pSBase                = Param(initialize=pSBase               , within=NonNegativeReals)
     mTEPES.pTimeStep             = Param(initialize=pTimeStep            , within=NonNegativeReals)
     # mTEPES.pStageDuration        = Param(initialize=pStageDuration      , within=NonNegativeReals)
@@ -606,7 +606,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.pReserveMargin        = Param(                               mTEPES.ar, initialize=pReserveMargin.to_dict()            , within=NonNegativeReals, doc='Adequacy reserve margin'        )
     mTEPES.pPeakDemand           = Param(                               mTEPES.ar, initialize=pPeakDemand.to_dict()               , within=NonNegativeReals, doc='Peak demand'                    )
     mTEPES.pDemand               = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nd, initialize=pDemand.stack().to_dict()           , within=           Reals, doc='Demand'                         )
-    mTEPES.pScenProb             = Param(mTEPES.scc,                               initialize=pScenProb.to_dict()                 , within=NonNegativeReals, doc='Probability'                    )
+    mTEPES.pScenProb             = Param(mTEPES.scc,                               initialize=pScenProb.to_dict()                 , within=UnitInterval    , doc='Probability'                    )
     mTEPES.pStageWeight          = Param(mTEPES.stt,                               initialize=pStageWeight.to_dict()              , within=NonNegativeReals, doc='Stage weight'                   )
     mTEPES.pDuration             = Param(                     mTEPES.n,            initialize=pDuration.to_dict()                 , within=NonNegativeReals, doc='Duration'                       )
     mTEPES.pNodeLon              = Param(                               mTEPES.nd, initialize=pNodeLon.to_dict()                  ,                          doc='Longitude'                      )
@@ -627,8 +627,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.pRatedMaxPower        = Param(                               mTEPES.gg, initialize=pRatedMaxPower.to_dict()            , within=NonNegativeReals, doc='Rated maximum power'            )
     mTEPES.pMustRun              = Param(                               mTEPES.gg, initialize=pMustRun.to_dict()                  , within=Boolean         , doc='must-run unit'                  )
     mTEPES.pInertia              = Param(                               mTEPES.gg, initialize=pInertia.to_dict()                  , within=NonNegativeReals, doc='unit inertia constant'          )
-    mTEPES.pAvailability         = Param(                               mTEPES.gg, initialize=pAvailability.to_dict()             , within=NonNegativeReals, doc='unit availability',           mutable=True)
-    mTEPES.pEFOR                 = Param(                               mTEPES.gg, initialize=pEFOR.to_dict()                     , within=NonNegativeReals, doc='EFOR'                           )
+    mTEPES.pAvailability         = Param(                               mTEPES.gg, initialize=pAvailability.to_dict()             , within=UnitInterval    , doc='unit availability',           mutable=True)
+    mTEPES.pEFOR                 = Param(                               mTEPES.gg, initialize=pEFOR.to_dict()                     , within=UnitInterval    , doc='EFOR'                           )
     mTEPES.pLinearOperCost       = Param(                               mTEPES.gg, initialize=pLinearOperCost.to_dict()           , within=NonNegativeReals, doc='Linear   variable cost'         )
     mTEPES.pLinearVarCost        = Param(                               mTEPES.gg, initialize=pLinearVarCost.to_dict()            , within=NonNegativeReals, doc='Linear   variable cost'         )
     mTEPES.pLinearOMCost         = Param(                               mTEPES.gg, initialize=pLinearOMCost.to_dict()             , within=NonNegativeReals, doc='Linear   O&M      cost'         )
@@ -648,14 +648,14 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.pIndBinUnitRetire     = Param(                               mTEPES.gg, initialize=pIndBinUnitRetire.to_dict()         , within=Boolean         , doc='Binary retirement decision'     )
     mTEPES.pIndBinUnitCommit     = Param(                               mTEPES.gg, initialize=pIndBinUnitCommit.to_dict()         , within=Boolean         , doc='Binary commitment decision'     )
     mTEPES.pIndOperReserve       = Param(                               mTEPES.gg, initialize=pIndOperReserve.to_dict()           , within=Boolean         , doc='Indicator of operating reserve' )
-    mTEPES.pEfficiency           = Param(                               mTEPES.gg, initialize=pEfficiency.to_dict()               , within=NonNegativeReals, doc='Round-trip efficiency'          )
+    mTEPES.pEfficiency           = Param(                               mTEPES.gg, initialize=pEfficiency.to_dict()               , within=UnitInterval    , doc='Round-trip efficiency'          )
     mTEPES.pCycleTimeStep        = Param(                               mTEPES.gg, initialize=pCycleTimeStep.to_dict()            , within=NonNegativeReals, doc='ESS Storage cycle'              )
     mTEPES.pOutflowsTimeStep     = Param(                               mTEPES.gg, initialize=pOutflowsTimeStep.to_dict()         , within=NonNegativeReals, doc='ESS Outflows cycle'             )
     mTEPES.pIniInventory         = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.gg, initialize=pIniInventory.stack().to_dict()     , within=NonNegativeReals, doc='ESS Initial storage',         mutable=True)
     mTEPES.pInitialInventory     = Param(                               mTEPES.gg, initialize=pInitialInventory.to_dict()         , within=NonNegativeReals, doc='ESS Initial storage without load levels'  )
     mTEPES.pStorageType          = Param(                               mTEPES.gg, initialize=pStorageType.to_dict()              , within=Any             , doc='ESS Storage type'               )
 
-    mTEPES.pLineLossFactor       = Param(                               mTEPES.ln, initialize=pLineLossFactor.to_dict()           , within=NonNegativeReals, doc='Loss factor'                    )
+    mTEPES.pLineLossFactor       = Param(                               mTEPES.ln, initialize=pLineLossFactor.to_dict()           , within=UnitInterval    , doc='Loss factor'                    )
     mTEPES.pLineR                = Param(                               mTEPES.ln, initialize=pLineR.to_dict()                    , within=NonNegativeReals, doc='Resistance'                     )
     mTEPES.pLineX                = Param(                               mTEPES.ln, initialize=pLineX.to_dict()                    , within=           Reals, doc='Reactance'                      )
     mTEPES.pLineBsh              = Param(                               mTEPES.ln, initialize=pLineBsh.to_dict()                  , within=NonNegativeReals, doc='Susceptance',                 mutable=True)
