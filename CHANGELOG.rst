@@ -1,9 +1,9 @@
 Change Log
 =============
 
-[4.3.6] - 2022-02-01 - release candidate
+[4.3.6] - 2022-02-05 - release candidate
 --------------------
-- [CHANGED] change of domain of all parameters to UnitInterval
+- [CHANGED] change of domain of some p.u. parameters to UnitInterval
 - [CHANGED] change modeling of units not contributing to operating reserves
 - [CHANGED] change on the assessment of the termination condition
 
