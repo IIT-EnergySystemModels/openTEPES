@@ -286,7 +286,7 @@ BinaryRetirement      Binary unit retirement decision                           
 Daily storage type means that the ESS inventory is assessed every time step, weekly storage type is assessed at the end of every day, and monthly storage type is assessed at the end of every week.
 Outflows type represents the interval when the energy extracted from the storage needs to be satisfied.
 The storage cycle is the minimum between the inventory assessment period and the outflows period. It can be one time step, one day, and one week.
-The ESS inventory level at the end of a large storage cycle is fixed to its initial value, i.e., the inventory of a daily storage type (evaluated on a time step basis) is fixed at the end of the week,
+The ESS inventory level at the end of a larger storage cycle is fixed to its initial value, i.e., the inventory of a daily storage type (evaluated on a time step basis) is fixed at the end of the week,
 the inventory of weekly/monthly storage is fixed at the end of the year.
 
 The initial storage of the ESSs is also fixed at the beginning and end of each stage. For example, the initial storage level is set for the hour 8736 in case of a single stage or for the hours 4368 and 4369
