@@ -222,7 +222,7 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES):
         OutputToFile = pd.Series(data=[(mTEPES.pMaxPower[sc,p,n,g]-OptModel.vTotalOutput[sc,p,n,g]())*1e3            for sc,p,n,g in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.g], index=pd.MultiIndex.from_tuples(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.g))
         for sc,p,n,g in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.g:
             if g in mTEPES.gc:
-                OutputToFile[sc,p,n,g] = OutputToFile[sc,p,n,g] * OptModel.vGenerationInvest[r]()
+                OutputToFile[sc,p,n,g] = OutputToFile[sc,p,n,g] * OptModel.vGenerationInvest[g]()
         OutputToFile.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW'  ).rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_GenerationSurplus_'+CaseName+'.csv', sep=',')
 
     if len(mTEPES.r):
