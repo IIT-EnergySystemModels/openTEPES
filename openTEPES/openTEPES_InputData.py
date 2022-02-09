@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 05, 2022
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 09, 2022
 """
 
 import time
@@ -655,7 +655,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.pInitialInventory     = Param(                               mTEPES.gg, initialize=pInitialInventory.to_dict()         , within=NonNegativeReals, doc='ESS Initial storage without load levels'  )
     mTEPES.pStorageType          = Param(                               mTEPES.gg, initialize=pStorageType.to_dict()              , within=Any             , doc='ESS Storage type'               )
 
-    mTEPES.pLineLossFactor       = Param(                               mTEPES.ln, initialize=pLineLossFactor.to_dict()           , within=UnitInterval    , doc='Loss factor'                    )
+    mTEPES.pLineLossFactor       = Param(                               mTEPES.ln, initialize=pLineLossFactor.to_dict()           , within=NonNegativeReals, doc='Loss factor'                    )
     mTEPES.pLineR                = Param(                               mTEPES.ln, initialize=pLineR.to_dict()                    , within=NonNegativeReals, doc='Resistance'                     )
     mTEPES.pLineX                = Param(                               mTEPES.ln, initialize=pLineX.to_dict()                    , within=           Reals, doc='Reactance'                      )
     mTEPES.pLineBsh              = Param(                               mTEPES.ln, initialize=pLineBsh.to_dict()                  , within=NonNegativeReals, doc='Susceptance',                 mutable=True)
