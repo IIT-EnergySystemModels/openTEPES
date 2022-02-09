@@ -35,8 +35,8 @@ Installation
 There are 2 ways to get all required packages under Windows. We recommend using the Python distribution Anaconda. If you don't want to use it or already have an existing Python (version 3.8 | 3.9 **recommended**, 2.7 is supported as well) installation, you can also download the required packages by yourself.
 
 
-Miniconda (recommended)
------------------------
+**Miniconda (recommended)**
+
 1. `Miniconda <https://docs.conda.io/en/latest/miniconda.html>`_. Choose the 64-bit installer if possible.
 
    1. During the installation procedure, keep both checkboxes "modify the PATH" and "register Python" selected! If only higher Python versions are available, you can switch to a specific Python Version by typing ``conda install python=<version>``
@@ -50,44 +50,42 @@ Miniconda (recommended)
 Continue at `Get Started <#get-started>`_ and see the `Tips <#tips>`_.
 
 
-GitHub Repository (the hard way)
---------------------------------
+**GitHub Repository (the hard way)**
+
 1. Clone the `openTEPES <https://github.com/IIT-EnergySystemModels/openTEPES/tree/master>`_ repository.
 2. Launch the command prompt (Windows: Win+R, type "cmd", Enter), or the Anaconda prompt
 3. Set up the path by ``cd "C:\Users\<username>\...\openTEPES"``. (Note that the path is where the repository was cloned.)
 4. Install openTEPES via pip by ``pip install .``
 
-Solvers
-###########
+**Solvers**
 
 GLPK
-----
+
 As an easy option for installation, we have the free and open-source `GLPK solver <https://www.gnu.org/software/glpk/>`_. However, it takes too much time for large-scale problems. It can be installed using: ``conda install -c conda-forge glpk``.
 
 CBC
----
+
 The `CBC solver <https://github.com/coin-or/Cbc>`_ is our recommendation if you want a free and open-source solver. For Windows users, the effective way to install the CBC solver is downloading the binaries from `this link <https://www.coin-or.org/download/binary/Cbc/Cbc-2.10.5-x86_64-w64-mingw32.zip>`_, copy and paste the *cbc.exe* file to the PATH that is the "bin" directory of the Anaconda or Miniconda environment. It can be installed using: ``conda install -c conda-forge coincbc``.
 
 Gurobi
-------
+
 Our another recommendation is the use  `Gurobi solver <https://www.gurobi.com/>`_. However, it is commercial solver but most powerful than GPLK and CBC for large-scale problems.
 As a commercial solver it needs a license that is free of charge for academic usage by signing up in `Gurobi webpage <https://pages.gurobi.com/registration/>`_. After downloading the latest version of the `Gurobi optimizer <https://www.gurobi.com/downloads/gurobi-optimizer-eula/>`_. Install Gurobi using the downloaded executable and ask for an academic or commercial license. Active the license in your computer using the ``grbgetkey`` command (you need to be in the university domain if you are installing an academic license).
 
 Mosek
------
+
 Another alternative is the `Mosek solver <https://www.mosek.com/>`_. Note that it is a commercial solver and you need a license for it. Mosek is a good alternative to deal with QPs, SOCPs, and SDPs problems. You only need to use ``conda install -c mosek mosek`` for installation and request a license (academic or commercial). To request the academic one, you can request `here <https://www.mosek.com/products/academic-licenses/>`_. Moreover, Mosek brings a `license guide <https://docs.mosek.com/9.2/licensing/index.html>`_. But if you are request an academic license, you will receive the license by email, and you only need to locate it in the following path ``C:\Users\(your user)\mosek`` in your computer.
 
-Get started
-###########
+**Get started**
 
 Developers
-----------
+
 By cloning the `openTEPES <https://github.com/IIT-EnergySystemModels/openTEPES/tree/master>`_ repository, you can create branches and propose pull-request. Any help will be very appreciated.
 
 Continue like the users for a simple way of executions.
 
 Users
------
+
 
 If you are not planning on developing, please follows the instructions of the `Installation <#installation>`_.
 
@@ -111,8 +109,7 @@ Then, the **results** should be written in the folder who is called with the cas
 
     ``openTEPES_run(<case>, <dir>, <solver>)``
 
-Tips
-####
+**Tips**
 
 1. A complete documentation of the openTEPES model can be found at `<https://pascua.iit.comillas.edu/aramos/openTEPES/index.html#>`_, which presents the mathematical formulation, input data and output results.
 2. Try modifying the **TimeStep** in **oT_Data_Parameter_<case>.csv** and see their effect on results.
@@ -120,8 +117,7 @@ Tips
 4. If you need a nice python editor, think about using `PyCharm <https://www.jetbrains.com/pycharm/download>`_. It has many features including project management, etc.
 5. We also suggest the use of `Gurobi <https://www.gurobi.com/academia/academic-program-and-licenses/>`_ (for Academics and Researchers) as a solver to deal with MIP and LP problems instead of GLPK.
 
-Run the Tutorial
-################
+**Run the Tutorial**
 
 It can be run in Binder:
 
