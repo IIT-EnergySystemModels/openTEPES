@@ -121,6 +121,14 @@ Identifier    Identifier  Identifier  Header      Description
 Scenario      Period      Load level  Generator   Output (discharge in ESS) [MW]
 ============  ==========  ==========  ==========  ===================================
 
+File ``oT_Result_GenerationSurplus.csv``
+
+============  ==========  ==========  ==============  ===============================
+Identifier    Identifier  Identifier  Header          Description
+============  ==========  ==========  ==============  ===============================
+Scenario      Period      Load level  Generator       Powr surplus [MW]
+============  ==========  ==========  ==============  ===============================
+
 File ``oT_Result_Curtailment.csv``
 
 ============  ==========  ==========  ==============  ===============================
