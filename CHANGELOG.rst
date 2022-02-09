@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.3.6] - 2022-02-05 - release candidate
+[4.3.6] - 2022-02-09
 --------------------
+- [CHANGED] saving new results about generation surplus in 'oT_Result_GenerationSurplus_'+CaseName+'.csv'. 
 - [CHANGED] change of domain of some p.u. parameters to UnitInterval
 - [CHANGED] change modeling of units not contributing to operating reserves
 - [CHANGED] change on the assessment of the termination condition
