@@ -126,7 +126,7 @@ File ``oT_Result_GenerationSurplus.csv``
 ============  ==========  ==========  ==============  ===============================
 Identifier    Identifier  Identifier  Header          Description
 ============  ==========  ==========  ==============  ===============================
-Scenario      Period      Load level  Generator       Powr surplus [MW]
+Scenario      Period      Load level  Generator       Power surplus [MW]
 ============  ==========  ==========  ==============  ===============================
 
 File ``oT_Result_Curtailment.csv``
@@ -442,7 +442,6 @@ Scenario      Period      Load level  Node        Energy not served by node [GWh
 Marginal information
 --------------------
 
-
 File ``oT_Result_MarginalReserveMargin.csv``
 
 ============  ==========  ==========  ==========  =================================================
@@ -450,6 +449,14 @@ Identifier    Identifier  Identifier  Header      Description
 ============  ==========  ==========  ==========  =================================================
 Scenario      Period      Load level  Area        Marginal of the reserve margin [€/MW]
 ============  ==========  ==========  ==========  =================================================
+
+File ``oT_Result_GenerationIncrementalVariableCost.csv``
+
+============  ==========  ==========  ==============  ==============================================================================
+Identifier    Identifier  Identifier  Header          Description
+============  ==========  ==========  ==============  ==============================================================================
+Scenario      Period      Load level  Generator       Variable cost (fuel+O&M+emission) of the generators with power surplus [€/MWh]
+============  ==========  ==========  ==============  ==============================================================================
 
 File ``oT_Result_LSRMC.csv``
 
