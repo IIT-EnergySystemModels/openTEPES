@@ -1,11 +1,12 @@
 Change Log
 =============
 
-[4.3.6] - 2022-02-09
+[4.3.6] - 2022-02-10
 --------------------
 - [CHANGED] saving new results about generation surplus in 'oT_Result_GenerationSurplus_'+CaseName+'.csv'. 
-- [CHANGED] change of domain of some p.u. parameters to UnitInterval
-- [CHANGED] change modeling of units not contributing to operating reserves
+- [CHANGED] saving new results about generation surplus in 'oT_Result_GenerationIncrementalVariableCost_'+CaseName+'.csv'.
+- [CHANGED] change of domain of some p.u. parameters to UnitInterval and others to Reals
+- [CHANGED] change output of units not contributing to operating reserves
 - [CHANGED] change on the assessment of the termination condition
 
 [4.3.5] - 2022-01-29
