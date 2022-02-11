@@ -559,7 +559,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         pMaxCharge2ndBlock[pMaxCharge2ndBlock[[es for es in mTEPES.es if (ar,es) in mTEPES.a2g]] < pEpsilon] = 0.0
 
     # replace very small costs by 0
-    pEpsilon = 1e-6           # this value is related to the smallest reduced cost independent of the area
+    pEpsilon = 1e-6           # this value is related to the smallest reduced cost, independent of the area
     for gg in mTEPES.gg:
         if  pLinearVarCost      [gg] < pEpsilon:
             pLinearVarCost.loc  [gg] = 0.0
