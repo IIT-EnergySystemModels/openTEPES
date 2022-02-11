@@ -1,5 +1,9 @@
 """
+<<<<<<< Updated upstream
 Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 10, 2022
+=======
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 11, 2022
+>>>>>>> Stashed changes
 """
 
 import time
@@ -544,19 +548,35 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
 
         # these parameters are in GW
         for ni,nf,cc,ar in mTEPES.laar:
-            if  pLineNTCFrw[ni,nf,cc] < pEpsilon:
-                pLineNTCFrw[ni,nf,cc] = 0.0
-            if  pLineNTCBck[ni,nf,cc] < pEpsilon:
-                pLineNTCBck[ni,nf,cc] = 0.0
+            if  pLineNTCFrw    [ni,nf,cc] < pEpsilon:
+                pLineNTCFrw.loc[ni,nf,cc] = 0.0
+            if  pLineNTCBck    [ni,nf,cc] < pEpsilon:
+                pLineNTCBck.loc[ni,nf,cc] = 0.0
         for ar,es in mTEPES.a2g:
-            if  pInitialInventory[es] < pEpsilon and es in mTEPES.es:
-                pInitialInventory[es] = 0.0
+            if  pInitialInventory    [es] < pEpsilon and es in mTEPES.es:
+                pInitialInventory.loc[es] = 0.0
 
         pMaxPower2ndBlock  = pMaxPower  - pMinPower
         pMaxCharge2ndBlock = pMaxCharge - pMinCharge
 
         pMaxPower2ndBlock [pMaxPower2ndBlock [[es for es in mTEPES.es if (ar,es) in mTEPES.a2g]] < pEpsilon] = 0.0
         pMaxCharge2ndBlock[pMaxCharge2ndBlock[[es for es in mTEPES.es if (ar,es) in mTEPES.a2g]] < pEpsilon] = 0.0
+
+    # replace very small costs by 0
+    pEpsilon = 1e-6           # this value is related to the smallest reduced cost independent of the area
+    for gg in mTEPES.gg:
+        if  pLinearVarCost      [gg] < pEpsilon and (ar,gg) in mTEPES.a2g:
+            pLinearVarCost.loc  [gg] = 0.0
+        if  pConstantVarCost    [gg] < pEpsilon and (ar,gg) in mTEPES.a2g:
+            pConstantVarCost.loc[gg] = 0.0
+        if  pStartUpCost        [gg] < pEpsilon and (ar,gg) in mTEPES.a2g:
+            pStartUpCost.loc    [gg] = 0.0
+        if  pShutDownCost       [gg] < pEpsilon and (ar,gg) in mTEPES.a2g:
+            pShutDownCost.loc   [gg] = 0.0
+        if  pOperReserveCost    [gg] < pEpsilon and (ar,gg) in mTEPES.a2g:
+            pOperReserveCost.loc[gg] = 0.0
+        if  pOperReserveCost    [gg] < pEpsilon and (ar,gg) in mTEPES.a2g:
+            pOperReserveCost.loc[gg] = 0.0
 
     # replace < 0.0 by 0.0
     pMaxPower2ndBlock  = pMaxPower2ndBlock.where (pMaxPower2ndBlock  > 0.0, other=0.0)
