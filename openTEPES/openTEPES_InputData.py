@@ -559,20 +559,15 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         pMaxCharge2ndBlock[pMaxCharge2ndBlock[[es for es in mTEPES.es if (ar,es) in mTEPES.a2g]] < pEpsilon] = 0.0
 
     # replace very small costs by 0
-    pEpsilon = 1e-6           # this value is related to the smallest reduced cost, independent of the area
-    for gg in mTEPES.gg:
-        if  pLinearVarCost      [gg] < pEpsilon:
-            pLinearVarCost.loc  [gg] = 0.0
-        if  pConstantVarCost    [gg] < pEpsilon:
-            pConstantVarCost.loc[gg] = 0.0
-        if  pStartUpCost        [gg] < pEpsilon:
-            pStartUpCost.loc    [gg] = 0.0
-        if  pShutDownCost       [gg] < pEpsilon:
-            pShutDownCost.loc   [gg] = 0.0
-        if  pOperReserveCost    [gg] < pEpsilon:
-            pOperReserveCost.loc[gg] = 0.0
-        if  pOperReserveCost    [gg] < pEpsilon:
-            pOperReserveCost.loc[gg] = 0.0
+    pEpsilon = 1e-4           # this value in €/GWh is related to the smallest reduced cost, independent of the area
+    pLinearOperCost.loc [pLinearOperCost [[gg for gg in mTEPES.gg]] < pEpsilon] = 0.0
+    pLinearVarCost.loc  [pLinearVarCost  [[gg for gg in mTEPES.gg]] < pEpsilon] = 0.0
+    pLinearOMCost.loc   [pLinearOMCost   [[gg for gg in mTEPES.gg]] < pEpsilon] = 0.0
+    pConstantVarCost.loc[pConstantVarCost[[gg for gg in mTEPES.gg]] < pEpsilon] = 0.0
+    pOperReserveCost.loc[pOperReserveCost[[gg for gg in mTEPES.gg]] < pEpsilon] = 0.0
+    pCO2EmissionCost.loc[pCO2EmissionCost[[gg for gg in mTEPES.gg]] < pEpsilon] = 0.0
+    pStartUpCost.loc    [pStartUpCost    [[gg for gg in mTEPES.gg]] < pEpsilon] = 0.0
+    pShutDownCost.loc   [pShutDownCost   [[gg for gg in mTEPES.gg]] < pEpsilon] = 0.0
 
     # replace < 0.0 by 0.0
     pMaxPower2ndBlock  = pMaxPower2ndBlock.where (pMaxPower2ndBlock  > 0.0, other=0.0)
