@@ -1,9 +1,5 @@
 """
-<<<<<<< Updated upstream
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 10, 2022
-=======
 Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 11, 2022
->>>>>>> Stashed changes
 """
 
 import time
@@ -565,17 +561,17 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     # replace very small costs by 0
     pEpsilon = 1e-6           # this value is related to the smallest reduced cost independent of the area
     for gg in mTEPES.gg:
-        if  pLinearVarCost      [gg] < pEpsilon and (ar,gg) in mTEPES.a2g:
+        if  pLinearVarCost      [gg] < pEpsilon:
             pLinearVarCost.loc  [gg] = 0.0
-        if  pConstantVarCost    [gg] < pEpsilon and (ar,gg) in mTEPES.a2g:
+        if  pConstantVarCost    [gg] < pEpsilon:
             pConstantVarCost.loc[gg] = 0.0
-        if  pStartUpCost        [gg] < pEpsilon and (ar,gg) in mTEPES.a2g:
+        if  pStartUpCost        [gg] < pEpsilon:
             pStartUpCost.loc    [gg] = 0.0
-        if  pShutDownCost       [gg] < pEpsilon and (ar,gg) in mTEPES.a2g:
+        if  pShutDownCost       [gg] < pEpsilon:
             pShutDownCost.loc   [gg] = 0.0
-        if  pOperReserveCost    [gg] < pEpsilon and (ar,gg) in mTEPES.a2g:
+        if  pOperReserveCost    [gg] < pEpsilon:
             pOperReserveCost.loc[gg] = 0.0
-        if  pOperReserveCost    [gg] < pEpsilon and (ar,gg) in mTEPES.a2g:
+        if  pOperReserveCost    [gg] < pEpsilon:
             pOperReserveCost.loc[gg] = 0.0
 
     # replace < 0.0 by 0.0
