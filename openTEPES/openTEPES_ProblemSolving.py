@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - January 22, 2021
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 16, 2022
 """
 
 import time
@@ -30,6 +30,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
         Solver.options['LogFile'       ] = _path+'/openTEPES_'+CaseName+'.log'
         # Solver.options['IISFile'     ] = _path+'/openTEPES_'+CaseName+'.ilp'               # should be uncommented to show results of IIS
         Solver.options['Method'        ] = 2                                                 # barrier method
+        Solver.options['MIPFocus'      ] = 1
         Solver.options['Presolve'      ] = 2
         Solver.options['Crossover'     ] = 0
         Solver.options['RINS'          ] = 100
