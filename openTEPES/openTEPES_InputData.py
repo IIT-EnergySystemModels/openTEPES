@@ -543,14 +543,19 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         pIniInventory  [pIniInventory  [[es for es in mTEPES.es if (ar,es) in mTEPES.a2g ]] <  pEpsilon] = 0.0
 
         # these parameters are in GW
-        for ni,nf,cc,ar in mTEPES.laar:
-            if  pLineNTCFrw    [ni,nf,cc] < pEpsilon:
-                pLineNTCFrw.loc[ni,nf,cc] = 0.0
-            if  pLineNTCBck    [ni,nf,cc] < pEpsilon:
-                pLineNTCBck.loc[ni,nf,cc] = 0.0
-        for ar,es in mTEPES.a2g:
-            if  pInitialInventory    [es] < pEpsilon and es in mTEPES.es:
-                pInitialInventory.loc[es] = 0.0
+        # for ni,nf,cc,ar in mTEPES.laar:
+        #     if  pLineNTCFrw    [ni,nf,cc] < pEpsilon:
+        #         pLineNTCFrw.loc[ni,nf,cc] = 0.0
+        #     if  pLineNTCBck    [ni,nf,cc] < pEpsilon:
+        #         pLineNTCBck.loc[ni,nf,cc] = 0.0
+        # for ar,es in mTEPES.a2g:
+        #     if  pInitialInventory    [es] < pEpsilon and es in mTEPES.es:
+        #         pInitialInventory.loc[es] = 0.0
+
+        pInitialInventory.update(pd.Series([0 for es in mTEPES.es if (ar, es) in mTEPES.a2g and pInitialInventory[es] < pEpsilon], index=[es for es in mTEPES.es if (ar, es) in mTEPES.a2g and pInitialInventory[es] < pEpsilon]))
+        pLineNTCFrw.update(pd.Series([0 for (ni,nf,cc,ar) in mTEPES.laar if pLineNTCFrw[ni,nf,cc] < pEpsilon], index = [(ni,nf,cc) for (ni,nf,cc,ar) in mTEPES.laar if pLineNTCFrw[ni,nf,cc] < pEpsilon]))
+        pLineNTCBck.update(pd.Series([0 for (ni,nf,cc,ar) in mTEPES.laar if pLineNTCBck[ni,nf,cc] < pEpsilon], index = [(ni,nf,cc) for (ni,nf,cc,ar) in mTEPES.laar if pLineNTCBck[ni,nf,cc] < pEpsilon]))
+
 
         pMaxPower2ndBlock  = pMaxPower  - pMinPower
         pMaxCharge2ndBlock = pMaxCharge - pMinCharge
@@ -560,14 +565,23 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
 
     # replace very small costs by 0
     pEpsilon = 1e-4           # this value in €/GWh is related to the smallest reduced cost, independent of the area
-    pLinearOperCost.loc [pLinearOperCost [[gg for gg in mTEPES.gg]] < pEpsilon] = 0.0
-    pLinearVarCost.loc  [pLinearVarCost  [[gg for gg in mTEPES.gg]] < pEpsilon] = 0.0
-    pLinearOMCost.loc   [pLinearOMCost   [[gg for gg in mTEPES.gg]] < pEpsilon] = 0.0
-    pConstantVarCost.loc[pConstantVarCost[[gg for gg in mTEPES.gg]] < pEpsilon] = 0.0
-    pOperReserveCost.loc[pOperReserveCost[[gg for gg in mTEPES.gg]] < pEpsilon] = 0.0
-    pCO2EmissionCost.loc[pCO2EmissionCost[[gg for gg in mTEPES.gg]] < pEpsilon] = 0.0
-    pStartUpCost.loc    [pStartUpCost    [[gg for gg in mTEPES.gg]] < pEpsilon] = 0.0
-    pShutDownCost.loc   [pShutDownCost   [[gg for gg in mTEPES.gg]] < pEpsilon] = 0.0
+    # pLinearOperCost.loc [pLinearOperCost [[gg for gg in mTEPES.gg]] < pEpsilon] = 0.0
+    # pLinearVarCost.loc  [pLinearVarCost  [[gg for gg in mTEPES.gg]] < pEpsilon] = 0.0
+    # pLinearOMCost.loc   [pLinearOMCost   [[gg for gg in mTEPES.gg]] < pEpsilon] = 0.0
+    # pConstantVarCost.loc[pConstantVarCost[[gg for gg in mTEPES.gg]] < pEpsilon] = 0.0
+    # pOperReserveCost.loc[pOperReserveCost[[gg for gg in mTEPES.gg]] < pEpsilon] = 0.0
+    # pCO2EmissionCost.loc[pCO2EmissionCost[[gg for gg in mTEPES.gg]] < pEpsilon] = 0.0
+    # pStartUpCost.loc    [pStartUpCost    [[gg for gg in mTEPES.gg]] < pEpsilon] = 0.0
+    # pShutDownCost.loc   [pShutDownCost   [[gg for gg in mTEPES.gg]] < pEpsilon] = 0.0
+    pLinearOperCost.update (pd.Series([0 for gg in mTEPES.gg if pLinearOperCost [gg] < pEpsilon], index=[gg for gg in mTEPES.gg if pLinearOperCost [gg] < pEpsilon]))
+    pLinearVarCost.update  (pd.Series([0 for gg in mTEPES.gg if pLinearVarCost  [gg] < pEpsilon], index=[gg for gg in mTEPES.gg if pLinearVarCost  [gg] < pEpsilon]))
+    pLinearOMCost.update   (pd.Series([0 for gg in mTEPES.gg if pLinearOMCost   [gg] < pEpsilon], index=[gg for gg in mTEPES.gg if pLinearOMCost   [gg] < pEpsilon]))
+    pConstantVarCost.update(pd.Series([0 for gg in mTEPES.gg if pConstantVarCost[gg] < pEpsilon], index=[gg for gg in mTEPES.gg if pConstantVarCost[gg] < pEpsilon]))
+    pOperReserveCost.update(pd.Series([0 for gg in mTEPES.gg if pOperReserveCost[gg] < pEpsilon], index=[gg for gg in mTEPES.gg if pOperReserveCost[gg] < pEpsilon]))
+    pCO2EmissionCost.update(pd.Series([0 for gg in mTEPES.gg if pCO2EmissionCost[gg] < pEpsilon], index=[gg for gg in mTEPES.gg if pCO2EmissionCost[gg] < pEpsilon]))
+    pStartUpCost.update    (pd.Series([0 for gg in mTEPES.gg if pStartUpCost    [gg] < pEpsilon], index=[gg for gg in mTEPES.gg if pStartUpCost    [gg] < pEpsilon]))
+    pShutDownCost.update   (pd.Series([0 for gg in mTEPES.gg if pShutDownCost   [gg] < pEpsilon], index=[gg for gg in mTEPES.gg if pShutDownCost   [gg] < pEpsilon]))
+
 
     # replace < 0.0 by 0.0
     pMaxPower2ndBlock  = pMaxPower2ndBlock.where (pMaxPower2ndBlock  > 0.0, other=0.0)
