@@ -38,8 +38,8 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
         # Solver.options['BarQCPConvTol' ] = 0.025
         Solver.options['MIPGap'        ] = 0.01
         Solver.options['Threads'       ] = int((psutil.cpu_count(logical=True) + psutil.cpu_count(logical=False))/2)
-        Solver.options['TimeLimit'     ] =    9000
-        Solver.options['IterationLimit'] = 9000000
+        Solver.options['TimeLimit'     ] =    18000
+        Solver.options['IterationLimit'] = 18000000
     if mTEPES.pIndBinGenInvest()*len(mTEPES.gc) + mTEPES.pIndBinGenRetire()*len(mTEPES.gd) + mTEPES.pIndBinNetInvest()*len(mTEPES.lc) + mTEPES.pIndBinGenOperat()*len(mTEPES.nr) + mTEPES.pIndBinLineCommit()*len(mTEPES.la) + len(mTEPES.g2g) == 0:
         if SolverName == 'gurobi' or SolverName == 'mosek':
             Solver.options['relax_integrality'] =  1  # introduced to show results of the dual variables
@@ -88,7 +88,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
         if len(mTEPES.g2g):
             for nr in mTEPES.nr:
                 if sum(1 for g in mTEPES.nr if (nr,g) in mTEPES.g2g or (g,nr) in mTEPES.g2g):
-                    OptModel.vMaxCommitment[nr].fix(OptModel.vMaxCommitment[nr]())
+                    OptModel.vMaxCommitment[nr].fix(round(OptModel.vMaxCommitment[nr]()))
         if SolverName == 'gurobi' or SolverName == 'mosek':
             Solver.options['relax_integrality'] =  1  # introduced to show results of the dual variables
             Solver.options['Crossover'        ] = -1
