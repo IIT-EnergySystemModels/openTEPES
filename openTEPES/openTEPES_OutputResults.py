@@ -216,20 +216,20 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES):
     pEpsilon = 1e-6
 
     SurplusGens  = [(sc,p,n,g) for sc,p,n,g in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.g if OptModel.vTotalOutput[sc,p,n,g].upper - OptModel.vTotalOutput[sc,p,n,g]() > pEpsilon]
-    OutputToFile = pd.Series(data=[(OptModel.vTotalOutput[sc,p,n,g].upper-OptModel.vTotalOutput[sc,p,n,g]())*1e3 for sc,p,n,g in SurplusGens], index=pd.MultiIndex.from_tuples(SurplusGens))
+    OutputToFile = pd.Series(data=[(OptModel.vTotalOutput[sc,p,n,g].upper - OptModel.vTotalOutput[sc,p,n,g]())*1e3 for sc,p,n,g in SurplusGens], index=pd.MultiIndex.from_tuples(SurplusGens))
     for sc,p,n,g in SurplusGens:
         if g in mTEPES.gc:
             OutputToFile[sc,p,n,g] *= OptModel.vGenerationInvest[g]()
     OutputToFile.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW'  ).rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_GenerationSurplus_'+CaseName+'.csv', sep=',')
 
     if len(mTEPES.r):
-        OutputToFile = pd.Series(data=[(OptModel.vTotalOutput[sc,p,n,r].upper-OptModel.vTotalOutput[sc,p,n,r]())*1e3            for sc,p,n,r in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.r], index=pd.MultiIndex.from_tuples(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.r))
+        OutputToFile = pd.Series(data=[(OptModel.vTotalOutput[sc,p,n,r].upper - OptModel.vTotalOutput[sc,p,n,r]())*1e3            for sc,p,n,r in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.r], index=pd.MultiIndex.from_tuples(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.r))
         for sc,p,n,r in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.r:
             if r in mTEPES.gc:
                 OutputToFile[sc,p,n,r] *= OptModel.vGenerationInvest[r]()
         OutputToFile.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW'  ).rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_Curtailment_'+CaseName+'.csv', sep=',')
 
-        OutputToFile = pd.Series(data=[(OptModel.vTotalOutput[sc,p,n,r].upper-OptModel.vTotalOutput[sc,p,n,r]())*mTEPES.pDuration[n]*mTEPES.pLoadLevelWeight[n]() for sc,p,n,r in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.r], index=pd.MultiIndex.from_tuples(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.r))
+        OutputToFile = pd.Series(data=[(OptModel.vTotalOutput[sc,p,n,r].upper - OptModel.vTotalOutput[sc,p,n,r]())*mTEPES.pDuration[n]*mTEPES.pLoadLevelWeight[n]() for sc,p,n,r in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.r], index=pd.MultiIndex.from_tuples(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.r))
         for sc,p,n,r in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.r:
             if r in mTEPES.gc:
                 OutputToFile[sc,p,n,r] *= OptModel.vGenerationInvest[r]()
