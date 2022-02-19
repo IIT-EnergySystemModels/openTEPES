@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 16, 2022
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 19, 2022
 """
 
 import time
@@ -215,7 +215,7 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES):
     # tolerance to consider 0 a number
     pEpsilon = 1e-6
 
-    SurplusGens  = [(sc,p,n,g) for sc,p,n,g in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.g if (mTEPES.pMaxPower[sc,p,n,g]-OptModel.vTotalOutput[sc,p,n,g]()) > pEpsilon]
+    SurplusGens  = [(sc,p,n,g) for sc,p,n,g in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.g if OptModel.vTotalOutput[sc,p,n,g].upper - OptModel.vTotalOutput[sc,p,n,g]() > pEpsilon]
     OutputToFile = pd.Series(data=[(mTEPES.pMaxPower[sc,p,n,g]-OptModel.vTotalOutput[sc,p,n,g]())*1e3 for sc,p,n,g in SurplusGens], index=pd.MultiIndex.from_tuples(SurplusGens))
     for sc,p,n,g in SurplusGens:
         if g in mTEPES.gc:
@@ -481,7 +481,7 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES):
     # tolerance to consider 0 a number
     pEpsilon = 1e-6
 
-    SurplusGens  = [(sc,p,n,g) for sc,p,n,g in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.g if (mTEPES.pMaxPower[sc,p,n,g]-OptModel.vTotalOutput[sc,p,n,g]()) > pEpsilon and g not in mTEPES.es]
+    SurplusGens  = [(sc,p,n,g) for sc,p,n,g in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.g if OptModel.vTotalOutput[sc,p,n,g].upper - OptModel.vTotalOutput[sc,p,n,g]() > pEpsilon and g not in mTEPES.es]
     OutputToFile = pd.Series(data=[(mTEPES.pLinearVarCost[g]+mTEPES.pCO2EmissionCost[g])*1e3 for sc,p,n,g in SurplusGens], index=pd.MultiIndex.from_tuples(SurplusGens))
     OutputToFile.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW'  ).rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_GenerationIncrementalVariableCost_'+CaseName+'.csv', sep=',')
 
