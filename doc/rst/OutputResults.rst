@@ -129,6 +129,22 @@ Identifier    Identifier  Identifier  Header          Description
 Scenario      Period      Load level  Generator       Power surplus [MW]
 ============  ==========  ==========  ==============  ===============================
 
+File ``oT_Result_GenerationRampUpSurplus.csv``
+
+============  ==========  ==========  ==============  ===============================
+Identifier    Identifier  Identifier  Header          Description
+============  ==========  ==========  ==============  ===============================
+Scenario      Period      Load level  Generator       Upward ramp surplus [MW]
+============  ==========  ==========  ==============  ===============================
+
+File ``oT_Result_GenerationRampDwSurplus.csv``
+
+============  ==========  ==========  ==============  ===============================
+Identifier    Identifier  Identifier  Header          Description
+============  ==========  ==========  ==============  ===============================
+Scenario      Period      Load level  Generator       Downward ramp surplus [MW]
+============  ==========  ==========  ==============  ===============================
+
 File ``oT_Result_Curtailment.csv``
 
 ============  ==========  ==========  ==============  ===============================
