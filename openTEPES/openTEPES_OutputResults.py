@@ -285,7 +285,7 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES):
     TechCO2 = OutputToFile.to_frame(name='MtCO2').reset_index().pivot_table(index=['level_0','level_1','level_2'],   columns='level_3', values='MtCO2').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).sum(axis=0).to_frame(name='MtCO2')
     TechCO2 = TechCO2[(TechCO2[['MtCO2']] != 0).all(axis=1)]
 
-    if len(TechCO2) > 0:
+    if len(TechCO2):
         TechCO2 = TechCO2.reset_index()
         TechCO2.rename({'index': 'Technologies'}, axis=1, inplace=True)
 
