@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 22, 2022
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 23, 2022
 """
 
 import time
@@ -228,7 +228,8 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES):
         mTEPES.n = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.pDuration and (st,nn) in mTEPES.s2n)
         if len(mTEPES.n):
             RampSurplusGens = [(sc,p,n,nr) for sc,p,n,nr in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.nr if mTEPES.pRampUp[nr] and mTEPES.pRampUp[nr] < mTEPES.pMaxPower2ndBlock[sc,p,n,nr]]
-            OutputToFile = pd.Series(data=[(getattr(OptModel, 'eRampUp_'+st)[sc,p,n,nr].uslack())*mTEPES.pDuration[n]*mTEPES.pRampUp[nr]*1e3*(OptModel.vCommitment[sc,p,n,nr]() - OptModel.vStartUp[sc,p,n,nr]()) for sc,p,n,nr in RampSurplusGens], index=pd.MultiIndex.from_tuples(RampSurplusGens))
+            if len(RampSurplusGens):
+                OutputToFile = pd.Series(data=[(getattr(OptModel, 'eRampUp_'+st)[sc,p,n,nr].uslack())*mTEPES.pDuration[n]*mTEPES.pRampUp[nr]*1e3*(OptModel.vCommitment[sc,p,n,nr]() - OptModel.vStartUp[sc,p,n,nr]()) for sc,p,n,nr in RampSurplusGens], index=pd.MultiIndex.from_tuples(RampSurplusGens))
         OutputData.append(OutputToFile)
     mTEPES.del_component(mTEPES.n)
     mTEPES.n = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.pDuration)
@@ -241,9 +242,11 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES):
         mTEPES.n = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.pDuration and (st,nn) in mTEPES.s2n)
         if len(mTEPES.n):
             RampSurplusGens = [(sc,p,n,nr) for sc,p,n,nr in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.nr if mTEPES.pRampDw[nr] and mTEPES.pRampDw[nr] < mTEPES.pMaxPower2ndBlock[sc,p,n,nr] and n == mTEPES.n.first()]
-            OutputToFile = pd.Series(data=[(getattr(OptModel, 'eRampDw_'+st)[sc,p,n,nr].uslack())*mTEPES.pDuration[n]*mTEPES.pRampDw[nr]*1e3*(- mTEPES.pInitialUC[sc,p,n,nr]                     + OptModel.vShutDown[sc,p,n,nr]()) for sc,p,n,nr in RampSurplusGens], index=pd.MultiIndex.from_tuples(RampSurplusGens))
+            if len(RampSurplusGens):
+                OutputToFile = pd.Series(data=[(getattr(OptModel, 'eRampDw_'+st)[sc,p,n,nr].uslack())*mTEPES.pDuration[n]*mTEPES.pRampDw[nr]*1e3*(- mTEPES.pInitialUC[sc,p,n,nr]                     + OptModel.vShutDown[sc,p,n,nr]()) for sc,p,n,nr in RampSurplusGens], index=pd.MultiIndex.from_tuples(RampSurplusGens))
             RampSurplusGens = [(sc,p,n,nr) for sc,p,n,nr in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.nr if mTEPES.pRampDw[nr] and mTEPES.pRampDw[nr] < mTEPES.pMaxPower2ndBlock[sc,p,n,nr] and n != mTEPES.n.first()]
-            OutputToFile = pd.Series(data=[(getattr(OptModel, 'eRampDw_'+st)[sc,p,n,nr].uslack())*mTEPES.pDuration[n]*mTEPES.pRampDw[nr]*1e3*(- OptModel.vCommitment[sc,p,mTEPES.n.prev(n),nr]() + OptModel.vShutDown[sc,p,n,nr]()) for sc,p,n,nr in RampSurplusGens], index=pd.MultiIndex.from_tuples(RampSurplusGens))
+            if len(RampSurplusGens):
+                OutputToFile = pd.Series(data=[(getattr(OptModel, 'eRampDw_'+st)[sc,p,n,nr].uslack())*mTEPES.pDuration[n]*mTEPES.pRampDw[nr]*1e3*(- OptModel.vCommitment[sc,p,mTEPES.n.prev(n),nr]() + OptModel.vShutDown[sc,p,n,nr]()) for sc,p,n,nr in RampSurplusGens], index=pd.MultiIndex.from_tuples(RampSurplusGens))
         OutputData.append(OutputToFile)
     mTEPES.del_component(mTEPES.n)
     mTEPES.n = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.pDuration)
