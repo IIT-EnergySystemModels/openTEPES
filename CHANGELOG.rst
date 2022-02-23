@@ -1,7 +1,7 @@
 Change Log
 =============
 
-[4.3.6] - 2022-02-21
+[4.3.6] - 2022-02-23
 --------------------
 - [CHANGED] saving new results about generation ramp surplus in 'oT_Result_GenerationRampUpSurplus_'+CaseName+'.csv' and 'oT_Result_GenerationRampDwSurplus_'+CaseName+'.csv'.
 - [CHANGED] saving new results about generation surplus in 'oT_Result_GenerationSurplus_'+CaseName+'.csv'.
