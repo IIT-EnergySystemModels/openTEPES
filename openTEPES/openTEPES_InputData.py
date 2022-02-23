@@ -546,10 +546,10 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         pMaxStorage    [pMaxStorage    [[es for es in mTEPES.es if (ar,es) in mTEPES.a2g ]] <  pEpsilon] = 0.0
         pIniInventory  [pIniInventory  [[es for es in mTEPES.es if (ar,es) in mTEPES.a2g ]] <  pEpsilon] = 0.0
 
-        pInitialInventory.update(pd.Series([0.0 for es in mTEPES.es if (ar, es) in mTEPES.a2g and pInitialInventory[es] < pEpsilon], index=[es for es in mTEPES.es if (ar, es) in mTEPES.a2g and pInitialInventory[es] < pEpsilon]))
+        pInitialInventory.update(pd.Series([0 for es in mTEPES.es if (ar, es) in mTEPES.a2g and pInitialInventory[es] < pEpsilon], index=[es for es in mTEPES.es if (ar, es) in mTEPES.a2g and pInitialInventory[es] < pEpsilon], dtype='float64'))
 
-        pLineNTCFrw.update(pd.Series([0.0 for (ni,nf,cc,ar) in mTEPES.laar if pLineNTCFrw[ni,nf,cc] < pEpsilon], index = [(ni,nf,cc) for (ni,nf,cc,ar) in mTEPES.laar if pLineNTCFrw[ni,nf,cc] < pEpsilon]))
-        pLineNTCBck.update(pd.Series([0.0 for (ni,nf,cc,ar) in mTEPES.laar if pLineNTCBck[ni,nf,cc] < pEpsilon], index = [(ni,nf,cc) for (ni,nf,cc,ar) in mTEPES.laar if pLineNTCBck[ni,nf,cc] < pEpsilon]))
+        pLineNTCFrw.update(pd.Series([0 for (ni,nf,cc,ar) in mTEPES.laar if pLineNTCFrw[ni,nf,cc] < pEpsilon], index = [(ni,nf,cc) for (ni,nf,cc,ar) in mTEPES.laar if pLineNTCFrw[ni,nf,cc] < pEpsilon], dtype='float64'))
+        pLineNTCBck.update(pd.Series([0 for (ni,nf,cc,ar) in mTEPES.laar if pLineNTCBck[ni,nf,cc] < pEpsilon], index = [(ni,nf,cc) for (ni,nf,cc,ar) in mTEPES.laar if pLineNTCBck[ni,nf,cc] < pEpsilon], dtype='float64'))
 
         # merging positive and negative values of the demand
         pDemand         = pDemandPos.where      (pDemandPos >= 0.0, other=pDemandNeg)
