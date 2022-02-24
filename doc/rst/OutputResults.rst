@@ -468,19 +468,11 @@ Scenario      Period      Load level  Area        Marginal of the reserve margin
 
 File ``oT_Result_GenerationIncrementalVariableCost.csv``
 
-<<<<<<< Updated upstream
-============  ==========  ==========  ==============  ==============================================================================
-Identifier    Identifier  Identifier  Header          Description
-============  ==========  ==========  ==============  ==============================================================================
-Scenario      Period      Load level  Generator       Variable cost (fuel+O&M+emission) of the generators with power surplus [€/MWh]
-============  ==========  ==========  ==============  ==============================================================================
-=======
 ============  ==========  ==========  ==============  ===============================================================================================
 Identifier    Identifier  Identifier  Header          Description
 ============  ==========  ==========  ==============  ===============================================================================================
 Scenario      Period      Load level  Generator       Variable cost (fuel+O&M+emission) of the generators with power surplus, except the ESS [€/MWh]
 ============  ==========  ==========  ==============  ===============================================================================================
->>>>>>> Stashed changes
 
 File ``oT_Result_LSRMC.csv``
 
