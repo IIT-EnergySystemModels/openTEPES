@@ -130,16 +130,16 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES):
 
         OutputResults_1 = pd.Series(data=[lt for ni,nf,cc,lt in mTEPES.lc*mTEPES.lt if (ni,nf,cc,lt) in mTEPES.pLineType], index=pd.Index(mTEPES.lc))
         OutputResults_1 = OutputResults_1.to_frame(name='LineType')
-        OutputResults_2 = pd.Series(data=[mTEPES.pLineNTCFrw[ni,nf,cc]*1e3 for ni,nf,cc in mTEPES.lc], index=pd.Index(mTEPES.lc))
-        OutputResults_2 = OutputResults_2.to_frame(name='MW')
+        OutputResults_2 = pd.Series(data=[mTEPES.pLineVoltage[ni,nf,cc] for ni,nf,cc in mTEPES.lc], index=pd.Index(mTEPES.lc))
+        OutputResults_2 = OutputResults_2.to_frame(name='kV')
         OutputResults_3 = OutputToFile.set_index(['InitialNode', 'FinalNode', 'Circuit'])
         OutputResults   = pd.concat([OutputResults_1, OutputResults_2, OutputResults_3], axis=1)
         OutputResults.index.names = ['InitialNode','FinalNode','Circuit']
-        OutputResults   = OutputResults.reset_index().groupby(['LineType', 'MW']).sum().rename(columns={'vNetworkInvest': 'Investment Decision'})
+        OutputResults   = OutputResults.reset_index().groupby(['LineType', 'kV']).sum().rename(columns={'vNetworkInvest': 'Investment Decision'})
         OutputResults   = OutputResults.reset_index()
-        OutputResults['MW'] = round(OutputResults['MW'], 2)
+        OutputResults['kV'] = round(OutputResults['kV'], 2)
 
-        chart = alt.Chart(OutputResults).mark_bar().encode(x='LineType:O', y='sum(Investment Decision):Q', color='LineType:N', column='MW:N')
+        chart = alt.Chart(OutputResults).mark_bar().encode(x='LineType:O', y='sum(Investment Decision):Q', color='LineType:N', column='kV:N')
         chart.save(_path+'/oT_Plot_NetworkInvestment_'+CaseName+'.html', embed_options={'renderer':'svg'})
 
         OutputToFile = pd.Series(data=[(OptModel.vNetworkInvest[ni,nf,cc]()*mTEPES.pLineNTCFrw[ni,nf,cc]*1e3)/mTEPES.pLineLength[ni,nf,cc]() for ni,nf,cc in mTEPES.lc], index= pd.MultiIndex.from_tuples(mTEPES.lc))
@@ -148,16 +148,16 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES):
 
         OutputResults_1 = pd.Series(data=[lt for ni,nf,cc,lt in mTEPES.lc*mTEPES.lt if (ni,nf,cc,lt) in mTEPES.pLineType], index=pd.Index(mTEPES.lc))
         OutputResults_1 = OutputResults_1.to_frame(name='LineType')
-        OutputResults_2 = pd.Series(data=[mTEPES.pLineNTCFrw[ni,nf,cc]*1e3 for ni,nf,cc in mTEPES.lc], index=pd.Index(mTEPES.lc))
-        OutputResults_2 = OutputResults_2.to_frame(name='MW')
+        OutputResults_2 = pd.Series(data=[mTEPES.pLineVoltage[ni,nf,cc] for ni,nf,cc in mTEPES.lc], index=pd.Index(mTEPES.lc))
+        OutputResults_2 = OutputResults_2.to_frame(name='kV')
         OutputResults_3 = OutputToFile
         OutputResults   = pd.concat([OutputResults_1, OutputResults_2, OutputResults_3], axis=1)
         OutputResults.index.names = ['InitialNode','FinalNode','Circuit']
-        OutputResults   = OutputResults.reset_index().groupby(['LineType', 'MW']).sum()
+        OutputResults   = OutputResults.reset_index().groupby(['LineType', 'kV']).sum()
         OutputResults   = OutputResults.reset_index()
-        OutputResults['MW'] = round(OutputResults['MW'], 2)
+        OutputResults['kV'] = round(OutputResults['kV'], 2)
 
-        chart = alt.Chart(OutputResults).mark_bar().encode(x='LineType:O', y='sum(MW-km):Q', color='LineType:N', column='MW:N')
+        chart = alt.Chart(OutputResults).mark_bar().encode(x='LineType:O', y='sum(MW-km):Q', color='LineType:N', column='kV:N')
         chart.save(_path+'/oT_Plot_NetworkInvestment_MW-km_'+CaseName+'.html', embed_options={'renderer':'svg'})
 
     WritingResultsTime = time.time() - StartTime
@@ -776,7 +776,7 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES):
                 mTEPES.del_component(mTEPES.n)
                 mTEPES.n = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.pDuration and (st,nn) in mTEPES.s2n)
                 if len(mTEPES.n):
-                    OutputToFile = pd.Series(data=[OptModel.dual[getattr(OptModel, 'eOperReserveUp_'+st)[sc,p,n,ar]]/mTEPES.pScenProb[sc]*OptModel.vESSReserveUp[sc,p,n,gc]() for sc,p,n,ar,gc in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.a2g if mTEPES.pOperReserveUp[sc,p,n,ar] and gc in mTEPES.gc], index=pd.MultiIndex.from_tuples([(sc,p,n,ar,gc) for sc,p,n,ar,gc in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.a2g if mTEPES.pOperReserveUp[sc,p,n,ar] and gc in mTEPES.gc]))
+                    OutputToFile = pd.Series(data=[OptModel.dual[getattr(OptModel, 'eOperReserveUp_'+st)[sc,p,n,ar]]/mTEPES.pScenProb[sc]*OptModel.vESSReserveUp[sc,p,n,ec]() for sc,p,n,ar,ec in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.a2g if mTEPES.pOperReserveUp[sc,p,n,ar] and ec in mTEPES.ec], index=pd.MultiIndex.from_tuples([(sc,p,n,ar,ec) for sc,p,n,ar,ec in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.a2g if mTEPES.pOperReserveUp[sc,p,n,ar] and ec in mTEPES.ec]))
                 OutputData.append(OutputToFile)
             mTEPES.del_component(mTEPES.n)
             mTEPES.n      = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.pDuration)
@@ -821,7 +821,7 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES):
                 mTEPES.del_component(mTEPES.n)
                 mTEPES.n = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.pDuration and (st,nn) in mTEPES.s2n)
                 if len(mTEPES.n):
-                    OutputToFile = pd.Series(data=[OptModel.dual[getattr(OptModel, 'eOperReserveDw_'+st)[sc,p,n,ar]]/mTEPES.pScenProb[sc]*OptModel.vESSReserveDown[sc,p,n,gc]() for sc,p,n,ar,gc in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.a2g if mTEPES.pOperReserveDw[sc,p,n,ar] and gc in mTEPES.gc], index=pd.MultiIndex.from_tuples([(sc,p,n,ar,gc) for sc,p,n,ar,gc in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.a2g if mTEPES.pOperReserveDw[sc,p,n,ar] and gc in mTEPES.gc]))
+                    OutputToFile = pd.Series(data=[OptModel.dual[getattr(OptModel, 'eOperReserveDw_'+st)[sc,p,n,ar]]/mTEPES.pScenProb[sc]*OptModel.vESSReserveDown[sc,p,n,ec]() for sc,p,n,ar,ec in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.a2g if mTEPES.pOperReserveDw[sc,p,n,ar] and ec in mTEPES.ec], index=pd.MultiIndex.from_tuples([(sc,p,n,ar,ec) for sc,p,n,ar,ec in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.a2g if mTEPES.pOperReserveDw[sc,p,n,ar] and ec in mTEPES.ec]))
                 OutputData.append(OutputToFile)
             mTEPES.del_component(mTEPES.n)
             mTEPES.n      = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.pDuration)
