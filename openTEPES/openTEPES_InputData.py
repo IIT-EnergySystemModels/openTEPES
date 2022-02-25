@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 18, 2022
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 25, 2022
 """
 
 import time
@@ -725,7 +725,7 @@ def SettingUpVariables(OptModel, mTEPES):
     OptModel.vOutput2ndBlock       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=NonNegativeReals, bounds=lambda OptModel,sc,p,n,nr: (0.0,mTEPES.pMaxPower2ndBlock [sc,p,n,nr]),                    doc='second block of the unit                         [GW]')
     OptModel.vReserveUp            = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=NonNegativeReals, bounds=lambda OptModel,sc,p,n,nr: (0.0,mTEPES.pMaxPower2ndBlock [sc,p,n,nr]),                    doc='upward   operating reserve                       [GW]')
     OptModel.vReserveDown          = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, within=NonNegativeReals, bounds=lambda OptModel,sc,p,n,nr: (0.0,mTEPES.pMaxPower2ndBlock [sc,p,n,nr]),                    doc='downward operating reserve                       [GW]')
-    OptModel.vEnergyOutflows       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.g , within=NonNegativeReals, bounds=lambda OptModel,sc,p,n,g : (0.0,mTEPES.pMaxPower         [sc,p,n,g ]),                    doc='total outflows of the ESS unit                   [GW]')
+    OptModel.vEnergyOutflows       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es, within=NonNegativeReals, bounds=lambda OptModel,sc,p,n,es: (0.0,mTEPES.pMaxPower         [sc,p,n,es]),                    doc='total outflows of the ESS unit                   [GW]')
     OptModel.vESSInventory         = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es, within=NonNegativeReals, bounds=lambda OptModel,sc,p,n,es: (mTEPES.pMinStorage[sc,p,n,es],mTEPES.pMaxStorage[sc,p,n,es]), doc='ESS inventory                                   [GWh]')
     OptModel.vESSSpillage          = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es, within=NonNegativeReals,                                                                                                  doc='ESS spillage                                    [GWh]')
     OptModel.vESSTotalCharge       = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.es, within=NonNegativeReals, bounds=lambda OptModel,sc,p,n,es: (0.0,mTEPES.pMaxCharge        [sc,p,n,es]),                    doc='ESS total charge power                           [GW]')
