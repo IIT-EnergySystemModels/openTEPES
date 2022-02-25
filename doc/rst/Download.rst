@@ -69,8 +69,9 @@ The `CBC solver <https://github.com/coin-or/Cbc>`_ is our recommendation if you 
 
 Gurobi
 
-Our another recommendation is the use  `Gurobi solver <https://www.gurobi.com/>`_. However, it is commercial solver but most powerful than GPLK and CBC for large-scale problems.
-As a commercial solver it needs a license that is free of charge for academic usage by signing up in `Gurobi webpage <https://pages.gurobi.com/registration/>`_. After downloading the latest version of the `Gurobi optimizer <https://www.gurobi.com/downloads/gurobi-optimizer-eula/>`_. Install Gurobi using the downloaded executable and ask for an academic or commercial license. Active the license in your computer using the ``grbgetkey`` command (you need to be in the university domain if you are installing an academic license).
+Another recommendation is the use of `Gurobi solver <https://www.gurobi.com/>`_. However, it is commercial solver but most powerful than GPLK and CBC for large-scale problems.
+As a commercial solver it needs a license that is free of charge for academic usage by signing up in `Gurobi webpage <https://pages.gurobi.com/registration/>`_.
+It can be installed using: ``conda install -c gurobi gurobi`` and then ask for an academic or commercial license. Activate the license in your computer using the ``grbgetkey`` command (you need to be in the university domain if you are installing an academic license).
 
 Mosek
 
