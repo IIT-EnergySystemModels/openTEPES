@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 10, 2021
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 26, 2021
 """
 
 import time
@@ -397,8 +397,8 @@ def GenerationOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, st):
         print('eUCStrShut            ... ', len(getattr(OptModel, 'eUCStrShut_'+st)), ' rows')
 
     def eMaxCommitment(OptModel,sc,p,n,nr):
-        if sum(1 for g in mTEPES.nr if (nr,g) in mTEPES.g2g or (g,nr) in mTEPES.g2g):
-            return OptModel.vCommitment[sc,p,n,nr] <= OptModel.vMaxCommitment[nr]
+        if len(mTEPES.g2g) and sum(1 for g in mTEPES.nr if (nr,g) in mTEPES.g2g or (g,nr) in mTEPES.g2g):
+            return OptModel.vCommitment[sc,p,n,nr]                            <= OptModel.vMaxCommitment[nr]
         else:
             return Constraint.Skip
     setattr(OptModel, 'eMaxCommitment_'+st, Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.nr, rule=eMaxCommitment, doc='maximum of all the commitments'))
@@ -407,7 +407,7 @@ def GenerationOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, st):
         print('eMaxCommitment        ... ', len(getattr(OptModel, 'eMaxCommitment_'+st)), ' rows')
 
     def eMaxCommitGen(OptModel,sc,p,n,g):
-        if sum(1 for gg in mTEPES.gg if (g,gg) in mTEPES.g2g or (gg,g) in mTEPES.g2g) and mTEPES.pMaxPower[sc,p,n,g]:
+        if len(mTEPES.g2g) and sum(1 for gg in mTEPES.g if (g,gg) in mTEPES.g2g or (gg,g) in mTEPES.g2g) and mTEPES.pMaxPower[sc,p,n,g]:
             return OptModel.vTotalOutput[sc,p,n,g]/mTEPES.pMaxPower[sc,p,n,g] <= OptModel.vMaxCommitment[g]
         else:
             return Constraint.Skip
@@ -417,8 +417,8 @@ def GenerationOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, st):
         print('eMaxCommitGen         ... ', len(getattr(OptModel, 'eMaxCommitGen_'+st)), ' rows')
 
     def eExclusiveGens(OptModel,g):
-        if sum(1 for gg in mTEPES.gg if (gg,g) in mTEPES.g2g):
-            return OptModel.vMaxCommitment[g] + sum(OptModel.vMaxCommitment[gg] for gg in mTEPES.gg if (gg,g) in mTEPES.g2g) <= 1
+        if len(mTEPES.g2g) and sum(1 for gg in mTEPES.g if (gg,g) in mTEPES.g2g):
+            return OptModel.vMaxCommitment[g] + sum(OptModel.vMaxCommitment[gg] for gg in mTEPES.g if (gg,g) in mTEPES.g2g) <= 1
         else:
             return Constraint.Skip
     setattr(OptModel, 'eExclusiveGens_'+st, Constraint(mTEPES.g, rule=eExclusiveGens, doc='mutually exclusive generators'))
