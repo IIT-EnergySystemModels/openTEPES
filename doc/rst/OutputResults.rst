@@ -9,6 +9,8 @@ A map of the transmission network and the energy share of different technologies
    :scale: 40%
    :align: center
 
+|
+
 .. image:: ../img/oT_Map_Network_MAF2030.png
    :scale: 60%
    :align: center

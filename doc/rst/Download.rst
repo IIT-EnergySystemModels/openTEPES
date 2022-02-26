@@ -95,7 +95,7 @@ In the directory of your choice, open and execute the openTEPES_run.py script by
 
      ``openTEPES_Main``
 
-Then, three parameters (case, dir, and solver) will be asked for.
+Then, four parameters (case, dir, solver, and console log) will be asked for.
 
 **Remark:** at this step only press enter for each input and openTEPES will be executed with the default parameters.
 
