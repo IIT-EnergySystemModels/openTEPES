@@ -128,7 +128,7 @@ They are written in **lowercase** letters.
 ------------------------------------------  --------------------------------------------------------------------------  -----
 :math:`icg_g`                               Candidate generator or ESS installed or not                                 {0,1}
 :math:`gp^ω_{png}, gc^ω_{png}`              Generator output (discharge if an ESS) and consumption (charge if an ESS)   GW
-:math:`go^ω_{png}`                          Generator outflows of an ESS                                                GW
+:math:`go^ω_{pne}`                          Generator outflows of an ESS                                                GW
 :math:`p^ω_{png}`                           Generator output of the second block (i.e., above the minimum load)         GW
 :math:`c^ω_{pne}`                           Generator charge                                                            GW
 :math:`ur^ω_{png}, dr^ω_{png}`              Upward and downward operating reserves of a non-renewable generating unit   GW
@@ -338,27 +338,29 @@ Half ohmic losses are linearly approximated as a function of the flow [GW] (``eL
 
 **Bounds on generation variables** [GW]
 
-:math:`0 \leq gp^ω_{png} \leq \overline{GP}^ω_{png}                           \quad \forall ωpng`
+:math:`0 \leq gp^ω_{png} \leq \overline{GP}^ω_{png}                              \quad \forall ωpng`
 
-:math:`0 \leq qc^ω_{pne} \leq \overline{GP}^ω_{pne}                           \quad \forall ωpne`
+:math:`0 \leq go^ω_{pne} \leq \max(\overline{GP}^ω_{pne},\underline{GC}^ω_{pne}) \quad \forall ωpne`
 
-:math:`0 \leq ur^ω_{png} \leq \overline{GP}^ω_{png} - \underline{GP}^ω_{png}  \quad \forall ωpng`
+:math:`0 \leq qc^ω_{pne} \leq \overline{GP}^ω_{pne}                              \quad \forall ωpne`
 
-:math:`0 \leq ur'^ω_{pne} \leq \overline{GC}^ω_{pne} - \underline{GC}^ω_{pne} \quad \forall ωpne`
+:math:`0 \leq ur^ω_{png} \leq \overline{GP}^ω_{png} - \underline{GP}^ω_{png}     \quad \forall ωpng`
 
-:math:`0 \leq dr^ω_{png} \leq \overline{GP}^ω_{png} - \underline{GP}^ω_{png}  \quad \forall ωpng`
+:math:`0 \leq ur'^ω_{pne} \leq \overline{GC}^ω_{pne} - \underline{GC}^ω_{pne}    \quad \forall ωpne`
 
-:math:`0 \leq dr'^ω_{pne} \leq \overline{GC}^ω_{pne} - \underline{GC}^ω_{pne} \quad \forall ωpne`
+:math:`0 \leq dr^ω_{png}  \leq \overline{GP}^ω_{png} - \underline{GP}^ω_{png}    \quad \forall ωpng`
 
-:math:`0 \leq  p^ω_{png} \leq \overline{GP}^ω_{png} - \underline{GP}^ω_{png}  \quad \forall ωpng`
+:math:`0 \leq dr'^ω_{pne} \leq \overline{GC}^ω_{pne} - \underline{GC}^ω_{pne}    \quad \forall ωpne`
 
-:math:`0 \leq  c^ω_{pne} \leq \overline{GP}^ω_{pne}                           \quad \forall ωpne`
+:math:`0 \leq  p^ω_{png}  \leq \overline{GP}^ω_{png} - \underline{GP}^ω_{png}    \quad \forall ωpng`
 
-:math:`0 \leq  i^ω_{pne} \leq I^ω_{pne}                                       \quad \forall ωpne`
+:math:`0 \leq  c^ω_{pne}  \leq \overline{GP}^ω_{pne}                             \quad \forall ωpne`
 
-:math:`0 \leq  s^ω_{pne}                                                      \quad \forall ωpne`
+:math:`0 \leq  i^ω_{pne}  \leq I^ω_{pne}                                         \quad \forall ωpne`
 
-:math:`0 \leq ens^ω_{pni} \leq D^ω_{pni}                                      \quad \forall ωpni`
+:math:`0 \leq  s^ω_{pne}                                                         \quad \forall ωpne`
+
+:math:`0 \leq ens^ω_{pni} \leq D^ω_{pni}                                         \quad \forall ωpni`
 
 **Bounds on network variables** [GW]
 
