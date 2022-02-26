@@ -31,17 +31,14 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
         Solver.options['Method'        ] = 2                                                 # barrier method
         Solver.options['MIPFocus'      ] = 1
         Solver.options['Presolve'      ] = 2
-        Solver.options['Crossover'     ] = 0
         Solver.options['RINS'          ] = 100
         # Solver.options['BarConvTol'    ] = 1e-9
         # Solver.options['BarQCPConvTol' ] = 0.025
         Solver.options['MIPGap'        ] = 0.01
         Solver.options['Threads'       ] = int((psutil.cpu_count(logical=True) + psutil.cpu_count(logical=False))/2)
-        Solver.options['TimeLimit'     ] =    18000
-        Solver.options['IterationLimit'] = 18000000
+        Solver.options['TimeLimit'     ] =    10800
+        Solver.options['IterationLimit'] = 10800000
     if mTEPES.pIndBinGenInvest()*len(mTEPES.gc) + mTEPES.pIndBinGenRetire()*len(mTEPES.gd) + mTEPES.pIndBinNetInvest()*len(mTEPES.lc) + mTEPES.pIndBinGenOperat()*len(mTEPES.nr) + mTEPES.pIndBinLineCommit()*len(mTEPES.la) + len(mTEPES.g2g) == 0:
-        if SolverName == 'gurobi':
-            Solver.options['Crossover' ] = -1
         OptModel.dual = Suffix(direction=Suffix.IMPORT)
         OptModel.rc   = Suffix(direction=Suffix.IMPORT)
     SolverResults = Solver.solve(OptModel, tee=True , report_timing=True )             # tee=True displays the log of the solver
