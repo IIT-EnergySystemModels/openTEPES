@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 16, 2022
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 26, 2022
 """
 
 import time
@@ -24,7 +24,6 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
     mTEPES.n  = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in                mTEPES.pDuration        )
 
     #%% solving the problem
-    # Solver = SolverFactory(SolverName, solver_io='mps')                                      # select solver
     Solver = SolverFactory(SolverName)                                                         # select solver
     if SolverName == 'gurobi':
         Solver.options['LogFile'       ] = _path+'/openTEPES_'+CaseName+'.log'
@@ -41,9 +40,8 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
         Solver.options['TimeLimit'     ] =    18000
         Solver.options['IterationLimit'] = 18000000
     if mTEPES.pIndBinGenInvest()*len(mTEPES.gc) + mTEPES.pIndBinGenRetire()*len(mTEPES.gd) + mTEPES.pIndBinNetInvest()*len(mTEPES.lc) + mTEPES.pIndBinGenOperat()*len(mTEPES.nr) + mTEPES.pIndBinLineCommit()*len(mTEPES.la) + len(mTEPES.g2g) == 0:
-        if SolverName == 'gurobi' or SolverName == 'mosek':
-            Solver.options['relax_integrality'] =  1  # introduced to show results of the dual variables
-            Solver.options['Crossover'        ] = -1
+        if SolverName == 'gurobi':
+            Solver.options['Crossover' ] = -1
         OptModel.dual = Suffix(direction=Suffix.IMPORT)
         OptModel.rc   = Suffix(direction=Suffix.IMPORT)
     SolverResults = Solver.solve(OptModel, tee=True , report_timing=True )             # tee=True displays the log of the solver
@@ -89,12 +87,9 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
             for nr in mTEPES.nr:
                 if sum(1 for g in mTEPES.nr if (nr,g) in mTEPES.g2g or (g,nr) in mTEPES.g2g):
                     OptModel.vMaxCommitment[nr].fix(round(OptModel.vMaxCommitment[nr]()))
-        if SolverName == 'gurobi' or SolverName == 'mosek':
-            Solver.options['relax_integrality'] =  1  # introduced to show results of the dual variables
-            Solver.options['Crossover'        ] = -1
         OptModel.dual = Suffix(direction=Suffix.IMPORT)
         OptModel.rc   = Suffix(direction=Suffix.IMPORT)
-        SolverResults = Solver.solve(OptModel, tee=True , report_timing=True , warmstart=True)   # tee=True displays the log of the solver
+        SolverResults = Solver.solve(OptModel, tee=True, report_timing=True, warmstart=True)   # tee=True displays the log of the solver
         SolverResults.write()                                                                  # summary of the solver results
 
     SolvingTime = time.time() - StartTime

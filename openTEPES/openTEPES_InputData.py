@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 25, 2022
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 26, 2022
 """
 
 import time
@@ -942,7 +942,7 @@ def SettingUpVariables(OptModel, mTEPES):
     # fixing the ENS in nodes with no demand
     for sc,p,n,nd in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.nd:
         if mTEPES.pDemand[sc,p,n,nd] == 0.0:
-            OptModel.vENS  [sc,p,n,nd].fix(0.0)
+            OptModel.vENS[sc,p,n,nd].fix(0.0)
 
     SettingUpVariablesTime = time.time() - StartTime
     print('Setting up variables                   ... ', round(SettingUpVariablesTime), 's')

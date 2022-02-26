@@ -156,19 +156,19 @@ The names between parenthesis correspond to the names of the constraints in the 
 
 **Objective function**: minimization of total (investment and operation) cost for the scope of the model
 
-Generation, storage and network investment cost [M€] (``eTotalFCost``)
+Generation, storage and network investment cost [M€] <``eTotalFCost``>
 
 :math:`\sum_g {CFG_g icg_g} + \sum_{ijc}{CFT_{ijc} ict_{ijc}} +`
 
-Generation operation cost [M€] (``eTotalGCost``) (``eTotalECost``)
+Generation operation cost [M€] <``eTotalGCost``> <``eTotalECost``>
 
 :math:`\sum_{ωpng}{[P^ω DUR_n (CV_g gp^ω_{png} + CF_g uc^ω_{png}) + CSU_g su^ω_{png} + CSD_g sd^ω_{png}]} +`
 
-Variable consumption operation cost [M€] (``eTotalCCost``)
+Variable consumption operation cost [M€] <``eTotalCCost``>
 
 :math:`\sum_{ωpne}{P^ω DUR_n CV_e gc^ω_{pne}} +`
 
-Reliability cost [M€] (``eTotalRCost``)
+Reliability cost [M€] <``eTotalRCost``>
 
 :math:`\sum_{ωpni}{P^ω DUR_n CENS ens^ω_{pni}}`
 
@@ -176,35 +176,35 @@ Reliability cost [M€] (``eTotalRCost``)
 
 **Generation operation**
 
-Commitment decision bounded by investment decision for candidate committed units (all except the VRES units) [p.u.] (``eInstalGenComm``)
+Commitment decision bounded by investment decision for candidate committed units (all except the VRES units) [p.u.] <``eInstalGenComm``>
 
 :math:`uc^ω_{png} \leq icg_g \quad \forall ωpng, g \in CG`
 
-Output and consumption bounded by investment decision for candidate ESS [p.u.] (``eInstalGenCap``) (``eInstalConESS``)
+Output and consumption bounded by investment decision for candidate ESS [p.u.] <``eInstalGenCap``> <``eInstalConESS``>
 
 :math:`\frac{gp^ω_{pne}}{\overline{GP}^ω_{pne}} \leq icg_e \quad \forall ωpne, e \in CE`
 
 :math:`\frac{gc^ω_{pne}}{\overline{GP}^ω_{pne}} \leq icg_e \quad \forall ωpne, e \in CE`
 
-Adequacy system reserve margin [p.u.] (``eAdequacyReserveMargin``)
+Adequacy system reserve margin [p.u.] <``eAdequacyReserveMargin``>
 
 :math:`\sum_{g \in a, EG} \overline{GP}_g A_g + \sum_{g \in a, CG} icg_g  \overline{GP}_g A_g \geq PD_a RM_a \quad \forall a`
 
-Balance of generation and demand at each node with ohmic losses [GW] (``eBalance``)
+Balance of generation and demand at each node with ohmic losses [GW] <``eBalance``>
 
 :math:`\sum_{g \in i} gp^ω_{png} - \sum_{e \in i} gc^ω_{pne} + ens^ω_{pni} = D^ω_{pni} + \sum_{jc} l^ω_{pnijc} + \sum_{jc} l^ω_{pnjic} + \sum_{jc} f^ω_{pnijc} - \sum_{jc} f^ω_{pnjic} \quad \forall ωpni`
 
-System inertia for each area [s] (``eSystemInertia``)
+System inertia for each area [s] <``eSystemInertia``>
 
 :math:`\sum_{g \in a} \frac{GI_g}{\overline{GP}_g} gp^ω_{png} \geq SI^ω_{pna} \quad \forall ωpna`
 
-Upward and downward operating reserves provided by non-renewable generators, and ESS when charging for each area [GW] (``eOperReserveUp``) (``eOperReserveDw``)
+Upward and downward operating reserves provided by non-renewable generators, and ESS when charging for each area [GW] <``eOperReserveUp``> <``eOperReserveDw``>
 
 :math:`\sum_{g \in a} ur^ω_{png} + \sum_{e \in a} ur'^ω_{pne} = UR^ω_{pna} \quad \forall ωpna`
 
 :math:`\sum_{g \in a} dr^ω_{png} + \sum_{e \in a} dr'^ω_{pne} = DR^ω_{pna} \quad \forall ωpna`
 
-Ratio between downward and upward operating reserves provided by non-renewable generators, and ESS when charging for each area [GW] (``eReserveMinRatioDwUp``) (``eReserveMaxRatioDwUp``) (``eRsrvMinRatioDwUpESS``) (``eRsrvMaxRatioDwUpESS``)
+Ratio between downward and upward operating reserves provided by non-renewable generators, and ESS when charging for each area [GW] <``eReserveMinRatioDwUp``> <``eReserveMaxRatioDwUp``> <``eRsrvMinRatioDwUpESS``> <``eRsrvMaxRatioDwUpESS``>
 
 :math:`\underline{DtUR} \: ur^ω_{png}  \leq dr^ω_{png}  \leq \overline{DtUR} \: ur^ω_{png}  \quad \forall ωpng`
 
@@ -212,27 +212,27 @@ Ratio between downward and upward operating reserves provided by non-renewable g
 
 VRES units (i.e., those with linear variable cost equal to 0 and no storage capacity) do not contribute to the the operating reserves.
 
-Operating reserves from ESS can only be provided if enough energy is available for producing [GW] (``eReserveUpIfEnergy``) (``eReserveDwIfEnergy``)
+Operating reserves from ESS can only be provided if enough energy is available for producing [GW] <``eReserveUpIfEnergy``> <``eReserveDwIfEnergy``>
 
 :math:`ur^ω_{pne} \leq \frac{      i^ω_{pne}}{DUR_n} \quad \forall ωpne`
 
 :math:`dr^ω_{pne} \leq \frac{I^ω_{pne} - i^ω_{pne}}{DUR_n} \quad \forall ωpne`
 
-or for storing [GW] (``eESSReserveUpIfEnergy``) (``eESSReserveDwIfEnergy``)
+or for storing [GW] <``eESSReserveUpIfEnergy``> <``eESSReserveDwIfEnergy``>
 
 :math:`ur'^ω_{pne} \leq \frac{I^ω_{pne} - i^ω_{pne}}{DUR_n} \quad \forall ωpne`
 
 :math:`dr'^ω_{pne} \leq \frac{      i^ω_{pne}}{DUR_n} \quad \forall ωpne`
 
-ESS energy inventory (only for load levels multiple of 1, 24, 168 h depending on the ESS storage type) [GWh] (``eESSInventory``)
+ESS energy inventory (only for load levels multiple of 1, 24, 168 h depending on the ESS storage type) [GWh] <``eESSInventory``>
 
 :math:`i^ω_{p,n-\frac{\tau_e}{\nu},e} + \sum_{n' = n-\frac{\tau_e}{\nu}}^{n} DUR_n' (EI^ω_{pn'e} - go^ω_{pn'e} - gp^ω_{pn'e} + EF_e gc^ω_{pn'e}) = i^ω_{pne} + s^ω_{pne} \quad \forall ωpne`
 
-ESS outflows (only for load levels multiple of 1, 24, 168, 672, and 8736 h depending on the ESS outflow cycle) must be satisfied [GWh] (``eEnergyOutflows``)
+ESS outflows (only for load levels multiple of 1, 24, 168, 672, and 8736 h depending on the ESS outflow cycle) must be satisfied [GWh] <``eEnergyOutflows``>
 
 :math:`\sum_{n' = n-\frac{\tau_e}{\rho_e}}^{n} go^ω_{pn'e} = EO^ω_{pne} \quad \forall ωpne`
 
-Maximum and minimum output of the second block of a committed unit (all except the VRES units) [p.u.] (``eMaxOutput2ndBlock``) (``eMinOutput2ndBlock``)
+Maximum and minimum output of the second block of a committed unit (all except the VRES units) [p.u.] <``eMaxOutput2ndBlock``> <``eMinOutput2ndBlock``>
 
 * D.A. Tejada-Arango, S. Lumbreras, P. Sánchez-Martín, and A. Ramos "Which Unit-Commitment Formulation is Best? A Systematic Comparison" IEEE Transactions on Power Systems 35 (4): 2926-2936, Jul 2020 `10.1109/TPWRS.2019.2962024 <https://doi.org/10.1109/TPWRS.2019.2962024>`_
 
@@ -246,43 +246,43 @@ Maximum and minimum output of the second block of a committed unit (all except t
 
 :math:`\frac{p^ω_{png} - dr^ω_{png}}{\overline{GP}^ω_{png} - \underline{GP}^ω_{png}} \geq 0          \quad \forall ωpng`
 
-Maximum and minimum charge of an ESS [p.u.] (``eMaxCharge``) (``eMinCharge``)
+Maximum and minimum charge of an ESS [p.u.] <``eMaxCharge``> <``eMinCharge``>
 
 :math:`\frac{c^ω_{pne} + dr'^ω_{pne}}{\overline{GC}^ω_{pne} - \underline{GC}^ω_{pne}} \leq 1 \quad \forall ωpne`
 
 :math:`\frac{c^ω_{pne} - ur'^ω_{pne}}{\overline{GC}^ω_{pne} - \underline{GC}^ω_{pne}} \geq 0 \quad \forall ωpne`
 
-Incompatibility between charge and discharge of an ESS [p.u.] (``eChargeDischarge``)
+Incompatibility between charge and discharge of an ESS [p.u.] <``eChargeDischarge``>
 
 :math:`\frac{p^ω_{pne} + URA \: ur'^ω_{pne}}{\overline{GP}^ω_{pne} - \underline{GP}^ω_{pne}} + \frac{c^ω_{pne} + DRA \: dr'^ω_{pne}}{\overline{GC}^ω_{pne} - \underline{GC}^ω_{pne}} \leq 1 \quad \forall ωpne, e \in CE`
 
-Total output of a committed unit (all except the VRES units) [GW] (``eTotalOutput``)
+Total output of a committed unit (all except the VRES units) [GW] <``eTotalOutput``>
 
 :math:`\frac{gp^ω_{png}}{\underline{GP}^ω_{png}} = uc^ω_{png} + \frac{p^ω_{png} + URA \: ur^ω_{png} - DRA \: dr^ω_{png}}{\underline{GP}^ω_{png}} \quad \forall ωpng`
 
-Total charge of an ESS [GW] (``eESSTotalCharge``)
+Total charge of an ESS [GW] <``eESSTotalCharge``>
 
 :math:`\frac{gc^ω_{pne}}{\underline{GC}^ω_{pne}} = 1 + \frac{c^ω_{pne} + URA \: ur'^ω_{pne} - DRA \: dr'^ω_{pne}}{\underline{GC}^ω_{pne}} \quad \forall ωpne, e \in CE`
 
-Logical relation between commitment, startup and shutdown status of a committed unit (all except the VRES units) [p.u.] (``eUCStrShut``)
+Logical relation between commitment, startup and shutdown status of a committed unit (all except the VRES units) [p.u.] <``eUCStrShut``>
 
 :math:`uc^ω_{png} - uc^ω_{p,n-\nu,g} = su^ω_{png} - sd^ω_{png} \quad \forall ωpng`
 
-Maximum commitment of a committable unit (all except the VRES units) [p.u.] (``eMaxCommitment``)
+Maximum commitment of a committable unit (all except the VRES units) [p.u.] <``eMaxCommitment``>
 
 :math:`uc^ω_{png} \leq uc'_g \quad \forall ωpng`
 
-Maximum commitment of any unit [p.u.] (``eMaxCommitGen``)
+Maximum commitment of any unit [p.u.] <``eMaxCommitGen``>
 
 :math:`\sum_{ωpn} \frac{gp^ω_{png}}{\overline{GP}_g} \leq uc'_g \quad \forall ωpng`
 
-Mutually exclusive :math:`g` and :math:`g'` units (e.g., thermal, ESS, VRES units) [p.u.] (``eExclusiveGens``)
+Mutually exclusive :math:`g` and :math:`g'` units (e.g., thermal, ESS, VRES units) [p.u.] <``eExclusiveGens``>
 
 :math:`uc'_g + uc'_{g'} \leq 1 \quad \forall g, g'`
 
 Initial commitment of the units is determined by the model based on the merit order loading, including the VRES and ESS units.
 
-Maximum ramp up and ramp down for the second block of a non-renewable (thermal, hydro) unit [p.u.] (``eRampUp``) (``eRampDw``)
+Maximum ramp up and ramp down for the second block of a non-renewable (thermal, hydro) unit [p.u.] <``eRampUp``> <``eRampDw``>
 
 - P. Damcı-Kurt, S. Küçükyavuz, D. Rajan, and A. Atamtürk, “A polyhedral study of production ramping,” Math. Program., vol. 158, no. 1–2, pp. 175–205, Jul. 2016. `10.1007/s10107-015-0919-9 <https://doi.org/10.1007/s10107-015-0919-9>`_
 
@@ -290,13 +290,13 @@ Maximum ramp up and ramp down for the second block of a non-renewable (thermal, 
 
 :math:`\frac{- p^ω_{p,n-\nu,g} + ur^ω_{p,n-\nu,g} + p^ω_{png} - dr^ω_{png}}{DUR_n RD_g} \geq - uc^ω_{p,n-\nu,g} + sd^ω_{png} \quad \forall ωpng`
 
-Maximum ramp down and ramp up for the charge of an ESS [p.u.] (``eRampUpCharge``) (``eRampDwCharge``)
+Maximum ramp down and ramp up for the charge of an ESS [p.u.] <``eRampUpCharge``> <``eRampDwCharge``>
 
 :math:`\frac{- c^ω_{p,n-\nu,e} - ur^ω_{p,n-\nu,e} + c^ω_{pne} + dr^ω_{pne}}{DUR_n RD_e} \leq   1 \quad \forall ωpne`
 
 :math:`\frac{- c^ω_{p,n-\nu,e} + dr^ω_{p,n-\nu,e} + c^ω_{pne} - ur^ω_{pne}}{DUR_n RU_e} \geq - 1 \quad \forall ωpne`
 
-Minimum up time and down time of thermal unit [h] (``eMinUpTime``) (``eMinDownTime``)
+Minimum up time and down time of thermal unit [h] <``eMinUpTime``> <``eMinDownTime``>
 
 - D. Rajan and S. Takriti, “Minimum up/down polytopes of the unit commitment problem with start-up costs,” IBM, New York, Technical Report RC23628, 2005. https://pdfs.semanticscholar.org/b886/42e36b414d5929fed48593d0ac46ae3e2070.pdf
 
@@ -306,61 +306,61 @@ Minimum up time and down time of thermal unit [h] (``eMinUpTime``) (``eMinDownTi
 
 **Network operation**
 
-Logical relation between transmission investment and switching {0,1} (``eLineStateCand``)
+Logical relation between transmission investment and switching {0,1} <``eLineStateCand``>
 
 :math:`swt^{ω}_{pnijc} \leq ict_{ijc} \quad \forall ωpnijc, ijc \in CL`
 
-Logical relation between switching state, switch-on and switch-off status of a line [p.u.] (``eSWOnOff``)
+Logical relation between switching state, switch-on and switch-off status of a line [p.u.] <``eSWOnOff``>
 
 :math:`swt^ω_{pnijc} - swt^ω_{p,n-\nu,ijc} = son^ω_{pnijc} - sof^ω_{pnijc} \quad \forall ωpnijc`
 
 The initial status of the lines is pre-defined as switched on.
 
-Minimum switch-on and switch-off state of a line [h] (``eMinSwOnState``) (``eMinSwOffState``)
+Minimum switch-on and switch-off state of a line [h] <``eMinSwOnState``> <``eMinSwOffState``>
 
 :math:`\sum_{n'=n+\nu-SON_{ijc}}^n son^ω_{pn'ijc} \leq     swt^ω_{pnijc} \quad \forall ωpnijc`
 
 :math:`\sum_{n'=n+\nu-SOF_{ijc}}^n sof^ω_{pn'ijc} \leq 1 - swt^ω_{pnijc} \quad \forall ωpnijc`
 
-Flow limit in transmission lines [p.u.] (``eNetCapacity1``) (``eNetCapacity2``)
+Flow limit in transmission lines [p.u.] <``eNetCapacity1``> <``eNetCapacity2``>
 
 :math:`- swt^{ω}_{pnijc} \leq \frac{f^ω_{pnijc}}{\overline{F}_{ijc}} \leq swt^{ω}_{pnijc} \quad \forall ωpnijc`
 
-DC Power flow for existing and non-switchable, and candidate and switchable AC-type lines (Kirchhoff's second law) [rad] (``eKirchhoff2ndLaw1``) (``eKirchhoff2ndLaw2``)
+DC Power flow for existing and non-switchable, and candidate and switchable AC-type lines (Kirchhoff's second law) [rad] <``eKirchhoff2ndLaw1``> <``eKirchhoff2ndLaw2``>
 
 :math:`\frac{f^ω_{pnijc}}{\overline{F}'_{ijc}} - (\theta^ω_{pni} - \theta^ω_{pnj})\frac{S_B}{X_{ijc}\overline{F}'_{ijc}} = 0 \quad \forall ωpnijc, ijc \in EL`
 
 :math:`-1+swt^{ω}_{pnijc} \leq \frac{f^ω_{pnijc}}{\overline{F}'_{ijc}} - (\theta^ω_{pni} - \theta^ω_{pnj})\frac{S_B}{X_{ijc}\overline{F}'_{ijc}} \leq 1-swt^{ω}_{pnijc} \quad \forall ωpnijc, ijc \in CL`
 
-Half ohmic losses are linearly approximated as a function of the flow [GW] (``eLineLosses1``) (``eLineLosses2``)
+Half ohmic losses are linearly approximated as a function of the flow [GW] <``eLineLosses1``> <``eLineLosses2``>
 
 :math:`- \frac{L_{ijc}}{2} f^ω_{pnijc} \leq l^ω_{pnijc} \geq \frac{L_{ijc}}{2} f^ω_{pnijc} \quad \forall ωpnijc`
 
 **Bounds on generation variables** [GW]
 
-:math:`0 \leq gp^ω_{png} \leq \overline{GP}^ω_{png}                              \quad \forall ωpng`
+:math:`0 \leq gp^ω_{png} \leq \overline{GP}^ω_{png}                             \quad \forall ωpng`
 
-:math:`0 \leq go^ω_{pne} \leq \max(\overline{GP}^ω_{pne},\underline{GC}^ω_{pne}) \quad \forall ωpne`
+:math:`0 \leq go^ω_{pne} \leq \max(\overline{GP}^ω_{pne},\overline{GC}^ω_{pne}) \quad \forall ωpne`
 
-:math:`0 \leq qc^ω_{pne} \leq \overline{GP}^ω_{pne}                              \quad \forall ωpne`
+:math:`0 \leq qc^ω_{pne} \leq \overline{GP}^ω_{pne}                             \quad \forall ωpne`
 
-:math:`0 \leq ur^ω_{png} \leq \overline{GP}^ω_{png} - \underline{GP}^ω_{png}     \quad \forall ωpng`
+:math:`0 \leq ur^ω_{png} \leq \overline{GP}^ω_{png} - \underline{GP}^ω_{png}    \quad \forall ωpng`
 
-:math:`0 \leq ur'^ω_{pne} \leq \overline{GC}^ω_{pne} - \underline{GC}^ω_{pne}    \quad \forall ωpne`
+:math:`0 \leq ur'^ω_{pne} \leq \overline{GC}^ω_{pne} - \underline{GC}^ω_{pne}   \quad \forall ωpne`
 
-:math:`0 \leq dr^ω_{png}  \leq \overline{GP}^ω_{png} - \underline{GP}^ω_{png}    \quad \forall ωpng`
+:math:`0 \leq dr^ω_{png}  \leq \overline{GP}^ω_{png} - \underline{GP}^ω_{png}   \quad \forall ωpng`
 
-:math:`0 \leq dr'^ω_{pne} \leq \overline{GC}^ω_{pne} - \underline{GC}^ω_{pne}    \quad \forall ωpne`
+:math:`0 \leq dr'^ω_{pne} \leq \overline{GC}^ω_{pne} - \underline{GC}^ω_{pne}   \quad \forall ωpne`
 
-:math:`0 \leq  p^ω_{png}  \leq \overline{GP}^ω_{png} - \underline{GP}^ω_{png}    \quad \forall ωpng`
+:math:`0 \leq  p^ω_{png}  \leq \overline{GP}^ω_{png} - \underline{GP}^ω_{png}   \quad \forall ωpng`
 
-:math:`0 \leq  c^ω_{pne}  \leq \overline{GP}^ω_{pne}                             \quad \forall ωpne`
+:math:`0 \leq  c^ω_{pne}  \leq \overline{GP}^ω_{pne}                            \quad \forall ωpne`
 
-:math:`0 \leq  i^ω_{pne}  \leq I^ω_{pne}                                         \quad \forall ωpne`
+:math:`0 \leq  i^ω_{pne}  \leq I^ω_{pne}                                        \quad \forall ωpne`
 
-:math:`0 \leq  s^ω_{pne}                                                         \quad \forall ωpne`
+:math:`0 \leq  s^ω_{pne}                                                        \quad \forall ωpne`
 
-:math:`0 \leq ens^ω_{pni} \leq D^ω_{pni}                                         \quad \forall ωpni`
+:math:`0 \leq ens^ω_{pni} \leq D^ω_{pni}                                        \quad \forall ωpni`
 
 **Bounds on network variables** [GW]
 
