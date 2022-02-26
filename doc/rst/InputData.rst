@@ -260,7 +260,7 @@ MinimumCharge         Minimum consumption/charge when the ESS unit is storing en
 InitialStorage        Initial energy stored at the first instant of the time scope                                                            GWh
 MaximumStorage        Maximum energy that can be stored by the ESS unit                                                                       GWh
 MinimumStorage        Minimum energy that can be stored by the ESS unit                                                                       GWh
-Efficiency            Round-trip efficiency of the pump/turbine cycle of a pumped-storage hydro power plant or charge/discharge of a battery  p.u.
+Efficiency            Round-trip efficiency of the pump/turbine cycle of a pumped-hydro storage power plant or charge/discharge of a battery  p.u.
 Availability          Unit availability for system adequacy reserve margin                                                                    p.u.
 Inertia               Unit inertia constant                                                                                                   s
 EFOR                  Equivalent Forced Outage Rate                                                                                           p.u.

@@ -133,7 +133,7 @@ They are written in **lowercase** letters.
 :math:`c^ω_{pne}`                           Generator charge                                                            GW
 :math:`ur^ω_{png}, dr^ω_{png}`              Upward and downward operating reserves of a non-renewable generating unit   GW
 :math:`ur'^ω_{pne}, dr'^ω_{pne}`            Upward and downward operating reserves of an ESS as a consumption unit      GW
-:math:`i^ω_{pne}`                           ESS stored energy (inventory)                                               GWh
+:math:`i^ω_{pne}`                           ESS stored energy (inventory, state of charge)                              GWh
 :math:`s^ω_{pne}`                           ESS spilled energy                                                          GWh
 :math:`uc^ω_{png}, su^ω_{png}, sd^ω_{png}`  Commitment, startup and shutdown of generation unit per load level          {0,1}
 :math:`uc'_g`                               Maximum commitment of a generation unit for all the load levels             {0,1}
