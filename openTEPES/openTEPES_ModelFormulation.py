@@ -272,7 +272,7 @@ def GenerationOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, st):
     def eESSInventory(OptModel,sc,p,n,es):
         if   mTEPES.n.ord(n) == mTEPES.pCycleTimeStep[es]:
             return mTEPES.pIniInventory[sc,p,n,es]                                            + sum(mTEPES.pDuration[n2]*(mTEPES.pEnergyInflows[sc,p,n2,es] - OptModel.vEnergyOutflows[sc,p,n2,es] - OptModel.vTotalOutput[sc,p,n2,es] + mTEPES.pEfficiency[es]*OptModel.vESSTotalCharge[sc,p,n2,es]) for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pCycleTimeStep[es]:mTEPES.n.ord(n)]) == OptModel.vESSInventory[sc,p,n,es] + OptModel.vESSSpillage[sc,p,n,es]
-        elif mTEPES.n.ord(n) >  mTEPES.pCycleTimeStep[es] and mTEPES.n.ord(n) % mTEPES.pCycleTimeStep[es] == 0:
+        elif mTEPES.n.ord(n) > mTEPES.pCycleTimeStep[es] and mTEPES.n.ord(n) % mTEPES.pCycleTimeStep[es] == 0:
             return OptModel.vESSInventory[sc,p,mTEPES.n.prev(n,mTEPES.pCycleTimeStep[es]),es] + sum(mTEPES.pDuration[n2]*(mTEPES.pEnergyInflows[sc,p,n2,es] - OptModel.vEnergyOutflows[sc,p,n2,es] - OptModel.vTotalOutput[sc,p,n2,es] + mTEPES.pEfficiency[es]*OptModel.vESSTotalCharge[sc,p,n2,es]) for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pCycleTimeStep[es]:mTEPES.n.ord(n)]) == OptModel.vESSInventory[sc,p,n,es] + OptModel.vESSSpillage[sc,p,n,es]
         else:
             return Constraint.Skip

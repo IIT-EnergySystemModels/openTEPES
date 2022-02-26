@@ -900,7 +900,7 @@ def NetworkMapResults(DirName, CaseName, OptModel, mTEPES):
         line_df['nf'         ] = 0.0
         line_df['cc'         ] = 0.0
 
-        line_df = line_df.groupby(level=[0, 1]).sum()
+        line_df = line_df.groupby(level=[0,1]).sum()
         ncolors = 11
         colors = list(Color('lightgreen').range_to(Color('darkred'), ncolors))
         colors = ['rgb'+str(x.rgb) for x in colors]
