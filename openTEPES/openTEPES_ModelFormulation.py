@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 26, 2021
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 27, 2021
 """
 
 import time
@@ -205,7 +205,7 @@ def GenerationOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, st):
 
     #%%
     def eReserveUpIfEnergy(OptModel,sc,p,n,es):
-        if sum(mTEPES.pOperReserveUp[sc,p,n,ar] for ar in mTEPES.ar if (ar,es) in mTEPES.a2g) and mTEPES.pMaxPower2ndBlock[sc,p,n,es] and mTEPES.pIndOperReserve[es] == 0:
+        if sum(mTEPES.pOperReserveUp[sc,p,n,ar] for ar in mTEPES.ar if (ar,es) in mTEPES.a2g) and mTEPES.pMaxPower2ndBlock[sc,p,n,es] and mTEPES.pIndOperReserve[es] == 0 and mTEPES.n.ord(n) % mTEPES.pCycleTimeStep[es] == 0:
             return OptModel.vReserveUp  [sc,p,n,es] <=                                  OptModel.vESSInventory[sc,p,n,es]  / mTEPES.pDuration[n]
         else:
             return Constraint.Skip
@@ -215,7 +215,7 @@ def GenerationOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, st):
         print('eReserveUpIfEnergy    ... ', len(getattr(OptModel, 'eReserveUpIfEnergy_'+st)), ' rows')
 
     def eReserveDwIfEnergy(OptModel,sc,p,n,es):
-        if sum(mTEPES.pOperReserveDw[sc,p,n,ar] for ar in mTEPES.ar if (ar,es) in mTEPES.a2g) and mTEPES.pMaxPower2ndBlock[sc,p,n,es] and mTEPES.pIndOperReserve[es] == 0:
+        if sum(mTEPES.pOperReserveDw[sc,p,n,ar] for ar in mTEPES.ar if (ar,es) in mTEPES.a2g) and mTEPES.pMaxPower2ndBlock[sc,p,n,es] and mTEPES.pIndOperReserve[es] == 0 and mTEPES.n.ord(n) % mTEPES.pCycleTimeStep[es] == 0:
             return OptModel.vReserveDown[sc,p,n,es] <= (mTEPES.pMaxStorage[sc,p,n,es] - OptModel.vESSInventory[sc,p,n,es]) / mTEPES.pDuration[n]
         else:
             return Constraint.Skip
@@ -225,7 +225,7 @@ def GenerationOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, st):
         print('eReserveDwIfEnergy    ... ', len(getattr(OptModel, 'eReserveDwIfEnergy_'+st)), ' rows')
 
     def eESSReserveUpIfEnergy(OptModel,sc,p,n,es):
-        if sum(mTEPES.pOperReserveUp[sc,p,n,ar] for ar in mTEPES.ar if (ar,es) in mTEPES.a2g) and mTEPES.pMaxCharge2ndBlock[sc,p,n,es] and mTEPES.pIndOperReserve[es] == 0:
+        if sum(mTEPES.pOperReserveUp[sc,p,n,ar] for ar in mTEPES.ar if (ar,es) in mTEPES.a2g) and mTEPES.pMaxCharge2ndBlock[sc,p,n,es] and mTEPES.pIndOperReserve[es] == 0 and mTEPES.n.ord(n) % mTEPES.pCycleTimeStep[es] == 0:
             return OptModel.vESSReserveUp  [sc,p,n,es] <= (mTEPES.pMaxStorage[sc,p,n,es] - OptModel.vESSInventory[sc,p,n,es]) / mTEPES.pDuration[n]
         else:
             return Constraint.Skip
@@ -235,7 +235,7 @@ def GenerationOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, st):
         print('eESSReserveUpIfEnergy ... ', len(getattr(OptModel, 'eESSReserveUpIfEnergy_'+st)), ' rows')
 
     def eESSReserveDwIfEnergy(OptModel,sc,p,n,es):
-        if sum(mTEPES.pOperReserveDw[sc,p,n,ar] for ar in mTEPES.ar if (ar,es) in mTEPES.a2g) and mTEPES.pMaxCharge2ndBlock[sc,p,n,es] and mTEPES.pIndOperReserve[es] == 0:
+        if sum(mTEPES.pOperReserveDw[sc,p,n,ar] for ar in mTEPES.ar if (ar,es) in mTEPES.a2g) and mTEPES.pMaxCharge2ndBlock[sc,p,n,es] and mTEPES.pIndOperReserve[es] == 0 and mTEPES.n.ord(n) % mTEPES.pCycleTimeStep[es] == 0:
             return OptModel.vESSReserveDown[sc,p,n,es] <=                                  OptModel.vESSInventory[sc,p,n,es]  / mTEPES.pDuration[n]
         else:
             return Constraint.Skip
