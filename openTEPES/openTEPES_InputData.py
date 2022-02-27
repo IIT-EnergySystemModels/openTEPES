@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 26, 2022
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 27, 2022
 """
 
 import time
@@ -281,9 +281,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.gc = Set(initialize=mTEPES.g ,                     ordered=False, doc='candidate       units', filter=lambda mTEPES,g       :  g         in mTEPES.g   and pGenInvestCost    [g ] >  0.0)
     mTEPES.gd = Set(initialize=mTEPES.g ,                     ordered=False, doc='retirement      units', filter=lambda mTEPES,g       :  g         in mTEPES.g   and pGenRetireCost    [g ] != 0.0)
     mTEPES.ec = Set(initialize=mTEPES.es,                     ordered=False, doc='candidate   ESS units', filter=lambda mTEPES,es      :  es        in mTEPES.es  and pGenInvestCost    [es] >  0.0)
-    # mTEPES.br = Set(initialize=mTEPES.ni*mTEPES.nf,           ordered=False, doc='all branches         ', filter=lambda mTEPES,ni,nf   : (ni,nf)    in                pLineType                    )
     mTEPES.br = Set(initialize=list(pBrList),                 ordered=False, doc='all input lines'                                                                                                 )
-    # mTEPES.ln = Set(initialize=mTEPES.ni*mTEPES.nf*mTEPES.cc, ordered=False, doc='all input       lines', filter=lambda mTEPES,ni,nf,cc: (ni,nf,cc) in                pLineType                    )
     mTEPES.ln = Set(initialize=list(dfNetwork.index),         ordered=False, doc='all input lines'                                                                                                 )
     mTEPES.la = Set(initialize=mTEPES.ln,                     ordered=False, doc='all real        lines', filter=lambda mTEPES,*ln     :  ln        in mTEPES.ln  and pLineX            [ln] != 0.0 and pLineNTCFrw[ln] > 0.0 and pLineNTCBck[ln] > 0.0)
     mTEPES.lc = Set(initialize=mTEPES.la,                     ordered=False, doc='candidate       lines', filter=lambda mTEPES,*la     :  la        in mTEPES.la  and pNetFixedCost     [la] >  0.0)
@@ -355,9 +353,9 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.laa = mTEPES.lea | mTEPES.lca
 
     # define DC existing  lines     non-switchable
-    mTEPES.led = Set(initialize=mTEPES.le, ordered=False, doc='DC existing  lines and non-switchable lines', filter=lambda mTEPES,*le: le in mTEPES.le and  pIndBinLineSwitch[le] == 0                             and pLineType[le] == 'DC')
+    mTEPES.led = Set(initialize=mTEPES.le, ordered=False, doc='DC existing  lines and non-switchable lines', filter=lambda mTEPES,*le: le in mTEPES.le and  pIndBinLineSwitch[le] == 0                             and     pLineType[le] == 'DC')
     # define DC candidate lines and     switchable lines
-    mTEPES.lcd = Set(initialize=mTEPES.la, ordered=False, doc='DC candidate lines and     switchable lines', filter=lambda mTEPES,*la: la in mTEPES.la and (pIndBinLineSwitch[la] == 1 or pNetFixedCost[la] > 0.0) and pLineType[la] == 'DC')
+    mTEPES.lcd = Set(initialize=mTEPES.la, ordered=False, doc='DC candidate lines and     switchable lines', filter=lambda mTEPES,*la: la in mTEPES.la and (pIndBinLineSwitch[la] == 1 or pNetFixedCost[la] > 0.0) and     pLineType[la] == 'DC')
 
     mTEPES.lad = mTEPES.led | mTEPES.lcd
 
@@ -473,27 +471,28 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pUpTime = round(pUpTime/pTimeStep).astype('int')
     pDwTime = round(pDwTime/pTimeStep).astype('int')
 
-    #%% definition of the time-steps leap to observe the stored energy at ESS
-    pCycleTimeStep    = (pUpTime*0).astype('int')
-    pOutflowsTimeStep = (pUpTime*0).astype('int')
+    # %% definition of the time-steps leap to observe the stored energy at an ESS
+    pCycleTimeStep    = (pUpTime*0+   1).astype('int')
+    pOutflowsTimeStep = (pUpTime*0+8736).astype('int')
     for es in mTEPES.es:
-        if  pStorageType  [es] == 'Daily'  :
+        if pStorageType[es] == 'Daily'  :
             pCycleTimeStep[es] =       1
-        if  pStorageType  [es] == 'Weekly' :
+        if pStorageType[es] == 'Weekly' :
             pCycleTimeStep[es] = int( 24/pTimeStep)
-        if  pStorageType  [es] == 'Monthly':
+        if pStorageType[es] == 'Monthly':
             pCycleTimeStep[es] = int(168/pTimeStep)
 
-        if  pOutflowsType    [es] == 'Hourly' :
-            pOutflowsTimeStep[es] =    1
-        if  pOutflowsType    [es] == 'Daily'  :
-            pOutflowsTimeStep[es] =   24/pTimeStep
-        if  pOutflowsType    [es] == 'Weekly' :
-            pOutflowsTimeStep[es] =  168/pTimeStep
-        if  pOutflowsType    [es] == 'Monthly':
-            pOutflowsTimeStep[es] =  672/pTimeStep
-        if  pOutflowsType    [es] == 'Yearly' :
-            pOutflowsTimeStep[es] = 8736/pTimeStep
+        if pEnergyOutflows.sum()[es]:
+            if pOutflowsType[es] == 'Hourly' :
+                pOutflowsTimeStep[es] =        1
+            if pOutflowsType[es] == 'Daily'  :
+                pOutflowsTimeStep[es] = int(  24/pTimeStep)
+            if pOutflowsType[es] == 'Weekly' :
+                pOutflowsTimeStep[es] = int( 168/pTimeStep)
+            if pOutflowsType[es] == 'Monthly':
+                pOutflowsTimeStep[es] = int( 672/pTimeStep)
+            if pOutflowsType[es] == 'Yearly' :
+                pOutflowsTimeStep[es] = int(8736/pTimeStep)
 
         pCycleTimeStep[es] = min(pCycleTimeStep[es], pOutflowsTimeStep[es])
 
@@ -552,7 +551,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         pLineNTCBck.update(pd.Series([0 for (ni,nf,cc,ar) in mTEPES.laar if pLineNTCBck[ni,nf,cc] < pEpsilon], index = [(ni,nf,cc) for (ni,nf,cc,ar) in mTEPES.laar if pLineNTCBck[ni,nf,cc] < pEpsilon], dtype='float64'))
 
         # merging positive and negative values of the demand
-        pDemand         = pDemandPos.where      (pDemandPos >= 0.0, other=pDemandNeg)
+        pDemand            = pDemandPos.where(pDemandPos >= 0.0, other=pDemandNeg)
 
         pMaxPower2ndBlock  = pMaxPower  - pMinPower
         pMaxCharge2ndBlock = pMaxCharge - pMinCharge
@@ -703,9 +702,9 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pInitialUC     = pd.DataFrame([[0  ]*len(mTEPES.gg)]*len(mTEPES.sc*mTEPES.p*mTEPES.n), index=pd.MultiIndex.from_tuples(mTEPES.sc*mTEPES.p*mTEPES.n), columns=list(mTEPES.gg))
     pInitialSwitch = pd.DataFrame([[0  ]*len(mTEPES.ln)]*len(mTEPES.sc*mTEPES.p*mTEPES.n), index=pd.MultiIndex.from_tuples(mTEPES.sc*mTEPES.p*mTEPES.n), columns=list(mTEPES.ln))
 
-    mTEPES.pInitialOutput        = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.gg, initialize=pInitialOutput.stack().to_dict()    , within=NonNegativeReals, doc='unit initial output',         mutable=True)
-    mTEPES.pInitialUC            = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.gg, initialize=pInitialUC.stack().to_dict()        , within=Boolean,          doc='unit initial commitment',     mutable=True)
-    mTEPES.pInitialSwitch        = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.ln, initialize=pInitialSwitch.stack().to_dict()    , within=Boolean,          doc='line initial switching',      mutable=True)
+    mTEPES.pInitialOutput = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.gg, initialize=pInitialOutput.stack().to_dict(), within=NonNegativeReals, doc='unit initial output',     mutable=True)
+    mTEPES.pInitialUC     = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.gg, initialize=pInitialUC.stack().to_dict()    , within=Boolean,          doc='unit initial commitment', mutable=True)
+    mTEPES.pInitialSwitch = Param(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.ln, initialize=pInitialSwitch.stack().to_dict(), within=Boolean,          doc='line initial switching',  mutable=True)
 
     SettingUpDataTime = time.time() - StartTime
     print('Setting up input data                  ... ', round(SettingUpDataTime), 's')
@@ -793,9 +792,9 @@ def SettingUpVariables(OptModel, mTEPES):
     # existing lines are always committed if no decision is modeled
     for sc,p,n,ni,nf,cc in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.le:
         if mTEPES.pIndBinLineSwitch[ni,nf,cc] == 0:
-            OptModel.vLineCommit    [sc,p,n,ni,nf,cc].fix(1)
-            OptModel.vLineOnState   [sc,p,n,ni,nf,cc].fix(0)
-            OptModel.vLineOffState  [sc,p,n,ni,nf,cc].fix(0)
+            OptModel.vLineCommit  [sc,p,n,ni,nf,cc].fix(1)
+            OptModel.vLineOnState [sc,p,n,ni,nf,cc].fix(0)
+            OptModel.vLineOffState[sc,p,n,ni,nf,cc].fix(0)
 
     OptModel.vLineLosses           = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.ll, within=NonNegativeReals, bounds=lambda OptModel,sc,p,n,*ll: (0.0,0.5*mTEPES.pLineLossFactor[ll]*max(mTEPES.pLineNTCBck[ll],mTEPES.pLineNTCFrw[ll])), doc='half line losses                                 [GW]')
     OptModel.vFlow                 = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=Reals,            bounds=lambda OptModel,sc,p,n,*la: (-mTEPES.pLineNTCBck[la],mTEPES.pLineNTCFrw[la]),                                        doc='flow                                             [GW]')
