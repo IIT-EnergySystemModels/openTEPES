@@ -1,11 +1,12 @@
 Change Log
 =============
 
-[4.3.6] - 2022-02-23
+[4.3.6] - 2022-02-27
 --------------------
+- [CHANGED] saving new results about incremental emission of generators with surplus 'oT_Result_GenerationIncrementalEmission_'+CaseName+'.csv'.
 - [CHANGED] saving new results about generation ramp surplus in 'oT_Result_GenerationRampUpSurplus_'+CaseName+'.csv' and 'oT_Result_GenerationRampDwSurplus_'+CaseName+'.csv'.
 - [CHANGED] saving new results about generation surplus in 'oT_Result_GenerationSurplus_'+CaseName+'.csv'.
-- [CHANGED] saving new results about generation surplus in 'oT_Result_GenerationIncrementalVariableCost_'+CaseName+'.csv'.
+- [CHANGED] saving new results about incremental variable cost of generators with surplus in 'oT_Result_GenerationIncrementalVariableCost_'+CaseName+'.csv'.
 - [CHANGED] change of domain of some p.u. parameters to UnitInterval and others to Reals
 - [CHANGED] change output of units not contributing to operating reserves
 - [CHANGED] change on the assessment of the termination condition
