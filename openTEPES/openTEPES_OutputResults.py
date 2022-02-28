@@ -514,7 +514,7 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES):
     OutputToFile = pd.Series(data=[(mTEPES.pLinearVarCost[g]+mTEPES.pCO2EmissionCost[g])*1e3 for sc,p,n,g in SurplusGens], index=pd.MultiIndex.from_tuples(SurplusGens))
     OutputToFile.to_frame(name='EUR/MWh' ).reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='EUR/MWh' ).rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_GenerationIncrementalVariableCost_'+CaseName+'.csv', sep=',')
 
-    OutputToFile = pd.Series(data=[mTEPES.pCO2EmissionRate[g] for sc,p,n,g in SurplusGens], index=pd.MultiIndex.from_tuples(SurplusGens))
+    OutputToFile = pd.Series(data=[mTEPES.pCO2EmissionCost[g] for sc,p,n,g in SurplusGens], index=pd.MultiIndex.from_tuples(SurplusGens))
     OutputToFile.to_frame(name='tCO2/MWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='tCO2/MWh').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_GenerationIncrementalEmission_'    +CaseName+'.csv', sep=',')
 
     # incoming and outgoing lines (lin) (lout)
