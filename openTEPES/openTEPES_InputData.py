@@ -213,6 +213,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pRampUp             = dfGeneration  ['RampUp'                ] * 1e-3                                                                     # ramp up   rate                              [GW/h]
     pRampDw             = dfGeneration  ['RampDown'              ] * 1e-3                                                                     # ramp down rate                              [GW/h]
     pCO2EmissionCost    = dfGeneration  ['CO2EmissionRate'       ] * 1e-3 * pCO2Cost                                                          # emission  cost                              [MEUR/GWh]
+    pCO2EmissionRate    = dfGeneration  ['CO2EmissionRate'       ]                                                                            # emission  rate                              [tCO2/MWh]
     pUpTime             = dfGeneration  ['UpTime'                ]                                                                            # minimum up   time                           [h]
     pDwTime             = dfGeneration  ['DownTime'              ]                                                                            # minimum down time                           [h]
     pGenInvestCost      = dfGeneration  ['FixedInvestmentCost'   ] *        dfGeneration['FixedChargeRate']                                   # generation fixed cost                       [MEUR]
@@ -647,6 +648,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.pConstantVarCost      = Param(                               mTEPES.gg, initialize=pConstantVarCost.to_dict()          , within=NonNegativeReals, doc='Constant variable cost'         )
     mTEPES.pOperReserveCost      = Param(                               mTEPES.gg, initialize=pOperReserveCost.to_dict()          , within=NonNegativeReals, doc='Operating reserve cost'         )
     mTEPES.pCO2EmissionCost      = Param(                               mTEPES.gg, initialize=pCO2EmissionCost.to_dict()          , within=NonNegativeReals, doc='CO2 Emission      cost'         )
+    mTEPES.pCO2EmissionRate      = Param(                               mTEPES.gg, initialize=pCO2EmissionRate.to_dict()          , within=NonNegativeReals, doc='CO2 Emission      rate'         )
     mTEPES.pStartUpCost          = Param(                               mTEPES.gg, initialize=pStartUpCost.to_dict()              , within=NonNegativeReals, doc='Startup  cost'                  )
     mTEPES.pShutDownCost         = Param(                               mTEPES.gg, initialize=pShutDownCost.to_dict()             , within=NonNegativeReals, doc='Shutdown cost'                  )
     mTEPES.pRampUp               = Param(                               mTEPES.gg, initialize=pRampUp.to_dict()                   , within=NonNegativeReals, doc='Ramp up   rate'                 )
