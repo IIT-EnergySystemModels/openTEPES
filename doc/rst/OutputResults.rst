@@ -179,6 +179,14 @@ Identifier    Identifier  Identifier  Header      Description
 Scenario      Period      Load level  Generator   CO2 emission [Mt CO2]
 ============  ==========  ==========  ==========  =================================
 
+File ``oT_Result_GenerationIncrementalEmission.csv``
+
+============  ==========  ==========  ==============  ===============================================================================================
+Identifier    Identifier  Identifier  Header          Description
+============  ==========  ==========  ==============  ===============================================================================================
+Scenario      Period      Load level  Generator       Emission rate of the generators with power surplus, except the ESS [tCO2/MWh]
+============  ==========  ==========  ==============  ===============================================================================================
+
 File ``oT_Result_TechnologyEmission.csv``
 
 ============  ==========  ==========  ==========  =================================

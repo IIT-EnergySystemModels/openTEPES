@@ -220,7 +220,7 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES):
     for sc,p,n,g in SurplusGens:
         if g in mTEPES.gc:
             OutputToFile[sc,p,n,g] *= OptModel.vGenerationInvest[g]()
-    OutputToFile.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW'  ).rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_GenerationSurplus_'+CaseName+'.csv', sep=',')
+    OutputToFile.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_GenerationSurplus_'+CaseName+'.csv', sep=',')
 
     OutputData = []
     for st in mTEPES.st:
@@ -234,7 +234,7 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES):
     mTEPES.del_component(mTEPES.n)
     mTEPES.n = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.pDuration)
     OutputData = pd.concat(OutputData)
-    OutputData.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_GenerationRampUpSurplus_'+CaseName+'.csv', sep=',')
+    OutputData.to_frame(name='MW/h').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW/h').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_GenerationRampUpSurplus_'+CaseName+'.csv', sep=',')
 
     OutputData = []
     for st in mTEPES.st:
@@ -251,7 +251,7 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES):
     mTEPES.del_component(mTEPES.n)
     mTEPES.n = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.pDuration)
     OutputData = pd.concat(OutputData)
-    OutputData.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_GenerationRampDwSurplus_'+CaseName+'.csv', sep=',')
+    OutputData.to_frame(name='MW/h').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW/h').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_GenerationRampDwSurplus_'+CaseName+'.csv', sep=',')
 
     if len(mTEPES.r):
         OutputToFile = pd.Series(data=[(OptModel.vTotalOutput[sc,p,n,r].ub - OptModel.vTotalOutput[sc,p,n,r]())*1e3  for sc,p,n,r in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.r], index=pd.MultiIndex.from_tuples(mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.r))
@@ -512,7 +512,11 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES):
 
     SurplusGens  = [(sc,p,n,g) for sc,p,n,g in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.g if OptModel.vTotalOutput[sc,p,n,g].ub - OptModel.vTotalOutput[sc,p,n,g]() > pEpsilon and g not in mTEPES.es]
     OutputToFile = pd.Series(data=[(mTEPES.pLinearVarCost[g]+mTEPES.pCO2EmissionCost[g])*1e3 for sc,p,n,g in SurplusGens], index=pd.MultiIndex.from_tuples(SurplusGens))
-    OutputToFile.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW'  ).rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_GenerationIncrementalVariableCost_'+CaseName+'.csv', sep=',')
+    OutputToFile.to_frame(name='EUR/MWh' ).reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='EUR/MWh' ).rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_GenerationIncrementalVariableCost_'+CaseName+'.csv', sep=',')
+
+    OutputToFile = pd.Series(data=[mTEPES.pCO2EmissionRate[g] for sc,p,n,g in SurplusGens], index=pd.MultiIndex.from_tuples(SurplusGens))
+    OutputToFile.to_frame(name='tCO2/MWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='tCO2/MWh').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_GenerationIncrementalEmission_'    +CaseName+'.csv', sep=',')
+
     # incoming and outgoing lines (lin) (lout)
     lin  = defaultdict(list)
     lout = defaultdict(list)
