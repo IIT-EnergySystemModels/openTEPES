@@ -1,5 +1,5 @@
 """
-Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 28, 2022
+Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 02, 2022
 """
 
 import time
@@ -92,9 +92,9 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
     SolvingTime = time.time() - StartTime
     print('Solution time                          ... ', round(SolvingTime), 's')
     print('Total system      cost [MEUR]              ', OptModel.eTotalTCost.expr())
-    print('Total Genr invest cost [MEUR]              ', sum(mTEPES.pGenInvestCost[gc] * OptModel.vGenerationInvest[gc]() for gc     in mTEPES.gc                  ))
-    print('Total Retr invest cost [MEUR]              ', sum(mTEPES.pGenRetireCost[gd] * OptModel.vGenerationRetire[gd]() for gd     in mTEPES.gd                  ))
-    print('Total Line invest cost [MEUR]              ', sum(mTEPES.pNetFixedCost [lc] * OptModel.vNetworkInvest   [lc]() for lc     in mTEPES.lc                  ))
+    print('Total genr invest cost [MEUR]              ', sum(mTEPES.pGenInvestCost[gc] * OptModel.vGenerationInvest[gc]() for gc     in mTEPES.gc                  ))
+    print('Total retr invest cost [MEUR]              ', sum(mTEPES.pGenRetireCost[gd] * OptModel.vGenerationRetire[gd]() for gd     in mTEPES.gd                  ))
+    print('Total line invest cost [MEUR]              ', sum(mTEPES.pNetFixedCost [lc] * OptModel.vNetworkInvest   [lc]() for lc     in mTEPES.lc                  ))
     print('Total generation  cost [MEUR]              ', sum(mTEPES.pScenProb     [sc] * OptModel.vTotalGCost  [sc,p,n]() for sc,p,n in mTEPES.sc*mTEPES.p*mTEPES.n))
     print('Total consumption cost [MEUR]              ', sum(mTEPES.pScenProb     [sc] * OptModel.vTotalCCost  [sc,p,n]() for sc,p,n in mTEPES.sc*mTEPES.p*mTEPES.n))
     print('Total emission    cost [MEUR]              ', sum(mTEPES.pScenProb     [sc] * OptModel.vTotalECost  [sc,p,n]() for sc,p,n in mTEPES.sc*mTEPES.p*mTEPES.n))
