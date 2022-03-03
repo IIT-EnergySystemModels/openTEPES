@@ -11,7 +11,7 @@ openTEPES Documentation
    :scale: 100%
    :align: right
 
-\ **Open** \ Generation and \ **T**\ransmission Operation and \ **E**\xpansion \ **P**\lanning Model with RES and \ **ES**\S (**openTEPES**)
+\ **Open** \ Generation, \ Storage, \ and \ **T**\ransmission Operation and \ **E**\xpansion \ **P**\lanning Model with RES and \ **ES**\S (**openTEPES**)
 
 “*Simplicity and Transparency in Power Systems Planning*”
 
