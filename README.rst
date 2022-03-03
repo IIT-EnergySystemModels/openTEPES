@@ -29,7 +29,7 @@
 .. image:: https://mybinder.org/badge_logo.svg
   :target: https://mybinder.org/v2/gh/IIT-EnergySystemModels/openTEPES-tutorial/HEAD
 
-**Open Generation and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES)**
+**Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES)**
 
 *Simplicity and Transparency in Power Systems Planning*
 
@@ -58,7 +58,7 @@ It determines automatically optimal expansion plans that satisfy simultaneously 
 - **Stochastic**: several stochastic parameters that can influence the optimal generation and transmission expansion decisions are considered. The model considers stochastic
   medium-term yearly uncertainties (scenarios) related to the system operation. These operation scenarios are associated with renewable energy sources and electricity demand.
 
-The objective function incorporates the two main quantifiable costs: **generation and transmission investment cost (CAPEX)** and **expected variable operation costs (including generation emission and reliability costs) (system OPEX)**.
+The objective function incorporates the two main quantifiable costs: **generation, storage, and transmission investment cost (CAPEX)** and **expected variable operation costs (including generation emission and reliability costs) (system OPEX)**.
 
 The model formulates a stochastic optimization problem including generation and network binary investment decisions, generation operation decisions (commitment, startup and shutdown decisions are also binary) and line switching decisions.
 
