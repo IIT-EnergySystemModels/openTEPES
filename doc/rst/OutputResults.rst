@@ -147,7 +147,7 @@ Identifier    Identifier  Identifier  Header          Description
 Scenario      Period      Load level  Generator       Downward ramp surplus [MW]
 ============  ==========  ==========  ==============  ===============================
 
-File ``oT_Result_Curtailment.csv``
+File ``oT_Result_GenerationCurtailment.csv``
 
 ============  ==========  ==========  ==============  ===============================
 Identifier    Identifier  Identifier  Header          Description
@@ -155,7 +155,7 @@ Identifier    Identifier  Identifier  Header          Description
 Scenario      Period      Load level  VRES Generator  Curtailed power of VRES [MW]
 ============  ==========  ==========  ==============  ===============================
 
-File ``oT_Result_CurtailmentEnergy.csv``
+File ``oT_Result_GenerationCurtailmentEnergy.csv``
 
 ============  ==========  ==========  ==============  ===============================
 Identifier    Identifier  Identifier  Header          Description
@@ -366,7 +366,7 @@ Identifier    Identifier  Identifier  Header      Description
 Scenario      Period      Load level  Technology  Downward operating reserve [MW]
 ============  ==========  ==========  ==========  ==========================================
 
-File ``oT_Result_Inventory.csv``
+File ``oT_Result_GenerationInventory.csv``
 
 ============  ==========  ==========  =========  ==============================================================================================
 Identifier    Identifier  Identifier  Header     Description
@@ -374,15 +374,7 @@ Identifier    Identifier  Identifier  Header     Description
 Scenario      Period      Load level  Generator  Stored energy (SoC in batteries, reservoir energy in pumped-hydro storage power plants) [GWh]
 ============  ==========  ==========  =========  ==============================================================================================
 
-File ``oT_Result_InventoryUtilization.csv``
-
-============  ==========  ==========  =========  =================================================================
-Identifier    Identifier  Identifier  Header     Description
-============  ==========  ==========  =========  =================================================================
-Scenario      Period      Load level  Generator  ESS utilization (i.e., ratio between usage and capacity) [p.u.]
-============  ==========  ==========  =========  =================================================================
-
-File ``oT_Result_Spillage.csv``
+File ``oT_Result_GenerationSpillage.csv``
 
 ============  ==========  ==========  ==========  ==========================================
 Identifier    Identifier  Identifier  Header      Description
@@ -465,6 +457,14 @@ Identifier    Identifier  Identifier  Header      Description
 Scenario      Period      Load level  Node        Energy not served by node [GWh]
 ============  ==========  ==========  ==========  ==========================================
 
+File ``oT_Result_NetworkCostENS.csv``
+
+============  ==========  ==========  ==========  ==========================================
+Identifier    Identifier  Identifier  Header      Description
+============  ==========  ==========  ==========  ==========================================
+Scenario      Period      Load level  Node        Reliability cost (cost of the ENS) [M€]
+============  ==========  ==========  ==========  ==========================================
+
 Marginal information
 --------------------
 
@@ -492,7 +492,7 @@ Identifier    Identifier  Identifier  Description
 Scenario      Period      Load level  Generator with power surplus, except the ESS, and with the lowest variable cost (fuel+O&M+emission)
 ============  ==========  ==========  ===================================================================================================
 
-File ``oT_Result_LSRMC.csv``
+File ``oT_Result_NetworkSRMC.csv``
 
 ============  ==========  ==========  ==========  ==========================================
 Identifier    Identifier  Identifier  Header      Description
@@ -503,7 +503,7 @@ Scenario      Period      Load level  Node        Locational Short-Mun Marginal 
 These marginal costs are obtained after fixing the binary and continuous investment decisions and the binary operation decisions to their optimal values.
 Remember that binary decisions are not affected by marginal changes.
 
-File ``oT_Result_WaterValue.csv``
+File ``oT_Result_MarginalWaterValue.csv``
 
 ============  ==========  ==========  ==========  ================================================
 Identifier    Identifier  Identifier  Header      Description
@@ -600,14 +600,6 @@ File ``oT_Result_GenerationCostEmission.csv``
 Identifier    Identifier  Identifier  Header      Description
 ============  ==========  ==========  ==========  ==========================================
 Scenario      Period      Load level  Generator   Emission cost for the generation [M€]
-============  ==========  ==========  ==========  ==========================================
-
-File ``oT_Result_ReliabilityCost.csv``
-
-============  ==========  ==========  ==========  ==========================================
-Identifier    Identifier  Identifier  Header      Description
-============  ==========  ==========  ==========  ==========================================
-Scenario      Period      Load level  Node        Reliability cost (cost of the ENS) [M€]
 ============  ==========  ==========  ==========  ==========================================
 
 File ``oT_Result_RevenueEnergyGeneration.csv``

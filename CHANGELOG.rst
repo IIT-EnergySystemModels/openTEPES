@@ -1,6 +1,10 @@
 Change Log
 =============
 
+[4.3.8RC] - 2022-03-06
+--------------------
+- [CHANGED] change some names of output results to organize them by topics.
+
 [4.3.7] - 2022-02-28
 --------------------
 - [CHANGED] saving new results about incremental generator 'oT_Result_IncrementalGenerator_'+CaseName+'.csv'.
