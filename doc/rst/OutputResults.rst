@@ -457,14 +457,6 @@ Identifier    Identifier  Identifier  Header      Description
 Scenario      Period      Load level  Node        Energy not served by node [GWh]
 ============  ==========  ==========  ==========  ==========================================
 
-File ``oT_Result_NetworkCostENS.csv``
-
-============  ==========  ==========  ==========  ==========================================
-Identifier    Identifier  Identifier  Header      Description
-============  ==========  ==========  ==========  ==========================================
-Scenario      Period      Load level  Node        Reliability cost (cost of the ENS) [M€]
-============  ==========  ==========  ==========  ==========================================
-
 Marginal information
 --------------------
 
@@ -600,6 +592,14 @@ File ``oT_Result_GenerationCostEmission.csv``
 Identifier    Identifier  Identifier  Header      Description
 ============  ==========  ==========  ==========  ==========================================
 Scenario      Period      Load level  Generator   Emission cost for the generation [M€]
+============  ==========  ==========  ==========  ==========================================
+
+File ``oT_Result_NetworkCostENS.csv``
+
+============  ==========  ==========  ==========  ==========================================
+Identifier    Identifier  Identifier  Header      Description
+============  ==========  ==========  ==========  ==========================================
+Scenario      Period      Load level  Node        Reliability cost (cost of the ENS) [M€]
 ============  ==========  ==========  ==========  ==========================================
 
 File ``oT_Result_RevenueEnergyGeneration.csv``
