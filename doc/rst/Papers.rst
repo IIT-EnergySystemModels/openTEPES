@@ -4,6 +4,8 @@ Publications
 =================
 The model has being used in these publications:
 
+- S. Huclin et al. "Exploring the roles of storage technologies in the Spanish electric system with high share of renewable energy" Energy Reports (accepted)
+
 - A. Ramos "Assessing the operational flexibility provided by energy storage systems. The Spanish system in 2030" IEA Wind Task 25 Spring 2021 meeting. April 2021
   (`Presentation <https://pascua.iit.comillas.edu/aramos/papers/AssessingESSFlexibility.pdf>`_)
 
