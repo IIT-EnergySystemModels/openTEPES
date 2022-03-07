@@ -476,7 +476,7 @@ Identifier    Identifier  Identifier  Header          Description
 Scenario      Period      Load level  Generator       Variable cost (fuel+O&M+emission) of the generators with power surplus, except the ESS [€/MWh]
 ============  ==========  ==========  ==============  ===============================================================================================
 
-File ``oT_Result_IncrementalGenerator.csv``
+File ``oT_Result_MarginalIncrGenerator.csv``
 
 ============  ==========  ==========  ===================================================================================================
 Identifier    Identifier  Identifier  Description
