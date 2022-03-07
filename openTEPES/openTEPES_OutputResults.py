@@ -512,14 +512,13 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES):
 
     SurplusGens  = [(sc,p,n,g) for sc,p,n,g in mTEPES.sc*mTEPES.p*mTEPES.n*mTEPES.g if OptModel.vTotalOutput[sc,p,n,g].ub - OptModel.vTotalOutput[sc,p,n,g]() > pEpsilon and g not in mTEPES.es]
     OutputToFile = pd.Series(data=[(mTEPES.pLinearVarCost[g]+mTEPES.pCO2EmissionCost[g])*1e3 for sc,p,n,g in SurplusGens], index=pd.MultiIndex.from_tuples(SurplusGens))
-    # OutputToFile.to_frame(name='EUR/MWh' ).reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='EUR/MWh' ).rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_GenerationIncrementalVariableCost_'+CaseName+'.csv', sep=',')
 
     OutputToFile = OutputToFile.to_frame(name='EUR/MWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='EUR/MWh')
-    OutputToFile.rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_GenerationIncrementalVariableCost_'+CaseName+'.csv', sep=',')
+    OutputToFile.rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_MarginalIncrementalVariableCost_'+CaseName+'.csv', sep=',')
     IncrementalGens = pd.Series(data=[0 for sc,p,n in mTEPES.sc*mTEPES.p*mTEPES.n], index=pd.MultiIndex.from_tuples(mTEPES.sc*mTEPES.p*mTEPES.n)).to_frame(name='Generator')
     for sc,p,n in mTEPES.sc*mTEPES.p*mTEPES.n:
         IncrementalGens["Generator"][sc,p,n] = OutputToFile.loc[[(sc,p,n)]].squeeze().idxmin()
-    IncrementalGens.to_csv(_path+'/oT_Result_MarginalIncrGenerator_'+CaseName+'.csv', sep=',')
+    IncrementalGens.to_csv(_path+'/oT_Result_MarginalIncrementalGenerator_'+CaseName+'.csv', sep=',')
 
     OutputToFile = pd.Series(data=[mTEPES.pCO2EmissionRate[g] for sc,p,n,g in SurplusGens], index=pd.MultiIndex.from_tuples(SurplusGens))
     OutputToFile.to_frame(name='tCO2/MWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='tCO2/MWh').rename_axis(['Scenario','Period','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_GenerationIncrementalEmission_'+CaseName+'.csv', sep=',')
