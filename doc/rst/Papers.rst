@@ -4,7 +4,7 @@ Publications
 =================
 The model has being used in these publications:
 
-- A. Ramos, E. Alvarez "openTEPES" First openTEPES World Conference (`Presentation <https://pascua.iit.comillas.edu/aramos/papers/openTEPES.pdf>`_))
+- A. Ramos, E. Alvarez "openTEPES" First openTEPES World Conference (`Presentation <https://pascua.iit.comillas.edu/aramos/papers/openTEPES.pdf>`_)
 
 - A. Ramos, E. Alvarez, S. Lumbreras "OpenTEPES: Open-source Transmission and Generation Expansion Planning" SoftwareX (submitted)
 
