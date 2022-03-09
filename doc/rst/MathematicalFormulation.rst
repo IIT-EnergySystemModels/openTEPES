@@ -156,7 +156,7 @@ The names between parenthesis correspond to the names of the constraints in the 
 
 **Objective function**: minimization of total (investment and operation) cost for the scope of the model
 
-Generation, storage and network investment cost [M€] <<``eTotalFCost``>>
+Generation, storage and network investment cost [M€] «``eTotalFCost``»
 
 :math:`\sum_g {CFG_g icg_g} + \sum_{ijc}{CFT_{ijc} ict_{ijc}} +`
 
