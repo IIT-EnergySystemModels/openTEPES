@@ -230,7 +230,7 @@ ESS energy inventory (only for load levels multiple of 1, 24, 168 h depending on
 
 ESS outflows (only for load levels multiple of 1, 24, 168, 672, and 8736 h depending on the ESS outflow cycle) must be satisfied [GWh] <``eEnergyOutflows``>
 
-:math:`\sum_{n' = n-\frac{\tau_e}{\rho_e}}^{n} go^ω_{pn'e} = EO^ω_{pne} \quad \forall ωpne`
+:math:`\sum_{n' = n-\frac{\tau_e}{\rho_e}}^{n} go^ω_{pn'e} = \sum_{n' = n-\frac{\tau_e}{\rho_e}}^{n} EO^ω_{pn'e} \quad \forall ωpne, n \in \rho_e`
 
 Maximum and minimum output of the second block of a committed unit (all except the VRES units) [p.u.] <``eMaxOutput2ndBlock``> <``eMinOutput2ndBlock``>
 
