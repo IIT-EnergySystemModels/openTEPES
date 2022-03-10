@@ -1,2 +1,2 @@
-,IndBinGenInvest,IndBinGenRetirement,IndBinNetInvest,IndBinGenOperat,IndNetLosses,IndBinLineCommit
-Options,0,0,0,0,0,0
+,IndBinGenInvest,IndBinGenRetirement,IndBinNetInvest,IndBinGenOperat,IndNetLosses,IndBinLineCommit,IndBinSingleNode
+Options,0,0,0,0,0,1,0
