@@ -100,16 +100,16 @@ Options
 ----------
 A description of the options included in the file ``oT_Data_Option.csv`` follows:
 
-===================  ====================================================  =============================
+===================  ====================================================  ===============================================
 File                 Description
-===================  ====================================================  =============================
-IndBinGenInvest      Indicator of binary generation   expansion decisions  {0 continuous, 1 binary}
-IndBinGenRetirement  Indicator of binary generation   expansion decisions  {0 continuous, 1 binary}
-IndBinNetInvest      Indicator of binary network      expansion decisions  {0 continuous, 1 binary}
+===================  ====================================================  ===============================================
+IndBinGenInvest      Indicator of binary generation   expansion decisions  {0 continuous, 1 binary, 2 ignore investments}
+IndBinGenRetirement  Indicator of binary generation  retirement decisions  {0 continuous, 1 binary, 2 ignore retirements}
+IndBinNetInvest      Indicator of binary network      expansion decisions  {0 continuous, 1 binary, 2 ignore investments}
 IndBinGenCommit      Indicator of binary generation   operation decisions  {0 continuous, 1 binary}
 IndBinLineCommit     Indicator of binary transmission switching decisions  {0 continuous, 1 binary}
 IndNetLosses         Indicator of network losses                           {0 lossless, 1 ohmic losses}
-===================  ====================================================  =============================
+===================  ====================================================  ===============================================
 
 Parameters
 ----------

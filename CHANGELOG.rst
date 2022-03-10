@@ -3,6 +3,8 @@ Change Log
 
 [4.3.8RC] - 2022-03-06
 --------------------
+- [CHANGED] new option value 2 for IndBinGenInvest, IndBinGenRetirement, IndBinNetInvest for ignoring the investment/retirement decisions.
+- [CHANGED] re-group the generation operation constraints by topics in separate functions.
 - [CHANGED] change some names of output results to organize them by topics.
 
 [4.3.7] - 2022-02-28
