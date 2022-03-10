@@ -6,7 +6,7 @@ import time
 import math
 import os
 import pandas        as pd
-from   pyomo.environ import DataPortal, Set, Param, Var, Binary, NonNegativeReals, Reals, UnitInterval, Boolean, Any
+from   pyomo.environ import DataPortal, Set, Param, Var, Binary, NonNegativeReals, NonNegativeIntegers, Reals, UnitInterval, Boolean, Any
 
 
 def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
