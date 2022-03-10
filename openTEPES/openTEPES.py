@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 28, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 10, 2022
 """
 
 import time
@@ -9,7 +9,7 @@ import setuptools
 from pyomo.environ import ConcreteModel, Set
 
 from .openTEPES_InputData        import InputData, SettingUpVariables
-from .openTEPES_ModelFormulation import InvestmentModelFormulation, GenerationOperationModelFormulation, NetworkSwitchingModelFormulation, NetworkOperationModelFormulation
+from .openTEPES_ModelFormulation import InvestmentModelFormulation, GenerationOperationModelFormulationObjFunct, GenerationOperationModelFormulationInvestment, GenerationOperationModelFormulationDemand, GenerationOperationModelFormulationStorage, GenerationOperationModelFormulationCommitment, GenerationOperationModelFormulationRampMinTime, NetworkSwitchingModelFormulation, NetworkOperationModelFormulation
 from .openTEPES_ProblemSolving   import ProblemSolving
 from .openTEPES_OutputResults    import InvestmentResults, GenerationOperationResults, ESSOperationResults, FlexibilityResults, NetworkOperationResults, MarginalResults, EconomicResults, NetworkMapResults
 
@@ -35,7 +35,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndLogConsole):
     idxDict['y'  ] = 1
 
     #%% model declaration
-    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.3.7 - February 28, 2022')
+    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.3.8 - March 10, 2022')
 
     pIndLogConsole = [j for i, j in idxDict.items() if i == pIndLogConsole][0]
 
@@ -63,9 +63,14 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndLogConsole):
         mTEPES.n2 = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in mTEPES.pDuration and (st,nn) in mTEPES.s2n)
 
         # operation model objective function and constraints by stage
-        GenerationOperationModelFormulation(mTEPES, mTEPES, pIndLogConsole, st)
-        NetworkSwitchingModelFormulation   (mTEPES, mTEPES, pIndLogConsole, st)
-        NetworkOperationModelFormulation   (mTEPES, mTEPES, pIndLogConsole, st)
+        GenerationOperationModelFormulationObjFunct   (mTEPES, mTEPES, pIndLogConsole, st)
+        GenerationOperationModelFormulationInvestment (mTEPES, mTEPES, pIndLogConsole, st)
+        GenerationOperationModelFormulationDemand     (mTEPES, mTEPES, pIndLogConsole, st)
+        GenerationOperationModelFormulationStorage    (mTEPES, mTEPES, pIndLogConsole, st)
+        GenerationOperationModelFormulationCommitment (mTEPES, mTEPES, pIndLogConsole, st)
+        GenerationOperationModelFormulationRampMinTime(mTEPES, mTEPES, pIndLogConsole, st)
+        NetworkSwitchingModelFormulation              (mTEPES, mTEPES, pIndLogConsole, st)
+        NetworkOperationModelFormulation              (mTEPES, mTEPES, pIndLogConsole, st)
 
     if pIndLogConsole == 1:
         StartTime         = time.time()
