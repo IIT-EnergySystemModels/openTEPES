@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 07, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 10, 2022
 """
 
 import time
@@ -870,9 +870,7 @@ def NetworkMapResults(DirName, CaseName, OptModel, mTEPES):
     mTEPES.n  = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in                mTEPES.pDuration        )
 
     def oT_make_series(_var, _sets, _factor):
-        return pd.Series(data=[_var[sc,p,n,ni,nf,cc]()*_factor for sc,p,n,ni,nf,cc in _sets],
-                         index=pd.MultiIndex.from_tuples(list(_sets)))
-
+        return pd.Series(data=[_var[sc,p,n,ni,nf,cc]()*_factor for sc,p,n,ni,nf,cc in _sets], index=pd.MultiIndex.from_tuples(list(_sets)))
 
     def oT_selecting_data(sc,p,n):
         # Nodes data

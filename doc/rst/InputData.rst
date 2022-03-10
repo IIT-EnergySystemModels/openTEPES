@@ -108,7 +108,8 @@ IndBinGenRetirement  Indicator of binary generation  retirement decisions  {0 co
 IndBinNetInvest      Indicator of binary network      expansion decisions  {0 continuous, 1 binary, 2 ignore investments}
 IndBinGenCommit      Indicator of binary generation   operation decisions  {0 continuous, 1 binary}
 IndBinLineCommit     Indicator of binary transmission switching decisions  {0 continuous, 1 binary}
-IndNetLosses         Indicator of network losses                           {0 lossless, 1 ohmic losses}
+IndNetLosses         Indicator of network losses                           {0 lossless,   1 ohmic losses}
+IndBinSingleNode     Indicator of single node case study                   {0 network,    1 single node}
 ===================  ====================================================  ===============================================
 
 Parameters
