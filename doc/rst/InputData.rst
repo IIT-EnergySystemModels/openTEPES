@@ -111,7 +111,7 @@ IndBinGenRamps       Indicator of activating or not the up/down ramp constraints
 IndBinGenMinTime     Indicator of activating or not the min up/down time constraints   {0 no min time constraints, 1 min time constraints}
 IndBinSingleNode     Indicator of single node case study                               {0 network,    1 single node}
 IndBinLineCommit     Indicator of binary transmission switching decisions              {0 continuous, 1 binary}
-IndNetLosses         Indicator of network losses                                       {0 lossless,   1 ohmic losses}
+IndBinNetLosses      Indicator of network losses                                       {0 lossless,   1 ohmic losses}
 ===================  ===============================================================   ====================================================
 
 Parameters

@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 10, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 11, 2022
 """
 
 import time
@@ -449,9 +449,9 @@ def GenerationOperationModelFormulationRampMinTime(OptModel, mTEPES, pIndLogCons
     StartTime = time.time()
 
     def eRampUp(OptModel,sc,p,n,nr):
-        if   mTEPES.pRampUp[nr] and mTEPES.pRampUp[nr] < mTEPES.pMaxPower2ndBlock[sc,p,n,nr] and n == mTEPES.n.first():
+        if   mTEPES.pRampUp[nr] and mTEPES.pIndBinGenRamps == 1 and mTEPES.pRampUp[nr] < mTEPES.pMaxPower2ndBlock[sc,p,n,nr] and n == mTEPES.n.first():
             return (- max(mTEPES.pInitialOutput[sc,p,n,nr]() - mTEPES.pMinPower[sc,p,n,nr],0.0)                            + OptModel.vOutput2ndBlock[sc,p,n,nr] + OptModel.vReserveUp  [sc,p,n,nr]) / mTEPES.pDuration[n] / mTEPES.pRampUp[nr] <=   OptModel.vCommitment[sc,p,n,nr] - OptModel.vStartUp[sc,p,n,nr]
-        elif mTEPES.pRampUp[nr] and mTEPES.pRampUp[nr] < mTEPES.pMaxPower2ndBlock[sc,p,n,nr]:
+        elif mTEPES.pRampUp[nr] and mTEPES.pIndBinGenRamps == 1 and mTEPES.pRampUp[nr] < mTEPES.pMaxPower2ndBlock[sc,p,n,nr]:
             return (- OptModel.vOutput2ndBlock[sc,p,mTEPES.n.prev(n),nr] - OptModel.vReserveDown[sc,p,mTEPES.n.prev(n),nr] + OptModel.vOutput2ndBlock[sc,p,n,nr] + OptModel.vReserveUp  [sc,p,n,nr]) / mTEPES.pDuration[n] / mTEPES.pRampUp[nr] <=   OptModel.vCommitment[sc,p,n,nr] - OptModel.vStartUp[sc,p,n,nr]
         else:
             return Constraint.Skip
@@ -461,9 +461,9 @@ def GenerationOperationModelFormulationRampMinTime(OptModel, mTEPES, pIndLogCons
         print('eRampUp               ... ', len(getattr(OptModel, 'eRampUp_'+st)), ' rows')
 
     def eRampDw(OptModel,sc,p,n,nr):
-        if   mTEPES.pRampDw[nr] and mTEPES.pRampDw[nr] < mTEPES.pMaxPower2ndBlock[sc,p,n,nr] and n == mTEPES.n.first():
+        if   mTEPES.pRampDw[nr] and mTEPES.pIndBinGenRamps == 1 and mTEPES.pRampDw[nr] < mTEPES.pMaxPower2ndBlock[sc,p,n,nr] and n == mTEPES.n.first():
             return (- max(mTEPES.pInitialOutput[sc,p,n,nr]() - mTEPES.pMinPower[sc,p,n,nr],0.0)                            + OptModel.vOutput2ndBlock[sc,p,n,nr] - OptModel.vReserveDown[sc,p,n,nr]) / mTEPES.pDuration[n] / mTEPES.pRampDw[nr] >= - mTEPES.pInitialUC[sc,p,n,nr]                   + OptModel.vShutDown[sc,p,n,nr]
-        elif mTEPES.pRampDw[nr] and mTEPES.pRampDw[nr] < mTEPES.pMaxPower2ndBlock[sc,p,n,nr]:
+        elif mTEPES.pRampDw[nr] and mTEPES.pIndBinGenRamps == 1 and mTEPES.pRampDw[nr] < mTEPES.pMaxPower2ndBlock[sc,p,n,nr]:
             return (- OptModel.vOutput2ndBlock[sc,p,mTEPES.n.prev(n),nr] + OptModel.vReserveUp  [sc,p,mTEPES.n.prev(n),nr] + OptModel.vOutput2ndBlock[sc,p,n,nr] - OptModel.vReserveDown[sc,p,n,nr]) / mTEPES.pDuration[n] / mTEPES.pRampDw[nr] >= - OptModel.vCommitment[sc,p,mTEPES.n.prev(n),nr] + OptModel.vShutDown[sc,p,n,nr]
         else:
             return Constraint.Skip
@@ -473,9 +473,9 @@ def GenerationOperationModelFormulationRampMinTime(OptModel, mTEPES, pIndLogCons
         print('eRampDw               ... ', len(getattr(OptModel, 'eRampDw_'+st)), ' rows')
 
     def eRampUpCharge(OptModel,sc,p,n,es):
-        if   mTEPES.pRampUp[es] and mTEPES.pMaxCharge2ndBlock[sc,p,n,es] and n == mTEPES.n.first():
+        if   mTEPES.pRampUp[es] and mTEPES.pIndBinGenRamps == 1 and mTEPES.pMaxCharge2ndBlock[sc,p,n,es] and n == mTEPES.n.first():
             return (                                                                                                            OptModel.vCharge2ndBlock[sc,p,n,es] - OptModel.vESSReserveUp  [sc,p,n,es]) / mTEPES.pDuration[n] / mTEPES.pRampUp[es] >= - 1.0
-        elif mTEPES.pRampUp[es] and mTEPES.pMaxCharge2ndBlock[sc,p,n,es]:
+        elif mTEPES.pRampUp[es] and mTEPES.pIndBinGenRamps == 1 and mTEPES.pMaxCharge2ndBlock[sc,p,n,es]:
             return (                                                                                                            OptModel.vCharge2ndBlock[sc,p,n,es] - OptModel.vESSReserveUp  [sc,p,n,es]) / mTEPES.pDuration[n] / mTEPES.pRampUp[es] >= - 1.0
         else:
             return Constraint.Skip
@@ -485,9 +485,9 @@ def GenerationOperationModelFormulationRampMinTime(OptModel, mTEPES, pIndLogCons
         print('eRampUpChr            ... ', len(getattr(OptModel, 'eRampUpChr_'+st)), ' rows')
 
     def eRampDwCharge(OptModel,sc,p,n,es):
-        if   mTEPES.pRampDw[es] and mTEPES.pMaxCharge[sc,p,n,es] and n == mTEPES.n.first():
+        if   mTEPES.pRampDw[es] and mTEPES.pIndBinGenRamps == 1 and mTEPES.pMaxCharge[sc,p,n,es] and n == mTEPES.n.first():
             return (                                                                                                          + OptModel.vCharge2ndBlock[sc,p,n,es] + OptModel.vESSReserveDown[sc,p,n,es]) / mTEPES.pDuration[n] / mTEPES.pRampDw[es] <=   1.0
-        elif mTEPES.pRampDw[es] and mTEPES.pMaxCharge[sc,p,n,es]:
+        elif mTEPES.pRampDw[es] and mTEPES.pIndBinGenRamps == 1 and mTEPES.pMaxCharge[sc,p,n,es]:
             return (- OptModel.vCharge2ndBlock[sc,p,mTEPES.n.prev(n),es] - OptModel.vESSReserveUp  [sc,p,mTEPES.n.prev(n),es] + OptModel.vCharge2ndBlock[sc,p,n,es] + OptModel.vESSReserveDown[sc,p,n,es]) / mTEPES.pDuration[n] / mTEPES.pRampDw[es] <=   1.0
         else:
             return Constraint.Skip
@@ -497,7 +497,7 @@ def GenerationOperationModelFormulationRampMinTime(OptModel, mTEPES, pIndLogCons
         print('eRampDwChr            ... ', len(getattr(OptModel, 'eRampDwChr_'+st)), ' rows')
 
     def eMinUpTime(OptModel,sc,p,n,t):
-        if mTEPES.pMustRun[t] == 0 and (mTEPES.pMinPower[sc,p,n,t] or mTEPES.pConstantVarCost[t]) and t not in mTEPES.es and mTEPES.pUpTime[t] > 1 and mTEPES.n.ord(n) >= mTEPES.pUpTime[t]:
+        if mTEPES.pMustRun[t] == 0 and mTEPES.pIndBinGenMinTime == 1 and (mTEPES.pMinPower[sc,p,n,t] or mTEPES.pConstantVarCost[t]) and t not in mTEPES.es and mTEPES.pUpTime[t] > 1 and mTEPES.n.ord(n) >= mTEPES.pUpTime[t]:
             return sum(OptModel.vStartUp [sc,p,n2,t] for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pUpTime[t]:mTEPES.n.ord(n)]) <=     OptModel.vCommitment[sc,p,n,t]
         else:
             return Constraint.Skip
@@ -507,7 +507,7 @@ def GenerationOperationModelFormulationRampMinTime(OptModel, mTEPES, pIndLogCons
         print('eMinUpTime            ... ', len(getattr(OptModel, 'eMinUpTime_'+st)), ' rows')
 
     def eMinDownTime(OptModel,sc,p,n,t):
-        if mTEPES.pMustRun[t] == 0 and (mTEPES.pMinPower[sc,p,n,t] or mTEPES.pConstantVarCost[t]) and t not in mTEPES.es and mTEPES.pDwTime[t] > 1 and mTEPES.n.ord(n) >= mTEPES.pDwTime[t]:
+        if mTEPES.pMustRun[t] == 0 and mTEPES.pIndBinGenMinTime == 1 and (mTEPES.pMinPower[sc,p,n,t] or mTEPES.pConstantVarCost[t]) and t not in mTEPES.es and mTEPES.pDwTime[t] > 1 and mTEPES.n.ord(n) >= mTEPES.pDwTime[t]:
             return sum(OptModel.vShutDown[sc,p,n2,t] for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pDwTime[t]:mTEPES.n.ord(n)]) <= 1 - OptModel.vCommitment[sc,p,n,t]
         else:
             return Constraint.Skip
@@ -625,7 +625,7 @@ def NetworkOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, st):
         print('eKirchhoff2ndLaw2     ... ', len(getattr(OptModel, 'eKirchhoff2ndLaw2_'+st)), ' rows')
 
     def eLineLosses1(OptModel,sc,p,n,ni,nf,cc):
-        if mTEPES.pIndBinSingleNode == 0 and mTEPES.pIndNetLosses and len(mTEPES.ll):
+        if mTEPES.pIndBinSingleNode == 0 and mTEPES.pIndBinNetLosses and len(mTEPES.ll):
             return OptModel.vLineLosses[sc,p,n,ni,nf,cc] >= - 0.5 * mTEPES.pLineLossFactor[ni,nf,cc] * OptModel.vFlow[sc,p,n,ni,nf,cc]
         else:
             return Constraint.Skip
@@ -635,7 +635,7 @@ def NetworkOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, st):
         print('eLineLosses1          ... ', len(getattr(OptModel, 'eLineLosses1_'+st)), ' rows')
 
     def eLineLosses2(OptModel,sc,p,n,ni,nf,cc):
-        if mTEPES.pIndBinSingleNode == 0 and mTEPES.pIndNetLosses and len(mTEPES.ll):
+        if mTEPES.pIndBinSingleNode == 0 and mTEPES.pIndBinNetLosses and len(mTEPES.ll):
             return OptModel.vLineLosses[sc,p,n,ni,nf,cc] >=   0.5 * mTEPES.pLineLossFactor[ni,nf,cc] * OptModel.vFlow[sc,p,n,ni,nf,cc]
         else:
             return Constraint.Skip

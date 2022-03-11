@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 10, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 11, 2022
 """
 
 import time
@@ -122,13 +122,15 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.arrg = Set(initialize=dictSets['arrg'], ordered=False, doc='area to region'  )
 
     #%% parameters
-    pIndBinGenInvest     = dfOption   ['IndBinGenInvest'    ][0].astype('int')                                                            # Indicator of binary generation expansion decisions, 0 continuous - 1 binary - 2 no investment variables
-    pIndBinNetInvest     = dfOption   ['IndBinNetInvest'    ][0].astype('int')                                                            # Indicator of binary network    expansion decisions, 0 continuous - 1 binary - 2 no investment variables
-    pIndBinGenRetire     = dfOption   ['IndBinGenRetirement'][0].astype('int')                                                            # Indicator of binary generation retirement decisions,0 continuous - 1 binary - 2 no retirement variables
-    pIndBinGenOperat     = dfOption   ['IndBinGenOperat'    ][0].astype('int')                                                            # Indicator of binary generation operation decisions, 0 continuous - 1 binary
-    pIndBinSingleNode    = dfOption   ['IndBinSingleNode'   ][0].astype('int')                                                            # Indicator of single node although with network,     0 network    - 1 single node
-    pIndBinLineCommit    = dfOption   ['IndBinLineCommit'   ][0].astype('int')                                                            # Indicator of binary network    switching decisions, 0 continuous - 1 binary
-    pIndNetLosses        = dfOption   ['IndNetLosses'       ][0].astype('int')                                                            # Indicator of network losses,                        0 lossless   - 1 ohmic losses
+    pIndBinGenInvest     = dfOption   ['IndBinGenInvest'    ][0].astype('int')                                                            # Indicator of binary generation expansion decisions, 0 continuous  - 1 binary - 2 no investment variables
+    pIndBinNetInvest     = dfOption   ['IndBinNetInvest'    ][0].astype('int')                                                            # Indicator of binary network    expansion decisions, 0 continuous  - 1 binary - 2 no investment variables
+    pIndBinGenRetire     = dfOption   ['IndBinGenRetirement'][0].astype('int')                                                            # Indicator of binary generation retirement decisions,0 continuous  - 1 binary - 2 no retirement variables
+    pIndBinGenOperat     = dfOption   ['IndBinGenOperat'    ][0].astype('int')                                                            # Indicator of binary generation operation decisions, 0 continuous  - 1 binary
+    pIndBinSingleNode    = dfOption   ['IndBinSingleNode'   ][0].astype('int')                                                            # Indicator of single node although with network,     0 network     - 1 single node
+    pIndBinGenRamps      = dfOption   ['IndBinGenRamps'     ][0].astype('int')                                                            # Indicator of ramp constraints,                      0 no ramps    - 1 ramp constraints
+    pIndBinGenMinTime    = dfOption   ['IndBinGenMinTime'   ][0].astype('int')                                                            # Indicator of minimum up/down time constraints,      0 no min time - 1 min time constraints
+    pIndBinLineCommit    = dfOption   ['IndBinLineCommit'   ][0].astype('int')                                                            # Indicator of binary network    switching decisions, 0 continuous  - 1 binary
+    pIndBinNetLosses     = dfOption   ['IndBinNetLosses'    ][0].astype('int')                                                            # Indicator of network losses,                        0 lossless    - 1 ohmic losses
     pENSCost             = dfParameter['ENSCost'            ][0] * 1e-3                                                                   # cost of energy not served                [MEUR/GWh]
     pCO2Cost             = dfParameter['CO2Cost'            ][0]                                                                          # cost of CO2 emission                     [EUR/t CO2]
     pUpReserveActivation = dfParameter['UpReserveActivation'][0]                                                                          # upward   reserve activation              [p.u.]
@@ -289,7 +291,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.lc = Set(initialize=mTEPES.la,                     ordered=False, doc='candidate       lines', filter=lambda mTEPES,*la     :  la        in mTEPES.la  and pNetFixedCost     [la] >  0.0)
     mTEPES.cd = Set(initialize=mTEPES.la,                     ordered=False, doc='             DC lines', filter=lambda mTEPES,*la     :  la        in mTEPES.la  and pNetFixedCost     [la] >  0.0 and pLineType[la] == 'DC')
     mTEPES.ed = Set(initialize=mTEPES.la,                     ordered=False, doc='             DC lines', filter=lambda mTEPES,*la     :  la        in mTEPES.la  and pNetFixedCost     [la] == 0.0 and pLineType[la] == 'DC')
-    mTEPES.ll = Set(initialize=mTEPES.la,                     ordered=False, doc='loss            lines', filter=lambda mTEPES,*la     :  la        in mTEPES.la  and pLineLossFactor   [la] >  0.0 and pIndNetLosses >   0  )
+    mTEPES.ll = Set(initialize=mTEPES.la,                     ordered=False, doc='loss            lines', filter=lambda mTEPES,*la     :  la        in mTEPES.la  and pLineLossFactor   [la] >  0.0 and pIndBinNetLosses > 0 )
     mTEPES.rf = Set(initialize=mTEPES.nd,                     ordered=True , doc='reference node'       , filter=lambda mTEPES,nd      :  nd        in                pReferenceNode               )
     mTEPES.gq = Set(initialize=mTEPES.gg,                     ordered=False, doc='gen    reactive units', filter=lambda mTEPES,gg      :  gg        in mTEPES.gg  and pRMaxReactivePower[gg] >  0.0)
     mTEPES.sq = Set(initialize=mTEPES.gg,                     ordered=False, doc='syn    reactive units', filter=lambda mTEPES,gg      :  gg        in mTEPES.gg  and pRMaxReactivePower[gg] >  0.0 and pGenToTechnology[gg] == 'SynchronousCondenser')
@@ -604,9 +606,11 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.pIndBinGenRetire      = Param(initialize=pIndBinGenRetire     , within=NonNegativeIntegers, doc='Indicator of binary generation retirement decisions', mutable=True)
     mTEPES.pIndBinGenOperat      = Param(initialize=pIndBinGenOperat     , within=NonNegativeIntegers, doc='Indicator of binary generation operation  decisions', mutable=True)
     mTEPES.pIndBinSingleNode     = Param(initialize=pIndBinSingleNode    , within=Boolean,             doc='Indicator of single node within a network case',      mutable=True)
+    mTEPES.pIndBinGenRamps       = Param(initialize=pIndBinGenRamps      , within=Boolean,             doc='Indicator of using or not the ramp constraints',      mutable=True)
+    mTEPES.pIndBinGenMinTime     = Param(initialize=pIndBinGenMinTime    , within=Boolean,             doc='Indicator of using or not the min time constraints',  mutable=True)
     mTEPES.pIndBinNetInvest      = Param(initialize=pIndBinNetInvest     , within=Boolean,             doc='Indicator of binary network    investment decisions', mutable=True)
     mTEPES.pIndBinLineCommit     = Param(initialize=pIndBinLineCommit    , within=Boolean,             doc='Indicator of binary network    switching  decisions', mutable=True)
-    mTEPES.pIndNetLosses         = Param(initialize=pIndNetLosses        , within=Boolean,             doc='Indicator of binary network ohmic losses',            mutable=True)
+    mTEPES.pIndBinNetLosses      = Param(initialize=pIndBinNetLosses     , within=Boolean,             doc='Indicator of binary network ohmic losses',            mutable=True)
 
     mTEPES.pENSCost              = Param(initialize=pENSCost             , within=NonNegativeReals)
     mTEPES.pCO2Cost              = Param(initialize=pCO2Cost             , within=NonNegativeReals)
