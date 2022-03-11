@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.4.0] - 2022-03-10
+[4.4.0] - 2022-03-11
 --------------------
+- [CHANGED] introduce options for deactivating the up/down ramp constraints and the minimum up/down time constraints.
 - [CHANGED] introduce a single-node option for running a case study as a single node (no network constraints).
 - [CHANGED] new option value 2 for IndBinGenInvest, IndBinGenRetirement, IndBinNetInvest for ignoring the investment/retirement decisions.
 - [CHANGED] re-group the generation operation constraints by topics in separate functions.
