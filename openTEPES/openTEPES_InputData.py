@@ -811,7 +811,7 @@ def SettingUpVariables(OptModel, mTEPES):
             OptModel.vLineOffState[sc,p,n,ni,nf,cc].fix(0)
 
     OptModel.vLineLosses = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.ll, within=NonNegativeReals, bounds=lambda OptModel,sc,p,n,*ll: (0.0,0.5*mTEPES.pLineLossFactor[ll]*max(mTEPES.pLineNTCBck[ll],mTEPES.pLineNTCFrw[ll])), doc='half line losses [GW]')
-    if mTEPES.pIndBinSingleNode == 0:
+    if mTEPES.pIndBinSingleNode() == 0:
         OptModel.vFlow   = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=Reals,            bounds=lambda OptModel,sc,p,n,*la: (-mTEPES.pLineNTCBck[la],mTEPES.pLineNTCFrw[la]),                                        doc='flow             [GW]')
     else:
         OptModel.vFlow   = Var(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.la, within=Reals,                                                                                                                                        doc='flow             [GW]')
