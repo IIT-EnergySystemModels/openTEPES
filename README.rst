@@ -45,11 +45,10 @@ the optimal decisions among those specified by the user.
 
 It determines automatically optimal expansion plans that satisfy simultaneously several attributes. Its main characteristics are:
 
-- **Static**: the scope of the model corresponds to a single year at a long-term horizon, 2030 or 2040 for example.
+- **Dynamic**: the scope of the model corresponds to a several periods (years) at a long-term horizon, 2030 to 2040 for example.
 
   It represents hierarchically the different time scopes to take decisions in an electric system:
 
-  - Period: one year
   - Load level: 2030-01-01T00:00:00+01:00 to 2030-12-30T23:00:00+01:00
 
   The time division allows a flexible representation of the periods for evaluating the system operation. Additionally, it can be run with chronological periods of several consecutive hours (bi-hourly, tri-hourly resolution)
