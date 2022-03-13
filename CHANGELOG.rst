@@ -1,6 +1,10 @@
 Change Log
 =============
 
+[4.5.0] - 2022-03-13
+--------------------
+- [CHANGED] exchange the order of scenario and period to do dynamic expansion planning.
+
 [4.4.0] - 2022-03-11
 --------------------
 - [CHANGED] introduce options for deactivating the up/down ramp constraints and the minimum up/down time constraints.
