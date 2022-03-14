@@ -146,19 +146,19 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES):
         OutputToFile = OutputToFile.to_frame(name='MW-km')
         OutputToFile.to_csv(_path+'/oT_Result_NetworkInvestment_MWkm_'+CaseName+'.csv', sep=',')
 
-        # OutputResults_1 = pd.Series(data=[lt for ni,nf,cc,lt in mTEPES.lc*mTEPES.lt if (ni,nf,cc,lt) in mTEPES.pLineType], index=pd.Index(mTEPES.lc))
-        # OutputResults_1 = OutputResults_1.to_frame(name='LineType')
-        # OutputResults_2 = pd.Series(data=[mTEPES.pLineVoltage[ni,nf,cc] for ni,nf,cc in mTEPES.lc], index=pd.Index(mTEPES.lc))
-        # OutputResults_2 = OutputResults_2.to_frame(name='kV')
-        # OutputResults_3 = OutputToFile
-        # OutputResults   = pd.concat([OutputResults_1, OutputResults_2, OutputResults_3], axis=1)
-        # OutputResults.index.names = ['InitialNode','FinalNode','Circuit']
-        # OutputResults   = OutputResults.reset_index().groupby(['LineType', 'kV']).sum()
-        # OutputResults   = OutputResults.reset_index()
-        # OutputResults['kV'] = round(OutputResults['kV'], 2)
-        #
-        # chart = alt.Chart(OutputResults).mark_bar().encode(x='LineType:O', y='sum(MW-km):Q', color='LineType:N', column='kV:N')
-        # chart.save(_path+'/oT_Plot_NetworkInvestment_MW-km_'+CaseName+'.html', embed_options={'renderer':'svg'})
+        OutputResults_1 = pd.Series(data=[lt for p,ni,nf,cc,lt in mTEPES.p*mTEPES.lc*mTEPES.lt if (ni,nf,cc,lt) in mTEPES.pLineType], index=pd.Index(mTEPES.p*mTEPES.lc))
+        OutputResults_1 = OutputResults_1.to_frame(name='LineType')
+        OutputResults_2 = pd.Series(data=[mTEPES.pLineVoltage[ni,nf,cc] for p,ni,nf,cc in mTEPES.p*mTEPES.lc], index=pd.Index(mTEPES.p*mTEPES.lc))
+        OutputResults_2 = OutputResults_2.to_frame(name='kV')
+        OutputResults_3 = OutputToFile
+        OutputResults   = pd.concat([OutputResults_1, OutputResults_2, OutputResults_3], axis=1)
+        OutputResults.index.names = ['period','InitialNode','FinalNode','Circuit']
+        OutputResults   = OutputResults.reset_index().groupby(['LineType', 'kV']).sum()
+        OutputResults   = OutputResults.reset_index()
+        OutputResults['kV'] = round(OutputResults['kV'], 2)
+
+        chart = alt.Chart(OutputResults).mark_bar().encode(x='LineType:O', y='sum(MW-km):Q', color='LineType:N', column='kV:N')
+        chart.save(_path+'/oT_Plot_NetworkInvestment_MW-km_'+CaseName+'.html', embed_options={'renderer':'svg'})
 
     WritingResultsTime = time.time() - StartTime
     StartTime          = time.time()
