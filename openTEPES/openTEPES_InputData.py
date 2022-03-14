@@ -782,9 +782,9 @@ def SettingUpVariables(OptModel, mTEPES):
             OptModel.vGenerationInvest[p,gc].fix    = 0
     for p,ni,nf,cc in mTEPES.p*mTEPES.lc:
         if mTEPES.pIndBinNetInvest() != 0 and mTEPES.pIndBinLineInvest[lc] == 0:
-            OptModel.vNetworkInvest   [p,lc].domain = UnitInterval
+            OptModel.vNetworkInvest   [p,ni,nf,cc].domain = UnitInterval
         if mTEPES.pIndBinNetInvest() == 2:
-            OptModel.vNetworkInvest   [p,lc].fix    = 0
+            OptModel.vNetworkInvest   [p,ni,nf,cc].fix    = 0
 
     # relax binary condition in generation retirement decisions
     for p,gd in mTEPES.p*mTEPES.gd:
