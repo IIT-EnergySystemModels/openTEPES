@@ -543,7 +543,7 @@ File ``oT_Result_CostRecovery.csv``
 ============  ==========================================
 Identifier    Description
 ============  ==========================================
-Cost type     Revenues and costs of investments [M€]
+Cost type     Revenues and investment costs [M€]
 ============  ==========================================
 
 File ``oT_Result_GenerationCostOandM.csv``

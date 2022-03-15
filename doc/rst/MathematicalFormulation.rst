@@ -176,6 +176,16 @@ Reliability cost [M€] «``eTotalRCost``»
 
 **Constraints**
 
+**Generation and network investment and retirement**
+
+Investment and retirement decisions in consecutive years «``eConsecutiveGenInvest``» «``eConsecutiveGenRetire``» «``eConsecutiveNetInvest``»
+
+:math:`icg_{p-1,g} \leq icg_{pg} \quad \forall pg, g \in CG`
+
+:math:`rcg_{p-1,g} \leq rcg_{pg} \quad \forall pg, g \in CG`
+
+:math:`ict_{p-1,ijc} \leq ict_{pijc} \quad \forall pijc, ijc \in CL`
+
 **Generation operation**
 
 Commitment decision bounded by investment decision for candidate committed units (all except the VRES units) [p.u.] «``eInstalGenComm``»

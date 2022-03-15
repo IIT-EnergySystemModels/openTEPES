@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 12, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 15, 2022
 """
 
 import time
@@ -543,10 +543,10 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES):
     OutputData = pd.concat(OutputData)
     OutputData.to_frame(name='LSRMC').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='LSRMC').rename_axis(['Period','Scenario','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_NetworkSRMC_'+CaseName+'.csv', sep=',')
 
-    LSRMC = OutputData.loc[:,:,:,:]
+    OptModel.LSRMC = OutputData.loc[:,:,:,:]
 
     for p,sc in mTEPES.p*mTEPES.sc:
-        chart = LinePlots(sc, p, LSRMC, 'Node', 'LoadLevel', 'EUR/MWh', 'average')
+        chart = LinePlots(sc, p, OptModel.LSRMC, 'Node', 'LoadLevel', 'EUR/MWh', 'average')
         chart.save(_path+'/oT_Plot_NetworkSRMC_'+p+'_'+sc+'_'+CaseName+'.html', embed_options={'renderer': 'svg'})
 
     if sum(mTEPES.pReserveMargin[ar] for ar in mTEPES.ar):
@@ -648,14 +648,15 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES):
     StartTime = time.time()
 
     SysCost     = OptModel.eTotalTCost.expr()
-    GenInvCost  = sum(mTEPES.pGenInvestCost[gc      ] * OptModel.vGenerationInvest[p,gc      ]() for p,gc       in mTEPES.p*mTEPES.gc         )
-    GenRetCost  = sum(mTEPES.pGenRetireCost[gd      ] * OptModel.vGenerationRetire[p,gd      ]() for p,gd       in mTEPES.p*mTEPES.gd         )
-    NetInvCost  = sum(mTEPES.pNetFixedCost [ni,nf,cc] * OptModel.vNetworkInvest   [p,ni,nf,cc]() for p,ni,nf,cc in mTEPES.p*mTEPES.lc         )
-    GenCost     = sum(mTEPES.pScenProb     [sc      ] * OptModel.vTotalGCost      [p,sc,n    ]() for p,sc,n     in mTEPES.p*mTEPES.sc*mTEPES.n)
-    ConCost     = sum(mTEPES.pScenProb     [sc      ] * OptModel.vTotalCCost      [p,sc,n    ]() for p,sc,n     in mTEPES.p*mTEPES.sc*mTEPES.n)
-    EmiCost     = sum(mTEPES.pScenProb     [sc      ] * OptModel.vTotalECost      [p,sc,n    ]() for p,sc,n     in mTEPES.p*mTEPES.sc*mTEPES.n)
-    RelCost     = sum(mTEPES.pScenProb     [sc      ] * OptModel.vTotalRCost      [p,sc,n    ]() for p,sc,n     in mTEPES.p*mTEPES.sc*mTEPES.n)
-    Costs       = {'':['System Cost', 'Generation Investment Cost', 'Generation Retirement Cost', 'Network Investment Cost', 'Generation Cost', 'Consumption Cost', 'Emissions Cost', 'Reliability Cost'], 'MEUR': [SysCost, GenInvCost, GenRetCost, NetInvCost, GenCost, ConCost, EmiCost, RelCost]}
+    GenInvCost  = sum(mTEPES.pGenInvestCost[gc       ] * OptModel.vGenerationInvest[p,gc      ]()                     for p,gc       in mTEPES.p*mTEPES.gc                   )
+    GenRetCost  = sum(mTEPES.pGenRetireCost[gd       ] * OptModel.vGenerationRetire[p,gd      ]()                     for p,gd       in mTEPES.p*mTEPES.gd                   )
+    NetInvCost  = sum(mTEPES.pNetFixedCost [ni,nf,cc ] * OptModel.vNetworkInvest   [p,ni,nf,cc]()                     for p,ni,nf,cc in mTEPES.p*mTEPES.lc                   )
+    GenCost     = sum(mTEPES.pScenProb     [sc       ] * OptModel.vTotalGCost      [p,sc,n    ]()                     for p,sc,n     in mTEPES.p*mTEPES.sc*mTEPES.n          )
+    ConCost     = sum(mTEPES.pScenProb     [sc       ] * OptModel.vTotalCCost      [p,sc,n    ]()                     for p,sc,n     in mTEPES.p*mTEPES.sc*mTEPES.n          )
+    EmiCost     = sum(mTEPES.pScenProb     [sc       ] * OptModel.vTotalECost      [p,sc,n    ]()                     for p,sc,n     in mTEPES.p*mTEPES.sc*mTEPES.n          )
+    RelCost     = sum(mTEPES.pScenProb     [sc       ] * OptModel.vTotalRCost      [p,sc,n    ]()                     for p,sc,n     in mTEPES.p*mTEPES.sc*mTEPES.n          )
+    DemPayment  = sum(mTEPES.pDemand       [p,sc,n,nd] * OptModel.LSRMC            [p,sc,n,nd ] * mTEPES.pDuration[n] for p,sc,n,nd  in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.nd) / 1e3
+    Costs       = {'':['System Cost', 'Generation Investment Cost', 'Generation Retirement Cost', 'Network Investment Cost', 'Generation Operation Cost', 'Consumption Operation Cost', 'Emission Cost', 'Reliability Cost', 'Demand Payment with SRMC'], 'MEUR': [SysCost, GenInvCost, GenRetCost, NetInvCost, GenCost, ConCost, EmiCost, RelCost, DemPayment]}
     CostSummary = pd.DataFrame(Costs)
     CostSummary.to_csv(_path+'/oT_Result_CostSummary_'+CaseName+'.csv', sep=',', index=False)
 

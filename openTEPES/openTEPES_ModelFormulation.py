@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 12, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 15, 2022
 """
 
 import time
@@ -17,8 +17,29 @@ def InvestmentModelFormulation(OptModel, mTEPES, pIndLogConsole):
     OptModel.eTotalTCost = Objective(rule=eTotalTCost, sense=minimize, doc='total system cost [MEUR]')
 
     def eTotalFCost(OptModel):
-       return OptModel.vTotalFCost == sum(mTEPES.pGenInvestCost[gc] * OptModel.vGenerationInvest[p,gc] for p,gc in mTEPES.p*mTEPES.gc) + sum(mTEPES.pGenRetireCost[gd] * OptModel.vGenerationRetire[p,gd] for p,gd in mTEPES.p*mTEPES.gd) + sum(mTEPES.pNetFixedCost[ni,nf,cc] * OptModel.vNetworkInvest[p,ni,nf,cc] for p,ni,nf,cc in mTEPES.p*mTEPES.lc)
+        return OptModel.vTotalFCost == sum(mTEPES.pGenInvestCost[gc] * OptModel.vGenerationInvest[p,gc] for p,gc in mTEPES.p*mTEPES.gc) + sum(mTEPES.pGenRetireCost[gd] * OptModel.vGenerationRetire[p,gd] for p,gd in mTEPES.p*mTEPES.gd) + sum(mTEPES.pNetFixedCost[ni,nf,cc] * OptModel.vNetworkInvest[p,ni,nf,cc] for p,ni,nf,cc in mTEPES.p*mTEPES.lc)
     OptModel.eTotalFCost = Constraint(rule=eTotalFCost, doc='system fixed    cost [MEUR]')
+
+    def eConsecutiveGenInvest(OptModel,p,gc):
+        if p != mTEPES.p.first():
+            return OptModel.vGenerationInvest[p.prev(p,1),gc      ] <= OptModel.vGenerationInvest[p,gc      ]
+        else:
+            return Constraint.Skip
+    OptModel.eConsecutiveGenInvest = Constraint(mTEPES.p, mTEPES.gc, rule=eConsecutiveGenInvest, doc='generation investment in consecutive periods')
+
+    def eConsecutiveGenRetire(OptModel,p,gc):
+        if p != mTEPES.p.first():
+            return OptModel.vGenerationRetire[p.prev(p,1),gc      ] <= OptModel.vGenerationRetire[p,gc      ]
+        else:
+            return Constraint.Skip
+    OptModel.eConsecutiveGenRetire = Constraint(mTEPES.p, mTEPES.gc, rule=eConsecutiveGenRetire, doc='generation retirement in consecutive periods')
+
+    def eConsecutiveNetInvest(OptModel,p,ni,nf,cc):
+        if p != mTEPES.p.first():
+            return OptModel.vNetworkInvest   [p.prev(p,1),ni,nf,cc] <= OptModel.vNetworkInvest   [p,ni,nf,cc]
+        else:
+            return Constraint.Skip
+    OptModel.eConsecutiveNetInvest = Constraint(mTEPES.p, mTEPES.lc, rule=eConsecutiveNetInvest, doc='netowrk    investment in consecutive periods')
 
     GeneratingTime = time.time() - StartTime
     if pIndLogConsole == 1:
@@ -81,7 +102,7 @@ def GenerationOperationModelFormulationInvestment(OptModel, mTEPES, pIndLogConso
 
     def eInstalGenCap(OptModel,p,sc,n,gc):
         if mTEPES.pMaxPower[p,sc,n,gc]:
-            return OptModel.vTotalOutput[p,sc,n,gc] / mTEPES.pMaxPower[p,sc,n,gc]  <= OptModel.vGenerationInvest[p,gc]
+            return OptModel.vTotalOutput[p,sc,n,gc] / mTEPES.pMaxPower [p,sc,n,gc] <= OptModel.vGenerationInvest[p,gc]
         else:
             return OptModel.vTotalOutput[p,sc,n,gc]                               <= 0.0
     setattr(OptModel, 'eInstalGenCap_'+st, Constraint(mTEPES.p, mTEPES.sc, mTEPES.n, mTEPES.gc, rule=eInstalGenCap, doc='output if installed gen unit [p.u.]'))
