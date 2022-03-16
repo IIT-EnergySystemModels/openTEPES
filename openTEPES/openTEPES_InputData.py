@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 12, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 16, 2022
 """
 
 import time
@@ -99,9 +99,9 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     dictSets.load(filename=_path+'/oT_Dict_ZoneToArea_'    +CaseName+'.csv', set='znar', format='set')
     dictSets.load(filename=_path+'/oT_Dict_AreaToRegion_'  +CaseName+'.csv', set='arrg', format='set')
 
-    mTEPES.scc  = Set(initialize=dictSets['sc'],   ordered=True,  doc='scenarios'       )
     mTEPES.pp   = Set(initialize=dictSets['p' ],   ordered=True,  doc='periods'         )
     mTEPES.p    = Set(initialize=dictSets['p' ],   ordered=True,  doc='periods'         )
+    mTEPES.scc  = Set(initialize=dictSets['sc'],   ordered=True,  doc='scenarios'       )
     mTEPES.stt  = Set(initialize=dictSets['st'],   ordered=True,  doc='stages'          )
     mTEPES.nn   = Set(initialize=dictSets['n' ],   ordered=True,  doc='load levels'     )
     mTEPES.gg   = Set(initialize=dictSets['g' ],   ordered=False, doc='units'           )
@@ -281,7 +281,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.g  = Set(initialize=mTEPES.gg,                     ordered=False, doc='generating      units', filter=lambda mTEPES,gg      :  gg        in mTEPES.gg  and (pRatedMaxPower   [gg] >  0.0 or  pRatedMaxCharge[gg] >  0.0) and pGenToNode.reset_index().set_index(['index']).isin(mTEPES.nd)['Node'][gg])  # excludes generators with empty node
     mTEPES.t  = Set(initialize=mTEPES.g ,                     ordered=False, doc='thermal         units', filter=lambda mTEPES,g       :  g         in mTEPES.g   and pLinearOperCost   [g ] >  0.0)
     mTEPES.r  = Set(initialize=mTEPES.g ,                     ordered=False, doc='RES             units', filter=lambda mTEPES,g       :  g         in mTEPES.g   and pLinearOperCost   [g ] == 0.0 and pRatedMaxStorage[g] == 0.0)
-    mTEPES.es = Set(initialize=mTEPES.g ,                     ordered=False, doc='ESS             units', filter=lambda mTEPES,g       :  g         in mTEPES.g   and                                   pRatedMaxStorage[g] >  0.0)
+    mTEPES.es = Set(initialize=mTEPES.g ,                     ordered=False, doc='ESS             units', filter=lambda mTEPES,g       :  g         in mTEPES.g   and                                   pRatedMaxStorage[g] >  0.0 and (pEnergyInflows.sum()[g] > 0.0 or pRatedMaxCharge[g] > 0.0))
     mTEPES.gc = Set(initialize=mTEPES.g ,                     ordered=False, doc='candidate       units', filter=lambda mTEPES,g       :  g         in mTEPES.g   and pGenInvestCost    [g ] >  0.0)
     mTEPES.gd = Set(initialize=mTEPES.g ,                     ordered=False, doc='retirement      units', filter=lambda mTEPES,g       :  g         in mTEPES.g   and pGenRetireCost    [g ] != 0.0)
     mTEPES.ec = Set(initialize=mTEPES.es,                     ordered=False, doc='candidate   ESS units', filter=lambda mTEPES,es      :  es        in mTEPES.es  and pGenInvestCost    [es] >  0.0)
@@ -776,22 +776,22 @@ def SettingUpVariables(OptModel, mTEPES):
 
     # relax binary condition in generation and network investment decisions
     for p,gc in mTEPES.p*mTEPES.gc:
-        if mTEPES.pIndBinGenInvest() != 0 and mTEPES.pIndBinUnitInvest[gc] == 0:
-            OptModel.vGenerationInvest[p,gc].domain = UnitInterval
+        if mTEPES.pIndBinGenInvest() != 0 and mTEPES.pIndBinUnitInvest[gc      ] == 0:
+            OptModel.vGenerationInvest[p,gc      ].domain = UnitInterval
         if mTEPES.pIndBinGenInvest() == 2:
-            OptModel.vGenerationInvest[p,gc].fix    = 0
+            OptModel.vGenerationInvest[p,gc      ].fix(0)
     for p,ni,nf,cc in mTEPES.p*mTEPES.lc:
         if mTEPES.pIndBinNetInvest() != 0 and mTEPES.pIndBinLineInvest[ni,nf,cc] == 0:
             OptModel.vNetworkInvest   [p,ni,nf,cc].domain = UnitInterval
         if mTEPES.pIndBinNetInvest() == 2:
-            OptModel.vNetworkInvest   [p,ni,nf,cc].fix    = 0
+            OptModel.vNetworkInvest   [p,ni,nf,cc].fix(0)
 
     # relax binary condition in generation retirement decisions
     for p,gd in mTEPES.p*mTEPES.gd:
-        if mTEPES.pIndBinGenRetire() != 0 and mTEPES.pIndBinUnitRetire[gd] == 0:
-            OptModel.vGenerationRetire[p,gd].domain = UnitInterval
+        if mTEPES.pIndBinGenRetire() != 0 and mTEPES.pIndBinUnitRetire[gd      ] == 0:
+            OptModel.vGenerationRetire[p,gd      ].domain = UnitInterval
         if mTEPES.pIndBinGenRetire() == 2:
-            OptModel.vGenerationRetire[p,gd].fix    = 0
+            OptModel.vGenerationRetire[p,gd      ].fix(0)
 
     # relax binary condition in unit generation, startup and shutdown decisions
     for p,sc,n,nr in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.nr:
@@ -959,6 +959,15 @@ def SettingUpVariables(OptModel, mTEPES):
     for p,sc,n,nd in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.nd:
         if mTEPES.pDemand[p,sc,n,nd] == 0.0:
             OptModel.vENS[p,sc,n,nd].fix(0.0)
+
+    # detecting infeasibility: total min ESS output greater than total inflows, total max ESS charge lower than total outflows
+    for es in mTEPES.es:
+        if sum(mTEPES.pMinPower [p,sc,n,es]-mTEPES.pEnergyInflows [p,sc,n,es] for p,sc,n in mTEPES.p*mTEPES.sc*mTEPES.n) > 0.0:
+            print('### Total minimum output greater than total inflows  for ESS unit ', es)
+            assert (0==1)
+        if sum(mTEPES.pMaxCharge[p,sc,n,es]-mTEPES.pEnergyOutflows[p,sc,n,es] for p,sc,n in mTEPES.p*mTEPES.sc*mTEPES.n) < 0.0:
+            print('### Total maximum charge greater than total outflows for ESS unit ', es)
+            assert (0==1)
 
     SettingUpVariablesTime = time.time() - StartTime
     print('Setting up variables                   ... ', round(SettingUpVariablesTime), 's')
