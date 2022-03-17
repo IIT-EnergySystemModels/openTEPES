@@ -608,7 +608,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.pIndBinSingleNode     = Param(initialize=pIndBinSingleNode    , within=Boolean,             doc='Indicator of single node within a network case',      mutable=True)
     mTEPES.pIndBinGenRamps       = Param(initialize=pIndBinGenRamps      , within=Boolean,             doc='Indicator of using or not the ramp constraints',      mutable=True)
     mTEPES.pIndBinGenMinTime     = Param(initialize=pIndBinGenMinTime    , within=Boolean,             doc='Indicator of using or not the min time constraints',  mutable=True)
-    mTEPES.pIndBinNetInvest      = Param(initialize=pIndBinNetInvest     , within=Boolean,             doc='Indicator of binary network    investment decisions', mutable=True)
+    mTEPES.pIndBinNetInvest      = Param(initialize=pIndBinNetInvest     , within=NonNegativeIntegers, doc='Indicator of binary network    investment decisions', mutable=True)
     mTEPES.pIndBinLineCommit     = Param(initialize=pIndBinLineCommit    , within=Boolean,             doc='Indicator of binary network    switching  decisions', mutable=True)
     mTEPES.pIndBinNetLosses      = Param(initialize=pIndBinNetLosses     , within=Boolean,             doc='Indicator of binary network ohmic losses',            mutable=True)
 
