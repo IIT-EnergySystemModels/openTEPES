@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 17, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 18, 2022
 """
 
 import time
@@ -874,7 +874,7 @@ def SettingUpVariables(OptModel, mTEPES):
             OptModel.vEnergyOutflows[p,sc,n,es].fix(mTEPES.pEnergyOutflows[p,sc,n,es])
 
     for p,sc,st in mTEPES.pp*mTEPES.scc*mTEPES.stt:
-        # activate only scenario, period and load levels to formulate
+        # activate only period, scenario, and load levels to formulate
         mTEPES.del_component(mTEPES.p )
         mTEPES.del_component(mTEPES.sc)
         mTEPES.del_component(mTEPES.st)
@@ -916,7 +916,7 @@ def SettingUpVariables(OptModel, mTEPES):
             for p,sc,es in mTEPES.p*mTEPES.sc*mTEPES.es:
                 OptModel.vESSInventory[p,sc,mTEPES.n.last(),es].fix(mTEPES.pInitialInventory[es])
 
-    # activate all the scenarios, periods and load levels again
+    # activate all the periods, scenarios, and load levels again
     mTEPES.del_component(mTEPES.p )
     mTEPES.del_component(mTEPES.sc)
     mTEPES.del_component(mTEPES.st)
@@ -963,6 +963,12 @@ def SettingUpVariables(OptModel, mTEPES):
     for p,sc,n,nd in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.nd:
         if mTEPES.pDemand[p,sc,n,nd] == 0.0:
             OptModel.vENS[p,sc,n,nd].fix(0.0)
+
+    # detecting infeasibility: sum of scenario probabilities must be 1 in each period
+    for p in mTEPES.p:
+        if abs(sum(mTEPES.pScenProb[p,sc] for sc in mTEPES.sc)-1.0) > 1e-6:
+            print('### Sum of scenario probabilities different fr5om 1 in period ', p)
+            assert (0==1)
 
     # detecting infeasibility: total min ESS output greater than total inflows, total max ESS charge lower than total outflows
     for es in mTEPES.es:

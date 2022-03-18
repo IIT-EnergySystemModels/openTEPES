@@ -13,7 +13,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
     _path = os.path.join(DirName, CaseName)
     StartTime = time.time()
 
-    #%% activating all scenarios, periods, and load levels
+    #%% activating all periods, scenarios, and load levels
     mTEPES.del_component(mTEPES.p )
     mTEPES.del_component(mTEPES.sc)
     mTEPES.del_component(mTEPES.st)
