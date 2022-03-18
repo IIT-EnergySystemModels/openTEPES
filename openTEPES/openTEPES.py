@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 11, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 17, 2022
 """
 
 import time
@@ -35,7 +35,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndLogConsole):
     idxDict['y'  ] = 1
 
     #%% model declaration
-    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.5.0 - March 11, 2022')
+    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.5.0 - March 17, 2022')
 
     pIndLogConsole = [j for i, j in idxDict.items() if i == pIndLogConsole][0]
 
@@ -56,21 +56,23 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndLogConsole):
         mTEPES.del_component(mTEPES.st)
         mTEPES.del_component(mTEPES.n )
         mTEPES.del_component(mTEPES.n2)
-        mTEPES.p  = Set(initialize=mTEPES.pp,  ordered=True, doc='periods',     filter=lambda mTEPES,pp : pp  in                p  == pp                              )
+        mTEPES.p  = Set(initialize=mTEPES.pp,  ordered=True, doc='periods',     filter=lambda mTEPES,pp : pp  in mTEPES.pp  and p  == pp                              )
         mTEPES.sc = Set(initialize=mTEPES.scc, ordered=True, doc='scenarios',   filter=lambda mTEPES,scc: scc in mTEPES.scc and sc == scc and mTEPES.pScenProb   [scc])
-        mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in mTEPES.stt and st == stt and mTEPES.pStageWeight[stt] and sum(1 for (st, nn) in mTEPES.s2n))
-        mTEPES.n  = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in mTEPES.pDuration and (st,nn) in mTEPES.s2n)
-        mTEPES.n2 = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in mTEPES.pDuration and (st,nn) in mTEPES.s2n)
+        mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in mTEPES.stt and st == stt and mTEPES.pStageWeight[stt] and sum(1 for (st,nn) in mTEPES.s2n))
+        mTEPES.n  = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in                              mTEPES.pDuration         and           (st,nn) in mTEPES.s2n)
+        mTEPES.n2 = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in                              mTEPES.pDuration         and           (st,nn) in mTEPES.s2n)
 
         # operation model objective function and constraints by stage
-        GenerationOperationModelFormulationObjFunct   (mTEPES, mTEPES, pIndLogConsole, st)
-        GenerationOperationModelFormulationInvestment (mTEPES, mTEPES, pIndLogConsole, st)
-        GenerationOperationModelFormulationDemand     (mTEPES, mTEPES, pIndLogConsole, st)
-        GenerationOperationModelFormulationStorage    (mTEPES, mTEPES, pIndLogConsole, st)
-        GenerationOperationModelFormulationCommitment (mTEPES, mTEPES, pIndLogConsole, st)
-        GenerationOperationModelFormulationRampMinTime(mTEPES, mTEPES, pIndLogConsole, st)
-        NetworkSwitchingModelFormulation              (mTEPES, mTEPES, pIndLogConsole, st)
-        NetworkOperationModelFormulation              (mTEPES, mTEPES, pIndLogConsole, st)
+        GenerationOperationModelFormulationObjFunct   (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
+        GenerationOperationModelFormulationInvestment (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
+        GenerationOperationModelFormulationDemand     (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
+        GenerationOperationModelFormulationStorage    (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
+        GenerationOperationModelFormulationCommitment (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
+        GenerationOperationModelFormulationRampMinTime(mTEPES, mTEPES, pIndLogConsole, p, sc, st)
+        NetworkSwitchingModelFormulation              (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
+        NetworkOperationModelFormulation              (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
+
+        print('Period '+p+', Scenario '+sc+', Stage '+st)
 
     if pIndLogConsole == 1:
         StartTime         = time.time()
@@ -85,9 +87,9 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndLogConsole):
     mTEPES.del_component(mTEPES.sc)
     mTEPES.del_component(mTEPES.st)
     mTEPES.del_component(mTEPES.n )
-    mTEPES.p  = Set(initialize=mTEPES.pp,  ordered=True, doc='periods',     filter=lambda mTEPES,pp : pp  in p  == pp                               )
+    mTEPES.p  = Set(initialize=mTEPES.pp,  ordered=True, doc='periods',     filter=lambda mTEPES,pp : pp  in mTEPES.pp                              )
     mTEPES.sc = Set(initialize=mTEPES.scc, ordered=True, doc='scenarios',   filter=lambda mTEPES,scc: scc in mTEPES.scc and mTEPES.pScenProb   [scc])
-    mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in mTEPES.stt and mTEPES.pStageWeight[stt] and sum(1 for (stt, nn) in mTEPES.s2n))
+    mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in mTEPES.stt and mTEPES.pStageWeight[stt] and sum(1 for (stt,nn) in mTEPES.s2n))
     mTEPES.n  = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in                mTEPES.pDuration        )
 
     InvestmentResults         (DirName, CaseName, mTEPES, mTEPES)

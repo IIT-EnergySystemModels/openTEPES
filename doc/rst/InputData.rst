@@ -75,8 +75,9 @@ File                                       Description
 =========================================  ==========================================================================================================
 ``oT_Data_Option.csv``                     Options of use of the **openTEPES** model
 ``oT_Data_Parameter.csv``                  General system parameters
+``oT_Data_Period.csv``                     Weight of each period
 ``oT_Data_Scenario.csv``                   Short-term uncertainties
-``oT_Data_Stage.csv``                      Stages
+``oT_Data_Stage.csv``                      Weight of each stage
 ``oT_Data_ReserveMargin.csv``              Adequacy reserve margin
 ``oT_Data_Duration.csv``                   Duration of the load levels
 ``oT_Data_Demand.csv``                     Demand
@@ -136,18 +137,33 @@ TimeStep              Duration of the time step for the load levels (hourly, bi-
 A time step greater than one hour it is a convenient way to reduce the load levels of the time scope. The moving average of the demand, upward/downward operating reserves, variable generation/consumption/storage and ESS energy inflows/outflows
 over the time step load levels is assigned to active load levels (e.g., the mean value of the three hours is associated to the third hour in a trihourly time step).
 
+Period
+------
+
+A description of the data included in the file ``oT_Data_Period.csv`` follows:
+
+==============  ============  =====================
+Identifier      Header        Description
+==============  ============  =====================
+Scenario        Weight        Weight of each period
+==============  ============  =====================
+
+This weight allows the definition of equivalent (representative) years (e.g., year 2030 with a weight of 5 would represent years 2030-2034). Periods are not mathematically connected between them, i.e., no constraints link the operation
+at different periods.
+
 Scenario
 --------
 
 A description of the data included in the file ``oT_Data_Scenario.csv`` follows:
 
-==============  ============  ===========================  ====
-Identifier      Header        Description
-==============  ============  ===========================  ====
-Scenario        Probability   Probability of the scenario  p.u.
-==============  ============  ===========================  ====
+==============  ==============  ============  ===========================================  ====
+Identifier      Identifier      Header        Description
+==============  ==============  ============  ===========================================  ====
+Period          Scenario        Probability   Probability of each scenario in each period  p.u.
+==============  ==============  ============  ===========================================  ====
 
-For example, the scenarios can be used for obtaining the GEP+TEP considering hydro inflows uncertainty represented by means of three scenarios (wet, dry and average), or two VRE scenarios (windy/cloudy and calm/sunny).
+For example, the scenarios can be used for obtaining the GEP+SEP+TEP considering hydro inflows uncertainty represented by means of three scenarios (wet, dry and average), or two VRE scenarios (windy/cloudy and calm/sunny).
+The sum of the probabilities of all the scenarios of a period must be 1.
 
 Stage
 -----

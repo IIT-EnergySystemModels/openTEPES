@@ -54,7 +54,7 @@ They are written in **uppercase** letters.
 ==================  ====================================================  =======
 **Scenarios**                                                       
 ------------------  ----------------------------------------------------  -------
-:math:`P^ω`         Probability of each scenario                          p.u.
+:math:`P^ω_p`         Probability of each scenario in each period           p.u.
 ==================  ====================================================  =======
 
 ==========================================  ==================================================================  ====
@@ -164,15 +164,15 @@ Generation, storage and network investment cost plus retirement cost [M€] «``
 
 Generation operation cost [M€] «``eTotalGCost``» «``eTotalECost``»
 
-:math:`\sum_{pωng}{[P^ω DUR_n (CV_g gp^p_{ωng} + CF_g uc^p_{ωng}) + CSU_g su^p_{ωng} + CSD_g sd^p_{ωng}]} +`
+:math:`\sum_{pωng}{[P^ω_p DUR_n (CV_g gp^p_{ωng} + CF_g uc^p_{ωng}) + CSU_g su^p_{ωng} + CSD_g sd^p_{ωng}]} +`
 
 Variable consumption operation cost [M€] «``eTotalCCost``»
 
-:math:`\sum_{pωne}{P^ω DUR_n CV_e gc^p_{ωne}} +`
+:math:`\sum_{pωne}{P^ω_p DUR_n CV_e gc^p_{ωne}} +`
 
 Reliability cost [M€] «``eTotalRCost``»
 
-:math:`\sum_{pωni}{P^ω DUR_n CENS ens^p_{ωni}}`
+:math:`\sum_{pωni}{P^ω_p DUR_n CENS ens^p_{ωni}}`
 
 **Constraints**
 

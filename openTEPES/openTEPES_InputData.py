@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 16, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 17, 2022
 """
 
 import time
@@ -18,7 +18,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     #%% reading data from CSV
     dfOption             = pd.read_csv(_path+'/oT_Data_Option_'                +CaseName+'.csv', index_col=[0    ])
     dfParameter          = pd.read_csv(_path+'/oT_Data_Parameter_'             +CaseName+'.csv', index_col=[0    ])
-    dfScenario           = pd.read_csv(_path+'/oT_Data_Scenario_'              +CaseName+'.csv', index_col=[0    ])
+    dfPeriod             = pd.read_csv(_path+'/oT_Data_Period_'                +CaseName+'.csv', index_col=[0    ])
+    dfScenario           = pd.read_csv(_path+'/oT_Data_Scenario_'              +CaseName+'.csv', index_col=[0,1  ])
     dfStage              = pd.read_csv(_path+'/oT_Data_Stage_'                 +CaseName+'.csv', index_col=[0    ])
     dfDuration           = pd.read_csv(_path+'/oT_Data_Duration_'              +CaseName+'.csv', index_col=[0    ])
     dfReserveMargin      = pd.read_csv(_path+'/oT_Data_ReserveMargin_'         +CaseName+'.csv', index_col=[0    ])
@@ -41,6 +42,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     # substitute NaN by 0
     dfOption.fillna            (0  , inplace=True)
     dfParameter.fillna         (0.0, inplace=True)
+    dfPeriod.fillna            (0.0, inplace=True)
     dfScenario.fillna          (0.0, inplace=True)
     dfStage.fillna             (0.0, inplace=True)
     dfDuration.fillna          (0  , inplace=True)
@@ -81,26 +83,25 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
 
     #%% reading the sets
     dictSets = DataPortal()
-    dictSets.load(filename=_path+'/oT_Dict_Scenario_'      +CaseName+'.csv', set='sc'  , format='set')
-    dictSets.load(filename=_path+'/oT_Dict_Period_'        +CaseName+'.csv', set='p'   , format='set')
-    dictSets.load(filename=_path+'/oT_Dict_Stage_'         +CaseName+'.csv', set='st'  , format='set')
-    dictSets.load(filename=_path+'/oT_Dict_LoadLevel_'     +CaseName+'.csv', set='n'   , format='set')
-    dictSets.load(filename=_path+'/oT_Dict_Generation_'    +CaseName+'.csv', set='g'   , format='set')
-    dictSets.load(filename=_path+'/oT_Dict_Technology_'    +CaseName+'.csv', set='gt'  , format='set')
-    dictSets.load(filename=_path+'/oT_Dict_Storage_'       +CaseName+'.csv', set='et'  , format='set')
-    dictSets.load(filename=_path+'/oT_Dict_Node_'          +CaseName+'.csv', set='nd'  , format='set')
-    dictSets.load(filename=_path+'/oT_Dict_Zone_'          +CaseName+'.csv', set='zn'  , format='set')
-    dictSets.load(filename=_path+'/oT_Dict_Area_'          +CaseName+'.csv', set='ar'  , format='set')
-    dictSets.load(filename=_path+'/oT_Dict_Region_'        +CaseName+'.csv', set='rg'  , format='set')
-    dictSets.load(filename=_path+'/oT_Dict_Circuit_'       +CaseName+'.csv', set='cc'  , format='set')
-    dictSets.load(filename=_path+'/oT_Dict_Line_'          +CaseName+'.csv', set='lt'  , format='set')
+    dictSets.load(filename=_path+'/oT_Dict_Scenario_'    +CaseName+'.csv', set='sc'  , format='set')
+    dictSets.load(filename=_path+'/oT_Dict_Period_'      +CaseName+'.csv', set='p'   , format='set')
+    dictSets.load(filename=_path+'/oT_Dict_Stage_'       +CaseName+'.csv', set='st'  , format='set')
+    dictSets.load(filename=_path+'/oT_Dict_LoadLevel_'   +CaseName+'.csv', set='n'   , format='set')
+    dictSets.load(filename=_path+'/oT_Dict_Generation_'  +CaseName+'.csv', set='g'   , format='set')
+    dictSets.load(filename=_path+'/oT_Dict_Technology_'  +CaseName+'.csv', set='gt'  , format='set')
+    dictSets.load(filename=_path+'/oT_Dict_Storage_'     +CaseName+'.csv', set='et'  , format='set')
+    dictSets.load(filename=_path+'/oT_Dict_Node_'        +CaseName+'.csv', set='nd'  , format='set')
+    dictSets.load(filename=_path+'/oT_Dict_Zone_'        +CaseName+'.csv', set='zn'  , format='set')
+    dictSets.load(filename=_path+'/oT_Dict_Area_'        +CaseName+'.csv', set='ar'  , format='set')
+    dictSets.load(filename=_path+'/oT_Dict_Region_'      +CaseName+'.csv', set='rg'  , format='set')
+    dictSets.load(filename=_path+'/oT_Dict_Circuit_'     +CaseName+'.csv', set='cc'  , format='set')
+    dictSets.load(filename=_path+'/oT_Dict_Line_'        +CaseName+'.csv', set='lt'  , format='set')
 
-    dictSets.load(filename=_path+'/oT_Dict_NodeToZone_'    +CaseName+'.csv', set='ndzn', format='set')
-    dictSets.load(filename=_path+'/oT_Dict_ZoneToArea_'    +CaseName+'.csv', set='znar', format='set')
-    dictSets.load(filename=_path+'/oT_Dict_AreaToRegion_'  +CaseName+'.csv', set='arrg', format='set')
+    dictSets.load(filename=_path+'/oT_Dict_NodeToZone_'  +CaseName+'.csv', set='ndzn', format='set')
+    dictSets.load(filename=_path+'/oT_Dict_ZoneToArea_'  +CaseName+'.csv', set='znar', format='set')
+    dictSets.load(filename=_path+'/oT_Dict_AreaToRegion_'+CaseName+'.csv', set='arrg', format='set')
 
     mTEPES.pp   = Set(initialize=dictSets['p' ],   ordered=True,  doc='periods'         )
-    mTEPES.p    = Set(initialize=dictSets['p' ],   ordered=True,  doc='periods'         )
     mTEPES.scc  = Set(initialize=dictSets['sc'],   ordered=True,  doc='scenarios'       )
     mTEPES.stt  = Set(initialize=dictSets['st'],   ordered=True,  doc='stages'          )
     mTEPES.nn   = Set(initialize=dictSets['n' ],   ordered=True,  doc='load levels'     )
@@ -142,11 +143,12 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pTimeStep            = dfParameter['TimeStep'           ][0].astype('int')                                                            # duration of the unit time step           [h]
     # pStageDuration       = dfParameter['StageDuration'      ][0].astype('int')                                                          # duration of each stage                   [h]
 
-    pScenProb            = dfScenario     ['Probability'   ]                                                                              # probabilities of scenarios               [p.u.]
-    pStageWeight         = dfStage        ['Weight'        ]                                                                              # weights of stages                        [p.u.]
-    pDuration            = dfDuration     ['Duration'      ]    * pTimeStep                                                               # duration of load levels                  [h]
-    pReserveMargin       = dfReserveMargin['ReserveMargin' ]                                                                              # minimum adequacy reserve margin          [p.u.]
-    pLevelToStage        = dfDuration     ['Stage'         ]                                                                              # load levels assignment to stages
+    pPeriodWeight        = dfPeriod        ['Weight'        ]                                                                             # weights of periods                       [p.u.]
+    pScenProb            = dfScenario      ['Probability'   ]                                                                             # probabilities of scenarios               [p.u.]
+    pStageWeight         = dfStage         ['Weight'        ]                                                                             # weights of stages                        [p.u.]
+    pDuration            = dfDuration      ['Duration'      ]    * pTimeStep                                                              # duration of load levels                  [h]
+    pReserveMargin       = dfReserveMargin ['ReserveMargin' ]                                                                             # minimum adequacy reserve margin          [p.u.]
+    pLevelToStage        = dfDuration      ['Stage'         ]                                                                             # load levels assignment to stages
     pDemand              = dfDemand               [mTEPES.nd]    * 1e-3                                                                   # demand                                   [GW]
     pSystemInertia       = dfInertia              [mTEPES.ar]                                                                             # inertia                                  [s]
     pOperReserveUp       = dfUpOperatingReserve   [mTEPES.ar]    * 1e-3                                                                   # upward   operating reserve               [GW]
@@ -274,7 +276,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pBrList = [(ni,nf) for n, (ni,nf) in enumerate(pBr) if (ni,nf) not in pBr[:n]]
 
     #%% defining subsets: active load levels (n,n2), thermal units (t), RES units (r), ESS units (es), candidate gen units (gc), candidate ESS units (ec), all the lines (la), candidate lines (lc), candidate DC lines (cd), existing DC lines (cd), lines with losses (ll), reference node (rf), and reactive generating units (gq)
-    mTEPES.sc = Set(initialize=mTEPES.scc,                    ordered=True , doc='scenarios'            , filter=lambda mTEPES,scc     :  scc       in mTEPES.scc and pScenProb        [scc] >  0.0)
+    mTEPES.p  = Set(initialize=mTEPES.pp,                     ordered=True , doc='periods'              , filter=lambda mTEPES,pp      :  pp        in mTEPES.pp  and pPeriodWeight     [pp] >  0.0)
+    mTEPES.sc = Set(initialize=mTEPES.scc,                    ordered=True , doc='scenarios'            , filter=lambda mTEPES,scc     :  scc       in mTEPES.scc                                  )
     mTEPES.st = Set(initialize=mTEPES.stt,                    ordered=True , doc='stages'               , filter=lambda mTEPES,stt     :  stt       in mTEPES.stt and pStageWeight     [stt] >  0.0)
     mTEPES.n  = Set(initialize=mTEPES.nn,                     ordered=True , doc='load levels'          , filter=lambda mTEPES,nn      :  nn        in mTEPES.nn  and pDuration         [nn] >  0  )
     mTEPES.n2 = Set(initialize=mTEPES.nn,                     ordered=True , doc='load levels'          , filter=lambda mTEPES,nn      :  nn        in mTEPES.nn  and pDuration         [nn] >  0  )
@@ -625,7 +628,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.pReserveMargin        = Param(                               mTEPES.ar, initialize=pReserveMargin.to_dict()            , within=NonNegativeReals, doc='Adequacy reserve margin'       )
     mTEPES.pPeakDemand           = Param(                               mTEPES.ar, initialize=pPeakDemand.to_dict()               , within=NonNegativeReals, doc='Peak demand'                   )
     mTEPES.pDemand               = Param(mTEPES.p, mTEPES.sc, mTEPES.n, mTEPES.nd, initialize=pDemand.stack().to_dict()           , within=           Reals, doc='Demand'                        )
-    mTEPES.pScenProb             = Param(mTEPES.scc,                               initialize=pScenProb.to_dict()                 , within=UnitInterval    , doc='Probability'                   )
+    mTEPES.pPeriodWeight         = Param(mTEPES.p,                                 initialize=pPeriodWeight.to_dict()             , within=NonNegativeReals, doc='Period weight'                 )
+    mTEPES.pScenProb             = Param(mTEPES.p, mTEPES.sc,                      initialize=pScenProb.to_dict()                 , within=UnitInterval    , doc='Probability'                   )
     mTEPES.pStageWeight          = Param(mTEPES.stt,                               initialize=pStageWeight.to_dict()              , within=NonNegativeReals, doc='Stage weight'                  )
     mTEPES.pDuration             = Param(                     mTEPES.n,            initialize=pDuration.to_dict()                 , within=NonNegativeReals, doc='Duration'                      )
     mTEPES.pNodeLon              = Param(                               mTEPES.nd, initialize=pNodeLon.to_dict()                  ,                          doc='Longitude'                     )
@@ -875,10 +879,10 @@ def SettingUpVariables(OptModel, mTEPES):
         mTEPES.del_component(mTEPES.sc)
         mTEPES.del_component(mTEPES.st)
         mTEPES.del_component(mTEPES.n )
-        mTEPES.p  = Set(initialize=mTEPES.pp , ordered=True, doc='periods',     filter=lambda mTEPES,pp : pp  in                p  == pp                              )
-        mTEPES.sc = Set(initialize=mTEPES.scc, ordered=True, doc='scenarios',   filter=lambda mTEPES,scc: scc in mTEPES.scc and sc == scc and mTEPES.pScenProb   [scc])
+        mTEPES.p  = Set(initialize=mTEPES.pp , ordered=True, doc='periods',     filter=lambda mTEPES,pp : pp  in mTEPES.pp  and p  == pp                              )
+        mTEPES.sc = Set(initialize=mTEPES.scc, ordered=True, doc='scenarios',   filter=lambda mTEPES,scc: scc in mTEPES.scc and sc == scc                             )
         mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in mTEPES.stt and st == stt and mTEPES.pStageWeight[stt] and sum(1 for (st,nn) in mTEPES.s2n))
-        mTEPES.n  = Set(initialize=mTEPES.nn , ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in mTEPES.pDuration and (st,nn) in mTEPES.s2n           )
+        mTEPES.n  = Set(initialize=mTEPES.nn , ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in                              mTEPES.pDuration         and           (st,nn) in mTEPES.s2n)
 
         if len(mTEPES.n):
             # determine the first load level of each stage
@@ -908,7 +912,7 @@ def SettingUpVariables(OptModel, mTEPES):
                 else:
                     mTEPES.pInitialSwitch[n1,la] = 1
 
-            # fixing the ESS inventory at the last load level
+            # fixing the ESS inventory at the last load level for every period and scenario
             for p,sc,es in mTEPES.p*mTEPES.sc*mTEPES.es:
                 OptModel.vESSInventory[p,sc,mTEPES.n.last(),es].fix(mTEPES.pInitialInventory[es])
 
@@ -917,10 +921,10 @@ def SettingUpVariables(OptModel, mTEPES):
     mTEPES.del_component(mTEPES.sc)
     mTEPES.del_component(mTEPES.st)
     mTEPES.del_component(mTEPES.n )
-    mTEPES.p  = Set(initialize=mTEPES.pp,  ordered=True, doc='periods',     filter=lambda mTEPES,pp : pp  in p == pp                                )
-    mTEPES.sc = Set(initialize=mTEPES.scc, ordered=True, doc='scenarios',   filter=lambda mTEPES,scc: scc in mTEPES.scc and mTEPES.pScenProb   [scc])
+    mTEPES.p  = Set(initialize=mTEPES.pp,  ordered=True, doc='periods',     filter=lambda mTEPES,pp : pp  in mTEPES.pp                              )
+    mTEPES.sc = Set(initialize=mTEPES.scc, ordered=True, doc='scenarios',   filter=lambda mTEPES,scc: scc in mTEPES.scc                             )
     mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in mTEPES.stt and mTEPES.pStageWeight[stt] and sum(1 for (stt,nn) in mTEPES.s2n))
-    mTEPES.n  = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in mTEPES.pDuration                       )
+    mTEPES.n  = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in                mTEPES.pDuration        )
 
     # fixing the ESS inventory at the end of the following pCycleTimeStep (daily, weekly, monthly), i.e., for daily ESS is fixed at the end of the week, for weekly/monthly ESS is fixed at the end of the year
     for p,sc,n,es in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.es:

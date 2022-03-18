@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 14, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 17, 2022
 """
 
 import time
@@ -18,9 +18,9 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
     mTEPES.del_component(mTEPES.sc)
     mTEPES.del_component(mTEPES.st)
     mTEPES.del_component(mTEPES.n )
-    mTEPES.p  = Set(initialize=mTEPES.pp,  ordered=True, doc='periods',     filter=lambda mTEPES,pp : pp                                            )
-    mTEPES.sc = Set(initialize=mTEPES.scc, ordered=True, doc='scenarios',   filter=lambda mTEPES,scc: scc in mTEPES.scc and mTEPES.pScenProb   [scc])
-    mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in mTEPES.stt and mTEPES.pStageWeight[stt] and sum(1 for (stt, nn) in mTEPES.s2n))
+    mTEPES.p  = Set(initialize=mTEPES.pp,  ordered=True, doc='periods',     filter=lambda mTEPES,pp : pp  in mTEPES.pp                              )
+    mTEPES.sc = Set(initialize=mTEPES.scc, ordered=True, doc='scenarios',   filter=lambda mTEPES,scc: scc in mTEPES.scc                             )
+    mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in mTEPES.stt and mTEPES.pStageWeight[stt] and sum(1 for (stt,nn) in mTEPES.s2n))
     mTEPES.n  = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in                mTEPES.pDuration        )
 
     #%% solving the problem
@@ -97,7 +97,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
     print('Total genr invest cost [MEUR]              ', sum(mTEPES.pGenInvestCost[gc      ] * OptModel.vGenerationInvest[p,gc      ]() for p,gc       in mTEPES.p*mTEPES.gc         ))
     print('Total retr invest cost [MEUR]              ', sum(mTEPES.pGenRetireCost[gd      ] * OptModel.vGenerationRetire[p,gd      ]() for p,gd       in mTEPES.p*mTEPES.gd         ))
     print('Total line invest cost [MEUR]              ', sum(mTEPES.pNetFixedCost [ni,nf,cc] * OptModel.vNetworkInvest   [p,ni,nf,cc]() for p,ni,nf,cc in mTEPES.p*mTEPES.lc         ))
-    print('Total generation  cost [MEUR]              ', sum(mTEPES.pScenProb     [sc      ] * OptModel.vTotalGCost      [p,sc,n    ]() for p,sc,n     in mTEPES.p*mTEPES.sc*mTEPES.n))
-    print('Total consumption cost [MEUR]              ', sum(mTEPES.pScenProb     [sc      ] * OptModel.vTotalCCost      [p,sc,n    ]() for p,sc,n     in mTEPES.p*mTEPES.sc*mTEPES.n))
-    print('Total emission    cost [MEUR]              ', sum(mTEPES.pScenProb     [sc      ] * OptModel.vTotalECost      [p,sc,n    ]() for p,sc,n     in mTEPES.p*mTEPES.sc*mTEPES.n))
-    print('Total reliability cost [MEUR]              ', sum(mTEPES.pScenProb     [sc      ] * OptModel.vTotalRCost      [p,sc,n    ]() for p,sc,n     in mTEPES.p*mTEPES.sc*mTEPES.n))
+    print('Total generation  cost [MEUR]              ', sum(mTEPES.pScenProb     [p,sc    ] * OptModel.vTotalGCost      [p,sc,n    ]() for p,sc,n     in mTEPES.p*mTEPES.sc*mTEPES.n))
+    print('Total consumption cost [MEUR]              ', sum(mTEPES.pScenProb     [p,sc    ] * OptModel.vTotalCCost      [p,sc,n    ]() for p,sc,n     in mTEPES.p*mTEPES.sc*mTEPES.n))
+    print('Total emission    cost [MEUR]              ', sum(mTEPES.pScenProb     [p,sc    ] * OptModel.vTotalECost      [p,sc,n    ]() for p,sc,n     in mTEPES.p*mTEPES.sc*mTEPES.n))
+    print('Total reliability cost [MEUR]              ', sum(mTEPES.pScenProb     [p,sc    ] * OptModel.vTotalRCost      [p,sc,n    ]() for p,sc,n     in mTEPES.p*mTEPES.sc*mTEPES.n))

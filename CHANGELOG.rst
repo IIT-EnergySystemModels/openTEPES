@@ -1,8 +1,12 @@
 Change Log
 =============
 
-[4.5.0] - 2022-03-13
+[4.5.0] - 2022-03-17
 --------------------
+- [CHANGED] define the scenario probability ofr each period.
+- [CHANGED] introduce changes to allow multiperiod cases.
+- [CHANGED] introduce some infeasibility detection.
+- [CHANGED] additional control on definition of ESS units.
 - [CHANGED] exchange the order of scenario and period to do dynamic expansion planning.
 
 [4.4.0] - 2022-03-11

@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 15, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 17, 2022
 """
 
 import time
@@ -128,19 +128,19 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES):
         OutputToFile = OutputToFile.reset_index()
         OutputToFile.rename(columns={'vNetworkInvest': 'Investment Decision'}).to_csv(_path+'/oT_Result_NetworkInvestment_'+CaseName+'.csv', index=False, sep=',')
 
-        OutputResults_1 = pd.Series(data=[lt for ni,nf,cc,lt in mTEPES.lc*mTEPES.lt if (ni,nf,cc,lt) in mTEPES.pLineType], index=pd.Index(mTEPES.lc))
-        OutputResults_1 = OutputResults_1.to_frame(name='LineType')
-        OutputResults_2 = pd.Series(data=[mTEPES.pLineVoltage[ni,nf,cc] for ni,nf,cc in mTEPES.lc], index=pd.Index(mTEPES.lc))
-        OutputResults_2 = OutputResults_2.to_frame(name='kV')
-        OutputResults_3 = OutputToFile.set_index(['InitialNode', 'FinalNode', 'Circuit'])
-        OutputResults   = pd.concat([OutputResults_1, OutputResults_2, OutputResults_3], axis=1)
-        OutputResults.index.names = ['InitialNode','FinalNode','Circuit']
-        OutputResults   = OutputResults.reset_index().groupby(['LineType', 'kV']).sum().rename(columns={'vNetworkInvest': 'Investment Decision'})
-        OutputResults   = OutputResults.reset_index()
-        OutputResults['kV'] = round(OutputResults['kV'], 2)
-
-        chart = alt.Chart(OutputResults).mark_bar().encode(x='LineType:O', y='sum(Investment Decision):Q', color='LineType:N', column='kV:N')
-        chart.save(_path+'/oT_Plot_NetworkInvestment_'+CaseName+'.html', embed_options={'renderer':'svg'})
+        # OutputResults_1 = pd.Series(data=[lt for ni,nf,cc,lt in mTEPES.lc*mTEPES.lt if (ni,nf,cc,lt) in mTEPES.pLineType], index=pd.Index(mTEPES.lc))
+        # OutputResults_1 = OutputResults_1.to_frame(name='LineType')
+        # OutputResults_2 = pd.Series(data=[mTEPES.pLineVoltage[ni,nf,cc] for ni,nf,cc in mTEPES.lc], index=pd.Index(mTEPES.lc))
+        # OutputResults_2 = OutputResults_2.to_frame(name='kV')
+        # OutputResults_3 = OutputToFile.set_index(['InitialNode', 'FinalNode', 'Circuit'])
+        # OutputResults   = pd.concat([OutputResults_1, OutputResults_2, OutputResults_3], axis=1)
+        # OutputResults.index.names = ['InitialNode','FinalNode','Circuit']
+        # OutputResults   = OutputResults.reset_index().groupby(['LineType', 'kV']).sum().rename(columns={'vNetworkInvest': 'Investment Decision'})
+        # OutputResults   = OutputResults.reset_index()
+        # OutputResults['kV'] = round(OutputResults['kV'], 2)
+        #
+        # chart = alt.Chart(OutputResults).mark_bar().encode(x='LineType:O', y='sum(Investment Decision):Q', color='LineType:N', column='kV:N')
+        # chart.save(_path+'/oT_Plot_NetworkInvestment_'+CaseName+'.html', embed_options={'renderer':'svg'})
 
         OutputToFile = pd.Series(data=[(OptModel.vNetworkInvest[p,ni,nf,cc]()*mTEPES.pLineNTCFrw[ni,nf,cc]*1e3)/mTEPES.pLineLength[ni,nf,cc]() for p,ni,nf,cc in mTEPES.p*mTEPES.lc], index= pd.MultiIndex.from_tuples(mTEPES.p*mTEPES.lc))
         OutputToFile = OutputToFile.to_frame(name='MW-km')
@@ -223,33 +223,57 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES):
     OutputToFile.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW').rename_axis(['Period','Scenario','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_GenerationSurplus_'+CaseName+'.csv', sep=',')
 
     OutputData = []
-    for st in mTEPES.st:
-        mTEPES.del_component(mTEPES.n)
-        mTEPES.n = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.pDuration and (st,nn) in mTEPES.s2n)
+    for p,sc,st in mTEPES.p*mTEPES.sc*mTEPES.st:
+        mTEPES.del_component(mTEPES.p )
+        mTEPES.del_component(mTEPES.sc)
+        mTEPES.del_component(mTEPES.st)
+        mTEPES.del_component(mTEPES.n )
+        mTEPES.p  = Set(initialize=mTEPES.pp , ordered=True, doc='periods',     filter=lambda mTEPES,pp : pp  in mTEPES.pp  and p  == pp                              )
+        mTEPES.sc = Set(initialize=mTEPES.scc, ordered=True, doc='scenarios',   filter=lambda mTEPES,scc: scc in mTEPES.scc and sc == scc                                         )
+        mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in mTEPES.stt and st == stt and mTEPES.pStageWeight[stt] and sum(1 for (st,nn) in mTEPES.s2n))
+        mTEPES.n  = Set(initialize=mTEPES.nn , ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in                              mTEPES.pDuration         and           (st,nn) in mTEPES.s2n)
         if len(mTEPES.n):
             RampSurplusGens = [(p,sc,n,nr) for p,sc,n,nr in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.nr if mTEPES.pRampUp[nr] and mTEPES.pRampUp[nr] < mTEPES.pMaxPower2ndBlock[p,sc,n,nr]]
             if len(RampSurplusGens):
-                OutputToFile = pd.Series(data=[(getattr(OptModel, 'eRampUp_'+st)[p,sc,n,nr].uslack())*mTEPES.pDuration[n]*mTEPES.pRampUp[nr]*1e3*(OptModel.vCommitment[p,sc,n,nr]() - OptModel.vStartUp[p,sc,n,nr]()) for p,sc,n,nr in RampSurplusGens], index=pd.MultiIndex.from_tuples(RampSurplusGens))
+                OutputToFile = pd.Series(data=[(getattr(OptModel, 'eRampUp_'+p+sc+st)[p,sc,n,nr].uslack())*mTEPES.pDuration[n]*mTEPES.pRampUp[nr]*1e3*(OptModel.vCommitment[p,sc,n,nr]() - OptModel.vStartUp[p,sc,n,nr]()) for p,sc,n,nr in RampSurplusGens], index=pd.MultiIndex.from_tuples(RampSurplusGens))
         OutputData.append(OutputToFile)
-    mTEPES.del_component(mTEPES.n)
-    mTEPES.n = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.pDuration)
+    mTEPES.del_component(mTEPES.p )
+    mTEPES.del_component(mTEPES.sc)
+    mTEPES.del_component(mTEPES.st)
+    mTEPES.del_component(mTEPES.n )
+    mTEPES.p  = Set(initialize=mTEPES.pp,  ordered=True, doc='periods',     filter=lambda mTEPES,pp : pp  in mTEPES.pp                              )
+    mTEPES.sc = Set(initialize=mTEPES.scc, ordered=True, doc='scenarios',   filter=lambda mTEPES,scc: scc in mTEPES.scc                             )
+    mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in mTEPES.stt and mTEPES.pStageWeight[stt] and sum(1 for (stt,nn) in mTEPES.s2n))
+    mTEPES.n  = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in                mTEPES.pDuration        )
     OutputData = pd.concat(OutputData)
     OutputData.to_frame(name='MW/h').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW/h').rename_axis(['Period','Scenario','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_GenerationRampUpSurplus_'+CaseName+'.csv', sep=',')
 
     OutputData = []
-    for st in mTEPES.st:
-        mTEPES.del_component(mTEPES.n)
-        mTEPES.n = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.pDuration and (st,nn) in mTEPES.s2n)
+    for p,sc,st in mTEPES.p*mTEPES.sc*mTEPES.st:
+        mTEPES.del_component(mTEPES.p )
+        mTEPES.del_component(mTEPES.sc)
+        mTEPES.del_component(mTEPES.st)
+        mTEPES.del_component(mTEPES.n )
+        mTEPES.p  = Set(initialize=mTEPES.pp , ordered=True, doc='periods',     filter=lambda mTEPES,pp : pp  in mTEPES.pp  and p  == pp                              )
+        mTEPES.sc = Set(initialize=mTEPES.scc, ordered=True, doc='scenarios',   filter=lambda mTEPES,scc: scc in mTEPES.scc and sc == scc                                         )
+        mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in mTEPES.stt and st == stt and mTEPES.pStageWeight[stt] and sum(1 for (st,nn) in mTEPES.s2n))
+        mTEPES.n  = Set(initialize=mTEPES.nn , ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in                              mTEPES.pDuration         and           (st,nn) in mTEPES.s2n)
         if len(mTEPES.n):
             RampSurplusGens = [(p,sc,n,nr) for p,sc,n,nr in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.nr if mTEPES.pRampDw[nr] and mTEPES.pRampDw[nr] < mTEPES.pMaxPower2ndBlock[p,sc,n,nr] and n == mTEPES.n.first()]
             if len(RampSurplusGens):
-                OutputToFile = pd.Series(data=[(getattr(OptModel, 'eRampDw_'+st)[p,sc,n,nr].uslack())*mTEPES.pDuration[n]*mTEPES.pRampDw[nr]*1e3*(- mTEPES.pInitialUC[p,sc,n,nr]                     + OptModel.vShutDown[p,sc,n,nr]()) for p,sc,n,nr in RampSurplusGens], index=pd.MultiIndex.from_tuples(RampSurplusGens))
+                OutputToFile = pd.Series(data=[(getattr(OptModel, 'eRampDw_'+p+sc+st)[p,sc,n,nr].uslack())*mTEPES.pDuration[n]*mTEPES.pRampDw[nr]*1e3*(- mTEPES.pInitialUC[p,sc,n,nr]                     + OptModel.vShutDown[p,sc,n,nr]()) for p,sc,n,nr in RampSurplusGens], index=pd.MultiIndex.from_tuples(RampSurplusGens))
             RampSurplusGens = [(p,sc,n,nr) for p,sc,n,nr in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.nr if mTEPES.pRampDw[nr] and mTEPES.pRampDw[nr] < mTEPES.pMaxPower2ndBlock[p,sc,n,nr] and n != mTEPES.n.first()]
             if len(RampSurplusGens):
-                OutputToFile = pd.Series(data=[(getattr(OptModel, 'eRampDw_'+st)[p,sc,n,nr].uslack())*mTEPES.pDuration[n]*mTEPES.pRampDw[nr]*1e3*(- OptModel.vCommitment[p,sc,mTEPES.n.prev(n),nr]() + OptModel.vShutDown[p,sc,n,nr]()) for p,sc,n,nr in RampSurplusGens], index=pd.MultiIndex.from_tuples(RampSurplusGens))
+                OutputToFile = pd.Series(data=[(getattr(OptModel, 'eRampDw_'+p+sc+st)[p,sc,n,nr].uslack())*mTEPES.pDuration[n]*mTEPES.pRampDw[nr]*1e3*(- OptModel.vCommitment[p,sc,mTEPES.n.prev(n),nr]() + OptModel.vShutDown[p,sc,n,nr]()) for p,sc,n,nr in RampSurplusGens], index=pd.MultiIndex.from_tuples(RampSurplusGens))
         OutputData.append(OutputToFile)
-    mTEPES.del_component(mTEPES.n)
-    mTEPES.n = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.pDuration)
+    mTEPES.del_component(mTEPES.p )
+    mTEPES.del_component(mTEPES.sc)
+    mTEPES.del_component(mTEPES.st)
+    mTEPES.del_component(mTEPES.n )
+    mTEPES.p  = Set(initialize=mTEPES.pp,  ordered=True, doc='periods',     filter=lambda mTEPES,pp : pp  in mTEPES.pp                              )
+    mTEPES.sc = Set(initialize=mTEPES.scc, ordered=True, doc='scenarios',   filter=lambda mTEPES,scc: scc in mTEPES.scc                             )
+    mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in mTEPES.stt and mTEPES.pStageWeight[stt] and sum(1 for (stt,nn) in mTEPES.s2n))
+    mTEPES.n  = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in                mTEPES.pDuration        )
     OutputData = pd.concat(OutputData)
     OutputData.to_frame(name='MW/h').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW/h').rename_axis(['Period','Scenario','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_GenerationRampDwSurplus_'+CaseName+'.csv', sep=',')
 
@@ -532,14 +556,26 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES):
 
     #%% outputting the LSRMC
     OutputData = []
-    for st in mTEPES.st:
-        mTEPES.del_component(mTEPES.n)
-        mTEPES.n = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.pDuration and (st,nn) in mTEPES.s2n)
+    for p,sc,st in mTEPES.p*mTEPES.sc*mTEPES.st:
+        mTEPES.del_component(mTEPES.p )
+        mTEPES.del_component(mTEPES.sc)
+        mTEPES.del_component(mTEPES.st)
+        mTEPES.del_component(mTEPES.n )
+        mTEPES.p  = Set(initialize=mTEPES.pp , ordered=True, doc='periods',     filter=lambda mTEPES,pp : pp  in mTEPES.pp  and p  == pp                              )
+        mTEPES.sc = Set(initialize=mTEPES.scc, ordered=True, doc='scenarios',   filter=lambda mTEPES,scc: scc in mTEPES.scc and sc == scc                                         )
+        mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in mTEPES.stt and st == stt and mTEPES.pStageWeight[stt] and sum(1 for (st,nn) in mTEPES.s2n))
+        mTEPES.n  = Set(initialize=mTEPES.nn , ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in                              mTEPES.pDuration         and           (st,nn) in mTEPES.s2n)
         if len(mTEPES.n):
-            OutputToFile = pd.Series(data=[OptModel.dual[getattr(OptModel, 'eBalance_'+st)[p,sc,n,nd]]*1e3/mTEPES.pScenProb[sc]/mTEPES.pLoadLevelWeight[n]()/mTEPES.pDuration[n] for p,sc,n,nd in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.nd if sum(1 for g in mTEPES.g if (nd,g) in mTEPES.n2g) + sum(1 for lout in lout[nd]) + sum(1 for ni,cc in lin[nd])], index=pd.MultiIndex.from_tuples(getattr(OptModel, 'eBalance_'+st)))
+            OutputToFile = pd.Series(data=[OptModel.dual[getattr(OptModel, 'eBalance_'+p+sc+st)[p,sc,n,nd]]*1e3/mTEPES.pScenProb[p,sc]/mTEPES.pLoadLevelWeight[n]()/mTEPES.pDuration[n] for p,sc,n,nd in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.nd if sum(1 for g in mTEPES.g if (nd,g) in mTEPES.n2g) + sum(1 for lout in lout[nd]) + sum(1 for ni,cc in lin[nd])], index=pd.MultiIndex.from_tuples(getattr(OptModel, 'eBalance_'+p+sc+st)))
         OutputData.append(OutputToFile)
-    mTEPES.del_component(mTEPES.n)
-    mTEPES.n = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.pDuration)
+    mTEPES.del_component(mTEPES.p )
+    mTEPES.del_component(mTEPES.sc)
+    mTEPES.del_component(mTEPES.st)
+    mTEPES.del_component(mTEPES.n )
+    mTEPES.p  = Set(initialize=mTEPES.pp,  ordered=True, doc='periods',     filter=lambda mTEPES,pp : pp  in mTEPES.pp                              )
+    mTEPES.sc = Set(initialize=mTEPES.scc, ordered=True, doc='scenarios',   filter=lambda mTEPES,scc: scc in mTEPES.scc                             )
+    mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in mTEPES.stt and mTEPES.pStageWeight[stt] and sum(1 for (stt,nn) in mTEPES.s2n))
+    mTEPES.n  = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in                mTEPES.pDuration        )
     OutputData = pd.concat(OutputData)
     OutputData.to_frame(name='LSRMC').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='LSRMC').rename_axis(['Period','Scenario','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_NetworkSRMC_'+CaseName+'.csv', sep=',')
 
@@ -550,19 +586,31 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES):
         chart.save(_path+'/oT_Plot_NetworkSRMC_'+p+'_'+sc+'_'+CaseName+'.html', embed_options={'renderer': 'svg'})
 
     if sum(mTEPES.pReserveMargin[ar] for ar in mTEPES.ar):
-        OutputToFile = pd.Series(data=[OptModel.dual[getattr(OptModel, 'eAdequacyReserveMargin_'+st)[p,ar]] for st,p,ar in mTEPES.st*mTEPES.p*mTEPES.ar if mTEPES.pReserveMargin[ar] and sum(1 for nr in mTEPES.nr if (ar,nr) in mTEPES.a2g) + sum(1 for es in mTEPES.es if (ar,es) in mTEPES.a2g)], index=pd.MultiIndex.from_tuples(list(mTEPES.st*list(getattr(OptModel, 'eAdequacyReserveMargin_'+st)))))
+        OutputToFile = pd.Series(data=[OptModel.dual[getattr(OptModel, 'eAdequacyReserveMargin_'+p+sc+st)[p,ar]] for st,p,ar in mTEPES.st*mTEPES.p*mTEPES.ar if mTEPES.pReserveMargin[ar] and sum(1 for nr in mTEPES.nr if (ar,nr) in mTEPES.a2g) + sum(1 for es in mTEPES.es if (ar,es) in mTEPES.a2g)], index=pd.MultiIndex.from_tuples(list(mTEPES.st*list(getattr(OptModel, 'eAdequacyReserveMargin_'+p+sc+st)))))
         OutputToFile.to_frame(name='RM').reset_index().pivot_table(index=['level_0','level_1'], columns=['level_2'], values='RM').rename_axis(['Stage','Period'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_MarginalReserveMargin_'+CaseName+'.csv', sep=',')
 
     if sum(mTEPES.pOperReserveUp[p,sc,n,ar] for p,sc,n,ar in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.ar) > 0.0 and (sum(1 for ar,nr in mTEPES.ar*mTEPES.nr if (ar,nr) in mTEPES.a2g and mTEPES.pIndOperReserve[nr] == 0) + sum(1 for ar,es in mTEPES.ar*mTEPES.es if (ar,es) in mTEPES.a2g and mTEPES.pIndOperReserve[es] == 0)) > 0:
         OutputData = []
-        for st in mTEPES.st:
-            mTEPES.del_component(mTEPES.n)
-            mTEPES.n = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.pDuration and (st,nn) in mTEPES.s2n)
+        for p,sc,st in mTEPES.p*mTEPES.sc*mTEPES.st:
+            mTEPES.del_component(mTEPES.p )
+            mTEPES.del_component(mTEPES.sc)
+            mTEPES.del_component(mTEPES.st)
+            mTEPES.del_component(mTEPES.n )
+            mTEPES.p  = Set(initialize=mTEPES.pp , ordered=True, doc='periods',     filter=lambda mTEPES,pp : pp  in mTEPES.pp  and p  == pp                              )
+            mTEPES.sc = Set(initialize=mTEPES.scc, ordered=True, doc='scenarios',   filter=lambda mTEPES,scc: scc in mTEPES.scc and sc == scc                                         )
+            mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in mTEPES.stt and st == stt and mTEPES.pStageWeight[stt] and sum(1 for (st,nn) in mTEPES.s2n))
+            mTEPES.n  = Set(initialize=mTEPES.nn , ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in                              mTEPES.pDuration         and           (st,nn) in mTEPES.s2n)
             if len(mTEPES.n):
-                OutputToFile = pd.Series(data=[OptModel.dual[getattr(OptModel, 'eOperReserveUp_'+st)[p,sc,n,ar]]*1e3/mTEPES.pScenProb[sc] for p,sc,n,ar in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.ar if mTEPES.pOperReserveUp[p,sc,n,ar] and sum(1 for nr in mTEPES.nr if (ar,nr) in mTEPES.a2g) + sum(1 for es in mTEPES.es if (ar,es) in mTEPES.a2g)], index=pd.MultiIndex.from_tuples(getattr(OptModel, 'eOperReserveUp_'+st)))
+                OutputToFile = pd.Series(data=[OptModel.dual[getattr(OptModel, 'eOperReserveUp_'+p+sc+st)[p,sc,n,ar]]*1e3/mTEPES.pScenProb[p,sc] for p,sc,n,ar in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.ar if mTEPES.pOperReserveUp[p,sc,n,ar] and sum(1 for nr in mTEPES.nr if (ar,nr) in mTEPES.a2g) + sum(1 for es in mTEPES.es if (ar,es) in mTEPES.a2g)], index=pd.MultiIndex.from_tuples(getattr(OptModel, 'eOperReserveUp_'+p+sc+st)))
             OutputData.append(OutputToFile)
-        mTEPES.del_component(mTEPES.n)
-        mTEPES.n = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.pDuration)
+        mTEPES.del_component(mTEPES.p )
+        mTEPES.del_component(mTEPES.sc)
+        mTEPES.del_component(mTEPES.st)
+        mTEPES.del_component(mTEPES.n )
+        mTEPES.p  = Set(initialize=mTEPES.pp,  ordered=True, doc='periods',     filter=lambda mTEPES,pp : pp  in mTEPES.pp                              )
+        mTEPES.sc = Set(initialize=mTEPES.scc, ordered=True, doc='scenarios',   filter=lambda mTEPES,scc: scc in mTEPES.scc                             )
+        mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in mTEPES.stt and mTEPES.pStageWeight[stt] and sum(1 for (stt,nn) in mTEPES.s2n))
+        mTEPES.n  = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in                mTEPES.pDuration        )
         OutputData = pd.concat(OutputData)
         OutputData.to_frame(name='UORM').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='UORM').rename_axis(['Period','Scenario','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_MarginalOperatingReserveUp_'+CaseName+'.csv', sep=',')
 
@@ -575,14 +623,26 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES):
     #%% outputting the down operating reserve marginal
     if sum(mTEPES.pOperReserveDw[p,sc,n,ar] for p,sc,n,ar in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.ar) > 0.0 and (sum(1 for ar,nr in mTEPES.ar*mTEPES.nr if (ar,nr) in mTEPES.a2g and mTEPES.pIndOperReserve[nr] == 0) + sum(1 for ar,es in mTEPES.ar*mTEPES.es if (ar,es) in mTEPES.a2g and mTEPES.pIndOperReserve[es] == 0)) > 0:
         OutputData = []
-        for st in mTEPES.st:
-            mTEPES.del_component(mTEPES.n)
-            mTEPES.n = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.pDuration and (st,nn) in mTEPES.s2n)
+        for p,sc,st in mTEPES.p*mTEPES.sc*mTEPES.st:
+            mTEPES.del_component(mTEPES.p )
+            mTEPES.del_component(mTEPES.sc)
+            mTEPES.del_component(mTEPES.st)
+            mTEPES.del_component(mTEPES.n )
+            mTEPES.p  = Set(initialize=mTEPES.pp , ordered=True, doc='periods',     filter=lambda mTEPES,pp : pp  in mTEPES.pp  and p  == pp                              )
+            mTEPES.sc = Set(initialize=mTEPES.scc, ordered=True, doc='scenarios',   filter=lambda mTEPES,scc: scc in mTEPES.scc and sc == scc                                         )
+            mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in mTEPES.stt and st == stt and mTEPES.pStageWeight[stt] and sum(1 for (st,nn) in mTEPES.s2n))
+            mTEPES.n  = Set(initialize=mTEPES.nn , ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in                              mTEPES.pDuration         and           (st,nn) in mTEPES.s2n)
             if len(mTEPES.n):
-                OutputToFile = pd.Series(data=[OptModel.dual[getattr(OptModel, 'eOperReserveDw_'+st)[p,sc,n,ar]]*1e3/mTEPES.pScenProb[sc] for p,sc,n,ar in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.ar if mTEPES.pOperReserveDw[p,sc,n,ar] and sum(1 for nr in mTEPES.nr if (ar,nr) in mTEPES.a2g) + sum(1 for es in mTEPES.es if (ar,es) in mTEPES.a2g)], index=pd.MultiIndex.from_tuples(getattr(OptModel, 'eOperReserveDw_'+st)))
+                OutputToFile = pd.Series(data=[OptModel.dual[getattr(OptModel, 'eOperReserveDw_'+p+sc+st)[p,sc,n,ar]]*1e3/mTEPES.pScenProb[p,sc] for p,sc,n,ar in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.ar if mTEPES.pOperReserveDw[p,sc,n,ar] and sum(1 for nr in mTEPES.nr if (ar,nr) in mTEPES.a2g) + sum(1 for es in mTEPES.es if (ar,es) in mTEPES.a2g)], index=pd.MultiIndex.from_tuples(getattr(OptModel, 'eOperReserveDw_'+p+sc+st)))
             OutputData.append(OutputToFile)
-        mTEPES.del_component(mTEPES.n)
-        mTEPES.n = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.pDuration)
+        mTEPES.del_component(mTEPES.p )
+        mTEPES.del_component(mTEPES.sc)
+        mTEPES.del_component(mTEPES.st)
+        mTEPES.del_component(mTEPES.n )
+        mTEPES.p  = Set(initialize=mTEPES.pp,  ordered=True, doc='periods',     filter=lambda mTEPES,pp : pp  in mTEPES.pp                              )
+        mTEPES.sc = Set(initialize=mTEPES.scc, ordered=True, doc='scenarios',   filter=lambda mTEPES,scc: scc in mTEPES.scc                             )
+        mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in mTEPES.stt and mTEPES.pStageWeight[stt] and sum(1 for (stt,nn) in mTEPES.s2n))
+        mTEPES.n  = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in                mTEPES.pDuration        )
         OutputData = pd.concat(OutputData)
         OutputData.to_frame(name='DORM').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='DORM').rename_axis(['Period','Scenario','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_MarginalOperatingReserveDown_'+CaseName+'.csv', sep=',')
 
@@ -595,14 +655,26 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES):
     #%% outputting the water values
     if len(mTEPES.es):
         OutputData = []
-        for st in mTEPES.st:
-            mTEPES.del_component(mTEPES.n)
-            mTEPES.n = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.pDuration and (st,nn) in mTEPES.s2n)
+        for p,sc,st in mTEPES.p*mTEPES.sc*mTEPES.st:
+            mTEPES.del_component(mTEPES.p )
+            mTEPES.del_component(mTEPES.sc)
+            mTEPES.del_component(mTEPES.st)
+            mTEPES.del_component(mTEPES.n )
+            mTEPES.p  = Set(initialize=mTEPES.pp , ordered=True, doc='periods',     filter=lambda mTEPES,pp : pp  in mTEPES.pp  and p  == pp                              )
+            mTEPES.sc = Set(initialize=mTEPES.scc, ordered=True, doc='scenarios',   filter=lambda mTEPES,scc: scc in mTEPES.scc and sc == scc                                         )
+            mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in mTEPES.stt and st == stt and mTEPES.pStageWeight[stt] and sum(1 for (st,nn) in mTEPES.s2n))
+            mTEPES.n  = Set(initialize=mTEPES.nn , ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in                              mTEPES.pDuration         and           (st,nn) in mTEPES.s2n)
             if len(mTEPES.n):
-                OutputToFile = pd.Series(data=[OptModel.dual[getattr(OptModel, 'eESSInventory_'+st)[p,sc,n,es]]*1e3/mTEPES.pScenProb[sc] for p,sc,n,es in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.es if mTEPES.n.ord(n) % mTEPES.pCycleTimeStep[es] == 0], index=pd.MultiIndex.from_tuples(getattr(OptModel, 'eESSInventory_'+st)))
+                OutputToFile = pd.Series(data=[OptModel.dual[getattr(OptModel, 'eESSInventory_'+p+sc+st)[p,sc,n,es]]*1e3/mTEPES.pScenProb[p,sc] for p,sc,n,es in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.es if mTEPES.n.ord(n) % mTEPES.pCycleTimeStep[es] == 0], index=pd.MultiIndex.from_tuples(getattr(OptModel, 'eESSInventory_'+p+sc+st)))
             OutputData.append(OutputToFile)
-        mTEPES.del_component(mTEPES.n)
-        mTEPES.n = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.pDuration)
+        mTEPES.del_component(mTEPES.p )
+        mTEPES.del_component(mTEPES.sc)
+        mTEPES.del_component(mTEPES.st)
+        mTEPES.del_component(mTEPES.n )
+        mTEPES.p  = Set(initialize=mTEPES.pp,  ordered=True, doc='periods',     filter=lambda mTEPES,pp : pp  in mTEPES.pp                              )
+        mTEPES.sc = Set(initialize=mTEPES.scc, ordered=True, doc='scenarios',   filter=lambda mTEPES,scc: scc in mTEPES.scc                             )
+        mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in mTEPES.stt and mTEPES.pStageWeight[stt] and sum(1 for (stt,nn) in mTEPES.s2n))
+        mTEPES.n  = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in                mTEPES.pDuration        )
         OutputData = pd.concat(OutputData)
         OutputData.to_frame(name='WaterValue').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='WaterValue').rename_axis(['Period','Scenario','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_MarginalWaterValue_'+CaseName+'.csv', sep=',')
 
@@ -623,14 +695,26 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES):
     mTEPES.las = Set(initialize=mTEPES.ni*mTEPES.nf*mTEPES.cc, ordered=False, doc='all real lines with switching decision', filter=lambda mTEPES,ni,nf,cc: (ni,nf,cc) in mTEPES.pLineX and mTEPES.pIndBinLineSwitch[ni,nf,cc])
     if len(mTEPES.las) and not ReducedCostActivation:
         OutputData = []
-        for st in mTEPES.st:
-            mTEPES.del_component(mTEPES.n)
-            mTEPES.n = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.pDuration and (st,nn) in mTEPES.s2n)
+        for p,sc,st in mTEPES.p*mTEPES.sc*mTEPES.st:
+            mTEPES.del_component(mTEPES.p )
+            mTEPES.del_component(mTEPES.sc)
+            mTEPES.del_component(mTEPES.st)
+            mTEPES.del_component(mTEPES.n )
+            mTEPES.p  = Set(initialize=mTEPES.pp , ordered=True, doc='periods',     filter=lambda mTEPES,pp : pp  in mTEPES.pp  and p  == pp                              )
+            mTEPES.sc = Set(initialize=mTEPES.scc, ordered=True, doc='scenarios',   filter=lambda mTEPES,scc: scc in mTEPES.scc and sc == scc                                         )
+            mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in mTEPES.stt and st == stt and mTEPES.pStageWeight[stt] and sum(1 for (st,nn) in mTEPES.s2n))
+            mTEPES.n  = Set(initialize=mTEPES.nn , ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in                              mTEPES.pDuration         and           (st,nn) in mTEPES.s2n)
             if len(mTEPES.n):
                 OutputToFile = pd.Series(data=[OptModel.rc[OptModel.vLineCommit[p,sc,n,ni,nf,cc]] for p,sc,n,ni,nf,cc in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.las], index=pd.MultiIndex.from_tuples(mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.las))
             OutputData.append(OutputToFile)
-        mTEPES.del_component(mTEPES.n)
-        mTEPES.n = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.pDuration)
+        mTEPES.del_component(mTEPES.p )
+        mTEPES.del_component(mTEPES.sc)
+        mTEPES.del_component(mTEPES.st)
+        mTEPES.del_component(mTEPES.n )
+        mTEPES.p  = Set(initialize=mTEPES.pp,  ordered=True, doc='periods',     filter=lambda mTEPES,pp : pp  in mTEPES.pp                              )
+        mTEPES.sc = Set(initialize=mTEPES.scc, ordered=True, doc='scenarios',   filter=lambda mTEPES,scc: scc in mTEPES.scc                             )
+        mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in mTEPES.stt and mTEPES.pStageWeight[stt] and sum(1 for (stt,nn) in mTEPES.s2n))
+        mTEPES.n  = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in                mTEPES.pDuration        )
         OutputData = pd.concat(OutputData)
         OutputData.index.names = ['Period','Scenario','LoadLevel','InitialNode','FinalNode','Circuit']
         OutputData = pd.pivot_table(OutputData.to_frame(name='p.u.'), values='p.u.', index=['Period','Scenario','LoadLevel'], columns=['InitialNode','FinalNode','Circuit'], fill_value=0.0)
@@ -651,88 +735,124 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES):
     GenInvCost  = sum(mTEPES.pGenInvestCost[gc       ] * OptModel.vGenerationInvest[p,gc      ]()                     for p,gc       in mTEPES.p*mTEPES.gc                   )
     GenRetCost  = sum(mTEPES.pGenRetireCost[gd       ] * OptModel.vGenerationRetire[p,gd      ]()                     for p,gd       in mTEPES.p*mTEPES.gd                   )
     NetInvCost  = sum(mTEPES.pNetFixedCost [ni,nf,cc ] * OptModel.vNetworkInvest   [p,ni,nf,cc]()                     for p,ni,nf,cc in mTEPES.p*mTEPES.lc                   )
-    GenCost     = sum(mTEPES.pScenProb     [sc       ] * OptModel.vTotalGCost      [p,sc,n    ]()                     for p,sc,n     in mTEPES.p*mTEPES.sc*mTEPES.n          )
-    ConCost     = sum(mTEPES.pScenProb     [sc       ] * OptModel.vTotalCCost      [p,sc,n    ]()                     for p,sc,n     in mTEPES.p*mTEPES.sc*mTEPES.n          )
-    EmiCost     = sum(mTEPES.pScenProb     [sc       ] * OptModel.vTotalECost      [p,sc,n    ]()                     for p,sc,n     in mTEPES.p*mTEPES.sc*mTEPES.n          )
-    RelCost     = sum(mTEPES.pScenProb     [sc       ] * OptModel.vTotalRCost      [p,sc,n    ]()                     for p,sc,n     in mTEPES.p*mTEPES.sc*mTEPES.n          )
+    GenCost     = sum(mTEPES.pScenProb     [p,sc     ] * OptModel.vTotalGCost      [p,sc,n    ]()                     for p,sc,n     in mTEPES.p*mTEPES.sc*mTEPES.n          )
+    ConCost     = sum(mTEPES.pScenProb     [p,sc     ] * OptModel.vTotalCCost      [p,sc,n    ]()                     for p,sc,n     in mTEPES.p*mTEPES.sc*mTEPES.n          )
+    EmiCost     = sum(mTEPES.pScenProb     [p,sc     ] * OptModel.vTotalECost      [p,sc,n    ]()                     for p,sc,n     in mTEPES.p*mTEPES.sc*mTEPES.n          )
+    RelCost     = sum(mTEPES.pScenProb     [p,sc     ] * OptModel.vTotalRCost      [p,sc,n    ]()                     for p,sc,n     in mTEPES.p*mTEPES.sc*mTEPES.n          )
     DemPayment  = sum(mTEPES.pDemand       [p,sc,n,nd] * OptModel.LSRMC            [p,sc,n,nd ] * mTEPES.pDuration[n] for p,sc,n,nd  in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.nd) / 1e3
     Costs       = {'':['System Cost', 'Generation Investment Cost', 'Generation Retirement Cost', 'Network Investment Cost', 'Generation Operation Cost', 'Consumption Operation Cost', 'Emission Cost', 'Reliability Cost', 'Demand Payment with SRMC'], 'MEUR': [SysCost, GenInvCost, GenRetCost, NetInvCost, GenCost, ConCost, EmiCost, RelCost, DemPayment]}
     CostSummary = pd.DataFrame(Costs)
     CostSummary.to_csv(_path+'/oT_Result_CostSummary_'+CaseName+'.csv', sep=',', index=False)
 
-    OutputToFile = pd.Series(data=[(mTEPES.pScenProb[sc] * mTEPES.pLoadLevelWeight[n]() * mTEPES.pDuration[n] * mTEPES.pLinearVarCost  [nr] * OptModel.vTotalOutput[p,sc,n,nr]() +
-                                    mTEPES.pScenProb[sc] * mTEPES.pLoadLevelWeight[n]() * mTEPES.pDuration[n] * mTEPES.pConstantVarCost[nr] * OptModel.vCommitment [p,sc,n,nr]() +
-                                    mTEPES.pScenProb[sc] * mTEPES.pLoadLevelWeight[n]()                       * mTEPES.pStartUpCost    [nr] * OptModel.vStartUp    [p,sc,n,nr]() +
-                                    mTEPES.pScenProb[sc] * mTEPES.pLoadLevelWeight[n]()                       * mTEPES.pShutDownCost   [nr] * OptModel.vShutDown   [p,sc,n,nr]()) for p,sc,n,nr in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.nr], index=pd.MultiIndex.from_tuples(mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.nr))
+    OutputToFile = pd.Series(data=[(mTEPES.pScenProb[p,sc] * mTEPES.pLoadLevelWeight[n]() * mTEPES.pDuration[n] * mTEPES.pLinearVarCost  [nr] * OptModel.vTotalOutput[p,sc,n,nr]() +
+                                    mTEPES.pScenProb[p,sc] * mTEPES.pLoadLevelWeight[n]() * mTEPES.pDuration[n] * mTEPES.pConstantVarCost[nr] * OptModel.vCommitment [p,sc,n,nr]() +
+                                    mTEPES.pScenProb[p,sc] * mTEPES.pLoadLevelWeight[n]()                       * mTEPES.pStartUpCost    [nr] * OptModel.vStartUp    [p,sc,n,nr]() +
+                                    mTEPES.pScenProb[p,sc] * mTEPES.pLoadLevelWeight[n]()                       * mTEPES.pShutDownCost   [nr] * OptModel.vShutDown   [p,sc,n,nr]()) for p,sc,n,nr in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.nr], index=pd.MultiIndex.from_tuples(mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.nr))
     OutputToFile.to_frame(name='MEUR').reset_index().pivot_table(index=['level_0','level_1','level_2'],     columns='level_3', values='MEUR').rename_axis(['Period','Scenario','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_GenerationCostOperation_'+CaseName+'.csv', sep=',')
 
     if sum(mTEPES.pOperReserveUp[p,sc,n,ar]+mTEPES.pOperReserveDw[p,sc,n,ar] for p,sc,n,ar in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.ar):
-        OutputToFile = pd.Series(data=[(mTEPES.pScenProb[sc] * mTEPES.pLoadLevelWeight[n]()                   * mTEPES.pOperReserveCost[nr] * OptModel.vReserveUp  [p,sc,n,nr]() +
-                                        mTEPES.pScenProb[sc] * mTEPES.pLoadLevelWeight[n]()                   * mTEPES.pOperReserveCost[nr] * OptModel.vReserveDown[p,sc,n,nr]()) for p,sc,n,nr in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.nr], index=pd.MultiIndex.from_tuples(mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.nr))
+        OutputToFile = pd.Series(data=[(mTEPES.pScenProb[p,sc] * mTEPES.pLoadLevelWeight[n]()                   * mTEPES.pOperReserveCost[nr] * OptModel.vReserveUp  [p,sc,n,nr]() +
+                                        mTEPES.pScenProb[p,sc] * mTEPES.pLoadLevelWeight[n]()                   * mTEPES.pOperReserveCost[nr] * OptModel.vReserveDown[p,sc,n,nr]()) for p,sc,n,nr in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.nr], index=pd.MultiIndex.from_tuples(mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.nr))
         OutputToFile.to_frame(name='MEUR').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MEUR').rename_axis(['Period','Scenario','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_GenerationCostOperReserve_'   +CaseName+'.csv', sep=',')
 
     if len(mTEPES.r):
-        OutputToFile = pd.Series(data=[mTEPES.pScenProb[sc] * mTEPES.pLoadLevelWeight[n]() * mTEPES.pDuration[n] * mTEPES.pLinearOMCost [ r] * OptModel.vTotalOutput   [p,sc,n, r]() for p,sc,n, r in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.r ], index=pd.MultiIndex.from_tuples(mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.r ))
+        OutputToFile = pd.Series(data=[mTEPES.pScenProb[p,sc] * mTEPES.pLoadLevelWeight[n]() * mTEPES.pDuration[n] * mTEPES.pLinearOMCost [ r] * OptModel.vTotalOutput   [p,sc,n, r]() for p,sc,n, r in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.r ], index=pd.MultiIndex.from_tuples(mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.r ))
         OutputToFile.to_frame(name='MEUR').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MEUR').rename_axis(['Period','Scenario','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_GenerationCostOandM_'         +CaseName+'.csv', sep=',')
 
     if len(mTEPES.es) and sum(mTEPES.pIndOperReserve[es] for es in mTEPES.es if mTEPES.pIndOperReserve[es] == 0) > 0:
-        OutputToFile = pd.Series(data=[mTEPES.pScenProb[sc] * mTEPES.pLoadLevelWeight[n]() * mTEPES.pDuration[n] * mTEPES.pLinearVarCost  [es] * OptModel.vESSTotalCharge[p,sc,n,es]()  for p,sc,n,es in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.es], index=pd.MultiIndex.from_tuples(mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.es))
+        OutputToFile = pd.Series(data=[mTEPES.pScenProb[p,sc] * mTEPES.pLoadLevelWeight[n]() * mTEPES.pDuration[n] * mTEPES.pLinearVarCost  [es] * OptModel.vESSTotalCharge[p,sc,n,es]()  for p,sc,n,es in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.es], index=pd.MultiIndex.from_tuples(mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.es))
         OutputToFile.to_frame(name='MEUR').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MEUR').rename_axis(['Period','Scenario','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_ChargeCostOperation_'         +CaseName+'.csv', sep=',')
-        OutputToFile = pd.Series(data=[(mTEPES.pScenProb[sc] * mTEPES.pLoadLevelWeight[n]()                      * mTEPES.pOperReserveCost[es] * OptModel.vESSReserveUp  [p,sc,n,es]() +
-                                        mTEPES.pScenProb[sc] * mTEPES.pLoadLevelWeight[n]()                      * mTEPES.pOperReserveCost[es] * OptModel.vESSReserveDown[p,sc,n,es]()) for p,sc,n,es in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.es], index=pd.MultiIndex.from_tuples(mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.es))
+        OutputToFile = pd.Series(data=[(mTEPES.pScenProb[p,sc] * mTEPES.pLoadLevelWeight[n]()                      * mTEPES.pOperReserveCost[es] * OptModel.vESSReserveUp  [p,sc,n,es]() +
+                                        mTEPES.pScenProb[p,sc] * mTEPES.pLoadLevelWeight[n]()                      * mTEPES.pOperReserveCost[es] * OptModel.vESSReserveDown[p,sc,n,es]()) for p,sc,n,es in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.es], index=pd.MultiIndex.from_tuples(mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.es))
         OutputToFile.to_frame(name='MEUR').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MEUR').rename_axis(['Period','Scenario','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_GenerationCostOperReserveESS_'+CaseName+'.csv', sep=',')
 
-    OutputToFile = pd.Series(data=[mTEPES.pScenProb[sc] * mTEPES.pLoadLevelWeight[n]() * mTEPES.pDuration[n] * mTEPES.pCO2EmissionCost[nr] * OptModel.vTotalOutput[p,sc,n,nr]() for p,sc,n,nr in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.nr], index=pd.MultiIndex.from_tuples(mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.nr))
+    OutputToFile = pd.Series(data=[mTEPES.pScenProb[p,sc] * mTEPES.pLoadLevelWeight[n]() * mTEPES.pDuration[n] * mTEPES.pCO2EmissionCost[nr] * OptModel.vTotalOutput[p,sc,n,nr]() for p,sc,n,nr in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.nr], index=pd.MultiIndex.from_tuples(mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.nr))
     OutputToFile.to_frame(name='MEUR').reset_index().pivot_table(index=['level_0','level_1','level_2'],     columns='level_3', values='MEUR').rename_axis(['Period','Scenario','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_GenerationCostEmission_'      +CaseName+'.csv', sep=',')
 
-    OutputToFile = pd.Series(data=[mTEPES.pScenProb[sc] * mTEPES.pLoadLevelWeight[n]() * mTEPES.pDuration[n] * mTEPES.pENSCost()           * OptModel.vENS        [p,sc,n,nd]() for p,sc,n,nd in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.nd], index=pd.MultiIndex.from_tuples(mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.nd))
+    OutputToFile = pd.Series(data=[mTEPES.pScenProb[p,sc] * mTEPES.pLoadLevelWeight[n]() * mTEPES.pDuration[n] * mTEPES.pENSCost()           * OptModel.vENS        [p,sc,n,nd]() for p,sc,n,nd in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.nd], index=pd.MultiIndex.from_tuples(mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.nd))
     OutputToFile.to_frame(name='MEUR').reset_index().pivot_table(index=['level_0','level_1','level_2'],     columns='level_3', values='MEUR').rename_axis(['Period','Scenario','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_NetworkCostENS_'              +CaseName+'.csv', sep=',')
 
     OutputData = []
-    for st in mTEPES.st:
-        mTEPES.del_component(mTEPES.n)
-        mTEPES.n = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.pDuration and (st,nn) in mTEPES.s2n)
+    for p,sc,st in mTEPES.p*mTEPES.sc*mTEPES.st:
+        mTEPES.del_component(mTEPES.p )
+        mTEPES.del_component(mTEPES.sc)
+        mTEPES.del_component(mTEPES.st)
+        mTEPES.del_component(mTEPES.n )
+        mTEPES.p  = Set(initialize=mTEPES.pp , ordered=True, doc='periods',     filter=lambda mTEPES,pp : pp  in mTEPES.pp  and p  == pp                              )
+        mTEPES.sc = Set(initialize=mTEPES.scc, ordered=True, doc='scenarios',   filter=lambda mTEPES,scc: scc in mTEPES.scc and sc == scc                                         )
+        mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in mTEPES.stt and st == stt and mTEPES.pStageWeight[stt] and sum(1 for (st,nn) in mTEPES.s2n))
+        mTEPES.n  = Set(initialize=mTEPES.nn , ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in                              mTEPES.pDuration         and           (st,nn) in mTEPES.s2n)
         if len(mTEPES.n):
-            OutputToFile = pd.Series(data=[OptModel.dual[getattr(OptModel, 'eBalance_'+st)[p,sc,n,nd]]/mTEPES.pScenProb[sc]/mTEPES.pLoadLevelWeight[n]()/mTEPES.pDuration[n] * OptModel.vTotalOutput[p,sc,n,g]() for p,sc,n,nd,g in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.n2g], index=pd.MultiIndex.from_tuples(mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.n2g))
+            OutputToFile = pd.Series(data=[OptModel.dual[getattr(OptModel, 'eBalance_'+p+sc+st)[p,sc,n,nd]]/mTEPES.pScenProb[p,sc]/mTEPES.pLoadLevelWeight[n]()/mTEPES.pDuration[n] * OptModel.vTotalOutput[p,sc,n,g]() for p,sc,n,nd,g in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.n2g], index=pd.MultiIndex.from_tuples(mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.n2g))
         OutputData.append(OutputToFile)
-    mTEPES.del_component(mTEPES.n)
-    mTEPES.n = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.pDuration)
+    mTEPES.del_component(mTEPES.p )
+    mTEPES.del_component(mTEPES.sc)
+    mTEPES.del_component(mTEPES.st)
+    mTEPES.del_component(mTEPES.n )
+    mTEPES.p  = Set(initialize=mTEPES.pp,  ordered=True, doc='periods',     filter=lambda mTEPES,pp : pp  in mTEPES.pp                              )
+    mTEPES.sc = Set(initialize=mTEPES.scc, ordered=True, doc='scenarios',   filter=lambda mTEPES,scc: scc in mTEPES.scc                             )
+    mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in mTEPES.stt and mTEPES.pStageWeight[stt] and sum(1 for (stt,nn) in mTEPES.s2n))
+    mTEPES.n  = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in                mTEPES.pDuration        )
     OutputData = pd.concat(OutputData)
     OutputData.to_frame(name='MEUR').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_4', values='MEUR').rename_axis(['Period','Scenario','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_RevenueEnergyGeneration_'+CaseName+'.csv', sep=',')
 
     if len(mTEPES.es):
         OutputData = []
-        for st in mTEPES.st:
-            mTEPES.del_component(mTEPES.n)
-            mTEPES.n = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.pDuration and (st,nn) in mTEPES.s2n)
+        for p,sc,st in mTEPES.p*mTEPES.sc*mTEPES.st:
+            mTEPES.del_component(mTEPES.p )
+            mTEPES.del_component(mTEPES.sc)
+            mTEPES.del_component(mTEPES.st)
+            mTEPES.del_component(mTEPES.n )
+            mTEPES.p  = Set(initialize=mTEPES.pp , ordered=True, doc='periods',     filter=lambda mTEPES,pp : pp  in mTEPES.pp  and p  == pp                              )
+            mTEPES.sc = Set(initialize=mTEPES.scc, ordered=True, doc='scenarios',   filter=lambda mTEPES,scc: scc in mTEPES.scc and sc == scc                                         )
+            mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in mTEPES.stt and st == stt and mTEPES.pStageWeight[stt] and sum(1 for (st,nn) in mTEPES.s2n))
+            mTEPES.n  = Set(initialize=mTEPES.nn , ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in                              mTEPES.pDuration         and           (st,nn) in mTEPES.s2n)
             if len(mTEPES.n):
-                OutputToFile      = pd.Series(data=[OptModel.dual[getattr(OptModel, 'eBalance_'+st)[p,sc,n,nd]]/mTEPES.pScenProb[sc]/mTEPES.pLoadLevelWeight[n]()/mTEPES.pDuration[n] * OptModel.vESSTotalCharge[p,sc,n,es]() for p,sc,n,nd,es in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.n2g if es in mTEPES.es], index=pd.MultiIndex.from_tuples([(p,sc,n,nd,es) for p,sc,n,nd,es in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.n2g if es in mTEPES.es]))
+                OutputToFile      = pd.Series(data=[OptModel.dual[getattr(OptModel, 'eBalance_'+p+sc+st)[p,sc,n,nd]]/mTEPES.pScenProb[p,sc]/mTEPES.pLoadLevelWeight[n]()/mTEPES.pDuration[n] * OptModel.vESSTotalCharge[p,sc,n,es]() for p,sc,n,nd,es in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.n2g if es in mTEPES.es], index=pd.MultiIndex.from_tuples([(p,sc,n,nd,es) for p,sc,n,nd,es in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.n2g if es in mTEPES.es]))
             OutputData.append(OutputToFile)
-        mTEPES.del_component(mTEPES.n)
-        mTEPES.n = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.pDuration)
+        mTEPES.del_component(mTEPES.p )
+        mTEPES.del_component(mTEPES.sc)
+        mTEPES.del_component(mTEPES.st)
+        mTEPES.del_component(mTEPES.n )
+        mTEPES.p  = Set(initialize=mTEPES.pp,  ordered=True, doc='periods',     filter=lambda mTEPES,pp : pp  in mTEPES.pp                              )
+        mTEPES.sc = Set(initialize=mTEPES.scc, ordered=True, doc='scenarios',   filter=lambda mTEPES,scc: scc in mTEPES.scc                             )
+        mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in mTEPES.stt and mTEPES.pStageWeight[stt] and sum(1 for (stt,nn) in mTEPES.s2n))
+        mTEPES.n  = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in                mTEPES.pDuration        )
         OutputData = pd.concat(OutputData)
         OutputData.to_frame(name='MEUR').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_4', values='MEUR').rename_axis(['Period','Scenario','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_RevenueEnergyCharge_'+CaseName+'.csv', sep=',')
 
     if len(mTEPES.gc):
         GenRev     = []
         ChargeRev  = []
-        for st in mTEPES.st:
-            mTEPES.del_component(mTEPES.n)
-            mTEPES.n = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.pDuration and (st,nn) in mTEPES.s2n)
+        for p,sc,st in mTEPES.p*mTEPES.sc*mTEPES.st:
+            mTEPES.del_component(mTEPES.p )
+            mTEPES.del_component(mTEPES.sc)
+            mTEPES.del_component(mTEPES.st)
+            mTEPES.del_component(mTEPES.n )
+            mTEPES.p  = Set(initialize=mTEPES.pp , ordered=True, doc='periods',     filter=lambda mTEPES,pp : pp  in mTEPES.pp  and p  == pp                              )
+            mTEPES.sc = Set(initialize=mTEPES.scc, ordered=True, doc='scenarios',   filter=lambda mTEPES,scc: scc in mTEPES.scc and sc == scc                                         )
+            mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in mTEPES.stt and st == stt and mTEPES.pStageWeight[stt] and sum(1 for (st,nn) in mTEPES.s2n))
+            mTEPES.n  = Set(initialize=mTEPES.nn , ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in                              mTEPES.pDuration         and           (st,nn) in mTEPES.s2n)
             if len(mTEPES.n):
-                OutputToGenRev         = pd.Series(data=[OptModel.dual[getattr(OptModel, 'eBalance_'+st)[p,sc,n,nd]]/mTEPES.pScenProb[sc]/mTEPES.pDuration[n]/mTEPES.pLoadLevelWeight[n]() * OptModel.vTotalOutput   [p,sc,n,gc]() for p,sc,n,nd,gc in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.n2g if gc in mTEPES.gc                                                 ], index=pd.MultiIndex.from_tuples([(p,sc,n,nd,gc) for p,sc,n,nd,gc in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.n2g if gc in mTEPES.gc                                                 ]))
+                OutputToGenRev         = pd.Series(data=[OptModel.dual[getattr(OptModel, 'eBalance_'+p+sc+st)[p,sc,n,nd]]/mTEPES.pScenProb[p,sc]/mTEPES.pDuration[n]/mTEPES.pLoadLevelWeight[n]() * OptModel.vTotalOutput   [p,sc,n,gc]() for p,sc,n,nd,gc in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.n2g if gc in mTEPES.gc                                                 ], index=pd.MultiIndex.from_tuples([(p,sc,n,nd,gc) for p,sc,n,nd,gc in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.n2g if gc in mTEPES.gc                                                 ]))
                 GenRev.append       (OutputToGenRev    )
                 if len([(p,sc,n,nd,gc) for p,sc,n,nd,gc in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.n2g if gc in mTEPES.gc for ot in mTEPES.ot if (ot,gc)     in mTEPES.t2g]):
-                    OutputChargeRevESS = pd.Series(data=[OptModel.dual[getattr(OptModel, 'eBalance_'+st)[p,sc,n,nd]]/mTEPES.pScenProb[sc]/mTEPES.pDuration[n]/mTEPES.pLoadLevelWeight[n]() * OptModel.vESSTotalCharge[p,sc,n,gc]() for p,sc,n,nd,gc in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.n2g if gc in mTEPES.gc for ot in mTEPES.ot if (ot,gc)     in mTEPES.t2g], index=pd.MultiIndex.from_tuples([(p,sc,n,nd,gc) for p,sc,n,nd,gc in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.n2g if gc in mTEPES.gc for ot in mTEPES.ot if (ot,gc)     in mTEPES.t2g]))
+                    OutputChargeRevESS = pd.Series(data=[OptModel.dual[getattr(OptModel, 'eBalance_'+p+sc+st)[p,sc,n,nd]]/mTEPES.pScenProb[p,sc]/mTEPES.pDuration[n]/mTEPES.pLoadLevelWeight[n]() * OptModel.vESSTotalCharge[p,sc,n,gc]() for p,sc,n,nd,gc in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.n2g if gc in mTEPES.gc for ot in mTEPES.ot if (ot,gc)     in mTEPES.t2g], index=pd.MultiIndex.from_tuples([(p,sc,n,nd,gc) for p,sc,n,nd,gc in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.n2g if gc in mTEPES.gc for ot in mTEPES.ot if (ot,gc)     in mTEPES.t2g]))
                     ChargeRev.append(OutputChargeRevESS)
                 if len([(p,sc,n,nd,gc) for p,sc,n,nd,gc in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.n2g if gc in mTEPES.gc for rt in mTEPES.rt if (rt,gc)     in mTEPES.t2g]):
-                    OutputChargeRevRES = pd.Series(data=[OptModel.dual[getattr(OptModel, 'eBalance_'+st)[p,sc,n,nd]]/mTEPES.pScenProb[sc] * 0.0                                                                                    for p,sc,n,nd,gc in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.n2g if gc in mTEPES.gc for rt in mTEPES.rt if (rt,gc)     in mTEPES.t2g], index=pd.MultiIndex.from_tuples([(p,sc,n,nd,gc) for p,sc,n,nd,gc in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.n2g if gc in mTEPES.gc for rt in mTEPES.rt if (rt,gc)     in mTEPES.t2g]))
+                    OutputChargeRevRES = pd.Series(data=[OptModel.dual[getattr(OptModel, 'eBalance_'+p+sc+st)[p,sc,n,nd]]/mTEPES.pScenProb[p,sc] * 0.0                                                                                    for p,sc,n,nd,gc in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.n2g if gc in mTEPES.gc for rt in mTEPES.rt if (rt,gc)     in mTEPES.t2g], index=pd.MultiIndex.from_tuples([(p,sc,n,nd,gc) for p,sc,n,nd,gc in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.n2g if gc in mTEPES.gc for rt in mTEPES.rt if (rt,gc)     in mTEPES.t2g]))
                     ChargeRev.append(OutputChargeRevRES)
                 if len([(p,sc,n,nd,gc) for p,sc,n,nd,gc in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.n2g if gc in mTEPES.gc for ot in mTEPES.ot if (ot,gc) not in mTEPES.t2g]):
-                    OutputChargeRevThr = pd.Series(data=[OptModel.dual[getattr(OptModel, 'eBalance_'+st)[p,sc,n,nd]]/mTEPES.pScenProb[sc] * 0.0                                                                                    for p,sc,n,nd,gc in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.n2g if gc in mTEPES.gc for ot in mTEPES.ot if (ot,gc) not in mTEPES.t2g], index=pd.MultiIndex.from_tuples([(p,sc,n,nd,gc) for p,sc,n,nd,gc in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.n2g if gc in mTEPES.gc for ot in mTEPES.ot if (ot,gc) not in mTEPES.t2g]))
+                    OutputChargeRevThr = pd.Series(data=[OptModel.dual[getattr(OptModel, 'eBalance_'+p+sc+st)[p,sc,n,nd]]/mTEPES.pScenProb[p,sc] * 0.0                                                                                    for p,sc,n,nd,gc in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.n2g if gc in mTEPES.gc for ot in mTEPES.ot if (ot,gc) not in mTEPES.t2g], index=pd.MultiIndex.from_tuples([(p,sc,n,nd,gc) for p,sc,n,nd,gc in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.n2g if gc in mTEPES.gc for ot in mTEPES.ot if (ot,gc) not in mTEPES.t2g]))
                     ChargeRev.append(OutputChargeRevThr)
-        mTEPES.del_component(mTEPES.n)
-        mTEPES.n = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.pDuration)
+        mTEPES.del_component(mTEPES.p )
+        mTEPES.del_component(mTEPES.sc)
+        mTEPES.del_component(mTEPES.st)
+        mTEPES.del_component(mTEPES.n )
+        mTEPES.p  = Set(initialize=mTEPES.pp,  ordered=True, doc='periods',     filter=lambda mTEPES,pp : pp  in mTEPES.pp                              )
+        mTEPES.sc = Set(initialize=mTEPES.scc, ordered=True, doc='scenarios',   filter=lambda mTEPES,scc: scc in mTEPES.scc                             )
+        mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in mTEPES.stt and mTEPES.pStageWeight[stt] and sum(1 for (stt,nn) in mTEPES.s2n))
+        mTEPES.n  = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in                mTEPES.pDuration        )
         GenRev    = pd.concat(GenRev)
         ChargeRev = pd.concat(ChargeRev)
         GenRev    = GenRev.to_frame   ('MEUR').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_4', values='MEUR').rename_axis(['Period','Scenario','LoadLevel'], axis=0).rename_axis([None], axis=1).sum(axis=0)
@@ -744,7 +864,7 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES):
     if sum(mTEPES.pReserveMargin[ar] for ar in mTEPES.ar):
         if len(mTEPES.gc):
             IndexResRev    = [(st,ar,gc) for st,ar,gc in mTEPES.st*mTEPES.ar*mTEPES.gc if mTEPES.pReserveMargin[ar] and (ar,gc) in mTEPES.a2g]
-            OutputToResRev = pd.Series(data=[OptModel.dual[getattr(OptModel, 'eAdequacyReserveMargin_'+st)[ar]]*mTEPES.pRatedMaxPower[gc]*mTEPES.pAvailability[gc]()/1e3 for st,ar,gc in IndexResRev], index=pd.MultiIndex.from_tuples(IndexResRev))
+            OutputToResRev = pd.Series(data=[OptModel.dual[getattr(OptModel, 'eAdequacyReserveMargin_'+p+sc+st)[ar]]*mTEPES.pRatedMaxPower[gc]*mTEPES.pAvailability[gc]()/1e3 for st,ar,gc in IndexResRev], index=pd.MultiIndex.from_tuples(IndexResRev))
             OutputToResRev = OutputToResRev.to_frame(name='MEUR').reset_index().pivot_table(index=['level_0','level_1'], columns='level_2', values='MEUR').rename_axis(['Stages','Areas'], axis=0).rename_axis([None], axis=1).sum(axis=0)
             ResRev         = pd.Series(data=[0.0 for gc in mTEPES.gc], index=mTEPES.gc, dtype='float64')
             for g in OutputToResRev.index:
@@ -757,38 +877,74 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES):
     if sum(mTEPES.pOperReserveUp[p,sc,n,ar] for p,sc,n,ar in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.ar) > 0.0 and (sum(1 for ar,nr in mTEPES.ar*mTEPES.nr if (ar,nr) in mTEPES.a2g and mTEPES.pIndOperReserve[nr] == 0) + sum(1 for ar,es in mTEPES.ar*mTEPES.es if (ar,es) in mTEPES.a2g and mTEPES.pIndOperReserve[es] == 0)) > 0:
         if len([(p,sc,n,ar,nr) for p,sc,n,ar,nr in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.a2g if mTEPES.pOperReserveUp[p,sc,n,ar] and nr in mTEPES.nr]):
             OutputData = []
-            for st in mTEPES.st:
-                mTEPES.del_component(mTEPES.n)
-                mTEPES.n = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.pDuration and (st,nn) in mTEPES.s2n)
+            for p,sc,st in mTEPES.p*mTEPES.sc*mTEPES.st:
+                mTEPES.del_component(mTEPES.p )
+                mTEPES.del_component(mTEPES.sc)
+                mTEPES.del_component(mTEPES.st)
+                mTEPES.del_component(mTEPES.n )
+                mTEPES.p  = Set(initialize=mTEPES.pp , ordered=True, doc='periods',     filter=lambda mTEPES,pp : pp  in mTEPES.pp  and p  == pp                              )
+                mTEPES.sc = Set(initialize=mTEPES.scc, ordered=True, doc='scenarios',   filter=lambda mTEPES,scc: scc in mTEPES.scc and sc == scc                                         )
+                mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in mTEPES.stt and st == stt and mTEPES.pStageWeight[stt] and sum(1 for (st,nn) in mTEPES.s2n))
+                mTEPES.n  = Set(initialize=mTEPES.nn , ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in                              mTEPES.pDuration         and           (st,nn) in mTEPES.s2n)
                 if len(mTEPES.n):
-                    OutputToFile = pd.Series(data=[OptModel.dual[getattr(OptModel, 'eOperReserveUp_'+st)[p,sc,n,ar]]/mTEPES.pScenProb[sc]*OptModel.vReserveUp   [p,sc,n,nr]() for p,sc,n,ar,nr in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.a2g if mTEPES.pOperReserveUp[p,sc,n,ar] and nr in mTEPES.nr], index=pd.MultiIndex.from_tuples([(p,sc,n,ar,nr) for p,sc,n,ar,nr in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.a2g if mTEPES.pOperReserveUp[p,sc,n,ar] and nr in mTEPES.nr]))
+                    OutputToFile = pd.Series(data=[OptModel.dual[getattr(OptModel, 'eOperReserveUp_'+p+sc+st)[p,sc,n,ar]]/mTEPES.pScenProb[p,sc]*OptModel.vReserveUp   [p,sc,n,nr]() for p,sc,n,ar,nr in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.a2g if mTEPES.pOperReserveUp[p,sc,n,ar] and nr in mTEPES.nr], index=pd.MultiIndex.from_tuples([(p,sc,n,ar,nr) for p,sc,n,ar,nr in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.a2g if mTEPES.pOperReserveUp[p,sc,n,ar] and nr in mTEPES.nr]))
                 OutputData.append(OutputToFile)
-            mTEPES.del_component(mTEPES.n)
-            mTEPES.n = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.pDuration)
+            mTEPES.del_component(mTEPES.p )
+            mTEPES.del_component(mTEPES.sc)
+            mTEPES.del_component(mTEPES.st)
+            mTEPES.del_component(mTEPES.n )
+            mTEPES.p  = Set(initialize=mTEPES.pp,  ordered=True, doc='periods',     filter=lambda mTEPES,pp : pp  in mTEPES.pp                              )
+            mTEPES.sc = Set(initialize=mTEPES.scc, ordered=True, doc='scenarios',   filter=lambda mTEPES,scc: scc in mTEPES.scc                             )
+            mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in mTEPES.stt and mTEPES.pStageWeight[stt] and sum(1 for (stt,nn) in mTEPES.s2n))
+            mTEPES.n  = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in                mTEPES.pDuration        )
             OutputData = pd.concat(OutputData)
             OutputData.to_frame(name='MEUR').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_4', values='MEUR').rename_axis(['Period','Scenario','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_RevenueOperatingReserveUp_'+CaseName+'.csv', sep=',')
         if len([(p,sc,n,ar,es) for p,sc,n,ar,es in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.a2g if mTEPES.pOperReserveUp[p,sc,n,ar] and es in mTEPES.es]):
             OutputData = []
-            for st in mTEPES.st:
-                mTEPES.del_component(mTEPES.n)
-                mTEPES.n = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.pDuration and (st,nn) in mTEPES.s2n)
+            for p,sc,st in mTEPES.p*mTEPES.sc*mTEPES.st:
+                mTEPES.del_component(mTEPES.p )
+                mTEPES.del_component(mTEPES.sc)
+                mTEPES.del_component(mTEPES.st)
+                mTEPES.del_component(mTEPES.n )
+                mTEPES.p  = Set(initialize=mTEPES.pp , ordered=True, doc='periods',     filter=lambda mTEPES,pp : pp  in mTEPES.pp  and p  == pp                              )
+                mTEPES.sc = Set(initialize=mTEPES.scc, ordered=True, doc='scenarios',   filter=lambda mTEPES,scc: scc in mTEPES.scc and sc == scc                                         )
+                mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in mTEPES.stt and st == stt and mTEPES.pStageWeight[stt] and sum(1 for (st,nn) in mTEPES.s2n))
+                mTEPES.n  = Set(initialize=mTEPES.nn , ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in                              mTEPES.pDuration         and           (st,nn) in mTEPES.s2n)
                 if len(mTEPES.n):
-                    OutputToFile = pd.Series(data=[OptModel.dual[getattr(OptModel, 'eOperReserveUp_'+st)[p,sc,n,ar]]/mTEPES.pScenProb[sc]*OptModel.vESSReserveUp[p,sc,n,es]() for p,sc,n,ar,es in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.a2g if mTEPES.pOperReserveUp[p,sc,n,ar] and es in mTEPES.es], index=pd.MultiIndex.from_tuples([(p,sc,n,ar,es) for p,sc,n,ar,es in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.a2g if mTEPES.pOperReserveUp[p,sc,n,ar] and es in mTEPES.es]))
+                    OutputToFile = pd.Series(data=[OptModel.dual[getattr(OptModel, 'eOperReserveUp_'+p+sc+st)[p,sc,n,ar]]/mTEPES.pScenProb[p,sc]*OptModel.vESSReserveUp[p,sc,n,es]() for p,sc,n,ar,es in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.a2g if mTEPES.pOperReserveUp[p,sc,n,ar] and es in mTEPES.es], index=pd.MultiIndex.from_tuples([(p,sc,n,ar,es) for p,sc,n,ar,es in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.a2g if mTEPES.pOperReserveUp[p,sc,n,ar] and es in mTEPES.es]))
                 OutputData.append(OutputToFile)
-            mTEPES.del_component(mTEPES.n)
-            mTEPES.n = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.pDuration)
+            mTEPES.del_component(mTEPES.p )
+            mTEPES.del_component(mTEPES.sc)
+            mTEPES.del_component(mTEPES.st)
+            mTEPES.del_component(mTEPES.n )
+            mTEPES.p  = Set(initialize=mTEPES.pp,  ordered=True, doc='periods',     filter=lambda mTEPES,pp : pp  in mTEPES.pp                              )
+            mTEPES.sc = Set(initialize=mTEPES.scc, ordered=True, doc='scenarios',   filter=lambda mTEPES,scc: scc in mTEPES.scc                             )
+            mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in mTEPES.stt and mTEPES.pStageWeight[stt] and sum(1 for (stt,nn) in mTEPES.s2n))
+            mTEPES.n  = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in                mTEPES.pDuration        )
             OutputData = pd.concat(OutputData)
             OutputData.to_frame(name='MEUR').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_4', values='MEUR').rename_axis(['Period','Scenario','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_RevenueOperatingReserveUpESS_'+CaseName+'.csv', sep=',')
         if len([(p,sc,n,ar,gc) for p,sc,n,ar,gc in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.a2g if mTEPES.pOperReserveUp[p,sc,n,ar] and gc in mTEPES.gc]):
             OutputData = []
-            for st in mTEPES.st:
-                mTEPES.del_component(mTEPES.n)
-                mTEPES.n = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.pDuration and (st,nn) in mTEPES.s2n)
+            for p,sc,st in mTEPES.p*mTEPES.sc*mTEPES.st:
+                mTEPES.del_component(mTEPES.p )
+                mTEPES.del_component(mTEPES.sc)
+                mTEPES.del_component(mTEPES.st)
+                mTEPES.del_component(mTEPES.n )
+                mTEPES.p  = Set(initialize=mTEPES.pp , ordered=True, doc='periods',     filter=lambda mTEPES,pp : pp  in mTEPES.pp  and p  == pp                              )
+                mTEPES.sc = Set(initialize=mTEPES.scc, ordered=True, doc='scenarios',   filter=lambda mTEPES,scc: scc in mTEPES.scc and sc == scc                                         )
+                mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in mTEPES.stt and st == stt and mTEPES.pStageWeight[stt] and sum(1 for (st,nn) in mTEPES.s2n))
+                mTEPES.n  = Set(initialize=mTEPES.nn , ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in                              mTEPES.pDuration         and           (st,nn) in mTEPES.s2n)
                 if len(mTEPES.n):
-                    OutputToFile = pd.Series(data=[OptModel.dual[getattr(OptModel, 'eOperReserveUp_'+st)[p,sc,n,ar]]/mTEPES.pScenProb[sc]*OptModel.vESSReserveUp[p,sc,n,ec]() for p,sc,n,ar,ec in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.a2g if mTEPES.pOperReserveUp[p,sc,n,ar] and ec in mTEPES.ec], index=pd.MultiIndex.from_tuples([(p,sc,n,ar,ec) for p,sc,n,ar,ec in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.a2g if mTEPES.pOperReserveUp[p,sc,n,ar] and ec in mTEPES.ec]))
+                    OutputToFile = pd.Series(data=[OptModel.dual[getattr(OptModel, 'eOperReserveUp_'+p+sc+st)[p,sc,n,ar]]/mTEPES.pScenProb[p,sc]*OptModel.vESSReserveUp[p,sc,n,ec]() for p,sc,n,ar,ec in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.a2g if mTEPES.pOperReserveUp[p,sc,n,ar] and ec in mTEPES.ec], index=pd.MultiIndex.from_tuples([(p,sc,n,ar,ec) for p,sc,n,ar,ec in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.a2g if mTEPES.pOperReserveUp[p,sc,n,ar] and ec in mTEPES.ec]))
                 OutputData.append(OutputToFile)
-            mTEPES.del_component(mTEPES.n)
-            mTEPES.n      = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.pDuration)
+            mTEPES.del_component(mTEPES.p )
+            mTEPES.del_component(mTEPES.sc)
+            mTEPES.del_component(mTEPES.st)
+            mTEPES.del_component(mTEPES.n )
+            mTEPES.p  = Set(initialize=mTEPES.pp,  ordered=True, doc='periods',     filter=lambda mTEPES,pp : pp  in mTEPES.pp                              )
+            mTEPES.sc = Set(initialize=mTEPES.scc, ordered=True, doc='scenarios',   filter=lambda mTEPES,scc: scc in mTEPES.scc                             )
+            mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in mTEPES.stt and mTEPES.pStageWeight[stt] and sum(1 for (stt,nn) in mTEPES.s2n))
+            mTEPES.n  = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in                mTEPES.pDuration        )
             OutputData    = pd.concat(OutputData)
             OutputToUpRev = OutputData.to_frame('MEUR').reset_index().pivot_table(index=['level_0', 'level_1', 'level_2'], columns='level_4', values='MEUR').rename_axis(['Period','Scenario','LoadLevel'], axis=0).rename_axis([None], axis=1).sum(axis=0)
             UpRev         = pd.Series(data=[0.0 for gc in mTEPES.gc], index=mTEPES.gc, dtype='float64')
@@ -802,38 +958,74 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES):
     if sum(mTEPES.pOperReserveDw[p,sc,n,ar] for p,sc,n,ar in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.ar) > 0.0 and (sum(1 for ar,nr in mTEPES.ar*mTEPES.nr if (ar,nr) in mTEPES.a2g and mTEPES.pIndOperReserve[nr] == 0) + sum(1 for ar,es in mTEPES.ar*mTEPES.es if (ar,es) in mTEPES.a2g and mTEPES.pIndOperReserve[es] == 0)) > 0:
         if len([(p,sc,n,ar,nr) for p,sc,n,ar,nr in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.a2g if mTEPES.pOperReserveUp[p,sc,n,ar] and nr in mTEPES.nr]):
             OutputData = []
-            for st in mTEPES.st:
-                mTEPES.del_component(mTEPES.n)
-                mTEPES.n = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.pDuration and (st,nn) in mTEPES.s2n)
+            for p,sc,st in mTEPES.p*mTEPES.sc*mTEPES.st:
+                mTEPES.del_component(mTEPES.p )
+                mTEPES.del_component(mTEPES.sc)
+                mTEPES.del_component(mTEPES.st)
+                mTEPES.del_component(mTEPES.n )
+                mTEPES.p  = Set(initialize=mTEPES.pp , ordered=True, doc='periods',     filter=lambda mTEPES,pp : pp  in mTEPES.pp  and p  == pp                              )
+                mTEPES.sc = Set(initialize=mTEPES.scc, ordered=True, doc='scenarios',   filter=lambda mTEPES,scc: scc in mTEPES.scc and sc == scc                                         )
+                mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in mTEPES.stt and st == stt and mTEPES.pStageWeight[stt] and sum(1 for (st,nn) in mTEPES.s2n))
+                mTEPES.n  = Set(initialize=mTEPES.nn , ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in                              mTEPES.pDuration         and           (st,nn) in mTEPES.s2n)
                 if len(mTEPES.n):
-                    OutputToFile = pd.Series(data=[OptModel.dual[getattr(OptModel, 'eOperReserveDw_'+st)[p,sc,n,ar]]/mTEPES.pScenProb[sc]*OptModel.vReserveDown   [p,sc,n,nr]() for p,sc,n,ar,nr in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.a2g if mTEPES.pOperReserveDw[p,sc,n,ar] and nr in mTEPES.nr], index=pd.MultiIndex.from_tuples([(p,sc,n,ar,nr) for p,sc,n,ar,nr in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.a2g if mTEPES.pOperReserveDw[p,sc,n,ar] and nr in mTEPES.nr]))
+                    OutputToFile = pd.Series(data=[OptModel.dual[getattr(OptModel, 'eOperReserveDw_'+p+sc+st)[p,sc,n,ar]]/mTEPES.pScenProb[p,sc]*OptModel.vReserveDown   [p,sc,n,nr]() for p,sc,n,ar,nr in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.a2g if mTEPES.pOperReserveDw[p,sc,n,ar] and nr in mTEPES.nr], index=pd.MultiIndex.from_tuples([(p,sc,n,ar,nr) for p,sc,n,ar,nr in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.a2g if mTEPES.pOperReserveDw[p,sc,n,ar] and nr in mTEPES.nr]))
                 OutputData.append(OutputToFile)
-            mTEPES.del_component(mTEPES.n)
-            mTEPES.n = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.pDuration)
+            mTEPES.del_component(mTEPES.p )
+            mTEPES.del_component(mTEPES.sc)
+            mTEPES.del_component(mTEPES.st)
+            mTEPES.del_component(mTEPES.n )
+            mTEPES.p  = Set(initialize=mTEPES.pp,  ordered=True, doc='periods',     filter=lambda mTEPES,pp : pp  in mTEPES.pp                              )
+            mTEPES.sc = Set(initialize=mTEPES.scc, ordered=True, doc='scenarios',   filter=lambda mTEPES,scc: scc in mTEPES.scc                             )
+            mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in mTEPES.stt and mTEPES.pStageWeight[stt] and sum(1 for (stt,nn) in mTEPES.s2n))
+            mTEPES.n  = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in                mTEPES.pDuration        )
             OutputData = pd.concat(OutputData)
             OutputData.to_frame(name='MEUR').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_4', values='MEUR').rename_axis(['Period','Scenario','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_RevenueOperatingReserveDw_'+CaseName+'.csv', sep=',')
         if len([(p,sc,n,ar,es) for p,sc,n,ar,es in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.a2g if mTEPES.pOperReserveUp[p,sc,n,ar] and es in mTEPES.es]):
             OutputData = []
-            for st in mTEPES.st:
-                mTEPES.del_component(mTEPES.n)
-                mTEPES.n = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.pDuration and (st,nn) in mTEPES.s2n)
+            for p,sc,st in mTEPES.p*mTEPES.sc*mTEPES.st:
+                mTEPES.del_component(mTEPES.p )
+                mTEPES.del_component(mTEPES.sc)
+                mTEPES.del_component(mTEPES.st)
+                mTEPES.del_component(mTEPES.n )
+                mTEPES.p  = Set(initialize=mTEPES.pp , ordered=True, doc='periods',     filter=lambda mTEPES,pp : pp  in mTEPES.pp  and p  == pp                              )
+                mTEPES.sc = Set(initialize=mTEPES.scc, ordered=True, doc='scenarios',   filter=lambda mTEPES,scc: scc in mTEPES.scc and sc == scc                                         )
+                mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in mTEPES.stt and st == stt and mTEPES.pStageWeight[stt] and sum(1 for (st,nn) in mTEPES.s2n))
+                mTEPES.n  = Set(initialize=mTEPES.nn , ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in                              mTEPES.pDuration         and           (st,nn) in mTEPES.s2n)
                 if len(mTEPES.n):
-                    OutputToFile = pd.Series(data=[OptModel.dual[getattr(OptModel, 'eOperReserveDw_'+st)[p,sc,n,ar]]/mTEPES.pScenProb[sc]*OptModel.vESSReserveDown[p,sc,n,es]() for p,sc,n,ar,es in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.a2g if mTEPES.pOperReserveDw[p,sc,n,ar] and es in mTEPES.es], index=pd.MultiIndex.from_tuples([(p,sc,n,ar,es) for p,sc,n,ar,es in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.a2g if mTEPES.pOperReserveDw[p,sc,n,ar] and es in mTEPES.es]))
+                    OutputToFile = pd.Series(data=[OptModel.dual[getattr(OptModel, 'eOperReserveDw_'+p+sc+st)[p,sc,n,ar]]/mTEPES.pScenProb[p,sc]*OptModel.vESSReserveDown[p,sc,n,es]() for p,sc,n,ar,es in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.a2g if mTEPES.pOperReserveDw[p,sc,n,ar] and es in mTEPES.es], index=pd.MultiIndex.from_tuples([(p,sc,n,ar,es) for p,sc,n,ar,es in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.a2g if mTEPES.pOperReserveDw[p,sc,n,ar] and es in mTEPES.es]))
                 OutputData.append(OutputToFile)
-            mTEPES.del_component(mTEPES.n)
-            mTEPES.n = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.pDuration)
+            mTEPES.del_component(mTEPES.p )
+            mTEPES.del_component(mTEPES.sc)
+            mTEPES.del_component(mTEPES.st)
+            mTEPES.del_component(mTEPES.n )
+            mTEPES.p  = Set(initialize=mTEPES.pp,  ordered=True, doc='periods',     filter=lambda mTEPES,pp : pp  in mTEPES.pp                              )
+            mTEPES.sc = Set(initialize=mTEPES.scc, ordered=True, doc='scenarios',   filter=lambda mTEPES,scc: scc in mTEPES.scc                             )
+            mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in mTEPES.stt and mTEPES.pStageWeight[stt] and sum(1 for (stt,nn) in mTEPES.s2n))
+            mTEPES.n  = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in                mTEPES.pDuration        )
             OutputData = pd.concat(OutputData)
             OutputData.to_frame(name='MEUR').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_4', values='MEUR').rename_axis(['Period','Scenario','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_RevenueOperatingReserveDwESS_'+CaseName+'.csv', sep=',')
         if len([(p,sc,n,ar,gc) for p,sc,n,ar,gc in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.a2g if mTEPES.pOperReserveUp[p,sc,n,ar] and gc in mTEPES.gc]):
             OutputData = []
-            for st in mTEPES.st:
-                mTEPES.del_component(mTEPES.n)
-                mTEPES.n = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.pDuration and (st,nn) in mTEPES.s2n)
+            for p,sc,st in mTEPES.p*mTEPES.sc*mTEPES.st:
+                mTEPES.del_component(mTEPES.p )
+                mTEPES.del_component(mTEPES.sc)
+                mTEPES.del_component(mTEPES.st)
+                mTEPES.del_component(mTEPES.n )
+                mTEPES.p  = Set(initialize=mTEPES.pp , ordered=True, doc='periods',     filter=lambda mTEPES,pp : pp  in mTEPES.pp  and p  == pp                              )
+                mTEPES.sc = Set(initialize=mTEPES.scc, ordered=True, doc='scenarios',   filter=lambda mTEPES,scc: scc in mTEPES.scc and sc == scc                                         )
+                mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in mTEPES.stt and st == stt and mTEPES.pStageWeight[stt] and sum(1 for (st,nn) in mTEPES.s2n))
+                mTEPES.n  = Set(initialize=mTEPES.nn , ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in                              mTEPES.pDuration         and           (st,nn) in mTEPES.s2n)
                 if len(mTEPES.n):
-                    OutputToFile = pd.Series(data=[OptModel.dual[getattr(OptModel, 'eOperReserveDw_'+st)[p,sc,n,ar]]/mTEPES.pScenProb[sc]*OptModel.vESSReserveDown[p,sc,n,ec]() for p,sc,n,ar,ec in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.a2g if mTEPES.pOperReserveDw[p,sc,n,ar] and ec in mTEPES.ec], index=pd.MultiIndex.from_tuples([(p,sc,n,ar,ec) for p,sc,n,ar,ec in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.a2g if mTEPES.pOperReserveDw[p,sc,n,ar] and ec in mTEPES.ec]))
+                    OutputToFile = pd.Series(data=[OptModel.dual[getattr(OptModel, 'eOperReserveDw_'+p+sc+st)[p,sc,n,ar]]/mTEPES.pScenProb[p,sc]*OptModel.vESSReserveDown[p,sc,n,ec]() for p,sc,n,ar,ec in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.a2g if mTEPES.pOperReserveDw[p,sc,n,ar] and ec in mTEPES.ec], index=pd.MultiIndex.from_tuples([(p,sc,n,ar,ec) for p,sc,n,ar,ec in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.a2g if mTEPES.pOperReserveDw[p,sc,n,ar] and ec in mTEPES.ec]))
                 OutputData.append(OutputToFile)
-            mTEPES.del_component(mTEPES.n)
-            mTEPES.n      = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.pDuration)
+            mTEPES.del_component(mTEPES.p )
+            mTEPES.del_component(mTEPES.sc)
+            mTEPES.del_component(mTEPES.st)
+            mTEPES.del_component(mTEPES.n )
+            mTEPES.p  = Set(initialize=mTEPES.pp,  ordered=True, doc='periods',     filter=lambda mTEPES,pp : pp  in mTEPES.pp                              )
+            mTEPES.sc = Set(initialize=mTEPES.scc, ordered=True, doc='scenarios',   filter=lambda mTEPES,scc: scc in mTEPES.scc                             )
+            mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in mTEPES.stt and mTEPES.pStageWeight[stt] and sum(1 for (stt,nn) in mTEPES.s2n))
+            mTEPES.n  = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in                mTEPES.pDuration        )
             OutputData    = pd.concat(OutputData)
             OutputToDwRev = OutputData.to_frame('MEUR').reset_index().pivot_table(index=['level_0', 'level_1', 'level_2'], columns='level_4', values='MEUR').rename_axis(['Period','Scenario','LoadLevel'], axis=0).rename_axis([None], axis=1).sum(axis=0)
             DwRev         = pd.Series(data=[0.0 for gc in mTEPES.gc], index=mTEPES.gc, dtype='float64')
@@ -865,7 +1057,7 @@ def NetworkMapResults(DirName, CaseName, OptModel, mTEPES):
     mTEPES.del_component(mTEPES.p )
     mTEPES.del_component(mTEPES.st)
     mTEPES.del_component(mTEPES.n )
-    mTEPES.sc = Set(initialize=mTEPES.scc, ordered=True, doc='scenarios',   filter=lambda mTEPES,scc: scc in mTEPES.scc and mTEPES.pScenProb   [scc])
+    mTEPES.sc = Set(initialize=mTEPES.scc, ordered=True, doc='scenarios',   filter=lambda mTEPES,scc: scc in mTEPES.scc                             )
     mTEPES.p  = Set(initialize=mTEPES.pp,  ordered=True, doc='periods',     filter=lambda mTEPES,pp : pp                                            )
     mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in mTEPES.stt and mTEPES.pStageWeight[stt] and sum(1 for (stt, nn) in mTEPES.s2n))
     mTEPES.n  = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in                mTEPES.pDuration        )
@@ -994,7 +1186,7 @@ def NetworkMapResults(DirName, CaseName, OptModel, mTEPES):
     fig.add_trace(go.Scattermapbox(lat=line_df['lat'], lon=line_df['lon'], mode='markers', marker=go.scattermapbox.Marker(size=20, sizeref=1.1, sizemode='area', color='LightSkyBlue',), opacity=0, hoverinfo='text', text='<br>Line: '+line_df['ni']+' --> '+line_df['nf']+'<br># Of circuits: '+line_df['cc'].astype(str)+'<br>Total NTC: '+line_df['NTC'].astype(str)+'<br>Power flow: '+line_df['vFlow'].astype(str)+'<br>Utilization [%]: '+line_df['utilization'].astype(str),))
 
     # Setting up the layout
-    fig.update_layout(title={'text': 'Power Network: '+str(CaseName)+'<br>Scenario: '+str(sc)+'; Period: '+str(p)+'; LoadLevel: '+str(n), 'x': 0.5, 'xanchor': 'center', 'yanchor': 'top'}, font=dict(size=14), hovermode='closest', geo=dict(projection_type='azimuthal equal area', showland=True,), mapbox=dict(style='dark', accesstoken=token, bearing=0, center=dict(lat=(loc_df['Lat'].max()+loc_df['Lat'].min())*0.5, lon=(loc_df['Lon'].max()+loc_df['Lon'].min())*0.5), pitch=0, zoom=5), showlegend=False,)
+    fig.update_layout(title={'text': 'Power Network: '+CaseName+'<br>Period: '+p+'; Scenario: '+sc+'; LoadLevel: '+n, 'x': 0.5, 'xanchor': 'center', 'yanchor': 'top'}, font=dict(size=14), hovermode='closest', geo=dict(projection_type='azimuthal equal area', showland=True,), mapbox=dict(style='dark', accesstoken=token, bearing=0, center=dict(lat=(loc_df['Lat'].max()+loc_df['Lat'].min())*0.5, lon=(loc_df['Lon'].max()+loc_df['Lon'].min())*0.5), pitch=0, zoom=5), showlegend=False,)
 
     # Saving the figure
     fig.write_html(_path+'/oT_Plot_MapNetwork_'+CaseName+'.html')
