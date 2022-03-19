@@ -523,8 +523,9 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pIniInventory     = pIniInventory.loc    [mTEPES.p*mTEPES.sc*mTEPES.n          ]
 
     # separate positive and negative demands to avoid converting negative values to 0
-    pDemandPos          = pDemand.where         (pDemand >= 0.0, other=0.0)
-    pDemandNeg          = pDemand.where         (pDemand <  0.0, other=0.0)
+    pDemandPos        = pDemand.where        (pDemand >= 0.0, other=0.0)
+    pDemandNeg        = pDemand.where        (pDemand <  0.0, other=0.0)
+
     # small values are converted to 0
     pPeakDemand         = pd.Series(data=[0.0 for ar in mTEPES.ar], index=mTEPES.ar)
     for ar in mTEPES.ar:
