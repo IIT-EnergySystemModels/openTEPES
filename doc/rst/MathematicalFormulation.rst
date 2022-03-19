@@ -128,7 +128,7 @@ They are written in **lowercase** letters.
 **Generation system**   
 ------------------------------------------  --------------------------------------------------------------------------  -----
 :math:`icg_{pg}`                            Candidate generator or ESS installed or not                                 {0,1}
-:math:`rcg_{pg}`                            Candidate generator or ESS retried   or not                                 {0,1}
+:math:`rcg_{pg}`                            Candidate generator or ESS retired   or not                                 {0,1}
 :math:`gp^p_{ωng}, gc^p_{ωng}`              Generator output (discharge if an ESS) and consumption (charge if an ESS)   GW
 :math:`go^p_{ωne}`                          Generator outflows of an ESS                                                GW
 :math:`p^p_{ωng}`                           Generator output of the second block (i.e., above the minimum load)         GW

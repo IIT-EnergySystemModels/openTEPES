@@ -45,7 +45,7 @@ the optimal decisions among those specified by the user.
 
 It determines automatically optimal expansion plans that satisfy simultaneously several attributes. Its main characteristics are:
 
-- **Dynamic**: the scope of the model corresponds to a several periods (years) at a long-term horizon, 2030 to 2040 for example.
+- **Dynamic**: the scope of the model corresponds to several periods (years) at a long-term horizon, 2030 to 2040 for example.
 
   It represents hierarchically the different time scopes to take decisions in an electric system:
 
