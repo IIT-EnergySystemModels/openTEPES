@@ -41,8 +41,8 @@ The dictionaries include all the possible elements of the corresponding sets inc
 =============================  ===================================================================================================================================================================================================================
 File                           Description
 =============================  ===================================================================================================================================================================================================================
-``oT_Dict_Scenario.csv``       Scenario. Short-term uncertainties (scenarios) (e.g., s001 to s100)
 ``oT_Dict_Period.csv``         Period (e.g., y2030)
+``oT_Dict_Scenario.csv``       Scenario. Short-term uncertainties (scenarios) (e.g., s001 to s100)
 ``oT_Dict_Stage.csv``          Stage
 ``oT_Dict_LoadLevel.csv``      Load level (e.g., 2030-01-01T00:00:00+01:00 to 2030-12-30T23:00:00+01:00). Load levels with duration 0 are ignored
 ``oT_Dict_Generation.csv``     Generation units (thermal -nuclear, CCGT, OCGT, coal-, ESS -hydro, pumped-hydro storage PHS, battery BESS, electric vehicle EV, demand response DR, alkaline water electrolyzer AWE, solar thermal- and VRE -wind onshore and offshore, solar PV-)
@@ -195,12 +195,12 @@ Duration
 
 A description of the data included in the file ``oT_Data_Duration.csv`` follows:
 
-==============  ==========  ==========  ========  ===================================================================  ==
-Identifier      Identifier  Identifier  Header    Description
-==============  ==========  ==========  ========  ===================================================================  ==
-Scenario        Period      Load level  Duration  Duration of the load level. Load levels with duration 0 are ignored  h
-Scenario        Period      Load level  Stage     Assignment of the load level to a stage
-==============  ==========  ==========  ========  ===================================================================  ==
+==========  ==============  ==========  ========  ===================================================================  ==
+Identifier  Identifier      Identifier  Header    Description
+==========  ==============  ==========  ========  ===================================================================  ==
+Period      Scenario        Load level  Duration  Duration of the load level. Load levels with duration 0 are ignored  h
+Period      Scenario        Load level  Stage     Assignment of the load level to a stage
+==========  ==============  ==========  ========  ===================================================================  ==
 
 It is a simple way to use isolated snapshots or representative days or just the first three months instead of all the hours of a year to simplify the optimization problem.
 
@@ -215,11 +215,11 @@ Demand
 
 A description of the data included in the file ``oT_Data_Demand.csv`` follows:
 
-==============  ==========  ==========  ======  ============================================  ==
-Identifier      Identifier  Identifier  Header  Description
-==============  ==========  ==========  ======  ============================================  ==
-Scenario        Period      Load level  Node    Power demand of the node for each load level  MW
-==============  ==========  ==========  ======  ============================================  ==
+==========  ==============  ==========  ======  ============================================  ==
+Identifier  Identifier      Identifier  Header  Description
+==========  ==============  ==========  ======  ============================================  ==
+Period      Scenario        Load level  Node    Power demand of the node for each load level  MW
+==========  ==============  ==========  ======  ============================================  ==
 
 The demand can be negative for the (transmission) nodes where there is (renewable) generation in lower voltage levels. This negative demand is equivalent to generate that power amount in this node.
 Internally, all the values below if positive demand (or above if negative demand) 2.5e-5 times the maximum system demand of each area will be converted into 0 by the model.
@@ -229,11 +229,11 @@ System inertia
 
 A description of the data included in the files ``oT_Data_Inertia.csv`` follows:
 
-==============  ==========  ==========  ======  ================================================  ==
-Identifier      Identifier  Identifier  Header  Description
-==============  ==========  ==========  ======  ================================================  ==
-Scenario        Period      Load level  Area    System inertia of the area for each load level    s
-==============  ==========  ==========  ======  ================================================  ==
+==========  ==============  ==========  ======  ================================================  ==
+Identifier  Identifier      Identifier  Header  Description
+==========  ==============  ==========  ======  ================================================  ==
+Period      Scenario        Load level  Area    System inertia of the area for each load level    s
+==========  ==============  ==========  ======  ================================================  ==
 
 Given that the system inertia depends on the area, it can be sensible to assign an area as a country, for example.
 
@@ -244,11 +244,11 @@ Upward and downward operating reserves
 
 A description of the data included in the files ``oT_Data_OperatingReserveUp.csv`` and ``oT_Data_OperatingReserveDown.csv`` follows:
 
-==============  ==========  ==========  ======  ===================================================================  ==
-Identifier      Identifier  Identifier  Header  Description
-==============  ==========  ==========  ======  ===================================================================  ==
-Scenario        Period      Load level  Area    Upward/downward operating reserves of the area for each load level   MW
-==============  ==========  ==========  ======  ===================================================================  ==
+==========  ==============  ==========  ======  ===================================================================  ==
+Identifier  Identifier      Identifier  Header  Description
+==========  ==============  ==========  ======  ===================================================================  ==
+Period      Scenario        Load level  Area    Upward/downward operating reserves of the area for each load level   MW
+==========  ==============  ==========  ======  ===================================================================  ==
 
 Given that the operating reserves depend on the area, it can be sensible to assign an area as a country, for example.
 These operating reserves must include Automatic Frequency Restoration Reserves (aFRR), Manual Frequency Restoration Reserves (mFRR) and Replacement Reserves (RR) for electricity balancing from ENTSO-E.
@@ -327,11 +327,11 @@ Variable maximum and minimum generation
 
 A description of the data included in the files ``oT_Data_VariableMaxGeneration.csv`` and ``oT_Data_VariableMinGeneration.csv`` follows:
 
-==============  ==========  ==========  =========  ============================================================  ==
-Identifier      Identifier  Identifier  Header     Description
-==============  ==========  ==========  =========  ============================================================  ==
-Scenario        Period      Load level  Generator  Maximum (minimum) power generation of the unit by load level  MW
-==============  ==========  ==========  =========  ============================================================  ==
+==========  ==============  ==========  =========  ============================================================  ==
+Identifier  Identifier      Identifier  Header     Description
+==========  ==============  ==========  =========  ============================================================  ==
+Period      Scenario        Load level  Generator  Maximum (minimum) power generation of the unit by load level  MW
+==========  ==============  ==========  =========  ============================================================  ==
 
 To force a generator to produce 0 a lower value (e.g., 0.1 MW) strictly > 0, but not 0 (in which case the value will be ignored), must be introduced. This is needed to limit the solar production at night, for example.
 It can be used also for upper-bounding and/or lower-bounding the output of any generator (e.g., run-of-the-river hydro, wind).
@@ -343,11 +343,11 @@ Variable maximum and minimum consumption
 
 A description of the data included in the files ``oT_Data_VariableMaxConsumption.csv`` and ``oT_Data_VariableMinConsumption.csv`` follows:
 
-==============  ==========  ==========  =========  =============================================================  ==
-Identifier      Identifier  Identifier  Header     Description
-==============  ==========  ==========  =========  =============================================================  ==
-Scenario        Period      Load level  Generator  Maximum (minimum) power consumption of the unit by load level  MW
-==============  ==========  ==========  =========  =============================================================  ==
+==========  ==============  ==========  =========  =============================================================  ==
+Identifier  Identifier      Identifier  Header     Description
+==========  ==============  ==========  =========  =============================================================  ==
+Period      Scenario        Load level  Generator  Maximum (minimum) power consumption of the unit by load level  MW
+==========  ==============  ==========  =========  =============================================================  ==
 
 To force a ESS to consume 0 a lower value (e.g., 0.1 MW) strictly > 0, but not 0 (in which case the value will be ignored), must be introduced.
 It can be used also for upper-bounding and/or lower-bounding the consumption of any ESS (e.g., pumped-hydro storage, battery).
@@ -359,11 +359,11 @@ Energy inflows
 
 A description of the data included in the file ``oT_Data_EnergyInflows.csv`` follows:
 
-==============  ==========  ==========  =========  =============================  ==
-Identifier      Identifier  Identifier  Header     Description
-==============  ==========  ==========  =========  =============================  ==
-Scenario        Period      Load level  Generator  Energy inflows by load level   MW
-==============  ==========  ==========  =========  =============================  ==
+==========  ==============  ==========  =========  =============================  ==
+Identifier  Identifier      Identifier  Header     Description
+==========  ==============  ==========  =========  =============================  ==
+Period      Scenario        Load level  Generator  Energy inflows by load level   MW
+==========  ==============  ==========  =========  =============================  ==
 
 All the generators must be defined as columns of these files.
 
@@ -376,11 +376,11 @@ Energy outflows
 
 A description of the data included in the file ``oT_Data_EnergyOutflows.csv`` follows:
 
-==============  ==========  ==========  =========  ==============================  ==
-Identifier      Identifier  Identifier  Header     Description
-==============  ==========  ==========  =========  ==============================  ==
-Scenario        Period      Load level  Generator  Energy outflows by load level   MW
-==============  ==========  ==========  =========  ==============================  ==
+==========  ==============  ==========  =========  ==============================  ==
+Identifier  Identifier      Identifier  Header     Description
+==========  ==============  ==========  =========  ==============================  ==
+Period      Scenario        Load level  Generator  Energy outflows by load level   MW
+==========  ==============  ==========  =========  ==============================  ==
 
 All the generators must be defined as columns of these files.
 
@@ -395,11 +395,11 @@ Variable maximum and minimum storage
 
 A description of the data included in the files ``oT_Data_VariableMaxStorage.csv`` and ``oT_Data_VariableMinStorage.csv`` follows:
 
-==============  ==========  ==========  =========  ====================================================  ===
-Identifier      Identifier  Identifier  Header     Description
-==============  ==========  ==========  =========  ====================================================  ===
-Scenario        Period      Load level  Generator  Maximum (minimum) storage of the ESS by load level    GWh
-==============  ==========  ==========  =========  ====================================================  ===
+==========  ==============  ==========  =========  ====================================================  ===
+Identifier  Identifier      Identifier  Header     Description
+==========  ==============  ==========  =========  ====================================================  ===
+Period      Scenario        Load level  Generator  Maximum (minimum) storage of the ESS by load level    GWh
+==========  ==============  ==========  =========  ====================================================  ===
 
 All the generators must be defined as columns of these files.
 
