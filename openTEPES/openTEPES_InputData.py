@@ -10,7 +10,6 @@ from   pyomo.environ import DataPortal, Set, Param, Var, Binary, NonNegativeReal
 
 
 def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
-    print('\n #### Academic research license - for non-commercial use only #### \n')
     print('Input data                             ****')
 
     _path = os.path.join(DirName, CaseName)
