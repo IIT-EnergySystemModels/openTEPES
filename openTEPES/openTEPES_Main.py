@@ -89,6 +89,8 @@ import os
 # import pkg_resources
 from .openTEPES import openTEPES_run
 
+print('\n #### Academic research license - for non-commercial use only #### \n')
+
 parser = argparse.ArgumentParser(description='Introducing main parameters...')
 parser.add_argument('--case',   type=str, default=None)
 parser.add_argument('--dir',    type=str, default=None)
