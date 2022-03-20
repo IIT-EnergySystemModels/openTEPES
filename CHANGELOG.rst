@@ -1,9 +1,10 @@
 Change Log
 =============
 
-[4.5.0] - 2022-03-17
+[4.5.0] - 2022-03-20
 --------------------
-- [CHANGED] define the scenario probability ofr each period.
+- [CHANGED] introduce initial and final period for each generator/line. The periods must be non-negative integers
+- [CHANGED] define the scenario probability of each period.
 - [CHANGED] introduce changes to allow multiperiod cases.
 - [CHANGED] introduce some infeasibility detection.
 - [CHANGED] additional control on definition of ESS units.
