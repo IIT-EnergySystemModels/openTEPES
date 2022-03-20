@@ -72,7 +72,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndLogConsole):
         NetworkSwitchingModelFormulation              (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
         NetworkOperationModelFormulation              (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
 
-        print('Period '+p+', Scenario '+sc+', Stage '+st)
+        print('Period '+str(p)+', Scenario '+str(sc)+', Stage '+str(st))
 
     if pIndLogConsole == 1:
         StartTime         = time.time()

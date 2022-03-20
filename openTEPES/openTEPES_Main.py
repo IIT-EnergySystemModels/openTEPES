@@ -126,7 +126,7 @@ def main():
     print(sys.argv)
     print(args)
     openTEPES_run(args.dir, args.case, args.solver, args.log)
-    sys.exit('End of the run                         ...')
+    sys.exit('End of the run                ************')
 
 if __name__ == '__main__':
     main()

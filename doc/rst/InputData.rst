@@ -41,7 +41,7 @@ The dictionaries include all the possible elements of the corresponding sets inc
 =============================  ===================================================================================================================================================================================================================
 File                           Description
 =============================  ===================================================================================================================================================================================================================
-``oT_Dict_Period.csv``         Period (e.g., y2030)
+``oT_Dict_Period.csv``         Period (e.g., 2030, 2035). **It must be a non-negative integer**
 ``oT_Dict_Scenario.csv``       Scenario. Short-term uncertainties (scenarios) (e.g., s001 to s100)
 ``oT_Dict_Stage.csv``          Stage
 ``oT_Dict_LoadLevel.csv``      Load level (e.g., 2030-01-01T00:00:00+01:00 to 2030-12-30T23:00:00+01:00). Load levels with duration 0 are ignored
@@ -270,6 +270,8 @@ NoOperatingReserve    No contribution to operating reserve. Yes if the unit does
 StorageType           Storage type based on storage capacity (daily, weekly, monthly, etc.)                                                   Daily/Weekly/Monthly
 OutflowsType          Outflows type based on the demand extracted from the storage (hourly, daily, weekly, monthly, yearly, etc.)             Hourly/Daily/Weekly/Monthly/Yearly
 MustRun               Must-run unit                                                                                                           Yes/No
+PeriodIniGen          Installation period (year)                                                                                              Year
+PeriodFinGen          Retirement   period (year)                                                                                              Year
 MaximumPower          Maximum power output (generation/discharge for ESS units)                                                               MW
 MinimumPower          Minimum power output (i.e., minimum stable load in the case of a thermal power plant)                                   MW
 MaximumReactivePower  Maximum reactive power output (discharge for ESS units) (not used in this version)                                      MW
@@ -415,6 +417,8 @@ Header               Description
 ===================  ===============================================================================================================  ======
 LineType             Line type {AC, DC, Transformer, Converter}
 Switching            The transmission line is able to switch on/off                                                                   Yes/No
+PeriodIniNet         Installation period (year)                                                                                       Year
+PeriodFinNet         Retirement   period (year)                                                                                       Year
 Voltage              Line voltage (e.g., 400, 220 kV, 220/400 kV if transformer). Used only for plotting purposes                     kV
 Length               Line length (only used for reporting purposes). If not defined, computed as 1.1 times the geographical distance  km
 LossFactor           Transmission losses equal to the line flow times this factor                                                     p.u.

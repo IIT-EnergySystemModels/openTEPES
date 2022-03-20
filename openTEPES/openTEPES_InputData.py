@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 18, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 20, 2022
 """
 
 import time
@@ -10,6 +10,7 @@ from   pyomo.environ import DataPortal, Set, Param, Var, Binary, NonNegativeReal
 
 
 def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
+    print('\n #### Academic research license - for non-commercial use only #### \n')
     print('Input data                             ****')
 
     _path = os.path.join(DirName, CaseName)
@@ -101,7 +102,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     dictSets.load(filename=_path+'/oT_Dict_ZoneToArea_'  +CaseName+'.csv', set='znar', format='set')
     dictSets.load(filename=_path+'/oT_Dict_AreaToRegion_'+CaseName+'.csv', set='arrg', format='set')
 
-    mTEPES.pp   = Set(initialize=dictSets['p' ],   ordered=True,  doc='periods'         )
+    mTEPES.pp   = Set(initialize=dictSets['p' ],   ordered=True,  doc='periods',         within=NonNegativeIntegers)
     mTEPES.scc  = Set(initialize=dictSets['sc'],   ordered=True,  doc='scenarios'       )
     mTEPES.stt  = Set(initialize=dictSets['st'],   ordered=True,  doc='stages'          )
     mTEPES.nn   = Set(initialize=dictSets['n' ],   ordered=True,  doc='load levels'     )
@@ -205,6 +206,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pIndOperReserve     = dfGeneration  ['NoOperatingReserve'    ]                                                                            # no contribution to operating reserve        [Yes]
     pMustRun            = dfGeneration  ['MustRun'               ]                                                                            # must-run unit                               [Yes]
     pInertia            = dfGeneration  ['Inertia'               ]                                                                            # inertia constant                            [s]
+    pPeriodIniGen       = dfGeneration  ['InitialPeriod'         ]                                                                            # initial period                              [year]
+    pPeriodFinGen       = dfGeneration  ['FinalPeriod'           ]                                                                            # final   period                              [year]
     pAvailability       = dfGeneration  ['Availability'          ]                                                                            # unit availability for adequacy              [p.u.]
     pEFOR               = dfGeneration  ['EFOR'                  ]                                                                            # EFOR                                        [p.u.]
     pRatedMinPower      = dfGeneration  ['MinimumPower'          ] * 1e-3 * (1.0-dfGeneration['EFOR'])                                        # rated minimum power                         [GW]
@@ -242,6 +245,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pLineType           = dfNetwork     ['LineType'              ]                                                                            # line type
     pLineLength         = dfNetwork     ['Length'                ]                                                                            # line length                                 [km]
     pLineVoltage        = dfNetwork     ['Voltage'               ]                                                                            # line voltage                                [kV]
+    pPeriodIniNet       = dfNetwork     ['InitialPeriod'         ]                                                                            # initial period
+    pPeriodFinNet       = dfNetwork     ['FinalPeriod'           ]                                                                            # final   period
     pLineLossFactor     = dfNetwork     ['LossFactor'            ]                                                                            # loss factor                                 [p.u.]
     pLineR              = dfNetwork     ['Resistance'            ]                                                                            # resistance                                  [p.u.]
     pLineX              = dfNetwork     ['Reactance'             ].sort_index()                                                               # reactance                                   [p.u.]
@@ -281,7 +286,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.st = Set(initialize=mTEPES.stt,                    ordered=True , doc='stages'               , filter=lambda mTEPES,stt     :  stt       in mTEPES.stt and pStageWeight     [stt] >  0.0)
     mTEPES.n  = Set(initialize=mTEPES.nn,                     ordered=True , doc='load levels'          , filter=lambda mTEPES,nn      :  nn        in mTEPES.nn  and pDuration         [nn] >  0  )
     mTEPES.n2 = Set(initialize=mTEPES.nn,                     ordered=True , doc='load levels'          , filter=lambda mTEPES,nn      :  nn        in mTEPES.nn  and pDuration         [nn] >  0  )
-    mTEPES.g  = Set(initialize=mTEPES.gg,                     ordered=False, doc='generating      units', filter=lambda mTEPES,gg      :  gg        in mTEPES.gg  and (pRatedMaxPower   [gg] >  0.0 or  pRatedMaxCharge[gg] >  0.0) and pGenToNode.reset_index().set_index(['index']).isin(mTEPES.nd)['Node'][gg])  # excludes generators with empty node
+    mTEPES.g  = Set(initialize=mTEPES.gg,                     ordered=False, doc='generating      units', filter=lambda mTEPES,gg      :  gg        in mTEPES.gg  and (pRatedMaxPower   [gg] >  0.0 or  pRatedMaxCharge[gg] >  0.0) and pPeriodIniGen[gg] <= mTEPES.p.last() and pPeriodFinGen[gg] >= mTEPES.p.first() and pGenToNode.reset_index().set_index(['index']).isin(mTEPES.nd)['Node'][gg])  # excludes generators with empty node
     mTEPES.t  = Set(initialize=mTEPES.g ,                     ordered=False, doc='thermal         units', filter=lambda mTEPES,g       :  g         in mTEPES.g   and pLinearOperCost   [g ] >  0.0)
     mTEPES.r  = Set(initialize=mTEPES.g ,                     ordered=False, doc='RES             units', filter=lambda mTEPES,g       :  g         in mTEPES.g   and pLinearOperCost   [g ] == 0.0 and pRatedMaxStorage[g] == 0.0)
     mTEPES.es = Set(initialize=mTEPES.g ,                     ordered=False, doc='ESS             units', filter=lambda mTEPES,g       :  g         in mTEPES.g   and                                   pRatedMaxStorage[g] >  0.0 and (pEnergyInflows.sum()[g] > 0.0 or pRatedMaxCharge[g] > 0.0))
@@ -290,7 +295,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.ec = Set(initialize=mTEPES.es,                     ordered=False, doc='candidate   ESS units', filter=lambda mTEPES,es      :  es        in mTEPES.es  and pGenInvestCost    [es] >  0.0)
     mTEPES.br = Set(initialize=list(pBrList),                 ordered=False, doc='all input lines'                                                                                                 )
     mTEPES.ln = Set(initialize=list(dfNetwork.index),         ordered=False, doc='all input lines'                                                                                                 )
-    mTEPES.la = Set(initialize=mTEPES.ln,                     ordered=False, doc='all real        lines', filter=lambda mTEPES,*ln     :  ln        in mTEPES.ln  and pLineX            [ln] != 0.0 and pLineNTCFrw[ln] > 0.0 and pLineNTCBck[ln] > 0.0)
+    mTEPES.la = Set(initialize=mTEPES.ln,                     ordered=False, doc='all real        lines', filter=lambda mTEPES,*ln     :  ln        in mTEPES.ln  and pLineX            [ln] != 0.0 and pLineNTCFrw[ln] > 0.0 and pLineNTCBck[ln] > 0.0 and pPeriodIniNet[ln] <= mTEPES.p.last() and pPeriodFinNet[ln] >= mTEPES.p.first())
     mTEPES.lc = Set(initialize=mTEPES.la,                     ordered=False, doc='candidate       lines', filter=lambda mTEPES,*la     :  la        in mTEPES.la  and pNetFixedCost     [la] >  0.0)
     mTEPES.cd = Set(initialize=mTEPES.la,                     ordered=False, doc='             DC lines', filter=lambda mTEPES,*la     :  la        in mTEPES.la  and pNetFixedCost     [la] >  0.0 and pLineType[la] == 'DC')
     mTEPES.ed = Set(initialize=mTEPES.la,                     ordered=False, doc='             DC lines', filter=lambda mTEPES,*la     :  la        in mTEPES.la  and pNetFixedCost     [la] == 0.0 and pLineType[la] == 'DC')
@@ -651,6 +656,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.pRatedMaxPower        = Param(                               mTEPES.gg, initialize=pRatedMaxPower.to_dict()            , within=NonNegativeReals, doc='Rated maximum power'           )
     mTEPES.pMustRun              = Param(                               mTEPES.gg, initialize=pMustRun.to_dict()                  , within=Boolean         , doc='must-run unit'                 )
     mTEPES.pInertia              = Param(                               mTEPES.gg, initialize=pInertia.to_dict()                  , within=NonNegativeReals, doc='unit inertia constant'         )
+    mTEPES.pPeriodIniGen         = Param(                               mTEPES.gg, initialize=pPeriodIniGen.to_dict()             , within=NonNegativeIntegers, doc='installation year',         )
+    mTEPES.pPeriodFinGen         = Param(                               mTEPES.gg, initialize=pPeriodFinGen.to_dict()             , within=NonNegativeIntegers, doc='retirement   year',         )
     mTEPES.pAvailability         = Param(                               mTEPES.gg, initialize=pAvailability.to_dict()             , within=UnitInterval    , doc='unit availability',          mutable=True)
     mTEPES.pEFOR                 = Param(                               mTEPES.gg, initialize=pEFOR.to_dict()                     , within=UnitInterval    , doc='EFOR'                          )
     mTEPES.pLinearOperCost       = Param(                               mTEPES.gg, initialize=pLinearOperCost.to_dict()           , within=NonNegativeReals, doc='Linear   variable cost'        )
@@ -686,6 +693,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.pLineBsh              = Param(                               mTEPES.ln, initialize=pLineBsh.to_dict()                  , within=NonNegativeReals, doc='Susceptance',                mutable=True)
     mTEPES.pLineTAP              = Param(                               mTEPES.ln, initialize=pLineTAP.to_dict()                  , within=NonNegativeReals, doc='Tap changer',                mutable=True)
     mTEPES.pLineLength           = Param(                               mTEPES.ln, initialize=pLineLength.to_dict()               , within=NonNegativeReals, doc='Length',                     mutable=True)
+    mTEPES.pPeriodIniNet         = Param(                               mTEPES.ln, initialize=pPeriodIniNet.to_dict()             , within=NonNegativeIntegers, doc='Installation period'        )
+    mTEPES.pPeriodFinNet         = Param(                               mTEPES.ln, initialize=pPeriodFinNet.to_dict()             , within=NonNegativeIntegers, doc='Retirement   period'        )
     mTEPES.pLineVoltage          = Param(                               mTEPES.ln, initialize=pLineVoltage.to_dict()              , within=NonNegativeReals, doc='Voltage'                       )
     mTEPES.pLineNTCFrw           = Param(                               mTEPES.ln, initialize=pLineNTCFrw.to_dict()               , within=NonNegativeReals, doc='NTC forward'                   )
     mTEPES.pLineNTCBck           = Param(                               mTEPES.ln, initialize=pLineNTCBck.to_dict()               , within=NonNegativeReals, doc='NTC backward'                  )
@@ -896,7 +905,7 @@ def SettingUpVariables(OptModel, mTEPES):
                     mTEPES.pInitialUC    [n1,nr] = 1
                     pSystemOutput               += mTEPES.pInitialOutput[n1,nr]()
 
-            # determine the initial committed units and their output at the first load level of each stage
+            # determine the initial committed units and their output at the first load level of each period, scenario, and stage
             for go in mTEPES.go:
                 if pSystemOutput < sum(mTEPES.pDemand[n1,nd] for nd in mTEPES.nd) and mTEPES.pMustRun[go] != 1:
                     if go in mTEPES.r:
@@ -964,6 +973,60 @@ def SettingUpVariables(OptModel, mTEPES):
     for p,sc,n,nd in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.nd:
         if mTEPES.pDemand[p,sc,n,nd] == 0.0:
             OptModel.vENS[p,sc,n,nd].fix(0.0)
+
+    # do not install/retire power plants and lines if not allowed in this period
+    for p,g in mTEPES.p*mTEPES.gc:
+        if mTEPES.pPeriodIniGen[gc] > p or mTEPES.pPeriodFinGen[gc] < p:
+            OptModel.vGenerationInvest[p,gc].fix(0)
+
+    for p,g in mTEPES.p*mTEPES.gd:
+        if mTEPES.pPeriodIniGen[gd] > p or mTEPES.pPeriodFinGen[gd] < p:
+            OptModel.vGenerationRetire[p,gd].fix(0)
+
+    for p,ni,nf,cc in mTEPES.p*mTEPES.lc:
+        if mTEPES.pPeriodIniNet[ni,nf,cc] > p or mTEPES.pPeriodFinNet[ni,nf,cc] < p:
+                OptModel.vNetworkInvest[p,ni,nf,cc].fix(0)
+
+    # remove power plants and lines not installed in this period
+    for p,g in mTEPES.p*mTEPES.g :
+        if mTEPES.pPeriodIniGen[g ] > p or mTEPES.pPeriodFinGen[g ] < p:
+            for sc,n in mTEPES.sc*mTEPES.n:
+                OptModel.vTotalOutput   [p,sc,n,g].fix(0.0)
+
+    for p,nr in mTEPES.p*mTEPES.nr:
+        if mTEPES.pPeriodIniGen[nr] > p or mTEPES.pPeriodFinGen[nr] < p:
+            OptModel.vMaxCommitment[nr].fix(0)
+            for sc,n in mTEPES.sc*mTEPES.n:
+                OptModel.vOutput2ndBlock[p,sc,n,nr].fix(0.0)
+                OptModel.vReserveUp     [p,sc,n,nr].fix(0.0)
+                OptModel.vReserveDown   [p,sc,n,nr].fix(0.0)
+                OptModel.vCommitment    [p,sc,n,nr].fix(0  )
+                OptModel.vStartUp       [p,sc,n,nr].fix(0  )
+                OptModel.vShutDown      [p,sc,n,nr].fix(0  )
+
+    for p,es in mTEPES.p*mTEPES.es:
+        if mTEPES.pPeriodIniGen[es] > p or mTEPES.pPeriodFinGen[es] < p:
+            for sc,n in mTEPES.sc*mTEPES.n:
+                OptModel.vEnergyOutflows[p,sc,n,es].fix(0.0)
+                OptModel.vESSInventory  [p,sc,n,es].fix(0.0)
+                OptModel.vESSSpillage   [p,sc,n,es].fix(0.0)
+                OptModel.vESSTotalCharge[p,sc,n,es].fix(0.0)
+                OptModel.vCharge2ndBlock[p,sc,n,es].fix(0.0)
+                OptModel.vESSReserveUp  [p,sc,n,es].fix(0.0)
+                OptModel.vESSReserveDown[p,sc,n,es].fix(0.0)
+
+    for p,ni,nf,cc in mTEPES.p*mTEPES.la:
+        if mTEPES.pPeriodIniNet[ni,nf,cc] > p or mTEPES.pPeriodFinNet[ni,nf,cc] < p:
+            for sc,n in mTEPES.sc*mTEPES.n:
+                OptModel.vFlow        [p,sc,n,ni,nf,cc].fix(0.0)
+                OptModel.vLineCommit  [p,sc,n,ni,nf,cc].fix(0  )
+                OptModel.vLineOnState [p,sc,n,ni,nf,cc].fix(0  )
+                OptModel.vLineOffState[p,sc,n,ni,nf,cc].fix(0  )
+
+    for p,ni,nf,cc in mTEPES.p*mTEPES.ll:
+        if mTEPES.pPeriodIniNet[ni,nf,cc] > p or mTEPES.pPeriodFinNet[ni,nf,cc] < p:
+            for sc,n in mTEPES.sc*mTEPES.n:
+                OptModel.vLineLosses  [p,sc,n,ni,nf,cc].fix(0.0)
 
     # detecting infeasibility: sum of scenario probabilities must be 1 in each period
     for p in mTEPES.p:

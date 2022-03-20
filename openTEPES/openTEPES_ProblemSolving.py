@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 17, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 20, 2022
 """
 
 import time
@@ -88,7 +88,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
                     OptModel.vMaxCommitment[nr].fix(round(OptModel.vMaxCommitment[nr]()))
         OptModel.dual = Suffix(direction=Suffix.IMPORT)
         OptModel.rc   = Suffix(direction=Suffix.IMPORT)
-        SolverResults = Solver.solve(OptModel, tee=True, report_timing=True, warmstart=True)   # tee=True displays the log of the solver
+        SolverResults = Solver.solve(OptModel, tee=True, report_timing=True, warmstart=False)   # tee=True displays the log of the solver
         SolverResults.write()                                                                  # summary of the solver results
 
     SolvingTime = time.time() - StartTime
