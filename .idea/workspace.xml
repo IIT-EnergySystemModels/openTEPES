@@ -3,7 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="70fc96e0-bc3b-4530-a009-091403d9cfdb" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/openTEPES/openTEPES_OutputResults.py" beforeDir="false" afterPath="$PROJECT_DIR$/openTEPES/openTEPES_OutputResults.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -54,7 +53,7 @@
     <property name="settings.editor.selected.configurable" value="editor.preferences.fonts.default" />
     <property name="two.files.diff.last.used.file" value="$PROJECT_DIR$/../openTEPES_PRO/openTEPES/openTEPES_Modules/openTEPES_ModelFormulation.py" />
   </component>
-  <component name="RunManager" selected="Python.Pivote">
+  <component name="RunManager" selected="Python.openTEPES_Main">
     <configuration name="Pivote" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="openTEPES" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -196,8 +195,8 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.Pivote" />
         <item itemvalue="Python.openTEPES_Main" />
+        <item itemvalue="Python.Pivote" />
         <item itemvalue="Python.openTEPES_run" />
         <item itemvalue="Python.openTEPES_run" />
         <item itemvalue="Python.openTEPES" />
@@ -263,6 +262,9 @@
       <workItem from="1647243820010" duration="1562000" />
       <workItem from="1647250182938" duration="392000" />
       <workItem from="1647250882098" duration="681000" />
+      <workItem from="1647802383467" duration="3471000" />
+      <workItem from="1647813528490" duration="1382000" />
+      <workItem from="1647817258702" duration="718000" />
     </task>
     <servers />
   </component>
