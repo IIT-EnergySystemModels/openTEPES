@@ -33,14 +33,14 @@ def PiePlots(df, Category, Value):
 
 
 # Definition of Area plots
-def AreaPlots(period, scenario, df, Category, X, Y, OperationType):
-    Results = df.loc[period,scenario,:,:]
-    Results = Results.reset_index().rename(columns={'level_0': X, 'level_1': Category, 0: Y})
+def AreaPlots(scenario, df, Category, X, Y, OperationType):
+    Results = df.loc[:,scenario,:,:]
+    Results = Results.reset_index().rename(columns={'level_1': X, 'level_2': Category, 0: Y})
     # # Change the format of the LoadLevel
     Results[X] = Results[X].str[:19]
     Results[X] = (Results[X]+'+01:00')
     Results[X] = pd.to_datetime(Results[X])
-    Results[X] = Results[X].dt.strftime('%m-%d %H:%M:%S')
+    Results[X] = Results[X].dt.strftime('%Y-%m-%d %H:%M:%S')
     # Composed Names
     C_C = Category+':N'
 
@@ -62,14 +62,14 @@ def AreaPlots(period, scenario, df, Category, X, Y, OperationType):
 
 
 # Definition of Line plots
-def LinePlots(period, scenario, df, Category, X, Y, OperationType):
-    Results = df.loc[period,scenario,:,:]
-    Results = Results.reset_index().rename(columns={'level_0': X, 'level_1': Category, 0: Y})
+def LinePlots(scenario, df, Category, X, Y, OperationType):
+    Results = df.loc[:,scenario,:,:]
+    Results = Results.reset_index().rename(columns={'level_1': X, 'level_2': Category, 0: Y})
     # # Change the format of the LoadLevel
     Results[X] = Results[X].str[:19]
     Results[X] = (Results[X]+'+01:00')
     Results[X] = pd.to_datetime(Results[X])
-    Results[X] = Results[X].dt.strftime('%m-%d %H:%M:%S')
+    Results[X] = Results[X].dt.strftime('%Y-%m-%d %H:%M:%S')
     # Composed Names
     C_C = Category+':N'
 
@@ -122,42 +122,39 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES):
         chart.save(_path+'/oT_Plot_TechnologyRetirement_'+CaseName+'.html', embed_options={'renderer':'svg'})
 
     if len(mTEPES.lc):
-        OutputToFile = pd.DataFrame.from_dict(OptModel.vNetworkInvest.extract_values(), orient='index', columns=[str(OptModel.vNetworkInvest)])
-        OutputToFile.index = pd.MultiIndex.from_tuples(OutputToFile.index)
-        OutputToFile.index.names = ['Period','InitialNode','FinalNode','Circuit']
-        OutputToFile = OutputToFile.reset_index()
-        OutputToFile.rename(columns={'vNetworkInvest': 'Investment Decision'}).to_csv(_path+'/oT_Result_NetworkInvestment_'+CaseName+'.csv', index=False, sep=',')
+        # Saving investment decisions
+        OutputToFile = pd.Series(data=[OptModel.vNetworkInvest[p,ni,nf,cc]() for p,ni,nf,cc in mTEPES.p*mTEPES.lc], index=pd.Index(mTEPES.p*mTEPES.lc))
+        OutputToFile = OutputToFile.fillna(0).to_frame(name='Investment Decision').reset_index().rename(columns={'level_0': 'Period', 'level_1': 'InitialNode', 'level_2': 'FinalNode', 'level_3': 'Circuit'})
+        OutputToFile.to_csv(_path+'/oT_Result_NetworkInvestment_'+CaseName+'.csv', sep=',', index=False)
 
-        # OutputResults_1 = pd.Series(data=[lt for ni,nf,cc,lt in mTEPES.lc*mTEPES.lt if (ni,nf,cc,lt) in mTEPES.pLineType], index=pd.Index(mTEPES.lc))
-        # OutputResults_1 = OutputResults_1.to_frame(name='LineType')
-        # OutputResults_2 = pd.Series(data=[mTEPES.pLineVoltage[ni,nf,cc] for ni,nf,cc in mTEPES.lc], index=pd.Index(mTEPES.lc))
-        # OutputResults_2 = OutputResults_2.to_frame(name='kV')
-        # OutputResults_3 = OutputToFile.set_index(['InitialNode', 'FinalNode', 'Circuit'])
-        # OutputResults   = pd.concat([OutputResults_1, OutputResults_2, OutputResults_3], axis=1)
-        # OutputResults.index.names = ['InitialNode','FinalNode','Circuit']
-        # OutputResults   = OutputResults.reset_index().groupby(['LineType', 'kV']).sum().rename(columns={'vNetworkInvest': 'Investment Decision'})
-        # OutputResults   = OutputResults.reset_index()
-        # OutputResults['kV'] = round(OutputResults['kV'], 2)
-        #
-        # chart = alt.Chart(OutputResults).mark_bar().encode(x='LineType:O', y='sum(Investment Decision):Q', color='LineType:N', column='kV:N')
-        # chart.save(_path+'/oT_Plot_NetworkInvestment_'+CaseName+'.html', embed_options={'renderer':'svg'})
-
-        OutputToFile = pd.Series(data=[(OptModel.vNetworkInvest[p,ni,nf,cc]()*mTEPES.pLineNTCFrw[ni,nf,cc]*1e3)/mTEPES.pLineLength[ni,nf,cc]() for p,ni,nf,cc in mTEPES.p*mTEPES.lc], index= pd.MultiIndex.from_tuples(mTEPES.p*mTEPES.lc))
-        OutputToFile = OutputToFile.to_frame(name='MW-km')
-        OutputToFile.to_csv(_path+'/oT_Result_NetworkInvestment_MWkm_'+CaseName+'.csv', sep=',')
-
+        # Ordering data to plot the investment decision
         OutputResults_1 = pd.Series(data=[lt for p,ni,nf,cc,lt in mTEPES.p*mTEPES.lc*mTEPES.lt if (ni,nf,cc,lt) in mTEPES.pLineType], index=pd.Index(mTEPES.p*mTEPES.lc))
         OutputResults_1 = OutputResults_1.to_frame(name='LineType')
-        OutputResults_2 = pd.Series(data=[mTEPES.pLineVoltage[ni,nf,cc] for p,ni,nf,cc in mTEPES.p*mTEPES.lc], index=pd.Index(mTEPES.p*mTEPES.lc))
-        OutputResults_2 = OutputResults_2.to_frame(name='kV')
-        OutputResults_3 = OutputToFile
-        OutputResults   = pd.concat([OutputResults_1, OutputResults_2, OutputResults_3], axis=1)
-        OutputResults.index.names = ['period','InitialNode','FinalNode','Circuit']
-        OutputResults   = OutputResults.reset_index().groupby(['LineType', 'kV']).sum()
+        OutputResults_2 = OutputToFile.set_index(['Period', 'InitialNode', 'FinalNode', 'Circuit'])
+        OutputResults   = pd.concat([OutputResults_1, OutputResults_2], axis=1)
+        OutputResults.index.names = ['Period','InitialNode','FinalNode','Circuit']
+        OutputResults   = OutputResults.reset_index().groupby(['LineType', 'Period']).sum()
+        OutputResults['Investment Decision'] = round(OutputResults['Investment Decision'], 2)
         OutputResults   = OutputResults.reset_index()
-        OutputResults['kV'] = round(OutputResults['kV'], 2)
 
-        chart = alt.Chart(OutputResults).mark_bar().encode(x='LineType:O', y='sum(MW-km):Q', color='LineType:N', column='kV:N')
+        chart = alt.Chart(OutputResults).mark_bar().encode(x='LineType:O', y='sum(Investment Decision):Q', color='LineType:N', column='Period:N')
+        chart.save(_path+'/oT_Plot_NetworkInvestment_'+CaseName+'.html', embed_options={'renderer':'svg'})
+
+        OutputToFile = pd.Series(data=[(OptModel.vNetworkInvest[p,ni,nf,cc]()*mTEPES.pLineNTCFrw[ni,nf,cc]*1e3)/mTEPES.pLineLength[ni,nf,cc]() for p,ni,nf,cc in mTEPES.p*mTEPES.lc], index= pd.MultiIndex.from_tuples(mTEPES.p*mTEPES.lc))
+        OutputToFile = OutputToFile.fillna(0).to_frame(name='MW-km').reset_index().rename(columns={'level_0': 'Period', 'level_1': 'InitialNode', 'level_2': 'FinalNode', 'level_3': 'Circuit'})
+        OutputToFile.to_csv(_path+'/oT_Result_NetworkInvestment_MWkm_'+CaseName+'.csv', sep=',')
+
+        # Ordering data to plot the investment decision per kilometer
+        OutputResults_1 = pd.Series(data=[lt for p,ni,nf,cc,lt in mTEPES.p*mTEPES.lc*mTEPES.lt if (ni,nf,cc,lt) in mTEPES.pLineType], index=pd.Index(mTEPES.p*mTEPES.lc))
+        OutputResults_1 = OutputResults_1.to_frame(name='LineType')
+        OutputResults_2 = OutputToFile.set_index(['Period', 'InitialNode', 'FinalNode', 'Circuit'])
+        OutputResults   = pd.concat([OutputResults_1, OutputResults_2], axis=1)
+        OutputResults.index.names = ['Period','InitialNode','FinalNode','Circuit']
+        OutputResults   = OutputResults.reset_index().groupby(['LineType', 'Period']).sum()
+        OutputResults['MW-km'] = round(OutputResults['MW-km'], 2)
+        OutputResults   = OutputResults.reset_index()
+
+        chart = alt.Chart(OutputResults).mark_bar().encode(x='LineType:O', y='sum(MW-km):Q', color='LineType:N', column='Period:N')
         chart.save(_path+'/oT_Plot_NetworkInvestment_MW-km_'+CaseName+'.html', embed_options={'renderer':'svg'})
 
     WritingResultsTime = time.time() - StartTime
@@ -324,9 +321,9 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES):
 
     TechnologyOutput = OutputToFile.loc[:,:,:,:]
 
-    for p,sc in mTEPES.p*mTEPES.sc:
-        chart = AreaPlots(p, sc, TechnologyOutput, 'Technology', 'LoadLevel', 'MW', 'sum')
-        chart.save(_path+'/oT_Plot_TechnologyOutput_'+str(p)+'_'+str(sc)+'_'+CaseName+'.html', embed_options={'renderer': 'svg'})
+    for sc in mTEPES.sc:
+        chart = AreaPlots(sc, TechnologyOutput, 'Technology', 'LoadLevel', 'MW', 'sum')
+        chart.save(_path+'/oT_Plot_TechnologyOutput_'+str(sc)+'_'+CaseName+'.html', embed_options={'renderer': 'svg'})
 
     OutputToFile = pd.Series(data=[OptModel.vTotalOutput[p,sc,n,g]()*mTEPES.pLoadLevelWeight[n]()*mTEPES.pDuration[n] for p,sc,n,g in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.g ], index=pd.MultiIndex.from_tuples(mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.g ))
     OutputToFile = pd.Series(data=[sum(OutputToFile[p,sc,n,g] for g in mTEPES.g if (gt,g) in mTEPES.t2g) for p,sc,n,gt in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.gt], index=pd.MultiIndex.from_tuples(mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.gt))
@@ -427,9 +424,9 @@ def ESSOperationResults(DirName, CaseName, OptModel, mTEPES):
 
         TechnologyCharge = OutputToFile.loc[:,:,:,:]
 
-        for p,sc in mTEPES.p*mTEPES.sc:
-            chart = AreaPlots(p, sc, TechnologyCharge, 'Technology', 'LoadLevel', 'MW', 'sum')
-            chart.save(_path+'/oT_Plot_TechnologyCharge_'+str(p)+'_'+str(sc)+'_'+CaseName+'.html', embed_options={'renderer': 'svg'})
+        for sc in mTEPES.sc:
+            chart = AreaPlots(sc, TechnologyCharge, 'Technology', 'LoadLevel', 'MW', 'sum')
+            chart.save(_path+'/oT_Plot_TechnologyCharge_'+str(sc)+'_'+CaseName+'.html', embed_options={'renderer': 'svg'})
 
     WritingResultsTime = time.time() - StartTime
     StartTime = time.time()
@@ -581,9 +578,9 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES):
 
     OptModel.LSRMC = OutputData.loc[:,:,:,:]
 
-    for p,sc in mTEPES.p*mTEPES.sc:
-        chart = LinePlots(p, sc, OptModel.LSRMC, 'Node', 'LoadLevel', 'EUR/MWh', 'average')
-        chart.save(_path+'/oT_Plot_NetworkSRMC_'+str(p)+'_'+str(sc)+'_'+CaseName+'.html', embed_options={'renderer': 'svg'})
+    for sc in mTEPES.sc:
+        chart = LinePlots(sc, OptModel.LSRMC, 'Node', 'LoadLevel', 'EUR/MWh', 'average')
+        chart.save(_path+'/oT_Plot_NetworkSRMC_'+str(sc)+'_'+CaseName+'.html', embed_options={'renderer': 'svg'})
 
     if sum(mTEPES.pReserveMargin[ar] for ar in mTEPES.ar):
         OutputData = []
@@ -632,9 +629,9 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES):
 
         MarginalUpOperatingReserve = OutputToFile.loc[:,:,:,:]
 
-        # for p,sc in mTEPES.p*mTEPES.sc:
-        #     chart = LinePlots(p, sc, MarginalUpOperatingReserve, 'Area', 'LoadLevel', 'EUR/MW', 'sum')
-        #     chart.save(_path+'/oT_Plot_MarginalOperatingReserveUpward_'+str(p)+'_'+str(sc)+'_'+CaseName+'.html', embed_options={'renderer': 'svg'})
+        for sc in mTEPES.sc:
+            chart = LinePlots(sc, MarginalUpOperatingReserve, 'Area', 'LoadLevel', 'EUR/MW', 'sum')
+            chart.save(_path+'/oT_Plot_MarginalOperatingReserveUpward_'+str(sc)+'_'+CaseName+'.html', embed_options={'renderer': 'svg'})
 
     #%% outputting the down operating reserve marginal
     if sum(mTEPES.pOperReserveDw[p,sc,n,ar] for p,sc,n,ar in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.ar) > 0.0 and (sum(1 for ar,nr in mTEPES.ar*mTEPES.nr if (ar,nr) in mTEPES.a2g and mTEPES.pIndOperReserve[nr] == 0) + sum(1 for ar,es in mTEPES.ar*mTEPES.es if (ar,es) in mTEPES.a2g and mTEPES.pIndOperReserve[es] == 0)) > 0:
@@ -664,9 +661,9 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES):
 
         MarginalDwOperatingReserve = OutputToFile.loc[:,:,:,:]
 
-        # for p,sc in mTEPES.p*mTEPES.sc:
-        #     chart = LinePlots(p, sc, MarginalDwOperatingReserve, 'Area', 'LoadLevel', 'EUR/MW', 'sum')
-        #     chart.save(_path+'/oT_Plot_MarginalOperatingReserveDownward_'+str(p)+'_'+str(sc)+'_'+CaseName+'.html', embed_options={'renderer': 'svg'})
+        for sc in mTEPES.sc:
+            chart = LinePlots(sc, MarginalDwOperatingReserve, 'Area', 'LoadLevel', 'EUR/MW', 'sum')
+            chart.save(_path+'/oT_Plot_MarginalOperatingReserveDownward_'+str(sc)+'_'+CaseName+'.html', embed_options={'renderer': 'svg'})
 
     #%% outputting the water values
     if len(mTEPES.es):
@@ -696,9 +693,9 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES):
 
         WaterValue = OutputToFile.loc[:,:,:,:]
 
-        # for p,sc in mTEPES.p*mTEPES.sc:
-        #     chart = LinePlots(p, sc, WaterValue, 'Unit', 'LoadLevel', 'EUR/MWh', 'average')
-        #     chart.save(_path+'/oT_Plot_MarginalWaterValue_'+str(p)+'_'+str(sc)+'_'+CaseName+'.html', embed_options={'renderer': 'svg'})
+        for sc in mTEPES.sc:
+            chart = LinePlots(sc, WaterValue, 'Unit', 'LoadLevel', 'EUR/MWh', 'average')
+            chart.save(_path+'/oT_Plot_MarginalWaterValue_'+str(sc)+'_'+CaseName+'.html', embed_options={'renderer': 'svg'})
 
     #%% Reduced cost for NetworkInvestment
     ReducedCostActivation = mTEPES.pIndBinGenInvest()*len(mTEPES.gc) + mTEPES.pIndBinNetInvest()*len(mTEPES.lc) + mTEPES.pIndBinGenOperat()*len(mTEPES.nr) + mTEPES.pIndBinLineCommit()*len(mTEPES.la)
