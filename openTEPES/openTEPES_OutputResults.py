@@ -96,29 +96,43 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES):
     StartTime = time.time()
 
     if len(mTEPES.gc):
+        # Saving generation investment into CSV file
         OutputToFile = pd.Series(data=[mTEPES.pRatedMaxPower[gc]*OptModel.vGenerationInvest[p,gc]()*1e3 for p,gc in mTEPES.p*mTEPES.gc], index=pd.Index(mTEPES.p*mTEPES.gc))
-        OutputToFile = OutputToFile.fillna(0)
-        OutputToFile.to_frame(name='MW').reset_index().rename(columns={'index': 'Generating unit'}).to_csv(_path+'/oT_Result_GenerationInvestment_'+CaseName+'.csv', sep=',', index=False)
+        OutputToFile = OutputToFile.fillna(0).to_frame(name='MW').reset_index().rename(columns={'level_0': 'Period', 'level_1': 'Generating unit'})
+        OutputToFile.to_csv(_path+'/oT_Result_GenerationInvestment_'+CaseName+'.csv', sep=',', index=False)
 
-        OutputToFile = pd.Series(data=[sum(OutputToFile[p,gc] for p,gc in mTEPES.p*mTEPES.gc if (gt,gc) in mTEPES.t2g) for gt in mTEPES.gt], index=pd.Index(mTEPES.gt))
-        OutputToFile.to_frame(name='MW').reset_index().rename(columns={'index': 'Technology'}).to_csv(_path+'/oT_Result_TechnologyInvestment_'+CaseName+'.csv', sep=',', index=False)
-        TechInv = OutputToFile.to_frame(name='MW').reset_index().rename(columns={'index': 'Technology'})
-        TechInv = TechInv[(TechInv[['MW']] != 0).all(axis=1)]
+        # Ordering data to plot the investment decision
+        OutputResults_1 = pd.Series(data=[gt for p,gc,gt in mTEPES.p*mTEPES.gc*mTEPES.gt if (gt,gc) in mTEPES.t2g], index=pd.Index(mTEPES.p*mTEPES.gc))
+        OutputResults_1 = OutputResults_1.to_frame(name='Technology')
+        OutputResults_2 = OutputToFile.set_index(['Period', 'Generating unit'])
+        OutputResults   = pd.concat([OutputResults_1, OutputResults_2], axis=1)
+        OutputResults.index.names = ['Period','Generating unit']
+        OutputResults   = OutputResults.reset_index().groupby(['Period', 'Technology']).sum()
+        OutputResults['MW'] = round(OutputResults['MW'], 2)
+        OutputResults   = OutputResults.reset_index()
+        OutputResults.to_csv(_path+'/oT_Result_TechnologyInvestment_'+CaseName+'.csv', sep=',', index=False)
 
-        chart = alt.Chart(TechInv).mark_bar().encode(alt.X('Technology:O', axis=alt.Axis(title='Technology')), alt.Y('sum(MW):Q', axis=alt.Axis(title='MW'))).properties(width=600, height=400)
+        chart = alt.Chart(OutputResults).mark_bar().encode(x='Technology:O', y='sum(MW):Q', color='Technology:N', column='Period:N').properties(width=600, height=400)
         chart.save(_path+'/oT_Plot_TechnologyInvestment_'+CaseName+'.html', embed_options={'renderer':'svg'})
 
     if len(mTEPES.gd):
-        OutputToFile = pd.Series(data=[mTEPES.pRatedMaxPower[gd]*OptModel.vGenerationRetire[gd]()*1e3 for gd in mTEPES.gd], index=pd.Index(mTEPES.gd))
-        OutputToFile = OutputToFile.fillna(0)
-        OutputToFile.to_frame(name='MW').reset_index().rename(columns={'index': 'Generating unit'}).to_csv(_path+'/oT_Result_GenerationRetirement_'+CaseName+'.csv', sep=',', index=False)
+        # Saving generation retirement into CSV file
+        OutputToFile = pd.Series(data=[mTEPES.pRatedMaxPower[gd]*OptModel.vGenerationRetire[p,gd]()*1e3 for p,gd in mTEPES.p*mTEPES.gd], index=pd.Index(mTEPES.p*mTEPES.gd))
+        OutputToFile = OutputToFile.fillna(0).to_frame(name='MW').reset_index().rename(columns={'level_0': 'Period', 'level_1': 'Generating unit'})
+        OutputToFile.to_csv(_path+'/oT_Result_GenerationRetirement_'+CaseName+'.csv', sep=',', index=False)
 
-        OutputToFile = pd.Series(data=[sum(OutputToFile[gd] for gd in mTEPES.gd if (gt,gd) in mTEPES.t2g) for gt in mTEPES.gt], index=pd.Index(mTEPES.gt))
-        OutputToFile.to_frame(name='MW').reset_index().rename(columns={'index': 'Technology'}).to_csv(_path+'/oT_Result_TechnologyRetirement_'+CaseName+'.csv', sep=',', index=False)
-        TechDecom = OutputToFile.to_frame(name='MW').reset_index().rename(columns={'index': 'Technology'})
-        TechDecom = TechDecom[(TechDecom[['MW']] != 0).all(axis=1)]
+        # Ordering data to plot the investment retirement
+        OutputResults_1 = pd.Series(data=[gt for p,gd,gt in mTEPES.p*mTEPES.gd*mTEPES.gt if (gt,gd) in mTEPES.t2g], index=pd.Index(mTEPES.p*mTEPES.gd))
+        OutputResults_1 = OutputResults_1.to_frame(name='Technology')
+        OutputResults_2 = OutputToFile.set_index(['Period', 'Generating unit'])
+        OutputResults   = pd.concat([OutputResults_1, OutputResults_2], axis=1)
+        OutputResults.index.names = ['Period','Generating unit']
+        OutputResults   = OutputResults.reset_index().groupby(['Period', 'Technology']).sum()
+        OutputResults['MW'] = round(OutputResults['MW'], 2)
+        OutputResults   = OutputResults.reset_index()
+        OutputResults.to_csv(_path+'/oT_Result_TechnologyRetirement_'+CaseName+'.csv', sep=',', index=False)
 
-        chart = alt.Chart(TechDecom).mark_bar().encode(alt.X('Technology:O', axis=alt.Axis(title='Technology')), alt.Y('sum(MW):Q', axis=alt.Axis(title='MW'))).properties(width=600, height=400)
+        chart = alt.Chart(OutputResults).mark_bar().encode(x='Technology:O', y='sum(MW):Q', color='Technology:N', column='Period:N').properties(width=600, height=400)
         chart.save(_path+'/oT_Plot_TechnologyRetirement_'+CaseName+'.html', embed_options={'renderer':'svg'})
 
     if len(mTEPES.lc):
@@ -137,7 +151,7 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES):
         OutputResults['Investment Decision'] = round(OutputResults['Investment Decision'], 2)
         OutputResults   = OutputResults.reset_index()
 
-        chart = alt.Chart(OutputResults).mark_bar().encode(x='LineType:O', y='sum(Investment Decision):Q', color='LineType:N', column='Period:N')
+        chart = alt.Chart(OutputResults).mark_bar().encode(x='LineType:O', y='sum(Investment Decision):Q', color='LineType:N', column='Period:N').properties(width=600, height=400)
         chart.save(_path+'/oT_Plot_NetworkInvestment_'+CaseName+'.html', embed_options={'renderer':'svg'})
 
         OutputToFile = pd.Series(data=[(OptModel.vNetworkInvest[p,ni,nf,cc]()*mTEPES.pLineNTCFrw[ni,nf,cc]*1e3)/mTEPES.pLineLength[ni,nf,cc]() for p,ni,nf,cc in mTEPES.p*mTEPES.lc], index= pd.MultiIndex.from_tuples(mTEPES.p*mTEPES.lc))
