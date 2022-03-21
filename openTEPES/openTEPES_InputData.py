@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 20, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 21, 2022
 """
 
 import time
@@ -1028,10 +1028,10 @@ def SettingUpVariables(OptModel, mTEPES):
                 OptModel.vLineLosses  [p,sc,n,ni,nf,cc].fix(0.0)
 
     # detecting infeasibility: sum of scenario probabilities must be 1 in each period
-    for p in mTEPES.p:
-        if abs(sum(mTEPES.pScenProb[p,sc] for sc in mTEPES.sc)-1.0) > 1e-6:
-            print('### Sum of scenario probabilities different fr5om 1 in period ', p)
-            assert (0==1)
+    # for p in mTEPES.p:
+    #     if abs(sum(mTEPES.pScenProb[p,sc] for sc in mTEPES.sc)-1.0) > 1e-6:
+    #         print('### Sum of scenario probabilities different fr5om 1 in period ', p)
+    #         assert (0==1)
 
     # detecting infeasibility: total min ESS output greater than total inflows, total max ESS charge lower than total outflows
     for es in mTEPES.es:
