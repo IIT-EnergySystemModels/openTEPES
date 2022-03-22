@@ -39,6 +39,8 @@ def AreaPlots(scenario, df, Category, X, Y, OperationType):
     # # Change the format of the LoadLevel
     Results[X] = Results[X].str[:19]
     Results[X] = (Results[X]+'+01:00')
+    Results[X] = Results[X].str[5:]
+    Results[X] = (Results['level_0'].astype(str)+'-'+Results[X])
     Results[X] = pd.to_datetime(Results[X])
     Results[X] = Results[X].dt.strftime('%Y-%m-%d %H:%M:%S')
     # Composed Names
@@ -68,6 +70,8 @@ def LinePlots(scenario, df, Category, X, Y, OperationType):
     # # Change the format of the LoadLevel
     Results[X] = Results[X].str[:19]
     Results[X] = (Results[X]+'+01:00')
+    Results[X] = Results[X].str[5:]
+    Results[X] = (Results['level_0'].astype(str)+'-'+Results[X])
     Results[X] = pd.to_datetime(Results[X])
     Results[X] = Results[X].dt.strftime('%Y-%m-%d %H:%M:%S')
     # Composed Names
