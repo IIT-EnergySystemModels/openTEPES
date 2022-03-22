@@ -112,7 +112,7 @@ Then, the **results** should be written in the folder who is called with the cas
 
 **Tips**
 
-1. A complete documentation of the openTEPES model can be found at `<https://pascua.iit.comillas.edu/aramos/openTEPES/index.html#>`_, which presents the mathematical formulation, input data and output results.
+1. A complete documentation of the openTEPES model can be found at `<https://opentepes.readthedocs.io/en/latest/index.html>`_, which presents the mathematical formulation, input data and output results.
 2. Try modifying the **TimeStep** in **oT_Data_Parameter_<case>.csv** and see their effect on results.
 3. Using **0** or **1**, the optimization options can be activated or deactivated in **oT_Data_Option_<case>.csv**.
 4. If you need a nice python editor, think about using `PyCharm <https://www.jetbrains.com/pycharm/download>`_. It has many features including project management, etc.
