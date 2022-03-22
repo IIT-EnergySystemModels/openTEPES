@@ -15,7 +15,7 @@ It determines automatically optimal expansion plans that satisfy simultaneously 
 
   It represents hierarchically the different time scopes to take decisions in an electric system:
   
-  - Load level: one hour, e.g., 2030-01-01T00:00:00+01:00 to 2030-12-30T23:00:00+01:00
+  - Load level: one hour, e.g., 01-01 00:00:00+01:00 to 12-30 23:00:00+01:00
 
   The time division allows a flexible representation of the periods for evaluating the system operation. Moreover, it can be run with chronological periods of several consecutive hours (bi-hourly, tri-hourly resolution)
   to allow decreasing the computational burden without accuracy loss.
