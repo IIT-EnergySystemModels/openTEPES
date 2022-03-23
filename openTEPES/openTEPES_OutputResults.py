@@ -441,7 +441,7 @@ def ESSOperationResults(DirName, CaseName, OptModel, mTEPES):
 
         for p,sc in mTEPES.p*mTEPES.sc:
             chart = AreaPlots(p, sc, TechnologyCharge, 'Technology', 'LoadLevel', 'MW', 'sum')
-            chart.save(_path+'/oT_Plot_TechnologyCharge_'+str(p)+str(sc)+'_'+CaseName+'.html', embed_options={'renderer': 'svg'})
+            chart.save(_path+'/oT_Plot_TechnologyCharge_'+str(p)+'_'+str(sc)+'_'+CaseName+'.html', embed_options={'renderer': 'svg'})
 
     WritingResultsTime = time.time() - StartTime
     StartTime = time.time()
@@ -595,7 +595,7 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES):
 
     for p,sc in mTEPES.p*mTEPES.sc:
         chart = LinePlots(p, sc, OptModel.LSRMC, 'Node', 'LoadLevel', 'EUR/MWh', 'average')
-        chart.save(_path+'/oT_Plot_NetworkSRMC_'+str(p)+str(sc)+'_'+CaseName+'.html', embed_options={'renderer': 'svg'})
+        chart.save(_path+'/oT_Plot_NetworkSRMC_'+str(p)+'_'+str(sc)+'_'+CaseName+'.html', embed_options={'renderer': 'svg'})
 
     if sum(mTEPES.pReserveMargin[ar] for ar in mTEPES.ar):
         OutputData = []
@@ -646,7 +646,7 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES):
 
         for p,sc in mTEPES.p*mTEPES.sc:
             chart = LinePlots(p, sc, MarginalUpOperatingReserve, 'Area', 'LoadLevel', 'EUR/MW', 'sum')
-            chart.save(_path+'/oT_Plot_MarginalOperatingReserveUpward_'+str(p)+str(sc)+'_'+CaseName+'.html', embed_options={'renderer': 'svg'})
+            chart.save(_path+'/oT_Plot_MarginalOperatingReserveUpward_'+str(p)+'_'+str(sc)+'_'+CaseName+'.html', embed_options={'renderer': 'svg'})
 
     #%% outputting the down operating reserve marginal
     if sum(mTEPES.pOperReserveDw[p,sc,n,ar] for p,sc,n,ar in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.ar) > 0.0 and (sum(1 for ar,nr in mTEPES.ar*mTEPES.nr if (ar,nr) in mTEPES.a2g and mTEPES.pIndOperReserve[nr] == 0) + sum(1 for ar,es in mTEPES.ar*mTEPES.es if (ar,es) in mTEPES.a2g and mTEPES.pIndOperReserve[es] == 0)) > 0:
@@ -678,7 +678,7 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES):
 
         for p,sc in mTEPES.p*mTEPES.sc:
             chart = LinePlots(p, sc, MarginalDwOperatingReserve, 'Area', 'LoadLevel', 'EUR/MW', 'sum')
-            chart.save(_path+'/oT_Plot_MarginalOperatingReserveDownward_'+str(p)+str(sc)+'_'+CaseName+'.html', embed_options={'renderer': 'svg'})
+            chart.save(_path+'/oT_Plot_MarginalOperatingReserveDownward_'+str(p)+'_'+str(sc)+'_'+CaseName+'.html', embed_options={'renderer': 'svg'})
 
     #%% outputting the water values
     if len(mTEPES.es):
@@ -710,7 +710,7 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES):
 
         for p,sc in mTEPES.p*mTEPES.sc:
             chart = LinePlots(p, sc, WaterValue, 'Unit', 'LoadLevel', 'EUR/MWh', 'average')
-            chart.save(_path+'/oT_Plot_MarginalWaterValue_'+str(p)+str(sc)+'_'+CaseName+'.html', embed_options={'renderer': 'svg'})
+            chart.save(_path+'/oT_Plot_MarginalWaterValue_'+str(p)+'_'+str(sc)+'_'+CaseName+'.html', embed_options={'renderer': 'svg'})
 
     #%% Reduced cost for NetworkInvestment
     ReducedCostActivation = mTEPES.pIndBinGenInvest()*len(mTEPES.gc) + mTEPES.pIndBinNetInvest()*len(mTEPES.lc) + mTEPES.pIndBinGenOperat()*len(mTEPES.nr) + mTEPES.pIndBinLineCommit()*len(mTEPES.la)
