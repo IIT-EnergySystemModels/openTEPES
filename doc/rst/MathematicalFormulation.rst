@@ -296,7 +296,7 @@ Initial commitment of the units is determined by the model based on the merit or
 
 Maximum ramp up and ramp down for the second block of a non-renewable (thermal, hydro) unit [p.u.] «``eRampUp``» «``eRampDw``»
 
-- P. Damcı-Kurt, S. Küçükyavuz, D. Rajan, and A. Atamtürk, “A polyhedral study of production ramping,” Math. Program., vol. 158, no. 1–2, pp. 175–205, Jul. 2016. `10.1007/s10107-015-0919-9 <https://doi.org/10.1007/s10107-015-0919-9>`_
+* P. Damcı-Kurt, S. Küçükyavuz, D. Rajan, and A. Atamtürk, “A polyhedral study of production ramping,” Math. Program., vol. 158, no. 1–2, pp. 175–205, Jul. 2016. `10.1007/s10107-015-0919-9 <https://doi.org/10.1007/s10107-015-0919-9>`_
 
 :math:`\frac{- p^p_{ω,n-\nu,g} - dr^p_{ω,n-\nu,g} + p^p_{ωng} + ur^p_{ωng}}{DUR_n RU_g} \leq   uc^p_{ωng}       - su^p_{ωng} \quad \forall pωng`
 
@@ -310,7 +310,7 @@ Maximum ramp down and ramp up for the charge of an ESS [p.u.] «``eRampUpCharge`
 
 Minimum up time and down time of thermal unit [h] «``eMinUpTime``» «``eMinDownTime``»
 
-- D. Rajan and S. Takriti, “Minimum up/down polytopes of the unit commitment problem with start-up costs,” IBM, New York, Technical Report RC23628, 2005. https://pdfs.semanticscholar.org/b886/42e36b414d5929fed48593d0ac46ae3e2070.pdf
+* D. Rajan and S. Takriti, “Minimum up/down polytopes of the unit commitment problem with start-up costs,” IBM, New York, Technical Report RC23628, 2005. https://pdfs.semanticscholar.org/b886/42e36b414d5929fed48593d0ac46ae3e2070.pdf
 
 :math:`\sum_{n'=n+\nu-TU_t}^n su^p_{ωn't} \leq     uc^p_{ωnt} \quad \forall pωnt`
 
@@ -382,4 +382,4 @@ Half ohmic losses are linearly approximated as a function of the flow [GW] «``e
 
 Voltage angle of the reference node fixed to 0 for each scenario, period, and load level [rad]
 
-:math:`\theta^p_{ωn,node_{ref}} = 0` 
+:math:`\theta^p_{ωn,node_{ref}} = 0`
