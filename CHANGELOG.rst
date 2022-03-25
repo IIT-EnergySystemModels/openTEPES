@@ -1,6 +1,10 @@
 Change Log
 =============
 
+[4.5.1] - 2022-03-25
+--------------------
+- [CHANGED] split the objective function and investment constraints in two scripts
+
 [4.5.0] - 2022-03-20
 --------------------
 - [CHANGED] introduce initial and final period for each generator/line. The periods must be non-negative integers

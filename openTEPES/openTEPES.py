@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 20, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 25, 2022
 """
 
 import time
@@ -35,7 +35,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndLogConsole):
     idxDict['y'  ] = 1
 
     #%% model declaration
-    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.5.0 - March 20, 2022')
+    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.5.1 - March 25, 2022')
 
     pIndLogConsole = [j for i, j in idxDict.items() if i == pIndLogConsole][0]
 
@@ -45,7 +45,8 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndLogConsole):
     # Define variables
     SettingUpVariables(mTEPES, mTEPES)
 
-    # investment model objective function
+    # objective function and investment constraints
+    TotalObjectiveFunction    (mTEPES, mTEPES, pIndLogConsole)
     InvestmentModelFormulation(mTEPES, mTEPES, pIndLogConsole)
 
     # iterative model formulation for each stage of a year
