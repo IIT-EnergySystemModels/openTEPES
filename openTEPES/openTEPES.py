@@ -103,6 +103,6 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndLogConsole):
     NetworkMapResults         (DirName, CaseName, mTEPES, mTEPES)
 
     TotalTime = time.time() - InitialTime
-    print('Total time                             ... ', round(TotalTime), 's')
+    print('Total time                              ... ', round(TotalTime), 's')
 
     return mTEPES
