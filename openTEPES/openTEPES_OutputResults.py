@@ -246,10 +246,14 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES):
         mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in mTEPES.stt and st == stt and mTEPES.pStageWeight[stt] and sum(1 for (st,nn) in mTEPES.s2n))
         mTEPES.n  = Set(initialize=mTEPES.nn , ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in                              mTEPES.pDuration         and           (st,nn) in mTEPES.s2n)
         if len(mTEPES.n):
-            RampSurplusGens = [(p,sc,n,nr) for p,sc,n,nr in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.nr if mTEPES.pRampUp[nr] and mTEPES.pRampUp[nr] < mTEPES.pMaxPower2ndBlock[p,sc,n,nr]]
+            # RampSurplusGens = [(p,sc,n,nr) for p,sc,n,nr in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.nr if mTEPES.pRampUp[nr] and mTEPES.pIndBinGenRamps() == 1 and mTEPES.pRampUp[nr] < mTEPES.pMaxPower2ndBlock[p,sc,n,nr] and n == mTEPES.n.first()]
+            # if len(RampSurplusGens):
+            #     OutputToFile = pd.Series(data=[(getattr(OptModel, 'eRampUp_'+str(p)+'_'+str(sc)+'_'+str(st))[p,sc,n,nr].uslack())*mTEPES.pDuration[n]*mTEPES.pRampUp[nr]*1e3*(mTEPES.pInitialUC[p,sc,n,nr]                     - OptModel.vStartUp[p,sc,n,nr]()) for p,sc,n,nr in RampSurplusGens], index=pd.MultiIndex.from_tuples(RampSurplusGens))
+            #     OutputData.append(OutputToFile)
+            RampSurplusGens = [(p,sc,n,nr) for p,sc,n,nr in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.nr if mTEPES.pRampUp[nr] and mTEPES.pIndBinGenRamps() == 1 and mTEPES.pRampUp[nr] < mTEPES.pMaxPower2ndBlock[p,sc,n,nr]]
             if len(RampSurplusGens):
-                OutputToFile = pd.Series(data=[(getattr(OptModel, 'eRampUp_'+str(p)+'_'+str(sc)+'_'+str(st))[p,sc,n,nr].uslack())*mTEPES.pDuration[n]*mTEPES.pRampUp[nr]*1e3*(OptModel.vCommitment[p,sc,n,nr]() - OptModel.vStartUp[p,sc,n,nr]()) for p,sc,n,nr in RampSurplusGens], index=pd.MultiIndex.from_tuples(RampSurplusGens))
-        OutputData.append(OutputToFile)
+                OutputToFile = pd.Series(data=[(getattr(OptModel, 'eRampUp_'+str(p)+'_'+str(sc)+'_'+str(st))[p,sc,n,nr].uslack())*mTEPES.pDuration[n]*mTEPES.pRampUp[nr]*1e3*(OptModel.vCommitment[p,sc,mTEPES.n.prev(n),nr]() - OptModel.vStartUp[p,sc,n,nr]()) for p,sc,n,nr in RampSurplusGens], index=pd.MultiIndex.from_tuples(RampSurplusGens))
+                OutputData.append(OutputToFile)
     mTEPES.del_component(mTEPES.p )
     mTEPES.del_component(mTEPES.sc)
     mTEPES.del_component(mTEPES.st)
@@ -258,8 +262,9 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES):
     mTEPES.sc = Set(initialize=mTEPES.scc, ordered=True, doc='scenarios',   filter=lambda mTEPES,scc: scc in mTEPES.scc                             )
     mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in mTEPES.stt and mTEPES.pStageWeight[stt] and sum(1 for (stt,nn) in mTEPES.s2n))
     mTEPES.n  = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in                mTEPES.pDuration        )
-    OutputData = pd.concat(OutputData)
-    OutputData.to_frame(name='MW/h').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW/h').rename_axis(['Period','Scenario','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_GenerationRampUpSurplus_'+CaseName+'.csv', sep=',')
+    if len(OutputData):
+        OutputData = pd.concat(OutputData)
+        OutputData.to_frame(name='MW/h').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW/h').rename_axis(['Period','Scenario','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_GenerationRampUpSurplus_'+CaseName+'.csv', sep=',')
 
     OutputData = []
     for p,sc,st in mTEPES.p*mTEPES.sc*mTEPES.st:
@@ -272,13 +277,14 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES):
         mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in mTEPES.stt and st == stt and mTEPES.pStageWeight[stt] and sum(1 for (st,nn) in mTEPES.s2n))
         mTEPES.n  = Set(initialize=mTEPES.nn , ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in                              mTEPES.pDuration         and           (st,nn) in mTEPES.s2n)
         if len(mTEPES.n):
-            RampSurplusGens = [(p,sc,n,nr) for p,sc,n,nr in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.nr if mTEPES.pRampDw[nr] and mTEPES.pRampDw[nr] < mTEPES.pMaxPower2ndBlock[p,sc,n,nr] and n == mTEPES.n.first()]
-            if len(RampSurplusGens):
-                OutputToFile = pd.Series(data=[(getattr(OptModel, 'eRampDw_'+str(p)+'_'+str(sc)+'_'+str(st))[p,sc,n,nr].uslack())*mTEPES.pDuration[n]*mTEPES.pRampDw[nr]*1e3*(- mTEPES.pInitialUC[p,sc,n,nr]                     + OptModel.vShutDown[p,sc,n,nr]()) for p,sc,n,nr in RampSurplusGens], index=pd.MultiIndex.from_tuples(RampSurplusGens))
-            RampSurplusGens = [(p,sc,n,nr) for p,sc,n,nr in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.nr if mTEPES.pRampDw[nr] and mTEPES.pRampDw[nr] < mTEPES.pMaxPower2ndBlock[p,sc,n,nr] and n != mTEPES.n.first()]
+            # RampSurplusGens = [(p,sc,n,nr) for p,sc,n,nr in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.nr if mTEPES.pRampDw[nr] and mTEPES.pIndBinGenRamps() == 1 and mTEPES.pRampDw[nr] < mTEPES.pMaxPower2ndBlock[p,sc,n,nr] and n == mTEPES.n.first()]
+            # if len(RampSurplusGens):
+            #     OutputToFile = pd.Series(data=[(getattr(OptModel, 'eRampDw_'+str(p)+'_'+str(sc)+'_'+str(st))[p,sc,n,nr].uslack())*mTEPES.pDuration[n]*mTEPES.pRampDw[nr]*1e3*(- mTEPES.pInitialUC[p,sc,n,nr]                     + OptModel.vShutDown[p,sc,n,nr]()) for p,sc,n,nr in RampSurplusGens], index=pd.MultiIndex.from_tuples(RampSurplusGens))
+            #     OutputData.append(OutputToFile)
+            RampSurplusGens = [(p,sc,n,nr) for p,sc,n,nr in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.nr if mTEPES.pRampDw[nr] and mTEPES.pIndBinGenRamps() == 1 and mTEPES.pRampDw[nr] < mTEPES.pMaxPower2ndBlock[p,sc,n,nr]]
             if len(RampSurplusGens):
                 OutputToFile = pd.Series(data=[(getattr(OptModel, 'eRampDw_'+str(p)+'_'+str(sc)+'_'+str(st))[p,sc,n,nr].uslack())*mTEPES.pDuration[n]*mTEPES.pRampDw[nr]*1e3*(- OptModel.vCommitment[p,sc,mTEPES.n.prev(n),nr]() + OptModel.vShutDown[p,sc,n,nr]()) for p,sc,n,nr in RampSurplusGens], index=pd.MultiIndex.from_tuples(RampSurplusGens))
-        OutputData.append(OutputToFile)
+                OutputData.append(OutputToFile)
     mTEPES.del_component(mTEPES.p )
     mTEPES.del_component(mTEPES.sc)
     mTEPES.del_component(mTEPES.st)
@@ -287,8 +293,9 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES):
     mTEPES.sc = Set(initialize=mTEPES.scc, ordered=True, doc='scenarios',   filter=lambda mTEPES,scc: scc in mTEPES.scc                             )
     mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in mTEPES.stt and mTEPES.pStageWeight[stt] and sum(1 for (stt,nn) in mTEPES.s2n))
     mTEPES.n  = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in                mTEPES.pDuration        )
-    OutputData = pd.concat(OutputData)
-    OutputData.to_frame(name='MW/h').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW/h').rename_axis(['Period','Scenario','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_GenerationRampDwSurplus_'+CaseName+'.csv', sep=',')
+    if len(OutputData):
+        OutputData = pd.concat(OutputData)
+        OutputData.to_frame(name='MW/h').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW/h').rename_axis(['Period','Scenario','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_GenerationRampDwSurplus_'+CaseName+'.csv', sep=',')
 
     if len(mTEPES.r):
         OutputToFile = pd.Series(data=[(OptModel.vTotalOutput[p,sc,n,r].ub - OptModel.vTotalOutput[p,sc,n,r]())*1e3  for p,sc,n,r in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.r], index=pd.MultiIndex.from_tuples(mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.r))
@@ -767,7 +774,8 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES):
     ConCost     = sum(mTEPES.pPeriodWeight[p] * mTEPES.pScenProb     [p,sc     ] * OptModel.vTotalCCost      [p,sc,n    ]() for p,sc,n     in mTEPES.p*mTEPES.sc*mTEPES.n          )
     EmiCost     = sum(mTEPES.pPeriodWeight[p] * mTEPES.pScenProb     [p,sc     ] * OptModel.vTotalECost      [p,sc,n    ]() for p,sc,n     in mTEPES.p*mTEPES.sc*mTEPES.n          )
     RelCost     = sum(mTEPES.pPeriodWeight[p] * mTEPES.pScenProb     [p,sc     ] * OptModel.vTotalRCost      [p,sc,n    ]() for p,sc,n     in mTEPES.p*mTEPES.sc*mTEPES.n          )
-    DemPayment  = sum(mTEPES.pDuration    [n] * mTEPES.pDemand       [p,sc,n,nd] * OptModel.LSRMC            [p,sc,n,nd ]   for p,sc,n,nd  in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.nd) / 1e3
+    if sum(mTEPES.pDemand[p,sc,n,nd] for p,sc,n,nd in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.nd):
+        DemPayment = sum(mTEPES.pDuration [n] * mTEPES.pDemand [p,sc,n,nd] * OptModel.LSRMC [p,sc,n,nd ] for p,sc,n,nd in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.nd) / 1e3
     Costs       = {'':['System Cost', 'Generation Investment Cost', 'Generation Retirement Cost', 'Network Investment Cost', 'Generation Operation Cost', 'Consumption Operation Cost', 'Emission Cost', 'Reliability Cost', 'Demand Payment with SRMC'], 'MEUR': [SysCost, GenInvCost, GenRetCost, NetInvCost, GenCost, ConCost, EmiCost, RelCost, DemPayment]}
     CostSummary = pd.DataFrame(Costs)
     CostSummary.to_csv(_path+'/oT_Result_CostSummary_'+CaseName+'.csv', sep=',', index=False)
