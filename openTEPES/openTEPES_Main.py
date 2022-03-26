@@ -128,6 +128,7 @@ def main():
     print(sys.argv)
     print(args)
     openTEPES_run(args.dir, args.case, args.solver, args.log)
+    print('\n #### Academic research license - for non-commercial use only #### \n')
     sys.exit('End of the run                ************')
 
 if __name__ == '__main__':
