@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 25, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 26, 2022
 """
 
 import time
@@ -35,7 +35,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndLogConsole):
     idxDict['y'  ] = 1
 
     #%% model declaration
-    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.5.1 - March 25, 2022')
+    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.5.1 - March 26, 2022')
 
     pIndLogConsole = [j for i, j in idxDict.items() if i == pIndLogConsole][0]
 
@@ -63,6 +63,8 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndLogConsole):
         mTEPES.n  = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in                              mTEPES.pDuration         and           (st,nn) in mTEPES.s2n)
         mTEPES.n2 = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in                              mTEPES.pDuration         and           (st,nn) in mTEPES.s2n)
 
+        print('Period '+str(p)+', Scenario '+str(sc)+', Stage '+str(st))
+
         # operation model objective function and constraints by stage
         GenerationOperationModelFormulationObjFunct   (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
         GenerationOperationModelFormulationInvestment (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
@@ -72,8 +74,6 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndLogConsole):
         GenerationOperationModelFormulationRampMinTime(mTEPES, mTEPES, pIndLogConsole, p, sc, st)
         NetworkSwitchingModelFormulation              (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
         NetworkOperationModelFormulation              (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
-
-        print('Period '+str(p)+', Scenario '+str(sc)+', Stage '+str(st))
 
     if pIndLogConsole == 1:
         StartTime         = time.time()
