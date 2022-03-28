@@ -63,11 +63,11 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
                 else:
                     OptModel.vGenerationRetire[p,gd].fix(      OptModel.vGenerationRetire[p,gd]())
         if mTEPES.pIndBinNetInvest()*len(mTEPES.lc):
-            for p,lc in mTEPES.p*mTEPES.lc:
-                if mTEPES.pIndBinLineInvest[lc] != 0:
-                    OptModel.vNetworkInvest   [p,lc].fix(round(OptModel.vNetworkInvest   [p,lc]()))
+            for p,ni,nf,cc in mTEPES.p*mTEPES.lc:
+                if mTEPES.pIndBinLineInvest[ni,nf,cc] != 0:
+                    OptModel.vNetworkInvest   [p,ni,nf,cc].fix(round(OptModel.vNetworkInvest   [p,ni,nf,cc]()))
                 else:
-                    OptModel.vNetworkInvest   [p,lc].fix(      OptModel.vNetworkInvest   [p,lc]())
+                    OptModel.vNetworkInvest   [p,ni,nf,cc].fix(      OptModel.vNetworkInvest   [p,ni,nf,cc]())
         if mTEPES.pIndBinGenOperat()*len(mTEPES.nr):
             for p,sc,n,nr in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.nr:
                 if mTEPES.pIndBinUnitCommit[nr] != 0:
