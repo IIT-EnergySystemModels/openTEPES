@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 21, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 29, 2022
 """
 
 import time
@@ -746,7 +746,7 @@ def SettingUpVariables(OptModel, mTEPES):
     OptModel.vReserveUp            = Var(mTEPES.p, mTEPES.sc, mTEPES.n, mTEPES.nr, within=NonNegativeReals, bounds=lambda OptModel,p,sc,n,nr: (0.0,mTEPES.pMaxPower2ndBlock [p,sc,n,nr]),                          doc='upward   operating reserve                       [GW]')
     OptModel.vReserveDown          = Var(mTEPES.p, mTEPES.sc, mTEPES.n, mTEPES.nr, within=NonNegativeReals, bounds=lambda OptModel,p,sc,n,nr: (0.0,mTEPES.pMaxPower2ndBlock [p,sc,n,nr]),                          doc='downward operating reserve                       [GW]')
     OptModel.vEnergyOutflows       = Var(mTEPES.p, mTEPES.sc, mTEPES.n, mTEPES.es, within=NonNegativeReals, bounds=lambda OptModel,p,sc,n,es: (0.0,max(mTEPES.pMaxPower[p,sc,n,es],mTEPES.pMaxCharge[p,sc,n,es])), doc='total outflows of the ESS unit                   [GW]')
-    OptModel.vESSInventory         = Var(mTEPES.p, mTEPES.sc, mTEPES.n, mTEPES.es, within=NonNegativeReals, bounds=lambda OptModel,p,sc,n,es: (      mTEPES.pMinStorage[p,sc,n,es],mTEPES.pMaxStorage[p,sc,n,es]),  doc='ESS inventory                                   [GWh]')
+    OptModel.vESSInventory         = Var(mTEPES.p, mTEPES.sc, mTEPES.n, mTEPES.es, within=NonNegativeReals, bounds=lambda OptModel,p,sc,n,es: (      mTEPES.pMinStorage[p,sc,n,es],mTEPES.pMaxStorage[p,sc,n,es]), doc='ESS inventory                                   [GWh]')
     OptModel.vESSSpillage          = Var(mTEPES.p, mTEPES.sc, mTEPES.n, mTEPES.es, within=NonNegativeReals,                                                                                                        doc='ESS spillage                                    [GWh]')
     OptModel.vESSTotalCharge       = Var(mTEPES.p, mTEPES.sc, mTEPES.n, mTEPES.es, within=NonNegativeReals, bounds=lambda OptModel,p,sc,n,es: (0.0,mTEPES.pMaxCharge        [p,sc,n,es]),                          doc='ESS total charge power                           [GW]')
     OptModel.vCharge2ndBlock       = Var(mTEPES.p, mTEPES.sc, mTEPES.n, mTEPES.es, within=NonNegativeReals, bounds=lambda OptModel,p,sc,n,es: (0.0,mTEPES.pMaxCharge2ndBlock[p,sc,n,es]),                          doc='ESS       charge power                           [GW]')
@@ -965,8 +965,9 @@ def SettingUpVariables(OptModel, mTEPES):
                 OptModel.vEnergyOutflows[p,sc,n,es].fix(0.0)
 
     # fixing the voltage angle of the reference node for each scenario, period, and load level
-    for p,sc,n in mTEPES.p*mTEPES.sc*mTEPES.n:
-        OptModel.vTheta[p,sc,n,mTEPES.rf.first()].fix(0.0)
+    if mTEPES.pIndBinSingleNode() == 0:
+        for p,sc,n in mTEPES.p*mTEPES.sc*mTEPES.n:
+            OptModel.vTheta[p,sc,n,mTEPES.rf.first()].fix(0.0)
 
     # fixing the ENS in nodes with no demand
     for p,sc,n,nd in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.nd:
