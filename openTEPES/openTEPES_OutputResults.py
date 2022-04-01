@@ -102,11 +102,22 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES):
         OutputToFile = pd.Series(data=[mTEPES.pRatedMaxPower[gc]*OptModel.vGenerationInvest[p,gc]()*1e3 for p,gc in mTEPES.p*mTEPES.gc], index=pd.Index(mTEPES.p*mTEPES.gc))
         OutputToFile = OutputToFile.fillna(0).to_frame(name='MW').reset_index().rename(columns={'level_0': 'Period', 'level_1': 'Generating unit'})
         OutputToFile.to_csv(_path+'/oT_Result_GenerationInvestment_'+CaseName+'.csv', sep=',', index=False)
+        OutputToFile = OutputToFile.set_index(['Period', 'Generating unit'])
+
+        if len(mTEPES.ar) > 1:
+            GenInvestToArea   = pd.Series(data=[OutputToFile['MW'][p,gc] for p,ar,gc in mTEPES.p*mTEPES.ar*mTEPES.gc if (ar,gc) in mTEPES.a2g], index=pd.MultiIndex.from_tuples((p,ar,gc) for p,ar,gc in mTEPES.p*mTEPES.ar*mTEPES.gc if (ar,gc) in mTEPES.a2g)).to_frame(name='MW')
+            GenInvestToArea.index.names = ['Period', 'Area', 'Generating unit']
+            chart = alt.Chart(GenInvestToArea.reset_index()).mark_bar().encode(x='Generating unit:O', y='sum(MW):Q', color='Area:N', column='Period:N').properties(width=600, height=400)
+            chart.save(_path+'/oT_Plot_GenerationInvestmentPerArea_'+CaseName+'.html', embed_options={'renderer':'svg'})
+            TechInvestToArea  = pd.Series(data=[sum(OutputToFile['MW'][p,gc] for gc in mTEPES.gc if (ar,gc) in mTEPES.a2g and (gt,gc) in mTEPES.t2g) for p,ar,gt in mTEPES.p*mTEPES.ar*mTEPES.gt], index=pd.MultiIndex.from_tuples(mTEPES.p*mTEPES.ar*mTEPES.gt)).to_frame(name='MW')
+            TechInvestToArea.index.names = ['Period', 'Area', 'Technology']
+            chart = alt.Chart(TechInvestToArea.reset_index()).mark_bar().encode(x='Technology:O', y='sum(MW):Q', color='Area:N', column='Period:N').properties(width=600, height=400)
+            chart.save(_path+'/oT_Plot_TechnologyInvestmentPerArea_'+CaseName+'.html', embed_options={'renderer':'svg'})
 
         # Ordering data to plot the investment decision
         OutputResults_1 = pd.Series(data=[gt for p,gc,gt in mTEPES.p*mTEPES.gc*mTEPES.gt if (gt,gc) in mTEPES.t2g], index=pd.Index(mTEPES.p*mTEPES.gc))
         OutputResults_1 = OutputResults_1.to_frame(name='Technology')
-        OutputResults_2 = OutputToFile.set_index(['Period', 'Generating unit'])
+        OutputResults_2 = OutputToFile
         OutputResults   = pd.concat([OutputResults_1, OutputResults_2], axis=1)
         OutputResults.index.names = ['Period','Generating unit']
         OutputResults   = OutputResults.reset_index().groupby(['Period', 'Technology']).sum()
@@ -122,6 +133,17 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES):
         OutputToFile = pd.Series(data=[mTEPES.pRatedMaxPower[gd]*OptModel.vGenerationRetire[p,gd]()*1e3 for p,gd in mTEPES.p*mTEPES.gd], index=pd.Index(mTEPES.p*mTEPES.gd))
         OutputToFile = OutputToFile.fillna(0).to_frame(name='MW').reset_index().rename(columns={'level_0': 'Period', 'level_1': 'Generating unit'})
         OutputToFile.to_csv(_path+'/oT_Result_GenerationRetirement_'+CaseName+'.csv', sep=',', index=False)
+        OutputToFile = OutputToFile.set_index(['Period', 'Generating unit'])
+
+        if len(mTEPES.ar) > 1:
+            GenRetireToArea   = pd.Series(data=[OutputToFile['MW'][p,gd] for p,ar,gd in mTEPES.p*mTEPES.ar*mTEPES.gd if (ar,gd) in mTEPES.a2g], index=pd.MultiIndex.from_tuples((p,ar,gd) for p,ar,gd in mTEPES.p*mTEPES.ar*mTEPES.gd if (ar,gd) in mTEPES.a2g)).to_frame(name='MW')
+            GenRetireToArea.index.names = ['Period', 'Area', 'Generating unit']
+            chart = alt.Chart(GenRetireToArea.reset_index()).mark_bar().encode(x='Generating unit:O', y='sum(MW):Q', color='Area:N', column='Period:N').properties(width=600, height=400)
+            chart.save(_path+'/oT_Plot_GenerationRetirementPerArea_'+CaseName+'.html', embed_options={'renderer':'svg'})
+            TechRetireToArea  = pd.Series(data=[sum(OutputToFile['MW'][p,gd] for gd in mTEPES.gd if (ar,gd) in mTEPES.a2g and (gt,gd) in mTEPES.t2g) for p,ar,gt in mTEPES.p*mTEPES.ar*mTEPES.gt], index=pd.MultiIndex.from_tuples(mTEPES.p*mTEPES.ar*mTEPES.gt)).to_frame(name='MW')
+            TechRetireToArea.index.names = ['Period', 'Area', 'Technology']
+            chart = alt.Chart(TechRetireToArea.reset_index()).mark_bar().encode(x='Technology:O', y='sum(MW):Q', color='Area:N', column='Period:N').properties(width=600, height=400)
+            chart.save(_path+'/oT_Plot_TechnologyRetirementPerArea_'+CaseName+'.html', embed_options={'renderer':'svg'})
 
         # Ordering data to plot the investment retirement
         OutputResults_1 = pd.Series(data=[gt for p,gd,gt in mTEPES.p*mTEPES.gd*mTEPES.gt if (gt,gd) in mTEPES.t2g], index=pd.Index(mTEPES.p*mTEPES.gd))
