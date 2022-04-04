@@ -45,7 +45,7 @@ File ``oT_Result_TechnologyInvestment.csv``
 ============  ==========  ============================
 Identifier    Header      Description
 ============  ==========  ============================
-Generator     MW        Technology investment POWER
+Generator     MW          Technology investment power
 ============  ==========  ============================
 
 File ``oT_Result_TechnologyRetirement.csv``
