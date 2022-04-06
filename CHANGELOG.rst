@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.5.2rc1] - 2022-03-29
+[4.5.2rc1] - 2022-04-06
 --------------------
+- [FIXED] control of non-negative values of some input data
 - [CHANGED] avoid fixing voltage angle for the reference node with single node option
 
 [4.5.1] - 2022-03-25
