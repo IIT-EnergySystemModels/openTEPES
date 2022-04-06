@@ -188,7 +188,7 @@ Investment and retirement decisions in consecutive years «``eConsecutiveGenInve
 
 **Generation operation**
 
-Commitment decision bounded by investment decision for candidate committed units (all except the VRES units) [p.u.] «``eInstalGenComm``»
+Commitment decision bounded by investment decision for candidate committed units (all except the VRE units) [p.u.] «``eInstalGenComm``»
 
 :math:`uc^p_{ωng} \leq icg_{pg} \quad \forall pωng, g \in CG`
 
