@@ -132,6 +132,7 @@ MaxRatioDwUp          Maximum ratio downward to upward operating reserves       
 Sbase                 Base power used in the DCPF                                                                                    MW
 ReferenceNode         Reference node used in the DCPF
 TimeStep              Duration of the time step for the load levels (hourly, bi-hourly, trihourly, etc.)                             h
+AnnualDiscountRate    Annual discount rate                                                                                           %
 ====================  =============================================================================================================  =========
 
 A time step greater than one hour it is a convenient way to reduce the load levels of the time scope. The moving average of the demand, upward/downward operating reserves, variable generation/consumption/storage and ESS energy inflows/outflows
