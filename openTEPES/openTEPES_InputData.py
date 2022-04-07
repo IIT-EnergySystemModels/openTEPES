@@ -2,6 +2,7 @@
 Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 06, 2022
 """
 
+import datetime
 import time
 import math
 import os
@@ -135,6 +136,10 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.znar = Set(initialize=dictSets['znar'], ordered=False, doc='zone to area'    )
     mTEPES.arrg = Set(initialize=dictSets['arrg'], ordered=False, doc='area to region'  )
 
+    #%% Getting the current year
+    date                 = datetime.date.today()
+    pCurrentYear         = date.year
+
     #%% parameters
     pIndBinGenInvest     = dfOption   ['IndBinGenInvest'    ][0].astype('int')                                                            # Indicator of binary generation expansion decisions, 0 continuous  - 1 binary - 2 no investment variables
     pIndBinNetInvest     = dfOption   ['IndBinNetInvest'    ][0].astype('int')                                                            # Indicator of binary network    expansion decisions, 0 continuous  - 1 binary - 2 no investment variables
@@ -147,6 +152,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pIndBinNetLosses     = dfOption   ['IndBinNetLosses'    ][0].astype('int')                                                            # Indicator of network losses,                        0 lossless    - 1 ohmic losses
     pENSCost             = dfParameter['ENSCost'            ][0] * 1e-3                                                                   # cost of energy not served                [MEUR/GWh]
     pCO2Cost             = dfParameter['CO2Cost'            ][0]                                                                          # cost of CO2 emission                     [EUR/t CO2]
+    pAnnualDiscRate      = dfParameter['AnnualDiscountRate' ][0] * 1e-2                                                                   # Annual discount rate                     [%   ]
     pUpReserveActivation = dfParameter['UpReserveActivation'][0]                                                                          # upward   reserve activation              [p.u.]
     pDwReserveActivation = dfParameter['DwReserveActivation'][0]                                                                          # downward reserve activation              [p.u.]
     pMinRatioDwUp        = dfParameter['MinRatioDwUp'       ][0]                                                                          # minimum ratio down up operating reserves [p.u.]
@@ -635,6 +641,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
 
     mTEPES.pENSCost              = Param(initialize=pENSCost             , within=NonNegativeReals)
     mTEPES.pCO2Cost              = Param(initialize=pCO2Cost             , within=NonNegativeReals)
+    mTEPES.pAnnualDiscRate       = Param(initialize=pAnnualDiscRate      , within=UnitInterval    )
     mTEPES.pUpReserveActivation  = Param(initialize=pUpReserveActivation , within=UnitInterval    )
     mTEPES.pDwReserveActivation  = Param(initialize=pDwReserveActivation , within=UnitInterval    )
     mTEPES.pMinRatioDwUp         = Param(initialize=pMinRatioDwUp        , within=UnitInterval    )
@@ -642,6 +649,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.pSBase                = Param(initialize=pSBase               , within=NonNegativeReals)
     mTEPES.pTimeStep             = Param(initialize=pTimeStep            , within=NonNegativeReals)
     # mTEPES.pStageDuration        = Param(initialize=pStageDuration      , within=NonNegativeReals)
+    mTEPES.pCurrentYear          = Param(initialize=pCurrentYear         , within=NonNegativeReals)
 
     mTEPES.pReserveMargin        = Param(                               mTEPES.ar, initialize=pReserveMargin.to_dict()            , within=NonNegativeReals,    doc='Adequacy reserve margin'                 )
     mTEPES.pPeakDemand           = Param(                               mTEPES.ar, initialize=pPeakDemand.to_dict()               , within=NonNegativeReals,    doc='Peak demand'                             )
@@ -749,7 +757,7 @@ def SettingUpVariables(OptModel, mTEPES):
     StartTime = time.time()
 
     #%% variables
-    OptModel.vTotalFCost           = Var(                                          within=NonNegativeReals,                                                                                                        doc='total system fixed                   cost      [MEUR]')
+    OptModel.vTotalFCost           = Var(mTEPES.p,                                 within=NonNegativeReals,                                                                                                        doc='total system fixed                   cost      [MEUR]')
     OptModel.vTotalGCost           = Var(mTEPES.p, mTEPES.sc, mTEPES.n,            within=NonNegativeReals,                                                                                                        doc='total variable generation  operation cost      [MEUR]')
     OptModel.vTotalCCost           = Var(mTEPES.p, mTEPES.sc, mTEPES.n,            within=NonNegativeReals,                                                                                                        doc='total variable consumption operation cost      [MEUR]')
     OptModel.vTotalECost           = Var(mTEPES.p, mTEPES.sc, mTEPES.n,            within=NonNegativeReals,                                                                                                        doc='total system emission                cost      [MEUR]')
