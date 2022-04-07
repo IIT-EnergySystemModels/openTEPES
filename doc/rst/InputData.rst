@@ -267,7 +267,7 @@ Technology            Technology of the generator (nuclear, coal, CCGT, OCGT, ES
 MutuallyExclusive     Mutually exclusive generator. Only exclusion in one direction is needed
 BinaryCommitment      Binary unit commitment decision                                                                                         Yes/No
 NoOperatingReserve    No contribution to operating reserve. Yes if the unit doesn't contribute to the operating reserve                       Yes/No
-StorageType           Storage type based on storage capacity (daily, weekly, monthly, etc.)                                                   Daily/Weekly/Monthly
+StorageType           Storage type based on storage capacity (hourly, daily, weekly, monthly, etc.)                                           Hourly/Daily/Weekly/Monthly
 OutflowsType          Outflows type based on the demand extracted from the storage (hourly, daily, weekly, monthly, yearly, etc.)             Hourly/Daily/Weekly/Monthly/Yearly
 MustRun               Must-run unit                                                                                                           Yes/No
 PeriodIniGen          Installation period (year)                                                                                              Year
