@@ -13,7 +13,7 @@ def TotalObjectiveFunction(OptModel, mTEPES, pIndLogConsole):
     StartTime = time.time()
 
     def eTotalTCost(OptModel):
-        return OptModel.vTotalFCost + sum(mTEPES.pPeriodWeight[p] * mTEPES.pScenProb[p,sc] * (OptModel.vTotalGCost[p,sc,n] + OptModel.vTotalCCost[p,sc,n] + OptModel.vTotalECost[p,sc,n] + OptModel.vTotalRCost[p,sc,n]) for p,sc,n in mTEPES.p*mTEPES.sc*mTEPES.n)
+        return sum((1/((1+mTEPES.pAnnualDiscRate())**(p-mTEPES.pCurrentYear()))) * OptModel.vTotalFCost[p] for p in mTEPES.p) + sum((1/((1+mTEPES.pAnnualDiscRate())**(p-mTEPES.pCurrentYear()))) * mTEPES.pPeriodWeight[p] * mTEPES.pScenProb[p,sc] * (OptModel.vTotalGCost[p,sc,n] + OptModel.vTotalCCost[p,sc,n] + OptModel.vTotalECost[p,sc,n] + OptModel.vTotalRCost[p,sc,n]) for p,sc,n in mTEPES.p*mTEPES.sc*mTEPES.n)
     OptModel.eTotalTCost = Objective(rule=eTotalTCost, sense=minimize, doc='total system cost [MEUR]')
 
     GeneratingTime = time.time() - StartTime
@@ -26,9 +26,9 @@ def InvestmentModelFormulation(OptModel, mTEPES, pIndLogConsole):
 
     StartTime = time.time()
 
-    def eTotalFCost(OptModel):
-        return OptModel.vTotalFCost == sum(mTEPES.pPeriodWeight[p] * mTEPES.pGenInvestCost[gc] * OptModel.vGenerationInvest[p,gc] for p,gc in mTEPES.p*mTEPES.gc) + sum(mTEPES.pPeriodWeight[p] * mTEPES.pGenRetireCost[gd] * OptModel.vGenerationRetire[p,gd] for p,gd in mTEPES.p*mTEPES.gd) + sum(mTEPES.pPeriodWeight[p] * mTEPES.pNetFixedCost[ni,nf,cc] * OptModel.vNetworkInvest[p,ni,nf,cc] for p,ni,nf,cc in mTEPES.p*mTEPES.lc)
-    OptModel.eTotalFCost = Constraint(rule=eTotalFCost, doc='system fixed    cost [MEUR]')
+    def eTotalFCost(OptModel,p):
+        return OptModel.vTotalFCost[p] == sum(mTEPES.pGenInvestCost[gc] * OptModel.vGenerationInvest[p,gc] for gc in mTEPES.gc) + sum(mTEPES.pGenRetireCost[gd] * OptModel.vGenerationRetire[p,gd] for gd in mTEPES.gd) + sum(mTEPES.pNetFixedCost[ni,nf,cc] * OptModel.vNetworkInvest[p,ni,nf,cc] for ni,nf,cc in mTEPES.lc)
+    OptModel.eTotalFCost = Constraint(mTEPES.p, rule=eTotalFCost, doc='system fixed    cost [MEUR]')
 
     def eConsecutiveGenInvest(OptModel,p,gc):
         if p != mTEPES.p.first():
