@@ -182,9 +182,7 @@ Reliability cost [M€] «``eTotalRCost``»
 
 :math:`\sum_{pωni}{P^ω_p DUR_n CENS ens^p_{ωni}}`
 
-All the periodical (annual) costs are updated considering that a period is replicated for a number of years defined by weight :math:`\Omega` and discounted to the current year :math:`T` with this formula
-
-:math:`\frac{(1+\delta)^{\Omega}-1}{\delta(1+\delta)^{\Omega}(1+\delta)^{p-T}}`
+All the periodical (annual) costs are updated considering that a period is replicated for a number of years defined by the weight :math:`\Omega` and discounted to the current year :math:`T` with this formula :math:`\frac{(1+\delta)^{\Omega}-1}{\delta(1+\delta)^{\Omega}(1+\delta)^{p-T}}`.
 
 **Constraints**
 
