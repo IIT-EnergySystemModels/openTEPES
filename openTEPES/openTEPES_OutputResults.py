@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 07, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 08, 2022
 """
 
 import time
@@ -788,13 +788,13 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES):
     _path = os.path.join(DirName, CaseName)
     StartTime = time.time()
     SysCost     = OptModel.eTotalTCost.expr()
-    GenInvCost  = sum((1/((1+mTEPES.pAnnualDiscRate())**(p-mTEPES.pCurrentYear())))                                                                                                                                                    * mTEPES.pGenInvestCost[gc       ] * OptModel.vGenerationInvest[p,gc      ]() for p,gc       in mTEPES.p*mTEPES.gc                   )
-    GenRetCost  = sum((1/((1+mTEPES.pAnnualDiscRate())**(p-mTEPES.pCurrentYear())))                                                                                                                                                    * mTEPES.pGenRetireCost[gd       ] * OptModel.vGenerationRetire[p,gd      ]() for p,gd       in mTEPES.p*mTEPES.gd                   )
-    NetInvCost  = sum((1/((1+mTEPES.pAnnualDiscRate())**(p-mTEPES.pCurrentYear())))                                                                                                                                                    * mTEPES.pNetFixedCost [ni,nf,cc ] * OptModel.vNetworkInvest   [p,ni,nf,cc]() for p,ni,nf,cc in mTEPES.p*mTEPES.lc                   )
-    GenCost     = sum((1/((1+mTEPES.pAnnualDiscRate())**(p-mTEPES.pCurrentYear()))) * (((1+mTEPES.pAnnualDiscRate())**(mTEPES.pPeriodWeight[p])-1)/(mTEPES.pAnnualDiscRate()*(1+mTEPES.pAnnualDiscRate())**(mTEPES.pPeriodWeight[p]))) * mTEPES.pScenProb     [p,sc     ] * OptModel.vTotalGCost      [p,sc,n    ]() for p,sc,n     in mTEPES.p*mTEPES.sc*mTEPES.n          )
-    ConCost     = sum((1/((1+mTEPES.pAnnualDiscRate())**(p-mTEPES.pCurrentYear()))) * (((1+mTEPES.pAnnualDiscRate())**(mTEPES.pPeriodWeight[p])-1)/(mTEPES.pAnnualDiscRate()*(1+mTEPES.pAnnualDiscRate())**(mTEPES.pPeriodWeight[p]))) * mTEPES.pScenProb     [p,sc     ] * OptModel.vTotalCCost      [p,sc,n    ]() for p,sc,n     in mTEPES.p*mTEPES.sc*mTEPES.n          )
-    EmiCost     = sum((1/((1+mTEPES.pAnnualDiscRate())**(p-mTEPES.pCurrentYear()))) * (((1+mTEPES.pAnnualDiscRate())**(mTEPES.pPeriodWeight[p])-1)/(mTEPES.pAnnualDiscRate()*(1+mTEPES.pAnnualDiscRate())**(mTEPES.pPeriodWeight[p]))) * mTEPES.pScenProb     [p,sc     ] * OptModel.vTotalECost      [p,sc,n    ]() for p,sc,n     in mTEPES.p*mTEPES.sc*mTEPES.n          )
-    RelCost     = sum((1/((1+mTEPES.pAnnualDiscRate())**(p-mTEPES.pCurrentYear()))) * (((1+mTEPES.pAnnualDiscRate())**(mTEPES.pPeriodWeight[p])-1)/(mTEPES.pAnnualDiscRate()*(1+mTEPES.pAnnualDiscRate())**(mTEPES.pPeriodWeight[p]))) * mTEPES.pScenProb     [p,sc     ] * OptModel.vTotalRCost      [p,sc,n    ]() for p,sc,n     in mTEPES.p*mTEPES.sc*mTEPES.n          )
+    GenInvCost  = sum(mTEPES.pDiscountFactor[p] * mTEPES.pGenInvestCost[gc       ] * OptModel.vGenerationInvest[p,gc      ]() for p,gc       in mTEPES.p*mTEPES.gc         )
+    GenRetCost  = sum(mTEPES.pDiscountFactor[p] * mTEPES.pGenRetireCost[gd       ] * OptModel.vGenerationRetire[p,gd      ]() for p,gd       in mTEPES.p*mTEPES.gd         )
+    NetInvCost  = sum(mTEPES.pDiscountFactor[p] * mTEPES.pNetFixedCost [ni,nf,cc ] * OptModel.vNetworkInvest   [p,ni,nf,cc]() for p,ni,nf,cc in mTEPES.p*mTEPES.lc         )
+    GenCost     = sum(mTEPES.pDiscountFactor[p] * mTEPES.pScenProb     [p,sc     ] * OptModel.vTotalGCost      [p,sc,n    ]() for p,sc,n     in mTEPES.p*mTEPES.sc*mTEPES.n)
+    ConCost     = sum(mTEPES.pDiscountFactor[p] * mTEPES.pScenProb     [p,sc     ] * OptModel.vTotalCCost      [p,sc,n    ]() for p,sc,n     in mTEPES.p*mTEPES.sc*mTEPES.n)
+    EmiCost     = sum(mTEPES.pDiscountFactor[p] * mTEPES.pScenProb     [p,sc     ] * OptModel.vTotalECost      [p,sc,n    ]() for p,sc,n     in mTEPES.p*mTEPES.sc*mTEPES.n)
+    RelCost     = sum(mTEPES.pDiscountFactor[p] * mTEPES.pScenProb     [p,sc     ] * OptModel.vTotalRCost      [p,sc,n    ]() for p,sc,n     in mTEPES.p*mTEPES.sc*mTEPES.n)
     if sum(mTEPES.pDemand[p,sc,n,nd] for p,sc,n,nd in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.nd):
         DemPayment = sum(mTEPES.pDuration [n] * mTEPES.pDemand [p,sc,n,nd] * OptModel.LSRMC [p,sc,n,nd ] for p,sc,n,nd in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.nd) / 1e3
     Costs       = {'':['System Cost', 'Generation Investment Cost', 'Generation Retirement Cost', 'Network Investment Cost', 'Generation Operation Cost', 'Consumption Operation Cost', 'Emission Cost', 'Reliability Cost', 'Demand Payment with SRMC'], 'MEUR': [SysCost, GenInvCost, GenRetCost, NetInvCost, GenCost, ConCost, EmiCost, RelCost, DemPayment]}
