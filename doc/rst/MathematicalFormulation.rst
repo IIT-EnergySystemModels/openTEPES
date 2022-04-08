@@ -43,7 +43,15 @@ Parameters
 They are written in **uppercase** letters.
 
 ==================  ====================================================  =======
-**Demand**                                                       
+**General**
+------------------  ----------------------------------------------------  -------
+:math:`\delta`      Annual discount rate                                  p.u.
+:math:`\Omega`      Period (year) weight                                  p.u.
+:math:`T`           Current period (year)                                 p.u.
+==================  ====================================================  =======
+
+==================  ====================================================  =======
+**Demand**
 ------------------  ----------------------------------------------------  -------
 :math:`D^p_{ωni}`   Demand in each node                                   GW
 :math:`PD_a`        Peak demand in each area                              GW
@@ -52,13 +60,13 @@ They are written in **uppercase** letters.
 ==================  ====================================================  =======
 
 ==================  ====================================================  =======
-**Scenarios**                                                       
+**Scenarios**
 ------------------  ----------------------------------------------------  -------
 :math:`P^ω_p`         Probability of each scenario in each period           p.u.
 ==================  ====================================================  =======
 
 ==========================================  ==================================================================  ====
-**Operating reserves**                                         
+**Operating reserves**
 ------------------------------------------  ------------------------------------------------------------------  ----
 :math:`URA, DRA`                            Upward and downward reserve activation                              p.u.
 :math:`\underline{DtUR}, \overline{DtUR}`   Minimum and maximum ratios downward to upward operating reserves    p.u.
@@ -78,7 +86,7 @@ They are written in **uppercase** letters.
 ==============================  ========================================================  ====
 
 =====================================================  ========================================================================================================================  ============
-**Generation system**   
+**Generation system**
 -----------------------------------------------------  ------------------------------------------------------------------------------------------------------------------------  ------------
 :math:`CFG_g`                                          Annualized fixed cost of a candidate generator                                                                            M€
 :math:`CFR_g`                                          Annualized fixed cost of a candidate generator to be retired                                                              M€
@@ -101,10 +109,10 @@ They are written in **uppercase** letters.
 =====================================================  ========================================================================================================================  ============
 
 =========================================  =================================================================================================================  ====
-**Transmission system**   
+**Transmission system**
 -----------------------------------------  -----------------------------------------------------------------------------------------------------------------  ----
-:math:`CFT_{ijc}`                          Annualized fixed cost of a candidate transmission line                                                             M€    
-:math:`\overline{F}_{ijc}`                 Net transfer capacity (total transfer capacity multiplied by the security coefficient) of a transmission line      GW  
+:math:`CFT_{ijc}`                          Annualized fixed cost of a candidate transmission line                                                             M€
+:math:`\overline{F}_{ijc}`                 Net transfer capacity (total transfer capacity multiplied by the security coefficient) of a transmission line      GW
 :math:`\overline{F}'_{ijc}`                Maximum flow used in the Kirchhoff's 2nd law constraint (e.g., disjunctive constraint for the candidate AC lines)  GW
 :math:`L_{ijc}, X_{ijc}`                   Loss factor and reactance of a transmission line                                                                   p.u.
 :math:`SON_{ijc}, SOF_{ijc}`               Minimum switch-on and switch-off state of a line                                                                   h
@@ -119,13 +127,13 @@ Variables
 They are written in **lowercase** letters.
 
 ===================  ==================  ===
-**Demand**                             
+**Demand**
 -------------------  ------------------  ---
 :math:`ens^p_{ωni}`   Energy not served   GW
 ===================  ==================  ===
 
 ==========================================  ==========================================================================  =====
-**Generation system**   
+**Generation system**
 ------------------------------------------  --------------------------------------------------------------------------  -----
 :math:`icg_{pg}`                            Candidate generator or ESS installed or not                                 {0,1}
 :math:`rcg_{pg}`                            Candidate generator or ESS retired   or not                                 {0,1}
@@ -142,7 +150,7 @@ They are written in **lowercase** letters.
 ==========================================  ==========================================================================  =====
 
 ======================================================  =================================================================  =====
-**Transmission system** 
+**Transmission system**
 ------------------------------------------------------  -----------------------------------------------------------------  -----
 :math:`ict_{pijc}`                                      Candidate line installed or not                                    {0,1}
 :math:`swt^p_{ωnijc}, son^p_{ωnijc}, sof^p_{ωnijc}`     Switching state, switch-on and switch-off of a line                {0,1}
@@ -156,7 +164,7 @@ Equations
 
 The names between parenthesis correspond to the names of the constraints in the code.
 
-**Objective function**: minimization of total (investment and operation) cost for the scope of the model
+**Objective function**: minimization of total (investment and operation) cost for the multi-period scope of the model
 
 Generation, storage and network investment cost plus retirement cost [M€] «``eTotalFCost``»
 
@@ -173,6 +181,10 @@ Variable consumption operation cost [M€] «``eTotalCCost``»
 Reliability cost [M€] «``eTotalRCost``»
 
 :math:`\sum_{pωni}{P^ω_p DUR_n CENS ens^p_{ωni}}`
+
+All the periodical (annual) costs are updated considering that a period is replicated for a number of years defined by weight :math:`\Omega` and discounted to the current year :math:`T` with this formula
+
+:math:`\frac{(1+\delta)^{\Omega}-1}{\delta(1+\delta)^{\Omega}(1+\delta)^{p-T}}`
 
 **Constraints**
 
