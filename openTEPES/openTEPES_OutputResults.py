@@ -580,8 +580,8 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES):
 
     OutputToFile = OutputToFile.to_frame(name='EUR/MWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='EUR/MWh')
     OutputToFile.rename_axis(['Period','Scenario','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_MarginalIncrementalVariableCost_'+CaseName+'.csv', sep=',')
-    IncrementalGens = pd.Series(data=[0 for p,sc,n in mTEPES.p*mTEPES.sc*mTEPES.n], index=pd.MultiIndex.from_tuples(mTEPES.p*mTEPES.sc*mTEPES.n)).to_frame(name='Generator')
-    for p,sc,n in mTEPES.p*mTEPES.sc*mTEPES.n:
+    IncrementalGens = pd.Series(data=[0 for p,sc,n in list(set([(p,sc,n) for p,sc,n,g in SurplusGens]))], index=pd.MultiIndex.from_tuples(list(set([(p,sc,n) for p,sc,n,g in SurplusGens])))).to_frame(name='Generator')
+    for p,sc,n in list(set([(p,sc,n) for p,sc,n,g in SurplusGens])):
         IncrementalGens["Generator"][p,sc,n] = OutputToFile.loc[[(p,sc,n)]].squeeze().idxmin()
     IncrementalGens.to_csv(_path+'/oT_Result_MarginalIncrementalGenerator_'+CaseName+'.csv', sep=',')
 
