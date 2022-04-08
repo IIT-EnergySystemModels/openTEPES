@@ -183,7 +183,7 @@ Reliability cost [M€] «``eTotalRCost``»
 
 :math:`\sum_{pωni}{DF_p P^ω_p DUR_n CENS ens^p_{ωni}}`
 
-All the periodical (annual) costs are updated considering that a period (e.g., 2030) is replicated for a number of years defined by the weight :math:`\Omega` (e.g., 5 times) and discounted to the current year :math:`T` (e.g., 2022) with this discount factor :math:`DF_p = \frac{(1+\delta)^{\Omega}-1}{\delta(1+\delta)^{\Omega-1}(1+\delta)^{p-T}}`.
+All the periodical (annual) costs are updated considering that a period (e.g., 2030) is replicated for a number of years defined by its weight :math:`\Omega` (e.g., 5 times) and discounted to the current year :math:`T` (e.g., 2022) with this discount factor :math:`DF_p = \frac{(1+\delta)^{\Omega}-1}{\delta(1+\delta)^{\Omega-1}(1+\delta)^{p-T}}`.
 
 **Constraints**
 
