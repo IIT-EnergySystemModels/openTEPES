@@ -13,7 +13,7 @@ def TotalObjectiveFunction(OptModel, mTEPES, pIndLogConsole):
     StartTime = time.time()
 
     def eTotalTCost(OptModel):
-        return sum(((1+mTEPES.pAnnualDiscRate())**mTEPES.pPeriodWeight[p]-1) / (mTEPES.pAnnualDiscRate()*(1+mTEPES.pAnnualDiscRate())**mTEPES.pPeriodWeight[p]) / ((1+mTEPES.pAnnualDiscRate())**(p-mTEPES.pCurrentYear())) *OptModel.vTotalFCost[p] for p in mTEPES.p) + sum(((1+mTEPES.pAnnualDiscRate())**mTEPES.pPeriodWeight[p]-1) / (mTEPES.pAnnualDiscRate()*(1+mTEPES.pAnnualDiscRate())**mTEPES.pPeriodWeight[p]) / ((1+mTEPES.pAnnualDiscRate())**(p-mTEPES.pCurrentYear())) * mTEPES.pScenProb[p,sc] * (OptModel.vTotalGCost[p,sc,n] + OptModel.vTotalCCost[p,sc,n] + OptModel.vTotalECost[p,sc,n] + OptModel.vTotalRCost[p,sc,n]) for p,sc,n in mTEPES.p*mTEPES.sc*mTEPES.n)
+        return sum(mTEPES.pDiscountFactor[p] * OptModel.vTotalFCost[p] for p in mTEPES.p) + sum(mTEPES.pDiscountFactor[p] * mTEPES.pScenProb[p,sc] * (OptModel.vTotalGCost[p,sc,n] + OptModel.vTotalCCost[p,sc,n] + OptModel.vTotalECost[p,sc,n] + OptModel.vTotalRCost[p,sc,n]) for p,sc,n in mTEPES.p*mTEPES.sc*mTEPES.n)
     OptModel.eTotalTCost = Objective(rule=eTotalTCost, sense=minimize, doc='total system cost [MEUR]')
 
     GeneratingTime = time.time() - StartTime

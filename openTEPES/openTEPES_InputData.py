@@ -401,6 +401,11 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
 
     mTEPES.s2n = Set(initialize=pStage2Level.index, ordered=False, doc='load level to stage')
 
+    if pAnnualDiscRate == 0.0:
+        pDiscountFactor = pd.Series(data=[1.0 for p in mTEPES.p], index=mTEPES.p)
+    else:
+        pDiscountFactor = pd.Series(data=[((1.0+pAnnualDiscRate())**pPeriodWeight[p]-1.0) / (pAnnualDiscRate()*(1.0+pAnnualDiscRate())**pPeriodWeight[p]) / ((1.0+pAnnualDiscRate())**(p-mTEPES.pCurrentYear())) for p in mTEPES.p], index=mTEPES.p)
+
     mTEPES.pLoadLevelWeight = Param(mTEPES.n, initialize=0.0, within=NonNegativeReals, doc='Load level weight', mutable=True)
     for st,n in mTEPES.s2n:
         mTEPES.pLoadLevelWeight[n] = pStageWeight[st]
@@ -654,7 +659,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.pReserveMargin        = Param(                               mTEPES.ar, initialize=pReserveMargin.to_dict()            , within=NonNegativeReals,    doc='Adequacy reserve margin'                 )
     mTEPES.pPeakDemand           = Param(                               mTEPES.ar, initialize=pPeakDemand.to_dict()               , within=NonNegativeReals,    doc='Peak demand'                             )
     mTEPES.pDemand               = Param(mTEPES.p, mTEPES.sc, mTEPES.n, mTEPES.nd, initialize=pDemand.stack().to_dict()           , within=           Reals,    doc='Demand'                                  )
-    mTEPES.pPeriodWeight         = Param(mTEPES.p,                                 initialize=pPeriodWeight.to_dict()             , within=NonNegativeReals,    doc='Period weight'                           )
+    mTEPES.pPeriodWeight         = Param(mTEPES.p,                                 initialize=pPeriodWeight.to_dict()             , within=NonNegativeIntegers, doc='Period weight'                           )
+    mTEPES.pDiscountFactor       = Param(mTEPES.p,                                 initialize=pDiscountFactor.to_dict()           , within=NonNegativeReals,    doc='Discount factor'                         )
     mTEPES.pScenProb             = Param(mTEPES.p, mTEPES.sc,                      initialize=pScenProb.to_dict()                 , within=UnitInterval    ,    doc='Probability'                             )
     mTEPES.pStageWeight          = Param(mTEPES.stt,                               initialize=pStageWeight.to_dict()              , within=NonNegativeReals,    doc='Stage weight'                            )
     mTEPES.pDuration             = Param(                     mTEPES.n,            initialize=pDuration.to_dict()                 , within=NonNegativeReals,    doc='Duration'                                )
