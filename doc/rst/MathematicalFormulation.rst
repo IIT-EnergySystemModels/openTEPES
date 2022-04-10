@@ -48,6 +48,7 @@ They are written in **uppercase** letters.
 :math:`\delta`      Annual discount rate                                  p.u.
 :math:`\Omega`      Period (year) weight                                  p.u.
 :math:`T`           Current period (year)                                 p.u.
+:math:`DF_p`        Discount factor for each period (year)                p.u.
 ==================  ====================================================  =======
 
 ==================  ====================================================  =======
@@ -168,21 +169,21 @@ The names between parenthesis correspond to the names of the constraints in the 
 
 Generation, storage and network investment cost plus retirement cost [M€] «``eTotalFCost``»
 
-:math:`\sum_{pg} CFG_g icg_{pg} + \sum_{pg} CFR_g rcg_{pg} + \sum_{pijc} CFT_{ijc} ict_{pijc} +`
+:math:`\sum_{pg} DF_p CFG_g icg_{pg} + \sum_{pg} DF_p CFR_g rcg_{pg} + \sum_{pijc} DF_p CFT_{ijc} ict_{pijc} +`
 
 Generation operation cost [M€] «``eTotalGCost``» «``eTotalECost``»
 
-:math:`\sum_{pωng}{[P^ω_p DUR_n (CV_g gp^p_{ωng} + CF_g uc^p_{ωng}) + CSU_g su^p_{ωng} + CSD_g sd^p_{ωng}]} +`
+:math:`\sum_{pωng} {[DF_p P^ω_p DUR_n (CV_g gp^p_{ωng} + CF_g uc^p_{ωng}) + DF_p CSU_g su^p_{ωng} + DF_p CSD_g sd^p_{ωng}]} +`
 
 Variable consumption operation cost [M€] «``eTotalCCost``»
 
-:math:`\sum_{pωne}{P^ω_p DUR_n CV_e gc^p_{ωne}} +`
+:math:`\sum_{pωne}{DF_p P^ω_p DUR_n CV_e gc^p_{ωne}} +`
 
 Reliability cost [M€] «``eTotalRCost``»
 
-:math:`\sum_{pωni}{P^ω_p DUR_n CENS ens^p_{ωni}}`
+:math:`\sum_{pωni}{DF_p P^ω_p DUR_n CENS ens^p_{ωni}}`
 
-All the periodical (annual) costs are updated considering that a period is replicated for a number of years defined by the weight :math:`\Omega` and discounted to the current year :math:`T` with this formula :math:`\frac{(1+\delta)^{\Omega}-1}{\delta(1+\delta)^{\Omega}(1+\delta)^{p-T}}`.
+All the periodical (annual) costs are updated considering that a period (e.g., 2030) is replicated for a number of years defined by its weight :math:`\Omega` (e.g., 5 times) and discounted to the current year :math:`T` (e.g., 2022) with this discount factor :math:`DF_p = \frac{(1+\delta)^{\Omega}-1}{\delta(1+\delta)^{\Omega-1+p-T}}`.
 
 **Constraints**
 

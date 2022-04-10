@@ -402,9 +402,9 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.s2n = Set(initialize=pStage2Level.index, ordered=False, doc='load level to stage')
 
     if pAnnualDiscRate == 0.0:
-        pDiscountFactor = pd.Series(data=[1.0 for p in mTEPES.p], index=mTEPES.p)
+        pDiscountFactor = pd.Series(data=[pPeriodWeight[p] for p in mTEPES.p], index=mTEPES.p)
     else:
-        pDiscountFactor = pd.Series(data=[((1.0+pAnnualDiscRate)**pPeriodWeight[p]-1.0) / (pAnnualDiscRate*(1.0+pAnnualDiscRate)**pPeriodWeight[p]) / ((1.0+pAnnualDiscRate)**(p-pCurrentYear)) for p in mTEPES.p], index=mTEPES.p)
+        pDiscountFactor = pd.Series(data=[((1.0+pAnnualDiscRate)**pPeriodWeight[p]-1.0) / (pAnnualDiscRate*(1.0+pAnnualDiscRate)**(pPeriodWeight[p]-1+p-pCurrentYear)) for p in mTEPES.p], index=mTEPES.p)
 
     mTEPES.pLoadLevelWeight = Param(mTEPES.n, initialize=0.0, within=NonNegativeReals, doc='Load level weight', mutable=True)
     for st,n in mTEPES.s2n:
