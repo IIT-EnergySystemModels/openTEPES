@@ -128,6 +128,33 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES):
         chart = alt.Chart(OutputResults).mark_bar().encode(x='Technology:O', y='sum(MW):Q', color='Technology:N', column='Period:N').properties(width=600, height=400)
         chart.save(_path+'/oT_Plot_TechnologyInvestment_'+CaseName+'.html', embed_options={'renderer':'svg'})
 
+        # Saving and plotting generation investment cost into CSV file
+        OutputResults_0 = OutputResults.set_index(['Period', 'Technology'])
+        OutputToFile = pd.Series(data=[mTEPES.pDiscountFactor[p] * mTEPES.pGenInvestCost[gc] * OptModel.vGenerationInvest[p,gc]() for p,gc in mTEPES.p*mTEPES.gc], index=pd.Index(mTEPES.p*mTEPES.gc))
+        OutputToFile = OutputToFile.fillna(0).to_frame(name='MEUR').reset_index().rename(columns={'level_0': 'Period', 'level_1': 'Generating unit'})
+        OutputToFile = OutputToFile.set_index(['Period', 'Generating unit'])
+
+        OutputResults_1 = pd.Series(data=[gt for p,gc,gt in mTEPES.p*mTEPES.gc*mTEPES.gt if (gt,gc) in mTEPES.t2g], index=pd.Index(mTEPES.p*mTEPES.gc))
+        OutputResults_1 = OutputResults_1.to_frame(name='Technology')
+        OutputResults_2 = OutputToFile
+        OutputResults   = pd.concat([OutputResults_1, OutputResults_2], axis=1)
+        OutputResults.index.names = ['Period','Generating unit']
+        OutputResults   = OutputResults.reset_index().groupby(['Period', 'Technology']).sum()
+        OutputResults['MEUR'] = round(OutputResults['MEUR'], 2)
+
+        OutputResults.reset_index().to_csv(_path+'/oT_Result_TechnologyInvestmentCost_'+CaseName+'.csv', sep=',', index=False)
+
+        chart = alt.Chart(OutputResults.reset_index()).mark_bar().encode(x='Technology:O', y='sum(MEUR):Q', color='Technology:N', column='Period:N').properties(width=600, height=400)
+        chart.save(_path+'/oT_Plot_TechnologyInvestmentCost_'+CaseName+'.html', embed_options={'renderer':'svg'})
+
+        OutputResults = OutputResults['MEUR']/OutputResults_0['MW']
+        OutputResults = OutputResults.fillna(0).to_frame(name='MEUR/MW')
+        OutputResults   = OutputResults.reset_index()
+        OutputResults.to_csv(_path+'/oT_Result_TechnologyInvestmentCostPerMW_'+CaseName+'.csv', sep=',', index=False)
+
+        chart = alt.Chart(OutputResults).mark_bar().encode(x='Technology:O', y='sum(MEUR/MW):Q', color='Technology:N', column='Period:N').properties(width=600, height=400)
+        chart.save(_path+'/oT_Plot_TechnologyInvestmentCostPerMW_'+CaseName+'.html', embed_options={'renderer':'svg'})
+
     if len(mTEPES.gd):
         # Saving generation retirement into CSV file
         OutputToFile = pd.Series(data=[mTEPES.pRatedMaxPower[gd]*OptModel.vGenerationRetire[p,gd]()*1e3 for p,gd in mTEPES.p*mTEPES.gd], index=pd.Index(mTEPES.p*mTEPES.gd))
