@@ -1004,11 +1004,11 @@ def SettingUpVariables(OptModel, mTEPES):
             OptModel.vENS[p,sc,n,nd].fix(0.0)
 
     # do not install/retire power plants and lines if not allowed in this period
-    for p,g in mTEPES.p*mTEPES.gc:
+    for p,gc in mTEPES.p*mTEPES.gc:
         if mTEPES.pPeriodIniGen[gc] > p or mTEPES.pPeriodFinGen[gc] < p:
             OptModel.vGenerationInvest[p,gc].fix(0)
 
-    for p,g in mTEPES.p*mTEPES.gd:
+    for p,gd in mTEPES.p*mTEPES.gd:
         if mTEPES.pPeriodIniGen[gd] > p or mTEPES.pPeriodFinGen[gd] < p:
             OptModel.vGenerationRetire[p,gd].fix(0)
 
