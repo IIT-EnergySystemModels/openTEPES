@@ -16,9 +16,14 @@ from   colour        import Color
 
 # Definition of Pie plots
 def PiePlots(period, scenario, df, Category, Value):
+    df                    = df.reset_index()
     df                    = df.loc[(df['level_0'] == period) & (df['level_1'] == scenario)]
+    df                    = df.set_index(['level_0', 'level_1', 'level_2', 'level_3'])
+    df[0]                 = (df[0] / df[0].sum()) * 100.0
+    df                    = df.reset_index()
     OutputToPlot          = df.groupby(['level_3']).sum()
-    OutputToPlot          = OutputToPlot.reset_index().rename(columns={'level_3': Category, '': Value})
+    OutputToPlot          = OutputToPlot[0]
+    OutputToPlot          = OutputToPlot.reset_index().rename(columns={'level_3': Category, 0: Value})
     OutputToPlot[Value]   = round(OutputToPlot[Value], 1)
     OutputToPlot          = OutputToPlot[(OutputToPlot[[Value]] != 0).all(axis=1)]
     OutputToPlot['Label'] = [OutputToPlot[Category][i]+': '+str(OutputToPlot[Value][i]) for i in OutputToPlot.index]
@@ -400,12 +405,8 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES):
     OutputToFile = pd.Series(data=[sum(OutputToFile[p,sc,n,g] for g in mTEPES.g if (gt,g) in mTEPES.t2g) for p,sc,n,gt in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.gt], index=pd.MultiIndex.from_tuples(mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.gt))
     OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='GWh').rename_axis(['Period','Scenario','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_TechnologyEnergy_'+CaseName+'.csv', sep=',')
 
-    TechnologyEnergy = OutputToFile.to_frame(name='')
-    TechnologyEnergy[''] = (TechnologyEnergy[''] / TechnologyEnergy[''].sum()) * 100.0
-    # TechnologyEnergy.reset_index(level=3, inplace=True)
-
     for p,sc in mTEPES.p*mTEPES.sc:
-        chart = PiePlots(p, sc , TechnologyEnergy.reset_index(), 'Technology', '%')
+        chart = PiePlots(p, sc , OutputToFile, 'Technology', '%')
         chart.save(_path+'/oT_Plot_TechnologyEnergy_'+str(p)+'_'+str(sc)+'_'+CaseName+'.html', embed_options={'renderer': 'svg'})
 
     for ar in mTEPES.ar:
@@ -414,12 +415,8 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES):
             OutputToFile = pd.Series(data=[sum(OutputToFile[p,sc,n,g] for g in mTEPES.g if (ar,g) in mTEPES.a2g and (gt,g) in mTEPES.t2g) for p,sc,n,gt in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.gt], index=pd.MultiIndex.from_tuples(mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.gt))
             OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='GWh').rename_axis(['Period','Scenario','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_TechnologyEnergy_'+ar+'_'+CaseName+'.csv', sep=',')
 
-            TechnologyEnergy = OutputToFile.to_frame(name='')
-            TechnologyEnergy[''] = (TechnologyEnergy[''] / TechnologyEnergy[''].sum()) * 100.0
-            # TechnologyEnergy.reset_index(level=3, inplace=True)
-
             for p, sc in mTEPES.p * mTEPES.sc:
-                chart = PiePlots(p, sc, TechnologyEnergy.reset_index(), 'Technology', '%')
+                chart = PiePlots(p, sc, OutputToFile, 'Technology', '%')
                 chart.save(_path+'/oT_Plot_TechnologyEnergy_'+str(p)+'_'+str(sc)+'_'+ar+'_'+CaseName+'.html', embed_options={'renderer': 'svg'})
 
     WritingResultsTime = time.time() - StartTime
@@ -459,12 +456,8 @@ def ESSOperationResults(DirName, CaseName, OptModel, mTEPES):
 
         OutputToFile *= -1.0
         if OutputToFile.sum() < 0.0:
-            ESSTechnologyEnergy = OutputToFile.to_frame(name='')
-            ESSTechnologyEnergy[''] = (ESSTechnologyEnergy[''] / ESSTechnologyEnergy[''].sum()) * 100.0
-            # ESSTechnologyEnergy.reset_index(level=3, inplace=True)
-
             for p, sc in mTEPES.p * mTEPES.sc:
-                chart = PiePlots(p, sc, ESSTechnologyEnergy.reset_index(), 'Technology', '%')
+                chart = PiePlots(p, sc, OutputToFile, 'Technology', '%')
                 chart.save(_path+'/oT_Plot_TechnologyEnergyESS_'+str(p)+'_'+str(sc)+'_'+CaseName+'.html', embed_options={'renderer': 'svg'})
 
         for ar in mTEPES.ar:
@@ -475,12 +468,8 @@ def ESSOperationResults(DirName, CaseName, OptModel, mTEPES):
 
                 OutputToFile *= -1.0
                 if OutputToFile.sum() < 0.0:
-                    ESSTechnologyEnergy = OutputToFile.to_frame(name='')
-                    ESSTechnologyEnergy[''] = (ESSTechnologyEnergy[''] / ESSTechnologyEnergy[''].sum()) * 100.0
-                    # ESSTechnologyEnergy.reset_index(level=3, inplace=True)
-
                     for p, sc in mTEPES.p * mTEPES.sc:
-                        chart = PiePlots(p, sc, ESSTechnologyEnergy.reset_index(), 'Technology', '%')
+                        chart = PiePlots(p, sc, OutputToFile, 'Technology', '%')
                         chart.save(_path+'/oT_Plot_TechnologyEnergyESS_'+str(p)+'_'+str(sc)+'_'+ar+'_'+CaseName+'.html', embed_options={'renderer': 'svg'})
 
         OutputToFile = pd.Series(data=[OptModel.vESSInventory[p,sc,n,es]()                               for p,sc,n,es in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.es if mTEPES.n.ord(n) % mTEPES.pCycleTimeStep[es] == 0], index=pd.MultiIndex.from_tuples(list([(p,sc,n,es) for p,sc,n,es in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.es if mTEPES.n.ord(n) % mTEPES.pCycleTimeStep[es] == 0])))
