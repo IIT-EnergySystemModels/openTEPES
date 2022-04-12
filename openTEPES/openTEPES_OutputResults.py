@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 08, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 12, 2022
 """
 
 import time
@@ -15,7 +15,8 @@ from   colour        import Color
 
 
 # Definition of Pie plots
-def PiePlots(df, Category, Value):
+def PiePlots(period, scenario, df, Category, Value):
+    df                    = df.loc[(df['level_0'] == period) & (df['level_1'] == scenario)]
     OutputToPlot          = df.groupby(['level_3']).sum()
     OutputToPlot          = OutputToPlot.reset_index().rename(columns={'level_3': Category, '': Value})
     OutputToPlot[Value]   = round(OutputToPlot[Value], 1)
@@ -393,7 +394,7 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES):
 
     for p,sc in mTEPES.p*mTEPES.sc:
         chart = AreaPlots(p, sc, TechnologyOutput, 'Technology', 'LoadLevel', 'MW', 'sum')
-        chart.save(_path+'/oT_Plot_TechnologyOutput_'+str(sc)+'_'+CaseName+'.html', embed_options={'renderer': 'svg'})
+        chart.save(_path+'/oT_Plot_TechnologyOutput_'+str(p)+'_'+str(sc)+'_'+CaseName+'.html', embed_options={'renderer': 'svg'})
 
     OutputToFile = pd.Series(data=[OptModel.vTotalOutput[p,sc,n,g]()*mTEPES.pLoadLevelWeight[n]()*mTEPES.pDuration[n] for p,sc,n,g in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.g ], index=pd.MultiIndex.from_tuples(mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.g ))
     OutputToFile = pd.Series(data=[sum(OutputToFile[p,sc,n,g] for g in mTEPES.g if (gt,g) in mTEPES.t2g) for p,sc,n,gt in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.gt], index=pd.MultiIndex.from_tuples(mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.gt))
@@ -401,10 +402,11 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES):
 
     TechnologyEnergy = OutputToFile.to_frame(name='')
     TechnologyEnergy[''] = (TechnologyEnergy[''] / TechnologyEnergy[''].sum()) * 100.0
-    TechnologyEnergy.reset_index(level=3, inplace=True)
+    # TechnologyEnergy.reset_index(level=3, inplace=True)
 
-    chart = PiePlots(TechnologyEnergy, 'Technology', '%')
-    chart.save(_path+'/oT_Plot_TechnologyEnergy_'+CaseName+'.html', embed_options={'renderer': 'svg'})
+    for p,sc in mTEPES.p*mTEPES.sc:
+        chart = PiePlots(p, sc , TechnologyEnergy.reset_index(), 'Technology', '%')
+        chart.save(_path+'/oT_Plot_TechnologyEnergy_'+str(p)+'_'+str(sc)+'_'+CaseName+'.html', embed_options={'renderer': 'svg'})
 
     for ar in mTEPES.ar:
         if len(mTEPES.ar) > 1:
@@ -414,10 +416,11 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES):
 
             TechnologyEnergy = OutputToFile.to_frame(name='')
             TechnologyEnergy[''] = (TechnologyEnergy[''] / TechnologyEnergy[''].sum()) * 100.0
-            TechnologyEnergy.reset_index(level=3, inplace=True)
+            # TechnologyEnergy.reset_index(level=3, inplace=True)
 
-            chart = PiePlots(TechnologyEnergy, 'Technology', '%')
-            chart.save(_path+'/oT_Plot_TechnologyEnergy_'+ar+'_'+CaseName+'.html', embed_options={'renderer': 'svg'})
+            for p, sc in mTEPES.p * mTEPES.sc:
+                chart = PiePlots(p, sc, TechnologyEnergy.reset_index(), 'Technology', '%')
+                chart.save(_path+'/oT_Plot_TechnologyEnergy_'+str(p)+'_'+str(sc)+'_'+ar+'_'+CaseName+'.html', embed_options={'renderer': 'svg'})
 
     WritingResultsTime = time.time() - StartTime
     StartTime          = time.time()
@@ -458,10 +461,11 @@ def ESSOperationResults(DirName, CaseName, OptModel, mTEPES):
         if OutputToFile.sum() < 0.0:
             ESSTechnologyEnergy = OutputToFile.to_frame(name='')
             ESSTechnologyEnergy[''] = (ESSTechnologyEnergy[''] / ESSTechnologyEnergy[''].sum()) * 100.0
-            ESSTechnologyEnergy.reset_index(level=3, inplace=True)
+            # ESSTechnologyEnergy.reset_index(level=3, inplace=True)
 
-            chart = PiePlots(ESSTechnologyEnergy, 'Technology', '%')
-            chart.save(_path+'/oT_Plot_TechnologyEnergyESS_'+CaseName+'.html', embed_options={'renderer': 'svg'})
+            for p, sc in mTEPES.p * mTEPES.sc:
+                chart = PiePlots(p, sc, ESSTechnologyEnergy.reset_index(), 'Technology', '%')
+                chart.save(_path+'/oT_Plot_TechnologyEnergyESS_'+str(p)+'_'+str(sc)+'_'+CaseName+'.html', embed_options={'renderer': 'svg'})
 
         for ar in mTEPES.ar:
             if len(mTEPES.ar) > 1:
@@ -473,10 +477,11 @@ def ESSOperationResults(DirName, CaseName, OptModel, mTEPES):
                 if OutputToFile.sum() < 0.0:
                     ESSTechnologyEnergy = OutputToFile.to_frame(name='')
                     ESSTechnologyEnergy[''] = (ESSTechnologyEnergy[''] / ESSTechnologyEnergy[''].sum()) * 100.0
-                    ESSTechnologyEnergy.reset_index(level=3, inplace=True)
+                    # ESSTechnologyEnergy.reset_index(level=3, inplace=True)
 
-                    chart = PiePlots(ESSTechnologyEnergy, 'Technology', '%')
-                    chart.save(_path+'/oT_Plot_TechnologyEnergyESS_'+ar+'_'+CaseName+'.html', embed_options={'renderer': 'svg'})
+                    for p, sc in mTEPES.p * mTEPES.sc:
+                        chart = PiePlots(p, sc, ESSTechnologyEnergy.reset_index(), 'Technology', '%')
+                        chart.save(_path+'/oT_Plot_TechnologyEnergyESS_'+str(p)+'_'+str(sc)+'_'+ar+'_'+CaseName+'.html', embed_options={'renderer': 'svg'})
 
         OutputToFile = pd.Series(data=[OptModel.vESSInventory[p,sc,n,es]()                               for p,sc,n,es in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.es if mTEPES.n.ord(n) % mTEPES.pCycleTimeStep[es] == 0], index=pd.MultiIndex.from_tuples(list([(p,sc,n,es) for p,sc,n,es in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.es if mTEPES.n.ord(n) % mTEPES.pCycleTimeStep[es] == 0])))
         OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='GWh').rename_axis(['Period','Scenario','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_GenerationInventory_'+CaseName+'.csv', sep=',')
