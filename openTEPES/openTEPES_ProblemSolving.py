@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 12, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 13, 2022
 """
 
 import time
@@ -92,12 +92,12 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
         SolverResults.write()                                                                  # summary of the solver results
 
     SolvingTime = time.time() - StartTime
-    print('Solution time                          ... ', round(SolvingTime), 's')
-    print('Total system      cost [MEUR]              ', OptModel.eTotalTCost.expr())
+    print('Solution time                                ... ', round(SolvingTime), 's')
+    print('Total system            cost [MEUR]              ', OptModel.eTotalTCost.expr())
     for p,sc in mTEPES.p*mTEPES.sc:
         print('***** Period: ' + str(p) + ', Scenario: ' + str(sc) + ' ******')
         print('      Total genr invest cost [MEUR]              ', sum(mTEPES.pDiscountFactor[p] * mTEPES.pGenInvestCost[gc      ] * OptModel.vGenerationInvest[p,gc      ]() for gc       in mTEPES.gc))
-        print('      Total retr invest cost [MEUR]              ', sum(mTEPES.pDiscountFactor[p] * mTEPES.pGenRetireCost[gd      ] * OptModel.vGenerationRetire[p,gd      ]() for gd       in mTEPES.gd))
+        print('      Total genr retire cost [MEUR]              ', sum(mTEPES.pDiscountFactor[p] * mTEPES.pGenRetireCost[gd      ] * OptModel.vGenerationRetire[p,gd      ]() for gd       in mTEPES.gd))
         print('      Total line invest cost [MEUR]              ', sum(mTEPES.pDiscountFactor[p] * mTEPES.pNetFixedCost [ni,nf,cc] * OptModel.vNetworkInvest   [p,ni,nf,cc]() for ni,nf,cc in mTEPES.lc))
         print('      Total generation  cost [MEUR]              ', sum(mTEPES.pDiscountFactor[p] * mTEPES.pScenProb     [p,sc    ] * OptModel.vTotalGCost      [p,sc,n    ]() for n        in mTEPES.n ))
         print('      Total consumption cost [MEUR]              ', sum(mTEPES.pDiscountFactor[p] * mTEPES.pScenProb     [p,sc    ] * OptModel.vTotalCCost      [p,sc,n    ]() for n        in mTEPES.n ))
