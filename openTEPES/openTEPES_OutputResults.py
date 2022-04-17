@@ -155,7 +155,7 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES):
 
         OutputResults = OutputResults['MEUR']/OutputResults_0['MW']
         OutputResults = OutputResults.fillna(0).to_frame(name='MEUR/MW')
-        OutputResults   = OutputResults.reset_index()
+        OutputResults = OutputResults.reset_index()
         OutputResults.to_csv(_path+'/oT_Result_TechnologyInvestmentCostPerMW_'+CaseName+'.csv', sep=',', index=False)
 
         chart = alt.Chart(OutputResults).mark_bar().encode(x='Technology:O', y='sum(MEUR/MW):Q', color='Technology:N', column='Period:N').properties(width=600, height=400)
@@ -406,7 +406,7 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES):
     OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='GWh').rename_axis(['Period','Scenario','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_TechnologyEnergy_'+CaseName+'.csv', sep=',')
 
     for p,sc in mTEPES.p*mTEPES.sc:
-        chart = PiePlots(p, sc , OutputToFile, 'Technology', '%')
+        chart = PiePlots(p, sc, OutputToFile, 'Technology', '%')
         chart.save(_path+'/oT_Plot_TechnologyEnergy_'+str(p)+'_'+str(sc)+'_'+CaseName+'.html', embed_options={'renderer': 'svg'})
 
     for ar in mTEPES.ar:
