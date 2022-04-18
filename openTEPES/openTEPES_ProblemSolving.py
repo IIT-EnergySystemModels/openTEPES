@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 13, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 18, 2022
 """
 
 import time
@@ -65,9 +65,9 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
         if mTEPES.pIndBinNetInvest()*len(mTEPES.lc):
             for p,ni,nf,cc in mTEPES.p*mTEPES.lc:
                 if mTEPES.pIndBinLineInvest[ni,nf,cc] != 0:
-                    OptModel.vNetworkInvest   [p,ni,nf,cc].fix(round(OptModel.vNetworkInvest   [p,ni,nf,cc]()))
+                    OptModel.vNetworkInvest   [p,ni,nf,cc].fix(round(OptModel.vNetworkInvest[p,ni,nf,cc]()))
                 else:
-                    OptModel.vNetworkInvest   [p,ni,nf,cc].fix(      OptModel.vNetworkInvest   [p,ni,nf,cc]())
+                    OptModel.vNetworkInvest   [p,ni,nf,cc].fix(      OptModel.vNetworkInvest[p,ni,nf,cc]())
         if mTEPES.pIndBinGenOperat()*len(mTEPES.nr):
             for p,sc,n,nr in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.nr:
                 if mTEPES.pIndBinUnitCommit[nr] != 0:
@@ -95,7 +95,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
     print('Solution time                                ... ', round(SolvingTime), 's')
     print('Total system            cost [MEUR]              ', OptModel.eTotalTCost.expr())
     for p,sc in mTEPES.p*mTEPES.sc:
-        print('***** Period: ' + str(p) + ', Scenario: ' + str(sc) + ' ******')
+        print('***** Period: '+str(p)+', Scenario: '+str(sc)+' ******')
         print('      Total genr invest cost [MEUR]              ', sum(mTEPES.pDiscountFactor[p] * mTEPES.pGenInvestCost[gc      ] * OptModel.vGenerationInvest[p,gc      ]() for gc       in mTEPES.gc))
         print('      Total genr retire cost [MEUR]              ', sum(mTEPES.pDiscountFactor[p] * mTEPES.pGenRetireCost[gd      ] * OptModel.vGenerationRetire[p,gd      ]() for gd       in mTEPES.gd))
         print('      Total line invest cost [MEUR]              ', sum(mTEPES.pDiscountFactor[p] * mTEPES.pNetFixedCost [ni,nf,cc] * OptModel.vNetworkInvest   [p,ni,nf,cc]() for ni,nf,cc in mTEPES.lc))
