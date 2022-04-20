@@ -808,7 +808,7 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES):
     # %% outputting the system costs and revenues
     _path = os.path.join(DirName, CaseName)
     StartTime   = time.time()
-    SysCost     = pd.Series(data=[OptModel.eTotalTCost.expr()]                                                                                                                                               ).to_frame(name='System Cost'               ).stack()
+    SysCost     = pd.Series(data=[OptModel.eTotalTCost.expr()]                                                                                                                         , index=['Total']     ).to_frame(name='System Cost'               ).stack()
     GenInvCost  = pd.Series(data=[mTEPES.pDiscountFactor[p] * sum(mTEPES.pGenInvestCost[gc  ] * OptModel.vGenerationInvest[p,gc  ]() for gc   in mTEPES.gc         ) for p in mTEPES.p], index=list(mTEPES.p)).to_frame(name='Generation Investment Cost').stack()
     GenRetCost  = pd.Series(data=[mTEPES.pDiscountFactor[p] * sum(mTEPES.pGenRetireCost[gd  ] * OptModel.vGenerationRetire[p,gd  ]() for gd   in mTEPES.gd         ) for p in mTEPES.p], index=list(mTEPES.p)).to_frame(name='Generation Retirement Cost').stack()
     NetInvCost  = pd.Series(data=[mTEPES.pDiscountFactor[p] * sum(mTEPES.pNetFixedCost [lc  ] * OptModel.vNetworkInvest   [p,lc  ]() for lc   in mTEPES.lc         ) for p in mTEPES.p], index=list(mTEPES.p)).to_frame(name='Network Investment Cost'   ).stack()
