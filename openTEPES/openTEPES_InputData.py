@@ -740,7 +740,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         if  mTEPES.pAvailability[g]() == 0.0:
             mTEPES.pAvailability[g]   =  1.0
 
-    # if line length = 0 changed to geographical distance
+    # if line length = 0 changed to geographical distance with an additional 10%
     for ni,nf,cc in mTEPES.la:
         if  mTEPES.pLineLength[ni,nf,cc]() == 0.0:
             mTEPES.pLineLength[ni,nf,cc]   =  1.1 * 6371 * 2 * math.asin(math.sqrt(math.pow(math.sin((mTEPES.pNodeLat[nf]-mTEPES.pNodeLat[ni])*math.pi/180/2),2) + math.cos(mTEPES.pNodeLat[ni]*math.pi/180)*math.cos(mTEPES.pNodeLat[nf]*math.pi/180)*math.pow(math.sin((mTEPES.pNodeLon[nf]-mTEPES.pNodeLon[ni])*math.pi/180/2),2)))
