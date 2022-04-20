@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.5.2rc4] - 2022-04-20
+[4.5.2rc5] - 2022-04-20
 --------------------
+- [CHANGED] fix some typos in cost summary
 - [CHANGED] introduce annual discount rate to move money along the time
 - [FIXED] control of non-negative values of some input data
 - [CHANGED] avoid fixing voltage angle for the reference node with single node option
