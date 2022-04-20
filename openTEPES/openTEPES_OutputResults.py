@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 18, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 20, 2022
 """
 
 import time
@@ -809,16 +809,15 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES):
     _path = os.path.join(DirName, CaseName)
     StartTime   = time.time()
     SysCost     = pd.Series(data=[OptModel.eTotalTCost.expr()]                                                                                                                                               ).to_frame(name='System Cost'               ).stack()
-    GenInvCost  = pd.Series(data=[sum(mTEPES.pDiscountFactor[p] * mTEPES.pGenInvestCost[gc  ] * OptModel.vGenerationInvest[p,gc  ]() for gc   in mTEPES.gc         ) for p in mTEPES.p], index=list(mTEPES.p)).to_frame(name='Generation Investment Cost').stack()
-    GenRetCost  = pd.Series(data=[sum(mTEPES.pDiscountFactor[p] * mTEPES.pGenRetireCost[gd  ] * OptModel.vGenerationInvest[p,gd  ]() for gd   in mTEPES.gd         ) for p in mTEPES.p], index=list(mTEPES.p)).to_frame(name='Generation Retirement Cost').stack()
-    NetInvCost  = pd.Series(data=[sum(mTEPES.pDiscountFactor[p] * mTEPES.pNetFixedCost [lc  ] * OptModel.vNetworkInvest   [p,lc  ]() for lc   in mTEPES.lc         ) for p in mTEPES.p], index=list(mTEPES.p)).to_frame(name='Network Investment Cost'   ).stack()
-    GenCost     = pd.Series(data=[sum(mTEPES.pDiscountFactor[p] * mTEPES.pScenProb     [p,sc] * OptModel.vTotalGCost      [p,sc,n]() for sc,n in mTEPES.sc*mTEPES.n) for p in mTEPES.p], index=list(mTEPES.p)).to_frame(name='Generation Operation Cost' ).stack()
-    ConCost     = pd.Series(data=[sum(mTEPES.pDiscountFactor[p] * mTEPES.pScenProb     [p,sc] * OptModel.vTotalCCost      [p,sc,n]() for sc,n in mTEPES.sc*mTEPES.n) for p in mTEPES.p], index=list(mTEPES.p)).to_frame(name='Consumption Operation Cost').stack()
-    EmiCost     = pd.Series(data=[sum(mTEPES.pDiscountFactor[p] * mTEPES.pScenProb     [p,sc] * OptModel.vTotalECost      [p,sc,n]() for sc,n in mTEPES.sc*mTEPES.n) for p in mTEPES.p], index=list(mTEPES.p)).to_frame(name='Emission Cost'             ).stack()
-    RelCost     = pd.Series(data=[sum(mTEPES.pDiscountFactor[p] * mTEPES.pScenProb     [p,sc] * OptModel.vTotalRCost      [p,sc,n]() for sc,n in mTEPES.sc*mTEPES.n) for p in mTEPES.p], index=list(mTEPES.p)).to_frame(name='Reliability Cost'          ).stack()
-    # if sum(mTEPES.pDemand[p,sc,n,nd] for p,sc,n,nd in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.nd):
-    #     DemPayment = pd.Series(data=[sum(mTEPES.pDiscountFactor[p] * mTEPES.pScenProb     [p,sc] * mTEPES.pDuration [n] * mTEPES.pDemand [p,sc,n,nd] * OptModel.LSRMC [p,sc,n,nd] for sc,n,nd in mTEPES.sc*mTEPES.n*mTEPES.nd)/1e3 for p in mTEPES.p], index=list(mTEPES.p)).to_frame(name='Demand Payment')
-    CostSummary = pd.concat([SysCost, GenInvCost, GenRetCost, NetInvCost, GenCost, ConCost, EmiCost, RelCost])
+    GenInvCost  = pd.Series(data=[mTEPES.pDiscountFactor[p] * sum(mTEPES.pGenInvestCost[gc  ] * OptModel.vGenerationInvest[p,gc  ]() for gc   in mTEPES.gc         ) for p in mTEPES.p], index=list(mTEPES.p)).to_frame(name='Generation Investment Cost').stack()
+    GenRetCost  = pd.Series(data=[mTEPES.pDiscountFactor[p] * sum(mTEPES.pGenRetireCost[gd  ] * OptModel.vGenerationRetire[p,gd  ]() for gd   in mTEPES.gd         ) for p in mTEPES.p], index=list(mTEPES.p)).to_frame(name='Generation Retirement Cost').stack()
+    NetInvCost  = pd.Series(data=[mTEPES.pDiscountFactor[p] * sum(mTEPES.pNetFixedCost [lc  ] * OptModel.vNetworkInvest   [p,lc  ]() for lc   in mTEPES.lc         ) for p in mTEPES.p], index=list(mTEPES.p)).to_frame(name='Network Investment Cost'   ).stack()
+    GenCost     = pd.Series(data=[mTEPES.pDiscountFactor[p] * sum(mTEPES.pScenProb     [p,sc] * OptModel.vTotalGCost      [p,sc,n]() for sc,n in mTEPES.sc*mTEPES.n) for p in mTEPES.p], index=list(mTEPES.p)).to_frame(name='Generation Operation Cost' ).stack()
+    ConCost     = pd.Series(data=[mTEPES.pDiscountFactor[p] * sum(mTEPES.pScenProb     [p,sc] * OptModel.vTotalCCost      [p,sc,n]() for sc,n in mTEPES.sc*mTEPES.n) for p in mTEPES.p], index=list(mTEPES.p)).to_frame(name='Consumption Operation Cost').stack()
+    EmiCost     = pd.Series(data=[mTEPES.pDiscountFactor[p] * sum(mTEPES.pScenProb     [p,sc] * OptModel.vTotalECost      [p,sc,n]() for sc,n in mTEPES.sc*mTEPES.n) for p in mTEPES.p], index=list(mTEPES.p)).to_frame(name='Emission Cost'             ).stack()
+    RelCost     = pd.Series(data=[mTEPES.pDiscountFactor[p] * sum(mTEPES.pScenProb     [p,sc] * OptModel.vTotalRCost      [p,sc,n]() for sc,n in mTEPES.sc*mTEPES.n) for p in mTEPES.p], index=list(mTEPES.p)).to_frame(name='Reliability Cost'          ).stack()
+    DemPayment  = pd.Series(data=[mTEPES.pDiscountFactor[p] * sum(mTEPES.pScenProb     [p,sc] * mTEPES.pLoadLevelWeight[n] * mTEPES.pDuration[n] * mTEPES.pDemand[p,sc,n,nd] * OptModel.LSRMC[p,sc,n,nd] for sc,n,nd in mTEPES.sc*mTEPES.n*mTEPES.nd)/1e3 for p in mTEPES.p], index=list(mTEPES.p)).to_frame(name='Demand Payment').stack()
+    CostSummary = pd.concat([SysCost, GenInvCost, GenRetCost, NetInvCost, GenCost, ConCost, EmiCost, RelCost, DemPayment])
     CostSummary = CostSummary.reset_index().rename(columns={'level_0': 'Period', 'level_1': 'Cost', 0: '[MEUR]'})
     CostSummary.to_csv(_path+'/oT_Result_CostSummary_'+CaseName+'.csv', sep=',', index=False)
 
