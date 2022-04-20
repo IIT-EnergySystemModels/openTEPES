@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 08, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 14, 2022
 """
 
 import time
@@ -37,12 +37,12 @@ def InvestmentModelFormulation(OptModel, mTEPES, pIndLogConsole):
             return Constraint.Skip
     OptModel.eConsecutiveGenInvest = Constraint(mTEPES.p, mTEPES.gc, rule=eConsecutiveGenInvest, doc='generation investment in consecutive periods')
 
-    def eConsecutiveGenRetire(OptModel,p,gc):
+    def eConsecutiveGenRetire(OptModel,p,gd):
         if p != mTEPES.p.first():
-            return OptModel.vGenerationRetire[mTEPES.p.prev(p,1),gc      ] <= OptModel.vGenerationRetire[p,gc      ]
+            return OptModel.vGenerationRetire[mTEPES.p.prev(p,1),gd      ] <= OptModel.vGenerationRetire[p,gd      ]
         else:
             return Constraint.Skip
-    OptModel.eConsecutiveGenRetire = Constraint(mTEPES.p, mTEPES.gc, rule=eConsecutiveGenRetire, doc='generation retirement in consecutive periods')
+    OptModel.eConsecutiveGenRetire = Constraint(mTEPES.p, mTEPES.gd, rule=eConsecutiveGenRetire, doc='generation retirement in consecutive periods')
 
     def eConsecutiveNetInvest(OptModel,p,ni,nf,cc):
         if p != mTEPES.p.first():
