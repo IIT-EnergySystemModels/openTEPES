@@ -816,9 +816,9 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES):
     ConCost     = pd.Series(data=[mTEPES.pDiscountFactor[p] * sum(mTEPES.pScenProb     [p,sc] * OptModel.vTotalCCost      [p,sc,n]() for sc,n in mTEPES.sc*mTEPES.n) for p in mTEPES.p], index=list(mTEPES.p)).to_frame(name='Consumption Operation Cost').stack()
     EmiCost     = pd.Series(data=[mTEPES.pDiscountFactor[p] * sum(mTEPES.pScenProb     [p,sc] * OptModel.vTotalECost      [p,sc,n]() for sc,n in mTEPES.sc*mTEPES.n) for p in mTEPES.p], index=list(mTEPES.p)).to_frame(name='Emission Cost'             ).stack()
     RelCost     = pd.Series(data=[mTEPES.pDiscountFactor[p] * sum(mTEPES.pScenProb     [p,sc] * OptModel.vTotalRCost      [p,sc,n]() for sc,n in mTEPES.sc*mTEPES.n) for p in mTEPES.p], index=list(mTEPES.p)).to_frame(name='Reliability Cost'          ).stack()
-    DemPayment  = pd.Series(data=[mTEPES.pDiscountFactor[p] * sum(mTEPES.pScenProb     [p,sc] * mTEPES.pLoadLevelWeight[n] * mTEPES.pDuration[n] * mTEPES.pDemand[p,sc,n,nd] * OptModel.LSRMC[p,sc,n,nd] for sc,n,nd in mTEPES.sc*mTEPES.n*mTEPES.nd)/1e3 for p in mTEPES.p], index=list(mTEPES.p)).to_frame(name='Demand Payment').stack()
+    DemPayment  = pd.Series(data=[mTEPES.pDiscountFactor[p] * sum(mTEPES.pScenProb     [p,sc] * mTEPES.pLoadLevelWeight[n]() * mTEPES.pDuration[n] * mTEPES.pDemand[p,sc,n,nd] * OptModel.LSRMC[p,sc,n,nd] for sc,n,nd in mTEPES.sc*mTEPES.n*mTEPES.nd)/1e3 for p in mTEPES.p], index=list(mTEPES.p)).to_frame(name='Demand Payment').stack()
     CostSummary = pd.concat([SysCost, GenInvCost, GenRetCost, NetInvCost, GenCost, ConCost, EmiCost, RelCost, DemPayment])
-    CostSummary = CostSummary.reset_index().rename(columns={'level_0': 'Period', 'level_1': 'Cost', 0: '[MEUR]'})
+    CostSummary = CostSummary.reset_index().rename(columns={'level_0': 'Period', 'level_1': 'Cost/Payment', 0: '[MEUR]'})
     CostSummary.to_csv(_path+'/oT_Result_CostSummary_'+CaseName+'.csv', sep=',', index=False)
 
     OutputToFile = pd.Series(data=[(mTEPES.pDiscountFactor[p] * mTEPES.pScenProb[p,sc] * mTEPES.pLoadLevelWeight[n] * mTEPES.pDuration[n] * mTEPES.pLinearVarCost  [nr] * OptModel.vTotalOutput[p,sc,n,nr]() +
