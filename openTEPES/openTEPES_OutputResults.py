@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 21, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 22, 2022
 """
 
 import time
@@ -1164,17 +1164,20 @@ def NetworkMapResults(DirName, CaseName, OptModel, mTEPES):
         OutputToFile.index.names = ['Period','Scenario','LoadLevel', 'InitialNode', 'FinalNode', 'Circuit']
         OutputToFile = OutputToFile.to_frame(name='MW')
 
-        line_df = pd.Series(data=[mTEPES.pLineNTCFrw[i]*1e3 for i in mTEPES.la], index=pd.MultiIndex.from_tuples(mTEPES.la)).to_frame(name='NTC')
-        line_df['vFlow'      ] = 0.0
-        line_df['utilization'] = 0.0
-        line_df['color'      ] = 0.0
-        line_df['voltage'    ] = 0.0
-        line_df['width'      ] = 0.0
-        line_df['lon'        ] = 0.0
-        line_df['lat'        ] = 0.0
-        line_df['ni'         ] = 0.0
-        line_df['nf'         ] = 0.0
-        line_df['cc'         ] = 0.0
+        NTCs = {'NTCFrw': pd.Series(data=[mTEPES.pLineNTCFrw[i]*1e3 for i in mTEPES.la], index=pd.MultiIndex.from_tuples(mTEPES.la)), 'NTCBck': pd.Series(data=[mTEPES.pLineNTCBck[i]*1e3 for i in mTEPES.la], index=pd.MultiIndex.from_tuples(mTEPES.la))}
+        # line_df = pd.Series(data=[mTEPES.pLineNTCFrw[i]*1e3 for i in mTEPES.la], index=pd.MultiIndex.from_tuples(mTEPES.la)).to_frame(name='NTCFrw')
+        line_df = pd.DataFrame(data=NTCs, index=pd.MultiIndex.from_tuples(mTEPES.la))
+        line_df['vFlow'         ] = 0.0
+        line_df['utilizationFrw'] = 0.0
+        line_df['utilizationBck'] = 0.0
+        line_df['color'         ] = 0.0
+        line_df['voltage'       ] = 0.0
+        line_df['width'         ] = 0.0
+        line_df['lon'           ] = 0.0
+        line_df['lat'           ] = 0.0
+        line_df['ni'            ] = 0.0
+        line_df['nf'            ] = 0.0
+        line_df['cc'            ] = 0.0
 
         line_df = line_df.groupby(level=[0,1]).sum()
         ncolors = 11
@@ -1182,35 +1185,40 @@ def NetworkMapResults(DirName, CaseName, OptModel, mTEPES):
         colors = ['rgb'+str(x.rgb) for x in colors]
 
         for ni,nf,cc in mTEPES.la:
-            line_df['vFlow'      ][ni,nf] += OutputToFile['MW'][p,sc,n,ni,nf,cc]
-            line_df['utilization'][ni,nf]  = abs(line_df['vFlow'][ni,nf]/line_df['NTC'][ni,nf])*100.0
-            line_df['lon'        ][ni,nf]  = (mTEPES.pNodeLon[ni]+mTEPES.pNodeLon[nf]) * 0.5
-            line_df['lat'        ][ni,nf]  = (mTEPES.pNodeLat[ni]+mTEPES.pNodeLat[nf]) * 0.5
-            line_df['ni'         ][ni,nf]  = ni
-            line_df['nf'         ][ni,nf]  = nf
-            line_df['cc'         ][ni,nf] += 1
+            line_df['vFlow'         ][ni,nf] += OutputToFile['MW'][p,sc,n,ni,nf,cc]
+            if line_df['vFlow'][ni,nf] > 0:
+                line_df['utilizationFrw'][ni,nf]  = abs(line_df['vFlow'][ni,nf]/line_df['NTCFrw'][ni,nf])*100.0
+                line_df['utilizationBck'][ni,nf]  = 0.0
+            else:
+                line_df['utilizationFrw'][ni,nf]  = 0.0
+                line_df['utilizationBck'][ni,nf]  = abs(line_df['vFlow'][ni,nf]/line_df['NTCBck'][ni,nf])*100.0
+            line_df['lon'           ][ni,nf]  = (mTEPES.pNodeLon[ni]+mTEPES.pNodeLon[nf]) * 0.5
+            line_df['lat'           ][ni,nf]  = (mTEPES.pNodeLat[ni]+mTEPES.pNodeLat[nf]) * 0.5
+            line_df['ni'            ][ni,nf]  = ni
+            line_df['nf'            ][ni,nf]  = nf
+            line_df['cc'            ][ni,nf] += 1
 
-            if   0.0 <= line_df['utilization'][ni,nf] <= 10.0:
+            if   0.0 <= line_df['utilizationFrw'][ni,nf] <=  10.0 or   0.0 <= line_df['utilizationBck'][ni,nf] <= 10.0:
                 line_df['color'][ni,nf] = colors[0]
-            if  10.0 <  line_df['utilization'][ni,nf] <= 20.0:
+            if  10.0 <  line_df['utilizationFrw'][ni,nf] <=  20.0 or  10.0 <  line_df['utilizationBck'][ni,nf] <= 20.0:
                 line_df['color'][ni,nf] = colors[1]
-            if  20.0 <  line_df['utilization'][ni,nf] <= 30.0:
+            if  20.0 <  line_df['utilizationFrw'][ni,nf] <=  30.0 or  20.0 <  line_df['utilizationBck'][ni,nf] <= 30.0:
                 line_df['color'][ni,nf] = colors[2]
-            if  30.0 <  line_df['utilization'][ni,nf] <= 40.0:
+            if  30.0 <  line_df['utilizationFrw'][ni,nf] <=  40.0 or  30.0 <  line_df['utilizationBck'][ni,nf] <= 40.0:
                 line_df['color'][ni,nf] = colors[3]
-            if  40.0 <  line_df['utilization'][ni,nf] <= 50.0:
+            if  40.0 <  line_df['utilizationFrw'][ni,nf] <=  50.0 or  40.0 <  line_df['utilizationBck'][ni,nf] <= 50.0:
                 line_df['color'][ni,nf] = colors[4]
-            if  50.0 <  line_df['utilization'][ni,nf] <= 60.0:
+            if  50.0 <  line_df['utilizationFrw'][ni,nf] <=  60.0 or  50.0 <  line_df['utilizationBck'][ni,nf] <= 60.0:
                 line_df['color'][ni,nf] = colors[5]
-            if  60.0 <  line_df['utilization'][ni,nf] <= 70.0:
+            if  60.0 <  line_df['utilizationFrw'][ni,nf] <=  70.0 or  60.0 <  line_df['utilizationBck'][ni,nf] <= 70.0:
                 line_df['color'][ni,nf] = colors[6]
-            if  70.0 <  line_df['utilization'][ni,nf] <= 80.0:
+            if  70.0 <  line_df['utilizationFrw'][ni,nf] <=  80.0 or  70.0 <  line_df['utilizationBck'][ni,nf] <= 80.0:
                 line_df['color'][ni,nf] = colors[7]
-            if  80.0 <  line_df['utilization'][ni,nf] <= 90.0:
+            if  80.0 <  line_df['utilizationFrw'][ni,nf] <=  90.0 or  80.0 <  line_df['utilizationBck'][ni,nf] <= 90.0:
                 line_df['color'][ni,nf] = colors[8]
-            if  90.0 <  line_df['utilization'][ni,nf] <= 100.0:
+            if  90.0 <  line_df['utilizationFrw'][ni,nf] <  100.0 or 100.0 <  line_df['utilizationBck'][ni,nf] < 100.0:
                 line_df['color'][ni,nf] = colors[9]
-            if 100.0 <  line_df['utilization'][ni,nf]:
+            if 100.0 ==  line_df['utilizationFrw'][ni,nf]         or 100.0 == line_df['utilizationBck'][ni,nf]:
                 line_df['color'][ni,nf] = colors[10]
 
             line_df['voltage'][ni,nf] = mTEPES.pLineVoltage[ni,nf,cc]
@@ -1260,7 +1268,7 @@ def NetworkMapResults(DirName, CaseName, OptModel, mTEPES):
         fig.add_trace(go.Scattermapbox(lon=[pos_dict[ni][0], pos_dict[nf][0]], lat=[pos_dict[ni][1], pos_dict[nf][1]], mode='lines+markers', marker=dict(size=0, showscale=True, colorbar={'title': 'Utilization [%]', 'titleside': 'top', 'thickness': 8, 'ticksuffix': '%'}, colorscale=[[0, 'lightgreen'], [1, 'darkred']], cmin=0, cmax=100,), line=dict(width=line_df['width'][ni,nf], color=line_df['color'][ni,nf]), opacity=1, hoverinfo='text', textposition='middle center',))
 
     # Add legends related to the lines
-    fig.add_trace(go.Scattermapbox(lat=line_df['lat'], lon=line_df['lon'], mode='markers', marker=go.scattermapbox.Marker(size=20, sizeref=1.1, sizemode='area', color='LightSkyBlue',), opacity=0, hoverinfo='text', text='<br>Line: '+line_df['ni']+' --> '+line_df['nf']+'<br># Of circuits: '+line_df['cc'].astype(str)+'<br>Total NTC: '+line_df['NTC'].astype(str)+'<br>Power flow: '+line_df['vFlow'].astype(str)+'<br>Utilization [%]: '+line_df['utilization'].astype(str),))
+    fig.add_trace(go.Scattermapbox(lat=line_df['lat'], lon=line_df['lon'], mode='markers', marker=go.scattermapbox.Marker(size=20, sizeref=1.1, sizemode='area', color='LightSkyBlue',), opacity=0, hoverinfo='text', text='<br>Line: '+line_df['ni']+' --> '+line_df['nf']+'<br># Of circuits: '+line_df['cc'].astype(str)+'<br>Total NTC Forward: '+line_df['NTCFrw'].astype(str)+'<br>Total NTC Backward: '+line_df['NTCBck'].astype(str)+'<br>Power Flow: '+line_df['vFlow'].astype(str)+'<br>Utilization Forward [%]: '+line_df['utilizationFrw'].astype(str)+'<br>Utilization Backward [%]: '+line_df['utilizationBck'].astype(str),))
 
     # Setting up the layout
     fig.update_layout(title={'text': 'Power Network: '+CaseName+'<br>Period: '+str(p)+'; Scenario: '+str(sc)+'; LoadLevel: '+n, 'x': 0.5, 'xanchor': 'center', 'yanchor': 'top'}, font=dict(size=14), hovermode='closest', geo=dict(projection_type='azimuthal equal area', showland=True,), mapbox=dict(style='dark', accesstoken=token, bearing=0, center=dict(lat=(loc_df['Lat'].max()+loc_df['Lat'].min())*0.5, lon=(loc_df['Lon'].max()+loc_df['Lon'].min())*0.5), pitch=0, zoom=5), showlegend=False,)
