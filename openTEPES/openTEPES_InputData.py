@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 12, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 25, 2022
 """
 
 import datetime
@@ -712,6 +712,14 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.pIniInventory         = Param(mTEPES.p, mTEPES.sc, mTEPES.n, mTEPES.gg, initialize=pIniInventory.stack().to_dict()     , within=NonNegativeReals,    doc='ESS Initial storage',        mutable=True)
     mTEPES.pInitialInventory     = Param(                               mTEPES.gg, initialize=pInitialInventory.to_dict()         , within=NonNegativeReals,    doc='ESS Initial storage without load levels' )
     mTEPES.pStorageType          = Param(                               mTEPES.gg, initialize=pStorageType.to_dict()              , within=Any             ,    doc='ESS Storage type'                        )
+
+    mTEPES.pLoadLevelDuration    = Param(                     mTEPES.n,            initialize=0.0                                 , within=NonNegativeReals,    doc='Load level duration',        mutable=True)
+    for n in mTEPES.n:
+        mTEPES.pLoadLevelDuration[n] = mTEPES.pLoadLevelWeight[n] * mTEPES.pDuration[n]
+
+    mTEPES.pPeriodProb           = Param(mTEPES.p, mTEPES.sc,                      initialize=0.0                                 , within=NonNegativeReals,    doc='Period probability',         mutable=True)
+    for p,sc in mTEPES.p*mTEPES.sc:
+        mTEPES.pPeriodProb[p,sc] = mTEPES.pPeriodWeight[p] * mTEPES.pScenProb[p,sc]
 
     mTEPES.pLineLossFactor       = Param(                               mTEPES.ln, initialize=pLineLossFactor.to_dict()           , within=           Reals,    doc='Loss factor'                             )
     mTEPES.pLineR                = Param(                               mTEPES.ln, initialize=pLineR.to_dict()                    , within=NonNegativeReals,    doc='Resistance'                              )

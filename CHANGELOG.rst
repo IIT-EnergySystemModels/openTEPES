@@ -1,8 +1,10 @@
 Change Log
 =============
 
-[4.5.2rc5] - 2022-04-20
+[4.5.2rc5] - 2022-04-25
 --------------------
+- [CHANGED] combine load level weight and duration
+- [CHANGED] combine period weight and probability
 - [CHANGED] fix some typos in cost summary
 - [CHANGED] introduce annual discount rate to move money along the time
 - [FIXED] control of non-negative values of some input data
