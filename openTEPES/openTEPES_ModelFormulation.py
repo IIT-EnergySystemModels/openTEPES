@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 24, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 26, 2022
 """
 
 import time
@@ -319,6 +319,16 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
         else:
             return Constraint.Skip
     setattr(OptModel, 'eESSInventory_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.p, mTEPES.sc, mTEPES.n, mTEPES.es, rule=eESSInventory, doc='ESS inventory balance [GWh]'))
+
+    if pIndLogConsole == 1:
+        print('eESSInventory         ... ', len(getattr(OptModel, 'eESSInventory_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+
+    def eMaxShiftTime(OptModel,p,sc,n,es):
+        if   mTEPES.pShiftTime[es]:
+            return mTEPES.pDuration[n]*mTEPES.pEfficiency[es]*OptModel.vESSTotalCharge[p,sc,n,es] <= sum(mTEPES.pDuration[n2]*OptModel.vTotalOutput[p,sc,n2,es] for n2 in list(mTEPES.n2)[mTEPES.n.ord(n):mTEPES.n.ord(n)+mTEPES.pShiftTime[es]])
+        else:
+            return Constraint.Skip
+    setattr(OptModel, 'eMaxShiftTime_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.p, mTEPES.sc, mTEPES.n, mTEPES.es, rule=eMaxShiftTime, doc='Maximum shift time [GWh]'))
 
     if pIndLogConsole == 1:
         print('eESSInventory         ... ', len(getattr(OptModel, 'eESSInventory_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')

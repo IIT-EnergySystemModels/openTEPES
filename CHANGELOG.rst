@@ -1,6 +1,10 @@
 Change Log
 =============
 
+[4.6.0rc1] - 2022-04-25
+--------------------
+- [CHANGED] introduce maximum shifting time for DSM
+
 [4.5.2rc5] - 2022-04-25
 --------------------
 - [CHANGED] combine load level weight and duration

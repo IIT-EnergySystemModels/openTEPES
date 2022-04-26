@@ -99,6 +99,7 @@ They are written in **uppercase** letters.
 :math:`CV_e`                                           Variable cost of an ESS when charging                                                                                     €/MWh
 :math:`RU_g, RD_g`                                     Ramp up/down of a non-renewable unit or maximum discharge/charge rate for ESS discharge/charge                            MW/h
 :math:`TU_t, TD_t`                                     Minimum uptime and downtime of a thermal unit                                                                             h
+:math:`ST_e`                                           Maximum shift time of an ESS unit (in particular, for demand side management)                                             h
 :math:`CSU_g, CSD_g`                                   Startup and shutdown cost of a committed unit                                                                             M€
 :math:`\tau_e`                                         Storage cycle of the ESS (e.g., 1, 24, 168 h -for daily, weekly, monthly-)                                                h
 :math:`\rho_e`                                         Outflow cycle of the ESS (e.g., 1, 24, 168 h -for hourly, daily, weekly, monthly, yearly-)                                h
@@ -250,6 +251,10 @@ or for storing [GW] «``eESSReserveUpIfEnergy``» «``eESSReserveDwIfEnergy``»
 ESS energy inventory (only for load levels multiple of 1, 24, 168 h depending on the ESS storage type) [GWh] «``eESSInventory``»
 
 :math:`i^p_{ω,n-\frac{\tau_e}{\nu},e} + \sum_{n' = n-\frac{\tau_e}{\nu}}^{n} DUR_n' (EI^p_{ωn'e} - go^p_{ωn'e} - gp^p_{ωn'e} + EF_e gc^p_{ωn'e}) = i^p_{ωne} + s^p_{ωne} \quad \forall pωne`
+
+Maximum shift time of stored energy [GWh]. It is thought to be applied to demand side management «``eMaxShiftTime``»
+
+:math:`DUR_n EF_e gc^p_{ωne}) \leq \sum_{n' = n+1}^{n+\frac{ST_e}{\nu}} DUR_n' gp^p_{ωn'e}  \quad \forall pωne`
 
 ESS outflows (only for load levels multiple of 1, 24, 168, 672, and 8736 h depending on the ESS outflow cycle) must be satisfied [GWh] «``eEnergyOutflows``»
 

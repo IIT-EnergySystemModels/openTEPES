@@ -290,6 +290,7 @@ RampUp                Ramp up   rate for generating units or maximum discharge r
 RampDown              Ramp down rate for generating units or maximum    charge rate for ESS    charge                                         MW/h
 UpTime                Minimum uptime                                                                                                          h
 DownTime              Minimum downtime                                                                                                        h
+ShiftTime             Maximum shift time                                                                                                      h
 FuelCost              Fuel cost                                                                                                               €/Mcal
 LinearTerm            Linear term (slope) of the heat rate straight line                                                                      Mcal/MWh
 ConstantTerm          Constant term (intercept) of the heat rate straight line                                                                Mcal/h

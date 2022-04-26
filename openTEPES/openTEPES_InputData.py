@@ -240,8 +240,9 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pRampDw             = dfGeneration  ['RampDown'              ] * 1e-3                                                                     # ramp down rate                              [GW/h]
     pCO2EmissionCost    = dfGeneration  ['CO2EmissionRate'       ] * 1e-3 * pCO2Cost                                                          # emission  cost                              [MEUR/GWh]
     pCO2EmissionRate    = dfGeneration  ['CO2EmissionRate'       ]                                                                            # emission  rate                              [tCO2/MWh]
-    pUpTime             = dfGeneration  ['UpTime'                ]                                                                            # minimum up   time                           [h]
-    pDwTime             = dfGeneration  ['DownTime'              ]                                                                            # minimum down time                           [h]
+    pUpTime             = dfGeneration  ['UpTime'                ]                                                                            # minimum up    time                          [h]
+    pDwTime             = dfGeneration  ['DownTime'              ]                                                                            # minimum down  time                          [h]
+    pShiftTime          = dfGeneration  ['ShiftTime'             ]                                                                            # maximum shift time for DSM                  [h]
     pGenInvestCost      = dfGeneration  ['FixedInvestmentCost'   ] *        dfGeneration['FixedChargeRate']                                   # generation fixed cost                       [MEUR]
     pGenRetireCost      = dfGeneration  ['FixedRetirementCost'   ] *        dfGeneration['FixedChargeRate']                                   # generation fixed retirement cost            [MEUR]
     pRatedMinCharge     = dfGeneration  ['MinimumCharge'         ] * 1e-3                                                                     # rated minimum ESS charge                    [GW]
@@ -502,9 +503,10 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     # pIniInventory       = pMinStorage.where(pMinStorage > pIniInventory, other=pIniInventory)
     # pIniInventory       = pMaxStorage.where(pMaxStorage < pIniInventory, other=pIniInventory)
 
-    # minimum up and down time converted to an integer number of time steps
-    pUpTime = round(pUpTime/pTimeStep).astype('int')
-    pDwTime = round(pDwTime/pTimeStep).astype('int')
+    # minimum up and down time and maximum shift time converted to an integer number of time steps
+    pUpTime    = round(pUpTime   /pTimeStep).astype('int')
+    pDwTime    = round(pDwTime   /pTimeStep).astype('int')
+    pShiftTime = round(pShiftTime/pTimeStep).astype('int')
 
     # %% definition of the time-steps leap to observe the stored energy at an ESS
     pCycleTimeStep    = (pUpTime*0+   1).astype('int')
@@ -697,8 +699,9 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.pShutDownCost         = Param(                               mTEPES.gg, initialize=pShutDownCost.to_dict()             , within=NonNegativeReals,    doc='Shutdown cost'                           )
     mTEPES.pRampUp               = Param(                               mTEPES.gg, initialize=pRampUp.to_dict()                   , within=NonNegativeReals,    doc='Ramp up   rate'                          )
     mTEPES.pRampDw               = Param(                               mTEPES.gg, initialize=pRampDw.to_dict()                   , within=NonNegativeReals,    doc='Ramp down rate'                          )
-    mTEPES.pUpTime               = Param(                               mTEPES.gg, initialize=pUpTime.to_dict()                   , within=NonNegativeReals,    doc='Up   time'                               )
-    mTEPES.pDwTime               = Param(                               mTEPES.gg, initialize=pDwTime.to_dict()                   , within=NonNegativeReals,    doc='Down time'                               )
+    mTEPES.pUpTime               = Param(                               mTEPES.gg, initialize=pUpTime.to_dict()                   , within=NonNegativeReals,    doc='Up    time'                              )
+    mTEPES.pDwTime               = Param(                               mTEPES.gg, initialize=pDwTime.to_dict()                   , within=NonNegativeReals,    doc='Down  time'                              )
+    mTEPES.pShiftTime            = Param(                               mTEPES.gg, initialize=pShiftTime.to_dict()                , within=NonNegativeReals,    doc='Shift time'                              )
     mTEPES.pRatedMaxCharge       = Param(                               mTEPES.gg, initialize=pRatedMaxCharge.to_dict()           , within=NonNegativeReals,    doc='Rated maximum charge'                    )
     mTEPES.pGenInvestCost        = Param(                               mTEPES.gg, initialize=pGenInvestCost.to_dict()            , within=NonNegativeReals,    doc='Generation fixed cost'                   )
     mTEPES.pGenRetireCost        = Param(                               mTEPES.gg, initialize=pGenRetireCost.to_dict()            , within=Reals           ,    doc='Generation fixed retire cost'            )
