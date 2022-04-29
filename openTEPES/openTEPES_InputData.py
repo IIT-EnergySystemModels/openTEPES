@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 25, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 29, 2022
 """
 
 import datetime
@@ -585,8 +585,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
 
         pInitialInventory.update(pd.Series([0 for es in mTEPES.es if (ar, es) in mTEPES.a2g and pInitialInventory[es] < pEpsilon], index=[es for es in mTEPES.es if (ar, es) in mTEPES.a2g and pInitialInventory[es] < pEpsilon], dtype='float64'))
 
-        pLineNTCFrw.update(pd.Series([0 for (ni,nf,cc,ar) in mTEPES.laar if pLineNTCFrw[ni,nf,cc] < pEpsilon], index = [(ni,nf,cc) for (ni,nf,cc,ar) in mTEPES.laar if pLineNTCFrw[ni,nf,cc] < pEpsilon], dtype='float64'))
-        pLineNTCBck.update(pd.Series([0 for (ni,nf,cc,ar) in mTEPES.laar if pLineNTCBck[ni,nf,cc] < pEpsilon], index = [(ni,nf,cc) for (ni,nf,cc,ar) in mTEPES.laar if pLineNTCBck[ni,nf,cc] < pEpsilon], dtype='float64'))
+        pLineNTCFrw.update(pd.Series([0.0 for (ni,nf,cc,ar) in mTEPES.laar if pLineNTCFrw[ni,nf,cc] < pEpsilon], index = [(ni,nf,cc) for (ni,nf,cc,ar) in mTEPES.laar if pLineNTCFrw[ni,nf,cc] < pEpsilon], dtype='float64'))
+        pLineNTCBck.update(pd.Series([0.0 for (ni,nf,cc,ar) in mTEPES.laar if pLineNTCBck[ni,nf,cc] < pEpsilon], index = [(ni,nf,cc) for (ni,nf,cc,ar) in mTEPES.laar if pLineNTCBck[ni,nf,cc] < pEpsilon], dtype='float64'))
 
         # merging positive and negative values of the demand
         pDemand            = pDemandPos.where(pDemandPos >= 0.0, other=pDemandNeg)
@@ -627,6 +627,10 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     for lcd in mTEPES.lcd:
         pBigMFlowBck.loc[lcd] = pLineNTCBck[lcd]*1.5
         pBigMFlowFrw.loc[lcd] = pLineNTCFrw[lcd]*1.5
+
+    # if BigM are 0.0 then converted to 1.0 to avoid division by 0.0
+    pBigMFlowBck = pBigMFlowBck.where(pBigMFlowBck != 0.0, other=1.0)
+    pBigMFlowFrw = pBigMFlowFrw.where(pBigMFlowFrw != 0.0, other=1.0)
 
     # maximum voltage angle
     pMaxTheta = pDemand*0.0 + math.pi/2
