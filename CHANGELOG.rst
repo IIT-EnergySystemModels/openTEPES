@@ -1,8 +1,10 @@
 Change Log
 =============
 
-[4.6.0rc1] - 2022-04-25
+[4.6.0rc1] - 2022-04-29
 --------------------
+- [CHANGED] avoid values of BigM = 0.0
+- [CHANGED] change modeling of negative reactances
 - [CHANGED] introduce maximum shifting time for DSM
 
 [4.5.2rc5] - 2022-04-25
