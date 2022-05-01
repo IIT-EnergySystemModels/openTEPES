@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.6.0rc2] - 2022-04-29
+[4.6.0rc2] - 2022-05-01
 --------------------
+- [CHANGED] avoid division by 0 in network utilization
 - [CHANGED] avoid values of BigM = 0.0
 - [CHANGED] change modeling of negative reactances
 - [CHANGED] introduce maximum shifting time for DSM
