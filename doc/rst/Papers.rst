@@ -4,6 +4,9 @@ Publications
 =================
 The model has being used in these publications:
 
+* A. Ramos, S. Huclin, J.P. Chaves "Analysis of different storage technologies in the Spain NECP for 2030" IEA Wind Task 25 Spring 2022 meeting. May 2022.
+  (`Presentation <https://pascua.iit.comillas.edu/aramos/papers/StorageTechnologies.pdf>`_)
+
 * A. Ramos, E. Alvarez "openTEPES" First openTEPES World Conference. March 2022. (`Presentation <https://pascua.iit.comillas.edu/aramos/papers/openTEPES.pdf>`_)
 
 * A. Ramos, E. Alvarez, S. Lumbreras "OpenTEPES: Open-source Transmission and Generation Expansion Planning" SoftwareX (accepted)
