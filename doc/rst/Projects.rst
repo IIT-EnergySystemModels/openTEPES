@@ -4,6 +4,12 @@ Research projects
 =================
 The model has being used in these research projects:
 
+- `Application of the ENTSO-e cost-benefit analysis method to Los Guájares pumped-hydro storage <https://www.iit.comillas.edu/proyectos/mostrar_proyecto.php.en?nombre_abreviado=VMEnergia_LosGuajares>`_, developed for **Repsol**.
+  May 2022 - June 2022.  `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_,
+  `L. Olmos <https://www.iit.comillas.edu/people/olmos>`_, `S. Gómez <https://www.iit.comillas.edu/people/sgomez>`_
+
+    It aims at write a report on the application of the ENTSO-e cost-benefit analysis method to Los Guájares pumped-hydro storage..
+
 - `Impact of the electric vehicle in the electricity markets in 2030 <https://www.iit.comillas.edu/proyectos/mostrar_proyecto.php.en?nombre_abreviado=REPSOL_VE>`_, developed for **Repsol**.
   November 2021 - February 2022.  `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_,
   `P. Frías <https://www.iit.comillas.edu/people/pablof>`_, `J.P. Chaves <https://www.iit.comillas.edu/people/jchaves>`_, `P. Linares <https://www.iit.comillas.edu/people/pedrol>`_,
