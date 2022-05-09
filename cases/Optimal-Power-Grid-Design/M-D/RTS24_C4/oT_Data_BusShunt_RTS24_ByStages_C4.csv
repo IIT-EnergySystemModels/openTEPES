@@ -1,0 +1,7 @@
+,Node,Gshb,Bshb,FixedCost,FixedChargeRate,BinaryInvestment
+BusBshb_01,N_106,0,0.02,0.05,0.75,Yes
+BusBshb_02,N_108,0,0.02,0.05,0.75,Yes
+BusBshb_03,N_109,0,0.02,0.05,0.75,Yes
+BusBshb_04,N_110,0,0.02,0.05,0.75,Yes
+BusBshb_05,N_114,0,0.02,0.05,0.75,Yes
+BusBshb_06,N_117,0,0.02,0.05,0.75,Yes

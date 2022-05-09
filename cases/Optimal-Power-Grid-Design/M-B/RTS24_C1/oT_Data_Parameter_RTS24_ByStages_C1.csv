@@ -1,0 +1,2 @@
+,ENSCost,CO2Cost,UpReserveActivation,DwReserveActivation,SBase,ReferenceNode,TimeStep,StageDuration
+Parameters,10000,100,0.25,0.3,100,N_113,1,8736
