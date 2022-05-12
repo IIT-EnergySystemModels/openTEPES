@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 18, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 12, 2022
 """
 
 import time
@@ -14,17 +14,13 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
     StartTime = time.time()
 
     #%% activating all periods, scenarios, and load levels
-    mTEPES.del_component(mTEPES.p )
-    mTEPES.del_component(mTEPES.sc)
     mTEPES.del_component(mTEPES.st)
     mTEPES.del_component(mTEPES.n )
-    mTEPES.p  = Set(initialize=mTEPES.pp,  ordered=True, doc='periods',     filter=lambda mTEPES,pp : pp  in mTEPES.pp                              )
-    mTEPES.sc = Set(initialize=mTEPES.scc, ordered=True, doc='scenarios',   filter=lambda mTEPES,scc: scc in mTEPES.scc                             )
     mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in mTEPES.stt and mTEPES.pStageWeight[stt] and sum(1 for (stt,nn) in mTEPES.s2n))
-    mTEPES.n  = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in                mTEPES.pDuration        )
+    mTEPES.n  = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in                mTEPES.pDuration                                              )
 
     #%% solving the problem
-    Solver = SolverFactory(SolverName)                                                         # select solver
+    Solver = SolverFactory(SolverName)                                                       # select solver
     if SolverName == 'gurobi':
         Solver.options['LogFile'       ] = _path+'/openTEPES_'+CaseName+'.log'
         # Solver.options['IISFile'     ] = _path+'/openTEPES_'+CaseName+'.ilp'               # should be uncommented to show results of IIS
@@ -36,8 +32,8 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
         # Solver.options['BarQCPConvTol' ] = 0.025
         Solver.options['MIPGap'        ] = 0.01
         Solver.options['Threads'       ] = int((psutil.cpu_count(logical=True) + psutil.cpu_count(logical=False))/2)
-        Solver.options['TimeLimit'     ] =    10800
-        Solver.options['IterationLimit'] = 10800000
+        Solver.options['TimeLimit'     ] =    50800
+        Solver.options['IterationLimit'] = 50800000
     if mTEPES.pIndBinGenInvest()*len(mTEPES.gc) + mTEPES.pIndBinGenRetire()*len(mTEPES.gd) + mTEPES.pIndBinNetInvest()*len(mTEPES.lc) + mTEPES.pIndBinGenOperat()*len(mTEPES.nr) + mTEPES.pIndBinLineCommit()*len(mTEPES.la) + len(mTEPES.g2g) == 0:
         OptModel.dual = Suffix(direction=Suffix.IMPORT)
         OptModel.rc   = Suffix(direction=Suffix.IMPORT)
@@ -69,13 +65,13 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
                 else:
                     OptModel.vNetworkInvest   [p,ni,nf,cc].fix(      OptModel.vNetworkInvest[p,ni,nf,cc]())
         if mTEPES.pIndBinGenOperat()*len(mTEPES.nr):
-            for p,sc,n,nr in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.nr:
+            for p,sc,n,nr in mTEPES.ps*mTEPES.n*mTEPES.nr:
                 if mTEPES.pIndBinUnitCommit[nr] != 0:
                     OptModel.vCommitment[p,sc,n,nr].fix(round(OptModel.vCommitment[p,sc,n,nr]()))
                     OptModel.vStartUp   [p,sc,n,nr].fix(round(OptModel.vStartUp   [p,sc,n,nr]()))
                     OptModel.vShutDown  [p,sc,n,nr].fix(round(OptModel.vShutDown  [p,sc,n,nr]()))
         if mTEPES.pIndBinLineCommit()*len(mTEPES.la):
-            for p,sc,n,ni,nf,cc in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.la:
+            for p,sc,n,ni,nf,cc in mTEPES.ps*mTEPES.n*mTEPES.la:
                 if mTEPES.pIndBinLineSwitch[ni,nf,cc] != 0:
                     OptModel.vLineCommit  [p,sc,n,ni,nf,cc].fix(round(OptModel.vLineCommit   [p,sc,n,ni,nf,cc]()))
                     OptModel.vLineOnState [p,sc,n,ni,nf,cc].fix(round(OptModel.vLineOnState  [p,sc,n,ni,nf,cc]()))
@@ -94,7 +90,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
     SolvingTime = time.time() - StartTime
     print('Solution time                                ... ', round(SolvingTime), 's')
     print('Total system            cost [MEUR]              ', OptModel.eTotalTCost.expr())
-    for p,sc in mTEPES.p*mTEPES.sc:
+    for p,sc in mTEPES.ps:
         print('***** Period: '+str(p)+', Scenario: '+str(sc)+' ******')
         print('      Total genr invest cost [MEUR]              ', sum(mTEPES.pDiscountFactor[p] * mTEPES.pGenInvestCost[gc      ] * OptModel.vGenerationInvest[p,gc      ]() for gc       in mTEPES.gc))
         print('      Total genr retire cost [MEUR]              ', sum(mTEPES.pDiscountFactor[p] * mTEPES.pGenRetireCost[gd      ] * OptModel.vGenerationRetire[p,gd      ]() for gd       in mTEPES.gd))

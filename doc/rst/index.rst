@@ -18,7 +18,7 @@ openTEPES Documentation
 The **openTEPES** model has been developed at the `Instituto de Investigación Tecnológica (IIT) <https://www.iit.comillas.edu/index.php.en>`_ of
 the `Universidad Pontificia Comillas <https://www.comillas.edu/en/>`_.
 
-**DOI**: `10.24433/CO.8709849.v1 <https://doi.org/10.24433/CO.8709849.v1>`_
+**Reference**: A. Ramos, E. Quispe, S. Lumbreras "`OpenTEPES: Open-source Transmission and Generation Expansion Planning <https://www.sciencedirect.com/science/article/pii/S235271102200053X/pdfft?md5=ece8d3328c853a4795eda29acd2ad140&pid=1-s2.0-S235271102200053X-main.pdf>`_" SoftwareX 18: June 2022 `10.1016/j.softx.2022.101070 <https://doi.org/10.1016/j.softx.2022.101070>`_
 
 Index
 =====

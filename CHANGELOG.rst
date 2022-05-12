@@ -3,6 +3,7 @@ Change Log
 
 [4.6.0rc2] - 2022-05-01
 --------------------
+- [CHANGED] allow scenarios defined with 0 probability
 - [CHANGED] avoid division by 0 in network utilization
 - [CHANGED] avoid values of BigM = 0.0
 - [CHANGED] change modeling of negative reactances
