@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
   <component name="ChangeListManager">
     <list default="true" id="70fc96e0-bc3b-4530-a009-091403d9cfdb" name="Default Changelist" comment="" />
     <option name="SHOW_DIALOG" value="false" />
@@ -32,25 +35,27 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="JupyterTrust" id="15401f25-200e-4de5-ab01-0f1cc0d30ae9" />
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
   <component name="ProjectId" id="1jm1ojPuKK1Y2UywcdD3c12DVhL" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">
-    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
-    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
-    <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../openTEPES_PRO/openTEPES/openTEPES_Modules/openTEPES_ModelFormulation.py" />
-    <property name="node.js.detected.package.eslint" value="true" />
-    <property name="node.js.detected.package.tslint" value="true" />
-    <property name="node.js.path.for.package.eslint" value="project" />
-    <property name="node.js.path.for.package.tslint" value="project" />
-    <property name="node.js.selected.package.eslint" value="(autodetect)" />
-    <property name="node.js.selected.package.tslint" value="(autodetect)" />
-    <property name="settings.editor.selected.configurable" value="editor.preferences.fonts.default" />
-    <property name="two.files.diff.last.used.file" value="$PROJECT_DIR$/../openTEPES_PRO/openTEPES/openTEPES_Modules/openTEPES_ModelFormulation.py" />
-  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "last_opened_file_path": "C:/Users/erik_/miniconda3/python.exe",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
+  }
+}]]></component>
   <component name="RunManager" selected="Python.openTEPES_Main">
     <configuration name="Pivote" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="openTEPES" />
@@ -270,6 +275,7 @@
       <workItem from="1649428324435" duration="26000" />
       <workItem from="1649577161813" duration="1128000" />
       <workItem from="1652370641431" duration="613000" />
+      <workItem from="1652722119267" duration="2420000" />
     </task>
     <servers />
   </component>
@@ -286,6 +292,5 @@
         </entry>
       </map>
     </option>
-    <option name="oldMeFiltersMigrated" value="true" />
   </component>
 </project>
