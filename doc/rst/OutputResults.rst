@@ -481,7 +481,7 @@ File ``oT_Result_NetworkSRMC.csv``
 ============  ==========  ==========  ==========  ==========================================
 Identifier    Identifier  Identifier  Header      Description
 ============  ==========  ==========  ==========  ==========================================
-Scenario      Period      Load level  Node        Locational Short-Mun Marginal Cost [€/MWh]
+Scenario      Period      Load level  Node        Locational Short-Run Marginal Cost [€/MWh]
 ============  ==========  ==========  ==========  ==========================================
 
 These marginal costs are obtained after fixing the binary and continuous investment decisions and the binary operation decisions to their optimal values.
