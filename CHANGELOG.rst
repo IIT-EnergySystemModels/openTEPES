@@ -1,15 +1,16 @@
 Change Log
 =============
 
-[4.6.0rc2] - 2022-05-01
+[4.6.0] - 2022-05-19
 --------------------
+- [CHANGED] introduce generation/demanda balance output result
 - [CHANGED] allow scenarios defined with 0 probability
 - [CHANGED] avoid division by 0 in network utilization
 - [CHANGED] avoid values of BigM = 0.0
 - [CHANGED] change modeling of negative reactances
 - [CHANGED] introduce maximum shifting time for DSM
 
-[4.5.2rc5] - 2022-04-25
+[4.5.2] - 2022-04-25
 --------------------
 - [CHANGED] combine load level weight and duration
 - [CHANGED] combine period weight and probability

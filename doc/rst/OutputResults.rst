@@ -682,8 +682,8 @@ Balance
 
 File ``oT_Result_Balance.csv``
 
-============  ==========  ==========  ==========  ======================================================
-Identifier    Identifier  Identifier  Header      Description
-============  ==========  ==========  ==========  ======================================================
-Scenario      Period      Load level  Nodes       Geenration, consumption, flows, losses and demand [MW]
-============  ==========  ==========  ==========  ======================================================
+============  ==========  ==========  ==========  ==========  ======================================================
+Identifier    Identifier  Identifier  Identifier  Header      Description
+============  ==========  ==========  ==========  ==========  ======================================================
+Scenario      Period      Load level  Technology  Nodes       Geenration, consumption, flows, losses and demand [MW]
+============  ==========  ==========  ==========  ==========  ======================================================
