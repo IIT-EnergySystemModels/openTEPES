@@ -676,3 +676,14 @@ Identifier    Identifier  Identifier  Header      Description
 ============  ==========  ==========  ==========  ================================================
 Scenario      Period      Load level  Technology  ESS Technology variation wrt its mean value [MW]
 ============  ==========  ==========  ==========  ================================================
+
+Balance
+-------
+
+File ``oT_Result_BalancePower.csv``
+
+============  ==========  ==========  ==========  ======================================================
+Identifier    Identifier  Identifier  Header      Description
+============  ==========  ==========  ==========  ======================================================
+Scenario      Period      Load level  Nodes       Geenration, consumption, flows, losses and demand [MW]
+============  ==========  ==========  ==========  ======================================================

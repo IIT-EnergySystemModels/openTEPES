@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 17, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 19, 2022
 """
 
 import time
@@ -769,7 +769,7 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES):
     CostSummary = CostSummary.reset_index().rename(columns={'level_0': 'Period', 'level_1': 'Cost/Payment', 0: '[MEUR]'})
     CostSummary.to_csv(_path+'/oT_Result_CostSummary_'+CaseName+'.csv', sep=',', index=False)
 
-    # %%  Energy Balance per period, scenario, and load level
+    # %%  Power balance per period, scenario, and load level
     # incoming and outgoing lines (lin) (lout)
     lin   = defaultdict(list)
     linl  = defaultdict(list)
@@ -796,14 +796,14 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES):
         mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in mTEPES.stt and st == stt and mTEPES.pStageWeight[stt] and sum(1 for (st,nn) in mTEPES.s2n))
         mTEPES.n  = Set(initialize=mTEPES.nn , ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn      in                          mTEPES.pDuration         and           (st,nn) in mTEPES.s2n)
         if len(mTEPES.n):
-            OutputToFile_1 = pd.Series(data=[sum(OptModel.vTotalOutput[p,sc,n,g]()        for g in mTEPES.g if (nd,g) in mTEPES.n2g)    for n,nd in mTEPES.n*mTEPES.nd if sum(1 for g in mTEPES.g if (nd, g) in mTEPES.n2g) + sum(1 for lout in lout[nd]) + sum(1 for ni, cc in lin[nd])], index=pd.MultiIndex.from_tuples(mTEPES.ps*mTEPES.n*mTEPES.nd))
-            OutputToFile_2 = pd.Series(data=[-sum(OptModel.vESSTotalCharge[p,sc,n,es]()   for es in mTEPES.es if (nd,es) in mTEPES.n2g) for n,nd in mTEPES.n*mTEPES.nd if sum(1 for g in mTEPES.g if (nd, g) in mTEPES.n2g) + sum(1 for lout in lout[nd]) + sum(1 for ni, cc in lin[nd])], index=pd.MultiIndex.from_tuples(mTEPES.ps*mTEPES.n*mTEPES.nd))
-            OutputToFile_3 = pd.Series(data=[OptModel.vENS[p,sc,n,nd]()                                                                 for n,nd in mTEPES.n*mTEPES.nd if sum(1 for g in mTEPES.g if (nd, g) in mTEPES.n2g) + sum(1 for lout in lout[nd]) + sum(1 for ni, cc in lin[nd])], index=pd.MultiIndex.from_tuples(mTEPES.ps*mTEPES.n*mTEPES.nd))
-            OutputToFile_4 = pd.Series(data=[-mTEPES.pDemand[p,sc,n,nd]                                                                 for n,nd in mTEPES.n*mTEPES.nd if sum(1 for g in mTEPES.g if (nd, g) in mTEPES.n2g) + sum(1 for lout in lout[nd]) + sum(1 for ni, cc in lin[nd])], index=pd.MultiIndex.from_tuples(mTEPES.ps*mTEPES.n*mTEPES.nd))
-            OutputToFile_5 = pd.Series(data=[-sum(OptModel.vLineLosses[p,sc,n,nd,lout]()  for lout  in loutl[nd])                       for n,nd in mTEPES.n*mTEPES.nd if sum(1 for g in mTEPES.g if (nd, g) in mTEPES.n2g) + sum(1 for lout in lout[nd]) + sum(1 for ni, cc in lin[nd])], index=pd.MultiIndex.from_tuples(mTEPES.ps*mTEPES.n*mTEPES.nd))
-            OutputToFile_6 = pd.Series(data=[-sum(OptModel.vFlow[p,sc,n,nd,lout]()        for lout  in lout [nd])                       for n,nd in mTEPES.n*mTEPES.nd if sum(1 for g in mTEPES.g if (nd, g) in mTEPES.n2g) + sum(1 for lout in lout[nd]) + sum(1 for ni, cc in lin[nd])], index=pd.MultiIndex.from_tuples(mTEPES.ps*mTEPES.n*mTEPES.nd))
-            OutputToFile_7 = pd.Series(data=[-sum(OptModel.vLineLosses[p,sc,n,ni,nd,cc]() for ni,cc in linl [nd])                       for n,nd in mTEPES.n*mTEPES.nd if sum(1 for g in mTEPES.g if (nd, g) in mTEPES.n2g) + sum(1 for lout in lout[nd]) + sum(1 for ni, cc in lin[nd])], index=pd.MultiIndex.from_tuples(mTEPES.ps*mTEPES.n*mTEPES.nd))
-            OutputToFile_8 = pd.Series(data=[sum(OptModel.vFlow[p,sc,n,ni,nd,cc]()        for ni,cc in lin  [nd])                       for n,nd in mTEPES.n*mTEPES.nd if sum(1 for g in mTEPES.g if (nd, g) in mTEPES.n2g) + sum(1 for lout in lout[nd]) + sum(1 for ni, cc in lin[nd])], index=pd.MultiIndex.from_tuples(mTEPES.ps*mTEPES.n*mTEPES.nd))
+            OutputToFile_1 = pd.Series(data=[sum(OptModel.vTotalOutput[p,sc,n,g]()       *1e3 for g  in mTEPES.g  if (nd,g ) in mTEPES.n2g) for n,nd in mTEPES.n*mTEPES.nd if sum(1 for g in mTEPES.g if (nd, g) in mTEPES.n2g) + sum(1 for lout in lout[nd]) + sum(1 for ni, cc in lin[nd])], index=pd.MultiIndex.from_tuples(mTEPES.ps*mTEPES.n*mTEPES.nd))
+            OutputToFile_2 = pd.Series(data=[-sum(OptModel.vESSTotalCharge[p,sc,n,es]()  *1e3 for es in mTEPES.es if (nd,es) in mTEPES.n2g) for n,nd in mTEPES.n*mTEPES.nd if sum(1 for g in mTEPES.g if (nd, g) in mTEPES.n2g) + sum(1 for lout in lout[nd]) + sum(1 for ni, cc in lin[nd])], index=pd.MultiIndex.from_tuples(mTEPES.ps*mTEPES.n*mTEPES.nd))
+            OutputToFile_3 = pd.Series(data=[OptModel.vENS[p,sc,n,nd]()                  *1e3                                               for n,nd in mTEPES.n*mTEPES.nd if sum(1 for g in mTEPES.g if (nd, g) in mTEPES.n2g) + sum(1 for lout in lout[nd]) + sum(1 for ni, cc in lin[nd])], index=pd.MultiIndex.from_tuples(mTEPES.ps*mTEPES.n*mTEPES.nd))
+            OutputToFile_4 = pd.Series(data=[-mTEPES.pDemand[p,sc,n,nd]                  *1e3                                               for n,nd in mTEPES.n*mTEPES.nd if sum(1 for g in mTEPES.g if (nd, g) in mTEPES.n2g) + sum(1 for lout in lout[nd]) + sum(1 for ni, cc in lin[nd])], index=pd.MultiIndex.from_tuples(mTEPES.ps*mTEPES.n*mTEPES.nd))
+            OutputToFile_5 = pd.Series(data=[-sum(OptModel.vLineLosses[p,sc,n,nd,lout]() *1e3 for lout  in loutl[nd])                       for n,nd in mTEPES.n*mTEPES.nd if sum(1 for g in mTEPES.g if (nd, g) in mTEPES.n2g) + sum(1 for lout in lout[nd]) + sum(1 for ni, cc in lin[nd])], index=pd.MultiIndex.from_tuples(mTEPES.ps*mTEPES.n*mTEPES.nd))
+            OutputToFile_6 = pd.Series(data=[-sum(OptModel.vFlow[p,sc,n,nd,lout]()       *1e3 for lout  in lout [nd])                       for n,nd in mTEPES.n*mTEPES.nd if sum(1 for g in mTEPES.g if (nd, g) in mTEPES.n2g) + sum(1 for lout in lout[nd]) + sum(1 for ni, cc in lin[nd])], index=pd.MultiIndex.from_tuples(mTEPES.ps*mTEPES.n*mTEPES.nd))
+            OutputToFile_7 = pd.Series(data=[-sum(OptModel.vLineLosses[p,sc,n,ni,nd,cc]()*1e3 for ni,cc in linl [nd])                       for n,nd in mTEPES.n*mTEPES.nd if sum(1 for g in mTEPES.g if (nd, g) in mTEPES.n2g) + sum(1 for lout in lout[nd]) + sum(1 for ni, cc in lin[nd])], index=pd.MultiIndex.from_tuples(mTEPES.ps*mTEPES.n*mTEPES.nd))
+            OutputToFile_8 = pd.Series(data=[sum(OptModel.vFlow[p,sc,n,ni,nd,cc]()       *1e3 for ni,cc in lin  [nd])                       for n,nd in mTEPES.n*mTEPES.nd if sum(1 for g in mTEPES.g if (nd, g) in mTEPES.n2g) + sum(1 for lout in lout[nd]) + sum(1 for ni, cc in lin[nd])], index=pd.MultiIndex.from_tuples(mTEPES.ps*mTEPES.n*mTEPES.nd))
             OutputData_1.append(OutputToFile_1)
             OutputData_2.append(OutputToFile_2)
             OutputData_3.append(OutputToFile_3)
@@ -816,17 +816,16 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES):
     mTEPES.del_component(mTEPES.n )
     mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in mTEPES.stt and mTEPES.pStageWeight[stt] and sum(1 for (stt,nn) in mTEPES.s2n))
     mTEPES.n  = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in                mTEPES.pDuration                                              )
-    OutputData_1 = pd.concat(OutputData_1).to_frame(name="Generation [GW]"         )
-    OutputData_2 = pd.concat(OutputData_2).to_frame(name="ESSCharge [GW]"          )
-    OutputData_3 = pd.concat(OutputData_3).to_frame(name="ENS [GW]"                )
-    OutputData_4 = pd.concat(OutputData_4).to_frame(name="ElectricityDemand [GW]"  )
-    OutputData_5 = pd.concat(OutputData_5).to_frame(name="OutcomingLineLosses [GW]")
-    OutputData_6 = pd.concat(OutputData_6).to_frame(name="OutcomingPowerFlow [GW]" )
-    OutputData_7 = pd.concat(OutputData_7).to_frame(name="IncomingLineLosses [GW]" )
-    OutputData_8 = pd.concat(OutputData_8).to_frame(name="IncomingPowerFlow [GW]"  )
+    OutputData_1 = pd.concat(OutputData_1).to_frame(name="Generation [MW]"         )
+    OutputData_2 = pd.concat(OutputData_2).to_frame(name="ESSCharge [MW]"          )
+    OutputData_3 = pd.concat(OutputData_3).to_frame(name="ENS [MW]"                )
+    OutputData_4 = pd.concat(OutputData_4).to_frame(name="ElectricityDemand [MW]"  )
+    OutputData_5 = pd.concat(OutputData_5).to_frame(name="OutcomingLineLosses [MW]")
+    OutputData_6 = pd.concat(OutputData_6).to_frame(name="OutcomingPowerFlow [MW]" )
+    OutputData_7 = pd.concat(OutputData_7).to_frame(name="IncomingLineLosses [MW]" )
+    OutputData_8 = pd.concat(OutputData_8).to_frame(name="IncomingPowerFlow [MW]"  )
     OutputData   = pd.concat([OutputData_1, OutputData_2, OutputData_3, OutputData_4, OutputData_5, OutputData_6, OutputData_7, OutputData_8], axis=1)
-    OutputData.rename_axis(['Period','Scenario','LoadLevel','Node'], axis=0).to_csv(_path+'/oT_Result_EnergyBalance_'+CaseName+'.csv', sep=',')
-
+    OutputData.rename_axis(['Period','Scenario','LoadLevel','Node'], axis=0).to_csv(_path+'/oT_Result_Balance_'+CaseName+'.csv', sep=',')
 
     OutputToFile = pd.Series(data=[(mTEPES.pDiscountFactor[p] * mTEPES.pScenProb[p,sc] * mTEPES.pLoadLevelDuration[n]() * mTEPES.pLinearVarCost  [nr] * OptModel.vTotalOutput[p,sc,n,nr]() +
                                     mTEPES.pDiscountFactor[p] * mTEPES.pScenProb[p,sc] * mTEPES.pLoadLevelDuration[n]() * mTEPES.pConstantVarCost[nr] * OptModel.vCommitment [p,sc,n,nr]() +
