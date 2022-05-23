@@ -12,7 +12,7 @@ copyright = '2022, Universidad Pontificia Comillas'
 author = 'Andres Ramos'
 
 # The short X.Y version
-version = 'version 4.6.0'
+version = 'version 4.6.1rc1'
 # The full version, including alpha/beta/rc tags
 release = ''
 
@@ -79,18 +79,18 @@ html_static_path = []
 #
 # The default sidebars (for documents that don't match any pattern) are
 # defined by theme itself.  Builtin themes are using these templates by
-# default: ``['localtoc.html', 'relations.html', 'sourcelink.html',
+# default: ``['loaltoc.html', 'relations.html', 'sourcelink.html',
 # 'searchbox.html']``.
 #
 # html_sidebars = {}
 html_theme = 'alabaster'
-html_title = 'version 4.6.0'
+html_title = 'version 4.6.1rc1'
 html_logo  = '../img/openTEPES.png'
 html_last_updated_fmt = ''
 html_show_sphinx = False
 html_theme_options = {
     'analytics_id': 'UA-515200-2',  #  Provided by Google in your dashboard
-    'description': 'version 4.6.0',
+    'description': 'version 4.6.1rc1',
     'page_width': 'auto',
     'font_family': 'Georgia'
 }
