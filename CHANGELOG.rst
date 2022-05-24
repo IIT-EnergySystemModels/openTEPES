@@ -1,13 +1,14 @@
 Change Log
 =============
 
-[4.6.1] - 2022-05-23
+[4.6.1] - 2022-05-24
 --------------------
+- [CHANGED] introduce generation/demand balance energy result
 - [FIXED] error in the generation/demand balance file
 
 [4.6.0] - 2022-05-19
 --------------------
-- [CHANGED] introduce generation/demanda balance output result
+- [CHANGED] introduce generation/demand balance output result
 - [CHANGED] allow scenarios defined with 0 probability
 - [CHANGED] avoid division by 0 in network utilization
 - [CHANGED] avoid values of BigM = 0.0
