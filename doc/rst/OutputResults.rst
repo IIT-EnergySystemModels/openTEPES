@@ -9,8 +9,6 @@ A map of the transmission network and the energy share of different technologies
    :scale: 40%
    :align: center
 
-|
-
 .. image:: ../img/oT_Map_Network_MAF2030.png
    :scale: 60%
    :align: center
@@ -233,6 +231,14 @@ File ``oT_Result_TechnologyEmission.csv``
 Identifier    Identifier  Identifier  Header      Description
 ============  ==========  ==========  ==========  =================================
 Scenario      Period      Load level  Technology   CO2 emission [Mt CO2]
+============  ==========  ==========  ==========  =================================
+
+File ``oT_Result_TechnologyEmission_AreaName.csv``
+
+============  ==========  ==========  ==========  =================================
+Identifier    Identifier  Identifier  Header      Description
+============  ==========  ==========  ==========  =================================
+Scenario      Period      Load level  Technology   CO2 emission per area [Mt CO2]
 ============  ==========  ==========  ==========  =================================
 
 File ``oT_Result_TechnologyReserveUp.csv``
@@ -538,6 +544,14 @@ Identifier    Description
 Cost type     Type of cost [M€]
 ============  ==========================================
 
+File ``oT_Result_CostSummary_AreaName.csv``
+
+============  ==========  ==========================================
+Identifier    Header      Description
+============  ==========  ==========================================
+Cost type     Area        Type of cost per area [M€]
+============  ==========  ==========================================
+
 File ``oT_Result_CostRecovery.csv``
 
 ============  ==========================================
@@ -577,6 +591,14 @@ Identifier    Identifier  Identifier  Header      Description
 ============  ==========  ==========  ==========  ==============================================
 Scenario      Period      Load level  Generator   Operation reserve cost for the generation [M€]
 ============  ==========  ==========  ==========  ==============================================
+
+File ``oT_Result_ChargeCostOperReserve.csv``
+
+============  ==========  ==========  ==========  ===============================================
+Identifier    Identifier  Identifier  Header      Description
+============  ==========  ==========  ==========  ===============================================
+Scenario      Period      Load level  Pump        Operation reserve cost for the consumption [M€]
+============  ==========  ==========  ==========  ===============================================
 
 File ``oT_Result_GenerationCostEmission.csv``
 
