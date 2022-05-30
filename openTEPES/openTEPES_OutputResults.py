@@ -1293,6 +1293,7 @@ def NetworkMapResults(DirName, CaseName, OptModel, mTEPES):
 
         return loc_df, line_df
 
+<<<<<<< HEAD
     p = list(mTEPES.p)[0]
     n = list(mTEPES.n)[0]
 
@@ -1302,6 +1303,17 @@ def NetworkMapResults(DirName, CaseName, OptModel, mTEPES):
                 sc = scc
     else:
         sc = list(mTEPES.sc)[0]
+=======
+    p  = list(mTEPES.p )[0]
+    n  = list(mTEPES.n )[0]
+    if len(mTEPES.sc)>1:
+        for scc in mTEPES.sc:
+            if mTEPES.pScenProb[p, scc] == 1:
+                sc = scc
+    else:
+        sc = list(mTEPES.sc)[0]
+
+>>>>>>> 2c12c8348d90b8700ce2f3dbd1fad5aaa028d0ed
 
     loc_df, line_df = oT_selecting_data(p,sc,n)
 
