@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 28, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 30, 2022
 """
 
 import time
@@ -1293,9 +1293,15 @@ def NetworkMapResults(DirName, CaseName, OptModel, mTEPES):
 
         return loc_df, line_df
 
-    sc = list(mTEPES.sc)[0]
     p  = list(mTEPES.p )[0]
     n  = list(mTEPES.n )[0]
+    if len(mTEPES.sc)>1:
+        for scc in mTEPES.sc:
+            if mTEPES.pScenProb[p, scc] == 1:
+                sc = scc
+    else:
+        sc = list(mTEPES.sc)[0]
+
 
     loc_df, line_df = oT_selecting_data(p,sc,n)
 
