@@ -106,8 +106,8 @@ They are written in **uppercase** letters.
 :math:`GI_g`                                           Generator inertia                                                                                                         s
 :math:`EF_e`                                           Round-trip efficiency of the pump/turbine cycle of a pumped-storage hydro power plant or charge/discharge of a battery    p.u.
 :math:`I^p_{ωne}`                                      Capacity of an ESS (e.g., hydro power plant)                                                                              GWh
-:math:`EI^p_{ωng}`                                     Energy inflows of an ESS (e.g., hydro power plant)                                                                        GWh
-:math:`EO^p_{ωng}`                                     Energy outflows of an ESS (e.g., H2, EV, hydro power plant)                                                               GWh
+:math:`EI^p_{ωng}`                                     Energy inflows of an ESS (e.g., hydro power plant)                                                                        GW
+:math:`EO^p_{ωng}`                                     Energy outflows of an ESS (e.g., H2, EV, hydro power plant)                                                               GW
 =====================================================  ========================================================================================================================  ============
 
 =========================================  =================================================================================================================  ====
