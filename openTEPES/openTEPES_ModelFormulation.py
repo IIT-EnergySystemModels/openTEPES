@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 14, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 31, 2022
 """
 
 import time
@@ -519,7 +519,7 @@ def GenerationOperationModelFormulationRampMinTime(OptModel, mTEPES, pIndLogCons
         if   mTEPES.pRampUp[es] and mTEPES.pIndBinGenRamps() == 1 and mTEPES.pMaxCharge2ndBlock[p,sc,n,es] and n == mTEPES.n.first():
             return (                                                                                                            OptModel.vCharge2ndBlock[p,sc,n,es] - OptModel.vESSReserveUp  [p,sc,n,es]) / mTEPES.pDuration[n] / mTEPES.pRampUp[es] >= - 1.0
         elif mTEPES.pRampUp[es] and mTEPES.pIndBinGenRamps() == 1 and mTEPES.pMaxCharge2ndBlock[p,sc,n,es]:
-            return (                                                                                                            OptModel.vCharge2ndBlock[p,sc,n,es] - OptModel.vESSReserveUp  [p,sc,n,es]) / mTEPES.pDuration[n] / mTEPES.pRampUp[es] >= - 1.0
+            return (- OptModel.vCharge2ndBlock[p,sc,mTEPES.n.prev(n),es] + OptModel.vESSReserveDown[p,sc,mTEPES.n.prev(n),es] + OptModel.vCharge2ndBlock[p,sc,n,es] - OptModel.vESSReserveUp  [p,sc,n,es]) / mTEPES.pDuration[n] / mTEPES.pRampUp[es] >= - 1.0
         else:
             return Constraint.Skip
     setattr(OptModel, 'eRampUpChr_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.ps, mTEPES.n, mTEPES.es, rule=eRampUpCharge, doc='maximum ramp up   charge [p.u.]'))

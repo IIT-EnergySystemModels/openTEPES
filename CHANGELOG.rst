@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.6.1] - 2022-05-24
+[4.6.1] - 2022-05-31
 --------------------
+- [FIXED] error in the ramp up equation for the charge onf an ESS (eRampUpCharge)
 - [CHANGED] introduce generation/demand balance energy result
 - [FIXED] error in the generation/demand balance file
 
