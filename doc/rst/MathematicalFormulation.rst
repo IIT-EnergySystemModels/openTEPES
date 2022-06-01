@@ -95,7 +95,8 @@ They are written in **uppercase** letters.
 :math:`\underline{GP}_g, \overline{GP}_g`              Rated minimum load and maximum output of a generator                                                                      GW
 :math:`\underline{GP}^p_{ωng}, \overline{GP}^p_{ωng}`  Minimum load and maximum output of a generator                                                                            GW
 :math:`\underline{GC}^p_{ωne}, \overline{GC}^p_{ωne}`  Minimum and maximum consumption of an ESS                                                                                 GW
-:math:`CF_g, CV_g`                                     Fixed (no load) and variable cost of a generator. Variable cost includes fuel, O&M and emission cost                      €/h, €/MWh
+:math:`CF_g, CV_g`                                     Fixed (no load) and variable cost of a generator. Variable cost includes fuel and O&M                                     €/h, €/MWh
+:math:`CE_g`                                           Emission cost of a generator                                                                                              €/MWh
 :math:`CV_e`                                           Variable cost of an ESS when charging                                                                                     €/MWh
 :math:`RU_g, RD_g`                                     Ramp up/down of a non-renewable unit or maximum discharge/charge rate for ESS discharge/charge                            MW/h
 :math:`TU_t, TD_t`                                     Minimum uptime and downtime of a thermal unit                                                                             h
@@ -151,15 +152,15 @@ They are written in **lowercase** letters.
 :math:`uc'_g`                               Maximum commitment of a generation unit for all the load levels             {0,1}
 ==========================================  ==========================================================================  =====
 
-======================================================  =================================================================  =====
+======================================================  ==============================================================  =====
 **Transmission system**
-------------------------------------------------------  -----------------------------------------------------------------  -----
-:math:`ict_{pijc}`                                      Candidate line installed or not                                    {0,1}
-:math:`swt^p_{ωnijc}, son^p_{ωnijc}, sof^p_{ωnijc}`     Switching state, switch-on and switch-off of a line                {0,1}
-:math:`f^p_{ωnijc}`                                     Flow through a line                                                GW
-:math:`l^p_{ωnijc}`                                     Half ohmic losses of a line                                        GW
-:math:`θ^p_{ωni}`                                       Voltage angle of a node                                            rad
-======================================================  =================================================================  =====
+------------------------------------------------------  --------------------------------------------------------------  -----
+:math:`ict_{pijc}`                                      Candidate line installed or not                                 {0,1}
+:math:`swt^p_{ωnijc}, son^p_{ωnijc}, sof^p_{ωnijc}`     Switching state, switch-on and switch-off of a line             {0,1}
+:math:`f^p_{ωnijc}`                                     Flow through a line                                             GW
+:math:`l^p_{ωnijc}`                                     Half ohmic losses of a line                                     GW
+:math:`θ^p_{ωni}`                                       Voltage angle of a node                                         rad
+======================================================  ==============================================================  =====
 
 Equations
 ---------
@@ -172,9 +173,13 @@ Generation, storage and network investment cost plus retirement cost [M€] «``
 
 :math:`\sum_{pg} DF_p CFG_g icg_{pg} + \sum_{pg} DF_p CFR_g rcg_{pg} + \sum_{pijc} DF_p CFT_{ijc} ict_{pijc} +`
 
-Generation operation cost [M€] «``eTotalGCost``» «``eTotalECost``»
+Generation operation cost [M€] «``eTotalGCost``»
 
 :math:`\sum_{pωng} {[DF_p P^ω_p DUR_n (CV_g gp^p_{ωng} + CF_g uc^p_{ωng}) + DF_p CSU_g su^p_{ωng} + DF_p CSD_g sd^p_{ωng}]} +`
+
+Generation emission cost [M€] «``eTotalECost``»
+
+:math:`\sum_{pωng} {DF_p P^ω_p DUR_n CE_g gp^p_{ωng}} +`
 
 Variable consumption operation cost [M€] «``eTotalCCost``»
 
@@ -366,29 +371,29 @@ Half ohmic losses are linearly approximated as a function of the flow [GW] «``e
 
 **Bounds on generation variables** [GW]
 
-:math:`0 \leq gp^p_{ωng} \leq \overline{GP}^p_{ωng}                             \quad \forall pωng`
+:math:`0 \leq gp^p_{ωng}  \leq \overline{GP}^p_{ωng}                             \quad \forall pωng`
 
-:math:`0 \leq go^p_{ωne} \leq \max(\overline{GP}^p_{ωne},\overline{GC}^p_{ωne}) \quad \forall pωne`
+:math:`0 \leq go^p_{ωne}  \leq \max(\overline{GP}^p_{ωne},\overline{GC}^p_{ωne}) \quad \forall pωne`
 
-:math:`0 \leq qc^p_{ωne} \leq \overline{GC}^p_{ωne}                             \quad \forall pωne`
+:math:`0 \leq gc^p_{ωne}  \leq \overline{GC}^p_{ωne}                             \quad \forall pωne`
 
-:math:`0 \leq ur^p_{ωng} \leq \overline{GP}^p_{ωng} - \underline{GP}^p_{ωng}    \quad \forall pωng`
+:math:`0 \leq ur^p_{ωng}  \leq \overline{GP}^p_{ωng} - \underline{GP}^p_{ωng}    \quad \forall pωng`
 
-:math:`0 \leq ur'^p_{ωne} \leq \overline{GC}^p_{ωne} - \underline{GC}^p_{ωne}   \quad \forall pωne`
+:math:`0 \leq ur'^p_{ωne} \leq \overline{GC}^p_{ωne} - \underline{GC}^p_{ωne}    \quad \forall pωne`
 
-:math:`0 \leq dr^p_{ωng}  \leq \overline{GP}^p_{ωng} - \underline{GP}^p_{ωng}   \quad \forall pωng`
+:math:`0 \leq dr^p_{ωng}  \leq \overline{GP}^p_{ωng} - \underline{GP}^p_{ωng}    \quad \forall pωng`
 
-:math:`0 \leq dr'^p_{ωne} \leq \overline{GC}^p_{ωne} - \underline{GC}^p_{ωne}   \quad \forall pωne`
+:math:`0 \leq dr'^p_{ωne} \leq \overline{GC}^p_{ωne} - \underline{GC}^p_{ωne}    \quad \forall pωne`
 
-:math:`0 \leq  p^p_{ωng}  \leq \overline{GP}^p_{ωng} - \underline{GP}^p_{ωng}   \quad \forall pωng`
+:math:`0 \leq  p^p_{ωng}  \leq \overline{GP}^p_{ωng} - \underline{GP}^p_{ωng}    \quad \forall pωng`
 
-:math:`0 \leq  c^p_{ωne}  \leq \overline{GP}^p_{ωne}                            \quad \forall pωne`
+:math:`0 \leq  c^p_{ωne}  \leq \overline{GC}^p_{ωne}                             \quad \forall pωne`
 
-:math:`0 \leq  i^p_{ωne}  \leq I^p_{ωne}                                        \quad \forall pωne`
+:math:`0 \leq  i^p_{ωne}  \leq I^p_{ωne}                                         \quad \forall pωne`
 
-:math:`0 \leq  s^p_{ωne}                                                        \quad \forall pωne`
+:math:`0 \leq  s^p_{ωne}                                                         \quad \forall pωne`
 
-:math:`0 \leq ens^p_{ωni} \leq D^p_{ωni}                                        \quad \forall pωni`
+:math:`0 \leq ens^p_{ωni} \leq D^p_{ωni}                                         \quad \forall pωni`
 
 **Bounds on network variables** [GW]
 
