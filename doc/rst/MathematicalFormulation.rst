@@ -370,7 +370,7 @@ Half ohmic losses are linearly approximated as a function of the flow [GW] «``e
 
 :math:`0 \leq go^p_{ωne} \leq \max(\overline{GP}^p_{ωne},\overline{GC}^p_{ωne}) \quad \forall pωne`
 
-:math:`0 \leq qc^p_{ωne} \leq \overline{GP}^p_{ωne}                             \quad \forall pωne`
+:math:`0 \leq qc^p_{ωne} \leq \overline{GC}^p_{ωne}                             \quad \forall pωne`
 
 :math:`0 \leq ur^p_{ωng} \leq \overline{GP}^p_{ωng} - \underline{GP}^p_{ωng}    \quad \forall pωng`
 
