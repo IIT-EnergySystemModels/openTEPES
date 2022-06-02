@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 12, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 02, 2022
 """
 
 import datetime
@@ -586,8 +586,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
 
         pInitialInventory.update(pd.Series([0 for es in mTEPES.es if (ar, es) in mTEPES.a2g and pInitialInventory[es] < pEpsilon], index=[es for es in mTEPES.es if (ar, es) in mTEPES.a2g and pInitialInventory[es] < pEpsilon], dtype='float64'))
 
-        pLineNTCFrw.update(pd.Series([0.0 for (ni,nf,cc,ar) in mTEPES.laar if pLineNTCFrw[ni,nf,cc] < pEpsilon], index = [(ni,nf,cc) for (ni,nf,cc,ar) in mTEPES.laar if pLineNTCFrw[ni,nf,cc] < pEpsilon], dtype='float64'))
-        pLineNTCBck.update(pd.Series([0.0 for (ni,nf,cc,ar) in mTEPES.laar if pLineNTCBck[ni,nf,cc] < pEpsilon], index = [(ni,nf,cc) for (ni,nf,cc,ar) in mTEPES.laar if pLineNTCBck[ni,nf,cc] < pEpsilon], dtype='float64'))
+        pLineNTCFrw.update(pd.Series([0.0 for (ni,nf,cc) in mTEPES.la if pLineNTCFrw[ni,nf,cc] < pEpsilon], index = [(ni,nf,cc) for (ni,nf,cc) in mTEPES.la if pLineNTCFrw[ni,nf,cc] < pEpsilon], dtype='float64'))
+        pLineNTCBck.update(pd.Series([0.0 for (ni,nf,cc) in mTEPES.la if pLineNTCBck[ni,nf,cc] < pEpsilon], index = [(ni,nf,cc) for (ni,nf,cc) in mTEPES.la if pLineNTCBck[ni,nf,cc] < pEpsilon], dtype='float64'))
 
         # merging positive and negative values of the demand
         pDemand            = pDemandPos.where(pDemandPos >= 0.0, other=pDemandNeg)
@@ -903,16 +903,16 @@ def SettingUpVariables(OptModel, mTEPES):
 
     for p,sc,n,es in mTEPES.ps*mTEPES.n*mTEPES.es:
         # ESS with no charge capacity or not storage capacity can't charge
-        if mTEPES.pMaxCharge        [p,sc,n,es] == 0.0:
+        if mTEPES.pMaxCharge        [p,sc,n,es] ==  0.0:
             OptModel.vESSTotalCharge[p,sc,n,es].fix(0.0)
-        if mTEPES.pMaxCharge2ndBlock[p,sc,n,es] == 0.0:
+        if mTEPES.pMaxCharge2ndBlock[p,sc,n,es] ==  0.0:
             OptModel.vCharge2ndBlock[p,sc,n,es].fix(0.0)
             OptModel.vESSReserveUp  [p,sc,n,es].fix(0.0)
             OptModel.vESSReserveDown[p,sc,n,es].fix(0.0)
         if  mTEPES.pIndOperReserve  [       es] !=  0.0:
             OptModel.vESSReserveUp  [p,sc,n,es].fix(0.0)
             OptModel.vESSReserveDown[p,sc,n,es].fix(0.0)
-        if mTEPES.pMaxStorage       [p,sc,n,es] == 0.0:
+        if mTEPES.pMaxStorage       [p,sc,n,es] ==  0.0:
             OptModel.vESSInventory  [p,sc,n,es].fix(0.0)
 
     # thermal and RES units ordered by increasing variable operation cost, excluding reactive generating units

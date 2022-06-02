@@ -97,6 +97,8 @@ File                                       Description
 ``oT_Data_NodeLocation.csv``               Node location in latitude and longitude
 =========================================  ==========================================================================================================
 
+In any input file only the columns indicated in this document will be read. For example, you can add a column for comments or additional information as needed, but it will not read by the model.
+
 Options
 ----------
 A description of the options included in the file ``oT_Data_Option.csv`` follows:
