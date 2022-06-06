@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 02, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 06, 2022
 """
 
 import time
@@ -181,7 +181,7 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES):
         # Ordering data to plot the investment retirement
         OutputResults1 = pd.Series(data=[gt for p,gd,gt in mTEPES.p*mTEPES.gd*mTEPES.gt if (gt,gd) in mTEPES.t2g], index=pd.Index(mTEPES.p*mTEPES.gd))
         OutputResults1 = OutputResults1.to_frame(name='Technology')
-        OutputResults2 = OutputToFile.set_index(['Period', 'Generating unit'])
+        OutputResults2 = OutputToFile
         OutputResults   = pd.concat([OutputResults1, OutputResults2], axis=1)
         OutputResults.index.names = ['Period','Generating unit']
         OutputResults   = OutputResults.reset_index().groupby(['Period', 'Technology']).sum()
@@ -340,6 +340,25 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES):
         OutputResults.to_frame(name='MW/h').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW/h', aggfunc=sum).rename_axis(['Period','Scenario','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_GenerationRampDwSurplus_'+CaseName+'.csv', sep=',')
 
     if len(mTEPES.r):
+        OutputToFile1 = pd.Series(data=[(OptModel.vTotalOutput[p,sc,n,r].ub - OptModel.vTotalOutput[p,sc,n,r]())*mTEPES.pLoadLevelDuration[n]() for p,sc,n,r in mTEPES.ps*mTEPES.n*mTEPES.r], index=pd.MultiIndex.from_tuples(mTEPES.ps*mTEPES.n*mTEPES.r))
+        OutputToFile2 = pd.Series(data=[(OptModel.vTotalOutput[p,sc,n,r].ub)*mTEPES.pLoadLevelDuration[n]() for p,sc,n,r in mTEPES.ps*mTEPES.n*mTEPES.r], index=pd.MultiIndex.from_tuples(mTEPES.ps*mTEPES.n*mTEPES.r))
+        for p,sc,n,r in mTEPES.ps*mTEPES.n*mTEPES.r:
+            if r in mTEPES.gc:
+                OutputToFile1[p,sc,n,r] *= OptModel.vGenerationInvest[p,r]()
+                OutputToFile2[p,sc,n,r] *= OptModel.vGenerationInvest[p,r]()
+        OutputToFile1 = OutputToFile1.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_3'], values='GWh', aggfunc=sum).rename_axis(['Period','Scenario','Unit'], axis=0).rename_axis([None], axis=1)
+        OutputToFile2 = OutputToFile2.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_3'], values='GWh', aggfunc=sum).rename_axis(['Period','Scenario','Unit'], axis=0).rename_axis([None], axis=1)
+        OutputToFile  = OutputToFile1.div(OutputToFile2)*1e2
+        OutputToFile  = OutputToFile.fillna(0.0)
+        OutputToFile.rename(columns = {'GWh':'%'}, inplace = True)
+        OutputToFile.to_csv(_path+'/oT_Result_GenerationRelativeCurtailmentEnergy_'+CaseName+'.csv', sep=',')
+
+        OutputToFile1 = pd.Series(data=[sum(OutputToFile1['GWh'][p,sc,r] for r in mTEPES.r if (rt,r) in mTEPES.t2g) for p,sc,rt in mTEPES.ps*mTEPES.rt], index=pd.MultiIndex.from_tuples(mTEPES.ps*mTEPES.rt))
+        OutputToFile2 = pd.Series(data=[sum(OutputToFile2['GWh'][p,sc,r] for r in mTEPES.r if (rt,r) in mTEPES.t2g) for p,sc,rt in mTEPES.ps*mTEPES.rt], index=pd.MultiIndex.from_tuples(mTEPES.ps*mTEPES.rt))
+        OutputToFile  = OutputToFile1.div(OutputToFile2)*1e2
+        OutputToFile  = OutputToFile.fillna(0.0)
+        OutputToFile.to_frame(name='%').to_csv(_path+'/oT_Result_TechnologyRelativeCurtailmentEnergy_'+CaseName+'.csv', sep=',')
+
         OutputToFile = pd.Series(data=[(OptModel.vTotalOutput[p,sc,n,r].ub - OptModel.vTotalOutput[p,sc,n,r]())*1e3  for p,sc,n,r in mTEPES.ps*mTEPES.n*mTEPES.r], index=pd.MultiIndex.from_tuples(mTEPES.ps*mTEPES.n*mTEPES.r))
         for p,sc,n,r in mTEPES.ps*mTEPES.n*mTEPES.r:
             if r in mTEPES.gc:
