@@ -37,7 +37,7 @@ The model has being used in these research projects:
    :align: center
 
 - `Assessment of the storage needs for the Spanish electric system in a horizon 2020-2050 with large share of renewables <https://www.iit.comillas.edu/proyectos/mostrar_proyecto.php.en?nombre_abreviado=IDAE_Almacenamiento>`_, developed for
-  the **Instituto para la Diversificación y Ahorro de la Energía (IDAE)**. January 2021 - March 2022.
+  the **Instituto para la Diversificación y Ahorro de la Energía (IDAE)**. January 2021 - June 2022.
   `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `P. Linares <https://www.iit.comillas.edu/people/pedrol>`_, `J.P. Chaves <https://www.iit.comillas.edu/people/jchaves>`_,
   `J. García <https://www.iit.comillas.edu/people/javiergg>`_, `S. Wogrin <https://www.iit.comillas.edu/people/swogrin>`_, `J.J. Valentín <https://www.iit.comillas.edu/people/jjvalentin>`_
 
