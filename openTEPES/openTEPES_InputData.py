@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 02, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 07, 2022
 """
 
 import datetime
@@ -684,8 +684,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.pMaxCharge2ndBlock    = Param(mTEPES.p, mTEPES.sc, mTEPES.n, mTEPES.gg, initialize=pMaxCharge2ndBlock.stack().to_dict(), within=NonNegativeReals,    doc='Second block charge'                     )
     mTEPES.pEnergyInflows        = Param(mTEPES.p, mTEPES.sc, mTEPES.n, mTEPES.gg, initialize=pEnergyInflows.stack().to_dict()    , within=NonNegativeReals,    doc='Energy inflows'                          )
     mTEPES.pEnergyOutflows       = Param(mTEPES.p, mTEPES.sc, mTEPES.n, mTEPES.gg, initialize=pEnergyOutflows.stack().to_dict()   , within=NonNegativeReals,    doc='Energy outflows'                         )
-    mTEPES.pMinStorage           = Param(mTEPES.p, mTEPES.sc, mTEPES.n, mTEPES.gg, initialize=pMinStorage.stack().to_dict()       , within=NonNegativeReals,    doc='ESS Minimum stoarage capacity'           )
-    mTEPES.pMaxStorage           = Param(mTEPES.p, mTEPES.sc, mTEPES.n, mTEPES.gg, initialize=pMaxStorage.stack().to_dict()       , within=NonNegativeReals,    doc='ESS Maximum stoarage capacity'           )
+    mTEPES.pMinStorage           = Param(mTEPES.p, mTEPES.sc, mTEPES.n, mTEPES.gg, initialize=pMinStorage.stack().to_dict()       , within=NonNegativeReals,    doc='ESS Minimum storage capacity'            )
+    mTEPES.pMaxStorage           = Param(mTEPES.p, mTEPES.sc, mTEPES.n, mTEPES.gg, initialize=pMaxStorage.stack().to_dict()       , within=NonNegativeReals,    doc='ESS Maximum storage capacity'            )
     mTEPES.pRatedMaxPower        = Param(                               mTEPES.gg, initialize=pRatedMaxPower.to_dict()            , within=NonNegativeReals,    doc='Rated maximum power'                     )
     mTEPES.pMustRun              = Param(                               mTEPES.gg, initialize=pMustRun.to_dict()                  , within=Boolean         ,    doc='must-run unit'                           )
     mTEPES.pInertia              = Param(                               mTEPES.gg, initialize=pInertia.to_dict()                  , within=NonNegativeReals,    doc='unit inertia constant'                   )

@@ -161,7 +161,7 @@ Identifier    Identifier  Identifier  Header          Description
 Scenario      Period      Load level  VRES Generator  Curtailed energy of VRES [GWh]
 ============  ==========  ==========  ==============  ===============================
 
-File ``oT_Result_GenerationRelativeCurtailmentEnergy.csv``
+File ``oT_Result_GenerationCurtailmentEnergyRelative.csv``
 
 ============  ==========  ==========  ==============  ===========================================
 Identifier    Identifier  Identifier  Header          Description
@@ -217,7 +217,7 @@ Identifier    Identifier  Identifier  Header      Description
 Scenario      Period      Load level  Technology  Curtailed energy of VRES [GWh]
 ============  ==========  ==========  ==========  ==========================================
 
-File ``oT_Result_TechnologyRelativeCurtailmentEnergy.csv``
+File ``oT_Result_TechnologyCurtailmentEnergyRelative.csv``
 
 ============  ==========  ==========  ==============  ===========================================
 Identifier    Identifier  Identifier  Header          Description
