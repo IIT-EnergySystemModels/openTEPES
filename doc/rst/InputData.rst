@@ -273,8 +273,8 @@ NoOperatingReserve    No contribution to operating reserve. Yes if the unit does
 StorageType           Storage type based on storage capacity (hourly, daily, weekly, monthly, etc.)                                           Hourly/Daily/Weekly/Monthly
 OutflowsType          Outflows type based on the demand extracted from the storage (hourly, daily, weekly, monthly, yearly, etc.)             Hourly/Daily/Weekly/Monthly/Yearly
 MustRun               Must-run unit                                                                                                           Yes/No
-PeriodIniGen          Installation period (year)                                                                                              Year
-PeriodFinGen          Retirement   period (year)                                                                                              Year
+InitialPeriod         Installation period (year)                                                                                              Year
+FinalPeriod           Retirement   period (year)                                                                                              Year
 MaximumPower          Maximum power output (generation/discharge for ESS units)                                                               MW
 MinimumPower          Minimum power output (i.e., minimum stable load in the case of a thermal power plant)                                   MW
 MaximumReactivePower  Maximum reactive power output (discharge for ESS units) (not used in this version)                                      MW
@@ -421,8 +421,8 @@ Header               Description
 ===================  ===============================================================================================================  ======
 LineType             Line type {AC, DC, Transformer, Converter}
 Switching            The transmission line is able to switch on/off                                                                   Yes/No
-PeriodIniNet         Installation period (year)                                                                                       Year
-PeriodFinNet         Retirement   period (year)                                                                                       Year
+InitialPeriod        Installation period (year)                                                                                       Year
+FinalPeriod          Retirement   period (year)                                                                                       Year
 Voltage              Line voltage (e.g., 400, 220 kV, 220/400 kV if transformer). Used only for plotting purposes                     kV
 Length               Line length (only used for reporting purposes). If not defined, computed as 1.1 times the geographical distance  km
 LossFactor           Transmission losses equal to the line flow times this factor                                                     p.u.

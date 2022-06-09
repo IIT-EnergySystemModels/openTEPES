@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 07, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 09, 2022
 """
 
 import datetime
@@ -1025,13 +1025,13 @@ def SettingUpVariables(OptModel, mTEPES):
                 OptModel.vNetworkInvest[p,ni,nf,cc].fix(0)
 
     # remove power plants and lines not installed in this period
-    for p,g in mTEPES.p*mTEPES.g :
-        if mTEPES.pPeriodIniGen[g ] > p or mTEPES.pPeriodFinGen[g ] < p:
+    for p,g in mTEPES.p*mTEPES.g:
+        if g  not in mTEPES.gc and (mTEPES.pPeriodIniGen[g ] > p or mTEPES.pPeriodFinGen[g ] < p):
             for sc,n in mTEPES.sc*mTEPES.n:
                 OptModel.vTotalOutput   [p,sc,n,g].fix(0.0)
 
     for p,nr in mTEPES.p*mTEPES.nr:
-        if mTEPES.pPeriodIniGen[nr] > p or mTEPES.pPeriodFinGen[nr] < p:
+        if nr not in mTEPES.gc and (mTEPES.pPeriodIniGen[nr] > p or mTEPES.pPeriodFinGen[nr] < p):
             OptModel.vMaxCommitment[nr].fix(0)
             for sc,n in mTEPES.sc*mTEPES.n:
                 OptModel.vOutput2ndBlock[p,sc,n,nr].fix(0.0)
@@ -1042,7 +1042,7 @@ def SettingUpVariables(OptModel, mTEPES):
                 OptModel.vShutDown      [p,sc,n,nr].fix(0  )
 
     for p,es in mTEPES.p*mTEPES.es:
-        if mTEPES.pPeriodIniGen[es] > p or mTEPES.pPeriodFinGen[es] < p:
+        if es not in mTEPES.gc and (mTEPES.pPeriodIniGen[es] > p or mTEPES.pPeriodFinGen[es] < p):
             for sc,n in mTEPES.sc*mTEPES.n:
                 OptModel.vEnergyOutflows[p,sc,n,es].fix(0.0)
                 OptModel.vESSInventory  [p,sc,n,es].fix(0.0)
@@ -1053,7 +1053,7 @@ def SettingUpVariables(OptModel, mTEPES):
                 OptModel.vESSReserveDown[p,sc,n,es].fix(0.0)
 
     for p,ni,nf,cc in mTEPES.p*mTEPES.la:
-        if mTEPES.pPeriodIniNet[ni,nf,cc] > p or mTEPES.pPeriodFinNet[ni,nf,cc] < p:
+        if (ni,nf,cc) not in mTEPES.lc and (mTEPES.pPeriodIniNet[ni,nf,cc] > p or mTEPES.pPeriodFinNet[ni,nf,cc] < p):
             for sc,n in mTEPES.sc*mTEPES.n:
                 OptModel.vFlow        [p,sc,n,ni,nf,cc].fix(0.0)
                 OptModel.vLineCommit  [p,sc,n,ni,nf,cc].fix(0  )
@@ -1061,7 +1061,7 @@ def SettingUpVariables(OptModel, mTEPES):
                 OptModel.vLineOffState[p,sc,n,ni,nf,cc].fix(0  )
 
     for p,ni,nf,cc in mTEPES.p*mTEPES.ll:
-        if mTEPES.pPeriodIniNet[ni,nf,cc] > p or mTEPES.pPeriodFinNet[ni,nf,cc] < p:
+        if (ni,nf,cc) not in mTEPES.lc and (mTEPES.pPeriodIniNet[ni,nf,cc] > p or mTEPES.pPeriodFinNet[ni,nf,cc] < p):
             for sc,n in mTEPES.sc*mTEPES.n:
                 OptModel.vLineLosses  [p,sc,n,ni,nf,cc].fix(0.0)
 
