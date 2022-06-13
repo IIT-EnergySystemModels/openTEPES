@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 09, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 13, 2022
 """
 
 import datetime
@@ -682,8 +682,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.pMaxCharge            = Param(mTEPES.p, mTEPES.sc, mTEPES.n, mTEPES.gg, initialize=pMaxCharge.stack().to_dict()        , within=NonNegativeReals,    doc='Maximum charge'                          )
     mTEPES.pMaxPower2ndBlock     = Param(mTEPES.p, mTEPES.sc, mTEPES.n, mTEPES.gg, initialize=pMaxPower2ndBlock.stack().to_dict() , within=NonNegativeReals,    doc='Second block power'                      )
     mTEPES.pMaxCharge2ndBlock    = Param(mTEPES.p, mTEPES.sc, mTEPES.n, mTEPES.gg, initialize=pMaxCharge2ndBlock.stack().to_dict(), within=NonNegativeReals,    doc='Second block charge'                     )
-    mTEPES.pEnergyInflows        = Param(mTEPES.p, mTEPES.sc, mTEPES.n, mTEPES.gg, initialize=pEnergyInflows.stack().to_dict()    , within=NonNegativeReals,    doc='Energy inflows'                          )
-    mTEPES.pEnergyOutflows       = Param(mTEPES.p, mTEPES.sc, mTEPES.n, mTEPES.gg, initialize=pEnergyOutflows.stack().to_dict()   , within=NonNegativeReals,    doc='Energy outflows'                         )
+    mTEPES.pEnergyInflows        = Param(mTEPES.p, mTEPES.sc, mTEPES.n, mTEPES.gg, initialize=pEnergyInflows.stack().to_dict()    , within=NonNegativeReals,    doc='Energy inflows',             mutable=True)
+    mTEPES.pEnergyOutflows       = Param(mTEPES.p, mTEPES.sc, mTEPES.n, mTEPES.gg, initialize=pEnergyOutflows.stack().to_dict()   , within=NonNegativeReals,    doc='Energy outflows',            mutable=True)
     mTEPES.pMinStorage           = Param(mTEPES.p, mTEPES.sc, mTEPES.n, mTEPES.gg, initialize=pMinStorage.stack().to_dict()       , within=NonNegativeReals,    doc='ESS Minimum storage capacity'            )
     mTEPES.pMaxStorage           = Param(mTEPES.p, mTEPES.sc, mTEPES.n, mTEPES.gg, initialize=pMaxStorage.stack().to_dict()       , within=NonNegativeReals,    doc='ESS Maximum storage capacity'            )
     mTEPES.pRatedMaxPower        = Param(                               mTEPES.gg, initialize=pRatedMaxPower.to_dict()            , within=NonNegativeReals,    doc='Rated maximum power'                     )
@@ -997,7 +997,7 @@ def SettingUpVariables(OptModel, mTEPES):
 
     # if there are no energy outflows no variable is needed
     for es in mTEPES.es:
-        if sum(mTEPES.pEnergyOutflows[p,sc,n,es] for p,sc,n in mTEPES.ps*mTEPES.n) == 0:
+        if sum(mTEPES.pEnergyOutflows[p,sc,n,es]() for p,sc,n in mTEPES.ps*mTEPES.n) == 0:
             for p,sc,n in mTEPES.ps*mTEPES.n:
                 OptModel.vEnergyOutflows[p,sc,n,es].fix(0.0)
 
@@ -1051,6 +1051,8 @@ def SettingUpVariables(OptModel, mTEPES):
                 OptModel.vCharge2ndBlock[p,sc,n,es].fix(0.0)
                 OptModel.vESSReserveUp  [p,sc,n,es].fix(0.0)
                 OptModel.vESSReserveDown[p,sc,n,es].fix(0.0)
+                mTEPES.pIniInventory    [p,sc,n,es] = 0
+                mTEPES.pEnergyInflows   [p,sc,n,es] = 0
 
     for p,ni,nf,cc in mTEPES.p*mTEPES.la:
         if (ni,nf,cc) not in mTEPES.lc and (mTEPES.pPeriodIniNet[ni,nf,cc] > p or mTEPES.pPeriodFinNet[ni,nf,cc] < p):
@@ -1073,10 +1075,10 @@ def SettingUpVariables(OptModel, mTEPES):
 
     # detecting infeasibility: total min ESS output greater than total inflows, total max ESS charge lower than total outflows
     for es in mTEPES.es:
-        if sum(mTEPES.pMinPower [p,sc,n,es]-mTEPES.pEnergyInflows [p,sc,n,es] for p,sc,n in mTEPES.ps*mTEPES.n) > 0.0:
+        if sum(mTEPES.pMinPower [p,sc,n,es]-mTEPES.pEnergyInflows [p,sc,n,es]() for p,sc,n in mTEPES.ps*mTEPES.n) > 0.0:
             print('### Total minimum output greater than total inflows  for ESS unit ', es)
             assert (0==1)
-        if sum(mTEPES.pMaxCharge[p,sc,n,es]-mTEPES.pEnergyOutflows[p,sc,n,es] for p,sc,n in mTEPES.ps*mTEPES.n) < 0.0:
+        if sum(mTEPES.pMaxCharge[p,sc,n,es]-mTEPES.pEnergyOutflows[p,sc,n,es]() for p,sc,n in mTEPES.ps*mTEPES.n) < 0.0:
             print('### Total maximum charge greater than total outflows for ESS unit ', es)
             assert (0==1)
 
