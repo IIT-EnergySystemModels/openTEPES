@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 07, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 14, 2022
 """
 
 import time
@@ -19,20 +19,19 @@ def PiePlots(period, scenario, df, Category, Value):
     df                    = df.reset_index()
     df                    = df.loc[(df['level_0'] == period) & (df['level_1'] == scenario)]
     df                    = df.set_index(['level_0', 'level_1', 'level_2', 'level_3'])
-    df[0]                 = (df[0] / df[0].sum()) * 100.0
-    df                    = df.reset_index()
-    OutputToPlot          = df.groupby(['level_3']).sum()
-    OutputToPlot          = OutputToPlot[0]
-    OutputToPlot          = OutputToPlot.reset_index().rename(columns={'level_3': Category, 0: Value})
-    OutputToPlot[Value]   = round(OutputToPlot[Value], 1)
-    OutputToPlot          = OutputToPlot[(OutputToPlot[[Value]] != 0).all(axis=1)]
-    OutputToPlot['Label'] = [OutputToPlot[Category][i]+': '+str(OutputToPlot[Value][i]) for i in OutputToPlot.index]
+    OutputToPlot          = df.reset_index().groupby(['level_3']).sum()
+    OutputToPlot['%']     = (OutputToPlot[0] / OutputToPlot[0].sum()) * 100.0
+    OutputToPlot          = OutputToPlot.reset_index().rename(columns={'level_3': Category, 0: 'GWh'})
+    OutputToPlot['GWh']   = round(OutputToPlot['GWh'], 1)
+    OutputToPlot['%'  ]   = round(OutputToPlot['%'  ], 1)
+    OutputToPlot          = OutputToPlot[(OutputToPlot[['GWh']] != 0).all(axis=1)]
+    OutputToPlot['Label'] = [OutputToPlot[Category][i] + ' (' + str(OutputToPlot['%'][i]) + ' %' + ', ' + str(OutputToPlot['GWh'][i]) + ' GWh' + ')' for i in OutputToPlot.index]
     ComposedCategory      = Category+':N'
     ComposedValue         = Value   +':Q'
 
     base  = alt.Chart(OutputToPlot).encode(theta=alt.Theta(ComposedValue, stack=True), color=alt.Color(ComposedCategory, legend=alt.Legend(title=Category))).properties(width=800, height=800)
     pie   = base.mark_arc(outerRadius=240)
-    text  = base.mark_text(radius=300, size=15).encode(text='Label:N')
+    text  = base.mark_text(radius=340, size=15).encode(text='Label:N')
     chart = pie+text
 
     return chart
@@ -384,6 +383,13 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES):
     OutputToFile = pd.Series(data=[OptModel.vTotalOutput[p,sc,n,g ]()*mTEPES.pLoadLevelDuration[n]() for p,sc,n,g  in mTEPES.ps*mTEPES.n*mTEPES.g ], index=pd.MultiIndex.from_tuples(mTEPES.ps*mTEPES.n*mTEPES.g ))
     OutputToFile.to_frame(name='GWh'  ).reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='GWh'  , aggfunc=sum).rename_axis(['Period','Scenario','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_GenerationEnergy_'  +CaseName+'.csv', sep=',')
 
+    OutputToFile1 = pd.Series(data=[sum(OptModel.vTotalOutput[p,sc,n,r ]() for r in mTEPES.r if (nd,r) in mTEPES.n2g) for p,sc,n,nd  in mTEPES.ps*mTEPES.n*mTEPES.nd ], index=pd.MultiIndex.from_tuples(mTEPES.ps*mTEPES.n*mTEPES.nd ))
+    OutputToFile2 = pd.Series(data=[    mTEPES.pDemand     [p,sc,n,nd]                                                for p,sc,n,nd  in mTEPES.ps*mTEPES.n*mTEPES.nd ], index=pd.MultiIndex.from_tuples(mTEPES.ps*mTEPES.n*mTEPES.nd ))
+    OutputToFile  = OutputToFile2 - OutputToFile1
+    OutputToFile  = OutputToFile.to_frame(name='GWh'  )
+    OutputToFile.reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='GWh'  , aggfunc=sum).rename_axis(['Period','Scenario','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_NetDemandPerNode_'  +CaseName+'.csv', sep=',')
+    OutputToFile.reset_index().pivot_table(index=['level_0','level_1','level_2'],                    values='GWh'  , aggfunc=sum).rename_axis(['Period','Scenario','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_NetDemand_'         +CaseName+'.csv', sep=',')
+
     if len(mTEPES.nr):
         OutputToFile = pd.Series(data=[OptModel.vTotalOutput[p,sc,n,nr]()*mTEPES.pLoadLevelDuration[n]()*mTEPES.pCO2EmissionCost[nr]/mTEPES.pCO2Cost() for p,sc,n,nr in mTEPES.ps*mTEPES.n*mTEPES.nr], index=pd.MultiIndex.from_tuples(mTEPES.ps*mTEPES.n*mTEPES.nr))
         OutputToFile.to_frame(name='MtCO2').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MtCO2', aggfunc=sum).rename_axis(['Period','Scenario','LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_GenerationEmission_'+CaseName+'.csv', sep=',')
@@ -506,6 +512,25 @@ def ESSOperationResults(DirName, CaseName, OptModel, mTEPES):
         for p,sc in mTEPES.ps:
             chart = AreaPlots(p, sc, TechnologyCharge, 'Technology', 'LoadLevel', 'MW', 'sum')
             chart.save(_path+'/oT_Plot_TechnologyCharge_'+str(p)+'_'+str(sc)+'_'+CaseName+'.html', embed_options={'renderer': 'svg'})
+
+        OutputToFile1 = pd.Series(data=[(OptModel.vTotalOutput[p,sc,n,es].ub - OptModel.vTotalOutput[p,sc,n,es]())*mTEPES.pLoadLevelDuration[n]() for p,sc,n,es in mTEPES.ps*mTEPES.n*mTEPES.es], index=pd.MultiIndex.from_tuples(mTEPES.ps*mTEPES.n*mTEPES.es))
+        OutputToFile2 = pd.Series(data=[(OptModel.vTotalOutput[p,sc,n,es].ub)*mTEPES.pLoadLevelDuration[n]() for p,sc,n,es in mTEPES.ps*mTEPES.n*mTEPES.es], index=pd.MultiIndex.from_tuples(mTEPES.ps*mTEPES.n*mTEPES.es))
+        for p,sc,n,es in mTEPES.ps*mTEPES.n*mTEPES.es:
+            if es in mTEPES.gc:
+                OutputToFile1[p,sc,n,es] *= OptModel.vGenerationInvest[p,es]()
+                OutputToFile2[p,sc,n,es] *= OptModel.vGenerationInvest[p,es]()
+        OutputToFile1 = OutputToFile1.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_3'], values='GWh', aggfunc=sum).rename_axis(['Period','Scenario','Unit'], axis=0).rename_axis([None], axis=1)
+        OutputToFile2 = OutputToFile2.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_3'], values='GWh', aggfunc=sum).rename_axis(['Period','Scenario','Unit'], axis=0).rename_axis([None], axis=1)
+        OutputToFile  = OutputToFile1.div(OutputToFile2)*1e2
+        OutputToFile  = OutputToFile.fillna(0.0)
+        OutputToFile.rename(columns = {'GWh':'%'}, inplace = True)
+        OutputToFile.to_csv(_path+'/oT_Result_GenerationSpillageEnergyRelative_'+CaseName+'.csv', sep=',')
+
+        OutputToFile1 = pd.Series(data=[sum(OutputToFile1['GWh'][p,sc,es] for es in mTEPES.es if (ot,es) in mTEPES.t2g) for p,sc,ot in mTEPES.ps*mTEPES.ot], index=pd.MultiIndex.from_tuples(mTEPES.ps*mTEPES.ot))
+        OutputToFile2 = pd.Series(data=[sum(OutputToFile2['GWh'][p,sc,es] for es in mTEPES.es if (ot,es) in mTEPES.t2g) for p,sc,ot in mTEPES.ps*mTEPES.ot], index=pd.MultiIndex.from_tuples(mTEPES.ps*mTEPES.ot))
+        OutputToFile  = OutputToFile1.div(OutputToFile2)*1e2
+        OutputToFile  = OutputToFile.fillna(0.0)
+        OutputToFile.to_frame(name='%').to_csv(_path+'/oT_Result_TechnologySpillageEnergyRelative_'+CaseName+'.csv', sep=',')
 
     WritingResultsTime = time.time() - StartTime
     StartTime = time.time()
