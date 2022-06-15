@@ -524,13 +524,13 @@ def ESSOperationResults(DirName, CaseName, OptModel, mTEPES):
         OutputToFile  = OutputToFile1.div(OutputToFile2)*1e2
         OutputToFile  = OutputToFile.fillna(0.0)
         OutputToFile.rename(columns = {'GWh':'%'}, inplace = True)
-        OutputToFile.to_csv(_path+'/oT_Result_GenerationSpillageEnergyRelative_'+CaseName+'.csv', sep=',')
+        OutputToFile.to_csv(_path+'/oT_Result_GenerationSpillageRelative_'+CaseName+'.csv', sep=',')
 
         OutputToFile1 = pd.Series(data=[sum(OutputToFile1['GWh'][p,sc,es] for es in mTEPES.es if (ot,es) in mTEPES.t2g) for p,sc,ot in mTEPES.ps*mTEPES.ot], index=pd.MultiIndex.from_tuples(mTEPES.ps*mTEPES.ot))
         OutputToFile2 = pd.Series(data=[sum(OutputToFile2['GWh'][p,sc,es] for es in mTEPES.es if (ot,es) in mTEPES.t2g) for p,sc,ot in mTEPES.ps*mTEPES.ot], index=pd.MultiIndex.from_tuples(mTEPES.ps*mTEPES.ot))
         OutputToFile  = OutputToFile1.div(OutputToFile2)*1e2
         OutputToFile  = OutputToFile.fillna(0.0)
-        OutputToFile.to_frame(name='%').to_csv(_path+'/oT_Result_TechnologySpillageEnergyRelative_'+CaseName+'.csv', sep=',')
+        OutputToFile.to_frame(name='%').to_csv(_path+'/oT_Result_TechnologySpillageRelative_'+CaseName+'.csv', sep=',')
 
     WritingResultsTime = time.time() - StartTime
     StartTime = time.time()
