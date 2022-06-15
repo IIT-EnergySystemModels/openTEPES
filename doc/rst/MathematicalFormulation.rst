@@ -287,7 +287,7 @@ Maximum and minimum charge of an ESS [p.u.] «``eMaxCharge``» «``eMinCharge``�
 
 Incompatibility between charge and discharge of an ESS [p.u.] «``eChargeDischarge``»
 
-:math:`\frac{p^p_{ωne} + URA \: ur'^p_{ωne}}{\overline{GP}^p_{ωne} - \underline{GP}^p_{ωne}} + \frac{c^p_{ωne} + DRA \: dr'^p_{ωne}}{\overline{GC}^p_{ωne} - \underline{GC}^p_{ωne}} \leq 1 \quad \forall pωne, e \in CE`
+:math:`\frac{p^p_{ωne} + URA \: ur'^p_{ωne}}{\overline{GP}^p_{ωne} - \underline{GP}^p_{ωne}} + \frac{c^p_{ωne} + DRA \: dr'^p_{ωne}}{\overline{GC}^p_{ωne} - \underline{GC}^p_{ωne}} \leq 1 \quad \forall pωne, e \in EE, CE`
 
 Total output of a committed unit (all except the VRES units) [GW] «``eTotalOutput``»
 
@@ -295,7 +295,7 @@ Total output of a committed unit (all except the VRES units) [GW] «``eTotalOutp
 
 Total charge of an ESS [GW] «``eESSTotalCharge``»
 
-:math:`\frac{gc^p_{ωne}}{\underline{GC}^p_{ωne}} = 1 + \frac{c^p_{ωne} + URA \: ur'^p_{ωne} - DRA \: dr'^p_{ωne}}{\underline{GC}^p_{ωne}} \quad \forall pωne, e \in CE`
+:math:`\frac{gc^p_{ωne}}{\underline{GC}^p_{ωne}} = 1 + \frac{c^p_{ωne} + URA \: ur'^p_{ωne} - DRA \: dr'^p_{ωne}}{\underline{GC}^p_{ωne}} \quad \forall pωne, e \in EE, CE`
 
 Logical relation between commitment, startup and shutdown status of a committed unit (all except the VRES units) [p.u.] «``eUCStrShut``»
 
