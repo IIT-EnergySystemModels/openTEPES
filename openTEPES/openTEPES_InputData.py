@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 13, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 14, 2022
 """
 
 import datetime
@@ -1051,8 +1051,8 @@ def SettingUpVariables(OptModel, mTEPES):
                 OptModel.vCharge2ndBlock[p,sc,n,es].fix(0.0)
                 OptModel.vESSReserveUp  [p,sc,n,es].fix(0.0)
                 OptModel.vESSReserveDown[p,sc,n,es].fix(0.0)
-                mTEPES.pIniInventory    [p,sc,n,es] = 0
-                mTEPES.pEnergyInflows   [p,sc,n,es] = 0
+                mTEPES.pIniInventory    [p,sc,n,es] = 0.0
+                mTEPES.pEnergyInflows   [p,sc,n,es] = 0.0
 
     for p,ni,nf,cc in mTEPES.p*mTEPES.la:
         if (ni,nf,cc) not in mTEPES.lc and (mTEPES.pPeriodIniNet[ni,nf,cc] > p or mTEPES.pPeriodFinNet[ni,nf,cc] < p):

@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.6.1] - 2022-06-14
+[4.6.1] - 2022-06-15
 --------------------
+- [FIXED] fix erro in outflows equation
 - [FIXED] fix some typos in input data
 - [FIXED] fix error related to initial and final periods
 - [CHANGED] addition of two new result files for percentage of energy curtailed by generator and technology
