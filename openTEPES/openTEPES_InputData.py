@@ -97,8 +97,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
 
     #%% reading the sets
     dictSets = DataPortal()
-    dictSets.load(filename=_path+'/oT_Dict_Scenario_'    +CaseName+'.csv', set='sc'  , format='set')
     dictSets.load(filename=_path+'/oT_Dict_Period_'      +CaseName+'.csv', set='p'   , format='set')
+    dictSets.load(filename=_path+'/oT_Dict_Scenario_'    +CaseName+'.csv', set='sc'  , format='set')
     dictSets.load(filename=_path+'/oT_Dict_Stage_'       +CaseName+'.csv', set='st'  , format='set')
     dictSets.load(filename=_path+'/oT_Dict_LoadLevel_'   +CaseName+'.csv', set='n'   , format='set')
     dictSets.load(filename=_path+'/oT_Dict_Generation_'  +CaseName+'.csv', set='g'   , format='set')
@@ -137,8 +137,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.arrg = Set(initialize=dictSets['arrg'], ordered=False, doc='area to region'  )
 
     #%% Getting the current year
-    date                 = datetime.date.today()
-    pCurrentYear         = date.year
+    pCurrentYear         = datetime.date.today().year
 
     #%% parameters
     pIndBinGenInvest     = dfOption   ['IndBinGenInvest'       ][0].astype('int')                                                            # Indicator of binary generation expansion decisions,                                                                                         0 continuous       - 1 binary - 2 no investment variables
@@ -1085,8 +1084,8 @@ def SettingUpVariables(OptModel, mTEPES):
                 OptModel.vCharge2ndBlock[p,sc,n,es].fix(0.0)
                 OptModel.vESSReserveUp  [p,sc,n,es].fix(0.0)
                 OptModel.vESSReserveDown[p,sc,n,es].fix(0.0)
-                mTEPES.pIniInventory    [p,sc,n,es] = 0
-                mTEPES.pEnergyInflows   [p,sc,n,es] = 0
+                mTEPES.pIniInventory    [p,sc,n,es] = 0.0
+                mTEPES.pEnergyInflows   [p,sc,n,es] = 0.0
 
     for p,ni,nf,cc in mTEPES.p*mTEPES.la:
         if (ni,nf,cc) not in mTEPES.lc and (mTEPES.pPeriodIniNet[ni,nf,cc] > p or mTEPES.pPeriodFinNet[ni,nf,cc] < p):

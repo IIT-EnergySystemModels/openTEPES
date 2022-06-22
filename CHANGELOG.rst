@@ -1,8 +1,11 @@
 Change Log
 =============
 
-[4.6.1] - 2022-06-09
+[4.6.1] - 2022-06-15
 --------------------
+- [CHANGED] addition of two new result files for percentage of spillage by generator and technology
+- [FIXED] fix error in outflows equation
+- [FIXED] fix some typos in input data
 - [FIXED] fix error related to initial and final periods
 - [CHANGED] addition of two new result files for percentage of energy curtailed by generator and technology
 - [FIXED] error in the ramp up equation for the charge onf an ESS (eRampUpCharge)

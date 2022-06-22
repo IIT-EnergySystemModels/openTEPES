@@ -273,6 +273,14 @@ Identifier    Identifier  Identifier  Header      Description
 Scenario      Period      Load level  Technology  Downward operating reserve [MW]
 ============  ==========  ==========  ==========  ==========================================
 
+File ``oT_Result_TechnologySpillageRelative.csv``
+
+============  ==========  ==========  ==========  ==========================================
+Identifier    Identifier  Identifier  Header      Description
+============  ==========  ==========  ==========  ==========================================
+Scenario      Period      Load level  Technology  Spilled energy in ESS wrt the inflows [%]
+============  ==========  ==========  ==========  ==========================================
+
 ESS operation
 -------------
 
@@ -394,6 +402,14 @@ File ``oT_Result_GenerationSpillage.csv``
 Identifier    Identifier  Identifier  Header      Description
 ============  ==========  ==========  ==========  ==========================================
 Scenario      Period      Load level  Generator   Spilled energy in ESS [GWh]
+============  ==========  ==========  ==========  ==========================================
+
+File ``oT_Result_GenerationSpillageRelative.csv``
+
+============  ==========  ==========  ==========  ==========================================
+Identifier    Identifier  Identifier  Header      Description
+============  ==========  ==========  ==========  ==========================================
+Scenario      Period      Load level  Generator   Spilled energy in ESS wrt the inflows [%]
 ============  ==========  ==========  ==========  ==========================================
 
 Network operation
