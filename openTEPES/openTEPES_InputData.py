@@ -253,12 +253,12 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pStorageType        = dfGeneration  ['StorageType'           ]                                                                            #         ESS storage  type
     pOutflowsType       = dfGeneration  ['OutflowsType'          ]                                                                            #         ESS outflows type
     pRMaxReactivePower  = dfGeneration  ['MaximumReactivePower'  ] * 1e-3                                                                     # rated maximum reactive power                [Gvar]
-    pGenLoInvest        = dfGeneration  ['BinaryInvestmentLo'    ]                                                                            # Lower bound of the investment decision      [p.u.]
-    pGenUpInvest        = dfGeneration  ['BinaryInvestmentUp'    ]                                                                            # Upper bound of the investment decision      [p.u.]
-    pGenLoRetire        = dfGeneration  ['BinaryRetirementLo'    ]                                                                            # Lower bound of the retirement decision      [p.u.]
-    pGenUpRetire        = dfGeneration  ['BinaryRetirementUp'    ]                                                                            # Upper bound of the retirement decision      [p.u.]
-    pGenLoCommit        = dfGeneration  ['BinaryCommitmentLo'    ]                                                                            # Lower bound of the commitment decision      [p.u.]
-    pGenUpCommit        = dfGeneration  ['BinaryCommitmentUp'    ]                                                                            # Upper bound of the commitment decision      [p.u.]
+    pGenLoInvest        = dfGeneration  ['InvestmentLo'          ]                                                                            # Lower bound of the investment decision      [p.u.]
+    pGenUpInvest        = dfGeneration  ['InvestmentUp'          ]                                                                            # Upper bound of the investment decision      [p.u.]
+    pGenLoRetire        = dfGeneration  ['RetirementLo'          ]                                                                            # Lower bound of the retirement decision      [p.u.]
+    pGenUpRetire        = dfGeneration  ['RetirementUp'          ]                                                                            # Upper bound of the retirement decision      [p.u.]
+    pGenLoCommit        = dfGeneration  ['CommitmentLo'          ]                                                                            # Lower bound of the commitment decision      [p.u.]
+    pGenUpCommit        = dfGeneration  ['CommitmentUp'          ]                                                                            # Upper bound of the commitment decision      [p.u.]
 
     pLinearOperCost     = pLinearFuelCost + pCO2EmissionCost
     pLinearVarCost      = pLinearFuelCost + pLinearOMCost
@@ -285,10 +285,10 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pSwitchOffTime      = dfNetwork     ['SwOffTime'             ]                                                                            # minimum off time                            [h]
     pAngMin             = dfNetwork     ['AngMin'                ] * math.pi / 180                                                            # Min phase angle difference                  [rad]
     pAngMax             = dfNetwork     ['AngMax'                ] * math.pi / 180                                                            # Max phase angle difference                  [rad]
-    pNetLoInvest        = dfNetwork     ['BinaryInvestmentLo'    ]                                                                            # Lower bound of the Investment decision      [p.u.]
-    pNetUpInvest        = dfNetwork     ['BinaryInvestmentUp'    ]                                                                            # Upper bound of the Investment decision      [p.u.]
-    pNetLoCommit        = dfNetwork     ['BinaryCommitmentLo'    ]                                                                            # Lower bound of the commitment decision      [p.u.]
-    pNetUpCommit        = dfNetwork     ['BinaryCommitmentUp'    ]                                                                            # Upper bound of the commitment decision      [p.u.]
+    pNetLoInvest        = dfNetwork     ['InvestmentLo'          ]                                                                            # Lower bound of the investment decision      [p.u.]
+    pNetUpInvest        = dfNetwork     ['InvestmentUp'          ]                                                                            # Upper bound of the investment decision      [p.u.]
+    pNetLoCommit        = dfNetwork     ['CommitmentLo'          ]                                                                            # Lower bound of the commitment decision      [p.u.]
+    pNetUpCommit        = dfNetwork     ['CommitmentUp'          ]                                                                            # Upper bound of the commitment decision      [p.u.]
 
     # replace pLineNTCBck = 0.0 by pLineNTCFrw
     pLineNTCBck     = pLineNTCBck.where(pLineNTCBck > 0.0, other=pLineNTCFrw)

@@ -269,8 +269,8 @@ Node                  Name of the node where generator is located. If left empty
 Technology            Technology of the generator (nuclear, coal, CCGT, OCGT, ESS, solar, wind, biomass, etc.)
 MutuallyExclusive     Mutually exclusive generator. Only exclusion in one direction is needed
 BinaryCommitment      Binary unit commitment decision                                                                                         Yes/No
-BinaryCommitmentLo    Lower bound of unit commitment decision                                                                                 p.u.
-BinaryCommitmentUp    Upper bound of unit commitment decision                                                                                 p.u.
+CommitmentLo          Lower bound of unit commitment decision                                                                                 p.u.
+CommitmentUp          Upper bound of unit commitment decision                                                                                 p.u.
 NoOperatingReserve    No contribution to operating reserve. Yes if the unit doesn't contribute to the operating reserve                       Yes/No
 StorageType           Storage type based on storage capacity (hourly, daily, weekly, monthly, etc.)                                           Hourly/Daily/Weekly/Monthly
 OutflowsType          Outflows type based on the demand extracted from the storage (hourly, daily, weekly, monthly, yearly, etc.)             Hourly/Daily/Weekly/Monthly/Yearly
@@ -307,11 +307,11 @@ FixedInvestmentCost   Overnight investment (capital and fixed O&M) cost         
 FixedRetirementCost   Overnight retirement (capital and fixed O&M) cost                                                                       M€
 FixedChargeRate       Fixed-charge rate to annualize the overnight investment cost                                                            p.u.
 BinaryInvestment      Binary unit investment decision                                                                                         Yes/No
-BinaryInvestmentLo    Lower bound of investment decision                                                                                      p.u.
-BinaryInvestmentUp    Upper bound of investment decision                                                                                      p.u.
+InvestmentLo          Lower bound of investment decision                                                                                      p.u.
+InvestmentUp          Upper bound of investment decision                                                                                      p.u.
 BinaryRetirement      Binary unit retirement decision                                                                                         Yes/No
-BinaryRetirementLo    Lower bound of retirement decision                                                                                      p.u.
-BinaryRetirementUp    Upper bound of retirement decision                                                                                      p.u.
+RetirementLo          Lower bound of retirement decision                                                                                      p.u.
+RetirementUp          Upper bound of retirement decision                                                                                      p.u.
 ====================  ======================================================================================================================  ===================================
 
 Daily *storage type* means that the ESS inventory is assessed every time step, weekly storage type is assessed at the end of every day, and monthly storage type is assessed at the end of every week.
@@ -427,8 +427,8 @@ Header               Description
 ===================  ===============================================================================================================  ======
 LineType             Line type {AC, DC, Transformer, Converter}
 Switching            The transmission line is able to switch on/off                                                                   Yes/No
-BinaryCommitmentLo   Lower bound of switching (commitment) decision                                                                   p.u.
-BinaryCommitmentUp   Upper bound of switching (commitment) decision                                                                   p.u.
+CommitmentLo         Lower bound of switching (commitment) decision                                                                   p.u.
+CommitmentUp         Upper bound of switching (commitment) decision                                                                   p.u.
 InitialPeriod        Initial period (year) when the unit is installed or can be installed, if candidate                               Year
 FinalPeriod          Final   period (year) when the unit is installed or can be installed, if candidate                               Year
 Voltage              Line voltage (e.g., 400, 220 kV, 220/400 kV if transformer). Used only for plotting purposes                     kV
@@ -447,8 +447,8 @@ SecurityFactor       Security factor to consider approximately N-1 contingencies
 FixedInvestmentCost  Overnight investment (capital and fixed O&M) cost                                                                M€
 FixedChargeRate      Fixed-charge rate to annualize the overnight investment cost                                                     p.u.
 BinaryInvestment     Binary line/circuit investment decision                                                                          Yes/No
-BinaryInvestmentLo   Lower bound of investment decision                                                                               p.u.
-BinaryInvestmentUp   Upper bound of investment decision                                                                               p.u.
+InvestmentLo         Lower bound of investment decision                                                                               p.u.
+InvestmentUp         Upper bound of investment decision                                                                               p.u.
 SwOnTime             Minimum switch-on time                                                                                           h
 SwOffTime            Minimum switch-off time                                                                                          h
 ===================  ===============================================================================================================  ======
