@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 22, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 23, 2022
 """
 
 import datetime
@@ -808,7 +808,7 @@ def SettingUpVariables(OptModel, mTEPES):
     StartTime = time.time()
 
     #%% variables
-    OptModel.vTotalFCost           = Var(mTEPES.p,                                 within=NonNegativeReals,                                                                                                        doc='total system fixed                   cost      [MEUR]')
+    OptModel.vTotalFCost           = Var(mTEPES.p,                       within=NonNegativeReals,                                                                                                        doc='total system fixed                   cost      [MEUR]')
     OptModel.vTotalGCost           = Var(mTEPES.ps, mTEPES.n,            within=NonNegativeReals,                                                                                                        doc='total variable generation  operation cost      [MEUR]')
     OptModel.vTotalCCost           = Var(mTEPES.ps, mTEPES.n,            within=NonNegativeReals,                                                                                                        doc='total variable consumption operation cost      [MEUR]')
     OptModel.vTotalECost           = Var(mTEPES.ps, mTEPES.n,            within=NonNegativeReals,                                                                                                        doc='total system emission                cost      [MEUR]')
