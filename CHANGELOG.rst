@@ -1,6 +1,10 @@
 Change Log
 =============
 
+[4.7.0] - 2022-06-23
+--------------------
+- [CHANGED] introduction of lower and upper bounds in investment, retirement, and commitment decisions for network and generation
+
 [4.6.1] - 2022-06-15
 --------------------
 - [CHANGED] addition of two new result files for percentage of spillage by generator and technology

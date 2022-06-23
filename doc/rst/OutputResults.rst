@@ -30,6 +30,14 @@ Identifier    Header      Description
 Generator     MW          Generation investment power
 ============  ==========  ============================
 
+File ``oT_Result_GenerationInvestment_PerUnit.csv``
+
+============  ==========  ============================
+Identifier    Header      Description
+============  ==========  ============================
+Generator     MW          Generation investment power
+============  ==========  ============================
+
 File ``oT_Result_GenerationRetirement.csv``
 
 ============  ==========  =============================

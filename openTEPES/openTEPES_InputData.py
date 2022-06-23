@@ -140,26 +140,25 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pCurrentYear         = datetime.date.today().year
 
     #%% parameters
-    pIndBinGenInvest     = dfOption   ['IndBinGenInvest'       ][0].astype('int')                                                            # Indicator of binary generation expansion decisions,                                                                                         0 continuous       - 1 binary - 2 no investment variables
-    pIndBinNetInvest     = dfOption   ['IndBinNetInvest'       ][0].astype('int')                                                            # Indicator of binary network    expansion decisions,                                                                                         0 continuous       - 1 binary - 2 no investment variables
-    pIndBinGenRetire     = dfOption   ['IndBinGenRetirement'   ][0].astype('int')                                                            # Indicator of binary generation retirement decisions,                                                                                        0 continuous       - 1 binary - 2 no retirement variables
-    pIndBinGenOperat     = dfOption   ['IndBinGenOperat'       ][0].astype('int')                                                            # Indicator of binary generation operation decisions,                                                                                         0 continuous       - 1 binary
-    pIndBinSingleNode    = dfOption   ['IndBinSingleNode'      ][0].astype('int')                                                            # Indicator of single node although with network,                                                                                             0 network          - 1 single node
-    pIndBinGenRamps      = dfOption   ['IndBinGenRamps'        ][0].astype('int')                                                            # Indicator of ramp constraints,                                                                                                              0 no ramps         - 1 ramp constraints
-    pIndBinGenMinTime    = dfOption   ['IndBinGenMinTime'      ][0].astype('int')                                                            # Indicator of minimum up/down time constraints,                                                                                              0 no min time      - 1 min time constraints
-    pIndBinLineCommit    = dfOption   ['IndBinLineCommit'      ][0].astype('int')                                                            # Indicator of binary network    switching decisions,                                                                                         0 continuous       - 1 binary
-    pIndBinNetLosses     = dfOption   ['IndBinNetLosses'       ][0].astype('int')                                                            # Indicator of network losses,                                                                                                                0 lossless         - 1 ohmic losses
-    pIndBinBounds        = dfOption   ['IndBinBoundsActivation'][0].astype('int')                                                            # Indicator of the activation the setting up of upper/lower bounds for investment,retirement and commitment of the generation units and lines, 0 WithoutBounds    - 1 WithBounds
-    pENSCost             = dfParameter['ENSCost'               ][0] * 1e-3                                                                   # cost of energy not served                [MEUR/GWh]
-    pCO2Cost             = dfParameter['CO2Cost'               ][0]                                                                          # cost of CO2 emission                     [EUR/t CO2]
-    pAnnualDiscRate      = dfParameter['AnnualDiscountRate'    ][0]                                                                          # annual discount rate                     [p.u.]
-    pUpReserveActivation = dfParameter['UpReserveActivation'   ][0]                                                                          # upward   reserve activation              [p.u.]
-    pDwReserveActivation = dfParameter['DwReserveActivation'   ][0]                                                                          # downward reserve activation              [p.u.]
-    pMinRatioDwUp        = dfParameter['MinRatioDwUp'          ][0]                                                                          # minimum ratio down up operating reserves [p.u.]
-    pMaxRatioDwUp        = dfParameter['MaxRatioDwUp'          ][0]                                                                          # maximum ratio down up operating reserves [p.u.]
-    pSBase               = dfParameter['SBase'                 ][0] * 1e-3                                                                   # base power                               [GW]
-    pReferenceNode       = dfParameter['ReferenceNode'         ][0]                                                                          # reference node
-    pTimeStep            = dfParameter['TimeStep'              ][0].astype('int')                                                            # duration of the unit time step           [h]
+    pIndBinGenInvest     = dfOption   ['IndBinGenInvest'    ][0].astype('int')                                                            # Indicator of binary generation expansion decisions, 0 continuous  - 1 binary - 2 no investment variables
+    pIndBinNetInvest     = dfOption   ['IndBinNetInvest'    ][0].astype('int')                                                            # Indicator of binary network    expansion decisions, 0 continuous  - 1 binary - 2 no investment variables
+    pIndBinGenRetire     = dfOption   ['IndBinGenRetirement'][0].astype('int')                                                            # Indicator of binary generation retirement decisions,0 continuous  - 1 binary - 2 no retirement variables
+    pIndBinGenOperat     = dfOption   ['IndBinGenOperat'    ][0].astype('int')                                                            # Indicator of binary generation operation decisions, 0 continuous  - 1 binary
+    pIndBinSingleNode    = dfOption   ['IndBinSingleNode'   ][0].astype('int')                                                            # Indicator of single node although with network,     0 network     - 1 single node
+    pIndBinGenRamps      = dfOption   ['IndBinGenRamps'     ][0].astype('int')                                                            # Indicator of ramp constraints,                      0 no ramps    - 1 ramp constraints
+    pIndBinGenMinTime    = dfOption   ['IndBinGenMinTime'   ][0].astype('int')                                                            # Indicator of minimum up/down time constraints,      0 no min time - 1 min time constraints
+    pIndBinLineCommit    = dfOption   ['IndBinLineCommit'   ][0].astype('int')                                                            # Indicator of binary network    switching decisions, 0 continuous  - 1 binary
+    pIndBinNetLosses     = dfOption   ['IndBinNetLosses'    ][0].astype('int')                                                            # Indicator of network losses,                        0 lossless    - 1 ohmic losses
+    pENSCost             = dfParameter['ENSCost'            ][0] * 1e-3                                                                   # cost of energy not served                [MEUR/GWh]
+    pCO2Cost             = dfParameter['CO2Cost'            ][0]                                                                          # cost of CO2 emission                     [EUR/t CO2]
+    pAnnualDiscRate      = dfParameter['AnnualDiscountRate' ][0]                                                                          # annual discount rate                     [p.u.]
+    pUpReserveActivation = dfParameter['UpReserveActivation'][0]                                                                          # upward   reserve activation              [p.u.]
+    pDwReserveActivation = dfParameter['DwReserveActivation'][0]                                                                          # downward reserve activation              [p.u.]
+    pMinRatioDwUp        = dfParameter['MinRatioDwUp'       ][0]                                                                          # minimum ratio down up operating reserves [p.u.]
+    pMaxRatioDwUp        = dfParameter['MaxRatioDwUp'       ][0]                                                                          # maximum ratio down up operating reserves [p.u.]
+    pSBase               = dfParameter['SBase'              ][0] * 1e-3                                                                   # base power                               [GW]
+    pReferenceNode       = dfParameter['ReferenceNode'      ][0]                                                                          # reference node
+    pTimeStep            = dfParameter['TimeStep'           ][0].astype('int')                                                            # duration of the unit time step           [h]
     # pStageDuration       = dfParameter['StageDuration'      ][0].astype('int')                                                          # duration of each stage                   [h]
 
     pPeriodWeight        = dfPeriod        ['Weight'        ]                                                                             # weights of periods                       [p.u.]
@@ -254,12 +253,12 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pStorageType        = dfGeneration  ['StorageType'           ]                                                                            #         ESS storage  type
     pOutflowsType       = dfGeneration  ['OutflowsType'          ]                                                                            #         ESS outflows type
     pRMaxReactivePower  = dfGeneration  ['MaximumReactivePower'  ] * 1e-3                                                                     # rated maximum reactive power                [Gvar]
-    pGenUBInvest        = dfGeneration  ['BinaryInvestmentUp'    ]                                                                            # Upper bound of the investment decision      [p.u.]
-    pGenLBInvest        = dfGeneration  ['BinaryInvestmentLow'   ]                                                                            # Lower bound of the investment decision      [p.u.]
-    pGenUBRetire        = dfGeneration  ['BinaryRetirementUp'    ]                                                                            # Upper bound of the retirement decision      [p.u.]
-    pGenLBRetire        = dfGeneration  ['BinaryRetirementLow'   ]                                                                            # Lower bound of the retirement decision      [p.u.]
-    pGenUBCommit        = dfGeneration  ['BinaryCommitmentUp'    ]                                                                            # Upper bound of the commitment decision      [p.u.]
-    pGenLBCommit        = dfGeneration  ['BinaryCommitmentLow'   ]                                                                            # Lower bound of the commitment decision      [p.u.]
+    pGenLoInvest        = dfGeneration  ['BinaryInvestmentLo'    ]                                                                            # Lower bound of the investment decision      [p.u.]
+    pGenUpInvest        = dfGeneration  ['BinaryInvestmentUp'    ]                                                                            # Upper bound of the investment decision      [p.u.]
+    pGenLoRetire        = dfGeneration  ['BinaryRetirementLo'    ]                                                                            # Lower bound of the retirement decision      [p.u.]
+    pGenUpRetire        = dfGeneration  ['BinaryRetirementUp'    ]                                                                            # Upper bound of the retirement decision      [p.u.]
+    pGenLoCommit        = dfGeneration  ['BinaryCommitmentLo'    ]                                                                            # Lower bound of the commitment decision      [p.u.]
+    pGenUpCommit        = dfGeneration  ['BinaryCommitmentUp'    ]                                                                            # Upper bound of the commitment decision      [p.u.]
 
     pLinearOperCost     = pLinearFuelCost + pCO2EmissionCost
     pLinearVarCost      = pLinearFuelCost + pLinearOMCost
@@ -286,27 +285,25 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pSwitchOffTime      = dfNetwork     ['SwOffTime'             ]                                                                            # minimum off time                            [h]
     pAngMin             = dfNetwork     ['AngMin'                ] * math.pi / 180                                                            # Min phase angle difference                  [rad]
     pAngMax             = dfNetwork     ['AngMax'                ] * math.pi / 180                                                            # Max phase angle difference                  [rad]
-    pNetUBInvest        = dfNetwork     ['BinaryInvestmentUp'    ]                                                                            # Upper bound of the Investment decision      [p.u.]
-    pNetLBInvest        = dfNetwork     ['BinaryInvestmentLow'   ]                                                                            # Lower bound of the Investment decision      [p.u.]
-    pNetUBCommit        = dfNetwork     ['BinaryCommitmentUp'    ]                                                                            # Upper bound of the commitment decision      [p.u.]
-    pNetLBCommit        = dfNetwork     ['BinaryCommitmentLow'   ]                                                                            # Lower bound of the commitment decision      [p.u.]
+    pNetLoInvest        = dfNetwork     ['BinaryInvestmentLo'    ]                                                                            # Lower bound of the Investment decision      [p.u.]
+    pNetUpInvest        = dfNetwork     ['BinaryInvestmentUp'    ]                                                                            # Upper bound of the Investment decision      [p.u.]
+    pNetLoCommit        = dfNetwork     ['BinaryCommitmentLo'    ]                                                                            # Lower bound of the commitment decision      [p.u.]
+    pNetUpCommit        = dfNetwork     ['BinaryCommitmentUp'    ]                                                                            # Upper bound of the commitment decision      [p.u.]
 
     # replace pLineNTCBck = 0.0 by pLineNTCFrw
-    pLineNTCBck     = pLineNTCBck.where (pLineNTCBck  > 0.0, other=pLineNTCFrw)
+    pLineNTCBck     = pLineNTCBck.where(pLineNTCBck > 0.0, other=pLineNTCFrw)
     # replace pLineNTCFrw = 0.0 by pLineNTCBck
-    pLineNTCFrw     = pLineNTCFrw.where (pLineNTCFrw  > 0.0, other=pLineNTCBck)
-    # replace pLineNTCBck = 0.0 by pLineNTCFrw
-    pLineNTCBck     = pLineNTCBck.where (pLineNTCBck  > 0.0, other=pLineNTCFrw)
-    # replace pGenUBInvest = 0.0 by 1.0
-    pGenUBInvest    = pGenUBInvest.where(pGenUBInvest > 0.0, other=1.0        )
-    # replace pGenUBRetire = 0.0 by 1.0
-    pGenUBRetire    = pGenUBRetire.where(pGenUBRetire > 0.0, other=1.0        )
-    # replace pGenUBCommit = 0.0 by 1.0
-    pGenUBCommit    = pGenUBCommit.where(pGenUBCommit > 0.0, other=1.0        )
-    # replace pNetUBInvest = 0.0 by 1.0
-    pNetUBInvest    = pNetUBInvest.where(pNetUBInvest > 0.0, other=1.0        )
-    # replace pNetUBCommit = 0.0 by 1.0
-    pNetUBCommit    = pNetUBCommit.where(pNetUBCommit > 0.0, other=1.0        )
+    pLineNTCFrw     = pLineNTCFrw.where(pLineNTCFrw > 0.0, other=pLineNTCBck)
+    # replace pGenUpInvest = 0.0 by 1.0
+    pGenUpInvest    = pGenUpInvest.where(pGenUpInvest > 0.0, other=1.0        )
+    # replace pGenUpRetire = 0.0 by 1.0
+    pGenUpRetire    = pGenUpRetire.where(pGenUpRetire > 0.0, other=1.0        )
+    # replace pGenUpCommit = 0.0 by 1.0
+    pGenUpCommit    = pGenUpCommit.where(pGenUpCommit > 0.0, other=1.0        )
+    # replace pNetUpInvest = 0.0 by 1.0
+    pNetUpInvest    = pNetUpInvest.where(pNetUpInvest > 0.0, other=1.0        )
+    # replace pNetUpCommit = 0.0 by 1.0
+    pNetUpCommit    = pNetUpCommit.where(pNetUpCommit > 0.0, other=1.0        )
 
     # minimum up and down time converted to an integer number of time steps
     pSwitchOnTime  = round(pSwitchOnTime /pTimeStep).astype('int')
@@ -672,7 +669,6 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.pIndBinNetInvest      = Param(initialize=pIndBinNetInvest     , within=NonNegativeIntegers, doc='Indicator of binary network    investment decisions', mutable=True)
     mTEPES.pIndBinLineCommit     = Param(initialize=pIndBinLineCommit    , within=Boolean,             doc='Indicator of binary network    switching  decisions', mutable=True)
     mTEPES.pIndBinNetLosses      = Param(initialize=pIndBinNetLosses     , within=Boolean,             doc='Indicator of binary network ohmic losses',            mutable=True)
-    mTEPES.pIndBinBounds         = Param(initialize=pIndBinBounds        , within=Boolean,             doc='Indicator of binary bounds',                          mutable=True)
 
     mTEPES.pENSCost              = Param(initialize=pENSCost             , within=NonNegativeReals)
     mTEPES.pCO2Cost              = Param(initialize=pCO2Cost             , within=NonNegativeReals)
@@ -743,12 +739,12 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.pIniInventory         = Param(mTEPES.p, mTEPES.sc, mTEPES.n, mTEPES.gg, initialize=pIniInventory.stack().to_dict()     , within=NonNegativeReals,    doc='ESS Initial storage',        mutable=True)
     mTEPES.pInitialInventory     = Param(                               mTEPES.gg, initialize=pInitialInventory.to_dict()         , within=NonNegativeReals,    doc='ESS Initial storage without load levels' )
     mTEPES.pStorageType          = Param(                               mTEPES.gg, initialize=pStorageType.to_dict()              , within=Any             ,    doc='ESS Storage type'                        )
-    mTEPES.pGenUBInvest          = Param(                               mTEPES.gg, initialize=pGenUBInvest.to_dict()              , within=NonNegativeReals,    doc='Upper bound of the investment decision'  )
-    mTEPES.pGenLBInvest          = Param(                               mTEPES.gg, initialize=pGenLBInvest.to_dict()              , within=NonNegativeReals,    doc='Lower bound of the investment decision'  )
-    mTEPES.pGenUBRetire          = Param(                               mTEPES.gg, initialize=pGenUBRetire.to_dict()              , within=NonNegativeReals,    doc='Upper bound of the retirement decision'  )
-    mTEPES.pGenLBRetire          = Param(                               mTEPES.gg, initialize=pGenLBRetire.to_dict()              , within=NonNegativeReals,    doc='Lower bound of the retirement decision'  )
-    mTEPES.pGenUBCommit          = Param(                               mTEPES.gg, initialize=pGenUBCommit.to_dict()              , within=NonNegativeReals,    doc='Upper bound of the commitment decision'  )
-    mTEPES.pGenLBCommit          = Param(                               mTEPES.gg, initialize=pGenLBCommit.to_dict()              , within=NonNegativeReals,    doc='Lower bound of the commitment decision'  )
+    mTEPES.pGenLoInvest          = Param(                               mTEPES.gg, initialize=pGenLoInvest.to_dict()              , within=NonNegativeReals,    doc='Lower bound of the investment decision'  )
+    mTEPES.pGenUpInvest          = Param(                               mTEPES.gg, initialize=pGenUpInvest.to_dict()              , within=NonNegativeReals,    doc='Upper bound of the investment decision'  )
+    mTEPES.pGenLoRetire          = Param(                               mTEPES.gg, initialize=pGenLoRetire.to_dict()              , within=NonNegativeReals,    doc='Lower bound of the retirement decision'  )
+    mTEPES.pGenUpRetire          = Param(                               mTEPES.gg, initialize=pGenUpRetire.to_dict()              , within=NonNegativeReals,    doc='Upper bound of the retirement decision'  )
+    mTEPES.pGenLoCommit          = Param(                               mTEPES.gg, initialize=pGenLoCommit.to_dict()              , within=NonNegativeReals,    doc='Lower bound of the commitment decision'  )
+    mTEPES.pGenUpCommit          = Param(                               mTEPES.gg, initialize=pGenUpCommit.to_dict()              , within=NonNegativeReals,    doc='Upper bound of the commitment decision'  )
 
     mTEPES.pLoadLevelDuration    = Param(                     mTEPES.n,            initialize=0.0                                 , within=NonNegativeReals,    doc='Load level duration',        mutable=True)
     for n in mTEPES.n:
@@ -779,10 +775,10 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.pMaxTheta             = Param(mTEPES.ps,           mTEPES.n, mTEPES.nd, initialize=pMaxTheta.stack().to_dict()         , within=NonNegativeReals,    doc='Maximum voltage angle',      mutable=True)
     mTEPES.pAngMin               = Param(                               mTEPES.ln, initialize=pAngMin.to_dict()                   , within=Reals,               doc='Minimum phase   angle diff', mutable=True)
     mTEPES.pAngMax               = Param(                               mTEPES.ln, initialize=pAngMax.to_dict()                   , within=Reals,               doc='Maximum phase   angle diff', mutable=True)
-    mTEPES.pNetUBInvest          = Param(                               mTEPES.ln, initialize=pNetUBInvest.to_dict()              , within=NonNegativeReals,    doc='Upper bound of the investment decision'  )
-    mTEPES.pNetLBInvest          = Param(                               mTEPES.ln, initialize=pNetLBInvest.to_dict()              , within=NonNegativeReals,    doc='Lower bound of the investment decision'  )
-    mTEPES.pNetUBCommit          = Param(                               mTEPES.ln, initialize=pNetUBCommit.to_dict()              , within=NonNegativeReals,    doc='Upper bound of the commitment decision'  )
-    mTEPES.pNetLBCommit          = Param(                               mTEPES.ln, initialize=pNetLBCommit.to_dict()              , within=NonNegativeReals,    doc='Lower bound of the commitment decision'  )
+    mTEPES.pNetLoInvest          = Param(                               mTEPES.ln, initialize=pNetLoInvest.to_dict()              , within=NonNegativeReals,    doc='Lower bound of the investment decision'  )
+    mTEPES.pNetUpInvest          = Param(                               mTEPES.ln, initialize=pNetUpInvest.to_dict()              , within=NonNegativeReals,    doc='Upper bound of the investment decision'  )
+    mTEPES.pNetLoCommit          = Param(                               mTEPES.ln, initialize=pNetLoCommit.to_dict()              , within=NonNegativeReals,    doc='Lower bound of the commitment decision'  )
+    mTEPES.pNetUpCommit          = Param(                               mTEPES.ln, initialize=pNetUpCommit.to_dict()              , within=NonNegativeReals,    doc='Upper bound of the commitment decision'  )
 
     # if unit availability = 0 changed to 1
     for g in mTEPES.g:
@@ -1100,23 +1096,21 @@ def SettingUpVariables(OptModel, mTEPES):
             for sc,n in mTEPES.sc*mTEPES.n:
                 OptModel.vLineLosses  [p,sc,n,ni,nf,cc].fix(0.0)
 
-    if mTEPES.pIndBinBounds() == 1:
-        for p,gc in mTEPES.p*mTEPES.gc:
-            OptModel.vGenerationInvest     [p,gc].setlb(mTEPES.pGenLBInvest[gc])
-            OptModel.vGenerationInvest     [p,gc].setub(mTEPES.pGenUBInvest[gc])
-        for p,gd in mTEPES.p*mTEPES.gd:
-            OptModel.vGenerationRetire     [p,gd].setlb(mTEPES.pGenLBRetire[gd])
-            OptModel.vGenerationRetire     [p,gd].setub(mTEPES.pGenUBRetire[gd])
-        for p,sc,n,nr in mTEPES.ps*mTEPES.n*mTEPES.nr:
-            OptModel.vCommitment      [p,sc,n,nr].setlb(mTEPES.pGenLBCommit[nr])
-            OptModel.vCommitment      [p,sc,n,nr].setub(mTEPES.pGenUBCommit[nr])
-        for p,ni,nf,cc in mTEPES.p*mTEPES.lc:
-            OptModel.vNetworkInvest  [p,ni,nf,cc].setlb(mTEPES.pNetLBInvest[ni,nf,cc])
-            OptModel.vNetworkInvest  [p,ni,nf,cc].setub(mTEPES.pNetUBInvest[ni,nf,cc])
-        for p,sc,n,ni,nf,cc in mTEPES.ps*mTEPES.n*mTEPES.lc:
-            OptModel.vLineCommit[p,sc,n,ni,nf,cc].setlb(mTEPES.pNetLBCommit[ni,nf,cc])
-            OptModel.vLineCommit[p,sc,n,ni,nf,cc].setub(mTEPES.pNetUBCommit[ni,nf,cc])
-
+    for p,gc in mTEPES.p*mTEPES.gc:
+        OptModel.vGenerationInvest     [p,gc].setlb(mTEPES.pGenLoInvest[gc])
+        OptModel.vGenerationInvest     [p,gc].setub(mTEPES.pGenUpInvest[gc])
+    for p,gd in mTEPES.p*mTEPES.gd:
+        OptModel.vGenerationRetire     [p,gd].setlb(mTEPES.pGenLoRetire[gd])
+        OptModel.vGenerationRetire     [p,gd].setub(mTEPES.pGenUpRetire[gd])
+    for p,sc,n,nr in mTEPES.ps*mTEPES.n*mTEPES.nr:
+        OptModel.vCommitment      [p,sc,n,nr].setlb(mTEPES.pGenLoCommit[nr])
+        OptModel.vCommitment      [p,sc,n,nr].setub(mTEPES.pGenUpCommit[nr])
+    for p,ni,nf,cc in mTEPES.p*mTEPES.lc:
+        OptModel.vNetworkInvest  [p,ni,nf,cc].setlb(mTEPES.pNetLoInvest[ni,nf,cc])
+        OptModel.vNetworkInvest  [p,ni,nf,cc].setub(mTEPES.pNetUpInvest[ni,nf,cc])
+    for p,sc,n,ni,nf,cc in mTEPES.ps*mTEPES.n*mTEPES.lc:
+        OptModel.vLineCommit[p,sc,n,ni,nf,cc].setlb(mTEPES.pNetLoCommit[ni,nf,cc])
+        OptModel.vLineCommit[p,sc,n,ni,nf,cc].setub(mTEPES.pNetUpCommit[ni,nf,cc])
 
     # detecting infeasibility: sum of scenario probabilities must be 1 in each period
     # for p in mTEPES.p:
