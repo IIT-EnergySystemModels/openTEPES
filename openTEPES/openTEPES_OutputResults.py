@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 23, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 26, 2022
 """
 
 import time
@@ -8,7 +8,6 @@ import pandas as pd
 import altair as alt
 import plotly.io as pio
 import plotly.graph_objs as go
-import matplotlib.pyplot as plt
 from   collections   import defaultdict
 from   pyomo.environ import Set
 from   colour        import Color
