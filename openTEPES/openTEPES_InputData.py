@@ -294,12 +294,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pGenUpInvest    = pGenUpInvest.where(pGenUpInvest > 0.0, other=1.0        )
     # replace pGenUpRetire = 0.0 by 1.0
     pGenUpRetire    = pGenUpRetire.where(pGenUpRetire > 0.0, other=1.0        )
-    # replace pGenUpCommit = 0.0 by 1.0
-    pGenUpCommit    = pGenUpCommit.where(pGenUpCommit > 0.0, other=1.0        )
     # replace pNetUpInvest = 0.0 by 1.0
     pNetUpInvest    = pNetUpInvest.where(pNetUpInvest > 0.0, other=1.0        )
-    # replace pNetUpCommit = 0.0 by 1.0
-    pNetUpCommit    = pNetUpCommit.where(pNetUpCommit > 0.0, other=1.0        )
 
     # minimum up and down time converted to an integer number of time steps
     pSwitchOnTime  = round(pSwitchOnTime /pTimeStep).astype('int')
