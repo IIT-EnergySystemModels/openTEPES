@@ -269,8 +269,6 @@ Node                  Name of the node where generator is located. If left empty
 Technology            Technology of the generator (nuclear, coal, CCGT, OCGT, ESS, solar, wind, biomass, etc.)
 MutuallyExclusive     Mutually exclusive generator. Only exclusion in one direction is needed
 BinaryCommitment      Binary unit commitment decision                                                                                         Yes/No
-CommitmentLo          Lower bound of unit commitment decision                                                                                 p.u.
-CommitmentUp          Upper bound of unit commitment decision                                                                                 p.u.
 NoOperatingReserve    No contribution to operating reserve. Yes if the unit doesn't contribute to the operating reserve                       Yes/No
 StorageType           Storage type based on storage capacity (hourly, daily, weekly, monthly, etc.)                                           Hourly/Daily/Weekly/Monthly
 OutflowsType          Outflows type based on the demand extracted from the storage (hourly, daily, weekly, monthly, yearly, etc.)             Hourly/Daily/Weekly/Monthly/Yearly
@@ -427,8 +425,6 @@ Header               Description
 ===================  ===============================================================================================================  ======
 LineType             Line type {AC, DC, Transformer, Converter}
 Switching            The transmission line is able to switch on/off                                                                   Yes/No
-CommitmentLo         Lower bound of switching (commitment) decision                                                                   p.u.
-CommitmentUp         Upper bound of switching (commitment) decision                                                                   p.u.
 InitialPeriod        Initial period (year) when the unit is installed or can be installed, if candidate                               Year
 FinalPeriod          Final   period (year) when the unit is installed or can be installed, if candidate                               Year
 Voltage              Line voltage (e.g., 400, 220 kV, 220/400 kV if transformer). Used only for plotting purposes                     kV

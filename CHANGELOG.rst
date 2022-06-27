@@ -1,9 +1,9 @@
 Change Log
 =============
 
-[4.7.0] - 2022-06-23
+[4.7.0] - 2022-06-27
 --------------------
-- [CHANGED] introduction of lower and upper bounds in investment, retirement, and commitment decisions for network and generation
+- [CHANGED] introduction of lower and upper bounds in investment and retirement decisions for network and generation
 
 [4.6.1] - 2022-06-15
 --------------------

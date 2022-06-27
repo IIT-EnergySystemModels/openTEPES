@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 23, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 27, 2022
 """
 
 import datetime
@@ -257,8 +257,6 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pGenUpInvest        = dfGeneration  ['InvestmentUp'          ]                                                                            # Upper bound of the investment decision      [p.u.]
     pGenLoRetire        = dfGeneration  ['RetirementLo'          ]                                                                            # Lower bound of the retirement decision      [p.u.]
     pGenUpRetire        = dfGeneration  ['RetirementUp'          ]                                                                            # Upper bound of the retirement decision      [p.u.]
-    pGenLoCommit        = dfGeneration  ['CommitmentLo'          ]                                                                            # Lower bound of the commitment decision      [p.u.]
-    pGenUpCommit        = dfGeneration  ['CommitmentUp'          ]                                                                            # Upper bound of the commitment decision      [p.u.]
 
     pLinearOperCost     = pLinearFuelCost + pCO2EmissionCost
     pLinearVarCost      = pLinearFuelCost + pLinearOMCost
@@ -287,8 +285,6 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pAngMax             = dfNetwork     ['AngMax'                ] * math.pi / 180                                                            # Max phase angle difference                  [rad]
     pNetLoInvest        = dfNetwork     ['InvestmentLo'          ]                                                                            # Lower bound of the investment decision      [p.u.]
     pNetUpInvest        = dfNetwork     ['InvestmentUp'          ]                                                                            # Upper bound of the investment decision      [p.u.]
-    pNetLoCommit        = dfNetwork     ['CommitmentLo'          ]                                                                            # Lower bound of the commitment decision      [p.u.]
-    pNetUpCommit        = dfNetwork     ['CommitmentUp'          ]                                                                            # Upper bound of the commitment decision      [p.u.]
 
     # replace pLineNTCBck = 0.0 by pLineNTCFrw
     pLineNTCBck     = pLineNTCBck.where(pLineNTCBck > 0.0, other=pLineNTCFrw)
@@ -743,8 +739,6 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.pGenUpInvest          = Param(                               mTEPES.gg, initialize=pGenUpInvest.to_dict()              , within=NonNegativeReals,    doc='Upper bound of the investment decision'  )
     mTEPES.pGenLoRetire          = Param(                               mTEPES.gg, initialize=pGenLoRetire.to_dict()              , within=NonNegativeReals,    doc='Lower bound of the retirement decision'  )
     mTEPES.pGenUpRetire          = Param(                               mTEPES.gg, initialize=pGenUpRetire.to_dict()              , within=NonNegativeReals,    doc='Upper bound of the retirement decision'  )
-    mTEPES.pGenLoCommit          = Param(                               mTEPES.gg, initialize=pGenLoCommit.to_dict()              , within=NonNegativeReals,    doc='Lower bound of the commitment decision'  )
-    mTEPES.pGenUpCommit          = Param(                               mTEPES.gg, initialize=pGenUpCommit.to_dict()              , within=NonNegativeReals,    doc='Upper bound of the commitment decision'  )
 
     mTEPES.pLoadLevelDuration    = Param(                     mTEPES.n,            initialize=0.0                                 , within=NonNegativeReals,    doc='Load level duration',        mutable=True)
     for n in mTEPES.n:
@@ -777,8 +771,6 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.pAngMax               = Param(                               mTEPES.ln, initialize=pAngMax.to_dict()                   , within=Reals,               doc='Maximum phase   angle diff', mutable=True)
     mTEPES.pNetLoInvest          = Param(                               mTEPES.ln, initialize=pNetLoInvest.to_dict()              , within=NonNegativeReals,    doc='Lower bound of the investment decision'  )
     mTEPES.pNetUpInvest          = Param(                               mTEPES.ln, initialize=pNetUpInvest.to_dict()              , within=NonNegativeReals,    doc='Upper bound of the investment decision'  )
-    mTEPES.pNetLoCommit          = Param(                               mTEPES.ln, initialize=pNetLoCommit.to_dict()              , within=NonNegativeReals,    doc='Lower bound of the commitment decision'  )
-    mTEPES.pNetUpCommit          = Param(                               mTEPES.ln, initialize=pNetUpCommit.to_dict()              , within=NonNegativeReals,    doc='Upper bound of the commitment decision'  )
 
     # if unit availability = 0 changed to 1
     for g in mTEPES.g:
@@ -808,7 +800,7 @@ def SettingUpVariables(OptModel, mTEPES):
     StartTime = time.time()
 
     #%% variables
-    OptModel.vTotalFCost           = Var(mTEPES.p,                       within=NonNegativeReals,                                                                                                        doc='total system fixed                   cost      [MEUR]')
+    OptModel.vTotalFCost           = Var(mTEPES.p,                                 within=NonNegativeReals,                                                                                                        doc='total system fixed                   cost      [MEUR]')
     OptModel.vTotalGCost           = Var(mTEPES.ps, mTEPES.n,            within=NonNegativeReals,                                                                                                        doc='total variable generation  operation cost      [MEUR]')
     OptModel.vTotalCCost           = Var(mTEPES.ps, mTEPES.n,            within=NonNegativeReals,                                                                                                        doc='total variable consumption operation cost      [MEUR]')
     OptModel.vTotalECost           = Var(mTEPES.ps, mTEPES.n,            within=NonNegativeReals,                                                                                                        doc='total system emission                cost      [MEUR]')
@@ -1102,15 +1094,9 @@ def SettingUpVariables(OptModel, mTEPES):
     for p,gd in mTEPES.p*mTEPES.gd:
         OptModel.vGenerationRetire     [p,gd].setlb(mTEPES.pGenLoRetire[gd])
         OptModel.vGenerationRetire     [p,gd].setub(mTEPES.pGenUpRetire[gd])
-    for p,sc,n,nr in mTEPES.ps*mTEPES.n*mTEPES.nr:
-        OptModel.vCommitment      [p,sc,n,nr].setlb(mTEPES.pGenLoCommit[nr])
-        OptModel.vCommitment      [p,sc,n,nr].setub(mTEPES.pGenUpCommit[nr])
     for p,ni,nf,cc in mTEPES.p*mTEPES.lc:
         OptModel.vNetworkInvest  [p,ni,nf,cc].setlb(mTEPES.pNetLoInvest[ni,nf,cc])
         OptModel.vNetworkInvest  [p,ni,nf,cc].setub(mTEPES.pNetUpInvest[ni,nf,cc])
-    for p,sc,n,ni,nf,cc in mTEPES.ps*mTEPES.n*mTEPES.lc:
-        OptModel.vLineCommit[p,sc,n,ni,nf,cc].setlb(mTEPES.pNetLoCommit[ni,nf,cc])
-        OptModel.vLineCommit[p,sc,n,ni,nf,cc].setub(mTEPES.pNetUpCommit[ni,nf,cc])
 
     # detecting infeasibility: sum of scenario probabilities must be 1 in each period
     # for p in mTEPES.p:
