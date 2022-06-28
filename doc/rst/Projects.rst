@@ -4,6 +4,13 @@ Research projects
 =================
 The model has being used in these research projects:
 
+- Delivering the next generation of open Integrated Assessment MOdels for Net-zero, sustainable Development, developed for the **European Commission**. September 2022 - August 2025.
+  `S. Lumbreras <https://www.iit.comillas.edu/people/slumbreras>`_, `L. Olmos <https://www.iit.comillas.edu/people/olmos>`_, `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_
+
+    It will update, upgrade, and fully open six IAMs that are emblematic in scientific and policy processes, improving their sectoral and technological detail, spatiotemporal resolution, and geographic granularity.
+    It will further enhance modelling capacity to assess the feasibility and desirability of Paris-compliant mitigation pathways, their interplay with adaptation, circular economy, and other SDGs,
+    their distributional and equity effects, and their resilience to extremes, as well as robust risk management and investment strategies.
+
 - `Application of the ENTSO-e cost-benefit analysis method to Aguayo II pumped-hydro storage <https://www.iit.comillas.edu/proyectos/mostrar_proyecto.php.en?nombre_abreviado=Repsol_AguayoII>`_, developed for **Repsol**.
   June 2022.  `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_,
   `L. Olmos <https://www.iit.comillas.edu/people/olmos>`_, `L. Sigrist <https://www.iit.comillas.edu/people/lsigrist>`_
