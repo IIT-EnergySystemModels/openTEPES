@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.7.0] - 2022-06-27
+[4.7.0] - 2022-06-30
 --------------------
+- [FIXED] fix detection of ESS units with no inflows
 - [CHANGED] introduction of lower and upper bounds in investment and retirement decisions for network and generation
 
 [4.6.1] - 2022-06-15

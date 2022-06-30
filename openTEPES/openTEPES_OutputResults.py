@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 26, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 30, 2022
 """
 
 import time
@@ -633,13 +633,13 @@ def NetworkOperationResults(DirName, CaseName, OptModel, mTEPES):
 
 
 def MarginalResults(DirName, CaseName, OptModel, mTEPES):
-    #%% outputting the up operating reserve marginal
     _path = os.path.join(DirName, CaseName)
     StartTime = time.time()
 
     # tolerance to consider 0 a number
     pEpsilon = 1e-6
 
+    #%% outputting the incremental variable cost of each generator with power surplus
     SurplusGens  = [(p,sc,n,g) for p,sc,n,g in mTEPES.ps*mTEPES.n*mTEPES.g if OptModel.vTotalOutput[p,sc,n,g].ub - OptModel.vTotalOutput[p,sc,n,g]() > pEpsilon and g not in mTEPES.es]
     OutputToFile = pd.Series(data=[(mTEPES.pLinearVarCost[g]+mTEPES.pCO2EmissionCost[g])*1e3 for p,sc,n,g in SurplusGens], index=pd.MultiIndex.from_tuples(SurplusGens))
 
@@ -699,6 +699,7 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES):
         OutputResults = pd.concat(OutputResults)
         OutputResults.to_frame(name='RM').reset_index().pivot_table(index=['level_0'], columns=['level_1'], values='RM').rename_axis(['Period'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_MarginalReserveMargin_'+CaseName+'.csv', sep=',')
 
+    #%% outputting the up operating reserve marginal
     if sum(mTEPES.pOperReserveUp[p,sc,n,ar] for p,sc,n,ar in mTEPES.ps*mTEPES.n*mTEPES.ar) > 0.0 and (sum(1 for ar,nr in mTEPES.ar*mTEPES.nr if (ar,nr) in mTEPES.a2g and mTEPES.pIndOperReserve[nr] == 0) + sum(1 for ar,es in mTEPES.ar*mTEPES.es if (ar,es) in mTEPES.a2g and mTEPES.pIndOperReserve[es] == 0)) > 0:
         OutputResults = []
         for p,sc,st in mTEPES.ps*mTEPES.st:
