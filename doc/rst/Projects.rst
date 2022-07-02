@@ -15,13 +15,13 @@ The model has being used in these research projects:
   June 2022.  `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_,
   `L. Olmos <https://www.iit.comillas.edu/people/olmos>`_, `L. Sigrist <https://www.iit.comillas.edu/people/lsigrist>`_
 
-    It aims at write a report on the application of the ENTSO-e cost-benefit analysis method to Aguayo II pumped-hydro storage.
+    It aims at writing a report on the application of the ENTSO-e cost-benefit analysis method to Aguayo II pumped-hydro storage.
 
 - `Application of the ENTSO-e cost-benefit analysis method to Los Guájares pumped-hydro storage <https://www.iit.comillas.edu/proyectos/mostrar_proyecto.php.en?nombre_abreviado=VMEnergia_LosGuajares>`_, developed for **VM Energía**.
   May 2022 - June 2022.  `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_,
   `L. Olmos <https://www.iit.comillas.edu/people/olmos>`_, `L. Sigrist <https://www.iit.comillas.edu/people/lsigrist>`_
 
-    It aims at write a report on the application of the ENTSO-e cost-benefit analysis method to Los Guájares pumped-hydro storage.
+    It aims at writing a report on the application of the ENTSO-e cost-benefit analysis method to Los Guájares pumped-hydro storage.
 
 - `Impact of the electric vehicle in the electricity markets in 2030 <https://www.iit.comillas.edu/proyectos/mostrar_proyecto.php.en?nombre_abreviado=REPSOL_VE>`_, developed for **Repsol**.
   November 2021 - February 2022.  `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_,
@@ -48,7 +48,7 @@ The model has being used in these research projects:
   `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `P. Linares <https://www.iit.comillas.edu/people/pedrol>`_, `J.P. Chaves <https://www.iit.comillas.edu/people/jchaves>`_,
   `J. García <https://www.iit.comillas.edu/people/javiergg>`_, `S. Wogrin <https://www.iit.comillas.edu/people/swogrin>`_, `J.J. Valentín <https://www.iit.comillas.edu/people/jjvalentin>`_
 
-    It aims at assessing, from a technical and economic point of view, the daily, weekly and seasonal storage needs for the Spanish electricity system in the 2020-2050 horizon.
+    It aims at assessing, from a technical and economic point of view, the daily, weekly, and seasonal storage needs for the Spanish electricity system in the 2020-2050 horizon.
 
 - `FlexEner. New 100% renewable, flexible and robust energy system for the integration of new technologies in generation, networks and demand - Scenarios <https://www.iit.comillas.edu/proyectos/mostrar_proyecto.php.en?nombre_abreviado=FLEXENER_IBD-GEN_ESCENARIOS>`_, developed for **Iberdrola** under **Misiones CDTI 2019** program (MIG-20201002).
   October 2020 - December 2023.
@@ -61,8 +61,8 @@ The model has being used in these research projects:
 
 - `Improving energy system modelling tools and capacity <https://www.iit.comillas.edu/proyectos/mostrar_proyecto.php.en?nombre_abreviado=REFORMS>`_, developed for the **European Commission**.
   October 2020 - June 2022.
-  `S. Lumbreras <https://www.iit.comillas.edu/people/slumbreras>`_, `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `P. Linares <https://www.iit.comillas.edu/people/pedrol>`_,
-  `J.C. Romero <https://www.iit.comillas.edu/people/jcromero>`_
+  `S. Lumbreras <https://www.iit.comillas.edu/people/slumbreras>`_, `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `P. Linares <https://www.iit.comillas.edu/people/pedrol>`_, `D. Santos <https://www.iit.comillas.edu/people/doliveira>`_,
+  `M. Pérez-Bravo <https://www.iit.comillas.edu/people/mperezb>`_, `A.F. Rodríguez Matas <https://www.iit.comillas.edu/people/afrmatas>`_, `J.C. Romero <https://www.iit.comillas.edu/people/jcromero>`_
 
     It aims at improving the description of the Spanish energy system in model TIMES-SINERGIA, from the technologies considered or a higher time resolution to the detailed modeling of the power sector, such as the inclusion of transmission constraints.
 
@@ -78,7 +78,7 @@ The model has being used in these research projects:
   `L. Olmos <https://www.iit.comillas.edu/people/olmos>`_, `S. Lumbreras <https://www.iit.comillas.edu/people/slumbreras>`_, `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_,
   `E. Alvarez <https://www.iit.comillas.edu/people/ealvarezq>`_
 
-    It aims at developing, using and disseminating an open, transparent and integrated modelling platform for assessing low-carbon transition pathways in Europe.
+    It aims at developing, using, and disseminating an open, transparent and integrated modelling platform for assessing low-carbon transition pathways in Europe.
 
 .. image:: ../img/open-entrance_logo.png
    :scale: 40%
