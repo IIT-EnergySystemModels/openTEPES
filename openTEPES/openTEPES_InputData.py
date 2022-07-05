@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 30, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 04, 2022
 """
 
 import datetime
@@ -664,17 +664,17 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.pIndBinLineCommit     = Param(initialize=pIndBinLineCommit    , within=Boolean,             doc='Indicator of binary network    switching  decisions', mutable=True)
     mTEPES.pIndBinNetLosses      = Param(initialize=pIndBinNetLosses     , within=Boolean,             doc='Indicator of binary network ohmic losses',            mutable=True)
 
-    mTEPES.pENSCost              = Param(initialize=pENSCost             , within=NonNegativeReals)
-    mTEPES.pCO2Cost              = Param(initialize=pCO2Cost             , within=NonNegativeReals)
-    mTEPES.pAnnualDiscRate       = Param(initialize=pAnnualDiscRate      , within=UnitInterval    )
-    mTEPES.pUpReserveActivation  = Param(initialize=pUpReserveActivation , within=UnitInterval    )
-    mTEPES.pDwReserveActivation  = Param(initialize=pDwReserveActivation , within=UnitInterval    )
-    mTEPES.pMinRatioDwUp         = Param(initialize=pMinRatioDwUp        , within=UnitInterval    )
-    mTEPES.pMaxRatioDwUp         = Param(initialize=pMaxRatioDwUp        , within=UnitInterval    )
-    mTEPES.pSBase                = Param(initialize=pSBase               , within=NonNegativeReals)
-    mTEPES.pTimeStep             = Param(initialize=pTimeStep            , within=NonNegativeReals)
-    # mTEPES.pStageDuration        = Param(initialize=pStageDuration      , within=NonNegativeReals)
-    mTEPES.pCurrentYear          = Param(initialize=pCurrentYear         , within=NonNegativeReals)
+    mTEPES.pENSCost              = Param(initialize=pENSCost             , within=NonNegativeReals,    doc='ENS cost')
+    mTEPES.pCO2Cost              = Param(initialize=pCO2Cost             , within=NonNegativeReals,    doc='CO2 emission cost')
+    mTEPES.pAnnualDiscRate       = Param(initialize=pAnnualDiscRate      , within=UnitInterval    ,    doc='Annual discount rate')
+    mTEPES.pUpReserveActivation  = Param(initialize=pUpReserveActivation , within=UnitInterval    ,    doc='Proportion of upward   reserve activation')
+    mTEPES.pDwReserveActivation  = Param(initialize=pDwReserveActivation , within=UnitInterval    ,    doc='Proportion of downward reserve activation')
+    mTEPES.pMinRatioDwUp         = Param(initialize=pMinRatioDwUp        , within=UnitInterval    ,    doc='Minimum ration between upward and downward reserve')
+    mTEPES.pMaxRatioDwUp         = Param(initialize=pMaxRatioDwUp        , within=UnitInterval    ,    doc='Maximum ration between upward and downward reserve')
+    mTEPES.pSBase                = Param(initialize=pSBase               , within=NonNegativeReals,    doc='Base power')
+    mTEPES.pTimeStep             = Param(initialize=pTimeStep            , within=NonNegativeReals,    doc='Unitary time step')
+    # mTEPES.pStageDuration        = Param(initialize=pStageDuration      , within=NonNegativeReals,   doc='Duration of each stage')
+    mTEPES.pCurrentYear          = Param(initialize=pCurrentYear         , within=NonNegativeReals,    doc='Current year')
 
     mTEPES.pReserveMargin        = Param(                               mTEPES.ar, initialize=pReserveMargin.to_dict()            , within=NonNegativeReals,    doc='Adequacy reserve margin'                 )
     mTEPES.pPeakDemand           = Param(                               mTEPES.ar, initialize=pPeakDemand.to_dict()               , within=NonNegativeReals,    doc='Peak demand'                             )

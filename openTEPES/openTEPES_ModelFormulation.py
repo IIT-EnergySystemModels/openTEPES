@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 15, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 04, 2022
 """
 
 import time
@@ -112,7 +112,7 @@ def GenerationOperationModelFormulationInvestment(OptModel, mTEPES, pIndLogConso
         if mTEPES.pMaxPower[p,sc,n,gc]:
             return OptModel.vTotalOutput[p,sc,n,gc] / mTEPES.pMaxPower [p,sc,n,gc] <= OptModel.vGenerationInvest[p,gc]
         else:
-            return OptModel.vTotalOutput[p,sc,n,gc]                               <= 0.0
+            return Constraint.Skip
     setattr(OptModel, 'eInstalGenCap_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.ps, mTEPES.n, mTEPES.gc, rule=eInstalGenCap, doc='output if installed gen unit [p.u.]'))
 
     if pIndLogConsole == 1:
@@ -139,7 +139,7 @@ def GenerationOperationModelFormulationInvestment(OptModel, mTEPES, pIndLogConso
         if mTEPES.pMaxPower[p,sc,n,gd]:
             return OptModel.vTotalOutput[p,sc,n,gd] / mTEPES.pMaxPower[p,sc,n,gd] <= 1 - OptModel.vGenerationRetire[p,gd]
         else:
-            return OptModel.vTotalOutput[p,sc,n,gd]                               <= 0.0
+            return Constraint.Skip
     setattr(OptModel, 'eUninstalGenCap_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.ps, mTEPES.n, mTEPES.gd, rule=eUninstalGenCap, doc='output if uninstalled gen unit [p.u.]'))
 
     if pIndLogConsole == 1:
