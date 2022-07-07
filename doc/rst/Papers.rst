@@ -4,7 +4,7 @@ Publications
 =================
 The model has being used in these publications:
 
-* E.F. Alvarez, L. Olmos, A. Ramos, K. Antoniadou-Plytaria, D. Steen, and L.A. Tuan "Values and Impacts of Incorporating Local Flexibility Services in Transmission Expansion Planning"
+* E.F. Alvarez, L. Olmos, A. Ramos, K. Antoniadou-Plytaria, D. Steen, and L.A. Tuan "`Values and Impacts of Incorporating Local Flexibility Services in Transmission Expansion Planning <https://pscc.epfl.ch/rms/modules/request.php?module=oc_program&action=view.php&id=1731&file=1/1731.pdf>`_"
   PSCC 2022. Porto, Portugal.
 
 * A. Ramos, S. Huclin, J.P. Chaves "Analysis of different storage technologies in the Spain NECP for 2030" IEA Wind Task 25 Spring 2022 meeting. May 2022.
