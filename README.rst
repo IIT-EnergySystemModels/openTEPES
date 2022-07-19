@@ -39,6 +39,8 @@ Reference
 ############
 **A. Ramos, E. Quispe, S. Lumbreras** `“OpenTEPES: Open-source Transmission and Generation Expansion Planning” <https://www.sciencedirect.com/science/article/pii/S235271102200053X>`_ SoftwareX 18: June 2022 `10.1016/j.softx.2022.101070 <https://doi.org/10.1016/j.softx.2022.101070>`_.
 
+Description
+############
 **openTEPES** determines the investment plans of new facilities (generators, ESS and lines)
 for supplying the forecasted demand at minimum cost. Tactical planning is concerned with time horizons of 10-20 years. Its objective is to evaluate the future generation, storage and network needs.
 The main results are the guidelines for the future structure of the generation and transmission systems.
