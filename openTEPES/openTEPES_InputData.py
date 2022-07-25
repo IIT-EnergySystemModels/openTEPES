@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 04, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 25, 2022
 """
 
 import datetime
@@ -798,6 +798,7 @@ def SettingUpVariables(OptModel, mTEPES):
     StartTime = time.time()
 
     #%% variables
+    OptModel.vTotalSCost           = Var(                                within=NonNegativeReals,                                                                                                                doc='total system                         cost      [MEUR]')
     OptModel.vTotalFCost           = Var(mTEPES.p,                       within=NonNegativeReals,                                                                                                                doc='total system fixed                   cost      [MEUR]')
     OptModel.vTotalGCost           = Var(mTEPES.ps, mTEPES.n,            within=NonNegativeReals,                                                                                                                doc='total variable generation  operation cost      [MEUR]')
     OptModel.vTotalCCost           = Var(mTEPES.ps, mTEPES.n,            within=NonNegativeReals,                                                                                                                doc='total variable consumption operation cost      [MEUR]')
@@ -876,7 +877,7 @@ def SettingUpVariables(OptModel, mTEPES):
             OptModel.vShutDown  [p,sc,n,nr].domain = UnitInterval
 
     # maximum value of time step commitment for mutually exclusive non-renewable generators
-    OptModel.vMaxCommitment = Var(mTEPES.nr, within=Binary, initialize=0, doc='maximum commitment of the unit {0,1}')
+    OptModel.vMaxCommitment = Var(mTEPES.ps, mTEPES.nr, within=Binary, initialize=0, doc='maximum commitment of the unit {0,1}')
 
     # existing lines are always committed if no switching decision is modeled
     for p,sc,n,ni,nf,cc in mTEPES.ps*mTEPES.n*mTEPES.le:
@@ -887,10 +888,10 @@ def SettingUpVariables(OptModel, mTEPES):
 
     OptModel.vLineLosses = Var(mTEPES.ps, mTEPES.n, mTEPES.ll, within=NonNegativeReals, bounds=lambda OptModel,p,sc,n,*ll: (0.0,0.5*mTEPES.pLineLossFactor[ll]*max(mTEPES.pLineNTCBck[ll],mTEPES.pLineNTCFrw[ll])), doc='half line losses [GW]')
     if mTEPES.pIndBinSingleNode() == 0:
-        OptModel.vFlow   = Var(mTEPES.ps, mTEPES.n, mTEPES.la, within=Reals,            bounds=lambda OptModel,p,sc,n,*la: (-mTEPES.pLineNTCBck[la],mTEPES.pLineNTCFrw[la]),                                        doc='flow             [GW]')
+        OptModel.vFlow   = Var(mTEPES.ps, mTEPES.n, mTEPES.la, within=Reals,            bounds=lambda OptModel,p,sc,n,*la: (                                      -mTEPES.pLineNTCBck[la],mTEPES.pLineNTCFrw[la]),  doc='flow             [GW]')
     else:
         OptModel.vFlow   = Var(mTEPES.ps, mTEPES.n, mTEPES.la, within=Reals,                                                                                                                                        doc='flow             [GW]')
-    OptModel.vTheta      = Var(mTEPES.ps, mTEPES.n, mTEPES.nd, within=Reals,            bounds=lambda OptModel,p,sc,n, nd: (-mTEPES.pMaxTheta[p,sc,n,nd],mTEPES.pMaxTheta[p,sc,n,nd]),                              doc='voltage angle   [rad]')
+    OptModel.vTheta      = Var(mTEPES.ps, mTEPES.n, mTEPES.nd, within=Reals,            bounds=lambda OptModel,p,sc,n, nd: (                            -mTEPES.pMaxTheta[p,sc,n,nd],mTEPES.pMaxTheta[p,sc,n,nd]),  doc='voltage angle   [rad]')
 
     # fix the must-run units and their output
     for p,sc,n,g  in mTEPES.ps*mTEPES.n*mTEPES.g :
@@ -1049,10 +1050,10 @@ def SettingUpVariables(OptModel, mTEPES):
             for sc,n in mTEPES.sc*mTEPES.n:
                 OptModel.vTotalOutput   [p,sc,n,g].fix(0.0)
 
-    for p,nr in mTEPES.p*mTEPES.nr:
+    for p,sc,nr in mTEPES.ps*mTEPES.nr:
         if nr not in mTEPES.gc and (mTEPES.pPeriodIniGen[nr] > p or mTEPES.pPeriodFinGen[nr] < p):
-            OptModel.vMaxCommitment[nr].fix(0)
-            for sc,n in mTEPES.sc*mTEPES.n:
+            OptModel.vMaxCommitment[p,sc,nr].fix(0)
+            for n in mTEPES.n:
                 OptModel.vOutput2ndBlock[p,sc,n,nr].fix(0.0)
                 OptModel.vReserveUp     [p,sc,n,nr].fix(0.0)
                 OptModel.vReserveDown   [p,sc,n,nr].fix(0.0)

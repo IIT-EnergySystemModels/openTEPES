@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.7.0] - 2022-07-04
+[4.7.0] - 2022-07-25
 --------------------
+- [FIXED] fix error en vMaxCommitment
 - [FIXED] fix eInstalGenCap and eUninstalGenCap
 - [FIXED] fix detection of ESS units with no inflows
 - [CHANGED] introduction of lower and upper bounds in investment and retirement decisions for network and generation
