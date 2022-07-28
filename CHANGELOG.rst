@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.7.0] - 2022-07-25
+[4.7.0] - 2022-07-26
 --------------------
+- [FIXED] fix error en operation cost
 - [FIXED] fix error en vMaxCommitment
 - [FIXED] fix eInstalGenCap and eUninstalGenCap
 - [FIXED] fix detection of ESS units with no inflows
