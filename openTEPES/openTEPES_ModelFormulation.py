@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 26, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 29, 2022
 """
 
 import time
@@ -17,7 +17,7 @@ def TotalObjectiveFunction(OptModel, mTEPES, pIndLogConsole):
     OptModel.eTotalSCost = Objective(rule=eTotalSCost, sense=minimize, doc='total system cost [MEUR]')
 
     def eTotalTCost(OptModel):
-        return OptModel.vTotalSCost == sum(mTEPES.pDiscountFactor[p] * OptModel.vTotalFCost[p] for p in mTEPES.p) + sum(mTEPES.pDiscountFactor[p] * mTEPES.pScenProb[p,sc] * (OptModel.vTotalGCost[p,sc,n] + OptModel.vTotalCCost[p,sc,n] + OptModel.vTotalECost[p,sc,n] + OptModel.vTotalRCost[p,sc,n]) for p,sc,n in mTEPES.ps*mTEPES.n)
+        return OptModel.vTotalSCost == OptModel.vTotalICost + sum(mTEPES.pDiscountFactor[p] * mTEPES.pScenProb[p,sc] * (OptModel.vTotalGCost[p,sc,n] + OptModel.vTotalCCost[p,sc,n] + OptModel.vTotalECost[p,sc,n] + OptModel.vTotalRCost[p,sc,n]) for p,sc,n in mTEPES.ps*mTEPES.n)
     OptModel.eTotalTCost = Constraint(rule=eTotalTCost, doc='total system cost [MEUR]')
 
     GeneratingTime = time.time() - StartTime
@@ -29,6 +29,10 @@ def InvestmentModelFormulation(OptModel, mTEPES, pIndLogConsole):
     print('Investment           model formulation ****')
 
     StartTime = time.time()
+
+    def eTotalICost(OptModel):
+        return OptModel.vTotalICost == sum(mTEPES.pDiscountFactor[p] * OptModel.vTotalFCost[p] for p in mTEPES.p)
+    OptModel.eTotalICost = Constraint(rule=eTotalICost, doc='system fixed    cost [MEUR]')
 
     def eTotalFCost(OptModel,p):
         return OptModel.vTotalFCost[p] == sum(mTEPES.pGenInvestCost[gc] * OptModel.vGenerationInvest[p,gc] for gc in mTEPES.gc) + sum(mTEPES.pGenRetireCost[gd] * OptModel.vGenerationRetire[p,gd] for gd in mTEPES.gd) + sum(mTEPES.pNetFixedCost[ni,nf,cc] * OptModel.vNetworkInvest[p,ni,nf,cc] for ni,nf,cc in mTEPES.lc)
