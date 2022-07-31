@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 29, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 31, 2022
 """
 
 import time
@@ -791,6 +791,35 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES):
     WritingResultsTime = time.time() - StartTime
     StartTime = time.time()
     print('Writing marginal information results   ... ', round(WritingResultsTime), 's')
+
+
+def ResultsKPI(DirName, CaseName, OptModel, mTEPES):
+    # %% outputting the KPIs
+    _path = os.path.join(DirName, CaseName)
+    StartTime   = time.time()
+
+    # Ratio Fossil Fuel Generation/Total Generation [%]
+    TotalGeneration      = sum(OptModel.vTotalOutput[p,sc,n,g ]()*mTEPES.pLoadLevelDuration[n]() for p,sc,n,g  in mTEPES.ps*mTEPES.n*mTEPES.g                 )
+    FossilFuelGeneration = sum(OptModel.vTotalOutput[p,sc,n,g ]()*mTEPES.pLoadLevelDuration[n]() for p,sc,n,g  in mTEPES.ps*mTEPES.n*mTEPES.g if g in mTEPES.t)
+    # Ratio Total Investments [%]
+    TotalInvestmentCost  = sum(                                  OptModel.vTotalFCost      [p]()                                   for p          in mTEPES.p          )
+    GenInvestmentCost    = sum(mTEPES.pGenInvestCost[gc]       * OptModel.vGenerationInvest[p,gc]()                                for p,gc       in mTEPES.p*mTEPES.gc)
+    GenRetirementCost    = sum(mTEPES.pGenRetireCost[gd]       * OptModel.vGenerationRetire[p,gd]()                                for p,gd       in mTEPES.p*mTEPES.gd)
+    NetInvestmentCost    = sum(mTEPES.pNetFixedCost [ni,nf,cc] * OptModel.vNetworkInvest   [p,ni,nf,cc]()                          for p,ni,nf,cc in mTEPES.p*mTEPES.lc)
+    # Ratio Generation Investment cost/ Generation Installed Capacity [MEUR-MW]
+    GenInvCostCapacity   = sum(mTEPES.pGenInvestCost[gc]       *OptModel.vGenerationInvest[p,gc]()/(mTEPES.pRatedMaxPower[gc]*1e3) for p,gc       in mTEPES.p*mTEPES.gc)
+    # Ratio Additional Transmission Capacity-Length [MW-km]
+    NetCapacityLength    = sum(max(mTEPES.pLineNTCFrw[ni,nf,cc], mTEPES.pLineNTCBck[ni,nf,cc])*OptModel.vNetworkInvest[p,ni,nf,cc]()*1e3/mTEPES.pLineLength[ni,nf,cc]() for p,ni,nf,cc in mTEPES.p*mTEPES.lc)
+    # Ratio Network Investment Cost/Variable RES Installed Capacity [EUR/MWh]
+    NetInvCostVRESInsCap = NetInvestmentCost*1e6/sum(OptModel.vTotalOutput[p,sc,n,gc]()*mTEPES.pLoadLevelDuration[n]()*1e3 for p,sc,n,gc in mTEPES.ps*mTEPES.n*mTEPES.gc if gc in mTEPES.r)
+
+    K1 = pd.Series(data={'Ratio Fossil Fuel Generation/Total Generation [%]'                      : FossilFuelGeneration / TotalGeneration }).to_frame(name='Value')
+    K2 = pd.Series(data={'Ratio Generation Investment Cost/Total Investment Cost [%]'             : GenInvestmentCost / TotalInvestmentCost}).to_frame(name='Value')
+    K3 = pd.Series(data={'Ratio Generation Retirement Cost/Total Investment Cost [%]'             : GenRetirementCost / TotalInvestmentCost}).to_frame(name='Value')
+    K4 = pd.Series(data={'Ratio Network Investment Cost/Total Investment Cost [%]'                : NetInvestmentCost / TotalInvestmentCost}).to_frame(name='Value')
+    K5 = pd.Series(data={'Ratio Generation Investment Cost/Additional Installed Capacity [MW-km]' : GenInvCostCapacity                     }).to_frame(name='Value')
+    K6 = pd.Series(data={'Ratio Additional Transmission Capacity/Line Length [MW-km]'             : NetCapacityLength                      }).to_frame(name='Value')
+    K7 = pd.Series(data={'Ratio Network Investment Cost/Variable RES Installed Capacity [EUR/MWh]': NetInvCostVRESInsCap                   }).to_frame(name='Value')
 
 
 def EconomicResults(DirName, CaseName, OptModel, mTEPES):
