@@ -1,9 +1,9 @@
 Change Log
 =============
 
-[4.7.0] - 2022-07-31
+[4.7.0] - 2022-08-01
 --------------------
-- [CHANGED] add some KPIs in output results
+- [CHANGED] add some KPIs, LCOE and net demand in output results
 - [FIXED] fix error en operation cost
 - [FIXED] fix error en vMaxCommitment
 - [FIXED] fix eInstalGenCap and eUninstalGenCap

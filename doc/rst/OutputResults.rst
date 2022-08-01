@@ -129,6 +129,14 @@ Identifier    Identifier  Identifier  Header      Description
 Scenario      Period      Load level  Generator   Output (discharge in ESS) [MW]
 ============  ==========  ==========  ==========  ===================================
 
+File ``oT_Result_NetDemand.csv``
+
+============  ==========  ==========  ===================================
+Identifier    Identifier  Identifier  Description
+============  ==========  ==========  ===================================
+Scenario      Period      Load level  Net demand (demand - VRE) [MW]
+============  ==========  ==========  ===================================
+
 File ``oT_Result_GenerationSurplus.csv``
 
 ============  ==========  ==========  ==============  ===============================
@@ -479,6 +487,14 @@ Identifier    Identifier  Identifier  Header     Description
 Scenario      Period      Load level  Node       Voltage angle [rad]
 ============  ==========  ==========  =========  =======================
 
+File ``oT_Result_NetworkNetDemand.csv``
+
+============  ==========  ==========  ==========  ===================================
+Identifier    Identifier  Identifier  Header      Description
+============  ==========  ==========  ==========  ===================================
+Scenario      Period      Load level  Node        Net demand (demand - VRE) [MW]
+============  ==========  ==========  ==========  ===================================
+
 File ``oT_Result_NetworkPNS.csv``
 
 ============  ==========  ==========  ==========  ==========================================
@@ -599,6 +615,22 @@ Identifier    Description
 ============  ==========================================
 Cost type     Revenues and investment costs [M€]
 ============  ==========================================
+
+File ``oT_Result_KPIsSummary.csv``
+
+============  ==========================================
+Identifier    Description
+============  ==========================================
+KPI           Different KPIs
+============  ==========================================
+
+File ``oT_Result_TechnologyLCOE.csv``
+
+ ==========  ==========================================
+ Identifier  Description
+ ==========  ==========================================
+ Technology  Levelized Cost of Energy [EUR/MWh]
+ ==========  ==========================================
 
 File ``oT_Result_GenerationCostOandM.csv``
 
