@@ -691,7 +691,8 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES):
             mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in mTEPES.stt and st == stt and mTEPES.pStageWeight[stt] and sum(1 for (st,nn) in mTEPES.s2n))
             mTEPES.n  = Set(initialize=mTEPES.nn , ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn      in                          mTEPES.pDuration         and           (st,nn) in mTEPES.s2n)
             if len(mTEPES.n):
-                OutputToFile = pd.Series(data=[OptModel.dual[getattr(OptModel, 'eAdequacyReserveMargin_'+str(p)+'_'+str(sc)+'_'+str(st))[p,ar]] for ar in mTEPES.ar if mTEPES.pReserveMargin[ar] and sum(1 for nr in mTEPES.nr if (ar,nr) in mTEPES.a2g) + sum(1 for es in mTEPES.es if (ar,es) in mTEPES.a2g)], index=pd.MultiIndex.from_tuples(getattr(OptModel, 'eAdequacyReserveMargin_'+str(p)+'_'+str(sc)+'_'+str(st))))
+                ListOfIndex  = [ar for ar in mTEPES.ar if mTEPES.pReserveMargin[ar] and sum(1 for nr in mTEPES.nr if (ar,nr) in mTEPES.a2g) + sum(1 for es in mTEPES.es if (ar,es) in mTEPES.a2g)]
+                OutputToFile = pd.Series(data=[OptModel.dual[getattr(OptModel, 'eAdequacyReserveMargin_'+str(p)+'_'+str(sc)+'_'+str(st))[p,ar]] for ar in ListOfIndex], index=pd.MultiIndex.from_tuples(getattr(OptModel, 'eAdequacyReserveMargin_'+str(p)+'_'+str(sc)+'_'+str(st))))
                 OutputResults.append(OutputToFile)
         mTEPES.del_component(mTEPES.st)
         mTEPES.del_component(mTEPES.n )
@@ -819,26 +820,27 @@ def ResultsKPI(DirName, CaseName, OptModel, mTEPES):
     VRETechRevenue        = sum(OptModel.dual[getattr(OptModel, 'eBalance_'+str(p)+'_'+str(sc)+'_'+str(st))[p,sc,n,nd]]/mTEPES.pPeriodProb[p,sc]() * OptModel.vTotalOutput   [p,sc,n,gc]() for p,sc,st,n,nd,gc in mTEPES.ps*mTEPES.st*mTEPES.n*mTEPES.nd*mTEPES.gc if (nd,gc) in mTEPES.n2g and (st,n) in mTEPES.s2n)
     VREInvCostCapacity    = sum(mTEPES.pGenInvestCost[gc]*OptModel.vGenerationInvest[p,gc]() for p,gc in mTEPES.p*mTEPES.gc if gc in mTEPES.r)
 
-    K1     = pd.Series(data={'Ratio Fossil Fuel Generation/Total Generation [%]'                      : FossilFuelGeneration / TotalGeneration       }).to_frame(name='Value')
-    K2     = pd.Series(data={'Ratio Generation Investment Cost/Total Investment Cost [%]'             : GenInvestmentCost    / TotalInvestmentCost   }).to_frame(name='Value')
-    K3     = pd.Series(data={'Ratio Generation Retirement Cost/Total Investment Cost [%]'             : GenRetirementCost    / TotalInvestmentCost   }).to_frame(name='Value')
-    K4     = pd.Series(data={'Ratio Network Investment Cost/Total Investment Cost [%]'                : NetInvestmentCost    / TotalInvestmentCost   }).to_frame(name='Value')
-    K5     = pd.Series(data={'Ratio Generation Investment Cost/Additional Installed Capacity [MW-km]' : GenInvCostCapacity                           }).to_frame(name='Value')
-    K6     = pd.Series(data={'Ratio Additional Transmission Capacity/Line Length [MW-km]'             : NetCapacityLength                            }).to_frame(name='Value')
-    K7     = pd.Series(data={'Ratio Network Investment Cost/Variable RES Installed Capacity [EUR/MWh]': NetInvCostVRESInsCap                         }).to_frame(name='Value')
+    K1     = pd.Series(data={'Ratio Fossil Fuel Generation/Total Generation [%]'                       : FossilFuelGeneration / TotalGeneration    *1e2}).to_frame(name='Value')
+    K2     = pd.Series(data={'Ratio Generation Investment Cost/Total Investment Cost [%]'              : GenInvestmentCost    / TotalInvestmentCost*1e2}).to_frame(name='Value')
+    K3     = pd.Series(data={'Ratio Generation Retirement Cost/Total Investment Cost [%]'              : GenRetirementCost    / TotalInvestmentCost*1e2}).to_frame(name='Value')
+    K4     = pd.Series(data={'Ratio Network Investment Cost/Total Investment Cost [%]'                 : NetInvestmentCost    / TotalInvestmentCost*1e2}).to_frame(name='Value')
+    K5     = pd.Series(data={'Ratio Generation Investment Cost/Additional Installed Capacity [MEUR-MW]': GenInvCostCapacity                            }).to_frame(name='Value')
+    K6     = pd.Series(data={'Ratio Additional Transmission Capacity/Line Length [MW-km]'              : NetCapacityLength                             }).to_frame(name='Value')
+    K7     = pd.Series(data={'Ratio Network Investment Cost/Variable RES Installed Capacity [EUR/MWh]' : NetInvCostVRESInsCap                          }).to_frame(name='Value')
     if VREInvCostCapacity:
-        K8 = pd.Series(data={'Rate of return for VRE technologies [%]'                                : VRETechRevenue       / VREInvCostCapacity*1e2}).to_frame(name='Value')
+        K8 = pd.Series(data={'Rate of return for VRE technologies [%]'                                 : VRETechRevenue       / VREInvCostCapacity*1e2 }).to_frame(name='Value')
     else:
-        K8 = pd.Series(data={'Rate of return for VRE technologies [%]'                                : 0.0                                          }).to_frame(name='Value')
+        K8 = pd.Series(data={'Rate of return for VRE technologies [%]'                                 : 0.0                                           }).to_frame(name='Value')
 
     OutputResults = pd.concat([K1, K2, K3, K4, K5, K6, K7, K8], axis=0)
-    OutputResults.to_csv(_path + '/oT_Result_KPIsSummary_' + CaseName + '.csv', sep=',', index=False)
+    OutputResults.to_csv(_path + '/oT_Result_KPIsSummary_' + CaseName + '.csv', sep=',', index=True)
 
     # LCOE per technology
-    GenTechInvestCost     = pd.Series(data=[sum(OptModel.vGenerationInvest[p,gc     ]()*mTEPES.pGenInvestCost    [gc]  *1e6  for p,     gc in mTEPES.p*mTEPES.gc           if (gt,gc) in mTEPES.t2g) for gt in mTEPES.gt], index=mTEPES.gt)
-    GenTechInjection      = pd.Series(data=[sum(OptModel.vTotalOutput     [p,sc,n,gc]()*mTEPES.pLoadLevelDuration[n ]()*1e3  for p,sc,n,gc in mTEPES.ps*mTEPES.n*mTEPES.gc if (gt,gc) in mTEPES.t2g) for gt in mTEPES.gt], index=mTEPES.gt)
-    LCOE = GenTechInvestCost.div(GenTechInjection).dropna().to_frame(name='EUR/MWh')
-    LCOE.to_csv(_path + '/oT_Result_TechnologyLCOE_' + CaseName + '.csv', sep=',', index=False)
+    if len(mTEPES.gc):
+        GenTechInvestCost     = pd.Series(data=[sum(OptModel.vGenerationInvest[p,gc     ]()*mTEPES.pGenInvestCost    [gc]  *1e6  for p,     gc in mTEPES.p*mTEPES.gc           if (gt,gc) in mTEPES.t2g) for gt in mTEPES.gt], index=mTEPES.gt)
+        GenTechInjection      = pd.Series(data=[sum(OptModel.vTotalOutput     [p,sc,n,gc]()*mTEPES.pLoadLevelDuration[n ]()*1e3  for p,sc,n,gc in mTEPES.ps*mTEPES.n*mTEPES.gc if (gt,gc) in mTEPES.t2g) for gt in mTEPES.gt], index=mTEPES.gt)
+        LCOE = GenTechInvestCost.div(GenTechInjection).to_frame(name='EUR/MWh')
+        LCOE.to_csv(_path + '/oT_Result_TechnologyLCOE_' + CaseName + '.csv', sep=',', index=True)
 
 def EconomicResults(DirName, CaseName, OptModel, mTEPES):
     # %% outputting the system costs and revenues
