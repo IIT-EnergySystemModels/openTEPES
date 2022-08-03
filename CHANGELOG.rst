@@ -1,7 +1,7 @@
 Change Log
 =============
 
-[4.7.0] - 2022-08-01
+[4.7.1] - 2022-08-01
 --------------------
 - [CHANGED] modify the definition of vMaxCommitment
 - [CHANGED] add some KPIs, LCOE and net demand in output results
