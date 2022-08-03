@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 31, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 01, 2022
 """
 
 import datetime
@@ -833,13 +833,15 @@ def SettingUpVariables(OptModel, mTEPES):
         OptModel.vNetworkInvest    = Var(mTEPES.p,                      mTEPES.lc, within=Binary,                                                                                                                doc='network    investment decision exists in a year {0,1}')
 
     if mTEPES.pIndBinGenOperat() == 0:
-        OptModel.vCommitment       = Var(mTEPES.ps, mTEPES.n, mTEPES.nr, within=UnitInterval,     initialize=0.0,                                                                                                doc='commitment of the unit                          [0,1]')
-        OptModel.vStartUp          = Var(mTEPES.ps, mTEPES.n, mTEPES.nr, within=UnitInterval,     initialize=0.0,                                                                                                doc='startup    of the unit                          [0,1]')
-        OptModel.vShutDown         = Var(mTEPES.ps, mTEPES.n, mTEPES.nr, within=UnitInterval,     initialize=0.0,                                                                                                doc='shutdown   of the unit                          [0,1]')
+        OptModel.vCommitment       = Var(mTEPES.ps, mTEPES.n, mTEPES.nr, within=UnitInterval,     initialize=0.0,                                                                                                doc='commitment         of the unit                  [0,1]')
+        OptModel.vStartUp          = Var(mTEPES.ps, mTEPES.n, mTEPES.nr, within=UnitInterval,     initialize=0.0,                                                                                                doc='startup            of the unit                  [0,1]')
+        OptModel.vShutDown         = Var(mTEPES.ps, mTEPES.n, mTEPES.nr, within=UnitInterval,     initialize=0.0,                                                                                                doc='shutdown           of the unit                  [0,1]')
+        OptModel.vMaxCommitment    = Var(mTEPES.ps,           mTEPES.nr, within=UnitInterval,     initialize=0.0,                                                                                                doc='maximum commitment of the unit                  [0,1]')
     else:
-        OptModel.vCommitment       = Var(mTEPES.ps, mTEPES.n, mTEPES.nr, within=Binary,           initialize=0  ,                                                                                                doc='commitment of the unit                          {0,1}')
-        OptModel.vStartUp          = Var(mTEPES.ps, mTEPES.n, mTEPES.nr, within=Binary,           initialize=0  ,                                                                                                doc='startup    of the unit                          {0,1}')
-        OptModel.vShutDown         = Var(mTEPES.ps, mTEPES.n, mTEPES.nr, within=Binary,           initialize=0  ,                                                                                                doc='shutdown   of the unit                          {0,1}')
+        OptModel.vCommitment       = Var(mTEPES.ps, mTEPES.n, mTEPES.nr, within=Binary,           initialize=0  ,                                                                                                doc='commitment         of the unit                  {0,1}')
+        OptModel.vStartUp          = Var(mTEPES.ps, mTEPES.n, mTEPES.nr, within=Binary,           initialize=0  ,                                                                                                doc='startup            of the unit                  {0,1}')
+        OptModel.vShutDown         = Var(mTEPES.ps, mTEPES.n, mTEPES.nr, within=Binary,           initialize=0  ,                                                                                                doc='shutdown           of the unit                  {0,1}')
+        OptModel.vMaxCommitment    = Var(mTEPES.ps,           mTEPES.nr, within=Binary,           initialize=0  ,                                                                                                doc='maximum commitment of the unit                  {0,1}')
 
     if mTEPES.pIndBinLineCommit() == 0:
         OptModel.vLineCommit       = Var(mTEPES.ps, mTEPES.n, mTEPES.la, within=UnitInterval,     initialize=0.0,                                                                                                doc='line switching      of the line                 [0,1]')
@@ -872,12 +874,12 @@ def SettingUpVariables(OptModel, mTEPES):
     # relax binary condition in unit generation, startup and shutdown decisions
     for p,sc,n,nr in mTEPES.ps*mTEPES.n*mTEPES.nr:
         if mTEPES.pIndBinUnitCommit[nr] == 0:
-            OptModel.vCommitment[p,sc,n,nr].domain = UnitInterval
-            OptModel.vStartUp   [p,sc,n,nr].domain = UnitInterval
-            OptModel.vShutDown  [p,sc,n,nr].domain = UnitInterval
-
-    # maximum value of time step commitment for mutually exclusive non-renewable generators
-    OptModel.vMaxCommitment = Var(mTEPES.ps, mTEPES.nr, within=Binary, initialize=0, doc='maximum commitment of the unit {0,1}')
+            OptModel.vCommitment   [p,sc,n,nr].domain = UnitInterval
+            OptModel.vStartUp      [p,sc,n,nr].domain = UnitInterval
+            OptModel.vShutDown     [p,sc,n,nr].domain = UnitInterval
+    for p,sc,  nr in mTEPES.ps*         mTEPES.nr:
+        if mTEPES.pIndBinUnitCommit[nr] == 0:
+            OptModel.vMaxCommitment[p,sc,  nr].domain = UnitInterval
 
     # existing lines are always committed if no switching decision is modeled
     for p,sc,n,ni,nf,cc in mTEPES.ps*mTEPES.n*mTEPES.le:
@@ -912,6 +914,7 @@ def SettingUpVariables(OptModel, mTEPES):
             OptModel.vCommitment    [p,sc,n,nr].fix(1)
             OptModel.vStartUp       [p,sc,n,nr].fix(0)
             OptModel.vShutDown      [p,sc,n,nr].fix(0)
+            OptModel.vMaxCommitment [p,sc,  nr].fix(1)
         # if min and max power coincide there are neither second block, nor operating reserve
         if  mTEPES.pMaxPower2ndBlock[p,sc,n,nr] ==  0.0:
             OptModel.vOutput2ndBlock[p,sc,n,nr].fix(0.0)
