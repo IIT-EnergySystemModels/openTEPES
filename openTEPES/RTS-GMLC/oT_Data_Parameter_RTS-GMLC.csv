@@ -1,0 +1,2 @@
+,ENSCost,CO2Cost,AnnualDiscountRate,UpReserveActivation,DwReserveActivation,MinRatioDwUp,MaxRatioDwUp,SBase,ReferenceNode,TimeStep
+Parameters,10000,78.55,0.04,0.25,0.3,0,1,100,N_113,1
