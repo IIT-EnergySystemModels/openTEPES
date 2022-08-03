@@ -4,7 +4,7 @@ Open Generation, Storage, and Transmission Operation and Expansion Planning Mode
 
 import time
 from   collections   import defaultdict
-from   pyomo.environ import Set, Constraint, Objective, Block, minimize
+from   pyomo.environ import Constraint, Objective, minimize
 
 
 def TotalObjectiveFunction(OptModel, mTEPES, pIndLogConsole):
