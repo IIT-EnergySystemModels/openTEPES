@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 09, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 23, 2022
 """
 
 import time
@@ -854,7 +854,7 @@ def ResultsKPI(DirName, CaseName, OptModel, mTEPES):
         LCOE.to_csv(_path + '/oT_Result_TechnologyLCOE_' + CaseName + '.csv', sep=',', index=True)
 
     WritingResultsTime = time.time() - StartTime
-    print('Writing KPI indexes                    ... ', round(WritingResultsTime), 's')
+    print('Writing          KPI         indexes   ... ', round(WritingResultsTime), 's')
 
 def ReliabilityResults(DirName, CaseName, OptModel, mTEPES):
     # %% outputting the reliability indexes
@@ -894,9 +894,8 @@ def ReliabilityResults(DirName, CaseName, OptModel, mTEPES):
 
     # Determination of the index: Loss Of Load Probability (LOLP)
 
-
     WritingResultsTime = time.time() - StartTime
-    print('Writing reliability indexes            ... ', round(WritingResultsTime), 's')
+    print('Writing          reliability indexes   ... ', round(WritingResultsTime), 's')
 
 def EconomicResults(DirName, CaseName, OptModel, mTEPES):
     # %% outputting the system costs and revenues
