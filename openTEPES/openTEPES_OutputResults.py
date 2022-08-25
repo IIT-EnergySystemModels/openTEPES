@@ -595,8 +595,7 @@ def NetworkOperationResults(DirName, CaseName, OptModel, mTEPES):
     OutputToFile.index.names = [None] * len(OutputToFile.index.names)
     OutputToFile.to_csv(_path+'/oT_Result_NetworkFlow_'       +CaseName+'.csv', sep=',')
 
-    OutputResults = pd.Series(data=[OptModel.vFlow[p,sc,n,ni,nf,cc]()*(mTEPES.pDuration[n]()*mTEPES.pLoadLevelWeight[n]()*mTEPES.pPeriodWeight[p] * mTEPES.pScenProb[p,sc])/mTEPES.pLineLength[ni,nf,cc]()
-                                    for p,sc,n,ni,nf,cc in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.laa], index= pd.MultiIndex.from_tuples(list(mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.laa)))
+    OutputResults = pd.Series(data=[OptModel.vFlow[p,sc,n,ni,nf,cc]()*(mTEPES.pDuration[n]()*mTEPES.pLoadLevelWeight[n]()*mTEPES.pPeriodWeight[p]*mTEPES.pScenProb[p,sc])/mTEPES.pLineLength[ni,nf,cc]() for p,sc,n,ni,nf,cc in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.laa], index=pd.MultiIndex.from_tuples(list(mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.laa)))
     OutputResults.index.names = ['Scenario','Period','LoadLevel','InitialNode','FinalNode','Circuit']
     OutputResults = OutputResults.reset_index().groupby(['InitialNode', 'FinalNode', 'Circuit']).sum()[0]
     OutputResults.index.names = [None] * len(OutputResults.index.names)
