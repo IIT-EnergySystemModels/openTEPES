@@ -458,10 +458,18 @@ Scenario      Period      Load level  Initial node  Final node  Circuit    Switc
 File ``oT_Result_NetworkFlow.csv``
 
 ============  ==========  ==========  ============  ==========  =========  =======================
-Identifier    Identifier  Identifier  Header        Header      Header      Description
+Identifier    Identifier  Identifier  Header        Header      Header     Description
 ============  ==========  ==========  ============  ==========  =========  =======================
-Scenario      Period      Load level  Initial node  Final node  Circuit     Line flow [MW]
+Scenario      Period      Load level  Initial node  Final node  Circuit    Line flow [MW]
 ============  ==========  ==========  ============  ==========  =========  =======================
+
+File ``oT_Result_NetworkEnergyTransport.csv``
+
+============  ==========  ==========  ============  ==========  =========  ===========================
+Identifier    Identifier  Identifier  Header        Header      Header     Description
+============  ==========  ==========  ============  ==========  =========  ===========================
+Scenario      Period      Load level  Initial node  Final node  Circuit    Energy transported [GWh-km]
+============  ==========  ==========  ============  ==========  =========  ===========================
 
 File ``oT_Result_NetworkUtilization.csv``
 
