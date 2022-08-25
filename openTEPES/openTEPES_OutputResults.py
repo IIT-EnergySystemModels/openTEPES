@@ -867,8 +867,17 @@ def ReliabilityResults(DirName, CaseName, OptModel, mTEPES):
     _path = os.path.join(DirName, CaseName)
     StartTime   = time.time()
 
+    ExistCapacity = [(p,sc,n,g) for p,sc,n,g  in mTEPES.ps*mTEPES.n*mTEPES.g if g not in mTEPES.gc]
+
     pDemand       = pd.Series(data=[    mTEPES.pDemand  [p,sc,n,nd]                               for p,sc,n,nd in mTEPES.ps*mTEPES.n*mTEPES.nd], index=pd.MultiIndex.from_tuples(mTEPES.ps*mTEPES.n*mTEPES.nd))
-    pMaxPower     = pd.Series(data=[    mTEPES.pMaxPower[p,sc,n,g ]                               for p,sc,n,g  in mTEPES.ps*mTEPES.n*mTEPES.g ], index=pd.MultiIndex.from_tuples(mTEPES.ps*mTEPES.n*mTEPES.g ))
+    pExistMaxPower= pd.Series(data=[    mTEPES.pMaxPower[p,sc,n,g ]                               for p,sc,n,g  in ExistCapacity], index=pd.MultiIndex.from_tuples(list(ExistCapacity)))
+    if len(mTEPES.gc):
+        CandCapacity  = [(p,sc,n,g) for p,sc,n,g  in mTEPES.ps*mTEPES.n*mTEPES.g if g     in mTEPES.gc]
+        pCandMaxPower = pd.Series(data=[    mTEPES.pMaxPower[p,sc,n,g ] * OptModel.vGenerationInvest[p,gc] for p,sc,n,g  in CandCapacity] , index=pd.MultiIndex.from_tuples(list(CandCapacity )))
+        frames        = [pExistMaxPower, pCandMaxPower]
+        pMaxPower     = pd.concat(frames)
+    else:
+        pMaxPower     = pExistMaxPower
 
     # Determination of the net demand
     OutputToFile1 = pd.Series(data=[sum(OptModel.vTotalOutput[p,sc,n,r ]()*1e3 for r in mTEPES.r if (nd,r) in mTEPES.n2g) for p,sc,n,nd in mTEPES.ps*mTEPES.n*mTEPES.nd], index=pd.MultiIndex.from_tuples(mTEPES.ps*mTEPES.n*mTEPES.nd))
@@ -882,8 +891,8 @@ def ReliabilityResults(DirName, CaseName, OptModel, mTEPES):
     OutputToFile1 = pd.Series(data=[      0.0 for p,sc in mTEPES.ps], index=pd.MultiIndex.from_tuples(mTEPES.ps))
     OutputToFile2 = pd.Series(data=[      0.0 for p,sc in mTEPES.ps], index=pd.MultiIndex.from_tuples(mTEPES.ps))
     for p,sc in mTEPES.ps:
-        OutputToFile1[p,sc] = pMaxPower.loc[(2030,'sc01')].reset_index().pivot_table(index=['level_0'], values=0, aggfunc = sum).max()
-        OutputToFile2[p,sc] =   pDemand.loc[(2030,'sc01')].reset_index().pivot_table(index=['level_0'], values=0, aggfunc = sum).max()
+        OutputToFile1[p,sc] = pMaxPower.loc[(p,sc)].reset_index().pivot_table(index=['level_0'], values=0, aggfunc = sum).max()
+        OutputToFile2[p,sc] =   pDemand.loc[(p,sc)].reset_index().pivot_table(index=['level_0'], values=0, aggfunc = sum).max()
     MarginReserve1 = OutputToFile1 - OutputToFile2
     MarginReserve2 = (OutputToFile1 - OutputToFile2)/OutputToFile2
     MarginReserve1.to_frame(name='GW').to_csv(_path+'/oT_Result_MarginReserve_'        +CaseName+'.csv', sep=',', index=True)
@@ -892,7 +901,7 @@ def ReliabilityResults(DirName, CaseName, OptModel, mTEPES):
     # Determination of the index: Largest Unit
     OutputToFile = pd.Series(data=[      0.0 for p,sc in mTEPES.ps], index=pd.MultiIndex.from_tuples(mTEPES.ps))
     for p,sc in mTEPES.ps:
-        OutputToFile[p,sc] = pMaxPower.loc[(2030,'sc01')].reset_index().pivot_table(index=['level_1'], values=0, aggfunc = max).max()
+        OutputToFile[p,sc] = pMaxPower.loc[(p,sc)].reset_index().pivot_table(index=['level_1'], values=0, aggfunc = max).max()
 
     LargestUnit  = MarginReserve1/OutputToFile
 
