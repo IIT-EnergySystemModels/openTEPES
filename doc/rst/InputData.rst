@@ -134,6 +134,7 @@ MaxRatioDwUp          Maximum ratio downward to upward operating reserves       
 Sbase                 Base power used in the DCPF                                                                                    MW
 ReferenceNode         Reference node used in the DCPF
 TimeStep              Duration of the time step for the load levels (hourly, bi-hourly, trihourly, etc.)                             h
+EconomicBaseYear      Base year for economic parameters affected by the discount rate                                                year
 AnnualDiscountRate    Annual discount rate                                                                                           p.u.
 ====================  =============================================================================================================  =========
 

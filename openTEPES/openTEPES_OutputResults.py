@@ -4,13 +4,13 @@ Open Generation, Storage, and Transmission Operation and Expansion Planning Mode
 
 import time
 import os
-import pandas as pd
-import altair as alt
-import plotly.io as pio
-import plotly.graph_objs as go
-from   collections   import defaultdict
-from   pyomo.environ import Set
-from   colour        import Color
+import pandas            as     pd
+import altair            as     alt
+import plotly.io         as     pio
+import plotly.graph_objs as     go
+from   collections       import defaultdict
+from   pyomo.environ     import Set
+from   colour            import Color
 
 
 # Definition of Pie plots

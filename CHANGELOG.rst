@@ -1,6 +1,10 @@
 Change Log
 =============
 
+[4.8.0] - 2022-08-25
+--------------------
+- [CHANGED] introduction of a base year for all the economic parameters being affected by the discount rate
+
 [4.7.1] - 2022-08-01
 --------------------
 - [CHANGED] modify the definition of vMaxCommitment

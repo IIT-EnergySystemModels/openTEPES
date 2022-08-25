@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 01, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 25, 2022
 """
 
 import datetime
@@ -7,7 +7,7 @@ import time
 import math
 import os
 import pandas        as pd
-from   pyomo.environ import DataPortal, Set, Param, Var, Binary, NonNegativeReals, NonNegativeIntegers, Reals, UnitInterval, Boolean, Any
+from   pyomo.environ import DataPortal, Set, Param, Var, Binary, NonNegativeReals, PositiveReals, PositiveIntegers, NonNegativeIntegers, Reals, UnitInterval, Boolean, Any
 
 
 def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
@@ -115,7 +115,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     dictSets.load(filename=_path+'/oT_Dict_ZoneToArea_'  +CaseName+'.csv', set='znar', format='set')
     dictSets.load(filename=_path+'/oT_Dict_AreaToRegion_'+CaseName+'.csv', set='arrg', format='set')
 
-    mTEPES.pp   = Set(initialize=dictSets['p' ],   ordered=True,  doc='periods',         within=NonNegativeIntegers)
+    mTEPES.pp   = Set(initialize=dictSets['p' ],   ordered=True,  doc='periods',         within=PositiveIntegers)
     mTEPES.scc  = Set(initialize=dictSets['sc'],   ordered=True,  doc='scenarios'       )
     mTEPES.stt  = Set(initialize=dictSets['st'],   ordered=True,  doc='stages'          )
     mTEPES.nn   = Set(initialize=dictSets['n' ],   ordered=True,  doc='load levels'     )
@@ -136,9 +136,6 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.znar = Set(initialize=dictSets['znar'], ordered=False, doc='zone to area'    )
     mTEPES.arrg = Set(initialize=dictSets['arrg'], ordered=False, doc='area to region'  )
 
-    #%% Getting the current year
-    pCurrentYear         = datetime.date.today().year
-
     #%% parameters
     pIndBinGenInvest     = dfOption   ['IndBinGenInvest'    ][0].astype('int')                                                            # Indicator of binary generation expansion decisions, 0 continuous  - 1 binary - 2 no investment variables
     pIndBinNetInvest     = dfOption   ['IndBinNetInvest'    ][0].astype('int')                                                            # Indicator of binary network    expansion decisions, 0 continuous  - 1 binary - 2 no investment variables
@@ -151,6 +148,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pIndBinNetLosses     = dfOption   ['IndBinNetLosses'    ][0].astype('int')                                                            # Indicator of network losses,                        0 lossless    - 1 ohmic losses
     pENSCost             = dfParameter['ENSCost'            ][0] * 1e-3                                                                   # cost of energy not served                [MEUR/GWh]
     pCO2Cost             = dfParameter['CO2Cost'            ][0]                                                                          # cost of CO2 emission                     [EUR/t CO2]
+    pEconomicBaseYear    = dfParameter['EconomicBaseYear'   ][0]                                                                          # economic base year                       [year]
     pAnnualDiscRate      = dfParameter['AnnualDiscountRate' ][0]                                                                          # annual discount rate                     [p.u.]
     pUpReserveActivation = dfParameter['UpReserveActivation'][0]                                                                          # upward   reserve activation              [p.u.]
     pDwReserveActivation = dfParameter['DwReserveActivation'][0]                                                                          # downward reserve activation              [p.u.]
@@ -161,9 +159,9 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pTimeStep            = dfParameter['TimeStep'           ][0].astype('int')                                                            # duration of the unit time step           [h]
     # pStageDuration       = dfParameter['StageDuration'      ][0].astype('int')                                                          # duration of each stage                   [h]
 
-    pPeriodWeight        = dfPeriod        ['Weight'        ]                                                                             # weights of periods                       [p.u.]
+    pPeriodWeight        = dfPeriod        ['Weight'        ].astype('int')                                                               # weights of periods                       [p.u.]
     pScenProb            = dfScenario      ['Probability'   ]                                                                             # probabilities of scenarios               [p.u.]
-    pStageWeight         = dfStage         ['Weight'        ]                                                                             # weights of stages                        [p.u.]
+    pStageWeight         = dfStage         ['Weight'        ].astype('int')                                                               # weights of stages                        [p.u.]
     pDuration            = dfDuration      ['Duration'      ]    * pTimeStep                                                              # duration of load levels                  [h]
     pReserveMargin       = dfReserveMargin ['ReserveMargin' ]                                                                             # minimum adequacy reserve margin          [p.u.]
     pLevelToStage        = dfDuration      ['Stage'         ]                                                                             # load levels assignment to stages
@@ -279,8 +277,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pNetFixedCost       = dfNetwork     ['FixedInvestmentCost'   ] *        dfNetwork['FixedChargeRate']                                      # network    fixed cost                       [MEUR]
     pIndBinLineSwitch   = dfNetwork     ['Switching'             ]                                                                            # binary line switching  decision             [Yes]
     pIndBinLineInvest   = dfNetwork     ['BinaryInvestment'      ]                                                                            # binary line investment decision             [Yes]
-    pSwitchOnTime       = dfNetwork     ['SwOnTime'              ]                                                                            # minimum on  time                            [h]
-    pSwitchOffTime      = dfNetwork     ['SwOffTime'             ]                                                                            # minimum off time                            [h]
+    pSwitchOnTime       = dfNetwork     ['SwOnTime'              ].astype('int')                                                              # minimum on  time                            [h]
+    pSwitchOffTime      = dfNetwork     ['SwOffTime'             ].astype('int')                                                              # minimum off time                            [h]
     pAngMin             = dfNetwork     ['AngMin'                ] * math.pi / 180                                                            # Min phase angle difference                  [rad]
     pAngMax             = dfNetwork     ['AngMax'                ] * math.pi / 180                                                            # Max phase angle difference                  [rad]
     pNetLoInvest        = dfNetwork     ['InvestmentLo'          ]                                                                            # Lower bound of the investment decision      [p.u.]
@@ -297,7 +295,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     # replace pNetUpInvest = 0.0 by 1.0
     pNetUpInvest    = pNetUpInvest.where(pNetUpInvest > 0.0, other=1.0        )
 
-    # minimum up and down time converted to an integer number of time steps
+    # minimum up- and downtime converted to an integer number of time steps
     pSwitchOnTime  = round(pSwitchOnTime /pTimeStep).astype('int')
     pSwitchOffTime = round(pSwitchOffTime/pTimeStep).astype('int')
 
@@ -417,9 +415,9 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     if pAnnualDiscRate == 0.0:
         pDiscountFactor = pd.Series([pPeriodWeight[p] for p in mTEPES.p], index=mTEPES.p)
     else:
-        pDiscountFactor = pd.Series([((1.0+pAnnualDiscRate)**pPeriodWeight[p]-1.0) / (pAnnualDiscRate*(1.0+pAnnualDiscRate)**(pPeriodWeight[p]-1+p-pCurrentYear)) for p in mTEPES.p], index=mTEPES.p)
+        pDiscountFactor = pd.Series([((1.0+pAnnualDiscRate)**pPeriodWeight[p]-1.0) / (pAnnualDiscRate*(1.0+pAnnualDiscRate)**(pPeriodWeight[p]-1+p-pEconomicBaseYear)) for p in mTEPES.p], index=mTEPES.p)
 
-    mTEPES.pLoadLevelWeight = Param(mTEPES.n, initialize=0.0, within=NonNegativeReals, doc='Load level weight', mutable=True)
+    mTEPES.pLoadLevelWeight = Param(mTEPES.n, initialize=0.0, within=NonNegativeIntegers, doc='Load level weight', mutable=True)
     for st,n in mTEPES.s2n:
         mTEPES.pLoadLevelWeight[n] = pStageWeight[st]
 
@@ -656,7 +654,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     # %% parameters
     mTEPES.pIndBinGenInvest      = Param(initialize=pIndBinGenInvest     , within=NonNegativeIntegers, doc='Indicator of binary generation investment decisions', mutable=True)
     mTEPES.pIndBinGenRetire      = Param(initialize=pIndBinGenRetire     , within=NonNegativeIntegers, doc='Indicator of binary generation retirement decisions', mutable=True)
-    mTEPES.pIndBinGenOperat      = Param(initialize=pIndBinGenOperat     , within=NonNegativeIntegers, doc='Indicator of binary generation operation  decisions', mutable=True)
+    mTEPES.pIndBinGenOperat      = Param(initialize=pIndBinGenOperat     , within=Boolean,             doc='Indicator of binary generation operation  decisions', mutable=True)
     mTEPES.pIndBinSingleNode     = Param(initialize=pIndBinSingleNode    , within=Boolean,             doc='Indicator of single node within a network case',      mutable=True)
     mTEPES.pIndBinGenRamps       = Param(initialize=pIndBinGenRamps      , within=Boolean,             doc='Indicator of using or not the ramp constraints',      mutable=True)
     mTEPES.pIndBinGenMinTime     = Param(initialize=pIndBinGenMinTime    , within=Boolean,             doc='Indicator of using or not the min time constraints',  mutable=True)
@@ -671,9 +669,9 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.pDwReserveActivation  = Param(initialize=pDwReserveActivation , within=UnitInterval    ,    doc='Proportion of downward reserve activation'         )
     mTEPES.pMinRatioDwUp         = Param(initialize=pMinRatioDwUp        , within=UnitInterval    ,    doc='Minimum ration between upward and downward reserve')
     mTEPES.pMaxRatioDwUp         = Param(initialize=pMaxRatioDwUp        , within=UnitInterval    ,    doc='Maximum ration between upward and downward reserve')
-    mTEPES.pSBase                = Param(initialize=pSBase               , within=NonNegativeReals,    doc='Base power'                                        )
-    mTEPES.pTimeStep             = Param(initialize=pTimeStep            , within=NonNegativeReals,    doc='Unitary time step'                                 )
-    mTEPES.pCurrentYear          = Param(initialize=pCurrentYear         , within=NonNegativeReals,    doc='Current year'                                      )
+    mTEPES.pSBase                = Param(initialize=pSBase               , within=PositiveReals   ,    doc='Base power'                                        )
+    mTEPES.pTimeStep             = Param(initialize=pTimeStep            , within=PositiveIntegers,    doc='Unitary time step'                                 )
+    mTEPES.pEconomicBaseYear     = Param(initialize=pEconomicBaseYear    , within=PositiveIntegers,    doc='Base year'                                         )
 
     mTEPES.pReserveMargin        = Param(                               mTEPES.ar, initialize=pReserveMargin.to_dict()            , within=NonNegativeReals,    doc='Adequacy reserve margin'                   )
     mTEPES.pPeakDemand           = Param(                               mTEPES.ar, initialize=pPeakDemand.to_dict()               , within=NonNegativeReals,    doc='Peak demand'                               )
@@ -681,8 +679,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.pPeriodWeight         = Param(mTEPES.p,                                 initialize=pPeriodWeight.to_dict()             , within=NonNegativeIntegers, doc='Period weight'                             )
     mTEPES.pDiscountFactor       = Param(mTEPES.p,                                 initialize=pDiscountFactor.to_dict()           , within=NonNegativeReals,    doc='Discount factor'                           )
     mTEPES.pScenProb             = Param(mTEPES.p, mTEPES.sc,                      initialize=pScenProb.to_dict()                 , within=UnitInterval    ,    doc='Probability'                               )
-    mTEPES.pStageWeight          = Param(                     mTEPES.stt,          initialize=pStageWeight.to_dict()              , within=NonNegativeReals,    doc='Stage weight'                              )
-    mTEPES.pDuration             = Param(                     mTEPES.n,            initialize=pDuration.to_dict()                 , within=NonNegativeReals,    doc='Duration',                     mutable=True)
+    mTEPES.pStageWeight          = Param(                     mTEPES.stt,          initialize=pStageWeight.to_dict()              , within=NonNegativeIntegers, doc='Stage weight'                              )
+    mTEPES.pDuration             = Param(                     mTEPES.n,            initialize=pDuration.to_dict()                 , within=PositiveIntegers,    doc='Duration',                     mutable=True)
     mTEPES.pNodeLon              = Param(                               mTEPES.nd, initialize=pNodeLon.to_dict()                  ,                             doc='Longitude'                                 )
     mTEPES.pNodeLat              = Param(                               mTEPES.nd, initialize=pNodeLat.to_dict()                  ,                             doc='Latitude'                                  )
     mTEPES.pSystemInertia        = Param(mTEPES.p, mTEPES.sc, mTEPES.n, mTEPES.ar, initialize=pSystemInertia.stack().to_dict()    , within=NonNegativeReals,    doc='System inertia'                            )
@@ -699,10 +697,11 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.pMinStorage           = Param(mTEPES.p, mTEPES.sc, mTEPES.n, mTEPES.gg, initialize=pMinStorage.stack().to_dict()       , within=NonNegativeReals,    doc='ESS Minimum storage capacity'              )
     mTEPES.pMaxStorage           = Param(mTEPES.p, mTEPES.sc, mTEPES.n, mTEPES.gg, initialize=pMaxStorage.stack().to_dict()       , within=NonNegativeReals,    doc='ESS Maximum storage capacity'              )
     mTEPES.pRatedMaxPower        = Param(                               mTEPES.gg, initialize=pRatedMaxPower.to_dict()            , within=NonNegativeReals,    doc='Rated maximum power'                       )
+    mTEPES.pRatedMaxCharge       = Param(                               mTEPES.gg, initialize=pRatedMaxCharge.to_dict()           , within=NonNegativeReals,    doc='Rated maximum charge'                      )
     mTEPES.pMustRun              = Param(                               mTEPES.gg, initialize=pMustRun.to_dict()                  , within=Boolean         ,    doc='must-run unit'                             )
     mTEPES.pInertia              = Param(                               mTEPES.gg, initialize=pInertia.to_dict()                  , within=NonNegativeReals,    doc='unit inertia constant'                     )
-    mTEPES.pPeriodIniGen         = Param(                               mTEPES.gg, initialize=pPeriodIniGen.to_dict()             , within=NonNegativeIntegers, doc='installation year',                        )
-    mTEPES.pPeriodFinGen         = Param(                               mTEPES.gg, initialize=pPeriodFinGen.to_dict()             , within=NonNegativeIntegers, doc='retirement   year',                        )
+    mTEPES.pPeriodIniGen         = Param(                               mTEPES.gg, initialize=pPeriodIniGen.to_dict()             , within=PositiveIntegers,    doc='installation year',                        )
+    mTEPES.pPeriodFinGen         = Param(                               mTEPES.gg, initialize=pPeriodFinGen.to_dict()             , within=PositiveIntegers,    doc='retirement   year',                        )
     mTEPES.pAvailability         = Param(                               mTEPES.gg, initialize=pAvailability.to_dict()             , within=UnitInterval    ,    doc='unit availability',            mutable=True)
     mTEPES.pEFOR                 = Param(                               mTEPES.gg, initialize=pEFOR.to_dict()                     , within=UnitInterval    ,    doc='EFOR'                                      )
     mTEPES.pLinearOperCost       = Param(                               mTEPES.gg, initialize=pLinearOperCost.to_dict()           , within=NonNegativeReals,    doc='Linear   variable cost'                    )
@@ -716,10 +715,9 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.pShutDownCost         = Param(                               mTEPES.gg, initialize=pShutDownCost.to_dict()             , within=NonNegativeReals,    doc='Shutdown cost'                             )
     mTEPES.pRampUp               = Param(                               mTEPES.gg, initialize=pRampUp.to_dict()                   , within=NonNegativeReals,    doc='Ramp up   rate'                            )
     mTEPES.pRampDw               = Param(                               mTEPES.gg, initialize=pRampDw.to_dict()                   , within=NonNegativeReals,    doc='Ramp down rate'                            )
-    mTEPES.pUpTime               = Param(                               mTEPES.gg, initialize=pUpTime.to_dict()                   , within=NonNegativeReals,    doc='Up    time'                                )
-    mTEPES.pDwTime               = Param(                               mTEPES.gg, initialize=pDwTime.to_dict()                   , within=NonNegativeReals,    doc='Down  time'                                )
-    mTEPES.pShiftTime            = Param(                               mTEPES.gg, initialize=pShiftTime.to_dict()                , within=NonNegativeReals,    doc='Shift time'                                )
-    mTEPES.pRatedMaxCharge       = Param(                               mTEPES.gg, initialize=pRatedMaxCharge.to_dict()           , within=NonNegativeReals,    doc='Rated maximum charge'                      )
+    mTEPES.pUpTime               = Param(                               mTEPES.gg, initialize=pUpTime.to_dict()                   , within=NonNegativeIntegers, doc='Up    time'                                )
+    mTEPES.pDwTime               = Param(                               mTEPES.gg, initialize=pDwTime.to_dict()                   , within=NonNegativeIntegers, doc='Down  time'                                )
+    mTEPES.pShiftTime            = Param(                               mTEPES.gg, initialize=pShiftTime.to_dict()                , within=NonNegativeIntegers, doc='Shift time'                                )
     mTEPES.pGenInvestCost        = Param(                               mTEPES.gg, initialize=pGenInvestCost.to_dict()            , within=NonNegativeReals,    doc='Generation fixed cost'                     )
     mTEPES.pGenRetireCost        = Param(                               mTEPES.gg, initialize=pGenRetireCost.to_dict()            , within=Reals           ,    doc='Generation fixed retire cost'              )
     mTEPES.pIndBinUnitInvest     = Param(                               mTEPES.gg, initialize=pIndBinUnitInvest.to_dict()         , within=Boolean         ,    doc='Binary investment decision'                )
@@ -727,8 +725,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.pIndBinUnitCommit     = Param(                               mTEPES.gg, initialize=pIndBinUnitCommit.to_dict()         , within=Boolean         ,    doc='Binary commitment decision'                )
     mTEPES.pIndOperReserve       = Param(                               mTEPES.gg, initialize=pIndOperReserve.to_dict()           , within=Boolean         ,    doc='Indicator of operating reserve'            )
     mTEPES.pEfficiency           = Param(                               mTEPES.gg, initialize=pEfficiency.to_dict()               , within=UnitInterval    ,    doc='Round-trip efficiency'                     )
-    mTEPES.pCycleTimeStep        = Param(                               mTEPES.gg, initialize=pCycleTimeStep.to_dict()            , within=NonNegativeReals,    doc='ESS Storage cycle'                         )
-    mTEPES.pOutflowsTimeStep     = Param(                               mTEPES.gg, initialize=pOutflowsTimeStep.to_dict()         , within=NonNegativeReals,    doc='ESS Outflows cycle'                        )
+    mTEPES.pCycleTimeStep        = Param(                               mTEPES.gg, initialize=pCycleTimeStep.to_dict()            , within=PositiveIntegers,    doc='ESS Storage cycle'                         )
+    mTEPES.pOutflowsTimeStep     = Param(                               mTEPES.gg, initialize=pOutflowsTimeStep.to_dict()         , within=PositiveIntegers,    doc='ESS Outflows cycle'                        )
     mTEPES.pIniInventory         = Param(mTEPES.p, mTEPES.sc, mTEPES.n, mTEPES.gg, initialize=pIniInventory.stack().to_dict()     , within=NonNegativeReals,    doc='ESS Initial storage',          mutable=True)
     mTEPES.pInitialInventory     = Param(                               mTEPES.gg, initialize=pInitialInventory.to_dict()         , within=NonNegativeReals,    doc='ESS Initial storage without load levels'   )
     mTEPES.pStorageType          = Param(                               mTEPES.gg, initialize=pStorageType.to_dict()              , within=Any             ,    doc='ESS Storage type'                          )
@@ -737,7 +735,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.pGenLoRetire          = Param(                               mTEPES.gg, initialize=pGenLoRetire.to_dict()              , within=NonNegativeReals,    doc='Lower bound of the retirement decision'    )
     mTEPES.pGenUpRetire          = Param(                               mTEPES.gg, initialize=pGenUpRetire.to_dict()              , within=NonNegativeReals,    doc='Upper bound of the retirement decision'    )
 
-    mTEPES.pLoadLevelDuration    = Param(                     mTEPES.n,            initialize=0.0                                 , within=NonNegativeReals,    doc='Load level duration',          mutable=True)
+    mTEPES.pLoadLevelDuration    = Param(                     mTEPES.n,            initialize=0                                   , within=NonNegativeIntegers, doc='Load level duration',          mutable=True)
     for n in mTEPES.n:
         mTEPES.pLoadLevelDuration[n] = mTEPES.pLoadLevelWeight[n] * mTEPES.pDuration[n]
 
@@ -751,16 +749,16 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.pLineBsh              = Param(                               mTEPES.ln, initialize=pLineBsh.to_dict()                  , within=NonNegativeReals,    doc='Susceptance',                  mutable=True)
     mTEPES.pLineTAP              = Param(                               mTEPES.ln, initialize=pLineTAP.to_dict()                  , within=NonNegativeReals,    doc='Tap changer',                  mutable=True)
     mTEPES.pLineLength           = Param(                               mTEPES.ln, initialize=pLineLength.to_dict()               , within=NonNegativeReals,    doc='Length',                       mutable=True)
-    mTEPES.pPeriodIniNet         = Param(                               mTEPES.ln, initialize=pPeriodIniNet.to_dict()             , within=NonNegativeIntegers, doc='Installation period'                       )
-    mTEPES.pPeriodFinNet         = Param(                               mTEPES.ln, initialize=pPeriodFinNet.to_dict()             , within=NonNegativeIntegers, doc='Retirement   period'                       )
+    mTEPES.pPeriodIniNet         = Param(                               mTEPES.ln, initialize=pPeriodIniNet.to_dict()             , within=PositiveIntegers,    doc='Installation period'                       )
+    mTEPES.pPeriodFinNet         = Param(                               mTEPES.ln, initialize=pPeriodFinNet.to_dict()             , within=PositiveIntegers,    doc='Retirement   period'                       )
     mTEPES.pLineVoltage          = Param(                               mTEPES.ln, initialize=pLineVoltage.to_dict()              , within=NonNegativeReals,    doc='Voltage'                                   )
     mTEPES.pLineNTCFrw           = Param(                               mTEPES.ln, initialize=pLineNTCFrw.to_dict()               , within=NonNegativeReals,    doc='NTC forward'                               )
     mTEPES.pLineNTCBck           = Param(                               mTEPES.ln, initialize=pLineNTCBck.to_dict()               , within=NonNegativeReals,    doc='NTC backward'                              )
     mTEPES.pNetFixedCost         = Param(                               mTEPES.ln, initialize=pNetFixedCost.to_dict()             , within=NonNegativeReals,    doc='Network fixed cost'                        )
     mTEPES.pIndBinLineInvest     = Param(                               mTEPES.ln, initialize=pIndBinLineInvest.to_dict()         , within=Boolean         ,    doc='Binary investment decision'                )
     mTEPES.pIndBinLineSwitch     = Param(                               mTEPES.ln, initialize=pIndBinLineSwitch.to_dict()         , within=Boolean         ,    doc='Binary switching  decision'                )
-    mTEPES.pSwOnTime             = Param(                               mTEPES.ln, initialize=pSwitchOnTime.to_dict()             , within=NonNegativeReals,    doc='Minimum switching on  time'                )
-    mTEPES.pSwOffTime            = Param(                               mTEPES.ln, initialize=pSwitchOffTime.to_dict()            , within=NonNegativeReals,    doc='Minimum switching off time'                )
+    mTEPES.pSwOnTime             = Param(                               mTEPES.ln, initialize=pSwitchOnTime.to_dict()             , within=NonNegativeIntegers, doc='Minimum switching on  time'                )
+    mTEPES.pSwOffTime            = Param(                               mTEPES.ln, initialize=pSwitchOffTime.to_dict()            , within=NonNegativeIntegers, doc='Minimum switching off time'                )
     mTEPES.pBigMFlowBck          = Param(                               mTEPES.ln, initialize=pBigMFlowBck.to_dict()              , within=NonNegativeReals,    doc='Maximum backward capacity',    mutable=True)
     mTEPES.pBigMFlowFrw          = Param(                               mTEPES.ln, initialize=pBigMFlowFrw.to_dict()              , within=NonNegativeReals,    doc='Maximum forward  capacity',    mutable=True)
     mTEPES.pMaxTheta             = Param(mTEPES.ps,           mTEPES.n, mTEPES.nd, initialize=pMaxTheta.stack().to_dict()         , within=NonNegativeReals,    doc='Maximum voltage angle',        mutable=True)
