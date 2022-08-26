@@ -41,7 +41,7 @@ The dictionaries include all the possible elements of the corresponding sets inc
 =============================  ===================================================================================================================================================================================================================
 File                           Description
 =============================  ===================================================================================================================================================================================================================
-``oT_Dict_Period.csv``         Period (e.g., 2030, 2035). **It must be a non-negative integer**
+``oT_Dict_Period.csv``         Period (e.g., 2030, 2035). **It must be a positive integer**
 ``oT_Dict_Scenario.csv``       Scenario. Short-term uncertainties (scenarios) (e.g., s001 to s100)
 ``oT_Dict_Stage.csv``          Stage
 ``oT_Dict_LoadLevel.csv``      Load level (e.g., 01-01 00:00:00+01:00 to 12-30 23:00:00+01:00). Load levels with duration 0 are ignored

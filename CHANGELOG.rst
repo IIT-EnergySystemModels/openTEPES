@@ -1,10 +1,11 @@
 Change Log
 =============
 
-[4.8.0] - 2022-08-25
+[4.8.0] - 2022-08-26
 --------------------
 - [CHANGED] introduction of a base year in Data_Parameter file for all the economic parameters being affected by the discount rate
 - [FIXED] fix error in eTotalTCost constraint
+- [FIXED] fix some errors in output results
 
 [4.7.1] - 2022-08-01
 --------------------
