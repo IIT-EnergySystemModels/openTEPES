@@ -690,8 +690,9 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES):
             mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in mTEPES.stt and st == stt and mTEPES.pStageWeight[stt] and sum(1 for (st,nn) in mTEPES.s2n))
             mTEPES.n  = Set(initialize=mTEPES.nn , ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn      in                          mTEPES.pDuration         and           (st,nn) in mTEPES.s2n)
             if len(mTEPES.n):
-                ListOfIndex  = [ar for ar in mTEPES.ar if mTEPES.pReserveMargin[ar] and sum(1 for nr in mTEPES.nr if (ar,nr) in mTEPES.a2g) + sum(1 for es in mTEPES.es if (ar,es) in mTEPES.a2g)]
-                OutputToFile = pd.Series(data=[OptModel.dual[getattr(OptModel, 'eAdequacyReserveMargin_'+str(p)+'_'+str(sc)+'_'+str(st))[p,ar]] for ar in ListOfIndex], index=pd.MultiIndex.from_tuples(getattr(OptModel, 'eAdequacyReserveMargin_'+str(p)+'_'+str(sc)+'_'+str(st))))
+                ListOfIndex_1  = [ar     for ar in mTEPES.ar if mTEPES.pReserveMargin[ar] and sum(1 for nr in mTEPES.nr if (ar,nr) in mTEPES.a2g) + sum(1 for es in mTEPES.es if (ar,es) in mTEPES.a2g)]
+                ListOfIndex_2  = [(p,ar) for ar in mTEPES.ar if mTEPES.pReserveMargin[ar] and sum(1 for nr in mTEPES.nr if (ar,nr) in mTEPES.a2g) + sum(1 for es in mTEPES.es if (ar,es) in mTEPES.a2g)]
+                OutputToFile = pd.Series(data=[OptModel.dual[getattr(OptModel, 'eAdequacyReserveMargin_'+str(p)+'_'+str(sc)+'_'+str(st))[p,ar]] for ar in ListOfIndex_1], index=pd.MultiIndex.from_tuples(ListOfIndex_2))
                 OutputResults.append(OutputToFile)
         mTEPES.del_component(mTEPES.st)
         mTEPES.del_component(mTEPES.n )
