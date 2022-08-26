@@ -285,9 +285,9 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pNetUpInvest        = dfNetwork     ['InvestmentUp'          ]                                                                            # Upper bound of the investment decision      [p.u.]
 
     # replace pLineNTCBck = 0.0 by pLineNTCFrw
-    pLineNTCBck     = pLineNTCBck.where(pLineNTCBck > 0.0, other=pLineNTCFrw)
+    pLineNTCBck     = pLineNTCBck.where(pLineNTCBck   > 0.0, other=pLineNTCFrw)
     # replace pLineNTCFrw = 0.0 by pLineNTCBck
-    pLineNTCFrw     = pLineNTCFrw.where(pLineNTCFrw > 0.0, other=pLineNTCBck)
+    pLineNTCFrw     = pLineNTCFrw.where(pLineNTCFrw   > 0.0, other=pLineNTCBck)
     # replace pGenUpInvest = 0.0 by 1.0
     pGenUpInvest    = pGenUpInvest.where(pGenUpInvest > 0.0, other=1.0        )
     # replace pGenUpRetire = 0.0 by 1.0
@@ -413,7 +413,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.s2n = Set(initialize=pStage2Level.index, ordered=False, doc='load level to stage')
 
     if pAnnualDiscRate == 0.0:
-        pDiscountFactor = pd.Series([pPeriodWeight[p] for p in mTEPES.p], index=mTEPES.p)
+        pDiscountFactor = pd.Series([                        pPeriodWeight[p]                                                                                          for p in mTEPES.p], index=mTEPES.p)
     else:
         pDiscountFactor = pd.Series([((1.0+pAnnualDiscRate)**pPeriodWeight[p]-1.0) / (pAnnualDiscRate*(1.0+pAnnualDiscRate)**(pPeriodWeight[p]-1+p-pEconomicBaseYear)) for p in mTEPES.p], index=mTEPES.p)
 

@@ -3,14 +3,15 @@ Change Log
 
 [4.8.0] - 2022-08-25
 --------------------
-- [CHANGED] introduction of a base year for all the economic parameters being affected by the discount rate
+- [CHANGED] introduction of a base year in Data_Parameter file for all the economic parameters being affected by the discount rate
+- [FIXED] fix error in eTotalTCost constraint
 
 [4.7.1] - 2022-08-01
 --------------------
 - [CHANGED] modify the definition of vMaxCommitment
 - [CHANGED] add some KPIs, LCOE and net demand in output results
-- [FIXED] fix error en operation cost
-- [FIXED] fix error en vMaxCommitment
+- [FIXED] fix error in operation cost
+- [FIXED] fix error in vMaxCommitment
 - [FIXED] fix eInstalGenCap and eUninstalGenCap
 - [FIXED] fix detection of ESS units with no inflows
 - [CHANGED] introduction of lower and upper bounds in investment and retirement decisions for network and generation
