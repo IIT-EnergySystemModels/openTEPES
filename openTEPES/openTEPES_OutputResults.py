@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 26, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 06, 2022
 """
 
 import time
@@ -595,11 +595,12 @@ def NetworkOperationResults(DirName, CaseName, OptModel, mTEPES):
     OutputToFile.index.names = [None] * len(OutputToFile.index.names)
     OutputToFile.to_csv(_path+'/oT_Result_NetworkFlow_'       +CaseName+'.csv', sep=',')
 
-    OutputResults = pd.Series(data=[OptModel.vFlow[p,sc,n,ni,nf,cc]()*(mTEPES.pDuration[n]()*mTEPES.pLoadLevelWeight[n]()*mTEPES.pPeriodWeight[p]*mTEPES.pScenProb[p,sc])/mTEPES.pLineLength[ni,nf,cc]() for p,sc,n,ni,nf,cc in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.laa], index=pd.MultiIndex.from_tuples(list(mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.laa)))
-    OutputResults.index.names = ['Scenario','Period','LoadLevel','InitialNode','FinalNode','Circuit']
-    OutputResults = OutputResults.reset_index().groupby(['InitialNode', 'FinalNode', 'Circuit']).sum()[0]
-    OutputResults.index.names = [None] * len(OutputResults.index.names)
-    OutputResults.to_frame(name='GWh-km').to_csv(_path+'/oT_Result_NetworkEnergyTransport_'+CaseName+'.csv', sep=',')
+    if len(mTEPES.laa):
+        OutputResults = pd.Series(data=[OptModel.vFlow[p,sc,n,ni,nf,cc]()*(mTEPES.pDuration[n]()*mTEPES.pLoadLevelWeight[n]()*mTEPES.pPeriodWeight[p]*mTEPES.pScenProb[p,sc])/mTEPES.pLineLength[ni,nf,cc]() for p,sc,n,ni,nf,cc in mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.laa], index=pd.MultiIndex.from_tuples(list(mTEPES.p*mTEPES.sc*mTEPES.n*mTEPES.laa)))
+        OutputResults.index.names = ['Scenario','Period','LoadLevel','InitialNode','FinalNode','Circuit']
+        OutputResults = OutputResults.reset_index().groupby(['InitialNode', 'FinalNode', 'Circuit']).sum()[0]
+        OutputResults.index.names = [None] * len(OutputResults.index.names)
+        OutputResults.to_frame(name='GWh-km').to_csv(_path+'/oT_Result_NetworkEnergyTransport_'+CaseName+'.csv', sep=',')
 
     # tolerance to consider avoid division by 0
     pEpsilon = 1e-6
