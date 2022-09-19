@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 26, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 19, 2022
 """
 
 import time
@@ -1004,13 +1004,13 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES):
 
     for ar in mTEPES.ar:
         if len(mTEPES.ar) >= 1:
-            OutputResults1 = pd.DataFrame(data={'MEUR': [0.0]}, index=[(p,sc,'Generation Operation Cost'         ) for p,sc in mTEPES.ps])
-            OutputResults2 = pd.DataFrame(data={'MEUR': [0.0]}, index=[(p,sc,'Generation Operating Reserve Cost' ) for p,sc in mTEPES.ps])
-            OutputResults3 = pd.DataFrame(data={'MEUR': [0.0]}, index=[(p,sc,'Generation O&M Cost'               ) for p,sc in mTEPES.ps])
-            OutputResults4 = pd.DataFrame(data={'MEUR': [0.0]}, index=[(p,sc,'Consumption Operation Cost'        ) for p,sc in mTEPES.ps])
-            OutputResults5 = pd.DataFrame(data={'MEUR': [0.0]}, index=[(p,sc,'Consumption Operating Reserve Cost') for p,sc in mTEPES.ps])
-            OutputResults6 = pd.DataFrame(data={'MEUR': [0.0]}, index=[(p,sc,'Emission Cost'                     ) for p,sc in mTEPES.ps])
-            OutputResults7 = pd.DataFrame(data={'MEUR': [0.0]}, index=[(p,sc,'Reliability Cost'                  ) for p,sc in mTEPES.ps])
+            OutputResults1 = pd.DataFrame(data={'MEUR': [0.0]}, index=pd.MultiIndex.from_tuples([(p,sc,'Generation Operation Cost'         ) for p,sc in mTEPES.ps]))
+            OutputResults2 = pd.DataFrame(data={'MEUR': [0.0]}, index=pd.MultiIndex.from_tuples([(p,sc,'Generation Operating Reserve Cost' ) for p,sc in mTEPES.ps]))
+            OutputResults3 = pd.DataFrame(data={'MEUR': [0.0]}, index=pd.MultiIndex.from_tuples([(p,sc,'Generation O&M Cost'               ) for p,sc in mTEPES.ps]))
+            OutputResults4 = pd.DataFrame(data={'MEUR': [0.0]}, index=pd.MultiIndex.from_tuples([(p,sc,'Consumption Operation Cost'        ) for p,sc in mTEPES.ps]))
+            OutputResults5 = pd.DataFrame(data={'MEUR': [0.0]}, index=pd.MultiIndex.from_tuples([(p,sc,'Consumption Operating Reserve Cost') for p,sc in mTEPES.ps]))
+            OutputResults6 = pd.DataFrame(data={'MEUR': [0.0]}, index=pd.MultiIndex.from_tuples([(p,sc,'Emission Cost'                     ) for p,sc in mTEPES.ps]))
+            OutputResults7 = pd.DataFrame(data={'MEUR': [0.0]}, index=pd.MultiIndex.from_tuples([(p,sc,'Reliability Cost'                  ) for p,sc in mTEPES.ps]))
             if len(mTEPES.nr):
                 GenList = [(p,sc,n,nr) for p,sc,n,nr in mTEPES.ps*mTEPES.n*mTEPES.nr if (ar,nr) in mTEPES.a2g]
                 if len(GenList):
