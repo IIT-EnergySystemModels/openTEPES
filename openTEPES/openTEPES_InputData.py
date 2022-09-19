@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 25, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 18, 2022
 """
 
 import datetime
@@ -926,6 +926,9 @@ def SettingUpVariables(OptModel, mTEPES):
         # ESS with no charge capacity or not storage capacity can't charge
         if mTEPES.pMaxCharge        [p,sc,n,es] ==  0.0:
             OptModel.vESSTotalCharge[p,sc,n,es].fix(0.0)
+        if mTEPES.pMaxCharge        [p,sc,n,es] ==  0.0 and mTEPES.pMaxPower[p,sc,n,es] == 0.0:
+            OptModel.vESSInventory  [p,sc,n,es].fix(0.0)
+            OptModel.vESSSpillage   [p,sc,n,es].fix(0.0)
         if mTEPES.pMaxCharge2ndBlock[p,sc,n,es] ==  0.0:
             OptModel.vCharge2ndBlock[p,sc,n,es].fix(0.0)
             OptModel.vESSReserveUp  [p,sc,n,es].fix(0.0)
