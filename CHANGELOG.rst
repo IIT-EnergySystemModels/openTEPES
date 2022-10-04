@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.8.0] - 2022-09-19
+[4.8.0] - 2022-10-04
 --------------------
+- [FIXED] fix some errors in OutputResults
 - [CHANGED] avoid formulation of storage variables and equations with no generation and consumption power
 - [FIXED] fix error in output results
 - [CHANGED] introduction of a base year in Data_Parameter file for all the economic parameters being affected by the discount rate
