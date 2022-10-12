@@ -28,16 +28,15 @@ The model has being used in these research projects:
     It aims at writing a report on the application of the ENTSO-e cost-benefit analysis method to Los Guájares pumped-hydro storage.
 
 - `Impact of the electric vehicle in the electricity markets in 2030 <https://www.iit.comillas.edu/proyectos/mostrar_proyecto.php.en?nombre_abreviado=REPSOL_VE>`_, developed for **Repsol**.
-  November 2021 - February 2022. `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_,
-  `P. Frías <https://www.iit.comillas.edu/people/pablof>`_, `J.P. Chaves <https://www.iit.comillas.edu/people/jchaves>`_, `P. Linares <https://www.iit.comillas.edu/people/pedrol>`_,
-  `J.J. Valentín <https://www.iit.comillas.edu/people/jjvalentin>`_
+  November 2021 - February 2022. `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `P. Frías <https://www.iit.comillas.edu/people/pablof>`_, `J.P. Chaves <https://www.iit.comillas.edu/people/jchaves>`_,
+  `P. Linares <https://www.iit.comillas.edu/people/pedrol>`_, `J.J. Valentín <https://www.iit.comillas.edu/people/jjvalentin>`_
 
     It aims at analyzing the impact on the electricity markets of the mainland Spanish system of the high penetration of electric vehicles in a 2030 scenario.
 
 - `European Climate and Energy Modelling Forum (ECEMF) <https://ecemf.eu/>`_, developed for the **European Commission**.
   May 2021 - December 2024.
   `S. Lumbreras <https://www.iit.comillas.edu/people/slumbreras>`_, `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `L. Olmos <https://www.iit.comillas.edu/people/olmos>`_,
-  `C. Mateo <https://www.iit.comillas.edu/people/cmateo>`_
+  `C. Mateo <https://www.iit.comillas.edu/people/cmateo>`_, `D. Santos Oliveira <https://www.iit.comillas.edu/people/doliveira>`_
 
     It aims at providing the knowledge to inform the development of future energy and climate policies at national and European levels. In support of this aim, ECEMF proposes a range of activities to achieve five objectives and meet the four challenges set out in the call text.
     ECEMF’s programme of events and novel IT-based communications channel will enable researchers to identify and co-develop the most pressing policy-relevant research questions with a range of stakeholders to meet ambitious European energy and climate policy goals,
