@@ -1,5 +1,5 @@
 
-.. image:: https://raw.githubusercontent.com/IIT-EnergySystemModels/openTEPES/1e6d907114d2e89a7114ef58dead3c55bc6e7d50/doc/img/openTEPES.png
+.. image:: https://github.com/IIT-EnergySystemModels/openTEPES/blob/master/doc/img/openTEPES.png
    :target: https://pascua.iit.comillas.edu/aramos/openTEPES/index.html
    :alt: logo
    :align: center
