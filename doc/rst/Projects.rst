@@ -8,7 +8,7 @@ The model has being used in these research projects:
   `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `J.P. Chaves <https://www.iit.comillas.edu/people/jchaves>`_, `J.M Latorre <https://www.iit.comillas.edu/people/jesuslc>`_, `M. Troncia <https://www.iit.comillas.edu/people/mtroncia>`_
 
 - Hydro generation advanced systems: modeling, control and optimized integration to the system (AVANHID), developed for **Iberdrola**. November 2022 - October 2024.
-  `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `J.M Latorre <https://www.iit.comillas.edu/people/jesuslc>`_,
+  `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `J.M Latorre <https://www.iit.comillas.edu/people/jesuslc>`_
 
 - Delivering the next generation of open Integrated Assessment MOdels for Net-zero, sustainable Development (DIAMOND), developed for the **European Commission**. September 2022 - August 2025.
   `S. Lumbreras <https://www.iit.comillas.edu/people/slumbreras>`_, `L. Olmos <https://www.iit.comillas.edu/people/olmos>`_, `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_
