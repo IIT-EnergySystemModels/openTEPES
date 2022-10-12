@@ -5,7 +5,7 @@ Research projects
 The model has being used in these research projects:
 
 - Renewable energy communities as a key to accelerating the energy transition: optimal integration from the citizen to the grid (OptiREC). TED2021-131365B-C43. November 2022 - October 2024.
-  `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_,    `J.P. Chaves <https://www.iit.comillas.edu/people/jchaves>`_, `J.M Latorre <https://www.iit.comillas.edu/people/jesuslc>`_, `M. Troncia <https://www.iit.comillas.edu/people/mtroncia>`_
+  `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `J.P. Chaves <https://www.iit.comillas.edu/people/jchaves>`_, `J.M Latorre <https://www.iit.comillas.edu/people/jesuslc>`_, `M. Troncia <https://www.iit.comillas.edu/people/mtroncia>`_
 
 - Hydro generation advanced systems: modeling, control and optimized integration to the system (AVANHID), developed for **Iberdrola**. November 2022 - October 2024.
   `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `J.M Latorre <https://www.iit.comillas.edu/people/jesuslc>`_,
@@ -18,14 +18,12 @@ The model has being used in these research projects:
     their distributional and equity effects, and their resilience to extremes, as well as robust risk management and investment strategies.
 
 - `Application of the ENTSO-e cost-benefit analysis method to Aguayo II pumped-hydro storage <https://www.iit.comillas.edu/proyectos/mostrar_proyecto.php.en?nombre_abreviado=Repsol_AguayoII>`_, developed for **Repsol**.
-  June 2022. `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_,
-  `L. Olmos <https://www.iit.comillas.edu/people/olmos>`_, `L. Sigrist <https://www.iit.comillas.edu/people/lsigrist>`_
+  June 2022. `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `L. Olmos <https://www.iit.comillas.edu/people/olmos>`_, `L. Sigrist <https://www.iit.comillas.edu/people/lsigrist>`_
 
     It aims at writing a report on the application of the ENTSO-e cost-benefit analysis method to Aguayo II pumped-hydro storage.
 
 - `Application of the ENTSO-e cost-benefit analysis method to Los Guájares pumped-hydro storage <https://www.iit.comillas.edu/proyectos/mostrar_proyecto.php.en?nombre_abreviado=VMEnergia_LosGuajares>`_, developed for **VM Energía**.
-  May 2022 - June 2022.  `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_,
-  `L. Olmos <https://www.iit.comillas.edu/people/olmos>`_, `L. Sigrist <https://www.iit.comillas.edu/people/lsigrist>`_
+  May 2022 - June 2022.  `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `L. Olmos <https://www.iit.comillas.edu/people/olmos>`_, `L. Sigrist <https://www.iit.comillas.edu/people/lsigrist>`_
 
     It aims at writing a report on the application of the ENTSO-e cost-benefit analysis method to Los Guájares pumped-hydro storage.
 
