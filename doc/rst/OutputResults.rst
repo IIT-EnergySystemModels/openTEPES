@@ -289,6 +289,14 @@ Identifier    Identifier  Identifier  Header      Description
 Scenario      Period      Load level  Technology  Downward operating reserve [MW]
 ============  ==========  ==========  ==========  ==========================================
 
+File ``oT_Result_TechnologySpillage.csv``
+
+============  ==========  ==========  ==========  ==========================================
+Identifier    Identifier  Identifier  Header      Description
+============  ==========  ==========  ==========  ==========================================
+Scenario      Period      Load level  Technology  Spilled energy [GWh]
+============  ==========  ==========  ==========  ==========================================
+
 File ``oT_Result_TechnologySpillageRelative.csv``
 
 ============  ==========  ==========  ==========  ==========================================
