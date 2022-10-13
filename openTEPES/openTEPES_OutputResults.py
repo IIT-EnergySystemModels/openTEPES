@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 04, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 13, 2022
 """
 
 import time
@@ -105,10 +105,10 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES):
         # Saving generation investment into CSV file
         OutputToFile = pd.Series(data=[OptModel.vGenerationInvest[p,gc]()                               for p,gc in mTEPES.p*mTEPES.gc], index=pd.Index(mTEPES.p*mTEPES.gc))
         OutputToFile = OutputToFile.fillna(0).to_frame(name='InvestmentDecision').reset_index().rename(columns={'level_0': 'Period', 'level_1': 'Generating unit'})
-        OutputToFile.to_csv(_path+'/oT_Result_GenerationInvestment_PerUnit_'+CaseName+'.csv', sep=',', index=False)
+        OutputToFile.pivot_table(index=['Period'], columns=['Generating unit'], values='InvestmentDecision').rename_axis([None], axis=0).to_csv(_path+'/oT_Result_GenerationInvestment_PerUnit_'+CaseName+'.csv', sep=',', index=True)
         OutputToFile = pd.Series(data=[OptModel.vGenerationInvest[p,gc]()*mTEPES.pRatedMaxPower[gc]*1e3 for p,gc in mTEPES.p*mTEPES.gc], index=pd.Index(mTEPES.p*mTEPES.gc))
         OutputToFile = OutputToFile.fillna(0).to_frame(name='MW').reset_index().rename(columns={'level_0': 'Period', 'level_1': 'Generating unit'})
-        OutputToFile.to_csv(_path+'/oT_Result_GenerationInvestment_'+CaseName+'.csv', sep=',', index=False)
+        OutputToFile.pivot_table(index=['Period'], columns=['Generating unit'], values='MW').rename_axis([None], axis=0).to_csv(_path+'/oT_Result_GenerationInvestment_'+CaseName+'.csv', sep=',', index=False)
         OutputToFile = OutputToFile.set_index(['Period', 'Generating unit'])
 
         if len(mTEPES.ar) > 1:
@@ -129,8 +129,8 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES):
         OutputResults.index.names = ['Period', 'Generating unit']
         OutputResults   = OutputResults.reset_index().groupby(['Period', 'Technology']).sum()
         OutputResults['MW'] = round(OutputResults['MW'], 2)
-        OutputResults   = OutputResults.reset_index()
-        OutputResults.to_csv(_path+'/oT_Result_TechnologyInvestment_'+CaseName+'.csv', sep=',', index=False)
+        OutputResults.reset_index().pivot_table(index=['Period'], columns=['Technology'], values='MW').rename_axis([None], axis=0).to_csv(_path+'/oT_Result_TechnologyInvestment_'+CaseName+'.csv', sep=',', index=True)
+        OutputResults = OutputResults.reset_index()
 
         chart = alt.Chart(OutputResults).mark_bar().encode(x='Technology:O', y='sum(MW):Q', color='Technology:N', column='Period:N').properties(width=600, height=400)
         chart.save(_path+'/oT_Plot_TechnologyInvestment_'+CaseName+'.html', embed_options={'renderer':'svg'})
@@ -149,24 +149,23 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES):
         OutputResults   = OutputResults.reset_index().groupby(['Period', 'Technology']).sum()
         OutputResults['MEUR'] = round(OutputResults['MEUR'], 2)
 
-        OutputResults.reset_index().to_csv(_path+'/oT_Result_TechnologyInvestmentCost_'+CaseName+'.csv', sep=',', index=False)
+        OutputResults.reset_index().pivot_table(index=['Period'], columns=['Technology'], values='MEUR').rename_axis([None], axis=0).to_csv(_path+'/oT_Result_TechnologyInvestmentCost_'+CaseName+'.csv', sep=',', index=True)
 
         chart = alt.Chart(OutputResults.reset_index()).mark_bar().encode(x='Technology:O', y='sum(MEUR):Q', color='Technology:N', column='Period:N').properties(width=600, height=400)
         chart.save(_path+'/oT_Plot_TechnologyInvestmentCost_'+CaseName+'.html', embed_options={'renderer':'svg'})
 
         OutputResults = OutputResults['MEUR']/OutputResults0['MW']
         OutputResults = OutputResults.fillna(0).to_frame(name='MEUR/MW')
-        OutputResults = OutputResults.reset_index()
-        OutputResults.to_csv(_path+'/oT_Result_TechnologyInvestmentCostPerMW_'+CaseName+'.csv', sep=',', index=False)
+        OutputResults.reset_index().pivot_table(index=['Period'], columns=['Technology'], values='MEUR/MW').rename_axis([None], axis=0).to_csv(_path+'/oT_Result_TechnologyInvestmentCostPerMW_'+CaseName+'.csv', sep=',', index=True)
 
-        chart = alt.Chart(OutputResults).mark_bar().encode(x='Technology:O', y='sum(MEUR/MW):Q', color='Technology:N', column='Period:N').properties(width=600, height=400)
+        chart = alt.Chart(OutputResults.reset_index()).mark_bar().encode(x='Technology:O', y='sum(MEUR/MW):Q', color='Technology:N', column='Period:N').properties(width=600, height=400)
         chart.save(_path+'/oT_Plot_TechnologyInvestmentCostPerMW_'+CaseName+'.html', embed_options={'renderer':'svg'})
 
     if len(mTEPES.gd):
         # Saving generation retirement into CSV file
         OutputToFile = pd.Series(data=[mTEPES.pRatedMaxPower[gd]*OptModel.vGenerationRetire[p,gd]()*1e3 for p,gd in mTEPES.p*mTEPES.gd], index=pd.Index(mTEPES.p*mTEPES.gd))
         OutputToFile = OutputToFile.fillna(0).to_frame(name='MW').reset_index().rename(columns={'level_0': 'Period', 'level_1': 'Generating unit'})
-        OutputToFile.to_csv(_path+'/oT_Result_GenerationRetirement_'+CaseName+'.csv', sep=',', index=False)
+        OutputToFile.pivot_table(index=['Period'], columns=['Generating unit'], values='MW').rename_axis([None], axis=0).to_csv(_path+'/oT_Result_GenerationRetirement_'+CaseName+'.csv', sep=',', index=True)
         OutputToFile = OutputToFile.set_index(['Period', 'Generating unit'])
 
         if len(mTEPES.ar) > 1:
@@ -183,12 +182,12 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES):
         OutputResults1 = pd.Series(data=[gt for p,gd,gt in mTEPES.p*mTEPES.gd*mTEPES.gt if (gt,gd) in mTEPES.t2g], index=pd.Index(mTEPES.p*mTEPES.gd))
         OutputResults1 = OutputResults1.to_frame(name='Technology')
         OutputResults2 = OutputToFile
-        OutputResults   = pd.concat([OutputResults1, OutputResults2], axis=1)
+        OutputResults  = pd.concat([OutputResults1, OutputResults2], axis=1)
         OutputResults.index.names = ['Period', 'Generating unit']
-        OutputResults   = OutputResults.reset_index().groupby(['Period', 'Technology']).sum()
+        OutputResults  = OutputResults.reset_index().groupby(['Period', 'Technology']).sum()
         OutputResults['MW'] = round(OutputResults['MW'], 2)
-        OutputResults   = OutputResults.reset_index()
-        OutputResults.to_csv(_path+'/oT_Result_TechnologyRetirement_'+CaseName+'.csv', sep=',', index=False)
+        OutputResults.reset_index().pivot_table(index=['Period'], columns=['Technology'], values='MW').rename_axis([None], axis=0).to_csv(_path+'/oT_Result_TechnologyRetirement_'+CaseName+'.csv', sep=',', index=False)
+        OutputResults  = OutputResults.reset_index()
 
         chart = alt.Chart(OutputResults).mark_bar().encode(x='Technology:O', y='sum(MW):Q', color='Technology:N', column='Period:N').properties(width=600, height=400)
         chart.save(_path+'/oT_Plot_TechnologyRetirement_'+CaseName+'.html', embed_options={'renderer':'svg'})
@@ -197,7 +196,7 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES):
         # Saving investment decisions
         OutputToFile = pd.Series(data=[OptModel.vNetworkInvest[p,ni,nf,cc]() for p,ni,nf,cc in mTEPES.p*mTEPES.lc], index=pd.Index(mTEPES.p*mTEPES.lc))
         OutputToFile = OutputToFile.fillna(0).to_frame(name='Investment Decision').reset_index().rename(columns={'level_0': 'Period', 'level_1': 'InitialNode', 'level_2': 'FinalNode', 'level_3': 'Circuit'})
-        OutputToFile.to_csv(_path+'/oT_Result_NetworkInvestment_'+CaseName+'.csv', sep=',', index=False)
+        OutputToFile.reset_index().pivot_table(index=['Period'], columns=['InitialNode','FinalNode','Circuit'], values='Investment Decision').rename_axis([None,None,None], axis=1).rename_axis([None], axis=0).to_csv(_path+'/oT_Result_NetworkInvestment_'+CaseName+'.csv', sep=',', index=True)
 
         # Ordering data to plot the investment decision
         OutputResults1 = pd.Series(data=[lt for p,ni,nf,cc,lt in mTEPES.p*mTEPES.lc*mTEPES.lt if (ni,nf,cc,lt) in mTEPES.pLineType], index=pd.Index(mTEPES.p*mTEPES.lc))
@@ -214,7 +213,7 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES):
 
         OutputToFile = pd.Series(data=[OptModel.vNetworkInvest[p,ni,nf,cc]()*mTEPES.pLineNTCFrw[ni,nf,cc]/mTEPES.pLineLength[ni,nf,cc]()*1e3 for p,ni,nf,cc in mTEPES.p*mTEPES.lc], index= pd.MultiIndex.from_tuples(mTEPES.p*mTEPES.lc))
         OutputToFile = OutputToFile.fillna(0).to_frame(name='MW-km').reset_index().rename(columns={'level_0': 'Period', 'level_1': 'InitialNode', 'level_2': 'FinalNode', 'level_3': 'Circuit'})
-        OutputToFile.to_csv(_path+'/oT_Result_NetworkInvestment_MWkm_'+CaseName+'.csv', sep=',')
+        OutputToFile.reset_index().pivot_table(index=['Period'], columns=['InitialNode','FinalNode','Circuit'], values='MW-km').rename_axis([None,None,None], axis=1).rename_axis([None], axis=0).to_csv(_path+'/oT_Result_NetworkInvestment_MWkm_'+CaseName+'.csv', sep=',')
 
         # Ordering data to plot the investment decision per kilometer
         OutputResults1 = pd.Series(data=[lt for p,ni,nf,cc,lt in mTEPES.p*mTEPES.lc*mTEPES.lt if (ni,nf,cc,lt) in mTEPES.pLineType], index=pd.Index(mTEPES.p*mTEPES.lc))
