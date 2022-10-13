@@ -3,6 +3,7 @@ Change Log
 
 [4.8.0] - 2022-10-04
 --------------------
+- [CHANGED] add file for spillage by technology TechnologySpillage
 - [FIXED] fix some errors in OutputResults
 - [CHANGED] avoid formulation of storage variables and equations with no generation and consumption power
 - [FIXED] fix error in output results

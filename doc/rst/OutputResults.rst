@@ -161,7 +161,7 @@ Identifier    Identifier  Identifier  Header          Description
 Scenario      Period      Load level  Generator       Downward ramp surplus [MW]
 ============  ==========  ==========  ==============  ===============================
 
-File ``oT_Result_GenerationCurtailment.csv``
+File ``oT_Result_GenerationCurtailmentOutput.csv``
 
 ============  ==========  ==========  ==============  ===============================
 Identifier    Identifier  Identifier  Header          Description
@@ -224,6 +224,14 @@ Identifier    Identifier  Identifier  Header      Description
 ============  ==========  ==========  ==========  =================================
 Scenario      Period      Load level  Technology  Consumption (charge in ESS) [MW]
 ============  ==========  ==========  ==========  =================================
+
+File ``oT_Result_TechnologyCurtailmentOutput.csv``
+
+============  ==========  ==========  ==========  ==========================================
+Identifier    Identifier  Identifier  Header      Description
+============  ==========  ==========  ==========  ==========================================
+Scenario      Period      Load level  Technology  Curtailed output of VRES [MW]
+============  ==========  ==========  ==========  ==========================================
 
 File ``oT_Result_TechnologyCurtailmentEnergy.csv``
 
