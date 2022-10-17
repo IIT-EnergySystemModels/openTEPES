@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 18, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 16, 2022
 """
 
 import datetime
@@ -1110,10 +1110,10 @@ def SettingUpVariables(OptModel, mTEPES):
     # detecting infeasibility: total min ESS output greater than total inflows, total max ESS charge lower than total outflows
     for es in mTEPES.es:
         if sum(mTEPES.pMinPower [p,sc,n,es]-mTEPES.pEnergyInflows [p,sc,n,es]() for p,sc,n in mTEPES.ps*mTEPES.n) > 0.0:
-            print('### Total minimum output greater than total inflows  for ESS unit ', es)
+            print('### Total minimum output greater than total inflows for ESS unit ', es)
             assert (0==1)
         if sum(mTEPES.pMaxCharge[p,sc,n,es]-mTEPES.pEnergyOutflows[p,sc,n,es]() for p,sc,n in mTEPES.ps*mTEPES.n) < 0.0:
-            print('### Total maximum charge greater than total outflows for ESS unit ', es)
+            print('### Total maximum charge lower than total outflows for ESS unit ', es)
             assert (0==1)
 
     SettingUpVariablesTime = time.time() - StartTime
