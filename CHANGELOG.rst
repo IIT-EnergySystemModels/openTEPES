@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.8.0] - 2022-10-17
+[4.8.0] - 2022-10-18
 --------------------
+- [FIXED] fix an error fixing values of storage with outflows
 - [CHANGED] fix typo in error message about input data
 - [CHANGED] add file for spillage by technology TechnologySpillage
 - [FIXED] fix some errors in OutputResults

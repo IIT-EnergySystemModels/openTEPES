@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 16, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 18, 2022
 """
 
 import datetime
@@ -944,10 +944,6 @@ def SettingUpVariables(OptModel, mTEPES):
         mTEPES.go = [k for k in sorted(mTEPES.pLinearVarCost, key=mTEPES.pLinearVarCost.__getitem__) if k not in mTEPES.gq]
     else:
         mTEPES.go = [k for k in sorted(mTEPES.pLinearVarCost, key=mTEPES.pLinearVarCost.__getitem__)                      ]
-
-    for p,sc,n,es in mTEPES.ps*mTEPES.n*mTEPES.es:
-        if mTEPES.pMaxPower[p,sc,n,es] == 0.0:
-            OptModel.vEnergyOutflows[p,sc,n,es].fix(mTEPES.pEnergyOutflows[p,sc,n,es])
 
     for p,sc,st in mTEPES.ps*mTEPES.stt:
         # activate only period, scenario, and load levels to formulate
