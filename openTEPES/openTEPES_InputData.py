@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 18, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 21, 2022
 """
 
 import datetime
@@ -350,18 +350,22 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
 
     # assigning a node to an area
     pNode2Area = pd.DataFrame(0, dtype=int, index=pd.MultiIndex.from_tuples(mTEPES.nd*mTEPES.ar, names=('Node', 'Area')), columns=['Y/N'])
-    for nd,zn,ar in mTEPES.ndzn*mTEPES.ar:
-        if (zn,ar) in mTEPES.znar:
-            pNode2Area.loc[nd,ar] = 1
-    mTEPES.ndar = Set(initialize=mTEPES.nd*mTEPES.ar, ordered=False, doc='node to area', filter=lambda mTEPES,nd,ar: (nd,ar) in mTEPES.nd*mTEPES.ar and pNode2Area.loc[nd,ar]['Y/N'] == 1)
+    # for nd,zn,ar in mTEPES.ndzn*mTEPES.ar:
+    #     if (zn,ar) in mTEPES.znar:
+    #         pNode2Area.loc[nd,ar] = 1
+    # mTEPES.ndar = Set(initialize=mTEPES.nd*mTEPES.ar, ordered=False, doc='node to area', filter=lambda mTEPES,nd,ar: (nd,ar) in mTEPES.nd*mTEPES.ar and pNode2Area.loc[nd,ar]['Y/N'] == 1)
+    pNode2Area  = [(nd,ar) for (nd,zn,ar) in mTEPES.ndzn*mTEPES.ar if (zn,ar) in mTEPES.znar]
+    mTEPES.ndar = Set(initialize=list(pNode2Area), ordered=False, doc='node to area')
 
     # assigning a line to an area. Both nodes are in the same area. Cross-area lines not included
-    pLine2Area = pd.DataFrame(0, dtype=int, index=pd.MultiIndex.from_tuples(mTEPES.la*mTEPES.ar, names=('InitialNode', 'FinalNode', 'Circuit', 'Area')), columns=['Y/N'])
-    for ni,nf,cc,ar in mTEPES.la*mTEPES.ar:
-        if (ni,ar) in mTEPES.ndar:
-            if (nf,ar) in mTEPES.ndar:
-                pLine2Area.loc[ni,nf,cc,ar] = 1
-    mTEPES.laar = Set(initialize=mTEPES.la*mTEPES.ar, ordered=False, doc='line to area', filter=lambda mTEPES,ni,nf,cc,ar: (ni,nf,cc,ar) in mTEPES.la*mTEPES.ar and pLine2Area.loc[ni,nf,cc,ar]['Y/N'] == 1)
+    # pLine2Area = pd.DataFrame(0, dtype=int, index=pd.MultiIndex.from_tuples(mTEPES.la*mTEPES.ar, names=('InitialNode', 'FinalNode', 'Circuit', 'Area')), columns=['Y/N'])
+    # for ni,nf,cc,ar in mTEPES.la*mTEPES.ar:
+    #     if (ni,ar) in mTEPES.ndar:
+    #         if (nf,ar) in mTEPES.ndar:
+    #             pLine2Area.loc[ni,nf,cc,ar] = 1
+    # mTEPES.laar = Set(initialize=mTEPES.la*mTEPES.ar, ordered=False, doc='line to area', filter=lambda mTEPES,ni,nf,cc,ar: (ni,nf,cc,ar) in mTEPES.la*mTEPES.ar and pLine2Area.loc[ni,nf,cc,ar]['Y/N'] == 1)
+    pLine2Area = [(ni,nf,cc,ar) for (ni,nf,cc,ar) in mTEPES.la*mTEPES.ar if (ni,ar) in mTEPES.ndar and (nf,ar) in mTEPES.ndar]
+    mTEPES.laar = Set(initialize=list(pLine2Area), ordered=False, doc='line to area')
 
     # replacing string values by numerical values
     idxDict = dict()

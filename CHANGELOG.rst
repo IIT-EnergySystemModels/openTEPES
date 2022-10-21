@@ -1,8 +1,11 @@
 Change Log
 =============
 
-[4.8.0] - 2022-10-18
+[4.8.0] - 2022-10-21
 --------------------
+- [FIXED] fix computation of ESS invested capacity when the unit has no power, but charge
+- [CHANGED] change computation of node and line to area sets
+- [FIXED] fix an error in balance between output of the ESS and outflows
 - [FIXED] fix an error fixing values of storage with outflows
 - [CHANGED] fix typo in error message about input data
 - [CHANGED] add file for spillage by technology TechnologySpillage

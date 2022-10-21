@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 13, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 21, 2022
 """
 
 import time
@@ -814,7 +814,7 @@ def ResultsKPI(DirName, CaseName, OptModel, mTEPES):
     GenRetirementCost    = sum(mTEPES.pDiscountFactor[p] * mTEPES.pGenRetireCost[gd]       * OptModel.vGenerationRetire[p,gd]()       for p,gd       in mTEPES.p*mTEPES.gd)
     NetInvestmentCost    = sum(mTEPES.pDiscountFactor[p] * mTEPES.pNetFixedCost [ni,nf,cc] * OptModel.vNetworkInvest   [p,ni,nf,cc]() for p,ni,nf,cc in mTEPES.p*mTEPES.lc)
     # Ratio Generation Investment cost/ Generation Installed Capacity [MEUR-MW]
-    GenInvCostCapacity   = sum(mTEPES.pGenInvestCost[gc]       *OptModel.vGenerationInvest[p,gc]()/(mTEPES.pRatedMaxPower[gc]*1e3)    for p,gc       in mTEPES.p*mTEPES.gc)
+    GenInvCostCapacity   = sum(mTEPES.pGenInvestCost[gc] * OptModel.vGenerationInvest[p,gc]()/(mTEPES.pRatedMaxPower[gc]*1e3)         for p,gc       in mTEPES.p*mTEPES.gc if mTEPES.pRatedMaxPower[gc])
     # Ratio Additional Transmission Capacity-Length [MW-km]
     NetCapacityLength    = sum(max(mTEPES.pLineNTCFrw[ni,nf,cc], mTEPES.pLineNTCBck[ni,nf,cc])*OptModel.vNetworkInvest[p,ni,nf,cc]()*1e3/mTEPES.pLineLength[ni,nf,cc]() for p,ni,nf,cc in mTEPES.p*mTEPES.lc)
     # Ratio Network Investment Cost/Variable RES Injection [EUR/MWh]
