@@ -1,8 +1,10 @@
 Change Log
 =============
 
-[4.8.0] - 2022-10-21
+[4.8.0] - 2022-10-24
 --------------------
+- [CHANGED] change names of output files from charge to consumption
+- [FIXED] protect against division by zero in output results
 - [FIXED] fix computation of ESS invested capacity when the unit has no power, but charge
 - [CHANGED] change computation of node and line to area sets
 - [FIXED] fix an error in balance between output of the ESS and outflows
