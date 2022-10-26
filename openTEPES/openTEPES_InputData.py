@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 21, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 26, 2022
 """
 
 import datetime
@@ -349,11 +349,6 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     # mTEPES.lil = Set(initialize=mTEPES.nf*mTEPES.ni*mTEPES.cc, ordered=False, doc='input line', filter=lambda mTEPES,nf,ni,cc: (ni,nf,cc) in mTEPES.ll)
 
     # assigning a node to an area
-    pNode2Area = pd.DataFrame(0, dtype=int, index=pd.MultiIndex.from_tuples(mTEPES.nd*mTEPES.ar, names=('Node', 'Area')), columns=['Y/N'])
-    # for nd,zn,ar in mTEPES.ndzn*mTEPES.ar:
-    #     if (zn,ar) in mTEPES.znar:
-    #         pNode2Area.loc[nd,ar] = 1
-    # mTEPES.ndar = Set(initialize=mTEPES.nd*mTEPES.ar, ordered=False, doc='node to area', filter=lambda mTEPES,nd,ar: (nd,ar) in mTEPES.nd*mTEPES.ar and pNode2Area.loc[nd,ar]['Y/N'] == 1)
     pNode2Area  = [(nd,ar) for (nd,zn,ar) in mTEPES.ndzn*mTEPES.ar if (zn,ar) in mTEPES.znar]
     mTEPES.ndar = Set(initialize=list(pNode2Area), ordered=False, doc='node to area')
 
@@ -432,24 +427,13 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
 
     mTEPES.n2g = Set(initialize=pNode2Gen.index, ordered=False, doc='node   to generator')
 
-    pZone2Gen   = pd.DataFrame(0, dtype=int, index=pd.MultiIndex.from_tuples(mTEPES.zn*mTEPES.g, names=('Zone',   'Generator')), columns=['Y/N'])
-    pArea2Gen   = pd.DataFrame(0, dtype=int, index=pd.MultiIndex.from_tuples(mTEPES.ar*mTEPES.g, names=('Area',   'Generator')), columns=['Y/N'])
-    pRegion2Gen = pd.DataFrame(0, dtype=int, index=pd.MultiIndex.from_tuples(mTEPES.rg*mTEPES.g, names=('Region', 'Generator')), columns=['Y/N'])
+    pZone2Gen   = [(zn,g) for (nd,g,zn      ) in mTEPES.n2g*mTEPES.zn                     if (nd,zn) in mTEPES.ndzn                                                      ]
+    pArea2Gen   = [(ar,g) for (nd,g,zn,ar   ) in mTEPES.n2g*mTEPES.zn*mTEPES.ar           if (nd,zn) in mTEPES.ndzn and [zn,ar] in mTEPES.znar                           ]
+    pRegion2Gen = [(rg,g) for (nd,g,zn,ar,rg) in mTEPES.n2g*mTEPES.zn*mTEPES.ar*mTEPES.rg if (nd,zn) in mTEPES.ndzn and [zn,ar] in mTEPES.znar and [ar,rg] in mTEPES.arrg]
 
-    for nd,g in mTEPES.n2g:
-        for zn in mTEPES.zn:
-            if (nd,zn) in mTEPES.ndzn:
-                pZone2Gen.loc[zn,g] = 1
-            for ar in mTEPES.ar:
-                if (nd,zn) in mTEPES.ndzn and (zn,ar) in mTEPES.znar:
-                    pArea2Gen.loc[ar,g] = 1
-                for rg in mTEPES.rg:
-                    if (nd,zn) in mTEPES.ndzn and (zn,ar) in mTEPES.znar and (zn,rg) in mTEPES.arrg:
-                        pRegion2Gen.loc[rg,g] = 1
-
-    mTEPES.z2g = Set(initialize=mTEPES.zn*mTEPES.g, ordered=False, doc='zone   to generator', filter=lambda mTEPES,zn,g: (zn,g) in mTEPES.zn*mTEPES.g and pZone2Gen.loc  [zn,g]['Y/N'] == 1)
-    mTEPES.a2g = Set(initialize=mTEPES.ar*mTEPES.g, ordered=False, doc='area   to generator', filter=lambda mTEPES,ar,g: (ar,g) in mTEPES.ar*mTEPES.g and pArea2Gen.loc  [ar,g]['Y/N'] == 1)
-    mTEPES.r2g = Set(initialize=mTEPES.rg*mTEPES.g, ordered=False, doc='region to generator', filter=lambda mTEPES,rg,g: (rg,g) in mTEPES.rg*mTEPES.g and pRegion2Gen.loc[rg,g]['Y/N'] == 1)
+    mTEPES.z2g = Set(initialize=mTEPES.zn*mTEPES.g, ordered=False, doc='zone   to generator', filter=lambda mTEPES,zn,g: (zn,g) in pZone2Gen  )
+    mTEPES.a2g = Set(initialize=mTEPES.ar*mTEPES.g, ordered=False, doc='area   to generator', filter=lambda mTEPES,ar,g: (ar,g) in pArea2Gen  )
+    mTEPES.r2g = Set(initialize=mTEPES.rg*mTEPES.g, ordered=False, doc='region to generator', filter=lambda mTEPES,rg,g: (rg,g) in pRegion2Gen)
 
     #%% inverse index generator to technology
     pTechnologyToGen = pGenToTechnology.reset_index().set_index('Technology').set_axis(['Generator'], axis=1, inplace=False)[['Generator']]
@@ -523,31 +507,28 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pShiftTime = round(pShiftTime/pTimeStep).astype('int')
 
     # %% definition of the time-steps leap to observe the stored energy at an ESS
-    pCycleTimeStep    = (pUpTime*0+   1).astype('int')
-    pOutflowsTimeStep = (pUpTime*0+8736).astype('int')
-    for es in mTEPES.es:
-        if pStorageType[es] == 'Hourly' :
-            pCycleTimeStep[es] =       1
-        if pStorageType[es] == 'Daily'  :
-            pCycleTimeStep[es] =       1
-        if pStorageType[es] == 'Weekly' :
-            pCycleTimeStep[es] = int( 24/pTimeStep)
-        if pStorageType[es] == 'Monthly':
-            pCycleTimeStep[es] = int(168/pTimeStep)
+    idxCycle = dict()
+    idxCycle[0        ] = 1
+    idxCycle[0.0      ] = 1
+    idxCycle["Hourly" ] = 1
+    idxCycle["Daily"  ] = 1
+    idxCycle["Weekly" ] = round(  24/pTimeStep)
+    idxCycle["Monthly"] = round( 168/pTimeStep)
+    idxCycle["Yearly" ] = round(8736/pTimeStep)
 
-        if pEnergyOutflows.sum()[es]:
-            if pOutflowsType[es] == 'Hourly' :
-                pOutflowsTimeStep[es] =        1
-            if pOutflowsType[es] == 'Daily'  :
-                pOutflowsTimeStep[es] = int(  24/pTimeStep)
-            if pOutflowsType[es] == 'Weekly' :
-                pOutflowsTimeStep[es] = int( 168/pTimeStep)
-            if pOutflowsType[es] == 'Monthly':
-                pOutflowsTimeStep[es] = int( 672/pTimeStep)
-            if pOutflowsType[es] == 'Yearly' :
-                pOutflowsTimeStep[es] = int(8736/pTimeStep)
+    idxOutflows = dict()
+    idxOutflows[0        ] = 8736
+    idxOutflows[0.0      ] = 8736
+    idxOutflows["Hourly" ] = 1
+    idxOutflows["Daily"  ] = 1
+    idxOutflows["Weekly" ] = round(  24/pTimeStep)
+    idxOutflows["Monthly"] = round( 168/pTimeStep)
+    idxOutflows["Yearly" ] = round(8736/pTimeStep)
 
-        pCycleTimeStep[es] = min(pCycleTimeStep[es], pOutflowsTimeStep[es])
+    pCycleTimeStep    = pStorageType.map(idxCycle)
+    pOutflowsTimeStep = pOutflowsType.map(idxOutflows)
+
+    pCycleTimeStep    = pd.concat([pCycleTimeStep,pOutflowsTimeStep], axis=1).min(axis=1)
 
     # the stage duration is the maximum between the defined stage duration and the storage type and the outflows type for any ESS to avoid breaking the energy outflows constraints
     # pStageDuration = max(pStageDuration, pCycleTimeStep.max(), pOutflowsTimeStep.max())
@@ -599,7 +580,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         pMaxStorage    [pMaxStorage    [[es for es in mTEPES.es if (ar,es) in mTEPES.a2g ]] <  pEpsilon] = 0.0
         pIniInventory  [pIniInventory  [[es for es in mTEPES.es if (ar,es) in mTEPES.a2g ]] <  pEpsilon] = 0.0
 
-        pInitialInventory.update(pd.Series([0 for es in mTEPES.es if (ar, es) in mTEPES.a2g and pInitialInventory[es] < pEpsilon], index=[es for es in mTEPES.es if (ar, es) in mTEPES.a2g and pInitialInventory[es] < pEpsilon], dtype='float64'))
+        pInitialInventory.update(pd.Series([0 for es in mTEPES.es if (ar,es) in mTEPES.a2g and pInitialInventory[es] < pEpsilon], index=[es for es in mTEPES.es if (ar,es) in mTEPES.a2g and pInitialInventory[es] < pEpsilon], dtype='float64'))
 
         pLineNTCFrw.update(pd.Series([0.0 for (ni,nf,cc) in mTEPES.la if pLineNTCFrw[ni,nf,cc] < pEpsilon], index = [(ni,nf,cc) for (ni,nf,cc) in mTEPES.la if pLineNTCFrw[ni,nf,cc] < pEpsilon], dtype='float64'))
         pLineNTCBck.update(pd.Series([0.0 for (ni,nf,cc) in mTEPES.la if pLineNTCBck[ni,nf,cc] < pEpsilon], index = [(ni,nf,cc) for (ni,nf,cc) in mTEPES.la if pLineNTCBck[ni,nf,cc] < pEpsilon], dtype='float64'))

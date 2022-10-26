@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.8.0] - 2022-10-24
+[4.8.0] - 2022-10-26
 --------------------
+- [CHANGED] improve the computation of some double sets
 - [CHANGED] change names of output files from charge to consumption
 - [FIXED] protect against division by zero in output results
 - [FIXED] fix computation of ESS invested capacity when the unit has no power, but charge
