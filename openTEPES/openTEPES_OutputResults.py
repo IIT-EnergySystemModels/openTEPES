@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 26, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 27, 2022
 """
 
 import time
@@ -876,8 +876,8 @@ def ReliabilityResults(DirName, CaseName, OptModel, mTEPES):
 
     ExistCapacity = [(p,sc,n,g) for p,sc,n,g  in mTEPES.ps*mTEPES.n*mTEPES.g if g not in mTEPES.gc]
 
-    pDemand       = pd.Series(data=[    mTEPES.pDemand  [p,sc,n,nd]                               for p,sc,n,nd in mTEPES.ps*mTEPES.n*mTEPES.nd], index=pd.MultiIndex.from_tuples(mTEPES.ps*mTEPES.n*mTEPES.nd))
-    pExistMaxPower= pd.Series(data=[    mTEPES.pMaxPower[p,sc,n,g ]                               for p,sc,n,g  in ExistCapacity], index=pd.MultiIndex.from_tuples(list(ExistCapacity)))
+    pDemand        = pd.Series(data=[mTEPES.pDemand  [p,sc,n,nd] for p,sc,n,nd in mTEPES.ps*mTEPES.n*mTEPES.nd], index=pd.MultiIndex.from_tuples(mTEPES.ps*mTEPES.n*mTEPES.nd))
+    pExistMaxPower = pd.Series(data=[mTEPES.pMaxPower[p,sc,n,g ] for p,sc,n,g  in ExistCapacity], index=pd.MultiIndex.from_tuples(list(ExistCapacity)))
     if len(mTEPES.gc):
         CandCapacity  = [(p,sc,n,g) for p,sc,n,g  in mTEPES.ps*mTEPES.n*mTEPES.g if g     in mTEPES.gc]
         pCandMaxPower = pd.Series(data=[    mTEPES.pMaxPower[p,sc,n,g ] * OptModel.vGenerationInvest[p,g]() for p,sc,n,g  in CandCapacity] , index=pd.MultiIndex.from_tuples(list(CandCapacity)))
