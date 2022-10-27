@@ -3,6 +3,7 @@ Change Log
 
 [4.8.0] - 2022-10-27
 --------------------
+- [FIXED] fix computation of the demand when there are negative demands
 - [CHANGED] avoid a second run of the model if no binary variables are in it
 - [CHANGED] improve the computation of some double sets
 - [CHANGED] change names of output files from charge to consumption

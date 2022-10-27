@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 26, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 27, 2022
 """
 
 import datetime
@@ -586,7 +586,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         pLineNTCBck.update(pd.Series([0.0 for (ni,nf,cc) in mTEPES.la if pLineNTCBck[ni,nf,cc] < pEpsilon], index = [(ni,nf,cc) for (ni,nf,cc) in mTEPES.la if pLineNTCBck[ni,nf,cc] < pEpsilon], dtype='float64'))
 
         # merging positive and negative values of the demand
-        pDemand            = pDemandPos.where(pDemandPos >= 0.0, other=pDemandNeg)
+        pDemand            = pDemandPos.where(pDemandNeg >= 0.0, other=pDemandNeg)
 
         pMaxPower2ndBlock  = pMaxPower  - pMinPower
         pMaxCharge2ndBlock = pMaxCharge - pMinCharge
