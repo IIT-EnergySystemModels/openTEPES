@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.8.0] - 2022-10-26
+[4.8.0] - 2022-10-27
 --------------------
+- [CHANGED] avoid a second run of the model if no binary variables are in it
 - [CHANGED] improve the computation of some double sets
 - [CHANGED] change names of output files from charge to consumption
 - [FIXED] protect against division by zero in output results
