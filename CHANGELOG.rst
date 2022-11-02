@@ -1,7 +1,7 @@
 Change Log
 =============
 
-[4.8.0] - 2022-10-27
+[4.8.2] - 2022-10-27
 --------------------
 - [FIXED] fix computation of the demand when there are negative demands
 - [CHANGED] avoid a second run of the model if no binary variables are in it

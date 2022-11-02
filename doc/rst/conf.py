@@ -84,13 +84,13 @@ html_static_path = []
 #
 # html_sidebars = {}
 html_theme = 'alabaster'
-html_title = 'version 4.8.0rc1'
+html_title = 'version 4.8.2'
 html_logo  = '../img/openTEPES.png'
 html_last_updated_fmt = ''
 html_show_sphinx = False
 html_theme_options = {
     'analytics_id': 'UA-515200-2',  #  Provided by Google in your dashboard
-    'description': 'version 4.8.0rc1',
+    'description': 'version 4.8.2',
     'page_width': 'auto',
     'font_family': 'Georgia'
 }
