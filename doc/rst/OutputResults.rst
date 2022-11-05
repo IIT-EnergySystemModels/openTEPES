@@ -640,7 +640,7 @@ Identifier    Description
 Cost type     Revenues and investment costs [M€]
 ============  ==========================================
 
-File ``oT_Result_KPIsSummary.csv``
+File ``oT_Result_SummaryKPIs.csv``
 
 ============  ==========================================
 Identifier    Description
@@ -648,13 +648,29 @@ Identifier    Description
 KPI           Different KPIs
 ============  ==========================================
 
+File ``oT_Result_SummaryGeneration.csv``
+
+============  ==========  ==========  ============  ==============================================
+Identifier    Identifier  Identifier  Identifier    Description
+============  ==========  ==========  ============  ==============================================
+Scenario      Period      Load level  Generator     Generation output (to be used as pivot table)
+============  ==========  ==========  ============  ==============================================
+
+File ``oT_Result_SummaryNetwork.csv``
+
+============  ==========  ==========  ============  ==========  ============================================
+Identifier    Identifier  Identifier  Identifier    Identifier  Description
+============  ==========  ==========  ============  ==========  ============================================
+Scenario      Period      Load level  Initial node  Final node   Network output (to be used as pivot table)
+============  ==========  ==========  ============  ==========  ============================================
+
 File ``oT_Result_TechnologyLCOE.csv``
 
- ==========  ==========================================
- Identifier  Description
- ==========  ==========================================
- Technology  Levelized Cost of Energy [EUR/MWh]
- ==========  ==========================================
+==========  ==========================================
+Identifier  Description
+==========  ==========================================
+Technology  Levelized Cost of Energy [EUR/MWh]
+==========  ==========================================
 
 File ``oT_Result_GenerationCostOandM.csv``
 
