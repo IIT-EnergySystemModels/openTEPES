@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 05, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 06, 2022
 """
 
 import time
@@ -35,7 +35,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndLogConsole):
     idxDict['y'  ] = 1
 
     #%% model declaration
-    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.8.3 - November 05, 2022')
+    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.8.3 - November 06, 2022')
 
     pIndLogConsole = [j for i, j in idxDict.items() if i == pIndLogConsole][0]
 
@@ -93,8 +93,8 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndLogConsole):
     FlexibilityResults        (DirName, CaseName, mTEPES, mTEPES)
     NetworkOperationResults   (DirName, CaseName, mTEPES, mTEPES)
     MarginalResults           (DirName, CaseName, mTEPES, mTEPES)
-    ResultsKPI                (DirName, CaseName, mTEPES, mTEPES)
-    ReliabilityResults           (DirName, CaseName, mTEPES, mTEPES)
+    OperationResultsSummary   (DirName, CaseName, mTEPES, mTEPES)
+    ReliabilityResults        (DirName, CaseName, mTEPES, mTEPES)
     EconomicResults           (DirName, CaseName, mTEPES, mTEPES)
     NetworkMapResults         (DirName, CaseName, mTEPES, mTEPES)
 
