@@ -11,7 +11,7 @@ from pyomo.environ import ConcreteModel, Set
 from .openTEPES_InputData        import InputData, SettingUpVariables
 from .openTEPES_ModelFormulation import TotalObjectiveFunction, InvestmentModelFormulation, GenerationOperationModelFormulationObjFunct, GenerationOperationModelFormulationInvestment, GenerationOperationModelFormulationDemand, GenerationOperationModelFormulationStorage, GenerationOperationModelFormulationCommitment, GenerationOperationModelFormulationRampMinTime, NetworkSwitchingModelFormulation, NetworkOperationModelFormulation
 from .openTEPES_ProblemSolving   import ProblemSolving
-from .openTEPES_OutputResults    import InvestmentResults, GenerationOperationResults, ESSOperationResults, FlexibilityResults, NetworkOperationResults, MarginalResults, ResultsKPI, ReliabilityResults, EconomicResults, NetworkMapResults
+from .openTEPES_OutputResults    import InvestmentResults, GenerationOperationResults, ESSOperationResults, FlexibilityResults, NetworkOperationResults, MarginalResults, OperationResultsSummary, ReliabilityResults, EconomicResults, NetworkMapResults
 
 
 def openTEPES_run(DirName, CaseName, SolverName, pIndLogConsole):
