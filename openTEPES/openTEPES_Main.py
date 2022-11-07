@@ -96,10 +96,12 @@ parser.add_argument('--case',   type=str, default=None)
 parser.add_argument('--dir',    type=str, default=None)
 parser.add_argument('--solver', type=str, default=None)
 parser.add_argument('--log',    type=str, default=None)
+parser.add_argument('--result', type=str, default=None)
 
 DIR    = os.path.dirname(__file__)
 CASE   = '9n'
 SOLVER = 'cbc'
+RESULT = 'Yes'
 LOG    = 'Yes'
 
 
@@ -117,6 +119,10 @@ def main():
         args.solver = input('Input Solver Name (Default {}): '.format(SOLVER))
         if args.solver == '':
             args.solver = SOLVER
+    if args.result is None:
+        args.result = input('Would you like to write all the results? (Default {}): '.format(RESULT))
+        if args.result == '':
+            args.result = RESULT
     if args.log is None:
         args.log = input('Would you like to write log information (seconds and rows) to console? (Default {}): '.format(LOG))
         if args.log == '':
@@ -127,7 +133,7 @@ def main():
     import sys
     print(sys.argv)
     print(args)
-    openTEPES_run(args.dir, args.case, args.solver, args.log)
+    openTEPES_run(args.dir, args.case, args.solver, args.result, args.log)
     print('End of the run                ************')
     print('\n #### Academic research license - for non-commercial use only #### \n')
 
