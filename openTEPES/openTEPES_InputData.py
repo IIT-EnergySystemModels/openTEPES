@@ -405,7 +405,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.pLineType = Set(initialize=pLineType.index, ordered=False, doc='line type')
 
     #%% inverse index load level to stage
-    pStageToLevel = pLevelToStage.reset_index().set_index('Stage').set_axis(['LoadLevel'], axis=1, inplace=False)[['LoadLevel']]
+    pStageToLevel = pLevelToStage.reset_index().set_index('Stage').set_axis(['LoadLevel'], axis=1, copy=False)[['LoadLevel']]
     pStageToLevel = pStageToLevel.loc[pStageToLevel['LoadLevel'].isin(mTEPES.n)]
     pStage2Level  = pStageToLevel.reset_index().set_index(['Stage','LoadLevel'])
 
@@ -421,7 +421,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         mTEPES.pLoadLevelWeight[n] = pStageWeight[st]
 
     #%% inverse index node to generator
-    pNodeToGen = pGenToNode.reset_index().set_index('Node').set_axis(['Generator'], axis=1, inplace=False)[['Generator']]
+    pNodeToGen = pGenToNode.reset_index().set_index('Node').set_axis(['Generator'], axis=1, copy=False)[['Generator']]
     pNodeToGen = pNodeToGen.loc[pNodeToGen['Generator'].isin(mTEPES.g)]
     pNode2Gen  = pNodeToGen.reset_index().set_index(['Node', 'Generator'])
 
@@ -436,7 +436,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.r2g = Set(initialize=mTEPES.rg*mTEPES.g, ordered=False, doc='region to generator', filter=lambda mTEPES,rg,g: (rg,g) in pRegion2Gen)
 
     #%% inverse index generator to technology
-    pTechnologyToGen = pGenToTechnology.reset_index().set_index('Technology').set_axis(['Generator'], axis=1, inplace=False)[['Generator']]
+    pTechnologyToGen = pGenToTechnology.reset_index().set_index('Technology').set_axis(['Generator'], axis=1, copy=False)[['Generator']]
     pTechnologyToGen = pTechnologyToGen.loc[pTechnologyToGen['Generator'].isin(mTEPES.g)]
     pTechnology2Gen  = pTechnologyToGen.reset_index().set_index(['Technology', 'Generator'])
 
@@ -447,7 +447,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.rt = Set(initialize=mTEPES.gt, ordered=False, doc='RES     technologies', filter=lambda mTEPES,gt: gt in mTEPES.gt and sum(1 for r  in mTEPES.r  if (gt,r ) in mTEPES.t2g))
 
     #%% inverse index generator to mutually exclusive generator
-    pExclusiveGenToGen = pGenToExclusiveGen.reset_index().set_index('MutuallyExclusive').set_axis(['Generator'], axis=1, inplace=False)[['Generator']]
+    pExclusiveGenToGen = pGenToExclusiveGen.reset_index().set_index('MutuallyExclusive').set_axis(['Generator'], axis=1, copy=False)[['Generator']]
     pExclusiveGenToGen = pExclusiveGenToGen.loc[pExclusiveGenToGen['Generator'].isin(mTEPES.g)]
     pExclusiveGen2Gen  = pExclusiveGenToGen.reset_index().set_index(['MutuallyExclusive', 'Generator'])
 
