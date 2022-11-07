@@ -985,7 +985,7 @@ def ReliabilityResults(DirName, CaseName, OptModel, mTEPES):
     WritingResultsTime = time.time() - StartTime
     print('Writing          reliability indexes   ... ', round(WritingResultsTime), 's')
 
-def EconomicResults(DirName, CaseName, OptModel, mTEPES):
+def CostSummaryResults(DirName, CaseName, OptModel, mTEPES):
     # %% outputting the system costs and revenues
     _path = os.path.join(DirName, CaseName)
     StartTime   = time.time()
@@ -1003,6 +1003,15 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES):
     CostSummary = pd.concat([SysCost, GenInvCost, GenRetCost, NetInvCost, GenCost, ConCost, EmiCost, RelCost])
     CostSummary = CostSummary.reset_index().rename(columns={'level_0': 'Period', 'level_1': 'Cost/Payment', 0: 'MEUR'})
     CostSummary.to_csv(_path+'/oT_Result_CostSummary_'+CaseName+'.csv', sep=',', index=False)
+
+    WritingResultsTime = time.time() - StartTime
+    print('Writing         cost summary results   ... ', round(WritingResultsTime), 's')
+
+
+def EconomicResults(DirName, CaseName, OptModel, mTEPES):
+    # %% outputting the system costs and revenues
+    _path = os.path.join(DirName, CaseName)
+    StartTime = time.time()
 
     for ar in mTEPES.ar:
         if len(mTEPES.ar) > 1:
