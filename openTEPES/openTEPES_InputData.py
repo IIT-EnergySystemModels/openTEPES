@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 27, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 07, 2022
 """
 
 import datetime
@@ -209,7 +209,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     if pTimeStep > 1:
         # assign duration 0 to load levels not being considered, active load levels are at the end of every pTimeStep
         for i in range(pTimeStep-2,-1,-1):
-            pDuration[range(i,len(mTEPES.nn),pTimeStep)] = 0
+            pDuration.iloc[[range(i,len(mTEPES.nn),pTimeStep)]] = 0
 
     #%% generation parameters
     pGenToNode          = dfGeneration  ['Node'                  ]                                                                            # generator location in node
