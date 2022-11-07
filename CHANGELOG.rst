@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.8.3] - 2022-11-05
+[4.8.3] - 2022-11-07
 --------------------
+- [FIXED] fix typo in assign duration 0 to load levels not being considered
 - [CHANGED] added new output files
 
 [4.8.2] - 2022-10-27
