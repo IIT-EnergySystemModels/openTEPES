@@ -11,10 +11,10 @@ from pyomo.environ import ConcreteModel, Set
 from .openTEPES_InputData        import InputData, SettingUpVariables
 from .openTEPES_ModelFormulation import TotalObjectiveFunction, InvestmentModelFormulation, GenerationOperationModelFormulationObjFunct, GenerationOperationModelFormulationInvestment, GenerationOperationModelFormulationDemand, GenerationOperationModelFormulationStorage, GenerationOperationModelFormulationCommitment, GenerationOperationModelFormulationRampMinTime, NetworkSwitchingModelFormulation, NetworkOperationModelFormulation
 from .openTEPES_ProblemSolving   import ProblemSolving
-from .openTEPES_OutputResults    import InvestmentResults, GenerationOperationResults, ESSOperationResults, FlexibilityResults, NetworkOperationResults, MarginalResults, OperationResultsSummary, ReliabilityResults, EconomicResults, NetworkMapResults
+from .openTEPES_OutputResults    import InvestmentResults, GenerationOperationResults, ESSOperationResults, FlexibilityResults, NetworkOperationResults, MarginalResults, OperationResultsSummary, ReliabilityResults, CostSummaryResults, EconomicResults, NetworkMapResults
 
 
-def openTEPES_run(DirName, CaseName, SolverName, pIndLogConsole):
+def openTEPES_run(DirName, CaseName, SolverName, pCompleteResults, pIndLogConsole):
 
     InitialTime = time.time()
     _path = os.path.join(DirName, CaseName)
@@ -37,7 +37,8 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndLogConsole):
     #%% model declaration
     mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.8.3 - November 07, 2022')
 
-    pIndLogConsole = [j for i, j in idxDict.items() if i == pIndLogConsole][0]
+    pCompleteResults = [j for i, j in idxDict.items() if i == pCompleteResults][0]
+    pIndLogConsole   = [j for i, j in idxDict.items() if i == pIndLogConsole  ][0]
 
     # Define sets and parameters
     InputData(DirName, CaseName, mTEPES, pIndLogConsole)
@@ -90,13 +91,16 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndLogConsole):
     InvestmentResults         (DirName, CaseName, mTEPES, mTEPES)
     GenerationOperationResults(DirName, CaseName, mTEPES, mTEPES)
     ESSOperationResults       (DirName, CaseName, mTEPES, mTEPES)
-    FlexibilityResults        (DirName, CaseName, mTEPES, mTEPES)
     NetworkOperationResults   (DirName, CaseName, mTEPES, mTEPES)
     MarginalResults           (DirName, CaseName, mTEPES, mTEPES)
     OperationResultsSummary   (DirName, CaseName, mTEPES, mTEPES)
-    ReliabilityResults        (DirName, CaseName, mTEPES, mTEPES)
-    EconomicResults           (DirName, CaseName, mTEPES, mTEPES)
+    CostSummaryResults        (DirName, CaseName, mTEPES, mTEPES)
     NetworkMapResults         (DirName, CaseName, mTEPES, mTEPES)
+    if pCompleteResults == 1:
+        EconomicResults       (DirName, CaseName, mTEPES, mTEPES)
+        FlexibilityResults    (DirName, CaseName, mTEPES, mTEPES)
+        ReliabilityResults    (DirName, CaseName, mTEPES, mTEPES)
+
 
     TotalTime = time.time() - InitialTime
     print('Total time                             ... ', round(TotalTime), 's')
