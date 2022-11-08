@@ -1,6 +1,10 @@
 Change Log
 =============
 
+[4.8.4] - 2022-11-08
+--------------------
+- [CHANGED] modify output results to reduce printing time
+
 [4.8.3] - 2022-11-07
 --------------------
 - [FIXED] fix typo in assign duration 0 to load levels not being considered
