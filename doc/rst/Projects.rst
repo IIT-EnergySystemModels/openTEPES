@@ -4,7 +4,7 @@ Research projects
 =================
 The model has being used in these research projects:
 
-- Hydro generation advanced systems: modeling, control, and optimized integration to the system (AVANHID), developed for **Iberdrola** under **NextGenerationEU** funds of the **Ministry of Science and Innovation** (CPP2021-009114). November 2022 - October 2025.
+- Hydro generation advanced systems: modeling, control, and optimized integration to the system (AVANHID), developed for **Iberdrola** under **NextGenerationEU** funds of the **Ministry of Science and Innovation** (CPP2021-009114). December 2022 - November 2025.
   `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `J.M. Latorre <https://www.iit.comillas.edu/people/jesuslc>`_
 
 - Local markets for energy communities: designing efficient markets and assessing the integration from the electricity system perspective (OptiREC), developed under **NextGenerationEU** funds for the **Ministry of Science and Innovation** (TED2021-131365B-C43). December 2022 - November 2024.
