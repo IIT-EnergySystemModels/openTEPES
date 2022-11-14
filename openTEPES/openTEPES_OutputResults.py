@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 07, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 14, 2022
 """
 
 import time
@@ -532,9 +532,10 @@ def OperationResultsSummary(DirName, CaseName, OptModel, mTEPES):
     OutputToFile_16 = pd.Series(data=[OptModel.vReserveDown   [p,sc,n,g]()*1e3                                                                          if g in mTEPES.nr else 0.0 for p,sc,n,g in mTEPES.ps*mTEPES.n*mTEPES.g], index=pd.MultiIndex.from_tuples(mTEPES.ps*mTEPES.n*mTEPES.g)).to_frame(name='ReserveDown [MW]'       )
     OutputToFile_17 = pd.Series(data=[OptModel.vESSReserveUp  [p,sc,n,g]()*1e3                                                                          if g in mTEPES.es else 0.0 for p,sc,n,g in mTEPES.ps*mTEPES.n*mTEPES.g], index=pd.MultiIndex.from_tuples(mTEPES.ps*mTEPES.n*mTEPES.g)).to_frame(name='ESSReserveUp [MW]'      )
     OutputToFile_18 = pd.Series(data=[OptModel.vESSReserveDown[p,sc,n,g]()*1e3                                                                          if g in mTEPES.es else 0.0 for p,sc,n,g in mTEPES.ps*mTEPES.n*mTEPES.g], index=pd.MultiIndex.from_tuples(mTEPES.ps*mTEPES.n*mTEPES.g)).to_frame(name='ESSReserveDown [MW]'    )
+    OutputToFile_19 = pd.Series(data=[OptModel.vESSSpillage   [p,sc,n,g]()                                                                              if g in mTEPES.es else 0.0 for p,sc,n,g in mTEPES.ps*mTEPES.n*mTEPES.g], index=pd.MultiIndex.from_tuples(mTEPES.ps*mTEPES.n*mTEPES.g)).to_frame(name='ESSSpillage    [MW]'    )
 
     OutputResults   = pd.concat([OutputToFile_1 , OutputToFile_2 , OutputToFile_3 , OutputToFile_4 , OutputToFile_5 , OutputToFile_6 , OutputToFile_7 , OutputToFile_8 , OutputToFile_9 ,
-                                 OutputToFile_11, OutputToFile_12, OutputToFile_13, OutputToFile_14, OutputToFile_15, OutputToFile_16, OutputToFile_17, OutputToFile_18], axis=1)
+                                 OutputToFile_11, OutputToFile_12, OutputToFile_13, OutputToFile_14, OutputToFile_15, OutputToFile_16, OutputToFile_17, OutputToFile_18, OutputToFile_19], axis=1)
     OutputResults.rename_axis(['Period', 'Scenario', 'LoadLevel', 'GenerationUnit'], axis=0).to_csv(_path+'/oT_Result_SummaryGeneration_'+CaseName+'.csv', sep=',')
 
     WritingResultsTime = time.time() - StartTime
