@@ -444,6 +444,14 @@ Identifier    Identifier  Identifier  Header      Description
 Scenario      Period      Load level  Generator   Spilled energy in ESS wrt the inflows [%]
 ============  ==========  ==========  ==========  ==========================================
 
+File ``oT_Result_SummaryGeneration.csv``
+
+============  ==========  ==========  ============  ==============================================
+Identifier    Identifier  Identifier  Identifier    Description
+============  ==========  ==========  ============  ==============================================
+Scenario      Period      Load level  Generator     Generation output (to be used as pivot table)
+============  ==========  ==========  ============  ==============================================
+
 Network operation
 -----------------
 
@@ -534,6 +542,14 @@ Identifier    Identifier  Identifier  Header      Description
 ============  ==========  ==========  ==========  ==========================================
 Scenario      Period      Load level  Node        Energy not served by node [GWh]
 ============  ==========  ==========  ==========  ==========================================
+
+File ``oT_Result_SummaryNetwork.csv``
+
+============  ==========  ==========  ============  ==========  ============================================
+Identifier    Identifier  Identifier  Identifier    Identifier  Description
+============  ==========  ==========  ============  ==========  ============================================
+Scenario      Period      Load level  Initial node  Final node   Network output (to be used as pivot table)
+============  ==========  ==========  ============  ==========  ============================================
 
 Marginal information
 --------------------
@@ -647,22 +663,6 @@ Identifier    Description
 ============  ==========================================
 KPI           Different KPIs
 ============  ==========================================
-
-File ``oT_Result_SummaryGeneration.csv``
-
-============  ==========  ==========  ============  ==============================================
-Identifier    Identifier  Identifier  Identifier    Description
-============  ==========  ==========  ============  ==============================================
-Scenario      Period      Load level  Generator     Generation output (to be used as pivot table)
-============  ==========  ==========  ============  ==============================================
-
-File ``oT_Result_SummaryNetwork.csv``
-
-============  ==========  ==========  ============  ==========  ============================================
-Identifier    Identifier  Identifier  Identifier    Identifier  Description
-============  ==========  ==========  ============  ==========  ============================================
-Scenario      Period      Load level  Initial node  Final node   Network output (to be used as pivot table)
-============  ==========  ==========  ============  ==========  ============================================
 
 File ``oT_Result_TechnologyLCOE.csv``
 
