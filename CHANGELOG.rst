@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.8.4] - 2022-11-08
+[4.8.4] - 2022-11-14
 --------------------
+- [CHANGED] modify input data and output results to clean up the use of aggregated sets
 - [CHANGED] modify output results to reduce printing time
 
 [4.8.3] - 2022-11-07

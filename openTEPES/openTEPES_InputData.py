@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 07, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 13, 2022
 """
 
 import datetime
@@ -304,36 +304,37 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     print('Reading    input data                  ... ', round(ReadingDataTime), 's')
 
     #%% Getting the branches from the network data
-    pBr = [(ni, nf) for (ni, nf, cc) in dfNetwork.index]
+    sBr = [(ni,nf) for (ni,nf,cc) in dfNetwork.index]
     # Dropping duplicate keys
-    pBrList = [(ni,nf) for n, (ni,nf) in enumerate(pBr) if (ni,nf) not in pBr[:n]]
+    sBrList = [(ni,nf) for n,(ni,nf) in enumerate(sBr) if (ni,nf) not in sBr[:n]]
 
     #%% defining subsets: active load levels (n,n2), thermal units (t), RES units (r), ESS units (es), candidate gen units (gc), candidate ESS units (ec), all the lines (la), candidate lines (lc), candidate DC lines (cd), existing DC lines (cd), lines with losses (ll), reference node (rf), and reactive generating units (gq)
-    mTEPES.p  = Set(initialize=mTEPES.pp,                     ordered=True , doc='periods'              , filter=lambda mTEPES,pp      :  pp     in mTEPES.pp  and pPeriodWeight     [pp] >  0.0)
-    mTEPES.sc = Set(initialize=mTEPES.scc,                    ordered=True , doc='scenarios'            , filter=lambda mTEPES,scc     :  scc    in mTEPES.scc                                  )
-    mTEPES.ps = Set(initialize=mTEPES.p*mTEPES.sc,            ordered=True , doc='periods/scenarios'    , filter=lambda mTEPES,p,sc    :  (p,sc) in mTEPES.p*mTEPES.sc and pScenProb[p,sc] > 0.0)
-    mTEPES.st = Set(initialize=mTEPES.stt,                    ordered=True , doc='stages'               , filter=lambda mTEPES,stt     :  stt    in mTEPES.stt and pStageWeight     [stt] >  0.0)
-    mTEPES.n  = Set(initialize=mTEPES.nn,                     ordered=True , doc='load levels'          , filter=lambda mTEPES,nn      :  nn     in mTEPES.nn  and pDuration         [nn] >  0  )
-    mTEPES.n2 = Set(initialize=mTEPES.nn,                     ordered=True , doc='load levels'          , filter=lambda mTEPES,nn      :  nn     in mTEPES.nn  and pDuration         [nn] >  0  )
-    mTEPES.g  = Set(initialize=mTEPES.gg,                     ordered=False, doc='generating      units', filter=lambda mTEPES,gg      :  gg     in mTEPES.gg  and (pRatedMaxPower   [gg] >  0.0 or  pRatedMaxCharge[gg] >  0.0) and pPeriodIniGen[gg] <= mTEPES.p.last() and pPeriodFinGen[gg] >= mTEPES.p.first() and pGenToNode.reset_index().set_index(['index']).isin(mTEPES.nd)['Node'][gg])  # excludes generators with empty node
-    mTEPES.t  = Set(initialize=mTEPES.g ,                     ordered=False, doc='thermal         units', filter=lambda mTEPES,g       :  g      in mTEPES.g   and pLinearOperCost   [g ] >  0.0)
-    mTEPES.r  = Set(initialize=mTEPES.g ,                     ordered=False, doc='RES             units', filter=lambda mTEPES,g       :  g      in mTEPES.g   and pLinearOperCost   [g ] == 0.0 and pRatedMaxStorage[g] == 0.0)
-    mTEPES.es = Set(initialize=mTEPES.g ,                     ordered=False, doc='ESS             units', filter=lambda mTEPES,g       :  g      in mTEPES.g   and                                  (pRatedMaxStorage[g] >  0.0   or pRatedMaxCharge[g] > 0.0))
-    mTEPES.gc = Set(initialize=mTEPES.g ,                     ordered=False, doc='candidate       units', filter=lambda mTEPES,g       :  g      in mTEPES.g   and pGenInvestCost    [g ] >  0.0)
-    mTEPES.gd = Set(initialize=mTEPES.g ,                     ordered=False, doc='retirement      units', filter=lambda mTEPES,g       :  g      in mTEPES.g   and pGenRetireCost    [g ] != 0.0)
-    mTEPES.ec = Set(initialize=mTEPES.es,                     ordered=False, doc='candidate   ESS units', filter=lambda mTEPES,es      :  es     in mTEPES.es  and pGenInvestCost    [es] >  0.0)
-    mTEPES.br = Set(initialize=list(pBrList),                 ordered=False, doc='all input lines'                                                                                              )
-    mTEPES.ln = Set(initialize=list(dfNetwork.index),         ordered=False, doc='all input lines'                                                                                              )
-    mTEPES.la = Set(initialize=mTEPES.ln,                     ordered=False, doc='all real        lines', filter=lambda mTEPES,*ln     :  ln     in mTEPES.ln  and pLineX            [ln] != 0.0 and pLineNTCFrw[ln] > 0.0 and pLineNTCBck[ln] > 0.0 and pPeriodIniNet[ln] <= mTEPES.p.last() and pPeriodFinNet[ln] >= mTEPES.p.first())
-    mTEPES.lc = Set(initialize=mTEPES.la,                     ordered=False, doc='candidate       lines', filter=lambda mTEPES,*la     :  la     in mTEPES.la  and pNetFixedCost     [la] >  0.0)
-    mTEPES.cd = Set(initialize=mTEPES.la,                     ordered=False, doc='             DC lines', filter=lambda mTEPES,*la     :  la     in mTEPES.la  and pNetFixedCost     [la] >  0.0 and pLineType[la] == 'DC')
-    mTEPES.ed = Set(initialize=mTEPES.la,                     ordered=False, doc='             DC lines', filter=lambda mTEPES,*la     :  la     in mTEPES.la  and pNetFixedCost     [la] == 0.0 and pLineType[la] == 'DC')
-    mTEPES.ll = Set(initialize=mTEPES.la,                     ordered=False, doc='loss            lines', filter=lambda mTEPES,*la     :  la     in mTEPES.la  and pLineLossFactor   [la] >  0.0 and pIndBinNetLosses > 0 )
-    mTEPES.rf = Set(initialize=mTEPES.nd,                     ordered=True , doc='reference node'       , filter=lambda mTEPES,nd      :  nd     in                pReferenceNode               )
-    mTEPES.gq = Set(initialize=mTEPES.gg,                     ordered=False, doc='gen    reactive units', filter=lambda mTEPES,gg      :  gg     in mTEPES.gg  and pRMaxReactivePower[gg] >  0.0 and pPeriodIniGen[gg] <= mTEPES.p.last() and pPeriodFinGen[gg] >= mTEPES.p.first())
-    mTEPES.sq = Set(initialize=mTEPES.gg,                     ordered=False, doc='syn    reactive units', filter=lambda mTEPES,gg      :  gg     in mTEPES.gg  and pRMaxReactivePower[gg] >  0.0 and pPeriodIniGen[gg] <= mTEPES.p.last() and pPeriodFinGen[gg] >= mTEPES.p.first() and pGenToTechnology[gg] == 'SynchronousCondenser')
-    mTEPES.sqc= Set(initialize=mTEPES.sq,                     ordered=False, doc='syn    reactive cand '                                                                                           )
-    mTEPES.shc= Set(initialize=mTEPES.sq,                     ordered=False, doc='shunt           cand '                                                                                           )
+    mTEPES.p   = Set(initialize=mTEPES.pp,                     ordered=True , doc='periods'              , filter=lambda mTEPES,pp      :  pp     in mTEPES.pp  and pPeriodWeight     [pp] >  0.0)
+    mTEPES.sc  = Set(initialize=mTEPES.scc,                    ordered=True , doc='scenarios'            , filter=lambda mTEPES,scc     :  scc    in mTEPES.scc                                  )
+    mTEPES.ps  = Set(initialize=mTEPES.p*mTEPES.sc,            ordered=True , doc='periods/scenarios'    , filter=lambda mTEPES,p,sc    :  (p,sc) in mTEPES.p*mTEPES.sc and pScenProb[p,sc] > 0.0)
+    mTEPES.st  = Set(initialize=mTEPES.stt,                    ordered=True , doc='stages'               , filter=lambda mTEPES,stt     :  stt    in mTEPES.stt and pStageWeight     [stt] >  0.0)
+    mTEPES.n   = Set(initialize=mTEPES.nn,                     ordered=True , doc='load levels'          , filter=lambda mTEPES,nn      :  nn     in mTEPES.nn  and pDuration         [nn] >  0  )
+    mTEPES.n2  = Set(initialize=mTEPES.nn,                     ordered=True , doc='load levels'          , filter=lambda mTEPES,nn      :  nn     in mTEPES.nn  and pDuration         [nn] >  0  )
+    mTEPES.g   = Set(initialize=mTEPES.gg,                     ordered=False, doc='generating      units', filter=lambda mTEPES,gg      :  gg     in mTEPES.gg  and (pRatedMaxPower   [gg] >  0.0 or  pRatedMaxCharge[gg] >  0.0) and pPeriodIniGen[gg] <= mTEPES.p.last() and pPeriodFinGen[gg] >= mTEPES.p.first() and pGenToNode.reset_index().set_index(['index']).isin(mTEPES.nd)['Node'][gg])  # excludes generators with empty node
+    mTEPES.t   = Set(initialize=mTEPES.g ,                     ordered=False, doc='thermal         units', filter=lambda mTEPES,g       :  g      in mTEPES.g   and pLinearOperCost   [g ] >  0.0)
+    mTEPES.r   = Set(initialize=mTEPES.g ,                     ordered=False, doc='RES             units', filter=lambda mTEPES,g       :  g      in mTEPES.g   and pLinearOperCost   [g ] == 0.0 and pRatedMaxStorage[g] == 0.0)
+    mTEPES.es  = Set(initialize=mTEPES.g ,                     ordered=False, doc='ESS             units', filter=lambda mTEPES,g       :  g      in mTEPES.g   and                                  (pRatedMaxStorage[g] >  0.0   or pRatedMaxCharge[g] > 0.0))
+    mTEPES.gc  = Set(initialize=mTEPES.g ,                     ordered=False, doc='candidate       units', filter=lambda mTEPES,g       :  g      in mTEPES.g   and pGenInvestCost    [g ] >  0.0)
+    mTEPES.gd  = Set(initialize=mTEPES.g ,                     ordered=False, doc='retirement      units', filter=lambda mTEPES,g       :  g      in mTEPES.g   and pGenRetireCost    [g ] != 0.0)
+    mTEPES.ec  = Set(initialize=mTEPES.es,                     ordered=False, doc='candidate   ESS units', filter=lambda mTEPES,es      :  es     in mTEPES.es  and pGenInvestCost    [es] >  0.0)
+    mTEPES.br  = Set(initialize=sBrList,                       ordered=False, doc='all input branches'                                                                                           )
+    mTEPES.ln  = Set(initialize=dfNetwork.index,               ordered=False, doc='all input lines'                                                                                              )
+    mTEPES.la  = Set(initialize=mTEPES.ln,                     ordered=False, doc='all real        lines', filter=lambda mTEPES,*ln     :  ln     in mTEPES.ln  and pLineX            [ln] != 0.0 and pLineNTCFrw[ln] > 0.0 and pLineNTCBck[ln] > 0.0 and pPeriodIniNet[ln] <= mTEPES.p.last() and pPeriodFinNet[ln] >= mTEPES.p.first())
+    mTEPES.ls  = Set(initialize=mTEPES.la,                     ordered=False, doc='all real switch lines', filter=lambda mTEPES,*la     :  la     in mTEPES.la  and pIndBinLineSwitch [la])
+    mTEPES.lc  = Set(initialize=mTEPES.la,                     ordered=False, doc='candidate       lines', filter=lambda mTEPES,*la     :  la     in mTEPES.la  and pNetFixedCost     [la] >  0.0)
+    mTEPES.cd  = Set(initialize=mTEPES.la,                     ordered=False, doc='             DC lines', filter=lambda mTEPES,*la     :  la     in mTEPES.la  and pNetFixedCost     [la] >  0.0 and pLineType[la] == 'DC')
+    mTEPES.ed  = Set(initialize=mTEPES.la,                     ordered=False, doc='             DC lines', filter=lambda mTEPES,*la     :  la     in mTEPES.la  and pNetFixedCost     [la] == 0.0 and pLineType[la] == 'DC')
+    mTEPES.ll  = Set(initialize=mTEPES.la,                     ordered=False, doc='loss            lines', filter=lambda mTEPES,*la     :  la     in mTEPES.la  and pLineLossFactor   [la] >  0.0 and pIndBinNetLosses > 0 )
+    mTEPES.rf  = Set(initialize=mTEPES.nd,                     ordered=True , doc='reference node'       , filter=lambda mTEPES,nd      :  nd     in                pReferenceNode               )
+    mTEPES.gq  = Set(initialize=mTEPES.gg,                     ordered=False, doc='gen    reactive units', filter=lambda mTEPES,gg      :  gg     in mTEPES.gg  and pRMaxReactivePower[gg] >  0.0 and pPeriodIniGen[gg] <= mTEPES.p.last() and pPeriodFinGen[gg] >= mTEPES.p.first())
+    mTEPES.sq  = Set(initialize=mTEPES.gg,                     ordered=False, doc='syn    reactive units', filter=lambda mTEPES,gg      :  gg     in mTEPES.gg  and pRMaxReactivePower[gg] >  0.0 and pPeriodIniGen[gg] <= mTEPES.p.last() and pPeriodFinGen[gg] >= mTEPES.p.first() and pGenToTechnology[gg] == 'SynchronousCondenser')
+    mTEPES.sqc = Set(initialize=mTEPES.sq,                     ordered=False, doc='syn    reactive cand '                                                                                           )
+    mTEPES.shc = Set(initialize=mTEPES.sq,                     ordered=False, doc='shunt           cand '                                                                                           )
 
     # non-RES units, they can be committed and also contribute to the operating reserves
     mTEPES.nr = mTEPES.g - mTEPES.r
@@ -344,23 +345,25 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     # existing lines (le)
     mTEPES.le = mTEPES.la - mTEPES.lc
 
-    # # input lines
-    # mTEPES.lin = Set(initialize=mTEPES.nf*mTEPES.ni*mTEPES.cc, ordered=False, doc='input line', filter=lambda mTEPES,nf,ni,cc: (ni,nf,cc) in mTEPES.la)
-    # mTEPES.lil = Set(initialize=mTEPES.nf*mTEPES.ni*mTEPES.cc, ordered=False, doc='input line', filter=lambda mTEPES,nf,ni,cc: (ni,nf,cc) in mTEPES.ll)
+    # instrumental sets
+    mTEPES.psn   = [(p,sc,n   ) for p,sc,n    in mTEPES.ps *mTEPES.n ]
+    mTEPES.psst  = [(p,sc,st  ) for p,sc,st   in mTEPES.ps *mTEPES.st]
+    mTEPES.psng  = [(p,sc,n,g ) for p,sc,n,g  in mTEPES.psn*mTEPES.g ]
+    mTEPES.psnr  = [(p,sc,n,r ) for p,sc,n,r  in mTEPES.psn*mTEPES.r ]
+    mTEPES.psnnr = [(p,sc,n,nr) for p,sc,n,nr in mTEPES.psn*mTEPES.nr]
+    mTEPES.psnes = [(p,sc,n,es) for p,sc,n,es in mTEPES.psn*mTEPES.es]
+    mTEPES.psnnd = [(p,sc,n,nd) for p,sc,n,nd in mTEPES.psn*mTEPES.nd]
+    mTEPES.psnar = [(p,sc,n,ar) for p,sc,n,ar in mTEPES.psn*mTEPES.ar]
+    mTEPES.psngt = [(p,sc,n,gt) for p,sc,n,gt in mTEPES.psn*mTEPES.gt]
+
+    mTEPES.psnla = [(p,sc,n,ni,nf,cc) for p,sc,n,ni,nf,cc in mTEPES.psn*mTEPES.la]
+    mTEPES.psnls = [(p,sc,n,ni,nf,cc) for p,sc,n,ni,nf,cc in mTEPES.psn*mTEPES.ls]
 
     # assigning a node to an area
-    pNode2Area  = [(nd,ar) for (nd,zn,ar) in mTEPES.ndzn*mTEPES.ar if (zn,ar) in mTEPES.znar]
-    mTEPES.ndar = Set(initialize=list(pNode2Area), ordered=False, doc='node to area')
+    mTEPES.ndar = [(nd,ar) for (nd,zn,ar) in mTEPES.ndzn*mTEPES.ar if (zn,ar) in mTEPES.znar]
 
     # assigning a line to an area. Both nodes are in the same area. Cross-area lines not included
-    # pLine2Area = pd.DataFrame(0, dtype=int, index=pd.MultiIndex.from_tuples(mTEPES.la*mTEPES.ar, names=('InitialNode', 'FinalNode', 'Circuit', 'Area')), columns=['Y/N'])
-    # for ni,nf,cc,ar in mTEPES.la*mTEPES.ar:
-    #     if (ni,ar) in mTEPES.ndar:
-    #         if (nf,ar) in mTEPES.ndar:
-    #             pLine2Area.loc[ni,nf,cc,ar] = 1
-    # mTEPES.laar = Set(initialize=mTEPES.la*mTEPES.ar, ordered=False, doc='line to area', filter=lambda mTEPES,ni,nf,cc,ar: (ni,nf,cc,ar) in mTEPES.la*mTEPES.ar and pLine2Area.loc[ni,nf,cc,ar]['Y/N'] == 1)
-    pLine2Area = [(ni,nf,cc,ar) for (ni,nf,cc,ar) in mTEPES.la*mTEPES.ar if (ni,ar) in mTEPES.ndar and (nf,ar) in mTEPES.ndar]
-    mTEPES.laar = Set(initialize=list(pLine2Area), ordered=False, doc='line to area')
+    mTEPES.laar = [(ni,nf,cc,ar) for (ni,nf,cc,ar) in mTEPES.la*mTEPES.ar if (ni,ar) in mTEPES.ndar and (nf,ar) in mTEPES.ndar]
 
     # replacing string values by numerical values
     idxDict = dict()
@@ -446,6 +449,9 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.ot = Set(initialize=mTEPES.gt, ordered=False, doc='storage technologies', filter=lambda mTEPES,gt: gt in mTEPES.gt and sum(1 for es in mTEPES.es if (gt,es) in mTEPES.t2g))
     mTEPES.rt = Set(initialize=mTEPES.gt, ordered=False, doc='RES     technologies', filter=lambda mTEPES,gt: gt in mTEPES.gt and sum(1 for r  in mTEPES.r  if (gt,r ) in mTEPES.t2g))
 
+    mTEPES.psnot = [(p,sc,n,ot) for p,sc,n,ot in mTEPES.ps*mTEPES.n*mTEPES.ot]
+    mTEPES.psnrt = [(p,sc,n,rt) for p,sc,n,rt in mTEPES.ps*mTEPES.n*mTEPES.rt]
+
     #%% inverse index generator to mutually exclusive generator
     pExclusiveGenToGen = pGenToExclusiveGen.reset_index().set_index('MutuallyExclusive').set_axis(['Generator'], axis=1, inplace=False)[['Generator']]
     pExclusiveGenToGen = pExclusiveGenToGen.loc[pExclusiveGenToGen['Generator'].isin(mTEPES.g)]
@@ -456,8 +462,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     # minimum and maximum variable power
     pVariableMinPower   = pVariableMinPower.replace(0.0, float('nan'))
     pVariableMaxPower   = pVariableMaxPower.replace(0.0, float('nan'))
-    pMinPower           = pd.DataFrame([pRatedMinPower]*len(pVariableMinPower.index), index=pd.MultiIndex.from_tuples(pVariableMinPower.index), columns=pRatedMinPower.index)
-    pMaxPower           = pd.DataFrame([pRatedMaxPower]*len(pVariableMaxPower.index), index=pd.MultiIndex.from_tuples(pVariableMaxPower.index), columns=pRatedMaxPower.index)
+    pMinPower           = pd.DataFrame([pRatedMinPower]*len(pVariableMinPower.index), index=pd.Index(pVariableMinPower.index), columns=pRatedMinPower.index)
+    pMaxPower           = pd.DataFrame([pRatedMaxPower]*len(pVariableMaxPower.index), index=pd.Index(pVariableMaxPower.index), columns=pRatedMaxPower.index)
     pMinPower           = pMinPower.reindex        (sorted(pMinPower.columns        ), axis=1)
     pMaxPower           = pMaxPower.reindex        (sorted(pMaxPower.columns        ), axis=1)
     pVariableMinPower   = pVariableMinPower.reindex(sorted(pVariableMinPower.columns), axis=1)
@@ -470,8 +476,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     # minimum and maximum variable charge
     pVariableMinCharge  = pVariableMinCharge.replace(0.0, float('nan'))
     pVariableMaxCharge  = pVariableMaxCharge.replace(0.0, float('nan'))
-    pMinCharge          = pd.DataFrame([pRatedMinCharge]*len(pVariableMinCharge.index), index=pd.MultiIndex.from_tuples(pVariableMinCharge.index), columns=pRatedMinCharge.index)
-    pMaxCharge          = pd.DataFrame([pRatedMaxCharge]*len(pVariableMaxCharge.index), index=pd.MultiIndex.from_tuples(pVariableMaxCharge.index), columns=pRatedMaxCharge.index)
+    pMinCharge          = pd.DataFrame([pRatedMinCharge]*len(pVariableMinCharge.index), index=pd.Index(pVariableMinCharge.index), columns=pRatedMinCharge.index)
+    pMaxCharge          = pd.DataFrame([pRatedMaxCharge]*len(pVariableMaxCharge.index), index=pd.Index(pVariableMaxCharge.index), columns=pRatedMaxCharge.index)
     pMinCharge          = pMinCharge.reindex        (sorted(pMinCharge.columns        ), axis=1)
     pMaxCharge          = pMaxCharge.reindex        (sorted(pMaxCharge.columns        ), axis=1)
     pVariableMinCharge  = pVariableMinCharge.reindex(sorted(pVariableMinCharge.columns), axis=1)
@@ -484,8 +490,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     # minimum and maximum variable storage capacity
     pVariableMinStorage = pVariableMinStorage.replace(0.0, float('nan'))
     pVariableMaxStorage = pVariableMaxStorage.replace(0.0, float('nan'))
-    pMinStorage         = pd.DataFrame([pRatedMinStorage]*len(pVariableMinStorage.index), index=pd.MultiIndex.from_tuples(pVariableMinStorage.index), columns=pRatedMinStorage.index)
-    pMaxStorage         = pd.DataFrame([pRatedMaxStorage]*len(pVariableMaxStorage.index), index=pd.MultiIndex.from_tuples(pVariableMaxStorage.index), columns=pRatedMaxStorage.index)
+    pMinStorage         = pd.DataFrame([pRatedMinStorage]*len(pVariableMinStorage.index), index=pd.Index(pVariableMinStorage.index), columns=pRatedMinStorage.index)
+    pMaxStorage         = pd.DataFrame([pRatedMaxStorage]*len(pVariableMaxStorage.index), index=pd.Index(pVariableMaxStorage.index), columns=pRatedMaxStorage.index)
     pMinStorage         = pMinStorage.reindex        (sorted(pMinStorage.columns        ), axis=1)
     pMaxStorage         = pMaxStorage.reindex        (sorted(pMaxStorage.columns        ), axis=1)
     pVariableMinStorage = pVariableMinStorage.reindex(sorted(pVariableMinStorage.columns), axis=1)
@@ -496,7 +502,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pMaxStorage         = pMaxStorage.where                 (pMaxStorage         > 0.0,         other=0.0)
 
     # parameter that allows the initial inventory to change with load level
-    pIniInventory       = pd.DataFrame([pInitialInventory]*len(pVariableMinStorage.index), index=pd.MultiIndex.from_tuples(pVariableMinStorage.index), columns=pInitialInventory.index)
+    pIniInventory       = pd.DataFrame([pInitialInventory]*len(pVariableMinStorage.index), index=pd.Index(pVariableMinStorage.index), columns=pInitialInventory.index)
     # initial inventory must be between minimum and maximum
     # pIniInventory       = pMinStorage.where(pMinStorage > pIniInventory, other=pIniInventory)
     # pIniInventory       = pMaxStorage.where(pMaxStorage < pIniInventory, other=pIniInventory)
@@ -631,7 +637,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
 
     # maximum voltage angle
     pMaxTheta = pDemand*0.0 + math.pi/2
-    pMaxTheta = pMaxTheta.loc[mTEPES.ps*mTEPES.n]
+    pMaxTheta = pMaxTheta.loc[mTEPES.psn]
 
     # this option avoids a warning in the following assignments
     pd.options.mode.chained_assignment = None
@@ -763,9 +769,9 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
             mTEPES.pLineLength[ni,nf,cc]   =  1.1 * 6371 * 2 * math.asin(math.sqrt(math.pow(math.sin((mTEPES.pNodeLat[nf]-mTEPES.pNodeLat[ni])*math.pi/180/2),2) + math.cos(mTEPES.pNodeLat[ni]*math.pi/180)*math.cos(mTEPES.pNodeLat[nf]*math.pi/180)*math.pow(math.sin((mTEPES.pNodeLon[nf]-mTEPES.pNodeLon[ni])*math.pi/180/2),2)))
 
     # initialize generation output, unit commitment and line switching
-    pInitialOutput = pd.DataFrame([[0.0]*len(mTEPES.gg)]*len(mTEPES.ps*mTEPES.n), index=pd.MultiIndex.from_tuples(mTEPES.ps*mTEPES.n), columns=list(mTEPES.gg))
-    pInitialUC     = pd.DataFrame([[0  ]*len(mTEPES.gg)]*len(mTEPES.ps*mTEPES.n), index=pd.MultiIndex.from_tuples(mTEPES.ps*mTEPES.n), columns=list(mTEPES.gg))
-    pInitialSwitch = pd.DataFrame([[0  ]*len(mTEPES.ln)]*len(mTEPES.ps*mTEPES.n), index=pd.MultiIndex.from_tuples(mTEPES.ps*mTEPES.n), columns=list(mTEPES.ln))
+    pInitialOutput = pd.DataFrame([[0.0]*len(mTEPES.gg)]*len(mTEPES.psn), index=pd.Index(mTEPES.psn), columns=list(mTEPES.gg))
+    pInitialUC     = pd.DataFrame([[0  ]*len(mTEPES.gg)]*len(mTEPES.psn), index=pd.Index(mTEPES.psn), columns=list(mTEPES.gg))
+    pInitialSwitch = pd.DataFrame([[0  ]*len(mTEPES.ln)]*len(mTEPES.psn), index=pd.Index(mTEPES.psn), columns=list(mTEPES.ln))
 
     mTEPES.pInitialOutput = Param(mTEPES.ps, mTEPES.n, mTEPES.gg, initialize=pInitialOutput.stack().to_dict(), within=NonNegativeReals, doc='unit initial output',     mutable=True)
     mTEPES.pInitialUC     = Param(mTEPES.ps, mTEPES.n, mTEPES.gg, initialize=pInitialUC.stack().to_dict()    , within=Boolean,          doc='unit initial commitment', mutable=True)
@@ -855,7 +861,7 @@ def SettingUpVariables(OptModel, mTEPES):
             OptModel.vGenerationRetire[p,gd      ].fix(0)
 
     # relax binary condition in unit generation, startup and shutdown decisions
-    for p,sc,n,nr in mTEPES.ps*mTEPES.n*mTEPES.nr:
+    for p,sc,n,nr in mTEPES.psnnr:
         if mTEPES.pIndBinUnitCommit[nr] == 0:
             OptModel.vCommitment   [p,sc,n,nr].domain = UnitInterval
             OptModel.vStartUp      [p,sc,n,nr].domain = UnitInterval
@@ -865,7 +871,7 @@ def SettingUpVariables(OptModel, mTEPES):
             OptModel.vMaxCommitment[p,sc,  nr].domain = UnitInterval
 
     # existing lines are always committed if no switching decision is modeled
-    for p,sc,n,ni,nf,cc in mTEPES.ps*mTEPES.n*mTEPES.le:
+    for p,sc,n,ni,nf,cc in mTEPES.psn*mTEPES.le:
         if mTEPES.pIndBinLineSwitch[ni,nf,cc] == 0:
             OptModel.vLineCommit  [p,sc,n,ni,nf,cc].fix(1)
             OptModel.vLineOnState [p,sc,n,ni,nf,cc].fix(0)
@@ -879,18 +885,18 @@ def SettingUpVariables(OptModel, mTEPES):
     OptModel.vTheta      = Var(mTEPES.ps, mTEPES.n, mTEPES.nd, within=Reals,            bounds=lambda OptModel,p,sc,n, nd: (                            -mTEPES.pMaxTheta[p,sc,n,nd],mTEPES.pMaxTheta[p,sc,n,nd]),  doc='voltage angle   [rad]')
 
     # fix the must-run units and their output
-    for p,sc,n,g  in mTEPES.ps*mTEPES.n*mTEPES.g :
+    for p,sc,n,g  in mTEPES.psn*mTEPES.g :
         # must run units must produce at least their minimum output
         if mTEPES.pMustRun[g] == 1:
             OptModel.vTotalOutput[p,sc,n,g].setlb(mTEPES.pMinPower[p,sc,n,g])
         # if no max power, no total output
         if mTEPES.pMaxPower[p,sc,n,g] == 0.0:
             OptModel.vTotalOutput[p,sc,n,g].fix(0.0)
-    #for p,sc,n,r  in mTEPES.ps*mTEPES.n*mTEPES.r :
+    #for p,sc,n,r  in mTEPES.psn*mTEPES.r :
     #    if mTEPES.pMinPower[p,sc,n,r] == mTEPES.pMaxPower[p,sc,n,r] and mTEPES.pLinearOMCost[r] == 0.0:
     #        OptModel.vTotalOutput[p,sc,n,r].fix(mTEPES.pMaxPower[p,sc,n,r])
 
-    for p,sc,n,nr in mTEPES.ps*mTEPES.n*mTEPES.nr:
+    for p,sc,n,nr in mTEPES.psnnr:
         # must run units or units with no minimum power or ESS units are always committed and must produce at least their minimum output
         # not applicable to mutually exclusive units
         if (mTEPES.pMustRun[nr] == 1 or (mTEPES.pMinPower[p,sc,n,nr] == 0.0 and mTEPES.pConstantVarCost[nr] == 0.0) or nr in mTEPES.es) and sum(1 for g in mTEPES.nr if (nr,g) in mTEPES.g2g or (g,nr) in mTEPES.g2g) == 0:
@@ -907,7 +913,7 @@ def SettingUpVariables(OptModel, mTEPES):
             OptModel.vReserveUp     [p,sc,n,nr].fix(0.0)
             OptModel.vReserveDown   [p,sc,n,nr].fix(0.0)
 
-    for p,sc,n,es in mTEPES.ps*mTEPES.n*mTEPES.es:
+    for p,sc,n,es in mTEPES.psnes:
         # ESS with no charge capacity or not storage capacity can't charge
         if mTEPES.pMaxCharge        [p,sc,n,es] ==  0.0:
             OptModel.vESSTotalCharge[p,sc,n,es].fix(0.0)
@@ -939,7 +945,7 @@ def SettingUpVariables(OptModel, mTEPES):
 
         if len(mTEPES.n):
             # determine the first load level of each stage
-            n1 = next(iter(mTEPES.ps*mTEPES.n))
+            n1 = next(iter(mTEPES.psn))
             # commit the units and their output at the first load level of each stage
             pSystemOutput = 0.0
             for nr in mTEPES.nr:
@@ -976,7 +982,7 @@ def SettingUpVariables(OptModel, mTEPES):
     mTEPES.n  = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in                mTEPES.pDuration                                              )
 
     # fixing the ESS inventory at the end of the following pCycleTimeStep (daily, weekly, monthly), i.e., for daily ESS is fixed at the end of the week, for weekly/monthly ESS is fixed at the end of the year
-    for p,sc,n,es in mTEPES.ps*mTEPES.n*mTEPES.es:
+    for p,sc,n,es in mTEPES.psnes:
          if mTEPES.pStorageType[es] == 'Hourly'  and mTEPES.n.ord(n) % int(  24/mTEPES.pTimeStep()) == 0:
              OptModel.vESSInventory[p,sc,n,es].fix(mTEPES.pInitialInventory[es])
          if mTEPES.pStorageType[es] == 'Daily'   and mTEPES.n.ord(n) % int( 168/mTEPES.pTimeStep()) == 0:
@@ -987,13 +993,13 @@ def SettingUpVariables(OptModel, mTEPES):
              OptModel.vESSInventory[p,sc,n,es].fix(mTEPES.pInitialInventory[es])
 
     # if no operating reserve is required no variables are needed
-    for p,sc,n,ar,nr in mTEPES.ps*mTEPES.n*mTEPES.ar*mTEPES.nr:
+    for p,sc,n,ar,nr in mTEPES.psn*mTEPES.ar*mTEPES.nr:
         if (ar,nr) in mTEPES.a2g:
             if mTEPES.pOperReserveUp    [p,sc,n,ar] ==  0.0:
                 OptModel.vReserveUp     [p,sc,n,nr].fix(0.0)
             if mTEPES.pOperReserveDw    [p,sc,n,ar] ==  0.0:
                 OptModel.vReserveDown   [p,sc,n,nr].fix(0.0)
-    for p,sc,n,ar,es in mTEPES.ps*mTEPES.n*mTEPES.ar*mTEPES.es:
+    for p,sc,n,ar,es in mTEPES.psn*mTEPES.ar*mTEPES.es:
         if (ar,es) in mTEPES.a2g:
             if mTEPES.pOperReserveUp    [p,sc,n,ar] ==  0.0:
                 OptModel.vESSReserveUp  [p,sc,n,es].fix(0.0)
@@ -1002,17 +1008,17 @@ def SettingUpVariables(OptModel, mTEPES):
 
     # if there are no energy outflows no variable is needed
     for es in mTEPES.es:
-        if sum(mTEPES.pEnergyOutflows[p,sc,n,es]() for p,sc,n in mTEPES.ps*mTEPES.n) == 0:
-            for p,sc,n in mTEPES.ps*mTEPES.n:
+        if sum(mTEPES.pEnergyOutflows[p,sc,n,es]() for p,sc,n in mTEPES.psn) == 0:
+            for p,sc,n in mTEPES.psn:
                 OptModel.vEnergyOutflows[p,sc,n,es].fix(0.0)
 
     # fixing the voltage angle of the reference node for each scenario, period, and load level
     if mTEPES.pIndBinSingleNode() == 0:
-        for p,sc,n in mTEPES.ps*mTEPES.n:
+        for p,sc,n in mTEPES.psn:
             OptModel.vTheta[p,sc,n,mTEPES.rf.first()].fix(0.0)
 
     # fixing the ENS in nodes with no demand
-    for p,sc,n,nd in mTEPES.ps*mTEPES.n*mTEPES.nd:
+    for p,sc,n,nd in mTEPES.psnnd:
         if mTEPES.pDemand[p,sc,n,nd] == 0.0:
             OptModel.vENS[p,sc,n,nd].fix(0.0)
 
@@ -1090,10 +1096,10 @@ def SettingUpVariables(OptModel, mTEPES):
 
     # detecting infeasibility: total min ESS output greater than total inflows, total max ESS charge lower than total outflows
     for es in mTEPES.es:
-        if sum(mTEPES.pMinPower [p,sc,n,es]-mTEPES.pEnergyInflows [p,sc,n,es]() for p,sc,n in mTEPES.ps*mTEPES.n) > 0.0:
+        if sum(mTEPES.pMinPower [p,sc,n,es]-mTEPES.pEnergyInflows [p,sc,n,es]() for p,sc,n in mTEPES.psn) > 0.0:
             print('### Total minimum output greater than total inflows for ESS unit ', es)
             assert (0==1)
-        if sum(mTEPES.pMaxCharge[p,sc,n,es]-mTEPES.pEnergyOutflows[p,sc,n,es]() for p,sc,n in mTEPES.ps*mTEPES.n) < 0.0:
+        if sum(mTEPES.pMaxCharge[p,sc,n,es]-mTEPES.pEnergyOutflows[p,sc,n,es]() for p,sc,n in mTEPES.psn) < 0.0:
             print('### Total maximum charge lower than total outflows for ESS unit ', es)
             assert (0==1)
 
