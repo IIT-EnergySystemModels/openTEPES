@@ -17,7 +17,7 @@ def TotalObjectiveFunction(OptModel, mTEPES, pIndLogConsole):
     OptModel.eTotalSCost = Objective(rule=eTotalSCost, sense=minimize, doc='total system cost [MEUR]')
 
     def eTotalTCost(OptModel):
-        return OptModel.vTotalSCost == OptModel.vTotalICost + sum(mTEPES.pDiscountFactor[p] * mTEPES.pPeriodProb[p,sc] * (OptModel.vTotalGCost[p,sc,n] + OptModel.vTotalCCost[p,sc,n] + OptModel.vTotalECost[p,sc,n] + OptModel.vTotalRCost[p,sc,n]) for p,sc,n in mTEPES.ps*mTEPES.n)
+        return OptModel.vTotalSCost == OptModel.vTotalICost + sum(mTEPES.pDiscountFactor[p] * mTEPES.pPeriodProb[p,sc] * (OptModel.vTotalGCost[p,sc,n] + OptModel.vTotalCCost[p,sc,n] + OptModel.vTotalECost[p,sc,n] + OptModel.vTotalRCost[p,sc,n]) for p,sc,n in mTEPES.psn)
     OptModel.eTotalTCost = Constraint(rule=eTotalTCost, doc='total system cost [MEUR]')
 
     GeneratingTime = time.time() - StartTime

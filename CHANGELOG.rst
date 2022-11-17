@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.8.4] - 2022-11-14
+[4.8.4] - 2022-11-17
 --------------------
+- [CHANGED] modify output results to avoid the dynamic activation of the load levels depending on the stage
 - [CHANGED] modify input data and output results to clean up the use of aggregated sets
 - [CHANGED] modify output results to reduce printing time
 
