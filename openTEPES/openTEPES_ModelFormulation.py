@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 15, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 17, 2022
 """
 
 import time
@@ -17,7 +17,7 @@ def TotalObjectiveFunction(OptModel, mTEPES, pIndLogConsole):
     OptModel.eTotalSCost = Objective(rule=eTotalSCost, sense=minimize, doc='total system cost [MEUR]')
 
     def eTotalTCost(OptModel):
-        return OptModel.vTotalSCost == OptModel.vTotalICost + sum(mTEPES.pDiscountFactor[p] * mTEPES.pPeriodProb[p,sc] * (OptModel.vTotalGCost[p,sc,n] + OptModel.vTotalCCost[p,sc,n] + OptModel.vTotalECost[p,sc,n] + OptModel.vTotalRCost[p,sc,n]) for p,sc,n in mTEPES.psn)
+        return OptModel.vTotalSCost == OptModel.vTotalICost + sum(mTEPES.pDiscountFactor[p] * mTEPES.pPeriodProb[p,sc] * (OptModel.vTotalGCost[p,sc,n] + OptModel.vTotalCCost[p,sc,n] + OptModel.vTotalECost[p,sc,n] + OptModel.vTotalRCost[p,sc,n]) for p,sc,n in mTEPES.ps*mTEPES.n)
     OptModel.eTotalTCost = Constraint(rule=eTotalTCost, doc='total system cost [MEUR]')
 
     GeneratingTime = time.time() - StartTime
@@ -69,32 +69,41 @@ def GenerationOperationModelFormulationObjFunct(OptModel, mTEPES, pIndLogConsole
 
     StartTime = time.time()
 
-    def eTotalGCost(OptModel,p,sc,n):
-        return OptModel.vTotalGCost[p,sc,n] == (sum(mTEPES.pLoadLevelDuration[n] * mTEPES.pLinearVarCost  [nr] * OptModel.vTotalOutput   [p,sc,n,nr]                      +
-                                                    mTEPES.pLoadLevelDuration[n] * mTEPES.pConstantVarCost[nr] * OptModel.vCommitment    [p,sc,n,nr]                      +
-                                                    mTEPES.pLoadLevelDuration[n] * mTEPES.pStartUpCost    [nr] * OptModel.vStartUp       [p,sc,n,nr]                      +
-                                                    mTEPES.pLoadLevelDuration[n] * mTEPES.pShutDownCost   [nr] * OptModel.vShutDown      [p,sc,n,nr] for nr in mTEPES.nr) +
-                                                sum(mTEPES.pLoadLevelDuration[n] * mTEPES.pOperReserveCost[nr] * OptModel.vReserveUp     [p,sc,n,nr]                      +
-                                                    mTEPES.pLoadLevelDuration[n] * mTEPES.pOperReserveCost[nr] * OptModel.vReserveDown   [p,sc,n,nr] for nr in mTEPES.nr if mTEPES.pIndOperReserve[nr] == 0) +
-                                                sum(mTEPES.pLoadLevelDuration[n] * mTEPES.pOperReserveCost[es] * OptModel.vESSReserveUp  [p,sc,n,es]                      +
-                                                    mTEPES.pLoadLevelDuration[n] * mTEPES.pOperReserveCost[es] * OptModel.vESSReserveDown[p,sc,n,es] for es in mTEPES.es if mTEPES.pIndOperReserve[es] == 0) +
-                                                sum(mTEPES.pLoadLevelDuration[n] * mTEPES.pLinearOMCost   [r ] * OptModel.vTotalOutput   [p,sc,n,r ] for r  in mTEPES.r ) )
-    setattr(OptModel, 'eTotalGCost_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.ps, mTEPES.n, rule=eTotalGCost, doc='system variable generation operation cost [MEUR]'))
+    def eTotalGCost(OptModel,n):
+        if (st,n) in mTEPES.s2n:
+            return OptModel.vTotalGCost[p,sc,n] == (sum(mTEPES.pLoadLevelDuration[n] * mTEPES.pLinearVarCost  [nr] * OptModel.vTotalOutput   [p,sc,n,nr]                      +
+                                                        mTEPES.pLoadLevelDuration[n] * mTEPES.pConstantVarCost[nr] * OptModel.vCommitment    [p,sc,n,nr]                      +
+                                                        mTEPES.pLoadLevelDuration[n] * mTEPES.pStartUpCost    [nr] * OptModel.vStartUp       [p,sc,n,nr]                      +
+                                                        mTEPES.pLoadLevelDuration[n] * mTEPES.pShutDownCost   [nr] * OptModel.vShutDown      [p,sc,n,nr] for nr in mTEPES.nr) +
+                                                    sum(mTEPES.pLoadLevelDuration[n] * mTEPES.pOperReserveCost[nr] * OptModel.vReserveUp     [p,sc,n,nr]                      +
+                                                        mTEPES.pLoadLevelDuration[n] * mTEPES.pOperReserveCost[nr] * OptModel.vReserveDown   [p,sc,n,nr] for nr in mTEPES.nr if mTEPES.pIndOperReserve[nr] == 0) +
+                                                    sum(mTEPES.pLoadLevelDuration[n] * mTEPES.pOperReserveCost[es] * OptModel.vESSReserveUp  [p,sc,n,es]                      +
+                                                        mTEPES.pLoadLevelDuration[n] * mTEPES.pOperReserveCost[es] * OptModel.vESSReserveDown[p,sc,n,es] for es in mTEPES.es if mTEPES.pIndOperReserve[es] == 0) +
+                                                    sum(mTEPES.pLoadLevelDuration[n] * mTEPES.pLinearOMCost   [r ] * OptModel.vTotalOutput   [p,sc,n,r ] for r  in mTEPES.r ) )
+        else:
+            return Constraint.Skip
+    setattr(OptModel, 'eTotalGCost_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, rule=eTotalGCost, doc='system variable generation operation cost [MEUR]'))
 
-    def eTotalCCost(OptModel,p,sc,n):
-        return OptModel.vTotalCCost    [p,sc,n] == sum(mTEPES.pLoadLevelDuration[n] * mTEPES.pLinearVarCost  [es] * OptModel.vESSTotalCharge[p,sc,n,es] for es in mTEPES.es)
-    setattr(OptModel, 'eTotalCCost_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.ps, mTEPES.n, rule=eTotalCCost, doc='system variable consumption operation cost [MEUR]'))
+    def eTotalCCost(OptModel,n):
+        if (st,n) in mTEPES.s2n:
+            return OptModel.vTotalCCost    [p,sc,n] == sum(mTEPES.pLoadLevelDuration[n] * mTEPES.pLinearVarCost  [es] * OptModel.vESSTotalCharge[p,sc,n,es] for es in mTEPES.es)
+        else:
+            return Constraint.Skip
+    setattr(OptModel, 'eTotalCCost_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, rule=eTotalCCost, doc='system variable consumption operation cost [MEUR]'))
 
-    def eTotalECost(OptModel,p,sc,n):
-        if sum(mTEPES.pCO2EmissionCost[nr] for nr in mTEPES.nr):
+    def eTotalECost(OptModel,n):
+        if (st,n) in mTEPES.s2n and sum(mTEPES.pCO2EmissionCost[nr] for nr in mTEPES.nr):
             return OptModel.vTotalECost[p,sc,n] == sum(mTEPES.pLoadLevelDuration[n] * mTEPES.pCO2EmissionCost[nr] * OptModel.vTotalOutput   [p,sc,n,nr] for nr in mTEPES.nr)
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eTotalECost_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.ps, mTEPES.n, rule=eTotalECost, doc='system emission cost [MEUR]'))
+    setattr(OptModel, 'eTotalECost_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, rule=eTotalECost, doc='system emission cost [MEUR]'))
 
-    def eTotalRCost(OptModel,p,sc,n):
-        return     OptModel.vTotalRCost[p,sc,n] == sum(mTEPES.pLoadLevelDuration[n] * mTEPES.pENSCost             * OptModel.vENS           [p,sc,n,nd] for nd in mTEPES.nd)
-    setattr(OptModel, 'eTotalRCost_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.ps, mTEPES.n, rule=eTotalRCost, doc='system reliability cost [MEUR]'))
+    def eTotalRCost(OptModel,n):
+        if (st,n) in mTEPES.s2n:
+            return     OptModel.vTotalRCost[p,sc,n] == sum(mTEPES.pLoadLevelDuration[n] * mTEPES.pENSCost             * OptModel.vENS           [p,sc,n,nd] for nd in mTEPES.nd)
+        else:
+            return Constraint.Skip
+    setattr(OptModel, 'eTotalRCost_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, rule=eTotalRCost, doc='system reliability cost [MEUR]'))
 
     GeneratingTime = time.time() - StartTime
     if pIndLogConsole == 1:
