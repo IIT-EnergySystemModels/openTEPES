@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 17, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 19, 2022
 """
 
 import time
@@ -796,7 +796,7 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES):
 
     #%% outputting the up operating reserve marginal
     if sum(mTEPES.pOperReserveUp[p,sc,n,ar] for p,sc,n,ar in mTEPES.psn*mTEPES.ar) > 0.0 and (sum(1 for ar,nr in mTEPES.ar*mTEPES.nr if (ar,nr) in mTEPES.a2g and mTEPES.pIndOperReserve[nr] == 0) + sum(1 for ar,es in mTEPES.ar*mTEPES.es if (ar,es) in mTEPES.a2g and mTEPES.pIndOperReserve[es] == 0)) > 0:
-        sPSSTNAR      = [(p,sc,st,n,ar) for p,sc,st,n,ar in mTEPES.ps*mTEPES.st*mTEPES.n*mTEPES.ar if mTEPES.pOperReserveUp[p,sc,n,ar] and sum(1 for nr in mTEPES.nr if (ar,nr) in mTEPES.a2g) + sum(1 for es in mTEPES.es if (ar,es) in mTEPES.a2g)]
+        sPSSTNAR      = [(p,sc,st,n,ar) for p,sc,st,n,ar in mTEPES.ps*mTEPES.st*mTEPES.n*mTEPES.ar if (st,n) in mTEPES.s2n and mTEPES.pOperReserveUp[p,sc,n,ar] and sum(1 for nr in mTEPES.nr if (ar,nr) in mTEPES.a2g) + sum(1 for es in mTEPES.es if (ar,es) in mTEPES.a2g)]
         OutputResults = pd.Series(data=[OptModel.dual[getattr(OptModel, 'eOperReserveUp_'+str(p)+'_'+str(sc)+'_'+str(st))[p,sc,n,ar]] for p,sc,st,n,ar in sPSSTNAR], index=pd.Index(sPSSTNAR))
         OutputResults.to_frame(name='UORM').reset_index().pivot_table(index=['level_0','level_1','level_3'], columns='level_4', values='UORM').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_MarginalOperatingReserveUp_'+CaseName+'.csv', sep=',')
 
@@ -808,7 +808,7 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES):
 
     #%% outputting the down operating reserve marginal
     if sum(mTEPES.pOperReserveDw[p,sc,n,ar] for p,sc,n,ar in mTEPES.psn*mTEPES.ar) > 0.0 and (sum(1 for ar,nr in mTEPES.ar*mTEPES.nr if (ar,nr) in mTEPES.a2g and mTEPES.pIndOperReserve[nr] == 0) + sum(1 for ar,es in mTEPES.ar*mTEPES.es if (ar,es) in mTEPES.a2g and mTEPES.pIndOperReserve[es] == 0)) > 0:
-        sPSSTNAR      = [(p,sc,st,n,ar) for p,sc,st,n,ar in mTEPES.ps*mTEPES.st*mTEPES.n*mTEPES.ar if mTEPES.pOperReserveDw[p,sc,n,ar] and sum(1 for nr in mTEPES.nr if (ar,nr) in mTEPES.a2g) + sum(1 for es in mTEPES.es if (ar,es) in mTEPES.a2g)]
+        sPSSTNAR      = [(p,sc,st,n,ar) for p,sc,st,n,ar in mTEPES.ps*mTEPES.st*mTEPES.n*mTEPES.ar if (st,n) in mTEPES.s2n and mTEPES.pOperReserveDw[p,sc,n,ar] and sum(1 for nr in mTEPES.nr if (ar,nr) in mTEPES.a2g) + sum(1 for es in mTEPES.es if (ar,es) in mTEPES.a2g)]
         OutputResults = pd.Series(data=[OptModel.dual[getattr(OptModel, 'eOperReserveDw_'+str(p)+'_'+str(sc)+'_'+str(st))[p,sc,n,ar]] for p,sc,st,n,ar in sPSSTNAR], index=pd.Index(sPSSTNAR))
         OutputResults.to_frame(name='DORM').reset_index().pivot_table(index=['level_0','level_1','level_3'], columns='level_4', values='DORM').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_MarginalOperatingReserveDown_'+CaseName+'.csv', sep=',')
         MarginalDwOperatingReserve = OutputResults.to_frame(name='DORM').reset_index().pivot_table(index=['level_0','level_1','level_3','level_4'], values='DORM').rename_axis(['level_0', 'level_1', 'level_2','level_3'], axis=0).loc[:,:,:,:]
@@ -820,10 +820,10 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES):
     #%% outputting the water values
     if len(mTEPES.es):
         OutputResults = []
-        sPSSTNES      = [(p,sc,st,n,es) for p,sc,st,n,es in mTEPES.ps*mTEPES.st*mTEPES.n*mTEPES.es if mTEPES.n.ord(n) == mTEPES.pCycleTimeStep[es] and                                                      mTEPES.pMaxCharge[p,sc,n,es] + mTEPES.pMaxPower[p,sc,n,es]]
+        sPSSTNES      = [(p,sc,st,n,es) for p,sc,st,n,es in mTEPES.ps*mTEPES.st*mTEPES.n*mTEPES.es if (st,n) in mTEPES.s2n and mTEPES.n.ord(n) == mTEPES.pCycleTimeStep[es] and                                                      mTEPES.pMaxCharge[p,sc,n,es] + mTEPES.pMaxPower[p,sc,n,es]]
         OutputToFile = pd.Series(data=[OptModel.dual[getattr(OptModel, 'eESSInventory_'+str(p)+'_'+str(sc)+'_'+str(st))[p,sc,n,es]] for p,sc,st,n,es in sPSSTNES], index=pd.Index(sPSSTNES))
         OutputResults.append(OutputToFile)
-        sPSSTNES      = [(p,sc,st,n,es) for p,sc,st,n,es in mTEPES.ps*mTEPES.st*mTEPES.n*mTEPES.es if mTEPES.n.ord(n)  > mTEPES.pCycleTimeStep[es] and mTEPES.n.ord(n) % mTEPES.pCycleTimeStep[es] == 0 and mTEPES.pMaxCharge[p,sc,n,es] + mTEPES.pMaxPower[p,sc,n,es]]
+        sPSSTNES      = [(p,sc,st,n,es) for p,sc,st,n,es in mTEPES.ps*mTEPES.st*mTEPES.n*mTEPES.es if (st,n) in mTEPES.s2n and mTEPES.n.ord(n)  > mTEPES.pCycleTimeStep[es] and mTEPES.n.ord(n) % mTEPES.pCycleTimeStep[es] == 0 and mTEPES.pMaxCharge[p,sc,n,es] + mTEPES.pMaxPower[p,sc,n,es]]
         OutputToFile = pd.Series(data=[OptModel.dual[getattr(OptModel, 'eESSInventory_'+str(p)+'_'+str(sc)+'_'+str(st))[p,sc,n,es]] for p,sc,st,n,es in sPSSTNES], index=pd.Index(sPSSTNES))
         OutputResults.append(OutputToFile)
         OutputResults = pd.concat(OutputResults)
