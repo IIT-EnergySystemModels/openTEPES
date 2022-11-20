@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 15, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 20, 2022
 """
 
 import time
@@ -48,19 +48,19 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
     # binary            operation  decisions are fixed to their optimal values
     if mTEPES.pIndBinGenInvest()*len(mTEPES.gc)*sum(mTEPES.pIndBinUnitInvest[gc] for gc in mTEPES.gc) + mTEPES.pIndBinGenRetire()*len(mTEPES.gd)*sum(mTEPES.pIndBinUnitRetire[gd] for gd in mTEPES.gd) + mTEPES.pIndBinNetInvest()*len(mTEPES.lc)*sum(mTEPES.pIndBinLineInvest[lc] for lc in mTEPES.lc) + mTEPES.pIndBinGenOperat()*len(mTEPES.nr)*sum(mTEPES.pIndBinUnitCommit[nr] for nr in mTEPES.nr) + mTEPES.pIndBinLineCommit()*len(mTEPES.la)*sum(mTEPES.pIndBinLineSwitch[la] for la in mTEPES.la) + len(mTEPES.g2g) > 0:
         if mTEPES.pIndBinGenInvest()*len(mTEPES.gc)*sum(mTEPES.pIndBinUnitInvest[gc] for gc in mTEPES.gc):
-            for p,gc in mTEPES.p*mTEPES.gc:
+            for p,gc in mTEPES.pgc:
                 if mTEPES.pIndBinUnitInvest[gc] != 0:
                     OptModel.vGenerationInvest[p,gc].fix(round(OptModel.vGenerationInvest[p,gc]()))
                 else:
                     OptModel.vGenerationInvest[p,gc].fix(      OptModel.vGenerationInvest[p,gc]())
         if mTEPES.pIndBinGenRetire()*len(mTEPES.gd)*sum(mTEPES.pIndBinUnitRetire[gd] for gd in mTEPES.gd):
-            for p,gd in mTEPES.p*mTEPES.gd:
+            for p,gd in mTEPES.pgd:
                 if mTEPES.pIndBinUnitRetire[gd] != 0:
                     OptModel.vGenerationRetire[p,gd].fix(round(OptModel.vGenerationRetire[p,gd]()))
                 else:
                     OptModel.vGenerationRetire[p,gd].fix(      OptModel.vGenerationRetire[p,gd]())
         if mTEPES.pIndBinNetInvest()*len(mTEPES.lc)*sum(mTEPES.pIndBinLineInvest[lc] for lc in mTEPES.lc):
-            for p,ni,nf,cc in mTEPES.p*mTEPES.lc:
+            for p,ni,nf,cc in mTEPES.plc:
                 if mTEPES.pIndBinLineInvest[ni,nf,cc] != 0:
                     OptModel.vNetworkInvest[p,ni,nf,cc].fix(round(OptModel.vNetworkInvest[p,ni,nf,cc]()))
                 else:
