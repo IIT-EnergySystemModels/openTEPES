@@ -3,6 +3,7 @@ Change Log
 
 [4.8.4] - 2022-11-24
 --------------------
+- [FIXED] avoid writing results for areas with no generation nor demand
 - [FIXED] fix some errors in the use of dynamic sets in output results and other modules
 - [CHANGED] extensive use of dynamic sets in several modules
 - [CHANGED] modify output results to avoid the dynamic activation of the load levels depending on the stage

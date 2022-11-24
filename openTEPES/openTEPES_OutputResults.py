@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 23, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 24, 2022
 """
 
 import time
@@ -372,7 +372,7 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES):
         OutputToFile.to_frame(name='MtCO2').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MtCO2', aggfunc=sum).rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_GenerationEmission_'+CaseName+'.csv', sep=',')
 
         for ar in mTEPES.ar:
-            if len(mTEPES.ar) > 1 and sum(1 for nr in mTEPES.nr if (ar,nr) in mTEPES.a2g):
+            if sum(1 for nr in mTEPES.nr if (ar,nr) in mTEPES.a2g):
                 sPSNGTNR = [(p,sc,n,gt,nr) for p,sc,n,gt,nr in mTEPES.psngt*mTEPES.nr if (ar,nr) in mTEPES.a2g and (gt,nr) in mTEPES.t2g]
                 if len(sPSNGTNR):
                     OutputResults = pd.Series(data=[OutputToFile[p,sc,n,nr] for p,sc,n,gt,nr in sPSNGTNR], index=pd.Index(sPSNGTNR))
@@ -409,7 +409,7 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES):
         chart.save(_path+'/oT_Plot_TechnologyEnergy_'+str(p)+'_'+str(sc)+'_'+CaseName+'.html', embed_options={'renderer': 'svg'})
 
     for ar in mTEPES.ar:
-        if len(mTEPES.ar) > 1 and sum(1 for g in mTEPES.g if (ar,g) in mTEPES.a2g):
+        if sum(1 for g in mTEPES.g if (ar,g) in mTEPES.a2g):
             sPSNGT = [(p,sc,n,gt) for p,sc,n,gt in mTEPES.psngt if sum(1 for g in mTEPES.g if (ar,g) in mTEPES.a2g and (gt,g) in mTEPES.t2g)]
             if len(sPSNG):
                 OutputToFile = pd.Series(data=[sum(OptModel.vTotalOutput[p,sc,n,g]()*mTEPES.pLoadLevelDuration[n]() for g in mTEPES.g if (ar,g) in mTEPES.a2g and (gt,g) in mTEPES.t2g) for p,sc,n,gt in sPSNGT], index=pd.Index(sPSNGT))
@@ -610,7 +610,7 @@ def ESSOperationResults(DirName, CaseName, OptModel, mTEPES):
                 chart.save(_path+'/oT_Plot_TechnologyEnergyESS_'+str(p)+'_'+str(sc)+'_'+CaseName+'.html', embed_options={'renderer': 'svg'})
 
         for ar in mTEPES.ar:
-            if len(mTEPES.ar) > 1 and sum(1 for es in mTEPES.es if (ar,es) in mTEPES.a2g):
+            if sum(1 for es in mTEPES.es if (ar,es) in mTEPES.a2g):
                 OutputToFile = pd.Series(data=[sum(-OptModel.vESSTotalCharge   [p,sc,n,es]()*mTEPES.pLoadLevelDuration[n]() for es in mTEPES.es if (ar,es) in mTEPES.a2g and (ot,es) in mTEPES.t2g) for p,sc,n,ot in mTEPES.psnot], index=pd.Index(mTEPES.psnot))
                 OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='GWh', aggfunc=sum).rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_TechnologyEnergyESS_'+ar+'_'+CaseName+'.csv', sep=',')
 
@@ -955,7 +955,7 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES):
     StartTime = time.time()
 
     for ar in mTEPES.ar:
-        if len(mTEPES.ar) > 1 and sum(1 for g in mTEPES.g if (ar,g) in mTEPES.a2g):
+        if sum(1 for g in mTEPES.g if (ar,g) in mTEPES.a2g):
             sPSNGT = [(p,sc,n,gt) for p,sc,n,gt in mTEPES.psngt if sum(1 for g in mTEPES.g if (ar,g) in mTEPES.a2g and (gt,g) in mTEPES.t2g)]
             if len(sPSNGT):
                 OutputToFile = pd.Series(data=[sum(OptModel.vTotalOutput[p,sc,n,g]()*mTEPES.pLoadLevelDuration[n]() for g in mTEPES.g if (ar,g) in mTEPES.a2g and (gt,g) in mTEPES.t2g) for p,sc,n,gt in sPSNGT], index=pd.Index(sPSNGT))
@@ -1026,7 +1026,7 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES):
         return df
 
     for ar in mTEPES.ar:
-        if len(mTEPES.ar) >= 1 and sum(1 for g in mTEPES.g if (ar,g) in mTEPES.a2g):
+        if sum(1 for g in mTEPES.g if (ar,g) in mTEPES.a2g):
             OutputResults1 = pd.DataFrame(data={'MEUR': [0.0]}, index=pd.Index([(p,sc,'Generation Operation Cost'         ) for p,sc in mTEPES.ps]))
             OutputResults2 = pd.DataFrame(data={'MEUR': [0.0]}, index=pd.Index([(p,sc,'Generation Operating Reserve Cost' ) for p,sc in mTEPES.ps]))
             OutputResults3 = pd.DataFrame(data={'MEUR': [0.0]}, index=pd.Index([(p,sc,'Generation O&M Cost'               ) for p,sc in mTEPES.ps]))
