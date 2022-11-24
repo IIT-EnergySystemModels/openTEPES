@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.8.4] - 2022-11-20
+[4.8.4] - 2022-11-24
 --------------------
+- [FIXED] fix some errors in the use of dynamic sets in output results and other modules
 - [CHANGED] extensive use of dynamic sets in several modules
 - [CHANGED] modify output results to avoid the dynamic activation of the load levels depending on the stage
 - [CHANGED] modify input data and output results to clean up the use of aggregated sets

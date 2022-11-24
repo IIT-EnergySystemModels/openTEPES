@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 20, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 23, 2022
 """
 
 import datetime
@@ -371,7 +371,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.ndar = [(nd,ar) for (nd,zn,ar) in mTEPES.ndzn*mTEPES.ar if (zn,ar) in mTEPES.znar]
 
     # assigning a line to an area. Both nodes are in the same area. Cross-area lines not included
-    mTEPES.laar = [(ni,nf,cc,ar) for (ni,nf,cc,ar) in mTEPES.la*mTEPES.ar if (ni,ar) in mTEPES.ndar and (nf,ar) in mTEPES.ndar]
+    mTEPES.laar = [(ni,nf,cc,ar) for ni,nf,cc,ar in mTEPES.la*mTEPES.ar if (ni,ar) in mTEPES.ndar and (nf,ar) in mTEPES.ndar]
 
     # replacing string values by numerical values
     idxDict = dict()
@@ -596,8 +596,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
 
         pInitialInventory.update(pd.Series([0 for es in mTEPES.es if (ar,es) in mTEPES.a2g and pInitialInventory[es] < pEpsilon], index=[es for es in mTEPES.es if (ar,es) in mTEPES.a2g and pInitialInventory[es] < pEpsilon], dtype='float64'))
 
-        pLineNTCFrw.update(pd.Series([0.0 for (ni,nf,cc) in mTEPES.la if pLineNTCFrw[ni,nf,cc] < pEpsilon], index = [(ni,nf,cc) for (ni,nf,cc) in mTEPES.la if pLineNTCFrw[ni,nf,cc] < pEpsilon], dtype='float64'))
-        pLineNTCBck.update(pd.Series([0.0 for (ni,nf,cc) in mTEPES.la if pLineNTCBck[ni,nf,cc] < pEpsilon], index = [(ni,nf,cc) for (ni,nf,cc) in mTEPES.la if pLineNTCBck[ni,nf,cc] < pEpsilon], dtype='float64'))
+        pLineNTCFrw.update(pd.Series([0.0 for ni,nf,cc in mTEPES.la if pLineNTCFrw[ni,nf,cc] < pEpsilon], index=[(ni,nf,cc) for ni,nf,cc in mTEPES.la if pLineNTCFrw[ni,nf,cc] < pEpsilon], dtype='float64'))
+        pLineNTCBck.update(pd.Series([0.0 for ni,nf,cc in mTEPES.la if pLineNTCBck[ni,nf,cc] < pEpsilon], index=[(ni,nf,cc) for ni,nf,cc in mTEPES.la if pLineNTCBck[ni,nf,cc] < pEpsilon], dtype='float64'))
 
         # merging positive and negative values of the demand
         pDemand            = pDemandPos.where(pDemandNeg >= 0.0, other=pDemandNeg)
@@ -940,7 +940,7 @@ def SettingUpVariables(OptModel, mTEPES):
 
     # thermal and RES units ordered by increasing variable operation cost, excluding reactive generating units
     if len(mTEPES.tq):
-        mTEPES.go = [k for k in sorted(mTEPES.pLinearVarCost, key=mTEPES.pLinearVarCost.__getitem__) if k not in mTEPES.gq]
+        mTEPES.go = [k for k in sorted(mTEPES.pLinearVarCost, key=mTEPES.pLinearVarCost.__getitem__) if k not in mTEPES.sq]
     else:
         mTEPES.go = [k for k in sorted(mTEPES.pLinearVarCost, key=mTEPES.pLinearVarCost.__getitem__)                      ]
 
