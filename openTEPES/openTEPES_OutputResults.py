@@ -112,7 +112,7 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES):
         OutputToFile.pivot_table(index=['Period'], columns=['Generating unit'], values='MW').rename_axis([None], axis=0).to_csv(_path+'/oT_Result_GenerationInvestment_'+CaseName+'.csv', sep=',', index=False)
         OutputToFile = OutputToFile.set_index(['Period', 'Generating unit'])
 
-        if len(mTEPES.ar) > 1 and sum(1 for g in mTEPES.g if (ar,g) in mTEPES.a2g):
+        if len(mTEPES.ar) > 1 and sum(1 for ar,g in mTEPES.ar*mTEPES.g if (ar,g) in mTEPES.a2g):
             sPARGC           = [(p,ar,gc) for p,ar,gc in mTEPES.p*mTEPES.ar*mTEPES.gc if (ar,gc) in mTEPES.a2g]
             GenInvestToArea  = pd.Series(data=[OutputToFile['MW'][p,gc] for p,ar,gc in sPARGC], index=pd.Index(sPARGC)).to_frame(name='MW')
             GenInvestToArea.index.names = ['Period', 'Area', 'Generating unit']
@@ -170,7 +170,7 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES):
         OutputToFile.pivot_table(index=['Period'], columns=['Generating unit'], values='MW').rename_axis([None], axis=0).to_csv(_path+'/oT_Result_GenerationRetirement_'+CaseName+'.csv', sep=',', index=True)
         OutputToFile = OutputToFile.set_index(['Period', 'Generating unit'])
 
-        if len(mTEPES.ar) > 1 and sum(1 for g in mTEPES.g if (ar,g) in mTEPES.a2g):
+        if len(mTEPES.ar) > 1 and sum(1 for ar,g in mTEPES.ar*mTEPES.g if (ar,g) in mTEPES.a2g):
             sPARGD           = [(p,ar,gd) for p,ar,gd in mTEPES.p*mTEPES.ar*mTEPES.gd if (ar,gd) in mTEPES.a2g]
             GenRetireToArea  = pd.Series(data=[OutputToFile['MW'][p,gd] for p,ar,gd in sPARGD], index=pd.Index(sPARGD)).to_frame(name='MW')
             GenRetireToArea.index.names = ['Period', 'Area', 'Generating unit']
