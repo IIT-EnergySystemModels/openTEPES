@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 23, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 26, 2022
 """
 
 import datetime
@@ -347,7 +347,6 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
 
     # instrumental sets
     mTEPES.psn   = [(p,sc,n   ) for p,sc,n    in mTEPES.ps *mTEPES.n ]
-    mTEPES.psst  = [(p,sc,st  ) for p,sc,st   in mTEPES.ps *mTEPES.st]
     mTEPES.psng  = [(p,sc,n,g ) for p,sc,n,g  in mTEPES.psn*mTEPES.g ]
     mTEPES.psngg = [(p,sc,n,gg) for p,sc,n,gg in mTEPES.psn*mTEPES.gg]
     mTEPES.psnr  = [(p,sc,n,r ) for p,sc,n,r  in mTEPES.psn*mTEPES.r ]
