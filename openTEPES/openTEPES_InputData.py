@@ -952,7 +952,7 @@ def SettingUpVariables(OptModel, mTEPES):
 
         if len(mTEPES.n):
             # determine the first load level of each stage
-            n1 = next(iter(mTEPES.psn))
+            n1 = next(iter(mTEPES.ps*mTEPES.n))
             # commit the units and their output at the first load level of each stage
             pSystemOutput = 0.0
             for nr in mTEPES.nr:
