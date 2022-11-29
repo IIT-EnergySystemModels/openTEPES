@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.8.4] - 2022-11-25
+[4.8.4] - 2022-11-29
 --------------------
+- [FIXED] error in declaring the parameter scenario probabilities
 - [FIXED] avoid writing results for areas with no generation nor demand
 - [FIXED] fix some errors in the use of dynamic sets in output results and other modules
 - [CHANGED] extensive use of dynamic sets in several modules
