@@ -1,8 +1,10 @@
 Change Log
 =============
 
-[4.8.4] - 2022-11-29
+[4.8.4] - 2022-12-01
 --------------------
+- [CHANGED] scenario probabilities declared as float
+- [FIXED] control of inventory at the end of each stage and initial inventory fixed, but only if they are between limits
 - [FIXED] error in declaring the parameter scenario probabilities
 - [FIXED] avoid writing results for areas with no generation nor demand
 - [FIXED] fix some errors in the use of dynamic sets in output results and other modules
