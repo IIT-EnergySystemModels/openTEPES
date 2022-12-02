@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 26, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - December 1, 2022
 """
 
 import datetime
@@ -160,7 +160,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     # pStageDuration       = dfParameter['StageDuration'      ][0].astype('int')                                                          # duration of each stage                   [h]
 
     pPeriodWeight        = dfPeriod        ['Weight'        ].astype('int')                                                               # weights of periods                       [p.u.]
-    pScenProb            = dfScenario      ['Probability'   ]                                                                             # probabilities of scenarios               [p.u.]
+    pScenProb            = dfScenario      ['Probability'   ].astype('float')                                                             # probabilities of scenarios               [p.u.]
     pStageWeight         = dfStage         ['Weight'        ].astype('int')                                                               # weights of stages                        [p.u.]
     pDuration            = dfDuration      ['Duration'      ]    * pTimeStep                                                              # duration of load levels                  [h]
     pReserveMargin       = dfReserveMargin ['ReserveMargin' ]                                                                             # minimum adequacy reserve margin          [p.u.]
@@ -346,6 +346,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.le = mTEPES.la - mTEPES.lc
 
     # instrumental sets
+    mTEPES.psc   = [(p,sc     ) for p,sc      in mTEPES.p  *mTEPES.sc]
     mTEPES.psn   = [(p,sc,n   ) for p,sc,n    in mTEPES.ps *mTEPES.n ]
     mTEPES.psng  = [(p,sc,n,g ) for p,sc,n,g  in mTEPES.psn*mTEPES.g ]
     mTEPES.psngg = [(p,sc,n,gg) for p,sc,n,gg in mTEPES.psn*mTEPES.gg]
@@ -676,7 +677,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.pDemand               = Param(mTEPES.psnnd, initialize=pDemand.stack().to_dict()           , within=           Reals,    doc='Demand'                                    )
     mTEPES.pPeriodWeight         = Param(mTEPES.p,     initialize=pPeriodWeight.to_dict()             , within=NonNegativeIntegers, doc='Period weight'                             )
     mTEPES.pDiscountFactor       = Param(mTEPES.p,     initialize=pDiscountFactor.to_dict()           , within=NonNegativeReals,    doc='Discount factor'                           )
-    mTEPES.pScenProb             = Param(mTEPES.ps,    initialize=pScenProb.to_dict()                 , within=UnitInterval    ,    doc='Probability'                               )
+    mTEPES.pScenProb             = Param(mTEPES.psc,   initialize=pScenProb.to_dict()                 , within=UnitInterval    ,    doc='Probability'                               )
     mTEPES.pStageWeight          = Param(mTEPES.stt,   initialize=pStageWeight.to_dict()              , within=NonNegativeIntegers, doc='Stage weight'                              )
     mTEPES.pDuration             = Param(mTEPES.n,     initialize=pDuration.to_dict()                 , within=PositiveIntegers,    doc='Duration',                     mutable=True)
     mTEPES.pNodeLon              = Param(mTEPES.nd,    initialize=pNodeLon.to_dict()                  ,                             doc='Longitude'                                 )
@@ -978,9 +979,10 @@ def SettingUpVariables(OptModel, mTEPES):
                 else:
                     mTEPES.pInitialSwitch[n1,la] = 1
 
-            # fixing the ESS inventory at the last load level for every period and scenario
+            # fixing the ESS inventory at the last load level of the stage for every period and scenario
             for p,sc,es in mTEPES.ps*mTEPES.es:
-                OptModel.vESSInventory[p,sc,mTEPES.n.last(),es].fix(mTEPES.pInitialInventory[es])
+                if mTEPES.pInitialInventory[es] >= mTEPES.pMinStorage[p,sc,mTEPES.n.last(),es] and mTEPES.pInitialInventory[es] <= mTEPES.pMaxStorage[p,sc,mTEPES.n.last(),es]:
+                    OptModel.vESSInventory[p,sc,mTEPES.n.last(),es].fix(mTEPES.pInitialInventory[es])
 
     # activate all the periods, scenarios, and load levels again
     mTEPES.del_component(mTEPES.st)
@@ -990,14 +992,14 @@ def SettingUpVariables(OptModel, mTEPES):
 
     # fixing the ESS inventory at the end of the following pCycleTimeStep (daily, weekly, monthly), i.e., for daily ESS is fixed at the end of the week, for weekly/monthly ESS is fixed at the end of the year
     for p,sc,n,es in mTEPES.psnes:
-         if mTEPES.pStorageType[es] == 'Hourly'  and mTEPES.n.ord(n) % int(  24/mTEPES.pTimeStep()) == 0:
-             OptModel.vESSInventory[p,sc,n,es].fix(mTEPES.pInitialInventory[es])
-         if mTEPES.pStorageType[es] == 'Daily'   and mTEPES.n.ord(n) % int( 168/mTEPES.pTimeStep()) == 0:
-             OptModel.vESSInventory[p,sc,n,es].fix(mTEPES.pInitialInventory[es])
-         if mTEPES.pStorageType[es] == 'Weekly'  and mTEPES.n.ord(n) % int(8736/mTEPES.pTimeStep()) == 0:
-             OptModel.vESSInventory[p,sc,n,es].fix(mTEPES.pInitialInventory[es])
-         if mTEPES.pStorageType[es] == 'Monthly' and mTEPES.n.ord(n) % int(8736/mTEPES.pTimeStep()) == 0:
-             OptModel.vESSInventory[p,sc,n,es].fix(mTEPES.pInitialInventory[es])
+         if mTEPES.pStorageType[es] == 'Hourly'  and mTEPES.n.ord(n) % int(  24/mTEPES.pTimeStep()) == 0 and mTEPES.pInitialInventory[es] >= mTEPES.pMinStorage[p,sc,n,es] and mTEPES.pInitialInventory[es] <= mTEPES.pMaxStorage[p,sc,n,es]:
+                 OptModel.vESSInventory[p,sc,n,es].fix(mTEPES.pInitialInventory[es])
+         if mTEPES.pStorageType[es] == 'Daily'   and mTEPES.n.ord(n) % int( 168/mTEPES.pTimeStep()) == 0 and mTEPES.pInitialInventory[es] >= mTEPES.pMinStorage[p,sc,n,es] and mTEPES.pInitialInventory[es] <= mTEPES.pMaxStorage[p,sc,n,es]:
+                 OptModel.vESSInventory[p,sc,n,es].fix(mTEPES.pInitialInventory[es])
+         if mTEPES.pStorageType[es] == 'Weekly'  and mTEPES.n.ord(n) % int(8736/mTEPES.pTimeStep()) == 0 and mTEPES.pInitialInventory[es] >= mTEPES.pMinStorage[p,sc,n,es] and mTEPES.pInitialInventory[es] <= mTEPES.pMaxStorage[p,sc,n,es]:
+                 OptModel.vESSInventory[p,sc,n,es].fix(mTEPES.pInitialInventory[es])
+         if mTEPES.pStorageType[es] == 'Monthly' and mTEPES.n.ord(n) % int(8736/mTEPES.pTimeStep()) == 0 and mTEPES.pInitialInventory[es] >= mTEPES.pMinStorage[p,sc,n,es] and mTEPES.pInitialInventory[es] <= mTEPES.pMaxStorage[p,sc,n,es]:
+                 OptModel.vESSInventory[p,sc,n,es].fix(mTEPES.pInitialInventory[es])
 
     # if no operating reserve is required no variables are needed
     for p,sc,n,ar,nr in mTEPES.psn*mTEPES.ar*mTEPES.nr:
