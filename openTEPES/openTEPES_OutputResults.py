@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 26, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - December 2, 2022
 """
 
 import time
@@ -322,7 +322,7 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES):
     if len(OutputResults.index):
         OutputResults.to_frame(name='MW/h').reset_index().pivot_table(index=['level_0','level_1','level_3'], columns='level_4', values='MW/h', aggfunc=sum).rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_GenerationRampDwSurplus_'+CaseName+'.csv', sep=',')
 
-    if len(mTEPES.r):
+    if len(mTEPES.r) and len(mTEPES.rt):
         OutputToFile1 = pd.Series(data=[(OptModel.vTotalOutput[p,sc,n,r].ub - OptModel.vTotalOutput[p,sc,n,r]())*mTEPES.pLoadLevelDuration[n]() for p,sc,n,r in mTEPES.psnr], index=pd.Index(mTEPES.psnr))
         OutputToFile2 = pd.Series(data=[(OptModel.vTotalOutput[p,sc,n,r].ub                                    )*mTEPES.pLoadLevelDuration[n]() for p,sc,n,r in mTEPES.psnr], index=pd.Index(mTEPES.psnr))
         for p,sc,n,r in mTEPES.psnr:
@@ -1313,7 +1313,7 @@ def NetworkMapResults(DirName, CaseName, OptModel, mTEPES):
 
     if len(mTEPES.sc) > 1:
         for scc in mTEPES.sc:
-            if mTEPES.pScenProb[p,scc] == 1.0:
+            if abs(mTEPES.pScenProb[p,scc] - 1.0) < 1e-6:
                 sc = scc
     else:
         sc = list(mTEPES.sc)[0]
