@@ -5,6 +5,7 @@ Change Log
 --------------------
 - [CHANGED] fix some warning on input data module
 - [FIXED] fix relation between generation investment and total charge
+- [FIXED] change some future warnings and fix generation investment for ESS
 
 [4.8.4] - 2022-12-01
 --------------------
