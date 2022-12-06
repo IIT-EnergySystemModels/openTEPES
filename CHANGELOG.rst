@@ -4,6 +4,7 @@ Change Log
 [4.8.5] - 2022-12-06
 --------------------
 - [CHANGED] fix some warning on input data module
+- [FIXED] fix relation between generation investment and total charge
 
 [4.8.4] - 2022-12-01
 --------------------
