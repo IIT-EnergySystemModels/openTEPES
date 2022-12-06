@@ -89,8 +89,8 @@ They are written in **uppercase** letters.
 =====================================================  ========================================================================================================================  ============
 **Generation system**
 -----------------------------------------------------  ------------------------------------------------------------------------------------------------------------------------  ------------
-:math:`CFG_g`                                          Annualized fixed cost of a candidate generator                                                                            M€
-:math:`CFR_g`                                          Annualized fixed cost of a candidate generator to be retired                                                              M€
+:math:`CFG_g`                                          Annualized fixed cost of a candidate generator                                                                            M€/yr
+:math:`CFR_g`                                          Annualized fixed cost of a candidate generator to be retired                                                              M€/yr
 :math:`A_g`                                            Availability of each generator for adequacy reserve margin                                                                p.u.
 :math:`\underline{GP}_g, \overline{GP}_g`              Rated minimum load and maximum output of a generator                                                                      GW
 :math:`\underline{GP}^p_{ωng}, \overline{GP}^p_{ωng}`  Minimum load and maximum output of a generator                                                                            GW
@@ -111,16 +111,16 @@ They are written in **uppercase** letters.
 :math:`EO^p_{ωng}`                                     Energy outflows of an ESS (e.g., H2, EV, hydro power plant)                                                               GW
 =====================================================  ========================================================================================================================  ============
 
-=========================================  =================================================================================================================  ====
+=========================================  =================================================================================================================  =====
 **Transmission system**
------------------------------------------  -----------------------------------------------------------------------------------------------------------------  ----
-:math:`CFT_{ijc}`                          Annualized fixed cost of a candidate transmission line                                                             M€
+-----------------------------------------  -----------------------------------------------------------------------------------------------------------------  -----
+:math:`CFT_{ijc}`                          Annualized fixed cost of a candidate transmission line                                                             M€/yr
 :math:`\overline{F}_{ijc}`                 Net transfer capacity (total transfer capacity multiplied by the security coefficient) of a transmission line      GW
 :math:`\overline{F}'_{ijc}`                Maximum flow used in the Kirchhoff's 2nd law constraint (e.g., disjunctive constraint for the candidate AC lines)  GW
 :math:`L_{ijc}, X_{ijc}`                   Loss factor and reactance of a transmission line                                                                   p.u.
 :math:`SON_{ijc}, SOF_{ijc}`               Minimum switch-on and switch-off state of a line                                                                   h
 :math:`S_B`                                Base power                                                                                                         GW
-=========================================  =================================================================================================================  ====
+=========================================  =================================================================================================================  =====
 
 The net transfer capacity of a transmission line can be different in each direction. However, here it is presented as equal for simplicity.
 

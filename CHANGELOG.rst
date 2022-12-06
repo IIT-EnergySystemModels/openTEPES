@@ -1,6 +1,10 @@
 Change Log
 =============
 
+[4.8.5] - 2022-12-06
+--------------------
+- [CHANGED] fix some warning on input data module
+
 [4.8.4] - 2022-12-01
 --------------------
 - [CHANGED] scenario probabilities declared as float
