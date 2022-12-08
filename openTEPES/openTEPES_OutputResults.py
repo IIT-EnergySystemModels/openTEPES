@@ -104,7 +104,7 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES):
 
     if len(mTEPES.gc):
         # Saving generation investment into CSV file
-        OutputToFile = pd.Series(data=[OptModel.vGenerationInvest[p,gc]()                               for p,gc in mTEPES.pgc], index=pd.Index(mTEPES.pgc))
+        OutputToFile = pd.Series(data=[OptModel.vGenerationInvest[p,gc]() for p,gc in mTEPES.pgc], index=pd.Index(mTEPES.pgc))
         OutputToFile = OutputToFile.fillna(0).to_frame(name='InvestmentDecision').reset_index().rename(columns={'level_0': 'Period', 'level_1': 'Generating unit'})
         OutputToFile.pivot_table(index=['Period'], columns=['Generating unit'], values='InvestmentDecision').rename_axis([None], axis=0).to_csv(_path+'/oT_Result_GenerationInvestment_PerUnit_'+CaseName+'.csv', sep=',', index=True)
         OutputToFile = pd.Series(data=[OptModel.vGenerationInvest[p,gc]()*max(mTEPES.pRatedMaxPower[gc],mTEPES.pRatedMaxCharge[gc])*1e3 for p,gc in mTEPES.pgc], index=pd.Index(mTEPES.pgc))
