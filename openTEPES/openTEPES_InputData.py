@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - December 06, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - December 09, 2022
 """
 
 import datetime
@@ -218,6 +218,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pIndBinUnitInvest   = dfGeneration  ['BinaryInvestment'      ]                                                                            # binary unit investment decision             [Yes]
     pIndBinUnitRetire   = dfGeneration  ['BinaryRetirement'      ]                                                                            # binary unit retirement decision             [Yes]
     pIndBinUnitCommit   = dfGeneration  ['BinaryCommitment'      ]                                                                            # binary unit commitment decision             [Yes]
+    pIndBinStorInvest   = dfGeneration  ['StorageInvestment'     ]                                                                            # storage linked to generation investment     [Yes]
     pIndOperReserve     = dfGeneration  ['NoOperatingReserve'    ]                                                                            # no contribution to operating reserve        [Yes]
     pMustRun            = dfGeneration  ['MustRun'               ]                                                                            # must-run unit                               [Yes]
     pInertia            = dfGeneration  ['Inertia'               ]                                                                            # inertia constant                            [s]
@@ -391,6 +392,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pIndBinUnitInvest = pIndBinUnitInvest.map(idxDict)
     pIndBinUnitRetire = pIndBinUnitRetire.map(idxDict)
     pIndBinUnitCommit = pIndBinUnitCommit.map(idxDict)
+    pIndBinStorInvest = pIndBinStorInvest.map(idxDict)
     pIndOperReserve   = pIndOperReserve.map  (idxDict)
     pMustRun          = pMustRun.map         (idxDict)
     pIndBinLineInvest = pIndBinLineInvest.map(idxDict)
@@ -722,6 +724,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.pIndBinUnitInvest     = Param(mTEPES.gg,    initialize=pIndBinUnitInvest.to_dict()         , within=Boolean         ,    doc='Binary investment decision'                )
     mTEPES.pIndBinUnitRetire     = Param(mTEPES.gg,    initialize=pIndBinUnitRetire.to_dict()         , within=Boolean         ,    doc='Binary retirement decision'                )
     mTEPES.pIndBinUnitCommit     = Param(mTEPES.gg,    initialize=pIndBinUnitCommit.to_dict()         , within=Boolean         ,    doc='Binary commitment decision'                )
+    mTEPES.pIndBinStorInvest     = Param(mTEPES.gg,    initialize=pIndBinStorInvest.to_dict()         , within=Boolean         ,    doc='Storage linked to generation investment'   )
     mTEPES.pIndOperReserve       = Param(mTEPES.gg,    initialize=pIndOperReserve.to_dict()           , within=Boolean         ,    doc='Indicator of operating reserve'            )
     mTEPES.pEfficiency           = Param(mTEPES.gg,    initialize=pEfficiency.to_dict()               , within=UnitInterval    ,    doc='Round-trip efficiency'                     )
     mTEPES.pCycleTimeStep        = Param(mTEPES.gg,    initialize=pCycleTimeStep.to_dict()            , within=PositiveIntegers,    doc='ESS Storage cycle'                         )
@@ -905,9 +908,9 @@ def SettingUpVariables(OptModel, mTEPES):
     #        OptModel.vTotalOutput[p,sc,n,r].fix(mTEPES.pMaxPower[p,sc,n,r])
 
     for p,sc,n,nr in mTEPES.psnnr:
-        # must run units or units with no minimum power or ESS units are always committed and must produce at least their minimum output
+        # must run units or units with no minimum power or ESS existing units are always committed and must produce at least their minimum output
         # not applicable to mutually exclusive units
-        if (mTEPES.pMustRun[nr] == 1 or (mTEPES.pMinPower[p,sc,n,nr] == 0.0 and mTEPES.pConstantVarCost[nr] == 0.0) or nr in mTEPES.es) and sum(1 for g in mTEPES.nr if (nr,g) in mTEPES.g2g or (g,nr) in mTEPES.g2g) == 0:
+        if (mTEPES.pMustRun[nr] == 1 or (mTEPES.pMinPower[p,sc,n,nr] == 0.0 and mTEPES.pConstantVarCost[nr] == 0.0) or nr in mTEPES.es) and nr not in mTEPES.ec and sum(1 for g in mTEPES.nr if (nr,g) in mTEPES.g2g or (g,nr) in mTEPES.g2g) == 0:
             OptModel.vCommitment    [p,sc,n,nr].fix(1)
             OptModel.vStartUp       [p,sc,n,nr].fix(0)
             OptModel.vShutDown      [p,sc,n,nr].fix(0)

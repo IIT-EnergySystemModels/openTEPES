@@ -146,7 +146,7 @@ They are written in **lowercase** letters.
 :math:`c^p_{ωne}`                           Generator charge                                                            GW
 :math:`ur^p_{ωng}, dr^p_{ωng}`              Upward and downward operating reserves of a non-renewable generating unit   GW
 :math:`ur'^p_{ωne}, dr'^p_{ωne}`            Upward and downward operating reserves of an ESS as a consumption unit      GW
-:math:`i^p_{ωne}`                           ESS stored energy (inventory, state of charge)                              GWh
+:math:`i^p_{ωne}`                           ESS stored energy (inventory, reservoir energy, state of charge)            GWh
 :math:`s^p_{ωne}`                           ESS spilled energy                                                          GWh
 :math:`uc^p_{ωng}, su^p_{ωng}, sd^p_{ωng}`  Commitment, startup and shutdown of generation unit per load level          {0,1}
 :math:`uc'_g`                               Maximum commitment of a generation unit for all the load levels             {0,1}
@@ -205,9 +205,13 @@ Investment and retirement decisions in consecutive years «``eConsecutiveGenInve
 
 **Generation operation**
 
-Commitment decision bounded by investment decision for candidate committed units (all except the VRE units) [p.u.] «``eInstalGenComm``»
+Commitment decision bounded by the investment decision for candidate committed units (all except the VRE units) [p.u.] «``eInstalGenComm``»
 
 :math:`uc^p_{ωng} \leq icg_{pg} \quad \forall pωng, g \in CG`
+
+Commitment decision bounded by the investment decision for candidate ESS [p.u.] «``eInstalESSComm``»
+
+:math:`uc^p_{ωne} \leq icg_{pe} \quad \forall pωne, e \in CE`
 
 Output and consumption bounded by investment decision for candidate ESS [p.u.] «``eInstalGenCap``» «``eInstalConESS``»
 
@@ -243,7 +247,7 @@ VRES units (i.e., those with linear variable cost equal to 0 and no storage capa
 
 Operating reserves from ESS can only be provided if enough energy is available for producing [GW] «``eReserveUpIfEnergy``» «``eReserveDwIfEnergy``»
 
-:math:`ur^p_{ωne} \leq \frac{      i^p_{ωne}}{DUR_n} \quad \forall pωne`
+:math:`ur^p_{ωne} \leq \frac{            i^p_{ωne}}{DUR_n} \quad \forall pωne`
 
 :math:`dr^p_{ωne} \leq \frac{I^p_{ωne} - i^p_{ωne}}{DUR_n} \quad \forall pωne`
 
@@ -251,7 +255,11 @@ or for storing [GW] «``eESSReserveUpIfEnergy``» «``eESSReserveDwIfEnergy``»
 
 :math:`ur'^p_{ωne} \leq \frac{I^p_{ωne} - i^p_{ωne}}{DUR_n} \quad \forall pωne`
 
-:math:`dr'^p_{ωne} \leq \frac{      i^p_{ωne}}{DUR_n} \quad \forall pωne`
+:math:`dr'^p_{ωne} \leq \frac{            i^p_{ωne}}{DUR_n} \quad \forall pωne`
+
+Inventory of ESS candidates (only for load levels multiple of 1, 24, 168 h depending on the ESS storage type) constrained by the ESS commitment decision times the maximum capacity [GWh] «``eInventory2Invest``»
+
+:math:`i^p_{ωne} <= uc^p_{ωne} I^p_{ωne} \quad \forall pωne`
 
 ESS energy inventory (only for load levels multiple of 1, 24, 168 h depending on the ESS storage type) [GWh] «``eESSInventory``»
 

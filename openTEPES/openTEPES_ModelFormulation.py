@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - December 06, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - December 09, 2022
 """
 
 import time
@@ -124,6 +124,16 @@ def GenerationOperationModelFormulationInvestment(OptModel, mTEPES, pIndLogConso
 
     if pIndLogConsole == 1:
         print('eInstalGenComm        ... ', len(getattr(OptModel, 'eInstalGenComm_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+
+    def eInstalESSComm(OptModel,p,sc,n,ec):
+        if mTEPES.pIndBinStorInvest[ec]:
+            return OptModel.vCommitment[p,sc,n,ec]                                 <= OptModel.vGenerationInvest[p,ec]
+        else:
+            return Constraint.Skip
+    setattr(OptModel, 'eInstalESSComm_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.ps, mTEPES.n, mTEPES.ec, rule=eInstalESSComm, doc='commitment if ESS unit [p.u.]'))
+
+    if pIndLogConsole == 1:
+        print('eInstalESSComm        ... ', len(getattr(OptModel, 'eInstalESSComm_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
 
     def eInstalGenCap(OptModel,p,sc,n,gc):
         if mTEPES.pMaxPower[p,sc,n,gc]:
@@ -330,6 +340,16 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
     print('Storage scheduling         constraints ****')
 
     StartTime = time.time()
+
+    def eInventory2Comm(OptModel,p,sc,n,ec):
+        if   mTEPES.pIndBinStorInvest[ec] and mTEPES.n.ord(n) == mTEPES.pCycleTimeStep[ec] and mTEPES.pMaxCharge[p,sc,n,ec] + mTEPES.pMaxPower[p,sc,n,ec]:
+            return OptModel.vESSInventory[p,sc,n,ec] <= mTEPES.pMaxStorage[p,sc,n,ec] * OptModel.vCommitment[p,sc,n,ec]
+        else:
+            return Constraint.Skip
+    setattr(OptModel, 'eInventory2Comm_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.ps, mTEPES.n, mTEPES.ec, rule=eInventory2Comm, doc='ESS inventory balance [GWh]'))
+
+    if pIndLogConsole == 1:
+        print('eInventory2Comm       ... ', len(getattr(OptModel, 'eInventory2Comm_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
 
     def eESSInventory(OptModel,p,sc,n,es):
         if   mTEPES.n.ord(n) == mTEPES.pCycleTimeStep[es] and mTEPES.pMaxCharge[p,sc,n,es] + mTEPES.pMaxPower[p,sc,n,es]:

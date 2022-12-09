@@ -1,6 +1,10 @@
 Change Log
 =============
 
+[4.9.0] - 2022-12-09
+--------------------
+- [FIXED] add StorageInvestment option in Generation file to link the storage capacity to the investment decision
+
 [4.8.5] - 2022-12-06
 --------------------
 - [CHANGED] fix some warning on input data module
