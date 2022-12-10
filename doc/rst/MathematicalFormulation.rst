@@ -106,7 +106,7 @@ They are written in **uppercase** letters.
 :math:`\rho_e`                                         Outflow cycle of the ESS (e.g., 1, 24, 168 h -for hourly, daily, weekly, monthly, yearly-)                                h
 :math:`GI_g`                                           Generator inertia                                                                                                         s
 :math:`EF_e`                                           Round-trip efficiency of the pump/turbine cycle of a pumped-storage hydro power plant or charge/discharge of a battery    p.u.
-:math:`I^p_{ωne}`                                      Capacity of an ESS (e.g., hydro power plant)                                                                              GWh
+:math:`\underline{I}^p_{ωne}, \overline{I}^p_{ωne}`    Maximum and minimum capacity of an ESS (e.g., hydro power plant, closed-loop pumped-storage hydro)                        GWh
 :math:`EI^p_{ωne}`                                     Energy inflows of an ESS (e.g., hydro power plant)                                                                        GW
 :math:`EO^p_{ωne}`                                     Energy outflows of an ESS (e.g., H2, EV, hydro power plant)                                                               GW
 =====================================================  ========================================================================================================================  ============
@@ -259,9 +259,11 @@ or for storing [GW] «``eESSReserveUpIfEnergy``» «``eESSReserveDwIfEnergy``»
 
 :math:`dr'^p_{ωne} \leq \frac{            i^p_{ωne}}{DUR_n} \quad \forall pωne`
 
-Inventory of ESS candidates (only for load levels multiple of 1, 24, 168 h depending on the ESS storage type) constrained by the ESS commitment decision times the maximum capacity [GWh] «``eInventory2Invest``»
+Maximum and minimum inventory of ESS candidates (only for load levels multiple of 1, 24, 168 h depending on the ESS storage type) constrained by the ESS commitment decision times the maximum capacity [GWh] «``eMaxInventory2Comm``» «``eMinInventory2Comm``»
 
-:math:`i^p_{ωne} <= uc^p_{ωne} I^p_{ωne}   \quad \forall pωne, e \in CE`
+:math:`i^p_{ωne} <= uc^p_{ωne} \overline{I}^p_{ωne}   \quad \forall pωne, e \in CE`
+
+:math:`i^p_{ωne} >= uc^p_{ωne} \underline{I}^p_{ωne}  \quad \forall pωne, e \in CE`
 
 Energy inflows of ESS candidates (only for load levels multiple of 1, 24, 168 h depending on the ESS storage type) constrained by the ESS commitment decision times the inflows data [GWh] «``eInflows2Comm``»
 
@@ -411,7 +413,7 @@ Half ohmic losses are linearly approximated as a function of the flow [GW] «``e
 
 :math:`0 \leq  c^p_{ωne}  \leq \overline{GC}^p_{ωne}                             \quad \forall pωne`
 
-:math:`0 \leq  i^p_{ωne}  \leq I^p_{ωne}                                         \quad \forall pωne`
+:math:`\undrline{I}^p_{ωne} \leq  i^p_{ωne}  \leq \overline{I}^p_{ωne}           \quad \forall pωne`
 
 :math:`0 \leq  s^p_{ωne}                                                         \quad \forall pωne`
 

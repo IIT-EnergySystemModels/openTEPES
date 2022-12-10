@@ -341,15 +341,25 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
 
     StartTime = time.time()
 
-    def eInventory2Comm(OptModel,p,sc,n,ec):
+    def eMaxInventory2Comm(OptModel,p,sc,n,ec):
         if   mTEPES.pIndBinStorInvest[ec] and mTEPES.n.ord(n) % mTEPES.pCycleTimeStep[ec] == 0 and mTEPES.pMaxCharge[p,sc,n,ec] + mTEPES.pMaxPower[p,sc,n,ec] and mTEPES.pMaxStorage[p,sc,n,ec]:
             return OptModel.vESSInventory[p,sc,n,ec] <= mTEPES.pMaxStorage[p,sc,n,ec] * OptModel.vCommitment[p,sc,n,ec]
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eInventory2Comm_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.ps, mTEPES.n, mTEPES.ec, rule=eInventory2Comm, doc='ESS inventory limited by commitment [GWh]'))
+    setattr(OptModel, 'eMaxInventory2Comm_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.ps, mTEPES.n, mTEPES.ec, rule=eMaxInventory2Comm, doc='ESS maximum inventory limited by commitment [GWh]'))
 
     if pIndLogConsole == 1:
-        print('eInventory2Comm       ... ', len(getattr(OptModel, 'eInventory2Comm_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eMaxInventory2Comm    ... ', len(getattr(OptModel, 'eMaxInventory2Comm_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+
+    def eMinInventory2Comm(OptModel,p,sc,n,ec):
+        if   mTEPES.pIndBinStorInvest[ec] and mTEPES.n.ord(n) % mTEPES.pCycleTimeStep[ec] == 0 and mTEPES.pMaxCharge[p,sc,n,ec] + mTEPES.pMaxPower[p,sc,n,ec] and mTEPES.pMaxStorage[p,sc,n,ec]:
+            return OptModel.vESSInventory[p,sc,n,ec] >= mTEPES.pMinStorage[p,sc,n,ec] * OptModel.vCommitment[p,sc,n,ec]
+        else:
+            return Constraint.Skip
+    setattr(OptModel, 'eMinInventory2Comm_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.ps, mTEPES.n, mTEPES.ec, rule=eMinInventory2Comm, doc='ESS minimum inventory limited by commitment [GWh]'))
+
+    if pIndLogConsole == 1:
+        print('eMinInventory2Comm    ... ', len(getattr(OptModel, 'eMinInventory2Comm_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
 
     def eInflows2Comm(OptModel,p,sc,n,ec):
         if   mTEPES.pIndBinStorInvest[ec] and mTEPES.n.ord(n) % mTEPES.pCycleTimeStep[ec] == 0 and mTEPES.pMaxCharge[p,sc,n,ec] + mTEPES.pMaxPower[p,sc,n,ec] and mTEPES.pEnergyInflows[p,sc,n,ec]():

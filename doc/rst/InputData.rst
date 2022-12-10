@@ -90,7 +90,7 @@ File                                       Description
 ``oT_Data_VariableMaxConsumption.csv``     Variable maximum power consumption by load level
 ``oT_Data_VariableMinConsumption.csv``     Variable minimum power consumption by load level
 ``oT_Data_EnergyInflows.csv``              Energy inflows to an ESS
-``oT_Data_EnergyOutflows.csv``             Energy outflows from an ESS for Power-to-X (H2 production or EV mobility or irrigation)
+``oT_Data_EnergyOutflows.csv``             Energy outflows from an ESS for Power-to-X (H2 production or EV mobility or water irrigation)
 ``oT_Data_VariableMaxStorage.csv``         Maximum storage of the ESS by load level
 ``oT_Data_VariableMinStorage.csv``         Minimum storage of the ESS by load level
 ``oT_Data_Network.csv``                    Network data
@@ -305,7 +305,7 @@ CO2EmissionRate       CO2 emission rate                                         
 FixedInvestmentCost   Overnight investment (capital and fixed O&M) cost                                                                       M€
 FixedRetirementCost   Overnight retirement (capital and fixed O&M) cost                                                                       M€
 FixedChargeRate       Fixed-charge rate to annualize the overnight investment cost                                                            p.u.
-StorageInvestment     Storage capacity linked to the investment decision                                                                      Yes/No
+StorageInvestment     Storage capacity, inflows, and outflows linked to the investment decision                                               Yes/No
 BinaryInvestment      Binary unit investment decision                                                                                         Yes/No
 InvestmentLo          Lower bound of investment decision                                                                                      p.u.
 InvestmentUp          Upper bound of investment decision                                                                                      p.u.
@@ -318,9 +318,9 @@ Daily *storage type* means that the ESS inventory is assessed every time step, w
 *Outflows type* represents the interval when the energy extracted from the storage needs to be satisfied.
 The *storage cycle* is the minimum between the inventory assessment period and the outflows period. It can be one time step, one day, and one week.
 The ESS inventory level at the end of a larger storage cycle is fixed to its initial value, i.e., the inventory of a daily storage type (evaluated on a time step basis) is fixed at the end of the week,
-the inventory of weekly/monthly storage is fixed at the end of the year.
+the inventory of weekly/monthly storage is fixed at the end of the year, only if the initial inventory lies between the storage limits.
 
-The initial storage of the ESSs is also fixed at the beginning and end of each stage. For example, the initial storage level is set for the hour 8736 in case of a single stage or for the hours 4368 and 4369
+The initial storage of the ESSs is also fixed at the beginning and end of each stage, only if the initial inventory lies between the storage limits. For example, the initial storage level is set for the hour 8736 in case of a single stage or for the hours 4368 and 4369
 (end of the first stage and beginning of the second stage) in case of two stages, each with 4368 hours.
 
 A generator with operation cost (sum of the fuel and emission cost, excluding O&M cost) > 0 is considered a non-renewable unit. If the unit has no operation cost and its maximum storage = 0,
@@ -333,6 +333,8 @@ If unit availability is left 0 or empty is changed to 1. For declaring a unit no
 EFOR is used to reduce the maximum and minimum power of the unit. For hydro units it can be used to reduce their maximum power by the water head effect. It does not reduce the maximum charge.
 
 Those generators or ESS with fixed cost > 0 are considered candidate and can be installed or not.
+
+Maximum and minimum storage is considered proportional to the invested capacity for the candidate ESS units if StorageInvestment is activated.
 
 Variable maximum and minimum generation
 ---------------------------------------
@@ -383,6 +385,8 @@ If you have daily inflows data just input the daily amount at the first hour of 
 
 Internally, all the values below 2.5e-5 times the maximum system demand of each area will be converted into 0 by the model.
 
+Inflows are considered proportional to the invested capacity for the candidate ESS units if StorageInvestment is activated.
+
 Energy outflows
 ---------------
 
@@ -401,6 +405,8 @@ These energy outflows can be used to represent the energy extracted from an ESS 
 If you have daily/weekly/monthly/yearly outflows data just input the daily/weekly/monthly/yearly amount at the first hour of every day/week/month/year.
 
 Internally, all the values below 2.5e-5 times the maximum system demand of each area will be converted into 0 by the model.
+
+Outflows are considered proportional to the invested capacity for the candidate ESS units if StorageInvestment is activated.
 
 Variable maximum and minimum storage
 ---------------------------------------------
