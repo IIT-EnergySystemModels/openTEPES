@@ -352,7 +352,7 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
         print('eMaxInventory2Comm    ... ', len(getattr(OptModel, 'eMaxInventory2Comm_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
 
     def eMinInventory2Comm(OptModel,p,sc,n,ec):
-        if   mTEPES.pIndBinStorInvest[ec] and mTEPES.n.ord(n) % mTEPES.pCycleTimeStep[ec] == 0 and mTEPES.pMaxCharge[p,sc,n,ec] + mTEPES.pMaxPower[p,sc,n,ec] and mTEPES.pMaxStorage[p,sc,n,ec]:
+        if   mTEPES.pIndBinStorInvest[ec] and mTEPES.n.ord(n) % mTEPES.pCycleTimeStep[ec] == 0 and mTEPES.pMaxCharge[p,sc,n,ec] + mTEPES.pMaxPower[p,sc,n,ec] and mTEPES.pMinStorage[p,sc,n,ec]:
             return OptModel.vESSInventory[p,sc,n,ec] >= mTEPES.pMinStorage[p,sc,n,ec] * OptModel.vCommitment[p,sc,n,ec]
         else:
             return Constraint.Skip
