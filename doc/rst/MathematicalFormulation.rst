@@ -107,8 +107,8 @@ They are written in **uppercase** letters.
 :math:`GI_g`                                           Generator inertia                                                                                                         s
 :math:`EF_e`                                           Round-trip efficiency of the pump/turbine cycle of a pumped-storage hydro power plant or charge/discharge of a battery    p.u.
 :math:`I^p_{ωne}`                                      Capacity of an ESS (e.g., hydro power plant)                                                                              GWh
-:math:`EI^p_{ωng}`                                     Energy inflows of an ESS (e.g., hydro power plant)                                                                        GW
-:math:`EO^p_{ωng}`                                     Energy outflows of an ESS (e.g., H2, EV, hydro power plant)                                                               GW
+:math:`EI^p_{ωne}`                                     Energy inflows of an ESS (e.g., hydro power plant)                                                                        GW
+:math:`EO^p_{ωne}`                                     Energy outflows of an ESS (e.g., H2, EV, hydro power plant)                                                               GW
 =====================================================  ========================================================================================================================  ============
 
 =========================================  =================================================================================================================  =====
@@ -135,22 +135,24 @@ They are written in **lowercase** letters.
 :math:`ens^p_{ωni}`   Energy not served   GW
 ===================  ==================  ===
 
-==========================================  ==========================================================================  =====
+==========================================  ==============================================================================  =====
 **Generation system**
-------------------------------------------  --------------------------------------------------------------------------  -----
-:math:`icg_{pg}`                            Candidate generator or ESS installed or not                                 {0,1}
-:math:`rcg_{pg}`                            Candidate generator or ESS retired   or not                                 {0,1}
-:math:`gp^p_{ωng}, gc^p_{ωng}`              Generator output (discharge if an ESS) and consumption (charge if an ESS)   GW
-:math:`go^p_{ωne}`                          Generator outflows of an ESS                                                GW
-:math:`p^p_{ωng}`                           Generator output of the second block (i.e., above the minimum load)         GW
-:math:`c^p_{ωne}`                           Generator charge                                                            GW
-:math:`ur^p_{ωng}, dr^p_{ωng}`              Upward and downward operating reserves of a non-renewable generating unit   GW
-:math:`ur'^p_{ωne}, dr'^p_{ωne}`            Upward and downward operating reserves of an ESS as a consumption unit      GW
-:math:`i^p_{ωne}`                           ESS stored energy (inventory, reservoir energy, state of charge)            GWh
-:math:`s^p_{ωne}`                           ESS spilled energy                                                          GWh
-:math:`uc^p_{ωng}, su^p_{ωng}, sd^p_{ωng}`  Commitment, startup and shutdown of generation unit per load level          {0,1}
-:math:`uc'_g`                               Maximum commitment of a generation unit for all the load levels             {0,1}
-==========================================  ==========================================================================  =====
+------------------------------------------  ------------------------------------------------------------------------------  -----
+:math:`icg_{pg}`                            Candidate generator or ESS installed or not                                     {0,1}
+:math:`rcg_{pg}`                            Candidate generator or ESS retired   or not                                     {0,1}
+:math:`gp^p_{ωng}, gc^p_{ωng}`              Generator output (discharge if an ESS) and consumption (charge if an ESS)       GW
+:math:`go^p_{ωne}`                          Generator outflows of an ESS                                                    GW
+:math:`p^p_{ωng}`                           Generator output of the second block (i.e., above the minimum load)             GW
+:math:`c^p_{ωne}`                           Generator charge                                                                GW
+:math:`ur^p_{ωng}, dr^p_{ωng}`              Upward and downward operating reserves of a non-renewable generating unit       GW
+:math:`ur'^p_{ωne}, dr'^p_{ωne}`            Upward and downward operating reserves of an ESS as a consumption unit          GW
+:math:`ei^p_{ωne}`                          Variable energy inflows of a candidate ESS (e.g., hydro power plant)            GW
+:math:`eo^p_{ωne}`                          Variable energy outflows of a candidate ESS (e.g., H2, EV, hydro power plant)   GW
+:math:`i^p_{ωne}`                           ESS stored energy (inventory, reservoir energy, state of charge)                GWh
+:math:`s^p_{ωne}`                           ESS spilled energy                                                              GWh
+:math:`uc^p_{ωng}, su^p_{ωng}, sd^p_{ωng}`  Commitment, startup and shutdown of generation unit per load level              {0,1}
+:math:`uc'_g`                               Maximum commitment of a generation unit for all the load levels                 {0,1}
+==========================================  ==============================================================================  =====
 
 ======================================================  ==============================================================  =====
 **Transmission system**
@@ -259,11 +261,21 @@ or for storing [GW] «``eESSReserveUpIfEnergy``» «``eESSReserveDwIfEnergy``»
 
 Inventory of ESS candidates (only for load levels multiple of 1, 24, 168 h depending on the ESS storage type) constrained by the ESS commitment decision times the maximum capacity [GWh] «``eInventory2Invest``»
 
-:math:`i^p_{ωne} <= uc^p_{ωne} I^p_{ωne} \quad \forall pωne`
+:math:`i^p_{ωne} <= uc^p_{ωne} I^p_{ωne}   \quad \forall pωne, e \in CE`
+
+Energy inflows of ESS candidates (only for load levels multiple of 1, 24, 168 h depending on the ESS storage type) constrained by the ESS commitment decision times the inflows data [GWh] «``eInflows2Comm``»
+
+:math:`ei^p_{ωne} <= uc^p_{ωne} EI^p_{ωne} \quad \forall pωne, e \in CE`
+
+Energy outflows of ESS candidates (only for load levels multiple of 1, 24, 168 h depending on the ESS storage type) constrained by the ESS commitment decision times the outflows data [GWh] «``eOutflows2Comm``»
+
+:math:`eo^p_{ωne} <= uc^p_{ωne} EO^p_{ωne} \quad \forall pωne, e \in CE`
 
 ESS energy inventory (only for load levels multiple of 1, 24, 168 h depending on the ESS storage type) [GWh] «``eESSInventory``»
 
-:math:`i^p_{ω,n-\frac{\tau_e}{\nu},e} + \sum_{n' = n-\frac{\tau_e}{\nu}}^{n} DUR_n' (EI^p_{ωn'e} - go^p_{ωn'e} - gp^p_{ωn'e} + EF_e gc^p_{ωn'e}) = i^p_{ωne} + s^p_{ωne} \quad \forall pωne`
+:math:`i^p_{ω,n-\frac{\tau_e}{\nu},e} + \sum_{n' = n-\frac{\tau_e}{\nu}}^{n} DUR_n' (EI^p_{ωn'e} - go^p_{ωn'e} - gp^p_{ωn'e} + EF_e gc^p_{ωn'e}) = i^p_{ωne} + s^p_{ωne} \quad \forall pωne, e \in EE`
+
+:math:`i^p_{ω,n-\frac{\tau_e}{\nu},e} + \sum_{n' = n-\frac{\tau_e}{\nu}}^{n} DUR_n' (ei^p_{ωn'e} - go^p_{ωn'e} - gp^p_{ωn'e} + EF_e gc^p_{ωn'e}) = i^p_{ωne} + s^p_{ωne} \quad \forall pωne, e \in CE`
 
 Maximum shift time of stored energy [GWh]. It is thought to be applied to demand side management «``eMaxShiftTime``»
 
@@ -271,7 +283,9 @@ Maximum shift time of stored energy [GWh]. It is thought to be applied to demand
 
 ESS outflows (only for load levels multiple of 1, 24, 168, 672, and 8736 h depending on the ESS outflow cycle) must be satisfied [GWh] «``eEnergyOutflows``»
 
-:math:`\sum_{n' = n-\frac{\tau_e}{\rho_e}}^{n} go^p_{ωn'e} DUR_n' = \sum_{n' = n-\frac{\tau_e}{\rho_e}}^{n} EO^p_{ωn'e} DUR_n' \quad \forall pωne, n \in \rho_e`
+:math:`\sum_{n' = n-\frac{\tau_e}{\rho_e}}^{n} go^p_{ωn'e} DUR_n' = \sum_{n' = n-\frac{\tau_e}{\rho_e}}^{n} EO^p_{ωn'e} DUR_n' \quad \forall pωne, n \in \rho_e, e \in EE`
+
+:math:`\sum_{n' = n-\frac{\tau_e}{\rho_e}}^{n} go^p_{ωn'e} DUR_n' = \sum_{n' = n-\frac{\tau_e}{\rho_e}}^{n} eo^p_{ωn'e} DUR_n' \quad \forall pωne, n \in \rho_e, e \in CE`
 
 Maximum and minimum output of the second block of a committed unit (all except the VRES units) [p.u.] «``eMaxOutput2ndBlock``» «``eMinOutput2ndBlock``»
 

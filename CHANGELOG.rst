@@ -1,9 +1,10 @@
 Change Log
 =============
 
-[4.9.0] - 2022-12-09
+[4.9.0] - 2022-12-10
 --------------------
-- [FIXED] add StorageInvestment option in Generation file to link the storage capacity to the investment decision
+- [FIXED] add StorageInvestment option in Generation file to link the storage capacity, inflows and outflows to the investment decision
+- [FIXED] add constraints related to the previous option
 
 [4.8.5] - 2022-12-06
 --------------------

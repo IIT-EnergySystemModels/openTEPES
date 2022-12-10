@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - December 09, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - December 10, 2022
 """
 
 import time
@@ -342,20 +342,44 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
     StartTime = time.time()
 
     def eInventory2Comm(OptModel,p,sc,n,ec):
-        if   mTEPES.pIndBinStorInvest[ec] and mTEPES.n.ord(n) == mTEPES.pCycleTimeStep[ec] and mTEPES.pMaxCharge[p,sc,n,ec] + mTEPES.pMaxPower[p,sc,n,ec]:
+        if   mTEPES.pIndBinStorInvest[ec] and mTEPES.n.ord(n) % mTEPES.pCycleTimeStep[ec] == 0 and mTEPES.pMaxCharge[p,sc,n,ec] + mTEPES.pMaxPower[p,sc,n,ec] and mTEPES.pMaxStorage[p,sc,n,ec]:
             return OptModel.vESSInventory[p,sc,n,ec] <= mTEPES.pMaxStorage[p,sc,n,ec] * OptModel.vCommitment[p,sc,n,ec]
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eInventory2Comm_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.ps, mTEPES.n, mTEPES.ec, rule=eInventory2Comm, doc='ESS inventory balance [GWh]'))
+    setattr(OptModel, 'eInventory2Comm_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.ps, mTEPES.n, mTEPES.ec, rule=eInventory2Comm, doc='ESS inventory limited by commitment [GWh]'))
 
     if pIndLogConsole == 1:
         print('eInventory2Comm       ... ', len(getattr(OptModel, 'eInventory2Comm_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
 
+    def eInflows2Comm(OptModel,p,sc,n,ec):
+        if   mTEPES.pIndBinStorInvest[ec] and mTEPES.n.ord(n) % mTEPES.pCycleTimeStep[ec] == 0 and mTEPES.pMaxCharge[p,sc,n,ec] + mTEPES.pMaxPower[p,sc,n,ec] and mTEPES.pEnergyInflows[p,sc,n,ec]():
+            return OptModel.vEnergyInflows[p,sc,n,ec] <= mTEPES.pEnergyInflows[p,sc,n,ec] * OptModel.vCommitment[p,sc,n,ec]
+        else:
+            return Constraint.Skip
+    setattr(OptModel, 'eInflows2Comm_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.ps, mTEPES.n, mTEPES.ec, rule=eInflows2Comm, doc='ESS inflows limited by commitment [GWh]'))
+
+    if pIndLogConsole == 1:
+        print('eInflows2Comm         ... ', len(getattr(OptModel, 'eInflows2Comm_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+
+    def eOutflows2Comm(OptModel,p,sc,n,ec):
+        if   mTEPES.pIndBinStorInvest[ec] and mTEPES.n.ord(n) % mTEPES.pCycleTimeStep[ec] == 0 and mTEPES.pMaxCharge[p,sc,n,ec] + mTEPES.pMaxPower[p,sc,n,ec] and mTEPES.pEnergyOutflows[p,sc,n,ec]():
+            return OptModel.vUnschedEnergyOutflows[p,sc,n,ec] <= mTEPES.pEnergyOutflows[p,sc,n,ec] * OptModel.vCommitment[p,sc,n,ec]
+        else:
+            return Constraint.Skip
+    setattr(OptModel, 'eOutflows2Comm_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.ps, mTEPES.n, mTEPES.ec, rule=eOutflows2Comm, doc='ESS outflows limited by commitment [GWh]'))
+
+    if pIndLogConsole == 1:
+        print('eOutflows2Comm        ... ', len(getattr(OptModel, 'eOutflows2Comm_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+
     def eESSInventory(OptModel,p,sc,n,es):
-        if   mTEPES.n.ord(n) == mTEPES.pCycleTimeStep[es] and mTEPES.pMaxCharge[p,sc,n,es] + mTEPES.pMaxPower[p,sc,n,es]:
+        if   mTEPES.n.ord(n) == mTEPES.pCycleTimeStep[es]                                                      and mTEPES.pMaxCharge[p,sc,n,es] + mTEPES.pMaxPower[p,sc,n,es] and es not in mTEPES.ec:
             return mTEPES.pIniInventory[p,sc,n,es]                                            + sum(mTEPES.pDuration[n2]*(mTEPES.pEnergyInflows[p,sc,n2,es] - OptModel.vEnergyOutflows[p,sc,n2,es] - OptModel.vTotalOutput[p,sc,n2,es] + mTEPES.pEfficiency[es]*OptModel.vESSTotalCharge[p,sc,n2,es]) for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pCycleTimeStep[es]:mTEPES.n.ord(n)]) == OptModel.vESSInventory[p,sc,n,es] + OptModel.vESSSpillage[p,sc,n,es]
-        elif mTEPES.n.ord(n) > mTEPES.pCycleTimeStep[es] and mTEPES.n.ord(n) % mTEPES.pCycleTimeStep[es] == 0 and mTEPES.pMaxCharge[p,sc,n,es] + mTEPES.pMaxPower[p,sc,n,es]:
+        elif mTEPES.n.ord(n) >  mTEPES.pCycleTimeStep[es] and mTEPES.n.ord(n) % mTEPES.pCycleTimeStep[es] == 0 and mTEPES.pMaxCharge[p,sc,n,es] + mTEPES.pMaxPower[p,sc,n,es] and es not in mTEPES.ec:
             return OptModel.vESSInventory[p,sc,mTEPES.n.prev(n,mTEPES.pCycleTimeStep[es]),es] + sum(mTEPES.pDuration[n2]*(mTEPES.pEnergyInflows[p,sc,n2,es] - OptModel.vEnergyOutflows[p,sc,n2,es] - OptModel.vTotalOutput[p,sc,n2,es] + mTEPES.pEfficiency[es]*OptModel.vESSTotalCharge[p,sc,n2,es]) for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pCycleTimeStep[es]:mTEPES.n.ord(n)]) == OptModel.vESSInventory[p,sc,n,es] + OptModel.vESSSpillage[p,sc,n,es]
+        if   mTEPES.n.ord(n) == mTEPES.pCycleTimeStep[es]                                                      and mTEPES.pMaxCharge[p,sc,n,es] + mTEPES.pMaxPower[p,sc,n,es] and es     in mTEPES.ec:
+            return mTEPES.pIniInventory[p,sc,n,es]                                            + sum(mTEPES.pDuration[n2]*(mTEPES.vEnergyInflows[p,sc,n2,es] - OptModel.vEnergyOutflows[p,sc,n2,es] - OptModel.vTotalOutput[p,sc,n2,es] + mTEPES.pEfficiency[es]*OptModel.vESSTotalCharge[p,sc,n2,es]) for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pCycleTimeStep[es]:mTEPES.n.ord(n)]) == OptModel.vESSInventory[p,sc,n,es] + OptModel.vESSSpillage[p,sc,n,es]
+        elif mTEPES.n.ord(n) >  mTEPES.pCycleTimeStep[es] and mTEPES.n.ord(n) % mTEPES.pCycleTimeStep[es] == 0 and mTEPES.pMaxCharge[p,sc,n,es] + mTEPES.pMaxPower[p,sc,n,es] and es     in mTEPES.ec:
+            return OptModel.vESSInventory[p,sc,mTEPES.n.prev(n,mTEPES.pCycleTimeStep[es]),es] + sum(mTEPES.pDuration[n2]*(mTEPES.vEnergyInflows[p,sc,n2,es] - OptModel.vEnergyOutflows[p,sc,n2,es] - OptModel.vTotalOutput[p,sc,n2,es] + mTEPES.pEfficiency[es]*OptModel.vESSTotalCharge[p,sc,n2,es]) for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pCycleTimeStep[es]:mTEPES.n.ord(n)]) == OptModel.vESSInventory[p,sc,n,es] + OptModel.vESSSpillage[p,sc,n,es]
         else:
             return Constraint.Skip
     setattr(OptModel, 'eESSInventory_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.ps, mTEPES.n, mTEPES.es, rule=eESSInventory, doc='ESS inventory balance [GWh]'))
@@ -429,7 +453,7 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
 
     def eEnergyOutflows(OptModel,p,sc,n,es):
         if mTEPES.n.ord(n) % mTEPES.pOutflowsTimeStep[es] == 0 and sum(mTEPES.pEnergyOutflows[p,sc,n2,es]() for n2 in mTEPES.n2):
-            return sum(OptModel.vEnergyOutflows[p,sc,n2,es]*mTEPES.pDuration[n2] for n2 in list(mTEPES.n2)[mTEPES.n.ord(n) - mTEPES.pOutflowsTimeStep[es]:mTEPES.n.ord(n)]) == sum(mTEPES.pEnergyOutflows[p,sc,n2,es]*mTEPES.pDuration[n2] for n2 in list(mTEPES.n2)[mTEPES.n.ord(n) - mTEPES.pOutflowsTimeStep[es]:mTEPES.n.ord(n)])
+            return sum(OptModel.vEnergyOutflows[p,sc,n2,es]*mTEPES.pDuration[n2] for n2 in list(mTEPES.n2)[mTEPES.n.ord(n) - mTEPES.pOutflowsTimeStep[es]:mTEPES.n.ord(n)]) == sum(mTEPES.vUnschedEnergyOutflows[p,sc,n2,es]*mTEPES.pDuration[n2] for n2 in list(mTEPES.n2)[mTEPES.n.ord(n) - mTEPES.pOutflowsTimeStep[es]:mTEPES.n.ord(n)])
         else:
             return Constraint.Skip
     setattr(OptModel, 'eEnergyOutflows_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.ps, mTEPES.n, mTEPES.es, rule=eEnergyOutflows, doc='energy outflows of an ESS unit [GW]'))
