@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - December 10, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - December 11, 2022
 """
 
 import time
@@ -352,7 +352,7 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
         print('eMaxInventory2Comm    ... ', len(getattr(OptModel, 'eMaxInventory2Comm_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
 
     def eMinInventory2Comm(OptModel,p,sc,n,ec):
-        if   mTEPES.pIndBinStorInvest[ec] and mTEPES.n.ord(n) % mTEPES.pCycleTimeStep[ec] == 0 and mTEPES.pMaxCharge[p,sc,n,ec] + mTEPES.pMaxPower[p,sc,n,ec] and mTEPES.pMinStorage[p,sc,n,ec]:
+        if   mTEPES.pIndBinStorInvest[ec] and mTEPES.n.ord(n) % mTEPES.pCycleTimeStep[ec] == 0 and mTEPES.pMaxCharge[p,sc,n,ec] + mTEPES.pMaxPower[p,sc,n,ec] and mTEPES.pMaxStorage[p,sc,n,ec]:
             return OptModel.vESSInventory[p,sc,n,ec] >= mTEPES.pMinStorage[p,sc,n,ec] * OptModel.vCommitment[p,sc,n,ec]
         else:
             return Constraint.Skip
@@ -462,7 +462,9 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
         print('eESSTotalCharge       ... ', len(getattr(OptModel, 'eESSTotalCharge_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
 
     def eEnergyOutflows(OptModel,p,sc,n,es):
-        if mTEPES.n.ord(n) % mTEPES.pOutflowsTimeStep[es] == 0 and sum(mTEPES.pEnergyOutflows[p,sc,n2,es]() for n2 in mTEPES.n2):
+        if   mTEPES.n.ord(n) % mTEPES.pOutflowsTimeStep[es] == 0 and sum(mTEPES.pEnergyOutflows[p,sc,n2,es]() for n2 in mTEPES.n2) and es not in mTEPES.ec:
+            return sum(OptModel.vEnergyOutflows[p,sc,n2,es]*mTEPES.pDuration[n2] for n2 in list(mTEPES.n2)[mTEPES.n.ord(n) - mTEPES.pOutflowsTimeStep[es]:mTEPES.n.ord(n)]) == sum(mTEPES.pEnergyOutflows       [p,sc,n2,es]*mTEPES.pDuration[n2] for n2 in list(mTEPES.n2)[mTEPES.n.ord(n) - mTEPES.pOutflowsTimeStep[es]:mTEPES.n.ord(n)])
+        elif mTEPES.n.ord(n) % mTEPES.pOutflowsTimeStep[es] == 0 and sum(mTEPES.pEnergyOutflows[p,sc,n2,es]() for n2 in mTEPES.n2) and es     in mTEPES.ec:
             return sum(OptModel.vEnergyOutflows[p,sc,n2,es]*mTEPES.pDuration[n2] for n2 in list(mTEPES.n2)[mTEPES.n.ord(n) - mTEPES.pOutflowsTimeStep[es]:mTEPES.n.ord(n)]) == sum(mTEPES.vUnschedEnergyOutflows[p,sc,n2,es]*mTEPES.pDuration[n2] for n2 in list(mTEPES.n2)[mTEPES.n.ord(n) - mTEPES.pOutflowsTimeStep[es]:mTEPES.n.ord(n)])
         else:
             return Constraint.Skip

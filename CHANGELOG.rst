@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.9.0] - 2022-12-10
+[4.9.0] - 2022-12-11
 --------------------
+- [FIXED] fix constraint of energy outflows management for the case of candidate ESS units
 - [FIXED] add StorageInvestment option in Generation file to link the storage capacity, inflows and outflows to the investment decision
 - [FIXED] add constraints related to the previous option
 
