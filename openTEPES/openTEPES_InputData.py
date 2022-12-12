@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - December 10, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - December 11, 2022
 """
 
 import datetime
@@ -810,7 +810,7 @@ def SettingUpVariables(OptModel, mTEPES):
     OptModel.vReserveUp             = Var(mTEPES.psnnr, within=NonNegativeReals, bounds=lambda OptModel,p,sc,n,nr: (0.0,                                mTEPES.pMaxPower2ndBlock [p,sc,n,nr]),  doc='upward   operating reserve                       [GW]')
     OptModel.vReserveDown           = Var(mTEPES.psnnr, within=NonNegativeReals, bounds=lambda OptModel,p,sc,n,nr: (0.0,                                mTEPES.pMaxPower2ndBlock [p,sc,n,nr]),  doc='downward operating reserve                       [GW]')
     OptModel.vEnergyInflows         = Var(mTEPES.psnec, within=NonNegativeReals, bounds=lambda OptModel,p,sc,n,ec: (0.0,                                mTEPES.pEnergyInflows    [p,sc,n,ec]),  doc='unscheduled inflows  of candidate ESS units      [GW]')
-    OptModel.vUnschedEnergyOutflows = Var(mTEPES.psnec, within=NonNegativeReals, bounds=lambda OptModel,p,sc,n,ec: (0.0,                                mTEPES.pEnergyOutflows   [p,sc,n,ec]),  doc='unscheduled outflows of candidate ESS units      [GW]')
+    # OptModel.vUnschedEnergyOutflows = Var(mTEPES.psnec, within=NonNegativeReals, bounds=lambda OptModel,p,sc,n,ec: (0.0,                                mTEPES.pEnergyOutflows   [p,sc,n,ec]),  doc='unscheduled outflows of candidate ESS units      [GW]')
     OptModel.vEnergyOutflows        = Var(mTEPES.psnes, within=NonNegativeReals, bounds=lambda OptModel,p,sc,n,es: (0.0,max(mTEPES.pMaxPower[p,sc,n,es],mTEPES.pMaxCharge        [p,sc,n,es])), doc='scheduled   outflows of all       ESS units      [GW]')
     OptModel.vESSInventory          = Var(mTEPES.psnes, within=NonNegativeReals, bounds=lambda OptModel,p,sc,n,es: (      mTEPES.pMinStorage[p,sc,n,es],mTEPES.pMaxStorage       [p,sc,n,es]),  doc='ESS inventory                                   [GWh]')
     OptModel.vESSSpillage           = Var(mTEPES.psnes, within=NonNegativeReals,                                                                                                                doc='ESS spillage                                    [GWh]')
@@ -1010,8 +1010,8 @@ def SettingUpVariables(OptModel, mTEPES):
     for p,sc,n,ec in mTEPES.psnec:
         if mTEPES.pEnergyInflows [p,sc,n,ec]() == 0.0:
             OptModel.vEnergyInflows        [p,sc,n,ec].fix(0.0)
-        if mTEPES.pEnergyOutflows[p,sc,n,ec]() == 0.0:
-            OptModel.vUnschedEnergyOutflows[p,sc,n,ec].fix(0.0)
+        # if mTEPES.pEnergyOutflows[p,sc,n,ec]() == 0.0:
+        #     OptModel.vUnschedEnergyOutflows[p,sc,n,ec].fix(0.0)
 
     # if no operating reserve is required no variables are needed
     for p,sc,n,ar,nr in mTEPES.psn*mTEPES.ar*mTEPES.nr:

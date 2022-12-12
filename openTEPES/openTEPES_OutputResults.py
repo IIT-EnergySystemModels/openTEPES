@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - December 06, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - December 12, 2022
 """
 
 import time
@@ -106,7 +106,7 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES):
         # Saving generation investment into CSV file
         OutputToFile = pd.Series(data=[OptModel.vGenerationInvest[p,gc]() for p,gc in mTEPES.pgc], index=pd.Index(mTEPES.pgc))
         OutputToFile = OutputToFile.fillna(0).to_frame(name='InvestmentDecision').reset_index().rename(columns={'level_0': 'Period', 'level_1': 'Generating unit'})
-        OutputToFile.pivot_table(index=['Period'], columns=['Generating unit'], values='InvestmentDecision').rename_axis([None], axis=0).to_csv(_path+'/oT_Result_GenerationInvestment_PerUnit_'+CaseName+'.csv', sep=',', index=True)
+        OutputToFile.pivot_table(index=['Period'], columns=['Generating unit'], values='InvestmentDecision').rename_axis([None], axis=0).to_csv(_path+'/oT_Result_GenerationInvestmentPerUnit_'+CaseName+'.csv', sep=',', index=True)
         OutputToFile = pd.Series(data=[OptModel.vGenerationInvest[p,gc]()*max(mTEPES.pRatedMaxPower[gc],mTEPES.pRatedMaxCharge[gc])*1e3 for p,gc in mTEPES.pgc], index=pd.Index(mTEPES.pgc))
         OutputToFile = OutputToFile.fillna(0).to_frame(name='MW').reset_index().rename(columns={'level_0': 'Period', 'level_1': 'Generating unit'})
         OutputToFile.pivot_table(index=['Period'], columns=['Generating unit'], values='MW').rename_axis([None], axis=0).to_csv(_path+'/oT_Result_GenerationInvestment_'+CaseName+'.csv', sep=',', index=False)
@@ -752,14 +752,14 @@ def NetworkOperationResults(DirName, CaseName, OptModel, mTEPES):
 
     OutputToFile = pd.Series(data=[max(OptModel.vFlow[p,sc,n,ni,nf,cc]()/(mTEPES.pLineNTCFrw[ni,nf,cc]+pEpsilon),-OptModel.vFlow[p,sc,n,ni,nf,cc]()/(mTEPES.pLineNTCBck[ni,nf,cc]+pEpsilon)) for p,sc,n,ni,nf,cc in mTEPES.psnla], index=pd.Index(mTEPES.psnla))
     OutputToFile.index.names = ['Period', 'Scenario', 'LoadLevel', 'InitialNode', 'FinalNode', 'Circuit']
-    OutputToFile = pd.pivot_table(OutputToFile.to_frame(name='pu'), values='pu', index=['Period', 'Scenario', 'LoadLevel'], columns=['InitialNode', 'FinalNode', 'Circuit'], fill_value=0.0)
+    OutputToFile = pd.pivot_table(OutputToFile.to_frame(name='p.u.'), values='p.u.', index=['Period', 'Scenario', 'LoadLevel'], columns=['InitialNode', 'FinalNode', 'Circuit'], fill_value=0.0)
     OutputToFile.index.names = [None] * len(OutputToFile.index.names)
     OutputToFile.to_csv(_path+'/oT_Result_NetworkUtilization_'+CaseName+'.csv', sep=',')
 
     if mTEPES.pIndBinNetLosses():
         OutputToFile = pd.Series(data=[OptModel.vLineLosses[p,sc,n,ni,nf,cc]() for p,sc,n,ni,nf,cc in mTEPES.psnll], index=pd.Index(mTEPES.psnll))
         OutputToFile.index.names = ['Period', 'Scenario', 'LoadLevel', 'InitialNode', 'FinalNode', 'Circuit']
-        OutputToFile = pd.pivot_table(OutputToFile.to_frame(name='pu'), values='pu', index=['Period', 'Scenario', 'LoadLevel'], columns=['InitialNode', 'FinalNode', 'Circuit'], fill_value=0.0)
+        OutputToFile = pd.pivot_table(OutputToFile.to_frame(name='p.u.'), values='p.u.', index=['Period', 'Scenario', 'LoadLevel'], columns=['InitialNode', 'FinalNode', 'Circuit'], fill_value=0.0)
         OutputToFile.index.names = [None] * len(OutputToFile.index.names)
         OutputToFile.to_csv(_path+'/oT_Result_NetworkLosses_' +CaseName+'.csv', sep=',')
 
@@ -914,19 +914,19 @@ def ReliabilityResults(DirName, CaseName, OptModel, mTEPES):
     for p,sc in mTEPES.ps:
         OutputToFile1[p,sc] = pMaxPower.loc[(p,sc)].reset_index().pivot_table(index=['level_0'], values=0, aggfunc = sum).max()
         OutputToFile2[p,sc] =   pDemand.loc[(p,sc)].reset_index().pivot_table(index=['level_0'], values=0, aggfunc = sum).max()
-    MarginReserve1 =  OutputToFile1 - OutputToFile2
-    MarginReserve2 = (OutputToFile1 - OutputToFile2)/OutputToFile2
-    MarginReserve1.to_frame(name='GW').to_csv(_path+'/oT_Result_MarginReserve_'        +CaseName+'.csv', sep=',', index=True)
-    MarginReserve2.to_frame(name='pu').to_csv(_path+'/oT_Result_MarginReserve_PerUnit_'+CaseName+'.csv', sep=',', index=True)
+    ReserveMargin1 =  OutputToFile1 - OutputToFile2
+    ReserveMargin2 = (OutputToFile1 - OutputToFile2)/OutputToFile2
+    ReserveMargin1.to_frame(name='GW'  ).to_csv(_path+'/oT_Result_ReserveMargin_'       +CaseName+'.csv', sep=',', index=True)
+    ReserveMargin2.to_frame(name='p.u.').to_csv(_path+'/oT_Result_ReserveMarginPerUnit_'+CaseName+'.csv', sep=',', index=True)
 
     # Determination of the index: Largest Unit
     OutputToFile = pd.Series(data=[0.0 for p,sc in mTEPES.ps], index=pd.Index(mTEPES.ps))
     for p,sc in mTEPES.ps:
         OutputToFile[p,sc] = pMaxPower.loc[(p,sc)].reset_index().pivot_table(index=['level_1'], values=0, aggfunc = max).max()
 
-    LargestUnit  = MarginReserve1/OutputToFile
+    LargestUnit  = ReserveMargin1/OutputToFile
 
-    LargestUnit.to_frame(name='pu').to_csv(_path+'/oT_Result_LargestUnit_PerUnit_'+CaseName+'.csv', sep=',', index=True)
+    LargestUnit.to_frame(name='p.u.').to_csv(_path+'/oT_Result_LargestUnitPerUnit_'+CaseName+'.csv', sep=',', index=True)
 
     # Determination of the index: Loss Of Load Probability (LOLP)
 
