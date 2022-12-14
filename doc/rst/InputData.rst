@@ -305,7 +305,7 @@ CO2EmissionRate       CO2 emission rate                                         
 FixedInvestmentCost   Overnight investment (capital and fixed O&M) cost                                                                       M€
 FixedRetirementCost   Overnight retirement (capital and fixed O&M) cost                                                                       M€
 FixedChargeRate       Fixed-charge rate to annualize the overnight investment cost                                                            p.u.
-StorageInvestment     Storage capacity, inflows, and outflows linked to the investment decision                                               Yes/No
+StorageInvestment     Storage capacity and inflows linked to the investment decision                                                          Yes/No
 BinaryInvestment      Binary unit investment decision                                                                                         Yes/No
 InvestmentLo          Lower bound of investment decision                                                                                      p.u.
 InvestmentUp          Upper bound of investment decision                                                                                      p.u.

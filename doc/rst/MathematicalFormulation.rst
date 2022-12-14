@@ -147,7 +147,6 @@ They are written in **lowercase** letters.
 :math:`ur^p_{ωng}, dr^p_{ωng}`              Upward and downward operating reserves of a non-renewable generating unit       GW
 :math:`ur'^p_{ωne}, dr'^p_{ωne}`            Upward and downward operating reserves of an ESS as a consumption unit          GW
 :math:`ei^p_{ωne}`                          Variable energy inflows of a candidate ESS (e.g., hydro power plant)            GW
-:math:`eo^p_{ωne}`                          Variable energy outflows of a candidate ESS (e.g., H2, EV, hydro power plant)   GW
 :math:`i^p_{ωne}`                           ESS stored energy (inventory, reservoir energy, state of charge)                GWh
 :math:`s^p_{ωne}`                           ESS spilled energy                                                              GWh
 :math:`uc^p_{ωng}, su^p_{ωng}, sd^p_{ωng}`  Commitment, startup and shutdown of generation unit per load level              {0,1}
@@ -269,10 +268,6 @@ Energy inflows of ESS candidates (only for load levels multiple of 1, 24, 168 h 
 
 :math:`ei^p_{ωne} <= uc^p_{ωne} EI^p_{ωne} \quad \forall pωne, e \in CE`
 
-Energy outflows of ESS candidates (only for load levels multiple of 1, 24, 168 h depending on the ESS storage type) constrained by the ESS commitment decision times the outflows data [GWh] «``eOutflows2Comm``»
-
-:math:`eo^p_{ωne} <= uc^p_{ωne} EO^p_{ωne} \quad \forall pωne, e \in CE`
-
 ESS energy inventory (only for load levels multiple of 1, 24, 168 h depending on the ESS storage type) [GWh] «``eESSInventory``»
 
 :math:`i^p_{ω,n-\frac{\tau_e}{\nu},e} + \sum_{n' = n-\frac{\tau_e}{\nu}}^{n} DUR_n' (EI^p_{ωn'e} - go^p_{ωn'e} - gp^p_{ωn'e} + EF_e gc^p_{ωn'e}) = i^p_{ωne} + s^p_{ωne} \quad \forall pωne, e \in EE`
@@ -285,9 +280,7 @@ Maximum shift time of stored energy [GWh]. It is thought to be applied to demand
 
 ESS outflows (only for load levels multiple of 1, 24, 168, 672, and 8736 h depending on the ESS outflow cycle) must be satisfied [GWh] «``eEnergyOutflows``»
 
-:math:`\sum_{n' = n-\frac{\tau_e}{\rho_e}}^{n} go^p_{ωn'e} DUR_n' = \sum_{n' = n-\frac{\tau_e}{\rho_e}}^{n} EO^p_{ωn'e} DUR_n' \quad \forall pωne, n \in \rho_e, e \in EE`
-
-:math:`\sum_{n' = n-\frac{\tau_e}{\rho_e}}^{n} go^p_{ωn'e} DUR_n' = \sum_{n' = n-\frac{\tau_e}{\rho_e}}^{n} eo^p_{ωn'e} DUR_n' \quad \forall pωne, n \in \rho_e, e \in CE`
+:math:`\sum_{n' = n-\frac{\tau_e}{\rho_e}}^{n} go^p_{ωn'e} DUR_n' = \sum_{n' = n-\frac{\tau_e}{\rho_e}}^{n} EO^p_{ωn'e} DUR_n' \quad \forall pωne, n \in \rho_e`
 
 Maximum and minimum output of the second block of a committed unit (all except the VRES units) [p.u.] «``eMaxOutput2ndBlock``» «``eMinOutput2ndBlock``»
 
