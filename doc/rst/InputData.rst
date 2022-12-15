@@ -373,11 +373,11 @@ Energy inflows
 
 A description of the data included in the file ``oT_Data_EnergyInflows.csv`` follows:
 
-==========  ==============  ==========  =========  =============================  ==
+==========  ==============  ==========  =========  =============================  =====
 Identifier  Identifier      Identifier  Header     Description
-==========  ==============  ==========  =========  =============================  ==
-Period      Scenario        Load level  Generator  Energy inflows by load level   MW
-==========  ==============  ==========  =========  =============================  ==
+==========  ==============  ==========  =========  =============================  =====
+Period      Scenario        Load level  Generator  Energy inflows by load level   MWh/h
+==========  ==============  ==========  =========  =============================  =====
 
 All the generators must be defined as columns of these files.
 
@@ -392,11 +392,11 @@ Energy outflows
 
 A description of the data included in the file ``oT_Data_EnergyOutflows.csv`` follows:
 
-==========  ==============  ==========  =========  ==============================  ==
+==========  ==============  ==========  =========  =============================  =====
 Identifier  Identifier      Identifier  Header     Description
-==========  ==============  ==========  =========  ==============================  ==
-Period      Scenario        Load level  Generator  Energy outflows by load level   MW
-==========  ==============  ==========  =========  ==============================  ==
+==========  ==============  ==========  =========  =============================  =====
+Period      Scenario        Load level  Generator  Energy outflows by load level  MWh/h
+==========  ==============  ==========  =========  =============================  =====
 
 All the generators must be defined as columns of these files.
 

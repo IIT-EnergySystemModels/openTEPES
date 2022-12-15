@@ -54,6 +54,22 @@ Identifier    Header      Description
 Generator     MW          Technology investment power
 ============  ==========  ============================
 
+File ``oT_Result_TechnologyInvestmentCost.csv``
+
+============  ==========  ============================
+Identifier    Header      Description
+============  ==========  ============================
+Generator     MEUR        Technology investment cost
+============  ==========  ============================
+
+File ``oT_Result_TechnologyInvestmentCostPerMW.csv``
+
+============  ==========  ==================================
+Identifier    Header      Description
+============  ==========  ==================================
+Generator     MEUR/MW     Technology investment cost per MW
+============  ==========  ==================================
+
 File ``oT_Result_TechnologyRetirement.csv``
 
 ============  ==========  ============================
@@ -241,21 +257,13 @@ Identifier    Identifier  Identifier  Header      Description
 Period        Scenario    Load level  Technology  Output (discharge in ESS) [MW]
 ============  ==========  ==========  ==========  =================================
 
-File ``oT_Result_TechnologyCharge.csv``
+File ``oT_Result_TechnologyConsumption.csv``
 
 ============  ==========  ==========  ==========  =================================
 Identifier    Identifier  Identifier  Header      Description
 ============  ==========  ==========  ==========  =================================
 Period        Scenario    Load level  Technology  Consumption (charge in ESS) [MW]
 ============  ==========  ==========  ==========  =================================
-
-File ``oT_Result_TechnologyCurtailmentOutput.csv``
-
-============  ==========  ==========  ==========  ==========================================
-Identifier    Identifier  Identifier  Header      Description
-============  ==========  ==========  ==========  ==========================================
-Period        Scenario    Load level  Technology  Curtailed output of VRES [MW]
-============  ==========  ==========  ==========  ==========================================
 
 File ``oT_Result_TechnologyCurtailmentEnergy.csv``
 
@@ -451,6 +459,14 @@ Identifier    Identifier  Identifier  Header     Description
 ============  ==========  ==========  =========  ==============================================================================================
 Period        Scenario    Load level  Generator  Stored energy (SoC in batteries, reservoir energy in pumped-hydro storage power plants) [GWh]
 ============  ==========  ==========  =========  ==============================================================================================
+
+File ``oT_Result_GenerationInventoryUtilization.csv``
+
+============  ==========  ==========  =========  ===================================================================================================================
+Identifier    Identifier  Identifier  Header     Description
+============  ==========  ==========  =========  ===================================================================================================================
+Period        Scenario    Load level  Generator  Utilization factor of the storage (SoC in batteries, reservoir energy in pumped-hydro storage power plants) [p.u.]
+============  ==========  ==========  =========  ===================================================================================================================
 
 File ``oT_Result_GenerationSpillage.csv``
 
@@ -760,7 +776,7 @@ Identifier    Identifier  Identifier  Header      Description
 Period        Scenario    Load level  Generator   Operation revenues for the generation [M€]
 ============  ==========  ==========  ==========  ==========================================
 
-File ``oT_Result_RevenueEnergyCharge.csv``
+File ``oT_Result_RevenueEnergyConsumption.csv``
 
 ============  ==========  ==========  ==============  ==================================================
 Identifier    Identifier  Identifier  Header          Description
