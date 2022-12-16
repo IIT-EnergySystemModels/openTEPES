@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.9.0] - 2022-12-14
+[4.9.0] - 2022-12-15
 --------------------
+- [CHANGED] add two new energy balance files per area and technology
 - [FIXED] fix ESS inventory constraint to include ESS candidate and existing units
 - [FIXED] fix constraint of energy inflows management for the case of candidate ESS units
 - [FIXED] add StorageInvestment option in Generation file to link the storage capacity and inflows to the investment decision

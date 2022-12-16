@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - December 14, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - December 15, 2022
 """
 
 import datetime
@@ -457,8 +457,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.t2g = Set(initialize=pTechnology2Gen.index, ordered=False, doc='technology to generator')
 
     # ESS and RES technologies
-    mTEPES.ot = Set(initialize=mTEPES.gt, ordered=False, doc='storage technologies', filter=lambda mTEPES,gt: gt in mTEPES.gt and sum(1 for es in mTEPES.es if (gt,es) in mTEPES.t2g))
-    mTEPES.rt = Set(initialize=mTEPES.gt, ordered=False, doc='RES     technologies', filter=lambda mTEPES,gt: gt in mTEPES.gt and sum(1 for r  in mTEPES.r  if (gt,r ) in mTEPES.t2g))
+    mTEPES.ot = Set(initialize=mTEPES.gt, ordered=False, doc='ESS technologies', filter=lambda mTEPES,gt: gt in mTEPES.gt and sum(1 for es in mTEPES.es if (gt,es) in mTEPES.t2g))
+    mTEPES.rt = Set(initialize=mTEPES.gt, ordered=False, doc='RES technologies', filter=lambda mTEPES,gt: gt in mTEPES.gt and sum(1 for r  in mTEPES.r  if (gt,r ) in mTEPES.t2g))
 
     mTEPES.psnot = [(p,sc,n,ot) for p,sc,n,ot in mTEPES.ps*mTEPES.n*mTEPES.ot]
     mTEPES.psnrt = [(p,sc,n,rt) for p,sc,n,rt in mTEPES.ps*mTEPES.n*mTEPES.rt]
