@@ -740,6 +740,13 @@ def NetworkOperationResults(DirName, CaseName, OptModel, mTEPES):
     OutputToFile.index.names = [None] * len(OutputToFile.index.names)
     OutputToFile.to_csv(_path+'/oT_Result_NetworkFlow_'       +CaseName+'.csv', sep=',')
 
+    PSNLAARAR = [(p,sc,n,ni,nf,cc,ari,arf) for p,sc,n,ni,nf,cc,ari,arf in mTEPES.psnla*mTEPES.ar*mTEPES.ar if (ni,ari) in mTEPES.ndar and (nf,arf) in mTEPES.ndar]
+    OutputToFile = pd.Series(data=[OptModel.vFlow[p,sc,n,ni,nf,cc]()*1e3 for p,sc,n,ni,nf,cc,ari,arf in PSNLAARAR], index=pd.Index(PSNLAARAR))
+    OutputToFile.index.names = ['Period', 'Scenario', 'LoadLevel', 'InitialNode', 'FinalNode', 'Circuit','InitialArea','FinalArea']
+    OutputToFile = pd.pivot_table(OutputToFile.to_frame(name='MW'), values='MW', index=['Period', 'Scenario', 'LoadLevel'], columns=['InitialArea', 'FinalArea'], fill_value=0.0)
+    OutputToFile.index.names = [None] * len(OutputToFile.index.names)
+    OutputToFile.to_csv(_path+'/oT_Result_NetworkFlowPerArea_'       +CaseName+'.csv', sep=',')
+
     if len(mTEPES.la):
         OutputResults = pd.Series(data=[OptModel.vFlow[p,sc,n,ni,nf,cc]()*(mTEPES.pDuration[n]()*mTEPES.pLoadLevelWeight[n]()*mTEPES.pPeriodWeight[p]*mTEPES.pScenProb[p,sc])/mTEPES.pLineLength[ni,nf,cc]() for p,sc,n,ni,nf,cc in mTEPES.psnla], index=pd.Index(mTEPES.psnla))
         OutputResults.index.names = ['Scenario','Period','LoadLevel','InitialNode','FinalNode','Circuit']
