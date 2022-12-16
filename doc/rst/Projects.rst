@@ -7,8 +7,16 @@ The model has being used in these research projects:
 - Hydro generation advanced systems: modeling, control, and optimized integration to the system (AVANHID), developed for the **Ministry of Science and Innovation** under the program **Public-Private Partnerships** with **NextGenerationEU** funds (CPP2021-009114). October 2022 - September 2025.
   `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `J.M. Latorre <https://www.iit.comillas.edu/people/jesuslc>`_
 
+.. image:: ../img/ColabPP.png
+   :scale: 30%
+   :align: center
+
 - Local markets for energy communities: designing efficient markets and assessing the integration from the electricity system perspective (OptiREC), developed for the **Ministry of Science and Innovation** under the program **Strategic projects oriented to the ecological transition and digital transition** with **NextGenerationEU** funds (TED2021-131365B-C43). December 2022 - November 2024.
   `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `J.P. Chaves <https://www.iit.comillas.edu/people/jchaves>`_, `J.M. Latorre <https://www.iit.comillas.edu/people/jesuslc>`_, `M. Troncia <https://www.iit.comillas.edu/people/mtroncia>`_
+
+.. image:: ../img/ColabPP.png
+   :scale: 30%
+   :align: center
 
 - Delivering the next generation of open Integrated Assessment MOdels for Net-zero, sustainable Development (DIAMOND), developed for the **European Commission**. October 2022 - August 2025.
   `S. Lumbreras <https://www.iit.comillas.edu/people/slumbreras>`_, `L. Olmos <https://www.iit.comillas.edu/people/olmos>`_, `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_
