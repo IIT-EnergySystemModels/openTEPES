@@ -854,10 +854,26 @@ Period        Scenario    Load level  Technology  ESS Technology variation wrt i
 Balance
 -------
 
-File ``oT_Result_BalanceEnergy.csv``
+File ``oT_Result_BalanceEnergyPerArea.csv``
 
 ============  ==========  ==========  ==========  ==========  =======================================================
 Identifier    Identifier  Identifier  Identifier  Header      Description
 ============  ==========  ==========  ==========  ==========  =======================================================
-Period        Scenario    Load level  Technology  Nodes       Generation, consumption, flows, losses and demand [GWh]
+Period        Scenario    Load level  Technology  Area        Generation, consumption, flows, losses and demand [GWh]
 ============  ==========  ==========  ==========  ==========  =======================================================
+
+File ``oT_Result_BalanceEnergyPerNode.csv``
+
+============  ==========  ==========  ==========  ==========  =======================================================
+Identifier    Identifier  Identifier  Identifier  Header      Description
+============  ==========  ==========  ==========  ==========  =======================================================
+Period        Scenario    Load level  Technology  Node        Generation, consumption, flows, losses and demand [GWh]
+============  ==========  ==========  ==========  ==========  =======================================================
+
+File ``oT_Result_BalanceEnergyPerTech.csv``
+
+============  ==========  ==========  ==========  ==========  ==========  =======================================================
+Identifier    Identifier  Identifier  Identifier  Identifier  Header      Description
+============  ==========  ==========  ==========  ==========  ==========  =======================================================
+Period        Scenario    Load level  Area        Node        Technology  Generation, consumption, flows, losses and demand [GWh]
+============  ==========  ==========  ==========  ==========  ==========  =======================================================
