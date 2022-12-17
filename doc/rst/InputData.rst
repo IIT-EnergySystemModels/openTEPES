@@ -336,6 +336,8 @@ Those generators or ESS with fixed cost > 0 are considered candidate and can be 
 
 Maximum and minimum storage is considered proportional to the invested capacity for the candidate ESS units if StorageInvestment is activated.
 
+If lower and upper bounds of investment/retirement decisions are very close (with a difference < 1e-3) to 0 or 1 are converted into 0 and 1.
+
 Variable maximum and minimum generation
 ---------------------------------------
 
@@ -464,6 +466,8 @@ If there is no data for TTCBck, i.e., TTCBck is left empty or is equal to 0, it 
 Reactance can take a negative value as a result of the approximation of three-winding transformers. No Kirchhoff's second law disjunctive constraint is formulated for a circuit with negative reactance.
 
 Those lines with fixed cost > 0 are considered candidate and can be installed or not.
+
+If lower and upper bounds of investment decisions are very close (with a difference < 1e-3) to 0 or 1 are converted into 0 and 1.
 
 Node location
 -------------
