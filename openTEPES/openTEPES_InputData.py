@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - December 15, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - December 17, 2022
 """
 
 import datetime
@@ -1096,13 +1096,39 @@ def SettingUpVariables(OptModel, mTEPES):
             for sc,n in mTEPES.sc*mTEPES.n:
                 OptModel.vLineLosses  [p,sc,n,ni,nf,cc].fix(0.0)
 
+    # tolerance to consider 0 a number
+    pEpsilon = 1e-3
     for p,gc in mTEPES.pgc:
+        if  mTEPES.pGenLoInvest[     gc      ] <       pEpsilon:
+            mTEPES.pGenLoInvest[     gc      ] = 0
+        if  mTEPES.pGenUpInvest[     gc      ] <       pEpsilon:
+            mTEPES.pGenUpInvest[     gc      ] = 0
+        if  mTEPES.pGenLoInvest[     gc      ] > 1.0 - pEpsilon:
+            mTEPES.pGenLoInvest[     gc      ] = 1
+        if  mTEPES.pGenUpInvest[     gc      ] > 1.0 - pEpsilon:
+            mTEPES.pGenUpInvest[     gc      ] = 1
         OptModel.vGenerationInvest[p,gc      ].setlb(mTEPES.pGenLoInvest[gc      ])
         OptModel.vGenerationInvest[p,gc      ].setub(mTEPES.pGenUpInvest[gc      ])
     for p,gd in mTEPES.pgd:
+        if  mTEPES.pGenLoRetire[     gd      ] <       pEpsilon:
+            mTEPES.pGenLoRetire[     gd      ] = 0
+        if  mTEPES.pGenUpRetire[     gd      ] <       pEpsilon:
+            mTEPES.pGenUpRetire[     gd      ] = 0
+        if  mTEPES.pGenLoRetire[     gd      ] > 1.0 - pEpsilon:
+            mTEPES.pGenLoRetire[     gd      ] = 1
+        if  mTEPES.pGenUpRetire[     gd      ] > 1.0 - pEpsilon:
+            mTEPES.pGenUpRetire[     gd      ] = 1
         OptModel.vGenerationRetire[p,gd      ].setlb(mTEPES.pGenLoRetire[gd      ])
         OptModel.vGenerationRetire[p,gd      ].setub(mTEPES.pGenUpRetire[gd      ])
     for p,ni,nf,cc in mTEPES.plc:
+        if  mTEPES.pNetLoInvest[     ni,nf,cc] <       pEpsilon:
+            mTEPES.pNetLoInvest[     ni,nf,cc] = 0
+        if  mTEPES.pNetUpInvest[     ni,nf,cc] <       pEpsilon:
+            mTEPES.pNetUpInvest[     ni,nf,cc] = 0
+        if  mTEPES.pNetLoInvest[     ni,nf,cc] > 1.0 - pEpsilon:
+            mTEPES.pNetLoInvest[     ni,nf,cc] = 1
+        if  mTEPES.pNetUpInvest[     ni,nf,cc] > 1.0 - pEpsilon:
+            mTEPES.pNetUpInvest[     ni,nf,cc] = 1
         OptModel.vNetworkInvest   [p,ni,nf,cc].setlb(mTEPES.pNetLoInvest[ni,nf,cc])
         OptModel.vNetworkInvest   [p,ni,nf,cc].setub(mTEPES.pNetUpInvest[ni,nf,cc])
 

@@ -3,6 +3,7 @@ Change Log
 
 [4.9.0] - 2022-12-17
 --------------------
+- [CHANGED] if investment/retirement lower and upper bounds are close to 0 or 1, make them 0 or 1
 - [CHANGED] add two new network energy flow files per area and total
 - [CHANGED] add two new energy balance files per area and technology
 - [FIXED] fix ESS inventory constraint to include ESS candidate and existing units
