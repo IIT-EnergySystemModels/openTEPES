@@ -519,13 +519,29 @@ Identifier    Identifier  Identifier  Header        Header      Header     Descr
 Period        Scenario    Load level  Initial node  Final node  Circuit    Switch off decision [p.u.]
 ============  ==========  ==========  ============  ==========  =========  ==========================
 
-File ``oT_Result_NetworkFlow.csv``
+File ``oT_Result_NetworkFlowPerNode.csv``
 
 ============  ==========  ==========  ============  ==========  =========  =======================
 Identifier    Identifier  Identifier  Header        Header      Header     Description
 ============  ==========  ==========  ============  ==========  =========  =======================
 Period        Scenario    Load level  Initial node  Final node  Circuit    Line flow [MW]
 ============  ==========  ==========  ============  ==========  =========  =======================
+
+File ``oT_Result_NetworkEnergyPerArea.csv``
+
+============  ==========  ==========  ============  ==========  =======================
+Identifier    Identifier  Identifier  Header        Header      Description
+============  ==========  ==========  ============  ==========  =======================
+Period        Scenario    Load level  Initial area  Final area  Area flow energy [GWh]
+============  ==========  ==========  ============  ==========  =======================
+
+File ``oT_Result_NetworkEnergyTotalPerArea.csv``
+
+============  ==========  ============  ==========  =======================
+Identifier    Identifier  Header        Header      Description
+============  ==========  ============  ==========  =======================
+Period        Scenario    Initial area  Final area  Area flow energy [GWh]
+============  ==========  ============  ==========  =======================
 
 File ``oT_Result_NetworkEnergyTransport.csv``
 

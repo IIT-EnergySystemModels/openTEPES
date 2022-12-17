@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.9.0] - 2022-12-15
+[4.9.0] - 2022-12-17
 --------------------
+- [CHANGED] add two new network energy flow files per area and total
 - [CHANGED] add two new energy balance files per area and technology
 - [FIXED] fix ESS inventory constraint to include ESS candidate and existing units
 - [FIXED] fix constraint of energy inflows management for the case of candidate ESS units
