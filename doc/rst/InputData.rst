@@ -194,6 +194,8 @@ Identifier      Header         Description
 Scenario        ReserveMargin  Adequacy reserve margin for each area
 ==============  =============  ======================================
 
+This parameter is only used for system generation expansion, not for the system operation.
+
 Duration
 --------
 
@@ -239,7 +241,7 @@ Identifier  Identifier      Identifier  Header  Description
 Period      Scenario        Load level  Area    System inertia of the area for each load level    s
 ==========  ==============  ==========  ======  ================================================  ==
 
-Given that the system inertia depends on the area, it can be sensible to assign an area as a country, for example.
+Given that the system inertia depends on the area, it can be sensible to assign an area as a country, for example. The system inertia can be used for imposing a minimum synchronous power and, consequently, force the commitment of at least some rotating units.
 
 Internally, all the values below 2.5e-5 times the maximum system demand of each area will be converted into 0 by the model.
 
@@ -407,8 +409,6 @@ These energy outflows can be used to represent the energy extracted from an ESS 
 If you have daily/weekly/monthly/yearly outflows data just input the daily/weekly/monthly/yearly amount at the first hour of every day/week/month/year.
 
 Internally, all the values below 2.5e-5 times the maximum system demand of each area will be converted into 0 by the model.
-
-Outflows are considered proportional to the invested capacity for the candidate ESS units if StorageInvestment is activated.
 
 Variable maximum and minimum storage
 ---------------------------------------------

@@ -1,12 +1,14 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 20, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - December 21, 2022
 """
 
 import time
 import os
 import psutil
-from   pyomo.opt     import SolverFactory
-from   pyomo.environ import Suffix, Set
+import logging
+from   pyomo.opt             import SolverFactory, SolverStatus, TerminationCondition
+from   pyomo.util.infeasible import log_infeasible_constraints
+from   pyomo.environ         import Suffix, Set
 
 def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConsole):
     print('Problem solving                        ****')
@@ -39,8 +41,11 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
         OptModel.dual = Suffix(direction=Suffix.IMPORT)
         OptModel.rc   = Suffix(direction=Suffix.IMPORT)
     SolverResults = Solver.solve(OptModel, tee=True , report_timing=True)              # tee=True displays the log of the solver
-    print('Termination Condition: ', SolverResults.solver.termination_condition)
-    assert (str(SolverResults.solver.termination_condition) == 'optimal' or str(SolverResults.solver.termination_condition) == 'maxTimeLimit' or str(SolverResults.solver.termination_condition) == 'maxIterations')
+    print('Termination condition: ', SolverResults.solver.termination_condition)
+    if SolverResults.solver.termination_condition == TerminationCondition.infeasible:
+        log_infeasible_constraints(OptModel, log_expression=True, log_variables=True)
+        logging.basicConfig(filename=_path+'/openTEPES_Infeasibilities_'+CaseName+'.txt', level=logging.INFO)
+    assert (SolverResults.solver.termination_condition == TerminationCondition.optimal or SolverResults.solver.termination_condition == TerminationCondition.maxTimeLimit or SolverResults.solver.termination_condition == TerminationCondition.infeasible.maxIterations), 'Problem infeasible'
     SolverResults.write()                                                              # summary of the solver results
 
     #%% fix values of some variables to get duals and solve it again
