@@ -120,7 +120,7 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES):
             chart = alt.Chart(GenInvestToArea.reset_index()).mark_bar().encode(x='Generating unit:O', y='sum(MW):Q', color='Area:N', column='Period:N').properties(width=600, height=400)
             chart.save(_path+'/oT_Plot_GenerationInvestmentPerArea_'+CaseName+'.html', embed_options={'renderer':'svg'})
             TechInvestToArea = pd.Series(data=[sum(OutputToFile['MW'][p,gc] for gc in mTEPES.gc if (ar,gc) in mTEPES.a2g and (gt,gc) in mTEPES.t2g) for p,ar,gt in mTEPES.p*mTEPES.ar*mTEPES.gt], index=pd.Index(mTEPES.p*mTEPES.ar*mTEPES.gt)).to_frame(name='MW')
-            TechInvestToArea.index.names = ['Period', 'Area', 'Technology']
+            TechInvestToArea.index.names = ['Period', 'Area', 'Technology'    ]
             chart = alt.Chart(TechInvestToArea.reset_index()).mark_bar().encode(x='Technology:O', y='sum(MW):Q', color='Area:N', column='Period:N').properties(width=600, height=400)
             chart.save(_path+'/oT_Plot_TechnologyInvestmentPerArea_'+CaseName+'.html', embed_options={'renderer':'svg'})
 
@@ -139,7 +139,7 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES):
         chart.save(_path+'/oT_Plot_TechnologyInvestment_'+CaseName+'.html', embed_options={'renderer':'svg'})
 
         # Saving and plotting generation investment cost into CSV file
-        OutputResults0 = OutputResults.set_index(['Period', 'Technology'])
+        OutputResults0 = OutputResults.set_index(['Period', 'Technology'    ])
         OutputToFile   = pd.Series(data=[mTEPES.pDiscountFactor[p] * mTEPES.pGenInvestCost[gc] * OptModel.vGenerationInvest[p,gc]() for p,gc in mTEPES.pgc], index=pd.Index(mTEPES.pgc))
         OutputToFile   = OutputToFile.fillna(0).to_frame(name='MEUR').reset_index().rename(columns={'level_0': 'Period', 'level_1': 'Generating unit'})
         OutputToFile   = OutputToFile.set_index(['Period', 'Generating unit'])
