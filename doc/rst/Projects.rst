@@ -5,7 +5,7 @@ Research projects
 The model has being used in these research projects:
 
 - Hydro generation advanced systems: modeling, control, and optimized integration to the system (AVANHID), developed for the **Ministry of Science and Innovation** under the program **Public-Private Partnerships** with **NextGenerationEU** funds (CPP2021-009114). October 2022 - September 2025.
-  `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `J.M. Latorre <https://www.iit.comillas.edu/people/jesuslc>`_
+  `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `J.M. Latorre <https://www.iit.comillas.edu/people/jesuslc>`_, `L. Rouco <https://www.iit.comillas.edu/people/rouco>`_
 
 .. image:: ../img/ColabPP.jpg
    :scale: 30%
