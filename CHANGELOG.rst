@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.9.0] - 2022-12-23
+[4.9.0] - 2023-01-12
 --------------------
+- [FIXED] fix error when writing NetworkInvestment and NetworkInvestment_MWkm output files
 - [CHANGED] fix inventory to the lower bound instead of 0 to avoid warnings
 - [CHANGED] print infeasibilities to a file
 - [CHANGED] if investment/retirement lower and upper bounds are close to 0 or 1, make them 0 or 1
