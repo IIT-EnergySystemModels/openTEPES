@@ -23,7 +23,8 @@ requires = [
   "plotly>=5.7.0",
   "colour>=0.1.5",
   "altair>=4.2.0",
-  "psutil>=5.8.0"]
+  "psutil>=5.8.0",
+  "jsonschema==4.16.0"]
 
 [tool.flit.scripts]
 openTEPES_Main = "openTEPES:main"
