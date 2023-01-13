@@ -1,6 +1,10 @@
 Change Log
 =============
 
+[4.9.1] - 2023-01-13
+--------------------
+- [FIXED] fix error in the values of MWkm output results
+
 [4.9.0] - 2023-01-12
 --------------------
 - [FIXED] fix error when writing NetworkInvestment and NetworkInvestment_MWkm output files
