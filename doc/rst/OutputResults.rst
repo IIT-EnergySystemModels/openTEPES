@@ -545,11 +545,11 @@ Period        Scenario    Initial area  Final area  Area flow energy [GWh]
 
 File ``oT_Result_NetworkEnergyTransport.csv``
 
-============  ==========  ==========  ============  ==========  =========  ===========================
+============  ==========  ==========  ============  ==========  =========  ============================
 Identifier    Identifier  Identifier  Header        Header      Header     Description
-============  ==========  ==========  ============  ==========  =========  ===========================
-Period        Scenario    Load level  Initial node  Final node  Circuit    Energy transported [GWh-km]
-============  ==========  ==========  ============  ==========  =========  ===========================
+============  ==========  ==========  ============  ==========  =========  ============================
+Period        Scenario    Load level  Initial node  Final node  Circuit    Energy transported [GWh-Mkm]
+============  ==========  ==========  ============  ==========  =========  ============================
 
 File ``oT_Result_NetworkUtilization.csv``
 
