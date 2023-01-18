@@ -659,7 +659,7 @@ def ESSOperationResults(DirName, CaseName, OptModel, mTEPES):
 
         OutputToFile = pd.Series(data=[-OptModel.vESSTotalCharge[p,sc,n,es]()*mTEPES.pLoadLevelDuration[n]()     for p,sc,n,es in mTEPES.psnes], index=pd.Index(mTEPES.psnes))
         OutputToFile = pd.Series(data=[sum(OutputToFile[p,sc,n,es] for es in mTEPES.es if (ot,es) in mTEPES.t2g) for p,sc,n,ot in mTEPES.psnot], index=pd.Index(mTEPES.psnot))
-        OutputToFile.to_frame(name='GWh' ).reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='GWh' , aggfunc=sum).rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_TechnologyConsumptionEnergy_'+CaseName+'.csv', sep=',')
+        OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='GWh' , aggfunc=sum).rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_TechnologyConsumptionEnergy_'+CaseName+'.csv', sep=',')
 
         OutputToFile1 = pd.Series(data=[(OptModel.vTotalOutput[p,sc,n,es].ub - OptModel.vTotalOutput[p,sc,n,es]())*mTEPES.pLoadLevelDuration[n]() for p,sc,n,es in mTEPES.psnes], index=pd.Index(mTEPES.psnes))
         OutputToFile2 = pd.Series(data=[(OptModel.vTotalOutput[p,sc,n,es].ub                                     )*mTEPES.pLoadLevelDuration[n]() for p,sc,n,es in mTEPES.psnes], index=pd.Index(mTEPES.psnes))

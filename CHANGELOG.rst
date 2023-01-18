@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.9.1] - 2023-01-16
+[4.9.1] - 2023-01-18
 --------------------
+- [CHANGED] new TechnologyConsumptionEnergy output file
 - [CHANGED] change some column headings in some output files
 - [FIXED] fix error in the values of MWkm output results
 
