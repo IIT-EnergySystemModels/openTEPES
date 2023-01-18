@@ -4,7 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="70fc96e0-bc3b-4530-a009-091403d9cfdb" name="Default Changelist" comment="" />
+    <list default="true" id="70fc96e0-bc3b-4530-a009-091403d9cfdb" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/openTEPES/.idea/.name" beforeDir="false" afterPath="$PROJECT_DIR$/openTEPES/.idea/.name" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/openTEPES/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/openTEPES/.idea/workspace.xml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -46,10 +50,12 @@
   <component name="PropertiesComponent">{
   &quot;keyToString&quot;: {
     &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/erik_/Documentos/GitHub/openTEPES/openTEPES/openTEPES_OutputResults.py&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;two.files.diff.last.used.file&quot;: &quot;C:/Users/erik_/Documentos/GitHub/openTEPES/openTEPES/openTEPES_OutputResults.py&quot;
   }
 }</component>
   <component name="RunManager" selected="Python.openTEPES_Main">
@@ -279,6 +285,10 @@
       <workItem from="1661536860756" duration="8000" />
       <workItem from="1665045716916" duration="1665000" />
       <workItem from="1666949785152" duration="149000" />
+      <workItem from="1667825391649" duration="986000" />
+      <workItem from="1667829595421" duration="1282000" />
+      <workItem from="1669289548913" duration="16884000" />
+      <workItem from="1673539882927" duration="597000" />
     </task>
     <servers />
   </component>
@@ -295,5 +305,16 @@
         </entry>
       </map>
     </option>
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/openTEPES/openTEPES.py</url>
+          <line>4</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>
