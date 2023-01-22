@@ -4,7 +4,7 @@ Introduction
 ============
 The *Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS* **(openTEPES)** determines the investment plans of new facilities (generators, ESS, and lines)
 for supplying the forecasted demand at minimum cost. Tactical planning is concerned with time horizons of 10-20 years. Its objective is to evaluate the future generation, storage, and network needs.
-The main results are the guidelines for the future structure of the generation and transmission systems.
+The main results are the guidelines for the future structure of the generation, storage, and transmission systems.
 
 The **openTEPES** model presents a decision support system for defining the generation, storage, and transmission expansion plan (GEP+SEP+TEP) of a **large-scale electric system** at a tactical level,
 defined as a set of generation, storage, and network investment decisions for future years. The expansion candidates are pre-defined by the user, so the model determines the optimal decisions among those specified by the user.
@@ -29,7 +29,7 @@ The model formulates a **two-stage stochastic optimization** problem including g
 
 The operation model is a **network constrained unit commitment (NCUC)** based on a **tight and compact** formulation including **operating reserves** with a
 **DC power flow (DCPF)** including **line switching** decisions. **Network ohmic losses** are considered proportional to the line flow. It considers different **energy storage systems (ESS)**, e.g., pumped-hydro storage,
-battery, etc. It allows analyzing the trade-off between the investment in generation/transmission and the investment or use of storage capacity.
+battery, etc. It allows analyzing the trade-off between the investment in generation/storage/transmission and the investment or use of storage capacity.
 
 The main results of the model can be structured in these topics:
   
