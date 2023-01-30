@@ -462,8 +462,8 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
         print('eEnergyOutflows       ... ', len(getattr(OptModel, 'eEnergyOutflows_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
 
     def eMinimumEnergy(OptModel,p,sc,n,es):
-        if   mTEPES.n.ord(n) % mTEPES.pEnergyTimeStep[es] == 0 and sum(mTEPES.pMinimumEnergy[p,sc,n2,es]() for n2 in mTEPES.n2):
-            return sum((OptModel.vTotalOutput[p,sc,n2,es] - mTEPES.pVariableMinEnergy[p,sc,n2,es])*mTEPES.pDuration[n2] for n2 in list(mTEPES.n2)[mTEPES.n.ord(n) - mTEPES.pEnergyTimeStep[es]:mTEPES.n.ord(n)]) >= 0.0
+        if   mTEPES.n.ord(n) % mTEPES.pEnergyTimeStep[es] == 0 and sum(mTEPES.pMinEnergy[p,sc,n2,es]() for n2 in mTEPES.n2):
+            return sum((OptModel.vTotalOutput[p,sc,n2,es] - mTEPES.pMinEnergy[p,sc,n2,es])*mTEPES.pDuration[n2] for n2 in list(mTEPES.n2)[mTEPES.n.ord(n) - mTEPES.pEnergyTimeStep[es]:mTEPES.n.ord(n)]) >= 0.0
         else:
             return Constraint.Skip
     setattr(OptModel, 'eMinimumEnergy_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.ps, mTEPES.n, mTEPES.es, rule=eMinimumEnergy, doc='minimum energy of a unit [GWh]'))
@@ -472,8 +472,8 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
         print('eMinimumEnergy        ... ', len(getattr(OptModel, 'eMinimumEnergy_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
 
     def eMaximumEnergy(OptModel,p,sc,n,es):
-        if   mTEPES.n.ord(n) % mTEPES.pEnergyTimeStep[es] == 0 and sum(mTEPES.pMaximumEnergy[p,sc,n2,es]() for n2 in mTEPES.n2):
-            return sum((OptModel.vTotalOutput[p,sc,n2,es] - mTEPES.pVariableMaxEnergy[p,sc,n2,es])*mTEPES.pDuration[n2] for n2 in list(mTEPES.n2)[mTEPES.n.ord(n) - mTEPES.pEnergyTimeStep[es]:mTEPES.n.ord(n)]) <= 0.0
+        if   mTEPES.n.ord(n) % mTEPES.pEnergyTimeStep[es] == 0 and sum(mTEPES.pMaxEnergy[p,sc,n2,es]() for n2 in mTEPES.n2):
+            return sum((OptModel.vTotalOutput[p,sc,n2,es] - mTEPES.pMaxEnergy[p,sc,n2,es])*mTEPES.pDuration[n2] for n2 in list(mTEPES.n2)[mTEPES.n.ord(n) - mTEPES.pEnergyTimeStep[es]:mTEPES.n.ord(n)]) <= 0.0
         else:
             return Constraint.Skip
     setattr(OptModel, 'eMaximumEnergy_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.ps, mTEPES.n, mTEPES.es, rule=eMaximumEnergy, doc='maximum energy of a unit [GWh]'))
