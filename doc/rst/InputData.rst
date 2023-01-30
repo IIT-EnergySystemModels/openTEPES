@@ -70,9 +70,9 @@ Input files
 -----------
 This is the list of the input data files and their brief description.
 
-=========================================  ==========================================================================================================
+=========================================  ================================================================================================================================
 File                                       Description
-=========================================  ==========================================================================================================
+=========================================  ================================================================================================================================
 ``oT_Data_Option.csv``                     Options of use of the **openTEPES** model
 ``oT_Data_Parameter.csv``                  General system parameters
 ``oT_Data_Period.csv``                     Weight of each period
@@ -93,9 +93,11 @@ File                                       Description
 ``oT_Data_EnergyOutflows.csv``             Energy outflows from an ESS for Power-to-X (H2 production or EV mobility or water irrigation)
 ``oT_Data_VariableMaxStorage.csv``         Maximum storage of the ESS by load level
 ``oT_Data_VariableMinStorage.csv``         Minimum storage of the ESS by load level
+``oT_Data_VariableMaxEnergy.csv``          Maximum energy of the unit by load level (the energy will be accumulated and enforced for the interval defined by EnergyType)
+``oT_Data_VariableMinEnergy.csv``          Minimum energy of the unit by load level (the energy will be accumulated and enforced for the interval defined by EnergyType)
 ``oT_Data_Network.csv``                    Network data
 ``oT_Data_NodeLocation.csv``               Node location in latitude and longitude
-=========================================  ==========================================================================================================
+=========================================  ================================================================================================================================
 
 In any input file only the columns indicated in this document will be read. For example, you can add a column for comments or additional information as needed, but it will not read by the model.
 
@@ -275,6 +277,7 @@ BinaryCommitment      Binary unit commitment decision                           
 NoOperatingReserve    No contribution to operating reserve. Yes if the unit doesn't contribute to the operating reserve                       Yes/No
 StorageType           Storage type based on storage capacity (hourly, daily, weekly, monthly, etc.)                                           Hourly/Daily/Weekly/Monthly
 OutflowsType          Outflows type based on the demand extracted from the storage (hourly, daily, weekly, monthly, yearly, etc.)             Hourly/Daily/Weekly/Monthly/Yearly
+EnergyType            Energy type based on the max/min energy to be produced by the unit (daily, weekly, 4-weeks, yearly, etc.)               Daily/Weekly/Monthly/Yearly
 MustRun               Must-run unit                                                                                                           Yes/No
 InitialPeriod         Initial period (year) when the unit is installed or can be installed, if candidate                                      Year
 FinalPeriod           Final   period (year) when the unit is installed or can be installed, if candidate                                      Year
@@ -411,7 +414,7 @@ If you have daily/weekly/monthly/yearly outflows data just input the daily/weekl
 Internally, all the values below 2.5e-5 times the maximum system demand of each area will be converted into 0 by the model.
 
 Variable maximum and minimum storage
----------------------------------------------
+------------------------------------
 
 A description of the data included in the files ``oT_Data_VariableMaxStorage.csv`` and ``oT_Data_VariableMinStorage.csv`` follows:
 
@@ -424,6 +427,21 @@ Period      Scenario        Load level  Generator  Maximum (minimum) storage of 
 All the generators must be defined as columns of these files.
 
 For example, these data can be used for defining the operating guide (rule) curves for the reservoirs.
+
+Variable maximum and minimum energy
+-----------------------------------
+
+A description of the data included in the files ``oT_Data_VariableMaxEnergy.csv`` and ``oT_Data_VariableMinEnergy.csv`` follows:
+
+==========  ==============  ==========  =========  ====================================================  ===
+Identifier  Identifier      Identifier  Header     Description
+==========  ==============  ==========  =========  ====================================================  ===
+Period      Scenario        Load level  Generator  Maximum (minimum) energy of the unit by load level    MW
+==========  ==============  ==========  =========  ====================================================  ===
+
+All the generators must be defined as columns of these files.
+
+For example, these data can be used for defining the minimum and/or maximum energy to be produced on a daily/weekly/yearly basis (depending on the EnergyType).
 
 Transmission network
 --------------------

@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - December 14, 2022
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - January 30, 2023
 """
 
 import time
@@ -453,13 +453,33 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
 
     def eEnergyOutflows(OptModel,p,sc,n,es):
         if   mTEPES.n.ord(n) % mTEPES.pOutflowsTimeStep[es] == 0 and sum(mTEPES.pEnergyOutflows[p,sc,n2,es]() for n2 in mTEPES.n2):
-            return sum(OptModel.vEnergyOutflows[p,sc,n2,es]*mTEPES.pDuration[n2] for n2 in list(mTEPES.n2)[mTEPES.n.ord(n) - mTEPES.pOutflowsTimeStep[es]:mTEPES.n.ord(n)]) == sum(mTEPES.pEnergyOutflows[p,sc,n2,es]*mTEPES.pDuration[n2] for n2 in list(mTEPES.n2)[mTEPES.n.ord(n) - mTEPES.pOutflowsTimeStep[es]:mTEPES.n.ord(n)])
+            return sum((OptModel.vEnergyOutflows[p,sc,n2,es] - mTEPES.pEnergyOutflows[p,sc,n2,es])*mTEPES.pDuration[n2] for n2 in list(mTEPES.n2)[mTEPES.n.ord(n) - mTEPES.pOutflowsTimeStep[es]:mTEPES.n.ord(n)]) == 0.0
         else:
             return Constraint.Skip
     setattr(OptModel, 'eEnergyOutflows_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.ps, mTEPES.n, mTEPES.es, rule=eEnergyOutflows, doc='energy outflows of an ESS unit [GW]'))
 
     if pIndLogConsole == 1:
         print('eEnergyOutflows       ... ', len(getattr(OptModel, 'eEnergyOutflows_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+
+    def eMinimumEnergy(OptModel,p,sc,n,es):
+        if   mTEPES.n.ord(n) % mTEPES.pEnergyTimeStep[es] == 0 and sum(mTEPES.pMinimumEnergy[p,sc,n2,es]() for n2 in mTEPES.n2):
+            return sum((OptModel.vTotalOutput[p,sc,n2,es] - mTEPES.pVariableMinEnergy[p,sc,n2,es])*mTEPES.pDuration[n2] for n2 in list(mTEPES.n2)[mTEPES.n.ord(n) - mTEPES.pEnergyTimeStep[es]:mTEPES.n.ord(n)]) >= 0.0
+        else:
+            return Constraint.Skip
+    setattr(OptModel, 'eMinimumEnergy_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.ps, mTEPES.n, mTEPES.es, rule=eMinimumEnergy, doc='minimum energy of a unit [GWh]'))
+
+    if pIndLogConsole == 1:
+        print('eMinimumEnergy        ... ', len(getattr(OptModel, 'eMinimumEnergy_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+
+    def eMaximumEnergy(OptModel,p,sc,n,es):
+        if   mTEPES.n.ord(n) % mTEPES.pEnergyTimeStep[es] == 0 and sum(mTEPES.pMaximumEnergy[p,sc,n2,es]() for n2 in mTEPES.n2):
+            return sum((OptModel.vTotalOutput[p,sc,n2,es] - mTEPES.pVariableMaxEnergy[p,sc,n2,es])*mTEPES.pDuration[n2] for n2 in list(mTEPES.n2)[mTEPES.n.ord(n) - mTEPES.pEnergyTimeStep[es]:mTEPES.n.ord(n)]) <= 0.0
+        else:
+            return Constraint.Skip
+    setattr(OptModel, 'eMaximumEnergy_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.ps, mTEPES.n, mTEPES.es, rule=eMaximumEnergy, doc='maximum energy of a unit [GWh]'))
+
+    if pIndLogConsole == 1:
+        print('eMaximumEnergy        ... ', len(getattr(OptModel, 'eMaximumEnergy_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
 
     GeneratingTime = time.time() - StartTime
     if pIndLogConsole == 1:

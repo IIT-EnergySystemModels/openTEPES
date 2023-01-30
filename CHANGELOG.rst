@@ -1,6 +1,10 @@
 Change Log
 =============
 
+[4.10.0] - 2023-01-30
+--------------------
+- [CHANGED] new VariableMaxEnergy and VariableMinEnergy input data files to determine mandatory max or min energy in time interval defined by EnergyType column in Generation file
+
 [4.9.1] - 2023-01-18
 --------------------
 - [CHANGED] new TechnologyConsumptionEnergy output file
