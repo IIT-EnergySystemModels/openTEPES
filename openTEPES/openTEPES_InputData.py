@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - January 30, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - January 31, 2023
 """
 
 import datetime
@@ -572,20 +572,22 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pCycleTimeStep    = pd.concat([pCycleTimeStep,pOutflowsTimeStep,pEnergyTimeStep], axis=1).min(axis=1)
 
     # drop load levels with duration 0
-    pDuration         = pDuration.loc        [mTEPES.n    ]
-    pDemand           = pDemand.loc          [mTEPES.psn  ]
-    pSystemInertia    = pSystemInertia.loc   [mTEPES.psnar]
-    pOperReserveUp    = pOperReserveUp.loc   [mTEPES.psnar]
-    pOperReserveDw    = pOperReserveDw.loc   [mTEPES.psnar]
-    pMinPower         = pMinPower.loc        [mTEPES.psn  ]
-    pMaxPower         = pMaxPower.loc        [mTEPES.psn  ]
-    pMinCharge        = pMinCharge.loc       [mTEPES.psn  ]
-    pMaxCharge        = pMaxCharge.loc       [mTEPES.psn  ]
-    pEnergyInflows    = pEnergyInflows.loc   [mTEPES.psn  ]
-    pEnergyOutflows   = pEnergyOutflows.loc  [mTEPES.psn  ]
-    pMinStorage       = pMinStorage.loc      [mTEPES.psn  ]
-    pMaxStorage       = pMaxStorage.loc      [mTEPES.psn  ]
-    pIniInventory     = pIniInventory.loc    [mTEPES.psn  ]
+    pDuration          = pDuration.loc         [mTEPES.n    ]
+    pDemand            = pDemand.loc           [mTEPES.psn  ]
+    pSystemInertia     = pSystemInertia.loc    [mTEPES.psnar]
+    pOperReserveUp     = pOperReserveUp.loc    [mTEPES.psnar]
+    pOperReserveDw     = pOperReserveDw.loc    [mTEPES.psnar]
+    pMinPower          = pMinPower.loc         [mTEPES.psn  ]
+    pMaxPower          = pMaxPower.loc         [mTEPES.psn  ]
+    pMinCharge         = pMinCharge.loc        [mTEPES.psn  ]
+    pMaxCharge         = pMaxCharge.loc        [mTEPES.psn  ]
+    pEnergyInflows     = pEnergyInflows.loc    [mTEPES.psn  ]
+    pEnergyOutflows    = pEnergyOutflows.loc   [mTEPES.psn  ]
+    pMinStorage        = pMinStorage.loc       [mTEPES.psn  ]
+    pMaxStorage        = pMaxStorage.loc       [mTEPES.psn  ]
+    pVariableMaxEnergy = pVariableMaxEnergy.loc[mTEPES.psn  ]
+    pVariableMinEnergy = pVariableMinEnergy.loc[mTEPES.psn  ]
+    pIniInventory      = pIniInventory.loc     [mTEPES.psn  ]
 
     # separate positive and negative demands to avoid converting negative values to 0
     pDemandPos        = pDemand.where        (pDemand >= 0.0, other=0.0)
