@@ -282,13 +282,13 @@ Maximum shift time of stored energy [GWh]. It is thought to be applied to demand
 
 ESS outflows (only for load levels multiple of 1, 24, 168, 672, and 8736 h depending on the ESS outflow cycle) must be satisfied [GWh] «``eEnergyOutflows``»
 
-:math:`\sum_{n' = n-\frac{\tau_e}{\rho_e}}^n go^p_{ωn'e} DUR_n' = \sum_{n' = n-\frac{\tau_e}{\rho_e}}^n EO^p_{ωn'e} DUR_n' \quad \forall pωne, n \in \rho_e`
+:math:`\sum_{n' = n-\frac{\tau_e}{\rho_e}}^n (go^p_{ωn'e} - EO^p_{ωn'e}) DUR_n' = 0 \quad \forall pωne, n \in \rho_e`
 
 Minimum and maximum energy production (only for load levels multiple of 24, 168, 672, 8736 h depending on the unit energy type) must be satisfied [GWh] «``eMinimumEnergy``»  «``eMaximumEnergy``»
 
-:math:`\sum_{n' = n-\sigma_g^n} gp^p_{ωn'g} DUR_n' \leq \sum_{n' = n-\sigma_g^n} \overline{E}^p_{ωn'g} DUR_n' \quad \forall pωng`
+:math:`\sum_{n' = n-\sigma_g^n} (gp^p_{ωn'g} - \overline{E}^p_{ωn'g})  DUR_n' \leq 0 \quad \forall pωng`
 
-:math:`\sum_{n' = n-\sigma_g^n} gp^p_{ωn'g} DUR_n' \geq \sum_{n' = n-\sigma_g^n} \underline{E}^p_{ωn'g} DUR_n' \quad \forall pωng`
+:math:`\sum_{n' = n-\sigma_g^n} (gp^p_{ωn'g} - \underline{E}^p_{ωn'g}) DUR_n' \geq 0 \quad \forall pωng`
 
 Maximum and minimum output of the second block of a committed unit (all except the VRES units) [p.u.] «``eMaxOutput2ndBlock``» «``eMinOutput2ndBlock``»
 
