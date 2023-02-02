@@ -104,7 +104,7 @@ They are written in **uppercase** letters.
 :math:`CSU_g, CSD_g`                                   Startup and shutdown cost of a committed unit                                                                             M€
 :math:`\tau_e`                                         Storage cycle of the ESS (e.g., 1, 24, 168, 8736 h -for daily, weekly, monthly, yearly-)                                  h
 :math:`\rho_e`                                         Outflow cycle of the ESS (e.g., 1, 24, 168, 8736 h -for hourly, daily, weekly, monthly, yearly-)                          h
-:math:`\sigma_e`                                       Energy cycle of the unit (e.g., 24, 168, 672, 8736 h -for daily, weekly, monthly, yearly-)                                h
+:math:`\sigma_g`                                       Energy cycle of the unit (e.g., 24, 168, 672, 8736 h -for daily, weekly, monthly, yearly-)                                h
 :math:`GI_g`                                           Generator inertia                                                                                                         s
 :math:`EF_e`                                           Round-trip efficiency of the pump/turbine cycle of a pumped-storage hydro power plant or charge/discharge of a battery    p.u.
 :math:`\underline{I}^p_{ωne}, \overline{I}^p_{ωne}`    Maximum and minimum capacity of an ESS (e.g., hydro power plant, closed-loop pumped-storage hydro)                        GWh
