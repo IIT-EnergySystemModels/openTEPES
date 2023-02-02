@@ -104,7 +104,7 @@ They are written in **uppercase** letters.
 :math:`CSU_g, CSD_g`                                   Startup and shutdown cost of a committed unit                                                                             M€
 :math:`\tau_e`                                         Storage cycle of the ESS (e.g., 1, 24, 168, 8736 h -for daily, weekly, monthly, yearly-)                                  h
 :math:`\rho_e`                                         Outflow cycle of the ESS (e.g., 1, 24, 168, 8736 h -for hourly, daily, weekly, monthly, yearly-)                          h
-:math:`\gamma_e`                                       Energy cycle of the unit (e.g., 24, 168, 672, 8736 h -for daily, weekly, monthly, yearly-)                                h
+:math:`\sigma_e`                                       Energy cycle of the unit (e.g., 24, 168, 672, 8736 h -for daily, weekly, monthly, yearly-)                                h
 :math:`GI_g`                                           Generator inertia                                                                                                         s
 :math:`EF_e`                                           Round-trip efficiency of the pump/turbine cycle of a pumped-storage hydro power plant or charge/discharge of a battery    p.u.
 :math:`\underline{I}^p_{ωne}, \overline{I}^p_{ωne}`    Maximum and minimum capacity of an ESS (e.g., hydro power plant, closed-loop pumped-storage hydro)                        GWh
@@ -272,9 +272,9 @@ Energy inflows of ESS candidates (only for load levels multiple of 1, 24, 168, 8
 
 ESS energy inventory (only for load levels multiple of 1, 24, 168 h depending on the ESS storage type) [GWh] «``eESSInventory``»
 
-:math:`i^p_{ω,n-\frac{\tau_e}{\nu},e} + \sum_{n' = n-\frac{\tau_e}{\nu}}^{n} DUR_n' (EI^p_{ωn'e} - go^p_{ωn'e} - gp^p_{ωn'e} + EF_e gc^p_{ωn'e}) = i^p_{ωne} + s^p_{ωne} \quad \forall pωne, e \in EE`
+:math:`i^p_{ω,n-\frac{\tau_e}{\nu},e} + \sum_{n' = n-\frac{\tau_e}{\nu}}^n DUR_n' (EI^p_{ωn'e} - go^p_{ωn'e} - gp^p_{ωn'e} + EF_e gc^p_{ωn'e}) = i^p_{ωne} + s^p_{ωne} \quad \forall pωne, e \in EE`
 
-:math:`i^p_{ω,n-\frac{\tau_e}{\nu},e} + \sum_{n' = n-\frac{\tau_e}{\nu}}^{n} DUR_n' (ei^p_{ωn'e} - go^p_{ωn'e} - gp^p_{ωn'e} + EF_e gc^p_{ωn'e}) = i^p_{ωne} + s^p_{ωne} \quad \forall pωne, e \in CE`
+:math:`i^p_{ω,n-\frac{\tau_e}{\nu},e} + \sum_{n' = n-\frac{\tau_e}{\nu}}^n DUR_n' (ei^p_{ωn'e} - go^p_{ωn'e} - gp^p_{ωn'e} + EF_e gc^p_{ωn'e}) = i^p_{ωne} + s^p_{ωne} \quad \forall pωne, e \in CE`
 
 Maximum shift time of stored energy [GWh]. It is thought to be applied to demand side management «``eMaxShiftTime``»
 
@@ -282,13 +282,13 @@ Maximum shift time of stored energy [GWh]. It is thought to be applied to demand
 
 ESS outflows (only for load levels multiple of 1, 24, 168, 672, and 8736 h depending on the ESS outflow cycle) must be satisfied [GWh] «``eEnergyOutflows``»
 
-:math:`\sum_{n' = n-\frac{\tau_e}{\rho_e}}^{n} go^p_{ωn'e} DUR_n' = \sum_{n' = n-\frac{\tau_e}{\rho_e}}^{n} EO^p_{ωn'e} DUR_n' \quad \forall pωne, n \in \rho_e`
+:math:`\sum_{n' = n-\frac{\tau_e}{\rho_e}}^n go^p_{ωn'e} DUR_n' = \sum_{n' = n-\frac{\tau_e}{\rho_e}}^n EO^p_{ωn'e} DUR_n' \quad \forall pωne, n \in \rho_e`
 
 Minimum and maximum energy production (only for load levels multiple of 24, 168, 672, 8736 h depending on the unit energy type) must be satisfied [GWh] «``eMinimumEnergy``»  «``eMaximumEnergy``»
 
-:math:`\sum_{n' = n-\gamma_g^{n} gp^p_{ωn'g} DUR_n' \leq \sum_{n' = n-\gamma_g^{n} \overline{E}^p_{ωn'g} DUR_n' \quad \forall pωng`
+:math:`\sum_{n' = n-\sigma_g^n} gp^p_{ωn'g} DUR_n' \leq \sum_{n' = n-\sigma_g^n} \overline{E}^p_{ωn'g} DUR_n' \quad \forall pωng`
 
-:math:`\sum_{n' = n-\gamma_g^{n} gp^p_{ωn'g} DUR_n' \geq \sum_{n' = n-\gamma_g^{n} \underline{E}^p_{ωn'g} DUR_n' \quad \forall pωng`
+:math:`\sum_{n' = n-\sigma_g^n} gp^p_{ωn'g} DUR_n' \geq \sum_{n' = n-\sigma_g^n} \underline{E}^p_{ωn'g} DUR_n' \quad \forall pωng`
 
 Maximum and minimum output of the second block of a committed unit (all except the VRES units) [p.u.] «``eMaxOutput2ndBlock``» «``eMinOutput2ndBlock``»
 
