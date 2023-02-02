@@ -286,9 +286,9 @@ ESS outflows (only for load levels multiple of 1, 24, 168, 672, and 8736 h depen
 
 Minimum and maximum energy production (only for load levels multiple of 24, 168, 672, 8736 h depending on the unit energy type) must be satisfied [GWh] «``eMinimumEnergy``»  «``eMaximumEnergy``»
 
-:math:`\sum_{n' = n-\sigma_g^n}^n (gp^p_{ωn'g} - \overline{E}^p_{ωn'g})  DUR_n' \leq 0 \quad \forall pωng, n \in \sigma_g`
+:math:`\sum_{n' = n-\sigma_g}^n (gp^p_{ωn'g} - \overline{E}^p_{ωn'g})  DUR_n' \leq 0 \quad \forall pωng, n \in \sigma_g`
 
-:math:`\sum_{n' = n-\sigma_g^n}^n (gp^p_{ωn'g} - \underline{E}^p_{ωn'g}) DUR_n' \geq 0 \quad \forall pωng, n \in \sigma_g`
+:math:`\sum_{n' = n-\sigma_g}^n (gp^p_{ωn'g} - \underline{E}^p_{ωn'g}) DUR_n' \geq 0 \quad \forall pωng, n \in \sigma_g`
 
 Maximum and minimum output of the second block of a committed unit (all except the VRES units) [p.u.] «``eMaxOutput2ndBlock``» «``eMinOutput2ndBlock``»
 
