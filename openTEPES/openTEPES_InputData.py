@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - January 31, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 06, 2023
 """
 
 import datetime
@@ -540,21 +540,20 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
 
     # %% definition of the time-steps leap to observe the stored energy at an ESS
     idxCycle            = dict()
-    idxCycle[0        ] = 1
-    idxCycle[0.0      ] = 1
+    idxCycle[0        ] = 8736
+    idxCycle[0.0      ] = 8736
     idxCycle["Hourly" ] = 1
     idxCycle["Daily"  ] = 1
     idxCycle["Weekly" ] = round(  24/pTimeStep)
     idxCycle["Monthly"] = round( 168/pTimeStep)
-    idxCycle["Yearly" ] = round(8736/pTimeStep)
+    idxCycle["Yearly" ] = round( 168/pTimeStep)
 
     idxOutflows            = dict()
     idxOutflows[0        ] = 8736
     idxOutflows[0.0      ] = 8736
-    idxOutflows["Hourly" ] = 1
-    idxOutflows["Daily"  ] = 1
-    idxOutflows["Weekly" ] = round(  24/pTimeStep)
-    idxOutflows["Monthly"] = round( 168/pTimeStep)
+    idxOutflows["Daily"  ] = round(  24/pTimeStep)
+    idxOutflows["Weekly" ] = round( 168/pTimeStep)
+    idxOutflows["Monthly"] = round( 672/pTimeStep)
     idxOutflows["Yearly" ] = round(8736/pTimeStep)
 
     idxEnergy            = dict()
@@ -566,10 +565,10 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     idxEnergy["Yearly" ] = round(8736/pTimeStep)
 
     pCycleTimeStep    = pStorageType.map (idxCycle   )
-    pOutflowsTimeStep = pOutflowsType.map(idxOutflows)
-    pEnergyTimeStep   = pEnergyType.map  (idxEnergy  )
+    pOutflowsTimeStep = pOutflowsType.map(idxOutflows).where(pEnergyOutflows.sum()                               > 0.0, 8736)
+    pEnergyTimeStep   = pEnergyType.map  (idxEnergy  ).where(pVariableMinEnergy.sum() + pVariableMaxEnergy.sum() > 0.0, 8736)
 
-    pCycleTimeStep    = pd.concat([pCycleTimeStep,pOutflowsTimeStep,pEnergyTimeStep], axis=1).min(axis=1)
+    pCycleTimeStep    = pd.concat([pCycleTimeStep, pOutflowsTimeStep, pEnergyTimeStep], axis=1).min(axis=1)
 
     # drop load levels with duration 0
     pDuration          = pDuration.loc         [mTEPES.n    ]
@@ -1168,16 +1167,27 @@ def SettingUpVariables(OptModel, mTEPES):
     # for p in mTEPES.p:
     #     if abs(sum(mTEPES.pScenProb[p,sc] for sc in mTEPES.sc)-1.0) > 1e-6:
     #         print('### Sum of scenario probabilities different from 1 in period ', p)
-    #         assert (0==1)
+    #         assert (0 == 1)
 
     # detecting infeasibility: total min ESS output greater than total inflows, total max ESS charge lower than total outflows
     for es in mTEPES.es:
         if sum(mTEPES.pMinPower [p,sc,n,es]-mTEPES.pEnergyInflows [p,sc,n,es]() for p,sc,n in mTEPES.psn) > 0.0:
             print('### Total minimum output greater than total inflows for ESS unit ', es)
-            assert (0==1)
+            assert (0 == 1)
         if sum(mTEPES.pMaxCharge[p,sc,n,es]-mTEPES.pEnergyOutflows[p,sc,n,es]() for p,sc,n in mTEPES.psn) < 0.0:
             print('### Total maximum charge lower than total outflows for ESS unit ', es)
-            assert (0==1)
+            assert (0 == 1)
+
+        # detect inventory infeasibility
+        for p,sc,n in mTEPES.psn:
+            if   mTEPES.n.ord(n) == mTEPES.pCycleTimeStep[es]                                                      and mTEPES.pMaxCharge[p,sc,n,es] + mTEPES.pMaxPower[p,sc,n,es]:
+                if mTEPES.pIniInventory[p,sc,n,es]()                                      + sum(mTEPES.pDuration[n2]()*(mTEPES.pEnergyInflows[p,sc,n2,es]() - mTEPES.pMinPower[p,sc,n2,es] + mTEPES.pEfficiency[es]*mTEPES.pMaxCharge[p,sc,n2,es]) for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pCycleTimeStep[es]:mTEPES.n.ord(n)]) < mTEPES.pMinStorage[p,sc,n,es]:
+                    print('### Inventory equation violation ', p, sc, n, es)
+                    assert (0 == 1)
+            elif mTEPES.n.ord(n) >  mTEPES.pCycleTimeStep[es] and mTEPES.n.ord(n) % mTEPES.pCycleTimeStep[es] == 0 and mTEPES.pMaxCharge[p,sc,n,es] + mTEPES.pMaxPower[p,sc,n,es]:
+                if mTEPES.pMaxStorage[p,sc,mTEPES.n.prev(n,mTEPES.pCycleTimeStep[es]),es] + sum(mTEPES.pDuration[n2]()*(mTEPES.pEnergyInflows[p,sc,n2,es]() - mTEPES.pMinPower[p,sc,n2,es] + mTEPES.pEfficiency[es]*mTEPES.pMaxCharge[p,sc,n2,es]) for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pCycleTimeStep[es]:mTEPES.n.ord(n)]) < mTEPES.pMinStorage[p,sc,n,es]:
+                    print('### Inventory equation violation ', p, sc, n, es)
+                    assert (0 == 1)
 
     SettingUpVariablesTime = time.time() - StartTime
     print('Setting up variables                   ... ', round(SettingUpVariablesTime), 's')

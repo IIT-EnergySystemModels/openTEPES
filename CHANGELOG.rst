@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.10.0] - 2023-01-30
+[4.10.0] - 2023-02-06
 --------------------
+- [FIXED] fix error in determining the storage cycle of every ESS unit (as the minimum value between storage type, outflows type, and energy type) only if values of outflows and energy are provided
 - [CHANGED] new VariableMaxEnergy and VariableMinEnergy input data files to determine mandatory max or min energy in time interval defined by EnergyType column in Generation file
 
 [4.9.1] - 2023-01-18
