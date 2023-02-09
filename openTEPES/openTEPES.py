@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 06, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 09, 2023
 """
 
 import time
@@ -36,7 +36,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pCompleteResults, pIndLogConsol
     idxDict['y'  ] = 1
 
     #%% model declaration
-    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.10.0 - February 06, 2023')
+    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.10.0 - February 09, 2023')
 
     pCompleteResults = [j for i,j in idxDict.items() if i == pCompleteResults][0]
     pIndLogConsole   = [j for i,j in idxDict.items() if i == pIndLogConsole  ][0]

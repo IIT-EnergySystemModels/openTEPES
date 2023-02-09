@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 06, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 09, 2023
 """
 
 import datetime
@@ -955,8 +955,12 @@ def SettingUpVariables(OptModel, mTEPES):
         # ESS with no charge capacity or not storage capacity can't charge
         if mTEPES.pMaxCharge        [p,sc,n,es] ==  0.0:
             OptModel.vESSTotalCharge[p,sc,n,es].fix(0.0)
-        if mTEPES.pMaxCharge        [p,sc,n,es] ==  0.0 and mTEPES.pMaxPower[p,sc,n,es] == 0.0:
-            OptModel.vESSInventory  [p,sc,n,es].fix(OptModel.vESSInventory  [p,sc,n,es].lb)
+        # ESS with no charge capacity and no inflows can't produce
+        if mTEPES.pMaxCharge        [p,sc,n,es] ==  0.0 and sum(mTEPES.pEnergyInflows[pp,scc,nn,es]() for pp,scc,nn in mTEPES.psn) == 0.0:
+            OptModel.vTotalOutput   [p,sc,n,es].fix(0.0)
+            OptModel.vOutput2ndBlock[p,sc,n,es].fix(0.0)
+            OptModel.vReserveUp     [p,sc,n,es].fix(0.0)
+            OptModel.vReserveDown   [p,sc,n,es].fix(0.0)
             OptModel.vESSSpillage   [p,sc,n,es].fix(0.0)
         if mTEPES.pMaxCharge2ndBlock[p,sc,n,es] ==  0.0:
             OptModel.vCharge2ndBlock[p,sc,n,es].fix(0.0)
@@ -1022,14 +1026,15 @@ def SettingUpVariables(OptModel, mTEPES):
 
     # fixing the ESS inventory at the end of the following pCycleTimeStep (daily, weekly, monthly) if between storage limits, i.e., for daily ESS is fixed at the end of the week, for weekly/monthly ESS is fixed at the end of the year
     for p,sc,n,es in mTEPES.psnes:
-         if mTEPES.pStorageType[es] == 'Hourly'  and mTEPES.n.ord(n) % int(  24/mTEPES.pTimeStep()) == 0 and mTEPES.pInitialInventory[es] >= mTEPES.pMinStorage[p,sc,n,es] and mTEPES.pInitialInventory[es] <= mTEPES.pMaxStorage[p,sc,n,es]:
-                 OptModel.vESSInventory[p,sc,n,es].fix(mTEPES.pInitialInventory[es])
-         if mTEPES.pStorageType[es] == 'Daily'   and mTEPES.n.ord(n) % int( 168/mTEPES.pTimeStep()) == 0 and mTEPES.pInitialInventory[es] >= mTEPES.pMinStorage[p,sc,n,es] and mTEPES.pInitialInventory[es] <= mTEPES.pMaxStorage[p,sc,n,es]:
-                 OptModel.vESSInventory[p,sc,n,es].fix(mTEPES.pInitialInventory[es])
-         if mTEPES.pStorageType[es] == 'Weekly'  and mTEPES.n.ord(n) % int(8736/mTEPES.pTimeStep()) == 0 and mTEPES.pInitialInventory[es] >= mTEPES.pMinStorage[p,sc,n,es] and mTEPES.pInitialInventory[es] <= mTEPES.pMaxStorage[p,sc,n,es]:
-                 OptModel.vESSInventory[p,sc,n,es].fix(mTEPES.pInitialInventory[es])
-         if mTEPES.pStorageType[es] == 'Monthly' and mTEPES.n.ord(n) % int(8736/mTEPES.pTimeStep()) == 0 and mTEPES.pInitialInventory[es] >= mTEPES.pMinStorage[p,sc,n,es] and mTEPES.pInitialInventory[es] <= mTEPES.pMaxStorage[p,sc,n,es]:
-                 OptModel.vESSInventory[p,sc,n,es].fix(mTEPES.pInitialInventory[es])
+        if mTEPES.pInitialInventory[es] >= mTEPES.pMinStorage[p,sc,n,es] and mTEPES.pInitialInventory[es] <= mTEPES.pMaxStorage[p,sc,n,es]:
+            if mTEPES.pStorageType[es] == 'Hourly'  and mTEPES.n.ord(n) % int(  24/mTEPES.pTimeStep()) == 0:
+                OptModel.vESSInventory[p,sc,n,es].fix(mTEPES.pInitialInventory[es])
+            if mTEPES.pStorageType[es] == 'Daily'   and mTEPES.n.ord(n) % int( 168/mTEPES.pTimeStep()) == 0:
+                OptModel.vESSInventory[p,sc,n,es].fix(mTEPES.pInitialInventory[es])
+            if mTEPES.pStorageType[es] == 'Weekly'  and mTEPES.n.ord(n) % int(8736/mTEPES.pTimeStep()) == 0:
+                OptModel.vESSInventory[p,sc,n,es].fix(mTEPES.pInitialInventory[es])
+            if mTEPES.pStorageType[es] == 'Monthly' and mTEPES.n.ord(n) % int(8736/mTEPES.pTimeStep()) == 0:
+                OptModel.vESSInventory[p,sc,n,es].fix(mTEPES.pInitialInventory[es])
 
     for p,sc,n,ec in mTEPES.psnec:
         if mTEPES.pEnergyInflows [p,sc,n,ec]() == 0.0:
