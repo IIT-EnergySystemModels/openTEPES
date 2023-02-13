@@ -203,12 +203,13 @@ Duration
 
 A description of the data included in the file ``oT_Data_Duration.csv`` follows:
 
-==========  ==============  ==========  ========  ===================================================================  ==
-Identifier  Identifier      Identifier  Header    Description
-==========  ==============  ==========  ========  ===================================================================  ==
-Period      Scenario        Load level  Duration  Duration of the load level. Load levels with duration 0 are ignored  h
-Period      Scenario        Load level  Stage     Assignment of the load level to a stage
-==========  ==============  ==========  ========  ===================================================================  ==
+==========  ===================================================================  ========
+Header      Description
+==========  ===================================================================  ========
+LoadLevel   Load level                                                           datetime
+Duration    Duration of the load level. Load levels with duration 0 are ignored  h
+Stage       Assignment of the load level to a stage
+==========  ===================================================================  ========
 
 It is a simple way to use isolated snapshots or representative days or just the first three months instead of all the hours of a year to simplify the optimization problem.
 
