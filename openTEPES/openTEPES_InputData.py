@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 09, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 13, 2023
 """
 
 import datetime
@@ -564,9 +564,9 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     idxEnergy["Monthly"] = round( 672/pTimeStep)
     idxEnergy["Yearly" ] = round(8736/pTimeStep)
 
-    pCycleTimeStep    = pStorageType.map (idxCycle   )
-    pOutflowsTimeStep = pOutflowsType.map(idxOutflows).where(pEnergyOutflows.sum()                               > 0.0, 8736)
-    pEnergyTimeStep   = pEnergyType.map  (idxEnergy  ).where(pVariableMinEnergy.sum() + pVariableMaxEnergy.sum() > 0.0, 8736)
+    pCycleTimeStep    = pStorageType.map (idxCycle                                                                                  ).astype('int')
+    pOutflowsTimeStep = pOutflowsType.map(idxOutflows).where(pEnergyOutflows.sum()                               > 0.0, other = 8736).astype('int')
+    pEnergyTimeStep   = pEnergyType.map  (idxEnergy  ).where(pVariableMinEnergy.sum() + pVariableMaxEnergy.sum() > 0.0, other = 8736).astype('int')
 
     pCycleTimeStep    = pd.concat([pCycleTimeStep, pOutflowsTimeStep, pEnergyTimeStep], axis=1).min(axis=1)
 

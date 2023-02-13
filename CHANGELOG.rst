@@ -1,9 +1,10 @@
 Change Log
 =============
 
-[4.10.0] - 2023-02-09
+[4.10.0] - 2023-02-13
 --------------------
-- [FIXED] eliminate production and opearting reserve variables if there is no pumping capabilty and no natural inflows
+- [FIXED] force time step cycle for ESS inventory scheduling to be integer
+- [FIXED] eliminate production and operating reserve variables if there is no pumping capability and no natural inflows
 - [FIXED] fix error in determining the storage cycle of every ESS unit (as the minimum value between storage type, outflows type, and energy type) only if values of outflows and energy are provided
 - [CHANGED] new VariableMaxEnergy and VariableMinEnergy input data files to determine mandatory max or min energy in time interval defined by EnergyType column in Generation file
 
