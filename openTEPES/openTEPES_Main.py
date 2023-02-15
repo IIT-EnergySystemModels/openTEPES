@@ -101,8 +101,8 @@ parser.add_argument('--result', type=str, default=None)
 DIR    = os.path.dirname(__file__)
 CASE   = '9n'
 SOLVER = 'cbc'
-RESULT = 'Yes'
-LOG    = 'Yes'
+RESULT = 'No'
+LOG    = 'No'
 
 
 def main():

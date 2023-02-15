@@ -276,9 +276,9 @@ Technology            Technology of the generator (nuclear, coal, CCGT, OCGT, ES
 MutuallyExclusive     Mutually exclusive generator. Only exclusion in one direction is needed
 BinaryCommitment      Binary unit commitment decision                                                                                         Yes/No
 NoOperatingReserve    No contribution to operating reserve. Yes if the unit doesn't contribute to the operating reserve                       Yes/No
-StorageType           Storage type based on storage capacity (hourly, daily, weekly, 4-weeks, yearly)                                         Hourly/Daily/Weekly/Monthly/yearly
-OutflowsType          Outflows type based on the demand extracted from the storage (daily, weekly, 4-weeks, yearly)                           Daily/Weekly/Monthly/Yearly
-EnergyType            Energy type based on the max/min energy to be produced by the unit (daily, weekly, 4-weeks, yearly)                     Daily/Weekly/Monthly/Yearly
+StorageType           Storage type based on storage capacity (hourly, daily, weekly, 4-week, yearly)                                          Hourly/Daily/Weekly/Monthly/yearly
+OutflowsType          Outflows type based on the demand extracted from the storage (daily, weekly, 4-week, yearly)                            Daily/Weekly/Monthly/Yearly
+EnergyType            Energy type based on the max/min energy to be produced by the unit (daily, weekly, 4-week, yearly)                      Daily/Weekly/Monthly/Yearly
 MustRun               Must-run unit                                                                                                           Yes/No
 InitialPeriod         Initial period (year) when the unit is installed or can be installed, if candidate                                      Year
 FinalPeriod           Final   period (year) when the unit is installed or can be installed, if candidate                                      Year
@@ -444,7 +444,7 @@ Period      Scenario        Load level  Generator  Maximum (minimum) energy of t
 
 All the generators must be defined as columns of these files.
 
-For example, these data can be used for defining the minimum and/or maximum energy to be produced on a daily/weekly/4-weeks/yearly basis (depending on the EnergyType).
+For example, these data can be used for defining the minimum and/or maximum energy to be produced on a daily/weekly/4-week/yearly basis (depending on the EnergyType).
 
 Transmission network
 --------------------

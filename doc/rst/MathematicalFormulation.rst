@@ -262,13 +262,13 @@ or for storing [GW] «``eESSReserveUpIfEnergy``» «``eESSReserveDwIfEnergy``»
 
 Maximum and minimum inventory of ESS candidates (only for load levels multiple of 1, 24, 168, 8736 h depending on the ESS storage type) constrained by the ESS commitment decision times the maximum capacity [GWh] «``eMaxInventory2Comm``» «``eMinInventory2Comm``»
 
-:math:`i^p_{ωne} <= uc^p_{ωne} \overline{I}^p_{ωne}   \quad \forall pωne, e \in CE`
+:math:`\frac{i^p_{ωne}}{\overline{I}^p_{ωne}}  <= uc^p_{ωne} \quad \forall pωne, e \in CE`
 
-:math:`i^p_{ωne} >= uc^p_{ωne} \underline{I}^p_{ωne}  \quad \forall pωne, e \in CE`
+:math:`\frac{i^p_{ωne}}{\underline{I}^p_{ωne}} >= uc^p_{ωne} \quad \forall pωne, e \in CE`
 
 Energy inflows of ESS candidates (only for load levels multiple of 1, 24, 168, 8736 h depending on the ESS storage type) constrained by the ESS commitment decision times the inflows data [GWh] «``eInflows2Comm``»
 
-:math:`ei^p_{ωne} <= uc^p_{ωne} EI^p_{ωne} \quad \forall pωne, e \in CE`
+:math:`\frac{ei^p_{ωne}}{EI^p_{ωne}} <= uc^p_{ωne} \quad \forall pωne, e \in CE`
 
 ESS energy inventory (only for load levels multiple of 1, 24, 168 h depending on the ESS storage type) [GWh] «``eESSInventory``»
 

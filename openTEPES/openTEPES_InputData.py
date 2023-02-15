@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 13, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 15, 2023
 """
 
 import datetime
@@ -1174,8 +1174,8 @@ def SettingUpVariables(OptModel, mTEPES):
     #         print('### Sum of scenario probabilities different from 1 in period ', p)
     #         assert (0 == 1)
 
-    # detecting infeasibility: total min ESS output greater than total inflows, total max ESS charge lower than total outflows
     for es in mTEPES.es:
+        # detecting infeasibility: total min ESS output greater than total inflows, total max ESS charge lower than total outflows
         if sum(mTEPES.pMinPower [p,sc,n,es]-mTEPES.pEnergyInflows [p,sc,n,es]() for p,sc,n in mTEPES.psn) > 0.0:
             print('### Total minimum output greater than total inflows for ESS unit ', es)
             assert (0 == 1)
@@ -1192,6 +1192,14 @@ def SettingUpVariables(OptModel, mTEPES):
             elif mTEPES.n.ord(n) >  mTEPES.pCycleTimeStep[es] and mTEPES.n.ord(n) % mTEPES.pCycleTimeStep[es] == 0 and mTEPES.pMaxCharge[p,sc,n,es] + mTEPES.pMaxPower[p,sc,n,es]:
                 if mTEPES.pMaxStorage[p,sc,mTEPES.n.prev(n,mTEPES.pCycleTimeStep[es]),es] + sum(mTEPES.pDuration[n2]()*(mTEPES.pEnergyInflows[p,sc,n2,es]() - mTEPES.pMinPower[p,sc,n2,es] + mTEPES.pEfficiency[es]*mTEPES.pMaxCharge[p,sc,n2,es]) for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pCycleTimeStep[es]:mTEPES.n.ord(n)]) < mTEPES.pMinStorage[p,sc,n,es]:
                     print('### Inventory equation violation ', p, sc, n, es)
+                    assert (0 == 1)
+
+    # detect minimum energy infeasibility
+    for g in mTEPES.g:
+        for p,sc,n in mTEPES.psn:
+            if mTEPES.n.ord(n) % mTEPES.pEnergyTimeStep[g] == 0 and sum(mTEPES.pMinEnergy[p,sc,n2,g] for n2 in mTEPES.n2):
+                if sum((mTEPES.pMaxPower[p,sc,n2,g] - mTEPES.pMinEnergy[p,sc,n2,g])*mTEPES.pDuration[n2] for n2 in list(mTEPES.n2)[mTEPES.n.ord(n) - mTEPES.pEnergyTimeStep[g]:mTEPES.n.ord(n)]) < 0.0:
+                    print('### Minimum energy violation ', p, sc, n, g)
                     assert (0 == 1)
 
     SettingUpVariablesTime = time.time() - StartTime
