@@ -45,8 +45,10 @@
   </component>
   <component name="PropertiesComponent">{
   &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/erik_/Documentos/GitHub/openTEPES/openTEPES/openTEPES_OutputResults.py&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/erik_/Documents/GitHub/openTEPES&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
@@ -188,11 +190,11 @@
       <method v="2" />
     </configuration>
     <list>
+      <item itemvalue="Python.Pivote" />
       <item itemvalue="Python.openTEPES" />
       <item itemvalue="Python.openTEPES_Main" />
       <item itemvalue="Python.openTEPES_run" />
       <item itemvalue="Python.transform_results" />
-      <item itemvalue="Python.Pivote" />
     </list>
     <recent_temporary>
       <list>
