@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 15, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 16, 2023
 """
 
 import datetime
@@ -1198,7 +1198,7 @@ def SettingUpVariables(OptModel, mTEPES):
     for g in mTEPES.g:
         for p,sc,n in mTEPES.psn:
             if mTEPES.n.ord(n) % mTEPES.pEnergyTimeStep[g] == 0 and sum(mTEPES.pMinEnergy[p,sc,n2,g] for n2 in mTEPES.n2):
-                if sum((mTEPES.pMaxPower[p,sc,n2,g] - mTEPES.pMinEnergy[p,sc,n2,g])*mTEPES.pDuration[n2] for n2 in list(mTEPES.n2)[mTEPES.n.ord(n) - mTEPES.pEnergyTimeStep[g]:mTEPES.n.ord(n)]) < 0.0:
+                if sum((mTEPES.pMaxPower[p,sc,n2,g] - mTEPES.pMinEnergy[p,sc,n2,g])*mTEPES.pDuration[n2]() for n2 in list(mTEPES.n2)[mTEPES.n.ord(n) - mTEPES.pEnergyTimeStep[g]:mTEPES.n.ord(n)]) < 0.0:
                     print('### Minimum energy violation ', p, sc, n, g)
                     assert (0 == 1)
 
