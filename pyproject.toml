@@ -22,7 +22,7 @@ requires = [
   "pandas>=1.2.3",
   "plotly>=5.7.0",
   "colour>=0.1.5",
-  "altair>=4.2.0",
+  "altair>=4.2.2",
   "psutil>=5.8.0",
   "jsonschema==4.16.0"]
 
