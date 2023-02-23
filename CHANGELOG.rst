@@ -1,6 +1,10 @@
 Change Log
 =============
 
+[4.10.1] - 2023-02-16
+--------------------
+- [FIXED] typo in control of minimum energy infeasibility
+
 [4.10.0] - 2023-02-15
 --------------------
 - [CHANGED] introduce control of minimum energy infeasibility

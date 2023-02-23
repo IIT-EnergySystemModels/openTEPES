@@ -414,7 +414,7 @@ Half ohmic losses are linearly approximated as a function of the flow [GW] «``e
 
 :math:`0 \leq  c^p_{ωne}  \leq \overline{GC}^p_{ωne}                             \quad \forall pωne`
 
-:math:`\undrline{I}^p_{ωne} \leq  i^p_{ωne}  \leq \overline{I}^p_{ωne}           \quad \forall pωne`
+:math:`\underline{I}^p_{ωne} \leq  i^p_{ωne}  \leq \overline{I}^p_{ωne}          \quad \forall pωne`
 
 :math:`0 \leq  s^p_{ωne}                                                         \quad \forall pωne`
 
