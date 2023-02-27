@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - January 18, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 27, 2023
 """
 
 import time
@@ -611,7 +611,8 @@ def ESSOperationResults(DirName, CaseName, OptModel, mTEPES):
         OutputToFile = pd.Series(data=[-OptModel.vESSTotalCharge   [p,sc,n,es]()*mTEPES.pLoadLevelDuration[n]() for p,sc,n,es in mTEPES.psnes], index=pd.Index(mTEPES.psnes))
         OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='GWh', aggfunc=sum).rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_ConsumptionEnergy_'            +CaseName+'.csv', sep=',')
 
-        OutputToFile = pd.Series(data=[sum(OutputToFile[p,sc,n,es] for es in mTEPES.es if (ot,es) in mTEPES.t2g) for p,sc,n,ot in mTEPES.psnot], index=pd.Index(mTEPES.psnot))
+        sPSNOT = [(p,sc,n,ot) for p,sc,n,ot in mTEPES.psnot if sum(1 for es in mTEPES.es if (ot,es) in mTEPES.t2g)]
+        OutputToFile = pd.Series(data=[sum(OutputToFile[p,sc,n,es] for es in mTEPES.es if (ot,es) in mTEPES.t2g) for p,sc,n,ot in sPSNOT], index=pd.Index(sPSNOT))
         OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='GWh').rename_axis             (['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_TechnologyEnergyESS_'     +CaseName+'.csv', sep=',')
 
         OutputToFile *= -1.0
@@ -622,12 +623,13 @@ def ESSOperationResults(DirName, CaseName, OptModel, mTEPES):
 
         if sum(1 for ar in mTEPES.ar if sum(1 for es in mTEPES.es if (ar,es) in mTEPES.a2g)) > 1:
             for ar in mTEPES.ar:
-                if sum(1 for es in mTEPES.es if (ar,es) in mTEPES.a2g) > 1:
-                    OutputToFile = pd.Series(data=[sum(-OptModel.vESSTotalCharge   [p,sc,n,es]()*mTEPES.pLoadLevelDuration[n]() for es in mTEPES.es if (ar,es) in mTEPES.a2g and (ot,es) in mTEPES.t2g) for p,sc,n,ot in mTEPES.psnot], index=pd.Index(mTEPES.psnot))
-                    OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='GWh', aggfunc=sum).rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_TechnologyEnergyESS_'+ar+'_'+CaseName+'.csv', sep=',')
+                if sum(1 for es in mTEPES.es if (ar,es) in mTEPES.a2g):
+                    sPSNOT = [(p,sc,n,ot) for p,sc,n,ot in mTEPES.psnot if sum(1 for es in mTEPES.es if (ar,es) in mTEPES.a2g and (ot,es) in mTEPES.t2g)]
+                    if len(sPSNOT):
+                        OutputToFile = pd.Series(data=[sum(-OptModel.vESSTotalCharge[p,sc,n,es]()*mTEPES.pLoadLevelDuration[n]() for es in mTEPES.es if (ar,es) in mTEPES.a2g and (ot,es) in mTEPES.t2g) for p,sc,n,ot in sPSNOT], index=pd.Index(sPSNOT))
+                        OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='GWh', aggfunc=sum).rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_TechnologyEnergyESS_'+ar+'_'+CaseName+'.csv', sep=',')
 
-                    OutputToFile *= -1.0
-                    if OutputToFile.sum() < 0.0:
+                        OutputToFile *= -1.0
                         for p,sc in mTEPES.ps:
                             chart = PiePlots(p, sc, OutputToFile, 'Technology', '%')
                             chart.save(_path+'/oT_Plot_TechnologyEnergyESS_'+str(p)+'_'+str(sc)+'_'+ar+'_'+CaseName+'.html', embed_options={'renderer': 'svg'})

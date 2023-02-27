@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.10.1] - 2023-02-16
+[4.10.1] - 2023-02-27
 --------------------
+- [FIXED] typo in writing ESS operation results
 - [FIXED] typo in control of minimum energy infeasibility
 
 [4.10.0] - 2023-02-15
