@@ -140,9 +140,9 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     if pIndCostSummaryResults         == 1:
         CostSummaryResults        (DirName, CaseName, mTEPES, mTEPES)
     if pIndMarginalResults            == 1:
-        MarginalResults           (DirName, CaseName, mTEPES, mTEPES, pIndPlotOutput)
+        MarginalResults           (DirName, CaseName, mTEPES, mTEPES,                 pIndPlotOutput)
     if pIndEconomicResults            == 1:
-        EconomicResults           (DirName, CaseName, mTEPES, mTEPES, pIndAreaOutput)
+        EconomicResults           (DirName, CaseName, mTEPES, mTEPES, pIndAreaOutput, pIndPlotOutput)
 
     TotalTime = time.time() - InitialTime
     print('Total time                             ... ', round(TotalTime), 's')
