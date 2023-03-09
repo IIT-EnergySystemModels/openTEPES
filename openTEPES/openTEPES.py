@@ -95,6 +95,9 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     # output results just for the system (0) or for every area (1). Areas correspond usually to countries
     pIndAreaOutput = 1
 
+    # output plot results
+    pIndPlotOutput = 1
+
     # indicators to control the amount of output results
     if pIndOutputResults == 1:
         pIndInvestmentResults          = 1
