@@ -878,6 +878,14 @@ Period        Scenario    Load level  Technology  ESS Technology variation wrt i
 Balance
 -------
 
+File ``oT_Result_BalanceEnergy.csv``
+
+============  ==========  ==========  ==========  =======================================================
+Identifier    Identifier  Identifier  Identifier  Description
+============  ==========  ==========  ==========  =======================================================
+Period        Scenario    Load level  Technology  Generation, consumption, flows, losses and demand [GWh]
+============  ==========  ==========  ==========  =======================================================
+
 File ``oT_Result_BalanceEnergyPerArea.csv``
 
 ============  ==========  ==========  ==========  ==========  =======================================================
