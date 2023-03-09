@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 27, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 09, 2023
 """
 
 import time
@@ -11,10 +11,10 @@ from pyomo.environ import ConcreteModel, Set
 from .openTEPES_InputData        import InputData, SettingUpVariables
 from .openTEPES_ModelFormulation import TotalObjectiveFunction, InvestmentModelFormulation, GenerationOperationModelFormulationObjFunct, GenerationOperationModelFormulationInvestment, GenerationOperationModelFormulationDemand, GenerationOperationModelFormulationStorage, GenerationOperationModelFormulationCommitment, GenerationOperationModelFormulationRampMinTime, NetworkSwitchingModelFormulation, NetworkOperationModelFormulation
 from .openTEPES_ProblemSolving   import ProblemSolving
-from .openTEPES_OutputResults    import InvestmentResults, GenerationOperationResults, ESSOperationResults, FlexibilityResults, NetworkOperationResults, MarginalResults, OperationResultsSummary, ReliabilityResults, CostSummaryResults, EconomicResults, NetworkMapResults
+from .openTEPES_OutputResults    import InvestmentResults, GenerationOperationResults, ESSOperationResults, FlexibilityResults, NetworkOperationResults, MarginalResults, OperationSummaryResults, ReliabilityResults, CostSummaryResults, EconomicResults, NetworkMapResults
 
 
-def openTEPES_run(DirName, CaseName, SolverName, pCompleteResults, pIndLogConsole):
+def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConsole):
 
     InitialTime = time.time()
     _path = os.path.join(DirName, CaseName)
@@ -36,10 +36,10 @@ def openTEPES_run(DirName, CaseName, SolverName, pCompleteResults, pIndLogConsol
     idxDict['y'  ] = 1
 
     #%% model declaration
-    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.10.1 - February 27, 2023')
+    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.10.2 - March 09, 2023')
 
-    pCompleteResults = [j for i,j in idxDict.items() if i == pCompleteResults][0]
-    pIndLogConsole   = [j for i,j in idxDict.items() if i == pIndLogConsole  ][0]
+    pIndOutputResults = [j for i,j in idxDict.items() if i == pIndOutputResults][0]
+    pIndLogConsole    = [j for i,j in idxDict.items() if i == pIndLogConsole   ][0]
 
     # Define sets and parameters
     InputData(DirName, CaseName, mTEPES, pIndLogConsole)
@@ -89,18 +89,60 @@ def openTEPES_run(DirName, CaseName, SolverName, pCompleteResults, pIndLogConsol
     mTEPES.n  = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in                mTEPES.pDuration                                              )
     mTEPES.n2 = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in                mTEPES.pDuration                                              )
 
-    InvestmentResults         (DirName, CaseName, mTEPES, mTEPES)
-    GenerationOperationResults(DirName, CaseName, mTEPES, mTEPES)
-    ESSOperationResults       (DirName, CaseName, mTEPES, mTEPES)
-    NetworkOperationResults   (DirName, CaseName, mTEPES, mTEPES)
-    MarginalResults           (DirName, CaseName, mTEPES, mTEPES)
-    OperationResultsSummary   (DirName, CaseName, mTEPES, mTEPES)
-    CostSummaryResults        (DirName, CaseName, mTEPES, mTEPES)
-    NetworkMapResults         (DirName, CaseName, mTEPES, mTEPES)
-    if pCompleteResults == 1:
-        EconomicResults       (DirName, CaseName, mTEPES, mTEPES)
-        FlexibilityResults    (DirName, CaseName, mTEPES, mTEPES)
-        ReliabilityResults    (DirName, CaseName, mTEPES, mTEPES)
+    # output results only for every unit (0), only for every technology (1), or for both (2)
+    pIndTechnologyOutput = 1
+
+    # output results just for the system (0) or for every area (1). Areas correspond usually to countries
+    pIndAreaOutput = 1
+
+    # indicators to control the amount of output results
+    if pIndOutputResults == 1:
+        pIndInvestmentResults          = 1
+        pIndGenerationOperationResults = 1
+        pIndESSOperationResults        = 1
+        pIndFlexibilityResults         = 1
+        pIndReliabilityResults         = 1
+        pIndNetworkOperationResults    = 1
+        pIndNetworkMapResults          = 1
+        pIndOperationSummaryResults    = 1
+        pIndCostSummaryResults         = 1
+        pIndMarginalResults            = 1
+        pIndEconomicResults            = 1
+    else:
+        pIndInvestmentResults          = 1
+        pIndGenerationOperationResults = 1
+        pIndESSOperationResults        = 1
+        pIndFlexibilityResults         = 1
+        pIndReliabilityResults         = 1
+        pIndNetworkOperationResults    = 1
+        pIndNetworkMapResults          = 1
+        pIndOperationSummaryResults    = 1
+        pIndCostSummaryResults         = 1
+        pIndMarginalResults            = 1
+        pIndEconomicResults            = 1
+
+    if pIndInvestmentResults          == 1:
+        InvestmentResults         (DirName, CaseName, mTEPES, mTEPES, pIndTechnologyOutput,                 pIndPlotOutput)
+    if pIndGenerationOperationResults == 1:
+        GenerationOperationResults(DirName, CaseName, mTEPES, mTEPES, pIndTechnologyOutput, pIndAreaOutput, pIndPlotOutput)
+    if pIndESSOperationResults        == 1:
+        ESSOperationResults       (DirName, CaseName, mTEPES, mTEPES, pIndTechnologyOutput, pIndAreaOutput, pIndPlotOutput)
+    if pIndFlexibilityResults         == 1:
+        FlexibilityResults        (DirName, CaseName, mTEPES, mTEPES)
+    if pIndReliabilityResults         == 1:
+        ReliabilityResults        (DirName, CaseName, mTEPES, mTEPES)
+    if pIndNetworkOperationResults    == 1:
+        NetworkOperationResults   (DirName, CaseName, mTEPES, mTEPES)
+    if pIndNetworkMapResults          == 1:
+        NetworkMapResults         (DirName, CaseName, mTEPES, mTEPES)
+    if pIndOperationSummaryResults    == 1:
+        OperationSummaryResults   (DirName, CaseName, mTEPES, mTEPES)
+    if pIndCostSummaryResults         == 1:
+        CostSummaryResults        (DirName, CaseName, mTEPES, mTEPES)
+    if pIndMarginalResults            == 1:
+        MarginalResults           (DirName, CaseName, mTEPES, mTEPES, pIndPlotOutput)
+    if pIndEconomicResults            == 1:
+        EconomicResults           (DirName, CaseName, mTEPES, mTEPES, pIndAreaOutput)
 
     TotalTime = time.time() - InitialTime
     print('Total time                             ... ', round(TotalTime), 's')

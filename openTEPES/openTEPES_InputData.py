@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 16, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 09, 2023
 """
 
 import datetime
@@ -123,22 +123,22 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     dictSets.load(filename=_path+'/oT_Dict_ZoneToArea_'  +CaseName+'.csv', set='znar', format='set')
     dictSets.load(filename=_path+'/oT_Dict_AreaToRegion_'+CaseName+'.csv', set='arrg', format='set')
 
-    mTEPES.pp   = Set(initialize=dictSets['p' ],   ordered=True,  doc='periods',         within=PositiveIntegers)
-    mTEPES.scc  = Set(initialize=dictSets['sc'],   ordered=True,  doc='scenarios'       )
-    mTEPES.stt  = Set(initialize=dictSets['st'],   ordered=True,  doc='stages'          )
-    mTEPES.nn   = Set(initialize=dictSets['n' ],   ordered=True,  doc='load levels'     )
-    mTEPES.gg   = Set(initialize=dictSets['g' ],   ordered=False, doc='units'           )
-    mTEPES.gt   = Set(initialize=dictSets['gt'],   ordered=False, doc='technologies'    )
-    mTEPES.et   = Set(initialize=dictSets['et'],   ordered=False, doc='ESS types'       )
-    mTEPES.nd   = Set(initialize=dictSets['nd'],   ordered=False, doc='nodes'           )
-    mTEPES.ni   = Set(initialize=dictSets['nd'],   ordered=False, doc='nodes'           )
-    mTEPES.nf   = Set(initialize=dictSets['nd'],   ordered=False, doc='nodes'           )
-    mTEPES.zn   = Set(initialize=dictSets['zn'],   ordered=False, doc='zones'           )
-    mTEPES.ar   = Set(initialize=dictSets['ar'],   ordered=False, doc='areas'           )
-    mTEPES.rg   = Set(initialize=dictSets['rg'],   ordered=False, doc='regions'         )
-    mTEPES.cc   = Set(initialize=dictSets['cc'],   ordered=False, doc='circuits'        )
-    mTEPES.c2   = Set(initialize=dictSets['cc'],   ordered=False, doc='circuits'        )
-    mTEPES.lt   = Set(initialize=dictSets['lt'],   ordered=False, doc='line types'      )
+    mTEPES.pp   = Set(initialize=dictSets['p'   ], ordered=True,  doc='periods',         within=PositiveIntegers)
+    mTEPES.scc  = Set(initialize=dictSets['sc'  ], ordered=True,  doc='scenarios'       )
+    mTEPES.stt  = Set(initialize=dictSets['st'  ], ordered=True,  doc='stages'          )
+    mTEPES.nn   = Set(initialize=dictSets['n'   ], ordered=True,  doc='load levels'     )
+    mTEPES.gg   = Set(initialize=dictSets['g'   ], ordered=False, doc='units'           )
+    mTEPES.gt   = Set(initialize=dictSets['gt'  ], ordered=False, doc='technologies'    )
+    mTEPES.et   = Set(initialize=dictSets['et'  ], ordered=False, doc='ESS types'       )
+    mTEPES.nd   = Set(initialize=dictSets['nd'  ], ordered=False, doc='nodes'           )
+    mTEPES.ni   = Set(initialize=dictSets['nd'  ], ordered=False, doc='nodes'           )
+    mTEPES.nf   = Set(initialize=dictSets['nd'  ], ordered=False, doc='nodes'           )
+    mTEPES.zn   = Set(initialize=dictSets['zn'  ], ordered=False, doc='zones'           )
+    mTEPES.ar   = Set(initialize=dictSets['ar'  ], ordered=False, doc='areas'           )
+    mTEPES.rg   = Set(initialize=dictSets['rg'  ], ordered=False, doc='regions'         )
+    mTEPES.cc   = Set(initialize=dictSets['cc'  ], ordered=False, doc='circuits'        )
+    mTEPES.c2   = Set(initialize=dictSets['cc'  ], ordered=False, doc='circuits'        )
+    mTEPES.lt   = Set(initialize=dictSets['lt'  ], ordered=False, doc='line types'      )
 
     mTEPES.ndzn = Set(initialize=dictSets['ndzn'], ordered=False, doc='node to zone'    )
     mTEPES.znar = Set(initialize=dictSets['znar'], ordered=False, doc='zone to area'    )
@@ -188,117 +188,129 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pEnergyInflows       = dfEnergyInflows        [mTEPES.gg]    * 1e-3                                                                   # dynamic energy inflows                   [GW]
     pEnergyOutflows      = dfEnergyOutflows       [mTEPES.gg]    * 1e-3                                                                   # dynamic energy outflows                  [GW]
 
-    # compute the demand as the mean over the time step load levels and assign it to active load levels. Idem for operating reserve, variable max power, variable min and max storage and inflows
     if pTimeStep > 1:
-        pDemand             = pDemand.rolling            (pTimeStep).mean()
-        pSystemInertia      = pSystemInertia.rolling     (pTimeStep).mean()
-        pOperReserveUp      = pOperReserveUp.rolling     (pTimeStep).mean()
-        pOperReserveDw      = pOperReserveDw.rolling     (pTimeStep).mean()
-        pVariableMinPower   = pVariableMinPower.rolling  (pTimeStep).mean()
-        pVariableMaxPower   = pVariableMaxPower.rolling  (pTimeStep).mean()
-        pVariableMinCharge  = pVariableMinCharge.rolling (pTimeStep).mean()
-        pVariableMaxCharge  = pVariableMaxCharge.rolling (pTimeStep).mean()
-        pVariableMinStorage = pVariableMinStorage.rolling(pTimeStep).mean()
-        pVariableMaxStorage = pVariableMaxStorage.rolling(pTimeStep).mean()
-        pVariableMinEnergy  = pVariableMinEnergy.rolling (pTimeStep).mean()
-        pVariableMaxEnergy  = pVariableMaxEnergy.rolling (pTimeStep).mean()
-        pEnergyInflows      = pEnergyInflows.rolling     (pTimeStep).mean()
-        pEnergyOutflows     = pEnergyOutflows.rolling    (pTimeStep).mean()
+        # compute the demand as the mean over the time step load levels and assign it to active load levels. Idem for the remaining parameters
+        if  pDemand.sum().sum()             > 0.0:
+            pDemand             = pDemand.rolling            (pTimeStep).mean()
+            pDemand.fillna                   (0.0, inplace=True)
+        if  pSystemInertia.sum().sum()      > 0.0:
+            pSystemInertia      = pSystemInertia.rolling     (pTimeStep).mean()
+            pSystemInertia.fillna            (0.0, inplace=True)
+        if  pOperReserveUp.sum().sum()      > 0.0:
+            pOperReserveUp      = pOperReserveUp.rolling     (pTimeStep).mean()
+            pOperReserveUp.fillna            (0.0, inplace=True)
+        if  pOperReserveDw.sum().sum()      > 0.0:
+            pOperReserveDw      = pOperReserveDw.rolling     (pTimeStep).mean()
+            pOperReserveDw.fillna            (0.0, inplace=True)
+        if  pVariableMinPower.sum().sum()   > 0.0:
+            pVariableMinPower   = pVariableMinPower.rolling  (pTimeStep).mean()
+            pVariableMinPower.fillna         (0.0, inplace=True)
+        if  pVariableMaxPower.sum().sum()   > 0.0:
+            pVariableMaxPower   = pVariableMaxPower.rolling  (pTimeStep).mean()
+            pVariableMaxPower.fillna         (0.0, inplace=True)
+        if  pVariableMinCharge.sum().sum()  > 0.0:
+            pVariableMinCharge  = pVariableMinCharge.rolling (pTimeStep).mean()
+            pVariableMinCharge.fillna        (0.0, inplace=True)
+        if  pVariableMaxCharge.sum().sum()  > 0.0:
+            pVariableMaxCharge  = pVariableMaxCharge.rolling (pTimeStep).mean()
+            pVariableMaxCharge.fillna        (0.0, inplace=True)
+        if  pVariableMinStorage.sum().sum() > 0.0:
+            pVariableMinStorage = pVariableMinStorage.rolling(pTimeStep).mean()
+            pVariableMinStorage.fillna       (0.0, inplace=True)
+        if  pVariableMaxStorage.sum().sum() > 0.0:
+            pVariableMaxStorage = pVariableMaxStorage.rolling(pTimeStep).mean()
+            pVariableMaxStorage.fillna       (0.0, inplace=True)
+        if  pVariableMinEnergy.sum().sum()  > 0.0:
+            pVariableMinEnergy  = pVariableMinEnergy.rolling (pTimeStep).mean()
+            pVariableMinEnergy.fillna        (0.0, inplace=True)
+        if  pVariableMaxEnergy.sum().sum()  > 0.0:
+            pVariableMaxEnergy  = pVariableMaxEnergy.rolling (pTimeStep).mean()
+            pVariableMaxEnergy.fillna        (0.0, inplace=True)
+        if  pEnergyInflows.sum().sum()      > 0.0:
+            pEnergyInflows      = pEnergyInflows.rolling     (pTimeStep).mean()
+            pEnergyInflows.fillna            (0.0, inplace=True)
+        if  pEnergyOutflows.sum().sum()     > 0.0:
+            pEnergyOutflows     = pEnergyOutflows.rolling    (pTimeStep).mean()
+            pEnergyOutflows.fillna           (0.0, inplace=True)
 
-    pDemand.fillna            (0.0, inplace=True)
-    pSystemInertia.fillna     (0.0, inplace=True)
-    pOperReserveUp.fillna     (0.0, inplace=True)
-    pOperReserveDw.fillna     (0.0, inplace=True)
-    pVariableMinPower.fillna  (0.0, inplace=True)
-    pVariableMaxPower.fillna  (0.0, inplace=True)
-    pVariableMinCharge.fillna (0.0, inplace=True)
-    pVariableMaxCharge.fillna (0.0, inplace=True)
-    pVariableMinStorage.fillna(0.0, inplace=True)
-    pVariableMaxStorage.fillna(0.0, inplace=True)
-    pVariableMinEnergy.fillna (0.0, inplace=True)
-    pVariableMaxEnergy.fillna (0.0, inplace=True)
-    pEnergyInflows.fillna     (0.0, inplace=True)
-    pEnergyOutflows.fillna    (0.0, inplace=True)
-
-    if pTimeStep > 1:
         # assign duration 0 to load levels not being considered, active load levels are at the end of every pTimeStep
         for i in range(pTimeStep-2,-1,-1):
             pDuration.iloc[[range(i,len(mTEPES.nn),pTimeStep)]] = 0
 
     #%% generation parameters
-    pGenToNode          = dfGeneration  ['Node'                  ]                                                                            # generator location in node
-    pGenToTechnology    = dfGeneration  ['Technology'            ]                                                                            # generator association to technology
-    pGenToExclusiveGen  = dfGeneration  ['MutuallyExclusive'     ]                                                                            # mutually exclusive generator
-    pIndBinUnitInvest   = dfGeneration  ['BinaryInvestment'      ]                                                                            # binary unit investment decision             [Yes]
-    pIndBinUnitRetire   = dfGeneration  ['BinaryRetirement'      ]                                                                            # binary unit retirement decision             [Yes]
-    pIndBinUnitCommit   = dfGeneration  ['BinaryCommitment'      ]                                                                            # binary unit commitment decision             [Yes]
-    pIndBinStorInvest   = dfGeneration  ['StorageInvestment'     ]                                                                            # storage linked to generation investment     [Yes]
-    pIndOperReserve     = dfGeneration  ['NoOperatingReserve'    ]                                                                            # no contribution to operating reserve        [Yes]
-    pMustRun            = dfGeneration  ['MustRun'               ]                                                                            # must-run unit                               [Yes]
-    pInertia            = dfGeneration  ['Inertia'               ]                                                                            # inertia constant                            [s]
-    pPeriodIniGen       = dfGeneration  ['InitialPeriod'         ]                                                                            # initial period                              [year]
-    pPeriodFinGen       = dfGeneration  ['FinalPeriod'           ]                                                                            # final   period                              [year]
-    pAvailability       = dfGeneration  ['Availability'          ]                                                                            # unit availability for adequacy              [p.u.]
-    pEFOR               = dfGeneration  ['EFOR'                  ]                                                                            # EFOR                                        [p.u.]
-    pRatedMinPower      = dfGeneration  ['MinimumPower'          ] * 1e-3 * (1.0-dfGeneration['EFOR'])                                        # rated minimum power                         [GW]
-    pRatedMaxPower      = dfGeneration  ['MaximumPower'          ] * 1e-3 * (1.0-dfGeneration['EFOR'])                                        # rated maximum power                         [GW]
-    pLinearFuelCost     = dfGeneration  ['LinearTerm'            ] * 1e-3 *      dfGeneration['FuelCost']                                     # fuel     term variable cost                 [MEUR/GWh]
-    pLinearOMCost       = dfGeneration  ['OMVariableCost'        ] * 1e-3                                                                     # O&M      term variable cost                 [MEUR/GWh]
-    pConstantVarCost    = dfGeneration  ['ConstantTerm'          ] * 1e-6 *      dfGeneration['FuelCost']                                     # constant term variable cost                 [MEUR/h]
-    pOperReserveCost    = dfGeneration  ['OperReserveCost'       ] * 1e-3                                                                     # operating reserve      cost                 [MEUR/GW]
-    pStartUpCost        = dfGeneration  ['StartUpCost'           ]                                                                            # startup  cost                               [MEUR]
-    pShutDownCost       = dfGeneration  ['ShutDownCost'          ]                                                                            # shutdown cost                               [MEUR]
-    pRampUp             = dfGeneration  ['RampUp'                ] * 1e-3                                                                     # ramp up   rate                              [GW/h]
-    pRampDw             = dfGeneration  ['RampDown'              ] * 1e-3                                                                     # ramp down rate                              [GW/h]
-    pCO2EmissionCost    = dfGeneration  ['CO2EmissionRate'       ] * 1e-3 * pCO2Cost                                                          # emission  cost                              [MEUR/GWh]
-    pCO2EmissionRate    = dfGeneration  ['CO2EmissionRate'       ]                                                                            # emission  rate                              [tCO2/MWh]
-    pUpTime             = dfGeneration  ['UpTime'                ]                                                                            # minimum up    time                          [h]
-    pDwTime             = dfGeneration  ['DownTime'              ]                                                                            # minimum down  time                          [h]
-    pShiftTime          = dfGeneration  ['ShiftTime'             ]                                                                            # maximum shift time for DSM                  [h]
-    pGenInvestCost      = dfGeneration  ['FixedInvestmentCost'   ] *        dfGeneration['FixedChargeRate']                                   # generation fixed cost                       [MEUR]
-    pGenRetireCost      = dfGeneration  ['FixedRetirementCost'   ] *        dfGeneration['FixedChargeRate']                                   # generation fixed retirement cost            [MEUR]
-    pRatedMinCharge     = dfGeneration  ['MinimumCharge'         ] * 1e-3                                                                     # rated minimum ESS charge                    [GW]
-    pRatedMaxCharge     = dfGeneration  ['MaximumCharge'         ] * 1e-3                                                                     # rated maximum ESS charge                    [GW]
-    pRatedMinStorage    = dfGeneration  ['MinimumStorage'        ]                                                                            # rated minimum ESS storage                   [GWh]
-    pRatedMaxStorage    = dfGeneration  ['MaximumStorage'        ]                                                                            # rated maximum ESS storage                   [GWh]
-    pInitialInventory   = dfGeneration  ['InitialStorage'        ]                                                                            # initial       ESS storage                   [GWh]
-    pEfficiency         = dfGeneration  ['Efficiency'            ]                                                                            #         ESS round-trip efficiency           [p.u.]
-    pStorageType        = dfGeneration  ['StorageType'           ]                                                                            #         ESS storage  type
-    pOutflowsType       = dfGeneration  ['OutflowsType'          ]                                                                            #         ESS outflows type
-    pEnergyType         = dfGeneration  ['EnergyType'            ]                                                                            #         unit  energy type
-    pRMaxReactivePower  = dfGeneration  ['MaximumReactivePower'  ] * 1e-3                                                                     # rated maximum reactive power                [Gvar]
-    pGenLoInvest        = dfGeneration  ['InvestmentLo'          ]                                                                            # Lower bound of the investment decision      [p.u.]
-    pGenUpInvest        = dfGeneration  ['InvestmentUp'          ]                                                                            # Upper bound of the investment decision      [p.u.]
-    pGenLoRetire        = dfGeneration  ['RetirementLo'          ]                                                                            # Lower bound of the retirement decision      [p.u.]
-    pGenUpRetire        = dfGeneration  ['RetirementUp'          ]                                                                            # Upper bound of the retirement decision      [p.u.]
+    pGenToNode          = dfGeneration  ['Node'                ]                                                                            # generator location in node
+    pGenToTechnology    = dfGeneration  ['Technology'          ]                                                                            # generator association to technology
+    pGenToExclusiveGen  = dfGeneration  ['MutuallyExclusive'   ]                                                                            # mutually exclusive generator
+    pIndBinUnitInvest   = dfGeneration  ['BinaryInvestment'    ]                                                                            # binary unit investment decision             [Yes]
+    pIndBinUnitRetire   = dfGeneration  ['BinaryRetirement'    ]                                                                            # binary unit retirement decision             [Yes]
+    pIndBinUnitCommit   = dfGeneration  ['BinaryCommitment'    ]                                                                            # binary unit commitment decision             [Yes]
+    pIndBinStorInvest   = dfGeneration  ['StorageInvestment'   ]                                                                            # storage linked to generation investment     [Yes]
+    pIndOperReserve     = dfGeneration  ['NoOperatingReserve'  ]                                                                            # no contribution to operating reserve        [Yes]
+    pMustRun            = dfGeneration  ['MustRun'             ]                                                                            # must-run unit                               [Yes]
+    pInertia            = dfGeneration  ['Inertia'             ]                                                                            # inertia constant                            [s]
+    pPeriodIniGen       = dfGeneration  ['InitialPeriod'       ]                                                                            # initial period                              [year]
+    pPeriodFinGen       = dfGeneration  ['FinalPeriod'         ]                                                                            # final   period                              [year]
+    pAvailability       = dfGeneration  ['Availability'        ]                                                                            # unit availability for adequacy              [p.u.]
+    pEFOR               = dfGeneration  ['EFOR'                ]                                                                            # EFOR                                        [p.u.]
+    pRatedMinPower      = dfGeneration  ['MinimumPower'        ] * 1e-3 * (1.0-dfGeneration['EFOR'])                                        # rated minimum power                         [GW]
+    pRatedMaxPower      = dfGeneration  ['MaximumPower'        ] * 1e-3 * (1.0-dfGeneration['EFOR'])                                        # rated maximum power                         [GW]
+    pLinearFuelCost     = dfGeneration  ['LinearTerm'          ] * 1e-3 *      dfGeneration['FuelCost']                                     # fuel     term variable cost                 [MEUR/GWh]
+    pLinearOMCost       = dfGeneration  ['OMVariableCost'      ] * 1e-3                                                                     # O&M      term variable cost                 [MEUR/GWh]
+    pConstantVarCost    = dfGeneration  ['ConstantTerm'        ] * 1e-6 *      dfGeneration['FuelCost']                                     # constant term variable cost                 [MEUR/h]
+    pOperReserveCost    = dfGeneration  ['OperReserveCost'     ] * 1e-3                                                                     # operating reserve      cost                 [MEUR/GW]
+    pStartUpCost        = dfGeneration  ['StartUpCost'         ]                                                                            # startup  cost                               [MEUR]
+    pShutDownCost       = dfGeneration  ['ShutDownCost'        ]                                                                            # shutdown cost                               [MEUR]
+    pRampUp             = dfGeneration  ['RampUp'              ] * 1e-3                                                                     # ramp up   rate                              [GW/h]
+    pRampDw             = dfGeneration  ['RampDown'            ] * 1e-3                                                                     # ramp down rate                              [GW/h]
+    pCO2EmissionCost    = dfGeneration  ['CO2EmissionRate'     ] * 1e-3 * pCO2Cost                                                          # emission  cost                              [MEUR/GWh]
+    pCO2EmissionRate    = dfGeneration  ['CO2EmissionRate'     ]                                                                            # emission  rate                              [tCO2/MWh]
+    pUpTime             = dfGeneration  ['UpTime'              ]                                                                            # minimum up    time                          [h]
+    pDwTime             = dfGeneration  ['DownTime'            ]                                                                            # minimum down  time                          [h]
+    pShiftTime          = dfGeneration  ['ShiftTime'           ]                                                                            # maximum shift time for DSM                  [h]
+    pGenInvestCost      = dfGeneration  ['FixedInvestmentCost' ] *        dfGeneration['FixedChargeRate']                                   # generation fixed cost                       [MEUR]
+    pGenRetireCost      = dfGeneration  ['FixedRetirementCost' ] *        dfGeneration['FixedChargeRate']                                   # generation fixed retirement cost            [MEUR]
+    pRatedMinCharge     = dfGeneration  ['MinimumCharge'       ] * 1e-3                                                                     # rated minimum ESS charge                    [GW]
+    pRatedMaxCharge     = dfGeneration  ['MaximumCharge'       ] * 1e-3                                                                     # rated maximum ESS charge                    [GW]
+    pRatedMinStorage    = dfGeneration  ['MinimumStorage'      ]                                                                            # rated minimum ESS storage                   [GWh]
+    pRatedMaxStorage    = dfGeneration  ['MaximumStorage'      ]                                                                            # rated maximum ESS storage                   [GWh]
+    pInitialInventory   = dfGeneration  ['InitialStorage'      ]                                                                            # initial       ESS storage                   [GWh]
+    pEfficiency         = dfGeneration  ['Efficiency'          ]                                                                            #         ESS round-trip efficiency           [p.u.]
+    pStorageType        = dfGeneration  ['StorageType'         ]                                                                            #         ESS storage  type
+    pOutflowsType       = dfGeneration  ['OutflowsType'        ]                                                                            #         ESS outflows type
+    pEnergyType         = dfGeneration  ['EnergyType'          ]                                                                            #         unit  energy type
+    pRMaxReactivePower  = dfGeneration  ['MaximumReactivePower'] * 1e-3                                                                     # rated maximum reactive power                [Gvar]
+    pGenLoInvest        = dfGeneration  ['InvestmentLo'        ]                                                                            # Lower bound of the investment decision      [p.u.]
+    pGenUpInvest        = dfGeneration  ['InvestmentUp'        ]                                                                            # Upper bound of the investment decision      [p.u.]
+    pGenLoRetire        = dfGeneration  ['RetirementLo'        ]                                                                            # Lower bound of the retirement decision      [p.u.]
+    pGenUpRetire        = dfGeneration  ['RetirementUp'        ]                                                                            # Upper bound of the retirement decision      [p.u.]
 
     pLinearOperCost     = pLinearFuelCost + pCO2EmissionCost
     pLinearVarCost      = pLinearFuelCost + pLinearOMCost
 
-    pNodeLat            = dfNodeLocation['Latitude'              ]                                                                            # node latitude                               [º]
-    pNodeLon            = dfNodeLocation['Longitude'             ]                                                                            # node longitude                              [º]
+    pNodeLat            = dfNodeLocation['Latitude'            ]                                                                            # node latitude                               [º]
+    pNodeLon            = dfNodeLocation['Longitude'           ]                                                                            # node longitude                              [º]
 
-    pLineType           = dfNetwork     ['LineType'              ]                                                                            # line type
-    pLineLength         = dfNetwork     ['Length'                ]                                                                            # line length                                 [km]
-    pLineVoltage        = dfNetwork     ['Voltage'               ]                                                                            # line voltage                                [kV]
-    pPeriodIniNet       = dfNetwork     ['InitialPeriod'         ]                                                                            # initial period
-    pPeriodFinNet       = dfNetwork     ['FinalPeriod'           ]                                                                            # final   period
-    pLineLossFactor     = dfNetwork     ['LossFactor'            ]                                                                            # loss factor                                 [p.u.]
-    pLineR              = dfNetwork     ['Resistance'            ]                                                                            # resistance                                  [p.u.]
-    pLineX              = dfNetwork     ['Reactance'             ].sort_index()                                                               # reactance                                   [p.u.]
-    pLineBsh            = dfNetwork     ['Susceptance'           ]                                                                            # susceptance                                 [p.u.]
-    pLineTAP            = dfNetwork     ['Tap'                   ]                                                                            # tap changer                                 [p.u.]
-    pLineNTCFrw         = dfNetwork     ['TTC'                   ] * 1e-3 * dfNetwork['SecurityFactor' ]                                      # net transfer capacity in forward  direction [GW]
-    pLineNTCBck         = dfNetwork     ['TTCBck'                ] * 1e-3 * dfNetwork['SecurityFactor' ]                                      # net transfer capacity in backward direction [GW]
-    pNetFixedCost       = dfNetwork     ['FixedInvestmentCost'   ] *        dfNetwork['FixedChargeRate']                                      # network    fixed cost                       [MEUR]
-    pIndBinLineSwitch   = dfNetwork     ['Switching'             ]                                                                            # binary line switching  decision             [Yes]
-    pIndBinLineInvest   = dfNetwork     ['BinaryInvestment'      ]                                                                            # binary line investment decision             [Yes]
-    pSwitchOnTime       = dfNetwork     ['SwOnTime'              ].astype('int')                                                              # minimum on  time                            [h]
-    pSwitchOffTime      = dfNetwork     ['SwOffTime'             ].astype('int')                                                              # minimum off time                            [h]
-    pAngMin             = dfNetwork     ['AngMin'                ] * math.pi / 180                                                            # Min phase angle difference                  [rad]
-    pAngMax             = dfNetwork     ['AngMax'                ] * math.pi / 180                                                            # Max phase angle difference                  [rad]
-    pNetLoInvest        = dfNetwork     ['InvestmentLo'          ]                                                                            # Lower bound of the investment decision      [p.u.]
-    pNetUpInvest        = dfNetwork     ['InvestmentUp'          ]                                                                            # Upper bound of the investment decision      [p.u.]
+    pLineType           = dfNetwork     ['LineType'            ]                                                                            # line type
+    pLineLength         = dfNetwork     ['Length'              ]                                                                            # line length                                 [km]
+    pLineVoltage        = dfNetwork     ['Voltage'             ]                                                                            # line voltage                                [kV]
+    pPeriodIniNet       = dfNetwork     ['InitialPeriod'       ]                                                                            # initial period
+    pPeriodFinNet       = dfNetwork     ['FinalPeriod'         ]                                                                            # final   period
+    pLineLossFactor     = dfNetwork     ['LossFactor'          ]                                                                            # loss factor                                 [p.u.]
+    pLineR              = dfNetwork     ['Resistance'          ]                                                                            # resistance                                  [p.u.]
+    pLineX              = dfNetwork     ['Reactance'           ].sort_index()                                                               # reactance                                   [p.u.]
+    pLineBsh            = dfNetwork     ['Susceptance'         ]                                                                            # susceptance                                 [p.u.]
+    pLineTAP            = dfNetwork     ['Tap'                 ]                                                                            # tap changer                                 [p.u.]
+    pLineNTCFrw         = dfNetwork     ['TTC'                 ] * 1e-3 * dfNetwork['SecurityFactor' ]                                      # net transfer capacity in forward  direction [GW]
+    pLineNTCBck         = dfNetwork     ['TTCBck'              ] * 1e-3 * dfNetwork['SecurityFactor' ]                                      # net transfer capacity in backward direction [GW]
+    pNetFixedCost       = dfNetwork     ['FixedInvestmentCost' ] *        dfNetwork['FixedChargeRate']                                      # network    fixed cost                       [MEUR]
+    pIndBinLineSwitch   = dfNetwork     ['Switching'           ]                                                                            # binary line switching  decision             [Yes]
+    pIndBinLineInvest   = dfNetwork     ['BinaryInvestment'    ]                                                                            # binary line investment decision             [Yes]
+    pSwitchOnTime       = dfNetwork     ['SwOnTime'            ].astype('int')                                                              # minimum on  time                            [h]
+    pSwitchOffTime      = dfNetwork     ['SwOffTime'           ].astype('int')                                                              # minimum off time                            [h]
+    pAngMin             = dfNetwork     ['AngMin'              ] * math.pi / 180                                                            # Min phase angle difference                  [rad]
+    pAngMax             = dfNetwork     ['AngMax'              ] * math.pi / 180                                                            # Max phase angle difference                  [rad]
+    pNetLoInvest        = dfNetwork     ['InvestmentLo'        ]                                                                            # Lower bound of the investment decision      [p.u.]
+    pNetUpInvest        = dfNetwork     ['InvestmentUp'        ]                                                                            # Upper bound of the investment decision      [p.u.]
 
     # replace pLineNTCBck = 0.0 by pLineNTCFrw
     pLineNTCBck     = pLineNTCBck.where(pLineNTCBck   > 0.0, other=pLineNTCFrw)
@@ -362,17 +374,17 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.le = mTEPES.la - mTEPES.lc
 
     # instrumental sets
-    mTEPES.psc   = [(p,sc     ) for p,sc      in mTEPES.p  *mTEPES.sc]
-    mTEPES.psn   = [(p,sc,n   ) for p,sc,n    in mTEPES.ps *mTEPES.n ]
-    mTEPES.psng  = [(p,sc,n,g ) for p,sc,n,g  in mTEPES.psn*mTEPES.g ]
-    mTEPES.psngg = [(p,sc,n,gg) for p,sc,n,gg in mTEPES.psn*mTEPES.gg]
-    mTEPES.psnr  = [(p,sc,n,r ) for p,sc,n,r  in mTEPES.psn*mTEPES.r ]
-    mTEPES.psnnr = [(p,sc,n,nr) for p,sc,n,nr in mTEPES.psn*mTEPES.nr]
-    mTEPES.psnes = [(p,sc,n,es) for p,sc,n,es in mTEPES.psn*mTEPES.es]
-    mTEPES.psnec = [(p,sc,n,ec) for p,sc,n,ec in mTEPES.psn*mTEPES.ec]
-    mTEPES.psnnd = [(p,sc,n,nd) for p,sc,n,nd in mTEPES.psn*mTEPES.nd]
-    mTEPES.psnar = [(p,sc,n,ar) for p,sc,n,ar in mTEPES.psn*mTEPES.ar]
-    mTEPES.psngt = [(p,sc,n,gt) for p,sc,n,gt in mTEPES.psn*mTEPES.gt]
+    mTEPES.psc   = [(p,sc     )       for p,sc            in mTEPES.p  *mTEPES.sc]
+    mTEPES.psn   = [(p,sc,n   )       for p,sc,n          in mTEPES.ps *mTEPES.n ]
+    mTEPES.psng  = [(p,sc,n,g )       for p,sc,n,g        in mTEPES.psn*mTEPES.g ]
+    mTEPES.psngg = [(p,sc,n,gg)       for p,sc,n,gg       in mTEPES.psn*mTEPES.gg]
+    mTEPES.psnr  = [(p,sc,n,r )       for p,sc,n,r        in mTEPES.psn*mTEPES.r ]
+    mTEPES.psnnr = [(p,sc,n,nr)       for p,sc,n,nr       in mTEPES.psn*mTEPES.nr]
+    mTEPES.psnes = [(p,sc,n,es)       for p,sc,n,es       in mTEPES.psn*mTEPES.es]
+    mTEPES.psnec = [(p,sc,n,ec)       for p,sc,n,ec       in mTEPES.psn*mTEPES.ec]
+    mTEPES.psnnd = [(p,sc,n,nd)       for p,sc,n,nd       in mTEPES.psn*mTEPES.nd]
+    mTEPES.psnar = [(p,sc,n,ar)       for p,sc,n,ar       in mTEPES.psn*mTEPES.ar]
+    mTEPES.psngt = [(p,sc,n,gt)       for p,sc,n,gt       in mTEPES.psn*mTEPES.gt]
 
     mTEPES.psnla = [(p,sc,n,ni,nf,cc) for p,sc,n,ni,nf,cc in mTEPES.psn*mTEPES.la]
     mTEPES.psnln = [(p,sc,n,ni,nf,cc) for p,sc,n,ni,nf,cc in mTEPES.psn*mTEPES.ln]
@@ -542,27 +554,27 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     idxCycle            = dict()
     idxCycle[0        ] = 8736
     idxCycle[0.0      ] = 8736
-    idxCycle["Hourly" ] = 1
-    idxCycle["Daily"  ] = 1
-    idxCycle["Weekly" ] = round(  24/pTimeStep)
-    idxCycle["Monthly"] = round( 168/pTimeStep)
-    idxCycle["Yearly" ] = round( 168/pTimeStep)
+    idxCycle['Hourly' ] = 1
+    idxCycle['Daily'  ] = 1
+    idxCycle['Weekly' ] = round(  24/pTimeStep)
+    idxCycle['Monthly'] = round( 168/pTimeStep)
+    idxCycle['Yearly' ] = round( 168/pTimeStep)
 
     idxOutflows            = dict()
     idxOutflows[0        ] = 8736
     idxOutflows[0.0      ] = 8736
-    idxOutflows["Daily"  ] = round(  24/pTimeStep)
-    idxOutflows["Weekly" ] = round( 168/pTimeStep)
-    idxOutflows["Monthly"] = round( 672/pTimeStep)
-    idxOutflows["Yearly" ] = round(8736/pTimeStep)
+    idxOutflows['Daily'  ] = round(  24/pTimeStep)
+    idxOutflows['Weekly' ] = round( 168/pTimeStep)
+    idxOutflows['Monthly'] = round( 672/pTimeStep)
+    idxOutflows['Yearly' ] = round(8736/pTimeStep)
 
     idxEnergy            = dict()
     idxEnergy[0        ] = 8736
     idxEnergy[0.0      ] = 8736
-    idxEnergy["Daily"  ] = round(  24/pTimeStep)
-    idxEnergy["Weekly" ] = round( 168/pTimeStep)
-    idxEnergy["Monthly"] = round( 672/pTimeStep)
-    idxEnergy["Yearly" ] = round(8736/pTimeStep)
+    idxEnergy['Daily'  ] = round(  24/pTimeStep)
+    idxEnergy['Weekly' ] = round( 168/pTimeStep)
+    idxEnergy['Monthly'] = round( 672/pTimeStep)
+    idxEnergy['Yearly' ] = round(8736/pTimeStep)
 
     pCycleTimeStep    = pStorageType.map (idxCycle                                                                                  ).astype('int')
     pOutflowsTimeStep = pOutflowsType.map(idxOutflows).where(pEnergyOutflows.sum()                               > 0.0, other = 8736).astype('int')

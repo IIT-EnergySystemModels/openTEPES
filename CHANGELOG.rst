@@ -1,6 +1,11 @@
 Change Log
 =============
 
+[4.10.2] - 2023-03-09
+--------------------
+- [CHANGED] introduce conditions to avoid doing unnecessary computations in input data
+- [CHANGED] introduce indicators to allow selecting output results
+
 [4.10.1] - 2023-02-27
 --------------------
 - [FIXED] typo in writing ESS operation results
