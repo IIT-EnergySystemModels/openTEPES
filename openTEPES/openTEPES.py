@@ -112,14 +112,14 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
         pIndInvestmentResults          = 1
         pIndGenerationOperationResults = 1
         pIndESSOperationResults        = 1
-        pIndFlexibilityResults         = 1
-        pIndReliabilityResults         = 1
+        pIndFlexibilityResults         = 0
+        pIndReliabilityResults         = 0
         pIndNetworkOperationResults    = 1
-        pIndNetworkMapResults          = 1
+        pIndNetworkMapResults          = 0
         pIndOperationSummaryResults    = 1
-        pIndCostSummaryResults         = 1
-        pIndMarginalResults            = 1
-        pIndEconomicResults            = 1
+        pIndCostSummaryResults         = 0
+        pIndMarginalResults            = 0
+        pIndEconomicResults            = 0
 
     if pIndInvestmentResults          == 1:
         InvestmentResults         (DirName, CaseName, mTEPES, mTEPES, pIndTechnologyOutput,                 pIndPlotOutput)
