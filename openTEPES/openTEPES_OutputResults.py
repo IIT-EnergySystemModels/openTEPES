@@ -1015,7 +1015,7 @@ def CostSummaryResults(DirName, CaseName, OptModel, mTEPES):
     print('Writing         cost summary results   ... ', round(WritingResultsTime), 's')
 
 
-def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput):
+def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput, pIndPlotOutput):
     # %% outputting the system costs and revenues
     _path = os.path.join(DirName, CaseName)
     StartTime = time.time()
