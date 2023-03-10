@@ -441,15 +441,22 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
 
     def eESSTotalCharge(OptModel,p,sc,n,es):
         if   mTEPES.pMaxCharge[p,sc,n,es] and mTEPES.pMaxCharge2ndBlock[p,sc,n,es] and mTEPES.pMinCharge[p,sc,n,es] == 0.0:
-            return OptModel.vESSTotalCharge[p,sc,n,es]                                ==      OptModel.vCharge2ndBlock[p,sc,n,es] + mTEPES.pUpReserveActivation * OptModel.vESSReserveDown[p,sc,n,es] - mTEPES.pDwReserveActivation * OptModel.vESSReserveUp[p,sc,n,es]
+            return OptModel.vESSTotalCharge[p,sc,n,es]                                ==        OptModel.vCharge2ndBlock[p,sc,n,es] + mTEPES.pUpReserveActivation * OptModel.vESSReserveDown[p,sc,n,es] - mTEPES.pDwReserveActivation * OptModel.vESSReserveUp[p,sc,n,es]
         elif mTEPES.pMaxCharge[p,sc,n,es] and mTEPES.pMaxCharge2ndBlock[p,sc,n,es]:
-            return OptModel.vESSTotalCharge[p,sc,n,es] / mTEPES.pMinCharge[p,sc,n,es] == 1 + (OptModel.vCharge2ndBlock[p,sc,n,es] + mTEPES.pUpReserveActivation * OptModel.vESSReserveDown[p,sc,n,es] - mTEPES.pDwReserveActivation * OptModel.vESSReserveUp[p,sc,n,es]) / mTEPES.pMinCharge[p,sc,n,es]
+            return OptModel.vESSTotalCharge[p,sc,n,es] / mTEPES.pMinCharge[p,sc,n,es] == 1.0 + (OptModel.vCharge2ndBlock[p,sc,n,es] + mTEPES.pUpReserveActivation * OptModel.vESSReserveDown[p,sc,n,es] - mTEPES.pDwReserveActivation * OptModel.vESSReserveUp[p,sc,n,es]) / mTEPES.pMinCharge[p,sc,n,es]
         else:
             return Constraint.Skip
     setattr(OptModel, 'eESSTotalCharge_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.ps, mTEPES.n, mTEPES.es, rule=eESSTotalCharge, doc='total charge of an ESS unit [GW]'))
 
     if pIndLogConsole == 1:
         print('eESSTotalCharge       ... ', len(getattr(OptModel, 'eESSTotalCharge_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+
+    def eChargeOutflows(OptModel,p,sc,n,es):
+        if mTEPES.pMaxCharge2ndBlock[p,sc,n,es] and sum(mTEPES.pEnergyOutflows[p,sc,n2,es]() for n2 in mTEPES.n2):
+            return (OptModel.vEnergyOutflows[p,sc,n,es] + OptModel.vCharge2ndBlock[p,sc,n,es]) / mTEPES.pMaxCharge2ndBlock[p,sc,n,es] <= 1.0
+        else:
+            return Constraint.Skip
+    setattr(OptModel, 'eChargeOutflows_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.ps, mTEPES.n, mTEPES.es, rule=eChargeOutflows, doc='incompatibility between charge and outflows use [p.u.]'))
 
     def eEnergyOutflows(OptModel,p,sc,n,es):
         if mTEPES.n.ord(n) % mTEPES.pOutflowsTimeStep[es] == 0 and sum(mTEPES.pEnergyOutflows[p,sc,n2,es]() for n2 in mTEPES.n2):

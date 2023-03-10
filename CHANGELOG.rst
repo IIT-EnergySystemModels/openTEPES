@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.10.2] - 2023-03-09
+[4.10.2] - 2023-03-10
 --------------------
+- [CHANGED] introduce incompatibility constraint between charge and outflows use
 - [CHANGED] introduce conditions to avoid doing unnecessary computations in input data
 - [CHANGED] introduce indicators to allow selecting output results
 
