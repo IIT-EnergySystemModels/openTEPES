@@ -307,7 +307,7 @@ OMVariableCost        Variable O&M cost                                         
 OperReserveCost       Operating reserve cost                                                                                                  €/MW
 StartUpCost           Startup  cost                                                                                                           M€
 ShutDownCost          Shutdown cost                                                                                                           M€
-CO2EmissionRate       CO2 emission rate                                                                                                       t CO2/MWh
+CO2EmissionRate       CO2 emission rate. It can be negative for units absorbing CO2 emissions as biomass                                      t CO2/MWh
 FixedInvestmentCost   Overnight investment (capital and fixed O&M) cost                                                                       M€
 FixedRetirementCost   Overnight retirement (capital and fixed O&M) cost                                                                       M€
 FixedChargeRate       Fixed-charge rate to annualize the overnight investment cost                                                            p.u.

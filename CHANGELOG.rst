@@ -1,6 +1,11 @@
 Change Log
 =============
 
+[4.10.4] - 2023-03-15
+--------------------
+- [CHANGED] allow negative CO2 emission rate for biomass units
+
+
 [4.10.3] - 2023-03-10
 --------------------
 - [CHANGED] introduce incompatibility constraint between charge and outflows use

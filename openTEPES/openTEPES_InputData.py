@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 09, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 15, 2023
 """
 
 import datetime
@@ -647,14 +647,14 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
 
     # replace very small costs by 0
     pEpsilon = 1e-4           # this value in €/GWh is related to the smallest reduced cost, independent of the area
-    pLinearOperCost.update (pd.Series([0 for gg in mTEPES.gg if pLinearOperCost [gg] < pEpsilon], index=[gg for gg in mTEPES.gg if pLinearOperCost [gg] < pEpsilon]))
-    pLinearVarCost.update  (pd.Series([0 for gg in mTEPES.gg if pLinearVarCost  [gg] < pEpsilon], index=[gg for gg in mTEPES.gg if pLinearVarCost  [gg] < pEpsilon]))
-    pLinearOMCost.update   (pd.Series([0 for gg in mTEPES.gg if pLinearOMCost   [gg] < pEpsilon], index=[gg for gg in mTEPES.gg if pLinearOMCost   [gg] < pEpsilon]))
-    pConstantVarCost.update(pd.Series([0 for gg in mTEPES.gg if pConstantVarCost[gg] < pEpsilon], index=[gg for gg in mTEPES.gg if pConstantVarCost[gg] < pEpsilon]))
-    pOperReserveCost.update(pd.Series([0 for gg in mTEPES.gg if pOperReserveCost[gg] < pEpsilon], index=[gg for gg in mTEPES.gg if pOperReserveCost[gg] < pEpsilon]))
-    pCO2EmissionCost.update(pd.Series([0 for gg in mTEPES.gg if pCO2EmissionCost[gg] < pEpsilon], index=[gg for gg in mTEPES.gg if pCO2EmissionCost[gg] < pEpsilon]))
-    pStartUpCost.update    (pd.Series([0 for gg in mTEPES.gg if pStartUpCost    [gg] < pEpsilon], index=[gg for gg in mTEPES.gg if pStartUpCost    [gg] < pEpsilon]))
-    pShutDownCost.update   (pd.Series([0 for gg in mTEPES.gg if pShutDownCost   [gg] < pEpsilon], index=[gg for gg in mTEPES.gg if pShutDownCost   [gg] < pEpsilon]))
+    pLinearOperCost.update (pd.Series([0.0 for gg in mTEPES.gg if     pLinearOperCost [gg]  < pEpsilon], index=[gg for gg in mTEPES.gg if     pLinearOperCost [gg]  < pEpsilon]))
+    pLinearVarCost.update  (pd.Series([0.0 for gg in mTEPES.gg if     pLinearVarCost  [gg]  < pEpsilon], index=[gg for gg in mTEPES.gg if     pLinearVarCost  [gg]  < pEpsilon]))
+    pLinearOMCost.update   (pd.Series([0.0 for gg in mTEPES.gg if     pLinearOMCost   [gg]  < pEpsilon], index=[gg for gg in mTEPES.gg if     pLinearOMCost   [gg]  < pEpsilon]))
+    pConstantVarCost.update(pd.Series([0.0 for gg in mTEPES.gg if     pConstantVarCost[gg]  < pEpsilon], index=[gg for gg in mTEPES.gg if     pConstantVarCost[gg]  < pEpsilon]))
+    pOperReserveCost.update(pd.Series([0.0 for gg in mTEPES.gg if     pOperReserveCost[gg]  < pEpsilon], index=[gg for gg in mTEPES.gg if     pOperReserveCost[gg]  < pEpsilon]))
+    pCO2EmissionCost.update(pd.Series([0.0 for gg in mTEPES.gg if abs(pCO2EmissionCost[gg]) < pEpsilon], index=[gg for gg in mTEPES.gg if abs(pCO2EmissionCost[gg]) < pEpsilon]))
+    pStartUpCost.update    (pd.Series([0.0 for gg in mTEPES.gg if     pStartUpCost    [gg]  < pEpsilon], index=[gg for gg in mTEPES.gg if     pStartUpCost    [gg]  < pEpsilon]))
+    pShutDownCost.update   (pd.Series([0.0 for gg in mTEPES.gg if     pShutDownCost   [gg]  < pEpsilon], index=[gg for gg in mTEPES.gg if     pShutDownCost   [gg]  < pEpsilon]))
 
     # replace < 0.0 by 0.0
     pMaxPower2ndBlock  = pMaxPower2ndBlock.where (pMaxPower2ndBlock  > 0.0, other=0.0)
@@ -747,8 +747,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.pLinearOMCost         = Param(mTEPES.gg,    initialize=pLinearOMCost.to_dict()             , within=NonNegativeReals,    doc='Linear   O&M      cost'                              )
     mTEPES.pConstantVarCost      = Param(mTEPES.gg,    initialize=pConstantVarCost.to_dict()          , within=NonNegativeReals,    doc='Constant variable cost'                              )
     mTEPES.pOperReserveCost      = Param(mTEPES.gg,    initialize=pOperReserveCost.to_dict()          , within=NonNegativeReals,    doc='Operating reserve cost'                              )
-    mTEPES.pCO2EmissionCost      = Param(mTEPES.gg,    initialize=pCO2EmissionCost.to_dict()          , within=NonNegativeReals,    doc='CO2 Emission      cost'                              )
-    mTEPES.pCO2EmissionRate      = Param(mTEPES.gg,    initialize=pCO2EmissionRate.to_dict()          , within=NonNegativeReals,    doc='CO2 Emission      rate'                              )
+    mTEPES.pCO2EmissionCost      = Param(mTEPES.gg,    initialize=pCO2EmissionCost.to_dict()          , within=Reals,               doc='CO2 Emission      cost'                              )
+    mTEPES.pCO2EmissionRate      = Param(mTEPES.gg,    initialize=pCO2EmissionRate.to_dict()          , within=Reals,               doc='CO2 Emission      rate'                              )
     mTEPES.pStartUpCost          = Param(mTEPES.gg,    initialize=pStartUpCost.to_dict()              , within=NonNegativeReals,    doc='Startup  cost'                                       )
     mTEPES.pShutDownCost         = Param(mTEPES.gg,    initialize=pShutDownCost.to_dict()             , within=NonNegativeReals,    doc='Shutdown cost'                                       )
     mTEPES.pRampUp               = Param(mTEPES.gg,    initialize=pRampUp.to_dict()                   , within=NonNegativeReals,    doc='Ramp up   rate'                                      )
