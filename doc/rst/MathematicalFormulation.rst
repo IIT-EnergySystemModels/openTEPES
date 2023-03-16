@@ -162,7 +162,7 @@ They are written in **lowercase** letters.
 :math:`swt^p_{wnijc}, son^p_{wnijc}, sof^p_{wnijc}`     Switching state, switch-on and switch-off of a line             {0,1}
 :math:`f^p_{wnijc}`                                     Flow through a line                                             GW
 :math:`l^p_{wnijc}`                                     Half ohmic losses of a line                                     GW
-:math:`θ^p_{wni}`                                       Voltage angle of a node                                         rad
+:math:`\theta^p_{wni}`                                  Voltage angle of a node                                         rad
 ======================================================  ==============================================================  =====
 
 Equations
