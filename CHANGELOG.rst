@@ -1,10 +1,13 @@
 Change Log
 =============
 
+[4.10.5] - 2023-03-16
+--------------------
+- [FIXED] fix a typo in generation operation output results
+
 [4.10.4] - 2023-03-15
 --------------------
 - [CHANGED] allow negative CO2 emission rate for biomass units
-
 
 [4.10.3] - 2023-03-10
 --------------------
