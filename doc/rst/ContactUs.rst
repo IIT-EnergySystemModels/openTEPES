@@ -4,11 +4,11 @@ Contact Us
 ==========
 
 .. image:: ../img/Escudo.png
-   :scale: 66%
+   :scale: 70%
    :align: right
 
-.. image:: ../img/logoIIT.gif
-   :scale: 100%
+.. image:: ../img/logoIIT.png
+   :scale: 15%
    :align: right
 
 `Andrés Ramos <https://pascua.iit.comillas.edu/aramos/Ramos_CV.htm>`_ 
