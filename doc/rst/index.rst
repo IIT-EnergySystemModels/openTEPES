@@ -7,7 +7,7 @@ openTEPES Documentation
    :scale: 66%
    :align: right
 
-.. image:: /../img/logoIIT.gif
+.. image:: /../img/logoIIT.tif
    :scale: 100%
    :align: right
 
