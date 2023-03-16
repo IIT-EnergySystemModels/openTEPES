@@ -126,5 +126,7 @@ Then, the **results** should be written in the folder who is called with the cas
 
 It can be run in Binder:
 
-.. image:: https://mybinder.org/badge_logo.svg
-  :target: https://mybinder.org/v2/gh/IIT-EnergySystemModels/openTEPES-tutorial/HEAD
+.. image:: /../img/binder.png
+   :scale: 30%
+   :align: left
+   :target: https://mybinder.org/v2/gh/IIT-EnergySystemModels/openTEPES-tutorial/HEAD
