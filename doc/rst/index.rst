@@ -1,14 +1,11 @@
 .. openTEPES documentation master file, created by Andres Ramos
 
-openTEPES Documentation
-=======================
-
 .. image:: /../img/Escudo.png
-   :scale: 66%
-   :align: right
+   :scale: 70%
+   :align: left
 
-.. image:: /../img/logoIIT.tif
-   :scale: 100%
+.. image:: /../img/logoIIT.png
+   :scale: 15%
    :align: right
 
 \ **Open** \ Generation, \ Storage, \ and \ **T**\ransmission Operation and \ **E**\xpansion \ **P**\lanning Model with RES and \ **ES**\S (**openTEPES**)
