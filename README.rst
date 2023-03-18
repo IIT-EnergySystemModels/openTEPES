@@ -89,7 +89,7 @@ A careful implementation has been done to avoid numerical problems by scaling pa
 
 Installation
 ############
-There are 2 ways to get all required packages under Windows. We recommend using the Python distribution Anaconda. If you don't want to use it or already have an existing Python (version 3.8 | 3.9 **recommended**, 2.7 is supported as well) installation, you can also download the required packages by yourself.
+There are 2 ways to get all required packages under Windows. We recommend using the Python distribution Miniconda. If you don't want to use it or already have an existing Python (version 3.8 | 3.9 **recommended**, 2.7 is supported as well) installation, you can also download the required packages by yourself.
 
 
 Miniconda (recommended)
