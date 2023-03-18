@@ -77,9 +77,11 @@ battery, etc. It allows analyzing the trade-off between the investment in genera
 The main results of the model can be structured in these topics:
 
 - **Investment**: investment decisions and cost
-- **Operation**: output of different units and aggregation by technologies (thermal, storage hydro, pumped-storage hydro, RES), RES curtailment, line flows, line ohmic losses, node voltage angles
+- **Operation**: unit commitment, startup, and shutdown of non-renewable units, unit output and aggregation by technologies (thermal, storage hydro, pumped-hydro storage, RES), RES curtailment, line flows, line ohmic losses, node voltage angles, upward and downward operating reserves, ESS inventory levels
 - **Emissions**: CO2 emissions by unit
-- **Marginal**: Locational Short-Run Marginal Costs (LSRMC), water value
+- **Marginal**: Locational Short-Run Marginal Costs (LSRMC), water energy value
+- **Economic**: operation, emission, and reliability costs and revenues from operation and operating reserves
+- **Flexibility**: flexibility provided by demand, by the different generation and consumption technologies, and by power not served
 
 Results are shown in csv files and graphical plots.
 
