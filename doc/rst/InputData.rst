@@ -357,6 +357,8 @@ Identifier  Identifier      Identifier  Header     Description
 Period      Scenario        Load level  Generator  Maximum (minimum) power generation of the unit by load level  MW
 ==========  ==============  ==========  =========  ============================================================  ==
 
+This information can be used for considering scheduled outages or weather-dependent operating capacity.
+
 To force a generator to produce 0 a lower value (e.g., 0.1 MW) strictly > 0, but not 0 (in which case the value will be ignored), must be introduced. This is needed to limit the solar production at night, for example.
 It can be used also for upper-bounding and/or lower-bounding the output of any generator (e.g., run-of-the-river hydro, wind).
 
