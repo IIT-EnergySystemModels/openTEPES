@@ -133,17 +133,17 @@ Variables
 
 They are written in **lowercase** letters.
 
-=========================  ==================  ===
+==========================  ==================  ===
 **Demand**
 --------------------------  ------------------  ---
 :math:`ens^p_{\omega ni}`   Energy not served   GW
-=========================  ==================  ===
+==========================  ==================  ===
 
 ============================================================  ==============================================================================  =====
 **Generation system**
 ------------------------------------------------------------  ------------------------------------------------------------------------------  -----
-:math:`icg^p_g`                                              Candidate generator or ESS installed or not                                     {0,1}
-:math:`rcg^p_g`                                              Candidate generator or ESS retired   or not                                     {0,1}
+:math:`icg^p_g`                                               Candidate generator or ESS installed or not                                     {0,1}
+:math:`rcg^p_g`                                               Candidate generator or ESS retired   or not                                     {0,1}
 :math:`gp^p_{\omega ng}, gc^p_{\omega ng}`                    Generator output (discharge if an ESS) and consumption (charge if an ESS)       GW
 :math:`go^p_{\omega ne}`                                      Generator outflows of an ESS                                                    GW
 :math:`p^p_{\omega ng}`                                       Generator output of the second block (i.e., above the minimum load)             GW
