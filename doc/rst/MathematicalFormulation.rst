@@ -48,7 +48,7 @@ They are written in **uppercase** letters.
 **General**
 ------------------  ----------------------------------------------------  -------
 :math:`\delta`      Annual discount rate                                  p.u.
-:math:`\Pi^p`      Period (year) weight                                  p.u.
+:math:`\Pi^p`       Period (year) weight                                  p.u.
 :math:`T`           Base period (year)                                    year
 :math:`DF_p`        Discount factor for each period (year)                p.u.
 ==================  ====================================================  =======
