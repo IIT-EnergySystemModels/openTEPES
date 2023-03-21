@@ -47,10 +47,10 @@ They are written in **uppercase** letters.
 ==================  ====================================================  =======
 **General**
 ------------------  ----------------------------------------------------  -------
-:math:`\delta`      Annual discount rate                                  p.u.
-:math:`\Pi^p`       Period (year) weight                                  p.u.
 :math:`T`           Base period (year)                                    year
-:math:`DF_p`        Discount factor for each period (year)                p.u.
+:math:`\delta`      Annual discount rate                                  p.u.
+:math:`PW^p`        Period (year) weight                                  p.u.
+:math:`DF^p`        Discount factor for each period (year)                p.u.
 ==================  ====================================================  =======
 
 ========================  ====================================================  =======
@@ -176,25 +176,25 @@ The names between parenthesis correspond to the names of the constraints in the 
 
 Generation, storage and network investment cost plus retirement cost [M€] «``eTotalFCost``»
 
-:math:`\sum_{pg} DF_p CFG_g icg_{pg} + \sum_{pg} DF_p CFR_g rcg_{pg} + \sum_{pijc} DF_p CFT_{ijc} ict_{pijc} +`
+:math:`\sum_{pg} DF^p CFG_g icg_{pg} + \sum_{pg} DF^p CFR_g rcg_{pg} + \sum_{pijc} DF^p CFT_{ijc} ict_{pijc} +`
 
 Generation operation cost [M€] «``eTotalGCost``»
 
-:math:`\sum_{p \omega ng} {[DF_p P^p_{\omega} DUR_n (CV_g gp^p_{\omega ng} + CF_g uc^p_{\omega ng}) + DF_p CSU_g su^p_{\omega ng} + DF_p CSD_g sd^p_{\omega ng}]} +`
+:math:`\sum_{p \omega ng} {[DF^p P^p_{\omega} DUR_n (CV_g gp^p_{\omega ng} + CF_g uc^p_{\omega ng}) + DF^p CSU_g su^p_{\omega ng} + DF^p CSD_g sd^p_{\omega ng}]} +`
 
 Generation emission cost [M€] «``eTotalECost``»
 
-:math:`\sum_{p \omega ng} {DF_p P^p_{\omega} DUR_n CE_g gp^p_{\omega ng}} +`
+:math:`\sum_{p \omega ng} {DF^p P^p_{\omega} DUR_n CE_g gp^p_{\omega ng}} +`
 
 Variable consumption operation cost [M€] «``eTotalCCost``»
 
-:math:`\sum_{p \omega ne}{DF_p P^p_{\omega} DUR_n CV_e gc^p_{\omega ne}} +`
+:math:`\sum_{p \omega ne}{DF^p P^p_{\omega} DUR_n CV_e gc^p_{\omega ne}} +`
 
 Reliability cost [M€] «``eTotalRCost``»
 
-:math:`\sum_{p \omega ni}{DF_p P^p_{\omega} DUR_n CENS ens^p_{\omega ni}}`
+:math:`\sum_{p \omega ni}{DF^p P^p_{\omega} DUR_n CENS ens^p_{\omega ni}}`
 
-All the periodical (annual) costs of a period :math:`p` are updated considering that the period (e.g., 2030) is replicated for a number of years defined by its weight :math:`\Pi^p` (e.g., 5 times) and discounted to the base year :math:`T` (e.g., 2020) with this discount factor :math:`DF_p = \frac{(1+\delta)^{\Pi^p}-1}{\delta(1+\delta)^{\Pi^p-1+p-T}}`.
+All the periodical (annual) costs of a period :math:`p` are updated considering that the period (e.g., 2030) is replicated for a number of years defined by its weight :math:`PW^p` (e.g., 5 times) and discounted to the base year :math:`T` (e.g., 2020) with this discount factor :math:`DF^p = \frac{(1+\delta)^{PW^p}-1}{\delta(1+\delta)^{PW^p-1+p-T}}`.
 
 **Constraints**
 
