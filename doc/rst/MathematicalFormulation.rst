@@ -22,7 +22,7 @@ Indices
 -------
 ==============  ========================================================================
 :math:`p`       Period (e.g., year)
-:math:`w`       Scenario
+:math:`\omega`  Scenario
 :math:`n`       Load level (e.g., hour)
 :math:`\nu`     Time step. Duration of each load level (e.g., 2 h, 3 h)
 :math:`g`       Generator (thermal or hydro unit or energy storage system)
