@@ -49,7 +49,7 @@ They are written in **uppercase** letters.
 ------------------  ----------------------------------------------------  -------
 :math:`T`           Base period (year)                                    year
 :math:`\delta`      Annual discount rate                                  p.u.
-:math:`PW^p`        Period (year) weight                                  p.u.
+:math:`WG^p`        Period (year) weight                                  p.u.
 :math:`DF^p`        Discount factor for each period (year)                p.u.
 ==================  ====================================================  =======
 
@@ -194,7 +194,7 @@ Reliability cost [M€] «``eTotalRCost``»
 
 :math:`\sum_{p \omega ni}{DF^p P^p_{\omega} DUR_n CENS ens^p_{\omega ni}}`
 
-All the periodical (annual) costs of a period :math:`p` are updated considering that the period (e.g., 2030) is replicated for a number of years defined by its weight :math:`PW^p` (e.g., 5 times) and discounted to the base year :math:`T` (e.g., 2020) with this discount factor :math:`DF^p = \frac{(1+\delta)^{PW^p}-1}{\delta(1+\delta)^{PW^p-1+p-T}}`.
+All the periodical (annual) costs of a period :math:`p` are updated considering that the period (e.g., 2030) is replicated for a number of years defined by its weight :math:`WG^p` (e.g., 5 times) and discounted to the base year :math:`T` (e.g., 2020) with this discount factor :math:`DF^p = \frac{(1+\delta)^{WG^p}-1}{\delta(1+\delta)^{WG^p-1+p-T}}`.
 
 **Constraints**
 
