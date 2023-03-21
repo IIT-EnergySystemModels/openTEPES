@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.10.5] - 2023-03-17
+[4.10.5] - 2023-03-21
 --------------------
+- [FIXED] fix a typo in the generation unit investment file
 - [FIXED] fix a typo in the name of the technology energy plot
 - [FIXED] fix a typo in generation operation output results
 
