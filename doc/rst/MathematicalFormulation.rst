@@ -142,8 +142,8 @@ They are written in **lowercase** letters.
 ============================================================  ==============================================================================  =====
 **Generation system**
 ------------------------------------------------------------  ------------------------------------------------------------------------------  -----
-:math:`icg_{pg}`                                              Candidate generator or ESS installed or not                                     {0,1}
-:math:`rcg_{pg}`                                              Candidate generator or ESS retired   or not                                     {0,1}
+:math:`icg^p_g`                                              Candidate generator or ESS installed or not                                     {0,1}
+:math:`rcg^p_g`                                              Candidate generator or ESS retired   or not                                     {0,1}
 :math:`gp^p_{\omega ng}, gc^p_{\omega ng}`                    Generator output (discharge if an ESS) and consumption (charge if an ESS)       GW
 :math:`go^p_{\omega ne}`                                      Generator outflows of an ESS                                                    GW
 :math:`p^p_{\omega ng}`                                       Generator output of the second block (i.e., above the minimum load)             GW
@@ -160,7 +160,7 @@ They are written in **lowercase** letters.
 ========================================================================  ==============================================================  =====
 **Transmission system**
 ------------------------------------------------------------------------  --------------------------------------------------------------  -----
-:math:`ict_{pijc}`                                                        Candidate line installed or not                                 {0,1}
+:math:`ict^p_{ijc}`                                                        Candidate line installed or not                                 {0,1}
 :math:`swt^p_{\omega nijc}, son^p_{\omega nijc}, sof^p_{\omega nijc}`     Switching state, switch-on and switch-off of a line             {0,1}
 :math:`f^p_{\omega nijc}`                                                 Flow through a line                                             GW
 :math:`l^p_{\omega nijc}`                                                 Half ohmic losses of a line                                     GW
@@ -176,7 +176,7 @@ The names between parenthesis correspond to the names of the constraints in the 
 
 Generation, storage and network investment cost plus retirement cost [M€] «``eTotalFCost``»
 
-:math:`\sum_{pg} DF^p CFG_g icg_{pg} + \sum_{pg} DF^p CFR_g rcg_{pg} + \sum_{pijc} DF^p CFT_{ijc} ict_{pijc} +`
+:math:`\sum^p_g DF^p CFG_g icg^p_g + \sum_{pg} DF^p CFR_g rcg^p_g + \sum_{pijc} DF^p CFT_{ijc} ict^p_{ijc} +`
 
 Generation operation cost [M€] «``eTotalGCost``»
 
@@ -202,17 +202,17 @@ All the periodical (annual) costs of a period :math:`p` are updated considering 
 
 Investment and retirement decisions in consecutive years «``eConsecutiveGenInvest``» «``eConsecutiveGenRetire``» «``eConsecutiveNetInvest``»
 
-:math:`icg_{p-1,g} \leq icg_{pg} \quad \forall pg, g \in CG`
+:math:`icg_{p-1,g} \leq icg^p_g \quad \forall pg, g \in CG`
 
-:math:`rcg_{p-1,g} \leq rcg_{pg} \quad \forall pg, g \in CG`
+:math:`rcg_{p-1,g} \leq rcg^p_g \quad \forall pg, g \in CG`
 
-:math:`ict_{p-1,ijc} \leq ict_{pijc} \quad \forall pijc, ijc \in CL`
+:math:`ict_{p-1,ijc} \leq ict^p_{ijc} \quad \forall pijc, ijc \in CL`
 
 **Generation operation**
 
 Commitment decision bounded by the investment decision for candidate committed units (all except the VRE units) [p.u.] «``eInstalGenComm``»
 
-:math:`uc^p_{\omega ng} \leq icg_{pg} \quad \forall p \omega ng, g \in CG`
+:math:`uc^p_{\omega ng} \leq icg^p_g \quad \forall p \omega ng, g \in CG`
 
 Commitment decision bounded by the investment decision for candidate ESS [p.u.] «``eInstalESSComm``»
 
@@ -226,7 +226,7 @@ Output and consumption bounded by investment decision for candidate ESS [p.u.] �
 
 Adequacy system reserve margin [p.u.] «``eAdequacyReserveMargin``»
 
-:math:`\sum_{g \in a, EG} \overline{GP}_g A_g + \sum_{g \in a, CG} icg_{pg}  \overline{GP}_g A_g \geq PD_a RM_a \quad \forall pa`
+:math:`\sum_{g \in a, EG} \overline{GP}_g A_g + \sum_{g \in a, CG} icg^p_g  \overline{GP}_g A_g \geq PD_a RM_a \quad \forall pa`
 
 Balance of generation and demand at each node with ohmic losses [GW] «``eBalance``»
 
@@ -304,7 +304,7 @@ Maximum and minimum output of the second block of a committed unit (all except t
 
 :math:`\frac{p^p_{\omega ng} + ur^p_{\omega ng}}{\overline{GP}^p_{\omega ng} - \underline{GP}^p_{\omega ng}} \leq uc^p_{\omega ng} \quad \forall p \omega ng`
 
-:math:`\frac{p^p_{\omega ng} - dr^p_{\omega ng}}{\overline{GP}^p_{\omega ng} - \underline{GP}^p_{\omega ng}} \geq 0          \quad \forall p \omega ng`
+:math:`\frac{p^p_{\omega ng} - dr^p_{\omega ng}}{\overline{GP}^p_{\omega ng} - \underline{GP}^p_{\omega ng}} \geq 0                \quad \forall p \omega ng`
 
 Maximum and minimum charge of an ESS [p.u.] «``eMaxCharge``» «``eMinCharge``»
 
@@ -372,7 +372,7 @@ Minimum up time and down time of thermal unit [h] «``eMinUpTime``» «``eMinDow
 
 Logical relation between transmission investment and switching {0,1} «``eLineStateCand``»
 
-:math:`swt^p_{\omega nijc} \leq ict_{pijc} \quad \forall p \omega nijc, ijc \in CL`
+:math:`swt^p_{\omega nijc} \leq ict^p_{ijc} \quad \forall p \omega nijc, ijc \in CL`
 
 Logical relation between switching state, switch-on and switch-off status of a line [p.u.] «``eSWOnOff``»
 
