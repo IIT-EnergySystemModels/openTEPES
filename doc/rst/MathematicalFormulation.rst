@@ -216,13 +216,13 @@ Commitment decision bounded by the investment decision for candidate committed u
 
 Commitment decision bounded by the investment decision for candidate ESS [p.u.] «``eInstalESSComm``»
 
-:math:`uc^p_{\omega ne} \leq icg_{pe} \quad \forall p \omega ne, e \in CE`
+:math:`uc^p_{\omega ne} \leq icg^p_e \quad \forall p \omega ne, e \in CE`
 
 Output and consumption bounded by investment decision for candidate ESS [p.u.] «``eInstalGenCap``» «``eInstalConESS``»
 
-:math:`\frac{gp^p_{\omega ne}}{\overline{GP}^p_{\omega ne}} \leq icg_{pe} \quad \forall p \omega ne, e \in CE`
+:math:`\frac{gp^p_{\omega ne}}{\overline{GP}^p_{\omega ne}} \leq icg^p_e \quad \forall p \omega ne, e \in CE`
 
-:math:`\frac{gc^p_{\omega ne}}{\overline{GP}^p_{\omega ne}} \leq icg_{pe} \quad \forall p \omega ne, e \in CE`
+:math:`\frac{gc^p_{\omega ne}}{\overline{GP}^p_{\omega ne}} \leq icg^p_e \quad \forall p \omega ne, e \in CE`
 
 Adequacy system reserve margin [p.u.] «``eAdequacyReserveMargin``»
 
