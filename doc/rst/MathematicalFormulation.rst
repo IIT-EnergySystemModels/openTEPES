@@ -202,11 +202,11 @@ All the periodical (annual) costs of a period :math:`p` are updated considering 
 
 Investment and retirement decisions in consecutive years «``eConsecutiveGenInvest``» «``eConsecutiveGenRetire``» «``eConsecutiveNetInvest``»
 
-:math:`icg_{p-1,g} \leq icg^p_g \quad \forall pg, g \in CG`
+:math:`icg^{p-1}_g \leq icg^p_g \quad \forall pg, g \in CG`
 
-:math:`rcg_{p-1,g} \leq rcg^p_g \quad \forall pg, g \in CG`
+:math:`rcg^{p-1}_g \leq rcg^p_g \quad \forall pg, g \in CG`
 
-:math:`ict_{p-1,ijc} \leq ict^p_{ijc} \quad \forall pijc, ijc \in CL`
+:math:`ict^{p-1}_{ijc} \leq ict^p_{ijc} \quad \forall pijc, ijc \in CL`
 
 **Generation operation**
 
