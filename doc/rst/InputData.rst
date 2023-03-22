@@ -128,7 +128,7 @@ File                  Description
 ====================  =============================================================================================================  =========
 ENSCost               Cost of energy not served. Cost of load curtailment. Value of Lost Load (VoLL)                                 €/MWh   
 PNSCost               Cost of power not served associated with the deficit in operating reserve by load level                        €/MW   
-CO2Cost               Cost of CO2 emissions                                                                                          €/t CO2
+CO2Cost               Cost of CO2 emissions                                                                                          €/tCO2
 UpReserveActivation   Upward   reserve activation (proportion of upward   operating reserve deployed to produce energy)              p.u.
 DwReserveActivation   Downward reserve activation (proportion of downward operating reserve deployed to produce energy)              p.u.
 MinRatioDwUp          Minimum ratio downward to upward operating reserves                                                            p.u.
@@ -307,7 +307,7 @@ OMVariableCost        Variable O&M cost                                         
 OperReserveCost       Operating reserve cost                                                                                                  €/MW
 StartUpCost           Startup  cost                                                                                                           M€
 ShutDownCost          Shutdown cost                                                                                                           M€
-CO2EmissionRate       CO2 emission rate. It can be negative for units absorbing CO2 emissions as biomass                                      t CO2/MWh
+CO2EmissionRate       CO2 emission rate. It can be negative for units absorbing CO2 emissions as biomass                                      tCO2/MWh
 FixedInvestmentCost   Overnight investment (capital and fixed O&M) cost                                                                       M€
 FixedRetirementCost   Overnight retirement (capital and fixed O&M) cost                                                                       M€
 FixedChargeRate       Fixed-charge rate to annualize the overnight investment cost                                                            p.u.

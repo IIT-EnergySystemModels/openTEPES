@@ -160,7 +160,7 @@ They are written in **lowercase** letters.
 ========================================================================  ==============================================================  =====
 **Transmission system**
 ------------------------------------------------------------------------  --------------------------------------------------------------  -----
-:math:`ict^p_{ijc}`                                                        Candidate line installed or not                                 {0,1}
+:math:`ict^p_{ijc}`                                                       Candidate line installed or not                                 {0,1}
 :math:`swt^p_{\omega nijc}, son^p_{\omega nijc}, sof^p_{\omega nijc}`     Switching state, switch-on and switch-off of a line             {0,1}
 :math:`f^p_{\omega nijc}`                                                 Flow through a line                                             GW
 :math:`l^p_{\omega nijc}`                                                 Half ohmic losses of a line                                     GW
@@ -402,11 +402,11 @@ Half ohmic losses are linearly approximated as a function of the flow [GW] «``e
 
 **Bounds on generation variables** [GW]
 
-:math:`0 \leq gp^p_{\omega ng}  \leq \overline{GP}^p_{\omega ng}                             \quad \forall p \omega ng`
+:math:`0 \leq gp^p_{\omega ng}  \leq \overline{GP}^p_{\omega ng}                                   \quad \forall p \omega ng`
 
 :math:`0 \leq go^p_{\omega ne}  \leq \max(\overline{GP}^p_{\omega ne},\overline{GC}^p_{\omega ne}) \quad \forall p \omega ne`
 
-:math:`0 \leq gc^p_{\omega ne}  \leq \overline{GC}^p_{\omega ne}                             \quad \forall p \omega ne`
+:math:`0 \leq gc^p_{\omega ne}  \leq \overline{GC}^p_{\omega ne}                                   \quad \forall p \omega ne`
 
 :math:`0 \leq ur^p_{\omega ng}  \leq \overline{GP}^p_{\omega ng} - \underline{GP}^p_{\omega ng}    \quad \forall p \omega ng`
 
@@ -418,13 +418,13 @@ Half ohmic losses are linearly approximated as a function of the flow [GW] «``e
 
 :math:`0 \leq  p^p_{\omega ng}  \leq \overline{GP}^p_{\omega ng} - \underline{GP}^p_{\omega ng}    \quad \forall p \omega ng`
 
-:math:`0 \leq  c^p_{\omega ne}  \leq \overline{GC}^p_{\omega ne}                             \quad \forall p \omega ne`
+:math:`0 \leq  c^p_{\omega ne}  \leq \overline{GC}^p_{\omega ne}                                   \quad \forall p \omega ne`
 
 :math:`\underline{I}^p_{\omega ne} \leq  i^p_{\omega ne}  \leq \overline{I}^p_{\omega ne}          \quad \forall p \omega ne`
 
-:math:`0 \leq  s^p_{\omega ne}                                                         \quad \forall p \omega ne`
+:math:`0 \leq  s^p_{\omega ne}                                                                     \quad \forall p \omega ne`
 
-:math:`0 \leq ens^p_{\omega ni} \leq D^p_{\omega ni}                                         \quad \forall p \omega ni`
+:math:`0 \leq ens^p_{\omega ni} \leq D^p_{\omega ni}                                               \quad \forall p \omega ni`
 
 **Bounds on network variables** [GW]
 
