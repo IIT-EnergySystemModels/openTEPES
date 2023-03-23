@@ -380,6 +380,23 @@ It can be used also for upper-bounding and/or lower-bounding the consumption of 
 
 Internally, all the values below 2.5e-5 times the maximum system demand of each area will be converted into 0 by the model.
 
+Variable fuel cost
+------------------
+
+A description of the data included in the file ``oT_Data_VariableFuelCost.csv`` follows:
+
+==========  ==============  ==========  =========  =============================  ======
+Identifier  Identifier      Identifier  Header     Description
+==========  ==============  ==========  =========  =============================  ======
+Period      Scenario        Load level  Generator  Variable fuel cost             €/Mcal
+==========  ==============  ==========  =========  =============================  ======
+
+All the generators must be defined as columns of these files.
+
+Internally, all the values below 1e-4 will be converted into 0 by the model.
+
+Fuel cost affects the linear and constant terms of the heat rate, expressed both in Mcal/MWh and Mcal/h respectively.
+
 Energy inflows
 --------------
 

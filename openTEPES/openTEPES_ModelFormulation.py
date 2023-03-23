@@ -71,22 +71,22 @@ def GenerationOperationModelFormulationObjFunct(OptModel, mTEPES, pIndLogConsole
 
     def eTotalGCost(OptModel,n):
         if (st,n) in mTEPES.s2n:
-            return OptModel.vTotalGCost[p,sc,n] == (sum(mTEPES.pLoadLevelDuration[n] * mTEPES.pLinearVarCost  [nr] * OptModel.vTotalOutput   [p,sc,n,nr]                      +
-                                                        mTEPES.pLoadLevelDuration[n] * mTEPES.pConstantVarCost[nr] * OptModel.vCommitment    [p,sc,n,nr]                      +
-                                                        mTEPES.pLoadLevelDuration[n] * mTEPES.pStartUpCost    [nr] * OptModel.vStartUp       [p,sc,n,nr]                      +
-                                                        mTEPES.pLoadLevelDuration[n] * mTEPES.pShutDownCost   [nr] * OptModel.vShutDown      [p,sc,n,nr] for nr in mTEPES.nr) +
-                                                    sum(mTEPES.pLoadLevelDuration[n] * mTEPES.pOperReserveCost[nr] * OptModel.vReserveUp     [p,sc,n,nr]                      +
-                                                        mTEPES.pLoadLevelDuration[n] * mTEPES.pOperReserveCost[nr] * OptModel.vReserveDown   [p,sc,n,nr] for nr in mTEPES.nr if mTEPES.pIndOperReserve[nr] == 0) +
-                                                    sum(mTEPES.pLoadLevelDuration[n] * mTEPES.pOperReserveCost[es] * OptModel.vESSReserveUp  [p,sc,n,es]                      +
-                                                        mTEPES.pLoadLevelDuration[n] * mTEPES.pOperReserveCost[es] * OptModel.vESSReserveDown[p,sc,n,es] for es in mTEPES.es if mTEPES.pIndOperReserve[es] == 0) +
-                                                    sum(mTEPES.pLoadLevelDuration[n] * mTEPES.pLinearOMCost   [r ] * OptModel.vTotalOutput   [p,sc,n,r ] for r  in mTEPES.r ) )
+            return OptModel.vTotalGCost[p,sc,n] == (sum(mTEPES.pLoadLevelDuration[n] * mTEPES.pLinearVarCost  [p,sc,n,nr] * OptModel.vTotalOutput   [p,sc,n,nr]                      +
+                                                        mTEPES.pLoadLevelDuration[n] * mTEPES.pConstantVarCost[p,sc,n,nr] * OptModel.vCommitment    [p,sc,n,nr]                      +
+                                                        mTEPES.pLoadLevelDuration[n] * mTEPES.pStartUpCost    [       nr] * OptModel.vStartUp       [p,sc,n,nr]                      +
+                                                        mTEPES.pLoadLevelDuration[n] * mTEPES.pShutDownCost   [       nr] * OptModel.vShutDown      [p,sc,n,nr] for nr in mTEPES.nr) +
+                                                    sum(mTEPES.pLoadLevelDuration[n] * mTEPES.pOperReserveCost[       nr] * OptModel.vReserveUp     [p,sc,n,nr]                      +
+                                                        mTEPES.pLoadLevelDuration[n] * mTEPES.pOperReserveCost[       nr] * OptModel.vReserveDown   [p,sc,n,nr] for nr in mTEPES.nr if mTEPES.pIndOperReserve[nr] == 0) +
+                                                    sum(mTEPES.pLoadLevelDuration[n] * mTEPES.pOperReserveCost[       es] * OptModel.vESSReserveUp  [p,sc,n,es]                      +
+                                                        mTEPES.pLoadLevelDuration[n] * mTEPES.pOperReserveCost[       es] * OptModel.vESSReserveDown[p,sc,n,es] for es in mTEPES.es if mTEPES.pIndOperReserve[es] == 0) +
+                                                    sum(mTEPES.pLoadLevelDuration[n] * mTEPES.pLinearOMCost   [       r ] * OptModel.vTotalOutput   [p,sc,n,r ] for r  in mTEPES.r ) )
         else:
             return Constraint.Skip
     setattr(OptModel, 'eTotalGCost_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, rule=eTotalGCost, doc='system variable generation operation cost [MEUR]'))
 
     def eTotalCCost(OptModel,n):
         if (st,n) in mTEPES.s2n:
-            return OptModel.vTotalCCost    [p,sc,n] == sum(mTEPES.pLoadLevelDuration[n] * mTEPES.pLinearVarCost  [es] * OptModel.vESSTotalCharge[p,sc,n,es] for es in mTEPES.es)
+            return OptModel.vTotalCCost    [p,sc,n] == sum(mTEPES.pLoadLevelDuration[n] * mTEPES.pLinearVarCost[p,sc,n,es] * OptModel.vESSTotalCharge[p,sc,n,es] for es in mTEPES.es)
         else:
             return Constraint.Skip
     setattr(OptModel, 'eTotalCCost_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, rule=eTotalCCost, doc='system variable consumption operation cost [MEUR]'))
@@ -116,7 +116,7 @@ def GenerationOperationModelFormulationInvestment(OptModel, mTEPES, pIndLogConso
     StartTime = time.time()
 
     def eInstalGenComm(OptModel,p,sc,n,gc):
-        if gc in mTEPES.nr and gc not in mTEPES.es and mTEPES.pMustRun[gc] == 0 and (mTEPES.pMinPower[p,sc,n,gc] > 0.0 or mTEPES.pConstantVarCost[gc] > 0.0):
+        if gc in mTEPES.nr and gc not in mTEPES.es and mTEPES.pMustRun[gc] == 0 and (mTEPES.pMinPower[p,sc,n,gc] > 0.0 or mTEPES.pConstantVarCost[p,sc,n,gc] > 0.0):
             return OptModel.vCommitment[p,sc,n,gc]                                 <= OptModel.vGenerationInvest[p,gc]
         else:
             return Constraint.Skip
@@ -156,7 +156,7 @@ def GenerationOperationModelFormulationInvestment(OptModel, mTEPES, pIndLogConso
         print('eInstalConESS         ... ', len(getattr(OptModel, 'eInstalConESS_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
 
     def eUninstalGenComm(OptModel,p,sc,n,gd):
-        if gd in mTEPES.nr and gd not in mTEPES.es and mTEPES.pMustRun[gd] == 0 and (mTEPES.pMinPower[p,sc,n,gd] > 0.0 or mTEPES.pConstantVarCost[gd] > 0.0):
+        if gd in mTEPES.nr and gd not in mTEPES.es and mTEPES.pMustRun[gd] == 0 and (mTEPES.pMinPower[p,sc,n,gd] > 0.0 or mTEPES.pConstantVarCost[p,sc,n,gd] > 0.0):
             return OptModel.vCommitment[p,sc,n,gd]                                <= 1 - OptModel.vGenerationRetire[p,gd]
         else:
             return Constraint.Skip
@@ -531,9 +531,9 @@ def GenerationOperationModelFormulationCommitment(OptModel, mTEPES, pIndLogConso
         print('eTotalOutput          ... ', len(getattr(OptModel, 'eTotalOutput_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
 
     def eUCStrShut(OptModel,p,sc,n,nr):
-        if   mTEPES.pMustRun[nr] == 0 and (mTEPES.pMinPower[p,sc,n,nr] or mTEPES.pConstantVarCost[nr]) and nr not in mTEPES.es and n == mTEPES.n.first():
+        if   mTEPES.pMustRun[nr] == 0 and (mTEPES.pMinPower[p,sc,n,nr] or mTEPES.pConstantVarCost[p,sc,n,nr]) and nr not in mTEPES.es and n == mTEPES.n.first():
             return OptModel.vCommitment[p,sc,n,nr] - mTEPES.pInitialUC[p,sc,n,nr]                   == OptModel.vStartUp[p,sc,n,nr] - OptModel.vShutDown[p,sc,n,nr]
-        elif mTEPES.pMustRun[nr] == 0 and (mTEPES.pMinPower[p,sc,n,nr] or mTEPES.pConstantVarCost[nr]) and nr not in mTEPES.es:
+        elif mTEPES.pMustRun[nr] == 0 and (mTEPES.pMinPower[p,sc,n,nr] or mTEPES.pConstantVarCost[p,sc,n,nr]) and nr not in mTEPES.es:
             return OptModel.vCommitment[p,sc,n,nr] - OptModel.vCommitment[p,sc,mTEPES.n.prev(n),nr] == OptModel.vStartUp[p,sc,n,nr] - OptModel.vShutDown[p,sc,n,nr]
         else:
             return Constraint.Skip
@@ -631,7 +631,7 @@ def GenerationOperationModelFormulationRampMinTime(OptModel, mTEPES, pIndLogCons
         print('eRampDwChr            ... ', len(getattr(OptModel, 'eRampDwChr_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
 
     def eMinUpTime(OptModel,p,sc,n,t):
-        if mTEPES.pMustRun[t] == 0 and mTEPES.pIndBinGenMinTime() == 1 and (mTEPES.pMinPower[p,sc,n,t] or mTEPES.pConstantVarCost[t]) and t not in mTEPES.es and mTEPES.pUpTime[t] > 1 and mTEPES.n.ord(n) >= mTEPES.pUpTime[t]:
+        if mTEPES.pMustRun[t] == 0 and mTEPES.pIndBinGenMinTime() == 1 and (mTEPES.pMinPower[p,sc,n,t] or mTEPES.pConstantVarCost[p,sc,n,t]) and t not in mTEPES.es and mTEPES.pUpTime[t] > 1 and mTEPES.n.ord(n) >= mTEPES.pUpTime[t]:
             return sum(OptModel.vStartUp [p,sc,n2,t] for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pUpTime[t]:mTEPES.n.ord(n)]) <=     OptModel.vCommitment[p,sc,n,t]
         else:
             return Constraint.Skip
@@ -641,7 +641,7 @@ def GenerationOperationModelFormulationRampMinTime(OptModel, mTEPES, pIndLogCons
         print('eMinUpTime            ... ', len(getattr(OptModel, 'eMinUpTime_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
 
     def eMinDownTime(OptModel,p,sc,n,t):
-        if mTEPES.pMustRun[t] == 0 and mTEPES.pIndBinGenMinTime() == 1 and (mTEPES.pMinPower[p,sc,n,t] or mTEPES.pConstantVarCost[t]) and t not in mTEPES.es and mTEPES.pDwTime[t] > 1 and mTEPES.n.ord(n) >= mTEPES.pDwTime[t]:
+        if mTEPES.pMustRun[t] == 0 and mTEPES.pIndBinGenMinTime() == 1 and (mTEPES.pMinPower[p,sc,n,t] or mTEPES.pConstantVarCost[p,sc,n,t]) and t not in mTEPES.es and mTEPES.pDwTime[t] > 1 and mTEPES.n.ord(n) >= mTEPES.pDwTime[t]:
             return sum(OptModel.vShutDown[p,sc,n2,t] for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pDwTime[t]:mTEPES.n.ord(n)]) <= 1 - OptModel.vCommitment[p,sc,n,t]
         else:
             return Constraint.Skip
