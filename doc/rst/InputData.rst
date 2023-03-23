@@ -395,7 +395,7 @@ All the generators must be defined as columns of these files.
 
 Internally, all the values below 1e-4 will be converted into 0 by the model.
 
-Fuel cost affects the linear and constant terms of the heat rate, expressed both in Mcal/MWh and Mcal/h respectively.
+Fuel cost affects the linear and constant terms of the heat rate, expressed in Mcal/MWh and Mcal/h respectively.
 
 Energy inflows
 --------------
