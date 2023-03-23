@@ -97,7 +97,7 @@ They are written in **uppercase** letters.
 :math:`\underline{GP}_g, \overline{GP}_g`                          Rated minimum load and maximum output of a generator                                                                      GW
 :math:`\underline{GP}^p_{\omega ng}, \overline{GP}^p_{\omega ng}`  Minimum load and maximum output of a generator                                                                            GW
 :math:`\underline{GC}^p_{\omega ne}, \overline{GC}^p_{\omega ne}`  Minimum and maximum consumption of an ESS                                                                                 GW
-:math:`CF_g, CV_g`                                                 Fixed (no load) and variable cost of a generator. Variable cost includes fuel and O&M                                     €/h, €/MWh
+:math:`CF^p_{\omega ng}, CV^p_{\omega ng}`                         Fixed (no load) and variable cost of a generator. Variable cost includes fuel and O&M                                     €/h, €/MWh
 :math:`CE_g`                                                       Emission cost of a generator                                                                                              €/MWh
 :math:`CV_e`                                                       Variable cost of an ESS when charging                                                                                     €/MWh
 :math:`RU_g, RD_g`                                                 Ramp up/down of a non-renewable unit or maximum discharge/charge rate for ESS discharge/charge                            MW/h
@@ -180,7 +180,7 @@ Generation, storage and network investment cost plus retirement cost [M€] «``
 
 Generation operation cost [M€] «``eTotalGCost``»
 
-:math:`\sum_{p \omega ng} {[DF^p P^p_{\omega} DUR_n (CV_g gp^p_{\omega ng} + CF_g uc^p_{\omega ng}) + DF^p CSU_g su^p_{\omega ng} + DF^p CSD_g sd^p_{\omega ng}]} +`
+:math:`\sum_{p \omega ng} {[DF^p P^p_{\omega} DUR_n (CV^p_{\omega ng} gp^p_{\omega ng} + CF^p_{\omega ng} uc^p_{\omega ng}) + DF^p CSU_g su^p_{\omega ng} + DF^p CSD_g sd^p_{\omega ng}]} +`
 
 Generation emission cost [M€] «``eTotalECost``»
 
