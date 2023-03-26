@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.11.0] - 2023-03-23
+[4.11.0] - 2023-03-26
 --------------------
+- [CHANGED] if no investment decisions all the scenarios with probability > 0 area solved sequentially
 - [CHANGED] new VariableFuelCost input data file
 
 [4.10.6] - 2023-03-21
