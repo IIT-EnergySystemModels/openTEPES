@@ -77,7 +77,7 @@ The model has being used in these research projects:
   `S. Lumbreras <https://www.iit.comillas.edu/people/slumbreras>`_, `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `P. Linares <https://www.iit.comillas.edu/people/pedrol>`_, `D. Santos <https://www.iit.comillas.edu/people/doliveira>`_,
   `M. Pérez-Bravo <https://www.iit.comillas.edu/people/mperezb>`_, `A.F. Rodríguez Matas <https://www.iit.comillas.edu/people/afrmatas>`_, `J.C. Romero <https://www.iit.comillas.edu/people/jcromero>`_
 
-    It aims at improving the description of the Spanish energy system in model TIMES-SINERGIA, from the technologies considered or a higher time resolution to the detailed modeling of the power sector, such as the inclusion of transmission constraints.
+    It aims at improving the description of the Spanish energy system in model TIMES-SINERGIA, from the technologies considered or a higher time resolution to the detailed modeling of the power sector, such as the inclusion of transmission constraints, with openTEPES.
 
 - `MODESC – Platform of innovative models for speeding the energy transition towards a decarbonized economy <https://www.iit.comillas.edu/proyectos/mostrar_proyecto.php.en?nombre_abreviado=MODESC_RETOS>`_, developed for the **Ministry of Science and Innovation** under **Retos Colaboración 2019** program (RTC2019-007315-3).
   September 2020 - December 2023.
