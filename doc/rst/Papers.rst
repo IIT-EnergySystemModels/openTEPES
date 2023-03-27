@@ -3,6 +3,7 @@
 Publications
 =================
 The model has being used in these publications:
+
 * J.J. Valentín, J.P. Chaves, P. Linares, A. Ramos "`Análisis de las necesidades de almacenamiento eléctrico de España en el horizonte 2030 <https://www.funcas.es/wp-content/uploads/2023/01/PEE-174_Valentin_Chaves_Linares_Ramos.pdf>`_". Papeles de Energía 174, 72-91, Diciembre 2022.
 
 * S. Huclin et al. "`Exploring the roles of storage technologies in the Spanish electricity system with high share of renewable energy <https://www.sciencedirect.com/science/article/pii/S2352484722005881/pdfft?md5=ff70ec78ff957bd32a1ded165aa77369&pid=1-s2.0-S2352484722005881-main.pdf>`_"
