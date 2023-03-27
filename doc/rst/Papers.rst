@@ -15,13 +15,13 @@ The model has being used in these publications:
 * E.F. Alvarez, L. Olmos, A. Ramos, K. Antoniadou-Plytaria, D. Steen, and L.A. Tuan "`Values and Impacts of Incorporating Local Flexibility Services in Transmission Expansion Planning <https://pscc.epfl.ch/rms/modules/request.php?module=oc_program&action=view.php&id=1731&file=1/1731.pdf>`_"
   *PSCC 2022*. Porto, Portugal. June 2022.
 
+* A. Ramos, E. Quispe, S. Lumbreras "`OpenTEPES: Open-source Transmission and Generation Expansion Planning <https://www.sciencedirect.com/science/article/pii/S235271102200053X/pdfft?md5=ece8d3328c853a4795eda29acd2ad140&pid=1-s2.0-S235271102200053X-main.pdf>`_"
+  *SoftwareX* 18: June 2022. `10.1016/j.softx.2022.101070 <https://doi.org/10.1016/j.softx.2022.101070>`_
+
 * A. Ramos, S. Huclin, J.P. Chaves "Analysis of different storage technologies in the Spain NECP for 2030" *IEA Wind Task 25 Spring 2022 meeting*. May 2022.
   (`Presentation <https://pascua.iit.comillas.edu/aramos/papers/StorageTechnologies.pdf>`_)
 
 * A. Ramos, E. Alvarez "openTEPES" *First openTEPES World Conference*. March 2022. (`Presentation <https://pascua.iit.comillas.edu/aramos/papers/openTEPES.pdf>`_)
-
-* A. Ramos, E. Quispe, S. Lumbreras "`OpenTEPES: Open-source Transmission and Generation Expansion Planning <https://www.sciencedirect.com/science/article/pii/S235271102200053X/pdfft?md5=ece8d3328c853a4795eda29acd2ad140&pid=1-s2.0-S235271102200053X-main.pdf>`_"
-  *SoftwareX* 18: June 2022. `10.1016/j.softx.2022.101070 <https://doi.org/10.1016/j.softx.2022.101070>`_
 
 * A. Ramos "Assessing the operational flexibility provided by energy storage systems. The Spanish system in 2030" *IEA Wind Task 25 Spring 2021 meeting*. April 2021.
   (`Presentation <https://pascua.iit.comillas.edu/aramos/papers/AssessingESSFlexibility.pdf>`_)
