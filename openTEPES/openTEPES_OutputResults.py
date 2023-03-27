@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 26, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 27, 2023
 """
 
 import time
@@ -143,7 +143,7 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutput,
                 chart.save(_path+'/oT_Plot_TechnologyInvestment_'+CaseName+'.html', embed_options={'renderer':'svg'})
 
             # Saving and plotting generation investment cost into CSV file
-            OutputResults0 = OutputResults.set_index(['Period', 'Technology'])
+            OutputResults0 = OutputResults
             OutputToFile   = pd.Series(data=[mTEPES.pDiscountFactor[p] * mTEPES.pGenInvestCost[gc] * OptModel.vGenerationInvest[p,gc]() for p,gc in mTEPES.pgc], index=pd.Index(mTEPES.pgc))
             OutputToFile   = OutputToFile.fillna(0).to_frame(name='MEUR').reset_index().rename(columns={'level_0': 'Period', 'level_1': 'Generating unit'}).set_index(['Period', 'Generating unit'])
 
@@ -161,8 +161,8 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutput,
                 chart = alt.Chart(OutputResults.reset_index()).mark_bar().encode(x='Technology:O', y='sum(MEUR):Q', color='Technology:N', column='Period:N').properties(width=600, height=400)
                 chart.save(_path+'/oT_Plot_TechnologyInvestmentCost_'+CaseName+'.html', embed_options={'renderer':'svg'})
 
-            OutputResults = OutputResults['MEUR']/OutputResults0['MW'].fillna(0).to_frame(name='MEUR/MW')
-            OutputResults.reset_index().pivot_table(index=['Period'], columns=['Technology'], values='MEUR/MW').rename_axis(['Period'], axis=0).to_csv(_path+'/oT_Result_TechnologyInvestmentCostPerMW_'+CaseName+'.csv', index=True, sep=',')
+            OutputResults = pd.Series(data=[OutputResults['MEUR'][p,gc]/OutputResults0['MW'][p,gc] for p,gc in OutputResults.index], index=pd.Index(list(OutputResults.index))).to_frame(name='MEUR/MW')
+            OutputResults.rename_axis(['Period','Technology'], axis=0).reset_index().pivot_table(index=['Period'], columns=['Technology'], values='MEUR/MW').to_csv(_path+'/oT_Result_TechnologyInvestmentCostPerMW_'+CaseName+'.csv', index=True, sep=',')
 
             if pIndPlotOutput == 1:
                 chart = alt.Chart(OutputResults.reset_index()).mark_bar().encode(x='Technology:O', y='sum(MEUR/MW):Q', color='Technology:N', column='Period:N').properties(width=600, height=400)
