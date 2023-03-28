@@ -1,7 +1,16 @@
 Change Log
 =============
 
-[4.10.5] - 2023-03-21
+[4.11.0] - 2023-03-28
+--------------------
+- [CHANGED] if no investment decisions all the scenarios with probability > 0 area solved sequentially
+- [CHANGED] new VariableFuelCost input data file
+
+[4.10.6] - 2023-03-21
+--------------------
+- [FIXED] fix a typo in the generation unit investment file
+
+[4.10.5] - 2023-03-17
 --------------------
 - [FIXED] fix a typo in the generation unit investment file
 - [FIXED] fix a typo in the name of the technology energy plot

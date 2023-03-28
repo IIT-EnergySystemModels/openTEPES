@@ -119,6 +119,8 @@ IndBinLineCommit     Indicator of binary transmission switching decisions       
 IndBinNetLosses      Indicator of network losses                                       {0 lossless,   1 ohmic losses}
 ===================  ===============================================================   ====================================================
 
+If the investment decisions are ignored (IndBinGenInvest, IndBinGenRetirement, and IndBinNetInvest take value 2) or there are no investment decisions, all the scenarios with a probability > 0 are solved sequentially (assuming a probability 1).
+
 Parameters
 ----------
 A description of the system parameters included in the file ``oT_Data_Parameter.csv`` follows:
@@ -128,7 +130,7 @@ File                  Description
 ====================  =============================================================================================================  =========
 ENSCost               Cost of energy not served. Cost of load curtailment. Value of Lost Load (VoLL)                                 €/MWh   
 PNSCost               Cost of power not served associated with the deficit in operating reserve by load level                        €/MW   
-CO2Cost               Cost of CO2 emissions                                                                                          €/t CO2
+CO2Cost               Cost of CO2 emissions                                                                                          €/tCO2
 UpReserveActivation   Upward   reserve activation (proportion of upward   operating reserve deployed to produce energy)              p.u.
 DwReserveActivation   Downward reserve activation (proportion of downward operating reserve deployed to produce energy)              p.u.
 MinRatioDwUp          Minimum ratio downward to upward operating reserves                                                            p.u.
@@ -307,7 +309,7 @@ OMVariableCost        Variable O&M cost                                         
 OperReserveCost       Operating reserve cost                                                                                                  €/MW
 StartUpCost           Startup  cost                                                                                                           M€
 ShutDownCost          Shutdown cost                                                                                                           M€
-CO2EmissionRate       CO2 emission rate. It can be negative for units absorbing CO2 emissions as biomass                                      t CO2/MWh
+CO2EmissionRate       CO2 emission rate. It can be negative for units absorbing CO2 emissions as biomass                                      tCO2/MWh
 FixedInvestmentCost   Overnight investment (capital and fixed O&M) cost                                                                       M€
 FixedRetirementCost   Overnight retirement (capital and fixed O&M) cost                                                                       M€
 FixedChargeRate       Fixed-charge rate to annualize the overnight investment cost                                                            p.u.
@@ -379,6 +381,23 @@ To force a ESS to consume 0 a lower value (e.g., 0.1 MW) strictly > 0, but not 0
 It can be used also for upper-bounding and/or lower-bounding the consumption of any ESS (e.g., pumped-hydro storage, battery).
 
 Internally, all the values below 2.5e-5 times the maximum system demand of each area will be converted into 0 by the model.
+
+Variable fuel cost
+------------------
+
+A description of the data included in the file ``oT_Data_VariableFuelCost.csv`` follows:
+
+==========  ==============  ==========  =========  =============================  ======
+Identifier  Identifier      Identifier  Header     Description
+==========  ==============  ==========  =========  =============================  ======
+Period      Scenario        Load level  Generator  Variable fuel cost             €/Mcal
+==========  ==============  ==========  =========  =============================  ======
+
+All the generators must be defined as columns of these files.
+
+Internally, all the values below 1e-4 will be converted into 0 by the model.
+
+Fuel cost affects the linear and constant terms of the heat rate, expressed in Mcal/MWh and Mcal/h respectively.
 
 Energy inflows
 --------------
