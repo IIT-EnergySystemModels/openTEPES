@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 26, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 28, 2023
 """
 
 import time
@@ -9,7 +9,7 @@ import psutil
 import logging
 from   pyomo.opt             import SolverFactory, SolverStatus, TerminationCondition
 from   pyomo.util.infeasible import log_infeasible_constraints
-from   pyomo.environ         import Param, Suffix, Set, UnitInterval
+from   pyomo.environ         import Param, Suffix, Set, NonNegativeReals, UnitInterval
 
 def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConsole):
     print('Problem solving                        ****')
@@ -46,22 +46,31 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
         OptModel.rc   = Suffix(direction=Suffix.IMPORT)
     if (len(mTEPES.gc) == 0 or (len(mTEPES.gc) > 0 and mTEPES.pIndBinGenInvest() == 2)) and (len(mTEPES.gd) == 0 or (len(mTEPES.gd) > 0 and mTEPES.pIndBinGenRetire() == 2)) and (len(mTEPES.lc) == 0 or (len(mTEPES.lc) > 0 and mTEPES.pIndBinNetInvest() == 2)):
         # there are no expansion decisions, or they are ignored (it is an operation model)
-        mTEPES.pScenProb_Saved = Param(mTEPES.ps, initialize=mTEPES.pScenProb.extract_values(), within=UnitInterval, doc='Probability')
+        mTEPES.pScenProb_Saved   = Param(mTEPES.psc, initialize=mTEPES.pScenProb.extract_values()  , within=UnitInterval    , doc='Probability'       )
+        mTEPES.pPeriodProb_Saved = Param(mTEPES.psc, initialize=mTEPES.pPeriodProb.extract_values(), within=NonNegativeReals, doc='Period probability')
         pScenProb = pd.Series([0.0 for p,sc in mTEPES.ps], index=mTEPES.ps)
         for p,sc in mTEPES.ps:
-            if  mTEPES.pScenProb_Saved[p,sc] > 0.0:
-                mTEPES.del_component(mTEPES.sc)
-                mTEPES.del_component(mTEPES.ps)
+            if  mTEPES.pPeriodProb_Saved[p,sc] > 0.0:
+                pScenProb[p,sc] = 1.0
+                mTEPES.del_component(mTEPES.sc         )
+                mTEPES.del_component(mTEPES.ps         )
+                mTEPES.del_component(mTEPES.pPeriodProb)
                 mTEPES.sc = Set(initialize=mTEPES.scc,         ordered=True, doc='scenarios'        , filter=lambda mTEPES,scc : scc    in mTEPES.scc         and pScenProb[p,sc] > 0.0)
                 mTEPES.ps = Set(initialize=mTEPES.p*mTEPES.sc, ordered=True, doc='periods/scenarios', filter=lambda mTEPES,p,sc: (p,sc) in mTEPES.p*mTEPES.sc and pScenProb[p,sc] > 0.0)
-                pScenProb       [p,sc] = 1.0
+                mTEPES.pPeriodProb = Param(mTEPES.ps, initialize=0.0, within=NonNegativeReals, doc='Period probability', mutable=True)
+                mTEPES.pPeriodProb[p,sc] = mTEPES.pPeriodWeight[p]
                 SolverResults = Solver.solve(OptModel, tee=True, report_timing=True)              # tee=True displays the log of the solver
-                pScenProb       [p,sc] = 0.0
-                mTEPES.pScenProb[p,sc] = 1.0
-        mTEPES.del_component(mTEPES.sc)
-        mTEPES.del_component(mTEPES.ps)
-        mTEPES.sc = Set(initialize=mTEPES.scc,         ordered=True, doc='scenarios'        , filter=lambda mTEPES,scc : scc    in mTEPES.scc         and mTEPES.pScenProb_Saved[p,sc] > 0.0)
-        mTEPES.ps = Set(initialize=mTEPES.p*mTEPES.sc, ordered=True, doc='periods/scenarios', filter=lambda mTEPES,p,sc: (p,sc) in mTEPES.p*mTEPES.sc and mTEPES.pScenProb_Saved[p,sc] > 0.0)
+                pScenProb[p,sc] = 0.0
+        pScenProb = pd.Series([1.0 for p,sc in mTEPES.psc], index=mTEPES.psc)
+        mTEPES.del_component(mTEPES.sc         )
+        mTEPES.del_component(mTEPES.ps         )
+        mTEPES.del_component(mTEPES.pPeriodProb)
+        mTEPES.sc = Set(initialize=mTEPES.scc,         ordered=True, doc='scenarios'        , filter=lambda mTEPES,scc : scc    in mTEPES.scc         and pScenProb[p,sc] > 0.0)
+        mTEPES.ps = Set(initialize=mTEPES.p*mTEPES.sc, ordered=True, doc='periods/scenarios', filter=lambda mTEPES,p,sc: (p,sc) in mTEPES.p*mTEPES.sc and pScenProb[p,sc] > 0.0)
+        mTEPES.pScenProb   = Param(mTEPES.ps, initialize=1.0, within=UnitInterval,     doc='Probability',        mutable=True)
+        mTEPES.pPeriodProb = Param(mTEPES.ps, initialize=0.0, within=NonNegativeReals, doc='Period probability', mutable=True)
+        for p, sc in mTEPES.ps:
+            mTEPES.pPeriodProb[p,sc] = mTEPES.pPeriodWeight[p] * mTEPES.pScenProb[p,sc]
     else:
         # there are investment decisions (it is an expansion and operation model)
         SolverResults = Solver.solve(OptModel, tee=True, report_timing=True)  # tee=True displays the log of the solver
@@ -119,20 +128,27 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
         # there are no expansion decisions, or they are fixed (it is an operation model)
         pScenProb = pd.Series([0.0 for p,sc in mTEPES.ps], index=mTEPES.ps)
         for p,sc in mTEPES.ps:
-            if  mTEPES.pScenProb_Saved[p,sc] > 0.0:
-                mTEPES.del_component(mTEPES.sc)
-                mTEPES.del_component(mTEPES.ps)
+            if  mTEPES.pPeriodProb_Saved[p,sc] > 0.0:
+                pScenProb[p,sc] = 1.0
+                mTEPES.del_component(mTEPES.sc         )
+                mTEPES.del_component(mTEPES.ps         )
+                mTEPES.del_component(mTEPES.pPeriodProb)
                 mTEPES.sc = Set(initialize=mTEPES.scc,         ordered=True, doc='scenarios'        , filter=lambda mTEPES,scc : scc    in mTEPES.scc         and pScenProb[p,sc] > 0.0)
                 mTEPES.ps = Set(initialize=mTEPES.p*mTEPES.sc, ordered=True, doc='periods/scenarios', filter=lambda mTEPES,p,sc: (p,sc) in mTEPES.p*mTEPES.sc and pScenProb[p,sc] > 0.0)
-                pScenProb       [p,sc] = 1.0
-                SolverResults = Solver.solve(OptModel, tee=True, report_timing=True, warmstart=False)              # tee=True displays the log of the solver
-                pScenProb       [p,sc] = 0.0
-                mTEPES.pScenProb[p,sc] = 1.0
-        mTEPES.del_component(mTEPES.sc)
-        mTEPES.del_component(mTEPES.ps)
-        mTEPES.sc = Set(initialize=mTEPES.scc,         ordered=True, doc='scenarios'        , filter=lambda mTEPES,scc : scc    in mTEPES.scc         and mTEPES.pScenProb_Saved[p,sc] > 0.0)
-        mTEPES.ps = Set(initialize=mTEPES.p*mTEPES.sc, ordered=True, doc='periods/scenarios', filter=lambda mTEPES,p,sc: (p,sc) in mTEPES.p*mTEPES.sc and mTEPES.pScenProb_Saved[p,sc] > 0.0)
-        SolverResults.write()                                                                       # summary of the solver results
+                mTEPES.pPeriodProb = Param(mTEPES.ps, initialize=0.0, within=NonNegativeReals, doc='Period probability', mutable=True)
+                mTEPES.pPeriodProb[p,sc] = mTEPES.pPeriodWeight[p]
+                SolverResults = Solver.solve(OptModel, tee=True, report_timing=True)              # tee=True displays the log of the solver
+                pScenProb[p,sc] = 0.0
+        pScenProb = pd.Series([1.0 for p,sc in mTEPES.psc], index=mTEPES.psc)
+        mTEPES.del_component(mTEPES.sc         )
+        mTEPES.del_component(mTEPES.ps         )
+        mTEPES.del_component(mTEPES.pPeriodProb)
+        mTEPES.sc = Set(initialize=mTEPES.scc,         ordered=True, doc='scenarios'        , filter=lambda mTEPES,scc : scc    in mTEPES.scc         and pScenProb[p,sc] > 0.0)
+        mTEPES.ps = Set(initialize=mTEPES.p*mTEPES.sc, ordered=True, doc='periods/scenarios', filter=lambda mTEPES,p,sc: (p,sc) in mTEPES.p*mTEPES.sc and pScenProb[p,sc] > 0.0)
+        mTEPES.pScenProb   = Param(mTEPES.ps, initialize=1.0, within=UnitInterval,     doc='Probability',        mutable=True)
+        mTEPES.pPeriodProb = Param(mTEPES.ps, initialize=0.0, within=NonNegativeReals, doc='Period probability', mutable=True)
+        for p, sc in mTEPES.ps:
+            mTEPES.pPeriodProb[p,sc] = mTEPES.pPeriodWeight[p] * mTEPES.pScenProb[p,sc]
 
     SolvingTime = time.time() - StartTime
     print('Solution time                          ... ', round(SolvingTime), 's')

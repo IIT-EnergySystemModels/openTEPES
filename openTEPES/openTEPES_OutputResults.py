@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 27, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 28, 2023
 """
 
 import time
@@ -969,8 +969,8 @@ def ReliabilityResults(DirName, CaseName, OptModel, mTEPES):
     OutputToFile.reset_index().pivot_table(index=['level_0','level_1','level_2'],                    values='MW', aggfunc=sum).rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_NetDemand_'       +CaseName+'.csv', sep=',')
 
     # Determination of the index: Reserve Margin
-    OutputToFile1 = pd.Series(data=[0.0 for p,sc in mTEPES.ps], index=pd.Index(mTEPES.ps))
-    OutputToFile2 = pd.Series(data=[0.0 for p,sc in mTEPES.ps], index=pd.Index(mTEPES.ps))
+    OutputToFile1 = pd.Series(data=[0.0 for p,sc in mTEPES.ps], index=mTEPES.ps)
+    OutputToFile2 = pd.Series(data=[0.0 for p,sc in mTEPES.ps], index=mTEPES.ps)
     for p,sc in mTEPES.ps:
         OutputToFile1[p,sc] = pMaxPower.loc[(p,sc)].reset_index().pivot_table(index=['level_0'], values=0, aggfunc=sum).max()
         OutputToFile2[p,sc] =   pDemand.loc[(p,sc)].reset_index().pivot_table(index=['level_0'], values=0, aggfunc=sum).max()
@@ -980,7 +980,7 @@ def ReliabilityResults(DirName, CaseName, OptModel, mTEPES):
     ReserveMargin2.to_frame(name='p.u.').rename_axis(['Period', 'Scenario'], axis=0).to_csv(_path+'/oT_Result_ReserveMarginPerUnit_'+CaseName+'.csv', sep=',')
 
     # Determination of the index: Largest Unit
-    OutputToFile = pd.Series(data=[0.0 for p,sc in mTEPES.ps], index=pd.Index(mTEPES.ps))
+    OutputToFile = pd.Series(data=[0.0 for p,sc in mTEPES.ps], index=mTEPES.ps)
     for p,sc in mTEPES.ps:
         OutputToFile[p,sc] = pMaxPower.loc[(p,sc)].reset_index().pivot_table(index=['level_1'], values=0, aggfunc = max).max()
 
@@ -1299,8 +1299,8 @@ def NetworkMapResults(DirName, CaseName, OptModel, mTEPES):
         # tolerance to consider avoid division by 0
         pEpsilon = 1e-6
 
-        line_df = pd.DataFrame(data={'NTCFrw': pd.Series(data=[mTEPES.pLineNTCFrw[i] * 1e3 + pEpsilon for i in mTEPES.la], index=pd.Index(mTEPES.la)),
-                                     'NTCBck': pd.Series(data=[mTEPES.pLineNTCBck[i] * 1e3 + pEpsilon for i in mTEPES.la], index=pd.Index(mTEPES.la))}, index=pd.Index(mTEPES.la))
+        line_df = pd.DataFrame(data={'NTCFrw': pd.Series(data=[mTEPES.pLineNTCFrw[i] * 1e3 + pEpsilon for i in mTEPES.la], index=mTEPES.la),
+                                     'NTCBck': pd.Series(data=[mTEPES.pLineNTCBck[i] * 1e3 + pEpsilon for i in mTEPES.la], index=mTEPES.la)}, index=mTEPES.la)
         line_df['vFlow'      ] = 0.0
         line_df['utilization'] = 0.0
         line_df['color'      ] = 0.0
