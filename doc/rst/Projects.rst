@@ -7,7 +7,7 @@ The model has being used in these research projects:
 - Open Modelling Toolbox for development of long-term pathways for the energy system in Africa (OpenMod4Africa), developed for the **European Commission**.
 
 - `Analysis of the technical and economic benefits of solar thermal generation in the Spanish peninsular system <https://www.iit.comillas.edu/proyectos/mostrar_proyecto.php.es?nombre_abreviado=ProTermosolar_Presentacion>`_, developed for **ProTermosolar**.
-  Marzh 2023. `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `L. Sigrist <https://www.iit.comillas.edu/people/lsigrist>`_
+  March 2023. `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `L. Sigrist <https://www.iit.comillas.edu/people/lsigrist>`_
 
     It aims at writing a presentation on the quantitative analysis of the technical and economic impact of solar thermal in the operation of the Spanish peninsular system.
 
