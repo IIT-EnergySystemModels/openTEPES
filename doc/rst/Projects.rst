@@ -7,7 +7,7 @@ The model has being used in these research projects:
 - Open Modelling Toolbox for development of long-term pathways for the energy system in Africa (OpenMod4Africa), developed for the **European Commission**.
 
 - Hydro generation advanced systems: modeling, control, and optimized integration to the system (AVANHID), developed for the **Ministry of Science and Innovation/State Research Agency** (10.13039/501100011033) under the program **Public-Private Partnerships** with **NextGenerationEU/PRTR** funds (CPP2021-009114). December 2022 - November 2025.
-  `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `J.M. Latorre <https://www.iit.comillas.edu/people/jesuslc>`_, `L. Rouco <https://www.iit.comillas.edu/people/rouco>`_
+  `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `J.M. Latorre <https://www.iit.comillas.edu/people/jesuslc>`_, `L. Rouco <https://www.iit.comillas.edu/people/rouco>`_, `L. Sigrist <https://www.iit.comillas.edu/people/lsigrist>`_, `I. Egido <https://www.iit.comillas.edu/people/egido>`_, `Jesús D. Gómez <https://www.iit.comillas.edu/people/jdgomez>`_
 
 .. image:: ../img/ColabPP.jpg
    :scale: 30%
