@@ -6,15 +6,20 @@ The model has being used in these research projects:
 
 - Open Modelling Toolbox for development of long-term pathways for the energy system in Africa (OpenMod4Africa), developed for the **European Commission**.
 
+- `Analysis of the technical and economic benefits of solar thermal generation in the Spanish peninsular system <https://www.iit.comillas.edu/proyectos/mostrar_proyecto.php.es?nombre_abreviado=ProTermosolar_Presentacion>`_, developed for **ProTermosolar**.
+  Marzh 2023. `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `L. Sigrist <https://www.iit.comillas.edu/people/lsigrist>`_
+
+    It aims at writing a presentation on the quantitative analysis of the technical and economic impact of solar thermal in the operation of the Spanish peninsular system.
+
 - Hydro generation advanced systems: modeling, control, and optimized integration to the system (AVANHID), developed for the **Ministry of Science and Innovation/State Research Agency** (10.13039/501100011033) under the program **Public-Private Partnerships** with **NextGenerationEU/PRTR** funds (CPP2021-009114). December 2022 - November 2025.
-  `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `J.M. Latorre <https://www.iit.comillas.edu/people/jesuslc>`_, `L. Rouco <https://www.iit.comillas.edu/people/rouco>`_, `L. Sigrist <https://www.iit.comillas.edu/people/lsigrist>`_, `I. Egido <https://www.iit.comillas.edu/people/egido>`_, `Jesús D. Gómez <https://www.iit.comillas.edu/people/jdgomez>`_
+  `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `J.M. Latorre <https://www.iit.comillas.edu/people/jesuslc>`_, `L. Rouco <https://www.iit.comillas.edu/people/rouco>`_, `L. Sigrist <https://www.iit.comillas.edu/people/lsigrist>`_, `I. Egido <https://www.iit.comillas.edu/people/egido>`_, `J.D. Gómez <https://www.iit.comillas.edu/people/jdgomez>`_
 
 .. image:: ../img/ColabPP.jpg
    :scale: 30%
    :align: center
 
 - Local markets for energy communities: designing efficient markets and assessing the integration from the electricity system perspective (OptiREC), developed for the **Ministry of Science and Innovation/State Research Agency** (10.13039/501100011033) under the program **Strategic projects oriented to the ecological transition and digital transition** with **NextGenerationEU/PRTR** funds (TED2021-131365B-C43). December 2022 - November 2024.
-  `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `J.P. Chaves <https://www.iit.comillas.edu/people/jchaves>`_, `J.M. Latorre <https://www.iit.comillas.edu/people/jesuslc>`_, `M. Troncia <https://www.iit.comillas.edu/people/mtroncia>`_
+  `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `J.P. Chaves <https://www.iit.comillas.edu/people/jchaves>`_, `J.M. Latorre <https://www.iit.comillas.edu/people/jesuslc>`_, `M. Troncia <https://www.iit.comillas.edu/people/mtroncia>`_, `O.M. Valarezo <https://www.iit.comillas.edu/people/ovalarezo>`_
 
 .. image:: ../img/ColabPP.jpg
    :scale: 30%
