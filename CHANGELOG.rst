@@ -1,6 +1,10 @@
 Change Log
 =============
 
+[4.11.1] - 2023-03-30
+--------------------
+- [FIXED] split formulation by period and scenario
+
 [4.11.0] - 2023-03-28
 --------------------
 - [CHANGED] if no investment decisions all the scenarios with probability > 0 area solved sequentially
