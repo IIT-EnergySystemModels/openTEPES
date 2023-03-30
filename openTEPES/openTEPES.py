@@ -54,18 +54,12 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     # iterative model formulation for each stage of a year
     for p,sc,st in mTEPES.ps*mTEPES.stt:
         # activate only period, scenario, and load levels to formulate
-        mTEPES.del_component(mTEPES.p )
-        mTEPES.del_component(mTEPES.sc)
-        mTEPES.del_component(mTEPES.ps)
         mTEPES.del_component(mTEPES.st)
         mTEPES.del_component(mTEPES.n )
         mTEPES.del_component(mTEPES.n2)
-        mTEPES.p  = Set(initialize=mTEPES.pp,          ordered=True, doc='periods'          , filter=lambda mTEPES,pp  : pp     in mTEPES.pp                and mTEPES.pPeriodWeight[pp]   > 0.0)
-        mTEPES.sc = Set(initialize=mTEPES.scc,         ordered=True, doc='scenarios'        , filter=lambda mTEPES,scc : scc    in mTEPES.scc                                                   )
-        mTEPES.ps = Set(initialize=mTEPES.p*mTEPES.sc, ordered=True, doc='periods/scenarios', filter=lambda mTEPES,p,sc: (p,sc) in mTEPES.p*mTEPES.sc       and mTEPES.pScenProb  [p,sc]() > 0.0)
-        mTEPES.st = Set(initialize=mTEPES.stt,         ordered=True, doc='stages'           , filter=lambda mTEPES,stt : stt    in mTEPES.stt and st == stt and mTEPES.pStageWeight[stt] and sum(1 for (st,nn) in mTEPES.s2n))
-        mTEPES.n  = Set(initialize=mTEPES.nn ,         ordered=True, doc='load levels'      , filter=lambda mTEPES,nn  : nn     in                              mTEPES.pDuration         and           (st,nn) in mTEPES.s2n)
-        mTEPES.n2 = Set(initialize=mTEPES.nn ,         ordered=True, doc='load levels'      , filter=lambda mTEPES,nn  : nn     in                              mTEPES.pDuration         and           (st,nn) in mTEPES.s2n)
+        mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in mTEPES.stt and st == stt and mTEPES.pStageWeight[stt] and sum(1 for (st,nn) in mTEPES.s2n))
+        mTEPES.n  = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn:  nn  in                              mTEPES.pDuration         and           (st,nn) in mTEPES.s2n)
+        mTEPES.n2 = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn:  nn  in                              mTEPES.pDuration         and           (st,nn) in mTEPES.s2n)
 
         print('Period '+str(p)+', Scenario '+str(sc)+', Stage '+str(st))
 
@@ -88,18 +82,12 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
 
     ProblemSolving(DirName, CaseName, SolverName, mTEPES, mTEPES, pIndLogConsole)
 
-    mTEPES.del_component(mTEPES.p )
-    mTEPES.del_component(mTEPES.sc)
-    mTEPES.del_component(mTEPES.ps)
     mTEPES.del_component(mTEPES.st)
     mTEPES.del_component(mTEPES.n )
     mTEPES.del_component(mTEPES.n2)
-    mTEPES.p  = Set(initialize=mTEPES.pp,          ordered=True , doc='periods',           filter=lambda mTEPES,pp  : pp     in mTEPES.pp          and mTEPES.pPeriodWeight[pp]   > 0.0)
-    mTEPES.sc = Set(initialize=mTEPES.scc,         ordered=True , doc='scenarios',         filter=lambda mTEPES,scc : scc    in mTEPES.scc                                             )
-    mTEPES.ps = Set(initialize=mTEPES.p*mTEPES.sc, ordered=True , doc='periods/scenarios', filter=lambda mTEPES,p,sc: (p,sc) in mTEPES.p*mTEPES.sc and mTEPES.pScenProb  [p,sc]() > 0.0)
-    mTEPES.st = Set(initialize=mTEPES.stt,         ordered=True, doc='stages',             filter=lambda mTEPES,stt : stt    in mTEPES.stt         and mTEPES.pStageWeight[stt] and sum(1 for (stt,nn) in mTEPES.s2n))
-    mTEPES.n  = Set(initialize=mTEPES.nn,          ordered=True, doc='load levels',        filter=lambda mTEPES,nn  : nn     in                        mTEPES.pDuration                                              )
-    mTEPES.n2 = Set(initialize=mTEPES.nn ,         ordered=True, doc='load levels',        filter=lambda mTEPES,nn  : nn     in                        mTEPES.pDuration                                              )
+    mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in mTEPES.stt and mTEPES.pStageWeight[stt] and sum(1 for (stt,nn) in mTEPES.s2n))
+    mTEPES.n  = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn:  nn  in                mTEPES.pDuration                                              )
+    mTEPES.n2 = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn:  nn  in                mTEPES.pDuration                                              )
 
     # output results only for every unit (0), only for every technology (1), or for both (2)
     pIndTechnologyOutput = 1
