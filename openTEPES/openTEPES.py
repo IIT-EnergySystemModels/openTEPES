@@ -85,13 +85,13 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
             mTEPES.pScenProb  [p,sc] = 1.0
             mTEPES.pPeriodProb[p,sc] = 1.0
             # there are no expansion decisions, or they are ignored (it is an operation model)
-            ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConsole, p, sc)
+            ProblemSolving(DirName, CaseName, SolverName, mTEPES, mTEPES, pIndLogConsole, p, sc)
             mTEPES.pPeriodWeight [p] = 0.0
             mTEPES.pScenProb  [p,sc] = 0.0
             mTEPES.pPeriodProb[p,sc] = 0.0
         elif p == mTEPES.pp.last() and sc == mTEPES.scc.last() and st == mTEPES.stt.last():
             # there are investment decisions (it is an expansion and operation model)
-            ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConsole, p, sc)
+            ProblemSolving(DirName, CaseName, SolverName, mTEPES, mTEPES, pIndLogConsole, p, sc)
 
     mTEPES.del_component(mTEPES.st)
     mTEPES.del_component(mTEPES.n )
