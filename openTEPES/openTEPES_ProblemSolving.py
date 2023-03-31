@@ -11,16 +11,10 @@ from   pyomo.opt             import SolverFactory, SolverStatus, TerminationCond
 from   pyomo.util.infeasible import log_infeasible_constraints
 from   pyomo.environ         import Param, Suffix, Set, NonNegativeReals, UnitInterval
 
-def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConsole):
+def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConsole, p, sc):
     print('Problem solving                        ****')
     _path = os.path.join(DirName, CaseName)
     StartTime = time.time()
-
-    #%% activating all periods, scenarios, and load levels
-    mTEPES.del_component(mTEPES.st)
-    mTEPES.del_component(mTEPES.n )
-    mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in mTEPES.stt and mTEPES.pStageWeight[stt] and sum(1 for (stt,nn) in mTEPES.s2n))
-    mTEPES.n  = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in                mTEPES.pDuration                                              )
 
     #%% solving the problem
     Solver = SolverFactory(SolverName)                                                       # select solver
@@ -38,42 +32,17 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
         Solver.options['Threads'       ] = int((psutil.cpu_count(logical=True) + psutil.cpu_count(logical=False))/2)
         Solver.options['TimeLimit'     ] =    36000
         Solver.options['IterationLimit'] = 36000000
+
     if ( mTEPES.pIndBinGenInvest()*len(mTEPES.gc)*sum(mTEPES.pIndBinUnitInvest[gc] for gc in mTEPES.gc) + mTEPES.pIndBinGenRetire() *len(mTEPES.gd)*sum(mTEPES.pIndBinUnitRetire[gd] for gd in mTEPES.gd) + mTEPES.pIndBinNetInvest() *len(mTEPES.lc)*sum(mTEPES.pIndBinLineInvest[lc] for lc in mTEPES.lc) +
          mTEPES.pIndBinGenOperat()*len(mTEPES.nr)*sum(mTEPES.pIndBinUnitCommit[nr] for nr in mTEPES.nr) +                                                                                                   mTEPES.pIndBinLineCommit()*len(mTEPES.la)*sum(mTEPES.pIndBinLineSwitch[la] for la in mTEPES.la) + len(mTEPES.g2g) == 0 or
-       (len(mTEPES.gc) == 0 or (len(mTEPES.gc) > 0 and mTEPES.pIndBinGenInvest() == 2)) and (len(mTEPES.gd) == 0 or (len(mTEPES.gd) > 0 and mTEPES.pIndBinGenRetire() == 2)) and (len(mTEPES.lc) == 0 or (len(mTEPES.lc) > 0 and mTEPES.pIndBinNetInvest() == 2))):
+       (len(mTEPES.gc) == 0 or (len(mTEPES.gc) > 0 and mTEPES.pIndBinGenInvest() == 2)) and (len(mTEPES.gd) == 0 or (len(mTEPES.gd) > 0 and mTEPES.pIndBinGenRetire() == 2)) and (len(mTEPES.lc) == 0 or (len(mTEPES.lc) > 0 and mTEPES.pIndBinNetInvest() == 2)) and  p == mTEPES.pp.first() and sc == mTEPES.scc.first()):
         # there are no binary decisions (no investment/retirement decisions or investment/retirement decisions already ignored, no line switching/unit commitment, no mutually exclusive units)
-        OptModel.dual = Suffix(direction=Suffix.IMPORT)
-        OptModel.rc   = Suffix(direction=Suffix.IMPORT)
-    if (len(mTEPES.gc) == 0 or (len(mTEPES.gc) > 0 and mTEPES.pIndBinGenInvest() == 2)) and (len(mTEPES.gd) == 0 or (len(mTEPES.gd) > 0 and mTEPES.pIndBinGenRetire() == 2)) and (len(mTEPES.lc) == 0 or (len(mTEPES.lc) > 0 and mTEPES.pIndBinNetInvest() == 2)):
-        # there are no expansion decisions, or they are ignored (it is an operation model)
-        mTEPES.pScenProb_Saved   = Param(mTEPES.psc, initialize=mTEPES.pScenProb.extract_values()  , within=UnitInterval    , doc='Probability'       )
-        mTEPES.pPeriodProb_Saved = Param(mTEPES.psc, initialize=mTEPES.pPeriodProb.extract_values(), within=NonNegativeReals, doc='Period probability')
-        pScenProb = pd.Series([0.0 for p,sc in mTEPES.ps], index=mTEPES.ps)
-        for p,sc in mTEPES.ps:
-            if  mTEPES.pPeriodProb_Saved[p,sc] > 0.0:
-                pScenProb[p,sc] = 1.0
-                mTEPES.del_component(mTEPES.sc         )
-                mTEPES.del_component(mTEPES.ps         )
-                mTEPES.del_component(mTEPES.pPeriodProb)
-                mTEPES.sc = Set(initialize=mTEPES.scc,         ordered=True, doc='scenarios'        , filter=lambda mTEPES,scc : scc    in mTEPES.scc         and pScenProb[p,sc] > 0.0)
-                mTEPES.ps = Set(initialize=mTEPES.p*mTEPES.sc, ordered=True, doc='periods/scenarios', filter=lambda mTEPES,p,sc: (p,sc) in mTEPES.p*mTEPES.sc and pScenProb[p,sc] > 0.0)
-                mTEPES.pPeriodProb = Param(mTEPES.ps, initialize=0.0, within=NonNegativeReals, doc='Period probability', mutable=True)
-                mTEPES.pPeriodProb[p,sc] = mTEPES.pPeriodWeight[p]
-                SolverResults = Solver.solve(OptModel, tee=True, report_timing=True)              # tee=True displays the log of the solver
-                pScenProb[p,sc] = 0.0
-        pScenProb = pd.Series([1.0 for p,sc in mTEPES.psc], index=mTEPES.psc)
-        mTEPES.del_component(mTEPES.sc         )
-        mTEPES.del_component(mTEPES.ps         )
-        mTEPES.del_component(mTEPES.pPeriodProb)
-        mTEPES.sc = Set(initialize=mTEPES.scc,         ordered=True, doc='scenarios'        , filter=lambda mTEPES,scc : scc    in mTEPES.scc         and pScenProb[p,sc] > 0.0)
-        mTEPES.ps = Set(initialize=mTEPES.p*mTEPES.sc, ordered=True, doc='periods/scenarios', filter=lambda mTEPES,p,sc: (p,sc) in mTEPES.p*mTEPES.sc and pScenProb[p,sc] > 0.0)
-        mTEPES.pScenProb   = Param(mTEPES.ps, initialize=1.0, within=UnitInterval,     doc='Probability',        mutable=True)
-        mTEPES.pPeriodProb = Param(mTEPES.ps, initialize=0.0, within=NonNegativeReals, doc='Period probability', mutable=True)
-        for p, sc in mTEPES.ps:
-            mTEPES.pPeriodProb[p,sc] = mTEPES.pPeriodWeight[p] * mTEPES.pScenProb[p,sc]
-    else:
-        # there are investment decisions (it is an expansion and operation model)
-        SolverResults = Solver.solve(OptModel, tee=True, report_timing=True)  # tee=True displays the log of the solver
+        OptModel.dual  = Suffix(direction=Suffix.IMPORT)
+        OptModel.rc    = Suffix(direction=Suffix.IMPORT)
+        OptModel.slack = Suffix(direction=Suffix.IMPORT)
+
+    SolverResults = Solver.solve(OptModel, tee=True, report_timing=True)              # tee=True displays the log of the solver
+
     print('Termination condition: ', SolverResults.solver.termination_condition)
     if SolverResults.solver.termination_condition == TerminationCondition.infeasible:
         log_infeasible_constraints(OptModel, log_expression=True, log_variables=True)
@@ -123,42 +92,20 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
             for nr in mTEPES.nr:
                 if sum(1 for g in mTEPES.nr if (nr,g) in mTEPES.g2g or (g,nr) in mTEPES.g2g):
                     OptModel.vMaxCommitment[nr].fix(round(OptModel.vMaxCommitment[nr]()))
-        OptModel.dual = Suffix(direction=Suffix.IMPORT)
-        OptModel.rc   = Suffix(direction=Suffix.IMPORT)
-        # there are no expansion decisions, or they are fixed (it is an operation model)
-        pScenProb = pd.Series([0.0 for p,sc in mTEPES.ps], index=mTEPES.ps)
-        for p,sc in mTEPES.ps:
-            if  mTEPES.pPeriodProb_Saved[p,sc] > 0.0:
-                pScenProb[p,sc] = 1.0
-                mTEPES.del_component(mTEPES.sc         )
-                mTEPES.del_component(mTEPES.ps         )
-                mTEPES.del_component(mTEPES.pPeriodProb)
-                mTEPES.sc = Set(initialize=mTEPES.scc,         ordered=True, doc='scenarios'        , filter=lambda mTEPES,scc : scc    in mTEPES.scc         and pScenProb[p,sc] > 0.0)
-                mTEPES.ps = Set(initialize=mTEPES.p*mTEPES.sc, ordered=True, doc='periods/scenarios', filter=lambda mTEPES,p,sc: (p,sc) in mTEPES.p*mTEPES.sc and pScenProb[p,sc] > 0.0)
-                mTEPES.pPeriodProb = Param(mTEPES.ps, initialize=0.0, within=NonNegativeReals, doc='Period probability', mutable=True)
-                mTEPES.pPeriodProb[p,sc] = mTEPES.pPeriodWeight[p]
-                SolverResults = Solver.solve(OptModel, tee=True, report_timing=True)              # tee=True displays the log of the solver
-                pScenProb[p,sc] = 0.0
-        pScenProb = pd.Series([1.0 for p,sc in mTEPES.psc], index=mTEPES.psc)
-        mTEPES.del_component(mTEPES.sc         )
-        mTEPES.del_component(mTEPES.ps         )
-        mTEPES.del_component(mTEPES.pPeriodProb)
-        mTEPES.sc = Set(initialize=mTEPES.scc,         ordered=True, doc='scenarios'        , filter=lambda mTEPES,scc : scc    in mTEPES.scc         and pScenProb[p,sc] > 0.0)
-        mTEPES.ps = Set(initialize=mTEPES.p*mTEPES.sc, ordered=True, doc='periods/scenarios', filter=lambda mTEPES,p,sc: (p,sc) in mTEPES.p*mTEPES.sc and pScenProb[p,sc] > 0.0)
-        mTEPES.pScenProb   = Param(mTEPES.ps, initialize=1.0, within=UnitInterval,     doc='Probability',        mutable=True)
-        mTEPES.pPeriodProb = Param(mTEPES.ps, initialize=0.0, within=NonNegativeReals, doc='Period probability', mutable=True)
-        for p, sc in mTEPES.ps:
-            mTEPES.pPeriodProb[p,sc] = mTEPES.pPeriodWeight[p] * mTEPES.pScenProb[p,sc]
+
+        OptModel.dual  = Suffix(direction=Suffix.IMPORT)
+        OptModel.rc    = Suffix(direction=Suffix.IMPORT)
+        OptModel.slack = Suffix(direction=Suffix.IMPORT)
+        SolverResults = Solver.solve(OptModel, tee=True, report_timing=True)              # tee=True displays the log of the solver
 
     SolvingTime = time.time() - StartTime
     print('Solution time                          ... ', round(SolvingTime), 's')
     print('Total system                   cost [MEUR] ', OptModel.eTotalSCost.expr())
-    for p,sc in mTEPES.ps:
-        print('***** Period: '+str(p)+', Scenario: '+str(sc)+' ******')
-        print('  Total generation  investment cost [MEUR] ', sum(mTEPES.pDiscountFactor[p] * mTEPES.pGenInvestCost[gc      ]   * OptModel.vGenerationInvest[p,gc      ]() for gc       in mTEPES.gc))
-        print('  Total generation  retirement cost [MEUR] ', sum(mTEPES.pDiscountFactor[p] * mTEPES.pGenRetireCost[gd      ]   * OptModel.vGenerationRetire[p,gd      ]() for gd       in mTEPES.gd))
-        print('  Total network     investment cost [MEUR] ', sum(mTEPES.pDiscountFactor[p] * mTEPES.pNetFixedCost [ni,nf,cc]   * OptModel.vNetworkInvest   [p,ni,nf,cc]() for ni,nf,cc in mTEPES.lc))
-        print('  Total generation  operation  cost [MEUR] ', sum(mTEPES.pDiscountFactor[p] * mTEPES.pScenProb     [p,sc    ]() * OptModel.vTotalGCost      [p,sc,n    ]() for n        in mTEPES.n ))
-        print('  Total consumption operation  cost [MEUR] ', sum(mTEPES.pDiscountFactor[p] * mTEPES.pScenProb     [p,sc    ]() * OptModel.vTotalCCost      [p,sc,n    ]() for n        in mTEPES.n ))
-        print('  Total emission               cost [MEUR] ', sum(mTEPES.pDiscountFactor[p] * mTEPES.pScenProb     [p,sc    ]() * OptModel.vTotalECost      [p,sc,n    ]() for n        in mTEPES.n ))
-        print('  Total reliability            cost [MEUR] ', sum(mTEPES.pDiscountFactor[p] * mTEPES.pScenProb     [p,sc    ]() * OptModel.vTotalRCost      [p,sc,n    ]() for n        in mTEPES.n ))
+    print('***** Period: '+str(p)+', Scenario: '+str(sc)+' ******')
+    print('  Total generation  investment cost [MEUR] ', sum(mTEPES.pDiscountFactor[p] * mTEPES.pGenInvestCost[gc      ]   * OptModel.vGenerationInvest[p,gc      ]() for gc       in mTEPES.gc))
+    print('  Total generation  retirement cost [MEUR] ', sum(mTEPES.pDiscountFactor[p] * mTEPES.pGenRetireCost[gd      ]   * OptModel.vGenerationRetire[p,gd      ]() for gd       in mTEPES.gd))
+    print('  Total network     investment cost [MEUR] ', sum(mTEPES.pDiscountFactor[p] * mTEPES.pNetFixedCost [ni,nf,cc]   * OptModel.vNetworkInvest   [p,ni,nf,cc]() for ni,nf,cc in mTEPES.lc))
+    print('  Total generation  operation  cost [MEUR] ', sum(mTEPES.pDiscountFactor[p] * mTEPES.pScenProb     [p,sc    ]() * OptModel.vTotalGCost      [p,sc,n    ]() for n        in mTEPES.n ))
+    print('  Total consumption operation  cost [MEUR] ', sum(mTEPES.pDiscountFactor[p] * mTEPES.pScenProb     [p,sc    ]() * OptModel.vTotalCCost      [p,sc,n    ]() for n        in mTEPES.n ))
+    print('  Total emission               cost [MEUR] ', sum(mTEPES.pDiscountFactor[p] * mTEPES.pScenProb     [p,sc    ]() * OptModel.vTotalECost      [p,sc,n    ]() for n        in mTEPES.n ))
+    print('  Total reliability            cost [MEUR] ', sum(mTEPES.pDiscountFactor[p] * mTEPES.pScenProb     [p,sc    ]() * OptModel.vTotalRCost      [p,sc,n    ]() for n        in mTEPES.n ))

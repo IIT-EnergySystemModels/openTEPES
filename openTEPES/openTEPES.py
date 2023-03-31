@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 30, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 31, 2023
 """
 
 import time
@@ -36,7 +36,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     idxDict['y'  ] = 1
 
     #%% model declaration
-    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.11.1 - March 30, 2023')
+    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.11.1 - March 31, 2023')
 
     pIndOutputResults = [j for i,j in idxDict.items() if i == pIndOutputResults][0]
     pIndLogConsole    = [j for i,j in idxDict.items() if i == pIndLogConsole   ][0]
@@ -73,14 +73,25 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
         NetworkSwitchingModelFormulation              (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
         NetworkOperationModelFormulation              (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
 
-    if pIndLogConsole == 1:
-        StartTime         = time.time()
-        mTEPES.write(_path+'/openTEPES_'+CaseName+'.lp', io_options={'symbolic_solver_labels': True})  # create lp-format file
-        WritingLPFileTime = time.time() - StartTime
-        StartTime         = time.time()
-        print('Writing LP file                        ... ', round(WritingLPFileTime), 's')
+        if pIndLogConsole == 1:
+            StartTime         = time.time()
+            mTEPES.write(_path+'/openTEPES_'+CaseName+'_'+str(p)+'_'+str(sc)+'.lp', io_options={'symbolic_solver_labels': True})
+            WritingLPFileTime = time.time() - StartTime
+            StartTime         = time.time()
+            print('Writing LP file                        ... ', round(WritingLPFileTime), 's')
 
-    ProblemSolving(DirName, CaseName, SolverName, mTEPES, mTEPES, pIndLogConsole)
+        if (len(mTEPES.gc) == 0 or (len(mTEPES.gc) > 0 and mTEPES.pIndBinGenInvest() == 2)) and (len(mTEPES.gd) == 0 or (len(mTEPES.gd) > 0 and mTEPES.pIndBinGenRetire() == 2)) and (len(mTEPES.lc) == 0 or (len(mTEPES.lc) > 0 and mTEPES.pIndBinNetInvest() == 2)):
+            mTEPES.pPeriodWeight [p] = 1.0
+            mTEPES.pScenProb  [p,sc] = 1.0
+            mTEPES.pPeriodProb[p,sc] = 1.0
+            # there are no expansion decisions, or they are ignored (it is an operation model)
+            ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConsole, p, sc)
+            mTEPES.pPeriodWeight [p] = 0.0
+            mTEPES.pScenProb  [p,sc] = 0.0
+            mTEPES.pPeriodProb[p,sc] = 0.0
+        elif p == mTEPES.pp.last() and sc == mTEPES.scc.last() and st == mTEPES.stt.last():
+            # there are investment decisions (it is an expansion and operation model)
+            ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConsole, p, sc)
 
     mTEPES.del_component(mTEPES.st)
     mTEPES.del_component(mTEPES.n )
@@ -88,6 +99,9 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in mTEPES.stt and mTEPES.pStageWeight[stt] and sum(1 for (stt,nn) in mTEPES.s2n))
     mTEPES.n  = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn:  nn  in                mTEPES.pDuration                                              )
     mTEPES.n2 = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn:  nn  in                mTEPES.pDuration                                              )
+
+    for p,sc in mTEPES.ps:
+        mTEPES.pPeriodWeight[p] = mTEPES.pScenProb[p,sc] = mTEPES.pPeriodProb[p,sc] = 1.0
 
     # output results only for every unit (0), only for every technology (1), or for both (2)
     pIndTechnologyOutput = 1

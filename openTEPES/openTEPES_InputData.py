@@ -731,7 +731,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.pReserveMargin        = Param(mTEPES.ar,    initialize=pReserveMargin.to_dict()            , within=NonNegativeReals,    doc='Adequacy reserve margin'                             )
     mTEPES.pPeakDemand           = Param(mTEPES.ar,    initialize=pPeakDemand.to_dict()               , within=NonNegativeReals,    doc='Peak demand'                                         )
     mTEPES.pDemand               = Param(mTEPES.psnnd, initialize=pDemand.stack().to_dict()           , within=           Reals,    doc='Demand'                                              )
-    mTEPES.pPeriodWeight         = Param(mTEPES.p,     initialize=pPeriodWeight.to_dict()             , within=NonNegativeIntegers, doc='Period weight'                                       )
+    mTEPES.pPeriodWeight         = Param(mTEPES.p,     initialize=pPeriodWeight.to_dict()             , within=NonNegativeIntegers, doc='Period weight',                          mutable=True)
     mTEPES.pDiscountFactor       = Param(mTEPES.p,     initialize=pDiscountFactor.to_dict()           , within=NonNegativeReals,    doc='Discount factor'                                     )
     mTEPES.pScenProb             = Param(mTEPES.psc,   initialize=pScenProb.to_dict()                 , within=UnitInterval    ,    doc='Probability',                            mutable=True)
     mTEPES.pStageWeight          = Param(mTEPES.stt,   initialize=pStageWeight.to_dict()              , within=NonNegativeIntegers, doc='Stage weight'                                        )
@@ -801,6 +801,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
 
     mTEPES.pPeriodProb           = Param(mTEPES.ps,    initialize=0.0                                 , within=NonNegativeReals,    doc='Period probability',                     mutable=True)
     for p,sc in mTEPES.ps:
+        # periods and scenarios are going to be solved together with their weight and probability
         mTEPES.pPeriodProb[p,sc] = mTEPES.pPeriodWeight[p] * mTEPES.pScenProb[p,sc]
 
     mTEPES.pLineLossFactor       = Param(mTEPES.ln,    initialize=pLineLossFactor.to_dict()           , within=           Reals,    doc='Loss factor'                                         )
@@ -1070,7 +1071,7 @@ def SettingUpVariables(OptModel, mTEPES):
 
     for p,sc,n,ec in mTEPES.psnec:
         if mTEPES.pEnergyInflows [p,sc,n,ec]() == 0.0:
-            OptModel.vEnergyInflows        [p,sc,n,ec].fix(0.0)
+            OptModel.vEnergyInflows     [p,sc,n,ec].fix(0.0)
 
     # if no operating reserve is required no variables are needed
     for p,sc,n,ar,nr in mTEPES.psn*mTEPES.ar*mTEPES.nr:

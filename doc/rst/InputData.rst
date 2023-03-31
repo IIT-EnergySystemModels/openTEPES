@@ -119,7 +119,7 @@ IndBinLineCommit     Indicator of binary transmission switching decisions       
 IndBinNetLosses      Indicator of network losses                                       {0 lossless,   1 ohmic losses}
 ===================  ===============================================================   ====================================================
 
-If the investment decisions are ignored (IndBinGenInvest, IndBinGenRetirement, and IndBinNetInvest take value 2) or there are no investment decisions, all the scenarios with a probability > 0 are solved sequentially (assuming a probability 1).
+If the investment decisions are ignored (IndBinGenInvest, IndBinGenRetirement, and IndBinNetInvest take value 2) or there are no investment decisions, all the scenarios with a probability > 0 are solved sequentially (assuming a probability 1) and the periods are considered with a weight 1.
 
 Parameters
 ----------

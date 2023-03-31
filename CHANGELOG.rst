@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.11.1] - 2023-03-30
+[4.11.1] - 2023-03-31
 --------------------
+- [FIXED] reorganize the problem solving by period
 - [FIXED] split formulation by period and scenario
 
 [4.11.0] - 2023-03-28
