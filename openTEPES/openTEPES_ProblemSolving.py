@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 28, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 01, 2023
 """
 
 import time
@@ -57,31 +57,31 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
            mTEPES.pIndBinGenOperat()*len(mTEPES.nr)*sum(mTEPES.pIndBinUnitCommit[nr] for nr in mTEPES.nr) +                                                                                                  mTEPES.pIndBinLineCommit()*len(mTEPES.la)*sum(mTEPES.pIndBinLineSwitch[la] for la in mTEPES.la) + len(mTEPES.g2g) > 0 and
          ((len(mTEPES.gc) > 0 and mTEPES.pIndBinGenInvest() != 2) or (len(mTEPES.gd) > 0 and mTEPES.pIndBinGenRetire() != 2) or (len(mTEPES.lc) > 0 and mTEPES.pIndBinNetInvest() != 2))):
         if mTEPES.pIndBinGenInvest()*len(mTEPES.gc)*sum(mTEPES.pIndBinUnitInvest[gc] for gc in mTEPES.gc):
-            for p,gc in mTEPES.pgc:
+            for gc in mTEPES.gc:
                 if mTEPES.pIndBinUnitInvest[gc] != 0:
                     OptModel.vGenerationInvest[p,gc].fix(round(OptModel.vGenerationInvest[p,gc]()))
                 else:
                     OptModel.vGenerationInvest[p,gc].fix(      OptModel.vGenerationInvest[p,gc]())
         if mTEPES.pIndBinGenRetire()*len(mTEPES.gd)*sum(mTEPES.pIndBinUnitRetire[gd] for gd in mTEPES.gd):
-            for p,gd in mTEPES.pgd:
+            for gd in mTEPES.gd:
                 if mTEPES.pIndBinUnitRetire[gd] != 0:
                     OptModel.vGenerationRetire[p,gd].fix(round(OptModel.vGenerationRetire[p,gd]()))
                 else:
                     OptModel.vGenerationRetire[p,gd].fix(      OptModel.vGenerationRetire[p,gd]())
         if mTEPES.pIndBinNetInvest()*len(mTEPES.lc)*sum(mTEPES.pIndBinLineInvest[lc] for lc in mTEPES.lc):
-            for p,ni,nf,cc in mTEPES.plc:
-                if mTEPES.pIndBinLineInvest[ni,nf,cc] != 0:
+            for ni,nf,cc in mTEPES.lc:
+                if mTEPES.pIndBinLineInvest[  ni,nf,cc] != 0:
                     OptModel.vNetworkInvest[p,ni,nf,cc].fix(round(OptModel.vNetworkInvest[p,ni,nf,cc]()))
                 else:
                     OptModel.vNetworkInvest[p,ni,nf,cc].fix(      OptModel.vNetworkInvest[p,ni,nf,cc]())
         if mTEPES.pIndBinGenOperat()*len(mTEPES.nr)*sum(mTEPES.pIndBinUnitCommit[nr] for nr in mTEPES.nr):
-            for p,sc,n,nr in mTEPES.psnnr:
+            for n,nr in mTEPES.n*mTEPES.nr:
                 if mTEPES.pIndBinUnitCommit[nr] != 0:
                     OptModel.vCommitment[p,sc,n,nr].fix(round(OptModel.vCommitment[p,sc,n,nr]()))
                     OptModel.vStartUp   [p,sc,n,nr].fix(round(OptModel.vStartUp   [p,sc,n,nr]()))
                     OptModel.vShutDown  [p,sc,n,nr].fix(round(OptModel.vShutDown  [p,sc,n,nr]()))
         if mTEPES.pIndBinLineCommit()*len(mTEPES.la)*sum(mTEPES.pIndBinLineSwitch[la] for la in mTEPES.la):
-            for p,sc,n,ni,nf,cc in mTEPES.psnla:
+            for n,ni,nf,cc in mTEPES.n*mTEPES.la:
                 if mTEPES.pIndBinLineSwitch[ni,nf,cc] != 0:
                     OptModel.vLineCommit  [p,sc,n,ni,nf,cc].fix(round(OptModel.vLineCommit   [p,sc,n,ni,nf,cc]()))
                     OptModel.vLineOnState [p,sc,n,ni,nf,cc].fix(round(OptModel.vLineOnState  [p,sc,n,ni,nf,cc]()))
