@@ -89,6 +89,7 @@ File                                       Description
 ``oT_Data_VariableMinGeneration.csv``      Variable minimum power generation  by load level
 ``oT_Data_VariableMaxConsumption.csv``     Variable maximum power consumption by load level
 ``oT_Data_VariableMinConsumption.csv``     Variable minimum power consumption by load level
+``oT_Data_VariableFuelCost.csv``           Variable fuel costs
 ``oT_Data_EnergyInflows.csv``              Energy inflows to an ESS
 ``oT_Data_EnergyOutflows.csv``             Energy outflows from an ESS for Power-to-X (H2 production or EV mobility or water irrigation)
 ``oT_Data_VariableMaxStorage.csv``         Maximum storage of the ESS by load level
