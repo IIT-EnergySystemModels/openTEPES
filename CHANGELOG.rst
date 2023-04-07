@@ -1,6 +1,10 @@
 Change Log
 =============
 
+[4.11.2] - 2023-04-07
+--------------------
+- [CHANGED] avoid formulation of period/scenario not solved
+
 [4.11.1] - 2023-03-31
 --------------------
 - [FIXED] reorganize the problem solving by period

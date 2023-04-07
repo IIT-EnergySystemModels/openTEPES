@@ -1,12 +1,13 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 31, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 07, 2023
 """
 
 import time
 import os
 import setuptools
 
-from pyomo.environ import ConcreteModel, Set
+import pyomo.environ as pyo
+from   pyomo.environ import ConcreteModel, Set
 
 from .openTEPES_InputData        import InputData, SettingUpVariables
 from .openTEPES_ModelFormulation import TotalObjectiveFunction, InvestmentModelFormulation, GenerationOperationModelFormulationObjFunct, GenerationOperationModelFormulationInvestment, GenerationOperationModelFormulationDemand, GenerationOperationModelFormulationStorage, GenerationOperationModelFormulationCommitment, GenerationOperationModelFormulationRampMinTime, NetworkSwitchingModelFormulation, NetworkOperationModelFormulation
@@ -36,7 +37,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     idxDict['y'  ] = 1
 
     #%% model declaration
-    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.11.1 - March 31, 2023')
+    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.11.2 - April 07, 2023')
 
     pIndOutputResults = [j for i,j in idxDict.items() if i == pIndOutputResults][0]
     pIndLogConsole    = [j for i,j in idxDict.items() if i == pIndLogConsole   ][0]
@@ -53,7 +54,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
 
     # iterative model formulation for each stage of a year
     for p,sc,st in mTEPES.ps*mTEPES.stt:
-        # activate only period, scenario, and load levels to formulate
+        # activate only load levels to formulate
         mTEPES.del_component(mTEPES.st)
         mTEPES.del_component(mTEPES.n )
         mTEPES.del_component(mTEPES.n2)
@@ -81,10 +82,14 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
             print('Writing LP file                        ... ', round(WritingLPFileTime), 's')
 
         if (len(mTEPES.gc) == 0 or (len(mTEPES.gc) > 0 and mTEPES.pIndBinGenInvest() == 2)) and (len(mTEPES.gd) == 0 or (len(mTEPES.gd) > 0 and mTEPES.pIndBinGenRetire() == 2)) and (len(mTEPES.lc) == 0 or (len(mTEPES.lc) > 0 and mTEPES.pIndBinNetInvest() == 2)):
-            mTEPES.pPeriodWeight[p] = mTEPES.pScenProb[p,sc] = mTEPES.pPeriodProb[p,sc] = 1.0
+            mTEPES.pPeriodProb[p,sc] = mTEPES.pPeriodWeight[p] = mTEPES.pScenProb[p,sc] = 1.0
             # there are no expansion decisions, or they are ignored (it is an operation model)
             ProblemSolving(DirName, CaseName, SolverName, mTEPES, mTEPES, pIndLogConsole, p, sc)
-            mTEPES.pPeriodWeight[p] = mTEPES.pScenProb[p,sc] = mTEPES.pPeriodProb[p,sc] = 0.0
+            mTEPES.pPeriodProb[p,sc] = mTEPES.pPeriodWeight[p] = mTEPES.pScenProb[p,sc] = 0.0
+            # deactivate the constraints of the previous period and scenario
+            for c in OptModel.component_objects(pyo.Constraint, active=True):
+                if c.name.find(str(p)) != -1 and c.name.find(str(sc)) != -1:
+                    c.deactivate()
         elif p == mTEPES.pp.last() and sc == mTEPES.scc.last() and st == mTEPES.stt.last():
             # there are investment decisions (it is an expansion and operation model)
             ProblemSolving(DirName, CaseName, SolverName, mTEPES, mTEPES, pIndLogConsole, p, sc)
@@ -96,8 +101,12 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     mTEPES.n  = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn:  nn  in                mTEPES.pDuration                                              )
     mTEPES.n2 = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn:  nn  in                mTEPES.pDuration                                              )
 
+    # activate the constraints of all the periods and scenarios
+    for c in OptModel.component_objects(pyo.Constraint):
+        c.activate()
+
     for p,sc in mTEPES.ps:
-        mTEPES.pPeriodWeight[p] = mTEPES.pScenProb[p,sc] = mTEPES.pPeriodProb[p,sc] = 1.0
+        mTEPES.pPeriodProb[p,sc] = mTEPES.pPeriodWeight[p] = mTEPES.pScenProb[p,sc] = 1.0
 
     # output results only for every unit (0), only for every technology (1), or for both (2)
     pIndTechnologyOutput = 1
