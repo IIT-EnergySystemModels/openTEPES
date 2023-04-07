@@ -90,7 +90,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
             for c in mTEPES.component_objects(pyo.Constraint, active=True):
                 if c.name.find(str(p)) != -1 and c.name.find(str(sc)) != -1:
                     c.deactivate()
-        elif p == mTEPES.pp.last() and sc == mTEPES.scc.last() and st == mTEPES.stt.last():
+        else:
             # there are investment decisions (it is an expansion and operation model)
             ProblemSolving(DirName, CaseName, SolverName, mTEPES, mTEPES, pIndLogConsole, p, sc)
 
