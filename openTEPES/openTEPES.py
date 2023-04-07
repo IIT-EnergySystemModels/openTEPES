@@ -87,7 +87,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
             ProblemSolving(DirName, CaseName, SolverName, mTEPES, mTEPES, pIndLogConsole, p, sc)
             mTEPES.pPeriodProb[p,sc] = mTEPES.pPeriodWeight[p] = mTEPES.pScenProb[p,sc] = 0.0
             # deactivate the constraints of the previous period and scenario
-            for c in OptModel.component_objects(pyo.Constraint, active=True):
+            for c in mTEPES.component_objects(pyo.Constraint, active=True):
                 if c.name.find(str(p)) != -1 and c.name.find(str(sc)) != -1:
                     c.deactivate()
         elif p == mTEPES.pp.last() and sc == mTEPES.scc.last() and st == mTEPES.stt.last():
@@ -102,7 +102,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     mTEPES.n2 = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn:  nn  in                mTEPES.pDuration                                              )
 
     # activate the constraints of all the periods and scenarios
-    for c in OptModel.component_objects(pyo.Constraint):
+    for c in mTEPES.component_objects(pyo.Constraint):
         c.activate()
 
     for p,sc in mTEPES.ps:
