@@ -3,7 +3,7 @@
 Output Results
 ==============
 
-A map of the transmission network and the energy share of different technologies is plotted (access to internet is required to download the underlying map).
+Some maps of the transmission network and the energy share of different technologies is plotted.
 
 .. image:: ../img/oT_Map_Network_sSEP.png
    :scale: 40%
