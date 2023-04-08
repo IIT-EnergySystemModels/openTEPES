@@ -29,7 +29,7 @@ Some maps of the transmission network and the energy share of different technolo
    :scale: 6%
    :align: center
 
-Besides, the csv files used for outputting the results are briefly described in the following items.
+Besides, the csv files used for outputting the results are briefly described in the following items. Some additional plots are also shown.
 
 Investment
 ----------
