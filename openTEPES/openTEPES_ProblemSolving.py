@@ -1,17 +1,18 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 01, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 10, 2023
 """
 
 import time
 import os
-import pandas as pd
+import pandas        as pd
+import pyomo.environ as pyo
 import psutil
 import logging
 from   pyomo.opt             import SolverFactory, SolverStatus, TerminationCondition
 from   pyomo.util.infeasible import log_infeasible_constraints
-from   pyomo.environ         import Param, Suffix, Set, NonNegativeReals, UnitInterval
+from   pyomo.environ         import Suffix
 
-def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConsole, p, sc):
+def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConsole, p, sc, pDuals):
     print('Problem solving                        ****')
     _path = os.path.join(DirName, CaseName)
     StartTime = time.time()
@@ -37,9 +38,8 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
          mTEPES.pIndBinGenOperat()*len(mTEPES.nr)*sum(mTEPES.pIndBinUnitCommit[nr] for nr in mTEPES.nr) +                                                                                                   mTEPES.pIndBinLineCommit()*len(mTEPES.la)*sum(mTEPES.pIndBinLineSwitch[la] for la in mTEPES.la) + len(mTEPES.g2g) == 0 or
        (len(mTEPES.gc) == 0 or (len(mTEPES.gc) > 0 and mTEPES.pIndBinGenInvest() == 2)) and (len(mTEPES.gd) == 0 or (len(mTEPES.gd) > 0 and mTEPES.pIndBinGenRetire() == 2)) and (len(mTEPES.lc) == 0 or (len(mTEPES.lc) > 0 and mTEPES.pIndBinNetInvest() == 2)) and p == mTEPES.pp.first() and sc == mTEPES.scc.first()):
         # there are no binary decisions (no investment/retirement decisions or investment/retirement decisions already ignored, no line switching/unit commitment, no mutually exclusive units)
-        OptModel.dual  = Suffix(direction=Suffix.IMPORT)
-        OptModel.rc    = Suffix(direction=Suffix.IMPORT)
-        OptModel.slack = Suffix(direction=Suffix.IMPORT)
+        OptModel.dual = Suffix(direction=Suffix.IMPORT_EXPORT)
+        OptModel.rc   = Suffix(direction=Suffix.IMPORT_EXPORT)
 
     SolverResults = Solver.solve(OptModel, tee=True, report_timing=True)              # tee=True displays the log of the solver
 
@@ -93,10 +93,16 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
                 if sum(1 for g in mTEPES.nr if (nr,g) in mTEPES.g2g or (g,nr) in mTEPES.g2g):
                     OptModel.vMaxCommitment[nr].fix(round(OptModel.vMaxCommitment[nr]()))
 
-        OptModel.dual  = Suffix(direction=Suffix.IMPORT)
-        OptModel.rc    = Suffix(direction=Suffix.IMPORT)
-        OptModel.slack = Suffix(direction=Suffix.IMPORT)
+        OptModel.dual = Suffix(direction=Suffix.IMPORT_EXPORT)
+        OptModel.rc   = Suffix(direction=Suffix.IMPORT_EXPORT)
+
         SolverResults = Solver.solve(OptModel, tee=True, report_timing=True)              # tee=True displays the log of the solver
+
+    # saving the dual variables for writing in output results
+    for c in OptModel.component_objects(pyo.Constraint, active=True):
+        if c.is_indexed():
+            for index in c:
+                pDuals[str(c.name)+str(index)] = OptModel.dual[c[index]]
 
     SolvingTime = time.time() - StartTime
     print('Solution time                          ... ', round(SolvingTime), 's')

@@ -1,6 +1,10 @@
 Change Log
 =============
 
+[4.11.3] - 2023-04-10
+--------------------
+- [CHANGED] get dual variables for each solved problem
+
 [4.11.2] - 2023-04-07
 --------------------
 - [CHANGED] avoid formulation of period/scenario not solved
