@@ -7,7 +7,7 @@ import os
 import setuptools
 
 import pyomo.environ as pyo
-from   pyomo.environ import ConcreteModel, Set, Param
+from   pyomo.environ import ConcreteModel, Set, Param, Reals
 
 from .openTEPES_InputData        import InputData, SettingUpVariables
 from .openTEPES_ModelFormulation import TotalObjectiveFunction, InvestmentModelFormulation, GenerationOperationModelFormulationObjFunct, GenerationOperationModelFormulationInvestment, GenerationOperationModelFormulationDemand, GenerationOperationModelFormulationStorage, GenerationOperationModelFormulationCommitment, GenerationOperationModelFormulationRampMinTime, NetworkSwitchingModelFormulation, NetworkOperationModelFormulation
