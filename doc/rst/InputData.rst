@@ -112,7 +112,7 @@ File                 Description
 IndBinGenInvest      Indicator of binary generation   expansion decisions              {0 continuous, 1 binary, 2 ignore investments}
 IndBinGenRetirement  Indicator of binary generation  retirement decisions              {0 continuous, 1 binary, 2 ignore retirements}
 IndBinNetInvest      Indicator of binary network      expansion decisions              {0 continuous, 1 binary, 2 ignore investments}
-IndBinGenCommit      Indicator of binary generation   operation decisions              {0 continuous, 1 binary}
+IndBinGenOperat      Indicator of binary generation   operation decisions              {0 continuous, 1 binary}
 IndBinGenRamps       Indicator of activating or not the up/down ramp constraints       {0 no ramps,   1 ramp constraints}
 IndBinGenMinTime     Indicator of activating or not the min up/down time constraints   {0 no min time constraints, 1 min time constraints}
 IndBinSingleNode     Indicator of single node case study                               {0 network,    1 single node}

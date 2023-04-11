@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.11.3] - 2023-04-10
+[4.11.3] - 2023-04-11
 --------------------
+- [CHANGED] change boolean to binary parameters
 - [CHANGED] get dual variables for each solved problem
 
 [4.11.2] - 2023-04-07
