@@ -1,6 +1,10 @@
 Change Log
 =============
 
+[4.11.4] - 2023-04-13
+--------------------
+- [CHANGED] detection of the first period and scenario solved
+
 [4.11.3] - 2023-04-11
 --------------------
 - [CHANGED] change boolean to binary parameters

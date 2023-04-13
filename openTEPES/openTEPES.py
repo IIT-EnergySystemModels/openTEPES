@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 11, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 13, 2023
 """
 
 import time
@@ -37,7 +37,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     idxDict['y'  ] = 1
 
     #%% model declaration
-    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.11.3 - April 11, 2023')
+    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.11.4 - April 13, 2023')
 
     pIndOutputResults = [j for i,j in idxDict.items() if i == pIndOutputResults][0]
     pIndLogConsole    = [j for i,j in idxDict.items() if i == pIndLogConsole   ][0]
@@ -52,6 +52,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     TotalObjectiveFunction    (mTEPES, mTEPES, pIndLogConsole)
     InvestmentModelFormulation(mTEPES, mTEPES, pIndLogConsole)
 
+    pIndFirstPeriodScenario = 1
     # iterative model formulation for each stage of a year
     for p,sc,st in mTEPES.ps*mTEPES.stt:
         # activate only load levels to formulate
@@ -82,7 +83,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
             print('Writing LP file                        ... ', round(WritingLPFileTime), 's')
 
         # initialize parameter for dual variables
-        if p == mTEPES.pp.first() and sc == mTEPES.scc.first():
+        if pIndFirstPeriodScenario == 1:
             pDuals = {}
 
         if (len(mTEPES.gc) == 0 or (len(mTEPES.gc) > 0 and mTEPES.pIndBinGenInvest() == 2)) and (len(mTEPES.gd) == 0 or (len(mTEPES.gd) > 0 and mTEPES.pIndBinGenRetire() == 2)) and (len(mTEPES.lc) == 0 or (len(mTEPES.lc) > 0 and mTEPES.pIndBinNetInvest() == 2)):
@@ -96,7 +97,11 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
                     c.deactivate()
         else:
             # there are investment decisions (it is an expansion and operation model)
-            ProblemSolving(DirName, CaseName, SolverName, mTEPES, mTEPES, pIndLogConsole, p, sc, pDuals)
+            ProblemSolving(DirName, CaseName, SolverName, mTEPES, mTEPES, pIndLogConsole, p, sc, pIndFirstPeriodScenario, pDuals)
+
+        # initialize parameter for dual variables
+        if  pIndFirstPeriodScenario == 1:
+            pIndFirstPeriodScenario =  0
 
     mTEPES.del_component(mTEPES.st)
     mTEPES.del_component(mTEPES.n )
