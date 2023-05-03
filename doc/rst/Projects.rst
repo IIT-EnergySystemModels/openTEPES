@@ -32,7 +32,7 @@ The model has being used in these research projects:
     It will further enhance modelling capacity to assess the feasibility and desirability of Paris-compliant mitigation pathways, their interplay with adaptation, circular economy, and other SDGs,
     their distributional and equity effects, and their resilience to extremes, as well as robust risk management and investment strategies.
 
-.. image:: ../img/DIAMOND_prj.jpg
+.. image:: ../img/DIAMOND_prj.png
    :scale: 30%
    :align: center
 
