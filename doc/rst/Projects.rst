@@ -32,6 +32,10 @@ The model has being used in these research projects:
     It will further enhance modelling capacity to assess the feasibility and desirability of Paris-compliant mitigation pathways, their interplay with adaptation, circular economy, and other SDGs,
     their distributional and equity effects, and their resilience to extremes, as well as robust risk management and investment strategies.
 
+.. image:: ../img/DIAMOND_prj.jpg
+   :scale: 30%
+   :align: center
+
 - `Application of the ENTSO-e cost-benefit analysis method to Aguayo II pumped-hydro storage <https://www.iit.comillas.edu/proyectos/mostrar_proyecto.php.en?nombre_abreviado=Repsol_AguayoII>`_, developed for **Repsol**.
   June 2022. `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `L. Olmos <https://www.iit.comillas.edu/people/olmos>`_, `L. Sigrist <https://www.iit.comillas.edu/people/lsigrist>`_
 
