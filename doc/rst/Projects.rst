@@ -19,8 +19,7 @@ The model has being used in these research projects:
    :align: center
 
 - Local markets for energy communities: designing efficient markets and assessing the integration from the electricity system perspective (OptiREC), developed for the **Ministry of Science and Innovation/State Research Agency** (10.13039/501100011033) under the program **Strategic projects oriented to the ecological transition and digital transition** with **NextGenerationEU/PRTR** funds (TED2021-131365B-C43). December 2022 - November 2024.
-  `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `J.P. Chaves <https://www.iit.comillas.edu/people/jchaves>`_, `J.M. Latorre <https://www.iit.comillas.edu/people/jesuslc>`_, `M. Troncia <https://www.iit.comillas.edu/people/mtroncia>`_,
-  `S.A. Mansouri <https://www.iit.comillas.edu/people/smansouri>`_, `O.M. Valarezo <https://www.iit.comillas.edu/people/ovalarezo>`_
+  `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `J.P. Chaves <https://www.iit.comillas.edu/people/jchaves>`_, `J.M. Latorre <https://www.iit.comillas.edu/people/jesuslc>`_, `M. Troncia <https://www.iit.comillas.edu/people/mtroncia>`_, `O.M. Valarezo <https://www.iit.comillas.edu/people/ovalarezo>`_
 
 .. image:: ../img/ColabPP.jpg
    :scale: 30%
