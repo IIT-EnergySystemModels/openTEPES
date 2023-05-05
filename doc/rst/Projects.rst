@@ -33,7 +33,7 @@ The model has being used in these research projects:
     their distributional and equity effects, and their resilience to extremes, as well as robust risk management and investment strategies.
 
 .. image:: ../img/DIAMOND_prj.jpg
-   :scale: 30%
+   :scale: 20%
    :align: center
 
 - `Application of the ENTSO-e cost-benefit analysis method to Aguayo II pumped-hydro storage <https://www.iit.comillas.edu/proyectos/mostrar_proyecto.php.en?nombre_abreviado=Repsol_AguayoII>`_, developed for **Repsol**.
