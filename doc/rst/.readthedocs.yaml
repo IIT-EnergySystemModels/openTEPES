@@ -20,11 +20,10 @@ sphinx:
    configuration: conf.py
 
 # If using Sphinx, optionally build your docs in additional formats such as PDF
-# formats:
-#    - pdf
+formats:
+   - pdf
 
 # # Optionally declare the Python requirements required to build your docs
 python:
    install:
-   # - OpenSSL: 1.1.1
    - requirements: requirements.txt
