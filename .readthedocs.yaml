@@ -23,8 +23,8 @@ sphinx:
 # formats:
 #    - pdf
 
-# Optionally declare the Python requirements required to build your docs
-python:
-   install:
-   - OpenSSL: 1.1.1
-   # - requirements: docs/requirements.txt
+# # Optionally declare the Python requirements required to build your docs
+# python:
+#    install:
+#    # - OpenSSL: 1.1.1
+#    - requirements: docs/requirements.txt
