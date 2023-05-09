@@ -24,7 +24,7 @@ sphinx:
 #    - pdf
 
 # # Optionally declare the Python requirements required to build your docs
-# python:
-#    install:
-#    # - OpenSSL: 1.1.1
-#    - requirements: docs/requirements.txt
+python:
+   install:
+   # - OpenSSL: 1.1.1
+   - requirements: requirements.txt
