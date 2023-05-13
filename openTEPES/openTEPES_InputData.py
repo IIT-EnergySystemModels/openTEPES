@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 11, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 13, 2023
 """
 
 import datetime
@@ -351,10 +351,10 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.st  = Set(initialize=mTEPES.stt,         ordered=True , doc='stages'               , filter=lambda mTEPES,stt     :  stt    in mTEPES.stt and pStageWeight     [stt] >  0.0)
     mTEPES.n   = Set(initialize=mTEPES.nn,          ordered=True , doc='load levels'          , filter=lambda mTEPES,nn      :  nn     in mTEPES.nn  and pDuration         [nn] >  0  )
     mTEPES.n2  = Set(initialize=mTEPES.nn,          ordered=True , doc='load levels'          , filter=lambda mTEPES,nn      :  nn     in mTEPES.nn  and pDuration         [nn] >  0  )
-    mTEPES.g   = Set(initialize=mTEPES.gg,          ordered=False, doc='generating      units', filter=lambda mTEPES,gg      :  gg     in mTEPES.gg  and (pRatedMaxPower   [gg] >  0.0 or  pRatedMaxCharge[gg] > 0.0) and pPeriodIniGen[gg] <= mTEPES.p.last() and pPeriodFinGen[gg] >= mTEPES.p.first() and pGenToNode.reset_index().set_index(['index']).isin(mTEPES.nd)['Node'][gg])  # excludes generators with empty node
+    mTEPES.g   = Set(initialize=mTEPES.gg,          ordered=False, doc='generating      units', filter=lambda mTEPES,gg      :  gg     in mTEPES.gg  and (pRatedMaxPower   [gg] >  0.0 or                                     pRatedMaxCharge[gg] > 0.0) and pPeriodIniGen[gg] <= mTEPES.p.last() and pPeriodFinGen[gg] >= mTEPES.p.first() and pGenToNode.reset_index().set_index(['index']).isin(mTEPES.nd)['Node'][gg])  # excludes generators with empty node
     mTEPES.t   = Set(initialize=mTEPES.g ,          ordered=False, doc='thermal         units', filter=lambda mTEPES,g       :  g      in mTEPES.g   and pRatedLinearOperCost   [g ] >  0.0)
     mTEPES.r   = Set(initialize=mTEPES.g ,          ordered=False, doc='RES             units', filter=lambda mTEPES,g       :  g      in mTEPES.g   and pRatedLinearOperCost   [g ] == 0.0 and pRatedMaxStorage[g] == 0.0)
-    mTEPES.es  = Set(initialize=mTEPES.g ,          ordered=False, doc='ESS             units', filter=lambda mTEPES,g       :  g      in mTEPES.g   and                                  (pRatedMaxStorage[g] > 0.0   or pRatedMaxCharge[g] > 0.0))
+    mTEPES.es  = Set(initialize=mTEPES.g ,          ordered=False, doc='ESS             units', filter=lambda mTEPES,g       :  g      in mTEPES.g   and                                       (pRatedMaxStorage[g] >  0.0   or pRatedMaxCharge[g] > 0.0))
     mTEPES.gc  = Set(initialize=mTEPES.g ,          ordered=False, doc='candidate       units', filter=lambda mTEPES,g       :  g      in mTEPES.g   and pGenInvestCost    [g ] >  0.0)
     mTEPES.gd  = Set(initialize=mTEPES.g ,          ordered=False, doc='retirement      units', filter=lambda mTEPES,g       :  g      in mTEPES.g   and pGenRetireCost    [g ] != 0.0)
     mTEPES.ec  = Set(initialize=mTEPES.es,          ordered=False, doc='candidate   ESS units', filter=lambda mTEPES,es      :  es     in mTEPES.es  and pGenInvestCost    [es] >  0.0)
@@ -642,6 +642,9 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         pEnergyInflows [pEnergyInflows [[es for es in mTEPES.es if (ar,es) in mTEPES.a2g ]] <  pEpsilon/pTimeStep] = 0.0
         pEnergyOutflows[pEnergyOutflows[[es for es in mTEPES.es if (ar,es) in mTEPES.a2g ]] <  pEpsilon/pTimeStep] = 0.0
 
+        pVariableMinEnergy[pVariableMinEnergy[[g for g in mTEPES.g if (ar,g) in mTEPES.a2g]] < pEpsilon/pTimeStep] = 0.0
+        pVariableMaxEnergy[pVariableMaxEnergy[[g for g in mTEPES.g if (ar,g) in mTEPES.a2g]] < pEpsilon/pTimeStep] = 0.0
+
         # these parameters are in GWh
         pMinStorage    [pMinStorage    [[es for es in mTEPES.es if (ar,es) in mTEPES.a2g ]] <  pEpsilon] = 0.0
         pMaxStorage    [pMaxStorage    [[es for es in mTEPES.es if (ar,es) in mTEPES.a2g ]] <  pEpsilon] = 0.0
@@ -751,7 +754,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.pEnergyOutflows       = Param(mTEPES.psngg, initialize=pEnergyOutflows.stack().to_dict()   , within=NonNegativeReals,    doc='Energy outflows',                        mutable=True)
     mTEPES.pMinStorage           = Param(mTEPES.psngg, initialize=pMinStorage.stack().to_dict()       , within=NonNegativeReals,    doc='ESS Minimum storage capacity'                        )
     mTEPES.pMaxStorage           = Param(mTEPES.psngg, initialize=pMaxStorage.stack().to_dict()       , within=NonNegativeReals,    doc='ESS Maximum storage capacity'                        )
-    mTEPES.pMinEnergy            = Param(mTEPES.psngg, initialize=pVariableMinEnergy.stack().to_dict(), within=NonNegativeReals,    doc='Unit minimum energy demand'                          )
+    mTEPES.pMinEnergy            = Param(mTEPES.psngg, initialize=pVariableMinEnergy.stack().to_dict(), within=NonNegativeReals,    doc='Unit minimum energy demand'                              )
     mTEPES.pMaxEnergy            = Param(mTEPES.psngg, initialize=pVariableMaxEnergy.stack().to_dict(), within=NonNegativeReals,    doc='Unit maximum energy demand'                          )
     mTEPES.pRatedMaxPower        = Param(mTEPES.gg,    initialize=pRatedMaxPower.to_dict()            , within=NonNegativeReals,    doc='Rated maximum power'                                 )
     mTEPES.pRatedMaxCharge       = Param(mTEPES.gg,    initialize=pRatedMaxCharge.to_dict()           , within=NonNegativeReals,    doc='Rated maximum charge'                                )
