@@ -642,9 +642,6 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         pEnergyInflows [pEnergyInflows [[es for es in mTEPES.es if (ar,es) in mTEPES.a2g ]] <  pEpsilon/pTimeStep] = 0.0
         pEnergyOutflows[pEnergyOutflows[[es for es in mTEPES.es if (ar,es) in mTEPES.a2g ]] <  pEpsilon/pTimeStep] = 0.0
 
-        pVariableMinEnergy[pVariableMinEnergy[[g for g in mTEPES.g if (ar,g) in mTEPES.a2g]] < pEpsilon/pTimeStep] = 0.0
-        pVariableMaxEnergy[pVariableMaxEnergy[[g for g in mTEPES.g if (ar,g) in mTEPES.a2g]] < pEpsilon/pTimeStep] = 0.0
-
         # these parameters are in GWh
         pMinStorage    [pMinStorage    [[es for es in mTEPES.es if (ar,es) in mTEPES.a2g ]] <  pEpsilon] = 0.0
         pMaxStorage    [pMaxStorage    [[es for es in mTEPES.es if (ar,es) in mTEPES.a2g ]] <  pEpsilon] = 0.0
