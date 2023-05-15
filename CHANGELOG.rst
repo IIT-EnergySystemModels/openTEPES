@@ -1,9 +1,13 @@
 Change Log
 =============
 
-[4.11.4] - 2023-04-13
+[4.11.6] - 2023-05-15
 --------------------
-- [CHANGED] detection of the first period and scenario solved
+- [CHANGED] adapt figures to altair 5.0.0
+
+[4.11.5] - 2023-05-13
+--------------------
+- [CHANGED] fix some typos
 
 [4.11.3] - 2023-04-11
 --------------------
