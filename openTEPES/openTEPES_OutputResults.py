@@ -55,13 +55,12 @@ def AreaPlots(period, scenario, df, Category, X, Y, OperationType):
     # alt.data_transformers.enable('json')
     alt.data_transformers.disable_max_rows()
     interval = alt.selection_interval(encodings=['x'])
-    selection = alt.selection_multi(fields=[Category], bind='legend')
+    selection = alt.selection_point(fields=[Category], bind='legend')
 
-    # base  = alt.Chart(Results).mark_area().encode(x=alt.X(C_X, axis=alt.Axis(title='')), y=alt.Y(C_Y, axis=alt.Axis(title=Y)), color=C_C)
-    base  = alt.Chart(Results).mark_area().encode(x=alt.X(C_X, axis=alt.Axis(title='')), y=alt.Y(C_Y, axis=alt.Axis(title=Y)), color=alt.Color(C_C, scale=alt.Scale(scheme='category20c')), opacity=alt.condition(selection, alt.value(1), alt.value(0.2))).add_selection(selection)
-    chart = base.encode(x=alt.X(C_X, axis=alt.Axis(title=''), scale=alt.Scale(domain=interval.ref()))).properties(width=1200, height=450)
-    view  = base.add_selection(interval).properties(width=1200, height=50)
-    plot  = chart & view
+    base  = alt.Chart(Results).mark_area().encode(x=alt.X(C_X, axis=alt.Axis(title='')), y=alt.Y(C_Y, axis=alt.Axis(title=Y)), color=alt.Color(C_C, scale=alt.Scale(scheme='category20c')), opacity=alt.condition(selection, alt.value(1), alt.value(0.2))).add_params(selection)
+    chart = base.encode(alt.X(C_X, axis=alt.Axis(title='')).scale(domain=interval)).properties(width=1200, height=450)
+    view  = base.add_params(interval).properties(width=1200, height=50)
+    plot  = alt.vconcat(chart, view)
 
     return plot
 
@@ -86,13 +85,12 @@ def LinePlots(period, scenario, df, Category, X, Y, OperationType):
     # alt.data_transformers.enable('json')
     alt.data_transformers.disable_max_rows()
     interval = alt.selection_interval(encodings=['x'])
-    selection = alt.selection_multi(fields=[Category], bind='legend')
+    selection = alt.selection_point(fields=[Category], bind='legend')
 
-    # base  = alt.Chart(Results).mark_line().encode(x=alt.X(C_X, axis=alt.Axis(title='')), y=alt.Y(C_Y, axis=alt.Axis(title=Y)), color=C_C)
-    base  = alt.Chart(Results).mark_line().encode(x=alt.X(C_X, axis=alt.Axis(title='')), y=alt.Y(C_Y, axis=alt.Axis(title=Y)), color=alt.Color(C_C, scale=alt.Scale(scheme='category20c')), opacity=alt.condition(selection, alt.value(1), alt.value(0.2))).add_selection(selection)
-    chart = base.encode(x=alt.X(C_X, axis=alt.Axis(title=''), scale=alt.Scale(domain=interval.ref()))).properties(width=1200, height=450)
-    view  = base.add_selection(interval).properties(width=1200, height=50)
-    plot  = chart & view
+    base  = alt.Chart(Results).mark_line().encode(x=alt.X(C_X, axis=alt.Axis(title='')), y=alt.Y(C_Y, axis=alt.Axis(title=Y)), color=alt.Color(C_C, scale=alt.Scale(scheme='category20c')), opacity=alt.condition(selection, alt.value(1), alt.value(0.2))).add_params(selection)
+    chart = base.encode(alt.X(C_X, axis=alt.Axis(title='')).scale(domain=interval)).properties(width=1200, height=450)
+    view  = base.add_params(interval).properties(width=1200, height=50)
+    plot  = alt.vconcat(chart, view)
 
     return plot
 
