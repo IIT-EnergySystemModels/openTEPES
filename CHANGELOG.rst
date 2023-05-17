@@ -1,6 +1,10 @@
 Change Log
 =============
 
+[4.11.7] - 2023-05-17
+--------------------
+- [CHANGED] reorganizing the ifs in model formulation
+
 [4.11.6] - 2023-05-15
 --------------------
 - [CHANGED] adapt figures to altair 5.0.0
