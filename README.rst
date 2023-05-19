@@ -18,9 +18,9 @@
    :target: https://opentepes.readthedocs.io/en/latest/index.html
    :alt: docs
 
-.. image:: https://img.shields.io/badge/License-GPL%20v3-blue.svg
+.. image:: https://img.shields.io/badge/License-AGPL%20v3-blue.svg
    :target: https://github.com/IIT-EnergySystemModels/openTEPES/blob/master/LICENSE
-   :alt: GPL
+   :alt: AGPL
 
 .. image:: https://pepy.tech/badge/openTEPES
    :target: https://pepy.tech/project/openTEPES
