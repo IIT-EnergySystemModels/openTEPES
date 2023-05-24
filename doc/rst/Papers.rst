@@ -4,7 +4,7 @@ Publications
 =================
 The model has being used in these publications:
 
-* A. Ramos "`Ayudando en los estudios eléctricos para hacer la transición energética <https://pascua.iit.comillas.edu/aramos/papers/OptiMad_openTEPES.pdf>`_". OptiMad 2023, Mayo 2023.
+* A. Ramos "Ayudando en los estudios eléctricos para hacer la transición energética". OptiMad 2023, Mayo 2023. (`Presentation <https://pascua.iit.comillas.edu/aramos/papers/OptiMad_openTEPES.pdf>`_)
 
 * J.J. Valentín, J.P. Chaves, P. Linares, A. Ramos "`Análisis de las necesidades de almacenamiento eléctrico de España en el horizonte 2030 <https://www.funcas.es/wp-content/uploads/2023/01/PEE-174_Valentin_Chaves_Linares_Ramos.pdf>`_". Papeles de Energía 174, 72-91, Diciembre 2022.
 
