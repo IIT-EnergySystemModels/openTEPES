@@ -1,6 +1,12 @@
 Change Log
 =============
 
+[4.11.8] - 2023-05-27
+--------------------
+- [CHANGED] introduce some dictionaries to avoid unnecessary computations
+- [CHANGED] change name mTEPES.r to mTEPES.re
+- [CHANGED] simplify some set combinations to reduce time of computation
+
 [4.11.7] - 2023-05-17
 --------------------
 - [CHANGED] reorganizing the ifs in model formulation

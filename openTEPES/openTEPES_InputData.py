@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 13, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 27, 2023
 """
 
 import datetime
@@ -353,7 +353,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.n2  = Set(initialize=mTEPES.nn,          ordered=True , doc='load levels'          , filter=lambda mTEPES,nn      :  nn     in mTEPES.nn  and pDuration         [nn] >  0  )
     mTEPES.g   = Set(initialize=mTEPES.gg,          ordered=False, doc='generating      units', filter=lambda mTEPES,gg      :  gg     in mTEPES.gg  and (pRatedMaxPower   [gg] >  0.0 or                                     pRatedMaxCharge[gg] > 0.0) and pPeriodIniGen[gg] <= mTEPES.p.last() and pPeriodFinGen[gg] >= mTEPES.p.first() and pGenToNode.reset_index().set_index(['index']).isin(mTEPES.nd)['Node'][gg])  # excludes generators with empty node
     mTEPES.t   = Set(initialize=mTEPES.g ,          ordered=False, doc='thermal         units', filter=lambda mTEPES,g       :  g      in mTEPES.g   and pRatedLinearOperCost   [g ] >  0.0)
-    mTEPES.r   = Set(initialize=mTEPES.g ,          ordered=False, doc='RES             units', filter=lambda mTEPES,g       :  g      in mTEPES.g   and pRatedLinearOperCost   [g ] == 0.0 and pRatedMaxStorage[g] == 0.0)
+    mTEPES.re  = Set(initialize=mTEPES.g ,          ordered=False, doc='RES             units', filter=lambda mTEPES,g       :  g      in mTEPES.g   and pRatedLinearOperCost   [g ] == 0.0 and pRatedMaxStorage[g] == 0.0)
     mTEPES.es  = Set(initialize=mTEPES.g ,          ordered=False, doc='ESS             units', filter=lambda mTEPES,g       :  g      in mTEPES.g   and                                       (pRatedMaxStorage[g] >  0.0   or pRatedMaxCharge[g] > 0.0))
     mTEPES.gc  = Set(initialize=mTEPES.g ,          ordered=False, doc='candidate       units', filter=lambda mTEPES,g       :  g      in mTEPES.g   and pGenInvestCost    [g ] >  0.0)
     mTEPES.gd  = Set(initialize=mTEPES.g ,          ordered=False, doc='retirement      units', filter=lambda mTEPES,g       :  g      in mTEPES.g   and pGenRetireCost    [g ] != 0.0)
@@ -373,7 +373,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.shc = Set(initialize=mTEPES.sq,          ordered=False, doc='shunt           cand '                                                                                           )
 
     # non-RES units, they can be committed and also contribute to the operating reserves
-    mTEPES.nr = mTEPES.g - mTEPES.r
+    mTEPES.nr = mTEPES.g - mTEPES.re
 
     # machines able to provide reactive power
     mTEPES.tq = mTEPES.gq - mTEPES.sq
@@ -383,10 +383,12 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
 
     # instrumental sets
     mTEPES.psc   = [(p,sc     )       for p,sc            in mTEPES.p  *mTEPES.sc]
+    mTEPES.psnr  = [(p,sc,  nr)       for p,sc,  nr       in mTEPES.ps *mTEPES.nr]
     mTEPES.psn   = [(p,sc,n   )       for p,sc,n          in mTEPES.ps *mTEPES.n ]
     mTEPES.psng  = [(p,sc,n,g )       for p,sc,n,g        in mTEPES.psn*mTEPES.g ]
     mTEPES.psngg = [(p,sc,n,gg)       for p,sc,n,gg       in mTEPES.psn*mTEPES.gg]
-    mTEPES.psnr  = [(p,sc,n,r )       for p,sc,n,r        in mTEPES.psn*mTEPES.r ]
+    mTEPES.psngc = [(p,sc,n,gc)       for p,sc,n,gc       in mTEPES.psn*mTEPES.gc]
+    mTEPES.psnre = [(p,sc,n,re)       for p,sc,n,re       in mTEPES.psn*mTEPES.re]
     mTEPES.psnnr = [(p,sc,n,nr)       for p,sc,n,nr       in mTEPES.psn*mTEPES.nr]
     mTEPES.psnes = [(p,sc,n,es)       for p,sc,n,es       in mTEPES.psn*mTEPES.es]
     mTEPES.psnec = [(p,sc,n,ec)       for p,sc,n,ec       in mTEPES.psn*mTEPES.ec]
@@ -395,14 +397,19 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.psngt = [(p,sc,n,gt)       for p,sc,n,gt       in mTEPES.psn*mTEPES.gt]
 
     mTEPES.psnla = [(p,sc,n,ni,nf,cc) for p,sc,n,ni,nf,cc in mTEPES.psn*mTEPES.la]
+    mTEPES.psnle = [(p,sc,n,ni,nf,cc) for p,sc,n,ni,nf,cc in mTEPES.psn*mTEPES.le]
     mTEPES.psnln = [(p,sc,n,ni,nf,cc) for p,sc,n,ni,nf,cc in mTEPES.psn*mTEPES.ln]
     mTEPES.psnll = [(p,sc,n,ni,nf,cc) for p,sc,n,ni,nf,cc in mTEPES.psn*mTEPES.ll]
     mTEPES.psnls = [(p,sc,n,ni,nf,cc) for p,sc,n,ni,nf,cc in mTEPES.psn*mTEPES.ls]
 
     mTEPES.pgc   = [(p,gc           ) for p,gc            in mTEPES.p  *mTEPES.gc]
+    mTEPES.pes   = [(p,es           ) for p,es            in mTEPES.p  *mTEPES.es]
     mTEPES.pec   = [(p,ec           ) for p,ec            in mTEPES.p  *mTEPES.ec]
     mTEPES.pgd   = [(p,gd           ) for p,gd            in mTEPES.p  *mTEPES.gd]
+    mTEPES.par   = [(p,ar           ) for p,ar            in mTEPES.p  *mTEPES.ar]
+    mTEPES.pla   = [(p,ni,nf,cc     ) for p,ni,nf,cc      in mTEPES.p  *mTEPES.la]
     mTEPES.plc   = [(p,ni,nf,cc     ) for p,ni,nf,cc      in mTEPES.p  *mTEPES.lc]
+    mTEPES.pll   = [(p,ni,nf,cc     ) for p,ni,nf,cc      in mTEPES.p  *mTEPES.ll]
 
     # assigning a node to an area
     mTEPES.ndar = [(nd,ar) for (nd,zn,ar) in mTEPES.ndzn*mTEPES.ar if (zn,ar) in mTEPES.znar]
@@ -493,10 +500,10 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
 
     # ESS and RES technologies
     mTEPES.ot = Set(initialize=mTEPES.gt, ordered=False, doc='ESS technologies', filter=lambda mTEPES,gt: gt in mTEPES.gt and sum(1 for es in mTEPES.es if (gt,es) in mTEPES.t2g))
-    mTEPES.rt = Set(initialize=mTEPES.gt, ordered=False, doc='RES technologies', filter=lambda mTEPES,gt: gt in mTEPES.gt and sum(1 for r  in mTEPES.r  if (gt,r ) in mTEPES.t2g))
+    mTEPES.rt = Set(initialize=mTEPES.gt, ordered=False, doc='RES technologies', filter=lambda mTEPES,gt: gt in mTEPES.gt and sum(1 for re in mTEPES.re if (gt,re) in mTEPES.t2g))
 
-    mTEPES.psnot = [(p,sc,n,ot) for p,sc,n,ot in mTEPES.ps*mTEPES.n*mTEPES.ot]
-    mTEPES.psnrt = [(p,sc,n,rt) for p,sc,n,rt in mTEPES.ps*mTEPES.n*mTEPES.rt]
+    mTEPES.psnot = [(p,sc,n,ot) for p,sc,n,ot in mTEPES.psn*mTEPES.ot]
+    mTEPES.psnrt = [(p,sc,n,rt) for p,sc,n,rt in mTEPES.psn*mTEPES.rt]
 
     #%% inverse index generator to mutually exclusive generator
     pExclusiveGenToGen = pGenToExclusiveGen.reset_index().set_index('MutuallyExclusive').set_axis(['Generator'], axis=1, copy=False)[['Generator']]
@@ -896,12 +903,12 @@ def SettingUpVariables(OptModel, mTEPES):
         OptModel.vCommitment        = Var(mTEPES.psnnr,         within=UnitInterval,     initialize=0.0,                                                                                        doc='commitment         of the unit                  [0,1]')
         OptModel.vStartUp           = Var(mTEPES.psnnr,         within=UnitInterval,     initialize=0.0,                                                                                        doc='startup            of the unit                  [0,1]')
         OptModel.vShutDown          = Var(mTEPES.psnnr,         within=UnitInterval,     initialize=0.0,                                                                                        doc='shutdown           of the unit                  [0,1]')
-        OptModel.vMaxCommitment     = Var(mTEPES.ps, mTEPES.nr, within=UnitInterval,     initialize=0.0,                                                                                        doc='maximum commitment of the unit                  [0,1]')
+        OptModel.vMaxCommitment     = Var(mTEPES.psnr ,         within=UnitInterval,     initialize=0.0,                                                                                        doc='maximum commitment of the unit                  [0,1]')
     else:
         OptModel.vCommitment        = Var(mTEPES.psnnr,         within=Binary,           initialize=0  ,                                                                                        doc='commitment         of the unit                  {0,1}')
         OptModel.vStartUp           = Var(mTEPES.psnnr,         within=Binary,           initialize=0  ,                                                                                        doc='startup            of the unit                  {0,1}')
         OptModel.vShutDown          = Var(mTEPES.psnnr,         within=Binary,           initialize=0  ,                                                                                        doc='shutdown           of the unit                  {0,1}')
-        OptModel.vMaxCommitment     = Var(mTEPES.ps, mTEPES.nr, within=Binary,           initialize=0  ,                                                                                        doc='maximum commitment of the unit                  {0,1}')
+        OptModel.vMaxCommitment     = Var(mTEPES.psnr ,         within=Binary,           initialize=0  ,                                                                                        doc='maximum commitment of the unit                  {0,1}')
 
     if mTEPES.pIndBinLineCommit() == 0:
         OptModel.vLineCommit        = Var(mTEPES.psnla,         within=UnitInterval,     initialize=0.0,                                                                                        doc='line switching      of the line                 [0,1]')
@@ -942,39 +949,46 @@ def SettingUpVariables(OptModel, mTEPES):
             OptModel.vMaxCommitment[p,sc,  nr].domain = UnitInterval
 
     # existing lines are always committed if no switching decision is modeled
-    for p,sc,n,ni,nf,cc in mTEPES.psn*mTEPES.le:
+    for p,sc,n,ni,nf,cc in mTEPES.psnle:
         if mTEPES.pIndBinLineSwitch[ni,nf,cc] == 0:
             OptModel.vLineCommit  [p,sc,n,ni,nf,cc].fix(1)
             OptModel.vLineOnState [p,sc,n,ni,nf,cc].fix(0)
             OptModel.vLineOffState[p,sc,n,ni,nf,cc].fix(0)
 
-    OptModel.vLineLosses = Var(mTEPES.ps, mTEPES.n, mTEPES.ll, within=NonNegativeReals, bounds=lambda OptModel,p,sc,n,*ll: (0.0,0.5*mTEPES.pLineLossFactor[ll]*max(mTEPES.pLineNTCBck[ll],mTEPES.pLineNTCFrw[ll])), doc='half line losses [GW]')
+    OptModel.vLineLosses = Var(mTEPES.psnll, within=NonNegativeReals, bounds=lambda OptModel,p,sc,n,*ll: (0.0,0.5*mTEPES.pLineLossFactor[ll]*max(mTEPES.pLineNTCBck[ll],mTEPES.pLineNTCFrw[ll])), doc='half line losses [GW]')
     if mTEPES.pIndBinSingleNode() == 0:
-        OptModel.vFlow   = Var(mTEPES.ps, mTEPES.n, mTEPES.la, within=Reals,            bounds=lambda OptModel,p,sc,n,*la: (                                      -mTEPES.pLineNTCBck[la],mTEPES.pLineNTCFrw[la]),  doc='flow             [GW]')
+        OptModel.vFlow   = Var(mTEPES.psnla, within=Reals,            bounds=lambda OptModel,p,sc,n,*la: (                                      -mTEPES.pLineNTCBck[la],mTEPES.pLineNTCFrw[la]),  doc='flow             [GW]')
     else:
-        OptModel.vFlow   = Var(mTEPES.ps, mTEPES.n, mTEPES.la, within=Reals,                                                                                                                                        doc='flow             [GW]')
-    OptModel.vTheta      = Var(mTEPES.ps, mTEPES.n, mTEPES.nd, within=Reals,            bounds=lambda OptModel,p,sc,n, nd: (                            -mTEPES.pMaxTheta[p,sc,n,nd],mTEPES.pMaxTheta[p,sc,n,nd]),  doc='voltage angle   [rad]')
+        OptModel.vFlow   = Var(mTEPES.psnla, within=Reals,                                                                                                                                        doc='flow             [GW]')
+    OptModel.vTheta      = Var(mTEPES.psnnd, within=Reals,            bounds=lambda OptModel,p,sc,n, nd: (                            -mTEPES.pMaxTheta[p,sc,n,nd],mTEPES.pMaxTheta[p,sc,n,nd]),  doc='voltage angle   [rad]')
 
     # fix the must-run units and their output
-    for p,sc,n,g  in mTEPES.psn*mTEPES.g :
+    for p,sc,n,g  in mTEPES.psng :
         # must run units must produce at least their minimum output
         if mTEPES.pMustRun[g] == 1:
             OptModel.vTotalOutput[p,sc,n,g].setlb(mTEPES.pMinPower[p,sc,n,g])
         # if no max power, no total output
         if mTEPES.pMaxPower[p,sc,n,g] == 0.0:
             OptModel.vTotalOutput[p,sc,n,g].fix(0.0)
-    #for p,sc,n,r  in mTEPES.psn*mTEPES.r :
+    #for p,sc,n,re in mTEPES.psnre:
     #    if mTEPES.pMinPower[p,sc,n,r] == mTEPES.pMaxPower[p,sc,n,r] and mTEPES.pLinearOMCost[r] == 0.0:
     #        OptModel.vTotalOutput[p,sc,n,r].fix(mTEPES.pMaxPower[p,sc,n,r])
 
     for p,sc,n,nr in mTEPES.psnnr:
         # must run units or units with no minimum power or ESS existing units are always committed and must produce at least their minimum output
         # not applicable to mutually exclusive units
-        if (mTEPES.pMustRun[nr] == 1 or (mTEPES.pMinPower[p,sc,n,nr] == 0.0 and mTEPES.pRatedConstantVarCost[nr] == 0.0) or nr in mTEPES.es) and nr not in mTEPES.ec and sum(1 for g in mTEPES.nr if (nr,g) in mTEPES.g2g or (g,nr) in mTEPES.g2g) == 0:
-            OptModel.vCommitment    [p,sc,n,nr].fix(1)
-            OptModel.vStartUp       [p,sc,n,nr].fix(0)
-            OptModel.vShutDown      [p,sc,n,nr].fix(0)
-            OptModel.vMaxCommitment [p,sc,  nr].fix(1)
+        if   len(mTEPES.g2g) == 0:
+            if (mTEPES.pMustRun[nr] == 1 or (mTEPES.pMinPower[p,sc,n,nr] == 0.0 and mTEPES.pRatedConstantVarCost[nr] == 0.0) or nr in mTEPES.es) and nr not in mTEPES.ec:
+                OptModel.vCommitment    [p,sc,n,nr].fix(1)
+                OptModel.vStartUp       [p,sc,n,nr].fix(0)
+                OptModel.vShutDown      [p,sc,n,nr].fix(0)
+                OptModel.vMaxCommitment [p,sc,  nr].fix(1)
+        elif len(mTEPES.g2g) >  0 and sum(1 for g in mTEPES.nr if (nr,g) in mTEPES.g2g or (g,nr) in mTEPES.g2g) == 0:
+            if (mTEPES.pMustRun[nr] == 1 or (mTEPES.pMinPower[p,sc,n,nr] == 0.0 and mTEPES.pRatedConstantVarCost[nr] == 0.0) or nr in mTEPES.es) and nr not in mTEPES.ec:
+                OptModel.vCommitment    [p,sc,n,nr].fix(1)
+                OptModel.vStartUp       [p,sc,n,nr].fix(0)
+                OptModel.vShutDown      [p,sc,n,nr].fix(0)
+                OptModel.vMaxCommitment [p,sc,  nr].fix(1)
         # if min and max power coincide there are neither second block, nor operating reserve
         if  mTEPES.pMaxPower2ndBlock[p,sc,n,nr] ==  0.0:
             OptModel.vOutput2ndBlock[p,sc,n,nr].fix(0.0)
@@ -1020,7 +1034,7 @@ def SettingUpVariables(OptModel, mTEPES):
 
         if len(mTEPES.n):
             # determine the first load level of each stage
-            n1 = next(iter(mTEPES.ps*mTEPES.n))
+            n1 = next(iter(mTEPES.psn))
             # commit the units and their output at the first load level of each stage
             pSystemOutput = 0.0
             for nr in mTEPES.nr:
@@ -1032,7 +1046,7 @@ def SettingUpVariables(OptModel, mTEPES):
             # determine the initial committed units and their output at the first load level of each period, scenario, and stage
             for go in mTEPES.go:
                 if pSystemOutput < sum(mTEPES.pDemand[n1,nd] for nd in mTEPES.nd) and mTEPES.pMustRun[go] != 1:
-                    if go in mTEPES.r:
+                    if go in mTEPES.re:
                         mTEPES.pInitialOutput[n1,go] = mTEPES.pMaxPower[n1,go]
                     else:
                         mTEPES.pInitialOutput[n1,go] = mTEPES.pMinPower[n1,go]
@@ -1074,13 +1088,13 @@ def SettingUpVariables(OptModel, mTEPES):
             OptModel.vEnergyInflows     [p,sc,n,ec].fix(0.0)
 
     # if no operating reserve is required no variables are needed
-    for p,sc,n,ar,nr in mTEPES.psn*mTEPES.ar*mTEPES.nr:
+    for p,sc,n,ar,nr in mTEPES.psnar*mTEPES.nr:
         if (ar,nr) in mTEPES.a2g:
             if mTEPES.pOperReserveUp    [p,sc,n,ar] ==  0.0:
                 OptModel.vReserveUp     [p,sc,n,nr].fix(0.0)
             if mTEPES.pOperReserveDw    [p,sc,n,ar] ==  0.0:
                 OptModel.vReserveDown   [p,sc,n,nr].fix(0.0)
-    for p,sc,n,ar,es in mTEPES.psn*mTEPES.ar*mTEPES.es:
+    for p,sc,n,ar,es in mTEPES.psnar*mTEPES.es:
         if (ar,es) in mTEPES.a2g:
             if mTEPES.pOperReserveUp    [p,sc,n,ar] ==  0.0:
                 OptModel.vESSReserveUp  [p,sc,n,es].fix(0.0)
@@ -1122,7 +1136,7 @@ def SettingUpVariables(OptModel, mTEPES):
             for sc,n in mTEPES.sc*mTEPES.n:
                 OptModel.vTotalOutput   [p,sc,n,g].fix(0.0)
 
-    for p,sc,nr in mTEPES.ps*mTEPES.nr:
+    for p,sc,nr in mTEPES.psnr:
         if nr not in mTEPES.gc and (mTEPES.pPeriodIniGen[nr] > p or mTEPES.pPeriodFinGen[nr] < p):
             OptModel.vMaxCommitment[p,sc,nr].fix(0)
             for n in mTEPES.n:
@@ -1133,7 +1147,7 @@ def SettingUpVariables(OptModel, mTEPES):
                 OptModel.vStartUp       [p,sc,n,nr].fix(0  )
                 OptModel.vShutDown      [p,sc,n,nr].fix(0  )
 
-    for p,es in mTEPES.p*mTEPES.es:
+    for p,es in mTEPES.pes:
         if es not in mTEPES.gc and (mTEPES.pPeriodIniGen[es] > p or mTEPES.pPeriodFinGen[es] < p):
             for sc,n in mTEPES.sc*mTEPES.n:
                 OptModel.vEnergyOutflows[p,sc,n,es].fix(0.0)
@@ -1146,7 +1160,7 @@ def SettingUpVariables(OptModel, mTEPES):
                 mTEPES.pIniInventory    [p,sc,n,es] =   0.0
                 mTEPES.pEnergyInflows   [p,sc,n,es] =   0.0
 
-    for p,ni,nf,cc in mTEPES.p*mTEPES.la:
+    for p,ni,nf,cc in mTEPES.pla:
         if (ni,nf,cc) not in mTEPES.lc and (mTEPES.pPeriodIniNet[ni,nf,cc] > p or mTEPES.pPeriodFinNet[ni,nf,cc] < p):
             for sc,n in mTEPES.sc*mTEPES.n:
                 OptModel.vFlow        [p,sc,n,ni,nf,cc].fix(0.0)
@@ -1154,7 +1168,7 @@ def SettingUpVariables(OptModel, mTEPES):
                 OptModel.vLineOnState [p,sc,n,ni,nf,cc].fix(0  )
                 OptModel.vLineOffState[p,sc,n,ni,nf,cc].fix(0  )
 
-    for p,ni,nf,cc in mTEPES.p*mTEPES.ll:
+    for p,ni,nf,cc in mTEPES.pll:
         if (ni,nf,cc) not in mTEPES.lc and (mTEPES.pPeriodIniNet[ni,nf,cc] > p or mTEPES.pPeriodFinNet[ni,nf,cc] < p):
             for sc,n in mTEPES.sc*mTEPES.n:
                 OptModel.vLineLosses  [p,sc,n,ni,nf,cc].fix(0.0)
