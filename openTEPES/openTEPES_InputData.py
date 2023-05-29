@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 27, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 29, 2023
 """
 
 import datetime
@@ -7,6 +7,7 @@ import time
 import math
 import os
 import pandas        as pd
+from   collections   import defaultdict
 from   pyomo.environ import DataPortal, Set, Param, Var, Binary, NonNegativeReals, PositiveReals, PositiveIntegers, NonNegativeIntegers, Reals, UnitInterval, Any
 
 
@@ -627,34 +628,45 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pDemandPos        = pDemand.where(pDemand >= 0.0, other=0.0)
     pDemandNeg        = pDemand.where(pDemand <  0.0, other=0.0)
 
+    # generators to area (e2a)
+    g2a = defaultdict(list)
+    for ar,g  in mTEPES.ar*mTEPES.g :
+        g2a[ar].append(g )
+    e2a = defaultdict(list)
+    for ar,es in mTEPES.ar*mTEPES.es:
+        e2a[ar].append(es)
+
+    n2a = defaultdict(list)
+    for nd,ar in mTEPES.ndar:
+        n2a[ar].append(nd)
+
     # small values are converted to 0
     pPeakDemand         = pd.Series([0.0 for ar in mTEPES.ar], index=mTEPES.ar)
     for ar in mTEPES.ar:
         # values < 1e-5 times the maximum demand for each area (an area is related to operating reserves procurement, i.e., country) are converted to 0
-        pPeakDemand[ar] = pDemand      [[nd for nd in mTEPES.nd if (nd,ar) in mTEPES.ndar]].sum(axis=1).max()
+        pPeakDemand[ar] = pDemand      [[nd for nd in n2a[ar]]].sum(axis=1).max()
         pEpsilon        = pPeakDemand[ar]*2.5e-5
         # values < 1e-5 times the maximum system demand are converted to 0
         # pEpsilon      = pDemand.sum(axis=1).max()*1e-5
 
         # these parameters are in GW
-        pDemandPos     [pDemandPos     [[nd for nd in mTEPES.nd if (nd,ar) in mTEPES.ndar]] <  pEpsilon] = 0.0
-        pDemandNeg     [pDemandNeg     [[nd for nd in mTEPES.nd if (nd,ar) in mTEPES.ndar]] > -pEpsilon] = 0.0
-        pSystemInertia [pSystemInertia [[                                              ar]] <  pEpsilon] = 0.0
-        pOperReserveUp [pOperReserveUp [[                                              ar]] <  pEpsilon] = 0.0
-        pOperReserveDw [pOperReserveDw [[                                              ar]] <  pEpsilon] = 0.0
-        pMinPower      [pMinPower      [[g  for  g in mTEPES.g  if (ar,g ) in mTEPES.a2g ]] <  pEpsilon] = 0.0
-        pMaxPower      [pMaxPower      [[g  for  g in mTEPES.g  if (ar,g ) in mTEPES.a2g ]] <  pEpsilon] = 0.0
-        pMinCharge     [pMinCharge     [[es for es in mTEPES.es if (ar,es) in mTEPES.a2g ]] <  pEpsilon] = 0.0
-        pMaxCharge     [pMaxCharge     [[es for es in mTEPES.es if (ar,es) in mTEPES.a2g ]] <  pEpsilon] = 0.0
-        pEnergyInflows [pEnergyInflows [[es for es in mTEPES.es if (ar,es) in mTEPES.a2g ]] <  pEpsilon/pTimeStep] = 0.0
-        pEnergyOutflows[pEnergyOutflows[[es for es in mTEPES.es if (ar,es) in mTEPES.a2g ]] <  pEpsilon/pTimeStep] = 0.0
-
+        pDemandPos     [pDemandPos     [[nd for nd in n2a[ar]]] <  pEpsilon] = 0.0
+        pDemandNeg     [pDemandNeg     [[nd for nd in n2a[ar]]] > -pEpsilon] = 0.0
+        pSystemInertia [pSystemInertia [[                 ar ]] <  pEpsilon] = 0.0
+        pOperReserveUp [pOperReserveUp [[                 ar ]] <  pEpsilon] = 0.0
+        pOperReserveDw [pOperReserveDw [[                 ar ]] <  pEpsilon] = 0.0
+        pMinPower      [pMinPower      [[g  for  g in g2a[ar]]] <  pEpsilon] = 0.0
+        pMaxPower      [pMaxPower      [[g  for  g in g2a[ar]]] <  pEpsilon] = 0.0
+        pMinCharge     [pMinCharge     [[es for es in e2a[ar]]] <  pEpsilon] = 0.0
+        pMaxCharge     [pMaxCharge     [[es for es in e2a[ar]]] <  pEpsilon] = 0.0
+        pEnergyInflows [pEnergyInflows [[es for es in e2a[ar]]] <  pEpsilon/pTimeStep] = 0.0
+        pEnergyOutflows[pEnergyOutflows[[es for es in e2a[ar]]] <  pEpsilon/pTimeStep] = 0.0
         # these parameters are in GWh
-        pMinStorage    [pMinStorage    [[es for es in mTEPES.es if (ar,es) in mTEPES.a2g ]] <  pEpsilon] = 0.0
-        pMaxStorage    [pMaxStorage    [[es for es in mTEPES.es if (ar,es) in mTEPES.a2g ]] <  pEpsilon] = 0.0
-        pIniInventory  [pIniInventory  [[es for es in mTEPES.es if (ar,es) in mTEPES.a2g ]] <  pEpsilon] = 0.0
+        pMinStorage    [pMinStorage    [[es for es in e2a[ar]]] <  pEpsilon] = 0.0
+        pMaxStorage    [pMaxStorage    [[es for es in e2a[ar]]] <  pEpsilon] = 0.0
+        pIniInventory  [pIniInventory  [[es for es in e2a[ar]]] <  pEpsilon] = 0.0
 
-        pInitialInventory.update(pd.Series([0 for es in mTEPES.es if (ar,es) in mTEPES.a2g and pInitialInventory[es] < pEpsilon], index=[es for es in mTEPES.es if (ar,es) in mTEPES.a2g and pInitialInventory[es] < pEpsilon], dtype='float64'))
+        pInitialInventory.update(pd.Series([0 for es in e2a[ar] if pInitialInventory[es] < pEpsilon], index=[es for es in e2a[ar] if pInitialInventory[es] < pEpsilon], dtype='float64'))
 
         pLineNTCFrw.update(pd.Series([0.0 for ni,nf,cc in mTEPES.la if pLineNTCFrw[ni,nf,cc] < pEpsilon], index=[(ni,nf,cc) for ni,nf,cc in mTEPES.la if pLineNTCFrw[ni,nf,cc] < pEpsilon], dtype='float64'))
         pLineNTCBck.update(pd.Series([0.0 for ni,nf,cc in mTEPES.la if pLineNTCBck[ni,nf,cc] < pEpsilon], index=[(ni,nf,cc) for ni,nf,cc in mTEPES.la if pLineNTCBck[ni,nf,cc] < pEpsilon], dtype='float64'))
@@ -666,7 +678,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         pMaxCharge2ndBlock = pMaxCharge - pMinCharge
 
         pMaxPower2ndBlock [pMaxPower2ndBlock [[nr for nr in mTEPES.nr if (ar,nr) in mTEPES.a2g]] < pEpsilon] = 0.0
-        pMaxCharge2ndBlock[pMaxCharge2ndBlock[[es for es in mTEPES.es if (ar,es) in mTEPES.a2g]] < pEpsilon] = 0.0
+        pMaxCharge2ndBlock[pMaxCharge2ndBlock[[es for es in e2a[ar]]] < pEpsilon] = 0.0
 
     # replace < 0.0 by 0.0
     pMaxPower2ndBlock  = pMaxPower2ndBlock.where (pMaxPower2ndBlock  > 0.0, other=0.0)
@@ -1029,8 +1041,8 @@ def SettingUpVariables(OptModel, mTEPES):
         # activate only period, scenario, and load levels to formulate
         mTEPES.del_component(mTEPES.st)
         mTEPES.del_component(mTEPES.n )
-        mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in mTEPES.stt and st == stt and mTEPES.pStageWeight[stt] and sum(1 for (st,nn) in mTEPES.s2n))
-        mTEPES.n  = Set(initialize=mTEPES.nn , ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in                              mTEPES.pDuration         and           (st,nn) in mTEPES.s2n)
+        mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in st == stt and mTEPES.pStageWeight and sum(1 for (st,nn) in mTEPES.s2n))
+        mTEPES.n  = Set(initialize=mTEPES.nn , ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in               mTEPES.pDuration    and           (st,nn) in mTEPES.s2n)
 
         if len(mTEPES.n):
             # determine the first load level of each stage
@@ -1068,8 +1080,8 @@ def SettingUpVariables(OptModel, mTEPES):
     # activate all the periods, scenarios, and load levels again
     mTEPES.del_component(mTEPES.st)
     mTEPES.del_component(mTEPES.n )
-    mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in mTEPES.stt and mTEPES.pStageWeight[stt] and sum(1 for (stt,nn) in mTEPES.s2n))
-    mTEPES.n  = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in                mTEPES.pDuration                                              )
+    mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in mTEPES.pStageWeight and sum(1 for (stt,nn) in mTEPES.s2n))
+    mTEPES.n  = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in mTEPES.pDuration                                         )
 
     # fixing the ESS inventory at the end of the following pCycleTimeStep (daily, weekly, monthly) if between storage limits, i.e., for daily ESS is fixed at the end of the week, for weekly/monthly ESS is fixed at the end of the year
     for p,sc,n,es in mTEPES.psnes:
