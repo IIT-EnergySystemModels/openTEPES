@@ -4,6 +4,7 @@ Change Log
 [4.11.9] - 2023-05-30
 --------------------
 - [FIXED] fix error in output results
+- [FIXED] fix computation of MarginalIncrementalGenerator output file
 
 [4.11.8] - 2023-05-29
 --------------------
