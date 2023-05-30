@@ -3,6 +3,7 @@ Change Log
 
 [4.11.9] - 2023-05-30
 --------------------
+- [CHANGED] avoid the repeated computation of modulo function with n
 - [FIXED] fix error in output results
 - [FIXED] fix computation of MarginalIncrementalGenerator output file
 

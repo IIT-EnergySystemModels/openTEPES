@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 29, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 30, 2023
 """
 
 import datetime
@@ -814,6 +814,10 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.pGenLoRetire          = Param(mTEPES.gg,    initialize=pGenLoRetire.to_dict()              , within=NonNegativeReals,    doc='Lower bound of the retirement decision', mutable=True)
     mTEPES.pGenUpRetire          = Param(mTEPES.gg,    initialize=pGenUpRetire.to_dict()              , within=NonNegativeReals,    doc='Upper bound of the retirement decision', mutable=True)
 
+    mTEPES.nCycleTimeStep        = [(n,gg) for n,gg in mTEPES.n*mTEPES.gg if mTEPES.n.ord(n) % mTEPES.pCycleTimeStep   [gg] == 0]
+    mTEPES.nOutflowsTimeStep     = [(n,gg) for n,gg in mTEPES.n*mTEPES.gg if mTEPES.n.ord(n) % mTEPES.pOutflowsTimeStep[gg] == 0]
+    mTEPES.nEnergyTimeStep       = [(n,gg) for n,gg in mTEPES.n*mTEPES.gg if mTEPES.n.ord(n) % mTEPES.pEnergyTimeStep  [gg] == 0]
+
     mTEPES.pLoadLevelDuration    = Param(mTEPES.n,     initialize=0                                   , within=NonNegativeIntegers, doc='Load level duration',                    mutable=True)
     for n in mTEPES.n:
         mTEPES.pLoadLevelDuration[n] = mTEPES.pLoadLevelWeight[n] * mTEPES.pDuration[n]
@@ -1244,19 +1248,20 @@ def SettingUpVariables(OptModel, mTEPES):
 
         # detect inventory infeasibility
         for p,sc,n in mTEPES.psn:
-            if   mTEPES.n.ord(n) == mTEPES.pCycleTimeStep[es]                                                      and mTEPES.pMaxCharge[p,sc,n,es] + mTEPES.pMaxPower[p,sc,n,es]:
-                if mTEPES.pIniInventory[p,sc,n,es]()                                      + sum(mTEPES.pDuration[n2]()*(mTEPES.pEnergyInflows[p,sc,n2,es]() - mTEPES.pMinPower[p,sc,n2,es] + mTEPES.pEfficiency[es]*mTEPES.pMaxCharge[p,sc,n2,es]) for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pCycleTimeStep[es]:mTEPES.n.ord(n)]) < mTEPES.pMinStorage[p,sc,n,es]:
-                    print('### Inventory equation violation ', p, sc, n, es)
-                    assert (0 == 1)
-            elif mTEPES.n.ord(n) >  mTEPES.pCycleTimeStep[es] and mTEPES.n.ord(n) % mTEPES.pCycleTimeStep[es] == 0 and mTEPES.pMaxCharge[p,sc,n,es] + mTEPES.pMaxPower[p,sc,n,es]:
-                if mTEPES.pMaxStorage[p,sc,mTEPES.n.prev(n,mTEPES.pCycleTimeStep[es]),es] + sum(mTEPES.pDuration[n2]()*(mTEPES.pEnergyInflows[p,sc,n2,es]() - mTEPES.pMinPower[p,sc,n2,es] + mTEPES.pEfficiency[es]*mTEPES.pMaxCharge[p,sc,n2,es]) for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pCycleTimeStep[es]:mTEPES.n.ord(n)]) < mTEPES.pMinStorage[p,sc,n,es]:
-                    print('### Inventory equation violation ', p, sc, n, es)
-                    assert (0 == 1)
+            if mTEPES.pMaxCharge[p,sc,n,es] + mTEPES.pMaxPower[p,sc,n,es]:
+                if   mTEPES.n.ord(n) == mTEPES.pCycleTimeStep[es]                                    :
+                    if mTEPES.pIniInventory[p,sc,n,es]()                                      + sum(mTEPES.pDuration[n2]()*(mTEPES.pEnergyInflows[p,sc,n2,es]() - mTEPES.pMinPower[p,sc,n2,es] + mTEPES.pEfficiency[es]*mTEPES.pMaxCharge[p,sc,n2,es]) for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pCycleTimeStep[es]:mTEPES.n.ord(n)]) < mTEPES.pMinStorage[p,sc,n,es]:
+                        print('### Inventory equation violation ', p, sc, n, es)
+                        assert (0 == 1)
+                elif mTEPES.n.ord(n) >  mTEPES.pCycleTimeStep[es] and (n,es) in mTEPES.nCycleTimeStep:
+                    if mTEPES.pMaxStorage[p,sc,mTEPES.n.prev(n,mTEPES.pCycleTimeStep[es]),es] + sum(mTEPES.pDuration[n2]()*(mTEPES.pEnergyInflows[p,sc,n2,es]() - mTEPES.pMinPower[p,sc,n2,es] + mTEPES.pEfficiency[es]*mTEPES.pMaxCharge[p,sc,n2,es]) for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pCycleTimeStep[es]:mTEPES.n.ord(n)]) < mTEPES.pMinStorage[p,sc,n,es]:
+                        print('### Inventory equation violation ', p, sc, n, es)
+                        assert (0 == 1)
 
     # detect minimum energy infeasibility
     for g in mTEPES.g:
         for p,sc,n in mTEPES.psn:
-            if mTEPES.n.ord(n) % mTEPES.pEnergyTimeStep[g] == 0 and sum(mTEPES.pMinEnergy[p,sc,n2,g] for n2 in mTEPES.n2):
+            if (n,g) in mTEPES.nEnergyTimeStep and sum(mTEPES.pMinEnergy[p,sc,n2,g] for n2 in mTEPES.n2):
                 if sum((mTEPES.pMaxPower[p,sc,n2,g] - mTEPES.pMinEnergy[p,sc,n2,g])*mTEPES.pDuration[n2]() for n2 in list(mTEPES.n2)[mTEPES.n.ord(n) - mTEPES.pEnergyTimeStep[g]:mTEPES.n.ord(n)]) < 0.0:
                     print('### Minimum energy violation ', p, sc, n, g)
                     assert (0 == 1)

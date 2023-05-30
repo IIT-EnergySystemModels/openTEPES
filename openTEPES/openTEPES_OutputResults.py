@@ -533,9 +533,9 @@ def ESSOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutpu
             if pIndAreaOutput == 1:
                 for ar in mTEPES.ar:
                     if sum(1 for es in e2a[ar]):
-                        sPSNOT = [(p,sc,n,ot) for p,sc,n,ot in mTEPES.psnot if sum(1 for es in e2a[ar] and (ot,es) in mTEPES.t2g)]
+                        sPSNOT = [(p,sc,n,ot) for p,sc,n,ot in mTEPES.psnot if sum(1 for es in e2a[ar] if (ot,es) in mTEPES.t2g)]
                         if len(sPSNOT):
-                            OutputToFile = pd.Series(data=[sum(-OptModel.vESSTotalCharge[p,sc,n,es]()*mTEPES.pLoadLevelDuration[n]() for es in e2a[ar] and (ot,es) in mTEPES.t2g) for p,sc,n,ot in sPSNOT], index=pd.Index(sPSNOT))
+                            OutputToFile = pd.Series(data=[sum(-OptModel.vESSTotalCharge[p,sc,n,es]()*mTEPES.pLoadLevelDuration[n]() for es in e2a[ar] if (ot,es) in mTEPES.t2g) for p,sc,n,ot in sPSNOT], index=pd.Index(sPSNOT))
                             OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='GWh', aggfunc=sum).rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_TechnologyEnergyESS_'+ar+'_'+CaseName+'.csv', sep=',')
 
                             if pIndPlotOutput == 1:
@@ -544,7 +544,7 @@ def ESSOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutpu
                                     chart = PiePlots(p, sc, OutputToFile, 'Technology', '%')
                                     chart.save(_path+'/oT_Plot_TechnologyEnergyESS_'+str(p)+'_'+str(sc)+'_'+ar+'_'+CaseName+'.html', embed_options={'renderer': 'svg'})
 
-        InventoryConstraints = [(p,sc,n,es) for p,sc,n,es in mTEPES.psnes if mTEPES.pMaxCharge[p,sc,n,es] + mTEPES.pMaxPower[p,sc,n,es] and mTEPES.n.ord(n) % mTEPES.pCycleTimeStep[es] == 0]
+        InventoryConstraints = [(p,sc,n,es) for p,sc,n,es in mTEPES.psnes if mTEPES.pMaxCharge[p,sc,n,es] + mTEPES.pMaxPower[p,sc,n,es] and (n,es) in mTEPES.nCycleTimeStep]
         if pIndTechnologyOutput == 0 or pIndTechnologyOutput == 2:
             OutputToFile = pd.Series(data=[OptModel.vESSInventory[p,sc,n,es]()                               for p,sc,n,es in InventoryConstraints], index=pd.Index(InventoryConstraints))
             OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='GWh',               aggfunc=sum).rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_GenerationInventory_'+CaseName+'.csv', sep=',')
@@ -559,7 +559,7 @@ def ESSOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutpu
 
         if pIndTechnologyOutput == 1 or pIndTechnologyOutput == 2:
             ESSTechnologies = [(p,sc,n,ot) for p,sc,n,ot in mTEPES.psnot if sum(1 for es in o2e[ot])]
-            OutputToFile = pd.Series(data=[sum(OutputToFile[p,sc,n,es] for es in o2e[ot] if mTEPES.pMaxCharge[p,sc,n,es] + mTEPES.pMaxPower[p,sc,n,es] and mTEPES.n.ord(n) % mTEPES.pCycleTimeStep[es] == 0) for p,sc,n,ot in ESSTechnologies], index=pd.Index(ESSTechnologies))
+            OutputToFile = pd.Series(data=[sum(OutputToFile[p,sc,n,es] for es in o2e[ot] if mTEPES.pMaxCharge[p,sc,n,es] + mTEPES.pMaxPower[p,sc,n,es] and (n,es) in mTEPES.nCycleTimeStep) for p,sc,n,ot in ESSTechnologies], index=pd.Index(ESSTechnologies))
             OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='GWh', aggfunc=sum).rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_TechnologySpillage_'+CaseName+'.csv', sep=',')
 
             OutputToFile = pd.Series(data=[-OptModel.vESSTotalCharge[p,sc,n,es]()*1e3                                for p,sc,n,es in mTEPES.psnes], index=pd.Index(mTEPES.psnes))
@@ -958,10 +958,10 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES, pIndPlotOutput):
     #%% outputting the water values
     if len(mTEPES.es):
         OutputResults = []
-        sPSSTNES      = [(p,sc,st,n,es) for p,sc,st,n,es in mTEPES.ps*mTEPES.s2n*mTEPES.es if mTEPES.n.ord(n) == mTEPES.pCycleTimeStep[es] and                                                      mTEPES.pMaxCharge[p,sc,n,es] + mTEPES.pMaxPower[p,sc,n,es]]
+        sPSSTNES      = [(p,sc,st,n,es) for p,sc,st,n,es in mTEPES.ps*mTEPES.s2n*mTEPES.es if mTEPES.n.ord(n) == mTEPES.pCycleTimeStep[es] and                                           mTEPES.pMaxCharge[p,sc,n,es] + mTEPES.pMaxPower[p,sc,n,es]]
         OutputToFile = pd.Series(data=[mTEPES.pDuals["".join(["eESSInventory_", str(p), "_", str(sc), "_", str(st), "('", str(n), "', '", str(es) + "')"])] for p,sc,st,n,es in sPSSTNES], index=pd.Index(sPSSTNES))
         OutputResults.append(OutputToFile)
-        sPSSTNES      = [(p,sc,st,n,es) for p,sc,st,n,es in mTEPES.ps*mTEPES.s2n*mTEPES.es if mTEPES.n.ord(n)  > mTEPES.pCycleTimeStep[es] and mTEPES.n.ord(n) % mTEPES.pCycleTimeStep[es] == 0 and mTEPES.pMaxCharge[p,sc,n,es] + mTEPES.pMaxPower[p,sc,n,es]]
+        sPSSTNES      = [(p,sc,st,n,es) for p,sc,st,n,es in mTEPES.ps*mTEPES.s2n*mTEPES.es if mTEPES.n.ord(n)  > mTEPES.pCycleTimeStep[es] and (n,es) in mTEPES.nCycleTimeStep and mTEPES.pMaxCharge[p,sc,n,es] + mTEPES.pMaxPower[p,sc,n,es]]
         OutputToFile = pd.Series(data=[mTEPES.pDuals["".join(["eESSInventory_", str(p), "_", str(sc), "_", str(st), "('", str(n), "', '", str(es) + "')"])] for p,sc,st,n,es in sPSSTNES], index=pd.Index(sPSSTNES))
         OutputResults.append(OutputToFile)
         OutputResults = pd.concat(OutputResults)
