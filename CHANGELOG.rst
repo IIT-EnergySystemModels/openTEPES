@@ -1,11 +1,15 @@
 Change Log
 =============
 
-[4.11.8] - 2023-05-27
+[4.11.9] - 2023-05-30
+--------------------
+- [FIXED] fix error in output results
+
+[4.11.8] - 2023-05-29
 --------------------
 - [CHANGED] introduce some dictionaries to avoid unnecessary computations
 - [CHANGED] change name mTEPES.r to mTEPES.re
-- [CHANGED] simplify some set combinations to reduce time of computation
+- [CHANGED] simplify some set combinations to reduce computation time
 
 [4.11.7] - 2023-05-17
 --------------------

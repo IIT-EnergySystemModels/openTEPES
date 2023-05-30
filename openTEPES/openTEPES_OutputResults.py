@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 29, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 30, 2023
 """
 
 import time
@@ -115,7 +115,7 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutput,
         if sum(1 for ar in mTEPES.ar if sum(1 for g in mTEPES.a2g)) > 1:
             if pIndPlotOutput == 1:
                 OutputToFile = OutputToFile.set_index(['Period', 'Generating unit'])
-                sPARGC           = [(p,ar,gc) for p,ar,gc in mTEPES.p*mTEPES.a2g]
+                sPARGC           = [(p,ar,gc) for p,ar,gc in mTEPES.par*mTEPES.gc if (ar,gc) in mTEPES.a2g]
                 GenInvestToArea  = pd.Series(data=[OutputToFile['MW'][p,gc] for p,ar,gc in sPARGC], index=pd.Index(sPARGC)).to_frame(name='MW')
                 GenInvestToArea.index.names = ['Period', 'Area', 'Generating unit']
                 chart = alt.Chart(GenInvestToArea.reset_index()).mark_bar().encode(x='Generating unit:O', y='sum(MW):Q', color='Area:N', column='Period:N').properties(width=600, height=400)
@@ -179,7 +179,7 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutput,
         if sum(1 for ar in mTEPES.ar if sum(1 for g in mTEPES.a2g)) > 1:
             if pIndPlotOutput == 1:
                 OutputToFile = OutputToFile.set_index(['Period', 'Generating unit'])
-                sPARGD           = [(p,ar,gd) for p,ar,gd in mTEPES.p*mTEPES.a2g]
+                sPARGD           = [(p,ar,gd) for p,ar,gd in mTEPES.par*mTEPES.gd if (ar,gd) in mTEPES.a2g]
                 GenRetireToArea  = pd.Series(data=[OutputToFile['MW'][p,gd] for p,ar,gd in sPARGD], index=pd.Index(sPARGD)).to_frame(name='MW')
                 GenRetireToArea.index.names = ['Period', 'Area', 'Generating unit']
                 chart = alt.Chart(GenRetireToArea.reset_index()).mark_bar().encode(x='Generating unit:O', y='sum(MW):Q', color='Area:N', column='Period:N').properties(width=600, height=400)
