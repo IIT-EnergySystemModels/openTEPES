@@ -1,6 +1,10 @@
 Change Log
 =============
 
+[4.11.10] - 2023-06-02
+--------------------
+- [CHANGED] clean up the scaling of the output results
+
 [4.11.9] - 2023-05-30
 --------------------
 - [CHANGED] avoid the repeated computation of modulo function with n

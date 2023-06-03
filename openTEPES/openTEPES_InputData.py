@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 30, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 02, 2023
 """
 
 import datetime
@@ -196,49 +196,49 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
 
     if pTimeStep > 1:
         # compute the demand as the mean over the time step load levels and assign it to active load levels. Idem for the remaining parameters
-        if  pDemand.sum().sum()             > 0.0:
+        if  pDemand.sum().sum()            :
             pDemand             = pDemand.rolling            (pTimeStep).mean()
             pDemand.fillna                   (0.0, inplace=True)
-        if  pSystemInertia.sum().sum()      > 0.0:
+        if  pSystemInertia.sum().sum()     :
             pSystemInertia      = pSystemInertia.rolling     (pTimeStep).mean()
             pSystemInertia.fillna            (0.0, inplace=True)
-        if  pOperReserveUp.sum().sum()      > 0.0:
+        if  pOperReserveUp.sum().sum()     :
             pOperReserveUp      = pOperReserveUp.rolling     (pTimeStep).mean()
             pOperReserveUp.fillna            (0.0, inplace=True)
-        if  pOperReserveDw.sum().sum()      > 0.0:
+        if  pOperReserveDw.sum().sum()     :
             pOperReserveDw      = pOperReserveDw.rolling     (pTimeStep).mean()
             pOperReserveDw.fillna            (0.0, inplace=True)
-        if  pVariableMinPower.sum().sum()   > 0.0:
+        if  pVariableMinPower.sum().sum()  :
             pVariableMinPower   = pVariableMinPower.rolling  (pTimeStep).mean()
             pVariableMinPower.fillna         (0.0, inplace=True)
-        if  pVariableMaxPower.sum().sum()   > 0.0:
+        if  pVariableMaxPower.sum().sum()  :
             pVariableMaxPower   = pVariableMaxPower.rolling  (pTimeStep).mean()
             pVariableMaxPower.fillna         (0.0, inplace=True)
-        if  pVariableMinCharge.sum().sum()  > 0.0:
+        if  pVariableMinCharge.sum().sum() :
             pVariableMinCharge  = pVariableMinCharge.rolling (pTimeStep).mean()
             pVariableMinCharge.fillna        (0.0, inplace=True)
-        if  pVariableMaxCharge.sum().sum()  > 0.0:
+        if  pVariableMaxCharge.sum().sum() :
             pVariableMaxCharge  = pVariableMaxCharge.rolling (pTimeStep).mean()
             pVariableMaxCharge.fillna        (0.0, inplace=True)
-        if  pVariableMinStorage.sum().sum() > 0.0:
+        if  pVariableMinStorage.sum().sum():
             pVariableMinStorage = pVariableMinStorage.rolling(pTimeStep).mean()
             pVariableMinStorage.fillna       (0.0, inplace=True)
-        if  pVariableMaxStorage.sum().sum() > 0.0:
+        if  pVariableMaxStorage.sum().sum():
             pVariableMaxStorage = pVariableMaxStorage.rolling(pTimeStep).mean()
             pVariableMaxStorage.fillna       (0.0, inplace=True)
-        if  pVariableMinEnergy.sum().sum()  > 0.0:
+        if  pVariableMinEnergy.sum().sum() :
             pVariableMinEnergy  = pVariableMinEnergy.rolling (pTimeStep).mean()
             pVariableMinEnergy.fillna        (0.0, inplace=True)
-        if  pVariableMaxEnergy.sum().sum()  > 0.0:
+        if  pVariableMaxEnergy.sum().sum() :
             pVariableMaxEnergy  = pVariableMaxEnergy.rolling (pTimeStep).mean()
             pVariableMaxEnergy.fillna        (0.0, inplace=True)
-        if  pVariableFuelCost.sum().sum()   > 0.0:
+        if  pVariableFuelCost.sum().sum()  :
             pVariableFuelCost   = pVariableFuelCost.rolling  (pTimeStep).mean()
             pVariableFuelCost.fillna         (0.0, inplace=True)
-        if  pEnergyInflows.sum().sum()      > 0.0:
+        if  pEnergyInflows.sum().sum()     :
             pEnergyInflows      = pEnergyInflows.rolling     (pTimeStep).mean()
             pEnergyInflows.fillna            (0.0, inplace=True)
-        if  pEnergyOutflows.sum().sum()     > 0.0:
+        if  pEnergyOutflows.sum().sum()    :
             pEnergyOutflows     = pEnergyOutflows.rolling    (pTimeStep).mean()
             pEnergyOutflows.fillna           (0.0, inplace=True)
 
