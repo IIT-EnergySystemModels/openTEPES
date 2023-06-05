@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 04, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 05, 2023
 """
 
 import datetime
@@ -194,6 +194,10 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pEnergyInflows       = dfEnergyInflows        [mTEPES.gg]    * 1e-3                                                                   # dynamic energy inflows                   [GW]
     pEnergyOutflows      = dfEnergyOutflows       [mTEPES.gg]    * 1e-3                                                                   # dynamic energy outflows                  [GW]
 
+    Tiempo1 = time.time() - StartTime
+    StartTime       = time.time()
+    print('Tiempo1    input data                  ... ', round(Tiempo1), 's')
+
     if pTimeStep > 1:
         # compute the demand as the mean over the time step load levels and assign it to active load levels. Idem for the remaining parameters
         if  pDemand.sum().sum()            :
@@ -293,6 +297,10 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pGenLoRetire          = dfGeneration  ['RetirementLo'        ]                                                                            # Lower bound of the retirement decision      [p.u.]
     pGenUpRetire          = dfGeneration  ['RetirementUp'        ]                                                                            # Upper bound of the retirement decision      [p.u.]
 
+    Tiempo2 = time.time() - StartTime
+    StartTime       = time.time()
+    print('Tiempo2    input data                  ... ', round(Tiempo2), 's')
+
     pRatedLinearOperCost  = pRatedLinearFuelCost + pCO2EmissionCost
     pRatedLinearVarCost   = pRatedLinearFuelCost + pLinearOMCost
 
@@ -340,6 +348,10 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     StartTime       = time.time()
     print('Reading    input data                  ... ', round(ReadingDataTime), 's')
 
+    Tiempo3 = time.time() - StartTime
+    StartTime       = time.time()
+    print('Tiempo3    input data                  ... ', round(Tiempo3), 's')
+
     #%% Getting the branches from the network data
     sBr = [(ni,nf) for (ni,nf,cc) in dfNetwork.index]
     # Dropping duplicate keys
@@ -382,6 +394,10 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     # existing lines (le)
     mTEPES.le = mTEPES.la - mTEPES.lc
 
+    Tiempo4 = time.time() - StartTime
+    StartTime       = time.time()
+    print('Tiempo4    input data                  ... ', round(Tiempo4), 's')
+
     # instrumental sets
     mTEPES.psc   = [(p,sc     )       for p,sc            in mTEPES.p  *mTEPES.sc]
     mTEPES.psnr  = [(p,sc,  nr)       for p,sc,  nr       in mTEPES.ps *mTEPES.nr]
@@ -403,6 +419,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.psnll = [(p,sc,n,ni,nf,cc) for p,sc,n,ni,nf,cc in mTEPES.psn*mTEPES.ll]
     mTEPES.psnls = [(p,sc,n,ni,nf,cc) for p,sc,n,ni,nf,cc in mTEPES.psn*mTEPES.ls]
 
+    mTEPES.pg    = [(p,g            ) for p,g             in mTEPES.p  *mTEPES.g ]
     mTEPES.pgc   = [(p,gc           ) for p,gc            in mTEPES.p  *mTEPES.gc]
     mTEPES.pes   = [(p,es           ) for p,es            in mTEPES.p  *mTEPES.es]
     mTEPES.pec   = [(p,ec           ) for p,ec            in mTEPES.p  *mTEPES.ec]
@@ -468,6 +485,10 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
 
     mTEPES.s2n = Set(initialize=pStage2Level.index, ordered=False, doc='load level to stage')
 
+    Tiempo5 = time.time() - StartTime
+    StartTime       = time.time()
+    print('Tiempo5    input data                  ... ', round(Tiempo5), 's')
+
     if pAnnualDiscRate == 0.0:
         pDiscountFactor = pd.Series([                        pPeriodWeight[p]                                                                                          for p in mTEPES.p], index=mTEPES.p)
     else:
@@ -503,6 +524,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.ot = Set(initialize=mTEPES.gt, ordered=False, doc='ESS technologies', filter=lambda mTEPES,gt: gt in mTEPES.gt and sum(1 for es in mTEPES.es if (gt,es) in mTEPES.t2g))
     mTEPES.rt = Set(initialize=mTEPES.gt, ordered=False, doc='RES technologies', filter=lambda mTEPES,gt: gt in mTEPES.gt and sum(1 for re in mTEPES.re if (gt,re) in mTEPES.t2g))
 
+    mTEPES.psot  = [(p,sc,  ot) for p,sc,  ot in mTEPES.ps *mTEPES.ot]
+    mTEPES.psrt  = [(p,sc,  rt) for p,sc,  rt in mTEPES.ps *mTEPES.rt]
     mTEPES.psnot = [(p,sc,n,ot) for p,sc,n,ot in mTEPES.psn*mTEPES.ot]
     mTEPES.psnrt = [(p,sc,n,rt) for p,sc,n,rt in mTEPES.psn*mTEPES.rt]
 
@@ -560,6 +583,10 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pVarConstantVarCost = pVarConstantVarCost.reindex(sorted(pVarConstantVarCost.columns), axis=1)
     pLinearVarCost      = pVarLinearVarCost.where  (pVariableFuelCost > 0.0, other=pLinearVarCost  )
     pConstantVarCost    = pVarConstantVarCost.where(pVariableFuelCost > 0.0, other=pConstantVarCost)
+
+    Tiempo6 = time.time() - StartTime
+    StartTime       = time.time()
+    print('Tiempo6    input data                  ... ', round(Tiempo6), 's')
 
     # parameter that allows the initial inventory to change with load level
     pIniInventory       = pd.DataFrame([pInitialInventory]*len(pVariableMinStorage.index), index=pVariableMinStorage.index, columns=pInitialInventory.index)
@@ -643,6 +670,10 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     for nd,ar in mTEPES.ndar:
         d2a[ar].append(nd)
 
+    Tiempo7 = time.time() - StartTime
+    StartTime       = time.time()
+    print('Tiempo7    input data                  ... ', round(Tiempo7), 's')
+
     # small values are converted to 0
     pPeakDemand         = pd.Series([0.0 for ar in mTEPES.ar], index=mTEPES.ar)
     for ar in mTEPES.ar:
@@ -716,6 +747,10 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     for lcd in mTEPES.lcd:
         pBigMFlowBck.loc[lcd] = pLineNTCBck[lcd]*1.5
         pBigMFlowFrw.loc[lcd] = pLineNTCFrw[lcd]*1.5
+
+    Tiempo8 = time.time() - StartTime
+    StartTime       = time.time()
+    print('Tiempo8    input data                  ... ', round(Tiempo8), 's')
 
     # if BigM are 0.0 then converted to 1.0 to avoid division by 0.0
     pBigMFlowBck = pBigMFlowBck.where(pBigMFlowBck != 0.0, other=1.0)
@@ -826,6 +861,10 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         # periods and scenarios are going to be solved together with their weight and probability
         mTEPES.pPeriodProb[p,sc] = mTEPES.pPeriodWeight[p] * mTEPES.pScenProb[p,sc]
 
+    Tiempo9 = time.time() - StartTime
+    StartTime       = time.time()
+    print('Tiempo9    input data                  ... ', round(Tiempo9), 's')
+
     mTEPES.pLineLossFactor       = Param(mTEPES.ln,    initialize=pLineLossFactor.to_dict()           , within=           Reals,    doc='Loss factor'                                         )
     mTEPES.pLineR                = Param(mTEPES.ln,    initialize=pLineR.to_dict()                    , within=NonNegativeReals,    doc='Resistance'                                          )
     mTEPES.pLineX                = Param(mTEPES.ln,    initialize=pLineX.to_dict()                    , within=           Reals,    doc='Reactance'                                           )
@@ -850,9 +889,9 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.pNetLoInvest          = Param(mTEPES.ln,    initialize=pNetLoInvest.to_dict()              , within=NonNegativeReals,    doc='Lower bound of the investment decision', mutable=True)
     mTEPES.pNetUpInvest          = Param(mTEPES.ln,    initialize=pNetUpInvest.to_dict()              , within=NonNegativeReals,    doc='Upper bound of the investment decision', mutable=True)
 
-    mTEPES.nCycleTimeStep        = [(n,g) for n,g in mTEPES.n*mTEPES.g if mTEPES.n.ord(n) % mTEPES.pCycleTimeStep   [g] == 0]
-    mTEPES.nOutflowsTimeStep     = [(n,g) for n,g in mTEPES.n*mTEPES.g if mTEPES.n.ord(n) % mTEPES.pOutflowsTimeStep[g] == 0]
-    mTEPES.nEnergyTimeStep       = [(n,g) for n,g in mTEPES.n*mTEPES.g if mTEPES.n.ord(n) % mTEPES.pEnergyTimeStep  [g] == 0]
+    mTEPES.nCycleTimeStep        = [(n,es) for n,es in mTEPES.n*mTEPES.es if mTEPES.n.ord(n) % mTEPES.pCycleTimeStep   [es] == 0]
+    mTEPES.nOutflowsTimeStep     = [(n,es) for n,es in mTEPES.n*mTEPES.es if mTEPES.n.ord(n) % mTEPES.pOutflowsTimeStep[es] == 0]
+    mTEPES.nEnergyTimeStep       = [(n,g ) for n,g  in mTEPES.n*mTEPES.g  if mTEPES.n.ord(n) % mTEPES.pEnergyTimeStep  [g ] == 0]
 
     # if unit availability = 0 changed to 1
     for g in mTEPES.g:
@@ -865,9 +904,9 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
             mTEPES.pLineLength[ni,nf,cc]   =  1.1 * 6371 * 2 * math.asin(math.sqrt(math.pow(math.sin((mTEPES.pNodeLat[nf]-mTEPES.pNodeLat[ni])*math.pi/180/2),2) + math.cos(mTEPES.pNodeLat[ni]*math.pi/180)*math.cos(mTEPES.pNodeLat[nf]*math.pi/180)*math.pow(math.sin((mTEPES.pNodeLon[nf]-mTEPES.pNodeLon[ni])*math.pi/180/2),2)))
 
     # initialize generation output, unit commitment and line switching
-    pInitialOutput = pd.DataFrame([[0.0]*len(mTEPES.gg)]*len(mTEPES.psn), index=mTEPES.psn, columns=mTEPES.gg)
-    pInitialUC     = pd.DataFrame([[0  ]*len(mTEPES.gg)]*len(mTEPES.psn), index=mTEPES.psn, columns=mTEPES.gg)
-    pInitialSwitch = pd.DataFrame([[0  ]*len(mTEPES.ln)]*len(mTEPES.psn), index=mTEPES.psn, columns=mTEPES.ln)
+    pInitialOutput = pd.DataFrame([[0.0]*len(mTEPES.gg)]*len(mTEPES.psn), index=mTEPES.psn, columns=list(mTEPES.gg))
+    pInitialUC     = pd.DataFrame([[0  ]*len(mTEPES.gg)]*len(mTEPES.psn), index=mTEPES.psn, columns=list(mTEPES.gg))
+    pInitialSwitch = pd.DataFrame([[0  ]*len(mTEPES.ln)]*len(mTEPES.psn), index=mTEPES.psn, columns=list(mTEPES.ln))
 
     mTEPES.pInitialOutput = Param(mTEPES.psngg, initialize=pInitialOutput.stack().to_dict(), within=NonNegativeReals, doc='unit initial output',     mutable=True)
     mTEPES.pInitialUC     = Param(mTEPES.psngg, initialize=pInitialUC.stack().to_dict()    , within=Binary,           doc='unit initial commitment', mutable=True)
@@ -938,6 +977,10 @@ def SettingUpVariables(OptModel, mTEPES):
         OptModel.vLineOnState       = Var(mTEPES.psnla, within=Binary,           initialize=0  ,                                                                                                doc='switching on  state of the line                 {0,1}')
         OptModel.vLineOffState      = Var(mTEPES.psnla, within=Binary,           initialize=0  ,                                                                                                doc='switching off state of the line                 {0,1}')
 
+    Tiempo1 = time.time() - StartTime
+    StartTime       = time.time()
+    print('Tiempo1    setup data                  ... ', round(Tiempo1), 's')
+
     # relax binary condition in generation and network investment decisions
     for p,gc in mTEPES.pgc:
         if mTEPES.pIndBinGenInvest() != 0 and mTEPES.pIndBinUnitInvest[gc      ] == 0:
@@ -966,6 +1009,10 @@ def SettingUpVariables(OptModel, mTEPES):
     for p,sc,  nr in mTEPES.ps*         mTEPES.nr:
         if mTEPES.pIndBinUnitCommit[nr] == 0:
             OptModel.vMaxCommitment[p,sc,  nr].domain = UnitInterval
+
+    Tiempo2 = time.time() - StartTime
+    StartTime       = time.time()
+    print('Tiempo2    setup data                  ... ', round(Tiempo2), 's')
 
     # existing lines are always committed if no switching decision is modeled
     for p,sc,n,ni,nf,cc in mTEPES.psnle:
@@ -1017,6 +1064,10 @@ def SettingUpVariables(OptModel, mTEPES):
             OptModel.vReserveUp     [p,sc,n,nr].fix(0.0)
             OptModel.vReserveDown   [p,sc,n,nr].fix(0.0)
 
+    Tiempo3 = time.time() - StartTime
+    StartTime       = time.time()
+    print('Tiempo3    setup data                  ... ', round(Tiempo3), 's')
+
     for p,sc,n,es in mTEPES.psnes:
         # ESS with no charge capacity or not storage capacity can't charge
         if mTEPES.pMaxCharge        [p,sc,n,es] ==  0.0:
@@ -1043,6 +1094,10 @@ def SettingUpVariables(OptModel, mTEPES):
         mTEPES.go = [k for k in sorted(mTEPES.pRatedLinearVarCost, key=mTEPES.pRatedLinearVarCost.__getitem__) if k not in mTEPES.sq]
     else:
         mTEPES.go = [k for k in sorted(mTEPES.pRatedLinearVarCost, key=mTEPES.pRatedLinearVarCost.__getitem__)                      ]
+
+    Tiempo4 = time.time() - StartTime
+    StartTime       = time.time()
+    print('Tiempo4    setup data                  ... ', round(Tiempo4), 's')
 
     for p,sc,st in mTEPES.ps*mTEPES.stt:
         # activate only period, scenario, and load levels to formulate
@@ -1089,6 +1144,10 @@ def SettingUpVariables(OptModel, mTEPES):
     mTEPES.del_component(mTEPES.n )
     mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in mTEPES.pStageWeight and sum(1 for (stt,nn) in mTEPES.s2n))
     mTEPES.n  = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in mTEPES.pDuration                                         )
+
+    Tiempo5 = time.time() - StartTime
+    StartTime       = time.time()
+    print('Tiempo5    setup data                  ... ', round(Tiempo5), 's')
 
     # fixing the ESS inventory at the end of the following pCycleTimeStep (daily, weekly, monthly) if between storage limits, i.e., for daily ESS is fixed at the end of the week, for weekly/monthly ESS is fixed at the end of the year
     for p,sc,n,es in mTEPES.psnes:
@@ -1150,7 +1209,7 @@ def SettingUpVariables(OptModel, mTEPES):
                 OptModel.vNetworkInvest[p,ni,nf,cc].fix(0)
 
     # remove power plants and lines not installed in this period
-    for p,g in mTEPES.p*mTEPES.g:
+    for p,g in mTEPES.pg:
         if g  not in mTEPES.gc and (mTEPES.pPeriodIniGen[g ] > p or mTEPES.pPeriodFinGen[g ] < p):
             for sc,n in mTEPES.sc*mTEPES.n:
                 OptModel.vTotalOutput   [p,sc,n,g].fix(0.0)
@@ -1165,6 +1224,10 @@ def SettingUpVariables(OptModel, mTEPES):
                 OptModel.vCommitment    [p,sc,n,nr].fix(0  )
                 OptModel.vStartUp       [p,sc,n,nr].fix(0  )
                 OptModel.vShutDown      [p,sc,n,nr].fix(0  )
+
+    Tiempo6 = time.time() - StartTime
+    StartTime       = time.time()
+    print('Tiempo6    setup data                  ... ', round(Tiempo6), 's')
 
     for p,es in mTEPES.pes:
         if es not in mTEPES.gc and (mTEPES.pPeriodIniGen[es] > p or mTEPES.pPeriodFinGen[es] < p):
@@ -1234,6 +1297,10 @@ def SettingUpVariables(OptModel, mTEPES):
         OptModel.vNetworkInvest   [p,ni,nf,cc].setlb(mTEPES.pNetLoInvest[ni,nf,cc])
         OptModel.vNetworkInvest   [p,ni,nf,cc].setub(mTEPES.pNetUpInvest[ni,nf,cc])
 
+    Tiempo7 = time.time() - StartTime
+    StartTime       = time.time()
+    print('Tiempo7    setup data                  ... ', round(Tiempo7), 's')
+
     # detecting infeasibility: sum of scenario probabilities must be 1 in each period
     # for p in mTEPES.p:
     #     if abs(sum(mTEPES.pScenProb[p,sc] for sc in mTEPES.sc)-1.0) > 1e-6:
@@ -1251,22 +1318,24 @@ def SettingUpVariables(OptModel, mTEPES):
 
     # detect inventory infeasibility
     for p,sc,n,es in mTEPES.psnes:
-        if mTEPES.pMaxCharge[p,sc,n,es] + mTEPES.pMaxPower[p,sc,n,es]:
-            if   mTEPES.n.ord(n) == mTEPES.pCycleTimeStep[es]                                    :
-                if mTEPES.pIniInventory[p,sc,n,es]()                                      + sum(mTEPES.pDuration[n2]()*(mTEPES.pEnergyInflows[p,sc,n2,es]() - mTEPES.pMinPower[p,sc,n2,es] + mTEPES.pEfficiency[es]*mTEPES.pMaxCharge[p,sc,n2,es]) for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pCycleTimeStep[es]:mTEPES.n.ord(n)]) < mTEPES.pMinStorage[p,sc,n,es]:
-                    print('### Inventory equation violation ', p, sc, n, es)
-                    assert (0 == 1)
-            elif mTEPES.n.ord(n) >  mTEPES.pCycleTimeStep[es] and (n,es) in mTEPES.nCycleTimeStep:
-                if mTEPES.pMaxStorage[p,sc,mTEPES.n.prev(n,mTEPES.pCycleTimeStep[es]),es] + sum(mTEPES.pDuration[n2]()*(mTEPES.pEnergyInflows[p,sc,n2,es]() - mTEPES.pMinPower[p,sc,n2,es] + mTEPES.pEfficiency[es]*mTEPES.pMaxCharge[p,sc,n2,es]) for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pCycleTimeStep[es]:mTEPES.n.ord(n)]) < mTEPES.pMinStorage[p,sc,n,es]:
-                    print('### Inventory equation violation ', p, sc, n, es)
-                    assert (0 == 1)
+        if (n,es) in mTEPES.nCycleTimeStep:
+            if mTEPES.pMaxCharge[p,sc,n,es] + mTEPES.pMaxPower[p,sc,n,es]:
+                if   mTEPES.n.ord(n) == mTEPES.pCycleTimeStep[es]                                    :
+                    if mTEPES.pIniInventory[p,sc,n,es]()                                      + sum(mTEPES.pDuration[n2]()*(mTEPES.pEnergyInflows[p,sc,n2,es]() - mTEPES.pMinPower[p,sc,n2,es] + mTEPES.pEfficiency[es]*mTEPES.pMaxCharge[p,sc,n2,es]) for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pCycleTimeStep[es]:mTEPES.n.ord(n)]) < mTEPES.pMinStorage[p,sc,n,es]:
+                        print('### Inventory equation violation ', p, sc, n, es)
+                        assert (0 == 1)
+                elif mTEPES.n.ord(n) >  mTEPES.pCycleTimeStep[es] and (n,es) in mTEPES.nCycleTimeStep:
+                    if mTEPES.pMaxStorage[p,sc,mTEPES.n.prev(n,mTEPES.pCycleTimeStep[es]),es] + sum(mTEPES.pDuration[n2]()*(mTEPES.pEnergyInflows[p,sc,n2,es]() - mTEPES.pMinPower[p,sc,n2,es] + mTEPES.pEfficiency[es]*mTEPES.pMaxCharge[p,sc,n2,es]) for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pCycleTimeStep[es]:mTEPES.n.ord(n)]) < mTEPES.pMinStorage[p,sc,n,es]:
+                        print('### Inventory equation violation ', p, sc, n, es)
+                        assert (0 == 1)
 
     # detect minimum energy infeasibility
     for p,sc,n,g in mTEPES.psng:
-       if (n,g) in mTEPES.nEnergyTimeStep and sum(mTEPES.pMinEnergy[p,sc,n2,g] for n2 in mTEPES.n2):
-           if sum((mTEPES.pMaxPower[p,sc,n2,g] - mTEPES.pMinEnergy[p,sc,n2,g])*mTEPES.pDuration[n2]() for n2 in list(mTEPES.n2)[mTEPES.n.ord(n) - mTEPES.pEnergyTimeStep[g]:mTEPES.n.ord(n)]) < 0.0:
-               print('### Minimum energy violation ', p, sc, n, g)
-               assert (0 == 1)
+       if (n,g) in mTEPES.nEnergyTimeStep:
+           if sum(mTEPES.pMinEnergy[p,sc,n2,g] for n2 in mTEPES.n2):
+               if sum((mTEPES.pMaxPower[p,sc,n2,g] - mTEPES.pMinEnergy[p,sc,n2,g])*mTEPES.pDuration[n2]() for n2 in list(mTEPES.n2)[mTEPES.n.ord(n) - mTEPES.pEnergyTimeStep[g]:mTEPES.n.ord(n)]) < 0.0:
+                   print('### Minimum energy violation ', p, sc, n, g)
+                   assert (0 == 1)
 
     SettingUpVariablesTime = time.time() - StartTime
     print('Setting up variables                   ... ', round(SettingUpVariablesTime), 's')
