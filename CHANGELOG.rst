@@ -1,7 +1,7 @@
 Change Log
 =============
 
-[4.11.10] - 2023-06-05
+[4.11.10] - 2023-06-06
 --------------------
 - [CHANGED] performance issues in input data
 - [CHANGED] clean up the scaling of the output results

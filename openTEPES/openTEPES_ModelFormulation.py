@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 05, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 06, 2023
 """
 
 import time
@@ -512,15 +512,21 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
         print('eESSTotalCharge       ... ', len(getattr(OptModel, 'eESSTotalCharge_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
 
     def eChargeOutflows(OptModel,n,es):
-        if mTEPES.pMaxCharge2ndBlock[p,sc,n,es] and sum(mTEPES.pEnergyOutflows[p,sc,n2,es]() for n2 in mTEPES.n2):
-            return (OptModel.vEnergyOutflows[p,sc,n,es] + OptModel.vCharge2ndBlock[p,sc,n,es]) / mTEPES.pMaxCharge2ndBlock[p,sc,n,es] <= 1.0
+        if (p,sc,es) in mTEPES.eo:
+            if mTEPES.pMaxCharge2ndBlock[p,sc,n,es]:
+                return (OptModel.vEnergyOutflows[p,sc,n,es] + OptModel.vCharge2ndBlock[p,sc,n,es]) / mTEPES.pMaxCharge2ndBlock[p,sc,n,es] <= 1.0
+            else:
+                return Constraint.Skip
         else:
             return Constraint.Skip
     setattr(OptModel, 'eChargeOutflows_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.es, rule=eChargeOutflows, doc='incompatibility between charge and outflows use [p.u.]'))
 
+    if pIndLogConsole == 1:
+        print('eChargeOutflows       ... ', len(getattr(OptModel, 'eChargeOutflows_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+
     def eEnergyOutflows(OptModel,n,es):
         if (n,es) in mTEPES.nOutflowsTimeStep:
-            if sum(mTEPES.pEnergyOutflows[p,sc,n2,es]() for n2 in mTEPES.n2):
+            if (p,sc,es) in mTEPES.eo:
                 return sum((OptModel.vEnergyOutflows[p,sc,n2,es] - mTEPES.pEnergyOutflows[p,sc,n2,es])*mTEPES.pDuration[n2] for n2 in list(mTEPES.n2)[mTEPES.n.ord(n) - mTEPES.pOutflowsTimeStep[es]:mTEPES.n.ord(n)]) == 0.0
             else:
                 return Constraint.Skip
@@ -533,7 +539,7 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
 
     def eMinimumEnergy(OptModel,n,g):
         if (n,g) in mTEPES.nEnergyTimeStep:
-            if sum(mTEPES.pMinEnergy[p,sc,n2,g] for n2 in mTEPES.n2):
+            if (p,sc,g) in mTEPES.gm:
                 return sum((OptModel.vTotalOutput[p,sc,n2,g] - mTEPES.pMinEnergy[p,sc,n2,g])*mTEPES.pDuration[n2] for n2 in list(mTEPES.n2)[mTEPES.n.ord(n) - mTEPES.pEnergyTimeStep[g]:mTEPES.n.ord(n)]) >= 0.0
             else:
                 return Constraint.Skip
@@ -546,7 +552,7 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
 
     def eMaximumEnergy(OptModel,n,g):
         if (n,g) in mTEPES.nEnergyTimeStep:
-            if sum(mTEPES.pMaxEnergy[p,sc,n2,g] for n2 in mTEPES.n2):
+            if (p,sc,g) in mTEPES.gM:
                 return sum((OptModel.vTotalOutput[p,sc,n2,g] - mTEPES.pMaxEnergy[p,sc,n2,g])*mTEPES.pDuration[n2] for n2 in list(mTEPES.n2)[mTEPES.n.ord(n) - mTEPES.pEnergyTimeStep[g]:mTEPES.n.ord(n)]) <= 0.0
             else:
                 return Constraint.Skip
