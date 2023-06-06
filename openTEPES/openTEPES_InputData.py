@@ -1035,6 +1035,7 @@ def SettingUpVariables(OptModel, mTEPES):
         # if no max power, no total output
         if mTEPES.pMaxPower      [p,sc,n,g] ==  0.0:
             OptModel.vTotalOutput[p,sc,n,g].fix(0.0)
+
     #for p,sc,n,re in mTEPES.psnre:
     #    if mTEPES.pMinPower[p,sc,n,r] == mTEPES.pMaxPower[p,sc,n,r] and mTEPES.pLinearOMCost[r] == 0.0:
     #        OptModel.vTotalOutput[p,sc,n,r].fix(mTEPES.pMaxPower[p,sc,n,r])
@@ -1148,9 +1149,9 @@ def SettingUpVariables(OptModel, mTEPES):
             if mTEPES.pStorageType[es] == 'Monthly' and mTEPES.n.ord(n) % int(8736/mTEPES.pTimeStep()) == 0:
                 OptModel.vESSInventory[p,sc,n,es].fix(mTEPES.pInitialInventory[es])
 
-    # for p,sc,n,ec in mTEPES.psnec:
-    #     if mTEPES.pEnergyInflows        [p,sc,n,ec]() == 0.0:
-    #         OptModel.vEnergyInflows     [p,sc,n,ec].fix(0.0)
+    for p,sc,n,ec in mTEPES.psnec:
+        if mTEPES.pEnergyInflows        [p,sc,n,ec]() == 0.0:
+            OptModel.vEnergyInflows     [p,sc,n,ec].fix(0.0)
 
     # if no operating reserve is required no variables are needed
     for p,sc,n,ar,nr in mTEPES.psnar*mTEPES.nr:
