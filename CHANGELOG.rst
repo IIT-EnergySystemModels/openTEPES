@@ -1,6 +1,10 @@
 Change Log
 =============
 
+[4.11.11] - 2023-06-08
+--------------------
+- [CHANGED] performance issues in input data and model formulation
+
 [4.11.10] - 2023-06-06
 --------------------
 - [CHANGED] performance issues in input data

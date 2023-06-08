@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 06, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 08, 2023
 """
 
 import datetime
@@ -8,7 +8,7 @@ import math
 import os
 import pandas        as pd
 from   collections   import defaultdict
-from   pyomo.environ import DataPortal, Set, Param, Var, Binary, NonNegativeReals, PositiveReals, PositiveIntegers, NonNegativeIntegers, Reals, UnitInterval, Any
+from   pyomo.environ import DataPortal, Set, Param, Var, Binary, NonNegativeReals, NonNegativeIntegers, PositiveReals, PositiveIntegers, Reals, UnitInterval, Any
 
 
 def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
@@ -633,17 +633,20 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pDemandPos        = pDemand.where(pDemand >= 0.0, other=0.0)
     pDemandNeg        = pDemand.where(pDemand <  0.0, other=0.0)
 
-    # generators to area (e2a)
+    # generators to area (g2a) (e2a) (n2a)
     g2a = defaultdict(list)
-    for ar,g  in mTEPES.ar*mTEPES.g :
+    for ar,g  in mTEPES.a2g:
         g2a[ar].append(g )
     e2a = defaultdict(list)
     for ar,es in mTEPES.ar*mTEPES.es:
-        e2a[ar].append(es)
+        if (ar,es) in mTEPES.a2g:
+            e2a[ar].append(es)
     n2a = defaultdict(list)
     for ar,nr in mTEPES.ar*mTEPES.nr:
-        n2a[ar].append(nr)
+        if (ar,nr) in mTEPES.a2g:
+            n2a[ar].append(nr)
 
+    # nodes to area (d2a)
     d2a = defaultdict(list)
     for nd,ar in mTEPES.ndar:
         d2a[ar].append(nd)
@@ -890,9 +893,11 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.pNetLoInvest          = Param(mTEPES.ln,    initialize=pNetLoInvest.to_dict()              , within=NonNegativeReals,    doc='Lower bound of the investment decision', mutable=True)
     mTEPES.pNetUpInvest          = Param(mTEPES.ln,    initialize=pNetUpInvest.to_dict()              , within=NonNegativeReals,    doc='Upper bound of the investment decision', mutable=True)
 
-    mTEPES.nCycleTimeStep        = [(n,es) for n,es in mTEPES.n*mTEPES.es if mTEPES.n.ord(n) % mTEPES.pCycleTimeStep   [es] == 0]
-    mTEPES.nOutflowsTimeStep     = [(n,es) for n,es in mTEPES.n*mTEPES.es if mTEPES.n.ord(n) % mTEPES.pOutflowsTimeStep[es] == 0]
-    mTEPES.nEnergyTimeStep       = [(n,g ) for n,g  in mTEPES.n*mTEPES.g  if mTEPES.n.ord(n) % mTEPES.pEnergyTimeStep  [g ] == 0]
+    # load levels multiple of cycles for each ESS/generator
+    mTEPES.nesc = [(n,es) for n,es in mTEPES.n*mTEPES.es if mTEPES.n.ord(n) % mTEPES.pCycleTimeStep   [es] == 0]
+    mTEPES.necc = [(n,ec) for n,ec in mTEPES.n*mTEPES.ec if mTEPES.n.ord(n) % mTEPES.pCycleTimeStep   [ec] == 0]
+    mTEPES.neso = [(n,es) for n,es in mTEPES.n*mTEPES.es if mTEPES.n.ord(n) % mTEPES.pOutflowsTimeStep[es] == 0]
+    mTEPES.ngen = [(n,g ) for n,g  in mTEPES.n*mTEPES.g  if mTEPES.n.ord(n) % mTEPES.pEnergyTimeStep  [g ] == 0]
 
     # ESS with outflows
     mTEPES.eo                    = [(p,sc,es) for p,sc,es in mTEPES.pses if sum(mTEPES.pEnergyOutflows[p,sc,n2,es]() for n2 in mTEPES.n2)]
@@ -1035,7 +1040,6 @@ def SettingUpVariables(OptModel, mTEPES):
         # if no max power, no total output
         if mTEPES.pMaxPower      [p,sc,n,g] ==  0.0:
             OptModel.vTotalOutput[p,sc,n,g].fix(0.0)
-
     #for p,sc,n,re in mTEPES.psnre:
     #    if mTEPES.pMinPower[p,sc,n,r] == mTEPES.pMaxPower[p,sc,n,r] and mTEPES.pLinearOMCost[r] == 0.0:
     #        OptModel.vTotalOutput[p,sc,n,r].fix(mTEPES.pMaxPower[p,sc,n,r])
@@ -1255,7 +1259,7 @@ def SettingUpVariables(OptModel, mTEPES):
         OptModel.vGenerationInvest[p,gc      ].setlb(mTEPES.pGenLoInvest[gc      ])
         OptModel.vGenerationInvest[p,gc      ].setub(mTEPES.pGenUpInvest[gc      ])
     for p,gd in mTEPES.pgd:
-        if  mTEPES.pGenLoRetire   [  gd      ]() <       pEpsilon:
+        if  mTEPES.pGenLoRetire   [  gd      ]() < pEpsilon:
             mTEPES.pGenLoRetire   [  gd      ]   = 0
         if  mTEPES.pGenUpRetire   [  gd      ]() <       pEpsilon:
             mTEPES.pGenUpRetire   [  gd      ]   = 0
@@ -1289,29 +1293,28 @@ def SettingUpVariables(OptModel, mTEPES):
 
     for es in mTEPES.es:
         # detecting infeasibility: total min ESS output greater than total inflows, total max ESS charge lower than total outflows
-        if sum(mTEPES.pMinPower [p,sc,n,es]-mTEPES.pEnergyInflows [p,sc,n,es]() for p,sc,n in mTEPES.psn) > 0.0:
+        if sum(mTEPES.pMinPower [p,sc,n,es] for p,sc,n in mTEPES.psn) - sum(mTEPES.pEnergyInflows [p,sc,n,es]() for p,sc,n in mTEPES.psn) > 0.0:
             print('### Total minimum output greater than total inflows for ESS unit ', es)
             assert (0 == 1)
-        if sum(mTEPES.pMaxCharge[p,sc,n,es]-mTEPES.pEnergyOutflows[p,sc,n,es]() for p,sc,n in mTEPES.psn) < 0.0:
+        if sum(mTEPES.pMaxCharge[p,sc,n,es] for p,sc,n in mTEPES.psn) - sum(mTEPES.pEnergyOutflows[p,sc,n,es]() for p,sc,n in mTEPES.psn) < 0.0:
             print('### Total maximum charge lower than total outflows for ESS unit ', es)
             assert (0 == 1)
 
     # detect inventory infeasibility
-    for p,sc,n,es in mTEPES.psnes:
-        if (n,es) in mTEPES.nCycleTimeStep:
-            if mTEPES.pMaxCharge[p,sc,n,es] + mTEPES.pMaxPower[p,sc,n,es]:
-                if   mTEPES.n.ord(n) == mTEPES.pCycleTimeStep[es]                                    :
-                    if mTEPES.pIniInventory[p,sc,n,es]()                                      + sum(mTEPES.pDuration[n2]()*(mTEPES.pEnergyInflows[p,sc,n2,es]() - mTEPES.pMinPower[p,sc,n2,es] + mTEPES.pEfficiency[es]*mTEPES.pMaxCharge[p,sc,n2,es]) for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pCycleTimeStep[es]:mTEPES.n.ord(n)]) < mTEPES.pMinStorage[p,sc,n,es]:
-                        print('### Inventory equation violation ', p, sc, n, es)
-                        assert (0 == 1)
-                elif mTEPES.n.ord(n) >  mTEPES.pCycleTimeStep[es] and (n,es) in mTEPES.nCycleTimeStep:
-                    if mTEPES.pMaxStorage[p,sc,mTEPES.n.prev(n,mTEPES.pCycleTimeStep[es]),es] + sum(mTEPES.pDuration[n2]()*(mTEPES.pEnergyInflows[p,sc,n2,es]() - mTEPES.pMinPower[p,sc,n2,es] + mTEPES.pEfficiency[es]*mTEPES.pMaxCharge[p,sc,n2,es]) for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pCycleTimeStep[es]:mTEPES.n.ord(n)]) < mTEPES.pMinStorage[p,sc,n,es]:
-                        print('### Inventory equation violation ', p, sc, n, es)
-                        assert (0 == 1)
+    for p,sc,n,es in mTEPES.ps*mTEPES.nesc:
+        if mTEPES.pMaxCharge[p,sc,n,es] + mTEPES.pMaxPower[p,sc,n,es]:
+            if   mTEPES.n.ord(n) == mTEPES.pCycleTimeStep[es]:
+                if mTEPES.pIniInventory[p,sc,n,es]()                                      + sum(mTEPES.pDuration[n2]()*(mTEPES.pEnergyInflows[p,sc,n2,es]() - mTEPES.pMinPower[p,sc,n2,es] + mTEPES.pEfficiency[es]*mTEPES.pMaxCharge[p,sc,n2,es]) for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pCycleTimeStep[es]:mTEPES.n.ord(n)]) < mTEPES.pMinStorage[p,sc,n,es]:
+                    print('### Inventory equation violation ', p, sc, n, es)
+                    assert (0 == 1)
+            elif mTEPES.n.ord(n) >  mTEPES.pCycleTimeStep[es]:
+                if mTEPES.pMaxStorage[p,sc,mTEPES.n.prev(n,mTEPES.pCycleTimeStep[es]),es] + sum(mTEPES.pDuration[n2]()*(mTEPES.pEnergyInflows[p,sc,n2,es]() - mTEPES.pMinPower[p,sc,n2,es] + mTEPES.pEfficiency[es]*mTEPES.pMaxCharge[p,sc,n2,es]) for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pCycleTimeStep[es]:mTEPES.n.ord(n)]) < mTEPES.pMinStorage[p,sc,n,es]:
+                    print('### Inventory equation violation ', p, sc, n, es)
+                    assert (0 == 1)
 
     # detect minimum energy infeasibility
     for p,sc,n,g in mTEPES.psng:
-       if (n,g) in mTEPES.nEnergyTimeStep:
+       if (n,g) in mTEPES.ngen:
            if (p,sc,g) in mTEPES.gm:
                if sum((mTEPES.pMaxPower[p,sc,n2,g] - mTEPES.pMinEnergy[p,sc,n2,g])*mTEPES.pDuration[n2]() for n2 in list(mTEPES.n2)[mTEPES.n.ord(n) - mTEPES.pEnergyTimeStep[g]:mTEPES.n.ord(n)]) < 0.0:
                    print('### Minimum energy violation ', p, sc, n, g)

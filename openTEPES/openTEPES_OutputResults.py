@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 05, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 08, 2023
 """
 
 import time
@@ -100,9 +100,9 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutput,
     _path = os.path.join(DirName, CaseName)
     StartTime = time.time()
 
-    # area to generators (g2t)
+    # generators to area (g2a)
     g2a = defaultdict(list)
-    for ar,g  in mTEPES.a2g:
+    for ar,g in mTEPES.a2g:
         g2a[ar].append(g)
 
     if len(mTEPES.gc):
@@ -121,7 +121,7 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutput,
         if sum(1 for ar in mTEPES.ar if sum(1 for g in g2a[ar])) > 1:
             if pIndPlotOutput == 1:
                 OutputToFile     = OutputToFile.set_index(['Period', 'Generating unit'])
-                sPARGC           = [(p,ar,gc) for p,ar,gc in mTEPES.p*mTEPES.a2g]
+                sPARGC           = [(p,ar,gc) for p,ar,gc in mTEPES.par*mTEPES.gc and (ar,gc) in mTEPES.a2g]
                 GenInvestToArea  = pd.Series(data=[OutputToFile['MW'][p,gc] for p,ar,gc in sPARGC], index=pd.Index(sPARGC)).to_frame(name='MW')
                 GenInvestToArea.index.names = ['Period', 'Area', 'Generating unit']
                 chart = alt.Chart(GenInvestToArea.reset_index()).mark_bar().encode(x='Generating unit:O', y='sum(MW):Q', color='Area:N', column='Period:N').properties(width=600, height=400)
@@ -186,7 +186,7 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutput,
         if sum(1 for ar in mTEPES.ar if sum(1 for g in g2a[ar])) > 1:
             if pIndPlotOutput == 1:
                 OutputToFile = OutputToFile.set_index(['Period', 'Generating unit'])
-                sPARGD           = [(p,ar,gd) for p,ar,gd in mTEPES.p*mTEPES.a2g]
+                sPARGD           = [(p,ar,gd) for p,ar,gd in mTEPES.par*mTEPES.gd if (ar,gd) in mTEPES.a2g]
                 GenRetireToArea  = pd.Series(data=[OutputToFile['MW'][p,gd] for p,ar,gd in sPARGD], index=pd.Index(sPARGD)).to_frame(name='MW')
                 GenRetireToArea.index.names = ['Period', 'Area', 'Generating unit']
                 chart = alt.Chart(GenRetireToArea.reset_index()).mark_bar().encode(x='Generating unit:O', y='sum(MW):Q', color='Area:N', column='Period:N').properties(width=600, height=400)
@@ -259,12 +259,18 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnolo
     _path = os.path.join(DirName, CaseName)
     StartTime = time.time()
 
-    # areas to generators (n2a)
+    # generators to area (n2a)
     n2a = defaultdict(list)
     for ar,nr in mTEPES.ar*mTEPES.nr:
-        n2a[ar].append(nr)
+        if (ar,nr) in mTEPES.a2g:
+            n2a[ar].append(nr)
 
-    # technology to generators (o2e)
+    # generators to area (g2a)
+    g2a = defaultdict(list)
+    for ar,g in mTEPES.a2g:
+        g2a[ar].append(g)
+
+    # technology to generators (o2e) (g2n)
     o2e = defaultdict(list)
     for ot,es in mTEPES.ot*mTEPES.es:
         if (ot,es) in mTEPES.t2g:
@@ -274,15 +280,10 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnolo
         if (gt,nr) in mTEPES.t2g:
             g2n[gt].append(nr)
 
-    # technology to generators (g2t)
+    # generators to technology (g2t)
     g2t = defaultdict(list)
-    for gt,g  in mTEPES.t2g:
+    for gt,g in mTEPES.t2g:
         g2t[gt].append(g)
-
-    # area to generators (g2t)
-    g2a = defaultdict(list)
-    for ar,g  in mTEPES.a2g:
-        g2a[ar].append(g)
 
     if len(mTEPES.nr):
         if pIndTechnologyOutput == 0 or pIndTechnologyOutput == 2:
@@ -507,10 +508,12 @@ def ESSOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutpu
     # generators to area (e2a) (n2a)
     e2a = defaultdict(list)
     for ar,es in mTEPES.ar*mTEPES.es:
-        e2a[ar].append(es)
+        if (ar,es) in mTEPES.a2g:
+            e2a[ar].append(es)
     n2a = defaultdict(list)
     for ar,nr in mTEPES.ar*mTEPES.nr:
-        n2a[ar].append(nr)
+        if (ar,nr) in mTEPES.a2g:
+            n2a[ar].append(nr)
 
     # technology to generators (o2e)
     o2e = defaultdict(list)
@@ -576,7 +579,7 @@ def ESSOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutpu
                                     chart = PiePlots(p, sc, OutputToFile, 'Technology', '%')
                                     chart.save(_path+'/oT_Plot_TechnologyEnergyESS_'+str(p)+'_'+str(sc)+'_'+ar+'_'+CaseName+'.html', embed_options={'renderer': 'svg'})
 
-        InventoryConstraints = [(p,sc,n,es) for p,sc,n,es in mTEPES.psnes if (n,es) in mTEPES.nCycleTimeStep and mTEPES.pMaxCharge[p,sc,n,es] + mTEPES.pMaxPower[p,sc,n,es]]
+        InventoryConstraints = [(p,sc,n,es) for p,sc,n,es in mTEPES.ps*mTEPES.nesc if mTEPES.pMaxCharge[p,sc,n,es] + mTEPES.pMaxPower[p,sc,n,es]]
         if pIndTechnologyOutput == 0 or pIndTechnologyOutput == 2:
             OutputToFile = pd.Series(data=[OptModel.vESSInventory[p,sc,n,es]()                               for p,sc,n,es in InventoryConstraints], index=pd.Index(InventoryConstraints))
             OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='GWh',               aggfunc=sum).rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_GenerationInventory_'+CaseName+'.csv', sep=',')
@@ -591,7 +594,7 @@ def ESSOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutpu
 
         if pIndTechnologyOutput == 1 or pIndTechnologyOutput == 2:
             ESSTechnologies = [(p,sc,n,ot) for p,sc,n,ot in mTEPES.psnot if sum(1 for es in o2e[ot])]
-            OutputToFile = pd.Series(data=[sum(OutputToFile[p,sc,n,es] for es in o2e[ot] if (n,es) in mTEPES.nCycleTimeStep and mTEPES.pMaxCharge[p,sc,n,es] + mTEPES.pMaxPower[p,sc,n,es]) for p,sc,n,ot in ESSTechnologies], index=pd.Index(ESSTechnologies))
+            OutputToFile = pd.Series(data=[sum(OutputToFile[p,sc,n,es] for es in o2e[ot] if (n,es) in mTEPES.nesc and mTEPES.pMaxCharge[p,sc,n,es] + mTEPES.pMaxPower[p,sc,n,es]) for p,sc,n,ot in ESSTechnologies], index=pd.Index(ESSTechnologies))
             OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='GWh', aggfunc=sum).rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_TechnologySpillage_'+CaseName+'.csv', sep=',')
 
             OutputToFile = pd.Series(data=[-OptModel.vESSTotalCharge[p,sc,n,es]()                                for p,sc,n,es in mTEPES.psnes], index=pd.Index(mTEPES.psnes))
@@ -654,7 +657,7 @@ def OperationSummaryResults(DirName, CaseName, OptModel, mTEPES):
         linl [nf].append((ni,cc))
         loutl[ni].append((nf,cc))
 
-    # nodes to generators (g2n)
+    # generators to nodes (g2n)
     g2n = defaultdict(list)
     for nd,g in mTEPES.n2g:
         g2n[nd].append(g)
@@ -805,13 +808,13 @@ def FlexibilityResults(DirName, CaseName, OptModel, mTEPES):
     _path = os.path.join(DirName, CaseName)
     StartTime = time.time()
 
-    # technology to generators (e2o)
+    # generators to technology (e2o)
     e2o = defaultdict(list)
     for ot,es in mTEPES.ot*mTEPES.es:
         if (ot,es) in mTEPES.t2g:
             e2o[ot].append(es)
 
-    # technology to generators (g2t)
+    # generators to technology (g2t)
     g2t = defaultdict(list)
     for gt,g  in mTEPES.t2g:
         g2t[gt].append(g)
@@ -933,18 +936,20 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES, pIndPlotOutput):
         lin [nf].append((ni,cc))
         lout[ni].append((nf,cc))
 
-    # nodes to generators (g2n)
+    # generators to nodes (g2n)
     g2n = defaultdict(list)
-    for nd,g in mTEPES.n2g:
+    for nd,g  in mTEPES.n2g:
         g2n[nd].append(g)
 
     # generators to area (e2a) (n2a)
     e2a = defaultdict(list)
     for ar,es in mTEPES.ar*mTEPES.es:
-        e2a[ar].append(es)
+        if (ar,es) in mTEPES.a2g:
+            e2a[ar].append(es)
     n2a = defaultdict(list)
     for ar,nr in mTEPES.ar*mTEPES.nr:
-        n2a[ar].append(nr)
+        if (ar,nr) in mTEPES.a2g:
+            n2a[ar].append(nr)
 
     # tolerance to consider 0 a number
     pEpsilon = 1e-6
@@ -1010,7 +1015,7 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES, pIndPlotOutput):
     #%% outputting the water values
     if len(mTEPES.es):
         OutputResults = []
-        sPSSTNES      = [(p,sc,st,n,es) for p,sc,st,n,es in mTEPES.ps*mTEPES.s2n*mTEPES.es if (n,es) in mTEPES.nCycleTimeStep and mTEPES.pMaxCharge[p,sc,n,es] + mTEPES.pMaxPower[p,sc,n,es]]
+        sPSSTNES      = [(p,sc,st,n,es) for p,sc,st,n,es in mTEPES.ps*mTEPES.s2n*mTEPES.es if (n,es) in mTEPES.nesc and mTEPES.pMaxCharge[p,sc,n,es] + mTEPES.pMaxPower[p,sc,n,es]]
         OutputToFile = pd.Series(data=[mTEPES.pDuals["".join(["eESSInventory_", str(p), "_", str(sc), "_", str(st), "('", str(n), "', '", str(es) + "')"])] for p,sc,st,n,es in sPSSTNES], index=pd.Index(sPSSTNES))
         OutputResults.append(OutputToFile)
         OutputResults = pd.concat(OutputResults)
@@ -1048,7 +1053,7 @@ def ReliabilityResults(DirName, CaseName, OptModel, mTEPES):
     _path = os.path.join(DirName, CaseName)
     StartTime   = time.time()
 
-    # nodes to generators (r2n)
+    # generators to nodes (r2n)
     r2n = defaultdict(list)
     for nd,re in mTEPES.nd*mTEPES.re:
         if (nd,re) in mTEPES.n2g:
@@ -1134,7 +1139,7 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput, pIndPlo
         linl [nf].append((ni,cc))
         loutl[ni].append((nf,cc))
 
-    # nodes to generators (g2n)
+    # generators to nodes (g2n)
     g2n = defaultdict(list)
     for nd,g  in mTEPES.n2g:
         g2n[nd].append(g)
@@ -1143,12 +1148,12 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput, pIndPlo
         if (nd,es) in mTEPES.n2g:
             e2n[nd].append(es)
 
-    # technology to generators (g2t)
+    # generators to technology (g2t)
     g2t = defaultdict(list)
     for gt,g  in mTEPES.t2g:
         g2t[gt].append(g)
 
-    # area to generators (g2t)
+    # generators to area (g2a)
     g2a = defaultdict(list)
     for ar,g  in mTEPES.a2g:
         g2a[ar].append(g)
