@@ -1,6 +1,10 @@
 Change Log
 =============
 
+[4.11.12] - 2023-06-12
+--------------------
+- [FIXED] fixed error in writing technology emission file of output results
+
 [4.11.11] - 2023-06-08
 --------------------
 - [CHANGED] performance issues in input data and model formulation

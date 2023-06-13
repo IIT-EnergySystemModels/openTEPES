@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 09, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 13, 2023
 """
 
 import time
@@ -396,8 +396,8 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnolo
         OutputToFile1 = OutputToFile1.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_3'], values='GWh', aggfunc=sum).rename_axis(['Period', 'Scenario', 'Generating unit'], axis=0).rename_axis([None], axis=1)
         OutputToFile2 = OutputToFile2.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_3'], values='GWh', aggfunc=sum).rename_axis(['Period', 'Scenario', 'Generating unit'], axis=0).rename_axis([None], axis=1)
         if pIndTechnologyOutput == 0 or pIndTechnologyOutput == 2:
-            OutputToFile  = OutputToFile1.div(OutputToFile2)*1e2
-            OutputToFile  = OutputToFile.fillna(0.0)
+            OutputToFile = OutputToFile1.div(OutputToFile2)*1e2
+            OutputToFile = OutputToFile.fillna(0.0)
             OutputToFile.rename(columns = {'GWh':'%'}, inplace = True)
             OutputToFile.to_csv(_path+'/oT_Result_GenerationCurtailmentEnergyRelative_'+CaseName+'.csv', sep=',')
 
@@ -446,9 +446,9 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnolo
                 if pIndAreaOutput == 1:
                     for ar in mTEPES.ar:
                         if sum(1 for nr in n2a[ar]):
-                            sPSNGTNR = [(p,sc,n,gt,nr) for p,sc,n,gt,nr in mTEPES.psn*mTEPES.t2g if (gt,nr) in mTEPES.t2g and (ar,nr) in mTEPES.a2g]
-                            if len(sPSNGTNR):
-                                OutputResults = pd.Series(data=[OutputToFile[p,sc,n,nr] for p,sc,n,gt,nr in sPSNGTNR], index=pd.Index(sPSNGTNR))
+                            sPSNGT = [(p,sc,n,gt) for p,sc,n,gt in mTEPES.psngt if sum(1 for nr in g2n[gt])]
+                            if len(sPSNGT):
+                                OutputResults = pd.Series(data=[sum(OutputToFile[p,sc,n,nr] for nr in g2n[gt] if (ar,nr) in mTEPES.a2g) for p,sc,n,gt in sPSNGT], index=pd.Index(sPSNGT))
                                 OutputResults.to_frame(name='MtCO2').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MtCO2', aggfunc=sum).rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_TechnologyEmission_'+ar+'_'+CaseName+'.csv', sep=',')
 
             sPSNGT       = [(p,sc,n,gt) for p,sc,n,gt in mTEPES.psngt if sum(1 for nr in g2n[gt])]
@@ -766,19 +766,6 @@ def OperationSummaryResults(DirName, CaseName, OptModel, mTEPES):
     WritingResultsTime = time.time() - StartTime
     StartTime = time.time()
     print('Writing   generation summary results   ... ', round(WritingResultsTime), 's')
-
-    # %%  Power balance per period, scenario, and load level
-    # incoming and outgoing lines (lin) (lout)
-    lin   = defaultdict(list)
-    linl  = defaultdict(list)
-    lout  = defaultdict(list)
-    loutl = defaultdict(list)
-    for ni,nf,cc in mTEPES.la:
-        lin  [nf].append((ni,cc))
-        lout [ni].append((nf,cc))
-    for ni,nf,cc in mTEPES.ll:
-        linl [nf].append((ni,cc))
-        loutl[ni].append((nf,cc))
 
     ndzn = pd.DataFrame(mTEPES.ndzn).set_index(0)
     ndar = pd.DataFrame(mTEPES.ndar).set_index(0)
