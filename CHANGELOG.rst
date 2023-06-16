@@ -1,6 +1,10 @@
 Change Log
 =============
 
+[4.11.13rc1] - 2023-06-14
+--------------------
+- [FIXED] fixed error in output results
+
 [4.11.12] - 2023-06-12
 --------------------
 - [FIXED] fixed error in writing technology emission file of output results
