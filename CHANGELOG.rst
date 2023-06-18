@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.11.13rc2] - 2023-06-16
+[4.11.13rc3] - 2023-06-18
 --------------------
+- [FIXED] fixed error in marginals of adequacy constraints
 - [FIXED] fixed error in output results
 
 [4.11.12] - 2023-06-12
