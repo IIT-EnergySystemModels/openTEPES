@@ -980,14 +980,18 @@ def SettingUpVariables(OptModel, mTEPES):
         OptModel.vShutDown          = Var(mTEPES.psnnr, within=Binary,           initialize=0  ,                                                                                                doc='shutdown           of the unit                  {0,1}')
         OptModel.vMaxCommitment     = Var(mTEPES.psnr , within=Binary,           initialize=0  ,                                                                                                doc='maximum commitment of the unit                  {0,1}')
 
-    if mTEPES.pIndBinLineCommit() == 0:
+    if mTEPES.pIndBinSingleNode() == 0 and mTEPES.pIndBinLineCommit() == 0:
         OptModel.vLineCommit        = Var(mTEPES.psnla, within=UnitInterval,     initialize=0.0,                                                                                                doc='line switching      of the line                 [0,1]')
-        OptModel.vLineOnState       = Var(mTEPES.psnla, within=UnitInterval,     initialize=0.0,                                                                                                doc='switching on  state of the line                 [0,1]')
-        OptModel.vLineOffState      = Var(mTEPES.psnla, within=UnitInterval,     initialize=0.0,                                                                                                doc='switching off state of the line                 [0,1]')
     else:
         OptModel.vLineCommit        = Var(mTEPES.psnla, within=Binary,           initialize=0  ,                                                                                                doc='line switching      of the line                 {0,1}')
-        OptModel.vLineOnState       = Var(mTEPES.psnla, within=Binary,           initialize=0  ,                                                                                                doc='switching on  state of the line                 {0,1}')
-        OptModel.vLineOffState      = Var(mTEPES.psnla, within=Binary,           initialize=0  ,                                                                                                doc='switching off state of the line                 {0,1}')
+
+    if sum(mTEPES.pIndBinLineSwitch[:,:,:]):
+        if mTEPES.pIndBinSingleNode() == 0 and mTEPES.pIndBinLineCommit() == 0:
+            OptModel.vLineOnState   = Var(mTEPES.psnla, within=UnitInterval,     initialize=0.0,                                                                                                doc='switching on  state of the line                 [0,1]')
+            OptModel.vLineOffState  = Var(mTEPES.psnla, within=UnitInterval,     initialize=0.0,                                                                                                doc='switching off state of the line                 [0,1]')
+        else:
+            OptModel.vLineOnState   = Var(mTEPES.psnla, within=Binary,           initialize=0  ,                                                                                                doc='switching on  state of the line                 {0,1}')
+            OptModel.vLineOffState  = Var(mTEPES.psnla, within=Binary,           initialize=0  ,                                                                                                doc='switching off state of the line                 {0,1}')
 
     # relax binary condition in generation and network investment decisions
     for p,gc in mTEPES.pgc:
@@ -1024,10 +1028,11 @@ def SettingUpVariables(OptModel, mTEPES):
             OptModel.vLineCommit  [p,sc,n,ni,nf,cc].fix(1)
 
     # no on/off state for lines if no switching decision is modeled
-    for p,sc,n,ni,nf,cc in mTEPES.psnla:
-        if mTEPES.pIndBinLineSwitch[ni,nf,cc] == 0:
-            OptModel.vLineOnState [p,sc,n,ni,nf,cc].fix(0)
-            OptModel.vLineOffState[p,sc,n,ni,nf,cc].fix(0)
+    if sum(mTEPES.pIndBinLineSwitch[:,:,:]):
+        for p,sc,n,ni,nf,cc in mTEPES.psnla:
+            if mTEPES.pIndBinLineSwitch[ni,nf,cc] == 0:
+                OptModel.vLineOnState [p,sc,n,ni,nf,cc].fix(0)
+                OptModel.vLineOffState[p,sc,n,ni,nf,cc].fix(0)
 
     OptModel.vLineLosses = Var(mTEPES.psnll, within=NonNegativeReals, bounds=lambda OptModel,p,sc,n,*ll: (0.0,0.5*mTEPES.pLineLossFactor[ll]*max(mTEPES.pLineNTCBck[ll],mTEPES.pLineNTCFrw[ll])), doc='half line losses [GW]')
     if mTEPES.pIndBinSingleNode() == 0:
