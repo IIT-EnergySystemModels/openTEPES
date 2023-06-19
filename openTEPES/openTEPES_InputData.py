@@ -1019,9 +1019,13 @@ def SettingUpVariables(OptModel, mTEPES):
             OptModel.vMaxCommitment[p,sc,  nr].domain = UnitInterval
 
     # existing lines are always committed if no switching decision is modeled
-    for p,sc,n,ni,nf,cc in mTEPES.psnla:
+    for p,sc,n,ni,nf,cc in mTEPES.psnle:
         if mTEPES.pIndBinLineSwitch[ni,nf,cc] == 0:
             OptModel.vLineCommit  [p,sc,n,ni,nf,cc].fix(1)
+
+    # no on/off state for lines if no switching decision is modeled
+    for p,sc,n,ni,nf,cc in mTEPES.psnla:
+        if mTEPES.pIndBinLineSwitch[ni,nf,cc] == 0:
             OptModel.vLineOnState [p,sc,n,ni,nf,cc].fix(0)
             OptModel.vLineOffState[p,sc,n,ni,nf,cc].fix(0)
 
