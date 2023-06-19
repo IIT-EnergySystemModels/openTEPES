@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 16, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 19, 2023
 """
 
 import time
@@ -46,7 +46,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
     print('Termination condition: ', SolverResults.solver.termination_condition)
     if SolverResults.solver.termination_condition == TerminationCondition.infeasible:
         log_infeasible_constraints(OptModel, log_expression=True, log_variables=True)
-        logging.basicConfig(filename=_path+'/openTEPES_Infeasibilities_'+CaseName+'.txt', level=logging.INFO)
+        logging.basicConfig(filename=_path+'/openTEPES_infeasibilities_'+CaseName+'.txt', level=logging.INFO)
     assert (SolverResults.solver.termination_condition == TerminationCondition.optimal or SolverResults.solver.termination_condition == TerminationCondition.maxTimeLimit or SolverResults.solver.termination_condition == TerminationCondition.infeasible.maxIterations), 'Problem infeasible'
     SolverResults.write()                                                              # summary of the solver results
 
@@ -105,9 +105,10 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
                 pDuals[str(c.name)+str(index)] = OptModel.dual[c[index]]
 
     SolvingTime = time.time() - StartTime
-    print('Solution time                          ... ', round(SolvingTime), 's')
-    print('Total system                   cost [MEUR] ', OptModel.eTotalSCost.expr())
     print('***** Period: '+str(p)+', Scenario: '+str(sc)+' ******')
+    print('  Problem size                         ... ', OptModel.model().nconstraints(), ' constraints ', OptModel.model().nvariables(), ' variables')
+    print('  Solution time                        ... ', round(SolvingTime), 's')
+    print('  Total system                 cost [MEUR] ', OptModel.eTotalSCost.expr())
     print('  Total generation  investment cost [MEUR] ', sum(mTEPES.pDiscountFactor[p] * mTEPES.pGenInvestCost[gc      ]   * OptModel.vGenerationInvest[p,gc      ]() for gc       in mTEPES.gc))
     print('  Total generation  retirement cost [MEUR] ', sum(mTEPES.pDiscountFactor[p] * mTEPES.pGenRetireCost[gd      ]   * OptModel.vGenerationRetire[p,gd      ]() for gd       in mTEPES.gd))
     print('  Total network     investment cost [MEUR] ', sum(mTEPES.pDiscountFactor[p] * mTEPES.pNetFixedCost [ni,nf,cc]   * OptModel.vNetworkInvest   [p,ni,nf,cc]() for ni,nf,cc in mTEPES.lc))

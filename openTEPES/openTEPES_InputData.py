@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 12, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 19, 2023
 """
 
 import datetime
@@ -1019,7 +1019,7 @@ def SettingUpVariables(OptModel, mTEPES):
             OptModel.vMaxCommitment[p,sc,  nr].domain = UnitInterval
 
     # existing lines are always committed if no switching decision is modeled
-    for p,sc,n,ni,nf,cc in mTEPES.psnle:
+    for p,sc,n,ni,nf,cc in mTEPES.psnla:
         if mTEPES.pIndBinLineSwitch[ni,nf,cc] == 0:
             OptModel.vLineCommit  [p,sc,n,ni,nf,cc].fix(1)
             OptModel.vLineOnState [p,sc,n,ni,nf,cc].fix(0)
@@ -1048,11 +1048,11 @@ def SettingUpVariables(OptModel, mTEPES):
         # must run units or units with no minimum power or ESS existing units are always committed and must produce at least their minimum output
         # not applicable to mutually exclusive units
         if   len(mTEPES.g2g) == 0:
+            OptModel.vMaxCommitment[p, sc, nr].fix(1)
             if (mTEPES.pMustRun[nr] == 1 or (mTEPES.pMinPower[p,sc,n,nr] == 0.0 and mTEPES.pRatedConstantVarCost[nr] == 0.0) or nr in mTEPES.es) and nr not in mTEPES.ec:
                 OptModel.vCommitment    [p,sc,n,nr].fix(1)
                 OptModel.vStartUp       [p,sc,n,nr].fix(0)
                 OptModel.vShutDown      [p,sc,n,nr].fix(0)
-                OptModel.vMaxCommitment [p,sc,  nr].fix(1)
         elif len(mTEPES.g2g) >  0 and sum(1 for g in mTEPES.nr if (nr,g) in mTEPES.g2g or (g,nr) in mTEPES.g2g) == 0:
             if (mTEPES.pMustRun[nr] == 1 or (mTEPES.pMinPower[p,sc,n,nr] == 0.0 and mTEPES.pRatedConstantVarCost[nr] == 0.0) or nr in mTEPES.es) and nr not in mTEPES.ec:
                 OptModel.vCommitment    [p,sc,n,nr].fix(1)

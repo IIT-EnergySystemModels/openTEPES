@@ -1,6 +1,12 @@
 Change Log
 =============
 
+[4.11.14rc1] - 2023-06-19
+--------------------
+- [FIXED] fixed vMaxCommitment in input data
+- [FIXED] fixed vLineOnState and vLineOffState in input data for all the lines
+- [CHANGED] add problem size in log file
+
 [4.11.13] - 2023-06-18
 --------------------
 - [FIXED] fixed error in marginals of adequacy constraints
