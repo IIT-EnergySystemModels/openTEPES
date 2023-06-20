@@ -121,7 +121,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
         mTEPES.pPeriodProb[p,sc] = mTEPES.pPeriodWeight[p] = mTEPES.pScenProb[p,sc] = 1.0
 
     # output results only for every unit (0), only for every technology (1), or for both (2)
-    pIndTechnologyOutput = 1
+    pIndTechnologyOutput = 2
 
     # output results just for the system (0) or for every area (1). Areas correspond usually to countries
     pIndAreaOutput = 1
