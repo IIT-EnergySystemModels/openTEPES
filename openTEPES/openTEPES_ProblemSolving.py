@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 19, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 21, 2023
 """
 
 import time
@@ -105,10 +105,11 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
                 pDuals[str(c.name)+str(index)] = OptModel.dual[c[index]]
 
     SolvingTime = time.time() - StartTime
+
     print('***** Period: '+str(p)+', Scenario: '+str(sc)+' ******')
-    print('  Problem size                         ... ', OptModel.model().nconstraints(), ' constraints ', OptModel.model().nvariables(), ' variables')
+    print('  Problem size                         ... ', OptModel.model().nconstraints(), ' constraints ', OptModel.model().nvariables()-mTEPES.nFixedVariables+1, ' variables')
     print('  Solution time                        ... ', round(SolvingTime), 's')
-    print('  Total system                 cost [MEUR] ', OptModel.eTotalSCost.expr())
+    print('  Total system                 cost [MEUR] ', OptModel.vTotalSCost())
     print('  Total generation  investment cost [MEUR] ', sum(mTEPES.pDiscountFactor[p] * mTEPES.pGenInvestCost[gc      ]   * OptModel.vGenerationInvest[p,gc      ]() for gc       in mTEPES.gc))
     print('  Total generation  retirement cost [MEUR] ', sum(mTEPES.pDiscountFactor[p] * mTEPES.pGenRetireCost[gd      ]   * OptModel.vGenerationRetire[p,gd      ]() for gd       in mTEPES.gd))
     print('  Total network     investment cost [MEUR] ', sum(mTEPES.pDiscountFactor[p] * mTEPES.pNetFixedCost [ni,nf,cc]   * OptModel.vNetworkInvest   [p,ni,nf,cc]() for ni,nf,cc in mTEPES.lc))

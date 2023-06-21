@@ -1,8 +1,10 @@
 Change Log
 =============
 
-[4.11.14rc1] - 2023-06-19
+[4.11.14rc2] - 2023-06-21
 --------------------
+- [CHANGED] NetworkCommitment file only if needed
+- [CHANGED] Computation of problem size
 - [FIXED] fixed vMaxCommitment in input data
 - [FIXED] fixed vLineOnState and vLineOffState in input data for all the lines
 - [CHANGED] add problem size in log file
