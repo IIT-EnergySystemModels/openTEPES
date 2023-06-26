@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 08, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 26, 2023
 """
 
 import time
@@ -362,9 +362,9 @@ def GenerationOperationModelFormulationDemand(OptModel, mTEPES, pIndLogConsole, 
 
     def eBalance(OptModel,n,nd):
         if sum(1 for g in g2n[nd]) + sum(1 for lout in lout[nd]) + sum(1 for ni,cc in lin[nd]):
-            return (sum(OptModel.vTotalOutput[p,sc,n,g] for g in g2n[nd]) - sum(OptModel.vESSTotalCharge[p,sc,n,es] for es in e2n[nd]) + OptModel.vENS[p,sc,n,nd] == mTEPES.pDemand[p,sc,n,nd] +
-                    sum(OptModel.vLineLosses[p,sc,n,nd,lout ] for lout  in loutl[nd]) + sum(OptModel.vFlow[p,sc,n,nd,lout ] for lout  in lout[nd]) +
-                    sum(OptModel.vLineLosses[p,sc,n,ni,nd,cc] for ni,cc in linl [nd]) - sum(OptModel.vFlow[p,sc,n,ni,nd,cc] for ni,cc in lin [nd]))
+            return (sum(OptModel.vTotalOutput[p,sc,n,g] for g in g2n[nd]) - sum(OptModel.vESSTotalCharge[p,sc,n,es] for es in e2n[nd]) + OptModel.vENS[p,sc,n,nd] -
+                    sum(OptModel.vLineLosses[p,sc,n,nd,lout ] for lout  in loutl[nd]) - sum(OptModel.vFlow[p,sc,n,nd,lout ] for lout  in lout[nd]) -
+                    sum(OptModel.vLineLosses[p,sc,n,ni,nd,cc] for ni,cc in linl [nd]) + sum(OptModel.vFlow[p,sc,n,ni,nd,cc] for ni,cc in lin [nd])) == mTEPES.pDemand[p,sc,n,nd]
         else:
             return Constraint.Skip
     setattr(OptModel, 'eBalance_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.nd, rule=eBalance, doc='load generation balance [GW]'))
