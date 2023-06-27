@@ -176,7 +176,7 @@ The names between parenthesis correspond to the names of the constraints in the 
 
 Generation, storage and network investment cost plus retirement cost [M€] «``eTotalFCost``»
 
-:math:`\sum^p_g DF^p CFG_g icg^p_g + \sum_{pg} DF^p CFR_g rcg^p_g + \sum_{pijc} DF^p CFT_{ijc} ict^p_{ijc} +`
+:math:`\sum_{pg} DF^p CFG_g icg^p_g + \sum_{pg} DF^p CFR_g rcg^p_g + \sum_{pijc} DF^p CFT_{ijc} ict^p_{ijc} +`
 
 Generation operation cost [M€] «``eTotalGCost``»
 
