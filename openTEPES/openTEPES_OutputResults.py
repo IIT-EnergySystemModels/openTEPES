@@ -100,12 +100,14 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutput,
     _path = os.path.join(DirName, CaseName)
     StartTime = time.time()
 
-    # generators to area (g2a)
-    g2a = defaultdict(list)
-    for ar,g in mTEPES.a2g:
-        g2a[ar].append(g)
-
     if len(mTEPES.gc):
+
+        # generators to area (g2a)
+        g2a = defaultdict(list)
+        for ar,gc in mTEPES.ar*mTEPES.gc:
+            if (ar,gc) in mTEPES.a2g:
+                g2a[ar].append(gc)
+
         # Saving generation investment into CSV file
         OutputToFile = pd.Series(data=[OptModel.vGenerationInvest[p,gc]()                                                           for p,gc in mTEPES.pgc], index=pd.Index(mTEPES.pgc))
         OutputToFile = OutputToFile.fillna(0).to_frame(name='InvestmentDecision').reset_index().rename(columns={'level_0': 'Period', 'level_1': 'Generating unit'})
@@ -117,10 +119,10 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutput,
         OutputToFile = OutputToFile.fillna(0).to_frame(name='MW'                ).reset_index().rename(columns={'level_0': 'Period', 'level_1': 'Generating unit'})
         if pIndTechnologyOutput == 0 or pIndTechnologyOutput == 2:
             OutputToFile.pivot_table(index=['Period'], columns=['Generating unit'], values='MW'                ).rename_axis(['Period'], axis=0).to_csv(_path+'/oT_Result_GenerationInvestment_'       +CaseName+'.csv', index=True, sep=',')
+        OutputToFile = OutputToFile.set_index(['Period', 'Generating unit'])
 
         if sum(1 for ar in mTEPES.ar if sum(1 for g in g2a[ar])) > 1:
             if pIndPlotOutput == 1:
-                OutputToFile     = OutputToFile.set_index(['Period', 'Generating unit'])
                 sPARGC           = [(p,ar,gc) for p,ar,gc in mTEPES.par*mTEPES.gc if (ar,gc) in mTEPES.a2g]
                 GenInvestToArea  = pd.Series(data=[OutputToFile['MW'][p,gc] for p,ar,gc in sPARGC], index=pd.Index(sPARGC)).to_frame(name='MW')
                 GenInvestToArea.index.names = ['Period', 'Area', 'Generating unit']
@@ -173,6 +175,13 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutput,
                 chart.save(_path+'/oT_Plot_TechnologyInvestmentCostPerMW_'+CaseName+'.html', embed_options={'renderer':'svg'})
 
     if len(mTEPES.gd):
+
+        # generators to area (g2a)
+        g2a = defaultdict(list)
+        for ar,gd in mTEPES.ar*mTEPES.gd:
+            if (ar,gd) in mTEPES.a2g:
+                g2a[ar].append(gd)
+
         if pIndTechnologyOutput == 0 or pIndTechnologyOutput == 2:
             # Saving generation retirement into CSV file
             OutputToFile = pd.Series(data=[OptModel.vGenerationRetire[p,gd]()                                                               for p,gd in mTEPES.pgd], index=pd.Index(mTEPES.pgd))
@@ -182,10 +191,10 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutput,
             OutputToFile *= 1e3
             OutputToFile = OutputToFile.fillna(0).to_frame(name='MW').reset_index().rename(columns={'level_0': 'Period', 'level_1': 'Generating unit'})
             OutputToFile.pivot_table(index=['Period'], columns=['Generating unit'], values='MW').rename_axis(['Period'], axis=0).to_csv(_path+'/oT_Result_GenerationRetirement_'+CaseName+'.csv', index=True, sep=',')
+            OutputToFile = OutputToFile.set_index(['Period', 'Generating unit'])
 
         if sum(1 for ar in mTEPES.ar if sum(1 for g in g2a[ar])) > 1:
             if pIndPlotOutput == 1:
-                OutputToFile = OutputToFile.set_index(['Period', 'Generating unit'])
                 sPARGD           = [(p,ar,gd) for p,ar,gd in mTEPES.par*mTEPES.gd if (ar,gd) in mTEPES.a2g]
                 GenRetireToArea  = pd.Series(data=[OutputToFile['MW'][p,gd] for p,ar,gd in sPARGD], index=pd.Index(sPARGD)).to_frame(name='MW')
                 GenRetireToArea.index.names = ['Period', 'Area', 'Generating unit']

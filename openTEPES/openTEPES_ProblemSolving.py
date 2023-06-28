@@ -107,7 +107,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
     SolvingTime = time.time() - StartTime
 
     print('***** Period: '+str(p)+', Scenario: '+str(sc)+' ******')
-    print('  Problem size                         ... ', OptModel.model().nconstraints(), ' constraints ', OptModel.model().nvariables()-mTEPES.nFixedVariables+1, ' variables')
+    print('  Problem size                         ... ', OptModel.model().nconstraints(), 'constraints ', OptModel.model().nvariables()-mTEPES.nFixedVariables+1, 'variables')
     print('  Solution time                        ... ', round(SolvingTime), 's')
     print('  Total system                 cost [MEUR] ', OptModel.vTotalSCost())
     print('  Total generation  investment cost [MEUR] ', sum(mTEPES.pDiscountFactor[p] * mTEPES.pGenInvestCost[gc      ]   * OptModel.vGenerationInvest[p,gc      ]() for gc       in mTEPES.gc))
