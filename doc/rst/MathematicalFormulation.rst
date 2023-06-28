@@ -280,7 +280,7 @@ ESS energy inventory (only for load levels multiple of 1, 24, 168 h depending on
 
 Maximum shift time of stored energy [GWh]. It is thought to be applied to demand side management «``eMaxShiftTime``»
 
-:math:`DUR_n EF_e gc^p_{\omega ne}) \leq \sum_{n' = n+1}^{n+\frac{ST_e}{\nu}} DUR_n' gp^p_{\omega n'e}  \quad \forall p \omega ne`
+:math:`DUR_n EF_e gc^p_{\omega ne} \leq \sum_{n' = n+1}^{n+\frac{ST_e}{\nu}} DUR_n' gp^p_{\omega n'e}  \quad \forall p \omega ne`
 
 ESS outflows (only for load levels multiple of 1, 24, 168, 672, and 8736 h depending on the ESS outflow cycle) must be satisfied [GWh] «``eEnergyOutflows``»
 
