@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 26, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 03, 2023
 """
 
 import time
@@ -31,11 +31,17 @@ def InvestmentModelFormulation(OptModel, mTEPES, pIndLogConsole):
     StartTime = time.time()
 
     def eTotalICost(OptModel):
-        return OptModel.vTotalICost == sum(mTEPES.pDiscountFactor[p] * OptModel.vTotalFCost[p] for p in mTEPES.p)
+        if len(mTEPES.gc) + len(mTEPES.gd) + len(mTEPES.lc):
+            return OptModel.vTotalICost == sum(mTEPES.pDiscountFactor[p] * OptModel.vTotalFCost[p] for p in mTEPES.p)
+        else:
+            return Constraint.Skip
     OptModel.eTotalICost = Constraint(rule=eTotalICost, doc='system fixed    cost [MEUR]')
 
     def eTotalFCost(OptModel,p):
-        return OptModel.vTotalFCost[p] == sum(mTEPES.pGenInvestCost[gc] * OptModel.vGenerationInvest[p,gc] for gc in mTEPES.gc) + sum(mTEPES.pGenRetireCost[gd] * OptModel.vGenerationRetire[p,gd] for gd in mTEPES.gd) + sum(mTEPES.pNetFixedCost[ni,nf,cc] * OptModel.vNetworkInvest[p,ni,nf,cc] for ni,nf,cc in mTEPES.lc)
+        if len(mTEPES.gc) + len(mTEPES.gd) + len(mTEPES.lc):
+            return OptModel.vTotalFCost[p] == sum(mTEPES.pGenInvestCost[gc] * OptModel.vGenerationInvest[p,gc] for gc in mTEPES.gc) + sum(mTEPES.pGenRetireCost[gd] * OptModel.vGenerationRetire[p,gd] for gd in mTEPES.gd) + sum(mTEPES.pNetFixedCost[ni,nf,cc] * OptModel.vNetworkInvest[p,ni,nf,cc] for ni,nf,cc in mTEPES.lc)
+        else:
+            return Constraint.Skip
     OptModel.eTotalFCost = Constraint(mTEPES.p, rule=eTotalFCost, doc='system fixed    cost [MEUR]')
 
     def eConsecutiveGenInvest(OptModel,p,gc):
@@ -175,14 +181,14 @@ def GenerationOperationModelFormulationInvestment(OptModel, mTEPES, pIndLogConso
     if pIndLogConsole == 1:
         print('eUninstalGenCap       ... ', len(getattr(OptModel, 'eUninstalGenCap_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
 
-    def eAdequacyReserveMargin(OptModel,p,sc,st,ar):
+    def eAdequacyReserveMargin(OptModel,ar):
         if mTEPES.pReserveMargin[ar] and sum(1 for g in mTEPES.a2g):
             return ((sum(                                       mTEPES.pRatedMaxPower[g ] * mTEPES.pAvailability[g ] / (1.0-mTEPES.pEFOR[g ]) for g  in mTEPES.g  if (ar,g ) in mTEPES.a2g and g not in (mTEPES.gc or mTEPES.gd)) +
                      sum(   OptModel.vGenerationInvest[p,gc]  * mTEPES.pRatedMaxPower[gc] * mTEPES.pAvailability[gc] / (1.0-mTEPES.pEFOR[gc]) for gc in mTEPES.gc if (ar,gc) in mTEPES.a2g                                      ) +
                      sum((1-OptModel.vGenerationRetire[p,gd]) * mTEPES.pRatedMaxPower[gd] * mTEPES.pAvailability[gd] / (1.0-mTEPES.pEFOR[gd]) for gd in mTEPES.gd if (ar,gd) in mTEPES.a2g                                      ) ) >= mTEPES.pPeakDemand[ar] * mTEPES.pReserveMargin[ar])
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eAdequacyReserveMargin_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.p, mTEPES.sc, mTEPES.st, mTEPES.ar, rule=eAdequacyReserveMargin, doc='system adequacy reserve margin [p.u.]'))
+    setattr(OptModel, 'eAdequacyReserveMargin_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.ar, rule=eAdequacyReserveMargin, doc='system adequacy reserve margin [p.u.]'))
 
     if pIndLogConsole == 1:
         print('eAdequacyReserveMargin... ', len(getattr(OptModel, 'eAdequacyReserveMargin_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')

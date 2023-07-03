@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 21, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 03, 2023
 """
 
 import datetime
@@ -527,8 +527,10 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pMaxPower           = pMaxPower.reindex        (sorted(pMaxPower.columns        ), axis=1)
     pVariableMinPower   = pVariableMinPower.reindex(sorted(pVariableMinPower.columns), axis=1)
     pVariableMaxPower   = pVariableMaxPower.reindex(sorted(pVariableMaxPower.columns), axis=1)
-    pMinPower           = pVariableMinPower.where         (pVariableMinPower > pMinPower, other=pMinPower).where(pMinPower > 0.0, other=0.0)
-    pMaxPower           = pVariableMaxPower.where         (pVariableMaxPower < pMaxPower, other=pMaxPower).where(pMaxPower > 0.0, other=0.0)
+    pMinPower           = pVariableMinPower.where         (pVariableMinPower != pMinPower, other=pMinPower)
+    pMaxPower           = pVariableMaxPower.where         (pVariableMaxPower <= pMaxPower, other=pMaxPower)
+    pMinPower           = pMinPower.where                 (pMinPower > 0.0, other=0.0)
+    pMaxPower           = pMaxPower.where                 (pMaxPower > 0.0, other=0.0)
 
     # minimum and maximum variable charge
     pVariableMinCharge  = pVariableMinCharge.replace(0.0, float('nan'))
@@ -539,8 +541,10 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pMaxCharge          = pMaxCharge.reindex        (sorted(pMaxCharge.columns        ), axis=1)
     pVariableMinCharge  = pVariableMinCharge.reindex(sorted(pVariableMinCharge.columns), axis=1)
     pVariableMaxCharge  = pVariableMaxCharge.reindex(sorted(pVariableMaxCharge.columns), axis=1)
-    pMinCharge          = pVariableMinCharge.where         (pVariableMinCharge > pMinCharge, other=pMinCharge).where(pMinCharge > 0.0, other=0.0)
-    pMaxCharge          = pVariableMaxCharge.where         (pVariableMaxCharge < pMaxCharge, other=pMaxCharge).where(pMaxCharge > 0.0, other=0.0)
+    pMinCharge          = pVariableMinCharge.where         (pVariableMinCharge != pMinCharge, other=pMinCharge)
+    pMaxCharge          = pVariableMaxCharge.where         (pVariableMaxCharge <= pMaxCharge, other=pMaxCharge)
+    pMinCharge          = pMinCharge.where                 (pMinCharge > 0.0, other=0.0)
+    pMaxCharge          = pMaxCharge.where                 (pMaxCharge > 0.0, other=0.0)
 
     # minimum and maximum variable storage capacity
     pVariableMinStorage = pVariableMinStorage.replace(0.0, float('nan'))
@@ -551,8 +555,10 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pMaxStorage         = pMaxStorage.reindex        (sorted(pMaxStorage.columns        ), axis=1)
     pVariableMinStorage = pVariableMinStorage.reindex(sorted(pVariableMinStorage.columns), axis=1)
     pVariableMaxStorage = pVariableMaxStorage.reindex(sorted(pVariableMaxStorage.columns), axis=1)
-    pMinStorage         = pVariableMinStorage.where         (pVariableMinStorage > pMinStorage, other=pMinStorage).where(pMinStorage > 0.0, other=0.0)
-    pMaxStorage         = pVariableMaxStorage.where         (pVariableMaxStorage < pMaxStorage, other=pMaxStorage).where(pMaxStorage > 0.0, other=0.0)
+    pMinStorage         = pVariableMinStorage.where         (pVariableMinStorage != pMinStorage, other=pMinStorage)
+    pMaxStorage         = pVariableMaxStorage.where         (pVariableMaxStorage <= pMaxStorage, other=pMaxStorage)
+    pMinStorage         = pMinStorage.where                 (pMinStorage > 0.0, other=0.0)
+    pMaxStorage         = pMaxStorage.where                 (pMaxStorage > 0.0, other=0.0)
 
     # fuel term and constant term variable cost
     pVarLinearVarCost   =              (dfGeneration['LinearTerm'  ] * 1e-3 * pVariableFuelCost       +dfGeneration['OMVariableCost'] * 1e-3).replace(0.0, float('nan'))
@@ -816,7 +822,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.pEnergyOutflows       = Param(mTEPES.psnes, initialize=pEnergyOutflows.stack().to_dict()   , within=NonNegativeReals,    doc='Energy outflows',                        mutable=True)
     mTEPES.pMinStorage           = Param(mTEPES.psnes, initialize=pMinStorage.stack().to_dict()       , within=NonNegativeReals,    doc='ESS Minimum storage capacity'                        )
     mTEPES.pMaxStorage           = Param(mTEPES.psnes, initialize=pMaxStorage.stack().to_dict()       , within=NonNegativeReals,    doc='ESS Maximum storage capacity'                        )
-    mTEPES.pMinEnergy            = Param(mTEPES.psngg, initialize=pVariableMinEnergy.stack().to_dict(), within=NonNegativeReals,    doc='Unit minimum energy demand'                              )
+    mTEPES.pMinEnergy            = Param(mTEPES.psngg, initialize=pVariableMinEnergy.stack().to_dict(), within=NonNegativeReals,    doc='Unit minimum energy demand'                          )
     mTEPES.pMaxEnergy            = Param(mTEPES.psngg, initialize=pVariableMaxEnergy.stack().to_dict(), within=NonNegativeReals,    doc='Unit maximum energy demand'                          )
     mTEPES.pRatedMaxPower        = Param(mTEPES.gg,    initialize=pRatedMaxPower.to_dict()            , within=NonNegativeReals,    doc='Rated maximum power'                                 )
     mTEPES.pRatedMaxCharge       = Param(mTEPES.gg,    initialize=pRatedMaxCharge.to_dict()           , within=NonNegativeReals,    doc='Rated maximum charge'                                )
@@ -1017,8 +1023,14 @@ def SettingUpVariables(OptModel, mTEPES):
             OptModel.vGenerationRetire[p,gd      ].fix(0)
             nFixedVariables += 1
 
+    # assign the minimum power for the RES units
+    for p,sc,n,re in mTEPES.psnre:
+        OptModel.vTotalOutput[p,sc,n,re].setlb(mTEPES.pMinPower[p,sc,n,re])
+
+    # assign the minimum power for the units that can be committed
     # relax binary condition in unit generation, startup and shutdown decisions
     for p,sc,n,nr in mTEPES.psnnr:
+        OptModel.vTotalOutput[p,sc,n,nr].setlb(mTEPES.pMinPower[p,sc,n,nr])
         if mTEPES.pIndBinUnitCommit[nr] == 0:
             OptModel.vCommitment   [p,sc,n,nr].domain = UnitInterval
             OptModel.vStartUp      [p,sc,n,nr].domain = UnitInterval

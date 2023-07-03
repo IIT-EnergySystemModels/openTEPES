@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.11.14rc4] - 2023-06-28
+[4.11.14rc5] - 2023-07-03
 --------------------
+- [FIXED] several fixes in input data, model formulation, problem solving, and output results modules
 - [FIXED] fix output of investment results
 - [FIXED] reorganize the balance equation to avoid negative dual variables
 - [CHANGED] NetworkCommitment file only if needed

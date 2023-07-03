@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 21, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 03, 2023
 """
 
 import time
@@ -672,7 +672,7 @@ def OperationSummaryResults(DirName, CaseName, OptModel, mTEPES):
     TotalGeneration      = sum(OptModel.vTotalOutput[p,sc,n,g ]()*mTEPES.pLoadLevelDuration[n]() for p,sc,n,g in mTEPES.psng                 )
     FossilFuelGeneration = sum(OptModel.vTotalOutput[p,sc,n,g ]()*mTEPES.pLoadLevelDuration[n]() for p,sc,n,g in mTEPES.psng if g in mTEPES.t)
     # Ratio Total Investments [%]
-    TotalInvestmentCost  = sum(mTEPES.pDiscountFactor[p] *                                   OptModel.vTotalFCost      [p]()          for p          in mTEPES.p  )
+    TotalInvestmentCost  = sum(mTEPES.pDiscountFactor[p] *                                   OptModel.vTotalFCost      [p]()          for p          in mTEPES.p  if len(mTEPES.gc) + len(mTEPES.gd) + len(mTEPES.lc))
     GenInvestmentCost    = sum(mTEPES.pDiscountFactor[p] * mTEPES.pGenInvestCost[gc]       * OptModel.vGenerationInvest[p,gc]()       for p,gc       in mTEPES.pgc)
     GenRetirementCost    = sum(mTEPES.pDiscountFactor[p] * mTEPES.pGenRetireCost[gd]       * OptModel.vGenerationRetire[p,gd]()       for p,gd       in mTEPES.pgd)
     NetInvestmentCost    = sum(mTEPES.pDiscountFactor[p] * mTEPES.pNetFixedCost [ni,nf,cc] * OptModel.vNetworkInvest   [p,ni,nf,cc]() for p,ni,nf,cc in mTEPES.plc)

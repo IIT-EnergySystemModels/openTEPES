@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 21, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 03, 2023
 """
 
 import time
@@ -34,9 +34,10 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
         Solver.options['TimeLimit'     ] =    36000
         Solver.options['IterationLimit'] = 36000000
 
-    if ( mTEPES.pIndBinGenInvest()*len(mTEPES.gc)*sum(mTEPES.pIndBinUnitInvest[gc] for gc in mTEPES.gc) + mTEPES.pIndBinGenRetire() *len(mTEPES.gd)*sum(mTEPES.pIndBinUnitRetire[gd] for gd in mTEPES.gd) + mTEPES.pIndBinNetInvest() *len(mTEPES.lc)*sum(mTEPES.pIndBinLineInvest[lc] for lc in mTEPES.lc) +
-         mTEPES.pIndBinGenOperat()*len(mTEPES.nr)*sum(mTEPES.pIndBinUnitCommit[nr] for nr in mTEPES.nr) +                                                                                                   mTEPES.pIndBinLineCommit()*len(mTEPES.la)*sum(mTEPES.pIndBinLineSwitch[la] for la in mTEPES.la) + len(mTEPES.g2g) == 0 or
-       (len(mTEPES.gc) == 0 or (len(mTEPES.gc) > 0 and mTEPES.pIndBinGenInvest() == 2)) and (len(mTEPES.gd) == 0 or (len(mTEPES.gd) > 0 and mTEPES.pIndBinGenRetire() == 2)) and (len(mTEPES.lc) == 0 or (len(mTEPES.lc) > 0 and mTEPES.pIndBinNetInvest() == 2)) and pIndFirstPeriodScenario == 1):
+    if (mTEPES.pIndBinGenInvest()*len(mTEPES.gc)*sum(mTEPES.pIndBinUnitInvest[gc] for gc in mTEPES.gc) + mTEPES.pIndBinGenRetire() *len(mTEPES.gd)*sum(mTEPES.pIndBinUnitRetire[gd] for gd in mTEPES.gd) + mTEPES.pIndBinNetInvest() *len(mTEPES.lc)*sum(mTEPES.pIndBinLineInvest[lc] for lc in mTEPES.lc) +
+        mTEPES.pIndBinGenOperat()*len(mTEPES.nr)*sum(mTEPES.pIndBinUnitCommit[nr] for nr in mTEPES.nr) +                                                                                                   mTEPES.pIndBinLineCommit()*len(mTEPES.la)*sum(mTEPES.pIndBinLineSwitch[la] for la in mTEPES.la) + len(mTEPES.g2g) == 0 or
+        ((len(mTEPES.gc) == 0 or (len(mTEPES.gc) > 0 and mTEPES.pIndBinGenInvest() == 2)) and (len(mTEPES.gd) == 0 or (len(mTEPES.gd) > 0 and mTEPES.pIndBinGenRetire() == 2)) and (len(mTEPES.lc) == 0 or (len(mTEPES.lc) > 0 and mTEPES.pIndBinNetInvest()  == 2)) and
+         (len(mTEPES.nr) == 0 or (len(mTEPES.nr) > 0 and mTEPES.pIndBinGenOperat() == 0)) and                                                                                      (len(mTEPES.la) == 0 or (len(mTEPES.la) > 0 and mTEPES.pIndBinLineCommit() == 0)) and pIndFirstPeriodScenario == 1)):
         # there are no binary decisions (no investment/retirement decisions or investment/retirement decisions already ignored, no line switching/unit commitment, no mutually exclusive units)
         OptModel.dual = Suffix(direction=Suffix.IMPORT_EXPORT)
         OptModel.rc   = Suffix(direction=Suffix.IMPORT_EXPORT)
@@ -53,9 +54,10 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
     #%% fix values of some variables to get duals and solve it again
     # binary/continuous investment decisions are fixed to their optimal values
     # binary            operation  decisions are fixed to their optimal values
-    if    (mTEPES.pIndBinGenInvest()*len(mTEPES.gc)*sum(mTEPES.pIndBinUnitInvest[gc] for gc in mTEPES.gc) + mTEPES.pIndBinGenRetire()*len(mTEPES.gd)*sum(mTEPES.pIndBinUnitRetire[gd] for gd in mTEPES.gd) + mTEPES.pIndBinNetInvest() *len(mTEPES.lc)*sum(mTEPES.pIndBinLineInvest[lc] for lc in mTEPES.lc) +
-           mTEPES.pIndBinGenOperat()*len(mTEPES.nr)*sum(mTEPES.pIndBinUnitCommit[nr] for nr in mTEPES.nr) +                                                                                                  mTEPES.pIndBinLineCommit()*len(mTEPES.la)*sum(mTEPES.pIndBinLineSwitch[la] for la in mTEPES.la) + len(mTEPES.g2g) > 0 and
-         ((len(mTEPES.gc) > 0 and mTEPES.pIndBinGenInvest() != 2) or (len(mTEPES.gd) > 0 and mTEPES.pIndBinGenRetire() != 2) or (len(mTEPES.lc) > 0 and mTEPES.pIndBinNetInvest() != 2))):
+    if (mTEPES.pIndBinGenInvest()*len(mTEPES.gc)*sum(mTEPES.pIndBinUnitInvest[gc] for gc in mTEPES.gc) + mTEPES.pIndBinGenRetire()*len(mTEPES.gd)*sum(mTEPES.pIndBinUnitRetire[gd] for gd in mTEPES.gd) + mTEPES.pIndBinNetInvest() *len(mTEPES.lc)*sum(mTEPES.pIndBinLineInvest[lc] for lc in mTEPES.lc) +
+        mTEPES.pIndBinGenOperat()*len(mTEPES.nr)*sum(mTEPES.pIndBinUnitCommit[nr] for nr in mTEPES.nr) +                                                                                                  mTEPES.pIndBinLineCommit()*len(mTEPES.la)*sum(mTEPES.pIndBinLineSwitch[la] for la in mTEPES.la) + len(mTEPES.g2g) > 0 and
+        ((len(mTEPES.gc) > 0 and mTEPES.pIndBinGenInvest() != 2) or (len(mTEPES.gd) > 0 and mTEPES.pIndBinGenRetire() != 2) or (len(mTEPES.lc) > 0 and mTEPES.pIndBinNetInvest()  != 2) or
+         (len(mTEPES.nr) > 0 and mTEPES.pIndBinGenOperat() == 0) or                                                            (len(mTEPES.la) > 0 and mTEPES.pIndBinLineCommit() == 0))):
         if mTEPES.pIndBinGenInvest()*len(mTEPES.gc)*sum(mTEPES.pIndBinUnitInvest[gc] for gc in mTEPES.gc):
             for gc in mTEPES.gc:
                 if mTEPES.pIndBinUnitInvest[gc] != 0:
