@@ -7,7 +7,7 @@ The model has being used in these research projects:
 - `Analysis of the role of pumped-hydro storage power plants in the Spanish NECP 2030 <https://www.iit.comillas.edu/proyectos/mostrar_proyecto.php.en?nombre_abreviado=IBD_ANALISIS_H2030-50>`_, developed for **Iberdrola**.
   July 2023 - October 2023. `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `P. Linares <https://www.iit.comillas.edu/people/pedrol>`_, `J.P. Chaves <https://www.iit.comillas.edu/people/jchaves>`_, `M. Rivier <https://www.iit.comillas.edu/people/michel>`_, `T. Gómez <https://www.iit.comillas.edu/people/tomas>`_
 
-    It aims to evaluate the role pumped-hydro storage power plants in the Spanish NECP 2030.
+    It aims to evaluate the role pumped-hydro storage power plants in the Spanish NECP 2023.
 
 - Open Modelling Toolbox for development of long-term pathways for the energy system in Africa (OpenMod4Africa), developed for the **European Union**. July 2023 - June 2026.
   `L. Olmos <https://www.iit.comillas.edu/people/olmos>`_, `S. Lumbreras <https://www.iit.comillas.edu/people/slumbreras>`_, `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_
