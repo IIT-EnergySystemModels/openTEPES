@@ -12,6 +12,7 @@ The model has being used in these research projects:
 - Open Modelling Toolbox for development of long-term pathways for the energy system in Africa (OpenMod4Africa), developed for the **European Union**. July 2023 - June 2026.
 
     It aims to develop an open toolbox populated with state-of-the-art models for analysing long-term pathways to sustainable, secure and competitive energy systems in Africa.
+    The Toolbox will build on EU projects like Open ENTRANCE, Plan4RES and FocusAfrica, and will adapt and further develop open models in accordance with the African context and needs.
 
 - `Analysis of the technical and economic benefits of solar thermal generation in the Spanish peninsular system <https://www.iit.comillas.edu/proyectos/mostrar_proyecto.php.es?nombre_abreviado=ProTermosolar_Presentacion>`_, developed for **ProTermosolar**.
   March 2023. `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `L. Sigrist <https://www.iit.comillas.edu/people/lsigrist>`_
