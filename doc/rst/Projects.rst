@@ -13,7 +13,7 @@ The model has being used in these research projects:
   `L. Olmos <https://www.iit.comillas.edu/people/olmos>`_, `S. Lumbreras <https://www.iit.comillas.edu/people/slumbreras>`_, `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_
 
     It aims to develop an open toolbox populated with state-of-the-art models for analysing long-term pathways to sustainable, secure and competitive energy systems in Africa.
-    The Toolbox will build on EU projects like Open ENTRANCE, Plan4RES and FocusAfrica, and will adapt and further develop open models in accordance with the African context and needs.
+    The Toolbox will build on EU projects like openENTRANCE, Plan4RES and FocusAfrica, and will adapt and further develop open models in accordance with the African context and needs.
     The models are scalable, and can be applied to cities, industries and countries. Furthermore, a main objective for OpenMod4Africa is capacity building among energy models in academia.
     Four African universities will be actively involved in adapting models and conducting two regional case studies. The additional capacity and the open Toolbox will enable the universities
     to train new generations of energy modelling experts for the energy industries in Africa.
