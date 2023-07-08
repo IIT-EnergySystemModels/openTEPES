@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 03, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 08, 2023
 """
 
 import datetime
@@ -518,47 +518,20 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
 
     mTEPES.g2g = Set(initialize=pExclusiveGen2Gen.index, ordered=False, doc='mutually exclusive generator to generator', filter=lambda mTEPES,gg,g: (gg,g) in mTEPES.gg*mTEPES.g)
 
-    # minimum and maximum variable power
-    pVariableMinPower   = pVariableMinPower.replace(0.0, float('nan'))
-    pVariableMaxPower   = pVariableMaxPower.replace(0.0, float('nan'))
-    pMinPower           = pd.DataFrame([pRatedMinPower]*len(pVariableMinPower.index), index=pVariableMinPower.index, columns=pRatedMinPower.index)
-    pMaxPower           = pd.DataFrame([pRatedMaxPower]*len(pVariableMaxPower.index), index=pVariableMaxPower.index, columns=pRatedMaxPower.index)
-    pMinPower           = pMinPower.reindex        (sorted(pMinPower.columns        ), axis=1)
-    pMaxPower           = pMaxPower.reindex        (sorted(pMaxPower.columns        ), axis=1)
-    pVariableMinPower   = pVariableMinPower.reindex(sorted(pVariableMinPower.columns), axis=1)
-    pVariableMaxPower   = pVariableMaxPower.reindex(sorted(pVariableMaxPower.columns), axis=1)
-    pMinPower           = pVariableMinPower.where         (pVariableMinPower != pMinPower, other=pMinPower)
-    pMaxPower           = pVariableMaxPower.where         (pVariableMaxPower <= pMaxPower, other=pMaxPower)
-    pMinPower           = pMinPower.where                 (pMinPower > 0.0, other=0.0)
-    pMaxPower           = pMaxPower.where                 (pMaxPower > 0.0, other=0.0)
+    # minimum and maximum variable power, charge, and storage capacity
+    pMinPower   = pVariableMinPower.replace  (0.0, pRatedMinPower  )
+    pMaxPower   = pVariableMaxPower.replace  (0.0, pRatedMaxPower  )
+    pMinCharge  = pVariableMinCharge.replace (0.0, pRatedMinCharge )
+    pMaxCharge  = pVariableMaxCharge.replace (0.0, pRatedMaxCharge )
+    pMinStorage = pVariableMinStorage.replace(0.0, pRatedMinStorage)
+    pMaxStorage = pVariableMaxStorage.replace(0.0, pRatedMaxStorage)
 
-    # minimum and maximum variable charge
-    pVariableMinCharge  = pVariableMinCharge.replace(0.0, float('nan'))
-    pVariableMaxCharge  = pVariableMaxCharge.replace(0.0, float('nan'))
-    pMinCharge          = pd.DataFrame([pRatedMinCharge]*len(pVariableMinCharge.index), index=pVariableMinCharge.index, columns=pRatedMinCharge.index)
-    pMaxCharge          = pd.DataFrame([pRatedMaxCharge]*len(pVariableMaxCharge.index), index=pVariableMaxCharge.index, columns=pRatedMaxCharge.index)
-    pMinCharge          = pMinCharge.reindex        (sorted(pMinCharge.columns        ), axis=1)
-    pMaxCharge          = pMaxCharge.reindex        (sorted(pMaxCharge.columns        ), axis=1)
-    pVariableMinCharge  = pVariableMinCharge.reindex(sorted(pVariableMinCharge.columns), axis=1)
-    pVariableMaxCharge  = pVariableMaxCharge.reindex(sorted(pVariableMaxCharge.columns), axis=1)
-    pMinCharge          = pVariableMinCharge.where         (pVariableMinCharge != pMinCharge, other=pMinCharge)
-    pMaxCharge          = pVariableMaxCharge.where         (pVariableMaxCharge <= pMaxCharge, other=pMaxCharge)
-    pMinCharge          = pMinCharge.where                 (pMinCharge > 0.0, other=0.0)
-    pMaxCharge          = pMaxCharge.where                 (pMaxCharge > 0.0, other=0.0)
-
-    # minimum and maximum variable storage capacity
-    pVariableMinStorage = pVariableMinStorage.replace(0.0, float('nan'))
-    pVariableMaxStorage = pVariableMaxStorage.replace(0.0, float('nan'))
-    pMinStorage         = pd.DataFrame([pRatedMinStorage]*len(pVariableMinStorage.index), index=pVariableMinStorage.index, columns=pRatedMinStorage.index)
-    pMaxStorage         = pd.DataFrame([pRatedMaxStorage]*len(pVariableMaxStorage.index), index=pVariableMaxStorage.index, columns=pRatedMaxStorage.index)
-    pMinStorage         = pMinStorage.reindex        (sorted(pMinStorage.columns        ), axis=1)
-    pMaxStorage         = pMaxStorage.reindex        (sorted(pMaxStorage.columns        ), axis=1)
-    pVariableMinStorage = pVariableMinStorage.reindex(sorted(pVariableMinStorage.columns), axis=1)
-    pVariableMaxStorage = pVariableMaxStorage.reindex(sorted(pVariableMaxStorage.columns), axis=1)
-    pMinStorage         = pVariableMinStorage.where         (pVariableMinStorage != pMinStorage, other=pMinStorage)
-    pMaxStorage         = pVariableMaxStorage.where         (pVariableMaxStorage <= pMaxStorage, other=pMaxStorage)
-    pMinStorage         = pMinStorage.where                 (pMinStorage > 0.0, other=0.0)
-    pMaxStorage         = pMaxStorage.where                 (pMaxStorage > 0.0, other=0.0)
+    pMinPower   = pMinPower.where  (pMinPower   > 0.0, other=0.0)
+    pMaxPower   = pMaxPower.where  (pMaxPower   > 0.0, other=0.0)
+    pMinCharge  = pMinCharge.where (pMinCharge  > 0.0, other=0.0)
+    pMaxCharge  = pMaxCharge.where (pMaxCharge  > 0.0, other=0.0)
+    pMinStorage = pMinStorage.where(pMinStorage > 0.0, other=0.0)
+    pMaxStorage = pMaxStorage.where(pMaxStorage > 0.0, other=0.0)
 
     # fuel term and constant term variable cost
     pVarLinearVarCost   =              (dfGeneration['LinearTerm'  ] * 1e-3 * pVariableFuelCost       +dfGeneration['OMVariableCost'] * 1e-3).replace(0.0, float('nan'))
@@ -1027,10 +1000,8 @@ def SettingUpVariables(OptModel, mTEPES):
     for p,sc,n,re in mTEPES.psnre:
         OptModel.vTotalOutput[p,sc,n,re].setlb(mTEPES.pMinPower[p,sc,n,re])
 
-    # assign the minimum power for the units that can be committed
     # relax binary condition in unit generation, startup and shutdown decisions
     for p,sc,n,nr in mTEPES.psnnr:
-        OptModel.vTotalOutput[p,sc,n,nr].setlb(mTEPES.pMinPower[p,sc,n,nr])
         if mTEPES.pIndBinUnitCommit[nr] == 0:
             OptModel.vCommitment   [p,sc,n,nr].domain = UnitInterval
             OptModel.vStartUp      [p,sc,n,nr].domain = UnitInterval

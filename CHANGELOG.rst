@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.11.14rc5] - 2023-07-03
---------------------
+[4.11.14] - 2023-07-08
+----------------------
+- [FIXED] simplify input data and fix division by zero in output results
 - [FIXED] several fixes in input data, model formulation, problem solving, and output results modules
 - [FIXED] fix output of investment results
 - [FIXED] reorganize the balance equation to avoid negative dual variables
@@ -13,97 +14,97 @@ Change Log
 - [CHANGED] add problem size in log file
 
 [4.11.13] - 2023-06-18
---------------------
+----------------------
 - [FIXED] fixed error in marginals of adequacy constraints
 - [FIXED] fixed error in output results
 
 [4.11.12] - 2023-06-12
---------------------
+----------------------
 - [FIXED] fixed error in writing technology emission file of output results
 
 [4.11.11] - 2023-06-08
---------------------
+----------------------
 - [CHANGED] performance issues in input data and model formulation
 
 [4.11.10] - 2023-06-06
---------------------
+----------------------
 - [CHANGED] performance issues in input data
 - [CHANGED] clean up the scaling of the output results
 
 [4.11.9] - 2023-05-30
---------------------
+---------------------
 - [CHANGED] avoid the repeated computation of modulo function with n
 - [FIXED] fix error in output results
 - [FIXED] fix computation of MarginalIncrementalGenerator output file
 
 [4.11.8] - 2023-05-29
---------------------
+---------------------
 - [CHANGED] introduce some dictionaries to avoid unnecessary computations
 - [CHANGED] change name mTEPES.r to mTEPES.re
 - [CHANGED] simplify some set combinations to reduce computation time
 
 [4.11.7] - 2023-05-17
---------------------
+---------------------
 - [CHANGED] reorganizing the ifs in model formulation
 
 [4.11.6] - 2023-05-15
---------------------
+---------------------
 - [CHANGED] adapt figures to altair 5.0.0
 
 [4.11.5] - 2023-05-13
---------------------
+---------------------
 - [CHANGED] fix some typos
 
 [4.11.3] - 2023-04-11
---------------------
+---------------------
 - [CHANGED] change boolean to binary parameters
 - [CHANGED] get dual variables for each solved problem
 
 [4.11.2] - 2023-04-07
---------------------
+---------------------
 - [CHANGED] avoid formulation of period/scenario not solved
 
 [4.11.1] - 2023-03-31
---------------------
+---------------------
 - [FIXED] reorganize the problem solving by period
 - [FIXED] split formulation by period and scenario
 
 [4.11.0] - 2023-03-28
---------------------
+---------------------
 - [CHANGED] if no investment decisions all the scenarios with probability > 0 area solved sequentially
 - [CHANGED] new VariableFuelCost input data file
 
 [4.10.6] - 2023-03-21
---------------------
+---------------------
 - [FIXED] fix a typo in the generation unit investment file
 
 [4.10.5] - 2023-03-17
---------------------
+---------------------
 - [FIXED] fix a typo in the generation unit investment file
 - [FIXED] fix a typo in the name of the technology energy plot
 - [FIXED] fix a typo in generation operation output results
 
 [4.10.4] - 2023-03-15
---------------------
+---------------------
 - [CHANGED] allow negative CO2 emission rate for biomass units
 
 [4.10.3] - 2023-03-10
---------------------
+---------------------
 - [CHANGED] introduce incompatibility constraint between charge and outflows use
 
 [4.10.2] - 2023-03-09
---------------------
+---------------------
 - [CHANGED] introduce incompatibility constraint between charge and outflows use
 - [CHANGED] introduce conditions to avoid doing unnecessary computations in input data
 - [CHANGED] introduce indicators to allow selecting output results
 
 [4.10.1] - 2023-02-27
---------------------
+---------------------
 - [FIXED] typo in writing ESS operation results
 - [FIXED] typo in control of minimum energy infeasibility
 
 [4.10.0] - 2023-02-15
---------------------
+---------------------
 - [CHANGED] introduce control of minimum energy infeasibility
 - [CHANGED] scale eMaxInventory2Comm, eMinInventory2Comm, and eInflows2Comm constraints
 - [FIXED] force time step cycle for ESS inventory scheduling to be integer
