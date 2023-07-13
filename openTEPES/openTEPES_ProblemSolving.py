@@ -23,7 +23,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
         Solver.options['LogFile'       ] = _path+'/openTEPES_gurobi_'+CaseName+'.log'
         # Solver.options['IISFile'     ] = _path+'/openTEPES_gurobi_'+CaseName+'.ilp'               # should be uncommented to show results of IIS
         Solver.options['Method'        ] = 2                                                 # barrier method
-        Solver.options['MIPFocus'      ] = 1
+        Solver.options['MIPFocus'      ] = 3
         Solver.options['Presolve'      ] = 2
         Solver.options['RINS'          ] = 100
         Solver.options['Crossover'     ] = -1
@@ -109,7 +109,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
     SolvingTime = time.time() - StartTime
 
     print('***** Period: '+str(p)+', Scenario: '+str(sc)+' ******')
-    print('  Problem size                         ... ', OptModel.model().nconstraints(), 'constraints ', OptModel.model().nvariables()-mTEPES.nFixedVariables+1, 'variables')
+    print('  Problem size                         ... ', OptModel.model().nconstraints(), 'constraints, ', OptModel.model().nvariables()-mTEPES.nFixedVariables+1, 'variables')
     print('  Solution time                        ... ', round(SolvingTime), 's')
     print('  Total system                 cost [MEUR] ', OptModel.vTotalSCost())
     print('  Total generation  investment cost [MEUR] ', sum(mTEPES.pDiscountFactor[p] * mTEPES.pGenInvestCost[gc      ]   * OptModel.vGenerationInvest[p,gc      ]() for gc       in mTEPES.gc))
