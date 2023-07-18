@@ -4,11 +4,6 @@ Research projects
 =================
 The model has being used in these research projects:
 
-- `Analysis of the role of pumped-hydro storage power plants in the Spanish NECP 2030 <https://www.iit.comillas.edu/proyectos/mostrar_proyecto.php.en?nombre_abreviado=IBD_PNIEC_Bbo>`_, developed for **Iberdrola**.
-  July 2023 - October 2023. `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `P. Linares <https://www.iit.comillas.edu/people/pedrol>`_, `J.P. Chaves <https://www.iit.comillas.edu/people/jchaves>`_, `M. Rivier <https://www.iit.comillas.edu/people/michel>`_, `T. Gómez <https://www.iit.comillas.edu/people/tomas>`_
-
-    It aims to evaluate the role pumped-hydro storage power plants in the Spanish NECP 2030.
-
 - Open Modelling Toolbox for development of long-term pathways for the energy system in Africa (OpenMod4Africa), developed for the **European Union**. July 2023 - June 2026.
   `L. Olmos <https://www.iit.comillas.edu/people/olmos>`_, `S. Lumbreras <https://www.iit.comillas.edu/people/slumbreras>`_, `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_
 
@@ -17,6 +12,16 @@ The model has being used in these research projects:
     The models are scalable, and can be applied to cities, industries and countries. Furthermore, a main objective for OpenMod4Africa is capacity building among energy models in academia.
     Four African universities will be actively involved in adapting models and conducting two regional case studies. The additional capacity and the open Toolbox will enable the universities
     to train new generations of energy modelling experts for the energy industries in Africa.
+
+- `Analysis of the role of pumped-hydro storage power plants in the Spanish NECP 2030 <https://www.iit.comillas.edu/proyectos/mostrar_proyecto.php.en?nombre_abreviado=IBD_PNIEC_Bbo>`_, developed for **Iberdrola**.
+  July 2023 - October 2023. `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `P. Linares <https://www.iit.comillas.edu/people/pedrol>`_, `J.P. Chaves <https://www.iit.comillas.edu/people/jchaves>`_, `M. Rivier <https://www.iit.comillas.edu/people/michel>`_, `T. Gómez <https://www.iit.comillas.edu/people/tomas>`_
+
+    It aims to evaluate the role pumped-hydro storage power plants in the Spanish NECP 2030.
+
+- `Support in the preparation of the application to the call on innovative energy storage systems <https://www.iit.comillas.edu/proyectos/mostrar_proyecto.php.en?nombre_abreviado=GlideEnergySoporteProyectosAlmacenamiento>`_, developed for **Glide Energy**.
+  June 2023 - October 2023. `L. Rouco <https://www.iit.comillas.edu/people/rouco>`_, `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `F.M. Echavarren <https://www.iit.comillas.edu/people/pacoec>`_, `R. Cossent <https://www.iit.comillas.edu/people/rcossent>`_
+
+    It is aimed at supporting Glide Energy in the preparation of the application to the call of the Spanish Ministry of Ecological Transition on innovative energy storage systems.
 
 - `Analysis of the technical and economic benefits of solar thermal generation in the Spanish peninsular system <https://www.iit.comillas.edu/proyectos/mostrar_proyecto.php.en?nombre_abreviado=ProTermosolar_Presentacion>`_, developed for **ProTermosolar**.
   March 2023. `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `L. Sigrist <https://www.iit.comillas.edu/people/lsigrist>`_
