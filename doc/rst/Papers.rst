@@ -18,6 +18,10 @@ The model has being used in these publications:
 
 - P. Linares, J.P. Chaves, J. García, J.F. Gutiérrez, A. Ramos, J.J. Valentín "How much storage do we need for the energy transition?". *Second World openTEPES Conference*, July 2023. (`Presentation <https://pascua.iit.comillas.edu/aramos/papers/Linares_etal_openTEPESWorldConference.pdf>`_)
 
+.. image:: ../img/ConferenceOpenTEPES_banner.png
+   :scale: 30%
+   :align: center
+
 - A. Ramos "Ayudando en los estudios eléctricos para hacer la transición energética". OptiMad 2023, Mayo 2023. (`Presentation <https://pascua.iit.comillas.edu/aramos/papers/OptiMad_openTEPES.pdf>`_)
 
 - J.J. Valentín, J.P. Chaves, P. Linares, A. Ramos "`Análisis de las necesidades de almacenamiento eléctrico de España en el horizonte 2030 <https://www.funcas.es/wp-content/uploads/2023/01/PEE-174_Valentin_Chaves_Linares_Ramos.pdf>`_". Papeles de Energía 174, 72-91, Diciembre 2022.
