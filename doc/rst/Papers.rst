@@ -14,12 +14,12 @@ The model has being used in these publications:
 
 - J.D. Gómez-Pérez, A. Ramos "Characterizing the Spanish hydro basins for their use in openTEPES". *Second World openTEPES Conference*, July 2023.
 
-- S. Gómez "openTEPES in the FLEXENER Project". *Second World openTEPES Conference*, July 2023.
+- S. Gómez "openTEPES in the FlexEner Project". *Second World openTEPES Conference*, July 2023.
 
 - P. Linares, J.P. Chaves, J. García, J.F. Gutiérrez, A. Ramos, J.J. Valentín "How much storage do we need for the energy transition?". *Second World openTEPES Conference*, July 2023. (`Presentation <https://pascua.iit.comillas.edu/aramos/papers/Linares_etal_openTEPESWorldConference.pdf>`_)
 
 .. image:: ../img/ConferenceOpenTEPES_banner.png
-   :scale: 30%
+   :scale: 5%
    :align: center
 
 - A. Ramos "Ayudando en los estudios eléctricos para hacer la transición energética". OptiMad 2023, Mayo 2023. (`Presentation <https://pascua.iit.comillas.edu/aramos/papers/OptiMad_openTEPES.pdf>`_)
