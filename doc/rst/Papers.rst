@@ -4,19 +4,19 @@ Publications
 =================
 The model has being used in these publications:
 
+- A. Ramos, E. Álvarez "Software implementation". *Second World openTEPES Conference*, July 2023. (`Presentation <https://pascua.iit.comillas.edu/aramos/papers/openTEPES_SoftwareImplementation.pdf>`_)
+
+- A. Ramos, S. Huclin, J.P. Chaves "Analysis of different flexible technologies in the Spain NECP for 2030". *Second World openTEPES Conference*, July 2023. (`Presentation <https://pascua.iit.comillas.edu/aramos/papers/SystemFlexibility.pdf>`_)
+
 - E. Álvarez, L. Olmos, A. Ramos, K. Antoniadou-Plytaria, D. Steen, and L.A. Tuan "Values and Impacts of Incorporating Local Flexibility Services in Transmission Expansion Planning". *Second World openTEPES Conference*, July 2023. (`Presentation <https://pascua.iit.comillas.edu/aramos/papers/TSO-DSO_Presentation_openTEPESWorldConference_v2.pdf>`_)
 
-- D. Oliviera "Impact of the different EV charging strategies at European scale". *Second World openTEPES Conference*, July 2023.
-
-- S. Gómez "openTEPES in the FLEXENER Project". *Second World openTEPES Conference*, July 2023.
-
-- P. Linares, J.P. Chaves, J. García, J.F. Gutiérrez, A. Ramos, J.J. Valentín "How much storage do we need for the energy transition?". *Second World openTEPES Conference*, July 2023.
-
-- A. Ramos, E. Álvarez "Software implementation". *Second World openTEPES Conference*, July 2023. (`Presentation <https://pascua.iit.comillas.edu/aramos/papers/openTEPES_SoftwareImplementation.pdf>`_)
+- D. Oliviera, L. Olmos, A. Ramos, S. Lumbreras "Impact of the different EV charging strategies at European scale". *Second World openTEPES Conference*, July 2023.
 
 - J.D. Gómez-Pérez, A. Ramos "Characterizing the Spanish hydro basins for their use in openTEPES". *Second World openTEPES Conference*, July 2023.
 
-- A. Ramos, S. Huclin, J.P. Chaves "Analysis of different flexible technologies in the Spain NECP for 2030". *Second World openTEPES Conference*, July 2023. (`Presentation <https://pascua.iit.comillas.edu/aramos/papers/SystemFlexibility.pdf>`_)
+- S. Gómez "openTEPES in the FLEXENER Project". *Second World openTEPES Conference*, July 2023.
+
+- P. Linares, J.P. Chaves, J. García, J.F. Gutiérrez, A. Ramos, J.J. Valentín "How much storage do we need for the energy transition?". *Second World openTEPES Conference*, July 2023. (`Presentation <https://pascua.iit.comillas.edu/aramos/papers/Linares_etal_openTEPESWorldConference.pdf>`_)
 
 - A. Ramos "Ayudando en los estudios eléctricos para hacer la transición energética". OptiMad 2023, Mayo 2023. (`Presentation <https://pascua.iit.comillas.edu/aramos/papers/OptiMad_openTEPES.pdf>`_)
 
