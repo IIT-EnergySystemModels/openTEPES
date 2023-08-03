@@ -171,7 +171,7 @@ Identifier      Identifier      Header        Description
 Period          Scenario        Probability   Probability of each scenario in each period  p.u.
 ==============  ==============  ============  ===========================================  ====
 
-For example, the scenarios can be used for obtaining the GEP+SEP+TEP considering hydro inflows uncertainty represented by means of three scenarios (wet, dry and average), or two VRE scenarios (windy/cloudy and calm/sunny).
+For example, the scenarios can be used for obtaining the GEP+SEP+TEP considering hydro energy inflows uncertainty represented by means of three scenarios (wet, dry and average), or two VRE scenarios (windy/cloudy and calm/sunny).
 The sum of the probabilities of all the scenarios of a period must be 1.
 
 Stage
@@ -271,61 +271,62 @@ Generation
 ----------
 A description of the data included for each generating unit in the file ``oT_Data_Generation.csv`` follows:
 
-====================  ======================================================================================================================  ===================================
+====================  ================================================================================================================================  ===================================
 Header                Description
-====================  ======================================================================================================================  ===================================
+====================  ================================================================================================================================  ===================================
 Node                  Name of the node where generator is located. If left empty, the generator is ignored
 Technology            Technology of the generator (nuclear, coal, CCGT, OCGT, ESS, solar, wind, biomass, etc.)
 MutuallyExclusive     Mutually exclusive generator. Only exclusion in one direction is needed
-BinaryCommitment      Binary unit commitment decision                                                                                         Yes/No
-NoOperatingReserve    No contribution to operating reserve. Yes if the unit doesn't contribute to the operating reserve                       Yes/No
-StorageType           Storage type based on storage capacity (hourly, daily, weekly, 4-week, yearly)                                          Hourly/Daily/Weekly/Monthly/Yearly
-OutflowsType          Outflows type based on the demand extracted from the storage (daily, weekly, 4-week, yearly)                            Daily/Weekly/Monthly/Yearly
-EnergyType            Energy type based on the max/min energy to be produced by the unit (daily, weekly, 4-week, yearly)                      Daily/Weekly/Monthly/Yearly
-MustRun               Must-run unit                                                                                                           Yes/No
-InitialPeriod         Initial period (year) when the unit is installed or can be installed, if candidate                                      Year
-FinalPeriod           Final   period (year) when the unit is installed or can be installed, if candidate                                      Year
-MaximumPower          Maximum power output (generation/discharge for ESS units)                                                               MW
-MinimumPower          Minimum power output (i.e., minimum stable load in the case of a thermal power plant)                                   MW
-MaximumReactivePower  Maximum reactive power output (discharge for ESS units) (not used in this version)                                      MW
-MinimumReactivePower  Minimum reactive power output (not used in this version)                                                                MW
-MaximumCharge         Maximum consumption/charge when the ESS unit is storing energy                                                          MW
-MinimumCharge         Minimum consumption/charge when the ESS unit is storing energy                                                          MW
-InitialStorage        Initial energy stored at the first instant of the time scope                                                            GWh
-MaximumStorage        Maximum energy that can be stored by the ESS unit                                                                       GWh
-MinimumStorage        Minimum energy that can be stored by the ESS unit                                                                       GWh
-Efficiency            Round-trip efficiency of the pump/turbine cycle of a pumped-hydro storage power plant or charge/discharge of a battery  p.u.
-Availability          Unit availability for system adequacy reserve margin                                                                    p.u.
-Inertia               Unit inertia constant                                                                                                   s
-EFOR                  Equivalent Forced Outage Rate                                                                                           p.u.
-RampUp                Ramp up   rate for generating units or maximum discharge rate for ESS discharge                                         MW/h
-RampDown              Ramp down rate for generating units or maximum    charge rate for ESS    charge                                         MW/h
-UpTime                Minimum uptime                                                                                                          h
-DownTime              Minimum downtime                                                                                                        h
-ShiftTime             Maximum shift time                                                                                                      h
-FuelCost              Fuel cost                                                                                                               €/Mcal
-LinearTerm            Linear term (slope) of the heat rate straight line                                                                      Mcal/MWh
-ConstantTerm          Constant term (intercept) of the heat rate straight line                                                                Mcal/h
-OMVariableCost        Variable O&M cost                                                                                                       €/MWh
-OperReserveCost       Operating reserve cost                                                                                                  €/MW
-StartUpCost           Startup  cost                                                                                                           M€
-ShutDownCost          Shutdown cost                                                                                                           M€
-CO2EmissionRate       CO2 emission rate. It can be negative for units absorbing CO2 emissions as biomass                                      tCO2/MWh
-FixedInvestmentCost   Overnight investment (capital and fixed O&M) cost                                                                       M€
-FixedRetirementCost   Overnight retirement (capital and fixed O&M) cost                                                                       M€
-FixedChargeRate       Fixed-charge rate to annualize the overnight investment cost                                                            p.u.
-StorageInvestment     Storage capacity and inflows linked to the investment decision                                                          Yes/No
-BinaryInvestment      Binary unit investment decision                                                                                         Yes/No
-InvestmentLo          Lower bound of investment decision                                                                                      p.u.
-InvestmentUp          Upper bound of investment decision                                                                                      p.u.
-BinaryRetirement      Binary unit retirement decision                                                                                         Yes/No
-RetirementLo          Lower bound of retirement decision                                                                                      p.u.
-RetirementUp          Upper bound of retirement decision                                                                                      p.u.
-====================  ======================================================================================================================  ===================================
+BinaryCommitment      Binary unit commitment decision                                                                                                   Yes/No
+NoOperatingReserve    No contribution to operating reserve. Yes if the unit doesn't contribute to the operating reserve                                 Yes/No
+StorageType           Storage type based on storage capacity (hourly, daily, weekly, 4-week, yearly)                                                    Hourly/Daily/Weekly/Monthly/Yearly
+OutflowsType          Outflows type based on the demand extracted from the storage (daily, weekly, 4-week, yearly)                                      Daily/Weekly/Monthly/Yearly
+EnergyType            Energy type based on the max/min energy to be produced by the unit (daily, weekly, 4-week, yearly)                                Daily/Weekly/Monthly/Yearly
+MustRun               Must-run unit                                                                                                                     Yes/No
+InitialPeriod         Initial period (year) when the unit is installed or can be installed, if candidate                                                Year
+FinalPeriod           Final   period (year) when the unit is installed or can be installed, if candidate                                                Year
+MaximumPower          Maximum power output (generation/discharge for ESS units)                                                                         MW
+MinimumPower          Minimum power output (i.e., minimum stable load in the case of a thermal power plant)                                             MW
+MaximumReactivePower  Maximum reactive power output (discharge for ESS units) (not used in this version)                                                MW
+MinimumReactivePower  Minimum reactive power output (not used in this version)                                                                          MW
+MaximumCharge         Maximum consumption/charge when the ESS unit is storing energy                                                                    MW
+MinimumCharge         Minimum consumption/charge when the ESS unit is storing energy                                                                    MW
+InitialStorage        Initial energy stored at the first instant of the time scope                                                                      GWh
+MaximumStorage        Maximum energy that can be stored by the ESS unit                                                                                 GWh
+MinimumStorage        Minimum energy that can be stored by the ESS unit                                                                                 GWh
+Efficiency            Round-trip efficiency of the pump/turbine cycle of a pumped-hydro storage power plant or charge/discharge of a battery            p.u.
+ProductionFunction    Production function from water inflows to energy (only used for hydropower plants modeled with water units and basin topology)    :math:`kWh/m^3`
+Availability          Unit availability for system adequacy reserve margin                                                                              p.u.
+Inertia               Unit inertia constant                                                                                                             s
+EFOR                  Equivalent Forced Outage Rate                                                                                                     p.u.
+RampUp                Ramp up   rate for generating units or maximum discharge rate for ESS discharge                                                   MW/h
+RampDown              Ramp down rate for generating units or maximum    charge rate for ESS    charge                                                   MW/h
+UpTime                Minimum uptime                                                                                                                    h
+DownTime              Minimum downtime                                                                                                                  h
+ShiftTime             Maximum shift time                                                                                                                h
+FuelCost              Fuel cost                                                                                                                         €/Mcal
+LinearTerm            Linear term (slope) of the heat rate straight line                                                                                Mcal/MWh
+ConstantTerm          Constant term (intercept) of the heat rate straight line                                                                          Mcal/h
+OMVariableCost        Variable O&M cost                                                                                                                 €/MWh
+OperReserveCost       Operating reserve cost                                                                                                            €/MW
+StartUpCost           Startup  cost                                                                                                                     M€
+ShutDownCost          Shutdown cost                                                                                                                     M€
+CO2EmissionRate       CO2 emission rate. It can be negative for units absorbing CO2 emissions as biomass                                                tCO2/MWh
+FixedInvestmentCost   Overnight investment (capital and fixed O&M) cost                                                                                 M€
+FixedRetirementCost   Overnight retirement (capital and fixed O&M) cost                                                                                 M€
+FixedChargeRate       Fixed-charge rate to annualize the overnight investment cost                                                                      p.u.
+StorageInvestment     Storage capacity and energy inflows linked to the investment decision                                                             Yes/No
+BinaryInvestment      Binary unit investment decision                                                                                                   Yes/No
+InvestmentLo          Lower bound of investment decision                                                                                                p.u.
+InvestmentUp          Upper bound of investment decision                                                                                                p.u.
+BinaryRetirement      Binary unit retirement decision                                                                                                   Yes/No
+RetirementLo          Lower bound of retirement decision                                                                                                p.u.
+RetirementUp          Upper bound of retirement decision                                                                                                p.u.
+====================  ================================================================================================================================  ===================================
 
 Daily *storage type* means that the ESS inventory is assessed every time step, for weekly storage type it is assessed at the end of every day, and monthly/yearly storage type is assessed at the end of every week.
 *Outflows type* represents the interval when the energy extracted from the storage must be satisfied (for daily outflows type at the end of every day, i.e., the sum of the energy consumed must be equal to the sum of outflows for every day).
-*Energy type* represents the interval when the minimum or maximu energy to be produced by a unit must be satisfied (for daily energy type at the end of every day, i.e., the sum of the energy generated by the unit must be lower/greater to the sum of max/min energy for every day).
+*Energy type* represents the interval when the minimum or maximum energy to be produced by a unit must be satisfied (for daily energy type at the end of every day, i.e., the sum of the energy generated by the unit must be lower/greater to the sum of max/min energy for every day).
 The *storage cycle* is the minimum between the inventory assessment period (defined by the storage type), the outflows period (defined by the outflows type), and the energy period (defined by the energy type) (only if outflows or energy power values have been introduced).
 It can be one time step, one day, and one week.
 The ESS inventory level at the end of a larger storage cycle is fixed to its initial value, i.e., the inventory of a daily storage type (evaluated on a time step basis) is fixed at the end of the week,
@@ -413,11 +414,11 @@ Period      Scenario        Load level  Generator  Energy inflows by load level 
 
 All the generators must be defined as columns of these files.
 
-If you have daily inflows data just input the daily amount at the first hour of every day if the ESS have daily or weekly storage capacity.
+If you have daily energy inflows data just input the daily amount at the first hour of every day if the ESS have daily or weekly storage capacity.
 
 Internally, all the values below 2.5e-5 times the maximum system demand of each area will be converted into 0 by the model.
 
-Inflows are considered proportional to the invested capacity for the candidate ESS units if StorageInvestment is activated.
+Energy inflows are considered proportional to the invested capacity for the candidate ESS units if StorageInvestment is activated.
 
 Energy outflows
 ---------------
@@ -452,7 +453,7 @@ Period      Scenario        Load level  Generator  Maximum (minimum) storage of 
 
 All the generators must be defined as columns of these files.
 
-For example, these data can be used for defining the operating guide (rule) curves for the reservoirs.
+For example, these data can be used for defining the operating guide (rule) curves for the ESS.
 
 Variable maximum and minimum energy
 -----------------------------------
@@ -524,3 +525,111 @@ Identifier      Header        Description
 Node            Latitude      Node latitude     º
 Node            Longitude     Node longitude    º
 ==============  ============  ================  ==
+
+Hydro system
+------------
+
+These input files are specifically introduced for allowing a representation of the hydro system based on volume and water flow data.
+
+Dictionaries. Sets
+------------------
+The dictionaries include all the possible elements of the corresponding sets included in the optimization problem. **You can't use non-English characters (e.g., ó, º)**
+
+=============================  ===============
+File                           Description
+=============================  ===============
+``oT_Dict_Reservoir.csv``      Reservoirs
+=============================  ===============
+
+The information contained in these input files determines the topology of the hydro basins and how water flows along the different
+hydro and pumped-hydro power plants and reservoirs.
+
+=======================================  ======================  ===========================================================================================
+File                                     Dictionary              Description
+=======================================  ======================  ===========================================================================================
+``oT_Dict_ReservoirToHydro.csv``         ReservoirToHydro        Reservoir upstream of hydro power plant (i.e., hydro takes the water from the reservoir)
+``oT_Dict_HydroToReservoir.csv``         HydroToReservoir        Hydro power plant upstream of reservoir (i.e., hydro releases the water to the reservoir)
+``oT_Dict_ReservoirToPumpedHydro.csv``   ReservoirToPumpedHydro  Reservoir upstream of pumped-hydro power plant (i.e., pump-hydro pumps from the reservoir)
+``oT_Dict_PumpedHydroToReservoir.csv``   PumpedHydroToReservoir  Pumped-hydro power plant upstream of reservoir (i.e., pump-hydro pumps to the reservoir)
+``oT_Dict_ReservoirToReservoir.csv``     ReservoirToReservoir    Reservoir upstream of reservoir (i.e., reservoir one spills the water to reservoir two)
+=======================================  ======================  ===========================================================================================
+
+Hydro inflows
+-------------
+
+A description of the data included in the file ``oT_Data_HydroInflows.csv`` follows:
+
+==========  ==============  ==========  =========  ====================================  ==============
+Identifier  Identifier      Identifier  Header     Description
+==========  ==============  ==========  =========  ====================================  ==============
+Period      Scenario        Load level  Reservoir  Natural water inflows by load level   :math:`m^3/s`
+==========  ==============  ==========  =========  ====================================  ==============
+
+All the reservoirs must be defined as columns of these files.
+
+If you have daily natural hydro inflows data just input the daily amount at the first hour of every day if the reservoir have daily or weekly storage capacity.
+
+Internally, all the values below 2.5e-5 times the maximum system demand of each area will be converted into 0 by the model.
+
+Hydro outflows
+--------------
+
+A description of the data included in the file ``oT_Data_HydroOutflows.csv`` follows:
+
+==========  ==============  ==========  =========  ===================================================  =============
+Identifier  Identifier      Identifier  Header     Description
+==========  ==============  ==========  =========  ===================================================  =============
+Period      Scenario        Load level  Reservoir  Water outflows by load level (e.g., for irrigation   :math:`m^3/s`
+==========  ==============  ==========  =========  ===================================================  =============
+
+All the reservoirs must be defined as columns of these files.
+
+These water outflows can be used to represent the hydro outflows for irrigation.
+
+If you have daily/weekly/monthly/yearly water outflows data, you can just input the daily/weekly/monthly/yearly amount at the first hour of every day/week/month/year.
+
+Internally, all the values below 2.5e-5 times the maximum system demand of each area will be converted into 0 by the model.
+
+Reservoir
+---------
+
+A description of the data included in the file ``oT_Data_Reservoir.csv`` follows:
+
+====================  ======================================================================================================================  ===================================
+Header                Description
+====================  ======================================================================================================================  ===================================
+StorageType           Reservoir storage type based on reservoir storage capacity (hourly, daily, weekly, 4-week, yearly)                      Hourly/Daily/Weekly/Monthly/Yearly
+OutflowsType          Water outflows type based on the water extracted from the reservoir (daily, weekly, 4-week, yearly)                     Daily/Weekly/Monthly/Yearly
+InitialStorage        Initial energy stored at the first instant of the time scope                                                            :math:`hm^3`
+MaximumStorage        Maximum energy that can be stored by the hydro reservoir                                                                :math:`hm^3`
+MinimumStorage        Minimum energy that can be stored by the hydro reservoir                                                                :math:`hm^3`
+FixedInvestmentCost   Overnight investment (capital and fixed O&M) cost                                                                       M€
+FixedChargeRate       Fixed-charge rate to annualize the overnight investment cost                                                            p.u.
+InitialPeriod         Initial period (year) when the unit is installed or can be installed, if candidate                                      Year
+FinalPeriod           Final   period (year) when the unit is installed or can be installed, if candidate                                      Year
+====================  ======================================================================================================================  ===================================
+
+Daily *storage type* means that the ESS inventory is assessed every time step, for weekly storage type it is assessed at the end of every day, and monthly/yearly storage type is assessed at the end of every week.
+*Outflows type* represents the interval when the water extracted from the reservoir must be satisfied (for daily outflows type at the end of every day, i.e., the sum of the water consumed must be equal to the sum of water outflows for every day).
+The *storage cycle* is the minimum between the inventory assessment period (defined by the storage type), the outflows period (defined by the outflows type), and the energy period (defined by the energy type) (only if outflows or energy power values have been introduced).
+It can be one time step, one day, and one week.
+The ESS inventory level at the end of a larger storage cycle is fixed to its initial value, i.e., the inventory of a daily storage type (evaluated on a time step basis) is fixed at the end of the week,
+the inventory of weekly/monthly storage is fixed at the end of the year, only if the initial inventory lies between the storage limits.
+
+The initial reservoir storage is also fixed at the beginning and end of each stage, only if the initial inventory lies between the reservoir storage limits. For example, the initial storage level is set for the hour 8736 in case of a single stage or for the hours 4368 and 4369
+(end of the first stage and beginning of the second stage) in case of two stages, each with 4368 hours.
+
+Variable maximum and minimum reservoir volume
+---------------------------------------------
+
+A description of the data included in the files ``oT_Data_VariableMaxVolume.csv`` and ``oT_Data_VariableMinVolume.csv`` follows:
+
+==========  ==============  ==========  =========  =================================================  =============
+Identifier  Identifier      Identifier  Header     Description
+==========  ==============  ==========  =========  =================================================  =============
+Period      Scenario        Load level  Reservoir  Maximum (minimum) reservoir volume by load level   :math:`hm^3`
+==========  ==============  ==========  =========  =================================================  =============
+
+All the reservoirs must be defined as columns of these files.
+
+For example, these data can be used for defining the operating guide (rule) curves for the hydro reservoirs.

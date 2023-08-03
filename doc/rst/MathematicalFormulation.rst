@@ -21,22 +21,28 @@ Here we present the mathematical formulation of the optimization problem solved 
 Indices
 -------
 ==============  ========================================================================
-:math:`p`       Period (e.g., year)
-:math:`\omega`  Scenario
-:math:`n`       Load level (e.g., hour)
-:math:`\nu`     Time step. Duration of each load level (e.g., 2 h, 3 h)
-:math:`g`       Generator (thermal or hydro unit or energy storage system)
-:math:`t`       Thermal unit
-:math:`e`       Energy Storage System (ESS)
-:math:`i, j`    Node
-:math:`z`       Zone. Each node belongs to a zone :math:`i \in z`
-:math:`a`       Area. Each zone belongs to an area :math:`z \in a`
-:math:`r`       Region. Each area belongs to a region :math:`a \in r`
-:math:`c`       Circuit
-:math:`ijc`     Line (initial node, final node, circuit)
-:math:`EG, CG`  Set of existing and candidate generators
-:math:`EE, CE`  Set of existing and candidate ESS
-:math:`EL, CL`  Set of existing and non-switchable, and candidate and switchable lines
+:math:`p`                Period (e.g., year)
+:math:`\omega`           Scenario
+:math:`n`                Load level (e.g., hour)
+:math:`\nu`              Time step. Duration of each load level (e.g., 2 h, 3 h)
+:math:`g`                Generator (thermal or hydro unit or energy storage system)
+:math:`t`                Thermal unit
+:math:`e`                Energy Storage System (ESS)
+:math:`h`                Hydro or pumped-storage hydro power plant (associated to a reservoir modeled in water units)
+:math:`e',e''`           Reservoir (modeled in water units, natural inflows in :math:`m^3/s` and volume in :math:`hm^3`)
+:math:`h \in up(e')`     Hydro or pumped-storage hydro power plant :math:`h` upstream of reservoir :math:`e'`
+:math:`h \in dw(e')`     Hydro or pumped-storage hydro power plant :math:`h` downstream of reservoir :math:`e'`
+:math:`e'' \in up(e')`   Reservoir :math:`e''` upstream of reservoir :math:`e'`
+:math:`i, j`             Node
+:math:`z`                Zone. Each node belongs to a zone :math:`i \in z`
+:math:`a`                Area. Each zone belongs to an area :math:`z \in a`
+:math:`r`                Region. Each area belongs to a region :math:`a \in r`
+:math:`c`                Circuit
+:math:`ijc`              Line (initial node, final node, circuit)
+:math:`EG, CG`           Set of existing and candidate generators
+:math:`EE, CE`           Set of existing and candidate ESS
+:math:`ER, CR`           Set of existing and candidate reservoirs
+:math:`EL, CL`           Set of existing and non-switchable, and candidate and switchable lines
 ==============  ========================================================================
 
 Parameters
@@ -88,9 +94,9 @@ They are written in **uppercase** letters.
 :math:`SI^p_{\omega na}`        System inertia for each area                              s
 ==============================  ========================================================  ====
 
-=================================================================  ========================================================================================================================  ============
+=================================================================  ========================================================================================================================  ================
 **Generation system**
------------------------------------------------------------------  ------------------------------------------------------------------------------------------------------------------------  ------------
+-----------------------------------------------------------------  ------------------------------------------------------------------------------------------------------------------------  ----------------
 :math:`CFG_g`                                                      Annualized fixed cost of a candidate generator                                                                            M€/yr
 :math:`CFR_g`                                                      Annualized fixed cost of a candidate generator to be retired                                                              M€/yr
 :math:`A_g`                                                        Availability of each generator for adequacy reserve margin                                                                p.u.
@@ -99,7 +105,7 @@ They are written in **uppercase** letters.
 :math:`\underline{GC}^p_{\omega ne}, \overline{GC}^p_{\omega ne}`  Minimum and maximum consumption of an ESS                                                                                 GW
 :math:`CF^p_{\omega ng}, CV^p_{\omega ng}`                         Fixed (no load) and variable cost of a generator. Variable cost includes fuel and O&M                                     €/h, €/MWh
 :math:`CE_g`                                                       Emission cost of a generator                                                                                              €/MWh
-:math:`CV_e`                                                       Variable cost of an ESS when charging                                                                                     €/MWh
+:math:`CV_e`                                                       Variable cost of an ESS or pumped-storage hydro power plant when charging                                                 €/MWh
 :math:`RU_g, RD_g`                                                 Ramp up/down of a non-renewable unit or maximum discharge/charge rate for ESS discharge/charge                            MW/h
 :math:`TU_t, TD_t`                                                 Minimum uptime and downtime of a thermal unit                                                                             h
 :math:`ST_e`                                                       Maximum shift time of an ESS unit (in particular, for demand side management)                                             h
@@ -109,11 +115,14 @@ They are written in **uppercase** letters.
 :math:`\sigma_g`                                                   Energy cycle of the unit (e.g., 24, 168, 672, 8736 h -for daily, weekly, monthly, yearly-)                                h
 :math:`GI_g`                                                       Generator inertia                                                                                                         s
 :math:`EF_e`                                                       Round-trip efficiency of the pump/turbine cycle of a pumped-storage hydro power plant or charge/discharge of a battery    p.u.
-:math:`\underline{I}^p_{\omega ne}, \overline{I}^p_{\omega ne}`    Maximum and minimum capacity of an ESS (e.g., hydro power plant, closed-loop pumped-storage hydro)                        GWh
+:math:`PF_h`                                                       Production function from water inflows to energy                                                                          :math:`kWh/m^3`
+:math:`\underline{I}^p_{\omega ne}, \overline{I}^p_{\omega ne}`    Maximum and minimum capacity of an ESS (e.g., hydro power plant, closed-/open-loop pumped-storage hydro)                  GWh
 :math:`\underline{E}^p_{\omega ne}, \overline{E}^p_{\omega ne}`    Maximum and minimum energy produced by a unit in an interval defined                                                      GW
 :math:`EI^p_{\omega ne}`                                           Energy inflows of an ESS (e.g., hydro power plant)                                                                        GW
-:math:`EO^p_{\omega ne}`                                           Energy outflows of an ESS (e.g., H2, EV, hydro power plant)                                                               GW
-=================================================================  ========================================================================================================================  ============
+:math:`EO^p_{\omega ne}`                                           Energy outflows of an ESS (e.g., hydrogen, electric vehicle, hydro power plant, demand response)                          GW
+:math:`HI^p_{\omega ne'}`                                          Natural hydro inflows of a reservoir                                                                                      :math:`m^3/s`
+:math:`HO^p_{\omega ne'}`                                          Hydro outflows of a reservoir (e.g., irrigation)                                                                          :math:`m^3/s`
+=================================================================  ========================================================================================================================  ================
 
 =========================================  =================================================================================================================  =====
 **Transmission system**
@@ -124,6 +133,14 @@ They are written in **uppercase** letters.
 :math:`L_{ijc}, X_{ijc}`                   Loss factor and reactance of a transmission line                                                                   p.u.
 :math:`SON_{ijc}, SOF_{ijc}`               Minimum switch-on and switch-off state of a line                                                                   h
 :math:`S_B`                                Base power                                                                                                         GW
+=========================================  =================================================================================================================  =====
+
+The net transfer capacity of a transmission line can be different in each direction. However, here it is presented as equal for simplicity.
+
+=========================================  =================================================================================================================  =====
+**Hydro system**
+-----------------------------------------  -----------------------------------------------------------------------------------------------------------------  -----
+:math:`CFT_{ijc}`                          Annualized fixed cost of a candidate transmission line                                                             M€/yr
 =========================================  =================================================================================================================  =====
 
 The net transfer capacity of a transmission line can be different in each direction. However, here it is presented as equal for simplicity.
@@ -139,9 +156,9 @@ They are written in **lowercase** letters.
 :math:`ens^p_{\omega ni}`   Energy not served   GW
 ==========================  ==================  ===
 
-============================================================  ==============================================================================  =====
+============================================================  ==============================================================================  ==============
 **Generation system**
-------------------------------------------------------------  ------------------------------------------------------------------------------  -----
+------------------------------------------------------------  ------------------------------------------------------------------------------  --------------
 :math:`icg^p_g`                                               Candidate generator or ESS installed or not                                     {0,1}
 :math:`rcg^p_g`                                               Candidate generator or ESS retired   or not                                     {0,1}
 :math:`gp^p_{\omega ng}, gc^p_{\omega ng}`                    Generator output (discharge if an ESS) and consumption (charge if an ESS)       GW
@@ -153,9 +170,12 @@ They are written in **lowercase** letters.
 :math:`ei^p_{\omega ne}`                                      Variable energy inflows of a candidate ESS (e.g., hydro power plant)            GW
 :math:`i^p_{\omega ne}`                                       ESS stored energy (inventory, reservoir energy, state of charge)                GWh
 :math:`s^p_{\omega ne}`                                       ESS spilled energy                                                              GWh
+:math:`hi^p_{\omega ne'}`                                     Variable hydro inflows of a candidate reservoir (e.g., hydro power plant)       :math:`m^3/s`
+:math:`i'^p_{\omega ne'}`                                     Reservoir volume                                                                :math:`hm^3`
+:math:`s'^p_{\omega ne'}`                                     Reservoir spilled water                                                         :math:`hm^3`
 :math:`uc^p_{\omega ng}, su^p_{\omega ng}, sd^p_{\omega ng}`  Commitment, startup and shutdown of generation unit per load level              {0,1}
 :math:`uc'_g`                                                 Maximum commitment of a generation unit for all the load levels                 {0,1}
-============================================================  ==============================================================================  =====
+============================================================  ==============================================================================  ==============
 
 ========================================================================  ==============================================================  =====
 **Transmission system**
@@ -277,6 +297,12 @@ ESS energy inventory (only for load levels multiple of 1, 24, 168 h depending on
 :math:`i^p_{\omega,n-\frac{\tau_e}{\nu},e} + \sum_{n' = n-\frac{\tau_e}{\nu}}^n DUR_n' (EI^p_{\omega n'e} - go^p_{\omega n'e} - gp^p_{\omega n'e} + EF_e gc^p_{\omega n'e}) = i^p_{\omega ne} + s^p_{\omega ne} \quad \forall p \omega ne, e \in EE`
 
 :math:`i^p_{\omega,n-\frac{\tau_e}{\nu},e} + \sum_{n' = n-\frac{\tau_e}{\nu}}^n DUR_n' (ei^p_{\omega n'e} - go^p_{\omega n'e} - gp^p_{\omega n'e} + EF_e gc^p_{\omega n'e}) = i^p_{\omega ne} + s^p_{\omega ne} \quad \forall p \omega ne, e \in CE`
+
+Water volume for each hydro reservoir (only for load levels multiple of 1, 24, 168 h depending on the reservoir storage type) [:math:`hm^3`] «``eHydroInventory``»
+
+:math:`i'^p_{\omega,n-\frac{\tau_e'}{\nu},e'} + \sum_{n' = n-\frac{\tau_e'}{\nu}}^n DUR_n' (0.036 HI^p_{\omega n'e'} - 0.036 go^p_{\omega n'e'} - \sum_{h \in dw(e')} gp^p_{\omega n'h} / PF_h + \sum_{h \in up(e')} gp^p_{\omega n'h} / PF_h + \sum_{h \in up(e')} EF_e' gc^p_{\omega n'h}) / PF_h - \sum_{h \in dw(h)} EF_e' gc^p_{\omega n'h}) / PF_h = i'^p_{\omega ne'} + s'^p_{\omega ne'} - \sum_{e'' \in up(e')} s'^p_{\omega ne''} \quad \forall p \omega ne', e' \in ER`
+
+:math:`i'^p_{\omega,n-\frac{\tau_e'}{\nu},e'} + \sum_{n' = n-\frac{\tau_e'}{\nu}}^n DUR_n' (0.036 hi^p_{\omega n'e'} - 0.036 go^p_{\omega n'e'} - \sum_{h \in dw(e')} gp^p_{\omega n'h} / PF_h + \sum_{h \in up(e')} gp^p_{\omega n'h} / PF_h + \sum_{h \in up(e')} EF_e' gc^p_{\omega n'h}) / PF_h - \sum_{h \in dw(h)} EF_e' gc^p_{\omega n'h}) / PF_h = i'^p_{\omega ne'} + s'^p_{\omega ne'} - \sum_{e'' \in up(e')} s'^p_{\omega ne''} \quad \forall p \omega ne', e' \in CR`
 
 Maximum shift time of stored energy [GWh]. It is thought to be applied to demand side management «``eMaxShiftTime``»
 

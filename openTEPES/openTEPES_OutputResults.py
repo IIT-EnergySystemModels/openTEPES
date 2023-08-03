@@ -523,11 +523,15 @@ def ESSOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutpu
         if (ar,nr) in mTEPES.a2g:
             n2a[ar].append(nr)
 
-    # technology to generators (o2e)
+    # technology to generators (o2e) (o2h)
     o2e = defaultdict(list)
     for ot,es in mTEPES.ot*mTEPES.es:
         if (ot,es) in mTEPES.t2g:
             o2e[ot].append(es)
+    o2h = defaultdict(list)
+    for ht,h  in mTEPES.ht*mTEPES.h :
+        if (ht,h ) in mTEPES.t2g:
+            o2h[ht].append(h )
 
     if len(mTEPES.es):
         OutputToFile = pd.Series(data=[OptModel.vEnergyOutflows    [p,sc,n,es]() for p,sc,n,es in mTEPES.psnes], index=pd.Index(mTEPES.psnes))
@@ -590,14 +594,14 @@ def ESSOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutpu
 
         InventoryConstraints = [(p,sc,n,es) for p,sc,n,es in mTEPES.ps*mTEPES.nesc if mTEPES.pMaxCharge[p,sc,n,es] + mTEPES.pMaxPower[p,sc,n,es]]
         if pIndTechnologyOutput == 0 or pIndTechnologyOutput == 2:
-            OutputToFile = pd.Series(data=[OptModel.vESSInventory[p,sc,n,es]()                               for p,sc,n,es in InventoryConstraints], index=pd.Index(InventoryConstraints))
+            OutputToFile = pd.Series(data=[OptModel.vESSInventory[p,sc,n,es]()                                          for p,sc,n,es in InventoryConstraints], index=pd.Index(InventoryConstraints))
             OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='GWh',               aggfunc=sum).rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_GenerationInventory_'+CaseName+'.csv', sep=',')
 
             OutputToFile = pd.Series(data=[OptModel.vESSInventory[p,sc,n,es]()/(mTEPES.pMaxStorage[p,sc,n,es]+pEpsilon) for p,sc,n,es in InventoryConstraints], index=pd.Index(InventoryConstraints))
             OutputToFile = OutputToFile.fillna(0.0)
             OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='GWh', dropna=False, aggfunc=sum).rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_GenerationInventoryUtilization_'+CaseName+'.csv', sep=',')
 
-        OutputToFile = pd.Series(data=[OptModel.vESSSpillage[p,sc,n,es]()                                    for p,sc,n,es in InventoryConstraints], index=pd.Index(InventoryConstraints))
+        OutputToFile = pd.Series(data=[OptModel.vESSSpillage[p,sc,n,es]()                                               for p,sc,n,es in InventoryConstraints], index=pd.Index(InventoryConstraints))
         if pIndTechnologyOutput == 0 or pIndTechnologyOutput == 2:
             OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='GWh',               aggfunc=sum).rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_GenerationSpillage_'+CaseName+'.csv', sep=',')
 
@@ -642,6 +646,25 @@ def ESSOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutpu
             OutputToFile  = OutputToFile1.div(OutputToFile2)*1e2
             OutputToFile  = OutputToFile.fillna(0.0)
             OutputToFile.to_frame(name='%').rename_axis(['Period', 'Scenario', 'Technology'], axis=0).to_csv(_path+'/oT_Result_TechnologySpillageRelative_'+CaseName+'.csv', index=True, sep=',')
+
+    if mTEPES.pIndHydroTopology == 1 and len(mTEPES.rs):
+        VolumeConstraints = [(p,sc,n,rs) for p,sc,n,rs in mTEPES.ps*mTEPES.nrsc if sum(1 for h in mTEPES.h if (rs,h) in mTEPES.r2h or (h,rs) in mTEPES.h2r)]
+        if pIndTechnologyOutput == 0 or pIndTechnologyOutput == 2:
+            OutputToFile = pd.Series(data=[OptModel.vReservoirVolume[p,sc,n,rs]()                                          for p,sc,n,rs in VolumeConstraints], index=pd.Index(VolumeConstraints))
+            OutputToFile.to_frame(name='hm3').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='hm3',               aggfunc=sum).rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_ReservoirVolume_'+CaseName+'.csv', sep=',')
+
+            OutputToFile = pd.Series(data=[OptModel.vReservoirVolume[p,sc,n,rs]()/(mTEPES.pMaxVolume[p,sc,n,rs]+pEpsilon) for p,sc,n,rs in VolumeConstraints], index=pd.Index(VolumeConstraints))
+            OutputToFile = OutputToFile.fillna(0.0)
+            OutputToFile.to_frame(name='hm3').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='hm3', dropna=False, aggfunc=sum).rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_ReservoirVolumeUtilization_'+CaseName+'.csv', sep=',')
+
+        OutputToFile = pd.Series(data=[OptModel.vReservoirSpillage[p,sc,n,rs]()                                           for p,sc,n,rs in VolumeConstraints], index=pd.Index(VolumeConstraints))
+        if pIndTechnologyOutput == 0 or pIndTechnologyOutput == 2:
+            OutputToFile.to_frame(name='hm3').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='hm3',               aggfunc=sum).rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_ReservoirSpillage_'+CaseName+'.csv', sep=',')
+
+        if pIndTechnologyOutput == 1 or pIndTechnologyOutput == 2:
+            HydroTechnologies = [(p,sc,n,ht) for p,sc,n,ht in mTEPES.psnht if sum(1 for h in o2h[ht])]
+            OutputToFile = pd.Series(data=[sum(OutputToFile[p,sc,n,rs] for rs in mTEPES.rs if (n,rs) in mTEPES.nrsc and sum(1 for h in o2h[ht] if (rs,h) in mTEPES.r2h)) for p,sc,n,ht in HydroTechnologies], index=pd.Index(HydroTechnologies))
+            OutputToFile.to_frame(name='hm3').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='hm3', aggfunc=sum).rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_TechnologyReservoirSpillage_'+CaseName+'.csv', sep=',')
 
     WritingResultsTime = time.time() - StartTime
     StartTime = time.time()
