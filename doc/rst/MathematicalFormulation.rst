@@ -20,7 +20,7 @@ Here we present the mathematical formulation of the optimization problem solved 
 
 Indices
 -------
-==============  ========================================================================
+=======================  ===============================================================================================
 :math:`p`                Period (e.g., year)
 :math:`\omega`           Scenario
 :math:`n`                Load level (e.g., hour)
@@ -43,7 +43,7 @@ Indices
 :math:`EE, CE`           Set of existing and candidate ESS
 :math:`ER, CR`           Set of existing and candidate reservoirs
 :math:`EL, CL`           Set of existing and non-switchable, and candidate and switchable lines
-==============  ========================================================================
+=======================  ===============================================================================================
 
 Parameters
 ----------
