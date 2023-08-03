@@ -120,8 +120,8 @@ They are written in **uppercase** letters.
 :math:`\underline{E}^p_{\omega ne}, \overline{E}^p_{\omega ne}`    Maximum and minimum energy produced by a unit in an interval defined                                                      GW
 :math:`EI^p_{\omega ne}`                                           Energy inflows of an ESS (e.g., hydro power plant)                                                                        GW
 :math:`EO^p_{\omega ne}`                                           Energy outflows of an ESS (e.g., hydrogen, electric vehicle, hydro power plant, demand response)                          GW
-:math:`HI^p_{\omega ne'}`                                          Natural hydro inflows of a reservoir                                                                                      m\ :sup:`3` /s
-:math:`HO^p_{\omega ne'}`                                          Hydro outflows of a reservoir (e.g., irrigation)                                                                          m\ :sup:`3` /s
+:math:`HI^p_{\omega ne'}`                                          Natural hydro inflows of a reservoir                                                                                      m\ :sup:`3`/s
+:math:`HO^p_{\omega ne'}`                                          Hydro outflows of a reservoir (e.g., irrigation)                                                                          m\ :sup:`3`/s
 =================================================================  ========================================================================================================================  ================
 
 =========================================  =================================================================================================================  =====
@@ -170,7 +170,7 @@ They are written in **lowercase** letters.
 :math:`ei^p_{\omega ne}`                                      Variable energy inflows of a candidate ESS (e.g., hydro power plant)            GW
 :math:`i^p_{\omega ne}`                                       ESS stored energy (inventory, reservoir energy, state of charge)                GWh
 :math:`s^p_{\omega ne}`                                       ESS spilled energy                                                              GWh
-:math:`hi^p_{\omega ne'}`                                     Variable hydro inflows of a candidate reservoir (e.g., hydro power plant)       m\ :sup:`3` /s
+:math:`hi^p_{\omega ne'}`                                     Variable hydro inflows of a candidate reservoir (e.g., hydro power plant)       m\ :sup:`3`/s
 :math:`i'^p_{\omega ne'}`                                     Reservoir volume                                                                hm\ :sup:`3`
 :math:`s'^p_{\omega ne'}`                                     Reservoir spilled water                                                         hm\ :sup:`3`
 :math:`uc^p_{\omega ng}, su^p_{\omega ng}, sd^p_{\omega ng}`  Commitment, startup and shutdown of generation unit per load level              {0,1}

@@ -579,7 +579,7 @@ A description of the data included in the file ``oT_Data_HydroOutflows.csv`` fol
 ==========  ==============  ==========  =========  ===================================================  =============
 Identifier  Identifier      Identifier  Header     Description
 ==========  ==============  ==========  =========  ===================================================  =============
-Period      Scenario        Load level  Reservoir  Water outflows by load level (e.g., for irrigation   m\ :sup:`3`
+Period      Scenario        Load level  Reservoir  Water outflows by load level (e.g., for irrigation   m\ :sup:`3`/s
 ==========  ==============  ==========  =========  ===================================================  =============
 
 All the reservoirs must be defined as columns of these files.
