@@ -29,7 +29,7 @@ Indices
 :math:`t`                Thermal unit
 :math:`e`                Energy Storage System (ESS)
 :math:`h`                Hydro or pumped-storage hydro power plant (associated to a reservoir modeled in water units)
-:math:`e',e''`           Reservoir (modeled in water units, natural inflows in m \ :sup:`3`/s and volume in hm  \ :sup:`3`)
+:math:`e',e''`           Reservoir (modeled in water units, natural inflows in m\ :sup:`3`/s and volume in hm\ :sup:`3`)
 :math:`h \in up(e')`     Hydro or pumped-storage hydro power plant :math:`h` upstream of reservoir :math:`e'`
 :math:`h \in dw(e')`     Hydro or pumped-storage hydro power plant :math:`h` downstream of reservoir :math:`e'`
 :math:`e'' \in up(e')`   Reservoir :math:`e''` upstream of reservoir :math:`e'`
@@ -115,13 +115,13 @@ They are written in **uppercase** letters.
 :math:`\sigma_g`                                                   Energy cycle of the unit (e.g., 24, 168, 672, 8736 h -for daily, weekly, monthly, yearly-)                                h
 :math:`GI_g`                                                       Generator inertia                                                                                                         s
 :math:`EF_e`                                                       Round-trip efficiency of the pump/turbine cycle of a pumped-storage hydro power plant or charge/discharge of a battery    p.u.
-:math:`PF_h`                                                       Production function from water inflows to energy                                                                          kWh/m \ :sup:`3`
+:math:`PF_h`                                                       Production function from water inflows to energy                                                                          kWh/m\ :sup:`3`
 :math:`\underline{I}^p_{\omega ne}, \overline{I}^p_{\omega ne}`    Maximum and minimum capacity of an ESS (e.g., hydro power plant, closed-/open-loop pumped-storage hydro)                  GWh
 :math:`\underline{E}^p_{\omega ne}, \overline{E}^p_{\omega ne}`    Maximum and minimum energy produced by a unit in an interval defined                                                      GW
 :math:`EI^p_{\omega ne}`                                           Energy inflows of an ESS (e.g., hydro power plant)                                                                        GW
 :math:`EO^p_{\omega ne}`                                           Energy outflows of an ESS (e.g., hydrogen, electric vehicle, hydro power plant, demand response)                          GW
-:math:`HI^p_{\omega ne'}`                                          Natural hydro inflows of a reservoir                                                                                      m \ :sup:`3` /s
-:math:`HO^p_{\omega ne'}`                                          Hydro outflows of a reservoir (e.g., irrigation)                                                                          m \ :sup:`3` /s
+:math:`HI^p_{\omega ne'}`                                          Natural hydro inflows of a reservoir                                                                                      m\ :sup:`3` /s
+:math:`HO^p_{\omega ne'}`                                          Hydro outflows of a reservoir (e.g., irrigation)                                                                          m\ :sup:`3` /s
 =================================================================  ========================================================================================================================  ================
 
 =========================================  =================================================================================================================  =====
@@ -170,9 +170,9 @@ They are written in **lowercase** letters.
 :math:`ei^p_{\omega ne}`                                      Variable energy inflows of a candidate ESS (e.g., hydro power plant)            GW
 :math:`i^p_{\omega ne}`                                       ESS stored energy (inventory, reservoir energy, state of charge)                GWh
 :math:`s^p_{\omega ne}`                                       ESS spilled energy                                                              GWh
-:math:`hi^p_{\omega ne'}`                                     Variable hydro inflows of a candidate reservoir (e.g., hydro power plant)       m \ :sup:`3` /s
-:math:`i'^p_{\omega ne'}`                                     Reservoir volume                                                                hm \ :sup:`3`
-:math:`s'^p_{\omega ne'}`                                     Reservoir spilled water                                                         hm \ :sup:`3`
+:math:`hi^p_{\omega ne'}`                                     Variable hydro inflows of a candidate reservoir (e.g., hydro power plant)       m\ :sup:`3` /s
+:math:`i'^p_{\omega ne'}`                                     Reservoir volume                                                                hm\ :sup:`3`
+:math:`s'^p_{\omega ne'}`                                     Reservoir spilled water                                                         hm\ :sup:`3`
 :math:`uc^p_{\omega ng}, su^p_{\omega ng}, sd^p_{\omega ng}`  Commitment, startup and shutdown of generation unit per load level              {0,1}
 :math:`uc'_g`                                                 Maximum commitment of a generation unit for all the load levels                 {0,1}
 ============================================================  ==============================================================================  ================
@@ -298,7 +298,7 @@ ESS energy inventory (only for load levels multiple of 1, 24, 168 h depending on
 
 :math:`i^p_{\omega,n-\frac{\tau_e}{\nu},e} + \sum_{n' = n-\frac{\tau_e}{\nu}}^n DUR_n' (ei^p_{\omega n'e} - go^p_{\omega n'e} - gp^p_{\omega n'e} + EF_e gc^p_{\omega n'e}) = i^p_{\omega ne} + s^p_{\omega ne} \quad \forall p \omega ne, e \in CE`
 
-Water volume for each hydro reservoir (only for load levels multiple of 1, 24, 168 h depending on the reservoir storage type) [hm \ :sup:`3`] «``eHydroInventory``»
+Water volume for each hydro reservoir (only for load levels multiple of 1, 24, 168 h depending on the reservoir storage type) [hm\ :sup:`3`] «``eHydroInventory``»
 
 :math:`i'^p_{\omega,n-\frac{\tau_e'}{\nu},e'} + \sum_{n' = n-\frac{\tau_e'}{\nu}}^n DUR_n' (0.036 HI^p_{\omega n'e'} - 0.036 go^p_{\omega n'e'} - \sum_{h \in dw(e')} gp^p_{\omega n'h} / PF_h + \sum_{h \in up(e')} gp^p_{\omega n'h} / PF_h + \sum_{h \in up(e')} EF_e' gc^p_{\omega n'h}) / PF_h - \sum_{h \in dw(h)} EF_e' gc^p_{\omega n'h}) / PF_h = i'^p_{\omega ne'} + s'^p_{\omega ne'} - \sum_{e'' \in up(e')} s'^p_{\omega ne''} \quad \forall p \omega ne', e' \in ER`
 

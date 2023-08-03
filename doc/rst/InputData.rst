@@ -295,7 +295,7 @@ InitialStorage        Initial energy stored at the first instant of the time sco
 MaximumStorage        Maximum energy that can be stored by the ESS unit                                                                                 GWh
 MinimumStorage        Minimum energy that can be stored by the ESS unit                                                                                 GWh
 Efficiency            Round-trip efficiency of the pump/turbine cycle of a pumped-hydro storage power plant or charge/discharge of a battery            p.u.
-ProductionFunction    Production function from water inflows to energy (only used for hydropower plants modeled with water units and basin topology)    kWh/m \ :sup:`3`
+ProductionFunction    Production function from water inflows to energy (only used for hydropower plants modeled with water units and basin topology)    kWh/m\ :sup:`3`
 Availability          Unit availability for system adequacy reserve margin                                                                              p.u.
 Inertia               Unit inertia constant                                                                                                             s
 EFOR                  Equivalent Forced Outage Rate                                                                                                     p.u.
@@ -562,7 +562,7 @@ A description of the data included in the file ``oT_Data_HydroInflows.csv`` foll
 ==========  ==============  ==========  =========  ====================================  ==============
 Identifier  Identifier      Identifier  Header     Description
 ==========  ==============  ==========  =========  ====================================  ==============
-Period      Scenario        Load level  Reservoir  Natural water inflows by load level   m \ :sup:`3`/s
+Period      Scenario        Load level  Reservoir  Natural water inflows by load level   m\ :sup:`3`/s
 ==========  ==============  ==========  =========  ====================================  ==============
 
 All the reservoirs must be defined as columns of these files.
@@ -579,7 +579,7 @@ A description of the data included in the file ``oT_Data_HydroOutflows.csv`` fol
 ==========  ==============  ==========  =========  ===================================================  =============
 Identifier  Identifier      Identifier  Header     Description
 ==========  ==============  ==========  =========  ===================================================  =============
-Period      Scenario        Load level  Reservoir  Water outflows by load level (e.g., for irrigation   m \ :sup:`3`
+Period      Scenario        Load level  Reservoir  Water outflows by load level (e.g., for irrigation   m\ :sup:`3`
 ==========  ==============  ==========  =========  ===================================================  =============
 
 All the reservoirs must be defined as columns of these files.
@@ -600,9 +600,9 @@ Header                Description
 ====================  ======================================================================================================================  ===================================
 StorageType           Reservoir storage type based on reservoir storage capacity (hourly, daily, weekly, 4-week, yearly)                      Hourly/Daily/Weekly/Monthly/Yearly
 OutflowsType          Water outflows type based on the water extracted from the reservoir (daily, weekly, 4-week, yearly)                     Daily/Weekly/Monthly/Yearly
-InitialStorage        Initial energy stored at the first instant of the time scope                                                            hm  \ :sup:`3`
-MaximumStorage        Maximum energy that can be stored by the hydro reservoir                                                                hm  \ :sup:`3`
-MinimumStorage        Minimum energy that can be stored by the hydro reservoir                                                                hm  \ :sup:`3`
+InitialStorage        Initial energy stored at the first instant of the time scope                                                            hm\ :sup:`3`
+MaximumStorage        Maximum energy that can be stored by the hydro reservoir                                                                hm\ :sup:`3`
+MinimumStorage        Minimum energy that can be stored by the hydro reservoir                                                                hm\ :sup:`3`
 FixedInvestmentCost   Overnight investment (capital and fixed O&M) cost                                                                       M€
 FixedChargeRate       Fixed-charge rate to annualize the overnight investment cost                                                            p.u.
 InitialPeriod         Initial period (year) when the unit is installed or can be installed, if candidate                                      Year
@@ -627,7 +627,7 @@ A description of the data included in the files ``oT_Data_VariableMaxVolume.csv`
 ==========  ==============  ==========  =========  =================================================  ==============
 Identifier  Identifier      Identifier  Header     Description
 ==========  ==============  ==========  =========  =================================================  ==============
-Period      Scenario        Load level  Reservoir  Maximum (minimum) reservoir volume by load level   hm  \ :sup:`3`
+Period      Scenario        Load level  Reservoir  Maximum (minimum) reservoir volume by load level   hm\ :sup:`3`
 ==========  ==============  ==========  =========  =================================================  ==============
 
 All the reservoirs must be defined as columns of these files.
