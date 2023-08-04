@@ -171,6 +171,7 @@ They are written in **lowercase** letters.
 :math:`i^p_{\omega ne}`                                       ESS stored energy (inventory, reservoir energy, state of charge)                GWh
 :math:`s^p_{\omega ne}`                                       ESS spilled energy                                                              GWh
 :math:`hi^p_{\omega ne'}`                                     Variable hydro inflows of a candidate reservoir (e.g., hydro power plant)       m\ :sup:`3`/s
+:math:`ho^p_{\omega ne}`                                      Hydro outflows of a reservoir                                                   m\ :sup:`3`/s
 :math:`i'^p_{\omega ne'}`                                     Reservoir volume                                                                hm\ :sup:`3`
 :math:`s'^p_{\omega ne'}`                                     Reservoir spilled water                                                         hm\ :sup:`3`
 :math:`uc^p_{\omega ng}, su^p_{\omega ng}, sd^p_{\omega ng}`  Commitment, startup and shutdown of generation unit per load level              {0,1}
@@ -298,18 +299,6 @@ ESS energy inventory (only for load levels multiple of 1, 24, 168 h depending on
 
 :math:`i^p_{\omega,n-\frac{\tau_e}{\nu},e} + \sum_{n' = n-\frac{\tau_e}{\nu}}^n DUR_n' (ei^p_{\omega n'e} - go^p_{\omega n'e} - gp^p_{\omega n'e} + EF_e gc^p_{\omega n'e}) = i^p_{\omega ne} + s^p_{\omega ne} \quad \forall p \omega ne, e \in CE`
 
-Hydro natural inflows of reservoir candidates (only for load levels multiple of 1, 24, 168, 8736 h depending on the reservoir storage type) constrained by the reservoir investment decision times the natural inflows data [p.u.] «``eHydroInflows2XXX``»
-
-:math:`\frac{hi^p_{\omega ne'}}{HI^p_{\omega ne'}} <= uc^p_{\omega ne'} \quad \forall p \omega ne', e' \in CR`
-
-Water volume for each hydro reservoir (only for load levels multiple of 1, 24, 168 h depending on the reservoir storage type) [hm\ :sup:`3`] «``eHydroInventory``»
-
-:math:`i'^p_{\omega,n-\frac{\tau_e'}{\nu},e'} + \sum_{n' = n-\frac{\tau_e'}{\nu}}^n DUR_n' (0.036 HI^p_{\omega n'e'} - 0.036 go^p_{\omega n'e'} - \sum_{h \in dw(e')} gp^p_{\omega n'h} / PF_h + \sum_{h \in up(e')} gp^p_{\omega n'h} / PF_h +`
-:math:`\sum_{h \in up(e')} EF_e' gc^p_{\omega n'h}) / PF_h - \sum_{h \in dw(h)} EF_e' gc^p_{\omega n'h}) / PF_h = i'^p_{\omega ne'} + s'^p_{\omega ne'} - \sum_{e'' \in up(e')} s'^p_{\omega ne''} \quad \forall p \omega ne', e' \in ER`
-
-:math:`i'^p_{\omega,n-\frac{\tau_e'}{\nu},e'} + \sum_{n' = n-\frac{\tau_e'}{\nu}}^n DUR_n' (0.036 hi^p_{\omega n'e'} - 0.036 go^p_{\omega n'e'} - \sum_{h \in dw(e')} gp^p_{\omega n'h} / PF_h + \sum_{h \in up(e')} gp^p_{\omega n'h} / PF_h +`
-:math:`\sum_{h \in up(e')} EF_e' gc^p_{\omega n'h}) / PF_h - \sum_{h \in dw(h)} EF_e' gc^p_{\omega n'h}) / PF_h = i'^p_{\omega ne'} + s'^p_{\omega ne'} - \sum_{e'' \in up(e')} s'^p_{\omega ne''} \quad \forall p \omega ne', e' \in CR`
-
 Maximum shift time of stored energy [GWh]. It is thought to be applied to demand side management «``eMaxShiftTime``»
 
 :math:`DUR_n EF_e gc^p_{\omega ne} \leq \sum_{n' = n+1}^{n+\frac{ST_e}{\nu}} DUR_n' gp^p_{\omega n'e}  \quad \forall p \omega ne`
@@ -317,6 +306,22 @@ Maximum shift time of stored energy [GWh]. It is thought to be applied to demand
 ESS outflows (only for load levels multiple of 1, 24, 168, 672, and 8736 h depending on the ESS outflow cycle) must be satisfied [GWh] «``eEnergyOutflows``»
 
 :math:`\sum_{n' = n-\frac{\tau_e}{\rho_e}}^n (go^p_{\omega n'e} - EO^p_{\omega n'e}) DUR_n' = 0 \quad \forall p \omega ne, n \in \rho_e`
+
+Hydro natural inflows of reservoir candidates (only for load levels multiple of 1, 24, 168, 8736 h depending on the reservoir storage type) constrained by the reservoir investment decision times the natural inflows data [p.u.] «``eHydroInflows2XXX``»
+
+:math:`\frac{hi^p_{\omega ne'}}{HI^p_{\omega ne'}} <= uc^p_{\omega ne'} \quad \forall p \omega ne', e' \in CR`
+
+Water volume for each hydro reservoir (only for load levels multiple of 1, 24, 168 h depending on the reservoir storage type) [hm\ :sup:`3`] «``eHydroInventory``»
+
+:math:`i'^p_{\omega,n-\frac{\tau_e'}{\nu},e'} + \sum_{n' = n-\frac{\tau_e'}{\nu}}^n DUR_n' (0.036 HI^p_{\omega n'e'} - 0.036 ho^p_{\omega n'e'} - \sum_{h \in dw(e')} gp^p_{\omega n'h} / PF_h + \sum_{h \in up(e')} gp^p_{\omega n'h} / PF_h +`
+:math:`+ \sum_{h \in up(e')} EF_e' gc^p_{\omega n'h}) / PF_h - \sum_{h \in dw(h)} EF_e' gc^p_{\omega n'h}) / PF_h = i'^p_{\omega ne'} + s'^p_{\omega ne'} - \sum_{e'' \in up(e')} s'^p_{\omega ne''} \quad \forall p \omega ne', e' \in ER`
+
+:math:`i'^p_{\omega,n-\frac{\tau_e'}{\nu},e'} + \sum_{n' = n-\frac{\tau_e'}{\nu}}^n DUR_n' (0.036 hi^p_{\omega n'e'} - 0.036 ho^p_{\omega n'e'} - \sum_{h \in dw(e')} gp^p_{\omega n'h} / PF_h + \sum_{h \in up(e')} gp^p_{\omega n'h} / PF_h +`
+:math:`+ \sum_{h \in up(e')} EF_e' gc^p_{\omega n'h}) / PF_h - \sum_{h \in dw(h)} EF_e' gc^p_{\omega n'h}) / PF_h = i'^p_{\omega ne'} + s'^p_{\omega ne'} - \sum_{e'' \in up(e')} s'^p_{\omega ne''} \quad \forall p \omega ne', e' \in CR`
+
+Hydro outflows (only for load levels multiple of 1, 24, 168, 672, and 8736 h depending on the ESS outflow cycle) must be satisfied [m\ :sup:`3`/s] «``eHydroOutflows``»
+
+:math:`\sum_{n' = n-\frac{\tau_e'}{\rho_e'}}^n (ho^p_{\omega n'e'} - HO^p_{\omega n'e'}) DUR_n' = 0 \quad \forall p \omega ne', n \in \rho_e'`
 
 Minimum and maximum energy production (only for load levels multiple of 24, 168, 672, 8736 h depending on the unit energy type) must be satisfied [GWh] «``eMinimumEnergy``»  «``eMaximumEnergy``»
 
@@ -456,9 +461,11 @@ Half ohmic losses are linearly approximated as a function of the flow [GW] «``e
 
 :math:`0 \leq  s^p_{\omega ne}                                                                     \quad \forall p \omega ne`
 
-:math:`\underline{I'}^p_{\omega ne'} \leq  i'^p_{\omega ne'}  \leq \overline{I'}^p_{\omega ne'}       \quad \forall p \omega ne'`
+:math:`0 \leq ho^p_{\omega ne'} \leq \sum_{h \in dw(e')} \overline{GP}^p_{\omega nh} / PF_h        \quad \forall p \omega ne'`
 
-:math:`0 \leq  s'^p_{\omega ne'}                                                                     \quad \forall p \omega ne'`
+:math:`\underline{I'}^p_{\omega ne'} \leq  i'^p_{\omega ne'}  \leq \overline{I'}^p_{\omega ne'}    \quad \forall p \omega ne'`
+
+:math:`0 \leq  s'^p_{\omega ne'}                                                                   \quad \forall p \omega ne'`
 
 :math:`0 \leq ens^p_{\omega ni} \leq D^p_{\omega ni}                                               \quad \forall p \omega ni`
 
