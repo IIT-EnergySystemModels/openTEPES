@@ -120,8 +120,6 @@ They are written in **uppercase** letters.
 :math:`\underline{E}^p_{\omega ne}, \overline{E}^p_{\omega ne}`    Maximum and minimum energy produced by a unit in an interval defined                                                      GW
 :math:`EI^p_{\omega ne}`                                           Energy inflows of an ESS (e.g., hydro power plant)                                                                        GW
 :math:`EO^p_{\omega ne}`                                           Energy outflows of an ESS (e.g., hydrogen, electric vehicle, hydro power plant, demand response)                          GW
-:math:`HI^p_{\omega ne'}`                                          Natural hydro inflows of a reservoir                                                                                      m\ :sup:`3`/s
-:math:`HO^p_{\omega ne'}`                                          Hydro outflows of a reservoir (e.g., irrigation)                                                                          m\ :sup:`3`/s
 =================================================================  ========================================================================================================================  ================
 
 =========================================  =================================================================================================================  =====
@@ -137,13 +135,13 @@ They are written in **uppercase** letters.
 
 The net transfer capacity of a transmission line can be different in each direction. However, here it is presented as equal for simplicity.
 
-=========================================  =================================================================================================================  =====
+=========================================  =======================================================================================================  ===============
 **Hydro system**
------------------------------------------  -----------------------------------------------------------------------------------------------------------------  -----
-:math:`CFT_{ijc}`                          Annualized fixed cost of a candidate transmission line                                                             M€/yr
-=========================================  =================================================================================================================  =====
-
-The net transfer capacity of a transmission line can be different in each direction. However, here it is presented as equal for simplicity.
+-----------------------------------------  -------------------------------------------------------------------------------------------------------  ---------------
+:math:`CFR_{e'}`                           Annualized fixed cost of a candidate reservoir                                                           M€/yr
+:math:`HI^p_{\omega ne'}`                  Natural hydro inflows of a reservoir                                                                     m\ :sup:`3`/s
+:math:`HO^p_{\omega ne'}`                  Hydro outflows of a reservoir (e.g., irrigation)                                                         m\ :sup:`3`/s
+=========================================  =======================================================================================================  ===============
 
 Variables
 ---------
@@ -170,10 +168,6 @@ They are written in **lowercase** letters.
 :math:`ei^p_{\omega ne}`                                      Variable energy inflows of a candidate ESS (e.g., hydro power plant)            GW
 :math:`i^p_{\omega ne}`                                       ESS stored energy (inventory, reservoir energy, state of charge)                GWh
 :math:`s^p_{\omega ne}`                                       ESS spilled energy                                                              GWh
-:math:`hi^p_{\omega ne'}`                                     Variable hydro inflows of a candidate reservoir (e.g., hydro power plant)       m\ :sup:`3`/s
-:math:`ho^p_{\omega ne}`                                      Hydro outflows of a reservoir                                                   m\ :sup:`3`/s
-:math:`i'^p_{\omega ne'}`                                     Reservoir volume                                                                hm\ :sup:`3`
-:math:`s'^p_{\omega ne'}`                                     Reservoir spilled water                                                         hm\ :sup:`3`
 :math:`uc^p_{\omega ng}, su^p_{\omega ng}, sd^p_{\omega ng}`  Commitment, startup and shutdown of generation unit per load level              {0,1}
 :math:`uc'_g`                                                 Maximum commitment of a generation unit for all the load levels                 {0,1}
 ============================================================  ==============================================================================  ================
@@ -188,6 +182,16 @@ They are written in **lowercase** letters.
 :math:`\theta^p_{\omega ni}`                                              Voltage angle of a node                                         rad
 ========================================================================  ==============================================================  =====
 
+======================================  ==========================================================================  ==============
+**Hydro system**
+--------------------------------------  --------------------------------------------------------------------------  --------------
+:math:`icr^p_{e'} `                     Candidate reservoir installed or not                                        {0,1}
+:math:`hi^p_{\omega ne'}`               Variable hydro inflows of a candidate reservoir (e.g., hydro power plant)   m\ :sup:`3`/s
+:math:`ho^p_{\omega ne'}`               Hydro outflows of a reservoir                                               m\ :sup:`3`/s
+:math:`i'^p_{\omega ne'}`               Reservoir volume                                                            hm\ :sup:`3`
+:math:`s'^p_{\omega ne'}`               Reservoir spilled water                                                     hm\ :sup:`3`
+======================================  ==========================================================================  ==============
+
 Equations
 ---------
 
@@ -197,7 +201,7 @@ The names between parenthesis correspond to the names of the constraints in the 
 
 Generation, storage and network investment cost plus retirement cost [M€] «``eTotalFCost``»
 
-:math:`\sum_{pg} DF^p CFG_g icg^p_g + \sum_{pg} DF^p CFR_g rcg^p_g + \sum_{pijc} DF^p CFT_{ijc} ict^p_{ijc} +`
+:math:`\sum_{pg} DF^p CFG_g icg^p_g + \sum_{pg} DF^p CFR_g rcg^p_g + \sum_{pijc} DF^p CFT_{ijc} ict^p_{ijc} + \sum_{pe'} DF^p CFT_{e'} icr^p_{e'} +`
 
 Generation operation cost [M€] «``eTotalGCost``»
 
@@ -307,22 +311,6 @@ ESS outflows (only for load levels multiple of 1, 24, 168, 672, and 8736 h depen
 
 :math:`\sum_{n' = n-\frac{\tau_e}{\rho_e}}^n (go^p_{\omega n'e} - EO^p_{\omega n'e}) DUR_n' = 0 \quad \forall p \omega ne, n \in \rho_e`
 
-Hydro natural inflows of reservoir candidates (only for load levels multiple of 1, 24, 168, 8736 h depending on the reservoir storage type) constrained by the reservoir investment decision times the natural inflows data [p.u.] «``eHydroInflows2XXX``»
-
-:math:`\frac{hi^p_{\omega ne'}}{HI^p_{\omega ne'}} <= uc^p_{\omega ne'} \quad \forall p \omega ne', e' \in CR`
-
-Water volume for each hydro reservoir (only for load levels multiple of 1, 24, 168 h depending on the reservoir storage type) [hm\ :sup:`3`] «``eHydroInventory``»
-
-:math:`i'^p_{\omega,n-\frac{\tau_e'}{\nu},e'} + \sum_{n' = n-\frac{\tau_e'}{\nu}}^n DUR_n' (0.036 HI^p_{\omega n'e'} - 0.036 ho^p_{\omega n'e'} - \sum_{h \in dw(e')} gp^p_{\omega n'h} / PF_h + \sum_{h \in up(e')} gp^p_{\omega n'h} / PF_h +`
-:math:`+ \sum_{h \in up(e')} EF_e' gc^p_{\omega n'h}) / PF_h - \sum_{h \in dw(h)} EF_e' gc^p_{\omega n'h}) / PF_h = i'^p_{\omega ne'} + s'^p_{\omega ne'} - \sum_{e'' \in up(e')} s'^p_{\omega ne''} \quad \forall p \omega ne', e' \in ER`
-
-:math:`i'^p_{\omega,n-\frac{\tau_e'}{\nu},e'} + \sum_{n' = n-\frac{\tau_e'}{\nu}}^n DUR_n' (0.036 hi^p_{\omega n'e'} - 0.036 ho^p_{\omega n'e'} - \sum_{h \in dw(e')} gp^p_{\omega n'h} / PF_h + \sum_{h \in up(e')} gp^p_{\omega n'h} / PF_h +`
-:math:`+ \sum_{h \in up(e')} EF_e' gc^p_{\omega n'h}) / PF_h - \sum_{h \in dw(h)} EF_e' gc^p_{\omega n'h}) / PF_h = i'^p_{\omega ne'} + s'^p_{\omega ne'} - \sum_{e'' \in up(e')} s'^p_{\omega ne''} \quad \forall p \omega ne', e' \in CR`
-
-Hydro outflows (only for load levels multiple of 1, 24, 168, 672, and 8736 h depending on the ESS outflow cycle) must be satisfied [m\ :sup:`3`/s] «``eHydroOutflows``»
-
-:math:`\sum_{n' = n-\frac{\tau_e'}{\rho_e'}}^n (ho^p_{\omega n'e'} - HO^p_{\omega n'e'}) DUR_n' = 0 \quad \forall p \omega ne', n \in \rho_e'`
-
 Minimum and maximum energy production (only for load levels multiple of 24, 168, 672, 8736 h depending on the unit energy type) must be satisfied [GWh] «``eMinimumEnergy``»  «``eMaximumEnergy``»
 
 :math:`\sum_{n' = n-\sigma_g}^n (gp^p_{\omega n'g} - \overline{E}^p_{\omega n'g})  DUR_n' \leq 0 \quad \forall p \omega ng, n \in \sigma_g`
@@ -405,6 +393,20 @@ Minimum up time and down time of thermal unit [h] «``eMinUpTime``» «``eMinDow
 
 :math:`\sum_{n'=n+\nu-TD_t}^n sd^p_{\omega n't} \leq 1 - uc^p_{\omega nt} \quad \forall p \omega nt`
 
+**Reservoir operation**
+
+Water volume for each hydro reservoir (only for load levels multiple of 1, 24, 168 h depending on the reservoir storage type) [hm\ :sup:`3`] «``eHydroInventory``»
+
+:math:`i'^p_{\omega,n-\frac{\tau_e'}{\nu},e'} + \sum_{n' = n-\frac{\tau_e'}{\nu}}^n DUR_n' (0.036 HI^p_{\omega n'e'} - 0.036 ho^p_{\omega n'e'} - \sum_{h \in dw(e')} gp^p_{\omega n'h} / PF_h + \sum_{h \in up(e')} gp^p_{\omega n'h} / PF_h +`
+:math:`+ \sum_{h \in up(e')} EF_e' gc^p_{\omega n'h}) / PF_h - \sum_{h \in dw(h)} EF_e' gc^p_{\omega n'h}) / PF_h = i'^p_{\omega ne'} + s'^p_{\omega ne'} - \sum_{e'' \in up(e')} s'^p_{\omega ne''} \quad \forall p \omega ne', e' \in ER`
+
+:math:`i'^p_{\omega,n-\frac{\tau_e'}{\nu},e'} + \sum_{n' = n-\frac{\tau_e'}{\nu}}^n DUR_n' (0.036 hi^p_{\omega n'e'} - 0.036 ho^p_{\omega n'e'} - \sum_{h \in dw(e')} gp^p_{\omega n'h} / PF_h + \sum_{h \in up(e')} gp^p_{\omega n'h} / PF_h +`
+:math:`+ \sum_{h \in up(e')} EF_e' gc^p_{\omega n'h}) / PF_h - \sum_{h \in dw(h)} EF_e' gc^p_{\omega n'h}) / PF_h = i'^p_{\omega ne'} + s'^p_{\omega ne'} - \sum_{e'' \in up(e')} s'^p_{\omega ne''} \quad \forall p \omega ne', e' \in CR`
+
+Hydro outflows (only for load levels multiple of 1, 24, 168, 672, and 8736 h depending on the ESS outflow cycle) must be satisfied [m\ :sup:`3`/s] «``eHydroOutflows``»
+
+:math:`\sum_{n' = n-\frac{\tau_e'}{\rho_e'}}^n (ho^p_{\omega n'e'} - HO^p_{\omega n'e'}) DUR_n' = 0 \quad \forall p \omega ne', n \in \rho_e'`
+
 **Network operation**
 
 Logical relation between transmission investment and switching {0,1} «``eLineStateCand``»
@@ -461,13 +463,15 @@ Half ohmic losses are linearly approximated as a function of the flow [GW] «``e
 
 :math:`0 \leq  s^p_{\omega ne}                                                                     \quad \forall p \omega ne`
 
-:math:`0 \leq ho^p_{\omega ne'} \leq \sum_{h \in dw(e')} \overline{GP}^p_{\omega nh} / PF_h        \quad \forall p \omega ne'`
-
-:math:`\underline{I'}^p_{\omega ne'} \leq  i'^p_{\omega ne'}  \leq \overline{I'}^p_{\omega ne'}    \quad \forall p \omega ne'`
-
-:math:`0 \leq  s'^p_{\omega ne'}                                                                   \quad \forall p \omega ne'`
-
 :math:`0 \leq ens^p_{\omega ni} \leq D^p_{\omega ni}                                               \quad \forall p \omega ni`
+
+**Bounds on reservoir variables** [m\ :sup:`3`/s, hm\ :sup:`3`]
+
+:math:`0 \leq ho^p_{\omega ne'} \leq \sum_{h \in dw(e')} \overline{GP}^p_{\omega nh} / PF_h      \quad \forall p \omega ne'`
+
+:math:`\underline{I'}^p_{\omega ne'} \leq i'^p_{\omega ne'} \leq \overline{I'}^p_{\omega ne'}    \quad \forall p \omega ne'`
+
+:math:`0 \leq s'^p_{\omega ne'}                                                                  \quad \forall p \omega ne'`
 
 **Bounds on network variables** [GW]
 
