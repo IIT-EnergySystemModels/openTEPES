@@ -298,11 +298,17 @@ ESS energy inventory (only for load levels multiple of 1, 24, 168 h depending on
 
 :math:`i^p_{\omega,n-\frac{\tau_e}{\nu},e} + \sum_{n' = n-\frac{\tau_e}{\nu}}^n DUR_n' (ei^p_{\omega n'e} - go^p_{\omega n'e} - gp^p_{\omega n'e} + EF_e gc^p_{\omega n'e}) = i^p_{\omega ne} + s^p_{\omega ne} \quad \forall p \omega ne, e \in CE`
 
+Hydro natural inflows of reservoir candidates (only for load levels multiple of 1, 24, 168, 8736 h depending on the reservoir storage type) constrained by the reservoir investment decision times the natural inflows data [p.u.] «``eHydroInflows2XXX``»
+
+:math:`\frac{hi^p_{\omega ne'}}{HI^p_{\omega ne'}} <= uc^p_{\omega ne'} \quad \forall p \omega ne', e' \in CR`
+
 Water volume for each hydro reservoir (only for load levels multiple of 1, 24, 168 h depending on the reservoir storage type) [hm\ :sup:`3`] «``eHydroInventory``»
 
-:math:`i'^p_{\omega,n-\frac{\tau_e'}{\nu},e'} + \sum_{n' = n-\frac{\tau_e'}{\nu}}^n DUR_n' (0.036 HI^p_{\omega n'e'} - 0.036 go^p_{\omega n'e'} - \sum_{h \in dw(e')} gp^p_{\omega n'h} / PF_h + \sum_{h \in up(e')} gp^p_{\omega n'h} / PF_h + \sum_{h \in up(e')} EF_e' gc^p_{\omega n'h}) / PF_h - \sum_{h \in dw(h)} EF_e' gc^p_{\omega n'h}) / PF_h = i'^p_{\omega ne'} + s'^p_{\omega ne'} - \sum_{e'' \in up(e')} s'^p_{\omega ne''} \quad \forall p \omega ne', e' \in ER`
+:math:`i'^p_{\omega,n-\frac{\tau_e'}{\nu},e'} + \sum_{n' = n-\frac{\tau_e'}{\nu}}^n DUR_n' (0.036 HI^p_{\omega n'e'} - 0.036 go^p_{\omega n'e'} - \sum_{h \in dw(e')} gp^p_{\omega n'h} / PF_h + \sum_{h \in up(e')} gp^p_{\omega n'h} / PF_h +`
+:math:`\sum_{h \in up(e')} EF_e' gc^p_{\omega n'h}) / PF_h - \sum_{h \in dw(h)} EF_e' gc^p_{\omega n'h}) / PF_h = i'^p_{\omega ne'} + s'^p_{\omega ne'} - \sum_{e'' \in up(e')} s'^p_{\omega ne''} \quad \forall p \omega ne', e' \in ER`
 
-:math:`i'^p_{\omega,n-\frac{\tau_e'}{\nu},e'} + \sum_{n' = n-\frac{\tau_e'}{\nu}}^n DUR_n' (0.036 hi^p_{\omega n'e'} - 0.036 go^p_{\omega n'e'} - \sum_{h \in dw(e')} gp^p_{\omega n'h} / PF_h + \sum_{h \in up(e')} gp^p_{\omega n'h} / PF_h + \sum_{h \in up(e')} EF_e' gc^p_{\omega n'h}) / PF_h - \sum_{h \in dw(h)} EF_e' gc^p_{\omega n'h}) / PF_h = i'^p_{\omega ne'} + s'^p_{\omega ne'} - \sum_{e'' \in up(e')} s'^p_{\omega ne''} \quad \forall p \omega ne', e' \in CR`
+:math:`i'^p_{\omega,n-\frac{\tau_e'}{\nu},e'} + \sum_{n' = n-\frac{\tau_e'}{\nu}}^n DUR_n' (0.036 hi^p_{\omega n'e'} - 0.036 go^p_{\omega n'e'} - \sum_{h \in dw(e')} gp^p_{\omega n'h} / PF_h + \sum_{h \in up(e')} gp^p_{\omega n'h} / PF_h +`
+:math:`\sum_{h \in up(e')} EF_e' gc^p_{\omega n'h}) / PF_h - \sum_{h \in dw(h)} EF_e' gc^p_{\omega n'h}) / PF_h = i'^p_{\omega ne'} + s'^p_{\omega ne'} - \sum_{e'' \in up(e')} s'^p_{\omega ne''} \quad \forall p \omega ne', e' \in CR`
 
 Maximum shift time of stored energy [GWh]. It is thought to be applied to demand side management «``eMaxShiftTime``»
 
@@ -449,6 +455,10 @@ Half ohmic losses are linearly approximated as a function of the flow [GW] «``e
 :math:`\underline{I}^p_{\omega ne} \leq  i^p_{\omega ne}  \leq \overline{I}^p_{\omega ne}          \quad \forall p \omega ne`
 
 :math:`0 \leq  s^p_{\omega ne}                                                                     \quad \forall p \omega ne`
+
+:math:`\underline{I'}^p_{\omega ne'} \leq  i'^p_{\omega ne'}  \leq \overline{I'}^p_{\omega ne'}       \quad \forall p \omega ne'`
+
+:math:`0 \leq  s'^p_{\omega ne'}                                                                     \quad \forall p \omega ne'`
 
 :math:`0 \leq ens^p_{\omega ni} \leq D^p_{\omega ni}                                               \quad \forall p \omega ni`
 
