@@ -175,7 +175,7 @@ They are written in **lowercase** letters.
 ======================================  ==========================================================================  ==============
 **Hydro system**
 --------------------------------------  --------------------------------------------------------------------------  --------------
-:math:`icr^p_{e'} `                     Candidate reservoir installed or not                                        {0,1}
+:math:`icr^p_{e'}`                      Candidate reservoir installed or not                                        {0,1}
 :math:`hi^p_{\omega ne'}`               Variable hydro inflows of a candidate reservoir (e.g., hydro power plant)   m\ :sup:`3`/s
 :math:`ho^p_{\omega ne'}`               Hydro outflows of a reservoir                                               m\ :sup:`3`/s
 :math:`i'^p_{\omega ne'}`               Reservoir volume                                                            hm\ :sup:`3`
