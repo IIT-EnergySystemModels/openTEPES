@@ -125,7 +125,7 @@ They are written in **uppercase** letters.
 =========================================  =======================================================================================================  ===============
 **Hydro system**
 -----------------------------------------  -------------------------------------------------------------------------------------------------------  ---------------
-:math:`CFR_{e'}`                           Annualized fixed cost of a candidate reservoir                                                           M€/yr
+:math:`CFE_{e'}`                           Annualized fixed cost of a candidate reservoir                                                           M€/yr
 :math:`HI^p_{\omega ne'}`                  Natural hydro inflows of a reservoir                                                                     m\ :sup:`3`/s
 :math:`HO^p_{\omega ne'}`                  Hydro outflows of a reservoir (e.g., irrigation)                                                         m\ :sup:`3`/s
 =========================================  =======================================================================================================  ===============
@@ -201,7 +201,7 @@ The names between parenthesis correspond to the names of the constraints in the 
 
 Generation, storage and network investment cost plus retirement cost [M€] «``eTotalFCost``»
 
-:math:`\sum_{pg} DF^p CFG_g icg^p_g + \sum_{pg} DF^p CFR_g rcg^p_g + \sum_{pijc} DF^p CFT_{ijc} ict^p_{ijc} + \sum_{pe'} DF^p CFT_{e'} icr^p_{e'} +`
+:math:`\sum_{pg} DF^p CFG_g icg^p_g + \sum_{pg} DF^p CFR_g rcg^p_g + \sum_{pijc} DF^p CFT_{ijc} ict^p_{ijc} + \sum_{pe'} DF^p CFE_{e'} icr^p_{e'} +`
 
 Generation operation cost [M€] «``eTotalGCost``»
 
