@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 08, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 06, 2023
 """
 
 import time
@@ -523,15 +523,11 @@ def ESSOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutpu
         if (ar,nr) in mTEPES.a2g:
             n2a[ar].append(nr)
 
-    # technology to generators (o2e) (o2h)
+    # technology to generators (o2e)
     o2e = defaultdict(list)
     for ot,es in mTEPES.ot*mTEPES.es:
         if (ot,es) in mTEPES.t2g:
             o2e[ot].append(es)
-    o2h = defaultdict(list)
-    for ht,h  in mTEPES.ht*mTEPES.h :
-        if (ht,h ) in mTEPES.t2g:
-            o2h[ht].append(h )
 
     if len(mTEPES.es):
         OutputToFile = pd.Series(data=[OptModel.vEnergyOutflows    [p,sc,n,es]() for p,sc,n,es in mTEPES.psnes], index=pd.Index(mTEPES.psnes))
@@ -647,7 +643,23 @@ def ESSOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutpu
             OutputToFile  = OutputToFile.fillna(0.0)
             OutputToFile.to_frame(name='%').rename_axis(['Period', 'Scenario', 'Technology'], axis=0).to_csv(_path+'/oT_Result_TechnologySpillageRelative_'+CaseName+'.csv', index=True, sep=',')
 
-    if mTEPES.pIndHydroTopology == 1 and len(mTEPES.rs):
+    WritingResultsTime = time.time() - StartTime
+    StartTime = time.time()
+    print('Writing        ESS operation results   ... ', round(WritingResultsTime), 's')
+
+
+def ReservoirOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutput):
+    # %% outputting the ESS operation
+    _path = os.path.join(DirName, CaseName)
+    StartTime = time.time()
+
+    # technology to generators (o2h)
+    o2h = defaultdict(list)
+    for ht,h  in mTEPES.ht*mTEPES.h :
+        if (ht,h ) in mTEPES.t2g:
+            o2h[ht].append(h )
+
+    if len(mTEPES.rs):
         VolumeConstraints = [(p,sc,n,rs) for p,sc,n,rs in mTEPES.ps*mTEPES.nrsc if sum(1 for h in mTEPES.h if (rs,h) in mTEPES.r2h or (h,rs) in mTEPES.h2r)]
         if pIndTechnologyOutput == 0 or pIndTechnologyOutput == 2:
             OutputToFile = pd.Series(data=[OptModel.vReservoirVolume[p,sc,n,rs]()                                          for p,sc,n,rs in VolumeConstraints], index=pd.Index(VolumeConstraints))
@@ -668,7 +680,7 @@ def ESSOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutpu
 
     WritingResultsTime = time.time() - StartTime
     StartTime = time.time()
-    print('Writing        ESS operation results   ... ', round(WritingResultsTime), 's')
+    print('Writing  reservoir operation results   ... ', round(WritingResultsTime), 's')
 
 
 def OperationSummaryResults(DirName, CaseName, OptModel, mTEPES):

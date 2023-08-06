@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 03, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 06, 2023
 """
 
 import time
@@ -10,9 +10,9 @@ import pyomo.environ as pyo
 from   pyomo.environ import ConcreteModel, Set, Param, Reals
 
 from .openTEPES_InputData        import InputData, SettingUpVariables
-from .openTEPES_ModelFormulation import TotalObjectiveFunction, InvestmentModelFormulation, GenerationOperationModelFormulationObjFunct, GenerationOperationModelFormulationInvestment, GenerationOperationModelFormulationDemand, GenerationOperationModelFormulationStorage, GenerationOperationModelFormulationCommitment, GenerationOperationModelFormulationRampMinTime, NetworkSwitchingModelFormulation, NetworkOperationModelFormulation
+from .openTEPES_ModelFormulation import TotalObjectiveFunction, InvestmentModelFormulation, GenerationOperationModelFormulationObjFunct, GenerationOperationModelFormulationInvestment, GenerationOperationModelFormulationDemand, GenerationOperationModelFormulationStorage, GenerationOperationModelFormulationReservoir, GenerationOperationModelFormulationCommitment, GenerationOperationModelFormulationRampMinTime, NetworkSwitchingModelFormulation, NetworkOperationModelFormulation
 from .openTEPES_ProblemSolving   import ProblemSolving
-from .openTEPES_OutputResults    import InvestmentResults, GenerationOperationResults, ESSOperationResults, FlexibilityResults, NetworkOperationResults, MarginalResults, OperationSummaryResults, ReliabilityResults, CostSummaryResults, EconomicResults, NetworkMapResults
+from .openTEPES_OutputResults    import InvestmentResults, GenerationOperationResults, ESSOperationResults, ReservoirOperationResults, FlexibilityResults, NetworkOperationResults, MarginalResults, OperationSummaryResults, ReliabilityResults, CostSummaryResults, EconomicResults, NetworkMapResults
 
 
 def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConsole):
@@ -37,8 +37,8 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     idxDict['y'  ] = 1
 
     #%% model declaration
-    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.12.0 - August 03, 2023')
-    print(                 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.12.0 - August 03, 2023', file=open(_path+'/openTEPES_version_'+CaseName+'.log','a'))
+    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.12.0 - August 06, 2023')
+    print(                 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.12.0 - August 06, 2023', file=open(_path+'/openTEPES_version_'+CaseName+'.log','a'))
 
     pIndOutputResults = [j for i,j in idxDict.items() if i == pIndOutputResults][0]
     pIndLogConsole    = [j for i,j in idxDict.items() if i == pIndLogConsole   ][0]
@@ -67,14 +67,16 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
         print('Period '+str(p)+', Scenario '+str(sc)+', Stage '+str(st))
 
         # operation model objective function and constraints by stage
-        GenerationOperationModelFormulationObjFunct   (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
-        GenerationOperationModelFormulationInvestment (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
-        GenerationOperationModelFormulationDemand     (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
-        GenerationOperationModelFormulationStorage    (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
-        GenerationOperationModelFormulationCommitment (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
-        GenerationOperationModelFormulationRampMinTime(mTEPES, mTEPES, pIndLogConsole, p, sc, st)
-        NetworkSwitchingModelFormulation              (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
-        NetworkOperationModelFormulation              (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
+        GenerationOperationModelFormulationObjFunct     (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
+        GenerationOperationModelFormulationInvestment   (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
+        GenerationOperationModelFormulationDemand       (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
+        GenerationOperationModelFormulationStorage      (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
+        if mTEPES.pIndHydroTopology == 1:
+            GenerationOperationModelFormulationReservoir(mTEPES, mTEPES, pIndLogConsole, p, sc, st)
+        GenerationOperationModelFormulationCommitment   (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
+        GenerationOperationModelFormulationRampMinTime  (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
+        NetworkSwitchingModelFormulation                (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
+        NetworkOperationModelFormulation                (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
 
         if pIndLogConsole == 1:
             StartTime         = time.time()
@@ -134,6 +136,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
         pIndInvestmentResults          = 1
         pIndGenerationOperationResults = 1
         pIndESSOperationResults        = 1
+        pIndReservoirOperationResults  = 1
         pIndFlexibilityResults         = 1
         pIndReliabilityResults         = 1
         pIndNetworkOperationResults    = 1
@@ -146,6 +149,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
         pIndInvestmentResults          = 1
         pIndGenerationOperationResults = 1
         pIndESSOperationResults        = 1
+        pIndReservoirOperationResults  = 1
         pIndFlexibilityResults         = 0
         pIndReliabilityResults         = 0
         pIndNetworkOperationResults    = 1
@@ -161,6 +165,8 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
         GenerationOperationResults(DirName, CaseName, mTEPES, mTEPES, pIndTechnologyOutput, pIndAreaOutput, pIndPlotOutput)
     if pIndESSOperationResults        == 1:
         ESSOperationResults       (DirName, CaseName, mTEPES, mTEPES, pIndTechnologyOutput, pIndAreaOutput, pIndPlotOutput)
+    if pIndReservoirOperationResults  == 1 and mTEPES.pIndHydroTopology == 1:
+        ReservoirOperationResults (DirName, CaseName, mTEPES, mTEPES, pIndTechnologyOutput                                )
     if pIndFlexibilityResults         == 1:
         FlexibilityResults        (DirName, CaseName, mTEPES, mTEPES)
     if pIndReliabilityResults         == 1:

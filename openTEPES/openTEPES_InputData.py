@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 03, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 06, 2023
 """
 
 import datetime
@@ -50,6 +50,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         dfVariableMaxVolume = pd.read_csv(_path+'/oT_Data_VariableMaxVolume_'     +CaseName+'.csv', index_col=[0,1,2])
         dfHydroInflows      = pd.read_csv(_path+'/oT_Data_HydroInflows_'          +CaseName+'.csv', index_col=[0,1,2])
         dfHydroOutflows     = pd.read_csv(_path+'/oT_Data_HydroOutflows_'         +CaseName+'.csv', index_col=[0,1,2])
+        pIndHydroTopology = 1
     except:
         pIndHydroTopology = 0
         print('No Data_Reservoir file found')
@@ -201,6 +202,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     #%% parameters
     pIndBinGenInvest       = dfOption   ['IndBinGenInvest'    ][0].astype('int')         # Indicator of binary generation expansion decisions, 0 continuous  - 1 binary - 2 no investment variables
     pIndBinNetInvest       = dfOption   ['IndBinNetInvest'    ][0].astype('int')         # Indicator of binary network    expansion decisions, 0 continuous  - 1 binary - 2 no investment variables
+    pIndBinRsrInvest       = dfOption   ['IndBinRsrInvest'    ][0].astype('int')         # Indicator of binary reservoir  expansion decisions, 0 continuous  - 1 binary - 2 no investment variables
     pIndBinGenRetire       = dfOption   ['IndBinGenRetirement'][0].astype('int')         # Indicator of binary generation retirement decisions,0 continuous  - 1 binary - 2 no retirement variables
     pIndBinGenOperat       = dfOption   ['IndBinGenOperat'    ][0].astype('int')         # Indicator of binary generation operation decisions, 0 continuous  - 1 binary
     pIndBinSingleNode      = dfOption   ['IndBinSingleNode'   ][0].astype('int')         # Indicator of single node although with network,     0 network     - 1 single node
@@ -487,19 +489,21 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.psnll     = [(p,sc,n,ni,nf,cc) for p,sc,n,ni,nf,cc in mTEPES.psn*mTEPES.ll]
     mTEPES.psnls     = [(p,sc,n,ni,nf,cc) for p,sc,n,ni,nf,cc in mTEPES.psn*mTEPES.ls]
 
-    mTEPES.pg        = [(p,g       )      for p,g             in mTEPES.p  *mTEPES.g ]
-    mTEPES.pgc       = [(p,gc      )      for p,gc            in mTEPES.p  *mTEPES.gc]
-    mTEPES.pes       = [(p,es      )      for p,es            in mTEPES.p  *mTEPES.es]
-    mTEPES.pgd       = [(p,gd      )      for p,gd            in mTEPES.p  *mTEPES.gd]
-    mTEPES.par       = [(p,ar      )      for p,ar            in mTEPES.p  *mTEPES.ar]
-    mTEPES.pla       = [(p,ni,nf,cc)      for p,ni,nf,cc      in mTEPES.p  *mTEPES.la]
-    mTEPES.plc       = [(p,ni,nf,cc)      for p,ni,nf,cc      in mTEPES.p  *mTEPES.lc]
-    mTEPES.pll       = [(p,ni,nf,cc)      for p,ni,nf,cc      in mTEPES.p  *mTEPES.ll]
+    mTEPES.pg        = [(p,     g       ) for p,     g        in mTEPES.p  *mTEPES.g ]
+    mTEPES.pgc       = [(p,     gc      ) for p,     gc       in mTEPES.p  *mTEPES.gc]
+    mTEPES.pes       = [(p,     es      ) for p,     es       in mTEPES.p  *mTEPES.es]
+    mTEPES.pgd       = [(p,     gd      ) for p,     gd       in mTEPES.p  *mTEPES.gd]
+    mTEPES.par       = [(p,     ar      ) for p,     ar       in mTEPES.p  *mTEPES.ar]
+    mTEPES.pla       = [(p,     ni,nf,cc) for p,     ni,nf,cc in mTEPES.p  *mTEPES.la]
+    mTEPES.plc       = [(p,     ni,nf,cc) for p,     ni,nf,cc in mTEPES.p  *mTEPES.lc]
+    mTEPES.pll       = [(p,     ni,nf,cc) for p,     ni,nf,cc in mTEPES.p  *mTEPES.ll]
 
     if pIndHydroTopology == 1:
+        mTEPES.psrs  = [(p,sc,  rs)       for p,sc,  rs       in mTEPES.ps *mTEPES.rs]
         mTEPES.psnrs = [(p,sc,n,rs)       for p,sc,n,rs       in mTEPES.psn*mTEPES.rs]
         mTEPES.psnrc = [(p,sc,n,rc)       for p,sc,n,rc       in mTEPES.psn*mTEPES.rn]
         mTEPES.prs   = [(p,     rs)       for p,     rs       in mTEPES.p  *mTEPES.rs]
+        mTEPES.prc   = [(p,     rc)       for p,     rc       in mTEPES.p  *mTEPES.rn]
 
     # assigning a node to an area
     mTEPES.ndar = [(nd,ar) for (nd,zn,ar) in mTEPES.ndzn*mTEPES.ar if (zn,ar) in mTEPES.znar]
@@ -703,10 +707,10 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         idxWaterOut['Monthly'] = round( 672/pTimeStep)
         idxWaterOut['Yearly' ] = round(8736/pTimeStep)
 
-        pCycleRsrTimeStep    = pReservoirType.map(idxCycleRsr).astype('int')
-        pCycleWatOutTimeStep = pWaterOutfType.map(idxWaterOut).astype('int')
+        pCycleRsrTimeStep = pReservoirType.map(idxCycleRsr).astype('int')
+        pWaterOutTimeStep = pWaterOutfType.map(idxWaterOut).astype('int')
 
-        pCycleWaterStep      = pd.concat([pCycleRsrTimeStep, pCycleWatOutTimeStep], axis=1).min(axis=1)
+        pCycleWaterStep      = pd.concat([pCycleRsrTimeStep, pWaterOutTimeStep], axis=1).min(axis=1)
 
     # drop load levels with duration 0
     pDuration          = pDuration.loc         [mTEPES.n    ]
@@ -842,6 +846,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pProductionFunction  = pProductionFunction.loc [   mTEPES.h ]
 
     if pIndHydroTopology == 1:
+        # drop reservoirs not rn
+        pRsrInvestCost   = pRsrInvestCost.loc      [   mTEPES.rn]
         # maximum outflows depending on the downstream hydropower unit
         pMaxOutflows = pd.DataFrame([[sum(pMaxPower[h][p,sc,n]/pProductionFunction[h] for h in mTEPES.h if (rs,h) in mTEPES.r2h) for rs in mTEPES.rs] for p,sc,n in mTEPES.psn], index=mTEPES.psn, columns=mTEPES.rs)
 
@@ -897,6 +903,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.pIndBinLineCommit     = Param(initialize=pIndBinLineCommit    , within=Binary,              doc='Indicator of binary network    switching  decisions', mutable=True)
     mTEPES.pIndBinNetLosses      = Param(initialize=pIndBinNetLosses     , within=Binary,              doc='Indicator of binary network ohmic losses',            mutable=True)
 
+    mTEPES.pIndBinRsrInvest      = Param(initialize=pIndBinRsrInvest     , within=NonNegativeIntegers, doc='Indicator of binary reservoir  investment decisions', mutable=True)
     mTEPES.pIndHydroTopology     = Param(initialize=pIndHydroTopology    , within=Binary,              doc='Indicator of reservoir and hydropower topology'    )
 
     mTEPES.pENSCost              = Param(initialize=pENSCost             , within=NonNegativeReals,    doc='ENS cost'                                          )
@@ -982,11 +989,13 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         mTEPES.pHydroInflows     = Param(mTEPES.psnrs, initialize=pHydroInflows.stack().to_dict()     , within=NonNegativeReals,    doc='Hydro inflows',                          mutable=True)
         mTEPES.pHydroOutflows    = Param(mTEPES.psnrs, initialize=pHydroOutflows.stack().to_dict()    , within=NonNegativeReals,    doc='Hydro outflows',                         mutable=True)
         mTEPES.pMaxOutflows      = Param(mTEPES.psnrs, initialize=pMaxOutflows.stack().to_dict()      , within=NonNegativeReals,    doc='Maximum hydro outflows',                             )
-        mTEPES.pMinVolume        = Param(mTEPES.psnrs, initialize=pMinVolume.stack().to_dict()        , within=NonNegativeReals,    doc='Minimum reservoir volume capacity'                        )
-        mTEPES.pMaxVolume        = Param(mTEPES.psnrs, initialize=pMaxVolume.stack().to_dict()        , within=NonNegativeReals,    doc='Maximum reservoir volume capacity'                        )
-        mTEPES.pPeriodIniRsr     = Param(mTEPES.rs,    initialize=pPeriodIniRsr.to_dict()             , within=PositiveIntegers,    doc='installation year',                                  )
-        mTEPES.pPeriodFinRsr     = Param(mTEPES.rs,    initialize=pPeriodFinRsr.to_dict()             , within=PositiveIntegers,    doc='retirement   year',                                  )
+        mTEPES.pMinVolume        = Param(mTEPES.psnrs, initialize=pMinVolume.stack().to_dict()        , within=NonNegativeReals,    doc='Minimum reservoir volume capacity'                   )
+        mTEPES.pMaxVolume        = Param(mTEPES.psnrs, initialize=pMaxVolume.stack().to_dict()        , within=NonNegativeReals,    doc='Maximum reservoir volume capacity'                   )
+        mTEPES.pRsrInvestCost    = Param(mTEPES.rn,    initialize=pRsrInvestCost.to_dict()            , within=NonNegativeReals,    doc='Reservoir fixed cost'                                )
+        mTEPES.pPeriodIniRsr     = Param(mTEPES.rs,    initialize=pPeriodIniRsr.to_dict()             , within=PositiveIntegers,    doc='Installation year',                                  )
+        mTEPES.pPeriodFinRsr     = Param(mTEPES.rs,    initialize=pPeriodFinRsr.to_dict()             , within=PositiveIntegers,    doc='Retirement   year',                                  )
         mTEPES.pCycleWaterStep   = Param(mTEPES.rs,    initialize=pCycleWaterStep.to_dict()           , within=PositiveIntegers,    doc='Reservoir volume cycle'                              )
+        mTEPES.pWaterOutTimeStep = Param(mTEPES.rs,    initialize=pWaterOutTimeStep.to_dict()         , within=PositiveIntegers,    doc='Reservoir outflows cycle'                            )
         mTEPES.pIniVolume        = Param(mTEPES.psnrs, initialize=pIniVolume.stack().to_dict()        , within=NonNegativeReals,    doc='Reservoir initial volume',               mutable=True)
         mTEPES.pInitialVolume    = Param(mTEPES.rs,    initialize=pInitialVolume.to_dict()            , within=NonNegativeReals,    doc='Reservoir initial volume without load levels'        )
         mTEPES.pReservoirType    = Param(mTEPES.rs,    initialize=pReservoirType.to_dict()            , within=Any             ,    doc='Reservoir volume type'                               )
@@ -1032,12 +1041,16 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     if pIndHydroTopology == 1:
         mTEPES.nrsc = [(n,rs) for n,rs in mTEPES.n*mTEPES.rs if mTEPES.n.ord(n) % mTEPES.pCycleWaterStep  [rs] == 0]
         mTEPES.nrcc = [(n,rc) for n,rc in mTEPES.n*mTEPES.rn if mTEPES.n.ord(n) % mTEPES.pCycleWaterStep  [rc] == 0]
+        mTEPES.nrso = [(n,rs) for n,rs in mTEPES.n*mTEPES.rs if mTEPES.n.ord(n) % mTEPES.pWaterOutTimeStep[rs] == 0]
 
     # ESS with outflows
-    mTEPES.eo = [(p,sc,es) for p,sc,es in mTEPES.pses if sum(mTEPES.pEnergyOutflows[p,sc,n2,es]() for n2 in mTEPES.n2)]
+    mTEPES.eo     = [(p,sc,es) for p,sc,es in mTEPES.pses if sum(mTEPES.pEnergyOutflows[p,sc,n2,es]() for n2 in mTEPES.n2)]
+    if pIndHydroTopology == 1:
+        # reservoirs with outflows
+        mTEPES.ro = [(p,sc,rs) for p,sc,rs in mTEPES.psrs if sum(mTEPES.pHydroOutflows [p,sc,n2,rs]() for n2 in mTEPES.n2)]
     # generators with min/Max energy
-    mTEPES.gm = [(p,sc,g ) for p,sc,g  in mTEPES.psg  if sum(mTEPES.pMinEnergy     [p,sc,n2,g ]   for n2 in mTEPES.n2)]
-    mTEPES.gM = [(p,sc,g ) for p,sc,g  in mTEPES.psg  if sum(mTEPES.pMaxEnergy     [p,sc,n2,g ]   for n2 in mTEPES.n2)]
+    mTEPES.gm     = [(p,sc,g ) for p,sc,g  in mTEPES.psg  if sum(mTEPES.pMinEnergy     [p,sc,n2,g ]   for n2 in mTEPES.n2)]
+    mTEPES.gM     = [(p,sc,g ) for p,sc,g  in mTEPES.psg  if sum(mTEPES.pMaxEnergy     [p,sc,n2,g ]   for n2 in mTEPES.n2)]
 
     # if unit availability = 0 changed to 1
     for g in mTEPES.g:
@@ -1095,19 +1108,25 @@ def SettingUpVariables(OptModel, mTEPES):
         OptModel.vReservoirSpillage = Var(mTEPES.psnrs, within=NonNegativeReals,                                                                                                            doc='Reservoir spillage                              [hm3]')
 
     if mTEPES.pIndBinGenInvest() == 0:
-        OptModel.vGenerationInvest  = Var(mTEPES.pgc,   within=UnitInterval,                                                                                                                    doc='generation investment decision exists in a year [0,1]')
+        OptModel.vGenerationInvest    = Var(mTEPES.pgc,   within=UnitInterval,                                                                                                                    doc='generation investment decision exists in a year [0,1]')
     else:
-        OptModel.vGenerationInvest  = Var(mTEPES.pgc,   within=Binary,                                                                                                                          doc='generation investment decision exists in a year {0,1}')
+        OptModel.vGenerationInvest    = Var(mTEPES.pgc,   within=Binary,                                                                                                                          doc='generation investment decision exists in a year {0,1}')
 
     if mTEPES.pIndBinGenRetire() == 0:
-        OptModel.vGenerationRetire  = Var(mTEPES.pgd,   within=UnitInterval,                                                                                                                    doc='generation retirement decision exists in a year [0,1]')
+        OptModel.vGenerationRetire    = Var(mTEPES.pgd,   within=UnitInterval,                                                                                                                    doc='generation retirement decision exists in a year [0,1]')
     else:
-        OptModel.vGenerationRetire  = Var(mTEPES.pgd,   within=Binary,                                                                                                                          doc='generation retirement decision exists in a year {0,1}')
+        OptModel.vGenerationRetire    = Var(mTEPES.pgd,   within=Binary,                                                                                                                          doc='generation retirement decision exists in a year {0,1}')
 
     if mTEPES.pIndBinNetInvest() == 0:
-        OptModel.vNetworkInvest     = Var(mTEPES.plc,   within=UnitInterval,                                                                                                                    doc='network    investment decision exists in a year [0,1]')
+        OptModel.vNetworkInvest       = Var(mTEPES.plc,   within=UnitInterval,                                                                                                                    doc='network    investment decision exists in a year [0,1]')
     else:
-        OptModel.vNetworkInvest     = Var(mTEPES.plc,   within=Binary,                                                                                                                          doc='network    investment decision exists in a year {0,1}')
+        OptModel.vNetworkInvest       = Var(mTEPES.plc,   within=Binary,                                                                                                                          doc='network    investment decision exists in a year {0,1}')
+
+    if mTEPES.pIndHydroTopology == 1:
+        if mTEPES.pIndBinRsrInvest() == 0:
+            OptModel.vReservoirInvest = Var(mTEPES.prc,   within=UnitInterval,                                                                                                                    doc='reservoir  investment decision exists in a year [0,1]')
+        else:
+            OptModel.vReservoirInvest = Var(mTEPES.prc,   within=Binary,                                                                                                                          doc='reservoir  investment decision exists in a year {0,1}')
 
     if mTEPES.pIndBinGenOperat() == 0:
         OptModel.vCommitment        = Var(mTEPES.psnnr, within=UnitInterval,     initialize=0.0,                                                                                                doc='commitment         of the unit                  [0,1]')

@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 03, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 06, 2023
 """
 
 import time
@@ -38,8 +38,10 @@ def InvestmentModelFormulation(OptModel, mTEPES, pIndLogConsole):
     OptModel.eTotalICost = Constraint(rule=eTotalICost, doc='system fixed    cost [MEUR]')
 
     def eTotalFCost(OptModel,p):
-        if len(mTEPES.gc) + len(mTEPES.gd) + len(mTEPES.lc):
+        if   len(mTEPES.gc) + len(mTEPES.gd) + len(mTEPES.lc)                  and mTEPES.pIndHydroTopology == 0:
             return OptModel.vTotalFCost[p] == sum(mTEPES.pGenInvestCost[gc] * OptModel.vGenerationInvest[p,gc] for gc in mTEPES.gc) + sum(mTEPES.pGenRetireCost[gd] * OptModel.vGenerationRetire[p,gd] for gd in mTEPES.gd) + sum(mTEPES.pNetFixedCost[ni,nf,cc] * OptModel.vNetworkInvest[p,ni,nf,cc] for ni,nf,cc in mTEPES.lc)
+        elif len(mTEPES.gc) + len(mTEPES.gd) + len(mTEPES.lc) + len(mTEPES.rn) and mTEPES.pIndHydroTopology == 1:
+            return OptModel.vTotalFCost[p] == sum(mTEPES.pGenInvestCost[gc] * OptModel.vGenerationInvest[p,gc] for gc in mTEPES.gc) + sum(mTEPES.pGenRetireCost[gd] * OptModel.vGenerationRetire[p,gd] for gd in mTEPES.gd) + sum(mTEPES.pNetFixedCost[ni,nf,cc] * OptModel.vNetworkInvest[p,ni,nf,cc] for ni,nf,cc in mTEPES.lc) + sum(mTEPES.pRsrInvestCost[rc] * OptModel.vReservoirInvest[p,rc] for rc in mTEPES.rn)
         else:
             return Constraint.Skip
     OptModel.eTotalFCost = Constraint(mTEPES.p, rule=eTotalFCost, doc='system fixed    cost [MEUR]')
@@ -428,7 +430,7 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
                 return Constraint.Skip
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eInflows2Comm_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.necc, rule=eInflows2Comm, doc='ESS inflows limited by commitment [GWh]'))
+    setattr(OptModel, 'eInflows2Comm_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.necc, rule=eInflows2Comm, doc='ESS inflows limited by commitment [p.u.]'))
 
     if pIndLogConsole == 1:
         print('eInflows2Comm         ... ', len(getattr(OptModel, 'eInflows2Comm_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
@@ -453,32 +455,6 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
 
     if pIndLogConsole == 1:
         print('eESSInventory         ... ', len(getattr(OptModel, 'eESSInventory_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
-
-    if mTEPES.pIndHydroTopology == 1:
-        def eHydroInventory(OptModel,n,rs):
-            # u otras relaciones de embalse e hidro
-            if sum(1 for h in mTEPES.h if (rs,h) in mTEPES.r2h or (h,rs) in mTEPES.h2r):
-                # mTEPES.pMaxCharge[p, sc, n, h] +
-                if   mTEPES.n.ord(n) == mTEPES.pCycleWaterStep[rs]:
-                    if rs not in mTEPES.rn:
-                        return mTEPES.pIniVolume[p,sc,n,rs]                                                   + sum(mTEPES.pDuration[n2]*(mTEPES.pHydroInflows[p,sc,n2,rs]*0.036 - OptModel.vHydroOutflows[p,sc,n2,rs]*0.036 - sum(OptModel.vTotalOutput[p,sc,n2,h]/mTEPES.pProductionFunction[h] for h in mTEPES.h if (rs,h) in mTEPES.r2h) + sum(OptModel.vTotalOutput[p,sc,n2,h]/mTEPES.pProductionFunction[h] for h in mTEPES.h if (h,rs) in mTEPES.h2r)) for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pCycleWaterStep[rs]:mTEPES.n.ord(n)]) == OptModel.vReservoirVolume[p,sc,n,rs] + OptModel.vReservoirSpillage[p,sc,n,rs] - sum(OptModel.vReservoirSpillage[p,sc,n,rsr] for rsr in mTEPES.rs if (rsr,rs) in mTEPES.r2r)
-                    else:
-                        return mTEPES.pIniVolume[p,sc,n,rs]                                                   + sum(mTEPES.pDuration[n2]*(mTEPES.vHydroInflows[p,sc,n2,rs]*0.036 - OptModel.vHydroOutflows[p,sc,n2,rs]*0.036 - sum(OptModel.vTotalOutput[p,sc,n2,h]/mTEPES.pProductionFunction[h] for h in mTEPES.h if (rs,h) in mTEPES.r2h) + sum(OptModel.vTotalOutput[p,sc,n2,h]/mTEPES.pProductionFunction[h] for h in mTEPES.h if (h,rs) in mTEPES.h2r)) for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pCycleWaterStep[rs]:mTEPES.n.ord(n)]) == OptModel.vReservoirVolume[p,sc,n,rs] + OptModel.vReservoirSpillage[p,sc,n,rs] - sum(OptModel.vReservoirSpillage[p,sc,n,rsr] for rsr in mTEPES.rs if (rsr,rs) in mTEPES.r2r)
-                elif mTEPES.n.ord(n) >  mTEPES.pCycleWaterStep[rs]:
-                    if rs not in mTEPES.rn:
-                        return OptModel.vReservoirVolume[p,sc,mTEPES.n.prev(n,mTEPES.pCycleWaterStep[rs]),rs] + sum(mTEPES.pDuration[n2]*(mTEPES.pHydroInflows[p,sc,n2,rs]*0.036 - OptModel.vHydroOutflows[p,sc,n2,rs]*0.036 - sum(OptModel.vTotalOutput[p,sc,n2,h]/mTEPES.pProductionFunction[h] for h in mTEPES.h if (rs,h) in mTEPES.r2h) + sum(OptModel.vTotalOutput[p,sc,n2,h]/mTEPES.pProductionFunction[h] for h in mTEPES.h if (h,rs) in mTEPES.h2r)) for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pCycleWaterStep[rs]:mTEPES.n.ord(n)]) == OptModel.vReservoirVolume[p,sc,n,rs] + OptModel.vReservoirSpillage[p,sc,n,rs] - sum(OptModel.vReservoirSpillage[p,sc,n,rsr] for rsr in mTEPES.rs if (rsr,rs) in mTEPES.r2r)
-                    else:
-                        return OptModel.vReservoirVolume[p,sc,mTEPES.n.prev(n,mTEPES.pCycleWaterStep[rs]),rs] + sum(mTEPES.pDuration[n2]*(mTEPES.vHydroInflows[p,sc,n2,rs]*0.036 - OptModel.vHydroOutflows[p,sc,n2,rs]*0.036 - sum(OptModel.vTotalOutput[p,sc,n2,h]/mTEPES.pProductionFunction[h] for h in mTEPES.h if (rs,h) in mTEPES.r2h) + sum(OptModel.vTotalOutput[p,sc,n2,h]/mTEPES.pProductionFunction[h] for h in mTEPES.h if (h,rs) in mTEPES.h2r)) for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pCycleWaterStep[rs]:mTEPES.n.ord(n)]) == OptModel.vReservoirVolume[p,sc,n,rs] + OptModel.vReservoirSpillage[p,sc,n,rs] - sum(OptModel.vReservoirSpillage[p,sc,n,rsr] for rsr in mTEPES.rs if (rsr,rs) in mTEPES.r2r)
-                else:
-                    return Constraint.Skip
-            else:
-                return Constraint.Skip
-        setattr(OptModel, 'eHydroInventory_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.nrsc, rule=eHydroInventory, doc='Reservoir water inventory [hm3]'))
-
-    # + mTEPES.pEfficiency[h] * OptModel.vESSTotalCharge[p, sc, n2, h]
-
-        if pIndLogConsole == 1:
-            print('eHydroInventory       ... ', len(getattr(OptModel, 'eHydroInventory_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
 
     def eMaxShiftTime(OptModel,n,es):
         if mTEPES.pShiftTime[es]:
@@ -588,6 +564,50 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
     if pIndLogConsole == 1:
         print('Generating storage operation           ... ', round(GeneratingTime), 's')
 
+def GenerationOperationModelFormulationReservoir(OptModel, mTEPES, pIndLogConsole, p, sc, st):
+    print('Reservoir scheduling       constraints ****')
+
+    StartTime = time.time()
+
+    def eHydroInventory(OptModel,n,rs):
+        # u otras relaciones de embalse e hidro
+        if sum(1 for h in mTEPES.h if (rs,h) in mTEPES.r2h or (h,rs) in mTEPES.h2r):
+            # mTEPES.pMaxCharge[p, sc, n, h] +
+            if   mTEPES.n.ord(n) == mTEPES.pCycleWaterStep[rs]:
+                if rs not in mTEPES.rn:
+                    return mTEPES.pIniVolume[p,sc,n,rs]                                                   + sum(mTEPES.pDuration[n2]*(mTEPES.pHydroInflows[p,sc,n2,rs]*0.036 - OptModel.vHydroOutflows[p,sc,n2,rs]*0.036 - sum(OptModel.vTotalOutput[p,sc,n2,h]/mTEPES.pProductionFunction[h] for h in mTEPES.h if (rs,h) in mTEPES.r2h) + sum(OptModel.vTotalOutput[p,sc,n2,h]/mTEPES.pProductionFunction[h] for h in mTEPES.h if (h,rs) in mTEPES.h2r)) for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pCycleWaterStep[rs]:mTEPES.n.ord(n)]) == OptModel.vReservoirVolume[p,sc,n,rs] + OptModel.vReservoirSpillage[p,sc,n,rs] - sum(OptModel.vReservoirSpillage[p,sc,n,rsr] for rsr in mTEPES.rs if (rsr,rs) in mTEPES.r2r)
+                else:
+                    return mTEPES.pIniVolume[p,sc,n,rs]                                                   + sum(mTEPES.pDuration[n2]*(mTEPES.vHydroInflows[p,sc,n2,rs]*0.036 - OptModel.vHydroOutflows[p,sc,n2,rs]*0.036 - sum(OptModel.vTotalOutput[p,sc,n2,h]/mTEPES.pProductionFunction[h] for h in mTEPES.h if (rs,h) in mTEPES.r2h) + sum(OptModel.vTotalOutput[p,sc,n2,h]/mTEPES.pProductionFunction[h] for h in mTEPES.h if (h,rs) in mTEPES.h2r)) for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pCycleWaterStep[rs]:mTEPES.n.ord(n)]) == OptModel.vReservoirVolume[p,sc,n,rs] + OptModel.vReservoirSpillage[p,sc,n,rs] - sum(OptModel.vReservoirSpillage[p,sc,n,rsr] for rsr in mTEPES.rs if (rsr,rs) in mTEPES.r2r)
+            elif mTEPES.n.ord(n) >  mTEPES.pCycleWaterStep[rs]:
+                if rs not in mTEPES.rn:
+                    return OptModel.vReservoirVolume[p,sc,mTEPES.n.prev(n,mTEPES.pCycleWaterStep[rs]),rs] + sum(mTEPES.pDuration[n2]*(mTEPES.pHydroInflows[p,sc,n2,rs]*0.036 - OptModel.vHydroOutflows[p,sc,n2,rs]*0.036 - sum(OptModel.vTotalOutput[p,sc,n2,h]/mTEPES.pProductionFunction[h] for h in mTEPES.h if (rs,h) in mTEPES.r2h) + sum(OptModel.vTotalOutput[p,sc,n2,h]/mTEPES.pProductionFunction[h] for h in mTEPES.h if (h,rs) in mTEPES.h2r)) for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pCycleWaterStep[rs]:mTEPES.n.ord(n)]) == OptModel.vReservoirVolume[p,sc,n,rs] + OptModel.vReservoirSpillage[p,sc,n,rs] - sum(OptModel.vReservoirSpillage[p,sc,n,rsr] for rsr in mTEPES.rs if (rsr,rs) in mTEPES.r2r)
+                else:
+                    return OptModel.vReservoirVolume[p,sc,mTEPES.n.prev(n,mTEPES.pCycleWaterStep[rs]),rs] + sum(mTEPES.pDuration[n2]*(mTEPES.vHydroInflows[p,sc,n2,rs]*0.036 - OptModel.vHydroOutflows[p,sc,n2,rs]*0.036 - sum(OptModel.vTotalOutput[p,sc,n2,h]/mTEPES.pProductionFunction[h] for h in mTEPES.h if (rs,h) in mTEPES.r2h) + sum(OptModel.vTotalOutput[p,sc,n2,h]/mTEPES.pProductionFunction[h] for h in mTEPES.h if (h,rs) in mTEPES.h2r)) for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pCycleWaterStep[rs]:mTEPES.n.ord(n)]) == OptModel.vReservoirVolume[p,sc,n,rs] + OptModel.vReservoirSpillage[p,sc,n,rs] - sum(OptModel.vReservoirSpillage[p,sc,n,rsr] for rsr in mTEPES.rs if (rsr,rs) in mTEPES.r2r)
+            else:
+                return Constraint.Skip
+        else:
+            return Constraint.Skip
+    setattr(OptModel, 'eHydroInventory_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.nrsc, rule=eHydroInventory, doc='Reservoir water inventory [hm3]'))
+
+    # + mTEPES.pEfficiency[h] * OptModel.vESSTotalCharge[p, sc, n2, h]
+
+    if pIndLogConsole == 1:
+        print('eHydroInventory       ... ', len(getattr(OptModel, 'eHydroInventory_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+
+    def eHydroOutflows(OptModel,n,rs):
+        if (p,sc,rs) in mTEPES.ro:
+            return sum((OptModel.vHydroOutflows[p,sc,n2,rs] - mTEPES.pHydroOutflows[p,sc,n2,rs])*mTEPES.pDuration[n2] for n2 in list(mTEPES.n2)[mTEPES.n.ord(n) - mTEPES.pWaterOutTimeStep[rs]:mTEPES.n.ord(n)]) == 0.0
+        else:
+            return Constraint.Skip
+    setattr(OptModel, 'eHydroOutflows_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.nrso, rule=eHydroOutflows, doc='hydro outflows of a reservoir [m3/s]'))
+
+    if pIndLogConsole == 1:
+        print('eHydroOutflows        ... ', len(getattr(OptModel, 'eHydroOutflows_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+
+    GeneratingTime = time.time() - StartTime
+    if pIndLogConsole == 1:
+        print('Generating reservoir operation         ... ', round(GeneratingTime), 's')
+
 
 def GenerationOperationModelFormulationCommitment(OptModel, mTEPES, pIndLogConsole, p, sc, st):
     print('Unit commitment            constraints ****')
@@ -645,8 +665,6 @@ def GenerationOperationModelFormulationCommitment(OptModel, mTEPES, pIndLogConso
 
     if pIndLogConsole == 1:
         print('eUCStrShut            ... ', len(getattr(OptModel, 'eUCStrShut_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
-
-    StartTime = time.time()
 
     def eMaxCommitment(OptModel,n,nr):
         if len(mTEPES.g2g):
