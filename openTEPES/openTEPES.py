@@ -163,9 +163,9 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
         InvestmentResults         (DirName, CaseName, mTEPES, mTEPES, pIndTechnologyOutput,                 pIndPlotOutput)
     if pIndGenerationOperationResults == 1:
         GenerationOperationResults(DirName, CaseName, mTEPES, mTEPES, pIndTechnologyOutput, pIndAreaOutput, pIndPlotOutput)
-    if pIndESSOperationResults        == 1:
+    if pIndESSOperationResults        == 1 and len(mTEPES.es):
         ESSOperationResults       (DirName, CaseName, mTEPES, mTEPES, pIndTechnologyOutput, pIndAreaOutput, pIndPlotOutput)
-    if pIndReservoirOperationResults  == 1 and mTEPES.pIndHydroTopology == 1:
+    if pIndReservoirOperationResults  == 1 and len(mTEPES.rs) and mTEPES.pIndHydroTopology == 1:
         ReservoirOperationResults (DirName, CaseName, mTEPES, mTEPES, pIndTechnologyOutput                                )
     if pIndFlexibilityResults         == 1:
         FlexibilityResults        (DirName, CaseName, mTEPES, mTEPES)

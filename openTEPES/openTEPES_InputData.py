@@ -161,43 +161,64 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     dictSets.load(filename=_path+'/oT_Dict_ZoneToArea_'  +CaseName+'.csv', set='znar', format='set')
     dictSets.load(filename=_path+'/oT_Dict_AreaToRegion_'+CaseName+'.csv', set='arrg', format='set')
 
+    mTEPES.pp   = Set(initialize=dictSets['p'   ], ordered=True,  doc='periods', within=PositiveIntegers)
+    mTEPES.scc  = Set(initialize=dictSets['sc'  ], ordered=True,  doc='scenarios'                       )
+    mTEPES.stt  = Set(initialize=dictSets['st'  ], ordered=True,  doc='stages'                          )
+    mTEPES.nn   = Set(initialize=dictSets['n'   ], ordered=True,  doc='load levels'                     )
+    mTEPES.gg   = Set(initialize=dictSets['g'   ], ordered=False, doc='units'                           )
+    mTEPES.gt   = Set(initialize=dictSets['gt'  ], ordered=False, doc='technologies'                    )
+    mTEPES.et   = Set(initialize=dictSets['et'  ], ordered=False, doc='ESS types'                       )
+    mTEPES.nd   = Set(initialize=dictSets['nd'  ], ordered=False, doc='nodes'                           )
+    mTEPES.ni   = Set(initialize=dictSets['nd'  ], ordered=False, doc='nodes'                           )
+    mTEPES.nf   = Set(initialize=dictSets['nd'  ], ordered=False, doc='nodes'                           )
+    mTEPES.zn   = Set(initialize=dictSets['zn'  ], ordered=False, doc='zones'                           )
+    mTEPES.ar   = Set(initialize=dictSets['ar'  ], ordered=False, doc='areas'                           )
+    mTEPES.rg   = Set(initialize=dictSets['rg'  ], ordered=False, doc='regions'                         )
+    mTEPES.cc   = Set(initialize=dictSets['cc'  ], ordered=False, doc='circuits'                        )
+    mTEPES.c2   = Set(initialize=dictSets['cc'  ], ordered=False, doc='circuits'                        )
+    mTEPES.lt   = Set(initialize=dictSets['lt'  ], ordered=False, doc='line types'                      )
+    mTEPES.ndzn = Set(initialize=dictSets['ndzn'], ordered=False, doc='node to zone'                    )
+    mTEPES.znar = Set(initialize=dictSets['znar'], ordered=False, doc='zone to area'                    )
+    mTEPES.arrg = Set(initialize=dictSets['arrg'], ordered=False, doc='area to region'                  )
+
     try:
-        dictSets.load(filename=_path+'/oT_Dict_Reservoir_'             +CaseName+'.csv', set='rs'  , format='set')
-        dictSets.load(filename=_path+'/oT_Dict_ReservoirToReservoir_'  +CaseName+'.csv', set='r2r' , format='set')
-        dictSets.load(filename=_path+'/oT_Dict_HydroToReservoir_'      +CaseName+'.csv', set='h2r' , format='set')
-        dictSets.load(filename=_path+'/oT_Dict_ReservoirToHydro_'      +CaseName+'.csv', set='r2h' , format='set')
-        # dictSets.load(filename=_path+'/oT_Dict_PumpedHydroToReservoir_'+CaseName+'.csv', set='ph2r', format='set')
-        # dictSets.load(filename=_path+'/oT_Dict_ReservoirToPumpedHydro_'+CaseName+'.csv', set='r2ph', format='set')
+        import csv
+        def count_lines_in_csv(csv_file_path):
+            with open(csv_file_path, 'r', newline='') as file:
+                reader = csv.reader(file)
+                num_lines = sum(1 for _ in reader)
+            return num_lines
+
+        mTEPES.r2h = Set(initialize=[], ordered=False, doc='reservoir to hydro'       )
+        mTEPES.h2r = Set(initialize=[], ordered=False, doc='hydro to reservoir'       )
+        mTEPES.r2r = Set(initialize=[], ordered=False, doc='reservoir to reservoir'   )
+        mTEPES.p2r = Set(initialize=[], ordered=False, doc='pumped-hydro to reservoir')
+        mTEPES.r2p = Set(initialize=[], ordered=False, doc='reservoir to pumped-hydro')
+
+        dictSets.load(    filename=_path+'/oT_Dict_Reservoir_'             +CaseName+'.csv', set='rs' , format='set')
+        mTEPES.rs      = Set(initialize=dictSets['rs' ], ordered=False, doc='reservoirs'               )
+        if count_lines_in_csv(     _path+'/oT_Dict_ReservoirToHydro_'      +CaseName+'.csv') > 1:
+            dictSets.load(filename=_path+'/oT_Dict_ReservoirToHydro_'      +CaseName+'.csv', set='r2h', format='set')
+            mTEPES.del_component(mTEPES.r2h)
+            mTEPES.r2h = Set(initialize=dictSets['r2h'], ordered=False, doc='reservoir to hydro'       )
+        if count_lines_in_csv(     _path+'/oT_Dict_HydroToReservoir_'      +CaseName+'.csv') > 1:
+            dictSets.load(filename=_path+'/oT_Dict_HydroToReservoir_'      +CaseName+'.csv', set='h2r', format='set')
+            mTEPES.del_component(mTEPES.h2r)
+            mTEPES.h2r = Set(initialize=dictSets['h2r'], ordered=False, doc='hydro to reservoir'       )
+        if count_lines_in_csv(     _path+'/oT_Dict_ReservoirToReservoir_'  +CaseName+'.csv') > 1:
+            dictSets.load(filename=_path+'/oT_Dict_ReservoirToReservoir_'  +CaseName+'.csv', set='r2r', format='set')
+            mTEPES.del_component(mTEPES.r2r)
+            mTEPES.r2r = Set(initialize=dictSets['r2r'], ordered=False, doc='reservoir to reservoir'   )
+        if count_lines_in_csv(     _path+'/oT_Dict_PumpedHydroToReservoir_'+CaseName+'.csv') > 1:
+            dictSets.load(filename=_path+'/oT_Dict_PumpedHydroToReservoir_'+CaseName+'.csv', set='p2r', format='set')
+            mTEPES.del_component(mTEPES.p2r)
+            mTEPES.p2r = Set(initialize=dictSets['p2r'], ordered=False, doc='pumped-hydro to reservoir')
+        if count_lines_in_csv(     _path+'/oT_Dict_ReservoirToPumpedHydro_'+CaseName+'.csv') > 1:
+            dictSets.load(filename=_path+'/oT_Dict_ReservoirToPumpedHydro_'+CaseName+'.csv', set='r2p', format='set')
+            mTEPES.del_component(mTEPES.r2p)
+            mTEPES.r2p = Set(initialize=dictSets['r2p'], ordered=False, doc='reservoir to pumped-hydro')
     except:
         print('No reservoir and hydropower topology dictionaries found')
-
-    mTEPES.pp      = Set(initialize=dictSets['p'   ], ordered=True,  doc='periods',              within=PositiveIntegers)
-    mTEPES.scc     = Set(initialize=dictSets['sc'  ], ordered=True,  doc='scenarios'               )
-    mTEPES.stt     = Set(initialize=dictSets['st'  ], ordered=True,  doc='stages'                  )
-    mTEPES.nn      = Set(initialize=dictSets['n'   ], ordered=True,  doc='load levels'             )
-    mTEPES.gg      = Set(initialize=dictSets['g'   ], ordered=False, doc='units'                   )
-    mTEPES.gt      = Set(initialize=dictSets['gt'  ], ordered=False, doc='technologies'            )
-    mTEPES.et      = Set(initialize=dictSets['et'  ], ordered=False, doc='ESS types'               )
-    mTEPES.nd      = Set(initialize=dictSets['nd'  ], ordered=False, doc='nodes'                   )
-    mTEPES.ni      = Set(initialize=dictSets['nd'  ], ordered=False, doc='nodes'                   )
-    mTEPES.nf      = Set(initialize=dictSets['nd'  ], ordered=False, doc='nodes'                   )
-    mTEPES.zn      = Set(initialize=dictSets['zn'  ], ordered=False, doc='zones'                   )
-    mTEPES.ar      = Set(initialize=dictSets['ar'  ], ordered=False, doc='areas'                   )
-    mTEPES.rg      = Set(initialize=dictSets['rg'  ], ordered=False, doc='regions'                 )
-    mTEPES.cc      = Set(initialize=dictSets['cc'  ], ordered=False, doc='circuits'                )
-    mTEPES.c2      = Set(initialize=dictSets['cc'  ], ordered=False, doc='circuits'                )
-    mTEPES.lt      = Set(initialize=dictSets['lt'  ], ordered=False, doc='line types'              )
-    mTEPES.ndzn    = Set(initialize=dictSets['ndzn'], ordered=False, doc='node to zone'            )
-    mTEPES.znar    = Set(initialize=dictSets['znar'], ordered=False, doc='zone to area'            )
-    mTEPES.arrg    = Set(initialize=dictSets['arrg'], ordered=False, doc='area to region'          )
-
-    if pIndHydroTopology == 1:
-        mTEPES.rs  = Set(initialize=dictSets['rs'  ], ordered=False, doc='reservoirs'              )
-        mTEPES.r2r = Set(initialize=dictSets['r2r' ], ordered=False, doc='reservoir to reservoir'  )
-        mTEPES.h2r = Set(initialize=dictSets['h2r' ], ordered=False, doc='hydro to reservoir'      )
-        mTEPES.r2h = Set(initialize=dictSets['r2h' ], ordered=False, doc='reservoir to hydro'      )
-        # mTEPES.p2r = Set(initialize=dictSets['p2r'], ordered=False, doc='pumped-hydro to reservoir')
-        # mTEPES.r2p = Set(initialize=dictSets['r2p'], ordered=False, doc='reservoir to pumped-hydro')
 
     #%% parameters
     pIndBinGenInvest       = dfOption   ['IndBinGenInvest'    ][0].astype('int')         # Indicator of binary generation expansion decisions, 0 continuous  - 1 binary - 2 no investment variables
