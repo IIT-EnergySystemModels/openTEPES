@@ -660,6 +660,10 @@ def ReservoirOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnolog
             o2h[ht].append(h )
 
     if len(mTEPES.rs):
+
+        # tolerance to consider avoid division by 0
+        pEpsilon = 1e-6
+
         VolumeConstraints = [(p,sc,n,rs) for p,sc,n,rs in mTEPES.ps*mTEPES.nrsc if sum(1 for h in mTEPES.h if (rs,h) in mTEPES.r2h or (h,rs) in mTEPES.h2r)]
         if pIndTechnologyOutput == 0 or pIndTechnologyOutput == 2:
             OutputToFile = pd.Series(data=[OptModel.vReservoirVolume[p,sc,n,rs]()                                          for p,sc,n,rs in VolumeConstraints], index=pd.Index(VolumeConstraints))
