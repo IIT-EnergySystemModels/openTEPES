@@ -648,11 +648,11 @@ def ESSOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutpu
 
 
 def ReservoirOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutput):
-    # %% outputting the ESS operation
+    # %% outputting the reservoir operation
     _path = os.path.join(DirName, CaseName)
     StartTime = time.time()
 
-    # technology to generators (o2h)
+    # technology to hydro units (o2h)
     o2h = defaultdict(list)
     for ht,h  in mTEPES.ht*mTEPES.h :
         if (ht,h ) in mTEPES.t2g:
