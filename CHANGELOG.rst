@@ -1,7 +1,7 @@
 Change Log
 =============
 
-[4.12.0] - 2023-08-05
+[4.12.0] - 2023-08-06
 ----------------------
 - [CHANGED] added IndBinRsrInvest option to relax reservoir investment decisions. This is needed to keep compatibility with previous cases
 - [CHANGED] added production function to hydropower plants to be modeled in water units instead of energy units. This is needed to keep compatibility with previous cases
