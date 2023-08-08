@@ -287,15 +287,15 @@ or for storing [GW] «``eESSReserveUpIfEnergy``» «``eESSReserveDwIfEnergy``»
 
 :math:`dr'^p_{\omega ne} \leq \frac{                             i^p_{\omega ne}}{DUR_n} \quad \forall p \omega ne`
 
-Maximum and minimum inventory of ESS candidates (only for load levels multiple of 1, 24, 168, 8736 h depending on the ESS storage type) constrained by the ESS commitment decision times the maximum capacity [GWh] «``eMaxInventory2Comm``» «``eMinInventory2Comm``»
+Maximum and minimum relative inventory of ESS candidates (only for load levels multiple of 1, 24, 168, 8736 h depending on the ESS storage type) constrained by the ESS commitment decision times the maximum capacity [p.u.] «``eMaxInventory2Comm``» «``eMinInventory2Comm``»
 
-:math:`\frac{i^p_{\omega ne}}{\overline{I}^p_{\omega ne}}  <= uc^p_{\omega ne} \quad \forall p \omega ne, e \in CE`
+:math:`\frac{i^p_{\omega ne}}{\overline{I}^p_{\omega ne}}  \leq uc^p_{\omega ne} \quad \forall p \omega ne, e \in CE`
 
-:math:`\frac{i^p_{\omega ne}}{\underline{I}^p_{\omega ne}} >= uc^p_{\omega ne} \quad \forall p \omega ne, e \in CE`
+:math:`\frac{i^p_{\omega ne}}{\underline{I}^p_{\omega ne}} \geq uc^p_{\omega ne} \quad \forall p \omega ne, e \in CE`
 
-Energy inflows of ESS candidates (only for load levels multiple of 1, 24, 168, 8736 h depending on the ESS storage type) constrained by the ESS commitment decision times the inflows data [GWh] «``eInflows2Comm``»
+Energy inflows of ESS candidates (only for load levels multiple of 1, 24, 168, 8736 h depending on the ESS storage type) constrained by the ESS commitment decision times the inflows data [p.u.] «``eInflows2Comm``»
 
-:math:`\frac{ei^p_{\omega ne}}{EI^p_{\omega ne}} <= uc^p_{\omega ne} \quad \forall p \omega ne, e \in CE`
+:math:`\frac{ei^p_{\omega ne}}{EI^p_{\omega ne}} \leq uc^p_{\omega ne} \quad \forall p \omega ne, e \in CE`
 
 ESS energy inventory (only for load levels multiple of 1, 24, 168 h depending on the ESS storage type) [GWh] «``eESSInventory``»
 
@@ -311,7 +311,7 @@ ESS outflows (only for load levels multiple of 1, 24, 168, 672, and 8736 h depen
 
 :math:`\sum_{n' = n-\frac{\tau_e}{\rho_e}}^n (go^p_{\omega n'e} - EO^p_{\omega n'e}) DUR_n' = 0 \quad \forall p \omega ne, n \in \rho_e`
 
-Minimum and maximum energy production (only for load levels multiple of 24, 168, 672, 8736 h depending on the unit energy type) must be satisfied [GWh] «``eMinimumEnergy``»  «``eMaximumEnergy``»
+Maximum and minimum energy production (only for load levels multiple of 24, 168, 672, 8736 h depending on the unit energy type) must be satisfied [GWh] «``eMaximumEnergy``»  «``eMinimumEnergy``»
 
 :math:`\sum_{n' = n-\sigma_g}^n (gp^p_{\omega n'g} - \overline{E}^p_{\omega n'g})  DUR_n' \leq 0 \quad \forall p \omega ng, n \in \sigma_g`
 
@@ -395,11 +395,11 @@ Minimum up time and down time of thermal unit [h] «``eMinUpTime``» «``eMinDow
 
 **Reservoir operation**
 
-Maximum and minimum volume of reservoir candidates (only for load levels multiple of 1, 24, 168, 8736 h depending on the reservoir volume type) constrained by the hydro commitment decision times the maximum capacity [hm3] «``eMaxVolume2Comm``» «``eMinVolume2Comm``»
+Maximum and minimum relative volume of reservoir candidates (only for load levels multiple of 1, 24, 168, 8736 h depending on the reservoir volume type) constrained by the hydro commitment decision times the maximum capacity [p.u.] «``eMaxVolume2Comm``» «``eMinVolume2Comm``»
 
-:math:`\frac{i'^p_{\omega ne'}}{\overline{I'}^p_{\omega ne'}}  <= \sum_{h \in dw(e')} uc^p_{\omega nh} \quad \forall p \omega ne', e' \in CR`
+:math:`\frac{i'^p_{\omega ne'}}{\overline{I'}^p_{\omega ne'}}  \leq \sum_{h \in dw(e')} uc^p_{\omega nh} \quad \forall p \omega ne', e' \in CR`
 
-:math:`\frac{i'^p_{\omega ne'}}{\underline{I'}^p_{\omega ne'}} >= \sum_{h \in dw(e')} uc^p_{\omega nh} \quad \forall p \omega ne', e' \in CR`
+:math:`\frac{i'^p_{\omega ne'}}{\underline{I'}^p_{\omega ne'}} \geq \sum_{h \in dw(e')} uc^p_{\omega nh} \quad \forall p \omega ne', e' \in CR`
 
 Operating reserves from a hydro power plant can only be provided if enough energy is available for turbining at the upstream reservoir [GW] «``eTrbReserveUpIfEnergy``» «``eTrbReserveDwIfEnergy``»
 
