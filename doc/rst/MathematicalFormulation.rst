@@ -395,13 +395,19 @@ Minimum up time and down time of thermal unit [h] «``eMinUpTime``» «``eMinDow
 
 **Reservoir operation**
 
-Operating reserves from a hydro power plant can only be provided if enough energy is available for producing at the upstream reservoir [GW] «``eTrbReserveUpIfEnergy``» «``eTrbReserveDwIfEnergy``»
+Maximum and minimum volume of reservoir candidates (only for load levels multiple of 1, 24, 168, 8736 h depending on the reservoir volume type) constrained by the hydro commitment decision times the maximum capacity [hm3] «``eMaxVolume2Comm``» «``eMinVolume2Comm``»
+
+:math:`\frac{i'^p_{\omega ne'}}{\overline{I'}^p_{\omega ne'}}  <= \sum_{h \in dw(e')} uc^p_{\omega nh} \quad \forall p \omega ne', e' \in CR`
+
+:math:`\frac{i'^p_{\omega ne'}}{\underline{I'}^p_{\omega ne'}} >= \sum_{h \in dw(e')} uc^p_{\omega nh} \quad \forall p \omega ne', e' \in CR`
+
+Operating reserves from a hydro power plant can only be provided if enough energy is available for turbining at the upstream reservoir [GW] «``eTrbReserveUpIfEnergy``» «``eTrbReserveDwIfEnergy``»
 
 :math:`ur^p_{\omega nh} \leq \frac{\sum_{e' \in up(h)}                                i'^p_{\omega ne'}}{DUR_n} \quad \forall p \omega nh`
 
 :math:`dr^p_{\omega nh} \leq \frac{\sum_{e' \in up(h)} \overline{I'}^p_{\omega ne'} - i'^p_{\omega ne'}}{DUR_n} \quad \forall p \omega nh`
 
-or for storing [GW] «``ePmpReserveUpIfEnergy``» «``ePmpReserveDwIfEnergy``»
+or for pumping [GW] «``ePmpReserveUpIfEnergy``» «``ePmpReserveDwIfEnergy``»
 
 :math:`ur'^p_{\omega nh} \leq \frac{\sum_{e' \in up(h)} \overline{I'}^p_{\omega ne'} - i'^p_{\omega ne'}}{DUR_n} \quad \forall p \omega nh`
 
