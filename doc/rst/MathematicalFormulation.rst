@@ -116,19 +116,20 @@ They are written in **uppercase** letters.
 :math:`GI_g`                                                       Generator inertia                                                                                                         s
 :math:`EF_e`                                                       Round-trip efficiency of the pump/turbine cycle of a pumped-storage hydro power plant or charge/discharge of a battery    p.u.
 :math:`PF_h`                                                       Production function from water inflows to energy                                                                          kWh/m\ :sup:`3`
-:math:`\underline{I}^p_{\omega ne}, \overline{I}^p_{\omega ne}`    Maximum and minimum capacity of an ESS (e.g., hydro power plant, closed-/open-loop pumped-storage hydro)                  GWh
-:math:`\underline{E}^p_{\omega ne}, \overline{E}^p_{\omega ne}`    Maximum and minimum energy produced by a unit in an interval defined                                                      GW
+:math:`\underline{I}^p_{\omega ne}, \overline{I}^p_{\omega ne}`    Minimum and maximum capacity of an ESS (e.g., hydro power plant, closed-/open-loop pumped-storage hydro)                  GWh
+:math:`\underline{E}^p_{\omega ne}, \overline{E}^p_{\omega ne}`    Minimum and maximum energy produced by a unit in an interval defined                                                      GW
 :math:`EI^p_{\omega ne}`                                           Energy inflows of an ESS (e.g., hydro power plant)                                                                        GW
 :math:`EO^p_{\omega ne}`                                           Energy outflows of an ESS (e.g., hydrogen, electric vehicle, hydro power plant, demand response)                          GW
 =================================================================  ========================================================================================================================  ================
 
-=========================================  =======================================================================================================  ===============
+=====================================================================  =======================================================================================================  ================
 **Hydro system**
------------------------------------------  -------------------------------------------------------------------------------------------------------  ---------------
-:math:`CFE_{e'}`                           Annualized fixed cost of a candidate reservoir                                                           M€/yr
-:math:`HI^p_{\omega ne'}`                  Natural hydro inflows of a reservoir                                                                     m\ :sup:`3`/s
-:math:`HO^p_{\omega ne'}`                  Hydro outflows of a reservoir (e.g., irrigation)                                                         m\ :sup:`3`/s
-=========================================  =======================================================================================================  ===============
+---------------------------------------------------------------------  -------------------------------------------------------------------------------------------------------  ----------------
+:math:`CFE_{e'}`                                                       Annualized fixed cost of a candidate reservoir                                                           M€/yr
+:math:`\underline{I'}^p_{\omega ne'}, \overline{I'}^p_{\omega ne'}`    Minimum and maximum volume of a reservoir                                                                hm\ :sup:`3`
+:math:`HI^p_{\omega ne'}`                                              Natural hydro inflows of a reservoir                                                                     m\ :sup:`3`/s
+:math:`HO^p_{\omega ne'}`                                              Hydro outflows of a reservoir (e.g., irrigation)                                                         m\ :sup:`3`/s
+=====================================================================  =======================================================================================================  ================
 
 =========================================  =================================================================================================================  =====
 **Transmission system**
@@ -485,11 +486,11 @@ Half ohmic losses are linearly approximated as a function of the flow [GW] «``e
 
 **Bounds on reservoir variables** [m\ :sup:`3`/s, hm\ :sup:`3`]
 
-:math:`0 \leq ho^p_{\omega ne'} \leq \sum_{h \in dw(e')} \overline{GP}^p_{\omega nh} / PF_h      \quad \forall p \omega ne'`
+:math:`0 \leq ho^p_{\omega ne'} \leq \sum_{h \in dw(e')} \overline{GP}^p_{\omega nh} / PF_h   \quad \forall p \omega ne'`
 
-:math:`\underline{I'}^p_{\omega ne'} \leq i'^p_{\omega ne'} \leq \overline{I'}^p_{\omega ne'}    \quad \forall p \omega ne'`
+:math:`\underline{I'}^p_{\omega ne'} \leq i'^p_{\omega ne'} \leq \overline{I'}^p_{\omega ne'} \quad \forall p \omega ne'`
 
-:math:`0 \leq s'^p_{\omega ne'}                                                                  \quad \forall p \omega ne'`
+:math:`0 \leq s'^p_{\omega ne'}                                                               \quad \forall p \omega ne'`
 
 **Bounds on network variables** [GW]
 
