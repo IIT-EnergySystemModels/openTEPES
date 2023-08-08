@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 06, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 08, 2023
 """
 
 import time
@@ -714,6 +714,7 @@ def OperationSummaryResults(DirName, CaseName, OptModel, mTEPES):
     TotalInvestmentCost  = sum(mTEPES.pDiscountFactor[p] *                                   OptModel.vTotalFCost      [p]()          for p          in mTEPES.p  if len(mTEPES.gc) + len(mTEPES.gd) + len(mTEPES.lc))
     GenInvestmentCost    = sum(mTEPES.pDiscountFactor[p] * mTEPES.pGenInvestCost[gc]       * OptModel.vGenerationInvest[p,gc]()       for p,gc       in mTEPES.pgc)
     GenRetirementCost    = sum(mTEPES.pDiscountFactor[p] * mTEPES.pGenRetireCost[gd]       * OptModel.vGenerationRetire[p,gd]()       for p,gd       in mTEPES.pgd)
+    RsrInvestmentCost    = sum(mTEPES.pDiscountFactor[p] * mTEPES.pRsrInvestCost[gc]       * OptModel.vreservoirInvest [p,rc]()       for p,rc       in mTEPES.prc)
     NetInvestmentCost    = sum(mTEPES.pDiscountFactor[p] * mTEPES.pNetFixedCost [ni,nf,cc] * OptModel.vNetworkInvest   [p,ni,nf,cc]() for p,ni,nf,cc in mTEPES.plc)
     # Ratio Generation Investment cost/ Generation Installed Capacity [MEUR-MW]
     GenInvCostCapacity   = sum(mTEPES.pGenInvestCost[gc] * OptModel.vGenerationInvest[p,gc]()/mTEPES.pRatedMaxPower[gc]               for p,gc       in mTEPES.pgc if mTEPES.pRatedMaxPower[gc])
@@ -737,28 +738,32 @@ def OperationSummaryResults(DirName, CaseName, OptModel, mTEPES):
         K3 = pd.Series(data={'Ratio Generation Retirement Cost/Total Investment Cost [%]'              : GenRetirementCost    / TotalInvestmentCost*1e2}).to_frame(name='Value')
     else:
         K3 = pd.Series(data={'Ratio Generation Retirement Cost/Total Investment Cost [%]'              : 0.0                                           }).to_frame(name='Value')
+    if RsrInvestmentCost:
+        K4 = pd.Series(data={'Ratio Reservoir Investment Cost/Total Investment Cost [%]'               : RsrInvestmentCost    / TotalInvestmentCost*1e2}).to_frame(name='Value')
+    else:
+        K4 = pd.Series(data={'Ratio Reservoir Investment Cost/Total Investment Cost [%]'               : 0.0                                           }).to_frame(name='Value')
     if NetInvestmentCost:
-        K4 = pd.Series(data={'Ratio Network Investment Cost/Total Investment Cost [%]'                 : NetInvestmentCost    / TotalInvestmentCost*1e2}).to_frame(name='Value')
+        K5 = pd.Series(data={'Ratio Network Investment Cost/Total Investment Cost [%]'                 : NetInvestmentCost    / TotalInvestmentCost*1e2}).to_frame(name='Value')
     else:
-        K4 = pd.Series(data={'Ratio Network Investment Cost/Total Investment Cost [%]'                 : 0.0                                           }).to_frame(name='Value')
+        K5 = pd.Series(data={'Ratio Network Investment Cost/Total Investment Cost [%]'                 : 0.0                                           }).to_frame(name='Value')
     if GenInvCostCapacity:
-        K5 = pd.Series(data={'Ratio Generation Investment Cost/Additional Installed Capacity [MEUR-MW]': GenInvCostCapacity   / 1e3                    }).to_frame(name='Value')
+        K6 = pd.Series(data={'Ratio Generation Investment Cost/Additional Installed Capacity [MEUR-MW]': GenInvCostCapacity   / 1e3                    }).to_frame(name='Value')
     else:
-        K5 = pd.Series(data={'Ratio Generation Investment Cost/Additional Installed Capacity [MEUR-MW]': 0.0                                           }).to_frame(name='Value')
+        K6 = pd.Series(data={'Ratio Generation Investment Cost/Additional Installed Capacity [MEUR-MW]': 0.0                                           }).to_frame(name='Value')
     if NetCapacityLength:
-        K6 = pd.Series(data={'Ratio Additional Transmission Capacity/Line Length [MW-km]'              : NetCapacityLength    * 1e3                    }).to_frame(name='Value')
+        K7 = pd.Series(data={'Ratio Additional Transmission Capacity/Line Length [MW-km]'              : NetCapacityLength    * 1e3                    }).to_frame(name='Value')
     else:
-        K6 = pd.Series(data={'Ratio Additional Transmission Capacity/Line Length [MW-km]'              : 0.0                                           }).to_frame(name='Value')
+        K7 = pd.Series(data={'Ratio Additional Transmission Capacity/Line Length [MW-km]'              : 0.0                                           }).to_frame(name='Value')
     if NetInvCostVRESInsCap:
-        K7 = pd.Series(data={'Ratio Network Investment Cost/Variable RES Installed Capacity [EUR/MWh]' : NetInvCostVRESInsCap * 1e3                    }).to_frame(name='Value')
+        K8 = pd.Series(data={'Ratio Network Investment Cost/Variable RES Installed Capacity [EUR/MWh]' : NetInvCostVRESInsCap * 1e3                    }).to_frame(name='Value')
     else:
-        K7 = pd.Series(data={'Ratio Network Investment Cost/Variable RES Installed Capacity [EUR/MWh]' : 0.0                                           }).to_frame(name='Value')
+        K8 = pd.Series(data={'Ratio Network Investment Cost/Variable RES Installed Capacity [EUR/MWh]' : 0.0                                           }).to_frame(name='Value')
     if VREInvCostCapacity:
-        K8 = pd.Series(data={'Rate of return for VRE technologies [%]'                                 : VRETechRevenue       / VREInvCostCapacity*1e2 }).to_frame(name='Value')
+        K9 = pd.Series(data={'Rate of return for VRE technologies [%]'                                 : VRETechRevenue       / VREInvCostCapacity*1e2 }).to_frame(name='Value')
     else:
-        K8 = pd.Series(data={'Rate of return for VRE technologies [%]'                                 : 0.0                                           }).to_frame(name='Value')
+        K9 = pd.Series(data={'Rate of return for VRE technologies [%]'                                 : 0.0                                           }).to_frame(name='Value')
 
-    OutputResults = pd.concat([K1, K2, K3, K4, K5, K6, K7, K8], axis=0)
+    OutputResults = pd.concat([K1, K2, K3, K4, K5, K6, K7, K8, K9], axis=0)
     OutputResults.to_csv(_path+'/oT_Result_SummaryKPIs_'+CaseName+'.csv', sep=',', index=True)
 
     # LCOE per technology
@@ -1142,14 +1147,14 @@ def CostSummaryResults(DirName, CaseName, OptModel, mTEPES):
     SysCost     = pd.Series(data=[                                                                                                                               OptModel.vTotalSCost()                                                                                                              ], index=[' ']   ).to_frame(name='Total          System Cost').stack()
     GenInvCost  = pd.Series(data=[mTEPES.pDiscountFactor[p] * sum(mTEPES.pGenInvestCost[gc  ]                                                                  * OptModel.vGenerationInvest[p,gc  ]()  for gc      in mTEPES.gc                                               )     for p in mTEPES.p], index=mTEPES.p).to_frame(name='Generation Investment Cost').stack()
     GenRetCost  = pd.Series(data=[mTEPES.pDiscountFactor[p] * sum(mTEPES.pGenRetireCost[gd  ]                                                                  * OptModel.vGenerationRetire[p,gd  ]()  for gd      in mTEPES.gd                                               )     for p in mTEPES.p], index=mTEPES.p).to_frame(name='Generation Retirement Cost').stack()
+    RsrInvCost  = pd.Series(data=[mTEPES.pDiscountFactor[p] * sum(mTEPES.pRsrInvestCost[rc  ]                                                                  * OptModel.vReservoirInvest [p,rc  ]()  for rc      in mTEPES.rc                                               )     for p in mTEPES.p], index=mTEPES.p).to_frame(name='Reservoir  Investment Cost').stack()
     NetInvCost  = pd.Series(data=[mTEPES.pDiscountFactor[p] * sum(mTEPES.pNetFixedCost [lc  ]                                                                  * OptModel.vNetworkInvest   [p,lc  ]()  for lc      in mTEPES.lc                                               )     for p in mTEPES.p], index=mTEPES.p).to_frame(name='Network    Investment Cost').stack()
     GenCost     = pd.Series(data=[mTEPES.pDiscountFactor[p] * sum(mTEPES.pScenProb     [p,sc]()                                                                * OptModel.vTotalGCost      [p,sc,n]()  for sc,n    in mTEPES.sc*mTEPES.n           if mTEPES.pScenProb[p,sc]())     for p in mTEPES.p], index=mTEPES.p).to_frame(name='Generation  Operation Cost').stack()
     ConCost     = pd.Series(data=[mTEPES.pDiscountFactor[p] * sum(mTEPES.pScenProb     [p,sc]()                                                                * OptModel.vTotalCCost      [p,sc,n]()  for sc,n    in mTEPES.sc*mTEPES.n           if mTEPES.pScenProb[p,sc]())     for p in mTEPES.p], index=mTEPES.p).to_frame(name='Consumption Operation Cost').stack()
     EmiCost     = pd.Series(data=[mTEPES.pDiscountFactor[p] * sum(mTEPES.pScenProb     [p,sc]()                                                                * OptModel.vTotalECost      [p,sc,n]()  for sc,n    in mTEPES.sc*mTEPES.n           if mTEPES.pScenProb[p,sc]())     for p in mTEPES.p], index=mTEPES.p).to_frame(name='Emission              Cost').stack()
     RelCost     = pd.Series(data=[mTEPES.pDiscountFactor[p] * sum(mTEPES.pScenProb     [p,sc]()                                                                * OptModel.vTotalRCost      [p,sc,n]()  for sc,n    in mTEPES.sc*mTEPES.n           if mTEPES.pScenProb[p,sc]())     for p in mTEPES.p], index=mTEPES.p).to_frame(name='Reliability           Cost').stack()
     # DemPayment  = pd.Series(data=[mTEPES.pDiscountFactor[p] * sum(mTEPES.pScenProb     [p,sc]() * mTEPES.pLoadLevelDuration[n]() * mTEPES.pDemand[p,sc,n,nd] * OptModel.LSRMC            [p,sc,n,nd] for sc,n,nd in mTEPES.sc*mTEPES.n*mTEPES.nd if mTEPES.pScenProb[p,sc]())/1e3 for p in mTEPES.p], index=mTEPES.p).to_frame(name='Demand Payment'            ).stack()
-    # CostSummary = pd.concat([SysCost, GenInvCost, GenRetCost, NetInvCost, GenCost, ConCost, EmiCost, RelCost, DemPayment])
-    CostSummary = pd.concat([SysCost, GenInvCost, GenRetCost, NetInvCost, GenCost, ConCost, EmiCost, RelCost]).reset_index().rename(columns={'level_0': 'Period', 'level_1': 'Cost/Payment', 0: 'MEUR'}).to_csv(_path+'/oT_Result_CostSummary_'+CaseName+'.csv', sep=',', index=False)
+    CostSummary = pd.concat([SysCost, GenInvCost, GenRetCost, RsrInvCost, NetInvCost, GenCost, ConCost, EmiCost, RelCost]).reset_index().rename(columns={'level_0': 'Period', 'level_1': 'Cost/Payment', 0: 'MEUR'}).to_csv(_path+'/oT_Result_CostSummary_'+CaseName+'.csv', sep=',', index=False)
 
     WritingResultsTime = time.time() - StartTime
     print('Writing         cost summary results   ... ', round(WritingResultsTime), 's')
