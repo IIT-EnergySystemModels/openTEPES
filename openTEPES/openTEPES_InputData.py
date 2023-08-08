@@ -218,8 +218,9 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
             mTEPES.del_component(mTEPES.r2p)
             mTEPES.r2p = Set(initialize=dictSets['r2p'], ordered=False, doc='reservoir to pumped-hydro')
     except:
-        mTEPES.rs = Set(initialize=[], ordered=False, doc='reservoirs' )
-        mTEPES.rn = Set(initialize=[], ordered=False, doc='reservoirs' )
+        mTEPES.rs  = Set(initialize=[], ordered=False, doc='reservoirs'            )
+        mTEPES.rn  = Set(initialize=[], ordered=False, doc='candidate reservoirs'  )
+        mTEPES.prc = Set(initialize=[], ordered=False, doc='periods and reservoirs')
         print('No reservoir and hydropower topology dictionaries found')
 
     #%% parameters
