@@ -575,6 +575,32 @@ def GenerationOperationModelFormulationReservoir(OptModel, mTEPES, pIndLogConsol
         if (ar,h) in mTEPES.a2g:
             a2h[h].append(ar)
 
+    def eMaxVolume2Comm(OptModel,n,rc):
+        if mTEPES.pIndBinRsrInvest[rc]:
+            if sum(mTEPES.pMaxCharge[p,sc,n,h] + mTEPES.pMaxPower[p,sc,n,h] for h in mTEPES.h if (rc,h) in mTEPES.r2h) and mTEPES.pMaxVolume[p,sc,n,rc]:
+                return OptModel.vReservoirVolume[p,sc,n,rc] / mTEPES.pMaxVolume[p,sc,n,rc] <= sum(OptModel.vCommitment[p,sc,n,h] for h in mTEPES.h if (rc,h) in mTEPES.r2h)
+            else:
+                return Constraint.Skip
+        else:
+            return Constraint.Skip
+    setattr(OptModel, 'eMaxVolume2Comm_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.nrcc, rule=eMaxVolume2Comm, doc='Reservoir maximum volume limited by commitment [hm3]'))
+
+    if pIndLogConsole == 1:
+        print('eMaxVolume2Comm       ... ', len(getattr(OptModel, 'eMaxVolume2Comm_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+
+    def eMinVolume2Comm(OptModel,n,rc):
+        if mTEPES.pIndBinRsrInvest[rc]:
+            if sum(mTEPES.pMaxCharge[p,sc,n,h] + mTEPES.pMaxPower[p,sc,n,h] for h in mTEPES.h if (rc,h) in mTEPES.r2h) and mTEPES.pMinVolume[p,sc,n,rc]:
+                return OptModel.vReservoirVolume[p,sc,n,rc] / mTEPES.pMinVolume[p,sc,n,rc] >= sum(OptModel.vCommitment[p,sc,n,h] for h in mTEPES.h if (rc,h) in mTEPES.r2h)
+            else:
+                return Constraint.Skip
+        else:
+            return Constraint.Skip
+    setattr(OptModel, 'eMinVolume2Comm_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.nrcc, rule=eMinVolume2Comm, doc='Reservoir minimum volume limited by commitment [hm3]'))
+
+    if pIndLogConsole == 1:
+        print('eMinVolume2Comm       ... ', len(getattr(OptModel, 'eMinVolume2Comm_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+
     def eTrbReserveUpIfEnergy(OptModel,n,h):
         if mTEPES.pIndOperReserve[h] == 0:
             if sum(mTEPES.pOperReserveUp[p,sc,n,ar] for ar in a2h[h]) and mTEPES.pMaxPower2ndBlock [p,sc,n,h]:

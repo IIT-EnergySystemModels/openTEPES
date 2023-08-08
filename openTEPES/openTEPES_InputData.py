@@ -1070,6 +1070,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         else:
             mTEPES.npc  = []
         mTEPES.nrsc     = [(n,rs) for n,rs in mTEPES.n*mTEPES.rs if mTEPES.n.ord(n) %     mTEPES.pCycleWaterStep  [rs] == 0]
+        mTEPES.nrcc     = [(n,rs) for n,rs in mTEPES.n*mTEPES.rn if mTEPES.n.ord(n) %     mTEPES.pCycleWaterStep  [rs] == 0]
         mTEPES.nrso     = [(n,rs) for n,rs in mTEPES.n*mTEPES.rs if mTEPES.n.ord(n) %     mTEPES.pWaterOutTimeStep[rs] == 0]
 
     # ESS with outflows
