@@ -512,6 +512,41 @@ Identifier    Identifier  Identifier  Identifier    Description
 Period        Scenario    Load level  Generator     Generation output (to be used as pivot table)
 ============  ==========  ==========  ============  ==============================================
 
+Reservoir operation
+-------------------
+
+File ``oT_Result_ReservoirVolume.csv``
+
+============  ==========  ==========  =========  =================================
+Identifier    Identifier  Identifier  Header     Description
+============  ==========  ==========  =========  =================================
+Period        Scenario    Load level  Reservoir  Reservoir volume [hm\ :sup:`3`]
+============  ==========  ==========  =========  =================================
+
+File ``oT_Result_ReservoirVolumeUtilization.csv``
+
+============  ==========  ==========  =========  ============================================
+Identifier    Identifier  Identifier  Header     Description
+============  ==========  ==========  =========  ============================================
+Period        Scenario    Load level  Reservoir  Utilization factor of the reservoir [p.u.]
+============  ==========  ==========  =========  ============================================
+
+File ``oT_Result_ReservoirSpillage.csv``
+
+============  ==========  ==========  ==========  ==========================================
+Identifier    Identifier  Identifier  Header      Description
+============  ==========  ==========  ==========  ==========================================
+Period        Scenario    Load level  Reservoir   Spilled water in reservoir [hm\ :sup:`3`]
+============  ==========  ==========  ==========  ==========================================
+
+File ``oT_Result_TechnologyReservoirSpillage.csv``
+
+============  ==========  ==========  ==========  =========================================================
+Identifier    Identifier  Identifier  Header      Description
+============  ==========  ==========  ==========  =========================================================
+Period        Scenario    Load level  Reservoir   Spilled water in reservoir by technology [hm\ :sup:`3`]
+============  ==========  ==========  ==========  =========================================================
+
 Network operation
 -----------------
 
