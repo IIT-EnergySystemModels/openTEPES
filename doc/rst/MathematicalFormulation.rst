@@ -277,15 +277,15 @@ VRES units (i.e., those with linear variable cost equal to 0 and no storage capa
 
 Operating reserves from ESS can only be provided if enough energy is available for producing [GW] «``eReserveUpIfEnergy``» «``eReserveDwIfEnergy``»
 
-:math:`ur^p_{\omega ne} \leq \frac{            i^p_{\omega ne}}{DUR_n} \quad \forall p \omega ne`
+:math:`ur^p_{\omega ne} \leq \frac{                             i^p_{\omega ne}}{DUR_n} \quad \forall p \omega ne`
 
-:math:`dr^p_{\omega ne} \leq \frac{I^p_{\omega ne} - i^p_{\omega ne}}{DUR_n} \quad \forall p \omega ne`
+:math:`dr^p_{\omega ne} \leq \frac{\overline{I}^p_{\omega ne} - i^p_{\omega ne}}{DUR_n} \quad \forall p \omega ne`
 
 or for storing [GW] «``eESSReserveUpIfEnergy``» «``eESSReserveDwIfEnergy``»
 
-:math:`ur'^p_{\omega ne} \leq \frac{I^p_{\omega ne} - i^p_{\omega ne}}{DUR_n} \quad \forall p \omega ne`
+:math:`ur'^p_{\omega ne} \leq \frac{\overline{I}^p_{\omega ne} - i^p_{\omega ne}}{DUR_n} \quad \forall p \omega ne`
 
-:math:`dr'^p_{\omega ne} \leq \frac{            i^p_{\omega ne}}{DUR_n} \quad \forall p \omega ne`
+:math:`dr'^p_{\omega ne} \leq \frac{                             i^p_{\omega ne}}{DUR_n} \quad \forall p \omega ne`
 
 Maximum and minimum inventory of ESS candidates (only for load levels multiple of 1, 24, 168, 8736 h depending on the ESS storage type) constrained by the ESS commitment decision times the maximum capacity [GWh] «``eMaxInventory2Comm``» «``eMinInventory2Comm``»
 
@@ -394,6 +394,18 @@ Minimum up time and down time of thermal unit [h] «``eMinUpTime``» «``eMinDow
 :math:`\sum_{n'=n+\nu-TD_t}^n sd^p_{\omega n't} \leq 1 - uc^p_{\omega nt} \quad \forall p \omega nt`
 
 **Reservoir operation**
+
+Operating reserves from a hydro power plant can only be provided if enough energy is available for producing at the upstream reservoir [GW] «``eTrbReserveUpIfEnergy``» «``eTrbReserveDwIfEnergy``»
+
+:math:`ur^p_{\omega nh} \leq \frac{sum_{e' \in up(h)}                                i'^p_{\omega ne'}}{DUR_n} \quad \forall p \omega nh`
+
+:math:`dr^p_{\omega nh} \leq \frac{sum_{e' \in up(h)} \overline{I'}^p_{\omega ne'} - i'^p_{\omega ne'}}{DUR_n} \quad \forall p \omega nh`
+
+or for storing [GW] «``ePmpReserveUpIfEnergy``» «``ePmpReserveDwIfEnergy``»
+
+:math:`ur'^p_{\omega nh} \leq \frac{sum_{e' \in up(h)} \overline{I'}^p_{\omega ne'} - i'^p_{\omega ne'}}{DUR_n} \quad \forall p \omega nh`
+
+:math:`dr'^p_{\omega nh} \leq \frac{                                                  i'^p_{\omega ne'}}{DUR_n} \quad \forall p \omega nh`
 
 Water volume for each hydro reservoir (only for load levels multiple of 1, 24, 168 h depending on the reservoir storage type) [hm\ :sup:`3`] «``eHydroInventory``»
 

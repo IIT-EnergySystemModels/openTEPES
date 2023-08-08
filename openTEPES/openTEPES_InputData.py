@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 07, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 08, 2023
 """
 
 import datetime
@@ -456,7 +456,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.n2     = Set(initialize=mTEPES.nn,          ordered=True , doc='load levels'          , filter=lambda mTEPES,nn      :  nn     in mTEPES.nn  and pDuration           [nn] >  0  )
     mTEPES.g      = Set(initialize=mTEPES.gg,          ordered=False, doc='generating      units', filter=lambda mTEPES,gg      :  gg     in mTEPES.gg  and (pRatedMaxPower     [gg] >  0.0 or                                  pRatedMaxCharge[gg] > 0.0) and pPeriodIniGen[gg] <= mTEPES.p.last() and pPeriodFinGen[gg] >= mTEPES.p.first() and pGenToNode.reset_index().set_index(['index']).isin(mTEPES.nd)['Node'][gg])  # excludes generators with empty node
     mTEPES.t      = Set(initialize=mTEPES.g ,          ordered=False, doc='thermal         units', filter=lambda mTEPES,g       :  g      in mTEPES.g   and pRatedLinearOperCost[g ] >  0.0)
-    mTEPES.re     = Set(initialize=mTEPES.g ,          ordered=False, doc='RES             units', filter=lambda mTEPES,g       :  g      in mTEPES.g   and pRatedLinearOperCost[g ] == 0.0 and pRatedMaxStorage[g] == 0.0)
+    mTEPES.re     = Set(initialize=mTEPES.g ,          ordered=False, doc='RES             units', filter=lambda mTEPES,g       :  g      in mTEPES.g   and pRatedLinearOperCost[g ] == 0.0 and pRatedMaxStorage[g] == 0.0                                and pProductionFunction[g] == 0.0)
     mTEPES.es     = Set(initialize=mTEPES.g ,          ordered=False, doc='ESS             units', filter=lambda mTEPES,g       :  g      in mTEPES.g   and                                    (pRatedMaxStorage[g] >  0.0   or pRatedMaxCharge[g] > 0.0) and pProductionFunction[g] == 0.0)
     mTEPES.h      = Set(initialize=mTEPES.g ,          ordered=False, doc='Hydro           units', filter=lambda mTEPES,g       :  g      in mTEPES.g   and                                                                                                   pProductionFunction[g]  > 0.0)
     mTEPES.gc     = Set(initialize=mTEPES.g ,          ordered=False, doc='candidate       units', filter=lambda mTEPES,g       :  g      in mTEPES.g   and pGenInvestCost      [g ] >  0.0)
@@ -1055,14 +1055,22 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.pNetUpInvest          = Param(mTEPES.lc,    initialize=pNetUpInvest.to_dict()              , within=NonNegativeReals,    doc='Upper bound of the investment decision', mutable=True)
 
     # load levels multiple of cycles for each ESS/generator
-    mTEPES.nesc     = [(n,es) for n,es in mTEPES.n*mTEPES.es if mTEPES.n.ord(n) % mTEPES.pCycleTimeStep   [es] == 0]
-    mTEPES.necc     = [(n,ec) for n,ec in mTEPES.n*mTEPES.ec if mTEPES.n.ord(n) % mTEPES.pCycleTimeStep   [ec] == 0]
-    mTEPES.neso     = [(n,es) for n,es in mTEPES.n*mTEPES.es if mTEPES.n.ord(n) % mTEPES.pOutflowsTimeStep[es] == 0]
-    mTEPES.ngen     = [(n,g ) for n,g  in mTEPES.n*mTEPES.g  if mTEPES.n.ord(n) % mTEPES.pEnergyTimeStep  [g ] == 0]
+    mTEPES.nesc         = [(n,es) for n,es in mTEPES.n*mTEPES.es if mTEPES.n.ord(n) %     mTEPES.pCycleTimeStep   [es] == 0]
+    mTEPES.necc         = [(n,ec) for n,ec in mTEPES.n*mTEPES.ec if mTEPES.n.ord(n) %     mTEPES.pCycleTimeStep   [ec] == 0]
+    mTEPES.neso         = [(n,es) for n,es in mTEPES.n*mTEPES.es if mTEPES.n.ord(n) %     mTEPES.pOutflowsTimeStep[es] == 0]
+    mTEPES.ngen         = [(n,g ) for n,g  in mTEPES.n*mTEPES.g  if mTEPES.n.ord(n) %     mTEPES.pEnergyTimeStep  [g ] == 0]
     if pIndHydroTopology == 1:
-        mTEPES.nrsc = [(n,rs) for n,rs in mTEPES.n*mTEPES.rs if mTEPES.n.ord(n) % mTEPES.pCycleWaterStep  [rs] == 0]
-        mTEPES.nrcc = [(n,rc) for n,rc in mTEPES.n*mTEPES.rn if mTEPES.n.ord(n) % mTEPES.pCycleWaterStep  [rc] == 0]
-        mTEPES.nrso = [(n,rs) for n,rs in mTEPES.n*mTEPES.rs if mTEPES.n.ord(n) % mTEPES.pWaterOutTimeStep[rs] == 0]
+        mTEPES.nhc      = [(n,h ) for n,h  in mTEPES.n*mTEPES.h  if mTEPES.n.ord(n) % sum(mTEPES.pCycleWaterStep  [rs] for rs in mTEPES.rs if (rs,h) in mTEPES.r2h) == 0]
+        if sum(1 for h,rs in mTEPES.p2r):
+            mTEPES.np2c = [(n,h ) for n,h  in mTEPES.n*mTEPES.h  if mTEPES.n.ord(n) % sum(mTEPES.pCycleWaterStep  [rs] for rs in mTEPES.rs if (h,rs) in mTEPES.p2r) == 0]
+        else:
+            mTEPES.np2c = []
+        if sum(1 for rs,h in mTEPES.r2p):
+            mTEPES.npc  = [(n,h ) for n,h  in mTEPES.n*mTEPES.h  if mTEPES.n.ord(n) % sum(mTEPES.pCycleWaterStep  [rs] for rs in mTEPES.rs if (rs,h) in mTEPES.r2p) == 0]
+        else:
+            mTEPES.npc  = []
+        mTEPES.nrsc     = [(n,rs) for n,rs in mTEPES.n*mTEPES.rs if mTEPES.n.ord(n) %     mTEPES.pCycleWaterStep  [rs] == 0]
+        mTEPES.nrso     = [(n,rs) for n,rs in mTEPES.n*mTEPES.rs if mTEPES.n.ord(n) %     mTEPES.pWaterOutTimeStep[rs] == 0]
 
     # ESS with outflows
     mTEPES.eo     = [(p,sc,es) for p,sc,es in mTEPES.pses if sum(mTEPES.pEnergyOutflows[p,sc,n2,es]() for n2 in mTEPES.n2)]

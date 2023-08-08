@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 06, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 08, 2023
 """
 
 import time
@@ -569,6 +569,64 @@ def GenerationOperationModelFormulationReservoir(OptModel, mTEPES, pIndLogConsol
 
     StartTime = time.time()
 
+    # area to generators (a2e)
+    a2h = defaultdict(list)
+    for ar,h in mTEPES.ar*mTEPES.h:
+        if (ar,h) in mTEPES.a2g:
+            a2h[h].append(ar)
+
+    def eTrbReserveUpIfEnergy(OptModel,n,h):
+        if mTEPES.pIndOperReserve[h] == 0:
+            if sum(mTEPES.pOperReserveUp[p,sc,n,ar] for ar in a2h[h]) and mTEPES.pMaxPower2ndBlock [p,sc,n,h]:
+                return OptModel.vReserveUp     [p,sc,n,h] <=  sum(                               OptModel.vReservoirVolume[p,sc,n,rs] for rs in mTEPES.rs if (rs,h) in mTEPES.r2h)  / mTEPES.pDuration[n] * mTEPES.pProductionFunction[h]
+            else:
+                return Constraint.Skip
+        else:
+            return Constraint.Skip
+    setattr(OptModel, 'eTrbReserveUpIfEnergy_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.nhc, rule=eTrbReserveUpIfEnergy, doc='up   operating reserve if energy available [GW]'))
+
+    if pIndLogConsole == 1:
+        print('eTrbReserveUpIfEnergy ... ', len(getattr(OptModel, 'eTrbReserveUpIfEnergy_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+
+    def eTrbReserveDwIfEnergy(OptModel,n,h):
+        if mTEPES.pIndOperReserve[h] == 0:
+            if sum(mTEPES.pOperReserveDw[p,sc,n,ar] for ar in a2h[h]) and mTEPES.pMaxPower2ndBlock [p,sc,n,h]:
+                return OptModel.vReserveDown   [p,sc,n,h] <= (sum(mTEPES.pMaxVolume[p,sc,n,rs] - OptModel.vReservoirVolume[p,sc,n,rs] for rs in mTEPES.rs if (rs,h) in mTEPES.r2h)) / mTEPES.pDuration[n] * mTEPES.pProductionFunction[h]
+            else:
+                return Constraint.Skip
+        else:
+            return Constraint.Skip
+    setattr(OptModel, 'eTrbReserveDwIfEnergy_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.nhc, rule=eTrbReserveDwIfEnergy, doc='down operating reserve if energy available [GW]'))
+
+    if pIndLogConsole == 1:
+        print('eTrbReserveDwIfEnergy ... ', len(getattr(OptModel, 'eTrbReserveDwIfEnergy_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+
+    def ePmpReserveUpIfEnergy(OptModel,n,h):
+        if mTEPES.pIndOperReserve[h] == 0 and sum(1 for rs in mTEPES.rs if (h,rs) in mTEPES.p2r):
+            if sum(mTEPES.pOperReserveUp[p,sc,n,ar] for ar in a2h[h]) and mTEPES.pMaxCharge2ndBlock[p,sc,n,h]:
+                return OptModel.vESSReserveUp  [p,sc,n,h] <= (sum(mTEPES.pMaxVolume[p,sc,n,rs] - OptModel.vReservoirVolume[p,sc,n,rs] for rs in mTEPES.rs if (h,rs) in mTEPES.p2r)) / mTEPES.pDuration[n] * mTEPES.pProductionFunction[h]
+            else:
+                return Constraint.Skip
+        else:
+            return Constraint.Skip
+    setattr(OptModel, 'ePmpReserveUpIfEnergy_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.np2c, rule=ePmpReserveUpIfEnergy, doc='up   operating reserve if energy available [GW]'))
+
+    if pIndLogConsole == 1:
+        print('ePmpReserveUpIfEnergy ... ', len(getattr(OptModel, 'ePmpReserveUpIfEnergy_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+
+    def ePmpReserveDwIfEnergy(OptModel,n,h):
+        if mTEPES.pIndOperReserve[h] == 0 and sum(1 for rs in mTEPES.rs if (rs,h) in mTEPES.r2p):
+            if sum(mTEPES.pOperReserveDw[p,sc,n,ar] for ar in a2h[h]) and mTEPES.pMaxCharge2ndBlock[p,sc,n,h]:
+                return OptModel.vESSReserveDown[p,sc,n,h] <=  sum(                               OptModel.vReservoirVolume[p,sc,n,rs] for rs in mTEPES.rs if (rs,h) in mTEPES.r2p)  / mTEPES.pDuration[n] * mTEPES.pProductionFunction[h]
+            else:
+                return Constraint.Skip
+        else:
+            return Constraint.Skip
+    setattr(OptModel, 'ePmpReserveDwIfEnergy_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.npc, rule=ePmpReserveDwIfEnergy, doc='down operating reserve if energy available [GW]'))
+
+    if pIndLogConsole == 1:
+        print('ePmpReserveDwIfEnergy ... ', len(getattr(OptModel, 'ePmpReserveDwIfEnergy_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+
     def eHydroInventory(OptModel,n,rs):
         if sum(1 for h in mTEPES.h if (rs,h) in mTEPES.r2h or (h,rs) in mTEPES.h2r or (rs,h) in mTEPES.r2p or (h,rs) in mTEPES.p2r):
             if   mTEPES.n.ord(n) == mTEPES.pCycleWaterStep[rs]:
@@ -586,8 +644,6 @@ def GenerationOperationModelFormulationReservoir(OptModel, mTEPES, pIndLogConsol
         else:
             return Constraint.Skip
     setattr(OptModel, 'eHydroInventory_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.nrsc, rule=eHydroInventory, doc='Reservoir water inventory [hm3]'))
-
-    # + mTEPES.pEfficiency[h] * OptModel.vESSTotalCharge[p, sc, n2, h]
 
     if pIndLogConsole == 1:
         print('eHydroInventory       ... ', len(getattr(OptModel, 'eHydroInventory_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
