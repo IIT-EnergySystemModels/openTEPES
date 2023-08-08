@@ -3,6 +3,7 @@ Change Log
 
 [4.12.0] - 2023-08-08
 ----------------------
+- [CHANGED] added eMaxVolume2Comm and eMinVolume2Comm constraints
 - [CHANGED] added eTrbReserveUpIfEnergy, eTrbReserveDwIfEnergy, ePmpReserveUpIfEnergy, and ePmpReserveDwIfEnergy constraints
 - [CHANGED] added IndBinRsrInvest in Option file to relax reservoir investment decisions. This is needed to keep compatibility with previous cases
 - [CHANGED] added production function to hydropower plants in Generation file to be modeled in water units instead of energy units. This is needed to keep compatibility with previous cases
