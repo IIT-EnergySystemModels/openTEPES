@@ -714,7 +714,7 @@ def OperationSummaryResults(DirName, CaseName, OptModel, mTEPES):
     TotalInvestmentCost  = sum(mTEPES.pDiscountFactor[p] *                                   OptModel.vTotalFCost      [p]()          for p          in mTEPES.p  if len(mTEPES.gc) + len(mTEPES.gd) + len(mTEPES.lc))
     GenInvestmentCost    = sum(mTEPES.pDiscountFactor[p] * mTEPES.pGenInvestCost[gc]       * OptModel.vGenerationInvest[p,gc]()       for p,gc       in mTEPES.pgc)
     GenRetirementCost    = sum(mTEPES.pDiscountFactor[p] * mTEPES.pGenRetireCost[gd]       * OptModel.vGenerationRetire[p,gd]()       for p,gd       in mTEPES.pgd)
-    RsrInvestmentCost    = sum(mTEPES.pDiscountFactor[p] * mTEPES.pRsrInvestCost[gc]       * OptModel.vreservoirInvest [p,rc]()       for p,rc       in mTEPES.prc)
+    RsrInvestmentCost    = sum(mTEPES.pDiscountFactor[p] * mTEPES.pRsrInvestCost[rc]       * OptModel.vreservoirInvest [p,rc]()       for p,rc       in mTEPES.prc)
     NetInvestmentCost    = sum(mTEPES.pDiscountFactor[p] * mTEPES.pNetFixedCost [ni,nf,cc] * OptModel.vNetworkInvest   [p,ni,nf,cc]() for p,ni,nf,cc in mTEPES.plc)
     # Ratio Generation Investment cost/ Generation Installed Capacity [MEUR-MW]
     GenInvCostCapacity   = sum(mTEPES.pGenInvestCost[gc] * OptModel.vGenerationInvest[p,gc]()/mTEPES.pRatedMaxPower[gc]               for p,gc       in mTEPES.pgc if mTEPES.pRatedMaxPower[gc])
