@@ -1,6 +1,10 @@
 Change Log
 =============
 
+[4.12.1] - 2023-08-09
+----------------------
+- [FIXED] fix indices of the dual variables of the adequacy constraints in output results
+
 [4.12.0] - 2023-08-08
 ----------------------
 - [CHANGED] added eMaxVolume2Comm and eMinVolume2Comm constraints
