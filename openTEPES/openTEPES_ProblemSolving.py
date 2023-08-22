@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 08, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 22, 2023
 """
 
 import time
@@ -114,8 +114,8 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
     print    ('  Total system                 cost [MEUR] ', OptModel.vTotalSCost())
     print    ('  Total generation  investment cost [MEUR] ', sum(mTEPES.pDiscountFactor[p] * mTEPES.pGenInvestCost[gc      ]   * OptModel.vGenerationInvest[p,gc      ]() for gc       in mTEPES.gc))
     print    ('  Total generation  retirement cost [MEUR] ', sum(mTEPES.pDiscountFactor[p] * mTEPES.pGenRetireCost[gd      ]   * OptModel.vGenerationRetire[p,gd      ]() for gd       in mTEPES.gd))
-    if mTEPES.pIndHydroTopology == 1:
-        print('  Total reservoir   investment cost [MEUR] ', sum(mTEPES.pDiscountFactor[p] * mTEPES.pRsrInvestCost[rc      ]   * OptModel.vReservoirInvest [p,rc      ]() for rc       in mTEPES.rc))
+    if mTEPES.pIndHydroTopology == 1 and len(mTEPES.rn):
+        print('  Total reservoir   investment cost [MEUR] ', sum(mTEPES.pDiscountFactor[p] * mTEPES.pRsrInvestCost[rc      ]   * OptModel.vReservoirInvest [p,rc      ]() for rc       in mTEPES.rn))
     else:
         print('  Total reservoir   investment cost [MEUR] ', 0)
     print    ('  Total network     investment cost [MEUR] ', sum(mTEPES.pDiscountFactor[p] * mTEPES.pNetFixedCost [ni,nf,cc]   * OptModel.vNetworkInvest   [p,ni,nf,cc]() for ni,nf,cc in mTEPES.lc))

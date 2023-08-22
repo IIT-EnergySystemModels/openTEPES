@@ -1,9 +1,12 @@
 Change Log
 =============
 
-[4.12.1] - 2023-08-09
+[4.12.1] - 2023-08-22
 ----------------------
 - [FIXED] fix indices of the dual variables of the adequacy constraints in output results
+- [CHANGED] added writing of the dual variables of the reservoir volume constraints in output results
+- [FIXED] fix error in problem solving when there are no candidate hydro reservoirs
+- [FIXED] fix error in units of water values in output results
 
 [4.12.0] - 2023-08-08
 ----------------------

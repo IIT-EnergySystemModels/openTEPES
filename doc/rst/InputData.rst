@@ -45,7 +45,7 @@ File                           Description
 ``oT_Dict_Scenario.csv``       Scenario. Short-term uncertainties (scenarios) (e.g., s001 to s100)
 ``oT_Dict_Stage.csv``          Stage
 ``oT_Dict_LoadLevel.csv``      Load level (e.g., 01-01 00:00:00+01:00 to 12-30 23:00:00+01:00). Load levels with duration 0 are ignored
-``oT_Dict_Generation.csv``     Generation units (thermal -nuclear, CCGT, OCGT, coal-, ESS -hydro, pumped-hydro storage PHS, battery BESS, electric vehicle EV, demand response DR, alkaline water electrolyzer AWE, solar thermal- and VRE -wind onshore and offshore, solar PV-)
+``oT_Dict_Generation.csv``     Generation units (thermal -nuclear, CCGT, OCGT, coal-, ESS -hydro, pumped-hydro storage PHS, battery BESS, electric vehicle EV, demand response DR, alkaline water electrolyzer AWE, solar thermal- and VRE -wind onshore and offshore, solar PV, run-of-the-river hydro-)
 ``oT_Dict_Technology.csv``     Generation technologies. The technology order is used in the temporal result plot.
 ``oT_Dict_Storage.csv``        ESS storage type (daily < 12 h, weekly < 40 h, monthly > 60 h)
 ``oT_Dict_Node.csv``           Nodes. A node belongs to a zone.
@@ -65,6 +65,8 @@ File                          Dictionary    Description
 ``oT_Dict_ZoneToArea.csv``    ZoneToArea    Location of zones at areas
 ``oT_Dict_AreaToRegion.csv``  AreaToRegion  Location of areas at regions
 ============================  ============  ============================
+
+See the hydro system section at the end of this page to know how to define the basin topology. Some additional dictionaries and data files are needed.
 
 Input files
 -----------
@@ -298,6 +300,7 @@ MaximumStorage        Maximum energy that can be stored by the ESS unit         
 MinimumStorage        Minimum energy that can be stored by the ESS unit                                                                                 GWh
 Efficiency            Round-trip efficiency of the pump/turbine cycle of a pumped-hydro storage power plant or charge/discharge of a battery            p.u.
 ProductionFunction    Production function from water inflows to energy (only used for hydropower plants modeled with water units and basin topology)    kWh/m\ :sup:`3`
+ProductionFunctionH2  Production function from energy to hydrogen (only used for electrolyzers)                                                         kWh/kgH2
 Availability          Unit availability for system adequacy reserve margin                                                                              p.u.
 Inertia               Unit inertia constant                                                                                                             s
 EFOR                  Equivalent Forced Outage Rate                                                                                                     p.u.
@@ -472,8 +475,8 @@ All the generators must be defined as columns of these files.
 
 For example, these data can be used for defining the minimum and/or maximum energy to be produced on a daily/weekly/4-week/yearly basis (depending on the EnergyType).
 
-Transmission network
---------------------
+Electricity transmission network
+--------------------------------
 
 A description of the circuit (initial node, final node, circuit) data included in the file ``oT_Data_Network.csv`` follows:
 
@@ -531,7 +534,7 @@ Node            Longitude     Node longitude    º
 Hydro system
 ------------
 
-These input files are specifically introduced for allowing a representation of the hydro system based on volume and water flow data.
+These input files are specifically introduced for allowing a representation of the hydro system based on volume and water inflow data considering the water stream topology (hydro cascade basins). If they are not available the model runs with a energy-based representation of the hydro system.
 
 Dictionaries. Sets
 ------------------
@@ -544,7 +547,7 @@ File                           Description
 =============================  ===============
 
 The information contained in these input files determines the topology of the hydro basins and how water flows along the different
-hydro and pumped-hydro power plants and reservoirs.
+hydro and pumped-hydro power plants and reservoirs. These relations follow the water downstream direction.
 
 =======================================  ======================  ===========================================================================================
 File                                     Dictionary              Description
@@ -635,3 +638,72 @@ Period      Scenario        Load level  Reservoir  Maximum (minimum) reservoir v
 All the reservoirs must be defined as columns of these files.
 
 For example, these data can be used for defining the operating guide (rule) curves for the hydro reservoirs.
+
+Hydrogen system
+---------------
+
+These input files are specifically introduced for allowing a representation of the hydrogen energy vector to supply hydrogen demand produced with electricity through the hydrogen network.
+
+=========================================  ================================================================================================================================
+File                                       Description
+=========================================  ================================================================================================================================
+``oT_Data_DemandHydrogen.csv``             Hydrogen demand
+``oT_Data_NetworkHydrogen.csv``            Hydrogen network data
+=========================================  ================================================================================================================================
+
+Hydrogen demand
+---------------
+
+A description of the data included in the file ``oT_Data_DemandHydrogen.csv`` follows:
+
+==========  ==============  ==========  ======  ===============================================  ===
+Identifier  Identifier      Identifier  Header  Description
+==========  ==============  ==========  ======  ===============================================  ===
+Period      Scenario        Load level  Node    Hydrogen demand of the node for each load level  tH2
+==========  ==============  ==========  ======  ===============================================  ===
+
+Internally, all the values below if positive demand (or above if negative demand) 2.5e-5 times the maximum system demand of each area will be converted into 0 by the model.
+
+Hydrogen transmission pipeline network
+--------------------------------------
+
+A description of the circuit (initial node, final node, circuit) data included in the file ``oT_Data_NetworkHydrogen.csv`` follows:
+
+===================  ===============================================================================================================  ======
+Header               Description
+===================  ===============================================================================================================  ======
+LineType             Line type {AC, DC, Transformer, Converter}
+Switching            The transmission line is able to switch on/off                                                                   Yes/No
+InitialPeriod        Initial period (year) when the unit is installed or can be installed, if candidate                               Year
+FinalPeriod          Final   period (year) when the unit is installed or can be installed, if candidate                               Year
+Voltage              Line voltage (e.g., 400, 220 kV, 220/400 kV if transformer). Used only for plotting purposes                     kV
+Length               Line length (only used for reporting purposes). If not defined, computed as 1.1 times the geographical distance  km
+LossFactor           Transmission losses equal to the line flow times this factor                                                     p.u.
+Resistance           Resistance (not used in this version)                                                                            p.u.
+Reactance            Reactance. Lines must have a reactance different from 0 to be considered                                         p.u.
+Susceptance          Susceptance (not used in this version)                                                                           p.u.
+AngMax               Maximum angle difference (not used in this version)                                                              º
+AngMin               Minimum angle difference (not used in this version)                                                              º
+Tap                  Tap changer (not used in this version)                                                                           p.u.
+Converter            Converter station (not used in this version)                                                                     Yes/No
+TTC                  Total transfer capacity (maximum permissible thermal load) in forward  direction. Static line rating             MW
+TTCBck               Total transfer capacity (maximum permissible thermal load) in backward direction. Static line rating             MW
+SecurityFactor       Security factor to consider approximately N-1 contingencies. NTC = TTC x SecurityFactor                          p.u.
+FixedInvestmentCost  Overnight investment (capital and fixed O&M) cost                                                                M€
+FixedChargeRate      Fixed-charge rate to annualize the overnight investment cost                                                     p.u.
+BinaryInvestment     Binary line/circuit investment decision                                                                          Yes/No
+InvestmentLo         Lower bound of investment decision                                                                               p.u.
+InvestmentUp         Upper bound of investment decision                                                                               p.u.
+SwOnTime             Minimum switch-on time                                                                                           h
+SwOffTime            Minimum switch-off time                                                                                          h
+===================  ===============================================================================================================  ======
+
+Depending on the voltage lines are plotted with different colors (orange < 200 kV, 200 < green < 350 kV, 350 < red < 500 kV, 500 < orange < 700 kV, blue > 700 kV).
+
+If there is no data for TTCBck, i.e., TTCBck is left empty or is equal to 0, it is substituted by the TTC in the code. Internally, all the TTC and TTCBck values below 2.5e-5 times the maximum system demand of each area will be converted into 0 by the model.
+
+Reactance can take a negative value as a result of the approximation of three-winding transformers. No Kirchhoff's second law disjunctive constraint is formulated for a circuit with negative reactance.
+
+Those lines with fixed cost > 0 are considered candidate and can be installed or not.
+
+If lower and upper bounds of investment decisions are very close (with a difference < 1e-3) to 0 or 1 are converted into 0 and 1.

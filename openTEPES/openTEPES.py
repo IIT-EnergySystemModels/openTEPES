@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 08, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 22, 2023
 """
 
 import time
@@ -37,8 +37,8 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     idxDict['y'  ] = 1
 
     #%% model declaration
-    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.12.0 - August 08, 2023')
-    print(                 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.12.0 - August 08, 2023', file=open(_path+'/openTEPES_version_'+CaseName+'.log','a'))
+    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.12.1 - August 22, 2023')
+    print(                 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.12.1 - August 22, 2023', file=open(_path+'/openTEPES_version_'+CaseName+'.log','a'))
 
     pIndOutputResults = [j for i,j in idxDict.items() if i == pIndOutputResults][0]
     pIndLogConsole    = [j for i,j in idxDict.items() if i == pIndLogConsole   ][0]
@@ -166,7 +166,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     if pIndESSOperationResults        == 1 and len(mTEPES.es):
         ESSOperationResults       (DirName, CaseName, mTEPES, mTEPES, pIndTechnologyOutput, pIndAreaOutput, pIndPlotOutput)
     if pIndReservoirOperationResults  == 1 and len(mTEPES.rs) and mTEPES.pIndHydroTopology == 1:
-        ReservoirOperationResults (DirName, CaseName, mTEPES, mTEPES, pIndTechnologyOutput                                )
+        ReservoirOperationResults (DirName, CaseName, mTEPES, mTEPES, pIndTechnologyOutput,                 pIndPlotOutput)
     if pIndFlexibilityResults         == 1:
         FlexibilityResults        (DirName, CaseName, mTEPES, mTEPES)
     if pIndReliabilityResults         == 1:

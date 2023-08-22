@@ -2,7 +2,7 @@
 
 Publications
 =================
-The model has being used in these publications:
+The **openTEPES** model has been used in these publications:
 
 - A. Ramos, E. Álvarez "Software implementation". *Second World openTEPES Conference*, July 2023. (`Presentation <https://pascua.iit.comillas.edu/aramos/papers/openTEPES_SoftwareImplementation.pdf>`_)
 

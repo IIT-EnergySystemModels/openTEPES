@@ -6,6 +6,9 @@ Here we present the mathematical formulation of the optimization problem solved 
 
 * E.F. Alvarez, L. Olmos, A. Ramos, K. Antoniadou-Plytaria, D. Steen, and L.A. Tuan “Values and Impacts of Incorporating Local Flexibility Services in Transmission Expansion Planning” Electric Power Systems Research 212, July 2022. `10.1016/j.epsr.2022.108480 <https://doi.org/10.1016/j.epsr.2022.108480>`_
 
+* A. Ramos, E. Quispe, S. Lumbreras "`OpenTEPES: Open-source Transmission and Generation Expansion Planning <https://www.sciencedirect.com/science/article/pii/S235271102200053X/pdfft?md5=ece8d3328c853a4795eda29acd2ad140&pid=1-s2.0-S235271102200053X-main.pdf>`_"
+  *SoftwareX* 18: June 2022. `10.1016/j.softx.2022.101070 <https://doi.org/10.1016/j.softx.2022.101070>`_
+
 * S. Lumbreras, H. Abdi, A. Ramos, and M. Moradi "Introduction: The Key Role of the Transmission Network" in the book S. Lumbreras, H. Abdi, A. Ramos (eds.) "Transmission Expansion Planning: The Network Challenges of the Energy Transition" Springer, 2020 ISBN 9783030494278 `10.1007/978-3-030-49428-5_1 <https://link.springer.com/chapter/10.1007/978-3-030-49428-5_1>`_
 
 * S. Lumbreras, F. Banez-Chicharro, A. Ramos "Optimal Transmission Expansion Planning in Real-Sized Power Systems with High Renewable Penetration" Electric Power Systems Research 49, 76-88, Aug 2017 `10.1016/j.epsr.2017.04.020 <https://doi.org/10.1016/j.epsr.2017.04.020>`_

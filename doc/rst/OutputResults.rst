@@ -29,7 +29,7 @@ Some maps of the transmission network and the energy share of different technolo
    :scale: 6%
    :align: center
 
-Besides, the csv files used for outputting the results are briefly described in the following items. Some additional plots are also shown.
+Besides, the csv files used for outputting the results are briefly described in the following items. Some other additional plots are also shown.
 
 Investment
 ----------
@@ -546,6 +546,14 @@ Identifier    Identifier  Identifier  Header      Description
 ============  ==========  ==========  ==========  =========================================================
 Period        Scenario    Load level  Reservoir   Spilled water in reservoir by technology [hm\ :sup:`3`]
 ============  ==========  ==========  ==========  =========================================================
+
+File ``oT_Result_MarginalWaterVolumeValue.csv``
+
+============  ==========  ==========  ==========  ================================================
+Identifier    Identifier  Identifier  Header      Description
+============  ==========  ==========  ==========  ================================================
+Period        Scenario    Load level  Reservoir   Water volume value [€/dam\ :sup:`3`]
+============  ==========  ==========  ==========  ================================================
 
 Network operation
 -----------------

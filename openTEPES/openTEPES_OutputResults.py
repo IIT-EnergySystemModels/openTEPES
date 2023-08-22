@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 09, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 22, 2023
 """
 
 import time
@@ -647,7 +647,7 @@ def ESSOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutpu
     print('Writing        ESS operation results   ... ', round(WritingResultsTime), 's')
 
 
-def ReservoirOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutput):
+def ReservoirOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutput, pIndPlotOutput):
     # %% outputting the reservoir operation
     _path = os.path.join(DirName, CaseName)
     StartTime = time.time()
@@ -678,6 +678,21 @@ def ReservoirOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnolog
         HydroTechnologies = [(p,sc,n,ht) for p,sc,n,ht in mTEPES.psnht if sum(1 for h in o2h[ht])]
         OutputToFile = pd.Series(data=[sum(OutputToFile[p,sc,n,rs] for rs in mTEPES.rs if (n,rs) in mTEPES.nrsc and sum(1 for h in o2h[ht] if (rs,h) in mTEPES.r2h)) for p,sc,n,ht in HydroTechnologies], index=pd.Index(HydroTechnologies))
         OutputToFile.to_frame(name='hm3').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='hm3', aggfunc=sum).rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_TechnologyReservoirSpillage_'+CaseName+'.csv', sep=',')
+
+    #%% outputting the water volume values
+    OutputResults = []
+    sPSSTNES      = [(p,sc,st,n,rs) for p,sc,st,n,rs in mTEPES.ps*mTEPES.s2n*mTEPES.rs if (n,rs) in mTEPES.nrsc and sum(1 for h in mTEPES.h if (rs,h) in mTEPES.r2h or (h,rs) in mTEPES.h2r or (rs,h) in mTEPES.r2p or (h,rs) in mTEPES.p2r)]
+    OutputToFile = pd.Series(data=[-mTEPES.pDuals["".join(["eHydroInventory_", str(p), "_", str(sc), "_", str(st), "('", str(n), "', '", str(rs), "')"])]*1e3 for p,sc,st,n,rs in sPSSTNES], index=pd.Index(sPSSTNES))
+    OutputResults.append(OutputToFile)
+    OutputResults = pd.concat(OutputResults)
+    if len(OutputResults.index):
+        OutputResults.to_frame(name='WaterValue').reset_index().pivot_table(index=['level_0','level_1','level_3'], columns='level_4', values='WaterValue').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_MarginalWaterVolumeValue_'+CaseName+'.csv', sep=',')
+
+    if pIndPlotOutput == 1:
+        WaterValue = OutputResults.to_frame(name='WaterValue').reset_index().pivot_table(index=['level_0','level_1','level_3','level_4'], values='WaterValue').rename_axis(['level_0','level_1','level_2','level_3'], axis=0).loc[:,:,:,:]
+        for p,sc in mTEPES.ps:
+            chart = LinePlots(p, sc, WaterValue, 'Generating unit', 'LoadLevel', 'EUR/dam3', 'average')
+            chart.save(_path+'/oT_Plot_MarginalWaterVolumeValue_'+str(p)+'_'+str(sc)+'_'+CaseName+'.html', embed_options={'renderer': 'svg'})
 
     WritingResultsTime = time.time() - StartTime
     StartTime = time.time()
@@ -1059,7 +1074,7 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES, pIndPlotOutput):
     if len(mTEPES.es):
         OutputResults = []
         sPSSTNES      = [(p,sc,st,n,es) for p,sc,st,n,es in mTEPES.ps*mTEPES.s2n*mTEPES.es if (n,es) in mTEPES.nesc and mTEPES.pMaxCharge[p,sc,n,es] + mTEPES.pMaxPower[p,sc,n,es]]
-        OutputToFile = pd.Series(data=[mTEPES.pDuals["".join(["eESSInventory_", str(p), "_", str(sc), "_", str(st), "('", str(n), "', '", str(es), "')"])] for p,sc,st,n,es in sPSSTNES], index=pd.Index(sPSSTNES))
+        OutputToFile = pd.Series(data=[-mTEPES.pDuals["".join(["eESSInventory_", str(p), "_", str(sc), "_", str(st), "('", str(n), "', '", str(es), "')"])]*1e3 for p,sc,st,n,es in sPSSTNES], index=pd.Index(sPSSTNES))
         OutputResults.append(OutputToFile)
         OutputResults = pd.concat(OutputResults)
         if len(OutputResults.index):
@@ -1153,7 +1168,7 @@ def CostSummaryResults(DirName, CaseName, OptModel, mTEPES):
     GenInvCost     = pd.Series(data=[mTEPES.pDiscountFactor[p] * sum(mTEPES.pGenInvestCost[gc  ]                                                                  * OptModel.vGenerationInvest[p,gc  ]()  for gc      in mTEPES.gc                                               )     for p in mTEPES.p], index=mTEPES.p).to_frame(name='Generation Investment Cost').stack()
     GenRetCost     = pd.Series(data=[mTEPES.pDiscountFactor[p] * sum(mTEPES.pGenRetireCost[gd  ]                                                                  * OptModel.vGenerationRetire[p,gd  ]()  for gd      in mTEPES.gd                                               )     for p in mTEPES.p], index=mTEPES.p).to_frame(name='Generation Retirement Cost').stack()
     if mTEPES.pIndHydroTopology == 1:
-        RsrInvCost = pd.Series(data=[mTEPES.pDiscountFactor[p] * sum(mTEPES.pRsrInvestCost[rc  ]                                                                  * OptModel.vReservoirInvest [p,rc  ]()  for rc      in mTEPES.rc                                               )     for p in mTEPES.p], index=mTEPES.p).to_frame(name='Reservoir  Investment Cost').stack()
+        RsrInvCost = pd.Series(data=[mTEPES.pDiscountFactor[p] * sum(mTEPES.pRsrInvestCost[rc  ]                                                                  * OptModel.vReservoirInvest [p,rc  ]()  for rc      in mTEPES.rn                                               )     for p in mTEPES.p], index=mTEPES.p).to_frame(name='Reservoir  Investment Cost').stack()
     else:
         RsrInvCost = pd.Series(data=[0.0                                                                                                                                                                                                                                                                ], index=mTEPES.p).to_frame(name='Reservoir  Investment Cost').stack()
     NetInvCost     = pd.Series(data=[mTEPES.pDiscountFactor[p] * sum(mTEPES.pNetFixedCost [lc  ]                                                                  * OptModel.vNetworkInvest   [p,lc  ]()  for lc      in mTEPES.lc                                               )     for p in mTEPES.p], index=mTEPES.p).to_frame(name='Network    Investment Cost').stack()
