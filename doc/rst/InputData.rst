@@ -98,7 +98,7 @@ File                                       Description
 ``oT_Data_VariableMinStorage.csv``         Minimum storage of the ESS by load level
 ``oT_Data_VariableMaxEnergy.csv``          Maximum energy of the unit by load level (the energy will be accumulated and enforced for the interval defined by EnergyType)
 ``oT_Data_VariableMinEnergy.csv``          Minimum energy of the unit by load level (the energy will be accumulated and enforced for the interval defined by EnergyType)
-``oT_Data_Network.csv``                    Network data
+``oT_Data_Network.csv``                    Electricity network data
 ``oT_Data_NodeLocation.csv``               Node location in latitude and longitude
 =========================================  ================================================================================================================================
 
@@ -113,9 +113,10 @@ File                 Description
 ===================  ==================================================================   ====================================================
 IndBinGenInvest      Indicator of binary generation   expansion decisions                 {0 continuous, 1 binary, 2 ignore investments}
 IndBinGenRetirement  Indicator of binary generation  retirement decisions                 {0 continuous, 1 binary, 2 ignore retirements}
-IndBinNetInvest      Indicator of binary network      expansion decisions                 {0 continuous, 1 binary, 2 ignore investments}
 IndBinRsrInvest      Indicator of binary reservoir    expansion decisions
                      (only used for reservoirs modeled with water units)                  {0 continuous, 1 binary, 2 ignore investments}
+IndBinNetInvest      Indicator of binary electric network expansion decisions             {0 continuous, 1 binary, 2 ignore investments}
+IndBinNetH2Invest    Indicator of binary hydrogen network expansion decisions             {0 continuous, 1 binary, 2 ignore investments}
 IndBinGenOperat      Indicator of binary generation   operation decisions                 {0 continuous, 1 binary}
 IndBinGenRamps       Indicator of activating or not the up/down ramp constraints          {0 no ramps,   1 ramp constraints}
 IndBinGenMinTime     Indicator of activating or not the min up/down time constraints      {0 no min time constraints, 1 min time constraints}
@@ -605,9 +606,10 @@ Header                Description
 ====================  ======================================================================================================================  ===================================
 StorageType           Reservoir storage type based on reservoir storage capacity (hourly, daily, weekly, 4-week, yearly)                      Hourly/Daily/Weekly/Monthly/Yearly
 OutflowsType          Water outflows type based on the water extracted from the reservoir (daily, weekly, 4-week, yearly)                     Daily/Weekly/Monthly/Yearly
-InitialStorage        Initial energy stored at the first instant of the time scope                                                            hm\ :sup:`3`
-MaximumStorage        Maximum energy that can be stored by the hydro reservoir                                                                hm\ :sup:`3`
-MinimumStorage        Minimum energy that can be stored by the hydro reservoir                                                                hm\ :sup:`3`
+InitialStorage        Initial volume stored at the first instant of the time scope                                                            hm\ :sup:`3`
+MaximumStorage        Maximum volume that can be stored by the hydro reservoir                                                                hm\ :sup:`3`
+MinimumStorage        Minimum volume that can be stored by the hydro reservoir                                                                hm\ :sup:`3`
+BinaryInvestment      Binary reservoir investment decision                                                                                    Yes/No
 FixedInvestmentCost   Overnight investment (capital and fixed O&M) cost                                                                       M€
 FixedChargeRate       Fixed-charge rate to annualize the overnight investment cost                                                            p.u.
 InitialPeriod         Initial period (year) when the unit is installed or can be installed, if candidate                                      Year
@@ -648,7 +650,7 @@ These input files are specifically introduced for allowing a representation of t
 File                                       Description
 =========================================  ================================================================================================================================
 ``oT_Data_DemandHydrogen.csv``             Hydrogen demand
-``oT_Data_NetworkHydrogen.csv``            Hydrogen network data
+``oT_Data_NetworkHydrogen.csv``            Hydrogen pipeline network data
 =========================================  ================================================================================================================================
 
 Hydrogen demand
