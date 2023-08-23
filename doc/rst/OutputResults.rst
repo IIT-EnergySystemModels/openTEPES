@@ -3,7 +3,7 @@
 Output Results
 ==============
 
-Some maps of the transmission network and the energy share of different technologies is plotted.
+Some maps of the electricity transmission network and the energy share of different technologies is plotted.
 
 .. image:: ../img/oT_Map_Network_sSEP.png
    :scale: 40%
@@ -92,19 +92,19 @@ Generator     MW          Technology retirement power
 
 File ``oT_Result_NetworkInvestment.csv``
 
-============  ==========  ==========  ======  =============================
+============  ==========  ==========  ======  =======================================
 Identifier    Identifier  Identifier  Header  Description
-============  ==========  ==========  ======  =============================
-Initial node  Final node  Circuit     p.u.    Network investment decision
-============  ==========  ==========  ======  =============================
+============  ==========  ==========  ======  =======================================
+Initial node  Final node  Circuit     p.u.    Electricity networ investment decision
+============  ==========  ==========  ======  =======================================
 
 File ``oT_Result_NetworkInvestment_MWkm.csv``
 
-============  ==========  ==========  ======  ===========================
+============  ==========  ==========  ======  ==============================
 Identifier    Identifier  Identifier  Header  Description
-============  ==========  ==========  ======  ===========================
-Initial node  Final node  Circuit     MW-km   Network investment
-============  ==========  ==========  ======  ===========================
+============  ==========  ==========  ======  ==============================
+Initial node  Final node  Circuit     MW-km   Electricity network investment
+============  ==========  ==========  ======  ==============================
 
 File ``oT_Result_ReserveMargin.csv``
 
@@ -555,32 +555,32 @@ Identifier    Identifier  Identifier  Header      Description
 Period        Scenario    Load level  Reservoir   Water volume value [€/dam\ :sup:`3`]
 ============  ==========  ==========  ==========  ================================================
 
-Network operation
------------------
+Electricity network operation
+-----------------------------
 
 File ``oT_Result_NetworkCommitment.csv``
 
-============  ==========  ==========  ============  ==========  =========  ==========================
+============  ==========  ==========  ============  ==========  =========  ================================
 Identifier    Identifier  Identifier  Header        Header      Header     Description
-============  ==========  ==========  ============  ==========  =========  ==========================
-Period        Scenario    Load level  Initial node  Final node  Circuit    Commitment decision [p.u.]
-============  ==========  ==========  ============  ==========  =========  ==========================
+============  ==========  ==========  ============  ==========  =========  ================================
+Period        Scenario    Load level  Initial node  Final node  Circuit    Line commitment decision [p.u.]
+============  ==========  ==========  ============  ==========  =========  ================================
 
 File ``oT_Result_NetworkSwitchOn.csv``
 
-============  ==========  ==========  ============  ==========  =========  ==========================
+============  ==========  ==========  ============  ==========  =========  ================================
 Identifier    Identifier  Identifier  Header        Header      Header     Description
-============  ==========  ==========  ============  ==========  =========  ==========================
-Period        Scenario    Load level  Initial node  Final node  Circuit    Switch on decision [p.u.]
-============  ==========  ==========  ============  ==========  =========  ==========================
+============  ==========  ==========  ============  ==========  =========  ================================
+Period        Scenario    Load level  Initial node  Final node  Circuit    Line switch on decision [p.u.]
+============  ==========  ==========  ============  ==========  =========  ================================
 
 File ``oT_Result_NetworkSwitchOff.csv``
 
-============  ==========  ==========  ============  ==========  =========  ==========================
+============  ==========  ==========  ============  ==========  =========  ================================
 Identifier    Identifier  Identifier  Header        Header      Header     Description
-============  ==========  ==========  ============  ==========  =========  ==========================
-Period        Scenario    Load level  Initial node  Final node  Circuit    Switch off decision [p.u.]
-============  ==========  ==========  ============  ==========  =========  ==========================
+============  ==========  ==========  ============  ==========  =========  ================================
+Period        Scenario    Load level  Initial node  Final node  Circuit    Line switch off decision [p.u.]
+============  ==========  ==========  ============  ==========  =========  ================================
 
 File ``oT_Result_NetworkFlowPerNode.csv``
 
@@ -640,11 +640,11 @@ Period        Scenario    Load level  Node       Voltage angle [rad]
 
 File ``oT_Result_NetworkNetDemand.csv``
 
-============  ==========  ==========  ==========  ===================================
+============  ==========  ==========  ==========  ===========================================
 Identifier    Identifier  Identifier  Header      Description
-============  ==========  ==========  ==========  ===================================
-Period        Scenario    Load level  Node        Net demand (demand - VRE) [MW]
-============  ==========  ==========  ==========  ===================================
+============  ==========  ==========  ==========  ===========================================
+Period        Scenario    Load level  Node        Electricity net demand (demand - VRE) [MW]
+============  ==========  ==========  ==========  ===========================================
 
 File ``oT_Result_NetworkPNS.csv``
 
@@ -669,6 +669,57 @@ Identifier    Identifier  Identifier  Identifier    Identifier  Description
 ============  ==========  ==========  ============  ==========  ============================================
 Period        Scenario    Load level  Initial node  Final node   Network output (to be used as pivot table)
 ============  ==========  ==========  ============  ==========  ============================================
+
+Hydrogen network operation
+--------------------------
+
+File ``oT_Result_BalanceHydrogen.csv``
+
+============  ==========  ==========  ==========  ======================================
+Identifier    Identifier  Identifier  Identifier  Description
+============  ==========  ==========  ==========  ======================================
+Period        Scenario    Load level  Technology  Generation, flows, and demand [tH2]
+============  ==========  ==========  ==========  ======================================
+
+File ``oT_Result_BalanceHydrogenPerArea.csv``
+
+============  ==========  ==========  ==========  ==========  ======================================
+Identifier    Identifier  Identifier  Identifier  Header      Description
+============  ==========  ==========  ==========  ==========  ======================================
+Period        Scenario    Load level  Technology  Area        Generation, flows, and demand [tH2]
+============  ==========  ==========  ==========  ==========  ======================================
+
+File ``oT_Result_BalanceHydrogenPerNode.csv``
+
+============  ==========  ==========  ==========  ==========  ======================================
+Identifier    Identifier  Identifier  Identifier  Header      Description
+============  ==========  ==========  ==========  ==========  ======================================
+Period        Scenario    Load level  Technology  Node        Generation, flows, and demand [tH2]
+============  ==========  ==========  ==========  ==========  ======================================
+
+File ``oT_Result_BalanceHydrogenPerTech.csv``
+
+============  ==========  ==========  ==========  ==========  ==========  ======================================
+Identifier    Identifier  Identifier  Identifier  Identifier  Header      Description
+============  ==========  ==========  ==========  ==========  ==========  ======================================
+Period        Scenario    Load level  Area        Node        Technology  Generation, flows, and demand [tH2]
+============  ==========  ==========  ==========  ==========  ==========  ======================================
+
+File ``oT_Result_NetworkFlowH2PerNode.csv``
+
+============  ==========  ==========  ============  ==========  =========  =======================
+Identifier    Identifier  Identifier  Header        Header      Header     Description
+============  ==========  ==========  ============  ==========  =========  =======================
+Period        Scenario    Load level  Initial node  Final node  Circuit    Pipeline flow [tH2]
+============  ==========  ==========  ============  ==========  =========  =======================
+
+File ``oT_Result_NetworkHNS.csv``
+
+============  ==========  ==========  ==========  ====================================
+Identifier    Identifier  Identifier  Header      Description
+============  ==========  ==========  ==========  ====================================
+Period        Scenario    Load level  Node        Hydrogen not served by node [tH2]
+============  ==========  ==========  ==========  ====================================
 
 Marginal information
 --------------------

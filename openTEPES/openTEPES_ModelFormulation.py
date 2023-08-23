@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 08, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 23, 2023
 """
 
 import time
@@ -38,10 +38,14 @@ def InvestmentModelFormulation(OptModel, mTEPES, pIndLogConsole):
     OptModel.eTotalICost = Constraint(rule=eTotalICost, doc='system fixed    cost [MEUR]')
 
     def eTotalFCost(OptModel,p):
-        if   len(mTEPES.gc) + len(mTEPES.gd) + len(mTEPES.lc)                  and mTEPES.pIndHydroTopology == 0:
+        if   len(mTEPES.gc) + len(mTEPES.gd) + len(mTEPES.lc)                                   and mTEPES.pIndHydroTopology == 0 and mTEPES.pIndHydrogen == 0:
             return OptModel.vTotalFCost[p] == sum(mTEPES.pGenInvestCost[gc] * OptModel.vGenerationInvest[p,gc] for gc in mTEPES.gc) + sum(mTEPES.pGenRetireCost[gd] * OptModel.vGenerationRetire[p,gd] for gd in mTEPES.gd) + sum(mTEPES.pNetFixedCost[ni,nf,cc] * OptModel.vNetworkInvest[p,ni,nf,cc] for ni,nf,cc in mTEPES.lc)
-        elif len(mTEPES.gc) + len(mTEPES.gd) + len(mTEPES.lc) + len(mTEPES.rn) and mTEPES.pIndHydroTopology == 1:
-            return OptModel.vTotalFCost[p] == sum(mTEPES.pGenInvestCost[gc] * OptModel.vGenerationInvest[p,gc] for gc in mTEPES.gc) + sum(mTEPES.pGenRetireCost[gd] * OptModel.vGenerationRetire[p,gd] for gd in mTEPES.gd) + sum(mTEPES.pNetFixedCost[ni,nf,cc] * OptModel.vNetworkInvest[p,ni,nf,cc] for ni,nf,cc in mTEPES.lc) + sum(mTEPES.pRsrInvestCost[rc] * OptModel.vReservoirInvest[p,rc] for rc in mTEPES.rn)
+        if   len(mTEPES.gc) + len(mTEPES.gd) + len(mTEPES.lc)                  + len(mTEPES.pc) and mTEPES.pIndHydroTopology == 0 and mTEPES.pIndHydrogen == 1:
+            return OptModel.vTotalFCost[p] == sum(mTEPES.pGenInvestCost[gc] * OptModel.vGenerationInvest[p,gc] for gc in mTEPES.gc) + sum(mTEPES.pGenRetireCost[gd] * OptModel.vGenerationRetire[p,gd] for gd in mTEPES.gd) + sum(mTEPES.pNetFixedCost[ni,nf,cc] * OptModel.vNetworkInvest[p,ni,nf,cc] for ni,nf,cc in mTEPES.lc) + sum(mTEPES.pPipeFixedCost[ni,nf,cc] * OptModel.vPipelineInvest[p,ni,nf,cc] for ni,nf,cc in mTEPES.pc)
+        elif len(mTEPES.gc) + len(mTEPES.gd) + len(mTEPES.lc) + len(mTEPES.rn)                  and mTEPES.pIndHydroTopology == 1 and mTEPES.pIndHydrogen == 0:
+            return OptModel.vTotalFCost[p] == sum(mTEPES.pGenInvestCost[gc] * OptModel.vGenerationInvest[p,gc] for gc in mTEPES.gc) + sum(mTEPES.pGenRetireCost[gd] * OptModel.vGenerationRetire[p,gd] for gd in mTEPES.gd) + sum(mTEPES.pNetFixedCost[ni,nf,cc] * OptModel.vNetworkInvest[p,ni,nf,cc] for ni,nf,cc in mTEPES.lc) +                                                                                                         sum(mTEPES.pRsrInvestCost[rc] * OptModel.vReservoirInvest[p,rc] for rc in mTEPES.rn)
+        elif len(mTEPES.gc) + len(mTEPES.gd) + len(mTEPES.lc) + len(mTEPES.rn) + len(mTEPES.pc) and mTEPES.pIndHydroTopology == 1 and mTEPES.pIndHydrogen == 1:
+            return OptModel.vTotalFCost[p] == sum(mTEPES.pGenInvestCost[gc] * OptModel.vGenerationInvest[p,gc] for gc in mTEPES.gc) + sum(mTEPES.pGenRetireCost[gd] * OptModel.vGenerationRetire[p,gd] for gd in mTEPES.gd) + sum(mTEPES.pNetFixedCost[ni,nf,cc] * OptModel.vNetworkInvest[p,ni,nf,cc] for ni,nf,cc in mTEPES.lc) + sum(mTEPES.pPipeFixedCost[ni,nf,cc] * OptModel.vPipelineInvest[p,ni,nf,cc] for ni,nf,cc in mTEPES.pc) + sum(mTEPES.pRsrInvestCost[rc] * OptModel.vReservoirInvest[p,rc] for rc in mTEPES.rn)
         else:
             return Constraint.Skip
     OptModel.eTotalFCost = Constraint(mTEPES.p, rule=eTotalFCost, doc='system fixed    cost [MEUR]')
@@ -60,12 +64,26 @@ def InvestmentModelFormulation(OptModel, mTEPES, pIndLogConsole):
             return Constraint.Skip
     OptModel.eConsecutiveGenRetire = Constraint(mTEPES.p, mTEPES.gd, rule=eConsecutiveGenRetire, doc='generation retirement in consecutive periods')
 
+    def eConsecutiveRsrInvest(OptModel,p,rc):
+        if p != mTEPES.p.first():
+            return OptModel.vReservoirInvest[mTEPES.p.prev(p,1),rc      ] <= OptModel.vReservoirInvest[p,ec      ]
+        else:
+            return Constraint.Skip
+    OptModel.eConsecutiveRsrInvest = Constraint(mTEPES.p, mTEPES.rn, rule=eConsecutiveRsrInvest, doc='reservoir investment in consecutive periods')
+
     def eConsecutiveNetInvest(OptModel,p,ni,nf,cc):
         if p != mTEPES.p.first():
             return OptModel.vNetworkInvest   [mTEPES.p.prev(p,1),ni,nf,cc] <= OptModel.vNetworkInvest   [p,ni,nf,cc]
         else:
             return Constraint.Skip
-    OptModel.eConsecutiveNetInvest = Constraint(mTEPES.p, mTEPES.lc, rule=eConsecutiveNetInvest, doc='network    investment in consecutive periods')
+    OptModel.eConsecutiveNetInvest = Constraint(mTEPES.p, mTEPES.lc, rule=eConsecutiveNetInvest, doc='electric network investment in consecutive periods')
+
+    def eConsecutiveNet2Invest(OptModel,p,ni,nf,cc):
+        if p != mTEPES.p.first():
+            return OptModel.vPipelineInvest  [mTEPES.p.prev(p,1),ni,nf,cc] <= OptModel.vPipelineInvest  [p,ni,nf,cc]
+        else:
+            return Constraint.Skip
+    OptModel.eConsecutiveNet2Invest = Constraint(mTEPES.p, mTEPES.pc, rule=eConsecutiveNet2Invest, doc='pipeline network investment in consecutive periods')
 
     GeneratingTime = time.time() - StartTime
     if pIndLogConsole == 1:
@@ -375,7 +393,7 @@ def GenerationOperationModelFormulationDemand(OptModel, mTEPES, pIndLogConsole, 
                     sum(OptModel.vLineLosses[p,sc,n,ni,nd,cc] for ni,cc in linl [nd]) + sum(OptModel.vFlow[p,sc,n,ni,nd,cc] for ni,cc in lin [nd])) == mTEPES.pDemand[p,sc,n,nd]
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eBalance_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.nd, rule=eBalance, doc='load generation balance [GW]'))
+    setattr(OptModel, 'eBalance_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.nd, rule=eBalance, doc='electric load generation balance [GW]'))
 
     if pIndLogConsole == 1:
         print('eBalance              ... ', len(getattr(OptModel, 'eBalance_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
@@ -1008,3 +1026,36 @@ def NetworkOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st
     GeneratingTime = time.time() - StartTime
     if pIndLogConsole == 1:
         print('Generating network    constraints      ... ', round(GeneratingTime), 's')
+
+def NetworkH2OperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st):
+    print('Hydrogen  scheduling       constraints ****')
+
+    StartTime = time.time()
+
+    # incoming and outgoing pipelines (lin) (lout)
+    lin  = defaultdict(list)
+    lout = defaultdict(list)
+    for ni,nf,cc in mTEPES.pa:
+        lin [nf].append((ni,cc))
+        lout[ni].append((nf,cc))
+
+    # nodes to generators (e2n)
+    e2n = defaultdict(list)
+    for nd,el in mTEPES.nd*mTEPES.el:
+        if (nd,el) in mTEPES.n2g:
+            e2n[nd].append(el)
+
+    def eBalanceH2(OptModel,n,nd):
+        if sum(1 for el in e2n[nd]) + sum(1 for lout in lout[nd]) + sum(1 for ni,cc in lin[nd]):
+            return (- sum(OptModel.vESSTotalCharge[p,sc,n,el]/mTEPES.pProductionFunctionH2[el] for es in e2n[nd]) + OptModel.vHNS[p,sc,n,nd] -
+                      sum(OptModel.vFlowH2[p,sc,n,nd,lout] for lout in lout[nd]) + sum(OptModel.vFlowH2[p,sc,n,ni,nd,cc] for ni,cc in lin[nd])) == mTEPES.pDemandH2[p,sc,n,nd]
+        else:
+            return Constraint.Skip
+    setattr(OptModel, 'eBalanceH2_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.nd, rule=eBalanceH2, doc='H2 load generation balance [tH2]'))
+
+    if pIndLogConsole == 1:
+        print('eBalanceH2            ... ', len(getattr(OptModel, 'eBalanceH2_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+
+    GeneratingTime = time.time() - StartTime
+    if pIndLogConsole == 1:
+        print('Generating hydrogen  operation         ... ', round(GeneratingTime), 's')

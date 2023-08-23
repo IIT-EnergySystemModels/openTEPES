@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 08, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 23, 2023
 """
 
 import datetime
@@ -50,12 +50,20 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         dfVariableMaxVolume = pd.read_csv(_path+'/oT_Data_VariableMaxVolume_'     +CaseName+'.csv', index_col=[0,1,2])
         dfHydroInflows      = pd.read_csv(_path+'/oT_Data_HydroInflows_'          +CaseName+'.csv', index_col=[0,1,2])
         dfHydroOutflows     = pd.read_csv(_path+'/oT_Data_HydroOutflows_'         +CaseName+'.csv', index_col=[0,1,2])
-        pIndHydroTopology = 1
+        pIndHydroTopology   = 1
     except:
-        pIndHydroTopology = 0
+        pIndHydroTopology   = 0
         print('No Data_Reservoir file found')
         print('No Data_VariableMinVolume and Data_VariableMaxVolume files found')
         print('No Data_HydroInflows and Data_HydroOutflows files found')
+
+    try:
+        dfDemandHydrogen    = pd.read_csv(_path+'/oT_Data_DemandHydrogen_'        +CaseName+'.csv', index_col=[0,1,2])
+        dfNetworkHydrogen   = pd.read_csv(_path+'/oT_Data_NetworkHydrogen_'       +CaseName+'.csv', index_col=[0,1,2])
+        pIndHydrogen        = 1
+    except:
+        pIndHydrogen        = 0
+        print('No Data_DemandHydrogen and Data_NetworkHydrogen files found')
 
     # substitute NaN by 0
     dfOption.fillna               (0  , inplace=True)
@@ -91,6 +99,10 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         dfHydroInflows.fillna     (0.0, inplace=True)
         dfHydroOutflows.fillna    (0.0, inplace=True)
 
+    if pIndHydrogen == 1:
+        dfDemandHydrogen.fillna   (0.0, inplace=True)
+        dfNetworkHydrogen.fillna  (0.0, inplace=True)
+
     dfReserveMargin         = dfReserveMargin.where     (dfReserveMargin      > 0.0, other=0.0)
     dfInertia               = dfInertia.where           (dfInertia            > 0.0, other=0.0)
     dfUpOperatingReserve    = dfUpOperatingReserve.where(dfUpOperatingReserve > 0.0, other=0.0)
@@ -116,7 +128,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     # show some statistics of the data
     if pIndLogConsole == 1:
         print('Reserve margin                        \n', dfReserveMargin.describe       ())
-        print('Demand                                \n', dfDemand.describe              ())
+        print('Electricity demand                    \n', dfDemand.describe              ())
         print('Inertia                               \n', dfInertia.describe             ())
         print('Upward   operating reserves           \n', dfUpOperatingReserve.describe  ())
         print('Downward operating reserves           \n', dfDwOperatingReserve.describe  ())
@@ -132,7 +144,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         print('Variable fuel cost                    \n', dfVariableFuelCost.describe    ())
         print('Energy inflows                        \n', dfEnergyInflows.describe       ())
         print('Energy outflows                       \n', dfEnergyOutflows.describe      ())
-        print('Network                               \n', dfNetwork.describe             ())
+        print('Electric network                      \n', dfNetwork.describe             ())
 
         if pIndHydroTopology == 1:
             print('Reservoir                         \n', dfReservoir.describe           ())
@@ -140,6 +152,10 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
             print('Variable maximum reservoir volume \n', dfVariableMaxVolume.describe   ())
             print('Hydro inflows                     \n', dfHydroInflows.describe        ())
             print('Hydro outflows                    \n', dfHydroOutflows.describe       ())
+
+        if pIndHydrogen == 1:
+            print('Hydrogen demand                   \n', dfDemandHydrogen.describe      ())
+            print('Hydrogen pipeline network         \n', dfNetworkHydrogen.describe     ())
 
     #%% reading the sets
     dictSets = DataPortal()
@@ -176,7 +192,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.rg   = Set(initialize=dictSets['rg'  ], ordered=False, doc='regions'                         )
     mTEPES.cc   = Set(initialize=dictSets['cc'  ], ordered=False, doc='circuits'                        )
     mTEPES.c2   = Set(initialize=dictSets['cc'  ], ordered=False, doc='circuits'                        )
-    mTEPES.lt   = Set(initialize=dictSets['lt'  ], ordered=False, doc='line types'                      )
+    mTEPES.lt   = Set(initialize=dictSets['lt'  ], ordered=False, doc='electric line types'             )
     mTEPES.ndzn = Set(initialize=dictSets['ndzn'], ordered=False, doc='node to zone'                    )
     mTEPES.znar = Set(initialize=dictSets['znar'], ordered=False, doc='zone to area'                    )
     mTEPES.arrg = Set(initialize=dictSets['arrg'], ordered=False, doc='area to region'                  )
@@ -224,17 +240,19 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         print('No reservoir and hydropower topology dictionaries found')
 
     #%% parameters
-    pIndBinGenInvest       = dfOption   ['IndBinGenInvest'    ][0].astype('int')         # Indicator of binary generation expansion decisions, 0 continuous  - 1 binary - 2 no investment variables
-    pIndBinNetInvest       = dfOption   ['IndBinNetInvest'    ][0].astype('int')         # Indicator of binary network    expansion decisions, 0 continuous  - 1 binary - 2 no investment variables
-    pIndBinRsrInvest       = dfOption   ['IndBinRsrInvest'    ][0].astype('int')         # Indicator of binary reservoir  expansion decisions, 0 continuous  - 1 binary - 2 no investment variables
-    pIndBinGenRetire       = dfOption   ['IndBinGenRetirement'][0].astype('int')         # Indicator of binary generation retirement decisions,0 continuous  - 1 binary - 2 no retirement variables
-    pIndBinGenOperat       = dfOption   ['IndBinGenOperat'    ][0].astype('int')         # Indicator of binary generation operation decisions, 0 continuous  - 1 binary
-    pIndBinSingleNode      = dfOption   ['IndBinSingleNode'   ][0].astype('int')         # Indicator of single node although with network,     0 network     - 1 single node
-    pIndBinGenRamps        = dfOption   ['IndBinGenRamps'     ][0].astype('int')         # Indicator of ramp constraints,                      0 no ramps    - 1 ramp constraints
-    pIndBinGenMinTime      = dfOption   ['IndBinGenMinTime'   ][0].astype('int')         # Indicator of minimum up/down time constraints,      0 no min time - 1 min time constraints
-    pIndBinLineCommit      = dfOption   ['IndBinLineCommit'   ][0].astype('int')         # Indicator of binary network    switching decisions, 0 continuous  - 1 binary
-    pIndBinNetLosses       = dfOption   ['IndBinNetLosses'    ][0].astype('int')         # Indicator of network losses,                        0 lossless    - 1 ohmic losses
-    pENSCost               = dfParameter['ENSCost'            ][0] * 1e-3                # cost of energy not served                [MEUR/GWh]
+    pIndBinGenInvest       = dfOption   ['IndBinGenInvest'    ][0].astype('int')         # Indicator of binary generation        expansion decisions, 0 continuous       - 1 binary - 2 no investment variables
+    pIndBinGenRetire       = dfOption   ['IndBinGenRetirement'][0].astype('int')         # Indicator of binary generation        retirement decisions,0 continuous       - 1 binary - 2 no retirement variables
+    pIndBinRsrInvest       = dfOption   ['IndBinRsrInvest'    ][0].astype('int')         # Indicator of binary reservoir         expansion decisions, 0 continuous       - 1 binary - 2 no investment variables
+    pIndBinNetInvest       = dfOption   ['IndBinNetInvest'    ][0].astype('int')         # Indicator of binary electric network  expansion decisions, 0 continuous       - 1 binary - 2 no investment variables
+    pIndBinNetH2Invest     = dfOption   ['IndBinNetH2Invest'  ][0].astype('int')         # Indicator of binary hydrogen pipeline expansion decisions, 0 continuous       - 1 binary - 2 no investment variables
+    pIndBinGenOperat       = dfOption   ['IndBinGenOperat'    ][0].astype('int')         # Indicator of binary generation        operation decisions, 0 continuous       - 1 binary
+    pIndBinSingleNode      = dfOption   ['IndBinSingleNode'   ][0].astype('int')         # Indicator of single node although with electric network,   0 electric network - 1 single node
+    pIndBinGenRamps        = dfOption   ['IndBinGenRamps'     ][0].astype('int')         # Indicator of ramp constraints,                             0 no ramps         - 1 ramp constraints
+    pIndBinGenMinTime      = dfOption   ['IndBinGenMinTime'   ][0].astype('int')         # Indicator of minimum up/downtime constraints,              0 no min time      - 1 min time constraints
+    pIndBinLineCommit      = dfOption   ['IndBinLineCommit'   ][0].astype('int')         # Indicator of binary electric network switching decisions,  0 continuous       - 1 binary
+    pIndBinNetLosses       = dfOption   ['IndBinNetLosses'    ][0].astype('int')         # Indicator of        electric network losses,               0 lossless         - 1 ohmic losses
+    pENSCost               = dfParameter['ENSCost'            ][0] * 1e-3                # cost of energy   not served              [MEUR/GWh]
+    pHNSCost               = dfParameter['HNSCost'            ][0] * 1e-3                # cost of hydrogen not served              [EUR/tH2]
     pCO2Cost               = dfParameter['CO2Cost'            ][0]                       # cost of CO2 emission                     [EUR/t CO2]
     pEconomicBaseYear      = dfParameter['EconomicBaseYear'   ][0]                       # economic base year                       [year]
     pAnnualDiscRate        = dfParameter['AnnualDiscountRate' ][0]                       # annual discount rate                     [p.u.]
@@ -253,7 +271,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pDuration              = dfDuration     ['Duration'      ]  * pTimeStep              # duration of load levels                  [h]
     pReserveMargin         = dfReserveMargin['ReserveMargin' ]                           # minimum adequacy reserve margin          [p.u.]
     pLevelToStage          = dfDuration     ['Stage'         ]                           # load levels assignment to stages
-    pDemand                = dfDemand            [mTEPES.nd]    * 1e-3                   # demand                                    [GW]
+    pDemand                = dfDemand            [mTEPES.nd]    * 1e-3                   # electric demand                           [GW]
     pSystemInertia         = dfInertia           [mTEPES.ar]                             # inertia                                   [s]
     pOperReserveUp         = dfUpOperatingReserve[mTEPES.ar]    * 1e-3                   # upward   operating reserve                [GW]
     pOperReserveDw         = dfDwOperatingReserve[mTEPES.ar]    * 1e-3                   # downward operating reserve                [GW]
@@ -274,6 +292,9 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         pVariableMaxVolume = dfVariableMaxVolume [mTEPES.rs]                             # dynamic variable maximum reservoir volume [hm3]
         pHydroInflows      = dfHydroInflows      [mTEPES.rs]                             # dynamic hydro inflows                     [m3/s]
         pHydroOutflows     = dfHydroOutflows     [mTEPES.rs]                             # dynamic hydro outflows                    [m3/s]
+
+    if pIndHydrogen == 1:
+        pDemandH2          = dfDemandHydrogen    [mTEPES.nd]                             # hydrogen demand                           [tH2]
 
     if pTimeStep > 1:
         # compute the demand as the mean over the time step load levels and assign it to active load levels. Idem for the remaining parameters
@@ -335,96 +356,102 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
             if  pHydroOutflows.sum().sum()     :
                 pHydroOutflows      = pHydroOutflows.rolling    (pTimeStep).mean()
                 pHydroOutflows.fillna    (0.0, inplace=True)
+        if pIndHydrogen == 1:
+            if  pDemandH2.sum().sum()          :
+                pDemandH2           = pDemandH2.rolling         (pTimeStep).mean()
+                pDemandH2.fillna         (0.0, inplace=True)
 
         # assign duration 0 to load levels not being considered, active load levels are at the end of every pTimeStep
         for i in range(pTimeStep-2,-1,-1):
             pDuration.iloc[[range(i,len(mTEPES.nn),pTimeStep)]] = 0
 
     #%% generation parameters
-    pGenToNode            = dfGeneration  ['Node'                ]                                                                            # generator location in node
-    pGenToTechnology      = dfGeneration  ['Technology'          ]                                                                            # generator association to technology
-    pGenToExclusiveGen    = dfGeneration  ['MutuallyExclusive'   ]                                                                            # mutually exclusive generator
-    pIndBinUnitInvest     = dfGeneration  ['BinaryInvestment'    ]                                                                            # binary unit investment decision             [Yes]
-    pIndBinUnitRetire     = dfGeneration  ['BinaryRetirement'    ]                                                                            # binary unit retirement decision             [Yes]
-    pIndBinUnitCommit     = dfGeneration  ['BinaryCommitment'    ]                                                                            # binary unit commitment decision             [Yes]
-    pIndBinStorInvest     = dfGeneration  ['StorageInvestment'   ]                                                                            # storage linked to generation investment     [Yes]
-    pIndOperReserve       = dfGeneration  ['NoOperatingReserve'  ]                                                                            # no contribution to operating reserve        [Yes]
-    pMustRun              = dfGeneration  ['MustRun'             ]                                                                            # must-run unit                               [Yes]
-    pInertia              = dfGeneration  ['Inertia'             ]                                                                            # inertia constant                            [s]
-    pPeriodIniGen         = dfGeneration  ['InitialPeriod'       ]                                                                            # initial period                              [year]
-    pPeriodFinGen         = dfGeneration  ['FinalPeriod'         ]                                                                            # final   period                              [year]
-    pAvailability         = dfGeneration  ['Availability'        ]                                                                            # unit availability for adequacy              [p.u.]
-    pEFOR                 = dfGeneration  ['EFOR'                ]                                                                            # EFOR                                        [p.u.]
-    pRatedMinPower        = dfGeneration  ['MinimumPower'        ] * 1e-3 * (1.0-dfGeneration['EFOR'])                                        # rated minimum power                         [GW]
-    pRatedMaxPower        = dfGeneration  ['MaximumPower'        ] * 1e-3 * (1.0-dfGeneration['EFOR'])                                        # rated maximum power                         [GW]
-    pRatedLinearFuelCost  = dfGeneration  ['LinearTerm'          ] * 1e-3 *      dfGeneration['FuelCost']                                     # fuel     term variable cost                 [MEUR/GWh]
-    pRatedConstantVarCost = dfGeneration  ['ConstantTerm'        ] * 1e-6 *      dfGeneration['FuelCost']                                     # constant term variable cost                 [MEUR/h]
-    pLinearOMCost         = dfGeneration  ['OMVariableCost'      ] * 1e-3                                                                     # O&M      term variable cost                 [MEUR/GWh]
-    pOperReserveCost      = dfGeneration  ['OperReserveCost'     ] * 1e-3                                                                     # operating reserve      cost                 [MEUR/GW]
-    pStartUpCost          = dfGeneration  ['StartUpCost'         ]                                                                            # startup  cost                               [MEUR]
-    pShutDownCost         = dfGeneration  ['ShutDownCost'        ]                                                                            # shutdown cost                               [MEUR]
-    pRampUp               = dfGeneration  ['RampUp'              ] * 1e-3                                                                     # ramp up   rate                              [GW/h]
-    pRampDw               = dfGeneration  ['RampDown'            ] * 1e-3                                                                     # ramp down rate                              [GW/h]
-    pCO2EmissionCost      = dfGeneration  ['CO2EmissionRate'     ] * 1e-3 * pCO2Cost                                                          # emission  cost                              [MEUR/GWh]
-    pCO2EmissionRate      = dfGeneration  ['CO2EmissionRate'     ]                                                                            # emission  rate                              [tCO2/MWh]
-    pUpTime               = dfGeneration  ['UpTime'              ]                                                                            # minimum up    time                          [h]
-    pDwTime               = dfGeneration  ['DownTime'            ]                                                                            # minimum down  time                          [h]
-    pShiftTime            = dfGeneration  ['ShiftTime'           ]                                                                            # maximum shift time for DSM                  [h]
-    pGenInvestCost        = dfGeneration  ['FixedInvestmentCost' ] *        dfGeneration['FixedChargeRate']                                   # generation fixed cost                       [MEUR]
-    pGenRetireCost        = dfGeneration  ['FixedRetirementCost' ] *        dfGeneration['FixedChargeRate']                                   # generation fixed retirement cost            [MEUR]
-    pRatedMinCharge       = dfGeneration  ['MinimumCharge'       ] * 1e-3                                                                     # rated minimum ESS charge                    [GW]
-    pRatedMaxCharge       = dfGeneration  ['MaximumCharge'       ] * 1e-3                                                                     # rated maximum ESS charge                    [GW]
-    pRatedMinStorage      = dfGeneration  ['MinimumStorage'      ]                                                                            # rated minimum ESS storage                   [GWh]
-    pRatedMaxStorage      = dfGeneration  ['MaximumStorage'      ]                                                                            # rated maximum ESS storage                   [GWh]
-    pInitialInventory     = dfGeneration  ['InitialStorage'      ]                                                                            # initial       ESS storage                   [GWh]
-    pProductionFunction   = dfGeneration  ['ProductionFunction'  ]                                                                            # production function of hydropower plant     [kWh/m3]
-    pEfficiency           = dfGeneration  ['Efficiency'          ]                                                                            #         ESS round-trip efficiency           [p.u.]
-    pStorageType          = dfGeneration  ['StorageType'         ]                                                                            #         ESS storage  type
-    pOutflowsType         = dfGeneration  ['OutflowsType'        ]                                                                            #         ESS outflows type
-    pEnergyType           = dfGeneration  ['EnergyType'          ]                                                                            #         unit  energy type
-    pRMaxReactivePower    = dfGeneration  ['MaximumReactivePower'] * 1e-3                                                                     # rated maximum reactive power                [Gvar]
-    pGenLoInvest          = dfGeneration  ['InvestmentLo'        ]                                                                            # Lower bound of the investment decision      [p.u.]
-    pGenUpInvest          = dfGeneration  ['InvestmentUp'        ]                                                                            # Upper bound of the investment decision      [p.u.]
-    pGenLoRetire          = dfGeneration  ['RetirementLo'        ]                                                                            # Lower bound of the retirement decision      [p.u.]
-    pGenUpRetire          = dfGeneration  ['RetirementUp'        ]                                                                            # Upper bound of the retirement decision      [p.u.]
+    pGenToNode            = dfGeneration  ['Node'                ]                                                      # generator location in node
+    pGenToTechnology      = dfGeneration  ['Technology'          ]                                                      # generator association to technology
+    pGenToExclusiveGen    = dfGeneration  ['MutuallyExclusive'   ]                                                      # mutually exclusive generator
+    pIndBinUnitInvest     = dfGeneration  ['BinaryInvestment'    ]                                                      # binary unit investment decision              [Yes]
+    pIndBinUnitRetire     = dfGeneration  ['BinaryRetirement'    ]                                                      # binary unit retirement decision              [Yes]
+    pIndBinUnitCommit     = dfGeneration  ['BinaryCommitment'    ]                                                      # binary unit commitment decision              [Yes]
+    pIndBinStorInvest     = dfGeneration  ['StorageInvestment'   ]                                                      # storage linked to generation investment      [Yes]
+    pIndOperReserve       = dfGeneration  ['NoOperatingReserve'  ]                                                      # no contribution to operating reserve         [Yes]
+    pMustRun              = dfGeneration  ['MustRun'             ]                                                      # must-run unit                                [Yes]
+    pInertia              = dfGeneration  ['Inertia'             ]                                                      # inertia constant                             [s]
+    pPeriodIniGen         = dfGeneration  ['InitialPeriod'       ]                                                      # initial period                               [year]
+    pPeriodFinGen         = dfGeneration  ['FinalPeriod'         ]                                                      # final   period                               [year]
+    pAvailability         = dfGeneration  ['Availability'        ]                                                      # unit availability for adequacy               [p.u.]
+    pEFOR                 = dfGeneration  ['EFOR'                ]                                                      # EFOR                                         [p.u.]
+    pRatedMinPower        = dfGeneration  ['MinimumPower'        ] * 1e-3 * (1.0-dfGeneration['EFOR'])                  # rated minimum power                          [GW]
+    pRatedMaxPower        = dfGeneration  ['MaximumPower'        ] * 1e-3 * (1.0-dfGeneration['EFOR'])                  # rated maximum power                          [GW]
+    pRatedLinearFuelCost  = dfGeneration  ['LinearTerm'          ] * 1e-3 *      dfGeneration['FuelCost']               # fuel     term variable cost                  [MEUR/GWh]
+    pRatedConstantVarCost = dfGeneration  ['ConstantTerm'        ] * 1e-6 *      dfGeneration['FuelCost']               # constant term variable cost                  [MEUR/h]
+    pLinearOMCost         = dfGeneration  ['OMVariableCost'      ] * 1e-3                                               # O&M      term variable cost                  [MEUR/GWh]
+    pOperReserveCost      = dfGeneration  ['OperReserveCost'     ] * 1e-3                                               # operating reserve      cost                  [MEUR/GW]
+    pStartUpCost          = dfGeneration  ['StartUpCost'         ]                                                      # startup  cost                                [MEUR]
+    pShutDownCost         = dfGeneration  ['ShutDownCost'        ]                                                      # shutdown cost                                [MEUR]
+    pRampUp               = dfGeneration  ['RampUp'              ] * 1e-3                                               # ramp up   rate                               [GW/h]
+    pRampDw               = dfGeneration  ['RampDown'            ] * 1e-3                                               # ramp down rate                               [GW/h]
+    pCO2EmissionCost      = dfGeneration  ['CO2EmissionRate'     ] * 1e-3 * pCO2Cost                                    # emission  cost                               [MEUR/GWh]
+    pCO2EmissionRate      = dfGeneration  ['CO2EmissionRate'     ]                                                      # emission  rate                               [tCO2/MWh]
+    pUpTime               = dfGeneration  ['UpTime'              ]                                                      # minimum up    time                           [h]
+    pDwTime               = dfGeneration  ['DownTime'            ]                                                      # minimum down  time                           [h]
+    pShiftTime            = dfGeneration  ['ShiftTime'           ]                                                      # maximum shift time for DSM                   [h]
+    pGenInvestCost        = dfGeneration  ['FixedInvestmentCost' ] *             dfGeneration['FixedChargeRate']        # generation fixed cost                        [MEUR]
+    pGenRetireCost        = dfGeneration  ['FixedRetirementCost' ] *             dfGeneration['FixedChargeRate']        # generation fixed retirement cost             [MEUR]
+    pRatedMinCharge       = dfGeneration  ['MinimumCharge'       ] * 1e-3                                               # rated minimum ESS charge                     [GW]
+    pRatedMaxCharge       = dfGeneration  ['MaximumCharge'       ] * 1e-3                                               # rated maximum ESS charge                     [GW]
+    pRatedMinStorage      = dfGeneration  ['MinimumStorage'      ]                                                      # rated minimum ESS storage                    [GWh]
+    pRatedMaxStorage      = dfGeneration  ['MaximumStorage'      ]                                                      # rated maximum ESS storage                    [GWh]
+    pInitialInventory     = dfGeneration  ['InitialStorage'      ]                                                      # initial       ESS storage                    [GWh]
+    pProductionFunction   = dfGeneration  ['ProductionFunction'  ]                                                      # production function of a hydropower plant    [kWh/m3]
+    pProductionFunctionH2 = dfGeneration  ['ProductionFunctionH2'] * 1e-3                                               # production function of an electrolyzer       [kWh/gH2]
+    pEfficiency           = dfGeneration  ['Efficiency'          ]                                                      #               ESS round-trip efficiency      [p.u.]
+    pStorageType          = dfGeneration  ['StorageType'         ]                                                      #               ESS storage  type
+    pOutflowsType         = dfGeneration  ['OutflowsType'        ]                                                      #               ESS outflows type
+    pEnergyType           = dfGeneration  ['EnergyType'          ]                                                      #               unit  energy type
+    pRMaxReactivePower    = dfGeneration  ['MaximumReactivePower'] * 1e-3                                               # rated maximum reactive power                 [Gvar]
+    pGenLoInvest          = dfGeneration  ['InvestmentLo'        ]                                                      # Lower bound of the investment decision       [p.u.]
+    pGenUpInvest          = dfGeneration  ['InvestmentUp'        ]                                                      # Upper bound of the investment decision       [p.u.]
+    pGenLoRetire          = dfGeneration  ['RetirementLo'        ]                                                      # Lower bound of the retirement decision       [p.u.]
+    pGenUpRetire          = dfGeneration  ['RetirementUp'        ]                                                      # Upper bound of the retirement decision       [p.u.]
 
     pRatedLinearOperCost  = pRatedLinearFuelCost + pCO2EmissionCost
     pRatedLinearVarCost   = pRatedLinearFuelCost + pLinearOMCost
 
     if pIndHydroTopology == 1:
-        pReservoirType    = dfReservoir   ['StorageType'         ]                                                                            #               reservoir type
-        pWaterOutfType    = dfReservoir   ['OutflowsType'        ]                                                                            #           water ourflow type
-        pRatedMinVolume   = dfReservoir   ['MinimumStorage'      ]                                                                            # rated minimum reservoir volume             [hm3]
-        pRatedMaxVolume   = dfReservoir   ['MaximumStorage'      ]                                                                            # rated maximum reservoir volume             [hm3]
-        pInitialVolume    = dfReservoir   ['InitialStorage'      ]                                                                            # initial       reservoir volume             [hm3]
-        pRsrInvestCost    = dfReservoir   ['FixedInvestmentCost' ] *        dfReservoir['FixedChargeRate']                                    # reservoir fixed cost                       [MEUR]
-        pPeriodIniRsr     = dfReservoir   ['InitialPeriod'       ]                                                                            # initial period                             [year]
-        pPeriodFinRsr     = dfReservoir   ['FinalPeriod'         ]                                                                            # final   period                             [year]
+        pReservoirType    = dfReservoir   ['StorageType'         ]                                                      #               reservoir type
+        pWaterOutfType    = dfReservoir   ['OutflowsType'        ]                                                      #           water ourflow type
+        pRatedMinVolume   = dfReservoir   ['MinimumStorage'      ]                                                      # rated minimum reservoir volume               [hm3]
+        pRatedMaxVolume   = dfReservoir   ['MaximumStorage'      ]                                                      # rated maximum reservoir volume               [hm3]
+        pInitialVolume    = dfReservoir   ['InitialStorage'      ]                                                      # initial       reservoir volume               [hm3]
+        pIndBinRsrvInvest = dfReservoir   ['BinaryInvestment'    ]                                                      # binary reservoir investment decision         [Yes]
+        pRsrInvestCost    = dfReservoir   ['FixedInvestmentCost' ] *             dfReservoir['FixedChargeRate']         #        reservoir fixed cost                  [MEUR]
+        pPeriodIniRsr     = dfReservoir   ['InitialPeriod'       ]                                                      # initial period                               [year]
+        pPeriodFinRsr     = dfReservoir   ['FinalPeriod'         ]                                                      # final   period                               [year]
 
-    pNodeLat              = dfNodeLocation['Latitude'            ]                                                                            # node latitude                               [º]
-    pNodeLon              = dfNodeLocation['Longitude'           ]                                                                            # node longitude                              [º]
+    pNodeLat              = dfNodeLocation['Latitude'            ]                                                      # node latitude                                [º]
+    pNodeLon              = dfNodeLocation['Longitude'           ]                                                      # node longitude                               [º]
 
-    pLineType             = dfNetwork     ['LineType'            ]                                                                            # line type
-    pLineLength           = dfNetwork     ['Length'              ]                                                                            # line length                                 [km]
-    pLineVoltage          = dfNetwork     ['Voltage'             ]                                                                            # line voltage                                [kV]
-    pPeriodIniNet         = dfNetwork     ['InitialPeriod'       ]                                                                            # initial period
-    pPeriodFinNet         = dfNetwork     ['FinalPeriod'         ]                                                                            # final   period
-    pLineLossFactor       = dfNetwork     ['LossFactor'          ]                                                                            # loss factor                                 [p.u.]
-    pLineR                = dfNetwork     ['Resistance'          ]                                                                            # resistance                                  [p.u.]
-    pLineX                = dfNetwork     ['Reactance'           ].sort_index()                                                               # reactance                                   [p.u.]
-    pLineBsh              = dfNetwork     ['Susceptance'         ]                                                                            # susceptance                                 [p.u.]
-    pLineTAP              = dfNetwork     ['Tap'                 ]                                                                            # tap changer                                 [p.u.]
-    pLineNTCFrw           = dfNetwork     ['TTC'                 ] * 1e-3 * dfNetwork['SecurityFactor' ]                                      # net transfer capacity in forward  direction [GW]
-    pLineNTCBck           = dfNetwork     ['TTCBck'              ] * 1e-3 * dfNetwork['SecurityFactor' ]                                      # net transfer capacity in backward direction [GW]
-    pNetFixedCost         = dfNetwork     ['FixedInvestmentCost' ] *        dfNetwork['FixedChargeRate']                                      # network    fixed cost                       [MEUR]
-    pIndBinLineSwitch     = dfNetwork     ['Switching'           ]                                                                            # binary line switching  decision             [Yes]
-    pIndBinLineInvest     = dfNetwork     ['BinaryInvestment'    ]                                                                            # binary line investment decision             [Yes]
-    pSwitchOnTime         = dfNetwork     ['SwOnTime'            ].astype('int')                                                              # minimum on  time                            [h]
-    pSwitchOffTime        = dfNetwork     ['SwOffTime'           ].astype('int')                                                              # minimum off time                            [h]
-    pAngMin               = dfNetwork     ['AngMin'              ] * math.pi / 180                                                            # Min phase angle difference                  [rad]
-    pAngMax               = dfNetwork     ['AngMax'              ] * math.pi / 180                                                            # Max phase angle difference                  [rad]
-    pNetLoInvest          = dfNetwork     ['InvestmentLo'        ]                                                                            # Lower bound of the investment decision      [p.u.]
-    pNetUpInvest          = dfNetwork     ['InvestmentUp'        ]                                                                            # Upper bound of the investment decision      [p.u.]
+    pLineType             = dfNetwork     ['LineType'            ]                                                      # electric line type
+    pLineLength           = dfNetwork     ['Length'              ]                                                      # electric line length                         [km]
+    pLineVoltage          = dfNetwork     ['Voltage'             ]                                                      # electric line voltage                        [kV]
+    pPeriodIniNet         = dfNetwork     ['InitialPeriod'       ]                                                      # initial period
+    pPeriodFinNet         = dfNetwork     ['FinalPeriod'         ]                                                      # final   period
+    pLineLossFactor       = dfNetwork     ['LossFactor'          ]                                                      # electric line loss factor                    [p.u.]
+    pLineR                = dfNetwork     ['Resistance'          ]                                                      # electric line resistance                     [p.u.]
+    pLineX                = dfNetwork     ['Reactance'           ].sort_index()                                         # electric line reactance                      [p.u.]
+    pLineBsh              = dfNetwork     ['Susceptance'         ]                                                      # electric line susceptance                    [p.u.]
+    pLineTAP              = dfNetwork     ['Tap'                 ]                                                      # tap changer                                  [p.u.]
+    pLineNTCFrw           = dfNetwork     ['TTC'                 ] * 1e-3 *      dfNetwork['SecurityFactor' ]           # net transfer capacity in forward  direction  [GW]
+    pLineNTCBck           = dfNetwork     ['TTCBck'              ] * 1e-3 *      dfNetwork['SecurityFactor' ]           # net transfer capacity in backward direction  [GW]
+    pNetFixedCost         = dfNetwork     ['FixedInvestmentCost' ] *             dfNetwork['FixedChargeRate']           # electric network    fixed cost               [MEUR]
+    pIndBinLineSwitch     = dfNetwork     ['Switching'           ]                                                      # binary electric line switching  decision     [Yes]
+    pIndBinLineInvest     = dfNetwork     ['BinaryInvestment'    ]                                                      # binary electric line investment decision     [Yes]
+    pSwitchOnTime         = dfNetwork     ['SwOnTime'            ].astype('int')                                        # minimum on  time                             [h]
+    pSwitchOffTime        = dfNetwork     ['SwOffTime'           ].astype('int')                                        # minimum off time                             [h]
+    pAngMin               = dfNetwork     ['AngMin'              ] * math.pi / 180                                      # Min phase angle difference                   [rad]
+    pAngMax               = dfNetwork     ['AngMax'              ] * math.pi / 180                                      # Max phase angle difference                   [rad]
+    pNetLoInvest          = dfNetwork     ['InvestmentLo'        ]                                                      # Lower bound of the investment decision       [p.u.]
+    pNetUpInvest          = dfNetwork     ['InvestmentUp'        ]                                                      # Upper bound of the investment decision       [p.u.]
 
     # replace pLineNTCBck = 0.0 by pLineNTCFrw
     pLineNTCBck     = pLineNTCBck.where(pLineNTCBck   > 0.0, other=pLineNTCFrw)
@@ -441,45 +468,71 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pSwitchOnTime  = round(pSwitchOnTime /pTimeStep).astype('int')
     pSwitchOffTime = round(pSwitchOffTime/pTimeStep).astype('int')
 
+    if pIndHydrogen == 1:
+        pPipeLength       = dfNetworkHydrogen['Length'             ]                                                    # electric line length                         [km]
+        pPeriodIniPipe    = dfNetworkHydrogen['InitialPeriod'      ]                                                    # initial period
+        pPeriodFinPipe    = dfNetworkHydrogen['FinalPeriod'        ]                                                    # final   period
+        pPipeNTCFrw       = dfNetworkHydrogen['TTC'                ] *        dfNetworkHydrogen['SecurityFactor' ]      # net transfer capacity in forward  direction  [tH2]
+        pPipeNTCBck       = dfNetworkHydrogen['TTCBck'             ] *        dfNetworkHydrogen['SecurityFactor' ]      # net transfer capacity in backward direction  [tH2]
+        pPipeFixedCost    = dfNetworkHydrogen['FixedInvestmentCost'] *        dfNetworkHydrogen['FixedChargeRate']      # hydrogen network    fixed cost               [MEUR]
+        pIndBinPipeInvest = dfNetworkHydrogen['BinaryInvestment'   ]                                                    # binary hydrogen pipeline investment decision [Yes]
+        pPipeLoInvest     = dfNetworkHydrogen['InvestmentLo'       ]                                                    # Lower bound of the investment decision       [p.u.]
+        pPipeUpInvest     = dfNetworkHydrogen['InvestmentUp'       ]                                                    # Upper bound of the investment decision       [p.u.]
+
+        # replace pPipeNTCBck = 0.0 by pPipeNTCFrw
+        pPipeNTCBck     = pPipeNTCBck.where(pPipeNTCBck     > 0.0, other=pPipeNTCFrw)
+        # replace pPipeNTCFrw = 0.0 by pPipeNTCBck
+        pPipeNTCFrw     = pPipeNTCFrw.where(pPipeNTCFrw     > 0.0, other=pPipeNTCBck)
+        # replace pPipeUpInvest = 0.0 by 1.0
+        pPipeUpInvest   = pPipeUpInvest.where(pPipeUpInvest > 0.0, other=1.0        )
+
     ReadingDataTime = time.time() - StartTime
     StartTime       = time.time()
     print('Reading    input data                  ... ', round(ReadingDataTime), 's')
 
-    #%% Getting the branches from the network data
+    #%% Getting the branches from the electric network data
     sBr = [(ni,nf) for (ni,nf,cc) in dfNetwork.index]
     # Dropping duplicate keys
     sBrList = [(ni,nf) for n,(ni,nf) in enumerate(sBr) if (ni,nf) not in sBr[:n]]
 
-    #%% defining subsets: active load levels (n,n2), thermal units (t), RES units (r), ESS units (es), candidate gen units (gc), candidate ESS units (ec), all the lines (la), candidate lines (lc), candidate DC lines (cd), existing DC lines (cd), lines with losses (ll), reference node (rf), and reactive generating units (gq)
-    mTEPES.p      = Set(initialize=mTEPES.pp,          ordered=True , doc='periods'              , filter=lambda mTEPES,pp      :  pp     in mTEPES.pp  and pPeriodWeight       [pp] >  0.0)
-    mTEPES.sc     = Set(initialize=mTEPES.scc,         ordered=True , doc='scenarios'            , filter=lambda mTEPES,scc     :  scc    in mTEPES.scc                                    )
-    mTEPES.ps     = Set(initialize=mTEPES.p*mTEPES.sc, ordered=True , doc='periods/scenarios'    , filter=lambda mTEPES,p,sc    :  (p,sc) in mTEPES.p*mTEPES.sc and pScenProb [p,sc] >  0.0)
-    mTEPES.st     = Set(initialize=mTEPES.stt,         ordered=True , doc='stages'               , filter=lambda mTEPES,stt     :  stt    in mTEPES.stt and pStageWeight       [stt] >  0.0)
-    mTEPES.n      = Set(initialize=mTEPES.nn,          ordered=True , doc='load levels'          , filter=lambda mTEPES,nn      :  nn     in mTEPES.nn  and pDuration           [nn] >  0  )
-    mTEPES.n2     = Set(initialize=mTEPES.nn,          ordered=True , doc='load levels'          , filter=lambda mTEPES,nn      :  nn     in mTEPES.nn  and pDuration           [nn] >  0  )
-    mTEPES.g      = Set(initialize=mTEPES.gg,          ordered=False, doc='generating      units', filter=lambda mTEPES,gg      :  gg     in mTEPES.gg  and (pRatedMaxPower     [gg] >  0.0 or                                  pRatedMaxCharge[gg] > 0.0) and pPeriodIniGen[gg] <= mTEPES.p.last() and pPeriodFinGen[gg] >= mTEPES.p.first() and pGenToNode.reset_index().set_index(['index']).isin(mTEPES.nd)['Node'][gg])  # excludes generators with empty node
-    mTEPES.t      = Set(initialize=mTEPES.g ,          ordered=False, doc='thermal         units', filter=lambda mTEPES,g       :  g      in mTEPES.g   and pRatedLinearOperCost[g ] >  0.0)
-    mTEPES.re     = Set(initialize=mTEPES.g ,          ordered=False, doc='RES             units', filter=lambda mTEPES,g       :  g      in mTEPES.g   and pRatedLinearOperCost[g ] == 0.0 and pRatedMaxStorage[g] == 0.0                                and pProductionFunction[g] == 0.0)
-    mTEPES.es     = Set(initialize=mTEPES.g ,          ordered=False, doc='ESS             units', filter=lambda mTEPES,g       :  g      in mTEPES.g   and                                    (pRatedMaxStorage[g] >  0.0   or pRatedMaxCharge[g] > 0.0) and pProductionFunction[g] == 0.0)
-    mTEPES.h      = Set(initialize=mTEPES.g ,          ordered=False, doc='Hydro           units', filter=lambda mTEPES,g       :  g      in mTEPES.g   and                                                                                                   pProductionFunction[g]  > 0.0)
-    mTEPES.gc     = Set(initialize=mTEPES.g ,          ordered=False, doc='candidate       units', filter=lambda mTEPES,g       :  g      in mTEPES.g   and pGenInvestCost      [g ] >  0.0)
-    mTEPES.gd     = Set(initialize=mTEPES.g ,          ordered=False, doc='retirement      units', filter=lambda mTEPES,g       :  g      in mTEPES.g   and pGenRetireCost      [g ] != 0.0)
-    mTEPES.ec     = Set(initialize=mTEPES.es,          ordered=False, doc='candidate   ESS units', filter=lambda mTEPES,es      :  es     in mTEPES.es  and pGenInvestCost      [es] >  0.0)
-    mTEPES.br     = Set(initialize=sBrList,            ordered=False, doc='all input branches'                                                                                             )
-    mTEPES.ln     = Set(initialize=dfNetwork.index,    ordered=False, doc='all input lines'                                                                                                )
-    mTEPES.la     = Set(initialize=mTEPES.ln,          ordered=False, doc='all real        lines', filter=lambda mTEPES,*ln     :  ln     in mTEPES.ln  and pLineX              [ln] != 0.0 and pLineNTCFrw[ln] > 0.0 and pLineNTCBck[ln] > 0.0 and pPeriodIniNet[ln] <= mTEPES.p.last() and pPeriodFinNet[ln] >= mTEPES.p.first())
-    mTEPES.ls     = Set(initialize=mTEPES.la,          ordered=False, doc='all real switch lines', filter=lambda mTEPES,*la     :  la     in mTEPES.la  and pIndBinLineSwitch   [la])
-    mTEPES.lc     = Set(initialize=mTEPES.la,          ordered=False, doc='candidate       lines', filter=lambda mTEPES,*la     :  la     in mTEPES.la  and pNetFixedCost       [la] >  0.0)
-    mTEPES.cd     = Set(initialize=mTEPES.la,          ordered=False, doc='             DC lines', filter=lambda mTEPES,*la     :  la     in mTEPES.la  and pNetFixedCost       [la] >  0.0 and pLineType[la] == 'DC')
-    mTEPES.ed     = Set(initialize=mTEPES.la,          ordered=False, doc='             DC lines', filter=lambda mTEPES,*la     :  la     in mTEPES.la  and pNetFixedCost       [la] == 0.0 and pLineType[la] == 'DC')
-    mTEPES.ll     = Set(initialize=mTEPES.la,          ordered=False, doc='loss            lines', filter=lambda mTEPES,*la     :  la     in mTEPES.la  and pLineLossFactor     [la] >  0.0 and pIndBinNetLosses > 0 )
-    mTEPES.rf     = Set(initialize=mTEPES.nd,          ordered=True , doc='reference node'       , filter=lambda mTEPES,nd      :  nd     in                pReferenceNode                 )
-    mTEPES.gq     = Set(initialize=mTEPES.gg,          ordered=False, doc='gen    reactive units', filter=lambda mTEPES,gg      :  gg     in mTEPES.gg  and pRMaxReactivePower  [gg] >  0.0 and                                                     pPeriodIniGen[gg] <= mTEPES.p.last() and pPeriodFinGen[gg] >= mTEPES.p.first())
-    mTEPES.sq     = Set(initialize=mTEPES.gg,          ordered=False, doc='syn    reactive units', filter=lambda mTEPES,gg      :  gg     in mTEPES.gg  and pRMaxReactivePower  [gg] >  0.0 and pGenToTechnology[gg] == 'SynchronousCondenser'  and pPeriodIniGen[gg] <= mTEPES.p.last() and pPeriodFinGen[gg] >= mTEPES.p.first())
-    mTEPES.sqc    = Set(initialize=mTEPES.sq,          ordered=False, doc='syn    reactive cand '                                                                                          )
-    mTEPES.shc    = Set(initialize=mTEPES.sq,          ordered=False, doc='shunt           cand '                                                                                          )
+    #%% defining subsets: active load levels (n,n2), thermal units (t), RES units (r), ESS units (es), candidate gen units (gc), candidate ESS units (ec), all the electric lines (la), candidate electric lines (lc), candidate DC electric lines (cd), existing DC electric lines (cd), electric lines with losses (ll), reference node (rf), and reactive generating units (gq)
+    mTEPES.p      = Set(initialize=mTEPES.pp,               ordered=True , doc='periods'                       , filter=lambda mTEPES,pp      :  pp     in mTEPES.pp  and pPeriodWeight       [pp] >  0.0)
+    mTEPES.sc     = Set(initialize=mTEPES.scc,              ordered=True , doc='scenarios'                     , filter=lambda mTEPES,scc     :  scc    in mTEPES.scc                                    )
+    mTEPES.ps     = Set(initialize=mTEPES.p*mTEPES.sc,      ordered=True , doc='periods/scenarios'             , filter=lambda mTEPES,p,sc    :  (p,sc) in mTEPES.p*mTEPES.sc and pScenProb [p,sc] >  0.0)
+    mTEPES.st     = Set(initialize=mTEPES.stt,              ordered=True , doc='stages'                        , filter=lambda mTEPES,stt     :  stt    in mTEPES.stt and pStageWeight       [stt] >  0.0)
+    mTEPES.n      = Set(initialize=mTEPES.nn,               ordered=True , doc='load levels'                   , filter=lambda mTEPES,nn      :  nn     in mTEPES.nn  and pDuration           [nn] >  0  )
+    mTEPES.n2     = Set(initialize=mTEPES.nn,               ordered=True , doc='load levels'                   , filter=lambda mTEPES,nn      :  nn     in mTEPES.nn  and pDuration           [nn] >  0  )
+    mTEPES.g      = Set(initialize=mTEPES.gg,               ordered=False, doc='generating      units'         , filter=lambda mTEPES,gg      :  gg     in mTEPES.gg  and (pRatedMaxPower     [gg] >  0.0 or                                  pRatedMaxCharge[gg] > 0.0) and pPeriodIniGen[gg] <= mTEPES.p.last() and pPeriodFinGen[gg] >= mTEPES.p.first() and pGenToNode.reset_index().set_index(['index']).isin(mTEPES.nd)['Node'][gg])  # excludes generators with empty node
+    mTEPES.t      = Set(initialize=mTEPES.g ,               ordered=False, doc='thermal         units'         , filter=lambda mTEPES,g       :  g      in mTEPES.g   and pRatedLinearOperCost[g ] >  0.0)
+    mTEPES.re     = Set(initialize=mTEPES.g ,               ordered=False, doc='RES             units'         , filter=lambda mTEPES,g       :  g      in mTEPES.g   and pRatedLinearOperCost[g ] == 0.0 and pRatedMaxStorage[g] == 0.0                              and pProductionFunctionH2[g] == 0.0  and pProductionFunction[g] == 0.0)
+    mTEPES.es     = Set(initialize=mTEPES.g ,               ordered=False, doc='ESS             units'         , filter=lambda mTEPES,g       :  g      in mTEPES.g   and                                    (pRatedMaxStorage[g] >  0.0   or pRatedMaxCharge[g] > 0.0 or pProductionFunctionH2[g]  > 0.0) and pProductionFunction[g] == 0.0)
+    mTEPES.el     = Set(initialize=mTEPES.es,               ordered=False, doc='electrolyzer    units'         , filter=lambda mTEPES,es      :  es     in mTEPES.es                                                                                                  and pProductionFunctionH2[es] > 0.0                                   )
+    mTEPES.h      = Set(initialize=mTEPES.g ,               ordered=False, doc='hydro           units'         , filter=lambda mTEPES,g       :  g      in mTEPES.g                                                                                                   and pProductionFunctionH2[g] == 0.0  and pProductionFunction[g]  > 0.0)
+    mTEPES.gc     = Set(initialize=mTEPES.g ,               ordered=False, doc='candidate       units'         , filter=lambda mTEPES,g       :  g      in mTEPES.g   and pGenInvestCost      [g ] >  0.0)
+    mTEPES.gd     = Set(initialize=mTEPES.g ,               ordered=False, doc='retirement      units'         , filter=lambda mTEPES,g       :  g      in mTEPES.g   and pGenRetireCost      [g ] != 0.0)
+    mTEPES.ec     = Set(initialize=mTEPES.es,               ordered=False, doc='candidate ESS   units'         , filter=lambda mTEPES,es      :  es     in mTEPES.es  and pGenInvestCost      [es] >  0.0)
+    mTEPES.br     = Set(initialize=sBrList,                 ordered=False, doc='all input       electric branches'                                                                                       )
+    mTEPES.ln     = Set(initialize=dfNetwork.index,         ordered=False, doc='all input       electric lines'                                                                                          )
+    mTEPES.la     = Set(initialize=mTEPES.ln,               ordered=False, doc='all real        electric lines', filter=lambda mTEPES,*ln     :  ln     in mTEPES.ln  and pLineX              [ln] != 0.0 and pLineNTCFrw[ln] > 0.0 and pLineNTCBck[ln] > 0.0 and pPeriodIniNet[ln]  <= mTEPES.p.last() and pPeriodFinNet[ln]  >= mTEPES.p.first())
+    mTEPES.ls     = Set(initialize=mTEPES.la,               ordered=False, doc='all real switch electric lines', filter=lambda mTEPES,*la     :  la     in mTEPES.la  and pIndBinLineSwitch   [la]       )
+    mTEPES.lc     = Set(initialize=mTEPES.la,               ordered=False, doc='candidate       electric lines', filter=lambda mTEPES,*la     :  la     in mTEPES.la  and pNetFixedCost       [la] >  0.0)
+    mTEPES.cd     = Set(initialize=mTEPES.la,               ordered=False, doc='             DC electric lines', filter=lambda mTEPES,*la     :  la     in mTEPES.la  and pNetFixedCost       [la] >  0.0 and pLineType[la] == 'DC')
+    mTEPES.ed     = Set(initialize=mTEPES.la,               ordered=False, doc='             DC electric lines', filter=lambda mTEPES,*la     :  la     in mTEPES.la  and pNetFixedCost       [la] == 0.0 and pLineType[la] == 'DC')
+    mTEPES.ll     = Set(initialize=mTEPES.la,               ordered=False, doc='loss            electric lines', filter=lambda mTEPES,*la     :  la     in mTEPES.la  and pLineLossFactor     [la] >  0.0 and pIndBinNetLosses > 0 )
+    mTEPES.rf     = Set(initialize=mTEPES.nd,               ordered=True , doc='reference node'                , filter=lambda mTEPES,nd      :  nd     in                pReferenceNode                 )
+    mTEPES.gq     = Set(initialize=mTEPES.gg,               ordered=False, doc='gen    reactive units'         , filter=lambda mTEPES,gg      :  gg     in mTEPES.gg  and pRMaxReactivePower  [gg] >  0.0 and                                                     pPeriodIniGen[gg]  <= mTEPES.p.last() and pPeriodFinGen[gg]  >= mTEPES.p.first())
+    mTEPES.sq     = Set(initialize=mTEPES.gg,               ordered=False, doc='synchr reactive units'         , filter=lambda mTEPES,gg      :  gg     in mTEPES.gg  and pRMaxReactivePower  [gg] >  0.0 and pGenToTechnology[gg] == 'SynchronousCondenser'  and pPeriodIniGen[gg]  <= mTEPES.p.last() and pPeriodFinGen[gg]  >= mTEPES.p.first())
+    mTEPES.sqc    = Set(initialize=mTEPES.sq,               ordered=False, doc='synchr reactive candidate'                                                                                               )
+    mTEPES.shc    = Set(initialize=mTEPES.sq,               ordered=False, doc='shunt           candidate'                                                                                               )
     if pIndHydroTopology == 1:
-        mTEPES.rn = Set(initialize=mTEPES.rs,          ordered=False, doc='candidate  reservoirs', filter=lambda mTEPES,rs      :  rs     in mTEPES.rs  and pRsrInvestCost      [rs] >  0.0 and                                                     pPeriodIniRsr[rs] <= mTEPES.p.last() and pPeriodFinRsr[rs] >= mTEPES.p.first())
+        mTEPES.rn = Set(initialize=mTEPES.rs,               ordered=False, doc='candidate  reservoirs'         , filter=lambda mTEPES,rs      :  rs     in mTEPES.rs  and pRsrInvestCost      [rs] >  0.0 and                                                     pPeriodIniRsr[rs]  <= mTEPES.p.last() and pPeriodFinRsr[rs]  >= mTEPES.p.first())
+    if pIndHydrogen      == 1:
+        mTEPES.pn = Set(initialize=dfNetworkHydrogen.index, ordered=False, doc='all input hydrogen pipelines'                                                                                            )
+        mTEPES.pa = Set(initialize=mTEPES.pn,               ordered=False, doc='all real  hydrogen pipelines'  , filter=lambda mTEPES,*pn     :  pn     in mTEPES.pn  and pPipeNTCFrw         [pn] != 0.0 and pPipeNTCFrw[pn] > 0.0 and pPipeNTCBck[pn] > 0.0 and pPeriodIniPipe[pn] <= mTEPES.p.last() and pPeriodFinPipe[pn] >= mTEPES.p.first())
+        mTEPES.pc = Set(initialize=mTEPES.pa,               ordered=False, doc='candidate hydrogen pipelines'  , filter=lambda mTEPES,*pa     :  pa     in mTEPES.pa  and pPipeFixedCost      [pa] >  0.0)
+
+        # existing hydrogen pipelines (pe)
+        mTEPES.pe = mTEPES.pa - mTEPES.pc
 
     # non-RES units, they can be committed and also contribute to the operating reserves
     mTEPES.nr = mTEPES.g - mTEPES.re
@@ -507,9 +560,9 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.psnar     = [(p,sc,n,ar)       for p,sc,n,ar       in mTEPES.psn*mTEPES.ar]
     mTEPES.psngt     = [(p,sc,n,gt)       for p,sc,n,gt       in mTEPES.psn*mTEPES.gt]
 
+    mTEPES.psnln     = [(p,sc,n,ni,nf,cc) for p,sc,n,ni,nf,cc in mTEPES.psn*mTEPES.ln]
     mTEPES.psnla     = [(p,sc,n,ni,nf,cc) for p,sc,n,ni,nf,cc in mTEPES.psn*mTEPES.la]
     mTEPES.psnle     = [(p,sc,n,ni,nf,cc) for p,sc,n,ni,nf,cc in mTEPES.psn*mTEPES.le]
-    mTEPES.psnln     = [(p,sc,n,ni,nf,cc) for p,sc,n,ni,nf,cc in mTEPES.psn*mTEPES.ln]
     mTEPES.psnll     = [(p,sc,n,ni,nf,cc) for p,sc,n,ni,nf,cc in mTEPES.psn*mTEPES.ll]
     mTEPES.psnls     = [(p,sc,n,ni,nf,cc) for p,sc,n,ni,nf,cc in mTEPES.psn*mTEPES.ls]
 
@@ -528,6 +581,13 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         mTEPES.psnrc = [(p,sc,n,rc)       for p,sc,n,rc       in mTEPES.psn*mTEPES.rn]
         mTEPES.prs   = [(p,     rs)       for p,     rs       in mTEPES.p  *mTEPES.rs]
         mTEPES.prc   = [(p,     rc)       for p,     rc       in mTEPES.p  *mTEPES.rn]
+
+    if pIndHydrogen == 1:
+        mTEPES.psnpn = [(p,sc,n,ni,nf,cc) for p,sc,n,ni,nf,cc in mTEPES.psn*mTEPES.pn]
+        mTEPES.psnpa = [(p,sc,n,ni,nf,cc) for p,sc,n,ni,nf,cc in mTEPES.psn*mTEPES.pa]
+        mTEPES.psnpe = [(p,sc,n,ni,nf,cc) for p,sc,n,ni,nf,cc in mTEPES.psn*mTEPES.pe]
+        mTEPES.ppa   = [(p,     ni,nf,cc) for p,     ni,nf,cc in mTEPES.p  *mTEPES.pa]
+        mTEPES.ppc   = [(p,     ni,nf,cc) for p,     ni,nf,cc in mTEPES.p  *mTEPES.pc]
 
     # assigning a node to an area
     mTEPES.ndar = [(nd,ar) for (nd,zn,ar) in mTEPES.ndzn*mTEPES.ar if (zn,ar) in mTEPES.znar]
@@ -554,10 +614,11 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pIndBinUnitRetire = pIndBinUnitRetire.map(idxDict)
     pIndBinUnitCommit = pIndBinUnitCommit.map(idxDict)
     pIndBinStorInvest = pIndBinStorInvest.map(idxDict)
-    pIndOperReserve   = pIndOperReserve.map  (idxDict)
-    pMustRun          = pMustRun.map         (idxDict)
+    pIndBinRsrvInvest = pIndBinRsrvInvest.map(idxDict)
     pIndBinLineInvest = pIndBinLineInvest.map(idxDict)
     pIndBinLineSwitch = pIndBinLineSwitch.map(idxDict)
+    pIndOperReserve   = pIndOperReserve.map  (idxDict)
+    pMustRun          = pMustRun.map         (idxDict)
 
     # define AC existing  lines     non-switchable
     mTEPES.lea = Set(initialize=mTEPES.le, ordered=False, doc='AC existing  lines and non-switchable lines', filter=lambda mTEPES,*le: le in mTEPES.le and  pIndBinLineSwitch[le] == 0                             and not pLineType[le] == 'DC')
@@ -737,31 +798,33 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         pCycleWaterStep      = pd.concat([pCycleRsrTimeStep, pWaterOutTimeStep], axis=1).min(axis=1)
 
     # drop load levels with duration 0
-    pDuration          = pDuration.loc         [mTEPES.n    ]
-    pDemand            = pDemand.loc           [mTEPES.psn  ]
-    pSystemInertia     = pSystemInertia.loc    [mTEPES.psnar]
-    pOperReserveUp     = pOperReserveUp.loc    [mTEPES.psnar]
-    pOperReserveDw     = pOperReserveDw.loc    [mTEPES.psnar]
-    pMinPower          = pMinPower.loc         [mTEPES.psn  ]
-    pMaxPower          = pMaxPower.loc         [mTEPES.psn  ]
-    pMinCharge         = pMinCharge.loc        [mTEPES.psn  ]
-    pMaxCharge         = pMaxCharge.loc        [mTEPES.psn  ]
-    pEnergyInflows     = pEnergyInflows.loc    [mTEPES.psn  ]
-    pEnergyOutflows    = pEnergyOutflows.loc   [mTEPES.psn  ]
-    pIniInventory      = pIniInventory.loc     [mTEPES.psn  ]
-    pMinStorage        = pMinStorage.loc       [mTEPES.psn  ]
-    pMaxStorage        = pMaxStorage.loc       [mTEPES.psn  ]
-    pVariableMaxEnergy = pVariableMaxEnergy.loc[mTEPES.psn  ]
-    pVariableMinEnergy = pVariableMinEnergy.loc[mTEPES.psn  ]
-    pLinearVarCost     = pLinearVarCost.loc    [mTEPES.psn  ]
-    pConstantVarCost   = pConstantVarCost.loc  [mTEPES.psn  ]
+    pDuration           = pDuration.loc         [mTEPES.n    ]
+    pDemand             = pDemand.loc           [mTEPES.psn  ]
+    pSystemInertia      = pSystemInertia.loc    [mTEPES.psnar]
+    pOperReserveUp      = pOperReserveUp.loc    [mTEPES.psnar]
+    pOperReserveDw      = pOperReserveDw.loc    [mTEPES.psnar]
+    pMinPower           = pMinPower.loc         [mTEPES.psn  ]
+    pMaxPower           = pMaxPower.loc         [mTEPES.psn  ]
+    pMinCharge          = pMinCharge.loc        [mTEPES.psn  ]
+    pMaxCharge          = pMaxCharge.loc        [mTEPES.psn  ]
+    pEnergyInflows      = pEnergyInflows.loc    [mTEPES.psn  ]
+    pEnergyOutflows     = pEnergyOutflows.loc   [mTEPES.psn  ]
+    pIniInventory       = pIniInventory.loc     [mTEPES.psn  ]
+    pMinStorage         = pMinStorage.loc       [mTEPES.psn  ]
+    pMaxStorage         = pMaxStorage.loc       [mTEPES.psn  ]
+    pVariableMaxEnergy  = pVariableMaxEnergy.loc[mTEPES.psn  ]
+    pVariableMinEnergy  = pVariableMinEnergy.loc[mTEPES.psn  ]
+    pLinearVarCost      = pLinearVarCost.loc    [mTEPES.psn  ]
+    pConstantVarCost    = pConstantVarCost.loc  [mTEPES.psn  ]
 
     if pIndHydroTopology == 1:
-        pHydroInflows  = pHydroInflows.loc     [mTEPES.psn  ]
-        pHydroOutflows = pHydroOutflows.loc    [mTEPES.psn  ]
-        pIniVolume     = pIniVolume.loc        [mTEPES.psn  ]
-        pMinVolume     = pMinVolume.loc        [mTEPES.psn  ]
-        pMaxVolume     = pMaxVolume.loc        [mTEPES.psn  ]
+        pHydroInflows   = pHydroInflows.loc     [mTEPES.psn  ]
+        pHydroOutflows  = pHydroOutflows.loc    [mTEPES.psn  ]
+        pIniVolume      = pIniVolume.loc        [mTEPES.psn  ]
+        pMinVolume      = pMinVolume.loc        [mTEPES.psn  ]
+        pMaxVolume      = pMaxVolume.loc        [mTEPES.psn  ]
+    if pIndHydrogen == 1:
+        pDemandH2       = pDemandH2.loc         [mTEPES.psn  ]
 
     # separate positive and negative demands to avoid converting negative values to 0
     pDemandPos        = pDemand.where(pDemand >= 0.0, other=0.0)
@@ -816,6 +879,11 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         pLineNTCFrw.update(pd.Series([0.0 for ni,nf,cc in mTEPES.la if pLineNTCFrw[ni,nf,cc] < pEpsilon], index=[(ni,nf,cc) for ni,nf,cc in mTEPES.la if pLineNTCFrw[ni,nf,cc] < pEpsilon], dtype='float64'))
         pLineNTCBck.update(pd.Series([0.0 for ni,nf,cc in mTEPES.la if pLineNTCBck[ni,nf,cc] < pEpsilon], index=[(ni,nf,cc) for ni,nf,cc in mTEPES.la if pLineNTCBck[ni,nf,cc] < pEpsilon], dtype='float64'))
 
+        if pIndHydrogen == 1:
+            pDemandH2[pDemandH2[[nd for nd in d2a[ar]]] <  pEpsilon] = 0.0
+            pPipeNTCFrw.update(pd.Series([0.0 for ni,nf,cc in mTEPES.pa if pPipeNTCFrw[ni,nf,cc] < pEpsilon], index=[(ni,nf,cc) for ni,nf,cc in mTEPES.pa if pPipeNTCFrw[ni,nf,cc] < pEpsilon], dtype='float64'))
+            pPipeNTCBck.update(pd.Series([0.0 for ni,nf,cc in mTEPES.pa if pPipeNTCBck[ni,nf,cc] < pEpsilon], index=[(ni,nf,cc) for ni,nf,cc in mTEPES.pa if pPipeNTCBck[ni,nf,cc] < pEpsilon], dtype='float64'))
+
         # merging positive and negative values of the demand
         pDemand            = pDemandPos.where(pDemandNeg >= 0.0, other=pDemandNeg)
 
@@ -830,50 +898,60 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pMaxCharge2ndBlock = pMaxCharge2ndBlock.where(pMaxCharge2ndBlock > 0.0, other=0.0)
 
     # drop generators not es
-    pMinCharge           = pMinCharge.loc          [:, mTEPES.es]
-    pMaxCharge           = pMaxCharge.loc          [:, mTEPES.es]
-    pEnergyInflows       = pEnergyInflows.loc      [:, mTEPES.es]
-    pEnergyOutflows      = pEnergyOutflows.loc     [:, mTEPES.es]
-    pMinStorage          = pMinStorage.loc         [:, mTEPES.es]
-    pMaxStorage          = pMaxStorage.loc         [:, mTEPES.es]
-    pEfficiency          = pEfficiency.loc         [   mTEPES.es]
-    pCycleTimeStep       = pCycleTimeStep.loc      [   mTEPES.es]
-    pOutflowsTimeStep    = pOutflowsTimeStep.loc   [   mTEPES.es]
-    pIniInventory        = pIniInventory.loc       [:, mTEPES.es]
-    pInitialInventory    = pInitialInventory.loc   [   mTEPES.es]
-    pStorageType         = pStorageType.loc        [   mTEPES.es]
-    pMaxCharge2ndBlock   = pMaxCharge2ndBlock.loc  [:, mTEPES.es]
+    pMinCharge            = pMinCharge.loc           [:, mTEPES.es]
+    pMaxCharge            = pMaxCharge.loc           [:, mTEPES.es]
+    pEnergyInflows        = pEnergyInflows.loc       [:, mTEPES.es]
+    pEnergyOutflows       = pEnergyOutflows.loc      [:, mTEPES.es]
+    pMinStorage           = pMinStorage.loc          [:, mTEPES.es]
+    pMaxStorage           = pMaxStorage.loc          [:, mTEPES.es]
+    pEfficiency           = pEfficiency.loc          [   mTEPES.es]
+    pCycleTimeStep        = pCycleTimeStep.loc       [   mTEPES.es]
+    pOutflowsTimeStep     = pOutflowsTimeStep.loc    [   mTEPES.es]
+    pIniInventory         = pIniInventory.loc        [:, mTEPES.es]
+    pInitialInventory     = pInitialInventory.loc    [   mTEPES.es]
+    pStorageType          = pStorageType.loc         [   mTEPES.es]
+    pMaxCharge2ndBlock    = pMaxCharge2ndBlock.loc   [:, mTEPES.es]
 
     # drop generators not gc or gd
-    pGenInvestCost       = pGenInvestCost.loc      [   mTEPES.gc]
-    pGenRetireCost       = pGenRetireCost.loc      [   mTEPES.gd]
-    pIndBinUnitInvest    = pIndBinUnitInvest.loc   [   mTEPES.gc]
-    pIndBinUnitRetire    = pIndBinUnitRetire.loc   [   mTEPES.gd]
-    pGenLoInvest         = pGenLoInvest.loc        [   mTEPES.gc]
-    pGenLoRetire         = pGenLoRetire.loc        [   mTEPES.gd]
-    pGenUpInvest         = pGenUpInvest.loc        [   mTEPES.gc]
-    pGenUpRetire         = pGenUpRetire.loc        [   mTEPES.gd]
+    pGenInvestCost        = pGenInvestCost.loc       [   mTEPES.gc]
+    pGenRetireCost        = pGenRetireCost.loc       [   mTEPES.gd]
+    pIndBinUnitInvest     = pIndBinUnitInvest.loc    [   mTEPES.gc]
+    pIndBinUnitRetire     = pIndBinUnitRetire.loc    [   mTEPES.gd]
+    pGenLoInvest          = pGenLoInvest.loc         [   mTEPES.gc]
+    pGenLoRetire          = pGenLoRetire.loc         [   mTEPES.gd]
+    pGenUpInvest          = pGenUpInvest.loc         [   mTEPES.gc]
+    pGenUpRetire          = pGenUpRetire.loc         [   mTEPES.gd]
 
     # drop generators not nr or ec
-    pStartUpCost         = pStartUpCost.loc        [   mTEPES.nr]
-    pShutDownCost        = pShutDownCost.loc       [   mTEPES.nr]
-    pIndBinUnitCommit    = pIndBinUnitCommit.loc   [   mTEPES.nr]
-    pIndBinStorInvest    = pIndBinStorInvest.loc   [   mTEPES.ec]
+    pStartUpCost          = pStartUpCost.loc         [   mTEPES.nr]
+    pShutDownCost         = pShutDownCost.loc        [   mTEPES.nr]
+    pIndBinUnitCommit     = pIndBinUnitCommit.loc    [   mTEPES.nr]
+    pIndBinStorInvest     = pIndBinStorInvest.loc    [   mTEPES.ec]
 
     # drop lines not lc or ll
-    pNetFixedCost        = pNetFixedCost.loc       [   mTEPES.lc]
-    pNetLoInvest         = pNetLoInvest.loc        [   mTEPES.lc]
-    pNetUpInvest         = pNetUpInvest.loc        [   mTEPES.lc]
-    pLineLossFactor      = pLineLossFactor.loc     [   mTEPES.ll]
+    pNetFixedCost         = pNetFixedCost.loc        [   mTEPES.lc]
+    pNetLoInvest          = pNetLoInvest.loc         [   mTEPES.lc]
+    pNetUpInvest          = pNetUpInvest.loc         [   mTEPES.lc]
+    pLineLossFactor       = pLineLossFactor.loc      [   mTEPES.ll]
 
     # drop generators not h
-    pProductionFunction  = pProductionFunction.loc [   mTEPES.h ]
+    pProductionFunction   = pProductionFunction.loc  [   mTEPES.h ]
+
+    # drop generators not h
+    pProductionFunctionH2 = pProductionFunctionH2.loc[   mTEPES.el]
 
     if pIndHydroTopology == 1:
         # drop reservoirs not rn
-        pRsrInvestCost   = pRsrInvestCost.loc      [   mTEPES.rn]
+        pIndBinRsrvInvest = pIndBinRsrvInvest.loc    [   mTEPES.rn]
+        pRsrInvestCost    = pRsrInvestCost.loc       [   mTEPES.rn]
         # maximum outflows depending on the downstream hydropower unit
         pMaxOutflows = pd.DataFrame([[sum(pMaxPower[h][p,sc,n]/pProductionFunction[h] for h in mTEPES.h if (rs,h) in mTEPES.r2h) for rs in mTEPES.rs] for p,sc,n in mTEPES.psn], index=mTEPES.psn, columns=mTEPES.rs)
+
+    if pIndHydrogen == 1:
+        # drop pipelines not pc
+        pPipeFixedCost    = pPipeFixedCost.loc       [   mTEPES.pc]
+        pPipeLoInvest     = pPipeLoInvest.loc        [   mTEPES.pc]
+        pPipeUpInvest     = pPipeUpInvest.loc        [   mTEPES.pc]
 
     # replace very small costs by 0
     pEpsilon = 1e-4           # this value in €/GWh is related to the smallest reduced cost, independent of the area
@@ -917,20 +995,22 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pd.options.mode.chained_assignment = None
 
     # %% parameters
-    mTEPES.pIndBinGenInvest      = Param(initialize=pIndBinGenInvest     , within=NonNegativeIntegers, doc='Indicator of binary generation investment decisions', mutable=True)
-    mTEPES.pIndBinGenRetire      = Param(initialize=pIndBinGenRetire     , within=NonNegativeIntegers, doc='Indicator of binary generation retirement decisions', mutable=True)
-    mTEPES.pIndBinGenOperat      = Param(initialize=pIndBinGenOperat     , within=Binary,              doc='Indicator of binary generation operation  decisions', mutable=True)
-    mTEPES.pIndBinSingleNode     = Param(initialize=pIndBinSingleNode    , within=Binary,              doc='Indicator of single node within a network case',      mutable=True)
-    mTEPES.pIndBinGenRamps       = Param(initialize=pIndBinGenRamps      , within=Binary,              doc='Indicator of using or not the ramp constraints',      mutable=True)
-    mTEPES.pIndBinGenMinTime     = Param(initialize=pIndBinGenMinTime    , within=Binary,              doc='Indicator of using or not the min time constraints',  mutable=True)
-    mTEPES.pIndBinNetInvest      = Param(initialize=pIndBinNetInvest     , within=NonNegativeIntegers, doc='Indicator of binary network    investment decisions', mutable=True)
-    mTEPES.pIndBinLineCommit     = Param(initialize=pIndBinLineCommit    , within=Binary,              doc='Indicator of binary network    switching  decisions', mutable=True)
-    mTEPES.pIndBinNetLosses      = Param(initialize=pIndBinNetLosses     , within=Binary,              doc='Indicator of binary network ohmic losses',            mutable=True)
-
-    mTEPES.pIndBinRsrInvest      = Param(initialize=pIndBinRsrInvest     , within=NonNegativeIntegers, doc='Indicator of binary reservoir  investment decisions', mutable=True)
-    mTEPES.pIndHydroTopology     = Param(initialize=pIndHydroTopology    , within=Binary,              doc='Indicator of reservoir and hydropower topology'    )
+    mTEPES.pIndBinGenInvest      = Param(initialize=pIndBinGenInvest     , within=NonNegativeIntegers, doc='Indicator of binary generation       investment decisions', mutable=True)
+    mTEPES.pIndBinGenRetire      = Param(initialize=pIndBinGenRetire     , within=NonNegativeIntegers, doc='Indicator of binary generation       retirement decisions', mutable=True)
+    mTEPES.pIndBinRsrInvest      = Param(initialize=pIndBinRsrInvest     , within=NonNegativeIntegers, doc='Indicator of binary reservoir        investment decisions', mutable=True)
+    mTEPES.pIndBinNetInvest      = Param(initialize=pIndBinNetInvest     , within=NonNegativeIntegers, doc='Indicator of binary electric network investment decisions', mutable=True)
+    mTEPES.pIndBinNetH2Invest    = Param(initialize=pIndBinNetH2Invest   , within=NonNegativeIntegers, doc='Indicator of binary pipeline network investment decisions', mutable=True)
+    mTEPES.pIndBinGenOperat      = Param(initialize=pIndBinGenOperat     , within=Binary,              doc='Indicator of binary generation operation  decisions',       mutable=True)
+    mTEPES.pIndBinSingleNode     = Param(initialize=pIndBinSingleNode    , within=Binary,              doc='Indicator of single node within a electric network case',   mutable=True)
+    mTEPES.pIndBinGenRamps       = Param(initialize=pIndBinGenRamps      , within=Binary,              doc='Indicator of using or not the ramp constraints',            mutable=True)
+    mTEPES.pIndBinGenMinTime     = Param(initialize=pIndBinGenMinTime    , within=Binary,              doc='Indicator of using or not the min time constraints',        mutable=True)
+    mTEPES.pIndBinLineCommit     = Param(initialize=pIndBinLineCommit    , within=Binary,              doc='Indicator of binary electric network switching  decisions', mutable=True)
+    mTEPES.pIndBinNetLosses      = Param(initialize=pIndBinNetLosses     , within=Binary,              doc='Indicator of binary electric network ohmic losses',         mutable=True)
+    mTEPES.pIndHydroTopology     = Param(initialize=pIndHydroTopology    , within=Binary,              doc='Indicator of reservoir and hydropower topology'                         )
+    mTEPES.pIndHydrogen          = Param(initialize=pIndHydrogen         , within=Binary,              doc='Indicator of hydrogen demand and pipeline network'                      )
 
     mTEPES.pENSCost              = Param(initialize=pENSCost             , within=NonNegativeReals,    doc='ENS cost'                                          )
+    mTEPES.pHNSCost              = Param(initialize=pHNSCost             , within=NonNegativeReals,    doc='HNS cost'                                          )
     mTEPES.pCO2Cost              = Param(initialize=pCO2Cost             , within=NonNegativeReals,    doc='CO2 emission cost'                                 )
     mTEPES.pAnnualDiscRate       = Param(initialize=pAnnualDiscRate      , within=UnitInterval,        doc='Annual discount rate'                              )
     mTEPES.pUpReserveActivation  = Param(initialize=pUpReserveActivation , within=UnitInterval,        doc='Proportion of upward   reserve activation'         )
@@ -942,8 +1022,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.pEconomicBaseYear     = Param(initialize=pEconomicBaseYear    , within=PositiveIntegers,    doc='Base year'                                         )
 
     mTEPES.pReserveMargin        = Param(mTEPES.ar,    initialize=pReserveMargin.to_dict()            , within=NonNegativeReals,    doc='Adequacy reserve margin'                             )
-    mTEPES.pPeakDemand           = Param(mTEPES.ar,    initialize=pPeakDemand.to_dict()               , within=NonNegativeReals,    doc='Peak demand'                                         )
-    mTEPES.pDemand               = Param(mTEPES.psnnd, initialize=pDemand.stack().to_dict()           , within=           Reals,    doc='Demand'                                              )
+    mTEPES.pPeakDemand           = Param(mTEPES.ar,    initialize=pPeakDemand.to_dict()               , within=NonNegativeReals,    doc='Peak electric demand'                                )
+    mTEPES.pDemand               = Param(mTEPES.psnnd, initialize=pDemand.stack().to_dict()           , within=           Reals,    doc='Electric Demand'                                     )
     mTEPES.pPeriodWeight         = Param(mTEPES.p,     initialize=pPeriodWeight.to_dict()             , within=NonNegativeIntegers, doc='Period weight',                          mutable=True)
     mTEPES.pDiscountFactor       = Param(mTEPES.p,     initialize=pDiscountFactor.to_dict()           , within=NonNegativeReals,    doc='Discount factor'                                     )
     mTEPES.pScenProb             = Param(mTEPES.psc,   initialize=pScenProb.to_dict()                 , within=UnitInterval    ,    doc='Probability',                            mutable=True)
@@ -996,7 +1076,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.pIndBinUnitCommit     = Param(mTEPES.nr,    initialize=pIndBinUnitCommit.to_dict()         , within=Binary          ,    doc='Binary commitment decision'                          )
     mTEPES.pIndBinStorInvest     = Param(mTEPES.ec,    initialize=pIndBinStorInvest.to_dict()         , within=Binary          ,    doc='Storage linked to generation investment'             )
     mTEPES.pIndOperReserve       = Param(mTEPES.gg,    initialize=pIndOperReserve.to_dict()           , within=Binary          ,    doc='Indicator of operating reserve'                      )
-    mTEPES.pProductionFunction   = Param(mTEPES.h ,    initialize=pProductionFunction.to_dict()       , within=NonNegativeReals,    doc='Production function of hydro power plant'            )
+    mTEPES.pProductionFunction   = Param(mTEPES.h ,    initialize=pProductionFunction.to_dict()       , within=NonNegativeReals,    doc='Production function of a hydro power plant'          )
+    mTEPES.pProductionFunctionH2 = Param(mTEPES.el,    initialize=pProductionFunctionH2.to_dict()     , within=NonNegativeReals,    doc='Production function of an electrolyzer plan'         )
     mTEPES.pEfficiency           = Param(mTEPES.es,    initialize=pEfficiency.to_dict()               , within=UnitInterval    ,    doc='Round-trip efficiency'                               )
     mTEPES.pCycleTimeStep        = Param(mTEPES.es,    initialize=pCycleTimeStep.to_dict()            , within=PositiveIntegers,    doc='ESS Storage cycle'                                   )
     mTEPES.pOutflowsTimeStep     = Param(mTEPES.es,    initialize=pOutflowsTimeStep.to_dict()         , within=PositiveIntegers,    doc='ESS Outflows cycle'                                  )
@@ -1015,6 +1096,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         mTEPES.pMaxOutflows      = Param(mTEPES.psnrs, initialize=pMaxOutflows.stack().to_dict()      , within=NonNegativeReals,    doc='Maximum hydro outflows',                             )
         mTEPES.pMinVolume        = Param(mTEPES.psnrs, initialize=pMinVolume.stack().to_dict()        , within=NonNegativeReals,    doc='Minimum reservoir volume capacity'                   )
         mTEPES.pMaxVolume        = Param(mTEPES.psnrs, initialize=pMaxVolume.stack().to_dict()        , within=NonNegativeReals,    doc='Maximum reservoir volume capacity'                   )
+        mTEPES.pIndBinRsrvInvest = Param(mTEPES.rn,    initialize=pIndBinRsrvInvest.to_dict()         , within=Binary          ,    doc='Binary  reservoir investment decision'               )
         mTEPES.pRsrInvestCost    = Param(mTEPES.rn,    initialize=pRsrInvestCost.to_dict()            , within=NonNegativeReals,    doc='Reservoir fixed cost'                                )
         mTEPES.pPeriodIniRsr     = Param(mTEPES.rs,    initialize=pPeriodIniRsr.to_dict()             , within=PositiveIntegers,    doc='Installation year',                                  )
         mTEPES.pPeriodFinRsr     = Param(mTEPES.rs,    initialize=pPeriodFinRsr.to_dict()             , within=PositiveIntegers,    doc='Retirement   year',                                  )
@@ -1023,6 +1105,9 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         mTEPES.pIniVolume        = Param(mTEPES.psnrs, initialize=pIniVolume.stack().to_dict()        , within=NonNegativeReals,    doc='Reservoir initial volume',               mutable=True)
         mTEPES.pInitialVolume    = Param(mTEPES.rs,    initialize=pInitialVolume.to_dict()            , within=NonNegativeReals,    doc='Reservoir initial volume without load levels'        )
         mTEPES.pReservoirType    = Param(mTEPES.rs,    initialize=pReservoirType.to_dict()            , within=Any             ,    doc='Reservoir volume type'                               )
+
+    if pIndHydrogen == 1:
+        mTEPES.pDemandH2         = Param(mTEPES.psnnd, initialize=pDemandH2.stack().to_dict()         , within=NonNegativeReals,    doc='Hydrogen demand'                                     )
 
     mTEPES.pLoadLevelDuration    = Param(mTEPES.n,     initialize=0                                   , within=NonNegativeIntegers, doc='Load level duration',                    mutable=True)
     for n in mTEPES.n:
@@ -1033,29 +1118,40 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         # periods and scenarios are going to be solved together with their weight and probability
         mTEPES.pPeriodProb[p,sc] = mTEPES.pPeriodWeight[p] * mTEPES.pScenProb[p,sc]
 
-    mTEPES.pLineLossFactor       = Param(mTEPES.ll,    initialize=pLineLossFactor.to_dict()           , within=           Reals,    doc='Loss factor'                                         )
-    mTEPES.pLineR                = Param(mTEPES.ln,    initialize=pLineR.to_dict()                    , within=NonNegativeReals,    doc='Resistance'                                          )
-    mTEPES.pLineX                = Param(mTEPES.ln,    initialize=pLineX.to_dict()                    , within=           Reals,    doc='Reactance'                                           )
-    mTEPES.pLineBsh              = Param(mTEPES.ln,    initialize=pLineBsh.to_dict()                  , within=NonNegativeReals,    doc='Susceptance',                            mutable=True)
-    mTEPES.pLineTAP              = Param(mTEPES.ln,    initialize=pLineTAP.to_dict()                  , within=NonNegativeReals,    doc='Tap changer',                            mutable=True)
-    mTEPES.pLineLength           = Param(mTEPES.ln,    initialize=pLineLength.to_dict()               , within=NonNegativeReals,    doc='Length',                                 mutable=True)
-    mTEPES.pPeriodIniNet         = Param(mTEPES.ln,    initialize=pPeriodIniNet.to_dict()             , within=PositiveIntegers,    doc='Installation period'                                 )
-    mTEPES.pPeriodFinNet         = Param(mTEPES.ln,    initialize=pPeriodFinNet.to_dict()             , within=PositiveIntegers,    doc='Retirement   period'                                 )
-    mTEPES.pLineVoltage          = Param(mTEPES.ln,    initialize=pLineVoltage.to_dict()              , within=NonNegativeReals,    doc='Voltage'                                             )
-    mTEPES.pLineNTCFrw           = Param(mTEPES.ln,    initialize=pLineNTCFrw.to_dict()               , within=NonNegativeReals,    doc='NTC forward'                                         )
-    mTEPES.pLineNTCBck           = Param(mTEPES.ln,    initialize=pLineNTCBck.to_dict()               , within=NonNegativeReals,    doc='NTC backward'                                        )
-    mTEPES.pNetFixedCost         = Param(mTEPES.lc,    initialize=pNetFixedCost.to_dict()             , within=NonNegativeReals,    doc='Network fixed cost'                                  )
-    mTEPES.pIndBinLineInvest     = Param(mTEPES.ln,    initialize=pIndBinLineInvest.to_dict()         , within=Binary          ,    doc='Binary investment decision'                          )
-    mTEPES.pIndBinLineSwitch     = Param(mTEPES.ln,    initialize=pIndBinLineSwitch.to_dict()         , within=Binary          ,    doc='Binary switching  decision'                          )
-    mTEPES.pSwOnTime             = Param(mTEPES.ln,    initialize=pSwitchOnTime.to_dict()             , within=NonNegativeIntegers, doc='Minimum switching on  time'                          )
-    mTEPES.pSwOffTime            = Param(mTEPES.ln,    initialize=pSwitchOffTime.to_dict()            , within=NonNegativeIntegers, doc='Minimum switching off time'                          )
-    mTEPES.pBigMFlowBck          = Param(mTEPES.ln,    initialize=pBigMFlowBck.to_dict()              , within=NonNegativeReals,    doc='Maximum backward capacity',              mutable=True)
-    mTEPES.pBigMFlowFrw          = Param(mTEPES.ln,    initialize=pBigMFlowFrw.to_dict()              , within=NonNegativeReals,    doc='Maximum forward  capacity',              mutable=True)
-    mTEPES.pMaxTheta             = Param(mTEPES.psnnd, initialize=pMaxTheta.stack().to_dict()         , within=NonNegativeReals,    doc='Maximum voltage angle',                  mutable=True)
-    mTEPES.pAngMin               = Param(mTEPES.ln,    initialize=pAngMin.to_dict()                   , within=Reals,               doc='Minimum phase angle diff',               mutable=True)
-    mTEPES.pAngMax               = Param(mTEPES.ln,    initialize=pAngMax.to_dict()                   , within=Reals,               doc='Maximum phase angle diff',               mutable=True)
-    mTEPES.pNetLoInvest          = Param(mTEPES.lc,    initialize=pNetLoInvest.to_dict()              , within=NonNegativeReals,    doc='Lower bound of the investment decision', mutable=True)
-    mTEPES.pNetUpInvest          = Param(mTEPES.lc,    initialize=pNetUpInvest.to_dict()              , within=NonNegativeReals,    doc='Upper bound of the investment decision', mutable=True)
+    mTEPES.pLineLossFactor       = Param(mTEPES.ll,    initialize=pLineLossFactor.to_dict()           , within=           Reals,    doc='Loss factor'                                                       )
+    mTEPES.pLineR                = Param(mTEPES.ln,    initialize=pLineR.to_dict()                    , within=NonNegativeReals,    doc='Resistance'                                                        )
+    mTEPES.pLineX                = Param(mTEPES.ln,    initialize=pLineX.to_dict()                    , within=           Reals,    doc='Reactance'                                                         )
+    mTEPES.pLineBsh              = Param(mTEPES.ln,    initialize=pLineBsh.to_dict()                  , within=NonNegativeReals,    doc='Susceptance',                                          mutable=True)
+    mTEPES.pLineTAP              = Param(mTEPES.ln,    initialize=pLineTAP.to_dict()                  , within=NonNegativeReals,    doc='Tap changer',                                          mutable=True)
+    mTEPES.pLineLength           = Param(mTEPES.ln,    initialize=pLineLength.to_dict()               , within=NonNegativeReals,    doc='Length',                                               mutable=True)
+    mTEPES.pPeriodIniNet         = Param(mTEPES.ln,    initialize=pPeriodIniNet.to_dict()             , within=PositiveIntegers,    doc='Installation period'                                               )
+    mTEPES.pPeriodFinNet         = Param(mTEPES.ln,    initialize=pPeriodFinNet.to_dict()             , within=PositiveIntegers,    doc='Retirement   period'                                               )
+    mTEPES.pLineVoltage          = Param(mTEPES.ln,    initialize=pLineVoltage.to_dict()              , within=NonNegativeReals,    doc='Voltage'                                                           )
+    mTEPES.pLineNTCFrw           = Param(mTEPES.ln,    initialize=pLineNTCFrw.to_dict()               , within=NonNegativeReals,    doc='Electric line NTC forward'                                         )
+    mTEPES.pLineNTCBck           = Param(mTEPES.ln,    initialize=pLineNTCBck.to_dict()               , within=NonNegativeReals,    doc='Electric line NTC backward'                                        )
+    mTEPES.pNetFixedCost         = Param(mTEPES.lc,    initialize=pNetFixedCost.to_dict()             , within=NonNegativeReals,    doc='Electric line fixed cost'                                          )
+    mTEPES.pIndBinLineInvest     = Param(mTEPES.ln,    initialize=pIndBinLineInvest.to_dict()         , within=Binary          ,    doc='Binary electric line investment decision'                          )
+    mTEPES.pIndBinLineSwitch     = Param(mTEPES.ln,    initialize=pIndBinLineSwitch.to_dict()         , within=Binary          ,    doc='Binary electric line switching  decision'                          )
+    mTEPES.pSwOnTime             = Param(mTEPES.ln,    initialize=pSwitchOnTime.to_dict()             , within=NonNegativeIntegers, doc='Minimum switching on  time'                                        )
+    mTEPES.pSwOffTime            = Param(mTEPES.ln,    initialize=pSwitchOffTime.to_dict()            , within=NonNegativeIntegers, doc='Minimum switching off time'                                        )
+    mTEPES.pBigMFlowBck          = Param(mTEPES.ln,    initialize=pBigMFlowBck.to_dict()              , within=NonNegativeReals,    doc='Maximum backward capacity',                            mutable=True)
+    mTEPES.pBigMFlowFrw          = Param(mTEPES.ln,    initialize=pBigMFlowFrw.to_dict()              , within=NonNegativeReals,    doc='Maximum forward  capacity',                            mutable=True)
+    mTEPES.pMaxTheta             = Param(mTEPES.psnnd, initialize=pMaxTheta.stack().to_dict()         , within=NonNegativeReals,    doc='Maximum voltage angle',                                mutable=True)
+    mTEPES.pAngMin               = Param(mTEPES.ln,    initialize=pAngMin.to_dict()                   , within=Reals,               doc='Minimum phase angle diff',                             mutable=True)
+    mTEPES.pAngMax               = Param(mTEPES.ln,    initialize=pAngMax.to_dict()                   , within=Reals,               doc='Maximum phase angle diff',                             mutable=True)
+    mTEPES.pNetLoInvest          = Param(mTEPES.lc,    initialize=pNetLoInvest.to_dict()              , within=NonNegativeReals,    doc='Lower bound of the electric line investment decision', mutable=True)
+    mTEPES.pNetUpInvest          = Param(mTEPES.lc,    initialize=pNetUpInvest.to_dict()              , within=NonNegativeReals,    doc='Upper bound of the electric line investment decision', mutable=True)
+
+    if pIndHydrogen == 1:
+        mTEPES.pPipeLength       = Param(mTEPES.pn,    initialize=pPipeLength.to_dict()               , within=NonNegativeReals,    doc='Hydrogen pipeline length',                        mutable=True)
+        mTEPES.pPeriodIniPipe    = Param(mTEPES.pn,    initialize=pPeriodIniPipe.to_dict()            , within=PositiveIntegers,    doc='Installation period'                                          )
+        mTEPES.pPeriodFinPipe    = Param(mTEPES.pn,    initialize=pPeriodFinPipe.to_dict()            , within=PositiveIntegers,    doc='Retirement   period'                                          )
+        mTEPES.pPipeNTCFrw       = Param(mTEPES.pn,    initialize=pPipeNTCFrw.to_dict()               , within=NonNegativeReals,    doc='Hydrogen pipeline NTC forward'                                )
+        mTEPES.pPipeNTCBck       = Param(mTEPES.pn,    initialize=pPipeNTCBck.to_dict()               , within=NonNegativeReals,    doc='Hydrogen pipeline NTC backward'                               )
+        mTEPES.pPipeFixedCost    = Param(mTEPES.pc,    initialize=pPipeFixedCost.to_dict()            , within=NonNegativeReals,    doc='Hydrogen pipeline fixed cost'                                 )
+        mTEPES.pIndBinPipeInvest = Param(mTEPES.pn,    initialize=pIndBinPipeInvest.to_dict()         , within=Binary          ,    doc='Binary   pipeline investment decision'                        )
+        mTEPES.pPipeLoInvest     = Param(mTEPES.pc,    initialize=pPipeLoInvest.to_dict()             , within=NonNegativeReals,    doc='Lower bound of the pipeline investment decision', mutable=True)
+        mTEPES.pPipeUpInvest     = Param(mTEPES.pc,    initialize=pPipeUpInvest.to_dict()             , within=NonNegativeReals,    doc='Upper bound of the pipeline investment decision', mutable=True)
 
     # load levels multiple of cycles for each ESS/generator
     mTEPES.nesc         = [(n,es) for n,es in mTEPES.n*mTEPES.es if mTEPES.n.ord(n) %     mTEPES.pCycleTimeStep   [es] == 0]
@@ -1095,6 +1191,12 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         if  mTEPES.pLineLength[ni,nf,cc]() == 0.0:
             mTEPES.pLineLength[ni,nf,cc]   =  1.1 * 6371 * 2 * math.asin(math.sqrt(math.pow(math.sin((mTEPES.pNodeLat[nf]-mTEPES.pNodeLat[ni])*math.pi/180/2),2) + math.cos(mTEPES.pNodeLat[ni]*math.pi/180)*math.cos(mTEPES.pNodeLat[nf]*math.pi/180)*math.pow(math.sin((mTEPES.pNodeLon[nf]-mTEPES.pNodeLon[ni])*math.pi/180/2),2)))
 
+    if pIndHydrogen == 1:
+        # if line length = 0 changed to geographical distance with an additional 10%
+        for ni,nf,cc in mTEPES.pa:
+            if  mTEPES.pPipeLength[ni,nf,cc]() == 0.0:
+                mTEPES.pPipeLength[ni,nf,cc]   =  1.1 * 6371 * 2 * math.asin(math.sqrt(math.pow(math.sin((mTEPES.pNodeLat[nf]-mTEPES.pNodeLat[ni])*math.pi/180/2),2) + math.cos(mTEPES.pNodeLat[ni]*math.pi/180)*math.cos(mTEPES.pNodeLat[nf]*math.pi/180)*math.pow(math.sin((mTEPES.pNodeLon[nf]-mTEPES.pNodeLon[ni])*math.pi/180/2),2)))
+
     # initialize generation output, unit commitment and line switching
     pInitialOutput = pd.DataFrame([[0.0]*len(mTEPES.gg)]*len(mTEPES.psn), index=mTEPES.psn, columns=list(mTEPES.gg))
     pInitialUC     = pd.DataFrame([[0  ]*len(mTEPES.gg)]*len(mTEPES.psn), index=mTEPES.psn, columns=list(mTEPES.gg))
@@ -1113,101 +1215,128 @@ def SettingUpVariables(OptModel, mTEPES):
     StartTime = time.time()
 
     #%% variables
-    OptModel.vTotalSCost            = Var(              within=NonNegativeReals,                                                                                                                     doc='total system                         cost      [MEUR]')
-    OptModel.vTotalICost            = Var(              within=NonNegativeReals,                                                                                                                     doc='total system investment              cost      [MEUR]')
-    OptModel.vTotalFCost            = Var(mTEPES.p,     within=NonNegativeReals,                                                                                                            doc='total system fixed                   cost      [MEUR]')
-    OptModel.vTotalGCost            = Var(mTEPES.psn,   within=NonNegativeReals,                                                                                                            doc='total variable generation  operation cost      [MEUR]')
-    OptModel.vTotalCCost            = Var(mTEPES.psn,   within=NonNegativeReals,                                                                                                            doc='total variable consumption operation cost      [MEUR]')
-    OptModel.vTotalECost            = Var(mTEPES.psn,   within=NonNegativeReals,                                                                                                            doc='total system emission                cost      [MEUR]')
-    OptModel.vTotalRCost            = Var(mTEPES.psn,   within=NonNegativeReals,                                                                                                            doc='total system reliability             cost      [MEUR]')
-    OptModel.vTotalOutput           = Var(mTEPES.psng , within=NonNegativeReals, bounds=lambda OptModel,p,sc,n,g : (0.0,                            mTEPES.pMaxPower         [p,sc,n,g ]),  doc='total output of the unit                         [GW]')
-    OptModel.vOutput2ndBlock        = Var(mTEPES.psnnr, within=NonNegativeReals, bounds=lambda OptModel,p,sc,n,nr: (0.0,                            mTEPES.pMaxPower2ndBlock [p,sc,n,nr]),  doc='second block of the unit                         [GW]')
-    OptModel.vReserveUp             = Var(mTEPES.psnnr, within=NonNegativeReals, bounds=lambda OptModel,p,sc,n,nr: (0.0,                            mTEPES.pMaxPower2ndBlock [p,sc,n,nr]),  doc='upward   operating reserve                       [GW]')
-    OptModel.vReserveDown           = Var(mTEPES.psnnr, within=NonNegativeReals, bounds=lambda OptModel,p,sc,n,nr: (0.0,                            mTEPES.pMaxPower2ndBlock [p,sc,n,nr]),  doc='downward operating reserve                       [GW]')
-    OptModel.vEnergyInflows         = Var(mTEPES.psnec, within=NonNegativeReals, bounds=lambda OptModel,p,sc,n,ec: (0.0,                                mTEPES.pEnergyInflows[p,sc,n,ec]),  doc='unscheduled inflows  of candidate ESS units      [GW]')
-    OptModel.vEnergyOutflows        = Var(mTEPES.psnes, within=NonNegativeReals, bounds=lambda OptModel,p,sc,n,es: (0.0,max(mTEPES.pMaxPower[p,sc,n,es],mTEPES.pMaxCharge    [p,sc,n,es])), doc='scheduled   outflows of all       ESS units      [GW]')
-    OptModel.vESSInventory          = Var(mTEPES.psnes, within=NonNegativeReals, bounds=lambda OptModel,p,sc,n,es: (      mTEPES.pMinStorage[p,sc,n,es],mTEPES.pMaxStorage   [p,sc,n,es]),  doc='ESS inventory                                   [GWh]')
-    OptModel.vESSSpillage           = Var(mTEPES.psnes, within=NonNegativeReals,                                                                                                            doc='ESS spillage                                    [GWh]')
-    OptModel.vESSTotalCharge        = Var(mTEPES.psnes, within=NonNegativeReals, bounds=lambda OptModel,p,sc,n,es: (0.0,                            mTEPES.pMaxCharge        [p,sc,n,es]),  doc='ESS total charge power                           [GW]')
-    OptModel.vCharge2ndBlock        = Var(mTEPES.psnes, within=NonNegativeReals, bounds=lambda OptModel,p,sc,n,es: (0.0,                            mTEPES.pMaxCharge2ndBlock[p,sc,n,es]),  doc='ESS       charge power                           [GW]')
-    OptModel.vESSReserveUp          = Var(mTEPES.psnes, within=NonNegativeReals, bounds=lambda OptModel,p,sc,n,es: (0.0,                            mTEPES.pMaxCharge2ndBlock[p,sc,n,es]),  doc='ESS upward   operating reserve                   [GW]')
-    OptModel.vESSReserveDown        = Var(mTEPES.psnes, within=NonNegativeReals, bounds=lambda OptModel,p,sc,n,es: (0.0,                            mTEPES.pMaxCharge2ndBlock[p,sc,n,es]),  doc='ESS downward operating reserve                   [GW]')
-    OptModel.vENS                   = Var(mTEPES.psnnd, within=NonNegativeReals, bounds=lambda OptModel,p,sc,n,nd: (0.0,                            max(0.0,mTEPES.pDemand   [p,sc,n,nd])), doc='energy not served in node                        [GW]')
+    OptModel.vTotalSCost              = Var(              within=NonNegativeReals,                                                                                                                     doc='total system                         cost      [MEUR]')
+    OptModel.vTotalICost              = Var(              within=NonNegativeReals,                                                                                                                     doc='total system investment              cost      [MEUR]')
+    OptModel.vTotalFCost              = Var(mTEPES.p,     within=NonNegativeReals,                                                                                                            doc='total system fixed                   cost      [MEUR]')
+    OptModel.vTotalGCost              = Var(mTEPES.psn,   within=NonNegativeReals,                                                                                                            doc='total variable generation  operation cost      [MEUR]')
+    OptModel.vTotalCCost              = Var(mTEPES.psn,   within=NonNegativeReals,                                                                                                            doc='total variable consumption operation cost      [MEUR]')
+    OptModel.vTotalECost              = Var(mTEPES.psn,   within=NonNegativeReals,                                                                                                            doc='total system emission                cost      [MEUR]')
+    OptModel.vTotalRCost              = Var(mTEPES.psn,   within=NonNegativeReals,                                                                                                            doc='total system reliability             cost      [MEUR]')
+    OptModel.vTotalOutput             = Var(mTEPES.psng , within=NonNegativeReals, bounds=lambda OptModel,p,sc,n,g : (0.0,                            mTEPES.pMaxPower         [p,sc,n,g ]),  doc='total output of the unit                         [GW]')
+    OptModel.vOutput2ndBlock          = Var(mTEPES.psnnr, within=NonNegativeReals, bounds=lambda OptModel,p,sc,n,nr: (0.0,                            mTEPES.pMaxPower2ndBlock [p,sc,n,nr]),  doc='second block of the unit                         [GW]')
+    OptModel.vReserveUp               = Var(mTEPES.psnnr, within=NonNegativeReals, bounds=lambda OptModel,p,sc,n,nr: (0.0,                            mTEPES.pMaxPower2ndBlock [p,sc,n,nr]),  doc='upward   operating reserve                       [GW]')
+    OptModel.vReserveDown             = Var(mTEPES.psnnr, within=NonNegativeReals, bounds=lambda OptModel,p,sc,n,nr: (0.0,                            mTEPES.pMaxPower2ndBlock [p,sc,n,nr]),  doc='downward operating reserve                       [GW]')
+    OptModel.vEnergyInflows           = Var(mTEPES.psnec, within=NonNegativeReals, bounds=lambda OptModel,p,sc,n,ec: (0.0,                                mTEPES.pEnergyInflows[p,sc,n,ec]),  doc='unscheduled inflows  of candidate ESS units      [GW]')
+    OptModel.vEnergyOutflows          = Var(mTEPES.psnes, within=NonNegativeReals, bounds=lambda OptModel,p,sc,n,es: (0.0,max(mTEPES.pMaxPower[p,sc,n,es],mTEPES.pMaxCharge    [p,sc,n,es])), doc='scheduled   outflows of all       ESS units      [GW]')
+    OptModel.vESSInventory            = Var(mTEPES.psnes, within=NonNegativeReals, bounds=lambda OptModel,p,sc,n,es: (      mTEPES.pMinStorage[p,sc,n,es],mTEPES.pMaxStorage   [p,sc,n,es]),  doc='ESS inventory                                   [GWh]')
+    OptModel.vESSSpillage             = Var(mTEPES.psnes, within=NonNegativeReals,                                                                                                            doc='ESS spillage                                    [GWh]')
+    OptModel.vESSTotalCharge          = Var(mTEPES.psnes, within=NonNegativeReals, bounds=lambda OptModel,p,sc,n,es: (0.0,                            mTEPES.pMaxCharge        [p,sc,n,es]),  doc='ESS total charge power                           [GW]')
+    OptModel.vCharge2ndBlock          = Var(mTEPES.psnes, within=NonNegativeReals, bounds=lambda OptModel,p,sc,n,es: (0.0,                            mTEPES.pMaxCharge2ndBlock[p,sc,n,es]),  doc='ESS       charge power                           [GW]')
+    OptModel.vESSReserveUp            = Var(mTEPES.psnes, within=NonNegativeReals, bounds=lambda OptModel,p,sc,n,es: (0.0,                            mTEPES.pMaxCharge2ndBlock[p,sc,n,es]),  doc='ESS upward   operating reserve                   [GW]')
+    OptModel.vESSReserveDown          = Var(mTEPES.psnes, within=NonNegativeReals, bounds=lambda OptModel,p,sc,n,es: (0.0,                            mTEPES.pMaxCharge2ndBlock[p,sc,n,es]),  doc='ESS downward operating reserve                   [GW]')
+    OptModel.vENS                     = Var(mTEPES.psnnd, within=NonNegativeReals, bounds=lambda OptModel,p,sc,n,nd: (0.0,                            max(0.0,mTEPES.pDemand   [p,sc,n,nd])), doc='energy not served in node                        [GW]')
 
     if mTEPES.pIndHydroTopology == 1:
-        OptModel.vHydroInflows      = Var(mTEPES.psnrc, within=NonNegativeReals, bounds=lambda OptModel,p,sc,n,rc: (0.0,                            mTEPES.pHydroInflows     [p,sc,n,rc]),  doc='unscheduled inflows  of candidate hydro units    [GW]')
-        OptModel.vHydroOutflows     = Var(mTEPES.psnrs, within=NonNegativeReals, bounds=lambda OptModel,p,sc,n,rs: (0.0,                                  mTEPES.pMaxOutflows[p,sc,n,rs]),  doc='scheduled   outflows of all       hydro units    [GW]')
-        OptModel.vReservoirVolume   = Var(mTEPES.psnrs, within=NonNegativeReals, bounds=lambda OptModel,p,sc,n,rs: (       mTEPES.pMinVolume[p,sc,n,rs],mTEPES.pMaxVolume    [p,sc,n,rs]),  doc='Reservoir volume                                [hm3]')
-        OptModel.vReservoirSpillage = Var(mTEPES.psnrs, within=NonNegativeReals,                                                                                                            doc='Reservoir spillage                              [hm3]')
+        OptModel.vHydroInflows        = Var(mTEPES.psnrc, within=NonNegativeReals, bounds=lambda OptModel,p,sc,n,rc: (0.0,                            mTEPES.pHydroInflows     [p,sc,n,rc]),  doc='unscheduled inflows  of candidate hydro units    [GW]')
+        OptModel.vHydroOutflows       = Var(mTEPES.psnrs, within=NonNegativeReals, bounds=lambda OptModel,p,sc,n,rs: (0.0,                                  mTEPES.pMaxOutflows[p,sc,n,rs]),  doc='scheduled   outflows of all       hydro units    [GW]')
+        OptModel.vReservoirVolume     = Var(mTEPES.psnrs, within=NonNegativeReals, bounds=lambda OptModel,p,sc,n,rs: (       mTEPES.pMinVolume[p,sc,n,rs],mTEPES.pMaxVolume    [p,sc,n,rs]),  doc='Reservoir volume                                [hm3]')
+        OptModel.vReservoirSpillage   = Var(mTEPES.psnrs, within=NonNegativeReals,                                                                                                            doc='Reservoir spillage                              [hm3]')
+
+    if mTEPES.pIndHydrogen == 1:
+        OptModel.vHNS                 = Var(mTEPES.psnnd, within=NonNegativeReals, bounds=lambda OptModel,p,sc,n,nd: (0.0,                            max(0.0,mTEPES.pDemandH2[p,sc,n,nd])),  doc='hydrogen not served in node                     [tH2]')
 
     if mTEPES.pIndBinGenInvest() == 0:
-        OptModel.vGenerationInvest    = Var(mTEPES.pgc,   within=UnitInterval,                                                                                                                    doc='generation investment decision exists in a year [0,1]')
+        OptModel.vGenerationInvest    = Var(mTEPES.pgc,   within=UnitInterval,                                                                                                                    doc='generation       investment decision exists in a year [0,1]')
     else:
-        OptModel.vGenerationInvest    = Var(mTEPES.pgc,   within=Binary,                                                                                                                          doc='generation investment decision exists in a year {0,1}')
+        OptModel.vGenerationInvest    = Var(mTEPES.pgc,   within=Binary,                                                                                                                          doc='generation       investment decision exists in a year {0,1}')
 
     if mTEPES.pIndBinGenRetire() == 0:
-        OptModel.vGenerationRetire    = Var(mTEPES.pgd,   within=UnitInterval,                                                                                                                    doc='generation retirement decision exists in a year [0,1]')
+        OptModel.vGenerationRetire    = Var(mTEPES.pgd,   within=UnitInterval,                                                                                                                    doc='generation       retirement decision exists in a year [0,1]')
     else:
-        OptModel.vGenerationRetire    = Var(mTEPES.pgd,   within=Binary,                                                                                                                          doc='generation retirement decision exists in a year {0,1}')
+        OptModel.vGenerationRetire    = Var(mTEPES.pgd,   within=Binary,                                                                                                                          doc='generation       retirement decision exists in a year {0,1}')
 
     if mTEPES.pIndBinNetInvest() == 0:
-        OptModel.vNetworkInvest       = Var(mTEPES.plc,   within=UnitInterval,                                                                                                                    doc='network    investment decision exists in a year [0,1]')
+        OptModel.vNetworkInvest       = Var(mTEPES.plc,   within=UnitInterval,                                                                                                                    doc='electric network investment decision exists in a year [0,1]')
     else:
-        OptModel.vNetworkInvest       = Var(mTEPES.plc,   within=Binary,                                                                                                                          doc='network    investment decision exists in a year {0,1}')
+        OptModel.vNetworkInvest       = Var(mTEPES.plc,   within=Binary,                                                                                                                          doc='electric network investment decision exists in a year {0,1}')
 
     if mTEPES.pIndHydroTopology == 1:
         if mTEPES.pIndBinRsrInvest() == 0:
-            OptModel.vReservoirInvest = Var(mTEPES.prc,   within=UnitInterval,                                                                                                                    doc='reservoir  investment decision exists in a year [0,1]')
+            OptModel.vReservoirInvest = Var(mTEPES.prc,   within=UnitInterval,                                                                                                                    doc='reservoir        investment decision exists in a year [0,1]')
         else:
-            OptModel.vReservoirInvest = Var(mTEPES.prc,   within=Binary,                                                                                                                          doc='reservoir  investment decision exists in a year {0,1}')
+            OptModel.vReservoirInvest = Var(mTEPES.prc,   within=Binary,                                                                                                                          doc='reservoir        investment decision exists in a year {0,1}')
+
+    if mTEPES.pIndHydrogen == 1:
+        if mTEPES.pIndBinNetH2Invest() == 0:
+            OptModel.vPipelineInvest  = Var(mTEPES.ppc,   within=UnitInterval,                                                                                                                    doc='hydrogen network investment decision exists in a year [0,1]')
+        else:
+            OptModel.vPipelineInvest  = Var(mTEPES.ppc,   within=Binary,                                                                                                                          doc='hydrogen network investment decision exists in a year {0,1}')
 
     if mTEPES.pIndBinGenOperat() == 0:
-        OptModel.vCommitment        = Var(mTEPES.psnnr, within=UnitInterval,     initialize=0.0,                                                                                                doc='commitment         of the unit                  [0,1]')
-        OptModel.vStartUp           = Var(mTEPES.psnnr, within=UnitInterval,     initialize=0.0,                                                                                                doc='startup            of the unit                  [0,1]')
-        OptModel.vShutDown          = Var(mTEPES.psnnr, within=UnitInterval,     initialize=0.0,                                                                                                doc='shutdown           of the unit                  [0,1]')
-        OptModel.vMaxCommitment     = Var(mTEPES.psnr , within=UnitInterval,     initialize=0.0,                                                                                                doc='maximum commitment of the unit                  [0,1]')
+        OptModel.vCommitment          = Var(mTEPES.psnnr, within=UnitInterval,     initialize=0.0,                                                                                                doc='commitment         of the unit                          [0,1]')
+        OptModel.vStartUp             = Var(mTEPES.psnnr, within=UnitInterval,     initialize=0.0,                                                                                                doc='startup            of the unit                          [0,1]')
+        OptModel.vShutDown            = Var(mTEPES.psnnr, within=UnitInterval,     initialize=0.0,                                                                                                doc='shutdown           of the unit                          [0,1]')
+        OptModel.vMaxCommitment       = Var(mTEPES.psnr , within=UnitInterval,     initialize=0.0,                                                                                                doc='maximum commitment of the unit                          [0,1]')
     else:
-        OptModel.vCommitment        = Var(mTEPES.psnnr, within=Binary,           initialize=0  ,                                                                                                doc='commitment         of the unit                  {0,1}')
-        OptModel.vStartUp           = Var(mTEPES.psnnr, within=Binary,           initialize=0  ,                                                                                                doc='startup            of the unit                  {0,1}')
-        OptModel.vShutDown          = Var(mTEPES.psnnr, within=Binary,           initialize=0  ,                                                                                                doc='shutdown           of the unit                  {0,1}')
-        OptModel.vMaxCommitment     = Var(mTEPES.psnr , within=Binary,           initialize=0  ,                                                                                                doc='maximum commitment of the unit                  {0,1}')
+        OptModel.vCommitment          = Var(mTEPES.psnnr, within=Binary,           initialize=0  ,                                                                                                doc='commitment         of the unit                          {0,1}')
+        OptModel.vStartUp             = Var(mTEPES.psnnr, within=Binary,           initialize=0  ,                                                                                                doc='startup            of the unit                          {0,1}')
+        OptModel.vShutDown            = Var(mTEPES.psnnr, within=Binary,           initialize=0  ,                                                                                                doc='shutdown           of the unit                          {0,1}')
+        OptModel.vMaxCommitment       = Var(mTEPES.psnr , within=Binary,           initialize=0  ,                                                                                                doc='maximum commitment of the unit                          {0,1}')
 
     if mTEPES.pIndBinSingleNode() == 0 and mTEPES.pIndBinLineCommit() == 0:
-        OptModel.vLineCommit        = Var(mTEPES.psnla, within=UnitInterval,     initialize=0.0,                                                                                                doc='line switching      of the line                 [0,1]')
+        OptModel.vLineCommit          = Var(mTEPES.psnla, within=UnitInterval,     initialize=0.0,                                                                                                doc='line switching      of the electric line                [0,1]')
     else:
-        OptModel.vLineCommit        = Var(mTEPES.psnla, within=Binary,           initialize=0  ,                                                                                                doc='line switching      of the line                 {0,1}')
+        OptModel.vLineCommit          = Var(mTEPES.psnla, within=Binary,           initialize=0  ,                                                                                                doc='line switching      of the electric line                {0,1}')
 
     if sum(mTEPES.pIndBinLineSwitch[:,:,:]):
         if mTEPES.pIndBinSingleNode() == 0 and mTEPES.pIndBinLineCommit() == 0:
-            OptModel.vLineOnState   = Var(mTEPES.psnla, within=UnitInterval,     initialize=0.0,                                                                                                doc='switching on  state of the line                 [0,1]')
-            OptModel.vLineOffState  = Var(mTEPES.psnla, within=UnitInterval,     initialize=0.0,                                                                                                doc='switching off state of the line                 [0,1]')
+            OptModel.vLineOnState     = Var(mTEPES.psnla, within=UnitInterval,     initialize=0.0,                                                                                                doc='switching on  state of the electric line                [0,1]')
+            OptModel.vLineOffState    = Var(mTEPES.psnla, within=UnitInterval,     initialize=0.0,                                                                                                doc='switching off state of the electric line                [0,1]')
         else:
-            OptModel.vLineOnState   = Var(mTEPES.psnla, within=Binary,           initialize=0  ,                                                                                                doc='switching on  state of the line                 {0,1}')
-            OptModel.vLineOffState  = Var(mTEPES.psnla, within=Binary,           initialize=0  ,                                                                                                doc='switching off state of the line                 {0,1}')
+            OptModel.vLineOnState     = Var(mTEPES.psnla, within=Binary,           initialize=0  ,                                                                                                doc='switching on  state of the electric line                {0,1}')
+            OptModel.vLineOffState    = Var(mTEPES.psnla, within=Binary,           initialize=0  ,                                                                                                doc='switching off state of the electric line                {0,1}')
 
     nFixedVariables = 0.0
 
-    # relax binary condition in generation and network investment decisions
+    # relax binary condition in generation and electric network investment decisions
     for p,gc in mTEPES.pgc:
         if mTEPES.pIndBinGenInvest() != 0 and mTEPES.pIndBinUnitInvest[gc      ] == 0:
-            OptModel.vGenerationInvest[p,gc      ].domain = UnitInterval
+            OptModel.vGenerationInvest   [p,gc      ].domain = UnitInterval
         if mTEPES.pIndBinGenInvest() == 2:
-            OptModel.vGenerationInvest[p,gc      ].fix(0)
+            OptModel.vGenerationInvest   [p,gc      ].fix(0)
             nFixedVariables += 1
     for p,ni,nf,cc in mTEPES.plc:
         if mTEPES.pIndBinNetInvest() != 0 and mTEPES.pIndBinLineInvest[ni,nf,cc] == 0:
-            OptModel.vNetworkInvest   [p,ni,nf,cc].domain = UnitInterval
+            OptModel.vNetworkInvest      [p,ni,nf,cc].domain = UnitInterval
         if mTEPES.pIndBinNetInvest() == 2:
-            OptModel.vNetworkInvest   [p,ni,nf,cc].fix(0)
+            OptModel.vNetworkInvest      [p,ni,nf,cc].fix(0)
             nFixedVariables += 1
 
     # relax binary condition in generation retirement decisions
     for p,gd in mTEPES.pgd:
         if mTEPES.pIndBinGenRetire() != 0 and mTEPES.pIndBinUnitRetire[gd      ] == 0:
-            OptModel.vGenerationRetire[p,gd      ].domain = UnitInterval
+            OptModel.vGenerationRetire   [p,gd      ].domain = UnitInterval
         if mTEPES.pIndBinGenRetire() == 2:
-            OptModel.vGenerationRetire[p,gd      ].fix(0)
+            OptModel.vGenerationRetire   [p,gd      ].fix(0)
             nFixedVariables += 1
+
+    if mTEPES.pIndHydroTopology == 1:
+        # relax binary condition in reservoir investment decisions
+        for p,rc in mTEPES.prc:
+            if mTEPES.pIndBinRsrInvest() != 0 and mTEPES.pIndBinRsrvInvest[rc      ] == 0:
+                OptModel.vReservoirInvest[p,rc      ].domain = UnitInterval
+            if mTEPES.pIndBinGenInvest() == 2:
+                OptModel.vReservoirInvest[p,rc      ].fix(0)
+                nFixedVariables += 1
+
+    if mTEPES.pIndHydrogen == 1:
+        # relax binary condition in hydrogen network investment decisions
+        for p,ni,nf,cc in mTEPES.ppc:
+            if mTEPES.pIndBinNetH2Invest() != 0 and mTEPES.pIndBinPipeInvest[ni,nf,cc] == 0:
+                OptModel.vPipelineInvest [p,ni,nf,cc].domain = UnitInterval
+            if mTEPES.pIndBinNetH2Invest() == 2:
+                OptModel.vPipelineInvest [p,ni,nf,cc].fix(0)
+                nFixedVariables += 1
 
     # assign the minimum power for the RES units
     for p,sc,n,re in mTEPES.psnre:
@@ -1239,10 +1368,13 @@ def SettingUpVariables(OptModel, mTEPES):
 
     OptModel.vLineLosses = Var(mTEPES.psnll, within=NonNegativeReals, bounds=lambda OptModel,p,sc,n,*ll: (0.0,0.5*mTEPES.pLineLossFactor[ll]*max(mTEPES.pLineNTCBck[ll],mTEPES.pLineNTCFrw[ll])), doc='half line losses [GW]')
     if mTEPES.pIndBinSingleNode() == 0:
-        OptModel.vFlow   = Var(mTEPES.psnla, within=Reals,            bounds=lambda OptModel,p,sc,n,*la: (                                      -mTEPES.pLineNTCBck[la],mTEPES.pLineNTCFrw[la]),  doc='flow             [GW]')
+        OptModel.vFlow   = Var(mTEPES.psnla, within=Reals,            bounds=lambda OptModel,p,sc,n,*la: (                                      -mTEPES.pLineNTCBck[la],mTEPES.pLineNTCFrw[la]),  doc='electric flow    [GW]')
     else:
-        OptModel.vFlow   = Var(mTEPES.psnla, within=Reals,                                                                                                                                        doc='flow             [GW]')
+        OptModel.vFlow   = Var(mTEPES.psnla, within=Reals,                                                                                                                                        doc='electric flow    [GW]')
     OptModel.vTheta      = Var(mTEPES.psnnd, within=Reals,            bounds=lambda OptModel,p,sc,n, nd: (                            -mTEPES.pMaxTheta[p,sc,n,nd],mTEPES.pMaxTheta[p,sc,n,nd]),  doc='voltage angle   [rad]')
+
+    if mTEPES.pIndHydrogen == 1:
+        OptModel.vFlowH2 = Var(mTEPES.psnpa, within=Reals,            bounds=lambda OptModel,p,sc,n,*pa: (                                      -mTEPES.pPipeNTCBck[pa],mTEPES.pPipeNTCFrw[pa]),  doc='pipeline flow   [tH2]')
 
     # fix the must-run units and their output
     for p,sc,n,g  in mTEPES.psng :
@@ -1417,6 +1549,13 @@ def SettingUpVariables(OptModel, mTEPES):
             OptModel.vENS[p,sc,n,nd].fix(0.0)
             nFixedVariables += 1
 
+    if mTEPES.pIndHydrogen == 1:
+        # fixing the ENS H2 in nodes with no hydrogen demand
+        for p,sc,n,nd in mTEPES.psnnd:
+            if mTEPES.pDemandH2[p,sc,n,nd] == 0.0:
+                OptModel.vHNS[p,sc,n,nd].fix (0.0)
+                nFixedVariables += 1
+
     # do not install/retire power plants and lines if not allowed in this period
     for p,gc in mTEPES.pgc:
         if mTEPES.pPeriodIniGen[gc] > p or mTEPES.pPeriodFinGen[gc] < p:
@@ -1432,6 +1571,18 @@ def SettingUpVariables(OptModel, mTEPES):
         if mTEPES.pPeriodIniNet[ni,nf,cc] > p or mTEPES.pPeriodFinNet[ni,nf,cc] < p:
             OptModel.vNetworkInvest[p,ni,nf,cc].fix(0)
             nFixedVariables += 1
+
+    if mTEPES.pIndHydroTopology == 1:
+        for p,rc in mTEPES.prc:
+            if mTEPES.pPeriodIniRsr[rc] > p or mTEPES.pPeriodFinRsr[rc] < p:
+                OptModel.vReservoirInvest[p,rc].fix(0)
+                nFixedVariables += 1
+
+    if mTEPES.pIndHydrogen == 1:
+        for p,ni,nf,cc in mTEPES.ppc:
+            if mTEPES.pPeriodIniPipe[ni,nf,cc] > p or mTEPES.pPeriodFinPipe[ni,nf,cc] < p:
+                OptModel.vPipeInvest[p,ni,nf,cc].fix(0)
+                nFixedVariables += 1
 
     # remove power plants and lines not installed in this period
     for p,g in mTEPES.pg:
@@ -1499,6 +1650,13 @@ def SettingUpVariables(OptModel, mTEPES):
                 OptModel.vLineLosses  [p,sc,n,ni,nf,cc].fix(0.0)
                 nFixedVariables += 1
 
+    if mTEPES.pIndHydrogen == 1:
+        for p,ni,nf,cc in mTEPES.ppa:
+            if (ni,nf,cc) not in mTEPES.pc and (mTEPES.pPeriodIniPipe[ni,nf,cc] > p or mTEPES.pPeriodFinPipe[ni,nf,cc] < p):
+                for sc,n in mTEPES.sc*mTEPES.n:
+                    OptModel.vFlowH2      [p,sc,n,ni,nf,cc].fix(0.0)
+                    nFixedVariables += 4
+
     # tolerance to consider 0 a number
     pEpsilon = 1e-4
     for p,gc in mTEPES.pgc:
@@ -1540,6 +1698,36 @@ def SettingUpVariables(OptModel, mTEPES):
             mTEPES.pNetLoInvest   [  ni,nf,cc]   =   mTEPES.pNetUpInvest[ni,nf,cc]()
         OptModel.vNetworkInvest   [p,ni,nf,cc].setlb(mTEPES.pNetLoInvest[ni,nf,cc])
         OptModel.vNetworkInvest   [p,ni,nf,cc].setub(mTEPES.pNetUpInvest[ni,nf,cc])
+
+    if mTEPES.pIndHydroTopology == 1:
+        for p,rc in mTEPES.prc:
+            if  mTEPES.pRsrLoInvest   [  rc      ]() <       pEpsilon:
+                mTEPES.pRsrLoInvest   [  rc      ]   = 0
+            if  mTEPES.pRsrUpInvest   [  rc      ]() <       pEpsilon:
+                mTEPES.pRsrUpInvest   [  rc      ]   = 0
+            if  mTEPES.pRsrLoInvest   [  rc      ]() > 1.0 - pEpsilon:
+                mTEPES.pRsrLoInvest   [  rc      ]   = 1
+            if  mTEPES.pRsrUpInvest   [  rc      ]() > 1.0 - pEpsilon:
+                mTEPES.pRsrUpInvest   [  rc      ]   = 1
+            if  mTEPES.pRsrLoInvest   [  rc      ]() >   mTEPES.pRsrUpInvest[rc      ]():
+                mTEPES.pRsrLoInvest   [  rc      ]   =   mTEPES.pRsrUpInvest[rc      ]()
+            OptModel.vReservoirInvest [p,rc      ].setlb(mTEPES.pRsrLoInvest[rc      ])
+            OptModel.vReservoirInvest [p,rc      ].setub(mTEPES.pRsrUpInvest[rc      ])
+
+    if mTEPES.pIndHydrogen == 1:
+        for p,ni,nf,cc in mTEPES.ppc:
+            if  mTEPES.pPipeLoInvest[  ni,nf,cc]() <       pEpsilon:
+                mTEPES.pPipeLoInvest[  ni,nf,cc]   = 0
+            if  mTEPES.pPipeUpInvest[  ni,nf,cc]() <       pEpsilon:
+                mTEPES.pPipeUpInvest[  ni,nf,cc]   = 0
+            if  mTEPES.pPipeLoInvest[  ni,nf,cc]() > 1.0 - pEpsilon:
+                mTEPES.pPipeLoInvest[  ni,nf,cc]   = 1
+            if  mTEPES.pPipeUpInvest[  ni,nf,cc]() > 1.0 - pEpsilon:
+                mTEPES.pPipeUpInvest[  ni,nf,cc]   = 1
+            if  mTEPES.pPipeLoInvest[  ni,nf,cc]() >   mTEPES.pPipeUpInvest[ni,nf,cc]():
+                mTEPES.pPipeLoInvest[  ni,nf,cc]   =   mTEPES.pPipeUpInvest[ni,nf,cc]()
+            OptModel.vPipelineInvest[p,ni,nf,cc].setlb(mTEPES.pPipeLoInvest[ni,nf,cc])
+            OptModel.vPipelineInvest[p,ni,nf,cc].setub(mTEPES.pPipeUpInvest[ni,nf,cc])
 
     # detecting infeasibility: sum of scenario probabilities must be 1 in each period
     # for p in mTEPES.p:

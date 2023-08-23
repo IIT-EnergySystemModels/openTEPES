@@ -46,6 +46,7 @@ Indices
 :math:`EE, CE`           Set of existing and candidate ESS
 :math:`ER, CR`           Set of existing and candidate reservoirs
 :math:`EL, CL`           Set of existing and non-switchable, and candidate and switchable lines
+:math:`EP, CP`           Set of existing and candidate pipelines
 =======================  ===============================================================================================
 
 Parameters
@@ -63,12 +64,19 @@ They are written in **uppercase** letters.
 ==================  ====================================================  =======
 
 ========================  ====================================================  =======
-**Demand**
+**Electricity demand**
 ------------------------  ----------------------------------------------------  -------
-:math:`D^p_{\omega ni}`   Demand in each node                                   GW
+:math:`D^p_{\omega ni}`   Electricity demand in each node                       GW
 :math:`PD_a`              Peak demand in each area                              GW
 :math:`DUR_n`             Duration of each load level                           h
 :math:`CENS`              Cost of energy not served. Value of Lost Load (VoLL)  €/MWh
+========================  ====================================================  =======
+
+========================  ====================================================  =======
+**Hydrogen demand**
+------------------------  ----------------------------------------------------  -------
+:math:`DH^p_{\omega ni}`  Hydrogen demand in each node                          tH2
+:math:`CHNS`              Cost of hydrogen not served                           €/tH2
 ========================  ====================================================  =======
 
 ===========================  ====================================================  =======
@@ -135,9 +143,9 @@ They are written in **uppercase** letters.
 =====================================================================  =======================================================================================================  ================
 
 =========================================  =================================================================================================================  =====
-**Transmission system**
+**Electric transmission system**
 -----------------------------------------  -----------------------------------------------------------------------------------------------------------------  -----
-:math:`CFT_{ijc}`                          Annualized fixed cost of a candidate transmission line                                                             M€/yr
+:math:`CFT_{ijc}`                          Annualized fixed cost of a candidate electric transmission line                                                    M€/yr
 :math:`\overline{F}_{ijc}`                 Net transfer capacity (total transfer capacity multiplied by the security coefficient) of a transmission line      GW
 :math:`\overline{F}'_{ijc}`                Maximum flow used in the Kirchhoff's 2nd law constraint (e.g., disjunctive constraint for the candidate AC lines)  GW
 :math:`L_{ijc}, X_{ijc}`                   Loss factor and reactance of a transmission line                                                                   p.u.
@@ -147,16 +155,31 @@ They are written in **uppercase** letters.
 
 The net transfer capacity of a transmission line can be different in each direction. However, here it is presented as equal for simplicity.
 
+=========================================  =================================================================================================================  =====
+**Hydrogen transmission system**
+-----------------------------------------  -----------------------------------------------------------------------------------------------------------------  -----
+:math:`CFP_{ijc}`                          Annualized fixed cost of a candidate transmission pipeline                                                         M€/yr
+:math:`\overline{FH}_{ijc}`                Net transfer capacity (total transfer capacity multiplied by the security coefficient) of a pipeline               tH2
+=========================================  =================================================================================================================  =====
+
+The net transfer capacity of a transmission pipeline can be different in each direction. However, here it is presented as equal for simplicity.
+
 Variables
 ---------
 
 They are written in **lowercase** letters.
 
 ==========================  ==================  ===
-**Demand**
+**Electric demand**
 --------------------------  ------------------  ---
 :math:`ens^p_{\omega ni}`   Energy not served   GW
 ==========================  ==================  ===
+
+==========================  ===================  ===
+**Hydrogen demand**
+--------------------------  -------------------  ---
+:math:`hns^p_{\omega ni}`   Hydrogen not served   GW
+==========================  ===================  ===
 
 ============================================================  ==============================================================================  ================
 **Generation system**
@@ -187,13 +210,20 @@ They are written in **lowercase** letters.
 ======================================  ==========================================================================  ==============
 
 ========================================================================  ==============================================================  =====
-**Transmission system**
+**Electric transmission system**
 ------------------------------------------------------------------------  --------------------------------------------------------------  -----
 :math:`ict^p_{ijc}`                                                       Candidate line installed or not                                 {0,1}
 :math:`swt^p_{\omega nijc}, son^p_{\omega nijc}, sof^p_{\omega nijc}`     Switching state, switch-on and switch-off of a line             {0,1}
-:math:`f^p_{\omega nijc}`                                                 Flow through a line                                             GW
+:math:`f^p_{\omega nijc}`                                                 Power flow through a line                                       GW
 :math:`l^p_{\omega nijc}`                                                 Half ohmic losses of a line                                     GW
 :math:`\theta^p_{\omega ni}`                                              Voltage angle of a node                                         rad
+========================================================================  ==============================================================  =====
+
+========================================================================  ==============================================================  =====
+**Hydrogen pipeline transmission system**
+------------------------------------------------------------------------  --------------------------------------------------------------  -----
+:math:`icp^p_{ijc}`                                                       Candidate pipeline installed or not                             {0,1}
+:math:`fh^p_{\omega nijc}`                                                Hydrogen flow through a line                                    tH2
 ========================================================================  ==============================================================  =====
 
 Equations
@@ -203,9 +233,9 @@ The names between parenthesis correspond to the names of the constraints in the 
 
 **Objective function**: minimization of total (investment and operation) cost for the multi-period scope of the model
 
-Generation, storage and network investment cost plus retirement cost [M€] «``eTotalFCost``»
+Generation, (energy and reservoir) storage and (electric and hydrogen) network investment cost plus retirement cost [M€] «``eTotalFCost``»
 
-:math:`\sum_{pg} DF^p CFG_g icg^p_g + \sum_{pg} DF^p CFR_g rcg^p_g + \sum_{pijc} DF^p CFT_{ijc} ict^p_{ijc} + \sum_{pe'} DF^p CFE_{e'} icr^p_{e'} +`
+:math:`\sum_{pg} DF^p CFG_g icg^p_g + \sum_{pg} DF^p CFR_g rcg^p_g + \sum_{pijc} DF^p CFT_{ijc} ict^p_{ijc} + \sum_{pijc} DF^p CFP_{ijc} icp^p_{ijc} + \sum_{pe'} DF^p CFE_{e'} icr^p_{e'} +`
 
 Generation operation cost [M€] «``eTotalGCost``»
 
@@ -219,9 +249,13 @@ Variable consumption operation cost [M€] «``eTotalCCost``»
 
 :math:`\sum_{p \omega ne}{DF^p P^p_{\omega} DUR_n CV_e gc^p_{\omega ne}} +`
 
-Reliability cost [M€] «``eTotalRCost``»
+Electricity reliability cost [M€] «``eTotalRCost``»
 
 :math:`\sum_{p \omega ni}{DF^p P^p_{\omega} DUR_n CENS ens^p_{\omega ni}}`
+
+Hydrogen reliability cost [M€] «``eTotalHRCost``»
+
+:math:`\sum_{p \omega ni}{DF^p P^p_{\omega} DUR_n CHNS hns^p_{\omega ni}}`
 
 All the periodical (annual) costs of a period :math:`p` are updated considering that the period (e.g., 2030) is replicated for a number of years defined by its weight :math:`WG^p` (e.g., 5 times) and discounted to the base year :math:`T` (e.g., 2020) with this discount factor :math:`DF^p = \frac{(1+\delta)^{WG^p}-1}{\delta(1+\delta)^{WG^p-1+p-T}}`.
 
@@ -229,13 +263,17 @@ All the periodical (annual) costs of a period :math:`p` are updated considering 
 
 **Generation and network investment and retirement**
 
-Investment and retirement decisions in consecutive years «``eConsecutiveGenInvest``» «``eConsecutiveGenRetire``» «``eConsecutiveNetInvest``»
+Investment and retirement decisions in consecutive years «``eConsecutiveGenInvest``» «``eConsecutiveGenRetire``» «``eConsecutiveRsrInvest``» «``eConsecutiveNetInvest``» «``eConsecutiveNetH2Invest``»
 
 :math:`icg^{p-1}_g \leq icg^p_g \quad \forall pg, g \in CG`
 
 :math:`rcg^{p-1}_g \leq rcg^p_g \quad \forall pg, g \in CG`
 
+:math:`icr^{p-1}_{e'} \leq icr^p_{e'} \quad \forall pe', e' \in CR`
+
 :math:`ict^{p-1}_{ijc} \leq ict^p_{ijc} \quad \forall pijc, ijc \in CL`
+
+:math:`icp^{p-1}_{ijc} \leq icp^p_{ijc} \quad \forall pijc, ijc \in CP`
 
 **Generation operation**
 
@@ -257,7 +295,7 @@ Adequacy system reserve margin [p.u.] «``eAdequacyReserveMargin``»
 
 :math:`\sum_{g \in a, EG} \overline{GP}_g A_g + \sum_{g \in a, CG} icg^p_g  \overline{GP}_g A_g \geq PD_a RM_a \quad \forall pa`
 
-Balance of generation and demand at each node with ohmic losses [GW] «``eBalance``»
+Balance of electric generation and demand at each node with ohmic losses [GW] «``eBalance``»
 
 :math:`\sum_{g \in i} gp^p_{\omega ng} - \sum_{e \in i} gc^p_{\omega ne} + ens^p_{\omega ni} = D^p_{\omega ni} + \sum_{jc} l^p_{\omega nijc} + \sum_{jc} l^p_{\omega njic} + \sum_{jc} f^p_{\omega nijc} - \sum_{jc} f^p_{\omega njic} \quad \forall p \omega ni`
 
@@ -429,7 +467,7 @@ Hydro outflows (only for load levels multiple of 1, 24, 168, 672, and 8736 h dep
 
 :math:`\sum_{n' = n-\frac{\tau_e'}{\rho_e'}}^n (ho^p_{\omega n'e'} - HO^p_{\omega n'e'}) DUR_n' = 0 \quad \forall p \omega ne', n \in \rho_e'`
 
-**Network operation**
+**Electric network operation**
 
 Logical relation between transmission investment and switching {0,1} «``eLineStateCand``»
 
@@ -460,6 +498,12 @@ DC Power flow for existing and non-switchable, and candidate and switchable AC-t
 Half ohmic losses are linearly approximated as a function of the flow [GW] «``eLineLosses1``» «``eLineLosses2``»
 
 :math:`- \frac{L_{ijc}}{2} f^p_{\omega nijc} \leq l^p_{\omega nijc} \geq \frac{L_{ijc}}{2} f^p_{\omega nijc} \quad \forall p \omega nijc`
+
+**Hydrogen network operation**
+
+Balance of hydrogen generation and demand at each node [tH2] «``eBalanceH2``»
+
+:math:`- \sum_{e \in i} gc^p_{\omega ne} + hns^p_{\omega ni} = DH^p_{\omega ni} + \sum_{jc} fh^p_{\omega nijc} - \sum_{jc} fh^p_{\omega njic} \quad \forall p \omega ni`
 
 **Bounds on generation variables** [GW]
 
@@ -495,7 +539,7 @@ Half ohmic losses are linearly approximated as a function of the flow [GW] «``e
 
 :math:`0 \leq s'^p_{\omega ne'}                                                               \quad \forall p \omega ne'`
 
-**Bounds on network variables** [GW]
+**Bounds on electric network variables** [GW]
 
 :math:`0 \leq l^p_{\omega nijc} \leq \frac{L_{ijc}}{2} \overline{F}_{ijc}  \quad \forall p \omega nijc`
 
@@ -504,3 +548,7 @@ Half ohmic losses are linearly approximated as a function of the flow [GW] «``e
 Voltage angle of the reference node fixed to 0 for each scenario, period, and load level [rad]
 
 :math:`\theta^p_{\omega n,node_{ref}} = 0`
+
+**Bounds on hydrogen network variables** [tH2]
+
+:math:`- \overline{FH}_{ijc} \leq fh^p_{\omega nijc} \leq \overline{FH}_{ijc} \quad \forall p \omega nijc, ijc \in EP`

@@ -82,7 +82,7 @@ File                                       Description
 ``oT_Data_Stage.csv``                      Weight of each stage
 ``oT_Data_ReserveMargin.csv``              Adequacy reserve margin
 ``oT_Data_Duration.csv``                   Duration of the load levels
-``oT_Data_Demand.csv``                     Demand
+``oT_Data_Demand.csv``                     Electricity demand
 ``oT_Data_Inertia.csv``                    System inertia by area
 ``oT_Data_OperatingReserveUp.csv``         Upward   operating reserves (include aFRR, mFRR and RR for electricity balancing from ENTSO-E)
 ``oT_Data_OperatingReserveDown.csv``       Downward operating reserves (include aFRR, mFRR and RR for electricity balancing from ENTSO-E)
@@ -227,8 +227,8 @@ Consecutive stages are not tied between them. Consequently, the objective functi
 The initial storage of the ESSs is also fixed at the beginning and end of each stage. For example, the initial storage level is set for the hour 8736 in case of a single stage or for the hours 4368 and 4369
 (end of the first stage and beginning of the second stage) in case of two stages, each with 4368 hours.
 
-Demand
-------
+Electricity demand
+------------------
 
 A description of the data included in the file ``oT_Data_Demand.csv`` follows:
 
@@ -238,7 +238,7 @@ Identifier  Identifier      Identifier  Header  Description
 Period      Scenario        Load level  Node    Power demand of the node for each load level  MW
 ==========  ==============  ==========  ======  ============================================  ==
 
-The demand can be negative for the (transmission) nodes where there is (renewable) generation in lower voltage levels. This negative demand is equivalent to generate that power amount in this node.
+The electricity demand can be negative for the (transmission) nodes where there is (renewable) generation in lower voltage levels. This negative demand is equivalent to generate that power amount in this node.
 Internally, all the values below if positive demand (or above if negative demand) 2.5e-5 times the maximum system demand of each area will be converted into 0 by the model.
 
 System inertia
@@ -254,7 +254,7 @@ Period      Scenario        Load level  Area    System inertia of the area for e
 
 Given that the system inertia depends on the area, it can be sensible to assign an area as a country, for example. The system inertia can be used for imposing a minimum synchronous power and, consequently, force the commitment of at least some rotating units.
 
-Internally, all the values below 2.5e-5 times the maximum system demand of each area will be converted into 0 by the model.
+Internally, all the values below 2.5e-5 times the maximum system electricity demand of each area will be converted into 0 by the model.
 
 Upward and downward operating reserves
 --------------------------------------
@@ -285,7 +285,7 @@ MutuallyExclusive     Mutually exclusive generator. Only exclusion in one direct
 BinaryCommitment      Binary unit commitment decision                                                                                                   Yes/No
 NoOperatingReserve    No contribution to operating reserve. Yes if the unit doesn't contribute to the operating reserve                                 Yes/No
 StorageType           Storage type based on storage capacity (hourly, daily, weekly, 4-week, yearly)                                                    Hourly/Daily/Weekly/Monthly/Yearly
-OutflowsType          Outflows type based on the demand extracted from the storage (daily, weekly, 4-week, yearly)                                      Daily/Weekly/Monthly/Yearly
+OutflowsType          Outflows type based on the electricity demand extracted from the storage (daily, weekly, 4-week, yearly)                          Daily/Weekly/Monthly/Yearly
 EnergyType            Energy type based on the max/min energy to be produced by the unit (daily, weekly, 4-week, yearly)                                Daily/Weekly/Monthly/Yearly
 MustRun               Must-run unit                                                                                                                     Yes/No
 InitialPeriod         Initial period (year) when the unit is installed or can be installed, if candidate                                                Year
@@ -674,37 +674,20 @@ A description of the circuit (initial node, final node, circuit) data included i
 ===================  ===============================================================================================================  ======
 Header               Description
 ===================  ===============================================================================================================  ======
-LineType             Line type {AC, DC, Transformer, Converter}
-Switching            The transmission line is able to switch on/off                                                                   Yes/No
 InitialPeriod        Initial period (year) when the unit is installed or can be installed, if candidate                               Year
 FinalPeriod          Final   period (year) when the unit is installed or can be installed, if candidate                               Year
-Voltage              Line voltage (e.g., 400, 220 kV, 220/400 kV if transformer). Used only for plotting purposes                     kV
 Length               Line length (only used for reporting purposes). If not defined, computed as 1.1 times the geographical distance  km
-LossFactor           Transmission losses equal to the line flow times this factor                                                     p.u.
-Resistance           Resistance (not used in this version)                                                                            p.u.
-Reactance            Reactance. Lines must have a reactance different from 0 to be considered                                         p.u.
-Susceptance          Susceptance (not used in this version)                                                                           p.u.
-AngMax               Maximum angle difference (not used in this version)                                                              º
-AngMin               Minimum angle difference (not used in this version)                                                              º
-Tap                  Tap changer (not used in this version)                                                                           p.u.
-Converter            Converter station (not used in this version)                                                                     Yes/No
-TTC                  Total transfer capacity (maximum permissible thermal load) in forward  direction. Static line rating             MW
-TTCBck               Total transfer capacity (maximum permissible thermal load) in backward direction. Static line rating             MW
+TTC                  Total transfer capacity (maximum permissible thermal load) in forward  direction. Static line rating             tH2
+TTCBck               Total transfer capacity (maximum permissible thermal load) in backward direction. Static line rating             tH2
 SecurityFactor       Security factor to consider approximately N-1 contingencies. NTC = TTC x SecurityFactor                          p.u.
 FixedInvestmentCost  Overnight investment (capital and fixed O&M) cost                                                                M€
 FixedChargeRate      Fixed-charge rate to annualize the overnight investment cost                                                     p.u.
 BinaryInvestment     Binary line/circuit investment decision                                                                          Yes/No
 InvestmentLo         Lower bound of investment decision                                                                               p.u.
 InvestmentUp         Upper bound of investment decision                                                                               p.u.
-SwOnTime             Minimum switch-on time                                                                                           h
-SwOffTime            Minimum switch-off time                                                                                          h
 ===================  ===============================================================================================================  ======
 
-Depending on the voltage lines are plotted with different colors (orange < 200 kV, 200 < green < 350 kV, 350 < red < 500 kV, 500 < orange < 700 kV, blue > 700 kV).
-
 If there is no data for TTCBck, i.e., TTCBck is left empty or is equal to 0, it is substituted by the TTC in the code. Internally, all the TTC and TTCBck values below 2.5e-5 times the maximum system demand of each area will be converted into 0 by the model.
-
-Reactance can take a negative value as a result of the approximation of three-winding transformers. No Kirchhoff's second law disjunctive constraint is formulated for a circuit with negative reactance.
 
 Those lines with fixed cost > 0 are considered candidate and can be installed or not.
 
