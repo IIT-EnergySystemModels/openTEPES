@@ -21,13 +21,17 @@ DCPF        DC Power Flow
 DR          Demand Response
 DSM         Demand-Side Management
 EFOR        Equivalent Forced Outage Rate
+ENS         Energy Not Served
 ENTSO-E     European Network of Transmission System Operators for Electricity
 ESS         Energy Storage System
 EV          Electric Vehicle
 mFRR        Manual Frequency Restoration Reserve
+H2          Hydrogen
+HNS         Hydrogen Not Served
 NTC         Net Transfer Capacity
 OCGT        Open Cycle Gas Turbine
 PHS         Pumped-Hydro Storage
+PNS         Power Not Served
 PV          Photovoltaics
 RR          Replacement Reserve
 TTC         Total Transfer Capacity
@@ -134,9 +138,9 @@ A description of the system parameters included in the file ``oT_Data_Parameter.
 ====================  =============================================================================================================  =========
 File                  Description                                                                              
 ====================  =============================================================================================================  =========
-ENSCost               Cost of energy not served. Cost of load curtailment. Value of Lost Load (VoLL)                                 €/MWh   
-HNSCost               Cost of hydrogen not served                                                                                    €/kgH2
-PNSCost               Cost of power not served associated with the deficit in operating reserve by load level                        €/MW
+ENSCost               Cost of energy not served (ENS). Cost of load curtailment. Value of Lost Load (VoLL)                           €/MWh
+HNSCost               Cost of hydrogen not served (HNS)                                                                              €/kgH2
+PNSCost               Cost of power not served (PNS) associated with the deficit in operating reserve by load level                  €/MW
 CO2Cost               Cost of CO2 emissions                                                                                          €/tCO2
 UpReserveActivation   Upward   reserve activation (proportion of upward   operating reserve deployed to produce energy)              p.u.
 DwReserveActivation   Downward reserve activation (proportion of downward operating reserve deployed to produce energy)              p.u.
@@ -672,24 +676,24 @@ Hydrogen transmission pipeline network
 
 A description of the circuit (initial node, final node, circuit) data included in the file ``oT_Data_NetworkHydrogen.csv`` follows:
 
-===================  ===============================================================================================================  ======
+===================  ===================================================================================================================  ======
 Header               Description
-===================  ===============================================================================================================  ======
-InitialPeriod        Initial period (year) when the unit is installed or can be installed, if candidate                               Year
-FinalPeriod          Final   period (year) when the unit is installed or can be installed, if candidate                               Year
-Length               Line length (only used for reporting purposes). If not defined, computed as 1.1 times the geographical distance  km
-TTC                  Total transfer capacity (maximum permissible thermal load) in forward  direction. Static line rating             tH2
-TTCBck               Total transfer capacity (maximum permissible thermal load) in backward direction. Static line rating             tH2
-SecurityFactor       Security factor to consider approximately N-1 contingencies. NTC = TTC x SecurityFactor                          p.u.
-FixedInvestmentCost  Overnight investment (capital and fixed O&M) cost                                                                M€
-FixedChargeRate      Fixed-charge rate to annualize the overnight investment cost                                                     p.u.
-BinaryInvestment     Binary line/circuit investment decision                                                                          Yes/No
-InvestmentLo         Lower bound of investment decision                                                                               p.u.
-InvestmentUp         Upper bound of investment decision                                                                               p.u.
-===================  ===============================================================================================================  ======
+===================  ===================================================================================================================  ======
+InitialPeriod        Initial period (year) when the unit is installed or can be installed, if candidate                                   Year
+FinalPeriod          Final   period (year) when the unit is installed or can be installed, if candidate                                   Year
+Length               Pipeline length (only used for reporting purposes). If not defined, computed as 1.1 times the geographical distance  km
+TTC                  Total transfer capacity (maximum permissible thermal load) in forward  direction. Static pipeline rating             tH2
+TTCBck               Total transfer capacity (maximum permissible thermal load) in backward direction. Static pipeline rating             tH2
+SecurityFactor       Security factor to consider approximately N-1 contingencies. NTC = TTC x SecurityFactor                              p.u.
+FixedInvestmentCost  Overnight investment (capital and fixed O&M) cost                                                                    M€
+FixedChargeRate      Fixed-charge rate to annualize the overnight investment cost                                                         p.u.
+BinaryInvestment     Binary pipeline investment decision                                                                                  Yes/No
+InvestmentLo         Lower bound of investment decision                                                                                   p.u.
+InvestmentUp         Upper bound of investment decision                                                                                   p.u.
+===================  ===================================================================================================================  ======
 
 If there is no data for TTCBck, i.e., TTCBck is left empty or is equal to 0, it is substituted by the TTC in the code. Internally, all the TTC and TTCBck values below 2.5e-5 times the maximum system demand of each area will be converted into 0 by the model.
 
-Those lines with fixed cost > 0 are considered candidate and can be installed or not.
+Those pipelines with fixed cost > 0 are considered candidate and can be installed or not.
 
 If lower and upper bounds of investment decisions are very close (with a difference < 1e-3) to 0 or 1 are converted into 0 and 1.

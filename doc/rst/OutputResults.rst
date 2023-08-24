@@ -95,7 +95,7 @@ File ``oT_Result_NetworkInvestment.csv``
 ============  ==========  ==========  ======  =======================================
 Identifier    Identifier  Identifier  Header  Description
 ============  ==========  ==========  ======  =======================================
-Initial node  Final node  Circuit     p.u.    Electricity networ investment decision
+Initial node  Final node  Circuit     p.u.    Electricity network investment decision
 ============  ==========  ==========  ======  =======================================
 
 File ``oT_Result_NetworkInvestment_MWkm.csv``
@@ -555,8 +555,8 @@ Identifier    Identifier  Identifier  Header      Description
 Period        Scenario    Load level  Reservoir   Water volume value [€/dam\ :sup:`3`]
 ============  ==========  ==========  ==========  ================================================
 
-Electricity network operation
------------------------------
+Electric network operation
+--------------------------
 
 File ``oT_Result_NetworkCommitment.csv``
 
@@ -785,19 +785,19 @@ Period        Scenario    Load level  Area        Marginal of the downward opera
 
 File ``oT_Result_NetworkInvestment_ReducedCost.csv``
 
-============  ==========  ==========  =====================================================
+============  ==========  ==========  ===========================================================
 Identifier    Identifier  Identifier  Description
-============  ==========  ==========  =====================================================
-Initial node  Final node  Circuit     Reduced costs of network investment decisions [M€]
-============  ==========  ==========  =====================================================
+============  ==========  ==========  ===========================================================
+Initial node  Final node  Circuit     Reduced costs of electric network investment decisions [M€]
+============  ==========  ==========  ===========================================================
 
 File ``oT_Result_NetworkCommitment_ReducedCost.csv``
 
-============  ==========  ==========  =====================================================
+============  ==========  ==========  ===========================================================
 Identifier    Identifier  Identifier  Description
-============  ==========  ==========  =====================================================
-Initial node  Final node  Circuit     Reduced costs of network switching decisions [M€]
-============  ==========  ==========  =====================================================
+============  ==========  ==========  ===========================================================
+Initial node  Final node  Circuit     Reduced costs of electric network switching decisions [M€]
+============  ==========  ==========  ===========================================================
 
 Economic
 --------
@@ -892,11 +892,11 @@ Period        Scenario    Load level  Generator   Emission cost for the generati
 
 File ``oT_Result_NetworkCostENS.csv``
 
-============  ==========  ==========  ==========  ==========================================
+============  ==========  ==========  ==========  ================================================
 Identifier    Identifier  Identifier  Header      Description
-============  ==========  ==========  ==========  ==========================================
-Period        Scenario    Load level  Node        Reliability cost (cost of the ENS) [M€]
-============  ==========  ==========  ==========  ==========================================
+============  ==========  ==========  ==========  ================================================
+Period        Scenario    Load level  Node        Reliability cost (cost of the ENS and HNS) [M€]
+============  ==========  ==========  ==========  ================================================
 
 File ``oT_Result_RevenueEnergyGeneration.csv``
 
