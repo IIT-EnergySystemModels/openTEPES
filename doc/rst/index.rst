@@ -10,7 +10,7 @@
 
 \ **Open** \ Generation, \ Storage, \ and \ **T**\ransmission Operation and \ **E**\xpansion \ **P**\lanning Model with RES and \ **ES**\S (**openTEPES**)
 
-“*Simplicity and Transparency in Power Systems Planning*”
+“*Simplicity and Transparency in Energy Systems Planning*”
 
 The **openTEPES** model has been developed at the `Instituto de Investigación Tecnológica (IIT) <https://www.iit.comillas.edu/index.php.en>`_ of
 the `Universidad Pontificia Comillas <https://www.comillas.edu/en/>`_.

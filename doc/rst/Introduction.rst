@@ -21,7 +21,7 @@ It determines automatically optimal expansion plans that satisfy simultaneously 
   The model can be run with a single period (year) or with several periods (years) to allow the analysis of the system evolution. The time definition can also specify disconnected representative periods (e.g., days, weeks) to evaluate the system operation
 
 - **Stochastic**: several stochastic parameters that can influence the optimal generation, storage, and transmission expansion decisions are considered. The model considers stochastic
-  medium-term yearly uncertainties (scenarios) related to the system operation. These operation scenarios are associated with renewable energy sources, energy inflows and outflows, operating reserves, inertia, and electricity demand.
+  medium-term yearly uncertainties (scenarios) related to the system operation. These operation scenarios are associated with renewable energy sources, energy inflows and outflows, natural water inflows, operating reserves, inertia, and electricity and hydrogen demand.
   
 The objective function incorporates the two main quantifiable costs: **generation, storage, and transmission investment cost (CAPEX)** and **expected variable operation costs (including generation, consumption, emission, and reliability costs) (system OPEX)**.
   
