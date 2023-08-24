@@ -503,7 +503,7 @@ Half ohmic losses are linearly approximated as a function of the flow [GW] «``e
 
 Balance of hydrogen generation and demand at each node [tH2] «``eBalanceH2``»
 
-:math:`- \sum_{e \in i} gc^p_{\omega ne} + hns^p_{\omega ni} = DH^p_{\omega ni} + \sum_{jc} fh^p_{\omega nijc} - \sum_{jc} fh^p_{\omega njic} \quad \forall p \omega ni`
+:math:`- \sum_{e \in i} DUR_n gc^p_{\omega ne} + hns^p_{\omega ni} = DH^p_{\omega ni} + \sum_{jc} fh^p_{\omega nijc} - \sum_{jc} fh^p_{\omega njic} \quad \forall p \omega ni`
 
 **Bounds on generation variables** [GW]
 
