@@ -946,8 +946,8 @@ Identifier    Identifier  Identifier  Header          Description
 Period        Scenario    Load level  ESS Generator   Operation revenues from the downward operating reserve [M€]
 ============  ==========  ==========  ==============  ===========================================================
 
-Flexibility
------------
+Operational flexibility
+-----------------------
 
 File ``oT_Result_FlexibilityDemand.csv``
 
