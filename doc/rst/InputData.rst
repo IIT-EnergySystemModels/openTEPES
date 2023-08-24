@@ -36,6 +36,7 @@ PV          Photovoltaics
 RR          Replacement Reserve
 TTC         Total Transfer Capacity
 VRE         Variable Renewable Energy
+VRES        Variable Renewable Energy Source
 ==========  ====================================================================
 
 Dictionaries. Sets

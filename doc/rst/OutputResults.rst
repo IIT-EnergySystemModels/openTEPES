@@ -29,7 +29,7 @@ Some maps of the electricity transmission network and the energy share of differ
    :scale: 6%
    :align: center
 
-Besides, the csv files used for outputting the results are briefly described in the following items. Some other additional plots are also shown.
+Some other additional plots are also plotted by the model. The CSV files used for outputting the results are briefly described in the following items.
 
 Investment
 ----------
