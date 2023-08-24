@@ -863,11 +863,11 @@ Cost type     Revenues and investment costs [M€]
 
 File ``oT_Result_SummaryKPIs.csv``
 
-============  ==========================================
+============  ===============
 Identifier    Description
-============  ==========================================
-KPI           Different KPIs
-============  ==========================================
+============  ===============
+KPI           Several KPIs
+============  ===============
 
 File ``oT_Result_TechnologyLCOE.csv``
 
