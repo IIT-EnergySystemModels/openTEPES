@@ -756,84 +756,6 @@ Identifier    Identifier  Identifier  Header      Description
 Period        Scenario    Load level  Node        Hydrogen not served by node [tH2]
 ============  ==========  ==========  ==========  ====================================
 
-Marginal information
---------------------
-
-File ``oT_Result_MarginalReserveMargin.csv``
-
-============  ==========  ==========  ==========  =================================================
-Identifier    Identifier  Identifier  Header      Description
-============  ==========  ==========  ==========  =================================================
-Period        Scenario    Load level  Area        Marginal of the reserve margin [€/MW]
-============  ==========  ==========  ==========  =================================================
-
-File ``oT_Result_MarginalIncrementalVariableCost.csv``
-
-============  ==========  ==========  ==============  ===============================================================================================
-Identifier    Identifier  Identifier  Header          Description
-============  ==========  ==========  ==============  ===============================================================================================
-Period        Scenario    Load level  Generator       Variable cost (fuel+O&M+emission) of the generators with power surplus, except the ESS [€/MWh]
-============  ==========  ==========  ==============  ===============================================================================================
-
-File ``oT_Result_MarginalIncrementalGenerator.csv``
-
-============  ==========  ==========  ===================================================================================================
-Identifier    Identifier  Identifier  Description
-============  ==========  ==========  ===================================================================================================
-Period        Scenario    Load level  Generator with power surplus, except the ESS, and with the lowest variable cost (fuel+O&M+emission)
-============  ==========  ==========  ===================================================================================================
-
-File ``oT_Result_NetworkSRMC.csv``
-
-============  ==========  ==========  ==========  ==========================================
-Identifier    Identifier  Identifier  Header      Description
-============  ==========  ==========  ==========  ==========================================
-Period        Scenario    Load level  Node        Locational Short-Run Marginal Cost [€/MWh]
-============  ==========  ==========  ==========  ==========================================
-
-These marginal costs are obtained after fixing the binary and continuous investment decisions and the binary operation decisions to their optimal values.
-Remember that binary decisions are not affected by marginal changes.
-
-File ``oT_Result_MarginalWaterValue.csv``
-
-============  ==========  ==========  ==========  ================================================
-Identifier    Identifier  Identifier  Header      Description
-============  ==========  ==========  ==========  ================================================
-Period        Scenario    Load level  Generator   Energy inflow value [€/MWh]
-============  ==========  ==========  ==========  ================================================
-
-File ``oT_Result_MarginalOperatingReserveUp.csv``
-
-============  ==========  ==========  ==========  ================================================
-Identifier    Identifier  Identifier  Header      Description
-============  ==========  ==========  ==========  ================================================
-Period        Scenario    Load level  Area        Marginal of the upward operating reserve [€/MW]
-============  ==========  ==========  ==========  ================================================
-
-File ``oT_Result_MarginalOperatingReserveDown.csv``
-
-============  ==========  ==========  ==========  =================================================
-Identifier    Identifier  Identifier  Header      Description
-============  ==========  ==========  ==========  =================================================
-Period        Scenario    Load level  Area        Marginal of the downward operating reserve [€/MW]
-============  ==========  ==========  ==========  =================================================
-
-File ``oT_Result_NetworkInvestment_ReducedCost.csv``
-
-============  ==========  ==========  ===========================================================
-Identifier    Identifier  Identifier  Description
-============  ==========  ==========  ===========================================================
-Initial node  Final node  Circuit     Reduced costs of electric network investment decisions [M€]
-============  ==========  ==========  ===========================================================
-
-File ``oT_Result_NetworkCommitment_ReducedCost.csv``
-
-============  ==========  ==========  ===========================================================
-Identifier    Identifier  Identifier  Description
-============  ==========  ==========  ===========================================================
-Initial node  Final node  Circuit     Reduced costs of electric network switching decisions [M€]
-============  ==========  ==========  ===========================================================
-
 Costs and revenues
 ------------------
 
@@ -1015,3 +937,81 @@ Identifier    Identifier  Identifier  Header      Description
 ============  ==========  ==========  ==========  ================================================
 Period        Scenario    Load level  Technology  ESS Technology variation wrt its mean value [MW]
 ============  ==========  ==========  ==========  ================================================
+
+Marginal information
+--------------------
+
+File ``oT_Result_MarginalReserveMargin.csv``
+
+============  ==========  ==========  ==========  =================================================
+Identifier    Identifier  Identifier  Header      Description
+============  ==========  ==========  ==========  =================================================
+Period        Scenario    Load level  Area        Marginal of the reserve margin [€/MW]
+============  ==========  ==========  ==========  =================================================
+
+File ``oT_Result_MarginalIncrementalVariableCost.csv``
+
+============  ==========  ==========  ==============  ===============================================================================================
+Identifier    Identifier  Identifier  Header          Description
+============  ==========  ==========  ==============  ===============================================================================================
+Period        Scenario    Load level  Generator       Variable cost (fuel+O&M+emission) of the generators with power surplus, except the ESS [€/MWh]
+============  ==========  ==========  ==============  ===============================================================================================
+
+File ``oT_Result_MarginalIncrementalGenerator.csv``
+
+============  ==========  ==========  ===================================================================================================
+Identifier    Identifier  Identifier  Description
+============  ==========  ==========  ===================================================================================================
+Period        Scenario    Load level  Generator with power surplus, except the ESS, and with the lowest variable cost (fuel+O&M+emission)
+============  ==========  ==========  ===================================================================================================
+
+File ``oT_Result_NetworkSRMC.csv``
+
+============  ==========  ==========  ==========  ==========================================
+Identifier    Identifier  Identifier  Header      Description
+============  ==========  ==========  ==========  ==========================================
+Period        Scenario    Load level  Node        Locational Short-Run Marginal Cost [€/MWh]
+============  ==========  ==========  ==========  ==========================================
+
+These marginal costs are obtained after fixing the binary and continuous investment decisions and the binary operation decisions to their optimal values.
+Remember that binary decisions are not affected by marginal changes.
+
+File ``oT_Result_MarginalWaterValue.csv``
+
+============  ==========  ==========  ==========  ================================================
+Identifier    Identifier  Identifier  Header      Description
+============  ==========  ==========  ==========  ================================================
+Period        Scenario    Load level  Generator   Energy inflow value [€/MWh]
+============  ==========  ==========  ==========  ================================================
+
+File ``oT_Result_MarginalOperatingReserveUp.csv``
+
+============  ==========  ==========  ==========  ================================================
+Identifier    Identifier  Identifier  Header      Description
+============  ==========  ==========  ==========  ================================================
+Period        Scenario    Load level  Area        Marginal of the upward operating reserve [€/MW]
+============  ==========  ==========  ==========  ================================================
+
+File ``oT_Result_MarginalOperatingReserveDown.csv``
+
+============  ==========  ==========  ==========  =================================================
+Identifier    Identifier  Identifier  Header      Description
+============  ==========  ==========  ==========  =================================================
+Period        Scenario    Load level  Area        Marginal of the downward operating reserve [€/MW]
+============  ==========  ==========  ==========  =================================================
+
+File ``oT_Result_NetworkInvestment_ReducedCost.csv``
+
+============  ==========  ==========  ===========================================================
+Identifier    Identifier  Identifier  Description
+============  ==========  ==========  ===========================================================
+Initial node  Final node  Circuit     Reduced costs of electric network investment decisions [M€]
+============  ==========  ==========  ===========================================================
+
+File ``oT_Result_NetworkCommitment_ReducedCost.csv``
+
+============  ==========  ==========  ===========================================================
+Identifier    Identifier  Identifier  Description
+============  ==========  ==========  ===========================================================
+Initial node  Final node  Circuit     Reduced costs of electric network switching decisions [M€]
+============  ==========  ==========  ===========================================================
