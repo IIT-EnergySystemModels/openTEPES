@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 23, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 24, 2023
 """
 
 import time
@@ -66,7 +66,7 @@ def InvestmentModelFormulation(OptModel, mTEPES, pIndLogConsole):
 
     def eConsecutiveRsrInvest(OptModel,p,rc):
         if p != mTEPES.p.first():
-            return OptModel.vReservoirInvest[mTEPES.p.prev(p,1),rc      ] <= OptModel.vReservoirInvest[p,ec      ]
+            return OptModel.vReservoirInvest[mTEPES.p.prev(p,1),rc      ] <= OptModel.vReservoirInvest[p,rc      ]
         else:
             return Constraint.Skip
     OptModel.eConsecutiveRsrInvest = Constraint(mTEPES.p, mTEPES.rn, rule=eConsecutiveRsrInvest, doc='reservoir investment in consecutive periods')
@@ -1039,7 +1039,7 @@ def NetworkH2OperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, 
         lin [nf].append((ni,cc))
         lout[ni].append((nf,cc))
 
-    # nodes to generators (e2n)
+    # nodes to electrolyzers (e2n)
     e2n = defaultdict(list)
     for nd,el in mTEPES.nd*mTEPES.el:
         if (nd,el) in mTEPES.n2g:
@@ -1047,7 +1047,7 @@ def NetworkH2OperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, 
 
     def eBalanceH2(OptModel,n,nd):
         if sum(1 for el in e2n[nd]) + sum(1 for lout in lout[nd]) + sum(1 for ni,cc in lin[nd]):
-            return (- sum(OptModel.vESSTotalCharge[p,sc,n,el]/mTEPES.pProductionFunctionH2[el] for es in e2n[nd]) + OptModel.vHNS[p,sc,n,nd] -
+            return (- sum(OptModel.vESSTotalCharge[p,sc,n,el]/mTEPES.pProductionFunctionH2[el] for el in e2n[nd]) + OptModel.vHNS[p,sc,n,nd] -
                       sum(OptModel.vFlowH2[p,sc,n,nd,lout] for lout in lout[nd]) + sum(OptModel.vFlowH2[p,sc,n,ni,nd,cc] for ni,cc in lin[nd])) == mTEPES.pDemandH2[p,sc,n,nd]
         else:
             return Constraint.Skip
