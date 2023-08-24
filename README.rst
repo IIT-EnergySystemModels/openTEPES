@@ -22,7 +22,7 @@
    :target: https://github.com/IIT-EnergySystemModels/openTEPES/blob/master/LICENSE
    :alt: AGPL
 
-.. image:: https://pepy.tech/badge/openTEPES
+.. image:: https://static.pepy.tech/badge/openTEPES
    :target: https://pepy.tech/project/openTEPES
    :alt: pepy
 
