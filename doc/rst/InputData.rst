@@ -1,7 +1,7 @@
 .. openTEPES documentation master file, created by Andres Ramos
 
-Input Data
-==========
+General Input Data
+==================
 
 All the input files must be located in a folder with the name of the case study.
 
@@ -533,8 +533,8 @@ Node            Latitude      Node latitude     º
 Node            Longitude     Node longitude    º
 ==============  ============  ================  ==
 
-Hydro system
-------------
+Hydro system data
+=================
 
 These input files are specifically introduced for allowing a representation of the hydro system based on volume and water inflow data considering the water stream topology (hydro cascade basins). If they are not available the model runs with a energy-based representation of the hydro system.
 
@@ -642,8 +642,8 @@ All the reservoirs must be defined as columns of these files.
 
 For example, these data can be used for defining the operating guide (rule) curves for the hydro reservoirs.
 
-Hydrogen system
----------------
+Hydrogen system data
+====================
 
 These input files are specifically introduced for allowing a representation of the hydrogen energy vector to supply hydrogen demand produced with electricity through the hydrogen network.
 
