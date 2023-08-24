@@ -555,8 +555,8 @@ Identifier    Identifier  Identifier  Header      Description
 Period        Scenario    Load level  Reservoir   Water volume value [€/dam\ :sup:`3`]
 ============  ==========  ==========  ==========  ================================================
 
-Electric network operation
---------------------------
+Electricity network operation
+-----------------------------
 
 File ``oT_Result_NetworkCommitment.csv``
 
@@ -670,8 +670,8 @@ Identifier    Identifier  Identifier  Identifier    Identifier  Description
 Period        Scenario    Load level  Initial node  Final node   Network output (to be used as pivot table)
 ============  ==========  ==========  ============  ==========  ============================================
 
-Hydrogen network operation
---------------------------
+Hydrogen balance and network operation
+--------------------------------------
 
 File ``oT_Result_BalanceHydrogen.csv``
 
@@ -836,11 +836,11 @@ KPI           Different KPIs
 
 File ``oT_Result_TechnologyLCOE.csv``
 
-==========  ==========================================
+==========  ==============================================
 Identifier  Description
-==========  ==========================================
-Technology  Levelized Cost of Energy [EUR/MWh]
-==========  ==========================================
+==========  ==============================================
+Technology  Levelized Cost of Electricity (LCOE) [EUR/MWh]
+==========  ==============================================
 
 File ``oT_Result_GenerationCostOandM.csv``
 
@@ -981,8 +981,8 @@ Identifier    Identifier  Identifier  Header      Description
 Period        Scenario    Load level  Technology  ESS Technology variation wrt its mean value [MW]
 ============  ==========  ==========  ==========  ================================================
 
-Balance
--------
+Electricity balance
+-------------------
 
 File ``oT_Result_BalanceEnergy.csv``
 
