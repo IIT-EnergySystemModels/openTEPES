@@ -1,6 +1,15 @@
 Change Log
 =============
 
+[4.12.2] - 2023-08-24
+----------------------
+- [CHANGED] added the hydrogen demand and network, DemandHydrogen and NetworkHydrogen input files
+- [CHANGED] added IndBinNetH2Invest in Option file to relax hydrogen network investment decisions. This is needed to keep compatibility with previous cases
+- [CHANGED] added HNSCost (hydrogen not served cost) in Parameter file. This is needed to keep compatibility with previous cases
+- [CHANGED] added production function of electrolyzers in Generation file to model hydrogen production. This is needed to keep compatibility with previous cases
+- [CHANGED] added eConsecutiveRsrInvest and eConsecutiveNet2Invest constraints
+- [CHANGED] added eBalanceH2 constraints
+
 [4.12.1] - 2023-08-22
 ----------------------
 - [FIXED] fix indices of the dual variables of the adequacy constraints in output results
@@ -13,7 +22,7 @@ Change Log
 - [CHANGED] added eMaxVolume2Comm and eMinVolume2Comm constraints
 - [CHANGED] added eTrbReserveUpIfEnergy, eTrbReserveDwIfEnergy, ePmpReserveUpIfEnergy, and ePmpReserveDwIfEnergy constraints
 - [CHANGED] added IndBinRsrInvest in Option file to relax reservoir investment decisions. This is needed to keep compatibility with previous cases
-- [CHANGED] added production function to hydropower plants in Generation file to be modeled in water units instead of energy units. This is needed to keep compatibility with previous cases
+- [CHANGED] added production function of hydropower plants in Generation file to be modeled in water units instead of energy units. This is needed to keep compatibility with previous cases
 - [CHANGED] added dictionaries of hydro basin topology in water units (Dict_Reservoir, Dict_ReservoirToHydro, Dict_HydroToReservoir, Dict_ReservoirToPumpedHydro, Dict_PumpedHydroToReservoir, Dict_ReservoirToReservoir)
 - [CHANGED] added data for water hydro inflows and outflows (Data_HydroInflows, Data_HydroOutflows)
 - [CHANGED] added data for reservoirs (Data_Reservoir, Data_VariableMaxVolume, oT_Data_VariableMinVolume)

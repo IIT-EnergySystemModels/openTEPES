@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 23, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 24, 2023
 """
 
 import time
@@ -703,6 +703,7 @@ def ReservoirOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnolog
 def NetworkH2OperationResults(DirName, CaseName, OptModel, mTEPES):
     # %% outputting the hydrogen pipeline network operation
     _path = os.path.join(DirName, CaseName)
+    DIR   = os.path.dirname(__file__)
     StartTime = time.time()
 
     # incoming and outgoing pipelines (lin) (lout)
@@ -1161,7 +1162,7 @@ def NetworkOperationResults(DirName, CaseName, OptModel, mTEPES):
 
     WritingResultsTime = time.time() - StartTime
     StartTime = time.time()
-    print('Writing elec network operation results ... ', round(WritingResultsTime), 's')
+    print('Writing el network operation results   ... ', round(WritingResultsTime), 's')
 
 
 def MarginalResults(DirName, CaseName, OptModel, mTEPES, pIndPlotOutput):

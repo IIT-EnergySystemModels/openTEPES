@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 23, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 24, 2023
 """
 
 import datetime
@@ -234,9 +234,6 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
             mTEPES.del_component(mTEPES.r2p)
             mTEPES.r2p = Set(initialize=dictSets['r2p'], ordered=False, doc='reservoir to pumped-hydro')
     except:
-        mTEPES.rs  = Set(initialize=[], ordered=False, doc='reservoirs'            )
-        mTEPES.rn  = Set(initialize=[], ordered=False, doc='candidate reservoirs'  )
-        mTEPES.prc = Set(initialize=[], ordered=False, doc='periods and reservoirs')
         print('No reservoir and hydropower topology dictionaries found')
 
     #%% parameters
@@ -526,21 +523,25 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.shc    = Set(initialize=mTEPES.sq,               ordered=False, doc='shunt           candidate'                                                                                               )
     if pIndHydroTopology == 1:
         mTEPES.rn = Set(initialize=mTEPES.rs,               ordered=False, doc='candidate  reservoirs'         , filter=lambda mTEPES,rs      :  rs     in mTEPES.rs  and pRsrInvestCost      [rs] >  0.0 and                                                     pPeriodIniRsr[rs]  <= mTEPES.p.last() and pPeriodFinRsr[rs]  >= mTEPES.p.first())
+    else:
+        mTEPES.rs = Set(initialize=[],                      ordered=False, doc='all input reservoirs')
+        mTEPES.rn = Set(initialize=[],                      ordered=False, doc='candidate reservoirs')
     if pIndHydrogen      == 1:
         mTEPES.pn = Set(initialize=dfNetworkHydrogen.index, ordered=False, doc='all input hydrogen pipelines'                                                                                            )
         mTEPES.pa = Set(initialize=mTEPES.pn,               ordered=False, doc='all real  hydrogen pipelines'  , filter=lambda mTEPES,*pn     :  pn     in mTEPES.pn  and pPipeNTCFrw         [pn] != 0.0 and pPipeNTCFrw[pn] > 0.0 and pPipeNTCBck[pn] > 0.0 and pPeriodIniPipe[pn] <= mTEPES.p.last() and pPeriodFinPipe[pn] >= mTEPES.p.first())
         mTEPES.pc = Set(initialize=mTEPES.pa,               ordered=False, doc='candidate hydrogen pipelines'  , filter=lambda mTEPES,*pa     :  pa     in mTEPES.pa  and pPipeFixedCost      [pa] >  0.0)
-
         # existing hydrogen pipelines (pe)
         mTEPES.pe = mTEPES.pa - mTEPES.pc
+    else:
+        mTEPES.pn = Set(initialize=[],                      ordered=False, doc='all input hydrogen pipelines')
+        mTEPES.pa = Set(initialize=[],                      ordered=False, doc='all real  hydrogen pipelines')
+        mTEPES.pc = Set(initialize=[],                      ordered=False, doc='candidate hydrogen pipelines')
 
     # non-RES units, they can be committed and also contribute to the operating reserves
     mTEPES.nr = mTEPES.g - mTEPES.re
-
     # machines able to provide reactive power
     mTEPES.tq = mTEPES.gq - mTEPES.sq
-
-    # existing lines (le)
+    # existing electric lines (le)
     mTEPES.le = mTEPES.la - mTEPES.lc
 
     # instrumental sets
@@ -610,15 +611,20 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     idxDict['Y'  ] = 1
     idxDict['y'  ] = 1
 
-    pIndBinUnitInvest = pIndBinUnitInvest.map(idxDict)
-    pIndBinUnitRetire = pIndBinUnitRetire.map(idxDict)
-    pIndBinUnitCommit = pIndBinUnitCommit.map(idxDict)
-    pIndBinStorInvest = pIndBinStorInvest.map(idxDict)
-    pIndBinRsrvInvest = pIndBinRsrvInvest.map(idxDict)
-    pIndBinLineInvest = pIndBinLineInvest.map(idxDict)
-    pIndBinLineSwitch = pIndBinLineSwitch.map(idxDict)
-    pIndOperReserve   = pIndOperReserve.map  (idxDict)
-    pMustRun          = pMustRun.map         (idxDict)
+    pIndBinUnitInvest     = pIndBinUnitInvest.map(idxDict)
+    pIndBinUnitRetire     = pIndBinUnitRetire.map(idxDict)
+    pIndBinUnitCommit     = pIndBinUnitCommit.map(idxDict)
+    pIndBinStorInvest     = pIndBinStorInvest.map(idxDict)
+    pIndBinLineInvest     = pIndBinLineInvest.map(idxDict)
+    pIndBinLineSwitch     = pIndBinLineSwitch.map(idxDict)
+    pIndOperReserve       = pIndOperReserve.map  (idxDict)
+    pMustRun              = pMustRun.map         (idxDict)
+
+    if pIndHydroTopology == 1:
+        pIndBinRsrvInvest = pIndBinRsrvInvest.map(idxDict)
+
+    if pIndHydrogen == 1:
+        pIndBinPipeInvest = pIndBinPipeInvest.map(idxDict)
 
     # define AC existing  lines     non-switchable
     mTEPES.lea = Set(initialize=mTEPES.le, ordered=False, doc='AC existing  lines and non-switchable lines', filter=lambda mTEPES,*le: le in mTEPES.le and  pIndBinLineSwitch[le] == 0                             and not pLineType[le] == 'DC')
