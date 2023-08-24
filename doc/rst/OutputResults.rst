@@ -555,6 +555,41 @@ Identifier    Identifier  Identifier  Header      Description
 Period        Scenario    Load level  Reservoir   Water volume value [€/dam\ :sup:`3`]
 ============  ==========  ==========  ==========  ================================================
 
+Electricity balance
+-------------------
+
+File ``oT_Result_BalanceEnergy.csv``
+
+============  ==========  ==========  ==========  =======================================================
+Identifier    Identifier  Identifier  Identifier  Description
+============  ==========  ==========  ==========  =======================================================
+Period        Scenario    Load level  Technology  Generation, consumption, flows, losses and demand [GWh]
+============  ==========  ==========  ==========  =======================================================
+
+File ``oT_Result_BalanceEnergyPerArea.csv``
+
+============  ==========  ==========  ==========  ==========  =======================================================
+Identifier    Identifier  Identifier  Identifier  Header      Description
+============  ==========  ==========  ==========  ==========  =======================================================
+Period        Scenario    Load level  Technology  Area        Generation, consumption, flows, losses and demand [GWh]
+============  ==========  ==========  ==========  ==========  =======================================================
+
+File ``oT_Result_BalanceEnergyPerNode.csv``
+
+============  ==========  ==========  ==========  ==========  =======================================================
+Identifier    Identifier  Identifier  Identifier  Header      Description
+============  ==========  ==========  ==========  ==========  =======================================================
+Period        Scenario    Load level  Technology  Node        Generation, consumption, flows, losses and demand [GWh]
+============  ==========  ==========  ==========  ==========  =======================================================
+
+File ``oT_Result_BalanceEnergyPerTech.csv``
+
+============  ==========  ==========  ==========  ==========  ==========  =======================================================
+Identifier    Identifier  Identifier  Identifier  Identifier  Header      Description
+============  ==========  ==========  ==========  ==========  ==========  =======================================================
+Period        Scenario    Load level  Area        Node        Technology  Generation, consumption, flows, losses and demand [GWh]
+============  ==========  ==========  ==========  ==========  ==========  =======================================================
+
 Electricity network operation
 -----------------------------
 
@@ -799,8 +834,8 @@ Identifier    Identifier  Identifier  Description
 Initial node  Final node  Circuit     Reduced costs of electric network switching decisions [M€]
 ============  ==========  ==========  ===========================================================
 
-Economic
---------
+Economics
+---------
 
 File ``oT_Result_CostSummary.csv``
 
@@ -980,38 +1015,3 @@ Identifier    Identifier  Identifier  Header      Description
 ============  ==========  ==========  ==========  ================================================
 Period        Scenario    Load level  Technology  ESS Technology variation wrt its mean value [MW]
 ============  ==========  ==========  ==========  ================================================
-
-Electricity balance
--------------------
-
-File ``oT_Result_BalanceEnergy.csv``
-
-============  ==========  ==========  ==========  =======================================================
-Identifier    Identifier  Identifier  Identifier  Description
-============  ==========  ==========  ==========  =======================================================
-Period        Scenario    Load level  Technology  Generation, consumption, flows, losses and demand [GWh]
-============  ==========  ==========  ==========  =======================================================
-
-File ``oT_Result_BalanceEnergyPerArea.csv``
-
-============  ==========  ==========  ==========  ==========  =======================================================
-Identifier    Identifier  Identifier  Identifier  Header      Description
-============  ==========  ==========  ==========  ==========  =======================================================
-Period        Scenario    Load level  Technology  Area        Generation, consumption, flows, losses and demand [GWh]
-============  ==========  ==========  ==========  ==========  =======================================================
-
-File ``oT_Result_BalanceEnergyPerNode.csv``
-
-============  ==========  ==========  ==========  ==========  =======================================================
-Identifier    Identifier  Identifier  Identifier  Header      Description
-============  ==========  ==========  ==========  ==========  =======================================================
-Period        Scenario    Load level  Technology  Node        Generation, consumption, flows, losses and demand [GWh]
-============  ==========  ==========  ==========  ==========  =======================================================
-
-File ``oT_Result_BalanceEnergyPerTech.csv``
-
-============  ==========  ==========  ==========  ==========  ==========  =======================================================
-Identifier    Identifier  Identifier  Identifier  Identifier  Header      Description
-============  ==========  ==========  ==========  ==========  ==========  =======================================================
-Period        Scenario    Load level  Area        Node        Technology  Generation, consumption, flows, losses and demand [GWh]
-============  ==========  ==========  ==========  ==========  ==========  =======================================================
