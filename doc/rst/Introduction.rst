@@ -31,7 +31,9 @@ The capacity expansion considers adequacy system reserve margin constraints.
 The operation model is a electric **network-constrained unit commitment (NCUC)** based on a **tight and compact** formulation, including **operating reserves** with a
 **DC power flow (DCPF)**, including electric **line switching** decisions. **Electric network ohmic losses** are considered proportional to the electric line flow. It considers different **energy storage systems (ESS)**, e.g., pumped-hydro storage,
 battery, demand response, electric vehicles, solar thermal, alkaline water electrolyzer, etc. It allows analyzing the trade-off between the investment in generation/storage/transmission and the investment or use of storage capacity.
+
 The model allows also a representation of the **hydro system** based on volume and water inflow data considering the water stream topology (hydro cascade basins). If they are not available it runs with a energy-based representation of the hydro system.
+
 Also it includes a representation of the **hydrogen demand** satisfied by the production of hydrogen with electrolyzers (consume electricity to produce hydrogen) and a **hydrogen network** to distribute it. If they are not available it runs with just the electric system.
 
 The main results of the model can be structured in these topics:
