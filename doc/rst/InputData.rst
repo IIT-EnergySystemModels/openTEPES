@@ -659,11 +659,11 @@ Hydrogen demand
 
 A description of the data included in the file ``oT_Data_DemandHydrogen.csv`` follows:
 
-==========  ==============  ==========  ======  ===============================================  ===
+==========  ==============  ==========  ======  ===============================================  =====
 Identifier  Identifier      Identifier  Header  Description
-==========  ==============  ==========  ======  ===============================================  ===
-Period      Scenario        Load level  Node    Hydrogen demand of the node for each load level  tH2
-==========  ==============  ==========  ======  ===============================================  ===
+==========  ==============  ==========  ======  ===============================================  =====
+Period      Scenario        Load level  Node    Hydrogen demand of the node for each load level  tH2/h
+==========  ==============  ==========  ======  ===============================================  =====
 
 Internally, all the values below if positive demand (or above if negative demand) 2.5e-5 times the maximum system demand of each area will be converted into 0 by the model.
 
