@@ -135,7 +135,8 @@ A description of the system parameters included in the file ``oT_Data_Parameter.
 File                  Description                                                                              
 ====================  =============================================================================================================  =========
 ENSCost               Cost of energy not served. Cost of load curtailment. Value of Lost Load (VoLL)                                 €/MWh   
-PNSCost               Cost of power not served associated with the deficit in operating reserve by load level                        €/MW   
+HNSCost               Cost of hydrogen not served                                                                                    €/tH2
+PNSCost               Cost of power not served associated with the deficit in operating reserve by load level                        €/MW
 CO2Cost               Cost of CO2 emissions                                                                                          €/tCO2
 UpReserveActivation   Upward   reserve activation (proportion of upward   operating reserve deployed to produce energy)              p.u.
 DwReserveActivation   Downward reserve activation (proportion of downward operating reserve deployed to produce energy)              p.u.
