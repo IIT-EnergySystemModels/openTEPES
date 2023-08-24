@@ -37,11 +37,11 @@ Also it includes a representation of the **hydrogen demand** satisfied by the pr
 The main results of the model can be structured in these topics:
   
 - **Investment**: (generation, storage, hydro reservoirs, electric lines and hydrogen pipelines) investment decisions and cost
-- **Operation**: unit commitment, startup, and shutdown of non-renewable units, unit output and aggregation by technologies (thermal, storage hydro, pumped-hydro storage, RES), RES curtailment, electric line and hydrogen pipeline flows, line ohmic losses, node voltage angles, upward and downward operating reserves, ESS inventory levels, hydro reservoir volumes
+- **Operation**: unit commitment, startup, and shutdown of non-renewable units, unit output and aggregation by technologies (thermal, storage hydro, pumped-hydro storage, RES), RES curtailment, electric line and hydrogen pipeline flows, line ohmic losses, node voltage angles, upward and downward operating reserves, ESS inventory levels, hydro reservoir volumes, power and hydrogen not served
 - **Emissions**: CO2 emissions by unit
-- **Marginal**: Locational Short-Run Marginal Costs (LSRMC), water energy value, water volume value
+- **Marginal**: Locational Short-Run Marginal Costs (LSRMC), stored energy value, water volume value
 - **Economic**: operation, emission, and reliability costs and revenues from operation and operating reserves
-- **Flexibility**: flexibility provided by demand, by the different generation and consumption technologies, and by power and hydrogen not served
+- **Flexibility**: flexibility provided by demand, by the different generation and consumption technologies, and by power not served
 
 Results are shown in csv files and graphical plots.
 
