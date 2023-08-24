@@ -903,41 +903,6 @@ Identifier    Identifier  Identifier  Header          Description
 Period        Scenario    Load level  ESS Generator   Operation revenues from the downward operating reserve [M€]
 ============  ==========  ==========  ==============  ===========================================================
 
-Operational flexibility
------------------------
-
-File ``oT_Result_FlexibilityDemand.csv``
-
-============  ==========  ==========  ==========  ================================================
-Identifier    Identifier  Identifier  Header      Description
-============  ==========  ==========  ==========  ================================================
-Period        Scenario    Load level  Demand      Demand variation wrt its mean value [MW]
-============  ==========  ==========  ==========  ================================================
-
-File ``oT_Result_FlexibilityPNS.csv``
-
-============  ==========  ==========  ==========  ==================================================
-Identifier    Identifier  Identifier  Header      Description
-============  ==========  ==========  ==========  ==================================================
-Period        Scenario    Load level  PNS         Power not served variation wrt its mean value [MW]
-============  ==========  ==========  ==========  ==================================================
-
-File ``oT_Result_FlexibilityTechnology.csv``
-
-============  ==========  ==========  ==========  ================================================
-Identifier    Identifier  Identifier  Header      Description
-============  ==========  ==========  ==========  ================================================
-Period        Scenario    Load level  Technology  Technology variation wrt its mean value [MW]
-============  ==========  ==========  ==========  ================================================
-
-File ``oT_Result_FlexibilityTechnologyESS.csv``
-
-============  ==========  ==========  ==========  ================================================
-Identifier    Identifier  Identifier  Header      Description
-============  ==========  ==========  ==========  ================================================
-Period        Scenario    Load level  Technology  ESS Technology variation wrt its mean value [MW]
-============  ==========  ==========  ==========  ================================================
-
 Marginal information
 --------------------
 
@@ -1015,3 +980,38 @@ Identifier    Identifier  Identifier  Description
 ============  ==========  ==========  ===========================================================
 Initial node  Final node  Circuit     Reduced costs of electric network switching decisions [M€]
 ============  ==========  ==========  ===========================================================
+
+Operational flexibility
+-----------------------
+
+File ``oT_Result_FlexibilityDemand.csv``
+
+============  ==========  ==========  ==========  ================================================
+Identifier    Identifier  Identifier  Header      Description
+============  ==========  ==========  ==========  ================================================
+Period        Scenario    Load level  Demand      Demand variation wrt its mean value [MW]
+============  ==========  ==========  ==========  ================================================
+
+File ``oT_Result_FlexibilityPNS.csv``
+
+============  ==========  ==========  ==========  ==================================================
+Identifier    Identifier  Identifier  Header      Description
+============  ==========  ==========  ==========  ==================================================
+Period        Scenario    Load level  PNS         Power not served variation wrt its mean value [MW]
+============  ==========  ==========  ==========  ==================================================
+
+File ``oT_Result_FlexibilityTechnology.csv``
+
+============  ==========  ==========  ==========  ================================================
+Identifier    Identifier  Identifier  Header      Description
+============  ==========  ==========  ==========  ================================================
+Period        Scenario    Load level  Technology  Technology variation wrt its mean value [MW]
+============  ==========  ==========  ==========  ================================================
+
+File ``oT_Result_FlexibilityTechnologyESS.csv``
+
+============  ==========  ==========  ==========  ================================================
+Identifier    Identifier  Identifier  Header      Description
+============  ==========  ==========  ==========  ================================================
+Period        Scenario    Load level  Technology  ESS Technology variation wrt its mean value [MW]
+============  ==========  ==========  ==========  ================================================
