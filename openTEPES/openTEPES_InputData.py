@@ -249,7 +249,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pIndBinLineCommit      = dfOption   ['IndBinLineCommit'   ][0].astype('int')         # Indicator of binary electric network switching decisions,  0 continuous       - 1 binary
     pIndBinNetLosses       = dfOption   ['IndBinNetLosses'    ][0].astype('int')         # Indicator of        electric network losses,               0 lossless         - 1 ohmic losses
     pENSCost               = dfParameter['ENSCost'            ][0] * 1e-3                # cost of energy   not served              [MEUR/GWh]
-    pHNSCost               = dfParameter['HNSCost'            ][0] * 1e-3                # cost of hydrogen not served              [EUR/tH2]
+    pHNSCost               = dfParameter['HNSCost'            ][0] * 1e-3                # cost of hydrogen not served              [MEUR/tH2]
     pCO2Cost               = dfParameter['CO2Cost'            ][0]                       # cost of CO2 emission                     [EUR/t CO2]
     pEconomicBaseYear      = dfParameter['EconomicBaseYear'   ][0]                       # economic base year                       [year]
     pAnnualDiscRate        = dfParameter['AnnualDiscountRate' ][0]                       # annual discount rate                     [p.u.]
@@ -291,7 +291,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         pHydroOutflows     = dfHydroOutflows     [mTEPES.rs]                             # dynamic hydro outflows                    [m3/s]
 
     if pIndHydrogen == 1:
-        pDemandH2          = dfDemandHydrogen    [mTEPES.nd]                             # hydrogen demand                           [tH2]
+        pDemandH2          = dfDemandHydrogen    [mTEPES.nd]                             # hydrogen demand                           [tH2/h]
 
     if pTimeStep > 1:
         # compute the demand as the mean over the time step load levels and assign it to active load levels. Idem for the remaining parameters
@@ -499,12 +499,12 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.st     = Set(initialize=mTEPES.stt,              ordered=True , doc='stages'                        , filter=lambda mTEPES,stt     :  stt    in mTEPES.stt and pStageWeight       [stt] >  0.0)
     mTEPES.n      = Set(initialize=mTEPES.nn,               ordered=True , doc='load levels'                   , filter=lambda mTEPES,nn      :  nn     in mTEPES.nn  and pDuration           [nn] >  0  )
     mTEPES.n2     = Set(initialize=mTEPES.nn,               ordered=True , doc='load levels'                   , filter=lambda mTEPES,nn      :  nn     in mTEPES.nn  and pDuration           [nn] >  0  )
-    mTEPES.g      = Set(initialize=mTEPES.gg,               ordered=False, doc='generating      units'         , filter=lambda mTEPES,gg      :  gg     in mTEPES.gg  and (pRatedMaxPower     [gg] >  0.0 or                                  pRatedMaxCharge[gg] > 0.0) and pPeriodIniGen[gg] <= mTEPES.p.last() and pPeriodFinGen[gg] >= mTEPES.p.first() and pGenToNode.reset_index().set_index(['index']).isin(mTEPES.nd)['Node'][gg])  # excludes generators with empty node
+    mTEPES.g      = Set(initialize=mTEPES.gg,               ordered=False, doc='generating      units'         , filter=lambda mTEPES,gg      :  gg     in mTEPES.gg  and (pRatedMaxPower     [gg] >  0.0 or                       pRatedMaxCharge[gg] > 0.0) and pPeriodIniGen[gg] <= mTEPES.p.last() and pPeriodFinGen[gg] >= mTEPES.p.first() and pGenToNode.reset_index().set_index(['index']).isin(mTEPES.nd)['Node'][gg])  # excludes generators with empty node
     mTEPES.t      = Set(initialize=mTEPES.g ,               ordered=False, doc='thermal         units'         , filter=lambda mTEPES,g       :  g      in mTEPES.g   and pRatedLinearOperCost[g ] >  0.0)
-    mTEPES.re     = Set(initialize=mTEPES.g ,               ordered=False, doc='RES             units'         , filter=lambda mTEPES,g       :  g      in mTEPES.g   and pRatedLinearOperCost[g ] == 0.0 and pRatedMaxStorage[g] == 0.0                              and pProductionFunctionH2[g] == 0.0  and pProductionFunction[g] == 0.0)
-    mTEPES.es     = Set(initialize=mTEPES.g ,               ordered=False, doc='ESS             units'         , filter=lambda mTEPES,g       :  g      in mTEPES.g   and                                    (pRatedMaxStorage[g] >  0.0   or pRatedMaxCharge[g] > 0.0 or pProductionFunctionH2[g]  > 0.0) and pProductionFunction[g] == 0.0)
-    mTEPES.el     = Set(initialize=mTEPES.es,               ordered=False, doc='electrolyzer    units'         , filter=lambda mTEPES,es      :  es     in mTEPES.es                                                                                                  and pProductionFunctionH2[es] > 0.0                                   )
-    mTEPES.h      = Set(initialize=mTEPES.g ,               ordered=False, doc='hydro           units'         , filter=lambda mTEPES,g       :  g      in mTEPES.g                                                                                                   and pProductionFunctionH2[g] == 0.0  and pProductionFunction[g]  > 0.0)
+    mTEPES.re     = Set(initialize=mTEPES.g ,               ordered=False, doc='RES             units'         , filter=lambda mTEPES,g       :  g      in mTEPES.g   and pRatedLinearOperCost[g ] == 0.0 and pRatedMaxStorage[g] == 0.0                            and pProductionFunctionH2[g] == 0.0  and pProductionFunction[g] == 0.0)
+    mTEPES.es     = Set(initialize=mTEPES.g ,               ordered=False, doc='ESS             units'         , filter=lambda mTEPES,g       :  g      in mTEPES.g   and                                    (pRatedMaxStorage[g] >  0.0 or pRatedMaxCharge[g] > 0.0 or pProductionFunctionH2[g]  > 0.0) and pProductionFunction[g] == 0.0)
+    mTEPES.el     = Set(initialize=mTEPES.es,               ordered=False, doc='electrolyzer    units'         , filter=lambda mTEPES,es      :  es     in mTEPES.es                                                                                                and pProductionFunctionH2[es] > 0.0                                   )
+    mTEPES.h      = Set(initialize=mTEPES.g ,               ordered=False, doc='hydro           units'         , filter=lambda mTEPES,g       :  g      in mTEPES.g                                                                                                 and pProductionFunctionH2[g] == 0.0  and pProductionFunction[g]  > 0.0)
     mTEPES.gc     = Set(initialize=mTEPES.g ,               ordered=False, doc='candidate       units'         , filter=lambda mTEPES,g       :  g      in mTEPES.g   and pGenInvestCost      [g ] >  0.0)
     mTEPES.gd     = Set(initialize=mTEPES.g ,               ordered=False, doc='retirement      units'         , filter=lambda mTEPES,g       :  g      in mTEPES.g   and pGenRetireCost      [g ] != 0.0)
     mTEPES.ec     = Set(initialize=mTEPES.es,               ordered=False, doc='candidate ESS   units'         , filter=lambda mTEPES,es      :  es     in mTEPES.es  and pGenInvestCost      [es] >  0.0)
@@ -1113,7 +1113,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         mTEPES.pReservoirType    = Param(mTEPES.rs,    initialize=pReservoirType.to_dict()            , within=Any             ,    doc='Reservoir volume type'                               )
 
     if pIndHydrogen == 1:
-        mTEPES.pDemandH2         = Param(mTEPES.psnnd, initialize=pDemandH2.stack().to_dict()         , within=NonNegativeReals,    doc='Hydrogen demand'                                     )
+        mTEPES.pDemandH2         = Param(mTEPES.psnnd, initialize=pDemandH2.stack().to_dict()         , within=NonNegativeReals,    doc='Hydrogen demand per hour'                            )
 
     mTEPES.pLoadLevelDuration    = Param(mTEPES.n,     initialize=0                                   , within=NonNegativeIntegers, doc='Load level duration',                    mutable=True)
     for n in mTEPES.n:
@@ -1249,58 +1249,58 @@ def SettingUpVariables(OptModel, mTEPES):
         OptModel.vReservoirSpillage   = Var(mTEPES.psnrs, within=NonNegativeReals,                                                                                                            doc='Reservoir spillage                              [hm3]')
 
     if mTEPES.pIndHydrogen == 1:
-        OptModel.vHNS                 = Var(mTEPES.psnnd, within=NonNegativeReals, bounds=lambda OptModel,p,sc,n,nd: (0.0,                            max(0.0,mTEPES.pDemandH2[p,sc,n,nd])),  doc='hydrogen not served in node                     [tH2]')
+        OptModel.vHNS                 = Var(mTEPES.psnnd, within=NonNegativeReals, bounds=lambda OptModel,p,sc,n,nd: (0.0,        mTEPES.pDuration[n]*max(0.0,mTEPES.pDemandH2[p,sc,n,nd])),  doc='hydrogen not served in node                     [tH2]')
 
     if mTEPES.pIndBinGenInvest() == 0:
-        OptModel.vGenerationInvest    = Var(mTEPES.pgc,   within=UnitInterval,                                                                                                                    doc='generation       investment decision exists in a year [0,1]')
+        OptModel.vGenerationInvest    = Var(mTEPES.pgc,   within=UnitInterval,                                                                                                                doc='generation       investment decision exists in a year [0,1]')
     else:
-        OptModel.vGenerationInvest    = Var(mTEPES.pgc,   within=Binary,                                                                                                                          doc='generation       investment decision exists in a year {0,1}')
+        OptModel.vGenerationInvest    = Var(mTEPES.pgc,   within=Binary,                                                                                                                      doc='generation       investment decision exists in a year {0,1}')
 
     if mTEPES.pIndBinGenRetire() == 0:
-        OptModel.vGenerationRetire    = Var(mTEPES.pgd,   within=UnitInterval,                                                                                                                    doc='generation       retirement decision exists in a year [0,1]')
+        OptModel.vGenerationRetire    = Var(mTEPES.pgd,   within=UnitInterval,                                                                                                                doc='generation       retirement decision exists in a year [0,1]')
     else:
-        OptModel.vGenerationRetire    = Var(mTEPES.pgd,   within=Binary,                                                                                                                          doc='generation       retirement decision exists in a year {0,1}')
+        OptModel.vGenerationRetire    = Var(mTEPES.pgd,   within=Binary,                                                                                                                      doc='generation       retirement decision exists in a year {0,1}')
 
     if mTEPES.pIndBinNetInvest() == 0:
-        OptModel.vNetworkInvest       = Var(mTEPES.plc,   within=UnitInterval,                                                                                                                    doc='electric network investment decision exists in a year [0,1]')
+        OptModel.vNetworkInvest       = Var(mTEPES.plc,   within=UnitInterval,                                                                                                                doc='electric network investment decision exists in a year [0,1]')
     else:
-        OptModel.vNetworkInvest       = Var(mTEPES.plc,   within=Binary,                                                                                                                          doc='electric network investment decision exists in a year {0,1}')
+        OptModel.vNetworkInvest       = Var(mTEPES.plc,   within=Binary,                                                                                                                      doc='electric network investment decision exists in a year {0,1}')
 
     if mTEPES.pIndHydroTopology == 1:
         if mTEPES.pIndBinRsrInvest() == 0:
-            OptModel.vReservoirInvest = Var(mTEPES.prc,   within=UnitInterval,                                                                                                                    doc='reservoir        investment decision exists in a year [0,1]')
+            OptModel.vReservoirInvest = Var(mTEPES.prc,   within=UnitInterval,                                                                                                                doc='reservoir        investment decision exists in a year [0,1]')
         else:
-            OptModel.vReservoirInvest = Var(mTEPES.prc,   within=Binary,                                                                                                                          doc='reservoir        investment decision exists in a year {0,1}')
+            OptModel.vReservoirInvest = Var(mTEPES.prc,   within=Binary,                                                                                                                      doc='reservoir        investment decision exists in a year {0,1}')
 
     if mTEPES.pIndHydrogen == 1:
         if mTEPES.pIndBinNetH2Invest() == 0:
-            OptModel.vPipelineInvest  = Var(mTEPES.ppc,   within=UnitInterval,                                                                                                                    doc='hydrogen network investment decision exists in a year [0,1]')
+            OptModel.vPipelineInvest  = Var(mTEPES.ppc,   within=UnitInterval,                                                                                                                doc='hydrogen network investment decision exists in a year [0,1]')
         else:
-            OptModel.vPipelineInvest  = Var(mTEPES.ppc,   within=Binary,                                                                                                                          doc='hydrogen network investment decision exists in a year {0,1}')
+            OptModel.vPipelineInvest  = Var(mTEPES.ppc,   within=Binary,                                                                                                                      doc='hydrogen network investment decision exists in a year {0,1}')
 
     if mTEPES.pIndBinGenOperat() == 0:
-        OptModel.vCommitment          = Var(mTEPES.psnnr, within=UnitInterval,     initialize=0.0,                                                                                                doc='commitment         of the unit                          [0,1]')
-        OptModel.vStartUp             = Var(mTEPES.psnnr, within=UnitInterval,     initialize=0.0,                                                                                                doc='startup            of the unit                          [0,1]')
-        OptModel.vShutDown            = Var(mTEPES.psnnr, within=UnitInterval,     initialize=0.0,                                                                                                doc='shutdown           of the unit                          [0,1]')
-        OptModel.vMaxCommitment       = Var(mTEPES.psnr , within=UnitInterval,     initialize=0.0,                                                                                                doc='maximum commitment of the unit                          [0,1]')
+        OptModel.vCommitment          = Var(mTEPES.psnnr, within=UnitInterval,     initialize=0.0,                                                                                            doc='commitment         of the unit                          [0,1]')
+        OptModel.vStartUp             = Var(mTEPES.psnnr, within=UnitInterval,     initialize=0.0,                                                                                            doc='startup            of the unit                          [0,1]')
+        OptModel.vShutDown            = Var(mTEPES.psnnr, within=UnitInterval,     initialize=0.0,                                                                                            doc='shutdown           of the unit                          [0,1]')
+        OptModel.vMaxCommitment       = Var(mTEPES.psnr , within=UnitInterval,     initialize=0.0,                                                                                            doc='maximum commitment of the unit                          [0,1]')
     else:
-        OptModel.vCommitment          = Var(mTEPES.psnnr, within=Binary,           initialize=0  ,                                                                                                doc='commitment         of the unit                          {0,1}')
-        OptModel.vStartUp             = Var(mTEPES.psnnr, within=Binary,           initialize=0  ,                                                                                                doc='startup            of the unit                          {0,1}')
-        OptModel.vShutDown            = Var(mTEPES.psnnr, within=Binary,           initialize=0  ,                                                                                                doc='shutdown           of the unit                          {0,1}')
-        OptModel.vMaxCommitment       = Var(mTEPES.psnr , within=Binary,           initialize=0  ,                                                                                                doc='maximum commitment of the unit                          {0,1}')
+        OptModel.vCommitment          = Var(mTEPES.psnnr, within=Binary,           initialize=0  ,                                                                                            doc='commitment         of the unit                          {0,1}')
+        OptModel.vStartUp             = Var(mTEPES.psnnr, within=Binary,           initialize=0  ,                                                                                            doc='startup            of the unit                          {0,1}')
+        OptModel.vShutDown            = Var(mTEPES.psnnr, within=Binary,           initialize=0  ,                                                                                            doc='shutdown           of the unit                          {0,1}')
+        OptModel.vMaxCommitment       = Var(mTEPES.psnr , within=Binary,           initialize=0  ,                                                                                            doc='maximum commitment of the unit                          {0,1}')
 
     if mTEPES.pIndBinSingleNode() == 0 and mTEPES.pIndBinLineCommit() == 0:
-        OptModel.vLineCommit          = Var(mTEPES.psnla, within=UnitInterval,     initialize=0.0,                                                                                                doc='line switching      of the electric line                [0,1]')
+        OptModel.vLineCommit          = Var(mTEPES.psnla, within=UnitInterval,     initialize=0.0,                                                                                            doc='line switching      of the electric line                [0,1]')
     else:
-        OptModel.vLineCommit          = Var(mTEPES.psnla, within=Binary,           initialize=0  ,                                                                                                doc='line switching      of the electric line                {0,1}')
+        OptModel.vLineCommit          = Var(mTEPES.psnla, within=Binary,           initialize=0  ,                                                                                            doc='line switching      of the electric line                {0,1}')
 
     if sum(mTEPES.pIndBinLineSwitch[:,:,:]):
         if mTEPES.pIndBinSingleNode() == 0 and mTEPES.pIndBinLineCommit() == 0:
-            OptModel.vLineOnState     = Var(mTEPES.psnla, within=UnitInterval,     initialize=0.0,                                                                                                doc='switching on  state of the electric line                [0,1]')
-            OptModel.vLineOffState    = Var(mTEPES.psnla, within=UnitInterval,     initialize=0.0,                                                                                                doc='switching off state of the electric line                [0,1]')
+            OptModel.vLineOnState     = Var(mTEPES.psnla, within=UnitInterval,     initialize=0.0,                                                                                            doc='switching on  state of the electric line                [0,1]')
+            OptModel.vLineOffState    = Var(mTEPES.psnla, within=UnitInterval,     initialize=0.0,                                                                                            doc='switching off state of the electric line                [0,1]')
         else:
-            OptModel.vLineOnState     = Var(mTEPES.psnla, within=Binary,           initialize=0  ,                                                                                                doc='switching on  state of the electric line                {0,1}')
-            OptModel.vLineOffState    = Var(mTEPES.psnla, within=Binary,           initialize=0  ,                                                                                                doc='switching off state of the electric line                {0,1}')
+            OptModel.vLineOnState     = Var(mTEPES.psnla, within=Binary,           initialize=0  ,                                                                                            doc='switching on  state of the electric line                {0,1}')
+            OptModel.vLineOffState    = Var(mTEPES.psnla, within=Binary,           initialize=0  ,                                                                                            doc='switching off state of the electric line                {0,1}')
 
     nFixedVariables = 0.0
 

@@ -95,6 +95,19 @@ def GenerationOperationModelFormulationObjFunct(OptModel, mTEPES, pIndLogConsole
 
     StartTime = time.time()
 
+    # incoming and outgoing pipelines (lin) (lout)
+    lin  = defaultdict(list)
+    lout = defaultdict(list)
+    for ni,nf,cc in mTEPES.pa:
+        lin [nf].append((ni,cc))
+        lout[ni].append((nf,cc))
+
+    # nodes to electrolyzers (e2n)
+    e2n = defaultdict(list)
+    for nd,el in mTEPES.nd*mTEPES.el:
+        if (nd,el) in mTEPES.n2g:
+            e2n[nd].append(el)
+
     def eTotalGCost(OptModel,n):
         if (st,n) in mTEPES.s2n:
             return OptModel.vTotalGCost[p,sc,n] == (sum(mTEPES.pLoadLevelDuration[n] * mTEPES.pLinearVarCost  [p,sc,n,nr] * OptModel.vTotalOutput   [p,sc,n,nr]                      +
@@ -126,7 +139,7 @@ def GenerationOperationModelFormulationObjFunct(OptModel, mTEPES, pIndLogConsole
 
     def eTotalRCost(OptModel,n):
         if (st,n) in mTEPES.s2n:
-            return     OptModel.vTotalRCost[p,sc,n] == sum(mTEPES.pLoadLevelDuration[n] * mTEPES.pENSCost             * OptModel.vENS           [p,sc,n,nd] for nd in mTEPES.nd)
+            return OptModel.vTotalRCost[p,sc,n] == sum(mTEPES.pLoadLevelDuration[n] * mTEPES.pENSCost             * OptModel.vENS           [p,sc,n,nd] for nd in mTEPES.nd) + sum(mTEPES.pHNSCost * OptModel.vHNS[p,sc,n,nd] for nd in mTEPES.nd if sum(1 for el in e2n[nd]) + sum(1 for lout in lout[nd]) + sum(1 for ni,cc in lin[nd]))
         else:
             return Constraint.Skip
     setattr(OptModel, 'eTotalRCost_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, rule=eTotalRCost, doc='system reliability cost [MEUR]'))
@@ -1047,8 +1060,8 @@ def NetworkH2OperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, 
 
     def eBalanceH2(OptModel,n,nd):
         if sum(1 for el in e2n[nd]) + sum(1 for lout in lout[nd]) + sum(1 for ni,cc in lin[nd]):
-            return (- sum(OptModel.vESSTotalCharge[p,sc,n,el]/mTEPES.pProductionFunctionH2[el] for el in e2n[nd]) + OptModel.vHNS[p,sc,n,nd] -
-                      sum(OptModel.vFlowH2[p,sc,n,nd,lout] for lout in lout[nd]) + sum(OptModel.vFlowH2[p,sc,n,ni,nd,cc] for ni,cc in lin[nd])) == mTEPES.pDemandH2[p,sc,n,nd]
+            return (sum(OptModel.vESSTotalCharge[p,sc,n,el]*mTEPES.pDuration[n]/mTEPES.pProductionFunctionH2[el] for el in e2n[nd]) + OptModel.vHNS[p,sc,n,nd] -
+                    sum(OptModel.vFlowH2[p,sc,n,nd,lout] for lout in lout[nd]) + sum(OptModel.vFlowH2[p,sc,n,ni,nd,cc] for ni,cc in lin[nd])) == mTEPES.pDemandH2[p,sc,n,nd]*mTEPES.pDuration[n]
         else:
             return Constraint.Skip
     setattr(OptModel, 'eBalanceH2_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.nd, rule=eBalanceH2, doc='H2 load generation balance [tH2]'))
