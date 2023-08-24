@@ -37,8 +37,8 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     idxDict['y'  ] = 1
 
     #%% model declaration
-    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.12.2 - August 24, 2023')
-    print(                 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.12.2 - August 24, 2023', file=open(_path+'/openTEPES_version_'+CaseName+'.log','a'))
+    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.13.0 - August 24, 2023')
+    print(                 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.13.0 - August 24, 2023', file=open(_path+'/openTEPES_version_'+CaseName+'.log','a'))
 
     pIndOutputResults = [j for i,j in idxDict.items() if i == pIndOutputResults][0]
     pIndLogConsole    = [j for i,j in idxDict.items() if i == pIndLogConsole   ][0]

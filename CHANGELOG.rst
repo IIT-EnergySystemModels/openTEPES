@@ -1,7 +1,7 @@
 Change Log
 =============
 
-[4.12.2] - 2023-08-24
+[4.13.0] - 2023-08-24
 ----------------------
 - [CHANGED] added the hydrogen demand and network, DemandHydrogen and NetworkHydrogen input files
 - [CHANGED] added IndBinNetH2Invest in Option file to relax hydrogen network investment decisions. This is needed to keep compatibility with previous cases
