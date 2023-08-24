@@ -834,8 +834,8 @@ Identifier    Identifier  Identifier  Description
 Initial node  Final node  Circuit     Reduced costs of electric network switching decisions [M€]
 ============  ==========  ==========  ===========================================================
 
-Economics
----------
+Costs and revenues
+------------------
 
 File ``oT_Result_CostSummary.csv``
 
