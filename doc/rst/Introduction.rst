@@ -34,7 +34,7 @@ battery, demand response, electric vehicles, solar thermal, alkaline water elect
 
 The model allows also a representation of the **hydro system** based on volume and water inflow data considering the water stream topology (hydro cascade basins). If they are not available it runs with a energy-based representation of the hydro system.
 
-Also it includes a representation of the **hydrogen demand** satisfied by the production of hydrogen with electrolyzers (consume electricity to produce hydrogen) and a **hydrogen network** to distribute it. If they are not available it runs with just the electric system.
+Also it includes a representation of **Power to Hydrogen (P2H2)** by setting the **hydrogen demand** satisfied by the production of hydrogen with electrolyzers (consume electricity to produce hydrogen) and a **hydrogen network** to distribute it. If they are not available it runs with just the electric system.
 
 The main results of the model can be structured in these topics:
   
