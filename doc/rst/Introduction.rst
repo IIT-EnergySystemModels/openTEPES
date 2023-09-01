@@ -28,11 +28,11 @@ The objective function incorporates the two main quantifiable costs: **generatio
 The model formulates a **two-stage stochastic optimization** problem, including generation, storage, and electric and hydrogen network binary investment/retirement decisions, generation operation decisions (commitment, startup, and shutdown decisions are also binary), and electric line-switching decisions.
 The capacity expansion considers adequacy system reserve margin constraints.
 
-The operation model is a electric **network-constrained unit commitment (NCUC)** based on a **tight and compact** formulation, including **operating reserves** with a
+The operation model is an electric **network-constrained unit commitment (NCUC)** based on a **tight and compact** formulation, including **operating reserves** with a
 **DC power flow (DCPF)**, including electric **line switching** decisions. **Electric network ohmic losses** are considered proportional to the electric line flow. It considers different **energy storage systems (ESS)**, e.g., pumped-hydro storage,
 battery, demand response, electric vehicles, solar thermal, alkaline water electrolyzer, etc. It allows analyzing the trade-off between the investment in generation/storage/transmission and the investment or use of storage capacity.
 
-The model allows also a representation of the **hydro system** based on volume and water inflow data considering the water stream topology (hydro cascade basins). If they are not available it runs with a energy-based representation of the hydro system.
+The model allows also a representation of the **hydro system** based on volume and water inflow data considering the water stream topology (hydro cascade basins). If they are not available it runs with an energy-based representation of the hydro system.
 
 Also, it includes a representation of **Power to Hydrogen (P2H2)** by setting the **hydrogen demand** satisfied by the production of hydrogen with electrolyzers (consume electricity to produce hydrogen) and a **hydrogen network** to distribute it. If they are not available it runs with just the electric system.
 
