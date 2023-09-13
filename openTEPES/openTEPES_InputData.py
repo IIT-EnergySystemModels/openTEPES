@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 24, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 13, 2023
 """
 
 import datetime
@@ -24,7 +24,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     dfScenario              = pd.read_csv(_path+'/oT_Data_Scenario_'              +CaseName+'.csv', index_col=[0,1  ])
     dfStage                 = pd.read_csv(_path+'/oT_Data_Stage_'                 +CaseName+'.csv', index_col=[0    ])
     dfDuration              = pd.read_csv(_path+'/oT_Data_Duration_'              +CaseName+'.csv', index_col=[0    ])
-    dfReserveMargin         = pd.read_csv(_path+'/oT_Data_ReserveMargin_'         +CaseName+'.csv', index_col=[0    ])
+    dfReserveMargin         = pd.read_csv(_path+'/oT_Data_ReserveMargin_'         +CaseName+'.csv', index_col=[0,1  ])
+    dfEmission              = pd.read_csv(_path+'/oT_Data_Emission_'              +CaseName+'.csv', index_col=[0,1  ])
     dfDemand                = pd.read_csv(_path+'/oT_Data_Demand_'                +CaseName+'.csv', index_col=[0,1,2])
     dfInertia               = pd.read_csv(_path+'/oT_Data_Inertia_'               +CaseName+'.csv', index_col=[0,1,2])
     dfUpOperatingReserve    = pd.read_csv(_path+'/oT_Data_OperatingReserveUp_'    +CaseName+'.csv', index_col=[0,1,2])
@@ -66,44 +67,46 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         print('No Data_DemandHydrogen and Data_NetworkHydrogen files found')
 
     # substitute NaN by 0
-    dfOption.fillna               (0  , inplace=True)
-    dfParameter.fillna            (0.0, inplace=True)
-    dfPeriod.fillna               (0.0, inplace=True)
-    dfScenario.fillna             (0.0, inplace=True)
-    dfStage.fillna                (0.0, inplace=True)
-    dfDuration.fillna             (0  , inplace=True)
-    dfReserveMargin.fillna        (0.0, inplace=True)
-    dfDemand.fillna               (0.0, inplace=True)
-    dfInertia.fillna              (0.0, inplace=True)
-    dfUpOperatingReserve.fillna   (0.0, inplace=True)
-    dfDwOperatingReserve.fillna   (0.0, inplace=True)
-    dfGeneration.fillna           (0.0, inplace=True)
-    dfVariableMinPower.fillna     (0.0, inplace=True)
-    dfVariableMaxPower.fillna     (0.0, inplace=True)
-    dfVariableMinCharge.fillna    (0.0, inplace=True)
-    dfVariableMaxCharge.fillna    (0.0, inplace=True)
-    dfVariableMinStorage.fillna   (0.0, inplace=True)
-    dfVariableMaxStorage.fillna   (0.0, inplace=True)
-    dfVariableMinEnergy.fillna    (0.0, inplace=True)
-    dfVariableMaxEnergy.fillna    (0.0, inplace=True)
-    dfVariableFuelCost.fillna     (0.0, inplace=True)
-    dfEnergyInflows.fillna        (0.0, inplace=True)
-    dfEnergyOutflows.fillna       (0.0, inplace=True)
-    dfNodeLocation.fillna         (0.0, inplace=True)
-    dfNetwork.fillna              (0.0, inplace=True)
+    dfOption.fillna               (0  ,    inplace=True)
+    dfParameter.fillna            (0.0,    inplace=True)
+    dfPeriod.fillna               (0.0,    inplace=True)
+    dfScenario.fillna             (0.0,    inplace=True)
+    dfStage.fillna                (0.0,    inplace=True)
+    dfDuration.fillna             (0  ,    inplace=True)
+    dfReserveMargin.fillna        (0.0,    inplace=True)
+    dfEmission.fillna             (float('inf'), inplace=True)
+    dfDemand.fillna               (0.0,    inplace=True)
+    dfInertia.fillna              (0.0,    inplace=True)
+    dfUpOperatingReserve.fillna   (0.0,    inplace=True)
+    dfDwOperatingReserve.fillna   (0.0,    inplace=True)
+    dfGeneration.fillna           (0.0,    inplace=True)
+    dfVariableMinPower.fillna     (0.0,    inplace=True)
+    dfVariableMaxPower.fillna     (0.0,    inplace=True)
+    dfVariableMinCharge.fillna    (0.0,    inplace=True)
+    dfVariableMaxCharge.fillna    (0.0,    inplace=True)
+    dfVariableMinStorage.fillna   (0.0,    inplace=True)
+    dfVariableMaxStorage.fillna   (0.0,    inplace=True)
+    dfVariableMinEnergy.fillna    (0.0,    inplace=True)
+    dfVariableMaxEnergy.fillna    (0.0,    inplace=True)
+    dfVariableFuelCost.fillna     (0.0,    inplace=True)
+    dfEnergyInflows.fillna        (0.0,    inplace=True)
+    dfEnergyOutflows.fillna       (0.0,    inplace=True)
+    dfNodeLocation.fillna         (0.0,    inplace=True)
+    dfNetwork.fillna              (0.0,    inplace=True)
 
     if pIndHydroTopology == 1:
-        dfReservoir.fillna        (0.0, inplace=True)
-        dfVariableMinVolume.fillna(0.0, inplace=True)
-        dfVariableMaxVolume.fillna(0.0, inplace=True)
-        dfHydroInflows.fillna     (0.0, inplace=True)
-        dfHydroOutflows.fillna    (0.0, inplace=True)
+        dfReservoir.fillna        (0.0,    inplace=True)
+        dfVariableMinVolume.fillna(0.0,    inplace=True)
+        dfVariableMaxVolume.fillna(0.0,    inplace=True)
+        dfHydroInflows.fillna     (0.0,    inplace=True)
+        dfHydroOutflows.fillna    (0.0,    inplace=True)
 
     if pIndHydrogen == 1:
-        dfDemandHydrogen.fillna   (0.0, inplace=True)
-        dfNetworkHydrogen.fillna  (0.0, inplace=True)
+        dfDemandHydrogen.fillna   (0.0,    inplace=True)
+        dfNetworkHydrogen.fillna  (0.0,    inplace=True)
 
     dfReserveMargin         = dfReserveMargin.where     (dfReserveMargin      > 0.0, other=0.0)
+    dfEmission              = dfEmission.where          (dfEmission           > 0.0, other=0.0)
     dfInertia               = dfInertia.where           (dfInertia            > 0.0, other=0.0)
     dfUpOperatingReserve    = dfUpOperatingReserve.where(dfUpOperatingReserve > 0.0, other=0.0)
     dfDwOperatingReserve    = dfDwOperatingReserve.where(dfDwOperatingReserve > 0.0, other=0.0)
@@ -127,24 +130,25 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
 
     # show some statistics of the data
     if pIndLogConsole == 1:
-        print('Reserve margin                        \n', dfReserveMargin.describe       ())
-        print('Electricity demand                    \n', dfDemand.describe              ())
-        print('Inertia                               \n', dfInertia.describe             ())
-        print('Upward   operating reserves           \n', dfUpOperatingReserve.describe  ())
-        print('Downward operating reserves           \n', dfDwOperatingReserve.describe  ())
-        print('Generation                            \n', dfGeneration.describe          ())
-        print('Variable minimum generation           \n', dfVariableMinPower.describe    ())
-        print('Variable maximum generation           \n', dfVariableMaxPower.describe    ())
-        print('Variable minimum consumption          \n', dfVariableMinCharge.describe   ())
-        print('Variable maximum consumption          \n', dfVariableMaxCharge.describe   ())
-        print('Variable minimum storage              \n', dfVariableMinStorage.describe  ())
-        print('Variable maximum storage              \n', dfVariableMaxStorage.describe  ())
-        print('Variable minimum energy               \n', dfVariableMinEnergy.describe   ())
-        print('Variable maximum energy               \n', dfVariableMaxEnergy.describe   ())
-        print('Variable fuel cost                    \n', dfVariableFuelCost.describe    ())
-        print('Energy inflows                        \n', dfEnergyInflows.describe       ())
-        print('Energy outflows                       \n', dfEnergyOutflows.describe      ())
-        print('Electric network                      \n', dfNetwork.describe             ())
+        print('Reserve margin                        \n', dfReserveMargin.describe       (), '\n')
+        print('Maximum CO2 emission                  \n', dfEmission.describe            (), '\n')
+        print('Electricity demand                    \n', dfDemand.describe              (), '\n')
+        print('Inertia                               \n', dfInertia.describe             (), '\n')
+        print('Upward   operating reserves           \n', dfUpOperatingReserve.describe  (), '\n')
+        print('Downward operating reserves           \n', dfDwOperatingReserve.describe  (), '\n')
+        print('Generation                            \n', dfGeneration.describe          (), '\n')
+        print('Variable minimum generation           \n', dfVariableMinPower.describe    (), '\n')
+        print('Variable maximum generation           \n', dfVariableMaxPower.describe    (), '\n')
+        print('Variable minimum consumption          \n', dfVariableMinCharge.describe   (), '\n')
+        print('Variable maximum consumption          \n', dfVariableMaxCharge.describe   (), '\n')
+        print('Variable minimum storage              \n', dfVariableMinStorage.describe  (), '\n')
+        print('Variable maximum storage              \n', dfVariableMaxStorage.describe  (), '\n')
+        print('Variable minimum energy               \n', dfVariableMinEnergy.describe   (), '\n')
+        print('Variable maximum energy               \n', dfVariableMaxEnergy.describe   (), '\n')
+        print('Variable fuel cost                    \n', dfVariableFuelCost.describe    (), '\n')
+        print('Energy inflows                        \n', dfEnergyInflows.describe       (), '\n')
+        print('Energy outflows                       \n', dfEnergyOutflows.describe      (), '\n')
+        print('Electric network                      \n', dfNetwork.describe             (), '\n')
 
         if pIndHydroTopology == 1:
             print('Reservoir                         \n', dfReservoir.describe           ())
@@ -248,25 +252,26 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pIndBinGenMinTime      = dfOption   ['IndBinGenMinTime'   ][0].astype('int')         # Indicator of minimum up/downtime constraints,              0 no min time      - 1 min time constraints
     pIndBinLineCommit      = dfOption   ['IndBinLineCommit'   ][0].astype('int')         # Indicator of binary electric network switching decisions,  0 continuous       - 1 binary
     pIndBinNetLosses       = dfOption   ['IndBinNetLosses'    ][0].astype('int')         # Indicator of        electric network losses,               0 lossless         - 1 ohmic losses
-    pENSCost               = dfParameter['ENSCost'            ][0] * 1e-3                # cost of energy   not served              [MEUR/GWh]
-    pHNSCost               = dfParameter['HNSCost'            ][0] * 1e-3                # cost of hydrogen not served              [MEUR/tH2]
-    pCO2Cost               = dfParameter['CO2Cost'            ][0]                       # cost of CO2 emission                     [EUR/t CO2]
-    pEconomicBaseYear      = dfParameter['EconomicBaseYear'   ][0]                       # economic base year                       [year]
-    pAnnualDiscRate        = dfParameter['AnnualDiscountRate' ][0]                       # annual discount rate                     [p.u.]
-    pUpReserveActivation   = dfParameter['UpReserveActivation'][0]                       # upward   reserve activation              [p.u.]
-    pDwReserveActivation   = dfParameter['DwReserveActivation'][0]                       # downward reserve activation              [p.u.]
-    pMinRatioDwUp          = dfParameter['MinRatioDwUp'       ][0]                       # minimum ratio down up operating reserves [p.u.]
-    pMaxRatioDwUp          = dfParameter['MaxRatioDwUp'       ][0]                       # maximum ratio down up operating reserves [p.u.]
-    pSBase                 = dfParameter['SBase'              ][0] * 1e-3                # base power                               [GW]
+    pENSCost               = dfParameter['ENSCost'            ][0] * 1e-3                # cost of energy   not served               [MEUR/GWh]
+    pHNSCost               = dfParameter['HNSCost'            ][0] * 1e-3                # cost of hydrogen not served               [MEUR/tH2]
+    pCO2Cost               = dfParameter['CO2Cost'            ][0]                       # cost of CO2 emission                      [EUR/tCO2]
+    pEconomicBaseYear      = dfParameter['EconomicBaseYear'   ][0]                       # economic base year                        [year]
+    pAnnualDiscRate        = dfParameter['AnnualDiscountRate' ][0]                       # annual discount rate                      [p.u.]
+    pUpReserveActivation   = dfParameter['UpReserveActivation'][0]                       # upward   reserve activation               [p.u.]
+    pDwReserveActivation   = dfParameter['DwReserveActivation'][0]                       # downward reserve activation               [p.u.]
+    pMinRatioDwUp          = dfParameter['MinRatioDwUp'       ][0]                       # minimum ratio down up operating reserves  [p.u.]
+    pMaxRatioDwUp          = dfParameter['MaxRatioDwUp'       ][0]                       # maximum ratio down up operating reserves  [p.u.]
+    pSBase                 = dfParameter['SBase'              ][0] * 1e-3                # base power                                [GW]
     pReferenceNode         = dfParameter['ReferenceNode'      ][0]                       # reference node
-    pTimeStep              = dfParameter['TimeStep'           ][0].astype('int')         # duration of the unit time step           [h]
-    # pStageDuration         = dfParameter['StageDuration'      ][0].astype('int')       # duration of each stage                   [h]
+    pTimeStep              = dfParameter['TimeStep'           ][0].astype('int')         # duration of the unit time step            [h]
+    # pStageDuration         = dfParameter['StageDuration'      ][0].astype('int')       # duration of each stage                    [h]
 
-    pPeriodWeight          = dfPeriod       ['Weight'        ].astype('int')             # weights of periods                       [p.u.]
-    pScenProb              = dfScenario     ['Probability'   ].astype('float')           # probabilities of scenarios               [p.u.]
-    pStageWeight           = dfStage        ['Weight'        ].astype('int')             # weights of stages                        [p.u.]
-    pDuration              = dfDuration     ['Duration'      ]  * pTimeStep              # duration of load levels                  [h]
-    pReserveMargin         = dfReserveMargin['ReserveMargin' ]                           # minimum adequacy reserve margin          [p.u.]
+    pPeriodWeight          = dfPeriod       ['Weight'        ].astype('int')             # weights of periods                        [p.u.]
+    pScenProb              = dfScenario     ['Probability'   ].astype('float')           # probabilities of scenarios                [p.u.]
+    pStageWeight           = dfStage        ['Weight'        ].astype('int')             # weights of stages                         [p.u.]
+    pDuration              = dfDuration     ['Duration'      ]  * pTimeStep              # duration of load levels                   [h]
+    pReserveMargin         = dfReserveMargin['ReserveMargin' ]                           # minimum adequacy reserve margin           [p.u.]
+    pEmission              = dfEmission     ['CO2Emission'   ]                           # maximum CO2 emission                      [MtCO2]
     pLevelToStage          = dfDuration     ['Stage'         ]                           # load levels assignment to stages
     pDemand                = dfDemand            [mTEPES.nd]    * 1e-3                   # electric demand                           [GW]
     pSystemInertia         = dfInertia           [mTEPES.ar]                             # inertia                                   [s]
@@ -387,8 +392,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pShutDownCost         = dfGeneration  ['ShutDownCost'        ]                                                      # shutdown cost                                [MEUR]
     pRampUp               = dfGeneration  ['RampUp'              ] * 1e-3                                               # ramp up   rate                               [GW/h]
     pRampDw               = dfGeneration  ['RampDown'            ] * 1e-3                                               # ramp down rate                               [GW/h]
-    pCO2EmissionCost      = dfGeneration  ['CO2EmissionRate'     ] * 1e-3 * pCO2Cost                                    # emission  cost                               [MEUR/GWh]
-    pCO2EmissionRate      = dfGeneration  ['CO2EmissionRate'     ]                                                      # emission  rate                               [tCO2/MWh]
+    pEmissionCost         = dfGeneration  ['CO2EmissionRate'     ] * 1e-3 * pCO2Cost                                    # CO2 emission  cost                           [MEUR/GWh]
+    pEmissionRate         = dfGeneration  ['CO2EmissionRate'     ]                                                      # CO2 emission  rate                           [tCO2/MWh]
     pUpTime               = dfGeneration  ['UpTime'              ]                                                      # minimum up    time                           [h]
     pDwTime               = dfGeneration  ['DownTime'            ]                                                      # minimum down  time                           [h]
     pShiftTime            = dfGeneration  ['ShiftTime'           ]                                                      # maximum shift time for DSM                   [h]
@@ -411,7 +416,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pGenLoRetire          = dfGeneration  ['RetirementLo'        ]                                                      # Lower bound of the retirement decision       [p.u.]
     pGenUpRetire          = dfGeneration  ['RetirementUp'        ]                                                      # Upper bound of the retirement decision       [p.u.]
 
-    pRatedLinearOperCost  = pRatedLinearFuelCost + pCO2EmissionCost
+    pRatedLinearOperCost  = pRatedLinearFuelCost + pEmissionCost
     pRatedLinearVarCost   = pRatedLinearFuelCost + pLinearOMCost
 
     if pIndHydroTopology == 1:
@@ -969,7 +974,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pRatedConstantVarCost.update(pd.Series([0.0 for gg in mTEPES.gg if     pRatedConstantVarCost[gg]  < pEpsilon], index=[gg for gg in mTEPES.gg if     pRatedConstantVarCost[gg]  < pEpsilon]))
     pLinearOMCost.update        (pd.Series([0.0 for gg in mTEPES.gg if     pLinearOMCost        [gg]  < pEpsilon], index=[gg for gg in mTEPES.gg if     pLinearOMCost        [gg]  < pEpsilon]))
     pOperReserveCost.update     (pd.Series([0.0 for gg in mTEPES.gg if     pOperReserveCost     [gg]  < pEpsilon], index=[gg for gg in mTEPES.gg if     pOperReserveCost     [gg]  < pEpsilon]))
-    pCO2EmissionCost.update     (pd.Series([0.0 for gg in mTEPES.gg if abs(pCO2EmissionCost     [gg]) < pEpsilon], index=[gg for gg in mTEPES.gg if abs(pCO2EmissionCost     [gg]) < pEpsilon]))
+    pEmissionCost.update        (pd.Series([0.0 for gg in mTEPES.gg if abs(pEmissionCost        [gg]) < pEpsilon], index=[gg for gg in mTEPES.gg if abs(pEmissionCost        [gg]) < pEpsilon]))
     pStartUpCost.update         (pd.Series([0.0 for nr in mTEPES.nr if     pStartUpCost         [nr]  < pEpsilon], index=[nr for nr in mTEPES.nr if     pStartUpCost         [nr]  < pEpsilon]))
     pShutDownCost.update        (pd.Series([0.0 for nr in mTEPES.nr if     pShutDownCost        [nr]  < pEpsilon], index=[nr for nr in mTEPES.nr if     pShutDownCost        [nr]  < pEpsilon]))
 
@@ -1027,7 +1032,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.pTimeStep             = Param(initialize=pTimeStep            , within=PositiveIntegers,    doc='Unitary time step'                                 )
     mTEPES.pEconomicBaseYear     = Param(initialize=pEconomicBaseYear    , within=PositiveIntegers,    doc='Base year'                                         )
 
-    mTEPES.pReserveMargin        = Param(mTEPES.ar,    initialize=pReserveMargin.to_dict()            , within=NonNegativeReals,    doc='Adequacy reserve margin'                             )
+    mTEPES.pReserveMargin        = Param(mTEPES.par,   initialize=pReserveMargin.to_dict()            , within=NonNegativeReals,    doc='Adequacy reserve margin'                             )
+    mTEPES.pEmission             = Param(mTEPES.par,   initialize=pEmission.to_dict()                 , within=NonNegativeReals,    doc='Maximum CO2 emission'                                )
     mTEPES.pPeakDemand           = Param(mTEPES.ar,    initialize=pPeakDemand.to_dict()               , within=NonNegativeReals,    doc='Peak electric demand'                                )
     mTEPES.pDemand               = Param(mTEPES.psnnd, initialize=pDemand.stack().to_dict()           , within=           Reals,    doc='Electric Demand'                                     )
     mTEPES.pPeriodWeight         = Param(mTEPES.p,     initialize=pPeriodWeight.to_dict()             , within=NonNegativeIntegers, doc='Period weight',                          mutable=True)
@@ -1066,8 +1072,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.pConstantVarCost      = Param(mTEPES.psngg, initialize=pConstantVarCost.stack().to_dict()  , within=NonNegativeReals,    doc='Constant variable cost'                              )
     mTEPES.pLinearOMCost         = Param(mTEPES.gg,    initialize=pLinearOMCost.to_dict()             , within=NonNegativeReals,    doc='Linear   O&M      cost'                              )
     mTEPES.pOperReserveCost      = Param(mTEPES.gg,    initialize=pOperReserveCost.to_dict()          , within=NonNegativeReals,    doc='Operating reserve cost'                              )
-    mTEPES.pCO2EmissionCost      = Param(mTEPES.gg,    initialize=pCO2EmissionCost.to_dict()          , within=Reals,               doc='CO2 Emission      cost'                              )
-    mTEPES.pCO2EmissionRate      = Param(mTEPES.gg,    initialize=pCO2EmissionRate.to_dict()          , within=Reals,               doc='CO2 Emission      rate'                              )
+    mTEPES.pEmissionCost         = Param(mTEPES.gg,    initialize=pEmissionCost.to_dict()             , within=Reals,               doc='CO2 Emission      cost'                              )
+    mTEPES.pEmissionRate         = Param(mTEPES.gg,    initialize=pEmissionRate.to_dict()             , within=Reals,               doc='CO2 Emission      rate'                              )
     mTEPES.pStartUpCost          = Param(mTEPES.nr,    initialize=pStartUpCost.to_dict()              , within=NonNegativeReals,    doc='Startup  cost'                                       )
     mTEPES.pShutDownCost         = Param(mTEPES.nr,    initialize=pShutDownCost.to_dict()             , within=NonNegativeReals,    doc='Shutdown cost'                                       )
     mTEPES.pRampUp               = Param(mTEPES.gg,    initialize=pRampUp.to_dict()                   , within=NonNegativeReals,    doc='Ramp up   rate'                                      )
@@ -1221,13 +1227,14 @@ def SettingUpVariables(OptModel, mTEPES):
     StartTime = time.time()
 
     #%% variables
-    OptModel.vTotalSCost              = Var(              within=NonNegativeReals,                                                                                                                     doc='total system                         cost      [MEUR]')
-    OptModel.vTotalICost              = Var(              within=NonNegativeReals,                                                                                                                     doc='total system investment              cost      [MEUR]')
+    OptModel.vTotalSCost              = Var(                      within=NonNegativeReals,                                                                                                            doc='total system                         cost      [MEUR]')
+    OptModel.vTotalICost              = Var(                      within=NonNegativeReals,                                                                                                            doc='total system investment              cost      [MEUR]')
     OptModel.vTotalFCost              = Var(mTEPES.p,     within=NonNegativeReals,                                                                                                            doc='total system fixed                   cost      [MEUR]')
     OptModel.vTotalGCost              = Var(mTEPES.psn,   within=NonNegativeReals,                                                                                                            doc='total variable generation  operation cost      [MEUR]')
     OptModel.vTotalCCost              = Var(mTEPES.psn,   within=NonNegativeReals,                                                                                                            doc='total variable consumption operation cost      [MEUR]')
     OptModel.vTotalECost              = Var(mTEPES.psn,   within=NonNegativeReals,                                                                                                            doc='total system emission                cost      [MEUR]')
     OptModel.vTotalRCost              = Var(mTEPES.psn,   within=NonNegativeReals,                                                                                                            doc='total system reliability             cost      [MEUR]')
+    OptModel.vTotalECostArea          = Var(mTEPES.psnar, within=NonNegativeReals,                                                                                                            doc='total   area emission                cost      [MEUR]')
     OptModel.vTotalOutput             = Var(mTEPES.psng , within=NonNegativeReals, bounds=lambda OptModel,p,sc,n,g : (0.0,                            mTEPES.pMaxPower         [p,sc,n,g ]),  doc='total output of the unit                         [GW]')
     OptModel.vOutput2ndBlock          = Var(mTEPES.psnnr, within=NonNegativeReals, bounds=lambda OptModel,p,sc,n,nr: (0.0,                            mTEPES.pMaxPower2ndBlock [p,sc,n,nr]),  doc='second block of the unit                         [GW]')
     OptModel.vReserveUp               = Var(mTEPES.psnnr, within=NonNegativeReals, bounds=lambda OptModel,p,sc,n,nr: (0.0,                            mTEPES.pMaxPower2ndBlock [p,sc,n,nr]),  doc='upward   operating reserve                       [GW]')

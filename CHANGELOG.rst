@@ -1,6 +1,10 @@
 Change Log
 =============
 
+[4.14.0] - 2023-09-13
+----------------------
+- [CHANGED] added the maximum CO2 emission constraint, eMaxSystemEmission, and the resulting MarginalEmission file
+
 [4.13.0] - 2023-08-24
 ----------------------
 - [CHANGED] added the hydrogen demand and network, DemandHydrogen and NetworkHydrogen input files

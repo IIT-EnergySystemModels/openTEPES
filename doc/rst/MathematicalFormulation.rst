@@ -93,11 +93,17 @@ They are written in **uppercase** letters.
 :math:`UR^p_{\omega na}, DR^p_{\omega na}`  Upward and downward operating reserves for each area                GW
 ==========================================  ==================================================================  ====
 
-==================================  ========================================================  ====
+==================================  ================================================================  ====
 **Adequacy system reserve margin**
-----------------------------------  --------------------------------------------------------  ----
-:math:`RM_a`                        Adequacy system reserve margin for each area              p.u.
-==================================  ========================================================  ====
+----------------------------------  ----------------------------------------------------------------  ----
+:math:`RM_pa`                       Minimum adequacy system reserve margin for each period and area   p.u.
+==================================  ================================================================  ====
+
+==================================  ================================================================  =====
+**Maximum CO2 emission**
+----------------------------------  ----------------------------------------------------------------  -----
+:math:`EL_pa`                       Maximum CO2 emission for each period, scenario, and area          MtCO2
+==================================  ================================================================  =====
 
 ==============================  ========================================================  ====
 **System inertia**
@@ -116,6 +122,7 @@ They are written in **uppercase** letters.
 :math:`\underline{GC}^p_{\omega ne}, \overline{GC}^p_{\omega ne}`  Minimum and maximum consumption of an ESS                                                                                 GW
 :math:`CF^p_{\omega ng}, CV^p_{\omega ng}`                         Fixed (no load) and variable cost of a generator. Variable cost includes fuel and O&M                                     €/h, €/MWh
 :math:`CE_g`                                                       Emission cost of a generator                                                                                              €/MWh
+:math:`ER_g`                                                       Emission rate of a generator                                                                                              tCO2/MWh
 :math:`CV_e`                                                       Variable cost of an ESS or pumped-storage hydro power plant when charging                                                 €/MWh
 :math:`RU_g, RD_g`                                                 Ramp up/down of a non-renewable unit or maximum discharge/charge rate for ESS discharge/charge                            MW/h
 :math:`TU_t, TD_t`                                                 Minimum uptime and downtime of a thermal unit                                                                             h
@@ -293,7 +300,11 @@ Output and consumption bounded by investment decision for candidate ESS [p.u.] �
 
 Adequacy system reserve margin [p.u.] «``eAdequacyReserveMargin``»
 
-:math:`\sum_{g \in a, EG} \overline{GP}_g A_g + \sum_{g \in a, CG} icg^p_g  \overline{GP}_g A_g \geq PD_a RM_a \quad \forall pa`
+:math:`\sum_{g \in a, EG} \overline{GP}_g A_g + \sum_{g \in a, CG} icg^p_g \overline{GP}_g A_g \geq PD_a RM_pa \quad \forall pa`
+
+Maximum CO2 emission [MtC02] «``eMaxSystemEmission``»
+
+:math:`\sum_{ng} {DUR_n gp^p_{\omega ng}} \leq EL_pa \quad \forall p \omega a`
 
 Balance of electric generation and demand at each node with ohmic losses [GW] «``eBalance``»
 

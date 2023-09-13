@@ -85,7 +85,8 @@ File                                       Description
 ``oT_Data_Period.csv``                     Weight of each period
 ``oT_Data_Scenario.csv``                   Short-term uncertainties
 ``oT_Data_Stage.csv``                      Weight of each stage
-``oT_Data_ReserveMargin.csv``              Adequacy reserve margin
+``oT_Data_ReserveMargin.csv``              Minimum adequacy reserve margin
+``oT_Data_Emission.csv``                   Maximum CO2 emission
 ``oT_Data_Duration.csv``                   Duration of the load levels
 ``oT_Data_Demand.csv``                     Electricity demand
 ``oT_Data_Inertia.csv``                    System inertia by area
@@ -204,13 +205,26 @@ Adequacy reserve margin
 
 A description of the data included in the file ``oT_Data_ReserveMargin.csv`` follows:
 
-==============  =============  ======================================
-Identifier      Header         Description
-==============  =============  ======================================
-Scenario        ReserveMargin  Adequacy reserve margin for each area
-==============  =============  ======================================
+==============  ==============  =============  ==========================================================  ====
+Identifier      Identifier      Header         Description
+==============  ==============  =============  ==========================================================  ====
+Period          Area            ReserveMargin  Minimum adequacy reserve margin for each period and area    p.u.
+==============  ==============  =============  ==========================================================  ====
 
-This parameter is only used for system generation expansion, not for the system operation.
+This parameter is only used for system generation expansion, not for the system operation. If no value is introduced for an area, the reserve margin is considered 0.
+
+Maximum CO2 emission
+--------------------
+
+A description of the data included in the file ``oT_Data_Emission.csv`` follows:
+
+==============  ==============  =============  ===========================================================  =====
+Identifier      Identifier      Header         Description
+==============  ==============  =============  ===========================================================  =====
+Period          Area            CO2Emission    Maximum CO2 emission for each period, scenario, and area     MtCO2
+==============  ==============  =============  ===========================================================  =====
+
+This parameter is only used for system generation expansion, not for the system operation. If no value is introduced for an area, the CO2 emission limit is considered infinite.
 
 Duration
 --------

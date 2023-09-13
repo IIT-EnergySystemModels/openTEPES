@@ -250,7 +250,7 @@ File ``oT_Result_GenerationEmission.csv``
 ============  ==========  ==========  ==========  =================================
 Identifier    Identifier  Identifier  Header      Description
 ============  ==========  ==========  ==========  =================================
-Period        Scenario    Load level  Generator   CO2 emission [Mt CO2]
+Period        Scenario    Load level  Generator   CO2 emission [MtCO2]
 ============  ==========  ==========  ==========  =================================
 
 File ``oT_Result_GenerationIncrementalEmission.csv``
@@ -322,7 +322,7 @@ File ``oT_Result_TechnologyEmission.csv``
 ============  ==========  ==========  ==========  =================================
 Identifier    Identifier  Identifier  Header      Description
 ============  ==========  ==========  ==========  =================================
-Period        Scenario    Load level  Technology   CO2 emission [Mt CO2]
+Period        Scenario    Load level  Technology   CO2 emission [MtCO2]
 ============  ==========  ==========  ==========  =================================
 
 File ``oT_Result_TechnologyEmission_AreaName.csv``
@@ -330,7 +330,7 @@ File ``oT_Result_TechnologyEmission_AreaName.csv``
 ============  ==========  ==========  ==========  =================================
 Identifier    Identifier  Identifier  Header      Description
 ============  ==========  ==========  ==========  =================================
-Period        Scenario    Load level  Technology   CO2 emission per area [Mt CO2]
+Period        Scenario    Load level  Technology   CO2 emission per area [MtCO2]
 ============  ==========  ==========  ==========  =================================
 
 File ``oT_Result_TechnologyReserveUp.csv``
@@ -908,11 +908,19 @@ Marginal information
 
 File ``oT_Result_MarginalReserveMargin.csv``
 
-============  ==========  ==========  ==========  =================================================
-Identifier    Identifier  Identifier  Header      Description
-============  ==========  ==========  ==========  =================================================
-Period        Scenario    Load level  Area        Marginal of the reserve margin [€/MW]
-============  ==========  ==========  ==========  =================================================
+============  ==========  ==========  =======================================================
+Identifier    Identifier  Header      Description
+============  ==========  ==========  =======================================================
+Period        Scenario    Area        Marginal of the minimum adequacy reserve margin [€/MW]
+============  ==========  ==========  =======================================================
+
+File ``oT_Result_MarginalEmission.csv``
+
+============  ==========  ==========  =================================================
+Identifier    Identifier  Header      Description
+============  ==========  ==========  =================================================
+Period        Scenario    Area        Marginal of the maximum CO2 emission [€/tCO2]
+============  ==========  ==========  =================================================
 
 File ``oT_Result_MarginalIncrementalVariableCost.csv``
 
