@@ -96,13 +96,13 @@ They are written in **uppercase** letters.
 ==================================  ================================================================  ====
 **Adequacy system reserve margin**
 ----------------------------------  ----------------------------------------------------------------  ----
-:math:`RM_pa`                       Minimum adequacy system reserve margin for each period and area   p.u.
+:math:`RM_{pa}`                     Minimum adequacy system reserve margin for each period and area   p.u.
 ==================================  ================================================================  ====
 
 ==================================  ================================================================  =====
 **Maximum CO2 emission**
 ----------------------------------  ----------------------------------------------------------------  -----
-:math:`EL_pa`                       Maximum CO2 emission for each period, scenario, and area          MtCO2
+:math:`EL_{pa}`                     Maximum CO2 emission for each period, scenario, and area          MtCO2
 ==================================  ================================================================  =====
 
 ==============================  ========================================================  ====
@@ -300,11 +300,11 @@ Output and consumption bounded by investment decision for candidate ESS [p.u.] �
 
 Adequacy system reserve margin [p.u.] «``eAdequacyReserveMargin``»
 
-:math:`\sum_{g \in a, EG} \overline{GP}_g A_g + \sum_{g \in a, CG} icg^p_g \overline{GP}_g A_g \geq PD_a RM_pa \quad \forall pa`
+:math:`\sum_{g \in a, EG} \overline{GP}_g A_g + \sum_{g \in a, CG} icg^p_g \overline{GP}_g A_g \geq PD_a RM_{pa} \quad \forall pa`
 
 Maximum CO2 emission [MtC02] «``eMaxSystemEmission``»
 
-:math:`\sum_{ng} {DUR_n gp^p_{\omega ng}} \leq EL_pa \quad \forall p \omega a`
+:math:`\sum_{ng} {DUR_n gp^p_{\omega ng}} \leq EL_{pa} \quad \forall p \omega a`
 
 Balance of electric generation and demand at each node with ohmic losses [GW] «``eBalance``»
 
