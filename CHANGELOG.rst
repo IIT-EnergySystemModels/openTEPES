@@ -4,6 +4,7 @@ Change Log
 [4.14.0] - 2023-09-13
 ----------------------
 - [CHANGED] added the maximum CO2 emission constraint, eMaxSystemEmission, and the resulting MarginalEmission file
+- [CHANGED] include period (year) in the adequacy reserve margin file, ReserveMargin
 
 [4.13.0] - 2023-08-24
 ----------------------
