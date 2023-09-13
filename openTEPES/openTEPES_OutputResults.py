@@ -1226,12 +1226,12 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES, pIndPlotOutput):
     if sum(mTEPES.pReserveMargin[:,:]):
         if len(mTEPES.gc):
             sPSSTAR       = [(p,sc,st,ar) for p,sc,st,ar in mTEPES.ps*mTEPES.st*mTEPES.ar if mTEPES.pReserveMargin[p,ar] and sum(1 for g in mTEPES.a2g)]
-            OutputResults = pd.Series(data=[mTEPES.pDuals["".join(["eAdequacyReserveMargin_", str(p), "_", str(sc), "_", str(st), "('", str(p), "', '", str(ar), "')"])] for p,sc,st,ar in sPSSTAR], index=pd.Index(sPSSTAR))
+            OutputResults = pd.Series(data=[mTEPES.pDuals["".join(["eAdequacyReserveMargin_", str(p), "_", str(sc), "_", str(st), str(ar)])] for p,sc,st,ar in sPSSTAR], index=pd.Index(sPSSTAR))
             OutputResults.to_frame(name='RM').reset_index().pivot_table(index=['level_0','level_1'], columns='level_3', values='RM').rename_axis(['Period', 'Scenario'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_MarginalReserveMargin_'+CaseName+'.csv', sep=',')
 
     if sum(mTEPES.pEmission[:,:]):
         sPSSTAR       = [(p,sc,st,ar) for p,sc,st,ar in mTEPES.ps*mTEPES.st*mTEPES.ar if mTEPES.pEmission[p,ar] and sum(1 for g in mTEPES.a2g)]
-        OutputResults = pd.Series(data=[mTEPES.pDuals["".join(["eMaxSystemEmission_", str(p), "_", str(sc), "_", str(st), "(", str(p), ", '", str(ar), "')"])] for p,sc,st,ar in sPSSTAR], index=pd.Index(sPSSTAR))
+        OutputResults = pd.Series(data=[mTEPES.pDuals["".join(["eMaxSystemEmission_", str(p), "_", str(sc), "_", str(st), str(ar)])] for p,sc,st,ar in sPSSTAR], index=pd.Index(sPSSTAR))
         OutputResults.to_frame(name='EM').reset_index().pivot_table(index=['level_0','level_1'], columns='level_3', values='EM').rename_axis(['Period', 'Scenario'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_MarginalEmission_'+CaseName+'.csv', sep=',')
 
     #%% outputting the up operating reserve marginal
@@ -1568,7 +1568,7 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput, pIndPlo
     if sum(mTEPES.pReserveMargin[:,:]):
         if len(mTEPES.gc):
             sPSSTARGC      = [(p,sc,st,ar,gc) for p,sc,st,ar,gc in mTEPES.ps*mTEPES.st*mTEPES.a2g if mTEPES.pReserveMargin[p,ar] and sum(1 for g in mTEPES.a2g)]
-            OutputToResRev = pd.Series(data=[mTEPES.pDuals["".join(["eAdequacyReserveMargin_", str(p), "_", str(sc), "_", str(st), "('", str(p), "', '", str(ar), "')"])]*mTEPES.pRatedMaxPower[gc]*mTEPES.pAvailability[gc]() for p,sc,st,ar,gc in sPSSTARGC], index=pd.Index(sPSSTARGC))
+            OutputToResRev = pd.Series(data=[mTEPES.pDuals["".join(["eAdequacyReserveMargin_", str(p), "_", str(sc), "_", str(st), str(ar)])]*mTEPES.pRatedMaxPower[gc]*mTEPES.pAvailability[gc]() for p,sc,st,ar,gc in sPSSTARGC], index=pd.Index(sPSSTARGC))
             OutputToResRev /= 1e3
             OutputToResRev = OutputToResRev.to_frame(name='MEUR').reset_index().pivot_table(index=['level_0','level_1'], columns='level_4', values='MEUR').rename_axis(['Stages', 'Areas'], axis=0).rename_axis([None], axis=1).sum(axis=0)
             ResRev         = pd.Series(data=[0.0 for gc in mTEPES.gc], index=mTEPES.gc, dtype='float64')

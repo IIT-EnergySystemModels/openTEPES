@@ -221,24 +221,24 @@ def GenerationOperationModelFormulationInvestment(OptModel, mTEPES, pIndLogConso
     if pIndLogConsole == 1:
         print('eUninstalGenCap       ... ', len(getattr(OptModel, 'eUninstalGenCap_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
 
-    def eAdequacyReserveMargin(OptModel,p,ar):
+    def eAdequacyReserveMargin(OptModel,ar):
         if mTEPES.pReserveMargin[p,ar] and sum(1 for g in mTEPES.a2g):
             return ((sum(                                       mTEPES.pRatedMaxPower[g ] * mTEPES.pAvailability[g ] / (1.0-mTEPES.pEFOR[g ]) for g  in mTEPES.g  if (ar,g ) in mTEPES.a2g and g not in (mTEPES.gc or mTEPES.gd)) +
                      sum(   OptModel.vGenerationInvest[p,gc]  * mTEPES.pRatedMaxPower[gc] * mTEPES.pAvailability[gc] / (1.0-mTEPES.pEFOR[gc]) for gc in mTEPES.gc if (ar,gc) in mTEPES.a2g                                      ) +
                      sum((1-OptModel.vGenerationRetire[p,gd]) * mTEPES.pRatedMaxPower[gd] * mTEPES.pAvailability[gd] / (1.0-mTEPES.pEFOR[gd]) for gd in mTEPES.gd if (ar,gd) in mTEPES.a2g                                      ) ) >= mTEPES.pPeakDemand[ar] * mTEPES.pReserveMargin[p,ar])
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eAdequacyReserveMargin_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.p, mTEPES.ar, rule=eAdequacyReserveMargin, doc='system adequacy reserve margin [p.u.]'))
+    setattr(OptModel, 'eAdequacyReserveMargin_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.ar, rule=eAdequacyReserveMargin, doc='system adequacy reserve margin [p.u.]'))
 
     if pIndLogConsole == 1:
         print('eAdequacyReserveMargin... ', len(getattr(OptModel, 'eAdequacyReserveMargin_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
 
-    def eMaxSystemEmission(OptModel,p,ar):
+    def eMaxSystemEmission(OptModel,ar):
         if mTEPES.pEmission[p,ar] and sum(mTEPES.pEmissionCost[nr] for nr in mTEPES.nr if (ar,nr) in mTEPES.a2g):
             return sum(OptModel.vTotalECostArea[p,sc,n,ar]/mTEPES.pCO2Cost for n in mTEPES.n) <= mTEPES.pEmission[p,ar]
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eMaxSystemEmission_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.p, mTEPES.ar, rule=eMaxSystemEmission, doc='maximum CO2 emission [tCO2]'))
+    setattr(OptModel, 'eMaxSystemEmission_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.ar, rule=eMaxSystemEmission, doc='maximum CO2 emission [tCO2]'))
 
     if pIndLogConsole == 1:
         print('eMaxSystemEmission    ... ', len(getattr(OptModel, 'eMaxSystemEmission_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
