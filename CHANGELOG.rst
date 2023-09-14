@@ -1,6 +1,10 @@
 Change Log
 =============
 
+[4.14.1] - 2023-09-14
+----------------------
+- [FIXED] fixed formulation of the maximum CO2 emission constraint
+
 [4.14.0] - 2023-09-13
 ----------------------
 - [CHANGED] added the maximum CO2 emission constraint, eMaxSystemEmission, and the resulting MarginalEmission file
