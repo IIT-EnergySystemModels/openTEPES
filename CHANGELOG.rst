@@ -1,12 +1,17 @@
 Change Log
 =============
 
-[4.14.1] - 2023-09-14
+[4.14.1] - 2023-09-18
 ----------------------
+- [FIXED] fixed some errors associated to hydropower plants parameters/variables
+- [FIXED] fixed solving of the investment decision problem and computation of dual variables when there are many scenarios
+- [FIXED] fixed computation of efficiency parameter of water reservoir and ESS units
+- [FIXED] fixed computation of the hydro units water cycle
 - [FIXED] fixed formulation of the maximum CO2 emission constraint
 
 [4.14.0] - 2023-09-13
 ----------------------
+- [CHANGED] added emission file to introduce the maximum system emission
 - [CHANGED] added the maximum CO2 emission constraint, eMaxSystemEmission, and the resulting MarginalEmission file
 - [CHANGED] include period (year) in the adequacy reserve margin file, ReserveMargin
 

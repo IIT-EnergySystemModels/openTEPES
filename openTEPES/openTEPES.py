@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 14, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 18, 2023
 """
 
 import time
@@ -37,8 +37,8 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     idxDict['y'  ] = 1
 
     #%% model declaration
-    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.14.1 - September 14, 2023')
-    print(                 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.14.1 - September 14, 2023', file=open(_path+'/openTEPES_version_'+CaseName+'.log','a'))
+    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.14.1 - September 18, 2023')
+    print(                 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.14.1 - September 18, 2023', file=open(_path+'/openTEPES_version_'+CaseName+'.log','a'))
 
     pIndOutputResults = [j for i,j in idxDict.items() if i == pIndOutputResults][0]
     pIndLogConsole    = [j for i,j in idxDict.items() if i == pIndLogConsole   ][0]
@@ -53,7 +53,9 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     TotalObjectiveFunction    (mTEPES, mTEPES, pIndLogConsole)
     InvestmentModelFormulation(mTEPES, mTEPES, pIndLogConsole)
 
-    pIndFirstPeriodScenario = 1
+    # initialize parameter for dual variables
+    mTEPES.pDuals = {}
+
     # iterative model formulation for each stage of a year
     for p,sc,st in mTEPES.ps*mTEPES.stt:
         # activate only load levels to formulate
@@ -80,33 +82,35 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
         NetworkSwitchingModelFormulation                (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
         NetworkOperationModelFormulation                (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
 
-        if pIndLogConsole == 1:
-            StartTime         = time.time()
-            mTEPES.write(_path+'/openTEPES_'+CaseName+'_'+str(p)+'_'+str(sc)+'.lp', io_options={'symbolic_solver_labels': True})
-            WritingLPFileTime = time.time() - StartTime
-            StartTime         = time.time()
-            print('Writing LP file                        ... ', round(WritingLPFileTime), 's')
-
-        # initialize parameter for dual variables
-        if pIndFirstPeriodScenario == 1:
-            pDuals = {}
-
         if (len(mTEPES.gc) == 0 or (len(mTEPES.gc) > 0 and mTEPES.pIndBinGenInvest() == 2)) and (len(mTEPES.gd) == 0 or (len(mTEPES.gd) > 0 and mTEPES.pIndBinGenRetire() == 2)) and (len(mTEPES.lc) == 0 or (len(mTEPES.lc) > 0 and mTEPES.pIndBinNetInvest() == 2)):
             mTEPES.pPeriodProb[p,sc] = mTEPES.pPeriodWeight[p] = mTEPES.pScenProb[p,sc] = 1.0
+
+            if pIndLogConsole == 1:
+                StartTime         = time.time()
+                mTEPES.write(_path+'/openTEPES_'+CaseName+'_'+str(p)+'_'+str(sc)+'.lp', io_options={'symbolic_solver_labels': True})
+                WritingLPFileTime = time.time() - StartTime
+                StartTime         = time.time()
+                print('Writing LP file                        ... ', round(WritingLPFileTime), 's')
+
             # there are no expansion decisions, or they are ignored (it is an operation planning model)
-            ProblemSolving(DirName, CaseName, SolverName, mTEPES, mTEPES, pIndLogConsole, p, sc, pIndFirstPeriodScenario, pDuals)
+            ProblemSolving(DirName, CaseName, SolverName, mTEPES, mTEPES, pIndLogConsole, p, sc)
             mTEPES.pPeriodProb[p,sc] = mTEPES.pPeriodWeight[p] = mTEPES.pScenProb[p,sc] = 0.0
             # deactivate the constraints of the previous period and scenario
             for c in mTEPES.component_objects(pyo.Constraint, active=True):
                 if c.name.find(str(p)) != -1 and c.name.find(str(sc)) != -1:
                     c.deactivate()
         else:
-            # there are investment decisions (it is an expansion and operation planning model)
-            ProblemSolving(DirName, CaseName, SolverName, mTEPES, mTEPES, pIndLogConsole, p, sc, pIndFirstPeriodScenario, pDuals)
+            if mTEPES.p.ord(p)*mTEPES.sc.ord(sc) == len(mTEPES.sc):
 
-        # initialize parameter for dual variables
-        if  pIndFirstPeriodScenario == 1:
-            pIndFirstPeriodScenario =  0
+                if pIndLogConsole == 1:
+                    StartTime         = time.time()
+                    mTEPES.write(_path+'/openTEPES_'+CaseName+'_'+str(p)+'_'+str(sc)+'.lp', io_options={'symbolic_solver_labels': True})
+                    WritingLPFileTime = time.time() - StartTime
+                    StartTime         = time.time()
+                    print('Writing LP file                        ... ', round(WritingLPFileTime), 's')
+
+                # there are investment decisions (it is an expansion and operation planning model)
+                ProblemSolving(DirName, CaseName, SolverName, mTEPES, mTEPES, pIndLogConsole, p, sc)
 
     mTEPES.del_component(mTEPES.st)
     mTEPES.del_component(mTEPES.n )
@@ -118,8 +122,6 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     # activate the constraints of all the periods and scenarios
     for c in mTEPES.component_objects(pyo.Constraint):
         c.activate()
-
-    mTEPES.pDuals = Param(pDuals.keys(), initialize=pDuals, within=Reals, doc='Dual variables')
 
     for p,sc in mTEPES.ps:
         mTEPES.pPeriodProb[p,sc] = mTEPES.pPeriodWeight[p] = mTEPES.pScenProb[p,sc] = 1.0

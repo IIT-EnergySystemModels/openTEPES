@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 23, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 18, 2023
 """
 
 import time
@@ -12,7 +12,7 @@ from   pyomo.opt             import SolverFactory, SolverStatus, TerminationCond
 from   pyomo.util.infeasible import log_infeasible_constraints
 from   pyomo.environ         import Suffix
 
-def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConsole, p, sc, pIndFirstPeriodScenario, pDuals):
+def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConsole, p, sc):
     print('Problem solving                        ****')
     _path = os.path.join(DirName, CaseName)
     StartTime = time.time()
@@ -37,10 +37,11 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
     if (mTEPES.pIndBinGenInvest()*len(mTEPES.gc)*sum(mTEPES.pIndBinUnitInvest[gc] for gc in mTEPES.gc) + mTEPES.pIndBinGenRetire()*len(mTEPES.gd)*sum(mTEPES.pIndBinUnitRetire[gd] for gd in mTEPES.gd) + mTEPES.pIndBinNetInvest ()*len(mTEPES.lc)*sum(mTEPES.pIndBinLineInvest[lc] for lc in mTEPES.lc) + mTEPES.pIndBinNetH2Invest()*len(mTEPES.pc)*sum(mTEPES.pIndBinPipeInvest[pc] for pc in mTEPES.pc) +
         mTEPES.pIndBinGenOperat()*len(mTEPES.nr)*sum(mTEPES.pIndBinUnitCommit[nr] for nr in mTEPES.nr) +                                                                                                  mTEPES.pIndBinLineCommit()*len(mTEPES.la)*sum(mTEPES.pIndBinLineSwitch[la] for la in mTEPES.la) + len(mTEPES.g2g) == 0 or
         ((len(mTEPES.gc) == 0 or (len(mTEPES.gc) > 0 and mTEPES.pIndBinGenInvest() == 2)) and (len(mTEPES.gd) == 0 or (len(mTEPES.gd) > 0 and mTEPES.pIndBinGenRetire() == 2)) and (len(mTEPES.lc) == 0 or (len(mTEPES.lc) > 0 and mTEPES.pIndBinNetInvest () == 2)) and (len(mTEPES.pc) == 0 or (len(mTEPES.pc) > 0 and mTEPES.pIndBinNeH2tInvest() == 2)) and
-         (len(mTEPES.nr) == 0 or (len(mTEPES.nr) > 0 and mTEPES.pIndBinGenOperat() == 0)) and                                                                                      (len(mTEPES.la) == 0 or (len(mTEPES.la) > 0 and mTEPES.pIndBinLineCommit() == 0)) and pIndFirstPeriodScenario == 1)):
+         (len(mTEPES.nr) == 0 or (len(mTEPES.nr) > 0 and mTEPES.pIndBinGenOperat() == 0)) and                                                                                      (len(mTEPES.la) == 0 or (len(mTEPES.la) > 0 and mTEPES.pIndBinLineCommit() == 0)))):
         # there are no binary decisions (no investment/retirement decisions or investment/retirement decisions already ignored, no line switching/unit commitment, no mutually exclusive units)
-        OptModel.dual = Suffix(direction=Suffix.IMPORT_EXPORT)
-        OptModel.rc   = Suffix(direction=Suffix.IMPORT_EXPORT)
+        if mTEPES.p.ord(p)*mTEPES.sc.ord(sc) == 1:
+            OptModel.dual = Suffix(direction=Suffix.IMPORT_EXPORT)
+            OptModel.rc   = Suffix(direction=Suffix.IMPORT_EXPORT)
 
     SolverResults = Solver.solve(OptModel, tee=True, report_timing=True)              # tee=True displays the log of the solver
 
@@ -109,16 +110,20 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
                 if sum(1 for g in mTEPES.nr if (nr,g) in mTEPES.g2g or (g,nr) in mTEPES.g2g):
                     OptModel.vMaxCommitment[nr].fix(round(OptModel.vMaxCommitment[nr]()))
 
-        OptModel.dual = Suffix(direction=Suffix.IMPORT_EXPORT)
-        OptModel.rc   = Suffix(direction=Suffix.IMPORT_EXPORT)
+        if mTEPES.p.ord(p)*mTEPES.sc.ord(sc) == 1:
+            OptModel.dual = Suffix(direction=Suffix.IMPORT_EXPORT)
+            OptModel.rc   = Suffix(direction=Suffix.IMPORT_EXPORT)
 
         SolverResults = Solver.solve(OptModel, tee=True, report_timing=True)              # tee=True displays the log of the solver
 
     # saving the dual variables for writing in output results
+    pDuals = {}
     for c in OptModel.component_objects(pyo.Constraint, active=True):
         if c.is_indexed():
             for index in c:
                 pDuals[str(c.name)+str(index)] = OptModel.dual[c[index]]
+
+    mTEPES.pDuals.update(pDuals)
 
     SolvingTime = time.time() - StartTime
 

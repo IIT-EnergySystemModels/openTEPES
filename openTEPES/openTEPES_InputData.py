@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 14, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 18, 2023
 """
 
 import datetime
@@ -582,6 +582,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.pll       = [(p,     ni,nf,cc) for p,     ni,nf,cc in mTEPES.p  *mTEPES.ll]
 
     if pIndHydroTopology == 1:
+        mTEPES.psnh  = [(p,sc,n,h )       for p,sc,n,h        in mTEPES.psn*mTEPES.h ]
         mTEPES.psrs  = [(p,sc,  rs)       for p,sc,  rs       in mTEPES.ps *mTEPES.rs]
         mTEPES.psnrs = [(p,sc,n,rs)       for p,sc,n,rs       in mTEPES.psn*mTEPES.rs]
         mTEPES.psnrc = [(p,sc,n,rc)       for p,sc,n,rc       in mTEPES.psn*mTEPES.rn]
@@ -877,7 +878,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         pMinPower      [pMinPower      [[g  for  g in g2a[ar]]] <  pEpsilon] = 0.0
         pMaxPower      [pMaxPower      [[g  for  g in g2a[ar]]] <  pEpsilon] = 0.0
         pMinCharge     [pMinCharge     [[es for es in e2a[ar]]] <  pEpsilon] = 0.0
-        pMaxCharge     [pMaxCharge     [[es for es in e2a[ar]]] <  pEpsilon] = 0.0
+        pMaxCharge     [pMaxCharge     [[g  for g  in g2a[ar]]] <  pEpsilon] = 0.0
         pEnergyInflows [pEnergyInflows [[es for es in e2a[ar]]] <  pEpsilon/pTimeStep] = 0.0
         pEnergyOutflows[pEnergyOutflows[[es for es in e2a[ar]]] <  pEpsilon/pTimeStep] = 0.0
         # these parameters are in GWh
@@ -902,7 +903,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         pMaxCharge2ndBlock = pMaxCharge - pMinCharge
 
         pMaxPower2ndBlock [pMaxPower2ndBlock [[nr for nr in n2a[ar]]] < pEpsilon] = 0.0
-        pMaxCharge2ndBlock[pMaxCharge2ndBlock[[es for es in e2a[ar]]] < pEpsilon] = 0.0
+        pMaxCharge2ndBlock[pMaxCharge2ndBlock[[g  for g  in g2a[ar]]] < pEpsilon] = 0.0
 
     # replace < 0.0 by 0.0
     pMaxPower2ndBlock  = pMaxPower2ndBlock.where (pMaxPower2ndBlock  > 0.0, other=0.0)
@@ -910,18 +911,18 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
 
     # drop generators not es
     pMinCharge            = pMinCharge.loc           [:, mTEPES.es]
-    pMaxCharge            = pMaxCharge.loc           [:, mTEPES.es]
+    pMaxCharge            = pMaxCharge.loc           [:, mTEPES.g ]
     pEnergyInflows        = pEnergyInflows.loc       [:, mTEPES.es]
     pEnergyOutflows       = pEnergyOutflows.loc      [:, mTEPES.es]
     pMinStorage           = pMinStorage.loc          [:, mTEPES.es]
     pMaxStorage           = pMaxStorage.loc          [:, mTEPES.es]
-    pEfficiency           = pEfficiency.loc          [   mTEPES.es]
+    pEfficiency           = pEfficiency.loc          [   mTEPES.g ]
     pCycleTimeStep        = pCycleTimeStep.loc       [   mTEPES.es]
     pOutflowsTimeStep     = pOutflowsTimeStep.loc    [   mTEPES.es]
     pIniInventory         = pIniInventory.loc        [:, mTEPES.es]
     pInitialInventory     = pInitialInventory.loc    [   mTEPES.es]
     pStorageType          = pStorageType.loc         [   mTEPES.es]
-    pMaxCharge2ndBlock    = pMaxCharge2ndBlock.loc   [:, mTEPES.es]
+    pMaxCharge2ndBlock    = pMaxCharge2ndBlock.loc   [:, mTEPES.g ]
 
     # drop generators not gc or gd
     pGenInvestCost        = pGenInvestCost.loc       [   mTEPES.gc]
@@ -1049,9 +1050,9 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.pMinPower             = Param(mTEPES.psngg, initialize=pMinPower.stack().to_dict()         , within=NonNegativeReals,    doc='Minimum power'                                       )
     mTEPES.pMaxPower             = Param(mTEPES.psngg, initialize=pMaxPower.stack().to_dict()         , within=NonNegativeReals,    doc='Maximum power'                                       )
     mTEPES.pMinCharge            = Param(mTEPES.psnes, initialize=pMinCharge.stack().to_dict()        , within=NonNegativeReals,    doc='Minimum charge'                                      )
-    mTEPES.pMaxCharge            = Param(mTEPES.psnes, initialize=pMaxCharge.stack().to_dict()        , within=NonNegativeReals,    doc='Maximum charge'                                      )
+    mTEPES.pMaxCharge            = Param(mTEPES.psng , initialize=pMaxCharge.stack().to_dict()        , within=NonNegativeReals,    doc='Maximum charge'                                      )
     mTEPES.pMaxPower2ndBlock     = Param(mTEPES.psngg, initialize=pMaxPower2ndBlock.stack().to_dict() , within=NonNegativeReals,    doc='Second block power'                                  )
-    mTEPES.pMaxCharge2ndBlock    = Param(mTEPES.psnes, initialize=pMaxCharge2ndBlock.stack().to_dict(), within=NonNegativeReals,    doc='Second block charge'                                 )
+    mTEPES.pMaxCharge2ndBlock    = Param(mTEPES.psng , initialize=pMaxCharge2ndBlock.stack().to_dict(), within=NonNegativeReals,    doc='Second block charge'                                 )
     mTEPES.pEnergyInflows        = Param(mTEPES.psnes, initialize=pEnergyInflows.stack().to_dict()    , within=NonNegativeReals,    doc='Energy inflows',                         mutable=True)
     mTEPES.pEnergyOutflows       = Param(mTEPES.psnes, initialize=pEnergyOutflows.stack().to_dict()   , within=NonNegativeReals,    doc='Energy outflows',                        mutable=True)
     mTEPES.pMinStorage           = Param(mTEPES.psnes, initialize=pMinStorage.stack().to_dict()       , within=NonNegativeReals,    doc='ESS Minimum storage capacity'                        )
@@ -1090,7 +1091,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.pIndOperReserve       = Param(mTEPES.gg,    initialize=pIndOperReserve.to_dict()           , within=Binary          ,    doc='Indicator of operating reserve'                      )
     mTEPES.pProductionFunction   = Param(mTEPES.h ,    initialize=pProductionFunction.to_dict()       , within=NonNegativeReals,    doc='Production function of a hydro power plant'          )
     mTEPES.pProductionFunctionH2 = Param(mTEPES.el,    initialize=pProductionFunctionH2.to_dict()     , within=NonNegativeReals,    doc='Production function of an electrolyzer plan'         )
-    mTEPES.pEfficiency           = Param(mTEPES.es,    initialize=pEfficiency.to_dict()               , within=UnitInterval    ,    doc='Round-trip efficiency'                               )
+    mTEPES.pEfficiency           = Param(mTEPES.g ,    initialize=pEfficiency.to_dict()               , within=UnitInterval    ,    doc='Round-trip efficiency'                               )
     mTEPES.pCycleTimeStep        = Param(mTEPES.es,    initialize=pCycleTimeStep.to_dict()            , within=PositiveIntegers,    doc='ESS Storage cycle'                                   )
     mTEPES.pOutflowsTimeStep     = Param(mTEPES.es,    initialize=pOutflowsTimeStep.to_dict()         , within=PositiveIntegers,    doc='ESS Outflows cycle'                                  )
     mTEPES.pEnergyTimeStep       = Param(mTEPES.gg,    initialize=pEnergyTimeStep.to_dict()           , within=PositiveIntegers,    doc='Unit energy cycle'                                   )
@@ -1173,11 +1174,11 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     if pIndHydroTopology == 1:
         mTEPES.nhc      = [(n,h ) for n,h  in mTEPES.n*mTEPES.h  if mTEPES.n.ord(n) % sum(mTEPES.pCycleWaterStep  [rs] for rs in mTEPES.rs if (rs,h) in mTEPES.r2h) == 0]
         if sum(1 for h,rs in mTEPES.p2r):
-            mTEPES.np2c = [(n,h ) for n,h  in mTEPES.n*mTEPES.h  if mTEPES.n.ord(n) % sum(mTEPES.pCycleWaterStep  [rs] for rs in mTEPES.rs if (h,rs) in mTEPES.p2r) == 0]
+            mTEPES.np2c = [(n,h ) for n,h  in mTEPES.n*mTEPES.h  if sum(1 for rs in mTEPES.rs if (h,rs) in mTEPES.p2r) and mTEPES.n.ord(n) % sum(mTEPES.pCycleWaterStep  [rs] for rs in mTEPES.rs if (h,rs) in mTEPES.p2r) == 0]
         else:
             mTEPES.np2c = []
         if sum(1 for rs,h in mTEPES.r2p):
-            mTEPES.npc  = [(n,h ) for n,h  in mTEPES.n*mTEPES.h  if mTEPES.n.ord(n) % sum(mTEPES.pCycleWaterStep  [rs] for rs in mTEPES.rs if (rs,h) in mTEPES.r2p) == 0]
+            mTEPES.npc  = [(n,h ) for n,h  in mTEPES.n*mTEPES.h  if sum(1 for rs in mTEPES.rs if (rs,h) in mTEPES.r2p) and mTEPES.n.ord(n) % sum(mTEPES.pCycleWaterStep  [rs] for rs in mTEPES.rs if (rs,h) in mTEPES.r2p) == 0]
         else:
             mTEPES.npc  = []
         mTEPES.nrsc     = [(n,rs) for n,rs in mTEPES.n*mTEPES.rs if mTEPES.n.ord(n) %     mTEPES.pCycleWaterStep  [rs] == 0]
@@ -1243,10 +1244,10 @@ def SettingUpVariables(OptModel, mTEPES):
     OptModel.vEnergyOutflows          = Var(mTEPES.psnes, within=NonNegativeReals, bounds=lambda OptModel,p,sc,n,es: (0.0,max(mTEPES.pMaxPower[p,sc,n,es],mTEPES.pMaxCharge    [p,sc,n,es])), doc='scheduled   outflows of all       ESS units      [GW]')
     OptModel.vESSInventory            = Var(mTEPES.psnes, within=NonNegativeReals, bounds=lambda OptModel,p,sc,n,es: (      mTEPES.pMinStorage[p,sc,n,es],mTEPES.pMaxStorage   [p,sc,n,es]),  doc='ESS inventory                                   [GWh]')
     OptModel.vESSSpillage             = Var(mTEPES.psnes, within=NonNegativeReals,                                                                                                            doc='ESS spillage                                    [GWh]')
-    OptModel.vESSTotalCharge          = Var(mTEPES.psnes, within=NonNegativeReals, bounds=lambda OptModel,p,sc,n,es: (0.0,                            mTEPES.pMaxCharge        [p,sc,n,es]),  doc='ESS total charge power                           [GW]')
-    OptModel.vCharge2ndBlock          = Var(mTEPES.psnes, within=NonNegativeReals, bounds=lambda OptModel,p,sc,n,es: (0.0,                            mTEPES.pMaxCharge2ndBlock[p,sc,n,es]),  doc='ESS       charge power                           [GW]')
-    OptModel.vESSReserveUp            = Var(mTEPES.psnes, within=NonNegativeReals, bounds=lambda OptModel,p,sc,n,es: (0.0,                            mTEPES.pMaxCharge2ndBlock[p,sc,n,es]),  doc='ESS upward   operating reserve                   [GW]')
-    OptModel.vESSReserveDown          = Var(mTEPES.psnes, within=NonNegativeReals, bounds=lambda OptModel,p,sc,n,es: (0.0,                            mTEPES.pMaxCharge2ndBlock[p,sc,n,es]),  doc='ESS downward operating reserve                   [GW]')
+    OptModel.vESSTotalCharge          = Var(mTEPES.psng , within=NonNegativeReals, bounds=lambda OptModel,p,sc,n,g : (0.0,                            mTEPES.pMaxCharge        [p,sc,n,g ]),  doc='ESS total charge power                           [GW]')
+    OptModel.vCharge2ndBlock          = Var(mTEPES.psng , within=NonNegativeReals, bounds=lambda OptModel,p,sc,n,g : (0.0,                            mTEPES.pMaxCharge2ndBlock[p,sc,n,g ]),  doc='ESS       charge power                           [GW]')
+    OptModel.vESSReserveUp            = Var(mTEPES.psng , within=NonNegativeReals, bounds=lambda OptModel,p,sc,n,g : (0.0,                            mTEPES.pMaxCharge2ndBlock[p,sc,n,g ]),  doc='ESS upward   operating reserve                   [GW]')
+    OptModel.vESSReserveDown          = Var(mTEPES.psng , within=NonNegativeReals, bounds=lambda OptModel,p,sc,n,g : (0.0,                            mTEPES.pMaxCharge2ndBlock[p,sc,n,g ]),  doc='ESS downward operating reserve                   [GW]')
     OptModel.vENS                     = Var(mTEPES.psnnd, within=NonNegativeReals, bounds=lambda OptModel,p,sc,n,nd: (0.0,                            max(0.0,mTEPES.pDemand   [p,sc,n,nd])), doc='energy not served in node                        [GW]')
 
     if mTEPES.pIndHydroTopology == 1:
@@ -1430,27 +1431,40 @@ def SettingUpVariables(OptModel, mTEPES):
 
     for p,sc,n,es in mTEPES.psnes:
         # ESS with no charge capacity or not storage capacity can't charge
-        if mTEPES.pMaxCharge        [p,sc,n,es] ==  0.0:
-            OptModel.vESSTotalCharge[p,sc,n,es].fix(0.0)
+        if mTEPES.pMaxCharge         [p,sc,n,es] ==  0.0:
+            OptModel.vESSTotalCharge [p,sc,n,es].fix(0.0)
             nFixedVariables += 1
         # ESS with no charge capacity and no inflows can't produce
-        if mTEPES.pMaxCharge        [p,sc,n,es] ==  0.0 and sum(mTEPES.pEnergyInflows[pp,scc,nn,es]() for pp,scc,nn in mTEPES.psn) == 0.0:
-            OptModel.vTotalOutput   [p,sc,n,es].fix(0.0)
-            OptModel.vOutput2ndBlock[p,sc,n,es].fix(0.0)
-            OptModel.vReserveUp     [p,sc,n,es].fix(0.0)
-            OptModel.vReserveDown   [p,sc,n,es].fix(0.0)
-            OptModel.vESSSpillage   [p,sc,n,es].fix(0.0)
+        if mTEPES.pMaxCharge         [p,sc,n,es] ==  0.0 and sum(mTEPES.pEnergyInflows[pp,scc,nn,es]() for pp,scc,nn in mTEPES.psn) == 0.0:
+            OptModel.vTotalOutput    [p,sc,n,es].fix(0.0)
+            OptModel.vOutput2ndBlock [p,sc,n,es].fix(0.0)
+            OptModel.vReserveUp      [p,sc,n,es].fix(0.0)
+            OptModel.vReserveDown    [p,sc,n,es].fix(0.0)
+            OptModel.vESSSpillage    [p,sc,n,es].fix(0.0)
             nFixedVariables += 5
-        if mTEPES.pMaxCharge2ndBlock[p,sc,n,es] ==  0.0:
-            OptModel.vCharge2ndBlock[p,sc,n,es].fix(0.0)
+        if mTEPES.pMaxCharge2ndBlock [p,sc,n,es] ==  0.0:
+            OptModel.vCharge2ndBlock [p,sc,n,es].fix(0.0)
             nFixedVariables += 1
         if  mTEPES.pMaxCharge2ndBlock[p,sc,n,es] ==  0.0 or mTEPES.pIndOperReserve  [       es] !=  0.0:
-            OptModel.vESSReserveUp  [p,sc,n,es].fix(0.0)
-            OptModel.vESSReserveDown[p,sc,n,es].fix(0.0)
+            OptModel.vESSReserveUp   [p,sc,n,es].fix(0.0)
+            OptModel.vESSReserveDown [p,sc,n,es].fix(0.0)
             nFixedVariables += 2
-        if mTEPES.pMaxStorage       [p,sc,n,es] ==  0.0:
-            OptModel.vESSInventory  [p,sc,n,es].fix(0.0)
+        if mTEPES.pMaxStorage        [p,sc,n,es] ==  0.0:
+            OptModel.vESSInventory   [p,sc,n,es].fix(0.0)
             nFixedVariables += 1
+
+    for p,sc,n,h in mTEPES.psnh:
+        # ESS with no charge capacity or not storage capacity can't charge
+        if mTEPES.pMaxCharge         [p,sc,n,h ] ==  0.0:
+            OptModel.vESSTotalCharge [p,sc,n,h ].fix(0.0)
+            nFixedVariables += 1
+        if mTEPES.pMaxCharge2ndBlock [p,sc,n,h ] ==  0.0:
+            OptModel.vCharge2ndBlock [p,sc,n,h ].fix(0.0)
+            nFixedVariables += 1
+        if  mTEPES.pMaxCharge2ndBlock[p,sc,n,h ] ==  0.0 or mTEPES.pIndOperReserve  [       h ] !=  0.0:
+            OptModel.vESSReserveUp   [p,sc,n,h ].fix(0.0)
+            OptModel.vESSReserveDown [p,sc,n,h ].fix(0.0)
+            nFixedVariables += 2
 
     # thermal and RES units ordered by increasing variable operation cost, excluding reactive generating units
     if len(mTEPES.tq):
