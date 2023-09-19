@@ -1,7 +1,7 @@
 Change Log
 =============
 
-[4.14.1] - 2023-09-18
+[4.14.1] - 2023-09-19
 ----------------------
 - [FIXED] fixed some errors associated to hydropower plants parameters/variables
 - [FIXED] fixed solving of the investment decision problem and computation of dual variables when there are many scenarios

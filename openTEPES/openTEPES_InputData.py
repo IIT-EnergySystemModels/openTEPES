@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 18, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 19, 2023
 """
 
 import datetime
@@ -1453,18 +1453,19 @@ def SettingUpVariables(OptModel, mTEPES):
             OptModel.vESSInventory   [p,sc,n,es].fix(0.0)
             nFixedVariables += 1
 
-    for p,sc,n,h in mTEPES.psnh:
-        # ESS with no charge capacity or not storage capacity can't charge
-        if mTEPES.pMaxCharge         [p,sc,n,h ] ==  0.0:
-            OptModel.vESSTotalCharge [p,sc,n,h ].fix(0.0)
-            nFixedVariables += 1
-        if mTEPES.pMaxCharge2ndBlock [p,sc,n,h ] ==  0.0:
-            OptModel.vCharge2ndBlock [p,sc,n,h ].fix(0.0)
-            nFixedVariables += 1
-        if  mTEPES.pMaxCharge2ndBlock[p,sc,n,h ] ==  0.0 or mTEPES.pIndOperReserve  [       h ] !=  0.0:
-            OptModel.vESSReserveUp   [p,sc,n,h ].fix(0.0)
-            OptModel.vESSReserveDown [p,sc,n,h ].fix(0.0)
-            nFixedVariables += 2
+    if mTEPES.pIndHydroTopology == 1:
+        for p,sc,n,h in mTEPES.psnh:
+            # ESS with no charge capacity or not storage capacity can't charge
+            if mTEPES.pMaxCharge         [p,sc,n,h ] ==  0.0:
+                OptModel.vESSTotalCharge [p,sc,n,h ].fix(0.0)
+                nFixedVariables += 1
+            if mTEPES.pMaxCharge2ndBlock [p,sc,n,h ] ==  0.0:
+                OptModel.vCharge2ndBlock [p,sc,n,h ].fix(0.0)
+                nFixedVariables += 1
+            if  mTEPES.pMaxCharge2ndBlock[p,sc,n,h ] ==  0.0 or mTEPES.pIndOperReserve  [       h ] !=  0.0:
+                OptModel.vESSReserveUp   [p,sc,n,h ].fix(0.0)
+                OptModel.vESSReserveDown [p,sc,n,h ].fix(0.0)
+                nFixedVariables += 2
 
     # thermal and RES units ordered by increasing variable operation cost, excluding reactive generating units
     if len(mTEPES.tq):
