@@ -1,6 +1,11 @@
 Change Log
 =============
 
+[4.14.2] - 2023-09-23
+----------------------
+- [CHANGED] avoid the use of max in bounds definition
+- [FIXED] fixed some errors associated to ESS and hydropower plants
+
 [4.14.1] - 2023-09-19
 ----------------------
 - [FIXED] fixed some errors associated to hydropower plants parameters/variables
