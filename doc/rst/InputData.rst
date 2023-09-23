@@ -50,7 +50,7 @@ File                           Description
 ``oT_Dict_Scenario.csv``       Scenario. Short-term uncertainties (scenarios) (e.g., s001 to s100)
 ``oT_Dict_Stage.csv``          Stage
 ``oT_Dict_LoadLevel.csv``      Load level (e.g., 01-01 00:00:00+01:00 to 12-30 23:00:00+01:00). Load levels with duration 0 are ignored
-``oT_Dict_Generation.csv``     Generation units (thermal -nuclear, CCGT, OCGT, coal-, ESS -hydro, pumped-hydro storage PHS, battery BESS, electric vehicle EV, demand response DR, alkaline water electrolyzer AWE, solar thermal- and VRE -wind onshore and offshore, solar PV, run-of-the-river hydro-)
+``oT_Dict_Generation.csv``     Generation units (thermal -nuclear, CCGT, OCGT, coal-, ESS -storage hydro modeled in energy or in water, pumped-hydro storage PHS, battery BESS, electric vehicle EV, demand response DR, alkaline water electrolyzer AWE, solar thermal- and VRE -wind onshore and offshore, solar PV, run-of-the-river hydro-)
 ``oT_Dict_Technology.csv``     Generation technologies. The technology order is used in the temporal result plot.
 ``oT_Dict_Storage.csv``        ESS storage type (daily < 12 h, weekly < 40 h, monthly > 60 h)
 ``oT_Dict_Node.csv``           Nodes. A node belongs to a zone.
@@ -71,7 +71,7 @@ File                          Dictionary    Description
 ``oT_Dict_AreaToRegion.csv``  AreaToRegion  Location of areas at regions
 ============================  ============  ============================
 
-See the hydro system section at the end of this page to know how to define the basin topology. Some additional dictionaries and data files are needed.
+See the hydro system section at the end of this page to know how to define the basin topology (connection among reservoir and hydropower plants). Some additional dictionaries and data files are needed.
 
 Input files
 -----------
@@ -183,7 +183,7 @@ Identifier      Identifier      Header        Description
 Period          Scenario        Probability   Probability of each scenario in each period  p.u.
 ==============  ==============  ============  ===========================================  ====
 
-For example, the scenarios can be used for obtaining the GEP+SEP+TEP considering hydro energy inflows uncertainty represented by means of three scenarios (wet, dry and average), or two VRE scenarios (windy/cloudy and calm/sunny).
+For example, the scenarios can be used for obtaining the GEP+SEP+TEP considering hydro energy/water inflows uncertainty represented by means of three scenarios (wet, dry and average), or two VRE scenarios (windy/cloudy and calm/sunny).
 The sum of the probabilities of all the scenarios of a period must be 1.
 
 Stage
@@ -368,7 +368,7 @@ Must-run non-renewable units are always committed, i.e., their commitment decisi
 
 If unit availability is left 0 or empty is changed to 1. For declaring a unit non contributing to system adequacy reserve margin, put the availability equal to a very small number.
 
-EFOR is used to reduce the maximum and minimum power of the unit. For hydro units it can be used to reduce their maximum power by the water head effect. It does not reduce the maximum charge.
+EFOR is used to reduce the maximum and minimum power of the unit. For hydropower plants it can be used to reduce their maximum power by the water head effect. It does not reduce the maximum charge.
 
 Those generators or ESS with fixed cost > 0 are considered candidate and can be installed or not.
 
@@ -555,7 +555,7 @@ Node            Longitude     Node longitude    º
 Hydro System Input Data
 =======================
 
-These input files are specifically introduced for allowing a representation of the hydro system based on volume and water inflow data considering the water stream topology (hydro cascade basins). If they are not available the model runs with a energy-based representation of the hydro system.
+These input files are specifically introduced for allowing a representation of the hydro system based on volume and water inflow data considering the water stream topology (hydro cascade basins). If they are not available, the model runs with an energy-based representation of the hydro system.
 
 Dictionaries. Sets
 ------------------
@@ -568,7 +568,7 @@ File                           Description
 =============================  ===============
 
 The information contained in these input files determines the topology of the hydro basins and how water flows along the different
-hydro and pumped-hydro power plants and reservoirs. These relations follow the water downstream direction.
+hydropower and pumped-hydro power plants and reservoirs. These relations follow the water downstream direction.
 
 =======================================  ======================  ===========================================================================================
 File                                     Dictionary              Description
