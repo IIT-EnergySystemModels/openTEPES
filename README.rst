@@ -193,7 +193,7 @@ It can be run in Binder:
 
 Expected Results
 ################
-.. image:: https://raw.githubusercontent.com/IIT-EnergySystemModels/openTEPES/0a99909cb2001e43627f3df6974f400f3886e899/doc/img/oT_Map_Network_MAF2030.png
+.. image:: doc/img/oT_Map_Network_TF2030.png
   :scale: 50 %
   :align: center
   :alt: Network map with investment decisions
