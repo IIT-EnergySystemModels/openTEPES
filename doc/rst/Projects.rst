@@ -13,7 +13,7 @@ The model has being used in these research projects:
     Four African universities will be actively involved in adapting models and conducting two regional case studies. The additional capacity and the open Toolbox will enable the universities
     to train new generations of energy modelling experts for the energy industries in Africa.
 
-.. image:: ../img/OM4A.jpg
+.. image:: ../img/OM4A.png
    :scale: 30%
    :align: center
 
