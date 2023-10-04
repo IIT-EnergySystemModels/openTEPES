@@ -14,7 +14,7 @@ The model has being used in these research projects:
     to train new generations of energy modelling experts for the energy industries in Africa.
 
 .. image:: ../img/OM4A.png
-   :scale: 50%
+   :scale: 40%
    :align: center
 
 - `Analysis of the role of pumped-hydro storage power plants in the Spanish NECP 2030 <https://www.iit.comillas.edu/proyectos/mostrar_proyecto.php.en?nombre_abreviado=IBD_PNIEC_Bbo>`_, developed for **Iberdrola**.
