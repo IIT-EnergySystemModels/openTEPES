@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 22, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 5, 2023
 """
 
 import datetime
@@ -421,7 +421,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
 
     if pIndHydroTopology == 1:
         pReservoirType    = dfReservoir   ['StorageType'         ]                                                      #               reservoir type
-        pWaterOutfType    = dfReservoir   ['OutflowsType'        ]                                                      #           water ourflow type
+        pWaterOutfType    = dfReservoir   ['OutflowsType'        ]                                                      #           water outflow type
         pRatedMinVolume   = dfReservoir   ['MinimumStorage'      ]                                                      # rated minimum reservoir volume               [hm3]
         pRatedMaxVolume   = dfReservoir   ['MaximumStorage'      ]                                                      # rated maximum reservoir volume               [hm3]
         pInitialVolume    = dfReservoir   ['InitialStorage'      ]                                                      # initial       reservoir volume               [hm3]
@@ -764,7 +764,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     idxCycle['Daily'  ] = 1
     idxCycle['Weekly' ] = round(  24/pTimeStep)
     idxCycle['Monthly'] = round( 168/pTimeStep)
-    idxCycle['Yearly' ] = round( 168/pTimeStep)
+    idxCycle['Yearly' ] = round( 672/pTimeStep)
 
     idxOutflows            = dict()
     idxOutflows[0        ] = 8736
@@ -797,7 +797,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         idxCycleRsr['Daily'  ] = 1
         idxCycleRsr['Weekly' ] = round(  24/pTimeStep)
         idxCycleRsr['Monthly'] = round( 168/pTimeStep)
-        idxCycleRsr['Yearly' ] = round( 168/pTimeStep)
+        idxCycleRsr['Yearly' ] = round( 672/pTimeStep)
 
         idxWaterOut            = dict()
         idxWaterOut[0        ] = 8736
@@ -1161,8 +1161,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.pBigMFlowBck          = Param(mTEPES.ln,    initialize=pBigMFlowBck.to_dict()     , within=NonNegativeReals,    doc='Maximum backward capacity',                            mutable=True)
     mTEPES.pBigMFlowFrw          = Param(mTEPES.ln,    initialize=pBigMFlowFrw.to_dict()     , within=NonNegativeReals,    doc='Maximum forward  capacity',                            mutable=True)
     mTEPES.pMaxTheta             = Param(mTEPES.psnnd, initialize=pMaxTheta.stack().to_dict(), within=NonNegativeReals,    doc='Maximum voltage angle',                                mutable=True)
-    mTEPES.pAngMin               = Param(mTEPES.ln,    initialize=pAngMin.to_dict()          , within=           Reals,    doc='Minimum phase angle diff',                             mutable=True)
-    mTEPES.pAngMax               = Param(mTEPES.ln,    initialize=pAngMax.to_dict()          , within=           Reals,    doc='Maximum phase angle diff',                             mutable=True)
+    mTEPES.pAngMin               = Param(mTEPES.ln,    initialize=pAngMin.to_dict()          , within=           Reals,    doc='Minimum phase angle difference',                       mutable=True)
+    mTEPES.pAngMax               = Param(mTEPES.ln,    initialize=pAngMax.to_dict()          , within=           Reals,    doc='Maximum phase angle difference',                       mutable=True)
     mTEPES.pNetLoInvest          = Param(mTEPES.lc,    initialize=pNetLoInvest.to_dict()     , within=NonNegativeReals,    doc='Lower bound of the electric line investment decision', mutable=True)
     mTEPES.pNetUpInvest          = Param(mTEPES.lc,    initialize=pNetUpInvest.to_dict()     , within=NonNegativeReals,    doc='Upper bound of the electric line investment decision', mutable=True)
 
@@ -1526,13 +1526,19 @@ def SettingUpVariables(OptModel, mTEPES):
                 if mTEPES.pInitialInventory[es] >= mTEPES.pMinStorage[p,sc,mTEPES.n.last(),es] and mTEPES.pInitialInventory[es] <= mTEPES.pMaxStorage[p,sc,mTEPES.n.last(),es]:
                     OptModel.vESSInventory[p,sc,mTEPES.n.last(),es].fix(mTEPES.pInitialInventory[es])
 
+            if mTEPES.pIndHydroTopology == 1:
+                 # fixing the reservoir volume at the last load level of the stage for every period and scenario if between storage limits
+                 for rs in mTEPES.rs:
+                     if mTEPES.pInitialVolume[rs] >= mTEPES.pMinVolume[p,sc,mTEPES.n.last(),rs] and mTEPES.pInitialVolume[rs] <= mTEPES.pMaxVolume[p,sc,mTEPES.n.last(),rs]:
+                         OptModel.vReservoirVolume[p,sc,mTEPES.n.last(),rs].fix(mTEPES.pInitialVolume[rs])
+
     # activate all the periods, scenarios, and load levels again
     mTEPES.del_component(mTEPES.st)
     mTEPES.del_component(mTEPES.n )
     mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in mTEPES.pStageWeight and sum(1 for (stt,nn) in mTEPES.s2n))
     mTEPES.n  = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in mTEPES.pDuration                                         )
 
-    # fixing the ESS inventory at the end of the following pCycleTimeStep (daily, weekly, monthly) if between storage limits, i.e., for daily ESS is fixed at the end of the week, for weekly/monthly ESS is fixed at the end of the year
+    # fixing the ESS inventory at the end of the following pCycleTimeStep (daily, weekly, monthly) if between storage limits, i.e., for daily ESS is fixed at the end of the week, for weekly ESS is fixed at the end of the month, for monthly ESS is fixed at the end of the year
     for p,sc,n,es in mTEPES.psnes:
         if mTEPES.pInitialInventory[es] >= mTEPES.pMinStorage[p,sc,n,es] and mTEPES.pInitialInventory[es] <= mTEPES.pMaxStorage[p,sc,n,es]:
             if mTEPES.pStorageType[es] == 'Hourly'  and mTEPES.n.ord(n) % int(  24/mTEPES.pTimeStep()) == 0:
@@ -1541,12 +1547,29 @@ def SettingUpVariables(OptModel, mTEPES):
             if mTEPES.pStorageType[es] == 'Daily'   and mTEPES.n.ord(n) % int( 168/mTEPES.pTimeStep()) == 0:
                 OptModel.vESSInventory[p,sc,n,es].fix(mTEPES.pInitialInventory[es])
                 nFixedVariables += 1
-            if mTEPES.pStorageType[es] == 'Weekly'  and mTEPES.n.ord(n) % int(8736/mTEPES.pTimeStep()) == 0:
+            if mTEPES.pStorageType[es] == 'Weekly'  and mTEPES.n.ord(n) % int( 672/mTEPES.pTimeStep()) == 0:
                 OptModel.vESSInventory[p,sc,n,es].fix(mTEPES.pInitialInventory[es])
                 nFixedVariables += 1
             if mTEPES.pStorageType[es] == 'Monthly' and mTEPES.n.ord(n) % int(8736/mTEPES.pTimeStep()) == 0:
                 OptModel.vESSInventory[p,sc,n,es].fix(mTEPES.pInitialInventory[es])
                 nFixedVariables += 1
+
+    if mTEPES.pIndHydroTopology == 1:
+        # fixing the reservoir volume at the end of the following pCycleWaterStep (daily, weekly, monthly) if between storage limits, i.e., for daily reservoir is fixed at the end of the week, for weekly reservoir is fixed at the end of the month, for monthly reservoir is fixed at the end of the year
+        for p,sc,n,rs in mTEPES.psnrs:
+            if mTEPES.pInitialVolume[rs] >= mTEPES.pMinVolume[p,sc,n,rs] and mTEPES.pInitialVolume[rs] <= mTEPES.pMaxVolume[p,sc,n,rs]:
+                if mTEPES.pReservoirType[rs] == 'Hourly'  and mTEPES.n.ord(n) % int(  24/mTEPES.pTimeStep()) == 0:
+                    OptModel.vReservoirVolume[p,sc,n,rs].fix(mTEPES.pInitialVolume[rs])
+                    nFixedVariables += 1
+                if mTEPES.pReservoirType[rs] == 'Daily'   and mTEPES.n.ord(n) % int( 168/mTEPES.pTimeStep()) == 0:
+                    OptModel.vReservoirVolume[p,sc,n,rs].fix(mTEPES.pInitialVolume[rs])
+                    nFixedVariables += 1
+                if mTEPES.pReservoirType[rs] == 'Weekly'  and mTEPES.n.ord(n) % int( 672/mTEPES.pTimeStep()) == 0:
+                    OptModel.vReservoirVolume[p,sc,n,rs].fix(mTEPES.pInitialVolume[rs])
+                    nFixedVariables += 1
+                if mTEPES.pReservoirType[rs] == 'Monthly' and mTEPES.n.ord(n) % int(8736/mTEPES.pTimeStep()) == 0:
+                    OptModel.vReservoirVolume[p,sc,n,rs].fix(mTEPES.pInitialVolume[rs])
+                    nFixedVariables += 1
 
     for p,sc,n,ec in mTEPES.psnec:
         if mTEPES.pEnergyInflows        [p,sc,n,ec]() == 0.0:

@@ -18,7 +18,8 @@ It determines automatically optimal expansion plans that satisfy simultaneously 
   - Load level: one hour, e.g., 01-01 00:00:00+01:00 to 12-30 23:00:00+01:00
 
   The time division allows a user-defined flexible representation of the periods for evaluating the system operation. Moreover, it can be run with chronological periods of several consecutive hours (bi-hourly, tri-hourly resolution) to decrease the computational burden without losing accuracy. The model can be run with a single period (year) or with several periods (years) to allow the analysis of the system evolution. The time definition allows also to specify disconnected representative periods (e.g., days, weeks) to evaluate the system operation.
-  The model can be run with a single period (year) or with several periods (years) to allow the analysis of the system evolution. The time definition can also specify disconnected representative periods (e.g., days, weeks) to evaluate the system operation
+  The model can be run with a single period (year) or with several periods (years) to allow the analysis of the system evolution. The time definition can also specify disconnected representative periods (e.g., days, weeks) to evaluate the system operation.
+  The period (year) must be represented by 8736 hours because several model concepts representing the system operation are based on weeks (168 hours) or months (made of 4 weeks, 672 hours).
 
 - **Stochastic**: several stochastic parameters that can influence the optimal generation, storage, and transmission expansion decisions are considered. The model considers stochastic
   medium-term yearly uncertainties (scenarios) related to the system operation. These operation scenarios are associated with renewable energy sources, energy inflows and outflows, natural water inflows, operating reserves, inertia, and electricity and hydrogen demand.

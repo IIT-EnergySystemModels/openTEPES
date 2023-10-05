@@ -1,6 +1,11 @@
 Change Log
 =============
 
+[4.14.3] - 2023-10-05
+----------------------
+- [FIXED] fix the reservoir volumes at the end of the period and for every water cycle
+- [FIXED] change the meaning of weekly storage/reservoir type by fixing the inventory/volume at the end of the month to the initial one
+
 [4.14.2] - 2023-09-23
 ----------------------
 - [CHANGED] avoid the use of max in bounds definition

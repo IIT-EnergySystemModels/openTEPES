@@ -49,10 +49,10 @@ File                           Description
 ``oT_Dict_Period.csv``         Period (e.g., 2030, 2035). **It must be a positive integer**
 ``oT_Dict_Scenario.csv``       Scenario. Short-term uncertainties (scenarios) (e.g., s001 to s100)
 ``oT_Dict_Stage.csv``          Stage
-``oT_Dict_LoadLevel.csv``      Load level (e.g., 01-01 00:00:00+01:00 to 12-30 23:00:00+01:00). Load levels with duration 0 are ignored
+``oT_Dict_LoadLevel.csv``      Load level (e.g., 01-01 00:00:00+01:00 to 12-30 23:00:00+01:00). Load levels with duration 0 are ignored. The period (year) must represented by 8736 load levels.
 ``oT_Dict_Generation.csv``     Generation units (thermal -nuclear, CCGT, OCGT, coal-, ESS -storage hydro modeled in energy or in water, pumped-hydro storage PHS, battery BESS, electric vehicle EV, demand response DR, alkaline water electrolyzer AWE, solar thermal- and VRE -wind onshore and offshore, solar PV, run-of-the-river hydro-)
 ``oT_Dict_Technology.csv``     Generation technologies. The technology order is used in the temporal result plot.
-``oT_Dict_Storage.csv``        ESS storage type (daily < 12 h, weekly < 40 h, monthly > 60 h)
+``oT_Dict_Storage.csv``        ESS storage type (daily < 12 h, weekly < 40 h, monthly > 60 h).
 ``oT_Dict_Node.csv``           Nodes. A node belongs to a zone.
 ``oT_Dict_Zone.csv``           Zones. A zone belongs to an area.
 ``oT_Dict_Area.csv``           Areas. An area belongs to a region. Long-term adequacy, inertia and operating reserves are associated to areas.
@@ -304,9 +304,9 @@ Technology            Technology of the generator (nuclear, coal, CCGT, OCGT, ES
 MutuallyExclusive     Mutually exclusive generator. Only exclusion in one direction is needed
 BinaryCommitment      Binary unit commitment decision                                                                                                   Yes/No
 NoOperatingReserve    No contribution to operating reserve. Yes if the unit doesn't contribute to the operating reserve                                 Yes/No
-StorageType           Storage type based on storage capacity (hourly, daily, weekly, 4-week, yearly)                                                    Hourly/Daily/Weekly/Monthly/Yearly
-OutflowsType          Outflows type based on the electricity demand extracted from the storage (daily, weekly, 4-week, yearly)                          Daily/Weekly/Monthly/Yearly
-EnergyType            Energy type based on the max/min energy to be produced by the unit (daily, weekly, 4-week, yearly)                                Daily/Weekly/Monthly/Yearly
+StorageType           Storage type based on storage capacity (hourly, daily, weekly, monthly, yearly)                                                   Hourly/Daily/Weekly/Monthly/Yearly
+OutflowsType          Outflows type based on the electricity demand extracted from the storage (daily, weekly, monthly, yearly)                         Daily/Weekly/Monthly/Yearly
+EnergyType            Energy type based on the max/min energy to be produced by the unit (daily, weekly, monthly, yearly)                               Daily/Weekly/Monthly/Yearly
 MustRun               Must-run unit                                                                                                                     Yes/No
 InitialPeriod         Initial period (year) when the unit is installed or can be installed, if candidate                                                Year
 FinalPeriod           Final   period (year) when the unit is installed or can be installed, if candidate                                                Year
@@ -350,13 +350,15 @@ RetirementLo          Lower bound of retirement decision                        
 RetirementUp          Upper bound of retirement decision                                                                                                p.u.
 ====================  ================================================================================================================================  ===================================
 
-Daily *storage type* means that the ESS inventory is assessed every time step, for weekly storage type it is assessed at the end of every day, and monthly/yearly storage type is assessed at the end of every week.
+The model allways considers a month of 672 hours, i.e., 4 weeks, not calendar months. The model considers a year of 8736 hours, i.e., 52 weeks, not calendar years.
+
+Daily *storage type* means that the ESS inventory is assessed every time step, for weekly storage type it is assessed at the end of every day, monthly storage type is assessed at the end of every week, and yearly storage type is assessed at the end of every month.
 *Outflows type* represents the interval when the energy extracted from the storage must be satisfied (for daily outflows type at the end of every day, i.e., the sum of the energy consumed must be equal to the sum of outflows for every day).
 *Energy type* represents the interval when the minimum or maximum energy to be produced by a unit must be satisfied (for daily energy type at the end of every day, i.e., the sum of the energy generated by the unit must be lower/greater to the sum of max/min energy for every day).
 The *storage cycle* is the minimum between the inventory assessment period (defined by the storage type), the outflows period (defined by the outflows type), and the energy period (defined by the energy type) (only if outflows or energy power values have been introduced).
-It can be one time step, one day, and one week.
+It can be one time step, one day, one week, and one month.
 The ESS inventory level at the end of a larger storage cycle is fixed to its initial value, i.e., the inventory of a daily storage type (evaluated on a time step basis) is fixed at the end of the week,
-the inventory of weekly/monthly storage is fixed at the end of the year, only if the initial inventory lies between the storage limits.
+the inventory of weekly storage is fixed at the end of the month, the inventory of monthly storage is fixed at the end of the year, only if the initial inventory lies between the storage limits.
 
 The initial storage of the ESSs is also fixed at the beginning and end of each stage, only if the initial inventory lies between the storage limits. For example, the initial storage level is set for the hour 8736 in case of a single stage or for the hours 4368 and 4369
 (end of the first stage and beginning of the second stage) in case of two stages, each with 4368 hours.
@@ -494,7 +496,7 @@ Period      Scenario        Load level  Generator  Maximum (minimum) energy of t
 
 All the generators must be defined as columns of these files.
 
-For example, these data can be used for defining the minimum and/or maximum energy to be produced on a daily/weekly/4-week/yearly basis (depending on the EnergyType).
+For example, these data can be used for defining the minimum and/or maximum energy to be produced on a daily/weekly/monthly/yearly basis (depending on the EnergyType).
 
 Electricity transmission network
 --------------------------------
@@ -624,8 +626,8 @@ A description of the data included in the file ``oT_Data_Reservoir.csv`` follows
 ====================  ======================================================================================================================  ===================================
 Header                Description
 ====================  ======================================================================================================================  ===================================
-StorageType           Reservoir storage type based on reservoir storage capacity (hourly, daily, weekly, 4-week, yearly)                      Hourly/Daily/Weekly/Monthly/Yearly
-OutflowsType          Water outflows type based on the water extracted from the reservoir (daily, weekly, 4-week, yearly)                     Daily/Weekly/Monthly/Yearly
+StorageType           Reservoir storage type based on reservoir storage capacity (hourly, daily, weekly, monthly, yearly)                     Hourly/Daily/Weekly/Monthly/Yearly
+OutflowsType          Water outflows type based on the water extracted from the reservoir (daily, weekly, monthly, yearly)                    Daily/Weekly/Monthly/Yearly
 InitialStorage        Initial volume stored at the first instant of the time scope                                                            hm\ :sup:`3`
 MaximumStorage        Maximum volume that can be stored by the hydro reservoir                                                                hm\ :sup:`3`
 MinimumStorage        Minimum volume that can be stored by the hydro reservoir                                                                hm\ :sup:`3`
@@ -636,14 +638,16 @@ InitialPeriod         Initial period (year) when the unit is installed or can be
 FinalPeriod           Final   period (year) when the unit is installed or can be installed, if candidate                                      Year
 ====================  ======================================================================================================================  ===================================
 
-Daily *storage type* means that the ESS inventory is assessed every time step, for weekly storage type it is assessed at the end of every day, and monthly/yearly storage type is assessed at the end of every week.
+The model allways considers a month of 672 hours, i.e., 4 weeks, not calendar months. The model considers a year of 8736 hours, i.e., 52 weeks, not calendar years.
+
+Daily *storage type* means that the ESS inventory is assessed every time step, for weekly storage type it is assessed at the end of every day, monthly storage type is assessed at the end of every week, and yearly storage type is assessed at the end of every month.
 *Outflows type* represents the interval when the water extracted from the reservoir must be satisfied (for daily outflows type at the end of every day, i.e., the sum of the water consumed must be equal to the sum of water outflows for every day).
 The *storage cycle* is the minimum between the inventory assessment period (defined by the storage type), the outflows period (defined by the outflows type), and the energy period (defined by the energy type) (only if outflows or energy power values have been introduced).
-It can be one time step, one day, and one week.
-The ESS inventory level at the end of a larger storage cycle is fixed to its initial value, i.e., the inventory of a daily storage type (evaluated on a time step basis) is fixed at the end of the week,
-the inventory of weekly/monthly storage is fixed at the end of the year, only if the initial inventory lies between the storage limits.
+It can be one time step, one day, one week, and one month.
+The reservoir volume level at the end of a larger storage cycle is fixed to its initial value, i.e., the volume of a daily storage type (evaluated on a time step basis) is fixed at the end of the week,
+the volume of weekly storage is fixed at the end of the month, the volume of monthly storage is fixed at the end of the year, only if the initial inventory lies between the storage limits.
 
-The initial reservoir storage is also fixed at the beginning and end of each stage, only if the initial inventory lies between the reservoir storage limits. For example, the initial storage level is set for the hour 8736 in case of a single stage or for the hours 4368 and 4369
+The initial reservoir volume is also fixed at the beginning and end of each stage, only if the initial volume lies between the reservoir storage limits. For example, the initial volume is set for the hour 8736 in case of a single stage or for the hours 4368 and 4369
 (end of the first stage and beginning of the second stage) in case of two stages, each with 4368 hours.
 
 Variable maximum and minimum reservoir volume
