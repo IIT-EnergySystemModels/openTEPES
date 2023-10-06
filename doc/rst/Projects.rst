@@ -4,7 +4,7 @@ Research projects
 =================
 The model has being used in these research projects:
 
-- Open Modelling Toolbox for development of long-term pathways for the energy system in Africa (OpenMod4Africa), developed for the **European Union**. July 2023 - June 2026.
+- `Open Modelling Toolbox for development of long-term pathways for the energy system in Africa (OpenMod4Africa) <https://www.iit.comillas.edu/proyectos/mostrar_proyecto.php.en?nombre_abreviado=OpenMod4Africa>`_, developed for the **European Union**. July 2023 - June 2026.
   `L. Olmos <https://www.iit.comillas.edu/people/olmos>`_, `S. Lumbreras <https://www.iit.comillas.edu/people/slumbreras>`_, `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_
 
     It aims to develop an open toolbox populated with state-of-the-art models for analysing long-term pathways to sustainable, secure and competitive energy systems in Africa.
