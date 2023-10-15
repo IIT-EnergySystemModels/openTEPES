@@ -27,7 +27,6 @@ Indices
 :math:`p`                Period (e.g., year)
 :math:`\omega`           Scenario
 :math:`n`                Load level (e.g., hour)
-:math:`\nu`              Time step. Duration of each load level (e.g., 2 h, 3 h)
 :math:`g`                Generator (thermal or hydro unit or energy storage system)
 :math:`t`                Thermal unit
 :math:`e`                Energy Storage System (ESS)
@@ -54,14 +53,15 @@ Parameters
 
 They are written in **uppercase** letters.
 
-==================  ====================================================  =======
+==================  =======================================================  =======
 **General**
-------------------  ----------------------------------------------------  -------
-:math:`T`           Base period (year)                                    year
-:math:`\delta`      Annual discount rate                                  p.u.
-:math:`WG^p`        Period (year) weight                                  p.u.
-:math:`DF^p`        Discount factor for each period (year)                p.u.
-==================  ====================================================  =======
+------------------  -------------------------------------------------------  -------
+:math:`T`           Base period (year)                                       year
+:math:`\nu`         Time step. Duration of the load levels (e.g., 2 h, 3 h)
+:math:`\delta`      Annual discount rate                                     p.u.
+:math:`WG^p`        Period (year) weight                                     p.u.
+:math:`DF^p`        Discount factor for each period (year)                   p.u.
+==================  =======================================================  =======
 
 ========================  ====================================================  =======
 **Electricity demand**
