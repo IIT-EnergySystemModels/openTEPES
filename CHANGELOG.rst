@@ -1,6 +1,11 @@
 Change Log
 =============
 
+[4.14.4] - 2023-10-15
+----------------------
+- [FIXED] check that the duration of all the stages is equal
+- [FIXED] cycles of ESS and hydro reservoirs can't exceed the duration of the stage
+
 [4.14.3] - 2023-10-05
 ----------------------
 - [FIXED] fix the reservoir volumes at the end of the period and for every water cycle

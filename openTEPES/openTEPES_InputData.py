@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 5, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 15, 2023
 """
 
 import datetime
@@ -264,7 +264,6 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pSBase                 = dfParameter['SBase'              ][0] * 1e-3                # base power                                [GW]
     pReferenceNode         = dfParameter['ReferenceNode'      ][0]                       # reference node
     pTimeStep              = dfParameter['TimeStep'           ][0].astype('int')         # duration of the unit time step            [h]
-    # pStageDuration         = dfParameter['StageDuration'      ][0].astype('int')       # duration of each stage                    [h]
 
     pPeriodWeight          = dfPeriod       ['Weight'        ].astype('int')             # weights of periods                        [p.u.]
     pScenProb              = dfScenario     ['Probability'   ].astype('float')           # probabilities of scenarios                [p.u.]
@@ -660,6 +659,12 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pStage2Level  = pStageToLevel.reset_index().set_index(['Stage','LoadLevel'])
 
     mTEPES.s2n = Set(initialize=pStage2Level.index, ordered=False, doc='load level to stage')
+    # all the stages must have the same duration
+    pStageDuration = pd.Series([sum(pDuration[n] for n in mTEPES.n if (st,n) in mTEPES.s2n) for st in mTEPES.st], index=mTEPES.st)
+    for st in mTEPES.st:
+        if mTEPES.st.ord(st) > 1:
+            if pStageDuration[st] != pStageDuration[mTEPES.st.prev(st)]:
+                assert (0 == 1)
 
     if pAnnualDiscRate == 0.0:
         pDiscountFactor = pd.Series([                        pPeriodWeight[p]                                                                                          for p in mTEPES.p], index=mTEPES.p)
@@ -787,6 +792,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pEnergyTimeStep   = pEnergyType.map  (idxEnergy  ).where(pVariableMinEnergy.sum() + pVariableMaxEnergy.sum() > 0.0, other = 8736).astype('int')
 
     pCycleTimeStep    = pd.concat([pCycleTimeStep, pOutflowsTimeStep, pEnergyTimeStep], axis=1).min(axis=1)
+    # cycle time step can't exceed the stage duration
+    pCycleTimeStep    = pCycleTimeStep.where(pCycleTimeStep <= pStageDuration.min(), pStageDuration.min())
 
     if pIndHydroTopology == 1:
         # %% definition of the time-steps leap to observe the stored energy at a reservoir
@@ -810,7 +817,9 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         pCycleRsrTimeStep = pReservoirType.map(idxCycleRsr).astype('int')
         pWaterOutTimeStep = pWaterOutfType.map(idxWaterOut).astype('int')
 
-        pCycleWaterStep      = pd.concat([pCycleRsrTimeStep, pWaterOutTimeStep], axis=1).min(axis=1)
+        pCycleWaterStep   = pd.concat([pCycleRsrTimeStep, pWaterOutTimeStep], axis=1).min(axis=1)
+        # cycle water step can't exceed the stage duration
+        pCycleWaterStep   = pCycleWaterStep.where(pCycleWaterStep <= pStageDuration.min(), pStageDuration.min())
 
     # drop load levels with duration 0
     pDuration           = pDuration.loc         [mTEPES.n    ]
