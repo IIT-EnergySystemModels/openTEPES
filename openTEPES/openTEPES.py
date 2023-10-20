@@ -1,10 +1,11 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 15, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 20, 2023
 """
 
-import time
+import math
 import os
 import setuptools
+import time
 
 import pyomo.environ as pyo
 from   pyomo.environ import ConcreteModel, Set, Param, Reals
@@ -37,8 +38,8 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     idxDict['y'  ] = 1
 
     #%% model declaration
-    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.14.4 - October 15, 2023')
-    print(                 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.14.4 - October 15, 2023', file=open(_path+'/openTEPES_version_'+CaseName+'.log','a'))
+    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.14.5 - October 20, 2023')
+    print(                 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.14.5 - October 20, 2023', file=open(_path+'/openTEPES_version_'+CaseName+'.log','a'))
 
     pIndOutputResults = [j for i,j in idxDict.items() if i == pIndOutputResults][0]
     pIndLogConsole    = [j for i,j in idxDict.items() if i == pIndLogConsole   ][0]
@@ -82,7 +83,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
         NetworkSwitchingModelFormulation                (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
         NetworkOperationModelFormulation                (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
 
-        if (len(mTEPES.gc) == 0 or (len(mTEPES.gc) > 0 and mTEPES.pIndBinGenInvest() == 2)) and (len(mTEPES.gd) == 0 or (len(mTEPES.gd) > 0 and mTEPES.pIndBinGenRetire() == 2)) and (len(mTEPES.lc) == 0 or (len(mTEPES.lc) > 0 and mTEPES.pIndBinNetInvest() == 2)):
+        if (len(mTEPES.gc) == 0 or (len(mTEPES.gc) > 0 and mTEPES.pIndBinGenInvest() == 2)) and (len(mTEPES.gd) == 0 or (len(mTEPES.gd) > 0 and mTEPES.pIndBinGenRetire() == 2)) and (len(mTEPES.lc) == 0 or (len(mTEPES.lc) > 0 and mTEPES.pIndBinNetInvest() == 2)) and (min([mTEPES.pEmission[p,ar] for ar in mTEPES.ar]) == math.inf or sum(mTEPES.pEmissionRate[nr] for nr in mTEPES.nr) == 0):
             mTEPES.pPeriodProb[p,sc] = mTEPES.pPeriodWeight[p] = mTEPES.pScenProb[p,sc] = 1.0
 
             if pIndLogConsole == 1:
@@ -100,7 +101,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
                 if c.name.find(str(p)) != -1 and c.name.find(str(sc)) != -1:
                     c.deactivate()
         else:
-            if mTEPES.p.ord(p)*mTEPES.sc.ord(sc) == len(mTEPES.sc):
+            if mTEPES.p.ord(p)*mTEPES.sc.ord(sc) == len(mTEPES.ps) and mTEPES.st.last() == mTEPES.stt.last():
 
                 if pIndLogConsole == 1:
                     StartTime         = time.time()

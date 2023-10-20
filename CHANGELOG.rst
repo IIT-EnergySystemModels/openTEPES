@@ -1,6 +1,10 @@
 Change Log
 =============
 
+[4.14.5] - 2023-10-20
+----------------------
+- [FIXED] if there are system emission constraints no stage run can be done
+
 [4.14.4] - 2023-10-15
 ----------------------
 - [FIXED] check that the duration of all the stages is equal

@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 09, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 18, 2023
 """
 
 import time
@@ -140,14 +140,14 @@ def GenerationOperationModelFormulationObjFunct(OptModel, mTEPES, pIndLogConsole
 
     def eTotalECostArea(OptModel,n,ar):
         if (st,n) in mTEPES.s2n and sum(mTEPES.pEmissionCost[nr] for nr in mTEPES.nr if (ar,nr) in mTEPES.a2g):
-            return OptModel.vTotalECostArea[p,sc,n,ar] == sum(mTEPES.pLoadLevelDuration[n] * mTEPES.pEmissionCost[nr] * OptModel.vTotalOutput   [p,sc,n,nr] for nr in mTEPES.nr if (ar,nr) in mTEPES.a2g)
+            return OptModel.vTotalECostArea[p,sc,n,ar] == sum(mTEPES.pLoadLevelDuration[n] * mTEPES.pEmissionCost[nr] * OptModel.vTotalOutput[p,sc,n,nr] for nr in mTEPES.nr if (ar,nr) in mTEPES.a2g)
         else:
             return Constraint.Skip
     setattr(OptModel, 'eTotalECostArea_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.ar, rule=eTotalECostArea, doc='area emission cost [MEUR]'))
 
     def eTotalRCost(OptModel,n):
         if (st,n) in mTEPES.s2n:
-            return OptModel.vTotalRCost[p,sc,n] == sum(mTEPES.pLoadLevelDuration[n] * mTEPES.pENSCost             * OptModel.vENS           [p,sc,n,nd] for nd in mTEPES.nd) + sum(mTEPES.pHNSCost * OptModel.vHNS[p,sc,n,nd] for nd in mTEPES.nd if sum(1 for el in e2n[nd]) + sum(1 for lout in lout[nd]) + sum(1 for ni,cc in lin[nd]))
+            return OptModel.vTotalRCost[p,sc,n] == sum(mTEPES.pLoadLevelDuration[n] * mTEPES.pENSCost * OptModel.vENS[p,sc,n,nd] for nd in mTEPES.nd) + sum(mTEPES.pHNSCost * OptModel.vHNS[p,sc,n,nd] for nd in mTEPES.nd if sum(1 for el in e2n[nd]) + sum(1 for lout in lout[nd]) + sum(1 for ni,cc in lin[nd]))
         else:
             return Constraint.Skip
     setattr(OptModel, 'eTotalRCost_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, rule=eTotalRCost, doc='system reliability cost [MEUR]'))
@@ -235,8 +235,8 @@ def GenerationOperationModelFormulationInvestment(OptModel, mTEPES, pIndLogConso
         print('eAdequacyReserveMargin... ', len(getattr(OptModel, 'eAdequacyReserveMargin_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
 
     def eMaxSystemEmission(OptModel,p,ar):
-        if mTEPES.pEmission[p,ar] < math.inf and sum(mTEPES.pEmissionRate[nr] for nr in mTEPES.nr if (ar,nr) in mTEPES.a2g):
-            return sum(OptModel.vTotalECostArea[p,sc,n,ar]/mTEPES.pCO2Cost for n in mTEPES.n) <= mTEPES.pEmission[p,ar]
+        if mTEPES.pEmission[p,ar] < math.inf and sum(mTEPES.pEmissionCost[nr] for nr in mTEPES.nr if (ar,nr) in mTEPES.a2g):
+            return sum(OptModel.vTotalECostArea[p,sc,n,ar]/mTEPES.pCO2Cost for n in mTEPES.nn if (st,n) in mTEPES.s2n) <= mTEPES.pEmission[p,ar]
         else:
             return Constraint.Skip
     setattr(OptModel, 'eMaxSystemEmission_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.p, mTEPES.ar, rule=eMaxSystemEmission, doc='maximum CO2 emission [tCO2]'))
