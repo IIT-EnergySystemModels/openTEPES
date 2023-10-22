@@ -1,6 +1,10 @@
 Change Log
 =============
 
+[4.14.6] - 2023-10-22
+----------------------
+- [FIXED] fix some pandas warnings
+
 [4.14.5] - 2023-10-20
 ----------------------
 - [FIXED] if there are system emission constraints no stage run can be done

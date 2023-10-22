@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 15, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 22, 2023
 """
 
 import datetime
@@ -241,52 +241,52 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         print('No reservoir and hydropower topology dictionaries found \n')
 
     #%% parameters
-    pIndBinGenInvest       = dfOption   ['IndBinGenInvest'    ][0].astype('int')         # Indicator of binary generation        expansion decisions, 0 continuous       - 1 binary - 2 no investment variables
-    pIndBinGenRetire       = dfOption   ['IndBinGenRetirement'][0].astype('int')         # Indicator of binary generation        retirement decisions,0 continuous       - 1 binary - 2 no retirement variables
-    pIndBinRsrInvest       = dfOption   ['IndBinRsrInvest'    ][0].astype('int')         # Indicator of binary reservoir         expansion decisions, 0 continuous       - 1 binary - 2 no investment variables
-    pIndBinNetInvest       = dfOption   ['IndBinNetInvest'    ][0].astype('int')         # Indicator of binary electric network  expansion decisions, 0 continuous       - 1 binary - 2 no investment variables
-    pIndBinNetH2Invest     = dfOption   ['IndBinNetH2Invest'  ][0].astype('int')         # Indicator of binary hydrogen pipeline expansion decisions, 0 continuous       - 1 binary - 2 no investment variables
-    pIndBinGenOperat       = dfOption   ['IndBinGenOperat'    ][0].astype('int')         # Indicator of binary generation        operation decisions, 0 continuous       - 1 binary
-    pIndBinSingleNode      = dfOption   ['IndBinSingleNode'   ][0].astype('int')         # Indicator of single node although with electric network,   0 electric network - 1 single node
-    pIndBinGenRamps        = dfOption   ['IndBinGenRamps'     ][0].astype('int')         # Indicator of ramp constraints,                             0 no ramps         - 1 ramp constraints
-    pIndBinGenMinTime      = dfOption   ['IndBinGenMinTime'   ][0].astype('int')         # Indicator of minimum up/downtime constraints,              0 no min time      - 1 min time constraints
-    pIndBinLineCommit      = dfOption   ['IndBinLineCommit'   ][0].astype('int')         # Indicator of binary electric network switching decisions,  0 continuous       - 1 binary
-    pIndBinNetLosses       = dfOption   ['IndBinNetLosses'    ][0].astype('int')         # Indicator of        electric network losses,               0 lossless         - 1 ohmic losses
-    pENSCost               = dfParameter['ENSCost'            ][0] * 1e-3                # cost of energy   not served               [MEUR/GWh]
-    pHNSCost               = dfParameter['HNSCost'            ][0] * 1e-3                # cost of hydrogen not served               [MEUR/tH2]
-    pCO2Cost               = dfParameter['CO2Cost'            ][0]                       # cost of CO2 emission                      [EUR/tCO2]
-    pEconomicBaseYear      = dfParameter['EconomicBaseYear'   ][0]                       # economic base year                        [year]
-    pAnnualDiscRate        = dfParameter['AnnualDiscountRate' ][0]                       # annual discount rate                      [p.u.]
-    pUpReserveActivation   = dfParameter['UpReserveActivation'][0]                       # upward   reserve activation               [p.u.]
-    pDwReserveActivation   = dfParameter['DwReserveActivation'][0]                       # downward reserve activation               [p.u.]
-    pMinRatioDwUp          = dfParameter['MinRatioDwUp'       ][0]                       # minimum ratio down up operating reserves  [p.u.]
-    pMaxRatioDwUp          = dfParameter['MaxRatioDwUp'       ][0]                       # maximum ratio down up operating reserves  [p.u.]
-    pSBase                 = dfParameter['SBase'              ][0] * 1e-3                # base power                                [GW]
-    pReferenceNode         = dfParameter['ReferenceNode'      ][0]                       # reference node
-    pTimeStep              = dfParameter['TimeStep'           ][0].astype('int')         # duration of the unit time step            [h]
+    pIndBinGenInvest       = dfOption   ['IndBinGenInvest'    ].iloc[0].astype('int')         # Indicator of binary generation        expansion decisions, 0 continuous       - 1 binary - 2 no investment variables
+    pIndBinGenRetire       = dfOption   ['IndBinGenRetirement'].iloc[0].astype('int')         # Indicator of binary generation        retirement decisions,0 continuous       - 1 binary - 2 no retirement variables
+    pIndBinRsrInvest       = dfOption   ['IndBinRsrInvest'    ].iloc[0].astype('int')         # Indicator of binary reservoir         expansion decisions, 0 continuous       - 1 binary - 2 no investment variables
+    pIndBinNetInvest       = dfOption   ['IndBinNetInvest'    ].iloc[0].astype('int')         # Indicator of binary electric network  expansion decisions, 0 continuous       - 1 binary - 2 no investment variables
+    pIndBinNetH2Invest     = dfOption   ['IndBinNetH2Invest'  ].iloc[0].astype('int')         # Indicator of binary hydrogen pipeline expansion decisions, 0 continuous       - 1 binary - 2 no investment variables
+    pIndBinGenOperat       = dfOption   ['IndBinGenOperat'    ].iloc[0].astype('int')         # Indicator of binary generation        operation decisions, 0 continuous       - 1 binary
+    pIndBinSingleNode      = dfOption   ['IndBinSingleNode'   ].iloc[0].astype('int')         # Indicator of single node although with electric network,   0 electric network - 1 single node
+    pIndBinGenRamps        = dfOption   ['IndBinGenRamps'     ].iloc[0].astype('int')         # Indicator of ramp constraints,                             0 no ramps         - 1 ramp constraints
+    pIndBinGenMinTime      = dfOption   ['IndBinGenMinTime'   ].iloc[0].astype('int')         # Indicator of minimum up/downtime constraints,              0 no min time      - 1 min time constraints
+    pIndBinLineCommit      = dfOption   ['IndBinLineCommit'   ].iloc[0].astype('int')         # Indicator of binary electric network switching decisions,  0 continuous       - 1 binary
+    pIndBinNetLosses       = dfOption   ['IndBinNetLosses'    ].iloc[0].astype('int')         # Indicator of        electric network losses,               0 lossless         - 1 ohmic losses
+    pENSCost               = dfParameter['ENSCost'            ].iloc[0] * 1e-3                # cost of energy   not served               [MEUR/GWh]
+    pHNSCost               = dfParameter['HNSCost'            ].iloc[0] * 1e-3                # cost of hydrogen not served               [MEUR/tH2]
+    pCO2Cost               = dfParameter['CO2Cost'            ].iloc[0]                       # cost of CO2 emission                      [EUR/tCO2]
+    pEconomicBaseYear      = dfParameter['EconomicBaseYear'   ].iloc[0]                       # economic base year                        [year]
+    pAnnualDiscRate        = dfParameter['AnnualDiscountRate' ].iloc[0]                       # annual discount rate                      [p.u.]
+    pUpReserveActivation   = dfParameter['UpReserveActivation'].iloc[0]                       # upward   reserve activation               [p.u.]
+    pDwReserveActivation   = dfParameter['DwReserveActivation'].iloc[0]                       # downward reserve activation               [p.u.]
+    pMinRatioDwUp          = dfParameter['MinRatioDwUp'       ].iloc[0]                       # minimum ratio down up operating reserves  [p.u.]
+    pMaxRatioDwUp          = dfParameter['MaxRatioDwUp'       ].iloc[0]                       # maximum ratio down up operating reserves  [p.u.]
+    pSBase                 = dfParameter['SBase'              ].iloc[0] * 1e-3                # base power                                [GW]
+    pReferenceNode         = dfParameter['ReferenceNode'      ].iloc[0]                       # reference node
+    pTimeStep              = dfParameter['TimeStep'           ].iloc[0].astype('int')         # duration of the unit time step            [h]
 
     pPeriodWeight          = dfPeriod       ['Weight'        ].astype('int')             # weights of periods                        [p.u.]
     pScenProb              = dfScenario     ['Probability'   ].astype('float')           # probabilities of scenarios                [p.u.]
     pStageWeight           = dfStage        ['Weight'        ].astype('int')             # weights of stages                         [p.u.]
-    pDuration              = dfDuration     ['Duration'      ]  * pTimeStep              # duration of load levels                   [h]
+    pDuration              = dfDuration     ['Duration'      ] * pTimeStep              # duration of load levels                   [h]
     pReserveMargin         = dfReserveMargin['ReserveMargin' ]                           # minimum adequacy reserve margin           [p.u.]
     pEmission              = dfEmission     ['CO2Emission'   ]                           # maximum CO2 emission                      [MtCO2]
     pLevelToStage          = dfDuration     ['Stage'         ]                           # load levels assignment to stages
-    pDemand                = dfDemand            [mTEPES.nd]    * 1e-3                   # electric demand                           [GW]
+    pDemand                = dfDemand            [mTEPES.nd]   * 1e-3                    # electric demand                           [GW]
     pSystemInertia         = dfInertia           [mTEPES.ar]                             # inertia                                   [s]
-    pOperReserveUp         = dfUpOperatingReserve[mTEPES.ar]    * 1e-3                   # upward   operating reserve                [GW]
-    pOperReserveDw         = dfDwOperatingReserve[mTEPES.ar]    * 1e-3                   # downward operating reserve                [GW]
-    pVariableMinPower      = dfVariableMinPower  [mTEPES.gg]    * 1e-3                   # dynamic variable minimum power            [GW]
-    pVariableMaxPower      = dfVariableMaxPower  [mTEPES.gg]    * 1e-3                   # dynamic variable maximum power            [GW]
-    pVariableMinCharge     = dfVariableMinCharge [mTEPES.gg]    * 1e-3                   # dynamic variable minimum charge           [GW]
-    pVariableMaxCharge     = dfVariableMaxCharge [mTEPES.gg]    * 1e-3                   # dynamic variable maximum charge           [GW]
+    pOperReserveUp         = dfUpOperatingReserve[mTEPES.ar]   * 1e-3                    # upward   operating reserve                [GW]
+    pOperReserveDw         = dfDwOperatingReserve[mTEPES.ar]   * 1e-3                    # downward operating reserve                [GW]
+    pVariableMinPower      = dfVariableMinPower  [mTEPES.gg]   * 1e-3                    # dynamic variable minimum power            [GW]
+    pVariableMaxPower      = dfVariableMaxPower  [mTEPES.gg]   * 1e-3                    # dynamic variable maximum power            [GW]
+    pVariableMinCharge     = dfVariableMinCharge [mTEPES.gg]   * 1e-3                    # dynamic variable minimum charge           [GW]
+    pVariableMaxCharge     = dfVariableMaxCharge [mTEPES.gg]   * 1e-3                    # dynamic variable maximum charge           [GW]
     pVariableMinStorage    = dfVariableMinStorage[mTEPES.gg]                             # dynamic variable minimum storage          [GWh]
     pVariableMaxStorage    = dfVariableMaxStorage[mTEPES.gg]                             # dynamic variable maximum storage          [GWh]
-    pVariableMinEnergy     = dfVariableMinEnergy [mTEPES.gg]    * 1e-3                   # dynamic variable minimum energy           [GW]
-    pVariableMaxEnergy     = dfVariableMaxEnergy [mTEPES.gg]    * 1e-3                   # dynamic variable maximum energy           [GW]
+    pVariableMinEnergy     = dfVariableMinEnergy [mTEPES.gg]   * 1e-3                    # dynamic variable minimum energy           [GW]
+    pVariableMaxEnergy     = dfVariableMaxEnergy [mTEPES.gg]   * 1e-3                    # dynamic variable maximum energy           [GW]
     pVariableFuelCost      = dfVariableFuelCost  [mTEPES.gg]                             # dynamic variable fuel cost                [€/Mcal]
-    pEnergyInflows         = dfEnergyInflows     [mTEPES.gg]    * 1e-3                   # dynamic energy inflows                    [GW]
-    pEnergyOutflows        = dfEnergyOutflows    [mTEPES.gg]    * 1e-3                   # dynamic energy outflows                   [GW]
+    pEnergyInflows         = dfEnergyInflows     [mTEPES.gg]   * 1e-3                    # dynamic energy inflows                    [GW]
+    pEnergyOutflows        = dfEnergyOutflows    [mTEPES.gg]   * 1e-3                    # dynamic energy outflows                   [GW]
 
     if pIndHydroTopology == 1:
         pVariableMinVolume = dfVariableMinVolume [mTEPES.rs]                             # dynamic variable minimum reservoir volume [hm3]
