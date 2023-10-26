@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 22, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 26, 2023
 """
 
 import math
@@ -38,8 +38,8 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     idxDict['y'  ] = 1
 
     #%% model declaration
-    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.14.6 - October 22, 2023')
-    print(                 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.14.6 - October 22, 2023', file=open(_path+'/openTEPES_version_'+CaseName+'.log','a'))
+    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.14.7 - October 26, 2023')
+    print(                 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.14.7 - October 26, 2023', file=open(_path+'/openTEPES_version_'+CaseName+'.log','a'))
 
     pIndOutputResults = [j for i,j in idxDict.items() if i == pIndOutputResults][0]
     pIndLogConsole    = [j for i,j in idxDict.items() if i == pIndLogConsole   ][0]
@@ -101,7 +101,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
                 if c.name.find(str(p)) != -1 and c.name.find(str(sc)) != -1:
                     c.deactivate()
         else:
-            if mTEPES.p.ord(p)*mTEPES.sc.ord(sc) == len(mTEPES.ps) and mTEPES.st.last() == mTEPES.stt.last():
+            if mTEPES.p.last() == mTEPES.pp.last() and mTEPES.sc.last() == mTEPES.scc.last() and mTEPES.st.last() == mTEPES.stt.last():
 
                 if pIndLogConsole == 1:
                     StartTime         = time.time()

@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 18, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 26, 2023
 """
 
 import time
@@ -110,7 +110,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
                 if sum(1 for g in mTEPES.nr if (nr,g) in mTEPES.g2g or (g,nr) in mTEPES.g2g):
                     OptModel.vMaxCommitment[nr].fix(round(OptModel.vMaxCommitment[nr]()))
 
-        if mTEPES.p.ord(p)*mTEPES.sc.ord(sc) == 1:
+        if mTEPES.p.last() == mTEPES.pp.last() and mTEPES.sc.last() == mTEPES.scc.last() and mTEPES.st.last() == mTEPES.stt.last():
             OptModel.dual = Suffix(direction=Suffix.IMPORT_EXPORT)
             OptModel.rc   = Suffix(direction=Suffix.IMPORT_EXPORT)
 

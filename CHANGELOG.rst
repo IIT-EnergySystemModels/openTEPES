@@ -1,6 +1,10 @@
 Change Log
 =============
 
+[4.14.7] - 2023-10-26
+----------------------
+- [FIXED] fix the condition to solve the complete problem
+
 [4.14.6] - 2023-10-22
 ----------------------
 - [FIXED] fix some pandas warnings
