@@ -4,6 +4,13 @@ Research projects
 =================
 The model has being used in these research projects:
 
+- Tool for simulating the price of the Daily Market in the future (HESIME), developed for the **Ministry of Science and Innovation/State Research Agency** (10.13039/501100011033) under the program **Public-Private Partnerships** with **NextGenerationEU/PRTR** funds (CPP2022-009809). November 2023 - October 2026.
+  `L. Olmos <https://www.iit.comillas.edu/people/olmos>`_, `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `S. Gómez Sánchez <https://www.iit.comillas.edu/people/sgomez>`_
+
+.. image:: ../img/ColabPP.jpg
+   :scale: 30%
+   :align: center
+
 - `Open Modelling Toolbox for development of long-term pathways for the energy system in Africa (OpenMod4Africa) <https://www.iit.comillas.edu/proyectos/mostrar_proyecto.php.en?nombre_abreviado=OpenMod4Africa>`_, developed for the **European Union**. July 2023 - June 2026.
   `L. Olmos <https://www.iit.comillas.edu/people/olmos>`_, `S. Lumbreras <https://www.iit.comillas.edu/people/slumbreras>`_, `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `M.A.E. Elabbas <https://www.iit.comillas.edu/people/mabbas>`_
 
@@ -96,8 +103,9 @@ The model has being used in these research projects:
 - `FlexEner. New 100% renewable, flexible and robust energy system for the integration of new technologies in generation, networks and demand - Scenarios <https://www.iit.comillas.edu/proyectos/mostrar_proyecto.php.en?nombre_abreviado=FLEXENER_IBD-GEN_ESCENARIOS>`_, developed for **Iberdrola** under **Misiones CDTI 2019** program (MIG-20201002).
   October 2020 - December 2023.
   `M. Rivier <https://www.iit.comillas.edu/people/michel>`_, `T. Gómez <https://www.iit.comillas.edu/people/tomas>`_, `A. Sánchez <https://www.iit.comillas.edu/people/alvaro>`_,
-  `F. Martín <https://www.iit.comillas.edu/people/fmartin>`_, `T. Freire <https://www.iit.comillas.edu/people/tfreire>`_, `J.P. Chaves <https://www.iit.comillas.edu/people/jchaves>`_,
-  `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_
+  `F. Martín <https://www.iit.comillas.edu/people/fmartin>`_, `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `J.P. Chaves <https://www.iit.comillas.edu/people/jchaves>`_,
+  `S. Gómez Sánchez <https://www.iit.comillas.edu/people/sgomez>`_, `L. Herding <https://www.iit.comillas.edu/people/lherding>`_, `T. Freire <https://www.iit.comillas.edu/people/tfreire>`_
+
 
     It aims to investigate new technologies and simulation models in the field of renewable generation, storage systems and flexible demand management and operation of the distribution network.
     A 100% renewable and decarbonised energy mix is sought, effectively integrated into the electrical system of the future in a flexible, efficient and safe way.
