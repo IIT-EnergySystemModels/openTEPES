@@ -3,7 +3,7 @@ Change Log
 
 [4.14.8] - 2023-11-03
 ----------------------
-- [FIXED] declare StageWeight as NonNegativeReal
+- [FIXED] declare StageWeight and LoadLevelWeight as NonNegativeReals
 - [FIXED] fix in eHydroInventory constraint the conversion constant 0.0036
 
 [4.14.7] - 2023-10-26

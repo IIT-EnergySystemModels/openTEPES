@@ -267,7 +267,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
 
     pPeriodWeight          = dfPeriod       ['Weight'        ].astype('int')             # weights of periods                        [p.u.]
     pScenProb              = dfScenario     ['Probability'   ].astype('float')           # probabilities of scenarios                [p.u.]
-    pStageWeight           = dfStage        ['Weight'        ].astype('int')             # weights of stages                         [p.u.]
+    pStageWeight           = dfStage        ['Weight'        ].astype('float')           # weights of stages                         [p.u.]
     pDuration              = dfDuration     ['Duration'      ] * pTimeStep               # duration of load levels                   [h]
     pReserveMargin         = dfReserveMargin['ReserveMargin' ]                           # minimum adequacy reserve margin           [p.u.]
     pEmission              = dfEmission     ['CO2Emission'   ]                           # maximum CO2 emission                      [MtCO2]
@@ -671,7 +671,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     else:
         pDiscountFactor = pd.Series([((1.0+pAnnualDiscRate)**pPeriodWeight[p]-1.0) / (pAnnualDiscRate*(1.0+pAnnualDiscRate)**(pPeriodWeight[p]-1+p-pEconomicBaseYear)) for p in mTEPES.p], index=mTEPES.p)
 
-    mTEPES.pLoadLevelWeight = Param(mTEPES.n, initialize=0.0, within=NonNegativeIntegers, doc='Load level weight', mutable=True)
+    mTEPES.pLoadLevelWeight = Param(mTEPES.n, initialize=0.0, within=NonNegativeReals, doc='Load level weight', mutable=True)
     for st,n in mTEPES.s2n:
         mTEPES.pLoadLevelWeight[n] = pStageWeight[st]
 
