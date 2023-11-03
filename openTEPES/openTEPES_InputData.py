@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 22, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 03, 2023
 """
 
 import datetime
@@ -268,7 +268,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pPeriodWeight          = dfPeriod       ['Weight'        ].astype('int')             # weights of periods                        [p.u.]
     pScenProb              = dfScenario     ['Probability'   ].astype('float')           # probabilities of scenarios                [p.u.]
     pStageWeight           = dfStage        ['Weight'        ].astype('int')             # weights of stages                         [p.u.]
-    pDuration              = dfDuration     ['Duration'      ] * pTimeStep              # duration of load levels                   [h]
+    pDuration              = dfDuration     ['Duration'      ] * pTimeStep               # duration of load levels                   [h]
     pReserveMargin         = dfReserveMargin['ReserveMargin' ]                           # minimum adequacy reserve margin           [p.u.]
     pEmission              = dfEmission     ['CO2Emission'   ]                           # maximum CO2 emission                      [MtCO2]
     pLevelToStage          = dfDuration     ['Stage'         ]                           # load levels assignment to stages
@@ -1057,7 +1057,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.pPeriodWeight         = Param(mTEPES.p,     initialize=pPeriodWeight.to_dict()             , within=NonNegativeIntegers, doc='Period weight',                          mutable=True)
     mTEPES.pDiscountFactor       = Param(mTEPES.p,     initialize=pDiscountFactor.to_dict()           , within=NonNegativeReals,    doc='Discount factor'                                     )
     mTEPES.pScenProb             = Param(mTEPES.psc,   initialize=pScenProb.to_dict()                 , within=UnitInterval    ,    doc='Probability',                            mutable=True)
-    mTEPES.pStageWeight          = Param(mTEPES.stt,   initialize=pStageWeight.to_dict()              , within=NonNegativeIntegers, doc='Stage weight'                                        )
+    mTEPES.pStageWeight          = Param(mTEPES.stt,   initialize=pStageWeight.to_dict()              , within=NonNegativeReals,    doc='Stage weight'                                        )
     mTEPES.pDuration             = Param(mTEPES.n,     initialize=pDuration.to_dict()                 , within=PositiveIntegers,    doc='Duration',                               mutable=True)
     mTEPES.pNodeLon              = Param(mTEPES.nd,    initialize=pNodeLon.to_dict()                  ,                             doc='Longitude'                                           )
     mTEPES.pNodeLat              = Param(mTEPES.nd,    initialize=pNodeLat.to_dict()                  ,                             doc='Latitude'                                            )
