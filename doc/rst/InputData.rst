@@ -169,8 +169,8 @@ Identifier      Header        Description
 Period          Weight        Weight of each period
 ==============  ============  =====================
 
-This weight allows the definition of equivalent (representative) years (e.g., year 2030 with a weight of 5 would represent years 2030-2034). Periods are not mathematically connected between them, i.e., no constraints link the operation
-at different periods.
+This weight allows the definition of equivalent (representative) years (e.g., year 2030 with a weight of 5 would represent years 2030-2034). Periods are not mathematically connected between them with operation constraints, i.e., no constraints link the operation
+at different periods. However, they are linked by the investment decisions, i.e., investments made in a year remain installed for the rest of the years.
 
 Scenario
 --------
