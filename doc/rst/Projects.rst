@@ -4,6 +4,9 @@ Research projects
 =================
 The model has being used in these research projects:
 
+- `Modeling the wholesale electricity market based on future projections <https://www.iit.comillas.edu/proyectos/mostrar_proyecto.php.en?nombre_abreviado=Repsol_AguayoII>`_, developed for **Repsol**.
+  November 2023 - April 2024. `L. Olmos <https://www.iit.comillas.edu/people/olmos>`_, `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_
+
 - Tool for simulating the price of the Daily Market in the future (HESIME), developed for the **Ministry of Science and Innovation/State Research Agency** (10.13039/501100011033) under the program **Public-Private Partnerships** with **NextGenerationEU/PRTR** funds (CPP2022-009809). November 2023 - October 2026.
   `L. Olmos <https://www.iit.comillas.edu/people/olmos>`_, `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `S. Gómez Sánchez <https://www.iit.comillas.edu/people/sgomez>`_
 
