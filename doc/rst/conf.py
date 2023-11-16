@@ -83,7 +83,7 @@ html_static_path = []
 # 'searchbox.html']``.
 #
 # html_sidebars = {}
-html_theme = 'alabaster'
+html_theme = 'pydata_sphinx_theme'
 html_title = 'version 4.14.7'
 html_logo  = '../img/openTEPES.png'
 html_last_updated_fmt = ''
