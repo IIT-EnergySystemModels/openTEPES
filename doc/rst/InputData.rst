@@ -33,7 +33,6 @@ OCGT        Open Cycle Gas Turbine
 PHS         Pumped-Hydro Storage
 PNS         Power Not Served
 PV          Photovoltaics
-RR          Replacement Reserve
 TTC         Total Transfer Capacity
 VRE         Variable Renewable Energy
 VRES        Variable Renewable Energy Source
@@ -90,8 +89,8 @@ File                                       Description
 ``oT_Data_Duration.csv``                   Duration of the load levels
 ``oT_Data_Demand.csv``                     Electricity demand
 ``oT_Data_Inertia.csv``                    System inertia by area
-``oT_Data_OperatingReserveUp.csv``         Upward   operating reserves (include aFRR, mFRR and RR for electricity balancing from ENTSO-E)
-``oT_Data_OperatingReserveDown.csv``       Downward operating reserves (include aFRR, mFRR and RR for electricity balancing from ENTSO-E)
+``oT_Data_OperatingReserveUp.csv``         Upward   operating reserves (include aFRR and mFRR for electricity balancing from ENTSO-E)
+``oT_Data_OperatingReserveDown.csv``       Downward operating reserves (include aFRR and mFRR for electricity balancing from ENTSO-E)
 ``oT_Data_Generation.csv``                 Generation data
 ``oT_Data_VariableMaxGeneration.csv``      Variable maximum power generation  by load level
 ``oT_Data_VariableMinGeneration.csv``      Variable minimum power generation  by load level
@@ -290,7 +289,7 @@ Period      Scenario        Load level  Area    Upward/downward operating reserv
 ==========  ==============  ==========  ======  ===================================================================  ==
 
 Given that the operating reserves depend on the area, it can be sensible to assign an area as a country, for example.
-These operating reserves must include Automatic Frequency Restoration Reserves (aFRR), Manual Frequency Restoration Reserves (mFRR) and Replacement Reserves (RR) for electricity balancing from ENTSO-E.
+These operating reserves must include Automatic Frequency Restoration Reserves (aFRR) and Manual Frequency Restoration Reserves (mFRR) for electricity balancing from ENTSO-E.
 
 Internally, all the values below 2.5e-5 times the maximum system demand of each area will be converted into 0 by the model.
 
