@@ -323,7 +323,7 @@ MinimumStorage        Minimum energy that can be stored by the ESS unit         
 Efficiency            Round-trip efficiency of the pump/turbine cycle of a pumped-hydro storage power plant or charge/discharge of a battery            p.u.
 ProductionFunction    Production function from water inflows to energy (only used for hydropower plants modeled with water units and basin topology)    kWh/m\ :sup:`3`
 ProductionFunctionH2  Production function from energy to hydrogen (only used for electrolyzers)                                                         kWh/kgH2
-Availability          Unit availability for system adequacy reserve margin                                                                              p.u.
+Availability          Unit availability for system adequacy reserve margin (also called de-rating factor)                                               p.u.
 Inertia               Unit inertia constant                                                                                                             s
 EFOR                  Equivalent Forced Outage Rate                                                                                                     p.u.
 RampUp                Ramp up   rate for generating units or maximum discharge rate for ESS discharge                                                   MW/h
@@ -368,8 +368,6 @@ A generator with operation cost (sum of the fuel and emission cost, excluding O&
 it is considered a renewable unit. If its maximum storage is > 0, with or without operation cost, is considered an ESS.
 
 Must-run non-renewable units are always committed, i.e., their commitment decision is equal to 1. All must-run units are forced to produce at least their minimum output.
-
-If unit availability is left 0 or empty is changed to 1. For declaring a unit non contributing to system adequacy reserve margin, put the availability equal to a very small number.
 
 EFOR is used to reduce the maximum and minimum power of the unit. For hydropower plants it can be used to reduce their maximum power by the water head effect. It does not reduce the maximum charge.
 
