@@ -1,6 +1,10 @@
 Change Log
 =============
 
+[4.14.9] - 2023-11-24
+----------------------
+- [FIXED] values 0 of availability not changed to 1
+
 [4.14.8] - 2023-11-03
 ----------------------
 - [FIXED] declare StageWeight and LoadLevelWeight as NonNegativeReals
