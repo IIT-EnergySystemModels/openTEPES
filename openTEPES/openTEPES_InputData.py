@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 03, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 23, 2023
 """
 
 import datetime
@@ -1214,10 +1214,10 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.gm     = [(p,sc,g ) for p,sc,g  in mTEPES.psg  if sum(mTEPES.pMinEnergy     [p,sc,n2,g ]   for n2 in mTEPES.n2)]
     mTEPES.gM     = [(p,sc,g ) for p,sc,g  in mTEPES.psg  if sum(mTEPES.pMaxEnergy     [p,sc,n2,g ]   for n2 in mTEPES.n2)]
 
-    # if unit availability = 0 changed to 1
-    for g in mTEPES.g:
-        if  mTEPES.pAvailability[g]() == 0.0:
-            mTEPES.pAvailability[g]   =  1.0
+    # # if unit availability = 0 changed to 1
+    # for g in mTEPES.g:
+    #     if  mTEPES.pAvailability[g]() == 0.0:
+    #         mTEPES.pAvailability[g]   =  1.0
 
     # if line length = 0 changed to geographical distance with an additional 10%
     for ni,nf,cc in mTEPES.la:

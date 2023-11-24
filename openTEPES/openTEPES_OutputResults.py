@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 22, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 22, 2023
 """
 
 import time
@@ -1312,8 +1312,7 @@ def ReliabilityResults(DirName, CaseName, OptModel, mTEPES):
     if len(mTEPES.gc):
         CandCapacity  = [(p,sc,n,g) for p,sc,n,g in mTEPES.psng if g in mTEPES.gc]
         pCandMaxPower = pd.Series(data=[mTEPES.pMaxPower[p,sc,n,g ] * OptModel.vGenerationInvest[p,g]() for p,sc,n,g in CandCapacity], index=pd.Index(CandCapacity))
-        frames        = [pExistMaxPower, pCandMaxPower]
-        pMaxPower     = pd.concat(frames)
+        pMaxPower     = pd.concat([pExistMaxPower, pCandMaxPower])
     else:
         pMaxPower     = pExistMaxPower
 
