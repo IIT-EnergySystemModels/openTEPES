@@ -25,7 +25,7 @@ Some maps of the electricity transmission network and the energy share of differ
    :scale: 40%
    :align: center
 
-.. image:: ../img/oT_Plot_TechnologyEnergy_ES_MAF2030.png
+.. image:: ../img/oT_Plot_TechnologyGenerationEnergy_ES_MAF2030.png
    :scale: 6%
    :align: center
 
@@ -293,7 +293,7 @@ Identifier    Identifier  Identifier  Header          Description
 Period        Scenario    Load level  Technology      Percentage of energy curtailed of VRES [%]
 ============  ==========  ==========  ==============  ===========================================
 
-File ``oT_Result_TechnologyEnergy.csv``
+File ``oT_Result_TechnologyGenerationEnergy.csv``
 
 ============  ==========  ==========  ==========  =================================
 Identifier    Identifier  Identifier  Header      Description
@@ -309,7 +309,7 @@ Identifier    Identifier  Identifier  Header      Description
 Period        Scenario    Load level  Technology  Energy (charge in ESS) [GWh]
 ============  ==========  ==========  ==========  =================================
 
-File ``oT_Result_TechnologyEnergy_AreaName.csv``
+File ``oT_Result_TechnologyGenerationEnergy_AreaName.csv``
 
 ============  ==========  ==========  ==========  ==========================================
 Identifier    Identifier  Identifier  Header      Description
@@ -424,7 +424,7 @@ Identifier    Identifier  Identifier  Header      Description
 Period        Scenario    Load level  Technology  Charged power in ESS [MW]
 ============  ==========  ==========  ==========  ==========================================
 
-File ``oT_Result_TechnologyEnergyESS.csv``
+File ``oT_Result_TechnologyConsumptionEnergyESS.csv``
 
 ============  ==========  ==========  ==========  ==========================================
 Identifier    Identifier  Identifier  Header      Description
@@ -432,7 +432,7 @@ Identifier    Identifier  Identifier  Header      Description
 Period        Scenario    Load level  Technology  Energy (charge in ESS) [GWh]
 ============  ==========  ==========  ==========  ==========================================
 
-File ``oT_Result_TechnologyEnergyESS_AreaName.csv``
+File ``oT_Result_TechnologyConsumptionEnergyESS_AreaName.csv``
 
 ============  ==========  ==========  ==========  ==========================================
 Identifier    Identifier  Identifier  Header      Description
