@@ -31,8 +31,8 @@ Some maps of the electricity transmission network and the energy share of differ
 
 Some other additional plots are also plotted by the model. The CSV files used for outputting the results are briefly described in the following items.
 
-Investment
-----------
+Investment/Retirement
+---------------------
 
 File ``oT_Result_GenerationInvestment.csv``
 
