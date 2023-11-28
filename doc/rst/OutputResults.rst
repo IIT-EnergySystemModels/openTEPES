@@ -25,10 +25,6 @@ Some maps of the electricity transmission network and the energy share of differ
    :scale: 40%
    :align: center
 
-.. image:: ../img/oT_Plot_TechnologyGenerationEnergy_ES_MAF2030.png
-   :scale: 6%
-   :align: center
-
 Some other additional plots are also plotted by the model. The CSV files used for outputting the results are briefly described in the following items.
 
 Investment/Retirement
