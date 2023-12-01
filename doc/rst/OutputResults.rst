@@ -181,7 +181,7 @@ Identifier    Identifier  Identifier  Header      Description
 Period        Scenario    Load level  Generator   Downward operating reserve of each generator [MW]
 ============  ==========  ==========  ==========  =================================================
 
-File ``oT_Result_GenerationOutput.csv``
+File ``oT_Result_Generation.csv``
 
 ============  ==========  ==========  ==========  ===================================
 Identifier    Identifier  Identifier  Header      Description
