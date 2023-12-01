@@ -309,14 +309,6 @@ Identifier    Identifier  Identifier  Header      Description
 Period        Scenario    Load level  Technology  Energy (discharge in ESS) [GWh]
 ============  ==========  ==========  ==========  =================================
 
-File ``oT_Result_TechnologyConsumptionEnergy.csv``
-
-============  ==========  ==========  ==========  =================================
-Identifier    Identifier  Identifier  Header      Description
-============  ==========  ==========  ==========  =================================
-Period        Scenario    Load level  Technology  Energy (charge in ESS) [GWh]
-============  ==========  ==========  ==========  =================================
-
 File ``oT_Result_TechnologyGenerationEnergy_AreaName.csv``
 
 ============  ==========  ==========  ==========  ==========================================
