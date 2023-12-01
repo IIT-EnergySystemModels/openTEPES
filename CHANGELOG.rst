@@ -3,7 +3,7 @@ Change Log
 
 [4.14.10] - 2023-12-01
 ----------------------
-- [FIXED] delete some duplicated result output files
+- [FIXED] change the name and delete some duplicated result output files
 
 [4.14.9] - 2023-11-24
 ----------------------
