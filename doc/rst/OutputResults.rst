@@ -269,7 +269,7 @@ Identifier    Identifier  Identifier  Header          Description
 Period        Scenario    Load level  Generator       Emission rate of the generators with power surplus, except the ESS [tCO2/MWh]
 ============  ==========  ==========  ==============  ===============================================================================================
 
-File ``oT_Result_TechnologyOutput.csv``
+File ``oT_Result_TechnologyGeneration.csv``
 
 ============  ==========  ==========  ==========  =================================
 Identifier    Identifier  Identifier  Header      Description
@@ -284,22 +284,6 @@ Identifier    Identifier  Identifier  Header      Description
 ============  ==========  ==========  ==========  =================================
 Period        Scenario    Load level  Technology  Consumption (charge in ESS) [MW]
 ============  ==========  ==========  ==========  =================================
-
-File ``oT_Result_TechnologyCurtailmentEnergy.csv``
-
-============  ==========  ==========  ==========  ==========================================
-Identifier    Identifier  Identifier  Header      Description
-============  ==========  ==========  ==========  ==========================================
-Period        Scenario    Load level  Technology  Curtailed energy of VRES [GWh]
-============  ==========  ==========  ==========  ==========================================
-
-File ``oT_Result_TechnologyCurtailmentEnergyRelative.csv``
-
-============  ==========  ==========  ==============  ===========================================
-Identifier    Identifier  Identifier  Header          Description
-============  ==========  ==========  ==============  ===========================================
-Period        Scenario    Load level  Technology      Percentage of energy curtailed of VRES [%]
-============  ==========  ==========  ==============  ===========================================
 
 File ``oT_Result_TechnologyGenerationEnergy.csv``
 
@@ -316,6 +300,22 @@ Identifier    Identifier  Identifier  Header      Description
 ============  ==========  ==========  ==========  ==========================================
 Period        Scenario    Load level  Technology  Energy (discharge in ESS) per area [GWh]
 ============  ==========  ==========  ==========  ==========================================
+
+File ``oT_Result_TechnologyCurtailmentEnergy.csv``
+
+============  ==========  ==========  ==========  ==========================================
+Identifier    Identifier  Identifier  Header      Description
+============  ==========  ==========  ==========  ==========================================
+Period        Scenario    Load level  Technology  Curtailed energy of VRES [GWh]
+============  ==========  ==========  ==========  ==========================================
+
+File ``oT_Result_TechnologyCurtailmentEnergyRelative.csv``
+
+============  ==========  ==========  ==============  ===========================================
+Identifier    Identifier  Identifier  Header          Description
+============  ==========  ==========  ==============  ===========================================
+Period        Scenario    Load level  Technology      Percentage of energy curtailed of VRES [%]
+============  ==========  ==========  ==============  ===========================================
 
 File ``oT_Result_TechnologyEmission.csv``
 
@@ -368,7 +368,7 @@ Period        Scenario    Load level  Technology  Spilled energy in ESS wrt the 
 ESS operation
 -------------
 
-File ``oT_Result_ConsumptionOutput.csv``
+File ``oT_Result_Consumption.csv``
 
 ============  ==========  ==========  ==========  ==========================================
 Identifier    Identifier  Identifier  Header      Description
