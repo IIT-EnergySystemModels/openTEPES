@@ -416,7 +416,7 @@ Identifier    Identifier  Identifier  Header      Description
 Period        Scenario    Load level  Generator   Outflows energy in ESS [GWh]
 ============  ==========  ==========  ==========  ==========================================
 
-File ``oT_Result_TechnologyOutputESS.csv``
+File ``oT_Result_TechnologyConsumption.csv``
 
 ============  ==========  ==========  ==========  ==========================================
 Identifier    Identifier  Identifier  Header      Description
@@ -424,7 +424,7 @@ Identifier    Identifier  Identifier  Header      Description
 Period        Scenario    Load level  Technology  Charged power in ESS [MW]
 ============  ==========  ==========  ==========  ==========================================
 
-File ``oT_Result_TechnologyConsumptionEnergyESS.csv``
+File ``oT_Result_TechnologyConsumptionEnergy.csv``
 
 ============  ==========  ==========  ==========  ==========================================
 Identifier    Identifier  Identifier  Header      Description
@@ -432,7 +432,7 @@ Identifier    Identifier  Identifier  Header      Description
 Period        Scenario    Load level  Technology  Energy (charge in ESS) [GWh]
 ============  ==========  ==========  ==========  ==========================================
 
-File ``oT_Result_TechnologyConsumptionEnergyESS_AreaName.csv``
+File ``oT_Result_TechnologyConsumptionEnergy_AreaName.csv``
 
 ============  ==========  ==========  ==========  ==========================================
 Identifier    Identifier  Identifier  Header      Description
