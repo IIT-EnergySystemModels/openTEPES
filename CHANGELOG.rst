@@ -1,6 +1,11 @@
 Change Log
 =============
 
+[4.14.11] - 2023-12-09
+----------------------
+- [FIXED] fix error associated to the period probability in the objective function
+- [FIXED] fix error in considering initial and final period for investment or retirement decisions
+
 [4.14.10] - 2023-12-01
 ----------------------
 - [FIXED] change the name and delete some duplicated result output files
