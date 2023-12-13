@@ -333,7 +333,7 @@ Identifier    Identifier  Identifier  Header      Description
 Period        Scenario    Load level  Technology   CO2 emission per area [MtCO2]
 ============  ==========  ==========  ==========  =================================
 
-File ``oT_Result_TechnologyReserveUp.csv``
+File ``oT_Result_TechnologyOperatingReserveUp.csv``
 
 ============  ==========  ==========  ==========  ==========================================
 Identifier    Identifier  Identifier  Header      Description
@@ -341,7 +341,7 @@ Identifier    Identifier  Identifier  Header      Description
 Period        Scenario    Load level  Technology  Upward operating reserve [MW]
 ============  ==========  ==========  ==========  ==========================================
 
-File ``oT_Result_TechnologyReserveDown.csv``
+File ``oT_Result_TechnologyOperatingReserveDown.csv``
 
 ============  ==========  ==========  ==========  ==========================================
 Identifier    Identifier  Identifier  Header      Description
@@ -456,7 +456,7 @@ Identifier    Identifier  Identifier  Header      Description
 Period        Scenario    Load level  Technology  Energy (Outflows in ESS) [GWh]
 ============  ==========  ==========  ==========  ==========================================
 
-File ``oT_Result_TechnologyReserveUpESS.csv``
+File ``oT_Result_TechnologyOperatingReserveUpESS.csv``
 
 ============  ==========  ==========  ==========  ==========================================
 Identifier    Identifier  Identifier  Header      Description
@@ -464,7 +464,7 @@ Identifier    Identifier  Identifier  Header      Description
 Period        Scenario    Load level  Technology  Upward operating reserve [MW]
 ============  ==========  ==========  ==========  ==========================================
 
-File ``oT_Result_TechnologyReserveDownESS.csv``
+File ``oT_Result_TechnologyOperatingReserveDownESS.csv``
 
 ============  ==========  ==========  ==========  ==========================================
 Identifier    Identifier  Identifier  Header      Description
@@ -539,7 +539,7 @@ Identifier    Identifier  Identifier  Header      Description
 Period        Scenario    Load level  Reservoir   Spilled water in reservoir [hm\ :sup:`3`]
 ============  ==========  ==========  ==========  ==========================================
 
-File ``oT_Result_TechnologyReservoirSpillage.csv``
+File ``oT_Result_TechnologyOperatingReservoirSpillage.csv``
 
 ============  ==========  ==========  ==========  =========================================================
 Identifier    Identifier  Identifier  Header      Description

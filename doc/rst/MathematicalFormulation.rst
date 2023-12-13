@@ -67,7 +67,7 @@ They are written in **uppercase** letters.
 **Electricity demand**
 ------------------------  ----------------------------------------------------  -------
 :math:`D^p_{\omega ni}`   Electricity demand in each node                       GW
-:math:`PD_a`              Peak demand in each area                              GW
+:math:`PD_{pa}`           Peak demand in each area                              GW
 :math:`DUR_n`             Duration of each load level                           h
 :math:`CENS`              Cost of energy not served. Value of Lost Load (VoLL)  €/MWh
 ========================  ====================================================  =======
@@ -300,7 +300,7 @@ Output and consumption bounded by investment decision for candidate ESS [p.u.] �
 
 Adequacy system reserve margin [p.u.] «``eAdequacyReserveMargin``»
 
-:math:`\sum_{g \in a, EG} \overline{GP}_g A_g + \sum_{g \in a, CG} icg^p_g \overline{GP}_g A_g \geq PD_a RM_{pa} \quad \forall pa`
+:math:`\sum_{g \in a, EG} \overline{GP}_g A_g + \sum_{g \in a, CG} icg^p_g \overline{GP}_g A_g \geq PD_{pa} RM_{pa} \quad \forall pa`
 
 Maximum CO2 emission [MtC02] «``eMaxSystemEmission``»
 
