@@ -20,6 +20,7 @@ DC          Direct Current
 DCPF        DC Power Flow
 DR          Demand Response
 DSM         Demand-Side Management
+DSR         Demand-Side Response
 EFOR        Equivalent Forced Outage Rate
 ENS         Energy Not Served
 ENTSO-E     European Network of Transmission System Operators for Electricity
@@ -33,7 +34,9 @@ OCGT        Open Cycle Gas Turbine
 PHS         Pumped-Hydro Storage
 PNS         Power Not Served
 PV          Photovoltaics
+RES         Renewable Energy Source
 TTC         Total Transfer Capacity
+VOLL        Value of Lost Load
 VRE         Variable Renewable Energy
 VRES        Variable Renewable Energy Source
 ==========  ====================================================================
