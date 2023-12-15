@@ -342,8 +342,8 @@ OperReserveCost       Operating reserve cost                                    
 StartUpCost           Startup  cost                                                                                                                     M€
 ShutDownCost          Shutdown cost                                                                                                                     M€
 CO2EmissionRate       CO2 emission rate. It can be negative for units absorbing CO2 emissions as biomass                                                tCO2/MWh
-FixedInvestmentCost   Overnight investment (capital and fixed O&M) cost                                                                                 M€
-FixedRetirementCost   Overnight retirement (capital and fixed O&M) cost                                                                                 M€
+FixedInvestmentCost   Overnight investment (capital -CAPEX- and fixed O&M -FOM-) cost                                                                   M€
+FixedRetirementCost   Overnight retirement (capital -CAPEX- and fixed O&M -FOM-) cost                                                                   M€
 FixedChargeRate       Fixed-charge rate to annualize the overnight investment cost                                                                      p.u.
 StorageInvestment     Storage capacity and energy inflows linked to the investment decision                                                             Yes/No
 BinaryInvestment      Binary unit investment decision                                                                                                   Yes/No
@@ -525,7 +525,7 @@ Converter            Converter station (not used in this version)               
 TTC                  Total transfer capacity (maximum permissible thermal load) in forward  direction. Static line rating             MW
 TTCBck               Total transfer capacity (maximum permissible thermal load) in backward direction. Static line rating             MW
 SecurityFactor       Security factor to consider approximately N-1 contingencies. NTC = TTC x SecurityFactor                          p.u.
-FixedInvestmentCost  Overnight investment (capital and fixed O&M) cost                                                                M€
+FixedInvestmentCost  Overnight investment (capital -CAPEX- and fixed O&M -FOM-) cost                                                  M€
 FixedChargeRate      Fixed-charge rate to annualize the overnight investment cost                                                     p.u.
 BinaryInvestment     Binary line/circuit investment decision                                                                          Yes/No
 InvestmentLo         Lower bound of investment decision                                                                               p.u.
@@ -634,7 +634,7 @@ InitialStorage        Initial volume stored at the first instant of the time sco
 MaximumStorage        Maximum volume that can be stored by the hydro reservoir                                                                hm\ :sup:`3`
 MinimumStorage        Minimum volume that can be stored by the hydro reservoir                                                                hm\ :sup:`3`
 BinaryInvestment      Binary reservoir investment decision                                                                                    Yes/No
-FixedInvestmentCost   Overnight investment (capital and fixed O&M) cost                                                                       M€
+FixedInvestmentCost   Overnight investment (capital -CAPEX- and fixed O&M -FOM-) cost                                                         M€
 FixedChargeRate       Fixed-charge rate to annualize the overnight investment cost                                                            p.u.
 InitialPeriod         Initial period (year) when the unit is installed or can be installed, if candidate                                      Year
 FinalPeriod           Final   period (year) when the unit is installed or can be installed, if candidate                                      Year
@@ -706,7 +706,7 @@ Length               Pipeline length (only used for reporting purposes). If not 
 TTC                  Total transfer capacity (maximum permissible thermal load) in forward  direction. Static pipeline rating             tH2
 TTCBck               Total transfer capacity (maximum permissible thermal load) in backward direction. Static pipeline rating             tH2
 SecurityFactor       Security factor to consider approximately N-1 contingencies. NTC = TTC x SecurityFactor                              p.u.
-FixedInvestmentCost  Overnight investment (capital and fixed O&M) cost                                                                    M€
+FixedInvestmentCost  Overnight investment (capital -CAPEX- and fixed O&M -FOM-) cost                                                      M€
 FixedChargeRate      Fixed-charge rate to annualize the overnight investment cost                                                         p.u.
 BinaryInvestment     Binary pipeline investment decision                                                                                  Yes/No
 InvestmentLo         Lower bound of investment decision                                                                                   p.u.
