@@ -3,11 +3,11 @@
 Introduction
 ============
 The *Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS* **(openTEPES)** determines the investment plans of new facilities (generators, ESS, and electric lines and hydrogen pipelines)
-for supplying the forecasted demand at minimum cost. Tactical planning is concerned with time horizons of 10-20 years. Its objective is to evaluate the future generation, storage, and electric and hydrogen network needs.
+for supplying the forecasted demand at minimum cost. Its objective is to evaluate the future generation, storage, and electric and hydrogen network needs.
 The main results are the guidelines for the future structure of the generation, storage, and transmission systems.
 
-The **openTEPES** model presents a decision support system for defining the integrated generation, storage, and transmission expansion plan (GEP+SEP+TEP) of a **large-scale electric system** at a tactical level,
-defined as a set of generation, storage, and electric and hydrogen network dynamic investment decisions for multiple future years. The user pre-defined the expansion candidates, so the model determines the optimal decisions among those specified by the user.
+The **openTEPES** model presents a decision support system for defining the integrated generation, storage, and transmission expansion plan (GEP+SEP+TEP) of a **large-scale electric system** at a tactical level (i.e., time horizons of 10-20 years),
+defined as a set of **generation, storage, and electric and hydrogen network dynamic investment decisions for multiple future years**. The user pre-defined the expansion candidates, so the model determines the optimal decisions among those specified by the user.
 
 It determines automatically optimal expansion plans that satisfy simultaneously several attributes. Its main characteristics are:
 
@@ -27,11 +27,11 @@ It determines automatically optimal expansion plans that satisfy simultaneously 
 The objective function incorporates the two main quantifiable costs: **generation, storage, and transmission investment cost (CAPEX)** and **expected variable operation costs (including generation, consumption, emission, and reliability costs) (system OPEX)**.
   
 The model formulates a **two-stage stochastic optimization** problem, including generation, storage, and electric and hydrogen network binary investment/retirement decisions, generation operation decisions (commitment, startup, and shutdown decisions are also binary), and electric line-switching decisions.
-The capacity expansion considers adequacy system reserve margin constraints.
+The capacity expansion considers adequacy system reserve margin and minimum and maximum energy constraints.
 
-The operation model is an electric **network-constrained unit commitment (NCUC)** based on a **tight and compact** formulation, including **operating reserves** with a
+The very detailed operation model is an electric **network-constrained unit commitment (NCUC)** based on a **tight and compact** formulation, including **operating reserves** with a
 **DC power flow (DCPF)**, including electric **line switching** decisions. **Electric network ohmic losses** are considered proportional to the electric line flow. It considers different **energy storage systems (ESS)**, e.g., pumped-hydro storage,
-battery, demand response, electric vehicles, solar thermal, alkaline water electrolyzer, etc. It allows analyzing the trade-off between the investment in generation/storage/transmission and the investment or use of storage capacity.
+battery, demand response, electric vehicles, solar thermal, alkaline water electrolyzer, etc. It allows analyzing the trade-off between the investment in generation/transmission/pipeline and the investment or use of storage capacity.
 
 The model allows also a representation of the **hydro system** based on volume and water inflow data considering the water stream topology (hydro cascade basins). If they are not available it runs with an energy-based representation of the hydro system.
 
@@ -48,5 +48,5 @@ The main results of the model can be structured in these topics:
 
 Results are shown in csv files and graphical plots.
 
-A careful implementation has been done to avoid numerical problems by scaling parameters, variables and equations of the optimization problem allowing the model to be used for large-scale cases, e.g., the European system with hourly detail.
+openTEPES is being used by investors, market participants, system planners, and consultants. A careful implementation has been done to avoid numerical problems by scaling parameters, variables and equations of the optimization problem allowing the model to be used for very large-scale cases, e.g., the European system with hourly detail.
 For example, a European operation case study with hourly detail has reached 22 million constraints and 27 million variables of an LP problem. The mainland Spain operation case has reached 5 million constraints and 5 million variables (1.3 million binary).
