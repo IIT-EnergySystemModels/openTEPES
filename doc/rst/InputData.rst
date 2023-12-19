@@ -15,6 +15,7 @@ AC          Alternating Current
 aFRR        Automatic Frequency Restoration Reserve
 AWE         Alkaline Water Electrolyzer
 BESS        Battery Energy Storage System
+CC          Capacity Credit
 CCGT        Combined Cycle Gas Turbine
 DC          Direct Current
 DCPF        DC Power Flow
@@ -87,7 +88,7 @@ File                                       Description
 ``oT_Data_Period.csv``                     Weight of each period
 ``oT_Data_Scenario.csv``                   Short-term uncertainties
 ``oT_Data_Stage.csv``                      Weight of each stage
-``oT_Data_ReserveMargin.csv``              Minimum adequacy reserve margin
+``oT_Data_ReserveMargin.csv``              Minimum adequacy reserve margin for each area and period
 ``oT_Data_Emission.csv``                   Maximum CO2 emission
 ``oT_Data_Duration.csv``                   Duration of the load levels
 ``oT_Data_Demand.csv``                     Electricity demand
@@ -326,7 +327,7 @@ MinimumStorage        Minimum energy that can be stored by the ESS unit         
 Efficiency            Round-trip efficiency of the pump/turbine cycle of a pumped-hydro storage power plant or charge/discharge of a battery            p.u.
 ProductionFunction    Production function from water inflows to energy (only used for hydropower plants modeled with water units and basin topology)    kWh/m\ :sup:`3`
 ProductionFunctionH2  Production function from energy to hydrogen (only used for electrolyzers)                                                         kWh/kgH2
-Availability          Unit availability for system adequacy reserve margin (also called de-rating factor)                                               p.u.
+Availability          Unit availability for area adequacy reserve margin (also called de-rating factor or capacity credit)                              p.u.
 Inertia               Unit inertia constant                                                                                                             s
 EFOR                  Equivalent Forced Outage Rate                                                                                                     p.u.
 RampUp                Ramp up   rate for generating units or maximum discharge rate for ESS discharge                                                   MW/h
