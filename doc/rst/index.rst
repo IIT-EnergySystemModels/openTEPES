@@ -15,6 +15,9 @@
 The **openTEPES** model has been developed at the `Instituto de Investigación Tecnológica (IIT) <https://www.iit.comillas.edu/index.php.en>`_ of
 the `Universidad Pontificia Comillas <https://www.comillas.edu/en/>`_.
 
+The **openTEPES** model presents a decision support system for defining the integrated generation, storage, and transmission expansion plan (GEP+SEP+TEP) of a **large-scale electric system** at a tactical level (i.e., time horizons of 10-20 years),
+defined as a set of **generation, storage, and electric and hydrogen networks dynamic investment decisions for multiple future years**.
+
 It is integrated into the `open energy system modelling platform  <https://openenergymodels.net/>`_, helping model Europe's energy system.
 
 It has been used by the **Ministry for the Ecological Transition and the Demographic Challenge (MITECO)** to analyze the electricity sector in the latest Spanish `National Energy and Climate Plan (NECP) 2023-2030 <https://energia.gob.es/_layouts/15/HttpHandlerParticipacionPublicaAnexos.ashx?k=64347>`_ in June 2023.
