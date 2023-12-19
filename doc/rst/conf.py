@@ -27,8 +27,7 @@ release = ''
 # ones.
 extensions = [
     'sphinx.ext.todo',
-    'sphinx.ext.githubpages',
-    'sphinx_simplepdf',
+    'sphinx.ext.githubpages'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
