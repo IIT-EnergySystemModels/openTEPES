@@ -21,7 +21,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
     Solver = SolverFactory(SolverName)                                                       # select solver
     if SolverName == 'gurobi':
         Solver.options['LogFile'       ] = _path+'/openTEPES_gurobi_'+CaseName+'.log'
-        # Solver.options['IISFile'     ] = _path+'/openTEPES_gurobi_'+CaseName+'.ilp'               # should be uncommented to show results of IIS
+        # Solver.options['IISFile'     ] = _path+'/openTEPES_gurobi_'+CaseName+'.ilp'        # should be uncommented to show results of IIS
         Solver.options['Method'        ] = 2                                                 # barrier method
         Solver.options['MIPFocus'      ] = 3
         Solver.options['Presolve'      ] = 2
