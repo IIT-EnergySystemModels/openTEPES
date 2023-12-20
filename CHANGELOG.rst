@@ -1,6 +1,11 @@
 Change Log
 =============
 
+[4.14.12] - 2023-12-20
+----------------------
+- [CHANGED] allow the use of GAMS as a solver
+- [CHANGED] avoid formulation of adequacy constraints if already satisfied with existing capacity
+
 [4.14.11] - 2023-12-09
 ----------------------
 - [FIXED] fix error associated to the period probability in the objective function
