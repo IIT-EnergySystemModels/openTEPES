@@ -14,6 +14,9 @@ Gurobi, HiGHS, or SCIP  solvers can be installed as a package::
   pip   install                highspy
   conda install -c conda-forge pyscipopt
 
+The model openTEPES can also be solved with GAMS and a valid GAMS license for a solver. The GAMS interface is not included in the openTEPES package and must be installed separately.
+This option is activated by calling the model with the solver name 'gams'.
+
 Besides, it also requires the following packages:
 
 - `Pandas <https://pandas.pydata.org/>`_ for inputting data and outputting results
