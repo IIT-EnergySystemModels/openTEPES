@@ -14,8 +14,8 @@ Gurobi, HiGHS, or SCIP  solvers can be installed as a package::
   pip   install                highspy
   conda install -c conda-forge pyscipopt
 
-The model openTEPES can also be solved with GAMS and a valid GAMS license for a solver. The GAMS interface is not included in the openTEPES package and must be installed separately.
-This option is activated by calling the model with the solver name 'gams'.
+The model openTEPES can also be solved with `GAMS <https://www.gams.com/>`_ and a valid GAMS license for a solver. The GAMS language is not included in the openTEPES package and must be installed separately.
+This option is activated by calling the openTEPES model with the solver name 'gams'.
 
 Besides, it also requires the following packages:
 
@@ -85,6 +85,11 @@ It can be installed using: ``conda install -c gurobi gurobi`` and then ask for a
 Mosek
 
 Another alternative is the `Mosek solver <https://www.mosek.com/>`_. Note that it is a commercial solver and you need a license for it. Mosek is a good alternative to deal with QPs, SOCPs, and SDPs problems. You only need to use ``conda install -c mosek mosek`` for installation and request a license (academic or commercial). To request the academic one, you can request `here <https://www.mosek.com/products/academic-licenses/>`_. Moreover, Mosek brings a `license guide <https://docs.mosek.com/9.2/licensing/index.html>`_. But if you are request an academic license, you will receive the license by email, and you only need to locate it in the following path ``C:\Users\(your user)\mosek`` in your computer.
+
+GAMS
+
+The model openTEPES can also be solved with `GAMS <https://www.gams.com/>`_ and a valid GAMS license for a solver. The GAMS language is not included in the openTEPES package and must be installed separately.
+This option is activated by calling the openTEPES model with the solver name 'gams'.
 
 **Get started**
 
