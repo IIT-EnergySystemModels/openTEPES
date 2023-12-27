@@ -235,7 +235,7 @@ def GenerationOperationModelFormulationInvestment(OptModel, mTEPES, pIndLogConso
         print('eAdequacyReserveMargin... ', len(getattr(OptModel, 'eAdequacyReserveMargin_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
 
     def eMaxSystemEmission(OptModel,p,ar):
-        if mTEPES.pEmission[p,ar] < math.inf and sum(mTEPES.pEmissionVarCost[p,sc,n,nr] for nr in mTEPES.nr if (ar,nr) in mTEPES.a2g):
+        if mTEPES.pEmission[p,ar] < math.inf and sum(mTEPES.pEmissionVarCost[p,sc,n,nr] for n,nr in mTEPES.nn*mTEPES.nr if (st,n) in mTEPES.s2n and (ar,nr) in mTEPES.a2g):
             return sum(OptModel.vTotalECostArea[p,sc,n,ar]/mTEPES.pCO2Cost for n in mTEPES.nn if (st,n) in mTEPES.s2n) <= mTEPES.pEmission[p,ar]
         else:
             return Constraint.Skip
