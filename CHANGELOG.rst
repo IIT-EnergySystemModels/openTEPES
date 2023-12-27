@@ -1,6 +1,10 @@
 Change Log
 =============
 
+[4.15.0] - 2023-12-27
+----------------------
+- [CHANGED] introduce the variable emission cost file
+
 [4.14.12] - 2023-12-20
 ----------------------
 - [CHANGED] allow the use of GAMS as a solver

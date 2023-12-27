@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - December 09, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - December 27, 2023
 """
 
 import datetime
@@ -40,6 +40,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     dfVariableMinEnergy     = pd.read_csv(_path+'/oT_Data_VariableMinEnergy_'     +CaseName+'.csv', index_col=[0,1,2])
     dfVariableMaxEnergy     = pd.read_csv(_path+'/oT_Data_VariableMaxEnergy_'     +CaseName+'.csv', index_col=[0,1,2])
     dfVariableFuelCost      = pd.read_csv(_path+'/oT_Data_VariableFuelCost_'      +CaseName+'.csv', index_col=[0,1,2])
+    dfVariableEmissionCost  = pd.read_csv(_path+'/oT_Data_VariableEmissionCost_'  +CaseName+'.csv', index_col=[0,1,2])
     dfEnergyInflows         = pd.read_csv(_path+'/oT_Data_EnergyInflows_'         +CaseName+'.csv', index_col=[0,1,2])
     dfEnergyOutflows        = pd.read_csv(_path+'/oT_Data_EnergyOutflows_'        +CaseName+'.csv', index_col=[0,1,2])
     dfNodeLocation          = pd.read_csv(_path+'/oT_Data_NodeLocation_'          +CaseName+'.csv', index_col=[0    ])
@@ -89,6 +90,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     dfVariableMinEnergy.fillna    (0.0, inplace=True)
     dfVariableMaxEnergy.fillna    (0.0, inplace=True)
     dfVariableFuelCost.fillna     (0.0, inplace=True)
+    dfVariableEmissionCost.fillna (0.0, inplace=True)
     dfEnergyInflows.fillna        (0.0, inplace=True)
     dfEnergyOutflows.fillna       (0.0, inplace=True)
     dfNodeLocation.fillna         (0.0, inplace=True)
@@ -105,61 +107,63 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         dfDemandHydrogen.fillna   (0.0,    inplace=True)
         dfNetworkHydrogen.fillna  (0.0,    inplace=True)
 
-    dfReserveMargin         = dfReserveMargin.where     (dfReserveMargin      > 0.0, 0.0)
-    dfEmission              = dfEmission.where          (dfEmission           > 0.0, 0.0)
-    dfInertia               = dfInertia.where           (dfInertia            > 0.0, 0.0)
-    dfUpOperatingReserve    = dfUpOperatingReserve.where(dfUpOperatingReserve > 0.0, 0.0)
-    dfDwOperatingReserve    = dfDwOperatingReserve.where(dfDwOperatingReserve > 0.0, 0.0)
-    dfVariableMinPower      = dfVariableMinPower.where  (dfVariableMinPower   > 0.0, 0.0)
-    dfVariableMaxPower      = dfVariableMaxPower.where  (dfVariableMaxPower   > 0.0, 0.0)
-    dfVariableMinCharge     = dfVariableMinCharge.where (dfVariableMinCharge  > 0.0, 0.0)
-    dfVariableMaxCharge     = dfVariableMaxCharge.where (dfVariableMaxCharge  > 0.0, 0.0)
-    dfVariableMinStorage    = dfVariableMinStorage.where(dfVariableMinStorage > 0.0, 0.0)
-    dfVariableMaxStorage    = dfVariableMaxStorage.where(dfVariableMaxStorage > 0.0, 0.0)
-    dfVariableMinEnergy     = dfVariableMinEnergy.where (dfVariableMinEnergy  > 0.0, 0.0)
-    dfVariableMaxEnergy     = dfVariableMaxEnergy.where (dfVariableMaxEnergy  > 0.0, 0.0)
-    dfVariableFuelCost      = dfVariableFuelCost.where  (dfVariableFuelCost   > 0.0, 0.0)
-    dfEnergyInflows         = dfEnergyInflows.where     (dfEnergyInflows      > 0.0, 0.0)
-    dfEnergyOutflows        = dfEnergyOutflows.where    (dfEnergyOutflows     > 0.0, 0.0)
+    dfReserveMargin         = dfReserveMargin.where       (dfReserveMargin        > 0.0, 0.0)
+    dfEmission              = dfEmission.where            (dfEmission             > 0.0, 0.0)
+    dfInertia               = dfInertia.where             (dfInertia              > 0.0, 0.0)
+    dfUpOperatingReserve    = dfUpOperatingReserve.where  (dfUpOperatingReserve   > 0.0, 0.0)
+    dfDwOperatingReserve    = dfDwOperatingReserve.where  (dfDwOperatingReserve   > 0.0, 0.0)
+    dfVariableMinPower      = dfVariableMinPower.where    (dfVariableMinPower     > 0.0, 0.0)
+    dfVariableMaxPower      = dfVariableMaxPower.where    (dfVariableMaxPower     > 0.0, 0.0)
+    dfVariableMinCharge     = dfVariableMinCharge.where   (dfVariableMinCharge    > 0.0, 0.0)
+    dfVariableMaxCharge     = dfVariableMaxCharge.where   (dfVariableMaxCharge    > 0.0, 0.0)
+    dfVariableMinStorage    = dfVariableMinStorage.where  (dfVariableMinStorage   > 0.0, 0.0)
+    dfVariableMaxStorage    = dfVariableMaxStorage.where  (dfVariableMaxStorage   > 0.0, 0.0)
+    dfVariableMinEnergy     = dfVariableMinEnergy.where   (dfVariableMinEnergy    > 0.0, 0.0)
+    dfVariableMaxEnergy     = dfVariableMaxEnergy.where   (dfVariableMaxEnergy    > 0.0, 0.0)
+    dfVariableFuelCost      = dfVariableFuelCost.where    (dfVariableFuelCost     > 0.0, 0.0)
+    dfVariableEmissionCost  = dfVariableEmissionCost.where(dfVariableEmissionCost > 0.0, 0.0)
+    dfEnergyInflows         = dfEnergyInflows.where       (dfEnergyInflows        > 0.0, 0.0)
+    dfEnergyOutflows        = dfEnergyOutflows.where      (dfEnergyOutflows       > 0.0, 0.0)
 
     if pIndHydroTopology == 1:
-        dfVariableMinVolume = dfVariableMinVolume.where (dfVariableMinVolume  > 0.0, 0.0)
-        dfVariableMaxVolume = dfVariableMaxVolume.where (dfVariableMaxVolume  > 0.0, 0.0)
-        dfHydroInflows      = dfHydroInflows.where      (dfHydroInflows       > 0.0, 0.0)
-        dfHydroOutflows     = dfHydroOutflows.where     (dfHydroOutflows      > 0.0, 0.0)
+        dfVariableMinVolume = dfVariableMinVolume.where   (dfVariableMinVolume    > 0.0, 0.0)
+        dfVariableMaxVolume = dfVariableMaxVolume.where   (dfVariableMaxVolume    > 0.0, 0.0)
+        dfHydroInflows      = dfHydroInflows.where        (dfHydroInflows         > 0.0, 0.0)
+        dfHydroOutflows     = dfHydroOutflows.where       (dfHydroOutflows        > 0.0, 0.0)
 
     # show some statistics of the data
     if pIndLogConsole == 1:
-        print('Reserve margin                        \n', dfReserveMargin.describe     (), '\n')
-        print('Maximum CO2 emission                  \n', dfEmission.describe          (), '\n')
-        print('Electricity demand                    \n', dfDemand.describe            (), '\n')
-        print('Inertia                               \n', dfInertia.describe           (), '\n')
-        print('Upward   operating reserves           \n', dfUpOperatingReserve.describe(), '\n')
-        print('Downward operating reserves           \n', dfDwOperatingReserve.describe(), '\n')
-        print('Generation                            \n', dfGeneration.describe        (), '\n')
-        print('Variable minimum generation           \n', dfVariableMinPower.describe  (), '\n')
-        print('Variable maximum generation           \n', dfVariableMaxPower.describe  (), '\n')
-        print('Variable minimum consumption          \n', dfVariableMinCharge.describe (), '\n')
-        print('Variable maximum consumption          \n', dfVariableMaxCharge.describe (), '\n')
-        print('Variable minimum storage              \n', dfVariableMinStorage.describe(), '\n')
-        print('Variable maximum storage              \n', dfVariableMaxStorage.describe(), '\n')
-        print('Variable minimum energy               \n', dfVariableMinEnergy.describe (), '\n')
-        print('Variable maximum energy               \n', dfVariableMaxEnergy.describe (), '\n')
-        print('Variable fuel cost                    \n', dfVariableFuelCost.describe  (), '\n')
-        print('Energy inflows                        \n', dfEnergyInflows.describe     (), '\n')
-        print('Energy outflows                       \n', dfEnergyOutflows.describe    (), '\n')
-        print('Electric network                      \n', dfNetwork.describe           (), '\n')
+        print('Reserve margin                        \n', dfReserveMargin.describe       (), '\n')
+        print('Maximum CO2 emission                  \n', dfEmission.describe            (), '\n')
+        print('Electricity demand                    \n', dfDemand.describe              (), '\n')
+        print('Inertia                               \n', dfInertia.describe             (), '\n')
+        print('Upward   operating reserves           \n', dfUpOperatingReserve.describe  (), '\n')
+        print('Downward operating reserves           \n', dfDwOperatingReserve.describe  (), '\n')
+        print('Generation                            \n', dfGeneration.describe          (), '\n')
+        print('Variable minimum generation           \n', dfVariableMinPower.describe    (), '\n')
+        print('Variable maximum generation           \n', dfVariableMaxPower.describe    (), '\n')
+        print('Variable minimum consumption          \n', dfVariableMinCharge.describe   (), '\n')
+        print('Variable maximum consumption          \n', dfVariableMaxCharge.describe   (), '\n')
+        print('Variable minimum storage              \n', dfVariableMinStorage.describe  (), '\n')
+        print('Variable maximum storage              \n', dfVariableMaxStorage.describe  (), '\n')
+        print('Variable minimum energy               \n', dfVariableMinEnergy.describe   (), '\n')
+        print('Variable maximum energy               \n', dfVariableMaxEnergy.describe   (), '\n')
+        print('Variable fuel cost                    \n', dfVariableFuelCost.describe    (), '\n')
+        print('Variable emission cost                \n', dfVariableEmissionCost.describe(), '\n')
+        print('Energy inflows                        \n', dfEnergyInflows.describe       (), '\n')
+        print('Energy outflows                       \n', dfEnergyOutflows.describe      (), '\n')
+        print('Electric network                      \n', dfNetwork.describe             (), '\n')
 
         if pIndHydroTopology == 1:
-            print('Reservoir                         \n', dfReservoir.describe         ())
-            print('Variable minimum reservoir volume \n', dfVariableMinVolume.describe ())
-            print('Variable maximum reservoir volume \n', dfVariableMaxVolume.describe ())
-            print('Hydro inflows                     \n', dfHydroInflows.describe      ())
-            print('Hydro outflows                    \n', dfHydroOutflows.describe     ())
+            print('Reservoir                         \n', dfReservoir.describe           ())
+            print('Variable minimum reservoir volume \n', dfVariableMinVolume.describe   ())
+            print('Variable maximum reservoir volume \n', dfVariableMaxVolume.describe   ())
+            print('Hydro inflows                     \n', dfHydroInflows.describe        ())
+            print('Hydro outflows                    \n', dfHydroOutflows.describe       ())
 
         if pIndHydrogen == 1:
-            print('Hydrogen demand                   \n', dfDemandHydrogen.describe    ())
-            print('Hydrogen pipeline network         \n', dfNetworkHydrogen.describe   ())
+            print('Hydrogen demand                   \n', dfDemandHydrogen.describe      ())
+            print('Hydrogen pipeline network         \n', dfNetworkHydrogen.describe     ())
 
     #%% reading the sets
     dictSets = DataPortal()
@@ -272,21 +276,22 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pReserveMargin         = dfReserveMargin['ReserveMargin' ]                           # minimum adequacy reserve margin           [p.u.]
     pEmission              = dfEmission     ['CO2Emission'   ]                           # maximum CO2 emission                      [MtCO2]
     pLevelToStage          = dfDuration     ['Stage'         ]                           # load levels assignment to stages
-    pDemand                = dfDemand            [mTEPES.nd]   * 1e-3                    # electric demand                           [GW]
-    pSystemInertia         = dfInertia           [mTEPES.ar]                             # inertia                                   [s]
-    pOperReserveUp         = dfUpOperatingReserve[mTEPES.ar]   * 1e-3                    # upward   operating reserve                [GW]
-    pOperReserveDw         = dfDwOperatingReserve[mTEPES.ar]   * 1e-3                    # downward operating reserve                [GW]
-    pVariableMinPower      = dfVariableMinPower  [mTEPES.gg]   * 1e-3                    # dynamic variable minimum power            [GW]
-    pVariableMaxPower      = dfVariableMaxPower  [mTEPES.gg]   * 1e-3                    # dynamic variable maximum power            [GW]
-    pVariableMinCharge     = dfVariableMinCharge [mTEPES.gg]   * 1e-3                    # dynamic variable minimum charge           [GW]
-    pVariableMaxCharge     = dfVariableMaxCharge [mTEPES.gg]   * 1e-3                    # dynamic variable maximum charge           [GW]
-    pVariableMinStorage    = dfVariableMinStorage[mTEPES.gg]                             # dynamic variable minimum storage          [GWh]
-    pVariableMaxStorage    = dfVariableMaxStorage[mTEPES.gg]                             # dynamic variable maximum storage          [GWh]
-    pVariableMinEnergy     = dfVariableMinEnergy [mTEPES.gg]   * 1e-3                    # dynamic variable minimum energy           [GW]
-    pVariableMaxEnergy     = dfVariableMaxEnergy [mTEPES.gg]   * 1e-3                    # dynamic variable maximum energy           [GW]
-    pVariableFuelCost      = dfVariableFuelCost  [mTEPES.gg]                             # dynamic variable fuel cost                [€/Mcal]
-    pEnergyInflows         = dfEnergyInflows     [mTEPES.gg]   * 1e-3                    # dynamic energy inflows                    [GW]
-    pEnergyOutflows        = dfEnergyOutflows    [mTEPES.gg]   * 1e-3                    # dynamic energy outflows                   [GW]
+    pDemand                = dfDemand              [mTEPES.nd] * 1e-3                    # electric demand                           [GW]
+    pSystemInertia         = dfInertia             [mTEPES.ar]                           # inertia                                   [s]
+    pOperReserveUp         = dfUpOperatingReserve  [mTEPES.ar] * 1e-3                    # upward   operating reserve                [GW]
+    pOperReserveDw         = dfDwOperatingReserve  [mTEPES.ar] * 1e-3                    # downward operating reserve                [GW]
+    pVariableMinPower      = dfVariableMinPower    [mTEPES.gg] * 1e-3                    # dynamic variable minimum power            [GW]
+    pVariableMaxPower      = dfVariableMaxPower    [mTEPES.gg] * 1e-3                    # dynamic variable maximum power            [GW]
+    pVariableMinCharge     = dfVariableMinCharge   [mTEPES.gg] * 1e-3                    # dynamic variable minimum charge           [GW]
+    pVariableMaxCharge     = dfVariableMaxCharge   [mTEPES.gg] * 1e-3                    # dynamic variable maximum charge           [GW]
+    pVariableMinStorage    = dfVariableMinStorage  [mTEPES.gg]                           # dynamic variable minimum storage          [GWh]
+    pVariableMaxStorage    = dfVariableMaxStorage  [mTEPES.gg]                           # dynamic variable maximum storage          [GWh]
+    pVariableMinEnergy     = dfVariableMinEnergy   [mTEPES.gg] * 1e-3                    # dynamic variable minimum energy           [GW]
+    pVariableMaxEnergy     = dfVariableMaxEnergy   [mTEPES.gg] * 1e-3                    # dynamic variable maximum energy           [GW]
+    pVariableFuelCost      = dfVariableFuelCost    [mTEPES.gg]                           # dynamic variable fuel cost                [EUR/Mcal]
+    pVariableEmissionCost  = dfVariableEmissionCost[mTEPES.gg]                           # dynamic variable fuel cost                [EUR/tCO2]
+    pEnergyInflows         = dfEnergyInflows       [mTEPES.gg] * 1e-3                    # dynamic energy inflows                    [GW]
+    pEnergyOutflows        = dfEnergyOutflows      [mTEPES.gg] * 1e-3                    # dynamic energy outflows                   [GW]
 
     if pIndHydroTopology == 1:
         pVariableMinVolume = dfVariableMinVolume [mTEPES.rs]                             # dynamic variable minimum reservoir volume [hm3]
@@ -300,66 +305,69 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     if pTimeStep > 1:
         # compute the demand as the mean over the time step load levels and assign it to active load levels. Idem for the remaining parameters
         if  pDemand.sum().sum()                :
-            pDemand                = pDemand.rolling            (pTimeStep).mean()
+            pDemand                = pDemand.rolling              (pTimeStep).mean()
             pDemand.fillna               (0.0, inplace=True)
         if  pSystemInertia.sum().sum()         :
-            pSystemInertia         = pSystemInertia.rolling     (pTimeStep).mean()
+            pSystemInertia         = pSystemInertia.rolling       (pTimeStep).mean()
             pSystemInertia.fillna        (0.0, inplace=True)
         if  pOperReserveUp.sum().sum()         :
-            pOperReserveUp         = pOperReserveUp.rolling     (pTimeStep).mean()
+            pOperReserveUp         = pOperReserveUp.rolling       (pTimeStep).mean()
             pOperReserveUp.fillna        (0.0, inplace=True)
         if  pOperReserveDw.sum().sum()         :
-            pOperReserveDw         = pOperReserveDw.rolling     (pTimeStep).mean()
+            pOperReserveDw         = pOperReserveDw.rolling       (pTimeStep).mean()
             pOperReserveDw.fillna        (0.0, inplace=True)
         if  pVariableMinPower.sum().sum()      :
-            pVariableMinPower      = pVariableMinPower.rolling  (pTimeStep).mean()
+            pVariableMinPower      = pVariableMinPower.rolling    (pTimeStep).mean()
             pVariableMinPower.fillna     (0.0, inplace=True)
         if  pVariableMaxPower.sum().sum()      :
-            pVariableMaxPower      = pVariableMaxPower.rolling  (pTimeStep).mean()
+            pVariableMaxPower      = pVariableMaxPower.rolling    (pTimeStep).mean()
             pVariableMaxPower.fillna     (0.0, inplace=True)
         if  pVariableMinCharge.sum().sum()     :
-            pVariableMinCharge     = pVariableMinCharge.rolling (pTimeStep).mean()
+            pVariableMinCharge     = pVariableMinCharge.rolling   (pTimeStep).mean()
             pVariableMinCharge.fillna    (0.0, inplace=True)
         if  pVariableMaxCharge.sum().sum()     :
-            pVariableMaxCharge     = pVariableMaxCharge.rolling (pTimeStep).mean()
+            pVariableMaxCharge     = pVariableMaxCharge.rolling   (pTimeStep).mean()
             pVariableMaxCharge.fillna    (0.0, inplace=True)
         if  pVariableMinStorage.sum().sum()    :
-            pVariableMinStorage    = pVariableMinStorage.rolling(pTimeStep).mean()
+            pVariableMinStorage    = pVariableMinStorage.rolling  (pTimeStep).mean()
             pVariableMinStorage.fillna   (0.0, inplace=True)
         if  pVariableMaxStorage.sum().sum()    :
-            pVariableMaxStorage    = pVariableMaxStorage.rolling(pTimeStep).mean()
+            pVariableMaxStorage    = pVariableMaxStorage.rolling  (pTimeStep).mean()
             pVariableMaxStorage.fillna   (0.0, inplace=True)
         if  pVariableMinEnergy.sum().sum()     :
-            pVariableMinEnergy     = pVariableMinEnergy.rolling (pTimeStep).mean()
+            pVariableMinEnergy     = pVariableMinEnergy.rolling   (pTimeStep).mean()
             pVariableMinEnergy.fillna    (0.0, inplace=True)
         if  pVariableMaxEnergy.sum().sum()     :
-            pVariableMaxEnergy     = pVariableMaxEnergy.rolling (pTimeStep).mean()
+            pVariableMaxEnergy     = pVariableMaxEnergy.rolling   (pTimeStep).mean()
             pVariableMaxEnergy.fillna    (0.0, inplace=True)
         if  pVariableFuelCost.sum().sum()      :
-            pVariableFuelCost      = pVariableFuelCost.rolling  (pTimeStep).mean()
+            pVariableFuelCost      = pVariableFuelCost.rolling    (pTimeStep).mean()
             pVariableFuelCost.fillna     (0.0, inplace=True)
+        if  pVariableEmissionCost.sum().sum()      :
+            pVariableEmissionCost  = pVariableEmissionCost.rolling(pTimeStep).mean()
+            pVariableEmissionCost.fillna (0.0, inplace=True)
         if  pEnergyInflows.sum().sum()         :
-            pEnergyInflows         = pEnergyInflows.rolling     (pTimeStep).mean()
+            pEnergyInflows         = pEnergyInflows.rolling       (pTimeStep).mean()
             pEnergyInflows.fillna        (0.0, inplace=True)
         if  pEnergyOutflows.sum().sum()        :
-            pEnergyOutflows        = pEnergyOutflows.rolling    (pTimeStep).mean()
+            pEnergyOutflows        = pEnergyOutflows.rolling      (pTimeStep).mean()
             pEnergyOutflows.fillna       (0.0, inplace=True)
         if pIndHydroTopology == 1:
             if  pVariableMinVolume.sum().sum() :
-                pVariableMinVolume = pVariableMinVolume.rolling (pTimeStep).mean()
+                pVariableMinVolume = pVariableMinVolume.rolling   (pTimeStep).mean()
                 pVariableMinVolume.fillna(0.0, inplace=True)
             if  pVariableMaxVolume.sum().sum() :
-                pVariableMaxVolume = pVariableMaxVolume.rolling (pTimeStep).mean()
+                pVariableMaxVolume = pVariableMaxVolume.rolling   (pTimeStep).mean()
                 pVariableMaxVolume.fillna(0.0, inplace=True)
             if  pHydroInflows.sum().sum()      :
-                pHydroInflows       = pHydroInflows.rolling     (pTimeStep).mean()
+                pHydroInflows       = pHydroInflows.rolling       (pTimeStep).mean()
                 pHydroInflows.fillna     (0.0, inplace=True)
             if  pHydroOutflows.sum().sum()     :
-                pHydroOutflows      = pHydroOutflows.rolling    (pTimeStep).mean()
+                pHydroOutflows      = pHydroOutflows.rolling      (pTimeStep).mean()
                 pHydroOutflows.fillna    (0.0, inplace=True)
         if pIndHydrogen == 1:
             if  pDemandH2.sum().sum()          :
-                pDemandH2           = pDemandH2.rolling         (pTimeStep).mean()
+                pDemandH2           = pDemandH2.rolling           (pTimeStep).mean()
                 pDemandH2.fillna         (0.0, inplace=True)
 
         # assign duration 0 to load levels not being considered, active load levels are at the end of every pTimeStep
@@ -741,12 +749,19 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pVarConstantVarCost =               dfGeneration['ConstantTerm'] * 1e-6 * pVariableFuelCost.replace                                              (0.0, float('nan'))
     pLinearVarCost      = pd.DataFrame([dfGeneration['LinearTerm'  ] * 1e-3 * dfGeneration['FuelCost']+dfGeneration['OMVariableCost'] * 1e-3]*len(pVariableFuelCost.index), index=pVariableFuelCost.index, columns=dfGeneration['FuelCost'].index)
     pConstantVarCost    = pd.DataFrame([dfGeneration['ConstantTerm'] * 1e-6 * dfGeneration['FuelCost']                                      ]*len(pVariableFuelCost.index), index=pVariableFuelCost.index, columns=dfGeneration['FuelCost'].index)
-    pLinearVarCost      = pLinearVarCost.reindex     (sorted(pLinearVarCost.columns     ), axis=1)
-    pConstantVarCost    = pConstantVarCost.reindex   (sorted(pConstantVarCost.columns   ), axis=1)
     pVarLinearVarCost   = pVarLinearVarCost.reindex  (sorted(pVarLinearVarCost.columns  ), axis=1)
     pVarConstantVarCost = pVarConstantVarCost.reindex(sorted(pVarConstantVarCost.columns), axis=1)
-    pLinearVarCost      = pVarLinearVarCost.where  (pVariableFuelCost > 0.0, pLinearVarCost  )
-    pConstantVarCost    = pVarConstantVarCost.where(pVariableFuelCost > 0.0, pConstantVarCost)
+    pLinearVarCost      = pLinearVarCost.reindex     (sorted(pLinearVarCost.columns     ), axis=1)
+    pConstantVarCost    = pConstantVarCost.reindex   (sorted(pConstantVarCost.columns   ), axis=1)
+    pLinearVarCost      = pVarLinearVarCost.where    (pVariableFuelCost > 0.0, pLinearVarCost  )
+    pConstantVarCost    = pVarConstantVarCost.where  (pVariableFuelCost > 0.0, pConstantVarCost)
+
+    # variable emission cost
+    pVarEmissionCost    =              (dfGeneration['CO2EmissionRate'] * 1e-3 * pVariableEmissionCost).replace(0.0, float('nan'))
+    pEmissionVarCost    = pd.DataFrame([dfGeneration['CO2EmissionRate'] * 1e-3 * pCO2Cost]*len(pVariableEmissionCost.index), index=pVariableEmissionCost.index, columns=dfGeneration['CO2EmissionRate'].index)
+    pVarEmissionCost    = pVarEmissionCost.reindex(sorted(pVarEmissionCost.columns), axis=1)
+    pEmissionVarCost    = pEmissionVarCost.reindex(sorted(pEmissionVarCost.columns), axis=1)
+    pEmissionVarCost    = pVarEmissionCost.where  (pVariableEmissionCost > 0.0, pEmissionVarCost)
 
     # parameter that allows the initial inventory to change with load level
     pIniInventory       = pd.DataFrame([pInitialInventory]*len(pVariableMinStorage.index), index=pVariableMinStorage.index, columns=pInitialInventory.index)
@@ -840,6 +855,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pVariableMinEnergy  = pVariableMinEnergy.loc[mTEPES.psn  ]
     pLinearVarCost      = pLinearVarCost.loc    [mTEPES.psn  ]
     pConstantVarCost    = pConstantVarCost.loc  [mTEPES.psn  ]
+    pEmissionVarCost    = pEmissionVarCost.loc  [mTEPES.psn  ]
 
     if pIndHydroTopology == 1:
         pHydroInflows   = pHydroInflows.loc     [mTEPES.psn  ]
@@ -982,16 +998,17 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         pPipeUpInvest     = pPipeUpInvest.loc        [   mTEPES.pc]
 
     # replace very small costs by 0
-    pEpsilon = 1e-4           # this value in €/GWh is related to the smallest reduced cost, independent of the area
+    pEpsilon = 1e-4           # this value in EUR/GWh is related to the smallest reduced cost, independent of the area
 
     pLinearVarCost  [pLinearVarCost  [[g for g in mTEPES.g]] < pEpsilon] = 0.0
     pConstantVarCost[pConstantVarCost[[g for g in mTEPES.g]] < pEpsilon] = 0.0
+    pEmissionVarCost[pEmissionVarCost[[g for g in mTEPES.g]] < pEpsilon] = 0.0
 
     pRatedLinearVarCost.update  (pd.Series([0.0 for gg in mTEPES.gg if     pRatedLinearVarCost  [gg]  < pEpsilon], index=[gg for gg in mTEPES.gg if     pRatedLinearVarCost  [gg]  < pEpsilon]))
     pRatedConstantVarCost.update(pd.Series([0.0 for gg in mTEPES.gg if     pRatedConstantVarCost[gg]  < pEpsilon], index=[gg for gg in mTEPES.gg if     pRatedConstantVarCost[gg]  < pEpsilon]))
     pLinearOMCost.update        (pd.Series([0.0 for gg in mTEPES.gg if     pLinearOMCost        [gg]  < pEpsilon], index=[gg for gg in mTEPES.gg if     pLinearOMCost        [gg]  < pEpsilon]))
     pOperReserveCost.update     (pd.Series([0.0 for gg in mTEPES.gg if     pOperReserveCost     [gg]  < pEpsilon], index=[gg for gg in mTEPES.gg if     pOperReserveCost     [gg]  < pEpsilon]))
-    pEmissionCost.update        (pd.Series([0.0 for gg in mTEPES.gg if abs(pEmissionCost        [gg]) < pEpsilon], index=[gg for gg in mTEPES.gg if abs(pEmissionCost        [gg]) < pEpsilon]))
+    # pEmissionCost.update      (pd.Series([0.0 for gg in mTEPES.gg if abs(pEmissionCost        [gg]) < pEpsilon], index=[gg for gg in mTEPES.gg if abs(pEmissionCost        [gg]) < pEpsilon]))
     pStartUpCost.update         (pd.Series([0.0 for nr in mTEPES.nr if     pStartUpCost         [nr]  < pEpsilon], index=[nr for nr in mTEPES.nr if     pStartUpCost         [nr]  < pEpsilon]))
     pShutDownCost.update        (pd.Series([0.0 for nr in mTEPES.nr if     pShutDownCost        [nr]  < pEpsilon], index=[nr for nr in mTEPES.nr if     pShutDownCost        [nr]  < pEpsilon]))
 
@@ -1091,7 +1108,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.pConstantVarCost      = Param(mTEPES.psngg, initialize=pConstantVarCost.stack().to_dict()  , within=NonNegativeReals,    doc='Constant variable cost'                              )
     mTEPES.pLinearOMCost         = Param(mTEPES.gg,    initialize=pLinearOMCost.to_dict()             , within=NonNegativeReals,    doc='Linear   O&M      cost'                              )
     mTEPES.pOperReserveCost      = Param(mTEPES.gg,    initialize=pOperReserveCost.to_dict()          , within=NonNegativeReals,    doc='Operating reserve cost'                              )
-    mTEPES.pEmissionCost         = Param(mTEPES.gg,    initialize=pEmissionCost.to_dict()             , within=Reals           ,    doc='CO2 Emission      cost'                              )
+    mTEPES.pEmissionVarCost      = Param(mTEPES.psngg, initialize=pEmissionVarCost.stack().to_dict()  , within=Reals           ,    doc='CO2 Emission      cost'                              )
     mTEPES.pEmissionRate         = Param(mTEPES.gg,    initialize=pEmissionRate.to_dict()             , within=Reals           ,    doc='CO2 Emission      rate'                              )
     mTEPES.pStartUpCost          = Param(mTEPES.nr,    initialize=pStartUpCost.to_dict()              , within=NonNegativeReals,    doc='Startup  cost'                                       )
     mTEPES.pShutDownCost         = Param(mTEPES.nr,    initialize=pShutDownCost.to_dict()             , within=NonNegativeReals,    doc='Shutdown cost'                                       )

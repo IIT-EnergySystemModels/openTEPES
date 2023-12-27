@@ -121,7 +121,7 @@ They are written in **uppercase** letters.
 :math:`\underline{GP}^p_{\omega ng}, \overline{GP}^p_{\omega ng}`  Minimum load and maximum output of a generator                                                                            GW
 :math:`\underline{GC}^p_{\omega ne}, \overline{GC}^p_{\omega ne}`  Minimum and maximum consumption of an ESS                                                                                 GW
 :math:`CF^p_{\omega ng}, CV^p_{\omega ng}`                         Fixed (no load) and variable cost of a generator. Variable cost includes fuel and O&M                                     €/h, €/MWh
-:math:`CE_g`                                                       Emission cost of a generator                                                                                              €/MWh
+:math:`CE^p_{\omega ng}`                                           Emission cost of a generator                                                                                              €/MWh
 :math:`ER_g`                                                       Emission rate of a generator                                                                                              tCO2/MWh
 :math:`CV_e`                                                       Variable cost of an ESS or pumped-storage hydro power plant when charging                                                 €/MWh
 :math:`RU_g, RD_g`                                                 Ramp up/down of a non-renewable unit or maximum discharge/charge rate for ESS discharge/charge                            MW/h
@@ -250,7 +250,7 @@ Generation operation cost [M€] «``eTotalGCost``»
 
 Generation emission cost [M€] «``eTotalECost``»
 
-:math:`\sum_{p \omega ng} {DF^p P^p_{\omega} DUR_n CE_g gp^p_{\omega ng}} +`
+:math:`\sum_{p \omega ng} {DF^p P^p_{\omega} DUR_n CE^p_{\omega ng} gp^p_{\omega ng}} +`
 
 Variable consumption operation cost [M€] «``eTotalCCost``»
 

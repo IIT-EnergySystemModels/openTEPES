@@ -432,6 +432,21 @@ Internally, all the values below 1e-4 will be converted into 0 by the model.
 
 Fuel cost affects the linear and constant terms of the heat rate, expressed in Mcal/MWh and Mcal/h respectively.
 
+Variable emission cost
+----------------------
+
+A description of the data included in the file ``oT_Data_VariableEmissionCost.csv`` follows:
+
+==========  ==============  ==========  =========  =============================  ======
+Identifier  Identifier      Identifier  Header     Description
+==========  ==============  ==========  =========  =============================  ======
+Period      Scenario        Load level  Generator  Variable emission cost         €/tCO2
+==========  ==============  ==========  =========  =============================  ======
+
+All the generators must be defined as columns of these files.
+
+Internally, all the values below 1e-4 will be converted into 0 by the model.
+
 Energy inflows
 --------------
 
