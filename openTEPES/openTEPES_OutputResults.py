@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - January 02, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - January 03, 2024
 """
 
 import time
@@ -1681,7 +1681,7 @@ def NetworkMapResults(DirName, CaseName, OptModel, mTEPES):
         line_df['nf'         ] = '0.0'
         line_df['cc'         ] = 0.0
 
-        line_df = line_df.groupby(level=[0,1]).sum(numeric_only=True)
+        line_df = line_df.groupby(level=[0,1]).sum(numeric_only=False)
         ncolors = 11
         colors = list(Color('lightgreen').range_to(Color('darkred'), ncolors))
         colors = ['rgb'+str(x.rgb) for x in colors]
@@ -1691,9 +1691,7 @@ def NetworkMapResults(DirName, CaseName, OptModel, mTEPES):
             line_df['utilization'][ni,nf]  = max(line_df['vFlow'][ni,nf]/line_df['NTCFrw'][ni,nf],-line_df['vFlow'][ni,nf]/line_df['NTCBck'][ni,nf])*100.0
             line_df['lon'        ][ni,nf]  = (mTEPES.pNodeLon[ni]+mTEPES.pNodeLon[nf]) * 0.5
             line_df['lat'        ][ni,nf]  = (mTEPES.pNodeLat[ni]+mTEPES.pNodeLat[nf]) * 0.5
-            # warnings
             line_df['ni'         ][ni,nf]  = ni
-            # warnings
             line_df['nf'         ][ni,nf]  = nf
             line_df['cc'         ][ni,nf] += 1
 
