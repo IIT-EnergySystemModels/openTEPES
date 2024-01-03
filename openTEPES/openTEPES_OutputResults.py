@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - December 27, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - January 02, 2024
 """
 
 import time
@@ -752,7 +752,7 @@ def NetworkH2OperationResults(DirName, CaseName, OptModel, mTEPES):
 
         loc_df = pd.Series(data=[mTEPES.pNodeLat[i] for i in mTEPES.nd], index=mTEPES.nd).to_frame(name='Lat')
         loc_df['Lon'   ] =  0.0
-        loc_df['Zone'  ] =  0.0
+        loc_df['Zone'  ] =  ''
         loc_df['Demand'] =  0.0
         loc_df['Size'  ] = 15.0
 
@@ -983,7 +983,7 @@ def OperationSummaryResults(DirName, CaseName, OptModel, mTEPES):
     OutputToFile05 = pd.Series(data=[a2g[0][g]                                                                                                                                for p,sc,n,g in mTEPES.psng], index=pd.Index(mTEPES.psng)).to_frame(name='Area'                   )
     OutputToFile06 = pd.Series(data=[r2g[0][g]                                                                                                                                for p,sc,n,g in mTEPES.psng], index=pd.Index(mTEPES.psng)).to_frame(name='Region'                 )
     OutputToFile07 = pd.Series(data=[t2g[0][g]                                                                                                                                for p,sc,n,g in mTEPES.psng], index=pd.Index(mTEPES.psng)).to_frame(name='Technology'             )
-    OutputToFile08 = pd.Series(data=[OptModel.vTotalOutput   [p,sc,n,g]()*mTEPES.pLoadLevelDuration[n]()*mTEPES.pEmissionVarCost[p,sc,n,g]/mTEPES.pCO2Cost()                            for p,sc,n,g in mTEPES.psng], index=pd.Index(mTEPES.psng)).to_frame(name='Emissions [MtCO2]'      )
+    OutputToFile08 = pd.Series(data=[OptModel.vTotalOutput   [p,sc,n,g]()*mTEPES.pLoadLevelDuration[n]()*mTEPES.pEmissionVarCost[p,sc,n,g]/mTEPES.pCO2Cost()                  for p,sc,n,g in mTEPES.psng], index=pd.Index(mTEPES.psng)).to_frame(name='Emissions [MtCO2]'      )
     OutputToFile09 = pd.Series(data=[OptModel.vTotalOutput   [p,sc,n,g].ub                                                                                                    for p,sc,n,g in mTEPES.psng], index=pd.Index(mTEPES.psng)).to_frame(name='MaxPower [MW]'          )
     OutputToFile10 = pd.Series(data=[OptModel.vTotalOutput   [p,sc,n,g].lb                                                                                                    for p,sc,n,g in mTEPES.psng], index=pd.Index(mTEPES.psng)).to_frame(name='MinPower [MW]'          )
     OutputToFile11 = pd.Series(data=[mTEPES.pLoadLevelDuration[n]()                                                                                                           for p,sc,n,g in mTEPES.psng], index=pd.Index(mTEPES.psng)).to_frame(name='LoadLevelDuration [h]'  )
@@ -1193,9 +1193,8 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES, pIndPlotOutput):
 
     OutputToFile = OutputToFile.to_frame(name='EUR/MWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='EUR/MWh')
     OutputToFile.rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_MarginalIncrementalVariableCost_'+CaseName+'.csv', sep=',')
-    IncrementalGens = pd.Series(0, index=pd.Index(mTEPES.psn)).to_frame(name='Generating unit')
+    IncrementalGens = pd.Series('N/A', index=pd.Index(mTEPES.psn)).to_frame(name='Generating unit')
     for p,sc,n in mTEPES.psn:
-        # warnings
         IncrementalGens['Generating unit'][p,sc,n] = OutputToFile.loc[[(p,sc,n)]].squeeze().idxmin()
     IncrementalGens.rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).to_csv(_path+'/oT_Result_MarginalIncrementalGenerator_'+CaseName+'.csv', index=True, sep=',')
 
@@ -1320,10 +1319,8 @@ def ReliabilityResults(DirName, CaseName, OptModel, mTEPES):
     OutputToFile1 = pd.Series(data=[0.0 for p,sc in mTEPES.ps], index=mTEPES.ps)
     OutputToFile2 = pd.Series(data=[0.0 for p,sc in mTEPES.ps], index=mTEPES.ps)
     for p,sc in mTEPES.ps:
-        # warnings
-        OutputToFile1[p,sc] = pMaxPower.loc[(p,sc)].reset_index().pivot_table(index=['level_0'], values=0, aggfunc='sum').max()
-        # warnings
-        OutputToFile2[p,sc] =   pDemand.loc[(p,sc)].reset_index().pivot_table(index=['level_0'], values=0, aggfunc='sum').max()
+        OutputToFile1[p,sc] = pMaxPower.loc[(p,sc)].reset_index().pivot_table(index=['level_0'], values=0, aggfunc='sum').max().iloc[0]
+        OutputToFile2[p,sc] =   pDemand.loc[(p,sc)].reset_index().pivot_table(index=['level_0'], values=0, aggfunc='sum').max().iloc[0]
     ReserveMargin1 =  OutputToFile1 - OutputToFile2
     ReserveMargin2 = (OutputToFile1 - OutputToFile2)/OutputToFile2
     ReserveMargin1.to_frame(name='MW'  ).rename_axis(['Period', 'Scenario'], axis=0).to_csv(_path+'/oT_Result_ReserveMarginPower_'  +CaseName+'.csv', sep=',')
@@ -1332,8 +1329,7 @@ def ReliabilityResults(DirName, CaseName, OptModel, mTEPES):
     # Determination of the index: Largest Unit
     OutputToFile = pd.Series(data=[0.0 for p,sc in mTEPES.ps], index=mTEPES.ps)
     for p,sc in mTEPES.ps:
-        # warnings
-        OutputToFile[p,sc] = pMaxPower.loc[(p,sc)].reset_index().pivot_table(index=['level_1'], values=0, aggfunc=max).max()
+        OutputToFile[p,sc] = pMaxPower.loc[(p,sc)].reset_index().pivot_table(index=['level_1'], values=0, aggfunc='sum').max().iloc[0]
 
     LargestUnit  = ReserveMargin1/OutputToFile
     LargestUnit.to_frame(name='p.u.').rename_axis(['Period', 'Scenario'], axis=0).to_csv(_path+'/oT_Result_LargestUnitPerUnit_'+CaseName+'.csv', index=True, sep=',')
@@ -1652,7 +1648,7 @@ def NetworkMapResults(DirName, CaseName, OptModel, mTEPES):
 
         loc_df = pd.Series(data=[mTEPES.pNodeLat[i] for i in mTEPES.nd], index=mTEPES.nd).to_frame(name='Lat')
         loc_df['Lon'   ] =  0.0
-        loc_df['Zone'  ] =  0.0
+        loc_df['Zone'  ] =  ''
         loc_df['Demand'] =  0.0
         loc_df['Size'  ] = 15.0
 
@@ -1714,7 +1710,6 @@ def NetworkMapResults(DirName, CaseName, OptModel, mTEPES):
             if  50.0 <  line_df['utilization'][ni,nf] <= 60.0:
                 line_df['color'][ni,nf] = colors[5]
             if  60.0 <  line_df['utilization'][ni,nf] <= 70.0:
-                # warnings
                 line_df['color'][ni,nf] = colors[6]
             if  70.0 <  line_df['utilization'][ni,nf] <= 80.0:
                 line_df['color'][ni,nf] = colors[7]

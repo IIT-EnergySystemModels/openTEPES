@@ -8,7 +8,7 @@
 # -- Project information -----------------------------------------------------
 
 project = 'openTEPES'
-copyright = '2023, Universidad Pontificia Comillas'
+copyright = '2024, Universidad Pontificia Comillas'
 author = 'Andres Ramos'
 
 # The short X.Y version

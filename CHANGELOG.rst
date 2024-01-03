@@ -1,6 +1,10 @@
 Change Log
 =============
 
+[4.15.1] - 2023-12-27
+----------------------
+- [CHANGED] avoid some future warnings in output results
+
 [4.15.0] - 2023-12-27
 ----------------------
 - [CHANGED] introduce the variable emission cost file
