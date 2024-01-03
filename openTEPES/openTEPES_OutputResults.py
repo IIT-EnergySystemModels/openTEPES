@@ -1672,14 +1672,14 @@ def NetworkMapResults(DirName, CaseName, OptModel, mTEPES):
                                      'NTCBck': pd.Series(data=[mTEPES.pLineNTCBck[i] * 1e3 + pEpsilon for i in mTEPES.la], index=mTEPES.la)}, index=mTEPES.la)
         line_df['vFlow'      ] = 0.0
         line_df['utilization'] = 0.0
-        line_df['color'      ] = 0.0
+        line_df['color'      ] = ''
         line_df['voltage'    ] = 0.0
         line_df['width'      ] = 0.0
         line_df['lon'        ] = 0.0
         line_df['lat'        ] = 0.0
-        line_df['ni'         ] = 0.0
-        line_df['nf'         ] = 0.0
-        line_df['cc'         ] = 0.0
+        line_df['ni'         ] = ''
+        line_df['nf'         ] = ''
+        line_df['cc'         ] = ''
 
         line_df = line_df.groupby(level=[0,1]).sum(numeric_only=True)
         ncolors = 11
@@ -1697,28 +1697,9 @@ def NetworkMapResults(DirName, CaseName, OptModel, mTEPES):
             line_df['nf'         ][ni,nf]  = nf
             line_df['cc'         ][ni,nf] += 1
 
-            if   0.0 <= line_df['utilization'][ni,nf] <= 10.0:
-                line_df['color'][ni,nf] = colors[0]
-            if  10.0 <  line_df['utilization'][ni,nf] <= 20.0:
-                line_df['color'][ni,nf] = colors[1]
-            if  20.0 <  line_df['utilization'][ni,nf] <= 30.0:
-                line_df['color'][ni,nf] = colors[2]
-            if  30.0 <  line_df['utilization'][ni,nf] <= 40.0:
-                line_df['color'][ni,nf] = colors[3]
-            if  40.0 <  line_df['utilization'][ni,nf] <= 50.0:
-                line_df['color'][ni,nf] = colors[4]
-            if  50.0 <  line_df['utilization'][ni,nf] <= 60.0:
-                line_df['color'][ni,nf] = colors[5]
-            if  60.0 <  line_df['utilization'][ni,nf] <= 70.0:
-                line_df['color'][ni,nf] = colors[6]
-            if  70.0 <  line_df['utilization'][ni,nf] <= 80.0:
-                line_df['color'][ni,nf] = colors[7]
-            if  80.0 <  line_df['utilization'][ni,nf] <= 90.0:
-                line_df['color'][ni,nf] = colors[8]
-            if  90.0 <  line_df['utilization'][ni,nf] <= 100.0:
-                line_df['color'][ni,nf] = colors[9]
-            if 100.0 <  line_df['utilization'][ni,nf]:
-                line_df['color'][ni,nf] = colors[10]
+            for i in range(len(colors)):
+                if 10*i <= line_df['utilization'][ni,nf] <= 10*(i+1):
+                    line_df['color'][ni,nf] = colors[i]
 
             line_df['voltage'][ni,nf] = mTEPES.pLineVoltage[ni,nf,cc]
             if   700 < line_df['voltage'][ni,nf] <= 900:
