@@ -1677,8 +1677,8 @@ def NetworkMapResults(DirName, CaseName, OptModel, mTEPES):
         line_df['width'      ] = 0.0
         line_df['lon'        ] = 0.0
         line_df['lat'        ] = 0.0
-        line_df['ni'         ] = mTEPES.nd.first()
-        line_df['nf'         ] = mTEPES.nd.first()
+        line_df['ni'         ] = list(mTEPES.nd)[0]
+        line_df['nf'         ] = list(mTEPES.nd)[0]
         line_df['cc'         ] = 0.0
 
         line_df = line_df.groupby(level=[0,1]).sum(numeric_only=True)
