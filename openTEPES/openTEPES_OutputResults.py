@@ -1672,14 +1672,14 @@ def NetworkMapResults(DirName, CaseName, OptModel, mTEPES):
                                      'NTCBck': pd.Series(data=[mTEPES.pLineNTCBck[i] * 1e3 + pEpsilon for i in mTEPES.la], index=mTEPES.la)}, index=mTEPES.la)
         line_df['vFlow'      ] = 0.0
         line_df['utilization'] = 0.0
-        line_df['color'      ] = ''
+        line_df['color'      ] = 'rgb(0.5647058823529412, 0.9333333333333333, 0.5647058823529413)'
         line_df['voltage'    ] = 0.0
         line_df['width'      ] = 0.0
         line_df['lon'        ] = 0.0
         line_df['lat'        ] = 0.0
-        line_df['ni'         ] = ''
-        line_df['nf'         ] = ''
-        line_df['cc'         ] = ''
+        line_df['ni'         ] = mTEPES.nd.first()
+        line_df['nf'         ] = mTEPES.nd.first()
+        line_df['cc'         ] = 0.0
 
         line_df = line_df.groupby(level=[0,1]).sum(numeric_only=True)
         ncolors = 11
