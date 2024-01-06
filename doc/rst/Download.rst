@@ -8,11 +8,12 @@ and `CBC 2.10.11 <https://github.com/coin-or/Cbc>`_. List the serial solver inte
 
   pyomo help -s
 
-Gurobi, HiGHS, or SCIP  solvers can be installed as a package::
+Gurobi, HiGHS, SCIP, or CBC  solvers can be installed as a package::
 
   conda install -c gurobi      gurobi
   pip   install                highspy
   conda install -c conda-forge pyscipopt
+  conda install -c conda-forge coincbc
 
 The model openTEPES can also be solved with `GAMS <https://www.gams.com/>`_ and a valid `GAMS license <https://www.gams.com/buy_gams/>`_ for a solver. The GAMS language is not included in the openTEPES package and must be installed separately.
 This option is activated by calling the openTEPES model with the solver name 'gams'.
@@ -74,7 +75,7 @@ As an easy option for installation, we have the free and open-source `GLPK solve
 
 CBC
 
-The `CBC solver <https://github.com/coin-or/Cbc>`_ is our recommendation if you want a free and open-source solver. For Windows users, the effective way to install the CBC solver is downloading the binaries from `this link <https://www.coin-or.org/download/binary/Cbc/Cbc-2.10.5-x86_64-w64-mingw32.zip>`_, copy and paste the *cbc.exe* file to the PATH that is the "bin" directory of the Anaconda or Miniconda environment. It can be installed using: ``conda install -c conda-forge coincbc``.
+The `CBC solver <https://github.com/coin-or/Cbc>`_ is our recommendation if you want a free and open-source solver. For Windows users, the effective way to install the CBC solver is downloading the binaries from `this link <https://www.coin-or.org/download/binary/Cbc/>`_, copy and paste the *cbc.exe* file to the PATH that is the "bin" directory of the Anaconda or Miniconda environment. It can be installed using: ``conda install -c conda-forge coincbc``.
 
 Gurobi
 
@@ -85,6 +86,10 @@ It can be installed using: ``conda install -c gurobi gurobi`` and then ask for a
 Mosek
 
 Another alternative is the `Mosek solver <https://www.mosek.com/>`_. Note that it is a commercial solver and you need a license for it. Mosek is a good alternative to deal with QPs, SOCPs, and SDPs problems. You only need to use ``conda install -c mosek mosek`` for installation and request a license (academic or commercial). To request the academic one, you can request `here <https://www.mosek.com/products/academic-licenses/>`_. Moreover, Mosek brings a `license guide <https://docs.mosek.com/9.2/licensing/index.html>`_. But if you are request an academic license, you will receive the license by email, and you only need to locate it in the following path ``C:\Users\(your user)\mosek`` in your computer.
+
+HiGHS
+
+This solver is activated by calling the openTEPES model with the solver name 'appsi_highs'.
 
 GAMS
 
