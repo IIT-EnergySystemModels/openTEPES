@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - December 20, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - January 06, 2024
 """
 
 import time
@@ -23,9 +23,9 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
         Solver.options['LogFile'       ] = _path+'/openTEPES_gurobi_'+CaseName+'.log'
         # Solver.options['IISFile'     ] = _path+'/openTEPES_gurobi_'+CaseName+'.ilp'        # should be uncommented to show results of IIS
         Solver.options['Method'        ] = 2                                                 # barrier method
-        Solver.options['MIPFocus'      ] = 3
-        Solver.options['Presolve'      ] = 2
-        Solver.options['RINS'          ] = 100
+        # Solver.options['MIPFocus'      ] = 3
+        # Solver.options['Presolve'      ] = 2
+        # Solver.options['RINS'          ] = 100
         Solver.options['Crossover'     ] = -1
         # Solver.options['BarConvTol'    ] = 1e-9
         # Solver.options['BarQCPConvTol' ] = 0.025
@@ -36,11 +36,10 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
     if SolverName == 'gams':
         solver_options = {
             'file COPT / cplex.opt / ; put COPT putclose "LPMethod 4" / "RINSHeur 100" / ; GAMS_MODEL.OptFile = 1 ;'
-            'option LP      = cplex    ;',
-            'option MIP     = cplex    ;',
-            'option Threads = '+str(int((psutil.cpu_count(logical=True) + psutil.cpu_count(logical=False))/2))+' ;',
-            'option ResLim  =    36000 ;',
-            'option IterLim = 36000000 ;'
+            'option SysOut  = off   ;',
+            'option LP      = cplex ; option MIP     = cplex    ;',
+            'option ResLim  = 36000 ; option IterLim = 36000000 ;',
+            'option Threads = '+str(int((psutil.cpu_count(logical=True) + psutil.cpu_count(logical=False))/2))+' ;'
         }
 
     if (mTEPES.pIndBinGenInvest()*len(mTEPES.gc)*sum(mTEPES.pIndBinUnitInvest[gc] for gc in mTEPES.gc) + mTEPES.pIndBinGenRetire()*len(mTEPES.gd)*sum(mTEPES.pIndBinUnitRetire[gd] for gd in mTEPES.gd) + mTEPES.pIndBinNetInvest ()*len(mTEPES.lc)*sum(mTEPES.pIndBinLineInvest[lc] for lc in mTEPES.lc) + mTEPES.pIndBinNetH2Invest()*len(mTEPES.pc)*sum(mTEPES.pIndBinPipeInvest[pc] for pc in mTEPES.pc) +
@@ -55,7 +54,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
     if SolverName == 'gurobi':
         SolverResults = Solver.solve(OptModel, tee=True, report_timing=True)
     if SolverName == 'gams'  :
-        SolverResults = Solver.solve(OptModel, tee=True, report_timing=True, symbolic_solver_labels=True, add_options=solver_options)
+        SolverResults = Solver.solve(OptModel, tee=True, report_timing=True, symbolic_solver_labels=False, add_options=solver_options)
 
     print('Termination condition: ', SolverResults.solver.termination_condition)
     if SolverResults.solver.termination_condition == TerminationCondition.infeasible:
@@ -126,7 +125,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
             OptModel.dual = Suffix(direction=Suffix.IMPORT_EXPORT)
             OptModel.rc   = Suffix(direction=Suffix.IMPORT_EXPORT)
 
-        SolverResults = Solver.solve(OptModel, tee=True, report_timing=True)              # tee=True displays the log of the solver
+        SolverResults = Solver.solve(OptModel, tee=True, report_timing=True)
 
     # saving the dual variables for writing in output results
     pDuals = {}
