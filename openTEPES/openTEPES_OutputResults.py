@@ -1670,9 +1670,11 @@ def NetworkMapResults(DirName, CaseName, OptModel, mTEPES):
 
         line_df = pd.DataFrame(data={'NTCFrw': pd.Series(data=[mTEPES.pLineNTCFrw[i] * 1e3 + pEpsilon for i in mTEPES.la], index=mTEPES.la),
                                      'NTCBck': pd.Series(data=[mTEPES.pLineNTCBck[i] * 1e3 + pEpsilon for i in mTEPES.la], index=mTEPES.la)}, index=mTEPES.la)
+
+        line_df = line_df.groupby(level=[0,1]).sum(numeric_only=True)
         line_df['vFlow'      ] = 0.0
         line_df['utilization'] = 0.0
-        line_df['color'      ] = 'rgb(0.5647058823529412, 0.9333333333333333, 0.5647058823529413)'
+        line_df['color'      ] = ''
         line_df['voltage'    ] = 0.0
         line_df['width'      ] = 0.0
         line_df['lon'        ] = 0.0
@@ -1681,7 +1683,6 @@ def NetworkMapResults(DirName, CaseName, OptModel, mTEPES):
         line_df['nf'         ] = '0.0'
         line_df['cc'         ] = 0.0
 
-        line_df = line_df.groupby(level=[0,1]).sum(numeric_only=False)
         ncolors = 11
         colors = list(Color('lightgreen').range_to(Color('darkred'), ncolors))
         colors = ['rgb'+str(x.rgb) for x in colors]
@@ -1698,6 +1699,10 @@ def NetworkMapResults(DirName, CaseName, OptModel, mTEPES):
             for i in range(len(colors)):
                 if 10*i <= line_df['utilization'][ni,nf] <= 10*(i+1):
                     line_df['color'][ni,nf] = colors[i]
+
+            # assigning black color to lines with utilization > 100%
+            if line_df['utilization'][ni,nf] > 100:
+                line_df['color'][ni,nf] = 'rgb(0,0,0)'
 
             line_df['voltage'][ni,nf] = mTEPES.pLineVoltage[ni,nf,cc]
             if   700 < line_df['voltage'][ni,nf] <= 900:
