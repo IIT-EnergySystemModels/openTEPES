@@ -77,7 +77,7 @@ The objective function incorporates the two main quantifiable costs: **generatio
 The model formulates a stochastic optimization problem including generation, storage, and network binary investment/retirement decisions, generation operation decisions (commitment, startup and shutdown decisions are also binary) and line switching decisions.
 The capacity expansion considers adequacy system reserve margin constraints.
 
-The operation model is a **network constrained unit commitment (NCUC)** based on a **tight and compact** formulation including operating reserves with a
+The operation model is a **network-constrained unit commitment (NCUC)** based on a **tight and compact** formulation including operating reserves with a
 **DC power flow (DCPF)** including **line switching** decisions. Network ohmic losses are considered proportional to the line flow. It considers different **energy storage systems (ESS)**, e.g., pumped-storage hydro,
 battery, etc. It allows analyzing the trade-off between the investment in generation/storage/transmission and the investment or use of storage capacity.
 
