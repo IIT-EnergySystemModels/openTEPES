@@ -1,6 +1,12 @@
 Change Log
 =============
 
+[4.15.2] - 2024-01-15
+----------------------
+- [FIXED] allow solving just one period out of several defined
+- [CHANGED] split variable definition and bound assignment
+- [CHANGED] simplify the dual variables computation
+
 [4.15.1] - 2023-12-27
 ----------------------
 - [CHANGED] avoid some future warnings in output results
