@@ -1,6 +1,11 @@
 Change Log
 =============
 
+[4.15.3] - 2024-01-16
+----------------------
+- [CHANGED] move the computation of storage total energy inflows to reduce computation time
+- [CHANGED] avoid the use of last in computing duals
+
 [4.15.2] - 2024-01-15
 ----------------------
 - [FIXED] allow solving just one period out of several defined

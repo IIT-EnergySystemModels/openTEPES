@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - January 15, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - January 16, 2024
 """
 
 import datetime
@@ -1506,13 +1506,16 @@ def SettingUpVariables(OptModel, mTEPES):
             OptModel.vReserveDown   [p,sc,n,nr].fix(0.0)
             nFixedVariables += 2
 
+    # total energy inflows per storage
+    pStorageTotalEnergyInflows = pd.Series([sum(mTEPES.pEnergyInflows[pp,scc,nn,es]() for pp,scc,nn in mTEPES.psn) for es in mTEPES.es], index=mTEPES.es)
+
     for p,sc,n,es in mTEPES.psnes:
         # ESS with no charge capacity or not storage capacity can't charge
         if mTEPES.pMaxCharge         [p,sc,n,es] ==  0.0:
             OptModel.vESSTotalCharge [p,sc,n,es].fix(0.0)
             nFixedVariables += 1
         # ESS with no charge capacity and no inflows can't produce
-        if mTEPES.pMaxCharge         [p,sc,n,es] ==  0.0 and sum(mTEPES.pEnergyInflows[pp,scc,nn,es]() for pp,scc,nn in mTEPES.psn) == 0.0:
+        if mTEPES.pMaxCharge         [p,sc,n,es] ==  0.0 and pStorageTotalEnergyInflows[es] == 0.0:
             OptModel.vTotalOutput    [p,sc,n,es].fix(0.0)
             OptModel.vOutput2ndBlock [p,sc,n,es].fix(0.0)
             OptModel.vReserveUp      [p,sc,n,es].fix(0.0)

@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - January 15, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - January 16, 2024
 """
 
 import time
@@ -42,7 +42,11 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
             'option Threads = '+str(int((psutil.cpu_count(logical=True) + psutil.cpu_count(logical=False))/2))+' ;'
         }
 
-    if sum(1 for var in OptModel.component_data_objects(pyo.Var, active=True, descend_into=True) if not var.is_continuous()) == 0 and mTEPES.p.ord(p)*mTEPES.sc.ord(sc) == 1:
+    idx = 0
+    for var in OptModel.component_data_objects(pyo.Var, active=True, descend_into=True):
+        if not var.is_continuous():
+            idx += 1
+    if idx == 0:
         OptModel.dual = Suffix(direction=Suffix.IMPORT_EXPORT)
         OptModel.rc   = Suffix(direction=Suffix.IMPORT_EXPORT)
 
@@ -66,7 +70,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
         if not var.is_continuous():
             var.fixed = True  # fix the current value
             idx += 1
-    if idx and mTEPES.p.last() == mTEPES.pp.last() and mTEPES.sc.last() == mTEPES.scc.last() and mTEPES.st.last() == mTEPES.stt.last():
+    if idx > 0:
         OptModel.dual = Suffix(direction=Suffix.IMPORT_EXPORT)
         OptModel.rc   = Suffix(direction=Suffix.IMPORT_EXPORT)
         SolverResults = Solver.solve(OptModel, tee=True, report_timing=True)
@@ -77,6 +81,11 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
         if c.is_indexed():
             for index in c:
                 pDuals[str(c.name)+str(index)] = OptModel.dual[c[index]]
+
+    # delete dual and rc suffixes if they exist
+    if idx > 0:
+        OptModel.del_component(OptModel.dual)
+        OptModel.del_component(OptModel.rc  )
 
     mTEPES.pDuals.update(pDuals)
 
