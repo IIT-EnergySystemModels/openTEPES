@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - January 09, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - January 18, 2024
 """
 
 import time
@@ -830,8 +830,9 @@ def NetworkH2OperationResults(DirName, CaseName, OptModel, mTEPES):
 
     if len(mTEPES.sc) > 1:
         for scc in mTEPES.sc:
-            if abs(mTEPES.pScenProb[p,scc]() - 1.0) < 1e-6:
-                sc = scc
+            if (p,scc) in mTEPES.ps:
+                if abs(mTEPES.pScenProb[p,scc]() - 1.0) < pEpsilon:
+                    sc = scc
     else:
         sc = list(mTEPES.sc)[0]
 
@@ -1187,7 +1188,7 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES, pIndPlotOutput):
     pEpsilon = 1e-6
 
     #%% outputting the incremental variable cost of each generating unit with power surplus
-    sPSNG        = [(p,sc,n,g) for p,sc,n,g in mTEPES.psng if OptModel.vTotalOutput[p,sc,n,g].ub - OptModel.vTotalOutput[p,sc,n,g]() > pEpsilon and g not in mTEPES.es]
+    sPSNG        = [(p,sc,n,g) for p,sc,n,g in mTEPES.psng if g not in mTEPES.es]
     OutputToFile = pd.Series(data=[(mTEPES.pLinearVarCost[p,sc,n,g]+mTEPES.pEmissionVarCost[p,sc,n,g]) for p,sc,n,g in sPSNG], index=pd.Index(sPSNG))
     OutputToFile *= 1e3
 
@@ -1342,19 +1343,19 @@ def CostSummaryResults(DirName, CaseName, OptModel, mTEPES):
     _path = os.path.join(DirName, CaseName)
     StartTime = time.time()
 
-    SysCost        = pd.Series(data=[                                                                                                                               OptModel.vTotalSCost()                                                                                                              ], index=[' ']   ).to_frame(name='Total          System Cost').stack()
-    GenInvCost     = pd.Series(data=[mTEPES.pDiscountedWeight[p] * sum(mTEPES.pGenInvestCost[gc  ]                                                                * OptModel.vGenerationInvest[p,gc  ]()  for gc      in mTEPES.gc                                               )     for p in mTEPES.p], index=mTEPES.p).to_frame(name='Generation Investment Cost').stack()
-    GenRetCost     = pd.Series(data=[mTEPES.pDiscountedWeight[p] * sum(mTEPES.pGenRetireCost[gd  ]                                                                * OptModel.vGenerationRetire[p,gd  ]()  for gd      in mTEPES.gd                                               )     for p in mTEPES.p], index=mTEPES.p).to_frame(name='Generation Retirement Cost').stack()
+    SysCost        = pd.Series(data=[                                                                                                                               OptModel.vTotalSCost()                                                                                                         ], index=[' ']   ).to_frame(name='Total          System Cost').stack()
+    GenInvCost     = pd.Series(data=[mTEPES.pDiscountedWeight[p] * sum(mTEPES.pGenInvestCost[gc  ]                                                                * OptModel.vGenerationInvest[p,gc  ]()  for gc      in mTEPES.gc                                          )     for p in mTEPES.p], index=mTEPES.p).to_frame(name='Generation Investment Cost').stack()
+    GenRetCost     = pd.Series(data=[mTEPES.pDiscountedWeight[p] * sum(mTEPES.pGenRetireCost[gd  ]                                                                * OptModel.vGenerationRetire[p,gd  ]()  for gd      in mTEPES.gd                                          )     for p in mTEPES.p], index=mTEPES.p).to_frame(name='Generation Retirement Cost').stack()
     if mTEPES.pIndHydroTopology == 1:
-        RsrInvCost = pd.Series(data=[mTEPES.pDiscountedWeight[p] * sum(mTEPES.pRsrInvestCost[rc  ]                                                                * OptModel.vReservoirInvest [p,rc  ]()  for rc      in mTEPES.rn                                               )     for p in mTEPES.p], index=mTEPES.p).to_frame(name='Reservoir  Investment Cost').stack()
+        RsrInvCost = pd.Series(data=[mTEPES.pDiscountedWeight[p] * sum(mTEPES.pRsrInvestCost[rc  ]                                                                * OptModel.vReservoirInvest [p,rc  ]()  for rc      in mTEPES.rn                                          )     for p in mTEPES.p], index=mTEPES.p).to_frame(name='Reservoir  Investment Cost').stack()
     else:
-        RsrInvCost = pd.Series(data=[0.0                                                                                                                                                                                                                                               for p in mTEPES.p], index=mTEPES.p).to_frame(name='Reservoir  Investment Cost').stack()
-    NetInvCost     = pd.Series(data=[mTEPES.pDiscountedWeight[p] * sum(mTEPES.pNetFixedCost [lc  ]                                                                * OptModel.vNetworkInvest   [p,lc  ]()  for lc      in mTEPES.lc                                               )     for p in mTEPES.p], index=mTEPES.p).to_frame(name='Network    Investment Cost').stack()
-    GenCost        = pd.Series(data=[mTEPES.pDiscountedWeight[p] * sum(mTEPES.pScenProb     [p,sc]()                                                              * OptModel.vTotalGCost      [p,sc,n]()  for sc,n    in mTEPES.sc*mTEPES.n           if mTEPES.pScenProb[p,sc]())     for p in mTEPES.p], index=mTEPES.p).to_frame(name='Generation  Operation Cost').stack()
-    ConCost        = pd.Series(data=[mTEPES.pDiscountedWeight[p] * sum(mTEPES.pScenProb     [p,sc]()                                                              * OptModel.vTotalCCost      [p,sc,n]()  for sc,n    in mTEPES.sc*mTEPES.n           if mTEPES.pScenProb[p,sc]())     for p in mTEPES.p], index=mTEPES.p).to_frame(name='Consumption Operation Cost').stack()
-    EmiCost        = pd.Series(data=[mTEPES.pDiscountedWeight[p] * sum(mTEPES.pScenProb     [p,sc]()                                                              * OptModel.vTotalECost      [p,sc,n]()  for sc,n    in mTEPES.sc*mTEPES.n           if mTEPES.pScenProb[p,sc]())     for p in mTEPES.p], index=mTEPES.p).to_frame(name='Emission              Cost').stack()
-    RelCost        = pd.Series(data=[mTEPES.pDiscountedWeight[p] * sum(mTEPES.pScenProb     [p,sc]()                                                              * OptModel.vTotalRCost      [p,sc,n]()  for sc,n    in mTEPES.sc*mTEPES.n           if mTEPES.pScenProb[p,sc]())     for p in mTEPES.p], index=mTEPES.p).to_frame(name='Reliability           Cost').stack()
-    # DemPayment   = pd.Series(data=[mTEPES.pDiscountedWeight[p] * sum(mTEPES.pScenProb     [p,sc]() * mTEPES.pLoadLevelDuration[n]() * mTEPES.pDemand[p,sc,n,nd] * OptModel.LSRMC            [p,sc,n,nd] for sc,n,nd in mTEPES.sc*mTEPES.n*mTEPES.nd if mTEPES.pScenProb[p,sc]())/1e3 for p in mTEPES.p], index=mTEPES.p).to_frame(name='Demand Payment'            ).stack()
+        RsrInvCost = pd.Series(data=[0.0                                                                                                                                                                                                                                          for p in mTEPES.p], index=mTEPES.p).to_frame(name='Reservoir  Investment Cost').stack()
+    NetInvCost     = pd.Series(data=[mTEPES.pDiscountedWeight[p] * sum(mTEPES.pNetFixedCost [lc  ]                                                                * OptModel.vNetworkInvest   [p,lc  ]()  for lc      in mTEPES.lc                                          )     for p in mTEPES.p], index=mTEPES.p).to_frame(name='Network    Investment Cost').stack()
+    GenCost        = pd.Series(data=[mTEPES.pDiscountedWeight[p] * sum(mTEPES.pScenProb     [p,sc]()                                                              * OptModel.vTotalGCost      [p,sc,n]()  for sc,n    in mTEPES.sc*mTEPES.n           if (p,sc) in mTEPES.ps)     for p in mTEPES.p], index=mTEPES.p).to_frame(name='Generation  Operation Cost').stack()
+    ConCost        = pd.Series(data=[mTEPES.pDiscountedWeight[p] * sum(mTEPES.pScenProb     [p,sc]()                                                              * OptModel.vTotalCCost      [p,sc,n]()  for sc,n    in mTEPES.sc*mTEPES.n           if (p,sc) in mTEPES.ps)     for p in mTEPES.p], index=mTEPES.p).to_frame(name='Consumption Operation Cost').stack()
+    EmiCost        = pd.Series(data=[mTEPES.pDiscountedWeight[p] * sum(mTEPES.pScenProb     [p,sc]()                                                              * OptModel.vTotalECost      [p,sc,n]()  for sc,n    in mTEPES.sc*mTEPES.n           if (p,sc) in mTEPES.ps)     for p in mTEPES.p], index=mTEPES.p).to_frame(name='Emission              Cost').stack()
+    RelCost        = pd.Series(data=[mTEPES.pDiscountedWeight[p] * sum(mTEPES.pScenProb     [p,sc]()                                                              * OptModel.vTotalRCost      [p,sc,n]()  for sc,n    in mTEPES.sc*mTEPES.n           if (p,sc) in mTEPES.ps)     for p in mTEPES.p], index=mTEPES.p).to_frame(name='Reliability           Cost').stack()
+    # DemPayment   = pd.Series(data=[mTEPES.pDiscountedWeight[p] * sum(mTEPES.pScenProb     [p,sc]() * mTEPES.pLoadLevelDuration[n]() * mTEPES.pDemand[p,sc,n,nd] * OptModel.LSRMC            [p,sc,n,nd] for sc,n,nd in mTEPES.sc*mTEPES.n*mTEPES.nd if (p,sc) in mTEPES.ps)/1e3 for p in mTEPES.p], index=mTEPES.p).to_frame(name='Demand Payment'            ).stack()
     CostSummary    = pd.concat([SysCost, GenInvCost, GenRetCost, RsrInvCost, NetInvCost, GenCost, ConCost, EmiCost, RelCost]).reset_index().rename(columns={'level_0': 'Period', 'level_1': 'Costs', 0: 'MEUR'}).to_csv(_path+'/oT_Result_CostSummary_'+CaseName+'.csv', sep=',', index=False)
 
     WritingResultsTime = time.time() - StartTime
@@ -1415,16 +1416,16 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput, pIndPlo
     sPSNARND   = [(p,sc,n,ar,nd)    for p,sc,n,ar,nd    in mTEPES.psnar*mTEPES.nd if sum(1 for g in g2n[nd]) + sum(1 for lout in lout[nd]) + sum(1 for ni,cc in lin[nd]) and (nd,ar) in mTEPES.ndar]
     sPSNARNDGT = [(p,sc,n,ar,nd,gt) for p,sc,n,ar,nd,gt in sPSNARND*mTEPES.gt     if sum(1 for g in g2t[gt])                                                             and (nd,ar) in mTEPES.ndar]
 
-    OutputResults1     = pd.Series(data=[ sum(OptModel.vTotalOutput   [p,sc,n,g       ]()*mTEPES.pLoadLevelDuration[n]() for g  in mTEPES.g  if (nd,g ) in mTEPES.n2g and (gt,g ) in mTEPES.t2g) for p,sc,n,ar,nd,gt in sPSNARNDGT], index=pd.Index(sPSNARNDGT)).to_frame(name='Generation'    ).reset_index().pivot_table(index=['level_0','level_1','level_2','level_3','level_4'], columns='level_5', values='Generation' , aggfunc='sum')
-    OutputResults2     = pd.Series(data=[-sum(OptModel.vESSTotalCharge[p,sc,n,eh      ]()*mTEPES.pLoadLevelDuration[n]() for eh in mTEPES.eh if (nd,eh) in mTEPES.n2g and (gt,eh) in mTEPES.t2g) for p,sc,n,ar,nd,gt in sPSNARNDGT], index=pd.Index(sPSNARNDGT)).to_frame(name='Consumption'   ).reset_index().pivot_table(index=['level_0','level_1','level_2','level_3','level_4'], columns='level_5', values='Consumption', aggfunc='sum')
-    OutputResults3     = pd.Series(data=[     OptModel.vENS           [p,sc,n,nd      ]()*mTEPES.pLoadLevelDuration[n]()                                                                         for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='PowerNotServed')
-    OutputResults4     = pd.Series(data=[-      mTEPES.pDemand        [p,sc,n,nd      ]  *mTEPES.pLoadLevelDuration[n]()                                                                         for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='EnergyDemand'  )
-    OutputResults5     = pd.Series(data=[-sum(OptModel.vFlow          [p,sc,n,nd,lout ]()*mTEPES.pLoadLevelDuration[n]() for lout  in lout [nd])                                                 for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='EnergyFlowOut' )
-    OutputResults6     = pd.Series(data=[ sum(OptModel.vFlow          [p,sc,n,ni,nd,cc]()*mTEPES.pLoadLevelDuration[n]() for ni,cc in lin  [nd])                                                 for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='EnergyFlowIn'  )
-    # OutputResults9   = pd.Series(data=[ ar                                                                             for ar in mTEPES.ar                          for p,sc,n,ar,nd    in sPSNND if (nd,ar) in mTEPES.ndar     ], index=pd.Index(sPSNARND  )).to_frame(name='Area'          )
+    OutputResults1     = pd.Series(data=[ sum(OptModel.vTotalOutput   [p,sc,n,g       ]()*mTEPES.pLoadLevelDuration[n]()                        for g  in mTEPES.g  if (nd,g ) in mTEPES.n2g and (gt,g ) in mTEPES.t2g) for p,sc,n,ar,nd,gt in sPSNARNDGT], index=pd.Index(sPSNARNDGT)).to_frame(name='Generation'    ).reset_index().pivot_table(index=['level_0','level_1','level_2','level_3','level_4'], columns='level_5', values='Generation' , aggfunc='sum')
+    OutputResults2     = pd.Series(data=[-sum(OptModel.vESSTotalCharge[p,sc,n,eh      ]()*mTEPES.pLoadLevelDuration[n]()*mTEPES.pEfficiency[eh] for eh in mTEPES.eh if (nd,eh) in mTEPES.n2g and (gt,eh) in mTEPES.t2g) for p,sc,n,ar,nd,gt in sPSNARNDGT], index=pd.Index(sPSNARNDGT)).to_frame(name='Consumption'   ).reset_index().pivot_table(index=['level_0','level_1','level_2','level_3','level_4'], columns='level_5', values='Consumption', aggfunc='sum')
+    OutputResults3     = pd.Series(data=[     OptModel.vENS           [p,sc,n,nd      ]()*mTEPES.pLoadLevelDuration[n]()                                                                                                for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='PowerNotServed')
+    OutputResults4     = pd.Series(data=[-      mTEPES.pDemand        [p,sc,n,nd      ]  *mTEPES.pLoadLevelDuration[n]()                                                                                                for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='EnergyDemand'  )
+    OutputResults5     = pd.Series(data=[-sum(OptModel.vFlow          [p,sc,n,nd,lout ]()*mTEPES.pLoadLevelDuration[n]()                        for lout  in lout [nd])                                                 for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='EnergyFlowOut' )
+    OutputResults6     = pd.Series(data=[ sum(OptModel.vFlow          [p,sc,n,ni,nd,cc]()*mTEPES.pLoadLevelDuration[n]()                        for ni,cc in lin  [nd])                                                 for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='EnergyFlowIn'  )
+    # OutputResults9   = pd.Series(data=[ ar                                                                                                    for ar in mTEPES.ar                          for p,sc,n,ar,nd    in sPSNND if (nd,ar) in mTEPES.ndar     ], index=pd.Index(sPSNARND  )).to_frame(name='Area'          )
     if len(mTEPES.ll):
-        OutputResults7 = pd.Series(data=[-sum(OptModel.vLineLosses    [p,sc,n,nd,lout ]()*mTEPES.pLoadLevelDuration[n]() for lout  in loutl[nd])                                                 for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='LineLossesOut' )
-        OutputResults8 = pd.Series(data=[-sum(OptModel.vLineLosses    [p,sc,n,ni,nd,cc]()*mTEPES.pLoadLevelDuration[n]() for ni,cc in linl [nd])                                                 for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='LineLossesIn'  )
+        OutputResults7 = pd.Series(data=[-sum(OptModel.vLineLosses    [p,sc,n,nd,lout ]()*mTEPES.pLoadLevelDuration[n]()                        for lout  in loutl[nd])                                                 for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='LineLossesOut' )
+        OutputResults8 = pd.Series(data=[-sum(OptModel.vLineLosses    [p,sc,n,ni,nd,cc]()*mTEPES.pLoadLevelDuration[n]()                        for ni,cc in linl [nd])                                                 for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='LineLossesIn'  )
 
         OutputResults  = pd.concat([OutputResults1, OutputResults2, OutputResults3, OutputResults4, OutputResults5, OutputResults6, OutputResults7, OutputResults8], axis=1)
     else:
@@ -1730,8 +1731,9 @@ def NetworkMapResults(DirName, CaseName, OptModel, mTEPES):
 
     if len(mTEPES.sc) > 1:
         for scc in mTEPES.sc:
-            if abs(mTEPES.pScenProb[p,scc]() - 1.0) < 1e-6:
-                sc = scc
+            if (p,scc) in mTEPES.ps:
+                if abs(mTEPES.pScenProb[p,scc]() - 1.0) < pEpsilon:
+                    sc = scc
     else:
         sc = list(mTEPES.sc)[0]
 

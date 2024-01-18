@@ -1,6 +1,10 @@
 Change Log
 =============
 
+[4.15.4] - 2024-01-18
+----------------------
+- [FIXED] fix error when some scenarios have prob 0
+
 [4.15.3] - 2024-01-16
 ----------------------
 - [CHANGED] move the computation of storage total energy inflows to reduce computation time
