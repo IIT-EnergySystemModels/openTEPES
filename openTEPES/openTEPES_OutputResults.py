@@ -825,6 +825,9 @@ def NetworkH2OperationResults(DirName, CaseName, OptModel, mTEPES):
 
         return loc_df, line_df
 
+    # tolerance to consider avoid division by 0
+    pEpsilon = 1e-6
+
     p = list(mTEPES.p)[0]
     n = list(mTEPES.n)[0]
 
@@ -1725,6 +1728,9 @@ def NetworkMapResults(DirName, CaseName, OptModel, mTEPES):
         line_df = line_df.round(decimals=2)
 
         return loc_df, line_df
+
+    # tolerance to consider avoid division by 0
+    pEpsilon = 1e-6
 
     p = list(mTEPES.p)[0]
     n = list(mTEPES.n)[0]
