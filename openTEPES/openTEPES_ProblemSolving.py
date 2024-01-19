@@ -50,10 +50,12 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
         OptModel.dual = Suffix(direction=Suffix.IMPORT_EXPORT)
         OptModel.rc   = Suffix(direction=Suffix.IMPORT_EXPORT)
 
-    if SolverName == 'gurobi':
+    if   SolverName == 'gurobi':
         SolverResults = Solver.solve(OptModel, tee=True, report_timing=True)
-    if SolverName == 'gams'  :
+    elif SolverName == 'gams'  :
         SolverResults = Solver.solve(OptModel, tee=True, report_timing=True, symbolic_solver_labels=False, add_options=solver_options)
+    else:
+        SolverResults = Solver.solve(OptModel, tee=True, report_timing=True)
 
     print('Termination condition: ', SolverResults.solver.termination_condition)
     if SolverResults.solver.termination_condition == TerminationCondition.infeasible:
