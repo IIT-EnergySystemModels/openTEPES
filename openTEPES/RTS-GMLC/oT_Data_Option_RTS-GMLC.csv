@@ -1,2 +1,2 @@
-,IndBinGenInvest,IndBinGenRetirement,IndBinRsrInvest,IndBinNetInvest,IndBinNetH2Invest,IndBinGenOperat,IndBinNetLosses,IndBinLineCommit,IndBinSingleNode,IndBinGenRamps,IndBinGenMinTime
-Options,0,0,0,0,0,0,0,0,0,1,1
+,IndBinGenInvest,IndBinGenRetirement,IndBinRsrInvest,IndBinNetInvest,IndBinNetH2Invest,IndBinNetHeatInvest,IndBinGenOperat,IndBinNetLosses,IndBinLineCommit,IndBinSingleNode,IndBinGenRamps,IndBinGenMinTime
+Options,0,0,0,0,0,0,0,0,0,0,1,1
