@@ -30,6 +30,7 @@ EV          Electric Vehicle
 mFRR        Manual Frequency Restoration Reserve
 H2          Hydrogen
 HNS         Hydrogen Not Served
+HTNS        Heat Not Served
 NTC         Net Transfer Capacity
 OCGT        Open Cycle Gas Turbine
 PHS         Pumped-Hydro Storage
@@ -126,6 +127,7 @@ IndBinRsrInvest      Indicator of binary reservoir    expansion decisions
                      (only used for reservoirs modeled with water units)                  {0 continuous, 1 binary, 2 ignore investments}
 IndBinNetInvest      Indicator of binary electric network expansion decisions             {0 continuous, 1 binary, 2 ignore investments}
 IndBinNetH2Invest    Indicator of binary hydrogen network expansion decisions             {0 continuous, 1 binary, 2 ignore investments}
+IndBinNetHeatInvest  Indicator of binary heat     network expansion decisions             {0 continuous, 1 binary, 2 ignore investments}
 IndBinGenOperat      Indicator of binary generation   operation decisions                 {0 continuous, 1 binary}
 IndBinGenRamps       Indicator of activating or not the up/down ramp constraints          {0 no ramps,   1 ramp constraints}
 IndBinGenMinTime     Indicator of activating or not the min up/down time constraints      {0 no min time constraints, 1 min time constraints}
@@ -145,6 +147,7 @@ File                  Description
 ====================  =============================================================================================================  =========
 ENSCost               Cost of energy not served (ENS). Cost of load curtailment. Value of Lost Load (VoLL)                           €/MWh
 HNSCost               Cost of hydrogen not served (HNS)                                                                              €/kgH2
+HTNSCost              Cost of heat not served (HTNS)                                                                                 €/Mcal
 PNSCost               Cost of power not served (PNS) associated with the deficit in operating reserve by load level                  €/MW
 CO2Cost               Cost of CO2 emissions                                                                                          €/tCO2
 UpReserveActivation   Upward   reserve activation (proportion of upward   operating reserve deployed to produce energy)              p.u.
@@ -301,59 +304,60 @@ Generation
 ----------
 A description of the data included for each generating unit in the file ``oT_Data_Generation.csv`` follows:
 
-====================  ================================================================================================================================  ===================================
-Header                Description
-====================  ================================================================================================================================  ===================================
-Node                  Name of the node where generator is located. If left empty, the generator is ignored
-Technology            Technology of the generator (nuclear, coal, CCGT, OCGT, ESS, solar, wind, biomass, etc.)
-MutuallyExclusive     Mutually exclusive generator. Only exclusion in one direction is needed
-BinaryCommitment      Binary unit commitment decision                                                                                                   Yes/No
-NoOperatingReserve    No contribution to operating reserve. Yes if the unit doesn't contribute to the operating reserve                                 Yes/No
-StorageType           Storage type based on storage capacity (hourly, daily, weekly, monthly, yearly)                                                   Hourly/Daily/Weekly/Monthly/Yearly
-OutflowsType          Outflows type based on the electricity demand extracted from the storage (daily, weekly, monthly, yearly)                         Daily/Weekly/Monthly/Yearly
-EnergyType            Energy type based on the max/min energy to be produced by the unit (daily, weekly, monthly, yearly)                               Daily/Weekly/Monthly/Yearly
-MustRun               Must-run unit                                                                                                                     Yes/No
-InitialPeriod         Initial period (year) when the unit is installed or can be installed, if candidate                                                Year
-FinalPeriod           Final   period (year) when the unit is installed or can be installed, if candidate                                                Year
-MaximumPower          Maximum power output (generation/discharge for ESS units)                                                                         MW
-MinimumPower          Minimum power output (i.e., minimum stable load in the case of a thermal power plant)                                             MW
-MaximumReactivePower  Maximum reactive power output (discharge for ESS units) (not used in this version)                                                MW
-MinimumReactivePower  Minimum reactive power output (not used in this version)                                                                          MW
-MaximumCharge         Maximum consumption/charge when the ESS unit is storing energy                                                                    MW
-MinimumCharge         Minimum consumption/charge when the ESS unit is storing energy                                                                    MW
-InitialStorage        Initial energy stored at the first instant of the time scope                                                                      GWh
-MaximumStorage        Maximum energy that can be stored by the ESS unit                                                                                 GWh
-MinimumStorage        Minimum energy that can be stored by the ESS unit                                                                                 GWh
-Efficiency            Round-trip efficiency of the pump/turbine cycle of a pumped-hydro storage power plant or charge/discharge of a battery            p.u.
-ProductionFunction    Production function from water inflows to energy (only used for hydropower plants modeled with water units and basin topology)    kWh/m\ :sup:`3`
-ProductionFunctionH2  Production function from energy to hydrogen (only used for electrolyzers)                                                         kWh/kgH2
-Availability          Unit availability for area adequacy reserve margin (also called de-rating factor or capacity credit)                              p.u.
-Inertia               Unit inertia constant                                                                                                             s
-EFOR                  Equivalent Forced Outage Rate                                                                                                     p.u.
-RampUp                Ramp up   rate for generating units or maximum discharge rate for ESS discharge                                                   MW/h
-RampDown              Ramp down rate for generating units or maximum    charge rate for ESS    charge                                                   MW/h
-UpTime                Minimum uptime                                                                                                                    h
-DownTime              Minimum downtime                                                                                                                  h
-ShiftTime             Maximum shift time                                                                                                                h
-FuelCost              Fuel cost                                                                                                                         €/Mcal
-LinearTerm            Linear term (slope) of the heat rate straight line                                                                                Mcal/MWh
-ConstantTerm          Constant term (intercept) of the heat rate straight line                                                                          Mcal/h
-OMVariableCost        Variable O&M cost                                                                                                                 €/MWh
-OperReserveCost       Operating reserve cost                                                                                                            €/MW
-StartUpCost           Startup  cost                                                                                                                     M€
-ShutDownCost          Shutdown cost                                                                                                                     M€
-CO2EmissionRate       CO2 emission rate. It can be negative for units absorbing CO2 emissions as biomass                                                tCO2/MWh
-FixedInvestmentCost   Overnight investment (capital -CAPEX- and fixed O&M -FOM-) cost                                                                   M€
-FixedRetirementCost   Overnight retirement (capital -CAPEX- and fixed O&M -FOM-) cost                                                                   M€
-FixedChargeRate       Fixed-charge rate to annualize the overnight investment cost                                                                      p.u.
-StorageInvestment     Storage capacity and energy inflows linked to the investment decision                                                             Yes/No
-BinaryInvestment      Binary unit investment decision                                                                                                   Yes/No
-InvestmentLo          Lower bound of investment decision                                                                                                p.u.
-InvestmentUp          Upper bound of investment decision                                                                                                p.u.
-BinaryRetirement      Binary unit retirement decision                                                                                                   Yes/No
-RetirementLo          Lower bound of retirement decision                                                                                                p.u.
-RetirementUp          Upper bound of retirement decision                                                                                                p.u.
-====================  ================================================================================================================================  ===================================
+======================  ================================================================================================================================  ===================================
+Header                  Description
+======================  ================================================================================================================================  ===================================
+Node                    Name of the node where generator is located. If left empty, the generator is ignored
+Technology              Technology of the generator (nuclear, coal, CCGT, OCGT, ESS, solar, wind, biomass, etc.)
+MutuallyExclusive       Mutually exclusive generator. Only exclusion in one direction is needed
+BinaryCommitment        Binary unit commitment decision                                                                                                   Yes/No
+NoOperatingReserve      No contribution to operating reserve. Yes if the unit doesn't contribute to the operating reserve                                 Yes/No
+StorageType             Storage type based on storage capacity (hourly, daily, weekly, monthly, yearly)                                                   Hourly/Daily/Weekly/Monthly/Yearly
+OutflowsType            Outflows type based on the electricity demand extracted from the storage (daily, weekly, monthly, yearly)                         Daily/Weekly/Monthly/Yearly
+EnergyType              Energy type based on the max/min energy to be produced by the unit (daily, weekly, monthly, yearly)                               Daily/Weekly/Monthly/Yearly
+MustRun                 Must-run unit                                                                                                                     Yes/No
+InitialPeriod           Initial period (year) when the unit is installed or can be installed, if candidate                                                Year
+FinalPeriod             Final   period (year) when the unit is installed or can be installed, if candidate                                                Year
+MaximumPower            Maximum power output (generation/discharge for ESS units)                                                                         MW
+MinimumPower            Minimum power output (i.e., minimum stable load in the case of a thermal power plant)                                             MW
+MaximumReactivePower    Maximum reactive power output (discharge for ESS units) (not used in this version)                                                MW
+MinimumReactivePower    Minimum reactive power output (not used in this version)                                                                          MW
+MaximumCharge           Maximum consumption/charge when the ESS unit is storing energy                                                                    MW
+MinimumCharge           Minimum consumption/charge when the ESS unit is storing energy                                                                    MW
+InitialStorage          Initial energy stored at the first instant of the time scope                                                                      GWh
+MaximumStorage          Maximum energy that can be stored by the ESS unit                                                                                 GWh
+MinimumStorage          Minimum energy that can be stored by the ESS unit                                                                                 GWh
+Efficiency              Round-trip efficiency of the pump/turbine cycle of a pumped-hydro storage power plant or charge/discharge of a battery            p.u.
+ProductionFunction      Production function from water inflows to energy (only used for hydropower plants modeled with water units and basin topology)    kWh/m\ :sup:`3`
+ProductionFunctionH2    Production function from energy to hydrogen (only used for electrolyzers)                                                         kWh/kgH2
+ProductionFunctionHeat  Production function from energy to heat     (only used for heat pumps)                                                            kWh/Mcal
+Availability            Unit availability for area adequacy reserve margin (also called de-rating factor or capacity credit)                              p.u.
+Inertia                 Unit inertia constant                                                                                                             s
+EFOR                    Equivalent Forced Outage Rate                                                                                                     p.u.
+RampUp                  Ramp up   rate for generating units or maximum discharge rate for ESS discharge                                                   MW/h
+RampDown                Ramp down rate for generating units or maximum    charge rate for ESS    charge                                                   MW/h
+UpTime                  Minimum uptime                                                                                                                    h
+DownTime                Minimum downtime                                                                                                                  h
+ShiftTime               Maximum shift time                                                                                                                h
+FuelCost                Fuel cost                                                                                                                         €/Mcal
+LinearTerm              Linear term (slope) of the heat rate straight line                                                                                Mcal/MWh
+ConstantTerm            Constant term (intercept) of the heat rate straight line                                                                          Mcal/h
+OMVariableCost          Variable O&M cost                                                                                                                 €/MWh
+OperReserveCost         Operating reserve cost                                                                                                            €/MW
+StartUpCost             Startup  cost                                                                                                                     M€
+ShutDownCost            Shutdown cost                                                                                                                     M€
+CO2EmissionRate         CO2 emission rate. It can be negative for units absorbing CO2 emissions as biomass                                                tCO2/MWh
+FixedInvestmentCost     Overnight investment (capital -CAPEX- and fixed O&M -FOM-) cost                                                                   M€
+FixedRetirementCost     Overnight retirement (capital -CAPEX- and fixed O&M -FOM-) cost                                                                   M€
+FixedChargeRate         Fixed-charge rate to annualize the overnight investment cost                                                                      p.u.
+StorageInvestment       Storage capacity and energy inflows linked to the investment decision                                                             Yes/No
+BinaryInvestment        Binary unit investment decision                                                                                                   Yes/No
+InvestmentLo            Lower bound of investment decision                                                                                                p.u.
+InvestmentUp            Upper bound of investment decision                                                                                                p.u.
+BinaryRetirement        Binary unit retirement decision                                                                                                   Yes/No
+RetirementLo            Lower bound of retirement decision                                                                                                p.u.
+RetirementUp            Upper bound of retirement decision                                                                                                p.u.
+======================  ================================================================================================================================  ===================================
 
 The model allways considers a month of 672 hours, i.e., 4 weeks, not calendar months. The model considers a year of 8736 hours, i.e., 52 weeks, not calendar years.
 
@@ -721,6 +725,58 @@ FinalPeriod          Final   period (year) when the unit is installed or can be 
 Length               Pipeline length (only used for reporting purposes). If not defined, computed as 1.1 times the geographical distance  km
 TTC                  Total transfer capacity (maximum permissible thermal load) in forward  direction. Static pipeline rating             tH2
 TTCBck               Total transfer capacity (maximum permissible thermal load) in backward direction. Static pipeline rating             tH2
+SecurityFactor       Security factor to consider approximately N-1 contingencies. NTC = TTC x SecurityFactor                              p.u.
+FixedInvestmentCost  Overnight investment (capital -CAPEX- and fixed O&M -FOM-) cost                                                      M€
+FixedChargeRate      Fixed-charge rate to annualize the overnight investment cost                                                         p.u.
+BinaryInvestment     Binary pipeline investment decision                                                                                  Yes/No
+InvestmentLo         Lower bound of investment decision                                                                                   p.u.
+InvestmentUp         Upper bound of investment decision                                                                                   p.u.
+===================  ===================================================================================================================  ======
+
+If there is no data for TTCBck, i.e., TTCBck is left empty or is equal to 0, it is substituted by the TTC in the code. Internally, all the TTC and TTCBck values below 2.5e-5 times the maximum system demand of each area will be converted into 0 by the model.
+
+Those pipelines with fixed cost > 0 are considered candidate and can be installed or not.
+
+If lower and upper bounds of investment decisions are very close (with a difference < 1e-3) to 0 or 1 are converted into 0 and 1.
+
+Heat System Input Data
+======================
+
+These input files are specifically introduced for allowing a representation of the heat energy vector to supply heat demand produced with electricity through the heat network.
+
+==================================== ================================================================================================================================
+File                                 Description
+===================================  ================================================================================================================================
+``oT_Data_DemandHeat.csv``           Heat demand
+``oT_Data_NetworkHeat.csv``          Heat pipeline network data
+===================================  ================================================================================================================================
+
+Heat demand
+-----------
+
+A description of the data included in the file ``oT_Data_DemandHeat.csv`` follows:
+
+==========  ==============  ==========  ======  ===============================================  ======
+Identifier  Identifier      Identifier  Header  Description
+==========  ==============  ==========  ======  ===============================================  ======
+Period      Scenario        Load level  Node    Heat demand of the node for each load level      Mcal/h
+==========  ==============  ==========  ======  ===============================================  ======
+
+Internally, all the values below if positive demand (or above if negative demand) 2.5e-5 times the maximum system demand of each area will be converted into 0 by the model.
+
+Heat transmission pipeline network
+----------------------------------
+
+A description of the circuit (initial node, final node, circuit) data included in the file ``oT_Data_NetworkHeat.csv`` follows:
+
+===================  ===================================================================================================================  ======
+Header               Description
+===================  ===================================================================================================================  ======
+InitialPeriod        Initial period (year) when the unit is installed or can be installed, if candidate                                   Year
+FinalPeriod          Final   period (year) when the unit is installed or can be installed, if candidate                                   Year
+Length               Pipeline length (only used for reporting purposes). If not defined, computed as 1.1 times the geographical distance  km
+TTC                  Total transfer capacity (maximum permissible thermal load) in forward  direction. Static pipeline rating             Mcal
+TTCBck               Total transfer capacity (maximum permissible thermal load) in backward direction. Static pipeline rating             Mcal
 SecurityFactor       Security factor to consider approximately N-1 contingencies. NTC = TTC x SecurityFactor                              p.u.
 FixedInvestmentCost  Overnight investment (capital -CAPEX- and fixed O&M -FOM-) cost                                                      M€
 FixedChargeRate      Fixed-charge rate to annualize the overnight investment cost                                                         p.u.

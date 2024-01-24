@@ -760,6 +760,57 @@ Identifier    Identifier  Identifier  Header      Description
 Period        Scenario    Load level  Node        Hydrogen not served by node [tH2]
 ============  ==========  ==========  ==========  ====================================
 
+Heat balance and network operation
+--------------------------------------
+
+File ``oT_Result_BalanceHeat.csv``
+
+============  ==========  ==========  ==========  ======================================
+Identifier    Identifier  Identifier  Identifier  Description
+============  ==========  ==========  ==========  ======================================
+Period        Scenario    Load level  Technology  Generation, flows, and demand [Mcal]
+============  ==========  ==========  ==========  ======================================
+
+File ``oT_Result_BalanceHeatPerArea.csv``
+
+============  ==========  ==========  ==========  ==========  ======================================
+Identifier    Identifier  Identifier  Identifier  Header      Description
+============  ==========  ==========  ==========  ==========  ======================================
+Period        Scenario    Load level  Technology  Area        Generation, flows, and demand [Mcal]
+============  ==========  ==========  ==========  ==========  ======================================
+
+File ``oT_Result_BalanceHeatPerNode.csv``
+
+============  ==========  ==========  ==========  ==========  ======================================
+Identifier    Identifier  Identifier  Identifier  Header      Description
+============  ==========  ==========  ==========  ==========  ======================================
+Period        Scenario    Load level  Technology  Node        Generation, flows, and demand [Mcal]
+============  ==========  ==========  ==========  ==========  ======================================
+
+File ``oT_Result_BalanceHeatPerTech.csv``
+
+============  ==========  ==========  ==========  ==========  ==========  ======================================
+Identifier    Identifier  Identifier  Identifier  Identifier  Header      Description
+============  ==========  ==========  ==========  ==========  ==========  ======================================
+Period        Scenario    Load level  Area        Node        Technology  Generation, flows, and demand [Mcal]
+============  ==========  ==========  ==========  ==========  ==========  ======================================
+
+File ``oT_Result_NetworkFlowHeatPerNode.csv``
+
+============  ==========  ==========  ============  ==========  =========  =======================
+Identifier    Identifier  Identifier  Header        Header      Header     Description
+============  ==========  ==========  ============  ==========  =========  =======================
+Period        Scenario    Load level  Initial node  Final node  Circuit    Pipe flow [Mcal]
+============  ==========  ==========  ============  ==========  =========  =======================
+
+File ``oT_Result_NetworkHTNS.csv``
+
+============  ==========  ==========  ==========  ====================================
+Identifier    Identifier  Identifier  Header      Description
+============  ==========  ==========  ==========  ====================================
+Period        Scenario    Load level  Node        Heat not served by node [Mcal]
+============  ==========  ==========  ==========  ====================================
+
 Costs and revenues
 ------------------
 

@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - January 18, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - January 24, 2024
 """
 
 import math
@@ -11,9 +11,9 @@ import pyomo.environ as pyo
 from   pyomo.environ import ConcreteModel, Set, Param, Reals
 
 from .openTEPES_InputData        import InputData, SettingUpVariables
-from .openTEPES_ModelFormulation import TotalObjectiveFunction, InvestmentModelFormulation, GenerationOperationModelFormulationObjFunct, GenerationOperationModelFormulationInvestment, GenerationOperationModelFormulationDemand, GenerationOperationModelFormulationStorage, GenerationOperationModelFormulationReservoir, NetworkH2OperationModelFormulation, GenerationOperationModelFormulationCommitment, GenerationOperationModelFormulationRampMinTime, NetworkSwitchingModelFormulation, NetworkOperationModelFormulation
+from .openTEPES_ModelFormulation import TotalObjectiveFunction, InvestmentModelFormulation, GenerationOperationModelFormulationObjFunct, GenerationOperationModelFormulationInvestment, GenerationOperationModelFormulationDemand, GenerationOperationModelFormulationStorage, GenerationOperationModelFormulationReservoir, NetworkH2OperationModelFormulation, NetworkHeatOperationModelFormulation, GenerationOperationModelFormulationCommitment, GenerationOperationModelFormulationRampMinTime, NetworkSwitchingModelFormulation, NetworkOperationModelFormulation
 from .openTEPES_ProblemSolving   import ProblemSolving
-from .openTEPES_OutputResults    import InvestmentResults, GenerationOperationResults, ESSOperationResults, ReservoirOperationResults, NetworkH2OperationResults, FlexibilityResults, NetworkOperationResults, MarginalResults, OperationSummaryResults, ReliabilityResults, CostSummaryResults, EconomicResults, NetworkMapResults
+from .openTEPES_OutputResults    import InvestmentResults, GenerationOperationResults, ESSOperationResults, ReservoirOperationResults, NetworkH2OperationResults, NetworkHeatOperationResults, FlexibilityResults, NetworkOperationResults, MarginalResults, OperationSummaryResults, ReliabilityResults, CostSummaryResults, EconomicResults, NetworkMapResults
 
 
 def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConsole):
@@ -38,8 +38,8 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     idxDict['y'  ] = 1
 
     #%% model declaration
-    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.15.4 - January 18, 2024')
-    print(                 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.15.4 - January 18, 2024', file=open(_path+'/openTEPES_version_'+CaseName+'.log','a'))
+    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.15.5 - January 24, 2024')
+    print(                 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.15.5 - January 24, 2024', file=open(_path+'/openTEPES_version_'+CaseName+'.log','a'))
 
     pIndOutputResults = [j for i,j in idxDict.items() if i == pIndOutputResults][0]
     pIndLogConsole    = [j for i,j in idxDict.items() if i == pIndLogConsole   ][0]
@@ -78,6 +78,8 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
             GenerationOperationModelFormulationReservoir(mTEPES, mTEPES, pIndLogConsole, p, sc, st)
         if mTEPES.pIndHydrogen == 1:
             NetworkH2OperationModelFormulation          (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
+        if mTEPES.pIndHeat == 1:
+            NetworkHeatOperationModelFormulation        (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
         GenerationOperationModelFormulationCommitment   (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
         GenerationOperationModelFormulationRampMinTime  (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
         NetworkSwitchingModelFormulation                (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
@@ -101,7 +103,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
                 if c.name.find(str(p)) != -1 and c.name.find(str(sc)) != -1:
                     c.deactivate()
         else:
-            if mTEPES.p.last() == mTEPES.pp.last() and mTEPES.sc.last() == mTEPES.scc.last() and mTEPES.st.last() == mTEPES.stt.last():
+            if p == mTEPES.pp.last() and sc == mTEPES.scc.last() and st == mTEPES.stt.last():
 
                 if pIndLogConsole == 1:
                     StartTime         = time.time()
@@ -138,60 +140,64 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
 
     # indicators to control the amount of output results
     if pIndOutputResults == 1:
-        pIndInvestmentResults          = 1
-        pIndGenerationOperationResults = 1
-        pIndESSOperationResults        = 1
-        pIndReservoirOperationResults  = 1
-        pIndNetworkH2OperationResults  = 1
-        pIndFlexibilityResults         = 1
-        pIndReliabilityResults         = 1
-        pIndNetworkOperationResults    = 1
-        pIndNetworkMapResults          = 1
-        pIndOperationSummaryResults    = 1
-        pIndCostSummaryResults         = 1
-        pIndMarginalResults            = 1
-        pIndEconomicResults            = 1
+        pIndInvestmentResults           = 1
+        pIndGenerationOperationResults  = 1
+        pIndESSOperationResults         = 1
+        pIndReservoirOperationResults   = 1
+        pIndNetworkH2OperationResults   = 1
+        pIndNetworkHeatOperationResults = 1
+        pIndFlexibilityResults          = 1
+        pIndReliabilityResults          = 1
+        pIndNetworkOperationResults     = 1
+        pIndNetworkMapResults           = 1
+        pIndOperationSummaryResults     = 1
+        pIndCostSummaryResults          = 1
+        pIndMarginalResults             = 1
+        pIndEconomicResults             = 1
     else:
-        pIndInvestmentResults          = 1
-        pIndGenerationOperationResults = 1
-        pIndESSOperationResults        = 1
-        pIndReservoirOperationResults  = 1
-        pIndNetworkH2OperationResults  = 1
-        pIndFlexibilityResults         = 0
-        pIndReliabilityResults         = 0
-        pIndNetworkOperationResults    = 1
-        pIndNetworkMapResults          = 0
-        pIndOperationSummaryResults    = 1
-        pIndCostSummaryResults         = 0
-        pIndMarginalResults            = 0
-        pIndEconomicResults            = 0
+        pIndInvestmentResults           = 1
+        pIndGenerationOperationResults  = 1
+        pIndESSOperationResults         = 1
+        pIndReservoirOperationResults   = 1
+        pIndNetworkH2OperationResults   = 1
+        pIndNetworkHeatOperationResults = 1
+        pIndFlexibilityResults          = 0
+        pIndReliabilityResults          = 0
+        pIndNetworkOperationResults     = 1
+        pIndNetworkMapResults           = 0
+        pIndOperationSummaryResults     = 1
+        pIndCostSummaryResults          = 0
+        pIndMarginalResults             = 0
+        pIndEconomicResults             = 0
 
-    if pIndInvestmentResults          == 1:
-        InvestmentResults         (DirName, CaseName, mTEPES, mTEPES, pIndTechnologyOutput,                 pIndPlotOutput)
-    if pIndGenerationOperationResults == 1:
-        GenerationOperationResults(DirName, CaseName, mTEPES, mTEPES, pIndTechnologyOutput, pIndAreaOutput, pIndPlotOutput)
-    if pIndESSOperationResults        == 1 and len(mTEPES.es):
-        ESSOperationResults       (DirName, CaseName, mTEPES, mTEPES, pIndTechnologyOutput, pIndAreaOutput, pIndPlotOutput)
-    if pIndReservoirOperationResults  == 1 and len(mTEPES.rs) and mTEPES.pIndHydroTopology == 1:
-        ReservoirOperationResults (DirName, CaseName, mTEPES, mTEPES, pIndTechnologyOutput,                 pIndPlotOutput)
-    if pIndNetworkH2OperationResults  == 1 and len(mTEPES.pa) and mTEPES.pIndHydrogen == 1:
-        NetworkH2OperationResults (DirName, CaseName, mTEPES, mTEPES)
-    if pIndFlexibilityResults         == 1:
-        FlexibilityResults        (DirName, CaseName, mTEPES, mTEPES)
-    if pIndReliabilityResults         == 1:
-        ReliabilityResults        (DirName, CaseName, mTEPES, mTEPES)
-    if pIndNetworkOperationResults    == 1:
-        NetworkOperationResults   (DirName, CaseName, mTEPES, mTEPES)
-    if pIndNetworkMapResults          == 1:
-        NetworkMapResults         (DirName, CaseName, mTEPES, mTEPES)
-    if pIndOperationSummaryResults    == 1:
-        OperationSummaryResults   (DirName, CaseName, mTEPES, mTEPES)
-    if pIndCostSummaryResults         == 1:
-        CostSummaryResults        (DirName, CaseName, mTEPES, mTEPES)
-    if pIndMarginalResults            == 1:
-        MarginalResults           (DirName, CaseName, mTEPES, mTEPES,                 pIndPlotOutput)
-    if pIndEconomicResults            == 1:
-        EconomicResults           (DirName, CaseName, mTEPES, mTEPES, pIndAreaOutput, pIndPlotOutput)
+    if pIndInvestmentResults           == 1:
+        InvestmentResults          (DirName, CaseName, mTEPES, mTEPES, pIndTechnologyOutput,                 pIndPlotOutput)
+    if pIndGenerationOperationResults  == 1:
+        GenerationOperationResults (DirName, CaseName, mTEPES, mTEPES, pIndTechnologyOutput, pIndAreaOutput, pIndPlotOutput)
+    if pIndESSOperationResults         == 1 and len(mTEPES.es):
+        ESSOperationResults        (DirName, CaseName, mTEPES, mTEPES, pIndTechnologyOutput, pIndAreaOutput, pIndPlotOutput)
+    if pIndReservoirOperationResults   == 1 and len(mTEPES.rs) and mTEPES.pIndHydroTopology == 1:
+        ReservoirOperationResults  (DirName, CaseName, mTEPES, mTEPES, pIndTechnologyOutput,                 pIndPlotOutput)
+    if pIndNetworkH2OperationResults   == 1 and len(mTEPES.pa) and mTEPES.pIndHydrogen == 1:
+        NetworkH2OperationResults  (DirName, CaseName, mTEPES, mTEPES)
+    if pIndNetworkHeatOperationResults == 1 and len(mTEPES.ha) and mTEPES.pIndHeat == 1:
+        NetworkHeatOperationResults(DirName, CaseName, mTEPES, mTEPES)
+    if pIndFlexibilityResults          == 1:
+        FlexibilityResults         (DirName, CaseName, mTEPES, mTEPES)
+    if pIndReliabilityResults          == 1:
+        ReliabilityResults         (DirName, CaseName, mTEPES, mTEPES)
+    if pIndNetworkOperationResults     == 1:
+        NetworkOperationResults    (DirName, CaseName, mTEPES, mTEPES)
+    if pIndNetworkMapResults           == 1:
+        NetworkMapResults          (DirName, CaseName, mTEPES, mTEPES)
+    if pIndOperationSummaryResults     == 1:
+        OperationSummaryResults    (DirName, CaseName, mTEPES, mTEPES)
+    if pIndCostSummaryResults          == 1:
+        CostSummaryResults         (DirName, CaseName, mTEPES, mTEPES)
+    if pIndMarginalResults             == 1:
+        MarginalResults            (DirName, CaseName, mTEPES, mTEPES,                 pIndPlotOutput)
+    if pIndEconomicResults             == 1:
+        EconomicResults            (DirName, CaseName, mTEPES, mTEPES, pIndAreaOutput, pIndPlotOutput)
 
     TotalTime = time.time() - InitialTime
     print('Total time                             ... ', round(TotalTime), 's')

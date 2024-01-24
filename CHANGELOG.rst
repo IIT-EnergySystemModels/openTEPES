@@ -1,6 +1,13 @@
 Change Log
 =============
 
+[4.15.5] - 2024-01-24
+----------------------
+- [FIXED] fix error in output results with multiple
+- [CHANGED] add column ProductionFunctionHeat in Data_Generation file to consider heat production of generators
+- [CHANGED] add column HTNSCost in Data_Parameter file to consider heat not served cost
+- [CHANGED] add column IndBinNetHeatInvest in Data_Option file to consider binary or not heat network investment decisions
+
 [4.15.4] - 2024-01-18
 ----------------------
 - [FIXED] fix error when some scenarios have prob 0

@@ -79,6 +79,13 @@ They are written in **uppercase** letters.
 :math:`CHNS`              Cost of hydrogen not served                           €/tH2
 ========================  ====================================================  =======
 
+=========================  ====================================================  =======
+**Heat demand**
+-------------------------  ----------------------------------------------------  -------
+:math:`DHt^p_{\omega ni}`  Heat demand in each node                              Mcal
+:math:`CHtNS`              Cost of heat not served                               €/Mcal
+=========================  ====================================================  =======
+
 ===========================  ====================================================  =======
 **Scenarios**
 ---------------------------  ----------------------------------------------------  -------
@@ -165,8 +172,15 @@ The net transfer capacity of a transmission line can be different in each direct
 =========================================  =================================================================================================================  =====
 **Hydrogen transmission system**
 -----------------------------------------  -----------------------------------------------------------------------------------------------------------------  -----
-:math:`CFP_{ijc}`                          Annualized fixed cost of a candidate transmission pipeline                                                         M€/yr
+:math:`CFH_{ijc}`                          Annualized fixed cost of a candidate transmission pipeline                                                         M€/yr
 :math:`\overline{FH}_{ijc}`                Net transfer capacity (total transfer capacity multiplied by the security coefficient) of a pipeline               tH2
+=========================================  =================================================================================================================  =====
+
+=========================================  =================================================================================================================  =====
+**Heat transmission system**
+-----------------------------------------  -----------------------------------------------------------------------------------------------------------------  -----
+:math:`CFP_{ijc}`                          Annualized fixed cost of a candidate heat pipe                                                                     M€/yr
+:math:`\overline{FP}_{ijc}`                Net transfer capacity (total transfer capacity multiplied by the security coefficient) of a heat pipe              Mcal
 =========================================  =================================================================================================================  =====
 
 The net transfer capacity of a transmission pipeline can be different in each direction. However, here it is presented as equal for simplicity.
@@ -186,6 +200,12 @@ They are written in **lowercase** letters.
 **Hydrogen demand**
 --------------------------  -------------------  ---
 :math:`hns^p_{\omega ni}`   Hydrogen not served  GW
+==========================  ===================  ===
+
+==========================  ===================  ===
+**Heat demand**
+--------------------------  -------------------  ---
+:math:`htns^p_{\omega ni}`  Heat not served      GW
 ==========================  ===================  ===
 
 ============================================================  ==============================================================================  ================
@@ -229,8 +249,15 @@ They are written in **lowercase** letters.
 ========================================================================  ==============================================================  =====
 **Hydrogen pipeline transmission system**
 ------------------------------------------------------------------------  --------------------------------------------------------------  -----
-:math:`icp^p_{ijc}`                                                       Candidate pipeline installed or not                             {0,1}
+:math:`ich^p_{ijc}`                                                       Candidate pipeline installed or not                             {0,1}
 :math:`fh^p_{\omega nijc}`                                                Hydrogen flow through a line                                    tH2
+========================================================================  ==============================================================  =====
+
+========================================================================  ==============================================================  =====
+**Heat pipe transmission system**
+------------------------------------------------------------------------  --------------------------------------------------------------  -----
+:math:`icp^p_{ijc}`                                                       Candidate heat pipe installed or not                            {0,1}
+:math:`fp^p_{\omega nijc}`                                                Heat flow through a line                                        Mcal
 ========================================================================  ==============================================================  =====
 
 Equations
@@ -240,9 +267,9 @@ The names between parenthesis correspond to the names of the constraints in the 
 
 **Objective function**: minimization of total (investment and operation) cost for the multi-period scope of the model
 
-Generation, (energy and reservoir) storage and (electric and hydrogen) network investment cost plus retirement cost [M€] «``eTotalFCost``»
+Generation, (energy and reservoir) storage and (electric, hydrogen, and heat) network investment cost plus retirement cost [M€] «``eTotalFCost``»
 
-:math:`\sum_{pg} DF^p CFG_g icg^p_g + \sum_{pg} DF^p CFR_g rcg^p_g + \sum_{pijc} DF^p CFT_{ijc} ict^p_{ijc} + \sum_{pijc} DF^p CFP_{ijc} icp^p_{ijc} + \sum_{pe'} DF^p CFE_{e'} icr^p_{e'} +`
+:math:`\sum_{pg} DF^p CFG_g icg^p_g + \sum_{pg} DF^p CFR_g rcg^p_g + \sum_{pijc} DF^p CFT_{ijc} ict^p_{ijc} + \sum_{pijc} DF^p CFH_{ijc} ich^p_{ijc} + \sum_{pijc} DF^p CFP_{ijc} icp^p_{ijc} + \sum_{pe'} DF^p CFE_{e'} icr^p_{e'} +`
 
 Generation operation cost [M€] «``eTotalGCost``»
 
@@ -256,13 +283,9 @@ Variable consumption operation cost [M€] «``eTotalCCost``»
 
 :math:`\sum_{p \omega ne}{DF^p P^p_{\omega} DUR_n CV_e gc^p_{\omega ne}} +`
 
-Electricity reliability cost [M€] «``eTotalRCost``»
+Electricity, hydrogen, and heat reliability cost [M€] «``eTotalRCost``»
 
-:math:`\sum_{p \omega ni}{DF^p P^p_{\omega} DUR_n CENS ens^p_{\omega ni}}`
-
-Hydrogen reliability cost [M€] «``eTotalHRCost``»
-
-:math:`\sum_{p \omega ni}{DF^p P^p_{\omega} DUR_n CHNS hns^p_{\omega ni}}`
+:math:`\sum_{p \omega ni}{DF^p P^p_{\omega} DUR_n CENS  ens^p_{\omega ni}} + \sum_{p \omega ni}{DF^p P^p_{\omega} DUR_n CHNS  hns^p_{\omega ni}} `\sum_{p \omega ni}{DF^p P^p_{\omega} DUR_n CHtNS htns^p_{\omega ni}}`
 
 All the periodical (annual) costs of a period :math:`p` are updated considering that the period (e.g., 2030) is replicated for a number of years defined by its weight :math:`WG^p` (e.g., 5 times) and discounted to the base year :math:`T` (e.g., 2020) with this discount factor :math:`DF^p = \frac{(1+\delta)^{WG^p}-1}{\delta(1+\delta)^{WG^p-1+p-T}}`.
 
@@ -279,6 +302,8 @@ Investment and retirement decisions in consecutive years «``eConsecutiveGenInve
 :math:`icr^{p-1}_{e'} \leq icr^p_{e'} \quad \forall pe', e' \in CR`
 
 :math:`ict^{p-1}_{ijc} \leq ict^p_{ijc} \quad \forall pijc, ijc \in CL`
+
+:math:`ich^{p-1}_{ijc} \leq ich^p_{ijc} \quad \forall pijc, ijc \in CH`
 
 :math:`icp^{p-1}_{ijc} \leq icp^p_{ijc} \quad \forall pijc, ijc \in CP`
 
@@ -516,6 +541,12 @@ Balance of hydrogen generation and demand at each node [tH2] «``eBalanceH2``»
 
 :math:`\sum_{e \in i} DUR_n gc^p_{\omega ne} + hns^p_{\omega ni} = DUR_n DH^p_{\omega ni} + \sum_{jc} fh^p_{\omega nijc} - \sum_{jc} fh^p_{\omega njic} \quad \forall p \omega ni`
 
+**Heat network operation**
+
+Balance of heat generation and demand at each node [tH2] «``eBalanceHeat``»
+
+:math:`\sum_{e \in i} DUR_n gc^p_{\omega ne} + htns^p_{\omega ni} = DUR_n DF^p_{\omega ni} + \sum_{jc} fp^p_{\omega nijc} - \sum_{jc} fp^p_{\omega njic} \quad \forall p \omega ni`
+
 **Bounds on generation variables** [GW]
 
 :math:`0 \leq gp^p_{\omega ng}  \leq \overline{GP}^p_{\omega ng}                                   \quad \forall p \omega ng`
@@ -563,3 +594,7 @@ Voltage angle of the reference node fixed to 0 for each scenario, period, and lo
 **Bounds on hydrogen network variables** [tH2]
 
 :math:`- \overline{FH}_{ijc} \leq fh^p_{\omega nijc} \leq \overline{FH}_{ijc} \quad \forall p \omega nijc, ijc \in EP`
+
+**Bounds on heat network variables** [Mcal]
+
+:math:`- \overline{FP}_{ijc} \leq fp^p_{\omega nijc} \leq \overline{FP}_{ijc} \quad \forall p \omega nijc, ijc \in EP`

@@ -2,8 +2,8 @@
 
 Introduction
 ============
-The *Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS* **(openTEPES)** determines the investment plans of new facilities (generators, ESS, and electric lines and hydrogen pipelines)
-for supplying the forecasted demand at minimum cost. Its objective is to evaluate the future generation, storage, and electric and hydrogen network needs.
+The *Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS* **(openTEPES)** determines the investment plans of new facilities (generators, ESS, and electric lines, hydrogen pipelines, and heat pipes)
+for supplying the forecasted demand at minimum cost. Its objective is to evaluate the future generation, storage, and electric, hydrogen, and heat network needs.
 The main results are the guidelines for the future structure of the generation, storage, and transmission systems.
 
 The **openTEPES** model presents a decision support system for defining the integrated generation, storage, and transmission expansion plan (GEP+SEP+TEP) of a **large-scale electric system** at a tactical level (i.e., time horizons of 10-20 years),
@@ -11,7 +11,7 @@ defined as a set of **generation, storage, and electric and hydrogen networks dy
 
 It determines automatically optimal expansion plans that satisfy simultaneously several attributes. Its main characteristics are:
 
-- **Dynamic**: the scope of the model corresponds to several periods (years) at a long-term horizon, 2030, 2035 and 2040 for example.
+- **Dynamic (perfect foresight)**: the scope of the model corresponds to several periods (years) at a long-term horizon, 2030, 2035 and 2040 for example.
 
   It represents hierarchically the different time scopes to take decisions in an electric system:
   
@@ -22,11 +22,11 @@ It determines automatically optimal expansion plans that satisfy simultaneously 
   The period (year) must be represented by 8736 hours because several model concepts representing the system operation are based on weeks (168 hours) or months (made of 4 weeks, 672 hours).
 
 - **Stochastic**: several stochastic parameters that can influence the optimal generation, storage, and transmission expansion decisions are considered. The model considers stochastic
-  medium-term yearly uncertainties (scenarios) related to the system operation. These operation scenarios are associated with renewable energy sources, energy inflows and outflows, natural water inflows, operating reserves, inertia, and electricity and hydrogen demand.
+  medium-term yearly uncertainties (scenarios) related to the system operation. These operation scenarios are associated with renewable energy sources, energy inflows and outflows, natural water inflows, operating reserves, inertia, and electricity, hydrogen, and heat demand.
   
 The objective function incorporates the two main quantifiable costs: **generation, storage, and transmission investment cost (CAPEX)** and **expected variable operation costs (including generation, consumption, emission, and reliability costs) (system OPEX)**.
   
-The model formulates a **two-stage stochastic optimization** problem, including generation, storage, and electric and hydrogen network binary investment/retirement decisions, generation operation decisions (commitment, startup, and shutdown decisions are also binary), and electric line-switching decisions.
+The model formulates a **two-stage stochastic optimization** problem, including generation, storage, and electric, hydrogen, and heat network binary investment/retirement decisions, generation operation decisions (commitment, startup, and shutdown decisions are also binary), and electric line-switching decisions.
 The capacity expansion considers adequacy system reserve margin and minimum and maximum energy constraints.
 
 The very detailed operation model is an electric **network-constrained unit commitment (NCUC)** based on a **tight and compact** formulation, including **operating reserves** with a
@@ -35,12 +35,13 @@ battery, demand response, electric vehicles, solar thermal, alkaline water elect
 
 The model allows also a representation of the **hydro system** based on volume and water inflow data considering the water stream topology (hydro cascade basins). If they are not available it runs with an energy-based representation of the hydro system.
 
-Also, it includes a representation of **Power to Hydrogen (P2H2)** by setting the **hydrogen demand** satisfied by the production of hydrogen with electrolyzers (consume electricity to produce hydrogen) and a **hydrogen network** to distribute it. If they are not available it runs with just the electric system.
+Also, it includes a representation of **Power to Hydrogen (P2H2)** by setting the **hydrogen demand** satisfied by the production of hydrogen with electrolyzers (consume electricity to produce hydrogen) and a **hydrogen network** to distribute it.
+Besides, it includes a representation of **Power to Heat (P2H)** by setting the **heat demand** satisfied by the production of heat with heat pumps (consume electricity to produce heat) and a **heat network** to distribute it. If they are not available it runs with just the other energy carriers.
 
 The main results of the model can be structured in these topics:
   
-- **Investment**: (generation, storage, hydro reservoirs, electric lines and hydrogen pipelines) investment decisions and cost
-- **Operation**: unit commitment, startup, and shutdown of non-renewable units, unit output and aggregation by technologies (thermal, storage hydro, pumped-hydro storage, RES), RES curtailment, electric line and hydrogen pipeline flows, line ohmic losses, node voltage angles, upward and downward operating reserves, ESS inventory levels, hydro reservoir volumes, power and hydrogen not served
+- **Investment**: (generation, storage, hydro reservoirs, electric lines, hydrogen pipelines, and heat pipes) investment decisions and cost
+- **Operation**: unit commitment, startup, and shutdown of non-renewable units, unit output and aggregation by technologies (thermal, storage hydro, pumped-hydro storage, RES), RES curtailment, electric line, hydrogen pipeline, and heat pipe flows, line ohmic losses, node voltage angles, upward and downward operating reserves, ESS inventory levels, hydro reservoir volumes, power, hydrogen, and heat not served
 - **Emissions**: CO2 emissions by unit
 - **Marginal**: Locational Short-Run Marginal Costs (LSRMC), stored energy value, water volume value
 - **Economic**: operation, emission, and reliability costs and revenues from operation and operating reserves
