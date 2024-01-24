@@ -113,7 +113,7 @@ Miniconda (recommended)
    2. **Remark:** if Anaconda or Miniconda was installed previously, please check that python is registered in the environment variables.
 2. **Packages and Solver**:
 
-   1. Launch a new command prompt (Windows: Win+R, type "cmd", Enter)
+   1. Launch a new Anaconda prompt
    2. Install `CBC solver <https://github.com/coin-or/Cbc>`_ via `Conda <https://anaconda.org/conda-forge/coincbc>`_ by ``conda install -c conda-forge coincbc``. If you have any problem about the installation, you can also follow the steps that are shown in this `link <https://coin-or.github.io/user_introduction.html>`_.
    3. Install openTEPES via pip by ``pip install openTEPES``
 
@@ -123,7 +123,7 @@ Continue at `Get Started <#get-started>`_ and see the `Tips <#tips>`_.
 GitHub Repository (the hard way)
 ================================
 1. Clone the `openTEPES <https://github.com/IIT-EnergySystemModels/openTEPES/tree/master>`_ repository.
-2. Launch the command prompt (Windows: Win+R, type "cmd", Enter), or the Anaconda prompt
+2. Launch the Anaconda prompt
 3. Set up the path by ``cd "C:\Users\<username>\...\openTEPES"``. (Note that the path is where the repository was cloned.)
 4. Install openTEPES via pip by ``pip install .``
 
