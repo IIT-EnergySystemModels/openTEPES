@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - January 16, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - January 24, 2024
 """
 
 import time
@@ -50,9 +50,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
         OptModel.dual = Suffix(direction=Suffix.IMPORT_EXPORT)
         OptModel.rc   = Suffix(direction=Suffix.IMPORT_EXPORT)
 
-    if   SolverName == 'gurobi':
-        SolverResults = Solver.solve(OptModel, tee=True, report_timing=True)
-    elif SolverName == 'gams'  :
+    if SolverName == 'gams':
         SolverResults = Solver.solve(OptModel, tee=True, report_timing=True, symbolic_solver_labels=False, add_options=solver_options)
     else:
         SolverResults = Solver.solve(OptModel, tee=True, report_timing=True)
@@ -72,6 +70,24 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
         if not var.is_continuous():
             var.fixed = True  # fix the current value
             idx += 1
+
+    # continuous investment decisions are fixed to their optimal values
+    for gc in mTEPES.gc:
+        OptModel.vGenerationInvest[p,gc].fix(        OptModel.vGenerationInvest[p,gc]())
+    for gd in mTEPES.gd:
+        OptModel.vGenerationRetire[p,gd].fix(        OptModel.vGenerationRetire[p,gd]())
+    if mTEPES.pIndHydroTopology == 1:
+        for rc in mTEPES.rn:
+            OptModel.vReservoirInvest[p,rc].fix(     OptModel.vReservoirInvest [p,rc]())
+    for ni,nf,cc in mTEPES.lc:
+        OptModel.vNetworkInvest[p,ni,nf,cc].fix(     OptModel.vNetworkInvest [p,ni,nf,cc]())
+    if mTEPES.pIndHydrogen == 1:
+        for ni,nf,cc in mTEPES.pc:
+            OptModel.vH2PipeInvest  [p,ni,nf,cc].fix(OptModel.vH2PipeInvest  [p,ni,nf,cc]())
+    if mTEPES.pIndHeat == 1:
+        for ni,nf,cc in mTEPES.hc:
+            OptModel.vHeatPipeInvest[p,ni,nf,cc].fix(OptModel.vHeatPipeInvest[p,ni,nf,cc]())
+
     if idx > 0:
         OptModel.dual = Suffix(direction=Suffix.IMPORT_EXPORT)
         OptModel.rc   = Suffix(direction=Suffix.IMPORT_EXPORT)
@@ -105,9 +121,13 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
         print('  Total reservoir   investment cost [MEUR] ', 0.0)
     print    ('  Total network     investment cost [MEUR] ', sum(mTEPES.pDiscountedWeight[p] * mTEPES.pNetFixedCost  [ni,nf,cc]   * OptModel.vNetworkInvest   [p,ni,nf,cc]() for ni,nf,cc in mTEPES.lc))
     if mTEPES.pIndHydrogen      == 1 and len(mTEPES.pc):
-        print('  Total pipeline    investment cost [MEUR] ', sum(mTEPES.pDiscountedWeight[p] * mTEPES.pLineInvestCost[ni,nf,cc]   * OptModel.vPipelineInvest  [p,ni,nf,cc]() for ni,nf,cc in mTEPES.pc))
+        print('  Total H2 pipe     investment cost [MEUR] ', sum(mTEPES.pDiscountedWeight[p] * mTEPES.pLineInvestCost[ni,nf,cc]   * OptModel.vH2PipeInvest    [p,ni,nf,cc]() for ni,nf,cc in mTEPES.pc))
     else:
-        print('  Total pipeline    investment cost [MEUR] ', 0.0)
+        print('  Total H2 pipe     investment cost [MEUR] ', 0.0)
+    if mTEPES.pIndHeat          == 1 and len(mTEPES.hc):
+        print('  Total heat pipe   investment cost [MEUR] ', sum(mTEPES.pDiscountedWeight[p] * mTEPES.pLineInvestCost[ni,nf,cc]   * OptModel.vHeatPipeInvest  [p,ni,nf,cc]() for ni,nf,cc in mTEPES.hc))
+    else:
+        print('  Total heat pipe   investment cost [MEUR] ', 0.0)
     print    ('  Total generation  operation  cost [MEUR] ', sum(mTEPES.pDiscountedWeight[p] * mTEPES.pScenProb      [p,sc    ]() * OptModel.vTotalGCost      [p,sc,n    ]() for n        in mTEPES.n ))
     print    ('  Total consumption operation  cost [MEUR] ', sum(mTEPES.pDiscountedWeight[p] * mTEPES.pScenProb      [p,sc    ]() * OptModel.vTotalCCost      [p,sc,n    ]() for n        in mTEPES.n ))
     print    ('  Total emission               cost [MEUR] ', sum(mTEPES.pDiscountedWeight[p] * mTEPES.pScenProb      [p,sc    ]() * OptModel.vTotalECost      [p,sc,n    ]() for n        in mTEPES.n ))
