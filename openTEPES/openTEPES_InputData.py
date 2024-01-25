@@ -596,7 +596,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
 
     if pIndHeat        == 1:
         mTEPES.hn = Set(initialize=dfNetworkHeat.index,     ordered=False, doc='all input heat pipelines'                                                                                                )
-        mTEPES.ha = Set(initialize=mTEPES.hn,               ordered=False, doc='all real  heat pipelines'      , filter=lambda mTEPES,*hn     :  hn     in mTEPES.hn  and pHeatPipeNTCFrw     [hn] != 0.0 and pHeatPipeNTCFrw[pn] > 0.0 and pHeatPipeNTCBck[pn] > 0.0 and pHeatPipePeriodIni[pn] <= mTEPES.p.last() and pHeatPipePeriodFin[pn] >= mTEPES.p.first())
+        mTEPES.ha = Set(initialize=mTEPES.hn,               ordered=False, doc='all real  heat pipelines'      , filter=lambda mTEPES,*hn     :  hn     in mTEPES.hn  and pHeatPipeNTCFrw     [hn] != 0.0 and pHeatPipeNTCFrw[hn] > 0.0 and pHeatPipeNTCBck[hn] > 0.0 and pHeatPipePeriodIni[hn] <= mTEPES.p.last() and pHeatPipePeriodFin[hn] >= mTEPES.p.first())
         mTEPES.hc = Set(initialize=mTEPES.ha,               ordered=False, doc='candidate heat pipelines'      , filter=lambda mTEPES,*ha     :  ha     in mTEPES.ha  and pHeatPipeFixedCost  [ha] >  0.0)
         # existing heat pipes (he)
         mTEPES.he = mTEPES.ha - mTEPES.hc
