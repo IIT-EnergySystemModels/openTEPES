@@ -584,26 +584,26 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         mTEPES.rs = Set(initialize=[],                      ordered=False, doc='all input reservoirs')
         mTEPES.rn = Set(initialize=[],                      ordered=False, doc='candidate reservoirs')
     if pIndHydrogen      == 1:
-        mTEPES.pn = Set(initialize=dfNetworkHydrogen.index, ordered=False, doc='all input hydrogen pipelines'                                                                                            )
-        mTEPES.pa = Set(initialize=mTEPES.pn,               ordered=False, doc='all real  hydrogen pipelines'  , filter=lambda mTEPES,*pn     :  pn     in mTEPES.pn  and pH2PipeNTCFrw         [pn] != 0.0 and pH2PipeNTCFrw[pn] > 0.0 and pH2PipeNTCBck[pn] > 0.0 and pH2PipePeriodIni[pn] <= mTEPES.p.last() and pH2PipePeriodFin[pn] >= mTEPES.p.first())
-        mTEPES.pc = Set(initialize=mTEPES.pa,               ordered=False, doc='candidate hydrogen pipelines'  , filter=lambda mTEPES,*pa     :  pa     in mTEPES.pa  and pH2PipeFixedCost      [pa] >  0.0)
+        mTEPES.pn = Set(initialize=dfNetworkHydrogen.index, ordered=False, doc='all input hydrogen pipes'                                                                                          )
+        mTEPES.pa = Set(initialize=mTEPES.pn,               ordered=False, doc='all real  hydrogen pipes', filter=lambda mTEPES,*pn     :  pn     in mTEPES.pn  and pH2PipeNTCFrw         [pn] != 0.0 and pH2PipeNTCFrw[pn] > 0.0 and pH2PipeNTCBck[pn] > 0.0 and pH2PipePeriodIni[pn] <= mTEPES.p.last() and pH2PipePeriodFin[pn] >= mTEPES.p.first())
+        mTEPES.pc = Set(initialize=mTEPES.pa,               ordered=False, doc='candidate hydrogen pipes', filter=lambda mTEPES,*pa     :  pa     in mTEPES.pa  and pH2PipeFixedCost      [pa] >  0.0)
         # existing hydrogen pipelines (pe)
         mTEPES.pe = mTEPES.pa - mTEPES.pc
     else:
-        mTEPES.pn = Set(initialize=[],                      ordered=False, doc='all input hydrogen pipelines')
-        mTEPES.pa = Set(initialize=[],                      ordered=False, doc='all real  hydrogen pipelines')
-        mTEPES.pc = Set(initialize=[],                      ordered=False, doc='candidate hydrogen pipelines')
+        mTEPES.pn = Set(initialize=[],                      ordered=False, doc='all input hydrogen pipes')
+        mTEPES.pa = Set(initialize=[],                      ordered=False, doc='all real  hydrogen pipes')
+        mTEPES.pc = Set(initialize=[],                      ordered=False, doc='candidate hydrogen pipes')
 
     if pIndHeat        == 1:
-        mTEPES.hn = Set(initialize=dfNetworkHeat.index,     ordered=False, doc='all input heat pipelines'                                                                                                )
-        mTEPES.ha = Set(initialize=mTEPES.hn,               ordered=False, doc='all real  heat pipelines'      , filter=lambda mTEPES,*hn     :  hn     in mTEPES.hn  and pHeatPipeNTCFrw     [hn] != 0.0 and pHeatPipeNTCFrw[hn] > 0.0 and pHeatPipeNTCBck[hn] > 0.0 and pHeatPipePeriodIni[hn] <= mTEPES.p.last() and pHeatPipePeriodFin[hn] >= mTEPES.p.first())
-        mTEPES.hc = Set(initialize=mTEPES.ha,               ordered=False, doc='candidate heat pipelines'      , filter=lambda mTEPES,*ha     :  ha     in mTEPES.ha  and pHeatPipeFixedCost  [ha] >  0.0)
+        mTEPES.hn = Set(initialize=dfNetworkHeat.index,     ordered=False, doc='all input heat pipes'                                                                                          )
+        mTEPES.ha = Set(initialize=mTEPES.hn,               ordered=False, doc='all real  heat pipes', filter=lambda mTEPES,*hn     :  hn     in mTEPES.hn  and pHeatPipeNTCFrw     [hn] != 0.0 and pHeatPipeNTCFrw[hn] > 0.0 and pHeatPipeNTCBck[hn] > 0.0 and pHeatPipePeriodIni[hn] <= mTEPES.p.last() and pHeatPipePeriodFin[hn] >= mTEPES.p.first())
+        mTEPES.hc = Set(initialize=mTEPES.ha,               ordered=False, doc='candidate heat pipes', filter=lambda mTEPES,*ha     :  ha     in mTEPES.ha  and pHeatPipeFixedCost  [ha] >  0.0)
         # existing heat pipes (he)
         mTEPES.he = mTEPES.ha - mTEPES.hc
     else:
-        mTEPES.hn = Set(initialize=[],                      ordered=False, doc='all input heat pipe')
-        mTEPES.ha = Set(initialize=[],                      ordered=False, doc='all real  heat pipe')
-        mTEPES.hc = Set(initialize=[],                      ordered=False, doc='candidate heat pipe')
+        mTEPES.hn = Set(initialize=[],                      ordered=False, doc='all input heat pipes')
+        mTEPES.ha = Set(initialize=[],                      ordered=False, doc='all real  heat pipes')
+        mTEPES.hc = Set(initialize=[],                      ordered=False, doc='candidate heat pipes')
 
     # non-RES units, they can be committed and also contribute to the operating reserves
     mTEPES.nr = mTEPES.g - mTEPES.re
