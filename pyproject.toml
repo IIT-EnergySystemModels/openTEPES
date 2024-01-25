@@ -13,7 +13,7 @@ classifiers = [
   "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
   "Operating System :: OS Independent",
   "Programming Language :: Python :: 3.11",]
-requires-python = ">=3.8"
+requires-python = ">=3.11"
 description-file = "README.rst"
 requires = [
   "pyomo>=5.7.3",
