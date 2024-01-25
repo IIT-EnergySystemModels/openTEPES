@@ -1,6 +1,10 @@
 Change Log
 =============
 
+[4.15.6] - 2024-01-5
+----------------------
+- [CHANGED] some typos
+
 [4.15.5] - 2024-01-25
 ----------------------
 - [FIXED] fix error in output results with multiple
