@@ -114,7 +114,7 @@ Miniconda (recommended)
 2. **Packages and Solver**:
 
    1. Launch a new Anaconda prompt
-   2. The `CBC solver <https://github.com/coin-or/Cbc>`_ is our recommendation if you want a free and open-source solver. For Windows users, download the binaries from this `link <https://github.com/coin-or/Cbc/releases>`_, copy and paste the *cbc.exe* file to the Python folder of the Anaconda or Miniconda environment. In linux it can be installed using: ``conda install -c conda-forge coincbc``.
+   2. The `CBC solver <https://github.com/coin-or/Cbc>`_ is our recommendation if you want a free and open-source solver. For Windows users, download the binaries from this `this link <https://github.com/coin-or/Cbc/releases>`_, copy and paste the *cbc.exe* file to the Python folder of the Anaconda or Miniconda environment. In linux it can be installed using: ``conda install -c conda-forge coincbc``.
    3. Install openTEPES via pip by ``pip install openTEPES``
 
 Continue at `Get Started <#get-started>`_ and see the `Tips <#tips>`_.
@@ -136,7 +136,7 @@ As an easy option for installation, we have the free and open-source `GLPK solve
 
 CBC
 =====
-The `CBC solver <https://github.com/coin-or/Cbc>`_ is our recommendation if you want a free and open-source solver. For Windows users, the way to install the CBC solver is downloading the binaries from this `link <https://github.com/coin-or/Cbc/releases>`_, copy and paste the *cbc.exe* file to the Python folder of the Anaconda or Miniconda environment. In linux it can be installed using: ``conda install -c conda-forge coincbc``.
+The `CBC solver <https://github.com/coin-or/Cbc>`_ is our recommendation if you want a free and open-source solver. For Windows users, the way to install the CBC solver is downloading the binaries from this `this link <https://github.com/coin-or/Cbc/releases>`_, copy and paste the *cbc.exe* file to the Python folder of the Anaconda or Miniconda environment. In linux it can be installed using: ``conda install -c conda-forge coincbc``.
 
 Gurobi
 ======
@@ -151,7 +151,7 @@ To request the academic one, you can request `here <https://www.mosek.com/produc
 
 HiGHS
 =====
-The `HiGHS solver <https://github.com/ERGO-Code/HiGHS>`_ can also be used. For Windows users, the way to install the HiGHS solver is downloading the binaries from this `link <https://github.com/JuliaBinaryWrappers/HiGHSstatic_jll.jl/releases>`_, copy and paste the *highs.exe* file to the Python folder of the Anaconda or Miniconda environment.
+The `HiGHS solver <https://github.com/ERGO-Code/HiGHS>`_ can also be used. For Windows users, the way to install the HiGHS solver is downloading the binaries from this `this link <https://github.com/JuliaBinaryWrappers/HiGHSstatic_jll.jl/releases>`_, copy and paste the *highs.exe* file to the Python folder of the Anaconda or Miniconda environment.
 This solver is activated by calling the openTEPES model with the solver name 'appsi_highs'.
 
 GAMS
