@@ -164,7 +164,7 @@ Get started
 
 Developers
 ==========
-By cloning the `openTEPES <https://github.com/IIT-EnergySystemModels/openTEPES/tree/master>`_ repository, you can create branches and propose pull-request. Any help will be very appreciated.
+By cloning the openTEPES from `this link <https://github.com/IIT-EnergySystemModels/openTEPES/tree/master>`_ repository, you can create branches and propose pull-request. Any help will be very appreciated.
 
 Continue like the users for a simple way of executions.
 
