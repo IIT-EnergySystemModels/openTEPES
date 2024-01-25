@@ -65,7 +65,7 @@ Continue at `Get Started <#get-started>`_ and see the `Tips <#tips>`_.
 1. Clone the `openTEPES <https://github.com/IIT-EnergySystemModels/openTEPES.git>`_ repository.
 2. Launch the Anaconda prompt
 3. Set up the path by ``cd "C:\Users\<username>\...\openTEPES"``. (Note that the path is where the repository was cloned.)
-4. Install openTEPES via pip by ``pip install .``
+4. Install openTEPES via pip by ``pip install openTEPES``
 
 **Solvers**
 
@@ -127,7 +127,7 @@ Then, the **results** should be written in the folder who is called with the cas
 
     ``from openTEPES.openTEPES import openTEPES_run``
 
-    ``openTEPES_run(<case>, <dir>, <solver>)``
+    ``openTEPES_run(<case>, <dir>, <solver>, <result>, <log>)``
 
 **Tips**
 

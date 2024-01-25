@@ -125,7 +125,7 @@ GitHub Repository (the hard way)
 1. Clone the openTEPES repository.
 2. Launch the Anaconda prompt
 3. Set up the PATH by ``cd "C:\Users\<username>\...\openTEPES"``. (Note that the path is where the repository was cloned.)
-4. Install openTEPES via pip by ``pip install .``
+4. Install openTEPES via pip by ``pip install openTEPES.``
 
 Solvers
 #######
@@ -178,12 +178,12 @@ In the directory of your choice, open and execute the openTEPES_run.py script by
 
      ``openTEPES_Main``
 
-Then, four parameters (case, dir, solver, and console log) will be asked for.
+Then, four parameters (case, dir, solver, results, and console log) will be asked for.
 
 **Remark:** at this step only press enter for each input and openTEPES will be executed with the default parameters.
 
 After this in a directory of your choice, make a copy of the `9n <https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/9n>`_ or `sSEP <https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/sSEP>`_ case to create a new case of your choice but using the current format of the CSV files.
-A proper execution by ``openTEPES_Main`` can be made by introducing the new case and the directory of your choice. Note that the solver is **glpk** by default, but it can be changed by other solvers that pyomo supports (e.g., gurobi, mosek).
+A proper execution by ``openTEPES_Main`` can be made by introducing the new case and the directory of your choice. Note that the solver is **cbc** by default, but it can be changed by other solvers that pyomo supports (e.g., gurobi, highs, mosek).
 
 Then, the **results** should be written in the folder who is called with the case name. The results contain plots and summary spreadsheets for multiple optimised energy scenarios, periods and load levels as well as the investment decisions.
 
@@ -191,7 +191,7 @@ Then, the **results** should be written in the folder who is called with the cas
 
     ``from openTEPES.openTEPES import openTEPES_run``
 
-    ``openTEPES_run(<case>, <dir>, <solver>)``
+    ``openTEPES_run(<case>, <dir>, <solver>, <result>, <log>)``
 
 Tips
 ####
