@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - January 23, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - January 25, 2024
 """
 
 import datetime
@@ -1298,8 +1298,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
 
     if pIndHeat == 1:
         mTEPES.pHeatPipeLength       = Param(mTEPES.hn,    initialize=pHeatPipeLength.to_dict()      , within=NonNegativeReals, doc='Heat pipe length',                                 mutable=True)
-        mTEPES.pHeatPeriodIniPipe    = Param(mTEPES.hn,    initialize=pHeatPeriodIniPipe.to_dict()   , within=PositiveIntegers, doc='Installation period'                                           )
-        mTEPES.pHeatPeriodFinPipe    = Param(mTEPES.hn,    initialize=pHeatPeriodFinPipe.to_dict()   , within=PositiveIntegers, doc='Retirement   period'                                           )
+        mTEPES.pHeatPipePeriodIni    = Param(mTEPES.hn,    initialize=pHeatPipePeriodIni.to_dict()   , within=PositiveIntegers, doc='Installation period'                                           )
+        mTEPES.pHeatPipePeriodFin    = Param(mTEPES.hn,    initialize=pHeatPipePeriodFin.to_dict()   , within=PositiveIntegers, doc='Retirement   period'                                           )
         mTEPES.pHeatPipeNTCFrw       = Param(mTEPES.hn,    initialize=pHeatPipeNTCFrw.to_dict()      , within=NonNegativeReals, doc='Heat pipe NTC forward'                                         )
         mTEPES.pHeatPipeNTCBck       = Param(mTEPES.hn,    initialize=pHeatPipeNTCBck.to_dict()      , within=NonNegativeReals, doc='Heat pipe NTC backward'                                        )
         mTEPES.pHeatPipeFixedCost    = Param(mTEPES.hc,    initialize=pHeatPipeFixedCost.to_dict()   , within=NonNegativeReals, doc='Heat pipe fixed cost'                                          )
