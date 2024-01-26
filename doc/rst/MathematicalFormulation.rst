@@ -112,6 +112,12 @@ They are written in **uppercase** letters.
 :math:`EL_{pa}`                     Maximum CO2 emission for each period, scenario, and area          MtCO2
 ==================================  ================================================================  =====
 
+==================================  ================================================================  =====
+**Minimum RES energy**
+----------------------------------  ----------------------------------------------------------------  -----
+:math:`RL_{pa}`                     Minimum RES energy for each period, scenario, and area            GWh
+==================================  ================================================================  =====
+
 ==============================  ========================================================  ====
 **System inertia**
 ------------------------------  --------------------------------------------------------  ----
@@ -329,7 +335,11 @@ Adequacy system reserve margin [p.u.] «``eAdequacyReserveMargin``»
 
 Maximum CO2 emission [MtC02] «``eMaxSystemEmission``»
 
-:math:`\sum_{ng} {DUR_n gp^p_{\omega ng}} \leq EL_{pa} \quad \forall p \omega a`
+:math:`\sum_{ng} {DUR_n CE^p_{\omega ng} gp^p_{\omega ng}} \leq EL_{pa} \quad \forall p \omega a`
+
+Minimum RES energy [GWh] «``eMinSystemEnergy``»
+
+:math:`\sum_{ng} {DUR_n gp^p_{\omega ng}} \geq RL_{pa} \quad \forall p \omega a`
 
 Balance of electric generation and demand at each node with ohmic losses [GW] «``eBalance``»
 
