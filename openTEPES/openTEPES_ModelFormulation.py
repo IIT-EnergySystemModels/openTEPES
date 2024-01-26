@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - January 23, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - January 26, 2023
 """
 
 import time
@@ -277,12 +277,12 @@ def GenerationOperationModelFormulationInvestment(OptModel, mTEPES, pIndLogConso
     if pIndLogConsole == 1:
         print('eMaxSystemEmission    ... ', len(getattr(OptModel, 'eMaxSystemEmission_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
 
-    def eMaxSystemEnergy(OptModel,p,ar):
+    def eMinSystemEnergy(OptModel,p,ar):
         if mTEPES.pRESEnergy[p,ar] < math.inf:
             return sum(OptModel.vTotalRESEnergyArea[p,sc,n,ar] for n in mTEPES.nn) >= mTEPES.pRESEnergy[p,ar]
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eMaxSystemEnergy_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.p, mTEPES.ar, rule=eMaxSystemEnergy, doc='minimum RES energy [GWh]'))
+    setattr(OptModel, 'eMinSystemEnergy_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.p, mTEPES.ar, rule=eMinSystemEnergy, doc='minimum RES energy [GWh]'))
 
     if pIndLogConsole == 1:
         print('eMaxSystemEnergy      ... ', len(getattr(OptModel, 'eMaxSystemEnergy_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
