@@ -91,6 +91,7 @@ File                                       Description
 ``oT_Data_Stage.csv``                      Weight of each stage
 ``oT_Data_ReserveMargin.csv``              Minimum adequacy reserve margin for each area and period
 ``oT_Data_Emission.csv``                   Maximum CO2 emission
+``oT_Data_RESEnergy.csv``                  Minimum RES energy
 ``oT_Data_Duration.csv``                   Duration of the load levels
 ``oT_Data_Demand.csv``                     Electricity demand
 ``oT_Data_Inertia.csv``                    System inertia by area
@@ -231,6 +232,19 @@ Period          Area            CO2Emission    Maximum CO2 emission for each per
 ==============  ==============  =============  ===========================================================  =====
 
 This parameter is only used for system generation expansion, not for the system operation. If no value is introduced for an area, the CO2 emission limit is considered infinite.
+
+Minimum RES energy
+------------------
+
+A description of the data included in the file ``oT_Data_RESEnergy.csv`` follows:
+
+==============  ==============  =============  ===========================================================  =====
+Identifier      Identifier      Header         Description
+==============  ==============  =============  ===========================================================  =====
+Period          Area            RESEnergy      Minimum RES energy for each period, scenario, and area       GWh
+==============  ==============  =============  ===========================================================  =====
+
+If no value is introduced for an area, the RES energy limit is considered 0.
 
 Duration
 --------

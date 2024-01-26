@@ -26,6 +26,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     dfDuration              = pd.read_csv(_path+'/oT_Data_Duration_'              +CaseName+'.csv', index_col=[0    ])
     dfReserveMargin         = pd.read_csv(_path+'/oT_Data_ReserveMargin_'         +CaseName+'.csv', index_col=[0,1  ])
     dfEmission              = pd.read_csv(_path+'/oT_Data_Emission_'              +CaseName+'.csv', index_col=[0,1  ])
+    dfRESEnergy             = pd.read_csv(_path+'/oT_Data_RESEnergy_'             +CaseName+'.csv', index_col=[0,1  ])
     dfDemand                = pd.read_csv(_path+'/oT_Data_Demand_'                +CaseName+'.csv', index_col=[0,1,2])
     dfInertia               = pd.read_csv(_path+'/oT_Data_Inertia_'               +CaseName+'.csv', index_col=[0,1,2])
     dfUpOperatingReserve    = pd.read_csv(_path+'/oT_Data_OperatingReserveUp_'    +CaseName+'.csv', index_col=[0,1,2])
@@ -84,6 +85,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     dfDuration.fillna             (0  , inplace=True)
     dfReserveMargin.fillna        (0.0, inplace=True)
     dfEmission.fillna             (math.inf , inplace=True)
+    dfRESEnergy.fillna            (0.0, inplace=True)
     dfDemand.fillna               (0.0, inplace=True)
     dfInertia.fillna              (0.0, inplace=True)
     dfUpOperatingReserve.fillna   (0.0, inplace=True)
@@ -121,6 +123,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
 
     dfReserveMargin         = dfReserveMargin.where       (dfReserveMargin        > 0.0, 0.0)
     dfEmission              = dfEmission.where            (dfEmission             > 0.0, 0.0)
+    dfRESEnergy             = dfRESEnergy.where           (dfRESEnergy             > 0.0, 0.0)
     dfInertia               = dfInertia.where             (dfInertia              > 0.0, 0.0)
     dfUpOperatingReserve    = dfUpOperatingReserve.where  (dfUpOperatingReserve   > 0.0, 0.0)
     dfDwOperatingReserve    = dfDwOperatingReserve.where  (dfDwOperatingReserve   > 0.0, 0.0)
@@ -147,6 +150,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     if pIndLogConsole == 1:
         print('Reserve margin                        \n', dfReserveMargin.describe       (), '\n')
         print('Maximum CO2 emission                  \n', dfEmission.describe            (), '\n')
+        print('Minimum RES energy                    \n', dfRESEnergy.describe           (), '\n')
         print('Electricity demand                    \n', dfDemand.describe              (), '\n')
         print('Inertia                               \n', dfInertia.describe             (), '\n')
         print('Upward   operating reserves           \n', dfUpOperatingReserve.describe  (), '\n')
@@ -293,6 +297,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pDuration              = dfDuration     ['Duration'      ] * pTimeStep               # duration of load levels                   [h]
     pReserveMargin         = dfReserveMargin['ReserveMargin' ]                           # minimum adequacy reserve margin           [p.u.]
     pEmission              = dfEmission     ['CO2Emission'   ]                           # maximum CO2 emission                      [MtCO2]
+    pRESEnergy             = dfRESEnergy    ['RESEnergy'     ]                           # minimum RES energy                        [GWh]
     pLevelToStage          = dfDuration     ['Stage'         ]                           # load levels assignment to stages
     pDemand                = dfDemand              [mTEPES.nd] * 1e-3                    # electric demand                           [GW]
     pSystemInertia         = dfInertia             [mTEPES.ar]                           # inertia                                   [s]
@@ -557,11 +562,11 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.n2     = Set(initialize=mTEPES.nn,               ordered=True , doc='load levels'                   , filter=lambda mTEPES,nn      :  nn     in mTEPES.nn  and pDuration           [nn] >  0  )
     mTEPES.g      = Set(initialize=mTEPES.gg,               ordered=False, doc='generating      units'         , filter=lambda mTEPES,gg      :  gg     in mTEPES.gg  and (pRatedMaxPower     [gg] >  0.0 or                                pRatedMaxCharge[gg] > 0.0) and pPeriodIniGen[gg] <= mTEPES.p.last() and pPeriodFinGen[gg] >= mTEPES.p.first() and pGenToNode.reset_index().set_index(['index']).isin(mTEPES.nd)['Node'][gg])  # excludes generators with empty node
     mTEPES.t      = Set(initialize=mTEPES.g ,               ordered=False, doc='thermal         units'         , filter=lambda mTEPES,g       :  g      in mTEPES.g   and pRatedLinearOperCost[g ] >  0.0)
-    mTEPES.re     = Set(initialize=mTEPES.g ,               ordered=False, doc='RES             units'         , filter=lambda mTEPES,g       :  g      in mTEPES.g   and pRatedLinearOperCost[g ] == 0.0 and pRatedMaxStorage[g] == 0.0                            and pProductionFunctionH2  [g ] == 0.0 and pProductionFunctionHeat[g ] == 0.0  and pProductionFunction[g] == 0.0)
-    mTEPES.es     = Set(initialize=mTEPES.g ,               ordered=False, doc='ESS             units'         , filter=lambda mTEPES,g       :  g      in mTEPES.g   and                                    (pRatedMaxStorage[g] >  0.0 or pRatedMaxCharge[g] > 0.0 or pProductionFunctionH2  [g ]  > 0.0  or pProductionFunctionHeat[g ]  > 0.0) and pProductionFunction[g] == 0.0)
-    mTEPES.h      = Set(initialize=mTEPES.g ,               ordered=False, doc='hydro           units'         , filter=lambda mTEPES,g       :  g      in mTEPES.g                                                                                                 and pProductionFunctionH2  [g ] == 0.0 and pProductionFunctionHeat[g ] == 0.0  and pProductionFunction[g]  > 0.0)
-    mTEPES.el     = Set(initialize=mTEPES.es,               ordered=False, doc='electrolyzer    units'         , filter=lambda mTEPES,es      :  es     in mTEPES.es                                                                                                and pProductionFunctionH2  [es]  > 0.0 and pProductionFunctionHeat[es] == 0.0                                   )
-    mTEPES.hp     = Set(initialize=mTEPES.es,               ordered=False, doc='heat pump       units'         , filter=lambda mTEPES,es      :  es     in mTEPES.es                                                                                                and pProductionFunctionH2  [es] == 0.0 and pProductionFunctionHeat[es]  > 0.0                                   )
+    mTEPES.re     = Set(initialize=mTEPES.g ,               ordered=False, doc='RES             units'         , filter=lambda mTEPES,g       :  g      in mTEPES.g   and pRatedLinearOperCost[g ] == 0.0 and pRatedMaxStorage[g] == 0.0                            and pProductionFunctionH2[g ] == 0.0 and pProductionFunctionHeat[g ] == 0.0  and pProductionFunction[g] == 0.0)
+    mTEPES.es     = Set(initialize=mTEPES.g ,               ordered=False, doc='ESS             units'         , filter=lambda mTEPES,g       :  g      in mTEPES.g   and                                    (pRatedMaxStorage[g] >  0.0 or pRatedMaxCharge[g] > 0.0 or pProductionFunctionH2[g ]  > 0.0  or pProductionFunctionHeat[g ]  > 0.0) and pProductionFunction[g] == 0.0)
+    mTEPES.h      = Set(initialize=mTEPES.g ,               ordered=False, doc='hydro           units'         , filter=lambda mTEPES,g       :  g      in mTEPES.g                                                                                                 and pProductionFunctionH2[g ] == 0.0 and pProductionFunctionHeat[g ] == 0.0  and pProductionFunction[g]  > 0.0)
+    mTEPES.el     = Set(initialize=mTEPES.es,               ordered=False, doc='electrolyzer    units'         , filter=lambda mTEPES,es      :  es     in mTEPES.es                                                                                                and pProductionFunctionH2[es]  > 0.0 and pProductionFunctionHeat[es] == 0.0                                   )
+    mTEPES.hp     = Set(initialize=mTEPES.es,               ordered=False, doc='heat pump       units'         , filter=lambda mTEPES,es      :  es     in mTEPES.es                                                                                                and pProductionFunctionH2[es] == 0.0 and pProductionFunctionHeat[es]  > 0.0                                   )
     mTEPES.gc     = Set(initialize=mTEPES.g ,               ordered=False, doc='candidate       units'         , filter=lambda mTEPES,g       :  g      in mTEPES.g   and pGenInvestCost      [g ] >  0.0)
     mTEPES.gd     = Set(initialize=mTEPES.g ,               ordered=False, doc='retirement      units'         , filter=lambda mTEPES,g       :  g      in mTEPES.g   and pGenRetireCost      [g ] != 0.0)
     mTEPES.ec     = Set(initialize=mTEPES.es,               ordered=False, doc='candidate ESS   units'         , filter=lambda mTEPES,es      :  es     in mTEPES.es  and pGenInvestCost      [es] >  0.0)
@@ -1018,6 +1023,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     # drop values not par, p, or ps
     pReserveMargin = pReserveMargin.loc[mTEPES.par]
     pEmission      = pEmission.loc     [mTEPES.par]
+    pRESEnergy     = pRESEnergy.loc    [mTEPES.par]
     pPeakDemand    = pPeakDemand.loc   [mTEPES.par]
     pPeriodWeight  = pPeriodWeight.loc [mTEPES.p  ]
     pScenProb      = pScenProb.loc     [mTEPES.ps ]
@@ -1157,6 +1163,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
 
     mTEPES.pReserveMargin        = Param(mTEPES.par,   initialize=pReserveMargin.to_dict()            , within=NonNegativeReals,    doc='Adequacy reserve margin'                             )
     mTEPES.pEmission             = Param(mTEPES.par,   initialize=pEmission.to_dict()                 , within=NonNegativeReals,    doc='Maximum CO2 emission'                                )
+    mTEPES.pRESEnergy            = Param(mTEPES.par,   initialize=pRESEnergy.to_dict()                , within=NonNegativeReals,    doc='Minimum RES energy'                                )
     mTEPES.pPeakDemand           = Param(mTEPES.par,   initialize=pPeakDemand.to_dict()               , within=NonNegativeReals,    doc='Peak electric demand'                                )
     mTEPES.pDemand               = Param(mTEPES.psnnd, initialize=pDemand.stack().to_dict()           , within=           Reals,    doc='Electric demand'                                     )
     mTEPES.pDemandAbs            = Param(mTEPES.psnnd, initialize=pDemandAbs.stack().to_dict()        , within=NonNegativeReals,    doc='Electric demand'                                     )
@@ -1383,6 +1390,7 @@ def SettingUpVariables(OptModel, mTEPES):
     OptModel.vTotalECost              = Var(mTEPES.psn,   within=NonNegativeReals,                          doc='total system emission                cost      [MEUR]')
     OptModel.vTotalRCost              = Var(mTEPES.psn,   within=NonNegativeReals,                          doc='total system reliability             cost      [MEUR]')
     OptModel.vTotalECostArea          = Var(mTEPES.psnar, within=NonNegativeReals,                          doc='total   area emission                cost      [MEUR]')
+    OptModel.vTotalRESEnergyArea      = Var(mTEPES.psnar, within=NonNegativeReals,                          doc='        RES energy                              [GWh]')
 
     OptModel.vTotalOutput             = Var(mTEPES.psng , within=NonNegativeReals,                 doc='total output of the unit                         [GW]')
     OptModel.vOutput2ndBlock          = Var(mTEPES.psnnr, within=NonNegativeReals,                 doc='second block of the unit                         [GW]')

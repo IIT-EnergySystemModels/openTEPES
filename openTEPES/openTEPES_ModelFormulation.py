@@ -166,6 +166,13 @@ def GenerationOperationModelFormulationObjFunct(OptModel, mTEPES, pIndLogConsole
             return Constraint.Skip
     setattr(OptModel, 'eTotalECostArea_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.ar, rule=eTotalECostArea, doc='area emission cost [MEUR]'))
 
+    def eTotalRESEnergyArea(OptModel,n,ar):
+        if (st,n) in mTEPES.s2n:
+            return OptModel.vTotalRESEnergyArea[p,sc,n,ar] == sum(mTEPES.pLoadLevelDuration[n] * OptModel.vTotalOutput[p,sc,n,re] for re in mTEPES.re if (ar,re) in mTEPES.a2g)
+        else:
+            return Constraint.Skip
+    setattr(OptModel, 'eTotalRESEnergyArea_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.ar, rule=eTotalRESEnergyArea, doc='area RES energy [GWh]'))
+
     def eTotalRCost(OptModel,n):
         if (st,n) in mTEPES.s2n:
             if   mTEPES.pIndHydrogen == 0 and mTEPES.pIndHeat == 0:
@@ -269,6 +276,16 @@ def GenerationOperationModelFormulationInvestment(OptModel, mTEPES, pIndLogConso
 
     if pIndLogConsole == 1:
         print('eMaxSystemEmission    ... ', len(getattr(OptModel, 'eMaxSystemEmission_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+
+    def eMaxSystemEnergy(OptModel,p,ar):
+        if mTEPES.pRESEnergy[p,ar] < math.inf:
+            return sum(OptModel.vTotalRESEnergyArea[p,sc,n,ar] for n in mTEPES.nn) >= mTEPES.pRESEnergy[p,ar]
+        else:
+            return Constraint.Skip
+    setattr(OptModel, 'eMaxSystemEnergy_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.p, mTEPES.ar, rule=eMaxSystemEnergy, doc='minimum RES energy [GWh]'))
+
+    if pIndLogConsole == 1:
+        print('eMaxSystemEnergy      ... ', len(getattr(OptModel, 'eMaxSystemEnergy_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
 
     GeneratingTime = time.time() - StartTime
     if pIndLogConsole == 1:
