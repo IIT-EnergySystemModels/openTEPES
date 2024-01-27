@@ -337,7 +337,7 @@ Maximum CO2 emission [MtC02] «``eMaxSystemEmission``»
 
 :math:`\sum_{ng} {DUR_n CE^p_{\omega ng} gp^p_{\omega ng}} \leq EL_{pa} \quad \forall p \omega a`
 
-Minimum RES energy [GWh] «``eMinSystemEnergy``»
+Minimum RES energy [GWh] «``eMinSystemRESEnergy``»
 
 :math:`\sum_{ng} {DUR_n gp^p_{\omega ng}} \geq RL_{pa} \quad \forall p \omega a`
 

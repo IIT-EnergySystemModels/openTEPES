@@ -231,7 +231,7 @@ Identifier      Identifier      Header         Description
 Period          Area            CO2Emission    Maximum CO2 emission for each period, scenario, and area     MtCO2
 ==============  ==============  =============  ===========================================================  =====
 
-This parameter is only used for system generation expansion, not for the system operation. If no value is introduced for an area, the CO2 emission limit is considered infinite.
+If no value is introduced for an area, the CO2 emission limit is considered infinite.
 
 Minimum RES energy
 ------------------

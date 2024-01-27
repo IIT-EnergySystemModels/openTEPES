@@ -1,7 +1,7 @@
 Change Log
 =============
 
-[4.15.7] - 2024-01-26
+[4.15.7] - 2024-01-27
 ----------------------
 - [CHANGED] add minimum RES energy in Data_RESEnergy file to consider minimum RES energy production
 
