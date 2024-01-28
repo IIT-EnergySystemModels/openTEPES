@@ -337,9 +337,9 @@ Maximum CO2 emission [MtC02] «``eMaxSystemEmission``»
 
 :math:`\sum_{ng} {DUR_n CE^p_{\omega ng} gp^p_{\omega ng}} \leq EL_{pa} \quad \forall p \omega a`
 
-Minimum RES energy [GWh] «``eMinSystemRESEnergy``»
+Minimum RES energy [GW] «``eMinSystemRESEnergy``»
 
-:math:`\sum_{ng} {DUR_n gp^p_{\omega ng}} \geq RL_{pa} \quad \forall p \omega a`
+:math:`\frac{\sum_{ng} {DUR_n gp^p_{\omega ng}}}{\sum_{n} {DUR_n}} \geq \frac{RL_{pa}}{\sum_{n} {DUR_n}}  \quad \forall p \omega a`
 
 Balance of electric generation and demand at each node with ohmic losses [GW] «``eBalance``»
 

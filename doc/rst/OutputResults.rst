@@ -977,6 +977,14 @@ Identifier    Identifier  Header      Description
 Period        Scenario    Area        Marginal of the maximum CO2 emission [€/tCO2]
 ============  ==========  ==========  =================================================
 
+File ``oT_Result_MarginalRESEnergy.csv``
+
+============  ==========  ==========  =================================================
+Identifier    Identifier  Header      Description
+============  ==========  ==========  =================================================
+Period        Scenario    Area        Marginal of the minimum RES energy [€/MWh]
+============  ==========  ==========  =================================================
+
 File ``oT_Result_MarginalIncrementalVariableCost.csv``
 
 ============  ==========  ==========  ==============  ===============================================================================================
