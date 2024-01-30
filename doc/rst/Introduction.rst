@@ -6,7 +6,7 @@ The *Open Generation, Storage, and Transmission Operation and Expansion Planning
 for supplying the forecasted demand at minimum cost. Its objective is to evaluate the future generation, storage, and electric, hydrogen, and heat network needs.
 The main results are the guidelines for the future structure of the generation, storage, and transmission systems.
 
-The **openTEPES** model presents a decision support system for defining the integrated generation, storage, and transmission expansion plan (GEP+SEP+TEP) of a **large-scale electric system** at a tactical level (i.e., time horizons of 10-20 years),
+The **openTEPES** model presents a decision support system for defining the integrated generation, storage, and transmission resource planning (IRP, GEP+SEP+TEP) of a **large-scale electric system** at a tactical level (i.e., time horizons of 10-20 years),
 defined as a set of **generation, storage, and (electric, hydrogen, and heat) networks dynamic investment decisions for multiple future years**. The user pre-defined the expansion candidates, so the model determines the optimal decisions among those specified by the user.
 
 It determines automatically optimal expansion plans that satisfy simultaneously several attributes. Its main characteristics are:
