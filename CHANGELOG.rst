@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.15.7] - 2024-01-28
+[4.15.7] - 2024-01-30
 ----------------------
+- [FIXED] fix error for stages with duration 0
 - [CHANGED] add minimum RES energy in Data_RESEnergy file to consider minimum RES energy production
 - [CHANGED] scale eMinSystemRESEnergy to GW instead of GWh
 - [CHANGED] add MarginalRESenergy output file to consider the marginal RES energy production

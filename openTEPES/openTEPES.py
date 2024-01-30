@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - January 28, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - January 30, 2024
 """
 
 import math
@@ -38,8 +38,8 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     idxDict['y'  ] = 1
 
     #%% model declaration
-    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.15.7 - January 28, 2024')
-    print(                 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.15.7 - January 28, 2024', file=open(_path+'/openTEPES_version_'+CaseName+'.log','a'))
+    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.15.7 - January 30, 2024')
+    print(                 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.15.7 - January 30, 2024', file=open(_path+'/openTEPES_version_'+CaseName+'.log','a'))
 
     pIndOutputResults = [j for i,j in idxDict.items() if i == pIndOutputResults][0]
     pIndLogConsole    = [j for i,j in idxDict.items() if i == pIndLogConsole   ][0]
@@ -57,61 +57,53 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     # initialize parameter for dual variables
     mTEPES.pDuals = {}
 
+    # last period, scenario, and stage
+    for p,sc in mTEPES.ps:
+        mTEPES.Last_p  = p
+        mTEPES.Last_sc = sc
+    for st in mTEPES.st:
+        mTEPES.Last_st = st
+
     # iterative model formulation for each stage of a year
     for p,sc,st in mTEPES.ps*mTEPES.stt:
         # activate only load levels to formulate
         mTEPES.del_component(mTEPES.st)
         mTEPES.del_component(mTEPES.n )
         mTEPES.del_component(mTEPES.n2)
-        mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in st == stt and mTEPES.pStageWeight and sum(1 for (st,nn) in mTEPES.s2n))
-        mTEPES.n  = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn:  nn  in               mTEPES.pDuration    and           (st,nn) in mTEPES.s2n)
-        mTEPES.n2 = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn:  nn  in               mTEPES.pDuration    and           (st,nn) in mTEPES.s2n)
+        mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in st == stt and mTEPES.pStageWeight[stt] and sum(1 for (st,nn) in mTEPES.s2n))
+        mTEPES.n  = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn:  nn  in mTEPES.nn                              and           (st,nn) in mTEPES.s2n)
+        mTEPES.n2 = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn:  nn  in mTEPES.nn                              and           (st,nn) in mTEPES.s2n)
 
-        # load levels up to the current stage for emission and RES energy constraints
-        if (p != mTEPES.pp.first() or sc != mTEPES.scc.first()) and st == mTEPES.stt.first():
-            mTEPES.del_component(mTEPES.na)
-        if st == mTEPES.stt.first():
-            mTEPES.na = Set(initialize=mTEPES.n)
-        else:
-            mTEPES.na = mTEPES.na | mTEPES.n
+        if len(mTEPES.st):
 
-        print('Period '+str(p)+', Scenario '+str(sc)+', Stage '+str(st))
+            # load levels up to the current stage for emission and RES energy constraints
+            if (p != mTEPES.pp.first() or sc != mTEPES.scc.first()) and st == mTEPES.stt.first():
+                mTEPES.del_component(mTEPES.na)
+            if st == mTEPES.stt.first():
+                mTEPES.na = Set(initialize=mTEPES.n)
+            else:
+                mTEPES.na = mTEPES.na | mTEPES.n
 
-        # operation model objective function and constraints by stage
-        GenerationOperationModelFormulationObjFunct     (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
-        GenerationOperationModelFormulationInvestment   (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
-        GenerationOperationModelFormulationDemand       (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
-        GenerationOperationModelFormulationStorage      (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
-        if mTEPES.pIndHydroTopology == 1:
-            GenerationOperationModelFormulationReservoir(mTEPES, mTEPES, pIndLogConsole, p, sc, st)
-        if mTEPES.pIndHydrogen == 1:
-            NetworkH2OperationModelFormulation          (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
-        if mTEPES.pIndHeat == 1:
-            NetworkHeatOperationModelFormulation        (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
-        GenerationOperationModelFormulationCommitment   (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
-        GenerationOperationModelFormulationRampMinTime  (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
-        NetworkSwitchingModelFormulation                (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
-        NetworkOperationModelFormulation                (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
+            print('Period '+str(p)+', Scenario '+str(sc)+', Stage '+str(st))
 
-        if (len(mTEPES.gc) == 0 or (len(mTEPES.gc) > 0 and mTEPES.pIndBinGenInvest() == 2)) and (len(mTEPES.gd) == 0 or (len(mTEPES.gd) > 0 and mTEPES.pIndBinGenRetire() == 2)) and (len(mTEPES.lc) == 0 or (len(mTEPES.lc) > 0 and mTEPES.pIndBinNetInvest() == 2)) and (min([mTEPES.pEmission[p,ar] for ar in mTEPES.ar]) == math.inf or sum(mTEPES.pEmissionRate[nr] for nr in mTEPES.nr) == 0):
-            mTEPES.pPeriodProb[p,sc] = mTEPES.pPeriodWeight[p] = mTEPES.pScenProb[p,sc] = 1.0
+            # operation model objective function and constraints by stage
+            GenerationOperationModelFormulationObjFunct     (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
+            GenerationOperationModelFormulationInvestment   (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
+            GenerationOperationModelFormulationDemand       (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
+            GenerationOperationModelFormulationStorage      (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
+            if mTEPES.pIndHydroTopology == 1:
+                GenerationOperationModelFormulationReservoir(mTEPES, mTEPES, pIndLogConsole, p, sc, st)
+            if mTEPES.pIndHydrogen == 1:
+                NetworkH2OperationModelFormulation          (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
+            if mTEPES.pIndHeat == 1:
+                NetworkHeatOperationModelFormulation        (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
+            GenerationOperationModelFormulationCommitment   (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
+            GenerationOperationModelFormulationRampMinTime  (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
+            NetworkSwitchingModelFormulation                (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
+            NetworkOperationModelFormulation                (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
 
-            if pIndLogConsole == 1:
-                StartTime         = time.time()
-                mTEPES.write(_path+'/openTEPES_'+CaseName+'_'+str(p)+'_'+str(sc)+'.lp', io_options={'symbolic_solver_labels': True})
-                WritingLPFileTime = time.time() - StartTime
-                StartTime         = time.time()
-                print('Writing LP file                        ... ', round(WritingLPFileTime), 's')
-
-            # there are no expansion decisions, or they are ignored (it is an operation planning model)
-            ProblemSolving(DirName, CaseName, SolverName, mTEPES, mTEPES, pIndLogConsole, p, sc)
-            mTEPES.pPeriodProb[p,sc] = mTEPES.pPeriodWeight[p] = mTEPES.pScenProb[p,sc] = 0.0
-            # deactivate the constraints of the previous period and scenario
-            for c in mTEPES.component_objects(pyo.Constraint, active=True):
-                if c.name.find(str(p)) != -1 and c.name.find(str(sc)) != -1:
-                    c.deactivate()
-        else:
-            if p == mTEPES.pp.last() and sc == mTEPES.scc.last() and st == mTEPES.stt.last():
+            if (len(mTEPES.gc) == 0 or (len(mTEPES.gc) > 0 and mTEPES.pIndBinGenInvest() == 2)) and (len(mTEPES.gd) == 0 or (len(mTEPES.gd) > 0 and mTEPES.pIndBinGenRetire() == 2)) and (len(mTEPES.lc) == 0 or (len(mTEPES.lc) > 0 and mTEPES.pIndBinNetInvest() == 2)) and (min([mTEPES.pEmission[p,ar] for ar in mTEPES.ar]) == math.inf or sum(mTEPES.pEmissionRate[nr] for nr in mTEPES.nr) == 0):
+                mTEPES.pPeriodProb[p,sc] = mTEPES.pPeriodWeight[p] = mTEPES.pScenProb[p,sc] = 1.0
 
                 if pIndLogConsole == 1:
                     StartTime         = time.time()
@@ -120,20 +112,47 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
                     StartTime         = time.time()
                     print('Writing LP file                        ... ', round(WritingLPFileTime), 's')
 
-                # there are investment decisions (it is an expansion and operation planning model)
+                # there are no expansion decisions, or they are ignored (it is an operation planning model)
                 ProblemSolving(DirName, CaseName, SolverName, mTEPES, mTEPES, pIndLogConsole, p, sc)
+                mTEPES.pPeriodProb[p,sc] = mTEPES.pPeriodWeight[p] = mTEPES.pScenProb[p,sc] = 0.0
+                # deactivate the constraints of the previous period and scenario
+                for c in mTEPES.component_objects(pyo.Constraint, active=True):
+                    if c.name.find(str(p)) != -1 and c.name.find(str(sc)) != -1:
+                        c.deactivate()
+            else:
+                NoRepetition = 0
+                if p == mTEPES.Last_p and sc == mTEPES.Last_sc and st == mTEPES.Last_st and NoRepetition == 0:
+                    NoRepetition = 1
+
+                    mTEPES.del_component(mTEPES.st)
+                    mTEPES.del_component(mTEPES.n )
+                    mTEPES.del_component(mTEPES.n2)
+                    mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in mTEPES.stt and mTEPES.pStageWeight[stt] and sum(1 for (stt,nn)                   in mTEPES.s2n))
+                    mTEPES.n  = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn:  nn  in mTEPES.nn                               and sum(1 for st in mTEPES.st if (st,nn) in mTEPES.s2n))
+                    mTEPES.n2 = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn:  nn  in mTEPES.nn                               and sum(1 for st in mTEPES.st if (st,nn) in mTEPES.s2n))
+
+                    if pIndLogConsole == 1:
+                        StartTime         = time.time()
+                        mTEPES.write(_path+'/openTEPES_'+CaseName+'_'+str(p)+'_'+str(sc)+'.lp', io_options={'symbolic_solver_labels': True})
+                        WritingLPFileTime = time.time() - StartTime
+                        StartTime         = time.time()
+                        print('Writing LP file                        ... ', round(WritingLPFileTime), 's')
+
+                    # there are investment decisions (it is an expansion and operation planning model)
+                    ProblemSolving(DirName, CaseName, SolverName, mTEPES, mTEPES, pIndLogConsole, p, sc)
 
     mTEPES.del_component(mTEPES.st)
     mTEPES.del_component(mTEPES.n )
     mTEPES.del_component(mTEPES.n2)
-    mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in mTEPES.pStageWeight and sum(1 for (stt,nn) in mTEPES.s2n))
-    mTEPES.n  = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn:  nn  in mTEPES.pDuration                                         )
-    mTEPES.n2 = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn:  nn  in mTEPES.pDuration                                         )
+    mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in mTEPES.stt and mTEPES.pStageWeight[stt] and sum(1 for (stt,nn)                   in mTEPES.s2n))
+    mTEPES.n  = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn:  nn  in mTEPES.nn                               and sum(1 for st in mTEPES.st if (st,nn) in mTEPES.s2n))
+    mTEPES.n2 = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn:  nn  in mTEPES.nn                               and sum(1 for st in mTEPES.st if (st,nn) in mTEPES.s2n))
 
     # activate the constraints of all the periods and scenarios
     for c in mTEPES.component_objects(pyo.Constraint):
         c.activate()
 
+    # assign probability 1 to all the periods and scenarios
     for p,sc in mTEPES.ps:
         mTEPES.pPeriodProb[p,sc] = mTEPES.pPeriodWeight[p] = mTEPES.pScenProb[p,sc] = 1.0
 

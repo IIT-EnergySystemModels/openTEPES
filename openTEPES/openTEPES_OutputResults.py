@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - January 24, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - January 30, 2024
 """
 
 import time
@@ -1326,7 +1326,7 @@ def NetworkOperationResults(DirName, CaseName, OptModel, mTEPES):
     OutputToFile = pd.pivot_table(OutputToFile.to_frame(name='p.u.'), values='p.u.', index=['Period', 'Scenario', 'LoadLevel'], columns=['InitialNode', 'FinalNode', 'Circuit'], fill_value=0.0).rename_axis([None, None, None], axis=1)
     OutputToFile.reset_index().to_csv(_path+'/oT_Result_NetworkUtilization_'+CaseName+'.csv', index=False, sep=',')
 
-    if mTEPES.pIndBinNetLosses():
+    if mTEPES.pIndBinNetLosses() and len(mTEPES.psnll):
         OutputToFile = pd.Series(data=[OptModel.vLineLosses[p,sc,n,ni,nf,cc]() for p,sc,n,ni,nf,cc in mTEPES.psnll], index=pd.Index(mTEPES.psnll))
         OutputToFile.index.names = ['Period', 'Scenario', 'LoadLevel', 'InitialNode', 'FinalNode', 'Circuit']
         OutputToFile = pd.pivot_table(OutputToFile.to_frame(name='p.u.'), values='p.u.', index=['Period', 'Scenario', 'LoadLevel'], columns=['InitialNode', 'FinalNode', 'Circuit'], fill_value=0.0).rename_axis([None, None, None], axis=1)
@@ -1407,19 +1407,19 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES, pIndPlotOutput):
 
     if sum(mTEPES.pReserveMargin[:,:]):
         if len(mTEPES.gc):
-            sPSSTAR           = [(p,sc,st,ar) for p,sc,st,ar in mTEPES.ps*mTEPES.st*mTEPES.ar if mTEPES.pReserveMargin[p,ar] and sum(1 for g in mTEPES.g if (ar,g) in mTEPES.a2g) and sum(mTEPES.pRatedMaxPower[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]) for g in mTEPES.g if (ar,g) in mTEPES.a2g and g not in (mTEPES.gc or mTEPES.gd)) <= mTEPES.pPeakDemand[p,ar] * mTEPES.pReserveMargin[p,ar]]
+            sPSSTAR           = [(p,sc,st,ar) for p,sc,st,ar in mTEPES.ps*mTEPES.st*mTEPES.ar if mTEPES.pReserveMargin[p,ar] and st == mTEPES.Last_st and sum(1 for g in mTEPES.g if (ar,g) in mTEPES.a2g) and sum(mTEPES.pRatedMaxPower[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]) for g in mTEPES.g if (ar,g) in mTEPES.a2g and g not in (mTEPES.gc or mTEPES.gd)) <= mTEPES.pPeakDemand[p,ar] * mTEPES.pReserveMargin[p,ar]]
             if len(sPSSTAR):
-                OutputResults = pd.Series(data=[mTEPES.pDuals["".join(["eAdequacyReserveMargin_", str(p), "_", str(sc), "_", str(st), "(", str(p), ", '", str(ar), "')"])] for p,sc,st,ar in sPSSTAR], index=pd.Index(sPSSTAR))
+                OutputResults = pd.Series(data=[mTEPES.pDuals["".join(["eAdequacyReserveMargin_", str(p), "_", str(sc), "_", str(st), str(ar)])] for p,sc,st,ar in sPSSTAR], index=pd.Index(sPSSTAR))
                 OutputResults.to_frame(name='RM').reset_index().pivot_table(index=['level_0','level_1'], columns='level_3', values='RM').rename_axis(['Period', 'Scenario'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_MarginalReserveMargin_'+CaseName+'.csv', sep=',')
 
-    sPSSTAR           = [(p,sc,st,ar) for p,sc,st,ar in mTEPES.ps*mTEPES.st*mTEPES.ar if mTEPES.pEmission[p,ar] < math.inf and sum(1 for g in mTEPES.g if (ar,g) in mTEPES.a2g)]
+    sPSSTAR           = [(p,sc,st,ar) for p,sc,st,ar in mTEPES.ps*mTEPES.st*mTEPES.ar if mTEPES.pEmission[p,ar] < math.inf and st == mTEPES.Last_st and sum(1 for g in mTEPES.g if (ar,g) in mTEPES.a2g)]
     if len(sPSSTAR):
-        OutputResults = pd.Series(data=[mTEPES.pDuals["".join(["eMaxSystemEmission_", str(p), "_", str(sc), "_", str(st),  "('", str(ar), "')"])] for p,sc,st,ar in sPSSTAR], index=pd.Index(sPSSTAR))
+        OutputResults = pd.Series(data=[mTEPES.pDuals["".join(["eMaxSystemEmission_", str(p), "_", str(sc), "_", str(st), str(ar)])] for p,sc,st,ar in sPSSTAR], index=pd.Index(sPSSTAR))
         OutputResults.to_frame(name='EM').reset_index().pivot_table(index=['level_0','level_1'], columns='level_3', values='EM').rename_axis(['Period', 'Scenario'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_MarginalEmission_'+CaseName+'.csv', sep=',')
 
-    sPSSTAR           = [(p,sc,st,ar) for p,sc,st,ar in mTEPES.ps*mTEPES.st*mTEPES.ar if mTEPES.pRESEnergy[p,ar] and st == mTEPES.stt.last()]
+    sPSSTAR           = [(p,sc,st,ar) for p,sc,st,ar in mTEPES.ps*mTEPES.st*mTEPES.ar if mTEPES.pRESEnergy[p,ar] and st == mTEPES.Last_st]
     if len(sPSSTAR):
-        OutputResults = pd.Series(data=[mTEPES.pDuals["".join(["eMinSystemRESEnergy_", str(p), "_", str(sc), "_", str(st),  "('", str(ar), "')"])] for p,sc,st,ar in sPSSTAR], index=pd.Index(sPSSTAR))
+        OutputResults = pd.Series(data=[mTEPES.pDuals["".join(["eMinSystemRESEnergy_", str(p), "_", str(sc), "_", str(st), str(ar)])] for p,sc,st,ar in sPSSTAR], index=pd.Index(sPSSTAR))
         OutputResults *= 1e-3*sum(mTEPES.pLoadLevelDuration[na]() for na in mTEPES.na)
         OutputResults.to_frame(name='RES').reset_index().pivot_table(index=['level_0','level_1'], columns='level_3', values='RES').rename_axis(['Period', 'Scenario'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_MarginalRESEnergy_'+CaseName+'.csv', sep=',')
 

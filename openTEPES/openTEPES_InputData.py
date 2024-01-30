@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - January 26, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - January 30, 2024
 """
 
 import datetime
@@ -619,6 +619,24 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     # ESS and hydro units
     mTEPES.eh = mTEPES.es | mTEPES.h
 
+    #%% inverse index load level to stage
+    pStageToLevel = pLevelToStage.reset_index().set_index('Stage').set_axis(['LoadLevel'], axis=1)[['LoadLevel']]
+    pStageToLevel = pStageToLevel.loc[pStageToLevel['LoadLevel'].keys().isin(mTEPES.st)]
+    pStageToLevel = pStageToLevel.loc[pStageToLevel['LoadLevel'].isin(mTEPES.n)].reset_index().set_index(['Stage','LoadLevel'])
+
+    mTEPES.s2n = Set(initialize=pStageToLevel.index, ordered=False, doc='load level to stage')
+    # all the stages must have the same duration
+    pStageDuration = pd.Series([sum(pDuration[n] for n in mTEPES.n if (st,n) in mTEPES.s2n) for st in mTEPES.st], index=mTEPES.st)
+    for st in mTEPES.st:
+        if mTEPES.st.ord(st) > 1 and pStageDuration[st] != pStageDuration[mTEPES.st.prev(st)]:
+            assert (0 == 1)
+
+    # delete all the load level belonging to stages with duration equal to zero
+    mTEPES.del_component(mTEPES.n )
+    mTEPES.del_component(mTEPES.n2)
+    mTEPES.n  = Set(initialize=mTEPES.nn, ordered=True , doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.nn and pDuration[nn] and sum(1 for st in mTEPES.st if (st,nn) in mTEPES.s2n))
+    mTEPES.n2 = Set(initialize=mTEPES.nn, ordered=True , doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.nn and pDuration[nn] and sum(1 for st in mTEPES.st if (st,nn) in mTEPES.s2n))
+
     # instrumental sets
     mTEPES.psc       = [(p,sc     )       for p,sc            in mTEPES.p  *mTEPES.sc]
     mTEPES.psg       = [(p,sc,  g )       for p,sc,  g        in mTEPES.ps *mTEPES.g ]
@@ -732,19 +750,6 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
 
     mTEPES.pLineType = Set(initialize=pLineType.index, ordered=False, doc='line type')
 
-    #%% inverse index load level to stage
-    pStageToLevel = pLevelToStage.reset_index().set_index('Stage').set_axis(['LoadLevel'], axis=1)[['LoadLevel']]
-    pStageToLevel = pStageToLevel.loc[pStageToLevel['LoadLevel'].isin(mTEPES.n)]
-    pStage2Level  = pStageToLevel.reset_index().set_index(['Stage','LoadLevel'])
-
-    mTEPES.s2n = Set(initialize=pStage2Level.index, ordered=False, doc='load level to stage')
-    # all the stages must have the same duration
-    pStageDuration = pd.Series([sum(pDuration[n] for n in mTEPES.n if (st,n) in mTEPES.s2n) for st in mTEPES.st], index=mTEPES.st)
-    for st in mTEPES.st:
-        if mTEPES.st.ord(st) > 1:
-            if pStageDuration[st] != pStageDuration[mTEPES.st.prev(st)]:
-                assert (0 == 1)
-
     if pAnnualDiscRate == 0.0:
         pDiscountedWeight = pd.Series([                        pPeriodWeight[p]                                                                                          for p in mTEPES.p], index=mTEPES.p)
     else:
@@ -756,10 +761,9 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
 
     #%% inverse index node to generator
     pNodeToGen = pGenToNode.reset_index().set_index('Node').set_axis(['Generator'], axis=1)[['Generator']]
-    pNodeToGen = pNodeToGen.loc[pNodeToGen['Generator'].isin(mTEPES.g)]
-    pNode2Gen  = pNodeToGen.reset_index().set_index(['Node', 'Generator'])
+    pNodeToGen = pNodeToGen.loc[pNodeToGen['Generator'].isin(mTEPES.g)].reset_index().set_index(['Node', 'Generator'])
 
-    mTEPES.n2g = Set(initialize=pNode2Gen.index, ordered=False, doc='node   to generator')
+    mTEPES.n2g = Set(initialize=pNodeToGen.index, ordered=False, doc='node   to generator')
 
     pZone2Gen   = [(zn,g) for (nd,g,zn      ) in mTEPES.n2g*mTEPES.zn             if (nd,zn) in mTEPES.ndzn                           ]
     pArea2Gen   = [(ar,g) for (nd,g,zn,ar   ) in mTEPES.n2g*mTEPES.znar           if (nd,zn) in mTEPES.ndzn                           ]
@@ -771,10 +775,9 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
 
     #%% inverse index generator to technology
     pTechnologyToGen = pGenToTechnology.reset_index().set_index('Technology').set_axis(['Generator'], axis=1)[['Generator']]
-    pTechnologyToGen = pTechnologyToGen.loc[pTechnologyToGen['Generator'].isin(mTEPES.g)]
-    pTechnology2Gen  = pTechnologyToGen.reset_index().set_index(['Technology', 'Generator'])
+    pTechnologyToGen = pTechnologyToGen.loc[pTechnologyToGen['Generator'].isin(mTEPES.g)].reset_index().set_index(['Technology', 'Generator'])
 
-    mTEPES.t2g = Set(initialize=pTechnology2Gen.index, ordered=False, doc='technology to generator')
+    mTEPES.t2g = Set(initialize=pTechnologyToGen.index, ordered=False, doc='technology to generator')
 
     # ESS and RES technologies
     mTEPES.ot = Set(initialize=mTEPES.gt, ordered=False, doc='ESS technologies', filter=lambda mTEPES,gt: gt in mTEPES.gt and sum(1 for es in mTEPES.es if (gt,es) in mTEPES.t2g))
@@ -789,10 +792,9 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
 
     #%% inverse index generator to mutually exclusive generator
     pExclusiveGenToGen = pGenToExclusiveGen.reset_index().set_index('MutuallyExclusive').set_axis(['Generator'], axis=1)[['Generator']]
-    pExclusiveGenToGen = pExclusiveGenToGen.loc[pExclusiveGenToGen['Generator'].isin(mTEPES.g)]
-    pExclusiveGen2Gen  = pExclusiveGenToGen.reset_index().set_index(['MutuallyExclusive', 'Generator'])
+    pExclusiveGenToGen = pExclusiveGenToGen.loc[pExclusiveGenToGen['Generator'].isin(mTEPES.g)].reset_index().set_index(['MutuallyExclusive', 'Generator'])
 
-    mTEPES.g2g = Set(initialize=pExclusiveGen2Gen.index, ordered=False, doc='mutually exclusive generator to generator', filter=lambda mTEPES,gg,g: (gg,g) in mTEPES.gg*mTEPES.g)
+    mTEPES.g2g = Set(initialize=pExclusiveGenToGen.index, ordered=False, doc='mutually exclusive generator to generator', filter=lambda mTEPES,gg,g: (gg,g) in mTEPES.gg*mTEPES.g)
 
     # minimum and maximum variable power, charge, and storage capacity
     pMinPower      = pVariableMinPower.replace  (0.0, pRatedMinPower  )
@@ -1080,9 +1082,9 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
 
     if pIndHydrogen == 1:
         # drop pipelines not pc
-        pH2PipeFixedCost    = pH2PipeFixedCost.loc       [   mTEPES.pc]
-        pH2PipeLoInvest     = pH2PipeLoInvest.loc        [   mTEPES.pc]
-        pH2PipeUpInvest     = pH2PipeUpInvest.loc        [   mTEPES.pc]
+        pH2PipeFixedCost    = pH2PipeFixedCost.loc   [   mTEPES.pc]
+        pH2PipeLoInvest     = pH2PipeLoInvest.loc    [   mTEPES.pc]
+        pH2PipeUpInvest     = pH2PipeUpInvest.loc    [   mTEPES.pc]
 
     if pIndHeat == 1:
         # drop heat pipes not hc
@@ -1149,8 +1151,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.pIndHeat              = Param(initialize=pIndHeat             , within=Binary,              doc='Indicator of heat     demand and pipe     network'                      )
 
     mTEPES.pENSCost              = Param(initialize=pENSCost             , within=NonNegativeReals,    doc='ENS cost'                                          )
-    mTEPES.pH2NSCost              = Param(initialize=pH2NSCost             , within=NonNegativeReals,    doc='HNS cost'                                          )
-    mTEPES.pHeatNSCost             = Param(initialize=pHeatNSCost            , within=NonNegativeReals,    doc='HTNS cost'                                         )
+    mTEPES.pH2NSCost             = Param(initialize=pH2NSCost            , within=NonNegativeReals,    doc='HNS cost'                                          )
+    mTEPES.pHeatNSCost           = Param(initialize=pHeatNSCost          , within=NonNegativeReals,    doc='HTNS cost'                                         )
     mTEPES.pCO2Cost              = Param(initialize=pCO2Cost             , within=NonNegativeReals,    doc='CO2 emission cost'                                 )
     mTEPES.pAnnualDiscRate       = Param(initialize=pAnnualDiscRate      , within=UnitInterval,        doc='Annual discount rate'                              )
     mTEPES.pUpReserveActivation  = Param(initialize=pUpReserveActivation , within=UnitInterval,        doc='Proportion of upward   reserve activation'         )
@@ -1255,8 +1257,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         mTEPES.pDemandH2Abs      = Param(mTEPES.psnnd, initialize=pDemandH2Abs.stack().to_dict()  , within=NonNegativeReals,    doc='Hydrogen demand'                                     )
 
     if pIndHeat == 1:
-        mTEPES.pDemandHeat       = Param(mTEPES.psnnd, initialize=pDemandHeat.stack().to_dict()   , within=NonNegativeReals,    doc='Heat demand per hour'                            )
-        mTEPES.pDemandHeatAbs    = Param(mTEPES.psnnd, initialize=pDemandHeatAbs.stack().to_dict(), within=NonNegativeReals,    doc='Heat demand'                                     )
+        mTEPES.pDemandHeat       = Param(mTEPES.psnnd, initialize=pDemandHeat.stack().to_dict()   , within=NonNegativeReals,    doc='Heat demand per hour'                                )
+        mTEPES.pDemandHeatAbs    = Param(mTEPES.psnnd, initialize=pDemandHeatAbs.stack().to_dict(), within=NonNegativeReals,    doc='Heat demand'                                         )
 
     mTEPES.pLoadLevelDuration    = Param(mTEPES.n,     initialize=0                               , within=NonNegativeIntegers, doc='Load level duration',                    mutable=True)
     for n in mTEPES.n:
@@ -1334,13 +1336,13 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         mTEPES.nrso     = [(n,rs) for n,rs in mTEPES.n*mTEPES.rs if mTEPES.n.ord(n) %     mTEPES.pWaterOutTimeStep[rs] == 0]
 
     # ESS with outflows
-    mTEPES.eo     = [(p,sc,es) for p,sc,es in mTEPES.pses if sum(mTEPES.pEnergyOutflows[p,sc,n2,es]() for n2 in mTEPES.n2)]
+    mTEPES.eo     = [(p,sc,es) for p,sc,es in mTEPES.pses if sum(mTEPES.pEnergyOutflows[p,sc,n2,es]() for n2 in mTEPES.n2 if (p,sc,n2) in mTEPES.psn)]
     if pIndHydroTopology == 1:
         # reservoirs with outflows
-        mTEPES.ro = [(p,sc,rs) for p,sc,rs in mTEPES.psrs if sum(mTEPES.pHydroOutflows [p,sc,n2,rs]() for n2 in mTEPES.n2)]
+        mTEPES.ro = [(p,sc,rs) for p,sc,rs in mTEPES.psrs if sum(mTEPES.pHydroOutflows [p,sc,n2,rs]() for n2 in mTEPES.n2 if (p,sc,n2) in mTEPES.psn)]
     # generators with min/Max energy
-    mTEPES.gm     = [(p,sc,g ) for p,sc,g  in mTEPES.psg  if sum(mTEPES.pMinEnergy     [p,sc,n2,g ]   for n2 in mTEPES.n2)]
-    mTEPES.gM     = [(p,sc,g ) for p,sc,g  in mTEPES.psg  if sum(mTEPES.pMaxEnergy     [p,sc,n2,g ]   for n2 in mTEPES.n2)]
+    mTEPES.gm     = [(p,sc,g ) for p,sc,g  in mTEPES.psg  if sum(mTEPES.pMinEnergy     [p,sc,n2,g ]   for n2 in mTEPES.n2 if (p,sc,n2) in mTEPES.psn)]
+    mTEPES.gM     = [(p,sc,g ) for p,sc,g  in mTEPES.psg  if sum(mTEPES.pMaxEnergy     [p,sc,n2,g ]   for n2 in mTEPES.n2 if (p,sc,n2) in mTEPES.psn)]
 
     # # if unit availability = 0 changed to 1
     # for g in mTEPES.g:
@@ -1414,10 +1416,10 @@ def SettingUpVariables(OptModel, mTEPES):
         OptModel.vReservoirSpillage   = Var(mTEPES.psnrs, within=NonNegativeReals,                 doc='Reservoir spillage                              [hm3]')
 
     if mTEPES.pIndHydrogen == 1:
-        OptModel.vH2NS                 = Var(mTEPES.psnnd, within=NonNegativeReals,                 doc='hydrogen not served in node                     [tH2]')
+        OptModel.vH2NS                = Var(mTEPES.psnnd, within=NonNegativeReals,                 doc='hydrogen not served in node                     [tH2]')
 
     if mTEPES.pIndHeat == 1:
-        OptModel.vHeatNS                = Var(mTEPES.psnnd, within=NonNegativeReals,                 doc='heat     not served in node                    [Mcal]')
+        OptModel.vHeatNS              = Var(mTEPES.psnnd, within=NonNegativeReals,                 doc='heat     not served in node                    [Mcal]')
 
     if mTEPES.pIndBinGenInvest() == 0:
         OptModel.vGenerationInvest    = Var(mTEPES.pgc,   within=UnitInterval,                     doc='generation       investment decision exists in a year [0,1]')
@@ -1461,8 +1463,8 @@ def SettingUpVariables(OptModel, mTEPES):
             OptModel.vHeatPipeInvest = Var(mTEPES.phc,   within=UnitInterval,                  doc='heat network investment decision exists in a year [0,1]'    )
             OptModel.vHeatPipeInvPer = Var(mTEPES.phc,   within=UnitInterval,                  doc='heat network investment decision exists in a year [0,1]'    )
         else:
-            OptModel.vHeatPipeInvest = Var(mTEPES.ppc,   within=Binary,                        doc='heat network investment decision exists in a year {0,1}'    )
-            OptModel.vHeatPipeInvPer = Var(mTEPES.ppc,   within=Binary,                        doc='heat network investment decision exists in a year {0,1}'    )
+            OptModel.vHeatPipeInvest = Var(mTEPES.phc,   within=Binary,                        doc='heat network investment decision exists in a year {0,1}'    )
+            OptModel.vHeatPipeInvPer = Var(mTEPES.phc,   within=Binary,                        doc='heat network investment decision exists in a year {0,1}'    )
 
     if mTEPES.pIndBinGenOperat() == 0:
         OptModel.vCommitment          = Var(mTEPES.psnnr, within=UnitInterval,     initialize=0.0, doc='commitment         of the unit                        [0,1]')
@@ -1600,14 +1602,14 @@ def SettingUpVariables(OptModel, mTEPES):
 
     if mTEPES.pIndHydrogen == 1:
         OptModel.vFlowH2 = Var(mTEPES.psnpa, within=Reals,            doc='pipeline flow   [tH2]')
-        [OptModel.vFlowH2[p,sc,n,ni,nf,cc].setlb(-mTEPES.pH2PipeNTCBck[ni,nf,cc])                        for p,sc,n,ni,nf,cc in mTEPES.psnpa]
-        [OptModel.vFlowH2[p,sc,n,ni,nf,cc].setub( mTEPES.pH2PipeNTCFrw[ni,nf,cc])                        for p,sc,n,ni,nf,cc in mTEPES.psnpa]
+        [OptModel.vFlowH2[p,sc,n,ni,nf,cc].setlb(-mTEPES.pH2PipeNTCBck[ni,nf,cc])                       for p,sc,n,ni,nf,cc in mTEPES.psnpa]
+        [OptModel.vFlowH2[p,sc,n,ni,nf,cc].setub( mTEPES.pH2PipeNTCFrw[ni,nf,cc])                       for p,sc,n,ni,nf,cc in mTEPES.psnpa]
         [OptModel.vH2NS   [p,sc,n,nd      ].setub(mTEPES.pDuration[n]()*mTEPES.pDemandH2Abs[p,sc,n,nd]) for p,sc,n,nd       in mTEPES.psnnd]
 
     if mTEPES.pIndHeat == 1:
         OptModel.vFlowHeat = Var(mTEPES.psnpa, within=Reals,          doc='heat pipe flow   [Mcal]')
-        [OptModel.vFlowHeat[p,sc,n,ni,nf,cc].setlb(-mTEPES.pHeatPipeNTCBck[ni,nf,cc])                      for p,sc,n,ni,nf,cc in mTEPES.psnpa]
-        [OptModel.vFlowHeat[p,sc,n,ni,nf,cc].setub( mTEPES.pHeatPipeNTCFrw[ni,nf,cc])                      for p,sc,n,ni,nf,cc in mTEPES.psnpa]
+        [OptModel.vFlowHeat[p,sc,n,ni,nf,cc].setlb(-mTEPES.pHeatPipeNTCBck[ni,nf,cc])                        for p,sc,n,ni,nf,cc in mTEPES.psnpa]
+        [OptModel.vFlowHeat[p,sc,n,ni,nf,cc].setub( mTEPES.pHeatPipeNTCFrw[ni,nf,cc])                        for p,sc,n,ni,nf,cc in mTEPES.psnpa]
         [OptModel.vHeatNS   [p,sc,n,nd       ].setub(mTEPES.pDuration[n]()*mTEPES.pDemandHeatAbs[p,sc,n,nd]) for p,sc,n,nd       in mTEPES.psnnd]
 
     # fix the must-run units and their output
@@ -1697,8 +1699,8 @@ def SettingUpVariables(OptModel, mTEPES):
         # activate only period, scenario, and load levels to formulate
         mTEPES.del_component(mTEPES.st)
         mTEPES.del_component(mTEPES.n )
-        mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in st == stt and mTEPES.pStageWeight and sum(1 for (st,nn) in mTEPES.s2n))
-        mTEPES.n  = Set(initialize=mTEPES.nn , ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in               mTEPES.pDuration    and           (st,nn) in mTEPES.s2n)
+        mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in st == stt and mTEPES.pStageWeight[stt] and sum(1 for (st,nn) in mTEPES.s2n))
+        mTEPES.n  = Set(initialize=mTEPES.nn , ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in mTEPES.nn                              and           (st,nn) in mTEPES.s2n)
 
         if len(mTEPES.n):
             # determine the first load level of each stage
@@ -1742,8 +1744,8 @@ def SettingUpVariables(OptModel, mTEPES):
     # activate all the periods, scenarios, and load levels again
     mTEPES.del_component(mTEPES.st)
     mTEPES.del_component(mTEPES.n )
-    mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in mTEPES.pStageWeight and sum(1 for (stt,nn) in mTEPES.s2n))
-    mTEPES.n  = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in mTEPES.pDuration                                         )
+    mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in mTEPES.stt and mTEPES.pStageWeight[stt] and sum(1 for (stt,nn)                   in mTEPES.s2n))
+    mTEPES.n  = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in mTEPES.nn                               and sum(1 for st in mTEPES.st if (st,nn) in mTEPES.s2n))
 
     # fixing the ESS inventory at the end of the following pCycleTimeStep (daily, weekly, monthly) if between storage limits, i.e., for daily ESS is fixed at the end of the week, for weekly ESS is fixed at the end of the month, for monthly ESS is fixed at the end of the year
     for p,sc,n,es in mTEPES.psnes:
