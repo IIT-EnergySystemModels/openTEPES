@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - January 30, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - January 31, 2024
 """
 
 import time
@@ -913,7 +913,7 @@ def NetworkHeatOperationResults(DirName, CaseName, OptModel, mTEPES):
     OutputResults6 = pd.Series(data=[ sum(OptModel.vFlowHeat      [p,sc,n,ni,nd,cc]()                                                          for ni,cc in lin [nd])                                                  for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='HeatFlowIn'   )
     OutputResults  = pd.concat([OutputResults2, OutputResults3, OutputResults4, OutputResults5, OutputResults6], axis=1)
 
-    OutputResults.stack().rename_axis(['Period', 'Scenario', 'LoadLevel', 'Area', 'Node', 'Technology'], axis=0).reset_index().rename(columns={0: 'tH2'}, inplace=False).to_csv(_path+'/oT_Result_BalanceHeat_'+CaseName+'.csv', index=False, sep=',')
+    OutputResults.stack().rename_axis(['Period', 'Scenario', 'LoadLevel', 'Area', 'Node', 'Technology'], axis=0).reset_index().rename(columns={0: 'Tcal'}, inplace=False).to_csv(_path+'/oT_Result_BalanceHeat_'+CaseName+'.csv', index=False, sep=',')
 
     OutputResults.stack().reset_index().pivot_table(index=['level_0','level_1','level_2','level_3','level_4'], columns='level_5', values=0, aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel', 'Area', 'Node'], axis=0).to_csv(_path+'/oT_Result_BalanceHeatPerTech_'+CaseName+'.csv', sep=',')
     OutputResults.stack().reset_index().pivot_table(index=['level_0','level_1','level_2'          ,'level_5'], columns='level_4', values=0, aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel', 'Technology'  ], axis=0).to_csv(_path+'/oT_Result_BalanceHeatPerNode_'+CaseName+'.csv', sep=',')
@@ -921,12 +921,12 @@ def NetworkHeatOperationResults(DirName, CaseName, OptModel, mTEPES):
 
     OutputToFile = pd.Series(data=[OptModel.vFlowHeat[p,sc,n,ni,nf,cc]() for p,sc,n,ni,nf,cc in mTEPES.psnha], index=pd.Index(mTEPES.psnha))
     OutputToFile.index.names = ['Period', 'Scenario', 'LoadLevel', 'InitialNode', 'FinalNode', 'Circuit']
-    OutputToFile = pd.pivot_table(OutputToFile.to_frame(name='Mcal'), values='tH2', index=['Period', 'Scenario', 'LoadLevel'], columns=['InitialNode', 'FinalNode', 'Circuit'], fill_value=0.0).rename_axis([None, None, None], axis=1)
+    OutputToFile = pd.pivot_table(OutputToFile.to_frame(name='Gcal/h'), values='Gcal/h', index=['Period', 'Scenario', 'LoadLevel'], columns=['InitialNode', 'FinalNode', 'Circuit'], fill_value=0.0).rename_axis([None, None, None], axis=1)
     OutputToFile.reset_index().to_csv(_path+'/oT_Result_NetworkFlowHeatPerNode_'     +CaseName+'.csv', index=False, sep=',')
 
     sPSNND = [(p,sc,n,nd) for p,sc,n,nd in mTEPES.psnnd if sum(1 for el in h2n[nd]) + sum(1 for lout in lout[nd]) + sum(1 for ni,cc in lin[nd])]
     OutputToFile = pd.Series(data=[OptModel.vHeatNS[p,sc,n,nd]() for p,sc,n,nd in sPSNND], index=pd.Index(sPSNND))
-    OutputToFile.to_frame(name='Mcal').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='tH2').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_NetworkHTNS_'  +CaseName+'.csv', sep=',')
+    OutputToFile.to_frame(name='Gcal/h').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='Gcal/h').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_NetworkHTNS_'  +CaseName+'.csv', sep=',')
 
     # plot heat network map
     # Sub functions
@@ -953,7 +953,7 @@ def NetworkHeatOperationResults(DirName, CaseName, OptModel, mTEPES):
         # Edges data
         OutputToFile = oT_make_series(OptModel.vFlowHeat, mTEPES.psnha, 1)
         OutputToFile.index.names = ['Period', 'Scenario', 'LoadLevel', 'InitialNode', 'FinalNode', 'Circuit']
-        OutputToFile = OutputToFile.to_frame(name='Mcal')
+        OutputToFile = OutputToFile.to_frame(name='Gcal/h')
 
         # tolerance to consider avoid division by 0
         pEpsilon = 1e-6
@@ -976,8 +976,8 @@ def NetworkHeatOperationResults(DirName, CaseName, OptModel, mTEPES):
         colors = ['rgb'+str(x.rgb) for x in colors]
 
         for ni,nf,cc in mTEPES.ha:
-            line_df['vFlowHeat'  ][ni,nf] += OutputToFile['Mcal'][p,sc,n,ni,nf,cc]
-            line_df['utilization'][ni,nf]  = max(line_df['vFlowHHeat'][ni,nf]/line_df['NTCFrw'][ni,nf],-line_df['vFlowH2'][ni,nf]/line_df['NTCBck'][ni,nf])*100.0
+            line_df['vFlowHeat'  ][ni,nf] += OutputToFile['Gcal/h'][p,sc,n,ni,nf,cc]
+            line_df['utilization'][ni,nf]  = max(line_df['vFlowHHeat'][ni,nf]/line_df['NTCFrw'][ni,nf],-line_df['vFlowHHeat'][ni,nf]/line_df['NTCBck'][ni,nf])*100.0
             line_df['lon'        ][ni,nf]  = (mTEPES.pNodeLon[ni]+mTEPES.pNodeLon[nf]) * 0.5
             line_df['lat'        ][ni,nf]  = (mTEPES.pNodeLat[ni]+mTEPES.pNodeLat[nf]) * 0.5
             line_df['ni'         ][ni,nf]  = ni
@@ -1404,6 +1404,34 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES, pIndPlotOutput):
         for p,sc in mTEPES.ps:
             chart = LinePlots(p, sc, OptModel.LSRMC, 'Node', 'LoadLevel', 'EUR/MWh', 'average')
             chart.save(_path+'/oT_Plot_NetworkSRMC_'+str(p)+'_'+str(sc)+'_'+CaseName+'.html', embed_options={'renderer': 'svg'})
+
+    if mTEPES.pIndHydrogen == 1:
+        #%% outputting the LSRMC of H2
+        sPSSTNND      = [(p,sc,st,n,nd) for p,sc,st,n,nd in mTEPES.ps*mTEPES.s2n*mTEPES.nd if sum(1 for g in g2n[nd]) + sum(1 for lout in lout[nd]) + sum(1 for ni,cc in lin[nd])]
+        OutputResults = pd.Series(data=[mTEPES.pDuals["".join(["eBalanceH2_", str(p), "_", str(sc), "_", str(st), "('", str(n), "', '", str(nd), "')"])]/mTEPES.pPeriodProb[p,sc]()/mTEPES.pLoadLevelDuration[n]() for p,sc,st,n,nd in sPSSTNND], index=pd.Index(sPSSTNND))
+        OutputResults *= 1e3
+        OutputResults.to_frame(name='LSRMCH2').reset_index().pivot_table(index=['level_0','level_1','level_3'], columns='level_4', values='LSRMCH2').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_NetworkSRMCH2_'+CaseName+'.csv', sep=',')
+
+        OptModel.LSRMCH2 = OutputResults.to_frame(name='LSRMCH2').reset_index().pivot_table(index=['level_0','level_1','level_3','level_4'], values='LSRMCH2').rename_axis(['level_0','level_1','level_2','level_3'], axis=0).loc[:,:,:,:]
+
+        if pIndPlotOutput == 1:
+            for p,sc in mTEPES.ps:
+                chart = LinePlots(p, sc, OptModel.LSRMCH2, 'Node', 'LoadLevel', 'EUR/tH2', 'average')
+                chart.save(_path+'/oT_Plot_NetworkSRMCH2_'+str(p)+'_'+str(sc)+'_'+CaseName+'.html', embed_options={'renderer': 'svg'})
+
+    if mTEPES.pIndHeat == 1:
+        #%% outputting the LSRMC of heat
+        sPSSTNND      = [(p,sc,st,n,nd) for p,sc,st,n,nd in mTEPES.ps*mTEPES.s2n*mTEPES.nd if sum(1 for g in g2n[nd]) + sum(1 for lout in lout[nd]) + sum(1 for ni,cc in lin[nd])]
+        OutputResults = pd.Series(data=[mTEPES.pDuals["".join(["eBalanceHeat_", str(p), "_", str(sc), "_", str(st), "('", str(n), "', '", str(nd), "')"])]/mTEPES.pPeriodProb[p,sc]()/mTEPES.pLoadLevelDuration[n]() for p,sc,st,n,nd in sPSSTNND], index=pd.Index(sPSSTNND))
+        OutputResults *= 1e3
+        OutputResults.to_frame(name='LSRMCHeat').reset_index().pivot_table(index=['level_0','level_1','level_3'], columns='level_4', values='LSRMCHeat').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_NetworkSRMCHeat_'+CaseName+'.csv', sep=',')
+
+        OptModel.LSRMCHeat = OutputResults.to_frame(name='LSRMCHeat').reset_index().pivot_table(index=['level_0','level_1','level_3','level_4'], values='LSRMCHeat').rename_axis(['level_0','level_1','level_2','level_3'], axis=0).loc[:,:,:,:]
+
+        if pIndPlotOutput == 1:
+            for p,sc in mTEPES.ps:
+                chart = LinePlots(p, sc, OptModel.LSRMCHeat, 'Node', 'LoadLevel', 'EUR/Gcal', 'average')
+                chart.save(_path+'/oT_Plot_NetworkSRMCHeat_'+str(p)+'_'+str(sc)+'_'+CaseName+'.html', embed_options={'renderer': 'svg'})
 
     if sum(mTEPES.pReserveMargin[:,:]):
         if len(mTEPES.gc):

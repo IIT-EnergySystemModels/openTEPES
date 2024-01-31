@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - January 30, 2023
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - January 31, 2023
 """
 
 import time
@@ -1159,7 +1159,7 @@ def NetworkHeatOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc
                     sum(OptModel.vFlowHeat[p,sc,n,nd,lout] for lout in lout[nd]) + sum(OptModel.vFlowHeat[p,sc,n,ni,nd,cc] for ni,cc in lin[nd])) == mTEPES.pDemandHeat[p,sc,n,nd]*mTEPES.pDuration[n]
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eBalanceHeat_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.nd, rule=eBalanceHeat, doc='Heat load generation balance [Mcal]'))
+    setattr(OptModel, 'eBalanceHeat_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.nd, rule=eBalanceHeat, doc='Heat load generation balance [Tcal/h]'))
 
     if pIndLogConsole == 1:
         print('eBalanceHeat          ... ', len(getattr(OptModel, 'eBalanceHeat_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')

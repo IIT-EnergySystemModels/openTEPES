@@ -83,7 +83,7 @@ File ``oT_Result_TechnologyInvestmentCost.csv``
 ============  ==========  ============================
 Identifier    Header      Description
 ============  ==========  ============================
-Generator     MEUR        Technology investment cost
+Generator     M€          Technology investment cost
 ============  ==========  ============================
 
 File ``oT_Result_TechnologyInvestmentCostPerMW.csv``
@@ -91,7 +91,7 @@ File ``oT_Result_TechnologyInvestmentCostPerMW.csv``
 ============  ==========  ==================================
 Identifier    Header      Description
 ============  ==========  ==================================
-Generator     MEUR/MW     Technology investment cost per MW
+Generator     M€/MW       Technology investment cost per MW
 ============  ==========  ==================================
 
 File ``oT_Result_TechnologyRetirement.csv``
@@ -768,7 +768,7 @@ File ``oT_Result_BalanceHeat.csv``
 ============  ==========  ==========  ==========  ======================================
 Identifier    Identifier  Identifier  Identifier  Description
 ============  ==========  ==========  ==========  ======================================
-Period        Scenario    Load level  Technology  Generation, flows, and demand [Mcal]
+Period        Scenario    Load level  Technology  Generation, flows, and demand [Tcal]
 ============  ==========  ==========  ==========  ======================================
 
 File ``oT_Result_BalanceHeatPerArea.csv``
@@ -776,7 +776,7 @@ File ``oT_Result_BalanceHeatPerArea.csv``
 ============  ==========  ==========  ==========  ==========  ======================================
 Identifier    Identifier  Identifier  Identifier  Header      Description
 ============  ==========  ==========  ==========  ==========  ======================================
-Period        Scenario    Load level  Technology  Area        Generation, flows, and demand [Mcal]
+Period        Scenario    Load level  Technology  Area        Generation, flows, and demand [Tcal]
 ============  ==========  ==========  ==========  ==========  ======================================
 
 File ``oT_Result_BalanceHeatPerNode.csv``
@@ -784,7 +784,7 @@ File ``oT_Result_BalanceHeatPerNode.csv``
 ============  ==========  ==========  ==========  ==========  ======================================
 Identifier    Identifier  Identifier  Identifier  Header      Description
 ============  ==========  ==========  ==========  ==========  ======================================
-Period        Scenario    Load level  Technology  Node        Generation, flows, and demand [Mcal]
+Period        Scenario    Load level  Technology  Node        Generation, flows, and demand [Tcal]
 ============  ==========  ==========  ==========  ==========  ======================================
 
 File ``oT_Result_BalanceHeatPerTech.csv``
@@ -792,7 +792,7 @@ File ``oT_Result_BalanceHeatPerTech.csv``
 ============  ==========  ==========  ==========  ==========  ==========  ======================================
 Identifier    Identifier  Identifier  Identifier  Identifier  Header      Description
 ============  ==========  ==========  ==========  ==========  ==========  ======================================
-Period        Scenario    Load level  Area        Node        Technology  Generation, flows, and demand [Mcal]
+Period        Scenario    Load level  Area        Node        Technology  Generation, flows, and demand [Tcal]
 ============  ==========  ==========  ==========  ==========  ==========  ======================================
 
 File ``oT_Result_NetworkFlowHeatPerNode.csv``
@@ -800,7 +800,7 @@ File ``oT_Result_NetworkFlowHeatPerNode.csv``
 ============  ==========  ==========  ============  ==========  =========  =======================
 Identifier    Identifier  Identifier  Header        Header      Header     Description
 ============  ==========  ==========  ============  ==========  =========  =======================
-Period        Scenario    Load level  Initial node  Final node  Circuit    Pipe flow [Mcal]
+Period        Scenario    Load level  Initial node  Final node  Circuit    Pipe flow [Gcal/h]
 ============  ==========  ==========  ============  ==========  =========  =======================
 
 File ``oT_Result_NetworkHTNS.csv``
@@ -808,7 +808,7 @@ File ``oT_Result_NetworkHTNS.csv``
 ============  ==========  ==========  ==========  ====================================
 Identifier    Identifier  Identifier  Header      Description
 ============  ==========  ==========  ==========  ====================================
-Period        Scenario    Load level  Node        Heat not served by node [Mcal]
+Period        Scenario    Load level  Node        Heat not served by node [Gcal/h]
 ============  ==========  ==========  ==========  ====================================
 
 Costs and revenues
@@ -851,7 +851,7 @@ File ``oT_Result_TechnologyLCOE.csv``
 ==========  ==============================================
 Identifier  Description
 ==========  ==============================================
-Technology  Levelized Cost of Electricity (LCOE) [EUR/MWh]
+Technology  Levelized Cost of Electricity (LCOE) [€/MWh]
 ==========  ==============================================
 
 File ``oT_Result_GenerationCostOandM.csv``
@@ -1008,6 +1008,28 @@ Identifier    Identifier  Identifier  Header      Description
 ============  ==========  ==========  ==========  ==========================================
 Period        Scenario    Load level  Node        Locational Short-Run Marginal Cost [€/MWh]
 ============  ==========  ==========  ==========  ==========================================
+
+These marginal costs are obtained after fixing the binary and continuous investment decisions and the binary operation decisions to their optimal values.
+Remember that binary decisions are not affected by marginal changes.
+
+File ``oT_Result_NetworkSRMCH2.csv``
+
+============  ==========  ==========  ==========  ==================================================
+Identifier    Identifier  Identifier  Header      Description
+============  ==========  ==========  ==========  ==================================================
+Period        Scenario    Load level  Node        Locational Short-Run Marginal Cost of H2 [€/kgH2]
+============  ==========  ==========  ==========  ==================================================
+
+These marginal costs are obtained after fixing the binary and continuous investment decisions and the binary operation decisions to their optimal values.
+Remember that binary decisions are not affected by marginal changes.
+
+File ``oT_Result_NetworkSRMCHeat.csv``
+
+============  ==========  ==========  ==========  ====================================================
+Identifier    Identifier  Identifier  Header      Description
+============  ==========  ==========  ==========  ====================================================
+Period        Scenario    Load level  Node        Locational Short-Run Marginal Cost of heat [€/Gcal]
+============  ==========  ==========  ==========  ====================================================
 
 These marginal costs are obtained after fixing the binary and continuous investment decisions and the binary operation decisions to their optimal values.
 Remember that binary decisions are not affected by marginal changes.

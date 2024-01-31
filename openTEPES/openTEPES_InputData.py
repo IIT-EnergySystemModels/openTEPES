@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - January 30, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - January 31, 2024
 """
 
 import datetime
@@ -123,7 +123,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
 
     dfReserveMargin         = dfReserveMargin.where       (dfReserveMargin        > 0.0, 0.0)
     dfEmission              = dfEmission.where            (dfEmission             > 0.0, 0.0)
-    dfRESEnergy             = dfRESEnergy.where           (dfRESEnergy             > 0.0, 0.0)
+    dfRESEnergy             = dfRESEnergy.where           (dfRESEnergy            > 0.0, 0.0)
     dfInertia               = dfInertia.where             (dfInertia              > 0.0, 0.0)
     dfUpOperatingReserve    = dfUpOperatingReserve.where  (dfUpOperatingReserve   > 0.0, 0.0)
     dfDwOperatingReserve    = dfDwOperatingReserve.where  (dfDwOperatingReserve   > 0.0, 0.0)
@@ -279,7 +279,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pIndBinNetLosses       = dfOption   ['IndBinNetLosses'    ].iloc[0].astype('int')         # Indicator of        electric network losses,               0 lossless         - 1 ohmic losses
     pENSCost               = dfParameter['ENSCost'            ].iloc[0] * 1e-3                # cost of energy   not served               [MEUR/GWh]
     pH2NSCost              = dfParameter['HNSCost'            ].iloc[0] * 1e-3                # cost of hydrogen not served               [MEUR/tH2]
-    pHeatNSCost            = dfParameter['HTNSCost'           ].iloc[0] * 1e-3                # cost of heat     not served               [MEUR/Mcal]
+    pHeatNSCost            = dfParameter['HTNSCost'           ].iloc[0] * 1e-3                # cost of heat     not served               [MEUR/Tcal]
     pCO2Cost               = dfParameter['CO2Cost'            ].iloc[0]                       # cost of CO2 emission                      [EUR/tCO2]
     pEconomicBaseYear      = dfParameter['EconomicBaseYear'   ].iloc[0]                       # economic base year                        [year]
     pAnnualDiscRate        = dfParameter['AnnualDiscountRate' ].iloc[0]                       # annual discount rate                      [p.u.]
@@ -317,16 +317,16 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pEnergyOutflows        = dfEnergyOutflows      [mTEPES.gg] * 1e-3                    # dynamic energy outflows                   [GW]
 
     if pIndHydroTopology == 1:
-        pVariableMinVolume = dfVariableMinVolume [mTEPES.rs]                             # dynamic variable minimum reservoir volume [hm3]
-        pVariableMaxVolume = dfVariableMaxVolume [mTEPES.rs]                             # dynamic variable maximum reservoir volume [hm3]
-        pHydroInflows      = dfHydroInflows      [mTEPES.rs]                             # dynamic hydro inflows                     [m3/s]
-        pHydroOutflows     = dfHydroOutflows     [mTEPES.rs]                             # dynamic hydro outflows                    [m3/s]
+        pVariableMinVolume = dfVariableMinVolume   [mTEPES.rs]                           # dynamic variable minimum reservoir volume [hm3]
+        pVariableMaxVolume = dfVariableMaxVolume   [mTEPES.rs]                           # dynamic variable maximum reservoir volume [hm3]
+        pHydroInflows      = dfHydroInflows        [mTEPES.rs]                           # dynamic hydro inflows                     [m3/s]
+        pHydroOutflows     = dfHydroOutflows       [mTEPES.rs]                           # dynamic hydro outflows                    [m3/s]
 
     if pIndHydrogen == 1:
-        pDemandH2          = dfDemandHydrogen    [mTEPES.nd]                             # hydrogen demand                           [tH2/h]
+        pDemandH2          = dfDemandHydrogen      [mTEPES.nd]                           # hydrogen demand                           [tH2/h]
 
     if pIndHeat == 1:
-        pDemandHeat        = dfDemandHeat        [mTEPES.nd]                             # heat     demand                           [Mcal/h]
+        pDemandHeat        = dfDemandHeat          [mTEPES.nd] * 1e-3                    # heat     demand                           [Tcal/h]
 
     if pTimeStep > 1:
         # compute the demand as the mean over the time step load levels and assign it to active load levels. Idem for the remaining parameters
@@ -509,15 +509,15 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pSwitchOffTime = round(pSwitchOffTime/pTimeStep).astype('int')
 
     if pIndHydrogen == 1:
-        pH2PipeLength       = dfNetworkHydrogen['Length'             ]                                                    # hydrogen line length                         [km]
-        pH2PipePeriodIni    = dfNetworkHydrogen['InitialPeriod'      ]                                                    # initial period
-        pH2PipePeriodFin    = dfNetworkHydrogen['FinalPeriod'        ]                                                    # final   period
-        pH2PipeNTCFrw       = dfNetworkHydrogen['TTC'                ] *        dfNetworkHydrogen['SecurityFactor' ]      # net transfer capacity in forward  direction  [tH2]
-        pH2PipeNTCBck       = dfNetworkHydrogen['TTCBck'             ] *        dfNetworkHydrogen['SecurityFactor' ]      # net transfer capacity in backward direction  [tH2]
-        pH2PipeFixedCost    = dfNetworkHydrogen['FixedInvestmentCost'] *        dfNetworkHydrogen['FixedChargeRate']      # hydrogen network    fixed cost               [MEUR]
-        pIndBinH2PipeInvest = dfNetworkHydrogen['BinaryInvestment'   ]                                                    # binary hydrogen pipeline investment decision [Yes]
-        pH2PipeLoInvest     = dfNetworkHydrogen['InvestmentLo'       ]                                                    # Lower bound of the investment decision       [p.u.]
-        pH2PipeUpInvest     = dfNetworkHydrogen['InvestmentUp'       ]                                                    # Upper bound of the investment decision       [p.u.]
+        pH2PipeLength       = dfNetworkHydrogen['Length'             ]                                                  # hydrogen line length                         [km]
+        pH2PipePeriodIni    = dfNetworkHydrogen['InitialPeriod'      ]                                                  # initial period
+        pH2PipePeriodFin    = dfNetworkHydrogen['FinalPeriod'        ]                                                  # final   period
+        pH2PipeNTCFrw       = dfNetworkHydrogen['TTC'                ] *      dfNetworkHydrogen['SecurityFactor' ]      # net transfer capacity in forward  direction  [tH2]
+        pH2PipeNTCBck       = dfNetworkHydrogen['TTCBck'             ] *      dfNetworkHydrogen['SecurityFactor' ]      # net transfer capacity in backward direction  [tH2]
+        pH2PipeFixedCost    = dfNetworkHydrogen['FixedInvestmentCost'] *      dfNetworkHydrogen['FixedChargeRate']      # hydrogen network    fixed cost               [MEUR]
+        pIndBinH2PipeInvest = dfNetworkHydrogen['BinaryInvestment'   ]                                                  # binary hydrogen pipeline investment decision [Yes]
+        pH2PipeLoInvest     = dfNetworkHydrogen['InvestmentLo'       ]                                                  # Lower bound of the investment decision       [p.u.]
+        pH2PipeUpInvest     = dfNetworkHydrogen['InvestmentUp'       ]                                                  # Upper bound of the investment decision       [p.u.]
 
         # replace pH2PipeNTCBck = 0.0 by pH2PipeNTCFrw
         pH2PipeNTCBck     = pH2PipeNTCBck.where(pH2PipeNTCBck     > 0.0, pH2PipeNTCFrw)
@@ -530,8 +530,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         pHeatPipeLength       = dfNetworkHeat['Length'             ]                                                    # heat pipe length                             [km]
         pHeatPipePeriodIni    = dfNetworkHeat['InitialPeriod'      ]                                                    # initial period
         pHeatPipePeriodFin    = dfNetworkHeat['FinalPeriod'        ]                                                    # final   period
-        pHeatPipeNTCFrw       = dfNetworkHeat['TTC'                ] *        dfNetworkHeat    ['SecurityFactor' ]      # net transfer capacity in forward  direction  [Mcal]
-        pHeatPipeNTCBck       = dfNetworkHeat['TTCBck'             ] *        dfNetworkHeat    ['SecurityFactor' ]      # net transfer capacity in backward direction  [Mcal]
+        pHeatPipeNTCFrw       = dfNetworkHeat['TTC'                ] * 1e-3 * dfNetworkHeat    ['SecurityFactor' ]      # net transfer capacity in forward  direction  [Tcal/h]
+        pHeatPipeNTCBck       = dfNetworkHeat['TTCBck'             ] * 1e-3 * dfNetworkHeat    ['SecurityFactor' ]      # net transfer capacity in backward direction  [Tcal/h]
         pHeatPipeFixedCost    = dfNetworkHeat['FixedInvestmentCost'] *        dfNetworkHeat    ['FixedChargeRate']      # heat    network    fixed cost                [MEUR]
         pIndBinHeatPipeInvest = dfNetworkHeat['BinaryInvestment'   ]                                                    # binary heat     pipe     investment decision [Yes]
         pHeatPipeLoInvest     = dfNetworkHeat['InvestmentLo'       ]                                                    # Lower bound of the investment decision       [p.u.]
@@ -1384,15 +1384,15 @@ def SettingUpVariables(OptModel, mTEPES):
     StartTime = time.time()
 
     #%% variables
-    OptModel.vTotalSCost              = Var(              within=NonNegativeReals,                          doc='total system                         cost      [MEUR]')
-    OptModel.vTotalICost              = Var(              within=NonNegativeReals,                          doc='total system investment              cost      [MEUR]')
-    OptModel.vTotalFCost              = Var(mTEPES.p,     within=NonNegativeReals,                          doc='total system fixed                   cost      [MEUR]')
-    OptModel.vTotalGCost              = Var(mTEPES.psn,   within=NonNegativeReals,                          doc='total variable generation  operation cost      [MEUR]')
-    OptModel.vTotalCCost              = Var(mTEPES.psn,   within=NonNegativeReals,                          doc='total variable consumption operation cost      [MEUR]')
-    OptModel.vTotalECost              = Var(mTEPES.psn,   within=NonNegativeReals,                          doc='total system emission                cost      [MEUR]')
-    OptModel.vTotalRCost              = Var(mTEPES.psn,   within=NonNegativeReals,                          doc='total system reliability             cost      [MEUR]')
-    OptModel.vTotalECostArea          = Var(mTEPES.psnar, within=NonNegativeReals,                          doc='total   area emission                cost      [MEUR]')
-    OptModel.vTotalRESEnergyArea      = Var(mTEPES.psnar, within=NonNegativeReals,                          doc='        RES energy                              [GWh]')
+    OptModel.vTotalSCost              = Var(                      within=NonNegativeReals,                 doc='total system                         cost      [MEUR]')
+    OptModel.vTotalICost              = Var(                      within=NonNegativeReals,                 doc='total system investment              cost      [MEUR]')
+    OptModel.vTotalFCost              = Var(mTEPES.p,     within=NonNegativeReals,                 doc='total system fixed                   cost      [MEUR]')
+    OptModel.vTotalGCost              = Var(mTEPES.psn,   within=NonNegativeReals,                 doc='total variable generation  operation cost      [MEUR]')
+    OptModel.vTotalCCost              = Var(mTEPES.psn,   within=NonNegativeReals,                 doc='total variable consumption operation cost      [MEUR]')
+    OptModel.vTotalECost              = Var(mTEPES.psn,   within=NonNegativeReals,                 doc='total system emission                cost      [MEUR]')
+    OptModel.vTotalRCost              = Var(mTEPES.psn,   within=NonNegativeReals,                 doc='total system reliability             cost      [MEUR]')
+    OptModel.vTotalECostArea          = Var(mTEPES.psnar, within=NonNegativeReals,                 doc='total   area emission                cost      [MEUR]')
+    OptModel.vTotalRESEnergyArea      = Var(mTEPES.psnar, within=NonNegativeReals,                 doc='        RES energy                              [GWh]')
 
     OptModel.vTotalOutput             = Var(mTEPES.psng , within=NonNegativeReals,                 doc='total output of the unit                         [GW]')
     OptModel.vOutput2ndBlock          = Var(mTEPES.psnnr, within=NonNegativeReals,                 doc='second block of the unit                         [GW]')
@@ -1419,7 +1419,7 @@ def SettingUpVariables(OptModel, mTEPES):
         OptModel.vH2NS                = Var(mTEPES.psnnd, within=NonNegativeReals,                 doc='hydrogen not served in node                     [tH2]')
 
     if mTEPES.pIndHeat == 1:
-        OptModel.vHeatNS              = Var(mTEPES.psnnd, within=NonNegativeReals,                 doc='heat     not served in node                    [Mcal]')
+        OptModel.vHeatNS              = Var(mTEPES.psnnd, within=NonNegativeReals,                 doc='heat     not served in node                  [Tcal/h]')
 
     if mTEPES.pIndBinGenInvest() == 0:
         OptModel.vGenerationInvest    = Var(mTEPES.pgc,   within=UnitInterval,                     doc='generation       investment decision exists in a year [0,1]')
@@ -1601,13 +1601,13 @@ def SettingUpVariables(OptModel, mTEPES):
     [OptModel.vTheta   [p,sc,n,nd      ].setub( mTEPES.pMaxTheta  [p,sc,n,nd]) for p,sc,n,nd       in mTEPES.psnnd]
 
     if mTEPES.pIndHydrogen == 1:
-        OptModel.vFlowH2 = Var(mTEPES.psnpa, within=Reals,            doc='pipeline flow   [tH2]')
+        OptModel.vFlowH2 = Var(mTEPES.psnpa, within=Reals,            doc='pipeline flow     [tH2]')
         [OptModel.vFlowH2[p,sc,n,ni,nf,cc].setlb(-mTEPES.pH2PipeNTCBck[ni,nf,cc])                       for p,sc,n,ni,nf,cc in mTEPES.psnpa]
         [OptModel.vFlowH2[p,sc,n,ni,nf,cc].setub( mTEPES.pH2PipeNTCFrw[ni,nf,cc])                       for p,sc,n,ni,nf,cc in mTEPES.psnpa]
         [OptModel.vH2NS   [p,sc,n,nd      ].setub(mTEPES.pDuration[n]()*mTEPES.pDemandH2Abs[p,sc,n,nd]) for p,sc,n,nd       in mTEPES.psnnd]
 
     if mTEPES.pIndHeat == 1:
-        OptModel.vFlowHeat = Var(mTEPES.psnpa, within=Reals,          doc='heat pipe flow   [Mcal]')
+        OptModel.vFlowHeat = Var(mTEPES.psnpa, within=Reals,          doc='heat pipe flow [Tcal/h]')
         [OptModel.vFlowHeat[p,sc,n,ni,nf,cc].setlb(-mTEPES.pHeatPipeNTCBck[ni,nf,cc])                        for p,sc,n,ni,nf,cc in mTEPES.psnpa]
         [OptModel.vFlowHeat[p,sc,n,ni,nf,cc].setub( mTEPES.pHeatPipeNTCFrw[ni,nf,cc])                        for p,sc,n,ni,nf,cc in mTEPES.psnpa]
         [OptModel.vHeatNS   [p,sc,n,nd       ].setub(mTEPES.pDuration[n]()*mTEPES.pDemandHeatAbs[p,sc,n,nd]) for p,sc,n,nd       in mTEPES.psnnd]

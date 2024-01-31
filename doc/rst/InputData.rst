@@ -148,7 +148,7 @@ File                  Description
 ====================  =============================================================================================================  =========
 ENSCost               Cost of energy not served (ENS). Cost of load curtailment. Value of Lost Load (VoLL)                           €/MWh
 HNSCost               Cost of hydrogen not served (HNS)                                                                              €/kgH2
-HTNSCost              Cost of heat not served (HTNS)                                                                                 €/Mcal
+HTNSCost              Cost of heat not served (HTNS)                                                                                 €/Gcal
 PNSCost               Cost of power not served (PNS) associated with the deficit in operating reserve by load level                  €/MW
 CO2Cost               Cost of CO2 emissions                                                                                          €/tCO2
 UpReserveActivation   Upward   reserve activation (proportion of upward   operating reserve deployed to produce energy)              p.u.
@@ -773,7 +773,7 @@ A description of the data included in the file ``oT_Data_DemandHeat.csv`` follow
 ==========  ==============  ==========  ======  ===============================================  ======
 Identifier  Identifier      Identifier  Header  Description
 ==========  ==============  ==========  ======  ===============================================  ======
-Period      Scenario        Load level  Node    Heat demand of the node for each load level      Mcal/h
+Period      Scenario        Load level  Node    Heat demand of the node for each load level      Gcal/h
 ==========  ==============  ==========  ======  ===============================================  ======
 
 Internally, all the values below if positive demand (or above if negative demand) 2.5e-5 times the maximum system demand of each area will be converted into 0 by the model.
@@ -789,8 +789,8 @@ Header               Description
 InitialPeriod        Initial period (year) when the unit is installed or can be installed, if candidate                                   Year
 FinalPeriod          Final   period (year) when the unit is installed or can be installed, if candidate                                   Year
 Length               Pipeline length (only used for reporting purposes). If not defined, computed as 1.1 times the geographical distance  km
-TTC                  Total transfer capacity (maximum permissible thermal load) in forward  direction. Static pipeline rating             Mcal
-TTCBck               Total transfer capacity (maximum permissible thermal load) in backward direction. Static pipeline rating             Mcal
+TTC                  Total transfer capacity (maximum permissible thermal load) in forward  direction. Static pipeline rating             Gcal/h
+TTCBck               Total transfer capacity (maximum permissible thermal load) in backward direction. Static pipeline rating             Gcal/h
 SecurityFactor       Security factor to consider approximately N-1 contingencies. NTC = TTC x SecurityFactor                              p.u.
 FixedInvestmentCost  Overnight investment (capital -CAPEX- and fixed O&M -FOM-) cost                                                      M€
 FixedChargeRate      Fixed-charge rate to annualize the overnight investment cost                                                         p.u.
