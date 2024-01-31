@@ -58,7 +58,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         pIndHydroTopology   = 0
         print('No Data_Reservoir file found')
         print('No Data_VariableMinVolume and Data_VariableMaxVolume files found')
-        print('No Data_HydroInflows and Data_HydroOutflows files found \n')
+        print('No Data_HydroInflows and Data_HydroOutflows files found')
 
     try:
         dfDemandHydrogen    = pd.read_csv(_path+'/oT_Data_DemandHydrogen_'        +CaseName+'.csv', index_col=[0,1,2])
@@ -66,7 +66,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         pIndHydrogen        = 1
     except:
         pIndHydrogen        = 0
-        print('No Data_DemandHydrogen and Data_NetworkHydrogen files found \n')
+        print('No Data_DemandHydrogen and Data_NetworkHydrogen files found')
 
     try:
         dfDemandHeat    = pd.read_csv(_path+'/oT_Data_DemandHeat_'                +CaseName+'.csv', index_col=[0,1,2])
@@ -74,7 +74,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         pIndHeat        = 1
     except:
         pIndHeat        = 0
-        print('No Data_DemandHeat and Data_NetworkHeat files found \n')
+        print('No Data_DemandHeat and Data_NetworkHeat files found')
 
     # substitute NaN by 0
     dfOption.fillna               (0  , inplace=True)
@@ -171,19 +171,19 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         print('Electric network                      \n', dfNetwork.describe             (), '\n')
 
         if pIndHydroTopology == 1:
-            print('Reservoir                         \n', dfReservoir.describe           ())
-            print('Variable minimum reservoir volume \n', dfVariableMinVolume.describe   ())
-            print('Variable maximum reservoir volume \n', dfVariableMaxVolume.describe   ())
-            print('Hydro inflows                     \n', dfHydroInflows.describe        ())
-            print('Hydro outflows                    \n', dfHydroOutflows.describe       ())
+            print('Reservoir                         \n', dfReservoir.describe           (), '\n')
+            print('Variable minimum reservoir volume \n', dfVariableMinVolume.describe   (), '\n')
+            print('Variable maximum reservoir volume \n', dfVariableMaxVolume.describe   (), '\n')
+            print('Hydro inflows                     \n', dfHydroInflows.describe        (), '\n')
+            print('Hydro outflows                    \n', dfHydroOutflows.describe       (), '\n')
 
         if pIndHydrogen == 1:
-            print('Hydrogen demand                   \n', dfDemandHydrogen.describe      ())
-            print('Hydrogen pipeline network         \n', dfNetworkHydrogen.describe     ())
+            print('Hydrogen demand                   \n', dfDemandHydrogen.describe      (), '\n')
+            print('Hydrogen pipeline network         \n', dfNetworkHydrogen.describe     (), '\n')
 
         if pIndHeat == 1:
-            print('Heat demand                       \n', dfDemandHeat.describe          ())
-            print('Heat pipe network                 \n', dfNetworkHeat.describe         ())
+            print('Heat demand                       \n', dfDemandHeat.describe          (), '\n')
+            print('Heat pipe network                 \n', dfNetworkHeat.describe         (), '\n')
 
     #%% reading the sets
     dictSets = DataPortal()
@@ -262,7 +262,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
             mTEPES.del_component(mTEPES.r2p)
             mTEPES.r2p = Set(initialize=dictSets['r2p'], ordered=False, doc='reservoir to pumped-hydro')
     except:
-        print('No reservoir and hydropower topology dictionaries found \n')
+        print('No reservoir and hydropower topology dictionaries found')
 
     #%% parameters
     pIndBinGenInvest       = dfOption   ['IndBinGenInvest'    ].iloc[0].astype('int')         # Indicator of binary generation        expansion decisions, 0 continuous       - 1 binary - 2 no investment variables
