@@ -684,6 +684,7 @@ import os
 # import pkg_resources
 from .openTEPES import openTEPES_run
 
+print('\n Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.15.7 - January 31, 2024')
 print('\n #### Academic research license - for non-commercial use only #### \n')
 
 parser = argparse.ArgumentParser(description='Introducing main parameters...')
