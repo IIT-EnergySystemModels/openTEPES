@@ -684,8 +684,8 @@ import os
 # import pkg_resources
 from .openTEPES import openTEPES_run
 
-print('\n Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.15.7 - January 31, 2024')
-print('\n #### Academic research license - for non-commercial use only #### \n')
+print("\033[1;32mOpen Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.15.7 - January 31, 2024\033[0m")
+print('\033[34m#### Academic research license - for non-commercial use only ####\033[0m \n')
 
 parser = argparse.ArgumentParser(description='Introducing main parameters...')
 parser.add_argument('--case',   type=str, default=None)
@@ -731,7 +731,7 @@ def main():
     print(args)
     openTEPES_run(args.dir, args.case, args.solver, args.result, args.log)
     print('End of the run                ************')
-    print('\n #### Academic research license - for non-commercial use only #### \n')
+    print('\033[34m#### Academic research license - for non-commercial use only ####\033[0m \n')
 
 if __name__ == '__main__':
     main()
