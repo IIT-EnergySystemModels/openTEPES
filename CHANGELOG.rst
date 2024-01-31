@@ -3,6 +3,7 @@ Change Log
 
 [4.15.7] - 2024-01-31
 ----------------------
+- [FIXED] fix error in system emission constraint
 - [CHANGED] clean up us of s2n in formulation
 - [FIXED] consistency of heat units
 - [FIXED] fix error for stages with duration 0
