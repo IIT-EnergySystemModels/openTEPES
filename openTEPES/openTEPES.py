@@ -50,19 +50,20 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     # Define variables
     SettingUpVariables(mTEPES, mTEPES)
 
+    # first/last stage
+    FirstST = 0
+    for st in mTEPES.st:
+        if FirstST == 0:
+            FirstST = 1
+            mTEPES.First_st = st
+        mTEPES.Last_st = st
+
     # objective function and investment constraints
     TotalObjectiveFunction    (mTEPES, mTEPES, pIndLogConsole)
     InvestmentModelFormulation(mTEPES, mTEPES, pIndLogConsole)
 
     # initialize parameter for dual variables
     mTEPES.pDuals = {}
-
-    # last period, scenario, and stage
-    for p,sc in mTEPES.ps:
-        mTEPES.Last_p  = p
-        mTEPES.Last_sc = sc
-    for st in mTEPES.st:
-        mTEPES.Last_st = st
 
     # iterative model formulation for each stage of a year
     for p,sc,st in mTEPES.ps*mTEPES.stt:
@@ -77,9 +78,9 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
         if len(mTEPES.st):
 
             # load levels up to the current stage for emission and RES energy constraints
-            if (p != mTEPES.pp.first() or sc != mTEPES.scc.first()) and st == mTEPES.stt.first():
+            if (p != mTEPES.p.first() or sc != mTEPES.sc.first()) and st == mTEPES.First_st:
                 mTEPES.del_component(mTEPES.na)
-            if st == mTEPES.stt.first():
+            if st == mTEPES.First_st:
                 mTEPES.na = Set(initialize=mTEPES.n)
             else:
                 mTEPES.na = mTEPES.na | mTEPES.n
@@ -121,7 +122,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
                         c.deactivate()
             else:
                 NoRepetition = 0
-                if p == mTEPES.Last_p and sc == mTEPES.Last_sc and st == mTEPES.Last_st and NoRepetition == 0:
+                if p == mTEPES.p.last() and sc == mTEPES.sc.last() and st == mTEPES.Last_st and NoRepetition == 0:
                     NoRepetition = 1
 
                     mTEPES.del_component(mTEPES.st)
