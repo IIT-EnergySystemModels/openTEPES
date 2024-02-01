@@ -1742,7 +1742,7 @@ def SettingUpVariables(OptModel, mTEPES):
             if mTEPES.pIndHydroTopology == 1:
                  # fixing the reservoir volume at the last load level of the stage for every period and scenario if between storage limits
                  for rs in mTEPES.rs:
-                     if mTEPES.pInitialVolume[rs] >= mTEPES.pMinVolume[p,sc,mTEPES.n.last(),rs] and mTEPES.pInitialVolume[rs] <= mTEPES.pMaxVolume[p,sc,mTEPES.n.last(),rs] and rn not in mTEPES.rn:
+                     if mTEPES.pInitialVolume[rs] >= mTEPES.pMinVolume[p,sc,mTEPES.n.last(),rs] and mTEPES.pInitialVolume[rs] <= mTEPES.pMaxVolume[p,sc,mTEPES.n.last(),rs] and rs not in mTEPES.rn:
                          OptModel.vReservoirVolume[p,sc,mTEPES.n.last(),rs].fix(mTEPES.pInitialVolume[rs])
 
     # activate all the periods, scenarios, and load levels again
