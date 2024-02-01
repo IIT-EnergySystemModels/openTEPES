@@ -1513,13 +1513,14 @@ def SettingUpVariables(OptModel, mTEPES):
     if mTEPES.pIndHydroTopology == 1:
         [OptModel.vHydroInflows   [p,sc,n,rc].setub(mTEPES.pHydroInflows[p,sc,n,rc]) for p,sc,n,rc in mTEPES.psnrc]
         [OptModel.vHydroOutflows  [p,sc,n,rs].setub(mTEPES.pMaxOutflows [p,sc,n,rs]) for p,sc,n,rs in mTEPES.psnrs]
+        [OptModel.vReservoirVolume[p,sc,n,rs].setlb(mTEPES.pMinVolume   [p,sc,n,rs]) for p,sc,n,rs in mTEPES.psnrs]
         [OptModel.vReservoirVolume[p,sc,n,rs].setub(mTEPES.pMaxVolume   [p,sc,n,rs]) for p,sc,n,rs in mTEPES.psnrs]
 
     if mTEPES.pIndHydrogen == 1:
-        [OptModel.vH2NS            [p,sc,n,nd].setub(mTEPES.pDuration[n]*mTEPES.pDemandH2Abs  [p,sc,n,nd]) for p,sc,n,nd in mTEPES.psnnd]
+        [OptModel.vH2NS           [p,sc,n,nd].setub(mTEPES.pDuration[n]*mTEPES.pDemandH2Abs  [p,sc,n,nd]) for p,sc,n,nd in mTEPES.psnnd]
 
     if mTEPES.pIndHeat == 1:
-        [OptModel.vHeatNS           [p,sc,n,nd].setub(mTEPES.pDuration[n]*mTEPES.pDemandHeatAbs[p,sc,n,nd]) for p,sc,n,nd in mTEPES.psnnd]
+        [OptModel.vHeatNS         [p,sc,n,nd].setub(mTEPES.pDuration[n]*mTEPES.pDemandHeatAbs[p,sc,n,nd]) for p,sc,n,nd in mTEPES.psnnd]
 
     nFixedVariables = 0.0
 
