@@ -620,8 +620,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.eh = mTEPES.es | mTEPES.h
 
     # initial inventory of the candidate storage units equal to its maximum capacity
-    for ec in mTEPES.ec:
-        pInitialInventory[ec] = pRatedMaxStorage[ec]
+    pInitialInventory.update(pd.Series([pRatedMaxStorage[ec] for ec in mTEPES.ec], index=mTEPES.ec, dtype='float64'))
 
     #%% inverse index load level to stage
     pStageToLevel = pLevelToStage.reset_index().set_index('Stage').set_axis(['LoadLevel'], axis=1)[['LoadLevel']]
