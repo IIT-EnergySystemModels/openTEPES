@@ -4,14 +4,14 @@ Change Log
 [4.15.7] - 2024-02-01
 ----------------------
 - [FIXED] don't fix the storage of ESS candidates to its initial storage in any cycle
-- [FIXED] fix the initial storage of ESS candidate to its maximum storage
+- [FIXED] fix the initial storage of ESS candidates to its maximum storage
 - [FIXED] fix error in system emission constraint
 - [CHANGED] clean up us of s2n in formulation
 - [FIXED] consistency of heat units
 - [FIXED] fix error for stages with duration 0
 - [CHANGED] add minimum RES energy in Data_RESEnergy file to consider minimum RES energy production
 - [CHANGED] scale eMinSystemRESEnergy to GW instead of GWh
-- [CHANGED] add MarginalRESenergy output file to consider the marginal RES energy production
+- [CHANGED] add MarginalRESEnergy output file to consider the marginal RES energy production
 
 [4.15.6] - 2024-01-25
 ----------------------

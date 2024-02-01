@@ -1753,7 +1753,7 @@ def SettingUpVariables(OptModel, mTEPES):
 
     # fixing the ESS inventory at the end of the following pCycleTimeStep (daily, weekly, monthly) if between storage limits, i.e., for daily ESS is fixed at the end of the week, for weekly ESS is fixed at the end of the month, for monthly ESS is fixed at the end of the year
     for p,sc,n,es in mTEPES.psnes:
-        if mTEPES.pInitialInventory[es] >= mTEPES.pMinStorage[p,sc,n,es] and mTEPES.pInitialInventory[es] <= mTEPES.pMaxStorage[p,sc,n,es] and es not in mTEPES.ec
+        if mTEPES.pInitialInventory[es] >= mTEPES.pMinStorage[p,sc,n,es] and mTEPES.pInitialInventory[es] <= mTEPES.pMaxStorage[p,sc,n,es] and es not in mTEPES.ec:
             if mTEPES.pStorageType[es] == 'Hourly'  and mTEPES.n.ord(n) % int(  24/mTEPES.pTimeStep()) == 0:
                 OptModel.vESSInventory[p,sc,n,es].fix(mTEPES.pInitialInventory[es])
                 nFixedVariables += 1
