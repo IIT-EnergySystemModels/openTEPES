@@ -3,6 +3,7 @@ Change Log
 
 [4.15.7] - 2024-02-01
 ----------------------
+- [FIXED] modify the condition to delete set na
 - [FIXED] don't fix the storage of ESS candidates to its initial storage in any cycle
 - [FIXED] fix the initial storage of ESS candidates to its maximum storage
 - [FIXED] fix error in system emission constraint
