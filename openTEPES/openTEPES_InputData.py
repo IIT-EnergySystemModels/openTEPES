@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - January 31, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 01, 2024
 """
 
 import datetime
@@ -618,6 +618,10 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.le = mTEPES.la - mTEPES.lc
     # ESS and hydro units
     mTEPES.eh = mTEPES.es | mTEPES.h
+
+    # initial inventory of the candidate storage units equal to its maximum capacity
+    for ec in mTEPES.ec:
+        pInitialInventory[ec] = pRatedMaxStorage[ec]
 
     #%% inverse index load level to stage
     pStageToLevel = pLevelToStage.reset_index().set_index('Stage').set_axis(['LoadLevel'], axis=1)[['LoadLevel']]

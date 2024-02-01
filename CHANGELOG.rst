@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.15.7] - 2024-01-31
+[4.15.7] - 2024-02-01
 ----------------------
+- [FIXED] fix the initial storage of ESS canidate to its maximum storage
 - [FIXED] fix error in system emission constraint
 - [CHANGED] clean up us of s2n in formulation
 - [FIXED] consistency of heat units
