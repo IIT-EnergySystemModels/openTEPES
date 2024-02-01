@@ -1753,7 +1753,7 @@ def SettingUpVariables(OptModel, mTEPES):
 
     # fixing the ESS inventory at the end of the following pCycleTimeStep (daily, weekly, monthly) if between storage limits, i.e., for daily ESS is fixed at the end of the week, for weekly ESS is fixed at the end of the month, for monthly ESS is fixed at the end of the year
     for p,sc,n,es in mTEPES.psnes:
-        if mTEPES.pInitialInventory[es] >= mTEPES.pMinStorage[p,sc,n,es] and mTEPES.pInitialInventory[es] <= mTEPES.pMaxStorage[p,sc,n,es]:
+        if mTEPES.pInitialInventory[es] >= mTEPES.pMinStorage[p,sc,n,es] and mTEPES.pInitialInventory[es] <= mTEPES.pMaxStorage[p,sc,n,es] and es not in mTEPES.ec
             if mTEPES.pStorageType[es] == 'Hourly'  and mTEPES.n.ord(n) % int(  24/mTEPES.pTimeStep()) == 0:
                 OptModel.vESSInventory[p,sc,n,es].fix(mTEPES.pInitialInventory[es])
                 nFixedVariables += 1
@@ -1770,7 +1770,7 @@ def SettingUpVariables(OptModel, mTEPES):
     if mTEPES.pIndHydroTopology == 1:
         # fixing the reservoir volume at the end of the following pCycleWaterStep (daily, weekly, monthly) if between storage limits, i.e., for daily reservoir is fixed at the end of the week, for weekly reservoir is fixed at the end of the month, for monthly reservoir is fixed at the end of the year
         for p,sc,n,rs in mTEPES.psnrs:
-            if mTEPES.pInitialVolume[rs] >= mTEPES.pMinVolume[p,sc,n,rs] and mTEPES.pInitialVolume[rs] <= mTEPES.pMaxVolume[p,sc,n,rs]:
+            if mTEPES.pInitialVolume[rs] >= mTEPES.pMinVolume[p,sc,n,rs] and mTEPES.pInitialVolume[rs] <= mTEPES.pMaxVolume[p,sc,n,rs] and rs not in mTEPES.rn:
                 if mTEPES.pReservoirType[rs] == 'Hourly'  and mTEPES.n.ord(n) % int(  24/mTEPES.pTimeStep()) == 0:
                     OptModel.vReservoirVolume[p,sc,n,rs].fix(mTEPES.pInitialVolume[rs])
                     nFixedVariables += 1

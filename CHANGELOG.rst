@@ -3,7 +3,7 @@ Change Log
 
 [4.15.7] - 2024-02-01
 ----------------------
-- [FIXED] don't fix the final storage of ESS candidate to its initial storage
+- [FIXED] don't fix the storage of ESS candidates to its initial storage in any cycle
 - [FIXED] fix the initial storage of ESS candidate to its maximum storage
 - [FIXED] fix error in system emission constraint
 - [CHANGED] clean up us of s2n in formulation
