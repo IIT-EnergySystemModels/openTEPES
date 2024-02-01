@@ -1736,13 +1736,13 @@ def SettingUpVariables(OptModel, mTEPES):
 
             # fixing the ESS inventory at the last load level of the stage for every period and scenario if between storage limits
             for es in mTEPES.es:
-                if mTEPES.pInitialInventory[es] >= mTEPES.pMinStorage[p,sc,mTEPES.n.last(),es] and mTEPES.pInitialInventory[es] <= mTEPES.pMaxStorage[p,sc,mTEPES.n.last(),es]:
+                if mTEPES.pInitialInventory[es] >= mTEPES.pMinStorage[p,sc,mTEPES.n.last(),es] and mTEPES.pInitialInventory[es] <= mTEPES.pMaxStorage[p,sc,mTEPES.n.last(),es] and es not in mTEPES.ec:
                     OptModel.vESSInventory[p,sc,mTEPES.n.last(),es].fix(mTEPES.pInitialInventory[es])
 
             if mTEPES.pIndHydroTopology == 1:
                  # fixing the reservoir volume at the last load level of the stage for every period and scenario if between storage limits
                  for rs in mTEPES.rs:
-                     if mTEPES.pInitialVolume[rs] >= mTEPES.pMinVolume[p,sc,mTEPES.n.last(),rs] and mTEPES.pInitialVolume[rs] <= mTEPES.pMaxVolume[p,sc,mTEPES.n.last(),rs]:
+                     if mTEPES.pInitialVolume[rs] >= mTEPES.pMinVolume[p,sc,mTEPES.n.last(),rs] and mTEPES.pInitialVolume[rs] <= mTEPES.pMaxVolume[p,sc,mTEPES.n.last(),rs] and rn not in mTEPES.rn:
                          OptModel.vReservoirVolume[p,sc,mTEPES.n.last(),rs].fix(mTEPES.pInitialVolume[rs])
 
     # activate all the periods, scenarios, and load levels again
