@@ -78,7 +78,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
         if len(mTEPES.st):
 
             # load levels up to the current stage for emission and RES energy constraints
-            if (p != mTEPES.p.first() or sc != mTEPES.sc.first()) and st == mTEPES.First_st and mTEPES.First_st != mTEPES.Last_st:
+            if (p,sc) != mTEPES.ps.first() and st == mTEPES.First_st and mTEPES.First_st != mTEPES.Last_st:
                 mTEPES.del_component(mTEPES.na)
             if st == mTEPES.First_st:
                 mTEPES.na = Set(initialize=mTEPES.n)
@@ -122,7 +122,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
                         c.deactivate()
             else:
                 NoRepetition = 0
-                if p == mTEPES.p.last() and sc == mTEPES.sc.last() and st == mTEPES.Last_st and NoRepetition == 0:
+                if (p,sc) == mTEPES.ps.last() and st == mTEPES.Last_st and NoRepetition == 0:
                     NoRepetition = 1
 
                     mTEPES.del_component(mTEPES.st)
