@@ -660,7 +660,7 @@
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <https://www.gnu.org/licenses/>.
 
-# Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - January 24, 2023
+# Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 02, 2023
 # simplicity and transparency in power systems planning
 
 # Developed by
@@ -684,7 +684,7 @@ import os
 # import pkg_resources
 from .openTEPES import openTEPES_run
 
-print("\033[1;32mOpen Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.15.7 - January 31, 2024\033[0m")
+print("\033[1;32mOpen Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.15.7 - February 02, 2024\033[0m")
 print('\033[34m#### Academic research license - for non-commercial use only ####\033[0m \n')
 
 parser = argparse.ArgumentParser(description='Introducing main parameters...')
