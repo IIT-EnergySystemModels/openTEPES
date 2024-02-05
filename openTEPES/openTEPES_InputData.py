@@ -56,9 +56,9 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         pIndHydroTopology   = 1
     except:
         pIndHydroTopology   = 0
-        print('No Data_Reservoir file found')
+        print('No Data_Reservoir                                    file  found')
         print('No Data_VariableMinVolume and Data_VariableMaxVolume files found')
-        print('No Data_HydroInflows and Data_HydroOutflows files found')
+        print('No Data_HydroInflows      and Data_HydroOutflows     files found')
 
     try:
         dfDemandHydrogen    = pd.read_csv(_path+'/oT_Data_DemandHydrogen_'        +CaseName+'.csv', index_col=[0,1,2])
@@ -66,7 +66,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         pIndHydrogen        = 1
     except:
         pIndHydrogen        = 0
-        print('No Data_DemandHydrogen and Data_NetworkHydrogen files found')
+        print('No Data_DemandHydrogen    and Data_NetworkHydrogen   files found')
 
     try:
         dfDemandHeat    = pd.read_csv(_path+'/oT_Data_DemandHeat_'                +CaseName+'.csv', index_col=[0,1,2])
@@ -74,7 +74,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         pIndHeat        = 1
     except:
         pIndHeat        = 0
-        print('No Data_DemandHeat and Data_NetworkHeat files found')
+        print('No Data_DemandHeat        and Data_NetworkHeat       files found')
 
     # substitute NaN by 0
     dfOption.fillna               (0  , inplace=True)
@@ -262,7 +262,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
             mTEPES.del_component(mTEPES.r2p)
             mTEPES.r2p = Set(initialize=dictSets['r2p'], ordered=False, doc='reservoir to pumped-hydro')
     except:
-        print('No reservoir and hydropower topology dictionaries found')
+        print('No reservoir and hydropower topology dictionary      files found')
 
     #%% parameters
     pIndBinGenInvest       = dfOption   ['IndBinGenInvest'    ].iloc[0].astype('int')         # Indicator of binary generation        expansion decisions, 0 continuous       - 1 binary - 2 no investment variables
@@ -619,9 +619,6 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     # ESS and hydro units
     mTEPES.eh = mTEPES.es | mTEPES.h
 
-    # initial inventory of the candidate storage units equal to its maximum capacity
-    pInitialInventory.update(pd.Series([pRatedMaxStorage[ec] for ec in mTEPES.ec], index=mTEPES.ec, dtype='float64'))
-
     #%% inverse index load level to stage
     pStageToLevel = pLevelToStage.reset_index().set_index('Stage').set_axis(['LoadLevel'], axis=1)[['LoadLevel']]
     pStageToLevel = pStageToLevel.loc[pStageToLevel['LoadLevel'].keys().isin(mTEPES.st)]
@@ -837,14 +834,6 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pEmissionVarCost    = pEmissionVarCost.reindex(sorted(pEmissionVarCost.columns), axis=1)
     pEmissionVarCost    = pVarEmissionCost.where  (pVariableEmissionCost > 0.0, pEmissionVarCost)
 
-    # parameter that allows the initial inventory to change with load level
-    pIniInventory       = pd.DataFrame([pInitialInventory]*len(pVariableMinStorage.index), index=pVariableMinStorage.index, columns=pInitialInventory.index)
-    if pIndHydroTopology == 1:
-        pIniVolume      = pd.DataFrame([pInitialVolume   ]*len(pVariableMinVolume.index ), index=pVariableMinVolume.index , columns=pInitialVolume.index   )
-    # initial inventory must be between minimum and maximum
-    # pIniInventory       = pMinStorage.where(pMinStorage > pIniInventory, pIniInventory)
-    # pIniInventory       = pMaxStorage.where(pMaxStorage < pIniInventory, pIniInventory)
-
     # minimum up- and downtime and maximum shift time converted to an integer number of time steps
     pUpTime    = round(pUpTime   /pTimeStep).astype('int')
     pDwTime    = round(pDwTime   /pTimeStep).astype('int')
@@ -909,6 +898,36 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         pCycleWaterStep   = pd.concat([pCycleRsrTimeStep, pWaterOutTimeStep], axis=1).min(axis=1)
         # cycle water step can't exceed the stage duration
         pCycleWaterStep   = pCycleWaterStep.where(pCycleWaterStep <= pStageDuration.min(), pStageDuration.min())
+
+    # initial inventory must be between minimum and maximum
+    pInitialInventory   = pRatedMinStorage.where(pRatedMinStorage > pInitialInventory, pInitialInventory)
+    pInitialInventory   = pRatedMaxStorage.where(pRatedMaxStorage < pInitialInventory, pInitialInventory)
+    if pIndHydroTopology == 1:
+        pInitialVolume  = pRatedMinVolume.where (pRatedMinVolume  > pInitialVolume,    pInitialVolume)
+        pInitialVolume  = pRatedMaxVolume.where (pRatedMaxVolume  < pInitialVolume,    pInitialVolume)
+
+    # initial inventory of the candidate storage units equal to its maximum capacity
+    pInitialInventory.update(pd.Series([pRatedMaxStorage[ec] for ec in mTEPES.ec], index=mTEPES.ec, dtype='float64'))
+
+    # parameter that allows the initial inventory to change with load level
+    pIniInventory       = pd.DataFrame([pInitialInventory]*len(pMinStorage.index), index=pMinStorage.index, columns=pInitialInventory.index)
+    if pIndHydroTopology == 1:
+        pIniVolume      = pd.DataFrame([pInitialVolume   ]*len(pMinVolume.index ), index=pMinVolume.index , columns=pInitialVolume.index   )
+
+    # initial inventory must be between minimum and maximum
+    for p,sc,n,es in mTEPES.psn*mTEPES.es:
+        if (st,n) in mTEPES.s2n and mTEPES.n.ord(n) == pCycleTimeStep[es]:
+            if  pIniInventory[es][p,sc,n] < pMinStorage[es][p,sc,n]:
+                pIniInventory[es][p,sc,n] = pMinStorage[es][p,sc,n]
+            if  pIniInventory[es][p,sc,n] > pMaxStorage[es][p,sc,n]:
+                pIniInventory[es][p,sc,n] = pMaxStorage[es][p,sc,n]
+    if pIndHydroTopology == 1:
+        for p,sc,n,rs in mTEPES.psn*mTEPES.rs:
+            if (st, n) in mTEPES.s2n and mTEPES.n.ord(n) == pCycleWaterStep[rs]:
+                if  pIniVolume[p,sc,n,rs] < pMinVolume[p,sc,n,rs]:
+                    pIniVolume[p,sc,n,rs] = pMinVolume[p,sc,n,rs]
+                if  pIniVolume[p,sc,n,rs] > pMaxVolume[p,sc,n,rs]:
+                    pIniVolume[p,sc,n,rs] = pMinVolume[p,sc,n,rs]
 
     # drop load levels with duration 0
     pDuration           = pDuration.loc         [mTEPES.n    ]
@@ -1436,6 +1455,7 @@ def SettingUpVariables(OptModel, mTEPES):
     OptModel.vEnergyOutflows          = Var(mTEPES.psnes, within=NonNegativeReals,                 doc='scheduled   outflows of all       ESS units      [GW]')
     OptModel.vESSInventory            = Var(mTEPES.psnes, within=NonNegativeReals,                 doc='ESS inventory                                   [GWh]')
     OptModel.vESSSpillage             = Var(mTEPES.psnes, within=NonNegativeReals,                 doc='ESS spillage                                    [GWh]')
+    OptModel.vIniInventory            = Var(mTEPES.psnec, within=NonNegativeReals,                 doc='initial inventory for ESS candidate             [GWh]')
 
     OptModel.vESSTotalCharge          = Var(mTEPES.psneh, within=NonNegativeReals,                 doc='ESS total charge power                           [GW]')
     OptModel.vCharge2ndBlock          = Var(mTEPES.psneh, within=NonNegativeReals,                 doc='ESS       charge power                           [GW]')
@@ -1534,6 +1554,8 @@ def SettingUpVariables(OptModel, mTEPES):
     [OptModel.vEnergyOutflows[p,sc,n,es].setub(mTEPES.pMaxCapacity      [p,sc,n,es]) for p,sc,n,es in mTEPES.psnes]
     [OptModel.vESSInventory  [p,sc,n,es].setlb(mTEPES.pMinStorage       [p,sc,n,es]) for p,sc,n,es in mTEPES.psnes]
     [OptModel.vESSInventory  [p,sc,n,es].setub(mTEPES.pMaxStorage       [p,sc,n,es]) for p,sc,n,es in mTEPES.psnes]
+    [OptModel.vIniInventory  [p,sc,n,ec].setlb(mTEPES.pMinStorage       [p,sc,n,ec]) for p,sc,n,ec in mTEPES.psnec]
+    [OptModel.vIniInventory  [p,sc,n,ec].setub(mTEPES.pMaxStorage       [p,sc,n,ec]) for p,sc,n,ec in mTEPES.psnec]
 
     [OptModel.vESSTotalCharge[p,sc,n,eh].setub(mTEPES.pMaxCharge        [p,sc,n,eh]) for p,sc,n,eh in mTEPES.psneh]
     [OptModel.vCharge2ndBlock[p,sc,n,eh].setub(mTEPES.pMaxCharge2ndBlock[p,sc,n,eh]) for p,sc,n,eh in mTEPES.psneh]
@@ -1767,13 +1789,13 @@ def SettingUpVariables(OptModel, mTEPES):
 
             # fixing the ESS inventory at the last load level of the stage for every period and scenario if between storage limits
             for es in mTEPES.es:
-                if mTEPES.pInitialInventory[es] >= mTEPES.pMinStorage[p,sc,mTEPES.n.last(),es] and mTEPES.pInitialInventory[es] <= mTEPES.pMaxStorage[p,sc,mTEPES.n.last(),es] and es not in mTEPES.ec:
+                if es not in mTEPES.ec:
                     OptModel.vESSInventory[p,sc,mTEPES.n.last(),es].fix(mTEPES.pInitialInventory[es])
 
             if mTEPES.pIndHydroTopology == 1:
                  # fixing the reservoir volume at the last load level of the stage for every period and scenario if between storage limits
                  for rs in mTEPES.rs:
-                     if mTEPES.pInitialVolume[rs] >= mTEPES.pMinVolume[p,sc,mTEPES.n.last(),rs] and mTEPES.pInitialVolume[rs] <= mTEPES.pMaxVolume[p,sc,mTEPES.n.last(),rs] and rs not in mTEPES.rn:
+                     if rs not in mTEPES.rn:
                          OptModel.vReservoirVolume[p,sc,mTEPES.n.last(),rs].fix(mTEPES.pInitialVolume[rs])
 
     # activate all the periods, scenarios, and load levels again
@@ -1950,7 +1972,7 @@ def SettingUpVariables(OptModel, mTEPES):
                 nFixedVariables += 6
 
     for p,es in mTEPES.pes:
-        if es not in mTEPES.gc and mTEPES.pPeriodIniGen[es] > p:
+        if es not in mTEPES.ec and mTEPES.pPeriodIniGen[es] > p:
             for sc,n in mTEPES.sc*mTEPES.n:
                 OptModel.vEnergyOutflows[p,sc,n,es].fix(0.0)
                 OptModel.vESSInventory  [p,sc,n,es].fix(0.0)
@@ -2101,7 +2123,7 @@ def SettingUpVariables(OptModel, mTEPES):
 
     # detect inventory infeasibility
     for p,sc,n,es in mTEPES.ps*mTEPES.nesc:
-        if mTEPES.pMaxCharge[p,sc,n,es] + mTEPES.pMaxPower[p,sc,n,es]:
+        if mTEPES.pMaxCapacity[p,sc,n,es]:
             if   mTEPES.n.ord(n) == mTEPES.pCycleTimeStep[es]:
                 if mTEPES.pIniInventory[p,sc,n,es]()                                      + sum(mTEPES.pDuration[n2]()*(mTEPES.pEnergyInflows[p,sc,n2,es]() - mTEPES.pMinPower[p,sc,n2,es] + mTEPES.pEfficiency[es]*mTEPES.pMaxCharge[p,sc,n2,es]) for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pCycleTimeStep[es]:mTEPES.n.ord(n)]) < mTEPES.pMinStorage[p,sc,n,es]:
                     print('### Inventory equation violation ', p, sc, n, es)
