@@ -1089,6 +1089,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pLineNTCFrw           = pLineNTCFrw.loc          [   mTEPES.la]
     pLineNTCBck           = pLineNTCBck.loc          [   mTEPES.la]
     pLineNTCMax           = pLineNTCMax.loc          [   mTEPES.la]
+    # pSwOnTime             = pSwOnTime.loc            [   mTEPES.la]
+    # pSwOffTime            = pSwOffTime.loc           [   mTEPES.la]
     pIndBinLineInvest     = pIndBinLineInvest.loc    [   mTEPES.la]
     pIndBinLineSwitch     = pIndBinLineSwitch.loc    [   mTEPES.la]
     pAngMin               = pAngMin.loc              [   mTEPES.la]
@@ -1317,8 +1319,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.pNetFixedCost         = Param(mTEPES.lc,    initialize=pNetFixedCost.to_dict()    , within=NonNegativeReals,    doc='Electric line fixed cost'                                          )
     mTEPES.pIndBinLineInvest     = Param(mTEPES.la,    initialize=pIndBinLineInvest.to_dict(), within=Binary          ,    doc='Binary electric line investment decision'                          )
     mTEPES.pIndBinLineSwitch     = Param(mTEPES.la,    initialize=pIndBinLineSwitch.to_dict(), within=Binary          ,    doc='Binary electric line switching  decision'                          )
-    mTEPES.pSwOnTime             = Param(mTEPES.la,    initialize=pSwitchOnTime.to_dict()    , within=NonNegativeIntegers, doc='Minimum switching on  time'                                        )
-    mTEPES.pSwOffTime            = Param(mTEPES.la,    initialize=pSwitchOffTime.to_dict()   , within=NonNegativeIntegers, doc='Minimum switching off time'                                        )
+    # mTEPES.pSwOnTime             = Param(mTEPES.la,    initialize=pSwitchOnTime.to_dict()    , within=NonNegativeIntegers, doc='Minimum switching on  time'                                        )
+    # mTEPES.pSwOffTime            = Param(mTEPES.la,    initialize=pSwitchOffTime.to_dict()   , within=NonNegativeIntegers, doc='Minimum switching off time'                                        )
     mTEPES.pBigMFlowBck          = Param(mTEPES.la,    initialize=pBigMFlowBck.to_dict()     , within=NonNegativeReals,    doc='Maximum backward capacity',                            mutable=True)
     mTEPES.pBigMFlowFrw          = Param(mTEPES.la,    initialize=pBigMFlowFrw.to_dict()     , within=NonNegativeReals,    doc='Maximum forward  capacity',                            mutable=True)
     mTEPES.pMaxTheta             = Param(mTEPES.psnnd, initialize=pMaxTheta.stack().to_dict(), within=NonNegativeReals,    doc='Maximum voltage angle',                                mutable=True)
