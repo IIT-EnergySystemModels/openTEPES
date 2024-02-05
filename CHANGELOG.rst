@@ -1,15 +1,16 @@
 Change Log
 =============
 
-[4.15.7] - 2024-02-02
+[4.15.7] - 2024-02-05
 ----------------------
+- [CHANGED] clean up of dynamic sets to avoid the use of static sets
 - [FIXED] typo in dual variable of reserve margin constraint
 - [FIXED] include minimum reservoir volume
 - [FIXED] modify the condition to delete set na
 - [FIXED] don't fix the storage of ESS candidates to its initial storage in any cycle
 - [FIXED] fix the initial storage of ESS candidates to its maximum storage
 - [FIXED] fix error in system emission constraint
-- [CHANGED] clean up us of s2n in formulation
+- [CHANGED] clean up of s2n in formulation
 - [FIXED] consistency of heat units
 - [FIXED] fix error for stages with duration 0
 - [CHANGED] add minimum RES energy in Data_RESEnergy file to consider minimum RES energy production
