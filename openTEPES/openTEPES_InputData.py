@@ -682,10 +682,10 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
 
     if pIndHydrogen == 1:
         mTEPES.ppa   = [(p,     ni,nf,cc) for p,     ni,nf,cc in mTEPES.p  *mTEPES.pa if pH2PipePeriodIni[ni,nf,cc] <= mTEPES.p.last() and pH2PipePeriodFin[ni,nf,cc] >= mTEPES.p.first()]
-        mTEPES.ppc   = [(p,     ni,nf,cc) for p,     ni,nf,cc in mTEPES.p  *mTEPES.pc if (p,ni,nf,cc) in mEPES.ppa]
-        mTEPES.psnpn = [(p,sc,n,ni,nf,cc) for p,sc,n,ni,nf,cc in mTEPES.psn*mTEPES.pn if (p,ni,nf,cc) in mEPES.ppa]
-        mTEPES.psnpa = [(p,sc,n,ni,nf,cc) for p,sc,n,ni,nf,cc in mTEPES.psn*mTEPES.pa if (p,ni,nf,cc) in mEPES.ppa]
-        mTEPES.psnpe = [(p,sc,n,ni,nf,cc) for p,sc,n,ni,nf,cc in mTEPES.psn*mTEPES.pe if (p,ni,nf,cc) in mEPES.ppa]
+        mTEPES.ppc   = [(p,     ni,nf,cc) for p,     ni,nf,cc in mTEPES.p  *mTEPES.pc if (p,ni,nf,cc) in mTEPES.ppa]
+        mTEPES.psnpn = [(p,sc,n,ni,nf,cc) for p,sc,n,ni,nf,cc in mTEPES.psn*mTEPES.pn if (p,ni,nf,cc) in mTEPES.ppa]
+        mTEPES.psnpa = [(p,sc,n,ni,nf,cc) for p,sc,n,ni,nf,cc in mTEPES.psn*mTEPES.pa if (p,ni,nf,cc) in mTEPES.ppa]
+        mTEPES.psnpe = [(p,sc,n,ni,nf,cc) for p,sc,n,ni,nf,cc in mTEPES.psn*mTEPES.pe if (p,ni,nf,cc) in mTEPES.ppa]
 
     if pIndHeat == 1:
         mTEPES.pha   = [(p,     ni,nf,cc) for p,     ni,nf,cc in mTEPES.p  *mTEPES.ha if pHeatPipePeriodIni[ni,nf,cc] <= mTEPES.p.last() and pHeatPipePeriodFin[ni,nf,cc] >= mTEPES.p.first()]
