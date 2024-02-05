@@ -681,15 +681,15 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         mTEPES.psnrc = [(p,sc,n,rc)       for p,sc,n,rc       in mTEPES.psn*mTEPES.rn if (p,rc) in mTEPES.prs]
 
     if pIndHydrogen == 1:
-        mTEPES.ppa   = [(p,     ni,nf,cc) for p,     ni,nf,cc in mTEPES.p  *mTEPES.pa if pH2PipePeriodIni[pn] <= mTEPES.p.last() and pH2PipePeriodFin[pn] >= mTEPES.p.first()]
+        mTEPES.ppa   = [(p,     ni,nf,cc) for p,     ni,nf,cc in mTEPES.p  *mTEPES.pa if pH2PipePeriodIni[ni,nf,cc] <= mTEPES.p.last() and pH2PipePeriodFin[ni,nf,cc] >= mTEPES.p.first()]
         mTEPES.ppc   = [(p,     ni,nf,cc) for p,     ni,nf,cc in mTEPES.p  *mTEPES.pc if (p,ni,nf,cc) in mEPES.ppa]
         mTEPES.psnpn = [(p,sc,n,ni,nf,cc) for p,sc,n,ni,nf,cc in mTEPES.psn*mTEPES.pn if (p,ni,nf,cc) in mEPES.ppa]
         mTEPES.psnpa = [(p,sc,n,ni,nf,cc) for p,sc,n,ni,nf,cc in mTEPES.psn*mTEPES.pa if (p,ni,nf,cc) in mEPES.ppa]
         mTEPES.psnpe = [(p,sc,n,ni,nf,cc) for p,sc,n,ni,nf,cc in mTEPES.psn*mTEPES.pe if (p,ni,nf,cc) in mEPES.ppa]
 
     if pIndHeat == 1:
-        mTEPES.ppa   = [(p,     ni,nf,cc) for p,     ni,nf,cc in mTEPES.p  *mTEPES.ha if pHeatPipePeriodIni[ha] <= mTEPES.p.last() and pHeatPipePeriodFin[ha] >= mTEPES.p.first()]
-        mTEPES.ppc   = [(p,     ni,nf,cc) for p,     ni,nf,cc in mTEPES.p  *mTEPES.hc if (p,ni,nf,cc) in mTEPES.pha]
+        mTEPES.pha   = [(p,     ni,nf,cc) for p,     ni,nf,cc in mTEPES.p  *mTEPES.ha if pHeatPipePeriodIni[ni,nf,cc] <= mTEPES.p.last() and pHeatPipePeriodFin[ni,nf,cc] >= mTEPES.p.first()]
+        mTEPES.phc   = [(p,     ni,nf,cc) for p,     ni,nf,cc in mTEPES.p  *mTEPES.hc if (p,ni,nf,cc) in mTEPES.pha]
         mTEPES.psnhn = [(p,sc,n,ni,nf,cc) for p,sc,n,ni,nf,cc in mTEPES.psn*mTEPES.hn if (p,ni,nf,cc) in mTEPES.pha]
         mTEPES.psnha = [(p,sc,n,ni,nf,cc) for p,sc,n,ni,nf,cc in mTEPES.psn*mTEPES.ha if (p,ni,nf,cc) in mTEPES.pha]
         mTEPES.psnhe = [(p,sc,n,ni,nf,cc) for p,sc,n,ni,nf,cc in mTEPES.psn*mTEPES.he if (p,ni,nf,cc) in mTEPES.pha]
@@ -1552,7 +1552,7 @@ def SettingUpVariables(OptModel, mTEPES):
     if mTEPES.pIndHeat == 1:
         [OptModel.vHeatNS         [p,sc,n,nd].setub(mTEPES.pDuration[n]*mTEPES.pDemandHeatAbs[p,sc,n,nd]) for p,sc,n,nd in mTEPES.psnnd]
 
-    nFixedVariables = 0.0
+    nFixedVariables = 0
 
     # relax binary condition in generation and electric network investment decisions
     for p,gc in mTEPES.pgc:
