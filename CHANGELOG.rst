@@ -3,6 +3,7 @@ Change Log
 
 [4.15.7] - 2024-02-05
 ----------------------
+- [FIXED] introduce initial inventory as a variable for ESS candidates
 - [CHANGED] clean up of dynamic sets to avoid the use of static sets
 - [FIXED] typo in dual variable of reserve margin constraint
 - [FIXED] include minimum reservoir volume
