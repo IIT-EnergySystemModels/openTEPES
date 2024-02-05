@@ -641,7 +641,6 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.n2 = Set(initialize=mTEPES.nn, ordered=True , doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.nn and pDuration[nn] and sum(1 for st in mTEPES.st if (st,nn) in mTEPES.s2n))
 
     # instrumental sets
-
     mTEPES.pg        = [(p,     g       ) for p,     g        in mTEPES.p  *mTEPES.g  if pPeriodIniGen[g ] <= mTEPES.p.last() and pPeriodFinGen[g ] >= mTEPES.p.first()]
     mTEPES.pgc       = [(p,     gc      ) for p,     gc       in mTEPES.p  *mTEPES.gc if (p,gc) in mTEPES.pg]
     mTEPES.pes       = [(p,     es      ) for p,     es       in mTEPES.p  *mTEPES.es if (p,es) in mTEPES.pg]
