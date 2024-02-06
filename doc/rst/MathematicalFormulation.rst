@@ -391,6 +391,10 @@ ESS energy inventory (only for load levels multiple of 1, 24, 168 h depending on
 
 :math:`i^p_{\omega,n-\frac{\tau_e}{\nu},e} + \sum_{n' = n-\frac{\tau_e}{\nu}}^n DUR_n' (ei^p_{\omega n'e} - go^p_{\omega n'e} - gp^p_{\omega n'e} + EF_e gc^p_{\omega n'e}) = i^p_{\omega ne} + s^p_{\omega ne} \quad \forall p \omega ne, e \in CE`
 
+The initial inventory of the ESS candidates divided by their initial storage :math:`I^p_{\omega,0,e}` (given in the input data) is fixed to the commitment decision [p.u.] «``eIniInventory``».
+
+:math:`\frac{i^p_{\omega,0,e}}{I^p_{\omega,0,e}} = uc^p_{\omega ne} \quad \forall p \omega ne, e \in CE`
+
 Maximum shift time of stored energy [GWh]. It is thought to be applied to demand side management «``eMaxShiftTime``»
 
 :math:`DUR_n EF_e gc^p_{\omega ne} \leq \sum_{n' = n+1}^{n+\frac{ST_e}{\nu}} DUR_n' gp^p_{\omega n'e}  \quad \forall p \omega ne`
