@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 05, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 06, 2024
 """
 
 import datetime
@@ -923,11 +923,11 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
                 pIniInventory[es][p,sc,n] = pMaxStorage[es][p,sc,n]
     if pIndHydroTopology == 1:
         for p,sc,n,rs in mTEPES.psn*mTEPES.rs:
-            if (st, n) in mTEPES.s2n and mTEPES.n.ord(n) == pCycleWaterStep[rs]:
-                if  pIniVolume[p,sc,n,rs] < pMinVolume[p,sc,n,rs]:
-                    pIniVolume[p,sc,n,rs] = pMinVolume[p,sc,n,rs]
-                if  pIniVolume[p,sc,n,rs] > pMaxVolume[p,sc,n,rs]:
-                    pIniVolume[p,sc,n,rs] = pMinVolume[p,sc,n,rs]
+            if (st,n) in mTEPES.s2n and mTEPES.n.ord(n) == pCycleWaterStep[rs]:
+                if  pIniVolume[rs][p,sc,n] < pMinVolume[rs][p,sc,n]:
+                    pIniVolume[rs][p,sc,n] = pMinVolume[rs][p,sc,n]
+                if  pIniVolume[rs][p,sc,n] > pMaxVolume[rs][p,sc,n]:
+                    pIniVolume[rs][p,sc,n] = pMinVolume[rs][p,sc,n]
 
     # drop load levels with duration 0
     pDuration           = pDuration.loc         [mTEPES.n    ]
