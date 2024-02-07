@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.15.7] - 2024-02-05
+[4.15.7] - 2024-02-07
 ----------------------
+- [CHANGED] flexibility to consider generating units not for all the periods
 - [FIXED] introduce initial inventory as a variable for ESS candidates
 - [CHANGED] clean up of dynamic sets to avoid the use of static sets
 - [FIXED] typo in dual variable of reserve margin constraint

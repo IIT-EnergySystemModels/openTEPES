@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 04, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 07, 2024
 """
 
 import math
@@ -38,8 +38,8 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     idxDict['y'  ] = 1
 
     #%% model declaration
-    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.15.7 - February 04, 2024')
-    print(                 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.15.7 - February 04, 2024', file=open(_path+'/openTEPES_version_'+CaseName+'.log','a'))
+    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.15.7 - February 07, 2024')
+    print(                 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.15.7 - February 07, 2024', file=open(_path+'/openTEPES_version_'+CaseName+'.log','a'))
 
     pIndOutputResults = [j for i,j in idxDict.items() if i == pIndOutputResults][0]
     pIndLogConsole    = [j for i,j in idxDict.items() if i == pIndLogConsole   ][0]
@@ -78,7 +78,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
         if len(mTEPES.st):
 
             # load levels up to the current stage for emission and RES energy constraints
-            if (p != mTEPES.p.first() or sc != mTEPES.sc.first()) and st == mTEPES.First_st and mTEPES.First_st != mTEPES.Last_st:
+            if (p != mTEPES.p.first() or sc != mTEPES.sc.first()) and st == mTEPES.First_st:
                 mTEPES.del_component(mTEPES.na)
             if st == mTEPES.First_st:
                 mTEPES.na = Set(initialize=mTEPES.n)
