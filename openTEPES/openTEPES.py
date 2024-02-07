@@ -121,9 +121,9 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
                     if c.name.find(str(p)) != -1 and c.name.find(str(sc)) != -1:
                         c.deactivate()
             else:
-                NoRepetition = 0
-                if (p,sc) == mTEPES.ps.last() and st == mTEPES.Last_st and NoRepetition == 0:
-                    NoRepetition = 1
+                mTEPES.NoRepetition = 0
+                if (p,sc) == mTEPES.ps.last() and st == mTEPES.Last_st and mTEPES.NoRepetition == 0:
+                    mTEPES.NoRepetition = 1
 
                     mTEPES.del_component(mTEPES.st)
                     mTEPES.del_component(mTEPES.n )

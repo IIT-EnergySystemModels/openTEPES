@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 06, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 07, 2024
 """
 
 import datetime
@@ -211,7 +211,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.nn   = Set(initialize=dictSets['n'   ], ordered=True,  doc='load levels'                     )
     mTEPES.gg   = Set(initialize=dictSets['g'   ], ordered=False, doc='units'                           )
     mTEPES.gt   = Set(initialize=dictSets['gt'  ], ordered=False, doc='technologies'                    )
-    mTEPES.et   = Set(initialize=dictSets['et'  ], ordered=False, doc='ESS types'                       )
+    # mTEPES.et   = Set(initialize=dictSets['et'  ], ordered=False, doc='ESS types'                       )
     mTEPES.nd   = Set(initialize=dictSets['nd'  ], ordered=False, doc='nodes'                           )
     mTEPES.ni   = Set(initialize=dictSets['nd'  ], ordered=False, doc='nodes'                           )
     mTEPES.nf   = Set(initialize=dictSets['nd'  ], ordered=False, doc='nodes'                           )
@@ -654,17 +654,17 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
 
     mTEPES.psc       = [(p,sc     )       for p,sc            in mTEPES.p  *mTEPES.sc]
     mTEPES.psg       = [(p,sc,  g )       for p,sc,  g        in mTEPES.ps *mTEPES.g  if (p,g ) in mTEPES.pg ]
-    mTEPES.psnr      = [(p,sc,  nr)       for p,sc,  nr       in mTEPES.ps *mTEPES.nr if (p,nr) in mTEPES.pg ]
-    mTEPES.pses      = [(p,sc,  es)       for p,sc,  es       in mTEPES.ps *mTEPES.es if (p,es) in mTEPES.pg ]
-    mTEPES.pseh      = [(p,sc,  eh)       for p,sc,  eh       in mTEPES.ps *mTEPES.eh if (p,eh) in mTEPES.pg ]
+    mTEPES.psnr      = [(p,sc,  nr)       for p,sc,  nr       in mTEPES.ps *mTEPES.nr if (p,nr) in mTEPES.pnr]
+    mTEPES.pses      = [(p,sc,  es)       for p,sc,  es       in mTEPES.ps *mTEPES.es if (p,es) in mTEPES.pes]
+    mTEPES.pseh      = [(p,sc,  eh)       for p,sc,  eh       in mTEPES.ps *mTEPES.eh if (p,eh) in mTEPES.peh]
     mTEPES.psn       = [(p,sc,n   )       for p,sc,n          in mTEPES.ps *mTEPES.n                         ]
     mTEPES.psng      = [(p,sc,n,g )       for p,sc,n,g        in mTEPES.psn*mTEPES.g  if (p,g ) in mTEPES.pg ]
     mTEPES.psngc     = [(p,sc,n,gc)       for p,sc,n,gc       in mTEPES.psn*mTEPES.gc if (p,gc) in mTEPES.pgc]
-    mTEPES.psnre     = [(p,sc,n,re)       for p,sc,n,re       in mTEPES.psn*mTEPES.re if (p,re) in mTEPES.pg ]
-    mTEPES.psnnr     = [(p,sc,n,nr)       for p,sc,n,nr       in mTEPES.psn*mTEPES.nr if (p,nr) in mTEPES.pg ]
+    mTEPES.psnre     = [(p,sc,n,re)       for p,sc,n,re       in mTEPES.psn*mTEPES.re if (p,re) in mTEPES.pre]
+    mTEPES.psnnr     = [(p,sc,n,nr)       for p,sc,n,nr       in mTEPES.psn*mTEPES.nr if (p,nr) in mTEPES.pnr]
     mTEPES.psnes     = [(p,sc,n,es)       for p,sc,n,es       in mTEPES.psn*mTEPES.es if (p,es) in mTEPES.pes]
-    mTEPES.psneh     = [(p,sc,n,eh)       for p,sc,n,eh       in mTEPES.psn*mTEPES.eh if (p,eh) in mTEPES.pg ]
-    mTEPES.psnec     = [(p,sc,n,ec)       for p,sc,n,ec       in mTEPES.psn*mTEPES.ec if (p,ec) in mTEPES.pes]
+    mTEPES.psneh     = [(p,sc,n,eh)       for p,sc,n,eh       in mTEPES.psn*mTEPES.eh if (p,eh) in mTEPES.peh]
+    mTEPES.psnec     = [(p,sc,n,ec)       for p,sc,n,ec       in mTEPES.psn*mTEPES.ec if (p,ec) in mTEPES.pec]
     mTEPES.psnnd     = [(p,sc,n,nd)       for p,sc,n,nd       in mTEPES.psn*mTEPES.nd                        ]
     mTEPES.psnar     = [(p,sc,n,ar)       for p,sc,n,ar       in mTEPES.psn*mTEPES.ar                        ]
 
@@ -677,9 +677,9 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         mTEPES.prs   = [(p,     rs)       for p,     rs       in mTEPES.p  *mTEPES.rs if pPeriodIniRsr[rs] <= p and pPeriodFinRsr[rs] >= p]
         mTEPES.prc   = [(p,     rc)       for p,     rc       in mTEPES.p  *mTEPES.rn if (p,rc) in mTEPES.prs]
         mTEPES.psrs  = [(p,sc,  rs)       for p,sc,  rs       in mTEPES.ps *mTEPES.rs if (p,rs) in mTEPES.prs]
-        mTEPES.psnh  = [(p,sc,n,h )       for p,sc,n,h        in mTEPES.psn*mTEPES.h  if (p,h ) in mTEPES.prs]
+        mTEPES.psnh  = [(p,sc,n,h )       for p,sc,n,h        in mTEPES.psn*mTEPES.h  if (p,h ) in mTEPES.ph ]
         mTEPES.psnrs = [(p,sc,n,rs)       for p,sc,n,rs       in mTEPES.psn*mTEPES.rs if (p,rs) in mTEPES.prs]
-        mTEPES.psnrc = [(p,sc,n,rc)       for p,sc,n,rc       in mTEPES.psn*mTEPES.rn if (p,rc) in mTEPES.prs]
+        mTEPES.psnrc = [(p,sc,n,rc)       for p,sc,n,rc       in mTEPES.psn*mTEPES.rn if (p,rc) in mTEPES.prc]
     else:
         mTEPES.prc   = []
 
@@ -787,19 +787,25 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pTechnologyToGen = pTechnologyToGen.loc[pTechnologyToGen['Generator'].isin(mTEPES.g)].reset_index().set_index(['Technology', 'Generator'])
 
     mTEPES.t2g = Set(initialize=pTechnologyToGen.index, ordered=False, doc='technology to generator')
-    mTEPES.psngt = [(p,sc,n,gt) for p,sc,n,gt in mTEPES.psn*mTEPES.gt if sum(1 for g in mTEPES.g if (gt,g) in mTEPES.t2g)]
+    mTEPES.psngt = [(p,sc,n,gt) for p,sc,n,gt in mTEPES.psn*mTEPES.gt if sum(1 for g in mTEPES.g if (gt,g) in mTEPES.t2g and (p,g) in mTEPES.pg)]
 
     # ESS and RES technologies
-    mTEPES.ot = Set(initialize=mTEPES.gt, ordered=False, doc='ESS   technologies', filter=lambda mTEPES,gt: gt in mTEPES.gt and sum(1 for es in mTEPES.es if (gt,es) in mTEPES.t2g))
-    mTEPES.ht = Set(initialize=mTEPES.gt, ordered=False, doc='hydro technologies', filter=lambda mTEPES,gt: gt in mTEPES.gt and sum(1 for h  in mTEPES.h  if (gt,h ) in mTEPES.t2g))
-    mTEPES.rt = Set(initialize=mTEPES.gt, ordered=False, doc='RES   technologies', filter=lambda mTEPES,gt: gt in mTEPES.gt and sum(1 for re in mTEPES.re if (gt,re) in mTEPES.t2g))
+    mTEPES.ot = Set(initialize=mTEPES.gt, ordered=False, doc='ESS         technologies', filter=lambda mTEPES,gt: gt in mTEPES.gt and sum(1 for es in mTEPES.es if (gt,es) in mTEPES.t2g))
+    mTEPES.ht = Set(initialize=mTEPES.gt, ordered=False, doc='hydro       technologies', filter=lambda mTEPES,gt: gt in mTEPES.gt and sum(1 for h  in mTEPES.h  if (gt,h ) in mTEPES.t2g))
+    mTEPES.et = Set(initialize=mTEPES.gt, ordered=False, doc='ESS & hydro technologies', filter=lambda mTEPES,gt: gt in mTEPES.gt and sum(1 for eh in mTEPES.eh if (gt,eh) in mTEPES.t2g))
+    mTEPES.rt = Set(initialize=mTEPES.gt, ordered=False, doc='RES         technologies', filter=lambda mTEPES,gt: gt in mTEPES.gt and sum(1 for re in mTEPES.re if (gt,re) in mTEPES.t2g))
+    mTEPES.nt = Set(initialize=mTEPES.gt, ordered=False, doc='RES         technologies', filter=lambda mTEPES,gt: gt in mTEPES.gt and sum(1 for nr in mTEPES.nr if (gt,nr) in mTEPES.t2g))
 
-    mTEPES.psot  = [(p,sc,  ot) for p,sc,  ot in mTEPES.ps *mTEPES.ot if sum(1 for es in mTEPES.es if (p,es) in mTEPES.pes)]
-    mTEPES.psht  = [(p,sc,  ht) for p,sc,  ht in mTEPES.ps *mTEPES.ht if sum(1 for h  in mTEPES.h  if (p,h ) in mTEPES.pg )]
-    mTEPES.psrt  = [(p,sc,  rt) for p,sc,  rt in mTEPES.ps *mTEPES.rt if sum(1 for re in mTEPES.re if (p,re) in mTEPES.pg )]
-    mTEPES.psnot = [(p,sc,n,ot) for p,sc,n,ot in mTEPES.psn*mTEPES.ot if sum(1 for es in mTEPES.es if (p,es) in mTEPES.pes)]
-    mTEPES.psnht = [(p,sc,n,ht) for p,sc,n,ht in mTEPES.psn*mTEPES.ht if sum(1 for h  in mTEPES.h  if (p,h ) in mTEPES.pg )]
-    mTEPES.psnrt = [(p,sc,n,rt) for p,sc,n,rt in mTEPES.psn*mTEPES.rt if sum(1 for re in mTEPES.re if (p,re) in mTEPES.pg )]
+    mTEPES.psot  = [(p,sc,  ot) for p,sc,  ot in mTEPES.ps *mTEPES.ot]
+    mTEPES.psht  = [(p,sc,  ht) for p,sc,  ht in mTEPES.ps *mTEPES.ht]
+    mTEPES.pset  = [(p,sc,  eh) for p,sc,  eh in mTEPES.ps *mTEPES.et]
+    mTEPES.psrt  = [(p,sc,  rt) for p,sc,  rt in mTEPES.ps *mTEPES.rt]
+    mTEPES.psnt  = [(p,sc,  nt) for p,sc,  nt in mTEPES.ps *mTEPES.nt]
+    mTEPES.psnot = [(p,sc,n,ot) for p,sc,n,ot in mTEPES.psn*mTEPES.ot]
+    mTEPES.psnht = [(p,sc,n,ht) for p,sc,n,ht in mTEPES.psn*mTEPES.ht]
+    mTEPES.psnet = [(p,sc,n,eh) for p,sc,n,eh in mTEPES.psn*mTEPES.et]
+    mTEPES.psnrt = [(p,sc,n,rt) for p,sc,n,rt in mTEPES.psn*mTEPES.rt]
+    mTEPES.psnnt = [(p,sc,n,nt) for p,sc,n,nt in mTEPES.psn*mTEPES.nt]
 
     #%% inverse index generator to mutually exclusive generator
     pExclusiveGenToGen = pGenToExclusiveGen.reset_index().set_index('MutuallyExclusive').set_axis(['Generator'], axis=1)[['Generator']]
@@ -1678,9 +1684,9 @@ def SettingUpVariables(OptModel, mTEPES):
 
     if mTEPES.pIndHeat == 1:
         OptModel.vFlowHeat = Var(mTEPES.psnpa, within=Reals,          doc='heat pipe flow [Tcal/h]')
-        [OptModel.vFlowHeat[p,sc,n,ni,nf,cc].setlb(-mTEPES.pHeatPipeNTCBck[ni,nf,cc])                        for p,sc,n,ni,nf,cc in mTEPES.psnpa]
-        [OptModel.vFlowHeat[p,sc,n,ni,nf,cc].setub( mTEPES.pHeatPipeNTCFrw[ni,nf,cc])                        for p,sc,n,ni,nf,cc in mTEPES.psnpa]
-        [OptModel.vHeatNS   [p,sc,n,nd       ].setub(mTEPES.pDuration[n]()*mTEPES.pDemandHeatAbs[p,sc,n,nd]) for p,sc,n,nd       in mTEPES.psnnd]
+        [OptModel.vFlowHeat[p,sc,n,ni,nf,cc].setlb(-mTEPES.pHeatPipeNTCBck[ni,nf,cc])                      for p,sc,n,ni,nf,cc in mTEPES.psnpa]
+        [OptModel.vFlowHeat[p,sc,n,ni,nf,cc].setub( mTEPES.pHeatPipeNTCFrw[ni,nf,cc])                      for p,sc,n,ni,nf,cc in mTEPES.psnpa]
+        [OptModel.vHeatNS   [p,sc,n,nd     ].setub(mTEPES.pDuration[n]()*mTEPES.pDemandHeatAbs[p,sc,n,nd]) for p,sc,n,nd       in mTEPES.psnnd]
 
     # fix the must-run units and their output
     # must run units must produce at least their minimum output
@@ -1719,7 +1725,7 @@ def SettingUpVariables(OptModel, mTEPES):
             nFixedVariables += 2
 
     # total energy inflows per storage
-    pStorageTotalEnergyInflows = pd.Series([sum(mTEPES.pEnergyInflows[pp,scc,nn,es]() for pp,scc,nn in mTEPES.psn) for es in mTEPES.es], index=mTEPES.es)
+    pStorageTotalEnergyInflows = pd.Series([sum(mTEPES.pEnergyInflows[p,sc,n,es]() for p,sc,n in mTEPES.psn) for es in mTEPES.es], index=mTEPES.es)
 
     for p,sc,n,es in mTEPES.psnes:
         # ESS with no charge capacity or not storage capacity can't charge
@@ -1737,7 +1743,7 @@ def SettingUpVariables(OptModel, mTEPES):
         if mTEPES.pMaxCharge2ndBlock [p,sc,n,es] ==  0.0:
             OptModel.vCharge2ndBlock [p,sc,n,es].fix(0.0)
             nFixedVariables += 1
-        if  mTEPES.pMaxCharge2ndBlock[p,sc,n,es] ==  0.0 or mTEPES.pIndOperReserve  [       es] !=  0.0:
+        if  mTEPES.pMaxCharge2ndBlock[p,sc,n,es] ==  0.0 or mTEPES.pIndOperReserve  [   es] != 0.0:
             OptModel.vESSReserveUp   [p,sc,n,es].fix(0.0)
             OptModel.vESSReserveDown [p,sc,n,es].fix(0.0)
             nFixedVariables += 2
@@ -1754,7 +1760,7 @@ def SettingUpVariables(OptModel, mTEPES):
             if mTEPES.pMaxCharge2ndBlock [p,sc,n,h ] ==  0.0:
                 OptModel.vCharge2ndBlock [p,sc,n,h ].fix(0.0)
                 nFixedVariables += 1
-            if  mTEPES.pMaxCharge2ndBlock[p,sc,n,h ] ==  0.0 or mTEPES.pIndOperReserve  [       h ] !=  0.0:
+            if  mTEPES.pMaxCharge2ndBlock[p,sc,n,h ] ==  0.0 or mTEPES.pIndOperReserve [h ] != 0.0:
                 OptModel.vESSReserveUp   [p,sc,n,h ].fix(0.0)
                 OptModel.vESSReserveDown [p,sc,n,h ].fix(0.0)
                 nFixedVariables += 2
@@ -1854,12 +1860,12 @@ def SettingUpVariables(OptModel, mTEPES):
 
     for p,sc,n,ec in mTEPES.psnec:
         if mTEPES.pEnergyInflows        [p,sc,n,ec]() == 0.0:
-            OptModel.vEnergyInflows     [p,sc,n,ec].fix(0.0)
+            OptModel.vEnergyInflows     [p,sc,n,ec].fix (0.0)
             nFixedVariables += 1
 
     # if no operating reserve is required no variables are needed
     for p,sc,n,ar,nr in mTEPES.psnar*mTEPES.nr:
-        if (ar,nr) in mTEPES.a2g and (p,sc,n,nr) in mTEPES.psnnr:
+        if (ar,nr) in mTEPES.a2g and (p,nr) in mTEPES.pnr:
             if mTEPES.pOperReserveUp    [p,sc,n,ar] ==  0.0:
                 OptModel.vReserveUp     [p,sc,n,nr].fix(0.0)
                 nFixedVariables += 1
@@ -1867,7 +1873,7 @@ def SettingUpVariables(OptModel, mTEPES):
                 OptModel.vReserveDown   [p,sc,n,nr].fix(0.0)
                 nFixedVariables += 1
     for p,sc,n,ar,es in mTEPES.psnar*mTEPES.es:
-        if (ar,es) in mTEPES.a2g and (p,sc,n,es) in mTEPES.psnes:
+        if (ar,es) in mTEPES.a2g and (p,es) in mTEPES.pes:
             if mTEPES.pOperReserveUp    [p,sc,n,ar] ==  0.0:
                 OptModel.vESSReserveUp  [p,sc,n,es].fix(0.0)
                 nFixedVariables += 1
@@ -1879,7 +1885,7 @@ def SettingUpVariables(OptModel, mTEPES):
     for es in mTEPES.es:
         if sum(mTEPES.pEnergyOutflows[p,sc,n,es]() for p,sc,n in mTEPES.psn) == 0.0:
             for p,sc,n in mTEPES.psn:
-                if (p,sc,n,es) in mTEPES.psnes:
+                if (p,es) in mTEPES.pes:
                     OptModel.vEnergyOutflows[p,sc,n,es].fix(0.0)
                     nFixedVariables += 1
 
