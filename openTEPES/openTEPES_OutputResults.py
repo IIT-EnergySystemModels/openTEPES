@@ -639,8 +639,7 @@ def ReservoirOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnolog
         OutputToFile.to_frame(name='hm3').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='hm3',               aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_ReservoirSpillage_'+CaseName+'.csv', sep=',')
 
     if pIndTechnologyOutput == 1 or pIndTechnologyOutput == 2:
-        HydroTechnologies = [(p,sc,n,ht) for p,sc,n,ht in mTEPES.psnht]
-        OutputToFile = pd.Series(data=[sum(OutputToFile[p,sc,n,rs] for rs in mTEPES.rs if (n,rs) in mTEPES.nrsc and sum(1 for h in o2h[ht] if (rs,h) in mTEPES.r2h)) for p,sc,n,ht in HydroTechnologies], index=pd.Index(HydroTechnologies))
+        OutputToFile = pd.Series(data=[sum(OutputToFile[p,sc,n,rs] for rs in mTEPES.rs if (n,rs) in mTEPES.nrsc and sum(1 for h in o2h[ht] if (rs,h) in mTEPES.r2h)) for p,sc,n,ht in mTEPES.psnht], index=pd.Index(mTEPES.psnht))
         OutputToFile.to_frame(name='hm3').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='hm3', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_TechnologyReservoirSpillage_'+CaseName+'.csv', sep=',')
 
     #%% outputting the water volume values

@@ -796,16 +796,16 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.rt = Set(initialize=mTEPES.gt, ordered=False, doc='RES         technologies', filter=lambda mTEPES,gt: gt in mTEPES.gt and sum(1 for re in mTEPES.re if (gt,re) in mTEPES.t2g))
     mTEPES.nt = Set(initialize=mTEPES.gt, ordered=False, doc='RES         technologies', filter=lambda mTEPES,gt: gt in mTEPES.gt and sum(1 for nr in mTEPES.nr if (gt,nr) in mTEPES.t2g))
 
-    mTEPES.psot  = [(p,sc,  ot) for p,sc,  ot in mTEPES.ps *mTEPES.ot]
-    mTEPES.psht  = [(p,sc,  ht) for p,sc,  ht in mTEPES.ps *mTEPES.ht]
-    mTEPES.pset  = [(p,sc,  et) for p,sc,  et in mTEPES.ps *mTEPES.et]
-    mTEPES.psrt  = [(p,sc,  rt) for p,sc,  rt in mTEPES.ps *mTEPES.rt]
-    mTEPES.psnt  = [(p,sc,  nt) for p,sc,  nt in mTEPES.ps *mTEPES.nt]
-    mTEPES.psnot = [(p,sc,n,ot) for p,sc,n,ot in mTEPES.psn*mTEPES.ot]
-    mTEPES.psnht = [(p,sc,n,ht) for p,sc,n,ht in mTEPES.psn*mTEPES.ht]
-    mTEPES.psnet = [(p,sc,n,et) for p,sc,n,et in mTEPES.psn*mTEPES.et]
-    mTEPES.psnrt = [(p,sc,n,rt) for p,sc,n,rt in mTEPES.psn*mTEPES.rt]
-    mTEPES.psnnt = [(p,sc,n,nt) for p,sc,n,nt in mTEPES.psn*mTEPES.nt]
+    mTEPES.psot  = [(p,sc,  ot) for p,sc,  ot in mTEPES.ps *mTEPES.ot if sum(1 for es in mTEPES.es if (p,es) in mTEPES.pes and (ot,es) in mTEPES.t2g)]
+    mTEPES.psht  = [(p,sc,  ht) for p,sc,  ht in mTEPES.ps *mTEPES.ht if sum(1 for h  in mTEPES.h  if (p,h ) in mTEPES.ph  and (ht,h ) in mTEPES.t2g)]
+    mTEPES.pset  = [(p,sc,  et) for p,sc,  et in mTEPES.ps *mTEPES.et if sum(1 for eh in mTEPES.eh if (p,eh) in mTEPES.peh and (et,eh) in mTEPES.t2g)]
+    mTEPES.psrt  = [(p,sc,  rt) for p,sc,  rt in mTEPES.ps *mTEPES.rt if sum(1 for re in mTEPES.re if (p,re) in mTEPES.pre and (rt,re) in mTEPES.t2g)]
+    mTEPES.psnt  = [(p,sc,  nt) for p,sc,  nt in mTEPES.ps *mTEPES.nt if sum(1 for nr in mTEPES.nr if (p,nr) in mTEPES.pnr and (nt,nr) in mTEPES.t2g)]
+    mTEPES.psnot = [(p,sc,n,ot) for p,sc,n,ot in mTEPES.psn*mTEPES.ot if (p,sc,ot) in mTEPES.psot]
+    mTEPES.psnht = [(p,sc,n,ht) for p,sc,n,ht in mTEPES.psn*mTEPES.ht if (p,sc,ht) in mTEPES.psht]
+    mTEPES.psnet = [(p,sc,n,et) for p,sc,n,et in mTEPES.psn*mTEPES.et if (p,sc,et) in mTEPES.pset]
+    mTEPES.psnrt = [(p,sc,n,rt) for p,sc,n,rt in mTEPES.psn*mTEPES.rt if (p,sc,rt) in mTEPES.psrt]
+    mTEPES.psnnt = [(p,sc,n,nt) for p,sc,n,nt in mTEPES.psn*mTEPES.nt if (p,sc,nt) in mTEPES.psnt]
 
     #%% inverse index generator to mutually exclusive generator
     pExclusiveGenToGen = pGenToExclusiveGen.reset_index().set_index('MutuallyExclusive').set_axis(['Generator'], axis=1)[['Generator']]
