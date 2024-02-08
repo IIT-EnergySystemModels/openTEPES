@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 07, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 08, 2024
 """
 
 import datetime
@@ -798,12 +798,12 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
 
     mTEPES.psot  = [(p,sc,  ot) for p,sc,  ot in mTEPES.ps *mTEPES.ot]
     mTEPES.psht  = [(p,sc,  ht) for p,sc,  ht in mTEPES.ps *mTEPES.ht]
-    mTEPES.pset  = [(p,sc,  eh) for p,sc,  eh in mTEPES.ps *mTEPES.et]
+    mTEPES.pset  = [(p,sc,  et) for p,sc,  et in mTEPES.ps *mTEPES.et]
     mTEPES.psrt  = [(p,sc,  rt) for p,sc,  rt in mTEPES.ps *mTEPES.rt]
     mTEPES.psnt  = [(p,sc,  nt) for p,sc,  nt in mTEPES.ps *mTEPES.nt]
     mTEPES.psnot = [(p,sc,n,ot) for p,sc,n,ot in mTEPES.psn*mTEPES.ot]
     mTEPES.psnht = [(p,sc,n,ht) for p,sc,n,ht in mTEPES.psn*mTEPES.ht]
-    mTEPES.psnet = [(p,sc,n,eh) for p,sc,n,eh in mTEPES.psn*mTEPES.et]
+    mTEPES.psnet = [(p,sc,n,et) for p,sc,n,et in mTEPES.psn*mTEPES.et]
     mTEPES.psnrt = [(p,sc,n,rt) for p,sc,n,rt in mTEPES.psn*mTEPES.rt]
     mTEPES.psnnt = [(p,sc,n,nt) for p,sc,n,nt in mTEPES.psn*mTEPES.nt]
 
