@@ -787,7 +787,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pTechnologyToGen = pTechnologyToGen.loc[pTechnologyToGen['Generator'].isin(mTEPES.g)].reset_index().set_index(['Technology', 'Generator'])
 
     mTEPES.t2g = Set(initialize=pTechnologyToGen.index, ordered=False, doc='technology to generator')
-    mTEPES.psngt = [(p,sc,n,gt) for p,sc,n,gt in mTEPES.psn*mTEPES.gt if sum(1 for g in mTEPES.g if (gt,g) in mTEPES.t2g and (p,g) in mTEPES.pg)]
+    mTEPES.psngt = [(p,sc,n,gt) for p,sc,n,gt in mTEPES.psn*mTEPES.gt if sum(1 for g in mTEPES.g if (p,g) in mTEPES.pg and (gt,g) in mTEPES.t2g)]
 
     # ESS and RES technologies
     mTEPES.ot = Set(initialize=mTEPES.gt, ordered=False, doc='ESS         technologies', filter=lambda mTEPES,gt: gt in mTEPES.gt and sum(1 for es in mTEPES.es if (gt,es) in mTEPES.t2g))
