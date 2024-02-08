@@ -497,9 +497,9 @@ def ESSOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutpu
 
     # generators to area (e2a)
     e2a = defaultdict(list)
-    for ar,es in mTEPES.ar*mTEPES.es:
-        if (ar,es) in mTEPES.a2g:
-            e2a[ar].append(es)
+    for ar,eh in mTEPES.ar*mTEPES.eh:
+        if (ar,eh) in mTEPES.a2g:
+            e2a[ar].append(eh)
 
     OutputToFile = pd.Series(data=[OptModel.vEnergyOutflows    [p,sc,n,es]() for p,sc,n,es in mTEPES.psnes], index=pd.Index(mTEPES.psnes))
     OutputToFile *= 1e3
