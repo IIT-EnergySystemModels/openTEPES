@@ -495,15 +495,11 @@ def ESSOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutpu
     _path = os.path.join(DirName, CaseName)
     StartTime = time.time()
 
-    # generators to area (e2a) (n2a)
+    # generators to area (e2a)
     e2a = defaultdict(list)
     for ar,es in mTEPES.ar*mTEPES.es:
         if (ar,es) in mTEPES.a2g:
             e2a[ar].append(es)
-    n2a = defaultdict(list)
-    for ar,nr in mTEPES.ar*mTEPES.nr:
-        if (ar,nr) in mTEPES.a2g:
-            n2a[ar].append(nr)
 
     OutputToFile = pd.Series(data=[OptModel.vEnergyOutflows    [p,sc,n,es]() for p,sc,n,es in mTEPES.psnes], index=pd.Index(mTEPES.psnes))
     OutputToFile *= 1e3
