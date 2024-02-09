@@ -795,7 +795,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.rt = Set(initialize=mTEPES.gt, ordered=False, doc='RES         technologies', filter=lambda mTEPES,gt: gt in mTEPES.gt and sum(1 for re in mTEPES.re if (gt,re) in mTEPES.t2g))
     mTEPES.nt = Set(initialize=mTEPES.gt, ordered=False, doc='RES         technologies', filter=lambda mTEPES,gt: gt in mTEPES.gt and sum(1 for nr in mTEPES.nr if (gt,nr) in mTEPES.t2g))
 
-    mTEPES.psgt  = [(p,sc,  gt) for p,sc,  gt in mTEPES.ps *mTEPES.gt                                     if sum(1 for g  in mTEPES.g  if (p,g ) in mTEPES.g   and (gt,g ) in mTEPES.t2g)]
+    mTEPES.psgt  = [(p,sc,  gt) for p,sc,  gt in mTEPES.ps *mTEPES.gt                                     if sum(1 for g  in mTEPES.g  if (p,g ) in mTEPES.pg  and (gt,g ) in mTEPES.t2g)]
     mTEPES.psot  = [(p,sc,  ot) for p,sc,  ot in mTEPES.ps *mTEPES.ot                                     if sum(1 for es in mTEPES.es if (p,es) in mTEPES.pes and (ot,es) in mTEPES.t2g)]
     mTEPES.psht  = [(p,sc,  ht) for p,sc,  ht in mTEPES.ps *mTEPES.ht                                     if sum(1 for h  in mTEPES.h  if (p,h ) in mTEPES.ph  and (ht,h ) in mTEPES.t2g)]
     mTEPES.pset  = [(p,sc,  et) for p,sc,  et in mTEPES.ps *mTEPES.et                                     if sum(1 for eh in mTEPES.eh if (p,eh) in mTEPES.peh and (et,eh) in mTEPES.t2g)]

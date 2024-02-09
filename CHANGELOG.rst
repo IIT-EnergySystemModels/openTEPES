@@ -1,7 +1,7 @@
 Change Log
 =============
 
-[4.15.7] - 2024-02-08
+[4.15.7] - 2024-02-09
 ----------------------
 - [FIXED] computation of fixed costs for several years
 - [FIXED] change some performance issues in ESS operation results
