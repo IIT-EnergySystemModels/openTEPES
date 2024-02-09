@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 08, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 09, 2024
 """
 
 import datetime
@@ -787,7 +787,6 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pTechnologyToGen = pTechnologyToGen.loc[pTechnologyToGen['Generator'].isin(mTEPES.g)].reset_index().set_index(['Technology', 'Generator'])
 
     mTEPES.t2g = Set(initialize=pTechnologyToGen.index, ordered=False, doc='technology to generator')
-    mTEPES.psngt = [(p,sc,n,gt) for p,sc,n,gt in mTEPES.psn*mTEPES.gt if sum(1 for g in mTEPES.g if (p,g) in mTEPES.pg and (gt,g) in mTEPES.t2g)]
 
     # ESS and RES technologies
     mTEPES.ot = Set(initialize=mTEPES.gt, ordered=False, doc='ESS         technologies', filter=lambda mTEPES,gt: gt in mTEPES.gt and sum(1 for es in mTEPES.es if (gt,es) in mTEPES.t2g))
@@ -796,11 +795,13 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.rt = Set(initialize=mTEPES.gt, ordered=False, doc='RES         technologies', filter=lambda mTEPES,gt: gt in mTEPES.gt and sum(1 for re in mTEPES.re if (gt,re) in mTEPES.t2g))
     mTEPES.nt = Set(initialize=mTEPES.gt, ordered=False, doc='RES         technologies', filter=lambda mTEPES,gt: gt in mTEPES.gt and sum(1 for nr in mTEPES.nr if (gt,nr) in mTEPES.t2g))
 
-    mTEPES.psot  = [(p,sc,  ot) for p,sc,  ot in mTEPES.ps *mTEPES.ot if sum(1 for es in mTEPES.es if (p,es) in mTEPES.pes and (ot,es) in mTEPES.t2g)]
-    mTEPES.psht  = [(p,sc,  ht) for p,sc,  ht in mTEPES.ps *mTEPES.ht if sum(1 for h  in mTEPES.h  if (p,h ) in mTEPES.ph  and (ht,h ) in mTEPES.t2g)]
-    mTEPES.pset  = [(p,sc,  et) for p,sc,  et in mTEPES.ps *mTEPES.et if sum(1 for eh in mTEPES.eh if (p,eh) in mTEPES.peh and (et,eh) in mTEPES.t2g)]
-    mTEPES.psrt  = [(p,sc,  rt) for p,sc,  rt in mTEPES.ps *mTEPES.rt if sum(1 for re in mTEPES.re if (p,re) in mTEPES.pre and (rt,re) in mTEPES.t2g)]
-    mTEPES.psnt  = [(p,sc,  nt) for p,sc,  nt in mTEPES.ps *mTEPES.nt if sum(1 for nr in mTEPES.nr if (p,nr) in mTEPES.pnr and (nt,nr) in mTEPES.t2g)]
+    mTEPES.psgt  = [(p,sc,  gt) for p,sc,  gt in mTEPES.ps *mTEPES.gt                                     if sum(1 for g  in mTEPES.g  if (p,g ) in mTEPES.g   and (gt,g ) in mTEPES.t2g)]
+    mTEPES.psot  = [(p,sc,  ot) for p,sc,  ot in mTEPES.ps *mTEPES.ot                                     if sum(1 for es in mTEPES.es if (p,es) in mTEPES.pes and (ot,es) in mTEPES.t2g)]
+    mTEPES.psht  = [(p,sc,  ht) for p,sc,  ht in mTEPES.ps *mTEPES.ht                                     if sum(1 for h  in mTEPES.h  if (p,h ) in mTEPES.ph  and (ht,h ) in mTEPES.t2g)]
+    mTEPES.pset  = [(p,sc,  et) for p,sc,  et in mTEPES.ps *mTEPES.et                                     if sum(1 for eh in mTEPES.eh if (p,eh) in mTEPES.peh and (et,eh) in mTEPES.t2g)]
+    mTEPES.psrt  = [(p,sc,  rt) for p,sc,  rt in mTEPES.ps *mTEPES.rt                                     if sum(1 for re in mTEPES.re if (p,re) in mTEPES.pre and (rt,re) in mTEPES.t2g)]
+    mTEPES.psnt  = [(p,sc,  nt) for p,sc,  nt in mTEPES.ps *mTEPES.nt                                     if sum(1 for nr in mTEPES.nr if (p,nr) in mTEPES.pnr and (nt,nr) in mTEPES.t2g)]
+    mTEPES.psngt = [(p,sc,n,gt) for p,sc,n,gt in mTEPES.psn*mTEPES.gt if (p,sc,gt) in mTEPES.psgt]
     mTEPES.psnot = [(p,sc,n,ot) for p,sc,n,ot in mTEPES.psn*mTEPES.ot if (p,sc,ot) in mTEPES.psot]
     mTEPES.psnht = [(p,sc,n,ht) for p,sc,n,ht in mTEPES.psn*mTEPES.ht if (p,sc,ht) in mTEPES.psht]
     mTEPES.psnet = [(p,sc,n,et) for p,sc,n,et in mTEPES.psn*mTEPES.et if (p,sc,et) in mTEPES.pset]
