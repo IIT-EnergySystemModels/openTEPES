@@ -137,7 +137,7 @@ def GenerationOperationModelFormulationObjFunct(OptModel, mTEPES, pIndLogConsole
                                                     mTEPES.pLoadLevelDuration[n] * mTEPES.pShutDownCost   [       nr] * OptModel.vShutDown      [p,sc,n,nr] for nr in mTEPES.nr if (p,nr) in mTEPES.pnr) +
                                                 sum(mTEPES.pLoadLevelDuration[n] * mTEPES.pOperReserveCost[       nr] * OptModel.vReserveUp     [p,sc,n,nr]                                              +
                                                     mTEPES.pLoadLevelDuration[n] * mTEPES.pOperReserveCost[       nr] * OptModel.vReserveDown   [p,sc,n,nr] for nr in mTEPES.nr if (p,nr) in mTEPES.pnr and mTEPES.pIndOperReserve[nr] == 0) +
-                                                sum(mTEPES.pLoadLevelDuration[n] * mTEPES.pOperReserveCost[       eh] * OptModel.vESSReserveUp  [p,sc,n,eh]                                                     +
+                                                sum(mTEPES.pLoadLevelDuration[n] * mTEPES.pOperReserveCost[       eh] * OptModel.vESSReserveUp  [p,sc,n,eh]                                              +
                                                     mTEPES.pLoadLevelDuration[n] * mTEPES.pOperReserveCost[       eh] * OptModel.vESSReserveDown[p,sc,n,eh] for eh in mTEPES.eh if (p,eh) in mTEPES.peh and mTEPES.pIndOperReserve[eh] == 0) +
                                                 sum(mTEPES.pLoadLevelDuration[n] * mTEPES.pLinearOMCost   [       re] * OptModel.vTotalOutput   [p,sc,n,re] for re in mTEPES.re if (p,re) in mTEPES.pre) )
     setattr(OptModel, 'eTotalGCost_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, rule=eTotalGCost, doc='system variable generation operation cost [MEUR]'))
@@ -629,7 +629,7 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
         print('eChargeOutflows       ... ', len(getattr(OptModel, 'eChargeOutflows_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
 
     def eEnergyOutflows(OptModel,n,es):
-        if (p,sc,es) in mTEPES.eo and (p,sc,es) in mTEPES.pseh:
+        if (p,sc,es) in mTEPES.eo and (p,sc,es) in mTEPES.pses:
             return sum((OptModel.vEnergyOutflows[p,sc,n2,es] - mTEPES.pEnergyOutflows[p,sc,n2,es])*mTEPES.pDuration[n2] for n2 in list(mTEPES.n2)[mTEPES.n.ord(n) - mTEPES.pOutflowsTimeStep[es]:mTEPES.n.ord(n)]) == 0.0
         else:
             return Constraint.Skip
