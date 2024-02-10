@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 09, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 10, 2024
 """
 
 import datetime
@@ -627,9 +627,9 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.s2n = Set(initialize=pStageToLevel.index, ordered=False, doc='load level to stage')
     # all the stages must have the same duration
     pStageDuration = pd.Series([sum(pDuration[n] for n in mTEPES.n if (st,n) in mTEPES.s2n) for st in mTEPES.st], index=mTEPES.st)
-    for st in mTEPES.st:
-        if mTEPES.st.ord(st) > 1 and pStageDuration[st] != pStageDuration[mTEPES.st.prev(st)]:
-            assert (0 == 1)
+    # for st in mTEPES.st:
+    #     if mTEPES.st.ord(st) > 1 and pStageDuration[st] != pStageDuration[mTEPES.st.prev(st)]:
+    #         assert (0 == 1)
 
     # delete all the load level belonging to stages with duration equal to zero
     mTEPES.del_component(mTEPES.n )
