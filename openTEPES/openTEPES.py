@@ -65,6 +65,9 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     # initialize parameter for dual variables
     mTEPES.pDuals = {}
 
+    # control for not repeating the stages in case of several ones
+    mTEPES.NoRepetition = 0
+
     # iterative model formulation for each stage of a year
     for p,sc,st in mTEPES.ps*mTEPES.stt:
         # activate only load levels to formulate
@@ -121,7 +124,6 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
                     if c.name.find(str(p)) != -1 and c.name.find(str(sc)) != -1:
                         c.deactivate()
             else:
-                mTEPES.NoRepetition = 0
                 if (p,sc) == mTEPES.ps.last() and st == mTEPES.Last_st and mTEPES.NoRepetition == 0:
                     mTEPES.NoRepetition = 1
 
