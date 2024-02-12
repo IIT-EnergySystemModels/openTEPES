@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 10, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 12, 2024
 """
 
 import datetime
@@ -568,7 +568,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.el     = Set(initialize=mTEPES.es,               ordered=False, doc='electrolyzer    units'         , filter=lambda mTEPES,es      :  es     in mTEPES.es                                                                                                and pProductionFunctionH2[es]  > 0.0 and pProductionFunctionHeat[es] == 0.0                                   )
     mTEPES.hp     = Set(initialize=mTEPES.es,               ordered=False, doc='heat pump       units'         , filter=lambda mTEPES,es      :  es     in mTEPES.es                                                                                                and pProductionFunctionH2[es] == 0.0 and pProductionFunctionHeat[es]  > 0.0                                   )
     mTEPES.gc     = Set(initialize=mTEPES.g ,               ordered=False, doc='candidate       units'         , filter=lambda mTEPES,g       :  g      in mTEPES.g   and pGenInvestCost      [g ] >  0.0)
-    mTEPES.gd     = Set(initialize=mTEPES.g ,               ordered=False, doc='retirement      units'         , filter=lambda mTEPES,g       :  g      in mTEPES.g   and pGenRetireCost      [g ] != 0.0)
+    mTEPES.gd     = Set(initialize=mTEPES.g ,               ordered=False, doc='retirement      units'         , filter=lambda mTEPES,g       :  g      in mTEPES.g   and pGenRetireCost      [g ] >  0.0)
     mTEPES.ec     = Set(initialize=mTEPES.es,               ordered=False, doc='candidate ESS   units'         , filter=lambda mTEPES,es      :  es     in mTEPES.es  and pGenInvestCost      [es] >  0.0)
     mTEPES.br     = Set(initialize=sBrList,                 ordered=False, doc='all input       electric branches'                                                                                       )
     mTEPES.ln     = Set(initialize=dfNetwork.index,         ordered=False, doc='all input       electric lines'                                                                                          )
@@ -590,7 +590,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         mTEPES.rn = Set(initialize=[],                      ordered=False, doc='candidate reservoirs')
     if pIndHydrogen      == 1:
         mTEPES.pn = Set(initialize=dfNetworkHydrogen.index, ordered=False, doc='all input hydrogen pipes'                                                                                          )
-        mTEPES.pa = Set(initialize=mTEPES.pn,               ordered=False, doc='all real  hydrogen pipes', filter=lambda mTEPES,*pn     :  pn     in mTEPES.pn  and pH2PipeNTCFrw         [pn] != 0.0 and pH2PipeNTCFrw[pn] > 0.0 and pH2PipeNTCBck[pn] > 0.0 and pH2PipePeriodIni[pn] <= mTEPES.p.last() and pH2PipePeriodFin[pn] >= mTEPES.p.first())
+        mTEPES.pa = Set(initialize=mTEPES.pn,               ordered=False, doc='all real  hydrogen pipes', filter=lambda mTEPES,*pn     :  pn     in mTEPES.pn  and pH2PipeNTCFrw[pn] > 0.0 and pH2PipeNTCBck[pn] > 0.0 and pH2PipePeriodIni[pn] <= mTEPES.p.last() and pH2PipePeriodFin[pn] >= mTEPES.p.first())
         mTEPES.pc = Set(initialize=mTEPES.pa,               ordered=False, doc='candidate hydrogen pipes', filter=lambda mTEPES,*pa     :  pa     in mTEPES.pa  and pH2PipeFixedCost      [pa] >  0.0)
         # existing hydrogen pipelines (pe)
         mTEPES.pe = mTEPES.pa - mTEPES.pc
@@ -601,7 +601,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
 
     if pIndHeat        == 1:
         mTEPES.hn = Set(initialize=dfNetworkHeat.index,     ordered=False, doc='all input heat pipes'                                                                                          )
-        mTEPES.ha = Set(initialize=mTEPES.hn,               ordered=False, doc='all real  heat pipes', filter=lambda mTEPES,*hn     :  hn     in mTEPES.hn  and pHeatPipeNTCFrw     [hn] != 0.0 and pHeatPipeNTCFrw[hn] > 0.0 and pHeatPipeNTCBck[hn] > 0.0 and pHeatPipePeriodIni[hn] <= mTEPES.p.last() and pHeatPipePeriodFin[hn] >= mTEPES.p.first())
+        mTEPES.ha = Set(initialize=mTEPES.hn,               ordered=False, doc='all real  heat pipes', filter=lambda mTEPES,*hn     :  hn     in mTEPES.hn  and pHeatPipeNTCFrw[hn] > 0.0 and pHeatPipeNTCBck[hn] > 0.0 and pHeatPipePeriodIni[hn] <= mTEPES.p.last() and pHeatPipePeriodFin[hn] >= mTEPES.p.first())
         mTEPES.hc = Set(initialize=mTEPES.ha,               ordered=False, doc='candidate heat pipes', filter=lambda mTEPES,*ha     :  ha     in mTEPES.ha  and pHeatPipeFixedCost  [ha] >  0.0)
         # existing heat pipes (he)
         mTEPES.he = mTEPES.ha - mTEPES.hc
@@ -1166,7 +1166,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         pHeatPipeUpInvest  = pHeatPipeUpInvest.loc   [   mTEPES.hc]
 
     # replace very small costs by 0
-    pEpsilon = 1e-4           # this value in EUR/GWh is related to the smallest reduced cost, independent of the area
+    pEpsilon = 1e-5           # this value in EUR/GWh is lower than the O&M variable cost of any technology, independent of the area
 
     pLinearVarCost  [pLinearVarCost  [[g for g in mTEPES.g]] < pEpsilon] = 0.0
     pConstantVarCost[pConstantVarCost[[g for g in mTEPES.g]] < pEpsilon] = 0.0
@@ -1457,8 +1457,8 @@ def SettingUpVariables(OptModel, mTEPES):
     StartTime = time.time()
 
     #%% variables
-    OptModel.vTotalSCost              = Var(                      within=NonNegativeReals,                 doc='total system                         cost      [MEUR]')
-    OptModel.vTotalICost              = Var(                      within=NonNegativeReals,                 doc='total system investment              cost      [MEUR]')
+    OptModel.vTotalSCost              = Var(                       within=NonNegativeReals,                 doc='total system                         cost      [MEUR]')
+    OptModel.vTotalICost              = Var(                       within=NonNegativeReals,                 doc='total system investment              cost      [MEUR]')
     OptModel.vTotalFCost              = Var(mTEPES.p,     within=NonNegativeReals,                 doc='total system fixed                   cost      [MEUR]')
     OptModel.vTotalGCost              = Var(mTEPES.psn,   within=NonNegativeReals,                 doc='total variable generation  operation cost      [MEUR]')
     OptModel.vTotalCCost              = Var(mTEPES.psn,   within=NonNegativeReals,                 doc='total variable consumption operation cost      [MEUR]')
@@ -1526,19 +1526,19 @@ def SettingUpVariables(OptModel, mTEPES):
 
     if mTEPES.pIndHydrogen == 1:
         if mTEPES.pIndBinNetH2Invest() == 0:
-            OptModel.vH2PipeInvest  = Var(mTEPES.ppc,   within=UnitInterval,                     doc='hydrogen network investment decision exists in a year [0,1]')
-            OptModel.vH2PipeInvPer  = Var(mTEPES.ppc,   within=UnitInterval,                     doc='hydrogen network investment decision exists in a year [0,1]')
+            OptModel.vH2PipeInvest    = Var(mTEPES.ppc,   within=UnitInterval,                     doc='hydrogen network investment decision exists in a year [0,1]')
+            OptModel.vH2PipeInvPer    = Var(mTEPES.ppc,   within=UnitInterval,                     doc='hydrogen network investment decision exists in a year [0,1]')
         else:
-            OptModel.vH2PipeInvest  = Var(mTEPES.ppc,   within=Binary,                           doc='hydrogen network investment decision exists in a year {0,1}')
-            OptModel.vH2PipeInvPer  = Var(mTEPES.ppc,   within=Binary,                           doc='hydrogen network investment decision exists in a year {0,1}')
+            OptModel.vH2PipeInvest    = Var(mTEPES.ppc,   within=Binary,                           doc='hydrogen network investment decision exists in a year {0,1}')
+            OptModel.vH2PipeInvPer    = Var(mTEPES.ppc,   within=Binary,                           doc='hydrogen network investment decision exists in a year {0,1}')
 
     if mTEPES.pIndHeat == 1:
         if mTEPES.pIndBinNetHeatInvest() == 0:
-            OptModel.vHeatPipeInvest = Var(mTEPES.phc,   within=UnitInterval,                  doc='heat network investment decision exists in a year [0,1]'    )
-            OptModel.vHeatPipeInvPer = Var(mTEPES.phc,   within=UnitInterval,                  doc='heat network investment decision exists in a year [0,1]'    )
+            OptModel.vHeatPipeInvest  = Var(mTEPES.phc,   within=UnitInterval,                     doc='heat network investment decision exists in a year [0,1]'    )
+            OptModel.vHeatPipeInvPer  = Var(mTEPES.phc,   within=UnitInterval,                     doc='heat network investment decision exists in a year [0,1]'    )
         else:
-            OptModel.vHeatPipeInvest = Var(mTEPES.phc,   within=Binary,                        doc='heat network investment decision exists in a year {0,1}'    )
-            OptModel.vHeatPipeInvPer = Var(mTEPES.phc,   within=Binary,                        doc='heat network investment decision exists in a year {0,1}'    )
+            OptModel.vHeatPipeInvest  = Var(mTEPES.phc,   within=Binary,                           doc='heat network investment decision exists in a year {0,1}'    )
+            OptModel.vHeatPipeInvPer  = Var(mTEPES.phc,   within=Binary,                           doc='heat network investment decision exists in a year {0,1}'    )
 
     if mTEPES.pIndBinGenOperat() == 0:
         OptModel.vCommitment          = Var(mTEPES.psnnr, within=UnitInterval,     initialize=0.0, doc='commitment         of the unit                        [0,1]')
@@ -1720,7 +1720,7 @@ def SettingUpVariables(OptModel, mTEPES):
             OptModel.vReserveUp     [p,sc,n,nr].fix(0.0)
             OptModel.vReserveDown   [p,sc,n,nr].fix(0.0)
             nFixedVariables += 3
-        if  mTEPES.pIndOperReserve  [       nr] !=  0.0:
+        if  mTEPES.pIndOperReserve  [       nr] ==  1:
             OptModel.vReserveUp     [p,sc,n,nr].fix(0.0)
             OptModel.vReserveDown   [p,sc,n,nr].fix(0.0)
             nFixedVariables += 2
@@ -1729,39 +1729,41 @@ def SettingUpVariables(OptModel, mTEPES):
     pStorageTotalEnergyInflows = pd.Series([sum(mTEPES.pEnergyInflows[p,sc,n,es]() for p,sc,n in mTEPES.psn) for es in mTEPES.es], index=mTEPES.es)
 
     for p,sc,n,es in mTEPES.psnes:
-        # ESS with no charge capacity or not storage capacity can't charge
-        if mTEPES.pMaxCharge         [p,sc,n,es] ==  0.0:
+        # ESS with no charge capacity
+        if  mTEPES.pMaxCharge        [p,sc,n,es] ==  0.0:
             OptModel.vESSTotalCharge [p,sc,n,es].fix(0.0)
             nFixedVariables += 1
         # ESS with no charge capacity and no inflows can't produce
-        if mTEPES.pMaxCharge         [p,sc,n,es] ==  0.0 and pStorageTotalEnergyInflows[es] == 0.0:
+        if  mTEPES.pMaxCharge        [p,sc,n,es] ==  0.0 and pStorageTotalEnergyInflows[es] == 0.0:
             OptModel.vTotalOutput    [p,sc,n,es].fix(0.0)
             OptModel.vOutput2ndBlock [p,sc,n,es].fix(0.0)
             OptModel.vReserveUp      [p,sc,n,es].fix(0.0)
             OptModel.vReserveDown    [p,sc,n,es].fix(0.0)
             OptModel.vESSSpillage    [p,sc,n,es].fix(0.0)
             nFixedVariables += 5
-        if mTEPES.pMaxCharge2ndBlock [p,sc,n,es] ==  0.0:
+        if  mTEPES.pMaxCharge2ndBlock[p,sc,n,es] ==  0.0:
             OptModel.vCharge2ndBlock [p,sc,n,es].fix(0.0)
             nFixedVariables += 1
-        if  mTEPES.pMaxCharge2ndBlock[p,sc,n,es] ==  0.0 or mTEPES.pIndOperReserve  [   es] != 0.0:
+        if  mTEPES.pMaxCharge2ndBlock[p,sc,n,es] ==  0.0 or mTEPES.pIndOperReserve     [es] == 1:
+            OptModel.vCharge2ndBlock [p,sc,n,es].fix(0.0)
             OptModel.vESSReserveUp   [p,sc,n,es].fix(0.0)
             OptModel.vESSReserveDown [p,sc,n,es].fix(0.0)
             nFixedVariables += 2
-        if mTEPES.pMaxStorage        [p,sc,n,es] ==  0.0:
+        if  mTEPES.pMaxStorage       [p,sc,n,es] ==  0.0:
             OptModel.vESSInventory   [p,sc,n,es].fix(0.0)
             nFixedVariables += 1
 
     if mTEPES.pIndHydroTopology == 1:
         for p,sc,n,h in mTEPES.psnh:
             # ESS with no charge capacity or not storage capacity can't charge
-            if mTEPES.pMaxCharge         [p,sc,n,h ] ==  0.0:
+            if  mTEPES.pMaxCharge        [p,sc,n,h ] ==  0.0:
                 OptModel.vESSTotalCharge [p,sc,n,h ].fix(0.0)
                 nFixedVariables += 1
-            if mTEPES.pMaxCharge2ndBlock [p,sc,n,h ] ==  0.0:
+            if  mTEPES.pMaxCharge2ndBlock[p,sc,n,h ] ==  0.0:
                 OptModel.vCharge2ndBlock [p,sc,n,h ].fix(0.0)
                 nFixedVariables += 1
-            if  mTEPES.pMaxCharge2ndBlock[p,sc,n,h ] ==  0.0 or mTEPES.pIndOperReserve [h ] != 0.0:
+            if  mTEPES.pMaxCharge2ndBlock[p,sc,n,h ] ==  0.0 or mTEPES.pIndOperReserve [h ] == 1:
+                OptModel.vCharge2ndBlock [p,sc,n,h ].fix(0.0)
                 OptModel.vESSReserveUp   [p,sc,n,h ].fix(0.0)
                 OptModel.vESSReserveDown [p,sc,n,h ].fix(0.0)
                 nFixedVariables += 2
@@ -1792,7 +1794,7 @@ def SettingUpVariables(OptModel, mTEPES):
 
             # determine the initial committed units and their output at the first load level of each period, scenario, and stage
             for go in mTEPES.go:
-                if pSystemOutput < sum(mTEPES.pDemand[n1,nd] for nd in mTEPES.nd) and mTEPES.pMustRun[go] != 1:
+                if pSystemOutput < sum(mTEPES.pDemand[n1,nd] for nd in mTEPES.nd) and mTEPES.pMustRun[go] == 0:
                     if go in mTEPES.re:
                         mTEPES.pInitialOutput[n1,go] = mTEPES.pMaxPower[n1,go]
                     else:
