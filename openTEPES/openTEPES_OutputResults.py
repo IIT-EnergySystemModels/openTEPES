@@ -1718,22 +1718,22 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput, pIndPlo
                     if len(mTEPES.re):
                         sPSNRE = [(p,sc,n,re) for p,sc,n,re in mTEPES.psnre if (ar,re) in mTEPES.a2g]
                         if len(sPSNRE):
-                            OutputResults3 = pd.Series(data=[mTEPES.pDiscountedWeight[p] * mTEPES.pScenProb[p,sc]() * mTEPES.pLoadLevelDuration[n]() * mTEPES.pLinearOMCost [re] * OptModel.vTotalOutput   [p,sc,n,re]() for p,sc,n,re in sPSNRE if (p,re) in mTEPES.pre], index=pd.Index(sPSNRE))
-                            OutputResults3 = Transformation1(OutputResults3, 'Generation O&M Cost')
+                            OutputResults3 =     pd.Series(data=[mTEPES.pDiscountedWeight[p] * mTEPES.pScenProb[p,sc]() * mTEPES.pLoadLevelDuration[n]() * mTEPES.pLinearOMCost [re] * OptModel.vTotalOutput   [p,sc,n,re]() for p,sc,n,re in sPSNRE if (p,re) in mTEPES.pre], index=pd.Index(sPSNRE))
+                            OutputResults3 =     Transformation1(OutputResults3, 'Generation O&M Cost')
 
                     if len(mTEPES.eh) and sum(mTEPES.pIndOperReserve[eh] for eh in mTEPES.eh if mTEPES.pIndOperReserve[eh] == 0):
                         sPSNES = [(p,sc,n,eh) for p,sc,n,eh in mTEPES.psneh if (ar,eh) in mTEPES.a2g]
                         if len(sPSNES):
-                            OutputResults4 = pd.Series(data=[ mTEPES.pDiscountedWeight[p] * mTEPES.pScenProb[p,sc]() * mTEPES.pLoadLevelDuration[n]() * mTEPES.pLinearVarCost  [p,sc,n,eh] * OptModel.vESSTotalCharge[p,sc,n,eh]()  for p,sc,n,eh in sPSNES if (p,eh) in mTEPES.peh], index=pd.Index(sPSNES))
-                            OutputResults5 = pd.Series(data=[(mTEPES.pDiscountedWeight[p] * mTEPES.pScenProb[p,sc]() * mTEPES.pLoadLevelWeight  [n]() * mTEPES.pOperReserveCost[       eh] * OptModel.vESSReserveUp  [p,sc,n,eh]() +
-                                                              mTEPES.pDiscountedWeight[p] * mTEPES.pScenProb[p,sc]() * mTEPES.pLoadLevelWeight  [n]() * mTEPES.pOperReserveCost[       eh] * OptModel.vESSReserveDown[p,sc,n,eh]()) for p,sc,n,eh in sPSNES if (p,eh) in mTEPES.peh], index=pd.Index(sPSNES))
-                            OutputResults4 = Transformation1(OutputResults4, 'Consumption Operation Cost')
-                            OutputResults5 = Transformation1(OutputResults5, 'Consumption Operating Reserve Cost')
+                            OutputResults4 =     pd.Series(data=[ mTEPES.pDiscountedWeight[p] * mTEPES.pScenProb[p,sc]() * mTEPES.pLoadLevelDuration[n]() * mTEPES.pLinearVarCost  [p,sc,n,eh] * OptModel.vESSTotalCharge[p,sc,n,eh]()  for p,sc,n,eh in sPSNES if (p,eh) in mTEPES.peh], index=pd.Index(sPSNES))
+                            OutputResults5 =     pd.Series(data=[(mTEPES.pDiscountedWeight[p] * mTEPES.pScenProb[p,sc]() * mTEPES.pLoadLevelWeight  [n]() * mTEPES.pOperReserveCost[       eh] * OptModel.vESSReserveUp  [p,sc,n,eh]() +
+                                                                  mTEPES.pDiscountedWeight[p] * mTEPES.pScenProb[p,sc]() * mTEPES.pLoadLevelWeight  [n]() * mTEPES.pOperReserveCost[       eh] * OptModel.vESSReserveDown[p,sc,n,eh]()) for p,sc,n,eh in sPSNES if (p,eh) in mTEPES.peh], index=pd.Index(sPSNES))
+                            OutputResults4 =     Transformation1(OutputResults4, 'Consumption Operation Cost')
+                            OutputResults5 =     Transformation1(OutputResults5, 'Consumption Operating Reserve Cost')
 
                     sPSNND = [(p,sc,n,nd) for p,sc,n,nd in mTEPES.psnnd if (nd,ar) in mTEPES.ndar]
                     if len(sPSNND):
-                        OutputResults7 = pd.Series(data=[mTEPES.pDiscountedWeight[p] * mTEPES.pScenProb[p,sc]() * mTEPES.pLoadLevelDuration[n]() * mTEPES.pENSCost()           * OptModel.vENS        [p,sc,n,nd]() for p,sc,n,nd in sPSNND], index=pd.Index(sPSNND))
-                        OutputResults7 = Transformation1(OutputResults7, 'Reliability Cost')
+                        OutputResults7 =         pd.Series(data=[mTEPES.pDiscountedWeight[p] * mTEPES.pScenProb[p,sc]() * mTEPES.pLoadLevelDuration[n]() * mTEPES.pENSCost()           * OptModel.vENS        [p,sc,n,nd]() for p,sc,n,nd in sPSNND], index=pd.Index(sPSNND))
+                        OutputResults7 =         Transformation1(OutputResults7, 'Reliability Cost')
 
                     OutputResults = pd.concat([OutputResults1, OutputResults2, OutputResults3, OutputResults4, OutputResults5, OutputResults6, OutputResults7], axis=0)
                     OutputResults.rename_axis(['Period', 'Scenario', 'Cost'], axis=0).to_csv(_path+'/oT_Result_CostSummary_'+ar+'_'+CaseName+'.csv', sep=',')

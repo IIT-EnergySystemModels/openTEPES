@@ -722,20 +722,20 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     idxDict['Y'  ] = 1
     idxDict['y'  ] = 1
 
-    pIndBinUnitInvest     = pIndBinUnitInvest.map(idxDict)
-    pIndBinUnitRetire     = pIndBinUnitRetire.map(idxDict)
-    pIndBinUnitCommit     = pIndBinUnitCommit.map(idxDict)
-    pIndBinStorInvest     = pIndBinStorInvest.map(idxDict)
-    pIndBinLineInvest     = pIndBinLineInvest.map(idxDict)
-    pIndBinLineSwitch     = pIndBinLineSwitch.map(idxDict)
-    pIndOperReserve       = pIndOperReserve.map  (idxDict)
-    pMustRun              = pMustRun.map         (idxDict)
+    pIndBinUnitInvest         = pIndBinUnitInvest.map    (idxDict)
+    pIndBinUnitRetire         = pIndBinUnitRetire.map    (idxDict)
+    pIndBinUnitCommit         = pIndBinUnitCommit.map    (idxDict)
+    pIndBinStorInvest         = pIndBinStorInvest.map    (idxDict)
+    pIndBinLineInvest         = pIndBinLineInvest.map    (idxDict)
+    pIndBinLineSwitch         = pIndBinLineSwitch.map    (idxDict)
+    pIndOperReserve           = pIndOperReserve.map      (idxDict)
+    pMustRun                  = pMustRun.map             (idxDict)
 
     if pIndHydroTopology == 1:
-        pIndBinRsrvInvest = pIndBinRsrvInvest.map(idxDict)
+        pIndBinRsrvInvest     = pIndBinRsrvInvest.map    (idxDict)
 
     if pIndHydrogen == 1:
-        pIndBinH2PipeInvest = pIndBinH2PipeInvest.map(idxDict)
+        pIndBinH2PipeInvest   = pIndBinH2PipeInvest.map  (idxDict)
 
     if pIndHeat == 1:
         pIndBinHeatPipeInvest = pIndBinHeatPipeInvest.map(idxDict)
@@ -988,7 +988,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         pMaxVolume      = pMaxVolume.loc            [mTEPES.psn  ]
     if pIndHydrogen == 1:
         pDemandH2       = pDemandH2.loc             [mTEPES.psn  ]
-        pDemandH2Abs    = pDemandH2.where(pDemandH2 > 0.0, 0.0)
+        pDemandH2Abs    = pDemandH2.where  (pDemandH2   > 0.0, 0.0)
     if pIndHeat == 1:
         pDemandHeat     = pDemandHeat.loc           [mTEPES.psn  ]
         pDemandHeatAbs  = pDemandHeat.where(pDemandHeat > 0.0, 0.0)
