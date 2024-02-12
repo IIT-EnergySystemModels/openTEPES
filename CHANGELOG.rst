@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.15.7] - 2024-02-10
+[4.15.7] - 2024-02-12
 ----------------------
+- [FIXED] introduction of line availability in electricity, H2, and heat balance equations
 - [CHANGED] not all the stages must have the same duration
 - [FIXED] computation of fixed costs for several years
 - [FIXED] change some performance issues in ESS operation results

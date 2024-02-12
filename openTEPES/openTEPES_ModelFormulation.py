@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 10, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 12, 2024
 """
 
 import time
@@ -454,10 +454,8 @@ def GenerationOperationModelFormulationDemand(OptModel, mTEPES, pIndLogConsole, 
     def eBalance(OptModel,n,nd):
         if sum(1 for g in g2n[nd]) + sum(1 for lout in lout[nd]) + sum(1 for ni,cc in lin[nd]):
             return (sum(OptModel.vTotalOutput[p,sc,n,g] for g in g2n[nd] if (p,g) in mTEPES.pg) - sum(OptModel.vESSTotalCharge[p,sc,n,eh] for eh in e2n[nd] if (p,eh) in mTEPES.peh) + OptModel.vENS[p,sc,n,nd] -
-                    sum(OptModel.vLineLosses[p,sc,n,nd,lout ] for lout  in loutl[nd]) - sum(OptModel.vFlow[p,sc,n,nd,lout ] for lout  in lout[nd]) -
-                    sum(OptModel.vLineLosses[p,sc,n,ni,nd,cc] for ni,cc in linl [nd]) + sum(OptModel.vFlow[p,sc,n,ni,nd,cc] for ni,cc in lin [nd])) == mTEPES.pDemand[p,sc,n,nd]
-                    # sum(OptModel.vLineLosses[p,sc,n,nd,lout ] for lout  in loutl[nd] if (p,nd,lout ) in mTEPES.pll) - sum(OptModel.vFlow[p,sc,n,nd,lout ] for lout  in lout[nd] if (p,nd,lout) in mTEPES.pla) -
-                    # sum(OptModel.vLineLosses[p,sc,n,ni,nd,cc] for ni,cc in linl [nd] if (p,ni,nd,cc) in mTEPES.pll) + sum(OptModel.vFlow[p,sc,n,ni,nd,cc] for ni,cc in lin [nd] if (p,ni,nd,cc) in mTEPES.pla)) == mTEPES.pDemand[p,sc,n,nd]
+                    sum(OptModel.vLineLosses[p,sc,n,nd,nf,cc] for nf,cc in loutl[nd] if (p,nd,nf,cc) in mTEPES.pll) - sum(OptModel.vFlow[p,sc,n,nd,nf,cc] for nf,cc in lout[nd] if (p,nd,nf,cc) in mTEPES.pla) -
+                    sum(OptModel.vLineLosses[p,sc,n,ni,nd,cc] for ni,cc in linl [nd] if (p,ni,nd,cc) in mTEPES.pll) + sum(OptModel.vFlow[p,sc,n,ni,nd,cc] for ni,cc in lin [nd] if (p,ni,nd,cc) in mTEPES.pla)) == mTEPES.pDemand[p,sc,n,nd]
         else:
             return Constraint.Skip
     setattr(OptModel, 'eBalance_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.nd, rule=eBalance, doc='electric load generation balance [GW]'))
@@ -1126,9 +1124,9 @@ def NetworkH2OperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, 
             e2n[nd].append(el)
 
     def eBalanceH2(OptModel,n,nd):
-        if sum(1 for el in e2n[nd]) + sum(1 for lout in lout[nd]) + sum(1 for ni,cc in lin[nd]):
+        if sum(1 for el in e2n[nd]) + sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd]):
             return (sum(OptModel.vESSTotalCharge[p,sc,n,el]*mTEPES.pDuration[n]/mTEPES.pProductionFunctionH2[el] for el in e2n[nd]) + OptModel.vH2NS[p,sc,n,nd] -
-                    sum(OptModel.vFlowH2[p,sc,n,nd,lout] for lout in lout[nd]) + sum(OptModel.vFlowH2[p,sc,n,ni,nd,cc] for ni,cc in lin[nd])) == mTEPES.pDemandH2[p,sc,n,nd]*mTEPES.pDuration[n]
+                    sum(OptModel.vFlowH2[p,sc,n,nd,nf,cc] for nf,cc in lout[nd] if (p,nd,nf,cc) in mTEPES.ppc) + sum(OptModel.vFlowH2[p,sc,n,ni,nd,cc] for ni,cc in lin[nd] if (p,ni,nd,cc) in mTEPES.ppc)) == mTEPES.pDemandH2[p,sc,n,nd]*mTEPES.pDuration[n]
         else:
             return Constraint.Skip
     setattr(OptModel, 'eBalanceH2_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.nd, rule=eBalanceH2, doc='H2 load generation balance [tH2]'))
@@ -1160,9 +1158,9 @@ def NetworkHeatOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc
             h2n[nd].append(hp)
 
     def eBalanceHeat(OptModel,n,nd):
-        if sum(1 for hp in h2n[nd]) + sum(1 for lout in lout[nd]) + sum(1 for ni,cc in lin[nd]):
+        if sum(1 for hp in h2n[nd]) + sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd]):
             return (sum(OptModel.vESSTotalCharge[p,sc,n,hp]*mTEPES.pDuration[n]/mTEPES.pProductionFunctionHeat[hp] for hp in h2n[nd]) + OptModel.vHeatNS[p,sc,n,nd] -
-                    sum(OptModel.vFlowHeat[p,sc,n,nd,lout] for lout in lout[nd]) + sum(OptModel.vFlowHeat[p,sc,n,ni,nd,cc] for ni,cc in lin[nd])) == mTEPES.pDemandHeat[p,sc,n,nd]*mTEPES.pDuration[n]
+                    sum(OptModel.vFlowHeat[p,sc,n,nd,nf,cc] for nf,cc in lout[nd] if (p,nd,nf,cc) in mTEPES.phc) + sum(OptModel.vFlowHeat[p,sc,n,ni,nd,cc] for ni,cc in lin[nd] if (p,ni,nd,cc) in mTEPES.phc)) == mTEPES.pDemandHeat[p,sc,n,nd]*mTEPES.pDuration[n]
         else:
             return Constraint.Skip
     setattr(OptModel, 'eBalanceHeat_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.nd, rule=eBalanceHeat, doc='Heat load generation balance [Tcal/h]'))
