@@ -3,6 +3,7 @@ Change Log
 
 [4.15.7] - 2024-02-12
 ----------------------
+- [CHANGED] split total generation in different technologies in balance results
 - [FIXED] introduction of line availability in electricity, H2, and heat balance equations
 - [CHANGED] not all the stages must have the same duration
 - [FIXED] computation of fixed costs for several years
