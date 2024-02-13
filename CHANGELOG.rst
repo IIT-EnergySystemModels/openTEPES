@@ -1,7 +1,7 @@
 Change Log
 =============
 
-[4.15.7] - 2024-02-12
+[4.15.7] - 2024-02-13
 ----------------------
 - [FIXED] change in the system inertia constraint
 - [FIXED] introduction of line availability in electricity, H2, and heat balance equations
