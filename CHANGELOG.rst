@@ -3,6 +3,7 @@ Change Log
 
 [4.15.7] - 2024-02-13
 ----------------------
+- [FIXED] clean up output results module
 - [FIXED] change in the system inertia constraint
 - [FIXED] introduction of line availability in electricity, H2, and heat balance equations
 - [CHANGED] split total generation in different technologies in balance results
