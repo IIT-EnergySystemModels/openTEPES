@@ -345,7 +345,7 @@ Balance of electric generation and demand at each node with ohmic losses [GW] «
 
 :math:`\sum_{g \in i} gp^p_{\omega ng} - \sum_{e \in i} gc^p_{\omega ne} + ens^p_{\omega ni} = D^p_{\omega ni} + \sum_{jc} l^p_{\omega nijc} + \sum_{jc} l^p_{\omega njic} + \sum_{jc} f^p_{\omega nijc} - \sum_{jc} f^p_{\omega njic} \quad \forall p \omega ni`
 
-System inertia for each area [s] «``eSystemInertia``»
+The sum of the inertia of the committed units must satisfy the system inertia for each area [s] «``eSystemInertia``»
 
 :math:`\sum_{g \in a} GI_g uc^p_{\omega ng} \geq SI^p_{\omega na} \quad \forall p \omega na`
 

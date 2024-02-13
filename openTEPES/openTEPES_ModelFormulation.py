@@ -302,7 +302,7 @@ def GenerationOperationModelFormulationDemand(OptModel, mTEPES, pIndLogConsole, 
 
     # nodes to generators (g2n)
     g2n = defaultdict(list)
-    for nd,g  in mTEPES.n2g:
+    for nd,g in mTEPES.n2g:
         g2n[nd].append(g)
     e2n = defaultdict(list)
     for nd,eh in mTEPES.nd*mTEPES.eh:

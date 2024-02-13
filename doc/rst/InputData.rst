@@ -295,7 +295,7 @@ Period      Scenario        Load level  Area    System inertia of the area for e
 ==========  ==============  ==========  ======  ================================================  ==
 
 Given that the system inertia depends on the area, it can be sensible to assign an area as a country, for example. The system inertia can be used for imposing a minimum synchronous power and, consequently, force the commitment of at least some rotating units.
-Each generating unit can contribute to the system inertia. The system inertia is the sum of the inertia of all the generating units in the area. The system inertia is the sum of the inertia of all the generating units in the area.
+Each generating unit can contribute to the system inertia. The system inertia is the sum of the inertia of all the committed units in the area.
 
 Internally, all the values below 2.5e-5 times the maximum system electricity demand of each area will be converted into 0 by the model.
 
