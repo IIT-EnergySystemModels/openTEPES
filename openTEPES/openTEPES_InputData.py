@@ -1744,8 +1744,7 @@ def SettingUpVariables(OptModel, mTEPES):
         if  mTEPES.pMaxCharge2ndBlock[p,sc,n,es] ==  0.0:
             OptModel.vCharge2ndBlock [p,sc,n,es].fix(0.0)
             nFixedVariables += 1
-        if  mTEPES.pMaxCharge2ndBlock[p,sc,n,es] ==  0.0 or mTEPES.pIndOperReserve     [es] == 1:
-            OptModel.vCharge2ndBlock [p,sc,n,es].fix(0.0)
+        if  mTEPES.pMaxCharge2ndBlock[p,sc,n,es] ==  0.0 or mTEPES.pIndOperReserve[es] == 1:
             OptModel.vESSReserveUp   [p,sc,n,es].fix(0.0)
             OptModel.vESSReserveDown [p,sc,n,es].fix(0.0)
             nFixedVariables += 2
@@ -1762,8 +1761,7 @@ def SettingUpVariables(OptModel, mTEPES):
             if  mTEPES.pMaxCharge2ndBlock[p,sc,n,h ] ==  0.0:
                 OptModel.vCharge2ndBlock [p,sc,n,h ].fix(0.0)
                 nFixedVariables += 1
-            if  mTEPES.pMaxCharge2ndBlock[p,sc,n,h ] ==  0.0 or mTEPES.pIndOperReserve [h ] == 1:
-                OptModel.vCharge2ndBlock [p,sc,n,h ].fix(0.0)
+            if  mTEPES.pMaxCharge2ndBlock[p,sc,n,h ] ==  0.0 or mTEPES.pIndOperReserve[h ] == 1:
                 OptModel.vESSReserveUp   [p,sc,n,h ].fix(0.0)
                 OptModel.vESSReserveDown [p,sc,n,h ].fix(0.0)
                 nFixedVariables += 2
