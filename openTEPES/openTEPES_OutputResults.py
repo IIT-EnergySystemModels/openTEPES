@@ -904,6 +904,12 @@ def NetworkHeatOperationResults(DirName, CaseName, OptModel, mTEPES):
         if (gt,hp) in mTEPES.t2g:
             h2t[gt].append(hp)
 
+    # electrolyzers to technology (e2t)
+    e2t = defaultdict(list)
+    for gt,el in mTEPES.gt*mTEPES.el:
+        if (gt,el) in mTEPES.t2g:
+            e2t[gt].append(el)
+
     sPSNARND   = [(p,sc,n,ar,nd)    for p,sc,n,ar,nd    in mTEPES.psnar*mTEPES.nd if (sum(1 for hp in h2n[nd]) + sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd])) and (nd,ar) in mTEPES.ndar]
     sPSNARNDGT = [(p,sc,n,ar,nd,gt) for p,sc,n,ar,nd,gt in sPSNARND*mTEPES.gt     if  sum(1 for hp in h2t[gt] if (p,hp) in mTEPES.pg)                                        and (nd,ar) in mTEPES.ndar]
 
