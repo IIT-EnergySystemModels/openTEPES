@@ -460,7 +460,7 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnolo
             if sum(1 for ar in mTEPES.ar if sum(1 for nr in n2a[ar])) > 1:
                 if pIndAreaOutput == 1:
                     for ar in mTEPES.ar:
-                        if sum(1 for nr in n2a[ar] if (p,nr) in mTEPES.pnr and nr in g2t[gt]):
+                        if sum(1 for nr in n2a[ar] if nr in g2t[gt]):
                             sPSNGT = [(p,sc,n,gt) for p,sc,n,gt in mTEPES.psngt if sum(1 for nr in n2a[ar] if (p,nr) in mTEPES.pnr and nr in g2t[gt])]
                             if len(sPSNGT):
                                 OutputResults = pd.Series(data=[sum(OutputToFile[p,sc,n,nr] for nr in n2a[ar] if (p,nr) in mTEPES.pnr and nr in g2t[gt]) for p,sc,n,gt in sPSNGT], index=pd.Index(sPSNGT))
@@ -497,7 +497,7 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnolo
         if sum(1 for ar in mTEPES.ar if sum(1 for g in g2a[ar])) > 1:
             if pIndAreaOutput == 1:
                 for ar in mTEPES.ar:
-                    if sum(1 for g in g2a[ar] if (p,g) in mTEPES.pg and g in g2t[gt]):
+                    if sum(1 for g in g2a[ar] if g in g2t[gt]):
                         sPSNGT = [(p,sc,n,gt) for p,sc,n,gt in mTEPES.psngt if sum(1 for g in g2a[ar] if (p,g) in mTEPES.pg and g in g2t[gt])]
                         if len(sPSNGT):
                             OutputToFile = pd.Series(data=[sum(OptModel.vTotalOutput[p,sc,n,g]()*mTEPES.pLoadLevelDuration[n]() for g in g2a[ar] if (p,g) in mTEPES.pg and g in g2t[gt]) for p,sc,n,gt in sPSNGT], index=pd.Index(sPSNGT))
@@ -583,7 +583,7 @@ def ESSOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutpu
     if sum(1 for ar in mTEPES.ar if sum(1 for eh in e2a[ar])) > 1:
         if pIndAreaOutput == 1:
             for ar in mTEPES.ar:
-                if sum(1 for eh in e2a[ar] if (p,eh) in mTEPES.peh and eh in e2e[gt]):
+                if sum(1 for eh in e2a[ar] if eh in e2e[gt]):
                     sPSNET = [(p,sc,n,et) for p,sc,n,et in mTEPES.psnet if sum(1 for eh in e2a[ar] if (p,eh) in mTEPES.peh and eh in e2e[gt])]
                     if len(sPSNET):
                         OutputToFile = pd.Series(data=[sum(-OptModel.vESSTotalCharge[p,sc,n,eh]()*mTEPES.pLoadLevelDuration[n]() for eh in e2a[ar] if eh in e2e[gt]) for p,sc,n,et in sPSNET], index=pd.Index(sPSNET))
@@ -1661,7 +1661,7 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput, pIndPlo
     if sum(1 for ar in mTEPES.ar if sum(1 for g in g2a[ar])) > 1:
         if pIndAreaOutput == 1:
             for ar in mTEPES.ar:
-                if sum(1 for g in g2a[ar] if (p,g) in mTEPES.pg and g in g2t[gt]):
+                if sum(1 for g in g2a[ar] if g in g2t[gt]):
                     sPSNGT = [(p,sc,n,gt) for p,sc,n,gt in mTEPES.psngt if sum(1 for g in g2a[ar] if (p,g) in mTEPES.pg and g in g2t[gt])]
                     if len(sPSNGT):
                         OutputToFile = pd.Series(data=[sum(OptModel.vTotalOutput[p,sc,n,g]()*mTEPES.pLoadLevelDuration[n]() for g in g2a[ar] if (p,g) in mTEPES.pg and g in g2t[gt]) for p,sc,n,gt in sPSNGT], index=pd.Index(sPSNGT))
