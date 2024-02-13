@@ -347,7 +347,7 @@ Balance of electric generation and demand at each node with ohmic losses [GW] «
 
 System inertia for each area [s] «``eSystemInertia``»
 
-:math:`\sum_{g \in a} \frac{GI_g}{\overline{GP}_g} gp^p_{\omega ng} \geq SI^p_{\omega na} \quad \forall p \omega na`
+:math:`\sum_{g \in a} GI_g uc^p_{\omega ng} \geq SI^p_{\omega na} \quad \forall p \omega na`
 
 Upward and downward operating reserves provided by non-renewable generators, and ESS when charging for each area [GW] «``eOperReserveUp``» «``eOperReserveDw``»
 
