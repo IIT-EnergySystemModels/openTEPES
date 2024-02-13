@@ -583,10 +583,10 @@ def ESSOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutpu
     if sum(1 for ar in mTEPES.ar if sum(1 for eh in e2a[ar])) > 1:
         if pIndAreaOutput == 1:
             for ar in mTEPES.ar:
-                if sum(1 for eh in e2a[ar] if eh in e2e[gt]):
-                    sPSNET = [(p,sc,n,et) for p,sc,n,et in mTEPES.psnet if sum(1 for eh in e2a[ar] if (p,eh) in mTEPES.peh and eh in e2e[gt])]
+                if sum(1 for eh in e2a[ar] if eh in e2e[et]):
+                    sPSNET = [(p,sc,n,et) for p,sc,n,et in mTEPES.psnet if sum(1 for eh in e2a[ar] if (p,eh) in mTEPES.peh and eh in e2e[et])]
                     if len(sPSNET):
-                        OutputToFile = pd.Series(data=[sum(-OptModel.vESSTotalCharge[p,sc,n,eh]()*mTEPES.pLoadLevelDuration[n]() for eh in e2a[ar] if eh in e2e[gt]) for p,sc,n,et in sPSNET], index=pd.Index(sPSNET))
+                        OutputToFile = pd.Series(data=[sum(-OptModel.vESSTotalCharge[p,sc,n,eh]()*mTEPES.pLoadLevelDuration[n]() for eh in e2a[ar] if eh in e2e[et]) for p,sc,n,et in sPSNET], index=pd.Index(sPSNET))
                         OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='GWh', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_TechnologyConsumptionEnergy_'+ar+'_'+CaseName+'.csv', sep=',')
 
                         if pIndPlotOutput == 1:
