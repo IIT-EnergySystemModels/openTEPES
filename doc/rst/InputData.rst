@@ -390,6 +390,8 @@ The initial storage of the ESSs is also fixed at the beginning and end of each s
 A generator with operation cost (sum of the fuel and emission cost, excluding O&M cost) > 0 is considered a non-renewable unit. If the unit has no operation cost and its maximum storage = 0,
 it is considered a renewable unit. If its maximum storage is > 0, with or without operation cost, is considered an ESS.
 
+A very small variable O&M cost (not below 0.01 €/MWh, otherwise it will converted to 0 by the model) for the ESS can be used to avoid pumping with avoided curtailment (at no cost) and afterwards being discharged as spillage.
+
 Must-run non-renewable units are always committed, i.e., their commitment decision is equal to 1. All must-run units are forced to produce at least their minimum output.
 
 EFOR is used to reduce the maximum and minimum power of the unit. For hydropower plants it can be used to reduce their maximum power by the water head effect. It does not reduce the maximum charge.
