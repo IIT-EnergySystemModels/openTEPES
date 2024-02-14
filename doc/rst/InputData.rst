@@ -354,9 +354,9 @@ RampDown                Ramp down rate for generating units or maximum    charge
 UpTime                  Minimum uptime                                                                                                                    h
 DownTime                Minimum downtime                                                                                                                  h
 ShiftTime               Maximum shift time                                                                                                                h
-FuelCost                Fuel cost                                                                                                                         €/Mcal
-LinearTerm              Linear term (slope) of the heat rate straight line                                                                                Mcal/MWh
-ConstantTerm            Constant term (intercept) of the heat rate straight line                                                                          Mcal/h
+FuelCost                Fuel cost                                                                                                                         €/Gcal
+LinearTerm              Linear term (slope) of the heat rate straight line                                                                                Gcal/MWh
+ConstantTerm            Constant term (intercept) of the heat rate straight line                                                                          Gcal/h
 OMVariableCost          Variable O&M cost                                                                                                                 €/MWh
 OperReserveCost         Operating reserve cost                                                                                                            €/MW
 StartUpCost             Startup  cost                                                                                                                     M€
@@ -442,14 +442,14 @@ A description of the data included in the file ``oT_Data_VariableFuelCost.csv`` 
 ==========  ==============  ==========  =========  =============================  ======
 Identifier  Identifier      Identifier  Header     Description
 ==========  ==============  ==========  =========  =============================  ======
-Period      Scenario        Load level  Generator  Variable fuel cost             €/Mcal
+Period      Scenario        Load level  Generator  Variable fuel cost             €/Gcal
 ==========  ==============  ==========  =========  =============================  ======
 
 All the generators must be defined as columns of these files.
 
 Internally, all the values below 1e-4 will be converted into 0 by the model.
 
-Fuel cost affects the linear and constant terms of the heat rate, expressed in Mcal/MWh and Mcal/h respectively.
+Fuel cost affects the linear and constant terms of the heat rate, expressed in Gcal/MWh and Gcal/h respectively.
 
 Variable emission cost
 ----------------------
