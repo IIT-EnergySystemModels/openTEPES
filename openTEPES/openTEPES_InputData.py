@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 13, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 15, 2024
 """
 
 import datetime
@@ -240,7 +240,6 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         mTEPES.r2p = Set(initialize=[], ordered=False, doc='reservoir to pumped-hydro')
 
         dictSets.load(    filename=_path+'/oT_Dict_Reservoir_'             +CaseName+'.csv', set='rs' , format='set')
-        mTEPES.rs      = Set(initialize=dictSets['rs' ], ordered=False, doc='reservoirs'               )
         if count_lines_in_csv(     _path+'/oT_Dict_ReservoirToHydro_'      +CaseName+'.csv') > 1:
             dictSets.load(filename=_path+'/oT_Dict_ReservoirToHydro_'      +CaseName+'.csv', set='r2h', format='set')
             mTEPES.del_component(mTEPES.r2h)
@@ -261,6 +260,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
             dictSets.load(filename=_path+'/oT_Dict_ReservoirToPumpedHydro_'+CaseName+'.csv', set='r2p', format='set')
             mTEPES.del_component(mTEPES.r2p)
             mTEPES.r2p = Set(initialize=dictSets['r2p'], ordered=False, doc='reservoir to pumped-hydro')
+        mTEPES.rs      = Set(initialize=dictSets['rs' ], ordered=False, doc='reservoirs'               , filter=lambda mTEPES,h: h in mTEPES.h and sum(1 for h in mTEPES.h if (rs,h) in mTEPES.r2h or (h,rs) in mTEPES.h2r or (rs,h) in mTEPES.r2p or (h,rs) in mTEPES.p2r))
     except:
         print('No reservoir and hydropower topology dictionary      files found')
 
@@ -1075,7 +1075,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pMaxCharge             = pMaxCharge.loc        [:,mTEPES.eh]
     pMaxPower2ndBlock      = pMaxPower2ndBlock.loc [:,mTEPES.g ]
     pMaxCharge2ndBlock     = pMaxCharge2ndBlock.loc[:,mTEPES.eh]
-    pMaxCapacity           = pMaxCapacity.loc      [:,mTEPES.g ]
+    pMaxCapacity           = pMaxCapacity.loc      [:,mTEPES.eh]
     pEnergyInflows         = pEnergyInflows.loc    [:,mTEPES.es]
     pEnergyOutflows        = pEnergyOutflows.loc   [:,mTEPES.es]
     pIniInventory          = pIniInventory.loc     [:,mTEPES.es]
@@ -1256,7 +1256,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.pMaxPower             = Param(mTEPES.psn*mTEPES.g , initialize=pMaxPower.stack().to_dict()         , within=NonNegativeReals,    doc='Maximum power'                                       )
     mTEPES.pMinCharge            = Param(mTEPES.psn*mTEPES.eh, initialize=pMinCharge.stack().to_dict()        , within=NonNegativeReals,    doc='Minimum charge'                                      )
     mTEPES.pMaxCharge            = Param(mTEPES.psn*mTEPES.eh, initialize=pMaxCharge.stack().to_dict()        , within=NonNegativeReals,    doc='Maximum charge'                                      )
-    mTEPES.pMaxCapacity          = Param(mTEPES.psn*mTEPES.g , initialize=pMaxCapacity.stack().to_dict()      , within=NonNegativeReals,    doc='Maximum capacity'                                    )
+    mTEPES.pMaxCapacity          = Param(mTEPES.psn*mTEPES.eh, initialize=pMaxCapacity.stack().to_dict()      , within=NonNegativeReals,    doc='Maximum capacity'                                    )
     mTEPES.pMaxPower2ndBlock     = Param(mTEPES.psn*mTEPES.g , initialize=pMaxPower2ndBlock.stack().to_dict() , within=NonNegativeReals,    doc='Second block power'                                  )
     mTEPES.pMaxCharge2ndBlock    = Param(mTEPES.psn*mTEPES.eh, initialize=pMaxCharge2ndBlock.stack().to_dict(), within=NonNegativeReals,    doc='Second block charge'                                 )
     mTEPES.pEnergyInflows        = Param(mTEPES.psn*mTEPES.es, initialize=pEnergyInflows.stack().to_dict()    , within=NonNegativeReals,    doc='Energy inflows',                         mutable=True)
