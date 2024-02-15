@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.15.7] - 2024-02-13
+[4.15.7] - 2024-02-15
 ----------------------
+- [CHANGED] add a small tolerance to avoid pumping/charging with curtailment/spillage
 - [FIXED] clean up output results module
 - [FIXED] change in the system inertia constraint
 - [FIXED] introduction of line availability in electricity, H2, and heat balance equations
