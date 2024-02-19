@@ -3,37 +3,38 @@
 Introduction
 ============
 The *Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS* **(openTEPES)** determines the investment plans of new facilities (generators, ESS, and electric lines, hydrogen pipelines, and heat pipes)
-for supplying the forecasted demand at minimum cost. Its objective is to evaluate the future generation, storage, and electric, hydrogen, and heat network needs.
+to meet the forecasted demand at minimum cost. The objective is to evaluate the future generation, storage, and electric, hydrogen, and heat network needs.
 The main results are the guidelines for the future structure of the generation, storage, and transmission systems.
 
-The **openTEPES** model presents a decision support system for defining the integrated generation, storage, and transmission resource planning (IRP, GEP+SEP+TEP) of a **large-scale electric system** at a tactical level (i.e., time horizons of 10-20 years),
-defined as a set of **generation, storage, and (electric, hydrogen, and heat) networks dynamic investment decisions for multiple future years**. The user pre-defined the expansion candidates, so the model determines the optimal decisions among those specified by the user.
+The **openTEPES** model represents a decision support system for defining the integrated generation, storage, and transmission resource planning (IRP, GEP+SEP+TEP) of a **large-scale electric system** at the tactical level (i.e., time horizons of 10-20 years),
+defined as a set of **generation, storage, and (electric, hydrogen, and heat) networks dynamic investment decisions for several future years**. The user pre-defines the expansion candidates, so the model determines the optimal decisions among those specified by the user.
 
-It determines automatically optimal expansion plans that satisfy simultaneously several attributes. Its main characteristics are:
+It automatically determines optimal expansion plans that satisfy multiple attributes simultaneously. Its main features are:
 
-- **Dynamic (perfect foresight)**: the scope of the model corresponds to several periods (years) at a long-term horizon, 2030, 2035 and 2040 for example.
+- **Dynamic (perfect foresight)**: the scope of the model corresponds to several periods (years) on a long-term horizon, for example 2030, 2035 and 2040.
 
-  It represents hierarchically the different time scopes to take decisions in an electric system:
+  It hierarchically represents the different time horizons for decision making in an electricity system:
   
   - Load level: one hour, e.g., 01-01 00:00:00+01:00 to 12-30 23:00:00+01:00
 
-  The time division allows a user-defined flexible representation of the periods for evaluating the system operation. Moreover, it can be run with chronological periods of several consecutive hours (bi-hourly, tri-hourly resolution) to decrease the computational burden without losing accuracy. The model can be run with a single period (year) or with several periods (years) to allow the analysis of the system evolution. The time definition allows also to specify disconnected representative periods (e.g., days, weeks) to evaluate the system operation.
-  The model can be run with a single period (year) or with several periods (years) to allow the analysis of the system evolution. The time definition can also specify disconnected representative periods (e.g., days, weeks) to evaluate the system operation.
-  The period (year) must be represented by 8736 hours because several model concepts representing the system operation are based on weeks (168 hours) or months (made of 4 weeks, 672 hours).
+  Time division allows a user-defined flexible representation of time periods for evaluating system operation. It can also be run with chronological periods of several consecutive hours (two-hour, three-hour resolution) to reduce the computational burden without sacrificing accuracy.
+  The model can be run with a single period (year) or with multiple periods (years) to allow analysis of system evolution.
+  The time definition also allows the specification of disconnected representative periods (e.g., days, weeks) to evaluate system operation. The model can be run with a single period (year) or with multiple periods (years) to allow analysis of system evolution.
+  The time definition can also specify unrelated representative periods (e.g., days, weeks) to evaluate system operation. The period (year) must be represented by 8736 hours because several model concepts representing the system operation are based on weeks (168 hours) or months (made of 4 weeks, 672 hours)
 
-- **Stochastic**: several stochastic parameters that can influence the optimal generation, storage, and transmission expansion decisions are considered. The model considers stochastic
-  medium-term yearly uncertainties (scenarios) related to the system operation. These operation scenarios are associated with renewable energy sources, energy inflows and outflows, natural water inflows, operating reserves, inertia, and electricity, hydrogen, and heat demand.
+- **Stochastic**: several stochastic parameters are considered that can influence the optimal generation, storage and transmission expansion decisions. The model considers stochastic
+  medium-term annual uncertainties (scenarios) related to the system operation. These operational scenarios are associated with renewable energy sources, energy inflows and outflows, natural water inflows, operating reserves, inertia, and electricity, hydrogen, and heat demand.
   
-The objective function incorporates the two main quantifiable costs: **generation, storage, and transmission investment cost (CAPEX)** and **expected variable operation costs (including generation, consumption, emission, and reliability costs) (system OPEX)**.
+The objective function includes the two main quantifiable costs: the **investment costs for generation, storage, and transmission (CAPEX)** and the **expected variable operation costs (including generation, consumption, emissions, and reliability costs) (system OPEX)**.
   
-The model formulates a **two-stage stochastic optimization** problem, including generation, storage, and electric, hydrogen, and heat network binary investment/retirement decisions, generation operation decisions (commitment, startup, and shutdown decisions are also binary), and electric line-switching decisions.
-The capacity expansion considers adequacy system reserve margin and minimum and maximum energy constraints.
+The model formulates a **two-stage stochastic optimization** problem, including binary generation, storage, and electric, hydrogen, and heat network investment/retirement decisions, generation operation decisions (commitment, startup, and shutdown decisions are also binary), and electric line-switching decisions.
+Capacity expansion takes into account the adequacy system reserve margin and minimum and maximum energy constraints.
 
-The very detailed operation model is an electric **network-constrained unit commitment (NCUC)** based on a **tight and compact** formulation, including **operating reserves** with a
-**DC power flow (DCPF)**, including electric **line switching** decisions. **Electric network ohmic losses** are considered proportional to the electric line flow. It considers different **energy storage systems (ESS)**, e.g., pumped-hydro storage,
-battery, demand response, electric vehicles, solar thermal, alkaline water electrolyzer, etc. It allows analyzing the trade-off between the investment in generation/transmission/pipeline and the investment and/or use of storage capacity.
+The highly detailed operation model is an electric **network-constrained unit commitment (NCUC)** based on a **tight and compact** formulation, including **operating reserves** with a
+**DC power flow (DCPF)**, including electric **line switching** decisions. The **ohmic losses of the electric network** are considered proportional to the electric line flow. It considers different **energy storage systems (ESS)**, such us pumped-hydro storage,
+battery, demand response, electric vehicles, solar thermal, alkaline water electrolyzer, etc. It allows analysis of the trade-off between the investment in generation/transmission/pipeline and the investment and/or use of storage capacity.
 
-The model allows also a representation of the **hydro system** based on volume and water inflow data considering the water stream topology (hydro cascade basins). If they are not available it runs with an energy-based representation of the hydro system.
+The model also allows a representation of the **hydro system** based on volume and water inflow data considering the water stream topology (hydro cascade basins). If they are not available it runs with an energy-based representation of the hydro system.
 
 Also, it includes a representation of **Power to Hydrogen (P2H2)** by setting the **hydrogen demand** satisfied by the production of hydrogen with electrolyzers (consume electricity to produce hydrogen) and a **hydrogen network** to distribute it.
 Besides, it includes a representation of **Power to Heat (P2H)** by setting the **heat demand** satisfied by the production of heat with heat pumps (consume electricity to produce heat) and a **heat network** to distribute it. If they are not available it runs with just the other energy carriers.

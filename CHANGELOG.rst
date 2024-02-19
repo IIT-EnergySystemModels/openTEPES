@@ -1,7 +1,7 @@
 Change Log
 =============
 
-[4.15.7] - 2024-02-16
+[4.15.7] - 2024-02-19
 ----------------------
 - [CHANGED] time reduction in outputting results
 - [CHANGED] add a small tolerance to avoid pumping/charging with curtailment/spillage
