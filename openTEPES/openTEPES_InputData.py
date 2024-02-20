@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February20, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 20, 2024
 """
 
 import datetime
@@ -942,15 +942,19 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         if (st,n) in mTEPES.s2n and mTEPES.n.ord(n) == pCycleTimeStep[es]:
             if  pIniInventory[es][p,sc,n] < pMinStorage[es][p,sc,n]:
                 pIniInventory[es][p,sc,n] = pMinStorage[es][p,sc,n]
+                print('### Initial inventory lower than minimum storage ',   es)
             if  pIniInventory[es][p,sc,n] > pMaxStorage[es][p,sc,n]:
                 pIniInventory[es][p,sc,n] = pMaxStorage[es][p,sc,n]
+                print('### Initial inventory greater than maximum storage ', es)
     if pIndHydroTopology == 1:
         for p,sc,n,rs in mTEPES.psnrs:
             if (st,n) in mTEPES.s2n and mTEPES.n.ord(n) == pCycleWaterStep[rs]:
                 if  pIniVolume[rs][p,sc,n] < pMinVolume[rs][p,sc,n]:
                     pIniVolume[rs][p,sc,n] = pMinVolume[rs][p,sc,n]
+                    print('### Initial volume lower than minimum volume ',   rs)
                 if  pIniVolume[rs][p,sc,n] > pMaxVolume[rs][p,sc,n]:
-                    pIniVolume[rs][p,sc,n] = pMinVolume[rs][p,sc,n]
+                    pIniVolume[rs][p,sc,n] = pMaxVolume[rs][p,sc,n]
+                    print('### Initial volume greater than maximum volume ', rs)
 
     # drop load levels with duration 0
     pDuration            = pDuration.loc            [mTEPES.n    ]
