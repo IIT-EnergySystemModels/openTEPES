@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 15, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February20, 2024
 """
 
 import datetime
@@ -233,13 +233,17 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
                 num_lines = sum(1 for _ in reader)
             return num_lines
 
+        mTEPES.rs  = Set(initialize=[], ordered=False, doc='reservoirs'               )
         mTEPES.r2h = Set(initialize=[], ordered=False, doc='reservoir to hydro'       )
         mTEPES.h2r = Set(initialize=[], ordered=False, doc='hydro to reservoir'       )
         mTEPES.r2r = Set(initialize=[], ordered=False, doc='reservoir to reservoir'   )
         mTEPES.p2r = Set(initialize=[], ordered=False, doc='pumped-hydro to reservoir')
         mTEPES.r2p = Set(initialize=[], ordered=False, doc='reservoir to pumped-hydro')
 
-        dictSets.load(    filename=_path+'/oT_Dict_Reservoir_'             +CaseName+'.csv', set='rs' , format='set')
+        if count_lines_in_csv(     _path+'/oT_Dict_Reservoir_'             +CaseName+'.csv') > 1:
+            dictSets.load(filename=_path+'/oT_Dict_Reservoir_'             +CaseName+'.csv', set='rs' , format='set')
+            mTEPES.del_component(mTEPES.rs)
+            mTEPES.rs  = Set(initialize=dictSets['rs' ], ordered=False, doc='reservoirs'               )
         if count_lines_in_csv(     _path+'/oT_Dict_ReservoirToHydro_'      +CaseName+'.csv') > 1:
             dictSets.load(filename=_path+'/oT_Dict_ReservoirToHydro_'      +CaseName+'.csv', set='r2h', format='set')
             mTEPES.del_component(mTEPES.r2h)
@@ -260,7 +264,6 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
             dictSets.load(filename=_path+'/oT_Dict_ReservoirToPumpedHydro_'+CaseName+'.csv', set='r2p', format='set')
             mTEPES.del_component(mTEPES.r2p)
             mTEPES.r2p = Set(initialize=dictSets['r2p'], ordered=False, doc='reservoir to pumped-hydro')
-        mTEPES.rs      = Set(initialize=dictSets['rs' ], ordered=False, doc='reservoirs'               , filter=lambda mTEPES,h: h in mTEPES.h and sum(1 for h in mTEPES.h if (rs,h) in mTEPES.r2h or (h,rs) in mTEPES.h2r or (rs,h) in mTEPES.r2p or (h,rs) in mTEPES.p2r))
     except:
         print('No reservoir and hydropower topology dictionary      files found')
 
@@ -977,7 +980,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pEfficiency          = pEfficiency.loc          [mTEPES.eh   ]
     pCycleTimeStep       = pCycleTimeStep.loc       [mTEPES.es   ]
     pOutflowsTimeStep    = pOutflowsTimeStep.loc    [mTEPES.es   ]
-    pInitialInventory    = pInitialInventory.loc    [mTEPES.es   ]
+    # pInitialInventory    = pInitialInventory.loc    [mTEPES.es   ]
     pStorageType         = pStorageType.loc         [mTEPES.es   ]
 
     if pIndHydroTopology == 1:
@@ -1042,7 +1045,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         pMaxStorage    [pMaxStorage    [[es for es in e2a[ar]]] <  pEpsilon] = 0.0
         pIniInventory  [pIniInventory  [[es for es in e2a[ar]]] <  pEpsilon] = 0.0
 
-        pInitialInventory.update(pd.Series([0.0 for es in e2a[ar] if pInitialInventory[es] < pEpsilon], index=[es for es in e2a[ar] if pInitialInventory[es] < pEpsilon], dtype='float64'))
+        # pInitialInventory.update(pd.Series([0.0 for es in e2a[ar] if pInitialInventory[es] < pEpsilon], index=[es for es in e2a[ar] if pInitialInventory[es] < pEpsilon], dtype='float64'))
 
         pLineNTCFrw.update(pd.Series([0.0 for ni,nf,cc in mTEPES.la if pLineNTCFrw[ni,nf,cc] < pEpsilon], index=[(ni,nf,cc) for ni,nf,cc in mTEPES.la if pLineNTCFrw[ni,nf,cc] < pEpsilon], dtype='float64'))
         pLineNTCBck.update(pd.Series([0.0 for ni,nf,cc in mTEPES.la if pLineNTCBck[ni,nf,cc] < pEpsilon], index=[(ni,nf,cc) for ni,nf,cc in mTEPES.la if pLineNTCBck[ni,nf,cc] < pEpsilon], dtype='float64'))
@@ -1302,7 +1305,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.pOutflowsTimeStep     = Param(mTEPES.es,            initialize=pOutflowsTimeStep.to_dict()         , within=PositiveIntegers,    doc='ESS Outflows cycle'                                  )
     mTEPES.pEnergyTimeStep       = Param(mTEPES.gg,            initialize=pEnergyTimeStep.to_dict()           , within=PositiveIntegers,    doc='Unit energy cycle'                                   )
     mTEPES.pIniInventory         = Param(mTEPES.psn*mTEPES.es, initialize=pIniInventory.stack().to_dict()     , within=NonNegativeReals,    doc='ESS Initial storage',                    mutable=True)
-    mTEPES.pInitialInventory     = Param(mTEPES.es,            initialize=pInitialInventory.to_dict()         , within=NonNegativeReals,    doc='ESS Initial storage without load levels'             )
+    # mTEPES.pInitialInventory     = Param(mTEPES.es,            initialize=pInitialInventory.to_dict()         , within=NonNegativeReals,    doc='ESS Initial storage without load levels'             )
     mTEPES.pStorageType          = Param(mTEPES.es,            initialize=pStorageType.to_dict()              , within=Any             ,    doc='ESS Storage type'                                    )
     mTEPES.pGenLoInvest          = Param(mTEPES.gc,            initialize=pGenLoInvest.to_dict()              , within=NonNegativeReals,    doc='Lower bound of the investment decision', mutable=True)
     mTEPES.pGenUpInvest          = Param(mTEPES.gc,            initialize=pGenUpInvest.to_dict()              , within=NonNegativeReals,    doc='Upper bound of the investment decision', mutable=True)
@@ -1809,16 +1812,14 @@ def SettingUpVariables(OptModel, mTEPES):
 
             # fixing the ESS inventory at the last load level of the stage for every period and scenario if between storage limits
             for es in mTEPES.es:
-                if es not in mTEPES.ec:
-                    if (p,sc,mTEPES.n.last(),es) in mTEPES.psnes:
-                        OptModel.vESSInventory[p,sc,mTEPES.n.last(),es].fix(mTEPES.pInitialInventory[es])
+                if es not in mTEPES.ec and (p,sc,mTEPES.n.last(),es) in mTEPES.psnes:
+                    OptModel.vESSInventory[p,sc,mTEPES.n.last(),es].fix(mTEPES.pIniInventory[p,sc,mTEPES.n.last(),es])
 
             if mTEPES.pIndHydroTopology == 1:
                 # fixing the reservoir volume at the last load level of the stage for every period and scenario if between storage limits
                 for rs in mTEPES.rs:
-                    if rs not in mTEPES.rn:
-                        if (p,sc,mTEPES.n.last(),rs) in mTEPES.psnrs:
-                            OptModel.vReservoirVolume[p,sc,mTEPES.n.last(),rs].fix(mTEPES.pInitialVolume[rs])
+                    if rs not in mTEPES.rn and (p,sc,mTEPES.n.last(),rs) in mTEPES.psnrs:
+                        OptModel.vReservoirVolume[p,sc,mTEPES.n.last(),rs].fix(mTEPES.pIniVolume[p,sc,mTEPES.n.last(),rs])
 
     # activate all the periods, scenarios, and load levels again
     mTEPES.del_component(mTEPES.st)
@@ -1826,37 +1827,39 @@ def SettingUpVariables(OptModel, mTEPES):
     mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in mTEPES.stt and mTEPES.pStageWeight[stt] and sum(1 for (stt,nn)                   in mTEPES.s2n))
     mTEPES.n  = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in mTEPES.nn                               and sum(1 for st in mTEPES.st if (st,nn) in mTEPES.s2n))
 
-    # fixing the ESS inventory at the end of the following pCycleTimeStep (daily, weekly, monthly) if between storage limits, i.e., for daily ESS is fixed at the end of the week, for weekly ESS is fixed at the end of the month, for monthly ESS is fixed at the end of the year
+    # fixing the ESS inventory at the end of the following pCycleTimeStep (daily, weekly, monthly) if between storage limits, i.e.,
+    # for daily ESS is fixed at the end of the week, for weekly ESS is fixed at the end of the month, for monthly ESS is fixed at the end of the year
     for p,sc,n,es in mTEPES.psnes:
-        if mTEPES.pInitialInventory[es] >= mTEPES.pMinStorage[p,sc,n,es] and mTEPES.pInitialInventory[es] <= mTEPES.pMaxStorage[p,sc,n,es] and es not in mTEPES.ec:
+        if es not in mTEPES.ec:
             if mTEPES.pStorageType[es] == 'Hourly'  and mTEPES.n.ord(n) % int(  24/mTEPES.pTimeStep()) == 0:
-                OptModel.vESSInventory[p,sc,n,es].fix(mTEPES.pInitialInventory[es])
+                OptModel.vESSInventory[p,sc,n,es].fix(mTEPES.pIniInventory[p,sc,n,es])
                 nFixedVariables += 1
             if mTEPES.pStorageType[es] == 'Daily'   and mTEPES.n.ord(n) % int( 168/mTEPES.pTimeStep()) == 0:
-                OptModel.vESSInventory[p,sc,n,es].fix(mTEPES.pInitialInventory[es])
+                OptModel.vESSInventory[p,sc,n,es].fix(mTEPES.pIniInventory[p,sc,n,es])
                 nFixedVariables += 1
             if mTEPES.pStorageType[es] == 'Weekly'  and mTEPES.n.ord(n) % int( 672/mTEPES.pTimeStep()) == 0:
-                OptModel.vESSInventory[p,sc,n,es].fix(mTEPES.pInitialInventory[es])
+                OptModel.vESSInventory[p,sc,n,es].fix(mTEPES.pIniInventory[p,sc,n,es])
                 nFixedVariables += 1
             if mTEPES.pStorageType[es] == 'Monthly' and mTEPES.n.ord(n) % int(8736/mTEPES.pTimeStep()) == 0:
-                OptModel.vESSInventory[p,sc,n,es].fix(mTEPES.pInitialInventory[es])
+                OptModel.vESSInventory[p,sc,n,es].fix(mTEPES.pIniInventory[p,sc,n,es])
                 nFixedVariables += 1
 
     if mTEPES.pIndHydroTopology == 1:
-        # fixing the reservoir volume at the end of the following pCycleWaterStep (daily, weekly, monthly) if between storage limits, i.e., for daily reservoir is fixed at the end of the week, for weekly reservoir is fixed at the end of the month, for monthly reservoir is fixed at the end of the year
+        # fixing the reservoir volume at the end of the following pCycleWaterStep (daily, weekly, monthly) if between storage limits, i.e.,
+        # for daily reservoir is fixed at the end of the week, for weekly reservoir is fixed at the end of the month, for monthly reservoir is fixed at the end of the year
         for p,sc,n,rs in mTEPES.psnrs:
-            if mTEPES.pInitialVolume[rs] >= mTEPES.pMinVolume[p,sc,n,rs] and mTEPES.pInitialVolume[rs] <= mTEPES.pMaxVolume[p,sc,n,rs] and rs not in mTEPES.rn:
+            if rs not in mTEPES.rn:
                 if mTEPES.pReservoirType[rs] == 'Hourly'  and mTEPES.n.ord(n) % int(  24/mTEPES.pTimeStep()) == 0:
-                    OptModel.vReservoirVolume[p,sc,n,rs].fix(mTEPES.pInitialVolume[rs])
+                    OptModel.vReservoirVolume[p,sc,n,rs].fix(mTEPES.pIniVolume[p,sc,n,rs])
                     nFixedVariables += 1
                 if mTEPES.pReservoirType[rs] == 'Daily'   and mTEPES.n.ord(n) % int( 168/mTEPES.pTimeStep()) == 0:
-                    OptModel.vReservoirVolume[p,sc,n,rs].fix(mTEPES.pInitialVolume[rs])
+                    OptModel.vReservoirVolume[p,sc,n,rs].fix(mTEPES.pIniVolume[p,sc,n,rs])
                     nFixedVariables += 1
                 if mTEPES.pReservoirType[rs] == 'Weekly'  and mTEPES.n.ord(n) % int( 672/mTEPES.pTimeStep()) == 0:
-                    OptModel.vReservoirVolume[p,sc,n,rs].fix(mTEPES.pInitialVolume[rs])
+                    OptModel.vReservoirVolume[p,sc,n,rs].fix(mTEPES.pIniVolume[p,sc,n,rs])
                     nFixedVariables += 1
                 if mTEPES.pReservoirType[rs] == 'Monthly' and mTEPES.n.ord(n) % int(8736/mTEPES.pTimeStep()) == 0:
-                    OptModel.vReservoirVolume[p,sc,n,rs].fix(mTEPES.pInitialVolume[rs])
+                    OptModel.vReservoirVolume[p,sc,n,rs].fix(mTEPES.pIniVolume[p,sc,n,rs])
                     nFixedVariables += 1
 
     for p,sc,n,ec in mTEPES.psnec:
@@ -2162,6 +2165,12 @@ def SettingUpVariables(OptModel, mTEPES):
             if sum((mTEPES.pMaxPower[p,sc,n2,g] - mTEPES.pMinEnergy[p,sc,n2,g])*mTEPES.pDuration[n2]() for n2 in list(mTEPES.n2)[mTEPES.n.ord(n) - mTEPES.pEnergyTimeStep[g]:mTEPES.n.ord(n)]) < 0.0:
                 print('### Minimum energy violation ', p, sc, n, g)
                 assert (0 == 1)
+
+    # detecting reserve margin infeasibility
+    for p,ar in mTEPES.p*mTEPES.ar:
+        if sum(mTEPES.pRatedMaxPower[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]) for g in mTEPES.g if (p,g) in mTEPES.pg and (ar,g) in mTEPES.a2g) < mTEPES.pPeakDemand[p,ar] * mTEPES.pReserveMargin[p,ar]:
+            print('### Reserve margin infeasibility ', p, ar)
+            assert (0 == 1)
 
     mTEPES.nFixedVariables = Param(initialize=round(nFixedVariables), within=NonNegativeIntegers, doc='Number of fixed variables')
 

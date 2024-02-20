@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 15, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 20, 2024
 """
 
 import time
@@ -248,10 +248,10 @@ def GenerationOperationModelFormulationInvestment(OptModel, mTEPES, pIndLogConso
         print('eUninstalGenCap       ... ', len(getattr(OptModel, 'eUninstalGenCap_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
 
     def eAdequacyReserveMargin(OptModel,ar):
-        if mTEPES.pReserveMargin[p,ar] and st == mTEPES.Last_st and sum(1 for g in mTEPES.g if (ar,g) in mTEPES.a2g) and sum(mTEPES.pRatedMaxPower[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]) for g in mTEPES.g if (ar,g) in mTEPES.a2g and g not in (mTEPES.gc or mTEPES.gd)) <= mTEPES.pPeakDemand[p,ar] * mTEPES.pReserveMargin[p,ar]:
-            return ((sum(                                       mTEPES.pRatedMaxPower[g ] * mTEPES.pAvailability[g ]() / (1.0-mTEPES.pEFOR[g ]) for g  in mTEPES.g  if (ar,g ) in mTEPES.a2g and g not in (mTEPES.gc or mTEPES.gd)) +
-                     sum(   OptModel.vGenerationInvest[p,gc]  * mTEPES.pRatedMaxPower[gc] * mTEPES.pAvailability[gc]() / (1.0-mTEPES.pEFOR[gc]) for gc in mTEPES.gc if (ar,gc) in mTEPES.a2g                                      ) +
-                     sum((1-OptModel.vGenerationRetire[p,gd]) * mTEPES.pRatedMaxPower[gd] * mTEPES.pAvailability[gd]() / (1.0-mTEPES.pEFOR[gd]) for gd in mTEPES.gd if (ar,gd) in mTEPES.a2g                                      ) ) >= mTEPES.pPeakDemand[p,ar] * mTEPES.pReserveMargin[p,ar])
+        if mTEPES.pReserveMargin[p,ar] and st == mTEPES.Last_st and sum(1 for gc in mTEPES.gc if (ar,gc) in mTEPES.a2g) and sum(mTEPES.pRatedMaxPower[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]) for g in mTEPES.g if (ar,g) in mTEPES.a2g and g not in (mTEPES.gc or mTEPES.gd)) <= mTEPES.pPeakDemand[p,ar] * mTEPES.pReserveMargin[p,ar]:
+            return ((sum(                                       mTEPES.pRatedMaxPower[g ] * mTEPES.pAvailability[g ]() / (1.0-mTEPES.pEFOR[g ]) for g  in mTEPES.g  if (p,g ) in mTEPES.pg  and (ar,g ) in mTEPES.a2g and g not in (mTEPES.gc or mTEPES.gd)) +
+                     sum(   OptModel.vGenerationInvest[p,gc]  * mTEPES.pRatedMaxPower[gc] * mTEPES.pAvailability[gc]() / (1.0-mTEPES.pEFOR[gc]) for gc in mTEPES.gc if (p,gc) in mTEPES.pgc and (ar,gc) in mTEPES.a2g                                      ) +
+                     sum((1-OptModel.vGenerationRetire[p,gd]) * mTEPES.pRatedMaxPower[gd] * mTEPES.pAvailability[gd]() / (1.0-mTEPES.pEFOR[gd]) for gd in mTEPES.gd if (p,gd) in mTEPES.pgd and (ar,gd) in mTEPES.a2g                                      ) ) >= mTEPES.pPeakDemand[p,ar] * mTEPES.pReserveMargin[p,ar])
         else:
             return Constraint.Skip
     setattr(OptModel, 'eAdequacyReserveMargin_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.ar, rule=eAdequacyReserveMargin, doc='system adequacy reserve margin [p.u.]'))
@@ -628,7 +628,7 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
         print('eChargeOutflows       ... ', len(getattr(OptModel, 'eChargeOutflows_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
 
     def eEnergyOutflows(OptModel,n,es):
-        if (p,sc,es) in mTEPES.eo and (p,sc,es) in mTEPES.pses:
+        if (p,sc,es) in mTEPES.eo:
             return sum((OptModel.vEnergyOutflows[p,sc,n2,es] - mTEPES.pEnergyOutflows[p,sc,n2,es])*mTEPES.pDuration[n2] for n2 in list(mTEPES.n2)[mTEPES.n.ord(n) - mTEPES.pOutflowsTimeStep[es]:mTEPES.n.ord(n)]) == 0.0
         else:
             return Constraint.Skip
@@ -751,7 +751,7 @@ def GenerationOperationModelFormulationReservoir(OptModel, mTEPES, pIndLogConsol
         print('ePmpReserveDwIfEnergy ... ', len(getattr(OptModel, 'ePmpReserveDwIfEnergy_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
 
     def eHydroInventory(OptModel,n,rs):
-        if (p,rs) in mTEPES.prs:
+        if (p,rs) in mTEPES.prs and sum(1 for h in mTEPES.h if (rs,h) in mTEPES.r2h or (h,rs) in mTEPES.h2r or (rs,h) in mTEPES.r2p or (h,rs) in mTEPES.p2r):
             if   (st,n) in mTEPES.s2n and mTEPES.n.ord(n) == mTEPES.pCycleWaterStep[rs]:
                 if rs not in mTEPES.rn:
                     return (mTEPES.pIniVolume[p,sc,n,rs]                                                   + sum(mTEPES.pDuration[n2]*(mTEPES.pHydroInflows[p,sc,n2,rs]*0.0036 - OptModel.vHydroOutflows[p,sc,n2,rs]*0.0036 - sum(OptModel.vTotalOutput[p,sc,n2,h]/mTEPES.pProductionFunction[h] for h in mTEPES.h if (rs,h) in mTEPES.r2h) + sum(OptModel.vTotalOutput[p,sc,n2,h]/mTEPES.pProductionFunction[h] for h in mTEPES.h if (h,rs) in mTEPES.h2r) + sum(mTEPES.pEfficiency[h]*OptModel.vESSTotalCharge[p,sc,n2,h]/mTEPES.pProductionFunction[h] for h in mTEPES.h if (rs,h) in mTEPES.r2p) - sum(mTEPES.pEfficiency[h]*OptModel.vESSTotalCharge[p,sc,n2,h]/mTEPES.pProductionFunction[h] for h in mTEPES.h if (h,rs) in mTEPES.p2r)) for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pCycleWaterStep[rs]:mTEPES.n.ord(n)]) == OptModel.vReservoirVolume[p,sc,n,rs] + OptModel.vReservoirSpillage[p,sc,n,rs] - sum(OptModel.vReservoirSpillage[p,sc,n,rsr] for rsr in mTEPES.rs if (rsr,rs) in mTEPES.r2r))
@@ -772,7 +772,7 @@ def GenerationOperationModelFormulationReservoir(OptModel, mTEPES, pIndLogConsol
         print('eHydroInventory       ... ', len(getattr(OptModel, 'eHydroInventory_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
 
     def eHydroOutflows(OptModel,n,rs):
-        if (p,sc,rs) in mTEPES.ro and (p,rs) in mTEPES.prs:
+        if (p,sc,rs) in mTEPES.ro:
             return sum((OptModel.vHydroOutflows[p,sc,n2,rs] - mTEPES.pHydroOutflows[p,sc,n2,rs])*mTEPES.pDuration[n2] for n2 in list(mTEPES.n2)[mTEPES.n.ord(n) - mTEPES.pWaterOutTimeStep[rs]:mTEPES.n.ord(n)]) == 0.0
         else:
             return Constraint.Skip

@@ -1,8 +1,12 @@
 Change Log
 =============
 
-[4.15.7] - 2024-02-19
+[4.15.7] - 2024-02-20
 ----------------------
+- [FIXED] initialization of the set of load levels up to the current stage
+- [CHANGED] if initial inventory is out of bounds, fix it to the closest bound
+- [CHANGED] detect reserve margin feasibility
+- [CHANGED] reserve margin constraint is not formulated if there are no candidate generation units
 - [CHANGED] time reduction in outputting results
 - [CHANGED] add a small tolerance to avoid pumping/charging with curtailment/spillage
 - [FIXED] clean up output results module
