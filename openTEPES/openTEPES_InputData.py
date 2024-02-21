@@ -589,7 +589,6 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     if pIndHydroTopology == 1:
         mTEPES.rn = Set(initialize=mTEPES.rs,               ordered=False, doc='candidate  reservoirs'         , filter=lambda mTEPES,rs      :  rs     in mTEPES.rs  and pRsrInvestCost      [rs] >  0.0 and                                                     pPeriodIniRsr[rs]  <= mTEPES.p.last() and pPeriodFinRsr[rs]  >= mTEPES.p.first())
     else:
-        mTEPES.rs = Set(initialize=[],                      ordered=False, doc='all input reservoirs')
         mTEPES.rn = Set(initialize=[],                      ordered=False, doc='candidate reservoirs')
     if pIndHydrogen      == 1:
         mTEPES.pn = Set(initialize=dfNetworkHydrogen.index, ordered=False, doc='all input hydrogen pipes'                                                                                          )
