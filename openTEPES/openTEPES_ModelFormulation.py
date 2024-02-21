@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 20, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 21, 2024
 """
 
 import time
@@ -18,7 +18,7 @@ def TotalObjectiveFunction(OptModel, mTEPES, pIndLogConsole):
     OptModel.eTotalSCost = Objective(rule=eTotalSCost, sense=minimize, doc='total system cost [MEUR]')
 
     def eTotalTCost(OptModel):
-        return OptModel.vTotalSCost == OptModel.vTotalICost + sum(mTEPES.pDiscountedWeight[p] * mTEPES.pScenProb[p,sc] * (OptModel.vTotalGCost[p,sc,n] + OptModel.vTotalCCost[p,sc,n] + OptModel.vTotalECost[p,sc,n] + OptModel.vTotalRCost[p,sc,n]) for p,sc,n in mTEPES.psn)
+        return OptModel.vTotalSCost == OptModel.vTotalICost + sum(mTEPES.pDiscountedWeight[p] * mTEPES.pScenProb[p,sc] * (OptModel.vTotalGCost[p,sc,n] + OptModel.vTotalCCost[p,sc,n] + OptModel.vTotalECost[p,sc,n] + OptModel.vTotalRCost[p,sc,n] + OptModel.vTotalNCost[p,sc,n]) for p,sc,n in mTEPES.psn)
     OptModel.eTotalTCost = Constraint(rule=eTotalTCost, doc='total system cost [MEUR]')
 
     GeneratingTime = time.time() - StartTime
@@ -177,9 +177,26 @@ def GenerationOperationModelFormulationObjFunct(OptModel, mTEPES, pIndLogConsole
             return OptModel.vTotalRCost[p,sc,n] == sum(mTEPES.pLoadLevelDuration[n] * mTEPES.pENSCost * OptModel.vENS[p,sc,n,nd] for nd in mTEPES.nd) + sum(mTEPES.pH2NSCost * OptModel.vH2NS[p,sc,n,nd] for nd in mTEPES.nd if sum(1 for el in e2n[nd]) + sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd])) + sum(mTEPES.pHeatNSCost * OptModel.vHeatNS[p,sc,n,nd] for nd in mTEPES.nd if sum(1 for hp in h2n[nd]) + sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd]))
     setattr(OptModel, 'eTotalRCost_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, rule=eTotalRCost, doc='system reliability cost [MEUR]'))
 
+    if len(mTEPES.ll):
+        # incoming and outgoing lines with losses (linl) (loutl)
+        linl  = defaultdict(list)
+        loutl = defaultdict(list)
+        for ni,nf,cc in mTEPES.ll:
+            linl [nf].append((ni,cc))
+            loutl[ni].append((nf,cc))
+
+    # the small tolerance 1e-5 is added to avoid superfluous losses with curtailment/spillage
+    def eTotalNCost(OptModel,n):
+        if mTEPES.pIndBinSingleNode() == 0 and mTEPES.pIndBinNetLosses() and len(mTEPES.ll):
+            return OptModel.vTotalNCost[p,sc,n] == sum(mTEPES.pLoadLevelDuration[n] * 1e-5 * (sum(OptModel.vLineLosses[p,sc,n,nd,nf,cc] for nf,cc in loutl[nd] if (p,nd,nf,cc) in mTEPES.pll) +
+                                                                                              sum(OptModel.vLineLosses[p,sc,n,ni,nd,cc] for ni,cc in linl [nd] if (p,ni,nd,cc) in mTEPES.pll)))
+        else:
+            return Constraint.Skip
+    setattr(OptModel, 'eTotalNCost_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, rule=eTotalNCost, doc='system variable network operation cost [MEUR]'))
+
     GeneratingTime = time.time() - StartTime
     if pIndLogConsole == 1:
-        print('Generating operation  o.f.             ... ', round(GeneratingTime), 's')
+        print('Operation cost        o.f.             ... ', round(GeneratingTime), 's')
 
 
 def GenerationOperationModelFormulationInvestment(OptModel, mTEPES, pIndLogConsole, p, sc, st):

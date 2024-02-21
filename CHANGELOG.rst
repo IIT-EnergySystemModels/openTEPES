@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.15.7] - 2024-02-20
+[4.15.7] - 2024-02-21
 ----------------------
+- [CHANGED] added a epsilon penalty in the o.f. to ohmic losses to avoid losses with spillage/curtailment
 - [FIXED] initialization of the set of load levels up to the current stage
 - [CHANGED] if initial inventory is out of bounds, fix it to the closest bound
 - [CHANGED] detect reserve margin feasibility
