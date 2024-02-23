@@ -21,14 +21,15 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
     Solver = SolverFactory(SolverName)                                                       # select solver
     if SolverName == 'gurobi':
         Solver.options['LogFile'       ] = _path+'/openTEPES_gurobi_'+CaseName+'.log'
-        # Solver.options['IISFile'     ] = _path+'/openTEPES_gurobi_'+CaseName+'.ilp'        # should be uncommented to show results of IIS
+        # Solver.options['SolutionTarget'] = 1                                                 # optimal solution with or without basic solutions
         Solver.options['Method'        ] = 2                                                 # barrier method
+        Solver.options['Crossover'     ] = -1
         # Solver.options['MIPFocus'      ] = 3
         # Solver.options['Presolve'      ] = 2
         # Solver.options['RINS'          ] = 100
-        Solver.options['Crossover'     ] = -1
         # Solver.options['BarConvTol'    ] = 1e-9
         # Solver.options['BarQCPConvTol' ] = 0.025
+        # Solver.options['IISFile'     ] = _path+'/openTEPES_gurobi_'+CaseName+'.ilp'        # should be uncommented to show results of IIS
         Solver.options['MIPGap'        ] = 0.01
         Solver.options['Threads'       ] = int((psutil.cpu_count(logical=True) + psutil.cpu_count(logical=False))/2)
         Solver.options['TimeLimit'     ] =    36000
@@ -73,20 +74,20 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
 
     # continuous investment decisions are fixed to their optimal values
     for gc in mTEPES.gc:
-        OptModel.vGenerationInvest[p,gc].fix(        OptModel.vGenerationInvest[p,gc]())
+        OptModel.vGenerationInvest[p,gc].fix(        OptModel.vGenerationInvest[p,gc      ]())
     for gd in mTEPES.gd:
-        OptModel.vGenerationRetire[p,gd].fix(        OptModel.vGenerationRetire[p,gd]())
+        OptModel.vGenerationRetire[p,gd].fix(        OptModel.vGenerationRetire[p,gd      ]())
     if mTEPES.pIndHydroTopology == 1:
         for rc in mTEPES.rn:
-            OptModel.vReservoirInvest[p,rc].fix(     OptModel.vReservoirInvest [p,rc]())
+            OptModel.vReservoirInvest[p,rc].fix(     OptModel.vReservoirInvest [p,rc      ]())
     for ni,nf,cc in mTEPES.lc:
-        OptModel.vNetworkInvest[p,ni,nf,cc].fix(     OptModel.vNetworkInvest [p,ni,nf,cc]())
+        OptModel.vNetworkInvest[p,ni,nf,cc].fix(     OptModel.vNetworkInvest   [p,ni,nf,cc]())
     if mTEPES.pIndHydrogen == 1:
         for ni,nf,cc in mTEPES.pc:
-            OptModel.vH2PipeInvest  [p,ni,nf,cc].fix(OptModel.vH2PipeInvest  [p,ni,nf,cc]())
+            OptModel.vH2PipeInvest  [p,ni,nf,cc].fix(OptModel.vH2PipeInvest    [p,ni,nf,cc]())
     if mTEPES.pIndHeat == 1:
         for ni,nf,cc in mTEPES.hc:
-            OptModel.vHeatPipeInvest[p,ni,nf,cc].fix(OptModel.vHeatPipeInvest[p,ni,nf,cc]())
+            OptModel.vHeatPipeInvest[p,ni,nf,cc].fix(OptModel.vHeatPipeInvest  [p,ni,nf,cc]())
 
     if idx > 0:
         OptModel.dual = Suffix(direction=Suffix.IMPORT_EXPORT)

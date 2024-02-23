@@ -228,7 +228,7 @@ A description of the data included in the file ``oT_Data_Emission.csv`` follows:
 ==============  ==============  =============  ===========================================================  =====
 Identifier      Identifier      Header         Description
 ==============  ==============  =============  ===========================================================  =====
-Period          Area            CO2Emission    Maximum CO2 emission for each period, scenario, and area     MtCO2
+Period          Area            CO2Emission    Maximum CO2 emission for each period and area     MtCO2
 ==============  ==============  =============  ===========================================================  =====
 
 If no value is introduced for an area, the CO2 emission limit is considered infinite.
@@ -241,7 +241,7 @@ A description of the data included in the file ``oT_Data_RESEnergy.csv`` follows
 ==============  ==============  =============  ===========================================================  =====
 Identifier      Identifier      Header         Description
 ==============  ==============  =============  ===========================================================  =====
-Period          Area            RESEnergy      Minimum RES energy for each period, scenario, and area       GWh
+Period          Area            RESEnergy      Minimum RES energy for each period and area       GWh
 ==============  ==============  =============  ===========================================================  =====
 
 If no value is introduced for an area, the RES energy limit is considered 0.
