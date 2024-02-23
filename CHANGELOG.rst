@@ -1,7 +1,7 @@
 Change Log
 =============
 
-[4.15.7] - 2024-02-21
+[4.15.7] - 2024-02-23
 ----------------------
 - [CHANGED] tighten formulation of second charge/discharge block
 - [CHANGED] added a epsilon penalty in the o.f. to ohmic losses to avoid losses with spillage/curtailment

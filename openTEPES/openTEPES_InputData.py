@@ -1244,7 +1244,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
 
     mTEPES.pReserveMargin        = Param(mTEPES.par,           initialize=pReserveMargin.to_dict()            , within=NonNegativeReals,    doc='Adequacy reserve margin'                             )
     mTEPES.pEmission             = Param(mTEPES.par,           initialize=pEmission.to_dict()                 , within=NonNegativeReals,    doc='Maximum CO2 emission'                                )
-    mTEPES.pRESEnergy            = Param(mTEPES.par,           initialize=pRESEnergy.to_dict()                , within=NonNegativeReals,    doc='Minimum RES energy'                                )
+    mTEPES.pRESEnergy            = Param(mTEPES.par,           initialize=pRESEnergy.to_dict()                , within=NonNegativeReals,    doc='Minimum RES energy'                                  )
     mTEPES.pPeakDemand           = Param(mTEPES.par,           initialize=pPeakDemand.to_dict()               , within=NonNegativeReals,    doc='Peak electric demand'                                )
     mTEPES.pDemand               = Param(mTEPES.psnnd,         initialize=pDemand.stack().to_dict()           , within=           Reals,    doc='Electric demand'                                     )
     mTEPES.pDemandAbs            = Param(mTEPES.psnnd,         initialize=pDemandAbs.stack().to_dict()        , within=NonNegativeReals,    doc='Electric demand'                                     )
@@ -1491,8 +1491,8 @@ def SettingUpVariables(OptModel, mTEPES):
     OptModel.vENS                     = Var(mTEPES.psnnd, within=NonNegativeReals,                 doc='energy not served in node                        [GW]')
 
     if mTEPES.pIndHydroTopology == 1:
-        OptModel.vHydroInflows        = Var(mTEPES.psnrc, within=NonNegativeReals,                 doc='unscheduled inflows  of candidate hydro units    [GW]')
-        OptModel.vHydroOutflows       = Var(mTEPES.psnrs, within=NonNegativeReals,                 doc='scheduled   outflows of all       hydro units    [GW]')
+        OptModel.vHydroInflows        = Var(mTEPES.psnrc, within=NonNegativeReals,                 doc='unscheduled inflows  of candidate hydro units  [m3/s]')
+        OptModel.vHydroOutflows       = Var(mTEPES.psnrs, within=NonNegativeReals,                 doc='scheduled   outflows of all       hydro units  [m3/s]')
         OptModel.vReservoirVolume     = Var(mTEPES.psnrs, within=NonNegativeReals,                 doc='Reservoir volume                                [hm3]')
         OptModel.vReservoirSpillage   = Var(mTEPES.psnrs, within=NonNegativeReals,                 doc='Reservoir spillage                              [hm3]')
 
