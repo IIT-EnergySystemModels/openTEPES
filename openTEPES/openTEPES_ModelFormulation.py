@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 21, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 23, 2024
 """
 
 import time
@@ -592,7 +592,7 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
 
     def eMinCharge(OptModel,n,eh):
         if sum(mTEPES.pOperReserveUp[p,sc,n,ar] for ar in a2e[eh]) and mTEPES.pMaxCharge[p,sc,n,eh] and mTEPES.pIndOperReserve[eh] == 0 and (p,eh) in mTEPES.peh:
-            return (OptModel.vCharge2ndBlock[p,sc,n,eh] - OptModel.vESSReserveUp  [p,sc,n,eh]) / mTEPES.pMaxCharge2ndBlock[p,sc,n,eh] >= 0.0
+            return  OptModel.vCharge2ndBlock[p,sc,n,eh] - OptModel.vESSReserveUp  [p,sc,n,eh]                                         >= 0.0
         else:
             return Constraint.Skip
     setattr(OptModel, 'eMinCharge_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.eh, rule=eMinCharge, doc='min charge of an ESS [p.u.]'))
@@ -815,8 +815,10 @@ def GenerationOperationModelFormulationCommitment(OptModel, mTEPES, pIndLogConso
             a2n[nr].append(ar)
 
     def eMaxOutput2ndBlock(OptModel,n,nr):
-        if mTEPES.pMaxPower2ndBlock[p,sc,n,nr] and (p,nr) in mTEPES.pnr:
-            return (OptModel.vOutput2ndBlock[p,sc,n,nr] + OptModel.vReserveUp  [p,sc,n,nr])     / mTEPES.pMaxPower2ndBlock[p,sc,n,nr] <= OptModel.vCommitment[p,sc,n,nr]
+        if mTEPES.pMaxPower2ndBlock[p,sc,n,nr] and (p,nr) in mTEPES.pnr and p != mTEPES.p.last():
+            return (OptModel.vOutput2ndBlock[p,sc,n,nr] + OptModel.vReserveUp  [p,sc,n,nr]) / mTEPES.pMaxPower2ndBlock[p,sc,n,nr] <= OptModel.vCommitment[p,sc,n,nr] - OptModel.vStartUp[p,sc,n,nr] - OptModel.vShutDown[p,sc,mTEPES.n.next(n),nr]
+        if mTEPES.pMaxPower2ndBlock[p,sc,n,nr] and (p,nr) in mTEPES.pnr and p == mTEPES.p.last():
+            return (OptModel.vOutput2ndBlock[p,sc,n,nr] + OptModel.vReserveUp  [p,sc,n,nr]) / mTEPES.pMaxPower2ndBlock[p,sc,n,nr] <= OptModel.vCommitment[p,sc,n,nr] - OptModel.vStartUp[p,sc,n,nr]
         else:
             return Constraint.Skip
     setattr(OptModel, 'eMaxOutput2ndBlock_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.nr, rule=eMaxOutput2ndBlock, doc='max output of the second block of a committed unit [p.u.]'))
@@ -826,7 +828,7 @@ def GenerationOperationModelFormulationCommitment(OptModel, mTEPES, pIndLogConso
 
     def eMinOutput2ndBlock(OptModel,n,nr):
         if mTEPES.pMaxPower2ndBlock[p,sc,n,nr] and (p,nr) in mTEPES.pnr:
-            return (OptModel.vOutput2ndBlock[p,sc,n,nr] - OptModel.vReserveDown[p,sc,n,nr])     / mTEPES.pMaxPower2ndBlock[p,sc,n,nr] >= 0.0
+            return  OptModel.vOutput2ndBlock[p,sc,n,nr] - OptModel.vReserveDown[p,sc,n,nr]                                        >= 0.0
         else:
             return Constraint.Skip
     setattr(OptModel, 'eMinOutput2ndBlock_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.nr, rule=eMinOutput2ndBlock, doc='min output of the second block of a committed unit [p.u.]'))

@@ -421,15 +421,15 @@ Maximum and minimum output of the second block of a committed unit (all except t
 
 * G. Morales-España, J.M. Latorre, and A. Ramos "Tight and Compact MILP Formulation for the Thermal Unit Commitment Problem" IEEE Transactions on Power Systems 28 (4): 4897-4908, Nov 2013. `10.1109/TPWRS.2013.2251373 <https://doi.org/10.1109/TPWRS.2013.2251373>`_
 
-:math:`\frac{p^p_{\omega ng} + ur^p_{\omega ng}}{\overline{GP}^p_{\omega ng} - \underline{GP}^p_{\omega ng}} \leq uc^p_{\omega ng} \quad \forall p \omega ng`
+:math:`\frac{p^p_{\omega ng} + ur^p_{\omega ng}}{\overline{GP}^p_{\omega ng} - \underline{GP}^p_{\omega ng}} \leq uc^p_{\omega ng} - su^p_{\omega ng} - sd^p_{\omega,n+\nu,g} \quad \forall p \omega ng`
 
-:math:`\frac{p^p_{\omega ng} - dr^p_{\omega ng}}{\overline{GP}^p_{\omega ng} - \underline{GP}^p_{\omega ng}} \geq 0                \quad \forall p \omega ng`
+:math:`p^p_{\omega ng} - dr^p_{\omega ng} \geq 0                \quad \forall p \omega ng`
 
 Maximum and minimum charge of an ESS [p.u.] «``eMaxCharge``» «``eMinCharge``»
 
 :math:`\frac{c^p_{\omega ne} + dr'^p_{\omega ne}}{\overline{GC}^p_{\omega ne} - \underline{GC}^p_{\omega ne}} \leq 1 \quad \forall p \omega ne`
 
-:math:`\frac{c^p_{\omega ne} - ur'^p_{\omega ne}}{\overline{GC}^p_{\omega ne} - \underline{GC}^p_{\omega ne}} \geq 0 \quad \forall p \omega ne`
+:math:`c^p_{\omega ne} - ur'^p_{\omega ne} \geq 0 \quad \forall p \omega ne`
 
 Incompatibility between charge and discharge of an ESS [p.u.] «``eChargeDischarge``»
 
