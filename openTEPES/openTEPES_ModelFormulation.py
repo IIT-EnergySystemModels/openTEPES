@@ -188,8 +188,8 @@ def GenerationOperationModelFormulationObjFunct(OptModel, mTEPES, pIndLogConsole
     # the small tolerance 1e-5 is added to avoid superfluous losses with curtailment/spillage
     def eTotalNCost(OptModel,n):
         if mTEPES.pIndBinSingleNode() == 0 and mTEPES.pIndBinNetLosses() and len(mTEPES.ll):
-            return OptModel.vTotalNCost[p,sc,n] == sum(mTEPES.pLoadLevelDuration[n] * 1e-5 * (sum(OptModel.vLineLosses[p,sc,n,nd,nf,cc] for nf,cc in loutl[nd] if (p,nd,nf,cc) in mTEPES.pll) +
-                                                                                              sum(OptModel.vLineLosses[p,sc,n,ni,nd,cc] for ni,cc in linl [nd] if (p,ni,nd,cc) in mTEPES.pll)))
+            return OptModel.vTotalNCost[p,sc,n] == sum(mTEPES.pLoadLevelDuration[n] * 1e-5 * (sum(OptModel.vLineLosses[p,sc,n,nd,nf,cc] for nd,nf,cc in loutl[nd] if (p,nd,nf,cc) in mTEPES.pll) +
+                                                                                              sum(OptModel.vLineLosses[p,sc,n,ni,nd,cc] for ni,nd,cc in linl [nd] if (p,ni,nd,cc) in mTEPES.pll)))
         else:
             return Constraint.Skip
     setattr(OptModel, 'eTotalNCost_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, rule=eTotalNCost, doc='system variable network operation cost [MEUR]'))
