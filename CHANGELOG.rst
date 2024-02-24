@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.15.7] - 2024-02-23
+[4.15.7] - 2024-02-24
 ----------------------
+- [FIXED] fix typo en H2 and heat balance equations
 - [CHANGED] tighten formulation of second charge/discharge block
 - [CHANGED] added a epsilon penalty in the o.f. to ohmic losses to avoid losses with spillage/curtailment
 - [FIXED] initialization of the set of load levels up to the current stage
