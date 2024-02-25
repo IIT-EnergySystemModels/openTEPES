@@ -1496,12 +1496,6 @@ def SettingUpVariables(OptModel, mTEPES):
         OptModel.vReservoirVolume     = Var(mTEPES.psnrs, within=NonNegativeReals,                 doc='Reservoir volume                                [hm3]')
         OptModel.vReservoirSpillage   = Var(mTEPES.psnrs, within=NonNegativeReals,                 doc='Reservoir spillage                              [hm3]')
 
-    if mTEPES.pIndHydrogen == 1:
-        OptModel.vH2NS                = Var(mTEPES.psnnd, within=NonNegativeReals,                 doc='hydrogen not served in node                     [tH2]')
-
-    if mTEPES.pIndHeat == 1:
-        OptModel.vHeatNS              = Var(mTEPES.psnnd, within=NonNegativeReals,                 doc='heat     not served in node                  [Tcal/h]')
-
     if mTEPES.pIndBinGenInvest() == 0:
         OptModel.vGenerationInvest    = Var(mTEPES.pgc,   within=UnitInterval,                     doc='generation       investment decision exists in a year [0,1]')
         OptModel.vGenerationInvPer    = Var(mTEPES.pgc,   within=UnitInterval,                     doc='generation       investment decision done   in a year [0,1]')
@@ -1596,12 +1590,6 @@ def SettingUpVariables(OptModel, mTEPES):
         [OptModel.vReservoirVolume[p,sc,n,rs].setlb(mTEPES.pMinVolume   [p,sc,n,rs]) for p,sc,n,rs in mTEPES.psnrs]
         [OptModel.vReservoirVolume[p,sc,n,rs].setub(mTEPES.pMaxVolume   [p,sc,n,rs]) for p,sc,n,rs in mTEPES.psnrs]
 
-    if mTEPES.pIndHydrogen == 1:
-        [OptModel.vH2NS           [p,sc,n,nd].setub(mTEPES.pDuration[n]*mTEPES.pDemandH2Abs  [p,sc,n,nd]) for p,sc,n,nd in mTEPES.psnnd]
-
-    if mTEPES.pIndHeat == 1:
-        [OptModel.vHeatNS         [p,sc,n,nd].setub(mTEPES.pDuration[n]*mTEPES.pDemandHeatAbs[p,sc,n,nd]) for p,sc,n,nd in mTEPES.psnnd]
-
     nFixedVariables = 0
 
     # relax binary condition in generation and electric network investment decisions
@@ -1685,16 +1673,18 @@ def SettingUpVariables(OptModel, mTEPES):
     [OptModel.vTheta   [p,sc,n,nd      ].setub( mTEPES.pMaxTheta  [p,sc,n,nd]) for p,sc,n,nd       in mTEPES.psnnd]
 
     if mTEPES.pIndHydrogen == 1:
-        OptModel.vFlowH2 = Var(mTEPES.psnpa, within=Reals,            doc='pipeline flow     [tH2]')
-        [OptModel.vFlowH2[p,sc,n,ni,nf,cc].setlb(-mTEPES.pH2PipeNTCBck[ni,nf,cc])                       for p,sc,n,ni,nf,cc in mTEPES.psnpa]
-        [OptModel.vFlowH2[p,sc,n,ni,nf,cc].setub( mTEPES.pH2PipeNTCFrw[ni,nf,cc])                       for p,sc,n,ni,nf,cc in mTEPES.psnpa]
-        [OptModel.vH2NS   [p,sc,n,nd      ].setub(mTEPES.pDuration[n]()*mTEPES.pDemandH2Abs[p,sc,n,nd]) for p,sc,n,nd       in mTEPES.psnnd]
+        OptModel.vFlowH2 = Var(mTEPES.psnpa, within=Reals,            doc='pipeline flow               [tH2]')
+        OptModel.vH2NS   = Var(mTEPES.psnnd, within=NonNegativeReals, doc='hydrogen not served in node [tH2]')
+        [OptModel.vFlowH2  [p,sc,n,ni,nf,cc].setlb(-mTEPES.pH2PipeNTCBck[ni,nf,cc])                        for p,sc,n,ni,nf,cc in mTEPES.psnpa]
+        [OptModel.vFlowH2  [p,sc,n,ni,nf,cc].setub( mTEPES.pH2PipeNTCFrw[ni,nf,cc])                        for p,sc,n,ni,nf,cc in mTEPES.psnpa]
+        [OptModel.vH2NS    [p,sc,n,nd      ].setub(mTEPES.pDuration[n]()*mTEPES.pDemandH2Abs[p,sc,n,nd])   for p,sc,n,nd       in mTEPES.psnnd]
 
     if mTEPES.pIndHeat == 1:
-        OptModel.vFlowHeat = Var(mTEPES.psnpa, within=Reals,          doc='heat pipe flow [Tcal/h]')
+        OptModel.vFlowHeat = Var(mTEPES.psnpa, within=Reals,            doc='heat pipe flow          [Tcal/h]')
+        OptModel.vHeatNS   = Var(mTEPES.psnnd, within=NonNegativeReals, doc='heat not served in node [Tcal/h]')
         [OptModel.vFlowHeat[p,sc,n,ni,nf,cc].setlb(-mTEPES.pHeatPipeNTCBck[ni,nf,cc])                      for p,sc,n,ni,nf,cc in mTEPES.psnpa]
         [OptModel.vFlowHeat[p,sc,n,ni,nf,cc].setub( mTEPES.pHeatPipeNTCFrw[ni,nf,cc])                      for p,sc,n,ni,nf,cc in mTEPES.psnpa]
-        [OptModel.vHeatNS   [p,sc,n,nd     ].setub(mTEPES.pDuration[n]()*mTEPES.pDemandHeatAbs[p,sc,n,nd]) for p,sc,n,nd       in mTEPES.psnnd]
+        [OptModel.vHeatNS  [p,sc,n,nd      ].setub(mTEPES.pDuration[n]()*mTEPES.pDemandHeatAbs[p,sc,n,nd]) for p,sc,n,nd       in mTEPES.psnnd]
 
     # fix the must-run units and their output
     # must run units must produce at least their minimum output
