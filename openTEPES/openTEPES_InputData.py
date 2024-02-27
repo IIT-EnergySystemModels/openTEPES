@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 21, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 27, 2024
 """
 
 import datetime
@@ -838,23 +838,16 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         pMaxVolume = pMaxVolume.where (pMaxVolume  > 0.0, 0.0)
 
     # fuel term and constant term variable cost
-    pVarLinearVarCost   =              (dfGeneration['LinearTerm'  ] * 1e-3 * pVariableFuelCost       +dfGeneration['OMVariableCost'] * 1e-3).replace(0.0, float('nan'))
-    pVarConstantVarCost =               dfGeneration['ConstantTerm'] * 1e-6 * pVariableFuelCost.replace                                              (0.0, float('nan'))
-    pLinearVarCost      = pd.DataFrame([dfGeneration['LinearTerm'  ] * 1e-3 * dfGeneration['FuelCost']+dfGeneration['OMVariableCost'] * 1e-3]*len(pVariableFuelCost.index), index=pVariableFuelCost.index, columns=dfGeneration['FuelCost'].index)
-    pConstantVarCost    = pd.DataFrame([dfGeneration['ConstantTerm'] * 1e-6 * dfGeneration['FuelCost']                                      ]*len(pVariableFuelCost.index), index=pVariableFuelCost.index, columns=dfGeneration['FuelCost'].index)
-    pVarLinearVarCost   = pVarLinearVarCost.reindex  (sorted(pVarLinearVarCost.columns  ), axis=1)
-    pVarConstantVarCost = pVarConstantVarCost.reindex(sorted(pVarConstantVarCost.columns), axis=1)
-    pLinearVarCost      = pLinearVarCost.reindex     (sorted(pLinearVarCost.columns     ), axis=1)
-    pConstantVarCost    = pConstantVarCost.reindex   (sorted(pConstantVarCost.columns   ), axis=1)
-    pLinearVarCost      = pVarLinearVarCost.where    (pVariableFuelCost > 0.0, pLinearVarCost  )
-    pConstantVarCost    = pVarConstantVarCost.where  (pVariableFuelCost > 0.0, pConstantVarCost)
+    pVariableFuelCost = pVariableFuelCost.replace(0.0, dfGeneration['FuelCost'])
+    pLinearVarCost    = dfGeneration['LinearTerm'  ] * 1e-3 * pVariableFuelCost + dfGeneration['OMVariableCost'] * 1e-3
+    pConstantVarCost  = dfGeneration['ConstantTerm'] * 1e-6 * pVariableFuelCost
+    pLinearVarCost    = pLinearVarCost.reindex  (sorted(pLinearVarCost.columns  ), axis=1)
+    pConstantVarCost  = pConstantVarCost.reindex(sorted(pConstantVarCost.columns), axis=1)
 
     # variable emission cost
-    pVarEmissionCost    =              (dfGeneration['CO2EmissionRate'] * 1e-3 * pVariableEmissionCost).replace(0.0, float('nan'))
-    pEmissionVarCost    = pd.DataFrame([dfGeneration['CO2EmissionRate'] * 1e-3 * pCO2Cost]*len(pVariableEmissionCost.index), index=pVariableEmissionCost.index, columns=dfGeneration['CO2EmissionRate'].index)
-    pVarEmissionCost    = pVarEmissionCost.reindex(sorted(pVarEmissionCost.columns), axis=1)
-    pEmissionVarCost    = pEmissionVarCost.reindex(sorted(pEmissionVarCost.columns), axis=1)
-    pEmissionVarCost    = pVarEmissionCost.where  (pVariableEmissionCost > 0.0, pEmissionVarCost)
+    pVariableEmissionCost = pVariableEmissionCost.replace(0.0, pCO2Cost)
+    pEmissionVarCost      = pEmissionRate * 1e-3 * pVariableEmissionCost
+    pEmissionVarCost      = pEmissionVarCost.reindex(sorted(pEmissionVarCost.columns), axis=1)
 
     # minimum up- and downtime and maximum shift time converted to an integer number of time steps
     pUpTime    = round(pUpTime   /pTimeStep).astype('int')
