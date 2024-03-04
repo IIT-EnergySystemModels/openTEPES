@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 27, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 04, 2024
 """
 
 import time
@@ -20,10 +20,10 @@ def PiePlots(period, scenario, df, Category, Value):
     df                    = df.loc[(df['level_0'] == period) & (df['level_1'] == scenario)]
     df                    = df.set_index(['level_0','level_1','level_2','level_3'])
     OutputToPlot          = df.reset_index().groupby(['level_3']).sum(numeric_only=True)
-    OutputToPlot['%']     = (OutputToPlot[0] / OutputToPlot[0].sum()) * 100.0
+    OutputToPlot['%'    ] = (OutputToPlot[0] / OutputToPlot[0].sum()) * 100.0
     OutputToPlot          = OutputToPlot.reset_index().rename(columns={'level_3': Category, 0: 'GWh'})
-    OutputToPlot['GWh']   = round(OutputToPlot['GWh'], 1)
-    OutputToPlot['%'  ]   = round(OutputToPlot['%'  ], 1)
+    OutputToPlot['GWh'  ] = round(OutputToPlot['GWh'], 1)
+    OutputToPlot['%'    ] = round(OutputToPlot['%'  ], 1)
     OutputToPlot          = OutputToPlot[(OutputToPlot[['GWh']] != 0).all(axis=1)]
     OutputToPlot['Label'] = [OutputToPlot[Category][i] + ' (' + str(OutputToPlot['%'][i]) + ' %' + ', ' + str(OutputToPlot['GWh'][i]) + ' GWh' + ')' for i in OutputToPlot.index]
     ComposedCategory      = Category+':N'
@@ -751,9 +751,9 @@ def NetworkH2OperationResults(DirName, CaseName, OptModel, mTEPES):
         loc_df['Size'  ] = 15.0
 
         for nd,zn in mTEPES.ndzn:
-            loc_df['Lon'   ][nd] = mTEPES.pNodeLon[nd]
-            loc_df['Zone'  ][nd] = zn
-            loc_df['Demand'][nd] = mTEPES.pDemandH2[p,sc,n,nd]
+            loc_df.loc[nd,'Lon'   ] = mTEPES.pNodeLon[nd]
+            loc_df.loc[nd,'Zone'  ] = zn
+            loc_df.loc[nd,'Demand'] = mTEPES.pDemandH2[p,sc,n,nd]
 
         loc_df = loc_df.reset_index().rename(columns={'Type': 'Scenario'}, inplace=False)
 
@@ -769,52 +769,52 @@ def NetworkH2OperationResults(DirName, CaseName, OptModel, mTEPES):
                                      'NTCBck': pd.Series(data=[mTEPES.pH2PipeNTCBck[i] + pEpsilon for i in mTEPES.pa], index=mTEPES.pa)}, index=mTEPES.pa)
         line_df['vFlowH2'    ] = 0.0
         line_df['utilization'] = 0.0
-        line_df['color'      ] = 0.0
+        line_df['color'      ] = ''
         line_df['width'      ] = 3.0
         line_df['lon'        ] = 0.0
         line_df['lat'        ] = 0.0
-        line_df['ni'         ] = 0.0
-        line_df['nf'         ] = 0.0
-        line_df['cc'         ] = 0.0
+        line_df['ni'         ] = ''
+        line_df['nf'         ] = ''
+        line_df['cc'         ] = 0
 
-        line_df = line_df.groupby(level=[0,1]).sum(numeric_only=True)
+        line_df = line_df.groupby(level=[0,1]).sum(numeric_only=False)
         ncolors = 11
         colors = list(Color('lightgreen').range_to(Color('darkred'), ncolors))
         colors = ['rgb'+str(x.rgb) for x in colors]
 
         for ni,nf,cc in mTEPES.pa:
-            line_df['vFlowH2'    ][ni,nf] += OutputToFile['tH2'][p,sc,n,ni,nf,cc]
-            line_df['utilization'][ni,nf]  = max(line_df['vFlowH2'][ni,nf]/line_df['NTCFrw'][ni,nf],-line_df['vFlowH2'][ni,nf]/line_df['NTCBck'][ni,nf])*100.0
-            line_df['lon'        ][ni,nf]  = (mTEPES.pNodeLon[ni]+mTEPES.pNodeLon[nf]) * 0.5
-            line_df['lat'        ][ni,nf]  = (mTEPES.pNodeLat[ni]+mTEPES.pNodeLat[nf]) * 0.5
-            line_df['ni'         ][ni,nf]  = ni
-            line_df['nf'         ][ni,nf]  = nf
-            line_df['cc'         ][ni,nf] += 1
+            line_df.loc[(ni,nf),'vFlowH2'    ] += OutputToFile['tH2'][p,sc,n,ni,nf,cc]
+            line_df.loc[(ni,nf),'utilization']  = max(line_df.loc[(ni,nf),'vFlowH2']/line_df.loc[(ni,nf),'NTCFrw'],-line_df.loc[(ni,nf),'vFlowH2']/line_df.loc[(ni,nf),'NTCBck'])*100.0
+            line_df.loc[(ni,nf),'lon'        ]  = (mTEPES.pNodeLon[ni]+mTEPES.pNodeLon[nf]) * 0.5
+            line_df.loc[(ni,nf),'lat'        ]  = (mTEPES.pNodeLat[ni]+mTEPES.pNodeLat[nf]) * 0.5
+            line_df.loc[(ni,nf),'ni'         ]  = ni
+            line_df.loc[(ni,nf),'nf'         ]  = nf
+            line_df.loc[(ni,nf),'cc'         ] += 1
 
-            if   0.0 <= line_df['utilization'][ni,nf] <= 10.0:
-                line_df['color'][ni,nf] = colors[0]
-            if  10.0 <  line_df['utilization'][ni,nf] <= 20.0:
-                line_df['color'][ni,nf] = colors[1]
-            if  20.0 <  line_df['utilization'][ni,nf] <= 30.0:
-                line_df['color'][ni,nf] = colors[2]
-            if  30.0 <  line_df['utilization'][ni,nf] <= 40.0:
-                line_df['color'][ni,nf] = colors[3]
-            if  40.0 <  line_df['utilization'][ni,nf] <= 50.0:
-                line_df['color'][ni,nf] = colors[4]
-            if  50.0 <  line_df['utilization'][ni,nf] <= 60.0:
-                line_df['color'][ni,nf] = colors[5]
-            if  60.0 <  line_df['utilization'][ni,nf] <= 70.0:
-                line_df['color'][ni,nf] = colors[6]
-            if  70.0 <  line_df['utilization'][ni,nf] <= 80.0:
-                line_df['color'][ni,nf] = colors[7]
-            if  80.0 <  line_df['utilization'][ni,nf] <= 90.0:
-                line_df['color'][ni,nf] = colors[8]
-            if  90.0 <  line_df['utilization'][ni,nf] <= 100.0:
-                line_df['color'][ni,nf] = colors[9]
-            if 100.0 <  line_df['utilization'][ni,nf]:
-                line_df['color'][ni,nf] = colors[10]
+            if   0.0 <= line_df.loc[(ni,nf),'utilization'] <= 10.0:
+                line_df.loc[(ni,nf),'color'] = colors[0]
+            if  10.0 <  line_df.loc[(ni,nf),'utilization'] <= 20.0:
+                line_df.loc[(ni,nf),'color'] = colors[1]
+            if  20.0 <  line_df.loc[(ni,nf),'utilization'] <= 30.0:
+                line_df.loc[(ni,nf),'color'] = colors[2]
+            if  30.0 <  line_df.loc[(ni,nf),'utilization'] <= 40.0:
+                line_df.loc[(ni,nf),'color'] = colors[3]
+            if  40.0 <  line_df.loc[(ni,nf),'utilization'] <= 50.0:
+                line_df.loc[(ni,nf),'color'] = colors[4]
+            if  50.0 <  line_df.loc[(ni,nf),'utilization'] <= 60.0:
+                line_df.loc[(ni,nf),'color'] = colors[5]
+            if  60.0 <  line_df.loc[(ni,nf),'utilization'] <= 70.0:
+                line_df.loc[(ni,nf),'color'] = colors[6]
+            if  70.0 <  line_df.loc[(ni,nf),'utilization'] <= 80.0:
+                line_df.loc[(ni,nf),'color'] = colors[7]
+            if  80.0 <  line_df.loc[(ni,nf),'utilization'] <= 90.0:
+                line_df.loc[(ni,nf),'color'] = colors[8]
+            if  90.0 <  line_df.loc[(ni,nf),'utilization'] <= 100.0:
+                line_df.loc[(ni,nf),'color'] = colors[9]
+            if 100.0 <  line_df.loc[(ni,nf),'utilization']:
+                line_df.loc[(ni,nf),'color'] = colors[10]
 
-        # Rounding to decimals
+        # Rounding to decimals of the numerical columns
         line_df = line_df.round(decimals=2)
 
         return loc_df, line_df
@@ -852,7 +852,7 @@ def NetworkH2OperationResults(DirName, CaseName, OptModel, mTEPES):
 
     # Add edges
     for ni,nf,cc in mTEPES.pa:
-        fig.add_trace(go.Scattermapbox(lon=[pos_dict[ni][0], pos_dict[nf][0]], lat=[pos_dict[ni][1], pos_dict[nf][1]], mode='lines+markers', marker=dict(size=0, showscale=True, colorbar={'title': 'Utilization [%]', 'titleside': 'top', 'thickness': 8, 'ticksuffix': '%'}, colorscale=[[0, 'lightgreen'], [1, 'darkred']], cmin=0, cmax=100,), line=dict(width=line_df['width'][ni,nf], color=line_df['color'][ni,nf]), opacity=1, hoverinfo='text', textposition='middle center',))
+        fig.add_trace(go.Scattermapbox(lon=[pos_dict[ni][0], pos_dict[nf][0]], lat=[pos_dict[ni][1], pos_dict[nf][1]], mode='lines+markers', marker=dict(size=0, showscale=True, colorbar={'title': 'Utilization [%]', 'titleside': 'top', 'thickness': 8, 'ticksuffix': '%'}, colorscale=[[0, 'lightgreen'], [1, 'darkred']], cmin=0, cmax=100,), line=dict(width=line_df.loc[(ni,nf),'width'], color=line_df.loc[(ni,nf),'color']), opacity=1, hoverinfo='text', textposition='middle center',))
 
     # Add legends related to the lines
     fig.add_trace(go.Scattermapbox(lat=line_df['lat'], lon=line_df['lon'], mode='markers', marker=go.scattermapbox.Marker(size=20, sizeref=1.1, sizemode='area', color='LightSkyBlue',), opacity=0, hoverinfo='text', text='<br>Line: '+line_df['ni']+' → '+line_df['nf']+'<br># circuits: '+line_df['cc'].astype(str)+'<br>NTC Forward: '+line_df['NTCFrw'].astype(str)+'<br>NTC Backward: '+line_df['NTCBck'].astype(str)+'<br>Power flow: '+line_df['vFlowH2'].astype(str)+'<br>Utilization [%]: '+line_df['utilization'].astype(str),))
@@ -955,50 +955,50 @@ def NetworkHeatOperationResults(DirName, CaseName, OptModel, mTEPES):
                                      'NTCBck': pd.Series(data=[mTEPES.pHeatPipeNTCBck[i] + pEpsilon for i in mTEPES.ha], index=mTEPES.ha)}, index=mTEPES.ha)
         line_df['vFlowHeat'  ] = 0.0
         line_df['utilization'] = 0.0
-        line_df['color'      ] = 0.0
+        line_df['color'      ] = ''
         line_df['width'      ] = 3.0
         line_df['lon'        ] = 0.0
         line_df['lat'        ] = 0.0
-        line_df['ni'         ] = 0.0
-        line_df['nf'         ] = 0.0
-        line_df['cc'         ] = 0.0
+        line_df['ni'         ] = ''
+        line_df['nf'         ] = ''
+        line_df['cc'         ] = 0
 
-        line_df = line_df.groupby(level=[0,1]).sum(numeric_only=True)
+        line_df = line_df.groupby(level=[0,1]).sum(numeric_only=False)
         ncolors = 11
         colors = list(Color('lightgreen').range_to(Color('darkred'), ncolors))
         colors = ['rgb'+str(x.rgb) for x in colors]
 
         for ni,nf,cc in mTEPES.ha:
-            line_df['vFlowHeat'  ][ni,nf] += OutputToFile['Gcal/h'][p,sc,n,ni,nf,cc]
-            line_df['utilization'][ni,nf]  = max(line_df['vFlowHHeat'][ni,nf]/line_df['NTCFrw'][ni,nf],-line_df['vFlowHHeat'][ni,nf]/line_df['NTCBck'][ni,nf])*100.0
-            line_df['lon'        ][ni,nf]  = (mTEPES.pNodeLon[ni]+mTEPES.pNodeLon[nf]) * 0.5
-            line_df['lat'        ][ni,nf]  = (mTEPES.pNodeLat[ni]+mTEPES.pNodeLat[nf]) * 0.5
-            line_df['ni'         ][ni,nf]  = ni
-            line_df['nf'         ][ni,nf]  = nf
-            line_df['cc'         ][ni,nf] += 1
+            line_df.loc[(ni,nf),'vFlowHeat'] += OutputToFile['Gcal/h'][p,sc,n,ni,nf,cc]
+            line_df.loc[(ni,nf),'utilization']  = max(line_df.loc[(ni,nf),'vFlowHHeat']/line_df.loc[(ni,nf),'NTCFrw'],-line_df.loc[(ni,nf),'vFlowHHeat']/line_df.loc[(ni,nf),'NTCBck'])*100.0
+            line_df.loc[(ni,nf),'lon']  = (mTEPES.pNodeLon[ni]+mTEPES.pNodeLon[nf]) * 0.5
+            line_df.loc[(ni,nf),'lat']  = (mTEPES.pNodeLat[ni]+mTEPES.pNodeLat[nf]) * 0.5
+            line_df.loc[(ni,nf),'ni']  = ni
+            line_df.loc[(ni,nf),'nf']  = nf
+            line_df.loc[(ni,nf),'cc'] += 1
 
-            if   0.0 <= line_df['utilization'][ni,nf] <= 10.0:
-                line_df['color'][ni,nf] = colors[0]
-            if  10.0 <  line_df['utilization'][ni,nf] <= 20.0:
-                line_df['color'][ni,nf] = colors[1]
-            if  20.0 <  line_df['utilization'][ni,nf] <= 30.0:
-                line_df['color'][ni,nf] = colors[2]
-            if  30.0 <  line_df['utilization'][ni,nf] <= 40.0:
-                line_df['color'][ni,nf] = colors[3]
-            if  40.0 <  line_df['utilization'][ni,nf] <= 50.0:
-                line_df['color'][ni,nf] = colors[4]
-            if  50.0 <  line_df['utilization'][ni,nf] <= 60.0:
-                line_df['color'][ni,nf] = colors[5]
-            if  60.0 <  line_df['utilization'][ni,nf] <= 70.0:
-                line_df['color'][ni,nf] = colors[6]
-            if  70.0 <  line_df['utilization'][ni,nf] <= 80.0:
-                line_df['color'][ni,nf] = colors[7]
-            if  80.0 <  line_df['utilization'][ni,nf] <= 90.0:
-                line_df['color'][ni,nf] = colors[8]
-            if  90.0 <  line_df['utilization'][ni,nf] <= 100.0:
-                line_df['color'][ni,nf] = colors[9]
-            if 100.0 <  line_df['utilization'][ni,nf]:
-                line_df['color'][ni,nf] = colors[10]
+            if   0.0 <= line_df.loc[(ni,nf),'utilization'] <= 10.0:
+                line_df.loc[(ni,nf),'color'] = colors[0]
+            if  10.0 <  line_df.loc[(ni,nf),'utilization'] <= 20.0:
+                line_df.loc[(ni,nf),'color'] = colors[1]
+            if  20.0 <  line_df.loc[(ni,nf),'utilization'] <= 30.0:
+                line_df.loc[(ni,nf),'color'] = colors[2]
+            if  30.0 <  line_df.loc[(ni,nf),'utilization'] <= 40.0:
+                line_df.loc[(ni,nf),'color'] = colors[3]
+            if  40.0 <  line_df.loc[(ni,nf),'utilization'] <= 50.0:
+                line_df.loc[(ni,nf),'color'] = colors[4]
+            if  50.0 <  line_df.loc[(ni,nf),'utilization'] <= 60.0:
+                line_df.loc[(ni,nf),'color'] = colors[5]
+            if  60.0 <  line_df.loc[(ni,nf),'utilization'] <= 70.0:
+                line_df.loc[(ni,nf),'color'] = colors[6]
+            if  70.0 <  line_df.loc[(ni,nf),'utilization'] <= 80.0:
+                line_df.loc[(ni,nf),'color'] = colors[7]
+            if  80.0 <  line_df.loc[(ni,nf),'utilization'] <= 90.0:
+                line_df.loc[(ni,nf),'color'] = colors[8]
+            if  90.0 <  line_df.loc[(ni,nf),'utilization'] <= 100.0:
+                line_df.loc[(ni,nf),'color'] = colors[9]
+            if 100.0 <  line_df.loc[(ni,nf),'utilization']:
+                line_df.loc[(ni,nf),'color'] = colors[10]
 
         # Rounding to decimals
         line_df = line_df.round(decimals=2)
@@ -1038,7 +1038,7 @@ def NetworkHeatOperationResults(DirName, CaseName, OptModel, mTEPES):
 
     # Add edges
     for ni,nf,cc in mTEPES.ha:
-        fig.add_trace(go.Scattermapbox(lon=[pos_dict[ni][0], pos_dict[nf][0]], lat=[pos_dict[ni][1], pos_dict[nf][1]], mode='lines+markers', marker=dict(size=0, showscale=True, colorbar={'title': 'Utilization [%]', 'titleside': 'top', 'thickness': 8, 'ticksuffix': '%'}, colorscale=[[0, 'lightgreen'], [1, 'darkred']], cmin=0, cmax=100,), line=dict(width=line_df['width'][ni,nf], color=line_df['color'][ni,nf]), opacity=1, hoverinfo='text', textposition='middle center',))
+        fig.add_trace(go.Scattermapbox(lon=[pos_dict[ni][0], pos_dict[nf][0]], lat=[pos_dict[ni][1], pos_dict[nf][1]], mode='lines+markers', marker=dict(size=0, showscale=True, colorbar={'title': 'Utilization [%]', 'titleside': 'top', 'thickness': 8, 'ticksuffix': '%'}, colorscale=[[0, 'lightgreen'], [1, 'darkred']], cmin=0, cmax=100,), line=dict(width=line_df.loc[(ni,nf),'width'], color=line_df.loc[(ni,nf),'color']), opacity=1, hoverinfo='text', textposition='middle center',))
 
     # Add legends related to the lines
     fig.add_trace(go.Scattermapbox(lat=line_df['lat'], lon=line_df['lon'], mode='markers', marker=go.scattermapbox.Marker(size=20, sizeref=1.1, sizemode='area', color='LightSkyBlue',), opacity=0, hoverinfo='text', text='<br>Line: '+line_df['ni']+' → '+line_df['nf']+'<br># circuits: '+line_df['cc'].astype(str)+'<br>NTC Forward: '+line_df['NTCFrw'].astype(str)+'<br>NTC Backward: '+line_df['NTCBck'].astype(str)+'<br>Power flow: '+line_df['vFlowH2'].astype(str)+'<br>Utilization [%]: '+line_df['utilization'].astype(str),))
@@ -1399,7 +1399,7 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES, pIndPlotOutput):
     OutputToFile.rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_MarginalIncrementalVariableCost_'+CaseName+'.csv', sep=',')
     IncrementalGens = pd.Series('N/A', index=pd.Index(mTEPES.psn)).to_frame(name='Generating unit')
     for p,sc,n in mTEPES.psn:
-        IncrementalGens['Generating unit'][p,sc,n] = OutputToFile.loc[[(p,sc,n)]].squeeze().idxmin()
+        IncrementalGens.loc[p,sc,n] = OutputToFile.loc[[(p,sc,n)]].squeeze().idxmin()
     IncrementalGens.rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).to_csv(_path+'/oT_Result_MarginalIncrementalGenerator_'+CaseName+'.csv', index=True, sep=',')
 
     OutputToFile = pd.Series(data=[mTEPES.pEmissionRate[g] for p,sc,n,g in sPSNG], index=pd.Index(sPSNG))
@@ -1581,7 +1581,7 @@ def CostSummaryResults(DirName, CaseName, OptModel, mTEPES):
     _path = os.path.join(DirName, CaseName)
     StartTime = time.time()
 
-    SysCost        = pd.Series(data=[                                                                                                                               OptModel.vTotalSCost()                                                                                                         ], index=[' ']   ).to_frame(name='Total          System Cost').stack()
+    SysCost        = pd.Series(data=[                                                                                                                               OptModel.vTotalSCost()                                                                                                         ], index=['']   ).to_frame(name='Total          System Cost').stack()
     GenInvCost     = pd.Series(data=[mTEPES.pDiscountedWeight[p] * sum(mTEPES.pGenInvestCost[gc  ]                                                                * OptModel.vGenerationInvest[p,gc  ]()  for gc      in mTEPES.gc                    if (p,gc) in mTEPES.pgc)     for p in mTEPES.p], index=mTEPES.p).to_frame(name='Generation Investment Cost').stack()
     GenRetCost     = pd.Series(data=[mTEPES.pDiscountedWeight[p] * sum(mTEPES.pGenRetireCost[gd  ]                                                                * OptModel.vGenerationRetire[p,gd  ]()  for gd      in mTEPES.gd                    if (p,gd) in mTEPES.pgd)     for p in mTEPES.p], index=mTEPES.p).to_frame(name='Generation Retirement Cost').stack()
     if mTEPES.pIndHydroTopology == 1:
@@ -1924,10 +1924,9 @@ def NetworkMapResults(DirName, CaseName, OptModel, mTEPES):
         loc_df['Size'  ] = 15.0
 
         for nd,zn in mTEPES.ndzn:
-            loc_df['Lon'   ][nd] = mTEPES.pNodeLon[nd]
-            # warnings
-            loc_df['Zone'  ][nd] = zn
-            loc_df['Demand'][nd] = mTEPES.pDemand[p,sc,n,nd]*1e3
+            loc_df.loc[nd,'Lon'   ] = mTEPES.pNodeLon[nd]
+            loc_df.loc[nd,'Zone'  ] = zn
+            loc_df.loc[nd,'Demand'] = mTEPES.pDemand[p,sc,n,nd]*1e3
 
         loc_df = loc_df.reset_index().rename(columns={'Type': 'Scenario'}, inplace=False)
 
@@ -1942,7 +1941,7 @@ def NetworkMapResults(DirName, CaseName, OptModel, mTEPES):
         line_df = pd.DataFrame(data={'NTCFrw': pd.Series(data=[mTEPES.pLineNTCFrw[i] * 1e3 + pEpsilon for i in mTEPES.la], index=mTEPES.la),
                                      'NTCBck': pd.Series(data=[mTEPES.pLineNTCBck[i] * 1e3 + pEpsilon for i in mTEPES.la], index=mTEPES.la)}, index=mTEPES.la)
 
-        line_df = line_df.groupby(level=[0,1]).sum(numeric_only=True)
+        line_df = line_df.groupby(level=[0,1]).sum(numeric_only=False)
         line_df['vFlow'      ] = 0.0
         line_df['utilization'] = 0.0
         line_df['color'      ] = ''
@@ -1950,46 +1949,46 @@ def NetworkMapResults(DirName, CaseName, OptModel, mTEPES):
         line_df['width'      ] = 0.0
         line_df['lon'        ] = 0.0
         line_df['lat'        ] = 0.0
-        line_df['ni'         ] = '0.0'
-        line_df['nf'         ] = '0.0'
-        line_df['cc'         ] = 0.0
+        line_df['ni'         ] = ''
+        line_df['nf'         ] = ''
+        line_df['cc'         ] = 0
 
         ncolors = 11
         colors = list(Color('lightgreen').range_to(Color('darkred'), ncolors))
         colors = ['rgb'+str(x.rgb) for x in colors]
 
         for ni,nf,cc in mTEPES.la:
-            line_df['vFlow'      ][ni,nf] += OutputToFile['MW'][p,sc,n,ni,nf,cc]
-            line_df['utilization'][ni,nf]  = max(line_df['vFlow'][ni,nf]/line_df['NTCFrw'][ni,nf],-line_df['vFlow'][ni,nf]/line_df['NTCBck'][ni,nf])*100.0
-            line_df['lon'        ][ni,nf]  = (mTEPES.pNodeLon[ni]+mTEPES.pNodeLon[nf]) * 0.5
-            line_df['lat'        ][ni,nf]  = (mTEPES.pNodeLat[ni]+mTEPES.pNodeLat[nf]) * 0.5
-            line_df['ni'         ][ni,nf]  = ni
-            line_df['nf'         ][ni,nf]  = nf
-            line_df['cc'         ][ni,nf] += 1
+            line_df.loc[(ni,nf),'vFlow'      ] += OutputToFile['MW'][p,sc,n,ni,nf,cc]
+            line_df.loc[(ni,nf),'utilization']  = max(line_df.loc[(ni,nf),'vFlow']/line_df.loc[(ni,nf),'NTCFrw'],-line_df.loc[(ni,nf),'vFlow']/line_df.loc[(ni,nf),'NTCBck'])*100.0
+            line_df.loc[(ni,nf),'lon'        ]  = (mTEPES.pNodeLon[ni]+mTEPES.pNodeLon[nf]) * 0.5
+            line_df.loc[(ni,nf),'lat'        ]  = (mTEPES.pNodeLat[ni]+mTEPES.pNodeLat[nf]) * 0.5
+            line_df.loc[(ni,nf),'ni'         ]  = ni
+            line_df.loc[(ni,nf),'nf'         ]  = nf
+            line_df.loc[(ni,nf),'cc'         ] += 1
 
             for i in range(len(colors)):
-                if 10*i <= line_df['utilization'][ni,nf] <= 10*(i+1):
-                    line_df['color'][ni,nf] = colors[i]
+                if 10*i <= line_df.loc[(ni,nf),'utilization'] <= 10*(i+1):
+                    line_df.loc[(ni,nf),'color'] = colors[i]
 
             # assigning black color to lines with utilization > 100%
-            if line_df['utilization'][ni,nf] > 100:
-                line_df['color'][ni,nf] = 'rgb(0,0,0)'
+            if line_df.loc[(ni,nf),'utilization'] > 100:
+                line_df.loc[(ni,nf),'color'] = 'rgb(0,0,0)'
 
-            line_df['voltage'][ni,nf] = mTEPES.pLineVoltage[ni,nf,cc]
-            if   700 < line_df['voltage'][ni,nf] <= 900:
-                line_df['width'][ni,nf] = 4
-            elif 500 < line_df['voltage'][ni,nf] <= 700:
-                line_df['width'][ni,nf] = 3
-            elif 350 < line_df['voltage'][ni,nf] <= 500:
-                line_df['width'][ni,nf] = 2.5
-            elif 290 < line_df['voltage'][ni,nf] <= 350:
-                line_df['width'][ni,nf] = 2
-            elif 200 < line_df['voltage'][ni,nf] <= 290:
-                line_df['width'][ni,nf] = 1.5
-            elif  50 < line_df['voltage'][ni,nf] <= 200:
-                line_df['width'][ni,nf] = 1
+            line_df.loc[(ni,nf),'voltage'] = mTEPES.pLineVoltage[ni,nf,cc]
+            if   700 < line_df.loc[(ni,nf),'voltage'] <= 900:
+                line_df.loc[(ni,nf),'width'] = 4
+            elif 500 < line_df.loc[(ni,nf),'voltage'] <= 700:
+                line_df.loc[(ni,nf),'width'] = 3
+            elif 350 < line_df.loc[(ni,nf),'voltage'] <= 500:
+                line_df.loc[(ni,nf),'width'] = 2.5
+            elif 290 < line_df.loc[(ni,nf),'voltage'] <= 350:
+                line_df.loc[(ni,nf),'width'] = 2
+            elif 200 < line_df.loc[(ni,nf),'voltage'] <= 290:
+                line_df.loc[(ni,nf),'width'] = 1.5
+            elif  50 < line_df.loc[(ni,nf),'voltage'] <= 200:
+                line_df.loc[(ni,nf),'width'] = 1
             else:
-                line_df['width'][ni,nf] = 0.5
+                line_df.loc[(ni,nf),'width'] = 0.5
 
         # Rounding to decimals
         line_df = line_df.round(decimals=2)
@@ -2029,7 +2028,7 @@ def NetworkMapResults(DirName, CaseName, OptModel, mTEPES):
 
     # Add edges
     for ni,nf,cc in mTEPES.la:
-        fig.add_trace(go.Scattermapbox(lon=[pos_dict[ni][0], pos_dict[nf][0]], lat=[pos_dict[ni][1], pos_dict[nf][1]], mode='lines+markers', marker=dict(size=0, showscale=True, colorbar={'title': 'Utilization [%]', 'titleside': 'top', 'thickness': 8, 'ticksuffix': '%'}, colorscale=[[0, 'lightgreen'], [1, 'darkred']], cmin=0, cmax=100,), line=dict(width=line_df['width'][ni,nf], color=line_df['color'][ni,nf]), opacity=1, hoverinfo='text', textposition='middle center',))
+        fig.add_trace(go.Scattermapbox(lon=[pos_dict[ni][0], pos_dict[nf][0]], lat=[pos_dict[ni][1], pos_dict[nf][1]], mode='lines+markers', marker=dict(size=0, showscale=True, colorbar={'title': 'Utilization [%]', 'titleside': 'top', 'thickness': 8, 'ticksuffix': '%'}, colorscale=[[0, 'lightgreen'], [1, 'darkred']], cmin=0, cmax=100,), line=dict(width=line_df.loc[(ni,nf),'width'], color=line_df.loc[(ni,nf),'color']), opacity=1, hoverinfo='text', textposition='middle center',))
 
     # Add legends related to the lines
     fig.add_trace(go.Scattermapbox(lat=line_df['lat'], lon=line_df['lon'], mode='markers', marker=go.scattermapbox.Marker(size=20, sizeref=1.1, sizemode='area', color='LightSkyBlue',), opacity=0, hoverinfo='text', text='<br>Line: '+line_df['ni']+' → '+line_df['nf']+'<br># circuits: '+line_df['cc'].astype(str)+'<br>NTC Forward: '+line_df['NTCFrw'].astype(str)+'<br>NTC Backward: '+line_df['NTCBck'].astype(str)+'<br>Power flow: '+line_df['vFlow'].astype(str)+'<br>Utilization [%]: '+line_df['utilization'].astype(str),))

@@ -1,6 +1,10 @@
 Change Log
 =============
 
+[4.15.8] - 2024-03-04
+----------------------
+- [CHANGED] fix some future warnings in output results
+
 [4.15.7] - 2024-02-27
 ----------------------
 - [FIXED] fix variable fuel cost and variable emission cost
