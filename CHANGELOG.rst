@@ -3,6 +3,7 @@ Change Log
 
 [4.15.8] - 2024-03-04
 ----------------------
+- [FIXED] fix some errors in cases with no renewables
 - [CHANGED] fix some future warnings in output results
 
 [4.15.7] - 2024-02-27
