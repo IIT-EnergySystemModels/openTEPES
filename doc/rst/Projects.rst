@@ -4,10 +4,10 @@ Research projects
 =================
 The model has being used in these research projects:
 
-- `Modeling the wholesale electricity market <https://www.iit.comillas.edu/proyectos/mostrar_proyecto.php.en?nombre_abreviado=REPSOL_PRED_PRECIOS>`_, developed for **Repsol**.
+- `Electricity Market Modelling <https://www.iit.comillas.edu/publicacion/proyecto/en/REPSOL_PRED_PRECIOS/Modelado_del_mercado_el%c3%a9ctrico>`_, developed for **Repsol**.
   November 2023 - April 2024. `L. Olmos <https://www.iit.comillas.edu/people/olmos>`_, `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `S. Gómez Sánchez <https://www.iit.comillas.edu/people/sgomez>`_
 
-- Tool for simulating the price of the Daily Market in the future (HESIME), developed for the **Ministry of Science and Innovation/State Research Agency** (10.13039/501100011033) under the program **Public-Private Partnerships** with **NextGenerationEU/PRTR** funds (CPP2022-009809). November 2023 - October 2026.
+- `Day-ahead market price simulation tool (HESIME) <https://www.iit.comillas.edu/publicacion/proyecto/en/HESIME/Herramienta_para_la_simulaci%c3%b3n_del_precio_del_mercado_diario_a_futuro>`_, developed for the **Ministry of Science and Innovation/State Research Agency** (10.13039/501100011033) under the program **Public-Private Partnerships** with **NextGenerationEU/PRTR** funds (CPP2022-009809). April 2023 - March 2026.
   `L. Olmos <https://www.iit.comillas.edu/people/olmos>`_, `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `S. Gómez Sánchez <https://www.iit.comillas.edu/people/sgomez>`_
 
 .. image:: ../img/ColabPP.jpg
