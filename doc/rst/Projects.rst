@@ -14,7 +14,7 @@ The model has being used in these research projects:
    :scale: 30%
    :align: center
 
-- `Open Modelling Toolbox for development of long-term pathways for the energy system in Africa (OpenMod4Africa) <https://openmod4africa.eu/`_, developed for the **European Union**. July 2023 - June 2026.
+- `Open Modelling Toolbox for development of long-term pathways for the energy system in Africa (OpenMod4Africa) <https://openmod4africa.eu/>`_, developed for the **European Union**. July 2023 - June 2026.
   `L. Olmos <https://www.iit.comillas.edu/people/olmos>`_, `S. Lumbreras <https://www.iit.comillas.edu/people/slumbreras>`_, `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `M.A.E. Elabbas <https://www.iit.comillas.edu/people/mabbas>`_
 
     It aims to develop an open toolbox populated with state-of-the-art models for analysing long-term pathways to sustainable, secure and competitive energy systems in Africa.
@@ -43,7 +43,7 @@ The model has being used in these research projects:
     It aims to write a presentation on the quantitative analysis of the technical and economic impact of solar thermal in the operation of the Spanish peninsular system.
 
 - Hydro generation advanced systems: modeling, control, and optimized integration to the system (AVANHID), developed for the **Ministry of Science and Innovation/State Research Agency** (10.13039/501100011033) under the program **Public-Private Partnerships** with **NextGenerationEU/PRTR** funds (CPP2021-009114). December 2022 - November 2025.
-  `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `J.M. Latorre <https://www.iit.comillas.edu/people/jesuslc>`_, `P. Dueñas <https://www.iit.comillas.edu/people/pduenas>`_, `L. Rouco <https://www.iit.comillas.edu/people/rouco>`_, `L. Sigrist <https://www.iit.comillas.edu/people/lsigrist>`_, `I. Egido <https://www.iit.comillas.edu/people/egido>`_, `J.D. Gómez <https://www.iit.comillas.edu/people/jdgomez>`_, `F. Labora <https://www.iit.comillas.edu/people/flabora>`_
+  `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `J.M. Latorre <https://www.iit.comillas.edu/people/jesuslc>`_, `P. Dueñas <https://www.iit.comillas.edu/people/pduenas>`_, `L. Rouco <https://www.iit.comillas.edu/people/rouco>`_, `L. Sigrist <https://www.iit.comillas.edu/people/lsigrist>`_, `I. Egido <https://www.iit.comillas.edu/people/egido>`_, `J.D. Gómez Pérez <https://www.iit.comillas.edu/people/jdgomez>`_, `F. Labora <https://www.iit.comillas.edu/people/flabora>`_
 
 .. image:: ../img/ColabPP.jpg
    :scale: 30%
