@@ -43,14 +43,14 @@ The model has being used in these research projects:
     It aims to write a presentation on the quantitative analysis of the technical and economic impact of solar thermal in the operation of the Spanish peninsular system.
 
 - Hydro generation advanced systems: modeling, control, and optimized integration to the system (AVANHID), developed for the **Ministry of Science and Innovation/State Research Agency** (10.13039/501100011033) under the program **Public-Private Partnerships** with **NextGenerationEU/PRTR** funds (CPP2021-009114). December 2022 - November 2025.
-  `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `J.M. Latorre <https://www.iit.comillas.edu/people/jesuslc>`_, `P. Dueñas <https://www.iit.comillas.edu/people/pduenas>`_, `L. Rouco <https://www.iit.comillas.edu/people/rouco>`_, `L. Sigrist <https://www.iit.comillas.edu/people/lsigrist>`_, `I. Egido <https://www.iit.comillas.edu/people/egido>`_, `J.D. Gómez <https://www.iit.comillas.edu/people/jdgomez>`_
+  `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `J.M. Latorre <https://www.iit.comillas.edu/people/jesuslc>`_, `P. Dueñas <https://www.iit.comillas.edu/people/pduenas>`_, `L. Rouco <https://www.iit.comillas.edu/people/rouco>`_, `L. Sigrist <https://www.iit.comillas.edu/people/lsigrist>`_, `I. Egido <https://www.iit.comillas.edu/people/egido>`_, `J.D. Gómez <https://www.iit.comillas.edu/people/jdgomez>`_, `F. Labora <https://www.iit.comillas.edu/people/flabora>`_
 
 .. image:: ../img/ColabPP.jpg
    :scale: 30%
    :align: center
 
 - Local markets for energy communities: designing efficient markets and assessing the integration from the electricity system perspective (OptiREC), developed for the **Ministry of Science and Innovation/State Research Agency** (10.13039/501100011033) under the program **Strategic projects oriented to the ecological transition and digital transition** with **NextGenerationEU/PRTR** funds (TED2021-131365B-C43). December 2022 - November 2024.
-  `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `J.P. Chaves <https://www.iit.comillas.edu/people/jchaves>`_, `J.M. Latorre <https://www.iit.comillas.edu/people/jesuslc>`_, `P. Sanchez <https://www.iit.comillas.edu/people/psanchez>`_, `M. Troncia <https://www.iit.comillas.edu/people/mtroncia>`_, `S.A. Mansouri <https://www.iit.comillas.edu/people/smansouri>`_, `O.M. Valarezo <https://www.iit.comillas.edu/people/ovalarezo>`_
+  `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `J.P. Chaves <https://www.iit.comillas.edu/people/jchaves>`_, `J.M. Latorre <https://www.iit.comillas.edu/people/jesuslc>`_, `J. García <https://www.iit.comillas.edu/people/javiergg>`_, `M. Troncia <https://www.iit.comillas.edu/people/mtroncia>`_, `S.A. Mansouri <https://www.iit.comillas.edu/people/smansouri>`_, `O.M. Valarezo <https://www.iit.comillas.edu/people/ovalarezo>`_, `M. Mohammed <https://www.iit.comillas.edu/people/mmohammed>`_
 
 .. image:: ../img/ColabPP.jpg
    :scale: 30%

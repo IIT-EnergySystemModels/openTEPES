@@ -4,8 +4,8 @@
    :scale: 70%
    :align: left
 
-.. image:: /../img/logoIIT.png
-   :scale: 15%
+.. image:: /../img/IIT40.png
+   :scale: 20%
    :align: right
 
 \ **Open** \ Generation, \ Storage, \ and \ **T**\ransmission Operation and \ **E**\xpansion \ **P**\lanning Model with RES and \ **ES**\S (**openTEPES**)
