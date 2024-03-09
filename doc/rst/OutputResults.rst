@@ -551,7 +551,7 @@ Identifier    Identifier  Identifier  Header      Description
 Period        Scenario    Load level  Reservoir   Spilled water in reservoir by technology [hm\ :sup:`3`]
 ============  ==========  ==========  ==========  =========================================================
 
-File ``oT_Result_MarginalWaterVolumeValue.csv``
+File ``oT_Result_MarginalWaterValue.csv``
 
 ============  ==========  ==========  ==========  ================================================
 Identifier    Identifier  Identifier  Header      Description
@@ -1034,7 +1034,7 @@ Period        Scenario    Load level  Node        Locational Short-Run Marginal 
 These marginal costs are obtained after fixing the binary and continuous investment decisions and the binary operation decisions to their optimal values.
 Remember that binary decisions are not affected by marginal changes.
 
-File ``oT_Result_MarginalWaterValue.csv``
+File ``oT_Result_MarginalEnergyValue.csv``
 
 ============  ==========  ==========  ==========  ================================================
 Identifier    Identifier  Identifier  Header      Description
