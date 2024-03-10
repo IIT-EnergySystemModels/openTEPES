@@ -27,6 +27,16 @@ The model has being used in these research projects:
    :scale: 40%
    :align: center
 
+- `Highly-efficient and flexible integration of biomass and renewable hydrogen for low-cost combined heat and power generation to the energy system (BIO-FlexGen) <https://bioflexgen.eu/>`_, developed for the **European Union**. September 2021 - August 2024.
+  `J.P. Chaves <https://www.iit.comillas.edu/people/jchaves>`_, `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `J.F. Gutierrez <https://www.iit.comillas.edu/people/jgutierrez>`_
+
+    It aims to significantly increase the efficiency, flexibility and cost effectiveness of renewable energy-based combined heat and power plants (CHP),
+    enabling them to play a key role in integrating fluctuating renewable energy into the energy system, and therefore making a significant contribution to the decarbonization of the energy system.
+
+.. image:: ../img/BioFlexGen.png
+   :scale: 80%
+   :align: center
+
 - `Analysis of the role of pumped-hydro storage power plants in the Spanish NECP 2030 <https://www.iit.comillas.edu/proyectos/mostrar_proyecto.php.en?nombre_abreviado=IBD_PNIEC_Bbo>`_, developed for **Iberdrola**.
   July 2023 - October 2023. `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `P. Linares <https://www.iit.comillas.edu/people/pedrol>`_, `J.P. Chaves <https://www.iit.comillas.edu/people/jchaves>`_, `M. Rivier <https://www.iit.comillas.edu/people/michel>`_, `T. Gómez <https://www.iit.comillas.edu/people/tomas>`_
 
