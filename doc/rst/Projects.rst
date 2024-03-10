@@ -34,7 +34,7 @@ The model has being used in these research projects:
     enabling them to play a key role in integrating fluctuating renewable energy into the energy system, and therefore making a significant contribution to the decarbonization of the energy system.
 
 .. image:: ../img/BioFlexGen.png
-   :scale: 80%
+   :scale: 40%
    :align: center
 
 - `Analysis of the role of pumped-hydro storage power plants in the Spanish NECP 2030 <https://www.iit.comillas.edu/proyectos/mostrar_proyecto.php.en?nombre_abreviado=IBD_PNIEC_Bbo>`_, developed for **Iberdrola**.
