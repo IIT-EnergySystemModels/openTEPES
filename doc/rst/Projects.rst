@@ -27,7 +27,7 @@ The model has being used in these research projects:
    :scale: 40%
    :align: center
 
-- `Highly-efficient and flexible integration of biomass and renewable hydrogen for low-cost combined heat and power generation to the energy system (BIO-FlexGen) <https://bioflexgen.eu/>`_, developed for the **European Union**. September 2021 - August 2024.
+- `Highly-efficient and flexible integration of biomass and renewable hydrogen for low-cost combined heat and power generation to the energy system (Bio-FlexGen) <https://bioflexgen.eu/>`_, developed for the **European Union**. September 2021 - August 2024.
   `J.P. Chaves <https://www.iit.comillas.edu/people/jchaves>`_, `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `J.F. Gutierrez <https://www.iit.comillas.edu/people/jgutierrez>`_
 
     It aims to significantly increase the efficiency, flexibility and cost effectiveness of renewable energy-based combined heat and power plants (CHP),
