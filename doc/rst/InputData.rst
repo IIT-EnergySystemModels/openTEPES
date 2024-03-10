@@ -210,6 +210,10 @@ Stages are not mathematically connected between them, i.e., no constraints link 
 Adequacy reserve margin
 -----------------------
 
+The adequacy reserve margin is the ratio between the available capacity and the maximum demand.
+According to ENTSO-e, adequacy is defined as the ability of the electric system to supply the aggregate electrical demand and energy requirements of the customers at all times,
+taking into account scheduled and reasonably expected unscheduled outages of system elements.
+For determining the available capacity, the model uses the availability of the generating units times their maximum power.
 A description of the data included in the file ``oT_Data_ReserveMargin.csv`` follows:
 
 ==============  ==============  =============  ==========================================================  ====
@@ -236,6 +240,7 @@ If no value is introduced for an area, the CO2 emission limit is considered infi
 Minimum RES energy
 ------------------
 
+It is like a Renewable Portfolio Standard (RPS).
 A description of the data included in the file ``oT_Data_RESEnergy.csv`` follows:
 
 ==============  ==============  =============  ===========================================================  =====
