@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.15.8] - 2024-03-09
+[4.15.8] - 2024-03-11
 ----------------------
+- [FIXED] change sign of water/energy values
 - [FIXED] fix sign of dual variable of equality constraints
 - [FIXED] fix some errors in cases with no renewables
 - [CHANGED] fix some future warnings in output results
