@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 27, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 12, 2024
 """
 
 import datetime
@@ -1334,7 +1334,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
 
     mTEPES.pLoadLevelDuration    = Param(mTEPES.n,     initialize=0                               , within=NonNegativeIntegers, doc='Load level duration',                    mutable=True)
     for n in mTEPES.n:
-        mTEPES.pLoadLevelDuration[n] = mTEPES.pLoadLevelWeight[n] * mTEPES.pDuration[n]
+        mTEPES.pLoadLevelDuration[n] = mTEPES.pLoadLevelWeight[n]() * mTEPES.pDuration[n]()
 
     mTEPES.pPeriodProb           = Param(mTEPES.ps,    initialize=0.0                             , within=NonNegativeReals,    doc='Period probability',                     mutable=True)
     for p,sc in mTEPES.ps:
@@ -1559,17 +1559,17 @@ def SettingUpVariables(OptModel, mTEPES):
             OptModel.vLineOffState    = Var(mTEPES.psnla, within=Binary,           initialize=0  , doc='switching off state of the electric line              {0,1}')
 
     # assign lower and upper bounds to variables
-    [OptModel.vTotalOutput   [p,sc,n,g ].setub(mTEPES.pMaxPower         [p,sc,n,g ]) for p,sc,n,g  in mTEPES.psng ]
-    [OptModel.vTotalOutput   [p,sc,n,re].setlb(mTEPES.pMinPower         [p,sc,n,re]) for p,sc,n,re in mTEPES.psnre]
-    [OptModel.vOutput2ndBlock[p,sc,n,nr].setub(mTEPES.pMaxPower2ndBlock [p,sc,n,nr]) for p,sc,n,nr in mTEPES.psnnr]
-    [OptModel.vReserveUp     [p,sc,n,nr].setub(mTEPES.pMaxPower2ndBlock [p,sc,n,nr]) for p,sc,n,nr in mTEPES.psnnr]
-    [OptModel.vReserveDown   [p,sc,n,nr].setub(mTEPES.pMaxPower2ndBlock [p,sc,n,nr]) for p,sc,n,nr in mTEPES.psnnr]
-    [OptModel.vEnergyInflows [p,sc,n,ec].setub(mTEPES.pEnergyInflows    [p,sc,n,ec]) for p,sc,n,ec in mTEPES.psnec]
-    [OptModel.vEnergyOutflows[p,sc,n,es].setub(mTEPES.pMaxCapacity      [p,sc,n,es]) for p,sc,n,es in mTEPES.psnes]
-    [OptModel.vESSInventory  [p,sc,n,es].setlb(mTEPES.pMinStorage       [p,sc,n,es]) for p,sc,n,es in mTEPES.psnes]
-    [OptModel.vESSInventory  [p,sc,n,es].setub(mTEPES.pMaxStorage       [p,sc,n,es]) for p,sc,n,es in mTEPES.psnes]
-    [OptModel.vIniInventory  [p,sc,n,ec].setlb(mTEPES.pMinStorage       [p,sc,n,ec]) for p,sc,n,ec in mTEPES.psnec]
-    [OptModel.vIniInventory  [p,sc,n,ec].setub(mTEPES.pMaxStorage       [p,sc,n,ec]) for p,sc,n,ec in mTEPES.psnec]
+    [OptModel.vTotalOutput   [p,sc,n,g ].setub(mTEPES.pMaxPower         [p,sc,n,g ]  ) for p,sc,n,g  in mTEPES.psng ]
+    [OptModel.vTotalOutput   [p,sc,n,re].setlb(mTEPES.pMinPower         [p,sc,n,re]  ) for p,sc,n,re in mTEPES.psnre]
+    [OptModel.vOutput2ndBlock[p,sc,n,nr].setub(mTEPES.pMaxPower2ndBlock [p,sc,n,nr]  ) for p,sc,n,nr in mTEPES.psnnr]
+    [OptModel.vReserveUp     [p,sc,n,nr].setub(mTEPES.pMaxPower2ndBlock [p,sc,n,nr]  ) for p,sc,n,nr in mTEPES.psnnr]
+    [OptModel.vReserveDown   [p,sc,n,nr].setub(mTEPES.pMaxPower2ndBlock [p,sc,n,nr]  ) for p,sc,n,nr in mTEPES.psnnr]
+    [OptModel.vEnergyInflows [p,sc,n,ec].setub(mTEPES.pEnergyInflows    [p,sc,n,ec]()) for p,sc,n,ec in mTEPES.psnec]
+    [OptModel.vEnergyOutflows[p,sc,n,es].setub(mTEPES.pMaxCapacity      [p,sc,n,es]  ) for p,sc,n,es in mTEPES.psnes]
+    [OptModel.vESSInventory  [p,sc,n,es].setlb(mTEPES.pMinStorage       [p,sc,n,es]  ) for p,sc,n,es in mTEPES.psnes]
+    [OptModel.vESSInventory  [p,sc,n,es].setub(mTEPES.pMaxStorage       [p,sc,n,es]  ) for p,sc,n,es in mTEPES.psnes]
+    [OptModel.vIniInventory  [p,sc,n,ec].setlb(mTEPES.pMinStorage       [p,sc,n,ec]  ) for p,sc,n,ec in mTEPES.psnec]
+    [OptModel.vIniInventory  [p,sc,n,ec].setub(mTEPES.pMaxStorage       [p,sc,n,ec]  ) for p,sc,n,ec in mTEPES.psnec]
 
     [OptModel.vESSTotalCharge[p,sc,n,eh].setub(mTEPES.pMaxCharge        [p,sc,n,eh]) for p,sc,n,eh in mTEPES.psneh]
     [OptModel.vCharge2ndBlock[p,sc,n,eh].setub(mTEPES.pMaxCharge2ndBlock[p,sc,n,eh]) for p,sc,n,eh in mTEPES.psneh]
@@ -1578,10 +1578,10 @@ def SettingUpVariables(OptModel, mTEPES):
     [OptModel.vENS           [p,sc,n,nd].setub(mTEPES.pDemandAbs        [p,sc,n,nd]) for p,sc,n,nd in mTEPES.psnnd]
 
     if mTEPES.pIndHydroTopology == 1:
-        [OptModel.vHydroInflows   [p,sc,n,rc].setub(mTEPES.pHydroInflows[p,sc,n,rc]) for p,sc,n,rc in mTEPES.psnrc]
-        [OptModel.vHydroOutflows  [p,sc,n,rs].setub(mTEPES.pMaxOutflows [p,sc,n,rs]) for p,sc,n,rs in mTEPES.psnrs]
-        [OptModel.vReservoirVolume[p,sc,n,rs].setlb(mTEPES.pMinVolume   [p,sc,n,rs]) for p,sc,n,rs in mTEPES.psnrs]
-        [OptModel.vReservoirVolume[p,sc,n,rs].setub(mTEPES.pMaxVolume   [p,sc,n,rs]) for p,sc,n,rs in mTEPES.psnrs]
+        [OptModel.vHydroInflows   [p,sc,n,rc].setub(mTEPES.pHydroInflows[p,sc,n,rc]()) for p,sc,n,rc in mTEPES.psnrc]
+        [OptModel.vHydroOutflows  [p,sc,n,rs].setub(mTEPES.pMaxOutflows [p,sc,n,rs]  ) for p,sc,n,rs in mTEPES.psnrs]
+        [OptModel.vReservoirVolume[p,sc,n,rs].setlb(mTEPES.pMinVolume   [p,sc,n,rs]  ) for p,sc,n,rs in mTEPES.psnrs]
+        [OptModel.vReservoirVolume[p,sc,n,rs].setub(mTEPES.pMaxVolume   [p,sc,n,rs]  ) for p,sc,n,rs in mTEPES.psnrs]
 
     nFixedVariables = 0
 
@@ -1660,10 +1660,10 @@ def SettingUpVariables(OptModel, mTEPES):
 
     [OptModel.vLineLosses[p,sc,n,ni,nf,cc].setub(0.5*mTEPES.pLineLossFactor[ni,nf,cc]*mTEPES.pLineNTCMax[ni,nf,cc]) for p,sc,n,ni,nf,cc in mTEPES.psnll]
     if mTEPES.pIndBinSingleNode() == 0:
-        [OptModel.vFlow[p,sc,n,ni,nf,cc].setlb(-mTEPES.pLineNTCBck[ni,nf,cc] ) for p,sc,n,ni,nf,cc in mTEPES.psnla]
-        [OptModel.vFlow[p,sc,n,ni,nf,cc].setub( mTEPES.pLineNTCFrw[ni,nf,cc] ) for p,sc,n,ni,nf,cc in mTEPES.psnla]
-    [OptModel.vTheta   [p,sc,n,nd      ].setlb(-mTEPES.pMaxTheta  [p,sc,n,nd]) for p,sc,n,nd       in mTEPES.psnnd]
-    [OptModel.vTheta   [p,sc,n,nd      ].setub( mTEPES.pMaxTheta  [p,sc,n,nd]) for p,sc,n,nd       in mTEPES.psnnd]
+        [OptModel.vFlow[p,sc,n,ni,nf,cc].setlb(-mTEPES.pLineNTCBck[ni,nf,cc]   ) for p,sc,n,ni,nf,cc in mTEPES.psnla]
+        [OptModel.vFlow[p,sc,n,ni,nf,cc].setub( mTEPES.pLineNTCFrw[ni,nf,cc]   ) for p,sc,n,ni,nf,cc in mTEPES.psnla]
+    [OptModel.vTheta   [p,sc,n,nd      ].setlb(-mTEPES.pMaxTheta  [p,sc,n,nd]()) for p,sc,n,nd       in mTEPES.psnnd]
+    [OptModel.vTheta   [p,sc,n,nd      ].setub( mTEPES.pMaxTheta  [p,sc,n,nd]()) for p,sc,n,nd       in mTEPES.psnnd]
 
     if mTEPES.pIndHydrogen == 1:
         OptModel.vFlowH2 = Var(mTEPES.psnpa, within=Reals,            doc='pipeline flow               [tH2]')
@@ -1806,7 +1806,7 @@ def SettingUpVariables(OptModel, mTEPES):
                 # fixing the reservoir volume at the last load level of the stage for every period and scenario if between storage limits
                 for rs in mTEPES.rs:
                     if rs not in mTEPES.rn and (p,sc,mTEPES.n.last(),rs) in mTEPES.psnrs:
-                        OptModel.vReservoirVolume[p,sc,mTEPES.n.last(),rs].fix(mTEPES.pIniVolume[p,sc,mTEPES.n.last(),rs])
+                        OptModel.vReservoirVolume[p,sc,mTEPES.n.last(),rs].fix(mTEPES.pIniVolume[p,sc,mTEPES.n.last(),rs]())
 
     # activate all the periods, scenarios, and load levels again
     mTEPES.del_component(mTEPES.st)
@@ -1837,16 +1837,16 @@ def SettingUpVariables(OptModel, mTEPES):
         for p,sc,n,rs in mTEPES.psnrs:
             if rs not in mTEPES.rn:
                 if mTEPES.pReservoirType[rs] == 'Hourly'  and mTEPES.n.ord(n) % int(  24/mTEPES.pTimeStep()) == 0:
-                    OptModel.vReservoirVolume[p,sc,n,rs].fix(mTEPES.pIniVolume[p,sc,n,rs])
+                    OptModel.vReservoirVolume[p,sc,n,rs].fix(mTEPES.pIniVolume[p,sc,n,rs]())
                     nFixedVariables += 1
                 if mTEPES.pReservoirType[rs] == 'Daily'   and mTEPES.n.ord(n) % int( 168/mTEPES.pTimeStep()) == 0:
-                    OptModel.vReservoirVolume[p,sc,n,rs].fix(mTEPES.pIniVolume[p,sc,n,rs])
+                    OptModel.vReservoirVolume[p,sc,n,rs].fix(mTEPES.pIniVolume[p,sc,n,rs]())
                     nFixedVariables += 1
                 if mTEPES.pReservoirType[rs] == 'Weekly'  and mTEPES.n.ord(n) % int( 672/mTEPES.pTimeStep()) == 0:
-                    OptModel.vReservoirVolume[p,sc,n,rs].fix(mTEPES.pIniVolume[p,sc,n,rs])
+                    OptModel.vReservoirVolume[p,sc,n,rs].fix(mTEPES.pIniVolume[p,sc,n,rs]())
                     nFixedVariables += 1
                 if mTEPES.pReservoirType[rs] == 'Monthly' and mTEPES.n.ord(n) % int(8736/mTEPES.pTimeStep()) == 0:
-                    OptModel.vReservoirVolume[p,sc,n,rs].fix(mTEPES.pIniVolume[p,sc,n,rs])
+                    OptModel.vReservoirVolume[p,sc,n,rs].fix(mTEPES.pIniVolume[p,sc,n,rs]())
                     nFixedVariables += 1
 
     for p,sc,n,ec in mTEPES.psnec:
@@ -2045,8 +2045,8 @@ def SettingUpVariables(OptModel, mTEPES):
             mTEPES.pGenUpInvest[  gc      ]   = 1
         if  mTEPES.pGenLoInvest[  gc      ]() >   mTEPES.pGenUpInvest[gc      ]():
             mTEPES.pGenLoInvest[  gc      ]   =   mTEPES.pGenUpInvest[gc      ]()
-    [OptModel.vGenerationInvest[p,gc      ].setlb(mTEPES.pGenLoInvest[gc      ]) for p,gc in mTEPES.pgc]
-    [OptModel.vGenerationInvest[p,gc      ].setub(mTEPES.pGenUpInvest[gc      ]) for p,gc in mTEPES.pgc]
+    [OptModel.vGenerationInvest[p,gc      ].setlb(mTEPES.pGenLoInvest[gc      ]()) for p,gc in mTEPES.pgc]
+    [OptModel.vGenerationInvest[p,gc      ].setub(mTEPES.pGenUpInvest[gc      ]()) for p,gc in mTEPES.pgc]
     for p,gd in mTEPES.pgd:
         if  mTEPES.pGenLoRetire[  gd      ]() < pEpsilon:
             mTEPES.pGenLoRetire[  gd      ]   = 0
@@ -2058,8 +2058,8 @@ def SettingUpVariables(OptModel, mTEPES):
             mTEPES.pGenUpRetire[  gd      ]   = 1
         if  mTEPES.pGenLoRetire[  gd      ]() >   mTEPES.pGenUpRetire[gd      ]():
             mTEPES.pGenLoRetire[  gd      ]   =   mTEPES.pGenUpRetire[gd      ]()
-    [OptModel.vGenerationRetire[p,gd      ].setlb(mTEPES.pGenLoRetire[gd      ]) for p,gd in mTEPES.pgd]
-    [OptModel.vGenerationRetire[p,gd      ].setub(mTEPES.pGenUpRetire[gd      ]) for p,gd in mTEPES.pgd]
+    [OptModel.vGenerationRetire[p,gd      ].setlb(mTEPES.pGenLoRetire[gd      ]()) for p,gd in mTEPES.pgd]
+    [OptModel.vGenerationRetire[p,gd      ].setub(mTEPES.pGenUpRetire[gd      ]()) for p,gd in mTEPES.pgd]
     for p,ni,nf,cc in mTEPES.plc:
         if  mTEPES.pNetLoInvest[  ni,nf,cc]() <       pEpsilon:
             mTEPES.pNetLoInvest[  ni,nf,cc]   = 0
@@ -2071,8 +2071,8 @@ def SettingUpVariables(OptModel, mTEPES):
             mTEPES.pNetUpInvest[  ni,nf,cc]   = 1
         if  mTEPES.pNetLoInvest[  ni,nf,cc]() >   mTEPES.pNetUpInvest[ni,nf,cc]():
             mTEPES.pNetLoInvest[  ni,nf,cc]   =   mTEPES.pNetUpInvest[ni,nf,cc]()
-    [OptModel.vNetworkInvest   [p,ni,nf,cc].setlb(mTEPES.pNetLoInvest[ni,nf,cc]) for p,ni,nf,cc in mTEPES.plc]
-    [OptModel.vNetworkInvest   [p,ni,nf,cc].setub(mTEPES.pNetUpInvest[ni,nf,cc]) for p,ni,nf,cc in mTEPES.plc]
+    [OptModel.vNetworkInvest   [p,ni,nf,cc].setlb(mTEPES.pNetLoInvest[ni,nf,cc]()) for p,ni,nf,cc in mTEPES.plc]
+    [OptModel.vNetworkInvest   [p,ni,nf,cc].setub(mTEPES.pNetUpInvest[ni,nf,cc]()) for p,ni,nf,cc in mTEPES.plc]
 
     if mTEPES.pIndHydroTopology == 1:
         for p,rc in mTEPES.prc:
@@ -2086,8 +2086,8 @@ def SettingUpVariables(OptModel, mTEPES):
                 mTEPES.pRsrUpInvest[  rc      ]   = 1
             if  mTEPES.pRsrLoInvest[  rc      ]() >   mTEPES.pRsrUpInvest[rc      ]():
                 mTEPES.pRsrLoInvest[  rc      ]   =   mTEPES.pRsrUpInvest[rc      ]()
-        [OptModel.vReservoirInvest [p,rc      ].setlb(mTEPES.pRsrLoInvest[rc      ]) for p,rc in mTEPES.prc]
-        [OptModel.vReservoirInvest [p,rc      ].setub(mTEPES.pRsrUpInvest[rc      ]) for p,rc in mTEPES.prc]
+        [OptModel.vReservoirInvest [p,rc      ].setlb(mTEPES.pRsrLoInvest[rc      ]()) for p,rc in mTEPES.prc]
+        [OptModel.vReservoirInvest [p,rc      ].setub(mTEPES.pRsrUpInvest[rc      ]()) for p,rc in mTEPES.prc]
 
     if mTEPES.pIndHydrogen == 1:
         for p,ni,nf,cc in mTEPES.ppc:
@@ -2101,8 +2101,8 @@ def SettingUpVariables(OptModel, mTEPES):
                 mTEPES.pH2PipeUpInvest[  ni,nf,cc]   = 1
             if  mTEPES.pH2PipeLoInvest[  ni,nf,cc]() >   mTEPES.pH2PipeUpInvest[ni,nf,cc]():
                 mTEPES.pH2PipeLoInvest[  ni,nf,cc]   =   mTEPES.pH2PipeUpInvest[ni,nf,cc]()
-        [OptModel.vH2PipeInvest       [p,ni,nf,cc].setlb(mTEPES.pH2PipeLoInvest[ni,nf,cc]) for p,ni,nf,cc in mTEPES.ppc]
-        [OptModel.vH2PipeInvest       [p,ni,nf,cc].setub(mTEPES.pH2PipeUpInvest[ni,nf,cc]) for p,ni,nf,cc in mTEPES.ppc]
+        [OptModel.vH2PipeInvest       [p,ni,nf,cc].setlb(mTEPES.pH2PipeLoInvest[ni,nf,cc]()) for p,ni,nf,cc in mTEPES.ppc]
+        [OptModel.vH2PipeInvest       [p,ni,nf,cc].setub(mTEPES.pH2PipeUpInvest[ni,nf,cc]()) for p,ni,nf,cc in mTEPES.ppc]
 
     if mTEPES.pIndHeat == 1:
         for p,ni,nf,cc in mTEPES.phc:
@@ -2116,8 +2116,8 @@ def SettingUpVariables(OptModel, mTEPES):
                 mTEPES.pHeatPipeUpInvest[  ni,nf,cc]   = 1
             if  mTEPES.pHeatPipeLoInvest[  ni,nf,cc]() >   mTEPES.pHeatPipeUpInvest[ni,nf,cc]():
                 mTEPES.pHeatPipeLoInvest[  ni,nf,cc]   =   mTEPES.pHeatPipeUpInvest[ni,nf,cc]()
-        [OptModel.vHeatPipeInvest       [p,ni,nf,cc].setlb(mTEPES.pHeatPipeLoInvest[ni,nf,cc]) for p,ni,nf,cc in mTEPES.phc]
-        [OptModel.vHeatPipeInvest       [p,ni,nf,cc].setub(mTEPES.pHeatPipeUpInvest[ni,nf,cc]) for p,ni,nf,cc in mTEPES.phc]
+        [OptModel.vHeatPipeInvest       [p,ni,nf,cc].setlb(mTEPES.pHeatPipeLoInvest[ni,nf,cc]()) for p,ni,nf,cc in mTEPES.phc]
+        [OptModel.vHeatPipeInvest       [p,ni,nf,cc].setub(mTEPES.pHeatPipeUpInvest[ni,nf,cc]()) for p,ni,nf,cc in mTEPES.phc]
 
     # detecting infeasibility: sum of scenario probabilities must be 1 in each period
     # for p in mTEPES.p:
