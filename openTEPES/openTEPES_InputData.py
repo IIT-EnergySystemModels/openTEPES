@@ -1021,7 +1021,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         d2a[ar].append(nd)
 
     # small values are converted to 0
-    pDemandElecPeak         = pd.Series([0.0 for p,ar in mTEPES.par], index=mTEPES.par)
+    pDemandElecPeak          = pd.Series([0.0 for p,ar in mTEPES.par], index=mTEPES.par)
     for p,ar in mTEPES.par:
         # values < 1e-5 times the maximum demand for each area (an area is related to operating reserves procurement, i.e., country) are converted to 0
         pDemandElecPeak[p,ar] = pDemandElec[[nd for nd in d2a[ar]]].sum(axis=1).max()
@@ -1097,6 +1097,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
 
     # computation of the power to heat ratio of the CHP units
     pPower2HeatRatio = [(pRatedMaxPowerElec[ch]-pRatedMinPowerElec[ch])/(pRatedMaxPowerHeat[ch]-pRatedMinPowerHeat[ch]) for ch in mTEPES.ch]
+    pMinPowerHeat    = pd.Series([0.0 for ch in mTEPES.ch], index=mTEPES.ch)
+    pMaxPowerHeat    = pd.Series([0.0 for ch in mTEPES.ch], index=mTEPES.ch)
     for p,sc,n,ch in mTEPES.psnch:
         # determine the minimum/maximum heat power
         pMinPowerHeat[p,sc,n,ch] = pMinPowerElec[p,sc,n,ch]/pPower2HeatRatio[ch]
