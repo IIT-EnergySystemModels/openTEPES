@@ -768,7 +768,7 @@ File ``oT_Result_BalanceHeat.csv``
 ============  ==========  ==========  ==========  ======================================
 Identifier    Identifier  Identifier  Identifier  Description
 ============  ==========  ==========  ==========  ======================================
-Period        Scenario    Load level  Technology  Generation, flows, and demand [Tcal]
+Period        Scenario    Load level  Technology  Generation, flows, and demand [GWh]
 ============  ==========  ==========  ==========  ======================================
 
 File ``oT_Result_BalanceHeatPerArea.csv``
@@ -776,7 +776,7 @@ File ``oT_Result_BalanceHeatPerArea.csv``
 ============  ==========  ==========  ==========  ==========  ======================================
 Identifier    Identifier  Identifier  Identifier  Header      Description
 ============  ==========  ==========  ==========  ==========  ======================================
-Period        Scenario    Load level  Technology  Area        Generation, flows, and demand [Tcal]
+Period        Scenario    Load level  Technology  Area        Generation, flows, and demand [GWh]
 ============  ==========  ==========  ==========  ==========  ======================================
 
 File ``oT_Result_BalanceHeatPerNode.csv``
@@ -784,7 +784,7 @@ File ``oT_Result_BalanceHeatPerNode.csv``
 ============  ==========  ==========  ==========  ==========  ======================================
 Identifier    Identifier  Identifier  Identifier  Header      Description
 ============  ==========  ==========  ==========  ==========  ======================================
-Period        Scenario    Load level  Technology  Node        Generation, flows, and demand [Tcal]
+Period        Scenario    Load level  Technology  Node        Generation, flows, and demand [GWh]
 ============  ==========  ==========  ==========  ==========  ======================================
 
 File ``oT_Result_BalanceHeatPerTech.csv``
@@ -792,7 +792,7 @@ File ``oT_Result_BalanceHeatPerTech.csv``
 ============  ==========  ==========  ==========  ==========  ==========  ======================================
 Identifier    Identifier  Identifier  Identifier  Identifier  Header      Description
 ============  ==========  ==========  ==========  ==========  ==========  ======================================
-Period        Scenario    Load level  Area        Node        Technology  Generation, flows, and demand [Tcal]
+Period        Scenario    Load level  Area        Node        Technology  Generation, flows, and demand [GWh]
 ============  ==========  ==========  ==========  ==========  ==========  ======================================
 
 File ``oT_Result_NetworkFlowHeatPerNode.csv``
@@ -800,7 +800,7 @@ File ``oT_Result_NetworkFlowHeatPerNode.csv``
 ============  ==========  ==========  ============  ==========  =========  =======================
 Identifier    Identifier  Identifier  Header        Header      Header     Description
 ============  ==========  ==========  ============  ==========  =========  =======================
-Period        Scenario    Load level  Initial node  Final node  Circuit    Pipe flow [Gcal/h]
+Period        Scenario    Load level  Initial node  Final node  Circuit    Pipe flow [MW]
 ============  ==========  ==========  ============  ==========  =========  =======================
 
 File ``oT_Result_NetworkHTNS.csv``
@@ -808,7 +808,7 @@ File ``oT_Result_NetworkHTNS.csv``
 ============  ==========  ==========  ==========  ====================================
 Identifier    Identifier  Identifier  Header      Description
 ============  ==========  ==========  ==========  ====================================
-Period        Scenario    Load level  Node        Heat not served by node [Gcal/h]
+Period        Scenario    Load level  Node        Heat not served by node [MW]
 ============  ==========  ==========  ==========  ====================================
 
 Costs and revenues
@@ -1028,7 +1028,7 @@ File ``oT_Result_NetworkSRMCHeat.csv``
 ============  ==========  ==========  ==========  ====================================================
 Identifier    Identifier  Identifier  Header      Description
 ============  ==========  ==========  ==========  ====================================================
-Period        Scenario    Load level  Node        Locational Short-Run Marginal Cost of heat [€/Gcal]
+Period        Scenario    Load level  Node        Locational Short-Run Marginal Cost of heat [€/MWh]
 ============  ==========  ==========  ==========  ====================================================
 
 These marginal costs are obtained after fixing the binary and continuous investment decisions and the binary operation decisions to their optimal values.
