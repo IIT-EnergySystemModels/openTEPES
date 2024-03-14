@@ -14,7 +14,7 @@ Open Generation, Storage, and Transmission Operation and Expansion Planning Mode
         >>> import openTEPES as oT
         >>> oT.routine("9n", "C:\\Users\\UserName\\Documents\\GitHub\\openTEPES", "glpk")
 """
-__version__ = "4.15.8"
+__version__ = "4.16.0"
 
 from .openTEPES_Main             import main
 from .openTEPES                  import *
