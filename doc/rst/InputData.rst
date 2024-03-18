@@ -17,6 +17,7 @@ AWE         Alkaline Water Electrolyzer
 BESS        Battery Energy Storage System
 CC          Capacity Credit
 CCGT        Combined Cycle Gas Turbine
+CHP         Combined Heat and Power. Cogeneration
 DC          Direct Current
 DCPF        DC Power Flow
 DR          Demand Response
@@ -148,7 +149,7 @@ File                  Description
 ====================  =============================================================================================================  =========
 ENSCost               Cost of energy not served (ENS). Cost of load curtailment. Value of Lost Load (VoLL)                           €/MWh
 HNSCost               Cost of hydrogen not served (HNS)                                                                              €/kgH2
-HTNSCost              Cost of heat not served (HTNS)                                                                                 €/Gcal
+HTNSCost              Cost of heat not served (HTNS)                                                                                 €/MWh
 PNSCost               Cost of power not served (PNS) associated with the deficit in operating reserve by load level                  €/MW
 CO2Cost               Cost of CO2 emissions                                                                                          €/tCO2
 UpReserveActivation   Upward   reserve activation (proportion of upward   operating reserve deployed to produce energy)              p.u.
@@ -210,6 +211,10 @@ Stages are not mathematically connected between them, i.e., no constraints link 
 Adequacy reserve margin
 -----------------------
 
+The adequacy reserve margin is the ratio between the available capacity and the maximum demand.
+According to ENTSO-e, adequacy is defined as the ability of the electric system to supply the aggregate electrical demand and energy requirements of the customers at all times,
+taking into account scheduled and reasonably expected unscheduled outages of system elements.
+For determining the available capacity, the model uses the availability of the generating units times their maximum power.
 A description of the data included in the file ``oT_Data_ReserveMargin.csv`` follows:
 
 ==============  ==============  =============  ==========================================================  ====
@@ -236,6 +241,7 @@ If no value is introduced for an area, the CO2 emission limit is considered infi
 Minimum RES energy
 ------------------
 
+It is like a Renewable Portfolio Standard (RPS).
 A description of the data included in the file ``oT_Data_RESEnergy.csv`` follows:
 
 ==============  ==============  =============  ===========================================================  =====
@@ -333,8 +339,10 @@ EnergyType              Energy type based on the max/min energy to be produced b
 MustRun                 Must-run unit                                                                                                                     Yes/No
 InitialPeriod           Initial period (year) when the unit is installed or can be installed, if candidate                                                Year
 FinalPeriod             Final   period (year) when the unit is installed or can be installed, if candidate                                                Year
-MaximumPower            Maximum power output (generation/discharge for ESS units)                                                                         MW
-MinimumPower            Minimum power output (i.e., minimum stable load in the case of a thermal power plant)                                             MW
+MaximumPower            Maximum power output of electricity (generation/discharge for ESS units)                                                          MW
+MinimumPower            Minimum power output of electricity (i.e., minimum stable load in the case of a thermal power plant)                              MW
+MaximumPowerHeat        Maximum power output of heat (heat produced by a CHP at its maximum electric power)                                               MW
+MinimumPowerHeat        Minimum power output of heat (heat produced by a CHP at its minimum electric power)                                               MW
 MaximumReactivePower    Maximum reactive power output (discharge for ESS units) (not used in this version)                                                MW
 MinimumReactivePower    Minimum reactive power output (not used in this version)                                                                          MW
 MaximumCharge           Maximum consumption/charge when the ESS unit is storing energy                                                                    MW
@@ -345,7 +353,7 @@ MinimumStorage          Minimum energy that can be stored by the ESS unit       
 Efficiency              Round-trip efficiency of the pump/turbine cycle of a pumped-hydro storage power plant or charge/discharge of a battery            p.u.
 ProductionFunction      Production function from water inflows to energy (only used for hydropower plants modeled with water units and basin topology)    kWh/m\ :sup:`3`
 ProductionFunctionH2    Production function from energy to hydrogen (only used for electrolyzers)                                                         kWh/kgH2
-ProductionFunctionHeat  Production function from energy to heat     (only used for heat pumps)                                                            kWh/Mcal
+ProductionFunctionHeat  Production function from energy to heat     (only used for heat pumps)                                                            kWh/kWh
 Availability            Unit availability for area adequacy reserve margin (also called de-rating factor or capacity credit)                              p.u.
 Inertia                 Unit inertia constant                                                                                                             s
 EFOR                    Equivalent Forced Outage Rate                                                                                                     p.u.
@@ -353,9 +361,10 @@ RampUp                  Ramp up   rate for generating units or maximum discharge
 RampDown                Ramp down rate for generating units or maximum    charge rate for ESS    charge                                                   MW/h
 UpTime                  Minimum uptime                                                                                                                    h
 DownTime                Minimum downtime                                                                                                                  h
+StableTime              Minimum stable time (intended for nuclear units to be at its minimum load during this time)                                       h
 ShiftTime               Maximum shift time                                                                                                                h
 FuelCost                Fuel cost                                                                                                                         €/Gcal
-LinearTerm              Linear term (slope) of the heat rate straight line                                                                                Gcal/MWh
+LinearTerm              Linear   term (slope    ) of the heat rate straight line                                                                          Gcal/MWh
 ConstantTerm            Constant term (intercept) of the heat rate straight line                                                                          Gcal/h
 OMVariableCost          Variable O&M cost                                                                                                                 €/MWh
 OperReserveCost         Operating reserve cost                                                                                                            €/MW
@@ -381,8 +390,6 @@ Daily *storage type* means that the ESS inventory is assessed every time step. F
 *Energy type* represents the interval when the minimum or maximum energy to be produced by a unit must be satisfied (for daily energy type at the end of every day, i.e., the sum of the energy generated by the unit must be lower/greater to the sum of max/min energy for every day).
 The *storage cycle* is the minimum between the inventory assessment period (defined by the storage type), the outflows period (defined by the outflows type), and the energy period (defined by the energy type) (only if outflows or energy power values have been introduced).
 It can be one time step, one day, one week, and one month, but it can't exceed the stage duration. For example, if the stage lasts for 168 hours the storage cycle can only be hourly or daily.
-The ESS inventory level at the end of a larger storage cycle is fixed to its initial value, i.e., the inventory of a daily storage type (evaluated on a time step basis) is fixed at the end of the week,
-the inventory of weekly storage is fixed at the end of the month, the inventory of monthly storage is fixed at the end of the year, only if the initial inventory lies between the storage limits.
 
 The initial storage of the ESSs is also fixed at the beginning and end of each stage, only if the initial inventory lies between the storage limits. For example, the initial storage level is set for the hour 8736 in case of a single stage or for the hours 4368 and 4369
 (end of the first stage and beginning of the second stage) in case of two stages, each with 4368 hours.
@@ -444,7 +451,7 @@ A description of the data included in the file ``oT_Data_VariableFuelCost.csv`` 
 ==========  ==============  ==========  =========  =============================  ======
 Identifier  Identifier      Identifier  Header     Description
 ==========  ==============  ==========  =========  =============================  ======
-Period      Scenario        Load level  Generator  Variable fuel cost             €/Gcal
+Period      Scenario        Load level  Generator  Variable fuel cost             €/MWh
 ==========  ==============  ==========  =========  =============================  ======
 
 All the generators must be defined as columns of these files.
@@ -683,8 +690,6 @@ Daily *storage type* means that the ESS inventory is assessed every time step, f
 *Outflows type* represents the interval when the water extracted from the reservoir must be satisfied (for daily outflows type at the end of every day, i.e., the sum of the water consumed must be equal to the sum of water outflows for every day).
 The *storage cycle* is the minimum between the inventory assessment period (defined by the storage type), the outflows period (defined by the outflows type), and the energy period (defined by the energy type) (only if outflows or energy power values have been introduced).
 It can be one time step, one day, one week, and one month, but it can't exceed the stage duration. For example, if the stage lasts for 168 hours the storage cycle can only be hourly or daily.
-The reservoir volume level at the end of a larger storage cycle is fixed to its initial value, i.e., the volume of a daily storage type (evaluated on a time step basis) is fixed at the end of the week,
-the volume of weekly storage is fixed at the end of the month, the volume of monthly storage is fixed at the end of the year, only if the initial inventory lies between the storage limits.
 
 The initial reservoir volume is also fixed at the beginning and end of each stage, only if the initial volume lies between the reservoir storage limits. For example, the initial volume is set for the hour 8736 in case of a single stage or for the hours 4368 and 4369
 (end of the first stage and beginning of the second stage) in case of two stages, each with 4368 hours.
@@ -776,7 +781,7 @@ A description of the data included in the file ``oT_Data_DemandHeat.csv`` follow
 ==========  ==============  ==========  ======  ===============================================  ======
 Identifier  Identifier      Identifier  Header  Description
 ==========  ==============  ==========  ======  ===============================================  ======
-Period      Scenario        Load level  Node    Heat demand of the node for each load level      Gcal/h
+Period      Scenario        Load level  Node    Heat demand of the node for each load level      MW
 ==========  ==============  ==========  ======  ===============================================  ======
 
 Internally, all the values below if positive demand (or above if negative demand) 2.5e-5 times the maximum system demand of each area will be converted into 0 by the model.
@@ -792,8 +797,8 @@ Header               Description
 InitialPeriod        Initial period (year) when the unit is installed or can be installed, if candidate                                   Year
 FinalPeriod          Final   period (year) when the unit is installed or can be installed, if candidate                                   Year
 Length               Pipeline length (only used for reporting purposes). If not defined, computed as 1.1 times the geographical distance  km
-TTC                  Total transfer capacity (maximum permissible thermal load) in forward  direction. Static pipeline rating             Gcal/h
-TTCBck               Total transfer capacity (maximum permissible thermal load) in backward direction. Static pipeline rating             Gcal/h
+TTC                  Total transfer capacity (maximum permissible thermal load) in forward  direction. Static pipeline rating             MW
+TTCBck               Total transfer capacity (maximum permissible thermal load) in backward direction. Static pipeline rating             MW
 SecurityFactor       Security factor to consider approximately N-1 contingencies. NTC = TTC x SecurityFactor                              p.u.
 FixedInvestmentCost  Overnight investment (capital -CAPEX- and fixed O&M -FOM-) cost                                                      M€
 FixedChargeRate      Fixed-charge rate to annualize the overnight investment cost                                                         p.u.

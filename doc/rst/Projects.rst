@@ -4,17 +4,17 @@ Research projects
 =================
 The model has being used in these research projects:
 
-- `Modeling the wholesale electricity market <https://www.iit.comillas.edu/proyectos/mostrar_proyecto.php.en?nombre_abreviado=REPSOL_PRED_PRECIOS>`_, developed for **Repsol**.
+- `Electricity Market Modelling <https://www.iit.comillas.edu/publicacion/proyecto/en/REPSOL_PRED_PRECIOS/Modelado_del_mercado_el%c3%a9ctrico>`_, developed for **Repsol**.
   November 2023 - April 2024. `L. Olmos <https://www.iit.comillas.edu/people/olmos>`_, `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `S. Gómez Sánchez <https://www.iit.comillas.edu/people/sgomez>`_
 
-- Tool for simulating the price of the Daily Market in the future (HESIME), developed for the **Ministry of Science and Innovation/State Research Agency** (10.13039/501100011033) under the program **Public-Private Partnerships** with **NextGenerationEU/PRTR** funds (CPP2022-009809). November 2023 - October 2026.
+- `Day-ahead market price simulation tool (HESIME) <https://www.iit.comillas.edu/publicacion/proyecto/en/HESIME/Herramienta_para_la_simulaci%c3%b3n_del_precio_del_mercado_diario_a_futuro>`_, developed for the **Ministry of Science and Innovation/State Research Agency** (10.13039/501100011033) under the program **Public-Private Partnerships** with **NextGenerationEU/PRTR** funds (CPP2022-009809). April 2023 - March 2026.
   `L. Olmos <https://www.iit.comillas.edu/people/olmos>`_, `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `S. Gómez Sánchez <https://www.iit.comillas.edu/people/sgomez>`_
 
 .. image:: ../img/ColabPP.jpg
    :scale: 30%
    :align: center
 
-- `Open Modelling Toolbox for development of long-term pathways for the energy system in Africa (OpenMod4Africa) <https://openmod4africa.eu/`_, developed for the **European Union**. July 2023 - June 2026.
+- `Open Modelling Toolbox for development of long-term pathways for the energy system in Africa (OpenMod4Africa) <https://openmod4africa.eu/>`_, developed for the **European Union**. July 2023 - June 2026.
   `L. Olmos <https://www.iit.comillas.edu/people/olmos>`_, `S. Lumbreras <https://www.iit.comillas.edu/people/slumbreras>`_, `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `M.A.E. Elabbas <https://www.iit.comillas.edu/people/mabbas>`_
 
     It aims to develop an open toolbox populated with state-of-the-art models for analysing long-term pathways to sustainable, secure and competitive energy systems in Africa.
@@ -25,6 +25,16 @@ The model has being used in these research projects:
 
 .. image:: ../img/OM4A.png
    :scale: 40%
+   :align: center
+
+- `Highly-efficient and flexible integration of biomass and renewable hydrogen for low-cost combined heat and power generation to the energy system (Bio-FlexGen) <https://bioflexgen.eu/>`_, developed for the **European Union**. September 2021 - August 2024.
+  `J.P. Chaves <https://www.iit.comillas.edu/people/jchaves>`_, `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `J.F. Gutierrez <https://www.iit.comillas.edu/people/jgutierrez>`_
+
+    It aims to significantly increase the efficiency, flexibility and cost effectiveness of renewable energy-based combined heat and power plants (CHP),
+    enabling them to play a key role in integrating fluctuating renewable energy into the energy system, and therefore making a significant contribution to the decarbonization of the energy system.
+
+.. image:: ../img/BioFlexGen.png
+   :scale: 50%
    :align: center
 
 - `Analysis of the role of pumped-hydro storage power plants in the Spanish NECP 2030 <https://www.iit.comillas.edu/proyectos/mostrar_proyecto.php.en?nombre_abreviado=IBD_PNIEC_Bbo>`_, developed for **Iberdrola**.
@@ -43,14 +53,14 @@ The model has being used in these research projects:
     It aims to write a presentation on the quantitative analysis of the technical and economic impact of solar thermal in the operation of the Spanish peninsular system.
 
 - Hydro generation advanced systems: modeling, control, and optimized integration to the system (AVANHID), developed for the **Ministry of Science and Innovation/State Research Agency** (10.13039/501100011033) under the program **Public-Private Partnerships** with **NextGenerationEU/PRTR** funds (CPP2021-009114). December 2022 - November 2025.
-  `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `J.M. Latorre <https://www.iit.comillas.edu/people/jesuslc>`_, `P. Dueñas <https://www.iit.comillas.edu/people/pduenas>`_, `L. Rouco <https://www.iit.comillas.edu/people/rouco>`_, `L. Sigrist <https://www.iit.comillas.edu/people/lsigrist>`_, `I. Egido <https://www.iit.comillas.edu/people/egido>`_, `J.D. Gómez <https://www.iit.comillas.edu/people/jdgomez>`_
+  `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `J.M. Latorre <https://www.iit.comillas.edu/people/jesuslc>`_, `P. Dueñas <https://www.iit.comillas.edu/people/pduenas>`_, `L. Rouco <https://www.iit.comillas.edu/people/rouco>`_, `L. Sigrist <https://www.iit.comillas.edu/people/lsigrist>`_, `I. Egido <https://www.iit.comillas.edu/people/egido>`_, `J.D. Gómez Pérez <https://www.iit.comillas.edu/people/jdgomez>`_, `F. Labora <https://www.iit.comillas.edu/people/flabora>`_
 
 .. image:: ../img/ColabPP.jpg
    :scale: 30%
    :align: center
 
 - Local markets for energy communities: designing efficient markets and assessing the integration from the electricity system perspective (OptiREC), developed for the **Ministry of Science and Innovation/State Research Agency** (10.13039/501100011033) under the program **Strategic projects oriented to the ecological transition and digital transition** with **NextGenerationEU/PRTR** funds (TED2021-131365B-C43). December 2022 - November 2024.
-  `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `J.P. Chaves <https://www.iit.comillas.edu/people/jchaves>`_, `J.M. Latorre <https://www.iit.comillas.edu/people/jesuslc>`_, `P. Sanchez <https://www.iit.comillas.edu/people/psanchez>`_, `M. Troncia <https://www.iit.comillas.edu/people/mtroncia>`_, `S.A. Mansouri <https://www.iit.comillas.edu/people/smansouri>`_, `O.M. Valarezo <https://www.iit.comillas.edu/people/ovalarezo>`_
+  `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `J.P. Chaves <https://www.iit.comillas.edu/people/jchaves>`_, `J.M. Latorre <https://www.iit.comillas.edu/people/jesuslc>`_, `J. García <https://www.iit.comillas.edu/people/javiergg>`_, `M. Troncia <https://www.iit.comillas.edu/people/mtroncia>`_, `S.A. Mansouri <https://www.iit.comillas.edu/people/smansouri>`_, `O.M. Valarezo <https://www.iit.comillas.edu/people/ovalarezo>`_, `M. Mohammed <https://www.iit.comillas.edu/people/mmohammed>`_
 
 .. image:: ../img/ColabPP.jpg
    :scale: 30%

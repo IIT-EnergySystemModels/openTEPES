@@ -1,8 +1,17 @@
 Change Log
 =============
 
-[4.15.8] - 2024-03-04
+[4.16.0] - 2024-03-14
 ----------------------
+- [CHANGED] introduction of StableTime in Data_Generation for nuclear units
+- [CHANGED] introduction of MinimumPowerHeat/MaximumPowerHeat in Data_Generation for CHP units
+- [CHANGED] inventories/reservoir volumes are no longer fixed to their initial value at the end of every storage type cycle
+
+[4.15.8] - 2024-03-12
+----------------------
+- [FIXED] check calls of mutable parameters
+- [FIXED] change sign of water/energy values
+- [FIXED] fix sign of dual variable of equality constraints
 - [FIXED] fix some errors in cases with no renewables
 - [CHANGED] fix some future warnings in output results
 
