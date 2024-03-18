@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 09, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 18, 2024
 """
 
 import time
@@ -20,6 +20,9 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
     #%% solving the problem
     Solver = SolverFactory(SolverName)                                                       # select solver
     if SolverName == 'gurobi':
+        FileName = _path+'/openTEPES_gurobi_'+CaseName+'.log'
+        if os.path.exists(FileName):
+            os.remove(FileName)
         Solver.options['LogFile'       ] = _path+'/openTEPES_gurobi_'+CaseName+'.log'
         # Solver.options['SolutionTarget'] = 1                                                 # optimal solution with or without basic solutions
         Solver.options['Method'        ] = 2                                                 # barrier method
@@ -34,6 +37,18 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
         Solver.options['Threads'       ] = int((psutil.cpu_count(logical=True) + psutil.cpu_count(logical=False))/2)
         Solver.options['TimeLimit'     ] =    36000
         Solver.options['IterationLimit'] = 36000000
+    if SolverName == 'appsi_highs':
+        FileName = _path+'/openTEPES_highs_'+CaseName+'.log'
+        if os.path.exists(FileName):
+            os.remove(FileName)
+        Solver.options['log_file'           ] = _path+'/openTEPES_highs_'+CaseName+'.log'
+        Solver.options['log_to_console'     ] = 'true'
+        Solver.options['solver'             ] = 'simplex'
+        Solver.options['run_crossover'      ] = 'off'
+        Solver.options['mip_rel_gap'        ] = 0.01
+        Solver.options['threads'            ] = int((psutil.cpu_count(logical=True) + psutil.cpu_count(logical=False))/2)
+        Solver.options['time_limit'         ] =    36000
+        Solver.options['ipm_iteration_limit'] = 36000000
     if SolverName == 'gams':
         solver_options = {
             'file COPT / cplex.opt / ; put COPT putclose "LPMethod 4" / "RINSHeur 100" / ; GAMS_MODEL.OptFile = 1 ;'

@@ -1,8 +1,10 @@
 Change Log
 =============
 
-[4.16.0] - 2024-03-14
+[4.16.0] - 2024-03-18
 ----------------------
+- [CHANGED] add curtailment in summary generation file
+- [CHANGED] introduction of HiGHS options and as default solver
 - [CHANGED] introduction of StableTime in Data_Generation for nuclear units
 - [CHANGED] introduction of MinimumPowerHeat/MaximumPowerHeat in Data_Generation for CHP units
 - [CHANGED] inventories/reservoir volumes are no longer fixed to their initial value at the end of every storage type cycle

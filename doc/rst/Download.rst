@@ -3,7 +3,7 @@
 Download & Installation
 =======================
 The **openTEPES** has been developed using `Python 3.11.5 <https://www.python.org/>`_ and `Pyomo 6.7.1 <https://pyomo.readthedocs.io/en/stable/>`_ and it uses `Gurobi 11.0.1 <https://www.gurobi.com/products/gurobi-optimizer/>`_ as commercial MIP solver for which a free academic license is available.
-It uses Pyomo so that it is independent of the preferred solver. You can alternatively use one of the free solvers `HiGHS 1.5.3 <https://ergo-code.github.io/HiGHS/dev/installation/>`_, `SCIP 9.0.0 <https://www.scipopt.org/>`_, `GLPK 5.0 <https://www.gnu.org/software/glpk/>`_
+It uses Pyomo so that it is independent of the preferred solver. You can alternatively use one of the free solvers `HiGHS 1.7.0 <https://ergo-code.github.io/HiGHS/dev/interfaces/python/#python-getting-started>`_, `SCIP 9.0.0 <https://www.scipopt.org/>`_, `GLPK 5.0 <https://www.gnu.org/software/glpk/>`_
 and `CBC 2.10.11 <https://github.com/coin-or/Cbc/releases>`_. List the serial solver interfaces under Pyomo with this call::
 
   pyomo help -s
@@ -69,6 +69,18 @@ Continue at `Get Started <#get-started>`_ and see the `Tips <#tips>`_.
 
 **Solvers**
 
+
+HiGHS
+
+The `HiGHS solver <https://ergo-code.github.io/HiGHS/dev/interfaces/python/#python-getting-started>`_ can also be used. It can be installed using: ``pip install highspy``.
+This solver is activated by calling the openTEPES model with the solver name 'appsi_highs'.
+
+Gurobi
+
+Another recommendation is the use of `Gurobi solver <https://www.gurobi.com/>`_. However, it is commercial solver but most powerful than open-source solvers for large-scale problems.
+As a commercial solver it needs a license that is free of charge for academic usage by signing up in `Gurobi webpage <https://pages.gurobi.com/registration/>`_.
+It can be installed using: ``conda install -c gurobi gurobi`` and then ask for an academic or commercial license. Activate the license in your computer using the ``grbgetkey`` command (you need to be in a university domain if you are installing an academic license).
+
 GLPK
 
 As an easy option for installation, we have the free and open-source `GLPK solver <https://www.gnu.org/software/glpk/>`_. However, it takes too much time for large-scale problems. It can be installed using: ``conda install -c conda-forge glpk``.
@@ -77,20 +89,9 @@ CBC
 
 The `CBC solver <https://github.com/coin-or/Cbc>`_ is our recommendation if you want a free and open-source solver. For Windows users, the effective way to install the CBC solver is downloading the binaries from this `site <https://www.coin-or.org/download/binary/Cbc/>`_, copy and paste the *cbc.exe* file to the PATH that is the "bin" directory of the Anaconda or Miniconda environment. It can be installed using: ``conda install -c conda-forge coincbc``.
 
-Gurobi
-
-Another recommendation is the use of `Gurobi solver <https://www.gurobi.com/>`_. However, it is commercial solver but most powerful than GLPK and CBC for large-scale problems.
-As a commercial solver it needs a license that is free of charge for academic usage by signing up in `Gurobi webpage <https://pages.gurobi.com/registration/>`_.
-It can be installed using: ``conda install -c gurobi gurobi`` and then ask for an academic or commercial license. Activate the license in your computer using the ``grbgetkey`` command (you need to be in the university domain if you are installing an academic license).
-
 Mosek
 
 Another alternative is the `Mosek solver <https://www.mosek.com/>`_. Note that it is a commercial solver and you need a license for it. Mosek is a good alternative to deal with QPs, SOCPs, and SDPs problems. You only need to use ``conda install -c mosek mosek`` for installation and request a license (academic or commercial). To request the academic one, you can request `here <https://www.mosek.com/products/academic-licenses/>`_. Moreover, Mosek brings a `license guide <https://docs.mosek.com/9.2/licensing/index.html>`_. But if you are request an academic license, you will receive the license by email, and you only need to locate it in the following path ``C:\Users\(your user)\mosek`` in your computer.
-
-HiGHS
-
-The `HiGHS solver <https://github.com/ERGO-Code/HiGHS>`_ can also be used. For Windows users, the way to install the HiGHS solver is downloading the binaries from this `website <https://github.com/JuliaBinaryWrappers/HiGHSstatic_jll.jl/releases>`_, copy and paste the *highs.exe* file to the Python folder of the Anaconda or Miniconda environment.
-This solver is activated by calling the openTEPES model with the solver name 'appsi_highs'.
 
 GAMS
 
