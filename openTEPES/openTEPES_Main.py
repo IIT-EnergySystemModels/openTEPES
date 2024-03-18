@@ -696,7 +696,7 @@ parser.add_argument('--result', type=str, default=None)
 
 DIR    = os.path.dirname(__file__)
 CASE   = '9n'
-SOLVER = 'cbc'
+SOLVER = 'appsi_highs'
 RESULT = 'No'
 LOG    = 'No'
 
