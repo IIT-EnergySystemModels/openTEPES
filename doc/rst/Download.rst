@@ -8,12 +8,12 @@ and `CBC 2.10.11 <https://github.com/coin-or/Cbc/releases>`_. List the serial so
 
   pyomo help -s
 
-Gurobi, HiGHS, SCIP, or CBC  solvers can be installed as a package::
+Gurobi, HiGHS, SCIP, or GLPK  solvers can be installed as a package::
 
   conda install -c gurobi      gurobi
   pip   install                highspy
   conda install -c conda-forge pyscipopt
-  conda install -c conda-forge coincbc
+  conda install                glpk
 
 The model openTEPES can also be solved with `GAMS <https://www.gams.com/>`_ and a valid `GAMS license <https://www.gams.com/buy_gams/>`_ for a solver. The GAMS language is not included in the openTEPES package and must be installed separately.
 This option is activated by calling the openTEPES model with the solver name 'gams'.
@@ -78,7 +78,7 @@ This solver is activated by calling the openTEPES model with the solver name 'ap
 Gurobi
 
 Another recommendation is the use of `Gurobi solver <https://www.gurobi.com/>`_. However, it is commercial solver but most powerful than open-source solvers for large-scale problems.
-As a commercial solver it needs a license that is free of charge for academic usage by signing up in `Gurobi webpage <https://pages.gurobi.com/registration/>`_.
+As a commercial solver it needs a license that is free of charge for academic usage by signing up in `Gurobi webpage <https://pages.gurobi.com/registration/>`_. You can also ask for an `evaluation license <https://www.gurobi.com/downloads/request-an-evaluation-license/>`_ for 30 days to test the solver.
 It can be installed using: ``conda install -c gurobi gurobi`` and then ask for an academic or commercial license. Activate the license in your computer using the ``grbgetkey`` command (you need to be in a university domain if you are installing an academic license).
 
 GLPK
