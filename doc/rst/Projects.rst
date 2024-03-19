@@ -138,6 +138,10 @@ The model has being used in these research projects:
 
     It aims to develop of a global platform that integrates innovative energy simulation and impact assessment models that allow speeding the decarbonization of the electricity system including the electrification of the energy demand.
 
+.. image:: ../img/micinn_aei.jpg
+   :scale: 30%
+   :align: center
+
 - `Open ENergy TRansition ANalyses for a low-carbon Economy (openENTRANCE) <https://openentrance.eu/>`_, developed for the **European Union**. May 2019 - June 2023.
   `L. Olmos <https://www.iit.comillas.edu/people/olmos>`_, `S. Lumbreras <https://www.iit.comillas.edu/people/slumbreras>`_, `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_,
   `E. Alvarez <https://www.iit.comillas.edu/people/ealvarezq>`_
