@@ -885,13 +885,13 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     idxEnergy['Monthly'] = round( 672/pTimeStep)
     idxEnergy['Yearly' ] = round(8736/pTimeStep)
 
-    pCycleTimeStep    = pStorageType.map (idxCycle                                                                                  ).astype('int')
+    pStorageTimeStep  = pStorageType.map (idxCycle                                                                                  ).astype('int')
     pOutflowsTimeStep = pOutflowsType.map(idxOutflows).where(pEnergyOutflows.sum()                               > 0.0, other = 8736).astype('int')
     pEnergyTimeStep   = pEnergyType.map  (idxEnergy  ).where(pVariableMinEnergy.sum() + pVariableMaxEnergy.sum() > 0.0, other = 8736).astype('int')
 
-    pCycleTimeStep    = pd.concat([pCycleTimeStep, pOutflowsTimeStep, pEnergyTimeStep], axis=1).min(axis=1)
+    pStorageTimeStep  = pd.concat([pStorageTimeStep, pOutflowsTimeStep, pEnergyTimeStep], axis=1).min(axis=1)
     # cycle time step can't exceed the stage duration
-    pCycleTimeStep    = pCycleTimeStep.where(pCycleTimeStep <= pStageDuration.min(), pStageDuration.min())
+    pStorageTimeStep  = pStorageTimeStep.where(pStorageTimeStep <= pStageDuration.min(), pStageDuration.min())
 
     if pIndHydroTopology == 1:
         # %% definition of the time-steps leap to observe the stored energy at a reservoir
@@ -915,9 +915,9 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         pCycleRsrTimeStep = pReservoirType.map(idxCycleRsr).astype('int')
         pWaterOutTimeStep = pWaterOutfType.map(idxWaterOut).astype('int')
 
-        pCycleWaterStep   = pd.concat([pCycleRsrTimeStep, pWaterOutTimeStep], axis=1).min(axis=1)
+        pReservoirTimeStep   = pd.concat([pCycleRsrTimeStep, pWaterOutTimeStep], axis=1).min(axis=1)
         # cycle water step can't exceed the stage duration
-        pCycleWaterStep   = pCycleWaterStep.where(pCycleWaterStep <= pStageDuration.min(), pStageDuration.min())
+        pReservoirTimeStep   = pReservoirTimeStep.where(pReservoirTimeStep <= pStageDuration.min(), pStageDuration.min())
 
     # initial inventory must be between minimum and maximum
     pInitialInventory   = pRatedMinStorage.where(pRatedMinStorage > pInitialInventory, pInitialInventory)
@@ -936,7 +936,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
 
     # initial inventory must be between minimum and maximum
     for p,sc,n,es in mTEPES.psnes:
-        if (st,n) in mTEPES.s2n and mTEPES.n.ord(n) == pCycleTimeStep[es]:
+        if (st,n) in mTEPES.s2n and mTEPES.n.ord(n) == pStorageTimeStep[es]:
             if  pIniInventory[es][p,sc,n] < pMinStorage[es][p,sc,n]:
                 pIniInventory[es][p,sc,n] = pMinStorage[es][p,sc,n]
                 print('### Initial inventory lower than minimum storage ',   es)
@@ -945,7 +945,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
                 print('### Initial inventory greater than maximum storage ', es)
     if pIndHydroTopology == 1:
         for p,sc,n,rs in mTEPES.psnrs:
-            if (st,n) in mTEPES.s2n and mTEPES.n.ord(n) == pCycleWaterStep[rs]:
+            if (st,n) in mTEPES.s2n and mTEPES.n.ord(n) == pReservoirTimeStep[rs]:
                 if  pIniVolume[rs][p,sc,n] < pMinVolume[rs][p,sc,n]:
                     pIniVolume[rs][p,sc,n] = pMinVolume[rs][p,sc,n]
                     print('### Initial volume lower than minimum volume ',   rs)
@@ -979,7 +979,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
 
     # drop generators not es
     pEfficiency          = pEfficiency.loc          [mTEPES.eh   ]
-    pCycleTimeStep       = pCycleTimeStep.loc       [mTEPES.es   ]
+    pStorageTimeStep     = pStorageTimeStep.loc     [mTEPES.es   ]
     pOutflowsTimeStep    = pOutflowsTimeStep.loc    [mTEPES.es   ]
     # pInitialInventory    = pInitialInventory.loc    [mTEPES.es   ]
     pStorageType         = pStorageType.loc         [mTEPES.es   ]
@@ -1315,7 +1315,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.pProductionFunctionHydro = Param(mTEPES.h ,    initialize=pProductionFunctionHydro.to_dict()  , within=NonNegativeReals,    doc='Production function of a hydro power plant'          )
     mTEPES.pProductionFunctionH2    = Param(mTEPES.el,    initialize=pProductionFunctionH2.to_dict()     , within=NonNegativeReals,    doc='Production function of an electrolyzer plan'         )
     mTEPES.pEfficiency              = Param(mTEPES.eh,    initialize=pEfficiency.to_dict()               , within=UnitInterval    ,    doc='Round-trip efficiency'                               )
-    mTEPES.pCycleTimeStep           = Param(mTEPES.es,    initialize=pCycleTimeStep.to_dict()            , within=PositiveIntegers,    doc='ESS Storage cycle'                                   )
+    mTEPES.pStorageTimeStep         = Param(mTEPES.es,    initialize=pStorageTimeStep.to_dict()          , within=PositiveIntegers,    doc='ESS Storage cycle'                                   )
     mTEPES.pOutflowsTimeStep        = Param(mTEPES.es,    initialize=pOutflowsTimeStep.to_dict()         , within=PositiveIntegers,    doc='ESS Outflows cycle'                                  )
     mTEPES.pEnergyTimeStep          = Param(mTEPES.gg,    initialize=pEnergyTimeStep.to_dict()           , within=PositiveIntegers,    doc='Unit energy cycle'                                   )
     mTEPES.pIniInventory            = Param(mTEPES.psnes, initialize=pIniInventory.stack().to_dict()     , within=NonNegativeReals,    doc='ESS Initial storage',                    mutable=True)
@@ -1335,7 +1335,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         mTEPES.pRsrInvestCost       = Param(mTEPES.rn,    initialize=pRsrInvestCost.to_dict()        , within=NonNegativeReals,    doc='Reservoir fixed cost'                                )
         mTEPES.pRsrPeriodIni        = Param(mTEPES.rs,    initialize=pRsrPeriodIni.to_dict()         , within=PositiveIntegers,    doc='Installation year',                                  )
         mTEPES.pRsrPeriodFin        = Param(mTEPES.rs,    initialize=pRsrPeriodFin.to_dict()         , within=PositiveIntegers,    doc='Retirement   year',                                  )
-        mTEPES.pCycleWaterStep      = Param(mTEPES.rs,    initialize=pCycleWaterStep.to_dict()       , within=PositiveIntegers,    doc='Reservoir volume cycle'                              )
+        mTEPES.pReservoirTimeStep      = Param(mTEPES.rs,    initialize=pReservoirTimeStep.to_dict()       , within=PositiveIntegers,    doc='Reservoir volume cycle'                              )
         mTEPES.pWaterOutTimeStep    = Param(mTEPES.rs,    initialize=pWaterOutTimeStep.to_dict()     , within=PositiveIntegers,    doc='Reservoir outflows cycle'                            )
         mTEPES.pIniVolume           = Param(mTEPES.psnrs, initialize=pIniVolume.stack().to_dict()    , within=NonNegativeReals,    doc='Reservoir initial volume',               mutable=True)
         mTEPES.pInitialVolume       = Param(mTEPES.rs,    initialize=pInitialVolume.to_dict()        , within=NonNegativeReals,    doc='Reservoir initial volume without load levels'        )
@@ -1406,22 +1406,22 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         mTEPES.pHeatPipeUpInvest     = Param(mTEPES.hc, initialize=pHeatPipeUpInvest.to_dict()    , within=NonNegativeReals, doc='Upper bound of the heat pipe investment decision', mutable=True)
 
     # load levels multiple of cycles for each ESS/generator
-    mTEPES.nesc         = [(n,es) for n,es in mTEPES.n*mTEPES.es if mTEPES.n.ord(n) %     mTEPES.pCycleTimeStep   [es] == 0]
-    mTEPES.necc         = [(n,ec) for n,ec in mTEPES.n*mTEPES.ec if mTEPES.n.ord(n) %     mTEPES.pCycleTimeStep   [ec] == 0]
+    mTEPES.nesc         = [(n,es) for n,es in mTEPES.n*mTEPES.es if mTEPES.n.ord(n) %     mTEPES.pStorageTimeStep [es] == 0]
+    mTEPES.necc         = [(n,ec) for n,ec in mTEPES.n*mTEPES.ec if mTEPES.n.ord(n) %     mTEPES.pStorageTimeStep [ec] == 0]
     mTEPES.neso         = [(n,es) for n,es in mTEPES.n*mTEPES.es if mTEPES.n.ord(n) %     mTEPES.pOutflowsTimeStep[es] == 0]
     mTEPES.ngen         = [(n,g ) for n,g  in mTEPES.n*mTEPES.g  if mTEPES.n.ord(n) %     mTEPES.pEnergyTimeStep  [g ] == 0]
     if pIndHydroTopology == 1:
-        mTEPES.nhc      = [(n,h ) for n,h  in mTEPES.n*mTEPES.h  if mTEPES.n.ord(n) % sum(mTEPES.pCycleWaterStep  [rs] for rs in mTEPES.rs if (rs,h) in mTEPES.r2h) == 0]
+        mTEPES.nhc      = [(n,h ) for n,h  in mTEPES.n*mTEPES.h  if mTEPES.n.ord(n) % sum(mTEPES.pReservoirTimeStep  [rs] for rs in mTEPES.rs if (rs,h) in mTEPES.r2h) == 0]
         if sum(1 for h,rs in mTEPES.p2r):
-            mTEPES.np2c = [(n,h ) for n,h  in mTEPES.n*mTEPES.h  if sum(1 for rs in mTEPES.rs if (h,rs) in mTEPES.p2r) and mTEPES.n.ord(n) % sum(mTEPES.pCycleWaterStep  [rs] for rs in mTEPES.rs if (h,rs) in mTEPES.p2r) == 0]
+            mTEPES.np2c = [(n,h ) for n,h  in mTEPES.n*mTEPES.h  if sum(1 for rs in mTEPES.rs if (h,rs) in mTEPES.p2r) and mTEPES.n.ord(n) % sum(mTEPES.pReservoirTimeStep  [rs] for rs in mTEPES.rs if (h,rs) in mTEPES.p2r) == 0]
         else:
             mTEPES.np2c = []
         if sum(1 for rs,h in mTEPES.r2p):
-            mTEPES.npc  = [(n,h ) for n,h  in mTEPES.n*mTEPES.h  if sum(1 for rs in mTEPES.rs if (rs,h) in mTEPES.r2p) and mTEPES.n.ord(n) % sum(mTEPES.pCycleWaterStep  [rs] for rs in mTEPES.rs if (rs,h) in mTEPES.r2p) == 0]
+            mTEPES.npc  = [(n,h ) for n,h  in mTEPES.n*mTEPES.h  if sum(1 for rs in mTEPES.rs if (rs,h) in mTEPES.r2p) and mTEPES.n.ord(n) % sum(mTEPES.pReservoirTimeStep  [rs] for rs in mTEPES.rs if (rs,h) in mTEPES.r2p) == 0]
         else:
             mTEPES.npc  = []
-        mTEPES.nrsc     = [(n,rs) for n,rs in mTEPES.n*mTEPES.rs if mTEPES.n.ord(n) %     mTEPES.pCycleWaterStep  [rs] == 0]
-        mTEPES.nrcc     = [(n,rs) for n,rs in mTEPES.n*mTEPES.rn if mTEPES.n.ord(n) %     mTEPES.pCycleWaterStep  [rs] == 0]
+        mTEPES.nrsc     = [(n,rs) for n,rs in mTEPES.n*mTEPES.rs if mTEPES.n.ord(n) %     mTEPES.pReservoirTimeStep  [rs] == 0]
+        mTEPES.nrcc     = [(n,rs) for n,rs in mTEPES.n*mTEPES.rn if mTEPES.n.ord(n) %     mTEPES.pReservoirTimeStep  [rs] == 0]
         mTEPES.nrso     = [(n,rs) for n,rs in mTEPES.n*mTEPES.rs if mTEPES.n.ord(n) %     mTEPES.pWaterOutTimeStep[rs] == 0]
 
     # ESS with outflows
@@ -1831,7 +1831,7 @@ def SettingUpVariables(OptModel, mTEPES):
     mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in mTEPES.stt and mTEPES.pStageWeight[stt] and sum(1 for (stt,nn)                   in mTEPES.s2n))
     mTEPES.n  = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in mTEPES.nn                               and sum(1 for st in mTEPES.st if (st,nn) in mTEPES.s2n))
 
-    # fixing the ESS inventory at the end of the following pCycleTimeStep (daily, weekly, monthly) if between storage limits, i.e.,
+    # fixing the ESS inventory at the end of the following pStorageTimeStep (daily, weekly, monthly) if between storage limits, i.e.,
     # for daily ESS is fixed at the end of the week, for weekly ESS is fixed at the end of the month, for monthly ESS is fixed at the end of the year
     # for p,sc,n,es in mTEPES.psnes:
     #     if es not in mTEPES.ec:
@@ -1849,7 +1849,7 @@ def SettingUpVariables(OptModel, mTEPES):
     #             nFixedVariables += 1
 
     # if mTEPES.pIndHydroTopology == 1:
-        # fixing the reservoir volume at the end of the following pCycleWaterStep (daily, weekly, monthly) if between storage limits, i.e.,
+        # fixing the reservoir volume at the end of the following pReservoirTimeStep (daily, weekly, monthly) if between storage limits, i.e.,
         # for daily reservoir is fixed at the end of the week, for weekly reservoir is fixed at the end of the month, for monthly reservoir is fixed at the end of the year
         # for p,sc,n,rs in mTEPES.psnrs:
         #     if rs not in mTEPES.rn:
@@ -2154,12 +2154,12 @@ def SettingUpVariables(OptModel, mTEPES):
     # detect inventory infeasibility
     for p,sc,n,es in mTEPES.ps*mTEPES.nesc:
         if mTEPES.pMaxCapacity[p,sc,n,es]:
-            if   mTEPES.n.ord(n) == mTEPES.pCycleTimeStep[es]:
-                if mTEPES.pIniInventory[p,sc,n,es]()                                      + sum(mTEPES.pDuration[n2]()*(mTEPES.pEnergyInflows[p,sc,n2,es]() - mTEPES.pMinPowerElec[p,sc,n2,es] + mTEPES.pEfficiency[es]*mTEPES.pMaxCharge[p,sc,n2,es]) for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pCycleTimeStep[es]:mTEPES.n.ord(n)]) < mTEPES.pMinStorage[p,sc,n,es]:
+            if   mTEPES.n.ord(n) == mTEPES.pStorageTimeStep[es]:
+                if mTEPES.pIniInventory[p,sc,n,es]()                                        + sum(mTEPES.pDuration[n2]()*(mTEPES.pEnergyInflows[p,sc,n2,es]() - mTEPES.pMinPowerElec[p,sc,n2,es] + mTEPES.pEfficiency[es]*mTEPES.pMaxCharge[p,sc,n2,es]) for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pStorageTimeStep[es]:mTEPES.n.ord(n)]) < mTEPES.pMinStorage[p,sc,n,es]:
                     print('### Inventory equation violation ', p, sc, n, es)
                     assert (0 == 1)
-            elif mTEPES.n.ord(n) >  mTEPES.pCycleTimeStep[es]:
-                if mTEPES.pMaxStorage[p,sc,mTEPES.n.prev(n,mTEPES.pCycleTimeStep[es]),es] + sum(mTEPES.pDuration[n2]()*(mTEPES.pEnergyInflows[p,sc,n2,es]() - mTEPES.pMinPowerElec[p,sc,n2,es] + mTEPES.pEfficiency[es]*mTEPES.pMaxCharge[p,sc,n2,es]) for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pCycleTimeStep[es]:mTEPES.n.ord(n)]) < mTEPES.pMinStorage[p,sc,n,es]:
+            elif mTEPES.n.ord(n) >  mTEPES.pStorageTimeStep[es]:
+                if mTEPES.pMaxStorage[p,sc,mTEPES.n.prev(n,mTEPES.pStorageTimeStep[es]),es] + sum(mTEPES.pDuration[n2]()*(mTEPES.pEnergyInflows[p,sc,n2,es]() - mTEPES.pMinPowerElec[p,sc,n2,es] + mTEPES.pEfficiency[es]*mTEPES.pMaxCharge[p,sc,n2,es]) for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pStorageTimeStep[es]:mTEPES.n.ord(n)]) < mTEPES.pMinStorage[p,sc,n,es]:
                     print('### Inventory equation violation ', p, sc, n, es)
                     assert (0 == 1)
 
