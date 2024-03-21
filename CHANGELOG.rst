@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.16.0] - 2024-03-18
+[4.16.0] - 2024-03-21
 ----------------------
+- [CHANGED] avoid some computations is converting small parameters to 0
 - [CHANGED] add curtailment in summary generation file
 - [CHANGED] introduction of HiGHS options and as default solver
 - [CHANGED] introduction of StableTime in Data_Generation for nuclear units

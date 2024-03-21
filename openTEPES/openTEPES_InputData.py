@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 14, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 21, 2024
 """
 
 import datetime
@@ -594,7 +594,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     else:
         mTEPES.rn = Set(initialize=[],                      ordered=False, doc='candidate reservoirs')
     if pIndHydrogen      == 1:
-        mTEPES.pn = Set(initialize=dfNetworkHydrogen.index, ordered=False, doc='all input hydrogen pipes'                                                                                          )
+        mTEPES.pn = Set(initialize=dfNetworkHydrogen.index, ordered=False, doc='all input hydrogen pipes'                                                                                            )
         mTEPES.pa = Set(initialize=mTEPES.pn,               ordered=False, doc='all real  hydrogen pipes', filter=lambda mTEPES,*pn     :  pn     in mTEPES.pn  and pH2PipeNTCFrw[pn] > 0.0 and pH2PipeNTCBck[pn] > 0.0 and pH2PipePeriodIni[pn] <= mTEPES.p.last() and pH2PipePeriodFin[pn] >= mTEPES.p.first())
         mTEPES.pc = Set(initialize=mTEPES.pa,               ordered=False, doc='candidate hydrogen pipes', filter=lambda mTEPES,*pa     :  pa     in mTEPES.pa  and pH2PipeFixedCost      [pa] >  0.0)
         # existing hydrogen pipelines (pe)
@@ -1025,42 +1025,27 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     for p,ar in mTEPES.par:
         # values < 1e-5 times the maximum demand for each area (an area is related to operating reserves procurement, i.e., country) are converted to 0
         pDemandElecPeak[p,ar] = pDemandElec[[nd for nd in d2a[ar]]].sum(axis=1).max()
-        pEpsilon          = pDemandElecPeak[p,ar]*2.5e-5
-        # values < 1e-5 times the maximum system demand are converted to 0
-        # pEpsilon      = pDemandElec.sum(axis=1).max()*1e-5
+        pEpsilon              = pDemandElecPeak[p,ar]*1e-5
 
         # these parameters are in GW
-        pDemandElecPos  [pDemandElecPos  [[nd for nd in d2a[ar]]] <  pEpsilon] = 0.0
-        pDemandElecNeg  [pDemandElecNeg  [[nd for nd in d2a[ar]]] > -pEpsilon] = 0.0
-        pSystemInertia  [pSystemInertia  [[                 ar ]] <  pEpsilon] = 0.0
-        pOperReserveUp  [pOperReserveUp  [[                 ar ]] <  pEpsilon] = 0.0
-        pOperReserveDw  [pOperReserveDw  [[                 ar ]] <  pEpsilon] = 0.0
-        pMinPowerElec   [pMinPowerElec   [[g  for  g in g2a[ar]]] <  pEpsilon] = 0.0
-        pMaxPowerElec   [pMaxPowerElec   [[g  for  g in g2a[ar]]] <  pEpsilon] = 0.0
-        pMinCharge      [pMinCharge      [[es for es in e2a[ar]]] <  pEpsilon] = 0.0
-        pMaxCharge      [pMaxCharge      [[eh for eh in g2a[ar]]] <  pEpsilon] = 0.0
-        pEnergyInflows  [pEnergyInflows  [[es for es in e2a[ar]]] <  pEpsilon/pTimeStep] = 0.0
-        pEnergyOutflows [pEnergyOutflows [[es for es in e2a[ar]]] <  pEpsilon/pTimeStep] = 0.0
-        # these parameters are in GWh
-        pMinStorage     [pMinStorage     [[es for es in e2a[ar]]] <  pEpsilon] = 0.0
-        pMaxStorage     [pMaxStorage     [[es for es in e2a[ar]]] <  pEpsilon] = 0.0
-        pIniInventory   [pIniInventory   [[es for es in e2a[ar]]] <  pEpsilon] = 0.0
+        pDemandElecPos      [pDemandElecPos [[nd for nd in d2a[ar]]] <  pEpsilon] = 0.0
+        pDemandElecNeg      [pDemandElecNeg [[nd for nd in d2a[ar]]] > -pEpsilon] = 0.0
+        pSystemInertia      [pSystemInertia [[                 ar ]] <  pEpsilon] = 0.0
+        pOperReserveUp      [pOperReserveUp [[                 ar ]] <  pEpsilon] = 0.0
+        pOperReserveDw      [pOperReserveDw [[                 ar ]] <  pEpsilon] = 0.0
+        if len(g2a[ar]):
+            pMinPowerElec   [pMinPowerElec  [[g  for  g in g2a[ar]]] <  pEpsilon] = 0.0
+            pMaxPowerElec   [pMaxPowerElec  [[g  for  g in g2a[ar]]] <  pEpsilon] = 0.0
+            pMinCharge      [pMinCharge     [[es for es in e2a[ar]]] <  pEpsilon] = 0.0
+            pMaxCharge      [pMaxCharge     [[eh for eh in g2a[ar]]] <  pEpsilon] = 0.0
+            pEnergyInflows  [pEnergyInflows [[es for es in e2a[ar]]] <  pEpsilon] = 0.0
+            pEnergyOutflows [pEnergyOutflows[[es for es in e2a[ar]]] <  pEpsilon] = 0.0
+            # these parameters are in GWh
+            pMinStorage     [pMinStorage    [[es for es in e2a[ar]]] <  pEpsilon] = 0.0
+            pMaxStorage     [pMaxStorage    [[es for es in e2a[ar]]] <  pEpsilon] = 0.0
+            pIniInventory   [pIniInventory  [[es for es in e2a[ar]]] <  pEpsilon] = 0.0
 
         # pInitialInventory.update(pd.Series([0.0 for es in e2a[ar] if pInitialInventory[es] < pEpsilon], index=[es for es in e2a[ar] if pInitialInventory[es] < pEpsilon], dtype='float64'))
-
-        pLineNTCFrw.update(pd.Series([0.0 for ni,nf,cc in mTEPES.la if pLineNTCFrw[ni,nf,cc] < pEpsilon], index=[(ni,nf,cc) for ni,nf,cc in mTEPES.la if pLineNTCFrw[ni,nf,cc] < pEpsilon], dtype='float64'))
-        pLineNTCBck.update(pd.Series([0.0 for ni,nf,cc in mTEPES.la if pLineNTCBck[ni,nf,cc] < pEpsilon], index=[(ni,nf,cc) for ni,nf,cc in mTEPES.la if pLineNTCBck[ni,nf,cc] < pEpsilon], dtype='float64'))
-        pLineNTCMax = pLineNTCFrw.where(pLineNTCFrw > pLineNTCBck, pLineNTCBck)
-
-        if pIndHydrogen == 1:
-            pDemandH2[pDemandH2[[nd for nd in d2a[ar]]] <  pEpsilon] = 0.0
-            pH2PipeNTCFrw.update(pd.Series([0.0 for ni,nf,cc in mTEPES.pa if pH2PipeNTCFrw[ni,nf,cc] < pEpsilon], index=[(ni,nf,cc) for ni,nf,cc in mTEPES.pa if pH2PipeNTCFrw[ni,nf,cc] < pEpsilon], dtype='float64'))
-            pH2PipeNTCBck.update(pd.Series([0.0 for ni,nf,cc in mTEPES.pa if pH2PipeNTCBck[ni,nf,cc] < pEpsilon], index=[(ni,nf,cc) for ni,nf,cc in mTEPES.pa if pH2PipeNTCBck[ni,nf,cc] < pEpsilon], dtype='float64'))
-
-        if pIndHeat == 1:
-            pDemandHeat[pDemandHeat[[nd for nd in d2a[ar]]] <  pEpsilon] = 0.0
-            pHeatPipeNTCFrw.update(pd.Series([0.0 for ni,nf,cc in mTEPES.ha if pHeatPipeNTCFrw[ni,nf,cc] < pEpsilon], index=[(ni,nf,cc) for ni,nf,cc in mTEPES.ha if pHeatPipeNTCFrw[ni,nf,cc] < pEpsilon], dtype='float64'))
-            pHeatPipeNTCBck.update(pd.Series([0.0 for ni,nf,cc in mTEPES.ha if pHeatPipeNTCBck[ni,nf,cc] < pEpsilon], index=[(ni,nf,cc) for ni,nf,cc in mTEPES.ha if pHeatPipeNTCBck[ni,nf,cc] < pEpsilon], dtype='float64'))
 
         # merging positive and negative values of the demand
         pDemandElec        = pDemandElecPos.where(pDemandElecNeg >= 0.0, pDemandElecNeg)
@@ -1069,8 +1054,23 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         pMaxCharge2ndBlock = pMaxCharge - pMinCharge
         pMaxCapacity       = pMaxPowerElec.where(pMaxPowerElec > pMaxCharge, pMaxCharge)
 
-        pMaxPower2ndBlock[pMaxPower2ndBlock [[nr for nr in n2a[ar]]] < pEpsilon] = 0.0
-        pMaxCharge2ndBlock   [pMaxCharge2ndBlock[[eh for eh in g2a[ar]]] < pEpsilon] = 0.0
+        if len(g2a[ar]):
+            pMaxPower2ndBlock [pMaxPower2ndBlock [[nr for nr in n2a[ar]]] < pEpsilon] = 0.0
+            pMaxCharge2ndBlock[pMaxCharge2ndBlock[[eh for eh in g2a[ar]]] < pEpsilon] = 0.0
+
+        pLineNTCFrw.update(pd.Series([0.0 for ni,nf,cc in mTEPES.la if pLineNTCFrw[ni,nf,cc] < pEpsilon], index=[(ni,nf,cc) for ni,nf,cc in mTEPES.la if pLineNTCFrw[ni,nf,cc] < pEpsilon], dtype='float64'))
+        pLineNTCBck.update(pd.Series([0.0 for ni,nf,cc in mTEPES.la if pLineNTCBck[ni,nf,cc] < pEpsilon], index=[(ni,nf,cc) for ni,nf,cc in mTEPES.la if pLineNTCBck[ni,nf,cc] < pEpsilon], dtype='float64'))
+        pLineNTCMax = pLineNTCFrw.where(pLineNTCFrw > pLineNTCBck, pLineNTCBck)
+
+        if pIndHydrogen == 1:
+            pDemandH2[pDemandH2[[nd for nd in d2a[ar]]] < pEpsilon] = 0.0
+            pH2PipeNTCFrw.update(pd.Series([0.0 for ni,nf,cc in mTEPES.pa if pH2PipeNTCFrw[ni,nf,cc] < pEpsilon], index=[(ni,nf,cc) for ni,nf,cc in mTEPES.pa if pH2PipeNTCFrw[ni,nf,cc] < pEpsilon], dtype='float64'))
+            pH2PipeNTCBck.update(pd.Series([0.0 for ni,nf,cc in mTEPES.pa if pH2PipeNTCBck[ni,nf,cc] < pEpsilon], index=[(ni,nf,cc) for ni,nf,cc in mTEPES.pa if pH2PipeNTCBck[ni,nf,cc] < pEpsilon], dtype='float64'))
+
+        if pIndHeat == 1:
+            pDemandHeat[pDemandHeat[[nd for nd in d2a[ar]]] < pEpsilon] = 0.0
+            pHeatPipeNTCFrw.update(pd.Series([0.0 for ni,nf,cc in mTEPES.ha if pHeatPipeNTCFrw[ni,nf,cc] < pEpsilon], index=[(ni,nf,cc) for ni,nf,cc in mTEPES.ha if pHeatPipeNTCFrw[ni,nf,cc] < pEpsilon], dtype='float64'))
+            pHeatPipeNTCBck.update(pd.Series([0.0 for ni,nf,cc in mTEPES.ha if pHeatPipeNTCBck[ni,nf,cc] < pEpsilon], index=[(ni,nf,cc) for ni,nf,cc in mTEPES.ha if pHeatPipeNTCBck[ni,nf,cc] < pEpsilon], dtype='float64'))
 
     # drop generators not g or es or eh or ch
     pMinPowerElec      = pMinPowerElec.loc     [:,mTEPES.g ]
@@ -2144,10 +2144,10 @@ def SettingUpVariables(OptModel, mTEPES):
 
     for es in mTEPES.es:
         # detecting infeasibility: total min ESS output greater than total inflows, total max ESS charge lower than total outflows
-        if sum(mTEPES.pMinPowerElec [p,sc,n,es] for p,sc,n in mTEPES.psn) - sum(mTEPES.pEnergyInflows [p,sc,n,es]() for p,sc,n in mTEPES.psn) > 0.0:
+        if sum(mTEPES.pMinPowerElec[p,sc,n,es] for p,sc,n in mTEPES.psn) - sum(mTEPES.pEnergyInflows [p,sc,n,es]() for p,sc,n in mTEPES.psn) > 0.0:
             print('### Total minimum output greater than total inflows for ESS unit ', es)
             assert (0 == 1)
-        if sum(mTEPES.pMaxCharge[p,sc,n,es] for p,sc,n in mTEPES.psn) - sum(mTEPES.pEnergyOutflows[p,sc,n,es]() for p,sc,n in mTEPES.psn) < 0.0:
+        if sum(mTEPES.pMaxCharge   [p,sc,n,es] for p,sc,n in mTEPES.psn) - sum(mTEPES.pEnergyOutflows[p,sc,n,es]() for p,sc,n in mTEPES.psn) < 0.0:
             print('### Total maximum charge lower than total outflows for ESS unit ', es)
             assert (0 == 1)
 
