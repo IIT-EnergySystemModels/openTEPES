@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.16.0] - 2024-03-21
+[4.16.0] - 2024-03-22
 ----------------------
+- [FIXED] fix several errors in heat modeling
 - [CHANGED] avoid some computations is converting small parameters to 0
 - [CHANGED] add curtailment in summary generation file
 - [CHANGED] introduction of HiGHS options and as default solver
