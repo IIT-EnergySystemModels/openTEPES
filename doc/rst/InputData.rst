@@ -17,7 +17,7 @@ AWE         Alkaline Water Electrolyzer
 BESS        Battery Energy Storage System
 CC          Capacity Credit
 CCGT        Combined Cycle Gas Turbine
-CHP         Combined Heat and Power. Cogeneration
+CHP         Combined Heat and Power. Cogeneration (produces electricity and heat)
 DC          Direct Current
 DCPF        DC Power Flow
 DR          Demand Response
@@ -31,6 +31,7 @@ EV          Electric Vehicle
 mFRR        Manual Frequency Restoration Reserve
 H2          Hydrogen
 HNS         Hydrogen Not Served
+HP          Heat Pump (consumes electricity to produce heat)
 HTNS        Heat Not Served
 NTC         Net Transfer Capacity
 OCGT        Open Cycle Gas Turbine
@@ -766,12 +767,12 @@ Heat System Input Data
 
 These input files are specifically introduced for allowing a representation of the heat energy vector to supply heat demand produced with electricity through the heat network.
 
-===================================  ================================================================================================================================
+===================================  ==============================
 File                                 Description
-===================================  ================================================================================================================================
+===================================  ==============================
 ``oT_Data_DemandHeat.csv``           Heat demand
 ``oT_Data_NetworkHeat.csv``          Heat pipeline network data
-===================================  ================================================================================================================================
+===================================  ==============================
 
 Heat demand
 -----------

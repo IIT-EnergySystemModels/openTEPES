@@ -82,8 +82,8 @@ They are written in **uppercase** letters.
 =========================  ====================================================  =======
 **Heat demand**
 -------------------------  ----------------------------------------------------  -------
-:math:`DHt^p_{\omega ni}`  Heat demand in each node                              Tcal/h
-:math:`CHtNS`              Cost of heat not served                               €/Gcal
+:math:`DHt^p_{\omega ni}`  Heat demand in each node                              GW
+:math:`CHtNS`              Cost of heat not served                               €/MWh
 =========================  ====================================================  =======
 
 ===========================  ====================================================  =======
@@ -148,7 +148,7 @@ They are written in **uppercase** letters.
 :math:`EF_e`                                                       Round-trip efficiency of the pump/turbine cycle of a pumped-storage hydro power plant or charge/discharge of a battery    p.u.
 :math:`PF_h`                                                       Production function from water inflows to energy                                                                          kWh/m\ :sup:`3`
 :math:`PF'_h`                                                      Production function from energy to hydrogen                                                                               kWh/kgH2`
-:math:`PF''_h`                                                     Production function from energy to heat                                                                                   kWh/Mcal`
+:math:`PF''_h`                                                     Production function from energy to heat                                                                                   kWh/kWh`
 :math:`\underline{I}^p_{\omega ne}, \overline{I}^p_{\omega ne}`    Minimum and maximum capacity of an ESS (e.g., hydro power plant, closed-/open-loop pumped-storage hydro)                  GWh
 :math:`\underline{E}^p_{\omega ne}, \overline{E}^p_{\omega ne}`    Minimum and maximum energy produced by a unit in an interval defined                                                      GW
 :math:`EI^p_{\omega ne}`                                           Energy inflows of an ESS (e.g., hydro power plant)                                                                        GW
@@ -188,7 +188,7 @@ The net transfer capacity of a transmission line can be different in each direct
 **Heat transmission system**
 -----------------------------------------  -----------------------------------------------------------------------------------------------------------------  ------
 :math:`CFP_{ijc}`                          Annualized fixed cost of a candidate heat pipe                                                                     M€/yr
-:math:`\overline{FP}_{ijc}`                Net transfer capacity (total transfer capacity multiplied by the security coefficient) of a heat pipe              Tcal/h
+:math:`\overline{FP}_{ijc}`                Net transfer capacity (total transfer capacity multiplied by the security coefficient) of a heat pipe              GW
 =========================================  =================================================================================================================  ======
 
 The net transfer capacity of a transmission pipeline can be different in each direction. However, here it is presented as equal for simplicity.
@@ -265,7 +265,7 @@ They are written in **lowercase** letters.
 **Heat pipe transmission system**
 ------------------------------------------------------------------------  --------------------------------------------------------------  ------
 :math:`icp^p_{ijc}`                                                       Candidate heat pipe installed or not                            {0,1}
-:math:`fp^p_{\omega nijc}`                                                Heat flow through a line                                        Tcal/h
+:math:`fp^p_{\omega nijc}`                                                Heat flow through a line                                        GW
 ========================================================================  ==============================================================  ======
 
 Equations
@@ -559,7 +559,7 @@ Balance of hydrogen generation and demand at each node [tH2] «``eBalanceH2``»
 
 **Heat network operation**
 
-Balance of heat generation and demand at each node [Tcal/h] «``eBalanceHeat``»
+Balance of heat generation and demand at each node [GW] «``eBalanceHeat``»
 
 :math:`\sum_{e \in i} \frac{DUR_n}{PF''_e} gc^p_{\omega ne} + htns^p_{\omega ni} = DUR_n DF^p_{\omega ni} + \sum_{jc} fp^p_{\omega nijc} - \sum_{jc} fp^p_{\omega njic} \quad \forall p \omega ni`
 
@@ -611,6 +611,6 @@ Voltage angle of the reference node fixed to 0 for each scenario, period, and lo
 
 :math:`- \overline{FH}_{ijc} \leq fh^p_{\omega nijc} \leq \overline{FH}_{ijc} \quad \forall p \omega nijc, ijc \in EP`
 
-**Bounds on heat network variables** [Tcal/h]
+**Bounds on heat network variables** [GW]
 
 :math:`- \overline{FP}_{ijc} \leq fp^p_{\omega nijc} \leq \overline{FP}_{ijc} \quad \forall p \omega nijc, ijc \in EP`
