@@ -1392,6 +1392,12 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES, pIndPlotOutput):
         if (nd,hp) in mTEPES.n2g:
             h2n[nd].append(hp)
 
+    # nodes to electrolyzers (e2n)
+    e2n = defaultdict(list)
+    for nd,el in mTEPES.nd*mTEPES.el:
+        if (nd,el) in mTEPES.n2g:
+            e2n[nd].append(el)
+
     # generators to area (e2a) (n2a)
     e2a = defaultdict(list)
     for ar,es in mTEPES.ar*mTEPES.es:
