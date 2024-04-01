@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 31, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 01, 2024
 """
 
 import time
@@ -951,9 +951,9 @@ def NetworkHeatOperationResults(DirName, CaseName, OptModel, mTEPES):
         loc_df['Size'  ] = 15.0
 
         for nd,zn in mTEPES.ndzn:
-            loc_df['Lon'   ][nd] = mTEPES.pNodeLon[nd]
-            loc_df['Zone'  ][nd] = zn
-            loc_df['Demand'][nd] = mTEPES.pDemandHeat[p,sc,n,nd]
+            loc_df.loc[nd,'Lon'   ] = mTEPES.pNodeLon[nd]
+            loc_df.loc[nd,'Zone'  ] = zn
+            loc_df.loc[nd,'Demand'] = mTEPES.pDemandHeat[p,sc,n,nd]
 
         loc_df = loc_df.reset_index().rename(columns={'Type': 'Scenario'}, inplace=False)
 

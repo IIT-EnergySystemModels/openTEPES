@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.16.0] - 2024-03-31
+[4.16.0] - 2024-04-01
 ----------------------
+- [FIXED] fix several errors in hydro reservoir modeling
 - [FIXED] fix several errors in heat modeling
 - [CHANGED] avoid some computations is converting small parameters to 0
 - [CHANGED] add curtailment in summary generation file
