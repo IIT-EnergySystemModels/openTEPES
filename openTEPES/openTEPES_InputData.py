@@ -499,9 +499,9 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pNetUpInvest             = dfNetwork     ['InvestmentUp'          ]                                                      # Upper bound of the investment decision       [p.u.]
 
     # replace pLineNTCBck = 0.0 by pLineNTCFrw
-    pLineNTCBck     = pLineNTCBck.where(pLineNTCBck   > 0.0, pLineNTCFrw)
+    pLineNTCBck     = pLineNTCBck.where (pLineNTCBck  > 0.0, pLineNTCFrw)
     # replace pLineNTCFrw = 0.0 by pLineNTCBck
-    pLineNTCFrw     = pLineNTCFrw.where(pLineNTCFrw   > 0.0, pLineNTCBck)
+    pLineNTCFrw     = pLineNTCFrw.where (pLineNTCFrw  > 0.0, pLineNTCBck)
     # replace pGenUpInvest = 0.0 by 1.0
     pGenUpInvest    = pGenUpInvest.where(pGenUpInvest > 0.0, 1.0        )
     # replace pGenUpRetire = 0.0 by 1.0
@@ -525,11 +525,11 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         pH2PipeUpInvest     = dfNetworkHydrogen['InvestmentUp'       ]                                                  # Upper bound of the investment decision       [p.u.]
 
         # replace pH2PipeNTCBck = 0.0 by pH2PipeNTCFrw
-        pH2PipeNTCBck     = pH2PipeNTCBck.where(pH2PipeNTCBck     > 0.0, pH2PipeNTCFrw)
+        pH2PipeNTCBck     = pH2PipeNTCBck.where  (pH2PipeNTCBck   > 0.0, pH2PipeNTCFrw)
         # replace pH2PipeNTCFrw = 0.0 by pH2PipeNTCBck
-        pH2PipeNTCFrw     = pH2PipeNTCFrw.where(pH2PipeNTCFrw     > 0.0, pH2PipeNTCBck)
+        pH2PipeNTCFrw     = pH2PipeNTCFrw.where  (pH2PipeNTCFrw   > 0.0, pH2PipeNTCBck)
         # replace pH2PipeUpInvest = 0.0 by 1.0
-        pH2PipeUpInvest   = pH2PipeUpInvest.where(pH2PipeUpInvest > 0.0, 1.0        )
+        pH2PipeUpInvest   = pH2PipeUpInvest.where(pH2PipeUpInvest > 0.0, 1.0          )
 
     if pIndHeat == 1:
         pHeatPipeLength       = dfNetworkHeat['Length'             ]                                                    # heat pipe length                             [km]
@@ -543,9 +543,9 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         pHeatPipeUpInvest     = dfNetworkHeat['InvestmentUp'       ]                                                    # Upper bound of the investment decision       [p.u.]
 
         # replace pHeatPipeNTCBck = 0.0 by pHeatPipeNTCFrw
-        pHeatPipeNTCBck     = pHeatPipeNTCBck.where(pHeatPipeNTCBck     > 0.0, pHeatPipeNTCFrw)
+        pHeatPipeNTCBck     = pHeatPipeNTCBck.where  (pHeatPipeNTCBck   > 0.0, pHeatPipeNTCFrw)
         # replace pHeatPipeNTCFrw = 0.0 by pHeatPipeNTCBck
-        pHeatPipeNTCFrw     = pHeatPipeNTCFrw.where(pHeatPipeNTCFrw     > 0.0, pHeatPipeNTCBck)
+        pHeatPipeNTCFrw     = pHeatPipeNTCFrw.where  (pHeatPipeNTCFrw   > 0.0, pHeatPipeNTCBck)
         # replace pHeatPipeUpInvest = 0.0 by 1.0
         pHeatPipeUpInvest   = pHeatPipeUpInvest.where(pHeatPipeUpInvest > 0.0, 1.0            )
 
@@ -923,8 +923,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pInitialInventory   = pRatedMinStorage.where(pRatedMinStorage > pInitialInventory, pInitialInventory)
     pInitialInventory   = pRatedMaxStorage.where(pRatedMaxStorage < pInitialInventory, pInitialInventory)
     if pIndHydroTopology == 1:
-        pInitialVolume  = pRatedMinVolume.where (pRatedMinVolume  > pInitialVolume,    pInitialVolume)
-        pInitialVolume  = pRatedMaxVolume.where (pRatedMaxVolume  < pInitialVolume,    pInitialVolume)
+        pInitialVolume  = pRatedMinVolume.where (pRatedMinVolume  > pInitialVolume,    pInitialVolume   )
+        pInitialVolume  = pRatedMaxVolume.where (pRatedMaxVolume  < pInitialVolume,    pInitialVolume   )
 
     # initial inventory of the candidate storage units equal to its maximum capacity
     pInitialInventory.update(pd.Series([pRatedMaxStorage[ec] for ec in mTEPES.ec], index=mTEPES.ec, dtype='float64'))
@@ -981,26 +981,25 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pEfficiency          = pEfficiency.loc          [mTEPES.eh   ]
     pStorageTimeStep     = pStorageTimeStep.loc     [mTEPES.es   ]
     pOutflowsTimeStep    = pOutflowsTimeStep.loc    [mTEPES.es   ]
-    # pInitialInventory    = pInitialInventory.loc    [mTEPES.es   ]
     pStorageType         = pStorageType.loc         [mTEPES.es   ]
 
     if pIndHydroTopology == 1:
-        pHydroInflows   = pHydroInflows.loc         [mTEPES.psn  ]
-        pHydroOutflows  = pHydroOutflows.loc        [mTEPES.psn  ]
-        pIniVolume      = pIniVolume.loc            [mTEPES.psn  ]
-        pMinVolume      = pMinVolume.loc            [mTEPES.psn  ]
-        pMaxVolume      = pMaxVolume.loc            [mTEPES.psn  ]
+        pHydroInflows    = pHydroInflows.loc        [mTEPES.psn  ]
+        pHydroOutflows   = pHydroOutflows.loc       [mTEPES.psn  ]
+        pIniVolume       = pIniVolume.loc           [mTEPES.psn  ]
+        pMinVolume       = pMinVolume.loc           [mTEPES.psn  ]
+        pMaxVolume       = pMaxVolume.loc           [mTEPES.psn  ]
     if pIndHydrogen == 1:
-        pDemandH2       = pDemandH2.loc             [mTEPES.psn  ]
-        pDemandH2Abs    = pDemandH2.where  (pDemandH2   > 0.0, 0.0)
+        pDemandH2        = pDemandH2.loc            [mTEPES.psn  ]
+        pDemandH2Abs     = pDemandH2.where  (pDemandH2   > 0.0, 0.0)
     if pIndHeat == 1:
-        pDemandHeat     = pDemandHeat.loc           [mTEPES.psn  ]
-        pDemandHeatAbs  = pDemandHeat.where(pDemandHeat > 0.0, 0.0)
+        pDemandHeat      = pDemandHeat.loc          [mTEPES.psn  ]
+        pDemandHeatAbs   = pDemandHeat.where(pDemandHeat > 0.0, 0.0)
 
     # separate positive and negative demands to avoid converting negative values to 0
-    pDemandElecPos      = pDemandElec.where(pDemandElec >= 0.0, 0.0)
-    pDemandElecNeg      = pDemandElec.where(pDemandElec <  0.0, 0.0)
-    pDemandElecAbs      = pDemandElec.where(pDemandElec >  0.0, 0.0)
+    pDemandElecPos       = pDemandElec.where(pDemandElec >= 0.0, 0.0)
+    pDemandElecNeg       = pDemandElec.where(pDemandElec <  0.0, 0.0)
+    pDemandElecAbs       = pDemandElec.where(pDemandElec >  0.0, 0.0)
 
     # generators to area (g2a) (e2a) (n2a)
     g2a = defaultdict(list)
@@ -1050,8 +1049,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         # merging positive and negative values of the demand
         pDemandElec        = pDemandElecPos.where(pDemandElecNeg >= 0.0, pDemandElecNeg)
 
-        pMaxPower2ndBlock  = pMaxPowerElec  - pMinPowerElec
-        pMaxCharge2ndBlock = pMaxCharge - pMinCharge
+        pMaxPower2ndBlock  = pMaxPowerElec - pMinPowerElec
+        pMaxCharge2ndBlock = pMaxCharge    - pMinCharge
         pMaxCapacity       = pMaxPowerElec.where(pMaxPowerElec > pMaxCharge, pMaxCharge)
 
         if len(g2a[ar]):

@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 31, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 01, 2024
 """
 
 import time
@@ -148,9 +148,10 @@ def GenerationOperationModelFormulationObjFunct(OptModel, mTEPES, pIndLogConsole
                                                 sum(mTEPES.pLoadLevelDuration[n]() * mTEPES.pLinearOMCost   [       re] * OptModel.vTotalOutput   [p,sc,n,re] for re in mTEPES.re if (p,re) in mTEPES.pre) )
     setattr(OptModel, 'eTotalGCost_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, rule=eTotalGCost, doc='system variable generation operation cost [MEUR]'))
 
-    # the small tolerance 1e-5 is added to avoid pumping/charging with curtailment/spillage
+    # the small tolerance pEpsilon=1e-5 is added to avoid pumping/charging with curtailment/spillage
+    pEpsilon = 1e-5
     def eTotalCCost(OptModel,n):
-        return OptModel.vTotalCCost    [p,sc,n] == sum(mTEPES.pLoadLevelDuration[n]() * (mTEPES.pLinearVarCost[p,sc,n,eh]+1e-5) * OptModel.vESSTotalCharge[p,sc,n,eh] for eh in mTEPES.eh if (p,eh) in mTEPES.peh)
+        return OptModel.vTotalCCost    [p,sc,n] == sum(mTEPES.pLoadLevelDuration[n]() * (mTEPES.pLinearVarCost[p,sc,n,eh]+pEpsilon) * OptModel.vESSTotalCharge[p,sc,n,eh] for eh in mTEPES.eh if (p,eh) in mTEPES.peh)
     setattr(OptModel, 'eTotalCCost_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, rule=eTotalCCost, doc='system variable consumption operation cost [MEUR]'))
 
     def eTotalECost(OptModel,n):
@@ -497,7 +498,7 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
 
     def eMaxInventory2Comm(OptModel,n,ec):
         if mTEPES.pIndBinStorInvest[ec] and (p,ec) in mTEPES.pec:
-            if mTEPES.pMaxCapacity[p,sc,n,ec] and mTEPES.pMaxStorage[p,sc,n,ec]:
+            if mTEPES.pMaxStorage[p,sc,n,ec]:
                 return OptModel.vESSInventory[p,sc,n,ec] / mTEPES.pMaxStorage[p,sc,n,ec] <= OptModel.vCommitment[p,sc,n,ec]
             else:
                 return Constraint.Skip
@@ -510,7 +511,7 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
 
     def eMinInventory2Comm(OptModel,n,ec):
         if mTEPES.pIndBinStorInvest[ec] and (p,ec) in mTEPES.pec:
-            if mTEPES.pMaxCapacity[p,sc,n,ec] and mTEPES.pMinStorage[p,sc,n,ec]:
+            if mTEPES.pMinStorage[p,sc,n,ec]:
                 return OptModel.vESSInventory[p,sc,n,ec] / mTEPES.pMinStorage[p,sc,n,ec] >= OptModel.vCommitment[p,sc,n,ec]
             else:
                 return Constraint.Skip
@@ -523,7 +524,7 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
 
     def eInflows2Comm(OptModel,n,ec):
         if mTEPES.pIndBinStorInvest[ec] and (p,ec) in mTEPES.pec:
-            if mTEPES.pMaxCapacity[p,sc,n,ec] and mTEPES.pEnergyInflows[p,sc,n,ec]():
+            if mTEPES.pEnergyInflows[p,sc,n,ec]():
                 return OptModel.vEnergyInflows[p,sc,n,ec] / mTEPES.pEnergyInflows[p,sc,n,ec]() <= OptModel.vCommitment[p,sc,n,ec]
             else:
                 return Constraint.Skip
@@ -535,7 +536,7 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
         print('eInflows2Comm         ... ', len(getattr(OptModel, 'eInflows2Comm_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
 
     def eESSInventory(OptModel,n,es):
-        if mTEPES.pMaxCapacity[p,sc,n,es] and (n,es) in mTEPES.nesc and (p,es) in mTEPES.pes:
+        if (n,es) in mTEPES.nesc and (p,es) in mTEPES.pes:
             if   (st,n) in mTEPES.s2n and mTEPES.n.ord(n) == mTEPES.pStorageTimeStep[es]:
                 if es not in mTEPES.ec:
                     return mTEPES.pIniInventory[p,sc,n,es]()                                            + sum(mTEPES.pDuration[n2]()*(mTEPES.pEnergyInflows[p,sc,n2,es]() - OptModel.vEnergyOutflows[p,sc,n2,es] - OptModel.vTotalOutput[p,sc,n2,es] + mTEPES.pEfficiency[es]*OptModel.vESSTotalCharge[p,sc,n2,es]) for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pStorageTimeStep[es]:mTEPES.n.ord(n)]) == OptModel.vESSInventory[p,sc,n,es] + OptModel.vESSSpillage[p,sc,n,es]
@@ -556,7 +557,7 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
         print('eESSInventory         ... ', len(getattr(OptModel, 'eESSInventory_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
 
     def eIniInventory(OptModel,n,ec):
-        if mTEPES.pMaxCapacity[p,sc,n,ec] and mTEPES.pIniInventory[p,sc,n,ec]() and (p,ec) in mTEPES.pec:
+        if mTEPES.pIniInventory[p,sc,n,ec]() and (p,ec) in mTEPES.pec:
             if   (st,n) in mTEPES.s2n and (mTEPES.n.ord(n) == mTEPES.pStorageTimeStep[ec] or mTEPES.n.ord(n) == mTEPES.n.first() or mTEPES.n.ord(n) == mTEPES.n.last()):
                 return mTEPES.vIniInventory[p,sc,n,ec] / mTEPES.pIniInventory[p,sc,n,ec]() == OptModel.vCommitment[p,sc,n,ec]
             else:

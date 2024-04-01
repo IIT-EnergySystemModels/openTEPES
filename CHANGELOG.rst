@@ -3,6 +3,7 @@ Change Log
 
 [4.16.0] - 2024-04-01
 ----------------------
+- [FIXED] delete pMacCapacity in some inventory constraints  
 - [FIXED] fix several errors in hydro reservoir modeling
 - [FIXED] fix several errors in heat modeling
 - [CHANGED] avoid some computations is converting small parameters to 0
