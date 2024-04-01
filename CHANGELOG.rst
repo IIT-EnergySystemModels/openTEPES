@@ -3,6 +3,7 @@ Change Log
 
 [4.16.0] - 2024-04-01
 ----------------------
+- [FIXED] control of max power greater than min power
 - [FIXED] delete pMacCapacity in some inventory constraints
 - [FIXED] fix several errors in hydro reservoir modeling
 - [FIXED] fix several errors in heat modeling
