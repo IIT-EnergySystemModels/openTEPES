@@ -8,16 +8,16 @@ All the input files must be located in a folder with the name of the case study.
 Acronyms
 --------
 
-==========  ====================================================================
+==========  ======================================================================================
 Acronym     Description
-==========  ====================================================================
+==========  ======================================================================================
 AC          Alternating Current
 aFRR        Automatic Frequency Restoration Reserve
-AWE         Alkaline Water Electrolyzer
+AWE         Alkaline Water Electrolyzer (consume electricity to produce hydrogen)
 BESS        Battery Energy Storage System
 CC          Capacity Credit
 CCGT        Combined Cycle Gas Turbine
-CHP         Combined Heat and Power. Cogeneration (produces electricity and heat)
+CHP         Combined Heat and Power. Cogeneration (produces electricity and heat simultaneously)
 DC          Direct Current
 DCPF        DC Power Flow
 DR          Demand Response
@@ -43,7 +43,7 @@ TTC         Total Transfer Capacity
 VOLL        Value of Lost Load
 VRE         Variable Renewable Energy
 VRES        Variable Renewable Energy Source
-==========  ====================================================================
+==========  ======================================================================================
 
 Dictionaries. Sets
 ------------------
