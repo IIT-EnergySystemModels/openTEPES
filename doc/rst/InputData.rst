@@ -342,8 +342,8 @@ InitialPeriod           Initial period (year) when the unit is installed or can 
 FinalPeriod             Final   period (year) when the unit is installed or can be installed, if candidate                                                Year
 MaximumPower            Maximum power output of electricity (generation/discharge for ESS units)                                                          MW
 MinimumPower            Minimum power output of electricity (i.e., minimum stable load in the case of a thermal power plant)                              MW
-MaximumPowerHeat        Maximum power output of heat (heat produced by a CHP at its maximum electric power)                                               MW
-MinimumPowerHeat        Minimum power output of heat (heat produced by a CHP at its minimum electric power)                                               MW
+MaximumPowerHeat        Maximum heat  output (heat produced by a CHP at its maximum electric power) (only used for CHPs)                                  MW
+MinimumPowerHeat        Minimum heat  output (heat produced by a CHP at its minimum electric power) (only used for CHPs)                                  MW
 MaximumReactivePower    Maximum reactive power output (discharge for ESS units) (not used in this version)                                                MW
 MinimumReactivePower    Minimum reactive power output (not used in this version)                                                                          MW
 MaximumCharge           Maximum consumption/charge when the ESS unit is storing energy                                                                    MW
