@@ -13,7 +13,7 @@ Acronym     Description
 ==========  ======================================================================================
 AC          Alternating Current
 aFRR        Automatic Frequency Restoration Reserve
-AWE         Alkaline Water Electrolyzer (consume electricity to produce hydrogen)
+AWE         Alkaline Water Electrolyzer (consumes electricity to produce hydrogen)
 BESS        Battery Energy Storage System
 CC          Capacity Credit
 CCGT        Combined Cycle Gas Turbine
