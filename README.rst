@@ -114,7 +114,7 @@ Miniconda (recommended)
 2. **Packages and Solver**:
 
    1. Launch a new Anaconda prompt (or terminal in any IDE)
-   2. The `CBC solver <https://github.com/coin-or/Cbc>`_ is our recommendation if you want a free and open-source solver. For Windows users, download the binaries from this `CBC's releases <https://github.com/coin-or/Cbc/releases>`_, copy and paste the *cbc.exe* file to the Python folder of the Anaconda or Miniconda environment. In linux it can be installed using: ``conda install -c conda-forge coincbc``.
+   2. The `HiGHS 1.7.0 <https://ergo-code.github.io/HiGHS/dev/interfaces/python/#python-getting-started>`_ is our recommendation if you want a free and open-source solver.
    3. Install openTEPES via pip by ``pip install openTEPES``
 
 Continue at `Get Started <#get-started>`_ and see the `Tips <#tips>`_.
