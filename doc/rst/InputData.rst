@@ -8,9 +8,9 @@ All the input files must be located in a folder with the name of the case study.
 Acronyms
 --------
 
-==========  ======================================================================================
+==========  ============================================================================================================================================================================
 Acronym     Description
-==========  ======================================================================================
+==========  ============================================================================================================================================================================
 AC          Alternating Current
 aFRR        Automatic Frequency Restoration Reserve
 AWE         Alkaline Water Electrolyzer (consumes electricity to produce hydrogen)
@@ -42,21 +42,22 @@ RES         Renewable Energy Source
 TTC         Total Transfer Capacity
 VOLL        Value of Lost Load
 VRE         Variable Renewable Energy
-VRES        Variable Renewable Energy Source
-==========  ======================================================================================
+VRES        Variable Renewable Energy Source (units with null linear variable cost and no storage capacity. Do not contribute to the the operating reserves)
+==========  ============================================================================================================================================================================
 
 Dictionaries. Sets
 ------------------
 The dictionaries include all the possible elements of the corresponding sets included in the optimization problem. **You can't use non-English characters (e.g., ó, º)**
 
-=============================  ===================================================================================================================================================================================================================
+=============================  =====================================================================================================================================================================================================================================================================================================================
+
 File                           Description
-=============================  ===================================================================================================================================================================================================================
+=============================  =====================================================================================================================================================================================================================================================================================================================
 ``oT_Dict_Period.csv``         Period (e.g., 2030, 2035). **It must be a positive integer**
 ``oT_Dict_Scenario.csv``       Scenario. Short-term uncertainties (scenarios) (e.g., s001 to s100)
 ``oT_Dict_Stage.csv``          Stage
 ``oT_Dict_LoadLevel.csv``      Load level (e.g., 01-01 00:00:00+01:00 to 12-30 23:00:00+01:00). Load levels with duration 0 are ignored. The period (year) must represented by 8736 load levels.
-``oT_Dict_Generation.csv``     Generation units (thermal -nuclear, CCGT, OCGT, coal-, ESS -storage hydro modeled in energy or in water, pumped-hydro storage PHS, battery BESS, electric vehicle EV, demand response DR, alkaline water electrolyzer AWE, solar thermal- and VRE -wind onshore and offshore, solar PV, run-of-the-river hydro-)
+``oT_Dict_Generation.csv``     Generation units (thermal -nuclear, CCGT, OCGT, coal-, ESS -storage hydro modeled in energy or in water, pumped-hydro storage PHS, battery BESS, electric vehicle EV, demand response DR, alkaline water electrolyzer AWE, solar thermal- and VRES -wind onshore and offshore, solar PV, run-of-the-river hydro-)
 ``oT_Dict_Technology.csv``     Generation technologies. The technology order is used in the temporal result plot.
 ``oT_Dict_Storage.csv``        ESS storage type (daily < 12 h, weekly < 40 h, monthly > 60 h).
 ``oT_Dict_Node.csv``           Nodes. A node belongs to a zone.
@@ -65,7 +66,7 @@ File                           Description
 ``oT_Dict_Region.csv``         Regions
 ``oT_Dict_Circuit.csv``        Circuits
 ``oT_Dict_Line.csv``           Line type (AC, DC)
-=============================  ===================================================================================================================================================================================================================
+=============================  =====================================================================================================================================================================================================================================================================================================================
 
 Geographical location of nodes, zones, areas, regions.
 
@@ -192,7 +193,7 @@ Identifier      Identifier      Header        Description
 Period          Scenario        Probability   Probability of each scenario in each period  p.u.
 ==============  ==============  ============  ===========================================  ====
 
-For example, the scenarios can be used for obtaining the GEP+SEP+TEP considering hydro energy/water inflows uncertainty represented by means of three scenarios (wet, dry and average), or two VRE scenarios (windy/cloudy and calm/sunny).
+For example, the scenarios can be used for obtaining the GEP+SEP+TEP considering hydro energy/water inflows uncertainty represented by means of three scenarios (wet, dry and average), or two VRES scenarios (windy/cloudy and calm/sunny).
 The sum of the probabilities of all the scenarios of a period must be 1.
 
 Stage
@@ -342,8 +343,8 @@ InitialPeriod           Initial period (year) when the unit is installed or can 
 FinalPeriod             Final   period (year) when the unit is installed or can be installed, if candidate                                                Year
 MaximumPower            Maximum power output of electricity (generation/discharge for ESS units)                                                          MW
 MinimumPower            Minimum power output of electricity (i.e., minimum stable load in the case of a thermal power plant)                              MW
-MaximumPowerHeat        Maximum heat  output (heat produced by a CHP at its maximum electric power) (only used for CHPs)                                  MW
-MinimumPowerHeat        Minimum heat  output (heat produced by a CHP at its minimum electric power) (only used for CHPs)                                  MW
+MaximumPowerHeat        Maximum heat output (heat produced by a CHP, at its maximum electric power, or by a boiler, which do not produce electric power)  MW
+MinimumPowerHeat        Minimum heat output (heat produced by a CHP, at its minimum electric power, or by a boiler, which do not produce electric power)  MW
 MaximumReactivePower    Maximum reactive power output (discharge for ESS units) (not used in this version)                                                MW
 MinimumReactivePower    Minimum reactive power output (not used in this version)                                                                          MW
 MaximumCharge           Maximum consumption/charge when the ESS unit is storing energy                                                                    MW

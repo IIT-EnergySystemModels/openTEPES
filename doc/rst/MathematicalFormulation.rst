@@ -133,6 +133,7 @@ They are written in **uppercase** letters.
 :math:`\underline{GP}_g, \overline{GP}_g`                          Rated minimum load and maximum output of a generator                                                                      GW
 :math:`\underline{GP}^p_{\omega ng}, \overline{GP}^p_{\omega ng}`  Minimum load and maximum output of a generator                                                                            GW
 :math:`\underline{GC}^p_{\omega ne}, \overline{GC}^p_{\omega ne}`  Minimum and maximum consumption of an ESS                                                                                 GW
+:math:`\underline{GH}_g, \overline{GH}_g`                          Rated minimum and maximum heat of a CHP or a boiler                                                                       GW
 :math:`CF^p_{\omega ng}, CV^p_{\omega ng}`                         Fixed (no load) and variable cost of a generator. Variable cost includes fuel and O&M                                     €/h, €/MWh
 :math:`CE^p_{\omega ng}`                                           Emission cost of a generator                                                                                              €/MWh
 :math:`ER_g`                                                       Emission rate of a generator                                                                                              tCO2/MWh
@@ -147,8 +148,9 @@ They are written in **uppercase** letters.
 :math:`GI_g`                                                       Generator inertia                                                                                                         s
 :math:`EF_e`                                                       Round-trip efficiency of the pump/turbine cycle of a pumped-storage hydro power plant or charge/discharge of a battery    p.u.
 :math:`PF_h`                                                       Production function from water inflows to energy                                                                          kWh/m\ :sup:`3`
-:math:`PF'_h`                                                      Production function from energy to hydrogen                                                                               kWh/kgH2`
-:math:`PF''_h`                                                     Production function from energy to heat                                                                                   kWh/kWh`
+:math:`PF'_e`                                                      Production function from energy to hydrogen of an electrolyzer                                                            kWh/kgH2`
+:math:`PF''_e`                                                     Production function from energy to heat of a heat pump                                                                    kWh/kWh
+:math:`PH''_g`                                                     Power to heat ratio for a CHP :math:`\frac{\overline{GP}_g - \underline{GP}_g}{\overline{GH}_g - \underline{GH}_g}`       kWh/kWh
 :math:`\underline{I}^p_{\omega ne}, \overline{I}^p_{\omega ne}`    Minimum and maximum capacity of an ESS (e.g., hydro power plant, closed-/open-loop pumped-storage hydro)                  GWh
 :math:`\underline{E}^p_{\omega ne}, \overline{E}^p_{\omega ne}`    Minimum and maximum energy produced by a unit in an interval defined                                                      GW
 :math:`EI^p_{\omega ne}`                                           Energy inflows of an ESS (e.g., hydro power plant)                                                                        GW
@@ -225,6 +227,7 @@ They are written in **lowercase** letters.
 :math:`go^p_{\omega ne}`                                      Generator outflows of an ESS                                                    GW
 :math:`p^p_{\omega ng}`                                       Generator output of the second block (i.e., above the minimum load)             GW
 :math:`c^p_{\omega ne}`                                       Generator charge                                                                GW
+:math:`gh^p_{\omega ng}`                                      Heat output of a boiler                                                         GW
 :math:`ur^p_{\omega ng}, dr^p_{\omega ng}`                    Upward and downward operating reserves of a non-renewable generating unit       GW
 :math:`ur'^p_{\omega ne}, dr'^p_{\omega ne}`                  Upward and downward operating reserves of an ESS as a consumption unit          GW
 :math:`ei^p_{\omega ne}`                                      Variable energy inflows of a candidate ESS (e.g., hydro power plant)            GW
@@ -343,7 +346,7 @@ Minimum RES energy [GW] «``eMinSystemRESEnergy``»
 
 :math:`\frac{\sum_{ng} {DUR_n gp^p_{\omega ng}}}{\sum_{n} {DUR_n}} \geq \frac{RL_{pa}}{\sum_{n} {DUR_n}}  \quad \forall p \omega a`
 
-Balance of electric generation and demand at each node with ohmic losses [GW] «``eBalance``»
+Balance of electric generation and demand at each node with ohmic losses [GW] «``eBalanceElec``»
 
 :math:`\sum_{g \in i} gp^p_{\omega ng} - \sum_{e \in i} gc^p_{\omega ne} + ens^p_{\omega ni} = D^p_{\omega ni} + \sum_{jc} l^p_{\omega nijc} + \sum_{jc} l^p_{\omega njic} + \sum_{jc} f^p_{\omega nijc} - \sum_{jc} f^p_{\omega njic} \quad \forall p \omega ni`
 
@@ -553,15 +556,15 @@ Half ohmic losses are linearly approximated as a function of the flow [GW] «``e
 
 **Hydrogen network operation**
 
-Balance of hydrogen generation and demand at each node [tH2] «``eBalanceH2``»
+Balance of hydrogen generation by electrolyzers and demand at each node [tH2] «``eBalanceH2``»
 
 :math:`\sum_{e \in i} \frac{DUR_n}{PF'_e} gc^p_{\omega ne} + hns^p_{\omega ni} = DUR_n DH^p_{\omega ni} + \sum_{jc} fh^p_{\omega nijc} - \sum_{jc} fh^p_{\omega njic} \quad \forall p \omega ni`
 
 **Heat network operation**
 
-Balance of heat generation and demand at each node [GW] «``eBalanceHeat``»
+Balance of heat generation produced by CHPs and boilers respectively and demand at each node [GW] «``eBalanceHeat``»
 
-:math:`\sum_{e \in i} \frac{DUR_n}{PF''_e} gc^p_{\omega ne} + htns^p_{\omega ni} = DUR_n DF^p_{\omega ni} + \sum_{jc} fp^p_{\omega nijc} - \sum_{jc} fp^p_{\omega njic} \quad \forall p \omega ni`
+:math:`\sum_{e \in i} \frac{DUR_n}{PF''_e} gc^p_{\omega ne} + \sum_{g \in i} gh^p_{\omega ng} + htns^p_{\omega ni} = DUR_n DF^p_{\omega ni} + \sum_{jc} fp^p_{\omega nijc} - \sum_{jc} fp^p_{\omega njic} \quad \forall p \omega ni`
 
 **Bounds on generation and ESS variables** [GW]
 
@@ -570,6 +573,8 @@ Balance of heat generation and demand at each node [GW] «``eBalanceHeat``»
 :math:`0 \leq go^p_{\omega ne}  \leq \max(\overline{GP}^p_{\omega ne},\overline{GC}^p_{\omega ne}) \quad \forall p \omega ne`
 
 :math:`0 \leq gc^p_{\omega ne}  \leq \overline{GC}^p_{\omega ne}                                   \quad \forall p \omega ne`
+
+:math:`\underline{GH}^p_{\omega ng} \leq gh^p_{\omega ng} \leq \overline{GH}^p_{\omega ng}         \quad \forall p \omega ng`
 
 :math:`0 \leq ur^p_{\omega ng}  \leq \overline{GP}^p_{\omega ng} - \underline{GP}^p_{\omega ng}    \quad \forall p \omega ng`
 
