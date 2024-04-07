@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 04, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 07, 2024
 """
 
 import time
@@ -556,9 +556,22 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
     if pIndLogConsole == 1:
         print('eESSInventory         ... ', len(getattr(OptModel, 'eESSInventory_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
 
+    def eIniFinInventory(OptModel,n,ec):
+        if mTEPES.pIniInventory[p,sc,n,ec]() and (p,ec) in mTEPES.pec:
+            if (st,n) in mTEPES.s2n and (mTEPES.n.ord(n) == mTEPES.pStorageTimeStep[ec] or mTEPES.n.ord(n) == mTEPES.n.last()):
+                return mTEPES.vIniInventory[p,sc,n,ec] / mTEPES.pIniInventory[p,sc,n,ec]() == OptModel.vESSInventory[p,sc,mTEPES.n.last(),ec] / mTEPES.pIniInventory[p,sc,n,ec]()
+            else:
+                return Constraint.Skip
+        else:
+            return Constraint.Skip
+    setattr(OptModel, 'eIniFinInventory_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.necc, rule=eIniFinInventory, doc='Initial equal to final inventory for ESS candidates [p.u.]'))
+
+    if pIndLogConsole == 1:
+        print('eIniFinInventory      ... ', len(getattr(OptModel, 'eIniFinInventory_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+
     def eIniInventory(OptModel,n,ec):
         if mTEPES.pIniInventory[p,sc,n,ec]() and (p,ec) in mTEPES.pec:
-            if   (st,n) in mTEPES.s2n and (mTEPES.n.ord(n) == mTEPES.pStorageTimeStep[ec] or mTEPES.n.ord(n) == mTEPES.n.first() or mTEPES.n.ord(n) == mTEPES.n.last()):
+            if (st,n) in mTEPES.s2n and (mTEPES.n.ord(n) == mTEPES.pStorageTimeStep[ec] or mTEPES.n.ord(n) == mTEPES.n.first() or mTEPES.n.ord(n) == mTEPES.n.last()):
                 return mTEPES.vIniInventory[p,sc,n,ec] / mTEPES.pIniInventory[p,sc,n,ec]() == OptModel.vCommitment[p,sc,n,ec]
             else:
                 return Constraint.Skip
@@ -786,6 +799,19 @@ def GenerationOperationModelFormulationReservoir(OptModel, mTEPES, pIndLogConsol
 
     if pIndLogConsole == 1:
         print('eHydroInventory       ... ', len(getattr(OptModel, 'eHydroInventory_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+
+    def eIniFinVolume(OptModel,n,rs):
+        if mTEPES.pIniVolume[p,sc,n,rs]() and (p,rs) in mTEPES.prs:
+            if (st,n) in mTEPES.s2n and (mTEPES.n.ord(n) == mTEPES.pReservoirTimeStep[rs] or mTEPES.n.ord(n) == mTEPES.n.last()):
+                return mTEPES.vIniVolume[p,sc,n,rs] / mTEPES.pIniVolume[p,sc,n,rs]() == OptModel.vHydroInventory[p,sc,mTEPES.n.last(),rs] / mTEPES.pIniVolume[p,sc,n,rs]()
+            else:
+                return Constraint.Skip
+        else:
+            return Constraint.Skip
+    setattr(OptModel, 'eIniFinVolume_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.nrcc, rule=eIniFinVolume, doc='Initial equal to final volume for reservoir candidates [p.u.]'))
+
+    if pIndLogConsole == 1:
+        print('eIniFinVolume         ... ', len(getattr(OptModel, 'eIniFinVolume_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
 
     def eHydroOutflows(OptModel,n,rs):
         if (p,sc,rs) in mTEPES.ro:

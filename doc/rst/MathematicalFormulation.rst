@@ -151,7 +151,8 @@ They are written in **uppercase** letters.
 :math:`PF'_e`                                                      Production function from energy to hydrogen of an electrolyzer                                                            kWh/kgH2`
 :math:`PF''_e`                                                     Production function from energy to heat of a heat pump                                                                    kWh/kWh
 :math:`PH''_g`                                                     Power to heat ratio for a CHP :math:`\frac{\overline{GP}_g - \underline{GP}_g}{\overline{GH}_g - \underline{GH}_g}`       kWh/kWh
-:math:`\underline{I}^p_{\omega ne}, \overline{I}^p_{\omega ne}`    Minimum and maximum capacity of an ESS (e.g., hydro power plant, closed-/open-loop pumped-storage hydro)                  GWh
+:math:`\underline{I}^p_{\omega ne}, \overline{I}^p_{\omega ne}`    Minimum and maximum storage of an ESS (e.g., hydro power plant, closed-/open-loop pumped-storage hydro)                  GWh
+:math:`I^p_{\omega e}`                                             Initial storage of an ESS (e.g., hydro power plant, closed-/open-loop pumped-storage hydro)                              GWh
 :math:`\underline{E}^p_{\omega ne}, \overline{E}^p_{\omega ne}`    Minimum and maximum energy produced by a unit in an interval defined                                                      GW
 :math:`EI^p_{\omega ne}`                                           Energy inflows of an ESS (e.g., hydro power plant)                                                                        GW
 :math:`EO^p_{\omega ne}`                                           Energy outflows of an ESS (e.g., hydrogen, electric vehicle, hydro power plant, demand response)                          GW
@@ -396,9 +397,13 @@ ESS energy inventory (only for load levels multiple of 1, 24, 168 h depending on
 
 :math:`i^p_{\omega,n-\frac{\tau_e}{\nu},e} + \sum_{n' = n-\frac{\tau_e}{\nu}}^n DUR_n' (ei^p_{\omega n'e} - go^p_{\omega n'e} - gp^p_{\omega n'e} + EF_e gc^p_{\omega n'e}) = i^p_{\omega ne} + s^p_{\omega ne} \quad \forall p \omega ne, e \in CE`
 
-The initial inventory of the ESS candidates divided by their initial storage :math:`I^p_{\omega,0,e}` (given in the input data) is fixed to the commitment decision [p.u.] «``eIniInventory``».
+The initial inventory of the ESS candidates divided by its initial storage :math:`I^p_{\omega e}` is equal to the final reservoir divide by its initial storage [p.u.] «``eIniFinInventory``».
 
-:math:`\frac{i^p_{\omega,0,e}}{I^p_{\omega,0,e}} = uc^p_{\omega ne} \quad \forall p \omega ne, e \in CE`
+:math:`\frac{i^p_{\omega,0,e}}{I^p_{\omega e}} = \frac{i^p_{\omega,N,e}}{I^p_{\omega e}} \quad \forall p \omega e, e \in CE`
+
+The initial inventory of the ESS candidates divided by their initial storage :math:`I^p_{\omega e}` is fixed to the commitment decision [p.u.] «``eIniInventory``».
+
+:math:`\frac{i^p_{\omega,0,e}}{I^p_{\omega e}} = uc^p_{\omega ne} \quad \forall p \omega ne, e \in CE`
 
 Maximum shift time of stored energy [GWh]. It is thought to be applied to demand side management «``eMaxShiftTime``»
 
@@ -517,6 +522,10 @@ Water volume for each hydro reservoir (only for load levels multiple of 1, 24, 1
 
 :math:`i'^p_{\omega,n-\frac{\tau_e'}{\nu},e'} + \sum_{n' = n-\frac{\tau_e'}{\nu}}^n DUR_n' (0.0036 hi^p_{\omega n'e'} - 0.0036 ho^p_{\omega n'e'} - \sum_{h \in dw(e')} gp^p_{\omega n'h} / PF_h + \sum_{h \in up(e')} gp^p_{\omega n'h} / PF_h +`
 :math:`+ \sum_{h \in up(e')} EF_e' gc^p_{\omega n'h} / PF_h - \sum_{h \in dw(h)} EF_e' gc^p_{\omega n'h} / PF_h) = i'^p_{\omega ne'} + s'^p_{\omega ne'} - \sum_{e'' \in up(e')} s'^p_{\omega ne''} \quad \forall p \omega ne', e' \in CR`
+
+The initial volume of the hydro reservoir divided by its initial volume :math:`I^p_{\omega e'}` is equal to the final reservoir divide by its initial volume [p.u.] «``eIniFinVolume``».
+
+:math:`\frac{i'^p_{\omega,0,e'}}{I^p_{\omega e'}} = \frac{i'^p_{\omega,N,e'}}{I^p_{\omega e'}} \quad \forall p \omega e', e' \in CE`
 
 Hydro outflows (only for load levels multiple of 1, 24, 168, 672, and 8736 h depending on the ESS outflow cycle) must be satisfied [m\ :sup:`3`/s] «``eHydroOutflows``»
 

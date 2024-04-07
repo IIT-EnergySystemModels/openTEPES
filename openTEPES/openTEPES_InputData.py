@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 04, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 07, 2024
 """
 
 import datetime
@@ -56,6 +56,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         pIndHydroTopology   = 1
     except:
         pIndHydroTopology   = 0
+        print('No hydropower topology                                          ')
         print('No Data_Reservoir                                    file  found')
         print('No Data_VariableMinVolume and Data_VariableMaxVolume files found')
         print('No Data_HydroInflows      and Data_HydroOutflows     files found')
@@ -66,6 +67,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         pIndHydrogen        = 1
     except:
         pIndHydrogen        = 0
+        print('No hydrogen energy carrier                                      ')
         print('No Data_DemandHydrogen    and Data_NetworkHydrogen   files found')
 
     try:
@@ -74,6 +76,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         pIndHeat        = 1
     except:
         pIndHeat        = 0
+        print('No heat energy carrier                                          ')
         print('No Data_DemandHeat        and Data_NetworkHeat       files found')
 
     # substitute NaN by 0
@@ -916,16 +919,16 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         pCycleRsrTimeStep = pReservoirType.map(idxCycleRsr).astype('int')
         pWaterOutTimeStep = pWaterOutfType.map(idxWaterOut).astype('int')
 
-        pReservoirTimeStep   = pd.concat([pCycleRsrTimeStep, pWaterOutTimeStep], axis=1).min(axis=1)
+        pReservoirTimeStep = pd.concat([pCycleRsrTimeStep, pWaterOutTimeStep], axis=1).min(axis=1)
         # cycle water step can't exceed the stage duration
-        pReservoirTimeStep   = pReservoirTimeStep.where(pReservoirTimeStep <= pStageDuration.min(), pStageDuration.min())
+        pReservoirTimeStep = pReservoirTimeStep.where(pReservoirTimeStep <= pStageDuration.min(), pStageDuration.min())
 
     # initial inventory must be between minimum and maximum
-    pInitialInventory   = pRatedMinStorage.where(pRatedMinStorage > pInitialInventory, pInitialInventory)
-    pInitialInventory   = pRatedMaxStorage.where(pRatedMaxStorage < pInitialInventory, pInitialInventory)
+    pInitialInventory  = pInitialInventory.where(pInitialInventory > pRatedMinStorage, pRatedMinStorage)
+    pInitialInventory  = pInitialInventory.where(pInitialInventory < pRatedMaxStorage, pRatedMaxStorage)
     if pIndHydroTopology == 1:
-        pInitialVolume  = pRatedMinVolume.where (pRatedMinVolume  > pInitialVolume,    pInitialVolume   )
-        pInitialVolume  = pRatedMaxVolume.where (pRatedMaxVolume  < pInitialVolume,    pInitialVolume   )
+        pInitialVolume = pInitialVolume.where   (pInitialVolume    > pRatedMinVolume,  pRatedMinVolume )
+        pInitialVolume = pInitialVolume.where   (pInitialVolume    < pRatedMaxVolume,  pRatedMaxVolume )
 
     # initial inventory of the candidate storage units equal to its maximum capacity
     pInitialInventory.update(pd.Series([pRatedMaxStorage[ec] for ec in mTEPES.ec], index=mTEPES.ec, dtype='float64'))

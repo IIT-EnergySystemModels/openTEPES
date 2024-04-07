@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.16.0] - 2024-04-04
+[4.16.0] - 2024-04-07
 ----------------------
+- [FIXED] initial equal to final inventory in candidate ESS or reservoir
 - [CHANGED] introduction of boilers to produce heat
 - [FIXED] control of max power greater than min power
 - [FIXED] delete pMacCapacity in some inventory constraints
