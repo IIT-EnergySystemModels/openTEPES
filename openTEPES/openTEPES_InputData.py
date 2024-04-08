@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 07, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 08, 2024
 """
 
 import datetime
@@ -56,10 +56,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         pIndHydroTopology   = 1
     except:
         pIndHydroTopology   = 0
-        print('No hydropower topology                                          ')
-        print('No Data_Reservoir                                    file  found')
-        print('No Data_VariableMinVolume and Data_VariableMaxVolume files found')
-        print('No Data_HydroInflows      and Data_HydroOutflows     files found')
+        print('**** No hydropower topology')
 
     try:
         dfDemandHydrogen    = pd.read_csv(_path+'/oT_Data_DemandHydrogen_'        +CaseName+'.csv', index_col=[0,1,2])
@@ -67,17 +64,15 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         pIndHydrogen        = 1
     except:
         pIndHydrogen        = 0
-        print('No hydrogen energy carrier                                      ')
-        print('No Data_DemandHydrogen    and Data_NetworkHydrogen   files found')
+        print('**** No hydrogen energy carrier')
 
     try:
-        dfDemandHeat    = pd.read_csv(_path+'/oT_Data_DemandHeat_'                +CaseName+'.csv', index_col=[0,1,2])
-        dfNetworkHeat   = pd.read_csv(_path+'/oT_Data_NetworkHeat_'               +CaseName+'.csv', index_col=[0,1,2])
-        pIndHeat        = 1
+        dfDemandHeat        = pd.read_csv(_path+'/oT_Data_DemandHeat_'                +CaseName+'.csv', index_col=[0,1,2])
+        dfNetworkHeat       = pd.read_csv(_path+'/oT_Data_NetworkHeat_'               +CaseName+'.csv', index_col=[0,1,2])
+        pIndHeat            = 1
     except:
-        pIndHeat        = 0
-        print('No heat energy carrier                                          ')
-        print('No Data_DemandHeat        and Data_NetworkHeat       files found')
+        pIndHeat            = 0
+        print('**** No heat energy carrier')
 
     # substitute NaN by 0
     dfOption.fillna               (0  , inplace=True)
@@ -110,19 +105,19 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     dfNetwork.fillna              (0.0, inplace=True)
 
     if pIndHydroTopology == 1:
-        dfReservoir.fillna        (0.0,    inplace=True)
-        dfVariableMinVolume.fillna(0.0,    inplace=True)
-        dfVariableMaxVolume.fillna(0.0,    inplace=True)
-        dfHydroInflows.fillna     (0.0,    inplace=True)
-        dfHydroOutflows.fillna    (0.0,    inplace=True)
+        dfReservoir.fillna        (0.0, inplace=True)
+        dfVariableMinVolume.fillna(0.0, inplace=True)
+        dfVariableMaxVolume.fillna(0.0, inplace=True)
+        dfHydroInflows.fillna     (0.0, inplace=True)
+        dfHydroOutflows.fillna    (0.0, inplace=True)
 
     if pIndHydrogen == 1:
-        dfDemandHydrogen.fillna   (0.0,    inplace=True)
-        dfNetworkHydrogen.fillna  (0.0,    inplace=True)
+        dfDemandHydrogen.fillna   (0.0, inplace=True)
+        dfNetworkHydrogen.fillna  (0.0, inplace=True)
 
     if pIndHeat == 1:
-        dfDemandHeat.fillna       (0.0,    inplace=True)
-        dfNetworkHeat.fillna      (0.0,    inplace=True)
+        dfDemandHeat.fillna       (0.0, inplace=True)
+        dfNetworkHeat.fillna      (0.0, inplace=True)
 
     dfReserveMargin         = dfReserveMargin.where       (dfReserveMargin        > 0.0, 0.0)
     dfEmission              = dfEmission.where            (dfEmission             > 0.0, 0.0)
@@ -268,7 +263,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
             mTEPES.del_component(mTEPES.r2p)
             mTEPES.r2p = Set(initialize=dictSets['r2p'], ordered=False, doc='reservoir to pumped-hydro')
     except:
-        print('No reservoir and hydropower topology dictionary      files found')
+        print('')
 
     #%% parameters
     pIndBinGenInvest       = dfOption   ['IndBinGenInvest'    ].iloc[0].astype('int')         # Indicator of binary generation        expansion decisions, 0 continuous       - 1 binary - 2 no investment variables
@@ -1483,8 +1478,8 @@ def SettingUpVariables(OptModel, mTEPES):
     StartTime = time.time()
 
     #%% variables
-    OptModel.vTotalSCost              = Var(                      within=NonNegativeReals,                 doc='total system                         cost      [MEUR]')
-    OptModel.vTotalICost              = Var(                      within=NonNegativeReals,                 doc='total system investment              cost      [MEUR]')
+    OptModel.vTotalSCost              = Var(                       within=NonNegativeReals,                 doc='total system                         cost      [MEUR]')
+    OptModel.vTotalICost              = Var(                       within=NonNegativeReals,                 doc='total system investment              cost      [MEUR]')
     OptModel.vTotalFCost              = Var(mTEPES.p,     within=NonNegativeReals,                 doc='total system fixed                   cost      [MEUR]')
     OptModel.vTotalGCost              = Var(mTEPES.psn,   within=NonNegativeReals,                 doc='total variable generation  operation cost      [MEUR]')
     OptModel.vTotalCCost              = Var(mTEPES.psn,   within=NonNegativeReals,                 doc='total variable consumption operation cost      [MEUR]')
@@ -2008,45 +2003,45 @@ def SettingUpVariables(OptModel, mTEPES):
         if nr not in mTEPES.gc and mTEPES.pElecGenPeriodIni[nr] > p:
             OptModel.vMaxCommitment[p,sc,nr].fix(0)
             nFixedVariables += 1
-            for n in mTEPES.n:
-                OptModel.vOutput2ndBlock[p,sc,n,nr].fix(0.0)
-                OptModel.vReserveUp     [p,sc,n,nr].fix(0.0)
-                OptModel.vReserveDown   [p,sc,n,nr].fix(0.0)
-                OptModel.vCommitment    [p,sc,n,nr].fix(0  )
-                OptModel.vStartUp       [p,sc,n,nr].fix(0  )
-                OptModel.vShutDown      [p,sc,n,nr].fix(0  )
-                nFixedVariables += 6
+    for p,sc,n,nr in mTEPES.psnnr:
+        if nr not in mTEPES.gc and mTEPES.pElecGenPeriodIni[nr] > p:
+            OptModel.vOutput2ndBlock[p,sc,n,nr].fix(0.0)
+            OptModel.vReserveUp     [p,sc,n,nr].fix(0.0)
+            OptModel.vReserveDown   [p,sc,n,nr].fix(0.0)
+            OptModel.vCommitment    [p,sc,n,nr].fix(0  )
+            OptModel.vStartUp       [p,sc,n,nr].fix(0  )
+            OptModel.vShutDown      [p,sc,n,nr].fix(0  )
+            nFixedVariables += 6
 
-    for p,es in mTEPES.pes:
+    for p,sc,n,es in mTEPES.psnes:
         if es not in mTEPES.ec and mTEPES.pElecGenPeriodIni[es] > p:
-            for sc,n in mTEPES.sc*mTEPES.n:
-                OptModel.vEnergyOutflows[p,sc,n,es].fix(0.0)
-                OptModel.vESSInventory  [p,sc,n,es].fix(0.0)
-                OptModel.vESSSpillage   [p,sc,n,es].fix(0.0)
-                OptModel.vESSTotalCharge[p,sc,n,es].fix(0.0)
-                OptModel.vCharge2ndBlock[p,sc,n,es].fix(0.0)
-                OptModel.vESSReserveUp  [p,sc,n,es].fix(0.0)
-                OptModel.vESSReserveDown[p,sc,n,es].fix(0.0)
-                mTEPES.pIniInventory    [p,sc,n,es] =   0.0
-                mTEPES.pEnergyInflows   [p,sc,n,es] =   0.0
-                nFixedVariables += 7
+            OptModel.vEnergyOutflows[p,sc,n,es].fix(0.0)
+            OptModel.vESSInventory  [p,sc,n,es].fix(0.0)
+            OptModel.vESSSpillage   [p,sc,n,es].fix(0.0)
+            OptModel.vESSTotalCharge[p,sc,n,es].fix(0.0)
+            OptModel.vCharge2ndBlock[p,sc,n,es].fix(0.0)
+            OptModel.vESSReserveUp  [p,sc,n,es].fix(0.0)
+            OptModel.vESSReserveDown[p,sc,n,es].fix(0.0)
+            mTEPES.pIniInventory    [p,sc,n,es] =   0.0
+            mTEPES.pEnergyInflows   [p,sc,n,es] =   0.0
+            nFixedVariables += 7
 
     if mTEPES.pIndHydroTopology == 1:
-        for p,rs in mTEPES.prs:
+        for p,sc,n,rs in mTEPES.psnrs:
             if rs not in mTEPES.rn and mTEPES.pRsrPeriodIni[rs] > p:
-                for sc,n in mTEPES.sc*mTEPES.n:
-                    OptModel.vEnergyOutflows   [p,sc,n,rs].fix(0.0)
-                    OptModel.vReservoirVolume  [p,sc,n,rs].fix(0.0)
-                    OptModel.vReservoirSpillage[p,sc,n,rs].fix(0.0)
-                    mTEPES.pIniVolume          [p,sc,n,rs] =   0.0
-                    mTEPES.pHydroInflows       [p,sc,n,rs] =   0.0
-                    for h in mTEPES.h:
-                        if (rs,h) in mTEPES.r2h:
-                            OptModel.vESSTotalCharge[p,sc,n,h].fix(0.0)
-                            OptModel.vCharge2ndBlock[p,sc,n,h].fix(0.0)
-                            OptModel.vESSReserveUp  [p,sc,n,h].fix(0.0)
-                            OptModel.vESSReserveDown[p,sc,n,h].fix(0.0)
-                    nFixedVariables += 7
+                OptModel.vEnergyOutflows        [p,sc,n,rs].fix(0.0)
+                OptModel.vReservoirVolume       [p,sc,n,rs].fix(0.0)
+                OptModel.vReservoirSpillage     [p,sc,n,rs].fix(0.0)
+                mTEPES.pIniVolume               [p,sc,n,rs] =   0.0
+                mTEPES.pHydroInflows            [p,sc,n,rs] =   0.0
+                nFixedVariables += 3
+                for h in mTEPES.h:
+                    if (rs,h) in mTEPES.r2h:
+                        OptModel.vESSTotalCharge[p,sc,n,h ].fix(0.0)
+                        OptModel.vCharge2ndBlock[p,sc,n,h ].fix(0.0)
+                        OptModel.vESSReserveUp  [p,sc,n,h ].fix(0.0)
+                        OptModel.vESSReserveDown[p,sc,n,h ].fix(0.0)
+                        nFixedVariables += 4
 
     [OptModel.vFlow        [p,sc,n,ni,nf,cc].fix(0.0) for p,sc,n,ni,nf,cc in mTEPES.psnla if (ni,nf,cc) not in mTEPES.lc and mTEPES.pElecNetPeriodIni [ni,nf,cc] > p]
     [OptModel.vLineCommit  [p,sc,n,ni,nf,cc].fix(0  ) for p,sc,n,ni,nf,cc in mTEPES.psnla if (ni,nf,cc) not in mTEPES.lc and mTEPES.pElecNetPeriodIni [ni,nf,cc] > p]

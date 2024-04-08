@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 18, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 08, 2024
 """
 
 import time
@@ -81,11 +81,19 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
     #%% fix values of some variables to get duals and solve it again
     # binary/continuous investment decisions are fixed to their optimal values
     # binary            operation  decisions are fixed to their optimal values
+    # if NoRepetition == 1, all variables are fixed
+    # if NoRepetition == 0, only the variables of the current period and scenario are fixed
     idx = 0
-    for var in OptModel.component_data_objects(pyo.Var, active=True, descend_into=True):
-        if not var.is_continuous():
-            var.fixed = True  # fix the current value
-            idx += 1
+    if mTEPES.NoRepetition == 1:
+        for var in OptModel.component_data_objects(pyo.Var, active=True, descend_into=True):
+            if not var.is_continuous():
+                var.fixed = True  # fix the current value
+                idx += 1
+    else:
+        for var in OptModel.component_data_objects(pyo.Var, active=True, descend_into=True):
+            if not var.is_continuous() and var.index()[0] == p and var.index()[1] == sc:
+                var.fixed = True  # fix the current value
+                idx += 1
 
     # continuous investment decisions are fixed to their optimal values
     for gc in mTEPES.gc:
@@ -140,9 +148,9 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
                 print('  Total reservoir   investment cost [MEUR] ', 0.0)
             print    ('  Total network     investment cost [MEUR] ', sum(mTEPES.pDiscountedWeight[pp] * mTEPES.pNetFixedCost     [ni,nf,cc]   * OptModel.vNetworkInvest   [pp,ni,nf,cc]() for ni,nf,cc in mTEPES.lc if (pp,ni,nf,cc) in mTEPES.plc))
             if mTEPES.pIndHydrogen      == 1 and len(mTEPES.pc):
-                print('  Total H2 pipe     investment cost [MEUR] ', sum(mTEPES.pDiscountedWeight[pp] * mTEPES.pH2PipeFixedCost  [ni,nf,cc]   * OptModel.vH2PipeInvest    [pp,ni,nf,cc]() for ni,nf,cc in mTEPES.pc if (pp,ni,nf,cc) in mTEPES.ppc))
+                print('  Total H2   pipe   investment cost [MEUR] ', sum(mTEPES.pDiscountedWeight[pp] * mTEPES.pH2PipeFixedCost  [ni,nf,cc]   * OptModel.vH2PipeInvest    [pp,ni,nf,cc]() for ni,nf,cc in mTEPES.pc if (pp,ni,nf,cc) in mTEPES.ppc))
             else:
-                print('  Total H2 pipe     investment cost [MEUR] ', 0.0)
+                print('  Total H2   pipe   investment cost [MEUR] ', 0.0)
             if mTEPES.pIndHeat          == 1 and len(mTEPES.hc):
                 print('  Total heat pipe   investment cost [MEUR] ', sum(mTEPES.pDiscountedWeight[pp] * mTEPES.pHeatPipeFixedCost[ni,nf,cc]   * OptModel.vHeatPipeInvest  [pp,ni,nf,cc]() for ni,nf,cc in mTEPES.hc if (pp,ni,nf,cc) in mTEPES.phc))
             else:
@@ -153,22 +161,22 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
             print    ('  Total reliability            cost [MEUR] ', sum(mTEPES.pDiscountedWeight[pp] * mTEPES.pScenProb         [pp,scc  ]() * OptModel.vTotalRCost      [pp,scc,n    ]() for n        in mTEPES.n ))
     else:
         print        ('***** Period: '+str(p)+', Scenario: '+str(sc)+' ******')
-        print        ('  Total generation  investment cost [MEUR] ', sum(mTEPES.pDiscountedWeight[p]  * mTEPES.pGenInvestCost    [gc      ]   * OptModel.vGenerationInvest [p,gc        ]() for gc       in mTEPES.gc if (p,gc)       in mTEPES.pgc))
-        print        ('  Total generation  retirement cost [MEUR] ', sum(mTEPES.pDiscountedWeight[p]  * mTEPES.pGenRetireCost    [gd      ]   * OptModel.vGenerationRetire [p,gd        ]() for gd       in mTEPES.gd if (p,gd)       in mTEPES.pgd))
+        print        ('  Total generation  investment cost [MEUR] ', sum(mTEPES.pDiscountedWeight[p]  * mTEPES.pGenInvestCost    [gc      ]   * OptModel.vGenerationInvest[p,gc        ]() for gc       in mTEPES.gc if (p,gc)       in mTEPES.pgc))
+        print        ('  Total generation  retirement cost [MEUR] ', sum(mTEPES.pDiscountedWeight[p]  * mTEPES.pGenRetireCost    [gd      ]   * OptModel.vGenerationRetire[p,gd        ]() for gd       in mTEPES.gd if (p,gd)       in mTEPES.pgd))
         if mTEPES.pIndHydroTopology == 1 and len(mTEPES.rn):
-            print    ('  Total reservoir   investment cost [MEUR] ', sum(mTEPES.pDiscountedWeight[p]  * mTEPES.pRsrInvestCost    [rc      ]   * OptModel.vReservoirInvest  [p,rc        ]() for rc       in mTEPES.rn if (p,rc)       in mTEPES.prc))
+            print    ('  Total reservoir   investment cost [MEUR] ', sum(mTEPES.pDiscountedWeight[p]  * mTEPES.pRsrInvestCost    [rc      ]   * OptModel.vReservoirInvest [p,rc        ]() for rc       in mTEPES.rn if (p,rc)       in mTEPES.prc))
         else:
             print    ('  Total reservoir   investment cost [MEUR] ', 0.0)
-        print        ('  Total network     investment cost [MEUR] ', sum(mTEPES.pDiscountedWeight[p]  * mTEPES.pNetFixedCost     [ni,nf,cc]   * OptModel.vNetworkInvest    [p,ni,nf,cc  ]() for ni,nf,cc in mTEPES.lc if (p,ni,nf,cc) in mTEPES.plc))
+        print        ('  Total network     investment cost [MEUR] ', sum(mTEPES.pDiscountedWeight[p]  * mTEPES.pNetFixedCost     [ni,nf,cc]   * OptModel.vNetworkInvest   [p,ni,nf,cc  ]() for ni,nf,cc in mTEPES.lc if (p,ni,nf,cc) in mTEPES.plc))
         if mTEPES.pIndHydrogen      == 1 and len(mTEPES.pc):
-            print    ('  Total H2 pipe     investment cost [MEUR] ', sum(mTEPES.pDiscountedWeight[p]  * mTEPES.pH2PipeFixedCost  [ni,nf,cc]   * OptModel.vH2PipeInvest     [p,ni,nf,cc  ]() for ni,nf,cc in mTEPES.pc if (p,ni,nf,cc) in mTEPES.ppc))
+            print    ('  Total H2   pipe   investment cost [MEUR] ', sum(mTEPES.pDiscountedWeight[p]  * mTEPES.pH2PipeFixedCost  [ni,nf,cc]   * OptModel.vH2PipeInvest    [p,ni,nf,cc  ]() for ni,nf,cc in mTEPES.pc if (p,ni,nf,cc) in mTEPES.ppc))
         else:
-            print    ('  Total H2 pipe     investment cost [MEUR] ', 0.0)
+            print    ('  Total H2   pipe   investment cost [MEUR] ', 0.0)
         if mTEPES.pIndHeat          == 1 and len(mTEPES.hc):
-            print    ('  Total heat pipe   investment cost [MEUR] ', sum(mTEPES.pDiscountedWeight[p]  * mTEPES.pHeatPipeFixedCost[ni,nf,cc]   * OptModel.vHeatPipeInvest   [p,ni,nf,cc  ]() for ni,nf,cc in mTEPES.hc if (p,ni,nf,cc) in mTEPES.phc))
+            print    ('  Total heat pipe   investment cost [MEUR] ', sum(mTEPES.pDiscountedWeight[p]  * mTEPES.pHeatPipeFixedCost[ni,nf,cc]   * OptModel.vHeatPipeInvest  [p,ni,nf,cc  ]() for ni,nf,cc in mTEPES.hc if (p,ni,nf,cc) in mTEPES.phc))
         else:
             print    ('  Total heat pipe   investment cost [MEUR] ', 0.0)
-        print        ('  Total generation  operation  cost [MEUR] ', sum(mTEPES.pDiscountedWeight[p]  * mTEPES.pScenProb         [p,sc    ]() * OptModel.vTotalGCost       [p,sc,n      ]() for n        in mTEPES.n ))
-        print        ('  Total consumption operation  cost [MEUR] ', sum(mTEPES.pDiscountedWeight[p]  * mTEPES.pScenProb         [p,sc    ]() * OptModel.vTotalCCost       [p,sc,n      ]() for n        in mTEPES.n ))
-        print        ('  Total emission               cost [MEUR] ', sum(mTEPES.pDiscountedWeight[p]  * mTEPES.pScenProb         [p,sc    ]() * OptModel.vTotalECost       [p,sc,n      ]() for n        in mTEPES.n ))
-        print        ('  Total reliability            cost [MEUR] ', sum(mTEPES.pDiscountedWeight[p]  * mTEPES.pScenProb         [p,sc    ]() * OptModel.vTotalRCost       [p,sc,n      ]() for n        in mTEPES.n ))
+        print        ('  Total generation  operation  cost [MEUR] ', sum(mTEPES.pDiscountedWeight[p]  * mTEPES.pScenProb         [p,sc    ]() * OptModel.vTotalGCost      [p,sc,n      ]() for n        in mTEPES.n ))
+        print        ('  Total consumption operation  cost [MEUR] ', sum(mTEPES.pDiscountedWeight[p]  * mTEPES.pScenProb         [p,sc    ]() * OptModel.vTotalCCost      [p,sc,n      ]() for n        in mTEPES.n ))
+        print        ('  Total emission               cost [MEUR] ', sum(mTEPES.pDiscountedWeight[p]  * mTEPES.pScenProb         [p,sc    ]() * OptModel.vTotalECost      [p,sc,n      ]() for n        in mTEPES.n ))
+        print        ('  Total reliability            cost [MEUR] ', sum(mTEPES.pDiscountedWeight[p]  * mTEPES.pScenProb         [p,sc    ]() * OptModel.vTotalRCost      [p,sc,n      ]() for n        in mTEPES.n ))
