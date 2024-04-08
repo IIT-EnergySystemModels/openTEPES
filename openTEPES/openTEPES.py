@@ -110,7 +110,6 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
             NetworkOperationModelFormulation                (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
 
             if (len(mTEPES.gc) == 0 or (len(mTEPES.gc) > 0 and mTEPES.pIndBinGenInvest() == 2)) and (len(mTEPES.gd) == 0 or (len(mTEPES.gd) > 0 and mTEPES.pIndBinGenRetire() == 2)) and (len(mTEPES.lc) == 0 or (len(mTEPES.lc) > 0 and mTEPES.pIndBinNetInvest() == 2)) and (min([mTEPES.pEmission[p,ar] for ar in mTEPES.ar]) == math.inf or sum(mTEPES.pEmissionRate[nr] for nr in mTEPES.nr) == 0):
-                mTEPES.pPeriodProb[p,sc] = mTEPES.pPeriodWeight[p] = mTEPES.pScenProb[p,sc] = 1.0
 
                 if pIndLogConsole == 1:
                     StartTime         = time.time()
@@ -120,8 +119,9 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
                     print('Writing LP file                        ... ', round(WritingLPFileTime), 's')
 
                 # there are no expansion decisions, or they are ignored (it is an operation planning model)
+                mTEPES.pScenProb[p,sc] = 1.0
                 ProblemSolving(DirName, CaseName, SolverName, mTEPES, mTEPES, pIndLogConsole, p, sc)
-                mTEPES.pPeriodProb[p,sc] = mTEPES.pPeriodWeight[p] = mTEPES.pScenProb[p,sc] = 0.0
+                mTEPES.pScenProb[p,sc] = 0.0
                 # deactivate the constraints of the previous period and scenario
                 for c in mTEPES.component_objects(pyo.Constraint, active=True):
                     if c.name.find(str(p)) != -1 and c.name.find(str(sc)) != -1:
@@ -160,7 +160,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
 
     # assign probability 1 to all the periods and scenarios
     for p,sc in mTEPES.ps:
-        mTEPES.pPeriodProb[p,sc] = mTEPES.pPeriodWeight[p] = mTEPES.pScenProb[p,sc] = 1.0
+        mTEPES.pScenProb[p,sc] = 1.0
 
     # output results only for every unit (0), only for every technology (1), or for both (2)
     pIndTechnologyOutput = 2
