@@ -96,7 +96,7 @@ The model has being used in these research projects:
 - `European Climate and Energy Modelling Forum (ECEMF) <https://ecemf.eu/>`_, developed for the **European Union**.
   May 2021 - December 2024.
   `S. Lumbreras <https://www.iit.comillas.edu/people/slumbreras>`_, `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `L. Olmos <https://www.iit.comillas.edu/people/olmos>`_,
-  `C. Mateo <https://www.iit.comillas.edu/people/cmateo>`_, `D. Santos Oliveira <https://www.iit.comillas.edu/people/doliveira>`_
+  `C. Mateo <https://www.iit.comillas.edu/people/cmateo>`_, `D. Santos Oliveira <https://www.iit.comillas.edu/people/doliveira>`_, `M.S. Gómez Pérez <https://www.iit.comillas.edu/people/mgomezp>`_
 
     It aims to provide the knowledge to inform the development of future energy and climate policies at national and European levels. In support of this aim, ECEMF proposes a range of activities to achieve five objectives and meet the four challenges set out in the call text.
     ECEMF’s programme of events and novel IT-based communications channel will enable researchers to identify and co-develop the most pressing policy-relevant research questions with a range of stakeholders to meet ambitious European energy and climate policy goals,

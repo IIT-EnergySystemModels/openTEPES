@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 04, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 11, 2024
 """
 
 import time
@@ -118,7 +118,7 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutput,
         # tolerance to avoid division by 0
         pEpsilon = 1e-6
 
-        # Saving generation investment into CSV file
+        # Saving generation investments
         OutputToFile = pd.Series(data=[OptModel.vGenerationInvest[p,gc]()                                                           for p,gc in mTEPES.pgc], index=pd.Index(mTEPES.pgc))
         OutputToFile = OutputToFile.fillna(0).to_frame(name='InvestmentDecision').reset_index().rename(columns={'level_0': 'Period', 'level_1': 'Generating unit'})
         if pIndTechnologyOutput == 0 or pIndTechnologyOutput == 2:
@@ -272,7 +272,7 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutput,
 
     WritingResultsTime = time.time() - StartTime
     StartTime          = time.time()
-    print('Writing           investment results   ... ', round(WritingResultsTime), 's')
+    print('Writing            investment results  ... ', round(WritingResultsTime), 's')
 
 
 def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutput, pIndAreaOutput, pIndPlotOutput):
@@ -505,7 +505,7 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnolo
 
     WritingResultsTime = time.time() - StartTime
     StartTime          = time.time()
-    print('Writing generation operation results   ... ', round(WritingResultsTime), 's')
+    print('Writing  generation operation results  ... ', round(WritingResultsTime), 's')
 
 
 def ESSOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutput, pIndAreaOutput, pIndPlotOutput):
@@ -634,7 +634,7 @@ def ESSOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutpu
 
     WritingResultsTime = time.time() - StartTime
     StartTime = time.time()
-    print('Writing        ESS operation results   ... ', round(WritingResultsTime), 's')
+    print('Writing         ESS operation results  ... ', round(WritingResultsTime), 's')
 
 
 def ReservoirOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutput, pIndPlotOutput):
@@ -683,7 +683,7 @@ def ReservoirOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnolog
 
     WritingResultsTime = time.time() - StartTime
     StartTime = time.time()
-    print('Writing  reservoir operation results   ... ', round(WritingResultsTime), 's')
+    print('Writing   reservoir operation results  ... ', round(WritingResultsTime), 's')
 
 
 def NetworkH2OperationResults(DirName, CaseName, OptModel, mTEPES):
@@ -869,7 +869,7 @@ def NetworkH2OperationResults(DirName, CaseName, OptModel, mTEPES):
 
     WritingResultsTime = time.time() - StartTime
     StartTime = time.time()
-    print('Writing   hydrogen operation results   ... ', round(WritingResultsTime), 's')
+    print('Writing    hydrogen operation results  ... ', round(WritingResultsTime), 's')
 
 
 def NetworkHeatOperationResults(DirName, CaseName, OptModel, mTEPES):
@@ -1069,7 +1069,7 @@ def NetworkHeatOperationResults(DirName, CaseName, OptModel, mTEPES):
 
     WritingResultsTime = time.time() - StartTime
     StartTime = time.time()
-    print('Writing   heat     operation results   ... ', round(WritingResultsTime), 's')
+    print('Writing    heat     operation results  ... ', round(WritingResultsTime), 's')
 
 
 def OperationSummaryResults(DirName, CaseName, OptModel, mTEPES):
@@ -1172,7 +1172,7 @@ def OperationSummaryResults(DirName, CaseName, OptModel, mTEPES):
 
     WritingResultsTime = time.time() - StartTime
     StartTime = time.time()
-    print('Writing          KPI summary results   ... ', round(WritingResultsTime), 's')
+    print('Writing           KPI summary results  ... ', round(WritingResultsTime), 's')
 
     StartTime = time.time()
     n2g = pd.DataFrame(mTEPES.n2g).set_index(1)
@@ -1215,7 +1215,7 @@ def OperationSummaryResults(DirName, CaseName, OptModel, mTEPES):
 
     WritingResultsTime = time.time() - StartTime
     StartTime = time.time()
-    print('Writing   generation summary results   ... ', round(WritingResultsTime), 's')
+    print('Writing    generation summary results  ... ', round(WritingResultsTime), 's')
 
     ndzn = pd.DataFrame(mTEPES.ndzn).set_index(0)
     ndar = pd.DataFrame(mTEPES.ndar).set_index(0)
@@ -1237,7 +1237,7 @@ def OperationSummaryResults(DirName, CaseName, OptModel, mTEPES):
     OutputResults.rename_axis(['Period', 'Scenario', 'LoadLevel', 'Node'], axis=0).to_csv(_path+'/oT_Result_SummaryNetwork_'+CaseName+'.csv', sep=',')
 
     WritingResultsTime = time.time() - StartTime
-    print('Writing elec network summary results   ... ', round(WritingResultsTime), 's')
+    print('Writing elect network summary results  ... ', round(WritingResultsTime), 's')
 
 
 def FlexibilityResults(DirName, CaseName, OptModel, mTEPES):
@@ -1289,7 +1289,7 @@ def FlexibilityResults(DirName, CaseName, OptModel, mTEPES):
 
     WritingResultsTime = time.time() - StartTime
     StartTime = time.time()
-    print('Writing          flexibility results   ... ', round(WritingResultsTime), 's')
+    print('Writing           flexibility results  ... ', round(WritingResultsTime), 's')
 
 
 def NetworkOperationResults(DirName, CaseName, OptModel, mTEPES):
@@ -1361,7 +1361,7 @@ def NetworkOperationResults(DirName, CaseName, OptModel, mTEPES):
 
     WritingResultsTime = time.time() - StartTime
     StartTime = time.time()
-    print('Writing elect netw operation results   ... ', round(WritingResultsTime), 's')
+    print('Writing elect netwk operation results  ... ', round(WritingResultsTime), 's')
 
 
 def MarginalResults(DirName, CaseName, OptModel, mTEPES, pIndPlotOutput):
@@ -1544,7 +1544,7 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES, pIndPlotOutput):
                 chart.save(_path+'/oT_Plot_MarginalEnergyValue_'+str(p)+'_'+str(sc)+'_'+CaseName+'.html', embed_options={'renderer': 'svg'})
 
     #%% Reduced cost for NetworkInvestment
-    ReducedCostActivation = mTEPES.pIndBinGenInvest()*len(mTEPES.gc) + mTEPES.pIndBinNetInvest()*len(mTEPES.lc) + mTEPES.pIndBinGenOperat()*len(mTEPES.nr) + mTEPES.pIndBinLineCommit()*len(mTEPES.la)
+    ReducedCostActivation = mTEPES.pIndBinGenInvest()*len(mTEPES.gc) + mTEPES.pIndBinNetElecInvest()*len(mTEPES.lc) + mTEPES.pIndBinGenOperat()*len(mTEPES.nr) + mTEPES.pIndBinLineCommit()*len(mTEPES.la)
     if len(mTEPES.lc) and not ReducedCostActivation and OptModel.vNetworkInvest.is_variable_type():
         OutputToFile = pd.Series(data=[OptModel.rc[OptModel.vNetworkInvest[p,ni,nf,cc]] for p,ni,nf,cc in mTEPES.plc], index=pd.Index(mTEPES.plc))
         OutputToFile.index.names = ['Period', 'InitialNode', 'FinalNode', 'Circuit']
@@ -1560,7 +1560,7 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES, pIndPlotOutput):
 
     WritingResultsTime = time.time() - StartTime
     StartTime = time.time()
-    print('Writing marginal information results   ... ', round(WritingResultsTime), 's')
+    print('Writing  marginal information results  ... ', round(WritingResultsTime), 's')
 
 
 def ReliabilityResults(DirName, CaseName, OptModel, mTEPES):
@@ -1599,6 +1599,7 @@ def ReliabilityResults(DirName, CaseName, OptModel, mTEPES):
     OutputToFile1 = pd.Series(data=[0.0 for p,sc in mTEPES.ps], index=mTEPES.ps)
     OutputToFile2 = pd.Series(data=[0.0 for p,sc in mTEPES.ps], index=mTEPES.ps)
     for p,sc in mTEPES.ps:
+        # warning
         OutputToFile1[p,sc] = pMaxPowerElec.loc[(p,sc)].reset_index().pivot_table(index=['level_0'], values=0, aggfunc='sum')[0].max()
         OutputToFile2[p,sc] = pDemandElec.loc  [(p,sc)].reset_index().pivot_table(index=['level_0'], values=0, aggfunc='sum')[0].max()
     ReserveMargin1 =  OutputToFile1 - OutputToFile2
@@ -1622,7 +1623,7 @@ def CostSummaryResults(DirName, CaseName, OptModel, mTEPES):
     _path = os.path.join(DirName, CaseName)
     StartTime = time.time()
 
-    SysCost        = pd.Series(data=[                                                                                                                               OptModel.vTotalSCost()                                                                                                         ], index=['']   ).to_frame(name='Total          System Cost').stack()
+    SysCost        = pd.Series(data=[                                                                                                                               OptModel.vTotalSCost()                                                                                                          ], index=['']    ).to_frame(name='Total          System Cost').stack()
     GenInvCost     = pd.Series(data=[mTEPES.pDiscountedWeight[p] * sum(mTEPES.pGenInvestCost[gc  ]                                                                * OptModel.vGenerationInvest[p,gc  ]()  for gc      in mTEPES.gc                    if (p,gc) in mTEPES.pgc)     for p in mTEPES.p], index=mTEPES.p).to_frame(name='Generation Investment Cost').stack()
     GenRetCost     = pd.Series(data=[mTEPES.pDiscountedWeight[p] * sum(mTEPES.pGenRetireCost[gd  ]                                                                * OptModel.vGenerationRetire[p,gd  ]()  for gd      in mTEPES.gd                    if (p,gd) in mTEPES.pgd)     for p in mTEPES.p], index=mTEPES.p).to_frame(name='Generation Retirement Cost').stack()
     if mTEPES.pIndHydroTopology == 1:
@@ -1638,7 +1639,7 @@ def CostSummaryResults(DirName, CaseName, OptModel, mTEPES):
     CostSummary    = pd.concat([SysCost, GenInvCost, GenRetCost, RsrInvCost, NetInvCost, GenCost, ConCost, EmiCost, RelCost]).reset_index().rename(columns={'level_0': 'Period', 'level_1': 'Costs', 0: 'MEUR'}).to_csv(_path+'/oT_Result_CostSummary_'+CaseName+'.csv', sep=',', index=False)
 
     WritingResultsTime = time.time() - StartTime
-    print('Writing         cost summary results   ... ', round(WritingResultsTime), 's')
+    print('Writing          cost summary results  ... ', round(WritingResultsTime), 's')
 
 
 def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput, pIndPlotOutput):
@@ -1950,7 +1951,7 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput, pIndPlo
         CostRecoveryESS.stack().to_frame(name='MEUR').reset_index().pivot_table(values='MEUR', index=['level_1'], columns=['level_0']).rename_axis([None], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_CostRecovery_'+CaseName+'.csv', sep=',')
 
     WritingResultsTime = time.time() - StartTime
-    print('Writing             economic results   ... ', round(WritingResultsTime), 's')
+    print('Writing              economic results  ... ', round(WritingResultsTime), 's')
 
 
 def NetworkMapResults(DirName, CaseName, OptModel, mTEPES):
@@ -2090,4 +2091,4 @@ def NetworkMapResults(DirName, CaseName, OptModel, mTEPES):
     fig.write_html(_path+'/oT_Plot_MapNetwork_'+CaseName+'.html')
 
     PlottingNetMapsTime = time.time() - StartTime
-    print('Plotting  electric network maps        ... ', round(PlottingNetMapsTime), 's')
+    print('Plotting elect network           maps  ... ', round(PlottingNetMapsTime), 's')

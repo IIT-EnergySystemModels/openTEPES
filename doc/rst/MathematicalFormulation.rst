@@ -42,6 +42,7 @@ Indices
 :math:`c`                Circuit
 :math:`ijc`              Line (initial node, final node, circuit)
 :math:`EG, CG`           Set of existing and candidate generators
+:math:`EB, CB`           Set of existing and candidate boilers
 :math:`EE, CE`           Set of existing and candidate ESS
 :math:`ER, CR`           Set of existing and candidate reservoirs
 :math:`EL, CL`           Set of existing and non-switchable, and candidate and switchable lines
@@ -321,19 +322,23 @@ Investment and retirement decisions in consecutive years «``eConsecutiveGenInve
 
 **Generation operation**
 
-Commitment decision bounded by the investment decision for candidate committed units (all except the VRE units) [p.u.] «``eInstalGenComm``»
+Commitment decision bounded by the investment decision for candidate committed units (all except the VRE units) [p.u.] «``eInstallGenComm``»
 
 :math:`uc^p_{\omega ng} \leq icg^p_g \quad \forall p \omega ng, g \in CG`
 
-Commitment decision bounded by the investment decision for candidate ESS [p.u.] «``eInstalESSComm``»
+Commitment decision bounded by the investment decision for candidate ESS [p.u.] «``eInstallESSComm``»
 
 :math:`uc^p_{\omega ne} \leq icg^p_e \quad \forall p \omega ne, e \in CE`
 
-Output and consumption bounded by investment decision for candidate ESS [p.u.] «``eInstalGenCap``» «``eInstalConESS``»
+Output and consumption bounded by investment decision for candidate ESS [p.u.] «``eInstallGenCap``» «``eInstallConESS``»
 
-:math:`\frac{gp^p_{\omega ne}}{\overline{GP}^p_{\omega ne}} \leq icg^p_e \quad \forall p \omega ne, e \in CE`
+:math:`\frac{gp^p_{\omega ng}}{\overline{GP}^p_{\omega ng}} \leq icg^p_g \quad \forall p \omega ng, g \in CG`
 
 :math:`\frac{gc^p_{\omega ne}}{\overline{GP}^p_{\omega ne}} \leq icg^p_e \quad \forall p \omega ne, e \in CE`
+
+Heat production with boiler bounded by investment decision for candidate boiler [p.u.] «``eInstallBoiCap``»
+
+:math:`\frac{gh^p_{\omega ng}}{\overline{GH}^p_{\omega ng}} \leq icg^p_g \quad \forall p \omega ng, g \in CB`
 
 Adequacy system reserve margin [p.u.] «``eAdequacyReserveMargin``»
 
@@ -403,11 +408,11 @@ The initial inventory of the ESS candidates divided by its initial storage :math
 
 The initial inventory of the ESS candidates divided by their initial storage :math:`I^p_{\omega e}` is fixed to the commitment decision [p.u.] «``eIniInventory``».
 
-:math:`\frac{i^p_{\omega,0,e}}{I^p_{\omega e}} = uc^p_{\omega ne} \quad \forall p \omega ne, e \in CE`
+:math:`\frac{i^p_{\omega,0,e}}{I^p_{\omega e}} \leq uc^p_{\omega ne} \quad \forall p \omega ne, e \in CE`
 
 Maximum shift time of stored energy [GWh]. It is thought to be applied to demand side management «``eMaxShiftTime``»
 
-:math:`DUR_n EF_e gc^p_{\omega ne} \leq \sum_{n' = n+1}^{n+\frac{ST_e}{\nu}} DUR_n' gp^p_{\omega n'e}  \quad \forall p \omega ne`
+:math:`DUR_n EF_e gc^p_{\omega ne} \leq \sum_{n' = n+1}^{n+\frac{ST_e}{\nu}} DUR_n' gp^p_{\omega n'e} \quad \forall p \omega ne`
 
 ESS outflows (only for load levels multiple of 1, 24, 168, 672, and 8736 h depending on the ESS outflow cycle) must be satisfied [GWh] «``eEnergyOutflows``»
 
@@ -565,9 +570,9 @@ Half ohmic losses are linearly approximated as a function of the flow [GW] «``e
 
 **Hydrogen network operation**
 
-Balance of hydrogen generation by electrolyzers and demand at each node [tH2] «``eBalanceH2``»
+Balance of hydrogen generation by electrolyzers, hydrogen consumption from boilers using it, and demand at each node [tH2] «``eBalanceH2``»
 
-:math:`\sum_{e \in i} \frac{DUR_n}{PF'_e} gc^p_{\omega ne} + hns^p_{\omega ni} = DUR_n DH^p_{\omega ni} + \sum_{jc} fh^p_{\omega nijc} - \sum_{jc} fh^p_{\omega njic} \quad \forall p \omega ni`
+:math:`\sum_{e \in i} \frac{DUR_n}{PF'_e} gc^p_{\omega ne} - \sum_{g \in i} gh^p_{\omega ng} + hns^p_{\omega ni} = DUR_n DH^p_{\omega ni} + \sum_{jc} fh^p_{\omega nijc} - \sum_{jc} fh^p_{\omega njic} \quad \forall p \omega ni`
 
 **Heat network operation**
 

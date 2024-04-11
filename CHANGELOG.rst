@@ -1,8 +1,11 @@
 Change Log
 =============
 
-[4.16.0] - 2024-04-08
+[4.16.0] - 2024-04-11
 ----------------------
+- [FIXED] introduce boiler expansion constraint eInstallBoiCap
+- [CHANGED] introduced ProductionFunctionH2ToHeat in Data_Generation file for boilers that produce heat with hydrogen
+- [CHANGED] changed ProductionFunction to ProductionFunctionHydro in Data_Generation file
 - [FIXED] fix binary variables to obtain dual variables only those of the corresponding period and scenario
 - [FIXED] initial equal to final inventory in candidate ESS or reservoir
 - [CHANGED] introduction of boilers to produce heat
