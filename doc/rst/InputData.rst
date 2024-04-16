@@ -454,7 +454,7 @@ A description of the data included in the file ``oT_Data_VariableFuelCost.csv`` 
 ==========  ==============  ==========  =========  =============================  ======
 Identifier  Identifier      Identifier  Header     Description
 ==========  ==============  ==========  =========  =============================  ======
-Period      Scenario        Load level  Generator  Variable fuel cost             €/MWh
+Period      Scenario        Load level  Generator  Variable fuel cost             €/Gcal
 ==========  ==============  ==========  =========  =============================  ======
 
 All the generators must be defined as columns of these files.
