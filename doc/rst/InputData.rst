@@ -357,8 +357,8 @@ MaximumStorage              Maximum energy that can be stored by the ESS unit   
 MinimumStorage              Minimum energy that can be stored by the ESS unit                                                                                     GWh
 Efficiency                  Round-trip efficiency of the pump/turbine cycle of a pumped-hydro storage power plant or charge/discharge of a battery                p.u.
 ProductionFunctionHydro     Production function from water inflows to electricity (only used for hydropower plants modeled with water units and basin topology)   kWh/m\ :sup:`3`
-ProductionFunctionH2        Production function from power to hydrogen (only used for electrolyzers)                                                              kWh/kgH2
-ProductionFunctionHeat      Production function from power to heat     (only used for heat pumps)                                                                 kWh/kWh
+ProductionFunctionH2        Production function from electricity to hydrogen (only used for electrolyzers)                                                        kWh/kgH2
+ProductionFunctionHeat      Production function from electricity to heat     (only used for heat pumps)                                                           kWh/kWh
 ProductionFunctionH2ToHeat  Production function from hydrogen to heat  (only used for hydrogen heater, which produce heat burning hydrogen)                       kgH2/kWh
 Availability                Unit availability for area adequacy reserve margin (also called de-rating factor or capacity credit)                                  p.u.
 Inertia                     Unit inertia constant                                                                                                                 s
@@ -624,18 +624,18 @@ File                           Description
 The information contained in these input files determines the topology of the hydro basins and how water flows along the different
 hydropower and pumped-hydro power plants and reservoirs. These relations follow the water downstream direction.
 
-=======================================  ======================  ===========================================================================================
+=======================================  ======================  =============================================================================================
 File                                     Dictionary              Description
-=======================================  ======================  ===========================================================================================
+=======================================  ======================  =============================================================================================
 ``oT_Dict_ReservoirToHydro.csv``         ReservoirToHydro        Reservoir upstream of hydro power plant (i.e., hydro takes the water from the reservoir)
 ``oT_Dict_HydroToReservoir.csv``         HydroToReservoir        Hydro power plant upstream of reservoir (i.e., hydro releases the water to the reservoir)
-``oT_Dict_ReservoirToPumpedHydro.csv``   ReservoirToPumpedHydro  Reservoir upstream of pumped-hydro power plant (i.e., pump-hydro pumps from the reservoir)
-``oT_Dict_PumpedHydroToReservoir.csv``   PumpedHydroToReservoir  Pumped-hydro power plant upstream of reservoir (i.e., pump-hydro pumps to the reservoir)
+``oT_Dict_ReservoirToPumpedHydro.csv``   ReservoirToPumpedHydro  Reservoir upstream of pumped-hydro power plant (i.e., pumped-hydro pumps from the reservoir)
+``oT_Dict_PumpedHydroToReservoir.csv``   PumpedHydroToReservoir  Pumped-hydro power plant upstream of reservoir (i.e., pumped-hydro pumps to the reservoir)
 ``oT_Dict_ReservoirToReservoir.csv``     ReservoirToReservoir    Reservoir upstream of reservoir (i.e., reservoir one spills the water to reservoir two)
-=======================================  ======================  ===========================================================================================
+=======================================  ======================  =============================================================================================
 
-Hydro inflows
--------------
+Natural hydro inflows
+---------------------
 
 A description of the data included in the file ``oT_Data_HydroInflows.csv`` follows:
 
@@ -651,8 +651,8 @@ If you have daily natural hydro inflows data just input the daily amount at the 
 
 Internally, all the values below 1e-5 times the maximum system demand of each area will be converted into 0 by the model.
 
-Hydro outflows
---------------
+Natural hydro outflows
+----------------------
 
 A description of the data included in the file ``oT_Data_HydroOutflows.csv`` follows:
 

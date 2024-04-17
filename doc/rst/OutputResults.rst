@@ -363,11 +363,11 @@ Period        Scenario    Load level  Technology  Spilled energy [GWh]
 
 File ``oT_Result_TechnologySpillageRelative.csv``
 
-============  ==========  ==========  ==========  ==========================================
+============  ==========  ==========  ==========  ================================================
 Identifier    Identifier  Identifier  Header      Description
-============  ==========  ==========  ==========  ==========================================
-Period        Scenario    Load level  Technology  Spilled energy in ESS wrt the inflows [%]
-============  ==========  ==========  ==========  ==========================================
+============  ==========  ==========  ==========  ================================================
+Period        Scenario    Load level  Technology  Spilled energy in ESS wrt the energy inflows [%]
+============  ==========  ==========  ==========  ================================================
 
 ESS operation
 -------------
@@ -502,11 +502,11 @@ Period        Scenario    Load level  Generator   Spilled energy in ESS [GWh]
 
 File ``oT_Result_GenerationSpillageRelative.csv``
 
-============  ==========  ==========  ==========  ==========================================
+============  ==========  ==========  ==========  ================================================
 Identifier    Identifier  Identifier  Header      Description
-============  ==========  ==========  ==========  ==========================================
-Period        Scenario    Load level  Generator   Spilled energy in ESS wrt the inflows [%]
-============  ==========  ==========  ==========  ==========================================
+============  ==========  ==========  ==========  ================================================
+Period        Scenario    Load level  Generator   Spilled energy in ESS wrt the energy inflows [%]
+============  ==========  ==========  ==========  ================================================
 
 File ``oT_Result_SummaryGeneration.csv``
 
@@ -543,7 +543,7 @@ Identifier    Identifier  Identifier  Header      Description
 Period        Scenario    Load level  Reservoir   Spilled water in reservoir [hm\ :sup:`3`]
 ============  ==========  ==========  ==========  ==========================================
 
-File ``oT_Result_TechnologyOperatingReservoirSpillage.csv``
+File ``oT_Result_TechnologyReservoirSpillage.csv``
 
 ============  ==========  ==========  ==========  =========================================================
 Identifier    Identifier  Identifier  Header      Description
@@ -878,7 +878,7 @@ Identifier    Identifier  Identifier  Header      Description
 Period        Scenario    Load level  Pump        Operation cost for the consumption [M€]
 ============  ==========  ==========  ==========  ==========================================
 
-File ``oT_Result_GenerationCostOperReserve.csv``
+File ``oT_Result_GenerationCostOperatingReserve.csv``
 
 ============  ==========  ==========  ==========  ==============================================
 Identifier    Identifier  Identifier  Header      Description
@@ -886,7 +886,7 @@ Identifier    Identifier  Identifier  Header      Description
 Period        Scenario    Load level  Generator   Operation reserve cost for the generation [M€]
 ============  ==========  ==========  ==========  ==============================================
 
-File ``oT_Result_ConsumptionCostOperReserve.csv``
+File ``oT_Result_ConsumptionCostOperatingReserve.csv``
 
 ============  ==========  ==========  ==========  ===============================================
 Identifier    Identifier  Identifier  Header      Description

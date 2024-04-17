@@ -31,7 +31,7 @@ Indices
 :math:`t`                Thermal unit
 :math:`e`                Energy Storage System (ESS)
 :math:`h`                Hydro or pumped-storage hydro power plant (associated to a reservoir modeled in water units)
-:math:`e',e''`           Reservoir (modeled in water units, natural inflows in m\ :sup:`3`/s and volume in hm\ :sup:`3`)
+:math:`e',e''`           Reservoir (natural water inflows in m\ :sup:`3`/s and volume in hm\ :sup:`3`)
 :math:`h \in up(e')`     Hydro or pumped-storage hydro power plant :math:`h` upstream of reservoir :math:`e'`
 :math:`h \in dw(e')`     Hydro or pumped-storage hydro power plant :math:`h` downstream of reservoir :math:`e'`
 :math:`e'' \in up(e')`   Reservoir :math:`e''` upstream of reservoir :math:`e'`
@@ -56,7 +56,7 @@ They are written in **uppercase** letters.
 
 ==================  =======================================================  =======
 **General**
-------------------  -------------------------------------------------------  -------
+---------------------------------------------------------------------------  -------
 :math:`T`           Base period (year)                                       year
 :math:`\nu`         Time step. Duration of the load levels (e.g., 2 h, 3 h)
 :math:`\delta`      Annual discount rate                                     p.u.
@@ -66,7 +66,7 @@ They are written in **uppercase** letters.
 
 ========================  ====================================================  =======
 **Electricity demand**
-------------------------  ----------------------------------------------------  -------
+------------------------------------------------------------------------------  -------
 :math:`D^p_{\omega ni}`   Electricity demand in each node                       GW
 :math:`PD_{pa}`           Peak demand in each area                              GW
 :math:`DUR_n`             Duration of each load level                           h
@@ -75,27 +75,27 @@ They are written in **uppercase** letters.
 
 ========================  ====================================================  =======
 **Hydrogen demand**
-------------------------  ----------------------------------------------------  -------
+------------------------------------------------------------------------------  -------
 :math:`DH^p_{\omega ni}`  Hydrogen demand in each node                          tH2
 :math:`CHNS`              Cost of hydrogen not served                           €/tH2
 ========================  ====================================================  =======
 
 =========================  ====================================================  =======
 **Heat demand**
--------------------------  ----------------------------------------------------  -------
+-------------------------------------------------------------------------------  -------
 :math:`DHt^p_{\omega ni}`  Heat demand in each node                              GW
 :math:`CHtNS`              Cost of heat not served                               €/MWh
 =========================  ====================================================  =======
 
 ===========================  ====================================================  =======
 **Scenarios**
----------------------------  ----------------------------------------------------  -------
+---------------------------------------------------------------------------------  -------
 :math:`P^p_{\omega}`         Probability of each scenario in each period           p.u.
 ===========================  ====================================================  =======
 
 ==========================================  ==================================================================  ====
 **Operating reserves**
-------------------------------------------  ------------------------------------------------------------------  ----
+--------------------------------------------------------------------------------------------------------------  ----
 :math:`URA, DRA`                            Upward and downward reserve activation                              p.u.
 :math:`\underline{DtUR}, \overline{DtUR}`   Minimum and maximum ratios downward to upward operating reserves    p.u.
 :math:`UR^p_{\omega na}, DR^p_{\omega na}`  Upward and downward operating reserves for each area                GW
@@ -103,31 +103,31 @@ They are written in **uppercase** letters.
 
 ==================================  ================================================================  ====
 **Adequacy system reserve margin**
-----------------------------------  ----------------------------------------------------------------  ----
+----------------------------------------------------------------------------------------------------  ----
 :math:`RM_{pa}`                     Minimum adequacy system reserve margin for each period and area   p.u.
 ==================================  ================================================================  ====
 
 ==================================  ================================================================  =====
 **Maximum CO2 emission**
-----------------------------------  ----------------------------------------------------------------  -----
+----------------------------------------------------------------------------------------------------  -----
 :math:`EL_{pa}`                     Maximum CO2 emission for each period, scenario, and area          MtCO2
 ==================================  ================================================================  =====
 
 ==================================  ================================================================  =====
 **Minimum RES energy**
-----------------------------------  ----------------------------------------------------------------  -----
+----------------------------------------------------------------------------------------------------  -----
 :math:`RL_{pa}`                     Minimum RES energy for each period, scenario, and area            GWh
 ==================================  ================================================================  =====
 
 ==============================  ========================================================  ====
 **System inertia**
-------------------------------  --------------------------------------------------------  ----
+----------------------------------------------------------------------------------------  ----
 :math:`SI^p_{\omega na}`        System inertia for each area                              s
 ==============================  ========================================================  ====
 
 =================================================================  ========================================================================================================================  ================
 **Generation system**
------------------------------------------------------------------  ------------------------------------------------------------------------------------------------------------------------  ----------------
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------  ----------------
 :math:`CFG_g`                                                      Annualized fixed cost of a candidate generator                                                                            M€/yr
 :math:`CFR_g`                                                      Annualized fixed cost of a candidate generator to be retired                                                              M€/yr
 :math:`A_g`                                                        Availability of each generator for adequacy reserve margin                                                                p.u.
@@ -148,12 +148,12 @@ They are written in **uppercase** letters.
 :math:`\sigma_g`                                                   Energy cycle of the unit (e.g., 24, 168, 672, 8736 h -for daily, weekly, monthly, yearly-)                                h
 :math:`GI_g`                                                       Generator inertia                                                                                                         s
 :math:`EF_e`                                                       Round-trip efficiency of the pump/turbine cycle of a pumped-storage hydro power plant or charge/discharge of a battery    p.u.
-:math:`PF_h`                                                       Production function from water inflows to energy                                                                          kWh/m\ :sup:`3`
-:math:`PF'_e`                                                      Production function from energy to hydrogen of an electrolyzer                                                            kWh/kgH2`
-:math:`PF''_e`                                                     Production function from energy to heat of a heat pump                                                                    kWh/kWh
+:math:`PF_h`                                                       Production function from water inflows to electricity                                                                     kWh/m\ :sup:`3`
+:math:`PF'_e`                                                      Production function from electricity to hydrogen of an electrolyzer                                                       kWh/kgH2
+:math:`PF''_e`                                                     Production function from electricity to heat of a heat pump or an electrical heater                                       kWh/kWh
 :math:`PH''_g`                                                     Power to heat ratio for a CHP :math:`\frac{\overline{GP}_g - \underline{GP}_g}{\overline{GH}_g - \underline{GH}_g}`       kWh/kWh
-:math:`\underline{I}^p_{\omega ne}, \overline{I}^p_{\omega ne}`    Minimum and maximum storage of an ESS (e.g., hydro power plant, closed-/open-loop pumped-storage hydro)                  GWh
-:math:`I^p_{\omega e}`                                             Initial storage of an ESS (e.g., hydro power plant, closed-/open-loop pumped-storage hydro)                              GWh
+:math:`\underline{I}^p_{\omega ne}, \overline{I}^p_{\omega ne}`    Minimum and maximum storage of an ESS (e.g., hydro power plant, closed-/open-loop pumped-storage hydro)                   GWh
+:math:`I^p_{\omega e}`                                             Initial storage of an ESS (e.g., hydro power plant, closed-/open-loop pumped-storage hydro)                               GWh
 :math:`\underline{E}^p_{\omega ne}, \overline{E}^p_{\omega ne}`    Minimum and maximum energy produced by a unit in an interval defined                                                      GW
 :math:`EI^p_{\omega ne}`                                           Energy inflows of an ESS (e.g., hydro power plant)                                                                        GW
 :math:`EO^p_{\omega ne}`                                           Energy outflows of an ESS (e.g., hydrogen, electric vehicle, hydro power plant, demand response)                          GW
@@ -161,16 +161,16 @@ They are written in **uppercase** letters.
 
 =====================================================================  =======================================================================================================  ================
 **Hydro system**
----------------------------------------------------------------------  -------------------------------------------------------------------------------------------------------  ----------------
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------  ----------------
 :math:`CFE_{e'}`                                                       Annualized fixed cost of a candidate reservoir                                                           M€/yr
 :math:`\underline{I'}^p_{\omega ne'}, \overline{I'}^p_{\omega ne'}`    Minimum and maximum volume of a reservoir                                                                hm\ :sup:`3`
-:math:`HI^p_{\omega ne'}`                                              Natural hydro inflows of a reservoir                                                                     m\ :sup:`3`/s
+:math:`HI^p_{\omega ne'}`                                              Natural water inflows of a reservoir                                                                     m\ :sup:`3`/s
 :math:`HO^p_{\omega ne'}`                                              Hydro outflows of a reservoir (e.g., irrigation)                                                         m\ :sup:`3`/s
 =====================================================================  =======================================================================================================  ================
 
 =========================================  =================================================================================================================  =====
 **Electric transmission system**
------------------------------------------  -----------------------------------------------------------------------------------------------------------------  -----
+------------------------------------------------------------------------------------------------------------------------------------------------------------  -----
 :math:`CFT_{ijc}`                          Annualized fixed cost of a candidate electric transmission line                                                    M€/yr
 :math:`\overline{F}_{ijc}`                 Net transfer capacity (total transfer capacity multiplied by the security coefficient) of a transmission line      GW
 :math:`\overline{F}'_{ijc}`                Maximum flow used in the Kirchhoff's 2nd law constraint (e.g., disjunctive constraint for the candidate AC lines)  GW
@@ -183,14 +183,14 @@ The net transfer capacity of a transmission line can be different in each direct
 
 =========================================  =================================================================================================================  =====
 **Hydrogen transmission system**
------------------------------------------  -----------------------------------------------------------------------------------------------------------------  -----
+------------------------------------------------------------------------------------------------------------------------------------------------------------  -----
 :math:`CFH_{ijc}`                          Annualized fixed cost of a candidate transmission pipeline                                                         M€/yr
 :math:`\overline{FH}_{ijc}`                Net transfer capacity (total transfer capacity multiplied by the security coefficient) of a pipeline               tH2
 =========================================  =================================================================================================================  =====
 
 =========================================  =================================================================================================================  ======
 **Heat transmission system**
------------------------------------------  -----------------------------------------------------------------------------------------------------------------  ------
+------------------------------------------------------------------------------------------------------------------------------------------------------------  ------
 :math:`CFP_{ijc}`                          Annualized fixed cost of a candidate heat pipe                                                                     M€/yr
 :math:`\overline{FP}_{ijc}`                Net transfer capacity (total transfer capacity multiplied by the security coefficient) of a heat pipe              GW
 =========================================  =================================================================================================================  ======
@@ -204,25 +204,25 @@ They are written in **lowercase** letters.
 
 ==========================  ==================  ===
 **Electric demand**
---------------------------  ------------------  ---
+----------------------------------------------  ---
 :math:`ens^p_{\omega ni}`   Energy not served   GW
 ==========================  ==================  ===
 
 ==========================  ===================  ===
 **Hydrogen demand**
---------------------------  -------------------  ---
-:math:`hns^p_{\omega ni}`   Hydrogen not served  GW
+-----------------------------------------------  ---
+:math:`hns^p_{\omega ni}`   Hydrogen not served  tH2
 ==========================  ===================  ===
 
 ==========================  ===================  ===
 **Heat demand**
---------------------------  -------------------  ---
+-----------------------------------------------  ---
 :math:`htns^p_{\omega ni}`  Heat not served      GW
 ==========================  ===================  ===
 
 ============================================================  ==============================================================================  ================
 **Generation system**
-------------------------------------------------------------  ------------------------------------------------------------------------------  ----------------
+--------------------------------------------------------------------------------------------------------------------------------------------  ----------------
 :math:`icg^p_g`                                               Candidate generator or ESS installed or not                                     {0,1}
 :math:`rcg^p_g`                                               Candidate generator or ESS retired   or not                                     {0,1}
 :math:`gp^p_{\omega ng}, gc^p_{\omega ng}`                    Generator output (discharge if an ESS) and consumption (charge if an ESS)       GW
@@ -241,9 +241,9 @@ They are written in **lowercase** letters.
 
 ======================================  ==========================================================================  ==============
 **Hydro system**
---------------------------------------  --------------------------------------------------------------------------  --------------
+------------------------------------------------------------------------------------------------------------------  --------------
 :math:`icr^p_{e'}`                      Candidate reservoir installed or not                                        {0,1}
-:math:`hi^p_{\omega ne'}`               Variable hydro inflows of a candidate reservoir (e.g., hydro power plant)   m\ :sup:`3`/s
+:math:`hi^p_{\omega ne'}`               Variable water inflows of a candidate reservoir (e.g., hydro power plant)   m\ :sup:`3`/s
 :math:`ho^p_{\omega ne'}`               Hydro outflows of a reservoir                                               m\ :sup:`3`/s
 :math:`i'^p_{\omega ne'}`               Reservoir volume                                                            hm\ :sup:`3`
 :math:`s'^p_{\omega ne'}`               Reservoir spilled water                                                     hm\ :sup:`3`
@@ -251,26 +251,26 @@ They are written in **lowercase** letters.
 
 ========================================================================  ==============================================================  =====
 **Electric transmission system**
-------------------------------------------------------------------------  --------------------------------------------------------------  -----
+----------------------------------------------------------------------------------------------------------------------------------------  -----
 :math:`ict^p_{ijc}`                                                       Candidate line installed or not                                 {0,1}
 :math:`swt^p_{\omega nijc}, son^p_{\omega nijc}, sof^p_{\omega nijc}`     Switching state, switch-on and switch-off of a line             {0,1}
-:math:`f^p_{\omega nijc}`                                                 Power flow through a line                                       GW
-:math:`l^p_{\omega nijc}`                                                 Half ohmic losses of a line                                     GW
+:math:`f^p_{\omega nijc}`                                                 Power flow through an electric line                             GW
+:math:`l^p_{\omega nijc}`                                                 Half ohmic losses of an electric line                           GW
 :math:`\theta^p_{\omega ni}`                                              Voltage angle of a node                                         rad
 ========================================================================  ==============================================================  =====
 
 ========================================================================  ==============================================================  =====
-**Hydrogen pipeline transmission system**
-------------------------------------------------------------------------  --------------------------------------------------------------  -----
+**Hydrogen transmission system**
+----------------------------------------------------------------------------------------------------------------------------------------  -----
 :math:`ich^p_{ijc}`                                                       Candidate pipeline installed or not                             {0,1}
-:math:`fh^p_{\omega nijc}`                                                Hydrogen flow through a line                                    tH2
+:math:`fh^p_{\omega nijc}`                                                Hydrogen flow through a hydrogen pipeline                       tH2
 ========================================================================  ==============================================================  =====
 
 ========================================================================  ==============================================================  ======
-**Heat pipe transmission system**
-------------------------------------------------------------------------  --------------------------------------------------------------  ------
+**Heat transmission system**
+----------------------------------------------------------------------------------------------------------------------------------------  ------
 :math:`icp^p_{ijc}`                                                       Candidate heat pipe installed or not                            {0,1}
-:math:`fp^p_{\omega nijc}`                                                Heat flow through a line                                        GW
+:math:`fp^p_{\omega nijc}`                                                Heat flow through a heat pipe                                   GW
 ========================================================================  ==============================================================  ======
 
 Equations
@@ -280,9 +280,10 @@ The names between parenthesis correspond to the names of the constraints in the 
 
 **Objective function**: minimization of total (investment and operation) cost for the multi-period scope of the model
 
-Generation, (energy and reservoir) storage and (electric, hydrogen, and heat) network investment cost plus retirement cost [M€] «``eTotalFCost``»
+Generation, (energy and reservoir) storage and (electricity, hydrogen, and heat) network investment cost plus retirement cost [M€] «``eTotalFCost``»
 
-:math:`\sum_{pg} DF^p CFG_g icg^p_g + \sum_{pg} DF^p CFR_g rcg^p_g + \sum_{pijc} DF^p CFT_{ijc} ict^p_{ijc} + \sum_{pijc} DF^p CFH_{ijc} ich^p_{ijc} + \sum_{pijc} DF^p CFP_{ijc} icp^p_{ijc} + \sum_{pe'} DF^p CFE_{e'} icr^p_{e'} +`
+:math:`\sum_{pg} DF^p CFG_g icg^p_g + \sum_{pg} DF^p CFR_g rcg^p_g + \sum_{pe'} DF^p CFE_{e'} icr^p_{e'} +`
+:math:`\sum_{pijc} DF^p CFT_{ijc} ict^p_{ijc} + \sum_{pijc} DF^p CFH_{ijc} ich^p_{ijc} + \sum_{pijc} DF^p CFP_{ijc} icp^p_{ijc} +`
 
 Generation operation cost [M€] «``eTotalGCost``»
 
@@ -298,7 +299,7 @@ Variable consumption operation cost [M€] «``eTotalCCost``»
 
 Electricity, hydrogen, and heat reliability cost [M€] «``eTotalRCost``»
 
-:math:`\sum_{p \omega ni}{DF^p P^p_{\omega} DUR_n CENS  ens^p_{\omega ni}} + \sum_{p \omega ni}{DF^p P^p_{\omega} DUR_n CHNS  hns^p_{\omega ni}} `\sum_{p \omega ni}{DF^p P^p_{\omega} DUR_n CHtNS htns^p_{\omega ni}}`
+:math:`\sum_{p \omega ni}{DF^p P^p_{\omega} DUR_n CENS  ens^p_{\omega ni}} + \sum_{p \omega ni}{DF^p P^p_{\omega} DUR_n CHNS  hns^p_{\omega ni}} + \sum_{p \omega ni}{DF^p P^p_{\omega} DUR_n CHtNS htns^p_{\omega ni}}`
 
 All the periodical (annual) costs of a period :math:`p` are updated considering that the period (e.g., 2030) is replicated for a number of years defined by its weight :math:`WG^p` (e.g., 5 times) and discounted to the base year :math:`T` (e.g., 2020) with this discount factor :math:`DF^p = \frac{(1+\delta)^{WG^p}-1}{\delta(1+\delta)^{WG^p-1+p-T}}`.
 
@@ -392,7 +393,7 @@ Maximum and minimum relative inventory of ESS candidates (only for load levels m
 
 :math:`\frac{i^p_{\omega ne}}{\underline{I}^p_{\omega ne}} \geq uc^p_{\omega ne} \quad \forall p \omega ne, e \in CE`
 
-Energy inflows of ESS candidates (only for load levels multiple of 1, 24, 168, 8736 h depending on the ESS storage type) constrained by the ESS commitment decision times the inflows data [p.u.] «``eInflows2Comm``»
+Energy inflows of ESS candidates (only for load levels multiple of 1, 24, 168, 8736 h depending on the ESS storage type) constrained by the ESS commitment decision times the energy inflows data [p.u.] «``eInflows2Comm``»
 
 :math:`\frac{ei^p_{\omega ne}}{EI^p_{\omega ne}} \leq uc^p_{\omega ne} \quad \forall p \omega ne, e \in CE`
 
@@ -536,7 +537,7 @@ Hydro outflows (only for load levels multiple of 1, 24, 168, 672, and 8736 h dep
 
 :math:`\sum_{n' = n-\frac{\tau_e'}{\rho_e'}}^n (ho^p_{\omega n'e'} - HO^p_{\omega n'e'}) DUR_n' = 0 \quad \forall p \omega ne', n \in \rho_e'`
 
-**Electric network operation**
+**Electricity network operation**
 
 Logical relation between transmission investment and switching {0,1} «``eLineStateCand``»
 
@@ -616,7 +617,7 @@ Balance of heat generation produced by CHPs and boilers respectively and demand 
 
 :math:`0 \leq s'^p_{\omega ne'}                                                               \quad \forall p \omega ne'`
 
-**Bounds on electric network variables** [GW]
+**Bounds on electricity network variables** [GW]
 
 :math:`0 \leq l^p_{\omega nijc} \leq \frac{L_{ijc}}{2} \overline{F}_{ijc}  \quad \forall p \omega nijc`
 
