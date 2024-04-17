@@ -38,7 +38,7 @@
 The **openTEPES** model has been developed at the `Instituto de Investigación Tecnológica (IIT) <https://www.iit.comillas.edu/index.php.en>`_ of the `Universidad Pontificia Comillas <https://www.comillas.edu/en/>`_.
 
 The **openTEPES** model presents a decision support system for defining the integrated generation, storage, and transmission resource planning (IRP, GEP+SEP+TEP) of a **large-scale electric system** at a tactical level (i.e., time horizons of 10-20 years),
-defined as a set of **generation, storage, and electric and hydrogen networks dynamic investment decisions for multiple future years**.
+defined as a set of **generation, storage, and (electricity, hydrogen, and heat) networks dynamic investment decisions for multiple future years**.
 
 It is integrated in the `open energy system modelling platform  <https://openenergymodels.net/>`_ helping modelling Europe's energy system.
 
@@ -75,17 +75,17 @@ It determines automatically optimal expansion plans that satisfy simultaneously 
 
 The objective function incorporates the two main quantifiable costs: **generation, storage, and transmission investment cost (CAPEX)** and **expected variable operation costs (including generation, consumption, emission, and reliability costs) (system OPEX)**.
 
-The model formulates a **two-stage stochastic optimization** problem, including generation, storage, and electric, hydrogen, and heat network binary investment/retirement decisions, generation operation decisions (commitment, startup, and shutdown decisions are also binary), and electric line-switching decisions.
+The model formulates a **two-stage stochastic optimization** problem, including generation, storage, and electricity, hydrogen, and heat network binary investment/retirement decisions, generation operation decisions (commitment, startup, and shutdown decisions are also binary), and electric line-switching decisions.
 The capacity expansion considers adequacy system reserve margin and minimum and maximum energy constraints.
 
 The very detailed operation model is an electric **network-constrained unit commitment (NCUC)** based on a **tight and compact** formulation, including **operating reserves** with a
-**DC power flow (DCPF)**, including electric **line switching** decisions. **Electric network ohmic losses** are considered proportional to the electric line flow. It considers different **energy storage systems (ESS)**, e.g., pumped-hydro storage,
+**DC power flow (DCPF)**, including electric **line-switching** decisions. **Electric network ohmic losses** are considered proportional to the electric line flow. It considers different **energy storage systems (ESS)**, e.g., pumped-hydro storage,
 battery, demand response, electric vehicles, solar thermal, alkaline water electrolyzer, etc. It allows analyzing the trade-off between the investment in generation/transmission/pipeline and the investment and/or use of storage capacity.
 
 The model allows also a representation of the **hydro system** based on volume and water inflow data considering the water stream topology (hydro cascade basins). If they are not available it runs with an energy-based representation of the hydro system.
 
-Also, it includes a representation of **Power to Hydrogen (P2H2)** by setting the **hydrogen demand** satisfied by the production of hydrogen with electrolyzers (consume electricity to produce hydrogen) and a **hydrogen network** to distribute it.
-Besides, it includes a representation of **Power to Heat (P2H)** by setting the **heat demand** satisfied by the production of heat with heat pumps (consume electricity to produce heat) and a **heat network** to distribute it. If they are not available it runs with just the other energy carriers.
+Also, it includes a representation of **Power to Hydrogen (P2H2)** by setting the **hydrogen demand** satisfied by the production of hydrogen with electrolyzers (consume electricity to produce hydrogen) and a **hydrogen pipeline network** to distribute it.
+Besides, it includes a representation of **Power to Heat (P2H)** by setting the **heat demand** satisfied by the production of heat with heat pumps or electric heaters (consume electricity to produce heat) and a **heat pipe network** to distribute it. If they are not available it runs with just the other energy carriers.
 
 The main results of the model can be structured in these topics:
 
