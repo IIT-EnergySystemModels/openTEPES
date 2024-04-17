@@ -53,7 +53,6 @@ Dictionaries. Sets
 The dictionaries include all the possible elements of the corresponding sets included in the optimization problem. **You can't use non-English characters (e.g., ó, º)**
 
 =============================  =====================================================================================================================================================================================================================================================================================================================
-
 File                           Description
 =============================  =====================================================================================================================================================================================================================================================================================================================
 ``oT_Dict_Period.csv``         Period (e.g., 2030, 2035). **It must be a positive integer**
@@ -132,7 +131,7 @@ IndBinGenInvest      Indicator of binary generation   expansion decisions       
 IndBinGenRetirement  Indicator of binary generation  retirement decisions                 {0 continuous, 1 binary, 2 ignore retirements}
 IndBinRsrInvest      Indicator of binary reservoir    expansion decisions
                      (only used for reservoirs modeled with water units)                  {0 continuous, 1 binary, 2 ignore investments}
-IndBinNetInvest      Indicator of binary electric network expansion decisions             {0 continuous, 1 binary, 2 ignore investments}
+IndBinNetInvest      Indicator of binary electricity network expansion decisions          {0 continuous, 1 binary, 2 ignore investments}
 IndBinNetH2Invest    Indicator of binary hydrogen network expansion decisions             {0 continuous, 1 binary, 2 ignore investments}
 IndBinNetHeatInvest  Indicator of binary heat     network expansion decisions             {0 continuous, 1 binary, 2 ignore investments}
 IndBinGenOperat      Indicator of binary generation   operation decisions                 {0 continuous, 1 binary}
