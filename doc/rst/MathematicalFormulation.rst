@@ -156,7 +156,7 @@ They are written in **uppercase** letters.
 :math:`I^p_{\omega e}`                                             Initial storage of an ESS (e.g., hydro power plant, closed-/open-loop pumped-storage hydro)                               GWh
 :math:`\underline{E}^p_{\omega ne}, \overline{E}^p_{\omega ne}`    Minimum and maximum energy produced by a unit in an interval defined                                                      GW
 :math:`EI^p_{\omega ne}`                                           Energy inflows of an ESS (e.g., hydro power plant)                                                                        GW
-:math:`EO^p_{\omega ne}`                                           Energy outflows of an ESS (e.g., hydrogen, electric vehicle, hydro power plant, demand response)                          GW
+:math:`EO^p_{\omega ne}`                                           Energy outflows of an ESS (e.g., hydrogen, electric vehicle, hydropower plant, demand response)                           GW
 =================================================================  ========================================================================================================================  ================
 
 =====================================================================  =======================================================================================================  ================
@@ -169,9 +169,9 @@ They are written in **uppercase** letters.
 =====================================================================  =======================================================================================================  ================
 
 =========================================  =================================================================================================================  =====
-**Electric transmission system**
+**Electricity transmission system**
 ------------------------------------------------------------------------------------------------------------------------------------------------------------  -----
-:math:`CFT_{ijc}`                          Annualized fixed cost of a candidate electric transmission line                                                    M€/yr
+:math:`CFT_{ijc}`                          Annualized fixed cost of a candidate electricity transmission line                                                 M€/yr
 :math:`\overline{F}_{ijc}`                 Net transfer capacity (total transfer capacity multiplied by the security coefficient) of a transmission line      GW
 :math:`\overline{F}'_{ijc}`                Maximum flow used in the Kirchhoff's 2nd law constraint (e.g., disjunctive constraint for the candidate AC lines)  GW
 :math:`L_{ijc}, X_{ijc}`                   Loss factor and reactance of a transmission line                                                                   p.u.
@@ -203,7 +203,7 @@ Variables
 They are written in **lowercase** letters.
 
 ==========================  ==================  ===
-**Electric demand**
+**Electricity demand**
 ----------------------------------------------  ---
 :math:`ens^p_{\omega ni}`   Energy not served   GW
 ==========================  ==================  ===
@@ -250,7 +250,7 @@ They are written in **lowercase** letters.
 ======================================  ==========================================================================  ==============
 
 ========================================================================  ==============================================================  =====
-**Electric transmission system**
+**Electricity transmission system**
 ----------------------------------------------------------------------------------------------------------------------------------------  -----
 :math:`ict^p_{ijc}`                                                       Candidate line installed or not                                 {0,1}
 :math:`swt^p_{\omega nijc}, son^p_{\omega nijc}, sof^p_{\omega nijc}`     Switching state, switch-on and switch-off of a line             {0,1}
@@ -353,7 +353,7 @@ Minimum RES energy [GW] «``eMinSystemRESEnergy``»
 
 :math:`\frac{\sum_{ng} {DUR_n gp^p_{\omega ng}}}{\sum_{n} {DUR_n}} \geq \frac{RL_{pa}}{\sum_{n} {DUR_n}}  \quad \forall p \omega a`
 
-Balance of electric generation and demand at each node with ohmic losses [GW] «``eBalanceElec``»
+Balance of electricity generation and demand at each node with ohmic losses [GW] «``eBalanceElec``»
 
 :math:`\sum_{g \in i} gp^p_{\omega ng} - \sum_{e \in i} gc^p_{\omega ne} + ens^p_{\omega ni} = D^p_{\omega ni} + \sum_{jc} l^p_{\omega nijc} + \sum_{jc} l^p_{\omega njic} + \sum_{jc} f^p_{\omega nijc} - \sum_{jc} f^p_{\omega njic} \quad \forall p \omega ni`
 
