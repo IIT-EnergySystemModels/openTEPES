@@ -30,10 +30,10 @@ Indices
 :math:`g`                Generator (thermal or hydro unit or energy storage system)
 :math:`t`                Thermal unit
 :math:`e`                Energy Storage System (ESS)
-:math:`h`                Hydro or pumped-storage hydro power plant (associated to a reservoir modeled in water units)
+:math:`h`                Hydropower or pumped-storage hydro plant (associated to a reservoir modeled in water units)
 :math:`e',e''`           Reservoir (natural water inflows in m\ :sup:`3`/s and volume in hm\ :sup:`3`)
-:math:`h \in up(e')`     Hydro or pumped-storage hydro power plant :math:`h` upstream of reservoir :math:`e'`
-:math:`h \in dw(e')`     Hydro or pumped-storage hydro power plant :math:`h` downstream of reservoir :math:`e'`
+:math:`h \in up(e')`     Hydro or pumped-storage hydropower plant :math:`h` upstream of reservoir :math:`e'`
+:math:`h \in dw(e')`     Hydro or pumped-storage hydropower plant :math:`h` downstream of reservoir :math:`e'`
 :math:`e'' \in up(e')`   Reservoir :math:`e''` upstream of reservoir :math:`e'`
 :math:`i, j`             Node
 :math:`z`                Zone. Each node belongs to a zone :math:`i \in z`
@@ -138,7 +138,7 @@ They are written in **uppercase** letters.
 :math:`CF^p_{\omega ng}, CV^p_{\omega ng}`                         Fixed (no load) and variable cost of a generator. Variable cost includes fuel and O&M                                     €/h, €/MWh
 :math:`CE^p_{\omega ng}`                                           Emission cost of a generator                                                                                              €/MWh
 :math:`ER_g`                                                       Emission rate of a generator                                                                                              tCO2/MWh
-:math:`CV_e`                                                       Variable cost of an ESS or pumped-storage hydro power plant when charging                                                 €/MWh
+:math:`CV_e`                                                       Variable cost of an ESS or pumped-storage hydropower plant when charging                                                 €/MWh
 :math:`RU_g, RD_g`                                                 Ramp up/down of a non-renewable unit or maximum discharge/charge rate for ESS discharge/charge                            MW/h
 :math:`TU_t, TD_t`                                                 Minimum uptime and downtime of a thermal unit                                                                             h
 :math:`ST_e`                                                       Maximum shift time of an ESS unit (in particular, for demand side management)                                             h
@@ -147,15 +147,15 @@ They are written in **uppercase** letters.
 :math:`\rho_e`                                                     Outflow cycle of the ESS (e.g., 1, 24, 168, 8736 h -for hourly, daily, weekly, monthly, yearly-)                          h
 :math:`\sigma_g`                                                   Energy cycle of the unit (e.g., 24, 168, 672, 8736 h -for daily, weekly, monthly, yearly-)                                h
 :math:`GI_g`                                                       Generator inertia                                                                                                         s
-:math:`EF_e`                                                       Round-trip efficiency of the pump/turbine cycle of a pumped-storage hydro power plant or charge/discharge of a battery    p.u.
+:math:`EF_e`                                                       Round-trip efficiency of the pump/turbine cycle of a pumped-storage hydro plant or charge/discharge of a battery    p.u.
 :math:`PF_h`                                                       Production function from water inflows to electricity                                                                     kWh/m\ :sup:`3`
 :math:`PF'_e`                                                      Production function from electricity to hydrogen of an electrolyzer                                                       kWh/kgH2
 :math:`PF''_e`                                                     Production function from electricity to heat of a heat pump or an electrical heater                                       kWh/kWh
 :math:`PH''_g`                                                     Power to heat ratio for a CHP :math:`\frac{\overline{GP}_g - \underline{GP}_g}{\overline{GH}_g - \underline{GH}_g}`       kWh/kWh
-:math:`\underline{I}^p_{\omega ne}, \overline{I}^p_{\omega ne}`    Minimum and maximum storage of an ESS (e.g., hydro power plant, closed-/open-loop pumped-storage hydro)                   GWh
-:math:`I^p_{\omega e}`                                             Initial storage of an ESS (e.g., hydro power plant, closed-/open-loop pumped-storage hydro)                               GWh
+:math:`\underline{I}^p_{\omega ne}, \overline{I}^p_{\omega ne}`    Minimum and maximum storage of an ESS (e.g., hydropower plant, closed-/open-loop pumped-storage hydro)                   GWh
+:math:`I^p_{\omega e}`                                             Initial storage of an ESS (e.g., hydropower plant, closed-/open-loop pumped-storage hydro)                               GWh
 :math:`\underline{E}^p_{\omega ne}, \overline{E}^p_{\omega ne}`    Minimum and maximum energy produced by a unit in an interval defined                                                      GW
-:math:`EI^p_{\omega ne}`                                           Energy inflows of an ESS (e.g., hydro power plant)                                                                        GW
+:math:`EI^p_{\omega ne}`                                           Energy inflows of an ESS (e.g., hydropower plant)                                                                        GW
 :math:`EO^p_{\omega ne}`                                           Energy outflows of an ESS (e.g., hydrogen, electric vehicle, hydropower plant, demand response)                           GW
 =================================================================  ========================================================================================================================  ================
 
@@ -232,7 +232,7 @@ They are written in **lowercase** letters.
 :math:`gh^p_{\omega ng}`                                      Heat output of a boiler                                                         GW
 :math:`ur^p_{\omega ng}, dr^p_{\omega ng}`                    Upward and downward operating reserves of a non-renewable generating unit       GW
 :math:`ur'^p_{\omega ne}, dr'^p_{\omega ne}`                  Upward and downward operating reserves of an ESS as a consumption unit          GW
-:math:`ei^p_{\omega ne}`                                      Variable energy inflows of a candidate ESS (e.g., hydro power plant)            GW
+:math:`ei^p_{\omega ne}`                                      Variable energy inflows of a candidate ESS (e.g., hydropower plant)             GW
 :math:`i^p_{\omega ne}`                                       ESS stored energy (inventory, reservoir energy, state of charge)                GWh
 :math:`s^p_{\omega ne}`                                       ESS spilled energy                                                              GWh
 :math:`uc^p_{\omega ng}, su^p_{\omega ng}, sd^p_{\omega ng}`  Commitment, startup and shutdown of generation unit per load level              {0,1}
@@ -243,7 +243,7 @@ They are written in **lowercase** letters.
 **Hydropower system**
 ----------------------------------------------------------------------------------------------------------------------------------
 :math:`icr^p_{e'}`                      Candidate reservoir installed or not                                        {0,1}
-:math:`hi^p_{\omega ne'}`               Variable water inflows of a candidate reservoir (e.g., hydro power plant)   m\ :sup:`3`/s
+:math:`hi^p_{\omega ne'}`               Variable water inflows of a candidate reservoir (e.g., hydropower plant)    m\ :sup:`3`/s
 :math:`ho^p_{\omega ne'}`               Hydro outflows of a reservoir                                               m\ :sup:`3`/s
 :math:`i'^p_{\omega ne'}`               Reservoir volume                                                            hm\ :sup:`3`
 :math:`s'^p_{\omega ne'}`               Reservoir spilled water                                                     hm\ :sup:`3`
@@ -509,7 +509,7 @@ Maximum and minimum relative volume of reservoir candidates (only for load level
 
 :math:`\frac{i'^p_{\omega ne'}}{\underline{I'}^p_{\omega ne'}} \geq \sum_{h \in dw(e')} uc^p_{\omega nh} \quad \forall p \omega ne', e' \in CR`
 
-Operating reserves from a hydro power plant can only be provided if enough energy is available for turbining at the upstream reservoir [GW] «``eTrbReserveUpIfEnergy``» «``eTrbReserveDwIfEnergy``»
+Operating reserves from a hydropower plant can only be provided if enough energy is available for turbining at the upstream reservoir [GW] «``eTrbReserveUpIfEnergy``» «``eTrbReserveDwIfEnergy``»
 
 :math:`ur^p_{\omega nh} \leq \frac{\sum_{e' \in up(h)}                                i'^p_{\omega ne'}}{DUR_n} \quad \forall p \omega nh`
 
