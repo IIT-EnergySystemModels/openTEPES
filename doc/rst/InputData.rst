@@ -80,7 +80,7 @@ File                          Dictionary    Description
 ``oT_Dict_AreaToRegion.csv``  AreaToRegion  Location of areas at regions
 ============================  ============  ============================
 
-See the hydro system section at the end of this page to know how to define the basin topology (connection among reservoir and hydropower plants). Some additional dictionaries and data files are needed.
+See the hydropower system section at the end of this page to know how to define the basin topology (connection among reservoir and hydropower plants). Some additional dictionaries and data files are needed.
 
 Input files
 -----------
@@ -605,10 +605,10 @@ Node            Latitude      Node latitude     º
 Node            Longitude     Node longitude    º
 ==============  ============  ================  ==
 
-Hydro System Input Data
-=======================
+Hydropower System Input Data
+============================
 
-These input files are specifically introduced for allowing a representation of the hydro system based on volume and water inflow data considering the water stream topology (hydro cascade basins). If they are not available, the model runs with an energy-based representation of the hydro system.
+These input files are specifically introduced for allowing a representation of the hydropower system based on volume and water inflow data considering the water stream topology (hydro cascade basins). If they are not available, the model runs with an energy-based representation of the hydropower system.
 
 Dictionaries. Sets
 ------------------
