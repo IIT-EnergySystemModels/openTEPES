@@ -23,15 +23,18 @@ DCPF        DC Power Flow
 DR          Demand Response
 DSM         Demand-Side Management
 DSR         Demand-Side Response
+EH          Electrical Heater (power to heat: consumes electricity to produce heat)
 EFOR        Equivalent Forced Outage Rate
+ELZ         Electrolyzer (power to hydrogen, consumes electricity to produce hydrogen)
 ENS         Energy Not Served
 ENTSO-E     European Network of Transmission System Operators for Electricity
 ESS         Energy Storage System
 EV          Electric Vehicle
 mFRR        Manual Frequency Restoration Reserve
 H2          Hydrogen
+HH          Hydrogen Heater (hydrogen to heat: consumes hydrogen to produce heat)
 HNS         Hydrogen Not Served
-HP          Heat Pump (consumes electricity to produce heat)
+HP          Heat Pump (power to heat: consumes electricity to produce heat)
 HTNS        Heat Not Served
 NTC         Net Transfer Capacity
 OCGT        Open Cycle Gas Turbine
@@ -354,9 +357,9 @@ MaximumStorage              Maximum energy that can be stored by the ESS unit   
 MinimumStorage              Minimum energy that can be stored by the ESS unit                                                                                     GWh
 Efficiency                  Round-trip efficiency of the pump/turbine cycle of a pumped-hydro storage power plant or charge/discharge of a battery                p.u.
 ProductionFunctionHydro     Production function from water inflows to electricity (only used for hydropower plants modeled with water units and basin topology)   kWh/m\ :sup:`3`
-ProductionFunctionH2        Production function from electricity to hydrogen (only used for electrolyzers)                                                        kWh/kgH2
-ProductionFunctionHeat      Production function from electricity to heat     (only used for heat pumps)                                                           kWh/kWh
-ProductionFunctionH2ToHeat  Production function from hydrogen to heat        (only used for boilers producing heat with hydrogen)                                 kgH2/kWh
+ProductionFunctionH2        Production function from power to hydrogen (only used for electrolyzers)                                                              kWh/kgH2
+ProductionFunctionHeat      Production function from power to heat     (only used for heat pumps)                                                                 kWh/kWh
+ProductionFunctionH2ToHeat  Production function from hydrogen to heat  (only used for hydrogen heater, which produce heat burning hydrogen)                       kgH2/kWh
 Availability                Unit availability for area adequacy reserve margin (also called de-rating factor or capacity credit)                                  p.u.
 Inertia                     Unit inertia constant                                                                                                                 s
 EFOR                        Equivalent Forced Outage Rate                                                                                                         p.u.
