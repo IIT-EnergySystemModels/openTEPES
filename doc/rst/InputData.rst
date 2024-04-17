@@ -190,7 +190,7 @@ Scenario
 A description of the data included in the file ``oT_Data_Scenario.csv`` follows:
 
 ==============  ==============  ============  ===========================================  ====
-Identifier                      Header        Description
+Identifiers                     Header        Description
 ==============================  ============  ===========================================  ====
 Period          Scenario        Probability   Probability of each scenario in each period  p.u.
 ==============  ==============  ============  ===========================================  ====
@@ -222,8 +222,8 @@ For determining the available capacity, the model uses the availability of the g
 A description of the data included in the file ``oT_Data_ReserveMargin.csv`` follows:
 
 ==============  ==============  =============  ==========================================================  ====
-Identifier      Identifier      Header         Description
-==============  ==============  =============  ==========================================================  ====
+Identifiers                     Header         Description
+==============================  =============  ==========================================================  ====
 Period          Area            ReserveMargin  Minimum adequacy reserve margin for each period and area    p.u.
 ==============  ==============  =============  ==========================================================  ====
 
@@ -235,8 +235,8 @@ Maximum CO2 emission
 A description of the data included in the file ``oT_Data_Emission.csv`` follows:
 
 ==============  ==============  =============  ===========================================================  =====
-Identifier      Identifier      Header         Description
-==============  ==============  =============  ===========================================================  =====
+Identifiers                     Header         Description
+==============================  =============  ===========================================================  =====
 Period          Area            CO2Emission    Maximum CO2 emission for each period and area                MtCO2
 ==============  ==============  =============  ===========================================================  =====
 
@@ -249,8 +249,8 @@ It is like a Renewable Portfolio Standard (RPS).
 A description of the data included in the file ``oT_Data_RESEnergy.csv`` follows:
 
 ==============  ==============  =============  ===========================================================  =====
-Identifier      Identifier      Header         Description
-==============  ==============  =============  ===========================================================  =====
+Identifiers                     Header         Description
+==============================  =============  ===========================================================  =====
 Period          Area            RESEnergy      Minimum RES energy for each period and area                  GWh
 ==============  ==============  =============  ===========================================================  =====
 
@@ -285,8 +285,8 @@ Electricity demand
 A description of the data included in the file ``oT_Data_Demand.csv`` follows:
 
 ==========  ==============  ==========  ======  ============================================  ==
-Identifier  Identifier      Identifier  Header  Description
-==========  ==============  ==========  ======  ============================================  ==
+Identifiers                             Header  Description
+======================================  ======  ============================================  ==
 Period      Scenario        Load level  Node    Power demand of the node for each load level  MW
 ==========  ==============  ==========  ======  ============================================  ==
 
@@ -299,8 +299,8 @@ System inertia
 A description of the data included in the files ``oT_Data_Inertia.csv`` follows:
 
 ==========  ==============  ==========  ======  ================================================  ==
-Identifier  Identifier      Identifier  Header  Description
-==========  ==============  ==========  ======  ================================================  ==
+Identifiers                             Header  Description
+======================================  ======  ================================================  ==
 Period      Scenario        Load level  Area    System inertia of the area for each load level    s
 ==========  ==============  ==========  ======  ================================================  ==
 
@@ -315,8 +315,8 @@ Upward and downward operating reserves
 A description of the data included in the files ``oT_Data_OperatingReserveUp.csv`` and ``oT_Data_OperatingReserveDown.csv`` follows:
 
 ==========  ==============  ==========  ======  ===================================================================  ==
-Identifier  Identifier      Identifier  Header  Description
-==========  ==============  ==========  ======  ===================================================================  ==
+Identifiers                                     Header  Description
+======================================  ======  ===================================================================  ==
 Period      Scenario        Load level  Area    Upward/downward operating reserves of the area for each load level   MW
 ==========  ==============  ==========  ======  ===================================================================  ==
 
@@ -420,8 +420,8 @@ Variable maximum and minimum generation
 A description of the data included in the files ``oT_Data_VariableMaxGeneration.csv`` and ``oT_Data_VariableMinGeneration.csv`` follows:
 
 ==========  ==============  ==========  =========  ============================================================  ==
-Identifier  Identifier      Identifier  Header     Description
-==========  ==============  ==========  =========  ============================================================  ==
+Identifiers                             Header     Description
+======================================  =========  ============================================================  ==
 Period      Scenario        Load level  Generator  Maximum (minimum) power generation of the unit by load level  MW
 ==========  ==============  ==========  =========  ============================================================  ==
 
@@ -438,8 +438,8 @@ Variable maximum and minimum consumption
 A description of the data included in the files ``oT_Data_VariableMaxConsumption.csv`` and ``oT_Data_VariableMinConsumption.csv`` follows:
 
 ==========  ==============  ==========  =========  =============================================================  ==
-Identifier  Identifier      Identifier  Header     Description
-==========  ==============  ==========  =========  =============================================================  ==
+Identifiers                             Header     Description
+======================================  =========  =============================================================  ==
 Period      Scenario        Load level  Generator  Maximum (minimum) power consumption of the unit by load level  MW
 ==========  ==============  ==========  =========  =============================================================  ==
 
@@ -454,8 +454,8 @@ Variable fuel cost
 A description of the data included in the file ``oT_Data_VariableFuelCost.csv`` follows:
 
 ==========  ==============  ==========  =========  =============================  ======
-Identifier  Identifier      Identifier  Header     Description
-==========  ==============  ==========  =========  =============================  ======
+Identifiers                             Header     Description
+======================================  =========  =============================  ======
 Period      Scenario        Load level  Generator  Variable fuel cost             €/Gcal
 ==========  ==============  ==========  =========  =============================  ======
 
@@ -471,8 +471,8 @@ Variable emission cost
 A description of the data included in the file ``oT_Data_VariableEmissionCost.csv`` follows:
 
 ==========  ==============  ==========  =========  =============================  ======
-Identifier  Identifier      Identifier  Header     Description
-==========  ==============  ==========  =========  =============================  ======
+Identifiers                             Header     Description
+======================================  =========  =============================  ======
 Period      Scenario        Load level  Generator  Variable emission cost         €/tCO2
 ==========  ==============  ==========  =========  =============================  ======
 
@@ -486,8 +486,8 @@ Energy inflows
 A description of the data included in the file ``oT_Data_EnergyInflows.csv`` follows:
 
 ==========  ==============  ==========  =========  =============================  =====
-Identifier  Identifier      Identifier  Header     Description
-==========  ==============  ==========  =========  =============================  =====
+Identifiers                             Header     Description
+======================================  =========  =============================  =====
 Period      Scenario        Load level  Generator  Energy inflows by load level   MWh/h
 ==========  ==============  ==========  =========  =============================  =====
 
@@ -505,8 +505,8 @@ Energy outflows
 A description of the data included in the file ``oT_Data_EnergyOutflows.csv`` follows:
 
 ==========  ==============  ==========  =========  =============================  =====
-Identifier  Identifier      Identifier  Header     Description
-==========  ==============  ==========  =========  =============================  =====
+Identifiers                             Header     Description
+======================================  =========  =============================  =====
 Period      Scenario        Load level  Generator  Energy outflows by load level  MWh/h
 ==========  ==============  ==========  =========  =============================  =====
 
@@ -525,8 +525,8 @@ Variable maximum and minimum storage
 A description of the data included in the files ``oT_Data_VariableMaxStorage.csv`` and ``oT_Data_VariableMinStorage.csv`` follows:
 
 ==========  ==============  ==========  =========  ====================================================  ===
-Identifier  Identifier      Identifier  Header     Description
-==========  ==============  ==========  =========  ====================================================  ===
+Identifiers                             Header     Description
+======================================  =========  ====================================================  ===
 Period      Scenario        Load level  Generator  Maximum (minimum) storage of the ESS by load level    GWh
 ==========  ==============  ==========  =========  ====================================================  ===
 
@@ -540,8 +540,8 @@ Variable maximum and minimum energy
 A description of the data included in the files ``oT_Data_VariableMaxEnergy.csv`` and ``oT_Data_VariableMinEnergy.csv`` follows:
 
 ==========  ==============  ==========  =========  ====================================================  ===
-Identifier  Identifier      Identifier  Header     Description
-==========  ==============  ==========  =========  ====================================================  ===
+Identifiers                             Header     Description
+======================================  =========  ====================================================  ===
 Period      Scenario        Load level  Generator  Maximum (minimum) energy of the unit by load level    MW
 ==========  ==============  ==========  =========  ====================================================  ===
 
@@ -639,8 +639,8 @@ Natural hydro inflows
 A description of the data included in the file ``oT_Data_HydroInflows.csv`` follows:
 
 ==========  ==============  ==========  =========  ====================================  ==============
-Identifier  Identifier      Identifier  Header     Description
-==========  ==============  ==========  =========  ====================================  ==============
+Identifiers                             Header     Description
+======================================  =========  ====================================  ==============
 Period      Scenario        Load level  Reservoir  Natural water inflows by load level   m\ :sup:`3`/s
 ==========  ==============  ==========  =========  ====================================  ==============
 
@@ -656,8 +656,8 @@ Natural hydro outflows
 A description of the data included in the file ``oT_Data_HydroOutflows.csv`` follows:
 
 ==========  ==============  ==========  =========  ===================================================  =============
-Identifier  Identifier      Identifier  Header     Description
-==========  ==============  ==========  =========  ===================================================  =============
+Identifiers                             Header     Description
+======================================  =========  ===================================================  =============
 Period      Scenario        Load level  Reservoir  Water outflows by load level (e.g., for irrigation   m\ :sup:`3`/s
 ==========  ==============  ==========  =========  ===================================================  =============
 
@@ -705,8 +705,8 @@ Variable maximum and minimum reservoir volume
 A description of the data included in the files ``oT_Data_VariableMaxVolume.csv`` and ``oT_Data_VariableMinVolume.csv`` follows:
 
 ==========  ==============  ==========  =========  =================================================  ==============
-Identifier  Identifier      Identifier  Header     Description
-==========  ==============  ==========  =========  =================================================  ==============
+Identifiers                             Header     Description
+======================================  =========  =================================================  ==============
 Period      Scenario        Load level  Reservoir  Maximum (minimum) reservoir volume by load level   hm\ :sup:`3`
 ==========  ==============  ==========  =========  =================================================  ==============
 
@@ -732,8 +732,8 @@ Hydrogen demand
 A description of the data included in the file ``oT_Data_DemandHydrogen.csv`` follows:
 
 ==========  ==============  ==========  ======  ===============================================  =====
-Identifier  Identifier      Identifier  Header  Description
-==========  ==============  ==========  ======  ===============================================  =====
+Identifiers                             Header  Description
+======================================  ======  ===============================================  =====
 Period      Scenario        Load level  Node    Hydrogen demand of the node for each load level  tH2/h
 ==========  ==============  ==========  ======  ===============================================  =====
 
@@ -784,8 +784,8 @@ Heat demand
 A description of the data included in the file ``oT_Data_DemandHeat.csv`` follows:
 
 ==========  ==============  ==========  ======  ===============================================  ======
-Identifier  Identifier      Identifier  Header  Description
-==========  ==============  ==========  ======  ===============================================  ======
+Identifiers                             Header  Description
+======================================  ======  ===============================================  ======
 Period      Scenario        Load level  Node    Heat demand of the node for each load level      MW
 ==========  ==============  ==========  ======  ===============================================  ======
 
