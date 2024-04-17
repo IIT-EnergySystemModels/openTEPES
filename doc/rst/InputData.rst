@@ -190,8 +190,8 @@ Scenario
 A description of the data included in the file ``oT_Data_Scenario.csv`` follows:
 
 ==============  ==============  ============  ===========================================  ====
-Identifier      Identifier      Header        Description
-==============  ==============  ============  ===========================================  ====
+Identifier                      Header        Description
+==============================  ============  ===========================================  ====
 Period          Scenario        Probability   Probability of each scenario in each period  p.u.
 ==============  ==============  ============  ===========================================  ====
 
