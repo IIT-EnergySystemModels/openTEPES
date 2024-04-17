@@ -626,8 +626,8 @@ hydropower and pumped-hydro power plants and reservoirs. These relations follow 
 =======================================  ======================  =============================================================================================
 File                                     Dictionary              Description
 =======================================  ======================  =============================================================================================
-``oT_Dict_ReservoirToHydro.csv``         ReservoirToHydro        Reservoir upstream of hydro power plant (i.e., hydro takes the water from the reservoir)
-``oT_Dict_HydroToReservoir.csv``         HydroToReservoir        Hydro power plant upstream of reservoir (i.e., hydro releases the water to the reservoir)
+``oT_Dict_ReservoirToHydro.csv``         ReservoirToHydro        Reservoir upstream of hydropower plant (i.e., hydro takes the water from the reservoir)
+``oT_Dict_HydroToReservoir.csv``         HydroToReservoir        Hydropower plant upstream of reservoir (i.e., hydro releases the water to the reservoir)
 ``oT_Dict_ReservoirToPumpedHydro.csv``   ReservoirToPumpedHydro  Reservoir upstream of pumped-hydro power plant (i.e., pumped-hydro pumps from the reservoir)
 ``oT_Dict_PumpedHydroToReservoir.csv``   PumpedHydroToReservoir  Pumped-hydro power plant upstream of reservoir (i.e., pumped-hydro pumps to the reservoir)
 ``oT_Dict_ReservoirToReservoir.csv``     ReservoirToReservoir    Reservoir upstream of reservoir (i.e., reservoir one spills the water to reservoir two)
