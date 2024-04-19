@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 11, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 17, 2024
 """
 
 import time
@@ -928,6 +928,7 @@ def NetworkHeatOperationResults(DirName, CaseName, OptModel, mTEPES):
     OutputResults.stack().reset_index().pivot_table(index=['level_0','level_1'                    ,'level_5'], columns='level_3', values=0, aggfunc='sum').rename_axis(['Period', 'Scenario'             , 'Technology'  ], axis=0).to_csv(_path+'/oT_Result_BalanceHeatPerArea_'+CaseName+'.csv', sep=',')
 
     OutputToFile = pd.Series(data=[OptModel.vFlowHeat[p,sc,n,ni,nf,cc]() for p,sc,n,ni,nf,cc in mTEPES.psnha], index=pd.Index(mTEPES.psnha))
+    OutputToFile *= 1e3
     OutputToFile.index.names = ['Period', 'Scenario', 'LoadLevel', 'InitialNode', 'FinalNode', 'Circuit']
     OutputToFile = pd.pivot_table(OutputToFile.to_frame(name='MW'), values='MW', index=['Period', 'Scenario', 'LoadLevel'], columns=['InitialNode', 'FinalNode', 'Circuit'], fill_value=0.0).rename_axis([None, None, None], axis=1)
     OutputToFile.reset_index().to_csv(_path+'/oT_Result_NetworkFlowHeatPerNode_'     +CaseName+'.csv', index=False, sep=',')

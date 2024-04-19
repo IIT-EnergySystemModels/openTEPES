@@ -3,6 +3,7 @@ Change Log
 
 [4.16.0] - 2024-04-19
 ----------------------
+- [FIXED] typo in heat network flow magnitudes
 - [CHANGED] introduced StableTime in Data_Generation file for nuclear unit operation
 - [FIXED] introduce boiler expansion constraint eInstallBoiCap
 - [CHANGED] introduced ProductionFunctionH2ToHeat in Data_Generation file for boilers that produce heat with hydrogen
