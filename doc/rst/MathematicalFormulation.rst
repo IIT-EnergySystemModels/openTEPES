@@ -42,7 +42,7 @@ Indices
 :math:`c`                Circuit
 :math:`ijc`              Line (initial node, final node, circuit)
 :math:`EG, CG`           Set of existing and candidate generators
-:math:`EB, CB`           Set of existing and candidate boilers
+:math:`EB, CB`           Set of existing and candidate fuel heaters
 :math:`EE, CE`           Set of existing and candidate ESS
 :math:`ER, CR`           Set of existing and candidate reservoirs
 :math:`EL, CL`           Set of existing and non-switchable, and candidate and switchable lines
@@ -134,7 +134,7 @@ They are written in **uppercase** letters.
 :math:`\underline{GP}_g, \overline{GP}_g`                          Rated minimum load and maximum output of a generator                                                                      GW
 :math:`\underline{GP}^p_{\omega ng}, \overline{GP}^p_{\omega ng}`  Minimum load and maximum output of a generator                                                                            GW
 :math:`\underline{GC}^p_{\omega ne}, \overline{GC}^p_{\omega ne}`  Minimum and maximum consumption of an ESS                                                                                 GW
-:math:`\underline{GH}_g, \overline{GH}_g`                          Rated minimum and maximum heat of a CHP or a boiler                                                                       GW
+:math:`\underline{GH}_g, \overline{GH}_g`                          Rated minimum and maximum heat of a CHP or a fuel heater                                                                  GW
 :math:`CF^p_{\omega ng}, CV^p_{\omega ng}`                         Fixed (no load) and variable cost of a generator. Variable cost includes fuel and O&M                                     €/h, €/MWh
 :math:`CE^p_{\omega ng}`                                           Emission cost of a generator                                                                                              €/MWh
 :math:`ER_g`                                                       Emission rate of a generator                                                                                              tCO2/MWh
@@ -229,7 +229,7 @@ They are written in **lowercase** letters.
 :math:`go^p_{\omega ne}`                                      Generator outflows of an ESS                                                    GW
 :math:`p^p_{\omega ng}`                                       Generator output of the second block (i.e., above the minimum load)             GW
 :math:`c^p_{\omega ne}`                                       Generator charge                                                                GW
-:math:`gh^p_{\omega ng}`                                      Heat output of a boiler                                                         GW
+:math:`gh^p_{\omega ng}`                                      Heat output of a fuel heater                                                    GW
 :math:`ur^p_{\omega ng}, dr^p_{\omega ng}`                    Upward and downward operating reserves of a non-renewable generating unit       GW
 :math:`ur'^p_{\omega ne}, dr'^p_{\omega ne}`                  Upward and downward operating reserves of an ESS as a consumption unit          GW
 :math:`ei^p_{\omega ne}`                                      Variable energy inflows of a candidate ESS (e.g., hydropower plant)             GW
@@ -337,7 +337,7 @@ Output and consumption bounded by investment decision for candidate ESS [p.u.] �
 
 :math:`\frac{gc^p_{\omega ne}}{\overline{GP}^p_{\omega ne}} \leq icg^p_e \quad \forall p \omega ne, e \in CE`
 
-Heat production with boiler bounded by investment decision for candidate boiler [p.u.] «``eInstallBoiCap``»
+Heat production with fuel heater bounded by investment decision for candidate fuel heater [p.u.] «``eInstallFHUCap``»
 
 :math:`\frac{gh^p_{\omega ng}}{\overline{GH}^p_{\omega ng}} \leq icg^p_g \quad \forall p \omega ng, g \in CB`
 
@@ -571,13 +571,13 @@ Half ohmic losses are linearly approximated as a function of the flow [GW] «``e
 
 **Hydrogen network operation**
 
-Balance of hydrogen generation by electrolyzers, hydrogen consumption from boilers using it, and demand at each node [tH2] «``eBalanceH2``»
+Balance of hydrogen generation by electrolyzers, hydrogen consumption from hydrogen heater using it, and demand at each node [tH2] «``eBalanceH2``»
 
 :math:`\sum_{e \in i} \frac{DUR_n}{PF'_e} gc^p_{\omega ne} - \sum_{g \in i} gh^p_{\omega ng} + hns^p_{\omega ni} = DUR_n DH^p_{\omega ni} + \sum_{jc} fh^p_{\omega nijc} - \sum_{jc} fh^p_{\omega njic} \quad \forall p \omega ni`
 
 **Heat network operation**
 
-Balance of heat generation produced by CHPs and boilers respectively and demand at each node [GW] «``eBalanceHeat``»
+Balance of heat generation produced by CHPs and fuel heaters respectively and demand at each node [GW] «``eBalanceHeat``»
 
 :math:`\sum_{e \in i} \frac{DUR_n}{PF''_e} gc^p_{\omega ne} + \sum_{g \in i} gh^p_{\omega ng} + htns^p_{\omega ni} = DUR_n DF^p_{\omega ni} + \sum_{jc} fp^p_{\omega nijc} - \sum_{jc} fp^p_{\omega njic} \quad \forall p \omega ni`
 

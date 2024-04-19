@@ -233,15 +233,15 @@ def GenerationOperationModelFormulationInvestment(OptModel, mTEPES, pIndLogConso
     if pIndLogConsole == 1:
         print('eInstallGenCap        ... ', len(getattr(OptModel, 'eInstallGenCap_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
 
-    def eInstallBoiCap(OptModel,n,bc):
+    def eInstallFHUCap(OptModel,n,bc):
         if mTEPES.pMaxPowerHeat[p,sc,n,bc] and (p,bc) in mTEPES.pbc:
             return OptModel.vTotalOutputHeat[p,sc,n,bc] / mTEPES.pMaxPowerHeat[p,sc,n,bc] <= OptModel.vGenerationInvestHeat[p,bc]
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eInstallBoiCap_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.bc, rule=eInstallBoiCap, doc='heat production if installed boiler unit [p.u.]'))
+    setattr(OptModel, 'eInstallFHUCap_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.bc, rule=eInstallFHUCap, doc='heat production if installed fuel heating unit [p.u.]'))
 
     if pIndLogConsole == 1:
-        print('eInstallBoiCap        ... ', len(getattr(OptModel, 'eInstallBoiCap_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eInstallFHUCap        ... ', len(getattr(OptModel, 'eInstallFHUCap_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
 
     def eInstallConESS(OptModel,n,ec):
         if mTEPES.pMaxCharge[p,sc,n,ec] and (p,ec) in mTEPES.pec:
@@ -1169,7 +1169,7 @@ def NetworkH2OperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, 
         if (nd,el) in mTEPES.n2g:
             e2n[nd].append(el)
 
-    # nodes to boiler using H2 (b2n)
+    # nodes to fuel heater using H2 (b2n)
     b2n = defaultdict(list)
     for nd,hh in mTEPES.nd*mTEPES.hh:
         if (nd,hh) in mTEPES.n2g:
