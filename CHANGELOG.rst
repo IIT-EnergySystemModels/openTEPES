@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.16.0] - 2024-04-11
+[4.16.0] - 2024-04-19
 ----------------------
+- [CHANGED] introduced StableTime in Data_Generation file for nuclear unit operation
 - [FIXED] introduce boiler expansion constraint eInstallBoiCap
 - [CHANGED] introduced ProductionFunctionH2ToHeat in Data_Generation file for boilers that produce heat with hydrogen
 - [CHANGED] changed ProductionFunction to ProductionFunctionHydro in Data_Generation file
