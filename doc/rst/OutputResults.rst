@@ -43,6 +43,9 @@ Some maps of the electricity transmission network and the energy share of differ
 
 Some other additional plots are also plotted by the model. The CSV files used for outputting the results are briefly described in the following items.
 
+The power is expressed in MW, energy or heat in GWh, and costs in M€. Hydrogen is expressed in tH2. Reservoir volume is expressed in hm\ :sup:`3`,
+and water flow in hm\ :sup:`3`/s. The energy transported in the electricity network is expressed in GWh-Mkm.
+
 Investment/Retirement
 ---------------------
 
@@ -195,10 +198,13 @@ Period        Scenario    Load level  Generator   Output (discharge in ESS) [MW]
 
 File ``oT_Result_NetDemand.csv``
 
+VRES are the variable renewable energy sources (e.g., wind and solar). Units with null linear variable cost and no storage capacity. Do not contribute to the the operating reserves.
+The net demand is the demand minus the VRES.
+
 ============  ==========  ==========  ===================================
 Identifier                            Description
 ====================================  ===================================
-Period        Scenario    Load level  Net demand (demand - VRE) [MW]
+Period        Scenario    Load level  Net demand (demand - VRES) [MW]
 ============  ==========  ==========  ===================================
 
 File ``oT_Result_GenerationSurplus.csv``
@@ -682,7 +688,7 @@ File ``oT_Result_NetworkNetDemand.csv``
 ============  ==========  ==========  ==========  ===========================================
 Identifier                            Header      Description
 ====================================  ==========  ===========================================
-Period        Scenario    Load level  Node        Electricity net demand (demand - VRE) [MW]
+Period        Scenario    Load level  Node        Electricity net demand (demand - VRES) [MW]
 ============  ==========  ==========  ==========  ===========================================
 
 File ``oT_Result_NetworkPNS.csv``
@@ -996,18 +1002,18 @@ Period        Scenario    Load level  Generator       Variable cost (fuel+O&M+em
 File ``oT_Result_MarginalIncrementalGenerator.csv``
 
 ============  ==========  ==========  ===================================================================================================
-Identifier                                    Description
+Identifier                            Description
 ====================================  ===================================================================================================
 Period        Scenario    Load level  Generator with power surplus, except the ESS, and with the lowest variable cost (fuel+O&M+emission)
 ============  ==========  ==========  ===================================================================================================
 
 File ``oT_Result_NetworkSRMC.csv``
 
-============  ==========  ==========  ==========  ==========================================
+============  ==========  ==========  ==========  =========================================================
 Identifier                            Header      Description
-====================================  ==========  ==========================================
-Period        Scenario    Load level  Node        Locational Short-Run Marginal Cost [€/MWh]
-============  ==========  ==========  ==========  ==========================================
+====================================  ==========  =========================================================
+Period        Scenario    Load level  Node        Locational Short-Run Marginal Cost of electricity [€/MWh]
+============  ==========  ==========  ==========  =========================================================
 
 These marginal costs are obtained after fixing the binary and continuous investment decisions and the binary operation decisions to their optimal values.
 Remember that binary decisions are not affected by marginal changes.
@@ -1060,19 +1066,19 @@ Period        Scenario    Load level  Area        Marginal of the downward opera
 
 File ``oT_Result_NetworkInvestment_ReducedCost.csv``
 
-============  ==========  ==========  ===========================================================
+============  ==========  ==========  ==============================================================
 Identifier                            Description
-====================================  ===========================================================
-Initial node  Final node  Circuit     Reduced costs of electric network investment decisions [M€]
-============  ==========  ==========  ===========================================================
+====================================  ==============================================================
+Initial node  Final node  Circuit     Reduced costs of electricity network investment decisions [M€]
+============  ==========  ==========  ==============================================================
 
 File ``oT_Result_NetworkCommitment_ReducedCost.csv``
 
-============  ==========  ==========  ===========================================================
+============  ==========  ==========  ==============================================================
 Identifier                            Description
-====================================  ===========================================================
-Initial node  Final node  Circuit     Reduced costs of electric network switching decisions [M€]
-============  ==========  ==========  ===========================================================
+====================================  ==============================================================
+Initial node  Final node  Circuit     Reduced costs of electricity network switching decisions [M€]
+============  ==========  ==========  ==============================================================
 
 Operational flexibility
 -----------------------
@@ -1082,29 +1088,29 @@ File ``oT_Result_FlexibilityDemand.csv``
 ============  ==========  ==========  ==========  ================================================
 Identifier                            Header      Description
 ====================================  ==========  ================================================
-Period        Scenario    Load level  Demand      Demand variation wrt its mean value [MW]
+Period        Scenario    Load level  Demand      Demand variation w.r.t. its mean value [MW]
 ============  ==========  ==========  ==========  ================================================
 
 File ``oT_Result_FlexibilityPNS.csv``
 
-============  ==========  ==========  ==========  ==================================================
+============  ==========  ==========  ==========  ======================================================
 Identifier                            Header      Description
-====================================  ==========  ==================================================
-Period        Scenario    Load level  PNS         Power not served variation wrt its mean value [MW]
-============  ==========  ==========  ==========  ==================================================
+====================================  ==========  ======================================================
+Period        Scenario    Load level  PNS         Power not served variation w.r.t. its mean value [MW]
+============  ==========  ==========  ==========  ======================================================
 
 File ``oT_Result_FlexibilityTechnology.csv``
 
 ============  ==========  ==========  ==========  ================================================
 Identifier                            Header      Description
 ====================================  ==========  ================================================
-Period        Scenario    Load level  Technology  Technology variation wrt its mean value [MW]
+Period        Scenario    Load level  Technology  Technology variation w.r.t. its mean value [MW]
 ============  ==========  ==========  ==========  ================================================
 
 File ``oT_Result_FlexibilityTechnologyESS.csv``
 
-============  ==========  ==========  ==========  ================================================
+============  ==========  ==========  ==========  ===================================================
 Identifier                            Header      Description
-====================================  ==========  ================================================
-Period        Scenario    Load level  Technology  ESS Technology variation wrt its mean value [MW]
-============  ==========  ==========  ==========  ================================================
+====================================  ==========  ===================================================
+Period        Scenario    Load level  Technology  ESS Technology variation w.r.t. its mean value [MW]
+============  ==========  ==========  ==========  ===================================================
