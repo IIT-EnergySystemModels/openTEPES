@@ -626,7 +626,7 @@ File ``oT_Result_NetworkFlowPerNode.csv``
 ============  ==========  ==========  ============  ==========  =========  =======================
 Identifier                            Header                               Description
 ====================================  ===================================  =======================
-Period        Scenario    Load level  Initial node  Final node  Circuit    Line flow [MW]
+Period        Scenario    Load level  Initial node  Final node  Circuit    Electric line flow [MW]
 ============  ==========  ==========  ============  ==========  =========  =======================
 
 File ``oT_Result_NetworkEnergyPerArea.csv``
@@ -746,11 +746,11 @@ Period        Scenario    Load level  Area        Node        Technology  Genera
 
 File ``oT_Result_NetworkFlowH2PerNode.csv``
 
-============  ==========  ==========  ============  ==========  =========  =======================
-Identifier                                                      Header     Description
-==============================================================  =========  =======================
-Period        Scenario    Load level  Initial node  Final node  Circuit    Pipeline flow [tH2]
-============  ==========  ==========  ============  ==========  =========  =======================
+============  ==========  ==========  ============  ==========  =========  ============================
+Identifier                            Header                               Description
+====================================  ===================================  ============================
+Period        Scenario    Load level  Initial node  Final node  Circuit    Hydrogen pipeline flow [tH2]
+============  ==========  ==========  ============  ==========  =========  ============================
 
 File ``oT_Result_NetworkHNS.csv``
 
@@ -800,7 +800,7 @@ File ``oT_Result_NetworkFlowHeatPerNode.csv``
 ============  ==========  ==========  ============  ==========  =========  =======================
 Identifier                            Header                               Description
 ====================================  ===================================  =======================
-Period        Scenario    Load level  Initial node  Final node  Circuit    Pipe flow [MW]
+Period        Scenario    Load level  Initial node  Final node  Circuit    Heat pipe flow [MW]
 ============  ==========  ==========  ============  ==========  =========  =======================
 
 File ``oT_Result_NetworkHTNS.csv``
