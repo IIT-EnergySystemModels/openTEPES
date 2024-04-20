@@ -127,7 +127,7 @@ They are written in **uppercase** letters.
 
 =================================================================  ========================================================================================================================  ================
 **Generation system**
--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------  ----------------
 :math:`CFG_g`                                                      Annualized fixed cost of a candidate generator                                                                            M€/yr
 :math:`CFR_g`                                                      Annualized fixed cost of a candidate generator to be retired                                                              M€/yr
 :math:`A_g`                                                        Availability of each generator for adequacy reserve margin                                                                p.u.
@@ -138,7 +138,7 @@ They are written in **uppercase** letters.
 :math:`CF^p_{\omega ng}, CV^p_{\omega ng}`                         Fixed (no load) and variable cost of a generator. Variable cost includes fuel and O&M                                     €/h, €/MWh
 :math:`CE^p_{\omega ng}`                                           Emission cost of a generator                                                                                              €/MWh
 :math:`ER_g`                                                       Emission rate of a generator                                                                                              tCO2/MWh
-:math:`CV_e`                                                       Variable cost of an ESS or pumped-storage hydropower plant when charging                                                 €/MWh
+:math:`CV_e`                                                       Variable cost of an ESS or pumped-storage hydropower plant when charging                                                  €/MWh
 :math:`RU_g, RD_g`                                                 Ramp up/down of a non-renewable unit or maximum discharge/charge rate for ESS discharge/charge                            MW/h
 :math:`TU_t, TD_t`                                                 Minimum uptime and downtime of a thermal unit                                                                             h
 :math:`ST_e`                                                       Maximum shift time of an ESS unit (in particular, for demand side management)                                             h
@@ -147,15 +147,15 @@ They are written in **uppercase** letters.
 :math:`\rho_e`                                                     Outflow cycle of the ESS (e.g., 1, 24, 168, 8736 h -for hourly, daily, weekly, monthly, yearly-)                          h
 :math:`\sigma_g`                                                   Energy cycle of the unit (e.g., 24, 168, 672, 8736 h -for daily, weekly, monthly, yearly-)                                h
 :math:`GI_g`                                                       Generator inertia                                                                                                         s
-:math:`EF_e`                                                       Round-trip efficiency of the pump/turbine cycle of a pumped-storage hydro plant or charge/discharge of a battery    p.u.
+:math:`EF_e`                                                       Round-trip efficiency of the pump/turbine cycle of a pumped-storage hydro plant or charge/discharge of a battery          p.u.
 :math:`PF_h`                                                       Production function from water inflows to electricity                                                                     kWh/m\ :sup:`3`
 :math:`PF'_e`                                                      Production function from electricity to hydrogen of an electrolyzer                                                       kWh/kgH2
 :math:`PF''_e`                                                     Production function from electricity to heat of a heat pump or an electrical heater                                       kWh/kWh
 :math:`PH''_g`                                                     Power to heat ratio for a CHP :math:`\frac{\overline{GP}_g - \underline{GP}_g}{\overline{GH}_g - \underline{GH}_g}`       kWh/kWh
-:math:`\underline{I}^p_{\omega ne}, \overline{I}^p_{\omega ne}`    Minimum and maximum storage of an ESS (e.g., hydropower plant, closed-/open-loop pumped-storage hydro)                   GWh
-:math:`I^p_{\omega e}`                                             Initial storage of an ESS (e.g., hydropower plant, closed-/open-loop pumped-storage hydro)                               GWh
+:math:`\underline{I}^p_{\omega ne}, \overline{I}^p_{\omega ne}`    Minimum and maximum storage of an ESS (e.g., hydropower plant, closed-/open-loop pumped-storage hydro)                    GWh
+:math:`I^p_{\omega e}`                                             Initial storage of an ESS (e.g., hydropower plant, closed-/open-loop pumped-storage hydro)                                GWh
 :math:`\underline{E}^p_{\omega ne}, \overline{E}^p_{\omega ne}`    Minimum and maximum energy produced by a unit in an interval defined                                                      GW
-:math:`EI^p_{\omega ne}`                                           Energy inflows of an ESS (e.g., hydropower plant)                                                                        GW
+:math:`EI^p_{\omega ne}`                                           Energy inflows of an ESS (e.g., hydropower plant)                                                                         GW
 :math:`EO^p_{\omega ne}`                                           Energy outflows of an ESS (e.g., hydrogen, electric vehicle, hydropower plant, demand response)                           GW
 =================================================================  ========================================================================================================================  ================
 
