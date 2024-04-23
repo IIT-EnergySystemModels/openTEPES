@@ -219,7 +219,8 @@ Adequacy reserve margin
 The adequacy reserve margin is the ratio between the available capacity and the maximum demand.
 According to ENTSO-e, adequacy is defined as the ability of the electric system to supply the aggregate electrical demand and energy requirements of the customers at all times,
 taking into account scheduled and reasonably expected unscheduled outages of system elements.
-For determining the available capacity, the model uses the availability of the generating units times their maximum power.
+For determining the available capacity, the model uses the availability of the generating units times their maximum power. The availability can be computed as the ratio between the firm capacity and the installed capacity. Firm capacity
+can be determined as the Firm Capacity Equivalent (FCE) or the Effective Load-Carrying Capability (ELCC).
 A description of the data included in the file ``oT_Data_ReserveMargin.csv`` follows:
 
 ==============  ==============  =============  ==========================================================  ====
