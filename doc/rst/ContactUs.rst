@@ -17,7 +17,7 @@ andres.ramos@comillas.edu
 
 Universidad Pontificia Comillas
 
-Instituto de Investigacion Tecnologica
+Instituto de Investigación Tecnológica
 
 Alberto Aguilera 23
 
