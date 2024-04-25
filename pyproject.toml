@@ -26,7 +26,6 @@ requires = [
   "psutil>=5.8.0",
   "jsonschema==4.16.0",
   "highspy>=1.5.3",
-  "datetime",
   "dill>=0.3.8",]
 
 [tool.flit.scripts]
