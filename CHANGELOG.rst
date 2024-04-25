@@ -1,8 +1,11 @@
 Change Log
 =============
 
-[4.16.0] - 2024-04-20
+[4.16.0] - 2024-04-25
 ----------------------
+- [CHANGED] case saved as a pickle file
+- [FIXED] fix computation of incremental variable cost of generators with surplus
+- [FIXED] typo in pPeriodWeight definition
 - [FIXED] typo in heat network flow magnitudes
 - [CHANGED] introduced StableTime in Data_Generation file for nuclear unit operation
 - [FIXED] introduce boiler expansion constraint eInstallBoiCap

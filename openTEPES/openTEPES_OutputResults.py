@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 20, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 25, 2024
 """
 
 import time
@@ -1417,7 +1417,7 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES, pIndPlotOutput):
     pEpsilon = 1e-6
 
     #%% outputting the incremental variable cost of each generating unit with power surplus
-    sPSNG        = [(p,sc,n,g) for p,sc,n,g in mTEPES.psng if g not in mTEPES.es]
+    sPSNG        = [(p,sc,n,g) for p,sc,n,g in mTEPES.psng if OptModel.vTotalOutput[p,sc,n,g].ub - OptModel.vTotalOutput[p,sc,n,g]() > pEpsilon and g not in mTEPES.es]
     OutputToFile = pd.Series(data=[(mTEPES.pLinearVarCost[p,sc,n,g]+mTEPES.pEmissionVarCost[p,sc,n,g]) for p,sc,n,g in sPSNG], index=pd.Index(sPSNG))
     OutputToFile *= 1e3
 

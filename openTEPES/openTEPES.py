@@ -1,7 +1,9 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 20, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 25, 2024
 """
 
+import datetime
+import dill as pickle
 import math
 import os
 import setuptools
@@ -38,8 +40,8 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     idxDict['y'  ] = 1
 
     #%% model declaration
-    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.16.0 - April 20, 2024')
-    print(                 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.16.0 - April 20, 2024', file=open(_path+'/openTEPES_version_'+CaseName+'.log','w'))
+    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.16.0 - April 25, 2024')
+    print(                 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.16.0 - April 25, 2024', file=open(_path+'/openTEPES_version_'+CaseName+'.log','w'))
 
     pIndOutputResults = [j for i,j in idxDict.items() if i == pIndOutputResults][0]
     pIndLogConsole    = [j for i,j in idxDict.items() if i == pIndLogConsole   ][0]
@@ -161,6 +163,13 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     # assign probability 1 to all the periods and scenarios
     for p,sc in mTEPES.ps:
         mTEPES.pScenProb[p,sc] = 1.0
+        
+    # pickle the case study data
+    dump_folder = _path+'/CaseDumpFolder_'+CaseName+'_'+str(datetime.datetime.now().strftime('%Y%m%d'))+'/'
+    if not os.path.exists(dump_folder):
+        os.makedirs(dump_folder)
+    with open(dump_folder+'/oT_Case_'+CaseName+'.pkl','wb') as f:
+        pickle.dump(mTEPES, f, pickle.HIGHEST_PROTOCOL)
 
     # output results only for every unit (0), only for every technology (1), or for both (2)
     pIndTechnologyOutput = 2

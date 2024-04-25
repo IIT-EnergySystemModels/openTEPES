@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 20, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 25, 2024
 """
 
 import datetime
@@ -294,7 +294,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
 
     pPeriodWeight          = dfPeriod       ['Weight'        ].astype('int')             # weights of periods                        [p.u.]
     pScenProb              = dfScenario     ['Probability'   ].astype('float')           # probabilities of scenarios                [p.u.]
-    pStageWeight           = dfStage        ['Weight'        ].astype('float')           # weights of stages                         [p.u.]
+    pStageWeight           = dfStage        ['Weight'        ].astype('float')           # weights of stages
     pDuration              = dfDuration     ['Duration'      ] * pTimeStep               # duration of load levels                   [h]
     pReserveMargin         = dfReserveMargin['ReserveMargin' ]                           # minimum adequacy reserve margin           [p.u.]
     pEmission              = dfEmission     ['CO2Emission'   ]                           # maximum CO2 emission                      [MtCO2]
@@ -1262,7 +1262,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.pDemandElecPeak       = Param(mTEPES.par,   initialize=pDemandElecPeak.to_dict()           , within=NonNegativeReals,    doc='Peak electric demand'                                )
     mTEPES.pDemandElec           = Param(mTEPES.psnnd, initialize=pDemandElec.stack().to_dict()       , within=           Reals,    doc='Electric demand'                                     )
     mTEPES.pDemandElecAbs        = Param(mTEPES.psnnd, initialize=pDemandElecAbs.stack().to_dict()    , within=NonNegativeReals,    doc='Electric demand'                                     )
-    mTEPES.pPeriodWeight         = Param(mTEPES.p,     initialize=pPeriodWeight.to_dict()             , within=NonNegativeIntegers, doc='Period weight',                          mutable=True)
+    mTEPES.pPeriodWeight         = Param(mTEPES.p,     initialize=pPeriodWeight.to_dict()             , within=NonNegativeReals,    doc='Period weight',                          mutable=True)
     mTEPES.pDiscountedWeight     = Param(mTEPES.p,     initialize=pDiscountedWeight.to_dict()         , within=NonNegativeReals,    doc='Discount factor'                                     )
     mTEPES.pScenProb             = Param(mTEPES.psc,   initialize=pScenProb.to_dict()                 , within=UnitInterval    ,    doc='Probability',                            mutable=True)
     mTEPES.pStageWeight          = Param(mTEPES.stt,   initialize=pStageWeight.to_dict()              , within=NonNegativeReals,    doc='Stage weight'                                        )
