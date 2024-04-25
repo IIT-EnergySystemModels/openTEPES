@@ -10,7 +10,7 @@ author-email = "andres.ramos@comillas.edu"
 home-page = "https://pascua.iit.comillas.edu/aramos/openTEPES/index.html"
 classifiers = [
   "Development Status :: 5 - Production/Stable","Intended Audience :: Science/Research",
-  "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+  "License :: OSI Approved :: GNU Affero General Public License v3 (AGPLv3)",
   "Operating System :: OS Independent",
   "Programming Language :: Python :: 3.11",]
 requires-python = ">=3.11"
