@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.16.0] - 2024-04-25
+[4.16.0] - 2024-04-26
 ----------------------
+- [CHANGED] delete investment and commitment reduced costs files
 - [CHANGED] case saved as a pickle file
 - [FIXED] fix computation of incremental variable cost of generators with surplus
 - [FIXED] typo in pPeriodWeight definition

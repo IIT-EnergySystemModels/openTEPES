@@ -1064,22 +1064,6 @@ Identifier                            Header      Description
 Period        Scenario    Load level  Area        Marginal of the downward operating reserve [€/MW]
 ============  ==========  ==========  ==========  =================================================
 
-File ``oT_Result_NetworkInvestment_ReducedCost.csv``
-
-============  ==========  ==========  ==============================================================
-Identifier                            Description
-====================================  ==============================================================
-Initial node  Final node  Circuit     Reduced costs of electricity network investment decisions [M€]
-============  ==========  ==========  ==============================================================
-
-File ``oT_Result_NetworkCommitment_ReducedCost.csv``
-
-============  ==========  ==========  ==============================================================
-Identifier                            Description
-====================================  ==============================================================
-Initial node  Final node  Circuit     Reduced costs of electricity network switching decisions [M€]
-============  ==========  ==========  ==============================================================
-
 Operational flexibility
 -----------------------
 
