@@ -45,7 +45,7 @@ Indices
 :math:`EB, CB`           Set of existing and candidate fuel heaters
 :math:`EE, CE`           Set of existing and candidate ESS
 :math:`ER, CR`           Set of existing and candidate reservoirs
-:math:`EL, CL`           Set of existing and non-switchable, and candidate and switchable lines
+:math:`EL, CL`           Set of existing and non-switchable, and candidate and switchable electric transmission lines
 :math:`EP, CP`           Set of existing and candidate pipelines
 =======================  ===============================================================================================
 
@@ -174,19 +174,22 @@ They are written in **uppercase** letters.
 :math:`CFT_{ijc}`                          Annualized fixed cost of a candidate electricity transmission line                                                 M€/yr
 :math:`\overline{F}_{ijc}`                 Net transfer capacity (total transfer capacity multiplied by the security coefficient) of a transmission line      GW
 :math:`\overline{F}'_{ijc}`                Maximum flow used in the Kirchhoff's 2nd law constraint (e.g., disjunctive constraint for the candidate AC lines)  GW
-:math:`L_{ijc}, X_{ijc}`                   Loss factor and reactance of a transmission line                                                                   p.u.
+:math:`L_{ijc}`                            Loss factor of an electric transmission line                                                                       p.u.
+:math:`X_{ijc}`                            Reactance of an electric transmission line                                                                         p.u.
 :math:`SON_{ijc}, SOF_{ijc}`               Minimum switch-on and switch-off state of a line                                                                   h
 :math:`S_B`                                Base power                                                                                                         GW
 =========================================  =================================================================================================================  =====
 
-The net transfer capacity of a transmission line can be different in each direction. However, here it is presented as equal for simplicity.
+The net transfer capacity of an electric transmission line can be different in each direction. However, here it is presented as equal for simplicity.
 
 =========================================  =================================================================================================================  =====
 **Hydrogen transmission system**
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------
-:math:`CFH_{ijc}`                          Annualized fixed cost of a candidate transmission pipeline                                                         M€/yr
+:math:`CFH_{ijc}`                          Annualized fixed cost of a candidate hydrogen transmission pipeline                                                M€/yr
 :math:`\overline{FH}_{ijc}`                Net transfer capacity (total transfer capacity multiplied by the security coefficient) of a pipeline               tH2
 =========================================  =================================================================================================================  =====
+
+The net transfer capacity of a hydrogen transmission pipeline can be different in each direction. However, here it is presented as equal for simplicity.
 
 =========================================  =================================================================================================================  ======
 **Heat transmission system**
@@ -195,7 +198,7 @@ The net transfer capacity of a transmission line can be different in each direct
 :math:`\overline{FP}_{ijc}`                Net transfer capacity (total transfer capacity multiplied by the security coefficient) of a heat pipe              GW
 =========================================  =================================================================================================================  ======
 
-The net transfer capacity of a transmission pipeline can be different in each direction. However, here it is presented as equal for simplicity.
+The net transfer capacity of a heat pipe can be different in each direction. However, here it is presented as equal for simplicity.
 
 Variables
 ---------
@@ -249,20 +252,20 @@ They are written in **lowercase** letters.
 :math:`s'^p_{\omega ne'}`               Reservoir spilled water                                                     hm\ :sup:`3`
 ======================================  ==========================================================================  ==============
 
-========================================================================  ==============================================================  =====
+========================================================================  =================================================================  =====
 **Electricity transmission system**
------------------------------------------------------------------------------------------------------------------------------------------------
-:math:`ict^p_{ijc}`                                                       Candidate line installed or not                                 {0,1}
-:math:`swt^p_{\omega nijc}, son^p_{\omega nijc}, sof^p_{\omega nijc}`     Switching state, switch-on and switch-off of a line             {0,1}
-:math:`f^p_{\omega nijc}`                                                 Power flow through an electric line                             GW
-:math:`l^p_{\omega nijc}`                                                 Half ohmic losses of an electric line                           GW
-:math:`\theta^p_{\omega ni}`                                              Voltage angle of a node                                         rad
-========================================================================  ==============================================================  =====
+--------------------------------------------------------------------------------------------------------------------------------------------------
+:math:`ict^p_{ijc}`                                                       Candidate transmission installed or not                            {0,1}
+:math:`swt^p_{\omega nijc}, son^p_{\omega nijc}, sof^p_{\omega nijc}`     Switching state, switch-on and switch-off of an electric line      {0,1}
+:math:`f^p_{\omega nijc}`                                                 Power flow through an electric line                                GW
+:math:`l^p_{\omega nijc}`                                                 Half ohmic losses of an electric line                              GW
+:math:`\theta^p_{\omega ni}`                                              Voltage angle of a node                                            rad
+========================================================================  =================================================================  =====
 
 ========================================================================  ==============================================================  =====
 **Hydrogen transmission system**
 -----------------------------------------------------------------------------------------------------------------------------------------------
-:math:`ich^p_{ijc}`                                                       Candidate pipeline installed or not                             {0,1}
+:math:`ich^p_{ijc}`                                                       Candidate hydrogen pipeline installed or not                    {0,1}
 :math:`fh^p_{\omega nijc}`                                                Hydrogen flow through a hydrogen pipeline                       tH2
 ========================================================================  ==============================================================  =====
 

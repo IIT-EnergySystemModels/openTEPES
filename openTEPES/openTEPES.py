@@ -3,7 +3,7 @@ Open Generation, Storage, and Transmission Operation and Expansion Planning Mode
 """
 
 import datetime
-import dill as pickle
+# import dill as pickle
 import math
 import os
 import setuptools
@@ -165,11 +165,11 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
         mTEPES.pScenProb[p,sc] = 1.0
         
     # pickle the case study data
-    dump_folder = _path+'/CaseDumpFolder_'+CaseName+'_'+str(datetime.datetime.now().strftime('%Y%m%d'))+'/'
-    if not os.path.exists(dump_folder):
-        os.makedirs(dump_folder)
-    with open(dump_folder+'/oT_Case_'+CaseName+'.pkl','wb') as f:
-        pickle.dump(mTEPES, f, pickle.HIGHEST_PROTOCOL)
+    # dump_folder = _path+'/CaseDumpFolder_'+CaseName+'_'+str(datetime.datetime.now().strftime('%Y%m%d'))+'/'
+    # if not os.path.exists(dump_folder):
+    #     os.makedirs(dump_folder)
+    # with open(dump_folder+'/oT_Case_'+CaseName+'.pkl','wb') as f:
+    #     pickle.dump(mTEPES, f, pickle.HIGHEST_PROTOCOL)
 
     # output results only for every unit (0), only for every technology (1), or for both (2)
     pIndTechnologyOutput = 2
