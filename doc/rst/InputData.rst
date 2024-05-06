@@ -364,14 +364,14 @@ ProductionFunctionH2ToHeat  Production function from hydrogen (numerator) to hea
 Availability                Unit availability for area adequacy reserve margin (also called de-rating factor or capacity credit)                                                            p.u.
 Inertia                     Unit inertia constant                                                                                                                                           s
 EFOR                        Equivalent Forced Outage Rate                                                                                                                                   p.u.
-RampUp                      Ramp up   rate for generating units or maximum discharge rate for ESS discharge                                                                                 MW/h
-RampDown                    Ramp down rate for generating units or maximum    charge rate for ESS    charge                                                                                 MW/h
+RampUp                      Ramp up   rate for generating units or maximum discharge rate for ESS discharge (generation)                                                                    MW/h
+RampDown                    Ramp down rate for generating units or maximum    charge rate for ESS    charge (consumption)                                                                   MW/h
 UpTime                      Minimum uptime                                                                                                                                                  h
 DownTime                    Minimum downtime                                                                                                                                                h
 StableTime                  Minimum stable time (intended for nuclear units to be at its minimum load during this time)                                                                     h
 ShiftTime                   Maximum shift time                                                                                                                                              h
 FuelCost                    Fuel cost                                                                                                                                                       €/Gcal
-LinearTerm                  Linear   term (slope    ) of the heat rate straight line                                                                                                        Gcal/MWh
+LinearTerm                  Linear   term (slope)     of the heat rate straight line                                                                                                        Gcal/MWh
 ConstantTerm                Constant term (intercept) of the heat rate straight line                                                                                                        Gcal/h
 OMVariableCost              Variable O&M cost                                                                                                                                               €/MWh
 OperReserveCost             Operating reserve cost                                                                                                                                          €/MW
