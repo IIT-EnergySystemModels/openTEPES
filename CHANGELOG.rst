@@ -1,6 +1,10 @@
 Change Log
 =============
 
+[4.16.1] - 2024-05-08
+----------------------
+- [CHANGED] add some CPLEX options
+
 [4.16.0] - 2024-04-30
 ----------------------
 - [FIXED] delete eTotalNCost and vTotalNCost

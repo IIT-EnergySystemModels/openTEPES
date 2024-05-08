@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 08, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 08, 2024
 """
 
 import time
@@ -37,6 +37,20 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
         Solver.options['Threads'       ] = int((psutil.cpu_count(logical=True) + psutil.cpu_count(logical=False))/2)
         Solver.options['TimeLimit'     ] =    36000
         Solver.options['IterationLimit'] = 36000000
+    if SolverName == 'cplex':
+        FileName = _path+'/openTEPES_cplex_'+CaseName+'.log'
+        if os.path.exists(FileName):
+            os.remove(FileName)
+        # Solver.options['LogFile'          ] = _path+'/openTEPES_cplex_'+CaseName+'.log'
+        Solver.options['LPMethod'         ] = 4                                                 # barrier method
+        Solver.options['BarCrossAlg'      ] = 0
+        # Solver.options['NumericalEmphasis'] = 1
+        # Solver.options['PreInd'           ] = 1
+        # Solver.options['RINSHeur'         ] = 100
+        Solver.options['EpGap'            ] = 0.01
+        Solver.options['Threads'          ] = int((psutil.cpu_count(logical=True) + psutil.cpu_count(logical=False))/2)
+        Solver.options['TiLim'            ] =    36000
+        Solver.options['ItLim'            ] = 36000000
     if SolverName == 'appsi_highs':
         FileName = _path+'/openTEPES_highs_'+CaseName+'.log'
         if os.path.exists(FileName):
