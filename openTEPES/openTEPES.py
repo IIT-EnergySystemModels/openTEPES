@@ -165,7 +165,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
         mTEPES.pScenProb[p,sc] = 1.0
 
     # output parameters, variables, and duals to CSV files
-    OutputResultsParVarCon(DirName, CaseName, OptModel)
+    OutputResultsParVarCon(DirName, CaseName, mTEPES)
 
     # pickle the case study data
     # with open(dump_folder+'/oT_Case_'+CaseName+'.pkl','wb') as f:
