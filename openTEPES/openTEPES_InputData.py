@@ -636,7 +636,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
 
     mTEPES.s2n = Set(initialize=pStageToLevel.index, ordered=False, doc='load level to stage')
     # all the stages must have the same duration
-    pStageDuration = pd.Series([sum(pDuration[p,sc,n] for p,sc,st,n in mTEPES.s2n)], index=mTEPES.st)
+    pStageDuration = pd.Series([sum(pDuration[p,sc,n] for p,sc,st2,n in mTEPES.s2n if st2 == st) for st in mTEPES.st], index=mTEPES.st)
     # for st in mTEPES.st:
     #     if mTEPES.st.ord(st) > 1 and pStageDuration[st] != pStageDuration[mTEPES.st.prev(st)]:
     #         assert (0 == 1)
