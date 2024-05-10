@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 25, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 10, 2024
 """
 
 import datetime
@@ -23,7 +23,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     dfPeriod                = pd.read_csv(_path+'/oT_Data_Period_'                +CaseName+'.csv', index_col=[0    ])
     dfScenario              = pd.read_csv(_path+'/oT_Data_Scenario_'              +CaseName+'.csv', index_col=[0,1  ])
     dfStage                 = pd.read_csv(_path+'/oT_Data_Stage_'                 +CaseName+'.csv', index_col=[0    ])
-    dfDuration              = pd.read_csv(_path+'/oT_Data_Duration_'              +CaseName+'.csv', index_col=[0    ])
+    dfDuration              = pd.read_csv(_path+'/oT_Data_Duration_'              +CaseName+'.csv', index_col=[0,1,2])
     dfReserveMargin         = pd.read_csv(_path+'/oT_Data_ReserveMargin_'         +CaseName+'.csv', index_col=[0,1  ])
     dfEmission              = pd.read_csv(_path+'/oT_Data_Emission_'              +CaseName+'.csv', index_col=[0,1  ])
     dfRESEnergy             = pd.read_csv(_path+'/oT_Data_RESEnergy_'             +CaseName+'.csv', index_col=[0,1  ])
@@ -296,10 +296,10 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pScenProb              = dfScenario     ['Probability'   ].astype('float')           # probabilities of scenarios                [p.u.]
     pStageWeight           = dfStage        ['Weight'        ].astype('float')           # weights of stages
     pDuration              = dfDuration     ['Duration'      ] * pTimeStep               # duration of load levels                   [h]
+    pLevelToStage          = dfDuration     ['Stage'         ]                           # load levels assignment to stages
     pReserveMargin         = dfReserveMargin['ReserveMargin' ]                           # minimum adequacy reserve margin           [p.u.]
     pEmission              = dfEmission     ['CO2Emission'   ]                           # maximum CO2 emission                      [MtCO2]
     pRESEnergy             = dfRESEnergy    ['RESEnergy'     ]                           # minimum RES energy                        [GWh]
-    pLevelToStage          = dfDuration     ['Stage'         ]                           # load levels assignment to stages
     pDemandElec            = dfDemand              [mTEPES.nd] * 1e-3                    # electric demand                           [GW]
     pSystemInertia         = dfInertia             [mTEPES.ar]                           # inertia                                   [s]
     pOperReserveUp         = dfUpOperatingReserve  [mTEPES.ar] * 1e-3                    # upward   operating reserve                [GW]
@@ -402,8 +402,10 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
                 pDemandHeat.fillna       (0.0, inplace=True)
 
         # assign duration 0 to load levels not being considered, active load levels are at the end of every pTimeStep
-        for i in range(pTimeStep-2,-1,-1):
-            pDuration.iloc[[range(i,len(mTEPES.nn),pTimeStep)]] = 0
+        for n in range(pTimeStep-2,-1,-1):
+            pDuration.iloc[[range(n,len(mTEPES.nn),pTimeStep)]] = 0
+
+            # pDuration = pDuration.loc[mTEPES.psn]
 
     #%% generation parameters
     pGenToNode                  = dfGeneration  ['Node'                      ]                                                      # generator location in node
@@ -563,8 +565,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.sc     = Set(initialize=mTEPES.scc,              ordered=True , doc='scenarios'                       , filter=lambda mTEPES,scc : scc    in mTEPES.scc                                    )
     mTEPES.ps     = Set(initialize=mTEPES.p*mTEPES.sc,      ordered=True , doc='periods/scenarios'               , filter=lambda mTEPES,p,sc: (p,sc) in mTEPES.p*mTEPES.sc and pScenProb [p,sc] >  0.0)
     mTEPES.st     = Set(initialize=mTEPES.stt,              ordered=True , doc='stages'                          , filter=lambda mTEPES,stt : stt    in mTEPES.stt and pStageWeight       [stt] >  0.0)
-    mTEPES.n      = Set(initialize=mTEPES.nn,               ordered=True , doc='load levels'                     , filter=lambda mTEPES,nn  : nn     in mTEPES.nn  and pDuration           [nn] >  0  )
-    mTEPES.n2     = Set(initialize=mTEPES.nn,               ordered=True , doc='load levels'                     , filter=lambda mTEPES,nn  : nn     in mTEPES.nn  and pDuration           [nn] >  0  )
+    mTEPES.n      = Set(initialize=mTEPES.nn,               ordered=True , doc='load levels'                     , filter=lambda mTEPES,nn  : nn     in mTEPES.nn  and sum(pDuration  [p,sc,nn] for p,sc in mTEPES.ps) > 0)
+    mTEPES.n2     = Set(initialize=mTEPES.nn,               ordered=True , doc='load levels'                     , filter=lambda mTEPES,nn  : nn     in mTEPES.nn  and sum(pDuration  [p,sc,nn] for p,sc in mTEPES.ps) > 0)
     mTEPES.g      = Set(initialize=mTEPES.gg,               ordered=False, doc='generating       units'          , filter=lambda mTEPES,gg  : gg     in mTEPES.gg  and (pRatedMaxPowerElec [gg] >  0.0 or  pRatedMaxCharge[gg] >  0.0 or pRatedMaxPowerHeat    [gg] >  0.0) and pElecGenPeriodIni[gg] <= mTEPES.p.last() and pElecGenPeriodFin[gg] >= mTEPES.p.first() and pGenToNode.reset_index().set_index(['index']).isin(mTEPES.nd)['Node'][gg])  # excludes generators with empty node
     mTEPES.t      = Set(initialize=mTEPES.g ,               ordered=False, doc='thermal          units'          , filter=lambda mTEPES,g   : g      in mTEPES.g   and pRatedLinearOperCost[g ] >  0.0)
     mTEPES.re     = Set(initialize=mTEPES.g ,               ordered=False, doc='RES              units'          , filter=lambda mTEPES,g   : g      in mTEPES.g   and pRatedLinearOperCost[g ] == 0.0 and pRatedMaxStorage[g] == 0.0 and pProductionFunctionH2[g ] == 0.0 and pProductionFunctionHeat[g ] == 0.0  and pProductionFunctionHydro[g ] == 0.0)
@@ -628,13 +630,13 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.eh = mTEPES.es | mTEPES.h
 
     #%% inverse index load level to stage
-    pStageToLevel = pLevelToStage.reset_index().set_index('Stage').set_axis(['LoadLevel'], axis=1)[['LoadLevel']]
-    pStageToLevel = pStageToLevel.loc[pStageToLevel['LoadLevel'].keys().isin(mTEPES.st)]
-    pStageToLevel = pStageToLevel.loc[pStageToLevel['LoadLevel'].isin(mTEPES.n)].reset_index().set_index(['Stage','LoadLevel'])
+    pStageToLevel = pLevelToStage.reset_index().set_index(['level_0','level_1','Stage'])
+    pStageToLevel = pStageToLevel.loc[pStageToLevel['level_2'].keys().isin(mTEPES.p*mTEPES.sc*mTEPES.st)]
+    pStageToLevel = pStageToLevel.loc[pStageToLevel['level_2'].isin(mTEPES.n)].reset_index().set_index(['level_0','level_1','Stage','level_2'])
 
     mTEPES.s2n = Set(initialize=pStageToLevel.index, ordered=False, doc='load level to stage')
     # all the stages must have the same duration
-    pStageDuration = pd.Series([sum(pDuration[n] for n in mTEPES.n if (st,n) in mTEPES.s2n) for st in mTEPES.st], index=mTEPES.st)
+    pStageDuration = pd.Series([sum(pDuration[p,sc,n] for p,sc,st,n in mTEPES.s2n)], index=mTEPES.st)
     # for st in mTEPES.st:
     #     if mTEPES.st.ord(st) > 1 and pStageDuration[st] != pStageDuration[mTEPES.st.prev(st)]:
     #         assert (0 == 1)
@@ -642,8 +644,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     # delete all the load level belonging to stages with duration equal to zero
     mTEPES.del_component(mTEPES.n )
     mTEPES.del_component(mTEPES.n2)
-    mTEPES.n  = Set(initialize=mTEPES.nn, ordered=True , doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.nn and pDuration[nn] and sum(1 for st in mTEPES.st if (st,nn) in mTEPES.s2n))
-    mTEPES.n2 = Set(initialize=mTEPES.nn, ordered=True , doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.nn and pDuration[nn] and sum(1 for st in mTEPES.st if (st,nn) in mTEPES.s2n))
+    mTEPES.n  = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.nn and sum(pDuration[p,sc,nn] for p,sc in mTEPES.ps) > 0)
+    mTEPES.n2 = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.nn and sum(pDuration[p,sc,nn] for p,sc in mTEPES.ps) > 0)
 
     # instrumental sets
     mTEPES.pg        = [(p,     g       ) for p,     g        in mTEPES.p  *mTEPES.g  if pElecGenPeriodIni[g ] <= p and pElecGenPeriodFin[g ] >= p]
@@ -776,9 +778,9 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     else:
         pDiscountedWeight = pd.Series([((1.0+pAnnualDiscRate)**pPeriodWeight[p]-1.0) / (pAnnualDiscRate*(1.0+pAnnualDiscRate)**(pPeriodWeight[p]-1+p-pEconomicBaseYear)) for p in mTEPES.p], index=mTEPES.p)
 
-    mTEPES.pLoadLevelWeight = Param(mTEPES.n, initialize=0.0, within=NonNegativeReals, doc='Load level weight', mutable=True)
-    for st,n in mTEPES.s2n:
-        mTEPES.pLoadLevelWeight[n] = pStageWeight[st]
+    mTEPES.pLoadLevelWeight = Param(mTEPES.psn, initialize=0.0, within=NonNegativeReals, doc='Load level weight', mutable=True)
+    for p,sc,st,n in mTEPES.s2n:
+        mTEPES.pLoadLevelWeight[p,sc,n] = pStageWeight[st]
 
     #%% inverse index node to generator
     pNodeToGen = pGenToNode.reset_index().set_index('Node').set_axis(['Generator'], axis=1)[['Generator']]
@@ -942,7 +944,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
 
     # initial inventory must be between minimum and maximum
     for p,sc,n,es in mTEPES.psnes:
-        if (st,n) in mTEPES.s2n and mTEPES.n.ord(n) == pStorageTimeStep[es]:
+        if (p,sc,st,n) in mTEPES.s2n and mTEPES.n.ord(n) == pStorageTimeStep[es]:
             if  pIniInventory[es][p,sc,n] < pMinStorage[es][p,sc,n]:
                 pIniInventory[es][p,sc,n] = pMinStorage[es][p,sc,n]
                 print('### Initial inventory lower than minimum storage ',   es)
@@ -951,7 +953,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
                 print('### Initial inventory greater than maximum storage ', es)
     if pIndHydroTopology == 1:
         for p,sc,n,rs in mTEPES.psnrs:
-            if (st,n) in mTEPES.s2n and mTEPES.n.ord(n) == pReservoirTimeStep[rs]:
+            if (p,sc,st,n) in mTEPES.s2n and mTEPES.n.ord(n) == pReservoirTimeStep[rs]:
                 if  pIniVolume[rs][p,sc,n] < pMinVolume[rs][p,sc,n]:
                     pIniVolume[rs][p,sc,n] = pMinVolume[rs][p,sc,n]
                     print('### Initial volume lower than minimum volume ',   rs)
@@ -960,7 +962,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
                     print('### Initial volume greater than maximum volume ', rs)
 
     # drop load levels with duration 0
-    pDuration            = pDuration.loc            [mTEPES.n    ]
+    pDuration            = pDuration.loc            [mTEPES.psn  ]
     pDemandElec          = pDemandElec.loc          [mTEPES.psn  ]
     pSystemInertia       = pSystemInertia.loc       [mTEPES.psnar]
     pOperReserveUp       = pOperReserveUp.loc       [mTEPES.psnar]
@@ -1266,7 +1268,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.pDiscountedWeight     = Param(mTEPES.p,     initialize=pDiscountedWeight.to_dict()         , within=NonNegativeReals,    doc='Discount factor'                                     )
     mTEPES.pScenProb             = Param(mTEPES.psc,   initialize=pScenProb.to_dict()                 , within=UnitInterval    ,    doc='Probability',                            mutable=True)
     mTEPES.pStageWeight          = Param(mTEPES.stt,   initialize=pStageWeight.to_dict()              , within=NonNegativeReals,    doc='Stage weight'                                        )
-    mTEPES.pDuration             = Param(mTEPES.n,     initialize=pDuration.to_dict()                 , within=PositiveIntegers,    doc='Duration',                               mutable=True)
+    mTEPES.pDuration             = Param(mTEPES.psn,   initialize=pDuration.to_dict()                 , within=PositiveIntegers,    doc='Duration',                               mutable=True)
     mTEPES.pNodeLon              = Param(mTEPES.nd,    initialize=pNodeLon.to_dict()                  ,                             doc='Longitude'                                           )
     mTEPES.pNodeLat              = Param(mTEPES.nd,    initialize=pNodeLat.to_dict()                  ,                             doc='Latitude'                                            )
     mTEPES.pSystemInertia        = Param(mTEPES.psnar, initialize=pSystemInertia.stack().to_dict()    , within=NonNegativeReals,    doc='System inertia'                                      )
@@ -1362,9 +1364,9 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         mTEPES.pDemandHeat    = Param(mTEPES.psnnd, initialize=pDemandHeat.stack().to_dict()   , within=NonNegativeReals,    doc='Heat demand per hour'    )
         mTEPES.pDemandHeatAbs = Param(mTEPES.psnnd, initialize=pDemandHeatAbs.stack().to_dict(), within=NonNegativeReals,    doc='Heat demand'             )
 
-    mTEPES.pLoadLevelDuration = Param(mTEPES.n,     initialize=0                               , within=NonNegativeIntegers, doc='Load level duration', mutable=True)
-    for n in mTEPES.n:
-        mTEPES.pLoadLevelDuration[n] = mTEPES.pLoadLevelWeight[n]() * mTEPES.pDuration[n]()
+    mTEPES.pLoadLevelDuration = Param(mTEPES.psn,   initialize=0                               , within=NonNegativeIntegers, doc='Load level duration', mutable=True)
+    for p,sc,n in mTEPES.psn:
+        mTEPES.pLoadLevelDuration[p,sc,n] = mTEPES.pLoadLevelWeight[p,sc,n]() * mTEPES.pDuration[p,sc,n]()
 
     mTEPES.pPeriodProb         = Param(mTEPES.ps,    initialize=0.0                             , within=NonNegativeReals,   doc='Period probability',  mutable=True)
     for p,sc in mTEPES.ps:
@@ -1704,16 +1706,16 @@ def SettingUpVariables(OptModel, mTEPES):
     if mTEPES.pIndHydrogen == 1:
         OptModel.vFlowH2 = Var(mTEPES.psnpa, within=Reals,            doc='pipeline flow               [tH2]')
         OptModel.vH2NS   = Var(mTEPES.psnnd, within=NonNegativeReals, doc='hydrogen not served in node [tH2]')
-        [OptModel.vFlowH2  [p,sc,n,ni,nf,cc].setlb(-mTEPES.pH2PipeNTCBck[ni,nf,cc])                        for p,sc,n,ni,nf,cc in mTEPES.psnpa]
-        [OptModel.vFlowH2  [p,sc,n,ni,nf,cc].setub( mTEPES.pH2PipeNTCFrw[ni,nf,cc])                        for p,sc,n,ni,nf,cc in mTEPES.psnpa]
-        [OptModel.vH2NS    [p,sc,n,nd      ].setub(mTEPES.pDuration[n]()*mTEPES.pDemandH2Abs[p,sc,n,nd])   for p,sc,n,nd       in mTEPES.psnnd]
+        [OptModel.vFlowH2  [p,sc,n,ni,nf,cc].setlb(-mTEPES.pH2PipeNTCBck[ni,nf,cc])                           for p,sc,n,ni,nf,cc in mTEPES.psnpa]
+        [OptModel.vFlowH2  [p,sc,n,ni,nf,cc].setub( mTEPES.pH2PipeNTCFrw[ni,nf,cc])                           for p,sc,n,ni,nf,cc in mTEPES.psnpa]
+        [OptModel.vH2NS    [p,sc,n,nd      ].setub(mTEPES.pDuration[p,sc,n]()*mTEPES.pDemandH2Abs[p,sc,n,nd]) for p,sc,n,nd       in mTEPES.psnnd]
 
     if mTEPES.pIndHeat == 1:
         OptModel.vFlowHeat = Var(mTEPES.psnha, within=Reals,            doc='heat pipe flow          [GW]')
         OptModel.vHeatNS   = Var(mTEPES.psnnd, within=NonNegativeReals, doc='heat not served in node [GW]')
-        [OptModel.vFlowHeat[p,sc,n,ni,nf,cc].setlb(-mTEPES.pHeatPipeNTCBck[ni,nf,cc])                      for p,sc,n,ni,nf,cc in mTEPES.psnha]
-        [OptModel.vFlowHeat[p,sc,n,ni,nf,cc].setub( mTEPES.pHeatPipeNTCFrw[ni,nf,cc])                      for p,sc,n,ni,nf,cc in mTEPES.psnha]
-        [OptModel.vHeatNS  [p,sc,n,nd      ].setub(mTEPES.pDuration[n]()*mTEPES.pDemandHeatAbs[p,sc,n,nd]) for p,sc,n,nd       in mTEPES.psnnd]
+        [OptModel.vFlowHeat[p,sc,n,ni,nf,cc].setlb(-mTEPES.pHeatPipeNTCBck[ni,nf,cc])                           for p,sc,n,ni,nf,cc in mTEPES.psnha]
+        [OptModel.vFlowHeat[p,sc,n,ni,nf,cc].setub( mTEPES.pHeatPipeNTCFrw[ni,nf,cc])                           for p,sc,n,ni,nf,cc in mTEPES.psnha]
+        [OptModel.vHeatNS  [p,sc,n,nd      ].setub(mTEPES.pDuration[p,sc,n]()*mTEPES.pDemandHeatAbs[p,sc,n,nd]) for p,sc,n,nd       in mTEPES.psnnd]
 
     # fix the must-run units and their output
     # must run units must produce at least their minimum output
@@ -1802,8 +1804,8 @@ def SettingUpVariables(OptModel, mTEPES):
         # activate only period, scenario, and load levels to formulate
         mTEPES.del_component(mTEPES.st)
         mTEPES.del_component(mTEPES.n )
-        mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in st == stt and mTEPES.pStageWeight[stt] and sum(1 for (st,nn) in mTEPES.s2n))
-        mTEPES.n  = Set(initialize=mTEPES.nn , ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in mTEPES.nn                              and           (st,nn) in mTEPES.s2n)
+        mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in st == stt and mTEPES.pStageWeight[stt] and sum(1 for (p,sc,st,nn) in mTEPES.s2n))
+        mTEPES.n  = Set(initialize=mTEPES.nn , ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in mTEPES.nn                              and           (p,sc,st,nn) in mTEPES.s2n)
 
         if len(mTEPES.n):
             # determine the first load level of each stage
@@ -1847,8 +1849,8 @@ def SettingUpVariables(OptModel, mTEPES):
     # activate all the periods, scenarios, and load levels again
     mTEPES.del_component(mTEPES.st)
     mTEPES.del_component(mTEPES.n )
-    mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in mTEPES.stt and mTEPES.pStageWeight[stt] and sum(1 for (stt,nn)                   in mTEPES.s2n))
-    mTEPES.n  = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in mTEPES.nn                               and sum(1 for st in mTEPES.st if (st,nn) in mTEPES.s2n))
+    mTEPES.st = Set(initialize=mTEPES.stt, ordered=True, doc='stages',      filter=lambda mTEPES,stt: stt in mTEPES.stt and mTEPES.pStageWeight[stt] and sum(1 for                    (p,sc,stt,nn) in mTEPES.s2n))
+    mTEPES.n  = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in mTEPES.nn                               and sum(1 for st in mTEPES.st if (p,sc,st, nn) in mTEPES.s2n))
 
     # fixing the ESS inventory at the end of the following pStorageTimeStep (daily, weekly, monthly) if between storage limits, i.e.,
     # for daily ESS is fixed at the end of the week, for weekly ESS is fixed at the end of the month, for monthly ESS is fixed at the end of the year
@@ -2174,18 +2176,18 @@ def SettingUpVariables(OptModel, mTEPES):
     for p,sc,n,es in mTEPES.ps*mTEPES.nesc:
         if mTEPES.pMaxCapacity[p,sc,n,es]:
             if   mTEPES.n.ord(n) == mTEPES.pStorageTimeStep[es]:
-                if mTEPES.pIniInventory[p,sc,n,es]()                                        + sum(mTEPES.pDuration[n2]()*(mTEPES.pEnergyInflows[p,sc,n2,es]() - mTEPES.pMinPowerElec[p,sc,n2,es] + mTEPES.pEfficiency[es]*mTEPES.pMaxCharge[p,sc,n2,es]) for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pStorageTimeStep[es]:mTEPES.n.ord(n)]) < mTEPES.pMinStorage[p,sc,n,es]:
+                if mTEPES.pIniInventory[p,sc,n,es]()                                        + sum(mTEPES.pDuration[p,sc,n2]()*(mTEPES.pEnergyInflows[p,sc,n2,es]() - mTEPES.pMinPowerElec[p,sc,n2,es] + mTEPES.pEfficiency[es]*mTEPES.pMaxCharge[p,sc,n2,es]) for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pStorageTimeStep[es]:mTEPES.n.ord(n)]) < mTEPES.pMinStorage[p,sc,n,es]:
                     print('### Inventory equation violation ', p, sc, n, es)
                     assert (0 == 1)
             elif mTEPES.n.ord(n) >  mTEPES.pStorageTimeStep[es]:
-                if mTEPES.pMaxStorage[p,sc,mTEPES.n.prev(n,mTEPES.pStorageTimeStep[es]),es] + sum(mTEPES.pDuration[n2]()*(mTEPES.pEnergyInflows[p,sc,n2,es]() - mTEPES.pMinPowerElec[p,sc,n2,es] + mTEPES.pEfficiency[es]*mTEPES.pMaxCharge[p,sc,n2,es]) for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pStorageTimeStep[es]:mTEPES.n.ord(n)]) < mTEPES.pMinStorage[p,sc,n,es]:
+                if mTEPES.pMaxStorage[p,sc,mTEPES.n.prev(n,mTEPES.pStorageTimeStep[es]),es] + sum(mTEPES.pDuration[p,sc,n2]()*(mTEPES.pEnergyInflows[p,sc,n2,es]() - mTEPES.pMinPowerElec[p,sc,n2,es] + mTEPES.pEfficiency[es]*mTEPES.pMaxCharge[p,sc,n2,es]) for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pStorageTimeStep[es]:mTEPES.n.ord(n)]) < mTEPES.pMinStorage[p,sc,n,es]:
                     print('### Inventory equation violation ', p, sc, n, es)
                     assert (0 == 1)
 
     # detect minimum energy infeasibility
     for p,sc,n,g in mTEPES.ps*mTEPES.ngen:
         if (p,sc,g) in mTEPES.gm:
-            if sum((mTEPES.pMaxPowerElec[p,sc,n2,g] - mTEPES.pMinEnergy[p,sc,n2,g])*mTEPES.pDuration[n2]() for n2 in list(mTEPES.n2)[mTEPES.n.ord(n) - mTEPES.pEnergyTimeStep[g]:mTEPES.n.ord(n)]) < 0.0:
+            if sum((mTEPES.pMaxPowerElec[p,sc,n2,g] - mTEPES.pMinEnergy[p,sc,n2,g])*mTEPES.pDuration[p,sc,n2]() for n2 in list(mTEPES.n2)[mTEPES.n.ord(n) - mTEPES.pEnergyTimeStep[g]:mTEPES.n.ord(n)]) < 0.0:
                 print('### Minimum energy violation ', p, sc, n, g)
                 assert (0 == 1)
 

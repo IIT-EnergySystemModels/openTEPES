@@ -57,9 +57,9 @@ The dictionaries include all the possible elements of the corresponding sets inc
 File                           Description
 =============================  =====================================================================================================================================================================================================================================================================================================================
 ``oT_Dict_Period.csv``         Period (e.g., 2030, 2035). **It must be a positive integer**
-``oT_Dict_Scenario.csv``       Scenario. Short-term uncertainties (scenarios) (e.g., s001 to s100)
+``oT_Dict_Scenario.csv``       Scenario. Short-term uncertainties (scenarios) (e.g., s001 to s100, CY2025 to CY2030)
 ``oT_Dict_Stage.csv``          Stage
-``oT_Dict_LoadLevel.csv``      Load level (e.g., 01-01 00:00:00+01:00 to 12-30 23:00:00+01:00). Load levels with duration 0 are ignored. The period (year) must represented by 8736 load levels.
+``oT_Dict_LoadLevel.csv``      Load level (e.g., 01-01 00:00:00+01:00 to 12-30 23:00:00+01:00). If is a datetime format. Load levels with duration 0 are ignored. The period (year) must represented by 8736 load levels.
 ``oT_Dict_Generation.csv``     Generation units (thermal -nuclear, CCGT, OCGT, coal-, ESS -storage hydro modeled in energy or in water, pumped-hydro storage PHS, battery BESS, electric vehicle EV, demand response DR, alkaline water electrolyzer AWE, solar thermal- and VRES -wind onshore and offshore, solar PV, run-of-the-river hydro-)
 ``oT_Dict_Technology.csv``     Generation technologies. The technology order is used in the temporal result plot.
 ``oT_Dict_Storage.csv``        ESS storage type (daily < 12 h, weekly < 40 h, monthly > 60 h).
@@ -263,13 +263,12 @@ Duration
 
 A description of the data included in the file ``oT_Data_Duration.csv`` follows:
 
-==========  ===================================================================  ========
-Header      Description
-==========  ===================================================================  ========
-LoadLevel   Load level                                                           datetime
-Duration    Duration of the load level. Load levels with duration 0 are ignored  h
-Stage       Assignment of the load level to a stage
-==========  ===================================================================  ========
+==========  ==============  ========== ==========  ===================================================================  ========
+Identifiers                            Header      Description
+====================================== ==========  ===================================================================  ========
+Period      Scenario        Load level Duration    Duration of the load level. Load levels with duration 0 are ignored  h
+                                       Stage       Assignment of the load level to a stage
+==========  ==============  ========== ==========  ===================================================================  ========
 
 It is a simple way to use isolated snapshots or representative days or just the first three months instead of all the hours of a year to simplify the optimization problem. All the load levels must have the same duration.
 The duration is not intended to change for the several load levels of an stage. Usually, duration is put as 1 hour or 0 if you want not to use the load levels after some hour of the year. The parameter time step must be used to collapse consecutive load levels into a single one for the optimization problem.

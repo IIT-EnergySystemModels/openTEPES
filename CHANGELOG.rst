@@ -1,6 +1,10 @@
 Change Log
 =============
 
+[4.17.0] - 2024-05-10
+----------------------
+- [CHANGED] add period and stage in Duration file to allow different durations for each stage in each period and scenario
+
 [4.16.1] - 2024-05-08
 ----------------------
 - [CHANGED] add some CPLEX options
