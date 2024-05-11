@@ -103,8 +103,8 @@ def LinePlots(period, scenario, df, Category, X, Y, OperationType):
 
 # write parameters, variables, and duals in CSV files
 def OutputResultsParVarCon(DirName, CaseName, OptModel):
-
-    DirName = os.path.dirname(DirName)
+    # print('Writing pars, vars, and duals results  ... ', end='')
+    # DirName = os.path.dirname(DirName)
     _path   = os.path.join(DirName, CaseName)
     StartTime = time.time()
 
@@ -114,7 +114,8 @@ def OutputResultsParVarCon(DirName, CaseName, OptModel):
     #     OptModel = pickle.load(f)
     # output parameters, variables, and constraints to CSV files
 
-    dump_folder = _path+'/CaseDumpFolder_'+CaseName+'_'+str(datetime.datetime.now().strftime('%Y%m%d'))+'/'
+    # dump_folder = _path+'/CaseDumpFolder_'+CaseName+'_'+str(datetime.datetime.now().strftime('%Y%m%d'))+'/'
+    dump_folder = os.path.join(DirName, CaseName, 'CaseDumpFolder_'+CaseName+'_'+str(datetime.datetime.now().strftime('%Y%m%d')))
     if not os.path.exists(dump_folder):
         os.makedirs(dump_folder)
     DateName = str(datetime.datetime.now().strftime('%Y%m%d'))
@@ -144,13 +145,13 @@ def OutputResultsParVarCon(DirName, CaseName, OptModel):
                 writer.writerow([str(var), index, var_object[index].value, str(var_object[index].lb), str(var_object[index].ub)])
 
     # Extract and write dual variables
-    # with open(_path+'/CaseDumpFolder_'+CaseName+'_'+DateName+'/oT_Case_'+CaseName+'_Constraints.csv', 'w', newline='') as csvfile:
-    #     writer = csv.writer(csvfile)
-    #     writer.writerow(['Name', 'Index', 'Value', 'Lower Bound', 'Upper Bound'])
-    #     for con in OptModel.component_objects(pyo.Constraint, active=True):
-    #         con_object = getattr(OptModel, str(con))
-    #         for index in con_object:
-    #             writer.writerow([str(con), index, OptModel.dual[con_object[index]], str(con_object[index].lb), str(con_object[index].ub)])
+    with open(_path+'/CaseDumpFolder_'+CaseName+'_'+DateName+'/oT_Case_'+CaseName+'_Constraints.csv', 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(['Name', 'Index', 'Value', 'Lower Bound', 'Upper Bound'])
+        for con in OptModel.component_objects(pyo.Constraint, active=True):
+            con_object = getattr(OptModel, str(con))
+            for index in con_object:
+                writer.writerow([str(con), index, OptModel.dual[con_object[index]], str(con_object[index].lb), str(con_object[index].ub)])
 
     # NameList = ['Parameters', 'Variables', 'Constraints']
     #
