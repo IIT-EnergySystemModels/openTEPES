@@ -681,6 +681,7 @@
 #%% libraries
 import argparse
 import os
+import time
 # import pkg_resources
 from .openTEPES import openTEPES_run
 
@@ -702,6 +703,9 @@ LOG    = 'No'
 
 
 def main():
+    # Defining the initial time
+    InitialTime = time.time()
+    # Parsing the arguments
     args = parser.parse_args()
     if args.dir is None:
         args.dir    = input('Input Dir    Name (Default {}): '.format(DIR))
@@ -730,6 +734,13 @@ def main():
     print(sys.argv)
     print(args)
     openTEPES_run(args.dir, args.case, args.solver, args.result, args.log)
+    # Computing the elapsed time
+    ElapsedTime = round(time.time() - InitialTime)
+    print('Total time                             ... {} s'.format(ElapsedTime))
+    path_to_write_time = os.path.join(args.dir,args.case,"oT_ComputationTime"+args.case+".txt")
+    with open(path_to_write_time, 'w') as f:
+         f.write(str(ElapsedTime))
+    # Final message
     print('End of the run                ************')
     print('\033[34m#### Academic research license - for non-commercial use only ####\033[0m')
 
