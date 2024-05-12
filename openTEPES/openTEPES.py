@@ -241,7 +241,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     if pIndEconomicResults             == 1:
         EconomicResults            (DirName, CaseName, mTEPES, mTEPES, pIndAreaOutput, pIndPlotOutput)
 
-    TotalTime = time.time() - InitialTime
-    print('Total time                             ... ', round(TotalTime), 's')
+    # TotalTime = time.time() - InitialTime
+    # print('Total time                             ... ', round(TotalTime), 's')
 
     return mTEPES
