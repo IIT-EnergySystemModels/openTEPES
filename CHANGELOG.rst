@@ -1,6 +1,10 @@
 Change Log
 =============
 
+[4.17.1] - 2024-05-12
+----------------------
+- [CHANGED] fix error in writing the duals in output results
+
 [4.17.0] - 2024-05-10
 ----------------------
 - [CHANGED] add period and stage in Duration file to allow different durations for each stage in each period and scenario

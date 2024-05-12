@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 10, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 12, 2024
 """
 
 import time
@@ -102,7 +102,7 @@ def LinePlots(period, scenario, df, Category, X, Y, OperationType):
 
 
 # write parameters, variables, and duals in CSV files
-def OutputResultsParVarCon(DirName, CaseName, OptModel):
+def OutputResultsParVarCon(DirName, CaseName, OptModel, mTEPES):
     # print('Writing pars, vars, and duals results  ... ', end='')
     # DirName = os.path.dirname(DirName)
     _path   = os.path.join(DirName, CaseName)
@@ -150,8 +150,10 @@ def OutputResultsParVarCon(DirName, CaseName, OptModel):
         writer.writerow(['Name', 'Index', 'Value', 'Lower Bound', 'Upper Bound'])
         for con in OptModel.component_objects(pyo.Constraint, active=True):
             con_object = getattr(OptModel, str(con))
-            for index in con_object:
-                writer.writerow([str(con), index, OptModel.dual[con_object[index]], str(con_object[index].lb), str(con_object[index].ub)])
+            if con.is_indexed():
+                for index in con_object:
+                    writer.writerow([str(con), index, mTEPES.pDuals[str(con_object.name)+str(index)], str(con_object[index].lb), str(con_object[index].ub)])
+                    # writer.writerow([str(con), index, OptModel.dual[con_object[index]], str(con_object[index].lb), str(con_object[index].ub)])
 
     # NameList = ['Parameters', 'Variables', 'Constraints']
     #

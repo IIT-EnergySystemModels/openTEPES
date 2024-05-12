@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 10, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 12, 2024
 """
 
 # import dill as pickle
@@ -39,8 +39,8 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     idxDict['y'  ] = 1
 
     #%% model declaration
-    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.17.0 - May 10, 2024')
-    print(                 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.17.0 - May 10, 2024', file=open(_path+'/openTEPES_version_'+CaseName+'.log','w'))
+    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.17.1 - May 12, 2024')
+    print(                 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.17.1 - May 12, 2024', file=open(_path+'/openTEPES_version_'+CaseName+'.log','w'))
 
     pIndOutputResults = [j for i,j in idxDict.items() if i == pIndOutputResults][0]
     pIndLogConsole    = [j for i,j in idxDict.items() if i == pIndLogConsole   ][0]
@@ -165,7 +165,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
         mTEPES.pScenProb[p,sc] = 1.0
 
     # output parameters, variables, and duals to CSV files
-    OutputResultsParVarCon(DirName, CaseName, mTEPES)
+    OutputResultsParVarCon(DirName, CaseName, mTEPES, mTEPES)
 
     # pickle the case study data
     # with open(dump_folder+'/oT_Case_'+CaseName+'.pkl','wb') as f:

@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 08, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 12, 2024
 """
 
 import time
@@ -133,10 +133,10 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
 
     # saving the dual variables for writing in output results
     pDuals = {}
-    for c in OptModel.component_objects(pyo.Constraint, active=True):
-        if c.is_indexed():
-            for index in c:
-                pDuals[str(c.name)+str(index)] = OptModel.dual[c[index]]
+    for con in OptModel.component_objects(pyo.Constraint, active=True):
+        if con.is_indexed():
+            for index in con:
+                pDuals[str(con.name)+str(index)] = OptModel.dual[con[index]]
 
     # delete dual and rc suffixes if they exist
     if idx > 0:
