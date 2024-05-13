@@ -41,6 +41,9 @@ Indices
 :math:`r`                Region. Each area belongs to a region :math:`a \in r`
 :math:`c`                Circuit
 :math:`ijc`              Line (initial node, final node, circuit)
+:math:`cy`               Electricity network cycle
+:math:`CY`               Electricity network cycle basis
+:math:`CLC`              AC candidate electricity transmission lines in a certain cycle
 :math:`EG, CG`           Set of existing and candidate generators
 :math:`EB, CB`           Set of existing and candidate fuel heaters
 :math:`EE, CE`           Set of existing and candidate ESS
@@ -168,17 +171,18 @@ They are written in **uppercase** letters.
 :math:`HO^p_{\omega ne'}`                                              Hydro outflows of a reservoir (e.g., irrigation)                                                         m\ :sup:`3`/s
 =====================================================================  =======================================================================================================  ================
 
-=========================================  =================================================================================================================  =====
+=========================================  =========================================================================================================================================  =====
 **Electricity transmission system**
--------------------------------------------------------------------------------------------------------------------------------------------------------------------
-:math:`CFT_{ijc}`                          Annualized fixed cost of a candidate electricity transmission line                                                 M€/yr
-:math:`\overline{F}_{ijc}`                 Net transfer capacity (total transfer capacity multiplied by the security coefficient) of a transmission line      GW
-:math:`\overline{F}'_{ijc}`                Maximum flow used in the Kirchhoff's 2nd law constraint (e.g., disjunctive constraint for the candidate AC lines)  GW
-:math:`L_{ijc}`                            Loss factor of an electric transmission line                                                                       p.u.
-:math:`X_{ijc}`                            Reactance of an electric transmission line                                                                         p.u.
-:math:`SON_{ijc}, SOF_{ijc}`               Minimum switch-on and switch-off state of a line                                                                   h
-:math:`S_B`                                Base power                                                                                                         GW
-=========================================  =================================================================================================================  =====
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+:math:`CFT_{ijc}`                          Annualized fixed cost of a candidate electricity transmission line                                                                         M€/yr
+:math:`\overline{F}_{ijc}`                 Net transfer capacity (total transfer capacity multiplied by the security coefficient) of a transmission line                              GW
+:math:`\overline{F}'_{ijc}`                Maximum flow used in the Kirchhoff's 2nd law constraint (e.g., disjunctive constraint for the candidate AC lines)                          GW
+:math:`L_{ijc}`                            Loss factor of an electric transmission line                                                                                               p.u.
+:math:`X_{ijc}`                            Reactance of an electric transmission line                                                                                                 p.u.
+:math:`SON_{ijc}, SOF_{ijc}`               Minimum switch-on and switch-off state of a line                                                                                           h
+:math:`S_B`                                Base power                                                                                                                                 GW
+:math:`\overline{θ}'_{cy,i'j'c'}`          Maximum angle used in the cycle Kirchhoff's 2nd law constraint (i.e., disjunctive constraint for a cycle with some AC candidate lines)     rad
+=========================================  =========================================================================================================================================  =====
 
 The net transfer capacity of an electric transmission line can be different in each direction. However, here it is presented as equal for simplicity.
 
@@ -571,6 +575,27 @@ DC Power flow for existing and non-switchable, and candidate and switchable AC-t
 Half ohmic losses are linearly approximated as a function of the flow [GW] «``eLineLosses1``» «``eLineLosses2``»
 
 :math:`- \frac{L_{ijc}}{2} f^p_{\omega nijc} \leq l^p_{\omega nijc} \geq \frac{L_{ijc}}{2} f^p_{\omega nijc} \quad \forall p \omega nijc`
+
+Cycle constraints for AC existing lines with DC power flow formulation [rad] «``eCycleKirchhoff2ndLawCnd1``» «``eCycleKirchhoff2ndLawCnd2``»
+
+Kirchhoff's second law is substituted by a cycle flow formulation for cycles with only AC existing lines [rad]
+
+:math:`\sum_{ijc \in cy} f_{ωpnijc} \frac{X_{ijc}}{S_B} = 0 \quad \forall ωpn,cy, cy \in CY`
+
+and disjunctive constraints for cycles with some AC candidate line [rad]
+
+:math:`-1+ict_{i'j'c'}  \leq \frac{\sum_{ijc \in cy} f_{ωpnijc} \frac{X_{ijc}}{S_B}}{\overline{θ}'_{cy,i'j'c'}} \leq 1-ict_{i'j'c'} \quad \forall ωpn,cy,i'j'c', cy \in CY, i'j'c' \in CLC`
+
+Flows in AC existing parallel circuits are inversely proportional to their reactances [GW] «``eFlowParallelCandidate1``» «``eFlowParallelCandidate2``»
+
+:math:`f_{ωpnijc} = \frac{X_{ijc'}}{X_{ijc}} f_{ωpnijc'} \quad \forall ωpnijcc', ijc \in EL, ijc' \in EL`
+
+and disjunctive constraints in AC candidate parallel circuits are inversely proportional to their reactances [p.u.]
+
+:math:`-1+ict_{ijc'} \leq \frac{f_{ωpnijc} - \frac{X_{ijc'}}{X_{ijc}} f_{ωpnijc'}}{\overline{F}_{ijc}} \leq 1-ict_{ijc'} \quad \forall ωpnijcc', ijc \in EL, ijc' \in CL`
+
+Given that there are disjunctive constraints, which are only correct with binary AC investment variables, this cycle-based formulation must be used only with binary AC investment decisions.
+
 
 **Hydrogen network operation**
 
