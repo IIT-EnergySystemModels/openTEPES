@@ -948,7 +948,7 @@ def NetworkH2OperationResults(DirName, CaseName, OptModel, mTEPES):
     fig.write_html(_path+'/oT_Plot_MapNetworkH2_'+CaseName+'.html')
 
     PlottingNetMapsTime = time.time() - StartTime
-    print('Plotting  hydrogen network       maps  ... ', round(PlottingNetMapsTime), 's')
+    print('Plotting hydrogen    network     maps  ... ', round(PlottingNetMapsTime), 's')
 
     WritingResultsTime = time.time() - StartTime
     StartTime = time.time()
@@ -1149,7 +1149,7 @@ def NetworkHeatOperationResults(DirName, CaseName, OptModel, mTEPES):
     fig.write_html(_path+'/oT_Plot_MapNetworkHeat_'+CaseName+'.html')
 
     PlottingNetMapsTime = time.time() - StartTime
-    print('Plotting  heat     network       maps  ... ', round(PlottingNetMapsTime), 's')
+    print('Plotting heat        network     maps  ... ', round(PlottingNetMapsTime), 's')
 
     WritingResultsTime = time.time() - StartTime
     StartTime = time.time()
@@ -2173,4 +2173,4 @@ def NetworkMapResults(DirName, CaseName, OptModel, mTEPES):
     fig.write_html(_path+'/oT_Plot_MapNetwork_'+CaseName+'.html')
 
     PlottingNetMapsTime = time.time() - StartTime
-    print('Plotting elect network           maps  ... ', round(PlottingNetMapsTime), 's')
+    print('Plotting electricity network     maps  ... ', round(PlottingNetMapsTime), 's')
