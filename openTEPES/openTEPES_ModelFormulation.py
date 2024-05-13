@@ -1228,7 +1228,7 @@ def CycleConstraints(OptModel, mTEPES, pIndLogConsole, p, sc, st):
     def eCycleKirchhoff2ndLawCnd1(OptModel,sc,p,n,cyc,nii,nff,cc):
         return (sum(OptModel.vFlowElec[sc,p,n,ni,nf,cc] * mTEPES.pLineX[ni,nf,cc] / mTEPES.pSBase for ni,nf in list(zip(mTEPES.ncd[cyc], mTEPES.ncd[cyc][1:] + mTEPES.ncd[cyc][:1])) for cc in mTEPES.cc if (ni,nf,cc) in mTEPES.uctc) -
                 sum(OptModel.vFlowElec[sc,p,n,ni,nf,cc] * mTEPES.pLineX[ni,nf,cc] / mTEPES.pSBase for nf,ni in list(zip(mTEPES.ncd[cyc], mTEPES.ncd[cyc][1:] + mTEPES.ncd[cyc][:1])) for cc in mTEPES.cc if (ni,nf,cc) in mTEPES.uctc) ) / mTEPES.pBigMTheta[cyc,nii,nff,cc] <=   1 - OptModel.vLineCommit[sc,p,n,nii,nff,cc]
-    setattr(OptModel, 'eCycleKirchhoff2ndLawCnd1_'+st, Constraint(mTEPES.n, mTEPES.lcac, rule=eCycleKirchhoff2ndLawCnd1, doc='cycle flow for with some AC candidate lines [rad]'))
+    setattr(OptModel, 'eCycleKirchhoff2ndLawCnd1_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.lcac, rule=eCycleKirchhoff2ndLawCnd1, doc='cycle flow for with some AC candidate lines [rad]'))
 
     if pIndLogConsole == 1:
         print('eCycleKirchhoff2ndLC1 ... ', len(getattr(OptModel, 'eCycleKirchhoff2ndLawCnd1_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
@@ -1236,7 +1236,7 @@ def CycleConstraints(OptModel, mTEPES, pIndLogConsole, p, sc, st):
     def eCycleKirchhoff2ndLawCnd2(OptModel,sc,p,n,cyc,nii,nff,cc):
         return (sum(OptModel.vFlowElec[sc,p,n,ni,nf,cc] * mTEPES.pLineX[ni,nf,cc] / mTEPES.pSBase for ni,nf in list(zip(mTEPES.ncd[cyc], mTEPES.ncd[cyc][1:] + mTEPES.ncd[cyc][:1])) for cc in mTEPES.cc if (ni,nf,cc) in mTEPES.uctc) -
                 sum(OptModel.vFlowElec[sc,p,n,ni,nf,cc] * mTEPES.pLineX[ni,nf,cc] / mTEPES.pSBase for nf,ni in list(zip(mTEPES.ncd[cyc], mTEPES.ncd[cyc][1:] + mTEPES.ncd[cyc][:1])) for cc in mTEPES.cc if (ni,nf,cc) in mTEPES.uctc) ) / mTEPES.pBigMTheta[cyc,nii,nff,cc] >= - 1 + OptModel.vLineCommit[sc,p,n,nii,nff,cc]
-    setattr(OptModel, 'eCycleKirchhoff2ndLawCnd2_'+st, Constraint(mTEPES.n, mTEPES.lcac, rule=eCycleKirchhoff2ndLawCnd2, doc='cycle flow for with some AC candidate lines [rad]'))
+    setattr(OptModel, 'eCycleKirchhoff2ndLawCnd2_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.lcac, rule=eCycleKirchhoff2ndLawCnd2, doc='cycle flow for with some AC candidate lines [rad]'))
 
     if pIndLogConsole == 1:
         print('eCycleKirchhoff2ndLC2 ... ', len(getattr(OptModel, 'eCycleKirchhoff2ndLawCnd2_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
@@ -1246,7 +1246,7 @@ def CycleConstraints(OptModel, mTEPES, pIndLogConsole, p, sc, st):
             return (OptModel.vFlowElec[sc,p,n,ni,nf,cc] - OptModel.vFlowElec[sc,p,n,ni,nf,c2] * mTEPES.pLineX[ni,nf,c2] / mTEPES.pLineX[ni,nf,cc]) / max(mTEPES.pLineNTCBck[ni,nf,cc],mTEPES.pLineNTCFrw[ni,nf,cc]) <=   1 - OptModel.vLineCommit[sc,p,n,ni,nf,c2]
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eFlowParallelCandidate1_'+st, Constraint(mTEPES.n, mTEPES.pct, mTEPES.cc, mTEPES.c2, rule=eFlowParallelCandidate1, doc='unitary flow for each AC candidate parallel circuit [p.u.]'))
+    setattr(OptModel, 'eFlowParallelCandidate1_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.pct, mTEPES.cc, mTEPES.c2, rule=eFlowParallelCandidate1, doc='unitary flow for each AC candidate parallel circuit [p.u.]'))
 
     if pIndLogConsole == 1:
         print('eFlowParallelCnddate1 ... ', len(getattr(OptModel, 'eFlowParallelCandidate1_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
@@ -1256,7 +1256,7 @@ def CycleConstraints(OptModel, mTEPES, pIndLogConsole, p, sc, st):
             return (OptModel.vFlowElec[sc,p,n,ni,nf,cc] - OptModel.vFlowElec[sc,p,n,ni,nf,c2] * mTEPES.pLineX[ni,nf,c2] / mTEPES.pLineX[ni,nf,cc]) / max(mTEPES.pLineNTCBck[ni,nf,cc],mTEPES.pLineNTCFrw[ni,nf,cc]) >= - 1 + OptModel.vLineCommit[sc,p,n,ni,nf,c2]
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eFlowParallelCandidate2_'+st, Constraint(mTEPES.n, mTEPES.pct, mTEPES.cc, mTEPES.c2, rule=eFlowParallelCandidate2, doc='unitary flow for each AC candidate parallel circuit [p.u.]'))
+    setattr(OptModel, 'eFlowParallelCandidate2_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.pct, mTEPES.cc, mTEPES.c2, rule=eFlowParallelCandidate2, doc='unitary flow for each AC candidate parallel circuit [p.u.]'))
 
     if pIndLogConsole == 1:
         print('eFlowParallelCnddate2 ... ', len(getattr(OptModel, 'eFlowParallelCandidate2_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
