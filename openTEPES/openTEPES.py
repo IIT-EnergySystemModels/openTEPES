@@ -46,9 +46,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     pIndLogConsole    = [j for i,j in idxDict.items() if i == pIndLogConsole   ][0]
 
     # introduce cycle flow formulations in DC and AC load flow
-    pIndCycleFlow = 1
-    # DC power flow
-    pIndPowerFlow = 0
+    pIndCycleFlow = 0
 
     # Define sets and parameters
     InputData(DirName, CaseName, mTEPES, pIndLogConsole)
@@ -118,7 +116,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
             # introduce cycle flow formulations
             if pIndCycleFlow == 1:
                 if st == mTEPES.First_st:
-                    NetworkCycles                           (        mTEPES, pIndLogConsole, pIndPowerFlow)
+                    NetworkCycles                           (        mTEPES, pIndLogConsole           )
                 CycleConstraints                            (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
 
             if (len(mTEPES.gc) == 0 or (len(mTEPES.gc) > 0 and mTEPES.pIndBinGenInvest() == 2)) and (len(mTEPES.gd) == 0 or (len(mTEPES.gd) > 0 and mTEPES.pIndBinGenRetire() == 2)) and (len(mTEPES.lc) == 0 or (len(mTEPES.lc) > 0 and mTEPES.pIndBinNetElecInvest() == 2)) and (min([mTEPES.pEmission[p,ar] for ar in mTEPES.ar]) == math.inf or sum(mTEPES.pEmissionRate[nr] for nr in mTEPES.nr) == 0):
