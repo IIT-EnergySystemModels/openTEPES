@@ -406,9 +406,9 @@ Energy inflows of ESS candidates (only for load levels multiple of 1, 24, 168, 8
 
 ESS energy inventory (only for load levels multiple of 1, 24, 168 h depending on the ESS storage type) [GWh] «``eESSInventory``»
 
-:math:`i^p_{\omega,n-\frac{\tau_e}{\nu},e} + \sum_{n' = n-\frac{\tau_e}{\nu}}^n DUR^p_{\omega n}' (EI^p_{\omega n'e} - go^p_{\omega n'e} - gp^p_{\omega n'e} + EF_e gc^p_{\omega n'e}) = i^p_{\omega ne} + s^p_{\omega ne} \quad \forall p \omega ne, e \in EE`
+:math:`i^p_{\omega,n-\frac{\tau_e}{\nu,e}} + \sum_{n' = n-\frac{\tau_e}{\nu}}^n DUR^p_{\omega n'} (EI^p_{\omega n'e} - go^p_{\omega n'e} - gp^p_{\omega n'e} + EF_e gc^p_{\omega n'e}) = i^p_{\omega ne} + s^p_{\omega ne} \quad \forall p \omega ne, e \in EE`
 
-:math:`i^p_{\omega,n-\frac{\tau_e}{\nu},e} + \sum_{n' = n-\frac{\tau_e}{\nu}}^n DUR^p_{\omega n}' (ei^p_{\omega n'e} - go^p_{\omega n'e} - gp^p_{\omega n'e} + EF_e gc^p_{\omega n'e}) = i^p_{\omega ne} + s^p_{\omega ne} \quad \forall p \omega ne, e \in CE`
+:math:`i^p_{\omega,n-\frac{\tau_e}{\nu,e}} + \sum_{n' = n-\frac{\tau_e}{\nu}}^n DUR^p_{\omega n'} (ei^p_{\omega n'e} - go^p_{\omega n'e} - gp^p_{\omega n'e} + EF_e gc^p_{\omega n'e}) = i^p_{\omega ne} + s^p_{\omega ne} \quad \forall p \omega ne, e \in CE`
 
 The initial inventory of the ESS candidates divided by its initial storage :math:`I^p_{\omega e}` is equal to the final reservoir divide by its initial storage [p.u.] «``eIniFinInventory``».
 
@@ -420,17 +420,17 @@ The initial inventory of the ESS candidates divided by their initial storage :ma
 
 Maximum shift time of stored energy [GWh]. It is thought to be applied to demand side management «``eMaxShiftTime``»
 
-:math:`DUR^p_{\omega n} EF_e gc^p_{\omega ne} \leq \sum_{n' = n+1}^{n+\frac{ST_e}{\nu}} DUR^p_{\omega n}' gp^p_{\omega n'e} \quad \forall p \omega ne`
+:math:`DUR^p_{\omega n} EF_e gc^p_{\omega ne} \leq \sum_{n' = n+1}^{n+\frac{ST_e}{\nu}} DUR^p_{\omega n'} gp^p_{\omega n'e} \quad \forall p \omega ne`
 
 ESS outflows (only for load levels multiple of 1, 24, 168, 672, and 8736 h depending on the ESS outflow cycle) must be satisfied [GWh] «``eEnergyOutflows``»
 
-:math:`\sum_{n' = n-\frac{\tau_e}{\rho_e}}^n (go^p_{\omega n'e} - EO^p_{\omega n'e}) DUR^p_{\omega n}' = 0 \quad \forall p \omega ne, n \in \rho_e`
+:math:`\sum_{n' = n-\frac{\tau_e}{\rho_e}}^n (go^p_{\omega n'e} - EO^p_{\omega n'e}) DUR^p_{\omega n'} = 0 \quad \forall p \omega ne, n \in \rho_e`
 
 Maximum and minimum energy production (only for load levels multiple of 24, 168, 672, 8736 h depending on the unit energy type) must be satisfied [GWh] «``eMaximumEnergy``»  «``eMinimumEnergy``»
 
-:math:`\sum_{n' = n-\sigma_g}^n (gp^p_{\omega n'g} - \overline{E}^p_{\omega n'g})  DUR^p_{\omega n}' \leq 0 \quad \forall p \omega ng, n \in \sigma_g`
+:math:`\sum_{n' = n-\sigma_g}^n (gp^p_{\omega n'g} - \overline{E}^p_{\omega n'g})  DUR^p_{\omega n'} \leq 0 \quad \forall p \omega ng, n \in \sigma_g`
 
-:math:`\sum_{n' = n-\sigma_g}^n (gp^p_{\omega n'g} - \underline{E}^p_{\omega n'g}) DUR^p_{\omega n}' \geq 0 \quad \forall p \omega ng, n \in \sigma_g`
+:math:`\sum_{n' = n-\sigma_g}^n (gp^p_{\omega n'g} - \underline{E}^p_{\omega n'g}) DUR^p_{\omega n'} \geq 0 \quad \forall p \omega ng, n \in \sigma_g`
 
 Maximum and minimum output of the second block of a committed unit (all except the VRES units) [p.u.] «``eMaxOutput2ndBlock``» «``eMinOutput2ndBlock``»
 
@@ -530,10 +530,10 @@ or for pumping [GW] «``ePmpReserveUpIfEnergy``» «``ePmpReserveDwIfEnergy``»
 
 Water volume for each hydro reservoir (only for load levels multiple of 1, 24, 168 h depending on the reservoir storage type) [hm\ :sup:`3`] «``eHydroInventory``»
 
-:math:`i'^p_{\omega,n-\frac{\tau_e'}{\nu},e'} + \sum_{n' = n-\frac{\tau_e'}{\nu}}^n DUR^p_{\omega n}' (0.0036 HI^p_{\omega n'e'} - 0.0036 ho^p_{\omega n'e'} - \sum_{h \in dw(e')} gp^p_{\omega n'h} / PF_h + \sum_{h \in up(e')} gp^p_{\omega n'h} / PF_h +`
+:math:`i'^p_{\omega,n-\frac{\tau_e'}{\nu,e'}} + \sum_{n' = n-\frac{\tau_e'}{\nu}}^n DUR^p_{\omega n'} (0.0036 HI^p_{\omega n'e'} - 0.0036 ho^p_{\omega n'e'} - \sum_{h \in dw(e')} gp^p_{\omega n'h} / PF_h + \sum_{h \in up(e')} gp^p_{\omega n'h} / PF_h +`
 :math:`+ \sum_{h \in up(e')} EF_e' gc^p_{\omega n'h} / PF_h - \sum_{h \in dw(h)} EF_e' gc^p_{\omega n'h} / PF_h) = i'^p_{\omega ne'} + s'^p_{\omega ne'} - \sum_{e'' \in up(e')} s'^p_{\omega ne''} \quad \forall p \omega ne', e' \in ER`
 
-:math:`i'^p_{\omega,n-\frac{\tau_e'}{\nu},e'} + \sum_{n' = n-\frac{\tau_e'}{\nu}}^n DUR^p_{\omega n}' (0.0036 hi^p_{\omega n'e'} - 0.0036 ho^p_{\omega n'e'} - \sum_{h \in dw(e')} gp^p_{\omega n'h} / PF_h + \sum_{h \in up(e')} gp^p_{\omega n'h} / PF_h +`
+:math:`i'^p_{\omega,n-\frac{\tau_e'}{\nu,e'}} + \sum_{n' = n-\frac{\tau_e'}{\nu}}^n DUR^p_{\omega n'} (0.0036 hi^p_{\omega n'e'} - 0.0036 ho^p_{\omega n'e'} - \sum_{h \in dw(e')} gp^p_{\omega n'h} / PF_h + \sum_{h \in up(e')} gp^p_{\omega n'h} / PF_h +`
 :math:`+ \sum_{h \in up(e')} EF_e' gc^p_{\omega n'h} / PF_h - \sum_{h \in dw(h)} EF_e' gc^p_{\omega n'h} / PF_h) = i'^p_{\omega ne'} + s'^p_{\omega ne'} - \sum_{e'' \in up(e')} s'^p_{\omega ne''} \quad \forall p \omega ne', e' \in CR`
 
 The initial volume of the hydro reservoir divided by its initial volume :math:`I^p_{\omega e'}` is equal to the final reservoir divide by its initial volume [p.u.] «``eIniFinVolume``».
@@ -542,7 +542,7 @@ The initial volume of the hydro reservoir divided by its initial volume :math:`I
 
 Hydro outflows (only for load levels multiple of 1, 24, 168, 672, and 8736 h depending on the ESS outflow cycle) must be satisfied [m\ :sup:`3`/s] «``eHydroOutflows``»
 
-:math:`\sum_{n' = n-\frac{\tau_e'}{\rho_e'}}^n (ho^p_{\omega n'e'} - HO^p_{\omega n'e'}) DUR^p_{\omega n}' = 0 \quad \forall p \omega ne', n \in \rho_e'`
+:math:`\sum_{n' = n-\frac{\tau_e'}{\rho_e'}}^n (ho^p_{\omega n'e'} - HO^p_{\omega n'e'}) DUR^p_{\omega n'} = 0 \quad \forall p \omega ne', n \in \rho_e'`
 
 **Electricity network operation**
 
@@ -576,7 +576,10 @@ Half ohmic losses are linearly approximated as a function of the flow [GW] «``e
 
 :math:`- \frac{L_{ijc}}{2} f^p_{\omega nijc} \leq l^p_{\omega nijc} \geq \frac{L_{ijc}}{2} f^p_{\omega nijc} \quad \forall p \omega nijc`
 
-Cycle constraints for AC existing lines with DC power flow formulation [rad] «``eCycleKirchhoff2ndLawCnd1``» «``eCycleKirchhoff2ndLawCnd2``»
+Cycle constraints for AC existing lines with DC power flow formulation [rad] «``eCycleKirchhoff2ndLawCnd1``» «``eCycleKirchhoff2ndLawCnd2``».
+See the cycle constraints for the AC power flow formulation in the following reference:
+
+* E.F. Álvarez, J.C. López, L. Olmos, A. Ramos "An Optimal Expansion Planning of Power Systems considering Cycle-Based AC-OPF" Sustainable Energy, Grids and Networks, May 2024 `10.1016/j.segan.2024.101413 <https://doi.org/10.1016/j.segan.2024.101413>`_
 
 Kirchhoff's second law is substituted by a cycle flow formulation for cycles with only AC existing lines [rad]
 
