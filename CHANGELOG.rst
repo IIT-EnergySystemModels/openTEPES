@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.17.1] - 2024-05-12
+[4.17.1] - 2024-05-13
 ----------------------
+- [CHANGED] introduction of cycle equations for DC power flow
 - [CHANGED] fix error in writing the duals in output results
 
 [4.17.0] - 2024-05-10

@@ -4,6 +4,8 @@ Open Generation, Storage, and Transmission Operation and Expansion Planning Mode
 
 import time
 import math
+import networkx as nx
+import pandas   as pd
 from   collections   import defaultdict
 from   pyomo.environ import Constraint, Objective, minimize
 
@@ -1143,6 +1145,126 @@ def NetworkOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st
     GeneratingTime = time.time() - StartTime
     if pIndLogConsole == 1:
         print('Generating network    constraints      ... ', round(GeneratingTime), 's')
+
+
+def NetworkCycles(mTEPES, pIndLogConsole, pIndPowerFlow):
+
+    NetworkGraph = nx.Graph()
+    NetworkGraph.add_nodes_from(mTEPES.nd)
+    NetworkGraph.add_edges_from((ni,nf) for ni,nf,cc in mTEPES.lea)
+
+    # cycles for AC existing lines and non-switchable lines
+    # mTEPES.nce = nx.cycle_basis(NetworkGraph, list(mTEPES.rf)[0])
+    mTEPES.nce = nx.cycle_basis(NetworkGraph)
+
+    # determining the set of unique existing circuits (only one in case of several circuits in //) and the parallel circuits
+    pUniqueCircuits = pd.DataFrame(0, index=pd.MultiIndex.from_tuples(mTEPES.lea, names=('NodeI', 'NodeF', 'Circuit')), columns=['0/1'        ])
+    pNoCircuits     = pd.DataFrame(0, index=pd.MultiIndex.from_tuples(mTEPES.br , names=('NodeI', 'NodeF'           )), columns=['No.Circuits'])
+    for ni,nf,cc in mTEPES.lea:
+        pNoCircuits.loc[ni,nf] += 1
+        if pNoCircuits.loc[ni,nf]['No.Circuits'] <= 1:
+            pUniqueCircuits.at[(ni,nf,cc),'0/1'] = 1
+    pNoCircuits     = pNoCircuits.replace(1,0)
+    pNoCircuits     = pNoCircuits[pNoCircuits['No.Circuits'] >  0]
+    pUniqueCircuits = pUniqueCircuits[pUniqueCircuits['0/1'] == 1]
+
+    # unique and parallel circuits of existing lines
+    mTEPES.ucte = Set(initialize=mTEPES.lea, ordered=False, doc='unique   circuits', filter=lambda mTEPES,ni,nf,cc: (ni,nf,cc) in pUniqueCircuits['0/1'    ])
+    mTEPES.pct  = Set(initialize=mTEPES.br , ordered=False, doc='parallel circuits', filter=lambda mTEPES,ni,nf   : (ni,nf   ) in pNoCircuits['No.Circuits'])
+    mTEPES.cye  = RangeSet(0,len(mTEPES.nce)-1)
+
+    # graph with all AC existing and candidate lines
+    NetworkGraph.add_edges_from((ni,nf) for ni,nf,cc in mTEPES.laa)
+
+    # cycles with AC existing and candidate lines
+    mTEPES.ncc = nx.cycle_basis(NetworkGraph, list(mTEPES.rf)[0])
+
+    # cycles added due to consider candidate lines
+    mTEPES.ncd = [nc for nc in mTEPES.ncc if nc not in mTEPES.nce]
+
+    # determining the set of unique existing and candidate circuits (only one in case of several circuits in //) and the parallel circuits
+    pUniqueCircuits = pd.DataFrame(0, index=pd.MultiIndex.from_tuples(mTEPES.laa, names=('NodeI', 'NodeF', 'Circuit')), columns=['0/1'        ])
+    pNoCircuits     = pd.DataFrame(0, index=pd.MultiIndex.from_tuples(mTEPES.br , names=('NodeI', 'NodeF'           )), columns=['No.Circuits'])
+    for ni,nf,cc in mTEPES.laa:
+        pNoCircuits.loc[ni,nf] += 1
+        if pNoCircuits.loc[ni,nf]['No.Circuits'] <= 1:
+            pUniqueCircuits.at[(ni,nf,cc),'0/1'] = 1
+    pNoCircuits     = pNoCircuits.replace(1,0)
+    pNoCircuits     = pNoCircuits[pNoCircuits['No.Circuits'] >  0]
+    pUniqueCircuits = pUniqueCircuits[pUniqueCircuits['0/1'] == 1]
+
+    # unique and parallel circuits of candidate lines
+    mTEPES.uctc = Set(initialize=mTEPES.laa, ordered=False, doc='unique   circuits', filter=lambda mTEPES,ni,nf,cc: (ni,nf,cc) in pUniqueCircuits['0/1'])
+    mTEPES.cyc  = RangeSet(0,len(mTEPES.ncd)-1)
+    # candidate lines included in every cycle
+    mTEPES.lcac = Set(initialize=mTEPES.cyc*mTEPES.lca, ordered=False, doc='AC candidate circuits in a cycle', filter=lambda mTEPES,cyc,ni,nf,cc: (ni,nf) in list(zip(mTEPES.ncd[cyc], mTEPES.ncd[cyc][1:] + mTEPES.ncd[cyc][:1])) or (nf,ni) in list(zip(mTEPES.ncd[cyc], mTEPES.ncd[cyc][1:] + mTEPES.ncd[cyc][:1])))
+
+    pBigMTheta = pd.DataFrame(0, index=pd.MultiIndex.from_tuples(mTEPES.cyc*mTEPES.lca, names=('No.Cycle', 'NodeI', 'NodeF', 'Circuit')), columns=['rad'])
+    # for cyc,nii,nff,ccc in mTEPES.cyc*mTEPES.lca:
+    #     if (nii,nff) in list(zip(mTEPES.ncd[cyc], mTEPES.ncd[cyc][1:] + mTEPES.ncd[cyc][:1])) or (nff,nii) in list(zip(mTEPES.ncd[cyc], mTEPES.ncd[cyc][1:] + mTEPES.ncd[cyc][:1])):
+    #         pBigMTheta.loc[cyc,nii,nff,ccc] = (sum(max(mTEPES.pLineNTCBck[ni,nf,cc],mTEPES.pLineNTCFrw[ni,nf,cc]) * mTEPES.pLineX[ni,nf,cc] / mTEPES.pSBase for ni,nf in list(zip(mTEPES.ncd[cyc], mTEPES.ncd[cyc][1:] + mTEPES.ncd[cyc][:1])) for cc in mTEPES.cc if (ni,nf,cc) in mTEPES.uctc) +
+    #                                            sum(max(mTEPES.pLineNTCBck[ni,nf,cc],mTEPES.pLineNTCFrw[ni,nf,cc]) * mTEPES.pLineX[ni,nf,cc] / mTEPES.pSBase for nf,ni in list(zip(mTEPES.ncd[cyc], mTEPES.ncd[cyc][1:] + mTEPES.ncd[cyc][:1])) for cc in mTEPES.cc if (ni,nf,cc) in mTEPES.uctc) )
+    for cyc,nii,nff,ccc in mTEPES.cyc*mTEPES.lca:
+        if (nii,nff) in list(zip(mTEPES.ncd[cyc], mTEPES.ncd[cyc][1:] + mTEPES.ncd[cyc][:1])) or (nff,nii) in list(zip(mTEPES.ncd[cyc], mTEPES.ncd[cyc][1:] + mTEPES.ncd[cyc][:1])):
+            if pIndPowerFlow == 0:
+                pBigMTheta.loc[cyc,nii,nff,ccc] = (sum(max(mTEPES.pLineNTCBck[ni,nf,cc],mTEPES.pLineNTCFrw[ni,nf,cc]) * mTEPES.pLineX[ni,nf,cc] / mTEPES.pSBase for ni,nf in list(zip(mTEPES.ncd[cyc], mTEPES.ncd[cyc][1:] + mTEPES.ncd[cyc][:1])) for cc in mTEPES.cc if (ni,nf,cc) in mTEPES.uctc and (ni!=nii or nf!=nff)) +
+                                                   sum(max(mTEPES.pLineNTCBck[ni,nf,cc],mTEPES.pLineNTCFrw[ni,nf,cc]) * mTEPES.pLineX[ni,nf,cc] / mTEPES.pSBase for nf,ni in list(zip(mTEPES.ncd[cyc], mTEPES.ncd[cyc][1:] + mTEPES.ncd[cyc][:1])) for cc in mTEPES.cc if (ni,nf,cc) in mTEPES.uctc and (ni!=nii or nf!=nff)) )
+            else:
+                pBigMTheta.loc[cyc,nii,nff,ccc] = (sum((mTEPES.pLineSmax[ni,nf,cc]*(mTEPES.pLineX[ni,nf,cc]-mTEPES.pLineR[ni,nf,cc]))/mTEPES.pSBase for ni,nf in list(zip(mTEPES.ncd[cyc], mTEPES.ncd[cyc][1:] + mTEPES.ncd[cyc][:1])) for cc in mTEPES.cc if (ni,nf,cc) in mTEPES.uctc and (ni!=nii or nf!=nff)) +
+                                                   sum((mTEPES.pLineSmax[ni,nf,cc]*(mTEPES.pLineX[ni,nf,cc]-mTEPES.pLineR[ni,nf,cc]))/mTEPES.pSBase for nf,ni in list(zip(mTEPES.ncd[cyc], mTEPES.ncd[cyc][1:] + mTEPES.ncd[cyc][:1])) for cc in mTEPES.cc if (ni,nf,cc) in mTEPES.uctc and (ni!=nii or nf!=nff)) )
+
+    mTEPES.pBigMTheta = Param(mTEPES.cyc, mTEPES.lca, initialize=pBigMTheta['rad'].to_dict(), doc='big M for an AC candidate line in a cycle [rad]')
+
+def CycleConstraints(OptModel, mTEPES, pIndLogConsole, p, sc, st):
+    StartTime = time.time()
+
+    # remove the Kirchhoff's second law for AC existing and candidate lines
+    # OptModel.del_component(getattr(OptModel, 'eKirchhoff2ndLawExst_stage'+str(st)))
+    OptModel.del_component(getattr(OptModel, 'eKirchhoff2ndLaw1_'+str(p)+'_'+str(sc)+'_'+str(st)))
+    OptModel.del_component(getattr(OptModel, 'eKirchhoff2ndLaw2_'+str(p)+'_'+str(sc)+'_'+str(st)))
+
+    #%% cycle Kirchhoff's second law with some candidate lines
+    # this equation is formulated for every AC candidate line included in the cycle
+    def eCycleKirchhoff2ndLawCnd1(OptModel,sc,p,n,cyc,nii,nff,cc):
+        return (sum(OptModel.vFlowElec[sc,p,n,ni,nf,cc] * mTEPES.pLineX[ni,nf,cc] / mTEPES.pSBase for ni,nf in list(zip(mTEPES.ncd[cyc], mTEPES.ncd[cyc][1:] + mTEPES.ncd[cyc][:1])) for cc in mTEPES.cc if (ni,nf,cc) in mTEPES.uctc) -
+                sum(OptModel.vFlowElec[sc,p,n,ni,nf,cc] * mTEPES.pLineX[ni,nf,cc] / mTEPES.pSBase for nf,ni in list(zip(mTEPES.ncd[cyc], mTEPES.ncd[cyc][1:] + mTEPES.ncd[cyc][:1])) for cc in mTEPES.cc if (ni,nf,cc) in mTEPES.uctc) ) / mTEPES.pBigMTheta[cyc,nii,nff,cc] <=   1 - OptModel.vLineCommit[sc,p,n,nii,nff,cc]
+    setattr(OptModel, 'eCycleKirchhoff2ndLawCnd1_'+st, Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.lcac, rule=eCycleKirchhoff2ndLawCnd1, doc='cycle flow for with some AC candidate lines [rad]'))
+
+    if pIndLogConsole == 1:
+        print('eCycleKirchhoff2ndLC1 ... ', len(getattr(OptModel, 'eCycleKirchhoff2ndLawCnd1_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+
+    def eCycleKirchhoff2ndLawCnd2(OptModel,sc,p,n,cyc,nii,nff,cc):
+        return (sum(OptModel.vFlowElec[sc,p,n,ni,nf,cc] * mTEPES.pLineX[ni,nf,cc] / mTEPES.pSBase for ni,nf in list(zip(mTEPES.ncd[cyc], mTEPES.ncd[cyc][1:] + mTEPES.ncd[cyc][:1])) for cc in mTEPES.cc if (ni,nf,cc) in mTEPES.uctc) -
+                sum(OptModel.vFlowElec[sc,p,n,ni,nf,cc] * mTEPES.pLineX[ni,nf,cc] / mTEPES.pSBase for nf,ni in list(zip(mTEPES.ncd[cyc], mTEPES.ncd[cyc][1:] + mTEPES.ncd[cyc][:1])) for cc in mTEPES.cc if (ni,nf,cc) in mTEPES.uctc) ) / mTEPES.pBigMTheta[cyc,nii,nff,cc] >= - 1 + OptModel.vLineCommit[sc,p,n,nii,nff,cc]
+    setattr(OptModel, 'eCycleKirchhoff2ndLawCnd2_'+st, Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.lcac, rule=eCycleKirchhoff2ndLawCnd2, doc='cycle flow for with some AC candidate lines [rad]'))
+
+    if pIndLogConsole == 1:
+        print('eCycleKirchhoff2ndLC2 ... ', len(getattr(OptModel, 'eCycleKirchhoff2ndLawCnd2_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+
+    def eFlowParallelCandidate1(OptModel,sc,p,n,ni,nf,cc,c2):
+        if cc < c2 and (ni,nf,cc) in mTEPES.lea and (ni,nf,c2) in mTEPES.lca:
+            return (OptModel.vFlowElec[sc,p,n,ni,nf,cc] - OptModel.vFlowElec[sc,p,n,ni,nf,c2] * mTEPES.pLineX[ni,nf,c2] / mTEPES.pLineX[ni,nf,cc]) / max(mTEPES.pLineNTCBck[ni,nf,cc],mTEPES.pLineNTCFrw[ni,nf,cc]) <=   1 - OptModel.vLineCommit[sc,p,n,ni,nf,c2]
+        else:
+            return Constraint.Skip
+    setattr(OptModel, 'eFlowParallelCandidate1_'+st, Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.pct, mTEPES.cc, mTEPES.c2, rule=eFlowParallelCandidate1, doc='unitary flow for each AC candidate parallel circuit [p.u.]'))
+
+    if pIndLogConsole == 1:
+        print('eFlowParallelCnddate1 ... ', len(getattr(OptModel, 'eFlowParallelCandidate1_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+
+    def eFlowParallelCandidate2(OptModel,sc,p,n,ni,nf,cc,c2):
+        if cc < c2 and (ni,nf,cc) in mTEPES.lea and (ni,nf,c2) in mTEPES.lca:
+            return (OptModel.vFlowElec[sc,p,n,ni,nf,cc] - OptModel.vFlowElec[sc,p,n,ni,nf,c2] * mTEPES.pLineX[ni,nf,c2] / mTEPES.pLineX[ni,nf,cc]) / max(mTEPES.pLineNTCBck[ni,nf,cc],mTEPES.pLineNTCFrw[ni,nf,cc]) >= - 1 + OptModel.vLineCommit[sc,p,n,ni,nf,c2]
+        else:
+            return Constraint.Skip
+    setattr(OptModel, 'eFlowParallelCandidate2_'+st, Constraint(mTEPES.sc, mTEPES.p, mTEPES.n, mTEPES.pct, mTEPES.cc, mTEPES.c2, rule=eFlowParallelCandidate2, doc='unitary flow for each AC candidate parallel circuit [p.u.]'))
+
+    if pIndLogConsole == 1:
+        print('eFlowParallelCnddate2 ... ', len(getattr(OptModel, 'eFlowParallelCandidate2_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+
+    CycleFlowTime = time.time() - StartTime
+
+    print('Generating cycle flow constraints       ... ', round(CycleFlowTime), 's')
+
 
 def NetworkH2OperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st):
     print('Hydrogen  scheduling       constraints ****')

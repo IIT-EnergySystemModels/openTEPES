@@ -405,8 +405,6 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         for n in range(pTimeStep-2,-1,-1):
             pDuration.iloc[[range(n,len(mTEPES.nn),pTimeStep)]] = 0
 
-            # pDuration = pDuration.loc[mTEPES.psn]
-
     #%% generation parameters
     pGenToNode                  = dfGeneration  ['Node'                      ]                                                      # generator location in node
     pGenToTechnology            = dfGeneration  ['Technology'                ]                                                      # generator association to technology
@@ -595,13 +593,13 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.sqc    = Set(initialize=mTEPES.sq,               ordered=False, doc='synchr reactive candidate'                                                                                            )
     mTEPES.shc    = Set(initialize=mTEPES.sq,               ordered=False, doc='shunt           candidate'                                                                                            )
     if pIndHydroTopology == 1:
-        mTEPES.rn = Set(initialize=mTEPES.rs,               ordered=False, doc='candidate reservoirs'          , filter=lambda mTEPES,rs  : rs     in mTEPES.rs  and pRsrInvestCost      [rs] >  0.0 and                                                     pRsrPeriodIni[rs]  <= mTEPES.p.last() and pRsrPeriodFin[rs]  >= mTEPES.p.first())
+        mTEPES.rn = Set(initialize=mTEPES.rs,               ordered=False, doc='candidate reservoirs'            , filter=lambda mTEPES,rs  : rs     in mTEPES.rs  and pRsrInvestCost      [rs] >  0.0 and                                                     pRsrPeriodIni[rs]      <= mTEPES.p.last() and pRsrPeriodFin[rs]      >= mTEPES.p.first())
     else:
         mTEPES.rn = Set(initialize=[],                      ordered=False, doc='candidate reservoirs')
     if pIndHydrogen      == 1:
-        mTEPES.pn = Set(initialize=dfNetworkHydrogen.index, ordered=False, doc='all input hydrogen pipes'                                                                                           )
-        mTEPES.pa = Set(initialize=mTEPES.pn,               ordered=False, doc='all real  hydrogen pipes'      , filter=lambda mTEPES,*pn : pn     in mTEPES.pn  and pH2PipeNTCFrw       [pn] >  0.0 and pH2PipeNTCBck[pn] > 0.0 and pH2PipePeriodIni[pn] <= mTEPES.p.last() and pH2PipePeriodFin[pn] >= mTEPES.p.first())
-        mTEPES.pc = Set(initialize=mTEPES.pa,               ordered=False, doc='candidate hydrogen pipes'      , filter=lambda mTEPES,*pa : pa     in mTEPES.pa  and pH2PipeFixedCost    [pa] >  0.0)
+        mTEPES.pn = Set(initialize=dfNetworkHydrogen.index, ordered=False, doc='all input hydrogen pipes'                                                                                             )
+        mTEPES.pa = Set(initialize=mTEPES.pn,               ordered=False, doc='all real  hydrogen pipes'        , filter=lambda mTEPES,*pn : pn     in mTEPES.pn  and pH2PipeNTCFrw       [pn] >  0.0 and pH2PipeNTCBck[pn] > 0.0 and                         pH2PipePeriodIni[pn]   <= mTEPES.p.last() and pH2PipePeriodFin[pn]   >= mTEPES.p.first())
+        mTEPES.pc = Set(initialize=mTEPES.pa,               ordered=False, doc='candidate hydrogen pipes'        , filter=lambda mTEPES,*pa : pa     in mTEPES.pa  and pH2PipeFixedCost    [pa] >  0.0)
         # existing hydrogen pipelines (pe)
         mTEPES.pe = mTEPES.pa - mTEPES.pc
     else:
