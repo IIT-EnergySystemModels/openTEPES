@@ -1270,7 +1270,6 @@ def CycleConstraints(OptModel, mTEPES, pIndLogConsole, p, sc, st):
     if pIndLogConsole == 1:
         print('Generating cycle flow constraints       ... ', round(CycleFlowTime), 's')
 
-
 def NetworkH2OperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st):
     print('Hydrogen  scheduling       constraints ****')
 
