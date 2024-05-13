@@ -1147,7 +1147,10 @@ def NetworkOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st
         print('Generating network    constraints      ... ', round(GeneratingTime), 's')
 
 
-def NetworkCycles(mTEPES, pIndLogConsole, pIndPowerFlow):
+def NetworkCycles(mTEPES, pIndLogConsole):
+    print('Network               Cycles Detection ****')
+
+    StartTime = time.time()
 
     NetworkGraph = nx.Graph()
     NetworkGraph.add_nodes_from(mTEPES.nd)
@@ -1206,16 +1209,18 @@ def NetworkCycles(mTEPES, pIndLogConsole, pIndPowerFlow):
     #                                            sum(max(mTEPES.pLineNTCBck[ni,nf,cc],mTEPES.pLineNTCFrw[ni,nf,cc]) * mTEPES.pLineX[ni,nf,cc] / mTEPES.pSBase for nf,ni in list(zip(mTEPES.ncd[cyc], mTEPES.ncd[cyc][1:] + mTEPES.ncd[cyc][:1])) for cc in mTEPES.cc if (ni,nf,cc) in mTEPES.uctc) )
     for cyc,nii,nff,ccc in mTEPES.cyc*mTEPES.lca:
         if (nii,nff) in list(zip(mTEPES.ncd[cyc], mTEPES.ncd[cyc][1:] + mTEPES.ncd[cyc][:1])) or (nff,nii) in list(zip(mTEPES.ncd[cyc], mTEPES.ncd[cyc][1:] + mTEPES.ncd[cyc][:1])):
-            if pIndPowerFlow == 0:
-                pBigMTheta.loc[cyc,nii,nff,ccc] = (sum(max(mTEPES.pLineNTCBck[ni,nf,cc],mTEPES.pLineNTCFrw[ni,nf,cc]) * mTEPES.pLineX[ni,nf,cc] / mTEPES.pSBase for ni,nf in list(zip(mTEPES.ncd[cyc], mTEPES.ncd[cyc][1:] + mTEPES.ncd[cyc][:1])) for cc in mTEPES.cc if (ni,nf,cc) in mTEPES.uctc and (ni!=nii or nf!=nff)) +
-                                                   sum(max(mTEPES.pLineNTCBck[ni,nf,cc],mTEPES.pLineNTCFrw[ni,nf,cc]) * mTEPES.pLineX[ni,nf,cc] / mTEPES.pSBase for nf,ni in list(zip(mTEPES.ncd[cyc], mTEPES.ncd[cyc][1:] + mTEPES.ncd[cyc][:1])) for cc in mTEPES.cc if (ni,nf,cc) in mTEPES.uctc and (ni!=nii or nf!=nff)) )
-            else:
-                pBigMTheta.loc[cyc,nii,nff,ccc] = (sum((mTEPES.pLineSmax[ni,nf,cc]*(mTEPES.pLineX[ni,nf,cc]-mTEPES.pLineR[ni,nf,cc]))/mTEPES.pSBase for ni,nf in list(zip(mTEPES.ncd[cyc], mTEPES.ncd[cyc][1:] + mTEPES.ncd[cyc][:1])) for cc in mTEPES.cc if (ni,nf,cc) in mTEPES.uctc and (ni!=nii or nf!=nff)) +
-                                                   sum((mTEPES.pLineSmax[ni,nf,cc]*(mTEPES.pLineX[ni,nf,cc]-mTEPES.pLineR[ni,nf,cc]))/mTEPES.pSBase for nf,ni in list(zip(mTEPES.ncd[cyc], mTEPES.ncd[cyc][1:] + mTEPES.ncd[cyc][:1])) for cc in mTEPES.cc if (ni,nf,cc) in mTEPES.uctc and (ni!=nii or nf!=nff)) )
+            pBigMTheta.loc[cyc,nii,nff,ccc] = (sum(max(mTEPES.pLineNTCBck[ni,nf,cc],mTEPES.pLineNTCFrw[ni,nf,cc]) * mTEPES.pLineX[ni,nf,cc] / mTEPES.pSBase for ni,nf in list(zip(mTEPES.ncd[cyc], mTEPES.ncd[cyc][1:] + mTEPES.ncd[cyc][:1])) for cc in mTEPES.cc if (ni,nf,cc) in mTEPES.uctc and (ni!=nii or nf!=nff)) +
+                                               sum(max(mTEPES.pLineNTCBck[ni,nf,cc],mTEPES.pLineNTCFrw[ni,nf,cc]) * mTEPES.pLineX[ni,nf,cc] / mTEPES.pSBase for nf,ni in list(zip(mTEPES.ncd[cyc], mTEPES.ncd[cyc][1:] + mTEPES.ncd[cyc][:1])) for cc in mTEPES.cc if (ni,nf,cc) in mTEPES.uctc and (ni!=nii or nf!=nff)) )
 
     mTEPES.pBigMTheta = Param(mTEPES.cyc, mTEPES.lca, initialize=pBigMTheta['rad'].to_dict(), doc='big M for an AC candidate line in a cycle [rad]')
 
+    CyclesDetectionTime = time.time() - StartTime
+    if pIndLogConsole == 1:
+        print('Cycles detection                      ... ', round(CyclesDetectionTime), 's')
+
 def CycleConstraints(OptModel, mTEPES, pIndLogConsole, p, sc, st):
+    print('Network              cycle constraints ****')
+
     StartTime = time.time()
 
     # remove the Kirchhoff's second law for AC existing and candidate lines
@@ -1262,8 +1267,8 @@ def CycleConstraints(OptModel, mTEPES, pIndLogConsole, p, sc, st):
         print('eFlowParallelCnddate2 ... ', len(getattr(OptModel, 'eFlowParallelCandidate2_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
 
     CycleFlowTime = time.time() - StartTime
-
-    print('Generating cycle flow constraints       ... ', round(CycleFlowTime), 's')
+    if pIndLogConsole == 1:
+        print('Generating cycle flow constraints       ... ', round(CycleFlowTime), 's')
 
 
 def NetworkH2OperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st):
