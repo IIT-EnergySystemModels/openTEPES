@@ -25,7 +25,8 @@ requires = [
   "altair>=5.0.0",
   "psutil>=5.8.0",
   "jsonschema==4.16.0",
-  "highspy>=1.5.3",
+  "glpk>=0.4.7",
+  "networkx>=3.3",
   "dill>=0.3.8",]
 
 [tool.flit.scripts]
