@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 12, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 14, 2024
 """
 
 import time
@@ -23,34 +23,34 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
         FileName = _path+'/openTEPES_gurobi_'+CaseName+'.log'
         if os.path.exists(FileName):
             os.remove(FileName)
-        Solver.options['LogFile'       ] = _path+'/openTEPES_gurobi_'+CaseName+'.log'
+        Solver.options['LogFile'         ] = _path+'/openTEPES_gurobi_'+CaseName+'.log'
         # Solver.options['SolutionTarget'] = 1                                                 # optimal solution with or without basic solutions
-        Solver.options['Method'        ] = 2                                                 # barrier method
-        Solver.options['Crossover'     ] = -1
+        Solver.options['Method'          ] = 2                                                 # barrier method
+        Solver.options['Crossover'       ] = -1
         # Solver.options['MIPFocus'      ] = 3
         # Solver.options['Presolve'      ] = 2
         # Solver.options['RINS'          ] = 100
         # Solver.options['BarConvTol'    ] = 1e-9
         # Solver.options['BarQCPConvTol' ] = 0.025
-        # Solver.options['IISFile'     ] = _path+'/openTEPES_gurobi_'+CaseName+'.ilp'        # should be uncommented to show results of IIS
-        Solver.options['MIPGap'        ] = 0.01
-        Solver.options['Threads'       ] = int((psutil.cpu_count(logical=True) + psutil.cpu_count(logical=False))/2)
-        Solver.options['TimeLimit'     ] =    36000
-        Solver.options['IterationLimit'] = 36000000
+        # Solver.options['IISFile'       ] = _path+'/openTEPES_gurobi_'+CaseName+'.ilp'        # should be uncommented to show results of IIS
+        Solver.options['MIPGap'          ] = 0.01
+        Solver.options['Threads'         ] = int((psutil.cpu_count(logical=True) + psutil.cpu_count(logical=False))/2)
+        Solver.options['TimeLimit'       ] =    36000
+        Solver.options['IterationLimit'  ] = 36000000
     if SolverName == 'cplex':
         FileName = _path+'/openTEPES_cplex_'+CaseName+'.log'
         if os.path.exists(FileName):
             os.remove(FileName)
         # Solver.options['LogFile'          ] = _path+'/openTEPES_cplex_'+CaseName+'.log'
-        Solver.options['LPMethod'         ] = 4                                                 # barrier method
-        Solver.options['BarCrossAlg'      ] = 0
+        Solver.options['LPMethod'           ] = 4                                                 # barrier method
+        # Solver.options['BarCrossAlg'      ] = 0
         # Solver.options['NumericalEmphasis'] = 1
         # Solver.options['PreInd'           ] = 1
         # Solver.options['RINSHeur'         ] = 100
-        Solver.options['EpGap'            ] = 0.01
-        Solver.options['Threads'          ] = int((psutil.cpu_count(logical=True) + psutil.cpu_count(logical=False))/2)
-        Solver.options['TiLim'            ] =    36000
-        Solver.options['ItLim'            ] = 36000000
+        # Solver.options['EpGap'            ] = 0.01
+        Solver.options['Threads'            ] = int((psutil.cpu_count(logical=True) + psutil.cpu_count(logical=False))/2)
+        Solver.options['TimeLimit'          ] =    36000
+        # Solver.options['ItLim'            ] = 36000000
     if SolverName == 'appsi_highs':
         FileName = _path+'/openTEPES_highs_'+CaseName+'.log'
         if os.path.exists(FileName):
@@ -100,12 +100,12 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
     idx = 0
     if mTEPES.NoRepetition == 1:
         for var in OptModel.component_data_objects(pyo.Var, active=True, descend_into=True):
-            if not var.is_continuous():
+            if not var.is_continuous() and not var.is_fixed():
                 var.fixed = True  # fix the current value
                 idx += 1
     else:
         for var in OptModel.component_data_objects(pyo.Var, active=True, descend_into=True):
-            if not var.is_continuous() and var.index()[0] == p and var.index()[1] == sc:
+            if not var.is_continuous() and not var.is_fixed() and var.index()[0] == p and var.index()[1] == sc:
                 var.fixed = True  # fix the current value
                 idx += 1
 
