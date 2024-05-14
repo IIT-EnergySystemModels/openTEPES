@@ -4,7 +4,7 @@ Publications
 =================
 The **openTEPES** model has been used in these publications:
 
-- E.F. Álvarez, J.C. López, L. Olmos, A. Ramos (2024) "An Optimal Expansion Planning of Power Systems considering Cycle-Based AC-OPF" Sustainable Energy, Grids and Networks (accepted)
+- E.F. Álvarez, J.C. López, L. Olmos, A. Ramos (2024) "An Optimal Expansion Planning of Power Systems considering Cycle-Based AC Optimal Power Flow" Sustainable Energy, Grids and Networks (accepted)
 
 - D. Santos-Oliveira, J. Lecarpentier, S. Lumbreras, L. Olmos, A. Ramos, M. Chammas, Th. Brouhard (2024) "The impact of EV penetration on the European Power System: the Tradeoffs in Storage" Social Science Research Network `10.2139/ssrn.4700642 <https://dx.doi.org/10.2139/ssrn.4700642>`_
 
