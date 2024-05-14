@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 10, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 14, 2024
 """
 
 import datetime
@@ -629,7 +629,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
 
     #%% inverse index load level to stage
     pStageToLevel = pLevelToStage.reset_index().set_index(['level_0','level_1','Stage'])
-    pStageToLevel = pStageToLevel.loc[pStageToLevel['level_2'].keys().isin(mTEPES.p*mTEPES.sc*mTEPES.st)]
+    pStageToLevel = pStageToLevel.loc[pStageToLevel['level_2'].keys().isin(mTEPES.ps*mTEPES.st)]
     pStageToLevel = pStageToLevel.loc[pStageToLevel['level_2'].isin(mTEPES.n)].reset_index().set_index(['level_0','level_1','Stage','level_2'])
 
     mTEPES.s2n = Set(initialize=pStageToLevel.index, ordered=False, doc='load level to stage')
