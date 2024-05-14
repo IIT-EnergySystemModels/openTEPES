@@ -205,17 +205,17 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
         pIndMarginalResults             = 1
         pIndEconomicResults             = 1
     else:
-        pIndInvestmentResults           = 1
-        pIndGenerationOperationResults  = 1
-        pIndESSOperationResults         = 1
-        pIndReservoirOperationResults   = 1
-        pIndNetworkH2OperationResults   = 1
-        pIndNetworkHeatOperationResults = 1
+        pIndInvestmentResults           = 0
+        pIndGenerationOperationResults  = 0
+        pIndESSOperationResults         = 0
+        pIndReservoirOperationResults   = 0
+        pIndNetworkH2OperationResults   = 0
+        pIndNetworkHeatOperationResults = 0
         pIndFlexibilityResults          = 0
         pIndReliabilityResults          = 0
-        pIndNetworkOperationResults     = 1
+        pIndNetworkOperationResults     = 0
         pIndNetworkMapResults           = 0
-        pIndOperationSummaryResults     = 1
+        pIndOperationSummaryResults     = 0
         pIndCostSummaryResults          = 0
         pIndMarginalResults             = 0
         pIndEconomicResults             = 0
