@@ -579,7 +579,7 @@ Half ohmic losses are linearly approximated as a function of the flow [GW] «``e
 Cycle constraints for AC existing lines with DC power flow formulation [rad] «``eCycleKirchhoff2ndLawCnd1``» «``eCycleKirchhoff2ndLawCnd2``».
 See the cycle constraints for the AC power flow formulation in the following reference:
 
-* E.F. Álvarez, J.C. López, L. Olmos, A. Ramos "An Optimal Expansion Planning of Power Systems considering Cycle-Based AC-OPF" Sustainable Energy, Grids and Networks, May 2024 `10.1016/j.segan.2024.101413 <https://doi.org/10.1016/j.segan.2024.101413>`_
+* E.F. Álvarez, J.C. López, L. Olmos, A. Ramos "An Optimal Expansion Planning of Power Systems Considering Cycle-Based AC Optimal Power Flow" Sustainable Energy, Grids and Networks, May 2024 `10.1016/j.segan.2024.101413 <https://doi.org/10.1016/j.segan.2024.101413>`_
 
 Kirchhoff's second law is substituted by a cycle flow formulation for cycles with only AC existing lines [rad]
 
