@@ -145,7 +145,7 @@ Identifier                  Header      Description
 Period        Scenario      p.u.        Per unit largest unit
 ============  ============  ==========  ============================
 
-Generation operation
+Electricity generation operation
 --------------------
 
 File ``oT_Result_GenerationCommitment.csv``
@@ -765,6 +765,57 @@ Identifier                            Header      Description
 ====================================  ==========  ====================================
 Period        Scenario    Load level  Node        Hydrogen not served by node [tH2]
 ============  ==========  ==========  ==========  ====================================
+
+Heat generation operation
+--------------------
+
+File ``oT_Result_GenerationHeat.csv``
+
+============  ==========  ==========  ==========  ===================================
+Identifier                            Header      Description
+====================================  ==========  ===================================
+Period        Scenario    Load level  Generator   Output (discharge in ESS) [MW]
+============  ==========  ==========  ==========  ===================================
+
+File ``oT_Result_GenerationSurplusHeat.csv``
+
+============  ==========  ==========  ==============  ===============================
+Identifier                            Header          Description
+====================================  ==============  ===============================
+Period        Scenario    Load level  Generator       Power surplus [MW]
+============  ==========  ==========  ==============  ===============================
+
+File ``oT_Result_GenerationEnergyHeat.csv``
+
+============  ==========  ==========  ==========  =================================
+Identifier                            Header      Description
+====================================  ==========  =================================
+Period        Scenario    Load level  Generator   Energy (discharge in ESS) [GWh]
+============  ==========  ==========  ==========  =================================
+
+File ``oT_Result_TechnologyGenerationHeat.csv``
+
+============  ==========  ==========  ==========  =================================
+Identifier                            Header      Description
+====================================  ==========  =================================
+Period        Scenario    Load level  Technology  Output (discharge in ESS) [MW]
+============  ==========  ==========  ==========  =================================
+
+File ``oT_Result_TechnologyGenerationEnergyHeat.csv``
+
+============  ==========  ==========  ==========  =================================
+Identifier                            Header      Description
+====================================  ==========  =================================
+Period        Scenario    Load level  Technology  Energy (discharge in ESS) [GWh]
+============  ==========  ==========  ==========  =================================
+
+File ``oT_Result_TechnologyGenerationEnergyHeat_AreaName.csv``
+
+============  ==========  ==========  ==========  ==========================================
+Identifier                            Header      Description
+====================================  ==========  ==========================================
+Period        Scenario    Load level  Technology  Energy (discharge in ESS) per area [GWh]
+============  ==========  ==========  ==========  ==========================================
 
 Heat balance and network operation
 --------------------------------------

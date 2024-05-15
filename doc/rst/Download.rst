@@ -2,8 +2,8 @@
 
 Download & Installation
 =======================
-The **openTEPES** has been developed using `Python 3.12.2 <https://www.python.org/>`_ and `Pyomo 6.7.2 <https://pyomo.readthedocs.io/en/stable/>`_ and it uses `Gurobi 11.0.1 <https://www.gurobi.com/products/gurobi-optimizer/>`_ as commercial MIP solver for which a free academic license is available.
-It uses Pyomo so that it is independent of the preferred solver. You can alternatively use one of the free solvers `HiGHS 1.7.0 <https://ergo-code.github.io/HiGHS/dev/interfaces/python/#python-getting-started>`_, `SCIP 9.0.0 <https://www.scipopt.org/>`_, `GLPK 5.0 <https://www.gnu.org/software/glpk/>`_
+The **openTEPES** has been developed using `Python 3.12.2 <https://www.python.org/>`_ and `Pyomo 6.7.2 <https://pyomo.readthedocs.io/en/stable/>`_ and it uses `Gurobi 11.0.2 <https://www.gurobi.com/products/gurobi-optimizer/>`_ as commercial MIP solver for which a free academic license is available.
+It uses Pyomo so that it is independent of the preferred solver. You can alternatively use one of the free solvers `HiGHS 1.7.1 <https://ergo-code.github.io/HiGHS/dev/interfaces/python/#python-getting-started>`_, `SCIP 9.0.1 <https://www.scipopt.org/>`_, `GLPK 5.0 <https://www.gnu.org/software/glpk/>`_
 and `CBC 2.10.11 <https://github.com/coin-or/Cbc/releases>`_. List the serial solver interfaces under Pyomo with this call::
 
   pyomo help -s
@@ -23,6 +23,7 @@ Besides, it also requires the following packages:
 - `Pandas <https://pandas.pydata.org/>`_ for inputting data and outputting results
 - `psutil <https://pypi.org/project/psutil/>`_ for detecting the number of CPUs
 - `Plotly <https://plotly.com/python/>`_,  `Altair <https://altair-viz.github.io/#>`_, `Colour <https://pypi.org/project/colour/>`_ for plotting results and drawing the network map
+- `NetworkX <https://networkx.org/>`_ for representing the DC power flow with cycle constraints
 
 Cases
 -----
