@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.17.1] - 2024-05-14
+[4.17.1] - 2024-05-15
 ----------------------
+- [CHANGED] add some heat generation output files
 - [FIXED] fix error in heat boilers
 - [CHANGED] introduction of cycle equations for DC power flow
 - [CHANGED] fix error in writing the duals in output results

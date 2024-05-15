@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 13, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 15, 2024
 """
 
 import time
@@ -139,15 +139,16 @@ def GenerationOperationModelFormulationObjFunct(OptModel, mTEPES, pIndLogConsole
             h2n[nd].append(hp)
 
     def eTotalGCost(OptModel,n):
-        return OptModel.vTotalGCost[p,sc,n] == (sum(mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pLinearVarCost  [p,sc,n,nr] * OptModel.vTotalOutput   [p,sc,n,nr]                                              +
-                                                    mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pConstantVarCost[p,sc,n,nr] * OptModel.vCommitment    [p,sc,n,nr]                                              +
-                                                    mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pStartUpCost    [       nr] * OptModel.vStartUp       [p,sc,n,nr]                                              +
-                                                    mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pShutDownCost   [       nr] * OptModel.vShutDown      [p,sc,n,nr] for nr in mTEPES.nr if (p,nr) in mTEPES.pnr) +
-                                                sum(mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pOperReserveCost[       nr] * OptModel.vReserveUp     [p,sc,n,nr]                                              +
-                                                    mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pOperReserveCost[       nr] * OptModel.vReserveDown   [p,sc,n,nr] for nr in mTEPES.nr if (p,nr) in mTEPES.pnr and mTEPES.pIndOperReserve[nr] == 0) +
-                                                sum(mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pOperReserveCost[       eh] * OptModel.vESSReserveUp  [p,sc,n,eh]                                              +
-                                                    mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pOperReserveCost[       eh] * OptModel.vESSReserveDown[p,sc,n,eh] for eh in mTEPES.eh if (p,eh) in mTEPES.peh and mTEPES.pIndOperReserve[eh] == 0) +
-                                                sum(mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pLinearOMCost   [       re] * OptModel.vTotalOutput   [p,sc,n,re] for re in mTEPES.re if (p,re) in mTEPES.pre) )
+        return OptModel.vTotalGCost[p,sc,n] == (sum(mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pLinearVarCost  [p,sc,n,nr] * OptModel.vTotalOutput    [p,sc,n,nr]                                              +
+                                                    mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pConstantVarCost[p,sc,n,nr] * OptModel.vCommitment     [p,sc,n,nr]                                              +
+                                                    mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pStartUpCost    [       nr] * OptModel.vStartUp        [p,sc,n,nr]                                              +
+                                                    mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pShutDownCost   [       nr] * OptModel.vShutDown       [p,sc,n,nr] for nr in mTEPES.nr if (p,nr) in mTEPES.pnr) +
+                                                sum(mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pOperReserveCost[       nr] * OptModel.vReserveUp      [p,sc,n,nr]                                              +
+                                                    mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pOperReserveCost[       nr] * OptModel.vReserveDown    [p,sc,n,nr] for nr in mTEPES.nr if (p,nr) in mTEPES.pnr and mTEPES.pIndOperReserve[nr] == 0) +
+                                                sum(mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pOperReserveCost[       eh] * OptModel.vESSReserveUp   [p,sc,n,eh]                                              +
+                                                    mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pOperReserveCost[       eh] * OptModel.vESSReserveDown [p,sc,n,eh] for eh in mTEPES.eh if (p,eh) in mTEPES.peh and mTEPES.pIndOperReserve[eh] == 0) +
+                                                sum(mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pLinearVarCost  [p,sc,n,bo] * OptModel.vTotalOutputHeat[p,sc,n,bo] for bo in mTEPES.bo if (p,bo) in mTEPES.pbo) +
+                                                sum(mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pLinearOMCost   [       re] * OptModel.vTotalOutput    [p,sc,n,re] for re in mTEPES.re if (p,re) in mTEPES.pre) )
     setattr(OptModel, 'eTotalGCost_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, rule=eTotalGCost, doc='system variable generation operation cost [MEUR]'))
 
     # the small tolerance pEpsilon=1e-5 is added to avoid pumping/charging with curtailment/spillage
@@ -1342,7 +1343,7 @@ def NetworkHeatOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc
 
     def eBalanceHeat(OptModel,n,nd):
         if sum(1 for ch in c2n[nd]) + sum(1 for hp in h2n[nd]) + sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd]):
-            return (sum(OptModel.vTotalOutput[p,sc,n,ch]/mTEPES.pPower2HeatRatio[ch] for ch in c2n[nd] if (p,ch) in mTEPES.pch and ch not in mTEPES.bo) + sum(OptModel.vTotalOutputHeat[p,sc,n,ch] for ch in b2n[nd] if (p,ch) in mTEPES.pch and ch in mTEPES.bo) + sum(OptModel.vESSTotalCharge[p,sc,n,hp]*mTEPES.pDuration[p,sc,n]()/mTEPES.pProductionFunctionHeat[hp] for hp in h2n[nd]) + OptModel.vHeatNS[p,sc,n,nd] -
+            return (sum(OptModel.vTotalOutput[p,sc,n,ch]/mTEPES.pPower2HeatRatio[ch] for ch in c2n[nd] if (p,ch) in mTEPES.pch and ch not in mTEPES.bo) + sum(OptModel.vTotalOutputHeat[p,sc,n,bo] for bo in b2n[nd] if (p,bo) in mTEPES.pbo) + sum(OptModel.vESSTotalCharge[p,sc,n,hp]/mTEPES.pProductionFunctionHeat[hp] for hp in h2n[nd]) + OptModel.vHeatNS[p,sc,n,nd] -
                     sum(OptModel.vFlowHeat[p,sc,n,nd,nf,cc] for nf,cc in lout[nd] if (p,nd,nf,cc) in mTEPES.pha) + sum(OptModel.vFlowHeat[p,sc,n,ni,nd,cc] for ni,cc in lin[nd] if (p,ni,nd,cc) in mTEPES.pha)) == mTEPES.pDemandHeat[p,sc,n,nd]
         else:
             return Constraint.Skip

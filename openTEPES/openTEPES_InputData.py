@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 14, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 15, 2024
 """
 
 import datetime
@@ -650,6 +650,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.pgc       = [(p,     gc      ) for p,     gc       in mTEPES.p  *mTEPES.gc if (p,gc) in mTEPES.pg]
     mTEPES.pnr       = [(p,     nr      ) for p,     nr       in mTEPES.p  *mTEPES.nr if (p,nr) in mTEPES.pg]
     mTEPES.pch       = [(p,     ch      ) for p,     ch       in mTEPES.p  *mTEPES.ch if (p,ch) in mTEPES.pg]
+    mTEPES.pbo       = [(p,     bo      ) for p,     bo       in mTEPES.p  *mTEPES.bo if (p,bo) in mTEPES.pg]
     mTEPES.phh       = [(p,     hh      ) for p,     hh       in mTEPES.p  *mTEPES.hh if (p,hh) in mTEPES.pg]
     mTEPES.pbc       = [(p,     bc      ) for p,     bc       in mTEPES.p  *mTEPES.bc if (p,bc) in mTEPES.pg]
     mTEPES.pes       = [(p,     es      ) for p,     es       in mTEPES.p  *mTEPES.es if (p,es) in mTEPES.pg]
@@ -674,6 +675,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.psnre     = [(p,sc,n,re)       for p,sc,n,re       in mTEPES.psn*mTEPES.re if (p,re) in mTEPES.pre]
     mTEPES.psnnr     = [(p,sc,n,nr)       for p,sc,n,nr       in mTEPES.psn*mTEPES.nr if (p,nr) in mTEPES.pnr]
     mTEPES.psnch     = [(p,sc,n,ch)       for p,sc,n,ch       in mTEPES.psn*mTEPES.ch if (p,ch) in mTEPES.pch]
+    mTEPES.psnbo     = [(p,sc,n,bo)       for p,sc,n,bo       in mTEPES.psn*mTEPES.bo if (p,bo) in mTEPES.pbo]
     mTEPES.psnes     = [(p,sc,n,es)       for p,sc,n,es       in mTEPES.psn*mTEPES.es if (p,es) in mTEPES.pes]
     mTEPES.psneh     = [(p,sc,n,eh)       for p,sc,n,eh       in mTEPES.psn*mTEPES.eh if (p,eh) in mTEPES.peh]
     mTEPES.psnec     = [(p,sc,n,ec)       for p,sc,n,ec       in mTEPES.psn*mTEPES.ec if (p,ec) in mTEPES.pec]
@@ -1524,7 +1526,7 @@ def SettingUpVariables(OptModel, mTEPES):
     if mTEPES.pIndHeat == 1:
         OptModel.vTotalOutputHeat      = Var(mTEPES.psnch, within=NonNegativeReals,                 doc='total heat output of the boiler unit             [GW]')
         [OptModel.vTotalOutputHeat[p,sc,n,ch].setub(mTEPES.pMaxPowerHeat[p,sc,n,ch]) for p,sc,n,ch in mTEPES.psnch]
-        [OptModel.vTotalOutputHeat[p,sc,n,ch].setlb(mTEPES.pMinPowerHeat[p,sc,n,ch]) for p,sc,n,ch in mTEPES.psnch if ch in mTEPES.bo]
+        [OptModel.vTotalOutputHeat[p,sc,n,bo].setlb(mTEPES.pMinPowerHeat[p,sc,n,bo]) for p,sc,n,bo in mTEPES.psnbo]
         # only boilers are forced to produce at their minimum heat power. CHPs are not forced to produce at their minimum heat power, they are committed or not to produce electricity
 
     if mTEPES.pIndBinGenInvest() == 0:
