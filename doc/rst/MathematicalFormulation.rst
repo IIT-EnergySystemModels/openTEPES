@@ -287,12 +287,12 @@ The names between parenthesis correspond to the names of the constraints in the 
 
 **Objective function**: minimization of total (investment and operation) cost for the multi-period scope of the model
 
-Generation, (energy and reservoir) storage and (electricity, hydrogen, and heat) network investment cost plus retirement cost [M€] «``eTotalFCost``»
+Electricity, heat, and hydrogen generation, (energy and reservoir) storage and (electricity, hydrogen, and heat) network investment cost plus retirement cost [M€] «``eTotalFCost``»
 
 :math:`\sum_{pg} DF^p CFG_g icg^p_g + \sum_{pg} DF^p CFR_g rcg^p_g + \sum_{pe'} DF^p CFE_{e'} icr^p_{e'} +`
 :math:`\sum_{pijc} DF^p CFT_{ijc} ict^p_{ijc} + \sum_{pijc} DF^p CFH_{ijc} ich^p_{ijc} + \sum_{pijc} DF^p CFP_{ijc} icp^p_{ijc} +`
 
-Generation operation cost [M€] «``eTotalGCost``»
+Electricity, heat, and hydrogen generation operation cost [M€] «``eTotalGCost``»
 
 :math:`\sum_{p \omega ng} {[DF^p P^p_{\omega} DUR^p_{\omega n} (CV^p_{\omega ng} gp^p_{\omega ng} + CF^p_{\omega ng} uc^p_{\omega ng}) + DF^p CSU_g su^p_{\omega ng} + DF^p CSD_g sd^p_{\omega ng}]} +`
 
@@ -579,7 +579,7 @@ Half ohmic losses are linearly approximated as a function of the flow [GW] «``e
 Cycle constraints for AC existing lines with DC power flow formulation [rad] «``eCycleKirchhoff2ndLawCnd1``» «``eCycleKirchhoff2ndLawCnd2``».
 See the cycle constraints for the AC power flow formulation in the following reference:
 
-* E.F. Álvarez, J.C. López, L. Olmos, A. Ramos "An Optimal Expansion Planning of Power Systems Considering Cycle-Based AC Optimal Power Flow" Sustainable Energy, Grids and Networks, May 2024 `10.1016/j.segan.2024.101413 <https://doi.org/10.1016/j.segan.2024.101413>`_
+* E.F. Álvarez, J.C. López, L. Olmos, A. Ramos "An Optimal Expansion Planning of Power Systems Considering Cycle-Based AC Optimal Power Flow" Sustainable Energy, Grids and Networks, May 2024. `10.1016/j.segan.2024.101413 <https://doi.org/10.1016/j.segan.2024.101413>`_
 
 Kirchhoff's second law is substituted by a cycle flow formulation for cycles with only AC existing lines [rad]
 
