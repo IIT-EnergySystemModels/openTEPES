@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.17.1] - 2024-05-16
+[4.17.1] - 2024-05-17
 ----------------------
+- [FIXED] fix errors in heat generator investments
 - [FIXED] fix errors and add some heat results
 - [CHANGED] add some heat generation output files
 - [FIXED] fix error in heat boilers

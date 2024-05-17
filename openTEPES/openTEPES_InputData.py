@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 16, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 17, 2024
 """
 
 import datetime
@@ -554,9 +554,9 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     print('Reading    input data                  ... ', round(ReadingDataTime), 's')
 
     #%% Getting the branches from the electric network data
-    sBr = [(ni,nf) for (ni,nf,cc) in dfNetwork.index]
+    sBr     = [(ni,nf) for (ni,nf,cc) in dfNetwork.index]
     # Dropping duplicate keys
-    sBrList = [(ni,nf) for n,(ni,nf) in enumerate(sBr) if (ni,nf) not in sBr[:n]]
+    sBrList = [(ni,nf) for n,(ni,nf)  in enumerate(sBr) if (ni,nf) not in sBr[:n]]
 
     #%% defining subsets: active load levels (n,n2), thermal units (t), RES units (r), ESS units (es), candidate gen units (gc), candidate ESS units (ec), all the electric lines (la), candidate electric lines (lc), candidate DC electric lines (cd), existing DC electric lines (cd), electric lines with losses (ll), reference node (rf), and reactive generating units (gq)
     mTEPES.p      = Set(initialize=mTEPES.pp,               ordered=True , doc='periods'                         , filter=lambda mTEPES,pp  : pp     in mTEPES.pp  and pPeriodWeight       [pp] >  0.0)
@@ -626,8 +626,10 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.le = mTEPES.la - mTEPES.lc
     # ESS and hydro units
     mTEPES.eh = mTEPES.es | mTEPES.h
-    # CHP, heat pump and boiler candidates
+    # CHP, heat pump and boiler (heat generator) candidates
     mTEPES.gb = (mTEPES.gc & mTEPES.ch) | mTEPES.bc
+    # electricity and heat generator candidates
+    mTEPES.eb = mTEPES.gc | mTEPES.bc
 
     #%% inverse index load level to stage
     pStageToLevel = pLevelToStage.reset_index().set_index(['level_0','level_1','Stage'])
@@ -656,6 +658,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.phh       = [(p,     hh      ) for p,     hh       in mTEPES.p  *mTEPES.hh if (p,hh) in mTEPES.pg]
     mTEPES.pbc       = [(p,     bc      ) for p,     bc       in mTEPES.p  *mTEPES.bc if (p,bc) in mTEPES.pg]
     mTEPES.pgb       = [(p,     gb      ) for p,     gb       in mTEPES.p  *mTEPES.gb if (p,gb) in mTEPES.pg]
+    mTEPES.peb       = [(p,     eb      ) for p,     eb       in mTEPES.p  *mTEPES.eb if (p,eb) in mTEPES.pg]
     mTEPES.pes       = [(p,     es      ) for p,     es       in mTEPES.p  *mTEPES.es if (p,es) in mTEPES.pg]
     mTEPES.pec       = [(p,     ec      ) for p,     ec       in mTEPES.p  *mTEPES.ec if (p,ec) in mTEPES.pg]
     mTEPES.peh       = [(p,     eh      ) for p,     eh       in mTEPES.p  *mTEPES.eh if (p,eh) in mTEPES.pg]
@@ -813,12 +816,12 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.rt = Set(initialize=mTEPES.gt, ordered=False, doc='RES         technologies', filter=lambda mTEPES,gt: gt in mTEPES.gt and sum(1 for re in mTEPES.re if (gt,re) in mTEPES.t2g))
     mTEPES.nt = Set(initialize=mTEPES.gt, ordered=False, doc='RES         technologies', filter=lambda mTEPES,gt: gt in mTEPES.gt and sum(1 for nr in mTEPES.nr if (gt,nr) in mTEPES.t2g))
 
-    mTEPES.psgt  = [(p,sc,  gt) for p,sc,  gt in mTEPES.ps *mTEPES.gt                                     if sum(1 for g  in mTEPES.g  if (p,g ) in mTEPES.pg  and (gt,g ) in mTEPES.t2g)]
-    mTEPES.psot  = [(p,sc,  ot) for p,sc,  ot in mTEPES.ps *mTEPES.ot                                     if sum(1 for es in mTEPES.es if (p,es) in mTEPES.pes and (ot,es) in mTEPES.t2g)]
-    mTEPES.psht  = [(p,sc,  ht) for p,sc,  ht in mTEPES.ps *mTEPES.ht                                     if sum(1 for h  in mTEPES.h  if (p,h ) in mTEPES.ph  and (ht,h ) in mTEPES.t2g)]
-    mTEPES.pset  = [(p,sc,  et) for p,sc,  et in mTEPES.ps *mTEPES.et                                     if sum(1 for eh in mTEPES.eh if (p,eh) in mTEPES.peh and (et,eh) in mTEPES.t2g)]
-    mTEPES.psrt  = [(p,sc,  rt) for p,sc,  rt in mTEPES.ps *mTEPES.rt                                     if sum(1 for re in mTEPES.re if (p,re) in mTEPES.pre and (rt,re) in mTEPES.t2g)]
-    mTEPES.psnt  = [(p,sc,  nt) for p,sc,  nt in mTEPES.ps *mTEPES.nt                                     if sum(1 for nr in mTEPES.nr if (p,nr) in mTEPES.pnr and (nt,nr) in mTEPES.t2g)]
+    mTEPES.psgt  = [(p,sc,  gt) for p,sc,  gt in mTEPES.ps *mTEPES.gt if sum(1 for g  in mTEPES.g  if (p,g ) in mTEPES.pg  and (gt,g ) in mTEPES.t2g)]
+    mTEPES.psot  = [(p,sc,  ot) for p,sc,  ot in mTEPES.ps *mTEPES.ot if sum(1 for es in mTEPES.es if (p,es) in mTEPES.pes and (ot,es) in mTEPES.t2g)]
+    mTEPES.psht  = [(p,sc,  ht) for p,sc,  ht in mTEPES.ps *mTEPES.ht if sum(1 for h  in mTEPES.h  if (p,h ) in mTEPES.ph  and (ht,h ) in mTEPES.t2g)]
+    mTEPES.pset  = [(p,sc,  et) for p,sc,  et in mTEPES.ps *mTEPES.et if sum(1 for eh in mTEPES.eh if (p,eh) in mTEPES.peh and (et,eh) in mTEPES.t2g)]
+    mTEPES.psrt  = [(p,sc,  rt) for p,sc,  rt in mTEPES.ps *mTEPES.rt if sum(1 for re in mTEPES.re if (p,re) in mTEPES.pre and (rt,re) in mTEPES.t2g)]
+    mTEPES.psnt  = [(p,sc,  nt) for p,sc,  nt in mTEPES.ps *mTEPES.nt if sum(1 for nr in mTEPES.nr if (p,nr) in mTEPES.pnr and (nt,nr) in mTEPES.t2g)]
     mTEPES.psngt = [(p,sc,n,gt) for p,sc,n,gt in mTEPES.psn*mTEPES.gt if (p,sc,gt) in mTEPES.psgt]
     mTEPES.psnot = [(p,sc,n,ot) for p,sc,n,ot in mTEPES.psn*mTEPES.ot if (p,sc,ot) in mTEPES.psot]
     mTEPES.psnht = [(p,sc,n,ht) for p,sc,n,ht in mTEPES.psn*mTEPES.ht if (p,sc,ht) in mTEPES.psht]
@@ -1039,22 +1042,22 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         pEpsilon              = pDemandElecPeak[p,ar]*1e-5
 
         # these parameters are in GW
-        pDemandElecPos      [pDemandElecPos [[nd for nd in d2a[ar]]] <  pEpsilon] = 0.0
-        pDemandElecNeg      [pDemandElecNeg [[nd for nd in d2a[ar]]] > -pEpsilon] = 0.0
-        pSystemInertia      [pSystemInertia [[                 ar ]] <  pEpsilon] = 0.0
-        pOperReserveUp      [pOperReserveUp [[                 ar ]] <  pEpsilon] = 0.0
-        pOperReserveDw      [pOperReserveDw [[                 ar ]] <  pEpsilon] = 0.0
+        pDemandElecPos     [pDemandElecPos [[nd for nd in d2a[ar]]] <  pEpsilon] = 0.0
+        pDemandElecNeg     [pDemandElecNeg [[nd for nd in d2a[ar]]] > -pEpsilon] = 0.0
+        pSystemInertia     [pSystemInertia [[                 ar ]] <  pEpsilon] = 0.0
+        pOperReserveUp     [pOperReserveUp [[                 ar ]] <  pEpsilon] = 0.0
+        pOperReserveDw     [pOperReserveDw [[                 ar ]] <  pEpsilon] = 0.0
         if len(g2a[ar]):
-            pMinPowerElec   [pMinPowerElec  [[g  for  g in g2a[ar]]] <  pEpsilon] = 0.0
-            pMaxPowerElec   [pMaxPowerElec  [[g  for  g in g2a[ar]]] <  pEpsilon] = 0.0
-            pMinCharge      [pMinCharge     [[es for es in e2a[ar]]] <  pEpsilon] = 0.0
-            pMaxCharge      [pMaxCharge     [[eh for eh in g2a[ar]]] <  pEpsilon] = 0.0
-            pEnergyInflows  [pEnergyInflows [[es for es in e2a[ar]]] <  pEpsilon] = 0.0
-            pEnergyOutflows [pEnergyOutflows[[es for es in e2a[ar]]] <  pEpsilon] = 0.0
+            pMinPowerElec  [pMinPowerElec  [[g  for  g in g2a[ar]]] <  pEpsilon] = 0.0
+            pMaxPowerElec  [pMaxPowerElec  [[g  for  g in g2a[ar]]] <  pEpsilon] = 0.0
+            pMinCharge     [pMinCharge     [[es for es in e2a[ar]]] <  pEpsilon] = 0.0
+            pMaxCharge     [pMaxCharge     [[eh for eh in g2a[ar]]] <  pEpsilon] = 0.0
+            pEnergyInflows [pEnergyInflows [[es for es in e2a[ar]]] <  pEpsilon] = 0.0
+            pEnergyOutflows[pEnergyOutflows[[es for es in e2a[ar]]] <  pEpsilon] = 0.0
             # these parameters are in GWh
-            pMinStorage     [pMinStorage    [[es for es in e2a[ar]]] <  pEpsilon] = 0.0
-            pMaxStorage     [pMaxStorage    [[es for es in e2a[ar]]] <  pEpsilon] = 0.0
-            pIniInventory   [pIniInventory  [[es for es in e2a[ar]]] <  pEpsilon] = 0.0
+            pMinStorage    [pMinStorage    [[es for es in e2a[ar]]] <  pEpsilon] = 0.0
+            pMaxStorage    [pMaxStorage    [[es for es in e2a[ar]]] <  pEpsilon] = 0.0
+            pIniInventory  [pIniInventory  [[es for es in e2a[ar]]] <  pEpsilon] = 0.0
 
         # pInitialInventory.update(pd.Series([0.0 for es in e2a[ar] if pInitialInventory[es] < pEpsilon], index=[es for es in e2a[ar] if pInitialInventory[es] < pEpsilon], dtype='float64'))
 
@@ -1125,45 +1128,45 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pScenProb       = pScenProb.loc      [mTEPES.ps ]
 
     # drop generators not gc or gd
-    pGenInvestCost           = pGenInvestCost.loc          [mTEPES.gc]
-    pGenRetireCost           = pGenRetireCost.loc          [mTEPES.gd]
-    pIndBinUnitInvest        = pIndBinUnitInvest.loc       [mTEPES.gc]
-    pIndBinUnitRetire        = pIndBinUnitRetire.loc       [mTEPES.gd]
-    pGenLoInvest             = pGenLoInvest.loc            [mTEPES.gc]
-    pGenLoRetire             = pGenLoRetire.loc            [mTEPES.gd]
-    pGenUpInvest             = pGenUpInvest.loc            [mTEPES.gc]
-    pGenUpRetire             = pGenUpRetire.loc            [mTEPES.gd]
+    pGenInvestCost           = pGenInvestCost.loc   [mTEPES.eb]
+    pGenRetireCost           = pGenRetireCost.loc   [mTEPES.gd]
+    pIndBinUnitInvest        = pIndBinUnitInvest.loc[mTEPES.eb]
+    pIndBinUnitRetire        = pIndBinUnitRetire.loc[mTEPES.gd]
+    pGenLoInvest             = pGenLoInvest.loc     [mTEPES.eb]
+    pGenLoRetire             = pGenLoRetire.loc     [mTEPES.gd]
+    pGenUpInvest             = pGenUpInvest.loc     [mTEPES.eb]
+    pGenUpRetire             = pGenUpRetire.loc     [mTEPES.gd]
 
     # drop generators not nr or ec
-    pStartUpCost             = pStartUpCost.loc            [mTEPES.nr]
-    pShutDownCost            = pShutDownCost.loc           [mTEPES.nr]
-    pIndBinUnitCommit        = pIndBinUnitCommit.loc       [mTEPES.nr]
-    pIndBinStorInvest        = pIndBinStorInvest.loc       [mTEPES.ec]
+    pStartUpCost             = pStartUpCost.loc     [mTEPES.nr]
+    pShutDownCost            = pShutDownCost.loc    [mTEPES.nr]
+    pIndBinUnitCommit        = pIndBinUnitCommit.loc[mTEPES.nr]
+    pIndBinStorInvest        = pIndBinStorInvest.loc[mTEPES.ec]
 
     # drop lines not la
-    pLineR                   = pLineR.loc                  [mTEPES.la]
-    pLineX                   = pLineX.loc                  [mTEPES.la]
-    pLineBsh                 = pLineBsh.loc                [mTEPES.la]
-    pLineTAP                 = pLineTAP.loc                [mTEPES.la]
-    pLineLength              = pLineLength.loc             [mTEPES.la]
-    pElecNetPeriodIni        = pElecNetPeriodIni.loc       [mTEPES.la]
-    pElecNetPeriodFin        = pElecNetPeriodFin.loc       [mTEPES.la]
-    pLineVoltage             = pLineVoltage.loc            [mTEPES.la]
-    pLineNTCFrw              = pLineNTCFrw.loc             [mTEPES.la]
-    pLineNTCBck              = pLineNTCBck.loc             [mTEPES.la]
-    pLineNTCMax              = pLineNTCMax.loc             [mTEPES.la]
-    # pSwOnTime              = pSwOnTime.loc               [mTEPES.la]
-    # pSwOffTime             = pSwOffTime.loc              [mTEPES.la]
-    pIndBinLineInvest        = pIndBinLineInvest.loc       [mTEPES.la]
-    pIndBinLineSwitch        = pIndBinLineSwitch.loc       [mTEPES.la]
-    pAngMin                  = pAngMin.loc                 [mTEPES.la]
-    pAngMax                  = pAngMax.loc                 [mTEPES.la]
+    pLineR                   = pLineR.loc           [mTEPES.la]
+    pLineX                   = pLineX.loc           [mTEPES.la]
+    pLineBsh                 = pLineBsh.loc         [mTEPES.la]
+    pLineTAP                 = pLineTAP.loc         [mTEPES.la]
+    pLineLength              = pLineLength.loc      [mTEPES.la]
+    pElecNetPeriodIni        = pElecNetPeriodIni.loc[mTEPES.la]
+    pElecNetPeriodFin        = pElecNetPeriodFin.loc[mTEPES.la]
+    pLineVoltage             = pLineVoltage.loc     [mTEPES.la]
+    pLineNTCFrw              = pLineNTCFrw.loc      [mTEPES.la]
+    pLineNTCBck              = pLineNTCBck.loc      [mTEPES.la]
+    pLineNTCMax              = pLineNTCMax.loc      [mTEPES.la]
+    # pSwOnTime              = pSwOnTime.loc        [mTEPES.la]
+    # pSwOffTime             = pSwOffTime.loc       [mTEPES.la]
+    pIndBinLineInvest        = pIndBinLineInvest.loc[mTEPES.la]
+    pIndBinLineSwitch        = pIndBinLineSwitch.loc[mTEPES.la]
+    pAngMin                  = pAngMin.loc          [mTEPES.la]
+    pAngMax                  = pAngMax.loc          [mTEPES.la]
 
     # drop lines not lc or ll
-    pNetFixedCost            = pNetFixedCost.loc           [mTEPES.lc]
-    pNetLoInvest             = pNetLoInvest.loc            [mTEPES.lc]
-    pNetUpInvest             = pNetUpInvest.loc            [mTEPES.lc]
-    pLineLossFactor          = pLineLossFactor.loc         [mTEPES.ll]
+    pNetFixedCost            = pNetFixedCost.loc    [mTEPES.lc]
+    pNetLoInvest             = pNetLoInvest.loc     [mTEPES.lc]
+    pNetUpInvest             = pNetUpInvest.loc     [mTEPES.lc]
+    pLineLossFactor          = pLineLossFactor.loc  [mTEPES.ll]
 
     if pIndHydroTopology == 1:
         # drop generators not h
@@ -1317,9 +1320,9 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.pDwTime               = Param(mTEPES.gg,    initialize=pDwTime.to_dict()                   , within=NonNegativeIntegers, doc='Down   time'                                         )
     mTEPES.pStableTime           = Param(mTEPES.gg,    initialize=pStableTime.to_dict()               , within=NonNegativeIntegers, doc='Stable time'                                         )
     mTEPES.pShiftTime            = Param(mTEPES.gg,    initialize=pShiftTime.to_dict()                , within=NonNegativeIntegers, doc='Shift  time'                                         )
-    mTEPES.pGenInvestCost        = Param(mTEPES.gc,    initialize=pGenInvestCost.to_dict()            , within=NonNegativeReals,    doc='Generation fixed cost'                               )
+    mTEPES.pGenInvestCost        = Param(mTEPES.eb,    initialize=pGenInvestCost.to_dict()            , within=NonNegativeReals,    doc='Generation fixed cost'                               )
     mTEPES.pGenRetireCost        = Param(mTEPES.gd,    initialize=pGenRetireCost.to_dict()            , within=Reals           ,    doc='Generation fixed retire cost'                        )
-    mTEPES.pIndBinUnitInvest     = Param(mTEPES.gc,    initialize=pIndBinUnitInvest.to_dict()         , within=Binary          ,    doc='Binary investment decision'                          )
+    mTEPES.pIndBinUnitInvest     = Param(mTEPES.eb,    initialize=pIndBinUnitInvest.to_dict()         , within=Binary          ,    doc='Binary investment decision'                          )
     mTEPES.pIndBinUnitRetire     = Param(mTEPES.gd,    initialize=pIndBinUnitRetire.to_dict()         , within=Binary          ,    doc='Binary retirement decision'                          )
     mTEPES.pIndBinUnitCommit     = Param(mTEPES.nr,    initialize=pIndBinUnitCommit.to_dict()         , within=Binary          ,    doc='Binary commitment decision'                          )
     mTEPES.pIndBinStorInvest     = Param(mTEPES.ec,    initialize=pIndBinStorInvest.to_dict()         , within=Binary          ,    doc='Storage linked to generation investment'             )
@@ -1330,8 +1333,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.pEnergyTimeStep       = Param(mTEPES.gg,    initialize=pEnergyTimeStep.to_dict()           , within=PositiveIntegers,    doc='Unit energy cycle'                                   )
     mTEPES.pIniInventory         = Param(mTEPES.psnes, initialize=pIniInventory.stack().to_dict()     , within=NonNegativeReals,    doc='ESS Initial storage',                    mutable=True)
     mTEPES.pStorageType          = Param(mTEPES.es,    initialize=pStorageType.to_dict()              , within=Any             ,    doc='ESS Storage type'                                    )
-    mTEPES.pGenLoInvest          = Param(mTEPES.gc,    initialize=pGenLoInvest.to_dict()              , within=NonNegativeReals,    doc='Lower bound of the investment decision', mutable=True)
-    mTEPES.pGenUpInvest          = Param(mTEPES.gc,    initialize=pGenUpInvest.to_dict()              , within=NonNegativeReals,    doc='Upper bound of the investment decision', mutable=True)
+    mTEPES.pGenLoInvest          = Param(mTEPES.eb,    initialize=pGenLoInvest.to_dict()              , within=NonNegativeReals,    doc='Lower bound of the investment decision', mutable=True)
+    mTEPES.pGenUpInvest          = Param(mTEPES.eb,    initialize=pGenUpInvest.to_dict()              , within=NonNegativeReals,    doc='Upper bound of the investment decision', mutable=True)
     mTEPES.pGenLoRetire          = Param(mTEPES.gd,    initialize=pGenLoRetire.to_dict()              , within=NonNegativeReals,    doc='Lower bound of the retirement decision', mutable=True)
     mTEPES.pGenUpRetire          = Param(mTEPES.gd,    initialize=pGenUpRetire.to_dict()              , within=NonNegativeReals,    doc='Upper bound of the retirement decision', mutable=True)
 
@@ -1535,11 +1538,11 @@ def SettingUpVariables(OptModel, mTEPES):
         # only boilers are forced to produce at their minimum heat power. CHPs are not forced to produce at their minimum heat power, they are committed or not to produce electricity
 
     if mTEPES.pIndBinGenInvest() == 0:
-        OptModel.vGenerationInvest     = Var(mTEPES.pgc,   within=UnitInterval,                     doc='generation       investment decision exists in a year [0,1]')
-        OptModel.vGenerationInvPer     = Var(mTEPES.pgc,   within=UnitInterval,                     doc='generation       investment decision done   in a year [0,1]')
+        OptModel.vGenerationInvest     = Var(mTEPES.peb,   within=UnitInterval,                     doc='generation       investment decision exists in a year [0,1]')
+        OptModel.vGenerationInvPer     = Var(mTEPES.peb,   within=UnitInterval,                     doc='generation       investment decision done   in a year [0,1]')
     else:
-        OptModel.vGenerationInvest     = Var(mTEPES.pgc,   within=Binary,                           doc='generation       investment decision exists in a year {0,1}')
-        OptModel.vGenerationInvPer     = Var(mTEPES.pgc,   within=Binary,                           doc='generation       investment decision done   in a year {0,1}')
+        OptModel.vGenerationInvest     = Var(mTEPES.peb,   within=Binary,                           doc='generation       investment decision exists in a year {0,1}')
+        OptModel.vGenerationInvPer     = Var(mTEPES.peb,   within=Binary,                           doc='generation       investment decision done   in a year {0,1}')
 
     if mTEPES.pIndBinGenRetire() == 0:
         OptModel.vGenerationRetire     = Var(mTEPES.pgd,   within=UnitInterval,                     doc='generation       retirement decision exists in a year [0,1]')
@@ -1637,11 +1640,11 @@ def SettingUpVariables(OptModel, mTEPES):
     nFixedVariables = 0
 
     # relax binary condition in generation, boiler, and electric network investment decisions
-    for p,gc in mTEPES.pgc:
-        if mTEPES.pIndBinGenInvest() != 0 and mTEPES.pIndBinUnitInvest[gc] == 0:
-            OptModel.vGenerationInvest    [p,gc      ].domain = UnitInterval
+    for p,eb in mTEPES.peb:
+        if mTEPES.pIndBinGenInvest() != 0 and mTEPES.pIndBinUnitInvest[eb] == 0:
+            OptModel.vGenerationInvest    [p,eb      ].domain = UnitInterval
         if mTEPES.pIndBinGenInvest() == 2:
-            OptModel.vGenerationInvest    [p,gc      ].fix(0)
+            OptModel.vGenerationInvest    [p,eb      ].fix(0)
             nFixedVariables += 1
     for p,ni,nf,cc in mTEPES.plc:
         if mTEPES.pIndBinNetElecInvest() != 0 and mTEPES.pIndBinLineInvest[ni,nf,cc] == 0:
@@ -1958,13 +1961,13 @@ def SettingUpVariables(OptModel, mTEPES):
                 nFixedVariables += 1
 
     # do not install/retire power plants and lines if not allowed in this period
-    for p,gc in mTEPES.pgc:
-        if mTEPES.pElecGenPeriodIni[gc] > p:
-            OptModel.vGenerationInvest[p,gc].fix(0)
-            OptModel.vGenerationInvPer[p,gc].fix(0)
+    for p,eb in mTEPES.peb:
+        if mTEPES.pElecGenPeriodIni[eb] > p:
+            OptModel.vGenerationInvest[p,eb].fix(0)
+            OptModel.vGenerationInvPer[p,eb].fix(0)
             nFixedVariables += 2
-        if mTEPES.pElecGenPeriodFin[gc] < p:
-            OptModel.vGenerationInvPer[p,gc].fix(0)
+        if mTEPES.pElecGenPeriodFin[eb] < p:
+            OptModel.vGenerationInvPer[p,eb].fix(0)
             nFixedVariables += 1
 
     for p,gd in mTEPES.pgd:
@@ -2017,17 +2020,17 @@ def SettingUpVariables(OptModel, mTEPES):
 
     # remove power plants and lines not installed in this period
     for p,g in mTEPES.pg:
-        if g not in mTEPES.gc and mTEPES.pElecGenPeriodIni[g ] > p:
+        if g not in mTEPES.eb and mTEPES.pElecGenPeriodIni[g ] > p:
             for sc,n in mTEPES.sc*mTEPES.n:
                 OptModel.vTotalOutput   [p,sc,n,g].fix(0.0)
                 nFixedVariables += 1
 
     for p,sc,nr in mTEPES.psnr:
-        if nr not in mTEPES.gc and mTEPES.pElecGenPeriodIni[nr] > p:
+        if nr not in mTEPES.eb and mTEPES.pElecGenPeriodIni[nr] > p:
             OptModel.vMaxCommitment[p,sc,nr].fix(0)
             nFixedVariables += 1
     for p,sc,n,nr in mTEPES.psnnr:
-        if nr not in mTEPES.gc and mTEPES.pElecGenPeriodIni[nr] > p:
+        if nr not in mTEPES.eb and mTEPES.pElecGenPeriodIni[nr] > p:
             OptModel.vOutput2ndBlock[p,sc,n,nr].fix(0.0)
             OptModel.vReserveUp     [p,sc,n,nr].fix(0.0)
             OptModel.vReserveDown   [p,sc,n,nr].fix(0.0)
@@ -2085,19 +2088,19 @@ def SettingUpVariables(OptModel, mTEPES):
 
     # tolerance to consider 0 a number
     pEpsilon = 1e-4
-    for p,gc in mTEPES.pgc:
-        if  mTEPES.pGenLoInvest[  gc      ]() <       pEpsilon:
-            mTEPES.pGenLoInvest[  gc      ]   = 0
-        if  mTEPES.pGenUpInvest[  gc      ]() <       pEpsilon:
-            mTEPES.pGenUpInvest[  gc      ]   = 0
-        if  mTEPES.pGenLoInvest[  gc      ]() > 1.0 - pEpsilon:
-            mTEPES.pGenLoInvest[  gc      ]   = 1
-        if  mTEPES.pGenUpInvest[  gc      ]() > 1.0 - pEpsilon:
-            mTEPES.pGenUpInvest[  gc      ]   = 1
-        if  mTEPES.pGenLoInvest[  gc      ]() >   mTEPES.pGenUpInvest[gc      ]():
-            mTEPES.pGenLoInvest[  gc      ]   =   mTEPES.pGenUpInvest[gc      ]()
-    [OptModel.vGenerationInvest[p,gc      ].setlb(mTEPES.pGenLoInvest[gc      ]()) for p,gc in mTEPES.pgc]
-    [OptModel.vGenerationInvest[p,gc      ].setub(mTEPES.pGenUpInvest[gc      ]()) for p,gc in mTEPES.pgc]
+    for p,eb in mTEPES.peb:
+        if  mTEPES.pGenLoInvest[  eb      ]() <       pEpsilon:
+            mTEPES.pGenLoInvest[  eb      ]   = 0
+        if  mTEPES.pGenUpInvest[  eb      ]() <       pEpsilon:
+            mTEPES.pGenUpInvest[  eb      ]   = 0
+        if  mTEPES.pGenLoInvest[  eb      ]() > 1.0 - pEpsilon:
+            mTEPES.pGenLoInvest[  eb      ]   = 1
+        if  mTEPES.pGenUpInvest[  eb      ]() > 1.0 - pEpsilon:
+            mTEPES.pGenUpInvest[  eb      ]   = 1
+        if  mTEPES.pGenLoInvest[  eb      ]() >   mTEPES.pGenUpInvest[eb      ]():
+            mTEPES.pGenLoInvest[  eb      ]   =   mTEPES.pGenUpInvest[eb      ]()
+    [OptModel.vGenerationInvest[p,eb      ].setlb(mTEPES.pGenLoInvest[eb      ]()) for p,eb in mTEPES.peb]
+    [OptModel.vGenerationInvest[p,eb      ].setub(mTEPES.pGenUpInvest[eb      ]()) for p,eb in mTEPES.peb]
     for p,gd in mTEPES.pgd:
         if  mTEPES.pGenLoRetire[  gd      ]() < pEpsilon:
             mTEPES.pGenLoRetire[  gd      ]   = 0
