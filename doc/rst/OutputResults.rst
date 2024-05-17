@@ -911,6 +911,14 @@ Identifier  Description
 Technology  Levelized Cost of Electricity (LCOE) [€/MWh]
 ==========  ==============================================
 
+File ``oT_Result_TechnologyLCOH.csv``
+
+==========  ==============================================
+Identifier  Description
+==========  ==============================================
+Technology  Levelized Cost of Heating (LCOH) [€/MWh]
+==========  ==============================================
+
 File ``oT_Result_GenerationCostOandM.csv``
 
 ============  ==========  ==========  ==========  ==========================================

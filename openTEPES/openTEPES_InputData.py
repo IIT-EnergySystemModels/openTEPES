@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 15, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 16, 2024
 """
 
 import datetime
@@ -626,6 +626,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.le = mTEPES.la - mTEPES.lc
     # ESS and hydro units
     mTEPES.eh = mTEPES.es | mTEPES.h
+    # CHP, heat pump and boiler candidates
+    mTEPES.gb = (mTEPES.gc & mTEPES.ch) | mTEPES.bc
 
     #%% inverse index load level to stage
     pStageToLevel = pLevelToStage.reset_index().set_index(['level_0','level_1','Stage'])
@@ -653,6 +655,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.pbo       = [(p,     bo      ) for p,     bo       in mTEPES.p  *mTEPES.bo if (p,bo) in mTEPES.pg]
     mTEPES.phh       = [(p,     hh      ) for p,     hh       in mTEPES.p  *mTEPES.hh if (p,hh) in mTEPES.pg]
     mTEPES.pbc       = [(p,     bc      ) for p,     bc       in mTEPES.p  *mTEPES.bc if (p,bc) in mTEPES.pg]
+    mTEPES.pgb       = [(p,     gb      ) for p,     gb       in mTEPES.p  *mTEPES.gb if (p,gb) in mTEPES.pg]
     mTEPES.pes       = [(p,     es      ) for p,     es       in mTEPES.p  *mTEPES.es if (p,es) in mTEPES.pg]
     mTEPES.pec       = [(p,     ec      ) for p,     ec       in mTEPES.p  *mTEPES.ec if (p,ec) in mTEPES.pg]
     mTEPES.peh       = [(p,     eh      ) for p,     eh       in mTEPES.p  *mTEPES.eh if (p,eh) in mTEPES.pg]
@@ -672,6 +675,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.psn       = [(p,sc,n   )       for p,sc,n          in mTEPES.ps *mTEPES.n                         ]
     mTEPES.psng      = [(p,sc,n,g )       for p,sc,n,g        in mTEPES.psn*mTEPES.g  if (p,g ) in mTEPES.pg ]
     mTEPES.psngc     = [(p,sc,n,gc)       for p,sc,n,gc       in mTEPES.psn*mTEPES.gc if (p,gc) in mTEPES.pgc]
+    mTEPES.psngb     = [(p,sc,n,gb)       for p,sc,n,gb       in mTEPES.psn*mTEPES.gb if (p,gb) in mTEPES.pgc]
     mTEPES.psnre     = [(p,sc,n,re)       for p,sc,n,re       in mTEPES.psn*mTEPES.re if (p,re) in mTEPES.pre]
     mTEPES.psnnr     = [(p,sc,n,nr)       for p,sc,n,nr       in mTEPES.psn*mTEPES.nr if (p,nr) in mTEPES.pnr]
     mTEPES.psnch     = [(p,sc,n,ch)       for p,sc,n,ch       in mTEPES.psn*mTEPES.ch if (p,ch) in mTEPES.pch]
@@ -1179,7 +1183,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         pH2PipeUpInvest       = pH2PipeUpInvest.loc      [mTEPES.pc]
 
     if pIndHeat == 1:
-        # drop generators not ch
+        # drop generators not hp
         pProductionFunctionHeat     = pProductionFunctionHeat.loc    [mTEPES.hp]
         # drop generators not hh
         pProductionFunctionH2ToHeat = pProductionFunctionH2ToHeat.loc[mTEPES.hh]
@@ -1335,6 +1339,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         mTEPES.pProductionFunctionH2 = Param(mTEPES.el, initialize=pProductionFunctionH2.to_dict(), within=NonNegativeReals, doc='Production function of an electrolyzer plant')
 
     if pIndHeat == 1:
+        mTEPES.pRatedMaxPowerHeat          = Param(mTEPES.gg,    initialize=pRatedMaxPowerHeat.to_dict()         , within=NonNegativeReals, doc='Rated maximum heat'                       )
         mTEPES.pMinPowerHeat               = Param(mTEPES.psnch, initialize=pMinPowerHeat.stack().to_dict()      , within=NonNegativeReals, doc='Minimum heat     power'                   )
         mTEPES.pMaxPowerHeat               = Param(mTEPES.psnch, initialize=pMaxPowerHeat.stack().to_dict()      , within=NonNegativeReals, doc='Maximum heat     power'                   )
         mTEPES.pPower2HeatRatio            = Param(mTEPES.ch,    initialize=pPower2HeatRatio.to_dict()           , within=NonNegativeReals, doc='Power to heat ratio'                      )
@@ -1526,7 +1531,7 @@ def SettingUpVariables(OptModel, mTEPES):
     if mTEPES.pIndHeat == 1:
         OptModel.vTotalOutputHeat      = Var(mTEPES.psnch, within=NonNegativeReals,                 doc='total heat output of the boiler unit             [GW]')
         [OptModel.vTotalOutputHeat[p,sc,n,ch].setub(mTEPES.pMaxPowerHeat[p,sc,n,ch]) for p,sc,n,ch in mTEPES.psnch]
-        [OptModel.vTotalOutputHeat[p,sc,n,bo].setlb(mTEPES.pMinPowerHeat[p,sc,n,bo]) for p,sc,n,bo in mTEPES.psnbo]
+        [OptModel.vTotalOutputHeat[p,sc,n,ch].setlb(mTEPES.pMinPowerHeat[p,sc,n,ch]) for p,sc,n,ch in mTEPES.psnch]
         # only boilers are forced to produce at their minimum heat power. CHPs are not forced to produce at their minimum heat power, they are committed or not to produce electricity
 
     if mTEPES.pIndBinGenInvest() == 0:
