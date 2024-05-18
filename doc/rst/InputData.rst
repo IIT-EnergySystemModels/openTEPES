@@ -360,7 +360,8 @@ ProductionFunctionHydro     Production function from water inflows (denominator)
 ProductionFunctionH2        Production function from electricity (numerator) to hydrogen (denominator) (only used for electrolyzers)                                                        kWh/kgH2
 ProductionFunctionHeat      Production function from electricity (numerator) to heat (denominator) (only used for heat pumps)                                                               kWh/kWh
 ProductionFunctionH2ToHeat  Production function from hydrogen (numerator) to heat (denominator) (only used for hydrogen heater, which produce heat burning hydrogen)                        kgH2/kWh
-Availability                Unit availability for area adequacy reserve margin (also called de-rating factor or capacity credit)                                                            p.u.
+Availability                Unit availability for area adequacy reserve margin (also called de-rating factor or capacity credit
+                            or Firm Capacity Equivalent (FCE) or the Effective Load-Carrying Capability (ELCC))                                                                             p.u.
 Inertia                     Unit inertia constant                                                                                                                                           s
 EFOR                        Equivalent Forced Outage Rate                                                                                                                                   p.u.
 RampUp                      Ramp up   rate for generating units or maximum discharge rate for ESS discharge (generation)                                                                    MW/h
