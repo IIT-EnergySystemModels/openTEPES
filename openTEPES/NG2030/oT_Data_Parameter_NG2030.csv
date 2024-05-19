@@ -1,0 +1,2 @@
+,ENSCost,HNSCost,HTNSCost,CO2Cost,UpReserveActivation,DwReserveActivation,MinRatioDwUp,MaxRatioDwUp,SBase,ReferenceNode,TimeStep,EconomicBaseYear,AnnualDiscountRate
+Parameters,10000,10000,10000,25,0,0,0,1,100,Federal Capital Territory,2,2020,0

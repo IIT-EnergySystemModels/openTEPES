@@ -3,6 +3,7 @@ Change Log
 
 [4.17.1] - 2024-05-18
 ----------------------
+- [CHANGED] add the NG2030 case study
 - [CHANGED] time reduction in some output results
 - [FIXED] fix errors in heat generator investments
 - [FIXED] fix errors and add some heat results

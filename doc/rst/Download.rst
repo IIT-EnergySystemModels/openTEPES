@@ -27,7 +27,7 @@ Besides, it also requires the following packages:
 
 Cases
 -----
-Here, you have the input files of a `small case study of 9 nodes <https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/9n>`_, another one like a `small Spanish system <https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/sSEP>`_, a `modified RTS24 case study <https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/RTS24>`_, and the `Reliability Test System Grid Modernization Lab Consortium (RTS-GMLC) <https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/RTS24-GMLC>`_.
+Here, you have the input files of a `small case study of 9 nodes <https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/9n>`_, another one like a `small Spanish system <https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/sSEP>`_, a `modified RTS24 case study <https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/RTS24>`_, the `Reliability Test System Grid Modernization Lab Consortium (RTS-GMLC) <https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/RTS24-GMLC>`_, and the `Nigeria 2030 case study <https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/NG2030>`_.
 
 Code
 ----
