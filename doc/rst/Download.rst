@@ -23,7 +23,7 @@ Besides, it also requires the following packages:
 - `Pandas <https://pandas.pydata.org/>`_ for inputting data and outputting results
 - `psutil <https://pypi.org/project/psutil/>`_ for detecting the number of CPUs
 - `Plotly <https://plotly.com/python/>`_,  `Altair <https://altair-viz.github.io/#>`_, `Colour <https://pypi.org/project/colour/>`_ for plotting results and drawing the network map
-- `NetworkX <https://networkx.org/>`_ for representing the DC power flow with cycle constraints
+- `NetworkX <https://networkx.org/>`_ for representing the DC power flow formulation with cycle constraints
 
 Cases
 -----
