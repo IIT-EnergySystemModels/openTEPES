@@ -31,18 +31,22 @@ ENS         Energy Not Served
 ENTSO-E     European Network of Transmission System Operators for Electricity
 ESS         Energy Storage System
 EV          Electric Vehicle
+GEP         Generation Expansion Planning
 mFRR        Manual Frequency Restoration Reserve
 H2          Hydrogen
 HHU         Hydrogen Heating unit (Hydrogen to Heat: consumes hydrogen to produce heat)
 HNS         Hydrogen Not Served
 HP          Heat Pump (power to heat: consumes electricity to produce heat)
 HTNS        Heat Not Served
+IRP         Integrated Resource Planning
 NTC         Net Transfer Capacity
 OCGT        Open Cycle Gas Turbine
 PHS         Pumped-Hydro Storage
 PNS         Power Not Served
 PV          Photovoltaics
 RES         Renewable Energy Source
+SEP         Storage Expansion Planning
+TEP         Transmission Expansion Planning
 TTC         Total Transfer Capacity
 VOLL        Value of Lost Load
 VRE         Variable Renewable Energy
@@ -196,7 +200,7 @@ Identifiers                     Header        Description
 Period          Scenario        Probability   Probability of each scenario in each period  p.u.
 ==============  ==============  ============  ===========================================  ====
 
-For example, the scenarios can be used for obtaining the GEP+SEP+TEP considering hydro energy/water inflows uncertainty represented by means of three scenarios (wet, dry and average), or two VRES scenarios (windy/cloudy and calm/sunny).
+For example, the scenarios can be used for obtaining the IRP (GEP+SEP+TEP) considering hydro energy/water inflows uncertainty represented by means of three scenarios (wet, dry and average), or two VRES scenarios (windy/cloudy and calm/sunny).
 The sum of the probabilities of all the scenarios of a period must be 1.
 
 Stage
