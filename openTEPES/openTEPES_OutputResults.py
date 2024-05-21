@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 18, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 21, 2024
 """
 
 import time
@@ -845,9 +845,9 @@ def ESSOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutpu
     if pIndTechnologyOutput == 0 or pIndTechnologyOutput == 2:
         OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='GWh',               aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_GenerationSpillage_'+CaseName+'.csv', sep=',')
 
-    # too much time
     if pIndTechnologyOutput == 1 or pIndTechnologyOutput == 2:
-        OutputToFile = pd.Series(data=[sum(OutputToFile[p,sc,n,es] for es in o2e[ot] if (p,sc,n,es) in sPSNES) for p,sc,n,ot in mTEPES.psnot], index=pd.Index(mTEPES.psnot))
+        sPSNESOT = [(p,sc,n,es,ot) for p,sc,n,es,ot in sPSNES*mTEPES.ot if es in o2e[ot]]
+        OutputToFile = pd.Series(data=[OutputToFile[p,sc,n,es] for p,sc,n,es,ot in sPSNES*mTEPES.ot if es in o2e[ot]], index=pd.Index(sPSNESOT))
         OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='GWh', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_TechnologySpillage_'+CaseName+'.csv', sep=',')
 
     OutputToFile1 = pd.Series(data=[(OptModel.vTotalOutput[p,sc,n,es].ub - OptModel.vTotalOutput[p,sc,n,es]())*mTEPES.pLoadLevelDuration[p,sc,n]() for p,sc,n,es in mTEPES.psnes], index=pd.Index(mTEPES.psnes))
@@ -1776,7 +1776,6 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES, pIndPlotOutput):
                 chart = LinePlots(p, sc, MarginalDwOperatingReserve, 'Area', 'LoadLevel', 'EUR/MW', 'sum')
                 chart.save(_path+'/oT_Plot_MarginalOperatingReserveDownward_'+str(p)+'_'+str(sc)+'_'+CaseName+'.html', embed_options={'renderer': 'svg'})
 
-    # too much time
     #%% outputting the water values
     if len(mTEPES.es):
         OutputResults = []
@@ -1998,7 +1997,6 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput, pIndPlo
     elif len(mTEPES.eh) == 0 and len(mTEPES.re) == 0 and len(mTEPES.ll) == 0:
         OutputResults   = pd.concat([OutputResults01,                                                    OutputResults05, OutputResults06, OutputResults07, OutputResults08                                  ], axis=1)
 
-    # too much time
     OutputResults.stack().rename_axis(['Period', 'Scenario', 'LoadLevel', 'Area', 'Node', 'Technology'], axis=0).reset_index().rename(columns={0: 'GWh'}, inplace=False).to_csv(_path+'/oT_Result_BalanceEnergy_'+CaseName+'.csv', index=False, sep=',')
 
     OutputResults.stack().reset_index().pivot_table(index=['level_0','level_1','level_2','level_3','level_4'], columns='level_5', values=0, aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel', 'Area', 'Node'], axis=0).to_csv(_path+'/oT_Result_BalanceEnergyPerTech_'+CaseName+'.csv', sep=',')

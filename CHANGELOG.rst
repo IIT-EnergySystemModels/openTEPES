@@ -1,7 +1,7 @@
 Change Log
 =============
 
-[4.17.1] - 2024-05-18
+[4.17.1] - 2024-05-21
 ----------------------
 - [CHANGED] add the NG2030 case study
 - [CHANGED] time reduction in some output results
