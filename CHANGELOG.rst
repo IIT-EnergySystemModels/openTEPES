@@ -1,6 +1,10 @@
 Change Log
 =============
 
+[4.17.2] - 2024-05-22
+----------------------
+- [CHANGED] considering emissions from heat generators
+
 [4.17.1] - 2024-05-21
 ----------------------
 - [CHANGED] add the NG2030 case study

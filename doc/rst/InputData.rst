@@ -100,14 +100,14 @@ File                                       Description
 ``oT_Data_Scenario.csv``                   Short-term uncertainties
 ``oT_Data_Stage.csv``                      Weight of each stage
 ``oT_Data_ReserveMargin.csv``              Minimum adequacy reserve margin for each area and period
-``oT_Data_Emission.csv``                   Maximum CO2 emission
+``oT_Data_Emission.csv``                   Maximum CO2 emission of the electric system
 ``oT_Data_RESEnergy.csv``                  Minimum RES energy
 ``oT_Data_Duration.csv``                   Duration of the load levels
 ``oT_Data_Demand.csv``                     Electricity demand
 ``oT_Data_Inertia.csv``                    System inertia by area
 ``oT_Data_OperatingReserveUp.csv``         Upward   operating reserves (include aFRR and mFRR for electricity balancing from ENTSO-E)
 ``oT_Data_OperatingReserveDown.csv``       Downward operating reserves (include aFRR and mFRR for electricity balancing from ENTSO-E)
-``oT_Data_Generation.csv``                 Generation data
+``oT_Data_Generation.csv``                 Generation (electricity and heat) data
 ``oT_Data_VariableMaxGeneration.csv``      Variable maximum power generation  by load level
 ``oT_Data_VariableMinGeneration.csv``      Variable minimum power generation  by load level
 ``oT_Data_VariableMaxConsumption.csv``     Variable maximum power consumption by load level
@@ -240,11 +240,11 @@ Maximum CO2 emission
 
 A description of the data included in the file ``oT_Data_Emission.csv`` follows:
 
-==============  ==============  =============  ===========================================================  =====
+==============  ==============  =============  ======================================================================  =====
 Identifiers                     Header         Description
-==============================  =============  ===========================================================  =====
-Period          Area            CO2Emission    Maximum CO2 emission for each period and area                MtCO2
-==============  ==============  =============  ===========================================================  =====
+==============  ==============  =============  ======================================================================  =====
+Period          Area            CO2Emission    Maximum CO2 emission of the electric system for each period and area    MtCO2
+==============  ==============  =============  ======================================================================  =====
 
 If no value is introduced for an area, the CO2 emission limit is considered infinite.
 
@@ -332,7 +332,7 @@ Internally, all the values below 1e-5 times the maximum system demand of each ar
 
 Generation
 ----------
-A description of the data included for each generating unit in the file ``oT_Data_Generation.csv`` follows:
+A description of the data included for each (electricity and heat) generating unit in the file ``oT_Data_Generation.csv`` follows:
 
 ==========================  ==============================================================================================================================================================  ===================================
 Header                      Description
