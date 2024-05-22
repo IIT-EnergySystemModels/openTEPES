@@ -268,7 +268,7 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutput,
                 chart = alt.Chart(OutputResults.reset_index().rename(columns={'level_0': 'Period', 'level_1': 'Technology'})).mark_bar().encode(x='Technology:O', y='sum(MEUR/MW):Q', color='Technology:N', column='Period:N').properties(width=600, height=400)
                 chart.save(_path+'/oT_Plot_TechnologyInvestmentCostPerMW_'+CaseName+'.html', embed_options={'renderer':'svg'})
 
-    if mTEPES.pIndHeat and len(mTEPES.gb):
+    if mTEPES.pIndHeat == 1 and len(mTEPES.gb):
 
         # generators to area (g2a)
         g2a = defaultdict(list)
@@ -611,8 +611,10 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnolo
         OutputToFile = pd.Series(data=[OptModel.vTotalOutput[p,sc,n,g ]()*mTEPES.pLoadLevelDuration[p,sc,n]() for p,sc,n,g in mTEPES.psng], index=pd.Index(mTEPES.psng))
         OutputToFile.to_frame(name='GWh').reset_index().pivot_table(      index=['level_0','level_1','level_2'], columns='level_3', values='GWh', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_GenerationEnergy_'+CaseName+'.csv', sep=',')
 
-    if len(mTEPES.nr) + len(mTEPES.ch):
-        OutputToFile = pd.Series(data=[OptModel.vTotalOutput[p,sc,n,g]()*mTEPES.pLoadLevelDuration[p,sc,n]()*mTEPES.pEmissionRate[g]/1e3 for p,sc,n,g in mTEPES.psng], index=pd.Index(mTEPES.psng))
+    if len(mTEPES.nr) + len(mTEPES.bo):
+        OutputToFile      = pd.Series(data=[OptModel.vTotalOutput    [p,sc,n,nr]()*mTEPES.pLoadLevelDuration[p,sc,n]()*mTEPES.pEmissionRate[nr]/1e3 for p,sc,n,nr in mTEPES.psnnr], index=pd.Index(mTEPES.psnnr))
+        if mTEPES.pIndHeat == 1:
+            OutputToFile += pd.Series(data=[OptModel.vTotalOutputHeat[p,sc,n,bo]()*mTEPES.pLoadLevelDuration[p,sc,n]()*mTEPES.pEmissionRate[bo]/1e3 for p,sc,n,bo in mTEPES.psnbo], index=pd.Index(mTEPES.psnbo))
         if pIndTechnologyOutput == 0 or pIndTechnologyOutput == 2:
             OutputToFile.to_frame(name='MtCO2').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MtCO2', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_GenerationEmission_'+CaseName+'.csv', sep=',')
 
