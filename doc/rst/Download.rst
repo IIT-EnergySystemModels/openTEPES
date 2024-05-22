@@ -137,7 +137,8 @@ Then, the **results** should be written in the folder who is called with the cas
 
     ``openTEPES_run(<case>, <dir>, <solver>, <log>)``
 
-**Tips**
+Tips
+-----------
 
 1. A complete documentation of the openTEPES model can be found at `<https://opentepes.readthedocs.io/en/latest/index.html>`_, which presents the mathematical formulation, input data and output results.
 2. Try modifying the **TimeStep** in **oT_Data_Parameter_<case>.csv** and see their effect on results.
