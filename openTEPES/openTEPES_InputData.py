@@ -812,8 +812,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.ot = Set(initialize=mTEPES.gt, ordered=False, doc='ESS         technologies', filter=lambda mTEPES,gt: gt in mTEPES.gt and sum(1 for es in mTEPES.es if (gt,es) in mTEPES.t2g))
     mTEPES.ht = Set(initialize=mTEPES.gt, ordered=False, doc='hydro       technologies', filter=lambda mTEPES,gt: gt in mTEPES.gt and sum(1 for h  in mTEPES.h  if (gt,h ) in mTEPES.t2g))
     mTEPES.et = Set(initialize=mTEPES.gt, ordered=False, doc='ESS & hydro technologies', filter=lambda mTEPES,gt: gt in mTEPES.gt and sum(1 for eh in mTEPES.eh if (gt,eh) in mTEPES.t2g))
-    mTEPES.rt = Set(initialize=mTEPES.gt, ordered=False, doc='RES         technologies', filter=lambda mTEPES,gt: gt in mTEPES.gt and sum(1 for re in mTEPES.re if (gt,re) in mTEPES.t2g))
-    mTEPES.nt = Set(initialize=mTEPES.gt, ordered=False, doc='RES         technologies', filter=lambda mTEPES,gt: gt in mTEPES.gt and sum(1 for nr in mTEPES.nr if (gt,nr) in mTEPES.t2g))
+    mTEPES.rt = Set(initialize=mTEPES.gt, ordered=False, doc='    RES     technologies', filter=lambda mTEPES,gt: gt in mTEPES.gt and sum(1 for re in mTEPES.re if (gt,re) in mTEPES.t2g))
+    mTEPES.nt = Set(initialize=mTEPES.gt, ordered=False, doc='non-RES     technologies', filter=lambda mTEPES,gt: gt in mTEPES.gt and sum(1 for nr in mTEPES.nr if (gt,nr) in mTEPES.t2g))
 
     mTEPES.psgt  = [(p,sc,  gt) for p,sc,  gt in mTEPES.ps *mTEPES.gt if sum(1 for g  in mTEPES.g  if (p,g ) in mTEPES.pg  and (gt,g ) in mTEPES.t2g)]
     mTEPES.psot  = [(p,sc,  ot) for p,sc,  ot in mTEPES.ps *mTEPES.ot if sum(1 for es in mTEPES.es if (p,es) in mTEPES.pes and (ot,es) in mTEPES.t2g)]
