@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.17.2] - 2024-05-23
+[4.17.2] - 2024-05-24
 ----------------------
+- [FIXED] fix some investment output files
 - [FIXED] fix some emission output files
 - [CHANGED] considering emissions from heat generators
 
