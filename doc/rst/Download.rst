@@ -122,7 +122,7 @@ In the directory of your choice, open and execute the openTEPES_run.py script by
 
      ``openTEPES_Main``
 
-Then, four parameters (case, dir, solver, and console log) will be asked for.
+Then, four parameters (case, dir, solver, results, and console log) will be asked for.
 
 **Remark:** at this step only press enter for each input and openTEPES will be executed with the default parameters.
 
@@ -135,7 +135,7 @@ Then, the **results** should be written in the folder who is called with the cas
 
     ``from openTEPES.openTEPES import openTEPES_run``
 
-    ``openTEPES_run(<case>, <dir>, <solver>, <log>)``
+    ``openTEPES_run(<dir>, <case>, <solver>, <results>, <log>)``
 
 Tips
 -----------
