@@ -125,7 +125,7 @@ GitHub Repository (the hard way)
 1. Clone the openTEPES repository
 2. Launch the Anaconda prompt (or terminal in any IDE)
 3. Set up the PATH by ``cd "C:\Users\<username>\...\openTEPES"``. (Note that the path is where the repository was cloned.)
-4. Install openTEPES via pip by ``pip install openTEPES``
+4. Install openTEPES via pip by ``pip install .``
 
 Solvers
 #######
