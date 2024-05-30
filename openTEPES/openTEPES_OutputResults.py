@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 23, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 30, 2024
 """
 
 import time
@@ -606,36 +606,40 @@ def GenerationOperationHeatResults(DirName, CaseName, OptModel, mTEPES, pIndTech
 
     # technology to generators (g2t)
     g2t = defaultdict(list)
-    for gt,ch in mTEPES.t2g:
-        g2t[gt].append(ch)
+    for gt,chp in mTEPES.t2g:
+        g2t[gt].append(chp)
 
     for p,sc,n,ch in mTEPES.psnch:
         if ch not in mTEPES.bo:
             OptModel.vTotalOutputHeat[p,sc,n,ch]    = OptModel.vTotalOutput[p,sc,n,ch]   /mTEPES.pPower2HeatRatio[ch]
             OptModel.vTotalOutputHeat[p,sc,n,ch].ub = OptModel.vTotalOutput[p,sc,n,ch].ub/mTEPES.pPower2HeatRatio[ch]
 
-    OutputToFile = pd.Series(data=[OptModel.vTotalOutputHeat[p,sc,n,ch]() for p,sc,n,ch in mTEPES.psnch], index=pd.Index(mTEPES.psnch))
+    for p,sc,n,hp in mTEPES.psnhp:
+        OptModel.vTotalOutputHeat[p,sc,n,hp]    = OptModel.vESSTotalCharge[p,sc,n,hp]   /mTEPES.pProductionFunctionHeat[hp]
+        OptModel.vTotalOutputHeat[p,sc,n,hp].ub = OptModel.vESSTotalCharge[p,sc,n,hp].ub/mTEPES.pProductionFunctionHeat[hp]
+
+    OutputToFile = pd.Series(data=[OptModel.vTotalOutputHeat[p,sc,n,chp]() for p,sc,n,chp in mTEPES.psnchp], index=pd.Index(mTEPES.psnchp))
     OutputToFile *= 1e3
     OutputToFile.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_GenerationHeat_'       +CaseName+'.csv', sep=',')
 
     # tolerance to consider 0 a number
     pEpsilon = 1e-6
 
-    sPSNG        = [(p,sc,n,ch) for p,sc,n,ch in mTEPES.psnch if OptModel.vTotalOutputHeat[p,sc,n,ch].ub - OptModel.vTotalOutputHeat[p,sc,n,ch]() > pEpsilon]
-    OutputToFile = pd.Series(data=[(OptModel.vTotalOutputHeat[p,sc,n,ch].ub - OptModel.vTotalOutputHeat[p,sc,n,ch]()) for p,sc,n,ch in sPSNG], index=pd.Index(sPSNG))
+    sPSNG        = [(p,sc,n,chp) for p,sc,n,chp in mTEPES.psnchp if OptModel.vTotalOutputHeat[p,sc,n,chp].ub - OptModel.vTotalOutputHeat[p,sc,n,chp]() > pEpsilon]
+    OutputToFile = pd.Series(data=[(OptModel.vTotalOutputHeat[p,sc,n,chp].ub - OptModel.vTotalOutputHeat[p,sc,n,chp]()) for p,sc,n,chp in sPSNG], index=pd.Index(sPSNG))
     OutputToFile *= 1e3
-    for p,sc,n,ch in sPSNG:
-        if ch in mTEPES.gc or ch in mTEPES.bc:
-            OutputToFile[p,sc,n,ch] *= OptModel.vGenerationInvest[p,ch]()
+    for p,sc,n,chp in sPSNG:
+        if chp in mTEPES.gc or chp in mTEPES.bc:
+            OutputToFile[p,sc,n,chp] *= OptModel.vGenerationInvest[p,chp]()
     OutputToFile.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_GenerationSurplusHeat_'+CaseName+'.csv', sep=',')
 
     if pIndTechnologyOutput == 0 or pIndTechnologyOutput == 2:
-        OutputToFile = pd.Series(data=[OptModel.vTotalOutputHeat[p,sc,n,ch]()*mTEPES.pLoadLevelDuration[p,sc,n]() for p,sc,n,ch in mTEPES.psnch], index=pd.Index(mTEPES.psnch))
+        OutputToFile = pd.Series(data=[OptModel.vTotalOutputHeat[p,sc,n,chp]()*mTEPES.pLoadLevelDuration[p,sc,n]() for p,sc,n,chp in mTEPES.psnchp], index=pd.Index(mTEPES.psnchp))
         OutputToFile.to_frame(name='GWh').reset_index().pivot_table(      index=['level_0','level_1','level_2'], columns='level_3', values='GWh', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_GenerationEnergyHeat_'+CaseName+'.csv', sep=',')
 
     if pIndTechnologyOutput == 1 or pIndTechnologyOutput == 2:
-        sPSNGT = [(p,sc,n,gt) for p,sc,n,gt in mTEPES.psngt if sum(1 for ch in g2t[gt] if (p,ch) in mTEPES.pch)]
-        OutputToFile = pd.Series(data=[sum(OptModel.vTotalOutputHeat[p,sc,n,ch]() for ch in g2t[gt] if (p,ch) in mTEPES.pch) for p,sc,n,gt in sPSNGT], index=pd.Index(sPSNGT))
+        sPSNGT = [(p,sc,n,gt) for p,sc,n,gt in mTEPES.psngt if sum(1 for chp in g2t[gt] if (p,chp) in mTEPES.pchp)]
+        OutputToFile = pd.Series(data=[sum(OptModel.vTotalOutputHeat[p,sc,n,chp]() for chp in g2t[gt] if (p,chp) in mTEPES.pchp) for p,sc,n,gt in sPSNGT], index=pd.Index(sPSNGT))
         OutputToFile *= 1e3
         OutputToFile.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_TechnologyGenerationHeat_'+CaseName+'.csv', sep=',')
 
@@ -645,7 +649,7 @@ def GenerationOperationHeatResults(DirName, CaseName, OptModel, mTEPES, pIndTech
                 chart = AreaPlots(p, sc, TechnologyOutput, 'Technology', 'LoadLevel', 'MW', 'sum')
                 chart.save(_path+'/oT_Plot_TechnologyGenerationHeat_'+str(p)+'_'+str(sc)+'_'+CaseName+'.html', embed_options={'renderer': 'svg'})
 
-        OutputToFile = pd.Series(data=[sum(OptModel.vTotalOutputHeat[p,sc,n,ch]()*mTEPES.pLoadLevelDuration[p,sc,n]() for ch in g2t[gt] if (p,ch) in mTEPES.pch) for p,sc,n,gt in sPSNGT], index=pd.Index(sPSNGT))
+        OutputToFile = pd.Series(data=[sum(OptModel.vTotalOutputHeat[p,sc,n,chp]()*mTEPES.pLoadLevelDuration[p,sc,n]() for chp in g2t[gt] if (p,chp) in mTEPES.pchp) for p,sc,n,gt in sPSNGT], index=pd.Index(sPSNGT))
         OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='GWh', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_TechnologyGenerationEnergyHeat_'+CaseName+'.csv', sep=',')
 
         if pIndPlotOutput == 1:
@@ -653,13 +657,13 @@ def GenerationOperationHeatResults(DirName, CaseName, OptModel, mTEPES, pIndTech
                 chart = PiePlots(p, sc, OutputToFile, 'Technology', '%')
                 chart.save(_path+'/oT_Plot_TechnologyGenerationEnergyHeat_'+str(p)+'_'+str(sc)+'_'+CaseName+'.html', embed_options={'renderer': 'svg'})
 
-        if sum(1 for ar in mTEPES.ar if sum(1 for ch in g2a[ar])) > 1:
+        if sum(1 for ar in mTEPES.ar if sum(1 for chp in g2a[ar])) > 1:
             if pIndAreaOutput == 1:
                 for ar in mTEPES.ar:
-                    if sum(1 for ch in g2a[ar] if ch in g2t[gt]):
-                        sPSNGT = [(p,sc,n,gt) for p,sc,n,gt in mTEPES.psngt if sum(1 for ch in g2a[ar] if (p,ch) in mTEPES.pch and ch in g2t[gt])]
+                    if sum(1 for chp in g2a[ar] if chp in g2t[gt]):
+                        sPSNGT = [(p,sc,n,gt) for p,sc,n,gt in mTEPES.psngt if sum(1 for chp in g2a[ar] if (p,chp) in mTEPES.pchp and chp in g2t[gt])]
                         if len(sPSNGT):
-                            OutputToFile = pd.Series(data=[sum(OptModel.vTotalOutputHeat[p,sc,n,ch]()*mTEPES.pLoadLevelDuration[p,sc,n]() for ch in g2a[ar] if (p,ch) in mTEPES.pg and ch in g2t[gt]) for p,sc,n,gt in sPSNGT], index=pd.Index(sPSNGT))
+                            OutputToFile = pd.Series(data=[sum(OptModel.vTotalOutputHeat[p,sc,n,chp]()*mTEPES.pLoadLevelDuration[p,sc,n]() for chp in g2a[ar] if (p,chp) in mTEPES.pg and chp in g2t[gt]) for p,sc,n,gt in sPSNGT], index=pd.Index(sPSNGT))
                             OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='GWh', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_TechnologyGenerationEnergyHeat_'+ar+'_'+CaseName+'.csv', sep=',')
 
                             if pIndPlotOutput == 1:
@@ -1554,19 +1558,15 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES, pIndPlotOutput):
     for nd,g in mTEPES.n2g:
         g2n[nd].append(g)
 
-    # nodes to CHPs (c2n)
+    # nodes to CHPs (c2n), to heat pumps (h2n), to electrolyzers (e2n)
     c2n = defaultdict(list)
     for nd,ch in mTEPES.nd*mTEPES.ch:
         if (nd,ch) in mTEPES.n2g:
             c2n[nd].append(ch)
-
-    # nodes to heat pumps (h2n)
     h2n = defaultdict(list)
     for nd,hp in mTEPES.nd*mTEPES.hp:
         if (nd,hp) in mTEPES.n2g:
             h2n[nd].append(hp)
-
-    # nodes to electrolyzers (e2n)
     e2n = defaultdict(list)
     for nd,el in mTEPES.nd*mTEPES.el:
         if (nd,el) in mTEPES.n2g:
@@ -1588,9 +1588,9 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES, pIndPlotOutput):
     # tolerance to consider 0 a number
     pEpsilon = 1e-6
 
-    #%% outputting the incremental variable cost of each generating unit with power surplus
-    sPSNG        = [(p,sc,n,g) for p,sc,n,g in mTEPES.psng if OptModel.vTotalOutput[p,sc,n,g].ub - OptModel.vTotalOutput[p,sc,n,g]() > pEpsilon and g not in mTEPES.es]
-    OutputToFile = pd.Series(data=[(mTEPES.pLinearVarCost[p,sc,n,g]+mTEPES.pEmissionVarCost[p,sc,n,g]) for p,sc,n,g in sPSNG], index=pd.Index(sPSNG))
+    #%% outputting the incremental variable cost of each generating unit (neither ESS nor boilers) with power surplus
+    sPSNG        = [(p,sc,n,g) for p,sc,n,g in mTEPES.psng if g not in mTEPES.es and g not in mTEPES.bo]
+    OutputToFile = pd.Series(data=[(mTEPES.pLinearVarCost[p,sc,n,g]+mTEPES.pEmissionVarCost[p,sc,n,g]) if OptModel.vTotalOutput[p,sc,n,g].ub - OptModel.vTotalOutput[p,sc,n,g]() > pEpsilon else math.inf for p,sc,n,g in sPSNG], index=pd.Index(sPSNG))
     OutputToFile *= 1e3
 
     OutputToFile = OutputToFile.to_frame(name='EUR/MWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='EUR/MWh')

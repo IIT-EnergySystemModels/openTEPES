@@ -1,8 +1,10 @@
 Change Log
 =============
 
-[4.17.2] - 2024-05-24
+[4.17.2] - 2024-05-30
 ----------------------
+- [FIXED] fix some heat output files
+- [CHANGED] defien chp as all the heat producers
 - [FIXED] fix some investment output files
 - [FIXED] fix some emission output files
 - [CHANGED] considering emissions from heat generators

@@ -24,6 +24,7 @@ DCPF        DC Power Flow
 DR          Demand Response
 DSM         Demand-Side Management
 DSR         Demand-Side Response
+EB          Electric Boiler
 EHU         Electrical Heating Unit (Power to Heat: consumes electricity to produce heat)
 EFOR        Equivalent Forced Outage Rate
 ELZ         Electrolyzer (Power to Hydrogen: consumes electricity to produce hydrogen)
@@ -362,7 +363,7 @@ MinimumStorage              Minimum energy that can be stored by the ESS unit   
 Efficiency                  Round-trip efficiency of the pump/turbine cycle of a pumped-hydro storage power plant or charge/discharge of a battery                                          p.u.
 ProductionFunctionHydro     Production function from water inflows (denominator) to electricity (numerator) (only used for hydropower plants modeled with water units and basin topology)   kWh/m\ :sup:`3`
 ProductionFunctionH2        Production function from electricity (numerator) to hydrogen (denominator) (only used for electrolyzers)                                                        kWh/kgH2
-ProductionFunctionHeat      Production function from electricity (numerator) to heat (denominator) (only used for heat pumps)                                                               kWh/kWh
+ProductionFunctionHeat      Production function from electricity (numerator) to heat (denominator) (only used for heat pumps or electric boilers)                                           kWh/kWh
 ProductionFunctionH2ToHeat  Production function from hydrogen (numerator) to heat (denominator) (only used for hydrogen heater, which produce heat burning hydrogen)                        kgH2/kWh
 Availability                Unit availability for area adequacy reserve margin (also called de-rating factor or capacity credit
                             or Firm Capacity Equivalent (FCE) or the Effective Load-Carrying Capability (ELCC))                                                                             p.u.

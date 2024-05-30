@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 18, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 30, 2024
 """
 
 import datetime
@@ -564,20 +564,20 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.st     = Set(initialize=mTEPES.stt,              ordered=True , doc='stages'                          , filter=lambda mTEPES,stt : stt    in mTEPES.stt and pStageWeight       [stt] >  0.0)
     mTEPES.n      = Set(initialize=mTEPES.nn,               ordered=True , doc='load levels'                     , filter=lambda mTEPES,nn  : nn     in mTEPES.nn  and sum(pDuration  [p,sc,nn] for p,sc in mTEPES.ps) > 0)
     mTEPES.n2     = Set(initialize=mTEPES.nn,               ordered=True , doc='load levels'                     , filter=lambda mTEPES,nn  : nn     in mTEPES.nn  and sum(pDuration  [p,sc,nn] for p,sc in mTEPES.ps) > 0)
-    mTEPES.g      = Set(initialize=mTEPES.gg,               ordered=False, doc='generating       units'          , filter=lambda mTEPES,gg  : gg     in mTEPES.gg  and (pRatedMaxPowerElec [gg] >  0.0 or  pRatedMaxCharge[gg] >  0.0 or pRatedMaxPowerHeat    [gg] >  0.0) and pElecGenPeriodIni[gg] <= mTEPES.p.last() and pElecGenPeriodFin[gg] >= mTEPES.p.first() and pGenToNode.reset_index().set_index(['index']).isin(mTEPES.nd)['Node'][gg])  # excludes generators with empty node
-    mTEPES.t      = Set(initialize=mTEPES.g ,               ordered=False, doc='thermal          units'          , filter=lambda mTEPES,g   : g      in mTEPES.g   and pRatedLinearOperCost[g ] >  0.0)
-    mTEPES.re     = Set(initialize=mTEPES.g ,               ordered=False, doc='RES              units'          , filter=lambda mTEPES,g   : g      in mTEPES.g   and pRatedLinearOperCost[g ] == 0.0 and pRatedMaxStorage[g] == 0.0 and pProductionFunctionH2[g ] == 0.0 and pProductionFunctionHeat[g ] == 0.0  and pProductionFunctionHydro[g ] == 0.0)
-    mTEPES.es     = Set(initialize=mTEPES.g ,               ordered=False, doc='ESS              units'          , filter=lambda mTEPES,g   : g      in mTEPES.g   and     (pRatedMaxCharge[g ] >  0.0 or  pRatedMaxStorage[g] >  0.0  or pProductionFunctionH2[g ]  > 0.0  or pProductionFunctionHeat[g ]  > 0.0) and pProductionFunctionHydro[g ] == 0.0)
-    mTEPES.h      = Set(initialize=mTEPES.g ,               ordered=False, doc='hydro            units'          , filter=lambda mTEPES,g   : g      in mTEPES.g                                                                      and pProductionFunctionH2[g ] == 0.0 and pProductionFunctionHeat[g ] == 0.0  and pProductionFunctionHydro[g ]  > 0.0)
-    mTEPES.el     = Set(initialize=mTEPES.es,               ordered=False, doc='electrolyzer     units'          , filter=lambda mTEPES,es  : es     in mTEPES.es                                                                     and pProductionFunctionH2[es]  > 0.0 and pProductionFunctionHeat[es] == 0.0  and pProductionFunctionHydro[es] == 0.0)
-    mTEPES.hp     = Set(initialize=mTEPES.es,               ordered=False, doc='heat pump        units'          , filter=lambda mTEPES,es  : es     in mTEPES.es                                                                     and pProductionFunctionH2[es] == 0.0 and pProductionFunctionHeat[es]  > 0.0  and pProductionFunctionHydro[es] == 0.0)
-    mTEPES.ch     = Set(initialize=mTEPES.g ,               ordered=False, doc='CHP & boiler     units'          , filter=lambda mTEPES,g   : g      in mTEPES.g   and                                     pRatedMaxPowerHeat[g ] > 0.0)
-    mTEPES.bo     = Set(initialize=mTEPES.ch,               ordered=False, doc='boiler           units'          , filter=lambda mTEPES,ch  : ch     in mTEPES.ch  and pRatedMaxPowerElec  [ch] == 0.0 and pRatedMaxPowerHeat[ch] > 0.0)
-    mTEPES.hh     = Set(initialize=mTEPES.bo,               ordered=False, doc='boiler           units using H2' , filter=lambda mTEPES,bo  : bo     in mTEPES.bo  and pProductionFunctionH2ToHeat[bo] > 0.0)
-    mTEPES.gc     = Set(initialize=mTEPES.g ,               ordered=False, doc='candidate        units'          , filter=lambda mTEPES,g   : g      in mTEPES.g   and pGenInvestCost      [g ] >  0.0)
-    mTEPES.gd     = Set(initialize=mTEPES.g ,               ordered=False, doc='retirement       units'          , filter=lambda mTEPES,g   : g      in mTEPES.g   and pGenRetireCost      [g ] >  0.0)
-    mTEPES.ec     = Set(initialize=mTEPES.es,               ordered=False, doc='candidate ESS    units'          , filter=lambda mTEPES,es  : es     in mTEPES.es  and pGenInvestCost      [es] >  0.0)
-    mTEPES.bc     = Set(initialize=mTEPES.bo,               ordered=False, doc='candidate boiler units'          , filter=lambda mTEPES,bo  : bo     in mTEPES.bo  and pGenInvestCost      [bo] >  0.0)
+    mTEPES.g      = Set(initialize=mTEPES.gg,               ordered=False, doc='generating              units'   , filter=lambda mTEPES,gg  : gg     in mTEPES.gg  and (pRatedMaxPowerElec [gg] >  0.0 or  pRatedMaxCharge[gg] >  0.0 or pRatedMaxPowerHeat    [gg] >  0.0) and pElecGenPeriodIni[gg] <= mTEPES.p.last() and pElecGenPeriodFin[gg] >= mTEPES.p.first() and pGenToNode.reset_index().set_index(['index']).isin(mTEPES.nd)['Node'][gg])  # excludes generators with empty node
+    mTEPES.t      = Set(initialize=mTEPES.g ,               ordered=False, doc='thermal                 units'   , filter=lambda mTEPES,g   : g      in mTEPES.g   and pRatedLinearOperCost[g ] >  0.0)
+    mTEPES.re     = Set(initialize=mTEPES.g ,               ordered=False, doc='RES                     units'   , filter=lambda mTEPES,g   : g      in mTEPES.g   and pRatedLinearOperCost[g ] == 0.0 and pRatedMaxStorage[g] == 0.0   and pProductionFunctionH2[g ] == 0.0 and pProductionFunctionHeat[g ] == 0.0  and pProductionFunctionHydro[g ] == 0.0)
+    mTEPES.es     = Set(initialize=mTEPES.g ,               ordered=False, doc='ESS                     units'   , filter=lambda mTEPES,g   : g      in mTEPES.g   and     (pRatedMaxCharge[g ] >  0.0 or  pRatedMaxStorage[g] >  0.0    or pProductionFunctionH2[g ]  > 0.0  or pProductionFunctionHeat[g ]  > 0.0) and pProductionFunctionHydro[g ] == 0.0)
+    mTEPES.h      = Set(initialize=mTEPES.g ,               ordered=False, doc='hydro                   units'   , filter=lambda mTEPES,g   : g      in mTEPES.g                                                                        and pProductionFunctionH2[g ] == 0.0 and pProductionFunctionHeat[g ] == 0.0  and pProductionFunctionHydro[g ]  > 0.0)
+    mTEPES.el     = Set(initialize=mTEPES.es,               ordered=False, doc='electrolyzer            units'   , filter=lambda mTEPES,es  : es     in mTEPES.es                                                                       and pProductionFunctionH2[es]  > 0.0 and pProductionFunctionHeat[es] == 0.0  and pProductionFunctionHydro[es] == 0.0)
+    mTEPES.hp     = Set(initialize=mTEPES.es,               ordered=False, doc='heat pump & elec boiler units'   , filter=lambda mTEPES,es  : es     in mTEPES.es                                                                       and pProductionFunctionH2[es] == 0.0 and pProductionFunctionHeat[es]  > 0.0  and pProductionFunctionHydro[es] == 0.0)
+    mTEPES.ch     = Set(initialize=mTEPES.g ,               ordered=False, doc='CHP       & fuel boiler units'   , filter=lambda mTEPES,g   : g      in mTEPES.g   and                                     pRatedMaxPowerHeat[g ] > 0.0 and pProductionFunctionHeat    [g ] == 0.0)
+    mTEPES.bo     = Set(initialize=mTEPES.ch,               ordered=False, doc='            fuel boiler units'   , filter=lambda mTEPES,ch  : ch     in mTEPES.ch  and pRatedMaxPowerElec  [ch] == 0.0 and pRatedMaxPowerHeat[ch] > 0.0 and pProductionFunctionHeat    [ch] == 0.0)
+    mTEPES.hh     = Set(initialize=mTEPES.bo,               ordered=False, doc='        hydrogen boiler units'   , filter=lambda mTEPES,bo  : bo     in mTEPES.bo                                                                       and pProductionFunctionH2ToHeat[bo] >  0.0)
+    mTEPES.gc     = Set(initialize=mTEPES.g ,               ordered=False, doc='candidate               units'   , filter=lambda mTEPES,g   : g      in mTEPES.g   and pGenInvestCost      [g ] >  0.0)
+    mTEPES.gd     = Set(initialize=mTEPES.g ,               ordered=False, doc='retirement              units'   , filter=lambda mTEPES,g   : g      in mTEPES.g   and pGenRetireCost      [g ] >  0.0)
+    mTEPES.ec     = Set(initialize=mTEPES.es,               ordered=False, doc='candidate ESS           units'   , filter=lambda mTEPES,es  : es     in mTEPES.es  and pGenInvestCost      [es] >  0.0)
+    mTEPES.bc     = Set(initialize=mTEPES.bo,               ordered=False, doc='candidate boiler        units'   , filter=lambda mTEPES,bo  : bo     in mTEPES.bo  and pGenInvestCost      [bo] >  0.0)
     mTEPES.br     = Set(initialize=sBrList,                 ordered=False, doc='all input       electric branches'                                                                                    )
     mTEPES.ln     = Set(initialize=dfNetwork.index,         ordered=False, doc='all input       electric lines'                                                                                       )
     mTEPES.la     = Set(initialize=mTEPES.ln,               ordered=False, doc='all real        electric lines'  , filter=lambda mTEPES,*ln : ln     in mTEPES.ln  and pLineX              [ln] != 0.0 and pLineNTCFrw[ln] > 0.0 and pLineNTCBck[ln] > 0.0 and pElecNetPeriodIni[ln]  <= mTEPES.p.last() and pElecNetPeriodFin[ln]  >= mTEPES.p.first())
@@ -625,6 +625,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.le = mTEPES.la - mTEPES.lc
     # ESS and hydro units
     mTEPES.eh = mTEPES.es | mTEPES.h
+    # heat producers (CHP, heat pump and boiler)
+    mTEPES.chp = mTEPES.ch | mTEPES.hp
     # CHP, heat pump and boiler (heat generator) candidates
     mTEPES.gb = (mTEPES.gc & mTEPES.ch) | mTEPES.bc
     # electricity and heat generator candidates
@@ -649,44 +651,48 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.n2 = Set(initialize=mTEPES.nn, ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.nn and sum(pDuration[p,sc,nn] for p,sc in mTEPES.ps) > 0)
 
     # instrumental sets
-    mTEPES.pg        = [(p,     g       ) for p,     g        in mTEPES.p  *mTEPES.g  if pElecGenPeriodIni[g ] <= p and pElecGenPeriodFin[g ] >= p]
-    mTEPES.pgc       = [(p,     gc      ) for p,     gc       in mTEPES.p  *mTEPES.gc if (p,gc) in mTEPES.pg]
-    mTEPES.pnr       = [(p,     nr      ) for p,     nr       in mTEPES.p  *mTEPES.nr if (p,nr) in mTEPES.pg]
-    mTEPES.pch       = [(p,     ch      ) for p,     ch       in mTEPES.p  *mTEPES.ch if (p,ch) in mTEPES.pg]
-    mTEPES.pbo       = [(p,     bo      ) for p,     bo       in mTEPES.p  *mTEPES.bo if (p,bo) in mTEPES.pg]
-    mTEPES.phh       = [(p,     hh      ) for p,     hh       in mTEPES.p  *mTEPES.hh if (p,hh) in mTEPES.pg]
-    mTEPES.pbc       = [(p,     bc      ) for p,     bc       in mTEPES.p  *mTEPES.bc if (p,bc) in mTEPES.pg]
-    mTEPES.pgb       = [(p,     gb      ) for p,     gb       in mTEPES.p  *mTEPES.gb if (p,gb) in mTEPES.pg]
-    mTEPES.peb       = [(p,     eb      ) for p,     eb       in mTEPES.p  *mTEPES.eb if (p,eb) in mTEPES.pg]
-    mTEPES.pes       = [(p,     es      ) for p,     es       in mTEPES.p  *mTEPES.es if (p,es) in mTEPES.pg]
-    mTEPES.pec       = [(p,     ec      ) for p,     ec       in mTEPES.p  *mTEPES.ec if (p,ec) in mTEPES.pg]
-    mTEPES.peh       = [(p,     eh      ) for p,     eh       in mTEPES.p  *mTEPES.eh if (p,eh) in mTEPES.pg]
-    mTEPES.pre       = [(p,     re      ) for p,     re       in mTEPES.p  *mTEPES.re if (p,re) in mTEPES.pg]
-    mTEPES.ph        = [(p,     h       ) for p,     h        in mTEPES.p  *mTEPES.h  if (p,h ) in mTEPES.pg]
-    mTEPES.pgd       = [(p,     gd      ) for p,     gd       in mTEPES.p  *mTEPES.gd if (p,gd) in mTEPES.pg]
-    mTEPES.par       = [(p,     ar      ) for p,     ar       in mTEPES.p  *mTEPES.ar                                                                                  ]
-    mTEPES.pla       = [(p,     ni,nf,cc) for p,     ni,nf,cc in mTEPES.p  *mTEPES.la if pElecNetPeriodIni[ni,nf,cc] <= p and pElecNetPeriodFin[ni,nf,cc] >= p]
-    mTEPES.plc       = [(p,     ni,nf,cc) for p,     ni,nf,cc in mTEPES.p  *mTEPES.lc if (p,ni,nf,cc) in mTEPES.pla]
-    mTEPES.pll       = [(p,     ni,nf,cc) for p,     ni,nf,cc in mTEPES.p  *mTEPES.ll if (p,ni,nf,cc) in mTEPES.pla]
+    mTEPES.pg        = [(p,     g       ) for p,     g        in mTEPES.p  *mTEPES.g   if pElecGenPeriodIni[g ] <= p and pElecGenPeriodFin[g ] >= p]
+    mTEPES.pgc       = [(p,     gc      ) for p,     gc       in mTEPES.p  *mTEPES.gc  if (p,gc)  in mTEPES.pg]
+    mTEPES.pnr       = [(p,     nr      ) for p,     nr       in mTEPES.p  *mTEPES.nr  if (p,nr)  in mTEPES.pg]
+    mTEPES.pch       = [(p,     ch      ) for p,     ch       in mTEPES.p  *mTEPES.ch  if (p,ch)  in mTEPES.pg]
+    mTEPES.pchp      = [(p,     chp     ) for p,     chp      in mTEPES.p  *mTEPES.chp if (p,chp) in mTEPES.pg]
+    mTEPES.pbo       = [(p,     bo      ) for p,     bo       in mTEPES.p  *mTEPES.bo  if (p,bo)  in mTEPES.pg]
+    mTEPES.php       = [(p,     hp      ) for p,     hp       in mTEPES.p  *mTEPES.hp  if (p,hp)  in mTEPES.pg]
+    mTEPES.phh       = [(p,     hh      ) for p,     hh       in mTEPES.p  *mTEPES.hh  if (p,hh)  in mTEPES.pg]
+    mTEPES.pbc       = [(p,     bc      ) for p,     bc       in mTEPES.p  *mTEPES.bc  if (p,bc)  in mTEPES.pg]
+    mTEPES.pgb       = [(p,     gb      ) for p,     gb       in mTEPES.p  *mTEPES.gb  if (p,gb)  in mTEPES.pg]
+    mTEPES.peb       = [(p,     eb      ) for p,     eb       in mTEPES.p  *mTEPES.eb  if (p,eb)  in mTEPES.pg]
+    mTEPES.pes       = [(p,     es      ) for p,     es       in mTEPES.p  *mTEPES.es  if (p,es)  in mTEPES.pg]
+    mTEPES.pec       = [(p,     ec      ) for p,     ec       in mTEPES.p  *mTEPES.ec  if (p,ec)  in mTEPES.pg]
+    mTEPES.peh       = [(p,     eh      ) for p,     eh       in mTEPES.p  *mTEPES.eh  if (p,eh)  in mTEPES.pg]
+    mTEPES.pre       = [(p,     re      ) for p,     re       in mTEPES.p  *mTEPES.re  if (p,re)  in mTEPES.pg]
+    mTEPES.ph        = [(p,     h       ) for p,     h        in mTEPES.p  *mTEPES.h   if (p,h )  in mTEPES.pg]
+    mTEPES.pgd       = [(p,     gd      ) for p,     gd       in mTEPES.p  *mTEPES.gd  if (p,gd)  in mTEPES.pg]
+    mTEPES.par       = [(p,     ar      ) for p,     ar       in mTEPES.p  *mTEPES.ar                                                                                   ]
+    mTEPES.pla       = [(p,     ni,nf,cc) for p,     ni,nf,cc in mTEPES.p  *mTEPES.la  if pElecNetPeriodIni[ni,nf,cc] <= p and pElecNetPeriodFin[ni,nf,cc] >= p]
+    mTEPES.plc       = [(p,     ni,nf,cc) for p,     ni,nf,cc in mTEPES.p  *mTEPES.lc  if (p,ni,nf,cc) in mTEPES.pla]
+    mTEPES.pll       = [(p,     ni,nf,cc) for p,     ni,nf,cc in mTEPES.p  *mTEPES.ll  if (p,ni,nf,cc) in mTEPES.pla]
 
     mTEPES.psc       = [(p,sc     )       for p,sc            in mTEPES.p  *mTEPES.sc]
-    mTEPES.psg       = [(p,sc,  g )       for p,sc,  g        in mTEPES.ps *mTEPES.g  if (p,g ) in mTEPES.pg ]
-    mTEPES.psnr      = [(p,sc,  nr)       for p,sc,  nr       in mTEPES.ps *mTEPES.nr if (p,nr) in mTEPES.pnr]
-    mTEPES.pses      = [(p,sc,  es)       for p,sc,  es       in mTEPES.ps *mTEPES.es if (p,es) in mTEPES.pes]
-    mTEPES.pseh      = [(p,sc,  eh)       for p,sc,  eh       in mTEPES.ps *mTEPES.eh if (p,eh) in mTEPES.peh]
-    mTEPES.psn       = [(p,sc,n   )       for p,sc,n          in mTEPES.ps *mTEPES.n                         ]
-    mTEPES.psng      = [(p,sc,n,g )       for p,sc,n,g        in mTEPES.psn*mTEPES.g  if (p,g ) in mTEPES.pg ]
-    mTEPES.psngc     = [(p,sc,n,gc)       for p,sc,n,gc       in mTEPES.psn*mTEPES.gc if (p,gc) in mTEPES.pgc]
-    mTEPES.psngb     = [(p,sc,n,gb)       for p,sc,n,gb       in mTEPES.psn*mTEPES.gb if (p,gb) in mTEPES.pgc]
-    mTEPES.psnre     = [(p,sc,n,re)       for p,sc,n,re       in mTEPES.psn*mTEPES.re if (p,re) in mTEPES.pre]
-    mTEPES.psnnr     = [(p,sc,n,nr)       for p,sc,n,nr       in mTEPES.psn*mTEPES.nr if (p,nr) in mTEPES.pnr]
-    mTEPES.psnch     = [(p,sc,n,ch)       for p,sc,n,ch       in mTEPES.psn*mTEPES.ch if (p,ch) in mTEPES.pch]
-    mTEPES.psnbo     = [(p,sc,n,bo)       for p,sc,n,bo       in mTEPES.psn*mTEPES.bo if (p,bo) in mTEPES.pbo]
-    mTEPES.psnes     = [(p,sc,n,es)       for p,sc,n,es       in mTEPES.psn*mTEPES.es if (p,es) in mTEPES.pes]
-    mTEPES.psneh     = [(p,sc,n,eh)       for p,sc,n,eh       in mTEPES.psn*mTEPES.eh if (p,eh) in mTEPES.peh]
-    mTEPES.psnec     = [(p,sc,n,ec)       for p,sc,n,ec       in mTEPES.psn*mTEPES.ec if (p,ec) in mTEPES.pec]
-    mTEPES.psnnd     = [(p,sc,n,nd)       for p,sc,n,nd       in mTEPES.psn*mTEPES.nd                        ]
-    mTEPES.psnar     = [(p,sc,n,ar)       for p,sc,n,ar       in mTEPES.psn*mTEPES.ar                        ]
+    mTEPES.psg       = [(p,sc,  g )       for p,sc,  g        in mTEPES.ps *mTEPES.g   if (p,g )  in mTEPES.pg  ]
+    mTEPES.psnr      = [(p,sc,  nr)       for p,sc,  nr       in mTEPES.ps *mTEPES.nr  if (p,nr)  in mTEPES.pnr ]
+    mTEPES.pses      = [(p,sc,  es)       for p,sc,  es       in mTEPES.ps *mTEPES.es  if (p,es)  in mTEPES.pes ]
+    mTEPES.pseh      = [(p,sc,  eh)       for p,sc,  eh       in mTEPES.ps *mTEPES.eh  if (p,eh)  in mTEPES.peh ]
+    mTEPES.psn       = [(p,sc,n   )       for p,sc,n          in mTEPES.ps *mTEPES.n                            ]
+    mTEPES.psng      = [(p,sc,n,g )       for p,sc,n,g        in mTEPES.psn*mTEPES.g   if (p,g )  in mTEPES.pg  ]
+    mTEPES.psngc     = [(p,sc,n,gc)       for p,sc,n,gc       in mTEPES.psn*mTEPES.gc  if (p,gc)  in mTEPES.pgc ]
+    mTEPES.psngb     = [(p,sc,n,gb)       for p,sc,n,gb       in mTEPES.psn*mTEPES.gb  if (p,gb)  in mTEPES.pgc ]
+    mTEPES.psnre     = [(p,sc,n,re)       for p,sc,n,re       in mTEPES.psn*mTEPES.re  if (p,re)  in mTEPES.pre ]
+    mTEPES.psnnr     = [(p,sc,n,nr)       for p,sc,n,nr       in mTEPES.psn*mTEPES.nr  if (p,nr)  in mTEPES.pnr ]
+    mTEPES.psnch     = [(p,sc,n,ch)       for p,sc,n,ch       in mTEPES.psn*mTEPES.ch  if (p,ch)  in mTEPES.pch ]
+    mTEPES.psnchp    = [(p,sc,n,chp)      for p,sc,n,chp      in mTEPES.psn*mTEPES.chp if (p,chp) in mTEPES.pchp]
+    mTEPES.psnbo     = [(p,sc,n,bo)       for p,sc,n,bo       in mTEPES.psn*mTEPES.bo  if (p,bo)  in mTEPES.pbo ]
+    mTEPES.psnhp     = [(p,sc,n,hp)       for p,sc,n,hp       in mTEPES.psn*mTEPES.hp  if (p,hp)  in mTEPES.php ]
+    mTEPES.psnes     = [(p,sc,n,es)       for p,sc,n,es       in mTEPES.psn*mTEPES.es  if (p,es)  in mTEPES.pes ]
+    mTEPES.psneh     = [(p,sc,n,eh)       for p,sc,n,eh       in mTEPES.psn*mTEPES.eh  if (p,eh)  in mTEPES.peh ]
+    mTEPES.psnec     = [(p,sc,n,ec)       for p,sc,n,ec       in mTEPES.psn*mTEPES.ec  if (p,ec)  in mTEPES.pec ]
+    mTEPES.psnnd     = [(p,sc,n,nd)       for p,sc,n,nd       in mTEPES.psn*mTEPES.nd                           ]
+    mTEPES.psnar     = [(p,sc,n,ar)       for p,sc,n,ar       in mTEPES.psn*mTEPES.ar                           ]
 
     mTEPES.psnla     = [(p,sc,n,ni,nf,cc) for p,sc,n,ni,nf,cc in mTEPES.psn*mTEPES.la if (p,ni,nf,cc) in mTEPES.pla]
     mTEPES.psnle     = [(p,sc,n,ni,nf,cc) for p,sc,n,ni,nf,cc in mTEPES.psn*mTEPES.le if (p,ni,nf,cc) in mTEPES.pla]
@@ -1531,7 +1537,7 @@ def SettingUpVariables(OptModel, mTEPES):
         OptModel.vReservoirSpillage    = Var(mTEPES.psnrs, within=NonNegativeReals,                 doc='Reservoir spillage                              [hm3]')
 
     if mTEPES.pIndHeat == 1:
-        OptModel.vTotalOutputHeat      = Var(mTEPES.psnch, within=NonNegativeReals,                 doc='total heat output of the boiler unit             [GW]')
+        OptModel.vTotalOutputHeat      = Var(mTEPES.psng , within=NonNegativeReals,                 doc='total heat output of the boiler unit             [GW]')
         [OptModel.vTotalOutputHeat[p,sc,n,ch].setub(mTEPES.pMaxPowerHeat[p,sc,n,ch]) for p,sc,n,ch in mTEPES.psnch]
         [OptModel.vTotalOutputHeat[p,sc,n,ch].setlb(mTEPES.pMinPowerHeat[p,sc,n,ch]) for p,sc,n,ch in mTEPES.psnch]
         # only boilers are forced to produce at their minimum heat power. CHPs are not forced to produce at their minimum heat power, they are committed or not to produce electricity
