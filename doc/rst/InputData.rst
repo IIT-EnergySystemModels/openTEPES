@@ -115,7 +115,7 @@ File                                       Description
 ``oT_Data_VariableMinConsumption.csv``     Variable minimum power consumption by load level
 ``oT_Data_VariableFuelCost.csv``           Variable fuel cost by load level
 ``oT_Data_EnergyInflows.csv``              Energy inflows to an ESS by load level
-``oT_Data_EnergyOutflows.csv``             Energy outflows from an ESS for Power-to-X (H2 production or EV mobility or water irrigation) by load level
+``oT_Data_EnergyOutflows.csv``             Energy outflows from an ESS for Power-to-X (H2 production, EV mobility, heat production, or water irrigation) by load level
 ``oT_Data_VariableMaxStorage.csv``         Maximum storage of the ESS by load level
 ``oT_Data_VariableMinStorage.csv``         Minimum storage of the ESS by load level
 ``oT_Data_VariableMaxEnergy.csv``          Maximum energy of the unit by load level (the energy will be accumulated and enforced for the interval defined by EnergyType)
@@ -519,7 +519,7 @@ Period      Scenario        Load level  Generator  Energy outflows by load level
 
 All the generators must be defined as columns of these files.
 
-These energy outflows can be used to represent the energy extracted from an ESS to produce H2 from electrolyzers, to move EV or as hydro outflows for irrigation.
+These energy outflows can be used to represent the electric energy extracted from an ESS to produce H2 from electrolyzers, to move EVs, to produce heat, or as hydro outflows for irrigation.
 The use of these outflows is incompatible with the charge of the ESS within the same time step (as the discharge of a battery is incompatible with the charge in the same hour).
 
 If you have daily/weekly/monthly/yearly outflows data, you can just input the daily/weekly/monthly/yearly amount at the first hour of every day/week/month/year.
@@ -726,14 +726,15 @@ For example, these data can be used for defining the operating guide (rule) curv
 Hydrogen System Input Data
 ==========================
 
-These input files are specifically introduced for allowing a representation of the hydrogen energy vector to supply hydrogen demand produced with electricity through the hydrogen network.
+These input files are specifically introduced for allowing a representation of the hydrogen energy vector to supply hydrogen demand produced with electricity or by any other means through the hydrogen network.
+If the hydrogen is only produced from electricity and there is not hydrogen transfer among nodes the hydrogen demand can be represented by the energy outflows associated to the unit (i.e., electrolyzer).
 
-=========================================  ================================================================================================================================
+=========================================  ==================================
 File                                       Description
-=========================================  ================================================================================================================================
+=========================================  ==================================
 ``oT_Data_DemandHydrogen.csv``             Hydrogen demand
 ``oT_Data_NetworkHydrogen.csv``            Hydrogen pipeline network data
-=========================================  ================================================================================================================================
+=========================================  ==================================
 
 Hydrogen demand
 ---------------
@@ -780,7 +781,8 @@ If lower and upper bounds of investment decisions are very close (with a differe
 Heat System Input Data
 ======================
 
-These input files are specifically introduced for allowing a representation of the heat energy vector to supply heat demand produced with electricity through the heat network.
+These input files are specifically introduced for allowing a representation of the heat energy vector to supply heat demand produced with electricity or with any fuel through the heat network.
+If the heat is only produced from electricity and there is not heat transfer among nodes the heat demand can be represented by the energy outflows associated to the unit (i.e., heat pump or electric boiler).
 
 ===================================  ==============================
 File                                 Description
