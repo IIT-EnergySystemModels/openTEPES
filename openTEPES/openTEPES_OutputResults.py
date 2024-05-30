@@ -1238,7 +1238,7 @@ def NetworkHeatOperationResults(DirName, CaseName, OptModel, mTEPES):
 
     WritingResultsTime = time.time() - StartTime
     StartTime = time.time()
-    print('Writing   heat      operation results  ... ', round(WritingResultsTime), 's')
+    print('Writing  heat netwk operation results  ... ', round(WritingResultsTime), 's')
 
 
 def OperationSummaryResults(DirName, CaseName, OptModel, mTEPES):
