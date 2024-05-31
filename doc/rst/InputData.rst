@@ -398,7 +398,7 @@ RetirementUp                Upper bound of retirement decision                  
 The main characteristics that define each type of generator are the following:
 
 ================================  =========================================================================================================================================
-                                  Description
+Generator type                    Description
 ================================  =========================================================================================================================================
 Generator                         It has MaximumPower or MaximumCharge or MaximumPowerHeat > 0
 Thermal                           Fuel-based variable cost (fuel cost x linear term + CO2 emission cost) > 0
@@ -406,13 +406,13 @@ RES                               Fuel-based variable cost (fuel cost x linear t
 ESS                               It has MaximumCharge or MaximumStorage > 0 or ProductionFunctionH2 or ProductionFunctionHeat > 0 and ProductionFunctionHydro = 0
 Hydro power plant (energy)        ESS with ProductionFunctionHydro = 0
 Pumped-hydro storage (energy)     ESS with MaximumCharge > 0
-Electrolyzer                      ESS with electric energy outflows and ProductionFunctionH2 > 0 and ProductionFunctionHeat = 0 and ProductionFunctionHydro = 0
+Battery, demand response          ESS with MaximumCharge > 0 (usually, StorageType daily)
 Electric vehicle                  ESS with electric energy outflows
+Electrolyzer                      ESS with electric energy outflows and ProductionFunctionH2 > 0 and ProductionFunctionHeat = 0 and ProductionFunctionHydro = 0
 Heat pump, electric boiler        ESS with ProductionFunctionHeat > 0 and ProductionFunctionH2 = 0 and ProductionFunctionHydro = 0
 CHP or fuel heating unit          It has RatedMaxPowerElec > 0 and RatedMaxPowerHeat > 0 and ProductionFunctionHeat = 0
-Fuel heating unit. Boiler         It has RatedMaxPowerElec = 0 and RatedMaxPowerHeat > 0 and ProductionFunctionHeat = 0
+Fuel heating unit, fuel boiler    It has RatedMaxPowerElec = 0 and RatedMaxPowerHeat > 0 and ProductionFunctionHeat = 0
 Hydrogen heating unit             Fuel heating unit with ProductionFunctionH2ToHeat > 0
-Battery. Demand response          ESS with daily outflows type
 Hydro power plant (water)         It has ProductionFunctionHydro > 0
 ================================  =========================================================================================================================================
 
