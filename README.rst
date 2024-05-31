@@ -48,6 +48,8 @@ Reference
 ############
 **A. Ramos, E. Quispe, S. Lumbreras** `“OpenTEPES: Open-source Transmission and Generation Expansion Planning” <https://www.sciencedirect.com/science/article/pii/S235271102200053X>`_ SoftwareX 18: June 2022 `10.1016/j.softx.2022.101070 <https://doi.org/10.1016/j.softx.2022.101070>`_.
 
+**openTEPES**: `summary presentation <https://pascua.iit.comillas.edu/aramos/openTEPES.pdf>`_ and `installation <https://pascua.iit.comillas.edu/aramos/openTEPES_installation.pdf>`_
+
 Description
 ############
 **openTEPES** determines the investment plans of new facilities (generators, ESS, and lines)
