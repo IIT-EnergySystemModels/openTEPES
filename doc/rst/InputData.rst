@@ -15,7 +15,6 @@ AC          Alternating Current
 aFRR        Automatic Frequency Restoration Reserve
 AWE         Alkaline Water Electrolyzer (consumes electricity to produce hydrogen)
 BESS        Battery Energy Storage System
-FHU         Fuel Heating Unit (Fuel to Heat: consumes any fuel other than hydrogen to produce heat)
 CC          Capacity Credit
 CCGT        Combined Cycle Gas Turbine
 CHP         Combined Heat and Power. Cogeneration (produces electricity and heat simultaneously)
@@ -25,13 +24,14 @@ DR          Demand Response
 DSM         Demand-Side Management
 DSR         Demand-Side Response
 EB          Electric Boiler
-EHU         Electrical Heating Unit (Power to Heat: consumes electricity to produce heat)
+EHU         Electrical Heating Unit (Power to Heat: consumes electricity to produce heat, e.g., heat pump, electric boiler)
 EFOR        Equivalent Forced Outage Rate
 ELZ         Electrolyzer (Power to Hydrogen: consumes electricity to produce hydrogen)
 ENS         Energy Not Served
 ENTSO-E     European Network of Transmission System Operators for Electricity
 ESS         Energy Storage System
 EV          Electric Vehicle
+FHU         Fuel Heating Unit (Fuel to Heat: consumes any fuel other than hydrogen to produce heat, e.g., biomass boiler, fuel boiler)
 GEP         Generation Expansion Planning
 mFRR        Manual Frequency Restoration Reserve
 H2          Hydrogen
