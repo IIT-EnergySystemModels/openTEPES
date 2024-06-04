@@ -31,7 +31,7 @@ ENS         Energy Not Served
 ENTSO-E     European Network of Transmission System Operators for Electricity
 ESS         Energy Storage System
 EV          Electric Vehicle
-FHU         Fuel Heating Unit (Fuel to Heat: consumes any fuel other than hydrogen to produce heat, e.g., biomass boiler, fuel boiler)
+FHU         Fuel Heating Unit (Fuel to Heat: consumes any fuel other than hydrogen to produce heat, e.g., biomass/natural gas/oil boiler)
 GEP         Generation Expansion Planning
 mFRR        Manual Frequency Restoration Reserve
 H2          Hydrogen
