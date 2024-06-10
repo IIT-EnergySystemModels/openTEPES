@@ -1,10 +1,15 @@
 Change Log
 =============
 
+[4.17.3] - 2024-06-10
+----------------------
+- [FIXED] control some divisions by zero due to pDuration
+- [CHANGED] declare pDuration as NonNegativeIntegers
+
 [4.17.2] - 2024-05-30
 ----------------------
 - [FIXED] fix some heat output files
-- [CHANGED] defien chp as all the heat producers
+- [CHANGED] define chp as all the heat producers
 - [FIXED] fix some investment output files
 - [FIXED] fix some emission output files
 - [CHANGED] considering emissions from heat generators

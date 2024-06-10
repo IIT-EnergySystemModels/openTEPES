@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 30, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 10, 2024
 """
 
 import datetime
@@ -1282,7 +1282,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.pDiscountedWeight     = Param(mTEPES.p,     initialize=pDiscountedWeight.to_dict()         , within=NonNegativeReals,    doc='Discount factor'                                     )
     mTEPES.pScenProb             = Param(mTEPES.psc,   initialize=pScenProb.to_dict()                 , within=UnitInterval    ,    doc='Probability',                            mutable=True)
     mTEPES.pStageWeight          = Param(mTEPES.stt,   initialize=pStageWeight.to_dict()              , within=NonNegativeReals,    doc='Stage weight'                                        )
-    mTEPES.pDuration             = Param(mTEPES.psn,   initialize=pDuration.to_dict()                 , within=PositiveIntegers,    doc='Duration',                               mutable=True)
+    mTEPES.pDuration             = Param(mTEPES.psn,   initialize=pDuration.to_dict()                 , within=NonNegativeIntegers, doc='Duration',                               mutable=True)
     mTEPES.pNodeLon              = Param(mTEPES.nd,    initialize=pNodeLon.to_dict()                  ,                             doc='Longitude'                                           )
     mTEPES.pNodeLat              = Param(mTEPES.nd,    initialize=pNodeLat.to_dict()                  ,                             doc='Latitude'                                            )
     mTEPES.pSystemInertia        = Param(mTEPES.psnar, initialize=pSystemInertia.stack().to_dict()    , within=NonNegativeReals,    doc='System inertia'                                      )
