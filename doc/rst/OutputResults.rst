@@ -565,6 +565,8 @@ Identifier                            Header      Description
 Period        Scenario    Load level  Reservoir   Water volume value [€/dam\ :sup:`3`]
 ============  ==========  ==========  ==========  ================================================
 
+The marginal costs (dual variables) are obtained after fixing the binary investment and operation decisions to their optimal values.
+
 Electricity balance
 -------------------
 
@@ -1025,6 +1027,8 @@ Period        Scenario    Load level  ESS Generator   Operation revenues from th
 
 Marginal information
 --------------------
+
+The marginal costs (dual variables) are obtained after fixing the binary investment and operation decisions to their optimal values.
 
 File ``oT_Result_MarginalReserveMargin.csv``
 
