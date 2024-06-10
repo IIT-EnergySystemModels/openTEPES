@@ -3,6 +3,7 @@ Change Log
 
 [4.17.3] - 2024-06-10
 ----------------------
+- [CHANGED] add case 9n expansion planning for 7 years
 - [FIXED] control some divisions by zero due to pDuration
 - [CHANGED] declare pDuration as NonNegativeIntegers
 

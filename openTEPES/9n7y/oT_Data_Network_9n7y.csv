@@ -1,0 +1,14 @@
+,,,LineType,Switching,InitialPeriod,FinalPeriod,Voltage,Length,LossFactor,Reactance,TTC,TTCBck,SecurityFactor,FixedInvestmentCost,FixedChargeRate,BinaryInvestment,SwOnTime,SwOffTime,Resistance,Susceptance,Tap,AngMin,AngMax,InvestmentLo,InvestmentUp,CommitmentLo,CommitmentUp
+Node_1,Node_6,ac1,AC,,2020,2050,400,,0.02,0.02,1000,,0.67,,,,,,,,,,,1,1,0.000001,0.000001
+Node_2,Node_3,ac1,AC,,2020,2050,400,,0.02,0.03,1000,,0.67,,,,,,,,,,,1,1,1,1
+Node_2,Node_6,ac1,AC,,2020,2050,400,,0.02,0.04,1000,,0.67,,,,,,,,,,,1,1,1,1
+Node_3,Node_4,ac1,AC,,2020,2050,400,,0.02,0.05,1000,,0.67,,,,,,,,,,,1,1,1,1
+Node_3,Node_6,ac1,AC,,2020,2050,400,,0.02,0.06,1000,,0.67,,,,,,,,,,,1,1,1,1
+Node_4,Node_5,ac1,AC,,2020,2050,400,,0.02,0.07,1000,,0.67,,,,,,,,,,,1,1,1,1
+Node_4,Node_6,ac1,AC,,2020,2050,400,,0.02,0.08,1000,,0.67,,,,,,,,,,,1,1,1,1
+Node_4,Node_9,ac1,AC,,2020,2050,400,,0.02,0.07,1000,,0.67,,,,,,,,,,,1,1,1,1
+Node_6,Node_7,ac1,AC,,2020,2050,400,,0.02,0.06,1000,,0.67,,,,,,,,,,,1,1,1,1
+Node_6,Node_8,ac1,AC,,2020,2050,400,,0.02,0.05,1000,,0.67,,,,,,,,,,,1,1,1,1
+Node_7,Node_8,ac1,AC,,2020,2050,400,,0.02,0.04,1000,,0.67,,,,,,,,,,,1,1,1,1
+Node_8,Node_9,ac1,AC,,2020,2050,400,,0.02,0.03,1000,,0.67,,,,,,,,,,,1,1,1,1
+Node_1,Node_4,dc1,DC,,2020,2050,400,,0.02,0.03,1000,,0.67,100,0.075,Yes,4,4,,,,,,0.000001,0.000001,0,1
