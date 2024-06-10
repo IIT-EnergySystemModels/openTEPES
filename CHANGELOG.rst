@@ -3,7 +3,8 @@ Change Log
 
 [4.17.3] - 2024-06-10
 ----------------------
-- [CHANGED] add case 9n expansion planning for 7 years
+- [CHANGED] add case RTS-GMLS expansion planning for 6 years with representative weeks
+- [CHANGED] add case 9n expansion planning for 7 years with representative weeks
 - [FIXED] control some divisions by zero due to pDuration
 - [CHANGED] declare pDuration as NonNegativeIntegers
 
