@@ -685,7 +685,7 @@ import time
 # import pkg_resources
 from .openTEPES import openTEPES_run
 
-print('\033[1;32mOpen Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.17.1 - May 13, 2024\033[0m')
+print('\033[1;32mOpen Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.17.3 - June 11, 2024\033[0m')
 print('\033[34m#### Academic research license - for non-commercial use only ####\033[0m \n')
 
 parser = argparse.ArgumentParser(description='Introducing main parameters...')
@@ -704,7 +704,7 @@ LOG    = 'No'
 
 def main():
     # Defining the initial time
-    InitialTime = time.time()
+    StartTime = time.time()
     # Parsing the arguments
     args = parser.parse_args()
     if args.dir is None:
@@ -735,11 +735,11 @@ def main():
     print(args)
     openTEPES_run(args.dir, args.case, args.solver, args.result, args.log)
     # Computing the elapsed time
-    ElapsedTime = round(time.time() - InitialTime)
-    print('Total time                             ... {} s'.format(ElapsedTime))
-    path_to_write_time = os.path.join(args.dir,args.case,"oT_ComputationTime"+args.case+".txt")
+    ElapsedTime = round(time.time() - StartTime)
+    print('Total time                             ...  {} s'.format(ElapsedTime))
+    path_to_write_time = os.path.join(args.dir,args.case,'openTEPES_time_'+args.case+'.log')
     with open(path_to_write_time, 'w') as f:
-         f.write(str(ElapsedTime))
+        f.write('Elapsed time '+str(ElapsedTime)+' s')
     # Final message
     print('End of the run                ************')
     print('\033[34m#### Academic research license - for non-commercial use only ####\033[0m')
