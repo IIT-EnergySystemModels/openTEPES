@@ -527,7 +527,7 @@ Minimum up time and down time of thermal unit [h] «``eMinUpTime``» «``eMinDow
 
 Minimum stable time of thermal unit [h] «``eMinStableTime``»
 
-:math:`su^p_{\omega n't} \leq uc^p_{\omega nt} \quad \forall p \omega nt`
+:math:`rsu^p_{\omega nt} \leq 1 - rsd^p_{\omega n't} \quad \forall p \omega nt`
 
 **Reservoir operation**
 
