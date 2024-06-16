@@ -146,6 +146,7 @@ They are written in **uppercase** letters.
 :math:`CV_e`                                                       Variable cost of an ESS or pumped-storage hydropower plant when charging                                                  €/MWh
 :math:`RU_g, RD_g`                                                 Ramp up/down of a non-renewable unit or maximum discharge/charge rate for ESS discharge/charge                            MW/h
 :math:`TU_t, TD_t`                                                 Minimum uptime and downtime of a thermal unit                                                                             h
+:math:`TS_t`                                                       Minimum stable time of a thermal unit                                                                                     h
 :math:`ST_e`                                                       Maximum shift time of an ESS unit (in particular, for demand side management)                                             h
 :math:`CSU_g, CSD_g`                                               Startup and shutdown cost of a committed unit                                                                             M€
 :math:`\tau_e`                                                     Storage cycle of the ESS (e.g., 1, 24, 168, 8736 h -for daily, weekly, monthly, yearly-)                                  h
@@ -527,7 +528,7 @@ Minimum up time and down time of thermal unit [h] «``eMinUpTime``» «``eMinDow
 
 Minimum stable time of thermal unit [h] «``eMinStableTime``»
 
-:math:`rsu^p_{\omega nt} \leq 1 - rsd^p_{\omega n't} \quad \forall p \omega nt`
+:math:`rsu^p_{\omega nt} \leq 1 - rsd^p_{\omega n't} \quad \forall p \omega nn't, n' \in [n-1,n-TS_t]`
 
 **Reservoir operation**
 
