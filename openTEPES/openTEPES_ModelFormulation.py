@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 10, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 16, 2024
 """
 
 import time
@@ -250,25 +250,25 @@ def GenerationOperationModelFormulationInvestment(OptModel, mTEPES, pIndLogConso
     if pIndLogConsole == 1:
         print('eInstallConESS        ... ', len(getattr(OptModel, 'eInstallConESS_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
 
-    def eUninstalGenComm(OptModel,n,gd):
+    def eUninstallGenComm(OptModel,n,gd):
         if gd in mTEPES.nr and gd not in mTEPES.eh and mTEPES.pMustRun[gd] == 0 and (mTEPES.pMinPowerElec[p,sc,n,gd] > 0.0 or mTEPES.pConstantVarCost[p,sc,n,gd] > 0.0) and (p,gd) in mTEPES.pgd:
             return OptModel.vCommitment[p,sc,n,gd]                                <= 1 - OptModel.vGenerationRetire[p,gd]
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eUninstalGenComm_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.gd, rule=eUninstalGenComm, doc='commitment if uninstalled unit [p.u.]'))
+    setattr(OptModel, 'eUninstallGenComm_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.gd, rule=eUninstallGenComm, doc='commitment if uninstalled unit [p.u.]'))
 
     if pIndLogConsole == 1:
-        print('eUninstalGenComm      ... ', len(getattr(OptModel, 'eUninstalGenComm_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eUninstallGenComm     ... ', len(getattr(OptModel, 'eUninstallGenComm_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
 
-    def eUninstalGenCap(OptModel,n,gd):
+    def eUninstallGenCap(OptModel,n,gd):
         if mTEPES.pMaxPowerElec[p,sc,n,gd] and (p,gd) in mTEPES.pgd:
             return OptModel.vTotalOutput[p,sc,n,gd] / mTEPES.pMaxPowerElec[p,sc,n,gd] <= 1 - OptModel.vGenerationRetire[p,gd]
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eUninstalGenCap_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.gd, rule=eUninstalGenCap, doc='output if uninstalled gen unit [p.u.]'))
+    setattr(OptModel, 'eUninstallGenCap_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.gd, rule=eUninstallGenCap, doc='output if uninstalled gen unit [p.u.]'))
 
     if pIndLogConsole == 1:
-        print('eUninstalGenCap       ... ', len(getattr(OptModel, 'eUninstalGenCap_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eUninstallGenCap      ... ', len(getattr(OptModel, 'eUninstallGenCap_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
 
     def eAdequacyReserveMargin(OptModel,ar):
         if mTEPES.pReserveMargin[p,ar] and st == mTEPES.Last_st and sum(1 for gc in mTEPES.gc if (ar,gc) in mTEPES.a2g) and sum(mTEPES.pRatedMaxPowerElec[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]) for g in mTEPES.g if (ar,g) in mTEPES.a2g and g not in (mTEPES.gc or mTEPES.gd)) <= mTEPES.pDemandElecPeak[p,ar] * mTEPES.pReserveMargin[p,ar]:

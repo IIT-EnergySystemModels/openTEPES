@@ -289,7 +289,7 @@ The names between parenthesis correspond to the names of the constraints in the 
 
 **Objective function**: minimization of total (investment and operation) cost for the multi-period scope of the model
 
-Electricity, heat, and hydrogen generation, (energy and reservoir) storage and (electricity, hydrogen, and heat) network investment cost plus retirement cost [M€] «``eTotalFCost``»
+Electricity, heat, and hydrogen generation, (energy and reservoir) storage and (electricity, hydrogen, and heat) network investment cost plus retirement cost [M€] «``eTotalFCost``» «``eTotalICost``»
 
 :math:`\sum_{pg} DF^p CFG_g icg^p_g + \sum_{pg} DF^p CFR_g rcg^p_g + \sum_{pe'} DF^p CFE_{e'} icr^p_{e'} +`
 :math:`\sum_{pijc} DF^p CFT_{ijc} ict^p_{ijc} + \sum_{pijc} DF^p CFH_{ijc} ich^p_{ijc} + \sum_{pijc} DF^p CFP_{ijc} icp^p_{ijc} +`
@@ -298,7 +298,7 @@ Electricity, heat, and hydrogen generation operation cost [M€] «``eTotalGCost
 
 :math:`\sum_{p \omega ng} {[DF^p P^p_{\omega} DUR^p_{\omega n} (CV^p_{\omega ng} gp^p_{\omega ng} + CF^p_{\omega ng} uc^p_{\omega ng}) + DF^p CSU_g su^p_{\omega ng} + DF^p CSD_g sd^p_{\omega ng}]} +`
 
-Generation emission cost [M€] «``eTotalECost``»
+Generation emission cost [M€] «``eTotalECost``» «``eTotalECostArea``»
 
 :math:`\sum_{p \omega ng} {DF^p P^p_{\omega} DUR^p_{\omega n} CE^p_{\omega ng} gp^p_{\omega ng}} +`
 
@@ -316,7 +316,7 @@ All the periodical (annual) costs of a period :math:`p` are updated considering 
 
 **Generation and network investment and retirement**
 
-Investment and retirement decisions in consecutive years «``eConsecutiveGenInvest``» «``eConsecutiveGenRetire``» «``eConsecutiveRsrInvest``» «``eConsecutiveNetInvest``» «``eConsecutiveNetH2Invest``»
+Investment and retirement decisions in consecutive years «``eConsecutiveGenInvest``» «``eConsecutiveGenRetire``» «``eConsecutiveRsrInvest``» «``eConsecutiveNetInvest``» «``eConsecutiveNetH2Invest``» «``eConsecutiveNetHeatInvest``»
 
 :math:`icg^{p-1}_g \leq icg^p_g \quad \forall pg, g \in CG`
 
@@ -336,13 +336,17 @@ Commitment decision bounded by the investment decision for candidate committed u
 
 :math:`uc^p_{\omega ng} \leq icg^p_g \quad \forall p \omega ng, g \in CG`
 
-Commitment decision bounded by the investment decision for candidate ESS [p.u.] «``eInstallESSComm``»
+Commitment decision bounded by the investment or retirement decision for candidate ESS [p.u.] «``eInstallESSComm``» «``eUninstallGenComm``»
 
 :math:`uc^p_{\omega ne} \leq icg^p_e \quad \forall p \omega ne, e \in CE`
 
-Output and consumption bounded by investment decision for candidate ESS [p.u.] «``eInstallGenCap``» «``eInstallConESS``»
+:math:`uc^p_{\omega ne} \leq 1-rcg^p_e \quad \forall p \omega ne, e \in CE`
+
+Output and consumption bounded by investment or retirement decision for candidate ESS [p.u.] «``eInstallGenCap``» «``eUninstallGenCap``» «``eInstallConESS``»
 
 :math:`\frac{gp^p_{\omega ng}}{\overline{GP}^p_{\omega ng}} \leq icg^p_g \quad \forall p \omega ng, g \in CG`
+
+:math:`\frac{gp^p_{\omega ng}}{\overline{GP}^p_{\omega ng}} \leq 1 - rcg^p_g \quad \forall p \omega ng, g \in CG`
 
 :math:`\frac{gc^p_{\omega ne}}{\overline{GP}^p_{\omega ne}} \leq icg^p_e \quad \forall p \omega ne, e \in CE`
 
@@ -358,7 +362,7 @@ Maximum CO2 emission [MtC02] «``eMaxSystemEmission``»
 
 :math:`\sum_{ng} {DUR^p_{\omega n} CE^p_{\omega ng} gp^p_{\omega ng}} \leq EL_{pa} \quad \forall p \omega a`
 
-Minimum RES energy [GW] «``eMinSystemRESEnergy``»
+Minimum RES energy [GW] «``eMinSystemRESEnergy``» «``eTotalRESEnergyArea``»
 
 :math:`\frac{\sum_{ng} {DUR^p_{\omega n} gp^p_{\omega ng}}}{\sum_{n} {DUR^p_{\omega n}}} \geq \frac{RL_{pa}}{\sum_{n} {DUR^p_{\omega n}}}  \quad \forall p \omega a`
 
