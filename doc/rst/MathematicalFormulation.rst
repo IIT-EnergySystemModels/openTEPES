@@ -518,7 +518,7 @@ Detection of ramp up and ramp down state for the second block of a non-renewable
 
 :math:`\frac{  p^p_{\omega,n-\nu,g} - p^p_{\omega ng}}{DUR^p_{\omega n} (\overline{GP}^p_{\omega ng} - \underline{GP}^p_{\omega ng})} \leq rsd^p_{\omega ng} - \epsilon \cdot rsu^p_{\omega ng} \quad \forall p \omega ng`
 
-Minimum up time and down time of thermal unit [h] «``eMinUpTime``» «``eMinDownTime``»
+Minimum up time and down time of thermal unit [p.u.] «``eMinUpTime``» «``eMinDownTime``»
 
 * D. Rajan and S. Takriti, “Minimum up/down polytopes of the unit commitment problem with start-up costs,” IBM, New York, Technical Report RC23628, 2005. https://pdfs.semanticscholar.org/b886/42e36b414d5929fed48593d0ac46ae3e2070.pdf
 
@@ -526,7 +526,7 @@ Minimum up time and down time of thermal unit [h] «``eMinUpTime``» «``eMinDow
 
 :math:`\sum_{n'=n+\nu-TD_t}^n sd^p_{\omega n't} \leq 1 - uc^p_{\omega nt} \quad \forall p \omega nt`
 
-Minimum stable time of thermal unit [h] «``eMinStableTime``»
+Minimum stable time of thermal unit [p.u.] «``eMinStableTime``»
 
 :math:`rsu^p_{\omega nt} \leq 1 - rsd^p_{\omega n't} \quad \forall p \omega nn't, n' \in [n-1,n-TS_t]`
 
