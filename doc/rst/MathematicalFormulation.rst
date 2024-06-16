@@ -229,24 +229,25 @@ They are written in **lowercase** letters.
 :math:`htns^p_{\omega ni}`  Heat not served      GW
 ==========================  ===================  ===
 
-============================================================  ==============================================================================  ================
+===============================================================  ================================================================================================  ======
 **Generation system**
---------------------------------------------------------------------------------------------------------------------------------------------------------------
-:math:`icg^p_g`                                               Candidate generator or ESS installed or not                                     {0,1}
-:math:`rcg^p_g`                                               Candidate generator or ESS retired   or not                                     {0,1}
-:math:`gp^p_{\omega ng}, gc^p_{\omega ng}`                    Generator output (discharge if an ESS) and consumption (charge if an ESS)       GW
-:math:`go^p_{\omega ne}`                                      Generator outflows of an ESS                                                    GW
-:math:`p^p_{\omega ng}`                                       Generator output of the second block (i.e., above the minimum load)             GW
-:math:`c^p_{\omega ne}`                                       Generator charge                                                                GW
-:math:`gh^p_{\omega ng}`                                      Heat output of a fuel heater                                                    GW
-:math:`ur^p_{\omega ng}, dr^p_{\omega ng}`                    Upward and downward operating reserves of a non-renewable generating unit       GW
-:math:`ur'^p_{\omega ne}, dr'^p_{\omega ne}`                  Upward and downward operating reserves of an ESS as a consumption unit          GW
-:math:`ei^p_{\omega ne}`                                      Variable energy inflows of a candidate ESS (e.g., hydropower plant)             GW
-:math:`i^p_{\omega ne}`                                       ESS stored energy (inventory, reservoir energy, state of charge)                GWh
-:math:`s^p_{\omega ne}`                                       ESS spilled energy                                                              GWh
-:math:`uc^p_{\omega ng}, su^p_{\omega ng}, sd^p_{\omega ng}`  Commitment, startup and shutdown of generation unit per load level              {0,1}
-:math:`uc'_g`                                                 Maximum commitment of a generation unit for all the load levels                 {0,1}
-============================================================  ==============================================================================  ================
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+:math:`icg^p_g`                                                  Candidate generator or ESS installed or not                                                       {0,1}
+:math:`rcg^p_g`                                                  Candidate generator or ESS retired   or not                                                       {0,1}
+:math:`gp^p_{\omega ng}, gc^p_{\omega ng}`                       Generator output (discharge if an ESS) and consumption (charge if an ESS)                         GW
+:math:`go^p_{\omega ne}`                                         Generator outflows of an ESS                                                                      GW
+:math:`p^p_{\omega ng}`                                          Generator output of the second block (i.e., above the minimum load)                               GW
+:math:`c^p_{\omega ne}`                                          Generator charge                                                                                  GW
+:math:`gh^p_{\omega ng}`                                         Heat output of a fuel heater                                                                      GW
+:math:`ur^p_{\omega ng}, dr^p_{\omega ng}`                       Upward and downward operating reserves of a non-renewable generating unit                         GW
+:math:`ur'^p_{\omega ne}, dr'^p_{\omega ne}`                     Upward and downward operating reserves of an ESS as a consumption unit                            GW
+:math:`ei^p_{\omega ne}`                                         Variable energy inflows of a candidate ESS (e.g., hydropower plant)                               GW
+:math:`i^p_{\omega ne}`                                          ESS stored energy (inventory, reservoir energy, state of charge)                                  GWh
+:math:`s^p_{\omega ne}`                                          ESS spilled energy                                                                                GWh
+:math:`uc^p_{\omega ng}, su^p_{\omega ng}, sd^p_{\omega ng}`     Commitment, startup, and shutdown of generation unit per load level                               {0,1}
+:math:`rss^p_{\omega ng}, rsu^p_{\omega ng}, rsd^p_{\omega ng}`  Stable, ramp up, and ramp down states of generation unit with minimum stable time per load level  {0,1}
+:math:`uc'_g`                                                    Maximum commitment of a generation unit for all the load levels                                   {0,1}
+===============================================================  ================================================================================================  ======
 
 ======================================  ==========================================================================  ==============
 **Hydropower system**
@@ -478,6 +479,10 @@ Logical relation between commitment, startup and shutdown status of a committed 
 
 :math:`uc^p_{\omega ng} - uc^p_{\omega,n-\nu,g} = su^p_{\omega ng} - sd^p_{\omega ng} \quad \forall p \omega ng`
 
+Logical relation between stable, ramp up, and ramp down states (units with stable time) [p.u.] «``eStableStates``»
+
+:math:`rss^p_{\omega ng} + rsu^p_{\omega ng} + rsd^p_{\omega ng} = 1 \quad \forall p \omega ng`
+
 Maximum commitment of a committable unit (all except the VRES units) [p.u.] «``eMaxCommitment``»
 
 :math:`uc^p_{\omega ng} \leq uc'_g \quad \forall p \omega ng`
@@ -506,6 +511,12 @@ Maximum ramp down and ramp up for the charge of an ESS [p.u.] «``eRampUpCharge`
 
 :math:`\frac{- c^p_{\omega,n-\nu,e} + dr^p_{\omega,n-\nu,e} + c^p_{\omega ne} - ur^p_{\omega ne}}{DUR^p_{\omega n} RU_e} \geq - 1 \quad \forall p \omega ne`
 
+Detection of ramp up and ramp down state for the second block of a non-renewable (thermal) unit with minimum stable time [p.u.] «``eRampUpState``» «``eRampDwState``»
+
+:math:`\frac{- p^p_{\omega,n-\nu,g} + p^p_{\omega ng}}{DUR^p_{\omega n} \overline{GP}^p_{\omega ng} - \underline{GP}^p_{\omega ng}} \leq rsu^p_{\omega ng} - \epsilon rsd^p_{\omega ng} \quad \forall p \omega ng`
+
+:math:`\frac{  p^p_{\omega,n-\nu,g} - p^p_{\omega ng}}{DUR^p_{\omega n} \overline{GP}^p_{\omega ng} - \underline{GP}^p_{\omega ng}} \leq rsd^p_{\omega ng} - \epsilon rsu^p_{\omega ng} \quad \forall p \omega ng`
+
 Minimum up time and down time of thermal unit [h] «``eMinUpTime``» «``eMinDownTime``»
 
 * D. Rajan and S. Takriti, “Minimum up/down polytopes of the unit commitment problem with start-up costs,” IBM, New York, Technical Report RC23628, 2005. https://pdfs.semanticscholar.org/b886/42e36b414d5929fed48593d0ac46ae3e2070.pdf
@@ -513,6 +524,10 @@ Minimum up time and down time of thermal unit [h] «``eMinUpTime``» «``eMinDow
 :math:`\sum_{n'=n+\nu-TU_t}^n su^p_{\omega n't} \leq     uc^p_{\omega nt} \quad \forall p \omega nt`
 
 :math:`\sum_{n'=n+\nu-TD_t}^n sd^p_{\omega n't} \leq 1 - uc^p_{\omega nt} \quad \forall p \omega nt`
+
+Minimum stable time of thermal unit [h] «``eMinStableTime``»
+
+:math:`\sum_{n'=n+\nu-TU_t}^n su^p_{\omega n't} \leq     uc^p_{\omega nt} \quad \forall p \omega nt`
 
 **Reservoir operation**
 
