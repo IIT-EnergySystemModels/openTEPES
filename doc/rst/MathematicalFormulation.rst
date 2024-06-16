@@ -513,9 +513,9 @@ Maximum ramp down and ramp up for the charge of an ESS [p.u.] «``eRampUpCharge`
 
 Detection of ramp up and ramp down state for the second block of a non-renewable (thermal) unit with minimum stable time [p.u.] «``eRampUpState``» «``eRampDwState``»
 
-:math:`\frac{- p^p_{\omega,n-\nu,g} + p^p_{\omega ng}}{DUR^p_{\omega n} \overline{GP}^p_{\omega ng} - \underline{GP}^p_{\omega ng}} \leq rsu^p_{\omega ng} - \epsilon rsd^p_{\omega ng} \quad \forall p \omega ng`
+:math:`\frac{- p^p_{\omega,n-\nu,g} + p^p_{\omega ng}}{DUR^p_{\omega n} (\overline{GP}^p_{\omega ng} - \underline{GP}^p_{\omega ng})} \leq rsu^p_{\omega ng} - \epsilon \cdot rsd^p_{\omega ng} \quad \forall p \omega ng`
 
-:math:`\frac{  p^p_{\omega,n-\nu,g} - p^p_{\omega ng}}{DUR^p_{\omega n} \overline{GP}^p_{\omega ng} - \underline{GP}^p_{\omega ng}} \leq rsd^p_{\omega ng} - \epsilon rsu^p_{\omega ng} \quad \forall p \omega ng`
+:math:`\frac{  p^p_{\omega,n-\nu,g} - p^p_{\omega ng}}{DUR^p_{\omega n} (\overline{GP}^p_{\omega ng} - \underline{GP}^p_{\omega ng})} \leq rsd^p_{\omega ng} - \epsilon \cdot rsu^p_{\omega ng} \quad \forall p \omega ng`
 
 Minimum up time and down time of thermal unit [h] «``eMinUpTime``» «``eMinDownTime``»
 
@@ -527,7 +527,7 @@ Minimum up time and down time of thermal unit [h] «``eMinUpTime``» «``eMinDow
 
 Minimum stable time of thermal unit [h] «``eMinStableTime``»
 
-:math:`\sum_{n'=n+\nu-TU_t}^n su^p_{\omega n't} \leq     uc^p_{\omega nt} \quad \forall p \omega nt`
+:math:`su^p_{\omega n't} \leq uc^p_{\omega nt} \quad \forall p \omega nt`
 
 **Reservoir operation**
 
