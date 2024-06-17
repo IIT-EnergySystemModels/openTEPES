@@ -373,7 +373,7 @@ RampUp                      Ramp up   rate for generating units or maximum disch
 RampDown                    Ramp down rate for generating units or maximum    charge rate for ESS    charge (consumption)                                                                   MW/h
 UpTime                      Minimum uptime                                                                                                                                                  h
 DownTime                    Minimum downtime                                                                                                                                                h
-StableTime                  Minimum stable time (intended for nuclear units to be at its minimum load during this time)                                                                     h
+StableTime                  Minimum stable time (intended for nuclear units to be at its minimum load, if lower than the rated capacity, during this time)                                  h
 ShiftTime                   Maximum shift time                                                                                                                                              h
 FuelCost                    Fuel cost                                                                                                                                                       €/Gcal
 LinearTerm                  Linear   term (slope)     of the heat rate straight line                                                                                                        Gcal/MWh

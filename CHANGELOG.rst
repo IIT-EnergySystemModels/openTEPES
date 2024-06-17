@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.17.3] - 2024-06-10
+[4.17.3] - 2024-06-17
 ----------------------
+- [CHANGED] introduced formulation of the minimum stable time constraints
 - [CHANGED] add case RTS-GMLS expansion planning for 6 years with representative weeks
 - [CHANGED] add case 9n expansion planning for 7 years with representative weeks
 - [FIXED] control some divisions by zero due to pDuration
