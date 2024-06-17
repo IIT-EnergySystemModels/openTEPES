@@ -887,7 +887,7 @@ def GenerationOperationModelFormulationCommitment(OptModel, mTEPES, pIndLogConso
 
     def eStableStates(OptModel,n,nr):
         if mTEPES.pStableTime[nr] and mTEPES.pMaxPower2ndBlock[p,sc,n,nr] and (p,nr) in mTEPES.pnr:
-            return OptModel.vStableState[p,sc,n,nr] + OptModel.vRampUpState[p,sc,n,nr] - OptModel.vRampDwState[p,sc,n,nr] == 1
+            return OptModel.vStableState[p,sc,n,nr] + OptModel.vRampUpState[p,sc,n,nr] + OptModel.vRampDwState[p,sc,n,nr] == 1
         else:
             return Constraint.Skip
     setattr(OptModel, 'eStableStates_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.nr, rule=eStableStates, doc='relation among stable, ramp up and ramp down states [p.u.]'))
