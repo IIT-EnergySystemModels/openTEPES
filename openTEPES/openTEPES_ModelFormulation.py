@@ -1062,13 +1062,23 @@ def GenerationOperationModelFormulationRampMinTime(OptModel, mTEPES, pIndLogCons
     if pIndLogConsole == 1:
         print('eMinDownTime          ... ', len(getattr(OptModel, 'eMinDownTime_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
 
-    def eMinStableTime(OptModel,n,nr):
+    # MinStableTimeLoadLevels = [(n,n2) for n in list(mTEPES.n)[mTEPES.n.ord(mTEPES.n.prev(n,max(mTEPES.pStableTime[nr] for nr in mTEPES.nr))):mTEPES.n.ord(mTEPES.n.prev(n))] for n2 in list(mTEPES.n2)[mTEPES.n.ord(mTEPES.n.prev(n,max(mTEPES.pStableTime[nr] for nr in mTEPES.nr))):mTEPES.n.ord(mTEPES.n.prev(n))]]
+
+    if sum(mTEPES.pStableTime[nr] for nr in mTEPES.nr):
+        MinStableTimeLoadLevels = [(n,n2,nr) for n in mTEPES.n for n2 in mTEPES.n2 for nr in mTEPES.nr
+            if (mTEPES.pStableTime[nr] and
+                mTEPES.pMaxPower2ndBlock[p,sc,n,nr] and
+                mTEPES.n.ord(n) >= mTEPES.pStableTime[nr] + 2 and
+                mTEPES.n2.ord(n2) >= mTEPES.n.ord(n) - mTEPES.pStableTime[nr] and
+                mTEPES.n2.ord(n2) <= mTEPES.n.ord(mTEPES.n.prev(n)))
+        ]
+
+    def eMinStableTime(OptModel,n,n2,nr):
         if mTEPES.pStableTime[nr] and mTEPES.pMaxPower2ndBlock[p,sc,n,nr] and mTEPES.n.ord(n) >= mTEPES.pStableTime[nr] + 2:
-            for n2 in list(mTEPES.n2)[mTEPES.n.ord(mTEPES.n.prev(n,mTEPES.pStableTime[nr])):mTEPES.n.ord(mTEPES.n.prev(n))]:
-                return OptModel.vRampUpState[p,sc,n,nr] <= 1 - OptModel.vRampDwState[p,sc,n2,nr]
+            return OptModel.vRampUpState[p,sc,n,nr] <= 1 - OptModel.vRampDwState[p,sc,n2,nr]
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eMinStableTime_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.nr, rule=eMinStableTime, doc='minimum stable time [p.u.]'))
+    setattr(OptModel, 'eMinStableTime_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(MinStableTimeLoadLevels, rule=eMinStableTime, doc='minimum stable time [p.u.]'))
 
     if pIndLogConsole == 1:
         print('eMinStableTime        ... ', len(getattr(OptModel, 'eMinStableTime_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
