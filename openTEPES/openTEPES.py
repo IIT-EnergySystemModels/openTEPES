@@ -229,9 +229,6 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     for p,sc in mTEPES.ps:
         mTEPES.pScenProb[p,sc] = 1.0
 
-    # output parameters, variables, and duals to CSV files
-    OutputResultsParVarCon(DirName, CaseName, mTEPES, mTEPES)
-
     # pickle the case study data
     # with open(dump_folder+'/oT_Case_'+CaseName+'.pkl','wb') as f:
     #     pickle.dump(mTEPES, f, pickle.HIGHEST_PROTOCOL)
@@ -247,6 +244,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
 
     # indicators to control the amount of output results
     if pIndOutputResults == 1:
+        pIndDumpRawResults              = 0
         pIndInvestmentResults           = 1
         pIndGenerationOperationResults  = 1
         pIndESSOperationResults         = 1
@@ -262,6 +260,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
         pIndMarginalResults             = 1
         pIndEconomicResults             = 1
     else:
+        pIndDumpRawResults              = 0
         pIndInvestmentResults           = 0
         pIndGenerationOperationResults  = 0
         pIndESSOperationResults         = 0
@@ -276,6 +275,10 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
         pIndCostSummaryResults          = 0
         pIndMarginalResults             = 0
         pIndEconomicResults             = 0
+
+    # output parameters, variables, and duals to CSV files
+    if pIndDumpRawResults:
+        OutputResultsParVarCon(DirName, CaseName, mTEPES, mTEPES)
 
     if pIndInvestmentResults           == 1:
         InvestmentResults                 (DirName, CaseName, mTEPES, mTEPES, pIndTechnologyOutput,                 pIndPlotOutput)
