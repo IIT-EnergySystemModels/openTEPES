@@ -665,7 +665,7 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
 
     def eEnergyOutflows(OptModel,n,es):
         if (p,sc,es) in mTEPES.eo:
-            return sum((OptModel.vEnergyOutflows[p,sc,n2,es] - mTEPES.pEnergyOutflows[p,sc,n2,es]())*mTEPES.pDuration[p,sc,n2]() for n2 in list(mTEPES.n2)[mTEPES.n.ord(n) - mTEPES.pOutflowsTimeStep[es]:mTEPES.n.ord(n)]) == 0.0
+            return sum((OptModel.vEnergyOutflows[p,sc,n2,es] - mTEPES.pEnergyOutflows[p,sc,n2,es]())*mTEPES.pDuration[p,sc,n2]() for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pOutflowsTimeStep[es]:mTEPES.n.ord(n)]) == 0.0
         else:
             return Constraint.Skip
     setattr(OptModel, 'eEnergyOutflows_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.neso, rule=eEnergyOutflows, doc='energy outflows of an ESS unit [GW]'))
@@ -675,7 +675,7 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
 
     def eMinimumEnergy(OptModel,n,g):
         if (p,sc,g) in mTEPES.gm and (p,g) in mTEPES.pg:
-            return sum((OptModel.vTotalOutput[p,sc,n2,g] - mTEPES.pMinEnergy[p,sc,n2,g])*mTEPES.pDuration[p,sc,n2]() for n2 in list(mTEPES.n2)[mTEPES.n.ord(n) - mTEPES.pEnergyTimeStep[g]:mTEPES.n.ord(n)]) >= 0.0
+            return sum((OptModel.vTotalOutput[p,sc,n2,g] - mTEPES.pMinEnergy[p,sc,n2,g])*mTEPES.pDuration[p,sc,n2]() for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pEnergyTimeStep[g]:mTEPES.n.ord(n)]) >= 0.0
         else:
             return Constraint.Skip
     setattr(OptModel, 'eMinimumEnergy_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.ngen, rule=eMinimumEnergy, doc='minimum energy of a unit [GWh]'))
@@ -685,7 +685,7 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
 
     def eMaximumEnergy(OptModel,n,g):
         if (p,sc,g) in mTEPES.gM and (p,g) in mTEPES.pg:
-            return sum((OptModel.vTotalOutput[p,sc,n2,g] - mTEPES.pMaxEnergy[p,sc,n2,g])*mTEPES.pDuration[p,sc,n2]() for n2 in list(mTEPES.n2)[mTEPES.n.ord(n) - mTEPES.pEnergyTimeStep[g]:mTEPES.n.ord(n)]) <= 0.0
+            return sum((OptModel.vTotalOutput[p,sc,n2,g] - mTEPES.pMaxEnergy[p,sc,n2,g])*mTEPES.pDuration[p,sc,n2]() for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pEnergyTimeStep[g]:mTEPES.n.ord(n)]) <= 0.0
         else:
             return Constraint.Skip
     setattr(OptModel, 'eMaximumEnergy_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.ngen, rule=eMaximumEnergy, doc='maximum energy of a unit [GWh]'))
@@ -819,7 +819,7 @@ def GenerationOperationModelFormulationReservoir(OptModel, mTEPES, pIndLogConsol
 
     def eHydroOutflows(OptModel,n,rs):
         if (p,sc,rs) in mTEPES.ro:
-            return sum((OptModel.vHydroOutflows[p,sc,n2,rs] - mTEPES.pHydroOutflows[p,sc,n2,rs]())*mTEPES.pDuration[p,sc,n2]() for n2 in list(mTEPES.n2)[mTEPES.n.ord(n) - mTEPES.pWaterOutTimeStep[rs]:mTEPES.n.ord(n)]) == 0.0
+            return sum((OptModel.vHydroOutflows[p,sc,n2,rs] - mTEPES.pHydroOutflows[p,sc,n2,rs]())*mTEPES.pDuration[p,sc,n2]() for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pWaterOutTimeStep[rs]:mTEPES.n.ord(n)]) == 0.0
         else:
             return Constraint.Skip
     setattr(OptModel, 'eHydroOutflows_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.nrso, rule=eHydroOutflows, doc='hydro outflows of a reservoir [m3/s]'))
@@ -1067,7 +1067,7 @@ def GenerationOperationModelFormulationRampMinTime(OptModel, mTEPES, pIndLogCons
         for n in mTEPES.n:
             for nr in mTEPES.nr:
                 if (mTEPES.pStableTime[nr] and mTEPES.pMaxPower2ndBlock[p,sc,n,nr] and mTEPES.n.ord(n) >= mTEPES.pStableTime[nr] + 2):
-                    for n2 in list(mTEPES.n2)[mTEPES.n.ord(mTEPES.n.prev(n,mTEPES.pStableTime[nr])):mTEPES.n.ord(mTEPES.n.prev(n))]:
+                    for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pStableTime[nr]:mTEPES.n.ord(n)-1]:
                         MinStableTimeLoadLevels.append((n,n2,nr))
 
     def eMinStableTime(OptModel,n,n2,nr):

@@ -334,70 +334,70 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
             pDemandElec            = pDemandElec.rolling              (pTimeStep).mean()
             pDemandElec.fillna           (0.0, inplace=True)
         if  pSystemInertia.sum().sum()         :
-            pSystemInertia         = pSystemInertia.rolling       (pTimeStep).mean()
+            pSystemInertia         = pSystemInertia.rolling           (pTimeStep).mean()
             pSystemInertia.fillna        (0.0, inplace=True)
         if  pOperReserveUp.sum().sum()         :
-            pOperReserveUp         = pOperReserveUp.rolling       (pTimeStep).mean()
+            pOperReserveUp         = pOperReserveUp.rolling           (pTimeStep).mean()
             pOperReserveUp.fillna        (0.0, inplace=True)
         if  pOperReserveDw.sum().sum()         :
-            pOperReserveDw         = pOperReserveDw.rolling       (pTimeStep).mean()
+            pOperReserveDw         = pOperReserveDw.rolling           (pTimeStep).mean()
             pOperReserveDw.fillna        (0.0, inplace=True)
         if  pVariableMinPowerElec.sum().sum()      :
-            pVariableMinPowerElec      = pVariableMinPowerElec.rolling    (pTimeStep).mean()
+            pVariableMinPowerElec      = pVariableMinPowerElec.rolling(pTimeStep).mean()
             pVariableMinPowerElec.fillna     (0.0, inplace=True)
         if  pVariableMaxPowerElec.sum().sum()      :
-            pVariableMaxPowerElec      = pVariableMaxPowerElec.rolling    (pTimeStep).mean()
+            pVariableMaxPowerElec      = pVariableMaxPowerElec.rolling(pTimeStep).mean()
             pVariableMaxPowerElec.fillna     (0.0, inplace=True)
         if  pVariableMinCharge.sum().sum()     :
-            pVariableMinCharge     = pVariableMinCharge.rolling   (pTimeStep).mean()
+            pVariableMinCharge     = pVariableMinCharge.rolling       (pTimeStep).mean()
             pVariableMinCharge.fillna    (0.0, inplace=True)
         if  pVariableMaxCharge.sum().sum()     :
-            pVariableMaxCharge     = pVariableMaxCharge.rolling   (pTimeStep).mean()
+            pVariableMaxCharge     = pVariableMaxCharge.rolling       (pTimeStep).mean()
             pVariableMaxCharge.fillna    (0.0, inplace=True)
         if  pVariableMinStorage.sum().sum()    :
-            pVariableMinStorage    = pVariableMinStorage.rolling  (pTimeStep).mean()
+            pVariableMinStorage    = pVariableMinStorage.rolling      (pTimeStep).mean()
             pVariableMinStorage.fillna   (0.0, inplace=True)
         if  pVariableMaxStorage.sum().sum()    :
-            pVariableMaxStorage    = pVariableMaxStorage.rolling  (pTimeStep).mean()
+            pVariableMaxStorage    = pVariableMaxStorage.rolling      (pTimeStep).mean()
             pVariableMaxStorage.fillna   (0.0, inplace=True)
         if  pVariableMinEnergy.sum().sum()     :
-            pVariableMinEnergy     = pVariableMinEnergy.rolling   (pTimeStep).mean()
+            pVariableMinEnergy     = pVariableMinEnergy.rolling       (pTimeStep).mean()
             pVariableMinEnergy.fillna    (0.0, inplace=True)
         if  pVariableMaxEnergy.sum().sum()     :
-            pVariableMaxEnergy     = pVariableMaxEnergy.rolling   (pTimeStep).mean()
+            pVariableMaxEnergy     = pVariableMaxEnergy.rolling       (pTimeStep).mean()
             pVariableMaxEnergy.fillna    (0.0, inplace=True)
         if  pVariableFuelCost.sum().sum()      :
-            pVariableFuelCost      = pVariableFuelCost.rolling    (pTimeStep).mean()
+            pVariableFuelCost      = pVariableFuelCost.rolling        (pTimeStep).mean()
             pVariableFuelCost.fillna     (0.0, inplace=True)
         if  pVariableEmissionCost.sum().sum()      :
-            pVariableEmissionCost  = pVariableEmissionCost.rolling(pTimeStep).mean()
+            pVariableEmissionCost  = pVariableEmissionCost.rolling    (pTimeStep).mean()
             pVariableEmissionCost.fillna (0.0, inplace=True)
         if  pEnergyInflows.sum().sum()         :
-            pEnergyInflows         = pEnergyInflows.rolling       (pTimeStep).mean()
+            pEnergyInflows         = pEnergyInflows.rolling           (pTimeStep).mean()
             pEnergyInflows.fillna        (0.0, inplace=True)
         if  pEnergyOutflows.sum().sum()        :
-            pEnergyOutflows        = pEnergyOutflows.rolling      (pTimeStep).mean()
+            pEnergyOutflows        = pEnergyOutflows.rolling          (pTimeStep).mean()
             pEnergyOutflows.fillna       (0.0, inplace=True)
         if pIndHydroTopology == 1:
             if  pVariableMinVolume.sum().sum() :
-                pVariableMinVolume = pVariableMinVolume.rolling   (pTimeStep).mean()
+                pVariableMinVolume = pVariableMinVolume.rolling       (pTimeStep).mean()
                 pVariableMinVolume.fillna(0.0, inplace=True)
             if  pVariableMaxVolume.sum().sum() :
-                pVariableMaxVolume = pVariableMaxVolume.rolling   (pTimeStep).mean()
+                pVariableMaxVolume = pVariableMaxVolume.rolling       (pTimeStep).mean()
                 pVariableMaxVolume.fillna(0.0, inplace=True)
             if  pHydroInflows.sum().sum()      :
-                pHydroInflows       = pHydroInflows.rolling       (pTimeStep).mean()
+                pHydroInflows       = pHydroInflows.rolling           (pTimeStep).mean()
                 pHydroInflows.fillna     (0.0, inplace=True)
             if  pHydroOutflows.sum().sum()     :
-                pHydroOutflows      = pHydroOutflows.rolling      (pTimeStep).mean()
+                pHydroOutflows      = pHydroOutflows.rolling          (pTimeStep).mean()
                 pHydroOutflows.fillna    (0.0, inplace=True)
         if pIndHydrogen == 1:
             if  pDemandH2.sum().sum()          :
-                pDemandH2           = pDemandH2.rolling           (pTimeStep).mean()
+                pDemandH2           = pDemandH2.rolling               (pTimeStep).mean()
                 pDemandH2.fillna         (0.0, inplace=True)
         if pIndHeat == 1:
             if  pDemandHeat.sum().sum()          :
-                pDemandHeat         = pDemandHeat.rolling         (pTimeStep).mean()
+                pDemandHeat         = pDemandHeat.rolling             (pTimeStep).mean()
                 pDemandHeat.fillna       (0.0, inplace=True)
 
         # assign duration 0 to load levels not being considered, active load levels are at the end of every pTimeStep
