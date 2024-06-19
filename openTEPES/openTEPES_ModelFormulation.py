@@ -1062,16 +1062,9 @@ def GenerationOperationModelFormulationRampMinTime(OptModel, mTEPES, pIndLogCons
     if pIndLogConsole == 1:
         print('eMinDownTime          ... ', len(getattr(OptModel, 'eMinDownTime_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
 
-    # MinStableTimeLoadLevels = [(n,n2) for n in list(mTEPES.n)[mTEPES.n.ord(mTEPES.n.prev(n,max(mTEPES.pStableTime[nr] for nr in mTEPES.nr))):mTEPES.n.ord(mTEPES.n.prev(n))] for n2 in list(mTEPES.n2)[mTEPES.n.ord(mTEPES.n.prev(n,max(mTEPES.pStableTime[nr] for nr in mTEPES.nr))):mTEPES.n.ord(mTEPES.n.prev(n))]]
-
+    MinStableTimeLoadLevels = []
     if sum(mTEPES.pStableTime[nr] for nr in mTEPES.nr):
-        MinStableTimeLoadLevels = [(n,n2,nr) for n in mTEPES.n for n2 in mTEPES.n2 for nr in mTEPES.nr
-            if (mTEPES.pStableTime[nr] and
-                mTEPES.pMaxPower2ndBlock[p,sc,n,nr] and
-                mTEPES.n.ord(n) >= mTEPES.pStableTime[nr] + 2 and
-                mTEPES.n2.ord(n2) >= mTEPES.n.ord(n) - mTEPES.pStableTime[nr] and
-                mTEPES.n2.ord(n2) <= mTEPES.n.ord(mTEPES.n.prev(n)))
-        ]
+        MinStableTimeLoadLevels = [(n,n2,nr) for n in mTEPES.n if mTEPES.n.ord(n) >= max(mTEPES.pStableTime[nr] for nr in mTEPES.nr) + 2 for n2 in list(mTEPES.n2)[mTEPES.n.ord(mTEPES.n.prev(n,max(mTEPES.pStableTime[nr] for nr in mTEPES.nr))):mTEPES.n.ord(mTEPES.n.prev(n))] for nr in mTEPES.nr if mTEPES.pStableTime[nr] and mTEPES.pMaxPower2ndBlock[p,sc,n,nr]]
 
     def eMinStableTime(OptModel,n,n2,nr):
         if mTEPES.pStableTime[nr] and mTEPES.pMaxPower2ndBlock[p,sc,n,nr] and mTEPES.n.ord(n) >= mTEPES.pStableTime[nr] + 2:
