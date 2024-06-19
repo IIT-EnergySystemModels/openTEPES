@@ -482,7 +482,7 @@ Logical relation between commitment, startup and shutdown status of a committed 
 
 Logical relation between stable, ramp up, and ramp down states (units with stable time) [p.u.] «``eStableStates``»
 
-:math:`rss^p_{\omega ng} + rsu^p_{\omega ng} + rsd^p_{\omega ng} = 1 \quad \forall p \omega ng`
+:math:`rss^p_{\omega ng} + rsu^p_{\omega ng} + rsd^p_{\omega ng} = uc^p_{\omega ng} \quad \forall p \omega ng`
 
 Maximum commitment of a committable unit (all except the VRES units) [p.u.] «``eMaxCommitment``»
 

@@ -3,6 +3,7 @@ Change Log
 
 [4.17.3] - 2024-06-19
 ----------------------
+- [FIXED] fixed typo in stable state equation
 - [FIXED] detection of electricity, heat and H2 lines/pipelines
 - [CHANGED] introduced formulation of the minimum stable time constraints
 - [CHANGED] add case RTS-GMLS expansion planning for 6 years with representative weeks
