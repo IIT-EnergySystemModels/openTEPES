@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 17, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 19, 2024
 """
 
 import time
@@ -113,10 +113,16 @@ def GenerationOperationModelFormulationObjFunct(OptModel, mTEPES, pIndLogConsole
 
     StartTime = time.time()
 
-    # incoming and outgoing pipelines (lin) (lout)
+    # incoming and outgoing electric lines, H2 and heat pipelines (lin) (lout)
     lin  = defaultdict(list)
     lout = defaultdict(list)
+    for ni,nf,cc in mTEPES.la:
+        lin [nf].append((ni,cc))
+        lout[ni].append((nf,cc))
     for ni,nf,cc in mTEPES.pa:
+        lin [nf].append((ni,cc))
+        lout[ni].append((nf,cc))
+    for ni,nf,cc in mTEPES.ha:
         lin [nf].append((ni,cc))
         lout[ni].append((nf,cc))
 
@@ -185,9 +191,9 @@ def GenerationOperationModelFormulationObjFunct(OptModel, mTEPES, pIndLogConsole
         elif mTEPES.pIndHydrogen == 1 and mTEPES.pIndHeat == 0:
             return OptModel.vTotalRCost[p,sc,n] == sum(mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pENSCost * OptModel.vENS[p,sc,n,nd] for nd in mTEPES.nd) + sum(mTEPES.pH2NSCost * OptModel.vH2NS[p,sc,n,nd] for nd in mTEPES.nd if sum(1 for el in e2n[nd]) + sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd]))
         elif mTEPES.pIndHydrogen == 0 and mTEPES.pIndHeat == 1:
-            return OptModel.vTotalRCost[p,sc,n] == sum(mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pENSCost * OptModel.vENS[p,sc,n,nd] for nd in mTEPES.nd)                                                                                                                                                                  + sum(mTEPES.pHeatNSCost * OptModel.vHeatNS[p,sc,n,nd] for nd in mTEPES.nd if sum(1 for ch in c2n[nd]) + sum(1 for hp in h2n[nd]) + sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd]))
+            return OptModel.vTotalRCost[p,sc,n] == sum(mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pENSCost * OptModel.vENS[p,sc,n,nd] for nd in mTEPES.nd)                                                                                                                                                                  + sum(mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pHeatNSCost * OptModel.vHeatNS[p,sc,n,nd] for nd in mTEPES.nd if sum(1 for ch in c2n[nd]) + sum(1 for hp in h2n[nd]) + sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd]))
         elif mTEPES.pIndHydrogen == 1 and mTEPES.pIndHeat == 1:
-            return OptModel.vTotalRCost[p,sc,n] == sum(mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pENSCost * OptModel.vENS[p,sc,n,nd] for nd in mTEPES.nd) + sum(mTEPES.pH2NSCost * OptModel.vH2NS[p,sc,n,nd] for nd in mTEPES.nd if sum(1 for el in e2n[nd]) + sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd])) + sum(mTEPES.pHeatNSCost * OptModel.vHeatNS[p,sc,n,nd] for nd in mTEPES.nd if sum(1 for ch in c2n[nd]) + sum(1 for hp in h2n[nd]) + sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd]))
+            return OptModel.vTotalRCost[p,sc,n] == sum(mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pENSCost * OptModel.vENS[p,sc,n,nd] for nd in mTEPES.nd) + sum(mTEPES.pH2NSCost * OptModel.vH2NS[p,sc,n,nd] for nd in mTEPES.nd if sum(1 for el in e2n[nd]) + sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd])) + sum(mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pHeatNSCost * OptModel.vHeatNS[p,sc,n,nd] for nd in mTEPES.nd if sum(1 for ch in c2n[nd]) + sum(1 for hp in h2n[nd]) + sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd]))
     setattr(OptModel, 'eTotalRCost_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, rule=eTotalRCost, doc='system reliability cost [MEUR]'))
 
     GeneratingTime = time.time() - StartTime
@@ -1056,21 +1062,13 @@ def GenerationOperationModelFormulationRampMinTime(OptModel, mTEPES, pIndLogCons
     if pIndLogConsole == 1:
         print('eMinDownTime          ... ', len(getattr(OptModel, 'eMinDownTime_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
 
-    MinStableTimeConstraints = [
-        (n,n2,nr) for n in mTEPES.n for n2 in mTEPES.n2 for nr in mTEPES.nr
-        if (
-            mTEPES.pStableTime[nr] and mTEPES.pMaxPower2ndBlock[p,sc,n,nr] and
-            mTEPES.n.ord(n) >= mTEPES.pStableTime[nr] + 2 and
-            mTEPES.n2.ord(n2) >= mTEPES.n.ord(mTEPES.n.prev(n,mTEPES.pStableTime[nr])) and mTEPES.n2.ord(n2) <= mTEPES.n.ord(mTEPES.n.prev(n))
-        )
-    ]
-
-    def eMinStableTime(OptModel,n,n2,nr):
-        if (n,n2,nr) in MinStableTimeConstraints:
-            return OptModel.vRampUpState[p,sc,n,nr] <= 1 - OptModel.vRampDwState[p,sc,n2,nr]
+    def eMinStableTime(OptModel,n,nr):
+        if mTEPES.pStableTime[nr] and mTEPES.pMaxPower2ndBlock[p,sc,n,nr] and mTEPES.n.ord(n) >= mTEPES.pStableTime[nr] + 2:
+            for n2 in list(mTEPES.n2)[mTEPES.n.ord(mTEPES.n.prev(n,mTEPES.pStableTime[nr])):mTEPES.n.ord(mTEPES.n.prev(n))]:
+                return OptModel.vRampUpState[p,sc,n,nr] <= 1 - OptModel.vRampDwState[p,sc,n2,nr]
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eMinStableTime_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(MinStableTimeConstraints, rule=eMinStableTime, doc='minimum up   time [p.u.]'))
+    setattr(OptModel, 'eMinStableTime_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.nr, rule=eMinStableTime, doc='minimum stable time [p.u.]'))
 
     if pIndLogConsole == 1:
         print('eMinStableTime        ... ', len(getattr(OptModel, 'eMinStableTime_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')

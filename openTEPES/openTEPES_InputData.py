@@ -628,7 +628,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     # heat producers (CHP, heat pump and boiler)
     mTEPES.chp = mTEPES.ch | mTEPES.hp
     # CHP, heat pump and boiler (heat generator) candidates
-    mTEPES.gb = (mTEPES.gc & mTEPES.ch) | mTEPES.bc
+    mTEPES.gb = (mTEPES.gc & mTEPES.chp) | mTEPES.bc
     # electricity and heat generator candidates
     mTEPES.eb = mTEPES.gc | mTEPES.bc
 
