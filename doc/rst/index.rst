@@ -24,7 +24,7 @@ It has been used by the **Ministry for the Ecological Transition and the Demogra
 
 **Reference**: A. Ramos, E. Quispe, S. Lumbreras "`OpenTEPES: Open-source Transmission and Generation Expansion Planning <https://www.sciencedirect.com/science/article/pii/S235271102200053X/pdfft?md5=ece8d3328c853a4795eda29acd2ad140&pid=1-s2.0-S235271102200053X-main.pdf>`_" SoftwareX 18: June 2022 `10.1016/j.softx.2022.101070 <https://doi.org/10.1016/j.softx.2022.101070>`_
 
-**openTEPES**: `summary presentation (English) <https://pascua.iit.comillas.edu/aramos/openTEPES.pdf>`_, `presentation (French) <https://pascua.iit.comillas.edu/aramos/openTEPES_Presentation_fr.pdf>`_, and `installation <https://pascua.iit.comillas.edu/aramos/openTEPES_installation.pdf>`_
+**openTEPES**: `summary presentation (English) <https://pascua.iit.comillas.edu/aramos/openTEPES.pdf>`_, `présentation (French) <https://pascua.iit.comillas.edu/aramos/openTEPES_Presentation_fr.pdf>`_, and `installation <https://pascua.iit.comillas.edu/aramos/openTEPES_installation.pdf>`_
 
 Index
 =====
