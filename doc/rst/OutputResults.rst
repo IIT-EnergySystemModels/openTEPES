@@ -231,7 +231,7 @@ Identifier                            Header          Description
 Period        Scenario    Load level  Generator       Downward ramp surplus [MW]
 ============  ==========  ==========  ==============  ===============================
 
-File ``oT_Result_GenerationCurtailmentOutput.csv``
+File ``oT_Result_GenerationCurtailment.csv``
 
 ============  ==========  ==========  ==============  ===============================
 Identifier                            Header          Description
