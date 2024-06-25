@@ -1,7 +1,7 @@
 Change Log
 =============
 
-[4.17.3] - 2024-06-19
+[4.17.3] - 2024-06-25
 ----------------------
 - [FIXED] fixed typo in stable state equation
 - [FIXED] detection of electricity, heat and H2 lines/pipelines
