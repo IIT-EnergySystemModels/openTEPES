@@ -25,6 +25,10 @@ Some maps of the electricity transmission network and the energy share of differ
    :scale: 40%
    :align: center
 
+.. image:: ../img/oT_Plot_MapNetwork_SE2045.png
+   :scale: 40%
+   :align: center
+
 .. image:: ../img/oT_Plot_TechnologyEnergy_ES_MAF2030.png
    :scale: 6%
    :align: center
