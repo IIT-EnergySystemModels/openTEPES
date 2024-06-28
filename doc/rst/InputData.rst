@@ -21,8 +21,8 @@ CHP         Combined Heat and Power. Cogeneration (produces electricity and heat
 DC          Direct Current
 DCPF        DC Power Flow
 DR          Demand Response
-DSM         Demand-Side Management
-DSR         Demand-Side Response
+DSM         Demand-Side Management (e.g., load shifting)
+DSR         Demand-Side Response (e.g., interruptibility)
 EB          Electric Boiler
 EHU         Electrical Heating Unit (Power to Heat: consumes electricity to produce heat, e.g., heat pump, electric boiler)
 EFOR        Equivalent Forced Outage Rate
@@ -58,14 +58,14 @@ Dictionaries. Sets
 ------------------
 The dictionaries include all the possible elements of the corresponding sets included in the optimization problem. **You can't use non-English characters (e.g., ó, º)**
 
-=============================  =====================================================================================================================================================================================================================================================================================================================
+=============================  =========================================================================================================================================================================================================================================================================================================================
 File                           Description
-=============================  =====================================================================================================================================================================================================================================================================================================================
+=============================  =========================================================================================================================================================================================================================================================================================================================
 ``oT_Dict_Period.csv``         Period (e.g., 2030, 2035). **It must be a positive integer**
 ``oT_Dict_Scenario.csv``       Scenario. Short-term uncertainties (scenarios) (e.g., s001 to s100, CY2025 to CY2030)
 ``oT_Dict_Stage.csv``          Stage
 ``oT_Dict_LoadLevel.csv``      Load level (e.g., 01-01 00:00:00+01:00 to 12-30 23:00:00+01:00). If is a datetime format. Load levels with duration 0 are ignored. The period (year) must represented by 8736 load levels.
-``oT_Dict_Generation.csv``     Generation units (thermal -nuclear, CCGT, OCGT, coal-, ESS -storage hydro modeled in energy or in water, pumped-hydro storage PHS, battery BESS, electric vehicle EV, demand response DR, alkaline water electrolyzer AWE, solar thermal- and VRES -wind onshore and offshore, solar PV, run-of-the-river hydro-)
+``oT_Dict_Generation.csv``     Generation units (thermal -nuclear, CCGT, OCGT, coal-, ESS -storage hydro modeled in energy or in water, pumped-hydro storage PHS, battery BESS, electric vehicle EV, demand side management DSM, alkaline water electrolyzer AWE, solar thermal- and VRES -wind onshore and offshore, solar PV, run-of-the-river hydro-)
 ``oT_Dict_Technology.csv``     Generation technologies. The technology order is used in the temporal result plot.
 ``oT_Dict_Storage.csv``        ESS storage type (daily < 12 h, weekly < 40 h, monthly > 60 h).
 ``oT_Dict_Node.csv``           Nodes. A node belongs to a zone.
@@ -74,7 +74,7 @@ File                           Description
 ``oT_Dict_Region.csv``         Regions
 ``oT_Dict_Circuit.csv``        Circuits
 ``oT_Dict_Line.csv``           Line type (AC, DC)
-=============================  =====================================================================================================================================================================================================================================================================================================================
+=============================  =========================================================================================================================================================================================================================================================================================================================
 
 Geographical location of nodes, zones, areas, regions.
 
@@ -408,7 +408,7 @@ Non-renewable                           All the generators except the RESS      
 ESS                                     It has MaximumCharge or MaximumStorage > 0 or ProductionFunctionH2 or ProductionFunctionHeat > 0 and ProductionFunctionHydro = 0     *es*
 Hydro power plant (energy)              ESS with ProductionFunctionHydro = 0                                                                                                 *es*
 Pumped-hydro storage (energy)           ESS with MaximumCharge > 0                                                                                                           *es*
-Battery (BESS), demand response (DR)    ESS with MaximumCharge > 0 (usually, StorageType daily)                                                                              *es*
+Battery (BESS), load shifting (DSM)     ESS with MaximumCharge > 0 (usually, StorageType daily)                                                                              *es*
 Electric vehicle (EV)                   ESS with electric energy outflows                                                                                                    *es*
 Electrolyzer (ELZ)                      ESS with electric energy outflows and ProductionFunctionH2 > 0 and ProductionFunctionHeat = 0 and ProductionFunctionHydro = 0        *el*
 Heat pump or electric boiler            ESS with ProductionFunctionHeat > 0 and ProductionFunctionH2 = 0 and ProductionFunctionHydro = 0                                     *hp*
