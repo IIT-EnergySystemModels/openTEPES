@@ -1292,6 +1292,7 @@ def OperationSummaryResults(DirName, CaseName, OptModel, mTEPES):
     else:
         NetInvCostVRESInsCap = 0.0
     # Rate of return for VRE technologies
+    # warning division and multiplication
     VRETechRevenue     = sum(mTEPES.pDuals["".join(["eBalanceElec_", str(p), "_", str(sc), "_", str(st), "('", str(n), "', '", str(nd), "')"])]/mTEPES.pPeriodProb[p,sc]()/mTEPES.pLoadLevelDuration[p,sc,n]()*OptModel.vTotalOutput[p,sc,n,gc]()*np.sign(getattr(OptModel, 'eBalanceElec_'+str(p)+'_'+str(sc)+'_'+str(st))[n,nd].ub+1e-10) for p,sc,st,n,nd,gc in mTEPES.s2n*mTEPES.nd*mTEPES.gc if gc in g2n[nd] and gc in mTEPES.re and (p,gc) in mTEPES.pgc and sum(1 for g in g2n[nd]) + sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd]))
     VREInvCostCapacity = sum(mTEPES.pGenInvestCost[gc]*OptModel.vGenerationInvest[p,gc]() for p,gc in mTEPES.pgc if gc in mTEPES.re)
 
@@ -1773,7 +1774,7 @@ def ReliabilityResults(DirName, CaseName, OptModel, mTEPES):
     OutputToFile1 = pd.Series(data=[0.0 for p,sc in mTEPES.ps], index=mTEPES.ps)
     OutputToFile2 = pd.Series(data=[0.0 for p,sc in mTEPES.ps], index=mTEPES.ps)
     for p,sc in mTEPES.ps:
-        # warning
+        # performance warning
         OutputToFile1[p,sc] = pMaxPowerElec.loc[(p,sc)].reset_index().pivot_table(index=['level_0'], values=0, aggfunc='sum')[0].max()
         OutputToFile2[p,sc] = pDemandElec.loc  [(p,sc)].reset_index().pivot_table(index=['level_0'], values=0, aggfunc='sum')[0].max()
     ReserveMargin1 =  OutputToFile1 - OutputToFile2
@@ -1784,6 +1785,7 @@ def ReliabilityResults(DirName, CaseName, OptModel, mTEPES):
     # Determination of the index: Largest Unit
     OutputToFile = pd.Series(data=[0.0 for p,sc in mTEPES.ps], index=mTEPES.ps)
     for p,sc in mTEPES.ps:
+        # performance warning
         OutputToFile[p,sc] = pMaxPowerElec.loc[(p,sc)].reset_index().pivot_table(index=['level_1'], values=0, aggfunc='sum')[0].max()
 
     LargestUnit  = ReserveMargin1/OutputToFile

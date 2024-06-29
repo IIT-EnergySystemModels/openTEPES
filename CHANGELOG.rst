@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.17.3] - 2024-06-25
+[4.17.3] - 2024-06-29
 ----------------------
+- [CHANGED] restructured source code of InputData module
 - [FIXED] fixed typo in stable state equation
 - [FIXED] detection of electricity, heat and H2 lines/pipelines
 - [CHANGED] introduced formulation of the minimum stable time constraints
