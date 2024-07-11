@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.17.3] - 2024-06-29
+[4.17.3] - 2024-07-11
 ----------------------
+- [FIXED] fixed disregarding load levels for timestep > 1 for many periods
 - [CHANGED] restructured source code of InputData module
 - [FIXED] fixed typo in stable state equation
 - [FIXED] detection of electricity, heat and H2 lines/pipelines
