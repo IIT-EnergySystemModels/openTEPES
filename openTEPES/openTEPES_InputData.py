@@ -1260,7 +1260,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pd.options.mode.chained_assignment = None
 
     def filter_rows(df, set):
-        df = df.stack()
+        df = df.stack(level=list(range(df.columns.nlevels)), future_stack=True)
         df = df[df.index.isin(set)]
         return df
 
@@ -1551,16 +1551,16 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
                 mTEPES.pHeatPipeLength[ni,nf,cc]   =  1.1 * 6371 * 2 * math.asin(math.sqrt(math.pow(math.sin((mTEPES.pNodeLat[nf]-mTEPES.pNodeLat[ni])*math.pi/180/2),2) + math.cos(mTEPES.pNodeLat[ni]*math.pi/180)*math.cos(mTEPES.pNodeLat[nf]*math.pi/180)*math.pow(math.sin((mTEPES.pNodeLon[nf]-mTEPES.pNodeLon[ni])*math.pi/180/2),2)))
 
     # initialize generation output, unit commitment and line switching
-    pInitialOutput = pd.DataFrame([[0.0]*len(mTEPES.g )]*len(mTEPES.psn), index=pd.MultiIndex.from_tuples(mTEPES.psn), columns=     mTEPES.g )
-    pInitialUC     = pd.DataFrame([[0  ]*len(mTEPES.g )]*len(mTEPES.psn), index=pd.MultiIndex.from_tuples(mTEPES.psn), columns=     mTEPES.g )
-    pInitialSwitch = pd.DataFrame([[0  ]*len(mTEPES.la)]*len(mTEPES.psn), index=pd.MultiIndex.from_tuples(mTEPES.psn), columns=list(mTEPES.la))
+    pInitialOutput = pd.DataFrame([[0.0]*len(mTEPES.g )]*len(mTEPES.psn), index=pd.MultiIndex.from_tuples(mTEPES.psn), columns=                           mTEPES.g )
+    pInitialUC     = pd.DataFrame([[0  ]*len(mTEPES.g )]*len(mTEPES.psn), index=pd.MultiIndex.from_tuples(mTEPES.psn), columns=                           mTEPES.g )
+    pInitialSwitch = pd.DataFrame([[0  ]*len(mTEPES.la)]*len(mTEPES.psn), index=pd.MultiIndex.from_tuples(mTEPES.psn), columns=pd.MultiIndex.from_tuples(mTEPES.la))
 
     pInitialOutput = filter_rows(pInitialOutput, mTEPES.psng )
     pInitialUC     = filter_rows(pInitialUC    , mTEPES.psng )
     pInitialSwitch = filter_rows(pInitialSwitch, mTEPES.psnla)
 
-    mTEPES.pInitialOutput = Param(mTEPES.psng , initialize=pInitialOutput.to_dict()        , within=NonNegativeReals, doc='unit initial output',     mutable=True)
-    mTEPES.pInitialUC     = Param(mTEPES.psng , initialize=pInitialUC.to_dict()            , within=Binary,           doc='unit initial commitment', mutable=True)
+    mTEPES.pInitialOutput = Param(mTEPES.psng , initialize=pInitialOutput.to_dict(), within=NonNegativeReals, doc='unit initial output',     mutable=True)
+    mTEPES.pInitialUC     = Param(mTEPES.psng , initialize=pInitialUC.to_dict()    , within=Binary,           doc='unit initial commitment', mutable=True)
     mTEPES.pInitialSwitch = Param(mTEPES.psnla, initialize=pInitialSwitch.to_dict(), within=Binary,           doc='line initial switching',  mutable=True)
 
     SettingUpDataTime = time.time() - StartTime
