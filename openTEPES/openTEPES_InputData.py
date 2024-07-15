@@ -967,9 +967,9 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pInitialInventory.update(pd.Series([pInitialInventory[ec] if pIndBinStorInvest[ec] == 0 else pRatedMaxStorage[ec] for ec in mTEPES.ec], index=mTEPES.ec, dtype='float64'))
 
     # parameter that allows the initial inventory to change with load level
-    pIniInventory  = pd.DataFrame([pInitialInventory]*len(mTEPES.psn), index=mTEPES.psn, columns=mTEPES.es)
+    pIniInventory  = pd.DataFrame([pInitialInventory]*len(mTEPES.psn), index=pd.MultiIndex.from_tuples(mTEPES.psn), columns=mTEPES.es)
     if pIndHydroTopology == 1:
-        pIniVolume = pd.DataFrame([pInitialVolume   ]*len(mTEPES.psn), index=mTEPES.psn, columns=mTEPES.rs)
+        pIniVolume = pd.DataFrame([pInitialVolume   ]*len(mTEPES.psn), index=pd.MultiIndex.from_tuples(mTEPES.psn), columns=mTEPES.rs)
 
     # initial inventory must be between minimum and maximum
     for p,sc,n,es in mTEPES.psnes:
@@ -1136,10 +1136,10 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     # computation of the power to heat ratio of the CHP units
     # heat ratio of boiler units is fixed to 1.0
     pPower2HeatRatio   = pd.Series([1.0 if ch in mTEPES.bo else (pRatedMaxPowerElec[ch]-pRatedMinPowerElec[ch])/(pRatedMaxPowerHeat[ch]-pRatedMinPowerHeat[ch]) for ch in mTEPES.ch], index=mTEPES.ch)
-    pMinPowerHeat      = pd.DataFrame([[pMinPowerElec     [ch][p,sc,n]/pPower2HeatRatio[ch] for ch in mTEPES.ch] for p,sc,n in mTEPES.psn], index=mTEPES.psn, columns=mTEPES.ch)
-    pMaxPowerHeat      = pd.DataFrame([[pMaxPowerElec     [ch][p,sc,n]/pPower2HeatRatio[ch] for ch in mTEPES.ch] for p,sc,n in mTEPES.psn], index=mTEPES.psn, columns=mTEPES.ch)
-    pMinPowerHeat.update(pd.DataFrame([[pRatedMinPowerHeat[bo]                              for bo in mTEPES.bo] for p,sc,n in mTEPES.psn], index=mTEPES.psn, columns=mTEPES.bo))
-    pMaxPowerHeat.update(pd.DataFrame([[pRatedMaxPowerHeat[bo]                              for bo in mTEPES.bo] for p,sc,n in mTEPES.psn], index=mTEPES.psn, columns=mTEPES.bo))
+    pMinPowerHeat      = pd.DataFrame([[pMinPowerElec     [ch][p,sc,n]/pPower2HeatRatio[ch] for ch in mTEPES.ch] for p,sc,n in mTEPES.psn], index=pd.MultiIndex.from_tuples(mTEPES.psn), columns=mTEPES.ch)
+    pMaxPowerHeat      = pd.DataFrame([[pMaxPowerElec     [ch][p,sc,n]/pPower2HeatRatio[ch] for ch in mTEPES.ch] for p,sc,n in mTEPES.psn], index=pd.MultiIndex.from_tuples(mTEPES.psn), columns=mTEPES.ch)
+    pMinPowerHeat.update(pd.DataFrame([[pRatedMinPowerHeat[bo]                              for bo in mTEPES.bo] for p,sc,n in mTEPES.psn], index=pd.MultiIndex.from_tuples(mTEPES.psn), columns=mTEPES.bo))
+    pMaxPowerHeat.update(pd.DataFrame([[pRatedMaxPowerHeat[bo]                              for bo in mTEPES.bo] for p,sc,n in mTEPES.psn], index=pd.MultiIndex.from_tuples(mTEPES.psn), columns=mTEPES.bo))
 
     # drop values not par, p, or ps
     pReserveMargin  = pReserveMargin.loc [mTEPES.par]
@@ -1197,7 +1197,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         pIndBinRsrvInvest        = pIndBinRsrvInvest.loc       [mTEPES.rn]
         pRsrInvestCost           = pRsrInvestCost.loc          [mTEPES.rn]
         # maximum outflows depending on the downstream hydropower unit
-        pMaxOutflows = pd.DataFrame([[sum(pMaxPowerElec[h][p,sc,n]/pProductionFunctionHydro[h] for h in mTEPES.h if (rs,h) in mTEPES.r2h) for rs in mTEPES.rs] for p,sc,n in mTEPES.psn], index=mTEPES.psn, columns=mTEPES.rs)
+        pMaxOutflows = pd.DataFrame([[sum(pMaxPowerElec[h][p,sc,n]/pProductionFunctionHydro[h] for h in mTEPES.h if (rs,h) in mTEPES.r2h) for rs in mTEPES.rs] for p,sc,n in mTEPES.psn], index=pd.MultiIndex.from_tuples(mTEPES.psn), columns=mTEPES.rs)
 
     if pIndHydrogen == 1:
         # drop generators not el
@@ -1259,34 +1259,34 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     # this option avoids a warning in the following assignments
     pd.options.mode.chained_assignment = None
 
-    def filter_rows_psng(df):
+    def filter_rows(df, set):
         df = df.stack()
-        df = df[df.index.isin(mTEPES.psng)]
+        df = df[df.index.isin(set)]
         return df
 
-    pMinPowerElec      = filter_rows_psng(pMinPowerElec     )
-    pMaxPowerElec      = filter_rows_psng(pMaxPowerElec     )
-    pMinCharge         = filter_rows_psng(pMinCharge        )
-    pMaxCharge         = filter_rows_psng(pMaxCharge        )
-    pMaxCapacity       = filter_rows_psng(pMaxCapacity      )
-    pMaxPower2ndBlock  = filter_rows_psng(pMaxPower2ndBlock )
-    pMaxCharge2ndBlock = filter_rows_psng(pMaxCharge2ndBlock)
-    pEnergyInflows     = filter_rows_psng(pEnergyInflows    )
-    pEnergyOutflows    = filter_rows_psng(pEnergyOutflows   )
-    pMinStorage        = filter_rows_psng(pMinStorage       )
-    pMaxStorage        = filter_rows_psng(pMaxStorage       )
-    pVariableMaxEnergy = filter_rows_psng(pVariableMaxEnergy)
-    pVariableMinEnergy = filter_rows_psng(pVariableMinEnergy)
-    pLinearVarCost     = filter_rows_psng(pLinearVarCost    )
-    pConstantVarCost   = filter_rows_psng(pConstantVarCost  )
-    pEmissionVarCost   = filter_rows_psng(pEmissionVarCost  )
-    pIniInventory      = filter_rows_psng(pIniInventory     )
+    pMinPowerElec      = filter_rows(pMinPowerElec     , mTEPES.psng )
+    pMaxPowerElec      = filter_rows(pMaxPowerElec     , mTEPES.psng )
+    pMinCharge         = filter_rows(pMinCharge        , mTEPES.psneh)
+    pMaxCharge         = filter_rows(pMaxCharge        , mTEPES.psneh)
+    pMaxCapacity       = filter_rows(pMaxCapacity      , mTEPES.psneh)
+    pMaxPower2ndBlock  = filter_rows(pMaxPower2ndBlock , mTEPES.psng )
+    pMaxCharge2ndBlock = filter_rows(pMaxCharge2ndBlock, mTEPES.psneh)
+    pEnergyInflows     = filter_rows(pEnergyInflows    , mTEPES.psnes)
+    pEnergyOutflows    = filter_rows(pEnergyOutflows   , mTEPES.psnes)
+    pMinStorage        = filter_rows(pMinStorage       , mTEPES.psnes)
+    pMaxStorage        = filter_rows(pMaxStorage       , mTEPES.psnes)
+    pVariableMaxEnergy = filter_rows(pVariableMaxEnergy, mTEPES.psng )
+    pVariableMinEnergy = filter_rows(pVariableMinEnergy, mTEPES.psng )
+    pLinearVarCost     = filter_rows(pLinearVarCost    , mTEPES.psng )
+    pConstantVarCost   = filter_rows(pConstantVarCost  , mTEPES.psng )
+    pEmissionVarCost   = filter_rows(pEmissionVarCost  , mTEPES.psng )
+    pIniInventory      = filter_rows(pIniInventory     , mTEPES.psnes)
 
-    pDemandElec        = filter_rows_psng(pDemandElec       )
-    pDemandElecAbs     = filter_rows_psng(pDemandElecAbs    )
-    pSystemInertia     = filter_rows_psng(pSystemInertia    )
-    pOperReserveUp     = filter_rows_psng(pOperReserveUp    )
-    pOperReserveDw     = filter_rows_psng(pOperReserveDw    )
+    pDemandElec        = filter_rows(pDemandElec       , mTEPES.psnnd)
+    pDemandElecAbs     = filter_rows(pDemandElecAbs    , mTEPES.psnnd)
+    pSystemInertia     = filter_rows(pSystemInertia    , mTEPES.psnar)
+    pOperReserveUp     = filter_rows(pOperReserveUp    , mTEPES.psnar)
+    pOperReserveDw     = filter_rows(pOperReserveDw    , mTEPES.psnar)
 
     # %% parameters
     mTEPES.pIndBinGenInvest      = Param(initialize=pIndBinGenInvest    , within=NonNegativeIntegers, doc='Indicator of binary generation       investment decisions', mutable=True)
@@ -1393,8 +1393,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         mTEPES.pProductionFunctionH2 = Param(mTEPES.el, initialize=pProductionFunctionH2.to_dict(), within=NonNegativeReals, doc='Production function of an electrolyzer plant')
 
     if pIndHeat == 1:
-        pMinPowerHeat = filter_rows_psng(pMinPowerHeat)
-        pMaxPowerHeat = filter_rows_psng(pMaxPowerHeat)
+        pMinPowerHeat = filter_rows(pMinPowerHeat, mTEPES.psnch)
+        pMaxPowerHeat = filter_rows(pMaxPowerHeat, mTEPES.psnch)
 
         mTEPES.pRatedMaxPowerHeat          = Param(mTEPES.gg,    initialize=pRatedMaxPowerHeat.to_dict()         , within=NonNegativeReals, doc='Rated maximum heat'                       )
         mTEPES.pMinPowerHeat               = Param(mTEPES.psnch, initialize=pMinPowerHeat.to_dict()              , within=NonNegativeReals, doc='Minimum heat     power'                   )
@@ -1405,12 +1405,12 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
 
     if pIndHydroTopology == 1:
 
-        pHydroInflows  = filter_rows_psng(pHydroInflows )
-        pHydroOutflows = filter_rows_psng(pHydroOutflows)
-        pMaxOutflows   = filter_rows_psng(pMaxOutflows  )
-        pMinVolume     = filter_rows_psng(pMinVolume    )
-        pMaxVolume     = filter_rows_psng(pMaxVolume    )
-        pIniVolume     = filter_rows_psng(pIniVolume    )
+        pHydroInflows  = filter_rows(pHydroInflows , mTEPES.psnrs)
+        pHydroOutflows = filter_rows(pHydroOutflows, mTEPES.psnrs)
+        pMaxOutflows   = filter_rows(pMaxOutflows  , mTEPES.psnrs)
+        pMinVolume     = filter_rows(pMinVolume    , mTEPES.psnrs)
+        pMaxVolume     = filter_rows(pMaxVolume    , mTEPES.psnrs)
+        pIniVolume     = filter_rows(pIniVolume    , mTEPES.psnrs)
 
         mTEPES.pProductionFunctionHydro = Param(mTEPES.h ,    initialize=pProductionFunctionHydro.to_dict(), within=NonNegativeReals, doc='Production function of a hydro power plant'  )
         mTEPES.pHydroInflows            = Param(mTEPES.psnrs, initialize=pHydroInflows.to_dict()           , within=NonNegativeReals, doc='Hydro inflows',                  mutable=True)
@@ -1429,15 +1429,15 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         mTEPES.pReservoirType           = Param(mTEPES.rs,    initialize=pReservoirType.to_dict()          , within=Any             , doc='Reservoir volume type'                       )
 
     if pIndHydrogen == 1:
-        pDemandH2    = filter_rows_psng(pDemandH2   )
-        pDemandH2Abs = filter_rows_psng(pDemandH2Abs)
+        pDemandH2    = filter_rows(pDemandH2   ,mTEPES.psnnd)
+        pDemandH2Abs = filter_rows(pDemandH2Abs,mTEPES.psnnd)
 
-        mTEPES.pDemandH2      = Param(mTEPES.psnnd, initialize=pDemandH2.to_dict()   , within=NonNegativeReals,    doc='Hydrogen demand per hour')
-        mTEPES.pDemandH2Abs   = Param(mTEPES.psnnd, initialize=pDemandH2Abs.to_dict(), within=NonNegativeReals,    doc='Hydrogen demand'         )
+        mTEPES.pDemandH2    = Param(mTEPES.psnnd, initialize=pDemandH2.to_dict()   , within=NonNegativeReals,    doc='Hydrogen demand per hour')
+        mTEPES.pDemandH2Abs = Param(mTEPES.psnnd, initialize=pDemandH2Abs.to_dict(), within=NonNegativeReals,    doc='Hydrogen demand'         )
 
     if pIndHeat == 1:
-        pDemandHeat    = filter_rows_psng(pDemandHeat   )
-        pDemandHeatAbs = filter_rows_psng(pDemandHeatAbs)
+        pDemandHeat    = filter_rows(pDemandHeat   , mTEPES.psnnd)
+        pDemandHeatAbs = filter_rows(pDemandHeatAbs, mTEPES.psnnd)
 
         mTEPES.pDemandHeat    = Param(mTEPES.psnnd, initialize=pDemandHeat.to_dict()   , within=NonNegativeReals,    doc='Heat demand per hour'    )
         mTEPES.pDemandHeatAbs = Param(mTEPES.psnnd, initialize=pDemandHeatAbs.to_dict(), within=NonNegativeReals,    doc='Heat demand'             )
@@ -1451,7 +1451,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         # periods and scenarios are going to be solved together with their weight and probability
         mTEPES.pPeriodProb[p,sc] = mTEPES.pPeriodWeight[p] * mTEPES.pScenProb[p,sc]
 
-    pMaxTheta = filter_rows_psng(pMaxTheta)
+    pMaxTheta = filter_rows(pMaxTheta, mTEPES.psnnd)
 
     mTEPES.pLineLossFactor   = Param(mTEPES.ll,    initialize=pLineLossFactor.to_dict()  , within=           Reals,    doc='Loss factor'                                                       )
     mTEPES.pLineR            = Param(mTEPES.la,    initialize=pLineR.to_dict()           , within=NonNegativeReals,    doc='Resistance'                                                        )
@@ -1551,13 +1551,13 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
                 mTEPES.pHeatPipeLength[ni,nf,cc]   =  1.1 * 6371 * 2 * math.asin(math.sqrt(math.pow(math.sin((mTEPES.pNodeLat[nf]-mTEPES.pNodeLat[ni])*math.pi/180/2),2) + math.cos(mTEPES.pNodeLat[ni]*math.pi/180)*math.cos(mTEPES.pNodeLat[nf]*math.pi/180)*math.pow(math.sin((mTEPES.pNodeLon[nf]-mTEPES.pNodeLon[ni])*math.pi/180/2),2)))
 
     # initialize generation output, unit commitment and line switching
-    pInitialOutput = pd.DataFrame([[0.0]*len(mTEPES.g )]*len(mTEPES.psn), index=mTEPES.psn, columns=     mTEPES.g )
-    pInitialUC     = pd.DataFrame([[0  ]*len(mTEPES.g )]*len(mTEPES.psn), index=mTEPES.psn, columns=     mTEPES.g )
-    pInitialSwitch = pd.DataFrame([[0  ]*len(mTEPES.la)]*len(mTEPES.psn), index=mTEPES.psn, columns=list(mTEPES.la))
+    pInitialOutput = pd.DataFrame([[0.0]*len(mTEPES.g )]*len(mTEPES.psn), index=pd.MultiIndex.from_tuples(mTEPES.psn), columns=     mTEPES.g )
+    pInitialUC     = pd.DataFrame([[0  ]*len(mTEPES.g )]*len(mTEPES.psn), index=pd.MultiIndex.from_tuples(mTEPES.psn), columns=     mTEPES.g )
+    pInitialSwitch = pd.DataFrame([[0  ]*len(mTEPES.la)]*len(mTEPES.psn), index=pd.MultiIndex.from_tuples(mTEPES.psn), columns=list(mTEPES.la))
 
-    pInitialOutput = filter_rows_psng(pInitialOutput)
-    pInitialUC     = filter_rows_psng(pInitialUC    )
-    pInitialSwitch = filter_rows_psng(pInitialSwitch)
+    pInitialOutput = filter_rows(pInitialOutput, mTEPES.psng )
+    pInitialUC     = filter_rows(pInitialUC    , mTEPES.psng )
+    pInitialSwitch = filter_rows(pInitialSwitch, mTEPES.psnla)
 
     mTEPES.pInitialOutput = Param(mTEPES.psng , initialize=pInitialOutput.to_dict()        , within=NonNegativeReals, doc='unit initial output',     mutable=True)
     mTEPES.pInitialUC     = Param(mTEPES.psng , initialize=pInitialUC.to_dict()            , within=Binary,           doc='unit initial commitment', mutable=True)
