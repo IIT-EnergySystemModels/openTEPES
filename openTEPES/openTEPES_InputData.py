@@ -67,8 +67,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         print('**** No hydrogen energy carrier')
 
     try:
-        dfDemandHeat        = pd.read_csv(_path+'/oT_Data_DemandHeat_'                +CaseName+'.csv', index_col=[0,1,2])
-        dfNetworkHeat       = pd.read_csv(_path+'/oT_Data_NetworkHeat_'               +CaseName+'.csv', index_col=[0,1,2])
+        dfDemandHeat        = pd.read_csv(_path+'/oT_Data_DemandHeat_'            +CaseName+'.csv', index_col=[0,1,2])
+        dfNetworkHeat       = pd.read_csv(_path+'/oT_Data_NetworkHeat_'           +CaseName+'.csv', index_col=[0,1,2])
         pIndHeat            = 1
     except:
         pIndHeat            = 0
