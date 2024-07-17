@@ -2002,19 +2002,21 @@ def SettingUpVariables(OptModel, mTEPES):
             # determine the initial committed units and their output at the first load level of each period, scenario, and stage
             for go in mTEPES.go:
                 if pSystemOutput < sum(mTEPES.pDemandElec[n1,nd] for nd in mTEPES.nd) and mTEPES.pMustRun[go] == 0:
-                    if go in mTEPES.re:
-                        mTEPES.pInitialOutput[n1,go] = mTEPES.pMaxPowerElec[n1,go]
-                    else:
-                        mTEPES.pInitialOutput[n1,go] = mTEPES.pMinPowerElec[n1,go]
-                    mTEPES.pInitialUC[n1,go] = 1
-                    pSystemOutput = pSystemOutput + mTEPES.pInitialOutput[n1,go]()
+                    if (n1,go) in mTEPES.psng:
+                        if go in mTEPES.re:
+                            mTEPES.pInitialOutput[n1,go] = mTEPES.pMaxPowerElec[n1,go]
+                        else:
+                            mTEPES.pInitialOutput[n1,go] = mTEPES.pMinPowerElec[n1,go]
+                        mTEPES.pInitialUC[n1,go] = 1
+                        pSystemOutput = pSystemOutput + mTEPES.pInitialOutput[n1,go]()
 
             # determine the initial committed lines
             for la in mTEPES.la:
-                if la in mTEPES.lc:
-                    mTEPES.pInitialSwitch[n1,la] = 0
-                else:
-                    mTEPES.pInitialSwitch[n1,la] = 1
+                if (n1,la) in mTEPES.psnla:
+                    if la in mTEPES.lc:
+                        mTEPES.pInitialSwitch[n1,la] = 0
+                    else:
+                        mTEPES.pInitialSwitch[n1,la] = 1
 
             # fixing the ESS inventory at the last load level of the stage for every period and scenario if between storage limits
             for es in mTEPES.es:
