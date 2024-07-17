@@ -344,10 +344,10 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
             pOperReserveDw.fillna        (0.0, inplace=True)
         if  pVariableMinPowerElec.sum().sum()      :
             pVariableMinPowerElec      = pVariableMinPowerElec.rolling(pTimeStep).mean()
-            pVariableMinPowerElec.fillna     (0.0, inplace=True)
+            pVariableMinPowerElec.fillna (0.0, inplace=True)
         if  pVariableMaxPowerElec.sum().sum()      :
             pVariableMaxPowerElec      = pVariableMaxPowerElec.rolling(pTimeStep).mean()
-            pVariableMaxPowerElec.fillna     (0.0, inplace=True)
+            pVariableMaxPowerElec.fillna (0.0, inplace=True)
         if  pVariableMinCharge.sum().sum()     :
             pVariableMinCharge     = pVariableMinCharge.rolling       (pTimeStep).mean()
             pVariableMinCharge.fillna    (0.0, inplace=True)
