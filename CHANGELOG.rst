@@ -3,6 +3,7 @@ Change Log
 
 [4.17.3] - 2024-07-17
 ----------------------
+- [FIXED] change when computing pStorageTotalEnergyInflows
 - [FIXED] fixed writing reserve margin dual variables
 - [FIXED] fixed creation of pyomo parameters stacking original data
 - [FIXED] fixed disregarding load levels for timestep > 1 for many periods
