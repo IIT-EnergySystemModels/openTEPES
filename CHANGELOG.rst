@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.17.3] - 2024-07-15
+[4.17.3] - 2024-07-17
 ----------------------
+- [FIXED] fixed writing reserve margin dual variables
 - [FIXED] fixed creation of pyomo parameters stacking original data
 - [FIXED] fixed disregarding load levels for timestep > 1 for many periods
 - [CHANGED] restructured source code of InputData module
