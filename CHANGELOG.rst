@@ -3,6 +3,7 @@ Change Log
 
 [4.17.3] - 2024-07-18
 ----------------------
+- [CHANGED] introduce hourly outflows
 - [FIXED] control of units not available in some years
 - [FIXED] change when computing pStorageTotalEnergyInflows
 - [FIXED] fixed writing reserve margin dual variables

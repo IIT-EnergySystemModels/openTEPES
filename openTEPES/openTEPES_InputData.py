@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 17, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 18, 2024
 """
 
 import datetime
@@ -909,6 +909,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     idxOutflows            = dict()
     idxOutflows[0        ] = 8736
     idxOutflows[0.0      ] = 8736
+    idxOutflows['Hourly' ] = 1
     idxOutflows['Daily'  ] = round(  24/pTimeStep)
     idxOutflows['Weekly' ] = round( 168/pTimeStep)
     idxOutflows['Monthly'] = round( 672/pTimeStep)
@@ -917,6 +918,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     idxEnergy            = dict()
     idxEnergy[0        ] = 8736
     idxEnergy[0.0      ] = 8736
+    idxEnergy['Hourly' ] = 1
     idxEnergy['Daily'  ] = round(  24/pTimeStep)
     idxEnergy['Weekly' ] = round( 168/pTimeStep)
     idxEnergy['Monthly'] = round( 672/pTimeStep)
@@ -944,6 +946,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         idxWaterOut            = dict()
         idxWaterOut[0        ] = 8736
         idxWaterOut[0.0      ] = 8736
+        idxWaterOut['Hourly' ] = 1
         idxWaterOut['Daily'  ] = round(  24/pTimeStep)
         idxWaterOut['Weekly' ] = round( 168/pTimeStep)
         idxWaterOut['Monthly'] = round( 672/pTimeStep)
