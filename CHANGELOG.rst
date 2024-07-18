@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.17.3] - 2024-07-17
+[4.17.3] - 2024-07-18
 ----------------------
+- [FIXED] control of units not available in some years
 - [FIXED] change when computing pStorageTotalEnergyInflows
 - [FIXED] fixed writing reserve margin dual variables
 - [FIXED] fixed creation of pyomo parameters stacking original data

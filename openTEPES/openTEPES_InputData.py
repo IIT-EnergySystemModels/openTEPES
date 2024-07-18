@@ -1873,8 +1873,8 @@ def SettingUpVariables(OptModel, mTEPES):
         if mTEPES.pIndHeat == 1:
             OptModel.vFlowHeat = Var(mTEPES.psnha, within=Reals,            doc='heat pipe flow          [GW]')
             OptModel.vHeatNS   = Var(mTEPES.psnnd, within=NonNegativeReals, doc='heat not served in node [GW]')
-            [OptModel.vFlowHeat[p,sc,n,ni,nf,cc].setlb(-mTEPES.pHeatPipeNTCBck[ni,nf,cc])                           for p,sc,n,ni,nf,cc in mTEPES.psnha]
-            [OptModel.vFlowHeat[p,sc,n,ni,nf,cc].setub( mTEPES.pHeatPipeNTCFrw[ni,nf,cc])                           for p,sc,n,ni,nf,cc in mTEPES.psnha]
+            [OptModel.vFlowHeat[p,sc,n,ni,nf,cc].setlb(-mTEPES.pHeatPipeNTCBck[ni,nf,cc])                            for p,sc,n,ni,nf,cc in mTEPES.psnha]
+            [OptModel.vFlowHeat[p,sc,n,ni,nf,cc].setub( mTEPES.pHeatPipeNTCFrw[ni,nf,cc])                            for p,sc,n,ni,nf,cc in mTEPES.psnha]
             [OptModel.vHeatNS  [p,sc,n,nd      ].setub( mTEPES.pDuration[p,sc,n]()*mTEPES.pDemandHeatAbs[p,sc,n,nd]) for p,sc,n,nd       in mTEPES.psnnd]
         return nFixedVariables
 
@@ -2095,7 +2095,7 @@ def SettingUpVariables(OptModel, mTEPES):
 
     # if there are no energy outflows no variable is needed
     for es in mTEPES.es:
-        if sum(mTEPES.pEnergyOutflows[p,sc,n,es]() for p,sc,n in mTEPES.psn) == 0.0:
+        if sum(mTEPES.pEnergyOutflows[p,sc,n,es]() for p,sc,n in mTEPES.psn if (p,es) in mTEPES.pes) == 0.0:
             for p,sc,n in mTEPES.psn:
                 if (p,es) in mTEPES.pes:
                     OptModel.vEnergyOutflows[p,sc,n,es].fix(0.0)
@@ -2393,26 +2393,28 @@ def SettingUpVariables(OptModel, mTEPES):
 
         for es in mTEPES.es:
             # detecting infeasibility: total min ESS output greater than total inflows, total max ESS charge lower than total outflows
-            if sum(mTEPES.pMinPowerElec[p,sc,n,es] for p,sc,n in mTEPES.psn) - sum(mTEPES.pEnergyInflows [p,sc,n,es]() for p,sc,n in mTEPES.psn) > 0.0:
+            if sum(mTEPES.pMinPowerElec[p,sc,n,es] for p,sc,n in mTEPES.psn if (p,es) in mTEPES.pes) - sum(mTEPES.pEnergyInflows [p,sc,n,es]() for p,sc,n in mTEPES.psn if (p,es) in mTEPES.pes) > 0.0:
                 raise ValueError('### Total minimum output greater than total inflows for ESS unit ', es)
-            if sum(mTEPES.pMaxCharge   [p,sc,n,es] for p,sc,n in mTEPES.psn) - sum(mTEPES.pEnergyOutflows[p,sc,n,es]() for p,sc,n in mTEPES.psn) < 0.0:
+            if sum(mTEPES.pMaxCharge   [p,sc,n,es] for p,sc,n in mTEPES.psn if (p,es) in mTEPES.pes) - sum(mTEPES.pEnergyOutflows[p,sc,n,es]() for p,sc,n in mTEPES.psn if (p,es) in mTEPES.pes) < 0.0:
                 raise ValueError('### Total maximum charge lower than total outflows for ESS unit ', es)
 
         # detect inventory infeasibility
         for p,sc,n,es in mTEPES.ps*mTEPES.nesc:
-            if mTEPES.pMaxCapacity[p,sc,n,es]:
-                if   mTEPES.n.ord(n) == mTEPES.pStorageTimeStep[es]:
-                    if mTEPES.pIniInventory[p,sc,n,es]()                                        + sum(mTEPES.pDuration[p,sc,n2]()*(mTEPES.pEnergyInflows[p,sc,n2,es]() - mTEPES.pMinPowerElec[p,sc,n2,es] + mTEPES.pEfficiency[es]*mTEPES.pMaxCharge[p,sc,n2,es]) for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pStorageTimeStep[es]:mTEPES.n.ord(n)]) < mTEPES.pMinStorage[p,sc,n,es]:
-                        raise ValueError('### Inventory equation violation ', p, sc, n, es)
-                elif mTEPES.n.ord(n) >  mTEPES.pStorageTimeStep[es]:
-                    if mTEPES.pMaxStorage[p,sc,mTEPES.n.prev(n,mTEPES.pStorageTimeStep[es]),es] + sum(mTEPES.pDuration[p,sc,n2]()*(mTEPES.pEnergyInflows[p,sc,n2,es]() - mTEPES.pMinPowerElec[p,sc,n2,es] + mTEPES.pEfficiency[es]*mTEPES.pMaxCharge[p,sc,n2,es]) for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pStorageTimeStep[es]:mTEPES.n.ord(n)]) < mTEPES.pMinStorage[p,sc,n,es]:
-                        raise ValueError('### Inventory equation violation ', p, sc, n, es)
+            if (p,es) in mTEPES.pes:
+                if mTEPES.pMaxCapacity[p,sc,n,es]:
+                    if   mTEPES.n.ord(n) == mTEPES.pStorageTimeStep[es]:
+                        if mTEPES.pIniInventory[p,sc,n,es]()                                        + sum(mTEPES.pDuration[p,sc,n2]()*(mTEPES.pEnergyInflows[p,sc,n2,es]() - mTEPES.pMinPowerElec[p,sc,n2,es] + mTEPES.pEfficiency[es]*mTEPES.pMaxCharge[p,sc,n2,es]) for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pStorageTimeStep[es]:mTEPES.n.ord(n)]) < mTEPES.pMinStorage[p,sc,n,es]:
+                            raise ValueError('### Inventory equation violation ', p, sc, n, es)
+                    elif mTEPES.n.ord(n) >  mTEPES.pStorageTimeStep[es]:
+                        if mTEPES.pMaxStorage[p,sc,mTEPES.n.prev(n,mTEPES.pStorageTimeStep[es]),es] + sum(mTEPES.pDuration[p,sc,n2]()*(mTEPES.pEnergyInflows[p,sc,n2,es]() - mTEPES.pMinPowerElec[p,sc,n2,es] + mTEPES.pEfficiency[es]*mTEPES.pMaxCharge[p,sc,n2,es]) for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pStorageTimeStep[es]:mTEPES.n.ord(n)]) < mTEPES.pMinStorage[p,sc,n,es]:
+                            raise ValueError('### Inventory equation violation ', p, sc, n, es)
 
         # detect minimum energy infeasibility
         for p,sc,n,g in mTEPES.ps*mTEPES.ngen:
-            if (p,sc,g) in mTEPES.gm:
-                if sum((mTEPES.pMaxPowerElec[p,sc,n2,g] - mTEPES.pMinEnergy[p,sc,n2,g])*mTEPES.pDuration[p,sc,n2]() for n2 in list(mTEPES.n2)[mTEPES.n.ord(n) - mTEPES.pEnergyTimeStep[g]:mTEPES.n.ord(n)]) < 0.0:
-                    raise ValueError('### Minimum energy violation ', p, sc, n, g)
+            if (p,g) in mTEPES.pg:
+                if (p,sc,g) in mTEPES.gm:
+                    if sum((mTEPES.pMaxPowerElec[p,sc,n2,g] - mTEPES.pMinEnergy[p,sc,n2,g])*mTEPES.pDuration[p,sc,n2]() for n2 in list(mTEPES.n2)[mTEPES.n.ord(n) - mTEPES.pEnergyTimeStep[g]:mTEPES.n.ord(n)]) < 0.0:
+                        raise ValueError('### Minimum energy violation ', p, sc, n, g)
 
         # detecting reserve margin infeasibility
         for p,ar in mTEPES.p*mTEPES.ar:
