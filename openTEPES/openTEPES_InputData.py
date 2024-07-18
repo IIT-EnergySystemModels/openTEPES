@@ -292,8 +292,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pTimeStep              = dfParameter['TimeStep'           ].iloc[0].astype('int')         # duration of the unit time step            [h]
 
     pPeriodWeight          = dfPeriod       ['Weight'        ].astype('int')             # weights of periods                        [p.u.]
-    pScenProb              = dfScenario     ['Probability'   ].astype('float')           # probabilities of scenarios                [p.u.]
-    pStageWeight           = dfStage        ['Weight'        ].astype('float')           # weights of stages
+    pScenProb              = dfScenario     ['Probability'   ].astype('float64')         # probabilities of scenarios                [p.u.]
+    pStageWeight           = dfStage        ['Weight'        ].astype('float64')         # weights of stages
     pDuration              = dfDuration     ['Duration'      ] * pTimeStep               # duration of load levels                   [h]
     pLevelToStage          = dfDuration     ['Stage'         ]                           # load levels assignment to stages
     pReserveMargin         = dfReserveMargin['ReserveMargin' ]                           # minimum adequacy reserve margin           [p.u.]

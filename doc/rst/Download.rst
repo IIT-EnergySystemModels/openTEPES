@@ -3,7 +3,7 @@
 Download & Installation
 =======================
 The **openTEPES** model has been developed using `Python 3.12.4 <https://www.python.org/>`_ and `Pyomo 6.7.3 <https://pyomo.readthedocs.io/en/stable/>`_ and it uses `Gurobi 11.0.3 <https://www.gurobi.com/products/gurobi-optimizer/>`_ as commercial MIP solver for which a free academic license is available.
-It uses Pyomo so that it is independent of the preferred solver. You can alternatively use one of the free solvers `HiGHS 1.7.1 <https://ergo-code.github.io/HiGHS/dev/interfaces/python/#python-getting-started>`_, `SCIP 9.0.1 <https://www.scipopt.org/>`_, `GLPK 5.0 <https://www.gnu.org/software/glpk/>`_,
+It uses Pyomo so that it is independent of the preferred solver. You can alternatively use one of the free solvers `HiGHS 1.7.2 <https://ergo-code.github.io/HiGHS/dev/interfaces/python/#python-getting-started>`_, `SCIP 9.1.0 <https://www.scipopt.org/>`_, `GLPK 5.0 <https://www.gnu.org/software/glpk/>`_,
 and `CBC 2.10.11 <https://github.com/coin-or/Cbc/releases>`_. List the serial solver interfaces under Pyomo with this call::
 
   pyomo help -s
@@ -30,9 +30,11 @@ Cases
 Here, you have the input files of:
 
 - a `small case study of 9 nodes <https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/9n>`_,
+- a dynamic (multiyear) `small case study of 9 nodes <https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/9n7y>`_ with 13 representative weeks per year,
 - another one like a `small Spanish system <https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/sSEP>`_,
 - a `modified RTS24 case study <https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/RTS24>`_,
-- the `Reliability Test System Grid Modernization Lab Consortium (RTS-GMLC) <https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/RTS24-GMLC>`_, and
+- the `Reliability Test System Grid Modernization Lab Consortium (RTS-GMLC) <https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/RTS24-GMLC>`_,
+- a dynamic (multiyear) `Reliability Test System Grid Modernization Lab Consortium (RTS-GMLC) <https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/RTS24-GMLC_6y>`_ with 13 representative weeks per year, and
 - a `Nigeria 2030 case study <https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/NG2030>`_.
 
 Code

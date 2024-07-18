@@ -344,8 +344,8 @@ MutuallyExclusive           Mutually exclusive generator. Only exclusion in one 
 BinaryCommitment            Binary unit commitment decision                                                                                                                                 Yes/No
 NoOperatingReserve          No contribution to operating reserve. Yes if the unit doesn't contribute to the operating reserve                                                               Yes/No
 StorageType                 Storage type based on storage capacity (hourly, daily, weekly, monthly, yearly)                                                                                 Hourly/Daily/Weekly/Monthly/Yearly
-OutflowsType                Outflows type based on the electricity demand extracted from the storage (daily, weekly, monthly, yearly)                                                       Daily/Weekly/Monthly/Yearly
-EnergyType                  Energy type based on the max/min energy to be produced by the unit (daily, weekly, monthly, yearly)                                                             Daily/Weekly/Monthly/Yearly
+OutflowsType                Outflows type based on the electricity demand extracted from the storage (hourly, daily, weekly, monthly, yearly)                                               Hourly/Daily/Weekly/Monthly/Yearly
+EnergyType                  Energy type based on the max/min energy to be produced by the unit (hourly, daily, weekly, monthly, yearly)                                                     Hourly/Daily/Weekly/Monthly/Yearly
 MustRun                     Must-run unit                                                                                                                                                   Yes/No
 InitialPeriod               Initial period (year) when the unit is installed or can be installed, if candidate                                                                              Year
 FinalPeriod                 Final   period (year) when the unit is installed or can be installed, if candidate                                                                              Year
@@ -545,7 +545,7 @@ All the generators must be defined as columns of these files.
 These energy outflows can be used to represent the electric energy extracted from an ESS to produce H2 from electrolyzers, to move EVs, to produce heat, or as hydro outflows for irrigation.
 The use of these outflows is incompatible with the charge of the ESS within the same time step (as the discharge of a battery is incompatible with the charge in the same hour).
 
-If you have daily/weekly/monthly/yearly outflows data, you can just input the daily/weekly/monthly/yearly amount at the first hour of every day/week/month/year.
+If you have hourly/daily/weekly/monthly/yearly outflows data, you can just input the hourly/daily/weekly/monthly/yearly amount at the first hour of every day/week/month/year.
 
 Internally, all the values below 1e-5 times the maximum system demand of each area will be converted into 0 by the model.
 
@@ -577,7 +577,7 @@ Period      Scenario        Load level  Generator  Maximum (minimum) energy of t
 
 All the generators must be defined as columns of these files.
 
-For example, these data can be used for defining the minimum and/or maximum energy to be produced on a daily/weekly/monthly/yearly basis (depending on the EnergyType).
+For example, these data can be used for defining the minimum and/or maximum energy to be produced on a hourly/daily/weekly/monthly/yearly basis (depending on the EnergyType).
 
 Electricity transmission network
 --------------------------------
@@ -697,7 +697,7 @@ All the reservoirs must be defined as columns of these files.
 
 These water outflows can be used to represent the hydro outflows for irrigation.
 
-If you have daily/weekly/monthly/yearly water outflows data, you can just input the daily/weekly/monthly/yearly amount at the first hour of every day/week/month/year.
+If you have hourly/daily/weekly/monthly/yearly water outflows data, you can just input the daily/weekly/monthly/yearly amount at the first hour of every day/week/month/year.
 
 Internally, all the values below 1e-5 times the maximum system demand of each area will be converted into 0 by the model.
 
