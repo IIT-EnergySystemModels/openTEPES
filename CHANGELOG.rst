@@ -1,6 +1,10 @@
 Change Log
 =============
 
+[4.17.4] - 2024-07-19
+----------------------
+- [CHANGED] introduce outflow incompatibility column in Data_Generation file
+
 [4.17.3] - 2024-07-19
 ----------------------
 - [CHANGED] introduce hourly outflows

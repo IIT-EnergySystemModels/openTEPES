@@ -413,6 +413,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pIndBinUnitCommit           = dfGeneration  ['BinaryCommitment'          ]                                                      # binary unit commitment decision              [Yes]
     pIndBinStorInvest           = dfGeneration  ['StorageInvestment'         ]                                                      # storage linked to generation investment      [Yes]
     pIndOperReserve             = dfGeneration  ['NoOperatingReserve'        ]                                                      # no contribution to operating reserve         [Yes]
+    pIndOutflowIncomp           = dfGeneration  ['OutflowsIncompatibility'   ]                                                      # outflows incompatibility with charging
     pMustRun                    = dfGeneration  ['MustRun'                   ]                                                      # must-run unit                                [Yes]
     pInertia                    = dfGeneration  ['Inertia'                   ]                                                      # inertia constant                             [s]
     pElecGenPeriodIni           = dfGeneration  ['InitialPeriod'             ]                                                      # initial period                               [year]
@@ -769,6 +770,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pIndBinLineInvest         = pIndBinLineInvest.map    (idxDict)
     pIndBinLineSwitch         = pIndBinLineSwitch.map    (idxDict)
     pIndOperReserve           = pIndOperReserve.map      (idxDict)
+    pIndOutflowIncomp         = pIndOutflowIncomp.map    (idxDict)
     pMustRun                  = pMustRun.map             (idxDict)
 
     if pIndHydroTopology == 1:
@@ -1381,6 +1383,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.pIndBinUnitCommit     = Param(mTEPES.nr,    initialize=pIndBinUnitCommit.to_dict()         , within=Binary          ,    doc='Binary commitment decision'                          )
     mTEPES.pIndBinStorInvest     = Param(mTEPES.ec,    initialize=pIndBinStorInvest.to_dict()         , within=Binary          ,    doc='Storage linked to generation investment'             )
     mTEPES.pIndOperReserve       = Param(mTEPES.gg,    initialize=pIndOperReserve.to_dict()           , within=Binary          ,    doc='Indicator of operating reserve'                      )
+    mTEPES.pIndOutflowIncomp     = Param(mTEPES.gg,    initialize=pIndOutflowIncomp.to_dict()         , within=Binary          ,    doc='Indicator of outflow incompatibility with charging'  )
     mTEPES.pEfficiency           = Param(mTEPES.eh,    initialize=pEfficiency.to_dict()               , within=UnitInterval    ,    doc='Round-trip efficiency'                               )
     mTEPES.pStorageTimeStep      = Param(mTEPES.es,    initialize=pStorageTimeStep.to_dict()          , within=PositiveIntegers,    doc='ESS Storage cycle'                                   )
     mTEPES.pOutflowsTimeStep     = Param(mTEPES.es,    initialize=pOutflowsTimeStep.to_dict()         , within=PositiveIntegers,    doc='ESS Outflows cycle'                                  )

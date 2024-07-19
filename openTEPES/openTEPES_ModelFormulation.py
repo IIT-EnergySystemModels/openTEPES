@@ -678,7 +678,7 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
         print('eESSTotalCharge       ... ', len(getattr(OptModel, 'eESSTotalCharge_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
 
     def eChargeOutflows(OptModel,n,eh):
-        if  (p,eh) in mTEPES.peh and (p,sc,eh) in mTEPES.eo:
+        if mTEPES.pIndOutflowIncomp[eh] == 1 and (p,eh) in mTEPES.peh and (p,sc,eh) in mTEPES.eo:
             if mTEPES.pMaxCharge2ndBlock[p,sc,n,eh]:
                 return (OptModel.vEnergyOutflows[p,sc,n,eh] + OptModel.vCharge2ndBlock[p,sc,n,eh]) / mTEPES.pMaxCharge2ndBlock[p,sc,n,eh] <= 1.0
             else:

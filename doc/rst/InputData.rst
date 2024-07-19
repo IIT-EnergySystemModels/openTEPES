@@ -343,6 +343,7 @@ Technology                  Technology of the generator (nuclear, coal, CCGT, OC
 MutuallyExclusive           Mutually exclusive generator. Only exclusion in one direction is needed
 BinaryCommitment            Binary unit commitment decision                                                                                                                                 Yes/No
 NoOperatingReserve          No contribution to operating reserve. Yes if the unit doesn't contribute to the operating reserve                                                               Yes/No
+OutflowsIncompatibility     Outflows are incompatible with the charging process (e.g., electric vehicle). This is not the case of an electrolyzer                                           Yes/No
 StorageType                 Storage type based on storage capacity (hourly, daily, weekly, monthly, yearly)                                                                                 Hourly/Daily/Weekly/Monthly/Yearly
 OutflowsType                Outflows type based on the electricity demand extracted from the storage (hourly, daily, weekly, monthly, yearly)                                               Hourly/Daily/Weekly/Monthly/Yearly
 EnergyType                  Energy type based on the max/min energy to be produced by the unit (hourly, daily, weekly, monthly, yearly)                                                     Hourly/Daily/Weekly/Monthly/Yearly
