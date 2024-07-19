@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 18, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 19, 2024
 """
 
 import datetime
@@ -402,7 +402,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
 
         # assign duration 0 to load levels not being considered, active load levels are at the end of every pTimeStep
         for n in range(pTimeStep-2,-1,-1):
-            pDuration.iloc[[range(n,len(mTEPES.nn)*len(mTEPES.pp),pTimeStep)]] = 0
+            pDuration.iloc[[range(n,len(mTEPES.pp)*len(mTEPES.scc)*len(mTEPES.nn),pTimeStep)]] = 0
 
     #%% generation parameters
     pGenToNode                  = dfGeneration  ['Node'                      ]                                                      # generator location in node
@@ -558,9 +558,9 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     sBrList = [(ni,nf) for n,(ni,nf)  in enumerate(sBr) if (ni,nf) not in sBr[:n]]
 
     #%% defining subsets: active load levels (n,n2), thermal units (t), RES units (r), ESS units (es), candidate gen units (gc), candidate ESS units (ec), all the electric lines (la), candidate electric lines (lc), candidate DC electric lines (cd), existing DC electric lines (cd), electric lines with losses (ll), reference node (rf), and reactive generating units (gq)
-    mTEPES.p      = Set(initialize=mTEPES.pp,               ordered=True , doc='periods'                         , filter=lambda mTEPES,pp  : pp     in mTEPES.pp  and pPeriodWeight       [pp] >  0.0)
+    mTEPES.p      = Set(initialize=mTEPES.pp,               ordered=True , doc='periods'                         , filter=lambda mTEPES,pp  : pp     in mTEPES.pp  and pPeriodWeight       [pp] >  0.0 and sum(pDuration[pp,sc,n] for sc,n in mTEPES.scc*mTEPES.nn))
     mTEPES.sc     = Set(initialize=mTEPES.scc,              ordered=True , doc='scenarios'                       , filter=lambda mTEPES,scc : scc    in mTEPES.scc                                    )
-    mTEPES.ps     = Set(initialize=mTEPES.p*mTEPES.sc,      ordered=True , doc='periods/scenarios'               , filter=lambda mTEPES,p,sc: (p,sc) in mTEPES.p*mTEPES.sc and pScenProb [p,sc] >  0.0)
+    mTEPES.ps     = Set(initialize=mTEPES.p*mTEPES.sc,      ordered=True , doc='periods/scenarios'               , filter=lambda mTEPES,p,sc: (p,sc) in mTEPES.p*mTEPES.sc and pScenProb [p,sc] >  0.0 and sum(pDuration[p,sc,n ] for    n in            mTEPES.nn))
     mTEPES.st     = Set(initialize=mTEPES.stt,              ordered=True , doc='stages'                          , filter=lambda mTEPES,stt : stt    in mTEPES.stt and pStageWeight       [stt] >  0.0)
     mTEPES.n      = Set(initialize=mTEPES.nn,               ordered=True , doc='load levels'                     , filter=lambda mTEPES,nn  : nn     in mTEPES.nn  and sum(pDuration  [p,sc,nn] for p,sc in mTEPES.ps) > 0)
     mTEPES.n2     = Set(initialize=mTEPES.nn,               ordered=True , doc='load levels'                     , filter=lambda mTEPES,nn  : nn     in mTEPES.nn  and sum(pDuration  [p,sc,nn] for p,sc in mTEPES.ps) > 0)
