@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.17.4] - 2024-07-19
+[4.17.4] - 2024-07-23
 ----------------------
+- [FIXED] fix error in writing investment output results
 - [CHANGED] introduce outflow incompatibility column in Data_Generation file
 
 [4.17.3] - 2024-07-19

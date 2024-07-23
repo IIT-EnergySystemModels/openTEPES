@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 19, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 23, 2024
 """
 
 import time
@@ -216,7 +216,7 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutput,
 
         if sum(1 for ar in mTEPES.ar if sum(1 for g in g2a[ar])) > 1:
             if pIndPlotOutput == 1:
-                sPAREB           = [(p,ar,eb) for p,ar,eb in mTEPES.par*mTEPES.eb if eb in g2a[ar]]
+                sPAREB           = [(p,ar,eb) for p,ar,eb in mTEPES.par*mTEPES.eb if (p,eb) in mTEPES.peb and eb in g2a[ar]]
                 GenInvestToArea  = pd.Series(data=[OutputToFile['MW'][p,eb] for p,ar,eb in sPAREB], index=pd.Index(sPAREB)).to_frame(name='MW')
                 GenInvestToArea.index.names = ['Period', 'Area', 'Generating unit']
                 chart = alt.Chart(GenInvestToArea.reset_index()).mark_bar().encode(x='Generating unit:O', y='sum(MW):Q', color='Area:N', column='Period:N').properties(width=600, height=400)
@@ -228,7 +228,7 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutput,
 
         if pIndTechnologyOutput == 1 or pIndTechnologyOutput == 2:
             # Ordering data to plot the investment decision
-            OutputResults1 = pd.Series(data=[gt for p,eb,gt in mTEPES.peb*mTEPES.gt if eb in g2t[gt]], index=pd.Index(mTEPES.peb))
+            OutputResults1 = pd.Series(data=[gt for p,eb,gt in mTEPES.peb*mTEPES.gt if (p,eb) in mTEPES.peb and eb in g2t[gt]], index=pd.Index(mTEPES.peb))
             OutputResults1 = OutputResults1.to_frame(name='Technology')
             OutputResults2 = OutputToFile
             OutputResults  = pd.concat([OutputResults1, OutputResults2], axis=1)
@@ -289,7 +289,7 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutput,
 
         if sum(1 for ar in mTEPES.ar if sum(1 for g in g2a[ar])) > 1:
             if pIndPlotOutput == 1:
-                sPARGD           = [(p,ar,gd) for p,ar,gd in mTEPES.par*mTEPES.gd if gd in g2a[ar]]
+                sPARGD           = [(p,ar,gd) for p,ar,gd in mTEPES.par*mTEPES.gd if (p,gd) in mTEPES.pgd and gd in g2a[ar]]
                 GenRetireToArea  = pd.Series(data=[OutputToFile['MW'][p,gd] for p,ar,gd in sPARGD], index=pd.Index(sPARGD)).to_frame(name='MW')
                 GenRetireToArea.index.names = ['Period', 'Area', 'Generating unit']
                 chart = alt.Chart(GenRetireToArea.reset_index()).mark_bar().encode(x='Generating unit:O', y='sum(MW):Q', color='Area:N', column='Period:N').properties(width=600, height=400)
@@ -749,7 +749,7 @@ def ESSOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutpu
                 if sum(1 for eh in e2a[ar] if eh in e2e[et]):
                     sPSNET = [(p,sc,n,et) for p,sc,n,et in mTEPES.psnet if sum(1 for eh in e2a[ar] if (p,sc,n,eh) in mTEPES.psneh and eh in e2e[et])]
                     if len(sPSNET):
-                        OutputToFile = pd.Series(data=[sum(-OptModel.vESSTotalCharge[p,sc,n,eh]()*mTEPES.pLoadLevelDuration[p,sc,n]() for eh in e2a[ar] if eh in e2e[et]) for p,sc,n,et in sPSNET], index=pd.Index(sPSNET))
+                        OutputToFile = pd.Series(data=[sum(-OptModel.vESSTotalCharge[p,sc,n,eh]()*mTEPES.pLoadLevelDuration[p,sc,n]() for eh in e2a[ar] if (p,sc,n,eh) in mTEPES.psneh and eh in e2e[et]) for p,sc,n,et in sPSNET], index=pd.Index(sPSNET))
                         OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='GWh', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_TechnologyConsumptionEnergy_'+ar+'_'+CaseName+'.csv', sep=',')
 
                         if pIndPlotOutput == 1:
