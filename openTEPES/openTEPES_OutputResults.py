@@ -1600,7 +1600,10 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES, pIndPlotOutput):
     OutputToFile.rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_MarginalIncrementalVariableCost_'+CaseName+'.csv', sep=',')
     IncrementalGens = pd.Series('N/A', index=pd.Index(mTEPES.psn)).to_frame(name='Generating unit')
     for p,sc,n in mTEPES.psn:
-        IncrementalGens.loc[p,sc,n] = OutputToFile.loc[[(p,sc,n)]].squeeze().idxmin()
+        if len(OutputToFile.loc[(p,sc,n)]) > 1:
+            IncrementalGens.loc[p,sc,n] = OutputToFile.loc[[(p,sc,n)]].squeeze().idxmin()
+        else:
+            IncrementalGens.loc[p,sc,n] = OutputToFile.loc[(p,sc,n)].index[0]
     IncrementalGens.rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).to_csv(_path+'/oT_Result_MarginalIncrementalGenerator_'+CaseName+'.csv', index=True, sep=',')
 
     OutputToFile = pd.Series(data=[mTEPES.pEmissionRate[g] for p,sc,n,g in sPSNG], index=pd.Index(sPSNG))
