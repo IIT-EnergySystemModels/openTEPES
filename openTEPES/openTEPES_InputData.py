@@ -1995,8 +1995,9 @@ def SettingUpVariables(OptModel, mTEPES):
         mTEPES.n  = Set(initialize=mTEPES.nn , ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in mTEPES.nn                              and           (p,sc,st,nn) in mTEPES.s2n)
 
         if len(mTEPES.n):
+            mTEPES.psn1 = Set(initialize=[(p, sc, n) for p, sc, n in mTEPES.ps * mTEPES.n])
             # determine the first load level of each stage
-            n1 = next(iter(mTEPES.psn))
+            n1 = next(iter(mTEPES.psn1))
             # commit the units and their output at the first load level of each stage
             pSystemOutput = 0.0
             for nr in mTEPES.nr:
@@ -2004,6 +2005,7 @@ def SettingUpVariables(OptModel, mTEPES):
                     mTEPES.pInitialOutput[n1,nr] = mTEPES.pMaxPowerElec[n1,nr]
                     mTEPES.pInitialUC    [n1,nr] = 1
                     pSystemOutput               += mTEPES.pInitialOutput[n1,nr]()
+            mTEPES.del_component(mTEPES.psn1)
 
             # determine the initial committed units and their output at the first load level of each period, scenario, and stage
             for go in mTEPES.go:
