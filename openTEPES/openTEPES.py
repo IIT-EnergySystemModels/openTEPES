@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 23, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 01, 2024
 """
 
 # import dill as pickle
@@ -39,8 +39,8 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     idxDict['y'  ] = 1
 
     #%% model declaration
-    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.17.4 - July 23, 2024')
-    print(                 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.17.4 - July 23, 2024', file=open(_path+'/openTEPES_version_'+CaseName+'.log','w'))
+    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.17.4 - August 01, 2024')
+    print(                 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.17.4 - August 01, 2024', file=open(_path+'/openTEPES_version_'+CaseName+'.log','w'))
 
     pIndOutputResults = [j for i,j in idxDict.items() if i == pIndOutputResults][0]
     pIndLogConsole    = [j for i,j in idxDict.items() if i == pIndLogConsole   ][0]
@@ -142,14 +142,14 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
 
                 if pIndLogConsole == 1:
                     StartTime         = time.time()
-                    mTEPES.write(_path+'/openTEPES_'+CaseName+'_'+str(p)+'_'+str(sc)+'.lp', io_options={'symbolic_solver_labels': True})
+                    mTEPES.write(_path+'/openTEPES_'+CaseName+'_'+str(p)+'_'+str(sc)+'_'+str(st)+'.lp', io_options={'symbolic_solver_labels': True})
                     WritingLPFileTime = time.time() - StartTime
                     StartTime         = time.time()
                     print('Writing LP file                        ... ', round(WritingLPFileTime), 's')
 
                 # there are no expansion decisions, or they are ignored (it is an operation planning model)
                 mTEPES.pScenProb[p,sc] = 1.0
-                ProblemSolving(DirName, CaseName, SolverName, mTEPES, mTEPES, pIndLogConsole, p, sc)
+                ProblemSolving(DirName, CaseName, SolverName, mTEPES, mTEPES, pIndLogConsole, p, sc, st)
                 mTEPES.pScenProb[p,sc] = 0.0
                 # deactivate the constraints of the previous period and scenario
                 for c in mTEPES.component_objects(pyo.Constraint, active=True):
@@ -187,13 +187,13 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
 
                     if pIndLogConsole == 1:
                         StartTime         = time.time()
-                        mTEPES.write(_path+'/openTEPES_'+CaseName+'_'+str(p)+'_'+str(sc)+'.lp', io_options={'symbolic_solver_labels': True})
+                        mTEPES.write(_path+'/openTEPES_'+CaseName+'_'+str(p)+'_'+str(sc)+'_'+str(st)+'.lp', io_options={'symbolic_solver_labels': True})
                         WritingLPFileTime = time.time() - StartTime
                         StartTime         = time.time()
                         print('Writing LP file                        ... ', round(WritingLPFileTime), 's')
 
                     # there are investment decisions (it is an expansion and operation planning model)
-                    ProblemSolving(DirName, CaseName, SolverName, mTEPES, mTEPES, pIndLogConsole, p, sc)
+                    ProblemSolving(DirName, CaseName, SolverName, mTEPES, mTEPES, pIndLogConsole, p, sc, st)
 
     mTEPES.del_component(mTEPES.st)
     mTEPES.del_component(mTEPES.n )

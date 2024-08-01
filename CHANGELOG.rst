@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.17.4] - 2024-07-23
+[4.17.4] - 2024-08-01
 ----------------------
+- [FIXED] fix error when solving by stages
 - [FIXED] fix error in writing investment output results
 - [CHANGED] introduce outflow incompatibility column in Data_Generation file
 

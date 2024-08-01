@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 29, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 01, 2024
 """
 
 import time
@@ -12,7 +12,7 @@ from   pyomo.opt             import SolverFactory, SolverStatus, TerminationCond
 from   pyomo.util.infeasible import log_infeasible_constraints
 from   pyomo.environ         import Suffix
 
-def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConsole, p, sc):
+def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConsole, p, sc, st):
     print('Problem solving                        ****')
     _path = os.path.join(DirName, CaseName)
     StartTime = time.time()
@@ -138,12 +138,18 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
             for index in con:
                 pDuals[str(con.name)+str(index)] = OptModel.dual[con[index]]
 
-    # delete dual and rc suffixes if they exist
-    if idx > 0:
-        OptModel.del_component(OptModel.dual)
-        OptModel.del_component(OptModel.rc  )
-
     mTEPES.pDuals.update(pDuals)
+
+    # save values of each stage
+    for n in mTEPES.n:
+        OptModel.vTotalGCost[p,sc,n].fix(OptModel.vTotalGCost[p,sc,n]())
+        OptModel.vTotalCCost[p,sc,n].fix(OptModel.vTotalCCost[p,sc,n]())
+        OptModel.vTotalECost[p,sc,n].fix(OptModel.vTotalECost[p,sc,n]())
+        OptModel.vTotalRCost[p,sc,n].fix(OptModel.vTotalRCost[p,sc,n]())
+
+    # delete dual and rc suffixes
+    OptModel.del_component(OptModel.dual)
+    OptModel.del_component(OptModel.rc  )
 
     SolvingTime = time.time() - StartTime
 
@@ -153,7 +159,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
     print    ('  Total system                 cost [MEUR] ', OptModel.vTotalSCost())
     if mTEPES.NoRepetition == 1:
         for pp,scc in mTEPES.ps:
-            print    ('***** Period: '+str(pp)+', Scenario: '+str(scc)+' ******')
+            print    ('***** Period: '+str(pp)+', Scenario: '+str(scc)+', Stage: '+str(st)+' ******')
             print    ('  Total generation  investment cost [MEUR] ', sum(mTEPES.pDiscountedWeight[pp] * mTEPES.pGenInvestCost    [gc      ]   * OptModel.vGenerationInvest[pp,gc      ]() for gc       in mTEPES.gc if (pp,gc)       in mTEPES.pgc))
             print    ('  Total generation  retirement cost [MEUR] ', sum(mTEPES.pDiscountedWeight[pp] * mTEPES.pGenRetireCost    [gd      ]   * OptModel.vGenerationRetire[pp,gd      ]() for gd       in mTEPES.gd if (pp,gd)       in mTEPES.pgd))
             if mTEPES.pIndHydroTopology == 1 and len(mTEPES.rn):
@@ -174,7 +180,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
             print    ('  Total emission               cost [MEUR] ', sum(mTEPES.pDiscountedWeight[pp] * mTEPES.pScenProb         [pp,scc  ]() * OptModel.vTotalECost      [pp,scc,n    ]() for n        in mTEPES.n ))
             print    ('  Total reliability            cost [MEUR] ', sum(mTEPES.pDiscountedWeight[pp] * mTEPES.pScenProb         [pp,scc  ]() * OptModel.vTotalRCost      [pp,scc,n    ]() for n        in mTEPES.n ))
     else:
-        print        ('***** Period: '+str(p)+', Scenario: '+str(sc)+' ******')
+        print        ('***** Period: '+str(p)+', Scenario: '+str(sc)+', Stage: '+str(st)+' ******')
         print        ('  Total generation  investment cost [MEUR] ', sum(mTEPES.pDiscountedWeight[p]  * mTEPES.pGenInvestCost    [gc      ]   * OptModel.vGenerationInvest[p,gc        ]() for gc       in mTEPES.gc if (p,gc)       in mTEPES.pgc))
         print        ('  Total generation  retirement cost [MEUR] ', sum(mTEPES.pDiscountedWeight[p]  * mTEPES.pGenRetireCost    [gd      ]   * OptModel.vGenerationRetire[p,gd        ]() for gd       in mTEPES.gd if (p,gd)       in mTEPES.pgd))
         if mTEPES.pIndHydroTopology == 1 and len(mTEPES.rn):
