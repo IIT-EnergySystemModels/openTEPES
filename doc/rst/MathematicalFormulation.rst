@@ -179,7 +179,7 @@ They are written in **uppercase** letters.
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 :math:`CFT_{ijc}`                          Annualized fixed cost of a candidate electricity transmission line                                                                         M€/yr
 :math:`\overline{F}_{ijc}`                 Net transfer capacity (total transfer capacity multiplied by the security coefficient) of a transmission line                              GW
-:math:`\overline{F}'_{ijc}`                Maximum flow used in the Kirchhoff's 2nd law constraint (e.g., disjunctive constraint for the candidate AC lines)                          GW
+:math:`\overline{F}'_{ijc}`                Maximum power flow used in the Kirchhoff's 2nd law constraint (e.g., disjunctive constraint for the candidate AC lines)                    GW
 :math:`L_{ijc}`                            Loss factor of an electric transmission line                                                                                               p.u.
 :math:`X_{ijc}`                            Reactance of an electric transmission line                                                                                                 p.u.
 :math:`SON_{ijc}, SOF_{ijc}`               Minimum switch-on and switch-off state of a line                                                                                           h
@@ -584,7 +584,7 @@ Minimum switch-on and switch-off state of a line [h] «``eMinSwOnState``» «``e
 
 :math:`\sum_{n'=n+\nu-SOF_{ijc}}^n sof^p_{\omega n'ijc} \leq 1 - swt^p_{\omega nijc} \quad \forall p \omega nijc`
 
-Flow limit in transmission lines [p.u.] «``eNetCapacity1``» «``eNetCapacity2``»
+Power flow limit in transmission lines [p.u.] «``eNetCapacity1``» «``eNetCapacity2``»
 
 :math:`- swt^p_{\omega nijc} \leq \frac{f^p_{\omega nijc}}{\overline{F}_{ijc}} \leq swt^p_{\omega nijc} \quad \forall p \omega nijc`
 
@@ -594,7 +594,7 @@ DC Power flow for existing and non-switchable, and candidate and switchable AC-t
 
 :math:`-1+swt^p_{\omega nijc} \leq \frac{f^p_{\omega nijc}}{\overline{F}'_{ijc}} - (\theta^p_{\omega ni} - \theta^p_{\omega nj})\frac{S_B}{X_{ijc}\overline{F}'_{ijc}} \leq 1-swt^p_{\omega nijc} \quad \forall p \omega nijc, ijc \in CL`
 
-Half ohmic losses are linearly approximated as a function of the flow [GW] «``eLineLosses1``» «``eLineLosses2``»
+Half ohmic losses are linearly approximated as a function of the power flow [GW] «``eLineLosses1``» «``eLineLosses2``»
 
 :math:`- \frac{L_{ijc}}{2} f^p_{\omega nijc} \leq l^p_{\omega nijc} \geq \frac{L_{ijc}}{2} f^p_{\omega nijc} \quad \forall p \omega nijc`
 
@@ -603,7 +603,7 @@ See the cycle constraints for the AC power flow formulation in the following ref
 
 * E.F. Álvarez, J.C. López, L. Olmos, A. Ramos "An Optimal Expansion Planning of Power Systems Considering Cycle-Based AC Optimal Power Flow" Sustainable Energy, Grids and Networks, May 2024. `10.1016/j.segan.2024.101413 <https://doi.org/10.1016/j.segan.2024.101413>`_
 
-Kirchhoff's second law is substituted by a cycle flow formulation for cycles with only AC existing lines [rad]
+Kirchhoff's second law is substituted by a cycle power flow formulation for cycles with only AC existing lines [rad]
 
 :math:`\sum_{ijc \in cy} f_{ωpnijc} \frac{X_{ijc}}{S_B} = 0 \quad \forall ωpn,cy, cy \in CY`
 
