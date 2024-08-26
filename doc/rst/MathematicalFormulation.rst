@@ -588,7 +588,7 @@ Power flow limit in transmission lines [p.u.] «``eNetCapacity1``» «``eNetCapa
 
 :math:`- swt^p_{\omega nijc} \leq \frac{f^p_{\omega nijc}}{\overline{F}_{ijc}} \leq swt^p_{\omega nijc} \quad \forall p \omega nijc`
 
-DC Power flow for existing and non-switchable, and candidate and switchable AC-type lines (Kirchhoff's second law) [rad] «``eKirchhoff2ndLaw1``» «``eKirchhoff2ndLaw2``»
+DC Optimal power flow for existing and non-switchable, and candidate and switchable AC-type lines (Kirchhoff's second law) [rad] «``eKirchhoff2ndLaw1``» «``eKirchhoff2ndLaw2``»
 
 :math:`\frac{f^p_{\omega nijc}}{\overline{F}'_{ijc}} - (\theta^p_{\omega ni} - \theta^p_{\omega nj})\frac{S_B}{X_{ijc}\overline{F}'_{ijc}} = 0 \quad \forall p \omega nijc, ijc \in EL`
 
@@ -598,7 +598,7 @@ Half ohmic losses are linearly approximated as a function of the power flow [GW]
 
 :math:`- \frac{L_{ijc}}{2} f^p_{\omega nijc} \leq l^p_{\omega nijc} \geq \frac{L_{ijc}}{2} f^p_{\omega nijc} \quad \forall p \omega nijc`
 
-Cycle constraints for AC existing lines with DC power flow formulation [rad] «``eCycleKirchhoff2ndLawCnd1``» «``eCycleKirchhoff2ndLawCnd2``».
+Cycle constraints for AC existing lines with DC optimal power flow formulation [rad] «``eCycleKirchhoff2ndLawCnd1``» «``eCycleKirchhoff2ndLawCnd2``».
 See the cycle constraints for the AC power flow formulation in the following reference:
 
 * E.F. Álvarez, J.C. López, L. Olmos, A. Ramos "An Optimal Expansion Planning of Power Systems Considering Cycle-Based AC Optimal Power Flow" Sustainable Energy, Grids and Networks, May 2024. `10.1016/j.segan.2024.101413 <https://doi.org/10.1016/j.segan.2024.101413>`_
