@@ -1763,7 +1763,7 @@ def ReliabilityResults(DirName, CaseName, OptModel, mTEPES):
 
     # Determination of the net demand
     if len(mTEPES.re):
-        OutputToFile1 = pd.Series(data=[sum(OptModel.vTotalOutput[p,sc,n,re]() for re in r2r[rt] if (p,re) in mTEPES.pre) for p,sc,n,nd in mTEPES.psnnd], index=pd.Index(mTEPES.psnnd))
+        OutputToFile1 = pd.Series(data=[sum(OptModel.vTotalOutput[p,sc,n,re]() for rt in model.rt for re in r2r[rt] if (p,re) in mTEPES.pre) for p,sc,n,nd in mTEPES.psnnd], index=pd.Index(mTEPES.psnnd))
     else:
         OutputToFile1 = pd.Series(data=[0.0                                                                               for p,sc,n,nd in mTEPES.psnnd], index=pd.Index(mTEPES.psnnd))
     OutputToFile2 = pd.Series(data=[      mTEPES.pDemandElec     [p,sc,n,nd]                                              for p,sc,n,nd in mTEPES.psnnd], index=pd.Index(mTEPES.psnnd))
