@@ -15,6 +15,7 @@ classifiers = [
   "Programming Language :: Python :: 3.11",]
 requires-python = ">=3.11"
 description-file = "README.rst"
+readme = "README.rst"
 requires = [
   "pyomo>=5.7.3",
   "matplotlib>=3.3.4",
