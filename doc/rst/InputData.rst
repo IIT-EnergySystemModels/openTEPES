@@ -19,7 +19,7 @@ CC          Capacity Credit
 CCGT        Combined Cycle Gas Turbine
 CHP         Combined Heat and Power. Cogeneration (produces electricity and heat simultaneously)
 DC          Direct Current
-DCPF        DC Power Flow
+DCPF        DC Optimal Power Flow
 DR          Demand Response
 DSM         Demand-Side Management (e.g., load shifting)
 DSR         Demand-Side Response (e.g., interruptibility)
@@ -594,7 +594,7 @@ InitialPeriod        Initial period (year) when the unit is installed or can be 
 FinalPeriod          Final   period (year) when the unit is installed or can be installed, if candidate                               Year
 Voltage              Line voltage (e.g., 400, 220 kV, 220/400 kV if transformer). Used only for plotting purposes                     kV
 Length               Line length (only used for reporting purposes). If not defined, computed as 1.1 times the geographical distance  km
-LossFactor           Transmission losses equal to the line flow times this factor                                                     p.u.
+LossFactor           Transmission losses equal to the line power flow times this factor                                               p.u.
 Resistance           Resistance (not used in this version)                                                                            p.u.
 Reactance            Reactance. Lines must have a reactance different from 0 to be considered                                         p.u.
 Susceptance          Susceptance (not used in this version)                                                                           p.u.
