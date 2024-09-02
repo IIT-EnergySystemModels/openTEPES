@@ -150,7 +150,7 @@ Period        Scenario      p.u.        Per unit largest unit
 ============  ============  ==========  ============================
 
 Electricity generation operation
---------------------
+--------------------------------
 
 File ``oT_Result_GenerationCommitment.csv``
 
@@ -773,7 +773,7 @@ Period        Scenario    Load level  Node        Hydrogen not served by node [t
 ============  ==========  ==========  ==========  ====================================
 
 Heat generation operation
---------------------
+-------------------------
 
 File ``oT_Result_GenerationHeat.csv``
 
