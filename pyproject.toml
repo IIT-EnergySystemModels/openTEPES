@@ -24,7 +24,7 @@ requires = [
   "colour>=0.1.5",
   "altair>=5.0.0",
   "psutil>=5.8.0",
-  "jsonschema==4.16.0",
+  "jsonschema>=4.16.0",
   "networkx>=3.3",
   "dill>=0.3.8",]
 
