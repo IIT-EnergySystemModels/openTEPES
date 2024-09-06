@@ -1056,7 +1056,7 @@ def GenerationOperationModelFormulationRampMinTime(OptModel, mTEPES, pIndLogCons
     if pIndLogConsole == 1:
         print('eRampDwChr            ... ', len(getattr(OptModel, 'eRampDwChr_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
 
-    # the small tolerance pEpsilon=1e-5 is added to detect if the generator is ramping up/down
+    # the small tolerance pEpsilon=5e-2 is added to detect if the generator is ramping up/down
     pEpsilon = 5e-2
     def eRampUpState(OptModel,n,nr):
         if (p,nr) in mTEPES.pnr:
