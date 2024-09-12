@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.17.4] - 2024-08-08
+[4.17.4] - 2024-09-12
 ----------------------
+- [FIXED] avoid considering the hydro units as marginal incremental generators
 - [CHANGED] split generation and consumption in ESS technologies
 - [FIXED] fix error when solving by stages
 - [FIXED] fix error in writing investment output results
