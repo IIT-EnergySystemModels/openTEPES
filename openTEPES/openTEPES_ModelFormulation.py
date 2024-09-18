@@ -1314,8 +1314,8 @@ def NetworkCycles(mTEPES, pIndLogConsole):
     pUniqueCircuits = pUniqueCircuits[pUniqueCircuits['0/1'] == 1]
 
     # unique and parallel circuits of existing lines
-    mTEPES.ucte = Set(initialize=mTEPES.lea, ordered=False, doc='unique   circuits', filter=lambda mTEPES,ni,nf,cc: (ni,nf,cc) in pUniqueCircuits['0/1'    ])
-    mTEPES.pct  = Set(initialize=mTEPES.br , ordered=False, doc='parallel circuits', filter=lambda mTEPES,ni,nf   : (ni,nf   ) in pNoCircuits['No.Circuits'])
+    mTEPES.ucte = Set(initialize=mTEPES.lea, doc='unique   circuits', filter=lambda mTEPES,ni,nf,cc: (ni,nf,cc) in pUniqueCircuits['0/1'    ])
+    mTEPES.pct  = Set(initialize=mTEPES.br , doc='parallel circuits', filter=lambda mTEPES,ni,nf   : (ni,nf   ) in pNoCircuits['No.Circuits'])
     mTEPES.cye  = RangeSet(0,len(mTEPES.nce)-1)
 
     # graph with all AC existing and candidate lines
@@ -1339,10 +1339,10 @@ def NetworkCycles(mTEPES, pIndLogConsole):
     pUniqueCircuits = pUniqueCircuits[pUniqueCircuits['0/1'] == 1]
 
     # unique and parallel circuits of candidate lines
-    mTEPES.uctc = Set(initialize=mTEPES.laa, ordered=False, doc='unique   circuits', filter=lambda mTEPES,ni,nf,cc: (ni,nf,cc) in pUniqueCircuits['0/1'])
+    mTEPES.uctc = Set(initialize=mTEPES.laa, doc='unique   circuits', filter=lambda mTEPES,ni,nf,cc: (ni,nf,cc) in pUniqueCircuits['0/1'])
     mTEPES.cyc  = RangeSet(0,len(mTEPES.ncd)-1)
     # candidate lines included in every cycle
-    mTEPES.lcac = Set(initialize=mTEPES.cyc*mTEPES.lca, ordered=False, doc='AC candidate circuits in a cycle', filter=lambda mTEPES,cyc,ni,nf,cc: (ni,nf) in list(zip(mTEPES.ncd[cyc], mTEPES.ncd[cyc][1:] + mTEPES.ncd[cyc][:1])) or (nf,ni) in list(zip(mTEPES.ncd[cyc], mTEPES.ncd[cyc][1:] + mTEPES.ncd[cyc][:1])))
+    mTEPES.lcac = Set(initialize=mTEPES.cyc*mTEPES.lca, doc='AC candidate circuits in a cycle', filter=lambda mTEPES,cyc,ni,nf,cc: (ni,nf) in list(zip(mTEPES.ncd[cyc], mTEPES.ncd[cyc][1:] + mTEPES.ncd[cyc][:1])) or (nf,ni) in list(zip(mTEPES.ncd[cyc], mTEPES.ncd[cyc][1:] + mTEPES.ncd[cyc][:1])))
 
     pBigMTheta = pd.DataFrame(0, index=pd.MultiIndex.from_tuples(mTEPES.cyc*mTEPES.lca, names=('No.Cycle', 'NodeI', 'NodeF', 'Circuit')), columns=['rad'])
     # for cyc,nii,nff,ccc in mTEPES.cyc*mTEPES.lca:
