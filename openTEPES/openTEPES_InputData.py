@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 19, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 18, 2024
 """
 
 import datetime
@@ -565,7 +565,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.st     = Set(initialize=mTEPES.stt,              ordered=True , doc='stages'                          , filter=lambda mTEPES,stt : stt    in mTEPES.stt and pStageWeight       [stt] >  0.0)
     mTEPES.n      = Set(initialize=mTEPES.nn,               ordered=True , doc='load levels'                     , filter=lambda mTEPES,nn  : nn     in mTEPES.nn  and sum(pDuration  [p,sc,nn] for p,sc in mTEPES.ps) > 0)
     mTEPES.n2     = Set(initialize=mTEPES.nn,               ordered=True , doc='load levels'                     , filter=lambda mTEPES,nn  : nn     in mTEPES.nn  and sum(pDuration  [p,sc,nn] for p,sc in mTEPES.ps) > 0)
-    mTEPES.g      = Set(initialize=mTEPES.gg,               ordered=False, doc='generating              units'   , filter=lambda mTEPES,gg  : gg     in mTEPES.gg  and (pRatedMaxPowerElec [gg] >  0.0 or  pRatedMaxCharge[gg] >  0.0 or pRatedMaxPowerHeat    [gg] >  0.0) and pElecGenPeriodIni[gg] <= mTEPES.p.last() and pElecGenPeriodFin[gg] >= mTEPES.p.first() and pGenToNode.reset_index().set_index(['index']).isin(mTEPES.nd)['Node'][gg])  # excludes generators with empty node
+    mTEPES.g      = Set(initialize=mTEPES.gg,               ordered=True , doc='generating              units'   , filter=lambda mTEPES,gg  : gg     in mTEPES.gg  and (pRatedMaxPowerElec [gg] >  0.0 or  pRatedMaxCharge[gg] >  0.0 or pRatedMaxPowerHeat    [gg] >  0.0) and pElecGenPeriodIni[gg] <= mTEPES.p.last() and pElecGenPeriodFin[gg] >= mTEPES.p.first() and pGenToNode.reset_index().set_index(['index']).isin(mTEPES.nd)['Node'][gg])  # excludes generators with empty node
     mTEPES.t      = Set(initialize=mTEPES.g ,               ordered=False, doc='thermal                 units'   , filter=lambda mTEPES,g   : g      in mTEPES.g   and pRatedLinearOperCost[g ] >  0.0)
     mTEPES.re     = Set(initialize=mTEPES.g ,               ordered=False, doc='RES                     units'   , filter=lambda mTEPES,g   : g      in mTEPES.g   and pRatedLinearOperCost[g ] == 0.0 and pRatedMaxStorage[g] == 0.0   and pProductionFunctionH2[g ] == 0.0 and pProductionFunctionHeat[g ] == 0.0  and pProductionFunctionHydro[g ] == 0.0)
     mTEPES.es     = Set(initialize=mTEPES.g ,               ordered=False, doc='ESS                     units'   , filter=lambda mTEPES,g   : g      in mTEPES.g   and     (pRatedMaxCharge[g ] >  0.0 or  pRatedMaxStorage[g] >  0.0    or pProductionFunctionH2[g ]  > 0.0  or pProductionFunctionHeat[g ]  > 0.0) and pProductionFunctionHydro[g ] == 0.0)
@@ -823,6 +823,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.z2g = Set(initialize=mTEPES.zn*mTEPES.g, ordered=False, doc='zone   to generator', filter=lambda mTEPES,zn,g: (zn,g) in pZone2Gen  )
     mTEPES.a2g = Set(initialize=mTEPES.ar*mTEPES.g, ordered=False, doc='area   to generator', filter=lambda mTEPES,ar,g: (ar,g) in pArea2Gen  )
     mTEPES.r2g = Set(initialize=mTEPES.rg*mTEPES.g, ordered=False, doc='region to generator', filter=lambda mTEPES,rg,g: (rg,g) in pRegion2Gen)
+
+    # mTEPES.z2g  = Set(initialize = [(zn,g) for zn,g in mTEPES.zn*mTEPES.g if (zn,g) in pZone2Gen])
 
     #%% inverse index generator to technology
     pTechnologyToGen = pGenToTechnology.reset_index().set_index('Technology').set_axis(['Generator'], axis=1)[['Generator']]
@@ -1236,6 +1238,11 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     # pEmissionCost.update      (pd.Series([0.0 for g  in mTEPES.g  if abs(pEmissionCost        [g ]) < pEpsilon], index=[g  for g  in mTEPES.g  if abs(pEmissionCost        [g ]) < pEpsilon]))
     pStartUpCost.update         (pd.Series([0.0 for nr in mTEPES.nr if     pStartUpCost         [nr]  < pEpsilon], index=[nr for nr in mTEPES.nr if     pStartUpCost         [nr]  < pEpsilon]))
     pShutDownCost.update        (pd.Series([0.0 for nr in mTEPES.nr if     pShutDownCost        [nr]  < pEpsilon], index=[nr for nr in mTEPES.nr if     pShutDownCost        [nr]  < pEpsilon]))
+
+    # this rated linear variable cost y going to be used to order the generating units
+    # we include a small term to avoid stochastic behavior due to equal values
+    for g in mTEPES.g:
+        pRatedLinearVarCost[g] += 1e-3*pEpsilon*mTEPES.g.ord(g)
 
     # BigM maximum flow to be used in the Kirchhoff's 2nd law disjunctive constraint
     pBigMFlowBck = pLineNTCBck*0.0
@@ -1983,9 +1990,9 @@ def SettingUpVariables(OptModel, mTEPES):
     nFixedVariables += nFixedGeneratorCommits
     # thermal and RES units ordered by increasing variable operation cost, excluding reactive generating units
     if len(mTEPES.tq):
-        mTEPES.go = [k for k in sorted(mTEPES.pRatedLinearVarCost, key=mTEPES.pRatedLinearVarCost.__getitem__) if k not in mTEPES.sq]
+        mTEPES.go = Set(initialize=[g for g in sorted(mTEPES.pRatedLinearVarCost, key=mTEPES.pRatedLinearVarCost.__getitem__) if g not in mTEPES.sq])
     else:
-        mTEPES.go = [k for k in sorted(mTEPES.pRatedLinearVarCost, key=mTEPES.pRatedLinearVarCost.__getitem__)                      ]
+        mTEPES.go = Set(initialize=[g for g in sorted(mTEPES.pRatedLinearVarCost, key=mTEPES.pRatedLinearVarCost.__getitem__) if g not in mTEPES.eh])
 
     for p,sc,st in mTEPES.ps*mTEPES.stt:
         # activate only period, scenario, and load levels to formulate
@@ -1995,7 +2002,7 @@ def SettingUpVariables(OptModel, mTEPES):
         mTEPES.n  = Set(initialize=mTEPES.nn , ordered=True, doc='load levels', filter=lambda mTEPES,nn : nn  in mTEPES.nn                              and           (p,sc,st,nn) in mTEPES.s2n)
 
         if len(mTEPES.n):
-            mTEPES.psn1 = Set(initialize=[(p, sc, n) for p, sc, n in mTEPES.ps * mTEPES.n])
+            mTEPES.psn1 = Set(initialize=[(p,sc,n) for p,sc,n in mTEPES.ps*mTEPES.n])
             # determine the first load level of each stage
             n1 = next(iter(mTEPES.psn1))
             # commit the units and their output at the first load level of each stage
@@ -2016,7 +2023,7 @@ def SettingUpVariables(OptModel, mTEPES):
                         else:
                             mTEPES.pInitialOutput[n1,go] = mTEPES.pMinPowerElec[n1,go]
                         mTEPES.pInitialUC[n1,go] = 1
-                        pSystemOutput = pSystemOutput + mTEPES.pInitialOutput[n1,go]()
+                        pSystemOutput           += mTEPES.pInitialOutput[n1,go]()
 
             # determine the initial committed lines
             for la in mTEPES.la:
