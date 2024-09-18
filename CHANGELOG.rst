@@ -1,6 +1,10 @@
 Change Log
 =============
 
+[4.17.5] - 2024-09-18
+----------------------
+- [FIXED] avoid degeneracy when ordering generating units by increasing variable costs
+
 [4.17.4] - 2024-09-12
 ----------------------
 - [FIXED] avoid considering the hydro units as marginal incremental generators
