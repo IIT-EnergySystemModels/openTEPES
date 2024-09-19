@@ -22,6 +22,7 @@ jobs:
       run: |
         conda install glpk cartopy
         pip install openTEPES
+        pip install highspy
     - name: Lint with flake8
       run: |
         conda install flake8
