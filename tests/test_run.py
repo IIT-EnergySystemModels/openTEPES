@@ -14,7 +14,8 @@ def case_9n_7d_system():
             os.path.join(os.path.dirname(__file__), "../openTEPES")
         ),
         CaseName="9n",
-        SolverName="appsi_highs",
+        # SolverName="appsi_highs",
+        SolverName="glpk",
         pIndLogConsole=0,
         pIndOutputResults=0,
     )
@@ -43,4 +44,4 @@ def case_9n_7d_system():
 def test_openTEPES_run(case_9n_7d_system):
     mTEPES = openTEPES_run(**case_9n_7d_system)
     assert mTEPES is not None
-    # np.testing.assert_approx_equal(pyo.value(mTEPES.eTotalSCost), 5.575775558785906)
+    np.testing.assert_approx_equal(pyo.value(mTEPES.eTotalSCost), 5.575775558785906)
