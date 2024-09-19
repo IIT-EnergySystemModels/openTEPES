@@ -42,4 +42,5 @@ def case_9n_7d_system():
 
 def test_openTEPES_run(case_9n_7d_system):
     mTEPES = openTEPES_run(**case_9n_7d_system)
-    # np.testing.assert_approx_equal(pyo.value(mTEPES.eTotalSCost), 6.2137322775927135)
+    assert mTEPES is not None
+    np.testing.assert_approx_equal(pyo.value(mTEPES.eTotalSCost), 5.575775558785906)
