@@ -42,5 +42,4 @@ def case_9n_7d_system():
 
 def test_openTEPES_run(case_9n_7d_system):
     mTEPES = openTEPES_run(**case_9n_7d_system)
-    print(f"Objective function value: {pyo.value(mTEPES.eTotalSCost)}, for the 9n case with 7d.")
     # np.testing.assert_approx_equal(pyo.value(mTEPES.eTotalSCost), 6.2137322775927135)
