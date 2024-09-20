@@ -593,7 +593,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.sqc    = Set(doc='synchr reactive candidate')
     mTEPES.shc    = Set(doc='shunt           candidate')
     if pIndHydroTopology == 1:
-        mTEPES.rn = Set(doc='candidate reservoirs'             , initialize=[rs     for rs   in mTEPES.rs  and pRsrInvestCost      [rs] >  0.0 and                                                     pRsrPeriodIni[rs]      <= mTEPES.p.last() and pRsrPeriodFin[rs]      >= mTEPES.p.first()])
+        mTEPES.rn = Set(doc='candidate reservoirs'             , initialize=[rs     for rs   in mTEPES.rs   if pRsrInvestCost      [rs] >  0.0 and                                                     pRsrPeriodIni[rs]    <= mTEPES.p.last() and pRsrPeriodFin[rs]      >= mTEPES.p.first()])
     else:
         mTEPES.rn = Set(doc='candidate reservoirs'             , initialize=[]                      )
     if pIndHydrogen      == 1:
