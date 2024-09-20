@@ -593,30 +593,30 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.sqc    = Set(doc='synchr reactive candidate')
     mTEPES.shc    = Set(doc='shunt           candidate')
     if pIndHydroTopology == 1:
-        mTEPES.rn = Set(doc='candidate reservoirs'             , initialize=[rs     in mTEPES.rs  and pRsrInvestCost      [rs] >  0.0 and                                                     pRsrPeriodIni[rs]      <= mTEPES.p.last() and pRsrPeriodFin[rs]      >= mTEPES.p.first()])
+        mTEPES.rn = Set(doc='candidate reservoirs'             , initialize=[rs     for rs   in mTEPES.rs  and pRsrInvestCost      [rs] >  0.0 and                                                     pRsrPeriodIni[rs]      <= mTEPES.p.last() and pRsrPeriodFin[rs]      >= mTEPES.p.first()])
     else:
         mTEPES.rn = Set(doc='candidate reservoirs'             , initialize=[]                      )
     if pIndHydrogen      == 1:
         mTEPES.pn = Set(doc='all input hydrogen pipes'         , initialize=dfNetworkHydrogen.index                                   )
-        mTEPES.pa = Set(doc='all real  hydrogen pipes'         , initialize=[pn     in mTEPES.pn  and pH2PipeNTCFrw       [pn] >  0.0 and pH2PipeNTCBck[pn] > 0.0 and                         pH2PipePeriodIni[pn]   <= mTEPES.p.last() and pH2PipePeriodFin[pn]   >= mTEPES.p.first()])
-        mTEPES.pc = Set(doc='candidate hydrogen pipes'         , initialize=[pa     in mTEPES.pa  and pH2PipeFixedCost    [pa] >  0.0])
+        mTEPES.pa = Set(doc='all real  hydrogen pipes'         , initialize=[pn     for pn   in mTEPES.pn  and pH2PipeNTCFrw       [pn] >  0.0 and pH2PipeNTCBck[pn] > 0.0 and                         pH2PipePeriodIni[pn]   <= mTEPES.p.last() and pH2PipePeriodFin[pn]   >= mTEPES.p.first()])
+        mTEPES.pc = Set(doc='candidate hydrogen pipes'         , initialize=[pa     for pa   in mTEPES.pa  and pH2PipeFixedCost    [pa] >  0.0])
         # existing hydrogen pipelines (pe)
         mTEPES.pe = mTEPES.pa - mTEPES.pc
     else:
-        mTEPES.pn = Set(doc='all input hydrogen pipes', initialize=[])
-        mTEPES.pa = Set(doc='all real  hydrogen pipes', initialize=[])
-        mTEPES.pc = Set(doc='candidate hydrogen pipes', initialize=[])
+        mTEPES.pn = Set(doc='all input hydrogen pipes'         , initialize=[])
+        mTEPES.pa = Set(doc='all real  hydrogen pipes'         , initialize=[])
+        mTEPES.pc = Set(doc='candidate hydrogen pipes'         , initialize=[])
 
     if pIndHeat        == 1:
-        mTEPES.hn = Set(doc='all input heat pipes', initialize=dfNetworkHeat.index)
-        mTEPES.ha = Set(doc='all real  heat pipes', initialize=[hn     in mTEPES.hn  and pHeatPipeNTCFrw     [hn] >  0.0 and pHeatPipeNTCBck[hn] > 0.0 and pHeatPipePeriodIni[hn] <= mTEPES.p.last() and pHeatPipePeriodFin[hn] >= mTEPES.p.first()])
-        mTEPES.hc = Set(doc='candidate heat pipes', initialize=[ha     in mTEPES.ha  and pHeatPipeFixedCost  [ha] >  0.0])
+        mTEPES.hn = Set(doc='all input heat pipes'             , initialize=dfNetworkHeat.index)
+        mTEPES.ha = Set(doc='all real  heat pipes'             , initialize=[hn     for hn   in mTEPES.hn  and pHeatPipeNTCFrw     [hn] >  0.0 and pHeatPipeNTCBck[hn] > 0.0 and pHeatPipePeriodIni[hn] <= mTEPES.p.last() and pHeatPipePeriodFin[hn] >= mTEPES.p.first()])
+        mTEPES.hc = Set(doc='candidate heat pipes'             , initialize=[ha     for ha   in mTEPES.ha  and pHeatPipeFixedCost  [ha] >  0.0])
         # existing heat pipes (he)
         mTEPES.he = mTEPES.ha - mTEPES.hc
     else:
-        mTEPES.hn = Set(doc='all input heat pipes', initialize=[])
-        mTEPES.ha = Set(doc='all real  heat pipes', initialize=[])
-        mTEPES.hc = Set(doc='candidate heat pipes', initialize=[])
+        mTEPES.hn = Set(doc='all input heat pipes'             , initialize=[])
+        mTEPES.ha = Set(doc='all real  heat pipes'             , initialize=[])
+        mTEPES.hc = Set(doc='candidate heat pipes'             , initialize=[])
 
     # non-RES units, they can be committed and also contribute to the operating reserves
     mTEPES.nr = mTEPES.g - mTEPES.re
