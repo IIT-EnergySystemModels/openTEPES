@@ -1,6 +1,10 @@
 Change Log
 =============
 
+[4.17.7] - 2024-09-20
+-[CHANGED] redefinition of all sets, removing the order of the elements, and the lambda function to filter the elements
+-[CHANGED] enabling assert of the objective function in the test run
+
 [4.17.5] - 2024-09-18
 ----------------------
 - [FIXED] avoid degeneracy when ordering generating units by increasing variable costs
