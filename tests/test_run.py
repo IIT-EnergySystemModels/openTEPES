@@ -33,7 +33,7 @@ def case_9n_7d_system():
     original_stage_df = pd.read_csv(stage_csv, index_col=[0])
     try:
         df = original_duration_df.copy()
-        df.iloc[170:, df.columns.get_loc("Duration")] = np.nan
+        df.iloc[169:, df.columns.get_loc("Duration")] = np.nan
         df.to_csv(duration_csv)
 
         df = original_resenergy_df.copy()
