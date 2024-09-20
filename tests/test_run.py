@@ -14,8 +14,8 @@ def case_9n_7d_system():
             os.path.join(os.path.dirname(__file__), "../openTEPES")
         ),
         CaseName="9n",
-        # SolverName="appsi_highs",
-        SolverName="glpk",
+        SolverName="appsi_highs",
+        # SolverName="glpk",
         pIndLogConsole=0,
         pIndOutputResults=0,
     )
