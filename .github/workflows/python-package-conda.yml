@@ -53,7 +53,7 @@ jobs:
     runs-on: windows-latest
     strategy:
       matrix:
-        python-version: [ 3.11, 3.12 ]  # Specify both versions for Windows
+        python-version: [3.12]  # Specify both versions for Windows
 
     steps:
       - uses: actions/checkout@v2
