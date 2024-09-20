@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 18, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 20, 2024
 """
 
 import datetime
@@ -559,64 +559,64 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     sBrList = [(ni,nf) for n,(ni,nf)  in enumerate(sBr) if (ni,nf) not in sBr[:n]]
 
     #%% defining subsets: active load levels (n,n2), thermal units (t), RES units (r), ESS units (es), candidate gen units (gc), candidate ESS units (ec), all the electric lines (la), candidate electric lines (lc), candidate DC electric lines (cd), existing DC electric lines (cd), electric lines with losses (ll), reference node (rf), and reactive generating units (gq)
-    mTEPES.p      = Set(initialize=mTEPES.pp,               doc='periods'                         , filter=lambda mTEPES,pp  : pp     in mTEPES.pp  and pPeriodWeight       [pp] >  0.0 and sum(pDuration[pp,sc,n] for sc,n in mTEPES.scc*mTEPES.nn))
-    mTEPES.sc     = Set(initialize=mTEPES.scc,              doc='scenarios'                       , filter=lambda mTEPES,scc : scc    in mTEPES.scc                                    )
-    mTEPES.ps     = Set(initialize=mTEPES.p*mTEPES.sc,      doc='periods/scenarios'               , filter=lambda mTEPES,p,sc: (p,sc) in mTEPES.p*mTEPES.sc and pScenProb [p,sc] >  0.0 and sum(pDuration[p,sc,n ] for    n in            mTEPES.nn))
-    mTEPES.st     = Set(initialize=mTEPES.stt,              doc='stages'                          , filter=lambda mTEPES,stt : stt    in mTEPES.stt and pStageWeight       [stt] >  0.0)
-    mTEPES.n      = Set(initialize=mTEPES.nn,               doc='load levels'                     , filter=lambda mTEPES,nn  : nn     in mTEPES.nn  and sum(pDuration  [p,sc,nn] for p,sc in mTEPES.ps) > 0)
-    mTEPES.n2     = Set(initialize=mTEPES.nn,               doc='load levels'                     , filter=lambda mTEPES,nn  : nn     in mTEPES.nn  and sum(pDuration  [p,sc,nn] for p,sc in mTEPES.ps) > 0)
-    mTEPES.g      = Set(initialize=mTEPES.gg,               doc='generating              units'   , filter=lambda mTEPES,gg  : gg     in mTEPES.gg  and (pRatedMaxPowerElec [gg] >  0.0 or  pRatedMaxCharge[gg] >  0.0 or pRatedMaxPowerHeat    [gg] >  0.0) and pElecGenPeriodIni[gg] <= mTEPES.p.last() and pElecGenPeriodFin[gg] >= mTEPES.p.first() and pGenToNode.reset_index().set_index(['index']).isin(mTEPES.nd)['Node'][gg])  # excludes generators with empty node
-    mTEPES.t      = Set(initialize=mTEPES.g ,               doc='thermal                 units'   , filter=lambda mTEPES,g   : g      in mTEPES.g   and pRatedLinearOperCost[g ] >  0.0)
-    mTEPES.re     = Set(initialize=mTEPES.g ,               doc='RES                     units'   , filter=lambda mTEPES,g   : g      in mTEPES.g   and pRatedLinearOperCost[g ] == 0.0 and pRatedMaxStorage[g] == 0.0   and pProductionFunctionH2[g ] == 0.0 and pProductionFunctionHeat[g ] == 0.0  and pProductionFunctionHydro[g ] == 0.0)
-    mTEPES.es     = Set(initialize=mTEPES.g ,               doc='ESS                     units'   , filter=lambda mTEPES,g   : g      in mTEPES.g   and     (pRatedMaxCharge[g ] >  0.0 or  pRatedMaxStorage[g] >  0.0    or pProductionFunctionH2[g ]  > 0.0  or pProductionFunctionHeat[g ]  > 0.0) and pProductionFunctionHydro[g ] == 0.0)
-    mTEPES.h      = Set(initialize=mTEPES.g ,               doc='hydro                   units'   , filter=lambda mTEPES,g   : g      in mTEPES.g                                                                        and pProductionFunctionH2[g ] == 0.0 and pProductionFunctionHeat[g ] == 0.0  and pProductionFunctionHydro[g ]  > 0.0)
-    mTEPES.el     = Set(initialize=mTEPES.es,               doc='electrolyzer            units'   , filter=lambda mTEPES,es  : es     in mTEPES.es                                                                       and pProductionFunctionH2[es]  > 0.0 and pProductionFunctionHeat[es] == 0.0  and pProductionFunctionHydro[es] == 0.0)
-    mTEPES.hp     = Set(initialize=mTEPES.es,               doc='heat pump & elec boiler units'   , filter=lambda mTEPES,es  : es     in mTEPES.es                                                                       and pProductionFunctionH2[es] == 0.0 and pProductionFunctionHeat[es]  > 0.0  and pProductionFunctionHydro[es] == 0.0)
-    mTEPES.ch     = Set(initialize=mTEPES.g ,               doc='CHP       & fuel boiler units'   , filter=lambda mTEPES,g   : g      in mTEPES.g   and                                     pRatedMaxPowerHeat[g ] > 0.0 and pProductionFunctionHeat    [g ] == 0.0)
-    mTEPES.bo     = Set(initialize=mTEPES.ch,               doc='            fuel boiler units'   , filter=lambda mTEPES,ch  : ch     in mTEPES.ch  and pRatedMaxPowerElec  [ch] == 0.0 and pRatedMaxPowerHeat[ch] > 0.0 and pProductionFunctionHeat    [ch] == 0.0)
-    mTEPES.hh     = Set(initialize=mTEPES.bo,               doc='        hydrogen boiler units'   , filter=lambda mTEPES,bo  : bo     in mTEPES.bo                                                                       and pProductionFunctionH2ToHeat[bo] >  0.0)
-    mTEPES.gc     = Set(initialize=mTEPES.g ,               doc='candidate               units'   , filter=lambda mTEPES,g   : g      in mTEPES.g   and pGenInvestCost      [g ] >  0.0)
-    mTEPES.gd     = Set(initialize=mTEPES.g ,               doc='retirement              units'   , filter=lambda mTEPES,g   : g      in mTEPES.g   and pGenRetireCost      [g ] >  0.0)
-    mTEPES.ec     = Set(initialize=mTEPES.es,               doc='candidate ESS           units'   , filter=lambda mTEPES,es  : es     in mTEPES.es  and pGenInvestCost      [es] >  0.0)
-    mTEPES.bc     = Set(initialize=mTEPES.bo,               doc='candidate boiler        units'   , filter=lambda mTEPES,bo  : bo     in mTEPES.bo  and pGenInvestCost      [bo] >  0.0)
-    mTEPES.br     = Set(initialize=sBrList,                 doc='all input       electric branches'                                                                                    )
-    mTEPES.ln     = Set(initialize=dfNetwork.index,         doc='all input       electric lines'                                                                                       )
-    mTEPES.la     = Set(initialize=mTEPES.ln,               doc='all real        electric lines'  , filter=lambda mTEPES,*ln : ln     in mTEPES.ln  and pLineX              [ln] != 0.0 and pLineNTCFrw[ln] > 0.0 and pLineNTCBck[ln] > 0.0 and pElecNetPeriodIni[ln]  <= mTEPES.p.last() and pElecNetPeriodFin[ln]  >= mTEPES.p.first())
-    mTEPES.ls     = Set(initialize=mTEPES.la,               doc='all real switch electric lines'  , filter=lambda mTEPES,*la : la     in mTEPES.la  and pIndBinLineSwitch   [la]       )
-    mTEPES.lc     = Set(initialize=mTEPES.la,               doc='candidate       electric lines'  , filter=lambda mTEPES,*la : la     in mTEPES.la  and pNetFixedCost       [la] >  0.0)
-    mTEPES.cd     = Set(initialize=mTEPES.la,               doc='             DC electric lines'  , filter=lambda mTEPES,*la : la     in mTEPES.la  and pNetFixedCost       [la] >  0.0 and pLineType[la] == 'DC')
-    mTEPES.ed     = Set(initialize=mTEPES.la,               doc='             DC electric lines'  , filter=lambda mTEPES,*la : la     in mTEPES.la  and pNetFixedCost       [la] == 0.0 and pLineType[la] == 'DC')
-    mTEPES.ll     = Set(initialize=mTEPES.la,               doc='loss            electric lines'  , filter=lambda mTEPES,*la : la     in mTEPES.la  and pLineLossFactor     [la] >  0.0 and pIndBinNetLosses > 0 )
-    mTEPES.rf     = Set(initialize=mTEPES.nd,               doc='reference node'                  , filter=lambda mTEPES,nd  : nd     in                pReferenceNode                 )
-    mTEPES.gq     = Set(initialize=mTEPES.gg,               doc='gen    reactive units'           , filter=lambda mTEPES,gg  : gg     in mTEPES.gg  and pRMaxReactivePower  [gg] >  0.0 and                                                     pElecGenPeriodIni[gg]  <= mTEPES.p.last() and pElecGenPeriodFin[gg]  >= mTEPES.p.first())
-    mTEPES.sq     = Set(initialize=mTEPES.gg,               doc='synchr reactive units'           , filter=lambda mTEPES,gg  : gg     in mTEPES.gg  and pRMaxReactivePower  [gg] >  0.0 and pGenToTechnology[gg] == 'SynchronousCondenser'  and pElecGenPeriodIni[gg]  <= mTEPES.p.last() and pElecGenPeriodFin[gg]  >= mTEPES.p.first())
-    mTEPES.sqc    = Set(initialize=mTEPES.sq,               doc='synchr reactive candidate'                                                                                            )
-    mTEPES.shc    = Set(initialize=mTEPES.sq,               doc='shunt           candidate'                                                                                            )
+    mTEPES.p      = Set(doc='periods'                          , initialize=[pp     for pp   in mTEPES.pp  if pPeriodWeight       [pp] >  0.0 and sum(pDuration[pp,sc,n] for sc,n in mTEPES.scc*mTEPES.nn)])
+    mTEPES.sc     = Set(doc='scenarios'                        , initialize=[scc    for scc  in mTEPES.scc                                    ])
+    mTEPES.ps     = Set(doc='periods/scenarios'                , initialize=[(p,sc) for p,sc in mTEPES.p*mTEPES.sc if pScenProb [p,sc] >  0.0 and sum(pDuration[p,sc,n ] for    n in            mTEPES.nn)])
+    mTEPES.st     = Set(doc='stages'                           , initialize=[stt    for stt  in mTEPES.stt if pStageWeight       [stt] >  0.0])
+    mTEPES.n      = Set(doc='load levels'                      , initialize=[nn     for nn   in mTEPES.nn  if sum(pDuration  [p,sc,nn] for p,sc in mTEPES.ps) > 0])
+    mTEPES.n2     = Set(doc='load levels'                      , initialize=[nn     for nn   in mTEPES.nn  if sum(pDuration  [p,sc,nn] for p,sc in mTEPES.ps) > 0])
+    mTEPES.g      = Set(doc='generating              units'    , initialize=[gg     for gg   in mTEPES.gg  if (pRatedMaxPowerElec [gg] >  0.0 or  pRatedMaxCharge[gg] >  0.0 or pRatedMaxPowerHeat    [gg] >  0.0) and pElecGenPeriodIni[gg] <= mTEPES.p.last() and pElecGenPeriodFin[gg] >= mTEPES.p.first() and pGenToNode.reset_index().set_index(['index']).isin(mTEPES.nd)['Node'][gg]])  # excludes generators with empty node
+    mTEPES.t      = Set(doc='thermal                 units'    , initialize=[g      for g    in mTEPES.g   if pRatedLinearOperCost[g ] >  0.0])
+    mTEPES.re     = Set(doc='RES                     units'    , initialize=[g      for g    in mTEPES.g   if pRatedLinearOperCost[g ] == 0.0 and pRatedMaxStorage[g] == 0.0   and pProductionFunctionH2[g ] == 0.0 and pProductionFunctionHeat[g ] == 0.0  and pProductionFunctionHydro[g ] == 0.0])
+    mTEPES.es     = Set(doc='ESS                     units'    , initialize=[g      for g    in mTEPES.g   if     (pRatedMaxCharge[g ] >  0.0 or  pRatedMaxStorage[g] >  0.0    or pProductionFunctionH2[g ]  > 0.0  or pProductionFunctionHeat[g ]  > 0.0) and pProductionFunctionHydro[g ] == 0.0])
+    mTEPES.h      = Set(doc='hydro                   units'    , initialize=[g      for g    in mTEPES.g                                                                        if pProductionFunctionH2[g ] == 0.0 and pProductionFunctionHeat[g ] == 0.0  and pProductionFunctionHydro[g ]  > 0.0])
+    mTEPES.el     = Set(doc='electrolyzer            units'    , initialize=[es     for es   in mTEPES.es                                                                       if pProductionFunctionH2[es]  > 0.0 and pProductionFunctionHeat[es] == 0.0  and pProductionFunctionHydro[es] == 0.0])
+    mTEPES.hp     = Set(doc='heat pump & elec boiler units'    , initialize=[es     for es   in mTEPES.es                                                                       if pProductionFunctionH2[es] == 0.0 and pProductionFunctionHeat[es]  > 0.0  and pProductionFunctionHydro[es] == 0.0])
+    mTEPES.ch     = Set(doc='CHP       & fuel boiler units'    , initialize=[g      for g    in mTEPES.g   if                                     pRatedMaxPowerHeat[g ] > 0.0 and pProductionFunctionHeat    [g ] == 0.0])
+    mTEPES.bo     = Set(doc='            fuel boiler units'    , initialize=[ch     for ch   in mTEPES.ch  if pRatedMaxPowerElec  [ch] == 0.0 and pRatedMaxPowerHeat[ch] > 0.0 and pProductionFunctionHeat    [ch] == 0.0])
+    mTEPES.hh     = Set(doc='        hydrogen boiler units'    , initialize=[bo     for bo   in mTEPES.bo                                                                       if pProductionFunctionH2ToHeat[bo] >  0.0])
+    mTEPES.gc     = Set(doc='candidate               units'    , initialize=[g      for g    in mTEPES.g   if pGenInvestCost      [g ] >  0.0])
+    mTEPES.gd     = Set(doc='retirement              units'    , initialize=[g      for g    in mTEPES.g   if pGenRetireCost      [g ] >  0.0])
+    mTEPES.ec     = Set(doc='candidate ESS           units'    , initialize=[es     for es   in mTEPES.es  if pGenInvestCost      [es] >  0.0])
+    mTEPES.bc     = Set(doc='candidate boiler        units'    , initialize=[bo     for bo   in mTEPES.bo  if pGenInvestCost      [bo] >  0.0])
+    mTEPES.br     = Set(doc='all input       electric branches', initialize=sBrList        )
+    mTEPES.ln     = Set(doc='all input       electric lines'   , initialize=dfNetwork.index)
+    mTEPES.la     = Set(doc='all real        electric lines'   , initialize=[ln     for ln   in mTEPES.ln if pLineX              [ln] != 0.0 and pLineNTCFrw[ln] > 0.0 and pLineNTCBck[ln] > 0.0 and pElecNetPeriodIni[ln]  <= mTEPES.p.last() and pElecNetPeriodFin[ln]  >= mTEPES.p.first()])
+    mTEPES.ls     = Set(doc='all real switch electric lines'   , initialize=[la     for la   in mTEPES.la if pIndBinLineSwitch   [la]       ])
+    mTEPES.lc     = Set(doc='candidate       electric lines'   , initialize=[la     for la   in mTEPES.la if pNetFixedCost       [la] >  0.0])
+    mTEPES.cd     = Set(doc='             DC electric lines'   , initialize=[la     for la   in mTEPES.la if pNetFixedCost       [la] >  0.0 and pLineType[la] == 'DC'])
+    mTEPES.ed     = Set(doc='             DC electric lines'   , initialize=[la     for la   in mTEPES.la if pNetFixedCost       [la] == 0.0 and pLineType[la] == 'DC'])
+    mTEPES.ll     = Set(doc='loss            electric lines'   , initialize=[la     for la   in mTEPES.la if pLineLossFactor     [la] >  0.0 and pIndBinNetLosses > 0 ])
+    mTEPES.rf     = Set(doc='reference node'                   , initialize=[pReferenceNode])
+    mTEPES.gq     = Set(doc='gen    reactive units'            , initialize=[gg     for gg   in mTEPES.gg if pRMaxReactivePower  [gg] >  0.0 and                                                     pElecGenPeriodIni[gg]  <= mTEPES.p.last() and pElecGenPeriodFin[gg]  >= mTEPES.p.first()])
+    mTEPES.sq     = Set(doc='synchr reactive units'            , initialize=[gg     for gg   in mTEPES.gg if pRMaxReactivePower  [gg] >  0.0 and pGenToTechnology[gg] == 'SynchronousCondenser'  and pElecGenPeriodIni[gg]  <= mTEPES.p.last() and pElecGenPeriodFin[gg]  >= mTEPES.p.first()])
+    mTEPES.sqc    = Set(doc='synchr reactive candidate')
+    mTEPES.shc    = Set(doc='shunt           candidate')
     if pIndHydroTopology == 1:
-        mTEPES.rn = Set(initialize=mTEPES.rs,               doc='candidate reservoirs'            , filter=lambda mTEPES,rs  : rs     in mTEPES.rs  and pRsrInvestCost      [rs] >  0.0 and                                                     pRsrPeriodIni[rs]      <= mTEPES.p.last() and pRsrPeriodFin[rs]      >= mTEPES.p.first())
+        mTEPES.rn = Set(doc='candidate reservoirs'             , initialize=[rs     in mTEPES.rs  and pRsrInvestCost      [rs] >  0.0 and                                                     pRsrPeriodIni[rs]      <= mTEPES.p.last() and pRsrPeriodFin[rs]      >= mTEPES.p.first()])
     else:
-        mTEPES.rn = Set(initialize=[],                      doc='candidate reservoirs')
+        mTEPES.rn = Set(doc='candidate reservoirs'             , initialize=[]                      )
     if pIndHydrogen      == 1:
-        mTEPES.pn = Set(initialize=dfNetworkHydrogen.index, doc='all input hydrogen pipes'                                                                                             )
-        mTEPES.pa = Set(initialize=mTEPES.pn,               doc='all real  hydrogen pipes'        , filter=lambda mTEPES,*pn : pn     in mTEPES.pn  and pH2PipeNTCFrw       [pn] >  0.0 and pH2PipeNTCBck[pn] > 0.0 and                         pH2PipePeriodIni[pn]   <= mTEPES.p.last() and pH2PipePeriodFin[pn]   >= mTEPES.p.first())
-        mTEPES.pc = Set(initialize=mTEPES.pa,               doc='candidate hydrogen pipes'        , filter=lambda mTEPES,*pa : pa     in mTEPES.pa  and pH2PipeFixedCost    [pa] >  0.0)
+        mTEPES.pn = Set(doc='all input hydrogen pipes'         , initialize=dfNetworkHydrogen.index                                   )
+        mTEPES.pa = Set(doc='all real  hydrogen pipes'         , initialize=[pn     in mTEPES.pn  and pH2PipeNTCFrw       [pn] >  0.0 and pH2PipeNTCBck[pn] > 0.0 and                         pH2PipePeriodIni[pn]   <= mTEPES.p.last() and pH2PipePeriodFin[pn]   >= mTEPES.p.first()])
+        mTEPES.pc = Set(doc='candidate hydrogen pipes'         , initialize=[pa     in mTEPES.pa  and pH2PipeFixedCost    [pa] >  0.0])
         # existing hydrogen pipelines (pe)
         mTEPES.pe = mTEPES.pa - mTEPES.pc
     else:
-        mTEPES.pn = Set(initialize=[],                      doc='all input hydrogen pipes')
-        mTEPES.pa = Set(initialize=[],                      doc='all real  hydrogen pipes')
-        mTEPES.pc = Set(initialize=[],                      doc='candidate hydrogen pipes')
+        mTEPES.pn = Set(doc='all input hydrogen pipes', initialize=[])
+        mTEPES.pa = Set(doc='all real  hydrogen pipes', initialize=[])
+        mTEPES.pc = Set(doc='candidate hydrogen pipes', initialize=[])
 
     if pIndHeat        == 1:
-        mTEPES.hn = Set(initialize=dfNetworkHeat.index,     doc='all input heat pipes'                                                                                               )
-        mTEPES.ha = Set(initialize=mTEPES.hn,               doc='all real  heat pipes'          , filter=lambda mTEPES,*hn : hn     in mTEPES.hn  and pHeatPipeNTCFrw     [hn] >  0.0 and pHeatPipeNTCBck[hn] > 0.0 and pHeatPipePeriodIni[hn] <= mTEPES.p.last() and pHeatPipePeriodFin[hn] >= mTEPES.p.first())
-        mTEPES.hc = Set(initialize=mTEPES.ha,               doc='candidate heat pipes'          , filter=lambda mTEPES,*ha : ha     in mTEPES.ha  and pHeatPipeFixedCost  [ha] >  0.0)
+        mTEPES.hn = Set(doc='all input heat pipes', initialize=dfNetworkHeat.index)
+        mTEPES.ha = Set(doc='all real  heat pipes', initialize=[hn     in mTEPES.hn  and pHeatPipeNTCFrw     [hn] >  0.0 and pHeatPipeNTCBck[hn] > 0.0 and pHeatPipePeriodIni[hn] <= mTEPES.p.last() and pHeatPipePeriodFin[hn] >= mTEPES.p.first()])
+        mTEPES.hc = Set(doc='candidate heat pipes', initialize=[ha     in mTEPES.ha  and pHeatPipeFixedCost  [ha] >  0.0])
         # existing heat pipes (he)
         mTEPES.he = mTEPES.ha - mTEPES.hc
     else:
-        mTEPES.hn = Set(initialize=[],                      doc='all input heat pipes')
-        mTEPES.ha = Set(initialize=[],                      doc='all real  heat pipes')
-        mTEPES.hc = Set(initialize=[],                      doc='candidate heat pipes')
+        mTEPES.hn = Set(doc='all input heat pipes', initialize=[])
+        mTEPES.ha = Set(doc='all real  heat pipes', initialize=[])
+        mTEPES.hc = Set(doc='candidate heat pipes', initialize=[])
 
     # non-RES units, they can be committed and also contribute to the operating reserves
     mTEPES.nr = mTEPES.g - mTEPES.re
@@ -648,8 +648,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     # delete all the load level belonging to stages with duration equal to zero
     mTEPES.del_component(mTEPES.n )
     mTEPES.del_component(mTEPES.n2)
-    mTEPES.n  = Set(initialize=mTEPES.nn, doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.nn and sum(pDuration[p,sc,nn] for p,sc in mTEPES.ps) > 0)
-    mTEPES.n2 = Set(initialize=mTEPES.nn, doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.nn and sum(pDuration[p,sc,nn] for p,sc in mTEPES.ps) > 0)
+    mTEPES.n  = Set(doc='load levels', initialize=[nn for nn in mTEPES.nn if sum(pDuration[p,sc,nn] for p,sc in mTEPES.ps) > 0])
+    mTEPES.n2 = Set(doc='load levels', initialize=[nn for nn in mTEPES.nn if sum(pDuration[p,sc,nn] for p,sc in mTEPES.ps) > 0])
     # instrumental sets
     def CreateInstrumentalSets(mTEPES, pIndHydroTopology, pIndHydrogen, pIndHeat) -> None:
         '''
@@ -782,17 +782,17 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     if pIndHeat == 1:
         pIndBinHeatPipeInvest = pIndBinHeatPipeInvest.map(idxDict)
 
-    # define AC existing  lines     non-switchable
-    mTEPES.lea = Set(initialize=mTEPES.le, doc='AC existing  lines and non-switchable lines', filter=lambda mTEPES,*le: le in mTEPES.le and  pIndBinLineSwitch[le] == 0                             and not pLineType[le] == 'DC')
+    # define AC existing  lines     non-switchable lines
+    mTEPES.lea = Set(doc='AC existing  lines and non-switchable lines', initialize=[le for le in mTEPES.le if  pIndBinLineSwitch[le] == 0                             and not pLineType[le] == 'DC'])
     # define AC candidate lines and     switchable lines
-    mTEPES.lca = Set(initialize=mTEPES.la, doc='AC candidate lines and     switchable lines', filter=lambda mTEPES,*la: la in mTEPES.la and (pIndBinLineSwitch[la] == 1 or pNetFixedCost[la] > 0.0) and not pLineType[la] == 'DC')
+    mTEPES.lca = Set(doc='AC candidate lines and     switchable lines', initialize=[la for la in mTEPES.la if (pIndBinLineSwitch[la] == 1 or pNetFixedCost[la] > 0.0) and not pLineType[la] == 'DC'])
 
     mTEPES.laa = mTEPES.lea | mTEPES.lca
 
-    # define DC existing  lines     non-switchable
-    mTEPES.led = Set(initialize=mTEPES.le, doc='DC existing  lines and non-switchable lines', filter=lambda mTEPES,*le: le in mTEPES.le and  pIndBinLineSwitch[le] == 0                             and     pLineType[le] == 'DC')
+    # define DC existing  lines     non-switchable lines
+    mTEPES.led = Set(doc='DC existing  lines and non-switchable lines', initialize=[le for le in mTEPES.le if  pIndBinLineSwitch[le] == 0                             and     pLineType[le] == 'DC'])
     # define DC candidate lines and     switchable lines
-    mTEPES.lcd = Set(initialize=mTEPES.la, doc='DC candidate lines and     switchable lines', filter=lambda mTEPES,*la: la in mTEPES.la and (pIndBinLineSwitch[la] == 1 or pNetFixedCost[la] > 0.0) and     pLineType[la] == 'DC')
+    mTEPES.lcd = Set(doc='DC candidate lines and     switchable lines', initialize=[la for la in mTEPES.la if (pIndBinLineSwitch[la] == 1 or pNetFixedCost[la] > 0.0) and     pLineType[la] == 'DC'])
 
     mTEPES.lad = mTEPES.led | mTEPES.lcd
 
@@ -816,13 +816,9 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
 
     mTEPES.n2g = Set(initialize=pNodeToGen.index, doc='node   to generator')
 
-    pZone2Gen   = [(zn,g) for (nd,g,zn      ) in mTEPES.n2g*mTEPES.zn             if (nd,zn) in mTEPES.ndzn                           ]
-    pArea2Gen   = [(ar,g) for (nd,g,zn,ar   ) in mTEPES.n2g*mTEPES.znar           if (nd,zn) in mTEPES.ndzn                           ]
-    pRegion2Gen = [(rg,g) for (nd,g,zn,ar,rg) in mTEPES.n2g*mTEPES.znar*mTEPES.rg if (nd,zn) in mTEPES.ndzn and [ar,rg] in mTEPES.arrg]
-
-    mTEPES.z2g = Set(initialize=mTEPES.zn*mTEPES.g, doc='zone   to generator', filter=lambda mTEPES,zn,g: (zn,g) in pZone2Gen  )
-    mTEPES.a2g = Set(initialize=mTEPES.ar*mTEPES.g, doc='area   to generator', filter=lambda mTEPES,ar,g: (ar,g) in pArea2Gen  )
-    mTEPES.r2g = Set(initialize=mTEPES.rg*mTEPES.g, doc='region to generator', filter=lambda mTEPES,rg,g: (rg,g) in pRegion2Gen)
+    mTEPES.z2g = Set(doc='zone   to generator', initialize=[(zn,g) for (nd,g,zn      ) in mTEPES.n2g*mTEPES.zn             if (nd,zn) in mTEPES.ndzn                           ])
+    mTEPES.a2g = Set(doc='area   to generator', initialize=[(ar,g) for (nd,g,zn,ar   ) in mTEPES.n2g*mTEPES.znar           if (nd,zn) in mTEPES.ndzn                           ])
+    mTEPES.r2g = Set(doc='region to generator', initialize=[(rg,g) for (nd,g,zn,ar,rg) in mTEPES.n2g*mTEPES.znar*mTEPES.rg if (nd,zn) in mTEPES.ndzn and [ar,rg] in mTEPES.arrg])
 
     # mTEPES.z2g  = Set(initialize = [(zn,g) for zn,g in mTEPES.zn*mTEPES.g if (zn,g) in pZone2Gen])
 
@@ -834,11 +830,11 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
 
     # ESS and RES technologies
     def Create_ESS_RES_Sets(mTEPES) -> None:
-        mTEPES.ot = Set(initialize=mTEPES.gt, doc='ESS         technologies', filter=lambda mTEPES,gt: gt in mTEPES.gt and sum(1 for es in mTEPES.es if (gt,es) in mTEPES.t2g))
-        mTEPES.ht = Set(initialize=mTEPES.gt, doc='hydro       technologies', filter=lambda mTEPES,gt: gt in mTEPES.gt and sum(1 for h  in mTEPES.h  if (gt,h ) in mTEPES.t2g))
-        mTEPES.et = Set(initialize=mTEPES.gt, doc='ESS & hydro technologies', filter=lambda mTEPES,gt: gt in mTEPES.gt and sum(1 for eh in mTEPES.eh if (gt,eh) in mTEPES.t2g))
-        mTEPES.rt = Set(initialize=mTEPES.gt, doc='    RES     technologies', filter=lambda mTEPES,gt: gt in mTEPES.gt and sum(1 for re in mTEPES.re if (gt,re) in mTEPES.t2g))
-        mTEPES.nt = Set(initialize=mTEPES.gt, doc='non-RES     technologies', filter=lambda mTEPES,gt: gt in mTEPES.gt and sum(1 for nr in mTEPES.nr if (gt,nr) in mTEPES.t2g))
+        mTEPES.ot = Set(doc='ESS         technologies', initialize=[gt for gt in mTEPES.gt if sum(1 for es in mTEPES.es if (gt,es) in mTEPES.t2g)])
+        mTEPES.ht = Set(doc='hydro       technologies', initialize=[gt for gt in mTEPES.gt if sum(1 for h  in mTEPES.h  if (gt,h ) in mTEPES.t2g)])
+        mTEPES.et = Set(doc='ESS & hydro technologies', initialize=[gt for gt in mTEPES.gt if sum(1 for eh in mTEPES.eh if (gt,eh) in mTEPES.t2g)])
+        mTEPES.rt = Set(doc='    RES     technologies', initialize=[gt for gt in mTEPES.gt if sum(1 for re in mTEPES.re if (gt,re) in mTEPES.t2g)])
+        mTEPES.nt = Set(doc='non-RES     technologies', initialize=[gt for gt in mTEPES.gt if sum(1 for nr in mTEPES.nr if (gt,nr) in mTEPES.t2g)])
 
         mTEPES.psgt  = Set(initialize=[(p,sc,  gt) for p,sc,  gt in mTEPES.ps *mTEPES.gt if sum(1 for g  in mTEPES.g  if (p,g ) in mTEPES.pg  and (gt,g ) in mTEPES.t2g)])
         mTEPES.psot  = Set(initialize=[(p,sc,  ot) for p,sc,  ot in mTEPES.ps *mTEPES.ot if sum(1 for es in mTEPES.es if (p,es) in mTEPES.pes and (ot,es) in mTEPES.t2g)])
@@ -859,7 +855,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pExclusiveGenToGen = pGenToExclusiveGen.reset_index().set_index('MutuallyExclusive').set_axis(['Generator'], axis=1)[['Generator']]
     pExclusiveGenToGen = pExclusiveGenToGen.loc[pExclusiveGenToGen['Generator'].isin(mTEPES.g)].reset_index().set_index(['MutuallyExclusive', 'Generator'])
 
-    mTEPES.g2g = Set(initialize=pExclusiveGenToGen.index, doc='mutually exclusive generator to generator', filter=lambda mTEPES,gg,g: (gg,g) in mTEPES.g*mTEPES.g)
+    mTEPES.g2g = Set(doc='mutually exclusive generator to generator', initialize=[(gg,g) for gg,g in mTEPES.g*mTEPES.g if (gg,g) in pExclusiveGenToGen])
 
     # minimum and maximum variable power, charge, and storage capacity
     pMinPowerElec  = pVariableMinPowerElec.replace(0.0, pRatedMinPowerElec)
@@ -1998,8 +1994,8 @@ def SettingUpVariables(OptModel, mTEPES):
         # activate only period, scenario, and load levels to formulate
         mTEPES.del_component(mTEPES.st)
         mTEPES.del_component(mTEPES.n )
-        mTEPES.st = Set(initialize=mTEPES.stt, doc='stages',      filter=lambda mTEPES,stt: stt in st == stt and mTEPES.pStageWeight[stt] and sum(1 for (p,sc,st,nn) in mTEPES.s2n))
-        mTEPES.n  = Set(initialize=mTEPES.nn , doc='load levels', filter=lambda mTEPES,nn : nn  in mTEPES.nn                              and           (p,sc,st,nn) in mTEPES.s2n)
+        mTEPES.st = Set(doc='stages',      initialize=[stt for stt in mTEPES.stt if st == stt and mTEPES.pStageWeight[stt] and sum(1 for (p,sc,st,nn) in mTEPES.s2n)])
+        mTEPES.n  = Set(doc='load levels', initialize=[nn  for nn  in mTEPES.nn  if                                                      (p,sc,st,nn) in mTEPES.s2n ])
 
         if len(mTEPES.n):
             mTEPES.psn1 = Set(initialize=[(p,sc,n) for p,sc,n in mTEPES.ps*mTEPES.n])
@@ -2047,8 +2043,8 @@ def SettingUpVariables(OptModel, mTEPES):
     # activate all the periods, scenarios, and load levels again
     mTEPES.del_component(mTEPES.st)
     mTEPES.del_component(mTEPES.n )
-    mTEPES.st = Set(initialize=mTEPES.stt, doc='stages',      filter=lambda mTEPES,stt: stt in mTEPES.stt and mTEPES.pStageWeight[stt] and sum(1 for                    (p,sc,stt,nn) in mTEPES.s2n))
-    mTEPES.n  = Set(initialize=mTEPES.nn,  doc='load levels', filter=lambda mTEPES,nn : nn  in mTEPES.nn                               and sum(1 for st in mTEPES.st if (p,sc,st, nn) in mTEPES.s2n))
+    mTEPES.st = Set(doc='stages',      initialize=[stt for stt in mTEPES.stt if mTEPES.pStageWeight[stt] and sum(1 for                    (p,sc,stt,nn) in mTEPES.s2n)])
+    mTEPES.n  = Set(doc='load levels', initialize=[nn  for nn  in mTEPES.nn  if                              sum(1 for st in mTEPES.st if (p,sc,st, nn) in mTEPES.s2n)])
 
     # fixing the ESS inventory at the end of the following pStorageTimeStep (daily, weekly, monthly) if between storage limits, i.e.,
     # for daily ESS is fixed at the end of the week, for weekly ESS is fixed at the end of the month, for monthly ESS is fixed at the end of the year
@@ -2125,21 +2121,21 @@ def SettingUpVariables(OptModel, mTEPES):
     # fixing the ENS in nodes with no demand
     for p,sc,n,nd in mTEPES.psnnd:
         if mTEPES.pDemandElec[p,sc,n,nd] ==  0.0:
-            OptModel.vENS[p,sc,n,nd].fix(0.0)
+            OptModel.vENS    [p,sc,n,nd].fix(0.0)
             nFixedVariables += 1
 
     if mTEPES.pIndHydrogen == 1:
         # fixing the H2 ENS in nodes with no hydrogen demand
         for p,sc,n,nd in mTEPES.psnnd:
-            if mTEPES.pDemandH2[p,sc,n,nd] == 0.0:
-                OptModel.vH2NS[p,sc,n,nd].fix (0.0)
+            if mTEPES.pDemandH2[p,sc,n,nd] ==   0.0:
+                OptModel.vH2NS [p,sc,n,nd].fix (0.0)
                 nFixedVariables += 1
 
     if mTEPES.pIndHeat == 1:
         # fixing the heat ENS in nodes with no heat demand
         for p,sc,n,nd in mTEPES.psnnd:
-            if mTEPES.pDemandHeat[p,sc,n,nd] == 0.0:
-                OptModel.vHeatNS[p,sc,n,nd].fix (0.0)
+            if mTEPES.pDemandHeat[p,sc,n,nd] ==   0.0:
+                OptModel.vHeatNS [p,sc,n,nd].fix (0.0)
                 nFixedVariables += 1
     def AvoidForbiddenInstallationsAndRetirements(mTEPES, OptModel) -> int:
         '''
