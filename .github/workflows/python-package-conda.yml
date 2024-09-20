@@ -71,7 +71,7 @@ jobs:
 
       - name: Add Miniconda to PATH
         run: |
-          echo "C:\Miniconda\condabin" >> $GITHUB_ENV  # Add Miniconda to PATH via environment file
+          echo "C:\Miniconda\condabin" >> $GITHUB_ENV  # Correctly add Miniconda to PATH via environment file
 
       - name: Install dependencies
         run: |
