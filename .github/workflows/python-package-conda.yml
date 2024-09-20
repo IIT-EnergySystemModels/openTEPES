@@ -69,6 +69,10 @@ jobs:
           auto-update-conda: true
           activate-environment: base
 
+      - name: Add Miniconda to PATH
+        run: |
+          echo "C:\Miniconda\condabin" >> $GITHUB_ENV  # Add Miniconda to PATH via environment file
+
       - name: Install dependencies
         run: |
           conda install -y glpk cartopy
