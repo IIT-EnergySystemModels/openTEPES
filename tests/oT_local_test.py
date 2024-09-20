@@ -39,7 +39,7 @@ def setup_test_case():
     try:
         print("Modifying CSV files...")  # Added print for console feedback
         # Modify and save the modified DataFrames
-        modify_and_save_csv(original_duration_df, "Duration", 170, duration_csv, 0)
+        modify_and_save_csv(original_duration_df, "Duration", 169, duration_csv, 0)
         modify_and_save_csv(original_resenergy_df, "RESEnergy", 0, RESEnergy_csv, 0)
         modify_and_save_csv(original_stage_df, "Weight", 0, stage_csv, 1)
 
