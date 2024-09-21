@@ -81,9 +81,9 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
         mTEPES.del_component(mTEPES.st)
         mTEPES.del_component(mTEPES.n )
         mTEPES.del_component(mTEPES.n2)
-        mTEPES.st = Set(doc='stages',      initialize=[stt for stt in st == stt if mTEPES.pStageWeight[stt] and sum(1 for (p,sc,st,nn) in mTEPES.s2n)])
-        mTEPES.n  = Set(doc='load levels', initialize=[nn  for nn  in mTEPES.nn if                                        (p,sc,st,nn) in mTEPES.s2n ])
-        mTEPES.n2 = Set(doc='load levels', initialize=[nn  for nn  in mTEPES.nn if                                        (p,sc,st,nn) in mTEPES.s2n ])
+        mTEPES.st = Set(doc='stages',      initialize=[stt for stt in mTEPES.stt if st == stt if mTEPES.pStageWeight[stt] and sum(1 for (p,sc,st,nn) in mTEPES.s2n)])
+        mTEPES.n  = Set(doc='load levels', initialize=[nn  for nn  in mTEPES.nn  if                                                     (p,sc,st,nn) in mTEPES.s2n ])
+        mTEPES.n2 = Set(doc='load levels', initialize=[nn  for nn  in mTEPES.nn  if                                                     (p,sc,st,nn) in mTEPES.s2n ])
 
         # load levels multiple of cycles for each ESS/generator
         mTEPES.nesc         = [(n,es) for n,es in mTEPES.n*mTEPES.es if mTEPES.n.ord(n) %     mTEPES.pStorageTimeStep [es] == 0]
