@@ -1314,8 +1314,8 @@ def NetworkCycles(mTEPES, pIndLogConsole):
     pUniqueCircuits = pUniqueCircuits[pUniqueCircuits['0/1'] == 1]
 
     # unique and parallel circuits of existing lines
-    mTEPES.ucte = Set(initialize=mTEPES.lea, doc='unique   circuits', filter=lambda mTEPES,ni,nf,cc: (ni,nf,cc) in pUniqueCircuits['0/1'    ])
-    mTEPES.pct  = Set(initialize=mTEPES.br , doc='parallel circuits', filter=lambda mTEPES,ni,nf   : (ni,nf   ) in pNoCircuits['No.Circuits'])
+    mTEPES.ucte = Set(doc='unique   circuits', initialize=[lea for lea in mTEPES.lea if lea in pUniqueCircuits['0/1'    ]])
+    mTEPES.pct  = Set(doc='parallel circuits', initialize=[br  for br  in mTEPES.br  if br  in pNoCircuits['No.Circuits']])
     mTEPES.cye  = RangeSet(0,len(mTEPES.nce)-1)
 
     # graph with all AC existing and candidate lines
