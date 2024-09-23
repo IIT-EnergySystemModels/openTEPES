@@ -83,6 +83,7 @@ def test_openTEPES_run():
         assert mTEPES is not None, "openTEPES run failed, mTEPES object is None."
         logger.info(f"Test passed. Total system cost: {mTEPES.eTotalSCost}")
         print(f"Total system cost: {mTEPES.eTotalSCost}")  # Added print for console feedback
+        np.testing.assert_approx_equal(pyo.value(mTEPES.eTotalSCost), 248.433199803524)
 
 
 # Run the test function
