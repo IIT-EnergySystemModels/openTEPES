@@ -3,7 +3,7 @@ import pytest
 import pyomo.environ as pyo
 import numpy as np
 import pandas as pd
-
+import logging
 from openTEPES.openTEPES import openTEPES_run
 
 
