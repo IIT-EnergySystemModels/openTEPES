@@ -22,7 +22,7 @@ def setup_test_case():
             os.path.join(os.path.dirname(__file__), "../openTEPES")
         ),
         CaseName="9n",
-        SolverName="gurobi",  # You can change the solver here
+        SolverName="appsi_highs",  # You can change the solver here
         pIndLogConsole=0,
         pIndOutputResults=0,
     )
