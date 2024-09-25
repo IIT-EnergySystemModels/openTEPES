@@ -42,7 +42,7 @@ defined as a set of **generation, storage, and (electricity, hydrogen, and heat)
 
 It is integrated in the `open energy system modelling platform  <https://openenergymodels.net/>`_ helping modelling Europe's energy system.
 
-It has been used by the **Ministry for the Ecological Transition and the Demographic Challenge (MITECO)** to analyze the electricity sector in the latest Spanish `National Energy and Climate Plan (NECP) 2023-2030 <https://www.miteco.gob.es/content/dam/miteco/es/energia/files-1/_layouts/15/Borrador%20para%20la%20actualizaci%C3%B3n%20del%20PNIEC%202023-2030-64347.pdf>`_ in June 2023.
+It has been used by the **Ministry for the Ecological Transition and the Demographic Challenge (MITECO)** to analyze the electricity sector in the latest Spanish `National Energy and Climate Plan (NECP) Update 2023-2030 <https://www.miteco.gob.es/content/dam/miteco/es/energia/files-1/pniec-2023-2030/PNIEC_2024_240924.pdf>`_ in September 2024.
 
 Reference
 ############
