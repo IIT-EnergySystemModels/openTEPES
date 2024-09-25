@@ -20,7 +20,7 @@ defined as a set of **generation, storage, and (electricity, hydrogen, and heat)
 
 It is integrated into the `open energy system modelling platform  <https://openenergymodels.net/>`_, helping model Europe's energy system.
 
-It has been used by the **Ministry for the Ecological Transition and the Demographic Challenge (MITECO)** to analyze the electricity sector in the latest Spanish `National Energy and Climate Plan (NECP) 2023-2030 <https://www.miteco.gob.es/content/dam/miteco/es/energia/files-1/_layouts/15/Borrador%20para%20la%20actualizaci%C3%B3n%20del%20PNIEC%202023-2030-64347.pdf>`_ in June 2023.
+It has been used by the **Ministry for the Ecological Transition and the Demographic Challenge (MITECO)** to analyze the electricity sector in the latest Spanish `National Energy and Climate Plan (NECP) Update 2023-2030 <https://www.miteco.gob.es/content/dam/miteco/es/energia/files-1/pniec-2023-2030/PNIEC_2024_240924.pdf>`_ in September 2024.
 
 **Reference**: A. Ramos, E. Quispe, S. Lumbreras "`OpenTEPES: Open-source Transmission and Generation Expansion Planning <https://www.sciencedirect.com/science/article/pii/S235271102200053X/pdfft?md5=ece8d3328c853a4795eda29acd2ad140&pid=1-s2.0-S235271102200053X-main.pdf>`_" SoftwareX 18: June 2022 `10.1016/j.softx.2022.101070 <https://doi.org/10.1016/j.softx.2022.101070>`_
 
