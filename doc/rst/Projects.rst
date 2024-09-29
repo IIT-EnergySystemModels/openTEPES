@@ -4,6 +4,11 @@ Research projects
 =================
 The model has being used in these research projects:
 
+- `Quantifying the techno-economic benefits of distributed storage deployment and demand response. <https://www.iit.comillas.edu/publicacion/proyecto/en/SAMSO_BATERIAS_DR_2024/Cuantificaci%C3%B3n%20de%20los%20beneficios%20t%C3%A9cnico-econ%C3%B3micos%20del%20despliegue%20del%20almacenamiento%20distribuido%20y%20la%20respuesta%20de%20la%20demanda>`_, developed for **SAMSO, UNEF, AEPIBAL, PIMEC, OCTOPUS**.
+  September 2024 - January 2025. `C. Mateo <https://www.iit.comillas.edu/people/cmateo>`_, `J.P. Chaves <https://www.iit.comillas.edu/people/jchaves>`_, `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `F. Martín <https://www.iit.comillas.edu/people/fmartin>`_, `T. Gómez <https://www.iit.comillas.edu/people/tomas>`_, `M. Martínez <https://www.iit.comillas.edu/people/mmartinezv>`_
+
+    It aims to quantify the value of distributed batteries and demand response in the context of the National Integrated Energy and Climate Plan (PNIEC).
+
 - `Electricity Market Modelling <https://www.iit.comillas.edu/publicacion/proyecto/en/REPSOL_PRED_PRECIOS/Modelado_del_mercado_el%c3%a9ctrico>`_, developed for **Repsol**.
   November 2023 - April 2024. `L. Olmos <https://www.iit.comillas.edu/people/olmos>`_, `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `S. Gómez Sánchez <https://www.iit.comillas.edu/people/sgomez>`_
 
