@@ -1,11 +1,14 @@
 Change Log
 =============
 
-[4.17.8] - 2024-10-03
--[FIXED] computation of curtailment in the output results for generation candidates
+[4.17.8] - 2024-10-04
+-----------------------
+[FIXED] lower bound only for VRE units
+[FIXED] computation of curtailment in the output results for generation candidates
 
 [4.17.7] - 2024-09-20
--[CHANGED] redefinition of all sets, removing the order of the elements, and the lambda function to filter the elements
+-----------------------
+[CHANGED] redefinition of all sets, removing the order of the elements, and the lambda function to filter the elements
 -[CHANGED] enabling assert of the objective function in the test run
 
 [4.17.5] - 2024-09-18
