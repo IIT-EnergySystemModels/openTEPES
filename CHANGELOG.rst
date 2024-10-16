@@ -3,6 +3,8 @@ Change Log
 
 [4.17.8] - 2024-10-16
 -----------------------
+- [CHANGED] if no ending year is given in the input data, the last year is considered year 3000
+- [CHANGED] control of invalid electric lines, hydrogen lines, and heat pipelines
 - [CHANGED] added colum of MEUR/year in cost summary files
 - [CHANGED] added information regarding detected infeasibilities
 - [FIXED] lower bound only for VRE units

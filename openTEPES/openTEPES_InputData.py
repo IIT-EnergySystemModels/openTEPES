@@ -498,16 +498,21 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pNetLoInvest                = dfNetwork     ['InvestmentLo'              ]                                                      # Lower bound of the investment decision       [p.u.]
     pNetUpInvest                = dfNetwork     ['InvestmentUp'              ]                                                      # Upper bound of the investment decision       [p.u.]
 
+    # replace PeriodFin = 0.0 by year 3000
+    pElecGenPeriodFin = pElecGenPeriodFin.where(pElecGenPeriodFin == 0.0, 3000   )
+    if pIndHydroTopology == 1:
+        pRsrPeriodFin = pRsrPeriodFin.where    (pRsrPeriodFin     == 0.0, 3000   )
+    pElecNetPeriodFin = pElecNetPeriodFin.where(pElecNetPeriodFin == 0.0, 3000   )
     # replace pLineNTCBck = 0.0 by pLineNTCFrw
-    pLineNTCBck     = pLineNTCBck.where (pLineNTCBck  > 0.0, pLineNTCFrw)
+    pLineNTCBck       = pLineNTCBck.where      (pLineNTCBck  > 0.0,   pLineNTCFrw)
     # replace pLineNTCFrw = 0.0 by pLineNTCBck
-    pLineNTCFrw     = pLineNTCFrw.where (pLineNTCFrw  > 0.0, pLineNTCBck)
+    pLineNTCFrw       = pLineNTCFrw.where      (pLineNTCFrw  > 0.0,   pLineNTCBck)
     # replace pGenUpInvest = 0.0 by 1.0
-    pGenUpInvest    = pGenUpInvest.where(pGenUpInvest > 0.0, 1.0        )
+    pGenUpInvest      = pGenUpInvest.where     (pGenUpInvest > 0.0,   1.0        )
     # replace pGenUpRetire = 0.0 by 1.0
-    pGenUpRetire    = pGenUpRetire.where(pGenUpRetire > 0.0, 1.0        )
+    pGenUpRetire      = pGenUpRetire.where     (pGenUpRetire > 0.0,   1.0        )
     # replace pNetUpInvest = 0.0 by 1.0
-    pNetUpInvest    = pNetUpInvest.where(pNetUpInvest > 0.0, 1.0        )
+    pNetUpInvest      = pNetUpInvest.where     (pNetUpInvest > 0.0,   1.0        )
 
     # minimum up- and downtime converted to an integer number of time steps
     pSwitchOnTime  = round(pSwitchOnTime /pTimeStep).astype('int')
@@ -524,6 +529,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         pH2PipeLoInvest     = dfNetworkHydrogen['InvestmentLo'       ]                                                  # Lower bound of the investment decision       [p.u.]
         pH2PipeUpInvest     = dfNetworkHydrogen['InvestmentUp'       ]                                                  # Upper bound of the investment decision       [p.u.]
 
+        pH2PipePeriodFin = pH2PipePeriodFin.where(pH2PipePeriodFin == 0.0, 3000       )
         # replace pH2PipeNTCBck = 0.0 by pH2PipeNTCFrw
         pH2PipeNTCBck     = pH2PipeNTCBck.where  (pH2PipeNTCBck   > 0.0, pH2PipeNTCFrw)
         # replace pH2PipeNTCFrw = 0.0 by pH2PipeNTCBck
@@ -542,6 +548,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         pHeatPipeLoInvest     = dfNetworkHeat['InvestmentLo'       ]                                                    # Lower bound of the investment decision       [p.u.]
         pHeatPipeUpInvest     = dfNetworkHeat['InvestmentUp'       ]                                                    # Upper bound of the investment decision       [p.u.]
 
+        pHeatPipePeriodFin = pHeatPipePeriodFin.where(pHeatPipePeriodFin == 0.0, 3000         )
         # replace pHeatPipeNTCBck = 0.0 by pHeatPipeNTCFrw
         pHeatPipeNTCBck     = pHeatPipeNTCBck.where  (pHeatPipeNTCBck   > 0.0, pHeatPipeNTCFrw)
         # replace pHeatPipeNTCFrw = 0.0 by pHeatPipeNTCBck
@@ -581,6 +588,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.bc     = Set(doc='candidate boiler        units'    , initialize=[bo     for bo   in mTEPES.bo  if pGenInvestCost      [bo] >  0.0])
     mTEPES.br     = Set(doc='all input       electric branches', initialize=sBrList        )
     mTEPES.ln     = Set(doc='all input       electric lines'   , initialize=dfNetwork.index)
+    if len(mTEPES.ln) != len(dfNetwork.index):
+        raise ValueError('### Some electric lines are invalid ', len(mTEPES.ln), len(dfNetwork.index))
     mTEPES.la     = Set(doc='all real        electric lines'   , initialize=[ln     for ln   in mTEPES.ln if pLineX              [ln] != 0.0 and pLineNTCFrw[ln] > 0.0 and pLineNTCBck[ln] > 0.0 and pElecNetPeriodIni[ln]  <= mTEPES.p.last() and pElecNetPeriodFin[ln]  >= mTEPES.p.first()])
     mTEPES.ls     = Set(doc='all real switch electric lines'   , initialize=[la     for la   in mTEPES.la if pIndBinLineSwitch   [la]       ])
     mTEPES.lc     = Set(doc='candidate       electric lines'   , initialize=[la     for la   in mTEPES.la if pNetFixedCost       [la] >  0.0])
@@ -598,6 +607,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         mTEPES.rn = Set(doc='candidate reservoirs'             , initialize=[]                      )
     if pIndHydrogen      == 1:
         mTEPES.pn = Set(doc='all input hydrogen pipes'         , initialize=dfNetworkHydrogen.index                                   )
+        if len(mTEPES.pn) != len(dfNetworkHydrogen.index):
+            raise ValueError('### Some hydrogen pipes are invalid ', len(mTEPES.pn), len(dfNetworkHydrogen.index))
         mTEPES.pa = Set(doc='all real  hydrogen pipes'         , initialize=[pn     for pn   in mTEPES.pn   if pH2PipeNTCFrw       [pn] >  0.0 and pH2PipeNTCBck[pn] > 0.0 and                         pH2PipePeriodIni[pn] <= mTEPES.p.last() and pH2PipePeriodFin[pn]   >= mTEPES.p.first()])
         mTEPES.pc = Set(doc='candidate hydrogen pipes'         , initialize=[pa     for pa   in mTEPES.pa   if pH2PipeFixedCost    [pa] >  0.0])
         # existing hydrogen pipelines (pe)
@@ -609,6 +620,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
 
     if pIndHeat        == 1:
         mTEPES.hn = Set(doc='all input heat pipes'             , initialize=dfNetworkHeat.index)
+        if len(mTEPES.hn) != len(dfNetworkHeat.index):
+            raise ValueError('### Some heat pipes are invalid ', len(mTEPES.hn), len(dfNetworkHeat.index))
         mTEPES.ha = Set(doc='all real  heat pipes'             , initialize=[hn     for hn   in mTEPES.hn   if pHeatPipeNTCFrw     [hn] >  0.0 and pHeatPipeNTCBck[hn] > 0.0 and pHeatPipePeriodIni[hn] <= mTEPES.p.last() and pHeatPipePeriodFin[hn] >= mTEPES.p.first()])
         mTEPES.hc = Set(doc='candidate heat pipes'             , initialize=[ha     for ha   in mTEPES.ha   if pHeatPipeFixedCost  [ha] >  0.0])
         # existing heat pipes (he)
