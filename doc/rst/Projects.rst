@@ -9,6 +9,11 @@ The model has being used in these research projects:
 
     It aims to quantify the value of distributed batteries and demand response in the context of the National Integrated Energy and Climate Plan (PNIEC).
 
+- `Application of the ENTSO-e cost-benefit analysis method to Conso II pumped-hydro storage <https://www.iit.comillas.edu/publicacion/proyecto/en/IberdrolaConsoIIENTSOE/Aplicaci%c3%b3n_de_la_metodolog%c3%ada_ENTSO-E_de_an%c3%a1lisis_de_coste_beneficio_al_proyecto_de_la_CH_Conso_II>`_, developed for **Iberdrola**.
+  September 2024. `L. Rouco <https://www.iit.comillas.edu/people/rouco>`_, `E. Lobato <https://www.iit.comillas.edu/people/enrique>`_, `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `L. Olmos <https://www.iit.comillas.edu/people/olmos>`_
+
+    It aims to write a report on the application of the ENTSO-e 2024 cost-benefit analysis method to Conso II pumped-hydro storage.
+
 - `Application of the ENTSO-e cost-benefit analysis method to Aguayo II pumped-hydro storage 2024 <https://www.iit.comillas.edu/publicacion/proyecto/en/Repsol_AguayoII_2024/Aplicaci%c3%b3n_de_la_metodolog%c3%ada_ENTSO-E_de_an%c3%a1lisis_de_coste_beneficio_al_proyecto_de_la_CH_Aguayo_II_2024>`_, developed for **Repsol**.
   June 2024 - September 2024. `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `L. Olmos <https://www.iit.comillas.edu/people/olmos>`_, `L. Rouco <https://www.iit.comillas.edu/people/rouco>`_, `E. Lobato <https://www.iit.comillas.edu/people/enrique>`_
 
