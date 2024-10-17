@@ -202,14 +202,21 @@ Period        Scenario    Load level  Generator   Output (discharge in ESS) [MW]
 
 File ``oT_Result_NetDemand.csv``
 
-VRES are the variable renewable energy sources (e.g., wind and solar). Units with null linear variable cost and no storage capacity. Do not contribute to the the operating reserves.
-The net demand is the demand minus the VRES.
+VRES are the variable renewable energy sources (e.g., wind and solar). Units with null linear variable cost and no storage capacity. The net demand is the demand minus the VRES.
 
 ============  ==========  ==========  ===================================
 Identifier                            Description
 ====================================  ===================================
 Period        Scenario    Load level  Net demand (demand - VRES) [MW]
 ============  ==========  ==========  ===================================
+
+File ``oT_Result_NetDemandNetwork.csv``
+
+============  ==========  ==========  ==========  ===========================================
+Identifier                            Header      Description
+====================================  ==========  ===========================================
+Period        Scenario    Load level  Node        Electricity net demand (demand - VRES) [MW]
+============  ==========  ==========  ==========  ===========================================
 
 File ``oT_Result_GenerationSurplus.csv``
 
@@ -688,14 +695,6 @@ Identifier                            Header     Description
 ====================================  =========  =======================
 Period        Scenario    Load level  Node       Voltage angle [rad]
 ============  ==========  ==========  =========  =======================
-
-File ``oT_Result_NetworkNetDemand.csv``
-
-============  ==========  ==========  ==========  ===========================================
-Identifier                            Header      Description
-====================================  ==========  ===========================================
-Period        Scenario    Load level  Node        Electricity net demand (demand - VRES) [MW]
-============  ==========  ==========  ==========  ===========================================
 
 File ``oT_Result_NetworkPNS.csv``
 
