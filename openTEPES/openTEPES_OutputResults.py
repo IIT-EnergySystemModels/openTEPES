@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 16, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 17, 2024
 """
 
 import time
@@ -1738,6 +1738,9 @@ def ReliabilityResults(DirName, CaseName, OptModel, mTEPES):
     for rt,re in mTEPES.rt*mTEPES.re:
         if (rt,re) in mTEPES.t2g:
             r2r[rt].append(re)
+    g2n = defaultdict(list)
+    for nd,g in mTEPES.n2g:
+        g2n[nd].append(g)
 
     pDemandElec    = pd.Series(data=[mTEPES.pDemandElec[p,sc,n,nd] for p,sc,n,nd in mTEPES.psnnd ], index=pd.Index(mTEPES.psnnd))
     ExistCapacity  = [(p,sc,n,g) for p,sc,n,g in mTEPES.psng if g not in mTEPES.gc]
@@ -1751,14 +1754,14 @@ def ReliabilityResults(DirName, CaseName, OptModel, mTEPES):
 
     # Determination of the net demand
     if len(mTEPES.re):
-        OutputToFile1 = pd.Series(data=[sum(OptModel.vTotalOutput[p,sc,n,re]() for rt in mTEPES.rt for re in r2r[rt] if (p,re) in mTEPES.pre) for p,sc,n,nd in mTEPES.psnnd], index=pd.Index(mTEPES.psnnd))
+        OutputToFile1 = pd.Series(data=[sum(OptModel.vTotalOutput[p,sc,n,re]() for rt in mTEPES.rt for re in r2r[rt] if (nd,re) in mTEPES.n2g and (p,re) in mTEPES.pre) for p,sc,n,nd in mTEPES.psnnd], index=pd.Index(mTEPES.psnnd))
     else:
-        OutputToFile1 = pd.Series(data=[0.0                                                                               for p,sc,n,nd in mTEPES.psnnd], index=pd.Index(mTEPES.psnnd))
-    OutputToFile2 = pd.Series(data=[      mTEPES.pDemandElec     [p,sc,n,nd]                                              for p,sc,n,nd in mTEPES.psnnd], index=pd.Index(mTEPES.psnnd))
+        OutputToFile1 = pd.Series(data=[0.0                                                                                                                             for p,sc,n,nd in mTEPES.psnnd], index=pd.Index(mTEPES.psnnd))
+    OutputToFile2     = pd.Series(data=[      mTEPES.pDemandElec [p,sc,n,nd]                                                                                            for p,sc,n,nd in mTEPES.psnnd], index=pd.Index(mTEPES.psnnd))
     OutputToFile  = OutputToFile2 - OutputToFile1
     OutputToFile  *= 1e3
     OutputToFile  = OutputToFile.to_frame(name='MW'  )
-    OutputToFile.reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_NetworkNetDemand_'+CaseName+'.csv', sep=',')
+    OutputToFile.reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_NetDemandNetwork_'+CaseName+'.csv', sep=',')
     OutputToFile.reset_index().pivot_table(index=['level_0','level_1','level_2'],                    values='MW', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(_path+'/oT_Result_NetDemand_'       +CaseName+'.csv', sep=',')
 
     # Determination of the index: Reserve Margin

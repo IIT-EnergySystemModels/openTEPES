@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.17.8] - 2024-10-16
+[4.17.8] - 2024-10-17
 -----------------------
+- [FIXED] computation of net demand per node in output results
 - [CHANGED] if no ending year is given in the input data, the last year is considered year 3000
 - [CHANGED] control of invalid electric lines, hydrogen lines, and heat pipelines
 - [CHANGED] added colum of MEUR/year in cost summary files
