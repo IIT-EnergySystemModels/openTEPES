@@ -49,6 +49,7 @@ class Simulation:
 
         self.pIndLogConsole = idxDict[self.pIndLogConsole]
         self.pIndOutputResults = idxDict[self.pIndOutputResults]
+        self.path = os.path.join(self.DirName, self.CaseName)
 
     def input_data(self):
         # Define sets and parameters
@@ -133,13 +134,12 @@ class Simulation:
         is_pcm = (len(mTEPES.gc) == 0 or (len(mTEPES.gc) > 0 and mTEPES.pIndBinGenInvest() == 2)) and (len(mTEPES.gd) == 0 or (len(mTEPES.gd) > 0 and mTEPES.pIndBinGenRetire() == 2)) and (len(mTEPES.lc) == 0 or (len(mTEPES.lc) > 0 and mTEPES.pIndBinNetElecInvest() == 2)) and (min([mTEPES.pEmission[p,ar] for ar in mTEPES.ar]) == math.inf or sum(mTEPES.pEmissionRate[nr] for nr in mTEPES.nr) == 0)
         return is_pcm
 
-    def write_lp_file(self, path, p, sc, st):
-
+    def write_lp_file(self, p, sc, st):
         mTEPES = self.mTEPES
         pIndLogConsole = self.pIndLogConsole
 
         StartTime         = time.time()
-        mTEPES.write(path+'/openTEPES_'+self.CaseName+'_'+str(p)+'_'+str(sc)+'_'+str(st)+'.lp', io_options={'symbolic_solver_labels': True})
+        mTEPES.write(self.path+'/openTEPES_'+self.CaseName+'_'+str(p)+'_'+str(sc)+'_'+str(st)+'.lp', io_options={'symbolic_solver_labels': True})
         WritingLPFileTime = time.time() - StartTime
         StartTime         = time.time()
         print('Writing LP file                        ... ', round(WritingLPFileTime), 's')
@@ -243,8 +243,86 @@ class Simulation:
         DirName, CaseName, SolverName, mTEPES, pIndLogConsole = self.DirName, self.CaseName, self.SolverName, self.mTEPES, self.pIndLogConsole
         ProblemSolving(DirName, CaseName, SolverName, mTEPES, mTEPES, pIndLogConsole, p, sc, st)
 
-def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConsole):
+    def build_and_solve_pcm(self):
+        mTEPES = self.mTEPES
+        # iterative model formulation for each stage of a year
+        for p,sc,st in self.mTEPES.ps*self.mTEPES.stt:
 
+            self.delete_and_initialize_st_n_n2(p, sc, st)
+            self.calculate_load_levels()
+
+            if not len(mTEPES.st): # TODO: document when this would happen. If this should not happen, throw an error here instead
+                continue
+
+            self.delete_and_initialize_na(st)
+
+            print('Period '+str(p)+', Scenario '+str(sc)+', Stage '+str(st))
+
+            self.operation_model_objective_function_and_constraints_by_stage(p, sc, st)
+
+            if pIndLogConsole == 1:
+                self.write_lp_file(p, sc, st)
+
+            # there are no expansion decisions, or they are ignored (it is an operation planning model)
+            mTEPES.pScenProb[p,sc] = 1.0
+
+            self.solve(p, sc, st)
+
+            mTEPES.pScenProb[p,sc] = 0.0
+
+            # deactivate the constraints of the previous period and scenario
+            for c in mTEPES.component_objects(pyo.Constraint, active=True):
+                if c.name.find(str(p)) != -1 and c.name.find(str(sc)) != -1:
+                    c.deactivate()
+
+        p, sc = mTEPES.ps.last()
+        st = mTEPES.st.last()
+        self.delete_and_initialize_st_n_n2(p, sc, st)
+        self.calculate_load_levels()
+
+    def build_and_solve_capex(self):
+        mTEPES = self.mTEPES
+        # iterative model formulation for each stage of a year
+        for p,sc,st in self.mTEPES.ps*self.mTEPES.stt:
+
+            self.delete_and_initialize_st_n_n2(p, sc, st)
+            self.calculate_load_levels()
+
+            if not len(mTEPES.st): # TODO: document when this would happen. If this should not happen, throw an error here instead
+                continue
+
+            self.delete_and_initialize_na(st)
+
+            print('Period '+str(p)+', Scenario '+str(sc)+', Stage '+str(st))
+
+            self.operation_model_objective_function_and_constraints_by_stage(p, sc, st)
+
+        p, sc = mTEPES.ps.last()
+        st = mTEPES.st.last()
+
+        self.delete_and_initialize_st_n_n2(p, sc, st)
+        self.calculate_load_levels()
+
+        if self.pIndLogConsole == 1:
+            self.write_lp_file(p, sc, st)
+
+        # there are investment decisions (it is an expansion and operation planning model)
+        self.solve(p, sc, st)
+
+        self.delete_and_initialize_st_n_n2(p, sc, st)
+        self.calculate_load_levels()
+
+        # activate the constraints of all the periods and scenarios
+        for c in mTEPES.component_objects(pyo.Constraint):
+            c.activate()
+
+        # assign probability 1 to all the periods and scenarios
+        for p,sc in mTEPES.ps:
+            mTEPES.pScenProb[p,sc] = 1.0
+
+
+
+def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConsole):
     InitialTime = time.time()
     _path = os.path.join(DirName, CaseName)
 
@@ -262,60 +340,11 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
 
     sim.initialize_pduals_and_na()
 
-    # iterative model formulation for each stage of a year
-    for p,sc,st in sim.mTEPES.ps*sim.mTEPES.stt:
+    if sim.is_pcm():
+        sim.build_and_solve_pcm()
+    else:
+        sim.build_and_solve_capex()
 
-        sim.delete_and_initialize_st_n_n2(p, sc, st)
-
-        sim.calculate_load_levels()
-
-        if not len(mTEPES.st): # TODO: document when this would happen. If this should not happen, throw an error here instead
-            continue
-
-        sim.delete_and_initialize_na(st)
-
-        print('Period '+str(p)+', Scenario '+str(sc)+', Stage '+str(st))
-
-        sim.operation_model_objective_function_and_constraints_by_stage(p, sc, st)
-
-        if sim.is_pcm():
-            if pIndLogConsole == 1:
-                sim.write_lp_file(_path, p, sc, st)
-
-            # there are no expansion decisions, or they are ignored (it is an operation planning model)
-            mTEPES.pScenProb[p,sc] = 1.0
-
-            sim.solve(p, sc, st)
-
-            mTEPES.pScenProb[p,sc] = 0.0
-
-            # deactivate the constraints of the previous period and scenario
-            for c in mTEPES.component_objects(pyo.Constraint, active=True):
-                if c.name.find(str(p)) != -1 and c.name.find(str(sc)) != -1:
-                    c.deactivate()
-
-    p, sc = mTEPES.ps.last()
-    st = mTEPES.st.last()
-
-    sim.delete_and_initialize_st_n_n2(p, sc, st)
-
-    sim.calculate_load_levels()
-
-    if pIndLogConsole == 1:
-        sim.write_lp_file(_path, p, sc, st)
-
-    # there are investment decisions (it is an expansion and operation planning model)
-    sim.solve(p, sc, st)
-
-    sim.delete_and_initialize_st_n_n2(p, sc, st)
-    sim.calculate_load_levels()
-
-    # activate the constraints of all the periods and scenarios
-    for c in mTEPES.component_objects(pyo.Constraint):
-        c.activate()
-
-    # assign probability 1 to all the periods and scenarios
-    for p,sc in mTEPES.ps:
-        mTEPES.pScenProb[p,sc] = 1.0
+    sim.output_results()
 
     return mTEPES
