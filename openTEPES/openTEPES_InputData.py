@@ -1156,7 +1156,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pMaxPowerHeat      = pd.DataFrame([[pMaxPowerElec     [ch][p,sc,n]/pPower2HeatRatio[ch]      for ch in mTEPES.ch] for p,sc,n in mTEPES.psn], index=pd.MultiIndex.from_tuples(mTEPES.psn), columns=mTEPES.ch)
     pMinPowerHeat.update(pd.DataFrame([[pRatedMinPowerHeat[bo]                                   for bo in mTEPES.bo] for p,sc,n in mTEPES.psn], index=pd.MultiIndex.from_tuples(mTEPES.psn), columns=mTEPES.bo))
     pMaxPowerHeat.update(pd.DataFrame([[pRatedMaxPowerHeat[bo]                                   for bo in mTEPES.bo] for p,sc,n in mTEPES.psn], index=pd.MultiIndex.from_tuples(mTEPES.psn), columns=mTEPES.bo))
-    pMaxPowerHeat.update(pd.DataFrame([[pMaxCharge[p,sc,n,hp]/mTEPES.pProductionFunctionHeat[hp] for hp in mTEPES.hp] for p,sc,n in mTEPES.psn], index=pd.MultiIndex.from_tuples(mTEPES.psn), columns=mTEPES.hp))
+    pMaxPowerHeat.update(pd.DataFrame([[pMaxCharge[hp][p,sc,n]/pProductionFunctionHeat[hp] for hp in mTEPES.hp] for p,sc,n in mTEPES.psn], index=pd.MultiIndex.from_tuples(mTEPES.psn), columns=mTEPES.hp))
 
     # drop values not par, p, or ps
     pReserveMargin  = pReserveMargin.loc [mTEPES.par]
