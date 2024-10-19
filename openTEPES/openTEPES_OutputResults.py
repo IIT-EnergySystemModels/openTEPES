@@ -616,7 +616,7 @@ def GenerationOperationHeatResults(DirName, CaseName, OptModel, mTEPES, pIndTech
     # tolerance to consider 0 a number
     pEpsilon = 1e-6
 
-    sPSNG        = [(p,sc,n,chp) for p,sc,n,chp in mTEPES.psnchp if OptModel.vTotalOutputHeat[p,sc,n,chp].ub     - OptModel.vTotalOutputHeat[p,sc,n,chp]() > pEpsilon]
+    sPSNG        = [(p,sc,n,chp) for p,sc,n,chp in mTEPES.psnchp if OptModel.vTotalOutputHeat[p,sc,n,chp].ub is not None and OptModel.vTotalOutputHeat[p,sc,n,chp].ub     - OptModel.vTotalOutputHeat[p,sc,n,chp]() > pEpsilon]
     OutputToFile = pd.Series(data=[(OptModel.vTotalOutputHeat[p,sc,n,chp].ub*OptModel.vGenerationInvest[p,chp]() - OptModel.vTotalOutputHeat[p,sc,n,chp]()) if chp in mTEPES.gc or chp in mTEPES.bc else
                                    (OptModel.vTotalOutputHeat[p,sc,n,chp].ub                                     - OptModel.vTotalOutputHeat[p,sc,n,chp]()) for p,sc,n,chp in sPSNG], index=pd.Index(sPSNG))
     OutputToFile *= 1e3
