@@ -1,8 +1,10 @@
 Change Log
 =============
 
-[4.17.8] - 2024-10-17
+[4.17.8] - 2024-10-20
 -----------------------
+- [FIXED] writing of the GenerationSurplusHeat file
+- [FIXED] computation of pMaxPowerHeat
 - [FIXED] computation of net demand per node in output results
 - [CHANGED] if no ending year is given in the input data, the last year is considered year 3000
 - [CHANGED] control of invalid electric lines, hydrogen lines, and heat pipelines
