@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.17.8] - 2024-10-20
+[4.17.8] - 2024-10-22
 -----------------------
+- [FIXED] fix some typos in output results
 - [FIXED] writing of the GenerationSurplusHeat file
 - [FIXED] computation of pMaxPowerHeat
 - [FIXED] computation of net demand per node in output results
