@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 16, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 23, 2024
 """
 
 import datetime
@@ -499,10 +499,10 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pNetUpInvest                = dfNetwork     ['InvestmentUp'              ]                                                      # Upper bound of the investment decision       [p.u.]
 
     # replace PeriodFin = 0.0 by year 3000
-    pElecGenPeriodFin = pElecGenPeriodFin.where(pElecGenPeriodFin == 0.0, 3000   )
+    pElecGenPeriodFin = pElecGenPeriodFin.where(pElecGenPeriodFin != 0.0, 3000   )
     if pIndHydroTopology == 1:
-        pRsrPeriodFin = pRsrPeriodFin.where    (pRsrPeriodFin     == 0.0, 3000   )
-    pElecNetPeriodFin = pElecNetPeriodFin.where(pElecNetPeriodFin == 0.0, 3000   )
+        pRsrPeriodFin = pRsrPeriodFin.where    (pRsrPeriodFin     != 0.0, 3000   )
+    pElecNetPeriodFin = pElecNetPeriodFin.where(pElecNetPeriodFin != 0.0, 3000   )
     # replace pLineNTCBck = 0.0 by pLineNTCFrw
     pLineNTCBck       = pLineNTCBck.where      (pLineNTCBck  > 0.0,   pLineNTCFrw)
     # replace pLineNTCFrw = 0.0 by pLineNTCBck
@@ -529,7 +529,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         pH2PipeLoInvest     = dfNetworkHydrogen['InvestmentLo'       ]                                                  # Lower bound of the investment decision       [p.u.]
         pH2PipeUpInvest     = dfNetworkHydrogen['InvestmentUp'       ]                                                  # Upper bound of the investment decision       [p.u.]
 
-        pH2PipePeriodFin = pH2PipePeriodFin.where(pH2PipePeriodFin == 0.0, 3000       )
+        pH2PipePeriodFin = pH2PipePeriodFin.where(pH2PipePeriodFin != 0.0, 3000       )
         # replace pH2PipeNTCBck = 0.0 by pH2PipeNTCFrw
         pH2PipeNTCBck     = pH2PipeNTCBck.where  (pH2PipeNTCBck   > 0.0, pH2PipeNTCFrw)
         # replace pH2PipeNTCFrw = 0.0 by pH2PipeNTCBck
@@ -548,7 +548,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         pHeatPipeLoInvest     = dfNetworkHeat['InvestmentLo'       ]                                                    # Lower bound of the investment decision       [p.u.]
         pHeatPipeUpInvest     = dfNetworkHeat['InvestmentUp'       ]                                                    # Upper bound of the investment decision       [p.u.]
 
-        pHeatPipePeriodFin = pHeatPipePeriodFin.where(pHeatPipePeriodFin == 0.0, 3000         )
+        pHeatPipePeriodFin = pHeatPipePeriodFin.where(pHeatPipePeriodFin != 0.0, 3000         )
         # replace pHeatPipeNTCBck = 0.0 by pHeatPipeNTCFrw
         pHeatPipeNTCBck     = pHeatPipeNTCBck.where  (pHeatPipeNTCBck   > 0.0, pHeatPipeNTCFrw)
         # replace pHeatPipeNTCFrw = 0.0 by pHeatPipeNTCBck

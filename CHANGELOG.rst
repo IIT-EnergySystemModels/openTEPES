@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.17.8] - 2024-10-22
+[4.17.8] - 2024-10-23
 -----------------------
+- [CHANGED] name of the solver log file
 - [FIXED] fix some typos in output results
 - [FIXED] writing of the GenerationSurplusHeat file
 - [FIXED] computation of pMaxPowerHeat
