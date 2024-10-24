@@ -1056,51 +1056,68 @@ def GenerationOperationModelFormulationRampMinTime(OptModel, mTEPES, pIndLogCons
     if pIndLogConsole == 1:
         print('eRampDwChr            ... ', len(getattr(OptModel, 'eRampDwChr_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
 
-    # the small tolerance pEpsilon=5e-2 is added to detect if the generator is ramping up/down
-    pEpsilon = 5e-2
-    def eRampUpState(OptModel,n,nr):
-        if (p,nr) in mTEPES.pnr:
-            if mTEPES.pStableTime[nr] and mTEPES.pMaxPower2ndBlock[p,sc,n,nr] and mTEPES.pDuration[p,sc,n]():
+    pIndSimplexFormulation = True  # Parameter to choose if minimum stable time should be physically accurate or computationally efficient. True for efficiency, False for accuracy
+    pIndStableTimeDeadBand = True  # Parameter to choose if ramps below a certain threshold set by pEpsilon should not be restricted. True for having dead band, False for restricting all ramps
+
+    if pIndStableTimeDeadBand:
+        pEpsilon = 1e-2
+    else:
+        pEpsilon = 1e-6
+
+    def eRampUpState(OptModel, n, nr):
+        if mTEPES.pStableTime[nr] and mTEPES.pMaxPower2ndBlock[p, sc, n, nr] and (p, nr) in mTEPES.pnr and mTEPES.pDuration[p, sc, n]():
+            if pIndStableTimeDeadBand:
                 if mTEPES.pRampUp[nr]:
                     if n == mTEPES.n.first():
-                        return (- max(mTEPES.pInitialOutput[p,sc,n,nr]() - mTEPES.pMinPowerElec[p,sc,n,nr],0.0) + OptModel.vOutput2ndBlock[p,sc,n,nr]) / mTEPES.pDuration[p,sc,n]() / mTEPES.pRampUp          [nr] <= OptModel.vRampUpState[p,sc,n,nr] - pEpsilon * OptModel.vRampDwState[p,sc,n,nr]
+                        return (- max(mTEPES.pInitialOutput[p, sc, n, nr]() - mTEPES.pMinPowerElec[p, sc, n, nr], 0.0) + OptModel.vOutput2ndBlock[p, sc, n, nr]) / mTEPES.pDuration[p, sc, n]() / mTEPES.pRampUp[nr] <= OptModel.vRampUpState[p, sc, n, nr] + pEpsilon * (OptModel.vStableState[p, sc, n, nr] - OptModel.vRampDwState[p, sc, n, nr])
                     else:
-                        return (- OptModel.vOutput2ndBlock[p,sc,mTEPES.n.prev(n),nr]                            + OptModel.vOutput2ndBlock[p,sc,n,nr]) / mTEPES.pDuration[p,sc,n]() / mTEPES.pRampUp          [nr] <= OptModel.vRampUpState[p,sc,n,nr] - pEpsilon * OptModel.vRampDwState[p,sc,n,nr]
+                        return (- OptModel.vOutput2ndBlock[p, sc, mTEPES.n.prev(n), nr] + OptModel.vOutput2ndBlock[p, sc, n, nr]) / mTEPES.pDuration[p, sc, n]() / mTEPES.pRampUp[nr] <= OptModel.vRampUpState[p, sc, n, nr] + pEpsilon * (OptModel.vStableState[p, sc, n, nr] - OptModel.vRampDwState[p, sc, n, nr])
                 else:
                     if n == mTEPES.n.first():
-                        return (- max(mTEPES.pInitialOutput[p,sc,n,nr]() - mTEPES.pMinPowerElec[p,sc,n,nr],0.0) + OptModel.vOutput2ndBlock[p,sc,n,nr]) / mTEPES.pDuration[p,sc,n]() / mTEPES.pMaxPower2ndBlock[p,sc,n,nr] <= OptModel.vRampUpState[p,sc,n,nr] - pEpsilon * OptModel.vRampDwState[p,sc,n,nr]
+                        return (- max(mTEPES.pInitialOutput[p, sc, n, nr]() - mTEPES.pMinPowerElec[p, sc, n, nr], 0.0) + OptModel.vOutput2ndBlock[p, sc, n, nr]) / mTEPES.pDuration[p, sc, n]() / mTEPES.pMaxPower2ndBlock[p, sc, n, nr] <= OptModel.vRampUpState[p, sc, n, nr] + pEpsilon * (OptModel.vStableState[p, sc, n, nr] - OptModel.vRampDwState[p, sc, n, nr])
                     else:
-                        return (- OptModel.vOutput2ndBlock[p,sc,mTEPES.n.prev(n),nr]                            + OptModel.vOutput2ndBlock[p,sc,n,nr]) / mTEPES.pDuration[p,sc,n]() / mTEPES.pMaxPower2ndBlock[p,sc,n,nr] <= OptModel.vRampUpState[p,sc,n,nr] - pEpsilon * OptModel.vRampDwState[p,sc,n,nr]
+                        return (- OptModel.vOutput2ndBlock[p, sc, mTEPES.n.prev(n), nr] + OptModel.vOutput2ndBlock[p, sc, n, nr]) / mTEPES.pDuration[p, sc, n]() / mTEPES.pMaxPower2ndBlock[p, sc, n, nr] <= OptModel.vRampUpState[p, sc, n, nr] + pEpsilon * (OptModel.vStableState[p, sc, n, nr] - OptModel.vRampDwState[p, sc, n, nr])
             else:
-                return Constraint.Skip
+                if mTEPES.pRampUp[nr]:
+                    if n == mTEPES.n.first():
+                        return (- max(mTEPES.pInitialOutput[p, sc, n, nr]() - mTEPES.pMinPowerElec[p, sc, n, nr], 0.0) + OptModel.vOutput2ndBlock[p, sc, n, nr]) / mTEPES.pDuration[p, sc, n]() / mTEPES.pRampUp[nr] <= OptModel.vRampUpState[p, sc, n, nr] - pEpsilon * OptModel.vRampDwState[p, sc, n, nr]
+                    else:
+                        return (- OptModel.vOutput2ndBlock[p, sc, mTEPES.n.prev(n), nr] + OptModel.vOutput2ndBlock[p, sc, n, nr]) / mTEPES.pDuration[p, sc, n]() / mTEPES.pRampUp[nr] <= OptModel.vRampUpState[p, sc, n, nr] - pEpsilon * OptModel.vRampDwState[p, sc, n, nr]
+                else:
+                    if n == mTEPES.n.first():
+                        return (- max(mTEPES.pInitialOutput[p, sc, n, nr]() - mTEPES.pMinPowerElec[p, sc, n, nr], 0.0) + OptModel.vOutput2ndBlock[p, sc, n, nr]) / mTEPES.pDuration[p, sc, n]() / mTEPES.pMaxPower2ndBlock[p, sc, n, nr] <= OptModel.vRampUpState[p, sc, n, nr] - pEpsilon * OptModel.vRampDwState[p, sc, n, nr]
+                    else:
+                        return (- OptModel.vOutput2ndBlock[p, sc, mTEPES.n.prev(n), nr] + OptModel.vOutput2ndBlock[p, sc, n, nr]) / mTEPES.pDuration[p, sc, n]() / mTEPES.pMaxPower2ndBlock[p, sc, n, nr] <= OptModel.vRampUpState[p, sc, n, nr] - pEpsilon * OptModel.vRampDwState[p, sc, n, nr]
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eRampUpState_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.nr, rule=eRampUpState, doc='ramp up state  [p.u.]'))
+
+    setattr(OptModel, 'eRampUpState_' + str(p) + '_' + str(sc) + '_' + str(st), Constraint(mTEPES.n, mTEPES.nr, rule=eRampUpState, doc='ramp up state  [p.u.]'))
 
     if pIndLogConsole == 1:
-        print('eRampUpState          ... ', len(getattr(OptModel, 'eRampUpState_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eRampUpState          ... ', len(getattr(OptModel, 'eRampUpState_' + str(p) + '_' + str(sc) + '_' + str(st))), ' rows')
 
-    def eRampDwState(OptModel,n,nr):
-        if (p,nr) in mTEPES.pnr:
-            if mTEPES.pStableTime[nr] and mTEPES.pMaxPower2ndBlock[p,sc,n,nr] and mTEPES.pDuration[p,sc,n]():
+    def eRampDwState(OptModel, n, nr):
+        if (p, nr) in mTEPES.pnr:
+            if mTEPES.pStableTime[nr] and mTEPES.pMaxPower2ndBlock[p, sc, n, nr] and mTEPES.pDuration[p, sc, n]():
                 if mTEPES.pRampDw[nr]:
                     if n == mTEPES.n.first():
-                        return (max(mTEPES.pInitialOutput[p,sc,n,nr]() - mTEPES.pMinPowerElec[p,sc,n,nr],0.0) - OptModel.vOutput2ndBlock[p,sc,n,nr]) / mTEPES.pDuration[p,sc,n]() / mTEPES.pRampDw          [nr] <= OptModel.vRampDwState[p,sc,n,nr] - pEpsilon * OptModel.vRampUpState[p,sc,n,nr]
+                        return (max(mTEPES.pInitialOutput[p, sc, n, nr]() - mTEPES.pMinPowerElec[p, sc, n, nr], 0.0) - OptModel.vOutput2ndBlock[p, sc, n, nr]) / mTEPES.pDuration[p, sc, n]() / mTEPES.pRampDw[nr] <= OptModel.vRampDwState[p, sc, n, nr] - pEpsilon * OptModel.vRampUpState[p, sc, n, nr]
                     else:
-                        return (OptModel.vOutput2ndBlock[p,sc,mTEPES.n.prev(n),nr]                            - OptModel.vOutput2ndBlock[p,sc,n,nr]) / mTEPES.pDuration[p,sc,n]() / mTEPES.pRampDw          [nr] <= OptModel.vRampDwState[p,sc,n,nr] - pEpsilon * OptModel.vRampUpState[p,sc,n,nr]
+                        return (OptModel.vOutput2ndBlock[p, sc, mTEPES.n.prev(n), nr] - OptModel.vOutput2ndBlock[p, sc, n, nr]) / mTEPES.pDuration[p, sc, n]() / mTEPES.pRampDw[nr] <= OptModel.vRampDwState[p, sc, n, nr] - pEpsilon * OptModel.vRampUpState[p, sc, n, nr]
                 else:
                     if n == mTEPES.n.first():
-                        return (max(mTEPES.pInitialOutput[p,sc,n,nr]() - mTEPES.pMinPowerElec[p,sc,n,nr],0.0) - OptModel.vOutput2ndBlock[p,sc,n,nr]) / mTEPES.pDuration[p,sc,n]() / mTEPES.pMaxPower2ndBlock[p,sc,n,nr] <= OptModel.vRampDwState[p,sc,n,nr] - pEpsilon * OptModel.vRampUpState[p,sc,n,nr]
+                        return (max(mTEPES.pInitialOutput[p, sc, n, nr]() - mTEPES.pMinPowerElec[p, sc, n, nr], 0.0) - OptModel.vOutput2ndBlock[p, sc, n, nr]) / mTEPES.pDuration[p, sc, n]() / mTEPES.pMaxPower2ndBlock[p, sc, n, nr] <= OptModel.vRampDwState[p, sc, n, nr] - pEpsilon * OptModel.vRampUpState[p, sc, n, nr]
                     else:
-                        return (OptModel.vOutput2ndBlock[p,sc,mTEPES.n.prev(n),nr]                            - OptModel.vOutput2ndBlock[p,sc,n,nr]) / mTEPES.pDuration[p,sc,n]() / mTEPES.pMaxPower2ndBlock[p,sc,n,nr] <= OptModel.vRampDwState[p,sc,n,nr] - pEpsilon * OptModel.vRampUpState[p,sc,n,nr]
+                        return (OptModel.vOutput2ndBlock[p, sc, mTEPES.n.prev(n), nr] - OptModel.vOutput2ndBlock[p, sc, n, nr]) / mTEPES.pDuration[p, sc, n]() / mTEPES.pMaxPower2ndBlock[p, sc, n, nr] <= OptModel.vRampDwState[p, sc, n, nr] - pEpsilon * OptModel.vRampUpState[p, sc, n, nr]
             else:
                 return Constraint.Skip
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eRampDwState_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.nr, rule=eRampDwState, doc='maximum ramp down [p.u.]'))
+
+    setattr(OptModel, 'eRampDwState_' + str(p) + '_' + str(sc) + '_' + str(st), Constraint(mTEPES.n, mTEPES.nr, rule=eRampDwState, doc='maximum ramp down [p.u.]'))
 
     if pIndLogConsole == 1:
-        print('eRampDwState          ... ', len(getattr(OptModel, 'eRampDwState_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eRampDwState          ... ', len(getattr(OptModel, 'eRampDwState_' + str(p) + '_' + str(sc) + '_' + str(st))), ' rows')
 
     def eMinUpTime(OptModel,n,t):
         if (p,t) in mTEPES.pg:
@@ -1128,23 +1145,30 @@ def GenerationOperationModelFormulationRampMinTime(OptModel, mTEPES, pIndLogCons
     if pIndLogConsole == 1:
         print('eMinDownTime          ... ', len(getattr(OptModel, 'eMinDownTime_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
 
-    MinStableTimeLoadLevels = []
-    if sum(mTEPES.pStableTime[nr] for nr in mTEPES.nr if (p,nr) in mTEPES.pnr):
-        for n in mTEPES.n:
-            for nr in mTEPES.nr:
-                if (mTEPES.pStableTime[nr] and mTEPES.pMaxPower2ndBlock[p,sc,n,nr] and mTEPES.n.ord(n) >= mTEPES.pStableTime[nr] + 2):
-                    for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pStableTime[nr]-1:mTEPES.n.ord(n)-1]:
-                        MinStableTimeLoadLevels.append((n,n2,nr))
+    if pIndSimplexFormulation:
+        def eMinStableTime(OptModel, n, nr):
+            if (mTEPES.pStableTime[nr] and mTEPES.pMaxPower2ndBlock[p, sc, n, nr] and mTEPES.n.ord(n) >= mTEPES.pStableTime[nr] + 2):
+                return OptModel.vRampUpState[p, sc, n, nr] + sum(OptModel.vRampDwState[p, sc, n2, nr] for n2 in list(mTEPES.n2)[mTEPES.n.ord(n) - mTEPES.pStableTime[nr] - 1: mTEPES.n.ord(n) - 1]) <= 1
+            else:
+                return Constraint.Skip
 
-    def eMinStableTime(OptModel,n,n2,nr):
-        if (p,nr) in mTEPES.pnr:
-            return OptModel.vRampUpState[p,sc,n,nr] <= 1 - OptModel.vRampDwState[p,sc,n2,nr]
-        else:
-            return Constraint.Skip
-    setattr(OptModel, 'eMinStableTime_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(MinStableTimeLoadLevels, rule=eMinStableTime, doc='minimum stable time [p.u.]'))
+        setattr(OptModel, 'eMinStableTime_' + str(p) + '_' + str(sc) + '_' + str(st), Constraint(mTEPES.n, mTEPES.nr, rule=eMinStableTime, doc='minimum stable time [p.u.]'))
+    else:
+        MinStableTimeLoadLevels = []
+        if sum(mTEPES.pStableTime[nr] for nr in mTEPES.nr):
+            for n in mTEPES.n:
+                for nr in mTEPES.nr:
+                    if (mTEPES.pStableTime[nr] and mTEPES.pMaxPower2ndBlock[p, sc, n, nr] and mTEPES.n.ord(n) >= mTEPES.pStableTime[nr] + 2):
+                        for n2 in list(mTEPES.n2)[mTEPES.n.ord(n) - mTEPES.pStableTime[nr] - 1:mTEPES.n.ord(n) - 1]:
+                            MinStableTimeLoadLevels.append((n, n2, nr))
+
+        def eMinStableTime(OptModel, n, n2, nr):
+            return OptModel.vRampUpState[p, sc, n, nr] <= 1 - OptModel.vRampDwState[p, sc, n2, nr]
+
+        setattr(OptModel, 'eMinStableTime_' + str(p) + '_' + str(sc) + '_' + str(st), Constraint(MinStableTimeLoadLevels, rule=eMinStableTime, doc='minimum stable time [p.u.]'))
 
     if pIndLogConsole == 1:
-        print('eMinStableTime        ... ', len(getattr(OptModel, 'eMinStableTime_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eMinStableTime        ... ', len(getattr(OptModel, 'eMinStableTime_' + str(p) + '_' + str(sc) + '_' + str(st))), ' rows')
 
     GeneratingTime = time.time() - StartTime
     if pIndLogConsole == 1:
