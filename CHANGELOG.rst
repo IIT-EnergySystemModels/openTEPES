@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.17.8] - 2024-10-23
+[4.17.8] - 2024-10-24
 -----------------------
+- [FIXED] fix formulation of the minimum stable time constraints
 - [CHANGED] name of the solver log file
 - [FIXED] fix some typos in output results
 - [FIXED] writing of the GenerationSurplusHeat file

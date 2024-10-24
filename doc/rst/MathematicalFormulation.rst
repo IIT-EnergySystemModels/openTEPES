@@ -513,11 +513,17 @@ Maximum ramp down and ramp up for the charge of an ESS [p.u.] «``eRampUpCharge`
 :math:`\frac{- c^p_{\omega,n-\nu,e} + dr^p_{\omega,n-\nu,e} + c^p_{\omega ne} - ur^p_{\omega ne}}{DUR^p_{\omega n} RU_e} \geq - 1 \quad \forall p \omega ne`
 
 Detection of ramp up and ramp down state for the second block of a non-renewable (thermal) unit with minimum stable time [p.u.] «``eRampUpState``» «``eRampDwState``».
-The maximum ramping rate :math:`\epsilon` is added to detect if the generator is ramping up/down. It is defined in the code as 5e-2. Below this value, the generator is considered stable.
+The parameter :math:`\epsilon` is added to detect if the generator is ramping up/down. It is defined in the code as 1e-5.
 
-:math:`\frac{- p^p_{\omega,n-\nu,t} + p^p_{\omega nt}}{DUR^p_{\omega n} RU_t} \leq rsu^p_{\omega nt} - \epsilon \cdot rsd^p_{\omega nt} \quad \forall p \omega nt`
+:math:`\frac{- p^p_{\omega,n-\nu,t} + p^p_{\omega nt}}{DUR^p_{\omega n} RU_t \epsilon} \leq \frac{rsu^p_{\omega nt}}{\epsilon} - rsd^p_{\omega nt} \quad \forall p \omega nt`
 
-:math:`\frac{  p^p_{\omega,n-\nu,t} - p^p_{\omega nt}}{DUR^p_{\omega n} RD_t} \leq rsd^p_{\omega nt} - \epsilon \cdot rsu^p_{\omega nt} \quad \forall p \omega nt`
+:math:`\frac{  p^p_{\omega,n-\nu,t} - p^p_{\omega nt}}{DUR^p_{\omega n} RD_t \epsilon} \leq \frac{rsd^p_{\omega nt}}{\epsilon} - rsu^p_{\omega nt} \quad \forall p \omega nt`
+
+The model can also consider a dead band, which means that ramps below a certain threshold set by :math:`\epsilon` should not be restricted. In this case, the :math:`\epsilon` is defined in the code as 1e-2.
+
+:math:`\frac{- p^p_{\omega,n-\nu,t} + p^p_{\omega nt}}{DUR^p_{\omega n} RU_t \epsilon} \leq \frac{rsu^p_{\omega nt}}{\epsilon} - rsd^p_{\omega nt} + rss^p_{\omega nt} \quad \forall p \omega nt`
+
+:math:`\frac{  p^p_{\omega,n-\nu,t} - p^p_{\omega nt}}{DUR^p_{\omega n} RD_t \epsilon} \leq \frac{rsd^p_{\omega nt}}{\epsilon} - rsu^p_{\omega nt} + rss^p_{\omega nt} \quad \forall p \omega nt`
 
 Minimum up time and down time of thermal unit [p.u.] «``eMinUpTime``» «``eMinDownTime``»
 
@@ -527,9 +533,12 @@ Minimum up time and down time of thermal unit [p.u.] «``eMinUpTime``» «``eMin
 
 :math:`\sum_{n'=n+\nu-TD_t}^n sd^p_{\omega n't} \leq 1 - uc^p_{\omega nt} \quad \forall p \omega nt`
 
-Minimum stable time of thermal unit [p.u.] «``eMinStableTime``»
+Minimum stable time of a thermal unit [p.u.] «``eMinStableTime``»
+In the code you can select a simplex-based (first) or a computational efficient formulation (second).
 
-:math:`rsu^p_{\omega nt} \leq 1 - rsd^p_{\omega n't} \quad \forall p \omega nn't, n' \in [n-TS_t,n-1]`
+:math:`rsu^p_{\omega nt} + \sum_{n'=n-TS_t}^{n-\nu} rsd^p_{\omega n't} \leq 1 \quad \forall p \omega nt`
+
+:math:`rsu^p_{\omega nt} + rsd^p_{\omega n't} \leq 1 \quad \forall p \omega nn't, n' \in [n-TS_t,n-\nu]`
 
 **Reservoir operation**
 
