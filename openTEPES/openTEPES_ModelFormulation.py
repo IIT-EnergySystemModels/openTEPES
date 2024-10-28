@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 24, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 28, 2024
 """
 
 import time
@@ -1060,9 +1060,9 @@ def GenerationOperationModelFormulationRampMinTime(OptModel, mTEPES, pIndLogCons
     pIndStableTimeDeadBand = True  # Parameter to choose if ramps below a certain threshold set by pEpsilon should not be restricted. True for having dead band, False for restricting all ramps
 
     if pIndStableTimeDeadBand:
-        pEpsilon = 5e-2
+        pEpsilon = 1e-2
     else:
-        pEpsilon = 1e-5
+        pEpsilon = 1e-4
 
     def eRampUpState(OptModel, n, nr):
         if mTEPES.pStableTime[nr] and mTEPES.pMaxPower2ndBlock[p,sc,n,nr] and (p,nr) in mTEPES.pnr and mTEPES.pDuration[p,sc,n]():
@@ -1154,8 +1154,8 @@ def GenerationOperationModelFormulationRampMinTime(OptModel, mTEPES, pIndLogCons
 
     if pIndSimplexFormulation:
         def eMinStableTime(OptModel, n, nr):
-            if (mTEPES.pStableTime[nr] and mTEPES.pMaxPower2ndBlock[p,sc,n,nr] and mTEPES.n.ord(n) >= mTEPES.pStableTime[nr] + 2*mTEPES.pTimeStep()):
-                return OptModel.vRampUpState[p,sc,n,nr] + sum(OptModel.vRampDwState[p,sc,n2,nr] for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pStableTime[nr]-mTEPES.pTimeStep():mTEPES.n.ord(n)-mTEPES.pTimeStep()]) <= 1
+            if (mTEPES.pStableTime[nr] and mTEPES.pMaxPower2ndBlock[p,sc,n,nr] and mTEPES.n.ord(n) >= mTEPES.pStableTime[nr] + 2):
+                return OptModel.vRampUpState[p,sc,n,nr] + sum(OptModel.vRampDwState[p,sc,n2,nr] for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pStableTime[nr]-1:mTEPES.n.ord(n)-1]) <= 1
             else:
                 return Constraint.Skip
         setattr(OptModel, 'eMinStableTime_' +str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.nr, rule=eMinStableTime, doc='minimum stable time [p.u.]'))
@@ -1165,7 +1165,7 @@ def GenerationOperationModelFormulationRampMinTime(OptModel, mTEPES, pIndLogCons
             for n in mTEPES.n:
                 for nr in mTEPES.nr:
                     if (mTEPES.pStableTime[nr] and mTEPES.pMaxPower2ndBlock[p,sc,n,nr] and mTEPES.n.ord(n) >= mTEPES.pStableTime[nr] + 2):
-                        for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pStableTime[nr]-mTEPES.pTimeStep():mTEPES.n.ord(n)-mTEPES.pTimeStep()]:
+                        for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pStableTime[nr]-1:mTEPES.n.ord(n)-1]:
                             MinStableTimeLoadLevels.append((n, n2, nr))
 
         def eMinStableTime(OptModel, n, n2, nr):
