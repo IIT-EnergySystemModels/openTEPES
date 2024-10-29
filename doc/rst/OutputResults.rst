@@ -1075,11 +1075,11 @@ Period        Scenario    Load level  Generator with power surplus, except the E
 
 File ``oT_Result_NetworkSRMC.csv``
 
-============  ==========  ==========  ==========  =========================================================
+============  ==========  ==========  ==========  ===================================================================================================
 Identifier                            Header      Description
-====================================  ==========  =========================================================
-Period        Scenario    Load level  Node        Locational Short-Run Marginal Cost of electricity [€/MWh]
-============  ==========  ==========  ==========  =========================================================
+====================================  ==========  ===================================================================================================
+Period        Scenario    Load level  Node        Locational Short-Run Marginal Cost of electricity [€/MWh], a.k.a. Locational Marginal Price (LMP)
+============  ==========  ==========  ==========  ===================================================================================================
 
 These marginal costs are obtained after fixing the binary and continuous investment decisions and the binary operation decisions to their optimal values.
 Remember that binary decisions are not affected by marginal changes.
