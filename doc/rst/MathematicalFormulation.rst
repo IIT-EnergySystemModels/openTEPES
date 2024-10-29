@@ -513,7 +513,7 @@ Maximum ramp down and ramp up for the charge of an ESS [p.u.] «``eRampUpCharge`
 :math:`\frac{- c^p_{\omega,n-\nu,e} + dr^p_{\omega,n-\nu,e} + c^p_{\omega ne} - ur^p_{\omega ne}}{DUR^p_{\omega n} RU_e} \geq - 1 \quad \forall p \omega ne`
 
 Detection of ramp up and ramp down state for the second block of a non-renewable (thermal) unit with minimum stable time [p.u.] «``eRampUpState``» «``eRampDwState``».
-The parameter :math:`\epsilon` is added to detect if the generator is ramping up/down. It is defined in the code as 1e-5.
+The parameter :math:`\epsilon` is added to detect if the generator is ramping up/down. It is defined in the code as 1e-4.
 
 :math:`\frac{- p^p_{\omega,n-\nu,t} + p^p_{\omega nt}}{DUR^p_{\omega n} RU_t \, \epsilon} \leq \frac{rsu^p_{\omega nt}}{\epsilon} - rsd^p_{\omega nt} \quad \forall p \omega nt`
 
