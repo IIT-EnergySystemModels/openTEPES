@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.17.8] - 2024-10-24
+[4.17.8] - 2024-10-30
 -----------------------
+- [FIXED] fix control of second block capacity extremely small (1e-17)
 - [FIXED] fix formulation of the minimum stable time constraints
 - [CHANGED] name of the solver log file
 - [FIXED] fix some typos in output results

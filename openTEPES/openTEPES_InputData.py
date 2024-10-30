@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 23, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 30, 2024
 """
 
 import datetime
@@ -1109,8 +1109,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         pMaxCapacity       = pMaxPowerElec.where(pMaxPowerElec > pMaxCharge, pMaxCharge)
 
         if len(g2a[ar]):
-            pMaxPower2ndBlock [pMaxPower2ndBlock [[nr for nr in n2a[ar]]] < pEpsilon] = 0.0
-            pMaxCharge2ndBlock[pMaxCharge2ndBlock[[eh for eh in g2a[ar]]] < pEpsilon] = 0.0
+            pMaxPower2ndBlock [pMaxPower2ndBlock [[g for g in g2a[ar]]] < pEpsilon] = 0.0
+            pMaxCharge2ndBlock[pMaxCharge2ndBlock[[g for g in g2a[ar]]] < pEpsilon] = 0.0
 
         pLineNTCFrw.update(pd.Series([0.0 for ni,nf,cc in mTEPES.la if pLineNTCFrw[ni,nf,cc] < pEpsilon], index=[(ni,nf,cc) for ni,nf,cc in mTEPES.la if pLineNTCFrw[ni,nf,cc] < pEpsilon], dtype='float64'))
         pLineNTCBck.update(pd.Series([0.0 for ni,nf,cc in mTEPES.la if pLineNTCBck[ni,nf,cc] < pEpsilon], index=[(ni,nf,cc) for ni,nf,cc in mTEPES.la if pLineNTCBck[ni,nf,cc] < pEpsilon], dtype='float64'))
@@ -1146,8 +1146,9 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pEmissionVarCost   = pEmissionVarCost.loc  [:,mTEPES.g ]
 
     # replace < 0.0 by 0.0
-    pMaxPower2ndBlock  = pMaxPower2ndBlock.where (pMaxPower2ndBlock  > 0.0, 0.0)
-    pMaxCharge2ndBlock = pMaxCharge2ndBlock.where(pMaxCharge2ndBlock > 0.0, 0.0)
+    pEpsilon = 1e-6
+    pMaxPower2ndBlock  = pMaxPower2ndBlock.where (pMaxPower2ndBlock  > pEpsilon, 0.0)
+    pMaxCharge2ndBlock = pMaxCharge2ndBlock.where(pMaxCharge2ndBlock > pEpsilon, 0.0)
 
     # computation of the power to heat ratio of the CHP units
     # heat ratio of boiler units is fixed to 1.0
@@ -1249,8 +1250,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pStartUpCost.update         (pd.Series([0.0 for nr in mTEPES.nr if     pStartUpCost         [nr]  < pEpsilon], index=[nr for nr in mTEPES.nr if     pStartUpCost         [nr]  < pEpsilon]))
     pShutDownCost.update        (pd.Series([0.0 for nr in mTEPES.nr if     pShutDownCost        [nr]  < pEpsilon], index=[nr for nr in mTEPES.nr if     pShutDownCost        [nr]  < pEpsilon]))
 
-    # this rated linear variable cost y going to be used to order the generating units
-    # we include a small term to avoid stochastic behavior due to equal values
+    # this rated linear variable cost is going to be used to order the generating units
+    # we include a small term to avoid a stochastic behavior due to equal values
     for g in mTEPES.g:
         pRatedLinearVarCost[g] += 1e-3*pEpsilon*mTEPES.g.ord(g)
 
@@ -2151,6 +2152,7 @@ def SettingUpVariables(OptModel, mTEPES):
             if mTEPES.pDemandHeat[p,sc,n,nd] ==   0.0:
                 OptModel.vHeatNS [p,sc,n,nd].fix (0.0)
                 nFixedVariables += 1
+
     def AvoidForbiddenInstallationsAndRetirements(mTEPES, OptModel) -> int:
         '''
         Fix installations/retirements forbidden by period.
@@ -2295,7 +2297,7 @@ def SettingUpVariables(OptModel, mTEPES):
         [OptModel.vFlowHeat[p,sc,n,ni,nf,cc].fix(0.0) for p,sc,n,ni,nf,cc in mTEPES.psnha if (ni,nf,cc) not in mTEPES.hc and mTEPES.pHeatPipePeriodIni[ni,nf,cc] > p]
         nFixedVariables += sum(                    4  for p,sc,n,ni,nf,cc in mTEPES.psnha if (ni,nf,cc) not in mTEPES.hc and mTEPES.pHeatPipePeriodIni[ni,nf,cc] > p)
 
-    # tolerance to consider 0 a number
+    # tolerance to consider 0 an investment decision
     pEpsilon = 1e-4
     def SetToZero(mTEPES, OptModel, pEpsilon) -> None:
         '''
@@ -2325,7 +2327,7 @@ def SettingUpVariables(OptModel, mTEPES):
         [OptModel.vGenerationInvest[p,eb      ].setlb(mTEPES.pGenLoInvest[eb      ]()) for p,eb in mTEPES.peb]
         [OptModel.vGenerationInvest[p,eb      ].setub(mTEPES.pGenUpInvest[eb      ]()) for p,eb in mTEPES.peb]
         for p,gd in mTEPES.pgd:
-            if  mTEPES.pGenLoRetire[  gd      ]() < pEpsilon:
+            if  mTEPES.pGenLoRetire[  gd      ]() <       pEpsilon:
                 mTEPES.pGenLoRetire[  gd      ]   = 0
             if  mTEPES.pGenUpRetire[  gd      ]() <       pEpsilon:
                 mTEPES.pGenUpRetire[  gd      ]   = 0
