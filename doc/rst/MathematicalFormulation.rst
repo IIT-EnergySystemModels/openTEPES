@@ -296,19 +296,19 @@ Electricity, heat, and hydrogen generation, (energy and reservoir) storage and (
 :math:`\sum_{pg} DF^p CFG_g icg^p_g + \sum_{pg} DF^p CFR_g rcg^p_g + \sum_{pe'} DF^p CFE_{e'} icr^p_{e'} +`
 :math:`\sum_{pijc} DF^p CFT_{ijc} ict^p_{ijc} + \sum_{pijc} DF^p CFH_{ijc} ich^p_{ijc} + \sum_{pijc} DF^p CFP_{ijc} icp^p_{ijc} +`
 
-Electricity, heat, and hydrogen generation operation cost [M€] «``eTotalGCost``»
+Electricity, heat, and hydrogen expected generation operation cost [M€] «``eTotalGCost``»
 
 :math:`\sum_{p \omega ng} {[DF^p P^p_{\omega} DUR^p_{\omega n} (CV^p_{\omega ng} gp^p_{\omega ng} + CF^p_{\omega ng} uc^p_{\omega ng}) + DF^p CSU_g su^p_{\omega ng} + DF^p CSD_g sd^p_{\omega ng}]} +`
 
-Generation emission cost [M€] «``eTotalECost``» «``eTotalECostArea``»
+Expected generation emission cost [M€] «``eTotalECost``» «``eTotalECostArea``»
 
 :math:`\sum_{p \omega ng} {DF^p P^p_{\omega} DUR^p_{\omega n} CE^p_{\omega ng} gp^p_{\omega ng}} +`
 
-Variable consumption operation cost [M€] «``eTotalCCost``»
+Expected consumption operation cost [M€] «``eTotalCCost``»
 
 :math:`\sum_{p \omega ne}{DF^p P^p_{\omega} DUR^p_{\omega n} CV_e gc^p_{\omega ne}} +`
 
-Electricity, hydrogen, and heat reliability cost [M€] «``eTotalRCost``»
+Electricity, hydrogen, and heat expected reliability cost [M€] «``eTotalRCost``»
 
 :math:`\sum_{p \omega ni}{DF^p P^p_{\omega} DUR^p_{\omega n} CENS  ens^p_{\omega ni}} + \sum_{p \omega ni}{DF^p P^p_{\omega} DUR^p_{\omega n} CHNS  hns^p_{\omega ni}} + \sum_{p \omega ni}{DF^p P^p_{\omega} DUR^p_{\omega n} CHtNS htns^p_{\omega ni}}`
 
