@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 28, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 08, 2024
 """
 
 import time
@@ -155,20 +155,20 @@ def GenerationOperationModelFormulationObjFunct(OptModel, mTEPES, pIndLogConsole
                                                     mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pOperReserveCost[       eh] * OptModel.vESSReserveDown [p,sc,n,eh] for eh in mTEPES.eh if (p,eh) in mTEPES.peh and mTEPES.pIndOperReserve[eh] == 0) +
                                                 sum(mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pLinearVarCost  [p,sc,n,bo] * OptModel.vTotalOutputHeat[p,sc,n,bo] for bo in mTEPES.bo if (p,bo) in mTEPES.pbo) +
                                                 sum(mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pLinearOMCost   [       re] * OptModel.vTotalOutput    [p,sc,n,re] for re in mTEPES.re if (p,re) in mTEPES.pre) )
-    setattr(OptModel, 'eTotalGCost_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, rule=eTotalGCost, doc='system variable generation operation cost [MEUR]'))
+    setattr(OptModel, f'eTotalGCost_{p}_{sc}_{st}', Constraint(mTEPES.n, rule=eTotalGCost, doc='system variable generation operation cost [MEUR]'))
 
     # the small tolerance pEpsilon=1e-5 is added to avoid pumping/charging with curtailment/spillage
     pEpsilon = 1e-5
     def eTotalCCost(OptModel,n):
         return OptModel.vTotalCCost    [p,sc,n] == sum(mTEPES.pLoadLevelDuration[p,sc,n]() * (mTEPES.pLinearVarCost[p,sc,n,eh]+pEpsilon) * OptModel.vESSTotalCharge[p,sc,n,eh] for eh in mTEPES.eh if (p,eh) in mTEPES.peh)
-    setattr(OptModel, 'eTotalCCost_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, rule=eTotalCCost, doc='system variable consumption operation cost [MEUR]'))
+    setattr(OptModel, f'eTotalCCost_{p}_{sc}_{st}', Constraint(mTEPES.n, rule=eTotalCCost, doc='system variable consumption operation cost [MEUR]'))
 
     def eTotalECost(OptModel,n):
         if sum(mTEPES.pEmissionVarCost[p,sc,n,g] for g in mTEPES.g if (p,g) in mTEPES.pg):
             return OptModel.vTotalECost[p,sc,n] == sum(OptModel.vTotalECostArea[p,sc,n,ar] for ar in mTEPES.ar)
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eTotalECost_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, rule=eTotalECost, doc='system emission cost [MEUR]'))
+    setattr(OptModel, f'eTotalECost_{p}_{sc}_{st}', Constraint(mTEPES.n, rule=eTotalECost, doc='system emission cost [MEUR]'))
 
     def eTotalECostArea(OptModel,n,ar):
         if sum(mTEPES.pEmissionVarCost[p,sc,n,g] for g in mTEPES.g if (ar,g) in mTEPES.a2g and (p,g) in mTEPES.pg):
@@ -176,14 +176,14 @@ def GenerationOperationModelFormulationObjFunct(OptModel, mTEPES, pIndLogConsole
                                                         +  sum(mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pEmissionVarCost[p,sc,n,bo] * OptModel.vTotalOutputHeat[p,sc,n,bo] for bo in mTEPES.bo if (ar,bo) in mTEPES.a2g and (p,bo) in mTEPES.pbo))
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eTotalECostArea_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.ar, rule=eTotalECostArea, doc='area emission cost [MEUR]'))
+    setattr(OptModel, f'eTotalECostArea_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.ar, rule=eTotalECostArea, doc='area emission cost [MEUR]'))
 
     def eTotalRESEnergyArea(OptModel,n,ar):
         if mTEPES.pRESEnergy[p,ar] and st == mTEPES.Last_st:
             return OptModel.vTotalRESEnergyArea[p,sc,n,ar] == sum(mTEPES.pLoadLevelDuration[p,sc,n]() * OptModel.vTotalOutput[p,sc,n,re] for re in mTEPES.re if (ar,re) in mTEPES.a2g and (p,re) in mTEPES.pre)
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eTotalRESEnergyArea_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.ar, rule=eTotalRESEnergyArea, doc='area RES energy [GWh]'))
+    setattr(OptModel, f'eTotalRESEnergyArea_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.ar, rule=eTotalRESEnergyArea, doc='area RES energy [GWh]'))
 
     def eTotalRCost(OptModel,n):
         if   mTEPES.pIndHydrogen == 0 and mTEPES.pIndHeat == 0:
@@ -194,7 +194,7 @@ def GenerationOperationModelFormulationObjFunct(OptModel, mTEPES, pIndLogConsole
             return OptModel.vTotalRCost[p,sc,n] == sum(mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pENSCost * OptModel.vENS[p,sc,n,nd] for nd in mTEPES.nd)                                                                                                                                                                  + sum(mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pHeatNSCost * OptModel.vHeatNS[p,sc,n,nd] for nd in mTEPES.nd if sum(1 for ch in c2n[nd]) + sum(1 for hp in h2n[nd]) + sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd]))
         elif mTEPES.pIndHydrogen == 1 and mTEPES.pIndHeat == 1:
             return OptModel.vTotalRCost[p,sc,n] == sum(mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pENSCost * OptModel.vENS[p,sc,n,nd] for nd in mTEPES.nd) + sum(mTEPES.pH2NSCost * OptModel.vH2NS[p,sc,n,nd] for nd in mTEPES.nd if sum(1 for el in e2n[nd]) + sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd])) + sum(mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pHeatNSCost * OptModel.vHeatNS[p,sc,n,nd] for nd in mTEPES.nd if sum(1 for ch in c2n[nd]) + sum(1 for hp in h2n[nd]) + sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd]))
-    setattr(OptModel, 'eTotalRCost_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, rule=eTotalRCost, doc='system reliability cost [MEUR]'))
+    setattr(OptModel, f'eTotalRCost_{p}_{sc}_{st}', Constraint(mTEPES.n, rule=eTotalRCost, doc='system reliability cost [MEUR]'))
 
     GeneratingTime = time.time() - StartTime
     if pIndLogConsole == 1:
@@ -211,20 +211,20 @@ def GenerationOperationModelFormulationInvestment(OptModel, mTEPES, pIndLogConso
             return OptModel.vCommitment[p,sc,n,gc]                                 <= OptModel.vGenerationInvest[p,gc]
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eInstallGenComm_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.gc, rule=eInstallGenComm, doc='commitment if installed unit [p.u.]'))
+    setattr(OptModel, f'eInstallGenComm_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.gc, rule=eInstallGenComm, doc='commitment if installed unit [p.u.]'))
 
     if pIndLogConsole == 1:
-        print('eInstallGenComm       ... ', len(getattr(OptModel, 'eInstallGenComm_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eInstallGenComm       ... ', len(getattr(OptModel, f'eInstallGenComm_{p}_{sc}_{st}')), ' rows')
 
     def eInstallESSComm(OptModel,n,ec):
         if mTEPES.pIndBinStorInvest[ec]:
             return OptModel.vCommitment[p,sc,n,ec] <= OptModel.vGenerationInvest[p,ec]
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eInstallESSComm_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.ec, rule=eInstallESSComm, doc='commitment if ESS unit [p.u.]'))
+    setattr(OptModel, f'eInstallESSComm_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.ec, rule=eInstallESSComm, doc='commitment if ESS unit [p.u.]'))
 
     if pIndLogConsole == 1:
-        print('eInstallESSComm       ... ', len(getattr(OptModel, 'eInstallESSComm_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eInstallESSComm       ... ', len(getattr(OptModel, f'eInstallESSComm_{p}_{sc}_{st}')), ' rows')
 
     def eInstallGenCap(OptModel,n,gc):
         if (p,gc) in mTEPES.pgc:
@@ -234,10 +234,10 @@ def GenerationOperationModelFormulationInvestment(OptModel, mTEPES, pIndLogConso
                 return Constraint.Skip
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eInstallGenCap_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.gc, rule=eInstallGenCap, doc='output if installed gen unit [p.u.]'))
+    setattr(OptModel, f'eInstallGenCap_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.gc, rule=eInstallGenCap, doc='output if installed gen unit [p.u.]'))
 
     if pIndLogConsole == 1:
-        print('eInstallGenCap        ... ', len(getattr(OptModel, 'eInstallGenCap_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eInstallGenCap        ... ', len(getattr(OptModel, f'eInstallGenCap_{p}_{sc}_{st}')), ' rows')
 
     def eInstallFHUCap(OptModel,n,bc):
         if (p,bc) in mTEPES.pbc:
@@ -247,10 +247,10 @@ def GenerationOperationModelFormulationInvestment(OptModel, mTEPES, pIndLogConso
                 return Constraint.Skip
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eInstallFHUCap_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.bc, rule=eInstallFHUCap, doc='heat production if installed fuel heating unit [p.u.]'))
+    setattr(OptModel, f'eInstallFHUCap_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.bc, rule=eInstallFHUCap, doc='heat production if installed fuel heating unit [p.u.]'))
 
     if pIndLogConsole == 1:
-        print('eInstallFHUCap        ... ', len(getattr(OptModel, 'eInstallFHUCap_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eInstallFHUCap        ... ', len(getattr(OptModel, f'eInstallFHUCap_{p}_{sc}_{st}')), ' rows')
 
     def eInstallConESS(OptModel,n,ec):
         if (p,ec) in mTEPES.pec:
@@ -260,10 +260,10 @@ def GenerationOperationModelFormulationInvestment(OptModel, mTEPES, pIndLogConso
                 return Constraint.Skip
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eInstallConESS_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.ec, rule=eInstallConESS, doc='consumption if installed ESS unit [p.u.]'))
+    setattr(OptModel, f'eInstallConESS_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.ec, rule=eInstallConESS, doc='consumption if installed ESS unit [p.u.]'))
 
     if pIndLogConsole == 1:
-        print('eInstallConESS        ... ', len(getattr(OptModel, 'eInstallConESS_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eInstallConESS        ... ', len(getattr(OptModel, f'eInstallConESS_{p}_{sc}_{st}')), ' rows')
 
     def eUninstallGenComm(OptModel,n,gd):
         if (p,gd) in mTEPES.pgd:
@@ -273,10 +273,10 @@ def GenerationOperationModelFormulationInvestment(OptModel, mTEPES, pIndLogConso
                 return Constraint.Skip
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eUninstallGenComm_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.gd, rule=eUninstallGenComm, doc='commitment if uninstalled unit [p.u.]'))
+    setattr(OptModel, f'eUninstallGenComm_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.gd, rule=eUninstallGenComm, doc='commitment if uninstalled unit [p.u.]'))
 
     if pIndLogConsole == 1:
-        print('eUninstallGenComm     ... ', len(getattr(OptModel, 'eUninstallGenComm_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eUninstallGenComm     ... ', len(getattr(OptModel, f'eUninstallGenComm_{p}_{sc}_{st}')), ' rows')
 
     def eUninstallGenCap(OptModel,n,gd):
         if (p,gd) in mTEPES.pgd:
@@ -286,10 +286,10 @@ def GenerationOperationModelFormulationInvestment(OptModel, mTEPES, pIndLogConso
                 return Constraint.Skip
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eUninstallGenCap_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.gd, rule=eUninstallGenCap, doc='output if uninstalled gen unit [p.u.]'))
+    setattr(OptModel, f'eUninstallGenCap_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.gd, rule=eUninstallGenCap, doc='output if uninstalled gen unit [p.u.]'))
 
     if pIndLogConsole == 1:
-        print('eUninstallGenCap      ... ', len(getattr(OptModel, 'eUninstallGenCap_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eUninstallGenCap      ... ', len(getattr(OptModel, f'eUninstallGenCap_{p}_{sc}_{st}')), ' rows')
 
     def eAdequacyReserveMargin(OptModel,ar):
         if mTEPES.pReserveMargin[p,ar] and st == mTEPES.Last_st and sum(1 for gc in mTEPES.gc if (ar,gc) in mTEPES.a2g) and sum(mTEPES.pRatedMaxPowerElec[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]) for g in mTEPES.g if (ar,g) in mTEPES.a2g and g not in (mTEPES.gc or mTEPES.gd)) <= mTEPES.pDemandElecPeak[p,ar] * mTEPES.pReserveMargin[p,ar]:
@@ -298,30 +298,30 @@ def GenerationOperationModelFormulationInvestment(OptModel, mTEPES, pIndLogConso
                      sum((1-OptModel.vGenerationRetire[p,gd]) * mTEPES.pRatedMaxPowerElec[gd] * mTEPES.pAvailability[gd]() / (1.0-mTEPES.pEFOR[gd]) for gd in mTEPES.gd if (p,gd) in mTEPES.pgd and (ar,gd) in mTEPES.a2g                                      ) ) >= mTEPES.pDemandElecPeak[p,ar] * mTEPES.pReserveMargin[p,ar])
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eAdequacyReserveMargin_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.ar, rule=eAdequacyReserveMargin, doc='system adequacy reserve margin [p.u.]'))
+    setattr(OptModel, f'eAdequacyReserveMargin_{p}_{sc}_{st}', Constraint(mTEPES.ar, rule=eAdequacyReserveMargin, doc='system adequacy reserve margin [p.u.]'))
 
     if pIndLogConsole == 1:
-        print('eAdequacyReserveMargin... ', len(getattr(OptModel, 'eAdequacyReserveMargin_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eAdequacyReserveMargin... ', len(getattr(OptModel, f'eAdequacyReserveMargin_{p}_{sc}_{st}')), ' rows')
 
     def eMaxSystemEmission(OptModel,ar):
         if mTEPES.pEmission[p,ar] < math.inf and st == mTEPES.Last_st and sum(mTEPES.pEmissionVarCost[p,sc,na,nr] for na,nr in mTEPES.na*mTEPES.nr if (ar,nr) in mTEPES.a2g):
             return sum(OptModel.vTotalECostArea[p,sc,na,ar]/mTEPES.pCO2Cost for na in mTEPES.na) <= mTEPES.pEmission[p,ar]
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eMaxSystemEmission_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.ar, rule=eMaxSystemEmission, doc='maximum CO2 emission [tCO2]'))
+    setattr(OptModel, f'eMaxSystemEmission_{p}_{sc}_{st}', Constraint(mTEPES.ar, rule=eMaxSystemEmission, doc='maximum CO2 emission [tCO2]'))
 
     if pIndLogConsole == 1:
-        print('eMaxSystemEmission    ... ', len(getattr(OptModel, 'eMaxSystemEmission_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eMaxSystemEmission    ... ', len(getattr(OptModel, f'eMaxSystemEmission_{p}_{sc}_{st}')), ' rows')
 
     def eMinSystemRESEnergy(OptModel,ar):
         if mTEPES.pRESEnergy[p,ar] and st == mTEPES.Last_st:
             return sum(OptModel.vTotalRESEnergyArea[p,sc,na,ar] for na in mTEPES.na)/sum(mTEPES.pLoadLevelDuration[p,sc,na] for na in mTEPES.na) >= mTEPES.pRESEnergy[p,ar]/sum(mTEPES.pLoadLevelDuration[p,sc,na] for na in mTEPES.na)
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eMinSystemRESEnergy_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.ar, rule=eMinSystemRESEnergy, doc='minimum RES energy [GW]'))
+    setattr(OptModel, f'eMinSystemRESEnergy_{p}_{sc}_{st}', Constraint(mTEPES.ar, rule=eMinSystemRESEnergy, doc='minimum RES energy [GW]'))
 
     if pIndLogConsole == 1:
-        print('eMinSystemRESEnergy   ... ', len(getattr(OptModel, 'eMinSystemRESEnergy_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eMinSystemRESEnergy   ... ', len(getattr(OptModel, f'eMinSystemRESEnergy_{p}_{sc}_{st}')), ' rows')
 
     GeneratingTime = time.time() - StartTime
     if pIndLogConsole == 1:
@@ -373,10 +373,10 @@ def GenerationOperationModelFormulationDemand(OptModel, mTEPES, pIndLogConsole, 
             return sum(OptModel.vCommitment[p,sc,n,nr] * mTEPES.pInertia[nr] for nr in mTEPES.nr if (ar,nr) in mTEPES.a2g) >= mTEPES.pSystemInertia[p,sc,n,ar]
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eSystemInertia_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.ar, rule=eSystemInertia, doc='system inertia [s]'))
+    setattr(OptModel, f'eSystemInertia_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.ar, rule=eSystemInertia, doc='system inertia [s]'))
 
     if pIndLogConsole == 1:
-        print('eSystemInertia        ... ', len(getattr(OptModel, 'eSystemInertia_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eSystemInertia        ... ', len(getattr(OptModel, f'eSystemInertia_{p}_{sc}_{st}')), ' rows')
 
     def eOperReserveUp(OptModel,n,ar):
         if mTEPES.pOperReserveUp[p,sc,n,ar]:
@@ -386,10 +386,10 @@ def GenerationOperationModelFormulationDemand(OptModel, mTEPES, pIndLogConsole, 
                 return Constraint.Skip
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eOperReserveUp_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.ar, rule=eOperReserveUp, doc='up   operating reserve [GW]'))
+    setattr(OptModel, f'eOperReserveUp_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.ar, rule=eOperReserveUp, doc='up   operating reserve [GW]'))
 
     if pIndLogConsole == 1:
-        print('eOperReserveUp        ... ', len(getattr(OptModel, 'eOperReserveUp_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eOperReserveUp        ... ', len(getattr(OptModel, f'eOperReserveUp_{p}_{sc}_{st}')), ' rows')
 
     def eOperReserveDw(OptModel,n,ar):
         if mTEPES.pOperReserveDw[p,sc,n,ar]:
@@ -399,50 +399,50 @@ def GenerationOperationModelFormulationDemand(OptModel, mTEPES, pIndLogConsole, 
                 return Constraint.Skip
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eOperReserveDw_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.ar, rule=eOperReserveDw, doc='down operating reserve [GW]'))
+    setattr(OptModel, f'eOperReserveDw_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.ar, rule=eOperReserveDw, doc='down operating reserve [GW]'))
 
     if pIndLogConsole == 1:
-        print('eOperReserveDw        ... ', len(getattr(OptModel, 'eOperReserveDw_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eOperReserveDw        ... ', len(getattr(OptModel, f'eOperReserveDw_{p}_{sc}_{st}')), ' rows')
 
     def eReserveMinRatioDwUp(OptModel,n,nr):
         if mTEPES.pMinRatioDwUp       and sum(mTEPES.pOperReserveUp[p,sc,n,ar] for ar in a2n[nr]) and sum(mTEPES.pOperReserveDw[p,sc,n,ar] for ar in a2n[nr]) and mTEPES.pMaxPower2ndBlock[p,sc,n,nr] and mTEPES.pIndOperReserve[nr] == 0:
             return OptModel.vReserveDown[p,sc,n,nr] >= OptModel.vReserveUp[p,sc,n,nr] * mTEPES.pMinRatioDwUp
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eReserveMinRatioDwUp_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.nr, rule=eReserveMinRatioDwUp, doc='minimum ratio down to up operating reserve [GW]'))
+    setattr(OptModel, f'eReserveMinRatioDwUp_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.nr, rule=eReserveMinRatioDwUp, doc='minimum ratio down to up operating reserve [GW]'))
 
     if pIndLogConsole == 1:
-        print('eReserveMinRatioDwUp  ... ', len(getattr(OptModel, 'eReserveMinRatioDwUp_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eReserveMinRatioDwUp  ... ', len(getattr(OptModel, f'eReserveMinRatioDwUp_{p}_{sc}_{st}')), ' rows')
 
     def eReserveMaxRatioDwUp(OptModel,n,nr):
         if mTEPES.pMaxRatioDwUp < 1.0 and sum(mTEPES.pOperReserveUp[p,sc,n,ar] for ar in a2n[nr]) and sum(mTEPES.pOperReserveDw[p,sc,n,ar] for ar in a2n[nr]) and mTEPES.pMaxPower2ndBlock[p,sc,n,nr] and mTEPES.pIndOperReserve[nr] == 0:
             return OptModel.vReserveDown[p,sc,n,nr] <= OptModel.vReserveUp[p,sc,n,nr] * mTEPES.pMaxRatioDwUp
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eReserveMaxRatioDwUp_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.nr, rule=eReserveMaxRatioDwUp, doc='maximum ratio down to up operating reserve [GW]'))
+    setattr(OptModel, f'eReserveMaxRatioDwUp_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.nr, rule=eReserveMaxRatioDwUp, doc='maximum ratio down to up operating reserve [GW]'))
 
     if pIndLogConsole == 1:
-        print('eReserveMaxRatioDwUp  ... ', len(getattr(OptModel, 'eReserveMaxRatioDwUp_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eReserveMaxRatioDwUp  ... ', len(getattr(OptModel, f'eReserveMaxRatioDwUp_{p}_{sc}_{st}')), ' rows')
 
     def eRsrvMinRatioDwUpESS(OptModel,n,eh):
         if mTEPES.pMinRatioDwUp > 0.0 and sum(mTEPES.pOperReserveUp[p,sc,n,ar] for ar in a2e[eh]) and sum(mTEPES.pOperReserveDw[p,sc,n,ar] for ar in a2e[eh]) and mTEPES.pMaxPower2ndBlock[p,sc,n,eh] and mTEPES.pIndOperReserve[eh] == 0:
             return OptModel.vESSReserveDown[p,sc,n,eh] >= OptModel.vESSReserveUp[p,sc,n,eh] * mTEPES.pMinRatioDwUp
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eRsrvMinRatioDwUpESS_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.eh, rule=eRsrvMinRatioDwUpESS, doc='minimum ratio down to up operating reserve [GW]'))
+    setattr(OptModel, f'eRsrvMinRatioDwUpESS_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.eh, rule=eRsrvMinRatioDwUpESS, doc='minimum ratio down to up operating reserve [GW]'))
 
     if pIndLogConsole == 1:
-        print('eRsrvMinRatioDwUpESS  ... ', len(getattr(OptModel, 'eRsrvMinRatioDwUpESS_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eRsrvMinRatioDwUpESS  ... ', len(getattr(OptModel, f'eRsrvMinRatioDwUpESS_{p}_{sc}_{st}')), ' rows')
 
     def eRsrvMaxRatioDwUpESS(OptModel,n,eh):
         if mTEPES.pMaxRatioDwUp < 1.0 and sum(mTEPES.pOperReserveUp[p,sc,n,ar] for ar in a2e[eh]) and sum(mTEPES.pOperReserveDw[p,sc,n,ar] for ar in a2e[eh]) and mTEPES.pMaxPower2ndBlock[p,sc,n,eh] and mTEPES.pIndOperReserve[eh] == 0:
             return OptModel.vESSReserveDown[p,sc,n,eh] <= OptModel.vESSReserveUp[p,sc,n,eh] * mTEPES.pMaxRatioDwUp
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eRsrvMaxRatioDwUpESS_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.eh, rule=eRsrvMaxRatioDwUpESS, doc='maximum ratio down to up operating reserve [GW]'))
+    setattr(OptModel, f'eRsrvMaxRatioDwUpESS_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.eh, rule=eRsrvMaxRatioDwUpESS, doc='maximum ratio down to up operating reserve [GW]'))
 
     if pIndLogConsole == 1:
-        print('eRsrvMaxRatioDwUpESS  ... ', len(getattr(OptModel, 'eRsrvMaxRatioDwUpESS_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eRsrvMaxRatioDwUpESS  ... ', len(getattr(OptModel, f'eRsrvMaxRatioDwUpESS_{p}_{sc}_{st}')), ' rows')
 
     def eReserveUpIfEnergy(OptModel,n,es):
         if mTEPES.pIndOperReserve[es] == 0 and (p,es) in mTEPES.pes:
@@ -452,10 +452,10 @@ def GenerationOperationModelFormulationDemand(OptModel, mTEPES, pIndLogConsole, 
                 return Constraint.Skip
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eReserveUpIfEnergy_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.nesc, rule=eReserveUpIfEnergy, doc='up   operating reserve if energy available [GW]'))
+    setattr(OptModel, f'eReserveUpIfEnergy_{p}_{sc}_{st}', Constraint(mTEPES.nesc, rule=eReserveUpIfEnergy, doc='up   operating reserve if energy available [GW]'))
 
     if pIndLogConsole == 1:
-        print('eReserveUpIfEnergy    ... ', len(getattr(OptModel, 'eReserveUpIfEnergy_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eReserveUpIfEnergy    ... ', len(getattr(OptModel, f'eReserveUpIfEnergy_{p}_{sc}_{st}')), ' rows')
 
     def eReserveDwIfEnergy(OptModel,n,es):
         if mTEPES.pIndOperReserve[es] == 0 and (p,es) in mTEPES.pes:
@@ -465,10 +465,10 @@ def GenerationOperationModelFormulationDemand(OptModel, mTEPES, pIndLogConsole, 
                 return Constraint.Skip
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eReserveDwIfEnergy_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.nesc, rule=eReserveDwIfEnergy, doc='down operating reserve if energy available [GW]'))
+    setattr(OptModel, f'eReserveDwIfEnergy_{p}_{sc}_{st}', Constraint(mTEPES.nesc, rule=eReserveDwIfEnergy, doc='down operating reserve if energy available [GW]'))
 
     if pIndLogConsole == 1:
-        print('eReserveDwIfEnergy    ... ', len(getattr(OptModel, 'eReserveDwIfEnergy_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eReserveDwIfEnergy    ... ', len(getattr(OptModel, f'eReserveDwIfEnergy_{p}_{sc}_{st}')), ' rows')
 
     def eESSReserveUpIfEnergy(OptModel,n,es):
         if mTEPES.pIndOperReserve[es] == 0 and (p,es) in mTEPES.pes:
@@ -478,10 +478,10 @@ def GenerationOperationModelFormulationDemand(OptModel, mTEPES, pIndLogConsole, 
                 return Constraint.Skip
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eESSReserveUpIfEnergy_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.nesc, rule=eESSReserveUpIfEnergy, doc='up   operating reserve if energy available [GW]'))
+    setattr(OptModel, f'eESSReserveUpIfEnergy_{p}_{sc}_{st}', Constraint(mTEPES.nesc, rule=eESSReserveUpIfEnergy, doc='up   operating reserve if energy available [GW]'))
 
     if pIndLogConsole == 1:
-        print('eESSReserveUpIfEnergy ... ', len(getattr(OptModel, 'eESSReserveUpIfEnergy_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eESSReserveUpIfEnergy ... ', len(getattr(OptModel, f'eESSReserveUpIfEnergy_{p}_{sc}_{st}')), ' rows')
 
     def eESSReserveDwIfEnergy(OptModel,n,es):
         if mTEPES.pIndOperReserve[es] == 0 and (p,es) in mTEPES.pes:
@@ -491,10 +491,10 @@ def GenerationOperationModelFormulationDemand(OptModel, mTEPES, pIndLogConsole, 
                 return Constraint.Skip
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eESSReserveDwIfEnergy_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.nesc, rule=eESSReserveDwIfEnergy, doc='down operating reserve if energy available [GW]'))
+    setattr(OptModel, f'eESSReserveDwIfEnergy_{p}_{sc}_{st}', Constraint(mTEPES.nesc, rule=eESSReserveDwIfEnergy, doc='down operating reserve if energy available [GW]'))
 
     if pIndLogConsole == 1:
-        print('eESSReserveDwIfEnergy ... ', len(getattr(OptModel, 'eESSReserveDwIfEnergy_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eESSReserveDwIfEnergy ... ', len(getattr(OptModel, f'eESSReserveDwIfEnergy_{p}_{sc}_{st}')), ' rows')
 
     def eBalanceElec(OptModel,n,nd):
         if sum(1 for g in g2n[nd]) + sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd]):
@@ -503,10 +503,10 @@ def GenerationOperationModelFormulationDemand(OptModel, mTEPES, pIndLogConsole, 
                     sum(OptModel.vLineLosses[p,sc,n,ni,nd,cc] for ni,cc in linl [nd] if (p,ni,nd,cc) in mTEPES.pll) + sum(OptModel.vFlowElec[p,sc,n,ni,nd,cc] for ni,cc in lin [nd] if (p,ni,nd,cc) in mTEPES.pla)) == mTEPES.pDemandElec[p,sc,n,nd]
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eBalanceElec_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.nd, rule=eBalanceElec, doc='electric load generation balance [GW]'))
+    setattr(OptModel, f'eBalanceElec_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.nd, rule=eBalanceElec, doc='electric load generation balance [GW]'))
 
     if pIndLogConsole == 1:
-        print('eBalanceElec          ... ', len(getattr(OptModel, 'eBalanceElec_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eBalanceElec          ... ', len(getattr(OptModel, f'eBalanceElec_{p}_{sc}_{st}')), ' rows')
 
     GeneratingTime = time.time() - StartTime
     if pIndLogConsole == 1:
@@ -532,10 +532,10 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
                     return Constraint.Skip
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eMaxInventory2Comm_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.necc, rule=eMaxInventory2Comm, doc='ESS maximum inventory limited by commitment [p.u.]'))
+    setattr(OptModel, f'eMaxInventory2Comm_{p}_{sc}_{st}', Constraint(mTEPES.necc, rule=eMaxInventory2Comm, doc='ESS maximum inventory limited by commitment [p.u.]'))
 
     if pIndLogConsole == 1:
-        print('eMaxInventory2Comm    ... ', len(getattr(OptModel, 'eMaxInventory2Comm_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eMaxInventory2Comm    ... ', len(getattr(OptModel, f'eMaxInventory2Comm_{p}_{sc}_{st}')), ' rows')
 
     def eMinInventory2Comm(OptModel,n,ec):
         if mTEPES.pIndBinStorInvest[ec] and (p,ec) in mTEPES.pec:
@@ -545,10 +545,10 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
                     return Constraint.Skip
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eMinInventory2Comm_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.necc, rule=eMinInventory2Comm, doc='ESS minimum inventory limited by commitment [p.u.]'))
+    setattr(OptModel, f'eMinInventory2Comm_{p}_{sc}_{st}', Constraint(mTEPES.necc, rule=eMinInventory2Comm, doc='ESS minimum inventory limited by commitment [p.u.]'))
 
     if pIndLogConsole == 1:
-        print('eMinInventory2Comm    ... ', len(getattr(OptModel, 'eMinInventory2Comm_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eMinInventory2Comm    ... ', len(getattr(OptModel, f'eMinInventory2Comm_{p}_{sc}_{st}')), ' rows')
 
     def eInflows2Comm(OptModel,n,ec):
         if mTEPES.pIndBinStorInvest[ec] and (p,ec) in mTEPES.pec:
@@ -558,10 +558,10 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
                 return Constraint.Skip
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eInflows2Comm_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.necc, rule=eInflows2Comm, doc='ESS inflows limited by commitment [p.u.]'))
+    setattr(OptModel, f'eInflows2Comm_{p}_{sc}_{st}', Constraint(mTEPES.necc, rule=eInflows2Comm, doc='ESS inflows limited by commitment [p.u.]'))
 
     if pIndLogConsole == 1:
-        print('eInflows2Comm         ... ', len(getattr(OptModel, 'eInflows2Comm_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eInflows2Comm         ... ', len(getattr(OptModel, f'eInflows2Comm_{p}_{sc}_{st}')), ' rows')
 
     def eESSInventory(OptModel,n,es):
         if (p,es) in mTEPES.pes:
@@ -579,40 +579,40 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
                 return Constraint.Skip
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eESSInventory_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.nesc, rule=eESSInventory, doc='ESS inventory balance [GWh]'))
+    setattr(OptModel, f'eESSInventory_{p}_{sc}_{st}', Constraint(mTEPES.nesc, rule=eESSInventory, doc='ESS inventory balance [GWh]'))
 
     if pIndLogConsole == 1:
-        print('eESSInventory         ... ', len(getattr(OptModel, 'eESSInventory_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eESSInventory         ... ', len(getattr(OptModel, f'eESSInventory_{p}_{sc}_{st}')), ' rows')
 
     def eIniFinInventory(OptModel,n,ec):
         if (p,ec) in mTEPES.pec and (p,sc,st,n) in mTEPES.s2n and mTEPES.n.ord(n) == mTEPES.pStorageTimeStep[ec]:
             return OptModel.vIniInventory[p,sc,n,ec] == OptModel.vESSInventory[p,sc,mTEPES.n.last(),ec]
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eIniFinInventory_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.necc, rule=eIniFinInventory, doc='Initial equal to final inventory for ESS candidates [p.u.]'))
+    setattr(OptModel, f'eIniFinInventory_{p}_{sc}_{st}', Constraint(mTEPES.necc, rule=eIniFinInventory, doc='Initial equal to final inventory for ESS candidates [p.u.]'))
 
     if pIndLogConsole == 1:
-        print('eIniFinInventory      ... ', len(getattr(OptModel, 'eIniFinInventory_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eIniFinInventory      ... ', len(getattr(OptModel, f'eIniFinInventory_{p}_{sc}_{st}')), ' rows')
 
     def eIniInventory(OptModel,n,ec):
         if (p,ec) in mTEPES.pec and (p,sc,st,n) in mTEPES.s2n and mTEPES.n.ord(n) == mTEPES.pStorageTimeStep[ec] and mTEPES.pIndBinStorInvest[ec]:
             return OptModel.vIniInventory[p,sc,n,ec] / mTEPES.pIniInventory[p,sc,n,ec]() <= OptModel.vCommitment[p,sc,n,ec]
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eIniInventory_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.necc, rule=eIniInventory, doc='Initial inventory for ESS candidates [p.u.]'))
+    setattr(OptModel, f'eIniInventory_{p}_{sc}_{st}', Constraint(mTEPES.necc, rule=eIniInventory, doc='Initial inventory for ESS candidates [p.u.]'))
 
     if pIndLogConsole == 1:
-        print('eIniInventory         ... ', len(getattr(OptModel, 'eIniInventory_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eIniInventory         ... ', len(getattr(OptModel, f'eIniInventory_{p}_{sc}_{st}')), ' rows')
 
     def eMaxShiftTime(OptModel,n,eh):
         if mTEPES.pShiftTime[eh] and (p,eh) in mTEPES.peh:
             return mTEPES.pDuration[p,sc,n]()*mTEPES.pEfficiency[eh]*OptModel.vESSTotalCharge[p,sc,n,eh] <= sum(mTEPES.pDuration[p,sc,n2]()*OptModel.vTotalOutput[p,sc,n2,eh] for n2 in list(mTEPES.n2)[mTEPES.n.ord(n):mTEPES.n.ord(n)+mTEPES.pShiftTime[eh]])
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eMaxShiftTime_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.eh, rule=eMaxShiftTime, doc='Maximum shift time [GWh]'))
+    setattr(OptModel, f'eMaxShiftTime_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.eh, rule=eMaxShiftTime, doc='Maximum shift time [GWh]'))
 
     if pIndLogConsole == 1:
-        print('eMaxShiftTime         ... ', len(getattr(OptModel, 'eMaxShiftTime_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eMaxShiftTime         ... ', len(getattr(OptModel, f'eMaxShiftTime_{p}_{sc}_{st}')), ' rows')
 
     def eMaxCharge(OptModel,n,eh):
         if mTEPES.pIndOperReserve[eh] == 0 and (p,eh) in mTEPES.peh:
@@ -622,10 +622,10 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
                 return Constraint.Skip
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eMaxCharge_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.eh, rule=eMaxCharge, doc='max charge of an ESS [p.u.]'))
+    setattr(OptModel, f'eMaxCharge_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.eh, rule=eMaxCharge, doc='max charge of an ESS [p.u.]'))
 
     if pIndLogConsole == 1:
-        print('eMaxCharge            ... ', len(getattr(OptModel, 'eMaxCharge_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eMaxCharge            ... ', len(getattr(OptModel, f'eMaxCharge_{p}_{sc}_{st}')), ' rows')
 
     def eMinCharge(OptModel,n,eh):
         if mTEPES.pIndOperReserve[eh] == 0 and (p,eh) in mTEPES.peh:
@@ -635,10 +635,10 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
                 return Constraint.Skip
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eMinCharge_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.eh, rule=eMinCharge, doc='min charge of an ESS [p.u.]'))
+    setattr(OptModel, f'eMinCharge_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.eh, rule=eMinCharge, doc='min charge of an ESS [p.u.]'))
 
     if pIndLogConsole == 1:
-        print('eMinCharge            ... ', len(getattr(OptModel, 'eMinCharge_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eMinCharge            ... ', len(getattr(OptModel, f'eMinCharge_{p}_{sc}_{st}')), ' rows')
 
     # def eChargeDischarge(OptModel,n,eh):
     #     if mTEPES.pMaxCharge[p,sc,n,eh]:
@@ -656,10 +656,10 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
                 return Constraint.Skip
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eChargeDischarge_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.eh, rule=eChargeDischarge, doc='incompatibility between charge and discharge [p.u.]'))
+    setattr(OptModel, f'eChargeDischarge_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.eh, rule=eChargeDischarge, doc='incompatibility between charge and discharge [p.u.]'))
 
     if pIndLogConsole == 1:
-        print('eChargeDischarge      ... ', len(getattr(OptModel, 'eChargeDischarge_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eChargeDischarge      ... ', len(getattr(OptModel, f'eChargeDischarge_{p}_{sc}_{st}')), ' rows')
 
     def eESSTotalCharge(OptModel,n,eh):
         if (p,eh) in mTEPES.peh:
@@ -672,10 +672,10 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
                 return Constraint.Skip
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eESSTotalCharge_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.eh, rule=eESSTotalCharge, doc='total charge of an ESS unit [GW]'))
+    setattr(OptModel, f'eESSTotalCharge_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.eh, rule=eESSTotalCharge, doc='total charge of an ESS unit [GW]'))
 
     if pIndLogConsole == 1:
-        print('eESSTotalCharge       ... ', len(getattr(OptModel, 'eESSTotalCharge_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eESSTotalCharge       ... ', len(getattr(OptModel, f'eESSTotalCharge_{p}_{sc}_{st}')), ' rows')
 
     def eChargeOutflows(OptModel,n,eh):
         if mTEPES.pIndOutflowIncomp[eh] == 1 and (p,eh) in mTEPES.peh and (p,sc,eh) in mTEPES.eo:
@@ -685,40 +685,40 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
                 return Constraint.Skip
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eChargeOutflows_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.eh, rule=eChargeOutflows, doc='incompatibility between charge and outflows use [p.u.]'))
+    setattr(OptModel, f'eChargeOutflows_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.eh, rule=eChargeOutflows, doc='incompatibility between charge and outflows use [p.u.]'))
 
     if pIndLogConsole == 1:
-        print('eChargeOutflows       ... ', len(getattr(OptModel, 'eChargeOutflows_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eChargeOutflows       ... ', len(getattr(OptModel, f'eChargeOutflows_{p}_{sc}_{st}')), ' rows')
 
     def eEnergyOutflows(OptModel,n,es):
         if (p,sc,es) in mTEPES.eo:
             return sum((OptModel.vEnergyOutflows[p,sc,n2,es] - mTEPES.pEnergyOutflows[p,sc,n2,es]())*mTEPES.pDuration[p,sc,n2]() for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pOutflowsTimeStep[es]:mTEPES.n.ord(n)]) == 0.0
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eEnergyOutflows_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.neso, rule=eEnergyOutflows, doc='energy outflows of an ESS unit [GW]'))
+    setattr(OptModel, f'eEnergyOutflows_{p}_{sc}_{st}', Constraint(mTEPES.neso, rule=eEnergyOutflows, doc='energy outflows of an ESS unit [GW]'))
 
     if pIndLogConsole == 1:
-        print('eEnergyOutflows       ... ', len(getattr(OptModel, 'eEnergyOutflows_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eEnergyOutflows       ... ', len(getattr(OptModel, f'eEnergyOutflows_{p}_{sc}_{st}')), ' rows')
 
     def eMinimumEnergy(OptModel,n,g):
         if (p,sc,g) in mTEPES.gm and (p,g) in mTEPES.pg:
             return sum((OptModel.vTotalOutput[p,sc,n2,g] - mTEPES.pMinEnergy[p,sc,n2,g])*mTEPES.pDuration[p,sc,n2]() for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pEnergyTimeStep[g]:mTEPES.n.ord(n)]) >= 0.0
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eMinimumEnergy_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.ngen, rule=eMinimumEnergy, doc='minimum energy of a unit [GWh]'))
+    setattr(OptModel, f'eMinimumEnergy_{p}_{sc}_{st}', Constraint(mTEPES.ngen, rule=eMinimumEnergy, doc='minimum energy of a unit [GWh]'))
 
     if pIndLogConsole == 1:
-        print('eMinimumEnergy        ... ', len(getattr(OptModel, 'eMinimumEnergy_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eMinimumEnergy        ... ', len(getattr(OptModel, f'eMinimumEnergy_{p}_{sc}_{st}')), ' rows')
 
     def eMaximumEnergy(OptModel,n,g):
         if (p,sc,g) in mTEPES.gM and (p,g) in mTEPES.pg:
             return sum((OptModel.vTotalOutput[p,sc,n2,g] - mTEPES.pMaxEnergy[p,sc,n2,g])*mTEPES.pDuration[p,sc,n2]() for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pEnergyTimeStep[g]:mTEPES.n.ord(n)]) <= 0.0
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eMaximumEnergy_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.ngen, rule=eMaximumEnergy, doc='maximum energy of a unit [GWh]'))
+    setattr(OptModel, f'eMaximumEnergy_{p}_{sc}_{st}', Constraint(mTEPES.ngen, rule=eMaximumEnergy, doc='maximum energy of a unit [GWh]'))
 
     if pIndLogConsole == 1:
-        print('eMaximumEnergy        ... ', len(getattr(OptModel, 'eMaximumEnergy_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eMaximumEnergy        ... ', len(getattr(OptModel, f'eMaximumEnergy_{p}_{sc}_{st}')), ' rows')
 
     GeneratingTime = time.time() - StartTime
     if pIndLogConsole == 1:
@@ -743,10 +743,10 @@ def GenerationOperationModelFormulationReservoir(OptModel, mTEPES, pIndLogConsol
                 return Constraint.Skip
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eMaxVolume2Comm_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.nrcc, rule=eMaxVolume2Comm, doc='Reservoir maximum volume limited by commitment [p.u.]'))
+    setattr(OptModel, f'eMaxVolume2Comm_{p}_{sc}_{st}', Constraint(mTEPES.nrcc, rule=eMaxVolume2Comm, doc='Reservoir maximum volume limited by commitment [p.u.]'))
 
     if pIndLogConsole == 1:
-        print('eMaxVolume2Comm       ... ', len(getattr(OptModel, 'eMaxVolume2Comm_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eMaxVolume2Comm       ... ', len(getattr(OptModel, f'eMaxVolume2Comm_{p}_{sc}_{st}')), ' rows')
 
     def eMinVolume2Comm(OptModel,n,rc):
         if mTEPES.pIndBinRsrInvest[rc]() and (p,rc) in mTEPES.prc:
@@ -756,10 +756,10 @@ def GenerationOperationModelFormulationReservoir(OptModel, mTEPES, pIndLogConsol
                 return Constraint.Skip
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eMinVolume2Comm_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.nrcc, rule=eMinVolume2Comm, doc='Reservoir minimum volume limited by commitment [p.u.]'))
+    setattr(OptModel, f'eMinVolume2Comm_{p}_{sc}_{st}', Constraint(mTEPES.nrcc, rule=eMinVolume2Comm, doc='Reservoir minimum volume limited by commitment [p.u.]'))
 
     if pIndLogConsole == 1:
-        print('eMinVolume2Comm       ... ', len(getattr(OptModel, 'eMinVolume2Comm_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eMinVolume2Comm       ... ', len(getattr(OptModel, f'eMinVolume2Comm_{p}_{sc}_{st}')), ' rows')
 
     def eTrbReserveUpIfEnergy(OptModel,n,h):
         if mTEPES.pIndOperReserve[h] == 0 and (p,h) in mTEPES.ph:
@@ -769,10 +769,10 @@ def GenerationOperationModelFormulationReservoir(OptModel, mTEPES, pIndLogConsol
                 return Constraint.Skip
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eTrbReserveUpIfEnergy_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.nhc, rule=eTrbReserveUpIfEnergy, doc='up   operating reserve if energy available [GW]'))
+    setattr(OptModel, f'eTrbReserveUpIfEnergy_{p}_{sc}_{st}', Constraint(mTEPES.nhc, rule=eTrbReserveUpIfEnergy, doc='up   operating reserve if energy available [GW]'))
 
     if pIndLogConsole == 1:
-        print('eTrbReserveUpIfEnergy ... ', len(getattr(OptModel, 'eTrbReserveUpIfEnergy_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eTrbReserveUpIfEnergy ... ', len(getattr(OptModel, f'eTrbReserveUpIfEnergy_{p}_{sc}_{st}')), ' rows')
 
     def eTrbReserveDwIfEnergy(OptModel,n,h):
         if mTEPES.pIndOperReserve[h] == 0 and (p,h) in mTEPES.ph:
@@ -782,10 +782,10 @@ def GenerationOperationModelFormulationReservoir(OptModel, mTEPES, pIndLogConsol
                 return Constraint.Skip
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eTrbReserveDwIfEnergy_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.nhc, rule=eTrbReserveDwIfEnergy, doc='down operating reserve if energy available [GW]'))
+    setattr(OptModel, f'eTrbReserveDwIfEnergy_{p}_{sc}_{st}', Constraint(mTEPES.nhc, rule=eTrbReserveDwIfEnergy, doc='down operating reserve if energy available [GW]'))
 
     if pIndLogConsole == 1:
-        print('eTrbReserveDwIfEnergy ... ', len(getattr(OptModel, 'eTrbReserveDwIfEnergy_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eTrbReserveDwIfEnergy ... ', len(getattr(OptModel, f'eTrbReserveDwIfEnergy_{p}_{sc}_{st}')), ' rows')
 
     def ePmpReserveUpIfEnergy(OptModel,n,h):
         if mTEPES.pIndOperReserve[h] == 0 and sum(1 for rs in mTEPES.rs if (h,rs) in mTEPES.p2r) and (p,h) in mTEPES.ph:
@@ -795,10 +795,10 @@ def GenerationOperationModelFormulationReservoir(OptModel, mTEPES, pIndLogConsol
                 return Constraint.Skip
         else:
             return Constraint.Skip
-    setattr(OptModel, 'ePmpReserveUpIfEnergy_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.np2c, rule=ePmpReserveUpIfEnergy, doc='up   operating reserve if energy available [GW]'))
+    setattr(OptModel, f'ePmpReserveUpIfEnergy_{p}_{sc}_{st}', Constraint(mTEPES.np2c, rule=ePmpReserveUpIfEnergy, doc='up   operating reserve if energy available [GW]'))
 
     if pIndLogConsole == 1:
-        print('ePmpReserveUpIfEnergy ... ', len(getattr(OptModel, 'ePmpReserveUpIfEnergy_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('ePmpReserveUpIfEnergy ... ', len(getattr(OptModel, f'ePmpReserveUpIfEnergy_{p}_{sc}_{st}')), ' rows')
 
     def ePmpReserveDwIfEnergy(OptModel,n,h):
         if mTEPES.pIndOperReserve[h] == 0 and sum(1 for rs in mTEPES.rs if (rs,h) in mTEPES.r2p) and (p,h) in mTEPES.ph:
@@ -808,10 +808,10 @@ def GenerationOperationModelFormulationReservoir(OptModel, mTEPES, pIndLogConsol
                 return Constraint.Skip
         else:
             return Constraint.Skip
-    setattr(OptModel, 'ePmpReserveDwIfEnergy_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.npc, rule=ePmpReserveDwIfEnergy, doc='down operating reserve if energy available [GW]'))
+    setattr(OptModel, f'ePmpReserveDwIfEnergy_{p}_{sc}_{st}', Constraint(mTEPES.npc, rule=ePmpReserveDwIfEnergy, doc='down operating reserve if energy available [GW]'))
 
     if pIndLogConsole == 1:
-        print('ePmpReserveDwIfEnergy ... ', len(getattr(OptModel, 'ePmpReserveDwIfEnergy_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('ePmpReserveDwIfEnergy ... ', len(getattr(OptModel, f'ePmpReserveDwIfEnergy_{p}_{sc}_{st}')), ' rows')
 
     def eHydroInventory(OptModel,n,rs):
         if (p,rs) in mTEPES.prs and sum(1 for h in mTEPES.h if (rs,h) in mTEPES.r2h or (h,rs) in mTEPES.h2r or (rs,h) in mTEPES.r2p or (h,rs) in mTEPES.p2r):
@@ -829,30 +829,30 @@ def GenerationOperationModelFormulationReservoir(OptModel, mTEPES, pIndLogConsol
                 return Constraint.Skip
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eHydroInventory_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.nrsc, rule=eHydroInventory, doc='Reservoir water inventory [hm3]'))
+    setattr(OptModel, f'eHydroInventory_{p}_{sc}_{st}', Constraint(mTEPES.nrsc, rule=eHydroInventory, doc='Reservoir water inventory [hm3]'))
 
     if pIndLogConsole == 1:
-        print('eHydroInventory       ... ', len(getattr(OptModel, 'eHydroInventory_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eHydroInventory       ... ', len(getattr(OptModel, f'eHydroInventory_{p}_{sc}_{st}')), ' rows')
 
     def eIniFinVolume(OptModel,n,rs):
         if (p,rs) in mTEPES.prs and (p,sc,st,n) in mTEPES.s2n and mTEPES.n.ord(n) == mTEPES.pReservoirTimeStep[rs]:
             return OptModel.vIniVolume[p,sc,n,rs] == OptModel.vHydroInventory[p,sc,mTEPES.n.last(),rs]
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eIniFinVolume_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.nrcc, rule=eIniFinVolume, doc='Initial equal to final volume for reservoir candidates [p.u.]'))
+    setattr(OptModel, f'eIniFinVolume_{p}_{sc}_{st}', Constraint(mTEPES.nrcc, rule=eIniFinVolume, doc='Initial equal to final volume for reservoir candidates [p.u.]'))
 
     if pIndLogConsole == 1:
-        print('eIniFinVolume         ... ', len(getattr(OptModel, 'eIniFinVolume_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eIniFinVolume         ... ', len(getattr(OptModel, f'eIniFinVolume_{p}_{sc}_{st}')), ' rows')
 
     def eHydroOutflows(OptModel,n,rs):
         if (p,sc,rs) in mTEPES.ro:
             return sum((OptModel.vHydroOutflows[p,sc,n2,rs] - mTEPES.pHydroOutflows[p,sc,n2,rs]())*mTEPES.pDuration[p,sc,n2]() for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pWaterOutTimeStep[rs]:mTEPES.n.ord(n)]) == 0.0
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eHydroOutflows_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.nrso, rule=eHydroOutflows, doc='hydro outflows of a reservoir [m3/s]'))
+    setattr(OptModel, f'eHydroOutflows_{p}_{sc}_{st}', Constraint(mTEPES.nrso, rule=eHydroOutflows, doc='hydro outflows of a reservoir [m3/s]'))
 
     if pIndLogConsole == 1:
-        print('eHydroOutflows        ... ', len(getattr(OptModel, 'eHydroOutflows_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eHydroOutflows        ... ', len(getattr(OptModel, f'eHydroOutflows_{p}_{sc}_{st}')), ' rows')
 
     GeneratingTime = time.time() - StartTime
     if pIndLogConsole == 1:
@@ -880,10 +880,10 @@ def GenerationOperationModelFormulationCommitment(OptModel, mTEPES, pIndLogConso
                 return Constraint.Skip
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eMaxOutput2ndBlock_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.nr, rule=eMaxOutput2ndBlock, doc='max output of the second block of a committed unit [p.u.]'))
+    setattr(OptModel, f'eMaxOutput2ndBlock_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.nr, rule=eMaxOutput2ndBlock, doc='max output of the second block of a committed unit [p.u.]'))
 
     if pIndLogConsole == 1:
-        print('eMaxOutput2ndBlock    ... ', len(getattr(OptModel, 'eMaxOutput2ndBlock_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eMaxOutput2ndBlock    ... ', len(getattr(OptModel, f'eMaxOutput2ndBlock_{p}_{sc}_{st}')), ' rows')
 
     def eMinOutput2ndBlock(OptModel,n,nr):
         if (p,nr) in mTEPES.pnr:
@@ -893,10 +893,10 @@ def GenerationOperationModelFormulationCommitment(OptModel, mTEPES, pIndLogConso
                 return Constraint.Skip
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eMinOutput2ndBlock_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.nr, rule=eMinOutput2ndBlock, doc='min output of the second block of a committed unit [p.u.]'))
+    setattr(OptModel, f'eMinOutput2ndBlock_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.nr, rule=eMinOutput2ndBlock, doc='min output of the second block of a committed unit [p.u.]'))
 
     if pIndLogConsole == 1:
-        print('eMinOutput2ndBlock    ... ', len(getattr(OptModel, 'eMinOutput2ndBlock_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eMinOutput2ndBlock    ... ', len(getattr(OptModel, f'eMinOutput2ndBlock_{p}_{sc}_{st}')), ' rows')
 
     def eTotalOutput(OptModel,n,nr):
         if (p,nr) in mTEPES.pnr:
@@ -909,10 +909,10 @@ def GenerationOperationModelFormulationCommitment(OptModel, mTEPES, pIndLogConso
                 return Constraint.Skip
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eTotalOutput_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.nr, rule=eTotalOutput, doc='total output of a unit [GW]'))
+    setattr(OptModel, f'eTotalOutput_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.nr, rule=eTotalOutput, doc='total output of a unit [GW]'))
 
     if pIndLogConsole == 1:
-        print('eTotalOutput          ... ', len(getattr(OptModel, 'eTotalOutput_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eTotalOutput          ... ', len(getattr(OptModel, f'eTotalOutput_{p}_{sc}_{st}')), ' rows')
 
     def eUCStrShut(OptModel,n,nr):
         if (p,nr) in mTEPES.pnr:
@@ -925,10 +925,10 @@ def GenerationOperationModelFormulationCommitment(OptModel, mTEPES, pIndLogConso
                 return Constraint.Skip
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eUCStrShut_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.nr, rule=eUCStrShut, doc='relation among commitment startup and shutdown [p.u.]'))
+    setattr(OptModel, f'eUCStrShut_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.nr, rule=eUCStrShut, doc='relation among commitment startup and shutdown [p.u.]'))
 
     if pIndLogConsole == 1:
-        print('eUCStrShut            ... ', len(getattr(OptModel, 'eUCStrShut_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eUCStrShut            ... ', len(getattr(OptModel, f'eUCStrShut_{p}_{sc}_{st}')), ' rows')
 
     def eStableStates(OptModel,n,nr):
         if (p,nr) in mTEPES.pnr:
@@ -938,10 +938,10 @@ def GenerationOperationModelFormulationCommitment(OptModel, mTEPES, pIndLogConso
                 return Constraint.Skip
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eStableStates_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.nr, rule=eStableStates, doc='relation among stable, ramp up and ramp down states [p.u.]'))
+    setattr(OptModel, f'eStableStates_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.nr, rule=eStableStates, doc='relation among stable, ramp up and ramp down states [p.u.]'))
 
     if pIndLogConsole == 1:
-        print('eStableStates         ... ', len(getattr(OptModel, 'eStableStates_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eStableStates         ... ', len(getattr(OptModel, f'eStableStates_{p}_{sc}_{st}')), ' rows')
 
     def eMaxCommitment(OptModel,n,nr):
         if len(mTEPES.g2g) and (p,nr) in mTEPES.pnr:
@@ -951,10 +951,10 @@ def GenerationOperationModelFormulationCommitment(OptModel, mTEPES, pIndLogConso
                 return Constraint.Skip
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eMaxCommitment_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.nr, rule=eMaxCommitment, doc='maximum of all the commitments [p.u.]'))
+    setattr(OptModel, f'eMaxCommitment_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.nr, rule=eMaxCommitment, doc='maximum of all the commitments [p.u.]'))
 
     if pIndLogConsole == 1:
-        print('eMaxCommitment        ... ', len(getattr(OptModel, 'eMaxCommitment_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eMaxCommitment        ... ', len(getattr(OptModel, f'eMaxCommitment_{p}_{sc}_{st}')), ' rows')
 
     def eMaxCommitGen(OptModel,n,g):
         if len(mTEPES.g2g) and (p,g) in mTEPES.pg:
@@ -964,10 +964,10 @@ def GenerationOperationModelFormulationCommitment(OptModel, mTEPES, pIndLogConso
                 return Constraint.Skip
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eMaxCommitGen_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.g, rule=eMaxCommitGen, doc='maximum of all the capacity factors'))
+    setattr(OptModel, f'eMaxCommitGen_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.g, rule=eMaxCommitGen, doc='maximum of all the capacity factors'))
 
     if pIndLogConsole == 1:
-        print('eMaxCommitGen         ... ', len(getattr(OptModel, 'eMaxCommitGen_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eMaxCommitGen         ... ', len(getattr(OptModel, f'eMaxCommitGen_{p}_{sc}_{st}')), ' rows')
 
     def eExclusiveGens(OptModel,n,g):
         if len(mTEPES.g2g) and (p,g) in mTEPES.pg:
@@ -977,10 +977,10 @@ def GenerationOperationModelFormulationCommitment(OptModel, mTEPES, pIndLogConso
                 return Constraint.Skip
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eExclusiveGens_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.g, rule=eExclusiveGens, doc='mutually exclusive generators'))
+    setattr(OptModel, f'eExclusiveGens_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.g, rule=eExclusiveGens, doc='mutually exclusive generators'))
 
     if pIndLogConsole == 1:
-        print('eExclusiveGens        ... ', len(getattr(OptModel, 'eExclusiveGens_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eExclusiveGens        ... ', len(getattr(OptModel, f'eExclusiveGens_{p}_{sc}_{st}')), ' rows')
 
     GeneratingTime = time.time() - StartTime
     if pIndLogConsole == 1:
@@ -1003,10 +1003,10 @@ def GenerationOperationModelFormulationRampMinTime(OptModel, mTEPES, pIndLogCons
                 return Constraint.Skip
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eRampUp_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.nr, rule=eRampUp, doc='maximum ramp up   [p.u.]'))
+    setattr(OptModel, f'eRampUp_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.nr, rule=eRampUp, doc='maximum ramp up   [p.u.]'))
 
     if pIndLogConsole == 1:
-        print('eRampUp               ... ', len(getattr(OptModel, 'eRampUp_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eRampUp               ... ', len(getattr(OptModel, f'eRampUp_{p}_{sc}_{st}')), ' rows')
 
     def eRampDw(OptModel,n,nr):
         if (p,nr) in mTEPES.pnr:
@@ -1019,10 +1019,10 @@ def GenerationOperationModelFormulationRampMinTime(OptModel, mTEPES, pIndLogCons
                 return Constraint.Skip
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eRampDw_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.nr, rule=eRampDw, doc='maximum ramp down [p.u.]'))
+    setattr(OptModel, f'eRampDw_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.nr, rule=eRampDw, doc='maximum ramp down [p.u.]'))
 
     if pIndLogConsole == 1:
-        print('eRampDw               ... ', len(getattr(OptModel, 'eRampDw_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eRampDw               ... ', len(getattr(OptModel, f'eRampDw_{p}_{sc}_{st}')), ' rows')
 
     def eRampUpCharge(OptModel,n,eh):
         if (p,eh) in mTEPES.peh:
@@ -1035,10 +1035,10 @@ def GenerationOperationModelFormulationRampMinTime(OptModel, mTEPES, pIndLogCons
                 return Constraint.Skip
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eRampUpChr_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.eh, rule=eRampUpCharge, doc='maximum ramp up   charge [p.u.]'))
+    setattr(OptModel, f'eRampUpChr_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.eh, rule=eRampUpCharge, doc='maximum ramp up   charge [p.u.]'))
 
     if pIndLogConsole == 1:
-        print('eRampUpChr            ... ', len(getattr(OptModel, 'eRampUpChr_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eRampUpChr            ... ', len(getattr(OptModel, f'eRampUpChr_{p}_{sc}_{st}')), ' rows')
 
     def eRampDwCharge(OptModel,n,eh):
         if (p,eh) in mTEPES.peh:
@@ -1051,10 +1051,10 @@ def GenerationOperationModelFormulationRampMinTime(OptModel, mTEPES, pIndLogCons
                 return Constraint.Skip
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eRampDwChr_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.eh, rule=eRampDwCharge, doc='maximum ramp down charge [p.u.]'))
+    setattr(OptModel, f'eRampDwChr_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.eh, rule=eRampDwCharge, doc='maximum ramp down charge [p.u.]'))
 
     if pIndLogConsole == 1:
-        print('eRampDwChr            ... ', len(getattr(OptModel, 'eRampDwChr_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eRampDwChr            ... ', len(getattr(OptModel, f'eRampDwChr_{p}_{sc}_{st}')), ' rows')
 
     pIndSimplexFormulation = True  # Parameter to choose if minimum stable time should be physically accurate or computationally efficient. True for efficiency, False for accuracy
     pIndStableTimeDeadBand = True  # Parameter to choose if ramps below a certain threshold set by pEpsilon should not be restricted. True for having dead band, False for restricting all ramps
@@ -1090,10 +1090,10 @@ def GenerationOperationModelFormulationRampMinTime(OptModel, mTEPES, pIndLogCons
                         return (- OptModel.vOutput2ndBlock[p,sc,mTEPES.n.prev(n),nr]                             + OptModel.vOutput2ndBlock[p,sc,n,nr]) / mTEPES.pDuration[p,sc,n]() / mTEPES.pMaxPower2ndBlock[p,sc,n,nr] / pEpsilon <= OptModel.vRampUpState[p,sc,n,nr] / pEpsilon - OptModel.vRampDwState[p,sc,n,nr]
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eRampUpState_' +str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.nr, rule=eRampUpState, doc='ramp up state  [p.u.]'))
+    setattr(OptModel, f'eRampUpState_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.nr, rule=eRampUpState, doc='ramp up state  [p.u.]'))
 
     if pIndLogConsole == 1:
-        print('eRampUpState          ... ', len(getattr(OptModel, 'eRampUpState_' +str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eRampUpState          ... ', len(getattr(OptModel, f'eRampUpState_{p}_{sc}_{st}')), ' rows')
 
     def eRampDwState(OptModel, n, nr):
         if mTEPES.pStableTime[nr] and mTEPES.pMaxPower2ndBlock[p,sc,n,nr] and (p,nr) in mTEPES.pnr and mTEPES.pDuration[p,sc,n]():
@@ -1121,10 +1121,10 @@ def GenerationOperationModelFormulationRampMinTime(OptModel, mTEPES, pIndLogCons
                         return (OptModel.vOutput2ndBlock[p,sc,mTEPES.n.prev(n),nr]                             - OptModel.vOutput2ndBlock[p,sc,n,nr]) / mTEPES.pDuration[p,sc,n]() / mTEPES.pMaxPower2ndBlock[p,sc,n,nr] / pEpsilon <= OptModel.vRampDwState[p,sc,n,nr] / pEpsilon - OptModel.vRampUpState[p,sc,n,nr]
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eRampDwState_' +str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.nr, rule=eRampDwState, doc='maximum ramp down [p.u.]'))
+    setattr(OptModel, f'eRampDwState_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.nr, rule=eRampDwState, doc='maximum ramp down [p.u.]'))
 
     if pIndLogConsole == 1:
-        print('eRampDwState          ... ', len(getattr(OptModel, 'eRampDwState_' +str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eRampDwState          ... ', len(getattr(OptModel, f'eRampDwState_{p}_{sc}_{st}')), ' rows')
 
     def eMinUpTime(OptModel,n,t):
         if (p,t) in mTEPES.pg:
@@ -1134,10 +1134,10 @@ def GenerationOperationModelFormulationRampMinTime(OptModel, mTEPES, pIndLogCons
                 return Constraint.Skip
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eMinUpTime_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.t, rule=eMinUpTime  , doc='minimum up   time [p.u.]'))
+    setattr(OptModel, f'eMinUpTime_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.t, rule=eMinUpTime  , doc='minimum up   time [p.u.]'))
 
     if pIndLogConsole == 1:
-        print('eMinUpTime            ... ', len(getattr(OptModel, 'eMinUpTime_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eMinUpTime            ... ', len(getattr(OptModel, f'eMinUpTime_{p}_{sc}_{st}')), ' rows')
 
     def eMinDownTime(OptModel,n,t):
         if (p,t) in mTEPES.pg:
@@ -1147,10 +1147,10 @@ def GenerationOperationModelFormulationRampMinTime(OptModel, mTEPES, pIndLogCons
                 return Constraint.Skip
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eMinDownTime_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.t, rule=eMinDownTime, doc='minimum down time [p.u.]'))
+    setattr(OptModel, f'eMinDownTime_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.t, rule=eMinDownTime, doc='minimum down time [p.u.]'))
 
     if pIndLogConsole == 1:
-        print('eMinDownTime          ... ', len(getattr(OptModel, 'eMinDownTime_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eMinDownTime          ... ', len(getattr(OptModel, f'eMinDownTime_{p}_{sc}_{st}')), ' rows')
 
     if pIndSimplexFormulation:
         def eMinStableTime(OptModel, n, nr):
@@ -1158,7 +1158,7 @@ def GenerationOperationModelFormulationRampMinTime(OptModel, mTEPES, pIndLogCons
                 return OptModel.vRampUpState[p,sc,n,nr] + sum(OptModel.vRampDwState[p,sc,n2,nr] for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pStableTime[nr]-1:mTEPES.n.ord(n)-1]) <= 1
             else:
                 return Constraint.Skip
-        setattr(OptModel, 'eMinStableTime_' +str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.nr, rule=eMinStableTime, doc='minimum stable time [p.u.]'))
+        setattr(OptModel, f'eMinStableTime_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.nr, rule=eMinStableTime, doc='minimum stable time [p.u.]'))
     else:
         MinStableTimeLoadLevels = []
         if sum(mTEPES.pStableTime[nr] for nr in mTEPES.nr):
@@ -1170,10 +1170,10 @@ def GenerationOperationModelFormulationRampMinTime(OptModel, mTEPES, pIndLogCons
 
         def eMinStableTime(OptModel, n, n2, nr):
             return OptModel.vRampUpState[p,sc,n,nr] + OptModel.vRampDwState[p,sc,n2,nr] <= 1
-        setattr(OptModel, 'eMinStableTime_' +str(p)+'_'+str(sc)+'_'+str(st), Constraint(MinStableTimeLoadLevels, rule=eMinStableTime, doc='minimum stable time [p.u.]'))
+        setattr(OptModel, f'eMinStableTime_{p}_{sc}_{st}', Constraint(MinStableTimeLoadLevels, rule=eMinStableTime, doc='minimum stable time [p.u.]'))
 
     if pIndLogConsole == 1:
-        print('eMinStableTime        ... ', len(getattr(OptModel, 'eMinStableTime_' +str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eMinStableTime        ... ', len(getattr(OptModel, f'eMinStableTime_{p}_{sc}_{st}')), ' rows')
 
     GeneratingTime = time.time() - StartTime
     if pIndLogConsole == 1:
@@ -1193,10 +1193,10 @@ def NetworkSwitchingModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st
                 return OptModel.vLineCommit[p,sc,n,ni,nf,cc] == OptModel.vNetworkInvest[p,ni,nf,cc]
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eLineStateCand_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.lc, rule=eLineStateCand, doc='logical relation between investment and operation in candidates'))
+    setattr(OptModel, f'eLineStateCand_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.lc, rule=eLineStateCand, doc='logical relation between investment and operation in candidates'))
 
     if pIndLogConsole == 1:
-        print('eLineStateCand        ... ', len(getattr(OptModel, 'eLineStateCand_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eLineStateCand        ... ', len(getattr(OptModel, f'eLineStateCand_{p}_{sc}_{st}')), ' rows')
 
     def eSWOnOff(OptModel,n,ni,nf,cc):
         if mTEPES.pIndBinSingleNode() == 0:
@@ -1209,10 +1209,10 @@ def NetworkSwitchingModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st
                 return Constraint.Skip
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eSWOnOff_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.la, rule=eSWOnOff, doc='relation among switching decision activate and deactivate state'))
+    setattr(OptModel, f'eSWOnOff_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.la, rule=eSWOnOff, doc='relation among switching decision activate and deactivate state'))
 
     if pIndLogConsole == 1:
-        print('eSWOnOff              ... ', len(getattr(OptModel, 'eSWOnOff_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eSWOnOff              ... ', len(getattr(OptModel, f'eSWOnOff_{p}_{sc}_{st}')), ' rows')
 
     def eMinSwOnState(OptModel,n,ni,nf,cc):
         if mTEPES.pIndBinSingleNode() == 0:
@@ -1222,10 +1222,10 @@ def NetworkSwitchingModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st
                 return Constraint.Skip
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eMinSwOnState_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.la, rule=eMinSwOnState, doc='minimum switch on state [h]'))
+    setattr(OptModel, f'eMinSwOnState_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.la, rule=eMinSwOnState, doc='minimum switch on state [h]'))
 
     if pIndLogConsole == 1:
-        print('eMinSwOnState         ... ', len(getattr(OptModel, 'eMinSwOnState_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eMinSwOnState         ... ', len(getattr(OptModel, f'eMinSwOnState_{p}_{sc}_{st}')), ' rows')
 
     def eMinSwOffState(OptModel,n,ni,nf,cc):
         if mTEPES.pIndBinSingleNode() == 0:
@@ -1235,10 +1235,10 @@ def NetworkSwitchingModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st
                 return Constraint.Skip
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eMinSwOffState_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.la, rule=eMinSwOffState, doc='minimum switch off state [h]'))
+    setattr(OptModel, f'eMinSwOffState_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.la, rule=eMinSwOffState, doc='minimum switch off state [h]'))
 
     if pIndLogConsole == 1:
-        print('eMinSwOffState        ... ', len(getattr(OptModel, 'eMinSwOffState_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eMinSwOffState        ... ', len(getattr(OptModel, f'eMinSwOffState_{p}_{sc}_{st}')), ' rows')
 
     GeneratingTime = time.time() - StartTime
     if pIndLogConsole == 1:
@@ -1255,20 +1255,20 @@ def NetworkOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st
             return OptModel.vFlowElec[p,sc,n,ni,nf,cc] / mTEPES.pLineNTCMax[ni,nf,cc] >= - OptModel.vLineCommit[p,sc,n,ni,nf,cc]
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eNetCapacity1_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.la, rule=eNetCapacity1, doc='maximum flow by existing network capacity [p.u.]'))
+    setattr(OptModel, f'eNetCapacity1_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.la, rule=eNetCapacity1, doc='maximum flow by existing network capacity [p.u.]'))
 
     if pIndLogConsole == 1:
-        print('eNetCapacity1         ... ', len(getattr(OptModel, 'eNetCapacity1_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eNetCapacity1         ... ', len(getattr(OptModel, f'eNetCapacity1_{p}_{sc}_{st}')), ' rows')
 
     def eNetCapacity2(OptModel,n,ni,nf,cc):
         if mTEPES.pIndBinSingleNode() == 0 and ((ni,nf,cc) in mTEPES.lc or mTEPES.pIndBinLineSwitch[ni,nf,cc] == 1):
             return OptModel.vFlowElec[p,sc,n,ni,nf,cc] / mTEPES.pLineNTCMax[ni,nf,cc] <=   OptModel.vLineCommit[p,sc,n,ni,nf,cc]
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eNetCapacity2_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.la, rule=eNetCapacity2, doc='maximum flow by existing network capacity [p.u.]'))
+    setattr(OptModel, f'eNetCapacity2_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.la, rule=eNetCapacity2, doc='maximum flow by existing network capacity [p.u.]'))
 
     if pIndLogConsole == 1:
-        print('eNetCapacity2         ... ', len(getattr(OptModel, 'eNetCapacity2_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eNetCapacity2         ... ', len(getattr(OptModel, f'eNetCapacity2_{p}_{sc}_{st}')), ' rows')
 
     def eKirchhoff2ndLaw1(OptModel,n,ni,nf,cc):
         if mTEPES.pIndBinSingleNode() == 0 and mTEPES.pElecNetPeriodIni[ni,nf,cc] <= p and mTEPES.pElecNetPeriodFin[ni,nf,cc] >= p and mTEPES.pLineX[ni,nf,cc] > 0.0:
@@ -1278,40 +1278,40 @@ def NetworkOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st
                 return OptModel.vFlowElec[p,sc,n,ni,nf,cc] / mTEPES.pBigMFlowBck[ni,nf,cc]() - (OptModel.vTheta[p,sc,n,ni] - OptModel.vTheta[p,sc,n,nf]) / mTEPES.pLineX[ni,nf,cc] / mTEPES.pBigMFlowBck[ni,nf,cc]() * mTEPES.pSBase ==   0
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eKirchhoff2ndLaw1_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.laa, rule=eKirchhoff2ndLaw1, doc='flow for each AC candidate line [rad]'))
+    setattr(OptModel, f'eKirchhoff2ndLaw1_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.laa, rule=eKirchhoff2ndLaw1, doc='flow for each AC candidate line [rad]'))
 
     if pIndLogConsole == 1:
-        print('eKirchhoff2ndLaw1     ... ', len(getattr(OptModel, 'eKirchhoff2ndLaw1_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eKirchhoff2ndLaw1     ... ', len(getattr(OptModel, f'eKirchhoff2ndLaw1_{p}_{sc}_{st}')), ' rows')
 
     def eKirchhoff2ndLaw2(OptModel,n,ni,nf,cc):
         if mTEPES.pIndBinSingleNode() == 0 and mTEPES.pElecNetPeriodIni[ni,nf,cc] <= p and mTEPES.pElecNetPeriodFin[ni,nf,cc] >= p and mTEPES.pLineX[ni,nf,cc] > 0.0:
             return OptModel.vFlowElec[p,sc,n,ni,nf,cc] / mTEPES.pBigMFlowFrw[ni,nf,cc]() - (OptModel.vTheta[p,sc,n,ni] - OptModel.vTheta[p,sc,n,nf]) / mTEPES.pLineX[ni,nf,cc] / mTEPES.pBigMFlowFrw[ni,nf,cc]() * mTEPES.pSBase <=   1 - OptModel.vLineCommit[p,sc,n,ni,nf,cc]
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eKirchhoff2ndLaw2_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.lca, rule=eKirchhoff2ndLaw2, doc='flow for each AC candidate line [rad]'))
+    setattr(OptModel, f'eKirchhoff2ndLaw2_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.lca, rule=eKirchhoff2ndLaw2, doc='flow for each AC candidate line [rad]'))
 
     if pIndLogConsole == 1:
-        print('eKirchhoff2ndLaw2     ... ', len(getattr(OptModel, 'eKirchhoff2ndLaw2_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eKirchhoff2ndLaw2     ... ', len(getattr(OptModel, f'eKirchhoff2ndLaw2_{p}_{sc}_{st}')), ' rows')
 
     def eLineLosses1(OptModel,n,ni,nf,cc):
         if mTEPES.pIndBinSingleNode() == 0 and mTEPES.pIndBinNetLosses() and len(mTEPES.ll):
             return OptModel.vLineLosses[p,sc,n,ni,nf,cc] >= - 0.5 * mTEPES.pLineLossFactor[ni,nf,cc] * OptModel.vFlowElec[p,sc,n,ni,nf,cc]
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eLineLosses1_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.ll, rule=eLineLosses1, doc='ohmic losses for all the lines [GW]'))
+    setattr(OptModel, f'eLineLosses1_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.ll, rule=eLineLosses1, doc='ohmic losses for all the lines [GW]'))
 
     if pIndLogConsole == 1:
-        print('eLineLosses1          ... ', len(getattr(OptModel, 'eLineLosses1_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eLineLosses1          ... ', len(getattr(OptModel, f'eLineLosses1_{p}_{sc}_{st}')), ' rows')
 
     def eLineLosses2(OptModel,n,ni,nf,cc):
         if mTEPES.pIndBinSingleNode() == 0 and mTEPES.pIndBinNetLosses() and len(mTEPES.ll):
             return OptModel.vLineLosses[p,sc,n,ni,nf,cc] >=   0.5 * mTEPES.pLineLossFactor[ni,nf,cc] * OptModel.vFlowElec[p,sc,n,ni,nf,cc]
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eLineLosses2_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.ll, rule=eLineLosses2, doc='ohmic losses for all the lines [GW]'))
+    setattr(OptModel, f'eLineLosses2_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.ll, rule=eLineLosses2, doc='ohmic losses for all the lines [GW]'))
 
     if pIndLogConsole == 1:
-        print('eLineLosses2          ... ', len(getattr(OptModel, 'eLineLosses2_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eLineLosses2          ... ', len(getattr(OptModel, f'eLineLosses2_{p}_{sc}_{st}')), ' rows')
 
     GeneratingTime = time.time() - StartTime
     if pIndLogConsole == 1:
@@ -1395,47 +1395,46 @@ def CycleConstraints(OptModel, mTEPES, pIndLogConsole, p, sc, st):
     StartTime = time.time()
 
     # remove the Kirchhoff's second law for AC existing and candidate lines
-    # OptModel.del_component(getattr(OptModel, 'eKirchhoff2ndLawExst_stage'+str(st)))
-    OptModel.del_component(getattr(OptModel, 'eKirchhoff2ndLaw1_'+str(p)+'_'+str(sc)+'_'+str(st)))
-    OptModel.del_component(getattr(OptModel, 'eKirchhoff2ndLaw2_'+str(p)+'_'+str(sc)+'_'+str(st)))
+    OptModel.del_component(getattr(OptModel, f'eKirchhoff2ndLaw1_{p}_{sc}_{st}'))
+    OptModel.del_component(getattr(OptModel, f'eKirchhoff2ndLaw2_{p}_{sc}_{st}'))
 
     #%% cycle Kirchhoff's second law with some candidate lines
     # this equation is formulated for every AC candidate line included in the cycle
     def eCycleKirchhoff2ndLawCnd1(OptModel,sc,p,n,cyc,nii,nff,cc):
         return (sum(OptModel.vFlowElec[sc,p,n,ni,nf,cc] * mTEPES.pLineX[ni,nf,cc] / mTEPES.pSBase for ni,nf in list(zip(mTEPES.ncd[cyc], mTEPES.ncd[cyc][1:] + mTEPES.ncd[cyc][:1])) for cc in mTEPES.cc if (ni,nf,cc) in mTEPES.uctc) -
                 sum(OptModel.vFlowElec[sc,p,n,ni,nf,cc] * mTEPES.pLineX[ni,nf,cc] / mTEPES.pSBase for nf,ni in list(zip(mTEPES.ncd[cyc], mTEPES.ncd[cyc][1:] + mTEPES.ncd[cyc][:1])) for cc in mTEPES.cc if (ni,nf,cc) in mTEPES.uctc) ) / mTEPES.pBigMTheta[cyc,nii,nff,cc] <=   1 - OptModel.vLineCommit[sc,p,n,nii,nff,cc]
-    setattr(OptModel, 'eCycleKirchhoff2ndLawCnd1_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.lcac, rule=eCycleKirchhoff2ndLawCnd1, doc='cycle flow for with some AC candidate lines [rad]'))
+    setattr(OptModel, f'eCycleKirchhoff2ndLawCnd1_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.lcac, rule=eCycleKirchhoff2ndLawCnd1, doc='cycle flow for with some AC candidate lines [rad]'))
 
     if pIndLogConsole == 1:
-        print('eCycleKirchhoff2ndLC1 ... ', len(getattr(OptModel, 'eCycleKirchhoff2ndLawCnd1_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eCycleKirchhoff2ndLC1 ... ', len(getattr(OptModel, f'eCycleKirchhoff2ndLawCnd1_{p}_{sc}_{st}')), ' rows')
 
     def eCycleKirchhoff2ndLawCnd2(OptModel,sc,p,n,cyc,nii,nff,cc):
         return (sum(OptModel.vFlowElec[sc,p,n,ni,nf,cc] * mTEPES.pLineX[ni,nf,cc] / mTEPES.pSBase for ni,nf in list(zip(mTEPES.ncd[cyc], mTEPES.ncd[cyc][1:] + mTEPES.ncd[cyc][:1])) for cc in mTEPES.cc if (ni,nf,cc) in mTEPES.uctc) -
                 sum(OptModel.vFlowElec[sc,p,n,ni,nf,cc] * mTEPES.pLineX[ni,nf,cc] / mTEPES.pSBase for nf,ni in list(zip(mTEPES.ncd[cyc], mTEPES.ncd[cyc][1:] + mTEPES.ncd[cyc][:1])) for cc in mTEPES.cc if (ni,nf,cc) in mTEPES.uctc) ) / mTEPES.pBigMTheta[cyc,nii,nff,cc] >= - 1 + OptModel.vLineCommit[sc,p,n,nii,nff,cc]
-    setattr(OptModel, 'eCycleKirchhoff2ndLawCnd2_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.lcac, rule=eCycleKirchhoff2ndLawCnd2, doc='cycle flow for with some AC candidate lines [rad]'))
+    setattr(OptModel, f'eCycleKirchhoff2ndLawCnd2_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.lcac, rule=eCycleKirchhoff2ndLawCnd2, doc='cycle flow for with some AC candidate lines [rad]'))
 
     if pIndLogConsole == 1:
-        print('eCycleKirchhoff2ndLC2 ... ', len(getattr(OptModel, 'eCycleKirchhoff2ndLawCnd2_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eCycleKirchhoff2ndLC2 ... ', len(getattr(OptModel, f'eCycleKirchhoff2ndLawCnd2_{p}_{sc}_{st}')), ' rows')
 
     def eFlowParallelCandidate1(OptModel,sc,p,n,ni,nf,cc,c2):
         if cc < c2 and (ni,nf,cc) in mTEPES.lea and (ni,nf,c2) in mTEPES.lca:
             return (OptModel.vFlowElec[sc,p,n,ni,nf,cc] - OptModel.vFlowElec[sc,p,n,ni,nf,c2] * mTEPES.pLineX[ni,nf,c2] / mTEPES.pLineX[ni,nf,cc]) / max(mTEPES.pLineNTCBck[ni,nf,cc],mTEPES.pLineNTCFrw[ni,nf,cc]) <=   1 - OptModel.vLineCommit[sc,p,n,ni,nf,c2]
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eFlowParallelCandidate1_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.pct, mTEPES.cc, mTEPES.c2, rule=eFlowParallelCandidate1, doc='unitary flow for each AC candidate parallel circuit [p.u.]'))
+    setattr(OptModel, f'eFlowParallelCandidate1_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.pct, mTEPES.cc, mTEPES.c2, rule=eFlowParallelCandidate1, doc='unitary flow for each AC candidate parallel circuit [p.u.]'))
 
     if pIndLogConsole == 1:
-        print('eFlowParallelCnddate1 ... ', len(getattr(OptModel, 'eFlowParallelCandidate1_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eFlowParallelCnddate1 ... ', len(getattr(OptModel, f'eFlowParallelCandidate1_{p}_{sc}_{st}')), ' rows')
 
     def eFlowParallelCandidate2(OptModel,sc,p,n,ni,nf,cc,c2):
         if cc < c2 and (ni,nf,cc) in mTEPES.lea and (ni,nf,c2) in mTEPES.lca:
             return (OptModel.vFlowElec[sc,p,n,ni,nf,cc] - OptModel.vFlowElec[sc,p,n,ni,nf,c2] * mTEPES.pLineX[ni,nf,c2] / mTEPES.pLineX[ni,nf,cc]) / max(mTEPES.pLineNTCBck[ni,nf,cc],mTEPES.pLineNTCFrw[ni,nf,cc]) >= - 1 + OptModel.vLineCommit[sc,p,n,ni,nf,c2]
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eFlowParallelCandidate2_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.pct, mTEPES.cc, mTEPES.c2, rule=eFlowParallelCandidate2, doc='unitary flow for each AC candidate parallel circuit [p.u.]'))
+    setattr(OptModel, f'eFlowParallelCandidate2_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.pct, mTEPES.cc, mTEPES.c2, rule=eFlowParallelCandidate2, doc='unitary flow for each AC candidate parallel circuit [p.u.]'))
 
     if pIndLogConsole == 1:
-        print('eFlowParallelCnddate2 ... ', len(getattr(OptModel, 'eFlowParallelCandidate2_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eFlowParallelCnddate2 ... ', len(getattr(OptModel, f'eFlowParallelCandidate2_{p}_{sc}_{st}')), ' rows')
 
     CycleFlowTime = time.time() - StartTime
     if pIndLogConsole == 1:
@@ -1471,10 +1470,10 @@ def NetworkH2OperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, 
                     sum(OptModel.vFlowH2[p,sc,n,nd,nf,cc] for nf,cc in lout[nd] if (p,nd,nf,cc) in mTEPES.ppa) + sum(OptModel.vFlowH2[p,sc,n,ni,nd,cc] for ni,cc in lin[nd] if (p,ni,nd,cc) in mTEPES.ppa)) == mTEPES.pDemandH2[p,sc,n,nd]*mTEPES.pDuration[p,sc,n]()
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eBalanceH2_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.nd, rule=eBalanceH2, doc='H2 load generation balance [tH2]'))
+    setattr(OptModel, f'eBalanceH2_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.nd, rule=eBalanceH2, doc='H2 load generation balance [tH2]'))
 
     if pIndLogConsole == 1:
-        print('eBalanceH2            ... ', len(getattr(OptModel, 'eBalanceH2_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eBalanceH2            ... ', len(getattr(OptModel, f'eBalanceH2_{p}_{sc}_{st}')), ' rows')
 
     GeneratingTime = time.time() - StartTime
     if pIndLogConsole == 1:
@@ -1517,10 +1516,10 @@ def NetworkHeatOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc
                     sum(OptModel.vFlowHeat[p,sc,n,nd,nf,cc] for nf,cc in lout[nd] if (p,nd,nf,cc) in mTEPES.pha) + sum(OptModel.vFlowHeat[p,sc,n,ni,nd,cc] for ni,cc in lin[nd] if (p,ni,nd,cc) in mTEPES.pha)) == mTEPES.pDemandHeat[p,sc,n,nd]
         else:
             return Constraint.Skip
-    setattr(OptModel, 'eBalanceHeat_'+str(p)+'_'+str(sc)+'_'+str(st), Constraint(mTEPES.n, mTEPES.nd, rule=eBalanceHeat, doc='Heat load generation balance [Tcal/h]'))
+    setattr(OptModel, f'eBalanceHeat_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.nd, rule=eBalanceHeat, doc='Heat load generation balance [Tcal/h]'))
 
     if pIndLogConsole == 1:
-        print('eBalanceHeat          ... ', len(getattr(OptModel, 'eBalanceHeat_'+str(p)+'_'+str(sc)+'_'+str(st))), ' rows')
+        print('eBalanceHeat          ... ', len(getattr(OptModel, f'eBalanceHeat_{p}_{sc}_{st}')), ' rows')
 
     GeneratingTime = time.time() - StartTime
     if pIndLogConsole == 1:

@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 23, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 08, 2024
 """
 
 import time
@@ -20,10 +20,10 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
     #%% solving the problem
     Solver = SolverFactory(SolverName)                                                       # select solver
     if SolverName == 'gurobi':
-        FileName = _path+'/openTEPES_gurobi_'+CaseName+'_'+str(p)+'_'+str(sc)+'_'+str(st)+'.log'
+        FileName = _path+f'/openTEPES_gurobi_{CaseName}_{p}_{sc}_{st}.log'
         if os.path.exists(FileName):
             os.remove(FileName)
-        Solver.options['LogFile'         ] = _path+'/openTEPES_gurobi_'+CaseName+'_'+str(p)+'_'+str(sc)+'_'+str(st)+'.log'
+        Solver.options['LogFile'         ] = _path+f'/openTEPES_gurobi_{CaseName}_{p}_{sc}_{st}.log'
         # Solver.options['SolutionTarget'] = 1                                                 # optimal solution with or without basic solutions
         Solver.options['Method'          ] = 2                                                 # barrier method
         Solver.options['Crossover'       ] = -1
@@ -32,16 +32,16 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
         # Solver.options['RINS'          ] = 100
         # Solver.options['BarConvTol'    ] = 1e-9
         # Solver.options['BarQCPConvTol' ] = 0.025
-        # Solver.options['IISFile'       ] = _path+'/openTEPES_gurobi_'+CaseName+'.ilp'        # should be uncommented to show results of IIS
+        # Solver.options['IISFile'       ] = _path+f'/openTEPES_gurobi_'+CaseName+'.ilp'        # should be uncommented to show results of IIS
         Solver.options['MIPGap'          ] = 0.01
         Solver.options['Threads'         ] = int((psutil.cpu_count(logical=True) + psutil.cpu_count(logical=False))/2)
         Solver.options['TimeLimit'       ] =    36000
         Solver.options['IterationLimit'  ] = 36000000
     if SolverName == 'cplex':
-        FileName = _path+'/openTEPES_cplex_'+CaseName+'_'+str(p)+'_'+str(sc)+'_'+str(st)+'.log'
+        FileName = _path+f'/openTEPES_cplex_{CaseName}_{p}_{sc}_{st}.log'
         if os.path.exists(FileName):
             os.remove(FileName)
-        # Solver.options['LogFile'          ] = _path+'/openTEPES_cplex_'+CaseName+'_'+str(p)+'_'+str(sc)+'_'+str(st)+'.log'
+        # Solver.options['LogFile'          ] = _path+f'/openTEPES_cplex_{CaseName}_{p}_{sc}_{st}.log'
         Solver.options['LPMethod'           ] = 4                                                 # barrier method
         # Solver.options['BarCrossAlg'      ] = 0
         # Solver.options['NumericalEmphasis'] = 1
@@ -52,10 +52,10 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
         Solver.options['TimeLimit'          ] =    36000
         # Solver.options['ItLim'            ] = 36000000
     if SolverName == 'appsi_highs':
-        FileName = _path+'/openTEPES_highs_'+CaseName+'_'+str(p)+'_'+str(sc)+'_'+str(st)+'.log'
+        FileName = _path+f'/openTEPES_highs_{CaseName}_{p}_{sc}_{st}.log'
         if os.path.exists(FileName):
             os.remove(FileName)
-        Solver.options['log_file'               ] = _path+'/openTEPES_highs_'+CaseName+'_'+str(p)+'_'+str(sc)+'_'+str(st)+'.log'
+        Solver.options['log_file'               ] = _path+f'/openTEPES_highs_{CaseName}_{p}_{sc}_{st}.log'
         Solver.options['log_to_console'         ] = 'true'
         Solver.options['solver'                 ] = 'simplex'
         Solver.options['run_crossover'          ] = 'off'
@@ -88,7 +88,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
     print('Termination condition: ', SolverResults.solver.termination_condition)
     if SolverResults.solver.termination_condition == TerminationCondition.infeasible or SolverResults.solver.termination_condition == TerminationCondition.maxTimeLimit or SolverResults.solver.termination_condition == TerminationCondition.infeasible.maxIterations:
         log_infeasible_constraints(OptModel, log_expression=True, log_variables=True)
-        logging.basicConfig(filename=_path+'/openTEPES_infeasibilities_'+CaseName+'_'+str(p)+'_'+str(sc)+'_'+str(st)+'.log', level=logging.INFO)
+        logging.basicConfig(filename=_path+f'/openTEPES_infeasibilities_{CaseName}_{p}_{sc}_{st}.log', level=logging.INFO)
         raise ValueError('Problem infeasible')
     SolverResults.write()                                                              # summary of the solver results
 
@@ -159,7 +159,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
     print    ('  Total system                 cost [MEUR] ', OptModel.vTotalSCost())
     if mTEPES.NoRepetition == 1:
         for pp,scc in mTEPES.ps:
-            print    ('***** Period: '+str(pp)+', Scenario: '+str(scc)+', Stage: '+str(st)+' ******')
+            print    (f'***** Period: {pp}, Scenario: {scc}, Stage: {st} ******')
             print    ('  Total generation  investment cost [MEUR] ', sum(mTEPES.pDiscountedWeight[pp] * mTEPES.pGenInvestCost    [gc      ]   * OptModel.vGenerationInvest[pp,gc      ]() for gc       in mTEPES.gc if (pp,gc)       in mTEPES.pgc))
             print    ('  Total generation  retirement cost [MEUR] ', sum(mTEPES.pDiscountedWeight[pp] * mTEPES.pGenRetireCost    [gd      ]   * OptModel.vGenerationRetire[pp,gd      ]() for gd       in mTEPES.gd if (pp,gd)       in mTEPES.pgd))
             if mTEPES.pIndHydroTopology == 1 and len(mTEPES.rn):
@@ -180,7 +180,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
             print    ('  Total emission               cost [MEUR] ', sum(mTEPES.pDiscountedWeight[pp] * mTEPES.pScenProb         [pp,scc  ]() * OptModel.vTotalECost      [pp,scc,n    ]() for n        in mTEPES.n ))
             print    ('  Total reliability            cost [MEUR] ', sum(mTEPES.pDiscountedWeight[pp] * mTEPES.pScenProb         [pp,scc  ]() * OptModel.vTotalRCost      [pp,scc,n    ]() for n        in mTEPES.n ))
     else:
-        print        ('***** Period: '+str(p)+', Scenario: '+str(sc)+', Stage: '+str(st)+' ******')
+        print        (f'***** Period: {p}, Scenario: {sc}, Stage: {st} ******')
         print        ('  Total generation  investment cost [MEUR] ', sum(mTEPES.pDiscountedWeight[p]  * mTEPES.pGenInvestCost    [gc      ]   * OptModel.vGenerationInvest[p,gc        ]() for gc       in mTEPES.gc if (p,gc)       in mTEPES.pgc))
         print        ('  Total generation  retirement cost [MEUR] ', sum(mTEPES.pDiscountedWeight[p]  * mTEPES.pGenRetireCost    [gd      ]   * OptModel.vGenerationRetire[p,gd        ]() for gd       in mTEPES.gd if (p,gd)       in mTEPES.pgd))
         if mTEPES.pIndHydroTopology == 1 and len(mTEPES.rn):

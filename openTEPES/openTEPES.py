@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 30, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 08, 2024
 """
 
 # import dill as pickle
@@ -39,8 +39,8 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     idxDict['y'  ] = 1
 
     #%% model declaration
-    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.17.8 - October 30, 2024')
-    print(                 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.17.8 - October 30, 2024', file=open(_path+'/openTEPES_version_'+CaseName+'.log','w'))
+    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.17.9 - November 08, 2024')
+    print(                 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.17.9 - November 08, 2024', file=open(_path+f'/openTEPES_version_{CaseName}.log','w'))
 
     pIndOutputResults = [j for i,j in idxDict.items() if i == pIndOutputResults][0]
     pIndLogConsole    = [j for i,j in idxDict.items() if i == pIndLogConsole   ][0]
@@ -115,7 +115,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
             else:
                 mTEPES.na = mTEPES.na | mTEPES.n
 
-            print('Period '+str(p)+', Scenario '+str(sc)+', Stage '+str(st))
+            print(f'Period {p}, Scenario {sc}, Stage {st}')
 
             # operation model objective function and constraints by stage
             GenerationOperationModelFormulationObjFunct     (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
@@ -142,7 +142,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
 
                 if pIndLogConsole == 1:
                     StartTime         = time.time()
-                    mTEPES.write(_path+'/openTEPES_'+CaseName+'_'+str(p)+'_'+str(sc)+'_'+str(st)+'.lp', io_options={'symbolic_solver_labels': True})
+                    mTEPES.write(_path+f'/openTEPES_{CaseName}_{p}_{sc}_{st}.lp', io_options={'symbolic_solver_labels': True})
                     WritingLPFileTime = time.time() - StartTime
                     StartTime         = time.time()
                     print('Writing LP file                        ... ', round(WritingLPFileTime), 's')
@@ -187,7 +187,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
 
                     if pIndLogConsole == 1:
                         StartTime         = time.time()
-                        mTEPES.write(_path+'/openTEPES_'+CaseName+'_'+str(p)+'_'+str(sc)+'_'+str(st)+'.lp', io_options={'symbolic_solver_labels': True})
+                        mTEPES.write(_path+f'/openTEPES_{CaseName}_{p}_{sc}_{st}.lp', io_options={'symbolic_solver_labels': True})
                         WritingLPFileTime = time.time() - StartTime
                         StartTime         = time.time()
                         print('Writing LP file                        ... ', round(WritingLPFileTime), 's')
@@ -230,7 +230,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
         mTEPES.pScenProb[p,sc] = 1.0
 
     # pickle the case study data
-    # with open(dump_folder+'/oT_Case_'+CaseName+'.pkl','wb') as f:
+    # with open(dump_folder+f'/oT_Case_{CaseName}.pkl','wb') as f:
     #     pickle.dump(mTEPES, f, pickle.HIGHEST_PROTOCOL)
 
     # output results only for every unit (0), only for every technology (1), or for both (2)

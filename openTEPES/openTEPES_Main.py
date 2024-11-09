@@ -660,7 +660,7 @@
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <https://www.gnu.org/licenses/>.
 
-# Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 30, 2024
+# Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 08, 2024
 # simplicity and transparency in power systems planning
 
 # Developed by
@@ -685,7 +685,7 @@ import time
 # import pkg_resources
 from .openTEPES import openTEPES_run
 
-print('\033[1;32mOpen Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.17.8 - October 30, 2024\033[0m')
+print('\033[1;32mOpen Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.17.9 - November 08, 2024\033[0m')
 print('\033[34m#### Academic research license - for non-commercial use only ####\033[0m \n')
 
 parser = argparse.ArgumentParser(description='Introducing main parameters...')
@@ -739,7 +739,7 @@ def main():
     print('Total time                             ...  {} s'.format(ElapsedTime))
     path_to_write_time = os.path.join(args.dir,args.case,'openTEPES_time_'+args.case+'.log')
     with open(path_to_write_time, 'w') as f:
-        f.write('Elapsed time '+str(ElapsedTime)+' s')
+        f'Elapsed time {ElapsedTime} s'
     # Final message
     print('End of the run                ************')
     print('\033[34m#### Academic research license - for non-commercial use only ####\033[0m')

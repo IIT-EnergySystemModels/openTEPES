@@ -1,6 +1,10 @@
 Change Log
 =============
 
+[4.17.9] - 2024-11-08
+-----------------------
+- [CHANGED] concatenation of strings
+
 [4.17.8] - 2024-10-30
 -----------------------
 - [FIXED] fix control of second block capacity extremely small (1e-17)
