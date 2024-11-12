@@ -737,7 +737,7 @@ def main():
     # Computing the elapsed time
     ElapsedTime = round(time.time() - StartTime)
     print('Total time                             ...  {} s'.format(ElapsedTime))
-    path_to_write_time = os.path.join(args.dir,args.case,'openTEPES_time_'+args.case+'.log')
+    path_to_write_time = os.path.join(args.dir,args.case,f'openTEPES_time_{args.case}.log')
     with open(path_to_write_time, 'w') as f:
         f'Elapsed time {ElapsedTime} s'
     # Final message

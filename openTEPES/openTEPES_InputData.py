@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 30, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 12, 2024
 """
 
 import datetime
@@ -1076,7 +1076,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pDemandElecPeak          = pd.Series([0.0 for p,ar in mTEPES.par], index=mTEPES.par)
     for p,ar in mTEPES.par:
         # values < 1e-5 times the maximum demand for each area (an area is related to operating reserves procurement, i.e., country) are converted to 0
-        pDemandElecPeak[p,ar] = pDemandElec[[nd for nd in d2a[ar]]].sum(axis=1).max()
+        pDemandElecPeak[p,ar] = pDemandElec.loc[p, [nd for nd in d2a[ar]]].sum(axis=1).max()
         pEpsilon              = pDemandElecPeak[p,ar]*1e-5
 
         # these parameters are in GW
