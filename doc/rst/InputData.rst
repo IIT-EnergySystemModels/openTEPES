@@ -216,7 +216,8 @@ Scenario        Weight        Weight of each stage
 ==============  ============  =====================
 
 This weight allows the definition of equivalent (representative) periods (e.g., one representative week with a weight of 52 or four representative weeks each one with a weight of 13).
-Stages are not mathematically connected between them, i.e., no constraints link the operation at different stages. Consequently, the storage type can't exceed the duration of the stage (i.e., if the stage lasts for 168 hours the storage type can only be hourly or daily).
+Stages are not mathematically connected between them, i.e., no constraints link the operation at different consecutive stages. Therefore, the storage type can't exceed the duration of the stage (i.e., if the stage lasts for 168 hours the storage type can only be hourly or daily).
+If there are no investment decisions or the investment decisions are ignored, all the periods, scenarios, and stages are solved independently.
 
 Adequacy reserve margin
 -----------------------
