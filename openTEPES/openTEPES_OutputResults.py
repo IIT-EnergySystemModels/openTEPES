@@ -109,7 +109,7 @@ def OutputResultsParVarCon(DirName, CaseName, OptModel, mTEPES):
     StartTime = time.time()
 
     # Load the model from the pickle file
-    # dump_folder = _path+f'/CaseDumpFolder_{CaseName}_'+DateName+f'/'
+    # dump_folder = _path+f'/CaseDumpFolder_{CaseName}_{DateName}/'
     # with open(dump_folder+f'/oT_Case_{CaseName}.pkl','rb') as f:
     #     OptModel = pickle.load(f)
     # output parameters, variables, and constraints to CSV files
