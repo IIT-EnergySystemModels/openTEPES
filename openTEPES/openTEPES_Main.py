@@ -744,5 +744,7 @@ def main():
     print('End of the run                ************')
     print('\033[34m#### Academic research license - for non-commercial use only ####\033[0m')
 
+    return model
+
 if __name__ == '__main__':
     main()

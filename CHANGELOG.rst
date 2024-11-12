@@ -3,6 +3,7 @@ Change Log
 
 [4.17.9] - 2024-11-12
 -----------------------
+- [CHANGED] keep the model in memory
 - [CHANGED] default values of minimum output results
 - [CHANGED] concatenation of strings
 
