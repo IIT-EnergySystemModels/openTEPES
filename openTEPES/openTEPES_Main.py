@@ -733,7 +733,7 @@ def main():
     import sys
     print(sys.argv)
     print(args)
-    openTEPES_run(args.dir, args.case, args.solver, args.result, args.log)
+    model = openTEPES_run(args.dir, args.case, args.solver, args.result, args.log)
     # Computing the elapsed time
     ElapsedTime = round(time.time() - StartTime)
     print('Total time                             ...  {} s'.format(ElapsedTime))
@@ -747,4 +747,4 @@ def main():
     return model
 
 if __name__ == '__main__':
-    main()
+    model = main()
