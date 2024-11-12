@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 08, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 12, 2024
 """
 
 # import dill as pickle
@@ -39,8 +39,8 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     idxDict['y'  ] = 1
 
     #%% model declaration
-    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.17.9 - November 08, 2024')
-    print(                 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.17.9 - November 08, 2024', file=open(_path+f'/openTEPES_version_{CaseName}.log','w'))
+    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.17.9 - November 12, 2024')
+    print(                 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.17.9 - November 12, 2024', file=open(_path+f'/openTEPES_version_{CaseName}.log','w'))
 
     pIndOutputResults = [j for i,j in idxDict.items() if i == pIndOutputResults][0]
     pIndLogConsole    = [j for i,j in idxDict.items() if i == pIndLogConsole   ][0]
@@ -261,7 +261,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
         pIndEconomicResults             = 1
     else:
         pIndDumpRawResults              = 0
-        pIndInvestmentResults           = 0
+        pIndInvestmentResults           = 1
         pIndGenerationOperationResults  = 0
         pIndESSOperationResults         = 0
         pIndReservoirOperationResults   = 0
@@ -271,8 +271,8 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
         pIndReliabilityResults          = 0
         pIndNetworkOperationResults     = 0
         pIndNetworkMapResults           = 0
-        pIndOperationSummaryResults     = 0
-        pIndCostSummaryResults          = 0
+        pIndOperationSummaryResults     = 1
+        pIndCostSummaryResults          = 1
         pIndMarginalResults             = 0
         pIndEconomicResults             = 0
 

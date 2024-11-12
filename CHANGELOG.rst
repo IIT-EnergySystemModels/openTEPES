@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.17.9] - 2024-11-08
+[4.17.9] - 2024-11-12
 -----------------------
+- [CHANGED] default values of minimum output results
 - [CHANGED] concatenation of strings
 
 [4.17.8] - 2024-10-30
