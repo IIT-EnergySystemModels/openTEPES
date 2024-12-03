@@ -1076,10 +1076,18 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         # merging positive and negative values of the demand
         pDemandElec        = pDemandElecPos.where(pDemandElecNeg >= 0.0, pDemandElecNeg)
 
-        pMaxPowerElec      = pMaxPowerElec.where(pMaxPowerElec >= pMinPowerElec, pMinPowerElec)
-        pMaxCharge         = pMaxCharge.where   (pMaxCharge    >= pMinCharge,    pMinCharge   )
+        # Increase Maximum to reach minimum
+        # pMaxPowerElec      = pMaxPowerElec.where(pMaxPowerElec >= pMinPowerElec, pMinPowerElec)
+        # pMaxCharge         = pMaxCharge.where   (pMaxCharge    >= pMinCharge,    pMinCharge   )
+
+        #Decrease Minimum to reach maximum
+        pMinPowerElec      = pMinPowerElec.where(pMinPowerElec <= pMaxPowerElec, pMaxPowerElec)
+        pMinCharge         = pMinCharge.where   (pMinCharge <= pMaxCharge, pMaxCharge)
+
+        #Calculate 2nd Blocks
         pMaxPower2ndBlock  = pMaxPowerElec - pMinPowerElec
         pMaxCharge2ndBlock = pMaxCharge    - pMinCharge
+
         pMaxCapacity       = pMaxPowerElec.where(pMaxPowerElec > pMaxCharge, pMaxCharge)
 
         if len(g2a[ar]):
