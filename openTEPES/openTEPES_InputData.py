@@ -1079,8 +1079,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         # pMaxCharge         = pMaxCharge.where   (pMaxCharge    >= pMinCharge,    pMinCharge   )
 
         #Decrease Minimum to reach maximum
-        pMinPowerElec      = pMinPowerElec.where(pMinPowerElec >= pMaxPowerElec, pMaxPowerElec)
-        pMinCharge         = pMinCharge.where   (pMinCharge >= pMaxCharge, pMaxCharge)
+        pMinPowerElec      = pMinPowerElec.where(pMinPowerElec <= pMaxPowerElec, pMaxPowerElec)
+        pMinCharge         = pMinCharge.where   (pMinCharge <= pMaxCharge, pMaxCharge)
 
         #Calculate 2nd Blocks
         pMaxPower2ndBlock  = pMaxPowerElec - pMinPowerElec
