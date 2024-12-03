@@ -642,7 +642,7 @@ Balance of hydrogen generation by electrolyzers, hydrogen consumption from hydro
 
 Balance of heat generation produced by CHPs and fuel heaters respectively and demand at each node [GW] «``eBalanceHeat``»
 
-:math:`\sum_{e \in i} \frac{DUR^p_{\omega n}}{PF''_e} gc^p_{\omega ne} + \sum_{g \in i} gh^p_{\omega ng} + htns^p_{\omega ni} = DUR^p_{\omega n} DF^p_{\omega ni} + \sum_{jc} fp^p_{\omega nijc} - \sum_{jc} fp^p_{\omega njic} \quad \forall p \omega ni`
+:math:`\sum_{e \in i} \frac{DUR^p_{\omega n}}{PF''_e} gc^p_{\omega ne} + \sum_{g \in i} gh^p_{\omega ng} + htns^p_{\omega ni} = DUR^p_{\omega n} DHt^p_{\omega ni} + \sum_{jc} fp^p_{\omega nijc} - \sum_{jc} fp^p_{\omega njic} \quad \forall p \omega ni`
 
 **Bounds on generation and ESS variables** [GW]
 
