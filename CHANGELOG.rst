@@ -1,8 +1,10 @@
 Change Log
 =============
 
-[4.17.9] - 2024-11-12
+[4.17.9] - 2024-11-19
 -----------------------
+- [FIXED] fix error in network map
+- [FIXED] fix error in computing cost recovery
 - [FIXED] fix error in computing pDemandElecPeak in InputData
 - [CHANGED] keep the model in memory
 - [CHANGED] default values of minimum output results
