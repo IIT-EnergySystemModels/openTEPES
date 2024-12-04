@@ -272,7 +272,7 @@ A description of the data included in the file ``oT_Data_Duration.csv`` follows:
 ==========  ==============  ========== ==========  ===================================================================  ========
 Identifiers                            Header      Description
 ====================================== ==========  ===================================================================  ========
-Period      Scenario        Load level Duration    Duration of the load level. Load levels with duration 0 are ignored  h
+Period      Scenario        LoadLevel  Duration    Duration of the load level. Load levels with duration 0 are ignored  h
                                        Stage       Assignment of the load level to a stage
 ==========  ==============  ========== ==========  ===================================================================  ========
 
@@ -294,7 +294,7 @@ A description of the data included in the file ``oT_Data_Demand.csv`` follows:
 ==========  ==============  ==========  ======  ============================================  ==
 Identifiers                             Header  Description
 ======================================  ======  ============================================  ==
-Period      Scenario        Load level  Node    Power demand of the node for each load level  MW
+Period      Scenario        LoadLevel   Node    Power demand of the node for each load level  MW
 ==========  ==============  ==========  ======  ============================================  ==
 
 The electricity demand can be negative for the (transmission) nodes where there is (renewable) generation in lower voltage levels. This negative demand is equivalent to generate that power amount in this node.
@@ -308,7 +308,7 @@ A description of the data included in the files ``oT_Data_Inertia.csv`` follows:
 ==========  ==============  ==========  ======  ================================================  ==
 Identifiers                             Header  Description
 ======================================  ======  ================================================  ==
-Period      Scenario        Load level  Area    System inertia of the area for each load level    s
+Period      Scenario        LoadLevel   Area    System inertia of the area for each load level    s
 ==========  ==============  ==========  ======  ================================================  ==
 
 Given that the system inertia depends on the area, it can be sensible to assign an area as a country, for example. The system inertia can be used for imposing a minimum synchronous power and, consequently, force the commitment of at least some rotating units.
@@ -324,7 +324,7 @@ A description of the data included in the files ``oT_Data_OperatingReserveUp.csv
 ==========  ==============  ==========  ======  ===================================================================  ==
 Identifiers                                     Header  Description
 ======================================  ======  ===================================================================  ==
-Period      Scenario        Load level  Area    Upward/downward operating reserves of the area for each load level   MW
+Period      Scenario        LoadLevel   Area    Upward/downward operating reserves of the area for each load level   MW
 ==========  ==============  ==========  ======  ===================================================================  ==
 
 Given that the operating reserves depend on the area, it can be sensible to assign an area as a country, for example.
@@ -454,13 +454,16 @@ A description of the data included in the files ``oT_Data_VariableMaxGeneration.
 ==========  ==============  ==========  =========  ============================================================  ==
 Identifiers                             Header     Description
 ======================================  =========  ============================================================  ==
-Period      Scenario        Load level  Generator  Maximum (minimum) power generation of the unit by load level  MW
+Period      Scenario        LoadLevel   Generator  Maximum (minimum) power generation of the unit by load level  MW
 ==========  ==============  ==========  =========  ============================================================  ==
+
+Not all the generators must be defined as columns of these files, only those with values different from 0.
 
 This information can be used for considering scheduled outages or weather-dependent operating capacity.
 
 To force a generator to produce 0 a lower value (e.g., 0.1 MW) strictly > 0, but not 0 (in which case the value will be ignored), must be introduced. This is needed to limit the solar production at night, for example.
-It can be used also for upper-bounding and/or lower-bounding the output of any generator (e.g., run-of-the-river hydro, wind). If the user introduces a maximum generation value that is lower than the minimum generation value, the model will adjust the minimum generation value to match the maximum.
+It can be used also for upper-bounding and/or lower-bounding the output of any generator (e.g., run-of-the-river hydro, wind).
+If the user introduces a maximum generation value that is lower than the minimum generation value, the model will adjust the minimum generation value to match the maximum.
 
 Internally, all the values below 1e-5 times the maximum system demand of each area will be converted into 0 by the model.
 
@@ -472,11 +475,14 @@ A description of the data included in the files ``oT_Data_VariableMaxConsumption
 ==========  ==============  ==========  =========  =============================================================  ==
 Identifiers                             Header     Description
 ======================================  =========  =============================================================  ==
-Period      Scenario        Load level  Generator  Maximum (minimum) power consumption of the unit by load level  MW
+Period      Scenario        LoadLevel   Generator  Maximum (minimum) power consumption of the unit by load level  MW
 ==========  ==============  ==========  =========  =============================================================  ==
 
+Not all the generators must be defined as columns of these files, only those with values different from 0.
+
 To force a ESS to consume 0 a lower value (e.g., 0.1 MW) strictly > 0, but not 0 (in which case the value will be ignored), must be introduced.
-It can be used also for upper-bounding and/or lower-bounding the consumption of any ESS (e.g., pumped-hydro storage, battery). If the user introduces a maximum consumption value that is lower than the minimum consumption value, the model will adjust the minimum consumption value to match the maximum.
+It can be used also for upper-bounding and/or lower-bounding the consumption of any ESS (e.g., pumped-hydro storage, battery).
+If the user introduces a maximum consumption value that is lower than the minimum consumption value, the model will adjust the minimum consumption value to match the maximum.
 
 Internally, all the values below 1e-5 times the maximum system demand of each area will be converted into 0 by the model.
 
@@ -488,10 +494,10 @@ A description of the data included in the file ``oT_Data_VariableFuelCost.csv`` 
 ==========  ==============  ==========  =========  =============================  ======
 Identifiers                             Header     Description
 ======================================  =========  =============================  ======
-Period      Scenario        Load level  Generator  Variable fuel cost             €/Gcal
+Period      Scenario        LoadLevel   Generator  Variable fuel cost             €/Gcal
 ==========  ==============  ==========  =========  =============================  ======
 
-All the generators must be defined as columns of these files.
+Not all the generators must be defined as columns of these files, only those with values different from 0.
 
 Internally, all the values below 1e-4 will be converted into 0 by the model.
 
@@ -505,10 +511,10 @@ A description of the data included in the file ``oT_Data_VariableEmissionCost.cs
 ==========  ==============  ==========  =========  =============================  ======
 Identifiers                             Header     Description
 ======================================  =========  =============================  ======
-Period      Scenario        Load level  Generator  Variable emission cost         €/tCO2
+Period      Scenario        LoadLevel   Generator  Variable emission cost         €/tCO2
 ==========  ==============  ==========  =========  =============================  ======
 
-All the generators must be defined as columns of these files.
+Not all the generators must be defined as columns of these files, only those with values different from 0.
 
 Internally, all the values below 1e-4 will be converted into 0 by the model.
 
@@ -520,10 +526,10 @@ A description of the data included in the file ``oT_Data_EnergyInflows.csv`` fol
 ==========  ==============  ==========  =========  =============================  =====
 Identifiers                             Header     Description
 ======================================  =========  =============================  =====
-Period      Scenario        Load level  Generator  Energy inflows by load level   MWh/h
+Period      Scenario        LoadLevel   Generator  Energy inflows by load level   MWh/h
 ==========  ==============  ==========  =========  =============================  =====
 
-All the generators must be defined as columns of these files.
+Not all the generators must be defined as columns of these files, only those with values different from 0.
 
 If you have daily energy inflows data just input the daily amount at the first hour of every day if the ESS have daily or weekly storage capacity.
 
@@ -539,10 +545,10 @@ A description of the data included in the file ``oT_Data_EnergyOutflows.csv`` fo
 ==========  ==============  ==========  =========  =============================  =====
 Identifiers                             Header     Description
 ======================================  =========  =============================  =====
-Period      Scenario        Load level  Generator  Energy outflows by load level  MWh/h
+Period      Scenario        LoadLevel   Generator  Energy outflows by load level  MWh/h
 ==========  ==============  ==========  =========  =============================  =====
 
-All the generators must be defined as columns of these files.
+Not all the generators must be defined as columns of these files, only those with values different from 0.
 
 These energy outflows can be used to represent the electric energy extracted from an ESS to produce H2 from electrolyzers, to move EVs, to produce heat, or as hydro outflows for irrigation.
 The use of these outflows is incompatible with the charge of the ESS within the same time step (as the discharge of a battery is incompatible with the charge in the same hour).
@@ -559,10 +565,13 @@ A description of the data included in the files ``oT_Data_VariableMaxStorage.csv
 ==========  ==============  ==========  =========  ====================================================  ===
 Identifiers                             Header     Description
 ======================================  =========  ====================================================  ===
-Period      Scenario        Load level  Generator  Maximum (minimum) storage of the ESS by load level    GWh
+Period      Scenario        LoadLevel   Generator  Maximum (minimum) storage of the ESS by load level    GWh
 ==========  ==============  ==========  =========  ====================================================  ===
 
-All the generators must be defined as columns of these files.
+Not all the generators must be defined as columns of these files, only those with values different from 0.
+
+It can be used also for upper-bounding and/or lower-bounding the storage of any generator (e.g., storage hydro).
+If the user introduces a maximum storage value that is lower than the minimum storage value, the model will adjust the minimum storage value to match the maximum.
 
 For example, these data can be used for defining the operating guide (rule) curves for the ESS.
 
@@ -574,10 +583,13 @@ A description of the data included in the files ``oT_Data_VariableMaxEnergy.csv`
 ==========  ==============  ==========  =========  ====================================================  ===
 Identifiers                             Header     Description
 ======================================  =========  ====================================================  ===
-Period      Scenario        Load level  Generator  Maximum (minimum) energy of the unit by load level    MW
+Period      Scenario        LoadLevel   Generator  Maximum (minimum) energy of the unit by load level    MW
 ==========  ==============  ==========  =========  ====================================================  ===
 
-All the generators must be defined as columns of these files.
+Not all the generators must be defined as columns of these files, only those with values different from 0.
+
+It can be used also for upper-bounding and/or lower-bounding the energy of any generator (e.g., storage hydro).
+If the user introduces a maximum energy value that is lower than the minimum energy value, the model will adjust the minimum energy value to match the maximum.
 
 For example, these data can be used for defining the minimum and/or maximum energy to be produced on a hourly/daily/weekly/monthly/yearly basis (depending on the EnergyType).
 
@@ -675,7 +687,7 @@ A description of the data included in the file ``oT_Data_HydroInflows.csv`` foll
 ==========  ==============  ==========  =========  ====================================  ==============
 Identifiers                             Header     Description
 ======================================  =========  ====================================  ==============
-Period      Scenario        Load level  Reservoir  Natural water inflows by load level   m\ :sup:`3`/s
+Period      Scenario        LoadLevel   Reservoir  Natural water inflows by load level   m\ :sup:`3`/s
 ==========  ==============  ==========  =========  ====================================  ==============
 
 All the reservoirs must be defined as columns of these files.
@@ -692,7 +704,7 @@ A description of the data included in the file ``oT_Data_HydroOutflows.csv`` fol
 ==========  ==============  ==========  =========  ===================================================  =============
 Identifiers                             Header     Description
 ======================================  =========  ===================================================  =============
-Period      Scenario        Load level  Reservoir  Water outflows by load level (e.g., for irrigation   m\ :sup:`3`/s
+Period      Scenario        LoadLevel   Reservoir  Water outflows by load level (e.g., for irrigation   m\ :sup:`3`/s
 ==========  ==============  ==========  =========  ===================================================  =============
 
 All the reservoirs must be defined as columns of these files.
@@ -741,10 +753,13 @@ A description of the data included in the files ``oT_Data_VariableMaxVolume.csv`
 ==========  ==============  ==========  =========  =================================================  ==============
 Identifiers                             Header     Description
 ======================================  =========  =================================================  ==============
-Period      Scenario        Load level  Reservoir  Maximum (minimum) reservoir volume by load level   hm\ :sup:`3`
+Period      Scenario        LoadLevel   Reservoir  Maximum (minimum) reservoir volume by load level   hm\ :sup:`3`
 ==========  ==============  ==========  =========  =================================================  ==============
 
-All the reservoirs must be defined as columns of these files.
+Not all the reservoirs must be defined as columns of these files, only those with values different from 0.
+
+It can be used also for upper-bounding and/or lower-bounding the volume of any reservoir.
+If the user introduces a maximum volume value that is lower than the minimum volume value, the model will adjust the minimum volume value to match the maximum.
 
 For example, these data can be used for defining the operating guide (rule) curves for the hydro reservoirs.
 
@@ -769,7 +784,7 @@ A description of the data included in the file ``oT_Data_DemandHydrogen.csv`` fo
 ==========  ==============  ==========  ======  ===============================================  =====
 Identifiers                             Header  Description
 ======================================  ======  ===============================================  =====
-Period      Scenario        Load level  Node    Hydrogen demand of the node for each load level  tH2/h
+Period      Scenario        LoadLevel   Node    Hydrogen demand of the node for each load level  tH2/h
 ==========  ==============  ==========  ======  ===============================================  =====
 
 Internally, all the values below if positive demand (or above if negative demand) 1e-5 times the maximum system demand of each area will be converted into 0 by the model.
@@ -824,7 +839,7 @@ A description of the data included in the file ``oT_Data_DemandHeat.csv`` follow
 ==========  ==============  ==========  ======  ===============================================  ======
 Identifiers                             Header  Description
 ======================================  ======  ===============================================  ======
-Period      Scenario        Load level  Node    Heat demand of the node for each load level      MW
+Period      Scenario        LoadLevel   Node    Heat demand of the node for each load level      MW
 ==========  ==============  ==========  ======  ===============================================  ======
 
 Internally, all the values below if positive demand (or above if negative demand) 1e-5 times the maximum system demand of each area will be converted into 0 by the model.

@@ -1,4 +1,4 @@
-,,,LineType,Switching,InitialPeriod,FinalPeriod,Voltage,Length,LossFactor,Reactance,TTC,TTCBck,SecurityFactor,FixedInvestmentCost,FixedChargeRate,BinaryInvestment,SwOnTime,SwOffTime,Resistance,Susceptance,Tap,AngMin,AngMax,Converter,InvestmentLo,InvestmentUp
+InitialNode,FinalNode,Circuit,LineType,Switching,InitialPeriod,FinalPeriod,Voltage,Length,LossFactor,Reactance,TTC,TTCBck,SecurityFactor,FixedInvestmentCost,FixedChargeRate,BinaryInvestment,SwOnTime,SwOffTime,Resistance,Susceptance,Tap,AngMin,AngMax,Converter,InvestmentLo,InvestmentUp
 Almeria,Cadiz,ac1,AC,,2020,2050,400,,0.012979167,0.0686875,600,,0.67,,,,168,168,,,,,,,,
 Almeria,Cartagena,ac1,AC,,2020,2050,400,,0.00445,0.02355,600,,0.67,,,,168,168,,,,,,,,
 Barcelona,Madrid,ac1,AC,,2020,2050,400,,0.019654167,0.1040125,600,,0.67,,,,168,168,,,,,,,,

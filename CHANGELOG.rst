@@ -3,6 +3,10 @@ Change Log
 
 [4.18.0] - 2024-12-04
 -----------------------
+- [CHANGED] in this version no need to introduce all the generators as headings of the variable max/min data files
+- [FIXED] all the cases have been updated to this new version
+- [FIXED] to improve model robustness the first cells of the heading row of all the Data files are filled with sensible headers. These changes are mandatory for this new version.
+- [FIXED] first column of Parameter and Option files dropped
 - [FIXED] minor changes in output results
 
 [4.17.9] - 2024-11-19

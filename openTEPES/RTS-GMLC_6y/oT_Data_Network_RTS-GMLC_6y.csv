@@ -1,4 +1,4 @@
-,,,Length,LineType,InitialPeriod,FinalPeriod,Voltage,LossFactor,Resistance,Reactance,Susceptance,Tap,TTC,TTCBck,SecurityFactor,FixedInvestmentCost,FixedChargeRate,BinaryInvestment,Switching,SwOnTime,SwOffTime,AngMin,AngMax,InvestmentLo,InvestmentUp
+InitialNode,FinalNode,Circuit,Length,LineType,InitialPeriod,FinalPeriod,Voltage,LossFactor,Resistance,Reactance,Susceptance,Tap,TTC,TTCBck,SecurityFactor,FixedInvestmentCost,FixedChargeRate,BinaryInvestment,Switching,SwOnTime,SwOffTime,AngMin,AngMax,InvestmentLo,InvestmentUp
 Node_101,Node_102,eac1,,AC,2015,2050,138,0.01,0.003,0.014,0.461,1,175,,1,,,,,,,-1.047197551,1.047197551,,
 Node_101,Node_103,eac1,,AC,2015,2050,138,0.01,0.055,0.211,0.057,1,175,,1,,,,,,,-1.047197551,1.047197551,,
 Node_101,Node_105,eac1,,AC,2015,2050,138,0.01,0.022,0.085,0.023,1,175,,1,,,,,,,-1.047197551,1.047197551,,

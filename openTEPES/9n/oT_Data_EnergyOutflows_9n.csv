@@ -1,4 +1,4 @@
-,,,Nuclear,DomesticCoal_Anthracite,BrownLignite,ImportedCoal_SubBituminous,ImportedCoal_Bituminous,CCGT_1,CCGT_2,CCGT_3,CCGT_4,OCGT_1,OCGT_2,OCGT_3,FuelOilGas,WindFarm_1,SolarPV_1,ESS1
+Period,Scenario,LoadLevel,Nuclear,DomesticCoal_Anthracite,BrownLignite,ImportedCoal_SubBituminous,ImportedCoal_Bituminous,CCGT_1,CCGT_2,CCGT_3,CCGT_4,OCGT_1,OCGT_2,OCGT_3,FuelOilGas,WindFarm_1,SolarPV_1,ESS1
 2030,sc01,01-01 00:00:00+01:00,,,,,,,,,,,,,,,,
 2030,sc01,01-01 01:00:00+01:00,,,,,,,,,,,,,,,,
 2030,sc01,01-01 02:00:00+01:00,,,,,,,,,,,,,,,,

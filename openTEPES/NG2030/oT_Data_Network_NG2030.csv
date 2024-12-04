@@ -1,4 +1,4 @@
-,,,LineType,Switching,InitialPeriod,FinalPeriod,Voltage,Length,LossFactor,Reactance,TTC,TTCBck,SecurityFactor,FixedInvestmentCost,FixedChargeRate,BinaryInvestment,SwOnTime,SwOffTime,Resistance,Susceptance,Tap,AngMin,AngMax,InvestmentLo,InvestmentUp
+InitialNode,FinalNode,Circuit,LineType,Switching,InitialPeriod,FinalPeriod,Voltage,Length,LossFactor,Reactance,TTC,TTCBck,SecurityFactor,FixedInvestmentCost,FixedChargeRate,BinaryInvestment,SwOnTime,SwOffTime,Resistance,Susceptance,Tap,AngMin,AngMax,InvestmentLo,InvestmentUp
 Nigeria States|Abia,Nigeria States|Akwa Ibom,cc1,AC,,2010,2050,330,67,0.01,0.0051,49.2,,0.65,,,,,,,,,,,,
 Nigeria States|Abia,Nigeria States|Akwa Ibom,cc2,AC,,2010,2050,330,67,0.01,0.0051,49.2,,0.65,,,,,,,,,,,,
 Nigeria States|Abia,Nigeria States|Akwa Ibom,n1,AC,,2010,2050,330,62,0.01,0.0184,179,,0.651,77.5,0.107,,,,,,,,,,

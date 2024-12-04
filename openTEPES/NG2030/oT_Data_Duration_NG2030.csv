@@ -1,4 +1,4 @@
-,,,Duration,Stage
+Period,Scenario,LoadLevel,Duration,Stage
 2030,sc01,01-01 00:00:00+01:00,1,st1
 2030,sc01,01-01 01:00:00+01:00,1,st1
 2030,sc01,01-01 02:00:00+01:00,1,st1
