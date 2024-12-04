@@ -1,6 +1,10 @@
 Change Log
 =============
 
+[4.18.0] - 2024-12-04
+-----------------------
+- [FIXED] minor changes in output results
+
 [4.17.9] - 2024-11-19
 -----------------------
 - [FIXED] fix error in network map

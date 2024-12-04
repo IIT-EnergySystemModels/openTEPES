@@ -640,7 +640,7 @@ Identifier                            Header                               Descr
 Period        Scenario    Load level  Initial node  Final node  Circuit    Line switch off decision [p.u.]
 ============  ==========  ==========  ============  ==========  =========  ================================
 
-File ``oT_Result_NetworkFlowPerNode.csv``
+File ``oT_Result_NetworkFlowElecPerNode.csv``
 
 ============  ==========  ==========  ============  ==========  =========  =======================
 Identifier                            Header                               Description
@@ -648,7 +648,7 @@ Identifier                            Header                               Descr
 Period        Scenario    Load level  Initial node  Final node  Circuit    Electric line flow [MW]
 ============  ==========  ==========  ============  ==========  =========  =======================
 
-File ``oT_Result_NetworkEnergyPerArea.csv``
+File ``oT_Result_NetworkEnergyElecPerArea.csv``
 
 ============  ==========  ==========  ============  ==========  =======================
 Identifier                            Header                    Description
@@ -656,7 +656,7 @@ Identifier                            Header                    Description
 Period        Scenario    Load level  Initial area  Final area  Area flow energy [GWh]
 ============  ==========  ==========  ============  ==========  =======================
 
-File ``oT_Result_NetworkEnergyTotalPerArea.csv``
+File ``oT_Result_NetworkEnergyElecTotalPerArea.csv``
 
 ============  ==========  ============  ==========  =======================
 Identifier                Header                    Description
@@ -664,7 +664,7 @@ Identifier                Header                    Description
 Period        Scenario    Initial area  Final area  Area flow energy [GWh]
 ============  ==========  ============  ==========  =======================
 
-File ``oT_Result_NetworkEnergyTransport.csv``
+File ``oT_Result_NetworkEnergyElecTransport.csv``
 
 ============  ==========  ==========  ============  ==========  =========  ============================
 Identifier                            Header                               Description
@@ -672,7 +672,7 @@ Identifier                            Header                               Descr
 Period        Scenario    Load level  Initial node  Final node  Circuit    Energy transported [GWh-Mkm]
 ============  ==========  ==========  ============  ==========  =========  ============================
 
-File ``oT_Result_NetworkUtilization.csv``
+File ``oT_Result_NetworkElecUtilization.csv``
 
 ============  ==========  ==========  ============  ==========  ==========  ================================================================
 Identifier                            Header                                Description
