@@ -18,8 +18,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     StartTime = time.time()
 
     #%% reading data from CSV
-    dfOption                = pd.read_csv(f'{_path}/oT_Data_Option_'                f'{CaseName}.csv'                             )
-    dfParameter             = pd.read_csv(f'{_path}/oT_Data_Parameter_'             f'{CaseName}.csv'                             )
+    dfOption                = pd.read_csv(f'{_path}/oT_Data_Option_'                f'{CaseName}.csv', header=0                   )
+    dfParameter             = pd.read_csv(f'{_path}/oT_Data_Parameter_'             f'{CaseName}.csv', header=0                   )
     dfPeriod                = pd.read_csv(f'{_path}/oT_Data_Period_'                f'{CaseName}.csv', header=0, index_col=[0    ])
     dfScenario              = pd.read_csv(f'{_path}/oT_Data_Scenario_'              f'{CaseName}.csv', header=0, index_col=[0,1  ])
     dfStage                 = pd.read_csv(f'{_path}/oT_Data_Stage_'                 f'{CaseName}.csv', header=0, index_col=[0    ])
