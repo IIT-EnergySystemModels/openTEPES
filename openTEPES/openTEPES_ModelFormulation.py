@@ -1510,9 +1510,20 @@ def NetworkHeatOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc
         if (nd,hp) in mTEPES.n2g:
             h2n[nd].append(hp)
 
+    def eEnergy2Heat(OptModel,n,chp):
+        if (p,chp) in mTEPES.pchp and chp not in mTEPES.bo and chp in mTEPES.ch:
+            return OptModel.vTotalOutputHeat[p,sc,n,chp] == OptModel.vTotalOutput[p,sc,n,chp] / mTEPES.pPower2HeatRatio[chp]
+        elif (p,chp) in mTEPES.pchp and chp in mTEPES.hp:
+            return OptModel.vTotalOutputHeat[p,sc,n,chp] == OptModel.vESSTotalCharge[p,sc,n,chp] / mTEPES.pProductionFunctionHeat[chp]
+        else:
+            return Constraint.Skip
+    setattr(OptModel, f'eEnergy2Heat_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.chp, rule=eEnergy2Heat, doc='Energy to heat conversion [Tcal/h]'))
+
     def eBalanceHeat(OptModel,n,nd):
         if sum(1 for ch in c2n[nd]) + sum(1 for hp in h2n[nd]) + sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd]):
-            return (sum(OptModel.vTotalOutput[p,sc,n,ch]/mTEPES.pPower2HeatRatio[ch] for ch in c2n[nd] if (p,ch) in mTEPES.pch and ch not in mTEPES.bo) + sum(OptModel.vTotalOutputHeat[p,sc,n,bo] for bo in b2n[nd] if (p,bo) in mTEPES.pbo) + sum(OptModel.vESSTotalCharge[p,sc,n,hp]/mTEPES.pProductionFunctionHeat[hp] for hp in h2n[nd]) + OptModel.vHeatNS[p,sc,n,nd] -
+            # return (sum(OptModel.vTotalOutput[p,sc,n,ch] * power_to_heat_ratios[ch] for ch in c2n[nd] if (p,ch) in mTEPES.pch and ch not in mTEPES.bo) + sum(OptModel.vTotalOutputHeat[p,sc,n,bo] for bo in b2n[nd] if (p,bo) in mTEPES.pbo) + sum(OptModel.vESSTotalCharge[p,sc,n,hp] * production_function_ratios[hp] for hp in h2n[nd]) + OptModel.vHeatNS[p,sc,n,nd] -
+            #         sum(OptModel.vFlowHeat[p,sc,n,nd,nf,cc] for nf,cc in lout[nd] if (p,nd,nf,cc) in mTEPES.pha) + sum(OptModel.vFlowHeat[p,sc,n,ni,nd,cc] for ni,cc in lin[nd] if (p,ni,nd,cc) in mTEPES.pha)) == mTEPES.pDemandHeat[p,sc,n,nd]
+            return (sum(OptModel.vTotalOutputHeat[p,sc,n,ch] for ch in c2n[nd] if (p,ch) in mTEPES.pch ) + sum(OptModel.vTotalOutputHeat[p,sc,n,hp] for hp in h2n[nd]) + OptModel.vHeatNS[p,sc,n,nd] -
                     sum(OptModel.vFlowHeat[p,sc,n,nd,nf,cc] for nf,cc in lout[nd] if (p,nd,nf,cc) in mTEPES.pha) + sum(OptModel.vFlowHeat[p,sc,n,ni,nd,cc] for ni,cc in lin[nd] if (p,ni,nd,cc) in mTEPES.pha)) == mTEPES.pDemandHeat[p,sc,n,nd]
         else:
             return Constraint.Skip
