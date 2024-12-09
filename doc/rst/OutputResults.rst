@@ -1035,11 +1035,19 @@ The marginal costs (dual variables) are obtained after fixing the binary investm
 
 File ``oT_Result_MarginalReserveMargin.csv``
 
-============  ==========  ==========  =======================================================
+============  ==========  ==========  ================================================================================
 Identifier                Header      Description
-========================  ==========  =======================================================
-Period        Scenario    Area        Marginal of the minimum adequacy reserve margin [€/MW]
-============  ==========  ==========  =======================================================
+========================  ==========  ================================================================================
+Period        Scenario    Area        Marginal of the minimum adequacy reserve margin in the electricity system [€/MW]
+============  ==========  ==========  ================================================================================
+
+File ``oT_Result_MarginalReserveMarginHeat.csv``
+
+============  ==========  ==========  ============================================================================
+Identifier                Header      Description
+========================  ==========  ============================================================================
+Period        Scenario    Area        Marginal of the minimum adequacy reserve margin in the heating system [€/MW]
+============  ==========  ==========  ============================================================================
 
 File ``oT_Result_MarginalEmission.csv``
 
