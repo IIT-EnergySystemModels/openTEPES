@@ -1,6 +1,12 @@
 Change Log
 =============
 
+[4.18.1] - 2024-12-09
+-----------------------
+- [CHANGED] add margin reserve for heating (new CSV file, and modifications related to it in input data, model formulation and output results)
+- [CHANGED] computing pDemandHeatPeak in InputData
+- [CHANGED] refactoring the energy to heat conversion
+
 [4.18.0] - 2024-12-04
 -----------------------
 - [CHANGED] in this version no need to introduce all the generators as headings of the variable max/min data files
