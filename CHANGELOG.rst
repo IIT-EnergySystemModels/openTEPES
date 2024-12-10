@@ -1,9 +1,10 @@
 Change Log
 =============
 
-[4.18.1] - 2024-12-09
+[4.18.1] - 2024-12-10
 -----------------------
-- [CHANGED] add margin reserve for heating (new CSV file, and modifications related to it in input data, model formulation and output results)
+- [FIXED] some epsilon for heat were wrong
+- [CHANGED] add reserve margin for heat demand (new CSV file, and modifications related to it in input data, model formulation and output results)
 - [CHANGED] computing pDemandHeatPeak in InputData
 - [CHANGED] refactoring the energy to heat conversion
 
