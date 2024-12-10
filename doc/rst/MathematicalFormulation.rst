@@ -106,11 +106,17 @@ They are written in **uppercase** letters.
 :math:`UR^p_{\omega na}, DR^p_{\omega na}`  Upward and downward operating reserves for each area                GW
 ==========================================  ==================================================================  ====
 
-==================================  ================================================================  ====
-**Adequacy system reserve margin**
-----------------------------------------------------------------------------------------------------------
-:math:`RM_{pa}`                     Minimum adequacy system reserve margin for each period and area   p.u.
-==================================  ================================================================  ====
+==================================  ============================================================================  ====
+**Adequacy electricity system reserve margin**
+----------------------------------------------------------------------------------------------------------------------
+:math:`RME_{pa}`                    Minimum adequacy electricity system reserve margin for each period and area   p.u.
+==================================  ============================================================================  ====
+
+==================================  ============================================================================  ====
+**Adequacy heat system reserve margin**
+----------------------------------------------------------------------------------------------------------------------
+:math:`RMH_{pa}`                    Minimum adequacy heat system reserve margin for each period and area          p.u.
+==================================  ============================================================================  ====
 
 ==================================  ================================================================  =====
 **Maximum CO2 emission**
@@ -356,9 +362,13 @@ Heat production with fuel heater bounded by investment decision for candidate fu
 
 :math:`\frac{gh^p_{\omega ng}}{\overline{GH}^p_{\omega ng}} \leq icg^p_g \quad \forall p \omega ng, g \in CB`
 
-Adequacy system reserve margin [p.u.] «``eAdequacyReserveMargin``»
+Adequacy electricity system reserve margin [p.u.] «``eAdequacyReserveMarginElec``»
 
-:math:`\sum_{g \in a, EG} \overline{GP}_g A_g + \sum_{g \in a, CG} icg^p_g \overline{GP}_g A_g \geq PD_{pa} RM_{pa} \quad \forall pa`
+:math:`\sum_{g \in a, EG} \overline{GP}_g A_g + \sum_{g \in a, CG} icg^p_g \overline{GP}_g A_g \geq PD_{pa} RME_{pa} \quad \forall pa`
+
+Adequacy heat system reserve margin [p.u.] «``eAdequacyReserveMarginHeat``»
+
+:math:`\sum_{g \in a, EB} \overline{GH}_g A_g + \sum_{g \in a, CB} icg^p_g \overline{GH}_g A_g \geq PD_{pa} RMH_{pa} \quad \forall pa`
 
 Maximum CO2 emission [MtC02] «``eMaxSystemEmission``»
 
@@ -630,7 +640,6 @@ and disjunctive constraints in AC candidate parallel circuits are inversely prop
 :math:`-1+ict_{ijc'} \leq \frac{f_{ωpnijc} - \frac{X_{ijc'}}{X_{ijc}} f_{ωpnijc'}}{\overline{F}_{ijc}} \leq 1-ict_{ijc'} \quad \forall ωpnijcc', ijc \in EL, ijc' \in CL`
 
 Given that there are disjunctive constraints, which are only correct with binary AC investment variables, this cycle-based formulation must be used only with binary AC investment decisions.
-
 
 **Hydrogen network operation**
 

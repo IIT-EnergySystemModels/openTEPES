@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - December 09, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - December 10, 2024
 """
 
 import datetime
@@ -148,7 +148,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
 
     # show some statistics of the data
     if pIndLogConsole == 1:
-        print('Reserve margin                        \n', dfReserveMargin.describe       (), '\n')
+        print('Reserve margin electricity            \n', dfReserveMargin.describe       (), '\n')
         print('Maximum CO2 emission                  \n', dfEmission.describe            (), '\n')
         print('Minimum RES energy                    \n', dfRESEnergy.describe           (), '\n')
         print('Electricity demand                    \n', dfDemand.describe              (), '\n')
@@ -1056,7 +1056,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     for p,ar in mTEPES.par:
         # values < 1e-5 times the maximum demand for each area (an area is related to operating reserves procurement, i.e., country) are converted to 0
         pDemandElecPeak[p,ar] = pDemandElec.loc[p,:,:][[nd for nd in d2a[ar]]].sum(axis=1).max()
-        pEpsilonElec              = pDemandElecPeak[p,ar]*1e-5
+        pEpsilonElec          = pDemandElecPeak[p,ar]*1e-5
 
         # these parameters are in GW
         pDemandElecPos     [pDemandElecPos [[nd for nd in d2a[ar]]] <  pEpsilonElec] = 0.0
@@ -1077,7 +1077,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
             pMaxStorage    [pMaxStorage    [[es for es in e2a[ar]]] <  pEpsilonElec] = 0.0
             pIniInventory  [pIniInventory  [[es for es in e2a[ar]]] <  pEpsilonElec] = 0.0
 
-        # pInitialInventory.update(pd.Series([0.0 for es in e2a[ar] if pInitialInventory[es] < pEpsilon], index=[es for es in e2a[ar] if pInitialInventory[es] < pEpsilon], dtype='float64'))
+        # pInitialInventory.update(pd.Series([0.0 for es in e2a[ar] if pInitialInventory[es] < pEpsilonElec], index=[es for es in e2a[ar] if pInitialInventory[es] < pEpsilonElec], dtype='float64'))
 
         # merging positive and negative values of the demand
         pDemandElec        = pDemandElecPos.where(pDemandElecNeg >= 0.0, pDemandElecNeg)
@@ -1113,8 +1113,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
             pDemandHeatPeak[p,ar] = pDemandHeat.loc[p,:,:][[nd for nd in d2a[ar]]].sum(axis=1).max()
             pEpsilonHeat          = pDemandHeatPeak[p,ar]*1e-5
             pDemandHeat             [pDemandHeat    [[nd for nd in   d2a[ar]]] <  pEpsilonHeat] = 0.0
-            pHeatPipeNTCFrw.update(pd.Series([0.0 for ni,nf,cc in mTEPES.ha if pHeatPipeNTCFrw[ni,nf,cc] < pEpsilonElec], index=[(ni,nf,cc) for ni,nf,cc in mTEPES.ha if pHeatPipeNTCFrw[ni,nf,cc] < pEpsilonElec], dtype='float64'))
-            pHeatPipeNTCBck.update(pd.Series([0.0 for ni,nf,cc in mTEPES.ha if pHeatPipeNTCBck[ni,nf,cc] < pEpsilonElec], index=[(ni,nf,cc) for ni,nf,cc in mTEPES.ha if pHeatPipeNTCBck[ni,nf,cc] < pEpsilonElec], dtype='float64'))
+            pHeatPipeNTCFrw.update(pd.Series([0.0 for ni,nf,cc in mTEPES.ha if pHeatPipeNTCFrw[ni,nf,cc] < pEpsilonHeat], index=[(ni,nf,cc) for ni,nf,cc in mTEPES.ha if pHeatPipeNTCFrw[ni,nf,cc] < pEpsilonHeat], dtype='float64'))
+            pHeatPipeNTCBck.update(pd.Series([0.0 for ni,nf,cc in mTEPES.ha if pHeatPipeNTCBck[ni,nf,cc] < pEpsilonHeat], index=[(ni,nf,cc) for ni,nf,cc in mTEPES.ha if pHeatPipeNTCBck[ni,nf,cc] < pEpsilonHeat], dtype='float64'))
 
     # drop generators not g or es or eh or ch
     pMinPowerElec      = pMinPowerElec.loc     [:,mTEPES.g ]
@@ -1143,11 +1143,11 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     # computation of the power to heat ratio of the CHP units
     # heat ratio of boiler units is fixed to 1.0
     pPower2HeatRatio   = pd.Series([1.0 if ch in mTEPES.bo else (pRatedMaxPowerElec[ch]-pRatedMinPowerElec[ch])/(pRatedMaxPowerHeat[ch]-pRatedMinPowerHeat[ch]) for ch in mTEPES.ch], index=mTEPES.ch)
-    pMinPowerHeat      = pd.DataFrame([[pMinPowerElec     [ch][p,sc,n]/pPower2HeatRatio[ch]      for ch in mTEPES.ch] for p,sc,n in mTEPES.psn], index=pd.MultiIndex.from_tuples(mTEPES.psn), columns=mTEPES.ch)
-    pMaxPowerHeat      = pd.DataFrame([[pMaxPowerElec     [ch][p,sc,n]/pPower2HeatRatio[ch]      for ch in mTEPES.ch] for p,sc,n in mTEPES.psn], index=pd.MultiIndex.from_tuples(mTEPES.psn), columns=mTEPES.ch)
-    pMinPowerHeat.update(pd.DataFrame([[pRatedMinPowerHeat[bo]                                   for bo in mTEPES.bo] for p,sc,n in mTEPES.psn], index=pd.MultiIndex.from_tuples(mTEPES.psn), columns=mTEPES.bo))
-    pMaxPowerHeat.update(pd.DataFrame([[pRatedMaxPowerHeat[bo]                                   for bo in mTEPES.bo] for p,sc,n in mTEPES.psn], index=pd.MultiIndex.from_tuples(mTEPES.psn), columns=mTEPES.bo))
-    pMaxPowerHeat.update(pd.DataFrame([[pMaxCharge[hp][p,sc,n]/pProductionFunctionHeat[hp] for hp in mTEPES.hp] for p,sc,n in mTEPES.psn], index=pd.MultiIndex.from_tuples(mTEPES.psn), columns=mTEPES.hp))
+    pMinPowerHeat      = pd.DataFrame([[pMinPowerElec     [ch][p,sc,n]/pPower2HeatRatio[ch] for ch in mTEPES.ch] for p,sc,n in mTEPES.psn], index=pd.MultiIndex.from_tuples(mTEPES.psn), columns=mTEPES.ch)
+    pMaxPowerHeat      = pd.DataFrame([[pMaxPowerElec     [ch][p,sc,n]/pPower2HeatRatio[ch] for ch in mTEPES.ch] for p,sc,n in mTEPES.psn], index=pd.MultiIndex.from_tuples(mTEPES.psn), columns=mTEPES.ch)
+    pMinPowerHeat.update(pd.DataFrame([[pRatedMinPowerHeat[bo]                              for bo in mTEPES.bo] for p,sc,n in mTEPES.psn], index=pd.MultiIndex.from_tuples(mTEPES.psn), columns=mTEPES.bo))
+    pMaxPowerHeat.update(pd.DataFrame([[pRatedMaxPowerHeat[bo]                              for bo in mTEPES.bo] for p,sc,n in mTEPES.psn], index=pd.MultiIndex.from_tuples(mTEPES.psn), columns=mTEPES.bo))
+    pMaxPowerHeat.update(pd.DataFrame([[pMaxCharge[hp][p,sc,n]/pProductionFunctionHeat[hp]  for hp in mTEPES.hp] for p,sc,n in mTEPES.psn], index=pd.MultiIndex.from_tuples(mTEPES.psn), columns=mTEPES.hp))
 
     # drop values not par, p, or ps
     pReserveMargin  = pReserveMargin.loc [mTEPES.par]
@@ -1456,15 +1456,15 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         pDemandHeat     = filter_rows(pDemandHeat    , mTEPES.psnnd)
         pDemandHeatAbs  = filter_rows(pDemandHeatAbs , mTEPES.psnnd)
 
-        mTEPES.pDemandHeatPeak = Param(mTEPES.par,   initialize=pDemandHeatPeak.to_dict(), within=NonNegativeReals,   doc='Peak heat demand'        )
-        mTEPES.pDemandHeat     = Param(mTEPES.psnnd, initialize=pDemandHeat.to_dict()   , within=NonNegativeReals,    doc='Heat demand per hour'    )
-        mTEPES.pDemandHeatAbs  = Param(mTEPES.psnnd, initialize=pDemandHeatAbs.to_dict(), within=NonNegativeReals,    doc='Heat demand'             )
+        mTEPES.pDemandHeatPeak = Param(mTEPES.par,   initialize=pDemandHeatPeak.to_dict(), within=NonNegativeReals,    doc='Peak heat demand'        )
+        mTEPES.pDemandHeat     = Param(mTEPES.psnnd, initialize=pDemandHeat.to_dict()   ,  within=NonNegativeReals,    doc='Heat demand per hour'    )
+        mTEPES.pDemandHeatAbs  = Param(mTEPES.psnnd, initialize=pDemandHeatAbs.to_dict(),  within=NonNegativeReals,    doc='Heat demand'             )
 
-    mTEPES.pLoadLevelDuration = Param(mTEPES.psn,   initialize=0                               , within=NonNegativeIntegers, doc='Load level duration', mutable=True)
+    mTEPES.pLoadLevelDuration = Param(mTEPES.psn,   initialize=0                        ,  within=NonNegativeIntegers, doc='Load level duration', mutable=True)
     for p,sc,n in mTEPES.psn:
         mTEPES.pLoadLevelDuration[p,sc,n] = mTEPES.pLoadLevelWeight[p,sc,n]() * mTEPES.pDuration[p,sc,n]()
 
-    mTEPES.pPeriodProb         = Param(mTEPES.ps,    initialize=0.0                             , within=NonNegativeReals,   doc='Period probability',  mutable=True)
+    mTEPES.pPeriodProb         = Param(mTEPES.ps,    initialize=0.0                     ,  within=NonNegativeReals,   doc='Period probability',  mutable=True)
     for p,sc in mTEPES.ps:
         # periods and scenarios are going to be solved together with their weight and probability
         mTEPES.pPeriodProb[p,sc] = mTEPES.pPeriodWeight[p] * mTEPES.pScenProb[p,sc]
