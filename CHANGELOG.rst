@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.18.1] - 2024-12-10
+[4.18.1] - 2024-12-11
 -----------------------
+- [FIXED] fix error in eAdequacyReserveMarginHeat
 - [FIXED] some epsilon for heat were wrong
 - [CHANGED] add reserve margin for heat demand (new CSV file, and modifications related to it in input data, model formulation and output results)
 - [CHANGED] computing pDemandHeatPeak in InputData
