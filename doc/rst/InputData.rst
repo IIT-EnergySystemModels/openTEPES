@@ -163,7 +163,7 @@ HTNSCost              Cost of heat not served (HTNS)                            
 PNSCost               Cost of power not served (PNS) associated with the deficit in operating reserve by load level                  €/MW
 CO2Cost               Cost of CO2 emissions                                                                                          €/tCO2
 UpReserveActivation   Upward   reserve activation (proportion of upward   operating reserve deployed to produce energy, e.g., 0.3)   p.u.
-DwReserveActivation   Downward reserve activation (proportion of downward operating reserve deployed to produce energy, e.g., 0.2)   p.u.
+DwReserveActivation   Downward reserve activation (proportion of downward operating reserve deployed to produce energy, e.g., 0.25)  p.u.
 MinRatioDwUp          Minimum ratio downward to upward operating reserves                                                            p.u.
 MaxRatioDwUp          Maximum ratio downward to upward operating reserves                                                            p.u.
 Sbase                 Base power used in the DCPF                                                                                    MW
