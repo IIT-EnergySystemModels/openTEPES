@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - December 10, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - December 19, 2024
 """
 
 import time
@@ -1605,22 +1605,23 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES, pIndPlotOutput):
     pEpsilon = 1e-6
 
     #%% outputting the incremental variable cost of each generating unit (neither ESS nor boilers) with power surplus
-    sPSNG        = [(p,sc,n,g) for p,sc,n,g in mTEPES.psng if g not in mTEPES.eh and g not in mTEPES.bo]
-    OutputToFile = pd.Series(data=[(mTEPES.pLinearVarCost[p,sc,n,g]+mTEPES.pEmissionVarCost[p,sc,n,g]) if OptModel.vTotalOutput[p,sc,n,g].ub - OptModel.vTotalOutput[p,sc,n,g]() > pEpsilon else math.inf for p,sc,n,g in sPSNG], index=pd.Index(sPSNG))
+    sPSNARG      = [(p,sc,n,ar,g) for p,sc,n,ar,g in mTEPES.psn*mTEPES.a2g if g not in mTEPES.eh and g not in mTEPES.bo]
+    OutputToFile = pd.Series(data=[(mTEPES.pLinearVarCost[p,sc,n,g]+mTEPES.pEmissionVarCost[p,sc,n,g]) if OptModel.vTotalOutput[p,sc,n,g].ub - OptModel.vTotalOutput[p,sc,n,g]() > pEpsilon else math.inf for p,sc,n,ar,g in sPSNARG], index=pd.Index(sPSNARG))
     OutputToFile *= 1e3
 
-    OutputToFile = OutputToFile.to_frame(name='EUR/MWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='EUR/MWh')
-    OutputToFile.rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(f'{_path}/oT_Result_MarginalIncrementalVariableCost_{CaseName}.csv', sep=',')
-    IncrementalGens = pd.Series('N/A', index=pd.Index(mTEPES.psn)).to_frame(name='Generating unit')
-    for p,sc,n in mTEPES.psn:
-        if len(OutputToFile.loc[(p,sc,n)]) > 1:
-            IncrementalGens.loc[p,sc,n] = OutputToFile.loc[[(p,sc,n)]].squeeze().idxmin()
-        else:
-            IncrementalGens.loc[p,sc,n] = OutputToFile.loc[(p,sc,n)].index[0]
-    IncrementalGens.rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).to_csv(f'{_path}/oT_Result_MarginalIncrementalGenerator_{CaseName}.csv', index=True, sep=',')
+    OutputToFile = OutputToFile.to_frame(name='EUR/MWh').reset_index().pivot_table(index=['level_0','level_1','level_2','level_3'], columns='level_4', values='EUR/MWh')
+    OutputToFile.rename_axis(['Period', 'Scenario', 'LoadLevel', 'Area'], axis=0).rename_axis([None], axis=1).to_csv(f'{_path}/oT_Result_MarginalIncrementalVariableCost_{CaseName}.csv', sep=',')
+    IncrementalGens = pd.Series('N/A', index=pd.Index(mTEPES.psnar)).to_frame(name='Generating unit')
+    for p,sc,n,ar in mTEPES.psnar:
+        if sum(1 for g in mTEPES.g if (ar,g) in mTEPES.a2g):
+            if len(OutputToFile.loc[(p,sc,n,ar)]) > 1:
+                IncrementalGens.loc[p,sc,n,ar] = OutputToFile.loc[[(p,sc,n,ar)]].squeeze().idxmin()
+            else:
+                IncrementalGens.loc[p,sc,n,ar] = OutputToFile.loc[ (p,sc,n,ar) ].index[0]
+    IncrementalGens.rename_axis(['Period', 'Scenario', 'LoadLevel', 'Area'], axis=0).to_csv(f'{_path}/oT_Result_MarginalIncrementalGenerator_{CaseName}.csv', index=True, sep=',')
 
-    OutputToFile = pd.Series(data=[mTEPES.pEmissionRate[g] for p,sc,n,g in sPSNG], index=pd.Index(sPSNG))
-    OutputToFile.to_frame(name='tCO2/MWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='tCO2/MWh').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(f'{_path}/oT_Result_GenerationIncrementalEmission_{CaseName}.csv', sep=',')
+    OutputToFile = pd.Series(data=[mTEPES.pEmissionRate[g] for p,sc,n,ar,g in sPSNARG], index=pd.Index(sPSNARG))
+    OutputToFile.to_frame(name='tCO2/MWh').reset_index().pivot_table(index=['level_0','level_1','level_2','level_3'], columns='level_4', values='tCO2/MWh').rename_axis(['Period', 'Scenario', 'LoadLevel', 'Area'], axis=0).rename_axis([None], axis=1).to_csv(f'{_path}/oT_Result_GenerationIncrementalEmission_{CaseName}.csv', sep=',')
 
     #%% outputting the LSRMC
     sPSSTNND      = [(p,sc,st,n,nd) for p,sc,st,n,nd in mTEPES.s2n*mTEPES.nd if sum(1 for g in g2n[nd]) + sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd]) and (p,sc,n) in mTEPES.psn]
