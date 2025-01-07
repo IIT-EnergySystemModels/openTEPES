@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - December 11, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - January 07, 2025
 """
 
 import time
@@ -1514,13 +1514,13 @@ def NetworkHeatOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc
             chp2n[nd].append(chp)
 
     def eEnergy2Heat(OptModel,n,chp):
-        if (p,chp) in mTEPES.pchp and chp not in mTEPES.bo and chp in mTEPES.ch:
-            return OptModel.vTotalOutputHeat[p,sc,n,chp] == OptModel.vTotalOutput[p,sc,n,chp] / mTEPES.pPower2HeatRatio[chp]
+        if   (p,chp) in mTEPES.pchp and chp in mTEPES.ch and chp not in mTEPES.bo:
+            return OptModel.vTotalOutputHeat[p,sc,n,chp] == OptModel.vTotalOutput   [p,sc,n,chp] / mTEPES.pPower2HeatRatio       [chp]
         elif (p,chp) in mTEPES.pchp and chp in mTEPES.hp:
             return OptModel.vTotalOutputHeat[p,sc,n,chp] == OptModel.vESSTotalCharge[p,sc,n,chp] / mTEPES.pProductionFunctionHeat[chp]
         else:
             return Constraint.Skip
-    setattr(OptModel, f'eEnergy2Heat_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.chp, rule=eEnergy2Heat, doc='Energy to heat conversion [Tcal/h]'))
+    setattr(OptModel, f'eEnergy2Heat_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.chp, rule=eEnergy2Heat, doc='Energy to heat conversion [GW]'))
 
     if pIndLogConsole == 1:
         print('eEnergy2Heat          ... ', len(getattr(OptModel, f'eEnergy2Heat_{p}_{sc}_{st}')), ' rows')
@@ -1531,7 +1531,7 @@ def NetworkHeatOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc
                     sum(OptModel.vFlowHeat[p,sc,n,nd,nf,cc] for nf,cc in lout[nd] if (p,nd,nf,cc) in mTEPES.pha) + sum(OptModel.vFlowHeat[p,sc,n,ni,nd,cc] for ni,cc in lin[nd] if (p,ni,nd,cc) in mTEPES.pha)) == mTEPES.pDemandHeat[p,sc,n,nd]
         else:
             return Constraint.Skip
-    setattr(OptModel, f'eBalanceHeat_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.nd, rule=eBalanceHeat, doc='Heat load generation balance [Tcal/h]'))
+    setattr(OptModel, f'eBalanceHeat_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.nd, rule=eBalanceHeat, doc='Heat load generation balance [GW]'))
 
     if pIndLogConsole == 1:
         print('eBalanceHeat          ... ', len(getattr(OptModel, f'eBalanceHeat_{p}_{sc}_{st}')), ' rows')
