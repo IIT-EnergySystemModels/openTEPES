@@ -4,9 +4,11 @@ Publications
 =================
 The **openTEPES** model has been used in these publications:
 
+- D. Santos-Oliveira, S. Lumbreras, E.F. Alvarez, A. Ramos, L. Olmos "Model-based energy planning: a methodology to choose and combine models to support policy decisions" International Journal of Electrical Power and Energy Systems, 159, August 2024`110048 10.1016/j.ijepes.2024.110048 <https://dx.doi.org/110048 10.1016/j.ijepes.2024.110048>`_
+
 - E.F. Álvarez, J.C. López, L. Olmos, A. Ramos "An Optimal Expansion Planning of Power Systems Considering Cycle-Based AC Optimal Power Flow" Sustainable Energy, Grids and Networks, May 2024. `10.1016/j.segan.2024.101413 <https://doi.org/10.1016/j.segan.2024.101413>`_
 
-- D. Santos-Oliveira, J. Lecarpentier, S. Lumbreras, L. Olmos, A. Ramos, M. Chammas, Th. Brouhard (2024) "The impact of EV penetration on the European Power System: the Tradeoffs in Storage" Social Science Research Network `10.2139/ssrn.4700642 <https://dx.doi.org/10.2139/ssrn.4700642>`_
+- D. Santos-Oliveira, J. Lecarpentier, S. Lumbreras, L. Olmos, A. Ramos, M. Chammas, Th. Brouhard "The impact of EV penetration on the European Power System: the Tradeoffs in Storage" Social Science Research Network. 2024 `10.2139/ssrn.4700642 <https://dx.doi.org/10.2139/ssrn.4700642>`_
 
 - A. Ramos A, S. Huclin and J.P. Chaves (2023), "Analysis of different flexible technologies in the Spain NECP for 2030". Front. Built Environ. 9:1065998. `10.3389/fbuil.2023.1065998 <https://doi.org/10.3389/fbuil.2023.1065998>`_
 
