@@ -148,7 +148,7 @@ IndBinLineCommit     Indicator of binary transmission switching decisions       
 IndBinNetLosses      Indicator of network losses                                          {0 lossless,   1 ohmic losses}
 ===================  ==================================================================   ====================================================
 
-If the investment decisions are ignored (IndBinGenInvest, IndBinGenRetirement, and IndBinNetInvest take value 2) or there are no investment decisions, all the scenarios with a probability > 0 are solved sequentially (assuming a probability 1) and the periods are considered with a weight 1.
+If the investment decisions are ignored (IndBinGenInvest, IndBinGenRetirement, and IndBinNetInvest take value 2) or there are no investment decisions, all the scenarios with a probability >0 are solved sequentially (assuming a probability 1) and the periods are considered with a weight 1.
 
 Parameters
 ----------
@@ -403,21 +403,21 @@ The main characteristics that define each type of generator are the following:
 ======================================  ===================================================================================================================================  ==========
 Generator type                          Description                                                                                                                          Set name
 ======================================  ===================================================================================================================================  ==========
-Generator                               It has MaximumPower or MaximumCharge or MaximumPowerHeat > 0                                                                         *g*
-Thermal                                 Fuel-based variable cost (fuel cost x linear term + CO2 emission cost) > 0                                                           *t*
-RES                                     Fuel-based variable cost (fuel cost x linear term + CO2 emission cost) = 0 and MaximumStorage = 0. It may have OMVariableCost > 0    *re*
+Generator                               It has MaximumPower or MaximumCharge or MaximumPowerHeat >0                                                                          *g*
+Thermal                                 Fuel-based variable cost (fuel cost x linear term + CO2 emission cost) >0                                                            *t*
+RES                                     Fuel-based variable cost (fuel cost x linear term + CO2 emission cost) =0  and MaximumStorage =0.  It may have OMVariableCost >0     *re*
 Non-renewable                           All the generators except the RESS                                                                                                   *nr*
-ESS                                     It has MaximumCharge or MaximumStorage > 0 or ProductionFunctionH2 or ProductionFunctionHeat > 0 and ProductionFunctionHydro = 0     *es*
-Hydro power plant (energy)              ESS with ProductionFunctionHydro = 0                                                                                                 *es*
-Pumped-hydro storage (energy)           ESS with MaximumCharge > 0                                                                                                           *es*
-Battery (BESS), load shifting (DSM)     ESS with MaximumCharge > 0 (usually, StorageType daily)                                                                              *es*
+ESS                                     It has MaximumCharge or MaximumStorage >0  or ProductionFunctionH2 or ProductionFunctionHeat >0  and ProductionFunctionHydro =0      *es*
+Hydro power plant (energy)              ESS with ProductionFunctionHydro =0                                                                                                  *es*
+Pumped-hydro storage (energy)           ESS with MaximumCharge >0                                                                                                            *es*
+Battery (BESS), load shifting (DSM)     ESS with MaximumCharge >0  (usually, StorageType daily)                                                                              *es*
 Electric vehicle (EV)                   ESS with electric energy outflows                                                                                                    *es*
-Electrolyzer (ELZ)                      ESS with electric energy outflows and ProductionFunctionH2 > 0 and ProductionFunctionHeat = 0 and ProductionFunctionHydro = 0        *el*
-Heat pump or electric boiler            ESS with ProductionFunctionHeat > 0 and ProductionFunctionH2 = 0 and ProductionFunctionHydro = 0                                     *hp*
-CHP or fuel heating unit                It has RatedMaxPowerElec > 0 and RatedMaxPowerHeat > 0 and ProductionFunctionHeat = 0                                                *ch*
-Fuel heating unit, fuel boiler          It has RatedMaxPowerElec = 0 and RatedMaxPowerHeat > 0 and ProductionFunctionHeat = 0                                                *bo*
-Hydrogen heating unit                   Fuel heating unit with ProductionFunctionH2ToHeat > 0                                                                                *hh*
-Hydro power plant (water)               It has ProductionFunctionHydro > 0                                                                                                   *h*
+Electrolyzer (ELZ)                      ESS with electric energy outflows and ProductionFunctionH2 >0  and ProductionFunctionHeat =0  and ProductionFunctionHydro =0         *el*
+Heat pump or electric boiler            ESS with ProductionFunctionHeat >0  and ProductionFunctionH2 =0  and ProductionFunctionHydro =0                                      *hp*
+CHP or fuel heating unit                It has RatedMaxPowerElec >0  and RatedMaxPowerHeat >0  and ProductionFunctionHeat =0                                                 *ch*
+Fuel heating unit, fuel boiler          It has RatedMaxPowerElec =0  and RatedMaxPowerHeat >0  and ProductionFunctionHeat =0                                                 *bo*
+Hydrogen heating unit                   Fuel heating unit with ProductionFunctionH2ToHeat >0                                                                                 *hh*
+Hydro power plant (water)               It has ProductionFunctionHydro >0                                                                                                    *h*
 ======================================  ===================================================================================================================================  ==========
 
 The model allways considers a month of 672 hours, i.e., 4 weeks, not calendar months. The model considers a year of 8736 hours, i.e., 52 weeks, not calendar years.
@@ -431,8 +431,8 @@ It can be one time step, one day, one week, and one month, but it can't exceed t
 The initial storage of the ESSs is also fixed at the beginning and end of each stage, only if the initial inventory lies between the storage limits. For example, the initial storage level is set for the hour 8736 in case of a single stage or for the hours 4368 and 4369
 (end of the first stage and beginning of the second stage) in case of two stages, each with 4368 hours.
 
-A generator with operation cost (sum of the fuel and emission cost, excluding O&M cost) > 0 is considered a non-renewable unit. If the unit has no operation cost and its maximum storage = 0,
-it is considered a renewable unit. If its maximum storage is > 0, with or without operation cost, is considered an ESS.
+A generator with operation cost (sum of the fuel and emission cost, excluding O&M cost) >0  is considered a non-renewable unit. If the unit has no operation cost and its maximum storage =0,
+it is considered a renewable unit. If its maximum storage is >0,  with or without operation cost, is considered an ESS.
 
 A very small variable O&M cost (not below 0.01 €/MWh, otherwise it will converted to 0 by the model) for the ESS can be used to avoid pumping with avoided curtailment (at no cost) and afterwards being discharged as spillage.
 
@@ -440,7 +440,7 @@ Must-run non-renewable units are always committed, i.e., their commitment decisi
 
 EFOR is used to reduce the maximum and minimum power of the unit. For hydropower plants it can be used to reduce their maximum power by the water head effect. It does not reduce the maximum charge.
 
-Those generators or ESS with fixed cost > 0 are considered candidate and can be installed or not.
+Those generators or ESS with fixed cost >0  are considered candidate and can be installed or not.
 
 Maximum, minimum, and initial storage values are considered proportional to the invested capacity for the candidate ESS units if StorageInvestment is activated.
 
@@ -461,7 +461,7 @@ Not all the generators must be defined as columns of these files, only those wit
 
 This information can be used for considering scheduled outages or weather-dependent operating capacity.
 
-To force a generator to produce 0 a lower value (e.g., 0.1 MW) strictly > 0, but not 0 (in which case the value will be ignored), must be introduced. This is needed to limit the solar production at night, for example.
+To force a generator to produce 0 a lower value (e.g., 0.1 MW) strictly >0,  but not 0 (in which case the value will be ignored), must be introduced. This is needed to limit the solar production at night, for example.
 It can be used also for upper-bounding and/or lower-bounding the output of any generator (e.g., run-of-the-river hydro, wind).
 If the user introduces a maximum generation value that is lower than the minimum generation value, the model will adjust the minimum generation value to match the maximum.
 
@@ -480,7 +480,7 @@ Period      Scenario        LoadLevel   Generator  Maximum (minimum) power consu
 
 Not all the generators must be defined as columns of these files, only those with values different from 0.
 
-To force a ESS to consume 0 a lower value (e.g., 0.1 MW) strictly > 0, but not 0 (in which case the value will be ignored), must be introduced.
+To force a ESS to consume 0 a lower value (e.g., 0.1 MW) strictly >0,  but not 0 (in which case the value will be ignored), must be introduced.
 It can be used also for upper-bounding and/or lower-bounding the consumption of any ESS (e.g., pumped-hydro storage, battery).
 If the user introduces a maximum consumption value that is lower than the minimum consumption value, the model will adjust the minimum consumption value to match the maximum.
 
@@ -635,7 +635,7 @@ If there is no data for TTCBck, i.e., TTCBck is left empty or is equal to 0, it 
 
 Reactance can take a negative value as a result of the approximation of three-winding transformers. No Kirchhoff's second law disjunctive constraint is formulated for a circuit with negative reactance.
 
-Those lines with fixed cost > 0 are considered candidate and can be installed or not.
+Those lines with fixed cost >0  are considered candidate and can be installed or not.
 
 If lower and upper bounds of investment decisions are very close (with a difference < 1e-3) to 0 or 1 are converted into 0 and 1.
 
@@ -814,7 +814,7 @@ Initial and final node are the nodes where the transmission line starts and ends
 
 If there is no data for TTCBck, i.e., TTCBck is left empty or is equal to 0, it is substituted by the TTC in the code. Internally, all the TTC and TTCBck values below 1e-5 times the maximum system demand of each area will be converted into 0 by the model.
 
-Those pipelines with fixed cost > 0 are considered candidate and can be installed or not.
+Those pipelines with fixed cost >0  are considered candidate and can be installed or not.
 
 If lower and upper bounds of investment decisions are very close (with a difference < 1e-3) to 0 or 1 are converted into 0 and 1.
 
@@ -884,6 +884,6 @@ Initial and final node are the nodes where the transmission line starts and ends
 
 If there is no data for TTCBck, i.e., TTCBck is left empty or is equal to 0, it is substituted by the TTC in the code. Internally, all the TTC and TTCBck values below 1e-5 times the maximum system demand of each area will be converted into 0 by the model.
 
-Those pipelines with fixed cost > 0 are considered candidate and can be installed or not.
+Those pipelines with fixed cost >0  are considered candidate and can be installed or not.
 
 If lower and upper bounds of investment decisions are very close (with a difference < 1e-3) to 0 or 1 are converted into 0 and 1.
