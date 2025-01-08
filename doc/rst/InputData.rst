@@ -67,7 +67,7 @@ File                           Description
 ``oT_Dict_LoadLevel.csv``      Load level (e.g., 01-01 00:00:00+01:00 to 12-30 23:00:00+01:00). If is a datetime format. Load levels with duration 0 are ignored. The period (year) must represented by 8736 load levels.
 ``oT_Dict_Generation.csv``     Generation units (thermal -nuclear, CCGT, OCGT, coal-, ESS -storage hydro modeled in energy or in water, pumped-hydro storage PHS, battery BESS, electric vehicle EV, demand side management DSM, alkaline water electrolyzer AWE, solar thermal- and VRES -wind onshore and offshore, solar PV, run-of-the-river hydro-)
 ``oT_Dict_Technology.csv``     Generation technologies. The technology order is used in the temporal result plot.
-``oT_Dict_Storage.csv``        ESS storage type (daily < 12 h, weekly < 40 h, monthly > 60 h).
+``oT_Dict_Storage.csv``        ESS storage type (daily <12 h, weekly <40 h, monthly >60 h).
 ``oT_Dict_Node.csv``           Nodes. A node belongs to a zone.
 ``oT_Dict_Zone.csv``           Zones. A zone belongs to an area.
 ``oT_Dict_Area.csv``           Areas. An area belongs to a region. Long-term adequacy, inertia and operating reserves are associated to areas.
@@ -444,7 +444,7 @@ Those generators or ESS with fixed cost >0  are considered candidate and can be 
 
 Maximum, minimum, and initial storage values are considered proportional to the invested capacity for the candidate ESS units if StorageInvestment is activated.
 
-If lower and upper bounds of investment/retirement decisions are very close (with a difference < 1e-3) to 0 or 1 are converted into 0 and 1.
+If lower and upper bounds of investment/retirement decisions are very close (with a difference <1e-3) to 0 or 1 are converted into 0 and 1.
 
 Variable maximum and minimum generation
 ---------------------------------------
@@ -637,7 +637,7 @@ Reactance can take a negative value as a result of the approximation of three-wi
 
 Those lines with fixed cost >0  are considered candidate and can be installed or not.
 
-If lower and upper bounds of investment decisions are very close (with a difference < 1e-3) to 0 or 1 are converted into 0 and 1.
+If lower and upper bounds of investment decisions are very close (with a difference <1e-3) to 0 or 1 are converted into 0 and 1.
 
 Node location
 -------------
@@ -816,7 +816,7 @@ If there is no data for TTCBck, i.e., TTCBck is left empty or is equal to 0, it 
 
 Those pipelines with fixed cost >0  are considered candidate and can be installed or not.
 
-If lower and upper bounds of investment decisions are very close (with a difference < 1e-3) to 0 or 1 are converted into 0 and 1.
+If lower and upper bounds of investment decisions are very close (with a difference <1e-3) to 0 or 1 are converted into 0 and 1.
 
 Heat System Input Data
 ======================
@@ -886,4 +886,4 @@ If there is no data for TTCBck, i.e., TTCBck is left empty or is equal to 0, it 
 
 Those pipelines with fixed cost >0  are considered candidate and can be installed or not.
 
-If lower and upper bounds of investment decisions are very close (with a difference < 1e-3) to 0 or 1 are converted into 0 and 1.
+If lower and upper bounds of investment decisions are very close (with a difference <1e-3) to 0 or 1 are converted into 0 and 1.
