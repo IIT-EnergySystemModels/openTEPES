@@ -1079,7 +1079,7 @@ def GenerationOperationModelFormulationRampMinTime(OptModel, mTEPES, pIndLogCons
     else:
         pEpsilon = 1e-4
 
-    def eRampUpState(OptModel, n, nr):
+    def eRampUpState(OptModel,n,nr):
         if mTEPES.pStableTime[nr] and mTEPES.pMaxPower2ndBlock[p,sc,n,nr] and (p,nr) in mTEPES.pnr and mTEPES.pDuration[p,sc,n]():
             if pIndStableTimeDeadBand:
                 if mTEPES.pRampUp[nr]:
@@ -1110,7 +1110,7 @@ def GenerationOperationModelFormulationRampMinTime(OptModel, mTEPES, pIndLogCons
     if pIndLogConsole == 1:
         print('eRampUpState          ... ', len(getattr(OptModel, f'eRampUpState_{p}_{sc}_{st}')), ' rows')
 
-    def eRampDwState(OptModel, n, nr):
+    def eRampDwState(OptModel,n,nr):
         if mTEPES.pStableTime[nr] and mTEPES.pMaxPower2ndBlock[p,sc,n,nr] and (p,nr) in mTEPES.pnr and mTEPES.pDuration[p,sc,n]():
             if pIndStableTimeDeadBand:
                 if mTEPES.pRampDw[nr]:
@@ -1168,7 +1168,7 @@ def GenerationOperationModelFormulationRampMinTime(OptModel, mTEPES, pIndLogCons
         print('eMinDownTime          ... ', len(getattr(OptModel, f'eMinDownTime_{p}_{sc}_{st}')), ' rows')
 
     if pIndSimplexFormulation:
-        def eMinStableTime(OptModel, n, nr):
+        def eMinStableTime(OptModel,n,nr):
             if (mTEPES.pStableTime[nr] and mTEPES.pMaxPower2ndBlock[p,sc,n,nr] and mTEPES.n.ord(n) >= mTEPES.pStableTime[nr] + 2):
                 return OptModel.vRampUpState[p,sc,n,nr] + sum(OptModel.vRampDwState[p,sc,n2,nr] for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pStableTime[nr]-1:mTEPES.n.ord(n)-1]) <= 1
             else:
@@ -1181,9 +1181,9 @@ def GenerationOperationModelFormulationRampMinTime(OptModel, mTEPES, pIndLogCons
                 for nr in mTEPES.nr:
                     if (mTEPES.pStableTime[nr] and mTEPES.pMaxPower2ndBlock[p,sc,n,nr] and mTEPES.n.ord(n) >= mTEPES.pStableTime[nr] + 2):
                         for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pStableTime[nr]-1:mTEPES.n.ord(n)-1]:
-                            MinStableTimeLoadLevels.append((n, n2, nr))
+                            MinStableTimeLoadLevels.append((n,n2,nr))
 
-        def eMinStableTime(OptModel, n, n2, nr):
+        def eMinStableTime(OptModel,n,n2,nr):
             return OptModel.vRampUpState[p,sc,n,nr] + OptModel.vRampDwState[p,sc,n2,nr] <= 1
         setattr(OptModel, f'eMinStableTime_{p}_{sc}_{st}', Constraint(MinStableTimeLoadLevels, rule=eMinStableTime, doc='minimum stable time [p.u.]'))
 
