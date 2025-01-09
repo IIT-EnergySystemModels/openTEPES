@@ -463,7 +463,7 @@ This information can be used for considering scheduled outages or weather-depend
 
 To force a generator to produce 0 a lower value (e.g., 0.1 MW) strictly >0,  but not 0 (in which case the value will be ignored), must be introduced. This is needed to limit the solar production at night, for example.
 It can be used also for upper-bounding and/or lower-bounding the output of any generator (e.g., run-of-the-river hydro, wind).
-If the user introduces a maximum generation value that is lower than the minimum generation value, the model will adjust the minimum generation value to match the maximum.
+If the user introduces a minimum generation value that is greater than the maximum generation value, the model will adjust the minimum generation value to match the maximum.
 
 Internally, all the values below 1e-5 times the maximum system demand of each area will be converted into 0 by the model.
 

@@ -1086,9 +1086,9 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         # pMaxPowerElec      = pMaxPowerElec.where(pMaxPowerElec >= pMinPowerElec, pMinPowerElec)
         # pMaxCharge         = pMaxCharge.where   (pMaxCharge    >= pMinCharge,    pMinCharge   )
 
-        #Decrease Minimum to reach maximum
+        # Decrease Minimum to reach maximum
         pMinPowerElec      = pMinPowerElec.where(pMinPowerElec <= pMaxPowerElec, pMaxPowerElec)
-        pMinCharge         = pMinCharge.where   (pMinCharge <= pMaxCharge, pMaxCharge)
+        pMinCharge         = pMinCharge.where   (pMinCharge    <= pMaxCharge,    pMaxCharge   )
 
         #Calculate 2nd Blocks
         pMaxPower2ndBlock  = pMaxPowerElec - pMinPowerElec
@@ -1313,7 +1313,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.pIndBinGenOperat      = Param(initialize=pIndBinGenOperat    , within=Binary,              doc='Indicator of binary generation operation  decisions',       mutable=True)
     mTEPES.pIndBinSingleNode     = Param(initialize=pIndBinSingleNode   , within=Binary,              doc='Indicator of single node within a electric network case',   mutable=True)
     mTEPES.pIndBinGenRamps       = Param(initialize=pIndBinGenRamps     , within=Binary,              doc='Indicator of using or not the ramp constraints',            mutable=True)
-    mTEPES.pIndBinGenMinTime     = Param(initialize=pIndBinGenMinTime   , within=Binary,              doc='Indicator of using or not the min time constraints',        mutable=True)
+    mTEPES.pIndBinGenMinTime     = Param(initialize=pIndBinGenMinTime   , within=Binary,              doc='Indicator of using or not the min up/dw time constraints',  mutable=True)
     mTEPES.pIndBinLineCommit     = Param(initialize=pIndBinLineCommit   , within=Binary,              doc='Indicator of binary electric network switching  decisions', mutable=True)
     mTEPES.pIndBinNetLosses      = Param(initialize=pIndBinNetLosses    , within=Binary,              doc='Indicator of binary electric network ohmic losses',         mutable=True)
     mTEPES.pIndHydroTopology     = Param(initialize=pIndHydroTopology   , within=Binary,              doc='Indicator of reservoir and hydropower topology'                         )
