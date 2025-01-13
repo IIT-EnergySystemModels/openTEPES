@@ -74,7 +74,7 @@ They are written in **uppercase** letters.
 ---------------------------------------------------------------------------------------
 :math:`D^p_{\omega ni}`   Electricity demand in each node                       GW
 :math:`PD_{pa}`           Peak demand in each area                              GW
-:math:`DUR^p_{\omega n}`             Duration of each load level                           h
+:math:`DUR^p_{\omega n}`  Duration of each load level                           h
 :math:`CENS`              Cost of energy not served. Value of Lost Load (VoLL)  €/MWh
 ========================  ====================================================  =======
 
@@ -236,25 +236,25 @@ They are written in **lowercase** letters.
 :math:`htns^p_{\omega ni}`  Heat not served      GW
 ==========================  ===================  ===
 
-===============================================================  ================================================================================================  ======
+===============================================================  ==================================================================================================  ======
 **Generation system**
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-:math:`icg^p_g`                                                  Candidate generator or ESS installed or not                                                       {0,1}
-:math:`rcg^p_g`                                                  Candidate generator or ESS retired   or not                                                       {0,1}
-:math:`gp^p_{\omega ng}, gc^p_{\omega ng}`                       Generator output (discharge if an ESS) and consumption (charge if an ESS)                         GW
-:math:`go^p_{\omega ne}`                                         Generator outflows of an ESS                                                                      GW
-:math:`p^p_{\omega ng}`                                          Generator output of the second block (i.e., above the minimum load)                               GW
-:math:`c^p_{\omega ne}`                                          Generator charge                                                                                  GW
-:math:`gh^p_{\omega ng}`                                         Heat output of a fuel heater                                                                      GW
-:math:`ur^p_{\omega ng}, dr^p_{\omega ng}`                       Upward and downward operating reserves of a non-renewable generating unit                         GW
-:math:`ur'^p_{\omega ne}, dr'^p_{\omega ne}`                     Upward and downward operating reserves of an ESS as a consumption unit                            GW
-:math:`ei^p_{\omega ne}`                                         Variable energy inflows of a candidate ESS (e.g., hydropower plant)                               GW
-:math:`i^p_{\omega ne}`                                          ESS stored energy (inventory, reservoir energy, state of charge)                                  GWh
-:math:`s^p_{\omega ne}`                                          ESS spilled energy                                                                                GWh
-:math:`uc^p_{\omega ng}, su^p_{\omega ng}, sd^p_{\omega ng}`     Commitment, startup, and shutdown of generation unit per load level                               {0,1}
-:math:`rss^p_{\omega nt}, rsu^p_{\omega nt}, rsd^p_{\omega nt}`  Stable, ramp up, and ramp down states of generation unit with minimum stable time per load level  {0,1}
-:math:`uc'_g`                                                    Maximum commitment of a generation unit for all the load levels                                   {0,1}
-===============================================================  ================================================================================================  ======
+:math:`icg^p_g`                                                  Candidate generator or ESS installed or not                                                         {0,1}
+:math:`rcg^p_g`                                                  Candidate generator or ESS retired   or not                                                         {0,1}
+:math:`gp^p_{\omega ng}, gc^p_{\omega ng}`                       Generator output (discharge if an ESS) and consumption (charge if an ESS)                           GW
+:math:`go^p_{\omega ne}`                                         Generator outflows of an ESS                                                                        GW
+:math:`p^p_{\omega ng}`                                          Generator output of the second block (i.e., above the minimum load)                                 GW
+:math:`c^p_{\omega ne}`                                          Generator charge                                                                                    GW
+:math:`gh^p_{\omega ng}`                                         Heat output of a fuel heater                                                                        GW
+:math:`ur^p_{\omega ng}, dr^p_{\omega ng}`                       Upward and downward operating reserves of a non-renewable generating unit                           GW
+:math:`ur'^p_{\omega ne}, dr'^p_{\omega ne}`                     Upward and downward operating reserves of an ESS as a consumption unit                              GW
+:math:`ei^p_{\omega ne}`                                         Variable energy inflows of a candidate ESS (e.g., hydropower plant)                                 GW
+:math:`i^p_{\omega ne}`                                          ESS stored energy (inventory, reservoir energy, state of charge)                                    GWh
+:math:`s^p_{\omega ne}`                                          ESS spilled energy                                                                                  GWh
+:math:`uc^p_{\omega ng}, su^p_{\omega ng}, sd^p_{\omega ng}`     Commitment, startup, and shutdown of a generation unit per load level                               {0,1}
+:math:`rss^p_{\omega nt}, rsu^p_{\omega nt}, rsd^p_{\omega nt}`  Stable, ramp up, and ramp down states of a generation unit with minimum stable time per load level  {0,1}
+:math:`uc'_g`                                                    Maximum commitment of a generation unit for all the load levels                                     {0,1}
+===============================================================  ==================================================================================================  ======
 
 ======================================  ==========================================================================  ==============
 **Hydropower system**
@@ -266,15 +266,15 @@ They are written in **lowercase** letters.
 :math:`s'^p_{\omega ne'}`               Reservoir spilled water                                                     hm\ :sup:`3`
 ======================================  ==========================================================================  ==============
 
-========================================================================  =================================================================  =====
+========================================================================  ===========================================================================  =====
 **Electricity transmission system**
---------------------------------------------------------------------------------------------------------------------------------------------------
-:math:`ict^p_{ijc}`                                                       Candidate transmission installed or not                            {0,1}
-:math:`swt^p_{\omega nijc}, son^p_{\omega nijc}, sof^p_{\omega nijc}`     Switching state, switch-on and switch-off of an electric line      {0,1}
-:math:`f^p_{\omega nijc}`                                                 Power flow through an electric line                                GW
-:math:`l^p_{\omega nijc}`                                                 Half ohmic losses of an electric line                              GW
-:math:`\theta^p_{\omega ni}`                                              Voltage angle of a node                                            rad
-========================================================================  =================================================================  =====
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+:math:`ict^p_{ijc}`                                                       Candidate transmission installed or not                                      {0,1}
+:math:`swt^p_{\omega nijc}, son^p_{\omega nijc}, sof^p_{\omega nijc}`     Switching state, switch-on, and switch-off of an transmission electric line  {0,1}
+:math:`f^p_{\omega nijc}`                                                 Power flow through an electric transmission line                             GW
+:math:`l^p_{\omega nijc}`                                                 Half ohmic losses of an electric transmission line                           GW
+:math:`\theta^p_{\omega ni}`                                              Voltage angle of a node                                                      rad
+========================================================================  ===========================================================================  =====
 
 ========================================================================  ==============================================================  =====
 **Hydrogen transmission system**
@@ -372,7 +372,7 @@ Adequacy heat system reserve margin [p.u.] «``eAdequacyReserveMarginHeat``»
 
 Maximum CO2 emission [MtC02] «``eMaxSystemEmission``»
 
-:math:`\sum_{ng} {DUR^p_{\omega n} CE^p_{\omega ng} gp^p_{\omega ng}} \leq EL_{pa} \quad \forall p \omega a`
+:math:`\sum_{ng, g \in a} {DUR^p_{\omega n} ER_g gp^p_{\omega ng}} \leq EL_{pa} \quad \forall p \omega a`
 
 Minimum RES energy [GW] «``eMinSystemRESEnergy``» «``eTotalRESEnergyArea``»
 
