@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - December 19, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - January 15, 2025
 """
 
 import time
@@ -366,10 +366,10 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnolo
     StartTime = time.time()
 
     # generators to area (n2a)
-    n2a = defaultdict(list)
-    for ar,nr in mTEPES.ar*mTEPES.nr:
-        if (ar,nr) in mTEPES.a2g:
-            n2a[ar].append(nr)
+    # n2a = defaultdict(list)
+    # for ar,nr in mTEPES.ar*mTEPES.nr:
+    #     if (ar,nr) in mTEPES.a2g:
+    #         n2a[ar].append(nr)
     g2a = defaultdict(list)
     for ar,g in mTEPES.a2g:
         g2a[ar].append(g)
@@ -1451,6 +1451,12 @@ def FlexibilityResults(DirName, CaseName, OptModel, mTEPES):
     for gt,g in mTEPES.t2g:
         g2t[gt].append(g)
 
+    # nodes to area (d2a)
+    d2a = defaultdict(list)
+    for ar,nd in mTEPES.ar*mTEPES.nd:
+        if (nd,ar) in mTEPES.ndar:
+            d2a[ar].append(nd)
+
     OutputToFile         = pd.Series(data=[sum(OptModel.vTotalOutput[p,sc,n,g]() for g in g2t[gt] if (p,g) in mTEPES.pg) for p,sc,n,gt in mTEPES.psngt], index=pd.Index(mTEPES.psngt))
     OutputToFile *= 1e3
     TechnologyOutput     = OutputToFile.loc[:,:,:,:]
@@ -1470,15 +1476,20 @@ def FlexibilityResults(DirName, CaseName, OptModel, mTEPES):
             NetESSTechnologyOutput[p,sc,n,ot] = MeanESSTechnologyOutput[ot] - ESSTechnologyOutput[p,sc,n,ot]
         NetESSTechnologyOutput.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(f'{_path}/oT_Result_FlexibilityTechnologyESS_{CaseName}.csv', sep=',')
 
-    MeanDemand   = pd.Series(data=[sum(mTEPES.pDemandElec[p,sc,n,nd] for nd in mTEPES.nd)              for p,sc,n in mTEPES.psn], index=pd.Index(mTEPES.psn)).mean()
-    OutputToFile = pd.Series(data=[sum(mTEPES.pDemandElec[p,sc,n,nd] for nd in mTEPES.nd) - MeanDemand for p,sc,n in mTEPES.psn], index=pd.Index(mTEPES.psn))
+    MeanDemand   = pd.Series(data=[sum(mTEPES.pDemandElec[p,sc,n,nd] for nd in d2a[ar])                  for p,sc,n,ar in mTEPES.psnar], index=pd.Index(mTEPES.psnar)).groupby(level=3).mean()
+    OutputToFile = pd.Series(data=[sum(mTEPES.pDemandElec[p,sc,n,nd] for nd in d2a[ar]) - MeanDemand[ar] for p,sc,n,ar in mTEPES.psnar], index=pd.Index(mTEPES.psnar))
     OutputToFile *= 1e3
-    OutputToFile.to_frame(name='Demand').reset_index().pivot_table(index=['level_0','level_1','level_2']).rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(f'{_path}/oT_Result_FlexibilityDemand_{CaseName}.csv', sep=',')
+    OutputToFile.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(f'{_path}/oT_Result_FlexibilityDemand_{CaseName}.csv', sep=',')
 
-    MeanENS      = pd.Series(data=[sum(OptModel.vENS[p,sc,n,nd]() for nd in mTEPES.nd)           for p,sc,n in mTEPES.psn], index=pd.Index(mTEPES.psn)).mean()
-    OutputToFile = pd.Series(data=[sum(OptModel.vENS[p,sc,n,nd]() for nd in mTEPES.nd) - MeanENS for p,sc,n in mTEPES.psn], index=pd.Index(mTEPES.psn))
+    MeanENS      = pd.Series(data=[sum(OptModel.vENS[p,sc,n,nd]() for nd in d2a[ar])               for p,sc,n,ar in mTEPES.psnar], index=pd.Index(mTEPES.psnar)).groupby(level=3).mean()
+    OutputToFile = pd.Series(data=[sum(OptModel.vENS[p,sc,n,nd]() for nd in d2a[ar]) - MeanENS[ar] for p,sc,n,ar in mTEPES.psnar], index=pd.Index(mTEPES.psnar))
     OutputToFile *= 1e3
-    OutputToFile.to_frame(name='PNS').reset_index().pivot_table(index=['level_0','level_1','level_2']).rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(f'{_path}/oT_Result_FlexibilityPNS_{CaseName}.csv', sep=',')
+    OutputToFile.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(f'{_path}/oT_Result_FlexibilityPNS_{CaseName}.csv', sep=',')
+
+    MeanFlow     = pd.Series(data=[sum(OptModel.vFlowElec[p,sc,n,nd,nf,cc]() for nd,nf,cc,af in mTEPES.la*mTEPES.ar if nd in d2a[ar] and nf in d2a[af] and af != ar)                for p,sc,n,ar in mTEPES.psnar], index=pd.Index(mTEPES.psnar)).groupby(level=3).mean()
+    OutputToFile = pd.Series(data=[sum(OptModel.vFlowElec[p,sc,n,nd,nf,cc]() for nd,nf,cc,af in mTEPES.la*mTEPES.ar if nd in d2a[ar] and nf in d2a[af] and af != ar) - MeanFlow[ar] for p,sc,n,ar in mTEPES.psnar], index=pd.Index(mTEPES.psnar))
+    OutputToFile *= 1e3
+    OutputToFile.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(f'{_path}/oT_Result_FlexibilityNetwork_{CaseName}.csv', sep=',')
 
     WritingResultsTime = time.time() - StartTime
     StartTime = time.time()
@@ -1879,7 +1890,7 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput, pIndPlo
         if (nd,re) in mTEPES.n2g:
             r2n[nd].append(re)
 
-    # generators to area (g2a)
+    # generators to area (n2a)(g2a)
     n2a = defaultdict(list)
     for ar,nr in mTEPES.ar*mTEPES.nr:
         if (ar,nr) in mTEPES.a2g:

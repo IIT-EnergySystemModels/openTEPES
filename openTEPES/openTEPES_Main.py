@@ -685,7 +685,7 @@ import time
 # import pkg_resources
 from .openTEPES import openTEPES_run
 
-print('\033[1;32mOpen Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.1 - December 19, 2024\033[0m')
+print('\033[1;32mOpen Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.2 - January 15, 2024\033[0m')
 print('\033[34m#### Academic research license - for non-commercial use only ####\033[0m \n')
 
 parser = argparse.ArgumentParser(description='Introducing main parameters...')

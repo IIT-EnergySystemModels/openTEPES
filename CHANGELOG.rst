@@ -1,6 +1,10 @@
 Change Log
 =============
 
+[4.18.2] - 2025-01-15
+-----------------------
+- [CHANGED] add FlexibilityNetwork output file
+
 [4.18.1] - 2024-12-19
 -----------------------
 - [CHANGED] add area in MarginalIncrementalVariableCost, MarginalIncrementalGenerator and GenerationIncrementalEmission output files
