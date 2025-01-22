@@ -293,8 +293,8 @@ They are written in **lowercase** letters.
 Equations
 ---------
 
-The names between parenthesis correspond to the names of the constraints in the code.
 In this section we replicate the mathematical formulation written in the code, which is specially oriented to numerical stability and efficiency to make easier for the people to understand it.
+The names between parenthesis correspond to the names of the constraints in the code.
 
 **Objective function**: minimization of total (investment and operation) cost for the multi-period scope of the model
 
