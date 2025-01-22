@@ -665,7 +665,7 @@
 
 # Developed by
 
-#    Andres Ramos, Erik Alvarez, Sara Lumbreras
+#    Andres Ramos, Erik Alvarez, Francisco Labora, Sara Lumbreras
 #    Instituto de Investigacion Tecnologica
 #    Escuela Tecnica Superior de Ingenieria - ICAI
 #    UNIVERSIDAD PONTIFICIA COMILLAS
