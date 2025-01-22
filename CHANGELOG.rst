@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.18.2] - 2025-01-15
+[4.18.2] - 2025-01-22
 -----------------------
+- [FIXED] fix error in eRampDw constraint
 - [CHANGED] add FlexibilityNetwork output file
 
 [4.18.1] - 2024-12-19

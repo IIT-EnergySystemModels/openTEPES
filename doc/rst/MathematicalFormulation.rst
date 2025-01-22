@@ -515,7 +515,7 @@ Maximum ramp up and ramp down for the second block of a non-renewable (thermal, 
 
 :math:`\frac{- p^p_{\omega,n-\nu,g} - dr^p_{\omega,n-\nu,g} + p^p_{\omega ng} + ur^p_{\omega ng}}{DUR^p_{\omega n} RU_g} \leq   uc^p_{\omega ng}      - su^p_{\omega ng} \quad \forall p \omega ng`
 
-:math:`\frac{- p^p_{\omega,n-\nu,g} + ur^p_{\omega,n-\nu,g} + p^p_{\omega ng} - dr^p_{\omega ng}}{DUR^p_{\omega n} RD_g} \geq - uc^p_{\omega,n-\nu,g} + sd^p_{\omega ng} \quad \forall p \omega ng`
+:math:`\frac{- p^p_{\omega,n-\nu,g} - ur^p_{\omega,n-\nu,g} + p^p_{\omega ng} + dr^p_{\omega ng}}{DUR^p_{\omega n} RD_g} \geq - uc^p_{\omega,n-\nu,g} + sd^p_{\omega ng} \quad \forall p \omega ng`
 
 Maximum ramp down and ramp up for the charge of an ESS [p.u.] «``eRampUpCharge``» «``eRampDwCharge``»
 
