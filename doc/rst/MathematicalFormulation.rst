@@ -294,7 +294,7 @@ Equations
 ---------
 
 The names between parenthesis correspond to the names of the constraints in the code.
-We have tried to replicate in this section the mathematical formulation written in the code, which is specially oriented to numerical stability and efficiency to make easier for the people to understand it.
+In this section we replicate the mathematical formulation written in the code, which is specially oriented to numerical stability and efficiency to make easier for the people to understand it.
 
 **Objective function**: minimization of total (investment and operation) cost for the multi-period scope of the model
 
