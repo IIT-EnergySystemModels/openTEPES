@@ -553,7 +553,7 @@ In the code you can select a simplex-based (first) or a computational efficient 
 
 **Reservoir operation**
 
-Maximum and minimum relative volume of reservoir candidates (only for load levels multiple of 1, 24, 168, 8736 h depending on the reservoir volume type) constrained by the hydro commitment decision times the maximum capacity [p.u.] «``eMaxVolume2Comm``» «``eMinVolume2Comm``»
+Maximum and minimum relative volume of reservoir candidates (only for load levels multiple of 1, 24, 168, 8736 h depending on the reservoir volume type, represented as :math:`n|\tau_{e'}`) constrained by the hydro commitment decision times the maximum capacity [p.u.] «``eMaxVolume2Comm``» «``eMinVolume2Comm``»
 
 :math:`\frac{i'^p_{\omega ne'}}{\overline{I'}^p_{\omega ne'}}  \leq \sum_{h \in dw(e')} uc^p_{\omega nh} \quad \forall p \omega ne', e' \in CR`
 
@@ -571,21 +571,21 @@ or for pumping [GW] «``ePmpReserveUpIfEnergy``» «``ePmpReserveDwIfEnergy``»
 
 :math:`dr'^p_{\omega nh} \leq \frac{\sum_{e' \in up(h)}                                i'^p_{\omega ne'}}{DUR^p_{\omega n}} \quad \forall p \omega nh`
 
-Water volume for each hydro reservoir (only for load levels multiple of 1, 24, 168 h depending on the reservoir storage type) [hm\ :sup:`3`] «``eHydroInventory``»
+Water volume for each hydro reservoir (only for load levels multiple of 1, 24, 168 h depending on the reservoir storage type, represented as :math:`n|\tau_{e'}`) [hm\ :sup:`3`] «``eHydroInventory``»
 
 :math:`i'^p_{\omega,n-\frac{\tau_e'}{\nu},e'} + \sum_{n' = n-\frac{\tau_e'}{\nu}}^n DUR^p_{\omega n'} (0.0036 HI^p_{\omega n'e'} - 0.0036 ho^p_{\omega n'e'} - \sum_{h \in dw(e')} gp^p_{\omega n'h} / PF_h + \sum_{h \in up(e')} gp^p_{\omega n'h} / PF_h +`
 :math:`+ \sum_{h \in up(e')} EF_e' gc^p_{\omega n'h} / PF_h - \sum_{h \in dw(h)} EF_e' gc^p_{\omega n'h} / PF_h) = i'^p_{\omega ne'} + s'^p_{\omega ne'} - \sum_{e'' \in up(e')} s'^p_{\omega ne''} \quad \forall p \omega ne', e' \in ER`
 
 :math:`i'^p_{\omega,n-\frac{\tau_e'}{\nu},e'} + \sum_{n' = n-\frac{\tau_e'}{\nu}}^n DUR^p_{\omega n'} (0.0036 hi^p_{\omega n'e'} - 0.0036 ho^p_{\omega n'e'} - \sum_{h \in dw(e')} gp^p_{\omega n'h} / PF_h + \sum_{h \in up(e')} gp^p_{\omega n'h} / PF_h +`
-:math:`+ \sum_{h \in up(e')} EF_e' gc^p_{\omega n'h} / PF_h - \sum_{h \in dw(h)} EF_e' gc^p_{\omega n'h} / PF_h) = i'^p_{\omega ne'} + s'^p_{\omega ne'} - \sum_{e'' \in up(e')} s'^p_{\omega ne''} \quad \forall p \omega ne', e' \in CR`
+:math:`+ \sum_{h \in up(e')} EF_e' gc^p_{\omega n'h} / PF_h - \sum_{h \in dw(h)} EF_e' gc^p_{\omega n'h} / PF_h) = i'^p_{\omega ne'} + s'^p_{\omega ne'} - \sum_{e'' \in up(e')} s'^p_{\omega ne''} \quad \forall p \omega ne', n|\tau_{e'}, e' \in CR`
 
 The initial volume of the hydro reservoir divided by its initial volume :math:`I^p_{\omega e'}` is equal to the final reservoir divide by its initial volume [p.u.] «``eIniFinVolume``».
 
-:math:`\frac{i'^p_{\omega,0,e'}}{I^p_{\omega e'}} = \frac{i'^p_{\omega,N,e'}}{I^p_{\omega e'}} \quad \forall p \omega e', e' \in CE`
+:math:`\frac{i'^p_{\omega,0,e'}}{I^p_{\omega e'}} = \frac{i'^p_{\omega,N,e'}}{I^p_{\omega e'}} \quad \forall p \omega e', e' \in CR`
 
-Hydro outflows (only for load levels multiple of 1, 24, 168, 672, and 8736 h depending on the ESS outflow cycle) must be satisfied [m\ :sup:`3`/s] «``eHydroOutflows``»
+Hydro outflows (only for load levels multiple of 1, 24, 168, 672, and 8736 h depending on the ESS outflow cycle, represented as :math:`n|\rho_e`) must be satisfied [m\ :sup:`3`/s] «``eHydroOutflows``»
 
-:math:`\sum_{n' = n-\frac{\tau_e'}{\rho_e'}}^n (ho^p_{\omega n'e'} - HO^p_{\omega n'e'}) DUR^p_{\omega n'} = 0 \quad \forall p \omega ne', n \in \rho_e'`
+:math:`\sum_{n' = n-\frac{\tau_e'}{\rho_e'}}^n (ho^p_{\omega n'e'} - HO^p_{\omega n'e'}) DUR^p_{\omega n'} = 0 \quad \forall p \omega ne', n|\rho_e'`
 
 **Electricity network operation**
 
