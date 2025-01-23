@@ -443,13 +443,13 @@ Maximum shift time of stored energy [GWh]. It is thought to be applied to demand
 
 ESS outflows (only for load levels multiple of 1, 24, 168, 672, and 8736 h depending on the ESS outflow cycle, represented as :math:`n|\rho_e`) must be satisfied [GWh] «``eEnergyOutflows``»
 
-:math:`\sum_{n' = n-\frac{\tau_e}{\rho_e}}^n (go^p_{\omega n'e} - EO^p_{\omega n'e}) DUR^p_{\omega n'} = 0 \quad \forall p \omega ne, n|\rho_e`
+:math:`\sum_{n' = n-\frac{\rho_e}{\nu}}^n (go^p_{\omega n'e} - EO^p_{\omega n'e}) DUR^p_{\omega n'} = 0 \quad \forall p \omega ne, n|\rho_e`
 
 Maximum and minimum energy production (only for load levels multiple of 24, 168, 672, 8736 h depending on the unit energy type, represented as :math:`n|\sigma_g`) must be satisfied [GWh] «``eMaximumEnergy``»  «``eMinimumEnergy``»
 
-:math:`\sum_{n' = n-\sigma_g}^n (gp^p_{\omega n'g} - \overline{E}^p_{\omega n'g})  DUR^p_{\omega n'} \leq 0 \quad \forall p \omega ng, n|\sigma_g`
+:math:`\sum_{n' = n-\frac{\sigma_g}{\nu}}^n (gp^p_{\omega n'g} - \overline{E}^p_{\omega n'g})  DUR^p_{\omega n'} \leq 0 \quad \forall p \omega ng, n|\sigma_g`
 
-:math:`\sum_{n' = n-\sigma_g}^n (gp^p_{\omega n'g} - \underline{E}^p_{\omega n'g}) DUR^p_{\omega n'} \geq 0 \quad \forall p \omega ng, n|\sigma_g`
+:math:`\sum_{n' = n-\frac{\sigma_g}{\nu}}^n (gp^p_{\omega n'g} - \underline{E}^p_{\omega n'g}) DUR^p_{\omega n'} \geq 0 \quad \forall p \omega ng, n|\sigma_g`
 
 Maximum and minimum output of the second block of a committed unit (all except the VRES units) [p.u.] «``eMaxOutput2ndBlock``» «``eMinOutput2ndBlock``»
 
@@ -585,7 +585,7 @@ The initial volume of the hydro reservoir divided by its initial volume :math:`I
 
 Hydro outflows (only for load levels multiple of 1, 24, 168, 672, and 8736 h depending on the ESS outflow cycle, represented as :math:`n|\rho_e`) must be satisfied [m\ :sup:`3`/s] «``eHydroOutflows``»
 
-:math:`\sum_{n' = n-\frac{\tau_e'}{\rho_e'}}^n (ho^p_{\omega n'e'} - HO^p_{\omega n'e'}) DUR^p_{\omega n'} = 0 \quad \forall p \omega ne', n|\rho_e'`
+:math:`\sum_{n' = n-\frac{\rho_e'}{\nu}}^n (ho^p_{\omega n'e'} - HO^p_{\omega n'e'}) DUR^p_{\omega n'} = 0 \quad \forall p \omega ne', n|\rho_e'`
 
 **Electricity network operation**
 
