@@ -413,15 +413,15 @@ or for storing [GW] «``eESSReserveUpIfEnergy``» «``eESSReserveDwIfEnergy``»
 
 :math:`dr'^p_{\omega ne} \leq \frac{                             i^p_{\omega ne}}{DUR^p_{\omega n}} \quad \forall p \omega ne`
 
-Maximum and minimum relative inventory of ESS candidates (only for load levels multiple of 1, 24, 168, 8736 h depending on the ESS storage type) constrained by the ESS commitment decision times the maximum capacity [p.u.] «``eMaxInventory2Comm``» «``eMinInventory2Comm``»
+Maximum and minimum relative inventory of ESS candidates (only for load levels multiple of 1, 24, 168, 8736 h depending on the ESS storage type, represented as :math:`n|\tau_e`) constrained by the ESS commitment decision times the maximum capacity [p.u.] «``eMaxInventory2Comm``» «``eMinInventory2Comm``»
 
-:math:`\frac{i^p_{\omega ne}}{\overline{I}^p_{\omega ne}}  \leq uc^p_{\omega ne} \quad \forall p \omega ne, e \in CE`
+:math:`\frac{i^p_{\omega ne}}{\overline{I}^p_{\omega ne}}  \leq uc^p_{\omega ne} \quad \forall p \omega ne, n|\tau_e, e \in CE`
 
-:math:`\frac{i^p_{\omega ne}}{\underline{I}^p_{\omega ne}} \geq uc^p_{\omega ne} \quad \forall p \omega ne, e \in CE`
+:math:`\frac{i^p_{\omega ne}}{\underline{I}^p_{\omega ne}} \geq uc^p_{\omega ne} \quad \forall p \omega ne, n|\tau_e, e \in CE`
 
-Energy inflows of ESS candidates (only for load levels multiple of 1, 24, 168, 8736 h depending on the ESS storage type) constrained by the ESS commitment decision times the energy inflows data [p.u.] «``eInflows2Comm``»
+Energy inflows of ESS candidates (only for load levels multiple of 1, 24, 168, 8736 h depending on the ESS storage type, represented as :math:`n|\tau_e`) constrained by the ESS commitment decision times the energy inflows data [p.u.] «``eInflows2Comm``»
 
-:math:`\frac{ei^p_{\omega ne}}{EI^p_{\omega ne}} \leq uc^p_{\omega ne} \quad \forall p \omega ne, e \in CE`
+:math:`\frac{ei^p_{\omega ne}}{EI^p_{\omega ne}} \leq uc^p_{\omega ne} \quad \forall p \omega ne, n|\tau_e, e \in CE`
 
 ESS energy inventory (only for load levels multiple of 1, 24, 168 h depending on the ESS storage type, represented as :math:`n|\tau_e`) [GWh] «``eESSInventory``»
 
@@ -441,15 +441,15 @@ Maximum shift time of stored energy [GWh]. It is thought to be applied to demand
 
 :math:`DUR^p_{\omega n} EF_e gc^p_{\omega ne} \leq \sum_{n' = n+1}^{n+\frac{ST_e}{\nu}} DUR^p_{\omega n'} gp^p_{\omega n'e} \quad \forall p \omega ne`
 
-ESS outflows (only for load levels multiple of 1, 24, 168, 672, and 8736 h depending on the ESS outflow cycle) must be satisfied [GWh] «``eEnergyOutflows``»
+ESS outflows (only for load levels multiple of 1, 24, 168, 672, and 8736 h depending on the ESS outflow cycle, represented as :math:`n|\rho_e`) must be satisfied [GWh] «``eEnergyOutflows``»
 
-:math:`\sum_{n' = n-\frac{\tau_e}{\rho_e}}^n (go^p_{\omega n'e} - EO^p_{\omega n'e}) DUR^p_{\omega n'} = 0 \quad \forall p \omega ne, n \in \rho_e`
+:math:`\sum_{n' = n-\frac{\tau_e}{\rho_e}}^n (go^p_{\omega n'e} - EO^p_{\omega n'e}) DUR^p_{\omega n'} = 0 \quad \forall p \omega ne, n|\rho_e`
 
-Maximum and minimum energy production (only for load levels multiple of 24, 168, 672, 8736 h depending on the unit energy type) must be satisfied [GWh] «``eMaximumEnergy``»  «``eMinimumEnergy``»
+Maximum and minimum energy production (only for load levels multiple of 24, 168, 672, 8736 h depending on the unit energy type, represented as :math:`n|\sigma_g`) must be satisfied [GWh] «``eMaximumEnergy``»  «``eMinimumEnergy``»
 
-:math:`\sum_{n' = n-\sigma_g}^n (gp^p_{\omega n'g} - \overline{E}^p_{\omega n'g})  DUR^p_{\omega n'} \leq 0 \quad \forall p \omega ng, n \in \sigma_g`
+:math:`\sum_{n' = n-\sigma_g}^n (gp^p_{\omega n'g} - \overline{E}^p_{\omega n'g})  DUR^p_{\omega n'} \leq 0 \quad \forall p \omega ng, n|\sigma_g`
 
-:math:`\sum_{n' = n-\sigma_g}^n (gp^p_{\omega n'g} - \underline{E}^p_{\omega n'g}) DUR^p_{\omega n'} \geq 0 \quad \forall p \omega ng, n \in \sigma_g`
+:math:`\sum_{n' = n-\sigma_g}^n (gp^p_{\omega n'g} - \underline{E}^p_{\omega n'g}) DUR^p_{\omega n'} \geq 0 \quad \forall p \omega ng, n|\sigma_g`
 
 Maximum and minimum output of the second block of a committed unit (all except the VRES units) [p.u.] «``eMaxOutput2ndBlock``» «``eMinOutput2ndBlock``»
 
