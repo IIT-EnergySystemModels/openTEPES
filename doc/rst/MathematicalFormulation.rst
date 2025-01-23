@@ -439,7 +439,7 @@ The initial inventory of the ESS candidates divided by their initial storage :ma
 
 Maximum shift time of stored energy [GWh]. It is thought to be applied to demand side management «``eMaxShiftTime``»
 
-:math:`DUR^p_{\omega n} EF_e gc^p_{\omega ne} \leq \sum_{n' = n+1}^{n+\frac{ST_e}{\nu}} DUR^p_{\omega n'} gp^p_{\omega n'e} \quad \forall p \omega ne`
+:math:`DUR^p_{\omega n} EF_e gc^p_{\omega ne} \leq \sum_{n' = n}^{n+\frac{ST_e}{\nu}} DUR^p_{\omega n'} gp^p_{\omega n'e} \quad \forall p \omega ne`
 
 ESS outflows (only for load levels multiple of 1, 24, 168, 672, and 8736 h depending on the ESS outflow cycle, represented as :math:`n|\rho_e`) must be satisfied [GWh] «``eEnergyOutflows``»
 
