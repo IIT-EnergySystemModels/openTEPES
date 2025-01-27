@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.18.2] - 2025-01-22
+[4.18.2] - 2025-01-27
 -----------------------
+- [CHANGED] define GAMS (capital letters) as a solver
 - [FIXED] fix error in eRampDw constraint
 - [CHANGED] add FlexibilityNetwork output file
 
