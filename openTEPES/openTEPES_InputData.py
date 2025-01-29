@@ -2407,10 +2407,12 @@ def SettingUpVariables(OptModel, mTEPES):
             None: Raises a ValueError when an infeasibility is found.
         '''
 
-        if sum(mTEPES.pPeriodWeight[p] for p  in mTEPES.p ) == 0.0:
-            raise ValueError('### No active periods in the case study')
-        if sum(mTEPES.pStageWeight[st] for st in mTEPES.st) == 0.0:
-            raise ValueError('### No active stages in the case study')
+        if len(mTEPES.p ) == 0:
+            raise ValueError('### No active periods in the case study'  )
+        if len(mTEPES.sc) == 0:
+            raise ValueError('### No active scenarios in the case study')
+        if len(mTEPES.st) == 0:
+            raise ValueError('### No active stages in the case study'   )
 
         # detecting infeasibility: sum of scenario probabilities must be 1 in each period
         # for p in mTEPES.p:
