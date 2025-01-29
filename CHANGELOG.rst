@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.18.2] - 2025-01-27
+[4.18.2] - 2025-01-29
 -----------------------
+- [CHANGED] detect no weights in periods and stages and abort the run
 - [CHANGED] define GAMS (capital letters) as a solver
 - [FIXED] fix error in eRampDw constraint
 - [CHANGED] add FlexibilityNetwork output file

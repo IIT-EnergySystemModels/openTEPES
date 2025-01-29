@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - December 10, 2024
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - January 29, 2025
 """
 
 import datetime
@@ -2406,11 +2406,16 @@ def SettingUpVariables(OptModel, mTEPES):
         Returns:
             None: Raises a ValueError when an infeasibility is found.
         '''
+
+        if sum(mTEPES.pPeriodWeight[p] for p  in mTEPES.p ) == 0.0:
+            raise ValueError('### No active periods in the case study')
+        if sum(mTEPES.pStageWeight[st] for st in mTEPES.st) == 0.0:
+            raise ValueError('### No active stages in the case study')
+
         # detecting infeasibility: sum of scenario probabilities must be 1 in each period
         # for p in mTEPES.p:
         #     if abs(sum(mTEPES.pScenProb[p,sc] for sc in mTEPES.sc)-1.0) > 1e-6:
         #         raise ValueError('### Sum of scenario probabilities different from 1 in period ', p)
-
 
         for es in mTEPES.es:
             # detecting infeasibility: total min ESS output greater than total inflows, total max ESS charge lower than total outflows
