@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - January 22, 2025
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - January 29, 2025
 """
 
 import time
@@ -169,6 +169,13 @@ def GenerationOperationModelFormulationObjFunct(OptModel, mTEPES, pIndLogConsole
         else:
             return Constraint.Skip
     setattr(OptModel, f'eTotalECost_{p}_{sc}_{st}', Constraint(mTEPES.n, rule=eTotalECost, doc='system emission cost [MEUR]'))
+    def eTotalEmissionArea(OptModel,n,ar):
+        if sum(mTEPES.pEmissionRate[g] for g in mTEPES.g if (ar, g) in mTEPES.a2g and (p, g) in mTEPES.pg):
+            return OptModel.vTotalEmissionArea[p, sc, n, ar] == (sum(mTEPES.pLoadLevelDuration[p, sc, n]() * mTEPES.pEmissionRate[nr] * 1e-3 * OptModel.vTotalOutput    [p, sc, n, nr] for nr in mTEPES.nr if (ar, nr) in mTEPES.a2g and (p, nr) in mTEPES.pnr)    #1e-3 to change from tCO2/MWh to MtCO2/GWh
+                                                               + sum(mTEPES.pLoadLevelDuration[p, sc, n]() * mTEPES.pEmissionRate[bo] * 1e-3 * OptModel.vTotalOutputHeat[p, sc, n, bo] for bo in mTEPES.bo if (ar, bo) in mTEPES.a2g and (p, bo) in mTEPES.pbo))   #1e-3 to change from tCO2/MWh to MtCO2/GWh
+        else:
+            return Constraint.Skip
+    setattr(OptModel, f'eTotalEmissionArea_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.ar, rule=eTotalEmissionArea, doc='area total emission [MtCO2 eq]'))
 
     def eTotalECostArea(OptModel,n,ar):
         if sum(mTEPES.pEmissionVarCost[p,sc,n,g] for g in mTEPES.g if (ar,g) in mTEPES.a2g and (p,g) in mTEPES.pg):
@@ -319,8 +326,9 @@ def GenerationOperationModelFormulationInvestment(OptModel, mTEPES, pIndLogConso
         print('eAdeqReserveMarginHeat... ', len(getattr(OptModel, f'eAdequacyReserveMarginHeat_{p}_{sc}_{st}')), ' rows')
 
     def eMaxSystemEmission(OptModel,ar):
-        if mTEPES.pEmission[p,ar] < math.inf and st == mTEPES.Last_st and sum(mTEPES.pEmissionVarCost[p,sc,na,nr] for na,nr in mTEPES.na*mTEPES.nr if (ar,nr) in mTEPES.a2g):
-            return sum(OptModel.vTotalECostArea[p,sc,na,ar]/mTEPES.pCO2Cost for na in mTEPES.na) <= mTEPES.pEmission[p,ar]
+        if mTEPES.pEmission[p,ar] < math.inf  and sum(mTEPES.pEmissionRate[nr] for nr in mTEPES.nr if (ar,nr) in mTEPES.a2g) and st == mTEPES.Last_st:
+            #There is an emission limit, there are generators with emissions in the Area and it is the last stage
+            return sum(OptModel.vTotalEmissionArea[p,sc,na,ar] for na in mTEPES.na) <= mTEPES.pEmission[p,ar]
         else:
             return Constraint.Skip
     setattr(OptModel, f'eMaxSystemEmission_{p}_{sc}_{st}', Constraint(mTEPES.ar, rule=eMaxSystemEmission, doc='maximum CO2 emission [tCO2]'))

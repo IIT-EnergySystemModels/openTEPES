@@ -876,9 +876,9 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pLinearVarCost    = pLinearVarCost.reindex  (sorted(pLinearVarCost.columns  ), axis=1)
     pConstantVarCost  = pConstantVarCost.reindex(sorted(pConstantVarCost.columns), axis=1)
 
-    # variable emission cost
-    pVariableEmissionCost = pVariableEmissionCost.replace(0.0, pCO2Cost)
-    pEmissionVarCost      = pEmissionRate * 1e-3 * pVariableEmissionCost
+    # variable emission cost [M€/GWh]
+    pVariableEmissionCost = pVariableEmissionCost.replace(0.0, pCO2Cost) #[€/tCO2]
+    pEmissionVarCost      = pEmissionRate * 1e-3 * pVariableEmissionCost                 #[M€/GWh] = [tCO2/MWh] * 1e-3 * [€/tCO2]
     pEmissionVarCost      = pEmissionVarCost.reindex(sorted(pEmissionVarCost.columns), axis=1)
 
     # minimum up- and downtime and maximum shift time converted to an integer number of time steps
@@ -1601,14 +1601,15 @@ def SettingUpVariables(OptModel, mTEPES):
             None: Variables are added directly to the mTEPES object.
         '''
         #%% variables
-        OptModel.vTotalSCost               = Var(                       within=NonNegativeReals,                 doc='total system                         cost      [MEUR]')
-        OptModel.vTotalICost               = Var(                       within=NonNegativeReals,                 doc='total system investment              cost      [MEUR]')
+        OptModel.vTotalSCost               = Var(                       within=NonNegativeReals,                doc='total system                         cost      [MEUR]')
+        OptModel.vTotalICost               = Var(                       within=NonNegativeReals,                doc='total system investment              cost      [MEUR]')
         OptModel.vTotalFCost               = Var(mTEPES.p,     within=NonNegativeReals,                 doc='total system fixed                   cost      [MEUR]')
         OptModel.vTotalGCost               = Var(mTEPES.psn,   within=NonNegativeReals,                 doc='total variable generation  operation cost      [MEUR]')
         OptModel.vTotalCCost               = Var(mTEPES.psn,   within=NonNegativeReals,                 doc='total variable consumption operation cost      [MEUR]')
         OptModel.vTotalECost               = Var(mTEPES.psn,   within=NonNegativeReals,                 doc='total system emission                cost      [MEUR]')
         OptModel.vTotalRCost               = Var(mTEPES.psn,   within=NonNegativeReals,                 doc='total system reliability             cost      [MEUR]')
         OptModel.vTotalNCost               = Var(mTEPES.psn,   within=NonNegativeReals,                 doc='total network loss penalty operation cost      [MEUR]')
+        OptModel.vTotalEmissionArea        = Var(mTEPES.psnar, within=NonNegativeReals,                 doc='total   area emission                         [MtCO2]')
         OptModel.vTotalECostArea           = Var(mTEPES.psnar, within=NonNegativeReals,                 doc='total   area emission                cost      [MEUR]')
         OptModel.vTotalRESEnergyArea       = Var(mTEPES.psnar, within=NonNegativeReals,                 doc='        RES energy                              [GWh]')
 
