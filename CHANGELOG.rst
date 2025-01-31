@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.18.2] - 2025-01-30
+[4.18.2] - 2025-01-31
 -----------------------
+- [FIXED] fix condition when ignoring investment decisions
 - [FIXED] typo in emission condition
 - [CHANGED] fixed emission limit calculation
 - [CHANGED] detect no weights in periods and stages and abort the run
