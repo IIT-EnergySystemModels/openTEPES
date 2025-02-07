@@ -532,9 +532,9 @@ The parameter :math:`\epsilon` is added to detect if the generator is ramping up
 
 The model can also consider a dead band, which means that ramps below a certain threshold in p.u. set by :math:`\epsilon` should not be restricted. In this case, the :math:`\epsilon` is defined in the code as 1e-2.
 
-:math:`\frac{- p^p_{\omega,n-\nu,t} + p^p_{\omega nt}}{DUR^p_{\omega n} (\overline{GP}^p_{\omega ng} - \underline{GP}^p_{\omega ng})} \leq rsu^p_{\omega nt} - \epsilon (rsd^p_{\omega nt} - rss^p_{\omega nt}) \quad \forall p \omega nt`
+:math:`\frac{- p^p_{\omega,n-\nu,t} + p^p_{\omega nt}}{DUR^p_{\omega n} RU_t} \leq rsu^p_{\omega nt} - \epsilon (rsd^p_{\omega nt} - rss^p_{\omega nt}) \quad \forall p \omega nt`
 
-:math:`\frac{  p^p_{\omega,n-\nu,t} - p^p_{\omega nt}}{DUR^p_{\omega n} (\overline{GP}^p_{\omega ng} - \underline{GP}^p_{\omega ng})} \leq rsd^p_{\omega nt} - \epsilon (rsu^p_{\omega nt} - rss^p_{\omega nt}) \quad \forall p \omega nt`
+:math:`\frac{  p^p_{\omega,n-\nu,t} - p^p_{\omega nt}}{DUR^p_{\omega n} RD_t} \leq rsd^p_{\omega nt} - \epsilon (rsu^p_{\omega nt} - rss^p_{\omega nt}) \quad \forall p \omega nt`
 
 Minimum up time and down time of thermal unit [p.u.] «``eMinUpTime``» «``eMinDownTime``»
 
