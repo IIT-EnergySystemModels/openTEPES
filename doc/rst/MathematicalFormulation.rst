@@ -524,13 +524,13 @@ Maximum ramp down and ramp up for the charge of an ESS [p.u.] «``eRampUpCharge`
 :math:`\frac{- c^p_{\omega,n-\nu,e} + dr^p_{\omega,n-\nu,e} + c^p_{\omega ne} - ur^p_{\omega ne}}{DUR^p_{\omega n} RU_e} \geq - 1 \quad \forall p \omega ne`
 
 Detection of ramp up and ramp down state for the second block of a non-renewable (thermal) unit with minimum stable time [p.u.] «``eRampUpState``» «``eRampDwState``».
-The parameter :math:`\epsilon` is added to detect if the generator is ramping up/down. It is defined in the code as 1e-4.
+The parameter :math:`\epsilon` is added to detect if the generator is ramping up/down. It is defined in the code as 1e-4 (of the ramp up/down limit).
 
-:math:`\frac{- p^p_{\omega,n-\nu,t} + p^p_{\omega nt}}{DUR^p_{\omega n} RU_t} \leq rsu^p_{\omega nt} - \epsilon \, rsd^p_{\omega nt} \quad \forall p \omega nt`
+:math:`\frac{- p^p_{\omega,n-\nu,t} + p^p_{\omega nt}}{DUR^p_{\omega n} RU_t} \leq rsu^p_{\omega nt} - \epsilon \cdot rsd^p_{\omega nt} \quad \forall p \omega nt`
 
-:math:`\frac{  p^p_{\omega,n-\nu,t} - p^p_{\omega nt}}{DUR^p_{\omega n} RD_t} \leq rsd^p_{\omega nt} - \epsilon \, rsu^p_{\omega nt} \quad \forall p \omega nt`
+:math:`\frac{  p^p_{\omega,n-\nu,t} - p^p_{\omega nt}}{DUR^p_{\omega n} RD_t} \leq rsd^p_{\omega nt} - \epsilon \cdot rsu^p_{\omega nt} \quad \forall p \omega nt`
 
-The model can also consider a dead band, which means that ramps below a certain threshold in p.u. set by :math:`\epsilon` should not be restricted. In this case, the :math:`\epsilon` is defined in the code as 1e-2.
+The model can also consider a dead band, which means that ramps below a certain threshold in p.u. set by :math:`\epsilon` should not be restricted. In this case, the :math:`\epsilon` is defined in the code as 1e-2 (of the ramp up/down limit).
 
 :math:`\frac{- p^p_{\omega,n-\nu,t} + p^p_{\omega nt}}{DUR^p_{\omega n} RU_t} \leq rsu^p_{\omega nt} - \epsilon (rsd^p_{\omega nt} - rss^p_{\omega nt}) \quad \forall p \omega nt`
 
