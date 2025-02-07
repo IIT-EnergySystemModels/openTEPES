@@ -1,6 +1,10 @@
 Change Log
 =============
 
+[4.18.2] - 2025-02-07
+-----------------------
+- [CHANGED] epsilon in eRampUpState/eRampDwState constraints moved to numerator
+
 [4.18.2] - 2025-01-31
 -----------------------
 - [FIXED] fix condition when ignoring investment decisions
