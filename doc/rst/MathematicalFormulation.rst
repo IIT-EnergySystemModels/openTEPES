@@ -166,7 +166,7 @@ They are written in **uppercase** letters.
 :math:`PH''_g`                                                     Power to heat ratio for a CHP :math:`\frac{\overline{GP}_g - \underline{GP}_g}{\overline{GH}_g - \underline{GH}_g}`       kWh/kWh
 :math:`\underline{I}^p_{\omega ne}, \overline{I}^p_{\omega ne}`    Minimum and maximum storage of an ESS (e.g., hydropower plant, closed-/open-loop pumped-storage hydro)                    GWh
 :math:`I^p_{\omega e}`                                             Initial storage of an ESS (e.g., hydropower plant, closed-/open-loop pumped-storage hydro)                                GWh
-:math:`\underline{E}^p_{\omega ne}, \overline{E}^p_{\omega ne}`    Minimum and maximum energy produced by a unit in an interval defined                                                      GW
+:math:`\underline{E}^p_{\omega ne}, \overline{E}^p_{\omega ne}`    Minimum and maximum power produced by a unit in an interval defined                                                       GW
 :math:`EI^p_{\omega ne}`                                           Energy inflows of an ESS (e.g., hydropower plant)                                                                         GW
 :math:`EO^p_{\omega ne}`                                           Energy outflows of an ESS (e.g., hydrogen, electric vehicle, hydropower plant, demand response)                           GW
 =================================================================  ========================================================================================================================  ================
@@ -371,11 +371,11 @@ Adequacy heat system reserve margin [p.u.] «``eAdequacyReserveMarginHeat``»
 
 :math:`\sum_{g \in a, EB} \overline{GH}_g A_g + \sum_{g \in a, CB} icg^p_g \overline{GH}_g A_g \geq PD_{pa} RMH_{pa} \quad \forall pa`
 
-Maximum CO2 emission [MtC02] «``eMaxSystemEmission``»
+Maximum CO2 emission per period, scenario, and area [MtC02] «``eMaxSystemEmission``»
 
 :math:`\sum_{ng, g \in a} {DUR^p_{\omega n} ER_g gp^p_{\omega ng}} \leq EL_{pa} \quad \forall p \omega a`
 
-Minimum RES energy [GW] «``eMinSystemRESEnergy``» «``eTotalRESEnergyArea``»
+Minimum RES energy per period, scenario, and area [GW] «``eMinSystemRESEnergy``» «``eTotalRESEnergyArea``»
 
 :math:`\frac{\sum_{ng} {DUR^p_{\omega n} gp^p_{\omega ng}}}{\sum_{n} {DUR^p_{\omega n}}} \geq \frac{RL_{pa}}{\sum_{n} {DUR^p_{\omega n}}}  \quad \forall p \omega a`
 

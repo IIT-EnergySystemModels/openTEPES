@@ -583,13 +583,13 @@ A description of the data included in the files ``oT_Data_VariableMaxEnergy.csv`
 ==========  ==============  ==========  =========  ====================================================  ===
 Identifiers                             Header     Description
 ======================================  =========  ====================================================  ===
-Period      Scenario        LoadLevel   Generator  Maximum (minimum) energy of the unit by load level    MW
+Period      Scenario        LoadLevel   Generator  Maximum (minimum) power of the unit by load level     MW
 ==========  ==============  ==========  =========  ====================================================  ===
 
 Not all the generators must be defined as columns of these files, only those with values different from 0.
 
 It can be used also for upper-bounding and/or lower-bounding the energy of any generator (e.g., storage hydro).
-If the user introduces a maximum energy value that is lower than the minimum energy value, the model will adjust the minimum energy value to match the maximum.
+If the user introduces a maximum power value that is lower than the minimum power value, the model will adjust the minimum power value to match the maximum.
 
 For example, these data can be used for defining the minimum and/or maximum energy to be produced on a hourly/daily/weekly/monthly/yearly basis (depending on the EnergyType).
 
