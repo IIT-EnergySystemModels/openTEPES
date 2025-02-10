@@ -497,7 +497,7 @@ Logical relation between stable, ramp up, and ramp down states (generating units
 
 Maximum commitment of a committable unit (all except the VRES units) [p.u.] «``eMaxCommitment``»
 
-:math:`uc^p_{\omega ng} \leq uc'_g \quad \forall p \omega ng`
+:math:`uc^p_{\omega ng} \leq uc'^p_{\omega ng} \quad \forall p \omega ng`
 
 Maximum commitment of any unit [p.u.] «``eMaxCommitGen``»
 
@@ -505,7 +505,7 @@ Maximum commitment of any unit [p.u.] «``eMaxCommitGen``»
 
 Mutually exclusive :math:`g` and :math:`g'` units (e.g., thermal, ESS, VRES units) [p.u.] «``eExclusiveGens``»
 
-:math:`uc'_g + uc'_{g'} \leq 1 \quad \forall g, g'`
+:math:`uc'^p_{\omega ng} + uc'^p_{\omega ng'} \leq 1 \quad \forall g, g'`
 
 Initial commitment of the units is determined by the model based on the merit order loading, including the VRES and ESS units.
 
