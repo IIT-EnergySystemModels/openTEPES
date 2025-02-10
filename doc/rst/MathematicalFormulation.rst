@@ -501,7 +501,7 @@ Maximum commitment of a committable unit (all except the VRES units) [p.u.] «``
 
 Maximum commitment of any unit [p.u.] «``eMaxCommitGen``»
 
-:math:`\sum_{p \omega n} \frac{gp^p_{\omega ng}}{\overline{GP}_g} \leq uc'_g \quad \forall p \omega ng`
+:math:`\frac{gp^p_{\omega ng}}{\overline{GP}_g} \leq uc'_g \quad \forall p \omega ng`
 
 Mutually exclusive :math:`g` and :math:`g'` units (e.g., thermal, ESS, VRES units) [p.u.] «``eExclusiveGens``»
 
