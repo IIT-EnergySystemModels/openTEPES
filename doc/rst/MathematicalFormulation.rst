@@ -505,7 +505,7 @@ Maximum of all the capacity factors [p.u.] «``eMaxCommitGen``»
 
 Mutually exclusive :math:`g` and :math:`g'` units (e.g., thermal, ESS, VRES units) [p.u.] «``eExclusiveGens``»
 
-:math:`uc'^p_{\omega g} + uc'^p_{\omega g'} \leq 1 \quad \forall p \omega g,g'`
+:math:`uc'^p_{\omega g} + uc'^p_{\omega g'} \leq 1 \quad \forall p \omega gg'`
 
 Initial commitment of the units for every period, scenario, and stage is determined by the model based on the merit order loading, including the VRES and ESS units.
 
