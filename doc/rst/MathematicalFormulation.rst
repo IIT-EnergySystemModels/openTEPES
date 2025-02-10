@@ -138,7 +138,7 @@ They are written in **uppercase** letters.
 
 =================================================================  ========================================================================================================================  ================
 **Generation system**
--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------  ----------------
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 :math:`CFG_g`                                                      Annualized fixed cost of a candidate generator                                                                            M€/yr
 :math:`CFR_g`                                                      Annualized fixed cost of a candidate generator to be retired                                                              M€/yr
 :math:`A_g`                                                        Availability of each generator for adequacy reserve margin                                                                p.u.
@@ -238,7 +238,7 @@ They are written in **lowercase** letters.
 
 ===============================================================  ==================================================================================================  ======
 **Generation system**
--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 :math:`icg^p_g`                                                  Candidate generator or ESS installed or not                                                         {0,1}
 :math:`rcg^p_g`                                                  Candidate generator or ESS retired   or not                                                         {0,1}
 :math:`gp^p_{\omega ng}, gc^p_{\omega ng}`                       Generator output (discharge if an ESS) and consumption (charge if an ESS)                           GW
@@ -501,13 +501,13 @@ Maximum commitment of a committable unit (all except the VRES units) [p.u.] «``
 
 Maximum commitment of any unit [p.u.] «``eMaxCommitGen``»
 
-:math:`\frac{gp^p_{\omega ng}}{\overline{GP}_g} \leq uc'_g \quad \forall p \omega ng`
+:math:`\frac{gp^p_{\omega ng}}{\overline{GP}_g} \leq uc'^p_{\omega ng} \quad \forall p \omega ng`
 
 Mutually exclusive :math:`g` and :math:`g'` units (e.g., thermal, ESS, VRES units) [p.u.] «``eExclusiveGens``»
 
 :math:`uc'^p_{\omega ng} + uc'^p_{\omega ng'} \leq 1 \quad \forall g, g'`
 
-Initial commitment of the units is determined by the model based on the merit order loading, including the VRES and ESS units.
+Initial commitment of the units for every period, scenario, and stage is determined by the model based on the merit order loading, including the VRES and ESS units.
 
 Maximum ramp up and ramp down for the second block of a non-renewable (thermal, hydro) unit [p.u.] «``eRampUp``» «``eRampDw``»
 
