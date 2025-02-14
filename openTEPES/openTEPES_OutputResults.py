@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - January 29, 2025
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 14, 2025
 """
 
 import time
@@ -1720,6 +1720,7 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES, pIndPlotOutput):
     if sum(mTEPES.pOperReserveUp[:,:,:,:]) and sum(1 for ar,nr in mTEPES.ar*mTEPES.nr if nr in n2a[ar] and mTEPES.pIndOperReserve[nr] == 0) + sum(1 for ar,es in mTEPES.ar*mTEPES.es if es in e2a[ar] if mTEPES.pIndOperReserve[es] == 0):
         sPSSTNAR      = [(p,sc,st,n,ar) for p,sc,st,n,ar in mTEPES.s2n*mTEPES.ar if mTEPES.pOperReserveUp[p,sc,n,ar] and sum(1 for nr in n2a[ar]) + sum(1 for es in e2a[ar]) and (p,sc,n) in mTEPES.psn]
         OutputResults = pd.Series(data=[mTEPES.pDuals["".join([f"eOperReserveUp_{p}_{sc}_{st}('{n}', '{ar}')"])] for p,sc,st,n,ar in sPSSTNAR], index=pd.Index(sPSSTNAR))
+        OutputToFile *= 1e3
         OutputResults.to_frame(name='UORM').reset_index().pivot_table(index=['level_0','level_1','level_3'], columns='level_4', values='UORM').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(f'{_path}/oT_Result_MarginalOperatingReserveUp_{CaseName}.csv', sep=',')
 
         if pIndPlotOutput == 1:
@@ -1732,6 +1733,7 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES, pIndPlotOutput):
     if sum(mTEPES.pOperReserveDw[:,:,:,:]) and sum(1 for ar,nr in mTEPES.ar*mTEPES.nr if nr in n2a[ar] if mTEPES.pIndOperReserve[nr] == 0) + sum(1 for ar,es in mTEPES.ar*mTEPES.es if es in e2a[ar] if mTEPES.pIndOperReserve[es] == 0):
         sPSSTNAR      = [(p,sc,st,n,ar) for p,sc,st,n,ar in mTEPES.s2n*mTEPES.ar if mTEPES.pOperReserveDw[p,sc,n,ar] and sum(1 for nr in n2a[ar]) + sum(1 for es in e2a[ar]) and (p,sc,n) in mTEPES.psn]
         OutputResults = pd.Series(data=[mTEPES.pDuals["".join([f"eOperReserveDw_{p}_{sc}_{st}('{n}', '{ar}')"])] for p,sc,st,n,ar in sPSSTNAR], index=pd.Index(sPSSTNAR))
+        OutputToFile *= 1e3
         OutputResults.to_frame(name='DORM').reset_index().pivot_table(index=['level_0','level_1','level_3'], columns='level_4', values='DORM').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(f'{_path}/oT_Result_MarginalOperatingReserveDown_{CaseName}.csv', sep=',')
 
         if pIndPlotOutput == 1:

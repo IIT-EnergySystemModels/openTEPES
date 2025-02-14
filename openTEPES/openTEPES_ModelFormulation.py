@@ -970,7 +970,7 @@ def GenerationOperationModelFormulationCommitment(OptModel, mTEPES, pIndLogConso
     def eMaxCommitment(OptModel,n,nr):
         if len(mTEPES.g2g) and (p,nr) in mTEPES.pnr:
             if sum(1 for g in mTEPES.nr if (nr,g) in mTEPES.g2g or (g,nr) in mTEPES.g2g):
-                return OptModel.vCommitment[p,sc,n,nr]                            <= OptModel.vMaxCommitment[p,sc,nr]
+                return OptModel.vCommitment[p,sc,n,nr]                               <= OptModel.vMaxCommitment[p,sc,nr]
             else:
                 return Constraint.Skip
         else:
