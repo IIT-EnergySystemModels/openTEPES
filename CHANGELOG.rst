@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.18.3] - 2025-02-14
+[4.18.3] - 2025-02-15
 -----------------------
+- [FIXED] minimum up/down time constraints
 - [FIXED] units of the operating reserve constraint marginals
 - [CHANGED] epsilon in eRampUpState/eRampDwState constraints moved to numerator
 
