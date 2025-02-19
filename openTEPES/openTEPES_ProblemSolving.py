@@ -56,16 +56,15 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
         if os.path.exists(FileName):
             os.remove(FileName)
         Solver.options['log_file'               ] = _path+f'/openTEPES_highs_{CaseName}_{p}_{sc}_{st}.log'
-        Solver.options['log_to_console'         ] = 'true'
         Solver.options['solver'                 ] = 'simplex'
-        Solver.options['run_crossover'          ] = 'off'
+        Solver.options['run_crossover'          ] = 'on'
         Solver.options['mip_rel_gap'            ] = 0.01
         Solver.options['threads'                ] = int((psutil.cpu_count(logical=True) + psutil.cpu_count(logical=False))/2)
         Solver.options['time_limit'             ] =    36000
         Solver.options['simplex_iteration_limit'] = 36000000
     if SolverName == 'gams' or SolverName == 'GAMS':
         solver_options = {
-            'file COPT / cplex.opt / ; put COPT putclose "LPMethod 4" / "RINSHeur 100" / ; GAMS_MODEL.OptFile = 1 ;'
+            'file COPT / cplex.opt / ; put COPT putclose "LPMethod 4" / "EpGap 0.01" / ; GAMS_MODEL.OptFile = 1 ;'
             'option SysOut  = off   ;',
             'option LP      = cplex ; option MIP     = cplex    ;',
             'option ResLim  = 36000 ; option IterLim = 36000000 ;',

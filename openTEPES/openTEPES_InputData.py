@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - January 31, 2025
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 19, 2025
 """
 
 import datetime
@@ -889,8 +889,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
 
     # %% definition of the time-steps leap to observe the stored energy at an ESS
     idxCycle            = dict()
-    idxCycle[0        ] = 8736
-    idxCycle[0.0      ] = 8736
+    idxCycle[0        ] = 1
+    idxCycle[0.0      ] = 1
     idxCycle['Hourly' ] = 1
     idxCycle['Daily'  ] = 1
     idxCycle['Weekly' ] = round(  24/pTimeStep)
@@ -898,8 +898,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     idxCycle['Yearly' ] = round( 672/pTimeStep)
 
     idxOutflows            = dict()
-    idxOutflows[0        ] = 8736
-    idxOutflows[0.0      ] = 8736
+    idxOutflows[0        ] = 1
+    idxOutflows[0.0      ] = 1
     idxOutflows['Hourly' ] = 1
     idxOutflows['Daily'  ] = round(  24/pTimeStep)
     idxOutflows['Weekly' ] = round( 168/pTimeStep)
@@ -907,17 +907,17 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     idxOutflows['Yearly' ] = round(8736/pTimeStep)
 
     idxEnergy            = dict()
-    idxEnergy[0        ] = 8736
-    idxEnergy[0.0      ] = 8736
+    idxEnergy[0        ] = 1
+    idxEnergy[0.0      ] = 1
     idxEnergy['Hourly' ] = 1
     idxEnergy['Daily'  ] = round(  24/pTimeStep)
     idxEnergy['Weekly' ] = round( 168/pTimeStep)
     idxEnergy['Monthly'] = round( 672/pTimeStep)
     idxEnergy['Yearly' ] = round(8736/pTimeStep)
 
-    pStorageTimeStep  = pStorageType.map (idxCycle                                                                                  ).astype('int')
-    pOutflowsTimeStep = pOutflowsType.map(idxOutflows).where(pEnergyOutflows.sum()                               > 0.0, other = 8736).astype('int')
-    pEnergyTimeStep   = pEnergyType.map  (idxEnergy  ).where(pVariableMinEnergy.sum() + pVariableMaxEnergy.sum() > 0.0, other = 8736).astype('int')
+    pStorageTimeStep  = pStorageType.map (idxCycle                                                                               ).astype('int')
+    pOutflowsTimeStep = pOutflowsType.map(idxOutflows).where(pEnergyOutflows.sum()                               > 0.0, other = 1).astype('int')
+    pEnergyTimeStep   = pEnergyType.map  (idxEnergy  ).where(pVariableMinEnergy.sum() + pVariableMaxEnergy.sum() > 0.0, other = 1).astype('int')
 
     pStorageTimeStep  = pd.concat([pStorageTimeStep, pOutflowsTimeStep, pEnergyTimeStep], axis=1).min(axis=1)
     # cycle time step can't exceed the stage duration
@@ -926,8 +926,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     if pIndHydroTopology == 1:
         # %% definition of the time-steps leap to observe the stored energy at a reservoir
         idxCycleRsr            = dict()
-        idxCycleRsr[0        ] = 8736
-        idxCycleRsr[0.0      ] = 8736
+        idxCycleRsr[0        ] = 1
+        idxCycleRsr[0.0      ] = 1
         idxCycleRsr['Hourly' ] = 1
         idxCycleRsr['Daily'  ] = 1
         idxCycleRsr['Weekly' ] = round(  24/pTimeStep)
@@ -935,8 +935,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         idxCycleRsr['Yearly' ] = round( 672/pTimeStep)
 
         idxWaterOut            = dict()
-        idxWaterOut[0        ] = 8736
-        idxWaterOut[0.0      ] = 8736
+        idxWaterOut[0        ] = 1
+        idxWaterOut[0.0      ] = 1
         idxWaterOut['Hourly' ] = 1
         idxWaterOut['Daily'  ] = round(  24/pTimeStep)
         idxWaterOut['Weekly' ] = round( 168/pTimeStep)
