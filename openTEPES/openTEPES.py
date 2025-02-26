@@ -113,7 +113,9 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
                 mTEPES.del_component(mTEPES.na)
                 mTEPES.na = Set(initialize=mTEPES.n)
             else:
-                mTEPES.na = mTEPES.na | mTEPES.n
+                temp_na = mTEPES.na | mTEPES.n  # Create a temporary set
+                mTEPES.del_component(mTEPES.na)  # Delete the existing set to avoid overwriting
+                mTEPES.na = Set(initialize=temp_na)  # Assign the new set
 
             print(f'Period {p}, Scenario {sc}, Stage {st}')
 

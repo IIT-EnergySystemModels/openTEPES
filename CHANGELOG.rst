@@ -3,6 +3,7 @@ Change Log
 
 [4.18.3] - 2025-02-26
 -----------------------
+- [CHANGED] avoid warning when updating mTEPES.na
 - [FIXED] typo in output results
 - [FIXED] control of duration 0 in load levels if there is no period weight or scenario probability
 - [CHANGED] default values when there are no StorageType, OutflowsType, or EnergyType to 1 instead of 8736
