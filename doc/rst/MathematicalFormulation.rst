@@ -387,13 +387,13 @@ The sum of the inertia of the committed units must satisfy the system inertia fo
 
 :math:`\sum_{g \in a} GI_g uc^p_{\omega ng} \geq SI^p_{\omega na} \quad \forall p \omega na`
 
-Upward and downward operating reserves provided by non-renewable generators, and ESS when charging for each area [GW] «``eOperReserveUp``» «``eOperReserveDw``»
+Upward and downward operating reserves provided for each area by non-renewable generators (including ESS when generating) and ESS, when charging, [GW] «``eOperReserveUp``» «``eOperReserveDw``»
 
 :math:`\sum_{g \in a} ur^p_{\omega ng} + \sum_{e \in a} ur'^p_{\omega ne} = UR^p_{\omega na} \quad \forall p \omega na`
 
 :math:`\sum_{g \in a} dr^p_{\omega ng} + \sum_{e \in a} dr'^p_{\omega ne} = DR^p_{\omega na} \quad \forall p \omega na`
 
-Ratio between downward and upward operating reserves provided by non-renewable generators, and ESS when charging for each area [GW] «``eReserveMinRatioDwUp``» «``eReserveMaxRatioDwUp``» «``eRsrvMinRatioDwUpESS``» «``eRsrvMaxRatioDwUpESS``»
+Ratio between downward and upward operating reserves for each area provided by non-renewable generators (including ESS when generating) and ESS, when charging, [GW] «``eReserveMinRatioDwUp``» «``eReserveMaxRatioDwUp``» «``eRsrvMinRatioDwUpESS``» «``eRsrvMaxRatioDwUpESS``»
 
 :math:`\underline{DtUR} \: ur^p_{\omega ng}  \leq dr^p_{\omega ng}  \leq \overline{DtUR} \: ur^p_{\omega ng}  \quad \forall p \omega ng`
 
@@ -473,7 +473,7 @@ Maximum and minimum charge of an ESS [p.u.] «``eMaxCharge``» «``eMinCharge``�
 
 Incompatibility between charge and discharge of an ESS [p.u.] «``eChargeDischarge``»
 
-:math:`\frac{p^p_{\omega ne} + URA \: ur'^p_{\omega ne}}{\overline{GP}^p_{\omega ne} - \underline{GP}^p_{\omega ne}} + \frac{c^p_{\omega ne} + DRA \: dr'^p_{\omega ne}}{\overline{GC}^p_{\omega ne} - \underline{GC}^p_{\omega ne}} \leq 1 \quad \forall p \omega ne, e \in EE, CE`
+:math:`\frac{p^p_{\omega ne} + URA \: ur^p_{\omega ne}}{\overline{GP}^p_{\omega ne} - \underline{GP}^p_{\omega ne}} + \frac{c^p_{\omega ne} + DRA \: dr'^p_{\omega ne}}{\overline{GC}^p_{\omega ne} - \underline{GC}^p_{\omega ne}} \leq 1 \quad \forall p \omega ne`
 
 Total output of a committed unit (all except the VRES units) [GW] «``eTotalOutput``»
 
@@ -481,11 +481,11 @@ Total output of a committed unit (all except the VRES units) [GW] «``eTotalOutp
 
 Total charge of an ESS [GW] «``eESSTotalCharge``»
 
-:math:`\frac{gc^p_{\omega ne}}{\underline{GC}^p_{\omega ne}} = 1 + \frac{c^p_{\omega ne} + URA \: ur'^p_{\omega ne} - DRA \: dr'^p_{\omega ne}}{\underline{GC}^p_{\omega ne}} \quad \forall p \omega ne, e \in EE, CE`
+:math:`\frac{gc^p_{\omega ne}}{\underline{GC}^p_{\omega ne}} = 1 + \frac{c^p_{\omega ne} - URA \: ur'^p_{\omega ne} + DRA \: dr'^p_{\omega ne}}{\underline{GC}^p_{\omega ne}} \quad \forall p \omega ne`
 
 Incompatibility between charge and outflows use of an ESS [p.u.] «``eChargeOutflows``»
 
-:math:`\frac{go^p_{\omega ne} + c^p_{\omega ne}}{\overline{GC}^p_{\omega ne} - \underline{GC}^p_{\omega ne}} \leq 1 \quad \forall p \omega ne, e \in EE, CE`
+:math:`\frac{go^p_{\omega ne} + c^p_{\omega ne}}{\overline{GC}^p_{\omega ne} - \underline{GC}^p_{\omega ne}} \leq 1 \quad \forall p \omega ne`
 
 Logical relation between commitment, startup and shutdown status of a committed unit (all except the VRES units) [p.u.] «``eUCStrShut``»
 

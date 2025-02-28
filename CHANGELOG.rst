@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.18.3] - 2025-02-26
+[4.18.3] - 2025-02-28
 -----------------------
+- [FIXED] contribution of the operating reserve activation of a consumption unit to eChargeDischarge and eESSTotalCharge constraints
 - [CHANGED] avoid warning when updating mTEPES.na
 - [FIXED] typo in output results
 - [FIXED] control of duration 0 in load levels if there is no period weight or scenario probability
