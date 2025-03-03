@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 24, 2025
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 03, 2025
 """
 
 import datetime
@@ -977,19 +977,19 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         if (p,sc,st,n) in mTEPES.s2n and mTEPES.n.ord(n) == pStorageTimeStep[es]:
             if  pIniInventory[es][p,sc,n] < pMinStorage[es][p,sc,n]:
                 pIniInventory[es][p,sc,n] = pMinStorage[es][p,sc,n]
-                print('### Initial inventory lower than minimum storage ',   es)
+                print('### Initial inventory lower than minimum storage ',   p, sc, st, es)
             if  pIniInventory[es][p,sc,n] > pMaxStorage[es][p,sc,n]:
                 pIniInventory[es][p,sc,n] = pMaxStorage[es][p,sc,n]
-                print('### Initial inventory greater than maximum storage ', es)
+                print('### Initial inventory greater than maximum storage ', p, sc, st, es)
     if pIndHydroTopology == 1:
         for p,sc,n,rs in mTEPES.psnrs:
             if (p,sc,st,n) in mTEPES.s2n and mTEPES.n.ord(n) == pReservoirTimeStep[rs]:
                 if  pIniVolume[rs][p,sc,n] < pMinVolume[rs][p,sc,n]:
                     pIniVolume[rs][p,sc,n] = pMinVolume[rs][p,sc,n]
-                    print('### Initial volume lower than minimum volume ',   rs)
+                    print('### Initial volume lower than minimum volume ',   p, sc, st, rs)
                 if  pIniVolume[rs][p,sc,n] > pMaxVolume[rs][p,sc,n]:
                     pIniVolume[rs][p,sc,n] = pMaxVolume[rs][p,sc,n]
-                    print('### Initial volume greater than maximum volume ', rs)
+                    print('### Initial volume greater than maximum volume ', p, sc, st, rs)
 
     # drop load levels with duration 0
     pDuration            = pDuration.loc            [mTEPES.psn  ]
@@ -2000,12 +2000,20 @@ def SettingUpVariables(OptModel, mTEPES):
                     nFixedVariables += 2
         return nFixedVariables
     nFixedGeneratorCommits = FixGeneratorsCommitment(mTEPES,mTEPES)
-    nFixedVariables += nFixedGeneratorCommits
-    # thermal and RES units ordered by increasing variable operation cost, excluding reactive generating units
+    nFixedVariables       += nFixedGeneratorCommits
+    # thermal, ESS, and RES units ordered by increasing variable operation cost, excluding reactive generating units
     if len(mTEPES.tq):
         mTEPES.go = Set(initialize=[g for g in sorted(mTEPES.pRatedLinearVarCost, key=mTEPES.pRatedLinearVarCost.__getitem__) if g not in mTEPES.sq])
     else:
-        mTEPES.go = Set(initialize=[g for g in sorted(mTEPES.pRatedLinearVarCost, key=mTEPES.pRatedLinearVarCost.__getitem__) if g not in mTEPES.eh])
+        if mTEPES.pIndHydroTopology == 1:
+            mTEPES.go = Set(initialize=[g for g in sorted(mTEPES.pRatedLinearVarCost, key=mTEPES.pRatedLinearVarCost.__getitem__)])
+        else:
+            mTEPES.go = Set(initialize=[g for g in sorted(mTEPES.pRatedLinearVarCost, key=mTEPES.pRatedLinearVarCost.__getitem__) if g not in mTEPES.h])
+
+    g2a = defaultdict(list)
+    for ar,g in mTEPES.ar*mTEPES.g:
+        if (ar,g) in mTEPES.a2g:
+            g2a[ar].append(g)
 
     for p,sc,st in mTEPES.ps*mTEPES.stt:
         # activate only period, scenario, and load levels to formulate
@@ -2015,46 +2023,43 @@ def SettingUpVariables(OptModel, mTEPES):
         mTEPES.n  = Set(doc='load levels', initialize=[nn  for nn  in mTEPES.nn  if                                                      (p,sc,st,nn) in mTEPES.s2n ])
 
         if len(mTEPES.n):
-            mTEPES.psn1 = Set(initialize=[(p,sc,n) for p,sc,n in mTEPES.ps*mTEPES.n])
             # determine the first load level of each stage
-            n1 = next(iter(mTEPES.psn1))
-            # commit the units and their output at the first load level of each stage
-            pSystemOutput = 0.0
-            for nr in mTEPES.nr:
-                if pSystemOutput < sum(mTEPES.pDemandElec[n1,nd] for nd in mTEPES.nd) and mTEPES.pMustRun[nr] == 1:
-                    mTEPES.pInitialOutput[n1,nr] = mTEPES.pMaxPowerElec[n1,nr]
-                    mTEPES.pInitialUC    [n1,nr] = 1
-                    pSystemOutput               += mTEPES.pInitialOutput[n1,nr]()
-            mTEPES.del_component(mTEPES.psn1)
+            n1 = (p,sc,mTEPES.n.first())
+            # commit the units of each area and their output at the first load level of each stage
+            for ar in mTEPES.ar:
+                pSystemOutput = 0.0
+                for nr in mTEPES.nr:
+                    if nr in g2a[ar] and pSystemOutput < sum(mTEPES.pDemandElec[n1,nd] for nd in mTEPES.nd if (nd,ar) in mTEPES.ndar) and mTEPES.pMustRun[nr] == 1:
+                        mTEPES.pInitialOutput[n1,nr] = mTEPES.pMaxPowerElec[n1,nr]
+                        mTEPES.pInitialUC    [n1,nr] = 1
+                        pSystemOutput               += mTEPES.pInitialOutput[n1,nr]()
 
-            # determine the initial committed units and their output at the first load level of each period, scenario, and stage
-            for go in mTEPES.go:
-                if pSystemOutput < sum(mTEPES.pDemandElec[n1,nd] for nd in mTEPES.nd) and mTEPES.pMustRun[go] == 0:
-                    if (n1,go) in mTEPES.psng:
+                # determine the initial committed units and their output at the first load level of each period, scenario, and stage
+                for go in mTEPES.go:
+                    if go in g2a[ar] and pSystemOutput < sum(mTEPES.pDemandElec[n1,nd] for nd in mTEPES.nd if (nd,ar) in mTEPES.ndar) and mTEPES.pMustRun[go] == 0:
                         if go in mTEPES.re:
                             mTEPES.pInitialOutput[n1,go] = mTEPES.pMaxPowerElec[n1,go]
                         else:
                             mTEPES.pInitialOutput[n1,go] = mTEPES.pMinPowerElec[n1,go]
-                        mTEPES.pInitialUC[n1,go] = 1
-                        pSystemOutput           += mTEPES.pInitialOutput[n1,go]()
+                        mTEPES.pInitialUC[n1,go]         = 1
+                        pSystemOutput                   += mTEPES.pInitialOutput[n1,go]()
 
             # determine the initial committed lines
             for la in mTEPES.la:
-                if (n1,la) in mTEPES.psnla:
-                    if la in mTEPES.lc:
-                        mTEPES.pInitialSwitch[n1,la] = 0
-                    else:
-                        mTEPES.pInitialSwitch[n1,la] = 1
+                if la in mTEPES.lc:
+                    mTEPES.pInitialSwitch[n1,la] = 0
+                else:
+                    mTEPES.pInitialSwitch[n1,la] = 1
 
             # fixing the ESS inventory at the last load level of the stage for every period and scenario if between storage limits
             for es in mTEPES.es:
-                if es not in mTEPES.ec and (p,sc,mTEPES.n.last(),es) in mTEPES.psnes:
+                if es not in mTEPES.ec:
                     OptModel.vESSInventory[p,sc,mTEPES.n.last(),es].fix(mTEPES.pIniInventory[p,sc,mTEPES.n.last(),es])
 
             if mTEPES.pIndHydroTopology == 1:
                 # fixing the reservoir volume at the last load level of the stage for every period and scenario if between storage limits
                 for rs in mTEPES.rs:
-                    if rs not in mTEPES.rn and (p,sc,mTEPES.n.last(),rs) in mTEPES.psnrs:
+                    if rs not in mTEPES.rn:
                         OptModel.vReservoirVolume[p,sc,mTEPES.n.last(),rs].fix(mTEPES.pIniVolume[p,sc,mTEPES.n.last(),rs]())
 
     # activate all the periods, scenarios, and load levels again
@@ -2432,7 +2437,7 @@ def SettingUpVariables(OptModel, mTEPES):
             if sum(mTEPES.pMinPowerElec[p,sc,n,es] for p,sc,n in mTEPES.psn if (p,es) in mTEPES.pes) - sum(mTEPES.pEnergyInflows [p,sc,n,es]() for p,sc,n in mTEPES.psn if (p,es) in mTEPES.pes) > 0.0:
                 raise ValueError('### Total minimum output greater than total inflows for ESS unit ', es, ' by ', sum(mTEPES.pMinPowerElec[p,sc,n,es] for p,sc,n in mTEPES.psn if (p,es) in mTEPES.pes) - sum(mTEPES.pEnergyInflows [p,sc,n,es]() for p,sc,n in mTEPES.psn if (p,es) in mTEPES.pes), ' GWh')
             if sum(mTEPES.pMaxCharge   [p,sc,n,es] for p,sc,n in mTEPES.psn if (p,es) in mTEPES.pes) - sum(mTEPES.pEnergyOutflows[p,sc,n,es]() for p,sc,n in mTEPES.psn if (p,es) in mTEPES.pes) < 0.0:
-                raise ValueError('### Total maximum charge lower than total outflows for ESS unit ', es,  ' by ', sum(mTEPES.pMaxCharge   [p,sc,n,es] for p,sc,n in mTEPES.psn if (p,es) in mTEPES.pes) - sum(mTEPES.pEnergyOutflows[p,sc,n,es]() for p,sc,n in mTEPES.psn if (p,es) in mTEPES.pes), ' GWh')
+                raise ValueError('### Total maximum charge lower than total outflows for ESS unit ',  es, ' by ', sum(mTEPES.pMaxCharge   [p,sc,n,es] for p,sc,n in mTEPES.psn if (p,es) in mTEPES.pes) - sum(mTEPES.pEnergyOutflows[p,sc,n,es]() for p,sc,n in mTEPES.psn if (p,es) in mTEPES.pes), ' GWh')
 
         # detect inventory infeasibility
         for p,sc,n,es in mTEPES.ps*mTEPES.nesc:

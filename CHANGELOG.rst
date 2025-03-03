@@ -1,8 +1,10 @@
 Change Log
 =============
 
-[4.18.3] - 2025-02-28
+[4.18.3] - 2025-03-03
 -----------------------
+- [FIXED] detection of the first time step for each period, scenario, and stage
+- [FIXED] decision on the unit commitment at the initial hour done by area instead of by system
 - [FIXED] contribution of the operating reserve activation of a consumption unit to eChargeDischarge and eESSTotalCharge constraints
 - [CHANGED] avoid warning when updating mTEPES.na
 - [FIXED] typo in output results
