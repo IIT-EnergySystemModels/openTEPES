@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.18.3] - 2025-03-03
+[4.18.3] - 2025-03-05
 -----------------------
+- [FIXED] don't formulate operating reserve constraints for ESS with no energy inflows and no consumption power
 - [FIXED] detection of the first time step for each period, scenario, and stage
 - [FIXED] decision on the unit commitment at the initial hour done by area instead of by system
 - [FIXED] contribution of the operating reserve activation of a consumption unit to eChargeDischarge and eESSTotalCharge constraints

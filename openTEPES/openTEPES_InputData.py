@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 03, 2025
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 05, 2025
 """
 
 import datetime
@@ -1960,6 +1960,7 @@ def SettingUpVariables(OptModel, mTEPES):
 
         # total energy inflows per storage
         pStorageTotalEnergyInflows = pd.Series([sum(mTEPES.pEnergyInflows[p,sc,n,es]() for p,sc,n in mTEPES.psn if (p,sc,n,es) in mTEPES.psnes) for es in mTEPES.es], index=mTEPES.es)
+        mTEPES.pStorageTotalEnergyInflows = Param(mTEPES.es, initialize=pStorageTotalEnergyInflows.to_dict(), within=NonNegativeReals, doc='Total energy outflows')
 
         for p,sc,n,es in mTEPES.psnes:
             # ESS with no charge capacity
