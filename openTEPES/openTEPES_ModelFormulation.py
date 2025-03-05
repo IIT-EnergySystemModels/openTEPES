@@ -588,7 +588,7 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
         print('eInflows2Comm         ... ', len(getattr(OptModel, f'eInflows2Comm_{p}_{sc}_{st}')), ' rows')
 
     def eESSInventory(OptModel,n,es):
-        if (p,es) in mTEPES.pes:
+        if (p,es) in mTEPES.pes and (mTEPES.pMaxCharge[p,sc,n,es] or mTEPES.pStorageTotalEnergyInflows[es]):
             if   (p,sc,st,n) in mTEPES.s2n and mTEPES.n.ord(n) == mTEPES.pStorageTimeStep[es]:
                 if es not in mTEPES.ec:
                     return mTEPES.pIniInventory[p,sc,n,es]()                                            + sum(mTEPES.pDuration[p,sc,n2]()*(mTEPES.pEnergyInflows[p,sc,n2,es]() - OptModel.vEnergyOutflows[p,sc,n2,es] - OptModel.vTotalOutput[p,sc,n2,es] + mTEPES.pEfficiency[es]*OptModel.vESSTotalCharge[p,sc,n2,es]) for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pStorageTimeStep[es]:mTEPES.n.ord(n)]) == OptModel.vESSInventory[p,sc,n,es] + OptModel.vESSSpillage[p,sc,n,es]
@@ -1017,7 +1017,7 @@ def GenerationOperationModelFormulationRampMinTime(OptModel, mTEPES, pIndLogCons
     StartTime = time.time()
 
     def eRampUp(OptModel,n,nr):
-        if (p,nr) in mTEPES.pnr:
+        if (p,nr) in mTEPES.pnr and (nr not in mTEPES.es or (nr in mTEPES.es and (mTEPES.pMaxCharge[p,sc,n,nr] or mTEPES.pStorageTotalEnergyInflows[nr]))):
             if mTEPES.pRampUp[nr] and mTEPES.pIndBinGenRamps() == 1 and mTEPES.pRampUp[nr] < mTEPES.pMaxPower2ndBlock[p,sc,n,nr] and mTEPES.pDuration[p,sc,n]():
                 if n == mTEPES.n.first():
                     return (- max(mTEPES.pInitialOutput[p,sc,n,nr]() - mTEPES.pMinPowerElec[p,sc,n,nr],0.0)                        + OptModel.vOutput2ndBlock[p,sc,n,nr] + OptModel.vReserveUp  [p,sc,n,nr]) / mTEPES.pDuration[p,sc,n]() / mTEPES.pRampUp[nr] <=   OptModel.vCommitment[p,sc,n,nr] - OptModel.vStartUp[p,sc,n,nr]
@@ -1033,7 +1033,7 @@ def GenerationOperationModelFormulationRampMinTime(OptModel, mTEPES, pIndLogCons
         print('eRampUp               ... ', len(getattr(OptModel, f'eRampUp_{p}_{sc}_{st}')), ' rows')
 
     def eRampDw(OptModel,n,nr):
-        if (p,nr) in mTEPES.pnr:
+        if (p,nr) in mTEPES.pnr and (nr not in mTEPES.es or (nr in mTEPES.es and (mTEPES.pMaxCharge[p,sc,n,nr] or mTEPES.pStorageTotalEnergyInflows[nr]))):
             if mTEPES.pRampDw[nr] and mTEPES.pIndBinGenRamps() == 1 and mTEPES.pRampDw[nr] < mTEPES.pMaxPower2ndBlock[p,sc,n,nr] and mTEPES.pDuration[p,sc,n]():
                 if n == mTEPES.n.first():
                     return (- max(mTEPES.pInitialOutput[p,sc,n,nr]() - mTEPES.pMinPowerElec[p,sc,n,nr],0.0)                        + OptModel.vOutput2ndBlock[p,sc,n,nr] - OptModel.vReserveDown[p,sc,n,nr]) / mTEPES.pDuration[p,sc,n]() / mTEPES.pRampDw[nr] >= - mTEPES.pInitialUC[p,sc,n,nr]()                 + OptModel.vShutDown[p,sc,n,nr]
