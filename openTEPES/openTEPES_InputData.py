@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 05, 2025
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 06, 2025
 """
 
 import datetime
@@ -1959,8 +1959,10 @@ def SettingUpVariables(OptModel, mTEPES):
                 nFixedVariables += 2
 
         # total energy inflows per storage
-        pStorageTotalEnergyInflows = pd.Series([sum(mTEPES.pEnergyInflows[p,sc,n,es]() for p,sc,n in mTEPES.psn if (p,sc,n,es) in mTEPES.psnes) for es in mTEPES.es], index=mTEPES.es)
-        mTEPES.pStorageTotalEnergyInflows = Param(mTEPES.es, initialize=pStorageTotalEnergyInflows.to_dict(), within=NonNegativeReals, doc='Total energy outflows')
+        pTotalEnergyInflows = pd.Series([sum(mTEPES.pEnergyInflows[p,sc,n,es]() for p,sc,n in mTEPES.psn if (p,sc,n,es) in mTEPES.psnes) for es in mTEPES.es], index=mTEPES.es)
+        pTotalMaxCharge     = pd.Series([sum(mTEPES.pMaxCharge[p,sc,n,es]       for p,sc,n in mTEPES.psn if (p,sc,n,es) in mTEPES.psnes) for es in mTEPES.es], index=mTEPES.es)
+        mTEPES.pTotalEnergyInflows = Param(mTEPES.es, initialize=pTotalEnergyInflows.to_dict(), within=NonNegativeReals, doc='Total energy outflows')
+        mTEPES.pTotalMaxCharge     = Param(mTEPES.es, initialize=pTotalMaxCharge.to_dict(),     within=NonNegativeReals, doc='Total maximum charge' )
 
         for p,sc,n,es in mTEPES.psnes:
             # ESS with no charge capacity
@@ -1968,12 +1970,13 @@ def SettingUpVariables(OptModel, mTEPES):
                 OptModel.vESSTotalCharge [p,sc,n,es].fix(0.0)
                 nFixedVariables += 1
             # ESS with no charge capacity and no inflows can't produce
-            if  mTEPES.pMaxCharge        [p,sc,n,es] ==  0.0 and pStorageTotalEnergyInflows[es] == 0.0:
+            if  pTotalMaxCharge[es] == 0.0 and pTotalEnergyInflows[es] == 0.0:
                 OptModel.vTotalOutput    [p,sc,n,es].fix(0.0)
                 OptModel.vOutput2ndBlock [p,sc,n,es].fix(0.0)
                 OptModel.vReserveUp      [p,sc,n,es].fix(0.0)
                 OptModel.vReserveDown    [p,sc,n,es].fix(0.0)
                 OptModel.vESSSpillage    [p,sc,n,es].fix(0.0)
+                OptModel.vESSInventory   [p,sc,n,es].fix(mTEPES.pIniInventory[p,sc,n,es])
                 nFixedVariables += 5
             if  mTEPES.pMaxCharge2ndBlock[p,sc,n,es] ==  0.0:
                 OptModel.vCharge2ndBlock [p,sc,n,es].fix(0.0)

@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.18.3] - 2025-03-05
+[4.18.3] - 2025-03-06
 -----------------------
+- [CHANGED] detection of units with no energy inflows and no consumption power
 - [FIXED] avoid formulation of superfluous ramp or inventory constraints for ESS with no energy inflows and no consumption power
 - [FIXED] don't formulate operating reserve constraints for ESS with no energy inflows and no consumption power
 - [FIXED] detection of the first time step for each period, scenario, and stage
