@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.18.3] - 2025-03-06
+[4.18.3] - 2025-03-07
 -----------------------
+- [FIXED] typo when computing charge revenues in output results
 - [CHANGED] detection of units with no energy inflows and no consumption power
 - [FIXED] avoid formulation of superfluous ramp or inventory constraints for ESS with no energy inflows and no consumption power
 - [FIXED] don't formulate operating reserve constraints for ESS with no energy inflows and no consumption power
