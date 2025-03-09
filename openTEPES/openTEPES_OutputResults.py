@@ -2179,7 +2179,7 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput, pIndPlo
     if len(mTEPES.gc):
         InvCost = pd.Series(data=[sum(mTEPES.pGenInvestCost[gc] * OptModel.vGenerationInvest[p,gc]() for p in mTEPES.p if (p,gc) in mTEPES.pgc) for gc in mTEPES.gc], index=mTEPES.gc, dtype='float64')
         Balance = pd.Series(data=[GenRev[gc]+ChargeRev[gc]+UpRev[gc]+DwRev[gc]+ResRev[gc]-InvCost[gc]                                           for gc in mTEPES.gc], index=mTEPES.gc, dtype='float64')
-        CostRecoveryESS = pd.concat([GenRev,ChargeRev,UpRev,DwRev,ResRev,-InvCost,Balance], axis=1, keys=['Generation revenue [MEUR]', 'Consumption revenue [MEUR]', 'Up operating reserve revenue [MEUR]', 'Down operating reserve revenue [MEUR]', 'Reserve margin revenue [MEUR]', 'Investment Cost [MEUR]', ' Total [MEUR]'])
+        CostRecoveryESS = pd.concat([GenRev,ChargeRev,UpRev,DwRev,ResRev,-InvCost,Balance], axis=1, keys=['Revenues generation [MEUR]', 'Revenue consumption [MEUR]', 'Revenue operating reserve up [MEUR]', 'Revenue operating reserve down [MEUR]', 'Revenue reserve margin [MEUR]', 'Cost investment [MEUR]', ' Total [MEUR]'])
         CostRecoveryESS.stack().to_frame(name='MEUR').reset_index().pivot_table(values='MEUR', index=['level_1'], columns=['level_0']).rename_axis([None], axis=0).rename_axis([None], axis=1).to_csv(f'{_path}/oT_Result_CostRecovery_{CaseName}.csv', sep=',')
 
     WritingResultsTime = time.time() - StartTime
