@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.18.3] - 2025-03-09
+[4.18.3] - 2025-03-10
 -----------------------
+- [FIXED] add revenues of ESS generation and consumption operating reserves
 - [CHANGED] change sign of the consumption energy and operating reserve revenues
 - [FIXED] typo when computing charge revenues in output results
 - [CHANGED] detection of units with no energy inflows and no consumption power
