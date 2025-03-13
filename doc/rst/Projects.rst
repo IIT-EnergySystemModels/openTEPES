@@ -1,6 +1,6 @@
 .. openTEPES documentation master file, created by Andres Ramos
 
-Research projects
+Research Projects
 =================
 The model has being used in these research projects:
 
@@ -44,6 +44,7 @@ The model has being used in these research projects:
     The models are scalable, and can be applied to cities, industries and countries. Furthermore, a main objective for OpenMod4Africa is capacity building among energy models in academia.
     Four African universities will be actively involved in adapting models and conducting two regional case studies. The additional capacity and the open Toolbox will enable the universities
     to train new generations of energy modelling experts for the energy industries in Africa.
+    It is also part of the `open energy system modelling toolbox <https://africaenergymodels.net/>`_, which is a collection of open-source energy system models for Africa.
 
 .. image:: ../img/OM4A.png
    :scale: 40%
@@ -169,6 +170,7 @@ The model has being used in these research projects:
   `E. Alvarez <https://www.iit.comillas.edu/people/ealvarezq>`_
 
     It aims to develop, use, and disseminate an open, transparent and integrated modelling platform for assessing low-carbon transition pathways in Europe.
+    It is integrated into the `open energy system modelling platform <https://openenergymodels.net/>`_, helping model Europe's energy system and in the list of `energy models published under open source licenses <https://wiki.openmod-initiative.org/wiki/Open_Models>`_.
 
 .. image:: ../img/open-entrance_logo.png
    :scale: 40%
