@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 07, 2025
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 17, 2025
 """
 
 import datetime
@@ -302,10 +302,10 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pReserveMargin         = dfReserveMargin['ReserveMargin' ]                                       # minimum adequacy reserve margin           [p.u.]
     pEmission              = dfEmission     ['CO2Emission'   ]                                       # maximum CO2 emission                      [MtCO2]
     pRESEnergy             = dfRESEnergy    ['RESEnergy'     ]                                       # minimum RES energy                        [GWh]
-    pDemandElec            = dfDemand              [mTEPES.nd] * 1e-3                                # electric demand                           [GW]
-    pSystemInertia         = dfInertia             [mTEPES.ar]                                       # inertia                                   [s]
-    pOperReserveUp         = dfUpOperatingReserve  [mTEPES.ar] * 1e-3                                # upward   operating reserve                [GW]
-    pOperReserveDw         = dfDwOperatingReserve  [mTEPES.ar] * 1e-3                                # downward operating reserve                [GW]
+    pDemandElec           = dfDemand.reindex              (columns=mTEPES.nd, fill_value=0.0) * 1e-3 # electric demand                           [GW]
+    pSystemInertia        = dfInertia.reindex             (columns=mTEPES.ar, fill_value=0.0)        # inertia                                   [s]
+    pOperReserveUp        = dfUpOperatingReserve.reindex  (columns=mTEPES.ar, fill_value=0.0) * 1e-3 # upward   operating reserve                [GW]
+    pOperReserveDw        = dfDwOperatingReserve.reindex  (columns=mTEPES.ar, fill_value=0.0) * 1e-3 # downward operating reserve                [GW]
 
     pVariableMinPowerElec = dfVariableMinPower.reindex    (columns=mTEPES.gg, fill_value=0.0) * 1e-3 # dynamic variable minimum power            [GW]
     pVariableMaxPowerElec = dfVariableMaxPower.reindex    (columns=mTEPES.gg, fill_value=0.0) * 1e-3 # dynamic variable maximum power            [GW]
