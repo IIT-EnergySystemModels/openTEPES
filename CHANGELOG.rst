@@ -3,6 +3,7 @@ Change Log
 
 [4.18.3] - 2025-03-18
 -----------------------
+- [FIXED] error in pumping signs of the HydroInventory constraint
 - [CHANGED] introduce operation costs in CostRecovery output file
 - [CHANGED] avoid the introduction of all the nodes in demand and operating reserve input files
 - [FIXED] add revenues of ESS generation and consumption operating reserves
