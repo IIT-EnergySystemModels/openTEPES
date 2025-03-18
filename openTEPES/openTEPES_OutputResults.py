@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 11, 2025
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 18, 2025
 """
 
 import time
@@ -2182,10 +2182,23 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput, pIndPlo
         DwRev     = pd.Series(data=[0.0 for gc in mTEPES.gc], index=mTEPES.gc, dtype='float64')
 
     if len(mTEPES.gc):
-        InvCost = pd.Series(data=[sum(mTEPES.pGenInvestCost[gc] * OptModel.vGenerationInvest[p,gc]() for p in mTEPES.p if (p,gc) in mTEPES.pgc) for gc in mTEPES.gc], index=mTEPES.gc, dtype='float64')
-        Balance = pd.Series(data=[GenRev[gc]+ChargeRev[gc]+UpRev[gc]+DwRev[gc]+ResRev[gc]-InvCost[gc]                                           for gc in mTEPES.gc], index=mTEPES.gc, dtype='float64')
-        CostRecoveryESS = pd.concat([GenRev,ChargeRev,UpRev,DwRev,ResRev,-InvCost,Balance], axis=1, keys=['Revenue generation [MEUR]', 'Revenue consumption [MEUR]', 'Revenue operating reserve up [MEUR]', 'Revenue operating reserve down [MEUR]', 'Revenue reserve margin [MEUR]', 'Cost investment [MEUR]', ' Total [MEUR]'])
-        CostRecoveryESS.stack().to_frame(name='MEUR').reset_index().pivot_table(values='MEUR', index=['level_1'], columns=['level_0']).rename_axis([None], axis=0).rename_axis([None], axis=1).to_csv(f'{_path}/oT_Result_CostRecovery_{CaseName}.csv', sep=',')
+        GenCost = pd.Series(data=[sum(mTEPES.pDiscountedWeight[p] * mTEPES.pScenProb[p,sc]() * mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pLinearVarCost  [p,sc,n,gc] * OptModel.vTotalOutput   [p,sc,n,gc]() +
+                                      mTEPES.pDiscountedWeight[p] * mTEPES.pScenProb[p,sc]() * mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pConstantVarCost[p,sc,n,gc] * OptModel.vCommitment    [p,sc,n,gc]() +
+                                      mTEPES.pDiscountedWeight[p] * mTEPES.pScenProb[p,sc]() * mTEPES.pLoadLevelWeight  [p,sc,n]() * mTEPES.pStartUpCost    [       gc] * OptModel.vStartUp       [p,sc,n,gc]()
+        # warning the next instruction doesn't work
+                                    # mTEPES.pDiscountedWeight[p] * mTEPES.pScenProb[p,sc]() * mTEPES.pLoadLevelWeight  [p,sc,n]() * mTEPES.pShutDownCost   [       gc] * OptModel.vShutDown      [p,sc,n,gc]()
+                                                                                                                                                                                                                for p,sc,n in mTEPES.psn if (p,gc) in mTEPES.pgc) for gc in mTEPES.gc], index=mTEPES.gc, dtype='float64')
+        EmsCost = pd.Series(data=[sum(mTEPES.pDiscountedWeight[p] * mTEPES.pScenProb[p,sc]() * mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pEmissionVarCost[p,sc,n,gc] * OptModel.vTotalOutput   [p,sc,n,gc]() for p,sc,n in mTEPES.psn if (p,gc) in mTEPES.pgc) for gc in mTEPES.gc], index=mTEPES.gc, dtype='float64')
+        OpGCost = pd.Series(data=[sum(mTEPES.pDiscountedWeight[p] * mTEPES.pScenProb[p,sc]() * mTEPES.pLoadLevelWeight  [p,sc,n]() * mTEPES.pOperReserveCost[       gc] * OptModel.vReserveUp     [p,sc,n,gc]() +
+                                      mTEPES.pDiscountedWeight[p] * mTEPES.pScenProb[p,sc]() * mTEPES.pLoadLevelWeight  [p,sc,n]() * mTEPES.pOperReserveCost[       gc] * OptModel.vReserveDown   [p,sc,n,gc]() for p,sc,n in mTEPES.psn if (p,gc) in mTEPES.pgc) for gc in mTEPES.gc], index=mTEPES.gc, dtype='float64')
+        CnsCost = pd.Series(data=[sum(mTEPES.pDiscountedWeight[p] * mTEPES.pScenProb[p,sc]() * mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pLinearVarCost  [p,sc,n,gc] * OptModel.vESSTotalCharge[p,sc,n,gc]() for p,sc,n in mTEPES.psn if (p,gc) in mTEPES.pgc) for gc in mTEPES.gc], index=mTEPES.gc, dtype='float64')
+        OpCCost = pd.Series(data=[sum(mTEPES.pDiscountedWeight[p] * mTEPES.pScenProb[p,sc]() * mTEPES.pLoadLevelWeight  [p,sc,n]() * mTEPES.pOperReserveCost[       gc] * OptModel.vESSReserveUp  [p,sc,n,gc]() +
+                                      mTEPES.pDiscountedWeight[p] * mTEPES.pScenProb[p,sc]() * mTEPES.pLoadLevelWeight  [p,sc,n]() * mTEPES.pOperReserveCost[       gc] * OptModel.vESSReserveDown[p,sc,n,gc]() for p,sc,n in mTEPES.psn if (p,gc) in mTEPES.pgc) for gc in mTEPES.gc], index=mTEPES.gc, dtype='float64')
+
+        InvCost = pd.Series(data=[sum(mTEPES.pGenInvestCost[gc] * OptModel.vGenerationInvest[p,gc]() for p in mTEPES.p if (p,gc) in mTEPES.pgc)                   for gc in mTEPES.gc], index=mTEPES.gc, dtype='float64')
+        Balance = pd.Series(data=[GenRev[gc]+ChargeRev[gc]+UpRev[gc]+DwRev[gc]+ResRev[gc]-GenCost[gc]-EmsCost[gc]-OpGCost[gc]-CnsCost[gc]-OpCCost[gc]-InvCost[gc] for gc in mTEPES.gc], index=mTEPES.gc, dtype='float64')
+        CostRecovery = pd.concat([GenRev,ChargeRev,UpRev,DwRev,ResRev,-GenCost,-EmsCost,-OpGCost,-CnsCost,-OpCCost,-InvCost,Balance], axis=1, keys=['Revenue generation [MEUR]', 'Revenue consumption [MEUR]', 'Revenue operating reserve up [MEUR]', 'Revenue operating reserve down [MEUR]', 'Revenue reserve margin [MEUR]', 'Cost generation operation [MEUR]', 'Cost emission [MEUR]', 'Cost operating reserves generation [MEUR]', 'Cost consumption operation [MEUR]', 'Cost operating reserves consumption [MEUR]', 'Cost investment [MEUR]', ' Total [MEUR]'])
+        CostRecovery.stack().to_frame(name='MEUR').reset_index().pivot_table(values='MEUR', index=['level_1'], columns=['level_0']).rename_axis([None], axis=0).rename_axis([None], axis=1).to_csv(f'{_path}/oT_Result_CostRecovery_{CaseName}.csv', sep=',')
 
     WritingResultsTime = time.time() - StartTime
     print('Writing              economic results  ... ', round(WritingResultsTime), 's')

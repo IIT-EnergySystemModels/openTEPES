@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.18.3] - 2025-03-17
+[4.18.3] - 2025-03-18
 -----------------------
+- [CHANGED] introduce operation costs in CostRecovery output file
 - [CHANGED] avoid the introduction of all the nodes in demand and operating reserve input files
 - [FIXED] add revenues of ESS generation and consumption operating reserves
 - [CHANGED] change sign of the consumption energy and operating reserve revenues
