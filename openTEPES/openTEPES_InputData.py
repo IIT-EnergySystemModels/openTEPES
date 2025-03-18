@@ -233,37 +233,37 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
                 num_lines = sum(1 for _ in reader)
             return num_lines
 
-        mTEPES.rs  = Set(initialize=[], doc='reservoirs'               )
-        mTEPES.r2h = Set(initialize=[], doc='reservoir to hydro'       )
-        mTEPES.h2r = Set(initialize=[], doc='hydro to reservoir'       )
-        mTEPES.r2r = Set(initialize=[], doc='reservoir to reservoir'   )
-        mTEPES.p2r = Set(initialize=[], doc='pumped-hydro to reservoir')
-        mTEPES.r2p = Set(initialize=[], doc='reservoir to pumped-hydro')
+        mTEPES.rs  = Set(initialize=[], doc='reservoirs'                )
+        mTEPES.r2h = Set(initialize=[], doc='reservoir to hydro'        )
+        mTEPES.h2r = Set(initialize=[], doc='hydro to reservoir'        )
+        mTEPES.r2r = Set(initialize=[], doc='reservoir 1 to reservoir 2')
+        mTEPES.p2r = Set(initialize=[], doc='pumped-hydro to reservoir' )
+        mTEPES.r2p = Set(initialize=[], doc='reservoir to pumped-hydro' )
 
         if count_lines_in_csv(     f'{_path}/oT_Dict_Reservoir_'            f'{CaseName}.csv') > 1:
             dictSets.load(filename=f'{_path}/oT_Dict_Reservoir_'            f'{CaseName}.csv', set='rs' , format='set')
             mTEPES.del_component(mTEPES.rs)
-            mTEPES.rs  = Set(initialize=dictSets['rs' ], doc='reservoirs'               )
+            mTEPES.rs  = Set(initialize=dictSets['rs' ], doc='reservoirs'                )
         if count_lines_in_csv(     f'{_path}/oT_Dict_ReservoirToHydro_'     f'{CaseName}.csv') > 1:
             dictSets.load(filename=f'{_path}/oT_Dict_ReservoirToHydro_'     f'{CaseName}.csv', set='r2h', format='set')
             mTEPES.del_component(mTEPES.r2h)
-            mTEPES.r2h = Set(initialize=dictSets['r2h'], doc='reservoir to hydro'       )
+            mTEPES.r2h = Set(initialize=dictSets['r2h'], doc='reservoir to hydro'        )
         if count_lines_in_csv(     f'{_path}/oT_Dict_HydroToReservoir_'     f'{CaseName}.csv') > 1:
             dictSets.load(filename=f'{_path}/oT_Dict_HydroToReservoir_'     f'{CaseName}.csv', set='h2r', format='set')
             mTEPES.del_component(mTEPES.h2r)
-            mTEPES.h2r = Set(initialize=dictSets['h2r'], doc='hydro to reservoir'       )
+            mTEPES.h2r = Set(initialize=dictSets['h2r'], doc='hydro to reservoir'        )
         if count_lines_in_csv(     f'{_path}/oT_Dict_ReservoirToReservoir_' f'{CaseName}.csv') > 1:
             dictSets.load(filename=f'{_path}/oT_Dict_ReservoirToReservoir_' f'{CaseName}.csv', set='r2r', format='set')
             mTEPES.del_component(mTEPES.r2r)
-            mTEPES.r2r = Set(initialize=dictSets['r2r'], doc='reservoir to reservoir'   )
+            mTEPES.r2r = Set(initialize=dictSets['r2r'], doc='reservoir 1 to reservoir 2')
         if count_lines_in_csv(     f'{_path}/oT_Dict_PumpedHydroToReservoir_' f'{CaseName}.csv') > 1:
             dictSets.load(filename=f'{_path}/oT_Dict_PumpedHydroToReservoir_' f'{CaseName}.csv', set='p2r', format='set')
             mTEPES.del_component(mTEPES.p2r)
-            mTEPES.p2r = Set(initialize=dictSets['p2r'], doc='pumped-hydro to reservoir')
+            mTEPES.p2r = Set(initialize=dictSets['p2r'], doc='pumped-hydro to reservoir' )
         if count_lines_in_csv(     f'{_path}/oT_Dict_ReservoirToPumpedHydro_' f'{CaseName}.csv') > 1:
             dictSets.load(filename=f'{_path}/oT_Dict_ReservoirToPumpedHydro_' f'{CaseName}.csv', set='r2p', format='set')
             mTEPES.del_component(mTEPES.r2p)
-            mTEPES.r2p = Set(initialize=dictSets['r2p'], doc='reservoir to pumped-hydro')
+            mTEPES.r2p = Set(initialize=dictSets['r2p'], doc='reservoir to pumped-hydro' )
     except:
         pass
 
