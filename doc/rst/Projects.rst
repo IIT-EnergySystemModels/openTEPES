@@ -29,7 +29,7 @@ The model has being used in these research projects:
 
     It aims to develop a tool focused on determining the evolution of prices in the Spanish peninsular electricity system electricity market in the 2023 to 2050 horizon.
 
-- `Day-ahead market price simulation tool (HESIME) <https://www.iit.comillas.edu/publicacion/proyecto/en/HESIME/Herramienta_para_la_simulaci%c3%b3n_del_precio_del_mercado_diario_a_futuro>`_, developed for the **Ministry of Science and Innovation/State Research Agency** (10.13039/501100011033) under the program **Public-Private Partnerships** with **NextGenerationEU/PRTR** funds (CPP2022-009809). April 2023 - March 2026.
+- `Day-ahead market price simulation tool (HESIME) <https://www.iit.comillas.edu/publicacion/proyecto/en/HESIME/Herramienta_para_la_simulaci%c3%b3n_del_precio_del_mercado_diario_a_futuro>`_, developed for the **Ministry of Science, Innovation, and Universities/State Research Agency** (MICIU/AEI/10.13039/501100011033) under the program **Public-Private Partnerships** with **NextGenerationEU/PRTR** funds (CPP2022-009809). April 2023 - March 2026.
   `L. Olmos <https://www.iit.comillas.edu/people/olmos>`_, `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `S. Gómez Sánchez <https://www.iit.comillas.edu/people/sgomez>`_
 
 .. image:: ../img/ColabPP.jpg
@@ -75,14 +75,14 @@ The model has being used in these research projects:
 
     It aims to write a presentation on the quantitative analysis of the technical and economic impact of solar thermal in the operation of the Spanish peninsular system.
 
-- Hydro generation advanced systems: modeling, control, and optimized integration to the system (AVANHID), developed for the **Ministry of Science and Innovation/State Research Agency** (10.13039/501100011033) under the program **Public-Private Partnerships** with **NextGenerationEU/PRTR** funds (CPP2021-009114). October 2022 - September 2025.
+- Hydro generation advanced systems: modeling, control, and optimized integration to the system (AVANHID), developed for the **Ministry of Science, Innovation, and Universities/State Research Agency** (MICIU/AEI/10.13039/501100011033) under the program **Public-Private Partnerships** with **NextGenerationEU/PRTR** funds (CPP2021-009114). October 2022 - September 2025.
   `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `J.M. Latorre <https://www.iit.comillas.edu/people/jesuslc>`_, `P. Dueñas <https://www.iit.comillas.edu/people/pduenas>`_, `L. Rouco <https://www.iit.comillas.edu/people/rouco>`_, `L. Sigrist <https://www.iit.comillas.edu/people/lsigrist>`_, `I. Egido <https://www.iit.comillas.edu/people/egido>`_, `J.D. Gómez Pérez <https://www.iit.comillas.edu/people/jdgomez>`_, `F. Labora <https://www.iit.comillas.edu/people/flabora>`_
 
 .. image:: ../img/ColabPP.jpg
    :scale: 30%
    :align: center
 
-- Local markets for energy communities: designing efficient markets and assessing the integration from the electricity system perspective (OptiREC), developed for the **Ministry of Science and Innovation/State Research Agency** (10.13039/501100011033) under the program **Strategic projects oriented to the ecological transition and digital transition** with **NextGenerationEU/PRTR** funds (TED2021-131365B-C43). December 2022 - July 2025.
+- Local markets for energy communities: designing efficient markets and assessing the integration from the electricity system perspective (OptiREC), developed for the **Ministry of Science, Innovation, and Universities/State Research Agency** (MICIU/AEI/10.13039/501100011033) under the program **Strategic projects oriented to the ecological transition and digital transition** with **NextGenerationEU/PRTR** funds (TED2021-131365B-C43). December 2022 - July 2025.
   `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `J.P. Chaves <https://www.iit.comillas.edu/people/jchaves>`_, `J.M. Latorre <https://www.iit.comillas.edu/people/jesuslc>`_, `J. García <https://www.iit.comillas.edu/people/javiergg>`_, `M. Troncia <https://www.iit.comillas.edu/people/mtroncia>`_, `S.A. Mansouri <https://www.iit.comillas.edu/people/smansouri>`_, `O.M. Valarezo <https://www.iit.comillas.edu/people/ovalarezo>`_, `M. Mohammed <https://www.iit.comillas.edu/people/mmohammed>`_
 
 .. image:: ../img/ColabPP.jpg
@@ -153,7 +153,7 @@ The model has being used in these research projects:
 
     It aims to improve the description of the Spanish energy system in model TIMES-SINERGIA, from the technologies considered or a higher time resolution to the detailed modeling of the power sector, such as the inclusion of transmission constraints, with openTEPES.
 
-- `MODESC – Platform of innovative models for speeding the energy transition towards a decarbonized economy <https://www.iit.comillas.edu/proyectos/mostrar_proyecto.php.en?nombre_abreviado=MODESC_RETOS>`_, developed for the **Ministry of Science and Innovation** under **Retos Colaboración 2019** program (RTC2019-007315-3).
+- `MODESC – Platform of innovative models for speeding the energy transition towards a decarbonized economy <https://www.iit.comillas.edu/proyectos/mostrar_proyecto.php.en?nombre_abreviado=MODESC_RETOS>`_, developed for the **Ministry of Science, Innovation, and Universities** under **Retos Colaboración 2019** program (RTC2019-007315-3).
   September 2020 - December 2023.
   `T. Gómez <https://www.iit.comillas.edu/people/tomas>`_, `M. Rivier <https://www.iit.comillas.edu/people/michel>`_, `J.P. Chaves <https://www.iit.comillas.edu/people/jchaves>`_,
   `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `P. Linares <https://www.iit.comillas.edu/people/pedrol>`_, `F. Martín <https://www.iit.comillas.edu/people/fmartin>`_,
