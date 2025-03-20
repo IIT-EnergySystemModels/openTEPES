@@ -301,7 +301,7 @@ The names between parenthesis correspond to the names of the constraints in the 
 
 Electricity, heat, and hydrogen generation, (energy and reservoir) storage and (electricity, hydrogen, and heat) network investment cost plus retirement cost [M€] «``eTotalFCost``» «``eTotalICost``»
 
-:math:`\sum_{pg} DF^p [CFG_g icg^p_g + \sum_{pg} CFR_g rcg^p_g + \sum_{pe'} CFE_{e'} icr^p_{e'} + \sum_{pijc} CFT_{ijc} ict^p_{ijc} + \sum_{pijc} CFH_{ijc} ich^p_{ijc} + \sum_{pijc} CFP_{ijc} icp^p_{ijc}] +`
+:math:`\sum_{p} DF^p [\sum_{g} CFG_g icg^p_g + \sum_{g} CFR_g rcg^p_g + \sum_{e'} CFE_{e'} icr^p_{e'} + \sum_{ijc} CFT_{ijc} ict^p_{ijc} + \sum_{ijc} CFH_{ijc} ich^p_{ijc} + \sum_{ijc} CFP_{ijc} icp^p_{ijc}] +`
 
 Electricity, heat, and hydrogen expected generation operation cost [M€] «``eTotalGCost``»
 
