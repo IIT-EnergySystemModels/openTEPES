@@ -1,6 +1,10 @@
 Change Log
 =============
 
+[4.18.4] - 2025-03-20
+-----------------------
+- [FIXED] error in CostRecovery output file
+
 [4.18.3] - 2025-03-18
 -----------------------
 - [FIXED] error in pumping signs of the HydroInventory constraint
