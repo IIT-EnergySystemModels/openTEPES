@@ -147,6 +147,7 @@ They are written in **uppercase** letters.
 :math:`\underline{GC}^p_{\omega ne}, \overline{GC}^p_{\omega ne}`  Minimum and maximum consumption of an ESS                                                                                 GW
 :math:`\underline{GH}_g, \overline{GH}_g`                          Rated minimum and maximum heat of a CHP or a fuel heater                                                                  GW
 :math:`CF^p_{\omega ng}, CV^p_{\omega ng}`                         Fixed (no load) and variable cost of a generator. Variable cost includes fuel and O&M                                     €/h, €/MWh
+:math:`CR_g`                                                       Operating reserve cost of a generator                                                                                     €/MW
 :math:`CE^p_{\omega ng}`                                           Emission cost of a generator                                                                                              €/MWh
 :math:`ER_g`                                                       Emission rate of a generator                                                                                              tCO2/MWh
 :math:`CV_e`                                                       Variable cost of an ESS or pumped-storage hydropower plant when charging                                                  €/MWh
@@ -300,12 +301,11 @@ The names between parenthesis correspond to the names of the constraints in the 
 
 Electricity, heat, and hydrogen generation, (energy and reservoir) storage and (electricity, hydrogen, and heat) network investment cost plus retirement cost [M€] «``eTotalFCost``» «``eTotalICost``»
 
-:math:`\sum_{pg} DF^p CFG_g icg^p_g + \sum_{pg} DF^p CFR_g rcg^p_g + \sum_{pe'} DF^p CFE_{e'} icr^p_{e'} +`
-:math:`\sum_{pijc} DF^p CFT_{ijc} ict^p_{ijc} + \sum_{pijc} DF^p CFH_{ijc} ich^p_{ijc} + \sum_{pijc} DF^p CFP_{ijc} icp^p_{ijc} +`
+:math:`\sum_{pg} DF^p [CFG_g icg^p_g + \sum_{pg} CFR_g rcg^p_g + \sum_{pe'} CFE_{e'} icr^p_{e'} + \sum_{pijc} CFT_{ijc} ict^p_{ijc} + \sum_{pijc} CFH_{ijc} ich^p_{ijc} + \sum_{pijc} CFP_{ijc} icp^p_{ijc}] +`
 
 Electricity, heat, and hydrogen expected generation operation cost [M€] «``eTotalGCost``»
 
-:math:`\sum_{p \omega ng} {[DF^p P^p_{\omega} DUR^p_{\omega n} (CV^p_{\omega ng} gp^p_{\omega ng} + CF^p_{\omega ng} uc^p_{\omega ng}) + DF^p CSU_g su^p_{\omega ng} + DF^p CSD_g sd^p_{\omega ng}]} +`
+:math:`\sum_{p \omega ng} {DF^p [P^p_{\omega} DUR^p_{\omega n} (CV^p_{\omega ng} gp^p_{\omega ng} + CF^p_{\omega ng} uc^p_{\omega ng}) + CSU_g su^p_{\omega ng} + CSD_g sd^p_{\omega ng} + CR_g ur^p_{\omega ng} + CR_g dr^p_{\omega ng}]} +`
 
 Expected generation emission cost [M€] «``eTotalECost``» «``eTotalECostArea``»
 
