@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 18, 2025
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 20, 2025
 """
 
 import time
@@ -147,12 +147,12 @@ def GenerationOperationModelFormulationObjFunct(OptModel, mTEPES, pIndLogConsole
     def eTotalGCost(OptModel,n):
         return OptModel.vTotalGCost[p,sc,n] == (sum(mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pLinearVarCost  [p,sc,n,nr] * OptModel.vTotalOutput    [p,sc,n,nr]                                              +
                                                     mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pConstantVarCost[p,sc,n,nr] * OptModel.vCommitment     [p,sc,n,nr]                                              +
-                                                    mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pStartUpCost    [       nr] * OptModel.vStartUp        [p,sc,n,nr]                                              +
-                                                    mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pShutDownCost   [       nr] * OptModel.vShutDown       [p,sc,n,nr] for nr in mTEPES.nr if (p,nr) in mTEPES.pnr) +
-                                                sum(mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pOperReserveCost[       nr] * OptModel.vReserveUp      [p,sc,n,nr]                                              +
-                                                    mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pOperReserveCost[       nr] * OptModel.vReserveDown    [p,sc,n,nr] for nr in mTEPES.nr if (p,nr) in mTEPES.pnr and mTEPES.pIndOperReserve[nr] == 0) +
-                                                sum(mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pOperReserveCost[       eh] * OptModel.vESSReserveUp   [p,sc,n,eh]                                              +
-                                                    mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pOperReserveCost[       eh] * OptModel.vESSReserveDown [p,sc,n,eh] for eh in mTEPES.eh if (p,eh) in mTEPES.peh and mTEPES.pIndOperReserve[eh] == 0) +
+                                                    mTEPES.pLoadLevelWeight  [p,sc,n]() * mTEPES.pStartUpCost    [       nr] * OptModel.vStartUp        [p,sc,n,nr]                                              +
+                                                    mTEPES.pLoadLevelWeight  [p,sc,n]() * mTEPES.pShutDownCost   [       nr] * OptModel.vShutDown       [p,sc,n,nr] for nr in mTEPES.nr if (p,nr) in mTEPES.pnr) +
+                                                sum(mTEPES.pLoadLevelWeight  [p,sc,n]() * mTEPES.pOperReserveCost[       nr] * OptModel.vReserveUp      [p,sc,n,nr]                                              +
+                                                    mTEPES.pLoadLevelWeight  [p,sc,n]() * mTEPES.pOperReserveCost[       nr] * OptModel.vReserveDown    [p,sc,n,nr] for nr in mTEPES.nr if (p,nr) in mTEPES.pnr and mTEPES.pIndOperReserve[nr] == 0) +
+                                                sum(mTEPES.pLoadLevelWeight  [p,sc,n]() * mTEPES.pOperReserveCost[       eh] * OptModel.vESSReserveUp   [p,sc,n,eh]                                              +
+                                                    mTEPES.pLoadLevelWeight  [p,sc,n]() * mTEPES.pOperReserveCost[       eh] * OptModel.vESSReserveDown [p,sc,n,eh] for eh in mTEPES.eh if (p,eh) in mTEPES.peh and mTEPES.pIndOperReserve[eh] == 0) +
                                                 sum(mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pLinearVarCost  [p,sc,n,bo] * OptModel.vTotalOutputHeat[p,sc,n,bo] for bo in mTEPES.bo if (p,bo) in mTEPES.pbo) +
                                                 sum(mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pLinearOMCost   [       re] * OptModel.vTotalOutput    [p,sc,n,re] for re in mTEPES.re if (p,re) in mTEPES.pre) )
     setattr(OptModel, f'eTotalGCost_{p}_{sc}_{st}', Constraint(mTEPES.n, rule=eTotalGCost, doc='system variable generation operation cost [MEUR]'))

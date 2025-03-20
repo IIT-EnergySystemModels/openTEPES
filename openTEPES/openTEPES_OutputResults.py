@@ -2193,8 +2193,9 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput, pIndPlo
         OpCCost = pd.Series(data=[sum(mTEPES.pDiscountedWeight[p] * mTEPES.pScenProb[p,sc]() * mTEPES.pLoadLevelWeight  [p,sc,n]() * mTEPES.pOperReserveCost[       ec] * OptModel.vESSReserveUp  [p,sc,n,ec]() +
                                       mTEPES.pDiscountedWeight[p] * mTEPES.pScenProb[p,sc]() * mTEPES.pLoadLevelWeight  [p,sc,n]() * mTEPES.pOperReserveCost[       ec] * OptModel.vESSReserveDown[p,sc,n,ec]() for p,sc,n in mTEPES.psn if (p,ec) in mTEPES.pec) for ec in mTEPES.ec], index=mTEPES.ec, dtype='float64')
 
-        CnsCost[gc] = 0.0 if gc not in CnsCost.index else CnsCost[gc]
-        OpCCost[gc] = 0.0 if gc not in OpCCost.index else OpCCost[gc]
+        for gc in mTEPES.gc:
+            CnsCost[gc] = 0.0 if gc not in CnsCost.index else CnsCost[gc]
+            OpCCost[gc] = 0.0 if gc not in OpCCost.index else OpCCost[gc]
 
         InvCost = pd.Series(data=[sum(mTEPES.pGenInvestCost[gc] * OptModel.vGenerationInvest[p,gc]() for p in mTEPES.p if (p,gc) in mTEPES.pgc)                   for gc in mTEPES.gc], index=mTEPES.gc, dtype='float64')
         Balance = pd.Series(data=[GenRev[gc]+ChargeRev[gc]+UpRev[gc]+DwRev[gc]+ResRev[gc]-GenCost[gc]-EmsCost[gc]-OpGCost[gc]-CnsCost[gc]-OpCCost[gc]-InvCost[gc] for gc in mTEPES.gc], index=mTEPES.gc, dtype='float64')
