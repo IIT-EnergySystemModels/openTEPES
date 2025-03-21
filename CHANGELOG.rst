@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.18.4] - 2025-03-20
+[4.18.4] - 2025-03-21
 -----------------------
+- [CHANGED] added GenerationConsumptionRatio output file
 - [FIXED] error in some terms of the operation costs
 - [FIXED] error in CostRecovery output file
 

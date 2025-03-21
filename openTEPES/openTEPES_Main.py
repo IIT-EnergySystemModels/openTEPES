@@ -519,7 +519,7 @@
 # conveyed by you (or copies made from those copies), or (b) primarily
 # for and in connection with specific products or compilations that
 # contain the covered work, unless you entered into that arrangement,
-# or that patent license was granted, prior to 28 March 2007.
+# or that patent license was granted, prior to 28 March 2107.
 #
 #   Nothing in this License shall be construed as excluding or limiting
 # any implied license or other defenses to infringement that may
@@ -660,7 +660,7 @@
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <https://www.gnu.org/licenses/>.
 
-# Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 20, 2025
+# Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 21, 2025
 # simplicity and transparency in power systems planning
 
 # Developed by
@@ -686,7 +686,7 @@ import time
 # import pkg_resources
 from .openTEPES import openTEPES_run
 
-print('\033[1;32mOpen Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.4 - March 20, 2025\033[0m')
+print('\033[1;32mOpen Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.4 - March 21, 2025\033[0m')
 print('\033[34m#### Academic research license - for non-commercial use only ####\033[0m \n')
 
 parser = argparse.ArgumentParser(description='Introducing main parameters...')

@@ -394,7 +394,7 @@ File ``oT_Result_Consumption.csv``
 ============  ==========  ==========  ==========  ==========================================
 Identifier                            Header      Description
 ====================================  ==========  ==========================================
-Period        Scenario    Load level  Generator   Consumed/charged power in ESS [MW]
+Period        Scenario    Load level  Generator   Consumed/charged power for each ESS [MW]
 ============  ==========  ==========  ==========  ==========================================
 
 File ``oT_Result_ConsumptionEnergy.csv``
@@ -402,7 +402,7 @@ File ``oT_Result_ConsumptionEnergy.csv``
 ============  ==========  ==========  ==========  ==========================================
 Identifier                            Header      Description
 ====================================  ==========  ==========================================
-Period        Scenario    Load level  Generator   Consumed/charged energy in ESS [GWh]
+Period        Scenario    Load level  Generator   Consumed/charged energy for each ESS [GWh]
 ============  ==========  ==========  ==========  ==========================================
 
 File ``oT_Result_ConsumptionReserveUp.csv``
@@ -421,12 +421,20 @@ Identifier                            Header      Description
 Period        Scenario    Load level  Generator   Downward operating reserve of each pump/charge [MW]
 ============  ==========  ==========  ==========  ===================================================
 
+File ``oT_Result_GenerationConsumptionRatio.csv``
+
+============  ==========  ==========  ==========  ==============================================================================================================================================================
+Identifier                            Header      Description
+============  ==========  ==========  ==========  ==============================================================================================================================================================
+Period        Scenario    Load level  Generator   Generation to consumption ratio for each ESS [p.u.] (1 only generating, -1 only consuming, 0 no generating nor consuming, ratio when generating and consuming)
+============  ==========  ==========  ==========  ==============================================================================================================================================================
+
 File ``oT_Result_GenerationOutflows.csv``
 
 ============  ==========  ==========  ==========  ==========================================
 Identifier                            Header      Description
 ====================================  ==========  ==========================================
-Period        Scenario    Load level  Generator   Outflows power in ESS [MW]
+Period        Scenario    Load level  Generator   Outflows power for each ESS [MW]
 ============  ==========  ==========  ==========  ==========================================
 
 File ``oT_Result_GenerationOutflowsEnergy.csv``
@@ -434,7 +442,7 @@ File ``oT_Result_GenerationOutflowsEnergy.csv``
 ============  ==========  ==========  ==========  ==========================================
 Identifier                            Header      Description
 ====================================  ==========  ==========================================
-Period        Scenario    Load level  Generator   Outflows energy in ESS [GWh]
+Period        Scenario    Load level  Generator   Outflows energy for each ESS [GWh]
 ============  ==========  ==========  ==========  ==========================================
 
 File ``oT_Result_TechnologyConsumption.csv``
@@ -442,7 +450,7 @@ File ``oT_Result_TechnologyConsumption.csv``
 ============  ==========  ==========  ==========  ==========================================
 Identifier                            Header      Description
 ====================================  ==========  ==========================================
-Period        Scenario    Load level  Technology  Charged power in ESS [MW]
+Period        Scenario    Load level  Technology  Charged power for each ESS [MW]
 ============  ==========  ==========  ==========  ==========================================
 
 File ``oT_Result_TechnologyConsumptionEnergy.csv``
@@ -466,7 +474,7 @@ File ``oT_Result_TechnologyOutflows.csv``
 ============  ==========  ==========  ==========  ==========================================
 Identifier                            Header      Description
 ====================================  ==========  ==========================================
-Period        Scenario    Load level  Technology  Outflows power in ESS [MW]
+Period        Scenario    Load level  Technology  Outflows power for each ESS [MW]
 ============  ==========  ==========  ==========  ==========================================
 
 File ``oT_Result_TechnologyOutflowsEnergy.csv``
@@ -514,16 +522,16 @@ File ``oT_Result_GenerationSpillage.csv``
 ============  ==========  ==========  ==========  ==========================================
 Identifier                            Header      Description
 ====================================  ==========  ==========================================
-Period        Scenario    Load level  Generator   Spilled energy in ESS [GWh]
+Period        Scenario    Load level  Generator   Spilled energy for each ESS [GWh]
 ============  ==========  ==========  ==========  ==========================================
 
 File ``oT_Result_GenerationSpillageRelative.csv``
 
-============  ==========  ==========  ==========  ================================================
+============  ==========  ==========  ==========  =======================================================
 Identifier                            Header      Description
-====================================  ==========  ================================================
-Period        Scenario    Load level  Generator   Spilled energy in ESS wrt the energy inflows [%]
-============  ==========  ==========  ==========  ================================================
+============  ==========  ==========  ==========  =======================================================
+Period        Scenario    Load level  Generator   Spilled energy for each ESS wrt the energy inflows [%]
+============  ==========  ==========  ==========  =======================================================
 
 File ``oT_Result_SummaryGeneration.csv``
 

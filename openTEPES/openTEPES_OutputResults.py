@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 20, 2025
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 21, 2025
 """
 
 import time
@@ -699,6 +699,16 @@ def ESSOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutpu
     OutputToFile = pd.Series(data=[OptModel.vESSTotalCharge    [p,sc,n,eh]() for p,sc,n,eh in mTEPES.psneh], index=mTEPES.psneh)
     OutputToFile *= -1e3
     OutputToFile.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(f'{_path}/oT_Result_Consumption_{CaseName}.csv', sep=',')
+
+    # tolerance to consider that an ESS is not producing or consuming
+    pEpsilon = 1e-6
+    OutputToFile = pd.Series(data=[0.0 for p,sc,n,eh in mTEPES.psneh], index=mTEPES.psneh)
+    for p,sc,n,eh in mTEPES.psneh:
+        OutputToFile[p,sc,n,eh] = -1.0                                                                         if OptModel.vESSTotalCharge[p,sc,n,eh]() and OptModel.vTotalOutput   [p,sc,n,eh]() <= pEpsilon * mTEPES.pMaxPowerElec[p,sc,n,eh]                                          else OutputToFile[p,sc,n,eh]
+        OutputToFile[p,sc,n,eh] =  1.0                                                                         if OptModel.vTotalOutput   [p,sc,n,eh]() and OptModel.vESSTotalCharge[p,sc,n,eh]() <= pEpsilon * mTEPES.pMaxCharge   [p,sc,n,eh]                                          else OutputToFile[p,sc,n,eh]
+        if OptModel.vTotalOutput[p,sc,n,eh]() and OptModel.vESSTotalCharge[p,sc,n,eh]():
+            OutputToFile[p,sc,n,eh] = OptModel.vTotalOutput[p,sc,n,eh]()/OptModel.vESSTotalCharge[p,sc,n,eh]() if OptModel.vTotalOutput   [p,sc,n,eh]() >  pEpsilon * mTEPES.pMaxPowerElec[p,sc,n,eh] or OptModel.vESSTotalCharge[p,sc,n,eh]() > pEpsilon * mTEPES.pMaxCharge[p,sc,n,eh] else OutputToFile[p,sc,n,eh]
+    OutputToFile.to_frame(name='p.u.').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='p.u.', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(f'{_path}/oT_Result_GenerationConsumptionRatio_{CaseName}.csv', sep=',')
 
     if pIndTechnologyOutput == 1 or pIndTechnologyOutput == 2:
         OutputToFile = pd.Series(data=[sum(OutputToFile[p,sc,n,eh] for eh in e2e[et] if (p,eh) in mTEPES.peh) for p,sc,n,et in mTEPES.psnet], index=mTEPES.psnet)
