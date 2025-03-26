@@ -393,7 +393,8 @@ Upward and downward operating reserves provided for each area by non-renewable g
 
 :math:`\sum_{g \in a} dr^p_{\omega ng} + \sum_{e \in a} dr'^p_{\omega ne} = DR^p_{\omega na} \quad \forall p \omega na`
 
-Ratio between downward and upward operating reserves for each area provided by non-renewable generators (including ESS when generating) and ESS, when charging, [GW] «``eReserveMinRatioDwUp``» «``eReserveMaxRatioDwUp``» «``eRsrvMinRatioDwUpESS``» «``eRsrvMaxRatioDwUpESS``»
+Ratio between downward and upward operating reserves for each area provided by non-renewable generators (including ESS when generating) and ESS, when charging, [GW] «``eReserveMinRatioDwUp``» «``eReserveMaxRatioDwUp``» «``eRsrvMinRatioDwUpESS``» «``eRsrvMaxRatioDwUpESS``».
+The corresponding constraints are not formulated if :math:`\underline{DtUR}=0` and :math:`\overline{DtUR}=1`.
 
 :math:`\underline{DtUR} \: ur^p_{\omega ng}  \leq dr^p_{\omega ng}  \leq \overline{DtUR} \: ur^p_{\omega ng}  \quad \forall p \omega ng`
 
