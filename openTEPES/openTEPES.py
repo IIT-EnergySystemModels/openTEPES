@@ -154,7 +154,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
                 and (min([mTEPES.pEmission [p,ar] for ar in mTEPES.ar]) == math.inf or sum(mTEPES.pEmissionRate[nr] for nr in mTEPES.nr) == 0)):
 
                     # Writing LP file
-                    if pIndWriteLP == 1 and pIndModelType != 0:
+                    if pIndLogConsole == 1:
                         StartTime         = time.time()
                         mTEPES.write(f'{_path}/openTEPES_{CaseName}_{p}_{sc}_{st}.lp', io_options={'symbolic_solver_labels': True})
                         WritingLPFileTime = time.time() - StartTime
