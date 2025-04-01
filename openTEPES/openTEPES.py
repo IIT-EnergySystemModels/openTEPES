@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 31, 2025
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 01, 2025
 """
 
 # import dill as pickle
@@ -39,8 +39,8 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     idxDict['y'  ] = 1
 
     #%% model declaration
-    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.4 - March 31, 2025')
-    print(                 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.4 - March 31, 2025', file=open(f'{_path}/openTEPES_version_{CaseName}.log','w'))
+    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.4 - April 01, 2025')
+    print(                 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.4 - April 01, 2025', file=open(f'{_path}/openTEPES_version_{CaseName}.log','w'))
 
     pIndOutputResults = [j for i,j in idxDict.items() if i == pIndOutputResults][0]
     pIndLogConsole    = [j for i,j in idxDict.items() if i == pIndLogConsole   ][0]
@@ -213,6 +213,11 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
 
                         # there are investment decisions (it is an expansion and operation model) or there are system emission constraints
                         ProblemSolving(DirName, CaseName, SolverName, mTEPES, mTEPES, pIndLogConsole, p, sc, st)
+
+                        # deactivate the constraints of the previous period and scenario
+                        for c in mTEPES.component_objects(pyo.Constraint, active=True):
+                            if c.name.find(str(p)) != -1 and c.name.find(str(sc)) != -1:
+                                c.deactivate()
 
             # generator investments or generator retirements, or line investments
             elif (  len(mTEPES.eb) > 0 and mTEPES.pIndBinGenInvest()     < 2

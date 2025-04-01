@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.18.4] - 2025-03-31
+[4.18.4] - 2025-04-01
 -----------------------
+- [FIXED] deactivate constraints when solving for each period and scenario
 - [FIXED] avoid solving all the periods and scenarios simultaneously if not needed
 - [CHANGED] added GenerationConsumptionRatio output file
 - [FIXED] error in some terms of the operation costs
