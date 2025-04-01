@@ -120,7 +120,7 @@ Miniconda (recommended)
 2. **Packages and Solver**:
 
    1. Launch a new Anaconda prompt (or terminal in any IDE)
-   2. The `HiGHS 1.7.2 <https://ergo-code.github.io/HiGHS/dev/interfaces/python/#python-getting-started>`_ is our recommendation if you want a free and open-source solver.
+   2. The `HiGHS <https://ergo-code.github.io/HiGHS/dev/interfaces/python/#python-getting-started>`_ is our recommendation if you want a free and open-source solver.
    3. Install openTEPES via pip by ``pip install openTEPES``
 
 Continue at `Get Started <#get-started>`_ and see the `Tips <#tips>`_.

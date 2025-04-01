@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 21, 2025
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 31, 2025
 """
 
 # import dill as pickle
@@ -39,8 +39,8 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     idxDict['y'  ] = 1
 
     #%% model declaration
-    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.4 - March 21, 2025')
-    print(                 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.4 - March 21, 2025', file=open(f'{_path}/openTEPES_version_{CaseName}.log','w'))
+    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.4 - March 31, 2025')
+    print(                 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.4 - March 31, 2025', file=open(f'{_path}/openTEPES_version_{CaseName}.log','w'))
 
     pIndOutputResults = [j for i,j in idxDict.items() if i == pIndOutputResults][0]
     pIndLogConsole    = [j for i,j in idxDict.items() if i == pIndLogConsole   ][0]
@@ -69,14 +69,15 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     # initialize parameter for dual variables
     mTEPES.pDuals = {}
 
-    # control for not repeating the stages in case of several ones
-    mTEPES.NoRepetition = 0
-
     # initialize the set of load levels up to the current stage
     mTEPES.na = Set(initialize=[])
 
     # iterative model formulation for each stage of a year
     for p,sc,st in mTEPES.ps*mTEPES.stt:
+
+        # control for not repeating the stages in case of several ones
+        mTEPES.NoRepetition = 0
+
         # activate only load levels to formulate
         mTEPES.del_component(mTEPES.st)
         mTEPES.del_component(mTEPES.n )
@@ -140,66 +141,126 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
                     NetworkCycles                           (        mTEPES, pIndLogConsole           )
                 CycleConstraints                            (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
 
-            if (     (len(mTEPES.gc) == 0 or mTEPES.pIndBinGenInvest()     == 2)   # No generator investments
-                 and (len(mTEPES.gd) == 0 or mTEPES.pIndBinGenRetire()     == 2)   # No generator retirements
-                 and (len(mTEPES.lc) == 0 or mTEPES.pIndBinNetElecInvest() == 2)   # No line      investments
-                 and (max([mTEPES.pRESEnergy[p,ar] for ar in mTEPES.ar]) == 0)     # No minimum RES requirements
-                 and (min([mTEPES.pEmission [p,ar] for ar in mTEPES.ar]) == math.inf or sum(mTEPES.pEmissionRate[nr] for nr in mTEPES.nr) == 0)):  # No emission limit
+            # No generator investments and no generator retirements, and no line investments
+            if (    len(mTEPES.eb) == 0 or mTEPES.pIndBinGenInvest()     == 2
+                and len(mTEPES.gd) == 0 or mTEPES.pIndBinGenRetire()     == 2
+                and len(mTEPES.rc) == 0 or mTEPES.pIndBinRsrInvest()     == 2
+                and len(mTEPES.lc) == 0 or mTEPES.pIndBinNetElecInvest() == 2
+                and len(mTEPES.pc) == 0 or mTEPES.pIndBinNetH2Invest()   == 2
+                and len(mTEPES.hc) == 0 or mTEPES.pIndBinNetHeatInvest() == 2):
 
-                if pIndLogConsole == 1:
-                    StartTime         = time.time()
-                    mTEPES.write(f'{_path}/openTEPES_{CaseName}_{p}_{sc}_{st}.lp', io_options={'symbolic_solver_labels': True})
-                    WritingLPFileTime = time.time() - StartTime
-                    StartTime         = time.time()
-                    print('Writing LP file                        ... ', round(WritingLPFileTime), 's')
+                # No minimum RES requirements and no emission limit
+                if  (max([mTEPES.pRESEnergy[p,ar] for ar in mTEPES.ar]) == 0
+                and (min([mTEPES.pEmission [p,ar] for ar in mTEPES.ar]) == math.inf or sum(mTEPES.pEmissionRate[nr] for nr in mTEPES.nr) == 0)):
 
-                # there are no expansion decisions, or they are ignored (it is an operation planning model)
-                mTEPES.pScenProb[p,sc] = 1.0
-                ProblemSolving(DirName, CaseName, SolverName, mTEPES, mTEPES, pIndLogConsole, p, sc, st)
-                mTEPES.pScenProb[p,sc] = 0.0
-                # deactivate the constraints of the previous period and scenario
-                for c in mTEPES.component_objects(pyo.Constraint, active=True):
-                    if c.name.find(str(p)) != -1 and c.name.find(str(sc)) != -1:
-                        c.deactivate()
-            else:
-                if (p,sc) == mTEPES.ps.last() and st == mTEPES.Last_st and mTEPES.NoRepetition == 0:
-                    mTEPES.NoRepetition = 1
-
-                    mTEPES.del_component(mTEPES.st)
-                    mTEPES.del_component(mTEPES.n )
-                    mTEPES.del_component(mTEPES.n2)
-                    mTEPES.st = Set(doc='stages',      initialize=[stt for stt in mTEPES.stt if mTEPES.pStageWeight[stt] and sum(1 for                                    p,sc,stt,nn  in mTEPES.s2n)])
-                    mTEPES.n  = Set(doc='load levels', initialize=[nn  for nn  in mTEPES.nn  if                              sum(1 for p,sc,st in mTEPES.ps*mTEPES.st if (p,sc,st, nn) in mTEPES.s2n)])
-                    mTEPES.n2 = Set(doc='load levels', initialize=[nn  for nn  in mTEPES.nn  if                              sum(1 for p,sc,st in mTEPES.ps*mTEPES.st if (p,sc,st, nn) in mTEPES.s2n)])
-
-                    # load levels multiple of cycles for each ESS/generator
-                    mTEPES.nesc         = [(n,es) for n,es in mTEPES.n*mTEPES.es if mTEPES.n.ord(n) %     mTEPES.pStorageTimeStep [es] == 0]
-                    mTEPES.necc         = [(n,ec) for n,ec in mTEPES.n*mTEPES.ec if mTEPES.n.ord(n) %     mTEPES.pStorageTimeStep [ec] == 0]
-                    mTEPES.neso         = [(n,es) for n,es in mTEPES.n*mTEPES.es if mTEPES.n.ord(n) %     mTEPES.pOutflowsTimeStep[es] == 0]
-                    mTEPES.ngen         = [(n,g ) for n,g  in mTEPES.n*mTEPES.g  if mTEPES.n.ord(n) %     mTEPES.pEnergyTimeStep  [g ] == 0]
-                    if mTEPES.pIndHydroTopology == 1:
-                        mTEPES.nhc      = [(n,h ) for n,h  in mTEPES.n*mTEPES.h  if mTEPES.n.ord(n) % sum(mTEPES.pReservoirTimeStep[rs] for rs in mTEPES.rs if (rs,h) in mTEPES.r2h) == 0]
-                        if sum(1 for h,rs in mTEPES.p2r):
-                            mTEPES.np2c = [(n,h ) for n,h  in mTEPES.n*mTEPES.h  if sum(1 for rs in mTEPES.rs if (h,rs) in mTEPES.p2r) and mTEPES.n.ord(n) % sum(mTEPES.pReservoirTimeStep[rs] for rs in mTEPES.rs if (h,rs) in mTEPES.p2r) == 0]
-                        else:
-                            mTEPES.np2c = []
-                        if sum(1 for rs,h in mTEPES.r2p):
-                            mTEPES.npc  = [(n,h ) for n,h  in mTEPES.n*mTEPES.h  if sum(1 for rs in mTEPES.rs if (rs,h) in mTEPES.r2p) and mTEPES.n.ord(n) % sum(mTEPES.pReservoirTimeStep[rs] for rs in mTEPES.rs if (rs,h) in mTEPES.r2p) == 0]
-                        else:
-                            mTEPES.npc  = []
-                        mTEPES.nrsc     = [(n,rs) for n,rs in mTEPES.n*mTEPES.rs if mTEPES.n.ord(n) %     mTEPES.pReservoirTimeStep[rs] == 0]
-                        mTEPES.nrcc     = [(n,rs) for n,rs in mTEPES.n*mTEPES.rn if mTEPES.n.ord(n) %     mTEPES.pReservoirTimeStep[rs] == 0]
-                        mTEPES.nrso     = [(n,rs) for n,rs in mTEPES.n*mTEPES.rs if mTEPES.n.ord(n) %     mTEPES.pWaterOutTimeStep [rs] == 0]
-
-                    if pIndLogConsole == 1:
+                    # Writing LP file
+                    if pIndWriteLP == 1 and pIndModelType != 0:
                         StartTime         = time.time()
                         mTEPES.write(f'{_path}/openTEPES_{CaseName}_{p}_{sc}_{st}.lp', io_options={'symbolic_solver_labels': True})
                         WritingLPFileTime = time.time() - StartTime
                         StartTime         = time.time()
                         print('Writing LP file                        ... ', round(WritingLPFileTime), 's')
 
-                    # there are investment decisions (it is an expansion and operation planning model)
+                    # there are no expansion decisions, or they are ignored (it is an operation model), or there are no system emission nor minimum RES constraints
+                    mTEPES.pScenProb[p,sc] = 1.0
                     ProblemSolving(DirName, CaseName, SolverName, mTEPES, mTEPES, pIndLogConsole, p, sc, st)
+                    mTEPES.pScenProb[p,sc] = 0.0
+
+                    # deactivate the constraints of the previous period and scenario
+                    for c in mTEPES.component_objects(pyo.Constraint, active=True):
+                        if c.name.find(str(p)) != -1 and c.name.find(str(sc)) != -1:
+                            c.deactivate()
+
+                # Minimum RES requirements or emission limit
+                elif  (max([mTEPES.pRESEnergy[p,ar] for ar in mTEPES.ar]) > 0
+                   or (min([mTEPES.pEmission [p,ar] for ar in mTEPES.ar]) < math.inf and sum(mTEPES.pEmissionRate[nr] for nr in mTEPES.nr) > 0)):
+
+                    if st == mTEPES.Last_st and mTEPES.NoRepetition == 0:
+
+                        mTEPES.del_component(mTEPES.st)
+                        mTEPES.del_component(mTEPES.n )
+                        mTEPES.del_component(mTEPES.n2)
+                        mTEPES.st = Set(doc='stages',      initialize=[stt for stt in mTEPES.stt if mTEPES.pStageWeight[stt] and sum(1 for                                    p,sc,stt,nn  in mTEPES.s2n)])
+                        mTEPES.n  = Set(doc='load levels', initialize=[nn  for nn  in mTEPES.nn  if                              sum(1 for p,sc,st in mTEPES.ps*mTEPES.st if (p,sc,st, nn) in mTEPES.s2n)])
+                        mTEPES.n2 = Set(doc='load levels', initialize=[nn  for nn  in mTEPES.nn  if                              sum(1 for p,sc,st in mTEPES.ps*mTEPES.st if (p,sc,st, nn) in mTEPES.s2n)])
+
+                        # load levels multiple of cycles for each ESS/generator
+                        mTEPES.nesc         = [(n,es) for n,es in mTEPES.n*mTEPES.es if mTEPES.n.ord(n) %     mTEPES.pStorageTimeStep [es] == 0]
+                        mTEPES.necc         = [(n,ec) for n,ec in mTEPES.n*mTEPES.ec if mTEPES.n.ord(n) %     mTEPES.pStorageTimeStep [ec] == 0]
+                        mTEPES.neso         = [(n,es) for n,es in mTEPES.n*mTEPES.es if mTEPES.n.ord(n) %     mTEPES.pOutflowsTimeStep[es] == 0]
+                        mTEPES.ngen         = [(n,g ) for n,g  in mTEPES.n*mTEPES.g  if mTEPES.n.ord(n) %     mTEPES.pEnergyTimeStep  [g ] == 0]
+                        if mTEPES.pIndHydroTopology == 1:
+                            mTEPES.nhc      = [(n,h ) for n,h  in mTEPES.n*mTEPES.h  if mTEPES.n.ord(n) % sum(mTEPES.pReservoirTimeStep[rs] for rs in mTEPES.rs if (rs,h) in mTEPES.r2h) == 0]
+                            if sum(1 for h,rs in mTEPES.p2r):
+                                mTEPES.np2c = [(n,h ) for n,h  in mTEPES.n*mTEPES.h  if sum(1 for rs in mTEPES.rs if (h,rs) in mTEPES.p2r) and mTEPES.n.ord(n) % sum(mTEPES.pReservoirTimeStep[rs] for rs in mTEPES.rs if (h,rs) in mTEPES.p2r) == 0]
+                            else:
+                                mTEPES.np2c = []
+                            if sum(1 for rs,h in mTEPES.r2p):
+                                mTEPES.npc  = [(n,h ) for n,h  in mTEPES.n*mTEPES.h  if sum(1 for rs in mTEPES.rs if (rs,h) in mTEPES.r2p) and mTEPES.n.ord(n) % sum(mTEPES.pReservoirTimeStep[rs] for rs in mTEPES.rs if (rs,h) in mTEPES.r2p) == 0]
+                            else:
+                                mTEPES.npc  = []
+                            mTEPES.nrsc     = [(n,rs) for n,rs in mTEPES.n*mTEPES.rs if mTEPES.n.ord(n) %     mTEPES.pReservoirTimeStep[rs] == 0]
+                            mTEPES.nrcc     = [(n,rs) for n,rs in mTEPES.n*mTEPES.rn if mTEPES.n.ord(n) %     mTEPES.pReservoirTimeStep[rs] == 0]
+                            mTEPES.nrso     = [(n,rs) for n,rs in mTEPES.n*mTEPES.rs if mTEPES.n.ord(n) %     mTEPES.pWaterOutTimeStep [rs] == 0]
+
+                        # Writing LP file
+                        if pIndLogConsole == 1:
+                            StartTime         = time.time()
+                            mTEPES.write(_path+f'/openTEPES_{CaseName}_{p}_{sc}_{st}.lp', io_options={'symbolic_solver_labels': True})
+                            WritingLPFileTime = time.time() - StartTime
+                            StartTime         = time.time()
+                            print('Writing LP file                        ... ', round(WritingLPFileTime), 's')
+
+                        # there are investment decisions (it is an expansion and operation model) or there are system emission constraints
+                        oTM.ProblemSolving(DirName, CaseName, SolverName, mTEPES, mTEPES, pIndLogConsole, p, sc, st)
+
+            # generator investments or generator retirements, or line investments
+            elif (  len(mTEPES.eb) > 0 and mTEPES.pIndBinGenInvest()     < 2
+                 or len(mTEPES.gd) > 0 and mTEPES.pIndBinGenRetire()     < 2
+                 or len(mTEPES.rc) > 0 and mTEPES.pIndBinRsrInvest()     < 2
+                 or len(mTEPES.lc) > 0 and mTEPES.pIndBinNetElecInvest() < 2
+                 or len(mTEPES.pc) > 0 and mTEPES.pIndBinNetH2Invest()   < 2
+                 or len(mTEPES.hc) > 0 and mTEPES.pIndBinNetHeatInvest() < 2):
+
+                    if (p,sc) == mTEPES.ps.last() and st == mTEPES.Last_st and mTEPES.NoRepetition == 0:
+                        mTEPES.NoRepetition = 1
+
+                        mTEPES.del_component(mTEPES.st)
+                        mTEPES.del_component(mTEPES.n )
+                        mTEPES.del_component(mTEPES.n2)
+                        mTEPES.st = Set(doc='stages',      initialize=[stt for stt in mTEPES.stt if mTEPES.pStageWeight[stt] and sum(1 for                                    p,sc,stt,nn  in mTEPES.s2n)])
+                        mTEPES.n  = Set(doc='load levels', initialize=[nn  for nn  in mTEPES.nn  if                              sum(1 for p,sc,st in mTEPES.ps*mTEPES.st if (p,sc,st, nn) in mTEPES.s2n)])
+                        mTEPES.n2 = Set(doc='load levels', initialize=[nn  for nn  in mTEPES.nn  if                              sum(1 for p,sc,st in mTEPES.ps*mTEPES.st if (p,sc,st, nn) in mTEPES.s2n)])
+
+                        # load levels multiple of cycles for each ESS/generator
+                        mTEPES.nesc         = [(n,es) for n,es in mTEPES.n*mTEPES.es if mTEPES.n.ord(n) %     mTEPES.pStorageTimeStep [es] == 0]
+                        mTEPES.necc         = [(n,ec) for n,ec in mTEPES.n*mTEPES.ec if mTEPES.n.ord(n) %     mTEPES.pStorageTimeStep [ec] == 0]
+                        mTEPES.neso         = [(n,es) for n,es in mTEPES.n*mTEPES.es if mTEPES.n.ord(n) %     mTEPES.pOutflowsTimeStep[es] == 0]
+                        mTEPES.ngen         = [(n,g ) for n,g  in mTEPES.n*mTEPES.g  if mTEPES.n.ord(n) %     mTEPES.pEnergyTimeStep  [g ] == 0]
+                        if mTEPES.pIndHydroTopology == 1:
+                            mTEPES.nhc      = [(n,h ) for n,h  in mTEPES.n*mTEPES.h  if mTEPES.n.ord(n) % sum(mTEPES.pReservoirTimeStep[rs] for rs in mTEPES.rs if (rs,h) in mTEPES.r2h) == 0]
+                            if sum(1 for h,rs in mTEPES.p2r):
+                                mTEPES.np2c = [(n,h ) for n,h  in mTEPES.n*mTEPES.h  if sum(1 for rs in mTEPES.rs if (h,rs) in mTEPES.p2r) and mTEPES.n.ord(n) % sum(mTEPES.pReservoirTimeStep[rs] for rs in mTEPES.rs if (h,rs) in mTEPES.p2r) == 0]
+                            else:
+                                mTEPES.np2c = []
+                            if sum(1 for rs,h in mTEPES.r2p):
+                                mTEPES.npc  = [(n,h ) for n,h  in mTEPES.n*mTEPES.h  if sum(1 for rs in mTEPES.rs if (rs,h) in mTEPES.r2p) and mTEPES.n.ord(n) % sum(mTEPES.pReservoirTimeStep[rs] for rs in mTEPES.rs if (rs,h) in mTEPES.r2p) == 0]
+                            else:
+                                mTEPES.npc  = []
+                            mTEPES.nrsc     = [(n,rs) for n,rs in mTEPES.n*mTEPES.rs if mTEPES.n.ord(n) %     mTEPES.pReservoirTimeStep[rs] == 0]
+                            mTEPES.nrcc     = [(n,rs) for n,rs in mTEPES.n*mTEPES.rn if mTEPES.n.ord(n) %     mTEPES.pReservoirTimeStep[rs] == 0]
+                            mTEPES.nrso     = [(n,rs) for n,rs in mTEPES.n*mTEPES.rs if mTEPES.n.ord(n) %     mTEPES.pWaterOutTimeStep [rs] == 0]
+
+                        # Writing LP file
+                        if pIndLogConsole == 1:
+                            StartTime         = time.time()
+                            mTEPES.write(_path+f'/openTEPES_{CaseName}_{p}_{sc}_{st}.lp', io_options={'symbolic_solver_labels': True})
+                            WritingLPFileTime = time.time() - StartTime
+                            StartTime         = time.time()
+                            print('Writing LP file                        ... ', round(WritingLPFileTime), 's')
+
+                        # there are investment decisions (it is an expansion and operation model) or there are system emission constraints
+                        ProblemSolving(DirName, CaseName, SolverName, mTEPES, mTEPES, pIndLogConsole, p, sc, st)
 
     mTEPES.del_component(mTEPES.st)
     mTEPES.del_component(mTEPES.n )
