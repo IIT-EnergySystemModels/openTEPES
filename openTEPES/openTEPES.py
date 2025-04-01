@@ -206,7 +206,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
                         # Writing LP file
                         if pIndLogConsole == 1:
                             StartTime         = time.time()
-                            mTEPES.write(_path+f'/openTEPES_{CaseName}_{p}_{sc}_{st}.lp', io_options={'symbolic_solver_labels': True})
+                            mTEPES.write(f'{_path}/openTEPES_{CaseName}_{p}_{sc}_{st}.lp', io_options={'symbolic_solver_labels': True})
                             WritingLPFileTime = time.time() - StartTime
                             StartTime         = time.time()
                             print('Writing LP file                        ... ', round(WritingLPFileTime), 's')
@@ -254,7 +254,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
                         # Writing LP file
                         if pIndLogConsole == 1:
                             StartTime         = time.time()
-                            mTEPES.write(_path+f'/openTEPES_{CaseName}_{p}_{sc}_{st}.lp', io_options={'symbolic_solver_labels': True})
+                            mTEPES.write(f'{_path}/openTEPES_{CaseName}_{p}_{sc}_{st}.lp', io_options={'symbolic_solver_labels': True})
                             WritingLPFileTime = time.time() - StartTime
                             StartTime         = time.time()
                             print('Writing LP file                        ... ', round(WritingLPFileTime), 's')
