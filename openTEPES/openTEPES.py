@@ -212,7 +212,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
                             print('Writing LP file                        ... ', round(WritingLPFileTime), 's')
 
                         # there are investment decisions (it is an expansion and operation model) or there are system emission constraints
-                        oTM.ProblemSolving(DirName, CaseName, SolverName, mTEPES, mTEPES, pIndLogConsole, p, sc, st)
+                        ProblemSolving(DirName, CaseName, SolverName, mTEPES, mTEPES, pIndLogConsole, p, sc, st)
 
             # generator investments or generator retirements, or line investments
             elif (  len(mTEPES.eb) > 0 and mTEPES.pIndBinGenInvest()     < 2
