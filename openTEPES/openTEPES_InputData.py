@@ -1707,6 +1707,9 @@ def SettingUpVariables(OptModel, mTEPES):
             OptModel.vStableState          = Var(mTEPES.psnnr, within=UnitInterval,     initialize=0.0, doc='stable    state    of the unit                        [0,1]')
             OptModel.vRampUpState          = Var(mTEPES.psnnr, within=UnitInterval,     initialize=0.0, doc='ramp up   state    of the unit                        [0,1]')
             OptModel.vRampDwState          = Var(mTEPES.psnnr, within=UnitInterval,     initialize=0.0, doc='ramp down state    of the unit                        [0,1]')
+            if mTEPES.pIndHydroTopology == 1:
+                OptModel.vCommitmentCons   = Var(mTEPES.psnh,  within=UnitInterval, initialize=0.0, doc='consumption commitment of the unit                        [0,1]')
+
         else:
             OptModel.vCommitment           = Var(mTEPES.psnnr, within=Binary,           initialize=0  , doc='commitment         of the unit                        {0,1}')
             OptModel.vStartUp              = Var(mTEPES.psnnr, within=Binary,           initialize=0  , doc='startup            of the unit                        {0,1}')
@@ -1715,6 +1718,8 @@ def SettingUpVariables(OptModel, mTEPES):
             OptModel.vStableState          = Var(mTEPES.psnnr, within=Binary,           initialize=0  , doc='stable    state    of the unit                        {0,1}')
             OptModel.vRampUpState          = Var(mTEPES.psnnr, within=Binary,           initialize=0  , doc='ramp up   state    of the unit                        {0,1}')
             OptModel.vRampDwState          = Var(mTEPES.psnnr, within=Binary,           initialize=0  , doc='ramp down state    of the unit                        {0,1}')
+            if mTEPES.pIndHydroTopology == 1:
+                OptModel.vCommitmentCons       = Var(mTEPES.psnh,  within=Binary, initialize=0.0, doc='consumption commitment of the unit                        [0,1]')
 
         if mTEPES.pIndBinLineCommit() == 0:
             OptModel.vLineCommit           = Var(mTEPES.psnla, within=UnitInterval,     initialize=0.0, doc='line switching      of the electric line              [0,1]')
@@ -1847,6 +1852,14 @@ def SettingUpVariables(OptModel, mTEPES):
         for p,sc,  nr in mTEPES.psnr:
             if mTEPES.pIndBinUnitCommit[nr] == 0:
                 OptModel.vMaxCommitment[p,sc,  nr].domain = UnitInterval
+        if mTEPES.pIndHydroTopology == 1:
+            for p,sc,n,h in mTEPES.psnh:
+                if mTEPES.pIndBinUnitCommit[h] == 0:
+                    OptModel.vCommitmentCons[p,sc,n,h].domain = UnitInterval
+                if mTEPES.pMaxCharge[p,sc,n,h] == 0:
+                    OptModel.vCommitmentCons[p,sc,n,h].fix(0)
+                    nFixedBinaries += 1
+
         return nFixedBinaries
 
     #Call the relaxing variables function and add its output to nFixedVariables
@@ -1935,13 +1948,16 @@ def SettingUpVariables(OptModel, mTEPES):
             if   len(mTEPES.g2g) == 0:
                 OptModel.vMaxCommitment     [p,sc,  nr].fix(1)
                 nFixedVariables += 1/len(mTEPES.n)
-                if (mTEPES.pMustRun[nr] == 1 or (mTEPES.pMinPowerElec[p,sc,n,nr] == 0.0 and mTEPES.pRatedConstantVarCost[nr] == 0.0) or nr in mTEPES.es) and nr not in mTEPES.ec:
+                if (mTEPES.pMustRun[nr] == 1 or (mTEPES.pMinPowerElec[p,sc,n,nr] == 0.0 and mTEPES.pRatedConstantVarCost[nr] == 0.0) or nr in mTEPES.es ) and nr not in mTEPES.ec and nr not in mTEPES.h:
+                    print("nr",nr)
+                    for h in mTEPES.h:
+                        print("h",h)
                     OptModel.vCommitment    [p,sc,n,nr].fix(1)
                     OptModel.vStartUp       [p,sc,n,nr].fix(0)
                     OptModel.vShutDown      [p,sc,n,nr].fix(0)
                     nFixedVariables += 3
             elif len(mTEPES.g2g) >  0 and sum(1 for g in mTEPES.nr if (nr,g) in mTEPES.g2g or (g,nr) in mTEPES.g2g) == 0:
-                if (mTEPES.pMustRun[nr] == 1 or (mTEPES.pMinPowerElec[p,sc,n,nr] == 0.0 and mTEPES.pRatedConstantVarCost[nr] == 0.0) or nr in mTEPES.es) and nr not in mTEPES.ec:
+                if (mTEPES.pMustRun[nr] == 1 or (mTEPES.pMinPowerElec[p,sc,n,nr] == 0.0 and mTEPES.pRatedConstantVarCost[nr] == 0.0) or nr in mTEPES.es) and nr not in mTEPES.ec and nr not in mTEPES.h:
                     OptModel.vCommitment    [p,sc,n,nr].fix(1)
                     OptModel.vStartUp       [p,sc,n,nr].fix(0)
                     OptModel.vShutDown      [p,sc,n,nr].fix(0)
@@ -1994,7 +2010,8 @@ def SettingUpVariables(OptModel, mTEPES):
                 # ESS with no charge capacity or not storage capacity can't charge
                 if  mTEPES.pMaxCharge        [p,sc,n,h ] ==  0.0:
                     OptModel.vESSTotalCharge [p,sc,n,h ].fix(0.0)
-                    nFixedVariables += 1
+                    OptModel.vCommitmentCons [p,sc,n,h ].fix(0.0)
+                    nFixedVariables += 2
                 if  mTEPES.pMaxCharge2ndBlock[p,sc,n,h ] ==  0.0:
                     OptModel.vCharge2ndBlock [p,sc,n,h ].fix(0.0)
                     nFixedVariables += 1
