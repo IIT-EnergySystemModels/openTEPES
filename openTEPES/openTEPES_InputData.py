@@ -10,7 +10,6 @@ import pandas        as pd
 from   collections   import defaultdict
 from   pyomo.environ import DataPortal, Set, Param, Var, Binary, NonNegativeReals, NonNegativeIntegers, PositiveReals, PositiveIntegers, Reals, UnitInterval, Any
 
-
 def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     print('Input data                             ****')
 
@@ -708,6 +707,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         mTEPES.psnle     = Set(initialize = [(p,sc,n,ni,nf,cc) for p,sc,n,ni,nf,cc in mTEPES.psn*mTEPES.le if (p,ni,nf,cc) in mTEPES.pla])
         mTEPES.psnll     = Set(initialize = [(p,sc,n,ni,nf,cc) for p,sc,n,ni,nf,cc in mTEPES.psn*mTEPES.ll if (p,ni,nf,cc) in mTEPES.pll])
         mTEPES.psnls     = Set(initialize = [(p,sc,n,ni,nf,cc) for p,sc,n,ni,nf,cc in mTEPES.psn*mTEPES.ls if (p,ni,nf,cc) in mTEPES.pla])
+
+        mTEPES.psnehc    = Set(initialize = [(p,sc,n,eh)       for p,sc,n,eh       in mTEPES.psneh          if pRatedMaxCharge[eh]>0.0 ])
 
         if pIndHydroTopology == 1:
             mTEPES.prs   = Set(initialize = [(p,     rs)       for p,     rs       in mTEPES.p  *mTEPES.rs if pRsrPeriodIni[rs] <= p and pRsrPeriodFin[rs] >= p])
@@ -1949,9 +1950,6 @@ def SettingUpVariables(OptModel, mTEPES):
                 OptModel.vMaxCommitment     [p,sc,  nr].fix(1)
                 nFixedVariables += 1/len(mTEPES.n)
                 if (mTEPES.pMustRun[nr] == 1 or (mTEPES.pMinPowerElec[p,sc,n,nr] == 0.0 and mTEPES.pRatedConstantVarCost[nr] == 0.0) or nr in mTEPES.es ) and nr not in mTEPES.ec and nr not in mTEPES.h:
-                    print("nr",nr)
-                    for h in mTEPES.h:
-                        print("h",h)
                     OptModel.vCommitment    [p,sc,n,nr].fix(1)
                     OptModel.vStartUp       [p,sc,n,nr].fix(0)
                     OptModel.vShutDown      [p,sc,n,nr].fix(0)
