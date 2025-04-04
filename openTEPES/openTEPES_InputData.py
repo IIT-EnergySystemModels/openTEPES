@@ -1861,6 +1861,7 @@ def SettingUpVariables(OptModel, mTEPES):
                     OptModel.vCommitmentCons[p,sc,n,h].fix(0)
                     nFixedBinaries += 1
 
+
         return nFixedBinaries
 
     #Call the relaxing variables function and add its output to nFixedVariables

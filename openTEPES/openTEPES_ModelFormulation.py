@@ -640,8 +640,9 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
 
     def eMaxCharge(OptModel,n,eh):
         # Check if generator is available in the period and has variable charging capacity
-        if (p,eh) not in mTEPES.eh or mTEPES.pMaxCharge2ndBlock[p,sc,n,eh] == 0:
+        if (p,eh) not in mTEPES.peh or mTEPES.pMaxCharge2ndBlock[p,sc,n,eh] == 0:
             return Constraint.Skip
+
         # Hydro units have commitment while ESS units are implicitly always committed
         if eh not in mTEPES.h:
             # ESS units only need this constraint when they can offer operating reserves and the systems demands reserves
@@ -650,9 +651,9 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
             # ESS case equation
             return (OptModel.vCharge2ndBlock[p, sc, n, eh] + OptModel.vESSReserveDown[p, sc, n, eh]) / mTEPES.pMaxCharge2ndBlock[p, sc, n, eh] <= 1.0
         # Hydro case equation
-        return (OptModel.vCharge2ndBlock[p, sc, n, eh] + OptModel.OptModel.vESSReserveDown[p, sc, n, eh]) / mTEPES.pMaxCharge2ndBlock[p, sc, n, eh] <= OptModel.vCommitmentCons[p, sc, n, eh]
 
-
+        else:
+            return (OptModel.vCharge2ndBlock[p, sc, n, eh] + OptModel.vESSReserveDown[p, sc, n, eh]) / mTEPES.pMaxCharge2ndBlock[p, sc, n, eh] <= OptModel.vCommitmentCons[p, sc, n, eh]
     setattr(OptModel, f'eMaxCharge_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.eh, rule=eMaxCharge, doc='max charge of an ESS [p.u.]'))
 
     if pIndLogConsole == 1:
