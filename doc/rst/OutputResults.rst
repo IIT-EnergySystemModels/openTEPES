@@ -591,11 +591,11 @@ Electricity balance
 
 File ``oT_Result_BalanceEnergy.csv``
 
-============  ==========  ==========  ==========  =======================================================
+============  ==========  ==========  ==========  ======================================================================================
 Identifier                            Header      Description
-====================================  ==========  =======================================================
-Period        Scenario    Load level  Technology  Generation, consumption, flows, losses and demand [GWh]
-============  ==========  ==========  ==========  =======================================================
+====================================  ==========  ======================================================================================
+Period        Scenario    Load level  Technology  Generation, consumption, flows, losses and demand [GWh] (to be used as a pivot table)
+============  ==========  ==========  ==========  ======================================================================================
 
 File ``oT_Result_BalanceEnergyPerArea.csv``
 
@@ -722,11 +722,11 @@ Period        Scenario    Load level  Node        Energy not served by node [GWh
 
 File ``oT_Result_SummaryNetwork.csv``
 
-============  ==========  ==========  ============  ==========  ============================================
-Identifier                            Header                    Description
-====================================  ========================  ============================================
-Period        Scenario    Load level  Initial node  Final node  Network output (to be used as pivot table)
-============  ==========  ==========  ============  ==========  ============================================
+============  ==========  ==========  =======  ============================================
+Identifier                            Header   Description
+====================================  =======  ============================================
+Period        Scenario    Load level  Node     Network output (to be used as pivot table)
+============  ==========  ==========  =======  ============================================
 
 Hydrogen balance and network operation
 --------------------------------------
