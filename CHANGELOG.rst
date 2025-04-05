@@ -1,8 +1,10 @@
 Change Log
 =============
 
-[4.18.4] - 2025-04-02
+[4.18.4] - 2025-04-05
 -----------------------
+- [CHANGED] introduction of commitment for hydro units modeled in water units
+- [FIXED] allow solving periods with no investment decisions independently in a multiyear case
 - [FIXED] fix GenerationCostOperatingReserve output file
 - [FIXED] deactivate constraints when solving for each period and scenario
 - [FIXED] avoid solving all the periods and scenarios simultaneously if not needed

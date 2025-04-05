@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 17, 2025
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 03, 2025
 """
 
 import datetime
@@ -2049,18 +2049,18 @@ def SettingUpVariables(OptModel, mTEPES):
             for ar in mTEPES.ar:
                 pSystemOutput = 0.0
                 for nr in mTEPES.nr:
-                    if nr in g2a[ar] and pSystemOutput < sum(mTEPES.pDemandElec[n1,nd] for nd in mTEPES.nd if (nd,ar) in mTEPES.ndar) and mTEPES.pMustRun[nr] == 1:
-                        mTEPES.pInitialOutput[n1,nr] = mTEPES.pMaxPowerElec[n1,nr]
+                    if nr in g2a[ar] and (p,nr) in mTEPES.pnr and pSystemOutput < sum(mTEPES.pDemandElec[n1,nd] for nd in mTEPES.nd if (nd,ar) in mTEPES.ndar) and mTEPES.pMustRun[nr] == 1:
+                        mTEPES.pInitialOutput[n1,nr] = mTEPES.pMaxPowerElec [n1,nr]
                         mTEPES.pInitialUC    [n1,nr] = 1
                         pSystemOutput               += mTEPES.pInitialOutput[n1,nr]()
 
                 # determine the initial committed units and their output at the first load level of each period, scenario, and stage
                 for go in mTEPES.go:
-                    if go in g2a[ar] and pSystemOutput < sum(mTEPES.pDemandElec[n1,nd] for nd in mTEPES.nd if (nd,ar) in mTEPES.ndar) and mTEPES.pMustRun[go] == 0:
+                    if go in g2a[ar] and (p,go) in mTEPES.pg and pSystemOutput < sum(mTEPES.pDemandElec[n1,nd] for nd in mTEPES.nd if (nd,ar) in mTEPES.ndar) and mTEPES.pMustRun[go] == 0:
                         if go in mTEPES.re:
-                            mTEPES.pInitialOutput[n1,go] = mTEPES.pMaxPowerElec[n1,go]
+                            mTEPES.pInitialOutput[n1,go] = mTEPES.pMaxPowerElec [n1,go]
                         else:
-                            mTEPES.pInitialOutput[n1,go] = mTEPES.pMinPowerElec[n1,go]
+                            mTEPES.pInitialOutput[n1,go] = mTEPES.pMinPowerElec [n1,go]
                         mTEPES.pInitialUC[n1,go]         = 1
                         pSystemOutput                   += mTEPES.pInitialOutput[n1,go]()
 
@@ -2073,7 +2073,7 @@ def SettingUpVariables(OptModel, mTEPES):
 
             # fixing the ESS inventory at the last load level of the stage for every period and scenario if between storage limits
             for es in mTEPES.es:
-                if es not in mTEPES.ec:
+                if es not in mTEPES.ec and (p,es) in mTEPES.pes:
                     OptModel.vESSInventory[p,sc,mTEPES.n.last(),es].fix(mTEPES.pIniInventory[p,sc,mTEPES.n.last(),es])
 
             if mTEPES.pIndHydroTopology == 1:

@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 31, 2025
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 03, 2025
 """
 
 import time
@@ -112,20 +112,26 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
 
     # continuous investment decisions are fixed to their optimal values
     for eb in mTEPES.eb:
-        OptModel.vGenerationInvest[p,eb].fix(        OptModel.vGenerationInvest[p,eb      ]())
+        if (p,eb) in mTEPES.peb:
+            OptModel.vGenerationInvest[p,eb].fix(        OptModel.vGenerationInvest[p,eb      ]())
     for gd in mTEPES.gd:
-        OptModel.vGenerationRetire[p,gd].fix(        OptModel.vGenerationRetire[p,gd      ]())
+        if (p,gd) in mTEPES.pgd:
+            OptModel.vGenerationRetire[p,gd].fix(        OptModel.vGenerationRetire[p,gd      ]())
     if mTEPES.pIndHydroTopology == 1:
         for rc in mTEPES.rn:
-            OptModel.vReservoirInvest[p,rc].fix(     OptModel.vReservoirInvest [p,rc      ]())
+            if (p,rc) in mTEPES.prc:
+                OptModel.vReservoirInvest[p,rc].fix(     OptModel.vReservoirInvest [p,rc      ]())
     for ni,nf,cc in mTEPES.lc:
-        OptModel.vNetworkInvest[p,ni,nf,cc].fix(     OptModel.vNetworkInvest   [p,ni,nf,cc]())
+        if (p,ni,nf,cc) in mTEPES.plc:
+            OptModel.vNetworkInvest[p,ni,nf,cc].fix(     OptModel.vNetworkInvest   [p,ni,nf,cc]())
     if mTEPES.pIndHydrogen == 1:
         for ni,nf,cc in mTEPES.pc:
-            OptModel.vH2PipeInvest  [p,ni,nf,cc].fix(OptModel.vH2PipeInvest    [p,ni,nf,cc]())
+            if (p,ni,nf,cc) in mTEPES.ppc:
+                OptModel.vH2PipeInvest  [p,ni,nf,cc].fix(OptModel.vH2PipeInvest    [p,ni,nf,cc]())
     if mTEPES.pIndHeat == 1:
         for ni,nf,cc in mTEPES.hc:
-            OptModel.vHeatPipeInvest[p,ni,nf,cc].fix(OptModel.vHeatPipeInvest  [p,ni,nf,cc]())
+            if (p,ni,nf,cc) in mTEPES.phc:
+                OptModel.vHeatPipeInvest[p,ni,nf,cc].fix(OptModel.vHeatPipeInvest  [p,ni,nf,cc]())
 
     if idx > 0:
         OptModel.dual = Suffix(direction=Suffix.IMPORT_EXPORT)
