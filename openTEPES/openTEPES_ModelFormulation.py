@@ -639,22 +639,30 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
         print('eMaxShiftTime         ... ', len(getattr(OptModel, f'eMaxShiftTime_{p}_{sc}_{st}')), ' rows')
 
     def eMaxCharge(OptModel,n,eh):
-        if mTEPES.pIndOperReserve[eh] == 0 and (p,eh) in mTEPES.peh:
-            if sum(mTEPES.pOperReserveDw[p,sc,n,ar] for ar in a2e[eh]) and mTEPES.pMaxCharge[p,sc,n,eh]:
-                return (OptModel.vCharge2ndBlock[p,sc,n,eh] + OptModel.vESSReserveDown[p,sc,n,eh]) / mTEPES.pMaxCharge2ndBlock[p,sc,n,eh] <= 1.0
-            else:
-                return Constraint.Skip
-        else:
+        # Check if generator is available in the period and has variable charging capacity
+        if (p,eh) not in mTEPES.peh or mTEPES.pMaxCharge2ndBlock[p,sc,n,eh] == 0:
             return Constraint.Skip
+
+        # Hydro units have commitment while ESS units are implicitly always committed
+        if eh not in mTEPES.h:
+            # ESS units only need this constraint when they can offer operating reserves and the systems demands reserves
+            if mTEPES.pIndOperReserve[eh] != 0 or not sum(mTEPES.pOperReserveDw[p,sc,n,ar] for ar in a2e[eh]):
+                return Constraint.Skip
+            # ESS case equation
+            return (OptModel.vCharge2ndBlock[p, sc, n, eh] + OptModel.vESSReserveDown[p, sc, n, eh]) / mTEPES.pMaxCharge2ndBlock[p, sc, n, eh] <= 1.0
+        # Hydro case equation
+
+        else:
+            return (OptModel.vCharge2ndBlock[p, sc, n, eh] + OptModel.vESSReserveDown[p, sc, n, eh]) / mTEPES.pMaxCharge2ndBlock[p, sc, n, eh] <= OptModel.vCommitmentCons[p, sc, n, eh]
     setattr(OptModel, f'eMaxCharge_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.eh, rule=eMaxCharge, doc='max charge of an ESS [p.u.]'))
 
     if pIndLogConsole == 1:
         print('eMaxCharge            ... ', len(getattr(OptModel, f'eMaxCharge_{p}_{sc}_{st}')), ' rows')
 
-    def eMinCharge(OptModel,n,eh):
-        if mTEPES.pIndOperReserve[eh] == 0 and (p,eh) in mTEPES.peh:
-            if sum(mTEPES.pOperReserveUp[p,sc,n,ar] for ar in a2e[eh]) and mTEPES.pMaxCharge[p,sc,n,eh]:
-                return  OptModel.vCharge2ndBlock[p,sc,n,eh] - OptModel.vESSReserveUp  [p,sc,n,eh]                                         >= 0.0
+    def eMinCharge(OptModel, n, eh):
+        if mTEPES.pIndOperReserve[eh] == 0 and (p, eh) in mTEPES.peh:
+            if sum(mTEPES.pOperReserveUp[p, sc, n, ar] for ar in a2e[eh]) and mTEPES.pMaxCharge[p, sc, n, eh]:
+                return OptModel.vCharge2ndBlock[p, sc, n, eh] - OptModel.vESSReserveUp[p, sc, n, eh] >= 0.0
             else:
                 return Constraint.Skip
         else:
@@ -671,31 +679,55 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
     #         return Constraint.Skip
     # OptModel.eChargeDischarge = Constraint(mTEPES.n, mTEPES.eh, rule=eChargeDischarge, doc='incompatibility between charge and discharge [p.u.]')
 
+    # Generators with consumption capability cannot be consuming and generating simultaneously
     def eChargeDischarge(OptModel,n,eh):
-        if (p,eh) in mTEPES.peh:
-            if mTEPES.pMaxPower2ndBlock [p,sc,n,eh] and mTEPES.pMaxCharge2ndBlock[p,sc,n,eh]:
-                return ((OptModel.vOutput2ndBlock[p,sc,n,eh] + mTEPES.pUpReserveActivation * OptModel.vReserveUp     [p,sc,n,eh]) / mTEPES.pMaxPower2ndBlock [p,sc,n,eh] +
-                        (OptModel.vCharge2ndBlock[p,sc,n,eh] + mTEPES.pDwReserveActivation * OptModel.vESSReserveDown[p,sc,n,eh]) / mTEPES.pMaxCharge2ndBlock[p,sc,n,eh] <= 1.0)
-            else:
-                return Constraint.Skip
-        else:
+        # Check if generator is avaiable in the period
+        if (p,eh) not in mTEPES.peh:
             return Constraint.Skip
+        # Constraint only relevant to generators which can consume and generate power
+        if mTEPES.pMaxPower2ndBlock [p,sc,n,eh] == 0 or mTEPES.pMaxCharge2ndBlock[p,sc,n,eh] == 0:
+            return Constraint.Skip
+
+        #Hydro generators can have binary commitment, energy modeled ESS do not have commitment
+
+        # ESS Generator
+        if eh not in mTEPES.h:
+            return ((OptModel.vOutput2ndBlock[p,sc,n,eh] + mTEPES.pUpReserveActivation * OptModel.vReserveUp     [p,sc,n,eh]) / mTEPES.pMaxPower2ndBlock [p,sc,n,eh] +
+                    (OptModel.vCharge2ndBlock[p,sc,n,eh] + mTEPES.pDwReserveActivation * OptModel.vESSReserveDown[p,sc,n,eh]) / mTEPES.pMaxCharge2ndBlock[p,sc,n,eh] <= 1.0)
+        # Hydro Generator
+        else:
+            return OptModel.vCommitment[p,sc,n,eh] + OptModel.vCommitmentCons[p,sc,n,eh] <= 1.0
+
     setattr(OptModel, f'eChargeDischarge_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.eh, rule=eChargeDischarge, doc='incompatibility between charge and discharge [p.u.]'))
 
     if pIndLogConsole == 1:
         print('eChargeDischarge      ... ', len(getattr(OptModel, f'eChargeDischarge_{p}_{sc}_{st}')), ' rows')
 
     def eESSTotalCharge(OptModel,n,eh):
-        if (p,eh) in mTEPES.peh:
-            if mTEPES.pMaxCharge[p,sc,n,eh] and mTEPES.pMaxCharge2ndBlock[p,sc,n,eh]:
-                if mTEPES.pMinCharge[p,sc,n,eh] == 0.0:
-                    return OptModel.vESSTotalCharge[p,sc,n,eh]                                ==        OptModel.vCharge2ndBlock[p,sc,n,eh] + mTEPES.pDwReserveActivation * OptModel.vESSReserveDown[p,sc,n,eh] - mTEPES.pUpReserveActivation * OptModel.vESSReserveUp[p,sc,n,eh]
-                else:
-                    return OptModel.vESSTotalCharge[p,sc,n,eh] / mTEPES.pMinCharge[p,sc,n,eh] == 1.0 + (OptModel.vCharge2ndBlock[p,sc,n,eh] + mTEPES.pDwReserveActivation * OptModel.vESSReserveDown[p,sc,n,eh] - mTEPES.pUpReserveActivation * OptModel.vESSReserveUp[p,sc,n,eh]) / mTEPES.pMinCharge[p,sc,n,eh]
-            else:
-                return Constraint.Skip
-        else:
+        # Check if generator is avaiable in the period
+        if (p,eh) not in mTEPES.peh:
             return Constraint.Skip
+        # Constraint only applies to generators with charging capabilities
+        if mTEPES.pMaxCharge2ndBlock[p,sc,n,eh] == 0:
+            return Constraint.Skip
+
+        # Hydro generators can have binary commitment, energy modeled ESS do not have commitment
+
+        # ESS Generator
+        if eh not in mTEPES.h:
+            # Check minimum charge to avoid dividing by 0. Dividing by MinCharge is more numerically stable
+            if mTEPES.pMinCharge[p,sc,n,eh] == 0.0:
+                return OptModel.vESSTotalCharge[p,sc,n,eh]                                ==        OptModel.vCharge2ndBlock[p,sc,n,eh] + mTEPES.pDwReserveActivation * OptModel.vESSReserveDown[p,sc,n,eh] - mTEPES.pUpReserveActivation * OptModel.vESSReserveUp[p,sc,n,eh]
+            else:
+                return OptModel.vESSTotalCharge[p,sc,n,eh] / mTEPES.pMinCharge[p,sc,n,eh] == 1.0 + (OptModel.vCharge2ndBlock[p,sc,n,eh] + mTEPES.pDwReserveActivation * OptModel.vESSReserveDown[p,sc,n,eh] - mTEPES.pUpReserveActivation * OptModel.vESSReserveUp[p,sc,n,eh]) / mTEPES.pMinCharge[p,sc,n,eh]
+        # Hydro generator
+        else:
+            # Check minimum charge to avoid dividing by 0. Dividing by MinCharge is more numerically stable
+            if mTEPES.pMinCharge[p,sc,n,eh] == 0.0:
+                return OptModel.vESSTotalCharge[p,sc,n,eh]                                ==        OptModel.vCharge2ndBlock[p,sc,n,eh] + mTEPES.pDwReserveActivation * OptModel.vESSReserveDown[p,sc,n,eh] - mTEPES.pUpReserveActivation * OptModel.vESSReserveUp[p,sc,n,eh]
+            else:
+                return OptModel.vESSTotalCharge[p,sc,n,eh] / mTEPES.pMinCharge[p,sc,n,eh] == OptModel.vCommitmentCons[p,sc,n,eh] + (OptModel.vCharge2ndBlock[p,sc,n,eh] + mTEPES.pDwReserveActivation * OptModel.vESSReserveDown[p,sc,n,eh] - mTEPES.pUpReserveActivation * OptModel.vESSReserveUp[p,sc,n,eh]) / mTEPES.pMinCharge[p,sc,n,eh]
+
     setattr(OptModel, f'eESSTotalCharge_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.eh, rule=eESSTotalCharge, doc='total charge of an ESS unit [GW]'))
 
     if pIndLogConsole == 1:
