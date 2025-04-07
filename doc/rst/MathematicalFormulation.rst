@@ -253,6 +253,7 @@ They are written in **lowercase** letters.
 :math:`i^p_{\omega ne}`                                          ESS stored energy (inventory, reservoir energy, state of charge)                                    GWh
 :math:`s^p_{\omega ne}`                                          ESS spilled energy                                                                                  GWh
 :math:`uc^p_{\omega ng}, su^p_{\omega ng}, sd^p_{\omega ng}`     Commitment, startup, and shutdown of a generation unit per load level                               {0,1}
+:math:`ucc^p_{\omega ng}`                                        Consumption commitment of a reversible hydro unit per load level
 :math:`rss^p_{\omega nt}, rsu^p_{\omega nt}, rsd^p_{\omega nt}`  Stable, ramp up, and ramp down states of a generation unit with minimum stable time per load level  {0,1}
 :math:`uc'_g`                                                    Maximum commitment of a generation unit for all the load levels                                     {0,1}
 ===============================================================  ==================================================================================================  ======
@@ -466,23 +467,35 @@ Maximum and minimum output of the second block of a committed unit (all except t
 
 :math:`p^p_{\omega ng} - dr^p_{\omega ng} \geq 0                \quad \forall p \omega ng`
 
-Maximum and minimum charge of an ESS [p.u.] «``eMaxCharge``» «``eMinCharge``»
+Maximum and minimum charge of a non-hydro ESS [p.u.] «``eMaxCharge``» «``eMinCharge``»
 
 :math:`\frac{c^p_{\omega ne} + dr'^p_{\omega ne}}{\overline{GC}^p_{\omega ne} - \underline{GC}^p_{\omega ne}} \leq 1 \quad \forall p \omega ne`
 
 :math:`c^p_{\omega ne} - ur'^p_{\omega ne} \geq 0 \quad \forall p \omega ne`
 
-Incompatibility between charge and discharge of an ESS [p.u.] «``eChargeDischarge``»
+Maximum charge of a hydro unit [p.u.] «``eMaxCharge``»
+
+:math:`\frac{c^p_{\omega ne} + dr'^p_{\omega ne}}{\overline{GC}^p_{\omega ne} - \underline{GC}^p_{\omega ne}} \leq ucc^p_{\omega ng} \quad \forall p \omega ne`
+
+Incompatibility between charge and discharge of a non-hydro ESS [p.u.] «``eChargeDischarge``»
 
 :math:`\frac{p^p_{\omega ne} + URA \: ur^p_{\omega ne}}{\overline{GP}^p_{\omega ne} - \underline{GP}^p_{\omega ne}} + \frac{c^p_{\omega ne} + DRA \: dr'^p_{\omega ne}}{\overline{GC}^p_{\omega ne} - \underline{GC}^p_{\omega ne}} \leq 1 \quad \forall p \omega ne`
+
+Incompatibility between charge and discharge of a hydro unit [p.u.] «``eChargeDischarge``»
+
+:math:`uc^p_{\omega ng} + ucc^p_{\omega ng} \leq 1 \quad \forall p \omega ne`
 
 Total output of a committed unit (all except the VRES units) [GW] «``eTotalOutput``»
 
 :math:`\frac{gp^p_{\omega ng}}{\underline{GP}^p_{\omega ng}} = uc^p_{\omega ng} + \frac{p^p_{\omega ng} + URA \: ur^p_{\omega ng} - DRA \: dr^p_{\omega ng}}{\underline{GP}^p_{\omega ng}} \quad \forall p \omega ng`
 
-Total charge of an ESS [GW] «``eESSTotalCharge``»
+Total charge of a non-hydro ESS [GW] «``eESSTotalCharge``»
 
 :math:`\frac{gc^p_{\omega ne}}{\underline{GC}^p_{\omega ne}} = 1 + \frac{c^p_{\omega ne} - URA \: ur'^p_{\omega ne} + DRA \: dr'^p_{\omega ne}}{\underline{GC}^p_{\omega ne}} \quad \forall p \omega ne`
+
+Total charge of a hydro unit [GW] «``eESSTotalCharge``»
+
+:math:`\frac{gc^p_{\omega ne}}{\underline{GC}^p_{\omega ne}} = ucc^p_{\omega ng} + \frac{c^p_{\omega ne} - URA \: ur'^p_{\omega ne} + DRA \: dr'^p_{\omega ne}}{\underline{GC}^p_{\omega ne}} \quad \forall p \omega ne`
 
 Incompatibility between charge and outflows use of an ESS [p.u.] «``eChargeOutflows``»
 
