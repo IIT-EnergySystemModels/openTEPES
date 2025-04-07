@@ -467,7 +467,7 @@ Maximum and minimum output of the second block of a committed unit (all except t
 
 :math:`p^p_{\omega ng} - dr^p_{\omega ng} \geq 0                \quad \forall p \omega ng`
 
-Maximum and minimum charge of a non-hydro ESS [p.u.] «``eMaxCharge``» «``eMinCharge``»
+Maximum and minimum charge of a non-hydropower ESS [p.u.] «``eMaxCharge``» «``eMinCharge``»
 
 :math:`\frac{c^p_{\omega ne} + dr'^p_{\omega ne}}{\overline{GC}^p_{\omega ne} - \underline{GC}^p_{\omega ne}} \leq 1 \quad \forall p \omega ne`
 
@@ -477,7 +477,7 @@ Maximum charge of a hydro unit [p.u.] «``eMaxCharge``»
 
 :math:`\frac{c^p_{\omega ne} + dr'^p_{\omega ne}}{\overline{GC}^p_{\omega ne} - \underline{GC}^p_{\omega ne}} \leq ucc^p_{\omega ng} \quad \forall p \omega ne`
 
-Incompatibility between charge and discharge of a non-hydro ESS [p.u.] «``eChargeDischarge``»
+Incompatibility between charge and discharge of a non-hydropower ESS [p.u.] «``eChargeDischarge``»
 
 :math:`\frac{p^p_{\omega ne} + URA \: ur^p_{\omega ne}}{\overline{GP}^p_{\omega ne} - \underline{GP}^p_{\omega ne}} + \frac{c^p_{\omega ne} + DRA \: dr'^p_{\omega ne}}{\overline{GC}^p_{\omega ne} - \underline{GC}^p_{\omega ne}} \leq 1 \quad \forall p \omega ne`
 
@@ -489,7 +489,7 @@ Total output of a committed unit (all except the VRES units) [GW] «``eTotalOutp
 
 :math:`\frac{gp^p_{\omega ng}}{\underline{GP}^p_{\omega ng}} = uc^p_{\omega ng} + \frac{p^p_{\omega ng} + URA \: ur^p_{\omega ng} - DRA \: dr^p_{\omega ng}}{\underline{GP}^p_{\omega ng}} \quad \forall p \omega ng`
 
-Total charge of a non-hydro ESS [GW] «``eESSTotalCharge``»
+Total charge of a non-hydropower ESS [GW] «``eESSTotalCharge``»
 
 :math:`\frac{gc^p_{\omega ne}}{\underline{GC}^p_{\omega ne}} = 1 + \frac{c^p_{\omega ne} - URA \: ur'^p_{\omega ne} + DRA \: dr'^p_{\omega ne}}{\underline{GC}^p_{\omega ne}} \quad \forall p \omega ne`
 
