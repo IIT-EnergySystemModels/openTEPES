@@ -834,7 +834,7 @@ File                                 Description
 ===================================  ==============================
 
 Heat adequacy reserve margin
------------
+----------------------------
 
 The adequacy reserve margin for heating is the ratio between the available capacity and the maximum demand. It is modeled as the adequacy reserve margin for electricity, but considering the heat demand and the heat capacity of the units.
 A description of the data included in the file ``oT_Data_ReserveMarginHeat.csv`` follows:
