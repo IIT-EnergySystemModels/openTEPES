@@ -526,7 +526,7 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnolo
         OutputToFile = pd.Series(data=[OptModel.vTotalOutput[p,sc,n,g ]()*mTEPES.pLoadLevelDuration[p,sc,n]() for p,sc,n,g in mTEPES.psng], index=mTEPES.psng)
         OutputToFile.to_frame(name='GWh').reset_index().pivot_table(      index=['level_0','level_1','level_2'], columns='level_3', values='GWh', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(f'{_path}/oT_Result_GenerationEnergy_{CaseName}.csv', sep=',')
 
-    if len(mTEPES.nr) + len(mTEPES.bo):
+    if mTEPES.nr or mTEPES.bo:
         OutputToFile     = pd.Series(data=[OptModel.vTotalOutput    [p,sc,n,g]()*mTEPES.pLoadLevelDuration[p,sc,n]()*mTEPES.pEmissionRate[g]/1e3 if g not in mTEPES.bo else
                                            OptModel.vTotalOutputHeat[p,sc,n,g]()*mTEPES.pLoadLevelDuration[p,sc,n]()*mTEPES.pEmissionRate[g]/1e3 for p,sc,n,g in mTEPES.psng], index=mTEPES.psng)
         if pIndTechnologyOutput == 0 or pIndTechnologyOutput == 2:
@@ -1777,13 +1777,13 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES, pIndPlotOutput):
 
     # #%% Reduced cost for NetworkInvestment
     # ReducedCostActivation = mTEPES.pIndBinGenInvest()*len(mTEPES.gc) + mTEPES.pIndBinNetElecInvest()*len(mTEPES.lc) + mTEPES.pIndBinGenOperat()*len(mTEPES.nr) + mTEPES.pIndBinLineCommit()*len(mTEPES.la)
-    # if len(mTEPES.lc) and not ReducedCostActivation and OptModel.vNetworkInvest.is_variable_type():
+    # if mTEPES.lc and not ReducedCostActivation and OptModel.vNetworkInvest.is_variable_type():
     #     OutputToFile = pd.Series(data=[OptModel.rc[OptModel.vNetworkInvest[p,ni,nf,cc]] for p,ni,nf,cc in mTEPES.plc], index=mTEPES.plc)
     #     OutputToFile.index.names = ['Period', 'InitialNode', 'FinalNode', 'Circuit']
     #     OutputToFile.to_frame(name='MEUR').to_csv(f'{_path}/oT_Result_NetworkInvestment_ReducedCost_{CaseName}.csv', sep=',')
     #
     # #%% Reduced cost for NetworkCommitment
-    # if len(mTEPES.ls) and not ReducedCostActivation and OptModel.vLineCommit.is_variable_type():
+    # if mTEPES.ls and not ReducedCostActivation and OptModel.vLineCommit.is_variable_type():
     #     OutputResults = pd.Series(data=[OptModel.rc[OptModel.vLineCommit[p,sc,n,ni,nf,cc]] for p,sc,n,ni,nf,cc in mTEPES.psnls], index=mTEPES.psnlas)
     #     OutputResults.index.names = ['Period', 'Scenario', 'LoadLevel', 'InitialNode', 'FinalNode', 'Circuit']
     #     OutputResults = pd.pivot_table(OutputResults.to_frame(name='p.u.'), values='p.u.', index=['Period', 'Scenario', 'LoadLevel'], columns=['InitialNode', 'FinalNode', 'Circuit'], fill_value=0.0)
