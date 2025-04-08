@@ -680,7 +680,7 @@ File                                     Dictionary              Description
 ``oT_Dict_ReservoirToReservoir.csv``     ReservoirToReservoir    Reservoir upstream of reservoir (i.e., reservoir one spills the water to reservoir two)
 =======================================  ======================  =============================================================================================
 
-Natural hydro inflows
+Natural water inflows
 ---------------------
 
 A description of the data included in the file ``oT_Data_HydroInflows.csv`` follows:
@@ -693,11 +693,11 @@ Period      Scenario        LoadLevel   Reservoir  Natural water inflows by load
 
 All the reservoirs must be defined as columns of these files.
 
-If you have daily natural hydro inflows data just input the daily amount at the first hour of every day if the reservoir have daily or weekly storage capacity.
+If you have daily natural water inflows data just input the daily amount at the first hour of every day if the reservoir have daily or weekly storage capacity.
 
 Internally, all the values below 1e-5 times the maximum system demand of each area will be converted into 0 by the model.
 
-Natural hydro outflows
+Natural water outflows
 ----------------------
 
 A description of the data included in the file ``oT_Data_HydroOutflows.csv`` follows:
@@ -710,7 +710,7 @@ Period      Scenario        LoadLevel   Reservoir  Water outflows by load level 
 
 All the reservoirs must be defined as columns of these files.
 
-These water outflows can be used to represent the hydro outflows for irrigation.
+These water outflows can be used to represent the water outflows for irrigation.
 
 If you have hourly/daily/weekly/monthly/yearly water outflows data, you can just input the daily/weekly/monthly/yearly amount at the first hour of every day/week/month/year.
 
