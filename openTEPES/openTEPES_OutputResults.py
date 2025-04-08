@@ -696,23 +696,62 @@ def ESSOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutpu
         OutputToFile = pd.Series(data=[sum(OutputToFile[p,sc,n,es] for es in o2e[ot] if (p,es) in mTEPES.pes) for p,sc,n,ot in mTEPES.psnot], index=mTEPES.psnot)
         OutputToFile.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(f'{_path}/oT_Result_TechnologyOutflows_{CaseName}.csv', sep=',')
 
-    OutputToFile = pd.Series(data=[OptModel.vESSTotalCharge    [p,sc,n,eh]() for p,sc,n,eh in mTEPES.psnehc], index=mTEPES.psnehc)
-    OutputToFile *= -1e3
-    OutputToFile.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(f'{_path}/oT_Result_Consumption_{CaseName}.csv', sep=',')
+    # Check if there are any ESS with consumption capabilities
+    # If there are none, just skip outputting consumption related files
+    if mTEPES.psnehc:
+        OutputToFile = pd.Series(data=[OptModel.vESSTotalCharge    [p,sc,n,eh]() for p,sc,n,eh in mTEPES.psnehc], index=mTEPES.psnehc)
+        OutputToFile *= -1e3
+        OutputToFile.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(f'{_path}/oT_Result_Consumption_{CaseName}.csv', sep=',')
 
-    # tolerance to consider that an ESS is not producing or consuming
-    pEpsilon = 1e-6
-    OutputToFile = pd.Series(data=[0.0 for p,sc,n,eh in mTEPES.psnehc], index=mTEPES.psnehc)
-    for p,sc,n,eh in mTEPES.psnehc:
-        OutputToFile[p,sc,n,eh] = -1.0                                                                         if OptModel.vESSTotalCharge[p,sc,n,eh]() and OptModel.vTotalOutput   [p,sc,n,eh]() <= pEpsilon * mTEPES.pMaxPowerElec[p,sc,n,eh]                                          else OutputToFile[p,sc,n,eh]
-        OutputToFile[p,sc,n,eh] =  1.0                                                                         if OptModel.vTotalOutput   [p,sc,n,eh]() and OptModel.vESSTotalCharge[p,sc,n,eh]() <= pEpsilon * mTEPES.pMaxCharge   [p,sc,n,eh]                                          else OutputToFile[p,sc,n,eh]
-        if OptModel.vTotalOutput[p,sc,n,eh]() and OptModel.vESSTotalCharge[p,sc,n,eh]():
-            OutputToFile[p,sc,n,eh] = OptModel.vTotalOutput[p,sc,n,eh]()/OptModel.vESSTotalCharge[p,sc,n,eh]() if OptModel.vTotalOutput   [p,sc,n,eh]() >  pEpsilon * mTEPES.pMaxPowerElec[p,sc,n,eh] or OptModel.vESSTotalCharge[p,sc,n,eh]() > pEpsilon * mTEPES.pMaxCharge[p,sc,n,eh] else OutputToFile[p,sc,n,eh]
-    OutputToFile.to_frame(name='p.u.').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='p.u.', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(f'{_path}/oT_Result_GenerationConsumptionRatio_{CaseName}.csv', sep=',')
+        # tolerance to consider that an ESS is not producing or consuming
+        pEpsilon = 1e-6
+        OutputToFile = pd.Series(data=[0.0 for p,sc,n,eh in mTEPES.psnehc], index=mTEPES.psnehc)
+        for p,sc,n,eh in mTEPES.psnehc:
+            OutputToFile[p,sc,n,eh] = -1.0                                                                         if OptModel.vESSTotalCharge[p,sc,n,eh]() and OptModel.vTotalOutput   [p,sc,n,eh]() <= pEpsilon * mTEPES.pMaxPowerElec[p,sc,n,eh]                                          else OutputToFile[p,sc,n,eh]
+            OutputToFile[p,sc,n,eh] =  1.0                                                                         if OptModel.vTotalOutput   [p,sc,n,eh]() and OptModel.vESSTotalCharge[p,sc,n,eh]() <= pEpsilon * mTEPES.pMaxCharge   [p,sc,n,eh]                                          else OutputToFile[p,sc,n,eh]
+            if OptModel.vTotalOutput[p,sc,n,eh]() and OptModel.vESSTotalCharge[p,sc,n,eh]():
+                OutputToFile[p,sc,n,eh] = OptModel.vTotalOutput[p,sc,n,eh]()/OptModel.vESSTotalCharge[p,sc,n,eh]() if OptModel.vTotalOutput   [p,sc,n,eh]() >  pEpsilon * mTEPES.pMaxPowerElec[p,sc,n,eh] or OptModel.vESSTotalCharge[p,sc,n,eh]() > pEpsilon * mTEPES.pMaxCharge[p,sc,n,eh] else OutputToFile[p,sc,n,eh]
+        OutputToFile.to_frame(name='p.u.').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='p.u.', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(f'{_path}/oT_Result_GenerationConsumptionRatio_{CaseName}.csv', sep=',')
 
-    if pIndTechnologyOutput == 1 or pIndTechnologyOutput == 2:
-        OutputToFile = pd.Series(data=[sum(OutputToFile[p,sc,n,eh] for eh in e2e[et] if (p,eh) in mTEPES.peh and mTEPES.pRatedMaxCharge[eh]) for p,sc,n,et in mTEPES.psnet], index=mTEPES.psnet)
-        OutputToFile.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(f'{_path}/oT_Result_TechnologyConsumption_{CaseName}.csv', sep=',')
+        if pIndTechnologyOutput == 1 or pIndTechnologyOutput == 2:
+            OutputToFile = pd.Series(data=[sum(OutputToFile[p,sc,n,eh] for eh in e2e[et] if (p,eh) in mTEPES.peh and mTEPES.pRatedMaxCharge[eh]) for p,sc,n,et in mTEPES.psnet], index=mTEPES.psnet)
+            OutputToFile.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(f'{_path}/oT_Result_TechnologyConsumption_{CaseName}.csv', sep=',')
+
+        OutputToFile = - pd.Series(data=[OptModel.vESSTotalCharge[p, sc, n, eh]() * mTEPES.pLoadLevelDuration[p, sc, n]() for p, sc, n, eh in mTEPES.psnehc], index=mTEPES.psnehc)
+        if pIndTechnologyOutput == 0 or pIndTechnologyOutput == 2:
+            OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0', 'level_1', 'level_2'], columns='level_3', values='GWh', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(f'{_path}/oT_Result_ConsumptionEnergy_{CaseName}.csv', sep=',')
+
+        if pIndTechnologyOutput == 1 or pIndTechnologyOutput == 2:
+            OutputToFile = pd.Series(data=[sum(OutputToFile[p, sc, n, eh] for eh in e2e[et] if (p, eh) in mTEPES.peh and mTEPES.pRatedMaxCharge[eh]) for p, sc, n, et in mTEPES.psnet], index=mTEPES.psnet)
+            OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0', 'level_1', 'level_2'], columns='level_3', values='GWh').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(f'{_path}/oT_Result_TechnologyConsumptionEnergy_{CaseName}.csv', sep=',')
+
+        if pIndPlotOutput == 1:
+            TechnologyCharge = OutputToFile.loc[:, :, :, :]
+            for p, sc in mTEPES.ps:
+                chart = AreaPlots(p, sc, TechnologyCharge, 'Technology', 'LoadLevel', 'MW', 'sum')
+                chart.save(f'{_path}/oT_Plot_TechnologyConsumption_{p}_{sc}_{CaseName}.html', embed_options={'renderer': 'svg'})
+
+        if pIndPlotOutput == 1:
+            OutputToFile *= -1.0
+            if OutputToFile.sum() < 0.0:
+                for p, sc in mTEPES.ps:
+                    chart = PiePlots(p, sc, OutputToFile, 'Technology', '%')
+                    chart.save(f'{_path}/oT_Plot_TechnologyConsumptionEnergy_{p}_{sc}_{CaseName}.html', embed_options={'renderer': 'svg'})
+
+        if sum(1 for ar in mTEPES.ar if sum(1 for eh in e2a[ar])) > 1:
+            if pIndAreaOutput == 1:
+                for ar in mTEPES.ar:
+                    if sum(1 for eh in e2a[ar] if eh in e2e[et]):
+                        sPSNET = [(p, sc, n, et) for p, sc, n, et in mTEPES.psnet if sum(1 for eh in e2a[ar] if (p, sc, n, eh) in mTEPES.psnehc and eh in e2e[et])]
+                        if len(sPSNET):
+                            OutputToFile = pd.Series(data=[sum(-OptModel.vESSTotalCharge[p, sc, n, eh]() * mTEPES.pLoadLevelDuration[p, sc, n]() for eh in e2a[ar] if (p, sc, n, eh) in mTEPES.psnehc and eh in e2e[et]) for p, sc, n, et in sPSNET], index=pd.Index(sPSNET))
+                            OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0', 'level_1', 'level_2'], columns='level_3', values='GWh', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(f'{_path}/oT_Result_TechnologyConsumptionEnergy_{ar}_{CaseName}.csv', sep=',')
+
+                            if pIndPlotOutput == 1:
+                                OutputToFile *= -1.0
+                                for p, sc in mTEPES.ps:
+                                    chart = PiePlots(p, sc, OutputToFile, 'Technology', '%')
+                                    chart.save(f'{_path}/oT_Plot_TechnologyConsumptionEnergy_{p}_{sc}_{ar}_{CaseName}.html', embed_options={'renderer': 'svg'})
 
     OutputToFile = pd.Series(data=[OptModel.vEnergyOutflows    [p,sc,n,es]()*mTEPES.pLoadLevelDuration[p,sc,n]() for p,sc,n,es in mTEPES.psnes], index=mTEPES.psnes)
     if pIndTechnologyOutput == 0 or pIndTechnologyOutput == 2:
@@ -722,41 +761,6 @@ def ESSOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutpu
         OutputToFile = pd.Series(data=[sum(OutputToFile[p,sc,n,es] for es in o2e[ot] if (p,es) in mTEPES.pes) for p,sc,n,ot in mTEPES.psnot], index=mTEPES.psnot)
         OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='GWh', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(f'{_path}/oT_Result_TechnologyOutflowsEnergy_{CaseName}.csv', sep=',')
 
-    OutputToFile = - pd.Series(data=[OptModel.vESSTotalCharge   [p,sc,n,eh]()*mTEPES.pLoadLevelDuration[p,sc,n]() for p,sc,n,eh in mTEPES.psnehc], index=mTEPES.psnehc)
-    if pIndTechnologyOutput == 0 or pIndTechnologyOutput == 2:
-        OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='GWh', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(f'{_path}/oT_Result_ConsumptionEnergy_{CaseName}.csv', sep=',')
-
-    if pIndTechnologyOutput == 1 or pIndTechnologyOutput == 2:
-        OutputToFile = pd.Series(data=[sum(OutputToFile[p,sc,n,eh] for eh in e2e[et] if (p,eh) in mTEPES.peh and mTEPES.pRatedMaxCharge[eh]) for p,sc,n,et in mTEPES.psnet], index=mTEPES.psnet)
-        OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='GWh').rename_axis             (['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(f'{_path}/oT_Result_TechnologyConsumptionEnergy_{CaseName}.csv', sep=',')
-
-    if pIndPlotOutput == 1:
-        TechnologyCharge = OutputToFile.loc[:,:,:,:]
-        for p,sc in mTEPES.ps:
-            chart = AreaPlots(p, sc, TechnologyCharge, 'Technology', 'LoadLevel', 'MW', 'sum')
-            chart.save(f'{_path}/oT_Plot_TechnologyConsumption_{p}_{sc}_{CaseName}.html', embed_options={'renderer': 'svg'})
-
-    if pIndPlotOutput == 1:
-        OutputToFile *= -1.0
-        if OutputToFile.sum() < 0.0:
-            for p,sc in mTEPES.ps:
-                chart = PiePlots(p, sc, OutputToFile, 'Technology', '%')
-                chart.save(f'{_path}/oT_Plot_TechnologyConsumptionEnergy_{p}_{sc}_{CaseName}.html', embed_options={'renderer': 'svg'})
-
-    if sum(1 for ar in mTEPES.ar if sum(1 for eh in e2a[ar])) > 1:
-        if pIndAreaOutput == 1:
-            for ar in mTEPES.ar:
-                if sum(1 for eh in e2a[ar] if eh in e2e[et]):
-                    sPSNET = [(p,sc,n,et) for p,sc,n,et in mTEPES.psnet if sum(1 for eh in e2a[ar] if (p,sc,n,eh) in mTEPES.psnehc and eh in e2e[et])]
-                    if len(sPSNET):
-                        OutputToFile = pd.Series(data=[sum(-OptModel.vESSTotalCharge[p,sc,n,eh]()*mTEPES.pLoadLevelDuration[p,sc,n]() for eh in e2a[ar] if (p,sc,n,eh) in mTEPES.psnehc and eh in e2e[et]) for p,sc,n,et in sPSNET], index=pd.Index(sPSNET))
-                        OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='GWh', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(f'{_path}/oT_Result_TechnologyConsumptionEnergy_{ar}_{CaseName}.csv', sep=',')
-
-                        if pIndPlotOutput == 1:
-                            OutputToFile *= -1.0
-                            for p,sc in mTEPES.ps:
-                                chart = PiePlots(p, sc, OutputToFile, 'Technology', '%')
-                                chart.save(f'{_path}/oT_Plot_TechnologyConsumptionEnergy_{p}_{sc}_{ar}_{CaseName}.html', embed_options={'renderer': 'svg'})
 
     # tolerance to consider avoid division by 0
     pEpsilon = 1e-6
@@ -2012,7 +2016,7 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput, pIndPlo
                                             mTEPES.pDiscountedWeight[p] * mTEPES.pScenProb[p,sc]() * mTEPES.pLoadLevelWeight[p,sc,n]() * mTEPES.pOperReserveCost[nr] * OptModel.vReserveDown[p,sc,n,nr]()) for p,sc,n,nr in mTEPES.psnnr if (p,nr) in mTEPES.pnr], index=mTEPES.psnnr)
             OutputToFile.to_frame(name='MEUR').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MEUR', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(f'{_path}/oT_Result_GenerationCostOperatingReserve_{CaseName}.csv', sep=',')
 
-    if len(mTEPES.eh):
+    if len(mTEPES.psnehc):
         OutputToFile = pd.Series(data=[ mTEPES.pDiscountedWeight[p] * mTEPES.pScenProb[p,sc]() * mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pLinearVarCost[p,sc,n,eh] * OptModel.vESSTotalCharge[p,sc,n,eh]() for p,sc,n,eh in mTEPES.psnehc if (p,eh) in mTEPES.peh], index=mTEPES.psnehc)
         OutputToFile.to_frame(name='MEUR').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MEUR', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(f'{_path}/oT_Result_ConsumptionCostOperation_{CaseName}.csv', sep=',')
         if sum(mTEPES.pIndOperReserve[eh] for eh in mTEPES.eh if mTEPES.pIndOperReserve[eh] == 0):
