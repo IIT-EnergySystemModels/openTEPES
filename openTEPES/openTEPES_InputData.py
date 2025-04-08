@@ -2022,7 +2022,7 @@ def SettingUpVariables(OptModel, mTEPES):
     nFixedGeneratorCommits = FixGeneratorsCommitment(mTEPES,mTEPES)
     nFixedVariables       += nFixedGeneratorCommits
     # thermal, ESS, and RES units ordered by increasing variable operation cost, excluding reactive generating units
-    if len(mTEPES.tq):
+    if mTEPES.tq:
         mTEPES.go = Set(initialize=[g for g in sorted(mTEPES.pRatedLinearVarCost, key=mTEPES.pRatedLinearVarCost.__getitem__) if g not in mTEPES.sq])
     else:
         if mTEPES.pIndHydroTopology == 1:
@@ -2042,7 +2042,7 @@ def SettingUpVariables(OptModel, mTEPES):
         mTEPES.st = Set(doc='stages',      initialize=[stt for stt in mTEPES.stt if st == stt and mTEPES.pStageWeight[stt] and sum(1 for (p,sc,st,nn) in mTEPES.s2n)])
         mTEPES.n  = Set(doc='load levels', initialize=[nn  for nn  in mTEPES.nn  if                                                      (p,sc,st,nn) in mTEPES.s2n ])
 
-        if len(mTEPES.n):
+        if mTEPES.n:
             # determine the first load level of each stage
             n1 = (p,sc,mTEPES.n.first())
             # commit the units of each area and their output at the first load level of each stage
