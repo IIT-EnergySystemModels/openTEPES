@@ -1000,7 +1000,7 @@ def GenerationOperationModelFormulationCommitment(OptModel, mTEPES, pIndLogConso
         print('eStableStates         ... ', len(getattr(OptModel, f'eStableStates_{p}_{sc}_{st}')), ' rows')
 
     def eMaxCommitment(OptModel,n,nr):
-        if len(mTEPES.g2g) and (p,nr) in mTEPES.pnr:
+        if mTEPES.g2g and (p,nr) in mTEPES.pnr:
             if sum(1 for g in mTEPES.nr if (nr,g) in mTEPES.g2g or (g,nr) in mTEPES.g2g):
                 return OptModel.vCommitment[p,sc,n,nr]                               <= OptModel.vMaxCommitment[p,sc,nr]
             else:
@@ -1013,7 +1013,7 @@ def GenerationOperationModelFormulationCommitment(OptModel, mTEPES, pIndLogConso
         print('eMaxCommitment        ... ', len(getattr(OptModel, f'eMaxCommitment_{p}_{sc}_{st}')), ' rows')
 
     def eMaxCommitGen(OptModel,n,g):
-        if len(mTEPES.g2g) and (p,g) in mTEPES.pg:
+        if mTEPES.g2g and (p,g) in mTEPES.pg:
             if sum(1 for gg in mTEPES.g if (g,gg) in mTEPES.g2g or (gg,g) in mTEPES.g2g) and mTEPES.pMaxPowerElec[p,sc,n,g]:
                 return OptModel.vTotalOutput[p,sc,n,g]/mTEPES.pMaxPowerElec[p,sc,n,g] <= OptModel.vMaxCommitment[p,sc,g]
             else:
@@ -1026,7 +1026,7 @@ def GenerationOperationModelFormulationCommitment(OptModel, mTEPES, pIndLogConso
         print('eMaxCommitGen         ... ', len(getattr(OptModel, f'eMaxCommitGen_{p}_{sc}_{st}')), ' rows')
 
     def eExclusiveGens(OptModel,g):
-        if len(mTEPES.g2g) and (p,g) in mTEPES.pg:
+        if mTEPES.g2g and (p,g) in mTEPES.pg:
             if sum(1 for gg in mTEPES.g if (gg,g) in mTEPES.g2g):
                 return OptModel.vMaxCommitment[p,sc,g] + sum(OptModel.vMaxCommitment[p,sc,gg] for gg in mTEPES.g if (gg,g) in mTEPES.g2g) <= 1
             else:
