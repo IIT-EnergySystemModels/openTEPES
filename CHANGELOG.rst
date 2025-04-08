@@ -1,7 +1,11 @@
 Change Log
 =============
 
-[4.18.4] - 2025-04-05
+[4.18.5] - 2025-04-08
+-----------------------
+- [CHANGED] change len(xxx) to xxx
+
+[4.18.4] - 2025-04-08
 -----------------------
 - [CHANGED] introduction of commitment for hydro units modeled in water units
 - [FIXED] allow solving periods with no investment decisions independently in a multiyear case

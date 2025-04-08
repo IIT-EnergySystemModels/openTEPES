@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 03, 2025
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 08, 2025
 """
 
 import datetime
@@ -1073,7 +1073,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         pOperReserveUp     [pOperReserveUp [[                 ar ]] <  pEpsilonElec] = 0.0
         pOperReserveDw     [pOperReserveDw [[                 ar ]] <  pEpsilonElec] = 0.0
 
-        if len(g2a[ar]):
+        if g2a[ar]:
             pMinPowerElec  [pMinPowerElec  [[g  for  g in g2a[ar]]] <  pEpsilonElec] = 0.0
             pMaxPowerElec  [pMaxPowerElec  [[g  for  g in g2a[ar]]] <  pEpsilonElec] = 0.0
             pMinCharge     [pMinCharge     [[es for es in e2a[ar]]] <  pEpsilonElec] = 0.0
@@ -1104,7 +1104,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
 
         pMaxCapacity       = pMaxPowerElec.where(pMaxPowerElec > pMaxCharge, pMaxCharge)
 
-        if len(g2a[ar]):
+        if g2a[ar]:
             pMaxPower2ndBlock [pMaxPower2ndBlock [[g for g in g2a[ar]]] < pEpsilonElec] = 0.0
             pMaxCharge2ndBlock[pMaxCharge2ndBlock[[g for g in g2a[ar]]] < pEpsilonElec] = 0.0
 
@@ -2022,7 +2022,7 @@ def SettingUpVariables(OptModel, mTEPES):
     nFixedGeneratorCommits = FixGeneratorsCommitment(mTEPES,mTEPES)
     nFixedVariables       += nFixedGeneratorCommits
     # thermal, ESS, and RES units ordered by increasing variable operation cost, excluding reactive generating units
-    if len(mTEPES.tq):
+    if mTEPES.tq:
         mTEPES.go = Set(initialize=[g for g in sorted(mTEPES.pRatedLinearVarCost, key=mTEPES.pRatedLinearVarCost.__getitem__) if g not in mTEPES.sq])
     else:
         if mTEPES.pIndHydroTopology == 1:
@@ -2042,7 +2042,7 @@ def SettingUpVariables(OptModel, mTEPES):
         mTEPES.st = Set(doc='stages',      initialize=[stt for stt in mTEPES.stt if st == stt and mTEPES.pStageWeight[stt] and sum(1 for (p,sc,st,nn) in mTEPES.s2n)])
         mTEPES.n  = Set(doc='load levels', initialize=[nn  for nn  in mTEPES.nn  if                                                      (p,sc,st,nn) in mTEPES.s2n ])
 
-        if len(mTEPES.n):
+        if mTEPES.n:
             # determine the first load level of each stage
             n1 = (p,sc,mTEPES.n.first())
             # commit the units of each area and their output at the first load level of each stage

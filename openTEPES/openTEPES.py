@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 03, 2025
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 08, 2025
 """
 
 # import dill as pickle
@@ -39,8 +39,8 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     idxDict['y'  ] = 1
 
     #%% model declaration
-    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.4 - April 03, 2025')
-    print(                 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.4 - April 03, 2025', file=open(f'{_path}/openTEPES_version_{CaseName}.log','w'))
+    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.5 - April 08, 2025')
+    print(                 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.5 - April 08, 2025', file=open(f'{_path}/openTEPES_version_{CaseName}.log','w'))
 
     pIndOutputResults = [j for i,j in idxDict.items() if i == pIndOutputResults][0]
     pIndLogConsole    = [j for i,j in idxDict.items() if i == pIndLogConsole   ][0]
@@ -105,7 +105,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
             mTEPES.nrcc     = [(n,rs) for n,rs in mTEPES.n*mTEPES.rn if mTEPES.n.ord(n) %     mTEPES.pReservoirTimeStep[rs] == 0]
             mTEPES.nrso     = [(n,rs) for n,rs in mTEPES.n*mTEPES.rs if mTEPES.n.ord(n) %     mTEPES.pWaterOutTimeStep [rs] == 0]
 
-        if len(mTEPES.st):
+        if mTEPES.st:
 
             # load levels up to the current stage for emission and RES energy constraints
             # if (p != mTEPES.p.first() or sc != mTEPES.sc.first()) and st == mTEPES.First_st:
@@ -356,15 +356,15 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
         InvestmentResults                 (DirName, CaseName, mTEPES, mTEPES, pIndTechnologyOutput,                 pIndPlotOutput)
     if pIndGenerationOperationResults  == 1:
         GenerationOperationResults        (DirName, CaseName, mTEPES, mTEPES, pIndTechnologyOutput, pIndAreaOutput, pIndPlotOutput)
-        if len(mTEPES.ch) and mTEPES.pIndHeat == 1:
+        if mTEPES.ch and mTEPES.pIndHeat == 1:
             GenerationOperationHeatResults(DirName, CaseName, mTEPES, mTEPES, pIndTechnologyOutput, pIndAreaOutput, pIndPlotOutput)
-    if pIndESSOperationResults         == 1 and len(mTEPES.es):
+    if pIndESSOperationResults         == 1 and mTEPES.es:
         ESSOperationResults               (DirName, CaseName, mTEPES, mTEPES, pIndTechnologyOutput, pIndAreaOutput, pIndPlotOutput)
-    if pIndReservoirOperationResults   == 1 and len(mTEPES.rs) and mTEPES.pIndHydroTopology == 1:
+    if pIndReservoirOperationResults   == 1 and mTEPES.rs and mTEPES.pIndHydroTopology == 1:
         ReservoirOperationResults         (DirName, CaseName, mTEPES, mTEPES, pIndTechnologyOutput,                 pIndPlotOutput)
-    if pIndNetworkH2OperationResults   == 1 and len(mTEPES.pa) and mTEPES.pIndHydrogen == 1:
+    if pIndNetworkH2OperationResults   == 1 and mTEPES.pa and mTEPES.pIndHydrogen == 1:
         NetworkH2OperationResults         (DirName, CaseName, mTEPES, mTEPES)
-    if pIndNetworkHeatOperationResults == 1 and len(mTEPES.ha) and mTEPES.pIndHeat == 1:
+    if pIndNetworkHeatOperationResults == 1 and mTEPES.ha and mTEPES.pIndHeat == 1:
         NetworkHeatOperationResults       (DirName, CaseName, mTEPES, mTEPES)
     if pIndFlexibilityResults          == 1:
         FlexibilityResults                (DirName, CaseName, mTEPES, mTEPES)
