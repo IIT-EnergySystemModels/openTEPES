@@ -41,7 +41,7 @@ The **openTEPES** model has been developed at the `Instituto de Investigación T
 The **openTEPES** model presents a decision support system for defining the **integrated generation, storage, and transmission resource planning** (IRP, GEP+SEP+TEP) -**Integrated Resource Planning** (IRP)- of a **large-scale electric system** at a tactical level (i.e., time horizons of 5-30 years),
 defined as a set of **generation, storage, and (electricity, hydrogen, and heat) networks dynamic investment decisions for multiple future years**.
 
-The `complete documentation <https://opentepes.readthedocs.io/en/latest/index.html>`_ of the openTEPES model presents the input data, output results, and mathematical formulation.
+The `openTEPES complete documentation <https://opentepes.readthedocs.io/en/latest/index.html>`_ presents the input data, output results, mathematical formulation, download and installation, and the research projects where the model has been used.
 
 It is integrated into the `open energy system modelling platform <https://openenergymodels.net/>`_, helping model Europe's energy system and in the list of `energy models published under open source licenses <https://wiki.openmod-initiative.org/wiki/Open_Models>`_.
 It is also part of the Africa `open energy system modelling toolbox <https://africaenergymodels.net/>`_, which is a suite of open and linked state-of-the-art open-source energy system models for Africa.
@@ -55,6 +55,12 @@ Reference
 **A. Ramos, E. Quispe, S. Lumbreras** `“OpenTEPES: Open-source Transmission and Generation Expansion Planning” <https://www.sciencedirect.com/science/article/pii/S235271102200053X>`_ SoftwareX 18: June 2022 `10.1016/j.softx.2022.101070 <https://doi.org/10.1016/j.softx.2022.101070>`_.
 
 **openTEPES**: `summary presentation <https://pascua.iit.comillas.edu/aramos/openTEPES.pdf>`_, `présentation (French) <https://pascua.iit.comillas.edu/aramos/openTEPES_fr.pdf>`_, and `installation <https://pascua.iit.comillas.edu/aramos/openTEPES_installation.pdf>`_
+
+Authors
+########
+**Andrés Ramos, Erik Alvarez, Francisco Labora, Sara Lumbreras** Universidad Pontificia Comillas, Instituto de Investigación Tecnológica, Alberto Aguilera 23, 28015 Madrid, Spain
+
+Contact: andres.ramos@comillas.edu
 
 Description
 ############
