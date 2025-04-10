@@ -404,7 +404,7 @@ Generator type                          Description                             
 ======================================  ===================================================================================================================================  ==========
 Generator                               It has MaximumPower or MaximumCharge or MaximumPowerHeat >0                                                                          *g*
 Thermal                                 Fuel-based variable cost (fuel cost x linear term + CO2 emission cost) >0                                                            *t*
-RES                                     Fuel-based variable cost (fuel cost x linear term + CO2 emission cost) =0  and MaximumStorage =0.  It may have OMVariableCost >0     *re*
+VRE                                     Fuel-based variable cost (fuel cost x linear term + CO2 emission cost) =0  and MaximumStorage =0.  It may have OMVariableCost >0     *re*
 Non-renewable                           All the generators except the RESS                                                                                                   *nr*
 ESS                                     It has MaximumCharge or MaximumStorage >0  or ProductionFunctionH2 or ProductionFunctionHeat >0  and ProductionFunctionHydro =0      *es*
 Hydro power plant (energy)              ESS with ProductionFunctionHydro =0                                                                                                  *es*

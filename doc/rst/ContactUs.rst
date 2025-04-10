@@ -7,6 +7,8 @@ Contact Us
    :scale: 70%
    :align: right
 
+|
+
 .. image:: ../img/logoIIT.png
    :scale: 15%
    :align: right
