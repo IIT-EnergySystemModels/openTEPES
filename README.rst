@@ -2,6 +2,7 @@
 .. image:: https://pascua.iit.comillas.edu/aramos/openTEPES.png
    :target: https://pascua.iit.comillas.edu/aramos/openTEPES/index.html
    :alt: logo
+   :scale: 70%
    :align: center
 
 |
