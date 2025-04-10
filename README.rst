@@ -40,6 +40,8 @@ The **openTEPES** model has been developed at the `Instituto de Investigación T
 The **openTEPES** model presents a decision support system for defining the **integrated generation, storage, and transmission resource planning** (IRP, GEP+SEP+TEP) -**Integrated Resource Planning** (IRP)- of a **large-scale electric system** at a tactical level (i.e., time horizons of 5-30 years),
 defined as a set of **generation, storage, and (electricity, hydrogen, and heat) networks dynamic investment decisions for multiple future years**.
 
+The `complete documentation <https://opentepes.readthedocs.io/en/latest/index.html>`_ of the openTEPES model presents the input data, output results, and mathematical formulation.
+
 It is integrated into the `open energy system modelling platform <https://openenergymodels.net/>`_, helping model Europe's energy system and in the list of `energy models published under open source licenses <https://wiki.openmod-initiative.org/wiki/Open_Models>`_.
 It is also part of the Africa `open energy system modelling toolbox <https://africaenergymodels.net/>`_, which is a suite of open and linked state-of-the-art open-source energy system models for Africa.
 
