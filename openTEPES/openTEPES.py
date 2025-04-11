@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 08, 2025
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 11, 2025
 """
 
 # import dill as pickle
@@ -39,8 +39,8 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     idxDict['y'  ] = 1
 
     #%% model declaration
-    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.5 - April 08, 2025')
-    print(                 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.5 - April 08, 2025', file=open(f'{_path}/openTEPES_version_{CaseName}.log','w'))
+    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.5 - April 11, 2025')
+    print(                 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.5 - April 11, 2025', file=open(f'{_path}/openTEPES_version_{CaseName}.log','w'))
 
     pIndOutputResults = [j for i,j in idxDict.items() if i == pIndOutputResults][0]
     pIndLogConsole    = [j for i,j in idxDict.items() if i == pIndLogConsole   ][0]
@@ -153,6 +153,9 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
                 if  (max([mTEPES.pRESEnergy[p,ar] for ar in mTEPES.ar]) == 0
                 and (min([mTEPES.pEmission [p,ar] for ar in mTEPES.ar]) == math.inf or sum(mTEPES.pEmissionRate[nr] for nr in mTEPES.nr) == 0)):
 
+                    if (p,sc) == mTEPES.ps.last() and st == mTEPES.Last_st and mTEPES.NoRepetition == 0:
+                        mTEPES.NoRepetition = 1
+
                     # Writing LP file
                     if pIndLogConsole == 1:
                         StartTime         = time.time()
@@ -176,6 +179,9 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
                    or (min([mTEPES.pEmission [p,ar] for ar in mTEPES.ar]) < math.inf and sum(mTEPES.pEmissionRate[nr] for nr in mTEPES.nr) > 0)):
 
                     if st == mTEPES.Last_st and mTEPES.NoRepetition == 0:
+
+                        if (p,sc) == mTEPES.ps.last():
+                            mTEPES.NoRepetition = 1
 
                         mTEPES.del_component(mTEPES.st)
                         mTEPES.del_component(mTEPES.n )

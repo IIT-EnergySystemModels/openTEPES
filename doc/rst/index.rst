@@ -12,8 +12,7 @@
 
 “*Simplicity and Transparency in Energy Systems Planning*”
 
-The **openTEPES** model has been developed at the `Instituto de Investigación Tecnológica (IIT) <https://www.iit.comillas.edu/index.php.en>`_ of
-the `Universidad Pontificia Comillas <https://www.comillas.edu/en/>`_.
+The **openTEPES** model has been developed at the `Instituto de Investigación Tecnológica (IIT) <https://www.iit.comillas.edu/index.php.en>`_ of the `Universidad Pontificia Comillas <https://www.comillas.edu/en/>`_.
 
 The **openTEPES** model presents a decision support system for defining the integrated generation, storage, and transmission expansion plan (GEP+SEP+TEP) -**Integrated Resource Planning** (IRP)- of a **large-scale electric system** at a tactical level (i.e., time horizons of 5-30 years),
 defined as a set of **generation, storage, and (electricity, hydrogen, and heat) networks dynamic investment decisions for multiple future years**.

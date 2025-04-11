@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 03, 2025
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 11, 2025
 """
 
 import time
@@ -73,11 +73,12 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
             'option Threads = '+str(int((psutil.cpu_count(logical=True) + psutil.cpu_count(logical=False))/2))+' ;'
         }
 
-    idx = 0
+    nUnfixedVars = 0
     for var in OptModel.component_data_objects(pyo.Var, active=True, descend_into=True):
-        if not var.is_continuous():
-            idx += 1
-    if idx == 0:
+        if not var.is_continuous() and not var.is_fixed():
+            nUnfixedVars += 1
+
+    if nUnfixedVars == 0:
         OptModel.dual = Suffix(direction=Suffix.IMPORT_EXPORT)
         OptModel.rc   = Suffix(direction=Suffix.IMPORT_EXPORT)
 
@@ -98,17 +99,17 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
     # binary            operation  decisions are fixed to their optimal values
     # if NoRepetition == 1, all variables are fixed
     # if NoRepetition == 0, only the variables of the current period and scenario are fixed
-    idx = 0
+    nUnfixedVars = 0
     if mTEPES.NoRepetition == 1:
         for var in OptModel.component_data_objects(pyo.Var, active=True, descend_into=True):
-            if not var.is_continuous() and not var.is_fixed():
+            if not var.is_continuous() and not var.is_fixed() and var.value != None:
                 var.fixed = True  # fix the current value
-                idx += 1
+                nUnfixedVars += 1
     else:
         for var in OptModel.component_data_objects(pyo.Var, active=True, descend_into=True):
-            if not var.is_continuous() and not var.is_fixed() and var.index()[0] == p and var.index()[1] == sc:
+            if not var.is_continuous() and not var.is_fixed() and var.value != None and var.index()[0] == p and var.index()[1] == sc:
                 var.fixed = True  # fix the current value
-                idx += 1
+                nUnfixedVars += 1
 
     # continuous investment decisions are fixed to their optimal values
     for eb in mTEPES.eb:
@@ -133,7 +134,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
             if (p,ni,nf,cc) in mTEPES.phc:
                 OptModel.vHeatPipeInvest[p,ni,nf,cc].fix(OptModel.vHeatPipeInvest  [p,ni,nf,cc]())
 
-    if idx > 0:
+    if nUnfixedVars > 0:
         OptModel.dual = Suffix(direction=Suffix.IMPORT_EXPORT)
         OptModel.rc   = Suffix(direction=Suffix.IMPORT_EXPORT)
         SolverResults = Solver.solve(OptModel, tee=True, report_timing=True)
