@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 11, 2025
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 20, 2025
 """
 
 import time
@@ -75,7 +75,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
 
     nUnfixedVars = 0
     for var in OptModel.component_data_objects(pyo.Var, active=True, descend_into=True):
-        if not var.is_continuous() and not var.is_fixed():
+        if not var.is_continuous() and not var.is_fixed() and var.value != None:
             nUnfixedVars += 1
 
     if nUnfixedVars == 0:

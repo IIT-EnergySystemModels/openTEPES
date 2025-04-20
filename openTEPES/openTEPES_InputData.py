@@ -267,40 +267,40 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         pass
 
     #%% parameters
-    pIndBinGenInvest       = dfOption   ['IndBinGenInvest'    ].iloc[0].astype('int')                # Indicator of binary generation        expansion decisions, 0 continuous       - 1 binary - 2 no investment variables
-    pIndBinGenRetire       = dfOption   ['IndBinGenRetirement'].iloc[0].astype('int')                # Indicator of binary generation        retirement decisions,0 continuous       - 1 binary - 2 no retirement variables
-    pIndBinRsrInvest       = dfOption   ['IndBinRsrInvest'    ].iloc[0].astype('int')                # Indicator of binary reservoir         expansion decisions, 0 continuous       - 1 binary - 2 no investment variables
-    pIndBinNetElecInvest   = dfOption   ['IndBinNetInvest'    ].iloc[0].astype('int')                # Indicator of binary electric network  expansion decisions, 0 continuous       - 1 binary - 2 no investment variables
-    pIndBinNetH2Invest     = dfOption   ['IndBinNetH2Invest'  ].iloc[0].astype('int')                # Indicator of binary hydrogen pipeline expansion decisions, 0 continuous       - 1 binary - 2 no investment variables
-    pIndBinNetHeatInvest   = dfOption   ['IndBinNetHeatInvest'].iloc[0].astype('int')                # Indicator of binary heat     pipe     expansion decisions, 0 continuous       - 1 binary - 2 no investment variables
-    pIndBinGenOperat       = dfOption   ['IndBinGenOperat'    ].iloc[0].astype('int')                # Indicator of binary generation        operation decisions, 0 continuous       - 1 binary
-    pIndBinSingleNode      = dfOption   ['IndBinSingleNode'   ].iloc[0].astype('int')                # Indicator of single node although with electric network,   0 electric network - 1 single node
-    pIndBinGenRamps        = dfOption   ['IndBinGenRamps'     ].iloc[0].astype('int')                # Indicator of ramp constraints,                             0 no ramps         - 1 ramp constraints
-    pIndBinGenMinTime      = dfOption   ['IndBinGenMinTime'   ].iloc[0].astype('int')                # Indicator of minimum up/downtime constraints,              0 no min time      - 1 min time constraints
-    pIndBinLineCommit      = dfOption   ['IndBinLineCommit'   ].iloc[0].astype('int')                # Indicator of binary electric network switching decisions,  0 continuous       - 1 binary
-    pIndBinNetLosses       = dfOption   ['IndBinNetLosses'    ].iloc[0].astype('int')                # Indicator of        electric network losses,               0 lossless         - 1 ohmic losses
-    pENSCost               = dfParameter['ENSCost'            ].iloc[0] * 1e-3                       # cost of energy   not served               [MEUR/GWh]
-    pH2NSCost              = dfParameter['HNSCost'            ].iloc[0] * 1e-3                       # cost of hydrogen not served               [MEUR/tH2]
-    pHeatNSCost            = dfParameter['HTNSCost'           ].iloc[0] * 1e-3                       # cost of heat     not served               [MEUR/GWh]
-    pCO2Cost               = dfParameter['CO2Cost'            ].iloc[0]                              # cost of CO2 emission                      [EUR/tCO2]
-    pEconomicBaseYear      = dfParameter['EconomicBaseYear'   ].iloc[0]                              # economic base year                        [year]
-    pAnnualDiscRate        = dfParameter['AnnualDiscountRate' ].iloc[0]                              # annual discount rate                      [p.u.]
-    pUpReserveActivation   = dfParameter['UpReserveActivation'].iloc[0]                              # upward   reserve activation               [p.u.]
-    pDwReserveActivation   = dfParameter['DwReserveActivation'].iloc[0]                              # downward reserve activation               [p.u.]
-    pMinRatioDwUp          = dfParameter['MinRatioDwUp'       ].iloc[0]                              # minimum ratio down up operating reserves  [p.u.]
-    pMaxRatioDwUp          = dfParameter['MaxRatioDwUp'       ].iloc[0]                              # maximum ratio down up operating reserves  [p.u.]
-    pSBase                 = dfParameter['SBase'              ].iloc[0] * 1e-3                       # base power                                [GW]
-    pReferenceNode         = dfParameter['ReferenceNode'      ].iloc[0]                              # reference node
-    pTimeStep              = dfParameter['TimeStep'           ].iloc[0].astype('int')                # duration of the unit time step            [h]
+    pIndBinGenInvest      = dfOption   ['IndBinGenInvest'    ].iloc[0].astype('int')                 # Indicator of binary generation        expansion decisions, 0 continuous       - 1 binary - 2 no investment variables
+    pIndBinGenRetire      = dfOption   ['IndBinGenRetirement'].iloc[0].astype('int')                 # Indicator of binary generation        retirement decisions,0 continuous       - 1 binary - 2 no retirement variables
+    pIndBinRsrInvest      = dfOption   ['IndBinRsrInvest'    ].iloc[0].astype('int')                 # Indicator of binary reservoir         expansion decisions, 0 continuous       - 1 binary - 2 no investment variables
+    pIndBinNetElecInvest  = dfOption   ['IndBinNetInvest'    ].iloc[0].astype('int')                 # Indicator of binary electric network  expansion decisions, 0 continuous       - 1 binary - 2 no investment variables
+    pIndBinNetH2Invest    = dfOption   ['IndBinNetH2Invest'  ].iloc[0].astype('int')                 # Indicator of binary hydrogen pipeline expansion decisions, 0 continuous       - 1 binary - 2 no investment variables
+    pIndBinNetHeatInvest  = dfOption   ['IndBinNetHeatInvest'].iloc[0].astype('int')                 # Indicator of binary heat     pipe     expansion decisions, 0 continuous       - 1 binary - 2 no investment variables
+    pIndBinGenOperat      = dfOption   ['IndBinGenOperat'    ].iloc[0].astype('int')                 # Indicator of binary generation        operation decisions, 0 continuous       - 1 binary
+    pIndBinSingleNode     = dfOption   ['IndBinSingleNode'   ].iloc[0].astype('int')                 # Indicator of single node although with electric network,   0 electric network - 1 single node
+    pIndBinGenRamps       = dfOption   ['IndBinGenRamps'     ].iloc[0].astype('int')                 # Indicator of ramp constraints,                             0 no ramps         - 1 ramp constraints
+    pIndBinGenMinTime     = dfOption   ['IndBinGenMinTime'   ].iloc[0].astype('int')                 # Indicator of minimum up/downtime constraints,              0 no min time      - 1 min time constraints
+    pIndBinLineCommit     = dfOption   ['IndBinLineCommit'   ].iloc[0].astype('int')                 # Indicator of binary electric network switching decisions,  0 continuous       - 1 binary
+    pIndBinNetLosses      = dfOption   ['IndBinNetLosses'    ].iloc[0].astype('int')                 # Indicator of        electric network losses,               0 lossless         - 1 ohmic losses
+    pENSCost              = dfParameter['ENSCost'            ].iloc[0] * 1e-3                        # cost of energy   not served               [MEUR/GWh]
+    pH2NSCost             = dfParameter['HNSCost'            ].iloc[0] * 1e-3                        # cost of hydrogen not served               [MEUR/tH2]
+    pHeatNSCost           = dfParameter['HTNSCost'           ].iloc[0] * 1e-3                        # cost of heat     not served               [MEUR/GWh]
+    pCO2Cost              = dfParameter['CO2Cost'            ].iloc[0]                               # cost of CO2 emission                      [EUR/tCO2]
+    pEconomicBaseYear     = dfParameter['EconomicBaseYear'   ].iloc[0]                               # economic base year                        [year]
+    pAnnualDiscRate       = dfParameter['AnnualDiscountRate' ].iloc[0]                               # annual discount rate                      [p.u.]
+    pUpReserveActivation  = dfParameter['UpReserveActivation'].iloc[0]                               # upward   reserve activation               [p.u.]
+    pDwReserveActivation  = dfParameter['DwReserveActivation'].iloc[0]                               # downward reserve activation               [p.u.]
+    pMinRatioDwUp         = dfParameter['MinRatioDwUp'       ].iloc[0]                               # minimum ratio down up operating reserves  [p.u.]
+    pMaxRatioDwUp         = dfParameter['MaxRatioDwUp'       ].iloc[0]                               # maximum ratio down up operating reserves  [p.u.]
+    pSBase                = dfParameter['SBase'              ].iloc[0] * 1e-3                        # base power                                [GW]
+    pReferenceNode        = dfParameter['ReferenceNode'      ].iloc[0]                               # reference node
+    pTimeStep             = dfParameter['TimeStep'           ].iloc[0].astype('int')                 # duration of the unit time step            [h]
 
-    pPeriodWeight          = dfPeriod       ['Weight'        ].astype('int')                         # weights of periods                        [p.u.]
-    pScenProb              = dfScenario     ['Probability'   ].astype('float64')                     # probabilities of scenarios                [p.u.]
-    pStageWeight           = dfStage        ['Weight'        ].astype('float64')                     # weights of stages
-    pDuration              = dfDuration     ['Duration'      ] * pTimeStep                           # duration of load levels                   [h]
-    pLevelToStage          = dfDuration     ['Stage'         ]                                       # load levels assignment to stages
-    pReserveMargin         = dfReserveMargin['ReserveMargin' ]                                       # minimum adequacy reserve margin           [p.u.]
-    pEmission              = dfEmission     ['CO2Emission'   ]                                       # maximum CO2 emission                      [MtCO2]
-    pRESEnergy             = dfRESEnergy    ['RESEnergy'     ]                                       # minimum RES energy                        [GWh]
+    pPeriodWeight         = dfPeriod       ['Weight'        ].astype('int')                          # weights of periods                        [p.u.]
+    pScenProb             = dfScenario     ['Probability'   ].astype('float64')                      # probabilities of scenarios                [p.u.]
+    pStageWeight          = dfStage        ['Weight'        ].astype('float64')                      # weights of stages
+    pDuration             = dfDuration     ['Duration'      ] * pTimeStep                            # duration of load levels                   [h]
+    pLevelToStage         = dfDuration     ['Stage'         ]                                        # load levels assignment to stages
+    pReserveMargin        = dfReserveMargin['ReserveMargin' ]                                        # minimum adequacy reserve margin           [p.u.]
+    pEmission             = dfEmission     ['CO2Emission'   ]                                        # maximum CO2 emission                      [MtCO2]
+    pRESEnergy            = dfRESEnergy    ['RESEnergy'     ]                                        # minimum RES energy                        [GWh]
     pDemandElec           = dfDemand.reindex              (columns=mTEPES.nd, fill_value=0.0) * 1e-3 # electric demand                           [GW]
     pSystemInertia        = dfInertia.reindex             (columns=mTEPES.ar, fill_value=0.0)        # inertia                                   [s]
     pOperReserveUp        = dfUpOperatingReserve.reindex  (columns=mTEPES.ar, fill_value=0.0) * 1e-3 # upward   operating reserve                [GW]
@@ -373,7 +373,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         if pIndHeat == 1:
             pDemandHeat        = ProcessParameter(pDemandHeat,           pTimeStep)
 
-        # assign duration 0 to load levels not being considered, active load levels are at the end of every pTimeStep
+        # assign duration 0 to load levels not being considered; active load levels are at the end of every pTimeStep
         for n in range(pTimeStep-2,-1,-1):
             pDuration.iloc[[range(n,len(mTEPES.pp)*len(mTEPES.scc)*len(mTEPES.nn),pTimeStep)]] = 0
 
@@ -652,7 +652,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         '''
                 Create mTEPES instrumental sets.
 
-                This function takes a mTEPES instance and adds instrumental sets which will be used later.
+                This function takes an mTEPES instance and adds instrumental sets which will be used later.
 
                 Parameters:
                     mTEPES: The instance of mTEPES.
@@ -741,7 +741,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         # assigning a node to an area
         mTEPES.ndar = Set(initialize = [(nd,ar) for (nd,zn,ar) in mTEPES.ndzn*mTEPES.ar if (zn,ar) in mTEPES.znar])
 
-        # assigning a line to an area. Both nodes are in the same area. Cross-area lines not included
+        # assigning a line to an area. Both nodes are in the same area. Cross-area lines are not included
         mTEPES.laar = Set(initialize = [(ni,nf,cc,ar) for ni,nf,cc,ar in mTEPES.la*mTEPES.ar if (ni,ar) in mTEPES.ndar and (nf,ar) in mTEPES.ndar])
 
 
@@ -1148,7 +1148,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pMaxPower2ndBlock  = pMaxPower2ndBlock.where (pMaxPower2ndBlock  > pEpsilon, 0.0)
     pMaxCharge2ndBlock = pMaxCharge2ndBlock.where(pMaxCharge2ndBlock > pEpsilon, 0.0)
 
-    # computation of the power to heat ratio of the CHP units
+    # computation of the power-to-heat ratio of the CHP units
     # heat ratio of boiler units is fixed to 1.0
     pPower2HeatRatio   = pd.Series([1.0 if ch in mTEPES.bo else (pRatedMaxPowerElec[ch]-pRatedMinPowerElec[ch])/(pRatedMaxPowerHeat[ch]-pRatedMinPowerHeat[ch]) for ch in mTEPES.ch], index=mTEPES.ch)
     pMinPowerHeat      = pd.DataFrame([[pMinPowerElec     [ch][p,sc,n]/pPower2HeatRatio[ch] for ch in mTEPES.ch] for p,sc,n in mTEPES.psn], index=mTEPES.psn, columns=mTEPES.ch)
@@ -1741,7 +1741,7 @@ def SettingUpVariables(OptModel, mTEPES):
         '''
         Set upper/lower bounds.
 
-        This function takes a mTEPES instance and adds lower/upper bounds to variables which are limited by a parameter.
+        This function takes an mTEPES instance and adds lower/upper bounds to variables which are limited by a parameter.
 
         Parameters:
             mTEPES: The instance of mTEPES
@@ -1779,16 +1779,16 @@ def SettingUpVariables(OptModel, mTEPES):
     nFixedVariables = 0
     def RelaxBinaryInvestmentConditions(mTEPES, OptModel) -> int:
         '''
-        Relax binary investent variables.
+        Relax binary investment variables.
 
-        This function takes a mTEPES instance relaxes binary investment conditions and calculates the amount of variables fixed in the process.
+        This function takes an mTEPES instance, relaxes binary investment conditions and calculates the number of variables fixed in the process.
 
         Parameters:
             mTEPES: The instance of mTEPES.
             OptModel:
 
         Returns:
-            int: The amount of fixed variables.
+            int: The number of fixed variables.
         '''
 
         nFixedBinaries = 0
@@ -1871,7 +1871,7 @@ def SettingUpVariables(OptModel, mTEPES):
     def CreateFlowVariables(mTEPES,OptModel) -> int:
         #TODO use a more descriptive name for nFixedVariables
         '''
-                Create electricity, hydrogen and heat flow related variables.
+                Create electricity, hydrogen and heat flow-related variables.
 
                 This function takes a mTEPES instance and adds the variables necessary to model power, hydrogen and heat flows in a network.
 
@@ -1880,7 +1880,7 @@ def SettingUpVariables(OptModel, mTEPES):
                     OptModel:
 
                 Returns:
-                    int: The amount of line commitment variables fixed
+                    int: The number of line commitment variables fixed
                 '''
         nFixedVariables = 0
         # existing lines are always committed if no switching decision is modeled
@@ -1926,14 +1926,14 @@ def SettingUpVariables(OptModel, mTEPES):
         '''
             Fix commitment variables.
 
-            This function takes a mTEPES instance and fixes commitment related variables for must run units, ESS units and units with no minimum power.
+            This function takes a mTEPES instance and fixes commitment-related variables for must run units, ESS units and units with no minimum power.
 
             Parameters:
                 mTEPES: The instance of mTEPES.
                 OptModel:
 
             Returns:
-                int: The amount of commitment variables fixed.
+                int: The number of commitment variables fixed.
             '''
         nFixedVariables = 0
 
@@ -1945,7 +1945,7 @@ def SettingUpVariables(OptModel, mTEPES):
         nFixedVariables += sum(                1  for p,sc,n,g in mTEPES.psng if mTEPES.pMaxPowerElec[p,sc,n,g] == 0.0)
 
         for p,sc,n,nr in mTEPES.psnnr:
-            # must run units or units with no minimum power or ESS existing units are always committed and must produce at least their minimum output
+            # must run units or units with no minimum power, or ESS existing units are always committed and must produce at least their minimum output
             # not applicable to mutually exclusive units
             if   len(mTEPES.g2g) == 0:
                 OptModel.vMaxCommitment     [p,sc,  nr].fix(1)
@@ -1962,7 +1962,7 @@ def SettingUpVariables(OptModel, mTEPES):
                     OptModel.vShutDown      [p,sc,n,nr].fix(0)
                     OptModel.vMaxCommitment [p,sc,  nr].fix(1)
                     nFixedVariables += 3+1/len(mTEPES.n)
-            # if min and max power coincide there are neither second block, nor operating reserve
+            # if min and max power coincide, there are neither second block nor operating reserve
             if  mTEPES.pMaxPower2ndBlock[p,sc,n,nr] ==  0.0:
                 OptModel.vOutput2ndBlock[p,sc,n,nr].fix(0.0)
                 OptModel.vReserveUp     [p,sc,n,nr].fix(0.0)
@@ -2054,7 +2054,7 @@ def SettingUpVariables(OptModel, mTEPES):
                         mTEPES.pInitialUC    [n1,nr] = 1
                         pSystemOutput               += mTEPES.pInitialOutput[n1,nr]()
 
-                # determine the initial committed units and their output at the first load level of each period, scenario, and stage
+                # determine the initially committed units and their output at the first load level of each period, scenario, and stage
                 for go in mTEPES.go:
                     if go in g2a[ar] and (p,go) in mTEPES.pg and pSystemOutput < sum(mTEPES.pDemandElec[n1,nd] for nd in mTEPES.nd if (nd,ar) in mTEPES.ndar) and mTEPES.pMustRun[go] == 0:
                         if go in mTEPES.re:
@@ -2064,7 +2064,7 @@ def SettingUpVariables(OptModel, mTEPES):
                         mTEPES.pInitialUC[n1,go]         = 1
                         pSystemOutput                   += mTEPES.pInitialOutput[n1,go]()
 
-            # determine the initial committed lines
+            # determine the initially committed lines
             for la in mTEPES.la:
                 if la in mTEPES.lc:
                     mTEPES.pInitialSwitch[n1,la] = 0
@@ -2128,7 +2128,7 @@ def SettingUpVariables(OptModel, mTEPES):
             OptModel.vEnergyInflows     [p,sc,n,ec].fix (0.0)
             nFixedVariables += 1
 
-    # if no operating reserve is required no variables are needed
+    # if no operating reserve is required, no variables are needed
     for p,sc,n,ar,nr in mTEPES.psnar*mTEPES.nr:
         if (ar,nr) in mTEPES.a2g and (p,nr) in mTEPES.pnr:
             if mTEPES.pOperReserveUp    [p,sc,n,ar] ==  0.0:
@@ -2146,7 +2146,7 @@ def SettingUpVariables(OptModel, mTEPES):
                 OptModel.vESSReserveDown[p,sc,n,es].fix(0.0)
                 nFixedVariables += 1
 
-    # if there are no energy outflows no variable is needed
+    # if there are no energy outflows, no variable is needed
     for es in mTEPES.es:
         if sum(mTEPES.pEnergyOutflows[p,sc,n,es]() for p,sc,n in mTEPES.psn if (p,es) in mTEPES.pes) == 0.0:
             for p,sc,n in mTEPES.psn:
@@ -2184,7 +2184,7 @@ def SettingUpVariables(OptModel, mTEPES):
         '''
         Fix installations/retirements forbidden by period.
 
-        This function takes a mTEPES instance and fixes all installation and retirement variables to 0 if they are not allowed in the corresponding period.
+        This function takes an mTEPES instance and fixes all installation and retirement variables to 0 if they are not allowed in the corresponding period.
 
         Parameters:
             mTEPES: The instance of mTEPES.
@@ -2330,7 +2330,7 @@ def SettingUpVariables(OptModel, mTEPES):
         '''
         Set small numbers to 0.
 
-        This function takes a mTEPES instance and sets values under a certain threshold to be 0.
+        This function takes an mTEPES instance and sets values under a certain threshold to be 0.
 
         Parameters:
             mTEPES: The instance of mTEPES.

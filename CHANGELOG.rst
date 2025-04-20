@@ -1,10 +1,10 @@
 Change Log
 =============
 
-[4.18.5] - 2025-04-11
+[4.18.5] - 2025-04-20
 -----------------------
-- [FIXED] don't initialize the variables
-- [FIXED] don't fixed variables that have no value
+- [FIXED] don't initialize some variables
+- [FIXED] don't fixed or count variables that have no value
 - [CHANGED] change len(xxx) to xxx
 
 [4.18.4] - 2025-04-08
