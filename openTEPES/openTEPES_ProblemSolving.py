@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 20, 2025
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 21, 2025
 """
 
 import time
@@ -20,10 +20,10 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
     #%% solving the problem
     Solver = SolverFactory(SolverName)                                                       # select solver
     if SolverName == 'gurobi':
-        FileName = _path+f'/openTEPES_gurobi_{CaseName}_{p}_{sc}_{st}.log'
+        FileName = f'{_path}/openTEPES_gurobi_{CaseName}_{p}_{sc}_{st}.log'
         if os.path.exists(FileName):
             os.remove(FileName)
-        Solver.options['LogFile'         ] = _path+f'/openTEPES_gurobi_{CaseName}_{p}_{sc}_{st}.log'
+        Solver.options['LogFile'         ] = f'{_path}/openTEPES_gurobi_{CaseName}_{p}_{sc}_{st}.log'
         # Solver.options['SolutionTarget'] = 1                                                 # optimal solution with or without basic solutions
         Solver.options['Method'          ] = 2                                                 # barrier method
         Solver.options['Crossover'       ] = -1
@@ -32,16 +32,16 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
         # Solver.options['RINS'          ] = 100
         # Solver.options['BarConvTol'    ] = 1e-9
         # Solver.options['BarQCPConvTol' ] = 0.025
-        # Solver.options['IISFile'       ] = _path+f'/openTEPES_gurobi_'+CaseName+'.ilp'        # should be uncommented to show results of IIS
+        # Solver.options['IISFile'       ] = f'{_path}/openTEPES_gurobi_'+CaseName+'.ilp'        # should be uncommented to show results of IIS
         Solver.options['MIPGap'          ] = 0.01
         Solver.options['Threads'         ] = int((psutil.cpu_count(logical=True) + psutil.cpu_count(logical=False))/2)
         Solver.options['TimeLimit'       ] =    36000
         Solver.options['IterationLimit'  ] = 36000000
     if SolverName == 'cplex':
-        FileName = _path+f'/openTEPES_cplex_{CaseName}_{p}_{sc}_{st}.log'
+        FileName = f'{_path}/openTEPES_cplex_{CaseName}_{p}_{sc}_{st}.log'
         if os.path.exists(FileName):
             os.remove(FileName)
-        # Solver.options['LogFile'          ] = _path+f'/openTEPES_cplex_{CaseName}_{p}_{sc}_{st}.log'
+        # Solver.options['LogFile'          ] = f'{_path}/openTEPES_cplex_{CaseName}_{p}_{sc}_{st}.log'
         Solver.options['LPMethod'           ] = 4                                                 # barrier method
         # Solver.options['BarCrossAlg'      ] = 0
         # Solver.options['NumericalEmphasis'] = 1
@@ -52,10 +52,10 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
         Solver.options['TimeLimit'          ] =    36000
         # Solver.options['ItLim'            ] = 36000000
     if SolverName == 'appsi_highs':
-        FileName = _path+f'/openTEPES_highs_{CaseName}_{p}_{sc}_{st}.log'
+        FileName = f'{_path}/openTEPES_highs_{CaseName}_{p}_{sc}_{st}.log'
         if os.path.exists(FileName):
             os.remove(FileName)
-        Solver.options['log_file'               ] = _path+f'/openTEPES_highs_{CaseName}_{p}_{sc}_{st}.log'
+        Solver.options['log_file'               ] = f'{_path}/openTEPES_highs_{CaseName}_{p}_{sc}_{st}.log'
         Solver.options['solver'                 ] = 'choose'
         Solver.options['simplex_strategy'       ] = 3
         Solver.options['run_crossover'          ] = 'on'
@@ -90,7 +90,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
     print('Termination condition: ', SolverResults.solver.termination_condition)
     if SolverResults.solver.termination_condition == TerminationCondition.infeasible or SolverResults.solver.termination_condition == TerminationCondition.maxTimeLimit or SolverResults.solver.termination_condition == TerminationCondition.infeasible.maxIterations:
         log_infeasible_constraints(OptModel, log_expression=True, log_variables=True)
-        logging.basicConfig(filename=_path+f'/openTEPES_infeasibilities_{CaseName}_{p}_{sc}_{st}.log', level=logging.INFO)
+        logging.basicConfig(filename=f'{_path}/openTEPES_infeasibilities_{CaseName}_{p}_{sc}_{st}.log', level=logging.INFO)
         raise ValueError('Problem infeasible')
     SolverResults.write()                                                              # summary of the solver results
 
