@@ -125,6 +125,11 @@ The model has being used in these research projects:
     ECEMF’s programme of events and novel IT-based communications channel will enable researchers to identify and co-develop the most pressing policy-relevant research questions with a range of stakeholders to meet ambitious European energy and climate policy goals,
     in particular the European Green Deal and the transformation to a climate neutral society.
 
+    `Electricity flexibility for the future EU power sector <https://www.ecemf.eu/insights/insights_electricity_flexibility_eu_power_sector/>`_.
+
+    A net-zero emissions power sector requires higher levels of electricity flexibility. But what is the most cost-effective way of providing electricity flexibility? When and where is it more cost-effective to invest in transmission grid upgrades or battery storage?
+    To what extent does the implementation of smart charging of electric vehicles lower investment costs?
+
 .. image:: ../img/ECEMF.png
    :scale: 10%
    :align: center
