@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.18.5] - 2025-04-20
+[4.18.5] - 2025-04-21
 -----------------------
+- [FIXED] fix some errors in the output results
 - [FIXED] don't initialize some variables
 - [FIXED] don't fixed or count variables that have no value
 - [CHANGED] change len(xxx) to xxx
