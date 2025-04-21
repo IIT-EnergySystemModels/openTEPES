@@ -58,7 +58,7 @@ Reference
 
 Authors
 ########
-**Andrés Ramos, Erik Alvarez, Francisco Labora, Sara Lumbreras** Universidad Pontificia Comillas, Instituto de Investigación Tecnológica, Alberto Aguilera 23, 28015 Madrid, Spain
+**Andrés Ramos, Erik Alvarez, Francisco Labora, Sara Lumbreras**. Universidad Pontificia Comillas, Instituto de Investigación Tecnológica, Alberto Aguilera 23, 28015 Madrid, Spain
 
 Contact: andres.ramos@comillas.edu
 
