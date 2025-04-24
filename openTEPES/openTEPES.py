@@ -209,7 +209,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
                             mTEPES.nrcc     = [(n,rs) for n,rs in mTEPES.n*mTEPES.rn if mTEPES.n.ord(n) %     mTEPES.pReservoirTimeStep[rs] == 0]
                             mTEPES.nrso     = [(n,rs) for n,rs in mTEPES.n*mTEPES.rs if mTEPES.n.ord(n) %     mTEPES.pWaterOutTimeStep [rs] == 0]
 
-                        # Writing LP file
+                        # Writing an LP file
                         if pIndLogConsole == 1:
                             StartTime         = time.time()
                             mTEPES.write(f'{_path}/openTEPES_{CaseName}_{p}_{sc}_{st}.lp', io_options={'symbolic_solver_labels': True})
@@ -217,7 +217,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
                             StartTime         = time.time()
                             print('Writing LP file                        ... ', round(WritingLPFileTime), 's')
 
-                        # there are investment decisions (it is an expansion and operation model) or there are system emission constraints
+                        # there are investment decisions (it is an expansion and operation model), or there are system emission constraints
                         ProblemSolving(DirName, CaseName, SolverName, mTEPES, mTEPES, pIndLogConsole, p, sc, st)
 
                         # deactivate the constraints of the previous period and scenario
@@ -262,7 +262,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
                             mTEPES.nrcc     = [(n,rs) for n,rs in mTEPES.n*mTEPES.rn if mTEPES.n.ord(n) %     mTEPES.pReservoirTimeStep[rs] == 0]
                             mTEPES.nrso     = [(n,rs) for n,rs in mTEPES.n*mTEPES.rs if mTEPES.n.ord(n) %     mTEPES.pWaterOutTimeStep [rs] == 0]
 
-                        # Writing LP file
+                        # Writing an LP file
                         if pIndLogConsole == 1:
                             StartTime         = time.time()
                             mTEPES.write(f'{_path}/openTEPES_{CaseName}_{p}_{sc}_{st}.lp', io_options={'symbolic_solver_labels': True})
@@ -270,7 +270,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
                             StartTime         = time.time()
                             print('Writing LP file                        ... ', round(WritingLPFileTime), 's')
 
-                        # there are investment decisions (it is an expansion and operation model) or there are system emission constraints
+                        # there are investment decisions (it is an expansion and operation model), or there are system emission constraints
                         ProblemSolving(DirName, CaseName, SolverName, mTEPES, mTEPES, pIndLogConsole, p, sc, st)
 
     mTEPES.del_component(mTEPES.st)
@@ -320,7 +320,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     # output plot results
     pIndPlotOutput = 1
 
-    # indicators to control the amount of output results
+    # indicators to control the number of output results
     if pIndOutputResults == 1:
         pIndDumpRawResults              = 0
         pIndInvestmentResults           = 1

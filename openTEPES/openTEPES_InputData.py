@@ -1600,7 +1600,7 @@ def SettingUpVariables(OptModel, mTEPES):
         '''
         Create all mTEPES variables.
 
-        This function takes a mTEPES instance with all parameters and sets created and adds variables to it.
+        This function takes an mTEPES instance with all parameters and sets created and adds variables to it.
 
         Parameters:
             mTEPES: The instance of mTEPES.
@@ -1861,7 +1861,6 @@ def SettingUpVariables(OptModel, mTEPES):
                     OptModel.vCommitmentCons[p,sc,n,h].fix(0)
                     nFixedBinaries += 1
 
-
         return nFixedBinaries
 
     #Call the relaxing variables function and add its output to nFixedVariables
@@ -1871,7 +1870,7 @@ def SettingUpVariables(OptModel, mTEPES):
     def CreateFlowVariables(mTEPES,OptModel) -> int:
         #TODO use a more descriptive name for nFixedVariables
         '''
-                Create electricity, hydrogen and heat flow-related variables.
+                Create electricity, hydrogen and heat-flow-related variables.
 
                 This function takes a mTEPES instance and adds the variables necessary to model power, hydrogen and heat flows in a network.
 
@@ -1926,7 +1925,7 @@ def SettingUpVariables(OptModel, mTEPES):
         '''
             Fix commitment variables.
 
-            This function takes a mTEPES instance and fixes commitment-related variables for must run units, ESS units and units with no minimum power.
+            This function takes an mTEPES instance and fixes commitment-related variables for must run units, ESS units and units with no minimum power.
 
             Parameters:
                 mTEPES: The instance of mTEPES.
@@ -2191,7 +2190,7 @@ def SettingUpVariables(OptModel, mTEPES):
             OptModel:
 
         Returns:
-            int: The amount of variables fixed.
+            int: The number of variables fixed.
         '''
         nFixedVariables = 0
         # do not install/retire power plants and lines if not allowed in this period

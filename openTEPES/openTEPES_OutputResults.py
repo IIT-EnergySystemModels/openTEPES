@@ -103,7 +103,7 @@ def LinePlots(period, scenario, df, Category, X, Y, OperationType):
     return plot
 
 
-# write parameters, variables, and duals in CSV files
+# write parameters, variables, and duals
 def OutputResultsParVarCon(DirName, CaseName, OptModel, mTEPES):
     # print('Writing pars, vars, and duals results  ... ', end='')
     # DirName = os.path.dirname(DirName)
@@ -114,7 +114,7 @@ def OutputResultsParVarCon(DirName, CaseName, OptModel, mTEPES):
     # dump_folder = f'{_path}/CaseDumpFolder_{CaseName}_{DateName}/'
     # with open(dump_folder+f'/oT_Case_{CaseName}.pkl','rb') as f:
     #     OptModel = pickle.load(f)
-    # output parameters, variables, and constraints to CSV files
+    # output parameters, variables, and constraints
 
     # dump_folder = f'{_path}/CaseDumpFolder_{CaseName}_'+str(datetime.datetime.now().strftime('%Y%m%d'))+f'/'
     dump_folder = os.path.join(DirName, CaseName, f'CaseDumpFolder_{CaseName}_'+str(datetime.datetime.now().strftime('%Y%m%d')))
@@ -243,7 +243,7 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutput,
                 chart = alt.Chart(OutputResults.reset_index()).mark_bar().encode(x='Technology:O', y='sum(MW):Q', color='Technology:N', column='Period:N').properties(width=600, height=400)
                 chart.save(f'{_path}/oT_Plot_TechnologyInvestment_{CaseName}.html', embed_options={'renderer':'svg'})
 
-            # Saving and plotting generation investment cost into CSV file
+            # Saving and plotting generation investment cost
             OutputResults0 = OutputResults
             OutputToFile   = pd.Series(data=[mTEPES.pDiscountedWeight[p] * mTEPES.pGenInvestCost[eb] * OptModel.vGenerationInvest[p,eb]() for p,eb in mTEPES.peb], index=mTEPES.peb)
             OutputToFile   = OutputToFile.fillna(0).to_frame(name='MEUR').reset_index().rename(columns={'level_0': 'Period', 'level_1': 'Generating unit'}).set_index(['Period', 'Generating unit'])
@@ -279,7 +279,7 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutput,
                 g2a[ar].append(gd)
 
         if pIndTechnologyOutput == 0 or pIndTechnologyOutput == 2:
-            # Saving generation retirement into CSV file
+            # Saving generation retirement
             OutputToFile = pd.Series(data=[OptModel.vGenerationRetire[p,gd]()                                                           for p,gd in mTEPES.pgd], index=mTEPES.pgd)
             OutputToFile = OutputToFile.fillna(0).to_frame(name='RetirementDecision').reset_index().rename(columns={'level_0': 'Period', 'level_1': 'Generating unit'})
             OutputToFile.pivot_table(index=['Period'], columns=['Generating unit'], values='RetirementDecision').rename_axis(['Period'], axis=0).to_csv(f'{_path}/oT_Result_GenerationRetirementPerUnit_{CaseName}.csv', index=True, sep=',')
@@ -762,7 +762,7 @@ def ESSOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutpu
         OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='GWh', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(f'{_path}/oT_Result_TechnologyOutflowsEnergy_{CaseName}.csv', sep=',')
 
 
-    # tolerance to consider avoid division by 0
+    # tolerance to avoid division by 0
     pEpsilon = 1e-6
 
     sPSNES = [(p,sc,n,es) for p,sc,n,es in mTEPES.ps*mTEPES.nesc if (p,es) in mTEPES.pes]
@@ -819,7 +819,7 @@ def ReservoirOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnolog
         if (ht,h ) in mTEPES.t2g:
             o2h[ht].append(h )
 
-    # tolerance to consider avoid division by 0
+    # tolerance to avoid division by 0
     pEpsilon = 1e-6
 
     VolumeConstraints = [(p,sc,n,rs) for p,sc,n,rs in mTEPES.ps*mTEPES.nrsc if (p,rs) in mTEPES.prs]
@@ -991,7 +991,7 @@ def NetworkH2OperationResults(DirName, CaseName, OptModel, mTEPES):
 
         return loc_df, line_df
 
-    # tolerance to consider avoid division by 0
+    # tolerance to avoid division by 0
     pEpsilon = 1e-6
 
     p = list(mTEPES.p)[0]
@@ -1121,7 +1121,7 @@ def NetworkHeatOperationResults(DirName, CaseName, OptModel, mTEPES):
         OutputResults = OutputResults.reset_index().groupby(['InitialNode', 'FinalNode', 'Circuit']).sum(numeric_only=True)[0]
         OutputResults.to_frame(name='GWh-Mkm').rename_axis(['InitialNode', 'FinalNode', 'Circuit'], axis=0).reset_index().to_csv(f'{_path}/oT_Result_NetworkEnergyHeatTransport_{CaseName}.csv', index=False, sep=',')
 
-    # tolerance to consider avoid division by 0
+    # tolerance to avoid division by 0
     pEpsilon = 1e-6
 
     OutputToFile = pd.Series(data=[max(OptModel.vFlowHeat[p,sc,n,ni,nf,cc]()/(mTEPES.pHeatPipeNTCFrw[ni,nf,cc]+pEpsilon),-OptModel.vFlowHeat[p,sc,n,ni,nf,cc]()/(mTEPES.pHeatPipeNTCBck[ni,nf,cc]+pEpsilon)) for p,sc,n,ni,nf,cc in mTEPES.psnha], index=mTEPES.psnha)
@@ -1558,7 +1558,7 @@ def NetworkOperationResults(DirName, CaseName, OptModel, mTEPES):
         OutputResults = OutputResults.reset_index().groupby(['InitialNode', 'FinalNode', 'Circuit']).sum(numeric_only=True)[0]
         OutputResults.to_frame(name='GWh-Mkm').rename_axis(['InitialNode', 'FinalNode', 'Circuit'], axis=0).reset_index().to_csv(f'{_path}/oT_Result_NetworkEnergyElecTransport_{CaseName}.csv', index=False, sep=',')
 
-    # tolerance to consider avoid division by 0
+    # tolerance to avoid division by 0
     pEpsilon = 1e-6
 
     OutputToFile = pd.Series(data=[max(OptModel.vFlowElec[p,sc,n,ni,nf,cc]()/(mTEPES.pLineNTCFrw[ni,nf,cc]+pEpsilon),-OptModel.vFlowElec[p,sc,n,ni,nf,cc]()/(mTEPES.pLineNTCBck[ni,nf,cc]+pEpsilon)) for p,sc,n,ni,nf,cc in mTEPES.psnla], index=mTEPES.psnla)
@@ -1653,7 +1653,7 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES, pIndPlotOutput):
     OutputToFile = pd.Series(data=[mTEPES.pEmissionRate[g] for p,sc,n,ar,g in sPSNARG], index=pd.Index(sPSNARG))
     OutputToFile.to_frame(name='tCO2/MWh').reset_index().pivot_table(index=['level_0','level_1','level_2','level_3'], columns='level_4', values='tCO2/MWh').rename_axis(['Period', 'Scenario', 'LoadLevel', 'Area'], axis=0).rename_axis([None], axis=1).to_csv(f'{_path}/oT_Result_GenerationIncrementalEmission_{CaseName}.csv', sep=',')
 
-    #%% outputting the LSRMC
+    #%% outputting the LSRMC of electricity
     sPSSTNND      = [(p,sc,st,n,nd) for p,sc,st,n,nd in mTEPES.s2n*mTEPES.nd if sum(1 for g in g2n[nd]) + sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd]) and (p,sc,n) in mTEPES.psn]
     OutputResults = pd.Series(data=[mTEPES.pDuals["".join([f"eBalanceElec_{p}_{sc}_{st}('{n}', '{nd}')"])]/mTEPES.pPeriodProb[p,sc]()/mTEPES.pLoadLevelDuration[p,sc,n]() for p,sc,st,n,nd in sPSSTNND], index=pd.Index(sPSSTNND))
     OutputResults *= 1e3
@@ -1884,7 +1884,7 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput, pIndPlo
     _path = os.path.join(DirName, CaseName)
     StartTime = time.time()
 
-    # %%  Power balance per period, scenario, and load level
+    # %% Power balance per period, scenario, and load level
     # incoming and outgoing lines (lin) (lout)
     lin   = defaultdict(list)
     linl  = defaultdict(list)
@@ -2260,7 +2260,7 @@ def NetworkMapResults(DirName, CaseName, OptModel, mTEPES):
         OutputToFile.index.names = ['Period', 'Scenario', 'LoadLevel', 'InitialNode', 'FinalNode', 'Circuit']
         OutputToFile = OutputToFile.to_frame(name='MW')
 
-        # tolerance to consider avoid division by 0
+        # tolerance to avoid division by 0
         pEpsilon = 1e-6
 
         line_df = pd.DataFrame(data={'NTCFrw': pd.Series(data=[mTEPES.pLineNTCFrw[i] * 1e3 + pEpsilon for i in mTEPES.la], index=mTEPES.la),
@@ -2320,7 +2320,7 @@ def NetworkMapResults(DirName, CaseName, OptModel, mTEPES):
 
         return loc_df, line_df
 
-    # tolerance to consider avoid division by 0
+    # tolerance to avoid division by 0
     pEpsilon = 1e-6
 
     p = list(mTEPES.p)[0]
