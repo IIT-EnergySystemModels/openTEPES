@@ -65,8 +65,9 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
         Solver.options['time_limit'             ] =    36000
         Solver.options['simplex_iteration_limit'] = 36000000
     if SolverName == 'gams' or SolverName == 'GAMS':
+        FileName = f'{_path}/openTEPES_gams_{CaseName}_{p}_{sc}_{st}.log'
         solver_options = {
-            'file COPT / cplex.opt / ; put COPT putclose "LPMethod 4" / "EpGap 0.01" / ; GAMS_MODEL.OptFile = 1 ;'
+            'file COPT / cplex.opt / ; put COPT putclose "LPMethod 4" / "EpGap 0.01" / ; GAMS_MODEL.OptFile = 1 ; '
             'option SysOut  = off   ;',
             'option LP      = cplex ; option MIP     = cplex    ;',
             'option ResLim  = 36000 ; option IterLim = 36000000 ;',
