@@ -28,7 +28,7 @@ It automatically determines optimal expansion plans that satisfy multiple attrib
 The objective function includes the two main quantifiable costs: the **investment costs for generation, storage, and transmission (CAPEX)** and the **expected variable operation costs (including generation, consumption, emissions, and reliability costs) (system OPEX)**.
   
 The model formulates a **two-stage stochastic optimization** problem, including binary generation, storage, and electricity, hydrogen, and heat network investment/retirement decisions, generation operation decisions (commitment, startup, and shutdown decisions are also binary), and electric line-switching decisions.
-Capacity expansion takes into account the adequacy system reserve margin and minimum and maximum energy constraints.
+Capacity expansion takes into account the adequacy system reserve margin, maximum CO2 emissions, and minimum and maximum energy constraints.
 
 The highly detailed operation model is an electric **network-constrained unit commitment (NCUC)** based on a **tight and compact** formulation, including **operating reserves** with a
 **DC power flow (DCPF)**, including electric **line-switching** decisions. The **ohmic losses of the electricity network** are considered proportional to the electric line flow. It considers different **energy storage systems (ESS)**, such us pumped-hydro storage,

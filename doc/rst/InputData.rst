@@ -101,7 +101,7 @@ File                                       Description
 ``oT_Data_Scenario.csv``                   Short-term uncertainties
 ``oT_Data_Stage.csv``                      Weight of each stage
 ``oT_Data_ReserveMargin.csv``              Minimum adequacy reserve margin for each area and period
-``oT_Data_Emission.csv``                   Maximum CO2 emission of the electric system
+``oT_Data_Emission.csv``                   Maximum CO2 emissions of the electric system
 ``oT_Data_RESEnergy.csv``                  Minimum RES energy
 ``oT_Data_Duration.csv``                   Duration of the load levels
 ``oT_Data_Demand.csv``                     Electricity demand
@@ -237,15 +237,15 @@ Period          Area            ReserveMargin  Minimum adequacy reserve margin f
 
 This parameter is only used for system generation expansion, not for the system operation. If no value is introduced for an area, the reserve margin is considered 0.
 
-Maximum CO2 emission
---------------------
+Maximum CO2 emissions
+---------------------
 
 A description of the data included in the file ``oT_Data_Emission.csv`` follows:
 
 ==============  ==============  =============  ======================================================================  =====
 Identifiers                     Header         Description
 ==============================  =============  ======================================================================  =====
-Period          Area            CO2Emission    Maximum CO2 emission of the electric system for each period and area    MtCO2
+Period          Area            CO2Emission    Maximum CO2 emissions of the electric system for each period and area   MtCO2
 ==============  ==============  =============  ======================================================================  =====
 
 If no value is introduced for an area, the CO2 emission limit is considered infinite.
