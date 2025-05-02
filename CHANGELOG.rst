@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.18.5] - 2025-04-21
+[4.18.5] - 2025-05-02
 -----------------------
+- [FIXED] fix error in the cost summary per area files
 - [FIXED] fix some errors in the output results
 - [FIXED] don't initialize some variables
 - [FIXED] don't fixed or count variables that have no value
