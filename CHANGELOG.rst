@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.18.5] - 2025-05-02
+[4.18.5] - 2025-05-05
 -----------------------
+- [CHANGED] add logfile for GAMS solver
 - [FIXED] fix error in the cost summary per area files
 - [FIXED] fix some errors in the output results
 - [FIXED] don't initialize some variables

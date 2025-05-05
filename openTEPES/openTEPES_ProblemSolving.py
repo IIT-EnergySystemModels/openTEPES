@@ -66,7 +66,6 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
         Solver.options['simplex_iteration_limit'] = 36000000
     if SolverName == 'gams' or SolverName == 'GAMS':
         FileName = f'{_path}/openTEPES_gams_{CaseName}_{p}_{sc}_{st}.log'
-        print(FileName)
         solver_options = {
             'file COPT / cplex.opt / ; put COPT putclose "LPMethod 4" / "EpGap 0.01" / ; GAMS_MODEL.OptFile = 1 ; '
             'option SysOut  = off   ;',
@@ -85,7 +84,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
         OptModel.rc   = Suffix(direction=Suffix.IMPORT_EXPORT)
 
     if SolverName == 'gams' or SolverName == 'GAMS':
-        SolverResults = Solver.solve(OptModel, tee=True, report_timing=True, symbolic_solver_labels=False, add_options=solver_options)
+        SolverResults = Solver.solve(OptModel, tee=True, report_timing=True, symbolic_solver_labels=False, add_options=solver_options, logfile=FileName)
     else:
         SolverResults = Solver.solve(OptModel, tee=True, report_timing=True)
 
