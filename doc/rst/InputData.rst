@@ -801,8 +801,8 @@ Header               Description
 InitialPeriod        Initial period (year) when the unit is installed or can be installed, if candidate                                   Year
 FinalPeriod          Final   period (year) when the unit is installed or can be installed, if candidate                                   Year
 Length               Pipeline length (only used for reporting purposes). If not defined, computed as 1.1 times the geographical distance  km
-TTC                  Total transfer capacity (maximum permissible thermal load) in forward  direction. Static pipeline rating             tH2
-TTCBck               Total transfer capacity (maximum permissible thermal load) in backward direction. Static pipeline rating             tH2
+TTC                  Total transfer capacity (maximum permissible hydrogen flow) in forward  direction. Static pipeline rating            tH2
+TTCBck               Total transfer capacity (maximum permissible hydrogen flow) in backward direction. Static pipeline rating            tH2
 SecurityFactor       Security factor to consider approximately N-1 contingencies. NTC = TTC x SecurityFactor                              p.u.
 FixedInvestmentCost  Overnight investment (capital -CAPEX- and fixed O&M -FOM-) cost                                                      M€
 FixedChargeRate      Fixed-charge rate to annualize the overnight investment cost                                                         p.u.
@@ -871,8 +871,8 @@ Header               Description
 InitialPeriod        Initial period (year) when the unit is installed or can be installed, if candidate                                   Year
 FinalPeriod          Final   period (year) when the unit is installed or can be installed, if candidate                                   Year
 Length               Pipeline length (only used for reporting purposes). If not defined, computed as 1.1 times the geographical distance  km
-TTC                  Total transfer capacity (maximum permissible thermal load) in forward  direction. Static pipeline rating             MW
-TTCBck               Total transfer capacity (maximum permissible thermal load) in backward direction. Static pipeline rating             MW
+TTC                  Total transfer capacity (maximum permissible heat flow) in forward  direction. Static pipeline rating                MW
+TTCBck               Total transfer capacity (maximum permissible heat flow) in backward direction. Static pipeline rating                MW
 SecurityFactor       Security factor to consider approximately N-1 contingencies. NTC = TTC x SecurityFactor                              p.u.
 FixedInvestmentCost  Overnight investment (capital -CAPEX- and fixed O&M -FOM-) cost                                                      M€
 FixedChargeRate      Fixed-charge rate to annualize the overnight investment cost                                                         p.u.
