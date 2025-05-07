@@ -597,6 +597,8 @@ For example, these data can be used for defining the minimum and/or maximum ener
 Electricity transmission network
 --------------------------------
 
+At least one electric transmission line connecting two different nodes must be defined.
+
 A description of the circuit (initial node, final node, circuit) data included in the file ``oT_Data_Network.csv`` follows:
 
 ===================  ===============================================================================================================  ======
@@ -642,6 +644,8 @@ If lower and upper bounds of investment decisions are very close (with a differe
 
 Node location
 -------------
+
+At least two different nodes must be defined.
 
 A description of the data included in the file ``oT_Data_NodeLocation.csv`` follows:
 
