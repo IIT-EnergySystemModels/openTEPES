@@ -29,7 +29,7 @@ What PC do I need?
 
    Time (periods, load levels)
 
-   Network (nodes, lines, DCPF)
+   Network (nodes, lines, DC power flow)
 
    Stochasticity (scenarios)
 
@@ -57,14 +57,14 @@ Some tips
 ---------
 - How can we strongly reduce the size of the case study for testing purposes
 
-   Delete the duration (column D in Data_Duration) of the load levels you want to ignore. For example, if you delete the duration beyond the first 168 hours, you are considering just the first week of the year in the case study
+   Delete the duration (column D in ``oT_Data_Duration``) of the load levels you want to ignore. For example, if you delete the duration beyond the first 168 hours, you are considering just the first week of the year in the case study
 
-   Put a time step of 2 or 3 hours in the Data_Parameter file. This will reduce the number of load levels by 2 or 3
+   Put a time step of 2 or 3 hours in the ``oT_Data_Parameter`` file. This will reduce the number of load levels by 2 or 3
 
 - Relaxing the binary condition of binary variables
 
-   In the Data_Option file you can force or relax the binary condition of the binary variables. This is useful for testing purposes.
-   Besides, in Data_Generation and Data_Network can also be relaxed individually by generator or transmission line.
+   In the ``oT_Data_Option`` file you can force or relax the binary condition of the binary variables. This is useful for testing purposes.
+   Besides, in ``oT_Data_Generation`` and ``oT_Data_Network`` can also be relaxed individually by generator or transmission line.
 
 - How to ignore a scenario or a period
 
