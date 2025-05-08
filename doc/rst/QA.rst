@@ -66,7 +66,7 @@ Some tips
 - Relaxing the binary condition of binary variables
 
    In the ``oT_Data_Option`` file you can force or relax the binary condition of the binary variables.
-   Besides, in ``oT_Data_Generation`` and ``oT_Data_Network`` can also be relaxed individually for each generator or transmission line.
+   Besides, in ``oT_Data_Generation`` and ``oT_Data_Network`` they can also be relaxed individually for each generator or transmission line.
 
 - How to ignore a scenario or a period
 
@@ -74,7 +74,7 @@ Some tips
 
 - How to ignore a generator
 
-   Don’t assign a node to it in ``oT_Data_Generation``
+   Don’t assign a node to it in ``oT_Data_Generation``, i.e., leave the node column empty
 
    Put the initial period beyond the year of study in ``oT_Data_Generation``
 
@@ -86,4 +86,4 @@ Some tips
 
    Therefore, if you want to set the generation of a solar PV to 0.0 at night, then you must put a small value 0.000001 that will be substituted internally by openTEPES by 0.0
 
-- You don’t need to put the generator column if nothing is in this column. Empty columns don’t need to be included in the CSV files
+- You don’t need to put the generator column if nothing is in this column. Empty columns don’t need to be included in the CSV files, for example, in ``oT_Data_VariableMaxGeneration``, ``oT_Data_VariableMinGeneration``, ``oT_Data_VariableMaxConsumption``, ``oT_Data_VariableMinConsumption``, etc.
