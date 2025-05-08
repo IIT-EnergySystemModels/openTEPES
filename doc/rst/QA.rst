@@ -68,7 +68,7 @@ Some tips
 
 - How to ignore a scenario or a period
 
-   Assign probability zero to the scenario or weight zero to the period
+   Assign probability 0.0 to the scenario or weight 0.0 to the period
 
 - How to ignore a generator
 
@@ -82,6 +82,6 @@ Some tips
 
 - All the empty cells of the CSV files are substituted by 0.
 
-   Therefore, if you want to set the generation of a solar PV to 0 at night, then you must put a small value 0.000001 that will be substituted internally by openTEPES by 0
+   Therefore, if you want to set the generation of a solar PV to 0.0 at night, then you must put a small value 0.000001 that will be substituted internally by openTEPES by 0.0
 
 - You don’t need to put the generator column if nothing is in this column. Empty columns don’t need to be included in the CSV files
