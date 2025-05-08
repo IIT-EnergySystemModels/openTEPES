@@ -13,13 +13,13 @@ How can I install it?
 
    `https://pascua.iit.comillas.edu/aramos/openTEPES_installation.pdf <https://pascua.iit.comillas.edu/aramos/openTEPES_installation.pdf>`_
 
-- We recommend using these solvers:
+- We recommend using these solvers
 
-   Gurobi because there is a free license for academic institutions
+   `Gurobi <https://www.gurobi.com/products/gurobi-optimizer/>`_ because there is a license that is free of charge for academic usage
 
-   HiGHS as a free solver
+   `HiGHS <https://ergo-code.github.io/HiGHS/dev/installation/#Precompiled-Binaries>`_ as a free solver
 
-   GAMS/CPLEX for those institutions having the corresponding license
+   `GAMS/CPLEX <https://www.gams.com/>`_ for those institutions having the corresponding licenses
 
 What PC do I need?
 ------------------
@@ -33,7 +33,7 @@ What PC do I need?
 
    Stochasticity (scenarios)
 
-   Binary investment decisions (generators, transmission lines, etc.)
+   Binary investment decisions (generators, transmission lines, etc.), operation decisions (commitment, startup, shutdown, etc.)
 
 - As a rule of thumb, an optimization problem needs 1 GB of memory for every 1 million rows
 
@@ -41,44 +41,46 @@ What PC do I need?
 
 First steps
 -----------
-- openTEPES is provided with seven case studies. Each one has varied characteristics
+- openTEPES is provided with `seven case studies <https://opentepes.readthedocs.io/en/latest/Download.html#cases>`_. Each one has varied characteristics
 
 - Check that you can run them on your PC. Some of them may not run if you have a PC with limited memory
 
 Potential issues
 ----------------
-- Check that any item you define (generator, node, technology, area, etc.) is included in the corresponding dictionary
+- Check that any item you define (generator, node, technology, area, etc.) is included in the corresponding dictionary (``oT_Dict_Generation``, ``oT_Dict_Node``, ``oT_Dict_Technology``, ``oT_Dict_Area``, etc.). Otherwise, the optimization problem will not run
 
-- openTEPES is implicitly a network model. Therefore, at least one electrical  transmission line connecting two nodes and at least two nodes must be defined
+- openTEPES is implicitly a network model. Therefore, at least one electrical transmission line connecting two nodes and at least two nodes must be defined
 
 - At least one generator must be defined. A thermal generator has a variable cost (the product of fuel cost times the linear term) ≠ 0. A variable renewable energy unit has no variable cost (the product of fuel cost times the linear term = 0)
 
 Some tips
 ---------
-- How can we strongly reduce the size of the case study for testing purposes
+- How can I strongly reduce the size of the case study for testing purposes
 
    Delete the duration (column D in ``oT_Data_Duration``) of the load levels you want to ignore. For example, if you delete the duration beyond the first 168 hours, you are considering just the first week of the year in the case study
 
    Put a time step of 2 or 3 hours in the ``oT_Data_Parameter`` file. This will reduce the number of load levels by 2 or 3
 
+   For working with representative stages see, for example, the `9n7y case study <https://opentepes.readthedocs.io/en/latest/Download.html#cases>`_
+
 - Relaxing the binary condition of binary variables
 
-   In the ``oT_Data_Option`` file you can force or relax the binary condition of the binary variables. This is useful for testing purposes.
-   Besides, in ``oT_Data_Generation`` and ``oT_Data_Network`` can also be relaxed individually by generator or transmission line.
+   In the ``oT_Data_Option`` file you can force or relax the binary condition of the binary variables.
+   Besides, in ``oT_Data_Generation`` and ``oT_Data_Network`` can also be relaxed individually for each generator or transmission line.
 
 - How to ignore a scenario or a period
 
-   Assign probability 0.0 to the scenario or weight 0.0 to the period
+   Assign probability 0.0 to the scenario in ``oT_Data_Scenario`` or weight 0.0 to the period in ``oT_Data_Period``
 
 - How to ignore a generator
 
-   Don’t assign a node to it
+   Don’t assign a node to it in ``oT_Data_Generation``
 
-   Put the initial period beyond the year of study
+   Put the initial period beyond the year of study in ``oT_Data_Generation``
 
 - How to ignore a line
 
-   Put the initial period beyond the year of study
+   Put the initial period beyond the year of study in ``oT_Data_Network``
 
 - All the empty cells of the CSV files are substituted by 0.
 
