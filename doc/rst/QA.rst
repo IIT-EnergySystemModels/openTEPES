@@ -1,7 +1,7 @@
 .. openTEPES documentation master file, created by Andres Ramos
 
-Questions & Answers
-===================
+Questions & Answers (Q&A)
+=========================
 
 How can I install it?
 ---------------------
@@ -37,24 +37,30 @@ What PC do I need?
 
 - As a rule of thumb, an optimization problem needs 1 GB of memory for every 1 million rows
 
-- So, depending on the size of the optimization problem and the available memory, you can run or not run it on your PC
+- So, depending on the size of the optimization problem and the available memory, you may or may not be able to run it on your PC
 
 First steps
 -----------
 - openTEPES is provided with `seven case studies <https://opentepes.readthedocs.io/en/latest/Download.html#cases>`_. Each one has varied characteristics
 
-- Check that you can run them on your PC. Some of them may not run if you have a PC with limited memory
+- Check that you can run them on your PC. Some of them may not run if you have a PC with too little memory
 
 Potential issues
 ----------------
 - Check that any item you define (generator, node, technology, area, etc.) is included in the corresponding dictionary (``oT_Dict_Generation``, ``oT_Dict_Node``, ``oT_Dict_Technology``, ``oT_Dict_Area``, etc.). Otherwise, the optimization problem will not run
 
-- openTEPES is implicitly a network model. Therefore, at least one electrical transmission line connecting two nodes and at least two nodes must be defined
+- openTEPES is implicitly a network model. Therefore, at least two nodes and one electrical transmission line connecting them must be defined
 
-- At least one generator must be defined. A thermal generator has a variable cost (the product of fuel cost times the linear term) ≠ 0. A variable renewable energy unit has no variable cost (the product of fuel cost times the linear term = 0)
+- At least one generator must be defined. A thermal generator has a larger than zero variable cost (the product of fuel cost times the linear term) ≠ 0. A variable renewable energy unit has zero variable cost (the product of fuel cost times the linear term = 0)
+
+- Check the correspondence between the resources you define for the system in the case study to be run and the nodes where they are deemed to be located. The location within the grid of any resource defined must be specified.
+
+- Check that all the demand in the system within the case study is located in a node that can be served with the energy output of some resources located in any node that is connected/to be connected to the former, possibly including generation representing non-served energy (NSE).  
 
 Some tips
 ---------
+On building an appropriate set of input data files for a case study that can be run on openTEPES:
+
 - How can I strongly reduce the size of the case study for testing purposes
 
    Delete the duration (column D in ``oT_Data_Duration``) of the load levels you want to ignore. For example, if you delete the duration beyond the first 168 hours, you are considering just the first week of the year in the case study
@@ -76,14 +82,30 @@ Some tips
 
    Don’t assign a node to it in ``oT_Data_Generation``, i.e., leave the node column empty
 
-   Put the initial period beyond the year of study in ``oT_Data_Generation``
+   Set the initial period where the generator can be in operation beyond the year of study in ``oT_Data_Generation``
 
 - How to ignore a line
 
-   Put the initial period beyond the year of study in ``oT_Data_Network``
+   Set the initial period where the line can be in operation beyond the year of study in ``oT_Data_Network``
 
-- All the empty cells of the CSV files are substituted by 0.
+- All the empty cells of the CSV files are substituted internally by openTEPES with 0.0
 
-   Therefore, if you want to set the generation of a solar PV to 0.0 at night, then you must put a small value 0.000001 that will be substituted internally by openTEPES by 0.0
+   Therefore, if you want to set the generation of a solar PV to 0.0 at night, then you must put a small value 0.000001 that will be substituted internally by openTEPES with 0.0. If the cell is left empty openTEPES will consider the rated capacity of the solar PV unit defined in ``oT_Data_Generation`` as the generation at night.
 
-- You don’t need to put the generator column if nothing is in this column. Empty columns don’t need to be included in the CSV files, for example, in ``oT_Data_VariableMaxGeneration``, ``oT_Data_VariableMinGeneration``, ``oT_Data_VariableMaxConsumption``, ``oT_Data_VariableMinConsumption``, etc.
+- There is no need to include the column for a certain resource within an input data file if there is not data to be defined for this resource within that file. Empty columns don’t need to be included in the input data CSV files, including ``oT_Data_VariableMaxGeneration``, ``oT_Data_VariableMinGeneration``, ``oT_Data_VariableMaxConsumption``, ``oT_Data_VariableMinConsumption``, etc.
+
+On analysing output data:
+
+- Make sure the problem solving process has been successfully completed, reaching optimality (console log and log file provide information on this).
+
+- If the problem solving process has not produced an optimal solution, check if the system conditions defined within the input data files are too tight, i.e., the system may has not been provided with a large enough amount of flexibility for the model to find the optimal problem solution. If this may be the case, some problem constraints could/should be relaxed to allow the model to compute an optimal solution.
+
+- Check the level of the overall system variables in the output energy balance files to assess whether they seem to make sense. Focus first on certain specific variables, including the ones that follow:
+
+   Non-served energy amounts
+
+   Amounts of spilled energy
+
+   Overall output by technology if you have some reference levels for this to compare to
+
+- Whenever the level of some variables at system level does not seem to be reasonable, check the output data file for the energy balance at area level, to try to locate in which area within the system the problem may be located
