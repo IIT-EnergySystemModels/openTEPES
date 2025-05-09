@@ -45,6 +45,14 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     dfEnergyOutflows        = pd.read_csv(f'{_path}/oT_Data_EnergyOutflows_'        f'{CaseName}.csv', header=0, index_col=[0,1,2])
     dfNodeLocation          = pd.read_csv(f'{_path}/oT_Data_NodeLocation_'          f'{CaseName}.csv', header=0, index_col=[0    ])
     dfNetwork               = pd.read_csv(f'{_path}/oT_Data_Network_'               f'{CaseName}.csv', header=0, index_col=[0,1,2])
+    try:
+        dfVariableTTCFrw    = pd.read_csv(f'{_path}/oT_Data_VariableTTCFrwFlow_'    f'{CaseName}.csv', header=0, index_col=[0,1,2,3,4,5])
+        dfVariableTTCBck    = pd.read_csv(f'{_path}/oT_Data_VariableTTCBckFlow_'    f'{CaseName}.csv', header=0, index_col=[0,1,2,3,4,5])
+        dfVariablePTDF      = pd.read_csv(f'{_path}/oT_Data_VariablePTDF_'          f'{CaseName}.csv', header=0, index_col=[0,1,2,3,4,5])
+        pIndPTDF            = 1
+    except:
+        pIndPTDF            = 0
+        print('**** No flow-based method')
 
     try:
         dfReservoir         = pd.read_csv(f'{_path}/oT_Data_Reservoir_'             f'{CaseName}.csv', header=0, index_col=[0    ])
@@ -120,6 +128,11 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         dfReserveMarginHeat.fillna(0.0, inplace=True)
         dfNetworkHeat.fillna      (0.0, inplace=True)
 
+    if pIndPTDF == 1:
+        dfVariableTTCFrw.fillna   (0.0, inplace=True)
+        dfVariableTTCBck.fillna   (0.0, inplace=True)
+        dfVariablePTDF.fillna     (0.0, inplace=True)
+
     dfReserveMargin         = dfReserveMargin.where       (dfReserveMargin        > 0.0, 0.0)
     dfEmission              = dfEmission.where            (dfEmission             > 0.0, 0.0)
     dfRESEnergy             = dfRESEnergy.where           (dfRESEnergy            > 0.0, 0.0)
@@ -144,6 +157,10 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         dfVariableMaxVolume = dfVariableMaxVolume.where   (dfVariableMaxVolume    > 0.0, 0.0)
         dfHydroInflows      = dfHydroInflows.where        (dfHydroInflows         > 0.0, 0.0)
         dfHydroOutflows     = dfHydroOutflows.where       (dfHydroOutflows        > 0.0, 0.0)
+
+    if pIndPTDF == 1:
+        dfVariableTTCFrw    = dfVariableTTCFrw.where      (dfVariableTTCFrw       > 0.0, 0.0)
+        dfVariableTTCBck    = dfVariableTTCBck.where      (dfVariableTTCBck       > 0.0, 0.0)
 
     # show some statistics of the data
     if pIndLogConsole == 1:
@@ -184,6 +201,9 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
             print('Heat demand                       \n', dfDemandHeat.describe          (), '\n')
             print('Reserve margin heat               \n', dfReserveMarginHeat.describe   (), '\n')
             print('Heat pipe network                 \n', dfNetworkHeat.describe         (), '\n')
+
+        if pIndPTDF == 1:
+            print('Variable PTDF                     \n', dfVariablePTDF.describe        (), '\n')
 
     #%% reading the sets
     dictSets = DataPortal()
@@ -328,11 +348,16 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
 
 
     if pIndHydrogen == 1:
-        pDemandH2          = dfDemandHydrogen      [mTEPES.nd]                           # hydrogen demand                           [tH2/h]
+        pDemandH2          = dfDemandHydrogen      [mTEPES.nd]                                       # hydrogen demand                           [tH2/h]
 
     if pIndHeat == 1:
-        pReserveMarginHeat = dfReserveMarginHeat   ['ReserveMargin']                     # minimum adequacy reserve margin           [p.u.]
-        pDemandHeat        = dfDemandHeat          [mTEPES.nd] * 1e-3                    # heat     demand                           [GW]
+        pReserveMarginHeat = dfReserveMarginHeat   ['ReserveMargin']                                 # minimum adequacy reserve margin           [p.u.]
+        pDemandHeat        = dfDemandHeat          [mTEPES.nd] * 1e-3                                # heat     demand                           [GW]
+
+    if pIndPTDF == 1:
+        pVariablePTDF      = dfVariablePTDF.reindex       (columns=mTEPES.nd, fill_value=0.0)        # variable PTDF                             [p.u.]
+        pVariableTTCFrw    = dfVariableTTCFrw['TTCFrw']                                             # variable maximum electric flow             [GW]
+        pVariableTTCBck    = dfVariableTTCBck['TTCBck']                                             # variable minimum electric flow             [GW]
 
     if pTimeStep > 1:
 
@@ -477,6 +502,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pAngMax                     = dfNetwork     ['AngMax'                    ] * math.pi / 180                                      # Max phase angle difference                   [rad]
     pNetLoInvest                = dfNetwork     ['InvestmentLo'              ]                                                      # Lower bound of the investment decision       [p.u.]
     pNetUpInvest                = dfNetwork     ['InvestmentUp'              ]                                                      # Upper bound of the investment decision       [p.u.]
+
 
     # replace PeriodFin = 0.0 by year 3000
     pElecGenPeriodFin = pElecGenPeriodFin.where(pElecGenPeriodFin != 0.0, 3000   )
@@ -737,6 +763,9 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
             mTEPES.psnhe = Set(initialize = [(p,sc,n,ni,nf,cc) for p,sc,n,ni,nf,cc in mTEPES.psn*mTEPES.he if (p,ni,nf,cc) in mTEPES.pha])
         else:
             mTEPES.phc   = Set(initialize = [])
+
+        if pIndPTDF == 1:
+            mTEPES.psnland = Set(initialize = [(p,sc,n,ni,nf,cc,nd) for p,sc,n,ni,nf,cc,nd in mTEPES.psnla*mTEPES.nd if (p,ni,nf,cc) in mTEPES.pla])
 
         # assigning a node to an area
         mTEPES.ndar = Set(initialize = [(nd,ar) for (nd,zn,ar) in mTEPES.ndzn*mTEPES.ar if (zn,ar) in mTEPES.znar])
@@ -1035,6 +1064,11 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         pDemandHeat      = pDemandHeat.loc          [mTEPES.psn  ]
         pDemandHeatAbs   = pDemandHeat.where(pDemandHeat > 0.0, 0.0)
 
+    if pIndPTDF == 1:
+        pVariableTTCFrw  = pVariableTTCFrw.loc      [mTEPES.psnla]
+        pVariableTTCBck  = pVariableTTCBck.loc      [mTEPES.psnla]
+        pVariablePTDF    = pVariablePTDF.loc        [mTEPES.psnla]
+
     # separate positive and negative demands to avoid converting negative values to 0
     pDemandElecPos       = pDemandElec.where(pDemandElec >= 0.0, 0.0)
     pDemandElecNeg       = pDemandElec.where(pDemandElec <  0.0, 0.0)
@@ -1327,6 +1361,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.pIndHydroTopology     = Param(initialize=pIndHydroTopology   , within=Binary,              doc='Indicator of reservoir and hydropower topology'                         )
     mTEPES.pIndHydrogen          = Param(initialize=pIndHydrogen        , within=Binary,              doc='Indicator of hydrogen demand and pipeline network'                      )
     mTEPES.pIndHeat              = Param(initialize=pIndHeat            , within=Binary,              doc='Indicator of heat     demand and pipe     network'                      )
+    mTEPES.pIndPTDF              = Param(initialize=pIndPTDF            , within=Binary,              doc='Indicator of using or not the Flow-based method'                        )
 
     mTEPES.pENSCost              = Param(initialize=pENSCost            , within=NonNegativeReals,    doc='ENS cost'                                           )
     mTEPES.pH2NSCost             = Param(initialize=pH2NSCost           , within=NonNegativeReals,    doc='HNS cost'                                           )
@@ -1427,6 +1462,13 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         mTEPES.pPower2HeatRatio            = Param(mTEPES.ch,    initialize=pPower2HeatRatio.to_dict()           , within=NonNegativeReals, doc='Power to heat ratio'                      )
         mTEPES.pProductionFunctionHeat     = Param(mTEPES.hp,    initialize=pProductionFunctionHeat.to_dict()    , within=NonNegativeReals, doc='Production function of an CHP plant'      )
         mTEPES.pProductionFunctionH2ToHeat = Param(mTEPES.hh,    initialize=pProductionFunctionH2ToHeat.to_dict(), within=NonNegativeReals, doc='Production function of an boiler using H2')
+
+    if pIndPTDF == 1:
+        pPTDF = filter_rows(pVariablePTDF, mTEPES.psnland)
+
+        mTEPES.pVariableTTCFrw             = Param(mTEPES.psnla, initialize=pVariableTTCFrw.to_dict()            , within=NonNegativeReals, doc='Variable TTC forward flow'                )
+        mTEPES.pVariableTTCBck             = Param(mTEPES.psnla, initialize=pVariableTTCBck.to_dict()            , within=NonNegativeReals, doc='Variable TTC backward flow'               )
+        mTEPES.pPTDF                       = Param(mTEPES.psnland, initialize=pPTDF.to_dict()                    , within=Reals           , doc='Power transfer distribution factor'       )
 
     if pIndHydroTopology == 1:
 
