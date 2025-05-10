@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.18.5] - 2025-05-05
+[4.18.5] - 2025-05-10
 -----------------------
+- [FIXED] change from titleside to title_side in output results to adapt to the latest plotly version
 - [CHANGED] add logfile for GAMS solver
 - [FIXED] fix error in the cost summary per area files
 - [FIXED] fix some errors in the output results

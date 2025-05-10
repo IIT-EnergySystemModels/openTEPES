@@ -37,7 +37,7 @@ What PC do I need?
 
 - As a rule of thumb, an optimization problem needs 1 GB of memory for every 1 million rows
 
-- So, depending on the size of the optimization problem and the available memory, you may or may not be able to run it on your PC
+- So, depending on the size of the optimization problem and the available memory, you may or may not be able to run it on your PC. As an example, the case studies provided can be run in a laptop with 16 MB of memory.
 
 First steps
 -----------
@@ -100,11 +100,11 @@ On analysing output data:
 
 - If the problem solving process has not produced an optimal solution, check if the system conditions defined within the input data files are too tight, i.e., the system may has not been provided with a large enough amount of flexibility for the model to find the optimal problem solution. If this may be the case, some problem constraints could/should be relaxed to allow the model to compute an optimal solution.
 
-- Check the level of the overall system variables in the output energy balance files to assess whether they seem to make sense. Focus first on certain specific variables, including the ones that follow:
+- Check the level of the overall system variables in the output energy balance files (e.g., ``oT_Result_BalanceEnergyPerArea``, ``oT_Result_BalanceEnergyPerTech``) to assess whether they seem to make sense. Focus first on certain specific variables, including the ones that follow:
 
    Non-served energy amounts
 
-   Amounts of spilled energy
+   Amounts of spilled and curtailed energy
 
    Overall output by technology if you have some reference levels for this to compare to
 
