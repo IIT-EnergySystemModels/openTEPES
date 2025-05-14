@@ -7,7 +7,7 @@ import math
 import networkx as nx
 import pandas   as pd
 from   collections   import defaultdict
-from   pyomo.environ import Constraint, Objective, minimize, Set, RangeSet, Param
+from   pyomo.environ import Constraint, Expression, Objective, minimize, Set, RangeSet, Param
 
 
 def TotalObjectiveFunction(OptModel, mTEPES, pIndLogConsole):
@@ -522,15 +522,9 @@ def GenerationOperationModelFormulationDemand(OptModel, mTEPES, pIndLogConsole, 
 
     def eBalanceElec(OptModel,n,nd):
         if sum(1 for g in g2n[nd]) + sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd]):
-            if mTEPES.pIndPTDF == 0:
-                return (sum(OptModel.vTotalOutput[p,sc,n,g] for g in g2n[nd] if (p,g) in mTEPES.pg) - sum(OptModel.vESSTotalCharge[p,sc,n,eh] for eh in e2n[nd] if (p,eh) in mTEPES.peh) + OptModel.vENS[p,sc,n,nd] -
-                        sum(OptModel.vLineLosses[p,sc,n,nd,nf,cc] for nf,cc in loutl[nd] if (p,nd,nf,cc) in mTEPES.pll) - sum(OptModel.vFlowElec[p,sc,n,nd,nf,cc] for nf,cc in lout[nd] if (p,nd,nf,cc) in mTEPES.pla) -
-                        sum(OptModel.vLineLosses[p,sc,n,ni,nd,cc] for ni,cc in linl [nd] if (p,ni,nd,cc) in mTEPES.pll) + sum(OptModel.vFlowElec[p,sc,n,ni,nd,cc] for ni,cc in lin [nd] if (p,ni,nd,cc) in mTEPES.pla)) == mTEPES.pDemandElec[p,sc,n,nd]
-            else:
-                return (mTEPES.vNetPosition[p,sc,n,nd] == sum(OptModel.vTotalOutput[p,sc,n,g] for g in g2n[nd] if (p,g) in mTEPES.pg) - sum(OptModel.vESSTotalCharge[p,sc,n,eh] for eh in e2n[nd] if (p,eh) in mTEPES.peh) + OptModel.vENS[p,sc,n,nd] -
-                        sum(OptModel.vLineLosses[p,sc,n,nd,nf,cc] for nf,cc in loutl[nd] if (p,nd,nf,cc) in mTEPES.pll) - sum(OptModel.vFlowElec[p,sc,n,nd,nf,cc] for nf,cc in lout[nd] if (p,nd,nf,cc) in mTEPES.pla) -
-                        sum(OptModel.vLineLosses[p,sc,n,ni,nd,cc] for ni,cc in linl [nd] if (p,ni,nd,cc) in mTEPES.pll) + sum(OptModel.vFlowElec[p,sc,n,ni,nd,cc] for ni,cc in lin [nd] if (p,ni,nd,cc) in mTEPES.pla) -
-                        mTEPES.pDemandElec[p,sc,n,nd])
+            return (sum(OptModel.vTotalOutput[p,sc,n,g] for g in g2n[nd] if (p,g) in mTEPES.pg) - sum(OptModel.vESSTotalCharge[p,sc,n,eh] for eh in e2n[nd] if (p,eh) in mTEPES.peh) + OptModel.vENS[p,sc,n,nd] -
+                    sum(OptModel.vLineLosses[p,sc,n,nd,nf,cc] for nf,cc in loutl[nd] if (p,nd,nf,cc) in mTEPES.pll) - sum(OptModel.vFlowElec[p,sc,n,nd,nf,cc] for nf,cc in lout[nd] if (p,nd,nf,cc) in mTEPES.pla) -
+                    sum(OptModel.vLineLosses[p,sc,n,ni,nd,cc] for ni,cc in linl [nd] if (p,ni,nd,cc) in mTEPES.pll) + sum(OptModel.vFlowElec[p,sc,n,ni,nd,cc] for ni,cc in lin [nd] if (p,ni,nd,cc) in mTEPES.pla)) == mTEPES.pDemandElec[p,sc,n,nd]
         else:
             return Constraint.Skip
     setattr(OptModel, f'eBalanceElec_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.nd, rule=eBalanceElec, doc='electric load generation balance [GW]'))
@@ -1375,12 +1369,29 @@ def NetworkOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st
     if pIndLogConsole == 1:
         print('eLineLosses2          ... ', len(getattr(OptModel, f'eLineLosses2_{p}_{sc}_{st}')), ' rows')
 
+    # nodes to generators (g2n)
+    g2n = defaultdict(list)
+    for nd,g in mTEPES.n2g:
+        g2n[nd].append(g)
+    e2n = defaultdict(list)
+    for nd,eh in mTEPES.nd*mTEPES.eh:
+        if (nd,eh) in mTEPES.n2g:
+            e2n[nd].append(eh)
+
+    def eNetPosition(OptModel,n,nd):
+        if mTEPES.pIndBinSingleNode() == 0 and mTEPES.pIndPTDF == 1:
+            """Net position NP_n = Σ P_g in node n − demand"""
+            return (OptModel.vNetPosition[p,sc,n,nd] == sum(OptModel.vTotalOutput[p,sc,n,g] for g in g2n[nd] if (p,g) in mTEPES.pg) - sum(OptModel.vESSTotalCharge[p,sc,n,eh] for eh in e2n[nd] if (p,eh) in mTEPES.peh) + OptModel.vENS[p,sc,n,nd] - mTEPES.pDemandElec[p,sc,n,nd])
+        else:
+            return Constraint.Skip
+    setattr(OptModel, f'eNetPosition_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.nd, rule=eNetPosition, doc='net position [GW]'))
+
     def eFlowBasedCalcu1(OptModel,n,ni,nf,cc):
-        if mTEPES.pIndBinSingleNode() == 0 and mTEPES.pElecNetPeriodIni[ni,nf,cc] <= p and mTEPES.pElecNetPeriodFin[ni,nf,cc] >= p and mTEPES.pIndPTDF == 1:
+        if mTEPES.pIndBinSingleNode() == 0 and mTEPES.pElecNetPeriodIni[ni,nf,cc] <= p and mTEPES.pElecNetPeriodFin[ni,nf,cc] >= p and mTEPES.pIndPTDF == 1 and mTEPES.pIndBinLinePTDF[ni,nf,cc] == 1:
             if (ni,nf,cc) in mTEPES.lca:
-                return OptModel.vFlowElec[p,sc,n,ni,nf,cc] - sum(mTEPES.pPTDF[p,sc,n,ni,nf,cc,nd] * OptModel.vNetPosition[p,sc,n,nd] for nd in mTEPES.nd) >= - 1 + OptModel.vLineCommit[p,sc,n,ni,nf,cc]
+                return OptModel.vFlowElec[p,sc,n,ni,nf,cc] - sum(mTEPES.pPTDF[p,sc,n,ni,nf,cc,nd] * OptModel.vNetPosition[p,sc,n,nd] for nd in mTEPES.nd if (p,sc,n,ni,nf,cc,nd) in mTEPES.psnland) >= - 1 + OptModel.vLineCommit[p,sc,n,ni,nf,cc]
             else:
-                return OptModel.vFlowElec[p,sc,n,ni,nf,cc] - sum(mTEPES.pPTDF[p,sc,n,ni,nf,cc,nd] * OptModel.vNetPosition[p,sc,n,nd] for nd in mTEPES.nd) ==   0
+                return OptModel.vFlowElec[p,sc,n,ni,nf,cc] - sum(mTEPES.pPTDF[p,sc,n,ni,nf,cc,nd] * OptModel.vNetPosition[p,sc,n,nd] for nd in mTEPES.nd if (p,sc,n,ni,nf,cc,nd) in mTEPES.psnland) ==   0
         else:
             return Constraint.Skip
     setattr(OptModel, f'eFlowBasedCalcu1_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.laa, rule=eFlowBasedCalcu1, doc='flow based calculation [p.u.]'))
@@ -1389,8 +1400,8 @@ def NetworkOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st
         print('eFlowBasedCalcu1      ... ', len(getattr(OptModel, f'eFlowBasedCalcu1_{p}_{sc}_{st}')), ' rows')
 
     def eFlowBasedCalcu2(OptModel,n,ni,nf,cc):
-        if mTEPES.pIndBinSingleNode() == 0 and mTEPES.pElecNetPeriodIni[ni,nf,cc] <= p and mTEPES.pElecNetPeriodFin[ni,nf,cc] >= p and mTEPES.pIndPTDF == 1:
-            return OptModel.vFlowElec[p,sc,n,ni,nf,cc] - sum(mTEPES.pPTDF[p,sc,n,ni,nf,cc,nd] * OptModel.vNetPosition[p,sc,n,nd] for nd in mTEPES.nd) <=   1 - OptModel.vLineCommit[p,sc,n,ni,nf,cc]
+        if mTEPES.pIndBinSingleNode() == 0 and mTEPES.pElecNetPeriodIni[ni,nf,cc] <= p and mTEPES.pElecNetPeriodFin[ni,nf,cc] >= p and mTEPES.pIndPTDF == 1 and mTEPES.pIndBinLinePTDF[ni,nf,cc] == 1:
+            return OptModel.vFlowElec[p,sc,n,ni,nf,cc] - sum(mTEPES.pPTDF[p,sc,n,ni,nf,cc,nd] * OptModel.vNetPosition[p,sc,n,nd] for nd in mTEPES.nd if (p,sc,n,ni,nf,cc,nd) in mTEPES.psnland) <=   1 - OptModel.vLineCommit[p,sc,n,ni,nf,cc]
         else:
             return Constraint.Skip
     setattr(OptModel, f'eFlowBasedCalcu2_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.lca, rule=eFlowBasedCalcu2, doc='flow based calculation [p.u.]'))
@@ -1398,25 +1409,25 @@ def NetworkOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st
     if pIndLogConsole == 1:
         print('eFlowBasedCalcu2      ... ', len(getattr(OptModel, f'eFlowBasedCalcu2_{p}_{sc}_{st}')), ' rows')
 
-    def eSecurityMargingTTCFrw(OptModel,n,ni,nf,cc):
-        if mTEPES.pIndBinSingleNode() == 0 and mTEPES.pElecNetPeriodIni[ni,nf,cc] <= p and mTEPES.pElecNetPeriodFin[ni,nf,cc] >= p and mTEPES.pIndPTDF == 1:
-            return OptModel.vFlowElec[p,sc,n,ni,nf,cc] <=   mTEPES.pVariableTTCFrw[p,sc,n,ni,nf,cc]
-        else:
-            return Constraint.Skip
-    setattr(OptModel, f'eSecurityMargingTTCFrw_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.lca, rule=eSecurityMargingTTCFrw, doc='security margin TTC for flow based calculation [p.u.]'))
-
-    if pIndLogConsole == 1:
-        print('eSecurityMargingTTCFrw... ', len(getattr(OptModel, f'eSecurityMargingTTCFrw_{p}_{sc}_{st}')), ' rows')
-
-    def eSecurityMargingTTCBck(OptModel,n,ni,nf,cc):
-        if mTEPES.pIndBinSingleNode() == 0 and mTEPES.pElecNetPeriodIni[ni,nf,cc] <= p and mTEPES.pElecNetPeriodFin[ni,nf,cc] >= p and mTEPES.pIndPTDF == 1:
-            return OptModel.vFlowElec[p,sc,n,ni,nf,cc] >= - mTEPES.pVariableTTCBck[p,sc,n,ni,nf,cc]
-        else:
-            return Constraint.Skip
-    setattr(OptModel, f'eSecurityMargingTTCBck_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.lca, rule=eSecurityMargingTTCBck, doc='security margin TTC for flow based calculation [p.u.]'))
-
-    if pIndLogConsole == 1:
-        print('eSecurityMargingTTCBck... ', len(getattr(OptModel, f'eSecurityMargingTTCBck_{p}_{sc}_{st}')), ' rows')
+    # def eSecurityMargingTTCFrw(OptModel,n,ni,nf,cc):
+    #     if mTEPES.pIndBinSingleNode() == 0 and mTEPES.pElecNetPeriodIni[ni,nf,cc] <= p and mTEPES.pElecNetPeriodFin[ni,nf,cc] >= p and mTEPES.pIndBinLinePTDF[ni,nf,cc] == 1 and mTEPES.pIndPTDF == 1:
+    #         return OptModel.vFlowElec[p,sc,n,ni,nf,cc] <=   mTEPES.pVariableTTCFrw[p,sc,n,ni,nf,cc]
+    #     else:
+    #         return Constraint.Skip
+    # setattr(OptModel, f'eSecurityMargingTTCFrw_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.lca, rule=eSecurityMargingTTCFrw, doc='security margin TTC for flow based calculation [p.u.]'))
+    #
+    # if pIndLogConsole == 1:
+    #     print('eSecurityMargingTTCFrw... ', len(getattr(OptModel, f'eSecurityMargingTTCFrw_{p}_{sc}_{st}')), ' rows')
+    #
+    # def eSecurityMargingTTCBck(OptModel,n,ni,nf,cc):
+    #     if mTEPES.pIndBinSingleNode() == 0 and mTEPES.pElecNetPeriodIni[ni,nf,cc] <= p and mTEPES.pElecNetPeriodFin[ni,nf,cc] >= p and mTEPES.pIndBinLinePTDF[ni,nf,cc] == 1 and mTEPES.pIndPTDF == 1:
+    #         return OptModel.vFlowElec[p,sc,n,ni,nf,cc] >= - mTEPES.pVariableTTCBck[p,sc,n,ni,nf,cc]
+    #     else:
+    #         return Constraint.Skip
+    # setattr(OptModel, f'eSecurityMargingTTCBck_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.lca, rule=eSecurityMargingTTCBck, doc='security margin TTC for flow based calculation [p.u.]'))
+    #
+    # if pIndLogConsole == 1:
+    #     print('eSecurityMargingTTCBck... ', len(getattr(OptModel, f'eSecurityMargingTTCBck_{p}_{sc}_{st}')), ' rows')
 
     GeneratingTime = time.time() - StartTime
     if pIndLogConsole == 1:
