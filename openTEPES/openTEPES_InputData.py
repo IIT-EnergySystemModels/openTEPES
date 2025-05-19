@@ -52,7 +52,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         pIndVarTTC          = 1
     except:
         pIndVarTTC          = 0
-        print('**** No variable transmission line capacities')
+        print('**** No variable transmission line TTCs')
     try:
         dfVariablePTDF      = pd.read_csv(f'{_path}/oT_Data_VariablePTDF_'          f'{CaseName}.csv', header=[0,1,2,3], index_col=[0,1,2])
         pIndPTDF            = 1
@@ -189,6 +189,12 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         print('Energy outflows                       \n', dfEnergyOutflows.describe      (), '\n')
         print('Electric network                      \n', dfNetwork.describe             (), '\n')
 
+        if pIndVarTTC == 1:
+            print('Variable TTC forward              \n', dfVariableTTCFrw.describe      (), '\n')
+            print('Variable TTC backward             \n', dfVariableTTCBck.describe      (), '\n')
+        if pIndPTDF == 1:
+            print('Variable PTDF                     \n', dfVariablePTDF.describe        (), '\n')
+
         if pIndHydroTopology == 1:
             print('Reservoir                         \n', dfReservoir.describe           (), '\n')
             print('Variable minimum reservoir volume \n', dfVariableMinVolume.describe   (), '\n')
@@ -204,12 +210,6 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
             print('Heat demand                       \n', dfDemandHeat.describe          (), '\n')
             print('Reserve margin heat               \n', dfReserveMarginHeat.describe   (), '\n')
             print('Heat pipe network                 \n', dfNetworkHeat.describe         (), '\n')
-
-        if pIndVarTTC == 1:
-            print('Variable TTC forward              \n', dfVariableTTCFrw.describe      (), '\n')
-            print('Variable TTC backward             \n', dfVariableTTCBck.describe      (), '\n')
-        if pIndPTDF == 1:
-            print('Variable PTDF                     \n', dfVariablePTDF.describe        (), '\n')
 
     #%% reading the sets
     dictSets = DataPortal()
@@ -750,12 +750,12 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         mTEPES.psnnd     = Set(initialize = [(p,sc,n,nd)       for p,sc,n,nd       in mTEPES.psn*mTEPES.nd                           ])
         mTEPES.psnar     = Set(initialize = [(p,sc,n,ar)       for p,sc,n,ar       in mTEPES.psn*mTEPES.ar                           ])
 
-        mTEPES.psnla     = Set(initialize = [(p,sc,n,ni,nf,cc) for p,sc,n,ni,nf,cc in mTEPES.psn*mTEPES.la if (p,ni,nf,cc) in mTEPES.pla])
-        mTEPES.psnle     = Set(initialize = [(p,sc,n,ni,nf,cc) for p,sc,n,ni,nf,cc in mTEPES.psn*mTEPES.le if (p,ni,nf,cc) in mTEPES.pla])
-        mTEPES.psnll     = Set(initialize = [(p,sc,n,ni,nf,cc) for p,sc,n,ni,nf,cc in mTEPES.psn*mTEPES.ll if (p,ni,nf,cc) in mTEPES.pll])
-        mTEPES.psnls     = Set(initialize = [(p,sc,n,ni,nf,cc) for p,sc,n,ni,nf,cc in mTEPES.psn*mTEPES.ls if (p,ni,nf,cc) in mTEPES.pla])
+        mTEPES.psnla     = Set(initialize = [(p,sc,n,ni,nf,cc) for p,sc,n,ni,nf,cc in mTEPES.psn*mTEPES.la  if (p,ni,nf,cc) in mTEPES.pla ])
+        mTEPES.psnle     = Set(initialize = [(p,sc,n,ni,nf,cc) for p,sc,n,ni,nf,cc in mTEPES.psn*mTEPES.le  if (p,ni,nf,cc) in mTEPES.pla ])
+        mTEPES.psnll     = Set(initialize = [(p,sc,n,ni,nf,cc) for p,sc,n,ni,nf,cc in mTEPES.psn*mTEPES.ll  if (p,ni,nf,cc) in mTEPES.pll ])
+        mTEPES.psnls     = Set(initialize = [(p,sc,n,ni,nf,cc) for p,sc,n,ni,nf,cc in mTEPES.psn*mTEPES.ls  if (p,ni,nf,cc) in mTEPES.pla ])
 
-        mTEPES.psnehc    = Set(initialize = [(p,sc,n,eh)       for p,sc,n,eh       in mTEPES.psneh          if pRatedMaxCharge[eh]>0.0 ])
+        mTEPES.psnehc    = Set(initialize = [(p,sc,n,eh)       for p,sc,n,eh       in mTEPES.psneh          if pRatedMaxCharge[eh] > 0.0 ])
 
         if pIndHydroTopology == 1:
             mTEPES.prs   = Set(initialize = [(p,     rs)       for p,     rs       in mTEPES.p  *mTEPES.rs if pRsrPeriodIni[rs] <= p and pRsrPeriodFin[rs] >= p])
@@ -944,10 +944,6 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pDwTime     = round(pDwTime    /pTimeStep).astype('int')
     pStableTime = round(pStableTime/pTimeStep).astype('int')
     pShiftTime  = round(pShiftTime /pTimeStep).astype('int')
-
-    if pIndVarTTC == 1:
-        pMaxNTCFrw = pVariableTTCFrw.replace(0.0, pLineNTCFrw / dfNetwork['SecurityFactor' ]) * dfNetwork['SecurityFactor' ]
-        pMaxNTCBck = pVariableTTCBck.replace(0.0, pLineNTCBck / dfNetwork['SecurityFactor' ]) * dfNetwork['SecurityFactor' ]
 
     # %% definition of the time-steps leap to observe the stored energy at an ESS
     idxCycle            = dict()
@@ -1167,21 +1163,21 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
             pMaxPower2ndBlock [pMaxPower2ndBlock [[g for g in g2a[ar]]] < pEpsilonElec] = 0.0
             pMaxCharge2ndBlock[pMaxCharge2ndBlock[[g for g in g2a[ar]]] < pEpsilonElec] = 0.0
 
-        pLineNTCFrw.update(pd.Series([0.0 for ni,nf,cc in mTEPES.la if pLineNTCFrw[ni,nf,cc] < pEpsilonElec], index=[(ni,nf,cc) for ni,nf,cc in mTEPES.la if pLineNTCFrw[ni,nf,cc] < pEpsilonElec], dtype='float64'))
-        pLineNTCBck.update(pd.Series([0.0 for ni,nf,cc in mTEPES.la if pLineNTCBck[ni,nf,cc] < pEpsilonElec], index=[(ni,nf,cc) for ni,nf,cc in mTEPES.la if pLineNTCBck[ni,nf,cc] < pEpsilonElec], dtype='float64'))
+        pLineNTCFrw.update(pd.Series([0.0 for la in mTEPES.la if pLineNTCFrw[la] < pEpsilonElec], index=[la for la in mTEPES.la if pLineNTCFrw[la] < pEpsilonElec], dtype='float64'))
+        pLineNTCBck.update(pd.Series([0.0 for la in mTEPES.la if pLineNTCBck[la] < pEpsilonElec], index=[la for la in mTEPES.la if pLineNTCBck[la] < pEpsilonElec], dtype='float64'))
         pLineNTCMax = pLineNTCFrw.where(pLineNTCFrw > pLineNTCBck, pLineNTCBck)
 
         if pIndHydrogen == 1:
             pDemandH2[pDemandH2[[nd for nd in d2a[ar]]] < pEpsilonElec] = 0.0
-            pH2PipeNTCFrw.update(pd.Series([0.0 for ni,nf,cc in mTEPES.pa if pH2PipeNTCFrw[ni,nf,cc] < pEpsilonElec], index=[(ni,nf,cc) for ni,nf,cc in mTEPES.pa if pH2PipeNTCFrw[ni,nf,cc] < pEpsilonElec], dtype='float64'))
-            pH2PipeNTCBck.update(pd.Series([0.0 for ni,nf,cc in mTEPES.pa if pH2PipeNTCBck[ni,nf,cc] < pEpsilonElec], index=[(ni,nf,cc) for ni,nf,cc in mTEPES.pa if pH2PipeNTCBck[ni,nf,cc] < pEpsilonElec], dtype='float64'))
+            pH2PipeNTCFrw.update(pd.Series([0.0 for pa in mTEPES.pa if pH2PipeNTCFrw[pa] < pEpsilonElec], index=[pa for pa in mTEPES.pa if pH2PipeNTCFrw[pa] < pEpsilonElec], dtype='float64'))
+            pH2PipeNTCBck.update(pd.Series([0.0 for pa in mTEPES.pa if pH2PipeNTCBck[pa] < pEpsilonElec], index=[pa for pa in mTEPES.pa if pH2PipeNTCBck[pa] < pEpsilonElec], dtype='float64'))
 
         if pIndHeat == 1:
             pDemandHeatPeak[p,ar] = pDemandHeat.loc[p,:,:][[nd for nd in d2a[ar]]].sum(axis=1).max()
             pEpsilonHeat          = pDemandHeatPeak[p,ar]*1e-5
             pDemandHeat             [pDemandHeat    [[nd for nd in   d2a[ar]]] <  pEpsilonHeat] = 0.0
-            pHeatPipeNTCFrw.update(pd.Series([0.0 for ni,nf,cc in mTEPES.ha if pHeatPipeNTCFrw[ni,nf,cc] < pEpsilonHeat], index=[(ni,nf,cc) for ni,nf,cc in mTEPES.ha if pHeatPipeNTCFrw[ni,nf,cc] < pEpsilonHeat], dtype='float64'))
-            pHeatPipeNTCBck.update(pd.Series([0.0 for ni,nf,cc in mTEPES.ha if pHeatPipeNTCBck[ni,nf,cc] < pEpsilonHeat], index=[(ni,nf,cc) for ni,nf,cc in mTEPES.ha if pHeatPipeNTCBck[ni,nf,cc] < pEpsilonHeat], dtype='float64'))
+            pHeatPipeNTCFrw.update(pd.Series([0.0 for ha in mTEPES.ha if pHeatPipeNTCFrw[ha] < pEpsilonHeat], index=[ha for ha in mTEPES.ha if pHeatPipeNTCFrw[ha] < pEpsilonHeat], dtype='float64'))
+            pHeatPipeNTCBck.update(pd.Series([0.0 for ha in mTEPES.ha if pHeatPipeNTCBck[ha] < pEpsilonHeat], index=[ha for ha in mTEPES.ha if pHeatPipeNTCBck[ha] < pEpsilonHeat], dtype='float64'))
 
     # drop generators not g or es or eh or ch
     pMinPowerElec      = pMinPowerElec.loc     [:,mTEPES.g ]
@@ -1266,6 +1262,17 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pNetUpInvest             = pNetUpInvest.loc     [mTEPES.lc]
     pLineLossFactor          = pLineLossFactor.loc  [mTEPES.ll]
 
+    pMaxNTCFrw = pd.DataFrame([[pLineNTCFrw[la] for la in mTEPES.la] for p,sc,n in mTEPES.psn], index=mTEPES.psn, columns=mTEPES.la)
+    pMaxNTCBck = pd.DataFrame([[pLineNTCBck[la] for la in mTEPES.la] for p,sc,n in mTEPES.psn], index=mTEPES.psn, columns=mTEPES.la)
+    if pIndVarTTC == 1:
+        pMaxNTCFrw = pVariableTTCFrw.replace(0.0, pLineNTCFrw / dfNetwork['SecurityFactor']) * dfNetwork['SecurityFactor']
+        pMaxNTCBck = pVariableTTCBck.replace(0.0, pLineNTCBck / dfNetwork['SecurityFactor']) * dfNetwork['SecurityFactor']
+    pMaxNTCMax = pMaxNTCFrw.where(pMaxNTCFrw > pMaxNTCBck, pMaxNTCBck)
+
+    pMaxNTCBck                  = pMaxNTCBck.loc             [:,mTEPES.la]
+    pMaxNTCFrw                  = pMaxNTCFrw.loc             [:,mTEPES.la]
+    pMaxNTCMax                  = pMaxNTCFrw.loc             [:,mTEPES.la]
+
     if pIndHydroTopology == 1:
         # drop generators not h
         pProductionFunctionHydro = pProductionFunctionHydro.loc[mTEPES.h ]
@@ -1293,9 +1300,6 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         pHeatPipeFixedCost          = pHeatPipeFixedCost.loc         [mTEPES.hc]
         pHeatPipeLoInvest           = pHeatPipeLoInvest.loc          [mTEPES.hc]
         pHeatPipeUpInvest           = pHeatPipeUpInvest.loc          [mTEPES.hc]
-
-    pMaxNTCBck                      = pMaxNTCBck.loc                 [:,mTEPES.la]
-    pMaxNTCFrw                      = pMaxNTCFrw.loc                 [:,mTEPES.la]
 
     # replace very small costs by 0
     pEpsilon = 1e-5           # this value in EUR/GWh is lower than the O&M variable cost of any technology, independent of the area
@@ -1375,6 +1379,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
 
     pMaxNTCBck         = filter_rows(pMaxNTCBck        , mTEPES.psnla)
     pMaxNTCFrw         = filter_rows(pMaxNTCFrw        , mTEPES.psnla)
+    pMaxNTCMax         = filter_rows(pMaxNTCMax        , mTEPES.psnla)
 
     if pIndPTDF == 1:
         pPTDF = pVariablePTDF.stack(level=list(range(pVariablePTDF.columns.nlevels)), future_stack=True)
@@ -1579,8 +1584,9 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.pNetLoInvest      = Param(mTEPES.lc,    initialize=pNetLoInvest.to_dict()     , within=NonNegativeReals,    doc='Lower bound of the electric line investment decision', mutable=True)
     mTEPES.pNetUpInvest      = Param(mTEPES.lc,    initialize=pNetUpInvest.to_dict()     , within=NonNegativeReals,    doc='Upper bound of the electric line investment decision', mutable=True)
     mTEPES.pIndBinLinePTDF   = Param(mTEPES.la,    initialize=pIndBinLinePTDF.to_dict()  , within=Binary          ,    doc='Binary indicator of line with'                                     )
-    mTEPES.pMaxNTCFrw        = Param(mTEPES.psnla, initialize=pMaxNTCFrw.to_dict()       , within=           Reals,    doc='Maximum NTC forward flow'                                          )
-    mTEPES.pMaxNTCBck        = Param(mTEPES.psnla, initialize=pMaxNTCBck.to_dict()       , within=           Reals,    doc='Maximum NTC backward flow'                                         )
+    mTEPES.pMaxNTCFrw        = Param(mTEPES.psnla, initialize=pMaxNTCFrw.to_dict()       , within=           Reals,    doc='Maximum NTC forward capacity'                                      )
+    mTEPES.pMaxNTCBck        = Param(mTEPES.psnla, initialize=pMaxNTCBck.to_dict()       , within=           Reals,    doc='Maximum NTC backward capacity'                                     )
+    mTEPES.pMaxNTCMax        = Param(mTEPES.psnla, initialize=pMaxNTCMax.to_dict()       , within=           Reals,    doc='Maximum NTC capacity'                                              )
 
     if pIndHydrogen == 1:
         mTEPES.pH2PipeLength       = Param(mTEPES.pn,  initialize=pH2PipeLength.to_dict()      , within=NonNegativeReals,    doc='Hydrogen pipeline length',                        mutable=True)
