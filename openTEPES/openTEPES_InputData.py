@@ -1294,8 +1294,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         pHeatPipeLoInvest           = pHeatPipeLoInvest.loc          [mTEPES.hc]
         pHeatPipeUpInvest           = pHeatPipeUpInvest.loc          [mTEPES.hc]
 
-    pMaxNTCBck                      = pMaxNTCBck.loc                 [mTEPES.la]
-    pMaxNTCFrw                      = pMaxNTCFrw.loc                 [mTEPES.la]
+    pMaxNTCBck                      = pMaxNTCBck.loc                 [:,mTEPES.la]
+    pMaxNTCFrw                      = pMaxNTCFrw.loc                 [:,mTEPES.la]
 
     # replace very small costs by 0
     pEpsilon = 1e-5           # this value in EUR/GWh is lower than the O&M variable cost of any technology, independent of the area
