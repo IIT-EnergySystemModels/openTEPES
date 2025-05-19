@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 11, 2025
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 19, 2025
 """
 
 import datetime
@@ -45,8 +45,14 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     dfEnergyOutflows        = pd.read_csv(f'{_path}/oT_Data_EnergyOutflows_'        f'{CaseName}.csv', header=0, index_col=[0,1,2])
     dfNodeLocation          = pd.read_csv(f'{_path}/oT_Data_NodeLocation_'          f'{CaseName}.csv', header=0, index_col=[0    ])
     dfNetwork               = pd.read_csv(f'{_path}/oT_Data_Network_'               f'{CaseName}.csv', header=0, index_col=[0,1,2])
-    dfVariableTTCFrw        = pd.read_csv(f'{_path}/oT_Data_VariableTTCFrwFlow_'    f'{CaseName}.csv', header=[0,1,2  ], index_col=[0,1,2])
-    dfVariableTTCBck        = pd.read_csv(f'{_path}/oT_Data_VariableTTCBckFlow_'    f'{CaseName}.csv', header=[0,1,2  ], index_col=[0,1,2])
+
+    try:
+        dfVariableTTCFrw    = pd.read_csv(f'{_path}/oT_Data_VariableTTCFrwFlow_'    f'{CaseName}.csv', header=[0,1,2  ], index_col=[0,1,2])
+        dfVariableTTCBck    = pd.read_csv(f'{_path}/oT_Data_VariableTTCBckFlow_'    f'{CaseName}.csv', header=[0,1,2  ], index_col=[0,1,2])
+        pIndVarTTC          = 1
+    except:
+        pIndVarTTC          = 0
+        print('**** No variable transmission line capacities')
     try:
         dfVariablePTDF      = pd.read_csv(f'{_path}/oT_Data_VariablePTDF_'          f'{CaseName}.csv', header=[0,1,2,3], index_col=[0,1,2])
         pIndPTDF            = 1
@@ -112,6 +118,12 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     dfNodeLocation.fillna         (0.0, inplace=True)
     dfNetwork.fillna              (0.0, inplace=True)
 
+    if pIndVarTTC == 1:
+        dfVariableTTCFrw.fillna   (0.0, inplace=True)
+        dfVariableTTCBck.fillna   (0.0, inplace=True)
+    if pIndPTDF == 1:
+        dfVariablePTDF.fillna     (0.0, inplace=True)
+
     if pIndHydroTopology == 1:
         dfReservoir.fillna        (0.0, inplace=True)
         dfVariableMinVolume.fillna(0.0, inplace=True)
@@ -127,11 +139,6 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         dfDemandHeat.fillna       (0.0, inplace=True)
         dfReserveMarginHeat.fillna(0.0, inplace=True)
         dfNetworkHeat.fillna      (0.0, inplace=True)
-
-    dfVariableTTCFrw.fillna       (0.0, inplace=True)
-    dfVariableTTCBck.fillna       (0.0, inplace=True)
-    if pIndPTDF == 1:
-        dfVariablePTDF.fillna     (0.0, inplace=True)
 
     dfReserveMargin         = dfReserveMargin.where       (dfReserveMargin        > 0.0, 0.0)
     dfEmission              = dfEmission.where            (dfEmission             > 0.0, 0.0)
@@ -198,8 +205,9 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
             print('Reserve margin heat               \n', dfReserveMarginHeat.describe   (), '\n')
             print('Heat pipe network                 \n', dfNetworkHeat.describe         (), '\n')
 
-        print('Variable TTC forward flow             \n', dfVariableTTCFrw.describe      (), '\n')
-        print('Variable TTC backward flow            \n', dfVariableTTCBck.describe      (), '\n')
+        if pIndVarTTC == 1:
+            print('Variable TTC forward              \n', dfVariableTTCFrw.describe      (), '\n')
+            print('Variable TTC backward             \n', dfVariableTTCBck.describe      (), '\n')
         if pIndPTDF == 1:
             print('Variable PTDF                     \n', dfVariablePTDF.describe        (), '\n')
 
@@ -337,6 +345,12 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pEnergyInflows        = dfEnergyInflows.reindex       (columns=mTEPES.gg, fill_value=0.0) * 1e-3 # dynamic energy inflows                    [GW]
     pEnergyOutflows       = dfEnergyOutflows.reindex      (columns=mTEPES.gg, fill_value=0.0) * 1e-3 # dynamic energy outflows                   [GW]
 
+    if pIndVarTTC == 1:
+        pVariableTTCFrw = dfVariableTTCFrw * 1e-3                                                    # variable TTC forward                      [GW]
+        pVariableTTCBck = dfVariableTTCBck * 1e-3                                                    # variable TTC backward                     [GW]
+    if pIndPTDF == 1:
+        pVariablePTDF = dfVariablePTDF  # variable PTDF                             [p.u.]
+
     if pIndHydroTopology == 1:
         pVariableMinVolume = dfVariableMinVolume.reindex  (columns=mTEPES.rs, fill_value=0.0)        # dynamic variable minimum reservoir volume [hm3]
         pVariableMaxVolume = dfVariableMaxVolume.reindex  (columns=mTEPES.rs, fill_value=0.0)        # dynamic variable maximum reservoir volume [hm3]
@@ -350,11 +364,6 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         pReserveMarginHeat = dfReserveMarginHeat   ['ReserveMargin']                                 # minimum adequacy reserve margin           [p.u.]
         pDemandHeat        = dfDemandHeat          [mTEPES.nd] * 1e-3                                # heat     demand                           [GW]
 
-    pVariableTTCFrw        = dfVariableTTCFrw * 1e-3                                                # variable maximum electric flow             [GW]
-    pVariableTTCBck        = dfVariableTTCBck * 1e-3                                                # variable minimum electric flow             [GW]
-    if pIndPTDF == 1:
-        pVariablePTDF      = dfVariablePTDF                                                         # variable PTDF                             [p.u.]
-
     if pTimeStep > 1:
 
         # compute the demand as the mean over the time step load levels and assign it to active load levels. Idem for the remaining parameters
@@ -364,6 +373,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
                 pDataFrame = pDataFrame.rolling(pTimeStep).mean()
                 pDataFrame.fillna(0.0, inplace=True)
             return pDataFrame
+
         # Apply the ProcessParameter function to each DataFrame
         pDemandElec            = ProcessParameter(pDemandElec,           pTimeStep)
         pSystemInertia         = ProcessParameter(pSystemInertia,        pTimeStep)
@@ -382,6 +392,12 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         pEnergyInflows         = ProcessParameter(pEnergyInflows,        pTimeStep)
         pEnergyOutflows        = ProcessParameter(pEnergyOutflows,       pTimeStep)
 
+        if pIndVarTTC == 1:
+            pVariableTTCFrw    = ProcessParameter(pVariableTTCFrw,       pTimeStep)
+            pVariableTTCBck    = ProcessParameter(pVariableTTCBck,       pTimeStep)
+        if pIndPTDF == 1:
+            pVariablePTDF      = ProcessParameter(pVariablePTDF,         pTimeStep)
+
         if pIndHydroTopology == 1:
             pVariableMinVolume = ProcessParameter(pVariableMinVolume,    pTimeStep)
             pVariableMaxVolume = ProcessParameter(pVariableMaxVolume,    pTimeStep)
@@ -393,11 +409,6 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
 
         if pIndHeat == 1:
             pDemandHeat        = ProcessParameter(pDemandHeat,           pTimeStep)
-
-        pVariableTTCFrw        = ProcessParameter(pVariableTTCFrw,       pTimeStep)
-        pVariableTTCBck        = ProcessParameter(pVariableTTCBck,       pTimeStep)
-        if pIndPTDF == 1:
-            pVariablePTDF      = ProcessParameter(pVariablePTDF,         pTimeStep)
 
         # assign duration 0 to load levels not being considered; active load levels are at the end of every pTimeStep
         for n in range(pTimeStep-2,-1,-1):
@@ -638,8 +649,9 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         mTEPES.hc = Set(doc='candidate heat pipes'             , initialize=[])
 
     pIndBinLinePTDF = pd.Series(index=mTEPES.la, data=0.0)                                     # indicate if the line has a PTDF or not
-    pVariableTTCFrw = pVariableTTCFrw.reindex(columns=mTEPES.la, fill_value=0.0)               # variable capacity forward direction
-    pVariableTTCBck = pVariableTTCBck.reindex(columns=mTEPES.la, fill_value=0.0)               # variable capacity backward direction
+    if pIndVarTTC == 1:
+        pVariableTTCFrw = pVariableTTCFrw.reindex(columns=mTEPES.la, fill_value=0.0)           # variable TTC forward  direction
+        pVariableTTCBck = pVariableTTCBck.reindex(columns=mTEPES.la, fill_value=0.0)           # variable TTC backward direction
     if pIndPTDF == 1:
         # get the level_3, level_4, and level_5 from multiindex of pVariablePTDF
         PTDF_columns = pVariablePTDF.columns
@@ -933,8 +945,9 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pStableTime = round(pStableTime/pTimeStep).astype('int')
     pShiftTime  = round(pShiftTime /pTimeStep).astype('int')
 
-    pMaxTTCFrw      = pVariableTTCFrw.replace(0.0, pLineNTCFrw)
-    pMaxTTCBck      = pVariableTTCBck.replace(0.0, pLineNTCBck)
+    if pIndVarTTC == 1:
+        pMaxNTCFrw = pVariableTTCFrw.replace(0.0, pLineNTCFrw / dfNetwork['SecurityFactor' ]) * dfNetwork['SecurityFactor' ]
+        pMaxNTCBck = pVariableTTCBck.replace(0.0, pLineNTCBck / dfNetwork['SecurityFactor' ]) * dfNetwork['SecurityFactor' ]
 
     # %% definition of the time-steps leap to observe the stored energy at an ESS
     idxCycle            = dict()
@@ -1281,8 +1294,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         pHeatPipeLoInvest           = pHeatPipeLoInvest.loc          [mTEPES.hc]
         pHeatPipeUpInvest           = pHeatPipeUpInvest.loc          [mTEPES.hc]
 
-    pMaxTTCBck = pMaxTTCBck.loc[:, mTEPES.la]
-    pMaxTTCFrw = pMaxTTCFrw.loc[:, mTEPES.la]
+    pMaxNTCBck                      = pMaxNTCBck.loc                 [mTEPES.la]
+    pMaxNTCFrw                      = pMaxNTCFrw.loc                 [mTEPES.la]
 
     # replace very small costs by 0
     pEpsilon = 1e-5           # this value in EUR/GWh is lower than the O&M variable cost of any technology, independent of the area
@@ -1360,8 +1373,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pOperReserveUp     = filter_rows(pOperReserveUp    , mTEPES.psnar)
     pOperReserveDw     = filter_rows(pOperReserveDw    , mTEPES.psnar)
 
-    pMaxTTCBck     = filter_rows(pMaxTTCBck        , mTEPES.psnla)
-    pMaxTTCFrw     = filter_rows(pMaxTTCFrw        , mTEPES.psnla)
+    pMaxNTCBck         = filter_rows(pMaxNTCBck        , mTEPES.psnla)
+    pMaxNTCFrw         = filter_rows(pMaxNTCFrw        , mTEPES.psnla)
 
     if pIndPTDF == 1:
         pPTDF = pVariablePTDF.stack(level=list(range(pVariablePTDF.columns.nlevels)), future_stack=True)
@@ -1566,8 +1579,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.pNetLoInvest      = Param(mTEPES.lc,    initialize=pNetLoInvest.to_dict()     , within=NonNegativeReals,    doc='Lower bound of the electric line investment decision', mutable=True)
     mTEPES.pNetUpInvest      = Param(mTEPES.lc,    initialize=pNetUpInvest.to_dict()     , within=NonNegativeReals,    doc='Upper bound of the electric line investment decision', mutable=True)
     mTEPES.pIndBinLinePTDF   = Param(mTEPES.la,    initialize=pIndBinLinePTDF.to_dict()  , within=Binary          ,    doc='Binary indicator of line with'                                     )
-    mTEPES.pMaxTTCFrw        = Param(mTEPES.psnla, initialize=pMaxTTCFrw.to_dict()       , within=Reals           ,    doc='Maximum  TTC forward flow'                                         )
-    mTEPES.pMaxTTCBck        = Param(mTEPES.psnla, initialize=pMaxTTCBck.to_dict()       , within=Reals           ,    doc='Maximum  TTC backward flow'                                        )
+    mTEPES.pMaxNTCFrw        = Param(mTEPES.psnla, initialize=pMaxNTCFrw.to_dict()       , within=           Reals,    doc='Maximum NTC forward flow'                                          )
+    mTEPES.pMaxNTCBck        = Param(mTEPES.psnla, initialize=pMaxNTCBck.to_dict()       , within=           Reals,    doc='Maximum NTC backward flow'                                         )
 
     if pIndHydrogen == 1:
         mTEPES.pH2PipeLength       = Param(mTEPES.pn,  initialize=pH2PipeLength.to_dict()      , within=NonNegativeReals,    doc='Hydrogen pipeline length',                        mutable=True)
@@ -1966,10 +1979,10 @@ def SettingUpVariables(OptModel, mTEPES):
 
         [OptModel.vLineLosses[p,sc,n,ni,nf,cc].setub(0.5*mTEPES.pLineLossFactor[ni,nf,cc]*mTEPES.pLineNTCMax[ni,nf,cc]) for p,sc,n,ni,nf,cc in mTEPES.psnll]
         if mTEPES.pIndBinSingleNode() == 0:
-            [OptModel.vFlowElec[p,sc,n,ni,nf,cc].setlb(-mTEPES.pMaxTTCBck[p,sc,n,ni,nf,cc]   ) for p,sc,n,ni,nf,cc in mTEPES.psnla]
-            [OptModel.vFlowElec[p,sc,n,ni,nf,cc].setub( mTEPES.pMaxTTCFrw[p,sc,n,ni,nf,cc]   ) for p,sc,n,ni,nf,cc in mTEPES.psnla]
-        [OptModel.vTheta       [p,sc,n,nd      ].setlb(-mTEPES.pMaxTheta  [p,sc,n,nd]()) for p,sc,n,nd       in mTEPES.psnnd]
-        [OptModel.vTheta       [p,sc,n,nd      ].setub( mTEPES.pMaxTheta  [p,sc,n,nd]()) for p,sc,n,nd       in mTEPES.psnnd]
+            [OptModel.vFlowElec[p,sc,n,ni,nf,cc].setlb(-mTEPES.pMaxNTCBck[p,sc,n,ni,nf,cc]   ) for p,sc,n,ni,nf,cc in mTEPES.psnla]
+            [OptModel.vFlowElec[p,sc,n,ni,nf,cc].setub( mTEPES.pMaxNTCFrw[p,sc,n,ni,nf,cc]   ) for p,sc,n,ni,nf,cc in mTEPES.psnla]
+        [OptModel.vTheta       [p,sc,n,nd      ].setlb(-mTEPES.pMaxTheta [p,sc,n,nd      ]() ) for p,sc,n,nd       in mTEPES.psnnd]
+        [OptModel.vTheta       [p,sc,n,nd      ].setub( mTEPES.pMaxTheta [p,sc,n,nd      ]() ) for p,sc,n,nd       in mTEPES.psnnd]
 
         if mTEPES.pIndHydrogen == 1:
             OptModel.vFlowH2 = Var(mTEPES.psnpa, within=Reals,            doc='pipeline flow               [tH2]')
