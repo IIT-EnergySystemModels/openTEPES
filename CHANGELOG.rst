@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.18.5] - 2025-05-10
+[4.18.5] - 2025-05-19
 -----------------------
+- [CHANGED] add hourly mutually exclusive generators, generators can now be part of several mutually exclusive groups, exclusivity now applies to consumption too
 - [FIXED] change from titleside to title_side in output results to adapt to the latest plotly version
 - [CHANGED] add logfile for GAMS solver
 - [FIXED] fix error in the cost summary per area files
