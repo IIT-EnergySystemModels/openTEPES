@@ -58,7 +58,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         pIndPTDF            = 1
     except:
         pIndPTDF            = 0
-        print('**** No flow-based method')
+        print('**** No flow-based market coupling method')
 
     try:
         dfReservoir         = pd.read_csv(f'{_path}/oT_Data_Reservoir_'             f'{CaseName}.csv', header=0, index_col=[0    ])
