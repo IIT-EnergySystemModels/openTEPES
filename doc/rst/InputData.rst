@@ -643,8 +643,8 @@ Those lines with fixed cost >0  are considered candidate and can be installed or
 
 If lower and upper bounds of investment decisions are very close (with a difference <1e-3) to 0 or 1 are converted into 0 and 1.
 
-Variable transmission line TTC forward and backward (optional)
---------------------------------------------------------------
+Variable transmission line TTC forward and backward (optional files)
+--------------------------------------------------------------------
 
 A description of the data included in the files ``oT_Data_VariableTTCFrw.csv`` and ``oT_Data_VariableTTCBck.csv`` follows:
 
