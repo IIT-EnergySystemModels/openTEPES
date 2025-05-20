@@ -49,7 +49,7 @@ RES         Renewable Energy Source
 SEP         Storage Expansion Planning
 TEP         Transmission Expansion Planning
 TTC         Total Transfer Capacity
-VOLL        Value of Lost Load
+VoLL        Value of Lost Load
 VRE         Variable Renewable Energy
 VRES        Variable Renewable Energy Source (units with null linear variable cost and no storage capacity. Do not contribute to the the operating reserves)
 ==========  ============================================================================================================================================================================
