@@ -656,6 +656,18 @@ and disjunctive constraints in AC candidate parallel circuits are inversely prop
 
 Given that there are disjunctive constraints, which are only correct with binary AC investment variables, this cycle-based formulation must be used only with binary AC investment decisions.
 
+**Flow based market coupling method**
+
+It is based on the flow-based approach presented in:
+
+* Huang D. "Dynamic PTDF Implementation in the Market Model" TU Delft, Delft University of Technology. 2011 Sep 12.
+
+The approach is based on the following equations:
+
+:math:`f^p_{\omega nijc} = \sum_{i'} PTDF_{nijci'} (\sum_{g \in i'} gp^p_{\omega ng} - \sum_{e \in i'} gc^p_{\omega ne} + ens^p_{\omega ni'} - D^p_{\omega ni'})  \quad \forall p \omega n, ijc, i', ijc' \in EL`
+
+:math:`-1+ict_{ijc'} \leq f^p_{\omega nijc} - \sum_{i'} PTDF_{nijci'} (\sum_{g \in i'} gp^p_{\omega ng} - \sum_{e \in i'} gc^p_{\omega ne} + ens^p_{\omega ni'} - D^p_{\omega ni'}) \leq 1-ict_{ijc'} \quad \forall p \omega nijcc', i', ijc \in EL, ijc' \in CL`
+
 **Hydrogen network operation**
 
 Balance of hydrogen generation by electrolyzers, hydrogen consumption from hydrogen heater using it, and demand at each node [tH2] «``eBalanceH2``». A transport model is used to model the hydrogen network.
@@ -712,7 +724,7 @@ Balance of heat generation produced by CHPs and fuel heaters respectively and de
 
 :math:`0 \leq l^p_{\omega nijc} \leq \frac{L_{ijc}}{2} \overline{F}^p_{\omega nijc}  \quad \forall p \omega nijc`
 
-:math:`- \overline{F}_{ijc} \leq f^p_{\omega nijc} \leq \overline{F}^p_{\omega nijc} \quad \forall p \omega nijc, ijc \in EL`
+:math:`- \overline{F}_{nijc} \leq f^p_{\omega nijc} \leq \overline{F}^p_{\omega nnijc} \quad \forall p \omega nijc, ijc \in EL`
 
 Voltage angle of the reference node fixed to 0 for each scenario, period, and load level [rad]
 
