@@ -900,11 +900,42 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
 
     Create_ESS_RES_Sets(mTEPES)
 
-    #%% inverse index generator to mutually exclusive generator
-    pExclusiveGenToGen = pGenToExclusiveGen.reset_index().set_index('MutuallyExclusive').set_axis(['Generator'], axis=1)[['Generator']]
-    pExclusiveGenToGen = pExclusiveGenToGen.loc[pExclusiveGenToGen['Generator'].isin(mTEPES.g)].reset_index().set_index(['MutuallyExclusive', 'Generator'])
+    # Create mutually exclusive groups
+    # Store in a group-generator dictionary all the relevant data
+    group_dict = {}
+    for generator, groups in pGenToExclusiveGen.items():
+        if groups != 0.0:
+            for group in str(groups).split('|'):
+                group_dict.setdefault(group, []).append(generator)
 
-    mTEPES.g2g = Set(doc='mutually exclusive generator to generator', initialize=[(gg,g) for gg,g in mTEPES.g*mTEPES.g if (gg,g) in pExclusiveGenToGen])
+    # These sets store all groups and the generators in them
+    mTEPES.ExclusiveGroups = Set(initialize=list(group_dict.keys()))
+    mTEPES.GeneratorsInExclusiveGroup = Set(mTEPES.ExclusiveGroups, initialize=group_dict)
+
+    # Create filtered dictionaries for Yearly and Hourly groups
+    group_dict_yearly = {}
+    group_dict_hourly = {}
+
+    for group, generators in group_dict.items():
+        if all(gen in mTEPES.gc for gen in generators):
+            group_dict_yearly[group] = generators
+        else:
+            group_dict_hourly[group] = generators
+
+    # The exclusive groups sets have all groups which are mutually exclusive in that time scope
+    # Generators in group sets are sets with the corresponding generators to a given group
+    mTEPES.ExclusiveGroupsYearly = Set(initialize=list(group_dict_yearly.keys()))
+    mTEPES.GeneratorsInYearlyGroup = Set(mTEPES.ExclusiveGroupsYearly, initialize=group_dict_yearly)
+
+    mTEPES.ExclusiveGroupsHourly = Set(initialize=list(group_dict_hourly.keys()))
+    mTEPES.GeneratorsInHourlyGroup = Set(mTEPES.ExclusiveGroupsHourly, initialize=group_dict_hourly)
+
+    # All exclusive generators (sorting to ensure deterministic behavior)
+    mTEPES.ExclusiveGenerators = Set(initialize=sorted(sum(group_dict.values(), [])))
+    # All yearly exclusive generators (sorting to ensure deterministic behavior)
+    mTEPES.ExclusiveGeneratorsYearly = Set(initialize=sorted(sum(group_dict_yearly.values(), [])))
+    # All hourly exclusive generators (sorting to ensure deterministic behavior)
+    mTEPES.ExclusiveGeneratorsHourly = Set(initialize=sorted(sum(group_dict_hourly.values(), [])))
 
     # minimum and maximum variable power, charge, and storage capacity
     pMinPowerElec  = pVariableMinPowerElec.replace(0.0, pRatedMinPowerElec)
@@ -1785,26 +1816,32 @@ def SettingUpVariables(OptModel, mTEPES):
                 OptModel.vHeatPipeInvPer       = Var(mTEPES.phc,   within=Binary,       doc='heat network investment decision exists in a year {0,1}'    )
 
         if mTEPES.pIndBinGenOperat() == 0:
-            OptModel.vCommitment           = Var(mTEPES.psnnr, within=UnitInterval,     doc='commitment         of the unit                        [0,1]', initialize = 0.0)
-            OptModel.vStartUp              = Var(mTEPES.psnnr, within=UnitInterval,     doc='startup            of the unit                        [0,1]', initialize = 0.0)
-            OptModel.vShutDown             = Var(mTEPES.psnnr, within=UnitInterval,     doc='shutdown           of the unit                        [0,1]', initialize = 0.0)
-            OptModel.vMaxCommitment        = Var(mTEPES.psnr , within=UnitInterval,     doc='maximum commitment of the unit                        [0,1]')
-            OptModel.vStableState          = Var(mTEPES.psnnr, within=UnitInterval,     doc='stable    state    of the unit                        [0,1]')
-            OptModel.vRampUpState          = Var(mTEPES.psnnr, within=UnitInterval,     doc='ramp up   state    of the unit                        [0,1]')
-            OptModel.vRampDwState          = Var(mTEPES.psnnr, within=UnitInterval,     doc='ramp down state    of the unit                        [0,1]')
+            OptModel.vCommitment           = Var(mTEPES.psnnr, within=UnitInterval,     initialize=0.0, doc='commitment         of the unit                        [0,1]')
+            OptModel.vStartUp              = Var(mTEPES.psnnr, within=UnitInterval,     initialize=0.0, doc='startup            of the unit                        [0,1]')
+            OptModel.vShutDown             = Var(mTEPES.psnnr, within=UnitInterval,     initialize=0.0, doc='shutdown           of the unit                        [0,1]')
+            OptModel.vStableState          = Var(mTEPES.psnnr, within=UnitInterval,     initialize=0.0, doc='stable    state    of the unit                        [0,1]')
+            OptModel.vRampUpState          = Var(mTEPES.psnnr, within=UnitInterval,     initialize=0.0, doc='ramp up   state    of the unit                        [0,1]')
+            OptModel.vRampDwState          = Var(mTEPES.psnnr, within=UnitInterval,     initialize=0.0, doc='ramp down state    of the unit                        [0,1]')
+
+            OptModel.vMaxCommitmentYearly  = Var(mTEPES.psnr ,mTEPES.ExclusiveGroupsYearly, within=UnitInterval, initialize=0.0, doc='maximum commitment of the unit yearly [0,1]')
+            OptModel.vMaxCommitmentHourly  = Var(mTEPES.psnnr,mTEPES.ExclusiveGroupsHourly, within=UnitInterval, initialize=0.0, doc='maximum commitment of the unit hourly [0,1]')
+
             if mTEPES.pIndHydroTopology == 1:
                 OptModel.vCommitmentCons   = Var(mTEPES.psnh,  within=UnitInterval,     doc='consumption commitment of the unit                    [0,1]')
 
         else:
-            OptModel.vCommitment           = Var(mTEPES.psnnr, within=Binary,           doc='commitment         of the unit                        {0,1}', initialize = 0  )
-            OptModel.vStartUp              = Var(mTEPES.psnnr, within=Binary,           doc='startup            of the unit                        {0,1}', initialize = 0  )
-            OptModel.vShutDown             = Var(mTEPES.psnnr, within=Binary,           doc='shutdown           of the unit                        {0,1}', initialize = 0  )
-            OptModel.vMaxCommitment        = Var(mTEPES.psnr , within=Binary,           doc='maximum commitment of the unit                        {0,1}')
-            OptModel.vStableState          = Var(mTEPES.psnnr, within=Binary,           doc='stable    state    of the unit                        {0,1}')
-            OptModel.vRampUpState          = Var(mTEPES.psnnr, within=Binary,           doc='ramp up   state    of the unit                        {0,1}')
-            OptModel.vRampDwState          = Var(mTEPES.psnnr, within=Binary,           doc='ramp down state    of the unit                        {0,1}')
+            OptModel.vCommitment           = Var(mTEPES.psnnr, within=Binary,           initialize=0  , doc='commitment         of the unit                        {0,1}')
+            OptModel.vStartUp              = Var(mTEPES.psnnr, within=Binary,           initialize=0  , doc='startup            of the unit                        {0,1}')
+            OptModel.vShutDown             = Var(mTEPES.psnnr, within=Binary,           initialize=0  , doc='shutdown           of the unit                        {0,1}')
+            OptModel.vStableState          = Var(mTEPES.psnnr, within=Binary,           initialize=0  , doc='stable    state    of the unit                        {0,1}')
+            OptModel.vRampUpState          = Var(mTEPES.psnnr, within=Binary,           initialize=0  , doc='ramp up   state    of the unit                        {0,1}')
+            OptModel.vRampDwState          = Var(mTEPES.psnnr, within=Binary,           initialize=0  , doc='ramp down state    of the unit                        {0,1}')
+
+            OptModel.vMaxCommitmentYearly  = Var(mTEPES.psnr ,mTEPES.ExclusiveGroupsYearly, within=Binary, initialize=0.0, doc='maximum commitment of the unit yearly [0,1]')
+            OptModel.vMaxCommitmentHourly  = Var(mTEPES.psnnr,mTEPES.ExclusiveGroupsHourly, within=Binary, initialize=0.0, doc='maximum commitment of the unit hourly [0,1]')
             if mTEPES.pIndHydroTopology == 1:
                 OptModel.vCommitmentCons   = Var(mTEPES.psnh,  within=Binary,           doc='consumption commitment of the unit                    {0,1}')
+
 
         if mTEPES.pIndBinLineCommit() == 0:
             OptModel.vLineCommit           = Var(mTEPES.psnla, within=UnitInterval,     doc='line switching      of the electric line              [0,1]')
@@ -1934,9 +1971,12 @@ def SettingUpVariables(OptModel, mTEPES):
                 OptModel.vStartUp      [p,sc,n,nr].domain = UnitInterval
                 OptModel.vShutDown     [p,sc,n,nr].domain = UnitInterval
 
-        for p,sc,  nr in mTEPES.psnr:
-            if mTEPES.pIndBinUnitCommit[nr] == 0:
-                OptModel.vMaxCommitment[p,sc,  nr].domain = UnitInterval
+        for p,sc,nr,  group in mTEPES.psnr * mTEPES.ExclusiveGroups:
+            if mTEPES.pIndBinUnitCommit[nr] == 0 and nr in mTEPES.ExclusiveGeneratorsYearly:
+                OptModel.vMaxCommitmentYearly[p,sc,  nr,group].domain = UnitInterval
+        for p,sc,n,nr,group in mTEPES.psnnr * mTEPES.ExclusiveGroups:
+            if mTEPES.pIndBinUnitCommit[nr] == 0 and nr in mTEPES.ExclusiveGeneratorsHourly:
+                OptModel.vMaxCommitmentHourly[p,sc,n,nr,group].domain = UnitInterval
         if mTEPES.pIndHydroTopology == 1:
             for p,sc,n,h in mTEPES.psnh:
                 if mTEPES.pIndBinUnitCommit[h] == 0:
@@ -2033,22 +2073,21 @@ def SettingUpVariables(OptModel, mTEPES):
         for p,sc,n,nr in mTEPES.psnnr:
             # must run units or units with no minimum power, or ESS existing units are always committed and must produce at least their minimum output
             # not applicable to mutually exclusive units
-            if   len(mTEPES.g2g) == 0:
-                OptModel.vMaxCommitment     [p,sc,  nr].fix(1)
-                nFixedVariables += 1/len(mTEPES.n)
+            if   len(mTEPES.ExclusiveGroups) == 0:
                 if (mTEPES.pMustRun[nr] == 1 or (mTEPES.pMinPowerElec[p,sc,n,nr] == 0.0 and mTEPES.pRatedConstantVarCost[nr] == 0.0) or nr in mTEPES.es ) and nr not in mTEPES.ec and nr not in mTEPES.h:
                     OptModel.vCommitment    [p,sc,n,nr].fix(1)
                     OptModel.vStartUp       [p,sc,n,nr].fix(0)
                     OptModel.vShutDown      [p,sc,n,nr].fix(0)
                     nFixedVariables += 3
-            elif len(mTEPES.g2g) >  0 and sum(1 for g in mTEPES.nr if (nr,g) in mTEPES.g2g or (g,nr) in mTEPES.g2g) == 0:
+            # If there are mutually exclusive groups do not fix variables from ESS in mutually exclusive groups
+            elif len(mTEPES.ExclusiveGroups) >  0 and nr not in mTEPES.ExclusiveGenerators:
                 if (mTEPES.pMustRun[nr] == 1 or (mTEPES.pMinPowerElec[p,sc,n,nr] == 0.0 and mTEPES.pRatedConstantVarCost[nr] == 0.0) or nr in mTEPES.es) and nr not in mTEPES.ec and nr not in mTEPES.h:
                     OptModel.vCommitment    [p,sc,n,nr].fix(1)
                     OptModel.vStartUp       [p,sc,n,nr].fix(0)
                     OptModel.vShutDown      [p,sc,n,nr].fix(0)
-                    OptModel.vMaxCommitment [p,sc,  nr].fix(1)
-                    nFixedVariables += 3+1/len(mTEPES.n)
-            # if min and max power coincide, there are neither second block nor operating reserve
+                    nFixedVariables += 3
+
+            # if min and max power coincide there are neither second block, nor operating reserve
             if  mTEPES.pMaxPower2ndBlock[p,sc,n,nr] ==  0.0:
                 OptModel.vOutput2ndBlock[p,sc,n,nr].fix(0.0)
                 OptModel.vReserveUp     [p,sc,n,nr].fix(0.0)

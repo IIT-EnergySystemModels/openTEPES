@@ -2,7 +2,7 @@
 
 Download & Installation
 =======================
-The **openTEPES** model has been developed using `Python 3.12.3 <https://www.python.org/>`_ and `Pyomo 6.9.2 <https://pyomo.readthedocs.io/en/stable/>`_ and it uses `Gurobi 12.0.1 <https://www.gurobi.com/products/gurobi-optimizer/>`_ as commercial MIP solver for which a free academic license is available.
+The **openTEPES** model has been developed using `Python 3.13.2 <https://www.python.org/>`_ and `Pyomo 6.9.2 <https://pyomo.readthedocs.io/en/stable/>`_ and it uses `Gurobi 12.0.2 <https://www.gurobi.com/products/gurobi-optimizer/>`_ as commercial MIP solver for which a free academic license is available.
 It uses Pyomo so that it is independent of the preferred solver. You can alternatively use one of the free solvers `HiGHS 1.10.0 <https://ergo-code.github.io/HiGHS/dev/installation/#Precompiled-Binaries>`_, `SCIP 9.2.1 <https://www.scipopt.org/index.php#download>`_, `GLPK 5.0 <https://www.gnu.org/software/glpk/>`_,
 and `CBC 2.10.12 <https://github.com/coin-or/Cbc/releases>`_. List the serial solver interfaces under Pyomo with this call::
 
@@ -39,7 +39,6 @@ Here, you have the input files of:
 
 Code
 ----
-
 The **openTEPES** code is provided under the `GNU Affero General Public License <https://www.gnu.org/licenses/agpl-3.0.en.html>`_:
 
 - the code can't become part of a closed-source commercial software product
@@ -68,7 +67,7 @@ There are 2 ways to get all required packages under Windows. We recommend using 
    2. `HiGHS <https://ergo-code.github.io/HiGHS/dev/interfaces/python/#python-getting-started>`_ is our recommendation if you want a free and open-source solver.
    3. Install openTEPES via pip by ``pip install openTEPES``
 
-Continue at `Get Started <#get-started>`_ and see the `Tips <#tips>`_.
+Continue at `Get Started <#get-started>`_.
 
 
 **GitHub Repository (the hard way)**
@@ -77,7 +76,6 @@ Continue at `Get Started <#get-started>`_ and see the `Tips <#tips>`_.
 2. Launch the Anaconda prompt (or terminal in any IDE)
 3. Set up the path by ``cd "C:\Users\<username>\...\openTEPES"``. (Note that the path is where the repository was cloned.)
 4. Install openTEPES via pip by ``pip install .``
-
 
 **Solvers**
 
@@ -112,7 +110,6 @@ This option is activated by calling the openTEPES model with the solver name 'ga
 
 Get started
 -----------
-
 Developers
 
 By cloning the `openTEPES repository <https://github.com/IIT-EnergySystemModels/openTEPES/tree/master>`_, you can create branches and propose pull-request. Any help will be very appreciated.
@@ -140,15 +137,6 @@ Then, the **results** should be written in the folder who is called with the cas
     ``from openTEPES.openTEPES import openTEPES_run``
 
     ``openTEPES_run(<dir>, <case>, <solver>, <results>, <log>)``
-
-Tips
------------
-
-1. A complete documentation of the openTEPES model can be found at `<https://opentepes.readthedocs.io/en/latest/index.html>`_, which presents the mathematical formulation, input data and output results.
-2. Try modifying the **TimeStep** in **oT_Data_Parameter_<case>.csv** and see their effect on results.
-3. Using **0** or **1**, the optimization options can be activated or deactivated in **oT_Data_Option_<case>.csv**.
-4. If you need a nice python editor, think about using `PyCharm <https://www.jetbrains.com/pycharm/>`_. It has many features including project management, etc.
-5. We also suggest the use of `Gurobi <https://www.gurobi.com/academia/academic-program-and-licenses/>`_ (for Academics and Recent Graduates) as a solver to deal with MIP and LP problems instead of GLPK.
 
 **Run the Tutorial**
 

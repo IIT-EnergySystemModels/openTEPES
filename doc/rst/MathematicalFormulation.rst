@@ -658,7 +658,7 @@ Given that there are disjunctive constraints, which are only correct with binary
 
 **Hydrogen network operation**
 
-Balance of hydrogen generation by electrolyzers, hydrogen consumption from hydrogen heater using it, and demand at each node [tH2] «``eBalanceH2``»
+Balance of hydrogen generation by electrolyzers, hydrogen consumption from hydrogen heater using it, and demand at each node [tH2] «``eBalanceH2``». A transport model is used to model the hydrogen network.
 
 :math:`\sum_{e \in i} \frac{DUR^p_{\omega n}}{PF'_e} gc^p_{\omega ne} - \sum_{g \in i} gh^p_{\omega ng} + hns^p_{\omega ni} = DUR^p_{\omega n} DH^p_{\omega ni} + \sum_{jc} fh^p_{\omega nijc} - \sum_{jc} fh^p_{\omega njic} \quad \forall p \omega ni`
 
@@ -668,7 +668,7 @@ Energy conversion from any energy type to heating [p.u.] («``eEnergy2Heat``»)
 
 :math:`gh_{ne} = \frac{DUR^p_{\omega n}}{PF''_e} gc_{ne} \quad \forall ne`
 
-Balance of heat generation produced by CHPs and fuel heaters respectively and demand at each node [GW] «``eBalanceHeat``»
+Balance of heat generation produced by CHPs and fuel heaters respectively and demand at each node [GW] «``eBalanceHeat``». A transport model is used to model the heat network.
 
 :math:`\sum_{g \in i} gh^p_{\omega ng} + htns^p_{\omega ni} = DUR^p_{\omega n} DHt^p_{\omega ni} + \sum_{jc} fp^p_{\omega nijc} - \sum_{jc} fp^p_{\omega njic} \quad \forall p \omega ni`
 

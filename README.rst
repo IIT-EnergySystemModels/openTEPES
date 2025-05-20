@@ -132,7 +132,7 @@ Miniconda (recommended)
    2. The `HiGHS <https://ergo-code.github.io/HiGHS/dev/interfaces/python/#python-getting-started>`_ is our recommendation if you want a free and open-source solver.
    3. Install openTEPES via pip by ``pip install openTEPES``
 
-Continue at `Get Started <#get-started>`_ and see the `Tips <#tips>`_.
+Continue at `Get Started <#get-started>`_.
 
 
 GitHub Repository (the hard way)
@@ -205,15 +205,6 @@ Then, the **results** should be written in the folder who is called with the cas
     ``from openTEPES.openTEPES import openTEPES_run``
 
     ``openTEPES_run(<dir>, <case>, <solver>, <results>, <log>)``
-
-Tips
-####
-
-1. A complete documentation of the openTEPES model can be found at `<https://opentepes.readthedocs.io/en/latest/index.html>`_, which presents the mathematical formulation, input data and output results.
-2. Try modifying the **TimeStep** in **oT_Data_Parameter_<case>.csv** and see their effect on results.
-3. Using **0** or **1**, the optimization options can be activated or deactivated in **oT_Data_Option_<case>.csv**.
-4. If you need a nice python editor, think about using `PyCharm <https://www.jetbrains.com/pycharm/>`_. It has many features including project management, etc.
-5. We also suggest the use of `Gurobi <https://www.gurobi.com/academia/academic-program-and-licenses/>`_ (for Academics and Recent Graduates) as a solver to deal with MIP and LP problems instead of GLPK.
 
 Run the Tutorial
 ################
