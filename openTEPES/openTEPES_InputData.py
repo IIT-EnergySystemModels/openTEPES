@@ -47,8 +47,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     dfNetwork               = pd.read_csv(f'{_path}/oT_Data_Network_'               f'{CaseName}.csv', header=0, index_col=[0,1,2])
 
     try:
-        dfVariableTTCFrw    = pd.read_csv(f'{_path}/oT_Data_VariableTTCFrwFlow_'    f'{CaseName}.csv', header=[0,1,2  ], index_col=[0,1,2])
-        dfVariableTTCBck    = pd.read_csv(f'{_path}/oT_Data_VariableTTCBckFlow_'    f'{CaseName}.csv', header=[0,1,2  ], index_col=[0,1,2])
+        dfVariableTTCFrw    = pd.read_csv(f'{_path}/oT_Data_VariableTTCFrw_'        f'{CaseName}.csv', header=[0,1,2  ], index_col=[0,1,2])
+        dfVariableTTCBck    = pd.read_csv(f'{_path}/oT_Data_VariableTTCBck_'        f'{CaseName}.csv', header=[0,1,2  ], index_col=[0,1,2])
         pIndVarTTC          = 1
     except:
         pIndVarTTC          = 0
