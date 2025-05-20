@@ -1437,7 +1437,7 @@ def NetworkOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st
                 return OptModel.vFlowElec[p,sc,n,ni,nf,cc] - sum(mTEPES.pPTDF[p,sc,n,ni,nf,cc,nd] * OptModel.vNetPosition[p,sc,n,nd] for nd in mTEPES.nd if (p,sc,n,ni,nf,cc,nd) in mTEPES.psnland) ==   0
         else:
             return Constraint.Skip
-    setattr(OptModel, f'eFlowBasedCalcu1_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.laa, rule=eFlowBasedCalcu1, doc='flow based calculation [p.u.]'))
+    setattr(OptModel, f'eFlowBasedCalcu1_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.la, rule=eFlowBasedCalcu1, doc='flow based calculation [p.u.]'))
 
     if pIndLogConsole == 1:
         print('eFlowBasedCalcu1      ... ', len(getattr(OptModel, f'eFlowBasedCalcu1_{p}_{sc}_{st}')), ' rows')
