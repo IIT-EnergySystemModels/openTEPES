@@ -656,18 +656,6 @@ and disjunctive constraints in AC candidate parallel circuits are inversely prop
 
 Given that there are disjunctive constraints, which are only correct with binary AC investment variables, this cycle-based formulation must be used only with binary AC investment decisions.
 
-**Flow based market coupling method**
-
-It is based on the flow-based approach presented in:
-
-* Huang D. "Dynamic PTDF Implementation in the Market Model" TU Delft, Delft University of Technology. 2011 Sep 12.
-
-The approach is based on the following equations:
-
-:math:`f^p_{\omega nijc} = \sum_{i'} PTDF_{nijci'} (\sum_{g \in i'} gp^p_{\omega ng} - \sum_{e \in i'} gc^p_{\omega ne} + ens^p_{\omega ni'} - D^p_{\omega ni'})  \quad \forall p \omega n, ijc, i', ijc' \in EL`
-
-:math:`-1+ict_{ijc'} \leq f^p_{\omega nijc} - \sum_{i'} PTDF_{nijci'} (\sum_{g \in i'} gp^p_{\omega ng} - \sum_{e \in i'} gc^p_{\omega ne} + ens^p_{\omega ni'} - D^p_{\omega ni'}) \leq 1-ict_{ijc'} \quad \forall p \omega nijcc', i', ijc \in EL, ijc' \in CL`
-
 **Hydrogen network operation**
 
 Balance of hydrogen generation by electrolyzers, hydrogen consumption from hydrogen heater using it, and demand at each node [tH2] «``eBalanceH2``». A transport model is used to model the hydrogen network.
@@ -683,6 +671,18 @@ Energy conversion from any energy type to heating [p.u.] («``eEnergy2Heat``»)
 Balance of heat generation produced by CHPs and fuel heaters respectively and demand at each node [GW] «``eBalanceHeat``». A transport model is used to model the heat network.
 
 :math:`\sum_{g \in i} gh^p_{\omega ng} + htns^p_{\omega ni} = DUR^p_{\omega n} DHt^p_{\omega ni} + \sum_{jc} fp^p_{\omega nijc} - \sum_{jc} fp^p_{\omega njic} \quad \forall p \omega ni`
+
+**Flow based market coupling method**
+
+It is based on the flow-based approach presented in:
+
+* Huang D. "Dynamic PTDF Implementation in the Market Model" TU Delft, Delft University of Technology. 2011 Sep 12.
+
+The approach is based on the following equations:
+
+:math:`f^p_{\omega nijc} = \sum_{i'} PTDF_{nijci'} (\sum_{g \in i'} gp^p_{\omega ng} - \sum_{e \in i'} gc^p_{\omega ne} + ens^p_{\omega ni'} - D^p_{\omega ni'})  \quad \forall p \omega n, ijc, i', ijc' \in EL`
+
+:math:`-1+ict_{ijc'} \leq f^p_{\omega nijc} - \sum_{i'} PTDF_{nijci'} (\sum_{g \in i'} gp^p_{\omega ng} - \sum_{e \in i'} gc^p_{\omega ne} + ens^p_{\omega ni'} - D^p_{\omega ni'}) \leq 1-ict_{ijc'} \quad \forall p \omega nijcc', i', ijc \in EL, ijc' \in CL`
 
 **Bounds on generation and ESS variables** [GW]
 
