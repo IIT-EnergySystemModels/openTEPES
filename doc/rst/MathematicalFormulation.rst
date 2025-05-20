@@ -185,7 +185,7 @@ They are written in **uppercase** letters.
 **Electricity transmission system**
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 :math:`CFT_{ijc}`                          Annualized fixed cost of a candidate electricity transmission line                                                                         M€/yr
-:math:`\overline{F}_{ijc}`                 Net transfer capacity (total transfer capacity multiplied by the security coefficient) of a transmission line                              GW
+:math:`\overline{F}^p_{\omega nijc}`       Net transfer capacity (total transfer capacity multiplied by the security coefficient) of a transmission line                              GW
 :math:`\overline{F}'_{ijc}`                Maximum power flow used in the Kirchhoff's 2nd law constraint (e.g., disjunctive constraint for the candidate AC lines)                    GW
 :math:`L_{ijc}`                            Loss factor of an electric transmission line                                                                                               p.u.
 :math:`X_{ijc}`                            Reactance of an electric transmission line                                                                                                 p.u.
@@ -621,7 +621,7 @@ Minimum switch-on and switch-off state of a line [h] «``eMinSwOnState``» «``e
 
 Power flow limit in transmission lines [p.u.] «``eNetCapacity1``» «``eNetCapacity2``»
 
-:math:`- swt^p_{\omega nijc} \leq \frac{f^p_{\omega nijc}}{\overline{F}_{ijc}} \leq swt^p_{\omega nijc} \quad \forall p \omega nijc`
+:math:`- swt^p_{\omega nijc} \leq \frac{f^p_{\omega nijc}}{\overline{F}^p_{\omega nijc}} \leq swt^p_{\omega nijc} \quad \forall p \omega nijc`
 
 DC Optimal power flow for existing and non-switchable, and candidate and switchable AC-type lines (Kirchhoff's second law) [rad] «``eKirchhoff2ndLaw1``» «``eKirchhoff2ndLaw2``»
 
@@ -640,19 +640,19 @@ See the cycle constraints for the AC power flow formulation in the following ref
 
 Kirchhoff's second law is substituted by a cycle power flow formulation for cycles with only AC existing lines [rad]
 
-:math:`\sum_{ijc \in cy} f_{ωpnijc} \frac{X_{ijc}}{S_B} = 0 \quad \forall ωpn,cy, cy \in CY`
+:math:`\sum_{ijc \in cy} f^p_{\omega nijc} \frac{X_{ijc}}{S_B} = 0 \quad \forall p \omega n,cy, cy \in CY`
 
 and disjunctive constraints for cycles with some AC candidate line [rad]
 
-:math:`-1+ict_{i'j'c'}  \leq \frac{\sum_{ijc \in cy} f_{ωpnijc} \frac{X_{ijc}}{S_B}}{\overline{θ}'_{cy,i'j'c'}} \leq 1-ict_{i'j'c'} \quad \forall ωpn,cy,i'j'c', cy \in CY, i'j'c' \in CLC`
+:math:`-1+ict_{i'j'c'}  \leq \frac{\sum_{ijc \in cy} f^p_{\omega nijc} \frac{X_{ijc}}{S_B}}{\overline{θ}'_{cy,i'j'c'}} \leq 1-ict_{i'j'c'} \quad \forall p \omega n,cy,i'j'c', cy \in CY, i'j'c' \in CLC`
 
 Flows in AC existing parallel circuits are inversely proportional to their reactances [GW] «``eFlowParallelCandidate1``» «``eFlowParallelCandidate2``»
 
-:math:`f_{ωpnijc} = \frac{X_{ijc'}}{X_{ijc}} f_{ωpnijc'} \quad \forall ωpnijcc', ijc \in EL, ijc' \in EL`
+:math:`f^p_{\omega nijc} = \frac{X_{ijc'}}{X_{ijc}} f^p_{\omega nijc'} \quad \forall p \omega nijcc', ijc \in EL, ijc' \in EL`
 
 and disjunctive constraints in AC candidate parallel circuits are inversely proportional to their reactances [p.u.]
 
-:math:`-1+ict_{ijc'} \leq \frac{f_{ωpnijc} - \frac{X_{ijc'}}{X_{ijc}} f_{ωpnijc'}}{\overline{F}_{ijc}} \leq 1-ict_{ijc'} \quad \forall ωpnijcc', ijc \in EL, ijc' \in CL`
+:math:`-1+ict_{ijc'} \leq \frac{f^p_{\omega nijc} - \frac{X_{ijc'}}{X_{ijc}} f^p_{\omega nijc'}}{\overline{F}^p_{\omega nijc}}} \leq 1-ict_{ijc'} \quad \forall p \omega nijcc', ijc \in EL, ijc' \in CL`
 
 Given that there are disjunctive constraints, which are only correct with binary AC investment variables, this cycle-based formulation must be used only with binary AC investment decisions.
 
@@ -710,9 +710,9 @@ Balance of heat generation produced by CHPs and fuel heaters respectively and de
 
 **Bounds on electricity network variables** [GW]
 
-:math:`0 \leq l^p_{\omega nijc} \leq \frac{L_{ijc}}{2} \overline{F}_{ijc}  \quad \forall p \omega nijc`
+:math:`0 \leq l^p_{\omega nijc} \leq \frac{L_{ijc}}{2} \overline{F}^p_{\omega nijc}  \quad \forall p \omega nijc`
 
-:math:`- \overline{F}_{ijc} \leq f^p_{\omega nijc} \leq \overline{F}_{ijc} \quad \forall p \omega nijc, ijc \in EL`
+:math:`- \overline{F}_{ijc} \leq f^p_{\omega nijc} \leq \overline{F}^p_{\omega nijc} \quad \forall p \omega nijc, ijc \in EL`
 
 Voltage angle of the reference node fixed to 0 for each scenario, period, and load level [rad]
 
