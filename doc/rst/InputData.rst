@@ -342,7 +342,7 @@ Header                      Description
 ==========================  =======================================================================================================================================================================================  ===================================
 Node                        Name of the node where generator is located. If left empty, the generator is ignored
 Technology                  Technology of the generator (nuclear, coal, CCGT, OCGT, ESS, solar, wind, biomass, etc.)
-MutuallyExclusive           Mutually exclusive groups the generator belongs to. Only one generator per group can be committed simultaneously. It is computationally demanding.
+MutuallyExclusive           List of mutually exclusive sets the generator belongs to. Only one generator per set can be committed simultaneously. It is computationally demanding.
 BinaryCommitment            Binary unit commitment decision                                                                                                                                                          Yes/No
 NoOperatingReserve          No contribution to operating reserve. Yes if the unit doesn't contribute to the operating reserve                                                                                        Yes/No
 OutflowsIncompatibility     Outflows are incompatible with the charging process (e.g., electric vehicle). This is not the case of an electrolyzer                                                                    Yes/No
@@ -444,7 +444,7 @@ Those generators or ESS with fixed cost >0  are considered candidate and can be 
 
 Maximum, minimum, and initial storage values are considered proportional to the invested capacity for the candidate ESS units if StorageInvestment is activated.
 
-A generator can be in several groups, which must be separated by "\|" when inputted. So if Generator1 belongs to Group1 and Group2, the data entry should be "Group1\|Group2". If any of the generators in a group is an installation candidate it is assumed that the exclusivity is yearly, so only one of the generators can be committed in the whole Period. When all mutually exclusive generators in a group are already installed and functioning it is assumed that the exclusivity is hourly and which generator is committed can change every LoadLevel.
+A generator can belong to several mutually exclusive sets, their names must be separated by "\|" when inputted. So if Generator1 belongs to Set1 and Set2, the data entry should be "Set1\|Set2". If any of the generators in a group is an installation candidate it is assumed that the exclusivity is yearly, so only one of the generators can be committed in the whole Period. When all mutually exclusive generators in a set are already installed and functioning it is assumed that the exclusivity is hourly and which generator is committed can change every LoadLevel.
 
 If lower and upper bounds of investment/retirement decisions are very close (with a difference <1e-3) to 0 or 1 are converted into 0 and 1.
 
