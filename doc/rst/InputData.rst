@@ -44,6 +44,7 @@ NTC         Net Transfer Capacity
 OCGT        Open Cycle Gas Turbine
 PHS         Pumped-Hydro Storage
 PNS         Power Not Served
+PTDF        Power Transfer Distribution Factor
 PV          Photovoltaics
 RES         Renewable Energy Source
 SEP         Storage Expansion Planning
@@ -914,3 +915,55 @@ If there is no data for TTCBck, i.e., TTCBck is left empty or is equal to 0, it 
 Those pipelines with fixed cost >0  are considered candidate and can be installed or not.
 
 If lower and upper bounds of investment decisions are very close (with a difference <1e-3) to 0 or 1 are converted into 0 and 1.
+
+Flow Based Market Coupling Method
+======================
+
+These input files are specifically introduced for allowing the use of the flow-based market coupling method. If they are not available, the model runs with the traditional DCOPF method.
+
+===================================  ==============================
+File                                 Description
+===================================  ==============================
+``oT_Data_VariablePTDF.csv``         Power transfer distribution factors
+``oT_Data_VariableTTCBck.csv``       Total transfer capacity backward that varies with the load level
+``oT_Data_VariableTTCFrw.csv``       Total transfer capacity forward that varies with the load level
+===================================  ==============================
+
+Variable power transfer distribution factors
+------------------------------------------------
+
+A description of the data included in the file ``oT_Data_VariablePTDF.csv`` follows:
+
+==========  ==============  ==========  ============ ========== ======= ====  =====================================================================  ==
+Identifiers                             Header                                Description
+======================================  ====================================  =====================================================================  ==
+Period      Scenario        LoadLevel   Initial node Final node Circuit Node  Power transfer distribution factors by load level    p.u.
+==========  ==============  ==========  ============ ========== ======= ====  =====================================================================  ==
+
+Not all the transmission lines must be defined as columns of these files, only those with values different from 0.
+
+Variable transfer capacity backward
+------------------------------------------------
+
+A description of the data included in the file ``oT_Data_VariableTTCBck.csv`` follows:
+
+==========  ==============  ==========  ============ ========== =======  =====================================================================  ==
+Identifiers                             Header                           Description
+======================================  ===============================  =====================================================================  ==
+Period      Scenario        LoadLevel   Initial node Final node Circuit  Maximum TTC backward of a transmission line by load level    MW
+==========  ==============  ==========  ============ ========== =======  =====================================================================  ==
+
+Not all the transmission lines must be defined as columns of these files, only those with values different from 0.
+
+Variable transfer capacity forward
+-------------------------------------------------
+
+A description of the data included in the file ``oT_Data_VariableTTCFrw.csv`` follows:
+
+==========  ==============  ==========  ============ ========== =======  =====================================================================  ==
+Identifiers                             Header                           Description
+======================================  ===============================  =====================================================================  ==
+Period      Scenario        LoadLevel   Initial node Final node Circuit  Maximum TTC forward of a transmission line by load level    MW
+==========  ==============  ==========  ============ ========== =======  =====================================================================  ==
+
+Not all the transmission lines must be defined as columns of these files, only those with values different from 0.
