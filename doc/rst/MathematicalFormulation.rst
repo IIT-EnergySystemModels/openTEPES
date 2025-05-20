@@ -672,13 +672,13 @@ Balance of heat generation produced by CHPs and fuel heaters respectively and de
 
 :math:`\sum_{g \in i} gh^p_{\omega ng} + htns^p_{\omega ni} = DUR^p_{\omega n} DHt^p_{\omega ni} + \sum_{jc} fp^p_{\omega nijc} - \sum_{jc} fp^p_{\omega njic} \quad \forall p \omega ni`
 
-**Flow based market coupling method**
+**Flow-based market coupling method**
 
 It is based on the flow-based approach presented in:
 
-* Huang D. "Dynamic PTDF Implementation in the Market Model" TU Delft, Delft University of Technology. 2011 Sep 12.
+* Huang D. "`Dynamic PTDF Implementation in the Market Model <https://repository.tudelft.nl/file/File_a8993444-6599-4912-b6bb-92c459d7b80d>`_" TU Delft, Delft University of Technology. Sep 2011.
 
-The approach is based on the following equations:
+The approach is based on the following equations «``eNetPosition``», «``eFlowBasedCalcu1``» and «``eFlowBasedCalcu2``»:
 
 :math:`f^p_{\omega nijc} = \sum_{i'} PTDF_{nijci'} (\sum_{g \in i'} gp^p_{\omega ng} - \sum_{e \in i'} gc^p_{\omega ne} + ens^p_{\omega ni'} - D^p_{\omega ni'})  \quad \forall p \omega n, ijc, i', ijc' \in EL`
 
