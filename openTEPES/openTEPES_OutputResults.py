@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 19, 2025
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 20, 2025
 """
 
 import time
@@ -1561,7 +1561,7 @@ def NetworkOperationResults(DirName, CaseName, OptModel, mTEPES):
     # tolerance to avoid division by 0
     pEpsilon = 1e-6
 
-    OutputToFile = pd.Series(data=[max(OptModel.vFlowElec[p,sc,n,ni,nf,cc]()/(mTEPES.pLineNTCFrw[ni,nf,cc]+pEpsilon),-OptModel.vFlowElec[p,sc,n,ni,nf,cc]()/(mTEPES.pLineNTCBck[ni,nf,cc]+pEpsilon)) for p,sc,n,ni,nf,cc in mTEPES.psnla], index=mTEPES.psnla)
+    OutputToFile = pd.Series(data=[max(OptModel.vFlowElec[p,sc,n,ni,nf,cc]()/(mTEPES.pMaxNTCFrw[p,sc,n,ni,nf,cc]+pEpsilon),-OptModel.vFlowElec[p,sc,n,ni,nf,cc]()/(mTEPES.pMaxNTCBck[p,sc,n,ni,nf,cc]+pEpsilon)) for p,sc,n,ni,nf,cc in mTEPES.psnla], index=mTEPES.psnla)
     OutputToFile.index.names = ['Period', 'Scenario', 'LoadLevel', 'InitialNode', 'FinalNode', 'Circuit']
     OutputToFile = pd.pivot_table(OutputToFile.to_frame(name='p.u.'), values='p.u.', index=['Period', 'Scenario', 'LoadLevel'], columns=['InitialNode', 'FinalNode', 'Circuit'], fill_value=0.0).rename_axis([None, None, None], axis=1)
     OutputToFile.reset_index().to_csv(f'{_path}/oT_Result_NetworkElecUtilization_{CaseName}.csv', index=False, sep=',')
@@ -2266,8 +2266,8 @@ def NetworkMapResults(DirName, CaseName, OptModel, mTEPES):
         # tolerance to avoid division by 0
         pEpsilon = 1e-6
 
-        line_df = pd.DataFrame(data={'NTCFrw': pd.Series(data=[mTEPES.pLineNTCFrw[i] * 1e3 + pEpsilon for i in mTEPES.la], index=mTEPES.la),
-                                     'NTCBck': pd.Series(data=[mTEPES.pLineNTCBck[i] * 1e3 + pEpsilon for i in mTEPES.la], index=mTEPES.la)}, index=mTEPES.la)
+        line_df = pd.DataFrame(data={'NTCFrw': pd.Series(data=[mTEPES.pLineNTCFrw[la] * 1e3 + pEpsilon for la in mTEPES.la], index=mTEPES.la),
+                                     'NTCBck': pd.Series(data=[mTEPES.pLineNTCBck[la] * 1e3 + pEpsilon for la in mTEPES.la], index=mTEPES.la)}, index=mTEPES.la)
 
         line_df = line_df.groupby(level=[0,1]).sum(numeric_only=False)
         line_df['vFlowElec'  ] = 0.0

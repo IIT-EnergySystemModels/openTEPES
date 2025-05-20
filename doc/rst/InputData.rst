@@ -44,12 +44,13 @@ NTC         Net Transfer Capacity
 OCGT        Open Cycle Gas Turbine
 PHS         Pumped-Hydro Storage
 PNS         Power Not Served
+PTDF        Power Transfer Distribution Factor
 PV          Photovoltaics
 RES         Renewable Energy Source
 SEP         Storage Expansion Planning
 TEP         Transmission Expansion Planning
 TTC         Total Transfer Capacity
-VOLL        Value of Lost Load
+VoLL        Value of Lost Load
 VRE         Variable Renewable Energy
 VRES        Variable Renewable Energy Source (units with null linear variable cost and no storage capacity. Do not contribute to the the operating reserves)
 ==========  ============================================================================================================================================================================
@@ -462,7 +463,7 @@ Not all the generators must be defined as columns of these files, only those wit
 
 This information can be used for considering scheduled outages or weather-dependent operating capacity.
 
-To force a generator to produce 0 a lower value (e.g., 0.1 MW) strictly >0,  but not 0 (in which case the value will be ignored), must be introduced. This is needed to limit the solar production at night, for example.
+To force a generator to produce 0 a lower value (e.g., 0.1 MW) strictly >0, but not 0 (in which case the value will be ignored), must be introduced. This is needed to limit the solar production at night, for example.
 It can be used also for upper-bounding and/or lower-bounding the output of any generator (e.g., run-of-the-river hydro, wind).
 If the user introduces a minimum generation value that is greater than the maximum generation value, the model will adjust the minimum generation value to match the maximum.
 
@@ -481,7 +482,7 @@ Period      Scenario        LoadLevel   Generator  Maximum (minimum) power consu
 
 Not all the generators must be defined as columns of these files, only those with values different from 0.
 
-To force a ESS to consume 0 a lower value (e.g., 0.1 MW) strictly >0,  but not 0 (in which case the value will be ignored), must be introduced.
+To force a ESS to consume 0 a lower value (e.g., 0.1 MW) strictly >0, but not 0 (in which case the value will be ignored), must be introduced.
 It can be used also for upper-bounding and/or lower-bounding the consumption of any ESS (e.g., pumped-hydro storage, battery).
 If the user introduces a maximum consumption value that is lower than the minimum consumption value, the model will adjust the minimum consumption value to match the maximum.
 
@@ -641,6 +642,28 @@ Reactance can take a negative value as a result of the approximation of three-wi
 Those lines with fixed cost >0  are considered candidate and can be installed or not.
 
 If lower and upper bounds of investment decisions are very close (with a difference <1e-3) to 0 or 1 are converted into 0 and 1.
+
+Variable transmission line TTC forward and backward (optional)
+--------------------------------------------------------------
+
+A description of the data included in the files ``oT_Data_VariableTTCFrw.csv`` and ``oT_Data_VariableTTCBck.csv`` follows:
+
+==========  ==============  ==========  ============ ========== =======  =====================================================================  ==
+Identifiers                             Header                           Description
+======================================  ===============================  =====================================================================  ==
+Period      Scenario        LoadLevel   Initial node Final node Circuit  Maximum TTC forward (backward) of a transmission line by load level    MW
+==========  ==============  ==========  ============ ========== =======  =====================================================================  ==
+
+Not all the transmission lines must be defined as columns of these files, only those with values different from 0.
+
+This information can be used for considering weather-dependent maximum capacity of the transmission line.
+
+To force the flow of a transmission line to be 0 a lower value (e.g., 0.1 MW) strictly >0, but not 0 (in which case the value will be ignored), must be introduced.
+If the user introduces a minimum transmission line capacity value that is greater than the maximum transmission line capacity value, the model will adjust the minimum transmission line capacity value to match the maximum.
+
+If you want to force the flow of a transmission line to be equal to a value, introduce the same value (with opposite sign) in both files (e.g., 125 MW in ``oT_Data_VariableTTCFrw.csv`` and -125 MW in ``oT_Data_VariableTTCBck.csv``) or viceversa.
+
+Internally, all the values below 1e-5 times the maximum system demand of each area will be converted into 0 by the model.
 
 Node location
 -------------
@@ -892,3 +915,27 @@ If there is no data for TTCBck, i.e., TTCBck is left empty or is equal to 0, it 
 Those pipelines with fixed cost >0  are considered candidate and can be installed or not.
 
 If lower and upper bounds of investment decisions are very close (with a difference <1e-3) to 0 or 1 are converted into 0 and 1.
+
+Flow-Based Market Coupling Method
+=================================
+
+This input file is specifically introduced for allowing the use of the flow-based market coupling method. If they are not available, the model runs with the DCOPF method.
+
+===================================  ====================================
+File                                 Description
+===================================  ====================================
+``oT_Data_VariablePTDF.csv``         Power transfer distribution factors
+===================================  ====================================
+
+Variable power transfer distribution factors
+------------------------------------------------
+
+A description of the data included in the file ``oT_Data_VariablePTDF.csv`` follows:
+
+==========  ==============  ==========  ============ ========== ======= ====  ===================================================  ====
+Identifiers                             Header                                Description
+======================================  ====================================  ===================================================  ====
+Period      Scenario        LoadLevel   Initial node Final node Circuit Node  Power transfer distribution factors by load level    p.u.
+==========  ==============  ==========  ============ ========== ======= ====  ===================================================  ====
+
+Not all the transmission lines must be defined as columns of these files, only those with values different from 0.
