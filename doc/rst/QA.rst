@@ -29,13 +29,13 @@ What PC do I need?
 
    Time (periods, load levels)
 
-   Network (nodes, lines, DC power flow)
+   Network (nodes, lines, transportation or DC power flow, ohmic losses)
 
    Stochasticity (scenarios)
 
-   Binary investment decisions (generators, transmission lines, etc.), operation decisions (commitment, startup, shutdown, etc.)
+   Binary investment decisions (generators, storage, transmission lines, etc.), operation decisions (commitment, startup, shutdown, etc.), mutual exclusivity
 
-- As a rule of thumb, an optimization problem needs 1 GB of memory for every 1 million rows
+- As a rule of thumb, a linear optimization problem requires 1 GB of memory for every 1 million rows
 
 - So, depending on the size of the optimization problem and the available memory, you may or may not be able to run it on your PC. As an example, the case studies provided can be run in a laptop with 16 MB of memory.
 
@@ -51,11 +51,11 @@ Potential issues
 
 - openTEPES is implicitly a network model. Therefore, at least two nodes and one electrical transmission line connecting them must be defined
 
-- At least one generator must be defined. A thermal generator has a larger than zero variable cost (the product of fuel cost times the linear term) ≠ 0. A variable renewable energy unit has zero variable cost (the product of fuel cost times the linear term = 0)
+- At least one generator must be defined. A thermal generator has a larger than zero variable cost (the product of fuel cost times the linear term ≠ 0). A variable renewable energy unit has zero variable cost (the product of fuel cost times the linear term = 0)
 
 - Check the correspondence between the resources you define for the system in the case study to be run and the nodes where they are deemed to be located. The location within the grid of any resource defined must be specified.
 
-- Check that all the demand in the system within the case study is located in a node that can be served with the energy output of some resources located in any node that is connected/to be connected to the former, possibly including generation representing non-served energy (NSE).  
+- Check that all the demand in the system within the case study is located in a node that can be served with the energy output of some resources located in any node that is connected/to be connected to the former, possibly including generation representing energy not served (ENS).  
 
 Some tips
 ---------
@@ -72,6 +72,7 @@ On building an appropriate set of input data files for a case study that can be 
 - Relaxing the binary condition of binary variables
 
    In the ``oT_Data_Option`` file you can force or relax the binary condition of the binary variables.
+   
    Besides, in ``oT_Data_Generation`` and ``oT_Data_Network`` they can also be relaxed individually for each generator or transmission line.
 
 - How to ignore a scenario or a period
@@ -96,7 +97,7 @@ On building an appropriate set of input data files for a case study that can be 
 
 On analysing output data:
 
-- Make sure the problem solving process has been successfully completed, reaching optimality (console log and log file provide information on this).
+- Make sure the problem solving process has been successfully completed, reaching optimality (console log and solver log file provide information on this).
 
 - If the problem solving process has not produced an optimal solution, check if the system conditions defined within the input data files are too tight, i.e., the system may has not been provided with a large enough amount of flexibility for the model to find the optimal problem solution. If this may be the case, some problem constraints could/should be relaxed to allow the model to compute an optimal solution.
 
@@ -108,4 +109,4 @@ On analysing output data:
 
    Overall output by technology if you have some reference levels for this to compare to
 
-- Whenever the level of some variables at system level does not seem to be reasonable, check the output data file for the energy balance at area level, to try to locate in which area within the system the problem may be located
+- Whenever the level of some variables at system level does not seem to be reasonable, check the output data file for the energy balance at area (country) level, to try to locate in which area within the system the problem may be located
