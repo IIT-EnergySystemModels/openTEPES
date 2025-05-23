@@ -122,8 +122,8 @@ File                                       Description
 ``oT_Data_VariableMaxEnergy.csv``          Maximum amount of energy produced/consumed by the unit by time interval (the amount of energy considered corresponds to the aggregate over the interval defined by EnergyType)
 ``oT_Data_VariableMinEnergy.csv``          Minimum amount of energy produced/consumed by the unit by time interval (the amount of energy considered corresponds to the aggregate over the interval defined by EnergyType)
 ``oT_Data_Network.csv``                    Electricity network data
-``oT_Data_VariableTTCFrw.csv``             Maximum transmission line TTC forward  flow (defined per load level) (optional file)
-``oT_Data_VariableTTCTbw.csv``             Maximum transmission line TTC backward flow (defined per load level) (optional file)
+``oT_Data_VariableTTCFrw.csv``             Maximum electric transmission line TTC forward  flow (defined per load level) (optional file)
+``oT_Data_VariableTTCTbw.csv``             Maximum electric transmission line TTC backward flow (defined per load level) (optional file)
 ``oT_Data_NodeLocation.csv``               Node location in latitude and longitude
 =========================================  ==================================================================================================================================================================================
 
@@ -600,7 +600,7 @@ For example, these data can be used for defining the minimum and/or maximum ener
 Electricity transmission network
 --------------------------------
 
-At least one electric transmission line connecting two different nodes must be defined.
+**At least one electric transmission line connecting two different nodes must be defined.**
 
 A description of the circuit (initial node, final node, circuit) data included in the file ``oT_Data_Network.csv`` follows:
 
@@ -645,18 +645,18 @@ Those lines with fixed cost >0  are considered candidate and can be installed or
 
 If lower and upper bounds of investment decisions are very close (with a difference <1e-3) to 0 or 1 are converted into 0 and 1.
 
-Variable transmission line TTC forward and backward (optional files)
---------------------------------------------------------------------
+Variable electric transmission line TTC forward and backward (optional files)
+------------------------------------------------------------------------------
 
 A description of the data included in the files ``oT_Data_VariableTTCFrw.csv`` and ``oT_Data_VariableTTCBck.csv`` follows:
 
-==========  ==============  ==========  ============ ========== =======  =====================================================================  ==
+==========  ==============  ==========  ============ ========== =======  ===============================================================================  ==
 Identifiers                             Header                           Description
-======================================  ===============================  =====================================================================  ==
-Period      Scenario        LoadLevel   Initial node Final node Circuit  Maximum TTC forward (backward) of a transmission line by load level    MW
-==========  ==============  ==========  ============ ========== =======  =====================================================================  ==
+======================================  ===============================  ===============================================================================  ==
+Period      Scenario        LoadLevel   Initial node Final node Circuit  Maximum TTC forward (backward) of an electric transmission line by load level    MW
+==========  ==============  ==========  ============ ========== =======  ===============================================================================  ==
 
-Not all the transmission lines must be defined as columns of these files, only those with values different from 0.
+Not all the electric transmission lines must be defined as columns of these files, only those with values different from 0.
 
 This information can be used for considering weather-dependent maximum capacity of the transmission line.
 
