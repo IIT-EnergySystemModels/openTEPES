@@ -122,6 +122,8 @@ File                                       Description
 ``oT_Data_VariableMaxEnergy.csv``          Maximum amount of energy produced/consumed by the unit by time interval (the amount of energy considered corresponds to the aggregate over the interval defined by EnergyType)
 ``oT_Data_VariableMinEnergy.csv``          Minimum amount of energy produced/consumed by the unit by time interval (the amount of energy considered corresponds to the aggregate over the interval defined by EnergyType)
 ``oT_Data_Network.csv``                    Electricity network data
+``oT_Data_VariableTTCFrw.csv``             maximum transmission line TTC forward  flow (defined per load level) (optional file)
+``oT_Data_VariableTTCTbw.csv``             maximum transmission line TTC backward flow (defined per load level) (optional file)
 ``oT_Data_NodeLocation.csv``               Node location in latitude and longitude
 =========================================  ==================================================================================================================================================================================
 
@@ -921,14 +923,14 @@ Flow-Based Market Coupling Method
 
 This input file is specifically introduced for allowing the use of the flow-based market coupling method. If they are not available, the model runs with the DCOPF method.
 
-===================================  ====================================
+===================================  ==========================================
 File                                 Description
-===================================  ====================================
-``oT_Data_VariablePTDF.csv``         Power transfer distribution factors
-===================================  ====================================
+===================================  ==========================================
+``oT_Data_VariablePTDF.csv``         Power transfer distribution factors (PTDF)
+===================================  ==========================================
 
 Variable power transfer distribution factors
-------------------------------------------------
+--------------------------------------------
 
 A description of the data included in the file ``oT_Data_VariablePTDF.csv`` follows:
 
