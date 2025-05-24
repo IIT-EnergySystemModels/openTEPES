@@ -28,7 +28,7 @@ It has been used by the **Ministry for the Ecological Transition and the Demogra
 
 **openTEPES**: `summary presentation (English) <https://pascua.iit.comillas.edu/aramos/openTEPES.pdf>`_, `présentation (French) <https://pascua.iit.comillas.edu/aramos/openTEPES_fr.pdf>`_, and `installation guide <https://pascua.iit.comillas.edu/aramos/openTEPES_installation.pdf>`_
 
-**Authors**: Andrés Ramos, Erik Álvarez, Francisco Labora, Sara Lumbreras. Universidad Pontificia Comillas, Instituto de Investigación Tecnológica, Alberto Aguilera 23, 28015 Madrid, Spain
+**Authors**: `Andrés Ramos <https://pascua.iit.comillas.edu/aramos/Ramos_CV.htm>`_, `Erik Álvarez <https://www.iit.comillas.edu/people/ealvarezq>`_, `Francisco Labora <https://www.iit.comillas.edu/people/flabora>`_, `Sara Lumbreras <https://www.iit.comillas.edu/people/slumbreras>`_. Universidad Pontificia Comillas, Instituto de Investigación Tecnológica, Alberto Aguilera 23, 28015 Madrid, Spain
 
 Contact: andres.ramos@comillas.edu
 

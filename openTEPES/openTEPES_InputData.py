@@ -676,10 +676,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     #%% inverse index load level to stage
     pStageToLevel = pLevelToStage.reset_index().set_index(['Period','Scenario','Stage'])['LoadLevel']
     #Filter only valid indices
-    pStageToLevel = pStageToLevel.loc[
-        pStageToLevel.index.isin([(p, s, st) for (p, s) in mTEPES.ps for st in mTEPES.st]) &
-        pStageToLevel.isin(mTEPES.n)
-        ]
+    pStageToLevel = pStageToLevel.loc[pStageToLevel.index.isin([(p,s,st) for (p,s) in mTEPES.ps for st in mTEPES.st]) & pStageToLevel.isin(mTEPES.n)]
     #Reorder the elements
     pStageToLevel = [(p,sc,st,n) for (p,sc,st),n in pStageToLevel.items()]
     mTEPES.s2n = Set(initialize=pStageToLevel, doc='Load level to stage')
