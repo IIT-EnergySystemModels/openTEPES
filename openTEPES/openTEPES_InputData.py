@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 19, 2025
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 26, 2025
 """
 
 import datetime
@@ -1293,8 +1293,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pMaxNTCFrw = pd.DataFrame([[pLineNTCFrw[la] for la in mTEPES.la] for p,sc,n in mTEPES.psn], index=mTEPES.psn, columns=mTEPES.la)
     pMaxNTCBck = pd.DataFrame([[pLineNTCBck[la] for la in mTEPES.la] for p,sc,n in mTEPES.psn], index=mTEPES.psn, columns=mTEPES.la)
     if pIndVarTTC == 1:
-        pMaxNTCFrw = pVariableTTCFrw.replace(0.0, pLineNTCFrw / dfNetwork['SecurityFactor']) * dfNetwork['SecurityFactor']
-        pMaxNTCBck = pVariableTTCBck.replace(0.0, pLineNTCBck / dfNetwork['SecurityFactor']) * dfNetwork['SecurityFactor']
+        pMaxNTCFrw = pVariableTTCFrw.replace(0.0, pLineNTCFrw / dfNetwork['SecurityFactor']) * dfNetwork['SecurityFactor'].loc[dfNetwork.index.isin(set(mTEPES.la))]
+        pMaxNTCBck = pVariableTTCBck.replace(0.0, pLineNTCBck / dfNetwork['SecurityFactor']) * dfNetwork['SecurityFactor'].loc[dfNetwork.index.isin(set(mTEPES.la))]
     pMaxNTCMax = pMaxNTCFrw.where(pMaxNTCFrw > pMaxNTCBck, pMaxNTCBck)
 
     pMaxNTCBck                  = pMaxNTCBck.loc             [:,mTEPES.la]

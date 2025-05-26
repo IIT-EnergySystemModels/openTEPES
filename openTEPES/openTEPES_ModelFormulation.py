@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 19, 2025
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 26, 2025
 """
 
 import time
@@ -1006,6 +1006,9 @@ def GenerationOperationModelFormulationCommitment(OptModel, mTEPES, pIndLogConso
         # Skip if the generator is not part of the exclusive group
         if nr not in mTEPES.GeneratorsInYearlyGroup[group]:
             return Constraint.Skip
+        # Skip if there are one or less generators in the group
+        if len(mTEPES.GeneratorsInYearlyGroup[group] & {nr for (p,nr) in mTEPES.pnr}) <= 1:
+            return Constraint.Skip
 
         return OptModel.vCommitment[p,sc,n,nr]                               <= OptModel.vMaxCommitmentYearly[p,sc,nr,group]
 
@@ -1024,6 +1027,10 @@ def GenerationOperationModelFormulationCommitment(OptModel, mTEPES, pIndLogConso
         # Avoid division by 0. If Maximum power is 0 this equation is not needed anyways
         if mTEPES.pMaxPowerElec[p, sc, n, nr] == 0:
             return Constraint.Skip
+        # Skip if there are one or less generators in the group
+        if len(mTEPES.GeneratorsInYearlyGroup[group] & {nr for (p, nr) in mTEPES.pnr}) <= 1:
+            return Constraint.Skip
+
         return OptModel.vTotalOutput[p,sc,n,nr]/mTEPES.pMaxPowerElec[p,sc,n,nr] <= OptModel.vMaxCommitmentYearly[p,sc,nr,group]
 
     setattr(OptModel, f'eMaxCommitGenYearly_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.ExclusiveGroupsYearly,mTEPES.nr, rule=eMaxCommitGenYearly, doc='maximum of all the capacity factors'))
@@ -1032,6 +1039,9 @@ def GenerationOperationModelFormulationCommitment(OptModel, mTEPES, pIndLogConso
         print('eMaxCommitGenYearly         ... ', len(getattr(OptModel, f'eMaxCommitGenYearly_{p}_{sc}_{st}')), ' rows')
 
     def eExclusiveGensYearly(OptModel,group):
+        # Skip if there are one or less generators in the group
+        if len(mTEPES.GeneratorsInYearlyGroup[group] & {nr for (p,nr) in mTEPES.pnr}) <= 1:
+            return Constraint.Skip
         return sum(OptModel.vMaxCommitmentYearly[p, sc, nr, group] + (OptModel.vCommitmentCons[p, sc, nr] if nr in mTEPES.h else 0) for nr in mTEPES.GeneratorsInYearlyGroup[group] if (p, nr) in mTEPES.pnr ) <= 1
     setattr(OptModel, f'eExclusiveGensYearly_{p}_{sc}_{st}', Constraint(mTEPES.ExclusiveGroupsYearly, rule=eExclusiveGensYearly, doc='mutually exclusive generators'))
 
@@ -1048,6 +1058,9 @@ def GenerationOperationModelFormulationCommitment(OptModel, mTEPES, pIndLogConso
             return Constraint.Skip
         # Skip if the generator is not part of the exclusive group
         if nr not in mTEPES.GeneratorsInHourlyGroup[group]:
+            return Constraint.Skip
+        # Skip if there are one or less generators in the group
+        if len(mTEPES.GeneratorsInHourlyGroup[group] & {nr for (p,nr) in mTEPES.pnr}) <= 1:
             return Constraint.Skip
 
         return OptModel.vCommitment[p,sc,n,nr]                               <= OptModel.vMaxCommitmentHourly[p,sc,n,nr,group]
@@ -1067,6 +1080,9 @@ def GenerationOperationModelFormulationCommitment(OptModel, mTEPES, pIndLogConso
         # Avoid division by 0. If Maximum power is 0 this equation is not needed anyways
         if mTEPES.pMaxPowerElec[p,sc,n,nr] == 0:
             return Constraint.Skip
+        # Skip if there are one or less generators in the group
+        if len(mTEPES.GeneratorsInHourlyGroup[group] & {nr for (p,nr) in mTEPES.pnr}) <= 1:
+            return Constraint.Skip
 
         return OptModel.vTotalOutput[p,sc,n,nr]/mTEPES.pMaxPowerElec[p,sc,n,nr] <= OptModel.vMaxCommitmentHourly[p,sc,n,nr,group]
 
@@ -1076,6 +1092,10 @@ def GenerationOperationModelFormulationCommitment(OptModel, mTEPES, pIndLogConso
         print('eMaxCommitGenHourly         ... ', len(getattr(OptModel, f'eMaxCommitGenHourly_{p}_{sc}_{st}')), ' rows')
 
     def eExclusiveGensHourly(OptModel,n,group):
+        # Skip if there are one or less generators in the group
+        if len(mTEPES.GeneratorsInHourlyGroup[group] & {nr for (p,nr) in mTEPES.pnr}) <= 1:
+            return Constraint.Skip
+
         return sum(OptModel.vMaxCommitmentHourly[p,sc,n,nr,group] + (OptModel.vCommitmentCons[p,sc,n,nr] if nr in mTEPES.h else 0) for nr in mTEPES.GeneratorsInHourlyGroup[group] if (p, nr) in mTEPES.pnr ) <= 1
 
     setattr(OptModel, f'eExclusiveGensHourly_{p}_{sc}_{st}', Constraint(mTEPES.n,mTEPES.ExclusiveGroupsHourly, rule=eExclusiveGensHourly, doc='mutually exclusive generators'))

@@ -1,8 +1,10 @@
 Change Log
 =============
 
-[4.18.5] - 2025-05-20
+[4.18.5] - 2025-05-26
 -----------------------
+- [FIXED] fix bug when a set of mutually exclusive generators has no generators
+- [FIXED] fix bug when variable TTC is used and there are lines with reactance equal to 0
 - [CHANGED] introduce variable TTC forward and backward for the transmission lines
 - [CHANGED] add hourly mutually exclusive generators, generators can now be part of several mutually exclusive groups, exclusivity now applies to consumption too
 - [FIXED] change from titleside to title_side in output results to adapt to the latest plotly version
