@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.18.5] - 2025-05-26
+[4.18.5] - 2025-05-28
 -----------------------
+- [FIXED] fix error when displaying network losses by transmission line
 - [FIXED] fix bug when a set of mutually exclusive generators has no generators
 - [FIXED] fix bug when variable TTC is used and there are lines with reactance equal to 0
 - [CHANGED] introduce variable TTC forward and backward for the transmission lines

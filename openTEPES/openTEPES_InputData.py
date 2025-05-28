@@ -2433,18 +2433,18 @@ def SettingUpVariables(OptModel, mTEPES):
     [OptModel.vLineCommit  [p,sc,n,ni,nf,cc].fix(0  ) for p,sc,n,ni,nf,cc in mTEPES.psnla if (ni,nf,cc) not in mTEPES.lc and mTEPES.pElecNetPeriodIni [ni,nf,cc] > p]
     [OptModel.vLineOnState [p,sc,n,ni,nf,cc].fix(0  ) for p,sc,n,ni,nf,cc in mTEPES.psnla if (ni,nf,cc) not in mTEPES.lc and mTEPES.pElecNetPeriodIni [ni,nf,cc] > p]
     [OptModel.vLineOffState[p,sc,n,ni,nf,cc].fix(0  ) for p,sc,n,ni,nf,cc in mTEPES.psnla if (ni,nf,cc) not in mTEPES.lc and mTEPES.pElecNetPeriodIni [ni,nf,cc] > p]
-    nFixedVariables += sum(                        4  for p,sc,n,ni,nf,cc in mTEPES.psnla if (ni,nf,cc) not in mTEPES.lc and mTEPES.pElecNetPeriodIni [ni,nf,cc] > p)
+    nFixedVariables += sum(                      4    for p,sc,n,ni,nf,cc in mTEPES.psnla if (ni,nf,cc) not in mTEPES.lc and mTEPES.pElecNetPeriodIni [ni,nf,cc] > p)
 
     [OptModel.vLineLosses  [p,sc,n,ni,nf,cc].fix(0.0) for p,sc,n,ni,nf,cc in mTEPES.psnll if (ni,nf,cc) not in mTEPES.lc and mTEPES.pElecNetPeriodIni [ni,nf,cc] > p]
-    nFixedVariables += sum(                        1  for p,sc,n,ni,nf,cc in mTEPES.psnll if (ni,nf,cc) not in mTEPES.lc and mTEPES.pElecNetPeriodIni [ni,nf,cc] > p)
+    nFixedVariables += sum(                      1    for p,sc,n,ni,nf,cc in mTEPES.psnll if (ni,nf,cc) not in mTEPES.lc and mTEPES.pElecNetPeriodIni [ni,nf,cc] > p)
 
     if mTEPES.pIndHydrogen == 1:
-        [OptModel.vFlowH2  [p,sc,n,ni,nf,cc].fix(0.0) for p,sc,n,ni,nf,cc in mTEPES.psnpa if (ni,nf,cc) not in mTEPES.pc and mTEPES.pH2PipePeriodIni[ni,nf,cc] > p]
-        nFixedVariables += sum(                    4  for p,sc,n,ni,nf,cc in mTEPES.psnpa if (ni,nf,cc) not in mTEPES.pc and mTEPES.pH2PipePeriodIni[ni,nf,cc] > p)
+        [OptModel.vFlowH2  [p,sc,n,ni,nf,cc].fix(0.0) for p,sc,n,ni,nf,cc in mTEPES.psnpa if (ni,nf,cc) not in mTEPES.pc and mTEPES.pH2PipePeriodIni  [ni,nf,cc] > p]
+        nFixedVariables += sum(                  4    for p,sc,n,ni,nf,cc in mTEPES.psnpa if (ni,nf,cc) not in mTEPES.pc and mTEPES.pH2PipePeriodIni  [ni,nf,cc] > p)
 
     if mTEPES.pIndHeat == 1:
         [OptModel.vFlowHeat[p,sc,n,ni,nf,cc].fix(0.0) for p,sc,n,ni,nf,cc in mTEPES.psnha if (ni,nf,cc) not in mTEPES.hc and mTEPES.pHeatPipePeriodIni[ni,nf,cc] > p]
-        nFixedVariables += sum(                    4  for p,sc,n,ni,nf,cc in mTEPES.psnha if (ni,nf,cc) not in mTEPES.hc and mTEPES.pHeatPipePeriodIni[ni,nf,cc] > p)
+        nFixedVariables += sum(                  4    for p,sc,n,ni,nf,cc in mTEPES.psnha if (ni,nf,cc) not in mTEPES.hc and mTEPES.pHeatPipePeriodIni[ni,nf,cc] > p)
 
     # tolerance to consider 0 an investment decision
     pEpsilon = 1e-4

@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 20, 2025
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 28, 2025
 """
 
 import time
@@ -1567,7 +1567,7 @@ def NetworkOperationResults(DirName, CaseName, OptModel, mTEPES):
     OutputToFile.reset_index().to_csv(f'{_path}/oT_Result_NetworkElecUtilization_{CaseName}.csv', index=False, sep=',')
 
     if mTEPES.pIndBinNetLosses() and mTEPES.psnll:
-        OutputToFile = pd.Series(data=[OptModel.vLineLosses[p,sc,n,ni,nf,cc]()                    for p,sc,n,ni,nf,cc in mTEPES.psnll], index=mTEPES.psnll)
+        OutputToFile = pd.Series(data=[OptModel.vLineLosses[p,sc,n,ni,nf,cc]()*2*1e3              for p,sc,n,ni,nf,cc in mTEPES.psnll], index=mTEPES.psnll)
         OutputToFile.index.names = ['Period', 'Scenario', 'LoadLevel', 'InitialNode', 'FinalNode', 'Circuit']
         OutputToFile = pd.pivot_table(OutputToFile.to_frame(name='p.u.'), values='p.u.', index=['Period', 'Scenario', 'LoadLevel'], columns=['InitialNode', 'FinalNode', 'Circuit'], fill_value=0.0).rename_axis([None, None, None], axis=1)
         OutputToFile.reset_index().to_csv(f'{_path}/oT_Result_NetworkLosses_{CaseName}.csv', index=False, sep=',')
