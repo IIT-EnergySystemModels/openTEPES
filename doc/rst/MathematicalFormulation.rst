@@ -664,7 +664,7 @@ Flows in AC existing parallel circuits are inversely proportional to their react
 
 and disjunctive constraints in AC candidate parallel circuits are inversely proportional to their reactances [p.u.]
 
-:math:`-1+ict_{ijc'} \leq \frac{f^p_{\omega nijc} - \frac{X_{ijc'}}{X_{ijc}} f^p_{\omega nijc'}{\overline{F}^p_{\omega nijc}} \leq 1-ict_{ijc'} \quad \forall p \omega nijcc', ijc \in EL, ijc' \in CL`
+:math:`-1+ict_{ijc'} \leq \frac{f^p_{\omega nijc} - \frac{X_{ijc'}}{X_{ijc}} f^p_{\omega nijc'}}{\overline{F}^p_{\omega nijc}} \leq 1-ict_{ijc'} \quad \forall p \omega nijcc', ijc \in EL, ijc' \in CL`
 
 Given that there are disjunctive constraints, which are only correct with binary AC investment variables, this cycle-based formulation must be used only with binary AC investment decisions.
 
