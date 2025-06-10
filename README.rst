@@ -44,7 +44,7 @@ defined as a set of **generation, storage, and (electricity, hydrogen, and heat)
 The `openTEPES complete documentation <https://opentepes.readthedocs.io/en/latest/index.html>`_ presents the input data, output results, mathematical formulation, download and installation, and the research projects where the model has been used.
 
 It is integrated into the `open energy system modelling platform <https://openenergymodels.net/>`_, helping model Europe's energy system and in the list of `energy models published under open source licenses <https://wiki.openmod-initiative.org/wiki/Open_Models>`_.
-It is also part of the Africa `open energy system modelling toolbox <https://africaenergymodels.net/>`_, which is a suite of open and linked state-of-the-art open-source energy system models for Africa.
+It is also part of the `Africa's open energy system modelling toolbox <https://africaenergymodels.net/models/>`_, which is a suite of open and linked state-of-the-art open-source energy system models for Africa, and of the `African Energy modelling Network Open-Source Tools <https://africanenergymodellingnetwork.net/en/focus-area-3-open-source-tools-and-data>`_.
 
 Scripts are provided to exchange information with Integrated Assessment Models (IAM) using their `nomenclature and data formats <https://nomenclature-iamc.readthedocs.io/en/stable/>`_.
 
