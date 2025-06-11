@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 26, 2025
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 11, 2025
 """
 
 import datetime
@@ -1131,6 +1131,11 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     for ar,es in mTEPES.ar*mTEPES.es:
         if (ar,es) in mTEPES.a2g:
             e2a[ar].append(es)
+    r2a = defaultdict(list)
+    for ar,rs in mTEPES.ar*mTEPES.rs:
+        for h in mTEPES.h:
+            if (ar,h) in mTEPES.a2g and sum(1 for h in mTEPES.h if (rs,h) in mTEPES.r2h or (h,rs) in mTEPES.h2r or (rs,h) in mTEPES.r2p or (h,rs) in mTEPES.p2r):
+                r2a[ar].append(rs)
     n2a = defaultdict(list)
     for ar,nr in mTEPES.ar*mTEPES.nr:
         if (ar,nr) in mTEPES.a2g:
@@ -1167,6 +1172,12 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
             pMinStorage    [pMinStorage    [[es for es in e2a[ar]]] <  pEpsilonElec] = 0.0
             pMaxStorage    [pMaxStorage    [[es for es in e2a[ar]]] <  pEpsilonElec] = 0.0
             pIniInventory  [pIniInventory  [[es for es in e2a[ar]]] <  pEpsilonElec] = 0.0
+
+            if pIndHydroTopology == 1:
+                pMinVolume    [pMinVolume    [[rs for rs in r2a[ar]]] < pEpsilonElec] = 0.0
+                pMaxVolume    [pMaxVolume    [[rs for rs in r2a[ar]]] < pEpsilonElec] = 0.0
+                pHydroInflows [pHydroInflows [[rs for rs in r2a[ar]]] < pEpsilonElec] = 0.0
+                pHydroOutflows[pHydroOutflows[[rs for rs in r2a[ar]]] < pEpsilonElec] = 0.0
 
         # pInitialInventory.update(pd.Series([0.0 for es in e2a[ar] if pInitialInventory[es] < pEpsilonElec], index=[es for es in e2a[ar] if pInitialInventory[es] < pEpsilonElec], dtype='float64'))
 
@@ -1537,7 +1548,6 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         mTEPES.pPTDF                       = Param(mTEPES.psnland, initialize=pPTDF.to_dict()                    , within=Reals           , doc='Power transfer distribution factor'       )
 
     if pIndHydroTopology == 1:
-
         pHydroInflows  = filter_rows(pHydroInflows , mTEPES.psnrs)
         pHydroOutflows = filter_rows(pHydroOutflows, mTEPES.psnrs)
         pMaxOutflows   = filter_rows(pMaxOutflows  , mTEPES.psnrs)
@@ -2270,11 +2280,20 @@ def SettingUpVariables(OptModel, mTEPES):
 
     # if there are no energy outflows, no variable is needed
     for es in mTEPES.es:
-        if sum(mTEPES.pEnergyOutflows[p,sc,n,es]() for p,sc,n in mTEPES.psn if (p,es) in mTEPES.pes) == 0.0:
+        if es not in mTEPES.eo:
             for p,sc,n in mTEPES.psn:
                 if (p,es) in mTEPES.pes:
                     OptModel.vEnergyOutflows[p,sc,n,es].fix(0.0)
                     nFixedVariables += 1
+
+    if mTEPES.pIndHydroTopology == 1:
+        # if there are no hydro outflows, no variable is needed
+        for rs in mTEPES.rs:
+            if rs not in mTEPES.ro:
+                for p,sc,n in mTEPES.psn:
+                    if (p,rs) in mTEPES.prs:
+                        OptModel.vHydroOutflows[p,sc,n,rs].fix(0.0)
+                        nFixedVariables += 1
 
     # fixing the voltage angle of the reference node for each scenario, period, and load level
     if mTEPES.pIndBinSingleNode() == 0:
@@ -2411,7 +2430,7 @@ def SettingUpVariables(OptModel, mTEPES):
         if mTEPES.pIndHydroTopology == 1:
             for p,sc,n,rs in mTEPES.psnrs:
                 if rs not in mTEPES.rn and mTEPES.pRsrPeriodIni[rs] > p:
-                    OptModel.vEnergyOutflows        [p,sc,n,rs].fix(0.0)
+                    OptModel.vHydroOutflows         [p,sc,n,rs].fix(0.0)
                     OptModel.vReservoirVolume       [p,sc,n,rs].fix(0.0)
                     OptModel.vReservoirSpillage     [p,sc,n,rs].fix(0.0)
                     mTEPES.pIniVolume               [p,sc,n,rs] =   0.0
