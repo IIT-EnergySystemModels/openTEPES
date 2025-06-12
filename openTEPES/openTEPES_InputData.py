@@ -1136,9 +1136,6 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         for h in mTEPES.h:
             if (ar,h) in mTEPES.a2g and sum(1 for h in mTEPES.h if (rs,h) in mTEPES.r2h or (h,rs) in mTEPES.h2r or (rs,h) in mTEPES.r2p or (h,rs) in mTEPES.p2r) and rs not in r2a[ar]:
                 r2a[ar].append(rs)
-
-    print(r2a)
-
     n2a = defaultdict(list)
     for ar,nr in mTEPES.ar*mTEPES.nr:
         if (ar,nr) in mTEPES.a2g:
