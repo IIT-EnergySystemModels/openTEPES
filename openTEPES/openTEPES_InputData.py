@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 11, 2025
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 12, 2025
 """
 
 import datetime
@@ -2280,7 +2280,7 @@ def SettingUpVariables(OptModel, mTEPES):
 
     # if there are no energy outflows, no variable is needed
     for es in mTEPES.es:
-        if es not in mTEPES.eo:
+        if sum(mTEPES.pEnergyOutflows[p,sc,n,es]() for p,sc,n in mTEPES.psn if (p,es) in mTEPES.pes) == 0.0:
             for p,sc,n in mTEPES.psn:
                 if (p,es) in mTEPES.pes:
                     OptModel.vEnergyOutflows[p,sc,n,es].fix(0.0)
@@ -2289,7 +2289,7 @@ def SettingUpVariables(OptModel, mTEPES):
     if mTEPES.pIndHydroTopology == 1:
         # if there are no hydro outflows, no variable is needed
         for rs in mTEPES.rs:
-            if rs not in mTEPES.ro:
+            if sum(mTEPES.pHydroOutflows[p,sc,n,rs]() for p,sc,n in mTEPES.psn if (p,rs) in mTEPES.prs) == 0.0:
                 for p,sc,n in mTEPES.psn:
                     if (p,rs) in mTEPES.prs:
                         OptModel.vHydroOutflows[p,sc,n,rs].fix(0.0)
