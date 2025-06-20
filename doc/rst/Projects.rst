@@ -37,14 +37,14 @@ The model has being used in these research projects:
    :align: center
 
 - `Open Modelling Toolbox for development of long-term pathways for the energy system in Africa (OpenMod4Africa) <https://openmod4africa.eu/>`_, developed for the **European Union**. July 2023 - June 2026.
-  `L. Olmos <https://www.iit.comillas.edu/people/olmos>`_, `S. Lumbreras <https://www.iit.comillas.edu/people/slumbreras>`_, `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `M.A.E. Elabbas <https://www.iit.comillas.edu/people/mabbas>`_
+  `L. Olmos <https://www.iit.comillas.edu/people/olmos>`_, `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `S. Lumbreras <https://www.iit.comillas.edu/people/slumbreras>`_, `M.A.E. Elabbas <https://www.iit.comillas.edu/people/mabbas>`_
 
     It aims to develop an open toolbox populated with state-of-the-art models for analysing long-term pathways to sustainable, secure and competitive energy systems in Africa.
     The Toolbox will build on EU projects like openENTRANCE, Plan4RES and FocusAfrica, and will adapt and further develop open models in accordance with the African context and needs.
     The models are scalable, and can be applied to cities, industries and countries. Furthermore, a main objective for OpenMod4Africa is capacity building among energy models in academia.
     Four African universities will be actively involved in adapting models and conducting two regional case studies. The additional capacity and the open Toolbox will enable the universities
     to train new generations of energy modelling experts for the energy industries in Africa.
-    openTEPES is part of the Africa `open energy system modelling toolbox <https://africaenergymodels.net/>`_, which is a suite of open and linked state-of-the-art open-source energy system models for Africa.
+    openTEPES is part of the Africa `open energy system modelling toolbox <https://africaenergymodels.net/models/>`_, which is a suite of open and linked state-of-the-art open-source energy system models for Africa.
 
 .. image:: ../img/OM4A.png
    :scale: 40%
