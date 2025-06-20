@@ -403,17 +403,13 @@ The corresponding constraints are not formulated if :math:`\underline{DtUR}=0` a
 
 VRES units (i.e., those with linear variable cost equal to 0 and no storage capacity) do not contribute to the the operating reserves.
 
-Operating reserves from ESS can only be provided if enough energy is available for producing [GW] «``eReserveUpIfEnergy``» «``eReserveDwIfEnergy``»
+Operating reserves from ESS can only be provided if enough energy is available for producing [GW] «``eReserveUpIfEnergy``»
 
-:math:`ur^p_{\omega ne} \leq \frac{                             i^p_{\omega ne}}{DUR^p_{\omega n}} \quad \forall p \omega ne`
+:math:`\frac{p^p_{\omega ne} + ur^p_{\omega ne}}{\underline{GP}^p_{\omega ne}} + 1 \leq \frac{i^p_{\omega ne} - \underline{I}^p_{wne}}{DUR^p_{\omega n} \underline{GP}^p_{\omega ne}} \quad \forall p \omega ne`
 
-:math:`dr^p_{\omega ne} \leq \frac{\overline{I}^p_{\omega ne} - i^p_{\omega ne}}{DUR^p_{\omega n}} \quad \forall p \omega ne`
+or if there is enough storage capacity left for storing [GW] «``eESSReserveDwIfEnergy``»
 
-or for storing [GW] «``eESSReserveUpIfEnergy``» «``eESSReserveDwIfEnergy``»
-
-:math:`ur'^p_{\omega ne} \leq \frac{\overline{I}^p_{\omega ne} - i^p_{\omega ne}}{DUR^p_{\omega n}} \quad \forall p \omega ne`
-
-:math:`dr'^p_{\omega ne} \leq \frac{                             i^p_{\omega ne}}{DUR^p_{\omega n}} \quad \forall p \omega ne`
+:math:`frac{c^p_{\omega ne} dr'^p_{\omega ne}}{\underline{GC}^p_{\omega ne}} + 1 \leq \frac{\overline{I}^p_{\omega ne} - i^p_{\omega ne}}{DUR^p_{\omega n} \underline{GC}^p_{\omega ne}} \quad \forall p \omega ne`
 
 Maximum and minimum relative inventory of ESS candidates (only for load levels multiple of 1, 24, 168, 8736 h depending on the ESS storage type, represented as :math:`n|\tau_e`) constrained by the ESS commitment decision times the maximum capacity [p.u.] «``eMaxInventory2Comm``» «``eMinInventory2Comm``»
 
@@ -591,7 +587,7 @@ Operating reserves from a hydropower plant can only be provided if enough energy
 
 :math:`dr^p_{\omega nh} \leq \frac{\sum_{e' \in up(h)} \overline{I'}^p_{\omega ne'} - i'^p_{\omega ne'}}{DUR^p_{\omega n}} \quad \forall p \omega nh`
 
-or for pumping [GW] «``ePmpReserveUpIfEnergy``» «``ePmpReserveDwIfEnergy``»
+or for pumping [GW] «``ePmpReserveDwIfEnergy``»
 
 :math:`ur'^p_{\omega nh} \leq \frac{\sum_{e' \in up(h)} \overline{I'}^p_{\omega ne'} - i'^p_{\omega ne'}}{DUR^p_{\omega n}} \quad \forall p \omega nh`
 
