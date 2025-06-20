@@ -409,7 +409,7 @@ Operating reserves from ESS can only be provided if enough energy is available f
 
 or if there is enough storage capacity left for storing [GW] «``eESSReserveDwIfEnergy``»
 
-:math:`frac{(c^p_{\omega ne} + dr'^p_{\omega ne}) \sqrt{EF_e'}} {\underline{GC}^p_{\omega ne}} + 1 \leq \frac{\overline{I}^p_{\omega ne} - i^p_{\omega ne}}{DUR^p_{\omega n} \underline{GC}^p_{\omega ne}} \quad \forall p \omega ne`
+:math:`\frac{(c^p_{\omega ne} + dr'^p_{\omega ne}) \sqrt{EF_e'}} {\underline{GC}^p_{\omega ne}} + 1 \leq \frac{\overline{I}^p_{\omega ne} - i^p_{\omega ne}}{DUR^p_{\omega n} \underline{GC}^p_{\omega ne}} \quad \forall p \omega ne`
 
 Maximum and minimum relative inventory of ESS candidates (only for load levels multiple of 1, 24, 168, 8736 h depending on the ESS storage type, represented as :math:`n|\tau_e`) constrained by the ESS commitment decision times the maximum capacity [p.u.] «``eMaxInventory2Comm``» «``eMinInventory2Comm``»
 
@@ -595,7 +595,7 @@ Operating reserves while pumping can only be provided if there is enough availab
 
 and if there is enough spare volume to store the water upstream «``ePmpReserveDwIfUpstream``»
 
-:math:`\frac{(c^p_{\omega nh} + dr^p_{\omega nh) * EF_e'} + ucc^p_{\omega ng}}{\underline{GC}^p_{\omega ng}} + \leq \frac{\sum_{e' \in up(h)}  i'^p_{\omega ne'}}{DUR^p_{\omega n} - \underline{I'}^p_{\omega ng}} \quad \forall p \omega nh`
+:math:`\frac{(c^p_{\omega nh} + dr^p_{\omega nh) * EF_e'} + ucc^p_{\omega ng}}{\underline{GC}^p_{\omega ng}} + \leq \frac{\sum_{e' \in up(h)}  i'^p_{\omega ne'} - \underline{I'}^p_{\omega ng}}{DUR^p_{\omega n}} \quad \forall p \omega nh`
 
 Water volume for each hydro reservoir (only for load levels multiple of 1, 24, 168 h depending on the reservoir storage type, represented as :math:`n|\tau_{e'}`) [hm\ :sup:`3`] «``eHydroInventory``»
 
