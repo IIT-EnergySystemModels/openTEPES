@@ -89,34 +89,35 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         print('**** No heat energy carrier')
 
     # substitute NaN by 0
-    dfOption.fillna               (0  , inplace=True)
-    dfParameter.fillna            (0.0, inplace=True)
-    dfPeriod.fillna               (0.0, inplace=True)
-    dfScenario.fillna             (0.0, inplace=True)
-    dfStage.fillna                (0.0, inplace=True)
-    dfDuration.fillna             (0  , inplace=True)
-    dfReserveMargin.fillna        (0.0, inplace=True)
-    dfEmission.fillna             (math.inf , inplace=True)
-    dfRESEnergy.fillna            (0.0, inplace=True)
-    dfDemand.fillna               (0.0, inplace=True)
-    dfInertia.fillna              (0.0, inplace=True)
-    dfUpOperatingReserve.fillna   (0.0, inplace=True)
-    dfDwOperatingReserve.fillna   (0.0, inplace=True)
-    dfGeneration.fillna           (0.0, inplace=True)
-    dfVariableMinPower.fillna     (0.0, inplace=True)
-    dfVariableMaxPower.fillna     (0.0, inplace=True)
-    dfVariableMinCharge.fillna    (0.0, inplace=True)
-    dfVariableMaxCharge.fillna    (0.0, inplace=True)
-    dfVariableMinStorage.fillna   (0.0, inplace=True)
-    dfVariableMaxStorage.fillna   (0.0, inplace=True)
-    dfVariableMinEnergy.fillna    (0.0, inplace=True)
-    dfVariableMaxEnergy.fillna    (0.0, inplace=True)
-    dfVariableFuelCost.fillna     (0.0, inplace=True)
-    dfVariableEmissionCost.fillna (0.0, inplace=True)
-    dfEnergyInflows.fillna        (0.0, inplace=True)
-    dfEnergyOutflows.fillna       (0.0, inplace=True)
-    dfNodeLocation.fillna         (0.0, inplace=True)
-    dfNetwork.fillna              (0.0, inplace=True)
+    dfOption.fillna                   (0  , inplace=True)
+    dfParameter.fillna                (0.0, inplace=True)
+    dfPeriod.fillna                   (0.0, inplace=True)
+    dfScenario.fillna                 (0.0, inplace=True)
+    dfStage.fillna                    (0.0, inplace=True)
+    dfDuration.fillna                 (0  , inplace=True)
+    dfReserveMargin.fillna            (0.0, inplace=True)
+    dfEmission.fillna                 (math.inf , inplace=True)
+    dfRESEnergy.fillna                (0.0, inplace=True)
+    dfDemand.fillna                   (0.0, inplace=True)
+    dfInertia.fillna                  (0.0, inplace=True)
+    dfUpOperatingReserve.fillna       (0.0, inplace=True)
+    dfDwOperatingReserve.fillna       (0.0, inplace=True)
+    dfGeneration.fillna               ({"Efficiency":1.0}, inplace=True)
+    dfGeneration.fillna               (0.0, inplace=True)
+    dfVariableMinPower.fillna         (0.0, inplace=True)
+    dfVariableMaxPower.fillna         (0.0, inplace=True)
+    dfVariableMinCharge.fillna        (0.0, inplace=True)
+    dfVariableMaxCharge.fillna        (0.0, inplace=True)
+    dfVariableMinStorage.fillna       (0.0, inplace=True)
+    dfVariableMaxStorage.fillna       (0.0, inplace=True)
+    dfVariableMinEnergy.fillna        (0.0, inplace=True)
+    dfVariableMaxEnergy.fillna        (0.0, inplace=True)
+    dfVariableFuelCost.fillna         (0.0, inplace=True)
+    dfVariableEmissionCost.fillna     (0.0, inplace=True)
+    dfEnergyInflows.fillna            (0.0, inplace=True)
+    dfEnergyOutflows.fillna           (0.0, inplace=True)
+    dfNodeLocation.fillna             (0.0, inplace=True)
+    dfNetwork.fillna                  (0.0, inplace=True)
 
     if pIndVarTTC == 1:
         dfVariableTTCFrw.fillna   (0.0, inplace=True)
@@ -467,6 +468,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pProductionFunctionHeat     = dfGeneration  ['ProductionFunctionHeat'    ]                                                      # production function of a heat pump           [kWh/kWh]
     pProductionFunctionH2ToHeat = dfGeneration  ['ProductionFunctionH2ToHeat'] * 1e-3                                               # production function of a boiler using H2     [gH2/kWh]
     pEfficiency                 = dfGeneration  ['Efficiency'                ]                                                      #               ESS round-trip efficiency      [p.u.]
+    print("Efficiency")
+    print(pEfficiency)
     pStorageType                = dfGeneration  ['StorageType'               ]                                                      #               ESS storage  type
     pOutflowsType               = dfGeneration  ['OutflowsType'              ]                                                      #               ESS outflows type
     pEnergyType                 = dfGeneration  ['EnergyType'                ]                                                      #               unit  energy type
@@ -815,9 +818,37 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pIndBinStorInvest         = pIndBinStorInvest.map    (idxDict)
     pIndBinLineInvest         = pIndBinLineInvest.map    (idxDict)
     pIndBinLineSwitch         = pIndBinLineSwitch.map    (idxDict)
-    pIndOperReserve           = pIndOperReserve.map      (idxDict)
+    # pIndOperReserve           = pIndOperReserve.map      (idxDict)
     pIndOutflowIncomp         = pIndOutflowIncomp.map    (idxDict)
     pMustRun                  = pMustRun.map             (idxDict)
+
+    # Operating reserves can be provided while generating or while consuming
+    # So there is need for two options to decide if the unit is able to provide them
+    # Due to backwards compatibility reasons instead of adding a new column to Data_Generation NoOperatingReserve column now accepts two inputs
+    # They are separated by "|", if only one input is detected, both parameters are set to whatever the input is
+
+    def split_and_map(val):
+        # Handle new format with double input. Detect if there is a | character
+        if isinstance(val, str) and '|' in val:
+            gen, cons = val.split('|', 1)
+            return pd.Series([idxDict.get(gen.strip(), 0), idxDict.get(cons.strip(), 0)])
+        else:
+        # If no | character is found, both options are set to the inputted value
+            mapped = idxDict.get(val, 0)
+            return pd.Series([mapped, mapped])
+    print(pIndOperReserve)
+
+    # Split the columns in pIndOperReserve and group them in Generation and Consumption tuples
+    pIndOperReserveGen, pIndOperReserveCon = zip(*pIndOperReserve.map(split_and_map))
+
+    print(pIndOperReserveGen)
+    print(pIndOperReserveCon)
+
+    pIndOperReserveGen = pd.Series(pIndOperReserveGen, index=pIndOperReserve.index)
+    pIndOperReserveCon = pd.Series(pIndOperReserveCon, index=pIndOperReserve.index)
+
+    print(pIndOperReserveGen)
+    print(pIndOperReserveCon)
 
     if pIndHydroTopology == 1:
         pIndBinRsrvInvest     = pIndBinRsrvInvest.map    (idxDict)
@@ -1516,7 +1547,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     mTEPES.pIndBinUnitRetire     = Param(mTEPES.gd,    initialize=pIndBinUnitRetire.to_dict()         , within=Binary          ,    doc='Binary retirement decision'                          )
     mTEPES.pIndBinUnitCommit     = Param(mTEPES.nr,    initialize=pIndBinUnitCommit.to_dict()         , within=Binary          ,    doc='Binary commitment decision'                          )
     mTEPES.pIndBinStorInvest     = Param(mTEPES.ec,    initialize=pIndBinStorInvest.to_dict()         , within=Binary          ,    doc='Storage linked to generation investment'             )
-    mTEPES.pIndOperReserve       = Param(mTEPES.gg,    initialize=pIndOperReserve.to_dict()           , within=Binary          ,    doc='Indicator of operating reserve'                      )
+    mTEPES.pIndOperReserveGen    = Param(mTEPES.gg,    initialize=pIndOperReserveGen.to_dict()        , within=Binary          ,    doc='Indicator of operating reserve when generating power')
+    mTEPES.pIndOperReserveCon    = Param(mTEPES.gg,    initialize=pIndOperReserveCon.to_dict()        , within=Binary          ,    doc='Indicator of operating reserve when consuming power' )
     mTEPES.pIndOutflowIncomp     = Param(mTEPES.gg,    initialize=pIndOutflowIncomp.to_dict()         , within=Binary          ,    doc='Indicator of outflow incompatibility with charging'  )
     mTEPES.pEfficiency           = Param(mTEPES.eh,    initialize=pEfficiency.to_dict()               , within=UnitInterval    ,    doc='Round-trip efficiency'                               )
     mTEPES.pStorageTimeStep      = Param(mTEPES.es,    initialize=pStorageTimeStep.to_dict()          , within=PositiveIntegers,    doc='ESS Storage cycle'                                   )
@@ -2095,14 +2127,14 @@ def SettingUpVariables(OptModel, mTEPES):
                     nFixedVariables += 3
 
             # if min and max power coincide there are neither second block, nor operating reserve
-            if  mTEPES.pMaxPower2ndBlock[p,sc,n,nr] ==  0.0:
-                OptModel.vOutput2ndBlock[p,sc,n,nr].fix(0.0)
-                OptModel.vReserveUp     [p,sc,n,nr].fix(0.0)
-                OptModel.vReserveDown   [p,sc,n,nr].fix(0.0)
+            if  mTEPES.pMaxPower2ndBlock [p,sc,n,nr] ==  0.0:
+                OptModel.vOutput2ndBlock [p,sc,n,nr].fix(0.0)
+                OptModel.vReserveUp      [p,sc,n,nr].fix(0.0)
+                OptModel.vReserveDown    [p,sc,n,nr].fix(0.0)
                 nFixedVariables += 3
-            if  mTEPES.pIndOperReserve  [       nr] ==  1:
-                OptModel.vReserveUp     [p,sc,n,nr].fix(0.0)
-                OptModel.vReserveDown   [p,sc,n,nr].fix(0.0)
+            if  mTEPES.pIndOperReserveGen[       nr] ==  1:
+                OptModel.vReserveUp      [p,sc,n,nr].fix(0.0)
+                OptModel.vReserveDown    [p,sc,n,nr].fix(0.0)
                 nFixedVariables += 2
 
         # total energy inflows per storage
@@ -2128,7 +2160,7 @@ def SettingUpVariables(OptModel, mTEPES):
             if  mTEPES.pMaxCharge2ndBlock[p,sc,n,es] ==  0.0:
                 OptModel.vCharge2ndBlock [p,sc,n,es].fix(0.0)
                 nFixedVariables += 1
-            if  mTEPES.pMaxCharge2ndBlock[p,sc,n,es] ==  0.0 or mTEPES.pIndOperReserve[es] == 1:
+            if  mTEPES.pMaxCharge2ndBlock[p,sc,n,es] ==  0.0 or mTEPES.pIndOperReserveCon[es] == 1:
                 OptModel.vESSReserveUp   [p,sc,n,es].fix(0.0)
                 OptModel.vESSReserveDown [p,sc,n,es].fix(0.0)
                 nFixedVariables += 2
@@ -2146,7 +2178,7 @@ def SettingUpVariables(OptModel, mTEPES):
                 if  mTEPES.pMaxCharge2ndBlock[p,sc,n,h ] ==  0.0:
                     OptModel.vCharge2ndBlock [p,sc,n,h ].fix(0.0)
                     nFixedVariables += 1
-                if  mTEPES.pMaxCharge2ndBlock[p,sc,n,h ] ==  0.0 or mTEPES.pIndOperReserve[h ] == 1:
+                if  mTEPES.pMaxCharge2ndBlock[p,sc,n,h ] ==  0.0 or mTEPES.pIndOperReserveCon[h ] == 1:
                     OptModel.vESSReserveUp   [p,sc,n,h ].fix(0.0)
                     OptModel.vESSReserveDown [p,sc,n,h ].fix(0.0)
                     nFixedVariables += 2
