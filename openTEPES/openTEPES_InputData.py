@@ -468,8 +468,6 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pProductionFunctionHeat     = dfGeneration  ['ProductionFunctionHeat'    ]                                                      # production function of a heat pump           [kWh/kWh]
     pProductionFunctionH2ToHeat = dfGeneration  ['ProductionFunctionH2ToHeat'] * 1e-3                                               # production function of a boiler using H2     [gH2/kWh]
     pEfficiency                 = dfGeneration  ['Efficiency'                ]                                                      #               ESS round-trip efficiency      [p.u.]
-    print("Efficiency")
-    print(pEfficiency)
     pStorageType                = dfGeneration  ['StorageType'               ]                                                      #               ESS storage  type
     pOutflowsType               = dfGeneration  ['OutflowsType'              ]                                                      #               ESS outflows type
     pEnergyType                 = dfGeneration  ['EnergyType'                ]                                                      #               unit  energy type
@@ -836,19 +834,12 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         # If no | character is found, both options are set to the inputted value
             mapped = idxDict.get(val, 0)
             return pd.Series([mapped, mapped])
-    print(pIndOperReserve)
 
     # Split the columns in pIndOperReserve and group them in Generation and Consumption tuples
     pIndOperReserveGen, pIndOperReserveCon = zip(*pIndOperReserve.map(split_and_map))
 
-    print(pIndOperReserveGen)
-    print(pIndOperReserveCon)
-
     pIndOperReserveGen = pd.Series(pIndOperReserveGen, index=pIndOperReserve.index)
     pIndOperReserveCon = pd.Series(pIndOperReserveCon, index=pIndOperReserve.index)
-
-    print(pIndOperReserveGen)
-    print(pIndOperReserveCon)
 
     if pIndHydroTopology == 1:
         pIndBinRsrvInvest     = pIndBinRsrvInvest.map    (idxDict)
