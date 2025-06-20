@@ -37,7 +37,7 @@ What PC do I need?
 
 - As a rule of thumb, a linear optimization problem requires 1 GB of memory for every 1 million rows
 
-- So, depending on the size of the optimization problem and the available memory, you may or may not be able to run it on your PC. As an example, the case studies provided can be run in a laptop with 16 MB of memory.
+- So, depending on the size of the optimization problem and the available memory, you may or may not be able to run it on your PC. As an example, the case studies provided can be run in a laptop with 32 GB of memory.
 
 First steps
 -----------
