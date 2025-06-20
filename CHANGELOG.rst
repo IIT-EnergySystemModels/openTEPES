@@ -6,8 +6,6 @@ Change Log
 - [CHANGED] change ESS inventory efficiency consideration from full value at consumption to square root at both consumption and generation.
 - [FIXED] fix operating reserve constraints for ESSs and hydropower plants regarding if there is enough energy/water
 - [CHANGED] add the ability to choose if an ESS provides reserves as a generator or a consumer independently
-- [CHANGED] avoid formulation of superfluous vHydroOutflows variables
-- [FIXED] fix error when displaying network losses by transmission line
 - [FIXED] fix bug when a set of mutually exclusive generators has no generators
 - [FIXED] fix bug when variable TTC is used and there are lines with reactance equal to 0
 - [CHANGED] introduce variable TTC forward and backward for the transmission lines
