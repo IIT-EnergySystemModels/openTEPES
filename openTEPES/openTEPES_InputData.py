@@ -160,6 +160,11 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     dfEnergyInflows         = dfEnergyInflows.where       (dfEnergyInflows        > 0.0, 0.0)
     dfEnergyOutflows        = dfEnergyOutflows.where      (dfEnergyOutflows       > 0.0, 0.0)
 
+    if (dfGeneration["Efficiency"] == 0).any():
+        print("WARNING: Efficiency values of 0.0 are not valid. They have been changed to 1.0.")
+        print("If you want to disable charging, set 'MaximumCharge' to 0.0 or leave it empty.")
+    dfGeneration["Efficiency"] = dfGeneration["Efficiency"].where(dfGeneration["Efficiency"] != 0.0, 1.0)
+
     if pIndHydroTopology == 1:
         dfVariableMinVolume = dfVariableMinVolume.where   (dfVariableMinVolume    > 0.0, 0.0)
         dfVariableMaxVolume = dfVariableMaxVolume.where   (dfVariableMaxVolume    > 0.0, 0.0)
