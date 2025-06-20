@@ -448,6 +448,8 @@ Maximum, minimum, and initial storage values are considered proportional to the 
 
 A generator can belong to several mutually exclusive sets, their names must be separated by "\|" when inputted. So if Generator1 belongs to Set1 and Set2, the data entry should be "Set1\|Set2". If any of the generators in a group is an installation candidate it is assumed that the exclusivity is yearly, so only one of the generators can be committed in the whole Period. When all mutually exclusive generators in a set are already installed and functioning it is assumed that the exclusivity is hourly and which generator is committed can change every LoadLevel.
 
+A generator can be restricted to only be able to provide reserves while generating or while consuming. The NoOperatingReserve entry accepts two inputs separatd by a "|". The first value corresponds to operating reserve while generating and the second one to operating reserves while consuming power. If only one value is entered, both values are considered to be the same. If no value is entered, both values are considered to be "No".
+
 If lower and upper bounds of investment/retirement decisions are very close (with a difference <1e-3) to 0 or 1 are converted into 0 and 1.
 
 Variable maximum and minimum generation

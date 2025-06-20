@@ -405,11 +405,11 @@ VRES units (i.e., those with linear variable cost equal to 0 and no storage capa
 
 Operating reserves from ESS can only be provided if enough energy is available for producing [GW] «``eReserveUpIfEnergy``»
 
-:math:`\frac{p^p_{\omega ne} + ur^p_{\omega ne}}{\underline{GP}^p_{\omega ne}} + 1 \leq \frac{i^p_{\omega ne} - \underline{I}^p_{wne}}{DUR^p_{\omega n} \underline{GP}^p_{\omega ne}} \quad \forall p \omega ne`
+:math:`\frac{p^p_{\omega ne} + ur^p_{\omega ne}}{\underline{GP}^p_{\omega ne} \sqrt{EF_e'}}  + 1 \leq \frac{i^p_{\omega ne} - \underline{I}^p_{wne}}{DUR^p_{\omega n} \underline{GP}^p_{\omega ne}} \quad \forall p \omega ne`
 
 or if there is enough storage capacity left for storing [GW] «``eESSReserveDwIfEnergy``»
 
-:math:`frac{c^p_{\omega ne} dr'^p_{\omega ne}}{\underline{GC}^p_{\omega ne}} + 1 \leq \frac{\overline{I}^p_{\omega ne} - i^p_{\omega ne}}{DUR^p_{\omega n} \underline{GC}^p_{\omega ne}} \quad \forall p \omega ne`
+:math:`frac{(c^p_{\omega ne} + dr'^p_{\omega ne}) \sqrt{EF_e'}} {\underline{GC}^p_{\omega ne}} + 1 \leq \frac{\overline{I}^p_{\omega ne} - i^p_{\omega ne}}{DUR^p_{\omega n} \underline{GC}^p_{\omega ne}} \quad \forall p \omega ne`
 
 Maximum and minimum relative inventory of ESS candidates (only for load levels multiple of 1, 24, 168, 8736 h depending on the ESS storage type, represented as :math:`n|\tau_e`) constrained by the ESS commitment decision times the maximum capacity [p.u.] «``eMaxInventory2Comm``» «``eMinInventory2Comm``»
 
@@ -423,9 +423,9 @@ Energy inflows of ESS candidates (only for load levels multiple of 1, 24, 168, 8
 
 ESS energy inventory (only for load levels multiple of 1, 24, 168 h depending on the ESS storage type, represented as :math:`n|\tau_e`) [GWh] «``eESSInventory``»
 
-:math:`i^p_{\omega,n-\frac{\tau_e}{\nu},e} + \sum_{n' = n-\frac{\tau_e}{\nu}}^n DUR^p_{\omega n'} (EI^p_{\omega n'e} - go^p_{\omega n'e} - gp^p_{\omega n'e} + EF_e gc^p_{\omega n'e}) = i^p_{\omega ne} + s^p_{\omega ne} \quad \forall p \omega ne, n|\tau_e, e \in EE`
+:math:`i^p_{\omega,n-\frac{\tau_e}{\nu},e} + \sum_{n' = n-\frac{\tau_e}{\nu}}^n DUR^p_{\omega n'} (EI^p_{\omega n'e} - go^p_{\omega n'e} - \frac{1}{\sqrt{EF_e}} gp^p_{\omega n'e} + \sqrt{EF_e} gc^p_{\omega n'e}) = i^p_{\omega ne} + s^p_{\omega ne} \quad \forall p \omega ne, n|\tau_e, e \in EE`
 
-:math:`i^p_{\omega,n-\frac{\tau_e}{\nu},e} + \sum_{n' = n-\frac{\tau_e}{\nu}}^n DUR^p_{\omega n'} (ei^p_{\omega n'e} - go^p_{\omega n'e} - gp^p_{\omega n'e} + EF_e gc^p_{\omega n'e}) = i^p_{\omega ne} + s^p_{\omega ne} \quad \forall p \omega ne, n|\tau_e, e \in CE`
+:math:`i^p_{\omega,n-\frac{\tau_e}{\nu},e} + \sum_{n' = n-\frac{\tau_e}{\nu}}^n DUR^p_{\omega n'} (ei^p_{\omega n'e} - go^p_{\omega n'e} - \frac{1}{\sqrt{EF_e}} gp^p_{\omega n'e} + \sqrt{EF_e} gc^p_{\omega n'e}) = i^p_{\omega ne} + s^p_{\omega ne} \quad \forall p \omega ne, n|\tau_e, e \in CE`
 
 The initial inventory of the ESS candidates divided by its initial storage :math:`I^p_{\omega e}` is equal to the final reservoir divide by its initial storage [p.u.] «``eIniFinInventory``».
 
@@ -581,17 +581,21 @@ Maximum and minimum relative volume of reservoir candidates (only for load level
 
 :math:`\frac{i'^p_{\omega ne'}}{\underline{I'}^p_{\omega ne'}} \geq \sum_{h \in dw(e')} uc^p_{\omega nh} \quad \forall p \omega ne', e' \in CR`
 
-Operating reserves from a hydropower plant can only be provided if enough energy is available for turbining at the upstream reservoir [GW] «``eTrbReserveUpIfEnergy``» «``eTrbReserveDwIfEnergy``»
+Operating reserves from a hydropower plant can only be provided if enough water is available for turbining at the upstream reservoirs [GW] «``eTrbReserveUpIfUpstream``»
 
-:math:`ur^p_{\omega nh} \leq \frac{\sum_{e' \in up(h)}                                i'^p_{\omega ne'}}{DUR^p_{\omega n}} \quad \forall p \omega nh`
+:math:`\frac{p^p_{\omega nh} + ur^p_{\omega nh} + uc^p_{\omega ng}}{\underline{GP}^p_{\omega ng}} \leq \frac{\sum_{e' \in up(h)}  i'^p_{\omega ne'} - \underline{I'}^p_{\omega ng}}{DUR^p_{\omega n}} \quad \forall p \omega nh`
 
-:math:`dr^p_{\omega nh} \leq \frac{\sum_{e' \in up(h)} \overline{I'}^p_{\omega ne'} - i'^p_{\omega ne'}}{DUR^p_{\omega n}} \quad \forall p \omega nh`
+and if there is enough spare volume to store the water downstream «``eTrbReserveUpIfDownstream``»
 
-or for pumping [GW] «``ePmpReserveDwIfEnergy``»
+:math:`\frac{p^p_{\omega nh} + ur^p_{\omega nh} + uc^p_{\omega ng}}{\underline{GP}^p_{\omega ng}} \leq \frac{\sum_{e' \in dw(h)}  \overline{I'}^p_{\omega ng} - i'^p_{\omega ne'}} {DUR^p_{\omega n}} \quad \forall p \omega nh`
 
-:math:`ur'^p_{\omega nh} \leq \frac{\sum_{e' \in up(h)} \overline{I'}^p_{\omega ne'} - i'^p_{\omega ne'}}{DUR^p_{\omega n}} \quad \forall p \omega nh`
+Operating reserves while pumping can only be provided if there is enough available water downstream to pump «``ePmpReserveDwIfUpstream``»
 
-:math:`dr'^p_{\omega nh} \leq \frac{\sum_{e' \in up(h)}                                i'^p_{\omega ne'}}{DUR^p_{\omega n}} \quad \forall p \omega nh`
+:math:`\frac{(c^p_{\omega nh} + dr^p_{\omega nh) * EF_e'} + ucc^p_{\omega ng}}{\underline{GC}^p_{\omega ng}} + \leq \frac{\sum_{e' \in up(h)} \overline{I'}^p_{\omega ng} - i'^p_{\omega ne'}}{DUR^p_{\omega n}} \quad \forall p \omega nh`
+
+and if there is enough spare volume to store the water upstream «``ePmpReserveDwIfUpstream``»
+
+:math:`\frac{(c^p_{\omega nh} + dr^p_{\omega nh) * EF_e'} + ucc^p_{\omega ng}}{\underline{GC}^p_{\omega ng}} + \leq \frac{\sum_{e' \in up(h)}  i'^p_{\omega ne'}}{DUR^p_{\omega n} - \underline{I'}^p_{\omega ng}} \quad \forall p \omega nh`
 
 Water volume for each hydro reservoir (only for load levels multiple of 1, 24, 168 h depending on the reservoir storage type, represented as :math:`n|\tau_{e'}`) [hm\ :sup:`3`] «``eHydroInventory``»
 
