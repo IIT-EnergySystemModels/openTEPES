@@ -3,6 +3,7 @@ Change Log
 
 [4.18.5] - 2025-06-23
 -----------------------
+- [CHANGED] add MarketResultsDemand and MarketResultsGeneration output files.
 - [FIXED] Fix typo in reserve equations
 - [CHANGED] change ESS inventory efficiency consideration from full value at consumption to square root at both consumption and generation.
 - [FIXED] fix operating reserve constraints for ESSs and hydropower plants regarding if there is enough energy/water

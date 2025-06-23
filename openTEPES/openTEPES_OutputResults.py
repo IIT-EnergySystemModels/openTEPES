@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 28, 2025
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 23, 2025
 """
 
 import time
@@ -1936,6 +1936,12 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput, pIndPlo
     for gt,g in mTEPES.t2g:
         g2t[gt].append(g)
 
+    # nodes to area (d2a)
+    d2a = defaultdict(list)
+    for ar,nd in mTEPES.ar*mTEPES.nd:
+        if (nd,ar) in mTEPES.ndar:
+            d2a[ar].append(nd)
+
     if sum(1 for ar in mTEPES.ar if sum(1 for g in g2a[ar])) > 1:
         if pIndAreaOutput == 1:
             for ar in mTEPES.ar:
@@ -1965,7 +1971,6 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput, pIndPlo
     OutputResults06     = pd.Series(data=[-  mTEPES.pDemandElec        [p,sc,n,nd      ]  *mTEPES.pLoadLevelDuration[p,sc,n]()                                                                                      for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='EnergyDemand'   )
     OutputResults07     = pd.Series(data=[-sum(OptModel.vFlowElec      [p,sc,n,nd,nf,cc]()*mTEPES.pLoadLevelDuration[p,sc,n]() for nf,cc in lout [nd])                                                              for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='EnergyFlowOut'  )
     OutputResults08     = pd.Series(data=[ sum(OptModel.vFlowElec      [p,sc,n,ni,nd,cc]()*mTEPES.pLoadLevelDuration[p,sc,n]() for ni,cc in lin  [nd])                                                              for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='EnergyFlowIn'   )
-    # OutputResults09   = pd.Series(data=[ ar                                                                                  for ar in mTEPES.ar                                                                  for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='Area'           )
     if mTEPES.ll:
         OutputResults09 = pd.Series(data=[-sum(OptModel.vLineLosses    [p,sc,n,nd,nf,cc]()*mTEPES.pLoadLevelDuration[p,sc,n]() for nf,cc in loutl[nd])                                                              for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='LineLossesOut'  )
         OutputResults10 = pd.Series(data=[-sum(OptModel.vLineLosses    [p,sc,n,ni,nd,cc]()*mTEPES.pLoadLevelDuration[p,sc,n]() for ni,cc in linl [nd])                                                              for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='LineLossesIn'   )
@@ -1993,6 +1998,56 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput, pIndPlo
     OutputResults.stack().reset_index().pivot_table(index=['level_0','level_1','level_2','level_3','level_4'], columns='level_5', values=0, aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel', 'Area', 'Node'], axis=0).to_csv(f'{_path}/oT_Result_BalanceEnergyPerTech_{CaseName}.csv', sep=',')
     OutputResults.stack().reset_index().pivot_table(index=['level_0','level_1','level_2'          ,'level_5'], columns='level_4', values=0, aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel', 'Technology'  ], axis=0).to_csv(f'{_path}/oT_Result_BalanceEnergyPerNode_{CaseName}.csv', sep=',')
     OutputResults.stack().reset_index().pivot_table(index=['level_0','level_1'                    ,'level_5'], columns='level_3', values=0, aggfunc='sum').rename_axis(['Period', 'Scenario'             , 'Technology'  ], axis=0).to_csv(f'{_path}/oT_Result_BalanceEnergyPerArea_{CaseName}.csv', sep=',')
+
+    #%% outputting the demand and the LSRMC of electricity
+    sPSSTNND      = [(p,sc,st,n,ar,nd) for p,sc,st,n,ar,nd in mTEPES.s2n*mTEPES.ar*mTEPES.nd if nd in d2a[ar] and sum(1 for g in g2n[nd]) + sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd]) and (p,sc,n) in mTEPES.psn]
+
+    OutputResults = pd.Series(data=[mTEPES.pDuals["".join([f"eBalanceElec_{p}_{sc}_{st}('{n}', '{nd}')"])]/mTEPES.pPeriodProb[p,sc]()/mTEPES.pLoadLevelDuration[p,sc,n]() for p,sc,st,n,ar,nd in sPSSTNND], index=pd.Index(sPSSTNND))
+    OutputResults *= 1e3
+    OutputResults.index = [idx[:2] + idx[3:] for idx in OutputResults.index]
+
+    #%% outputting the generator power output
+    sPSNARNDNR = [(p,sc,n,ar,nd,nr) for p,sc,n,ar,nd,nr in mTEPES.psnar*mTEPES.nd*mTEPES.nr if nr in g2n[nd] and sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd]) and (nd,ar) in mTEPES.ndar and (p,nr) in mTEPES.pnr and nr not in mTEPES.eh]
+    sPSNARNDRE = [(p,sc,n,ar,nd,re) for p,sc,n,ar,nd,re in mTEPES.psnar*mTEPES.nd*mTEPES.re if re in g2n[nd] and sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd]) and (nd,ar) in mTEPES.ndar and (p,re) in mTEPES.pre                        ]
+    sPSNARNDEH = [(p,sc,n,ar,nd,eh) for p,sc,n,ar,nd,eh in mTEPES.psnar*mTEPES.nd*mTEPES.eh if eh in g2n[nd] and sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd]) and (nd,ar) in mTEPES.ndar and (p,eh) in mTEPES.peh                        ]
+
+    OutputResults01     = pd.Series(data=[    OptModel.vTotalOutput   [p,sc,n,nr      ]()*mTEPES.pLoadLevelDuration[p,sc,n]()                         for p,sc,n,ar,nd,nr in sPSNARNDNR], index=pd.Index(sPSNARNDNR)).to_frame(name='Generation'     ).reset_index().pivot_table(index=['level_0','level_1','level_2','level_3','level_4'], columns='level_5', values='Generation' , aggfunc='sum')
+    if mTEPES.re:
+        OutputResults02 = pd.Series(data=[    OptModel.vTotalOutput   [p,sc,n,re      ]()*mTEPES.pLoadLevelDuration[p,sc,n]()                         for p,sc,n,ar,nd,re in sPSNARNDRE], index=pd.Index(sPSNARNDRE)).to_frame(name='Generation'     ).reset_index().pivot_table(index=['level_0','level_1','level_2','level_3','level_4'], columns='level_5', values='Generation' , aggfunc='sum')
+    if mTEPES.eh:
+        OutputResults03 = pd.Series(data=[    OptModel.vTotalOutput   [p,sc,n,eh      ]()*mTEPES.pLoadLevelDuration[p,sc,n]()                         for p,sc,n,ar,nd,eh in sPSNARNDEH], index=pd.Index(sPSNARNDEH)).to_frame(name='Generation'     ).reset_index().pivot_table(index=['level_0','level_1','level_2','level_3','level_4'], columns='level_5', values='Generation' , aggfunc='sum')
+        OutputResults04 = pd.Series(data=[   -OptModel.vESSTotalCharge[p,sc,n,eh      ]()*mTEPES.pLoadLevelDuration[p,sc,n]()                         for p,sc,n,ar,nd,eh in sPSNARNDEH], index=pd.Index(sPSNARNDEH)).to_frame(name='Consumption'    ).reset_index().pivot_table(index=['level_0','level_1','level_2','level_3','level_4'], columns='level_5', values='Consumption', aggfunc='sum').rename(columns={et: et+str(' -') for et in mTEPES.et})
+    OutputResults05     = pd.Series(data=[    OptModel.vENS           [p,sc,n,nd      ]()*mTEPES.pLoadLevelDuration[p,sc,n]()                         for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='EnergyNotServed')
+    OutputResults06     = pd.Series(data=[   -mTEPES.pDemandElec      [p,sc,n,nd      ]  *mTEPES.pLoadLevelDuration[p,sc,n]()                         for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='EnergyDemand'   )
+    OutputResults08     = pd.Series(data=[sum(OptModel.vFlowElec      [p,sc,n,ni,nd,cc]()*mTEPES.pLoadLevelDuration[p,sc,n]() for ni,cc in lin  [nd]) for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='EnergyFlowIn'   )
+    if mTEPES.ll:
+        OutputResults09 = pd.Series(data=[-sum(OptModel.vLineLosses   [p,sc,n,nd,nf,cc]()*mTEPES.pLoadLevelDuration[p,sc,n]() for nf,cc in loutl[nd]) for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='LineLossesOut'  )
+        OutputResults10 = pd.Series(data=[-sum(OptModel.vLineLosses   [p,sc,n,ni,nd,cc]()*mTEPES.pLoadLevelDuration[p,sc,n]() for ni,cc in linl [nd]) for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='LineLossesIn'   )
+
+    if   len(mTEPES.eh) >  0 and len(mTEPES.ll) == 0:
+        MarketResultsDem = pd.concat([OutputResults04, OutputResults06                                  ], axis=1)
+    elif len(mTEPES.eh) >  0 and len(mTEPES.ll) >  0:
+        MarketResultsDem = pd.concat([OutputResults04, OutputResults06, OutputResults09, OutputResults10], axis=1)
+    elif len(mTEPES.eh) == 0 and len(mTEPES.ll) >  0:
+        MarketResultsDem = pd.concat([                 OutputResults06, OutputResults09, OutputResults10], axis=1)
+    elif len(mTEPES.eh) == 0 and len(mTEPES.ll) >  0:
+        MarketResultsDem = pd.concat([                 OutputResults06, OutputResults09, OutputResults10], axis=1)
+
+    if   len(mTEPES.eh) >  0 and len(mTEPES.re) >  0:
+        MarketResultsGen = pd.concat([OutputResults01, OutputResults02, OutputResults03], axis=1)
+    elif len(mTEPES.eh) == 0 and len(mTEPES.re) >  0:
+        MarketResultsGen = pd.concat([OutputResults01, OutputResults02,                ], axis=1)
+    elif len(mTEPES.eh) >  0 and len(mTEPES.re) == 0:
+        MarketResultsGen = pd.concat([OutputResults01,                  OutputResults03], axis=1)
+    elif len(mTEPES.eh) == 0 and len(mTEPES.re) == 0:
+        MarketResultsGen = pd.concat([OutputResults01,                                 ], axis=1)
+
+    MarketResultsDem *= -1e3
+    MarketResultsDem = pd.concat([MarketResultsDem.sum(axis=1), OutputResults], axis=1)
+    MarketResultsDem.stack().reset_index().pivot_table(index=['level_0','level_1','level_2','level_3','level_4'], columns='level_5', values=0, aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel', 'Area', 'Node'], axis=0).rename(columns={0: 'Demand', 1: 'LSRMC'}, inplace=False).to_csv(f'{_path}/oT_Result_MarketResultsDemand_{CaseName}.csv', sep=',')
+
+    MarketResultsGen *= 1e3
+    MarketResultsGen.stack().reset_index().pivot_table(index=['level_0','level_1','level_2','level_3','level_4','level_5']).rename_axis(['Period', 'Scenario', 'LoadLevel', 'Area', 'Node', 'Generator'], axis=0).rename(columns={0: 'Generation'}, inplace=False).to_csv(f'{_path}/oT_Result_MarketResultsGeneration_{CaseName}.csv', sep=',')
 
     # df=OutputResults.stack().rename_axis(['Period', 'Scenario', 'LoadLevel', 'Area', 'Node', 'Technology'], axis=0).reset_index()
     # df['AreaFin'] = df['Area']
