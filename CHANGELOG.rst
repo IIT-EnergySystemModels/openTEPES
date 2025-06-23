@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.18.5] - 2025-06-20
+[4.18.5] - 2025-06-23
 -----------------------
+- [FIXED] Fix typo in reserve equations
 - [CHANGED] change ESS inventory efficiency consideration from full value at consumption to square root at both consumption and generation.
 - [FIXED] fix operating reserve constraints for ESSs and hydropower plants regarding if there is enough energy/water
 - [CHANGED] add the ability to choose if an ESS provides reserves as a generator or a consumer independently
