@@ -7,7 +7,7 @@ module = "openTEPES"
 dist-name = "openTEPES"
 author = "IIT-EnergySystemModels"
 author-email = "andres.ramos@comillas.edu"
-home-page = "https://pascua.iit.comillas.edu/aramos/openTEPES/index.html"
+home-page = "https://opentepes.readthedocs.io/en/latest/index.html"
 classifiers = [
   "Development Status :: 5 - Production/Stable","Intended Audience :: Science/Research",
   "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",

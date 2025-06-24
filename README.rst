@@ -2,7 +2,6 @@
 .. image:: doc/img/openTEPES.png
    :target: https://opentepes.readthedocs.io/en/latest/index.html
    :alt: logo
-   :scale: 70%
    :align: center
 
 |
