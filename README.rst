@@ -1,6 +1,6 @@
 
-.. image:: https://pascua.iit.comillas.edu/aramos/openTEPES.png
-   :target: https://pascua.iit.comillas.edu/aramos/openTEPES/index.html
+.. image:: doc/img/openTEPES.png
+   :target: https://opentepes.readthedocs.io/en/latest/index.html
    :alt: logo
    :scale: 70%
    :align: center
