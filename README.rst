@@ -1,5 +1,5 @@
 
-.. image:: doc/img/openTEPES.png
+.. image:: https://pascua.iit.comillas.edu/aramos/openTEPES.png
    :target: https://opentepes.readthedocs.io/en/latest/index.html
    :alt: logo
    :align: center
@@ -215,7 +215,7 @@ It can be run in Binder:
 
 Expected Results
 ################
-.. image:: doc/img/oT_Map_Network_TF2030.png
+.. image:: https://pascua.iit.comillas.edu/aramos/oT_Map_Network_TF2030.png
+  :alt: Network map with investment decisions
   :width: 600px
   :align: center
-  :alt: Network map with investment decisions
