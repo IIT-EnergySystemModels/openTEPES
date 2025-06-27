@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 23, 2025
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 27, 2025
 """
 
 import time
@@ -1961,7 +1961,8 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput, pIndPlo
     sPSNARNDRT = [(p,sc,n,ar,nd,rt) for p,sc,n,ar,nd,rt in sPSNARND*mTEPES.rt     if sum(1 for re in r2r[rt] if (p,re) in mTEPES.pre)                                      and (nd,ar) in mTEPES.ndar]
     sPSNARNDET = [(p,sc,n,ar,nd,et) for p,sc,n,ar,nd,et in sPSNARND*mTEPES.et     if sum(1 for eh in e2e[et] if (p,eh) in mTEPES.peh)                                      and (nd,ar) in mTEPES.ndar]
 
-    OutputResults01     = pd.Series(data=[ sum(OptModel.vTotalOutput   [p,sc,n,nr      ]()*mTEPES.pLoadLevelDuration[p,sc,n]() for nr in g2n[nd] if (p,nr) in mTEPES.pnr and nr in g2t[gt] and nr not in mTEPES.eh) for p,sc,n,ar,nd,gt in sPSNARNDGT], index=pd.Index(sPSNARNDGT)).to_frame(name='Generation'     ).reset_index().pivot_table(index=['level_0','level_1','level_2','level_3','level_4'], columns='level_5', values='Generation' , aggfunc='sum')
+    if sum(1 for nr in mTEPES.nr if nr not in mTEPES.eh):
+        OutputResults01 = pd.Series(data=[ sum(OptModel.vTotalOutput   [p,sc,n,nr      ]()*mTEPES.pLoadLevelDuration[p,sc,n]() for nr in g2n[nd] if (p,nr) in mTEPES.pnr and nr in g2t[gt] and nr not in mTEPES.eh) for p,sc,n,ar,nd,gt in sPSNARNDGT], index=pd.Index(sPSNARNDGT)).to_frame(name='Generation'     ).reset_index().pivot_table(index=['level_0','level_1','level_2','level_3','level_4'], columns='level_5', values='Generation' , aggfunc='sum')
     if mTEPES.re:
         OutputResults02 = pd.Series(data=[ sum(OptModel.vTotalOutput   [p,sc,n,re      ]()*mTEPES.pLoadLevelDuration[p,sc,n]() for re in r2n[nd] if (p,re) in mTEPES.pre and re in r2r[rt]                        ) for p,sc,n,ar,nd,rt in sPSNARNDRT], index=pd.Index(sPSNARNDRT)).to_frame(name='Generation'     ).reset_index().pivot_table(index=['level_0','level_1','level_2','level_3','level_4'], columns='level_5', values='Generation' , aggfunc='sum')
     if mTEPES.eh:
@@ -2011,7 +2012,8 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput, pIndPlo
     sPSNARNDRE = [(p,sc,n,ar,nd,re) for p,sc,n,ar,nd,re in mTEPES.psnar*mTEPES.nd*mTEPES.re if re in g2n[nd] and sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd]) and (nd,ar) in mTEPES.ndar and (p,re) in mTEPES.pre                        ]
     sPSNARNDEH = [(p,sc,n,ar,nd,eh) for p,sc,n,ar,nd,eh in mTEPES.psnar*mTEPES.nd*mTEPES.eh if eh in g2n[nd] and sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd]) and (nd,ar) in mTEPES.ndar and (p,eh) in mTEPES.peh                        ]
 
-    OutputResults01     = pd.Series(data=[    OptModel.vTotalOutput   [p,sc,n,nr      ]()*mTEPES.pLoadLevelDuration[p,sc,n]()                         for p,sc,n,ar,nd,nr in sPSNARNDNR], index=pd.Index(sPSNARNDNR)).to_frame(name='Generation'     ).reset_index().pivot_table(index=['level_0','level_1','level_2','level_3','level_4'], columns='level_5', values='Generation' , aggfunc='sum')
+    if sum(1 for nr in mTEPES.nr if nr not in mTEPES.eh):
+        OutputResults01 = pd.Series(data=[    OptModel.vTotalOutput   [p,sc,n,nr      ]()*mTEPES.pLoadLevelDuration[p,sc,n]()                         for p,sc,n,ar,nd,nr in sPSNARNDNR], index=pd.Index(sPSNARNDNR)).to_frame(name='Generation'     ).reset_index().pivot_table(index=['level_0','level_1','level_2','level_3','level_4'], columns='level_5', values='Generation' , aggfunc='sum')
     if mTEPES.re:
         OutputResults02 = pd.Series(data=[    OptModel.vTotalOutput   [p,sc,n,re      ]()*mTEPES.pLoadLevelDuration[p,sc,n]()                         for p,sc,n,ar,nd,re in sPSNARNDRE], index=pd.Index(sPSNARNDRE)).to_frame(name='Generation'     ).reset_index().pivot_table(index=['level_0','level_1','level_2','level_3','level_4'], columns='level_5', values='Generation' , aggfunc='sum')
     if mTEPES.eh:
@@ -2170,11 +2172,11 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput, pIndPlo
             ChargeRev.append(OutputChargeRevESS)
         if len([(p,sc,n,nd,gc) for p,sc,n,nd,gc in mTEPES.psn*mTEPES.n2g if gc in mTEPES.gc for rt in mTEPES.rt if (p,gc) in mTEPES.pgc and gc in r2r[rt]]):
             sPSSTNNDGC3        = [(p,sc,st,n,nd,gc) for p,sc,st,n,nd,gc in sPSSTNNDGC1      for rt in mTEPES.rt if (p,gc) in mTEPES.pgc and gc in r2r[rt] and (p,sc,n) in mTEPES.psn]
-            OutputChargeRevRES = pd.Series(data=[mTEPES.pDuals["".join([f"eBalanceElec_{p}_{sc}_{st}('{n}', '{nd}')"])]/mTEPES.pPeriodProb[p,sc]()/mTEPES.pLoadLevelDuration[p,sc,n]() * 0.0                                                                                                                                              for p,sc,st,n,nd,gc in sPSSTNNDGC3], index=pd.Index(sPSSTNNDGC3))
+            OutputChargeRevRES = pd.Series(data=[mTEPES.pDuals["".join([f"eBalanceElec_{p}_{sc}_{st}('{n}', '{nd}')"])]/mTEPES.pPeriodProb[p,sc]()/mTEPES.pLoadLevelDuration[p,sc,n]() * 0.0                                 for p,sc,st,n,nd,gc in sPSSTNNDGC3], index=pd.Index(sPSSTNNDGC3))
             ChargeRev.append(OutputChargeRevRES)
         if len([(p,sc,n,nd,gc) for p,sc,n,nd,gc in mTEPES.psn*mTEPES.n2g if gc in mTEPES.gc for ot in mTEPES.ot if (p,gc) in mTEPES.pgc and gc in o2e[ot]]):
             sPSSTNNDGC4        = [(p,sc,st,n,nd,gc) for p,sc,st,n,nd,gc in sPSSTNNDGC1      for ot in mTEPES.ot if (p,gc) in mTEPES.pgc and gc in o2e[ot] and (p,sc,n) in mTEPES.psn]
-            OutputChargeRevThr = pd.Series(data=[mTEPES.pDuals["".join([f"eBalanceElec_{p}_{sc}_{st}('{n}', '{nd}')"])]/mTEPES.pPeriodProb[p,sc]()/mTEPES.pLoadLevelDuration[p,sc,n]() * 0.0                                                                                                                                              for p,sc,st,n,nd,gc in sPSSTNNDGC4], index=pd.Index(sPSSTNNDGC4))
+            OutputChargeRevThr = pd.Series(data=[mTEPES.pDuals["".join([f"eBalanceElec_{p}_{sc}_{st}('{n}', '{nd}')"])]/mTEPES.pPeriodProb[p,sc]()/mTEPES.pLoadLevelDuration[p,sc,n]() * 0.0                                 for p,sc,st,n,nd,gc in sPSSTNNDGC4], index=pd.Index(sPSSTNNDGC4))
             ChargeRev.append(OutputChargeRevThr)
         if len(GenRev):
             GenRev    = pd.concat(GenRev)
