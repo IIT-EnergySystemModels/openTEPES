@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.18.6] - 2025-06-27
+[4.18.6] - 2025-06-28
 -----------------------
+- [FIXED] fix typo in TechnologySpillage output file
 - [FIXED] fix typo in BalanceEnergy and MarketResultsGeneration output files
 
 [4.18.5] - 2025-06-23
