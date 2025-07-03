@@ -438,6 +438,8 @@ it is considered a renewable unit. If its maximum storage is >0,  with or withou
 
 A very small variable O&M cost (not below 0.01 €/MWh, otherwise it will converted to 0 by the model) for the ESS can be used to avoid pumping with avoided curtailment (at no cost) and afterwards being discharged as spillage.
 
+The startup cost of a generating unit refers to the expenses incurred when bringing a power generation unit online, from an idle state to a point where it can produce electricity.
+
 Must-run non-renewable units are always committed, i.e., their commitment decision is equal to 1. All must-run units are forced to produce at least their minimum output.
 
 EFOR is used to reduce the maximum and minimum power of the unit. For hydropower plants it can be used to reduce their maximum power by the water head effect. It does not reduce the maximum charge.
