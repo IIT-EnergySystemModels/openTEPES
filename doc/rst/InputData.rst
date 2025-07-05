@@ -123,7 +123,7 @@ File                                       Description
 ``oT_Data_VariableMinEnergy.csv``          Minimum amount of energy produced/consumed by the unit by time interval (the amount of energy considered corresponds to the aggregate over the interval defined by EnergyType)
 ``oT_Data_Network.csv``                    Electricity network data
 ``oT_Data_VariableTTCFrw.csv``             Maximum electric transmission line TTC forward  flow (defined per load level) (optional file)
-``oT_Data_VariableTTCTbw.csv``             Maximum electric transmission line TTC backward flow (defined per load level) (optional file)
+``oT_Data_VariableTTCBck.csv``             Maximum electric transmission line TTC backward flow (defined per load level) (optional file)
 ``oT_Data_NodeLocation.csv``               Node location in latitude and longitude
 =========================================  ==================================================================================================================================================================================
 
