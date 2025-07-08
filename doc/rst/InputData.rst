@@ -671,6 +671,8 @@ If you want to force the flow of a transmission line to be equal to a value, int
 
 Internally, all the values below 1e-5 times the maximum system demand of each area will be converted into 0 by the model.
 
+If the variable TTCFrw and TTBck are both very small (e.g., 0.000001) for any time step, they are set to 0 and the line flow is forced to be 0, i.e., line is disconnected.
+
 Node location
 -------------
 
