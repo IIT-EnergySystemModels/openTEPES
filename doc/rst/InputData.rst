@@ -380,11 +380,11 @@ RampDown                    Maximum rate of decreasing its output for generating
 UpTime                      Minimum uptime                                                                                                                                                                                h
 DownTime                    Minimum downtime                                                                                                                                                                              h
 StableTime                  Minimum stable time (intended for nuclear units to be at their minimum load, if lower than the rated capacity, during this time).
-                            Power variations (ramp up/ramp down) below 5% are not considered for activating the minimum stable time                                                                                       h
+                            Power variations (ramp up/ramp down) below 1% are not considered for activating the minimum stable time                                                                                       h
 ShiftTime                   Maximum shift time                                                                                                                                                                            h
-FuelCost                    Fuel cost                                                                                                                                                                                     €/Gcal
-LinearTerm                  Linear   term (slope)     of the heat rate straight line                                                                                                                                      Gcal/MWh
-ConstantTerm                Constant term (intercept) of the heat rate straight line                                                                                                                                      Gcal/h
+FuelCost                    Fuel cost                                                                                                                                                                                     €/GJ
+LinearTerm                  Linear   term (slope)     of the heat rate straight line                                                                                                                                      GJ/MWh
+ConstantTerm                Constant term (intercept) of the heat rate straight line                                                                                                                                      GJ/h
 OMVariableCost              Variable O&M cost                                                                                                                                                                             €/MWh
 OperReserveCost             Operating reserve cost                                                                                                                                                                        €/MW
 StartUpCost                 Startup  cost                                                                                                                                                                                 M€
@@ -504,14 +504,14 @@ A description of the data included in the file ``oT_Data_VariableFuelCost.csv`` 
 ==========  ==============  ==========  =========  =============================  ======
 Identifiers                             Header     Description
 ======================================  =========  =============================  ======
-Period      Scenario        LoadLevel   Generator  Variable fuel cost             €/Gcal
+Period      Scenario        LoadLevel   Generator  Variable fuel cost             €/GJ
 ==========  ==============  ==========  =========  =============================  ======
 
 Not all the generators must be defined as columns of these files, only those with values different from 0.
 
 Internally, all the values below 1e-4 will be converted into 0 by the model.
 
-Fuel cost affects the linear and constant terms of the heat rate, expressed in Gcal/MWh and Gcal/h, respectively.
+Fuel cost affects the linear and constant terms of the heat rate, expressed in GJ/MWh and GJ/h, respectively.
 
 Variable emission cost
 ----------------------

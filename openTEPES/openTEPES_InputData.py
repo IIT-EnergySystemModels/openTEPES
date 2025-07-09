@@ -346,7 +346,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     pVariableMaxStorage   = dfVariableMaxStorage.reindex  (columns=mTEPES.gg, fill_value=0.0)        # dynamic variable maximum storage          [GWh]
     pVariableMinEnergy    = dfVariableMinEnergy.reindex   (columns=mTEPES.gg, fill_value=0.0) * 1e-3 # dynamic variable minimum energy           [GW]
     pVariableMaxEnergy    = dfVariableMaxEnergy.reindex   (columns=mTEPES.gg, fill_value=0.0) * 1e-3 # dynamic variable maximum energy           [GW]
-    pVariableFuelCost     = dfVariableFuelCost.reindex    (columns=mTEPES.gg, fill_value=0.0)        # dynamic variable fuel cost                [EUR/Mcal]
+    pVariableFuelCost     = dfVariableFuelCost.reindex    (columns=mTEPES.gg, fill_value=0.0)        # dynamic variable fuel cost                [EUR/MJ]
     pVariableEmissionCost = dfVariableEmissionCost.reindex(columns=mTEPES.gg, fill_value=0.0)        # dynamic variable emission cost            [EUR/tCO2]
     pEnergyInflows        = dfEnergyInflows.reindex       (columns=mTEPES.gg, fill_value=0.0) * 1e-3 # dynamic energy inflows                    [GW]
     pEnergyOutflows       = dfEnergyOutflows.reindex      (columns=mTEPES.gg, fill_value=0.0) * 1e-3 # dynamic energy outflows                   [GW]
@@ -2025,7 +2025,7 @@ def SettingUpVariables(OptModel, mTEPES):
 
         return nFixedBinaries
 
-    #Call the relaxing variables function and add its output to nFixedVariables
+    # call the relaxing variables function and add its output to nFixedVariables
     nFixedBinaries = RelaxBinaryInvestmentConditions(mTEPES, mTEPES)
     nFixedVariables += nFixedBinaries
 

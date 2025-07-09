@@ -1706,7 +1706,7 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES, pIndPlotOutput):
 
         if pIndPlotOutput == 1:
             for p,sc in mTEPES.ps:
-                chart = LinePlots(p, sc, OptModel.LSRMCHeat, 'Node', 'LoadLevel', 'EUR/Gcal', 'average')
+                chart = LinePlots(p, sc, OptModel.LSRMCHeat, 'Node', 'LoadLevel', 'EUR/GJ', 'average')
                 chart.save(f'{_path}/oT_Plot_NetworkSRMCHeat_{p}_{sc}_{CaseName}.html', embed_options={'renderer': 'svg'})
 
     if sum(mTEPES.pReserveMargin[:,:]):
