@@ -32,7 +32,7 @@ ENS         Energy Not Served
 ENTSO-E     European Network of Transmission System Operators for Electricity
 ESS         Energy Storage System
 EV          Electric Vehicle
-FCE         Firm Capacity Equivalent. Amount of reliable, always-available generation capacity that would provide the same level of system reliability as the resource being evaluated
+FCE         Firm Capacity Equivalent (amount of reliable, always-available generation capacity that would provide the same level of system reliability as the resource being evaluated)
 FHU         Fuel Heating Unit (Fuel to Heat: consumes any fuel other than hydrogen to produce heat, e.g., biomass/natural gas/oil boiler)
 GEP         Generation Expansion Planning
 mFRR        Manual Frequency Restoration Reserve (also tertiary reserve) helps to restore the required grid frequency of 50 Hz. It must be fully deployable after 12.5 minutes and has a minimum duration period of 5 minutes
@@ -52,7 +52,7 @@ RES         Renewable Energy Source
 SEP         Storage Expansion Planning
 TEP         Transmission Expansion Planning
 TTC         Total Transfer Capacity (maximum amount of electric power that can be transferred over the transmission network between two areas under ideal operating conditions, while maintaining system security as defined by operational standards)
-VoLL        Value of Lost Load
+VoLL        Value of Lost Load (maximum amount of money that a customer is willing to pay to avoid an interruption of 1 kWh of electricity supply). coom values are between 100 and 10000 €/MWh
 VRE         Variable Renewable Energy
 VRES        Variable Renewable Energy Source (units with null linear variable cost and no storage capacity. Do not contribute to the operating reserves)
 ==========  ================================================================================================================================================================================================================================================
