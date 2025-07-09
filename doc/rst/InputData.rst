@@ -8,14 +8,14 @@ All the input files must be in a folder with the name of the case study.
 Acronyms
 --------
 
-==========  ============================================================================================================================================================================
+==========  ================================================================================================================================================================================================================================================
 Acronym     Description
-==========  ============================================================================================================================================================================
+==========  ================================================================================================================================================================================================================================================
 AC          Alternating Current
-aFRR        Automatic Frequency Restoration Reserve
+aFRR        Automatic Frequency Restoration Reserve (also secondary reserve) reserve provided within 5 minutes (Full Activation Time)
 AWE         Alkaline Water Electrolyzer (consumes electricity to produce hydrogen)
 BESS        Battery Energy Storage System
-CC          Capacity Credit
+CC          Capacity Credit. It is contribution of a power generation resource—particularly variable renewable energy (VRE) like wind or solar—to meeting peak demand
 CCGT        Combined Cycle Gas Turbine
 CHP         Combined Heat and Power. Cogeneration (produces electricity and heat simultaneously)
 DC          Direct Current
@@ -23,37 +23,39 @@ DCPF        DC Optimal Power Flow
 DR          Demand Response
 DSM         Demand-Side Management (e.g., load shifting)
 DSR         Demand-Side Response (e.g., interruptibility)
-EB          Electric Boiler
+EB          Electric Boiler (Power to Heat: consumes electricity to produce heat)
 EHU         Electrical Heating Unit (Power to Heat: consumes electricity to produce heat, e.g., heat pump, electric boiler)
-EFOR        Equivalent Forced Outage Rate
+EFOR        Equivalent Forced Outage Rate. It is the probability that a generating unit will be unavailable due to forced outages during a given period
+ELCC        Effective Load-Carrying Capability. Amount of additional load that the power system can serve with the inclusion of the resource, while maintaining the same level of system reliability
 ELZ         Electrolyzer (Power to Hydrogen: consumes electricity to produce hydrogen)
 ENS         Energy Not Served
 ENTSO-E     European Network of Transmission System Operators for Electricity
 ESS         Energy Storage System
 EV          Electric Vehicle
+FCE         Firm Capacity Equivalent. Amount of reliable, always-available generation capacity that would provide the same level of system reliability as the resource being evaluated
 FHU         Fuel Heating Unit (Fuel to Heat: consumes any fuel other than hydrogen to produce heat, e.g., biomass/natural gas/oil boiler)
 GEP         Generation Expansion Planning
-mFRR        Manual Frequency Restoration Reserve
+mFRR        Manual Frequency Restoration Reserve (also tertiary reserve) helps to restore the required grid frequency of 50 Hz. It must be fully deployable after 12.5 minutes and has a minimum duration period of 5 minutes
 H2          Hydrogen
 HHU         Hydrogen Heating unit (Hydrogen to Heat: consumes hydrogen to produce heat)
 HNS         Hydrogen Not Served
-HP          Heat Pump (power to heat: consumes electricity to produce heat)
+HP          Heat Pump (Power to Heat: consumes electricity to produce heat)
 HTNS        Heat Not Served
 IRP         Integrated Resource Planning
-NTC         Net Transfer Capacity
+NTC         Net Transfer Capacity. It is the maximum power transfer between two nodes, zones, areas, or regions, considering the network constraints
 OCGT        Open Cycle Gas Turbine
 PHS         Pumped-Hydro Storage
 PNS         Power Not Served
-PTDF        Power Transfer Distribution Factor
+PTDF        Power Transfer Distribution Factor: It is the ratio of the change in flow on a transmission line to the change in power injection at a node
 PV          Photovoltaics
 RES         Renewable Energy Source
 SEP         Storage Expansion Planning
 TEP         Transmission Expansion Planning
-TTC         Total Transfer Capacity
+TTC         Total Transfer Capacity. It is maximum amount of electric power that can be transferred over the transmission network between two areas under ideal operating conditions, while maintaining system security as defined by operational standards
 VoLL        Value of Lost Load
 VRE         Variable Renewable Energy
 VRES        Variable Renewable Energy Source (units with null linear variable cost and no storage capacity. Do not contribute to the operating reserves)
-==========  ============================================================================================================================================================================
+==========  ================================================================================================================================================================================================================================================
 
 Dictionaries. Sets
 ------------------
@@ -226,7 +228,7 @@ Adequacy reserve margin
 -----------------------
 
 The adequacy reserve margin is the ratio between the available capacity and the maximum demand.
-According to ENTSO-e, adequacy is defined as the ability of the electric system to supply the aggregate electrical demand and energy requirements of the customers at all times,
+According to ENTSO-E, adequacy is defined as the ability of the electric system to supply the aggregate electrical demand and energy requirements of the customers at all times,
 taking into account scheduled and reasonably expected unscheduled outages of system elements.
 To determine the available capacity, the model uses the availability of the generating units times their maximum power. The availability can be computed as the ratio between the firm and installed capacity. Firm capacity
 can be determined as the Firm Capacity Equivalent (FCE) or the Effective Load-Carrying Capability (ELCC).
@@ -339,66 +341,66 @@ Generation
 ----------
 A description of the data included for each (electricity and heat) generating unit in the file ``oT_Data_Generation.csv`` follows:
 
-==========================  =======================================================================================================================================================================================  ===================================
+==========================  ============================================================================================================================================================================================  ===================================
 Header                      Description
-==========================  =======================================================================================================================================================================================  ===================================
+==========================  ============================================================================================================================================================================================  ===================================
 Node                        Name of the node where the generator is located. If left empty, the generator is ignored
 Technology                  Technology of the generator (nuclear, coal, CCGT, OCGT, ESS, solar, wind, biomass, etc.)
 MutuallyExclusive           List of mutually exclusive sets to which the generator belongs. Only one generator per set can be committed simultaneously. It is computationally demanding.
-BinaryCommitment            Binary unit commitment decision                                                                                                                                                          Yes/No
-NoOperatingReserve          No contribution to operating reserve. Yes, if the unit doesn't contribute to the operating reserve                                                                                        Yes/No
-OutflowsIncompatibility     Outflows are incompatible with the charging process (e.g., electric vehicle). This is not the case of an electrolyzer                                                                    Yes/No
-StorageType                 Represents the time period (hour, day, week, month, year) over which the requirement that aggregate electricity production must equal aggregate consumption is enforced                  Hourly/Daily/Weekly/Monthly/Yearly
-OutflowsType                Represents the time period (hour, day, week, month, year) over which the specified amount of energy must be consumed/withdrawn from the storage unit                                     Hourly/Daily/Weekly/Monthly/Yearly
-EnergyType                  Represents the time period (hour, day, week, month, year) over which the specified max/min amount of energy is to be produced by the unit                                                Hourly/Daily/Weekly/Monthly/Yearly
-MustRun                     Must-run unit                                                                                                                                                                            Yes/No
-InitialPeriod               Initial period (year) when the unit is installed or can be installed, if candidate                                                                                                       Year
-FinalPeriod                 Final   period (year) when the unit is installed or can be installed, if the candidate                                                                                                       Year
-MaximumPower                Maximum power output of electricity (generation/discharge for ESS units)                                                                                                                 MW
-MinimumPower                Minimum power output of electricity (i.e., minimum stable load in the case of a thermal power plant)                                                                                     MW
-MaximumPowerHeat            Maximum heat output (heat produced by a CHP, at its maximum electric power, or by a fuel heater, which do not produce electric power)                                                    MW
-MinimumPowerHeat            Minimum heat output (heat produced by a CHP, at its minimum electric power, or by a fuel heater, which do not produce electric power)                                                    MW
-MaximumReactivePower        Maximum reactive power output (discharge for ESS units) (not used in this version)                                                                                                       MW
-MinimumReactivePower        Minimum reactive power output (not used in this version)                                                                                                                                 MW
-MaximumCharge               Maximum consumption/charge level when the ESS unit is storing energy                                                                                                                     MW
-MinimumCharge               Minimum consumption/charge level when the ESS unit is storing energy                                                                                                                     MW
-InitialStorage              Initial amount of energy stored at the first instant of the time scope                                                                                                                   GWh
-MaximumStorage              Maximum amount of energy that can be stored by the ESS unit                                                                                                                              GWh
-MinimumStorage              Minimum amount of energy that can be stored by the ESS unit                                                                                                                              GWh
-Efficiency                  Round-trip efficiency of the pump/turbine cycle of a pumped-hydro storage power plant or charge/discharge of a battery                                                                   p.u.
-ProductionFunctionHydro     Production function from water inflows (denominator) to electricity (numerator) (only used for hydropower plants modeled with water units and basin topology)                            kWh/m\ :sup:`3`
-ProductionFunctionH2        Production function from electricity (numerator) to hydrogen (denominator) (only used for electrolyzers)                                                                                 kWh/kgH2
-ProductionFunctionHeat      Production function from electricity (numerator) to heat (denominator) (only used for heat pumps or electric boilers)                                                                    kWh/kWh
-ProductionFunctionH2ToHeat  Production function from hydrogen (numerator) to heat (denominator) (only used for hydrogen heater, which produces heat by burning hydrogen)                                                 kgH2/kWh
-Availability                Unit availability for area adequacy reserve margin (also called de-rating factor or capacity credit or Firm Capacity Equivalent (FCE) or the Effective Load-Carrying Capability (ELCC))  p.u.
-Inertia                     Unit inertia constant                                                                                                                                                                    s
-EFOR                        Equivalent Forced Outage Rate                                                                                                                                                            p.u.
-RampUp                      Maximum rate of increasing its output for generating units, or maximum rate of increasing its discharge rate or decreasing its charge rate for ESS units                                 MW/h
-RampDown                    Maximum rate of decreasing its output for generating units, or maximum rate of increasing its charge rate or decreasing its discharge rate for ESS units                                 MW/h
-UpTime                      Minimum uptime                                                                                                                                                                           h
-DownTime                    Minimum downtime                                                                                                                                                                         h
+BinaryCommitment            Binary unit commitment decision                                                                                                                                                               Yes/No
+NoOperatingReserve          No contribution to operating reserve. Yes, if the unit doesn't contribute to the operating reserve                                                                                            Yes/No
+OutflowsIncompatibility     Outflows are incompatible with the charging process (e.g., electric vehicle). This is not the case of an electrolyzer                                                                         Yes/No
+StorageType                 Represents the time period (hour, day, week, month, year) over which the requirement that aggregate electricity production must equal aggregate consumption is enforced                       Hourly/Daily/Weekly/Monthly/Yearly
+OutflowsType                Represents the time period (hour, day, week, month, year) over which the specified amount of energy must be consumed/withdrawn from the storage unit                                          Hourly/Daily/Weekly/Monthly/Yearly
+EnergyType                  Represents the time period (hour, day, week, month, year) over which the specified max/min amount of energy is to be produced by the unit                                                     Hourly/Daily/Weekly/Monthly/Yearly
+MustRun                     Must-run unit                                                                                                                                                                                 Yes/No
+InitialPeriod               Initial period (year) when the unit is installed or can be installed, if it is a candidate                                                                                                    Year
+FinalPeriod                 Final   period (year) when the unit is installed or can be installed, if it is a candidate                                                                                                    Year
+MaximumPower                Maximum power output of electricity (generation/discharge for ESS units)                                                                                                                      MW
+MinimumPower                Minimum power output of electricity (i.e., minimum stable load in the case of a thermal power plant)                                                                                          MW
+MaximumPowerHeat            Maximum heat output (heat produced by a CHP, at its maximum electric power, or by a fuel heater, which do not produce electric power)                                                         MW
+MinimumPowerHeat            Minimum heat output (heat produced by a CHP, at its minimum electric power, or by a fuel heater, which do not produce electric power)                                                         MW
+MaximumReactivePower        Maximum reactive power output (discharge for ESS units) (not used in this version)                                                                                                            MW
+MinimumReactivePower        Minimum reactive power output (not used in this version)                                                                                                                                      MW
+MaximumCharge               Maximum consumption/charge level when the ESS unit is storing energy                                                                                                                          MW
+MinimumCharge               Minimum consumption/charge level when the ESS unit is storing energy                                                                                                                          MW
+InitialStorage              Initial amount of energy stored at the first instant of the time scope                                                                                                                        GWh
+MaximumStorage              Maximum amount of energy that can be stored by the ESS unit                                                                                                                                   GWh
+MinimumStorage              Minimum amount of energy that can be stored by the ESS unit                                                                                                                                   GWh
+Efficiency                  Round-trip efficiency of the pump/turbine cycle of a pumped-hydro storage power plant or charge/discharge of a battery                                                                        p.u.
+ProductionFunctionHydro     Production function from water inflows (denominator) to electricity (numerator) (only used for hydropower plants modeled with water units and basin topology)                                 kWh/m\ :sup:`3`
+ProductionFunctionH2        Production function from electricity (numerator) to hydrogen (denominator) (only used for electrolyzers)                                                                                      kWh/kgH2
+ProductionFunctionHeat      Production function from electricity (numerator) to heat (denominator) (only used for heat pumps or electric boilers)                                                                         kWh/kWh
+ProductionFunctionH2ToHeat  Production function from hydrogen (numerator) to heat (denominator) (only used for hydrogen heater, which produces heat by burning hydrogen)                                                  kgH2/kWh
+Availability                Unit availability for area adequacy reserve margin (also called de-rating factor or capacity credit (CC) or Firm Capacity Equivalent (FCE) or the Effective Load-Carrying Capability (ELCC))  p.u.
+Inertia                     Unit inertia constant                                                                                                                                                                         s
+EFOR                        Equivalent Forced Outage Rate                                                                                                                                                                 p.u.
+RampUp                      Maximum rate of increasing its output for generating units, or maximum rate of increasing its discharge rate or decreasing its charge rate for ESS units                                      MW/h
+RampDown                    Maximum rate of decreasing its output for generating units, or maximum rate of increasing its charge rate or decreasing its discharge rate for ESS units                                      MW/h
+UpTime                      Minimum uptime                                                                                                                                                                                h
+DownTime                    Minimum downtime                                                                                                                                                                              h
 StableTime                  Minimum stable time (intended for nuclear units to be at their minimum load, if lower than the rated capacity, during this time).
-                            Power variations (ramp up/ramp down) below 5% are not considered for activating the minimum stable time                                                                                  h
-ShiftTime                   Maximum shift time                                                                                                                                                                       h
-FuelCost                    Fuel cost                                                                                                                                                                                €/Gcal
-LinearTerm                  Linear   term (slope)     of the heat rate straight line                                                                                                                                 Gcal/MWh
-ConstantTerm                Constant term (intercept) of the heat rate straight line                                                                                                                                 Gcal/h
-OMVariableCost              Variable O&M cost                                                                                                                                                                        €/MWh
-OperReserveCost             Operating reserve cost                                                                                                                                                                   €/MW
-StartUpCost                 Startup  cost                                                                                                                                                                            M€
-ShutDownCost                Shutdown cost                                                                                                                                                                            M€
-CO2EmissionRate             CO2 emission rate. It can be negative for units absorbing CO2 emissions as biomass                                                                                                       tCO2/MWh
-FixedInvestmentCost         Overnight investment (capital -CAPEX- and fixed O&M -FOM-) cost                                                                                                                          M€
-FixedRetirementCost         Overnight retirement (capital -CAPEX- and fixed O&M -FOM-) cost                                                                                                                          M€
-FixedChargeRate             Fixed-charge rate to annualize the overnight investment cost. Proportion of annual payment to return the overnight investment cost                                                       p.u.
-StorageInvestment           Storage capacity and energy inflows linked to the investment decision                                                                                                                    Yes/No
-BinaryInvestment            Binary unit investment decision                                                                                                                                                          Yes/No
-InvestmentLo                Lower bound of investment decision                                                                                                                                                       p.u.
-InvestmentUp                Upper bound of investment decision                                                                                                                                                       p.u.
-BinaryRetirement            Binary unit retirement decision                                                                                                                                                          Yes/No
-RetirementLo                Lower bound of retirement decision                                                                                                                                                       p.u.
-RetirementUp                Upper bound of retirement decision                                                                                                                                                       p.u.
-==========================  =======================================================================================================================================================================================  ===================================
+                            Power variations (ramp up/ramp down) below 5% are not considered for activating the minimum stable time                                                                                       h
+ShiftTime                   Maximum shift time                                                                                                                                                                            h
+FuelCost                    Fuel cost                                                                                                                                                                                     €/Gcal
+LinearTerm                  Linear   term (slope)     of the heat rate straight line                                                                                                                                      Gcal/MWh
+ConstantTerm                Constant term (intercept) of the heat rate straight line                                                                                                                                      Gcal/h
+OMVariableCost              Variable O&M cost                                                                                                                                                                             €/MWh
+OperReserveCost             Operating reserve cost                                                                                                                                                                        €/MW
+StartUpCost                 Startup  cost                                                                                                                                                                                 M€
+ShutDownCost                Shutdown cost                                                                                                                                                                                 M€
+CO2EmissionRate             CO2 emission rate. It can be negative for units absorbing CO2 emissions as biomass                                                                                                            tCO2/MWh
+FixedInvestmentCost         Overnight investment (capital -CAPEX- and fixed O&M -FOM-) cost                                                                                                                               M€
+FixedRetirementCost         Overnight retirement (capital -CAPEX- and fixed O&M -FOM-) cost                                                                                                                               M€
+FixedChargeRate             Fixed-charge rate to annualize the overnight investment cost. Proportion of annual payment to return the overnight investment cost                                                            p.u.
+StorageInvestment           Storage capacity and energy inflows linked to the investment decision                                                                                                                         Yes/No
+BinaryInvestment            Binary unit investment decision                                                                                                                                                               Yes/No
+InvestmentLo                Lower bound of investment decision                                                                                                                                                            p.u.
+InvestmentUp                Upper bound of investment decision                                                                                                                                                            p.u.
+BinaryRetirement            Binary unit retirement decision                                                                                                                                                               Yes/No
+RetirementLo                Lower bound of retirement decision                                                                                                                                                            p.u.
+RetirementUp                Upper bound of retirement decision                                                                                                                                                            p.u.
+==========================  ============================================================================================================================================================================================  ===================================
 
 The main characteristics that define each type of generator are the following:
 
