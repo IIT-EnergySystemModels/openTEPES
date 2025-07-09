@@ -1,9 +1,9 @@
-.. openTEPES documentation master file, created by Andres Ramos
+﻿.. openTEPES documentation master file, created by Andres Ramos
 
 Output Results
 ==============
 
-Some maps of the electricity transmission network and the energy share of different technologies is plotted.
+Some maps of the electricity transmission network and the energy share of different technologies are plotted.
 
 .. image:: ../img/oT_Map_Network_sSEP.png
    :scale: 40%
@@ -383,7 +383,7 @@ File ``oT_Result_TechnologySpillageRelative.csv``
 ============  ==========  ==========  ==========  ================================================
 Identifier                            Header      Description
 ====================================  ==========  ================================================
-Period        Scenario    Load level  Technology  Spilled energy in ESS wrt the energy inflows [%]
+Period        Scenario    Load level  Technology  Spilled energy in ESS w.r.t. the energy inflows [%]
 ============  ==========  ==========  ==========  ================================================
 
 File ``oT_Result_MarketResultsDemand.csv``
@@ -391,7 +391,7 @@ File ``oT_Result_MarketResultsDemand.csv``
 ============  ==========  ==========  ==========  ==========  =============  ===============================================================================================================
 Identifier                                                    Header         Description
 ============================================================  =============  ===============================================================================================================
-Period        Scenario    Load level  Area        Node        Demand, SRMC   Demand cleared [MW] (including demand, consumption and losses), and Locational Short-Run Marginal Cost [€/MWh]
+Period        Scenario    Load level  Area        Node        Demand, SRMC   Demand cleared [MW] (including demand, consumption, and losses), and Locational Short-Run Marginal Cost [€/MWh]
 ============  ==========  ==========  ==========  ==========  =============  ===============================================================================================================
 
 File ``oT_Result_MarketResultsGeneration.csv``
@@ -442,7 +442,7 @@ File ``oT_Result_GenerationConsumptionRatio.csv``
 ============  ==========  ==========  ==========  ==============================================================================================================================================================
 Identifier                            Header      Description
 ============  ==========  ==========  ==========  ==============================================================================================================================================================
-Period        Scenario    Load level  Generator   Generation to consumption ratio for each ESS [p.u.] (1 only generating, -1 only consuming, 0 no generating nor consuming, ratio when generating and consuming)
+Period        Scenario    Load level  Generator   Generation to consumption ratio for each ESS [p.u.] (1 only generating, -1 only consuming, 0 no generating or consuming, ratio when generating and consuming)
 ============  ==========  ==========  ==========  ==============================================================================================================================================================
 
 File ``oT_Result_GenerationOutflows.csv``
@@ -610,32 +610,32 @@ File ``oT_Result_BalanceEnergy.csv``
 ============  ==========  ==========  ==========  ======================================================================================
 Identifier                            Header      Description
 ====================================  ==========  ======================================================================================
-Period        Scenario    Load level  Technology  Generation, consumption, flows, losses and demand [GWh] (to be used as a pivot table)
+Period        Scenario    Load level  Technology  Generation, consumption, flows, losses, and demand [GWh] (to be used as a pivot table)
 ============  ==========  ==========  ==========  ======================================================================================
 
 File ``oT_Result_BalanceEnergyPerArea.csv``
 
-============  ==========  ==========  ==========  ==========  =======================================================
+============  ==========  ==========  ==========  ==========  ========================================================
 Identifier                                        Header      Description
-================================================  ==========  =======================================================
-Period        Scenario    Load level  Technology  Area        Generation, consumption, flows, losses and demand [GWh]
-============  ==========  ==========  ==========  ==========  =======================================================
+================================================  ==========  ========================================================
+Period        Scenario    Load level  Technology  Area        Generation, consumption, flows, losses, and demand [GWh]
+============  ==========  ==========  ==========  ==========  ========================================================
 
 File ``oT_Result_BalanceEnergyPerNode.csv``
 
-============  ==========  ==========  ==========  ==========  =======================================================
+============  ==========  ==========  ==========  ==========  ========================================================
 Identifier                                        Header      Description
-================================================  ==========  =======================================================
-Period        Scenario    Load level  Technology  Node        Generation, consumption, flows, losses and demand [GWh]
-============  ==========  ==========  ==========  ==========  =======================================================
+================================================  ==========  ========================================================
+Period        Scenario    Load level  Technology  Node        Generation, consumption, flows, losses, and demand [GWh]
+============  ==========  ==========  ==========  ==========  ========================================================
 
 File ``oT_Result_BalanceEnergyPerTech.csv``
 
-============  ==========  ==========  ==========  ==========  ==========  =======================================================
+============  ==========  ==========  ==========  ==========  ==========  ========================================================
 Identifier                                                    Header      Description
-============================================================  ==========  =======================================================
-Period        Scenario    Load level  Area        Node        Technology  Generation, consumption, flows, losses and demand [GWh]
-============  ==========  ==========  ==========  ==========  ==========  =======================================================
+============================================================  ==========  ========================================================
+Period        Scenario    Load level  Area        Node        Technology  Generation, consumption, flows, losses, and demand [GWh]
+============  ==========  ==========  ==========  ==========  ==========  ========================================================
 
 Electricity network operation
 -----------------------------
@@ -847,7 +847,7 @@ Period        Scenario    Load level  Technology  Energy (discharge in ESS) per 
 ============  ==========  ==========  ==========  ==========================================
 
 Heat balance and network operation
---------------------------------------
+----------------------------------
 
 File ``oT_Result_BalanceHeat.csv``
 

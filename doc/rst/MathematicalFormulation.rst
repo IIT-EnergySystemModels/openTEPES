@@ -1,4 +1,4 @@
-.. openTEPES documentation master file, created by Andres Ramos
+﻿.. openTEPES documentation master file, created by Andres Ramos
 
 Mathematical Formulation
 ========================
@@ -32,7 +32,7 @@ Indices
 :math:`g`                Generator (thermal or hydro unit or energy storage system)
 :math:`t`                Thermal unit
 :math:`e`                Energy Storage System (ESS)
-:math:`h`                Hydropower or pumped-storage hydro plant (associated to a reservoir modeled in water units)
+:math:`h`                Hydropower or pumped-storage hydro plant (associated with a reservoir modeled in water units)
 :math:`e',e''`           Reservoir (natural water inflows in m\ :sup:`3`/s and volume in hm\ :sup:`3`)
 :math:`h \in up(e')`     Hydro or pumped-storage hydropower plant :math:`h` upstream of reservoir :math:`e'`
 :math:`h \in dw(e')`     Hydro or pumped-storage hydropower plant :math:`h` downstream of reservoir :math:`e'`
@@ -295,12 +295,12 @@ They are written in **lowercase** letters.
 Equations
 ---------
 
-In this section we replicate the mathematical formulation written in the code, which is specially oriented to numerical stability and efficiency to make easier for the people to understand it.
-The names between parenthesis correspond to the names of the constraints in the code.
+In this section, we replicate the mathematical formulation written in the code, which is specially oriented to numerical stability and efficiency, to make it easier for people to understand.
+The names in parentheses correspond to the names of the constraints in the code.
 
 **Objective function**: minimization of total (investment and operation) cost for the multi-period scope of the model
 
-Electricity, heat, and hydrogen generation, (energy and reservoir) storage and (electricity, hydrogen, and heat) network investment cost plus retirement cost [M€] «``eTotalFCost``» «``eTotalICost``»
+Electricity, heat, and hydrogen generation, (energy and reservoir) storage, and (electricity, hydrogen, and heat) network investment cost plus retirement cost [M€] «``eTotalFCost``» «``eTotalICost``»
 
 :math:`\sum_{p} DF^p [\sum_{g} CFG_g icg^p_g + \sum_{g} CFR_g rcg^p_g + \sum_{e'} CFE_{e'} icr^p_{e'} + \sum_{ijc} CFT_{ijc} ict^p_{ijc} + \sum_{ijc} CFH_{ijc} ich^p_{ijc} + \sum_{ijc} CFP_{ijc} icp^p_{ijc}] +`
 
@@ -401,7 +401,7 @@ The corresponding constraints are not formulated if :math:`\underline{DtUR}=0` a
 
 :math:`\underline{DtUR} \: ur'^p_{\omega ne} \leq dr'^p_{\omega ne} \leq \overline{DtUR} \: ur'^p_{\omega ne} \quad \forall p \omega ne`
 
-VRES units (i.e., those with linear variable cost equal to 0 and no storage capacity) do not contribute to the the operating reserves.
+VRES units (i.e., those with linear variable cost equal to 0 and no storage capacity) do not contribute to the operating reserves.
 
 Operating reserves from ESS can only be provided if enough energy is available for producing [GW] «``eReserveUpIfEnergy``»
 
@@ -417,7 +417,7 @@ Maximum and minimum relative inventory of ESS candidates (only for load levels m
 
 :math:`\frac{i^p_{\omega ne}}{\underline{I}^p_{\omega ne}} \geq uc^p_{\omega ne} \quad \forall p \omega ne, n|\tau_e, e \in CE`
 
-Energy inflows of ESS candidates (only for load levels multiple of 1, 24, 168, 8736 h depending on the ESS storage type, represented as :math:`n|\tau_e`) constrained by the ESS commitment decision times the energy inflows data [p.u.] «``eInflows2Comm``»
+Energy inflows of ESS candidates (only for load levels multiple of 1, 24, 168, 8736 h, depending on the ESS storage type, represented as :math:`n|\tau_e`) constrained by the ESS commitment decision times the energy inflows data [p.u.] «``eInflows2Comm``»
 
 :math:`\frac{ei^p_{\omega ne}}{EI^p_{\omega ne}} \leq uc^p_{\omega ne} \quad \forall p \omega ne, n|\tau_e, e \in CE`
 
@@ -427,7 +427,7 @@ ESS energy inventory (only for load levels multiple of 1, 24, 168 h depending on
 
 :math:`i^p_{\omega,n-\frac{\tau_e}{\nu},e} + \sum_{n' = n-\frac{\tau_e}{\nu}}^n DUR^p_{\omega n'} (ei^p_{\omega n'e} - go^p_{\omega n'e} - \frac{1}{\sqrt{EF_e}} gp^p_{\omega n'e} + \sqrt{EF_e} gc^p_{\omega n'e}) = i^p_{\omega ne} + s^p_{\omega ne} \quad \forall p \omega ne, n|\tau_e, e \in CE`
 
-The initial inventory of the ESS candidates divided by its initial storage :math:`I^p_{\omega e}` is equal to the final reservoir divide by its initial storage [p.u.] «``eIniFinInventory``».
+The initial inventory of the ESS candidates divided by its initial storage :math:`I^p_{\omega e}` is equal to the final reservoir divided by its initial storage [p.u.] «``eIniFinInventory``».
 
 :math:`\frac{i^p_{\omega,0,e}}{I^p_{\omega e}} = \frac{i^p_{\omega,N,e}}{I^p_{\omega e}} \quad \forall p \omega e, e \in CE`
 
@@ -439,7 +439,7 @@ Maximum shift time of stored energy [GWh]. It is thought to be applied to demand
 
 :math:`DUR^p_{\omega n} EF_e gc^p_{\omega ne} \leq \sum_{n' = n}^{n+\frac{ST_e}{\nu}} DUR^p_{\omega n'} gp^p_{\omega n'e} \quad \forall p \omega ne`
 
-ESS outflows (only for load levels multiple of 1, 24, 168, 672, and 8736 h depending on the ESS outflow cycle, represented as :math:`n|\rho_e`) must be satisfied [GWh] «``eEnergyOutflows``»
+ESS outflows (only for load levels multiple of 1, 24, 168, 672, and 8736 h, depending on the ESS outflow cycle, represented as :math:`n|\rho_e`) must be satisfied [GWh] «``eEnergyOutflows``»
 
 :math:`\sum_{n' = n-\frac{\rho_e}{\nu}}^n (go^p_{\omega n'e} - EO^p_{\omega n'e}) DUR^p_{\omega n'} = 0 \quad \forall p \omega ne, n|\rho_e`
 
@@ -497,7 +497,7 @@ Incompatibility between charge and outflows use of an ESS [p.u.] «``eChargeOutf
 
 :math:`\frac{go^p_{\omega ne} + c^p_{\omega ne}}{\overline{GC}^p_{\omega ne} - \underline{GC}^p_{\omega ne}} \leq 1 \quad \forall p \omega ne`
 
-Logical relation between commitment, startup and shutdown status of a committed unit (all except the VRES units) [p.u.] «``eUCStrShut``»
+Logical relation between commitment, startup, and shutdown status of a committed unit (all except the VRES units) [p.u.] «``eUCStrShut``»
 
 :math:`uc^p_{\omega ng} - uc^p_{\omega,n-\nu,g} = su^p_{\omega ng} - sd^p_{\omega ng} \quad \forall p \omega ng`
 
@@ -597,7 +597,7 @@ and if there is enough spare volume to store the water upstream «``ePmpReserveD
 
 :math:`\frac{(c^p_{\omega nh} + dr^p_{\omega nh) * EF_e'} + ucc^p_{\omega ng}}{\underline{GC}^p_{\omega ng}} + \leq \frac{\sum_{e' \in up(h)}  i'^p_{\omega ne'} - \underline{I'}^p_{\omega ng}}{DUR^p_{\omega n}} \quad \forall p \omega nh`
 
-Water volume for each hydro reservoir (only for load levels multiple of 1, 24, 168 h depending on the reservoir storage type, represented as :math:`n|\tau_{e'}`) [hm\ :sup:`3`] «``eHydroInventory``»
+Water volume for each hydro reservoir (only for load levels multiple of 1, 24, 168 h, depending on the reservoir storage type, represented as :math:`n|\tau_{e'}`) [hm\ :sup:`3`] «``eHydroInventory``»
 
 :math:`i'^p_{\omega,n-\frac{\tau_e'}{\nu},e'} + \sum_{n' = n-\frac{\tau_e'}{\nu}}^n DUR^p_{\omega n'} (0.0036 HI^p_{\omega n'e'} - 0.0036 ho^p_{\omega n'e'} - \sum_{h \in dw(e')} gp^p_{\omega n'h} / PF_h + \sum_{h \in up(e')} gp^p_{\omega n'h} / PF_h +`
 :math:`+ \sum_{h \in up(e')} EF_e' gc^p_{\omega n'h} / PF_h - \sum_{h \in dw(h)} EF_e' gc^p_{\omega n'h} / PF_h) = i'^p_{\omega ne'} + s'^p_{\omega ne'} - \sum_{e'' \in up(e')} s'^p_{\omega ne''} \quad \forall p \omega ne', n|\tau_{e'}, e' \in ER`
@@ -605,11 +605,11 @@ Water volume for each hydro reservoir (only for load levels multiple of 1, 24, 1
 :math:`i'^p_{\omega,n-\frac{\tau_e'}{\nu},e'} + \sum_{n' = n-\frac{\tau_e'}{\nu}}^n DUR^p_{\omega n'} (0.0036 hi^p_{\omega n'e'} - 0.0036 ho^p_{\omega n'e'} - \sum_{h \in dw(e')} gp^p_{\omega n'h} / PF_h + \sum_{h \in up(e')} gp^p_{\omega n'h} / PF_h +`
 :math:`+ \sum_{h \in up(e')} EF_e' gc^p_{\omega n'h} / PF_h - \sum_{h \in dw(h)} EF_e' gc^p_{\omega n'h} / PF_h) = i'^p_{\omega ne'} + s'^p_{\omega ne'} - \sum_{e'' \in up(e')} s'^p_{\omega ne''} \quad \forall p \omega ne', n|\tau_{e'}, e' \in CR`
 
-The initial volume of the hydro reservoir divided by its initial volume :math:`I^p_{\omega e'}` is equal to the final reservoir divide by its initial volume [p.u.] «``eIniFinVolume``».
+The initial volume of the hydro reservoir divided by its initial volume :math:`I^p_{\omega e'}` is equal to the final reservoir divided by its initial volume [p.u.] «``eIniFinVolume``».
 
 :math:`\frac{i'^p_{\omega,0,e'}}{I^p_{\omega e'}} = \frac{i'^p_{\omega,N,e'}}{I^p_{\omega e'}} \quad \forall p \omega e', e' \in CR`
 
-Hydro outflows (only for load levels multiple of 1, 24, 168, 672, and 8736 h depending on the ESS outflow cycle, represented as :math:`n|\rho_e`) must be satisfied [m\ :sup:`3`/s] «``eHydroOutflows``»
+Hydro outflows (only for load levels multiple of 1, 24, 168, 672, and 8736 h, depending on the ESS outflow cycle, represented as :math:`n|\rho_e`) must be satisfied [m\ :sup:`3`/s] «``eHydroOutflows``»
 
 :math:`\sum_{n' = n-\frac{\rho_e'}{\nu}}^n (ho^p_{\omega n'e'} - HO^p_{\omega n'e'}) DUR^p_{\omega n'} = 0 \quad \forall p \omega ne', n|\rho_e'`
 
@@ -670,7 +670,7 @@ Given that there are disjunctive constraints, which are only correct with binary
 
 **Hydrogen network operation**
 
-Balance of hydrogen generation by electrolyzers, hydrogen consumption from hydrogen heater using it, and demand at each node [tH2] «``eBalanceH2``». A transport model is used to model the hydrogen network.
+Balance of hydrogen generation by electrolyzers, hydrogen consumption from the hydrogen heater using it, and demand at each node [tH2] «``eBalanceH2``». A transport model is used to model the hydrogen network.
 
 :math:`\sum_{e \in i} \frac{DUR^p_{\omega n}}{PF'_e} gc^p_{\omega ne} - \sum_{g \in i} gh^p_{\omega ng} + hns^p_{\omega ni} = DUR^p_{\omega n} DH^p_{\omega ni} + \sum_{jc} fh^p_{\omega nijc} - \sum_{jc} fh^p_{\omega njic} \quad \forall p \omega ni`
 
