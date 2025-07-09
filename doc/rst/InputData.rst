@@ -15,7 +15,7 @@ AC          Alternating Current
 aFRR        Automatic Frequency Restoration Reserve (also secondary reserve) reserve provided within 5 minutes (Full Activation Time)
 AWE         Alkaline Water Electrolyzer (consumes electricity to produce hydrogen)
 BESS        Battery Energy Storage System
-CC          Capacity Credit. It is contribution of a power generation resource—particularly variable renewable energy (VRE) like wind or solar—to meeting peak demand
+CC          Capacity Credit (contribution of a power generation resource—particularly variable renewable energy (VRE) like wind or solar—to meeting peak demand)
 CCGT        Combined Cycle Gas Turbine
 CHP         Combined Heat and Power. Cogeneration (produces electricity and heat simultaneously)
 DC          Direct Current
@@ -25,7 +25,7 @@ DSM         Demand-Side Management (e.g., load shifting)
 DSR         Demand-Side Response (e.g., interruptibility)
 EB          Electric Boiler (Power to Heat: consumes electricity to produce heat)
 EHU         Electrical Heating Unit (Power to Heat: consumes electricity to produce heat, e.g., heat pump, electric boiler)
-EFOR        Equivalent Forced Outage Rate. It is the probability that a generating unit will be unavailable due to forced outages during a given period
+EFOR        Equivalent Forced Outage Rate (probability that a generating unit will be unavailable due to forced outages during a given period)
 ELCC        Effective Load-Carrying Capability. Amount of additional load that the power system can serve with the inclusion of the resource, while maintaining the same level of system reliability
 ELZ         Electrolyzer (Power to Hydrogen: consumes electricity to produce hydrogen)
 ENS         Energy Not Served
@@ -42,16 +42,16 @@ HNS         Hydrogen Not Served
 HP          Heat Pump (Power to Heat: consumes electricity to produce heat)
 HTNS        Heat Not Served
 IRP         Integrated Resource Planning
-NTC         Net Transfer Capacity. It is the maximum power transfer between two nodes, zones, areas, or regions, considering the network constraints
+NTC         Net Transfer Capacity (maximum power transfer between two nodes, zones, areas, or regions, considering the network constraints)
 OCGT        Open Cycle Gas Turbine
 PHS         Pumped-Hydro Storage
 PNS         Power Not Served
-PTDF        Power Transfer Distribution Factor: It is the ratio of the change in flow on a transmission line to the change in power injection at a node
+PTDF        Power Transfer Distribution Factor (ratio of the change in flow on a transmission line to the change in power injection at a node)
 PV          Photovoltaics
 RES         Renewable Energy Source
 SEP         Storage Expansion Planning
 TEP         Transmission Expansion Planning
-TTC         Total Transfer Capacity. It is maximum amount of electric power that can be transferred over the transmission network between two areas under ideal operating conditions, while maintaining system security as defined by operational standards
+TTC         Total Transfer Capacity (maximum amount of electric power that can be transferred over the transmission network between two areas under ideal operating conditions, while maintaining system security as defined by operational standards)
 VoLL        Value of Lost Load
 VRE         Variable Renewable Energy
 VRES        Variable Renewable Energy Source (units with null linear variable cost and no storage capacity. Do not contribute to the operating reserves)
