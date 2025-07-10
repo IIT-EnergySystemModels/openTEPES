@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 28, 2025
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 10, 2025
 """
 
 import time
@@ -1992,23 +1992,6 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput, pIndPlo
         OutputResults   = pd.concat([OutputResults01,                                                    OutputResults05, OutputResults06, OutputResults07, OutputResults08, OutputResults09, OutputResults10], axis=1)
     elif len(mTEPES.eh) == 0 and len(mTEPES.re) == 0 and len(mTEPES.ll) == 0:
         OutputResults   = pd.concat([OutputResults01,                                                    OutputResults05, OutputResults06, OutputResults07, OutputResults08                                  ], axis=1)
-
-    if   sum(1 for nr in mTEPES.nr if nr not in mTEPES.eh) == 0 and len(mTEPES.eh) >  0 and len(mTEPES.re) >  0 and len(mTEPES.ll) >  0:
-        OutputResults   = pd.concat([OutputResults02, OutputResults03, OutputResults04, OutputResults05, OutputResults06, OutputResults07, OutputResults08, OutputResults09, OutputResults10], axis=1)
-    elif len(mTEPES.eh) >  0 and len(mTEPES.re) >  0 and len(mTEPES.ll) == 0:
-        OutputResults   = pd.concat([OutputResults02, OutputResults03, OutputResults04, OutputResults05, OutputResults06, OutputResults07, OutputResults08                                  ], axis=1)
-    elif len(mTEPES.eh) == 0 and len(mTEPES.re) >  0 and len(mTEPES.ll) >  0:
-        OutputResults   = pd.concat([OutputResults02,                                   OutputResults05, OutputResults06, OutputResults07, OutputResults08, OutputResults09, OutputResults10], axis=1)
-    elif len(mTEPES.eh) == 0 and len(mTEPES.re) >  0 and len(mTEPES.ll) == 0:
-        OutputResults   = pd.concat([OutputResults02,                                   OutputResults05, OutputResults06, OutputResults07, OutputResults08                                  ], axis=1)
-    elif len(mTEPES.eh) >  0 and len(mTEPES.re) == 0 and len(mTEPES.ll) >  0:
-        OutputResults   = pd.concat([                 OutputResults03, OutputResults04, OutputResults05, OutputResults06, OutputResults07, OutputResults08, OutputResults09, OutputResults10], axis=1)
-    elif len(mTEPES.eh) >  0 and len(mTEPES.re) == 0 and len(mTEPES.ll) == 0:
-        OutputResults   = pd.concat([                 OutputResults03, OutputResults04, OutputResults05, OutputResults06, OutputResults07, OutputResults08                                  ], axis=1)
-    elif len(mTEPES.eh) == 0 and len(mTEPES.re) == 0 and len(mTEPES.ll) >  0:
-        OutputResults   = pd.concat([                                                   OutputResults05, OutputResults06, OutputResults07, OutputResults08, OutputResults09, OutputResults10], axis=1)
-    elif len(mTEPES.eh) == 0 and len(mTEPES.re) == 0 and len(mTEPES.ll) == 0:
-        OutputResults   = pd.concat([                                                   OutputResults05, OutputResults06, OutputResults07, OutputResults08                                  ], axis=1)
 
     # OutputResults.stack().rename_axis(['Period', 'Scenario', 'LoadLevel', 'Area', 'Node', 'Technology'], axis=0).reset_index().rename(columns={0: 'GWh'}, inplace=False).to_csv    (f'{_path}/oT_Result_BalanceEnergy_{CaseName}.csv',     index=False, sep=',')
     # OutputResults.stack().rename_axis(['Period', 'Scenario', 'LoadLevel', 'Area', 'Node', 'Technology'], axis=0).reset_index().rename(columns={0: 'GWh'}, inplace=False).to_parquet(f'{_path}/oT_Result_BalanceEnergy_{CaseName}.parquet', index=False, engine='pyarrow')
