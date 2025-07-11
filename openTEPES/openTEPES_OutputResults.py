@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 10, 2025
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 11, 2025
 """
 
 import time
@@ -1976,25 +1976,17 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput, pIndPlo
         OutputResults09 = pd.Series(data=[-sum(OptModel.vLineLosses    [p,sc,n,nd,nf,cc]()*mTEPES.pLoadLevelDuration[p,sc,n]() for nf,cc in loutl[nd])                                                              for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='LineLossesOut'  )
         OutputResults10 = pd.Series(data=[-sum(OptModel.vLineLosses    [p,sc,n,ni,nd,cc]()*mTEPES.pLoadLevelDuration[p,sc,n]() for ni,cc in linl [nd])                                                              for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='LineLossesIn'   )
 
-    if   sum(1 for nr in mTEPES.nr if nr not in mTEPES.eh) >  0 and len(mTEPES.eh) >  0 and len(mTEPES.re) >  0 and len(mTEPES.ll) >  0:
-        OutputResults   = pd.concat([OutputResults01, OutputResults02, OutputResults03, OutputResults04, OutputResults05, OutputResults06, OutputResults07, OutputResults08, OutputResults09, OutputResults10], axis=1)
-    elif len(mTEPES.eh) >  0 and len(mTEPES.re) >  0 and len(mTEPES.ll) == 0:
-        OutputResults   = pd.concat([OutputResults01, OutputResults02, OutputResults03, OutputResults04, OutputResults05, OutputResults06, OutputResults07, OutputResults08                                  ], axis=1)
-    elif len(mTEPES.eh) == 0 and len(mTEPES.re) >  0 and len(mTEPES.ll) >  0:
-        OutputResults   = pd.concat([OutputResults01, OutputResults02,                                   OutputResults05, OutputResults06, OutputResults07, OutputResults08, OutputResults09, OutputResults10], axis=1)
-    elif len(mTEPES.eh) == 0 and len(mTEPES.re) >  0 and len(mTEPES.ll) == 0:
-        OutputResults   = pd.concat([OutputResults01, OutputResults02,                                   OutputResults05, OutputResults06, OutputResults07, OutputResults08                                  ], axis=1)
-    elif len(mTEPES.eh) >  0 and len(mTEPES.re) == 0 and len(mTEPES.ll) >  0:
-        OutputResults   = pd.concat([OutputResults01,                  OutputResults03, OutputResults04, OutputResults05, OutputResults06, OutputResults07, OutputResults08, OutputResults09, OutputResults10], axis=1)
-    elif len(mTEPES.eh) >  0 and len(mTEPES.re) == 0 and len(mTEPES.ll) == 0:
-        OutputResults   = pd.concat([OutputResults01,                  OutputResults03, OutputResults04, OutputResults05, OutputResults06, OutputResults07, OutputResults08                                  ], axis=1)
-    elif len(mTEPES.eh) == 0 and len(mTEPES.re) == 0 and len(mTEPES.ll) >  0:
-        OutputResults   = pd.concat([OutputResults01,                                                    OutputResults05, OutputResults06, OutputResults07, OutputResults08, OutputResults09, OutputResults10], axis=1)
-    elif len(mTEPES.eh) == 0 and len(mTEPES.re) == 0 and len(mTEPES.ll) == 0:
-        OutputResults   = pd.concat([OutputResults01,                                                    OutputResults05, OutputResults06, OutputResults07, OutputResults08                                  ], axis=1)
-
-    # OutputResults.stack().rename_axis(['Period', 'Scenario', 'LoadLevel', 'Area', 'Node', 'Technology'], axis=0).reset_index().rename(columns={0: 'GWh'}, inplace=False).to_csv    (f'{_path}/oT_Result_BalanceEnergy_{CaseName}.csv',     index=False, sep=',')
-    # OutputResults.stack().rename_axis(['Period', 'Scenario', 'LoadLevel', 'Area', 'Node', 'Technology'], axis=0).reset_index().rename(columns={0: 'GWh'}, inplace=False).to_parquet(f'{_path}/oT_Result_BalanceEnergy_{CaseName}.parquet', index=False, engine='pyarrow')
+    OutputResults = pd.DataFrame()
+    # Check if there are any non-RES generators
+    if sum(1 for nr in mTEPES.nr if nr not in mTEPES.eh):
+        OutputResults  = pd.concat([OutputResults,OutputResults01]                                                ,axis=1)
+    if mTEPES.re:
+        OutputResults  = pd.concat([OutputResults,OutputResults02]                                                ,axis=1)
+    if mTEPES.eh:
+        OutputResults  = pd.concat([OutputResults,OutputResults03,OutputResults04]                                ,axis=1)
+    OutputResults      = pd.concat([OutputResults,OutputResults05,OutputResults06,OutputResults07,OutputResults08],axis=1)
+    if mTEPES.ll:
+        OutputResults  = pd.concat([OutputResults,OutputResults09,OutputResults10]                                , axis=1)
 
     OutputResults.stack().reset_index().pivot_table(index=['level_0','level_1','level_2','level_3','level_4'], columns='level_5', values=0, aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel', 'Area', 'Node'], axis=0).to_csv(f'{_path}/oT_Result_BalanceEnergyPerTech_{CaseName}.csv', sep=',')
     OutputResults.stack().reset_index().pivot_table(index=['level_0','level_1','level_2'          ,'level_5'], columns='level_4', values=0, aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel', 'Technology'  ], axis=0).to_csv(f'{_path}/oT_Result_BalanceEnergyPerNode_{CaseName}.csv', sep=',')
@@ -2026,32 +2018,25 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput, pIndPlo
         OutputResults09 = pd.Series(data=[-sum(OptModel.vLineLosses   [p,sc,n,nd,nf,cc]()*mTEPES.pLoadLevelDuration[p,sc,n]() for nf,cc in loutl[nd]) for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='LineLossesOut'  )
         OutputResults10 = pd.Series(data=[-sum(OptModel.vLineLosses   [p,sc,n,ni,nd,cc]()*mTEPES.pLoadLevelDuration[p,sc,n]() for ni,cc in linl [nd]) for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='LineLossesIn'   )
 
-    if   len(mTEPES.eh) >  0 and len(mTEPES.ll) == 0:
-        MarketResultsDem = pd.concat([OutputResults04, OutputResults06                                  ], axis=1)
-    elif len(mTEPES.eh) >  0 and len(mTEPES.ll) >  0:
-        MarketResultsDem = pd.concat([OutputResults04, OutputResults06, OutputResults09, OutputResults10], axis=1)
-    elif len(mTEPES.eh) == 0 and len(mTEPES.ll) >  0:
-        MarketResultsDem = pd.concat([                 OutputResults06, OutputResults09, OutputResults10], axis=1)
-    elif len(mTEPES.eh) == 0 and len(mTEPES.ll) >  0:
-        MarketResultsDem = pd.concat([                 OutputResults06, OutputResults09, OutputResults10], axis=1)
+    MarketResultsDem    = pd.DataFrame()
+    if mTEPES.eh:
+        MarketResultsDem = pd.concat([MarketResultsDem, OutputResults04],axis=1)
 
-    if   sum(1 for nr in mTEPES.nr if nr not in mTEPES.eh) >  0 and len(mTEPES.eh) >  0 and len(mTEPES.re) >  0:
-        MarketResultsGen = pd.concat([OutputResults01, OutputResults02, OutputResults03], axis=1)
-    elif len(mTEPES.eh) == 0 and len(mTEPES.re) >  0:
-        MarketResultsGen = pd.concat([OutputResults01, OutputResults02,                ], axis=1)
-    elif len(mTEPES.eh) >  0 and len(mTEPES.re) == 0:
-        MarketResultsGen = pd.concat([OutputResults01,                  OutputResults03], axis=1)
-    elif len(mTEPES.eh) == 0 and len(mTEPES.re) == 0:
-        MarketResultsGen = pd.concat([OutputResults01,                                 ], axis=1)
+    MarketResultsDem     = pd.concat([MarketResultsDem, OutputResults06],axis=1)
 
-    if   sum(1 for nr in mTEPES.nr if nr not in mTEPES.eh) == 0 and len(mTEPES.eh) >  0 and len(mTEPES.re) >  0:
-        MarketResultsGen = pd.concat([OutputResults02, OutputResults03], axis=1)
-    elif len(mTEPES.eh) == 0 and len(mTEPES.re) >  0:
-        MarketResultsGen = pd.concat([OutputResults02,                ], axis=1)
-    elif len(mTEPES.eh) >  0 and len(mTEPES.re) == 0:
-        MarketResultsGen = pd.concat([                 OutputResults03], axis=1)
-    elif len(mTEPES.eh) == 0 and len(mTEPES.re) == 0:
-        MarketResultsGen = pd.concat([                                ], axis=1)
+    if mTEPES.ll:
+        MarketResultsDem = pd.concat([MarketResultsDem, OutputResults09, OutputResults10], axis=1)
+
+    MarketResultsGen     = pd.DataFrame()
+    # Check if there are non-RES generators
+    if sum(1 for nr in mTEPES.nr if nr not in mTEPES.eh):
+        MarketResultsGen = pd.concat([MarketResultsGen,OutputResults01], axis=1)
+
+    if mTEPES.re:
+        MarketResultsGen = pd.concat([MarketResultsGen, OutputResults02], axis=1)
+
+    if mTEPES.eh:
+        MarketResultsGen = pd.concat([MarketResultsGen, OutputResults03], axis=1)
 
     MarketResultsDem *= -1e3
     MarketResultsDem = pd.concat([MarketResultsDem.sum(axis=1), OutputResults], axis=1)
