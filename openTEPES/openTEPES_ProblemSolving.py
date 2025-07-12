@@ -29,6 +29,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
         Solver.options['Method'          ] = 2                                                 # barrier method
         Solver.options['Crossover'       ] = -1
         # Solver.options['MIPFocus'      ] = 3
+        # Solver.options['Seed'          ] = 104729
         # Solver.options['Presolve'      ] = 2
         # Solver.options['RINS'          ] = 100
         # Solver.options['BarConvTol'    ] = 1e-9
