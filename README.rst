@@ -1,4 +1,3 @@
-﻿
 .. image:: https://pascua.iit.comillas.edu/aramos/openTEPES.png
    :target: https://opentepes.readthedocs.io/en/latest/index.html
    :alt: logo
