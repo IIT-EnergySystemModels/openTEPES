@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 12, 2025
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 16, 2025
 """
 
 import time
@@ -213,3 +213,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
         print        ('  Total consumption operation  cost [MEUR] ', sum(mTEPES.pDiscountedWeight[p]  * mTEPES.pScenProb         [p,sc    ]() * OptModel.vTotalCCost          [p,sc,n      ]() for n        in mTEPES.n ))
         print        ('  Total emission               cost [MEUR] ', sum(mTEPES.pDiscountedWeight[p]  * mTEPES.pScenProb         [p,sc    ]() * OptModel.vTotalECost          [p,sc,n      ]() for n        in mTEPES.n ))
         print        ('  Total reliability            cost [MEUR] ', sum(mTEPES.pDiscountedWeight[p]  * mTEPES.pScenProb         [p,sc    ]() * OptModel.vTotalRCost          [p,sc,n      ]() for n        in mTEPES.n ))
+
+    # Adding SolverResults to mTEPES
+    mTEPES.SolverResults = SolverResults
+    
