@@ -216,4 +216,3 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
 
     # Adding SolverResults to mTEPES
     mTEPES.SolverResults = SolverResults
-    
