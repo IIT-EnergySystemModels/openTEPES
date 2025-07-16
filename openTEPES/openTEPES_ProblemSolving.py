@@ -213,3 +213,6 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
         print        ('  Total consumption operation  cost [MEUR] ', sum(mTEPES.pDiscountedWeight[p]  * mTEPES.pScenProb         [p,sc    ]() * OptModel.vTotalCCost          [p,sc,n      ]() for n        in mTEPES.n ))
         print        ('  Total emission               cost [MEUR] ', sum(mTEPES.pDiscountedWeight[p]  * mTEPES.pScenProb         [p,sc    ]() * OptModel.vTotalECost          [p,sc,n      ]() for n        in mTEPES.n ))
         print        ('  Total reliability            cost [MEUR] ', sum(mTEPES.pDiscountedWeight[p]  * mTEPES.pScenProb         [p,sc    ]() * OptModel.vTotalRCost          [p,sc,n      ]() for n        in mTEPES.n ))
+
+    # Adding SolverResults to mTEPES
+    mTEPES.SolverResults = SolverResults
