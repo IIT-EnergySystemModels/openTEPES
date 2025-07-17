@@ -318,7 +318,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     pIndAreaOutput = 1
 
     # output plot results
-    pIndPlotOutput = 1
+    pIndPlotOutput = 0
 
     # indicators to control the number of output results
     if pIndOutputResults == 1:
@@ -339,7 +339,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
         pIndEconomicResults             = 1
     else:
         pIndDumpRawResults              = 0
-        pIndInvestmentResults           = 1
+        pIndInvestmentResults           = 0
         pIndGenerationOperationResults  = 0
         pIndESSOperationResults         = 0
         pIndReservoirOperationResults   = 0
@@ -349,9 +349,9 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
         pIndReliabilityResults          = 0
         pIndNetworkOperationResults     = 0
         pIndNetworkMapResults           = 0
-        pIndOperationSummaryResults     = 1
-        pIndCostSummaryResults          = 1
-        pIndMarginalResults             = 0
+        pIndOperationSummaryResults     = 0
+        pIndCostSummaryResults          = 0
+        pIndMarginalResults             = 1
         pIndEconomicResults             = 0
 
     # output parameters, variables, and duals to CSV files
