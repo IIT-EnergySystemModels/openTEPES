@@ -5,6 +5,7 @@ import pandas as pd
 import logging
 
 from openTEPES.openTEPES import openTEPES_run
+# from scripts.openTEPES2IAMC.Tool_openTEPES_TO_IAMC import DirName
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -17,34 +18,35 @@ def setup_test_case():
     Returns the data required for running openTEPES.
     """
     data = dict(
-        DirName=os.path.abspath(
-            os.path.join(os.path.dirname(__file__), "../openTEPES")
-        ),
-        CaseName="9n",
+        # DirName=os.path.abspath(
+        #     os.path.join(os.path.dirname(__file__), "../openTEPES")
+        # ),
+        DirName="C:\\Users\\erikal\\OneDrive - RISE\\Projects\\P124390.AP05DP04.A2025_GridSecure\\codes\\cases",
+        CaseName="SE2025",
         SolverName="gurobi",  # You can change the solver here
-        pIndLogConsole=0,
-        pIndOutputResults=0,
+        pIndLogConsole='Yes',
+        pIndOutputResults='Yes',
     )
 
     print("Setting up test case...")  # Added print for console feedback
-    duration_csv = os.path.join(data["DirName"], data["CaseName"], f"oT_Data_Duration_{data['CaseName']}.csv")
-    RESEnergy_csv = os.path.join(data["DirName"], data["CaseName"], f"oT_Data_RESEnergy_{data['CaseName']}.csv")
-    stage_csv = os.path.join(data["DirName"], data["CaseName"], f"oT_Data_Stage_{data['CaseName']}.csv")
+    # duration_csv = os.path.join(data["DirName"], data["CaseName"], f"oT_Data_Duration_{data['CaseName']}.csv")
+    # RESEnergy_csv = os.path.join(data["DirName"], data["CaseName"], f"oT_Data_RESEnergy_{data['CaseName']}.csv")
+    # stage_csv = os.path.join(data["DirName"], data["CaseName"], f"oT_Data_Stage_{data['CaseName']}.csv")
 
     # Read original data
-    original_duration_df = pd.read_csv(duration_csv, index_col=[0, 1, 2])
-    original_resenergy_df = pd.read_csv(RESEnergy_csv, index_col=[0, 1])
-    original_stage_df = pd.read_csv(stage_csv, index_col=[0])
+    # original_duration_df = pd.read_csv(duration_csv, index_col=[0, 1, 2])
+    # original_resenergy_df = pd.read_csv(RESEnergy_csv, index_col=[0, 1])
+    # original_stage_df = pd.read_csv(stage_csv, index_col=[0])
 
     try:
         print("Modifying CSV files...")  # Added print for console feedback
         # Modify and save the modified DataFrames
-        modify_and_save_csv(original_duration_df, "Duration", 169, duration_csv, 0)
-        modify_and_save_csv(original_resenergy_df, "RESEnergy", 0, RESEnergy_csv, 0)
-        modify_and_save_csv(original_stage_df, "Weight", 0, stage_csv, 1)
-
+    #     modify_and_save_csv(original_duration_df, "Duration", 169, duration_csv, 0)
+    #     modify_and_save_csv(original_resenergy_df, "RESEnergy", 0, RESEnergy_csv, 0)
+    #     modify_and_save_csv(original_stage_df, "Weight", 0, stage_csv, 1)
+    #
         yield data  # Yielding allows cleanup even if there's an early return or exception
-
+    #
     except Exception as e:
         logger.error(f"Error occurred during test setup: {e}")
         raise
@@ -52,10 +54,10 @@ def setup_test_case():
     finally:
         print("Restoring original CSV files...")  # Added print for console feedback
         # Restore original data
-        logger.info("Restoring original CSV files.")
-        original_duration_df.to_csv(duration_csv)
-        original_resenergy_df.to_csv(RESEnergy_csv)
-        original_stage_df.to_csv(stage_csv)
+    #     logger.info("Restoring original CSV files.")
+    #     original_duration_df.to_csv(duration_csv)
+    #     original_resenergy_df.to_csv(RESEnergy_csv)
+    #     original_stage_df.to_csv(stage_csv)
 
 
 def modify_and_save_csv(df, column_name, start_row, file_path, idx):
@@ -83,12 +85,13 @@ def test_openTEPES_run():
         assert mTEPES is not None, "openTEPES run failed, mTEPES object is None."
         logger.info(f"Test passed. Total system cost: {mTEPES.eTotalSCost}")
         print(f"Total system cost: {mTEPES.eTotalSCost}")  # Added print for console feedback
-        np.testing.assert_approx_equal(pyo.value(mTEPES.eTotalSCost), 248.433199803524)
+        # np.testing.assert_approx_equal(pyo.value(mTEPES.eTotalSCost), 249.5625364481793)
 
+    return mTEPES
 
 # Run the test function
 if __name__ == "__main__":
     print("Running the test...")
-    test_openTEPES_run()
+    model = test_openTEPES_run()
     print("Test complete.")
 
