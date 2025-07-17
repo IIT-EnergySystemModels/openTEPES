@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.18.6] - 2025-07-10
+[4.18.6] - 2025-07-16
 -----------------------
+- [CHANGED] save all the output results in the mTEPES model object
 - [FIXED] fix typo in BalancePerXXX output files
 - [CHANGED] if the variable TTCFrw and TTBck are both very small (e.g., 0.000001), they are set to 0 and the line is considered open
 - [FIXED] fix typo in TechnologySpillage output file
