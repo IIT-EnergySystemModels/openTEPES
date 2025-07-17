@@ -24,7 +24,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
         if os.path.exists(FileName):
             os.remove(FileName)
         Solver.options['LogFile'         ] = f'{_path}/openTEPES_gurobi_{CaseName}_{p}_{sc}_{st}.log'
-        # Solver.options['OutputFlag'    ] = 0                                                 # suppress log file
+        Solver.options['OutputFlag'      ] = 0                                                 # suppress log file
         # Solver.options['SolutionTarget'] = 1                                                 # optimal solution with or without basic solutions
         Solver.options['Method'          ] = 2                                                 # barrier method
         Solver.options['Crossover'       ] = -1
@@ -36,7 +36,8 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
         # Solver.options['BarQCPConvTol' ] = 0.025
         # Solver.options['IISFile'       ] = f'{_path}/openTEPES_gurobi_'+CaseName+'.ilp'        # should be uncommented to show results of IIS
         Solver.options['MIPGap'          ] = 0.01
-        Solver.options['Threads'         ] = int((psutil.cpu_count(logical=True) + psutil.cpu_count(logical=False))/2)
+        # Solver.options['Threads'         ] = int((psutil.cpu_count(logical=True) + psutil.cpu_count(logical=False))/2)
+        Solver.options['Threads'         ] = 1
         Solver.options['TimeLimit'       ] =    36000
         Solver.options['IterationLimit'  ] = 36000000
     if SolverName == 'cplex':
