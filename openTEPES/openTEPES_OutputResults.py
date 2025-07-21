@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 11, 2025
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 21, 2025
 """
 
 import time
@@ -1643,7 +1643,7 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES, pIndPlotOutput):
     OutputToFile.rename_axis(['Period', 'Scenario', 'LoadLevel', 'Area'], axis=0).rename_axis([None], axis=1).to_csv(f'{_path}/oT_Result_MarginalIncrementalVariableCost_{CaseName}.csv', sep=',')
     IncrementalGens = pd.Series('N/A', index=mTEPES.psnar).to_frame(name='Generating unit')
     for p,sc,n,ar in mTEPES.psnar:
-        if sum(1 for g in mTEPES.g if (ar,g) in mTEPES.a2g):
+        if all(g not in mTEPES.eh and g not in mTEPES.bo and (p, g) in mTEPES.pg and (ar, g) in mTEPES.a2g for g in mTEPES.g):
             if len(OutputToFile.loc[(p,sc,n,ar)]) > 1:
                 IncrementalGens.loc[p,sc,n,ar] = OutputToFile.loc[[(p,sc,n,ar)]].squeeze().idxmin()
             else:
