@@ -4,6 +4,8 @@ Mathematical Formulation
 ========================
 Here we present the mathematical formulation of the optimization problem solved by the **openTEPES** model. See also some TEP-related publications:
 
+* F. Labora, A. Ramos “An Efficient and Tight Model for Nuclear Power Plant Constraints in Flexible Operation”  TechRxiv. July, 2025. `10.36227/techrxiv.175303856.68847882/v1 <https://doi.org/10.36227/techrxiv.175303856.68847882/v1>`_
+
 * E.F. Álvarez, J.C. López, L. Olmos, A. Ramos "An Optimal Expansion Planning of Power Systems Considering Cycle-Based AC Optimal Power Flow" Sustainable Energy, Grids and Networks, May 2024. `10.1016/j.segan.2024.101413 <https://doi.org/10.1016/j.segan.2024.101413>`_
 
 * E.F. Álvarez, L. Olmos, A. Ramos, K. Antoniadou-Plytaria, D. Steen, and L.A. Tuan “Values and Impacts of Incorporating Local Flexibility Services in Transmission Expansion Planning” Electric Power Systems Research 212, July 2022. `10.1016/j.epsr.2022.108480 <https://doi.org/10.1016/j.epsr.2022.108480>`_
