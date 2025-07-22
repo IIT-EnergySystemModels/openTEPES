@@ -18,20 +18,21 @@ from .openTEPES_OutputResults    import OutputResultsParVarCon, InvestmentResult
 
 # Cache static lists of functions for looped calls
 _STAGE_FORMULATIONS = [
-    GenerationOperationModelFormulationObjFunct,
-    GenerationOperationModelFormulationInvestment,
-    GenerationOperationModelFormulationDemand,
-    GenerationOperationModelFormulationStorage,
-    GenerationOperationModelFormulationReservoir,
-    NetworkH2OperationModelFormulation,
-    NetworkHeatOperationModelFormulation,
-    GenerationOperationModelFormulationCommitment,
-    GenerationOperationModelFormulationRampMinTime,
-    NetworkSwitchingModelFormulation,
-    NetworkOperationModelFormulation,
-    NetworkCycles,
-    CycleConstraints,
+    ('pIndGenerationOperationModelFormulationObjFunct', GenerationOperationModelFormulationObjFunct),
+    ('pIndGenerationOperationModelFormulationInvestment', GenerationOperationModelFormulationInvestment),
+    ('pIndGenerationOperationModelFormulationDemand', GenerationOperationModelFormulationDemand),
+    ('pIndGenerationOperationModelFormulationStorage', GenerationOperationModelFormulationStorage),
+    ('pIndGenerationOperationModelFormulationReservoir', GenerationOperationModelFormulationReservoir),
+    ('pIndNetworkH2OperationModelFormulation', NetworkH2OperationModelFormulation),
+    ('pIndNetworkHeatOperationModelFormulation', NetworkHeatOperationModelFormulation),
+    ('pIndGenerationOperationModelFormulationCommitment', GenerationOperationModelFormulationCommitment),
+    ('pIndGenerationOperationModelFormulationRampMinTime', GenerationOperationModelFormulationRampMinTime),
+    ('pIndNetworkSwitchingModelFormulation', NetworkSwitchingModelFormulation),
+    ('pIndNetworkOperationModelFormulation', NetworkOperationModelFormulation),
+    ('pIndNetworkCycles', NetworkCycles),
+    ('pIndCycleConstraints', CycleConstraints)
 ]
+
 _OUTPUT_FUNCS = [
     ('pIndDumpRawResults', OutputResultsParVarCon, ('DirName', 'CaseName', 'mTEPES', 'mTEPES')),
     ('pIndInvestmentResults', InvestmentResults, ('DirName', 'CaseName', 'mTEPES', 'mTEPES', 'pIndTechnologyOutput', 'pIndPlotOutput')),
@@ -67,10 +68,32 @@ def _configure_basic_components(dir_, case, model, log_flag):
     """Load data sets and initialize model variables and indices."""
     InputData(dir_, case, model, log_flag)
     SettingUpVariables(model, model)
+
     model.First_st, model.Last_st = next(iter(model.st)), None
     for st in model.st:
         model.Last_st = st
     model.pDuals, model.na = {}, Set(initialize=[])
+    model.NoRepetition = 0
+
+def _configure_formulation_flags(model):
+    """Generate the formulation control flags dict."""
+    base = dict(
+        pIndGenerationOperationModelFormulationObjFunct=1,
+        pIndGenerationOperationModelFormulationInvestment=1,
+        pIndGenerationOperationModelFormulationDemand=1,
+        pIndGenerationOperationModelFormulationStorage=1,
+        pIndGenerationOperationModelFormulationReservoir=1,
+        pIndNetworkH2OperationModelFormulation=1,
+        pIndNetworkHeatOperationModelFormulation=1,
+        pIndGenerationOperationModelFormulationCommitment=0,
+        pIndGenerationOperationModelFormulationRampMinTime=0,
+        pIndNetworkSwitchingModelFormulation=0,
+        pIndNetworkOperationModelFormulation=0,
+        pIndNetworkCycles=0,
+        pIndCycleConstraints=0
+    )
+    model._formulation_flags = base
+    return base
 
 
 def _configure_output_flags(output_flag: int) -> dict:
@@ -86,25 +109,40 @@ def _configure_output_flags(output_flag: int) -> dict:
     return {**base, **detailed}
 
 
-def _process_stage(model, solver, log_flag, idx0, idx1, idx2):
+def _process_stage(dir_, case, solver, model, log_flag, idx0, idx1, idx2):
     """Execute all formulation functions then solve."""
-    for func in _STAGE_FORMULATIONS:
-        func(model, model, log_flag, idx0, idx1, idx2)
-    ProblemSolving(model, solver, log_flag)
+    for flag_name, func in _STAGE_FORMULATIONS:
+        if _check_conditions(model, flag_name):
+            func(model, model, log_flag, idx0, idx1, idx2)
+    ProblemSolving(dir_, case, solver, model, model, log_flag, idx0, idx1, idx2)
 
 
-def process_stage_loop(model, solver, log_flag):
+def process_stage_loop(dir_, case, solver, model, log_flag):
     """Loop over all scenarios and stages."""
     for p,sc in model.ps:
         for st in model.st:
-            _process_stage(model, solver, log_flag, p, sc, st)
+            _process_stage(dir_, case, solver, model, log_flag, p, sc, st)
 
 
 def finalize_and_output(dir_, case, model, flags):
     """Run output routines based on computed flags."""
+    context = {
+        'DirName':  dir_,
+        'CaseName': case,
+        'OptModel': model,
+        'mTEPES':   model,
+        'pIndTechnologyOutput': flags['pIndTechnologyOutput'],
+        'pIndAreaOutput':       flags['pIndAreaOutput'],
+        'pIndPlotOutput':       flags['pIndPlotOutput']
+    }
+
     for flag_name, func, args in _OUTPUT_FUNCS:
-        if flags.get(flag_name, 0) and _check_conditions(model, flag_name):
-            func(*[locals().get(arg) if isinstance(arg,str) else arg for arg in args])
+        if not (flags.get(flag_name) and _check_conditions(model, flag_name)):
+            continue
+        # build a list of actual values, not raw strings
+        r_args = [context[a] if isinstance(a, str) else a for a in args]
+        # unpack them into separate parameters
+        func(*r_args)
 
 
 def _check_conditions(model, flag_name: str) -> bool:
@@ -115,6 +153,11 @@ def _check_conditions(model, flag_name: str) -> bool:
         'pIndNetworkHeatOperationResults': getattr(model, 'ha', False) and getattr(model, 'pIndHeat', 0)==1,
         'pIndReservoirOperationResults': getattr(model, 'rs', False) and getattr(model, 'pIndHydroTopology', 0)==1,
         'pIndESSOperationResults': getattr(model, 'es', False),
+        'pIndGenerationOperationModelFormulationReservoir': getattr(model, 'rs', False) and getattr(model, 'pIndHydroTopology', 0)==1,
+        'pIndNetworkH2OperationModelFormulation': getattr(model, 'pa', False) and getattr(model, 'pIndHydrogen', 0)==1,
+        'pIndNetworkHeatOperationModelFormulation': getattr(model, 'ha', False) and getattr(model, 'pIndHeat', 0)==1,
+        'pIndNetworkCycles': getattr(model, 'pIndCycleFlow', 0) == 1,
+        'pIndCycleConstraints': getattr(model, 'pIndCycleFlow', 0) == 1,
     }
     return cond_map.get(flag_name, True)
 
@@ -138,7 +181,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     _configure_basic_components(DirName, CaseName, model, pLog)
     TotalObjectiveFunction(model, model, pLog)
     InvestmentModelFormulation(model, model, pLog)
-    process_stage_loop(model, SolverName, pLog)
+    process_stage_loop(DirName, CaseName, SolverName, model, pLog)
 
     flags = _configure_output_flags(pOut)
     finalize_and_output(DirName, CaseName, model, flags)
