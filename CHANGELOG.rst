@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.18.6] - 2025-07-21
+[4.18.6] - 2025-07-22
 -----------------------
+- [FIXED] fix bug in Output Results computation of ramp surplus
 - [FIXED] fix bug in Output Results when an Area has no non-RES generators
 - [CHANGED] save all the output results in the mTEPES model object
 - [FIXED] fix typo in BalancePerXXX output files
