@@ -69,14 +69,14 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         """
         full_path = os.path.join(path, file_name)
         if header_levels:
-            df = pd.read_csv(full_path, header=header_levels)
+            df = pd.read_csv(full_path, header=header_levels, index_col=[0, 1, 2])
         else:
             df = pd.read_csv(full_path)
 
-        present_idx = [col for col in df.columns if col in idx_cols]
-        file_key = file_name.split('_')[2]
-        idx_to_set = SPECIAL_IDX_COLS.get(file_key, present_idx)
-        df.set_index(idx_to_set, inplace=True, drop=True)
+            present_idx = [col for col in df.columns if col in idx_cols]
+            file_key = file_name.split('_')[2]
+            idx_to_set = SPECIAL_IDX_COLS.get(file_key, present_idx)
+            df.set_index(idx_to_set, inplace=True, drop=True)
         return df
 
     def read_input_data(path, case_name):
@@ -98,9 +98,9 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
 
             try:
                 if fs in ('Option', 'Parameter'):
-                    dfs[f'df_{fs}'] = pd.read_csv(os.path.join(path, file_name))
+                    dfs[f'df{fs}'] = pd.read_csv(os.path.join(path, file_name))
                 else:
-                    dfs[f'df_{fs}'] = load_csv_with_index(path, file_name, DEFAULT_IDX_COLS, header)
+                    dfs[f'df{fs}'] = load_csv_with_index(path, file_name, DEFAULT_IDX_COLS, header)
 
                 if dp_key:
                     dps[dp_key] = 1
@@ -112,257 +112,60 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
                 print(f"No file {file_name}")
                 if dp_key:
                     dps[dp_key] = 0
-                # if error_msg:
-                #     print(f"**** {error_msg}")
 
         return dfs, dps
 
     dfs, dps = read_input_data(_path, CaseName)
 
     # substitute NaN by 0
-    for df in dfs.values():
-        df.fillna(0.0, inplace=True)
+    for key, df in dfs.items():
+        if 'Emission' in key:
+            df.fillna(math.inf, inplace=True)
+        elif 'Generation' in key:
+            df.fillna({"Efficiency": 1.0}, inplace=True)
+        else:
+            df.fillna(0.0, inplace=True)
 
-    #%% reading data from CSV
-    dfOption                = pd.read_csv(f'{_path}/oT_Data_Option_'                f'{CaseName}.csv', header=0                   )
-    dfParameter             = pd.read_csv(f'{_path}/oT_Data_Parameter_'             f'{CaseName}.csv', header=0                   )
-    dfPeriod                = pd.read_csv(f'{_path}/oT_Data_Period_'                f'{CaseName}.csv', header=0, index_col=[0    ])
-    dfScenario              = pd.read_csv(f'{_path}/oT_Data_Scenario_'              f'{CaseName}.csv', header=0, index_col=[0,1  ])
-    dfStage                 = pd.read_csv(f'{_path}/oT_Data_Stage_'                 f'{CaseName}.csv', header=0, index_col=[0    ])
-    dfDuration              = pd.read_csv(f'{_path}/oT_Data_Duration_'              f'{CaseName}.csv', header=0, index_col=[0,1,2])
-    dfReserveMargin         = pd.read_csv(f'{_path}/oT_Data_ReserveMargin_'         f'{CaseName}.csv', header=0, index_col=[0,1  ])
-    dfEmission              = pd.read_csv(f'{_path}/oT_Data_Emission_'              f'{CaseName}.csv', header=0, index_col=[0,1  ])
-    dfRESEnergy             = pd.read_csv(f'{_path}/oT_Data_RESEnergy_'             f'{CaseName}.csv', header=0, index_col=[0,1  ])
-    dfDemand                = pd.read_csv(f'{_path}/oT_Data_Demand_'                f'{CaseName}.csv', header=0, index_col=[0,1,2])
-    dfInertia               = pd.read_csv(f'{_path}/oT_Data_Inertia_'               f'{CaseName}.csv', header=0, index_col=[0,1,2])
-    dfUpOperatingReserve    = pd.read_csv(f'{_path}/oT_Data_OperatingReserveUp_'    f'{CaseName}.csv', header=0, index_col=[0,1,2])
-    dfDwOperatingReserve    = pd.read_csv(f'{_path}/oT_Data_OperatingReserveDown_'  f'{CaseName}.csv', header=0, index_col=[0,1,2])
-    dfGeneration            = pd.read_csv(f'{_path}/oT_Data_Generation_'            f'{CaseName}.csv', header=0, index_col=[0    ])
-    dfVariableMinPower      = pd.read_csv(f'{_path}/oT_Data_VariableMinGeneration_' f'{CaseName}.csv', header=0, index_col=[0,1,2])
-    dfVariableMaxPower      = pd.read_csv(f'{_path}/oT_Data_VariableMaxGeneration_' f'{CaseName}.csv', header=0, index_col=[0,1,2])
-    dfVariableMinCharge     = pd.read_csv(f'{_path}/oT_Data_VariableMinConsumption_'f'{CaseName}.csv', header=0, index_col=[0,1,2])
-    dfVariableMaxCharge     = pd.read_csv(f'{_path}/oT_Data_VariableMaxConsumption_'f'{CaseName}.csv', header=0, index_col=[0,1,2])
-    dfVariableMinStorage    = pd.read_csv(f'{_path}/oT_Data_VariableMinStorage_'    f'{CaseName}.csv', header=0, index_col=[0,1,2])
-    dfVariableMaxStorage    = pd.read_csv(f'{_path}/oT_Data_VariableMaxStorage_'    f'{CaseName}.csv', header=0, index_col=[0,1,2])
-    dfVariableMinEnergy     = pd.read_csv(f'{_path}/oT_Data_VariableMinEnergy_'     f'{CaseName}.csv', header=0, index_col=[0,1,2])
-    dfVariableMaxEnergy     = pd.read_csv(f'{_path}/oT_Data_VariableMaxEnergy_'     f'{CaseName}.csv', header=0, index_col=[0,1,2])
-    dfVariableFuelCost      = pd.read_csv(f'{_path}/oT_Data_VariableFuelCost_'      f'{CaseName}.csv', header=0, index_col=[0,1,2])
-    dfVariableEmissionCost  = pd.read_csv(f'{_path}/oT_Data_VariableEmissionCost_'  f'{CaseName}.csv', header=0, index_col=[0,1,2])
-    dfEnergyInflows         = pd.read_csv(f'{_path}/oT_Data_EnergyInflows_'         f'{CaseName}.csv', header=0, index_col=[0,1,2])
-    dfEnergyOutflows        = pd.read_csv(f'{_path}/oT_Data_EnergyOutflows_'        f'{CaseName}.csv', header=0, index_col=[0,1,2])
-    dfNodeLocation          = pd.read_csv(f'{_path}/oT_Data_NodeLocation_'          f'{CaseName}.csv', header=0, index_col=[0    ])
-    dfNetwork               = pd.read_csv(f'{_path}/oT_Data_Network_'               f'{CaseName}.csv', header=0, index_col=[0,1,2])
+    # Define prefixes and suffixes
+    mTEPES.gen_frames_suffixes   = ['VariableMinGeneration', 'VariableMaxGeneration',
+                                    'VariableMinConsumption', 'VariableMaxConsumption',
+                                    'VariableMinStorage', 'VariableMaxStorage',
+                                    'EnergyInflows',
+                                    'EnergyOutflows',
+                                    'VariableMinEnergy', 'VariableMaxEnergy',
+                                    'VariableFuelCost',
+                                    'VariableEmissionCost',]
+    mTEPES.node_frames_suffixes  = ['Demand', 'Inertia']
+    mTEPES.area_frames_suffixes  = ['OperatingReserveUp', 'OperatingReserveDown', 'ReserveMargin', 'Emission', 'RESEnergy']
+    mTEPES.hydro_frames_suffixes = ['Reservoir', 'VariableMinVolume', 'VariableMaxVolume', 'HydroInflows', 'HydroOutflows']
+    mTEPES.hydrogen_frames_suffixes  = ['DemandHydrogen']
+    mTEPES.heat_frames_suffixes  = ['DemandHeat', 'ReserveMarginHeat']
+    mTEPES.frames_suffixes = (mTEPES.gen_frames_suffixes + mTEPES.node_frames_suffixes + mTEPES.area_frames_suffixes +
+                              mTEPES.hydro_frames_suffixes+ mTEPES.hydrogen_frames_suffixes + mTEPES.heat_frames_suffixes)
 
-    try:
-        dfVariableTTCFrw    = pd.read_csv(f'{_path}/oT_Data_VariableTTCFrw_'        f'{CaseName}.csv', header=[0,1,2  ], index_col=[0,1,2])
-        dfVariableTTCBck    = pd.read_csv(f'{_path}/oT_Data_VariableTTCBck_'        f'{CaseName}.csv', header=[0,1,2  ], index_col=[0,1,2])
-        pIndVarTTC          = 1
-    except:
-        pIndVarTTC          = 0
-        print('**** No variable transmission line TTCs')
-    try:
-        dfVariablePTDF      = pd.read_csv(f'{_path}/oT_Data_VariablePTDF_'          f'{CaseName}.csv', header=[0,1,2,3], index_col=[0,1,2])
-        pIndPTDF            = 1
-    except:
-        pIndPTDF            = 0
-        print('**** No flow-based market coupling method')
+    # Apply the condition to each specified column
+    for keys, df in dfs.items():
+        if [1 for suffix in mTEPES.gen_frames_suffixes if suffix in keys]:
+            dfs[keys] = df.where(df > 0.0, 0.0)
 
-    try:
-        dfReservoir         = pd.read_csv(f'{_path}/oT_Data_Reservoir_'             f'{CaseName}.csv', header=0, index_col=[0    ])
-        dfVariableMinVolume = pd.read_csv(f'{_path}/oT_Data_VariableMinVolume_'     f'{CaseName}.csv', header=0, index_col=[0,1,2])
-        dfVariableMaxVolume = pd.read_csv(f'{_path}/oT_Data_VariableMaxVolume_'     f'{CaseName}.csv', header=0, index_col=[0,1,2])
-        dfHydroInflows      = pd.read_csv(f'{_path}/oT_Data_HydroInflows_'          f'{CaseName}.csv', header=0, index_col=[0,1,2])
-        dfHydroOutflows     = pd.read_csv(f'{_path}/oT_Data_HydroOutflows_'         f'{CaseName}.csv', header=0, index_col=[0,1,2])
-        pIndHydroTopology   = 1
-    except:
-        pIndHydroTopology   = 0
-        print('**** No hydropower topology')
+    reading_time = round(time.time() - StartTime)
+    print('--- Reading the CSV files:                                             {} seconds'.format(reading_time))
+    StartTime = time.time()
 
-    try:
-        dfDemandHydrogen    = pd.read_csv(f'{_path}/oT_Data_DemandHydrogen_'        f'{CaseName}.csv', header=0, index_col=[0,1,2])
-        dfNetworkHydrogen   = pd.read_csv(f'{_path}/oT_Data_NetworkHydrogen_'       f'{CaseName}.csv', header=0, index_col=[0,1,2])
-        pIndHydrogen        = 1
-    except:
-        pIndHydrogen        = 0
-        print('**** No hydrogen energy carrier')
-
-    try:
-        dfDemandHeat        = pd.read_csv(f'{_path}/oT_Data_DemandHeat_'            f'{CaseName}.csv', header=0, index_col=[0,1,2])
-        dfReserveMarginHeat = pd.read_csv(f'{_path}/oT_Data_ReserveMarginHeat_'     f'{CaseName}.csv', header=0, index_col=[0,1  ])
-        dfNetworkHeat       = pd.read_csv(f'{_path}/oT_Data_NetworkHeat_'           f'{CaseName}.csv', header=0, index_col=[0,1,2])
-        pIndHeat            = 1
-    except:
-        pIndHeat            = 0
-        print('**** No heat energy carrier')
-
-    # substitute NaN by 0
-    dfOption.fillna                   (0  , inplace=True)
-    dfParameter.fillna                (0.0, inplace=True)
-    dfPeriod.fillna                   (0.0, inplace=True)
-    dfScenario.fillna                 (0.0, inplace=True)
-    dfStage.fillna                    (0.0, inplace=True)
-    dfDuration.fillna                 (0  , inplace=True)
-    dfReserveMargin.fillna            (0.0, inplace=True)
-    dfEmission.fillna                 (math.inf , inplace=True)
-    dfRESEnergy.fillna                (0.0, inplace=True)
-    dfDemand.fillna                   (0.0, inplace=True)
-    dfInertia.fillna                  (0.0, inplace=True)
-    dfUpOperatingReserve.fillna       (0.0, inplace=True)
-    dfDwOperatingReserve.fillna       (0.0, inplace=True)
-    dfGeneration.fillna               ({"Efficiency":1.0}, inplace=True)
-    dfGeneration.fillna               (0.0, inplace=True)
-    dfVariableMinPower.fillna         (0.0, inplace=True)
-    dfVariableMaxPower.fillna         (0.0, inplace=True)
-    dfVariableMinCharge.fillna        (0.0, inplace=True)
-    dfVariableMaxCharge.fillna        (0.0, inplace=True)
-    dfVariableMinStorage.fillna       (0.0, inplace=True)
-    dfVariableMaxStorage.fillna       (0.0, inplace=True)
-    dfVariableMinEnergy.fillna        (0.0, inplace=True)
-    dfVariableMaxEnergy.fillna        (0.0, inplace=True)
-    dfVariableFuelCost.fillna         (0.0, inplace=True)
-    dfVariableEmissionCost.fillna     (0.0, inplace=True)
-    dfEnergyInflows.fillna            (0.0, inplace=True)
-    dfEnergyOutflows.fillna           (0.0, inplace=True)
-    dfNodeLocation.fillna             (0.0, inplace=True)
-    dfNetwork.fillna                  (0.0, inplace=True)
-
-    if pIndVarTTC == 1:
-        dfVariableTTCFrw.fillna   (0.0, inplace=True)
-        dfVariableTTCBck.fillna   (0.0, inplace=True)
-    if pIndPTDF == 1:
-        dfVariablePTDF.fillna     (0.0, inplace=True)
-
-    if pIndHydroTopology == 1:
-        dfReservoir.fillna        (0.0, inplace=True)
-        dfVariableMinVolume.fillna(0.0, inplace=True)
-        dfVariableMaxVolume.fillna(0.0, inplace=True)
-        dfHydroInflows.fillna     (0.0, inplace=True)
-        dfHydroOutflows.fillna    (0.0, inplace=True)
-
-    if pIndHydrogen == 1:
-        dfDemandHydrogen.fillna   (0.0, inplace=True)
-        dfNetworkHydrogen.fillna  (0.0, inplace=True)
-
-    if pIndHeat == 1:
-        dfDemandHeat.fillna       (0.0, inplace=True)
-        dfReserveMarginHeat.fillna(0.0, inplace=True)
-        dfNetworkHeat.fillna      (0.0, inplace=True)
-
-    dfReserveMargin         = dfReserveMargin.where       (dfReserveMargin        > 0.0, 0.0)
-    dfEmission              = dfEmission.where            (dfEmission             > 0.0, 0.0)
-    dfRESEnergy             = dfRESEnergy.where           (dfRESEnergy            > 0.0, 0.0)
-    dfInertia               = dfInertia.where             (dfInertia              > 0.0, 0.0)
-    dfUpOperatingReserve    = dfUpOperatingReserve.where  (dfUpOperatingReserve   > 0.0, 0.0)
-    dfDwOperatingReserve    = dfDwOperatingReserve.where  (dfDwOperatingReserve   > 0.0, 0.0)
-    dfVariableMinPower      = dfVariableMinPower.where    (dfVariableMinPower     > 0.0, 0.0)
-    dfVariableMaxPower      = dfVariableMaxPower.where    (dfVariableMaxPower     > 0.0, 0.0)
-    dfVariableMinCharge     = dfVariableMinCharge.where   (dfVariableMinCharge    > 0.0, 0.0)
-    dfVariableMaxCharge     = dfVariableMaxCharge.where   (dfVariableMaxCharge    > 0.0, 0.0)
-    dfVariableMinStorage    = dfVariableMinStorage.where  (dfVariableMinStorage   > 0.0, 0.0)
-    dfVariableMaxStorage    = dfVariableMaxStorage.where  (dfVariableMaxStorage   > 0.0, 0.0)
-    dfVariableMinEnergy     = dfVariableMinEnergy.where   (dfVariableMinEnergy    > 0.0, 0.0)
-    dfVariableMaxEnergy     = dfVariableMaxEnergy.where   (dfVariableMaxEnergy    > 0.0, 0.0)
-    dfVariableFuelCost      = dfVariableFuelCost.where    (dfVariableFuelCost     > 0.0, 0.0)
-    dfVariableEmissionCost  = dfVariableEmissionCost.where(dfVariableEmissionCost > 0.0, 0.0)
-    dfEnergyInflows         = dfEnergyInflows.where       (dfEnergyInflows        > 0.0, 0.0)
-    dfEnergyOutflows        = dfEnergyOutflows.where      (dfEnergyOutflows       > 0.0, 0.0)
-
-    if (dfGeneration["Efficiency"] == 0).any():
+    if (dfs['dfGeneration']["Efficiency"] == 0).any():
         print("WARNING: Efficiency values of 0.0 are not valid. They have been changed to 1.0.")
         print("If you want to disable charging, set 'MaximumCharge' to 0.0 or leave it empty.")
-    dfGeneration["Efficiency"] = dfGeneration["Efficiency"].where(dfGeneration["Efficiency"] != 0.0, 1.0)
-
-    if pIndHydroTopology == 1:
-        dfVariableMinVolume = dfVariableMinVolume.where   (dfVariableMinVolume    > 0.0, 0.0)
-        dfVariableMaxVolume = dfVariableMaxVolume.where   (dfVariableMaxVolume    > 0.0, 0.0)
-        dfHydroInflows      = dfHydroInflows.where        (dfHydroInflows         > 0.0, 0.0)
-        dfHydroOutflows     = dfHydroOutflows.where       (dfHydroOutflows        > 0.0, 0.0)
+    dfs['dfGeneration']["Efficiency"] = dfs['dfGeneration']["Efficiency"].where(dfs['dfGeneration']["Efficiency"] != 0.0, 1.0)
 
     # show some statistics of the data
-    if pIndLogConsole == 1:
-        print('Reserve margin electricity            \n', dfReserveMargin.describe       (), '\n')
-        print('Maximum CO2 emission                  \n', dfEmission.describe            (), '\n')
-        print('Minimum RES energy                    \n', dfRESEnergy.describe           (), '\n')
-        print('Electricity demand                    \n', dfDemand.describe              (), '\n')
-        print('Inertia                               \n', dfInertia.describe             (), '\n')
-        print('Upward   operating reserves           \n', dfUpOperatingReserve.describe  (), '\n')
-        print('Downward operating reserves           \n', dfDwOperatingReserve.describe  (), '\n')
-        print('Generation                            \n', dfGeneration.describe          (), '\n')
-        print('Variable minimum generation           \n', dfVariableMinPower.describe    (), '\n')
-        print('Variable maximum generation           \n', dfVariableMaxPower.describe    (), '\n')
-        print('Variable minimum consumption          \n', dfVariableMinCharge.describe   (), '\n')
-        print('Variable maximum consumption          \n', dfVariableMaxCharge.describe   (), '\n')
-        print('Variable minimum storage              \n', dfVariableMinStorage.describe  (), '\n')
-        print('Variable maximum storage              \n', dfVariableMaxStorage.describe  (), '\n')
-        print('Variable minimum energy               \n', dfVariableMinEnergy.describe   (), '\n')
-        print('Variable maximum energy               \n', dfVariableMaxEnergy.describe   (), '\n')
-        print('Variable fuel cost                    \n', dfVariableFuelCost.describe    (), '\n')
-        print('Variable emission cost                \n', dfVariableEmissionCost.describe(), '\n')
-        print('Energy inflows                        \n', dfEnergyInflows.describe       (), '\n')
-        print('Energy outflows                       \n', dfEnergyOutflows.describe      (), '\n')
-        print('Electric network                      \n', dfNetwork.describe             (), '\n')
+    for key, df in dfs.items():
+        if pIndLogConsole == 1 and [1 for suffix in mTEPES.frames_suffixes if suffix in key]:
+            print(f'{key}:\n', df.describe(), '\n')
 
-        if pIndVarTTC == 1:
-            print('Variable TTC forward              \n', dfVariableTTCFrw.describe      (), '\n')
-            print('Variable TTC backward             \n', dfVariableTTCBck.describe      (), '\n')
-        if pIndPTDF == 1:
-            print('Variable PTDF                     \n', dfVariablePTDF.describe        (), '\n')
 
-        if pIndHydroTopology == 1:
-            print('Reservoir                         \n', dfReservoir.describe           (), '\n')
-            print('Variable minimum reservoir volume \n', dfVariableMinVolume.describe   (), '\n')
-            print('Variable maximum reservoir volume \n', dfVariableMaxVolume.describe   (), '\n')
-            print('Hydro inflows                     \n', dfHydroInflows.describe        (), '\n')
-            print('Hydro outflows                    \n', dfHydroOutflows.describe       (), '\n')
 
-        if pIndHydrogen == 1:
-            print('Hydrogen demand                   \n', dfDemandHydrogen.describe      (), '\n')
-            print('Hydrogen pipeline network         \n', dfNetworkHydrogen.describe     (), '\n')
 
-        if pIndHeat == 1:
-            print('Heat demand                       \n', dfDemandHeat.describe          (), '\n')
-            print('Reserve margin heat               \n', dfReserveMarginHeat.describe   (), '\n')
-            print('Heat pipe network                 \n', dfNetworkHeat.describe         (), '\n')
-
-    #%% reading the sets
-    dictSets = DataPortal()
-    dictSets.load(filename=f'{_path}/oT_Dict_Period_'       f'{CaseName}.csv', set='p'   , format='set')
-    dictSets.load(filename=f'{_path}/oT_Dict_Scenario_'     f'{CaseName}.csv', set='sc'  , format='set')
-    dictSets.load(filename=f'{_path}/oT_Dict_Stage_'        f'{CaseName}.csv', set='st'  , format='set')
-    dictSets.load(filename=f'{_path}/oT_Dict_LoadLevel_'    f'{CaseName}.csv', set='n'   , format='set')
-    dictSets.load(filename=f'{_path}/oT_Dict_Generation_'   f'{CaseName}.csv', set='g'   , format='set')
-    dictSets.load(filename=f'{_path}/oT_Dict_Technology_'   f'{CaseName}.csv', set='gt'  , format='set')
-    dictSets.load(filename=f'{_path}/oT_Dict_Storage_'      f'{CaseName}.csv', set='et'  , format='set')
-    dictSets.load(filename=f'{_path}/oT_Dict_Node_'         f'{CaseName}.csv', set='nd'  , format='set')
-    dictSets.load(filename=f'{_path}/oT_Dict_Zone_'         f'{CaseName}.csv', set='zn'  , format='set')
-    dictSets.load(filename=f'{_path}/oT_Dict_Area_'         f'{CaseName}.csv', set='ar'  , format='set')
-    dictSets.load(filename=f'{_path}/oT_Dict_Region_'       f'{CaseName}.csv', set='rg'  , format='set')
-    dictSets.load(filename=f'{_path}/oT_Dict_Circuit_'      f'{CaseName}.csv', set='cc'  , format='set')
-    dictSets.load(filename=f'{_path}/oT_Dict_Line_'         f'{CaseName}.csv', set='lt'  , format='set')
-
-    dictSets.load(filename=f'{_path}/oT_Dict_NodeToZone_'   f'{CaseName}.csv', set='ndzn', format='set')
-    dictSets.load(filename=f'{_path}/oT_Dict_ZoneToArea_'   f'{CaseName}.csv', set='znar', format='set')
-    dictSets.load(filename=f'{_path}/oT_Dict_AreaToRegion_' f'{CaseName}.csv', set='arrg', format='set')
-
-    mTEPES.pp   = Set(initialize=dictSets['p'   ], doc='periods', within=PositiveIntegers)
-    mTEPES.scc  = Set(initialize=dictSets['sc'  ], doc='scenarios'                       )
-    mTEPES.stt  = Set(initialize=dictSets['st'  ], doc='stages'                          )
-    mTEPES.nn   = Set(initialize=dictSets['n'   ], doc='load levels'                     )
-    mTEPES.gg   = Set(initialize=dictSets['g'   ], doc='units'                           )
-    mTEPES.gt   = Set(initialize=dictSets['gt'  ], doc='technologies'                    )
-    mTEPES.nd   = Set(initialize=dictSets['nd'  ], doc='nodes'                           )
-    mTEPES.ni   = Set(initialize=dictSets['nd'  ], doc='nodes'                           )
-    mTEPES.nf   = Set(initialize=dictSets['nd'  ], doc='nodes'                           )
-    mTEPES.zn   = Set(initialize=dictSets['zn'  ], doc='zones'                           )
-    mTEPES.ar   = Set(initialize=dictSets['ar'  ], doc='areas'                           )
-    mTEPES.rg   = Set(initialize=dictSets['rg'  ], doc='regions'                         )
-    mTEPES.cc   = Set(initialize=dictSets['cc'  ], doc='circuits'                        )
-    mTEPES.c2   = Set(initialize=dictSets['cc'  ], doc='circuits'                        )
-    mTEPES.lt   = Set(initialize=dictSets['lt'  ], doc='electric line types'             )
-    mTEPES.ndzn = Set(initialize=dictSets['ndzn'], doc='node to zone'                    )
-    mTEPES.znar = Set(initialize=dictSets['znar'], doc='zone to area'                    )
-    mTEPES.arrg = Set(initialize=dictSets['arrg'], doc='area to region'                  )
-
+    
     try:
         import csv
         def count_lines_in_csv(csv_file_path):
