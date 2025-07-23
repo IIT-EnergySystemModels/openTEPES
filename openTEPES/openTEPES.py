@@ -107,6 +107,23 @@ def _configure_output_flags(output_flag: int, init_flags: int) -> dict:
     return {**base, **detailed}
 
 
+def _check_conditions(model, flag_name: str) -> bool:
+    """Ensure additional model-dependent conditions for certain outputs."""
+    cond_map = {
+        'pIndGenerationOperationResults': True,
+        'pIndNetworkH2OperationResults': getattr(model, 'pa', False) and getattr(model, 'pIndHydrogen', 0)==1,
+        'pIndNetworkHeatOperationResults': getattr(model, 'ha', False) and getattr(model, 'pIndHeat', 0)==1,
+        'pIndReservoirOperationResults': getattr(model, 'rs', False) and getattr(model, 'pIndHydroTopology', 0)==1,
+        'pIndESSOperationResults': getattr(model, 'es', False),
+        'pIndGenerationOperationModelFormulationReservoir': getattr(model, 'rs', False) and getattr(model, 'pIndHydroTopology', 0)==1,
+        'pIndNetworkH2OperationModelFormulation': getattr(model, 'pa', False) and getattr(model, 'pIndHydrogen', 0)==1,
+        'pIndNetworkHeatOperationModelFormulation': getattr(model, 'ha', False) and getattr(model, 'pIndHeat', 0)==1,
+        'pIndNetworkCycles': getattr(model, 'pIndCycleFlow', 0) == 1,
+        'pIndCycleConstraints': getattr(model, 'pIndCycleFlow', 0) == 1,
+    }
+    return cond_map.get(flag_name, True)
+
+
 def _process_stage(dir_, case, solver, model, log_flag, idx0, idx1, idx2):
     """Execute all formulation functions then solve."""
     for flag_name, func in _STAGE_FORMULATIONS:
@@ -141,23 +158,6 @@ def finalize_and_output(dir_, case, model, flags):
         r_args = [context[a] if isinstance(a, str) else a for a in args]
         # unpack them into separate parameters
         func(*r_args)
-
-
-def _check_conditions(model, flag_name: str) -> bool:
-    """Ensure additional model-dependent conditions for certain outputs."""
-    cond_map = {
-        'pIndGenerationOperationResults': True,
-        'pIndNetworkH2OperationResults': getattr(model, 'pa', False) and getattr(model, 'pIndHydrogen', 0)==1,
-        'pIndNetworkHeatOperationResults': getattr(model, 'ha', False) and getattr(model, 'pIndHeat', 0)==1,
-        'pIndReservoirOperationResults': getattr(model, 'rs', False) and getattr(model, 'pIndHydroTopology', 0)==1,
-        'pIndESSOperationResults': getattr(model, 'es', False),
-        'pIndGenerationOperationModelFormulationReservoir': getattr(model, 'rs', False) and getattr(model, 'pIndHydroTopology', 0)==1,
-        'pIndNetworkH2OperationModelFormulation': getattr(model, 'pa', False) and getattr(model, 'pIndHydrogen', 0)==1,
-        'pIndNetworkHeatOperationModelFormulation': getattr(model, 'ha', False) and getattr(model, 'pIndHeat', 0)==1,
-        'pIndNetworkCycles': getattr(model, 'pIndCycleFlow', 0) == 1,
-        'pIndCycleConstraints': getattr(model, 'pIndCycleFlow', 0) == 1,
-    }
-    return cond_map.get(flag_name, True)
 
 
 def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConsole):
