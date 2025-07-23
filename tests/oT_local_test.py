@@ -5,6 +5,9 @@ import pandas as pd
 import logging
 
 from openTEPES.openTEPES import openTEPES_run
+# from openTEPES.openTEPES_refactor_fixed import openTEPES_run
+# from scripts.openTEPES2IAMC.Tool_IAMC_TO_openTEPES import CaseName
+
 # from scripts.openTEPES2IAMC.Tool_openTEPES_TO_IAMC import DirName
 
 # Configure logging
@@ -21,6 +24,8 @@ def setup_test_case():
         # DirName=os.path.abspath(
         #     os.path.join(os.path.dirname(__file__), "../openTEPES")
         # ),
+        # DirName="C:\\Users\\erikal\\OneDrive - RISE\\Documents\\GitHub\\openTEPES\\openTEPES",
+        # CaseName="9n",
         DirName="C:\\Users\\erikal\\OneDrive - RISE\\Projects\\P124390.AP05DP04.A2025_GridSecure\\codes\\cases",
         CaseName="SE2025",
         SolverName="gurobi",  # You can change the solver here
