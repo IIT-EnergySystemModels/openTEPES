@@ -96,16 +96,14 @@ def _configure_formulation_flags(model):
     return base
 
 
-def _configure_output_flags(output_flag: int) -> dict:
+def _configure_output_flags(output_flag: int, init_flags: int) -> dict:
     """Generate the output control flags dict."""
     base = dict(
         pIndTechnologyOutput=2,
         pIndAreaOutput=1,
         pIndPlotOutput=0
     )
-    detailed = {key: int(output_flag == 1) for key,_func,_ in _OUTPUT_FUNCS}
-    # ensure marginal always on in else-case
-    detailed.setdefault('pIndMarginalResults', 1)
+    detailed = {key: int(output_flag == init_flags) for key,_func,_ in _OUTPUT_FUNCS}
     return {**base, **detailed}
 
 
@@ -183,6 +181,10 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     InvestmentModelFormulation(model, model, pLog)
     process_stage_loop(DirName, CaseName, SolverName, model, pLog)
 
-    flags = _configure_output_flags(pOut)
+    # show results or not
+    init_flags_value = 0
+    flags = _configure_output_flags(pOut, init_flags_value)
+    # ensure marginal always on in else-case
+    flags['pIndMarginalResults'] = 1
     finalize_and_output(DirName, CaseName, model, flags)
     return model
