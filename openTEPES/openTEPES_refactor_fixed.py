@@ -89,9 +89,10 @@ def _build_model(desc: str) -> ConcreteModel:
     model.name = desc
     return model
 
+def _reading_data(dir_, case, model, log_flag):
+    InputData(dir_, case, model, log_flag)
 
 def _configure_basic_components(dir_, case, model, log_flag):
-    InputData(dir_, case, model, log_flag)
     SettingUpVariables(model, model)
     model.First_st, model.Last_st = next(iter(model.st)), None
     for st in model.st:
@@ -298,6 +299,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     with open(os.path.join(path, f'openTEPES_version_{CaseName}.log'), 'w') as logf:
         print(model_name, file=logf)
 
+    _reading_data(dir_, case, model, log_flag)
     _configure_basic_components(DirName, CaseName, mTEPES, pLog)
     TotalObjectiveFunction(mTEPES, mTEPES, pLog)
     InvestmentModelFormulation(mTEPES, mTEPES, pLog)
