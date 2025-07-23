@@ -64,16 +64,19 @@ def _build_model(description: str) -> ConcreteModel:
     return ConcreteModel(description)
 
 
-def _configure_basic_components(dir_, case, model, log_flag):
-    """Load data sets and initialize model variables and indices."""
+def _reading_data(dir_, case, model, log_flag):
     InputData(dir_, case, model, log_flag)
-    SettingUpVariables(model, model)
 
+
+def _configure_basic_components(dir_, case, model, log_flag):
+    SettingUpVariables(model, model)
     model.First_st, model.Last_st = next(iter(model.st)), None
     for st in model.st:
         model.Last_st = st
     model.pDuals, model.na = {}, Set(initialize=[])
     model.NoRepetition = 0
+    model._has_run_last_stage = False
+
 
 def _configure_formulation_flags(model):
     """Generate the formulation control flags dict."""
@@ -176,6 +179,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     with open(os.path.join(path, f'openTEPES_version_{CaseName}.log'), 'w') as logf:
         print(model_name, file=logf)
 
+    _reading_data(DirName, CaseName, model, pLog)
     _configure_basic_components(DirName, CaseName, model, pLog)
     TotalObjectiveFunction(model, model, pLog)
     InvestmentModelFormulation(model, model, pLog)
