@@ -16,6 +16,113 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     _path = os.path.join(DirName, CaseName)
     StartTime = time.time()
 
+    set_definitions = {
+        'pp': ('Period',     'p' ), 'scc': ('Scenario', 'sc'), 'stt': ('Stage',      'st'),
+        'nn': ('LoadLevel',  'n' ), 'gg':  ('Generation','g'), 'gt':  ('Technology', 'gt'),
+        'nd': ('Node',       'nd'), 'ni':  ('Node',     'nd'), 'nf':  ('Node',       'nd'),
+        'zn': ('Zone',       'zn'), 'ar':  ('Area',     'ar'), 'rg':  ('Region',     'rg'),
+        'cc': ('Circuit',    'cc'), 'c2':  ('Circuit',  'cc'), 'lt':  ('Line',       'lt'),
+        'ndzn': ('NodeToZone', 'ndzn'), 'znar': ('ZoneToArea', 'znar'), 'arrg': ('AreaToRegion', 'arrg'),
+    }
+
+    dictSets = DataPortal()
+
+    # Reading dictionaries from CSV and adding elements to the dictSets
+    for set_name, (file_set_name, set_key) in set_definitions.items():
+        filename = f'oT_Dict_{file_set_name}_{CaseName}.csv'
+        dictSets.load(filename=os.path.join(_path, filename), set=set_key, format='set')
+        is_ordered = set_name not in {'stt', 'gt', 'nd', 'ni', 'nf', 'cc', 'c2', 'ndzn', 'znar', 'arrg'}
+        setattr(mTEPES, set_name, Set(initialize=dictSets[set_key], ordered=is_ordered, doc=f'{file_set_name}'))
+
+    # # Defining sets in the model
+    # for set_name, (file_set_name, set_key) in set_definitions.items():
+    #     is_ordered = set_name not in {'stt', 'gt', 'nd', 'ni', 'nf', 'cc', 'c2', 'ndzn', 'znar', 'arrg'}
+    #     setattr(model, set_name, Set(initialize=dictSets[set_key], ordered=is_ordered, doc=f'{file_set_name}'))
+
+    # Constants
+    DEFAULT_IDX_COLS = ['Period', 'Scenario', 'LoadLevel', 'Area', 'Generator', 'InitialNode', 'FinalNode', 'Circuit', 'Node', 'Stage']
+    SPECIAL_IDX_COLS = {'Generation': ['Generator']}
+    HEADER_LEVELS = {
+        'VariableTTCFrw': [0, 1, 2   ],
+        'VariableTTCBck': [0, 1, 2   ],
+        'VariablePTDF'  : [0, 1, 2, 3],
+    }
+    FLAG_MAPPING = {
+        'VariableTTCFrw'   : ('pIndVarTTC'       , None, 'No variable transmission line TTCs'  ),
+        'VariableTTCBck'   : ('pIndVarTTC'       , None, 'No variable transmission line TTCs'  ),
+        'VariablePTDF'     : ('pIndPTDF'         , None, 'No flow-based market coupling method'),
+        'Reservoir'        : ('pIndHydroTopology', None, 'No hydropower topology'              ),
+        'VariableMinVolume': ('pIndHydroTopology', None, 'No hydropower topology'              ),
+        'VariableMaxVolume': ('pIndHydroTopology', None, 'No hydropower topology'              ),
+        'HydroInflows'     : ('pIndHydroTopology', None, 'No hydropower topology'              ),
+        'HydroOutflows'    : ('pIndHydroTopology', None, 'No hydropower topology'              ),
+        'DemandHydrogen'   : ('pIndHydrogen'     , None, 'No hydrogen energy carrier'          ),
+        'NetworkHydrogen'  : ('pIndHydrogen'     , None, 'No hydrogen energy carrier'          ),
+        'DemandHeat'       : ('pIndHeat'         , None, 'No heat energy carrier'              ),
+        'ReserveMarginHeat': ('pIndHeat'         , None, 'No heat energy carrier'              ),
+        'NetworkHeat'      : ('pIndHeat'         , None, 'No heat energy carrier'              ),
+    }
+
+    def load_csv_with_index(path, file_name, idx_cols, header_levels=None):
+        """
+        Load a CSV file into a DataFrame and set its index based on provided columns.
+        """
+        full_path = os.path.join(path, file_name)
+        if header_levels:
+            df = pd.read_csv(full_path, header=header_levels)
+        else:
+            df = pd.read_csv(full_path)
+
+        present_idx = [col for col in df.columns if col in idx_cols]
+        file_key = file_name.split('_')[2]
+        idx_to_set = SPECIAL_IDX_COLS.get(file_key, present_idx)
+        df.set_index(idx_to_set, inplace=True, drop=True)
+        return df
+
+    def read_input_data(path, case_name):
+        """
+        Read all oT_Data files from the given directory, returning
+        a dict of DataFrames and a dict of flags for loaded data.
+        """
+        dfs = {}
+        dps = {}
+
+        # Identify unique file types
+        files = [f for f in os.listdir(path) if 'oT_Data' in f]
+        file_sets = set(f.split('_')[2] for f in files)
+
+        for fs in file_sets:
+            file_name = f'oT_Data_{fs}_{case_name}.csv'
+            dp_key, _, error_msg = FLAG_MAPPING.get(fs, (None, None, None))
+            header = HEADER_LEVELS.get(fs)
+
+            try:
+                if fs in ('Option', 'Parameter'):
+                    dfs[f'df_{fs}'] = pd.read_csv(os.path.join(path, file_name))
+                else:
+                    dfs[f'df_{fs}'] = load_csv_with_index(path, file_name, DEFAULT_IDX_COLS, header)
+
+                if dp_key:
+                    dps[dp_key] = 1
+            except FileNotFoundError:
+                print(f"WARNING: File not found: {file_name}")
+                if dp_key:
+                    dps[dp_key] = 0
+            except Exception as e:
+                print(f"No file {file_name}")
+                if dp_key:
+                    dps[dp_key] = 0
+                # if error_msg:
+                #     print(f"**** {error_msg}")
+
+        return dfs, dps
+
+    dfs, dps = read_input_data(_path, CaseName)
+
+    # substitute NaN by 0
+    for df in dfs.values():
+        df.fillna(0.0, inplace=True)
+
     #%% reading data from CSV
     dfOption                = pd.read_csv(f'{_path}/oT_Data_Option_'                f'{CaseName}.csv', header=0                   )
     dfParameter             = pd.read_csv(f'{_path}/oT_Data_Parameter_'             f'{CaseName}.csv', header=0                   )
@@ -579,12 +686,16 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         # replace pHeatPipeUpInvest = 0.0 by 1.0
         pHeatPipeUpInvest   = pHeatPipeUpInvest.where(pHeatPipeUpInvest > 0.0, 1.0            )
 
+        mTEPES.pNetwork = dfNetwork
+
     ReadingDataTime = time.time() - StartTime
     StartTime       = time.time()
     print('Reading    input data                  ... ', round(ReadingDataTime), 's')
 
+
+# def DataConfiguration(mTEPES: ConcreteModel):
     #%% Getting the branches from the electric network data
-    sBr     = [(ni,nf) for (ni,nf,cc) in dfNetwork.index]
+    sBr     = [(ni,nf) for (ni,nf,cc) in mTEPES.pNetwork.index]
     # Dropping duplicate keys
     sBrList = [(ni,nf) for n,(ni,nf)  in enumerate(sBr) if (ni,nf) not in sBr[:n]]
 
