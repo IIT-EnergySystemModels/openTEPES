@@ -5,7 +5,8 @@ import os
 import sys
 # Add the root project folder to the Python path
 sys.path.append(str(Path(__file__).resolve().parents[1]))
-from openTEPES.openTEPES import openTEPES_run
+from openTEPES import openTEPES as oT
+from openTEPES import openTEPES_ModelFormulation as oT_MF
 from pyomo.opt import check_optimal_termination
 
 import pandas as pd
@@ -126,21 +127,11 @@ new_iters       = compute_new_iterations(factor_0, factor_1, factor_2, existing_
 
 print(f"Total iterations to run: {len(new_iters)}, which were not run from the total of {len(factor_0) * len(factor_1) * len(factor_2)} possible combinations.")
 
-num_workers = 8
-
-def scenario_files(dir, folder_name):
-    files = {
-        'frw': dir / f'oT_Data_VariableTTCFrw_{folder_name}.csv',
-        'bck': dir / f'oT_Data_VariableTTCBck_{folder_name}.csv',
-        'dem': dir / f'oT_Data_Demand_{folder_name}.csv',
-        'max': dir / f'oT_Data_VariableMaxEnergy_{folder_name}.csv',
-        'min': dir / f'oT_Data_VariableMinEnergy_{folder_name}.csv',
-    }
-    return files
+num_workers = 1
 
 # ─── Per‐scenario worker function ────────────────────────────────────────────────
 
-def run_scenario(args):
+def run_scenario(args, model):
     """
     args: tuple (f0, f1, f2)
       - f0: (from_zone, to_zone, 'cc1')
@@ -155,27 +146,10 @@ def run_scenario(args):
 
      # unique case name and folder
     factor_label = dict_factor_1[f1]
-    case_name = f"{target_folder_name}_{factor_label}_LL{f2_new}_{f0[0]}_{f0[1]}"
-    scenario_dir = target_dir / case_name
-    # ensure clean workspace
-    if scenario_dir.exists():
-        shutil.rmtree(scenario_dir)
-    scenario_dir.mkdir(parents=True)
-    # # Create directory if it doesn't exist
-    # scenario_dir.mkdir(parents=True, exist_ok=True)
-    print(f"Using target directory: {scenario_dir}")
 
-    # Copy all CSV files matching "oT_Data" or "oT_Dict"
-    for file in source_dir.glob("*.csv"):
-        if "oT_Data" in file.name or "oT_Dict" in file.name:
-            new_name = file.stem + f"_Temporal_{factor_label}_LL{f2_new}_{f0[0]}_{f0[1]}.csv"
-            dest = scenario_dir / new_name
-            if not dest.exists():
-                shutil.copy2(file, dest)
-                # print(f"--Copied: {file.name} → {scenario_dir}")
 
-    # Load data from scenario folder
-    source_files = scenario_files(source_dir, base_folder_name)
+    # # Load data from scenario folder
+    # source_files = scenario_files(source_dir, base_folder_name)
 
     df_frw = pd.read_csv(source_files['frw'],  index_col=[0,1,2], header=[0,1,2])
     df_bck = pd.read_csv(source_files['bck'],  index_col=[0,1,2], header=[0,1,2])
@@ -259,6 +233,9 @@ def run_scenario(args):
     print(f"-Modified {f0} in {scenario_dir} for factor {f1} and load level {f2}")
 
     try:
+        oT._configure_basic_components(base_dir, base_folder_name, model, pLog)
+        oT_MF.TotalObjectiveFunction(mTEPES, mTEPES, pLog)
+        oT_MF.InvestmentModelFormulation(mTEPES, mTEPES, pLog)
         # Prepare the openTEPES inputs
         mTEPES = openTEPES_run(
             DirName = target_dir,
@@ -328,6 +305,23 @@ if __name__ == '__main__':
     tasks = new_iters
 
     all_results = []
+
+    # ─── openTEPES run function ─────────────────────────────────────────────────
+    pIndLogConsole = 'No'
+    pIndOutputResults = 'No'
+    idx = oT._initialize_indices()
+    pOut, pLog = idx[pIndOutputResults], idx[pIndLogConsole]
+
+    model_name = (
+        'Open Generation, Storage, and Transmission Operation and Expansion Planning Model '
+        'with RES and ESS (openTEPES) - Version 4.18.6 - July 22, 2025'
+    )
+    model = oT._build_model(model_name)
+    with open(os.path.join(source_dir, f'openTEPES_version_{base_folder_name}.log'), 'w') as logf:
+        print(model_name, file=logf)
+    oT._reading_data(base_dir, base_folder_name, model, pLog)
+    print(f"Model {model_name} initialized.")
+
     # with ProcessPoolExecutor(max_workers=num_workers) as executor:
     # with ProcessPoolExecutor() as executor:
     #     for df_part in executor.map(run_scenario, tasks):
