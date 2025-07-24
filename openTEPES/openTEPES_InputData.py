@@ -63,6 +63,9 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         'NetworkHeat'      : ('pIndHeat'         , None, 'No heat energy carrier'              ),
     }
 
+    factor_1 = 1e-3
+    factor_2 = 1e-6
+
     def load_csv_with_index(path, file_name, idx_cols, header_levels=None):
         """
         Load a CSV file into a DataFrame and set its index based on provided columns.
@@ -76,6 +79,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
             present_idx = [col for col in df.columns if col in idx_cols]
             file_key = file_name.split('_')[2]
             idx_to_set = SPECIAL_IDX_COLS.get(file_key, present_idx)
+            if file_key == 'Duration':
+                idx_to_set = idx_to_set[:-1]  # Exclude 'Stage' for Duration
             df.set_index(idx_to_set, inplace=True, drop=True)
         return df
 
@@ -86,6 +91,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         """
         dfs = {}
         dps = {}
+        par = {}
 
         # Identify unique file types
         files = [f for f in os.listdir(path) if 'oT_Data' in f]
@@ -103,19 +109,23 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
                     dfs[f'df{fs}'] = load_csv_with_index(path, file_name, DEFAULT_IDX_COLS, header)
 
                 if dp_key:
-                    dps[dp_key] = 1
+                    par[dp_key] = 1
             except FileNotFoundError:
                 print(f"WARNING: File not found: {file_name}")
                 if dp_key:
-                    dps[dp_key] = 0
+                    par[dp_key] = 0
             except Exception as e:
                 print(f"No file {file_name}")
                 if dp_key:
-                    dps[dp_key] = 0
+                    par[dp_key] = 0
 
-        return dfs, dps
+        return dfs, dps, par
 
-    dfs, dps = read_input_data(_path, CaseName)
+    dfs, dps, par = read_input_data(_path, CaseName)
+    # if 'pIndVarTTC', 'pIndPTDF', 'pIndHydroTopology', 'pIndHydrogen', 'pIndHeat' not in par include them and set value to zero
+    for key in ['pIndVarTTC', 'pIndPTDF', 'pIndHydroTopology', 'pIndHydrogen', 'pIndHeat']:
+        if key not in par.keys():
+            par[key] = 0
 
     # substitute NaN by 0
     for key, df in dfs.items():
@@ -161,11 +171,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     for key, df in dfs.items():
         if pIndLogConsole == 1 and [1 for suffix in mTEPES.frames_suffixes if suffix in key]:
             print(f'{key}:\n', df.describe(), '\n')
-
-
-
-
-
+    # reading additional data sets related to reservoirs and hydro
     try:
         import csv
         def count_lines_in_csv(csv_file_path):
@@ -208,79 +214,64 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     except:
         pass
 
-    #%% parameters
-    pIndBinGenInvest      = dfOption   ['IndBinGenInvest'    ].iloc[0].astype('int')                 # Indicator of binary generation        expansion decisions, 0 continuous       - 1 binary - 2 no investment variables
-    pIndBinGenRetire      = dfOption   ['IndBinGenRetirement'].iloc[0].astype('int')                 # Indicator of binary generation        retirement decisions,0 continuous       - 1 binary - 2 no retirement variables
-    pIndBinRsrInvest      = dfOption   ['IndBinRsrInvest'    ].iloc[0].astype('int')                 # Indicator of binary reservoir         expansion decisions, 0 continuous       - 1 binary - 2 no investment variables
-    pIndBinNetElecInvest  = dfOption   ['IndBinNetInvest'    ].iloc[0].astype('int')                 # Indicator of binary electric network  expansion decisions, 0 continuous       - 1 binary - 2 no investment variables
-    pIndBinNetH2Invest    = dfOption   ['IndBinNetH2Invest'  ].iloc[0].astype('int')                 # Indicator of binary hydrogen pipeline expansion decisions, 0 continuous       - 1 binary - 2 no investment variables
-    pIndBinNetHeatInvest  = dfOption   ['IndBinNetHeatInvest'].iloc[0].astype('int')                 # Indicator of binary heat     pipe     expansion decisions, 0 continuous       - 1 binary - 2 no investment variables
-    pIndBinGenOperat      = dfOption   ['IndBinGenOperat'    ].iloc[0].astype('int')                 # Indicator of binary generation        operation decisions, 0 continuous       - 1 binary
-    pIndBinSingleNode     = dfOption   ['IndBinSingleNode'   ].iloc[0].astype('int')                 # Indicator of single node although with electric network,   0 electric network - 1 single node
-    pIndBinGenRamps       = dfOption   ['IndBinGenRamps'     ].iloc[0].astype('int')                 # Indicator of ramp constraints,                             0 no ramps         - 1 ramp constraints
-    pIndBinGenMinTime     = dfOption   ['IndBinGenMinTime'   ].iloc[0].astype('int')                 # Indicator of minimum up/downtime constraints,              0 no min time      - 1 min time constraints
-    pIndBinLineCommit     = dfOption   ['IndBinLineCommit'   ].iloc[0].astype('int')                 # Indicator of binary electric network switching decisions,  0 continuous       - 1 binary
-    pIndBinNetLosses      = dfOption   ['IndBinNetLosses'    ].iloc[0].astype('int')                 # Indicator of        electric network losses,               0 lossless         - 1 ohmic losses
-    pENSCost              = dfParameter['ENSCost'            ].iloc[0] * 1e-3                        # cost of energy   not served               [MEUR/GWh]
-    pH2NSCost             = dfParameter['HNSCost'            ].iloc[0] * 1e-3                        # cost of hydrogen not served               [MEUR/tH2]
-    pHeatNSCost           = dfParameter['HTNSCost'           ].iloc[0] * 1e-3                        # cost of heat     not served               [MEUR/GWh]
-    pCO2Cost              = dfParameter['CO2Cost'            ].iloc[0]                               # cost of CO2 emission                      [EUR/tCO2]
-    pEconomicBaseYear     = dfParameter['EconomicBaseYear'   ].iloc[0]                               # economic base year                        [year]
-    pAnnualDiscRate       = dfParameter['AnnualDiscountRate' ].iloc[0]                               # annual discount rate                      [p.u.]
-    pUpReserveActivation  = dfParameter['UpReserveActivation'].iloc[0]                               # upward   reserve activation               [p.u.]
-    pDwReserveActivation  = dfParameter['DwReserveActivation'].iloc[0]                               # downward reserve activation               [p.u.]
-    pMinRatioDwUp         = dfParameter['MinRatioDwUp'       ].iloc[0]                               # minimum ratio down up operating reserves  [p.u.]
-    pMaxRatioDwUp         = dfParameter['MaxRatioDwUp'       ].iloc[0]                               # maximum ratio down up operating reserves  [p.u.]
-    pSBase                = dfParameter['SBase'              ].iloc[0] * 1e-3                        # base power                                [GW]
-    pReferenceNode        = dfParameter['ReferenceNode'      ].iloc[0]                               # reference node
-    pTimeStep             = dfParameter['TimeStep'           ].iloc[0].astype('int')                 # duration of the unit time step            [h]
+    # load parameters from dfOption
+    for col in dfs['dfOption'].columns:
+        par[f'p{col}'] = dfs['dfOption'][col].iloc[0].astype('int')
 
-    pPeriodWeight         = dfPeriod       ['Weight'        ].astype('int')                          # weights of periods                        [p.u.]
-    pScenProb             = dfScenario     ['Probability'   ].astype('float64')                      # probabilities of scenarios                [p.u.]
-    pStageWeight          = dfStage        ['Weight'        ].astype('float64')                      # weights of stages
-    pDuration             = dfDuration     ['Duration'      ] * pTimeStep                            # duration of load levels                   [h]
-    pLevelToStage         = dfDuration     ['Stage'         ]                                        # load levels assignment to stages
-    pReserveMargin        = dfReserveMargin['ReserveMargin' ]                                        # minimum adequacy reserve margin           [p.u.]
-    pEmission             = dfEmission     ['CO2Emission'   ]                                        # maximum CO2 emission                      [MtCO2]
-    pRESEnergy            = dfRESEnergy    ['RESEnergy'     ]                                        # minimum RES energy                        [GWh]
-    pDemandElec           = dfDemand.reindex              (columns=mTEPES.nd, fill_value=0.0) * 1e-3 # electric demand                           [GW]
-    pSystemInertia        = dfInertia.reindex             (columns=mTEPES.ar, fill_value=0.0)        # inertia                                   [s]
-    pOperReserveUp        = dfUpOperatingReserve.reindex  (columns=mTEPES.ar, fill_value=0.0) * 1e-3 # upward   operating reserve                [GW]
-    pOperReserveDw        = dfDwOperatingReserve.reindex  (columns=mTEPES.ar, fill_value=0.0) * 1e-3 # downward operating reserve                [GW]
+    # load parameters from dfParameter
+    for col in dfs['dfParameter'].columns:
+        if col in ['ENSCost', 'HNSCost', 'HTNSCost', 'SBase']:
+            par[f'p{col}'] = dfs['dfParameter'][col].iloc[0] * factor_1
+        elif col in ['TimeStep']:
+            par[f'p{col}'] = dfs['dfParameter'][col].iloc[0].astype('int')
+        else:
+            par[f'p{col}'] = dfs['dfParameter'][col].iloc[0]
 
-    pVariableMinPowerElec = dfVariableMinPower.reindex    (columns=mTEPES.gg, fill_value=0.0) * 1e-3 # dynamic variable minimum power            [GW]
-    pVariableMaxPowerElec = dfVariableMaxPower.reindex    (columns=mTEPES.gg, fill_value=0.0) * 1e-3 # dynamic variable maximum power            [GW]
-    pVariableMinCharge    = dfVariableMinCharge.reindex   (columns=mTEPES.gg, fill_value=0.0) * 1e-3 # dynamic variable minimum charge           [GW]
-    pVariableMaxCharge    = dfVariableMaxCharge.reindex   (columns=mTEPES.gg, fill_value=0.0) * 1e-3 # dynamic variable maximum charge           [GW]
-    pVariableMinStorage   = dfVariableMinStorage.reindex  (columns=mTEPES.gg, fill_value=0.0)        # dynamic variable minimum storage          [GWh]
-    pVariableMaxStorage   = dfVariableMaxStorage.reindex  (columns=mTEPES.gg, fill_value=0.0)        # dynamic variable maximum storage          [GWh]
-    pVariableMinEnergy    = dfVariableMinEnergy.reindex   (columns=mTEPES.gg, fill_value=0.0) * 1e-3 # dynamic variable minimum energy           [GW]
-    pVariableMaxEnergy    = dfVariableMaxEnergy.reindex   (columns=mTEPES.gg, fill_value=0.0) * 1e-3 # dynamic variable maximum energy           [GW]
-    pVariableFuelCost     = dfVariableFuelCost.reindex    (columns=mTEPES.gg, fill_value=0.0)        # dynamic variable fuel cost                [EUR/MJ]
-    pVariableEmissionCost = dfVariableEmissionCost.reindex(columns=mTEPES.gg, fill_value=0.0)        # dynamic variable emission cost            [EUR/tCO2]
-    pEnergyInflows        = dfEnergyInflows.reindex       (columns=mTEPES.gg, fill_value=0.0) * 1e-3 # dynamic energy inflows                    [GW]
-    pEnergyOutflows       = dfEnergyOutflows.reindex      (columns=mTEPES.gg, fill_value=0.0) * 1e-3 # dynamic energy outflows                   [GW]
+    par['pPeriodWeight']         = dfs['dfPeriod']       ['Weight'        ].astype('int')                          # weights of periods                        [p.u.]
+    par['pScenProb']             = dfs['dfScenario']     ['Probability'   ].astype('float64')                      # probabilities of scenarios                [p.u.]
+    par['pStageWeight']          = dfs['dfStage']        ['Weight'        ].astype('float64')                      # weights of stages
+    par['pDuration']             = dfs['dfDuration']     ['Duration'      ] * par['pTimeStep']                     # duration of load levels                   [h]
+    par['pLevelToStage']         = dfs['dfDuration']     ['Stage'         ]                                        # load levels assignment to stages
+    par['pReserveMargin']        = dfs['dfReserveMargin']['ReserveMargin' ]                                        # minimum adequacy reserve margin           [p.u.]
+    par['pEmission']             = dfs['dfEmission']     ['CO2Emission'   ]                                        # maximum CO2 emission                      [MtCO2]
+    par['pRESEnergy']            = dfs['dfRESEnergy']    ['RESEnergy'     ]                                        # minimum RES energy                        [GWh]
+    par['pDemandElec']           = dfs['dfDemand'].reindex                (columns=mTEPES.nd, fill_value=0.0) * 1e-3 # electric demand                           [GW]
+    par['pSystemInertia']        = dfs['dfInertia'].reindex               (columns=mTEPES.ar, fill_value=0.0)        # inertia                                   [s]
+    par['pOperReserveUp']        = dfs['dfOperatingReserveUp'].reindex    (columns=mTEPES.ar, fill_value=0.0) * 1e-3 # upward   operating reserve                [GW]
+    par['pOperReserveDw']        = dfs['dfOperatingReserveDown'].reindex  (columns=mTEPES.ar, fill_value=0.0) * 1e-3 # downward operating reserve                [GW]
+    par['pVariableMinPowerElec'] = dfs['dfVariableMinGeneration'].reindex (columns=mTEPES.gg, fill_value=0.0) * 1e-3 # dynamic variable minimum power            [GW]
+    par['pVariableMaxPowerElec'] = dfs['dfVariableMaxGeneration'].reindex (columns=mTEPES.gg, fill_value=0.0) * 1e-3 # dynamic variable maximum power            [GW]
+    par['pVariableMinCharge']    = dfs['dfVariableMinConsumption'].reindex(columns=mTEPES.gg, fill_value=0.0) * 1e-3 # dynamic variable minimum charge           [GW]
+    par['pVariableMaxCharge']    = dfs['dfVariableMaxConsumption'].reindex(columns=mTEPES.gg, fill_value=0.0) * 1e-3 # dynamic variable maximum charge           [GW]
+    par['pVariableMinStorage']   = dfs['dfVariableMinStorage'].reindex    (columns=mTEPES.gg, fill_value=0.0)        # dynamic variable minimum storage          [GWh]
+    par['pVariableMaxStorage']   = dfs['dfVariableMaxStorage'].reindex    (columns=mTEPES.gg, fill_value=0.0)        # dynamic variable maximum storage          [GWh]
+    par['pVariableMinEnergy']    = dfs['dfVariableMinEnergy'].reindex     (columns=mTEPES.gg, fill_value=0.0) * 1e-3 # dynamic variable minimum energy           [GW]
+    par['pVariableMaxEnergy']    = dfs['dfVariableMaxEnergy'].reindex     (columns=mTEPES.gg, fill_value=0.0) * 1e-3 # dynamic variable maximum energy           [GW]
+    par['pVariableFuelCost']     = dfs['dfVariableFuelCost'].reindex      (columns=mTEPES.gg, fill_value=0.0)        # dynamic variable fuel cost                [EUR/MJ]
+    par['pVariableEmissionCost'] = dfs['dfVariableEmissionCost'].reindex  (columns=mTEPES.gg, fill_value=0.0)        # dynamic variable emission cost            [EUR/tCO2]
+    par['pEnergyInflows']        = dfs['dfEnergyInflows'].reindex         (columns=mTEPES.gg, fill_value=0.0) * 1e-3 # dynamic energy inflows                    [GW]
+    par['pEnergyOutflows']       = dfs['dfEnergyOutflows'].reindex        (columns=mTEPES.gg, fill_value=0.0) * 1e-3 # dynamic energy outflows                   [GW]
 
-    if pIndVarTTC == 1:
-        pVariableNTCFrw = dfVariableTTCFrw * 1e-3                                                    # variable TTC forward                      [GW]
-        pVariableNTCBck = dfVariableTTCBck * 1e-3                                                    # variable TTC backward                     [GW]
-    if pIndPTDF == 1:
-        pVariablePTDF = dfVariablePTDF  # variable PTDF                             [p.u.]
+    if par['pIndVarTTC'] == 1:
+        par['pVariableNTCFrw'] = dfs['dfVariableTTCFrw'] * 1e-3                                                      # variable TTC forward                      [GW]
+        par['pVariableNTCBck'] = dfs['dfVariableTTCBck'] * 1e-3                                                      # variable TTC backward                     [GW]
+    if par['pIndPTDF'] == 1:
+        par['pVariablePTDF']   = dfs['dfVariablePTDF']                                                               # variable PTDF                             [p.u.]
 
-    if pIndHydroTopology == 1:
-        pVariableMinVolume = dfVariableMinVolume.reindex  (columns=mTEPES.rs, fill_value=0.0)        # dynamic variable minimum reservoir volume [hm3]
-        pVariableMaxVolume = dfVariableMaxVolume.reindex  (columns=mTEPES.rs, fill_value=0.0)        # dynamic variable maximum reservoir volume [hm3]
-        pHydroInflows      = dfHydroInflows.reindex       (columns=mTEPES.rs, fill_value=0.0)        # dynamic hydro inflows                     [m3/s]
-        pHydroOutflows     = dfHydroOutflows.reindex      (columns=mTEPES.rs, fill_value=0.0)        # dynamic hydro outflows                    [m3/s]
+    if par['pIndHydroTopology'] == 1:
+        par['pVariableMinVolume'] = dfs['dfVariableMinVolume'].reindex  (columns=mTEPES.rs, fill_value=0.0)          # dynamic variable minimum reservoir volume [hm3]
+        par['pVariableMaxVolume'] = dfs['dfVariableMaxVolume'].reindex  (columns=mTEPES.rs, fill_value=0.0)          # dynamic variable maximum reservoir volume [hm3]
+        par['pHydroInflows']      = dfs['dfHydroInflows'].reindex       (columns=mTEPES.rs, fill_value=0.0)          # dynamic hydro inflows                     [m3/s]
+        par['pHydroOutflows']     = dfs['dfHydroOutflows'].reindex      (columns=mTEPES.rs, fill_value=0.0)          # dynamic hydro outflows                    [m3/s]
 
-    if pIndHydrogen == 1:
-        pDemandH2          = dfDemandHydrogen      [mTEPES.nd]                                       # hydrogen demand                           [tH2/h]
+    if par['pIndHydrogen'] == 1:
+        par['pDemandH2']          = dfs['dfDemandHydrogen']      [mTEPES.nd]                                         # hydrogen demand                           [tH2/h]
 
-    if pIndHeat == 1:
-        pReserveMarginHeat = dfReserveMarginHeat   ['ReserveMargin']                                 # minimum adequacy reserve margin           [p.u.]
-        pDemandHeat        = dfDemandHeat          [mTEPES.nd] * 1e-3                                # heat     demand                           [GW]
+    if par['pIndHeat'] == 1:
+        par['pReserveMarginHeat'] = dfs['dfReserveMarginHeat']   ['ReserveMargin']                                   # minimum adequacy reserve margin           [p.u.]
+        par['pDemandHeat']        = dfs['dfDemandHeat']          [mTEPES.nd] * 1e-3                                  # heat     demand                           [GW]
 
-    if pTimeStep > 1:
+    if par['pTimeStep'] > 1:
 
         # compute the demand as the mean over the time step load levels and assign it to active load levels. Idem for the remaining parameters
         # Skip mean calculation for empty DataFrames (either full of 0s or NaNs)
