@@ -165,7 +165,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
 
 
 
-    
+
     try:
         import csv
         def count_lines_in_csv(csv_file_path):
