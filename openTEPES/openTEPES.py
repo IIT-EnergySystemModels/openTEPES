@@ -11,7 +11,7 @@ import time
 import pyomo.environ as pyo
 from   pyomo.environ import ConcreteModel, Set
 
-from .openTEPES_InputData        import InputData, SettingUpVariables
+from .openTEPES_InputData        import InputData, DataConfiguration, SettingUpVariables
 from .openTEPES_ModelFormulation import TotalObjectiveFunction, InvestmentModelFormulation, GenerationOperationModelFormulationObjFunct, GenerationOperationModelFormulationInvestment, GenerationOperationModelFormulationDemand, GenerationOperationModelFormulationStorage, GenerationOperationModelFormulationReservoir, NetworkH2OperationModelFormulation, NetworkHeatOperationModelFormulation, GenerationOperationModelFormulationCommitment, GenerationOperationModelFormulationRampMinTime, NetworkSwitchingModelFormulation, NetworkOperationModelFormulation, NetworkCycles, CycleConstraints
 from .openTEPES_ProblemSolving   import ProblemSolving
 from .openTEPES_OutputResults    import OutputResultsParVarCon, InvestmentResults, GenerationOperationResults, GenerationOperationHeatResults, ESSOperationResults, ReservoirOperationResults, NetworkH2OperationResults, NetworkHeatOperationResults, FlexibilityResults, NetworkOperationResults, MarginalResults, OperationSummaryResults, ReliabilityResults, CostSummaryResults, EconomicResults, NetworkMapResults
@@ -67,8 +67,8 @@ def _build_model(description: str) -> ConcreteModel:
 def _reading_data(dir_, case, model, log_flag):
     InputData(dir_, case, model, log_flag)
 
-
 def _configure_basic_components(dir_, case, model, log_flag):
+    DataConfiguration(model)
     SettingUpVariables(model, model)
     model.First_st, model.Last_st = next(iter(model.st)), None
     for st in model.st:
