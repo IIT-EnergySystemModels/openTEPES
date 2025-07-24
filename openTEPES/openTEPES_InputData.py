@@ -131,7 +131,10 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         if 'Emission' in key:
             df.fillna(math.inf, inplace=True)
         elif 'Generation' in key:
-            df.fillna({"Efficiency": 1.0}, inplace=True)
+            # build a dict that gives 1.0 for 'Efficiency', 0.0 for everything else
+            fill_values = {col: (1.0 if col == "Efficiency" else 0.0) for col in df.columns}
+            # one pass over the DataFrame
+            df.fillna(fill_values, inplace=True)
         else:
             df.fillna(0.0, inplace=True)
 
@@ -789,10 +792,10 @@ def DataConfiguration(mTEPES):
         mTEPES.pLoadLevelWeight[p,sc,n] = mTEPES.dPar['pStageWeight'][st]
 
     #%% inverse index node to generator
-    pNodeToGen = pGenToNode.reset_index().set_index('Node').set_axis(['Generator'], axis=1)[['Generator']]
-    pNodeToGen = pNodeToGen.loc[pNodeToGen['Generator'].isin(mTEPES.g)].reset_index().set_index(['Node', 'Generator'])
+    mTEPES.dPar['pNodeToGen'] = mTEPES.dPar['pGenToNode'].reset_index().set_index('Node').set_axis(['Generator'], axis=1)[['Generator']]
+    mTEPES.dPar['pNodeToGen'] = mTEPES.dPar['pNodeToGen'].loc[mTEPES.dPar['pNodeToGen']['Generator'].isin(mTEPES.g)].reset_index().set_index(['Node', 'Generator'])
 
-    mTEPES.n2g = Set(initialize=pNodeToGen.index, doc='node   to generator')
+    mTEPES.n2g = Set(initialize=mTEPES.dPar['pNodeToGen'].index, doc='node   to generator')
 
     mTEPES.z2g = Set(doc='zone   to generator', initialize=[(zn,g) for (nd,g,zn      ) in mTEPES.n2g*mTEPES.zn             if (nd,zn) in mTEPES.ndzn                           ])
     mTEPES.a2g = Set(doc='area   to generator', initialize=[(ar,g) for (nd,g,zn,ar   ) in mTEPES.n2g*mTEPES.znar           if (nd,zn) in mTEPES.ndzn                           ])
@@ -801,10 +804,10 @@ def DataConfiguration(mTEPES):
     # mTEPES.z2g  = Set(initialize = [(zn,g) for zn,g in mTEPES.zn*mTEPES.g if (zn,g) in pZone2Gen])
 
     #%% inverse index generator to technology
-    pTechnologyToGen = pGenToTechnology.reset_index().set_index('Technology').set_axis(['Generator'], axis=1)[['Generator']]
-    pTechnologyToGen = pTechnologyToGen.loc[pTechnologyToGen['Generator'].isin(mTEPES.g)].reset_index().set_index(['Technology', 'Generator'])
+    mTEPES.dPar['pTechnologyToGen'] = mTEPES.dPar['pGenToTechnology'].reset_index().set_index('Technology').set_axis(['Generator'], axis=1)[['Generator']]
+    mTEPES.dPar['pTechnologyToGen'] = mTEPES.dPar['pTechnologyToGen'].loc[mTEPES.dPar['pTechnologyToGen']['Generator'].isin(mTEPES.g)].reset_index().set_index(['Technology', 'Generator'])
 
-    mTEPES.t2g = Set(initialize=pTechnologyToGen.index, doc='technology to generator')
+    mTEPES.t2g = Set(initialize=mTEPES.dPar['pTechnologyToGen'].index, doc='technology to generator')
 
     # ESS and RES technologies
     def Create_ESS_RES_Sets(mTEPES) -> None:
@@ -832,7 +835,7 @@ def DataConfiguration(mTEPES):
     # Create mutually exclusive groups
     # Store in a group-generator dictionary all the relevant data
     group_dict = {}
-    for generator, groups in pGenToExclusiveGen.items():
+    for generator, groups in mTEPES.dPar['pGenToExclusiveGen'].items():
         if groups != 0.0:
             for group in str(groups).split('|'):
                 group_dict.setdefault(group, []).append(generator)
@@ -867,43 +870,43 @@ def DataConfiguration(mTEPES):
     mTEPES.ExclusiveGeneratorsHourly = Set(initialize=sorted(sum(group_dict_hourly.values(), [])))
 
     # minimum and maximum variable power, charge, and storage capacity
-    pMinPowerElec  = pVariableMinPowerElec.replace(0.0, pRatedMinPowerElec)
-    pMaxPowerElec  = pVariableMaxPowerElec.replace(0.0, pRatedMaxPowerElec)
-    pMinCharge     = pVariableMinCharge.replace   (0.0, pRatedMinCharge   )
-    pMaxCharge     = pVariableMaxCharge.replace   (0.0, pRatedMaxCharge   )
-    pMinStorage    = pVariableMinStorage.replace  (0.0, pRatedMinStorage  )
-    pMaxStorage    = pVariableMaxStorage.replace  (0.0, pRatedMaxStorage  )
-    if pIndHydroTopology == 1:
-        pMinVolume = pVariableMinVolume.replace   (0.0, pRatedMinVolume   )
-        pMaxVolume = pVariableMaxVolume.replace   (0.0, pRatedMaxVolume   )
+    mTEPES.dPar['pMinPowerElec']  = mTEPES.dPar['pVariableMinPowerElec'].replace(0.0, mTEPES.dPar['pRatedMinPowerElec'])
+    mTEPES.dPar['pMaxPowerElec']  = mTEPES.dPar['pVariableMaxPowerElec'].replace(0.0, mTEPES.dPar['pRatedMaxPowerElec'])
+    mTEPES.dPar['pMinCharge']     = mTEPES.dPar['pVariableMinCharge'].replace   (0.0, mTEPES.dPar['pRatedMinCharge']   )
+    mTEPES.dPar['pMaxCharge']     = mTEPES.dPar['pVariableMaxCharge'].replace   (0.0, mTEPES.dPar['pRatedMaxCharge']   )
+    mTEPES.dPar['pMinStorage']    = mTEPES.dPar['pVariableMinStorage'].replace  (0.0, mTEPES.dPar['pRatedMinStorage']  )
+    mTEPES.dPar['pMaxStorage']    = mTEPES.dPar['pVariableMaxStorage'].replace  (0.0, mTEPES.dPar['pRatedMaxStorage']  )
+    if mTEPES.dPar['pIndHydroTopology'] == 1:
+        mTEPES.dPar['pMinVolume'] = mTEPES.dPar['pVariableMinVolume'].replace   (0.0, mTEPES.dPar['pRatedMinVolume']   )
+        mTEPES.dPar['pMaxVolume'] = mTEPES.dPar['pVariableMaxVolume'].replace   (0.0, mTEPES.dPar['pRatedMaxVolume']   )
 
-    pMinPowerElec  = pMinPowerElec.where(pMinPowerElec > 0.0, 0.0)
-    pMaxPowerElec  = pMaxPowerElec.where(pMaxPowerElec > 0.0, 0.0)
-    pMinCharge     = pMinCharge.where   (pMinCharge    > 0.0, 0.0)
-    pMaxCharge     = pMaxCharge.where   (pMaxCharge    > 0.0, 0.0)
-    pMinStorage    = pMinStorage.where  (pMinStorage   > 0.0, 0.0)
-    pMaxStorage    = pMaxStorage.where  (pMaxStorage   > 0.0, 0.0)
-    if pIndHydroTopology == 1:
-        pMinVolume = pMinVolume.where   (pMinVolume    > 0.0, 0.0)
-        pMaxVolume = pMaxVolume.where   (pMaxVolume    > 0.0, 0.0)
+    mTEPES.dPar['pMinPowerElec']  = mTEPES.dPar['pMinPowerElec'].where(mTEPES.dPar['pMinPowerElec'] > 0.0, 0.0)
+    mTEPES.dPar['pMaxPowerElec']  = mTEPES.dPar['pMaxPowerElec'].where(mTEPES.dPar['pMaxPowerElec'] > 0.0, 0.0)
+    mTEPES.dPar['pMinCharge']     = mTEPES.dPar['pMinCharge'].where   (mTEPES.dPar['pMinCharge']    > 0.0, 0.0)
+    mTEPES.dPar['pMaxCharge']     = mTEPES.dPar['pMaxCharge'].where   (mTEPES.dPar['pMaxCharge']    > 0.0, 0.0)
+    mTEPES.dPar['pMinStorage']    = mTEPES.dPar['pMinStorage'].where  (mTEPES.dPar['pMinStorage']   > 0.0, 0.0)
+    mTEPES.dPar['pMaxStorage']    = mTEPES.dPar['pMaxStorage'].where  (mTEPES.dPar['pMaxStorage']   > 0.0, 0.0)
+    if mTEPES.dPar['pIndHydroTopology'] == 1:
+        mTEPES.dPar['pMinVolume'] = mTEPES.dPar['pMinVolume'].where   (mTEPES.dPar['pMinVolume']    > 0.0, 0.0)
+        mTEPES.dPar['pMaxVolume'] = mTEPES.dPar['pMaxVolume'].where   (mTEPES.dPar['pMaxVolume']    > 0.0, 0.0)
 
     # fuel term and constant term variable cost
-    pVariableFuelCost = pVariableFuelCost.replace(0.0, dfGeneration['FuelCost'])
-    pLinearVarCost    = dfGeneration['LinearTerm'  ] * 1e-3 * pVariableFuelCost + dfGeneration['OMVariableCost'] * 1e-3
-    pConstantVarCost  = dfGeneration['ConstantTerm'] * 1e-6 * pVariableFuelCost
-    pLinearVarCost    = pLinearVarCost.reindex  (sorted(pLinearVarCost.columns  ), axis=1)
-    pConstantVarCost  = pConstantVarCost.reindex(sorted(pConstantVarCost.columns), axis=1)
+    mTEPES.dPar['pVariableFuelCost'] = mTEPES.dPar  ['pVariableFuelCost'].replace(0.0, mTEPES.dFrame['dfGeneration']['FuelCost'])
+    mTEPES.dPar['pLinearVarCost']    = mTEPES.dFrame['dfGeneration']['LinearTerm'  ] * 1e-3 * mTEPES.dPar['pVariableFuelCost'] + mTEPES.dFrame['dfGeneration']['OMVariableCost'] * 1e-3
+    mTEPES.dPar['pConstantVarCost']  = mTEPES.dFrame['dfGeneration']['ConstantTerm'] * 1e-6 * mTEPES.dPar['pVariableFuelCost']
+    mTEPES.dPar['pLinearVarCost']    = mTEPES.dPar  ['pLinearVarCost'].reindex  (sorted(mTEPES.dPar['pLinearVarCost'].columns  ), axis=1)
+    mTEPES.dPar['pConstantVarCost']  = mTEPES.dPar  ['pConstantVarCost'].reindex(sorted(mTEPES.dPar['pConstantVarCost'].columns), axis=1)
 
     # variable emission cost [M€/GWh]
-    pVariableEmissionCost = pVariableEmissionCost.replace(0.0, pCO2Cost) #[€/tCO2]
-    pEmissionVarCost      = pEmissionRate * 1e-3 * pVariableEmissionCost                 #[M€/GWh] = [tCO2/MWh] * 1e-3 * [€/tCO2]
-    pEmissionVarCost      = pEmissionVarCost.reindex(sorted(pEmissionVarCost.columns), axis=1)
+    mTEPES.dPar['pVariableEmissionCost'] = mTEPES.dPar['pVariableEmissionCost'].replace(0.0, mTEPES.dPar['pCO2Cost']) #[€/tCO2]
+    mTEPES.dPar['pEmissionVarCost']      = mTEPES.dPar['pEmissionRate'] * 1e-3 * mTEPES.dPar['pVariableEmissionCost']                 #[M€/GWh] = [tCO2/MWh] * 1e-3 * [€/tCO2]
+    mTEPES.dPar['pEmissionVarCost']      = mTEPES.dPar['pEmissionVarCost'].reindex(sorted(mTEPES.dPar['pEmissionVarCost'].columns), axis=1)
 
     # minimum up- and downtime and maximum shift time converted to an integer number of time steps
-    pUpTime     = round(pUpTime    /pTimeStep).astype('int')
-    pDwTime     = round(pDwTime    /pTimeStep).astype('int')
-    pStableTime = round(pStableTime/pTimeStep).astype('int')
-    pShiftTime  = round(pShiftTime /pTimeStep).astype('int')
+    mTEPES.dPar['pUpTime']     = round(mTEPES.dPar['pUpTime']    /mTEPES.dPar['pTimeStep']).astype('int')
+    mTEPES.dPar['pDwTime']     = round(mTEPES.dPar['pDwTime']    /mTEPES.dPar['pTimeStep']).astype('int')
+    mTEPES.dPar['pStableTime'] = round(mTEPES.dPar['pStableTime']/mTEPES.dPar['pTimeStep']).astype('int')
+    mTEPES.dPar['pShiftTime']  = round(mTEPES.dPar['pShiftTime'] /mTEPES.dPar['pTimeStep']).astype('int')
 
     # %% definition of the time-steps leap to observe the stored energy at an ESS
     idxCycle            = dict()
@@ -911,77 +914,77 @@ def DataConfiguration(mTEPES):
     idxCycle[0.0      ] = 1
     idxCycle['Hourly' ] = 1
     idxCycle['Daily'  ] = 1
-    idxCycle['Weekly' ] = round(  24/pTimeStep)
-    idxCycle['Monthly'] = round( 168/pTimeStep)
-    idxCycle['Yearly' ] = round( 672/pTimeStep)
+    idxCycle['Weekly' ] = round(  24/mTEPES.dPar['pTimeStep'])
+    idxCycle['Monthly'] = round( 168/mTEPES.dPar['pTimeStep'])
+    idxCycle['Yearly' ] = round( 672/mTEPES.dPar['pTimeStep'])
 
     idxOutflows            = dict()
     idxOutflows[0        ] = 1
     idxOutflows[0.0      ] = 1
     idxOutflows['Hourly' ] = 1
-    idxOutflows['Daily'  ] = round(  24/pTimeStep)
-    idxOutflows['Weekly' ] = round( 168/pTimeStep)
-    idxOutflows['Monthly'] = round( 672/pTimeStep)
-    idxOutflows['Yearly' ] = round(8736/pTimeStep)
+    idxOutflows['Daily'  ] = round(  24/mTEPES.dPar['pTimeStep'])
+    idxOutflows['Weekly' ] = round( 168/mTEPES.dPar['pTimeStep'])
+    idxOutflows['Monthly'] = round( 672/mTEPES.dPar['pTimeStep'])
+    idxOutflows['Yearly' ] = round(8736/mTEPES.dPar['pTimeStep'])
 
     idxEnergy            = dict()
     idxEnergy[0        ] = 1
     idxEnergy[0.0      ] = 1
     idxEnergy['Hourly' ] = 1
-    idxEnergy['Daily'  ] = round(  24/pTimeStep)
-    idxEnergy['Weekly' ] = round( 168/pTimeStep)
-    idxEnergy['Monthly'] = round( 672/pTimeStep)
-    idxEnergy['Yearly' ] = round(8736/pTimeStep)
+    idxEnergy['Daily'  ] = round(  24/mTEPES.dPar['pTimeStep'])
+    idxEnergy['Weekly' ] = round( 168/mTEPES.dPar['pTimeStep'])
+    idxEnergy['Monthly'] = round( 672/mTEPES.dPar['pTimeStep'])
+    idxEnergy['Yearly' ] = round(8736/mTEPES.dPar['pTimeStep'])
 
-    pStorageTimeStep  = pStorageType.map (idxCycle                                                                               ).astype('int')
-    pOutflowsTimeStep = pOutflowsType.map(idxOutflows).where(pEnergyOutflows.sum()                               > 0.0, other = 1).astype('int')
-    pEnergyTimeStep   = pEnergyType.map  (idxEnergy  ).where(pVariableMinEnergy.sum() + pVariableMaxEnergy.sum() > 0.0, other = 1).astype('int')
+    mTEPES.dPar['pStorageTimeStep']  = mTEPES.dPar['pStorageType'].map (idxCycle                                                                                                             ).astype('int')
+    mTEPES.dPar['pOutflowsTimeStep'] = mTEPES.dPar['pOutflowsType'].map(idxOutflows).where(mTEPES.dPar['pEnergyOutflows'].sum()                                              > 0.0, other = 1).astype('int')
+    mTEPES.dPar['pEnergyTimeStep']   = mTEPES.dPar['pEnergyType'].map  (idxEnergy  ).where(mTEPES.dPar['pVariableMinEnergy'].sum() + mTEPES.dPar['pVariableMaxEnergy'].sum() > 0.0, other = 1).astype('int')
 
-    pStorageTimeStep  = pd.concat([pStorageTimeStep, pOutflowsTimeStep, pEnergyTimeStep], axis=1).min(axis=1)
+    mTEPES.dPar['pStorageTimeStep']  = pd.concat([mTEPES.dPar['pStorageTimeStep'], mTEPES.dPar['pOutflowsTimeStep'], mTEPES.dPar['pEnergyTimeStep']], axis=1).min(axis=1)
     # cycle time step can't exceed the stage duration
-    pStorageTimeStep  = pStorageTimeStep.where(pStorageTimeStep <= pStageDuration.min(), pStageDuration.min())
+    mTEPES.dPar['pStorageTimeStep']  = mTEPES.dPar['pStorageTimeStep'].where(mTEPES.dPar['pStorageTimeStep'] <= mTEPES.dPar['pStageDuration'].min(), mTEPES.dPar['pStageDuration'].min())
 
-    if pIndHydroTopology == 1:
+    if mTEPES.dPar['pIndHydroTopology'] == 1:
         # %% definition of the time-steps leap to observe the stored energy at a reservoir
         idxCycleRsr            = dict()
         idxCycleRsr[0        ] = 1
         idxCycleRsr[0.0      ] = 1
         idxCycleRsr['Hourly' ] = 1
         idxCycleRsr['Daily'  ] = 1
-        idxCycleRsr['Weekly' ] = round(  24/pTimeStep)
-        idxCycleRsr['Monthly'] = round( 168/pTimeStep)
-        idxCycleRsr['Yearly' ] = round( 672/pTimeStep)
+        idxCycleRsr['Weekly' ] = round(  24/mTEPES.dPar['pTimeStep'])
+        idxCycleRsr['Monthly'] = round( 168/mTEPES.dPar['pTimeStep'])
+        idxCycleRsr['Yearly' ] = round( 672/mTEPES.dPar['pTimeStep'])
 
         idxWaterOut            = dict()
         idxWaterOut[0        ] = 1
         idxWaterOut[0.0      ] = 1
         idxWaterOut['Hourly' ] = 1
-        idxWaterOut['Daily'  ] = round(  24/pTimeStep)
-        idxWaterOut['Weekly' ] = round( 168/pTimeStep)
-        idxWaterOut['Monthly'] = round( 672/pTimeStep)
-        idxWaterOut['Yearly' ] = round(8736/pTimeStep)
+        idxWaterOut['Daily'  ] = round(  24/mTEPES.dPar['pTimeStep'])
+        idxWaterOut['Weekly' ] = round( 168/mTEPES.dPar['pTimeStep'])
+        idxWaterOut['Monthly'] = round( 672/mTEPES.dPar['pTimeStep'])
+        idxWaterOut['Yearly' ] = round(8736/mTEPES.dPar['pTimeStep'])
 
-        pCycleRsrTimeStep = pReservoirType.map(idxCycleRsr).astype('int')
-        pWaterOutTimeStep = pWaterOutfType.map(idxWaterOut).astype('int')
+        mTEPES.dPar['pCycleRsrTimeStep'] = mTEPES.dPar['pReservoirType'].map(idxCycleRsr).astype('int')
+        mTEPES.dPar['pWaterOutTimeStep'] = mTEPES.dPar['pWaterOutfType'].map(idxWaterOut).astype('int')
 
-        pReservoirTimeStep = pd.concat([pCycleRsrTimeStep, pWaterOutTimeStep], axis=1).min(axis=1)
+        mTEPES.dPar['pReservoirTimeStep'] = pd.concat([mTEPES.dPar['pCycleRsrTimeStep'], mTEPES.dPar['pWaterOutTimeStep']], axis=1).min(axis=1)
         # cycle water step can't exceed the stage duration
-        pReservoirTimeStep = pReservoirTimeStep.where(pReservoirTimeStep <= pStageDuration.min(), pStageDuration.min())
+        mTEPES.dPar['pReservoirTimeStep'] = mTEPES.dPar['pReservoirTimeStep'].where(mTEPES.dPar['pReservoirTimeStep'] <= mTEPES.dPar['pStageDuration'].min(), mTEPES.dPar['pStageDuration'].min())
 
     # initial inventory must be between minimum and maximum
-    pInitialInventory  = pInitialInventory.where(pInitialInventory > pRatedMinStorage, pRatedMinStorage)
-    pInitialInventory  = pInitialInventory.where(pInitialInventory < pRatedMaxStorage, pRatedMaxStorage)
-    if pIndHydroTopology == 1:
-        pInitialVolume = pInitialVolume.where   (pInitialVolume    > pRatedMinVolume,  pRatedMinVolume )
-        pInitialVolume = pInitialVolume.where   (pInitialVolume    < pRatedMaxVolume,  pRatedMaxVolume )
+    mTEPES.dPar['pInitialInventory']  = mTEPES.dPar['pInitialInventory'].where(mTEPES.dPar['pInitialInventory'] > mTEPES.dPar['pRatedMinStorage'], mTEPES.dPar['pRatedMinStorage'])
+    mTEPES.dPar['pInitialInventory']  = mTEPES.dPar['pInitialInventory'].where(mTEPES.dPar['pInitialInventory'] < mTEPES.dPar['pRatedMaxStorage'], mTEPES.dPar['pRatedMaxStorage'])
+    if mTEPES.dPar['pIndHydroTopology'] == 1:
+        mTEPES.dPar['pInitialVolume'] = mTEPES.dPar['pInitialVolume'].where   (mTEPES.dPar['pInitialVolume']    > mTEPES.dPar['pRatedMinVolume'],  mTEPES.dPar['pRatedMinVolume'] )
+        mTEPES.dPar['pInitialVolume'] = mTEPES.dPar['pInitialVolume'].where   (mTEPES.dPar['pInitialVolume']    < mTEPES.dPar['pRatedMaxVolume'],  mTEPES.dPar['pRatedMaxVolume'] )
 
     # initial inventory of the candidate storage units equal to its maximum capacity if the storage capacity is linked to the investment decision
-    pInitialInventory.update(pd.Series([pInitialInventory[ec] if pIndBinStorInvest[ec] == 0 else pRatedMaxStorage[ec] for ec in mTEPES.ec], index=mTEPES.ec, dtype='float64'))
+    mTEPES.dPar['pInitialInventory'].update(pd.Series([mTEPES.dPar['pInitialInventory'][ec] if mTEPES.dPar['pIndBinStorInvest'][ec] == 0 else mTEPES.dPar['pRatedMaxStorage'][ec] for ec in mTEPES.ec], index=mTEPES.ec, dtype='float64'))
 
     # parameter that allows the initial inventory to change with load level
-    pIniInventory  = pd.DataFrame([pInitialInventory]*len(mTEPES.psn), index=mTEPES.psn, columns=mTEPES.es)
-    if pIndHydroTopology == 1:
-        pIniVolume = pd.DataFrame([pInitialVolume   ]*len(mTEPES.psn), index=mTEPES.psn, columns=mTEPES.rs)
+    mTEPES.dPar['pIniInventory']  = pd.DataFrame([mTEPES.dPar['pInitialInventory']]*len(mTEPES.psn), index=mTEPES.psn, columns=mTEPES.es)
+    if mTEPES.dPar['pIndHydroTopology'] == 1:
+        mTEPES.dPar['pIniVolume'] = pd.DataFrame([mTEPES.dPar['pInitialVolume']   ]*len(mTEPES.psn), index=mTEPES.psn, columns=mTEPES.rs)
 
     # initial inventory must be between minimum and maximum
     for p,sc,n,es in mTEPES.psnes:
