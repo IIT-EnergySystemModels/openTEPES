@@ -34,21 +34,21 @@ def setup_test_case():
     )
 
     print("Setting up test case...")  # Added print for console feedback
-    # duration_csv = os.path.join(data["DirName"], data["CaseName"], f"oT_Data_Duration_{data['CaseName']}.csv")
-    # RESEnergy_csv = os.path.join(data["DirName"], data["CaseName"], f"oT_Data_RESEnergy_{data['CaseName']}.csv")
-    # stage_csv = os.path.join(data["DirName"], data["CaseName"], f"oT_Data_Stage_{data['CaseName']}.csv")
+    duration_csv = os.path.join(data["DirName"], data["CaseName"], f"oT_Data_Duration_{data['CaseName']}.csv")
+    RESEnergy_csv = os.path.join(data["DirName"], data["CaseName"], f"oT_Data_RESEnergy_{data['CaseName']}.csv")
+    stage_csv = os.path.join(data["DirName"], data["CaseName"], f"oT_Data_Stage_{data['CaseName']}.csv")
 
     # Read original data
-    # original_duration_df = pd.read_csv(duration_csv, index_col=[0, 1, 2])
-    # original_resenergy_df = pd.read_csv(RESEnergy_csv, index_col=[0, 1])
-    # original_stage_df = pd.read_csv(stage_csv, index_col=[0])
+    original_duration_df = pd.read_csv(duration_csv, index_col=[0, 1, 2])
+    original_resenergy_df = pd.read_csv(RESEnergy_csv, index_col=[0, 1])
+    original_stage_df = pd.read_csv(stage_csv, index_col=[0])
 
     try:
         print("Modifying CSV files...")  # Added print for console feedback
         # Modify and save the modified DataFrames
-    #     modify_and_save_csv(original_duration_df, "Duration", 169, duration_csv, 0)
-    #     modify_and_save_csv(original_resenergy_df, "RESEnergy", 0, RESEnergy_csv, 0)
-    #     modify_and_save_csv(original_stage_df, "Weight", 0, stage_csv, 1)
+        modify_and_save_csv(original_duration_df, "Duration", 169, duration_csv, 0)
+        modify_and_save_csv(original_resenergy_df, "RESEnergy", 0, RESEnergy_csv, 0)
+        modify_and_save_csv(original_stage_df, "Weight", 0, stage_csv, 1)
     #
         yield data  # Yielding allows cleanup even if there's an early return or exception
     #
@@ -59,10 +59,10 @@ def setup_test_case():
     finally:
         print("Restoring original CSV files...")  # Added print for console feedback
         # Restore original data
-    #     logger.info("Restoring original CSV files.")
-    #     original_duration_df.to_csv(duration_csv)
-    #     original_resenergy_df.to_csv(RESEnergy_csv)
-    #     original_stage_df.to_csv(stage_csv)
+        logger.info("Restoring original CSV files.")
+        original_duration_df.to_csv(duration_csv)
+        original_resenergy_df.to_csv(RESEnergy_csv)
+        original_stage_df.to_csv(stage_csv)
 
 
 def modify_and_save_csv(df, column_name, start_row, file_path, idx):
