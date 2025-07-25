@@ -106,7 +106,7 @@ def _configure_output_flags(output_flag: int, init_flags: int) -> dict:
         pIndAreaOutput=1,
         pIndPlotOutput=0
     )
-    detailed = {key: int(output_flag == init_flags) for key,_func,_ in _OUTPUT_FUNCS}
+    detailed = {key: int(output_flag == 1-init_flags) for key,_func,_ in _OUTPUT_FUNCS}
     return {**base, **detailed}
 
 
