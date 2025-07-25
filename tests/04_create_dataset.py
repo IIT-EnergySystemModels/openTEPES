@@ -5,6 +5,7 @@ import os
 import sys
 # Add the root project folder to the Python path
 sys.path.append(str(Path(__file__).resolve().parents[1]))
+from collections import defaultdict
 from openTEPES import openTEPES as oT
 from openTEPES import openTEPES_ModelFormulation as oT_MF
 from pyomo.opt import check_optimal_termination
@@ -48,15 +49,15 @@ dict_factor_1 = {
     # -1.75: '-175%', -1.70: '-170%', -1.65: '-165%', -1.60: '-160%', -1.55: '-155%',
     # -1.50: '-150%', -1.45: '-145%', -1.40: '-140%', -1.35: '-135%', -1.30: '-130%',
     # -1.25: '-125%', -1.20: '-120%', -1.15: '-115%', -1.10: '-110%', -1.05: '-105%',
-    -1.00: '-100%', -0.95: '-95%' , -0.90: '-90%' , -0.85: '-85%' , -0.80: '-80%' ,
-    -0.75: '-75%' , -0.70: '-70%' , -0.65: '-65%' , -0.60: '-60%' , -0.55: '-55%' ,
-    -0.50: '-50%' , -0.45: '-45%' , -0.40: '-40%' , -0.35: '-35%' , -0.30: '-30%' ,
-    -0.25: '-25%' , -0.20: '-20%' , -0.15: '-15%' , -0.10: '-10%' , -0.05: '-5%'  ,
+    # -1.00: '-100%', -0.95: '-95%' , -0.90: '-90%' , -0.85: '-85%' , -0.80: '-80%' ,
+    # -0.75: '-75%' , -0.70: '-70%' , -0.65: '-65%' , -0.60: '-60%' , -0.55: '-55%' ,
+    # -0.50: '-50%' , -0.45: '-45%' , -0.40: '-40%' , -0.35: '-35%' , -0.30: '-30%' ,
+    # -0.25: '-25%' , -0.20: '-20%' , -0.15: '-15%' , -0.10: '-10%' , -0.05: '-5%'  ,
      0.0: '0%',  # 0% is the base case
-     0.05: '+5%'  ,  0.10: '+10%' ,  0.15: '+15%' ,  0.20: '+20%' ,  0.25: '+25%' ,
-     0.30: '+30%' ,  0.35: '+35%' ,  0.40: '+40%' ,  0.45: '+45%' ,  0.50: '+50%' ,
-     0.55: '+55%' ,  0.60: '+60%' ,  0.65: '+65%' ,  0.70: '+70%' ,  0.75: '+75%' ,
-     0.80: '+80%' ,  0.85: '+85%' ,  0.90: '+90%' ,  0.95: '+95%' ,  1.00: '+100%',
+     # 0.05: '+5%'  ,  0.10: '+10%' ,  0.15: '+15%' ,  0.20: '+20%' ,  0.25: '+25%' ,
+     # 0.30: '+30%' ,  0.35: '+35%' ,  0.40: '+40%' ,  0.45: '+45%' ,  0.50: '+50%' ,
+     # 0.55: '+55%' ,  0.60: '+60%' ,  0.65: '+65%' ,  0.70: '+70%' ,  0.75: '+75%' ,
+     # 0.80: '+80%' ,  0.85: '+85%' ,  0.90: '+90%' ,  0.95: '+95%' ,  1.00: '+100%',
      # 1.05: '+105%',  1.10: '+110%',  1.15: '+115%',  1.20: '+120%',  1.25: '+125%',
      # 1.30: '+130%',  1.35: '+135%',  1.40: '+140%',  1.45: '+145%',  1.50: '+150%',
      # 1.55: '+155%',  1.60: '+160%',  1.65: '+165%',  1.70: '+170%',  1.75: '+175%',
@@ -127,11 +128,11 @@ new_iters       = compute_new_iterations(factor_0, factor_1, factor_2, existing_
 
 print(f"Total iterations to run: {len(new_iters)}, which were not run from the total of {len(factor_0) * len(factor_1) * len(factor_2)} possible combinations.")
 
-num_workers = 1
+num_workers = 8
 
 # ─── Per‐scenario worker function ────────────────────────────────────────────────
 
-def run_scenario(args, model):
+def run_scenario(args):
     """
     args: tuple (f0, f1, f2)
       - f0: (from_zone, to_zone, 'cc1')
@@ -140,115 +141,109 @@ def run_scenario(args, model):
     Returns: a DataFrame of marginal costs for that scenario.
     """
     df_marginal_costs = pd.DataFrame(columns=['BiddingZoneFrom', 'BiddingZoneTo', 'Factor', 'LoadLevel', 'Zone', 'Variable', 'Value'])
-    f0, f1, f2 = args
+    (f0,f1,f2), m, pOut, pLog = args
     print(f"Running scenario: {f0}, factor: {f1}, load level: {f2}")
+
     f2_new = str(f2).replace(" ", "-").replace(":", "-")
 
-     # unique case name and folder
-    factor_label = dict_factor_1[f1]
+    # creation of the scenario opt model
+    model = m.clone()
+    print(f"-Cloned model")
+    for idx in model.dPar['pDuration'].index:
+        if idx[2] == f2:
+            model.dPar['pDuration'].loc[idx] = 1.0
+        else:
+            model.dPar['pDuration'].loc[idx] = 0.0
+    print(f"-Set duration for load level {f2} in model, duration: {model.dPar['pDuration'].sum()}")
 
-
-    # # Load data from scenario folder
-    # source_files = scenario_files(source_dir, base_folder_name)
-
-    df_frw = pd.read_csv(source_files['frw'],  index_col=[0,1,2], header=[0,1,2])
-    df_bck = pd.read_csv(source_files['bck'],  index_col=[0,1,2], header=[0,1,2])
-    df_dem = pd.read_csv(source_files['dem'],  index_col=[0,1,2])
-    df_max = pd.read_csv(source_files['max'],  index_col=[0,1,2])
-    df_min = pd.read_csv(source_files['min'],  index_col=[0,1,2])
-
-    # Modify duration file
-    df_dur = df_duration.set_index(['Period', 'Scenario', 'LoadLevel']).copy()
-    df_dur['Duration'] = 0  # Ensure 'Duration' is float
-    idx = pd.IndexSlice[:, :, f2]
-    df_dur.loc[idx, 'Duration'] = 1.0  # Set duration for the specified load level
-    df_dur.to_csv(scenario_dir / f'oT_Data_Duration_{case_name}.csv', sep=',', encoding='utf-8', index=True)
 
     # Modify the TTC values based on the factor and load level
     key = pd.IndexSlice[:, :, f2]
-    val_frw = df_frw.loc[key, f0].values[0]
-    val_bck = df_bck.loc[key, f0].values[0]
+
+    val_frw = model.dPar['pVariableNTCFrw'].loc[key, f0]
+    val_bck = model.dPar['pVariableNTCBck'].loc[key, f0]
 
     # Determine which value to use
-    if val_frw != 1e-5:
-        ttc_source, base_val = 'Frw', val_frw
-    elif val_bck != 1e-5:
+    if val_frw.values < 1e-7:
         ttc_source, base_val = 'Bck', val_bck
+    elif val_bck.values < 1e-7:
+        ttc_source, base_val = 'Frw', val_frw
     else:
-        print(f"No TTC for {f0} at LL={f2}")
-        ttc_source = None
-        base_val = None
+        print(f"No TTC for {f0} at LL={f2}, both values are below threshold.")
+        ttc_source, base_val = 'Frw', model.dFrame['dfNetwork'].loc[f0, 'TTC']
 
     # Apply logic only based on the source of TTC and is base_val is not None
     if ttc_source == 'Frw':
         if f1 < 0:
-            df_frw.loc[pd.IndexSlice[:, :, f2], f0] = 1e-5
-            df_bck.loc[pd.IndexSlice[:, :, f2], f0] = base_val * -f1
+            model.dPar['pVariableNTCFrw'].loc[key, f0] = 1e-8
+            model.dPar['pVariableNTCBck'].loc[key, f0] = base_val * -f1
             if 'SE' not in f0[1]:
-                df_dem.loc[pd.IndexSlice[:, f0[1]], f'{f0[1]}'] = 1e-5
-                df_max.loc[pd.IndexSlice[:, :, f2], f'Gen_{f0[1]}'] = base_val * -f1
-                df_min.loc[pd.IndexSlice[:, :, f2], f'Gen_{f0[1]}'] = base_val * -f1
+                model.dPar['pDemandElec'].loc[key, f'{f0[1]}'] = 1e-8
+                model.dPar['pVariableMaxPowerElec'].loc[key, f'Gen_{f0[1]}'] = base_val * -f1
+                model.dPar['pVariableMinPowerElec'].loc[key, f'Gen_{f0[1]}'] = 1e-8
+                model.dPar['pVariableMaxEnergy'].loc[key, f'Gen_{f0[1]}'] = base_val * -f1
+                model.dPar['pVariableMinEnergy'].loc[key, f'Gen_{f0[1]}'] = 0
         elif f1 == 0:
-            df_frw.loc[pd.IndexSlice[:, :, f2], f0] = 1e-5
-            df_bck.loc[pd.IndexSlice[:, :, f2], f0] = 1e-5
+            model.dPar['pVariableNTCFrw'].loc[key, f0] = 1e-8
+            model.dPar['pVariableNTCBck'].loc[key, f0] = 1e-8
             if 'SE' not in f0[1]:
-                df_dem.loc[pd.IndexSlice[:, f0[1]], f'{f0[1]}'] = 1e-5
+                model.dPar['pDemandElec'].loc[key, f'{f0[1]}'] = 1e-8
         elif f1 > 0:
-            df_frw.loc[pd.IndexSlice[:, :, f2], f0] = base_val * f1
-            df_bck.loc[pd.IndexSlice[:, :, f2], f0] = 1e-5
+            model.dPar['pVariableNTCFrw'].loc[key, f0] = base_val * f1
+            model.dPar['pVariableNTCBck'].loc[key, f0] = 1e-8
             if 'SE' not in f0[1]:
-                df_dem.loc[pd.IndexSlice[:, f0[1]], f'{f0[1]}'] *= f1
+                model.dPar['pDemandElec'].loc[key, f'{f0[1]}'] *= f1
     elif ttc_source == 'Bck':
         if f1 < 0:
-            df_frw.loc[pd.IndexSlice[:, :, f2], f0] = base_val * -f1
-            df_bck.loc[pd.IndexSlice[:, :, f2], f0] = 1e-5
+            model.dPar['pVariableNTCFrw'].loc[key, f0] = base_val * -f1
+            model.dPar['pVariableNTCBck'].loc[key, f0] = 1e-8
             if 'SE' not in f0[1]:
-                df_dem.loc[pd.IndexSlice[:, f0[1]], f'{f0[1]}'] = base_val * -f1
-                df_max.loc[pd.IndexSlice[:, :, f2], f'Gen_{f0[1]}'] = 1e-5
-                df_min.loc[pd.IndexSlice[:, :, f2], f'Gen_{f0[1]}'] = 1e-5
+                model.dPar['pDemandElec'].loc[key, f'{f0[1]}'] = base_val * -f1
+                model.dPar['pVariableMaxPowerElec'].loc[key, f'Gen_{f0[1]}'] = 1e-8
+                model.dPar['pVariableMinPowerElec'].loc[key, f'Gen_{f0[1]}'] = 1e-8
+                model.dPar['pVariableMaxEnergy'].loc[key, f'Gen_{f0[1]}'] = 1e-8
+                model.dPar['pVariableMinEnergy'].loc[key, f'Gen_{f0[1]}'] = 0
         elif f1 == 0:
-            df_frw.loc[pd.IndexSlice[:, :, f2], f0] = 1e-5
-            df_bck.loc[pd.IndexSlice[:, :, f2], f0] = 1e-5
+            model.dPar['pVariableNTCFrw'].loc[key, f0] = 1e-8
+            model.dPar['pVariableNTCBck'].loc[key, f0] = 1e-8
             if 'SE' not in f0[1]:
-                df_max.loc[pd.IndexSlice[:, :, f2], f'Gen_{f0[1]}'] = 1e-5
-                df_min.loc[pd.IndexSlice[:, :, f2], f'Gen_{f0[1]}'] = 1e-5
+                model.dPar['pVariableMaxPowerElec'].loc[key, f'Gen_{f0[1]}'] = 1e-8
+                model.dPar['pVariableMinPowerElec'].loc[key, f'Gen_{f0[1]}'] = 1e-8
+                model.dPar['pVariableMaxEnergy'].loc[key, f'Gen_{f0[1]}'] = 1e-8
+                model.dPar['pVariableMinEnergy'].loc[key, f'Gen_{f0[1]}'] = 0
         elif f1 > 0:
-            df_frw.loc[pd.IndexSlice[:, :, f2], f0] = 1e-5
-            df_bck.loc[pd.IndexSlice[:, :, f2], f0] = base_val * f1
+            model.dPar['pVariableNTCFrw'].loc[key, f0] = 1e-8
+            model.dPar['pVariableNTCBck'].loc[key, f0] = base_val * f1
             if 'SE' not in f0[1]:
-                df_max.loc[pd.IndexSlice[:, :, f2], f'Gen_{f0[1]}'] *= f1
-                df_min.loc[pd.IndexSlice[:, :, f2], f'Gen_{f0[1]}'] *= f1
+                model.dPar['pVariableMaxPowerElec'].loc[key, f'Gen_{f0[1]}'] = base_val * f1
+                model.dPar['pVariableMinPowerElec'].loc[key, f'Gen_{f0[1]}'] = 1e-8
+                model.dPar['pVariableMaxEnergy'].loc[key, f'Gen_{f0[1]}'] = base_val * f1
+                model.dPar['pVariableMinEnergy'].loc[key, f'Gen_{f0[1]}'] = 0
     else:
         print(f"-No valid TTC source found for {f0} at load level {f2}, skipping modification.")
 
-    target_files = scenario_files(scenario_dir, case_name)
+    print(f"-Modified {f0} in parameters for factor {f1} and load level {f2}")
 
-    # Update the DataFrames with modified values
-    df_frw.to_csv(target_files['frw'], sep=',', encoding='utf-8', index=True)
-    df_bck.to_csv(target_files['bck'], sep=',', encoding='utf-8', index=True)
-    df_dem.to_csv(target_files['dem'], sep=',', encoding='utf-8', index=True)
-    df_max.to_csv(target_files['max'], sep=',', encoding='utf-8', index=True)
-    df_min.to_csv(target_files['min'], sep=',', encoding='utf-8', index=True)
-
-    print(f"-Modified {f0} in {scenario_dir} for factor {f1} and load level {f2}")
+    # Data Processing and varaible definitions
+    oT._configure_basic_components(base_dir, base_folder_name, model, pLog)
 
     try:
-        oT._configure_basic_components(base_dir, base_folder_name, model, pLog)
-        oT_MF.TotalObjectiveFunction(mTEPES, mTEPES, pLog)
-        oT_MF.InvestmentModelFormulation(mTEPES, mTEPES, pLog)
-        # Prepare the openTEPES inputs
-        mTEPES = openTEPES_run(
-            DirName = target_dir,
-            CaseName = case_name,
-            SolverName = "gurobi",  # You can change the solver here
-            pIndLogConsole = 'No',
-            pIndOutputResults = 'No',
-        )
+        oT_MF.TotalObjectiveFunction(model, model, pLog)
+        oT_MF.InvestmentModelFormulation(model, model, pLog)
+        oT.process_stage_loop(base_dir, base_folder_name, 'gurobi', model, pLog)
+
+        # show results or not
+        init_flags_value = 0
+        flags = oT._configure_output_flags(pOut, init_flags_value)
+        oT.finalize_and_output(base_dir, base_folder_name, model, flags)
 
         # Extract the objective values if the model was solved successfully
-        print(f"*✅ Model {case_name} solved successfully.")
+        if model.SolverResults.solver.termination_condition == 'optimal':
+            print(f"*✅ Model solved successfully.")
+        else:
+            print(f"*❌ Model did not solve optimally: {model.SolverResults.solver.termination_condition}")
 
-        objective_values = mTEPES.vTotalSCost()
+        objective_values = model.vTotalSCost()
 
         # store the objective values in df_marginal_costs
         new_row = {
@@ -263,37 +258,45 @@ def run_scenario(args, model):
 
         df_marginal_costs = pd.concat([df_marginal_costs, pd.DataFrame([new_row])], ignore_index=True)
         #
-        print(f'--Objective value extracted for {case_name} with factor {f1} and load level {f2}: {objective_values}')
+        print(f'--Objective value extracted for {f0} with factor {f1} and load level {f2}: {objective_values}')
 
-        # read csv "oT_Result_NetworkSRMC_{case_name}.csv"
-        pri_file = scenario_dir / f'oT_Result_NetworkSRMC_{case_name}.csv'
-        if pri_file.exists():
-            pri_df = pd.read_csv(pri_file, index_col=[0, 1, 2])
-            # stack the columns
-            pri_df = pri_df.stack().reset_index()
-            pri_df.columns = ['Period', 'Scenario', 'LoadLevel', 'Node', 'Price']
-            pri_df['BiddingZoneFrom'] = f0[0]
-            pri_df['BiddingZoneTo'] = f0[1]
-            pri_df['Factor'] = dict_factor_1[f1]
-            pri_df['Variable'] = 'Price'
-            # rename columns "Node" to "Zone", "Price" to "Value"
-            pri_df.rename(columns={'Node': 'Zone', 'Price': 'Value'}, inplace=True)
-            # select columns
-            pri_df = pri_df[['BiddingZoneFrom', 'BiddingZoneTo', 'Factor', 'LoadLevel', 'Zone', 'Variable', 'Value']]
-            # concatenate the pri_df to df_marginal_costs
-            df_marginal_costs = pd.concat([df_marginal_costs, pri_df], ignore_index=True)
-            #
-            print(f'--Price data extracted for {case_name} with factor {f1} and load level {f2}')
+        # building the frame of marginal costs
+        # incoming and outgoing lines (lin) (lout)
+        lin = defaultdict(list)
+        lout = defaultdict(list)
+        for ni, nf, cc in model.la:
+            lin[nf].append((ni, cc))
+            lout[ni].append((nf, cc))
+
+        # nodes to generators (g2n)
+        g2n = defaultdict(list)
+        for nd, g in model.n2g:
+            g2n[nd].append(g)
+
+        sPSSTNND      = [(p,sc,st,n,nd) for p,sc,st,n,nd in model.s2n*model.nd if sum(1 for g in g2n[nd]) + sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd]) and (p,sc,n) in model.psn]
+        OutputResults = pd.Series(data=[model.pDuals["".join([f"eBalanceElec_{p}_{sc}_{st}('{n}', '{nd}')"])]/model.pPeriodProb[p,sc]()/model.pLoadLevelDuration[p,sc,n]() for p,sc,st,n,nd in sPSSTNND], index=pd.Index(sPSSTNND))
+        OutputResults *= 1e3
+        model.LSRMC = OutputResults.to_frame(name='LSRMC').reset_index().pivot_table(index=['level_0','level_1','level_3'], columns='level_4', values='LSRMC').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1)
+
+        # stack the columns
+        pri_df = model.LSRMC.stack().reset_index()
+        pri_df.columns = ['Period', 'Scenario', 'LoadLevel', 'Node', 'Price']
+        pri_df['BiddingZoneFrom'] = f0[0]
+        pri_df['BiddingZoneTo'] = f0[1]
+        pri_df['Factor'] = dict_factor_1[f1]
+        pri_df['Variable'] = 'Price'
+        # rename columns "Node" to "Zone", "Price" to "Value"
+        pri_df.rename(columns={'Node': 'Zone', 'Price': 'Value'}, inplace=True)
+        # select columns
+        pri_df = pri_df[['BiddingZoneFrom', 'BiddingZoneTo', 'Factor', 'LoadLevel', 'Zone', 'Variable', 'Value']]
+        # concatenate the pri_df to df_marginal_costs
+        df_marginal_costs = pd.concat([df_marginal_costs, pri_df], ignore_index=True)
+        #
+        print(f'--Price data extracted for {f0} with factor {f1} and load level {f2}')
     except Exception as e:
-        print(f"*❌ Error running openTEPES for {case_name}: {e}")
+        print(f"*❌ Error running openTEPES for {f0}: {e}")
 
-    # cleanup scenario directory
-    try:
-        shutil.rmtree(scenario_dir)
-    except Exception as e:
-        print(f"Error cleaning up scenario directory {scenario_dir}: {e}")
-
-    print(f"Finished scenario: {f0}, factor: {f1}, load level: {f2}")
+    print(f"✅ Finished scenario: {f0}, factor: {f1}, load level: {f2}")
 
     return df_marginal_costs
 
@@ -301,9 +304,6 @@ def run_scenario(args, model):
 
 if __name__ == '__main__':
     t0 = time.time()
-    # tasks = list(product(factor_0, factor_1, factor_2))
-    tasks = new_iters
-
     all_results = []
 
     # ─── openTEPES run function ─────────────────────────────────────────────────
@@ -313,22 +313,18 @@ if __name__ == '__main__':
     pOut, pLog = idx[pIndOutputResults], idx[pIndLogConsole]
 
     model_name = (
-        'Open Generation, Storage, and Transmission Operation and Expansion Planning Model '
-        'with RES and ESS (openTEPES) - Version 4.18.6 - July 22, 2025'
+        'Open Generation, Storage, and Transmission Operation '
+        'and Expansion Planning Model with RES and ESS '
+        '(openTEPES) - Version 4.18.6 - July 22, 2025'
     )
-    model = oT._build_model(model_name)
+    _model = oT._build_model(model_name)
     with open(os.path.join(source_dir, f'openTEPES_version_{base_folder_name}.log'), 'w') as logf:
         print(model_name, file=logf)
-    oT._reading_data(base_dir, base_folder_name, model, pLog)
-    print(f"Model {model_name} initialized.")
+    oT._reading_data(base_dir, base_folder_name, _model, pLog)
+    tasks = list(product(new_iters, [_model], [pOut], [pLog]))
+    print(f"Model arguments initialized.")
 
-    # with ProcessPoolExecutor(max_workers=num_workers) as executor:
-    # with ProcessPoolExecutor() as executor:
-    #     for df_part in executor.map(run_scenario, tasks):
-    #         if not df_part.empty:
-    #             all_results.append(df_part)
-
-    with ThreadPoolExecutor(max_workers=num_workers) as exec:
+    with ProcessPoolExecutor(max_workers=num_workers) as exec:
         futures = {exec.submit(run_scenario, t): t for t in tasks}
         for i, fut in enumerate(as_completed(futures), 1):
             try:
