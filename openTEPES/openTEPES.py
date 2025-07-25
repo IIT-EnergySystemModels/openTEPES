@@ -64,8 +64,8 @@ def _build_model(description: str) -> ConcreteModel:
     return ConcreteModel(description)
 
 
-def _reading_data(dir_, case, model, log_flag):
-    InputData(dir_, case, model, log_flag)
+def _reading_data(dir, case, model, log_flag):
+    InputData(dir, case, model, log_flag)
 
 def _configure_basic_components(dir_, case, model, log_flag):
     DataConfiguration(model)
