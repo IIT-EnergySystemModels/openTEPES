@@ -128,9 +128,9 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
 
     # substitute NaN by 0
     for key, df in dfs.items():
-        if 'Emission' in key:
+        if 'dfEmission' in key:
             df.fillna(math.inf, inplace=True)
-        elif 'Generation' in key:
+        elif 'dfGeneration' in key:
             # build a dict that gives 1.0 for 'Efficiency', 0.0 for everything else
             fill_values = {col: (1.0 if col == "Efficiency" else 0.0) for col in df.columns}
             # one pass over the DataFrame
@@ -491,6 +491,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
 
 
 def DataConfiguration(mTEPES):
+
+    StartTime = time.time()
     #%% Getting the branches from the electric network data
     sBr     = [(ni,nf) for (ni,nf,cc) in mTEPES.dFrame['dfNetwork'].index]
     # Dropping duplicate keys
