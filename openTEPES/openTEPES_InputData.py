@@ -703,7 +703,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         '''
                 Create mTEPES instrumental sets.
 
-                This function takes a mTEPES instance and adds instrumental sets which will be used later.
+                This function takes an mTEPES instance and adds instrumental sets which will be used later.
 
                 Parameters:
                     mTEPES: The instance of mTEPES.
