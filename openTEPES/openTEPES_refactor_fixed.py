@@ -4,7 +4,7 @@ import time
 import pyomo.environ as pyo
 from pyomo.environ import ConcreteModel, Set
 
-from .openTEPES_InputData import InputData, SettingUpVariables
+from .openTEPES_InputData import InputData, DataConfiguration, SettingUpVariables
 from .openTEPES_ModelFormulation import (
     TotalObjectiveFunction,
     InvestmentModelFormulation,
@@ -93,6 +93,7 @@ def _reading_data(dir, case, model, log_flag):
     InputData(dir, case, model, log_flag)
 
 def _configure_basic_components(dir_, case, model, log_flag):
+    DataConfiguration(model)
     SettingUpVariables(model, model)
     model.First_st, model.Last_st = next(iter(model.st)), None
     for st in model.st:
