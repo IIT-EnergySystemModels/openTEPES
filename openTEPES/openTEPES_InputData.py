@@ -2667,20 +2667,20 @@ def SettingUpVariables(OptModel, mTEPES):
 
     DetectInfeasibilities(mTEPES)
 
-    mTEPES.nFixedVariables = Param(initialize=round(nFixedVariables), within=NonNegativeIntegers, doc='Number of fixed variables')
+    mTEPES.nFixedVariables    = Param(initialize=round(nFixedVariables), within=NonNegativeIntegers, doc='Number of fixed variables')
 
-    mTEPES.IndependentPeriods = Param(domain=Boolean, initialize=False, mutable=True)
-    mTEPES.IndependentStages = Param(mTEPES.pp, domain = Boolean, initialize=False, mutable=True)
-    mTEPES.IndependentStages2 = Param(domain=Boolean, initialize=False, mutable=True)
-    mTEPES.Parallel = Param(domain=Boolean, initialize=False, mutable=True)
-    mTEPES.Parallel = True
+    mTEPES.IndependentPeriods = Param(           domain=Boolean, initialize=False, mutable=True)
+    mTEPES.IndependentStages  = Param(mTEPES.pp, domain=Boolean, initialize=False, mutable=True)
+    mTEPES.IndependentStages2 = Param(           domain=Boolean, initialize=False, mutable=True)
+    mTEPES.Parallel           = Param(           domain=Boolean, initialize=False, mutable=True)
+    mTEPES.Parallel           = True
     if (    (len(mTEPES.gc) == 0 or mTEPES.pIndBinGenInvest()     == 2)   # No candidates
         and (len(mTEPES.gd) == 0 or mTEPES.pIndBinGenRetire()     == 2)   # No retirements
         and (len(mTEPES.lc) == 0 or mTEPES.pIndBinNetElecInvest() == 2)): # No line candidates
-        # Periods and scenarios are independent from each other
+        # Periods and scenarios are independent each other
         ScIndep = True
         mTEPES.IndependentPeriods = True
-        for p, ar in mTEPES.pEmission:
+        for p,ar in mTEPES.pEmission:
             print(p,ar)
             print(mTEPES.pEmission[p,ar])
         for p in mTEPES.p:
