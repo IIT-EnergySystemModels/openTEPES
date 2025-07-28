@@ -4,8 +4,8 @@ import numpy as np
 import pandas as pd
 import logging
 
-from openTEPES.openTEPES import openTEPES_run
-# from openTEPES.openTEPES_refactor_fixed import openTEPES_run
+# from openTEPES.openTEPES import openTEPES_run
+from openTEPES.openTEPES_refactor_fixed import openTEPES_run
 # from scripts.openTEPES2IAMC.Tool_IAMC_TO_openTEPES import CaseName
 
 # from scripts.openTEPES2IAMC.Tool_openTEPES_TO_IAMC import DirName
