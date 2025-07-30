@@ -54,7 +54,7 @@ If you use openTEPES for a scientific publication, we would appreciate it if you
 
 **A. Ramos, E. Quispe, S. Lumbreras** `“OpenTEPES: Open-source Transmission and Generation Expansion Planning” <https://www.sciencedirect.com/science/article/pii/S235271102200053X>`_ SoftwareX 18: June 2022 `10.1016/j.softx.2022.101070 <https://doi.org/10.1016/j.softx.2022.101070>`_.
 
-If your work relies heavily on the software, we also encourage you to cite the repository directly. You can find the repository at: https://github.com/IIT-EnergySystemModels/openTEPES
+If your work relies heavily on the software, we also encourage you to cite the repository directly.
 
 BibTeX entry:
 **************
