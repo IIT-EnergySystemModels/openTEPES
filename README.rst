@@ -57,7 +57,6 @@ If you use openTEPES for a scientific publication, we would appreciate it if you
 If your work relies heavily on the software, we also encourage you to cite the repository directly.
 
 BibTeX entry:
-**************
 .. code::
 
   @article{Ramos2022,
