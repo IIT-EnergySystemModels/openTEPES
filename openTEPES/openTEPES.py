@@ -11,7 +11,7 @@ import time
 import pyomo.environ as pyo
 from   pyomo.environ import ConcreteModel, Set
 
-from .openTEPES_InputData        import InputData, SettingUpVariables
+from .openTEPES_InputData        import InputData, DataConfiguration, SettingUpVariables
 from .openTEPES_ModelFormulation import TotalObjectiveFunction, InvestmentModelFormulation, GenerationOperationModelFormulationObjFunct, GenerationOperationModelFormulationInvestment, GenerationOperationModelFormulationDemand, GenerationOperationModelFormulationStorage, GenerationOperationModelFormulationReservoir, NetworkH2OperationModelFormulation, NetworkHeatOperationModelFormulation, GenerationOperationModelFormulationCommitment, GenerationOperationModelFormulationRampMinTime, NetworkSwitchingModelFormulation, NetworkOperationModelFormulation, NetworkCycles, CycleConstraints
 from .openTEPES_ProblemSolving   import ProblemSolving
 from .openTEPES_OutputResults    import OutputResultsParVarCon, InvestmentResults, GenerationOperationResults, GenerationOperationHeatResults, ESSOperationResults, ReservoirOperationResults, NetworkH2OperationResults, NetworkHeatOperationResults, FlexibilityResults, NetworkOperationResults, MarginalResults, OperationSummaryResults, ReliabilityResults, CostSummaryResults, EconomicResults, NetworkMapResults
@@ -48,8 +48,11 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     # introduce cycle flow formulations in DC and AC load flow
     pIndCycleFlow = 0
 
-    # Define sets and parameters
+    # Reading sets and parameters
     InputData(DirName, CaseName, mTEPES, pIndLogConsole)
+
+    # Define sets and parameters
+    DataConfiguration(mTEPES)
 
     # Define variables
     SettingUpVariables(mTEPES, mTEPES)
