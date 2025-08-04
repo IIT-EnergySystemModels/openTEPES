@@ -49,7 +49,9 @@ def case_7d_system(request):
 
         # Modify RESEnergy: set all to NaN
         df = original_resenergy_df.copy()
-        df.iloc[:, df.columns.get_loc("RESEnergy")] = np.nan
+        col = "RESEnergy"
+        df[col] = df[col].astype(float)  # ✅ Ensure float dtype
+        df[col] = np.nan                 # ✅ Now safe to set NaN
         df.to_csv(RESEnergy_csv)
 
         # Modify Stage Weight: force all weights to 52 (weeks)
