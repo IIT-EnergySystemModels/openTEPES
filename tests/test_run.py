@@ -84,4 +84,4 @@ def test_openTEPES_run(case_7d_system, expected_cost):
     actual_cost = pyo.value(mTEPES.eTotalSCost)
     print(f"Expected cost: {expected_cost:.5f}, Actual cost: {actual_cost:.5f}")
 
-    np.testing.assert_approx_equal(actual_cost, expected_cost, decimal=5)
+    np.testing.assert_approx_equal(actual_cost, expected_cost)
