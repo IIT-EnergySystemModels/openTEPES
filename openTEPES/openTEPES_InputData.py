@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 28, 2025
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 04, 2025
 """
 
 import datetime
@@ -162,7 +162,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
             dfs[keys] = df.where(df > 0.0, 0.0)
 
     reading_time = round(time.time() - StartTime)
-    print('--- Reading the CSV files:                                             {} seconds'.format(reading_time))
+    print('Reading the CSV files                  ...  {} s'.format(reading_time))
     StartTime = time.time()
 
     if (dfs['dfGeneration']["Efficiency"] == 0).any():
