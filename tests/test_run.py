@@ -6,14 +6,16 @@ import pandas as pd
 
 from openTEPES.openTEPES import openTEPES_run
 
+CASE_NAMES     = ["9n", "sSEP"]  # Add more case names as needed
+EXPECTED_COSTS = {"9n": 249.5625364481767, "sSEP": 38623.89741870424}
 
 @pytest.fixture
-def case_9n_7d_system():
+def case_7d_system(case_name):
     data = dict(
         DirName=os.path.abspath(
             os.path.join(os.path.dirname(__file__), "../openTEPES")
         ),
-        CaseName="9n",
+        CaseName=case_name,
         # SolverName="appsi_highs",
         SolverName="glpk",
         pIndLogConsole=0,
@@ -51,7 +53,8 @@ def case_9n_7d_system():
         original_stage_df.to_csv(stage_csv)
 
 
-def test_openTEPES_run(case_9n_7d_system):
-    mTEPES = openTEPES_run(**case_9n_7d_system)
-    assert mTEPES is not None
-    np.testing.assert_approx_equal(pyo.value(mTEPES.eTotalSCost), 248.433199803524)
+def test_openTEPES_run(CASE_NAMES, EXPECTED_COSTS):
+    for case_name in CASE_NAMES:
+        mTEPES = openTEPES_run(**case_7d_system(case_name))
+        assert mTEPES is not None
+        np.testing.assert_approx_equal(pyo.value(mTEPES.eTotalSCost), EXPECTED_COSTS[case_name])
