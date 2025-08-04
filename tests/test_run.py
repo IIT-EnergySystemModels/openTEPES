@@ -6,9 +6,6 @@ import pandas as pd
 
 from openTEPES.openTEPES import openTEPES_run
 
-CASE_NAMES     = ["9n", "sSEP"]  # Add more case names as needed
-EXPECTED_COSTS = {"9n": 249.5625364481767, "sSEP": 38623.89741870424}
-
 @pytest.fixture
 def case_7d_system(case_name):
     data = dict(
@@ -53,11 +50,14 @@ def case_7d_system(case_name):
         original_stage_df.to_csv(stage_csv)
 
 
-def test_openTEPES_run(CASE_NAMES, EXPECTED_COSTS):
+def test_openTEPES_run():
     """
     Test function for running openTEPES with the modified test case.
     Asserts the run was successful.
     """
+    CASE_NAMES = ["9n", "sSEP"]  # Add more case names as needed
+    EXPECTED_COSTS = {"9n": 249.5625364481767, "sSEP": 38623.89741870424}
+
     print("Starting the openTEPES run...")
     for case_name in CASE_NAMES:
         print(f'Running test for {case_name}...')
