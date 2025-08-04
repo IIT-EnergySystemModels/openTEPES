@@ -36,7 +36,7 @@
 
 The **openTEPES** model has been developed at the `Instituto de Investigación Tecnológica (IIT) <https://www.iit.comillas.edu/index.php.en>`_ of the `Universidad Pontificia Comillas <https://www.comillas.edu/en/>`_.
 
-The **openTEPES** model presents a decision support system for defining the **integrated generation, storage, and transmission resource planning** (IRP, GEP+SEP+TEP) -**Integrated Resource Planning** (IRP)- of a **large-scale electric system** at a tactical level (i.e., time horizons of 5-30 years),
+The **openTEPES** model presents a decision support system for defining the **integrated generation, storage, and transmission resource planning** (IRP, GEP+SEP+TEP) -**Capacity Expansion Planning** (CEP) or **Integrated Resource Planning** (IRP)- of a **large-scale electric system** at a tactical level (i.e., time horizons of 5-30 years),
 defined as a set of **generation, storage, and (electricity, hydrogen, and heat) networks dynamic investment decisions for multiple future years**.
 
 The `openTEPES complete documentation <https://opentepes.readthedocs.io/en/latest/index.html>`_ presents the input data, output results, mathematical formulation, download and installation, and the research projects where the model has been used.
@@ -48,9 +48,29 @@ Scripts are provided to exchange information with Integrated Assessment Models (
 
 It has been used by the **Ministry for the Ecological Transition and the Demographic Challenge (MITECO)** to analyze the electricity sector in the latest Spanish `National Energy and Climate Plan (NECP) Update 2023-2030 <https://www.miteco.gob.es/content/dam/miteco/es/energia/files-1/pniec-2023-2030/PNIEC_2024_240924.pdf>`_ in September 2024.
 
-Reference
+How to Cite
 ############
+If you use openTEPES for a scientific publication, we would appreciate it if you cite the following paper:
+
 **A. Ramos, E. Quispe, S. Lumbreras** `“OpenTEPES: Open-source Transmission and Generation Expansion Planning” <https://www.sciencedirect.com/science/article/pii/S235271102200053X>`_ SoftwareX 18: June 2022 `10.1016/j.softx.2022.101070 <https://doi.org/10.1016/j.softx.2022.101070>`_.
+
+If your work relies heavily on the software, we also encourage you to cite the repository directly.
+
+BibTeX entry:
+.. code::
+
+  @article{Ramos2022,
+  author = {Andrés Ramos and Erik Quispe and Sara Lumbreras},
+  title = {openTEPES: Open-source Transmission and Generation Expansion Planning},
+  journal = {SoftwareX},
+  volume = {18},
+  pages = {101070},
+  year = {2022},
+  issn = {2352-7110},
+  doi = {https://doi.org/10.1016/j.softx.2022.101070},
+  url = {https://www.sciencedirect.com/science/article/pii/S235271102200053X},
+  }
+
 
 **openTEPES**: `summary presentation <https://pascua.iit.comillas.edu/aramos/openTEPES.pdf>`_, `présentation (French) <https://pascua.iit.comillas.edu/aramos/openTEPES_fr.pdf>`_, and `installation <https://pascua.iit.comillas.edu/aramos/openTEPES_installation.pdf>`_
 

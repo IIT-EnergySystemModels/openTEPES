@@ -1,8 +1,12 @@
 Change Log
 =============
 
-[4.18.6] - 2025-07-16
+[4.18.6] - 2025-08-04
 -----------------------
+- [FIXED] fix bugs in InputData module
+- [CHANGED] InputDate module refactored to split in several functions
+- [FIXED] fix bug in Output Results computation of ramp surplus
+- [FIXED] fix bug in Output Results when an Area has no non-RES generators
 - [CHANGED] save all the output results in the mTEPES model object
 - [FIXED] fix typo in BalancePerXXX output files
 - [CHANGED] if the variable TTCFrw and TTBck are both very small (e.g., 0.000001), they are set to 0 and the line is considered open

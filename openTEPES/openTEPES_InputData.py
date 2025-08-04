@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 28, 2025
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 04, 2025
 """
 
 import datetime
@@ -42,7 +42,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
 
     # Constants
     DEFAULT_IDX_COLS = ['Period', 'Scenario', 'LoadLevel', 'Area', 'Generator', 'InitialNode', 'FinalNode', 'Circuit', 'Node', 'Stage']
-    SPECIAL_IDX_COLS = {'Generation': ['Generator']}
+    SPECIAL_IDX_COLS = {'Generation': ['Generator'], 'Reservoir': ['Reservoir']}
     HEADER_LEVELS = {
         'VariableTTCFrw': [0, 1, 2   ],
         'VariableTTCBck': [0, 1, 2   ],
@@ -162,7 +162,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
             dfs[keys] = df.where(df > 0.0, 0.0)
 
     reading_time = round(time.time() - StartTime)
-    print('--- Reading the CSV files:                                             {} seconds'.format(reading_time))
+    print('Reading the CSV files                  ...  {} s'.format(reading_time))
     StartTime = time.time()
 
     if (dfs['dfGeneration']["Efficiency"] == 0).any():
@@ -992,20 +992,20 @@ def DataConfiguration(mTEPES):
     # initial inventory must be between minimum and maximum
     for p,sc,n,es in mTEPES.psnes:
         if (p,sc,st,n) in mTEPES.s2n and mTEPES.n.ord(n) == mTEPES.dPar['pStorageTimeStep'][es]:
-            if  mTEPES.dPar['pIniInventory'][es][p,sc,n] < mTEPES.dPar['pMinStorage'][es][p,sc,n]:
-                mTEPES.dPar['pIniInventory'][es][p,sc,n] = mTEPES.dPar['pMinStorage'][es][p,sc,n]
+            if  mTEPES.dPar["pIniInventory"][es].loc[p,sc,n] < mTEPES.dPar['pMinStorage'][es].loc[p,sc,n]:
+                mTEPES.dPar["pIniInventory"][es].loc[p,sc,n] = mTEPES.dPar['pMinStorage'][es].loc[p,sc,n]
                 print('### Initial inventory lower than minimum storage ',   p, sc, st, es)
-            if  mTEPES.dPar['pIniInventory'][es][p,sc,n] > mTEPES.dPar['pMaxStorage'][es][p,sc,n]:
-                mTEPES.dPar['pIniInventory'][es][p,sc,n] = mTEPES.dPar['pMaxStorage'][es][p,sc,n]
+            if  mTEPES.dPar['pIniInventory'][es].loc[p,sc,n] > mTEPES.dPar['pMaxStorage'][es].loc[p,sc,n]:
+                mTEPES.dPar['pIniInventory'][es].loc[p,sc,n] = mTEPES.dPar['pMaxStorage'][es].loc[p,sc,n]
                 print('### Initial inventory greater than maximum storage ', p, sc, st, es)
     if mTEPES.dPar['pIndHydroTopology'] == 1:
         for p,sc,n,rs in mTEPES.psnrs:
             if (p,sc,st,n) in mTEPES.s2n and mTEPES.n.ord(n) == mTEPES.dPar['pReservoirTimeStep'][rs]:
-                if  mTEPES.dPar['pIniVolume'][rs][p,sc,n] < mTEPES.dPar['pMinVolume'][rs][p,sc,n]:
-                    mTEPES.dPar['pIniVolume'][rs][p,sc,n] = mTEPES.dPar['pMinVolume'][rs][p,sc,n]
+                if  mTEPES.dPar['pIniVolume'][rs].loc[p,sc,n] < mTEPES.dPar['pMinVolume'][rs].loc[p,sc,n]:
+                    mTEPES.dPar['pIniVolume'][rs].loc[p,sc,n] = mTEPES.dPar['pMinVolume'][rs].loc[p,sc,n]
                     print('### Initial volume lower than minimum volume ',   p, sc, st, rs)
-                if  mTEPES.dPar['pIniVolume'][rs][p,sc,n] > mTEPES.dPar['pMaxVolume'][rs][p,sc,n]:
-                    mTEPES.dPar['pIniVolume'][rs][p,sc,n] = mTEPES.dPar['pMaxVolume'][rs][p,sc,n]
+                if  mTEPES.dPar['pIniVolume'][rs].loc[p,sc,n] > mTEPES.dPar['pMaxVolume'][rs].loc[p,sc,n]:
+                    mTEPES.dPar['pIniVolume'][rs].loc[p,sc,n] = mTEPES.dPar['pMaxVolume'][rs].loc[p,sc,n]
                     print('### Initial volume greater than maximum volume ', p, sc, st, rs)
 
     # drop load levels with duration 0
