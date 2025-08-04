@@ -54,7 +54,14 @@ def case_7d_system(case_name):
 
 
 def test_openTEPES_run(CASE_NAMES, EXPECTED_COSTS):
+    """
+    Test function for running openTEPES with the modified test case.
+    Asserts the run was successful.
+    """
+    print("Starting the openTEPES run...")
     for case_name in CASE_NAMES:
+        print(f'Running test for {case_name}...')
         mTEPES = openTEPES_run(**case_7d_system(case_name))
-        assert mTEPES is not None
+        assert mTEPES is not None, f"{case_name} failed: mTEPES is None."
+        print(f"{case_name} - Total system cost: {mTEPES.eTotalSCost}")  # Added print for console feedback
         np.testing.assert_approx_equal(pyo.value(mTEPES.eTotalSCost), EXPECTED_COSTS[case_name])
