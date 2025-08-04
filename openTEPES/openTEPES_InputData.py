@@ -42,7 +42,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
 
     # Constants
     DEFAULT_IDX_COLS = ['Period', 'Scenario', 'LoadLevel', 'Area', 'Generator', 'InitialNode', 'FinalNode', 'Circuit', 'Node', 'Stage']
-    SPECIAL_IDX_COLS = {'Generation': ['Generator']}
+    SPECIAL_IDX_COLS = {'Generation': ['Generator'], 'Reservoir': ['Reservoir']}
     HEADER_LEVELS = {
         'VariableTTCFrw': [0, 1, 2   ],
         'VariableTTCBck': [0, 1, 2   ],
