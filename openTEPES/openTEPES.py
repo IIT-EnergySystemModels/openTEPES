@@ -9,7 +9,16 @@ import setuptools
 import time
 
 import pyomo.environ as pyo
-from   pyomo.environ import ConcreteModel, Set
+from pyomo.environ import ConcreteModel, Set
+
+
+def _assert_single_objective_active(model):
+    """Defensive check: ensure exactly one active Objective before solve."""
+    objs = [o for o in model.component_objects(pyo.Objective, descend_into=True) if o.active]
+    if len(objs) != 1:
+        names = [o.name for o in objs]
+        raise RuntimeError(f"Expected exactly one active Objective, found {len(objs)}: {names}")
+
 
 from .openTEPES_InputData import InputData, DataConfiguration, SettingUpVariables
 from .openTEPES_ModelFormulation import (
@@ -68,10 +77,14 @@ _STAGE_FORMULATIONS = [
 
 _OUTPUT_FUNCS = [
     ('pIndDumpRawResults', OutputResultsParVarCon, ('DirName', 'CaseName', 'mTEPES', 'mTEPES')),
-    ('pIndInvestmentResults', InvestmentResults, ('DirName', 'CaseName', 'mTEPES', 'mTEPES', 'pIndTechnologyOutput', 'pIndPlotOutput')),
-    ('pIndGenerationOperationResults', GenerationOperationResults, ('DirName', 'CaseName', 'mTEPES', 'mTEPES', 'pIndTechnologyOutput', 'pIndAreaOutput', 'pIndPlotOutput')),
-    ('pIndESSOperationResults', ESSOperationResults, ('DirName', 'CaseName', 'mTEPES', 'mTEPES', 'pIndTechnologyOutput', 'pIndAreaOutput', 'pIndPlotOutput')),
-    ('pIndReservoirOperationResults', ReservoirOperationResults, ('DirName', 'CaseName', 'mTEPES', 'mTEPES', 'pIndTechnologyOutput', 'pIndPlotOutput')),
+    ('pIndInvestmentResults', InvestmentResults,
+     ('DirName', 'CaseName', 'mTEPES', 'mTEPES', 'pIndTechnologyOutput', 'pIndPlotOutput')),
+    ('pIndGenerationOperationResults', GenerationOperationResults,
+     ('DirName', 'CaseName', 'mTEPES', 'mTEPES', 'pIndTechnologyOutput', 'pIndAreaOutput', 'pIndPlotOutput')),
+    ('pIndESSOperationResults', ESSOperationResults,
+     ('DirName', 'CaseName', 'mTEPES', 'mTEPES', 'pIndTechnologyOutput', 'pIndAreaOutput', 'pIndPlotOutput')),
+    ('pIndReservoirOperationResults', ReservoirOperationResults,
+     ('DirName', 'CaseName', 'mTEPES', 'mTEPES', 'pIndTechnologyOutput', 'pIndPlotOutput')),
     ('pIndNetworkH2OperationResults', NetworkH2OperationResults, ('DirName', 'CaseName', 'mTEPES', 'mTEPES')),
     ('pIndNetworkHeatOperationResults', NetworkHeatOperationResults, ('DirName', 'CaseName', 'mTEPES', 'mTEPES')),
     ('pIndFlexibilityResults', FlexibilityResults, ('DirName', 'CaseName', 'mTEPES', 'mTEPES')),
@@ -81,13 +94,14 @@ _OUTPUT_FUNCS = [
     ('pIndOperationSummaryResults', OperationSummaryResults, ('DirName', 'CaseName', 'mTEPES', 'mTEPES')),
     ('pIndCostSummaryResults', CostSummaryResults, ('DirName', 'CaseName', 'mTEPES', 'mTEPES')),
     ('pIndMarginalResults', MarginalResults, ('DirName', 'CaseName', 'mTEPES', 'mTEPES', 'pIndPlotOutput')),
-    ('pIndEconomicResults', EconomicResults, ('DirName', 'CaseName', 'mTEPES', 'mTEPES', 'pIndAreaOutput', 'pIndPlotOutput'))
+    ('pIndEconomicResults', EconomicResults,
+     ('DirName', 'CaseName', 'mTEPES', 'mTEPES', 'pIndAreaOutput', 'pIndPlotOutput'))
 ]
 
 
 def _initialize_indices():
-    zero_map = dict(zip([0, 0.0, 'No', 'NO', 'no', 'N', 'n'], [0]*7))
-    one_map = dict(zip(['Yes', 'YES', 'yes', 'Y', 'y'], [1]*5))
+    zero_map = dict(zip([0, 0.0, 'No', 'NO', 'no', 'N', 'n'], [0] * 7))
+    one_map = dict(zip(['Yes', 'YES', 'yes', 'Y', 'y'], [1] * 5))
     return {**zero_map, **one_map}
 
 
@@ -96,8 +110,10 @@ def _build_model(desc: str) -> ConcreteModel:
     model.name = desc
     return model
 
+
 def _reading_data(dir, case, model, log_flag):
     InputData(dir, case, model, log_flag)
+
 
 def _configure_basic_components(dir_, case, model, log_flag):
     DataConfiguration(model)
@@ -137,7 +153,7 @@ def _configure_output_flags(output_flag: int, init_flags: int) -> dict:
         pIndAreaOutput=1,
         pIndPlotOutput=0
     )
-    detailed = {key: int(output_flag == init_flags) for key,_func,_ in _OUTPUT_FUNCS}
+    detailed = {key: int(output_flag == init_flags) for key, _func, _ in _OUTPUT_FUNCS}
     return {**base, **detailed}
 
 
@@ -145,13 +161,16 @@ def _check_conditions(model, flag_name: str) -> bool:
     enabled = model._formulation_flags.get(flag_name, 1)
     cond_map = {
         'pIndGenerationOperationResults': True,
-        'pIndNetworkH2OperationResults': getattr(model, 'pa', False) and getattr(model, 'pIndHydrogen', 0)==1,
-        'pIndNetworkHeatOperationResults': getattr(model, 'ha', False) and getattr(model, 'pIndHeat', 0)==1,
-        'pIndReservoirOperationResults': getattr(model, 'rs', False) and getattr(model, 'pIndHydroTopology', 0)==1,
+        'pIndNetworkH2OperationResults': getattr(model, 'pa', False) and getattr(model, 'pIndHydrogen', 0) == 1,
+        'pIndNetworkHeatOperationResults': getattr(model, 'ha', False) and getattr(model, 'pIndHeat', 0) == 1,
+        'pIndReservoirOperationResults': getattr(model, 'rs', False) and getattr(model, 'pIndHydroTopology', 0) == 1,
         'pIndESSOperationResults': getattr(model, 'es', False),
-        'pIndGenerationOperationModelFormulationReservoir': getattr(model, 'rs', False) and getattr(model, 'pIndHydroTopology', 0)==1,
-        'pIndNetworkH2OperationModelFormulation': getattr(model, 'pa', False) and getattr(model, 'pIndHydrogen', 0)==1,
-        'pIndNetworkHeatOperationModelFormulation': getattr(model, 'ha', False) and getattr(model, 'pIndHeat', 0)==1,
+        'pIndGenerationOperationModelFormulationReservoir': getattr(model, 'rs', False) and getattr(model,
+                                                                                                    'pIndHydroTopology',
+                                                                                                    0) == 1,
+        'pIndNetworkH2OperationModelFormulation': getattr(model, 'pa', False) and getattr(model, 'pIndHydrogen',
+                                                                                          0) == 1,
+        'pIndNetworkHeatOperationModelFormulation': getattr(model, 'ha', False) and getattr(model, 'pIndHeat', 0) == 1,
         'pIndNetworkCycles': getattr(model, 'pIndCycleFlow', 0) == 1,
         'pIndCycleConstraints': getattr(model, 'pIndCycleFlow', 0) == 1,
     }
@@ -182,13 +201,16 @@ def _compute_cycle_lists(model):
     model.ngen = [(n, g) for n, g in model.n * model.g if model.n.ord(n) % model.pEnergyTimeStep[g] == 0]
     if getattr(model, 'pIndHydroTopology', 0) == 1:
         model.nhc = [(n, h) for n, h in model.n * model.h
-                     if model.n.ord(n) % sum(model.pReservoirTimeStep[rs] for rs in model.rs if (rs, h) in model.r2h) == 0]
+                     if
+                     model.n.ord(n) % sum(model.pReservoirTimeStep[rs] for rs in model.rs if (rs, h) in model.r2h) == 0]
         model.np2c = [(n, h) for n, h in model.n * model.h
                       if any((h, rs) in model.p2r for rs in model.rs)
-                      and model.n.ord(n) % sum(model.pReservoirTimeStep[rs] for rs in model.rs if (h, rs) in model.p2r) == 0]
+                      and model.n.ord(n) % sum(
+                model.pReservoirTimeStep[rs] for rs in model.rs if (h, rs) in model.p2r) == 0]
         model.npc = [(n, h) for n, h in model.n * model.h
                      if any((rs, h) in model.r2p for rs in model.rs)
-                     and model.n.ord(n) % sum(model.pReservoirTimeStep[rs] for rs in model.rs if (rs, h) in model.r2p) == 0]
+                     and model.n.ord(n) % sum(
+                model.pReservoirTimeStep[rs] for rs in model.rs if (rs, h) in model.r2p) == 0]
         model.nrsc = [(n, rs) for n, rs in model.n * model.rs if model.n.ord(n) % model.pReservoirTimeStep[rs] == 0]
         model.nrcc = [(n, rs) for n, rs in model.n * model.rn if model.n.ord(n) % model.pReservoirTimeStep[rs] == 0]
         model.nrso = [(n, rs) for n, rs in model.n * model.rs if model.n.ord(n) % model.pWaterOutTimeStep[rs] == 0]
@@ -212,20 +234,22 @@ def _apply_formulations(model, log_flag, p, sc, st):
 
 def _solve_branch(dir_, case, solver, model, log_flag, p, sc, st):
     no_invest = (
-        (sum(1 for rec in model.peb if rec[0] <= p) == 0 or model.pIndBinGenInvest() == 2) and
-        (sum(1 for rec in model.pgd if rec[0] <= p) == 0 or model.pIndBinGenRetire() == 2) and
-        (sum(1 for rec in model.prc if rec[0] <= p) == 0 or model.pIndBinRsrInvest() == 2) and
-        (sum(1 for rec in model.plc if rec[0] <= p) == 0 or model.pIndBinNetElecInvest() == 2) and
-        (sum(1 for rec in model.ppc if rec[0] <= p) == 0 or model.pIndBinNetH2Invest() == 2) and
-        (sum(1 for rec in model.phc if rec[0] <= p) == 0 or model.pIndBinNetHeatInvest() == 2)
+            (sum(1 for rec in model.peb if rec[0] <= p) == 0 or model.pIndBinGenInvest() == 2) and
+            (sum(1 for rec in model.pgd if rec[0] <= p) == 0 or model.pIndBinGenRetire() == 2) and
+            (sum(1 for rec in model.prc if rec[0] <= p) == 0 or model.pIndBinRsrInvest() == 2) and
+            (sum(1 for rec in model.plc if rec[0] <= p) == 0 or model.pIndBinNetElecInvest() == 2) and
+            (sum(1 for rec in model.ppc if rec[0] <= p) == 0 or model.pIndBinNetH2Invest() == 2) and
+            (sum(1 for rec in model.phc if rec[0] <= p) == 0 or model.pIndBinNetHeatInvest() == 2)
     )
     min_res = (
-        max(model.pRESEnergy[p, ar] for ar in model.ar) > 0 or
-        (min(model.pEmission[p, ar] for ar in model.ar) < math.inf and sum(model.pEmissionRate[nr] for nr in model.nr) > 0)
+            max(model.pRESEnergy[p, ar] for ar in model.ar) > 0 or
+            (min(model.pEmission[p, ar] for ar in model.ar) < math.inf and sum(
+                model.pEmissionRate[nr] for nr in model.nr) > 0)
     )
     no_res = (
-        max(model.pRESEnergy[p, ar] for ar in model.ar) == 0 and
-        (min(model.pEmission[p, ar] for ar in model.ar) == math.inf or sum(model.pEmissionRate[nr] for nr in model.nr) == 0)
+            max(model.pRESEnergy[p, ar] for ar in model.ar) == 0 and
+            (min(model.pEmission[p, ar] for ar in model.ar) == math.inf or sum(
+                model.pEmissionRate[nr] for nr in model.nr) == 0)
     )
 
     def write_lp():
@@ -248,7 +272,8 @@ def _solve_branch(dir_, case, solver, model, log_flag, p, sc, st):
         ProblemSolving(dir_, case, solver, model, model, log_flag, p, sc, st)
 
     for c in model.component_objects(pyo.Constraint, active=True):
-        if str(p) in c.name and str(sc) in c.name:
+        nm = c.name
+        if all(tag in nm for tag in (str(p), str(sc), str(st))):
             c.deactivate()
 
 
@@ -274,13 +299,13 @@ def process_stage_loop(dir_, case, solver, model, log_flag):
 def finalize_and_output(dir_, case, model, flags):
     """Run output routines based on computed flags."""
     context = {
-        'DirName':  dir_,
+        'DirName': dir_,
         'CaseName': case,
         'OptModel': model,
-        'mTEPES':   model,
+        'mTEPES': model,
         'pIndTechnologyOutput': flags['pIndTechnologyOutput'],
-        'pIndAreaOutput':       flags['pIndAreaOutput'],
-        'pIndPlotOutput':       flags['pIndPlotOutput']
+        'pIndAreaOutput': flags['pIndAreaOutput'],
+        'pIndPlotOutput': flags['pIndPlotOutput']
     }
 
     for flag_name, func, args in _OUTPUT_FUNCS:
@@ -311,6 +336,8 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     _configure_basic_components(DirName, CaseName, mTEPES, pLog)
     TotalObjectiveFunction(mTEPES, mTEPES, pLog)
     InvestmentModelFormulation(mTEPES, mTEPES, pLog)
+
+    _assert_single_objective_active(mTEPES)
     _configure_formulation_flags(mTEPES)
     mTEPES.pWriteLP = False
 
