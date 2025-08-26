@@ -32,7 +32,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     for set_name, (file_set_name, set_key) in set_definitions.items():
         filename = f'oT_Dict_{file_set_name}_{CaseName}.csv'
         dictSets.load(filename=os.path.join(_path, filename), set=set_key, format='set')
-        is_ordered = set_name not in {'stt', 'gt', 'nd', 'ni', 'nf', 'cc', 'c2', 'ndzn', 'znar', 'arrg'}
+        is_ordered = set_name not in {'gt', 'nd', 'ni', 'nf', 'cc', 'c2', 'ndzn', 'znar', 'arrg'}
         setattr(mTEPES, set_name, Set(initialize=dictSets[set_key], ordered=is_ordered, doc=f'{file_set_name}'))
 
     # # Defining sets in the model
