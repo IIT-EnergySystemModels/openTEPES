@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 04, 2025
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 27, 2025
 """
 
 import datetime
@@ -111,11 +111,11 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
                 if dp_key:
                     par[dp_key] = 1
             except FileNotFoundError:
-                print(f"WARNING: File not found: {file_name}")
+                print(f'WARNING: File not found: {file_name}')
                 if dp_key:
                     par[dp_key] = 0
             except Exception as e:
-                print(f"No file {file_name}")
+                print(f'No file {file_name}')
                 if dp_key:
                     par[dp_key] = 0
 
@@ -133,7 +133,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
             df.fillna(math.inf, inplace=True)
         elif 'dfGeneration' in key:
             # build a dict that gives 1.0 for 'Efficiency', 0.0 for everything else
-            fill_values = {col: (1.0 if col == "Efficiency" else 0.0) for col in df.columns}
+            fill_values = {col: (1.0 if col == 'Efficiency' else 0.0) for col in df.columns}
             # one pass over the DataFrame
             df.fillna(fill_values, inplace=True)
         else:
@@ -165,10 +165,10 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     print('Reading the CSV files                  ...  {} s'.format(reading_time))
     StartTime = time.time()
 
-    if (dfs['dfGeneration']["Efficiency"] == 0).any():
-        print("WARNING: Efficiency values of 0.0 are not valid. They have been changed to 1.0.")
+    if (dfs['dfGeneration']['Efficiency'] == 0).any():
+        print('WARNING: Efficiency values of 0.0 are not valid. They have been changed to 1.0.')
         print("If you want to disable charging, set 'MaximumCharge' to 0.0 or leave it empty.")
-    dfs['dfGeneration']["Efficiency"] = dfs['dfGeneration']["Efficiency"].where(dfs['dfGeneration']["Efficiency"] != 0.0, 1.0)
+    dfs['dfGeneration']['Efficiency'] = dfs['dfGeneration']['Efficiency'].where(dfs['dfGeneration']['Efficiency'] != 0.0, 1.0)
 
     # show some statistics of the data
     for key, df in dfs.items():
@@ -992,8 +992,8 @@ def DataConfiguration(mTEPES):
     # initial inventory must be between minimum and maximum
     for p,sc,n,es in mTEPES.psnes:
         if (p,sc,st,n) in mTEPES.s2n and mTEPES.n.ord(n) == mTEPES.dPar['pStorageTimeStep'][es]:
-            if  mTEPES.dPar["pIniInventory"][es].loc[p,sc,n] < mTEPES.dPar['pMinStorage'][es].loc[p,sc,n]:
-                mTEPES.dPar["pIniInventory"][es].loc[p,sc,n] = mTEPES.dPar['pMinStorage'][es].loc[p,sc,n]
+            if  mTEPES.dPar['pIniInventory'][es].loc[p,sc,n] < mTEPES.dPar['pMinStorage'][es].loc[p,sc,n]:
+                mTEPES.dPar['pIniInventory'][es].loc[p,sc,n] = mTEPES.dPar['pMinStorage'][es].loc[p,sc,n]
                 print('### Initial inventory lower than minimum storage ',   p, sc, st, es)
             if  mTEPES.dPar['pIniInventory'][es].loc[p,sc,n] > mTEPES.dPar['pMaxStorage'][es].loc[p,sc,n]:
                 mTEPES.dPar['pIniInventory'][es].loc[p,sc,n] = mTEPES.dPar['pMaxStorage'][es].loc[p,sc,n]
