@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 04, 2025
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 15, 2025
 """
 
 import time
@@ -8,7 +8,6 @@ import os
 import ast
 import math
 import csv
-import numpy             as     np
 import pandas            as     pd
 import pyomo.environ     as     pyo
 import altair            as     alt
@@ -16,7 +15,6 @@ import plotly.io         as     pio
 import plotly.graph_objs as     go
 from   collections       import defaultdict
 from   colour            import Color
-from   pyomo.environ     import Suffix
 
 
 # Definition of Pie plots
@@ -536,7 +534,7 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnolo
             if sum(1 for ar in mTEPES.ar if sum(1 for g in g2a[ar])) > 1:
                 if pIndAreaOutput == 1:
                     for ar in mTEPES.ar:
-                        if sum(1 for g in g2a[ar] if g in g2t[gt]):
+                        if sum(1 for g in g2a[ar]):
                             sPSNGT = [(p,sc,n,gt) for p,sc,n,gt in mTEPES.psngt if sum(1 for g in g2a[ar] if (p,g) in mTEPES.pg and g in g2t[gt])]
                             if sPSNGT:
                                 OutputResults = pd.Series(data=[sum(OutputToFile[p,sc,n,g] for g in g2a[ar] if (p,g) in mTEPES.pg and g in g2t[gt]) for p,sc,n,gt in sPSNGT], index=pd.Index(sPSNGT))
@@ -573,7 +571,7 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnolo
         if sum(1 for ar in mTEPES.ar if sum(1 for g in g2a[ar])) > 1:
             if pIndAreaOutput == 1:
                 for ar in mTEPES.ar:
-                    if sum(1 for g in g2a[ar] if g in g2t[gt]):
+                    if sum(1 for g in g2a[ar]):
                         sPSNGT = [(p,sc,n,gt) for p,sc,n,gt in mTEPES.psngt if sum(1 for g in g2a[ar] if (p,g) in mTEPES.pg and g in g2t[gt])]
                         if sPSNGT:
                             OutputToFile = pd.Series(data=[sum(OptModel.vTotalOutput[p,sc,n,g]()*mTEPES.pLoadLevelDuration[p,sc,n]() for g in g2a[ar] if (p,g) in mTEPES.pg and g in g2t[gt]) for p,sc,n,gt in sPSNGT], index=pd.Index(sPSNGT))
@@ -1945,7 +1943,7 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput, pIndPlo
     if sum(1 for ar in mTEPES.ar if sum(1 for g in g2a[ar])) > 1:
         if pIndAreaOutput == 1:
             for ar in mTEPES.ar:
-                if sum(1 for g in g2a[ar] if g in g2t[gt]):
+                if sum(1 for g in g2a[ar]):
                     sPSNGT = [(p,sc,n,gt) for p,sc,n,gt in mTEPES.psngt if sum(1 for g in g2a[ar] if (p,g) in mTEPES.pg and g in g2t[gt])]
                     if sPSNGT:
                         OutputToFile = pd.Series(data=[sum(OptModel.vTotalOutput[p,sc,n,g]()*mTEPES.pLoadLevelDuration[p,sc,n]() for g in g2a[ar] if (p,g) in mTEPES.pg and g in g2t[gt]) for p,sc,n,gt in sPSNGT], index=pd.Index(sPSNGT))
@@ -2349,7 +2347,7 @@ def NetworkMapResults(DirName, CaseName, OptModel, mTEPES):
                 if 10*i <= line_df.loc[(ni,nf),'utilization'] <= 10*(i+1):
                     line_df.loc[(ni,nf),'color'] = colors[i]
 
-            # asnp.signing black color to lines with utilization > 100%
+            # assigning black color to lines with utilization > 100%
             if line_df.loc[(ni,nf),'utilization'] > 100:
                 line_df.loc[(ni,nf),'color'] = 'rgb(0,0,0)'
 
