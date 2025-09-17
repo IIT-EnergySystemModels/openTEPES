@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 15, 2025
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 17, 2025
 """
 
 import time
@@ -477,6 +477,7 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnolo
     OutputToFile *= 1e3
     OutputResults.append(OutputToFile)
     OutputResults = pd.concat(OutputResults)
+    OutputResults.index = pd.MultiIndex.from_tuples(OutputResults.index, names=['level_0', 'level_1', 'level_2', 'level_3', 'level_4'])
     if len(OutputResults):
         OutputResults.to_frame(name='MW/h').reset_index().pivot_table(index=['level_0','level_1','level_3'], columns='level_4', values='MW/h', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(f'{_path}/oT_Result_GenerationRampDwSurplus_{CaseName}.csv', sep=',')
 
