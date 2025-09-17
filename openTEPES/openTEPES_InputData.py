@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 27, 2025
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 17, 2025
 """
 
 import datetime
@@ -1060,7 +1060,7 @@ def DataConfiguration(mTEPES):
     # separate positive and negative demands to avoid converting negative values to 0
     mTEPES.dPar['pDemandElecPos']       = mTEPES.dPar['pDemandElec'].where(mTEPES.dPar['pDemandElec'] >= 0.0, 0.0)
     mTEPES.dPar['pDemandElecNeg']       = mTEPES.dPar['pDemandElec'].where(mTEPES.dPar['pDemandElec'] <  0.0, 0.0)
-    mTEPES.dPar['pDemandElecAbs']       = mTEPES.dPar['pDemandElec'].where(mTEPES.dPar['pDemandElec'] >  0.0, 0.0)
+    # mTEPES.dPar['pDemandElecAbs']       = mTEPES.dPar['pDemandElec'].where(mTEPES.dPar['pDemandElec'] >  0.0, 0.0)
 
     # generators to area (g2a) (e2a) (n2a)
     g2a = defaultdict(list)
@@ -1121,7 +1121,7 @@ def DataConfiguration(mTEPES):
         # pInitialInventory.update(pd.Series([0.0 for es in e2a[ar] if pInitialInventory[es] < pEpsilonElec], index=[es for es in e2a[ar] if pInitialInventory[es] < pEpsilonElec], dtype='float64'))
 
         # merging positive and negative values of the demand
-        mTEPES.dPar['pDemandElec']        = mTEPES.dPar['pDemandElecPos'].where(mTEPES.dPar['pDemandElecNeg'] >= 0.0, mTEPES.dPar['pDemandElecNeg'])
+        mTEPES.dPar['pDemandElec']        = mTEPES.dPar['pDemandElecPos'].where(mTEPES.dPar['pDemandElecNeg'] == 0.0, mTEPES.dPar['pDemandElecNeg'])
 
         # Increase Maximum to reach minimum
         # mTEPES.dPar['pMaxPowerElec']      = mTEPES.dPar['pMaxPowerElec'].where(mTEPES.dPar['pMaxPowerElec'] >= mTEPES.dPar['pMinPowerElec'], mTEPES.dPar['pMinPowerElec'])
@@ -1352,7 +1352,7 @@ def DataConfiguration(mTEPES):
     mTEPES.dPar['pIniInventory']      = filter_rows(mTEPES.dPar['pIniInventory']     , mTEPES.psnes)
 
     mTEPES.dPar['pDemandElec']        = filter_rows(mTEPES.dPar['pDemandElec']       , mTEPES.psnnd)
-    mTEPES.dPar['pDemandElecAbs']     = filter_rows(mTEPES.dPar['pDemandElecAbs']    , mTEPES.psnnd)
+    mTEPES.dPar['pDemandElecPos']     = filter_rows(mTEPES.dPar['pDemandElecPos']    , mTEPES.psnnd)
     mTEPES.dPar['pSystemInertia']     = filter_rows(mTEPES.dPar['pSystemInertia']    , mTEPES.psnar)
     mTEPES.dPar['pOperReserveUp']     = filter_rows(mTEPES.dPar['pOperReserveUp']    , mTEPES.psnar)
     mTEPES.dPar['pOperReserveDw']     = filter_rows(mTEPES.dPar['pOperReserveDw']    , mTEPES.psnar)
@@ -1404,7 +1404,7 @@ def DataConfiguration(mTEPES):
     mTEPES.pRESEnergy            = Param(mTEPES.par,   initialize=mTEPES.dPar['pRESEnergy'].to_dict()                , within=NonNegativeReals,    doc='Minimum RES energy'                                  )
     mTEPES.pDemandElecPeak       = Param(mTEPES.par,   initialize=mTEPES.dPar['pDemandElecPeak'].to_dict()           , within=NonNegativeReals,    doc='Peak electric demand'                                )
     mTEPES.pDemandElec           = Param(mTEPES.psnnd, initialize=mTEPES.dPar['pDemandElec'].to_dict()               , within=           Reals,    doc='Electric demand'                                     )
-    mTEPES.pDemandElecAbs        = Param(mTEPES.psnnd, initialize=mTEPES.dPar['pDemandElecAbs'].to_dict()            , within=NonNegativeReals,    doc='Electric demand'                                     )
+    mTEPES.pDemandElecPos        = Param(mTEPES.psnnd, initialize=mTEPES.dPar['pDemandElecPos'].to_dict()            , within=NonNegativeReals,    doc='Electric demand positive'                            )
     mTEPES.pPeriodWeight         = Param(mTEPES.p,     initialize=mTEPES.dPar['pPeriodWeight'].to_dict()             , within=NonNegativeReals,    doc='Period weight',                          mutable=True)
     mTEPES.pDiscountedWeight     = Param(mTEPES.p,     initialize=mTEPES.dPar['pDiscountedWeight'].to_dict()         , within=NonNegativeReals,    doc='Discount factor'                                     )
     mTEPES.pScenProb             = Param(mTEPES.psc,   initialize=mTEPES.dPar['pScenProb'].to_dict()                 , within=UnitInterval    ,    doc='Probability',                            mutable=True)
@@ -1836,7 +1836,7 @@ def SettingUpVariables(OptModel, mTEPES):
         [OptModel.vCharge2ndBlock[p,sc,n,eh].setub(mTEPES.pMaxCharge2ndBlock[p,sc,n,eh]  ) for p,sc,n,eh in mTEPES.psneh]
         [OptModel.vESSReserveUp  [p,sc,n,eh].setub(mTEPES.pMaxCharge2ndBlock[p,sc,n,eh]  ) for p,sc,n,eh in mTEPES.psneh]
         [OptModel.vESSReserveDown[p,sc,n,eh].setub(mTEPES.pMaxCharge2ndBlock[p,sc,n,eh]  ) for p,sc,n,eh in mTEPES.psneh]
-        [OptModel.vENS           [p,sc,n,nd].setub(mTEPES.pDemandElecAbs    [p,sc,n,nd]  ) for p,sc,n,nd in mTEPES.psnnd]
+        [OptModel.vENS           [p,sc,n,nd].setub(mTEPES.pDemandElecPos    [p,sc,n,nd]  ) for p,sc,n,nd in mTEPES.psnnd]
 
         if mTEPES.pIndHydroTopology == 1:
             [OptModel.vHydroInflows   [p,sc,n,rc].setub(mTEPES.pHydroInflows[p,sc,n,rc]()) for p,sc,n,rc in mTEPES.psnrc]
@@ -2251,7 +2251,7 @@ def SettingUpVariables(OptModel, mTEPES):
 
     # fixing the ENS in nodes with no demand
     for p,sc,n,nd in mTEPES.psnnd:
-        if mTEPES.pDemandElec[p,sc,n,nd] ==  0.0:
+        if mTEPES.pDemandElec[p,sc,n,nd] <=  0.0:
             OptModel.vENS    [p,sc,n,nd].fix(0.0)
             nFixedVariables += 1
 
