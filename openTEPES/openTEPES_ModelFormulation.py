@@ -547,8 +547,8 @@ def GenerationOperationModelFormulationDemand(OptModel, mTEPES, pIndLogConsole, 
         # Skip if generator cannot provide operating reserves while generating power
         if mTEPES.pIndOperReserveGen[es] or mTEPES.pMaxPower2ndBlock [p,sc,n,es] == 0:
             return Constraint.Skip
-        # Skip if no upward reserves are needed in the area where the generator is located
-        if sum(mTEPES.pOperReserveUp[p,sc,n,ar] for ar in a2e[es]) == 0:
+        # Skip if no downward reserves are needed in the area where the generator is located
+        if sum(mTEPES.pOperReserveDw[p,sc,n,ar] for ar in a2e[es]) == 0:
             return Constraint.Skip
         # Skip if the duration of the LoadLevel is 0
         if not mTEPES.pDuration[p,sc,n]():
