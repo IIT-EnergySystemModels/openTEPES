@@ -1,7 +1,7 @@
 Change Log
 =============
 
-[4.18.6] - 2025-08-04
+[4.18.6] - 2025-09-21
 -----------------------
 - [FIXED] fix bugs in InputData module
 - [CHANGED] InputDate module refactored to split in several functions
