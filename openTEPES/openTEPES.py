@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 21, 2025
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 24, 2025
 """
 
 # import dill as pickle
@@ -39,8 +39,8 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     idxDict['y'  ] = 1
 
     #%% model declaration
-    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.6 - September 21, 2025')
-    print(                 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.6 - September 21, 2025', file=open(f'{_path}/openTEPES_version_{CaseName}.log','w'))
+    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.7 - September 24, 2025')
+    print(                 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.7 - September 24, 2025', file=open(f'{_path}/openTEPES_version_{CaseName}.log','w'))
 
     pIndOutputResults = [j for i,j in idxDict.items() if i == pIndOutputResults][0]
     pIndLogConsole    = [j for i,j in idxDict.items() if i == pIndLogConsole   ][0]
@@ -320,9 +320,6 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     # output results just for the system (0) or for every area (1). Areas correspond usually to countries
     pIndAreaOutput = 1
 
-    # output plot results
-    pIndPlotOutput = 1
-
     # indicators to control the number of output results
     if pIndOutputResults == 1:
         pIndDumpRawResults              = 0
@@ -340,6 +337,8 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
         pIndCostSummaryResults          = 1
         pIndMarginalResults             = 1
         pIndEconomicResults             = 1
+        # output plot results
+        pIndPlotOutput                  = 1
     else:
         pIndDumpRawResults              = 0
         pIndInvestmentResults           = 1
@@ -355,7 +354,9 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
         pIndOperationSummaryResults     = 1
         pIndCostSummaryResults          = 1
         pIndMarginalResults             = 0
-        pIndEconomicResults             = 0
+        pIndEconomicResults             = 1
+        # output plot results
+        pIndPlotOutput                  = 0
 
     # output parameters, variables, and duals to CSV files
     if pIndDumpRawResults:

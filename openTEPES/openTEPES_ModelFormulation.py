@@ -528,7 +528,7 @@ def GenerationOperationModelFormulationDemand(OptModel, mTEPES, pIndLogConsole, 
 
         # Avoid division by 0 if unit has no minimum power
         if mTEPES.pMinPowerElec[p,sc,n,es] == 0:
-            return ((OptModel.vOutput2ndBlock[p,sc,n,es] + OptModel.vReserveUp[p,sc,n,es])                                      ) / math.sqrt(mTEPES.pEfficiency[es])<= (OptModel.vESSInventory[p,sc,n,es] - mTEPES.pMinStorage[p,sc,n,es]) / mTEPES.pDuration[p,sc,n]()
+            return ((OptModel.vOutput2ndBlock[p,sc,n,es] + OptModel.vReserveUp[p,sc,n,es])                                      ) / math.sqrt(mTEPES.pEfficiency[es]) <= (OptModel.vESSInventory[p,sc,n,es] - mTEPES.pMinStorage[p,sc,n,es]) / mTEPES.pDuration[p,sc,n]()
         else:
             return ((OptModel.vOutput2ndBlock[p,sc,n,es] + OptModel.vReserveUp[p,sc,n,es]) / mTEPES.pMinPowerElec[p,sc,n,es] + 1) / math.sqrt(mTEPES.pEfficiency[es]) <= (OptModel.vESSInventory[p,sc,n,es] - mTEPES.pMinStorage[p,sc,n,es]) / mTEPES.pDuration[p,sc,n]() / mTEPES.pMinPowerElec[p,sc,n,es]
 

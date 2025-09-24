@@ -1,6 +1,10 @@
 Change Log
 =============
 
+[4.18.7] - 2025-09-24
+-----------------------
+- [CHANGED] no plots for no output results
+
 [4.18.6] - 2025-09-21
 -----------------------
 - [FIXED] fix bugs in InputData module
