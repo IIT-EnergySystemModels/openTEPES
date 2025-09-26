@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 17, 2025
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 26, 2025
 """
 
 import datetime
@@ -351,7 +351,6 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     par['pRatedMinPowerHeat']          = dfs['dfGeneration']  ['MinimumPowerHeat'          ] * 1e-3 * (1.0-dfs['dfGeneration']['EFOR'])                  # rated minimum heat     power                 [GW]
     par['pRatedMaxPowerHeat']          = dfs['dfGeneration']  ['MaximumPowerHeat'          ] * 1e-3 * (1.0-dfs['dfGeneration']['EFOR'])                  # rated maximum heat     power                 [GW]
     par['pRatedLinearFuelCost']        = dfs['dfGeneration']  ['LinearTerm'                ] * 1e-3 *      dfs['dfGeneration']['FuelCost']               # fuel     term variable cost                  [MEUR/GWh]
-    par['pRatedConstantVarCost']       = dfs['dfGeneration']  ['ConstantTerm'              ] * 1e-6 *      dfs['dfGeneration']['FuelCost']               # constant term variable cost                  [MEUR/h]
     par['pLinearOMCost']               = dfs['dfGeneration']  ['OMVariableCost'            ] * 1e-3                                                      # O&M      term variable cost                  [MEUR/GWh]
     par['pOperReserveCost']            = dfs['dfGeneration']  ['OperReserveCost'           ] * 1e-3                                                      # operating reserve      cost                  [MEUR/GW]
     par['pStartUpCost']                = dfs['dfGeneration']  ['StartUpCost'               ]                                                             # startup  cost                                [MEUR]
@@ -1289,7 +1288,6 @@ def DataConfiguration(mTEPES):
     mTEPES.dPar['pEmissionVarCost'][mTEPES.dPar['pEmissionVarCost'][[g for g in mTEPES.g]] < mTEPES.dPar['pEpsilon']] = 0.0
 
     mTEPES.dPar['pRatedLinearVarCost'].update  (pd.Series([0.0 for g  in mTEPES.g  if     mTEPES.dPar['pRatedLinearVarCost']  [g ]  < mTEPES.dPar['pEpsilon']], index=[g  for g  in mTEPES.g  if     mTEPES.dPar['pRatedLinearVarCost']  [g ]  < mTEPES.dPar['pEpsilon']]))
-    mTEPES.dPar['pRatedConstantVarCost'].update(pd.Series([0.0 for g  in mTEPES.g  if     mTEPES.dPar['pRatedConstantVarCost'][g ]  < mTEPES.dPar['pEpsilon']], index=[g  for g  in mTEPES.g  if     mTEPES.dPar['pRatedConstantVarCost'][g ]  < mTEPES.dPar['pEpsilon']]))
     mTEPES.dPar['pLinearOMCost'].update        (pd.Series([0.0 for g  in mTEPES.g  if     mTEPES.dPar['pLinearOMCost']        [g ]  < mTEPES.dPar['pEpsilon']], index=[g  for g  in mTEPES.g  if     mTEPES.dPar['pLinearOMCost']        [g ]  < mTEPES.dPar['pEpsilon']]))
     mTEPES.dPar['pOperReserveCost'].update     (pd.Series([0.0 for g  in mTEPES.g  if     mTEPES.dPar['pOperReserveCost']     [g ]  < mTEPES.dPar['pEpsilon']], index=[g  for g  in mTEPES.g  if     mTEPES.dPar['pOperReserveCost']     [g ]  < mTEPES.dPar['pEpsilon']]))
     # mTEPES.dPar['pEmissionCost'].update      (pd.Series([0.0 for g  in mTEPES.g  if abs(mTEPES.dPar['pEmissionCost']        [g ]) < mTEPES.dPar['pEpsilon']], index=[g  for g  in mTEPES.g  if abs(mTEPES.dPar['pEmissionCost']        [g ]) < mTEPES.dPar['pEpsilon']]))
@@ -1437,7 +1435,6 @@ def DataConfiguration(mTEPES):
     mTEPES.pAvailability         = Param(mTEPES.gg,    initialize=mTEPES.dPar['pAvailability'].to_dict()             , within=UnitInterval    ,    doc='unit availability',                      mutable=True)
     mTEPES.pEFOR                 = Param(mTEPES.gg,    initialize=mTEPES.dPar['pEFOR'].to_dict()                     , within=UnitInterval    ,    doc='EFOR'                                                )
     mTEPES.pRatedLinearVarCost   = Param(mTEPES.gg,    initialize=mTEPES.dPar['pRatedLinearVarCost'].to_dict()       , within=NonNegativeReals,    doc='Linear   variable cost'                              )
-    mTEPES.pRatedConstantVarCost = Param(mTEPES.gg,    initialize=mTEPES.dPar['pRatedConstantVarCost'].to_dict()     , within=NonNegativeReals,    doc='Constant variable cost'                              )
     mTEPES.pLinearVarCost        = Param(mTEPES.psng , initialize=mTEPES.dPar['pLinearVarCost'].to_dict()            , within=NonNegativeReals,    doc='Linear   variable cost'                              )
     mTEPES.pConstantVarCost      = Param(mTEPES.psng , initialize=mTEPES.dPar['pConstantVarCost'].to_dict()          , within=NonNegativeReals,    doc='Constant variable cost'                              )
     mTEPES.pLinearOMCost         = Param(mTEPES.gg,    initialize=mTEPES.dPar['pLinearOMCost'].to_dict()             , within=NonNegativeReals,    doc='Linear   O&M      cost'                              )
@@ -1919,6 +1916,12 @@ def SettingUpVariables(OptModel, mTEPES):
                 OptModel.vCommitment   [p,sc,n,nr].domain = UnitInterval
                 OptModel.vStartUp      [p,sc,n,nr].domain = UnitInterval
                 OptModel.vShutDown     [p,sc,n,nr].domain = UnitInterval
+            # fix variables for units that don't have minimum stable time
+            if mTEPES.pStableTime[nr] == 0 or mTEPES.pMaxPower2ndBlock[p,sc,n,nr] == 0:
+                OptModel.vStableState  [p,sc,n,nr].fix(0)
+                OptModel.vRampDwState  [p,sc,n,nr].fix(0)
+                OptModel.vRampUpState  [p,sc,n,nr].fix(0)
+                nFixedBinaries += 1
 
         for p,sc,nr,  group in mTEPES.psnr * mTEPES.ExclusiveGroups:
             if mTEPES.pIndBinUnitCommit[nr] == 0 and nr in mTEPES.ExclusiveGeneratorsYearly:
@@ -2029,14 +2032,14 @@ def SettingUpVariables(OptModel, mTEPES):
             # must run units or units with no minimum power, or ESS existing units are always committed and must produce at least their minimum output
             # not applicable to mutually exclusive units
             if   len(mTEPES.ExclusiveGroups) == 0:
-                if (mTEPES.pMustRun[nr] == 1 or (mTEPES.pMinPowerElec[p,sc,n,nr] == 0.0 and mTEPES.pRatedConstantVarCost[nr] == 0.0) or nr in mTEPES.es ) and nr not in mTEPES.ec and nr not in mTEPES.h:
+                if (mTEPES.pMustRun[nr] == 1 or (mTEPES.pMinPowerElec[p,sc,n,nr] == 0.0 and mTEPES.pConstantVarCost[p,sc,n,nr] == 0.0) or nr in mTEPES.es) and nr not in mTEPES.ec and nr not in mTEPES.h:
                     OptModel.vCommitment    [p,sc,n,nr].fix(1)
                     OptModel.vStartUp       [p,sc,n,nr].fix(0)
                     OptModel.vShutDown      [p,sc,n,nr].fix(0)
                     nFixedVariables += 3
             # If there are mutually exclusive groups do not fix variables from ESS in mutually exclusive groups
             elif len(mTEPES.ExclusiveGroups) >  0 and nr not in mTEPES.ExclusiveGenerators:
-                if (mTEPES.pMustRun[nr] == 1 or (mTEPES.pMinPowerElec[p,sc,n,nr] == 0.0 and mTEPES.pRatedConstantVarCost[nr] == 0.0) or nr in mTEPES.es) and nr not in mTEPES.ec and nr not in mTEPES.h:
+                if (mTEPES.pMustRun[nr] == 1 or (mTEPES.pMinPowerElec[p,sc,n,nr] == 0.0 and mTEPES.pConstantVarCost[p,sc,n,nr] == 0.0) or nr in mTEPES.es) and nr not in mTEPES.ec and nr not in mTEPES.h:
                     OptModel.vCommitment    [p,sc,n,nr].fix(1)
                     OptModel.vStartUp       [p,sc,n,nr].fix(0)
                     OptModel.vShutDown      [p,sc,n,nr].fix(0)
@@ -2618,10 +2621,10 @@ def SettingUpVariables(OptModel, mTEPES):
                 Stage.n2 = Set(doc='load levels', initialize=[nn for pp, scc, stt, nn in mTEPES.s2n if stt == st and scc == sc and pp == p])
 
                 # load levels multiple of cycles for each ESS/generator
-                Stage.nesc = [(n, es) for n, es in Stage.n * mTEPES.es if Stage.n.ord(n) % mTEPES.pStorageTimeStep[es] == 0]
-                Stage.necc = [(n, ec) for n, ec in Stage.n * mTEPES.ec if Stage.n.ord(n) % mTEPES.pStorageTimeStep[ec] == 0]
-                Stage.neso = [(n, es) for n, es in Stage.n * mTEPES.es if Stage.n.ord(n) % mTEPES.pOutflowsTimeStep[es] == 0]
-                Stage.ngen = [(n, g ) for n, g in Stage.n * mTEPES.g if Stage.n.ord(n) % mTEPES.pEnergyTimeStep[g] == 0]
+                Stage.nesc = [(n, es) for n,es in Stage.n * mTEPES.es if Stage.n.ord(n) % mTEPES.pStorageTimeStep[es]  == 0]
+                Stage.necc = [(n, ec) for n,ec in Stage.n * mTEPES.ec if Stage.n.ord(n) % mTEPES.pStorageTimeStep[ec]  == 0]
+                Stage.neso = [(n, es) for n,es in Stage.n * mTEPES.es if Stage.n.ord(n) % mTEPES.pOutflowsTimeStep[es] == 0]
+                Stage.ngen = [(n, g ) for n,g  in Stage.n * mTEPES.g  if Stage.n.ord(n) % mTEPES.pEnergyTimeStep[g]    == 0]
 
                 if mTEPES.pIndHydroTopology == 1:
                     Stage.nhc      = [(n,h ) for n,h  in Stage.n*mTEPES.h  if Stage.n.ord(n) % sum(mTEPES.pReservoirTimeStep[rs] for rs in mTEPES.rs if (rs,h) in mTEPES.r2h) == 0]

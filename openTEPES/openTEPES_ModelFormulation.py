@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 19, 2025
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 25, 2025
 """
 
 import time
@@ -171,7 +171,7 @@ def GenerationOperationModelFormulationObjFunct(OptModel, mTEPES, pIndLogConsole
     setattr(OptModel, f'eTotalECost_{p}_{sc}_{st}', Constraint(mTEPES.n, rule=eTotalECost, doc='system emission cost [MEUR]'))
 
     def eTotalEmissionArea(OptModel,n,ar):
-        if sum(mTEPES.pEmissionRate[g] for g in mTEPES.g if (ar, g) in mTEPES.a2g and (p, g) in mTEPES.pg):
+        if mTEPES.pEmission[p,ar] < math.inf and sum(mTEPES.pEmissionRate[g] for g in mTEPES.g if (ar, g) in mTEPES.a2g and (p, g) in mTEPES.pg):
             return OptModel.vTotalEmissionArea[p,sc,n,ar] == (sum(mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pEmissionRate[nr] * 1e-3 * OptModel.vTotalOutput    [p,sc,n,nr] for nr in mTEPES.nr if (ar,nr) in mTEPES.a2g and (p,nr) in mTEPES.pnr)    #1e-3 to change from tCO2/MWh to MtCO2/GWh
                                                             + sum(mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pEmissionRate[bo] * 1e-3 * OptModel.vTotalOutputHeat[p,sc,n,bo] for bo in mTEPES.bo if (ar,bo) in mTEPES.a2g and (p,bo) in mTEPES.pbo))   #1e-3 to change from tCO2/MWh to MtCO2/GWh
         else:
@@ -327,7 +327,7 @@ def GenerationOperationModelFormulationInvestment(OptModel, mTEPES, pIndLogConso
         print('eAdeqReserveMarginHeat... ', len(getattr(OptModel, f'eAdequacyReserveMarginHeat_{p}_{sc}_{st}')), ' rows')
 
     def eMaxSystemEmission(OptModel,ar):
-        if mTEPES.pEmission[p,ar] < math.inf  and sum(mTEPES.pEmissionRate[nr] for nr in mTEPES.nr if (ar,nr) in mTEPES.a2g) and st == mTEPES.Last_st:
+        if mTEPES.pEmission[p,ar] < math.inf and sum(mTEPES.pEmissionRate[nr] for nr in mTEPES.nr if (ar,nr) in mTEPES.a2g) and st == mTEPES.Last_st:
             # There is an emission limit, there are generators with emissions in the Area and it is the last stage
             return sum(OptModel.vTotalEmissionArea[p,sc,na,ar] for na in mTEPES.na) <= mTEPES.pEmission[p,ar]
         else:
@@ -694,11 +694,11 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
             if mTEPES.pIndOperReserveCon[eh] != 0 or not sum(mTEPES.pOperReserveDw[p,sc,n,ar] for ar in a2e[eh]):
                 return Constraint.Skip
             # ESS case equation
-            return (OptModel.vCharge2ndBlock[p, sc, n, eh] + OptModel.vESSReserveDown[p, sc, n, eh]) / mTEPES.pMaxCharge2ndBlock[p, sc, n, eh] <= 1.0
+            return (OptModel.vCharge2ndBlock[p,sc,n,eh] + OptModel.vESSReserveDown[p,sc,n,eh]) / mTEPES.pMaxCharge2ndBlock[p,sc,n,eh] <= 1.0
         # Hydro case equation
 
         else:
-            return (OptModel.vCharge2ndBlock[p, sc, n, eh] + OptModel.vESSReserveDown[p, sc, n, eh]) / mTEPES.pMaxCharge2ndBlock[p, sc, n, eh] <= OptModel.vCommitmentCons[p, sc, n, eh]
+            return (OptModel.vCharge2ndBlock[p,sc,n,eh] + OptModel.vESSReserveDown[p,sc,n,eh]) / mTEPES.pMaxCharge2ndBlock[p,sc,n,eh] <= OptModel.vCommitmentCons[p,sc,n,eh]
     setattr(OptModel, f'eMaxCharge_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.eh, rule=eMaxCharge, doc='max charge of an ESS [p.u.]'))
 
     if pIndLogConsole == 1:
@@ -712,13 +712,13 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
         if mTEPES.pIndOperReserveCon[eh]:
             return Constraint.Skip
         # Skip if no reserves are demanded in the area where the ESS is located
-        if sum(mTEPES.pOperReserveUp[p, sc, n, ar] for ar in a2e[eh]) == 0:
+        if sum(mTEPES.pOperReserveUp[p,sc,n,ar] for ar in a2e[eh]) == 0:
             return Constraint.Skip
         # Skip if the ESS cannot consume at variable power
-        if not mTEPES.pMaxCharge2ndBlock[p, sc, n, eh]:
+        if not mTEPES.pMaxCharge2ndBlock[p,sc,n,eh]:
             return Constraint.Skip
 
-        return OptModel.vCharge2ndBlock[p, sc, n, eh] - OptModel.vESSReserveUp[p, sc, n, eh] >= 0.0
+        return OptModel.vCharge2ndBlock[p,sc,n,eh] - OptModel.vESSReserveUp[p,sc,n,eh] >= 0.0
 
     setattr(OptModel, f'eMinCharge_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.eh, rule=eMinCharge, doc='min charge of an ESS [p.u.]'))
 
@@ -880,20 +880,20 @@ def GenerationOperationModelFormulationReservoir(OptModel, mTEPES, pIndLogConsol
         if mTEPES.pIndOperReserveGen[h]:
             return Constraint.Skip
         # Skip if no reserves are demanded in the area where the turbine is located
-        if sum(mTEPES.pOperReserveUp[p, sc, n, ar] for ar in a2h[h]) == 0:
+        if sum(mTEPES.pOperReserveUp[p,sc,n,ar] for ar in a2h[h]) == 0:
             return Constraint.Skip
         # Skip if turbine cannot generate at variable power
         if mTEPES.pMaxPower2ndBlock [p,sc,n,h] == 0:
             return Constraint.Skip
         # Skip if LoalLevel has duration 0
-        if mTEPES.pDuration[p, sc, n]() == 0:
+        if mTEPES.pDuration[p,sc,n]() == 0:
             return Constraint.Skip
 
         # Avoid division by 0 if turbine has no minimum power
-        if mTEPES.pMinPowerElec[p, sc, n, h] == 0:
-            return  OptModel.vOutput2ndBlock[p, sc, n, h] + OptModel.vReserveUp[p, sc, n, h]                                                                          <= sum(OptModel.vReservoirVolume[p, sc, n, rs] - mTEPES.pMinVolume[p, sc, n, rs] for rs in mTEPES.rs if (rs, h) in mTEPES.r2h) * mTEPES.pProductionFunctionHydro[h] / mTEPES.pDuration[p, sc, n]()
+        if mTEPES.pMinPowerElec[p,sc,n,h] == 0:
+            return  OptModel.vOutput2ndBlock[p,sc,n,h] + OptModel.vReserveUp[p,sc,n,h]                                                                    <= sum(OptModel.vReservoirVolume[p,sc,n,rs] - mTEPES.pMinVolume[p,sc,n,rs] for rs in mTEPES.rs if (rs, h) in mTEPES.r2h) * mTEPES.pProductionFunctionHydro[h] / mTEPES.pDuration[p,sc,n]()
         else:
-            return (OptModel.vOutput2ndBlock[p, sc, n, h] + OptModel.vReserveUp[p, sc, n, h]) / mTEPES.pMinPowerElec[p, sc, n, h] + OptModel.vCommitment[p, sc, n, h] <= sum(OptModel.vReservoirVolume[p, sc, n, rs] - mTEPES.pMinVolume[p, sc, n, rs] for rs in mTEPES.rs if (rs, h) in mTEPES.r2h) * mTEPES.pProductionFunctionHydro[h] / mTEPES.pDuration[p, sc, n]() / mTEPES.pMinPowerElec[p, sc, n, h]
+            return (OptModel.vOutput2ndBlock[p,sc,n,h] + OptModel.vReserveUp[p,sc,n,h]) / mTEPES.pMinPowerElec[p,sc,n,h] + OptModel.vCommitment[p,sc,n,h] <= sum(OptModel.vReservoirVolume[p,sc,n,rs] - mTEPES.pMinVolume[p,sc,n,rs] for rs in mTEPES.rs if (rs, h) in mTEPES.r2h) * mTEPES.pProductionFunctionHydro[h] / mTEPES.pDuration[p,sc,n]() / mTEPES.pMinPowerElec[p,sc,n,h]
 
     setattr(OptModel, f'eTrbReserveUpIfUpstream_{p}_{sc}_{st}', Constraint(mTEPES.nhc, rule=eTrbReserveUpIfUpstream, doc='up   operating reserve if energy available [GW]'))
 
@@ -910,20 +910,20 @@ def GenerationOperationModelFormulationReservoir(OptModel, mTEPES, pIndLogConsol
         if mTEPES.pIndOperReserveGen[h]:
             return Constraint.Skip
         # Skip if no reserves are demanded in the area where the turbine is located
-        if sum(mTEPES.pOperReserveUp[p, sc, n, ar] for ar in a2h[h]) == 0:
+        if sum(mTEPES.pOperReserveUp[p,sc,n,ar] for ar in a2h[h]) == 0:
             return Constraint.Skip
         # Skip if turbine cannot generate at variable power
         if mTEPES.pMaxPower2ndBlock [p,sc,n,h] == 0:
             return Constraint.Skip
         # Skip if LoalLevel has duration 0
-        if mTEPES.pDuration[p, sc, n]() == 0:
+        if mTEPES.pDuration[p,sc,n]() == 0:
             return Constraint.Skip
 
         # Avoid division by 0 if turbine has no minimum power
-        if mTEPES.pMinPowerElec[p, sc, n, h] == 0:
-            return  OptModel.vOutput2ndBlock[p, sc, n, h] + OptModel.vReserveUp[p, sc, n, h]                                                                          <= sum(mTEPES.pMaxVolume[p, sc, n, rs] - OptModel.vReservoirVolume[p, sc, n, rs] for rs in mTEPES.rs if (h,rs) in mTEPES.h2r) * mTEPES.pProductionFunctionHydro[h] / mTEPES.pDuration[p, sc, n]()
+        if mTEPES.pMinPowerElec[p,sc,n,h] == 0:
+            return  OptModel.vOutput2ndBlock[p,sc,n,h] + OptModel.vReserveUp[p,sc,n,h]                                                                    <= sum(mTEPES.pMaxVolume[p,sc,n,rs] - OptModel.vReservoirVolume[p,sc,n,rs] for rs in mTEPES.rs if (h,rs) in mTEPES.h2r) * mTEPES.pProductionFunctionHydro[h] / mTEPES.pDuration[p,sc,n]()
         else:
-            return (OptModel.vOutput2ndBlock[p, sc, n, h] + OptModel.vReserveUp[p, sc, n, h]) / mTEPES.pMinPowerElec[p, sc, n, h] + OptModel.vCommitment[p, sc, n, h] <= sum(mTEPES.pMaxVolume[p, sc, n, rs] - OptModel.vReservoirVolume[p, sc, n, rs] for rs in mTEPES.rs if (h,rs) in mTEPES.h2r) * mTEPES.pProductionFunctionHydro[h] / mTEPES.pDuration[p, sc, n]() / mTEPES.pMinPowerElec[p, sc, n, h]
+            return (OptModel.vOutput2ndBlock[p,sc,n,h] + OptModel.vReserveUp[p,sc,n,h]) / mTEPES.pMinPowerElec[p,sc,n,h] + OptModel.vCommitment[p,sc,n,h] <= sum(mTEPES.pMaxVolume[p,sc,n,rs] - OptModel.vReservoirVolume[p,sc,n,rs] for rs in mTEPES.rs if (h,rs) in mTEPES.h2r) * mTEPES.pProductionFunctionHydro[h] / mTEPES.pDuration[p,sc,n]() / mTEPES.pMinPowerElec[p,sc,n,h]
 
     setattr(OptModel, f'eTrbReserveUpIfDownstream_{p}_{sc}_{st}', Constraint(mTEPES.nhc, rule=eTrbReserveUpIfDownstream, doc='up   operating reserve if energy available [GW]'))
 
@@ -944,20 +944,20 @@ def GenerationOperationModelFormulationReservoir(OptModel, mTEPES, pIndLogConsol
         if sum(1 for rs in mTEPES.rs if (h,rs) in mTEPES.p2r) == 0:
             return Constraint.Skip
         # Skip if no reserves are demanded in the area where the turbine is located
-        if sum(mTEPES.pOperReserveDw[p, sc, n, ar] for ar in a2h[h]) == 0:
+        if sum(mTEPES.pOperReserveDw[p,sc,n,ar] for ar in a2h[h]) == 0:
             return Constraint.Skip
         # Skip if pump cannot consume at variable power
-        if mTEPES.pMaxCharge2ndBlock[p, sc, n, h] == 0:
+        if mTEPES.pMaxCharge2ndBlock[p,sc,n,h] == 0:
             return Constraint.Skip
         # Skip if LoalLevel has duration 0
-        if mTEPES.pDuration[p, sc, n]() == 0:
+        if mTEPES.pDuration[p,sc,n]() == 0:
             return Constraint.Skip
 
         # Avoid dividing by 0 if pump has no minimum charge
         if mTEPES.pMinCharge[p,sc,n,h] == 0:
-            return  (OptModel.vCharge2ndBlock[p,sc,n,h] + OptModel.vESSReserveDown[p,sc,n,h]                                                                     ) * mTEPES.pEfficiency[h] <= sum(mTEPES.pMaxVolume[p,sc,n,rs] - OptModel.vReservoirVolume[p,sc,n,rs] for rs in mTEPES.rs if (h,rs) in mTEPES.p2r) * mTEPES.pProductionFunctionHydro[h] / mTEPES.pDuration[p,sc,n]()
+            return  (OptModel.vCharge2ndBlock[p,sc,n,h] + OptModel.vESSReserveDown[p,sc,n,h]                                                                    ) * mTEPES.pEfficiency[h] <= sum(mTEPES.pMaxVolume[p,sc,n,rs] - OptModel.vReservoirVolume[p,sc,n,rs] for rs in mTEPES.rs if (h,rs) in mTEPES.p2r) * mTEPES.pProductionFunctionHydro[h] / mTEPES.pDuration[p,sc,n]()
         else:
-            return ((OptModel.vCharge2ndBlock[p,sc,n,h] + OptModel.vESSReserveDown[p,sc,n,h]) / mTEPES.pMinCharge[p,sc,n,h] + OptModel.vCommitmentCons[p,sc,n,h])  * mTEPES.pEfficiency[h] <= sum(mTEPES.pMaxVolume[p,sc,n,rs] - OptModel.vReservoirVolume[p,sc,n,rs] for rs in mTEPES.rs if (h,rs) in mTEPES.p2r) * mTEPES.pProductionFunctionHydro[h] / mTEPES.pDuration[p,sc,n]() / mTEPES.pMinCharge[p,sc,n,h]
+            return ((OptModel.vCharge2ndBlock[p,sc,n,h] + OptModel.vESSReserveDown[p,sc,n,h]) / mTEPES.pMinCharge[p,sc,n,h] + OptModel.vCommitmentCons[p,sc,n,h]) * mTEPES.pEfficiency[h] <= sum(mTEPES.pMaxVolume[p,sc,n,rs] - OptModel.vReservoirVolume[p,sc,n,rs] for rs in mTEPES.rs if (h,rs) in mTEPES.p2r) * mTEPES.pProductionFunctionHydro[h] / mTEPES.pDuration[p,sc,n]() / mTEPES.pMinCharge[p,sc,n,h]
 
     setattr(OptModel, f'ePmpReserveDwIfUpstream_{p}_{sc}_{st}', Constraint(mTEPES.npc, rule=ePmpReserveDwIfUpstream, doc='down operating reserve if energy available [GW]'))
 
@@ -977,20 +977,20 @@ def GenerationOperationModelFormulationReservoir(OptModel, mTEPES, pIndLogConsol
         if sum(1 for rs in mTEPES.rs if (h, rs) in mTEPES.p2r) == 0:
             return Constraint.Skip
         # Skip if no reserves are demanded in the area where the turbine is located
-        if sum(mTEPES.pOperReserveDw[p, sc, n, ar] for ar in a2h[h]) == 0:
+        if sum(mTEPES.pOperReserveDw[p,sc,n,ar] for ar in a2h[h]) == 0:
             return Constraint.Skip
         # Skip if pump cannot consume at variable power
-        if mTEPES.pMaxCharge2ndBlock[p, sc, n, h] == 0:
+        if mTEPES.pMaxCharge2ndBlock[p,sc,n,h] == 0:
             return Constraint.Skip
         # Skip if LoalLevel has duration 0
-        if mTEPES.pDuration[p, sc, n]() == 0:
+        if mTEPES.pDuration[p,sc,n]() == 0:
             return Constraint.Skip
 
         # Avoid dividing by 0 if pump has no minimum charge
-        if mTEPES.pMinCharge[p, sc, n, h] == 0:
-            return  (OptModel.vCharge2ndBlock[p, sc, n, h] + OptModel.vESSReserveDown[p, sc, n, h]                                                                          ) * mTEPES.pEfficiency[h] <= sum(OptModel.vReservoirVolume[p, sc, n, rs] - mTEPES.pMinVolume[p, sc, n, rs] for rs in mTEPES.rs if (rs, h) in mTEPES.r2p) * mTEPES.pProductionFunctionHydro[h] / mTEPES.pDuration[p, sc, n]()
+        if mTEPES.pMinCharge[p,sc,n,h] == 0:
+            return  (OptModel.vCharge2ndBlock[p,sc,n,h] + OptModel.vESSReserveDown[p,sc,n,h]                                                                    ) * mTEPES.pEfficiency[h] <= sum(OptModel.vReservoirVolume[p,sc,n,rs] - mTEPES.pMinVolume[p,sc,n,rs] for rs in mTEPES.rs if (rs, h) in mTEPES.r2p) * mTEPES.pProductionFunctionHydro[h] / mTEPES.pDuration[p,sc,n]()
         else:
-            return ((OptModel.vCharge2ndBlock[p, sc, n, h] + OptModel.vESSReserveDown[p, sc, n, h]) / mTEPES.pMinCharge[p, sc, n, h] + OptModel.vCommitmentCons[p, sc, n, h]) * mTEPES.pEfficiency[h] <= sum(OptModel.vReservoirVolume[p, sc, n, rs] - mTEPES.pMinVolume[p, sc, n, rs] for rs in mTEPES.rs if (rs, h) in mTEPES.r2p) * mTEPES.pProductionFunctionHydro[h] / mTEPES.pDuration[p, sc, n]() / mTEPES.pMinCharge[p, sc, n, h]
+            return ((OptModel.vCharge2ndBlock[p,sc,n,h] + OptModel.vESSReserveDown[p,sc,n,h]) / mTEPES.pMinCharge[p,sc,n,h] + OptModel.vCommitmentCons[p,sc,n,h]) * mTEPES.pEfficiency[h] <= sum(OptModel.vReservoirVolume[p,sc,n,rs] - mTEPES.pMinVolume[p,sc,n,rs] for rs in mTEPES.rs if (rs, h) in mTEPES.r2p) * mTEPES.pProductionFunctionHydro[h] / mTEPES.pDuration[p,sc,n]() / mTEPES.pMinCharge[p,sc,n,h]
 
     setattr(OptModel, f'ePmpReserveDwIfDownstream_{p}_{sc}_{st}', Constraint(mTEPES.npc, rule=ePmpReserveDwIfDownstream, doc='down operating reserve if energy available [GW]'))
 
@@ -1055,7 +1055,7 @@ def GenerationOperationModelFormulationCommitment(OptModel, mTEPES, pIndLogConso
             a2n[nr].append(ar)
 
     def eMaxOutput2ndBlock(OptModel,n,nr):
-        if (p,nr) in mTEPES.pnr and (nr not in mTEPES.es or (nr in mTEPES.es and (mTEPES.pTotalMaxCharge[nr] or mTEPES.pTotalEnergyInflows[nr]))):
+        if (p,nr) in mTEPES.pnr and (nr not in mTEPES.es or (nr in mTEPES.es and (mTEPES.pTotalMaxCharge[nr] or mTEPES.pTotalEnergyInflows[nr]))) and (mTEPES.pMinPowerElec[p,sc,n,nr] or mTEPES.pConstantVarCost[p,sc,n,nr]):
             if   mTEPES.pMaxPower2ndBlock[p,sc,n,nr] and n != mTEPES.n.last():
                 return (OptModel.vOutput2ndBlock[p,sc,n,nr] + OptModel.vReserveUp  [p,sc,n,nr]) / mTEPES.pMaxPower2ndBlock[p,sc,n,nr] <= OptModel.vCommitment[p,sc,n,nr] - OptModel.vStartUp[p,sc,n,nr] - OptModel.vShutDown[p,sc,mTEPES.n.next(n),nr]
             elif mTEPES.pMaxPower2ndBlock[p,sc,n,nr] and n == mTEPES.n.last():
@@ -1071,7 +1071,7 @@ def GenerationOperationModelFormulationCommitment(OptModel, mTEPES, pIndLogConso
 
     def eMinOutput2ndBlock(OptModel,n,nr):
         if (p,nr) in mTEPES.pnr and (nr not in mTEPES.es or (nr in mTEPES.es and (mTEPES.pTotalMaxCharge[nr] or mTEPES.pTotalEnergyInflows[nr]))):
-            if mTEPES.pMaxPower2ndBlock[p,sc,n,nr]:
+            if mTEPES.pMaxPower2ndBlock[p,sc,n,nr] and mTEPES.pIndOperReserveGen[nr] != 1:
                 return  OptModel.vOutput2ndBlock[p,sc,n,nr] - OptModel.vReserveDown[p,sc,n,nr]                                        >= 0.0
             else:
                 return Constraint.Skip
@@ -1153,7 +1153,7 @@ def GenerationOperationModelFormulationCommitment(OptModel, mTEPES, pIndLogConso
         if nr not in mTEPES.GeneratorsInYearlyGroup[group]:
             return Constraint.Skip
         # Avoid division by 0. If Maximum power is 0 this equation is not needed anyways
-        if mTEPES.pMaxPowerElec[p, sc, n, nr] == 0:
+        if mTEPES.pMaxPowerElec[p,sc,n,nr] == 0:
             return Constraint.Skip
         # Skip if there are one or less generators in the group
         if len(mTEPES.GeneratorsInYearlyGroup[group] & {nr for (p, nr) in mTEPES.pnr}) <= 1:
@@ -1170,7 +1170,7 @@ def GenerationOperationModelFormulationCommitment(OptModel, mTEPES, pIndLogConso
         # Skip if there are one or less generators in the group
         if len(mTEPES.GeneratorsInYearlyGroup[group] & {nr for (p,nr) in mTEPES.pnr}) <= 1:
             return Constraint.Skip
-        return sum(OptModel.vMaxCommitmentYearly[p, sc, nr, group] + (OptModel.vCommitmentCons[p, sc, nr] if nr in mTEPES.h else 0) for nr in mTEPES.GeneratorsInYearlyGroup[group] if (p, nr) in mTEPES.pnr ) <= 1
+        return sum(OptModel.vMaxCommitmentYearly[p,sc,nr,group] + (OptModel.vCommitmentCons[p,sc,nr] if nr in mTEPES.h else 0) for nr in mTEPES.GeneratorsInYearlyGroup[group] if (p,nr) in mTEPES.pnr ) <= 1
     setattr(OptModel, f'eExclusiveGensYearly_{p}_{sc}_{st}', Constraint(mTEPES.ExclusiveGroupsYearly, rule=eExclusiveGensYearly, doc='mutually exclusive generators'))
 
     if pIndLogConsole == 1:

@@ -165,9 +165,9 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
     SolvingTime = time.time() - StartTime
 
     #%% writing the results
-    print    ('  Problem size                         ... ', OptModel.model().nconstraints(), 'constraints, ', OptModel.model().nvariables()-mTEPES.nFixedVariables+1, 'variables')
-    print    ('  Solution time                        ... ', round(SolvingTime), 's')
-    print    ('  Total system                 cost [MEUR] ', OptModel.vTotalSCost())
+    print            ('  Problem size                         ... ', OptModel.model().nconstraints(), 'constraints, ', OptModel.model().nvariables()-mTEPES.nFixedVariables+1, 'variables')
+    print            ('  Solution time                        ... ', round(SolvingTime), 's')
+    print            ('  Total system                 cost [MEUR] ', OptModel.vTotalSCost())
     if mTEPES.NoRepetition == 1:
         for pp,scc in mTEPES.ps:
             print    (f'***** Period: {pp}, Scenario: {scc}, Stage: {st} ******')
