@@ -571,7 +571,7 @@ Minimum up time and down time of thermal unit [p.u.] «``eMinUpTime``» «``eMin
 :math:`\sum_{n'=n+\nu-TD_t}^n sd^p_{\omega n't} \leq 1 - uc^p_{\omega nt} \quad \forall p \omega nt`
 
 Minimum stable time of a thermal unit [p.u.] «``eMinStableTime``»
-In the code you can select a simplified (first) or the tight computational efficient formulation (second).
+In the code you can select a simplified (first) or the tight computational efficient formulation (second). With the simplified formulation ramp down maneuvers can no longer be split into several periods to avoid restrictions.
 
 :math:`rsu^p_{\omega nt} + \sum_{n'=n-TS_t}^{n-\nu} rsd^p_{\omega n't} \leq 1 \quad \forall p \omega nt`
 
