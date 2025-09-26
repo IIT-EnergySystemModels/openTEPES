@@ -3,6 +3,7 @@ Change Log
 
 [4.18.7] - 2025-09-26
 -----------------------
+- [CHANGED] avoid formulating superfluous eMaxOutput2ndBlock and eMinOutput2ndBlock constraints
 - [CHANGED] fix minimum stable time variables for units that don't have minimum stable time
 - [CHANGED] remove parameter pRatedConstantVarCost
 - [CHANGED] avoid formulating superfluous eTotalEmissionArea and eMinOutput2ndBlock constraints

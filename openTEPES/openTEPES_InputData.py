@@ -165,7 +165,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     print('Reading the CSV files                  ...  {} s'.format(reading_time))
     StartTime = time.time()
 
-    if (dfs['dfGeneration']['Efficiency'] == 0).any():
+    if (dfs['dfGeneration']['Efficiency'] == 0.0).any():
         print('WARNING: Efficiency values of 0.0 are not valid. They have been changed to 1.0.')
         print("If you want to disable charging, set 'MaximumCharge' to 0.0 or leave it empty.")
     dfs['dfGeneration']['Efficiency'] = dfs['dfGeneration']['Efficiency'].where(dfs['dfGeneration']['Efficiency'] != 0.0, 1.0)
@@ -325,9 +325,9 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
 
         for psn in par['pDuration'].index:
             p,sc,n = psn
-            if par['pPeriodWeight'][p] == 0:
+            if par['pPeriodWeight'][p] == 0.0:
                 par['pDuration'].loc[p,sc,n] = 0
-            if par['pScenProb'][p,sc] == 0:
+            if par['pScenProb'][p,sc] == 0.0:
                 par['pDuration'].loc[p,sc,n] = 0
 
     #%% generation parameters
@@ -1917,11 +1917,10 @@ def SettingUpVariables(OptModel, mTEPES):
                 OptModel.vStartUp      [p,sc,n,nr].domain = UnitInterval
                 OptModel.vShutDown     [p,sc,n,nr].domain = UnitInterval
             # fix variables for units that don't have minimum stable time
-            if mTEPES.pStableTime[nr] == 0 or mTEPES.pMaxPower2ndBlock[p,sc,n,nr] == 0:
+            if mTEPES.pStableTime[nr] == 0.0 or mTEPES.pMaxPower2ndBlock[p,sc,n,nr] == 0.0:
                 OptModel.vStableState  [p,sc,n,nr].fix(0)
                 OptModel.vRampDwState  [p,sc,n,nr].fix(0)
                 OptModel.vRampUpState  [p,sc,n,nr].fix(0)
-                nFixedBinaries += 1
 
         for p,sc,nr,  group in mTEPES.psnr * mTEPES.ExclusiveGroups:
             if mTEPES.pIndBinUnitCommit[nr] == 0 and nr in mTEPES.ExclusiveGeneratorsYearly:
@@ -1933,7 +1932,7 @@ def SettingUpVariables(OptModel, mTEPES):
             for p,sc,n,h in mTEPES.psnh:
                 if mTEPES.pIndBinUnitCommit[h] == 0:
                     OptModel.vCommitmentCons[p,sc,n,h].domain = UnitInterval
-                if mTEPES.pMaxCharge[p,sc,n,h] == 0:
+                if mTEPES.pMaxCharge[p,sc,n,h] == 0.0:
                     OptModel.vCommitmentCons[p,sc,n,h].fix(0)
                     nFixedBinaries += 1
 
