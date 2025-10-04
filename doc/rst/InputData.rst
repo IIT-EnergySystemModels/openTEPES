@@ -344,6 +344,7 @@ A description of the data included for each (electricity and heat) generating un
 ==========================  ============================================================================================================================================================================================  ===================================
 Header                      Description
 ==========================  ============================================================================================================================================================================================  ===================================
+Generator                   Name of the generator. Each generator must have a unique name.
 Node                        Name of the node where the generator is located. If left empty, the generator is ignored
 Technology                  Technology of the generator (nuclear, coal, CCGT, OCGT, ESS, solar, wind, biomass, etc.)
 MutuallyExclusive           List of mutually exclusive sets to which the generator belongs. Only one generator per set can be committed simultaneously. It is computationally demanding.
