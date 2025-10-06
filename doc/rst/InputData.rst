@@ -71,9 +71,9 @@ File                           Description
 ``oT_Dict_Generation.csv``     Generation units (thermal -nuclear, CCGT, OCGT, coal-, ESS -storage hydro modeled in energy or water, pumped-hydro storage PHS, battery BESS, electric vehicle EV, demand side management DSM, alkaline water electrolyzer AWE, solar thermal- and VRES -wind onshore and offshore, solar PV, run-of-the-river hydro-)
 ``oT_Dict_Technology.csv``     Generation technologies. The technology order is used in the temporal result plot.
 ``oT_Dict_Storage.csv``        ESS storage type (daily <12 h, weekly <40 h, monthly >60 h).
-``oT_Dict_Node.csv``           Nodes. A node belongs to a zone.
-``oT_Dict_Zone.csv``           Zones. A zone belongs to an area.
-``oT_Dict_Area.csv``           Areas. An area belongs to a region. Long-term adequacy, inertia, and operating reserves are associated with areas.
+``oT_Dict_Node.csv``           Nodes. A node belongs to a defined zone.
+``oT_Dict_Zone.csv``           Zones. A zone belongs to a defined area.
+``oT_Dict_Area.csv``           Areas. An area belongs to a defined region. Long-term adequacy, inertia, and operating reserves are associated with areas.
 ``oT_Dict_Region.csv``         Regions
 ``oT_Dict_Circuit.csv``        Circuits
 ``oT_Dict_Line.csv``           Line type (AC, DC)
@@ -614,6 +614,10 @@ A description of the circuit (initial node, final node, circuit) data included i
 ===================  ===============================================================================================================  ======
 Header               Description
 ===================  ===============================================================================================================  ======
+InitialNode          Name of the initial node of the transmission line
+FinalNode            Name of the final node of the transmission line
+Circuit              Name of the circuit (if there are several circuits between two nodes, they must have different names)
+InitialNode          Name of the initial node of the transmission line
 LineType             Line type {AC, DC, Transformer, Converter}
 Switching            The transmission line can switch on/off                                                                          Yes/No
 InitialPeriod        Initial period (year) when the unit is installed or can be installed, if candidate                               Year
