@@ -720,6 +720,12 @@ def main():
         args.solver = input('Input Solver Name (Default {}): '.format(SOLVER))
         if args.solver == '':
             args.solver = SOLVER
+        if args.solver == 'GAMS' or args.solver == 'Gams':
+            args.solver = 'gams'
+        if args.solver == 'HiGHS' or args.solver == 'HIGHS' or args.solver == 'highs' or args.solver == 'Highs':
+            args.solver = 'appsi_highs'
+        if args.solver == 'GUROBI' or args.solver == 'Gurobi':
+            args.solver = 'gurobi'
     if args.result is None:
         args.result = input('Would you like to write all the results? (Default {}): '.format(RESULT))
         if args.result == '':
