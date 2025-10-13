@@ -71,11 +71,11 @@ File                           Description
 ``oT_Dict_Generation.csv``     Generation units (thermal -nuclear, CCGT, OCGT, coal-, ESS -storage hydro modeled in energy or water, pumped-hydro storage PHS, battery BESS, electric vehicle EV, demand side management DSM, alkaline water electrolyzer AWE, solar thermal- and VRES -wind onshore and offshore, solar PV, run-of-the-river hydro-)
 ``oT_Dict_Technology.csv``     Generation technologies. The technology order is used in the temporal result plot.
 ``oT_Dict_Storage.csv``        ESS storage type (daily <12 h, weekly <40 h, monthly >60 h).
-``oT_Dict_Node.csv``           Nodes. A node belongs to a defined zone.
-``oT_Dict_Zone.csv``           Zones. A zone belongs to a defined area.
-``oT_Dict_Area.csv``           Areas. An area belongs to a defined region. Long-term adequacy, inertia, and operating reserves are associated with areas.
+``oT_Dict_Node.csv``           Nodes. A node belongs to a defined zone. All the nodes must have a different name.
+``oT_Dict_Zone.csv``           Zones. A zone belongs to a defined area. All the zones must have a different name.
+``oT_Dict_Area.csv``           Areas. An area belongs to a defined region. All the areas must have a different name. Long-term adequacy, inertia, and operating reserves are associated with areas.
 ``oT_Dict_Region.csv``         Regions
-``oT_Dict_Circuit.csv``        Circuits
+``oT_Dict_Circuit.csv``        Circuits (e.g., ac1, ac2 for AC lines, dc1 for DC lines). All the circuits must have a different name.
 ``oT_Dict_Line.csv``           Line type (AC, DC)
 =============================  =========================================================================================================================================================================================================================================================================================================================
 
