@@ -79,15 +79,15 @@ File                           Description
 ``oT_Dict_Line.csv``           Line type (AC, DC)
 =============================  =========================================================================================================================================================================================================================================================================================================================
 
-Geographical location of nodes, zones, areas, and regions.
+Assignment of nodes to zones, zones to areas, and areas to regions.
 
-============================  ============  ============================
+============================  ============  ==============================
 File                          Dictionary    Description
-============================  ============  ============================
-``oT_Dict_NodeToZone.csv``    NodeToZone    Location of nodes at zones
-``oT_Dict_ZoneToArea.csv``    ZoneToArea    Location of zones at areas
-``oT_Dict_AreaToRegion.csv``  AreaToRegion  Location of areas at regions
-============================  ============  ============================
+============================  ============  ==============================
+``oT_Dict_NodeToZone.csv``    NodeToZone    Assignment of nodes at zones
+``oT_Dict_ZoneToArea.csv``    ZoneToArea    Assignment of zones at areas
+``oT_Dict_AreaToRegion.csv``  AreaToRegion  Assignment of areas at regions
+============================  ============  ==============================
 
 See the hydropower system section at the end of this page to learn how to define the basin topology (connection among reservoirs and hydropower plants). Some additional dictionaries and data files are needed.
 
