@@ -14,7 +14,7 @@ The **openTEPES** model has been used in these publications:
 
 - A. Ramos A, S. Huclin and J.P. Chaves (2023), "Analysis of different flexible technologies in the Spain NECP for 2030". Front. Built Environ. 9:1065998. `10.3389/fbuil.2023.1065998 <https://doi.org/10.3389/fbuil.2023.1065998>`_
 
-- A. Ramos, E. Álvarez "Software implementation". *Second World openTEPES Conference*, July 2023. (`Presentation_2ndWorld_Sofware <https://pascua.iit.comillas.edu/aramos/papers/openTEPES_SoftwareImplementation.pdf>`_)
+- A. Ramos, E. Álvarez "Software implementation". *Second World openTEPES Conference*, July 2023. (`Presentation_2ndWorld_Software <https://pascua.iit.comillas.edu/aramos/papers/openTEPES_SoftwareImplementation.pdf>`_)
 
 - A. Ramos, S. Huclin, J.P. Chaves "Analysis of different flexible technologies in the Spain NECP for 2030". *Second World openTEPES Conference*, July 2023. (`Presentation_2ndWorld_Spain_NECP_2030 <https://pascua.iit.comillas.edu/aramos/papers/SystemFlexibility.pdf>`_)
 
