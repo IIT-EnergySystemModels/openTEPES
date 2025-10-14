@@ -105,7 +105,7 @@ File                                       Description
 ``oT_Data_Stage.csv``                      Weight of each stage
 ``oT_Data_ReserveMargin.csv``              Minimum adequacy reserve margin for each area and period
 ``oT_Data_Emission.csv``                   Maximum CO2 emissions of the electric system
-``oT_Data_RESEnergy.csv``                  Minimum RES energy
+``oT_Data_RESEnergy.csv``                  Minimum RES energy for each area and period
 ``oT_Data_Duration.csv``                   Duration of the load levels
 ``oT_Data_Demand.csv``                     Electricity demand
 ``oT_Data_Inertia.csv``                    System inertia by area
@@ -622,7 +622,7 @@ LineType             Line type {AC, DC, Transformer, Converter}
 Switching            The transmission line can switch on/off                                                                          Yes/No
 InitialPeriod        Initial period (year) when the unit is installed or can be installed, if candidate                               Year
 FinalPeriod          Final   period (year) when the unit is installed or can be installed, if candidate                               Year
-Voltage              Line voltage (e.g., 400, 220 kV, 220/400 kV if transformer). Used only for plotting purposes                     kV
+Voltage              Line voltage (e.g., 400, 220 kV, 220.400 kV if transformer). Used only for plotting purposes                     kV
 Length               Line length (only used for reporting purposes). If not defined, computed as 1.1 times the geographical distance  km
 LossFactor           Transmission losses equal to the line power flow times this factor                                               p.u.
 Resistance           Resistance (not used in this version)                                                                            p.u.
@@ -635,6 +635,7 @@ Converter            Converter station (not used in this version)               
 TTC                  Total transfer capacity (maximum permissible thermal load) in forward  direction. Static line rating             MW
 TTCBck               Total transfer capacity (maximum permissible thermal load) in backward direction. Static line rating             MW
 SecurityFactor       Security factor to consider approximately N-1 contingencies. NTC = TTC x SecurityFactor                          p.u.
+                     All the security factors can't be 0. Otherwise, there is no network.
 FixedInvestmentCost  Overnight investment (capital -CAPEX- and fixed O&M -FOM-) cost                                                  M€
 FixedChargeRate      Fixed-charge rate to annualize the overnight investment cost                                                     p.u.
 BinaryInvestment     Binary line/circuit investment decision                                                                          Yes/No
@@ -846,6 +847,7 @@ Length               Pipeline length (only used for reporting purposes). If not 
 TTC                  Total transfer capacity (maximum permissible hydrogen flow) in forward  direction. Static pipeline rating            tH2
 TTCBck               Total transfer capacity (maximum permissible hydrogen flow) in backward direction. Static pipeline rating            tH2
 SecurityFactor       Security factor to consider approximately N-1 contingencies. NTC = TTC x SecurityFactor                              p.u.
+                     All the security factors can't be 0. Otherwise, there is no network.
 FixedInvestmentCost  Overnight investment (capital -CAPEX- and fixed O&M -FOM-) cost                                                      M€
 FixedChargeRate      Fixed-charge rate to annualize the overnight investment cost                                                         p.u.
 BinaryInvestment     Binary pipeline investment decision                                                                                  Yes/No
@@ -916,6 +918,7 @@ Length               Pipeline length (only used for reporting purposes). If not 
 TTC                  Total transfer capacity (maximum permissible heat flow) in forward  direction. Static pipeline rating                MW
 TTCBck               Total transfer capacity (maximum permissible heat flow) in backward direction. Static pipeline rating                MW
 SecurityFactor       Security factor to consider approximately N-1 contingencies. NTC = TTC x SecurityFactor                              p.u.
+                     All the security factors can't be 0. Otherwise, there is no network.
 FixedInvestmentCost  Overnight investment (capital -CAPEX- and fixed O&M -FOM-) cost                                                      M€
 FixedChargeRate      Fixed-charge rate to annualize the overnight investment cost                                                         p.u.
 BinaryInvestment     Binary pipeline investment decision                                                                                  Yes/No

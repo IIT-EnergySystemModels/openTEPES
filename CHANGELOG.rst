@@ -1,8 +1,11 @@
 Change Log
 =============
 
-[4.18.7] - 2025-09-26
+[4.18.7] - 2025-10-14
 -----------------------
+- [FIXED] fix the computation of MWkm in output results
+- [CHANGED] detection of minimum renewable energy requirement exceeds the demand
+- [CHANGED] detection of all the lines have NTC zero probably due to security factor equal to zero
 - [CHANGED] avoid formulating superfluous eMaxOutput2ndBlock and eMinOutput2ndBlock constraints
 - [CHANGED] fix minimum stable time variables for units that don't have minimum stable time
 - [CHANGED] remove parameter pRatedConstantVarCost

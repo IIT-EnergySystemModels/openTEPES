@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 26, 2025
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 14, 2025
 """
 
 import datetime
@@ -1621,7 +1621,7 @@ def DataConfiguration(mTEPES):
     #     if  mTEPES.pAvailability[g]() == 0.0:
     #         mTEPES.pAvailability[g]   =  1.0
 
-    # if line length = 0 changed to geographical distance with an additional 10%
+    # if line length = 0 changed to 110% the geographical distance
     for ni,nf,cc in mTEPES.la:
         if  mTEPES.pLineLength[ni,nf,cc]() == 0.0:
             mTEPES.pLineLength[ni,nf,cc]   =  1.1 * 6371 * 2 * math.asin(math.sqrt(math.pow(math.sin((mTEPES.pNodeLat[nf]-mTEPES.pNodeLat[ni])*math.pi/180/2),2) + math.cos(mTEPES.pNodeLat[ni]*math.pi/180)*math.cos(mTEPES.pNodeLat[nf]*math.pi/180)*math.pow(math.sin((mTEPES.pNodeLon[nf]-mTEPES.pNodeLon[ni])*math.pi/180/2),2)))
@@ -2568,14 +2568,22 @@ def SettingUpVariables(OptModel, mTEPES):
                     if sum((mTEPES.pMaxPowerElec[p,sc,n2,g] - mTEPES.pMinEnergy[p,sc,n2,g])*mTEPES.pDuration[p,sc,n2]() for n2 in list(mTEPES.n2)[mTEPES.n.ord(n) - mTEPES.pEnergyTimeStep[g]:mTEPES.n.ord(n)]) < 0.0:
                         raise ValueError('### Minimum energy violation ', p, sc, n, g, sum((mTEPES.pMaxPowerElec[p,sc,n2,g] - mTEPES.pMinEnergy[p,sc,n2,g])*mTEPES.pDuration[p,sc,n2]() for n2 in list(mTEPES.n2)[mTEPES.n.ord(n) - mTEPES.pEnergyTimeStep[g]:mTEPES.n.ord(n)]))
 
+        # detecting infeasibility: no capacity in the transmission network
+        if sum(mTEPES.pLineNTCMax[:,:,:]) == 0.0:
+            raise ValueError('### There is no capacity in the network. All the lines have NTC zero probably due to security factor equal to zero')
+
         # detecting reserve margin infeasibility
         for p,ar in mTEPES.p*mTEPES.ar:
             if     sum(mTEPES.pRatedMaxPowerElec[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]) for g in mTEPES.g if (p,g) in mTEPES.pg and (ar,g) in mTEPES.a2g) < mTEPES.pDemandElecPeak[p,ar] * mTEPES.pReserveMargin[p,ar]:
-                raise     ValueError('### Electricity reserve margin infeasibility ', p, ar, sum(mTEPES.pRatedMaxPowerElec[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]) for g in mTEPES.g if (p,g) in mTEPES.pg and (ar,g) in mTEPES.a2g), mTEPES.pDemandElecPeak[p,ar] * mTEPES.pReserveMargin[p,ar])
+                raise     ValueError('### Electricity reserve margin infeasibility ', p,ar, sum(mTEPES.pRatedMaxPowerElec[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]) for g in mTEPES.g if (p,g) in mTEPES.pg and (ar,g) in mTEPES.a2g), mTEPES.pDemandElecPeak[p,ar] * mTEPES.pReserveMargin[p,ar])
 
             if mTEPES.pIndHeat == 1:
                 if sum(mTEPES.pRatedMaxPowerHeat[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]) for g in mTEPES.g if (p,g) in mTEPES.pg and (ar,g) in mTEPES.a2g) < mTEPES.pDemandHeatPeak[p,ar] * mTEPES.pReserveMarginHeat[p,ar]:
-                    raise ValueError('### Heat reserve margin infeasibility ',        p, ar, sum(mTEPES.pRatedMaxPowerHeat[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]) for g in mTEPES.g if (p,g) in mTEPES.pg and (ar,g) in mTEPES.a2g), mTEPES.pDemandHeatPeak[p,ar] * mTEPES.pReserveMargin[p,ar])
+                    raise ValueError('### Heat reserve margin infeasibility ',        p,ar, sum(mTEPES.pRatedMaxPowerHeat[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]) for g in mTEPES.g if (p,g) in mTEPES.pg and (ar,g) in mTEPES.a2g), mTEPES.pDemandHeatPeak[p,ar] * mTEPES.pReserveMargin[p,ar])
+
+        for p,sc,ar in mTEPES.p*mTEPES.sc*mTEPES.ar:
+            if mTEPES.pRESEnergy[p,ar] > sum(mTEPES.pDemandElec[p,sc,n,nd] for n,nd in mTEPES.n*mTEPES.nd if (nd,ar) in mTEPES.ndar and (p,sc,n,nd) in mTEPES.psnnd):
+                raise ValueError('### Minimum renewable energy requirement exceeds the demand ', p, sc, ar, mTEPES.pRESEnergy[p,ar], sum(mTEPES.pDemandElec[p,sc,n,nd] for n,nd in mTEPES.n*mTEPES.nd if  (nd,ar) in mTEPES.ndar and (p,sc,n,nd) in mTEPES.psnnd))
 
     DetectInfeasibilities(mTEPES)
 
@@ -2593,8 +2601,8 @@ def SettingUpVariables(OptModel, mTEPES):
         ScIndep = True
         mTEPES.IndependentPeriods = True
         for p in mTEPES.p:
-            if (    (min([mTEPES.pEmission[p, ar] for ar in mTEPES.ar]) == math.inf or sum(mTEPES.pEmissionRate[nr] for nr in mTEPES.nr) == 0)  # No emissions
-                and (max([mTEPES.pRESEnergy[p, ar] for ar in mTEPES.ar]) == 0)):                                                                # No minimum RES requirements
+            if (    (min([mTEPES.pEmission[p,ar] for ar in mTEPES.ar]) == math.inf or sum(mTEPES.pEmissionRate[nr] for nr in mTEPES.nr) == 0)  # No emissions
+                and (max([mTEPES.pRESEnergy[p,ar] for ar in mTEPES.ar]) == 0)):                                                                # No minimum RES requirements
             # Stages are independent from each other
                 StIndep = True
                 mTEPES.IndependentStages[p] = True
