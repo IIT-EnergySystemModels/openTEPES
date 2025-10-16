@@ -122,7 +122,7 @@ File ``oT_Result_NetworkInvestment_MWkm.csv``
 ============  ==========  ==========  ======  ==============================
 Identifier                            Header  Description
 ====================================  ======  ==============================
-Initial node  Final node  Circuit     MW-km   Electricity network investment
+Initial node  Final node  Circuit     MWkm    Electricity network investment
 ============  ==========  ==========  ======  ==============================
 
 File ``oT_Result_ReserveMarginPower.csv``
