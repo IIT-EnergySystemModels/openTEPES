@@ -194,7 +194,7 @@ def GenerationOperationModelFormulationObjFunct(OptModel, mTEPES, pIndLogConsole
     setattr(OptModel, f'eTotalRESEnergyArea_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.ar, rule=eTotalRESEnergyArea, doc='area RES energy [GWh]'))
 
     def eTotalNCost(OptModel,n):
-        return OptModel.vTotalNCost[p,sc,n] == sum(mTEPES.pLoadLevelDuration[p,sc,n]() * pEpsilon * OptModel.vLineLosses[p,sc,n,ni,nf,cc] for ni,nf,cc in mTEPES.ll if (p,nd,nf,cc) in mTEPES.pll)
+        return OptModel.vTotalNCost[p,sc,n] == sum(mTEPES.pLoadLevelDuration[p,sc,n]() * pEpsilon * OptModel.vLineLosses[p,sc,n,ni,nf,cc] for ni,nf,cc in mTEPES.ll if (p,ni,nf,cc) in mTEPES.pll)
     setattr(OptModel, f'eTotalNCost_{p}_{sc}_{st}', Constraint(mTEPES.n, rule=eTotalNCost, doc='system variable network operation cost [MEUR]'))
 
     def eTotalRCost(OptModel,n):
