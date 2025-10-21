@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.18.7] - 2025-10-14
+[4.18.7] - 2025-10-21
 -----------------------
+- [CHANGED] penalize network losses in the objective function to avoid losses with spillage/curtailment
 - [FIXED] fix the computation of MWkm in output results
 - [CHANGED] detection of minimum renewable energy requirement exceeds the demand
 - [CHANGED] detection of all the lines have NTC zero probably due to security factor equal to zero

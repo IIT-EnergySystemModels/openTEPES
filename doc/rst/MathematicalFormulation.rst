@@ -310,13 +310,17 @@ Electricity, heat, and hydrogen expected generation operation cost [M€] «``eT
 
 :math:`\sum_{p \omega ng} {DF^p [P^p_{\omega} DUR^p_{\omega n} (CV^p_{\omega ng} gp^p_{\omega ng} + CF^p_{\omega ng} uc^p_{\omega ng}) + CSU_g su^p_{\omega ng} + CSD_g sd^p_{\omega ng} + CR_g ur^p_{\omega ng} + CR_g dr^p_{\omega ng}]} +`
 
+Expected consumption operation cost [M€] «``eTotalCCost``»
+
+:math:`\sum_{p \omega ne}{DF^p P^p_{\omega} DUR^p_{\omega n} CV_e gc^p_{\omega ne}} +`
+
 Expected generation emission cost [M€] «``eTotalECost``» «``eTotalECostArea``»
 
 :math:`\sum_{p \omega ng} {DF^p P^p_{\omega} DUR^p_{\omega n} CE^p_{\omega ng} gp^p_{\omega ng}} +`
 
-Expected consumption operation cost [M€] «``eTotalCCost``»
+Expected network operation cost [M€]. This cost penalizes with and :math:`\epsilon` the superfluous network losses done with spillage/curtailment «``eTotalNCost``»
 
-:math:`\sum_{p \omega ne}{DF^p P^p_{\omega} DUR^p_{\omega n} CV_e gc^p_{\omega ne}} +`
+:math:`\sum_{p \omega nijc}{DF^p P^p_{\omega} DUR^p_{\omega n} \epsilon l^p_{\omega nijc}} +`
 
 Electricity, hydrogen, and heat expected reliability cost [M€] «``eTotalRCost``»
 
