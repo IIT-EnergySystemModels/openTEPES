@@ -677,7 +677,7 @@
 #    Sara.Lumbreras@comillas.edu
 #    https://pascua.iit.comillas.edu/aramos/Ramos_CV.htm
 
-#    with the very valuable collaboration from David Dominguez (david.dominguez@comillas.edu) and Alejandro Rodriguez (argallego@comillas.edu), our local Python gurus
+#    with the very valuable collaboration from Claudia Domínguez-Barbero (claudia.dominguez@comillas.edu) and Alejandro Rodriguez (argallego@comillas.edu), our local Python gurus
 
 #%% libraries
 import argparse
