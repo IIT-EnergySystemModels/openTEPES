@@ -27,13 +27,15 @@ What PC do I need?
 
 - The main dimensions to take care of are:
 
-   Time (periods, load levels)
+   Time (periods, load levels). For example, select one every five years or use representative days or define time step 2-3 hours instead of 1 hour
 
-   Network (nodes, lines, transportation, or DC power flow, ohmic losses)
+   Generating units. Use generation types instead of generating units
+
+   Network (nodes, lines, transportation or DC power flow, ohmic losses). Use a reduced network (corridors) with fewer nodes and lines, transport model instead of DC power flow, or ignore ohmic losses
 
    Stochasticity (scenarios)
 
-   Binary investment decisions (generators, storage, transmission lines, etc.), operation decisions (commitment, startup, shutdown, etc.), and mutual exclusivity
+   Binary investment decisions (candidate generators, storage, transmission lines), operation decisions (commitment, startup, shutdown), and mutual exclusivity between units
 
 - As a rule of thumb, a linear optimization problem requires 1 GB of memory for every 1 million rows
 
@@ -43,7 +45,7 @@ First steps
 -----------
 - openTEPES is provided with `seven case studies <https://opentepes.readthedocs.io/en/latest/Download.html#cases>`_. Each one has varied characteristics
 
-- Check that you can run them on your PC. Some of them may not run if you have a PC with too little memory
+- Check that you can run them on your PC. Some of them may not run if you have a PC with small RAM memory
 
 Potential issues
 ----------------
