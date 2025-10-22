@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 21, 2025
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 22, 2025
 """
 
 import time
@@ -58,7 +58,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
         if os.path.exists(FileName):
             os.remove(FileName)
         Solver.options['log_file'               ] = f'{_path}/openTEPES_highs_{CaseName}_{p}_{sc}_{st}.log'
-        Solver.options['solver'                 ] = 'choose'
+        Solver.options['solver'                 ] = 'simplex'
         Solver.options['simplex_strategy'       ] = 3
         Solver.options['run_crossover'          ] = 'on'
         Solver.options['mip_rel_gap'            ] = 0.01
