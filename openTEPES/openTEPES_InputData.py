@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 14, 2025
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 24, 2025
 """
 
 import datetime
@@ -278,7 +278,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         # compute the demand as the mean over the time step load levels and assign it to active load levels. Idem for the remaining parameters
         # Skip mean calculation for empty DataFrames (either full of 0s or NaNs)
         def ProcessParameter(pDataFrame: pd.DataFrame, pTimeStep: int) -> pd.DataFrame:
-            if ((pDataFrame != 0 ) & (~pDataFrame.isna())).any().any():
+            if ((pDataFrame != 0) & (~pDataFrame.isna())).any().any():
                 pDataFrame = pDataFrame.rolling(pTimeStep).mean()
                 pDataFrame.fillna(0.0, inplace=True)
             return pDataFrame
@@ -416,8 +416,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     par['pNetFixedCost']               = dfs['dfNetwork']     ['FixedInvestmentCost'       ] *             dfs['dfNetwork']['FixedChargeRate']           # electric network    fixed cost               [MEUR]
     par['pIndBinLineSwitch']           = dfs['dfNetwork']     ['Switching'                 ]                                                             # binary electric line switching  decision     [Yes]
     par['pIndBinLineInvest']           = dfs['dfNetwork']     ['BinaryInvestment'          ]                                                             # binary electric line investment decision     [Yes]
-    par['pSwitchOnTime']               = dfs['dfNetwork']     ['SwOnTime'                  ].astype('int')                                               # minimum on  time                             [h]
-    par['pSwitchOffTime']              = dfs['dfNetwork']     ['SwOffTime'                 ].astype('int')                                               # minimum off time                             [h]
+    # par['pSwitchOnTime']               = dfs['dfNetwork']     ['SwOnTime'                  ].astype('int')                                               # minimum on  time                             [h]
+    # par['pSwitchOffTime']              = dfs['dfNetwork']     ['SwOffTime'                 ].astype('int')                                               # minimum off time                             [h]
     par['pAngMin']                     = dfs['dfNetwork']     ['AngMin'                    ] * math.pi / 180                                             # Min phase angle difference                   [rad]
     par['pAngMax']                     = dfs['dfNetwork']     ['AngMax'                    ] * math.pi / 180                                             # Max phase angle difference                   [rad]
     par['pNetLoInvest']                = dfs['dfNetwork']     ['InvestmentLo'              ]                                                             # Lower bound of the investment decision       [p.u.]
@@ -440,8 +440,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     par['pNetUpInvest']      = par['pNetUpInvest'].where     (par['pNetUpInvest'] > 0.0,   1.0               )
 
     # minimum up- and downtime converted to an integer number of time steps
-    par['pSwitchOnTime']  = round(par['pSwitchOnTime'] /par['pTimeStep']).astype('int')
-    par['pSwitchOffTime'] = round(par['pSwitchOffTime']/par['pTimeStep']).astype('int')
+    # par['pSwitchOnTime']  = round(par['pSwitchOnTime'] /par['pTimeStep']).astype('int')
+    # par['pSwitchOffTime'] = round(par['pSwitchOffTime']/par['pTimeStep']).astype('int')
 
     if par['pIndHydrogen'] == 1:
         par['pH2PipeLength']       = dfs['dfNetworkHydrogen']['Length'             ]                                                         # hydrogen line length                         [km]
@@ -938,9 +938,9 @@ def DataConfiguration(mTEPES):
     idxEnergy['Monthly'] = round( 672/mTEPES.dPar['pTimeStep'])
     idxEnergy['Yearly' ] = round(8736/mTEPES.dPar['pTimeStep'])
 
-    mTEPES.dPar['pStorageTimeStep']  = mTEPES.dPar['pStorageType'].map (idxCycle                                                                                                             ).astype('int')
+    mTEPES.dPar['pStorageTimeStep']  = mTEPES.dPar['pStorageType' ].map(idxCycle                                                                                                             ).astype('int')
     mTEPES.dPar['pOutflowsTimeStep'] = mTEPES.dPar['pOutflowsType'].map(idxOutflows).where(mTEPES.dPar['pEnergyOutflows'].sum()                                              > 0.0, other = 1).astype('int')
-    mTEPES.dPar['pEnergyTimeStep']   = mTEPES.dPar['pEnergyType'].map  (idxEnergy  ).where(mTEPES.dPar['pVariableMinEnergy'].sum() + mTEPES.dPar['pVariableMaxEnergy'].sum() > 0.0, other = 1).astype('int')
+    mTEPES.dPar['pEnergyTimeStep']   = mTEPES.dPar['pEnergyType'  ].map(idxEnergy  ).where(mTEPES.dPar['pVariableMinEnergy'].sum() + mTEPES.dPar['pVariableMaxEnergy'].sum() > 0.0, other = 1).astype('int')
 
     mTEPES.dPar['pStorageTimeStep']  = pd.concat([mTEPES.dPar['pStorageTimeStep'], mTEPES.dPar['pOutflowsTimeStep'], mTEPES.dPar['pEnergyTimeStep']], axis=1).min(axis=1)
     # cycle time step can't exceed the stage duration
@@ -2020,18 +2020,19 @@ def SettingUpVariables(OptModel, mTEPES):
             '''
         nFixedVariables = 0
 
-        # fix the must-run units and their output
-        # must run units must produce at least their minimum output
-        [OptModel.vTotalOutput[p,sc,n,g].setlb(mTEPES.pMinPowerElec[p,sc,n,g]) for p,sc,n,g in mTEPES.psng if mTEPES.pMustRun[g] == 1]
+        # fix the must-run existing units and their output
+        # must-run units must produce at least their minimum output
+        [OptModel.vTotalOutput[p,sc,n,g].setlb(mTEPES.pMinPowerElec[p,sc,n,g]) for p,sc,n,g in mTEPES.psng if mTEPES.pMustRun[g] == 1 and g not in mTEPES.gc]
+
         # if no max power, no total output
         [OptModel.vTotalOutput[p,sc,n,g].fix(0.0) for p,sc,n,g in mTEPES.psng if mTEPES.pMaxPowerElec[p,sc,n,g] == 0.0]
         nFixedVariables += sum(                1  for p,sc,n,g in mTEPES.psng if mTEPES.pMaxPowerElec[p,sc,n,g] == 0.0)
 
         for p,sc,n,nr in mTEPES.psnnr:
-            # must run units or units with no minimum power, or ESS existing units are always committed and must produce at least their minimum output
+            # must-run existing units or units with no minimum power, or ESS existing units are always committed and must produce at least their minimum output
             # not applicable to mutually exclusive units
             if   len(mTEPES.ExclusiveGroups) == 0:
-                if (mTEPES.pMustRun[nr] == 1 or (mTEPES.pMinPowerElec[p,sc,n,nr] == 0.0 and mTEPES.pConstantVarCost[p,sc,n,nr] == 0.0) or nr in mTEPES.es) and nr not in mTEPES.ec and nr not in mTEPES.h:
+                if (mTEPES.pMustRun[nr] == 1 and nr not in mTEPES.gc or (mTEPES.pMinPowerElec[p,sc,n,nr] == 0.0 and mTEPES.pConstantVarCost[p,sc,n,nr] == 0.0) or nr in mTEPES.es) and nr not in mTEPES.ec and nr not in mTEPES.h:
                     OptModel.vCommitment    [p,sc,n,nr].fix(1)
                     OptModel.vStartUp       [p,sc,n,nr].fix(0)
                     OptModel.vShutDown      [p,sc,n,nr].fix(0)
@@ -2582,7 +2583,7 @@ def SettingUpVariables(OptModel, mTEPES):
                     raise ValueError('### Heat reserve margin infeasibility ',        p,ar, sum(mTEPES.pRatedMaxPowerHeat[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]) for g in mTEPES.g if (p,g) in mTEPES.pg and (ar,g) in mTEPES.a2g), mTEPES.pDemandHeatPeak[p,ar] * mTEPES.pReserveMargin[p,ar])
 
         for p,sc,ar in mTEPES.p*mTEPES.sc*mTEPES.ar:
-            if mTEPES.pRESEnergy[p,ar] > sum(mTEPES.pDemandElec[p,sc,n,nd] for n,nd in mTEPES.n*mTEPES.nd if (nd,ar) in mTEPES.ndar and (p,sc,n,nd) in mTEPES.psnnd):
+            if mTEPES.pRESEnergy[p,ar] > sum(mTEPES.pDemandElec[p,sc,n,nd]*mTEPES.pLoadLevelDuration[p,sc,n]() for n,nd in mTEPES.n*mTEPES.nd if (nd,ar) in mTEPES.ndar and (p,sc,n,nd) in mTEPES.psnnd):
                 raise ValueError('### Minimum renewable energy requirement exceeds the demand ', p, sc, ar, mTEPES.pRESEnergy[p,ar], sum(mTEPES.pDemandElec[p,sc,n,nd] for n,nd in mTEPES.n*mTEPES.nd if  (nd,ar) in mTEPES.ndar and (p,sc,n,nd) in mTEPES.psnnd))
 
     DetectInfeasibilities(mTEPES)

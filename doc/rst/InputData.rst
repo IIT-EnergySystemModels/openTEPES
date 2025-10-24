@@ -173,7 +173,7 @@ MinRatioDwUp          Minimum ratio downward to upward operating reserves       
 MaxRatioDwUp          Maximum ratio downward to upward operating reserves                                                            p.u.
 Sbase                 Base power used in the DCPF                                                                                    MW
 ReferenceNode         Reference node used in the DCPF
-TimeStep              Duration of the time step for the load levels (hourly, bi-hourly, tri-hourly, etc.)                             h
+TimeStep              Duration of the time step for the load levels (quarter of an hour, hourly, bi-hourly, tri-hourly, etc.)        h
 EconomicBaseYear      Base year for economic parameters affected by the discount rate                                                year
 AnnualDiscountRate    Annual discount rate                                                                                           p.u.
 ====================  =============================================================================================================  =========
@@ -281,8 +281,8 @@ Period      Scenario        LoadLevel  Duration    Duration of the load level. L
                                        Stage       Assignment of the load level to a stage
 ==========  ==============  ========== ==========  ===================================================================  ========
 
-It is a simple way to use isolated snapshots, representative days, or just the first three months instead of all the hours of a year to simplify the optimization problem. All the load levels must have the same duration.
-The duration is not intended to change for several load levels of a stage. Usually, duration is 1 hour or 0 if you do not want to use the load levels after some hours of the year. The parameter time step must be used to collapse consecutive load levels into one for the optimization problem.
+It is a simple way to use isolated snapshots, representative days, or just the first three months instead of all the hours of a year to simplify the optimization problem. **All the load levels whose duration is different from 0 must have the same duration.**
+The duration is not intended to change for several load levels of a stage. Usually, duration is 1 hour (0.25 h if inputting data in quarters of an hour) or 0 if you do not want to use the load levels for some hours of the year. The parameter time step must be used to collapse consecutive load levels into one for the optimization problem.
 
 The stage duration, as the sum of the duration of all the load levels, must be larger than or equal to the shortest duration of any storage type, any outflow type, or any energy type (all given in the generation data), and a multiple of it.
 Consecutive stages are not connected, i.e., no constraints link the operation at different stages. Consequently, the storage type can't exceed the duration of the stage (i.e., if the stage lasts for 168 hours, the storage type can only be hourly or daily).

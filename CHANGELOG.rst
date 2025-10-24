@@ -1,8 +1,10 @@
 Change Log
 =============
 
-[4.18.7] - 2025-10-21
------------------------
+[4.18.7] - 2025-10-24
+---------------------
+- [CHANGED] remove condition for load levels with duration 0 in ReserveXXIf constraints
+- [FIXED] candidate must run unit behavior (i.e., committed if installed)
 - [CHANGED] penalize network losses in the objective function to avoid losses with spillage/curtailment
 - [FIXED] fix the computation of MWkm in output results
 - [CHANGED] detection of minimum renewable energy requirement exceeds the demand
