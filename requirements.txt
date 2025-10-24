@@ -1,0 +1,15 @@
+pyomo
+matplotlib
+numpy
+pandas
+altair
+plotly
+gurobipy
+colour
+psutil
+jsonschema
+streamlit
+networkx
+ausankey
+amplpy
+duckdb
