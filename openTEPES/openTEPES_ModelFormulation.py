@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 27, 2025
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 28, 2025
 """
 
 import time
@@ -1548,7 +1548,7 @@ def NetworkOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st
         print('eKirchhoff2ndLaw2         ... ', len(getattr(OptModel, f'eKirchhoff2ndLaw2_{p}_{sc}_{st}')), ' rows')
 
     def eLineLosses1(OptModel,n,ni,nf,cc):
-        if mTEPES.pIndBinSingleNode() == 0 and mTEPES.pIndBinNetLosses() and mTEPES.ll and mTEPES.pIndPTDF == 0:
+        if mTEPES.pIndBinSingleNode() == 0 and mTEPES.pIndBinNetLosses() and mTEPES.ll and mTEPES.pIndPTDF == 0 and (p,ni,nf,cc) in mTEPES.pll:
             return OptModel.vLineLosses[p,sc,n,ni,nf,cc] >= - 0.5 * mTEPES.pLineLossFactor[ni,nf,cc] * OptModel.vFlowElec[p,sc,n,ni,nf,cc]
         else:
             return Constraint.Skip
@@ -1558,7 +1558,7 @@ def NetworkOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st
         print('eLineLosses1              ... ', len(getattr(OptModel, f'eLineLosses1_{p}_{sc}_{st}')), ' rows')
 
     def eLineLosses2(OptModel,n,ni,nf,cc):
-        if mTEPES.pIndBinSingleNode() == 0 and mTEPES.pIndBinNetLosses() and mTEPES.ll and mTEPES.pIndPTDF == 0:
+        if mTEPES.pIndBinSingleNode() == 0 and mTEPES.pIndBinNetLosses() and mTEPES.ll and mTEPES.pIndPTDF == 0 and (p,ni,nf,cc) in mTEPES.pll:
             return OptModel.vLineLosses[p,sc,n,ni,nf,cc] >=   0.5 * mTEPES.pLineLossFactor[ni,nf,cc] * OptModel.vFlowElec[p,sc,n,ni,nf,cc]
         else:
             return Constraint.Skip

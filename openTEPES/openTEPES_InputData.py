@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 24, 2025
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 28, 2025
 """
 
 import datetime
@@ -2149,10 +2149,11 @@ def SettingUpVariables(OptModel, mTEPES):
 
             # determine the initially committed lines
             for la in mTEPES.la:
-                if la in mTEPES.lc:
-                    mTEPES.pInitialSwitch[n1,la] = 0
-                else:
-                    mTEPES.pInitialSwitch[n1,la] = 1
+                if (p,la) in mTEPES.pla:
+                    if la in mTEPES.lc:
+                        mTEPES.pInitialSwitch[n1,la] = 0
+                    else:
+                        mTEPES.pInitialSwitch[n1,la] = 1
 
             # fixing the ESS inventory at the last load level of the stage for every period and scenario if between storage limits
             for es in mTEPES.es:

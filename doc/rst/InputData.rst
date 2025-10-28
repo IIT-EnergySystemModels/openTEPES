@@ -449,7 +449,7 @@ EFOR is used to reduce the maximum and minimum power of the unit. For hydropower
 
 Those generators or ESS with fixed cost >0  are considered candidates and can be installed.
 
-Maximum, minimum, and initial storage values are considered proportional to the invested capacity for the candidate ESS units if StorageInvestment is activated.
+Maximum, minimum, and initial storage values are considered proportional to the invested capacity for the candidate ESS units if StorageInvestment is activated. This can be used for battery investment decisions where the investment can be continuous (StorageInvestment=Yes). For a particular hydro storage investment the dam investment is linked to this particular hydro and can't be made proportional (StorageInvestment=No).
 
 A generator can belong to several mutually exclusive sets; their names must be separated by "\|" when inputted. So if Generator1 belongs to Set1 and Set2, the data entry should be "Set1\|Set2". If any of the generators in a group are installation candidates, it is assumed that exclusivity is yearly, so only one can be committed during the whole period. When all mutually exclusive generators in a set are installed and functioning, it is assumed that the exclusivity is hourly, and which generator is committed can change every LoadLevel.
 
