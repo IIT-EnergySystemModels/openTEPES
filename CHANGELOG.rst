@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.18.7] - 2025-10-28
+[4.18.7] - 2025-11-07
 ---------------------
+- [FIXED] fix error in MarginalEmission output results
 - [FIXED] control of transmission lines not available for all the periods
 - [CHANGED] remove condition for load levels with duration 0 in ReserveXXIf constraints
 - [FIXED] candidate must run unit behavior (i.e., committed if installed)

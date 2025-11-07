@@ -323,6 +323,13 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         for n in range(par['pTimeStep']-2,-1,-1):
             par['pDuration'].iloc[[range(n,len(mTEPES.pp)*len(mTEPES.scc)*len(mTEPES.nn),par['pTimeStep'])]] = 0
 
+        # # remove load levels with duration 0 to determine min and max values correctly
+        # parDuration = par['pDuration']
+        # parDurationNZ = parDuration[(parDuration != 0)]
+        # if parDurationNZ.max() != parDurationNZ.min():
+        #     raise ValueError('### Some load levels have different duration. Max ', parDurationNZ.max(), ' Min ', parDurationNZ.min())
+        # pDurationNZMax = parDurationNZ.max()
+
         for psn in par['pDuration'].index:
             p,sc,n = psn
             if par['pPeriodWeight'][p] == 0.0:
