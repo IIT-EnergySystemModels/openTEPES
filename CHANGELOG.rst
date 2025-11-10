@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.18.7] - 2025-11-07
+[4.18.7] - 2025-11-10
 ---------------------
+- [CHANGED] introduce conditions to avoid formulating superfluous eMaximumEnergy and eMinimumEnergy constraints
 - [FIXED] fix error in MarginalEmission output results
 - [FIXED] control of transmission lines not available for all the periods
 - [CHANGED] remove condition for load levels with duration 0 in ReserveXXIf constraints
