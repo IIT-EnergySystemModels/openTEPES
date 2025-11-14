@@ -448,7 +448,7 @@ Must-run non-renewable units are always committed, i.e., their commitment decisi
 
 EFOR is used to reduce the maximum and minimum power of the unit. For hydropower plants, it can be used to reduce their maximum power by the water head effect. It does not reduce the maximum charge.
 
-Those generators or ESS with fixed cost >0  are considered candidates and can be installed.
+Those generators or ESS with fixed cost >0  are considered candidates and can be installed. The fixed cost is the product of the overnight investment cost (FixedInvestmentCost) and the fixed charge rate (FixedChargeRate).
 
 Maximum, minimum, and initial storage values are considered proportional to the invested capacity for the candidate ESS units if StorageInvestment is activated. This can be used for battery investment decisions where the investment can be continuous (StorageInvestment=Yes). For a particular hydro storage investment the dam investment is linked to this particular hydro and can't be made proportional (StorageInvestment=No).
 
@@ -654,7 +654,7 @@ If there is no data for TTCBck, i.e., TTCBck is left empty or is equal to 0, the
 
 Reactance can take a negative value due to the approximation of three-winding transformers. No Kirchhoff's second law disjunctive constraint is formulated for a circuit with negative reactance.
 
-Those lines with fixed cost >0 are considered candidates and can be installed.
+Those lines with fixed cost >0 are considered candidates and can be installed. The fixed cost is the product of the overnight investment cost (FixedInvestmentCost) and the fixed charge rate (FixedChargeRate).
 
 If the lower and upper bounds of investment decisions are very close (with a difference <1e-3) to 0 or 1, they are converted into 0 and 1.
 
