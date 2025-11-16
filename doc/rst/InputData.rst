@@ -74,7 +74,7 @@ File                           Description
 ``oT_Dict_Node.csv``           Nodes. A node belongs to a defined zone. All the nodes must have a different name. Nodes can be physical or virtual (e.g., for representing conventional demand, EV demand, and H2 demand).
 ``oT_Dict_Zone.csv``           Zones. A zone belongs to a defined area. All the zones must have a different name.
 ``oT_Dict_Area.csv``           Areas. An area belongs to a defined region. All the areas must have a different name. Long-term adequacy, inertia, and operating reserves are associated with areas.
-``oT_Dict_Region.csv``         Regions
+``oT_Dict_Region.csv``         Regions (e.g., Continental South West which includes Spain, Portugal, and France). All the regions must have a different name.
 ``oT_Dict_Circuit.csv``        Circuits (e.g., ac1, ac2 for AC lines, dc1 for DC lines). All the circuits must have a different name.
 ``oT_Dict_Line.csv``           Line type (AC, DC)
 =============================  =========================================================================================================================================================================================================================================================================================================================
@@ -619,7 +619,8 @@ InitialNode          Name of the initial node of the transmission line
 FinalNode            Name of the final node of the transmission line
 Circuit              Name of the circuit (if there are several circuits between two nodes, they must have different names)
 InitialNode          Name of the initial node of the transmission line
-LineType             Line type {AC, DC, Transformer, Converter}
+LineType             Line type {AC, DC, Transformer, Converter}. AC lines can be subject to Kirchhoff's second law.
+                     DC lines, transformers, and converters are not subject to Kirchhoff's second law.
 Switching            The transmission line can switch on/off                                                                          Yes/No
 InitialPeriod        Initial period (year) when the unit is installed or can be installed, if candidate                               Year
 FinalPeriod          Final   period (year) when the unit is installed or can be installed, if candidate                               Year
