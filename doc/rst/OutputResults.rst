@@ -63,11 +63,11 @@ Generator     MW          Generation investment power
 
 File ``oT_Result_GenerationInvestmentPerUnit.csv``
 
-============  ==========  ============================
+============  ==========  ===============================
 Identifier    Header      Description
-============  ==========  ============================
-Generator     MW          Generation investment power
-============  ==========  ============================
+============  ==========  ===============================
+Generator     p.u.        Generation investment decision
+============  ==========  ===============================
 
 File ``oT_Result_GenerationRetirement.csv``
 
@@ -109,7 +109,7 @@ Identifier    Header      Description
 Generator     MW          Technology retirement power
 ============  ==========  ============================
 
-File ``oT_Result_NetworkInvestment.csv``
+File ``oT_Result_NetworkInvestmentPerUnit.csv``
 
 ============  ==========  ==========  ======  =======================================
 Identifier                            Header  Description
@@ -117,7 +117,7 @@ Identifier                            Header  Description
 Initial node  Final node  Circuit     p.u.    Electricity network investment decision
 ============  ==========  ==========  ======  =======================================
 
-File ``oT_Result_NetworkInvestment_MWkm.csv``
+File ``oT_Result_NetworkInvestmentMWkm.csv``
 
 ============  ==========  ==========  ======  ==============================
 Identifier                            Header  Description
