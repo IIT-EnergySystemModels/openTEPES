@@ -119,19 +119,19 @@ Period        Generator   Technology retirement power [MW]
 
 File ``oT_Result_NetworkInvestmentPerUnit.csv``
 
-======  ============  ==========  ==========  ===============================================
-Period  Header                                Description
-======  ====================================  ===============================================
-Period  Initial node  Final node  Circuit     Electricity network investment decision [p.u.]
-======  ============  ==========  ==========  ===============================================
+==========  ============  ==========  ==========  ===============================================
+Identifier  Header                                Description
+==========  ====================================  ===============================================
+Period      Initial node  Final node  Circuit     Electricity network investment decision [p.u.]
+==========  ============  ==========  ==========  ===============================================
 
 File ``oT_Result_NetworkInvestmentMWkm.csv``
 
-======  ============  ==========  ==========  ======================================
-Period  Identifier                            Description
-======  ====================================  ======================================
-Period  Initial node  Final node  Circuit     Electricity network investment [MWkm]
-======  ============  ==========  ==========  ======================================
+==========  ============  ==========  ==========  ======================================
+Identifier  Header                                Description
+==========  ====================================  ======================================
+Period      Initial node  Final node  Circuit     Electricity network investment [MWkm]
+==========  ============  ==========  ==========  ======================================
 
 File ``oT_Result_ReserveMargin.csv``
 
