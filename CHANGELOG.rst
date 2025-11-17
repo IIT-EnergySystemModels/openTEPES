@@ -1,8 +1,10 @@
 Change Log
 =============
 
-[4.18.7] - 2025-11-10
+[4.18.7] - 2025-11-17
 ---------------------
+- [CHANGED] modify names of some output results and avoid writing empty files
+- [FIXED] fix eTotalECostArea constraint
 - [CHANGED] introduce conditions to avoid formulating superfluous eMaximumEnergy and eMinimumEnergy constraints
 - [FIXED] fix error in MarginalEmission output results
 - [FIXED] control of transmission lines not available for all the periods

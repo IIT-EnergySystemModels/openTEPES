@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 10, 2025
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 17, 2025
 """
 
 import time
@@ -180,8 +180,8 @@ def GenerationOperationModelFormulationObjFunct(OptModel, mTEPES, pIndLogConsole
 
     def eTotalECostArea(OptModel,n,ar):
         if sum(mTEPES.pEmissionVarCost[p,sc,n,g] for g in mTEPES.g if (ar,g) in mTEPES.a2g and (p,g) in mTEPES.pg):
-            return OptModel.vTotalECostArea[p,sc,n,ar] == (sum(mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pEmissionVarCost[p,sc,n,nr] * OptModel.vTotalOutput    [p,sc,n,nr] for nr in mTEPES.nr if (ar,nr) in mTEPES.a2g and (p,nr) in mTEPES.pnr)
-                                                        +  sum(mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pEmissionVarCost[p,sc,n,bo] * OptModel.vTotalOutputHeat[p,sc,n,bo] for bo in mTEPES.bo if (ar,bo) in mTEPES.a2g and (p,bo) in mTEPES.pbo))
+            return OptModel.vTotalECostArea[p,sc,n,ar] == (sum(mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pEmissionVarCost[p,sc,n, g] * OptModel.vTotalOutput    [p,sc,n, g] for  g in mTEPES.g  if (ar, g) in mTEPES.a2g and (p, g) in mTEPES.pg )
+                                                         + sum(mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pEmissionVarCost[p,sc,n,bo] * OptModel.vTotalOutputHeat[p,sc,n,bo] for bo in mTEPES.bo if (ar,bo) in mTEPES.a2g and (p,bo) in mTEPES.pbo))
         else:
             return Constraint.Skip
     setattr(OptModel, f'eTotalECostArea_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.ar, rule=eTotalECostArea, doc='area emission cost [MEUR]'))
