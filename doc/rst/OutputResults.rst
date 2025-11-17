@@ -55,77 +55,85 @@ Investment/Retirement
 
 File ``oT_Result_GenerationInvestment.csv``
 
-============  ==========  ============================
+============  ==========  ================================
 Identifier    Header      Description
-============  ==========  ============================
-Generator     MW          Generation investment power
-============  ==========  ============================
+============  ==========  ================================
+Period        Generator   Generation investment power [MW]
+============  ==========  ================================
 
 File ``oT_Result_GenerationInvestmentPerUnit.csv``
 
-============  ==========  ===============================
+============  ==========  ======================================
 Identifier    Header      Description
-============  ==========  ===============================
-Generator     p.u.        Generation investment decision
-============  ==========  ===============================
+============  ==========  ======================================
+Period        Generator   Generation investment decision [p.u.]
+============  ==========  ======================================
 
 File ``oT_Result_GenerationRetirement.csv``
 
-============  ==========  =============================
+============  ==========  ================================
 Identifier    Header      Description
-============  ==========  =============================
-Generator     MW          Generation retirement power
-============  ==========  =============================
+============  ==========  ================================
+Period        Generator   Generation retirement power [MW]
+============  ==========  ================================
+
+File ``oT_Result_GenerationRetirementPerUnit.csv``
+
+============  ==========  ======================================
+Identifier    Header      Description
+============  ==========  ======================================
+Period        Generator   Generation retirement decision [p.u.]
+============  ==========  ======================================
 
 File ``oT_Result_TechnologyInvestment.csv``
 
-============  ==========  ============================
+============  ==========  =================================
 Identifier    Header      Description
-============  ==========  ============================
-Generator     MW          Technology investment power
-============  ==========  ============================
+============  ==========  =================================
+Period        Generator   Technology investment power [MW]
+============  ==========  =================================
 
 File ``oT_Result_TechnologyInvestmentCost.csv``
 
-============  ==========  ============================
+============  ==========  ================================
 Identifier    Header      Description
-============  ==========  ============================
-Generator     M€          Technology investment cost
-============  ==========  ============================
+============  ==========  ================================
+Period        Generator   Technology investment cost [M€]
+============  ==========  ================================
 
 File ``oT_Result_TechnologyInvestmentCostPerMW.csv``
 
-============  ==========  ==================================
+============  ==========  ===========================================
 Identifier    Header      Description
-============  ==========  ==================================
-Generator     M€/MW       Technology investment cost per MW
-============  ==========  ==================================
+============  ==========  ===========================================
+Period        Generator   Technology investment cost per MW [M€/MW]
+============  ==========  ===========================================
 
 File ``oT_Result_TechnologyRetirement.csv``
 
-============  ==========  ============================
+============  ==========  =================================
 Identifier    Header      Description
-============  ==========  ============================
-Generator     MW          Technology retirement power
-============  ==========  ============================
+============  ==========  =================================
+Period        Generator   Technology retirement power [MW]
+============  ==========  =================================
 
 File ``oT_Result_NetworkInvestmentPerUnit.csv``
 
-============  ==========  ==========  ======  =======================================
-Identifier                            Header  Description
-====================================  ======  =======================================
-Initial node  Final node  Circuit     p.u.    Electricity network investment decision
-============  ==========  ==========  ======  =======================================
+======  ============  ==========  ==========  ===============================================
+Period  Header                                Description
+======  ====================================  ===============================================
+Period  Initial node  Final node  Circuit     Electricity network investment decision [p.u.]
+======  ============  ==========  ==========  ===============================================
 
 File ``oT_Result_NetworkInvestmentMWkm.csv``
 
-============  ==========  ==========  ======  ==============================
-Identifier                            Header  Description
-====================================  ======  ==============================
-Initial node  Final node  Circuit     MWkm    Electricity network investment
-============  ==========  ==========  ======  ==============================
+======  ============  ==========  ==========  ======================================
+Period  Identifier                            Description
+======  ====================================  ======================================
+Period  Initial node  Final node  Circuit     Electricity network investment [MWkm]
+======  ============  ==========  ==========  ======================================
 
-File ``oT_Result_ReserveMarginPower.csv``
+File ``oT_Result_ReserveMargin.csv``
 
 ============  ============  ==========  ============================
 Identifier                  Header      Description
