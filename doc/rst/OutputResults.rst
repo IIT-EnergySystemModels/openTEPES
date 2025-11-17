@@ -621,7 +621,7 @@ Identifier                            Header      Description
 Period        Scenario    Technology  Area        Generation, consumption, flows, losses, and demand [GWh]
 ============  ==========  ==========  ==========  ========================================================
 
-The sum of the values per area (column) must be 0. EnergyFlowIn and EnergyFlowOut are the sum of the incoming and outgoing flows of the corresponding area nodes. Positive values are generation and negative values are demand or consumption.
+The sum of the values per area (column) must be 0. EnergyFlowIn and EnergyFlowOut are the sum of the incoming and outgoing flows of the corresponding area nodes. Positive values represent generation and negative values demand or consumption.
 
 File ``oT_Result_BalanceEnergyPerNode.csv``
 
@@ -908,6 +908,7 @@ File ``oT_Result_CostSummary.csv``
 Identifier                  Header        Description
 ==========================  ============  ===============================================
 Period        Cost type     MEUR          Cumulative cost considering the period weight
+==========================  ============  ===============================================
                             MEUR/year     Yearly cost
 ============  ============  ============  ===============================================
 
@@ -917,6 +918,7 @@ File ``oT_Result_CostSummary_AreaName.csv``
 Identifier                              Header         Description
 ======================================  =============  ===============================================
 Period        Scenario      Cost type   MEUR           Cumulative cost considering the period weight
+======================================  =============  ===============================================
                                         MEUR/year      Yearly cost
 ============  ============  ==========  =============  ===============================================
 
