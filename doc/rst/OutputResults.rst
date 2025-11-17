@@ -908,8 +908,7 @@ File ``oT_Result_CostSummary.csv``
 Identifier                  Header        Description
 ==========================  ============  ===============================================
 Period        Cost type     MEUR          Cumulative cost considering the period weight
-==========================  ============  ===============================================
-                            MEUR/year     Yearly cost
+"             "             MEUR/year     Yearly cost
 ============  ============  ============  ===============================================
 
 File ``oT_Result_CostSummary_AreaName.csv``
@@ -918,8 +917,7 @@ File ``oT_Result_CostSummary_AreaName.csv``
 Identifier                              Header        Description
 ======================================  ============  ===============================================
 Period        Scenario      Cost type   MEUR          Cumulative cost considering the period weight
-======================================  ============  ===============================================
-                                        MEUR/year     Yearly cost
+"             "             "           MEUR/year     Yearly cost
 ============  ============  ==========  ============  ===============================================
 
 File ``oT_Result_CostRecovery.csv``
