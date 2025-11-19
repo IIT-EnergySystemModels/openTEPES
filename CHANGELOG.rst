@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.18.7] - 2025-11-17
+[4.18.7] - 2025-11-19
 ---------------------
+- [FIXED] fix TechnologyEmission outfile
 - [CHANGED] modify names of some output results and avoid writing empty files
 - [FIXED] fix eTotalECostArea constraint
 - [CHANGED] introduce conditions to avoid formulating superfluous eMaximumEnergy and eMinimumEnergy constraints

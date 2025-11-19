@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 17, 2025
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 19, 2025
 """
 
 import time
@@ -351,7 +351,7 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutput,
 
         if pIndPlotOutput == 1:
             chart = alt.Chart(OutputResults.reset_index()).mark_bar().encode(x='LineType:O', y='sum(MWkm):Q', color='LineType:N', column='Period:N')
-            chart.save(f'{_path}/oT_Plot_NetworkInvestment_MWkm_{CaseName}.html', embed_options={'renderer':'svg'})
+            chart.save(f'{_path}/oT_Plot_NetworkInvestmentMWkm_{CaseName}.html', embed_options={'renderer':'svg'})
 
     WritingResultsTime = time.time() - StartTime
     StartTime          = time.time()
@@ -543,7 +543,7 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnolo
                                     OutputResults.to_frame(name='MtCO2').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MtCO2', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(f'{_path}/oT_Result_TechnologyEmission_{CaseName}_{ar}.csv', sep=',')
 
             if sum(OutputToFile[:,:,:,:]):
-                OutputToFile = pd.Series(data=[sum(OutputToFile[p,sc,n,g] for g in g2n[nt] if (p,g) in mTEPES.pg) for p,sc,n,nt in mTEPES.psnnt], index=mTEPES.psnnt)
+                OutputToFile = pd.Series(data=[sum(OutputToFile[p,sc,n,g] for g in g2t[gt] if (p,g) in mTEPES.pg) for p,sc,n,gt in mTEPES.psngt], index=mTEPES.psngt)
                 OutputToFile.to_frame(name='MtCO2').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MtCO2', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(f'{_path}/oT_Result_TechnologyEmission_{CaseName}.csv', sep=',')
                 if pIndPlotOutput == 1:
                     TechEmission = OutputToFile.to_frame(name='MtCO2').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MtCO2', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).stack().rename_axis(['Period', 'Scenario', 'LoadLevel', 'Technology']).reset_index().groupby(['Period', 'Scenario', 'Technology']).sum(numeric_only=True).rename(columns={0: 'MtCO2'})
