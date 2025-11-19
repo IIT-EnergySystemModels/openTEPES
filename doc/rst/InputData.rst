@@ -772,8 +772,8 @@ Header                Description
 StorageType           Reservoir storage type based on reservoir storage capacity (hourly, daily, weekly, monthly, yearly)                     Hourly/Daily/Weekly/Monthly/Yearly
 OutflowsType          Water outflows type based on the water extracted from the reservoir (daily, weekly, monthly, yearly)                    Daily/Weekly/Monthly/Yearly
 InitialStorage        Initial volume stored at the first instant of the time scope                                                            hm\ :sup:`3`
-MaximumStorage        Maximum volume that the hydro reservoir can store hm\ :sup:`3`
-MinimumStorage        Minimum volume that the hydro reservoir can store hm\ :sup:`3`
+MaximumStorage        Maximum volume that the hydro reservoir can store                                                                       hm\ :sup:`3`
+MinimumStorage        Minimum volume that the hydro reservoir can store                                                                       hm\ :sup:`3`
 BinaryInvestment      Binary reservoir investment decision                                                                                    Yes/No
 FixedInvestmentCost   Overnight investment (capital -CAPEX- and fixed O&M -FOM-) cost                                                         M€
 FixedChargeRate       Fixed-charge rate to annualize the overnight investment cost                                                            p.u.
