@@ -103,7 +103,7 @@ They are written in **uppercase** letters.
 ==========================================  ==================================================================  ====
 **Operating reserves**
 --------------------------------------------------------------------------------------------------------------------
-:math:`URA, DRA`                            Upward and downward reserve activation                              p.u.
+:math:`URA, DRA`                            Upward and downward reserve activation coefficients                 p.u.
 :math:`\underline{DtUR}, \overline{DtUR}`   Minimum and maximum ratios downward to upward operating reserves    p.u.
 :math:`UR^p_{\omega na}, DR^p_{\omega na}`  Upward and downward operating reserves for each area                GW
 ==========================================  ==================================================================  ====
@@ -249,8 +249,10 @@ They are written in **lowercase** letters.
 :math:`p^p_{\omega ng}`                                          Generator output of the second block (i.e., above the minimum load)                                 GW
 :math:`c^p_{\omega ne}`                                          Generator charge                                                                                    GW
 :math:`gh^p_{\omega ng}`                                         Heat output of a fuel heater                                                                        GW
-:math:`ur^p_{\omega ng}, dr^p_{\omega ng}`                       Upward and downward operating reserves of a non-renewable generating unit                           GW
+:math:`ur^p_{\omega ng}, dr^p_{\omega ng}`                       Upward and downward operating reserves of a non-renewable generating unit.
+                                                                 A unit can provide simultaneously upward and downward reserves                                      GW
 :math:`ur'^p_{\omega ne}, dr'^p_{\omega ne}`                     Upward and downward operating reserves of an ESS as a consumption unit                              GW
+                                                                 A consumption unit can provide simultaneously upward and downward reserves                          GW
 :math:`ei^p_{\omega ne}`                                         Variable energy inflows of a candidate ESS (e.g., hydropower plant)                                 GW
 :math:`i^p_{\omega ne}`                                          ESS stored energy (inventory, reservoir energy, state of charge)                                    GWh
 :math:`s^p_{\omega ne}`                                          ESS spilled energy                                                                                  GWh
@@ -479,7 +481,7 @@ Maximum charge of a hydro unit [p.u.] «``eMaxCharge``»
 
 :math:`\frac{c^p_{\omega ne} + dr'^p_{\omega ne}}{\overline{GC}^p_{\omega ne} - \underline{GC}^p_{\omega ne}} \leq ucc^p_{\omega ng} \quad \forall p \omega ne`
 
-Incompatibility between charge and discharge of a non-hydropower ESS [p.u.] «``eChargeDischarge``»
+Incompatibility between charge and discharge, which includes the activation energy, of a non-hydropower ESS [p.u.] «``eChargeDischarge``»
 
 :math:`\frac{p^p_{\omega ne} + URA \: ur^p_{\omega ne}}{\overline{GP}^p_{\omega ne} - \underline{GP}^p_{\omega ne}} + \frac{c^p_{\omega ne} + DRA \: dr'^p_{\omega ne}}{\overline{GC}^p_{\omega ne} - \underline{GC}^p_{\omega ne}} \leq 1 \quad \forall p \omega ne`
 
