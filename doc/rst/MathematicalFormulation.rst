@@ -251,7 +251,7 @@ They are written in **lowercase** letters.
 :math:`gh^p_{\omega ng}`                                         Heat output of a fuel heater                                                                        GW
 :math:`ur^p_{\omega ng}, dr^p_{\omega ng}`                       Upward and downward operating reserves of a non-renewable generating unit.
                                                                  A unit can provide simultaneously upward and downward reserves                                      GW
-:math:`ur'^p_{\omega ne}, dr'^p_{\omega ne}`                     Upward and downward operating reserves of an ESS as a consumption unit                              GW
+:math:`ur'^p_{\omega ne}, dr'^p_{\omega ne}`                     Upward and downward operating reserves of an ESS as a consumption unit                              
                                                                  A consumption unit can provide simultaneously upward and downward reserves                          GW
 :math:`ei^p_{\omega ne}`                                         Variable energy inflows of a candidate ESS (e.g., hydropower plant)                                 GW
 :math:`i^p_{\omega ne}`                                          ESS stored energy (inventory, reservoir energy, state of charge)                                    GWh
