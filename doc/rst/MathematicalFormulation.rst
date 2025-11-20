@@ -481,7 +481,7 @@ Maximum charge of a hydro unit [p.u.] «``eMaxCharge``»
 
 :math:`\frac{c^p_{\omega ne} + dr'^p_{\omega ne}}{\overline{GC}^p_{\omega ne} - \underline{GC}^p_{\omega ne}} \leq ucc^p_{\omega ng} \quad \forall p \omega ne`
 
-Incompatibility between charge and discharge, which includes the activation energy, of a non-hydropower ESS [p.u.] «``eChargeDischarge``»
+Incompatibility between charge and discharge, including the activation energy in the worst direction, of a non-hydropower ESS [p.u.] «``eChargeDischarge``»
 
 :math:`\frac{p^p_{\omega ne} + URA \: ur^p_{\omega ne}}{\overline{GP}^p_{\omega ne} - \underline{GP}^p_{\omega ne}} + \frac{c^p_{\omega ne} + DRA \: dr'^p_{\omega ne}}{\overline{GC}^p_{\omega ne} - \underline{GC}^p_{\omega ne}} \leq 1 \quad \forall p \omega ne`
 
