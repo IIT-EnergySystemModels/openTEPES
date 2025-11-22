@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - October 28, 2025
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 22, 2025
 """
 
 import datetime
@@ -323,19 +323,19 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         for n in range(par['pTimeStep']-2,-1,-1):
             par['pDuration'].iloc[[range(n,len(mTEPES.pp)*len(mTEPES.scc)*len(mTEPES.nn),par['pTimeStep'])]] = 0
 
-        # # remove load levels with duration 0 to determine min and max values correctly
-        # parDuration = par['pDuration']
-        # parDurationNZ = parDuration[(parDuration != 0)]
-        # if parDurationNZ.max() != parDurationNZ.min():
-        #     raise ValueError('### Some load levels have different duration. Max ', parDurationNZ.max(), ' Min ', parDurationNZ.min())
-        # pDurationNZMax = parDurationNZ.max()
-
         for psn in par['pDuration'].index:
             p,sc,n = psn
             if par['pPeriodWeight'][p] == 0.0:
                 par['pDuration'].loc[p,sc,n] = 0
             if par['pScenProb'][p,sc] == 0.0:
                 par['pDuration'].loc[p,sc,n] = 0
+
+    # remove load levels with duration 0 to determine min and max values correctly
+    parDuration = par['pDuration']
+    parDurationNZ = parDuration[(parDuration != 0)]
+    if parDurationNZ.max() != parDurationNZ.min():
+        raise ValueError('### Some load levels have different duration. Max ', parDurationNZ.max(), ' Min ', parDurationNZ.min())
+    mTEPES.pDurationNZMax = parDurationNZ.max()
 
     #%% generation parameters
     par['pGenToNode']                  = dfs['dfGeneration']  ['Node'                      ]                                                             # generator location in node
@@ -912,10 +912,10 @@ def DataConfiguration(mTEPES):
     mTEPES.dPar['pEmissionVarCost']      = mTEPES.dPar['pEmissionVarCost'].reindex(sorted(mTEPES.dPar['pEmissionVarCost'].columns), axis=1)
 
     # minimum up- and downtime and maximum shift time converted to an integer number of time steps
-    mTEPES.dPar['pUpTime']     = round(mTEPES.dPar['pUpTime']    /mTEPES.dPar['pTimeStep']).astype('int')
-    mTEPES.dPar['pDwTime']     = round(mTEPES.dPar['pDwTime']    /mTEPES.dPar['pTimeStep']).astype('int')
-    mTEPES.dPar['pStableTime'] = round(mTEPES.dPar['pStableTime']/mTEPES.dPar['pTimeStep']).astype('int')
-    mTEPES.dPar['pShiftTime']  = round(mTEPES.dPar['pShiftTime'] /mTEPES.dPar['pTimeStep']).astype('int')
+    mTEPES.dPar['pUpTime']     = round(mTEPES.dPar['pUpTime']    /mTEPES.pDurationNZMax).astype('int')
+    mTEPES.dPar['pDwTime']     = round(mTEPES.dPar['pDwTime']    /mTEPES.pDurationNZMax).astype('int')
+    mTEPES.dPar['pStableTime'] = round(mTEPES.dPar['pStableTime']/mTEPES.pDurationNZMax).astype('int')
+    mTEPES.dPar['pShiftTime']  = round(mTEPES.dPar['pShiftTime'] /mTEPES.pDurationNZMax).astype('int')
 
     # %% definition of the time-steps leap to observe the stored energy at an ESS
     idxCycle            = dict()
@@ -923,27 +923,27 @@ def DataConfiguration(mTEPES):
     idxCycle[0.0      ] = 1
     idxCycle['Hourly' ] = 1
     idxCycle['Daily'  ] = 1
-    idxCycle['Weekly' ] = round(  24/mTEPES.dPar['pTimeStep'])
-    idxCycle['Monthly'] = round( 168/mTEPES.dPar['pTimeStep'])
-    idxCycle['Yearly' ] = round( 672/mTEPES.dPar['pTimeStep'])
+    idxCycle['Weekly' ] = round(  24/mTEPES.pDurationNZMax)
+    idxCycle['Monthly'] = round( 168/mTEPES.pDurationNZMax)
+    idxCycle['Yearly' ] = round( 672/mTEPES.pDurationNZMax)
 
     idxOutflows            = dict()
     idxOutflows[0        ] = 1
     idxOutflows[0.0      ] = 1
     idxOutflows['Hourly' ] = 1
-    idxOutflows['Daily'  ] = round(  24/mTEPES.dPar['pTimeStep'])
-    idxOutflows['Weekly' ] = round( 168/mTEPES.dPar['pTimeStep'])
-    idxOutflows['Monthly'] = round( 672/mTEPES.dPar['pTimeStep'])
-    idxOutflows['Yearly' ] = round(8736/mTEPES.dPar['pTimeStep'])
+    idxOutflows['Daily'  ] = round(  24/mTEPES.pDurationNZMax)
+    idxOutflows['Weekly' ] = round( 168/mTEPES.pDurationNZMax)
+    idxOutflows['Monthly'] = round( 672/mTEPES.pDurationNZMax)
+    idxOutflows['Yearly' ] = round(8736/mTEPES.pDurationNZMax)
 
     idxEnergy            = dict()
     idxEnergy[0        ] = 1
     idxEnergy[0.0      ] = 1
     idxEnergy['Hourly' ] = 1
-    idxEnergy['Daily'  ] = round(  24/mTEPES.dPar['pTimeStep'])
-    idxEnergy['Weekly' ] = round( 168/mTEPES.dPar['pTimeStep'])
-    idxEnergy['Monthly'] = round( 672/mTEPES.dPar['pTimeStep'])
-    idxEnergy['Yearly' ] = round(8736/mTEPES.dPar['pTimeStep'])
+    idxEnergy['Daily'  ] = round(  24/mTEPES.pDurationNZMax)
+    idxEnergy['Weekly' ] = round( 168/mTEPES.pDurationNZMax)
+    idxEnergy['Monthly'] = round( 672/mTEPES.pDurationNZMax)
+    idxEnergy['Yearly' ] = round(8736/mTEPES.pDurationNZMax)
 
     mTEPES.dPar['pStorageTimeStep']  = mTEPES.dPar['pStorageType' ].map(idxCycle                                                                                                             ).astype('int')
     mTEPES.dPar['pOutflowsTimeStep'] = mTEPES.dPar['pOutflowsType'].map(idxOutflows).where(mTEPES.dPar['pEnergyOutflows'].sum()                                              > 0.0, other = 1).astype('int')
@@ -960,18 +960,18 @@ def DataConfiguration(mTEPES):
         idxCycleRsr[0.0      ] = 1
         idxCycleRsr['Hourly' ] = 1
         idxCycleRsr['Daily'  ] = 1
-        idxCycleRsr['Weekly' ] = round(  24/mTEPES.dPar['pTimeStep'])
-        idxCycleRsr['Monthly'] = round( 168/mTEPES.dPar['pTimeStep'])
-        idxCycleRsr['Yearly' ] = round( 672/mTEPES.dPar['pTimeStep'])
+        idxCycleRsr['Weekly' ] = round(  24/mTEPES.pDurationNZMax)
+        idxCycleRsr['Monthly'] = round( 168/mTEPES.pDurationNZMax)
+        idxCycleRsr['Yearly' ] = round( 672/mTEPES.pDurationNZMax)
 
         idxWaterOut            = dict()
         idxWaterOut[0        ] = 1
         idxWaterOut[0.0      ] = 1
         idxWaterOut['Hourly' ] = 1
-        idxWaterOut['Daily'  ] = round(  24/mTEPES.dPar['pTimeStep'])
-        idxWaterOut['Weekly' ] = round( 168/mTEPES.dPar['pTimeStep'])
-        idxWaterOut['Monthly'] = round( 672/mTEPES.dPar['pTimeStep'])
-        idxWaterOut['Yearly' ] = round(8736/mTEPES.dPar['pTimeStep'])
+        idxWaterOut['Daily'  ] = round(  24/mTEPES.pDurationNZMax)
+        idxWaterOut['Weekly' ] = round( 168/mTEPES.pDurationNZMax)
+        idxWaterOut['Monthly'] = round( 672/mTEPES.pDurationNZMax)
+        idxWaterOut['Yearly' ] = round(8736/mTEPES.pDurationNZMax)
 
         mTEPES.dPar['pCycleRsrTimeStep'] = mTEPES.dPar['pReservoirType'].map(idxCycleRsr).astype('int')
         mTEPES.dPar['pWaterOutTimeStep'] = mTEPES.dPar['pWaterOutfType'].map(idxWaterOut).astype('int')
@@ -1118,6 +1118,7 @@ def DataConfiguration(mTEPES):
             mTEPES.dPar['pMaxStorage']    [mTEPES.dPar['pMaxStorage']    [[es for es in e2a[ar]]] <  mTEPES.dPar['pEpsilonElec']] = 0.0
             mTEPES.dPar['pIniInventory']  [mTEPES.dPar['pIniInventory']  [[es for es in e2a[ar]]] <  mTEPES.dPar['pEpsilonElec']] = 0.0
 
+            # the pEpsilonElec units are in GW while the volume is in hm3 and teh hydro inflows in m3/s
             if mTEPES.dPar['pIndHydroTopology'] == 1:
                 mTEPES.dPar['pMinVolume']    [mTEPES.dPar['pMinVolume']    [[rs for rs in r2a[ar]]] < mTEPES.dPar['pEpsilonElec']] = 0.0
                 mTEPES.dPar['pMaxVolume']    [mTEPES.dPar['pMaxVolume']    [[rs for rs in r2a[ar]]] < mTEPES.dPar['pEpsilonElec']] = 0.0

@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.18.7] - 2025-11-19
+[4.18.7] - 2025-11-22
 ---------------------
+- [CHANGED] extension to quarter of an hour resolution for the load levels
 - [FIXED] fix TechnologyEmission outfile
 - [CHANGED] modify names of some output results and avoid writing empty files
 - [FIXED] fix eTotalECostArea constraint

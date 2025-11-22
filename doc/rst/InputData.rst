@@ -281,7 +281,8 @@ Identifiers                            Header      Description
 Period      Scenario        LoadLevel  Duration    Duration of the load level. Load levels with duration 0 are ignored.
                                                    For an hour, the duration must be 1.
                                                    For quarter on an hour, the duration must be 0.25                     h
-                                       Stage       Assignment of the load level to a stage
+====================================== ==========  ====================================================================  ========
+...         ...             ...        Stage       Assignment of the load level to a stage
 ==========  ==============  ========== ==========  ====================================================================  ========
 
 It is a simple way to use isolated snapshots, representative days, or just the first three months instead of all the hours of a year to simplify the optimization problem. **All the load levels whose duration is different from 0 must have the same duration.**

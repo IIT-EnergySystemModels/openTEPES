@@ -50,8 +50,7 @@ def AreaPlots(period, scenario, df, Category, X, Y, OperationType):
     Results[X] = Results[X].str[:14]
     Results[X] = (Results[X]+'+01:00')
     Results[X] = (str(period)+'-'+Results[X])
-    Results[X] = pd.to_datetime(Results[X])
-    Results[X] = Results[X].dt.strftime('%Y-%m-%d %H:%M:%S')
+    Results[X] = pd.to_datetime(Results[X], format='%Y-%m-%d %H:%M:%S%z', errors='coerce')
     # Composed Names
     C_C = Category+':N'
 
@@ -80,8 +79,7 @@ def LinePlots(period, scenario, df, Category, X, Y, OperationType):
     Results[X] = Results[X].str[:14]
     Results[X] = (Results[X]+'+01:00')
     Results[X] = (str(period)+'-'+Results[X])
-    Results[X] = pd.to_datetime(Results[X])
-    Results[X] = Results[X].dt.strftime('%Y-%m-%d %H:%M:%S')
+    Results[X] = pd.to_datetime(Results[X], format='%Y-%m-%d %H:%M:%S%z', errors='coerce')
     # Composed Names
     C_C = Category+':N'
 
