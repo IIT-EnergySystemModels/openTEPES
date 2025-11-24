@@ -458,7 +458,7 @@ A generator can be restricted to only be able to provide reserves while generati
 
 If the lower and upper bounds of investment/retirement decisions are very close (with a difference <1e-3) to 0 or 1, they are converted into 0 and 1.
 
-A hydrogen import can be represented by means of an electric generator with variable cost equal to the import cost and an electrolyzer with a production function ProductionFunctionH2 equal to 1. This generator and the electrolyzer must be located in the hydrogen network, not in the electricity network.
+A hydrogen import can be represented by means of an electric generator with variable cost equal to the import cost and an electrolyzer with a production function ProductionFunctionH2 equal to 1. This generator must be located in an isolated electricity network (from the main one) and the electrolyzer must be located in a node linking this isolated electricity network and the hydrogen network.
 
 Variable maximum and minimum generation
 ---------------------------------------
