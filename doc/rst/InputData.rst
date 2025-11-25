@@ -15,6 +15,7 @@ AC          Alternating Current
 aFRR        Automatic Frequency Restoration Reserve (also secondary reserve) reserve provided within 5 minutes (Full Activation Time)
 AWE         Alkaline Water Electrolyzer (consumes electricity to produce hydrogen)
 BESS        Battery Energy Storage System
+CAPEX       Capital Expenditure
 CC          Capacity Credit (contribution of a power generation resource—particularly variable renewable energy (VRE) like wind or solar—to meeting peak demand)
 CCGT        Combined Cycle Gas Turbine
 CHP         Combined Heat and Power. Cogeneration (produces electricity and heat simultaneously)
