@@ -15,9 +15,10 @@ It automatically determines optimal expansion plans that satisfy multiple attrib
 
   It hierarchically represents the different time horizons for decision making in an electricity system:
   
-  - Load level: one hour, e.g., 01-01 00:00:00+01:00 to 12-30 23:00:00+01:00
+  - Load level: one hour, e.g., 01-01 00:00:00+01:00 to 12-30 23:00:00+01:00, or quarter of an hour, e.g., 01-01 00:00:00+01:00 to 30-12 23:45:00+01:00
 
-  Time division allows a user-defined flexible representation of time periods for evaluating system operation. It can also be run with chronological periods of several consecutive hours (two-hour, three-hour resolution) to reduce the computational burden without sacrificing accuracy.
+  The time division allows a user-defined flexible representation of the periods for evaluating the system operation. Moreover, it can be run with chronological periods of several consecutive hours (bi-hourly, tri-hourly resolution in case of hourly definition or half an hour in case of quarter of an hour definition) to decrease the computational burden without losing accuracy. The model can be run with a single period (year) or with several periods (years) to allow the analysis of the system's evolution.
+  The time definition also allows for specifying disconnected representative periods (e.g., days, weeks) to evaluate the system operation.
   The model can be run with a single period (year) or with multiple periods (years) to allow analysis of system evolution.
   The time definition also allows the specification of disconnected representative periods (e.g., days, weeks) to evaluate system operation. The model can be run with a single period (year) or with multiple periods (years) to allow analysis of system evolution.
   The time definition can also specify unrelated representative periods (e.g., days, weeks) to evaluate system operation. The period (year) must be represented by 8736 hours because several model concepts representing the system operation are based on weeks (168 hours) or months (made of 4 weeks, 672 hours)

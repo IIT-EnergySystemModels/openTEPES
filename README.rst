@@ -96,9 +96,10 @@ It determines automatically optimal expansion plans that satisfy simultaneously 
 
   It represents hierarchically the different time scopes to make decisions in an electric system:
 
-  - Load level: one hour, e.g., 01-01 00:00:00+01:00 to 12-30 23:00:00+01:00
+  - Load level: one hour, e.g., 01-01 00:00:00+01:00 to 12-30 23:00:00+01:00, or quarter of an hour, e.g., 01-01 00:00:00+01:00 to 30-12 23:45:00+01:00
 
-  The time division allows a user-defined flexible representation of the periods for evaluating the system operation. Moreover, it can be run with chronological periods of several consecutive hours (bi-hourly, tri-hourly resolution) to decrease the computational burden without losing accuracy. The model can be run with a single period (year) or with several periods (years) to allow the analysis of the system's evolution. The time definition also allows for specifying disconnected representative periods (e.g., days, weeks) to evaluate the system operation.
+  The time division allows a user-defined flexible representation of the periods for evaluating the system operation. Moreover, it can be run with chronological periods of several consecutive hours (bi-hourly, tri-hourly resolution in case of hourly definition or half an hour in case of quarter of an hour definition) to decrease the computational burden without losing accuracy. The model can be run with a single period (year) or with several periods (years) to allow the analysis of the system's evolution.
+  The time definition also allows for specifying disconnected representative periods (e.g., days, weeks) to evaluate the system operation.
   The model can be run with a single period (year) or with several periods (years) to allow the analysis of the system's evolution. The time definition can also specify disconnected representative periods (e.g., days, weeks) to evaluate the system operation.
   The period (year) must be represented by 8736 hours because several model concepts representing the system operation are based on weeks (168 hours) or months (made of 4 weeks, 672 hours).
 
@@ -142,7 +143,7 @@ Miniconda (recommended)
 =======================
 1. `Miniconda <https://docs.conda.io/en/latest/miniconda.html>`_. Choose the 64-bit installer if possible.
 
-   1. During the installation procedure, keep both checkboxes "modify the PATH" and "register Python" selected! If only higher Python versions are available, you can switch to a specific Python Version by typing ``conda install python=<version>``
+   1. During the installation procedure, keep both checkboxes "modify the PATH" and "register Python" selected! If only higher Python versions are available, you can switch to a specific Python Version by typing ``conda install python==<version>``
    2. **Remark:** if Anaconda or Miniconda was installed previously, please check that Python is registered in the environment variables.
 2. **Packages and Solver**:
 
