@@ -401,7 +401,9 @@ CO2EmissionRate             CO2 emission rate. It can be negative for units abso
 FixedInvestmentCost         Overnight investment (capital -CAPEX- and fixed O&M -FOM-) cost                                                                                                                               M€
 FixedRetirementCost         Overnight retirement (capital -CAPEX- and fixed O&M -FOM-) cost                                                                                                                               M€
 FixedChargeRate             Fixed-charge rate to annualize the overnight investment cost. Proportion of annual payment to return the overnight investment cost                                                            p.u.
-StorageInvestment           Storage capacity and energy inflows linked to the investment decision                                                                                                                         Yes/No
+StorageInvestment           Storage capacity and energy inflows are proportional to the investment decision.                                                                                                              Yes/No
+                            For example, in a battery with 4 h duration, the storage capacity will be proportional to the power invested.
+                            In a candidate reservoir, the size is usually predetermined and can't be made proportional to the investment decision.
 BinaryInvestment            Binary unit investment decision                                                                                                                                                               Yes/No
 InvestmentLo                Lower bound of investment decision                                                                                                                                                            p.u.
 InvestmentUp                Upper bound of investment decision                                                                                                                                                            p.u.
@@ -456,7 +458,7 @@ EFOR is used to reduce the maximum and minimum power of the unit. For hydropower
 
 Those generators or ESS with fixed cost >0  are considered candidates and can be installed. The fixed cost is the product of the overnight investment cost (FixedInvestmentCost) and the fixed charge rate (FixedChargeRate).
 
-Maximum, minimum, and initial storage values are considered proportional to the invested capacity for the candidate ESS units if StorageInvestment is activated. This can be used for battery investment decisions where the investment can be continuous (StorageInvestment=Yes). For a particular hydro storage investment the dam investment is linked to this particular hydro and can't be made proportional (StorageInvestment=No).
+Maximum, minimum, and initial storage values are considered proportional to the invested capacity for the candidate ESS units if StorageInvestment is activated (Yes). This can be used for battery investment decisions where the investment can be continuous (StorageInvestment=Yes). For a particular hydro storage investment the dam investment is linked to this particular hydro and can't be made proportional (StorageInvestment=No).
 
 A generator can belong to several mutually exclusive sets; their names must be separated by "\|" when inputted. So if Generator1 belongs to Set1 and Set2, the data entry should be "Set1\|Set2". If any of the generators in a group are installation candidates, it is assumed that exclusivity is yearly, so only one can be committed during the whole period. When all mutually exclusive generators in a set are installed and functioning, it is assumed that the exclusivity is hourly, and which generator is committed can change every LoadLevel.
 
