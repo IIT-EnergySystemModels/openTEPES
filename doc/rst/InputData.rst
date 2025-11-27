@@ -168,10 +168,9 @@ Item                  Description
 ENSCost               Cost of energy not served (ENS). Cost of load curtailment. Value of Lost Load (VoLL)                           €/MWh
 HNSCost               Cost of hydrogen not served (HNS)                                                                              €/kgH2
 HTNSCost              Cost of heat not served (HTNS)                                                                                 €/MWh
-PNSCost               Cost of power not served (PNS) associated with the deficit in operating reserve by load level                  €/MW
 CO2Cost               Cost of CO2 emissions                                                                                          €/tCO2
-UpReserveActivation   Upward   reserve activation (proportion of upward   operating reserve deployed to produce energy, e.g., 0.3)   p.u.
-DwReserveActivation   Downward reserve activation (proportion of downward operating reserve deployed to produce energy, e.g., 0.25)  p.u.
+UpReserveActivation   Upward   reserve activation (proportion of upward   operating reserve deployed to produce energy, e.g., 0.15)  p.u.
+DwReserveActivation   Downward reserve activation (proportion of downward operating reserve deployed to produce energy, e.g., 0.10)  p.u.
 MinRatioDwUp          Minimum ratio downward to upward operating reserves                                                            p.u.
 MaxRatioDwUp          Maximum ratio downward to upward operating reserves                                                            p.u.
 Sbase                 Base power used in the DCPF                                                                                    MW
@@ -184,6 +183,9 @@ AnnualDiscountRate    Annual discount rate                                      
 
 A time step greater than one hour is a convenient way to reduce the load levels of the time scope. The moving average of the demand, upward/downward operating reserves, variable generation/consumption/storage, and ESS energy inflows/outflows
 over the time step load levels is assigned to active load levels (e.g., the mean value of the three hours is associated with the third hour in a trihourly time step).
+
+Generators can provide upward and downward operating reserves simultaneously. The upward and downward activation proportions define the amount of upward and downward operating reserves that will be deployed to produce energy.
+In case of having both upward and downward operating reserves, the activation of both may cancel the energy produced.
 
 Period
 ------
@@ -337,7 +339,7 @@ Period      Scenario        LoadLevel   Area    Upward/downward operating reserv
 ==========  ==============  ==========  ======  ===================================================================  ==
 
 Given that the operating reserves depend on the area, assigning an area to a country can be sensible.
-These operating reserves must include Automatic Frequency Restoration Reserves (aFRR) and Manual Frequency Restoration Reserves (mFRR) for electricity balancing from ENTSO-E.
+These operating reserves must include Automatic Frequency Restoration Reserves (aFRR) (a.k.a. secondary reserve, deployed <5 min) and Manual Frequency Restoration Reserves (mFRR) (a.k.a. tertiary reserve, deployed <12.5 min) for electricity balancing from ENTSO-E.
 
 Internally, all the values below 1e-5 times the maximum system demand of each area will be converted into 0 by the model.
 
