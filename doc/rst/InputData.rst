@@ -176,7 +176,8 @@ MaxRatioDwUp          Maximum ratio downward to upward operating reserves       
 Sbase                 Base power used in the DCPF                                                                                    MW
 ReferenceNode         Reference node used in the DCPF
 TimeStep              Number of time steps grouped together. If the duration is 1 h and the time step is 2,
-                      two consecutive hours are grouped into one load level for the optimization problem
+                      two consecutive hours are grouped into one load level for the optimization problem.
+                      If the duration is 0.25 h and the time step is 4, the load level represents one hour.
 EconomicBaseYear      Base year for economic parameters affected by the discount rate                                                year
 AnnualDiscountRate    Annual discount rate                                                                                           p.u.
 ====================  =============================================================================================================  =========
