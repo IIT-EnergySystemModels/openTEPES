@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 22, 2025
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 27, 2025
 """
 
 import datetime
@@ -1988,12 +1988,14 @@ def SettingUpVariables(OptModel, mTEPES):
         if mTEPES.pIndPTDF == 1:
             OptModel.vNetPosition = Var(mTEPES.psnnd, within=Reals, doc='net position in node [GW]')
 
-        [OptModel.vLineLosses[p,sc,n,ni,nf,cc].setub(0.5*mTEPES.pLineLossFactor[ni,nf,cc]*mTEPES.pLineNTCMax[ni,nf,cc]) for p,sc,n,ni,nf,cc in mTEPES.psnll]
         if mTEPES.pIndBinSingleNode() == 0:
-            [OptModel.vFlowElec[p,sc,n,ni,nf,cc].setlb(-mTEPES.pMaxNTCBck[p,sc,n,ni,nf,cc]   ) for p,sc,n,ni,nf,cc in mTEPES.psnla]
-            [OptModel.vFlowElec[p,sc,n,ni,nf,cc].setub( mTEPES.pMaxNTCFrw[p,sc,n,ni,nf,cc]   ) for p,sc,n,ni,nf,cc in mTEPES.psnla]
-        [OptModel.vTheta       [p,sc,n,nd      ].setlb(-mTEPES.pMaxTheta [p,sc,n,nd      ]() ) for p,sc,n,nd       in mTEPES.psnnd]
-        [OptModel.vTheta       [p,sc,n,nd      ].setub( mTEPES.pMaxTheta [p,sc,n,nd      ]() ) for p,sc,n,nd       in mTEPES.psnnd]
+            [OptModel.vLineLosses[p,sc,n,ni,nf,cc].setub(0.5*mTEPES.pLineLossFactor[ni,nf,cc]*mTEPES.pLineNTCMax[ni,nf,cc]) for p,sc,n,ni,nf,cc in mTEPES.psnll]
+            [OptModel.vFlowElec  [p,sc,n,ni,nf,cc].setlb(-mTEPES.pMaxNTCBck[p,sc,n,ni,nf,cc]  ) for p,sc,n,ni,nf,cc in mTEPES.psnla]
+            [OptModel.vFlowElec  [p,sc,n,ni,nf,cc].setub( mTEPES.pMaxNTCFrw[p,sc,n,ni,nf,cc]  ) for p,sc,n,ni,nf,cc in mTEPES.psnla]
+        else:
+            [OptModel.vLineLosses[p,sc,n,ni,nf,cc].fix(0.0) for p,sc,n,ni,nf,cc in mTEPES.psnll]
+        [OptModel.vTheta         [p,sc,n,nd      ].setlb(-mTEPES.pMaxTheta [p,sc,n,nd      ]()) for p,sc,n,nd       in mTEPES.psnnd]
+        [OptModel.vTheta         [p,sc,n,nd      ].setub( mTEPES.pMaxTheta [p,sc,n,nd      ]()) for p,sc,n,nd       in mTEPES.psnnd]
 
         if mTEPES.pIndHydrogen == 1:
             OptModel.vFlowH2 = Var(mTEPES.psnpa, within=Reals,            doc='pipeline flow               [tH2]')

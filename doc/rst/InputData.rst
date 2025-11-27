@@ -156,6 +156,8 @@ IndBinNetLosses      Indicator of network losses                                
 
 Suppose the investment decisions are ignored (IndBinGenInvest, IndBinGenRetirement, and IndBinNetInvest take value 2) or there are no investment decisions. In that case, all the scenarios with a probability >0 are solved sequentially (assuming a probability of 1), and the periods are considered with a weight of 1.
 
+If you select the single node option (IndBinSingleNode takes value 1), the line capacity constraints are relaxed (i.e., flows can exceed these capacities), but line flows are obtained and presented in the result files. The line losses are considered 0.
+
 Parameters
 ----------
 A description of the system parameters included in the file ``oT_Data_Parameter.csv`` follows:

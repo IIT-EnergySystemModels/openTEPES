@@ -1,6 +1,10 @@
 Change Log
 =============
 
+[4.18.7] - 2025-11-27
+---------------------
+- [FIXED] upper bound of line losses only if no single node option. With single node option losses are 0.
+
 [4.18.7] - 2025-11-22
 ---------------------
 - [CHANGED] extension to quarter of an hour resolution for the load levels
