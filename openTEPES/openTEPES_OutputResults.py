@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 19, 2025
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 27, 2025
 """
 
 import time
@@ -1365,16 +1365,16 @@ def OperationSummaryResults(DirName, CaseName, OptModel, mTEPES):
 
     # LCOE per technology
     if mTEPES.gc:
-        GenTechInvestCost = pd.Series(data=[sum(mTEPES.pDiscountedWeight[p] * mTEPES.pGenInvestCost[gc] * OptModel.vGenerationInvest[p,gc]() for p,     gc in mTEPES.pgc   if gc in g2t[gt]) for gt in mTEPES.gt], index=mTEPES.gt)
-        GenTechInjection  = pd.Series(data=[sum(OptModel.vTotalOutput     [p,sc,n,gc]()*mTEPES.pLoadLevelDuration[p,sc,n ]()                 for p,sc,n,gc in mTEPES.psngc if gc in g2t[gt]) for gt in mTEPES.gt], index=mTEPES.gt)
+        GenTechInvestCost = pd.Series(data=[sum(mTEPES.pDiscountedWeight[p] * mTEPES.pGenInvestCost[gc]           * OptModel.vGenerationInvest[p,gc]() for p,     gc in mTEPES.pgc   if gc in g2t[gt]) for gt in mTEPES.gt], index=mTEPES.gt)
+        GenTechInjection  = pd.Series(data=[sum(mTEPES.pDiscountedWeight[p] * mTEPES.pLoadLevelDuration[p,sc,n]() * OptModel.vTotalOutput[p,sc,n,gc]() for p,sc,n,gc in mTEPES.psngc if gc in g2t[gt]) for gt in mTEPES.gt], index=mTEPES.gt)
         GenTechInvestCost *= 1e3
         LCOE = GenTechInvestCost.div(GenTechInjection).to_frame(name='EUR/MWh')
         LCOE.rename_axis(['Technology'], axis=0).to_csv(f'{_path}/oT_Result_TechnologyLCOE_{CaseName}.csv', index=True, sep=',')
 
     # LCOE per technology
     if mTEPES.gb:
-        GenTechInvestCost = pd.Series(data=[sum(mTEPES.pDiscountedWeight[p] * mTEPES.pGenInvestCost[gb] * OptModel.vGenerationInvest[p,gb]() for p,     gb in mTEPES.pgb   if gb in g2t[gt]) for gt in mTEPES.gt], index=mTEPES.gt)
-        GenTechInjection  = pd.Series(data=[sum(OptModel.vTotalOutputHeat [p,sc,n,gb]()*mTEPES.pLoadLevelDuration[p,sc,n ]()                 for p,sc,n,gb in mTEPES.psngb if gb in g2t[gt]) for gt in mTEPES.gt], index=mTEPES.gt)
+        GenTechInvestCost = pd.Series(data=[sum(mTEPES.pDiscountedWeight[p] * mTEPES.pGenInvestCost[gb]           * OptModel.vGenerationInvest[p,gb]()     for p,     gb in mTEPES.pgb   if gb in g2t[gt]) for gt in mTEPES.gt], index=mTEPES.gt)
+        GenTechInjection  = pd.Series(data=[sum(mTEPES.pDiscountedWeight[p] * mTEPES.pLoadLevelDuration[p,sc,n]() * OptModel.vTotalOutputHeat[p,sc,n,gb]() for p,sc,n,gb in mTEPES.psngb if gb in g2t[gt]) for gt in mTEPES.gt], index=mTEPES.gt)
         GenTechInvestCost *= 1e3
         LCOH = GenTechInvestCost.div(GenTechInjection).to_frame(name='EUR/MWh')
         LCOH.rename_axis(['Technology'], axis=0).to_csv(f'{_path}/oT_Result_TechnologyLCOH_{CaseName}.csv', index=True, sep=',')

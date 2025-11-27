@@ -3,6 +3,7 @@ Change Log
 
 [4.18.7] - 2025-11-27
 ---------------------
+- [FIXED] fix computation of LCOE.
 - [FIXED] upper bound of line losses only if no single node option. With single node option losses are 0.
 
 [4.18.7] - 2025-11-22
