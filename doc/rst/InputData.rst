@@ -644,7 +644,7 @@ Tap                  Tap changer (not used in this version)                     
 Converter            Converter station (not used in this version)                                                                     Yes/No
 TTC                  Total transfer capacity (maximum permissible thermal load) in forward  direction. Static line rating             MW
 TTCBck               Total transfer capacity (maximum permissible thermal load) in backward direction. Static line rating             MW
-SecurityFactor       Security factor to consider approximately N-1 contingencies. NTC = TTC x SecurityFactor                          p.u.
+SecurityFactor       Security factor to consider approximately N-1 contingencies. NTC = TTC x SecurityFactor.                         p.u.
                      All the security factors can't be 0. Otherwise, there is no network.
 FixedInvestmentCost  Overnight investment (capital -CAPEX- and fixed O&M -FOM-) cost                                                  M€
 FixedChargeRate      Fixed-charge rate to annualize the overnight investment cost                                                     p.u.
@@ -663,7 +663,7 @@ If there is no data for TTCBck, i.e., TTCBck is left empty or is equal to 0, the
 
 Reactance can take a negative value due to the approximation of three-winding transformers. No Kirchhoff's second law disjunctive constraint is formulated for a circuit with negative reactance.
 
-Those lines with fixed cost >0 are considered candidates and can be installed. The fixed cost is the product of the overnight investment cost (FixedInvestmentCost) and the fixed charge rate (FixedChargeRate).
+Those lines with fixed cost >0 are considered candidates and can be installed. The fixed cost is the product of the overnight investment cost (FixedInvestmentCost) and the fixed charge rate (FixedChargeRate). The reactance of a candidate line doesn't change although the candidate line is invested partially.
 
 If the lower and upper bounds of investment decisions are very close (with a difference <1e-3) to 0 or 1, they are converted into 0 and 1.
 
