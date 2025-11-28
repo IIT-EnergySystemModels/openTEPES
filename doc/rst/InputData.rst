@@ -12,7 +12,7 @@ Acronyms
 Acronym     Description
 ==========  ================================================================================================================================================================================================================================================
 AC          Alternating Current
-aFRR        Automatic Frequency Restoration Reserve (also secondary reserve) reserve provided within 5 minutes (Full Activation Time)
+aFRR        Automatic Frequency Restoration Reserve (a.k.a. secondary reserve) reserve provided within 5 minutes (Full Activation Time)
 AWE         Alkaline Water Electrolyzer (consumes electricity to produce hydrogen)
 BESS        Battery Energy Storage System
 CAPEX       Capital Expenditure
@@ -36,7 +36,7 @@ EV          Electric Vehicle
 FCE         Firm Capacity Equivalent (amount of reliable, always-available generation capacity that would provide the same level of system reliability as the resource being evaluated)
 FHU         Fuel Heating Unit (Fuel to Heat: consumes any fuel other than hydrogen to produce heat, e.g., biomass/natural gas/oil boiler)
 GEP         Generation Expansion Planning
-mFRR        Manual Frequency Restoration Reserve (also tertiary reserve) helps to restore the required grid frequency of 50 Hz. It must be fully deployable after 12.5 minutes and has a minimum duration period of 5 minutes
+mFRR        Manual Frequency Restoration Reserve (a.k.a. tertiary reserve) helps to restore the required grid frequency of 50 Hz. It must be fully deployable after 12.5 minutes and has a minimum duration period of 5 minutes
 H2          Hydrogen
 HHU         Hydrogen Heating unit (Hydrogen to Heat: consumes hydrogen to produce heat)
 HNS         Hydrogen Not Served
