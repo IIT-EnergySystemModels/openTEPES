@@ -647,7 +647,7 @@ Converter            Converter station (not used in this version)               
 TTC                  Total transfer capacity (maximum permissible thermal load) in forward  direction. Static line rating             MW
 TTCBck               Total transfer capacity (maximum permissible thermal load) in backward direction. Static line rating             MW
 SecurityFactor       Security factor to consider approximately N-1 contingencies (e.g., common values are in the range 0.6-0.7).      p.u.
-                     NTC = TTC x SecurityFactor.
+                     NTC=TTCxSecurityFactor.
                      All the security factors can't be 0. Otherwise, there is no capacity network.
 FixedInvestmentCost  Overnight investment (capital -CAPEX- and fixed O&M -FOM-) cost                                                  M€
 FixedChargeRate      Fixed-charge rate to annualize the overnight investment cost                                                     p.u.
