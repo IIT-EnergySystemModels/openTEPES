@@ -16,7 +16,7 @@ aFRR        Automatic Frequency Restoration Reserve (a.k.a. secondary reserve) r
 AWE         Alkaline Water Electrolyzer (consumes electricity to produce hydrogen)
 BESS        Battery Energy Storage System
 CAPEX       Capital Expenditure
-CC          Capacity Credit (contribution of a power generation resource—particularly variable renewable energy (VRE) like wind or solar—to meeting peak demand)
+CC          Capacity Credit (contribution of a power generation resource —particularly variable renewable energy (VRE) like wind or solar— to meeting peak demand)
 CCGT        Combined Cycle Gas Turbine
 CHP         Combined Heat and Power. Cogeneration (produces electricity and heat simultaneously)
 DC          Direct Current
@@ -120,13 +120,13 @@ File                                       Description
 ``oT_Data_VariableFuelCost.csv``           Variable fuel cost by load level
 ``oT_Data_EnergyInflows.csv``              Energy inflows into an ESS by load level
 ``oT_Data_EnergyOutflows.csv``             Energy outflows from an ESS for Power-to-X (H2 production, EV mobility, heat production, or water irrigation) by load level
-``oT_Data_VariableMaxStorage.csv``         Maximum amount of energy stored in the ESS (defined per load level)
-``oT_Data_VariableMinStorage.csv``         Minimum amount of energy stored in the ESS (defined per load level)
+``oT_Data_VariableMaxStorage.csv``         Maximum amount of energy stored in the ESS by load level
+``oT_Data_VariableMinStorage.csv``         Minimum amount of energy stored in the ESS by load level
 ``oT_Data_VariableMaxEnergy.csv``          Maximum amount of energy produced/consumed by the unit by time interval (the amount of energy considered corresponds to the aggregate over the interval defined by EnergyType)
 ``oT_Data_VariableMinEnergy.csv``          Minimum amount of energy produced/consumed by the unit by time interval (the amount of energy considered corresponds to the aggregate over the interval defined by EnergyType)
 ``oT_Data_Network.csv``                    Electricity network data
-``oT_Data_VariableTTCFrw.csv``             Maximum electric transmission line TTC forward  flow (defined per load level) (optional file)
-``oT_Data_VariableTTCBck.csv``             Maximum electric transmission line TTC backward flow (defined per load level) (optional file)
+``oT_Data_VariableTTCFrw.csv``             Maximum electric transmission line TTC forward  flow by load level (optional file)
+``oT_Data_VariableTTCBck.csv``             Maximum electric transmission line TTC backward flow by load level (optional file)
 ``oT_Data_NodeLocation.csv``               Node location in latitude and longitude
 =========================================  ==================================================================================================================================================================================
 

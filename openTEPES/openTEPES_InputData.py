@@ -1134,7 +1134,7 @@ def DataConfiguration(mTEPES):
         # mTEPES.dPar['pMaxPowerElec']      = mTEPES.dPar['pMaxPowerElec'].where(mTEPES.dPar['pMaxPowerElec'] >= mTEPES.dPar['pMinPowerElec'], mTEPES.dPar['pMinPowerElec'])
         # mTEPES.dPar['pMaxCharge']         = mTEPES.dPar['pMaxCharge'].where   (mTEPES.dPar['pMaxCharge']    >= mTEPES.dPar['pMinCharge'],    mTEPES.dPar['pMinCharge']   )
 
-        # Decrease Minimum to reach maximum
+        # Decrease minimum to reach maximum
         mTEPES.dPar['pMinPowerElec']      = mTEPES.dPar['pMinPowerElec'].where(mTEPES.dPar['pMinPowerElec'] <= mTEPES.dPar['pMaxPowerElec'], mTEPES.dPar['pMaxPowerElec'])
         mTEPES.dPar['pMinCharge']         = mTEPES.dPar['pMinCharge'].where   (mTEPES.dPar['pMinCharge']    <= mTEPES.dPar['pMaxCharge'],    mTEPES.dPar['pMaxCharge']   )
 

@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 17, 2025
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - December 01, 2025
 """
 
 import time
@@ -219,7 +219,7 @@ def GenerationOperationModelFormulationInvestment(OptModel, mTEPES, pIndLogConso
     StartTime = time.time()
 
     def eInstallGenComm(OptModel,n,gc):
-        if gc in mTEPES.nr and gc not in mTEPES.eh and gc not in mTEPES.bc and (mTEPES.pMinPowerElec[p,sc,n,gc] or mTEPES.pConstantVarCost[p,sc,n,gc]):
+        if gc in mTEPES.nr and gc not in mTEPES.eh and gc not in mTEPES.bc and (p,gc) in mTEPES.pgc and (mTEPES.pMinPowerElec[p,sc,n,gc] or mTEPES.pConstantVarCost[p,sc,n,gc]):
             if mTEPES.pMustRun[gc] == 0:
                 return OptModel.vCommitment[p,sc,n,gc] <= OptModel.vGenerationInvest[p,gc]
             else:
@@ -232,8 +232,11 @@ def GenerationOperationModelFormulationInvestment(OptModel, mTEPES, pIndLogConso
         print('eInstallGenComm           ... ', len(getattr(OptModel, f'eInstallGenComm_{p}_{sc}_{st}')), ' rows')
 
     def eInstallESSComm(OptModel,n,ec):
-        if mTEPES.pIndBinStorInvest[ec]:
-            return OptModel.vCommitment[p,sc,n,ec] <= OptModel.vGenerationInvest[p,ec]
+        if (p,ec) in mTEPES.pec:
+            if mTEPES.pIndBinStorInvest[ec]:
+                return OptModel.vCommitment[p,sc,n,ec] <= OptModel.vGenerationInvest[p,ec]
+            else:
+                return Constraint.Skip
         else:
             return Constraint.Skip
     setattr(OptModel, f'eInstallESSComm_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.ec, rule=eInstallESSComm, doc='commitment if ESS unit [p.u.]'))

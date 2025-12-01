@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.18.7] - 2025-11-27
+[4.18.8] - 2025-12-01
 ---------------------
+- [FIXED] control of candidate generators not available in some periods in some investment constraints in model formulation and output results
 - [FIXED] fix computation of LCOE.
 - [FIXED] upper bound of line losses only if no single node option. With single node option losses are 0.
 

@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 27, 2025
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - December 01, 2025
 """
 
 import time
@@ -292,7 +292,7 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutput,
                 GenRetireToArea.index.names = ['Period', 'Area', 'Generating unit']
                 chart = alt.Chart(GenRetireToArea.reset_index()).mark_bar().encode(x='Generating unit:O', y='sum(MW):Q', color='Area:N', column='Period:N').properties(width=600, height=400)
                 chart.save(f'{_path}/oT_Plot_GenerationRetirementPerArea_{CaseName}.html', embed_options={'renderer':'svg'})
-                TechRetireToArea = pd.Series(data=[sum(OutputToFile['MW'][p,gd] for gd in mTEPES.gd if gd in g2a[ar] and gd in g2t[gt]) for p,ar,gt in mTEPES.par*mTEPES.gt], index=mTEPES.par*mTEPES.gt).to_frame(name='MW')
+                TechRetireToArea = pd.Series(data=[sum(OutputToFile['MW'][p,gd] for gd in mTEPES.gd if (p,gd) in mTEPES.pgd and gd in g2a[ar] and gd in g2t[gt]) for p,ar,gt in mTEPES.par*mTEPES.gt], index=mTEPES.par*mTEPES.gt).to_frame(name='MW')
                 TechRetireToArea.index.names = ['Period', 'Area', 'Technology'    ]
                 chart = alt.Chart(TechRetireToArea.reset_index()).mark_bar().encode(x='Technology:O',     y='sum(MW):Q', color='Area:N', column='Period:N').properties(width=600, height=400)
                 chart.save(f'{_path}/oT_Plot_TechnologyRetirementPerArea_{CaseName}.html', embed_options={'renderer':'svg'})
