@@ -655,8 +655,8 @@ Half ohmic losses are linearly approximated as a function of the power flow [GW]
 
 :math:`- \frac{L_{ijc}}{2} f^p_{\omega nijc} \leq l^p_{\omega nijc} \geq \frac{L_{ijc}}{2} f^p_{\omega nijc} \quad \forall p \omega nijc`
 
-Cycle constraints for AC existing lines with DC optimal power flow formulation [rad] «``eCycleKirchhoff2ndLawCnd1``» «``eCycleKirchhoff2ndLawCnd2``».
-See the cycle constraints for the AC power flow formulation in the following reference:
+Cycle constraints for AC existing lines with DC optimal power flow formulation [rad] «``eCycleKirchhoff2ndLawCnd1``» «``eCycleKirchhoff2ndLawCnd2``». To activate these constraints you must put pIndCycleFlow = 1 in line 49 of the openTEPES.py file.
+It usually improves the computational performance of the model. See the cycle constraints for the AC power flow formulation in the following reference:
 
 * E.F. Álvarez, J.C. López, L. Olmos, A. Ramos "An Optimal Expansion Planning of Power Systems Considering Cycle-Based AC Optimal Power Flow" Sustainable Energy, Grids and Networks, May 2024. `10.1016/j.segan.2024.101413 <https://doi.org/10.1016/j.segan.2024.101413>`_
 
