@@ -32,6 +32,10 @@ It has been used by the **Ministry for the Ecological Transition and the Demogra
 
 Contact: andres.ramos@comillas.edu
 
+.. image:: /../img/GitHub.png
+   :scale: 20%
+   :align: left
+
 `openTEPES GitHub repository <https://github.com/IIT-EnergySystemModels/openTEPES>`_
 
 Index
