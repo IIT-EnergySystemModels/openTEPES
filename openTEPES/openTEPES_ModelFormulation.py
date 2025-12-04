@@ -9,8 +9,6 @@ import pandas   as pd
 from   collections   import defaultdict
 from   pyomo.environ import Constraint, Objective, minimize, Set, RangeSet, Param
 
-from line_profiler import profile
-
 
 def TotalObjectiveFunction(OptModel, mTEPES, pIndLogConsole):
     print('Total cost o.f.      model formulation ****')
@@ -110,7 +108,6 @@ def InvestmentModelFormulation(OptModel, mTEPES, pIndLogConsole):
         print('Gen&transm investment o.f./constraints ... ', round(GeneratingTime), 's')
 
 
-@profile
 def GenerationOperationModelFormulationObjFunct(OptModel, mTEPES, pIndLogConsole, p, sc, st):
     print('Generation oper o.f. model formulation ****')
 
@@ -216,7 +213,6 @@ def GenerationOperationModelFormulationObjFunct(OptModel, mTEPES, pIndLogConsole
         print('Operation cost        o.f.             ... ', round(GeneratingTime), 's')
 
 
-@profile
 def GenerationOperationModelFormulationInvestment(OptModel, mTEPES, pIndLogConsole, p, sc, st):
     print('Investment & operation var constraints ****')
 
@@ -366,7 +362,6 @@ def GenerationOperationModelFormulationInvestment(OptModel, mTEPES, pIndLogConso
         print('Generating operation & investment      ... ', round(GeneratingTime), 's')
 
 
-@profile
 def GenerationOperationModelFormulationDemand(OptModel, mTEPES, pIndLogConsole, p, sc, st):
     print('Inertia, oper resr, demand constraints ****')
 
@@ -595,7 +590,6 @@ def GenerationOperationModelFormulationDemand(OptModel, mTEPES, pIndLogConsole, 
         print('Generating inertia/reserves/balance    ... ', round(GeneratingTime), 's')
 
 
-@profile
 def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole, p, sc, st):
     print('Storage   scheduling       constraints ****')
 
@@ -837,7 +831,6 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
     if pIndLogConsole == 1:
         print('Generating storage operation           ... ', round(GeneratingTime), 's')
 
-@profile
 def GenerationOperationModelFormulationReservoir(OptModel, mTEPES, pIndLogConsole, p, sc, st):
     print('Reservoir scheduling       constraints ****')
 
@@ -1048,7 +1041,6 @@ def GenerationOperationModelFormulationReservoir(OptModel, mTEPES, pIndLogConsol
         print('Generating reservoir operation         ... ', round(GeneratingTime), 's')
 
 
-@profile
 def GenerationOperationModelFormulationCommitment(OptModel, mTEPES, pIndLogConsole, p, sc, st):
     print('Unit commitment            constraints ****')
 
@@ -1243,7 +1235,6 @@ def GenerationOperationModelFormulationCommitment(OptModel, mTEPES, pIndLogConso
         print('Generating generation commitment       ... ', round(GeneratingTime), 's')
 
 
-@profile
 def GenerationOperationModelFormulationRampMinTime(OptModel, mTEPES, pIndLogConsole, p, sc, st):
     print('Ramp and min up/down time  constraints ****')
 
@@ -1437,7 +1428,6 @@ def GenerationOperationModelFormulationRampMinTime(OptModel, mTEPES, pIndLogCons
         print('Generating ramps & minimum time        ... ', round(GeneratingTime), 's')
 
 
-@profile
 def NetworkSwitchingModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st):
     print('Network    switching model constraints ****')
 
@@ -1636,7 +1626,6 @@ def NetworkOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st
         print('Generating network    constraints      ... ', round(GeneratingTime), 's')
 
 
-@profile
 def NetworkCycles(mTEPES, pIndLogConsole):
     print('Network               Cycles Detection ****')
 
@@ -1709,7 +1698,6 @@ def NetworkCycles(mTEPES, pIndLogConsole):
         print('Cycles detection                      ... ', round(CyclesDetectionTime), 's')
 
 
-@profile
 def CycleConstraints(OptModel, mTEPES, pIndLogConsole, p, sc, st):
     print('Network              cycle constraints ****')
 
@@ -1768,7 +1756,6 @@ def CycleConstraints(OptModel, mTEPES, pIndLogConsole, p, sc, st):
         print('Generating cycle flow constraints       ... ', round(CycleFlowTime), 's')
 
 
-@profile
 def NetworkH2OperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st):
     print('Hydrogen  scheduling       constraints ****')
 
@@ -1809,7 +1796,6 @@ def NetworkH2OperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, 
         print('Generating hydrogen  operation         ... ', round(GeneratingTime), 's')
 
 
-@profile
 def NetworkHeatOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st):
     print('Heat      scheduling       constraints ****')
 
