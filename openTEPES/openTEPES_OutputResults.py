@@ -5,7 +5,6 @@ Open Generation, Storage, and Transmission Operation and Expansion Planning Mode
 import time
 import datetime
 import os
-# import ast
 import math
 import csv
 import pandas            as     pd

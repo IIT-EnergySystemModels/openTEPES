@@ -2,7 +2,6 @@
 Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 27, 2025
 """
 
-import datetime
 import time
 import math
 import os
@@ -10,6 +9,7 @@ import pandas        as pd
 from   collections   import defaultdict
 from   pyomo.environ import DataPortal, Set, Param, Var, Binary, NonNegativeReals, NonNegativeIntegers, PositiveReals, PositiveIntegers, Reals, UnitInterval, Any
 from   pyomo.environ import Block, Boolean
+
 
 def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     print('Input data                             ****')
