@@ -686,8 +686,13 @@ import time
 # import pkg_resources
 from .openTEPES import openTEPES_run
 
-print('\033[1;32mOpen Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.8 - December 04, 2025\033[0m')
-print('\033[34m#### Academic research license - for non-commercial use only ####\033[0m \n')
+
+GREEN  = "\033[32m"
+BLUE   = "\033[34m"
+RESET  = "\033[0m"
+
+print(GREEN + 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.8 - December 04, 2025' + RESET)
+print(BLUE  + '#### Academic research license - for non-commercial use only ####' + RESET + '\n')
 
 parser = argparse.ArgumentParser(description='Introducing main parameters...')
 parser.add_argument('--case',   type=str, default=None)
@@ -749,7 +754,7 @@ def main():
         f.write('Elapsed time '+str(ElapsedTime)+' s')
     # Final message
     print('End of the run                ************')
-    print('\033[34m#### Academic research license - for non-commercial use only ####\033[0m')
+    print(BLUE + '#### Academic research license - for non-commercial use only ####' + RESET)
 
     return model
 

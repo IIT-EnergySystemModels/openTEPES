@@ -21,7 +21,7 @@ It automatically determines optimal expansion plans that satisfy multiple attrib
   The time definition also allows for specifying disconnected representative periods (e.g., days, weeks) to evaluate the system operation.
   The model can be run with a single period (year) or with multiple periods (years) to allow analysis of system evolution.
   The time definition also allows the specification of disconnected representative periods (e.g., days, weeks) to evaluate system operation. The model can be run with a single period (year) or with multiple periods (years) to allow analysis of system evolution.
-  The time definition can also specify unrelated representative periods (e.g., days, weeks) to evaluate system operation. The period (year) must be represented by 8736 hours because several model concepts representing the system operation are based on weeks (168 hours) or months (made of 4 weeks, 672 hours)
+  The time definition can also specify unrelated representative periods (e.g., days, weeks) to evaluate system operation. The period (year) must be represented by 8736 hours because several model concepts representing the system operation are based on weeks (168 hours) or lunar months (made of 4 weeks, 672 hours)
 
 - **Stochastic**: several stochastic parameters are considered that can influence the optimal generation, storage, and transmission expansion decisions. The model considers stochastic
   medium-term annual uncertainties (scenarios) related to the system operation. These operational scenarios are associated with renewable energy sources, energy inflows and outflows, natural water inflows, operating reserves, inertia, and electricity, hydrogen, and heat demand.
