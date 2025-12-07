@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - November 27, 2025
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - December 05, 2025
 """
 
 import time
@@ -10,7 +10,10 @@ from   collections   import defaultdict
 from   pyomo.environ import DataPortal, Set, Param, Var, Binary, NonNegativeReals, NonNegativeIntegers, PositiveReals, PositiveIntegers, Reals, UnitInterval, Any
 from   pyomo.environ import Block, Boolean
 
+# from line_profiler import profile
 
+
+# @profile
 def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     print('Input data                             ****')
 
@@ -497,6 +500,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     print('Reading    input data                  ... ', round(ReadingDataTime), 's')
 
 
+# @profile
 def DataConfiguration(mTEPES):
 
     StartTime = time.time()
@@ -1663,6 +1667,7 @@ def DataConfiguration(mTEPES):
     print('Setting up input data                  ... ', round(SettingUpDataTime), 's')
 
 
+# @profile
 def SettingUpVariables(OptModel, mTEPES):
 
     StartTime = time.time()

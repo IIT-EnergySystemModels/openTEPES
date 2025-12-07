@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.18.8] - 2025-12-04
+[4.18.8] - 2025-12-07
 ---------------------
+- [CHANGED] reduce computation time in output results
 - [CHANGED] generation time reduction in model formulation moving parameters out of the sums
 - [FIXED] control of candidate generators not available in some periods in some investment constraints in model formulation and output results
 - [FIXED] fix computation of LCOE.
