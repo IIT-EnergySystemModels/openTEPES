@@ -5,7 +5,6 @@ Open Generation, Storage, and Transmission Operation and Expansion Planning Mode
 # import dill as pickle
 import math
 import os
-import setuptools
 import time
 
 import pyomo.environ as pyo
