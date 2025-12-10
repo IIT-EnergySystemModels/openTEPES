@@ -681,7 +681,7 @@
 
 #%% libraries
 import argparse
-import socket
+import platform
 import os
 import time
 # import pkg_resources
@@ -752,7 +752,7 @@ def main():
     print('Total time                             ...  {} s'.format(ElapsedTime))
     path_to_write_time = os.path.join(args.dir,args.case,f'openTEPES_time_{CASE}.log')
     with open(path_to_write_time, 'w') as f:
-        f.write('Elapsed time '+str(ElapsedTime)+' s on '+socket.gethostname()+'\n')
+        f.write('Elapsed time '+str(ElapsedTime)+' s   on '+platform.node()+' ['+ platform.system()+' '+platform.release()+'; '+str(psutil.cpu_count(logical=False))+' '+platform.processor()+' physical processors at '+str(round(psutil.cpu_freq().current/1000,2))+' GHz; '+str(round(psutil.virtual_memory().total/(1024**3),1))+' GB]\n')
     # Final message
     print('End of the run                ************')
     print(BLUE + '#### Academic research license - for non-commercial use only ####' + RESET)
