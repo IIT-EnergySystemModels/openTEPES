@@ -2074,16 +2074,17 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput, pIndPlo
         MarketResultsGen = pd.concat([MarketResultsGen, OutputResults02], axis=1)
     if mTEPES.eh:
         MarketResultsGen = pd.concat([MarketResultsGen, OutputResults03], axis=1)
-    MarketResultsGen *= 1e3
 
     OutputResults11 = pd.Series(data=[(OptModel.vTotalOutput[p,sc,n,g].ub*OptModel.vGenerationInvest[p,g]() - OptModel.vTotalOutput[p,sc,n,g]())*mTEPES.pLoadLevelDuration[p,sc,n]() if g in mTEPES.re and g     in mTEPES.gc else
                                       (OptModel.vTotalOutput[p,sc,n,g].ub                                   - OptModel.vTotalOutput[p,sc,n,g]())*mTEPES.pLoadLevelDuration[p,sc,n]() if g in mTEPES.re and g not in mTEPES.gc else
-                                       OptModel.vESSSpillage[p,sc,n,eh]() if g in mTEPES.eh else 0.0 for p,sc,n,ar,nd,g in sPSNARNDG], index=pd.Index(sPSNARNDG))
+                                       OptModel.vESSSpillage[p,sc,n,es]() if g in mTEPES.es else 0.0 for p,sc,n,ar,nd,g in sPSNARNDG], index=pd.Index(sPSNARNDG))
     OutputResults12 = pd.Series(data=[ OptModel.vTotalOutput    [p,sc,n,g]()*mTEPES.pLoadLevelDuration[p,sc,n]()*mTEPES.pEmissionRate[g]/1e3 if g not in mTEPES.bo else
                                        OptModel.vTotalOutputHeat[p,sc,n,g]()*mTEPES.pLoadLevelDuration[p,sc,n]()*mTEPES.pEmissionRate[g]/1e3 for p,sc,n,ar,nd,g in sPSNARNDG], index=pd.Index(sPSNARNDG))
 
     OutputResults11.index = [idx[:6] for idx in OutputResults11.index]
     OutputResults12.index = [idx[:6] for idx in OutputResults12.index]
+
+    MarketResultsGen *= 1e3
     MarketResultsGen = pd.concat([MarketResultsGen.stack(), OutputResults11, OutputResults12], axis=1)
     MarketResultsGen.reset_index().pivot_table(index=['level_0','level_1','level_2','level_3','level_4','level_5']).rename_axis(['Period', 'Scenario', 'LoadLevel', 'Area', 'Node', 'Generator'], axis=0).rename(columns={0: 'Generation', 1: 'Curtailment', 2: 'Emissions'}, inplace=False).to_csv(f'{_path}/oT_Result_MarketResultsGeneration_{CaseName}.csv', sep=',')
 
