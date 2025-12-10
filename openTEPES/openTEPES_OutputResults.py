@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - December 05, 2025
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - December 10, 2025
 """
 
 import time
@@ -2036,6 +2036,7 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput, pIndPlo
     OutputResults.index = [idx[:2] + idx[3:] for idx in OutputResults.index]
 
     #%% outputting the generator power output
+    sPSNARNDG  = [(p,sc,n,ar,nd,g ) for p,sc,n,ar,nd,g  in mTEPES.psn*mTEPES.ar*mTEPES.nd*mTEPES.g  if g  in g2n[nd] and nd in d2a[ar] and sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd]) and (p,g ) in mTEPES.pg                         ]
     sPSNARNDNR = [(p,sc,n,ar,nd,nr) for p,sc,n,ar,nd,nr in mTEPES.psn*mTEPES.ar*mTEPES.nd*mTEPES.nr if nr in g2n[nd] and nd in d2a[ar] and sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd]) and (p,nr) in mTEPES.pnr and nr not in mTEPES.eh]
     sPSNARNDRE = [(p,sc,n,ar,nd,re) for p,sc,n,ar,nd,re in mTEPES.psn*mTEPES.ar*mTEPES.nd*mTEPES.re if re in g2n[nd] and nd in d2a[ar] and sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd]) and (p,re) in mTEPES.pre                        ]
     sPSNARNDEH = [(p,sc,n,ar,nd,eh) for p,sc,n,ar,nd,eh in mTEPES.psn*mTEPES.ar*mTEPES.nd*mTEPES.eh if eh in g2n[nd] and nd in d2a[ar] and sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd]) and (p,eh) in mTEPES.peh                        ]
@@ -2054,32 +2055,37 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput, pIndPlo
         OutputResults09 = pd.Series(data=[-sum(OptModel.vLineLosses   [p,sc,n,nd,nf,cc]()*mTEPES.pLoadLevelDuration[p,sc,n]() for nf,cc in loutl[nd] if (p,nd,nf,cc) in mTEPES.pla) for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='LineLossesOut'  )
         OutputResults10 = pd.Series(data=[-sum(OptModel.vLineLosses   [p,sc,n,ni,nd,cc]()*mTEPES.pLoadLevelDuration[p,sc,n]() for ni,cc in linl [nd] if (p,ni,nd,cc) in mTEPES.pla) for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='LineLossesIn'   )
 
-    MarketResultsDem    = pd.DataFrame()
+    MarketResultsDem     = pd.DataFrame()
     if mTEPES.eh:
         MarketResultsDem = pd.concat([MarketResultsDem, OutputResults04],axis=1)
-
     MarketResultsDem     = pd.concat([MarketResultsDem, OutputResults06],axis=1)
-
     if mTEPES.ll:
         MarketResultsDem = pd.concat([MarketResultsDem, OutputResults09, OutputResults10], axis=1)
-
-    MarketResultsGen     = pd.DataFrame()
-    # Check if there are non-RES generators
-    if sum(1 for nr in mTEPES.nr if nr not in mTEPES.eh):
-        MarketResultsGen = pd.concat([MarketResultsGen,OutputResults01], axis=1)
-
-    if mTEPES.re:
-        MarketResultsGen = pd.concat([MarketResultsGen, OutputResults02], axis=1)
-
-    if mTEPES.eh:
-        MarketResultsGen = pd.concat([MarketResultsGen, OutputResults03], axis=1)
 
     MarketResultsDem *= -1e3
     MarketResultsDem = pd.concat([MarketResultsDem.sum(axis=1), OutputResults], axis=1)
     MarketResultsDem.stack().reset_index().pivot_table(index=['level_0','level_1','level_2','level_3','level_4'], columns='level_5', values=0, aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel', 'Area', 'Node'], axis=0).rename(columns={0: 'Demand', 1: 'LSRMC'}, inplace=False).to_csv(f'{_path}/oT_Result_MarketResultsDemand_{CaseName}.csv', sep=',')
 
+    MarketResultsGen     = pd.DataFrame()
+    # Check if there are non-RES generators
+    if sum(1 for nr in mTEPES.nr if nr not in mTEPES.eh):
+        MarketResultsGen = pd.concat([MarketResultsGen, OutputResults01], axis=1)
+    if mTEPES.re:
+        MarketResultsGen = pd.concat([MarketResultsGen, OutputResults02], axis=1)
+    if mTEPES.eh:
+        MarketResultsGen = pd.concat([MarketResultsGen, OutputResults03], axis=1)
     MarketResultsGen *= 1e3
-    MarketResultsGen.stack().reset_index().pivot_table(index=['level_0','level_1','level_2','level_3','level_4','level_5']).rename_axis(['Period', 'Scenario', 'LoadLevel', 'Area', 'Node', 'Generator'], axis=0).rename(columns={0: 'Generation'}, inplace=False).to_csv(f'{_path}/oT_Result_MarketResultsGeneration_{CaseName}.csv', sep=',')
+
+    OutputResults11 = pd.Series(data=[(OptModel.vTotalOutput[p,sc,n,g].ub*OptModel.vGenerationInvest[p,g]() - OptModel.vTotalOutput[p,sc,n,g]())*mTEPES.pLoadLevelDuration[p,sc,n]() if g in mTEPES.re and g     in mTEPES.gc else
+                                      (OptModel.vTotalOutput[p,sc,n,g].ub                                   - OptModel.vTotalOutput[p,sc,n,g]())*mTEPES.pLoadLevelDuration[p,sc,n]() if g in mTEPES.re and g not in mTEPES.gc else
+                                       OptModel.vESSSpillage[p,sc,n,eh]() if g in mTEPES.eh else 0.0 for p,sc,n,ar,nd,g in sPSNARNDG], index=pd.Index(sPSNARNDG))
+    OutputResults12 = pd.Series(data=[ OptModel.vTotalOutput    [p,sc,n,g]()*mTEPES.pLoadLevelDuration[p,sc,n]()*mTEPES.pEmissionRate[g]/1e3 if g not in mTEPES.bo else
+                                       OptModel.vTotalOutputHeat[p,sc,n,g]()*mTEPES.pLoadLevelDuration[p,sc,n]()*mTEPES.pEmissionRate[g]/1e3 for p,sc,n,ar,nd,g in sPSNARNDG], index=pd.Index(sPSNARNDG))
+
+    OutputResults11.index = [idx[:6] for idx in OutputResults11.index]
+    OutputResults12.index = [idx[:6] for idx in OutputResults12.index]
+    MarketResultsGen = pd.concat([MarketResultsGen.stack(), OutputResults11, OutputResults12], axis=1)
+    MarketResultsGen.reset_index().pivot_table(index=['level_0','level_1','level_2','level_3','level_4','level_5']).rename_axis(['Period', 'Scenario', 'LoadLevel', 'Area', 'Node', 'Generator'], axis=0).rename(columns={0: 'Generation', 1: 'Curtailment', 2: 'Emissions'}, inplace=False).to_csv(f'{_path}/oT_Result_MarketResultsGeneration_{CaseName}.csv', sep=',')
 
     # df=OutputResults.stack().rename_axis(['Period', 'Scenario', 'LoadLevel', 'Area', 'Node', 'Technology'], axis=0).reset_index()
     # df['AreaFin'] = df['Area']
