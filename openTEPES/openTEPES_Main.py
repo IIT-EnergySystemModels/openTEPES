@@ -682,6 +682,7 @@
 #%% libraries
 import argparse
 import platform
+import psutil
 import os
 import time
 # import pkg_resources
