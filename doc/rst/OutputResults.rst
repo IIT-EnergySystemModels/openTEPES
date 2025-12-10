@@ -403,6 +403,15 @@ Period        Scenario    Load level  Area        Node        Demand    Demand c
 ...           ...         ...         ...         ...         SRMC      Locational Short-Run Marginal Cost [€/MWh]
 ============  ==========  ==========  ==========  ==========  ========  ================================================================
 
+File ``oT_Result_MarketResultsInvestment.csv``
+
+============  ==========  ============  =========================================
+Identifier                Header        Description
+========================  ============  =========================================
+Period        Technology  Cost          Investment cost [M€]
+...           ...         Power         Power investment on each technology [MW]
+============  ==========  ============  =========================================
+
 File ``oT_Result_MarketResultsGeneration.csv``
 
 ============  ==========  ==========  ==========  ==========  ==========  ============  =====================================

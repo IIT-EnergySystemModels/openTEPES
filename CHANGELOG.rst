@@ -3,6 +3,7 @@ Change Log
 
 [4.18.8] - 2025-12-10
 ---------------------
+- [CHANGED] added MarketResultsInvestment file
 - [CHANGED] added curtailment and emissions to MarketResultsGeneration file
 - [CHANGED] reduce computation time in output results
 - [CHANGED] generation time reduction in model formulation moving parameters out of the sums
