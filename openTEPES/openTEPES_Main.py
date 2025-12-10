@@ -681,6 +681,7 @@
 
 #%% libraries
 import argparse
+import socket
 import os
 import time
 # import pkg_resources
@@ -751,7 +752,7 @@ def main():
     print('Total time                             ...  {} s'.format(ElapsedTime))
     path_to_write_time = os.path.join(args.dir,args.case,f'openTEPES_time_{CASE}.log')
     with open(path_to_write_time, 'w') as f:
-        f.write('Elapsed time '+str(ElapsedTime)+' s')
+        f.write('Elapsed time '+str(ElapsedTime)+' s on '+socket.gethostname()+'\n')
     # Final message
     print('End of the run                ************')
     print(BLUE + '#### Academic research license - for non-commercial use only ####' + RESET)
