@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.18.8] - 2025-12-10
+[4.18.8] - 2025-12-11
 ---------------------
+- [CHANGED] added LCOE and generation in the MarketResultsInvestment file
 - [CHANGED] added MarketResultsInvestment file
 - [CHANGED] added curtailment and emissions to MarketResultsGeneration file
 - [CHANGED] reduce computation time in output results

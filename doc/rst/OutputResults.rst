@@ -408,8 +408,10 @@ File ``oT_Result_MarketResultsInvestment.csv``
 ============  ==========  ============  =========================================
 Identifier                Header        Description
 ========================  ============  =========================================
-Period        Technology  Cost          Investment cost [M€]
-...           ...         Power         Power investment on each technology [MW]
+Period        Technology  Power         Power investment on each technology [MW]
+...           ...         Cost          Investment cost [M€]
+...           ...         Energy        Energy produced [GWh]
+...           ...         LCOE          Levelized Cost of Electricity [€/MWh]
 ============  ==========  ============  =========================================
 
 File ``oT_Result_MarketResultsGeneration.csv``

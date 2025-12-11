@@ -43,6 +43,7 @@ HNS         Hydrogen Not Served
 HP          Heat Pump (Power to Heat: consumes electricity to produce heat)
 HTNS        Heat Not Served
 IRP         Integrated Resource Planning
+LCOE        Levelized Cost of Electricity
 NTC         Net Transfer Capacity (maximum power transfer between two nodes, zones, areas, or regions, considering the network constraints)
 OCGT        Open Cycle Gas Turbine
 PHS         Pumped-Hydro Storage
