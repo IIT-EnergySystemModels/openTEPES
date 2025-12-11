@@ -403,7 +403,7 @@ Period        Scenario    Load level  Area        Node        Demand    Demand c
 ...           ...         ...         ...         ...         SRMC      Locational Short-Run Marginal Cost [€/MWh]
 ============  ==========  ==========  ==========  ==========  ========  ================================================================
 
-File ``oT_Result_MarketResultsInvestment.csv``
+File ``oT_Result_MarketResultsTechnologyInvestment.csv``
 
 ============  ==========  ============  =========================================
 Identifier                Header        Description
@@ -412,6 +412,14 @@ Period        Technology  Power         Power investment on each technology [MW]
 ...           ...         Cost          Investment cost [M€]
 ...           ...         Energy        Energy produced [GWh]
 ...           ...         LCOE          Levelized Cost of Electricity [€/MWh]
+============  ==========  ============  =========================================
+
+File ``oT_Result_MarketResultsGenerationInvestment.csv``
+
+============  ==========  ============  =========================================
+Identifier                Header        Description
+========================  ============  =========================================
+Period        Generator   Power         Power investment on each generator [MW]
 ============  ==========  ============  =========================================
 
 File ``oT_Result_MarketResultsGeneration.csv``

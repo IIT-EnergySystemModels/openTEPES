@@ -215,7 +215,8 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutput,
         OutputToFile *= 1e3
         OutputToFile = OutputToFile.fillna(0).to_frame(name='MW'                ).reset_index().rename(columns={'level_0': 'Period', 'level_1': 'Generator'})
         if pIndTechnologyOutput == 0 or pIndTechnologyOutput == 2:
-            OutputToFile.pivot_table(index=['Period'], columns=['Generator'], values='MW'                ).rename_axis(['Period'], axis=0).to_csv(f'{_path}/oT_Result_GenerationInvestment_{CaseName}.csv', index=True, sep=',')
+            OutputToFile.pivot_table(index=['Period'], columns=['Generator'], values='MW').rename_axis(['Period'], axis=0).to_csv(f'{_path}/oT_Result_GenerationInvestment_{CaseName}.csv', index=True, sep=',')
+            OutputToFile.pivot_table(index=['Period', 'Generator'], values='MW').rename_axis(['Period', 'Generator'], axis=0).rename(columns={'MW': 'Power [MW]'}, inplace=False).to_csv(f'{_path}/oT_Result_MarketResultsGenerationInvestment_{CaseName}.csv', index=True, sep=',')
         OutputToFile = OutputToFile.set_index(['Period', 'Generator'])
 
         if sum(1 for ar in mTEPES.ar if sum(1 for g in g2a[ar])) > 1:
@@ -226,7 +227,7 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutput,
                 chart = alt.Chart(GenInvestToArea.reset_index()).mark_bar().encode(x='Generator:O', y='sum(MW):Q', color='Area:N', column='Period:N').properties(width=600, height=400)
                 chart.save(f'{_path}/oT_Plot_GenerationInvestmentPerArea_{CaseName}.html', embed_options={'renderer':'svg'})
                 TechInvestToArea = pd.Series(data=[sum(OutputToFile['MW'][p,eb] for eb in mTEPES.eb if (p,eb) in mTEPES.peb and eb in g2t[gt] and eb in g2a[ar]) for p,ar,gt in mTEPES.par*mTEPES.gt], index=mTEPES.par*mTEPES.gt).to_frame(name='MW')
-                TechInvestToArea.index.names = ['Period', 'Area', 'Technology'    ]
+                TechInvestToArea.index.names = ['Period', 'Area', 'Technology']
                 chart = alt.Chart(TechInvestToArea.reset_index()).mark_bar().encode(x='Technology:O', y='sum(MW):Q', color='Area:N', column='Period:N').properties(width=600, height=400)
                 chart.save(f'{_path}/oT_Plot_TechnologyInvestmentPerArea_{CaseName}.html', embed_options={'renderer':'svg'})
 
@@ -275,7 +276,7 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutput,
             MarketResultsInv = pd.concat([MarketResultsInv, LCOE], axis=1)
             print(MarketResultsInv)
 
-            MarketResultsInv.stack().reset_index().pivot_table(index=['level_0','level_1'], columns='level_2', values=0, aggfunc='sum').rename_axis(['Period', 'Technology'], axis=0).rename(columns={'MW': 'Power [MW]', 'MEUR': 'Cost [MEUR]', 'Generation': 'Generation [GWh]', 'LCOE': 'LCOE [EUR/MWh]'}, inplace=False).to_csv(f'{_path}/oT_Result_MarketResultsInvestment_{CaseName}.csv', sep=',')
+            MarketResultsInv.stack().reset_index().pivot_table(index=['level_0','level_1'], columns='level_2', values=0, aggfunc='sum').rename_axis(['Period', 'Technology'], axis=0).rename(columns={'MW': 'Power [MW]', 'MEUR': 'Cost [MEUR]', 'Generation': 'Generation [GWh]', 'LCOE': 'LCOE [EUR/MWh]'}, inplace=False).to_csv(f'{_path}/oT_Result_MarketResultsTechnologyInvestment_{CaseName}.csv', sep=',')
 
             if pIndPlotOutput == 1:
                 chart = alt.Chart(OutputResults.reset_index()).mark_bar().encode(x='Technology:O', y='sum(MEUR):Q', color='Technology:N', column='Period:N').properties(width=600, height=400)
