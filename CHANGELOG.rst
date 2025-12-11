@@ -3,6 +3,7 @@ Change Log
 
 [4.18.8] - 2025-12-11
 ---------------------
+- [CHANGED] fix pandas warning in InputData module
 - [CHANGED] added MarketResultsGenerationInvestment file
 - [CHANGED] added LCOE and generation in the MarketResultsTechnologyInvestment file
 - [CHANGED] added MarketResultsTechnologyInvestment file

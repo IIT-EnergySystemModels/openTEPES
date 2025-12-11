@@ -211,6 +211,7 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutput,
         if pIndTechnologyOutput == 0 or pIndTechnologyOutput == 2:
             OutputToFile.pivot_table(index=['Period'], columns=['Generator'], values='InvestmentDecision').rename_axis(['Period'], axis=0).to_csv(f'{_path}/oT_Result_GenerationInvestmentPerUnit_{CaseName}.csv', index=True, sep=',')
         OutputToFile = OutputToFile.set_index(['Period', 'Generator'])
+
         OutputToFile = pd.Series(data=[OptModel.vGenerationInvest[p,eb]()*max(mTEPES.pRatedMaxPowerElec[eb],mTEPES.pRatedMaxCharge[eb]) for p,eb in mTEPES.peb], index=mTEPES.peb)
         OutputToFile *= 1e3
         OutputToFile = OutputToFile.fillna(0).to_frame(name='MW'                ).reset_index().rename(columns={'level_0': 'Period', 'level_1': 'Generator'})
@@ -274,8 +275,6 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutput,
             LCOE = GenTechInvestCost.div(GenTechInjection)
             LCOE.name = 'LCOE'
             MarketResultsInv = pd.concat([MarketResultsInv, LCOE], axis=1)
-            print(MarketResultsInv)
-
             MarketResultsInv.stack().reset_index().pivot_table(index=['level_0','level_1'], columns='level_2', values=0, aggfunc='sum').rename_axis(['Period', 'Technology'], axis=0).rename(columns={'MW': 'Power [MW]', 'MEUR': 'Cost [MEUR]', 'Generation': 'Generation [GWh]', 'LCOE': 'LCOE [EUR/MWh]'}, inplace=False).to_csv(f'{_path}/oT_Result_MarketResultsTechnologyInvestment_{CaseName}.csv', sep=',')
 
             if pIndPlotOutput == 1:
@@ -1760,7 +1759,7 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES, pIndPlotOutput):
         if mTEPES.gc:
             sPSSTAR           = [(p,sc,st,ar) for p,sc,st,ar in mTEPES.ps*mTEPES.st*mTEPES.ar if mTEPES.pReserveMargin[p,ar] and st == mTEPES.Last_st and sum(1 for g in mTEPES.g if g in g2a[ar]) and (p,sc,n) in mTEPES.psn and sum(mTEPES.pRatedMaxPowerElec[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]) for g in mTEPES.g if g in g2a[ar] and g not in (mTEPES.gc or mTEPES.gd)) <= mTEPES.pDemandElecPeak[p,ar] * mTEPES.pReserveMargin[p,ar]]
             if sPSSTAR:
-                OutputResults = pd.Series(data=[mTEPES.pDuals["".join([f"eAdequacyReserveMarginElec_{p}_{sc}_{st}{ar}"])] for p,sc,st,ar in sPSSTAR], index=pd.Index(sPSSTAR))
+                OutputResults = pd.Series(data=[mTEPES.pDuals[''.join([f'eAdequacyReserveMarginElec_{p}_{sc}_{st}{ar}'])] for p,sc,st,ar in sPSSTAR], index=pd.Index(sPSSTAR))
                 OutputResults.to_frame(name='RM').reset_index().pivot_table(index=['level_0','level_1'], columns='level_3', values='RM').rename_axis(['Period', 'Scenario'], axis=0).rename_axis([None], axis=1).to_csv(f'{_path}/oT_Result_MarginalReserveMargin_{CaseName}.csv', sep=',')
 
     if mTEPES.pIndHeat == 1:
@@ -1768,17 +1767,17 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES, pIndPlotOutput):
             if mTEPES.gc:
                 sPSSTAR           = [(p,sc,st,ar) for p,sc,st,ar in mTEPES.ps*mTEPES.st*mTEPES.ar if mTEPES.pReserveMarginHeat[p,ar] and st == mTEPES.Last_st and sum(1 for g in mTEPES.g if g in g2a[ar]) and (p,sc,n) in mTEPES.psn and sum(mTEPES.pRatedMaxPowerHeat[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]) for g in mTEPES.g if g in g2a[ar] and g not in (mTEPES.gc or mTEPES.gd)) <= mTEPES.pDemandHeatPeak[p,ar] * mTEPES.pReserveMarginHeat[p,ar]]
                 if sPSSTAR:
-                    OutputResults = pd.Series(data=[mTEPES.pDuals["".join([f"eAdequacyReserveMarginHeat_{p}_{sc}_{st}{ar}"])] for p,sc,st,ar in sPSSTAR], index=pd.Index(sPSSTAR))
+                    OutputResults = pd.Series(data=[mTEPES.pDuals[''.join([f'eAdequacyReserveMarginHeat_{p}_{sc}_{st}{ar}'])] for p,sc,st,ar in sPSSTAR], index=pd.Index(sPSSTAR))
                     OutputResults.to_frame(name='RM').reset_index().pivot_table(index=['level_0','level_1'], columns='level_3', values='RM').rename_axis(['Period', 'Scenario'], axis=0).rename_axis([None], axis=1).to_csv(f'{_path}/oT_Result_MarginalReserveMarginHeat_{CaseName}.csv', sep=',')
 
     sPSSTAR           = [(p,sc,st,ar) for p,sc,st,ar in mTEPES.ps*mTEPES.st*mTEPES.ar if mTEPES.pEmission[p,ar] < math.inf and st == mTEPES.Last_st and (p,sc,n) in mTEPES.psn and sum(mTEPES.pEmissionVarCost[p,sc,na,g] for na,g in mTEPES.na*mTEPES.g if (ar,g) in mTEPES.a2g and (p,g) in mTEPES.pg)]
     if sPSSTAR:
-        OutputResults = pd.Series(data=[mTEPES.pDuals["".join([f"eMaxSystemEmission_{p}_{sc}_{st}{ar}"])] for p,sc,st,ar in sPSSTAR], index=pd.Index(sPSSTAR))
+        OutputResults = pd.Series(data=[mTEPES.pDuals[''.join([f'eMaxSystemEmission_{p}_{sc}_{st}{ar}'])] for p,sc,st,ar in sPSSTAR], index=pd.Index(sPSSTAR))
         OutputResults.to_frame(name='EM').reset_index().pivot_table(index=['level_0','level_1'], columns='level_3', values='EM').rename_axis(['Period', 'Scenario'], axis=0).rename_axis([None], axis=1).to_csv(f'{_path}/oT_Result_MarginalEmission_{CaseName}.csv', sep=',')
 
     sPSSTAR           = [(p,sc,st,ar) for p,sc,st,ar in mTEPES.ps*mTEPES.st*mTEPES.ar if mTEPES.pRESEnergy[p,ar] and st == mTEPES.Last_st and (p,sc,n) in mTEPES.psn]
     if sPSSTAR:
-        OutputResults = pd.Series(data=[mTEPES.pDuals["".join([f"eMinSystemRESEnergy_{p}_{sc}_{st}{ar}"])] for p,sc,st,ar in sPSSTAR], index=pd.Index(sPSSTAR))
+        OutputResults = pd.Series(data=[mTEPES.pDuals[''.join([f'eMinSystemRESEnergy_{p}_{sc}_{st}{ar}'])] for p,sc,st,ar in sPSSTAR], index=pd.Index(sPSSTAR))
         OutputResults *= 1e-3*sum(mTEPES.pLoadLevelDuration[p,sc,na]() for na in mTEPES.na)
         OutputResults.to_frame(name='RES').reset_index().pivot_table(index=['level_0','level_1'], columns='level_3', values='RES').rename_axis(['Period', 'Scenario'], axis=0).rename_axis([None], axis=1).to_csv(f'{_path}/oT_Result_MarginalRESEnergy_{CaseName}.csv', sep=',')
 
@@ -2255,7 +2254,7 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput, pIndPlo
     if sum(mTEPES.pReserveMargin[:,:]):
         if mTEPES.gc:
             sPSSTARGC           = [(p,sc,st,ar,gc) for p,sc,st,ar,gc in mTEPES.ps*mTEPES.st*mTEPES.ar*mTEPES.gc if gc in g2a[ar] and mTEPES.pReserveMargin[p,ar] and st == mTEPES.Last_st and sum(1 for gc in mTEPES.gc if gc in g2a[ar]) and sum(mTEPES.pRatedMaxPowerElec[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]) for g in mTEPES.g if g in g2a[ar] and g not in (mTEPES.gc or mTEPES.gd)) <= mTEPES.pDemandElecPeak[p,ar] * mTEPES.pReserveMargin[p,ar]]
-            OutputToResRev      = pd.Series(data=[mTEPES.pDuals["".join([f"eAdequacyReserveMarginElec_{p}_{sc}_{st}{ar}"])]*mTEPES.pRatedMaxPowerElec[gc]*mTEPES.pAvailability[gc]() for p,sc,st,ar,gc in sPSSTARGC], index=pd.Index(sPSSTARGC))
+            OutputToResRev      = pd.Series(data=[mTEPES.pDuals[''.join([f'eAdequacyReserveMarginElec_{p}_{sc}_{st}{ar}'])]*mTEPES.pRatedMaxPowerElec[gc]*mTEPES.pAvailability[gc]() for p,sc,st,ar,gc in sPSSTARGC], index=pd.Index(sPSSTARGC))
             ResRev              = pd.Series(data=[0.0 for gc in mTEPES.gc], index=mTEPES.gc, dtype='float64')
             if sPSSTARGC:
                 OutputToResRev /= 1e3

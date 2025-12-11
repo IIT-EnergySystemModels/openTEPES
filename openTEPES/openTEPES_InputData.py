@@ -1002,20 +1002,20 @@ def DataConfiguration(mTEPES):
     # initial inventory must be between minimum and maximum
     for p,sc,n,es in mTEPES.psnes:
         if (p,sc,st,n) in mTEPES.s2n and mTEPES.n.ord(n) == mTEPES.dPar['pStorageTimeStep'][es]:
-            if  mTEPES.dPar['pIniInventory'][es].loc[p,sc,n] < mTEPES.dPar['pMinStorage'][es].loc[p,sc,n]:
-                mTEPES.dPar['pIniInventory'][es].loc[p,sc,n] = mTEPES.dPar['pMinStorage'][es].loc[p,sc,n]
-                print('### Initial inventory lower than minimum storage ',   p, sc, st, es)
-            if  mTEPES.dPar['pIniInventory'][es].loc[p,sc,n] > mTEPES.dPar['pMaxStorage'][es].loc[p,sc,n]:
-                mTEPES.dPar['pIniInventory'][es].loc[p,sc,n] = mTEPES.dPar['pMaxStorage'][es].loc[p,sc,n]
+            if  mTEPES.dPar['pIniInventory'].at[(p,sc,n),es] < mTEPES.dPar['pMinStorage'].at[(p,sc,n),es]:
+                mTEPES.dPar['pIniInventory'].at[(p,sc,n),es] = mTEPES.dPar['pMinStorage'].at[(p,sc,n),es]
+                print('### Initial inventory lower than minimum storage ', p, sc, st, es)
+            if  mTEPES.dPar['pIniInventory'].at[(p,sc,n),es] > mTEPES.dPar['pMaxStorage'].at[(p,sc,n),es]:
+                mTEPES.dPar['pIniInventory'].at[(p,sc,n),es] = mTEPES.dPar['pMaxStorage'].at[(p,sc,n),es]
                 print('### Initial inventory greater than maximum storage ', p, sc, st, es)
     if mTEPES.dPar['pIndHydroTopology'] == 1:
         for p,sc,n,rs in mTEPES.psnrs:
             if (p,sc,st,n) in mTEPES.s2n and mTEPES.n.ord(n) == mTEPES.dPar['pReservoirTimeStep'][rs]:
-                if  mTEPES.dPar['pIniVolume'][rs].loc[p,sc,n] < mTEPES.dPar['pMinVolume'][rs].loc[p,sc,n]:
-                    mTEPES.dPar['pIniVolume'][rs].loc[p,sc,n] = mTEPES.dPar['pMinVolume'][rs].loc[p,sc,n]
+                if  mTEPES.dPar['pIniVolume'].at[(p,sc,n),rs] < mTEPES.dPar['pMinVolume'].at[(p,sc,n),rs]:
+                    mTEPES.dPar['pIniVolume'].at[(p,sc,n),rs] = mTEPES.dPar['pMinVolume'].at[(p,sc,n),rs]
                     print('### Initial volume lower than minimum volume ',   p, sc, st, rs)
-                if  mTEPES.dPar['pIniVolume'][rs].loc[p,sc,n] > mTEPES.dPar['pMaxVolume'][rs].loc[p,sc,n]:
-                    mTEPES.dPar['pIniVolume'][rs].loc[p,sc,n] = mTEPES.dPar['pMaxVolume'][rs].loc[p,sc,n]
+                if  mTEPES.dPar['pIniVolume'].at[(p,sc,n),rs] > mTEPES.dPar['pMaxVolume'].at[(p,sc,n),rs]:
+                    mTEPES.dPar['pIniVolume'].at[(p,sc,n),rs] = mTEPES.dPar['pMaxVolume'].at[(p,sc,n),rs]
                     print('### Initial volume greater than maximum volume ', p, sc, st, rs)
 
     # drop load levels with duration 0
