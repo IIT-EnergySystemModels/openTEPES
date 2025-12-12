@@ -651,7 +651,9 @@ Identifier                            Header      Description
 Period        Scenario    Technology  Area        Generation, consumption, flows, losses, and demand [GWh]
 ============  ==========  ==========  ==========  ========================================================
 
-The sum of the values per area (column) must be 0. EnergyFlowIn and EnergyFlowOut are the sum of the incoming and outgoing flows of the corresponding area nodes. Positive values represent generation and negative values demand or consumption.
+Positive values represent generation and negative values demand or consumption. The sum of the values per area (column) must be 0.
+EnergyFlowIn and EnergyFlowOut are the sum of the incoming and outgoing flows of the corresponding area nodes. Only if the network is like an antenna, these values
+will represent the import/export of energy to/from other areas.
 
 File ``oT_Result_BalanceEnergyPerNode.csv``
 
