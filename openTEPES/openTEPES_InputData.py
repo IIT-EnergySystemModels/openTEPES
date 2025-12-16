@@ -2555,9 +2555,9 @@ def SettingUpVariables(OptModel, mTEPES):
             raise ValueError('### No active stages in the case study'   )
 
         # detecting infeasibility: sum of scenario probabilities must be 1 in each period
-        # for p in mTEPES.p:
-        #     if abs(sum(mTEPES.pScenProb[p,sc] for sc in mTEPES.sc)-1.0) > 1e-6:
-        #         raise ValueError('### Sum of scenario probabilities different from 1 in period ', p)
+        for p in mTEPES.p:
+            if abs(sum(mTEPES.pScenProb[p,sc] for sc in mTEPES.sc)-1.0) > 1e-6:
+                raise ValueError('### Sum of scenario probabilities different from 1 in period ', p)
 
         for es in mTEPES.es:
             # detecting infeasibility: total min ESS output greater than total inflows, total max ESS charge lower than total outflows

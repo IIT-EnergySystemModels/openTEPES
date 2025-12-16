@@ -2051,10 +2051,11 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput, pIndPlo
     OutputResults.index = [idx[:2] + idx[3:] for idx in OutputResults.index]
 
     #%% outputting the generator power output
-    sPSNARNDG  = [(p,sc,n,ar,nd,g ) for p,sc,n,ar,nd,g  in mTEPES.psn*mTEPES.ar*mTEPES.nd*mTEPES.g  if g  in g2n[nd] and nd in d2a[ar] and sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd]) and (p,g ) in mTEPES.pg                         ]
-    sPSNARNDNR = [(p,sc,n,ar,nd,nr) for p,sc,n,ar,nd,nr in mTEPES.psn*mTEPES.ar*mTEPES.nd*mTEPES.nr if nr in g2n[nd] and nd in d2a[ar] and sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd]) and (p,nr) in mTEPES.pnr and nr not in mTEPES.eh]
-    sPSNARNDRE = [(p,sc,n,ar,nd,re) for p,sc,n,ar,nd,re in mTEPES.psn*mTEPES.ar*mTEPES.nd*mTEPES.re if re in g2n[nd] and nd in d2a[ar] and sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd]) and (p,re) in mTEPES.pre                        ]
-    sPSNARNDEH = [(p,sc,n,ar,nd,eh) for p,sc,n,ar,nd,eh in mTEPES.psn*mTEPES.ar*mTEPES.nd*mTEPES.eh if eh in g2n[nd] and nd in d2a[ar] and sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd]) and (p,eh) in mTEPES.peh                        ]
+    sPSNARND   = [(p,sc,n,ar,nd)    for p,sc,n,ar,nd    in mTEPES.psn*mTEPES.ar*mTEPES.nd if nd in d2a[ar] and sum(1 for g  in g2n[nd]) + sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd])]
+    sPSNARNDG  = [(p,sc,n,ar,nd,g ) for p,sc,n,ar,nd,g  in sPSNARND*mTEPES.g  if g  in g2n[nd] and (p,g ) in mTEPES.pg                         ]
+    sPSNARNDNR = [(p,sc,n,ar,nd,nr) for p,sc,n,ar,nd,nr in sPSNARND*mTEPES.nr if nr in g2n[nd] and (p,nr) in mTEPES.pnr and nr not in mTEPES.eh]
+    sPSNARNDRE = [(p,sc,n,ar,nd,re) for p,sc,n,ar,nd,re in sPSNARND*mTEPES.re if re in g2n[nd] and (p,re) in mTEPES.pre                        ]
+    sPSNARNDEH = [(p,sc,n,ar,nd,eh) for p,sc,n,ar,nd,eh in sPSNARND*mTEPES.eh if eh in g2n[nd] and (p,eh) in mTEPES.peh                        ]
 
     if sum(1 for nr in mTEPES.nr if nr not in mTEPES.eh):
         OutputResults01 = pd.Series(data=[    OptModel.vTotalOutput   [p,sc,n,nr      ]()*mTEPES.pLoadLevelDuration[p,sc,n]()                                                       for p,sc,n,ar,nd,nr in sPSNARNDNR], index=pd.Index(sPSNARNDNR)).to_frame(name='Generation'     ).reset_index().pivot_table(index=['level_0','level_1','level_2','level_3','level_4'], columns='level_5', values='Generation' , aggfunc='sum')
