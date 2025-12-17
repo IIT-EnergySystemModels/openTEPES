@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - December 16, 2025
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - December 17, 2025
 """
 
 import time
@@ -2448,31 +2448,31 @@ def SettingUpVariables(OptModel, mTEPES):
             None: Changes are performed directly onto the model object.
         '''
         for p,eb in mTEPES.peb:
-            if  mTEPES.pGenLoInvest[  eb      ]() <       pEpsilon:
-                mTEPES.pGenLoInvest[  eb      ]   = 0
-            if  mTEPES.pGenUpInvest[  eb      ]() <       pEpsilon:
-                mTEPES.pGenUpInvest[  eb      ]   = 0
-            if  mTEPES.pGenLoInvest[  eb      ]() > 1.0 - pEpsilon:
-                mTEPES.pGenLoInvest[  eb      ]   = 1
-            if  mTEPES.pGenUpInvest[  eb      ]() > 1.0 - pEpsilon:
-                mTEPES.pGenUpInvest[  eb      ]   = 1
-            if  mTEPES.pGenLoInvest[  eb      ]() >   mTEPES.pGenUpInvest[eb      ]():
-                mTEPES.pGenLoInvest[  eb      ]   =   mTEPES.pGenUpInvest[eb      ]()
-        [OptModel.vGenerationInvest[p,eb      ].setlb(mTEPES.pGenLoInvest[eb      ]()) for p,eb in mTEPES.peb]
-        [OptModel.vGenerationInvest[p,eb      ].setub(mTEPES.pGenUpInvest[eb      ]()) for p,eb in mTEPES.peb]
+            if  mTEPES.pGenLoInvest[  eb]() <       pEpsilon:
+                mTEPES.pGenLoInvest[  eb]   = 0
+            if  mTEPES.pGenUpInvest[  eb]() <       pEpsilon:
+                mTEPES.pGenUpInvest[  eb]   = 0
+            if  mTEPES.pGenLoInvest[  eb]() > 1.0 - pEpsilon:
+                mTEPES.pGenLoInvest[  eb]   = 1
+            if  mTEPES.pGenUpInvest[  eb]() > 1.0 - pEpsilon:
+                mTEPES.pGenUpInvest[  eb]   = 1
+            if  mTEPES.pGenLoInvest[  eb]() >   mTEPES.pGenUpInvest[eb]():
+                mTEPES.pGenLoInvest[  eb]   =   mTEPES.pGenUpInvest[eb]()
+        [OptModel.vGenerationInvest[p,eb].setlb(mTEPES.pGenLoInvest[eb]()) for p,eb in mTEPES.peb]
+        [OptModel.vGenerationInvest[p,eb].setub(mTEPES.pGenUpInvest[eb]()) for p,eb in mTEPES.peb]
         for p,gd in mTEPES.pgd:
-            if  mTEPES.pGenLoRetire[  gd      ]() <       pEpsilon:
-                mTEPES.pGenLoRetire[  gd      ]   = 0
-            if  mTEPES.pGenUpRetire[  gd      ]() <       pEpsilon:
-                mTEPES.pGenUpRetire[  gd      ]   = 0
-            if  mTEPES.pGenLoRetire[  gd      ]() > 1.0 - pEpsilon:
-                mTEPES.pGenLoRetire[  gd      ]   = 1
-            if  mTEPES.pGenUpRetire[  gd      ]() > 1.0 - pEpsilon:
-                mTEPES.pGenUpRetire[  gd      ]   = 1
-            if  mTEPES.pGenLoRetire[  gd      ]() >   mTEPES.pGenUpRetire[gd      ]():
-                mTEPES.pGenLoRetire[  gd      ]   =   mTEPES.pGenUpRetire[gd      ]()
-        [OptModel.vGenerationRetire[p,gd      ].setlb(mTEPES.pGenLoRetire[gd      ]()) for p,gd in mTEPES.pgd]
-        [OptModel.vGenerationRetire[p,gd      ].setub(mTEPES.pGenUpRetire[gd      ]()) for p,gd in mTEPES.pgd]
+            if  mTEPES.pGenLoRetire[  gd]() <       pEpsilon:
+                mTEPES.pGenLoRetire[  gd]   = 0
+            if  mTEPES.pGenUpRetire[  gd]() <       pEpsilon:
+                mTEPES.pGenUpRetire[  gd]   = 0
+            if  mTEPES.pGenLoRetire[  gd]() > 1.0 - pEpsilon:
+                mTEPES.pGenLoRetire[  gd]   = 1
+            if  mTEPES.pGenUpRetire[  gd]() > 1.0 - pEpsilon:
+                mTEPES.pGenUpRetire[  gd]   = 1
+            if  mTEPES.pGenLoRetire[  gd]() >   mTEPES.pGenUpRetire[gd]():
+                mTEPES.pGenLoRetire[  gd]   =   mTEPES.pGenUpRetire[gd]()
+        [OptModel.vGenerationRetire[p,gd].setlb(mTEPES.pGenLoRetire[gd]()) for p,gd in mTEPES.pgd]
+        [OptModel.vGenerationRetire[p,gd].setub(mTEPES.pGenUpRetire[gd]()) for p,gd in mTEPES.pgd]
         for p,ni,nf,cc in mTEPES.plc:
             if  mTEPES.pNetLoInvest[  ni,nf,cc]() <       pEpsilon:
                 mTEPES.pNetLoInvest[  ni,nf,cc]   = 0
@@ -2489,18 +2489,18 @@ def SettingUpVariables(OptModel, mTEPES):
 
         if mTEPES.pIndHydroTopology == 1:
             for p,rc in mTEPES.prc:
-                if  mTEPES.pRsrLoInvest[  rc      ]() <       pEpsilon:
-                    mTEPES.pRsrLoInvest[  rc      ]   = 0
-                if  mTEPES.pRsrUpInvest[  rc      ]() <       pEpsilon:
-                    mTEPES.pRsrUpInvest[  rc      ]   = 0
-                if  mTEPES.pRsrLoInvest[  rc      ]() > 1.0 - pEpsilon:
-                    mTEPES.pRsrLoInvest[  rc      ]   = 1
-                if  mTEPES.pRsrUpInvest[  rc      ]() > 1.0 - pEpsilon:
-                    mTEPES.pRsrUpInvest[  rc      ]   = 1
-                if  mTEPES.pRsrLoInvest[  rc      ]() >   mTEPES.pRsrUpInvest[rc      ]():
-                    mTEPES.pRsrLoInvest[  rc      ]   =   mTEPES.pRsrUpInvest[rc      ]()
-            [OptModel.vReservoirInvest [p,rc      ].setlb(mTEPES.pRsrLoInvest[rc      ]()) for p,rc in mTEPES.prc]
-            [OptModel.vReservoirInvest [p,rc      ].setub(mTEPES.pRsrUpInvest[rc      ]()) for p,rc in mTEPES.prc]
+                if  mTEPES.pRsrLoInvest[  rc]() <       pEpsilon:
+                    mTEPES.pRsrLoInvest[  rc]   = 0
+                if  mTEPES.pRsrUpInvest[  rc]() <       pEpsilon:
+                    mTEPES.pRsrUpInvest[  rc]   = 0
+                if  mTEPES.pRsrLoInvest[  rc]() > 1.0 - pEpsilon:
+                    mTEPES.pRsrLoInvest[  rc]   = 1
+                if  mTEPES.pRsrUpInvest[  rc]() > 1.0 - pEpsilon:
+                    mTEPES.pRsrUpInvest[  rc]   = 1
+                if  mTEPES.pRsrLoInvest[  rc]() >   mTEPES.pRsrUpInvest[rc]():
+                    mTEPES.pRsrLoInvest[  rc]   =   mTEPES.pRsrUpInvest[rc]()
+            [OptModel.vReservoirInvest [p,rc].setlb(mTEPES.pRsrLoInvest[rc]()) for p,rc in mTEPES.prc]
+            [OptModel.vReservoirInvest [p,rc].setub(mTEPES.pRsrUpInvest[rc]()) for p,rc in mTEPES.prc]
 
         if mTEPES.pIndHydrogen == 1:
             for p,ni,nf,cc in mTEPES.ppc:
@@ -2555,9 +2555,11 @@ def SettingUpVariables(OptModel, mTEPES):
             raise ValueError('### No active stages in the case study'   )
 
         # detecting infeasibility: sum of scenario probabilities must be 1 in each period
-        # for p in mTEPES.p:
-        #     if abs(sum(mTEPES.pScenProb[p,sc] for sc in mTEPES.sc)-1.0) > 1e-6:
-        #         raise ValueError('### Sum of scenario probabilities different from 1 in period ', p)
+        # tolerance to consider 0 the difference between parameters
+        pEpsilon = 1e-6
+        for p in mTEPES.p:
+            if abs(sum(mTEPES.pScenProb[p,sc]() for sc in mTEPES.sc)-1.0) > pEpsilon:
+                raise ValueError('### Sum of scenario probabilities different from 1 in period ', p)
 
         for es in mTEPES.es:
             # detecting infeasibility: total min ESS output greater than total inflows, total max ESS charge lower than total outflows

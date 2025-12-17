@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - December 11, 2025
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - December 17, 2025
 """
 
 import time
@@ -2008,9 +2008,9 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput, pIndPlo
                                 chart.save(f'{_path}/oT_Plot_TechnologyGenerationEnergy_{CaseName}_{p}_{sc}_{ar}.html', embed_options={'renderer': 'svg'})
 
     sPSNARND   = [(p,sc,n,ar,nd)    for p,sc,n,ar,nd    in mTEPES.psn*mTEPES.ar*mTEPES.nd if nd in d2a[ar] and sum(1 for g  in g2n[nd]) + sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd])]
-    sPSNARNDGT = [(p,sc,n,ar,nd,gt) for p,sc,n,ar,nd,gt in sPSNARND*mTEPES.gt             if nd in d2a[ar] and sum(1 for g  in g2t[gt] if (p,g ) in mTEPES.pg )                                     ]
-    sPSNARNDRT = [(p,sc,n,ar,nd,rt) for p,sc,n,ar,nd,rt in sPSNARND*mTEPES.rt             if nd in d2a[ar] and sum(1 for re in r2r[rt] if (p,re) in mTEPES.pre)                                     ]
-    sPSNARNDET = [(p,sc,n,ar,nd,et) for p,sc,n,ar,nd,et in sPSNARND*mTEPES.et             if nd in d2a[ar] and sum(1 for eh in e2e[et] if (p,eh) in mTEPES.peh)                                     ]
+    sPSNARNDGT = [(p,sc,n,ar,nd,gt) for p,sc,n,ar,nd,gt in sPSNARND*mTEPES.gt             if sum(1 for g  in g2t[gt] if (p,g ) in mTEPES.pg )]
+    sPSNARNDRT = [(p,sc,n,ar,nd,rt) for p,sc,n,ar,nd,rt in sPSNARND*mTEPES.rt             if sum(1 for re in r2r[rt] if (p,re) in mTEPES.pre)]
+    sPSNARNDET = [(p,sc,n,ar,nd,et) for p,sc,n,ar,nd,et in sPSNARND*mTEPES.et             if sum(1 for eh in e2e[et] if (p,eh) in mTEPES.peh)]
 
     if sum(1 for nr in mTEPES.nr if nr not in mTEPES.eh):
         OutputResults01 = pd.Series(data=[ sum(OptModel.vTotalOutput   [p,sc,n,nr      ]()*mTEPES.pLoadLevelDuration[p,sc,n]() for nr in g2n[nd] if (p,nr) in mTEPES.pnr and nr in g2t[gt] and nr not in mTEPES.eh) for p,sc,n,ar,nd,gt in sPSNARNDGT], index=pd.Index(sPSNARNDGT)).to_frame(name='Generation'     ).reset_index().pivot_table(index=['level_0','level_1','level_2','level_3','level_4'], columns='level_5', values='Generation' , aggfunc='sum')
@@ -2051,7 +2051,6 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput, pIndPlo
     OutputResults.index = [idx[:2] + idx[3:] for idx in OutputResults.index]
 
     #%% outputting the generator power output
-    sPSNARND   = [(p,sc,n,ar,nd)    for p,sc,n,ar,nd    in mTEPES.psn*mTEPES.ar*mTEPES.nd if nd in d2a[ar] and sum(1 for g  in g2n[nd]) + sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd])]
     sPSNARNDG  = [(p,sc,n,ar,nd,g ) for p,sc,n,ar,nd,g  in sPSNARND*mTEPES.g  if g  in g2n[nd] and (p,g ) in mTEPES.pg                         ]
     sPSNARNDNR = [(p,sc,n,ar,nd,nr) for p,sc,n,ar,nd,nr in sPSNARND*mTEPES.nr if nr in g2n[nd] and (p,nr) in mTEPES.pnr and nr not in mTEPES.eh]
     sPSNARNDRE = [(p,sc,n,ar,nd,re) for p,sc,n,ar,nd,re in sPSNARND*mTEPES.re if re in g2n[nd] and (p,re) in mTEPES.pre                        ]

@@ -1,7 +1,7 @@
 Change Log
 =============
 
-[4.18.8] - 2025-12-16
+[4.18.8] - 2025-12-17
 ---------------------
 - [FIXED] control of load levels with 0 duration in psn and fix in OutputResults module
 - [CHANGED] fix pandas warning in InputData module
