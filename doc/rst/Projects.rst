@@ -44,7 +44,7 @@ The model has been used in these research projects:
     The models are scalable and can be applied to cities, industries, and countries. Furthermore, the main objective of OpenMod4Africa is capacity building among energy models in academia.
     Four African universities will be actively involved in adapting models and conducting two regional case studies. The additional capacity and the open Toolbox will enable the universities
     to train new generations of energy modelling experts for the energy industries in Africa.
-    openTEPES is part of the Africa `open energy system modelling toolbox <https://africaenergymodels.net/models/>`_, which is a suite of open and linked state-of-the-art open-source energy system models for Africa.
+    openTEPES is part of the Africa `open energy system modelling toolbox <https://africaenergymodels.net/>`_, which is a suite of open and linked state-of-the-art open-source energy system models for Africa.
 
 .. image:: ../img/OM4A.png
    :scale: 40%
