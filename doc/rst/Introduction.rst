@@ -24,7 +24,7 @@ It automatically determines optimal expansion plans that satisfy multiple attrib
   The time definition can also specify unrelated representative periods (e.g., days, weeks) to evaluate system operation. The period (year) must be represented by 8736 hours because several model concepts representing the system operation are based on weeks (168 hours) or lunar months (made of 4 weeks, 672 hours)
 
 - **Stochastic**: several stochastic parameters are considered that can influence the optimal generation, storage, and transmission expansion decisions. The model considers stochastic
-  medium-term annual uncertainties (scenarios) related to the system operation. These operational scenarios are associated with renewable energy sources, energy inflows and outflows, natural water inflows, operating reserves, inertia, and electricity, hydrogen, and heat demand.
+  medium-term annual uncertainties (scenarios) related to the system operation. These **operational scenarios** are associated with renewable energy sources, energy inflows and outflows, natural water inflows, operating reserves, inertia, and electricity, hydrogen, and heat demand.
   
 The objective function includes the two main quantifiable costs: the **investment costs for generation, storage, and transmission (CAPEX)** and the **expected variable operation costs (including generation, consumption, emissions, and reliability costs) (system OPEX)**.
   
@@ -35,7 +35,7 @@ The highly detailed operation model is an electric **network-constrained unit co
 **DC power flow (DCPF)**, including electric **line-switching** decisions. The **ohmic losses of the electricity network** are considered proportional to the electric line flow. It considers different **energy storage systems (ESS)**, such as pumped-hydro storage,
 battery, demand response, electric vehicles, solar thermal, electrolyzer, etc. It allows analysis of the trade-off between the investment in generation/transmission/pipeline and the investment and/or use of storage capacity.
 
-The model also allows a representation of the **hydro system** based on volume and water inflow data, considering the water stream topology (hydro cascade basins). If they are not available, it runs with an energy-based representation of the hydro system.
+The model also allows a representation of the **hydro system** based on volume and water inflow data, considering the water stream topology (**hydro cascade basins**). If they are not available, it runs with an energy-based representation of the hydro system.
 
 Also, it includes a representation of **Power to Hydrogen (P2H2)** by setting the **hydrogen demand** satisfied by the production of hydrogen with electrolyzers (consuming electricity to produce hydrogen) and a **hydrogen network** to distribute it.
 Besides, it includes a representation of **Power to Heat (P2H)** by setting the **heat demand** satisfied by the production of heat with heat pumps or an electric heater (consuming electricity to produce heat) and a **heat network** to distribute it. If they are not available, it runs with just the other energy carriers.
