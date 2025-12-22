@@ -208,6 +208,16 @@ Identifier                            Header      Description
 Period        Scenario    Load level  Generator   Output (discharge in ESS) [MW]
 ============  ==========  ==========  ==========  ===================================
 
+File ``oT_Result_GenerationCapturedSRMC.csv``
+
+============  ==========  ==========  ==========  ===================================
+Identifier                            Header      Description
+====================================  ==========  ===================================
+Period        Scenario    Load level  Generator   Captured SRMC [€/MWh]
+============  ==========  ==========  ==========  ===================================
+
+SRMC is the short-run marginal cost. It is computed as the generator output of each load level times the SRMC divided by the mean SRMC of each stage.
+
 File ``oT_Result_NetDemand.csv``
 
 VRES are the variable renewable energy sources (e.g., wind and solar). Units with null linear variable cost and no storage capacity. The net demand is the demand minus the VRES.
@@ -1149,7 +1159,7 @@ Identifier                            Header      Description
 Period        Scenario    Load level  Node        Locational Short-Run Marginal Cost of electricity [€/MWh], a.k.a. Locational Marginal Price (LMP)
 ============  ==========  ==========  ==========  ===================================================================================================
 
-These marginal costs are obtained after fixing the binary and continuous investment decisions and the binary operation decisions to their optimal values.
+These short-run marginal costs (SRMC) are obtained after fixing the binary and continuous investment decisions and the binary operation decisions to their optimal values.
 Remember that binary decisions are not affected by marginal changes.
 
 File ``oT_Result_NetworkSRMCH2.csv``
@@ -1160,7 +1170,7 @@ Identifier                            Header      Description
 Period        Scenario    Load level  Node        Locational Short-Run Marginal Cost of H2 [€/kgH2]
 ============  ==========  ==========  ==========  ==================================================
 
-These marginal costs are obtained after fixing the binary and continuous investment decisions and the binary operation decisions to their optimal values.
+These short-run marginal costs (SRMC) are obtained after fixing the binary and continuous investment decisions and the binary operation decisions to their optimal values.
 Remember that binary decisions are not affected by marginal changes.
 
 File ``oT_Result_NetworkSRMCHeat.csv``
@@ -1171,7 +1181,7 @@ Identifier                            Header      Description
 Period        Scenario    Load level  Node        Locational Short-Run Marginal Cost of heat [€/MWh]
 ============  ==========  ==========  ==========  ====================================================
 
-These marginal costs are obtained after fixing the binary and continuous investment decisions and the binary operation decisions to their optimal values.
+These short-run marginal costs (SRMC) are obtained after fixing the binary and continuous investment decisions and the binary operation decisions to their optimal values.
 Remember that binary decisions are not affected by marginal changes.
 
 File ``oT_Result_MarginalEnergyValue.csv``

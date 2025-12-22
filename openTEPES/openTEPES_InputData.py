@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - December 17, 2025
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - December 22, 2025
 """
 
 import time
@@ -2558,7 +2558,7 @@ def SettingUpVariables(OptModel, mTEPES):
         # tolerance to consider 0 the difference between parameters
         pEpsilon = 1e-6
         for p in mTEPES.p:
-            if abs(sum(mTEPES.pScenProb[p,sc]() for sc in mTEPES.sc)-1.0) > pEpsilon:
+            if abs(sum(mTEPES.pScenProb[p,sc]() for sc in mTEPES.sc if (p,sc) in mTEPES.ps)-1.0) > pEpsilon:
                 raise ValueError('### Sum of scenario probabilities different from 1 in period ', p)
 
         for es in mTEPES.es:
