@@ -216,7 +216,7 @@ Identifier                            Header      Description
 Period        Scenario    Load level  Generator   Captured SRMC [€/MWh]
 ============  ==========  ==========  ==========  ===================================
 
-SRMC is the short-run marginal cost. It is computed as the generator output of each load level times the SRMC divided by the mean SRMC of each stage.
+SRMC is the short-run marginal cost. It is computed for each load level as the generator output times the SRMC divided by the mean SRMC of each stage.
 
 File ``oT_Result_NetDemand.csv``
 
