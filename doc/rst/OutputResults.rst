@@ -208,16 +208,6 @@ Identifier                            Header      Description
 Period        Scenario    Load level  Generator   Output (discharge in ESS) [MW]
 ============  ==========  ==========  ==========  ===================================
 
-File ``oT_Result_GenerationCapturedSRMC.csv``
-
-============  ==========  ==========  ==========  ===================================
-Identifier                            Header      Description
-====================================  ==========  ===================================
-Period        Scenario    Load level  Generator   Captured SRMC [€/MWh]
-============  ==========  ==========  ==========  ===================================
-
-SRMC is the short-run marginal cost. It is computed for each load level as the generator output times the SRMC divided by the mean SRMC of each stage.
-
 File ``oT_Result_NetDemand.csv``
 
 VRES are the variable renewable energy sources (e.g., wind and solar). Units with null linear variable cost and no storage capacity. The net demand is the demand minus the VRES.
@@ -1097,6 +1087,26 @@ Identifier                            Header          Description
 ====================================  ==============  ===========================================================
 Period        Scenario    Load level  ESS Generator   Operation revenues from the downward operating reserve [M€]
 ============  ==========  ==========  ==============  ===========================================================
+
+File ``oT_Result_GenerationCapturedSRMC.csv``
+
+============  ==========  ==========  ==========  ======================================
+Identifier                            Header      Description
+====================================  ==========  ======================================
+Period        Scenario    Load level  Generator   Captured SRMC when generating [€/MWh]
+============  ==========  ==========  ==========  ======================================
+
+SRMC is the short-run marginal cost. It is computed for each load level as the generator output times the SRMC divided by the mean output of each stage.
+
+File ``oT_Result_ConsumptionCapturedSRMC.csv``
+
+============  ==========  ==========  ==========  ============================================
+Identifier                            Header      Description
+====================================  ==========  ============================================
+Period        Scenario    Load level  Generator   Captured SRMC when pumping/charging [€/MWh]
+============  ==========  ==========  ==========  ============================================
+
+SRMC is the short-run marginal cost. It is computed for each load level as the ESS consumption times the SRMC divided by the mean consumption of each stage.
 
 Marginal information
 --------------------

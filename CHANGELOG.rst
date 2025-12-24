@@ -1,9 +1,9 @@
 Change Log
 =============
 
-[4.18.8] - 2025-12-22
+[4.18.8] - 2025-12-24
 ---------------------
-- [CHANGED] add the GenerationCapturedSRMC output file
+- [CHANGED] add the GenerationCapturedSRMC and ConsumptionCapturedSRMC output files
 - [FIXED] control of load levels with 0 duration in psn and fix in OutputResults module
 - [CHANGED] fix pandas warning in InputData module
 - [CHANGED] added MarketResultsGenerationInvestment file
