@@ -9,7 +9,10 @@ import pandas   as pd
 from   collections   import defaultdict
 from   pyomo.environ import Constraint, Objective, minimize, Set, RangeSet, Param
 
+# from line_profiler import profile
 
+
+# @profile
 def TotalObjectiveFunction(OptModel, mTEPES, pIndLogConsole):
     print('Total cost o.f.      model formulation ****')
 
@@ -28,6 +31,7 @@ def TotalObjectiveFunction(OptModel, mTEPES, pIndLogConsole):
         print('Total fixed and variable costs         ... ', round(GeneratingTime), 's')
 
 
+# @profile
 def InvestmentModelFormulation(OptModel, mTEPES, pIndLogConsole):
     print('Investment           model formulation ****')
 
@@ -108,6 +112,7 @@ def InvestmentModelFormulation(OptModel, mTEPES, pIndLogConsole):
         print('Gen&transm investment o.f./constraints ... ', round(GeneratingTime), 's')
 
 
+# @profile
 def GenerationOperationModelFormulationObjFunct(OptModel, mTEPES, pIndLogConsole, p, sc, st):
     print('Generation oper o.f. model formulation ****')
 
@@ -213,6 +218,7 @@ def GenerationOperationModelFormulationObjFunct(OptModel, mTEPES, pIndLogConsole
         print('Operation cost        o.f.             ... ', round(GeneratingTime), 's')
 
 
+# @profile
 def GenerationOperationModelFormulationInvestment(OptModel, mTEPES, pIndLogConsole, p, sc, st):
     print('Investment & operation var constraints ****')
 
@@ -362,6 +368,7 @@ def GenerationOperationModelFormulationInvestment(OptModel, mTEPES, pIndLogConso
         print('Generating operation & investment      ... ', round(GeneratingTime), 's')
 
 
+# @profile
 def GenerationOperationModelFormulationDemand(OptModel, mTEPES, pIndLogConsole, p, sc, st):
     print('Inertia, oper resr, demand constraints ****')
 
@@ -590,6 +597,7 @@ def GenerationOperationModelFormulationDemand(OptModel, mTEPES, pIndLogConsole, 
         print('Generating inertia/reserves/balance    ... ', round(GeneratingTime), 's')
 
 
+# @profile
 def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole, p, sc, st):
     print('Storage   scheduling       constraints ****')
 
@@ -831,6 +839,7 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
     if pIndLogConsole == 1:
         print('Generating storage operation           ... ', round(GeneratingTime), 's')
 
+# @profile
 def GenerationOperationModelFormulationReservoir(OptModel, mTEPES, pIndLogConsole, p, sc, st):
     print('Reservoir scheduling       constraints ****')
 
@@ -1041,6 +1050,7 @@ def GenerationOperationModelFormulationReservoir(OptModel, mTEPES, pIndLogConsol
         print('Generating reservoir operation         ... ', round(GeneratingTime), 's')
 
 
+# @profile
 def GenerationOperationModelFormulationCommitment(OptModel, mTEPES, pIndLogConsole, p, sc, st):
     print('Unit commitment            constraints ****')
 
@@ -1132,10 +1142,9 @@ def GenerationOperationModelFormulationCommitment(OptModel, mTEPES, pIndLogConso
         # Skip if the generator is not part of the exclusive group
         if nr not in mTEPES.GeneratorsInYearlyGroup[group]:
             return Constraint.Skip
-        # Skip if there are one or less generators in the group
+        # Skip if there are one or fewer generators in the group
         if len(mTEPES.GeneratorsInYearlyGroup[group] & {nr for (p,nr) in mTEPES.pnr}) <= 1:
             return Constraint.Skip
-
         return OptModel.vCommitment[p,sc,n,nr]                               <= OptModel.vMaxCommitmentYearly[p,sc,nr,group]
 
     setattr(OptModel, f'eMaxCommitmentYearly_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.ExclusiveGroupsYearly, mTEPES.nr, rule=eMaxCommitmentYearly, doc='maximum of all the commitments [p.u.]'))
@@ -1156,7 +1165,6 @@ def GenerationOperationModelFormulationCommitment(OptModel, mTEPES, pIndLogConso
         # Skip if there are one or less generators in the group
         if len(mTEPES.GeneratorsInYearlyGroup[group] & {nr for (p, nr) in mTEPES.pnr}) <= 1:
             return Constraint.Skip
-
         return OptModel.vTotalOutput[p,sc,n,nr]/mTEPES.pMaxPowerElec[p,sc,n,nr] <= OptModel.vMaxCommitmentYearly[p,sc,nr,group]
 
     setattr(OptModel, f'eMaxCommitGenYearly_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.ExclusiveGroupsYearly,mTEPES.nr, rule=eMaxCommitGenYearly, doc='maximum of all the capacity factors'))
@@ -1185,10 +1193,9 @@ def GenerationOperationModelFormulationCommitment(OptModel, mTEPES, pIndLogConso
         # Skip if the generator is not part of the exclusive group
         if nr not in mTEPES.GeneratorsInHourlyGroup[group]:
             return Constraint.Skip
-        # Skip if there are one or less generators in the group
+        # Skip if there are one or fewer generators in the group
         if len(mTEPES.GeneratorsInHourlyGroup[group] & {nr for (p,nr) in mTEPES.pnr}) <= 1:
             return Constraint.Skip
-
         return OptModel.vCommitment[p,sc,n,nr]                               <= OptModel.vMaxCommitmentHourly[p,sc,n,nr,group]
 
     setattr(OptModel, f'eMaxCommitmentHourly_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.ExclusiveGroupsHourly, mTEPES.nr, rule=eMaxCommitmentHourly, doc='maximum of all the commitments [p.u.]'))
@@ -1209,7 +1216,6 @@ def GenerationOperationModelFormulationCommitment(OptModel, mTEPES, pIndLogConso
         # Skip if there are one or less generators in the group
         if len(mTEPES.GeneratorsInHourlyGroup[group] & {nr for (p,nr) in mTEPES.pnr}) <= 1:
             return Constraint.Skip
-
         return OptModel.vTotalOutput[p,sc,n,nr]/mTEPES.pMaxPowerElec[p,sc,n,nr] <= OptModel.vMaxCommitmentHourly[p,sc,n,nr,group]
 
     setattr(OptModel, f'eMaxCommitGenHourly_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.ExclusiveGroupsHourly,mTEPES.nr, rule=eMaxCommitGenHourly, doc='maximum of all the capacity factors'))
@@ -1218,14 +1224,13 @@ def GenerationOperationModelFormulationCommitment(OptModel, mTEPES, pIndLogConso
         print('eMaxCommitGenHourly       ... ', len(getattr(OptModel, f'eMaxCommitGenHourly_{p}_{sc}_{st}')), ' rows')
 
     def eExclusiveGensHourly(OptModel,n,group):
-        # Skip if there are one or less generators in the group
+        # Skip if there are one or fewer generators in the group
         # This is written in a different way to the rest of the code to avoid variable shadowing due to comprehension
         if len(mTEPES.GeneratorsInHourlyGroup[group] & {gen for (period, gen) in mTEPES.pnr if period == p}) <= 1:
             return Constraint.Skip
-
         return sum(OptModel.vMaxCommitmentHourly[p,sc,n,nr,group] + (OptModel.vCommitmentCons[p,sc,n,nr] if nr in mTEPES.h else 0) for nr in mTEPES.GeneratorsInHourlyGroup[group] if (p, nr) in mTEPES.pnr ) <= 1
 
-    setattr(OptModel, f'eExclusiveGensHourly_{p}_{sc}_{st}', Constraint(mTEPES.n,mTEPES.ExclusiveGroupsHourly, rule=eExclusiveGensHourly, doc='mutually exclusive generators'))
+    setattr(OptModel, f'eExclusiveGensHourly_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.ExclusiveGroupsHourly, rule=eExclusiveGensHourly, doc='mutually exclusive generators'))
 
     if pIndLogConsole == 1:
         print('eExclusiveGensHourly      ... ', len(getattr(OptModel, f'eExclusiveGensHourly_{p}_{sc}_{st}')), ' rows')
@@ -1235,6 +1240,7 @@ def GenerationOperationModelFormulationCommitment(OptModel, mTEPES, pIndLogConso
         print('Generating generation commitment       ... ', round(GeneratingTime), 's')
 
 
+# @profile
 def GenerationOperationModelFormulationRampMinTime(OptModel, mTEPES, pIndLogConsole, p, sc, st):
     print('Ramp and min up/down time  constraints ****')
 
@@ -1428,6 +1434,7 @@ def GenerationOperationModelFormulationRampMinTime(OptModel, mTEPES, pIndLogCons
         print('Generating ramps & minimum time        ... ', round(GeneratingTime), 's')
 
 
+# @profile
 def NetworkSwitchingModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st):
     print('Network    switching model constraints ****')
 
@@ -1493,6 +1500,7 @@ def NetworkSwitchingModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st
         print('Switching minimum on/off state         ... ', round(GeneratingTime), 's')
 
 
+# @profile
 def NetworkOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st):
     print('Network    operation model constraints ****')
 
@@ -1626,6 +1634,7 @@ def NetworkOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st
         print('Generating network    constraints      ... ', round(GeneratingTime), 's')
 
 
+# @profile
 def NetworkCycles(mTEPES, pIndLogConsole):
     print('Network               Cycles Detection ****')
 
@@ -1698,6 +1707,7 @@ def NetworkCycles(mTEPES, pIndLogConsole):
         print('Cycles detection                      ... ', round(CyclesDetectionTime), 's')
 
 
+# @profile
 def CycleConstraints(OptModel, mTEPES, pIndLogConsole, p, sc, st):
     print('Network              cycle constraints ****')
 
@@ -1756,6 +1766,7 @@ def CycleConstraints(OptModel, mTEPES, pIndLogConsole, p, sc, st):
         print('Generating cycle flow constraints       ... ', round(CycleFlowTime), 's')
 
 
+# @profile
 def NetworkH2OperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st):
     print('Hydrogen  scheduling       constraints ****')
 
@@ -1796,6 +1807,7 @@ def NetworkH2OperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, 
         print('Generating hydrogen  operation         ... ', round(GeneratingTime), 's')
 
 
+# @profile
 def NetworkHeatOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st):
     print('Heat      scheduling       constraints ****')
 

@@ -535,7 +535,7 @@ Yearly mutually exclusive :math:`g` and :math:`g'` units (e.g., thermal, ESS, VR
 
 Hourly mutually exclusive :math:`g` and :math:`g'` units (e.g., thermal, ESS, VRES units) [p.u.] «``eExclusiveGensHourly``»
 
-:math:`uc'^p_{\omega g} + uc'^p_{\omega g'} \leq 1 \quad \forall n \omega gg'`
+:math:`uc'^p_{\omega g} + uc'^p_{\omega g'} \leq 1 \quad \forall \omega ngg'`
 
 Initial commitment of the units for every period, scenario, and stage is determined by the model based on the merit order loading, including the VRES and ESS units.
 
