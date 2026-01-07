@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - December 04, 2025
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - January 07, 2026
 """
 
 import time
@@ -105,12 +105,14 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
     if mTEPES.NoRepetition == 1:
         for var in OptModel.component_data_objects(pyo.Var, active=True, descend_into=True):
             if not var.is_continuous() and not var.is_fixed() and var.value != None:
-                var.fixed = True  # fix the current value
+                var.fixed  = True          # fix the current value
+                var.domain = UnitInterval  # change the domain to continuous
                 nUnfixedVars += 1
     else:
         for var in OptModel.component_data_objects(pyo.Var, active=True, descend_into=True):
             if not var.is_continuous() and not var.is_fixed() and var.value != None and var.index()[0] == p and var.index()[1] == sc:
-                var.fixed = True  # fix the current value
+                var.fixed  = True          # fix the current value
+                var.domain = UnitInterval  # change the domain to continuous
                 nUnfixedVars += 1
 
     # continuous investment decisions are fixed to their optimal values
