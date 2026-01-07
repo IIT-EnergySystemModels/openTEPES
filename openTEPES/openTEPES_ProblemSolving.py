@@ -9,7 +9,7 @@ import psutil
 import logging
 from   pyomo.opt             import SolverFactory, SolverStatus, TerminationCondition
 from   pyomo.util.infeasible import log_infeasible_constraints
-from   pyomo.environ         import Suffix
+from   pyomo.environ         import Suffix, UnitInterval
 
 def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConsole, p, sc, st):
     print('Problem solving                        ****')
