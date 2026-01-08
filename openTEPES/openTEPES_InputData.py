@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - December 22, 2025
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - January 08, 2026
 """
 
 import time
@@ -1878,6 +1878,7 @@ def SettingUpVariables(OptModel, mTEPES):
                 OptModel.vGenerationInvest    [p,eb      ].domain = UnitInterval
             if mTEPES.pIndBinGenInvest() == 2:
                 OptModel.vGenerationInvest    [p,eb      ].fix(0)
+                OptModel.vGenerationInvest    [p,eb      ].domain = UnitInterval
                 nFixedBinaries += 1
 
         for p,ni,nf,cc in mTEPES.plc:
@@ -1885,6 +1886,7 @@ def SettingUpVariables(OptModel, mTEPES):
                 OptModel.vNetworkInvest       [p,ni,nf,cc].domain = UnitInterval
             if mTEPES.pIndBinNetElecInvest() == 2:
                 OptModel.vNetworkInvest       [p,ni,nf,cc].fix(0)
+                OptModel.vNetworkInvest       [p,ni,nf,cc].domain = UnitInterval
                 nFixedBinaries += 1
 
         # relax binary condition in generation retirement decisions
@@ -1893,6 +1895,7 @@ def SettingUpVariables(OptModel, mTEPES):
                 OptModel.vGenerationRetire    [p,gd      ].domain = UnitInterval
             if mTEPES.pIndBinGenRetire() == 2:
                 OptModel.vGenerationRetire    [p,gd      ].fix(0)
+                OptModel.vGenerationRetire    [p,gd      ].domain = UnitInterval
                 nFixedBinaries += 1
 
         # relax binary condition in reservoir investment decisions
@@ -1902,6 +1905,7 @@ def SettingUpVariables(OptModel, mTEPES):
                     OptModel.vReservoirInvest [p,rc      ].domain = UnitInterval
                 if mTEPES.pIndBinRsrInvest() == 2:
                     OptModel.vReservoirInvest [p,rc      ].fix(0)
+                    OptModel.vReservoirInvest [p,rc      ].domain = UnitInterval
                     nFixedBinaries += 1
 
         # relax binary condition in hydrogen network investment decisions
@@ -1911,6 +1915,7 @@ def SettingUpVariables(OptModel, mTEPES):
                     OptModel.vH2PipeInvest  [p,ni,nf,cc].domain = UnitInterval
                 if mTEPES.pIndBinNetH2Invest() == 2:
                     OptModel.vH2PipeInvest  [p,ni,nf,cc].fix(0)
+                    OptModel.vH2PipeInvest  [p,ni,nf,cc].domain = UnitInterval
                     nFixedBinaries += 1
 
         if mTEPES.pIndHeat == 1:
@@ -1920,6 +1925,7 @@ def SettingUpVariables(OptModel, mTEPES):
                     OptModel.vHeatPipeInvest  [p,ni,nf,cc].domain = UnitInterval
                 if mTEPES.pIndBinNetHeatInvest() == 2:
                     OptModel.vHeatPipeInvest  [p,ni,nf,cc].fix(0)
+                    OptModel.vHeatPipeInvest  [p,ni,nf,cc].domain = UnitInterval
                     nFixedBinaries += 1
 
         # relax binary condition in unit generation, startup and shutdown decisions
@@ -1933,6 +1939,9 @@ def SettingUpVariables(OptModel, mTEPES):
                 OptModel.vStableState  [p,sc,n,nr].fix(0)
                 OptModel.vRampDwState  [p,sc,n,nr].fix(0)
                 OptModel.vRampUpState  [p,sc,n,nr].fix(0)
+                OptModel.vStableState  [p,sc,n,nr].domain = UnitInterval
+                OptModel.vRampDwState  [p,sc,n,nr].domain = UnitInterval
+                OptModel.vRampUpState  [p,sc,n,nr].domain = UnitInterval
 
         for p,sc,nr,  group in mTEPES.psnr * mTEPES.ExclusiveGroups:
             if mTEPES.pIndBinUnitCommit[nr] == 0 and nr in mTEPES.ExclusiveGeneratorsYearly:
@@ -1946,6 +1955,7 @@ def SettingUpVariables(OptModel, mTEPES):
                     OptModel.vCommitmentCons[p,sc,n,h].domain = UnitInterval
                 if mTEPES.pMaxCharge[p,sc,n,h] == 0.0:
                     OptModel.vCommitmentCons[p,sc,n,h].fix(0)
+                    OptModel.vCommitmentCons[p,sc,n,h].domain = UnitInterval
                     nFixedBinaries += 1
 
         return nFixedBinaries
@@ -1971,14 +1981,21 @@ def SettingUpVariables(OptModel, mTEPES):
 
         nFixedVariables = 0
         # existing lines are always committed if no switching decision is modeled
-        [OptModel.vLineCommit[p,sc,n,ni,nf,cc].fix(1) for p,sc,n,ni,nf,cc in mTEPES.psnle if mTEPES.pIndBinLineSwitch[ni,nf,cc] == 0]
-        nFixedVariables += sum(                    1  for p,sc,n,ni,nf,cc in mTEPES.psnle if mTEPES.pIndBinLineSwitch[ni,nf,cc] == 0)
+        for p,sc,n,ni,nf,cc in mTEPES.psnle:
+            if mTEPES.pIndBinLineSwitch[ni,nf,cc] == 0:
+                OptModel.vLineCommit[p,sc,n,ni,nf,cc].fix(1)
+                OptModel.vLineCommit[p,sc,n,ni,nf,cc].domain = UnitInterval
+                nFixedVariables += 1
 
         # no on/off state for lines if no switching decision is modeled
         if sum(mTEPES.pIndBinLineSwitch[:,:,:]):
-            [OptModel.vLineOnState [p,sc,n,ni,nf,cc].fix(0) for p,sc,n,ni,nf,cc in mTEPES.psnla if mTEPES.pIndBinLineSwitch[ni,nf,cc] == 0]
-            [OptModel.vLineOffState[p,sc,n,ni,nf,cc].fix(0) for p,sc,n,ni,nf,cc in mTEPES.psnla if mTEPES.pIndBinLineSwitch[ni,nf,cc] == 0]
-            nFixedVariables += sum(                      2  for p,sc,n,ni,nf,cc in mTEPES.psnla if mTEPES.pIndBinLineSwitch[ni,nf,cc] == 0)
+             for p,sc,n,ni,nf,cc in mTEPES.psnla:
+                 if mTEPES.pIndBinLineSwitch[ni,nf,cc] == 0:
+                     OptModel.vLineOnState [p,sc,n,ni,nf,cc].fix(0)
+                     OptModel.vLineOffState[p,sc,n,ni,nf,cc].fix(0)
+                     OptModel.vLineOnState [p,sc,n,ni,nf,cc].domain = UnitInterval
+                     OptModel.vLineOffState[p,sc,n,ni,nf,cc].domain = UnitInterval
+                     nFixedVariables += 2
 
         OptModel.vLineLosses = Var(mTEPES.psnll, within=NonNegativeReals, doc='half line losses [GW]')
         OptModel.vFlowElec   = Var(mTEPES.psnla, within=Reals,            doc='electric flow    [GW]')
@@ -2050,6 +2067,9 @@ def SettingUpVariables(OptModel, mTEPES):
                     OptModel.vCommitment    [p,sc,n,nr].fix(1)
                     OptModel.vStartUp       [p,sc,n,nr].fix(0)
                     OptModel.vShutDown      [p,sc,n,nr].fix(0)
+                    OptModel.vCommitment    [p,sc,n,nr].domain = UnitInterval
+                    OptModel.vStartUp       [p,sc,n,nr].domain = UnitInterval
+                    OptModel.vShutDown      [p,sc,n,nr].domain = UnitInterval
                     nFixedVariables += 3
             # If there are mutually exclusive groups do not fix variables from ESS in mutually exclusive groups
             elif len(mTEPES.ExclusiveGroups) >  0 and nr not in mTEPES.ExclusiveGenerators:
@@ -2057,6 +2077,9 @@ def SettingUpVariables(OptModel, mTEPES):
                     OptModel.vCommitment    [p,sc,n,nr].fix(1)
                     OptModel.vStartUp       [p,sc,n,nr].fix(0)
                     OptModel.vShutDown      [p,sc,n,nr].fix(0)
+                    OptModel.vCommitment    [p,sc,n,nr].domain = UnitInterval
+                    OptModel.vStartUp       [p,sc,n,nr].domain = UnitInterval
+                    OptModel.vShutDown      [p,sc,n,nr].domain = UnitInterval
                     nFixedVariables += 3
 
             # if min and max power coincide there are neither second block, nor operating reserve
@@ -2106,7 +2129,8 @@ def SettingUpVariables(OptModel, mTEPES):
                 # ESS with no charge capacity or not storage capacity can't charge
                 if  mTEPES.pMaxCharge        [p,sc,n,h ] ==  0.0:
                     OptModel.vESSTotalCharge [p,sc,n,h ].fix(0.0)
-                    OptModel.vCommitmentCons [p,sc,n,h ].fix(0.0)
+                    OptModel.vCommitmentCons [p,sc,n,h ].fix(0  )
+                    OptModel.vCommitmentCons [p,sc,n,h ].domain = UnitInterval
                     nFixedVariables += 2
                 if  mTEPES.pMaxCharge2ndBlock[p,sc,n,h ] ==  0.0:
                     OptModel.vCharge2ndBlock [p,sc,n,h ].fix(0.0)
@@ -2306,27 +2330,36 @@ def SettingUpVariables(OptModel, mTEPES):
             if mTEPES.pElecGenPeriodIni[eb] > p:
                 OptModel.vGenerationInvest[p,eb].fix(0)
                 OptModel.vGenerationInvPer[p,eb].fix(0)
+                OptModel.vGenerationInvest[p,eb].domain = UnitInterval
+                OptModel.vGenerationInvPer[p,eb].domain = UnitInterval
                 nFixedVariables += 2
             if mTEPES.pElecGenPeriodFin[eb] < p:
                 OptModel.vGenerationInvPer[p,eb].fix(0)
+                OptModel.vGenerationInvPer[p,eb].domain = UnitInterval
                 nFixedVariables += 1
 
         for p,gd in mTEPES.pgd:
             if mTEPES.pElecGenPeriodIni[gd] > p:
                 OptModel.vGenerationRetire[p,gd].fix(0)
                 OptModel.vGenerationRetPer[p,gd].fix(0)
+                OptModel.vGenerationRetire[p,gd].domain = UnitInterval
+                OptModel.vGenerationRetPer[p,gd].domain = UnitInterval
                 nFixedVariables += 2
             if mTEPES.pElecGenPeriodFin[gd] < p:
                 OptModel.vGenerationRetPer[p,gd].fix(0)
+                OptModel.vGenerationRetPer[p,gd].domain = UnitInterval
                 nFixedVariables += 1
 
         for p,ni,nf,cc in mTEPES.plc:
             if mTEPES.pElecNetPeriodIni[ni,nf,cc] > p:
                 OptModel.vNetworkInvest[p,ni,nf,cc].fix(0)
                 OptModel.vNetworkInvPer[p,ni,nf,cc].fix(0)
+                OptModel.vNetworkInvest[p,ni,nf,cc].domain = UnitInterval
+                OptModel.vNetworkInvPer[p,ni,nf,cc].domain = UnitInterval
                 nFixedVariables += 2
             if mTEPES.pElecNetPeriodFin[ni,nf,cc] < p:
                 OptModel.vNetworkInvPer[p,ni,nf,cc].fix(0)
+                OptModel.vNetworkInvPer[p,ni,nf,cc].domain = UnitInterval
                 nFixedVariables += 1
 
         if mTEPES.pIndHydroTopology == 1:
@@ -2334,9 +2367,12 @@ def SettingUpVariables(OptModel, mTEPES):
                 if mTEPES.pRsrPeriodIni[rc] > p:
                     OptModel.vReservoirInvest[p,rc].fix(0)
                     OptModel.vReservoirInvPer[p,rc].fix(0)
+                    OptModel.vReservoirInvest[p,rc].domain = UnitInterval
+                    OptModel.vReservoirInvPer[p,rc].domain = UnitInterval
                     nFixedVariables += 2
                 if mTEPES.pRsrPeriodFin[rc] < p:
                     OptModel.vReservoirInvPer[p,rc].fix(0)
+                    OptModel.vReservoirInvPer[p,rc].domain = UnitInterval
                     nFixedVariables += 1
 
         if mTEPES.pIndHydrogen == 1:
@@ -2344,9 +2380,12 @@ def SettingUpVariables(OptModel, mTEPES):
                 if mTEPES.pH2PipePeriodIni[ni,nf,cc] > p:
                     OptModel.vH2PipeInvest[p,ni,nf,cc].fix(0)
                     OptModel.vH2PipeInvPer[p,ni,nf,cc].fix(0)
+                    OptModel.vH2PipeInvest[p,ni,nf,cc].domain = UnitInterval
+                    OptModel.vH2PipeInvPer[p,ni,nf,cc].domain = UnitInterval
                     nFixedVariables += 2
                 if mTEPES.pH2PipePeriodFin[ni,nf,cc] < p:
                     OptModel.vH2PipeInvPer[p,ni,nf,cc].fix(0)
+                    OptModel.vH2PipeInvPer[p,ni,nf,cc].domain = UnitInterval
                     nFixedVariables += 1
 
         if mTEPES.pIndHeat == 1:
@@ -2354,9 +2393,12 @@ def SettingUpVariables(OptModel, mTEPES):
                 if mTEPES.pHeatPipePeriodIni[ni,nf,cc] > p:
                     OptModel.vHeatPipeInvest[p,ni,nf,cc].fix(0)
                     OptModel.vHeatPipeInvPer[p,ni,nf,cc].fix(0)
+                    OptModel.vHeatPipeInvest[p,ni,nf,cc].domain = UnitInterval
+                    OptModel.vHeatPipeInvPer[p,ni,nf,cc].domain = UnitInterval
                     nFixedVariables += 2
                 if mTEPES.pHeatPipePeriodFin[ni,nf,cc] < p:
                     OptModel.vHeatPipeInvPer[p,ni,nf,cc].fix(0)
+                    OptModel.vHeatPipeInvPer[p,ni,nf,cc].domain = UnitInterval
                     nFixedVariables += 1
 
         # remove power plants and lines not installed in this period
@@ -2369,6 +2411,7 @@ def SettingUpVariables(OptModel, mTEPES):
         for p,sc,nr in mTEPES.psnr:
             if nr not in mTEPES.eb and mTEPES.pElecGenPeriodIni[nr] > p:
                 OptModel.vMaxCommitment[p,sc,nr].fix(0)
+                OptModel.vMaxCommitment[p,sc,nr].domain = UnitInterval
                 nFixedVariables += 1
         for p,sc,n,nr in mTEPES.psnnr:
             if nr not in mTEPES.eb and mTEPES.pElecGenPeriodIni[nr] > p:
@@ -2378,6 +2421,9 @@ def SettingUpVariables(OptModel, mTEPES):
                 OptModel.vCommitment    [p,sc,n,nr].fix(0  )
                 OptModel.vStartUp       [p,sc,n,nr].fix(0  )
                 OptModel.vShutDown      [p,sc,n,nr].fix(0  )
+                OptModel.vCommitment    [p,sc,n,nr].domain = UnitInterval
+                OptModel.vStartUp       [p,sc,n,nr].domain = UnitInterval
+                OptModel.vShutDown      [p,sc,n,nr].domain = UnitInterval
                 nFixedVariables += 6
 
         for p,sc,n,es in mTEPES.psnes:
@@ -2414,22 +2460,29 @@ def SettingUpVariables(OptModel, mTEPES):
     nFixedInstallationsAndRetirements = AvoidForbiddenInstallationsAndRetirements(mTEPES, mTEPES)
     nFixedVariables += nFixedInstallationsAndRetirements
 
-    [OptModel.vFlowElec    [p,sc,n,ni,nf,cc].fix(0.0) for p,sc,n,ni,nf,cc in mTEPES.psnla if (ni,nf,cc) not in mTEPES.lc and mTEPES.pElecNetPeriodIni [ni,nf,cc] > p]
-    [OptModel.vLineCommit  [p,sc,n,ni,nf,cc].fix(0  ) for p,sc,n,ni,nf,cc in mTEPES.psnla if (ni,nf,cc) not in mTEPES.lc and mTEPES.pElecNetPeriodIni [ni,nf,cc] > p]
-    [OptModel.vLineOnState [p,sc,n,ni,nf,cc].fix(0  ) for p,sc,n,ni,nf,cc in mTEPES.psnla if (ni,nf,cc) not in mTEPES.lc and mTEPES.pElecNetPeriodIni [ni,nf,cc] > p]
-    [OptModel.vLineOffState[p,sc,n,ni,nf,cc].fix(0  ) for p,sc,n,ni,nf,cc in mTEPES.psnla if (ni,nf,cc) not in mTEPES.lc and mTEPES.pElecNetPeriodIni [ni,nf,cc] > p]
-    nFixedVariables += sum(                      4    for p,sc,n,ni,nf,cc in mTEPES.psnla if (ni,nf,cc) not in mTEPES.lc and mTEPES.pElecNetPeriodIni [ni,nf,cc] > p)
+    for p,sc,n,ni,nf,cc in mTEPES.psnla:
+        if (ni,nf,cc) not in mTEPES.lc and mTEPES.pElecNetPeriodIni[ni,nf,cc] > p:
+            OptModel.vLineCommit  [p,sc,n,ni,nf,cc].fix(0)
+            OptModel.vLineOnState [p,sc,n,ni,nf,cc].fix(0)
+            OptModel.vLineOffState[p,sc,n,ni,nf,cc].fix(0)
+            OptModel.vLineCommit  [p,sc,n,ni,nf,cc].domain = UnitInterval
+            OptModel.vLineOnState [p,sc,n,ni,nf,cc].domain = UnitInterval
+            OptModel.vLineOffState[p,sc,n,ni,nf,cc].domain = UnitInterval
+            nFixedVariables += 3
 
-    [OptModel.vLineLosses  [p,sc,n,ni,nf,cc].fix(0.0) for p,sc,n,ni,nf,cc in mTEPES.psnll if (ni,nf,cc) not in mTEPES.lc and mTEPES.pElecNetPeriodIni [ni,nf,cc] > p]
-    nFixedVariables += sum(                      1    for p,sc,n,ni,nf,cc in mTEPES.psnll if (ni,nf,cc) not in mTEPES.lc and mTEPES.pElecNetPeriodIni [ni,nf,cc] > p)
+    [OptModel.vLineLosses  [p,sc,n,ni,nf,cc].fix(0.0) for p,sc,n,ni,nf,cc in mTEPES.psnll if (ni,nf,cc) not in mTEPES.lc and mTEPES.pElecNetPeriodIni[ni,nf,cc] > p]
+    nFixedVariables     += sum(                  1    for p,sc,n,ni,nf,cc in mTEPES.psnll if (ni,nf,cc) not in mTEPES.lc and mTEPES.pElecNetPeriodIni[ni,nf,cc] > p)
+
+    [OptModel.vFlowElec    [p,sc,n,ni,nf,cc].fix(0.0) for p,sc,n,ni,nf,cc in mTEPES.psnla if (ni,nf,cc) not in mTEPES.lc and mTEPES.pElecNetPeriodIni[ni,nf,cc] > p]
+    nFixedVariables     += sum(                  1    for p,sc,n,ni,nf,cc in mTEPES.psnla if (ni,nf,cc) not in mTEPES.lc and mTEPES.pElecNetPeriodIni[ni,nf,cc] > p)
 
     if mTEPES.pIndHydrogen == 1:
         [OptModel.vFlowH2  [p,sc,n,ni,nf,cc].fix(0.0) for p,sc,n,ni,nf,cc in mTEPES.psnpa if (ni,nf,cc) not in mTEPES.pc and mTEPES.pH2PipePeriodIni  [ni,nf,cc] > p]
-        nFixedVariables += sum(                  4    for p,sc,n,ni,nf,cc in mTEPES.psnpa if (ni,nf,cc) not in mTEPES.pc and mTEPES.pH2PipePeriodIni  [ni,nf,cc] > p)
+        nFixedVariables += sum(                  1    for p,sc,n,ni,nf,cc in mTEPES.psnpa if (ni,nf,cc) not in mTEPES.pc and mTEPES.pH2PipePeriodIni  [ni,nf,cc] > p)
 
     if mTEPES.pIndHeat == 1:
         [OptModel.vFlowHeat[p,sc,n,ni,nf,cc].fix(0.0) for p,sc,n,ni,nf,cc in mTEPES.psnha if (ni,nf,cc) not in mTEPES.hc and mTEPES.pHeatPipePeriodIni[ni,nf,cc] > p]
-        nFixedVariables += sum(                  4    for p,sc,n,ni,nf,cc in mTEPES.psnha if (ni,nf,cc) not in mTEPES.hc and mTEPES.pHeatPipePeriodIni[ni,nf,cc] > p)
+        nFixedVariables += sum(                  1    for p,sc,n,ni,nf,cc in mTEPES.psnha if (ni,nf,cc) not in mTEPES.hc and mTEPES.pHeatPipePeriodIni[ni,nf,cc] > p)
 
     # tolerance to consider 0 an investment decision
     pEpsilon = 1e-4
