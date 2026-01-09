@@ -6,7 +6,7 @@
 Download & Installation
 =======================
 The **openTEPES** model has been tested using these latest versions `Python 3.13.7 <https://www.python.org/>`_ and `Pyomo 6.9.5 <https://pyomo.readthedocs.io/en/stable/>`_, and it uses `Gurobi 13.0.0 <https://www.gurobi.com/products/gurobi-optimizer/>`_ as a commercial MIP solver for which a free academic license is available.
-It uses Pyomo so that it is independent of the preferred solver. You can alternatively use one of the free solvers `HiGHS 1.12.0 <https://ergo-code.github.io/HiGHS/dev/installation/#Precompiled-Binaries>`_, `SCIP 10.0.0 <https://www.scipopt.org/index.php#download>`_, `GLPK 5.0 <https://www.gnu.org/software/glpk/>`_,
+It uses Pyomo so that it is independent of the preferred solver. You can alternatively use one of the free solvers `HiGHS 1.12.0 <https://pypi.org/project/highspy/>`_, `SCIP 10.0.0 <https://www.scipopt.org/index.php#download>`_, `GLPK 5.0 <https://www.gnu.org/software/glpk/>`_,
 and `CBC 2.10.12 <https://github.com/coin-or/Cbc/releases>`_. List the serial solver interfaces under Pyomo with this call::
 
   pyomo help -s
@@ -67,7 +67,7 @@ There are 2 ways to get all required packages under Windows. We recommend using 
 2. **Packages and Solver**:
 
    1. Launch a new Anaconda prompt (or terminal in any IDE)
-   2. `HiGHS <https://ergo-code.github.io/HiGHS/dev/interfaces/python/#python-getting-started>`_ is our recommendation if you want a free and open-source solver.
+   2. `HiGHS <https://pypi.org/project/highspy/>`_ is our recommendation if you want a free and open-source solver.
    3. Install openTEPES via pip by ``pip install openTEPES``
 
 Continue at `Get Started <#get-started>`_.
@@ -84,7 +84,7 @@ Continue at `Get Started <#get-started>`_.
 
 HiGHS
 
-The `HiGHS solver <https://ergo-code.github.io/HiGHS/dev/interfaces/python/#python-getting-started>`_ can also be used. It can be installed using: ``pip install highspy``.
+The `HiGHS solver <https://pypi.org/project/highspy/>`_ can also be used. It can be installed using: ``pip install highspy``.
 This solver is activated by calling the openTEPES model with the solver name 'appsi_highs'.
 
 Gurobi
