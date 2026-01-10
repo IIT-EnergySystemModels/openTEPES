@@ -228,6 +228,8 @@ Period        Scenario    Load level  Node        Electricity net demand (demand
 
 File ``oT_Result_GenerationSurplus.csv``
 
+The surplus power is the additional generation available of a generator until its maximum power.
+
 ============  ==========  ==========  ==============  ===============================
 Identifier                            Header          Description
 ====================================  ==============  ===============================
@@ -235,6 +237,8 @@ Period        Scenario    Load level  Generator       Power surplus [MW]
 ============  ==========  ==========  ==============  ===============================
 
 File ``oT_Result_GenerationRampUpSurplus.csv``
+
+The upward ramp surplus is the additional upward ramp available of a generator until its maximum upward ramp.
 
 ============  ==========  ==========  ==============  ===============================
 Identifier                            Header          Description
@@ -244,6 +248,8 @@ Period        Scenario    Load level  Generator       Upward ramp surplus [MW]
 
 File ``oT_Result_GenerationRampDwSurplus.csv``
 
+The downward ramp surplus is the additional downward ramp available of a generator until its maximum downward ramp.
+
 ============  ==========  ==========  ==============  ===============================
 Identifier                            Header          Description
 ====================================  ==============  ===============================
@@ -251,6 +257,8 @@ Period        Scenario    Load level  Generator       Downward ramp surplus [MW]
 ============  ==========  ==========  ==============  ===============================
 
 File ``oT_Result_GenerationCurtailment.csv``
+
+The curtailment power is the curtailed power (i.e., not used to satisfy the electricity demand) of variable renewable energy sources (VRES).
 
 ============  ==========  ==========  ==============  ===============================
 Identifier                            Header          Description
@@ -379,6 +387,8 @@ Period        Scenario    Load level  Technology  Downward operating reserve [MW
 ============  ==========  ==========  ==========  ==========================================
 
 File ``oT_Result_TechnologySpillage.csv``
+
+Energy spillage represents the energy that could not be stored in the ESS due to its storage capacity limits.
 
 ============  ==========  ==========  ==========  ==========================================
 Identifier                            Header      Description
