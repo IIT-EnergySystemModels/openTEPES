@@ -45,10 +45,10 @@ Some maps of the electricity transmission network and the energy share of differ
    :scale: 20%
    :align: center
 
-Some other additional plots are also plotted by the model. The CSV files used for outputting the results are briefly described in the following items.
+The model also plots some additional plots. The CSV files used for outputting the results are briefly described in the following items.
 
-The power is expressed in MW, energy or heat in GWh, and costs in M€. Hydrogen is expressed in tH2. Reservoir volume is expressed in hm\ :sup:`3`,
-and water flow in hm\ :sup:`3`/s. The energy transported in the electricity network is expressed in GWh-Mkm.
+The power is expressed in MW, energy or heat in GWh, and costs in million euros (M€). Hydrogen is expressed in tH2. Reservoir volume is expressed in hm\ :sup:`3`,
+and water flow in hm\ :sup:`3`/s. The energy transported in the electricity network is described in GWh-Mkm.
 
 Investment/Retirement
 ---------------------
@@ -210,7 +210,7 @@ Period        Scenario    Load level  Generator   Output (discharge in ESS) [MW]
 
 File ``oT_Result_NetDemand.csv``
 
-VRES are the variable renewable energy sources (e.g., wind and solar). Units with null linear variable cost and no storage capacity. The net demand is the demand minus the VRES.
+VRES are variable renewable energy sources (e.g., wind and solar), units with null linear variable cost and no storage capacity. The net demand is the demand minus the VRES.
 
 ============  ==========  ==========  ===================================
 Identifier                            Description
@@ -228,7 +228,7 @@ Period        Scenario    Load level  Node        Electricity net demand (demand
 
 File ``oT_Result_GenerationSurplus.csv``
 
-The surplus power is the additional generation available of a generator until its maximum power.
+The surplus power is the additional generation available from a generator beyond its maximum power.
 
 ============  ==========  ==========  ==============  ===============================
 Identifier                            Header          Description
@@ -238,7 +238,7 @@ Period        Scenario    Load level  Generator       Power surplus [MW]
 
 File ``oT_Result_GenerationRampUpSurplus.csv``
 
-The upward ramp surplus is the additional upward ramp available of a generator until its maximum upward ramp.
+The upward ramp surplus is the additional upward ramp capacity available from a generator until it reaches its maximum upward ramp capacity.
 
 ============  ==========  ==========  ==============  ===============================
 Identifier                            Header          Description
@@ -248,7 +248,7 @@ Period        Scenario    Load level  Generator       Upward ramp surplus [MW]
 
 File ``oT_Result_GenerationRampDwSurplus.csv``
 
-The downward ramp surplus is the additional downward ramp available of a generator until its maximum downward ramp.
+The downward ramp surplus is the additional downward ramp capacity available from a generator until it reaches its maximum downward ramp capacity.
 
 ============  ==========  ==========  ==============  ===============================
 Identifier                            Header          Description
@@ -388,7 +388,7 @@ Period        Scenario    Load level  Technology  Downward operating reserve [MW
 
 File ``oT_Result_TechnologySpillage.csv``
 
-Energy spillage represents the energy that could not be stored in the ESS due to its storage capacity limits.
+Energy spillage refers to the energy that cannot be stored in the ESS due to its storage capacity limitations.
 
 ============  ==========  ==========  ==========  ==========================================
 Identifier                            Header      Description
@@ -661,7 +661,7 @@ Identifier                            Header      Description
 Period        Scenario    Technology  Area        Generation, consumption, flows, losses, and demand [GWh]
 ============  ==========  ==========  ==========  ========================================================
 
-Positive values represent generation and negative values demand or consumption. The sum of the values per area (column) must be 0.
+Positive values represent generation, and negative values represent demand or consumption. The sum of the values per area (column) must be 0.
 EnergyFlowIn and EnergyFlowOut are the sum of the incoming and outgoing flows of the corresponding area nodes. Only if the network is like an antenna, these values
 will represent the import/export of energy to/from other areas.
 
@@ -1106,7 +1106,7 @@ Identifier                            Header      Description
 Period        Scenario    Load level  Generator   Captured SRMC when generating [€/MWh]
 ============  ==========  ==========  ==========  ======================================
 
-SRMC is the short-run marginal cost. It is computed for each load level as the generator output times the SRMC divided by the mean output of each stage.
+SRMC is the short-run marginal cost. It is computed for each load level as the generator output multiplied by the SRMC, divided by the mean output of each stage.
 
 File ``oT_Result_ConsumptionCapturedSRMC.csv``
 
@@ -1116,7 +1116,7 @@ Identifier                            Header      Description
 Period        Scenario    Load level  Generator   Captured SRMC when pumping/charging [€/MWh]
 ============  ==========  ==========  ==========  ============================================
 
-SRMC is the short-run marginal cost. It is computed for each load level as the ESS consumption times the SRMC divided by the mean consumption of each stage.
+SRMC is the short-run marginal cost. It is computed for each load level as the ESS consumption multiplied by the SRMC divided by the mean consumption of each stage.
 
 Marginal information
 --------------------
