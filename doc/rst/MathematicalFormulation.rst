@@ -258,7 +258,7 @@ They are written in **lowercase** letters.
 :math:`s^p_{\omega ne}`                                          ESS spilled energy                                                                                  GWh
 :math:`uc^p_{\omega ng}, su^p_{\omega ng}, sd^p_{\omega ng}`     Commitment, startup, and shutdown of a generation unit per load level                               {0,1}
 :math:`rss^p_{\omega nt}, rsu^p_{\omega nt}, rsd^p_{\omega nt}`  Stable, ramp up, and ramp down states of a generation unit with minimum stable time per load level  {0,1}
-:math:`uc'^p_{\omega g}`, `uc'^p_{\omega ng}`                    Maximum commitment of a generation unit for all the load levels or for each load level.
+:math:`uc'^p_{\omega g}`, :math:`uc'^p_{\omega ng}`              Maximum commitment of a generation unit for all the load levels or for each load level.
                                                                  If any generator in a exclusion group is an installation/retirement candidate, it is assumed
                                                                  exclusivity per period :math:`uc'^p_{\omega g}`. When all mutually exclusive generators exist,
                                                                  it is assumed that the exclusivity is per load level :math:`uc'^p_{\omega ng}`.                     {0,1}
