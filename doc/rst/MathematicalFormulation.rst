@@ -257,7 +257,6 @@ They are written in **lowercase** letters.
 :math:`i^p_{\omega ne}`                                          ESS stored energy (inventory, reservoir energy, state of charge)                                    GWh
 :math:`s^p_{\omega ne}`                                          ESS spilled energy                                                                                  GWh
 :math:`uc^p_{\omega ng}, su^p_{\omega ng}, sd^p_{\omega ng}`     Commitment, startup, and shutdown of a generation unit per load level                               {0,1}
-:math:`ucc^p_{\omega ng}`                                        Consumption commitment of a reversible hydro unit per load level
 :math:`rss^p_{\omega nt}, rsu^p_{\omega nt}, rsd^p_{\omega nt}`  Stable, ramp up, and ramp down states of a generation unit with minimum stable time per load level  {0,1}
 :math:`uc'_g`                                                    Maximum commitment of a generation unit for all the load levels                                     {0,1}
 ===============================================================  ==================================================================================================  ======
@@ -270,6 +269,8 @@ They are written in **lowercase** letters.
 :math:`ho^p_{\omega ne'}`               Hydro outflows of a reservoir                                               m\ :sup:`3`/s
 :math:`i'^p_{\omega ne'}`               Reservoir volume                                                            hm\ :sup:`3`
 :math:`s'^p_{\omega ne'}`               Reservoir spilled water                                                     hm\ :sup:`3`
+:math:`ucc^p_{\omega ng}`               Consumption commitment of a reversible hydro unit per load level            {0,1}
+:math:`ucc'^p_{\omega ng}`              Maximum consumption commitment of a reversible hydro unit per load level    {0,1}
 ======================================  ==========================================================================  ==============
 
 ========================================================================  ===========================================================================  =====
@@ -519,7 +520,7 @@ Maximum commitment of a committable unit (all except the VRES units) for all the
 
 Maximum commitment of a committable unit (all except the VRES units) for all the load levels [p.u.] «``eMaxCommitmentHourly``»
 
-:math:`uc^p_{\omega ng} \leq uc'^p_{\omega g} \quad \forall  \omega ng`
+:math:`uc^p_{\omega ng} \leq uc'^p_{\omega ng} \quad \forall p \omega ng`
 
 Maximum of all the capacity factors [p.u.] «``eMaxCommitGenYearly``»
 
@@ -527,7 +528,7 @@ Maximum of all the capacity factors [p.u.] «``eMaxCommitGenYearly``»
 
 Maximum of all the capacity factors [p.u.] «``eMaxCommitGenHourly``»
 
-:math:`\frac{gp^p_{\omega ng}}{\overline{GP}_g} \leq uc'^p_{\omega g} \quad \forall \omega ng`
+:math:`\frac{gp^p_{\omega ng}}{\overline{GP}_g} \leq uc'^p_{\omega ng} \quad \forall p \omega ng`
 
 Yearly mutually exclusive :math:`g` and :math:`g'` units (e.g., thermal, ESS, VRES units) [p.u.] «``eExclusiveGensYearly``»
 
@@ -535,7 +536,7 @@ Yearly mutually exclusive :math:`g` and :math:`g'` units (e.g., thermal, ESS, VR
 
 Hourly mutually exclusive :math:`g` and :math:`g'` units (e.g., thermal, ESS, VRES units) [p.u.] «``eExclusiveGensHourly``»
 
-:math:`uc'^p_{\omega g} + uc'^p_{\omega g'} + ucc'^p_{\omega g} + ucc'^p_{\omega g'} \leq 1 \quad \forall \omega ngg'`
+:math:`uc'^p_{\omega ng} + uc'^p_{\omega ng'} + ucc'^p_{\omega ng} + ucc'^p_{\omega ng'} \leq 1 \quad \forall p \omega ngg'`
 
 Initial commitment of the units for every period, scenario, and stage is determined by the model based on the merit order loading, including the VRES and ESS units.
 
