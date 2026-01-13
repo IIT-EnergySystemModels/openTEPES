@@ -335,7 +335,7 @@ Upward and downward operating reserves
 A description of the data included in the files ``oT_Data_OperatingReserveUp.csv`` and ``oT_Data_OperatingReserveDown.csv`` follows:
 
 ==========  ==============  ==========  ======  ===================================================================  ==
-Identifiers                                     Header  Description
+Identifiers                             Header  Description
 ======================================  ======  ===================================================================  ==
 Period      Scenario        LoadLevel   Area    Upward/downward operating reserves of the area for each load level   MW
 ==========  ==============  ==========  ======  ===================================================================  ==
@@ -351,7 +351,7 @@ Upward and downward ramp reserves
 A description of the data included in the files ``oT_Data_RampReserveUp.csv`` and ``oT_Data_RampReserveDown.csv`` follows:
 
 ==========  ==============  ==========  ======  ===================================================================  ====
-Identifiers                                     Header  Description
+Identifiers                             Header  Description
 ======================================  ======  ===================================================================  ====
 Period      Scenario        LoadLevel   Area    Upward/downward ramp reserves of the area for each load level        MW/h
 ==========  ==============  ==========  ======  ===================================================================  ====
