@@ -184,7 +184,7 @@ Identifier                            Header      Description
 Period        Scenario    Load level  Generator   Shutdown decision [p.u.]
 ============  ==========  ==========  ==========  ==========================
 
-File ``oT_Result_GenerationReserveUp.csv``
+File ``oT_Result_GenerationOperatingReserveUp.csv``
 
 ============  ==========  ==========  ==========  ===============================================
 Identifier                            Header      Description
@@ -192,12 +192,28 @@ Identifier                            Header      Description
 Period        Scenario    Load level  Generator   Upward operating reserve of each generator [MW]
 ============  ==========  ==========  ==========  ===============================================
 
-File ``oT_Result_GenerationReserveDown.csv``
+File ``oT_Result_GenerationOperatingReserveDown.csv``
 
 ============  ==========  ==========  ==========  =================================================
 Identifier                            Header      Description
 ====================================  ==========  =================================================
 Period        Scenario    Load level  Generator   Downward operating reserve of each generator [MW]
+============  ==========  ==========  ==========  =================================================
+
+File ``oT_Result_GenerationRampReserveUp.csv``
+
+============  ==========  ==========  ==========  ===============================================
+Identifier                            Header      Description
+====================================  ==========  ===============================================
+Period        Scenario    Load level  Generator   Ramp up reserve of each generator [MW]
+============  ==========  ==========  ==========  ===============================================
+
+File ``oT_Result_GenerationRampReserveDown.csv``
+
+============  ==========  ==========  ==========  =================================================
+Identifier                            Header      Description
+====================================  ==========  =================================================
+Period        Scenario    Load level  Generator   Ramp down reserve of each generator [MW]
 ============  ==========  ==========  ==========  =================================================
 
 File ``oT_Result_Generation.csv``

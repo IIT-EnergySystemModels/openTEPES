@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - January 08, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - January 13, 2026
 """
 
 import time
@@ -52,6 +52,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         'VariablePTDF'  : [0, 1, 2, 3],
     }
     FLAG_MAPPING = {
+        'RampReserveUp'    : ('pIndRampReserves',  None, 'No ramp reserves'                    ),
+        'RampReserveDown'  : ('pIndRampReserves',  None, 'No ramp reserves'                    ),
         'VariableTTCFrw'   : ('pIndVarTTC'       , None, 'No variable transmission line TTCs'  ),
         'VariableTTCBck'   : ('pIndVarTTC'       , None, 'No variable transmission line TTCs'  ),
         'VariablePTDF'     : ('pIndPTDF'         , None, 'No flow-based market coupling method'),
@@ -125,8 +127,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         return dfs, par
 
     dfs, par = read_input_data(_path, CaseName)
-    # if 'pIndVarTTC', 'pIndPTDF', 'pIndHydroTopology', 'pIndHydrogen', 'pIndHeat' not in par include them and set value to zero
-    for key in ['pIndVarTTC', 'pIndPTDF', 'pIndHydroTopology', 'pIndHydrogen', 'pIndHeat']:
+    # if 'pIndRampReserves', 'pIndVarTTC', 'pIndPTDF', 'pIndHydroTopology', 'pIndHydrogen', 'pIndHeat' not in par include them and set value to zero
+    for key in ['pIndRampReserves', 'pIndVarTTC', 'pIndPTDF', 'pIndHydroTopology', 'pIndHydrogen', 'pIndHeat']:
         if key not in par.keys():
             par[key] = 0
 
@@ -152,7 +154,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
                                     'VariableFuelCost',
                                     'VariableEmissionCost',]
     mTEPES.node_frames_suffixes  = ['Demand', 'Inertia']
-    mTEPES.area_frames_suffixes  = ['OperatingReserveUp', 'OperatingReserveDown', 'ReserveMargin', 'Emission', 'RESEnergy']
+    mTEPES.area_frames_suffixes  = ['RampReserveUp', 'RampReserveDown', 'OperatingReserveUp', 'OperatingReserveDown', 'ReserveMargin', 'Emission', 'RESEnergy']
     mTEPES.hydro_frames_suffixes = ['Reservoir', 'VariableMinVolume', 'VariableMaxVolume', 'HydroInflows', 'HydroOutflows']
     mTEPES.hydrogen_frames_suffixes  = ['DemandHydrogen']
     mTEPES.heat_frames_suffixes  = ['DemandHeat', 'ReserveMarginHeat']
@@ -241,22 +243,26 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     par['pReserveMargin']        = dfs['dfReserveMargin']['ReserveMargin' ]                                        # minimum adequacy reserve margin           [p.u.]
     par['pEmission']             = dfs['dfEmission']     ['CO2Emission'   ]                                        # maximum CO2 emission                      [MtCO2]
     par['pRESEnergy']            = dfs['dfRESEnergy']    ['RESEnergy'     ]                                        # minimum RES energy                        [GWh]
-    par['pDemandElec']           = dfs['dfDemand'].reindex                (columns=mTEPES.nd, fill_value=0.0) * 1e-3 # electric demand                           [GW]
-    par['pSystemInertia']        = dfs['dfInertia'].reindex               (columns=mTEPES.ar, fill_value=0.0)        # inertia                                   [s]
-    par['pOperReserveUp']        = dfs['dfOperatingReserveUp'].reindex    (columns=mTEPES.ar, fill_value=0.0) * 1e-3 # upward   operating reserve                [GW]
-    par['pOperReserveDw']        = dfs['dfOperatingReserveDown'].reindex  (columns=mTEPES.ar, fill_value=0.0) * 1e-3 # downward operating reserve                [GW]
-    par['pVariableMinPowerElec'] = dfs['dfVariableMinGeneration'].reindex (columns=mTEPES.gg, fill_value=0.0) * 1e-3 # dynamic variable minimum power            [GW]
-    par['pVariableMaxPowerElec'] = dfs['dfVariableMaxGeneration'].reindex (columns=mTEPES.gg, fill_value=0.0) * 1e-3 # dynamic variable maximum power            [GW]
+    par['pDemandElec']           = dfs['dfDemand'                ].reindex(columns=mTEPES.nd, fill_value=0.0) * 1e-3 # electric demand                           [GW]
+    par['pSystemInertia']        = dfs['dfInertia'               ].reindex(columns=mTEPES.ar, fill_value=0.0)        # inertia                                   [s]
+    par['pOperReserveUp']        = dfs['dfOperatingReserveUp'    ].reindex(columns=mTEPES.ar, fill_value=0.0) * 1e-3 # upward   operating reserve                [GW]
+    par['pOperReserveDw']        = dfs['dfOperatingReserveDown'  ].reindex(columns=mTEPES.ar, fill_value=0.0) * 1e-3 # downward operating reserve                [GW]
+    par['pVariableMinPowerElec'] = dfs['dfVariableMinGeneration' ].reindex(columns=mTEPES.gg, fill_value=0.0) * 1e-3 # dynamic variable minimum power            [GW]
+    par['pVariableMaxPowerElec'] = dfs['dfVariableMaxGeneration' ].reindex(columns=mTEPES.gg, fill_value=0.0) * 1e-3 # dynamic variable maximum power            [GW]
     par['pVariableMinCharge']    = dfs['dfVariableMinConsumption'].reindex(columns=mTEPES.gg, fill_value=0.0) * 1e-3 # dynamic variable minimum charge           [GW]
     par['pVariableMaxCharge']    = dfs['dfVariableMaxConsumption'].reindex(columns=mTEPES.gg, fill_value=0.0) * 1e-3 # dynamic variable maximum charge           [GW]
-    par['pVariableMinStorage']   = dfs['dfVariableMinStorage'].reindex    (columns=mTEPES.gg, fill_value=0.0)        # dynamic variable minimum storage          [GWh]
-    par['pVariableMaxStorage']   = dfs['dfVariableMaxStorage'].reindex    (columns=mTEPES.gg, fill_value=0.0)        # dynamic variable maximum storage          [GWh]
-    par['pVariableMinEnergy']    = dfs['dfVariableMinEnergy'].reindex     (columns=mTEPES.gg, fill_value=0.0) * 1e-3 # dynamic variable minimum energy           [GW]
-    par['pVariableMaxEnergy']    = dfs['dfVariableMaxEnergy'].reindex     (columns=mTEPES.gg, fill_value=0.0) * 1e-3 # dynamic variable maximum energy           [GW]
-    par['pVariableFuelCost']     = dfs['dfVariableFuelCost'].reindex      (columns=mTEPES.gg, fill_value=0.0)        # dynamic variable fuel cost                [EUR/MJ]
-    par['pVariableEmissionCost'] = dfs['dfVariableEmissionCost'].reindex  (columns=mTEPES.gg, fill_value=0.0)        # dynamic variable emission cost            [EUR/tCO2]
-    par['pEnergyInflows']        = dfs['dfEnergyInflows'].reindex         (columns=mTEPES.gg, fill_value=0.0) * 1e-3 # dynamic energy inflows                    [GW]
-    par['pEnergyOutflows']       = dfs['dfEnergyOutflows'].reindex        (columns=mTEPES.gg, fill_value=0.0) * 1e-3 # dynamic energy outflows                   [GW]
+    par['pVariableMinStorage']   = dfs['dfVariableMinStorage'    ].reindex(columns=mTEPES.gg, fill_value=0.0)        # dynamic variable minimum storage          [GWh]
+    par['pVariableMaxStorage']   = dfs['dfVariableMaxStorage'    ].reindex(columns=mTEPES.gg, fill_value=0.0)        # dynamic variable maximum storage          [GWh]
+    par['pVariableMinEnergy']    = dfs['dfVariableMinEnergy'     ].reindex(columns=mTEPES.gg, fill_value=0.0) * 1e-3 # dynamic variable minimum energy           [GW]
+    par['pVariableMaxEnergy']    = dfs['dfVariableMaxEnergy'     ].reindex(columns=mTEPES.gg, fill_value=0.0) * 1e-3 # dynamic variable maximum energy           [GW]
+    par['pVariableFuelCost']     = dfs['dfVariableFuelCost'      ].reindex(columns=mTEPES.gg, fill_value=0.0)        # dynamic variable fuel cost                [EUR/MJ]
+    par['pVariableEmissionCost'] = dfs['dfVariableEmissionCost'  ].reindex(columns=mTEPES.gg, fill_value=0.0)        # dynamic variable emission cost            [EUR/tCO2]
+    par['pEnergyInflows']        = dfs['dfEnergyInflows'         ].reindex(columns=mTEPES.gg, fill_value=0.0) * 1e-3 # dynamic energy inflows                    [GW]
+    par['pEnergyOutflows']       = dfs['dfEnergyOutflows'        ].reindex(columns=mTEPES.gg, fill_value=0.0) * 1e-3 # dynamic energy outflows                   [GW]
+
+    if par['pIndRampReserves'] == 1:
+        par['pRampReserveUp']    = dfs['dfRampReserveUp'         ].reindex(columns=mTEPES.ar, fill_value=0.0) * 1e-3 # system ramp up   reserves                 [GW/h]
+        par['pRampReserveDw']    = dfs['dfRampReserveDown'       ].reindex(columns=mTEPES.ar, fill_value=0.0) * 1e-3 # system ramp down reserves                 [GW/h]
 
     if par['pIndVarTTC'] == 1:
         par['pVariableNTCFrw'] = dfs['dfVariableTTCFrw'] * 1e-3                                                      # variable TTC forward                      [GW]
@@ -265,10 +271,10 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         par['pVariablePTDF']   = dfs['dfVariablePTDF']                                                               # variable PTDF                             [p.u.]
 
     if par['pIndHydroTopology'] == 1:
-        par['pVariableMinVolume'] = dfs['dfVariableMinVolume'].reindex  (columns=mTEPES.rs, fill_value=0.0)          # dynamic variable minimum reservoir volume [hm3]
-        par['pVariableMaxVolume'] = dfs['dfVariableMaxVolume'].reindex  (columns=mTEPES.rs, fill_value=0.0)          # dynamic variable maximum reservoir volume [hm3]
-        par['pHydroInflows']      = dfs['dfHydroInflows'].reindex       (columns=mTEPES.rs, fill_value=0.0)          # dynamic hydro inflows                     [m3/s]
-        par['pHydroOutflows']     = dfs['dfHydroOutflows'].reindex      (columns=mTEPES.rs, fill_value=0.0)          # dynamic hydro outflows                    [m3/s]
+        par['pVariableMinVolume'] = dfs['dfVariableMinVolume'].reindex(columns=mTEPES.rs, fill_value=0.0)            # dynamic variable minimum reservoir volume [hm3]
+        par['pVariableMaxVolume'] = dfs['dfVariableMaxVolume'].reindex(columns=mTEPES.rs, fill_value=0.0)            # dynamic variable maximum reservoir volume [hm3]
+        par['pHydroInflows']      = dfs['dfHydroInflows'     ].reindex(columns=mTEPES.rs, fill_value=0.0)            # dynamic hydro inflows                     [m3/s]
+        par['pHydroOutflows']     = dfs['dfHydroOutflows'    ].reindex(columns=mTEPES.rs, fill_value=0.0)            # dynamic hydro outflows                    [m3/s]
 
     if par['pIndHydrogen'] == 1:
         par['pDemandH2']          = dfs['dfDemandHydrogen']      [mTEPES.nd]                                         # hydrogen demand                           [tH2/h]
@@ -303,6 +309,10 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         par['pVariableEmissionCost']  = ProcessParameter(par['pVariableEmissionCost'], par['pTimeStep'])
         par['pEnergyInflows']         = ProcessParameter(par['pEnergyInflows'],        par['pTimeStep'])
         par['pEnergyOutflows']        = ProcessParameter(par['pEnergyOutflows'],       par['pTimeStep'])
+
+        if par['pIndRampReserves'] == 1:
+            par['pRampReserveUp']     = ProcessParameter(par['pRampReserveUp'],        par['pTimeStep'])
+            par['pRampReserveDw']     = ProcessParameter(par['pRampReserveDw'],        par['pTimeStep'])
 
         if par['pIndVarTTC'] == 1:
             par['pVariableNTCFrw']    = ProcessParameter(par['pVariableNTCFrw'],       par['pTimeStep'])
@@ -1047,8 +1057,12 @@ def DataConfiguration(mTEPES):
     mTEPES.dPar['pOutflowsTimeStep']    = mTEPES.dPar['pOutflowsTimeStep'].loc    [mTEPES.es   ]
     mTEPES.dPar['pStorageType']         = mTEPES.dPar['pStorageType'].loc         [mTEPES.es   ]
 
+    if mTEPES.dPar['pIndRampReserves'] == 1:
+        mTEPES.dPar['pRampReserveUp']   = mTEPES.dPar['pRampReserveUp'].loc       [mTEPES.psnar]
+        mTEPES.dPar['pRampReserveDw']   = mTEPES.dPar['pRampReserveDw'].loc       [mTEPES.psnar]
+
     if mTEPES.dPar['pIndHydroTopology'] == 1:
-        mTEPES.dPar['pHydroInflows']    = mTEPES.dPar['pHydroInflows'].loc        [mTEPES.psn  ]
+        mTEPES.dPar['pHydroInflows' ]   = mTEPES.dPar['pHydroInflows' ].loc       [mTEPES.psn  ]
         mTEPES.dPar['pHydroOutflows']   = mTEPES.dPar['pHydroOutflows'].loc       [mTEPES.psn  ]
         mTEPES.dPar['pIniVolume']       = mTEPES.dPar['pIniVolume'].loc           [mTEPES.psn  ]
         mTEPES.dPar['pMinVolume']       = mTEPES.dPar['pMinVolume'].loc           [mTEPES.psn  ]
@@ -1366,6 +1380,10 @@ def DataConfiguration(mTEPES):
     mTEPES.dPar['pOperReserveUp']     = filter_rows(mTEPES.dPar['pOperReserveUp']    , mTEPES.psnar)
     mTEPES.dPar['pOperReserveDw']     = filter_rows(mTEPES.dPar['pOperReserveDw']    , mTEPES.psnar)
 
+    if mTEPES.dPar['pIndRampReserves'] == 1:
+        mTEPES.dPar['pRampReserveUp'] = filter_rows(mTEPES.dPar['pRampReserveUp']    , mTEPES.psnar)
+        mTEPES.dPar['pRampReserveDw'] = filter_rows(mTEPES.dPar['pRampReserveDw']    , mTEPES.psnar)
+
     mTEPES.dPar['pMaxNTCBck']         = filter_rows(mTEPES.dPar['pMaxNTCBck']        , mTEPES.psnla)
     mTEPES.dPar['pMaxNTCFrw']         = filter_rows(mTEPES.dPar['pMaxNTCFrw']        , mTEPES.psnla)
     mTEPES.dPar['pMaxNTCMax']         = filter_rows(mTEPES.dPar['pMaxNTCMax']        , mTEPES.psnla)
@@ -1389,6 +1407,7 @@ def DataConfiguration(mTEPES):
     mTEPES.pIndBinGenMinTime     = Param(initialize=mTEPES.dPar['pIndBinGenMinTime']   , within=Binary,              doc='Indicator of using or not the min up/dw time constraints',  mutable=True)
     mTEPES.pIndBinLineCommit     = Param(initialize=mTEPES.dPar['pIndBinLineCommit']   , within=Binary,              doc='Indicator of binary electric network switching  decisions', mutable=True)
     mTEPES.pIndBinNetLosses      = Param(initialize=mTEPES.dPar['pIndBinNetLosses']    , within=Binary,              doc='Indicator of binary electric network ohmic losses',         mutable=True)
+    mTEPES.pIndRampReserves      = Param(initialize=mTEPES.dPar['pIndRampReserves']    , within=Binary,              doc='Indicator of ramp reserves'                                             )
     mTEPES.pIndHydroTopology     = Param(initialize=mTEPES.dPar['pIndHydroTopology']   , within=Binary,              doc='Indicator of reservoir and hydropower topology'                         )
     mTEPES.pIndHydrogen          = Param(initialize=mTEPES.dPar['pIndHydrogen']        , within=Binary,              doc='Indicator of hydrogen demand and pipeline network'                      )
     mTEPES.pIndHeat              = Param(initialize=mTEPES.dPar['pIndHeat']            , within=Binary,              doc='Indicator of heat     demand and pipe     network'                      )
@@ -1479,6 +1498,10 @@ def DataConfiguration(mTEPES):
     mTEPES.pGenUpInvest          = Param(mTEPES.eb,    initialize=mTEPES.dPar['pGenUpInvest'].to_dict()              , within=NonNegativeReals,    doc='Upper bound of the investment decision', mutable=True)
     mTEPES.pGenLoRetire          = Param(mTEPES.gd,    initialize=mTEPES.dPar['pGenLoRetire'].to_dict()              , within=NonNegativeReals,    doc='Lower bound of the retirement decision', mutable=True)
     mTEPES.pGenUpRetire          = Param(mTEPES.gd,    initialize=mTEPES.dPar['pGenUpRetire'].to_dict()              , within=NonNegativeReals,    doc='Upper bound of the retirement decision', mutable=True)
+
+    if mTEPES.dPar['pIndRampReserves'] == 1:
+        mTEPES.pRampReserveUp    = Param(mTEPES.psnar, initialize=mTEPES.dPar['pRampReserveUp'].to_dict()            , within=NonNegativeReals,    doc='Ramp up   reserve'                                   )
+        mTEPES.pRampReserveDw    = Param(mTEPES.psnar, initialize=mTEPES.dPar['pRampReserveDw'].to_dict()            , within=NonNegativeReals,    doc='Ramp down reserve'                                   )
 
     if mTEPES.dPar['pIndHydrogen'] == 1:
         mTEPES.pProductionFunctionH2 = Param(mTEPES.el, initialize=mTEPES.dPar['pProductionFunctionH2'].to_dict(), within=NonNegativeReals, doc='Production function of an electrolyzer plant')
@@ -1705,6 +1728,10 @@ def SettingUpVariables(OptModel, mTEPES):
         OptModel.vESSSpillage              = Var(mTEPES.psnes, within=NonNegativeReals, doc='ESS spillage                                    [GWh]')
         OptModel.vIniInventory             = Var(mTEPES.psnec, within=NonNegativeReals, doc='initial inventory for ESS candidate             [GWh]')
 
+        if mTEPES.pIndRampReserves == 1:
+            OptModel.vRampReserveUp        = Var(mTEPES.psnnr, within=NonNegativeReals, doc='ramp up   reserve of the unit                  [GW/h]')
+            OptModel.vRampReserveDw        = Var(mTEPES.psnnr, within=NonNegativeReals, doc='ramp down reserve of the unit                  [GW/h]')
+
         OptModel.vESSTotalCharge           = Var(mTEPES.psneh, within=NonNegativeReals, doc='ESS total charge power                           [GW]')
         OptModel.vCharge2ndBlock           = Var(mTEPES.psneh, within=NonNegativeReals, doc='ESS       charge power                           [GW]')
         OptModel.vESSReserveUp             = Var(mTEPES.psneh, within=NonNegativeReals, doc='ESS upward   operating reserve                   [GW]')
@@ -1841,6 +1868,10 @@ def SettingUpVariables(OptModel, mTEPES):
         [OptModel.vIniInventory  [p,sc,n,ec].setlb(mTEPES.pMinStorage       [p,sc,n,ec]  ) for p,sc,n,ec in mTEPES.psnec]
         [OptModel.vIniInventory  [p,sc,n,ec].setub(mTEPES.pMaxStorage       [p,sc,n,ec]  ) for p,sc,n,ec in mTEPES.psnec]
 
+        if mTEPES.pIndRampReserves == 1:
+            [OptModel.vRampReserveUp[p,sc,n,nr].setub(min(mTEPES.pMaxPower2ndBlock[p,sc,n,nr], mTEPES.pRampUp[nr])) if mTEPES.pRampUp[nr] else OptModel.vRampReserveUp[p,sc,n,nr].setub(mTEPES.pMaxPower2ndBlock[p,sc,n,nr]) for p,sc,n,nr in mTEPES.psnnr]
+            [OptModel.vRampReserveDw[p,sc,n,nr].setub(min(mTEPES.pMaxPower2ndBlock[p,sc,n,nr], mTEPES.pRampDw[nr])) if mTEPES.pRampUp[nr] else OptModel.vRampReserveDw[p,sc,n,nr].setub(mTEPES.pMaxPower2ndBlock[p,sc,n,nr]) for p,sc,n,nr in mTEPES.psnnr]
+
         [OptModel.vESSTotalCharge[p,sc,n,eh].setub(mTEPES.pMaxCharge        [p,sc,n,eh]  ) for p,sc,n,eh in mTEPES.psneh]
         [OptModel.vCharge2ndBlock[p,sc,n,eh].setub(mTEPES.pMaxCharge2ndBlock[p,sc,n,eh]  ) for p,sc,n,eh in mTEPES.psneh]
         [OptModel.vESSReserveUp  [p,sc,n,eh].setub(mTEPES.pMaxCharge2ndBlock[p,sc,n,eh]  ) for p,sc,n,eh in mTEPES.psneh]
@@ -1870,7 +1901,7 @@ def SettingUpVariables(OptModel, mTEPES):
             int: The number of fixed variables.
         '''
 
-        nFixedBinaries = 0
+        nFixedVariables = 0
 
         # relax binary condition in generation, boiler, and electric network investment decisions
         for p,eb in mTEPES.peb:
@@ -1879,7 +1910,7 @@ def SettingUpVariables(OptModel, mTEPES):
             if mTEPES.pIndBinGenInvest() == 2:
                 OptModel.vGenerationInvest    [p,eb      ].fix(0)
                 OptModel.vGenerationInvest    [p,eb      ].domain = UnitInterval
-                nFixedBinaries += 1
+                nFixedVariables += 1
 
         for p,ni,nf,cc in mTEPES.plc:
             if mTEPES.pIndBinNetElecInvest() != 0 and mTEPES.pIndBinLineInvest[ni,nf,cc] == 0:
@@ -1887,7 +1918,7 @@ def SettingUpVariables(OptModel, mTEPES):
             if mTEPES.pIndBinNetElecInvest() == 2:
                 OptModel.vNetworkInvest       [p,ni,nf,cc].fix(0)
                 OptModel.vNetworkInvest       [p,ni,nf,cc].domain = UnitInterval
-                nFixedBinaries += 1
+                nFixedVariables += 1
 
         # relax binary condition in generation retirement decisions
         for p,gd in mTEPES.pgd:
@@ -1896,7 +1927,7 @@ def SettingUpVariables(OptModel, mTEPES):
             if mTEPES.pIndBinGenRetire() == 2:
                 OptModel.vGenerationRetire    [p,gd      ].fix(0)
                 OptModel.vGenerationRetire    [p,gd      ].domain = UnitInterval
-                nFixedBinaries += 1
+                nFixedVariables += 1
 
         # relax binary condition in reservoir investment decisions
         if mTEPES.pIndHydroTopology == 1:
@@ -1906,7 +1937,7 @@ def SettingUpVariables(OptModel, mTEPES):
                 if mTEPES.pIndBinRsrInvest() == 2:
                     OptModel.vReservoirInvest [p,rc      ].fix(0)
                     OptModel.vReservoirInvest [p,rc      ].domain = UnitInterval
-                    nFixedBinaries += 1
+                    nFixedVariables += 1
 
         # relax binary condition in hydrogen network investment decisions
         if mTEPES.pIndHydrogen == 1:
@@ -1916,7 +1947,7 @@ def SettingUpVariables(OptModel, mTEPES):
                 if mTEPES.pIndBinNetH2Invest() == 2:
                     OptModel.vH2PipeInvest  [p,ni,nf,cc].fix(0)
                     OptModel.vH2PipeInvest  [p,ni,nf,cc].domain = UnitInterval
-                    nFixedBinaries += 1
+                    nFixedVariables += 1
 
         if mTEPES.pIndHeat == 1:
             # relax binary condition in heat network investment decisions
@@ -1926,7 +1957,7 @@ def SettingUpVariables(OptModel, mTEPES):
                 if mTEPES.pIndBinNetHeatInvest() == 2:
                     OptModel.vHeatPipeInvest  [p,ni,nf,cc].fix(0)
                     OptModel.vHeatPipeInvest  [p,ni,nf,cc].domain = UnitInterval
-                    nFixedBinaries += 1
+                    nFixedVariables += 1
 
         # relax binary condition in unit generation, startup and shutdown decisions
         for p,sc,n,nr in mTEPES.psnnr:
@@ -1956,9 +1987,9 @@ def SettingUpVariables(OptModel, mTEPES):
                 if mTEPES.pMaxCharge[p,sc,n,h] == 0.0:
                     OptModel.vCommitmentCons[p,sc,n,h].fix(0)
                     OptModel.vCommitmentCons[p,sc,n,h].domain = UnitInterval
-                    nFixedBinaries += 1
+                    nFixedVariables += 1
 
-        return nFixedBinaries
+        return nFixedVariables
 
     # call the relaxing variables function and add its output to nFixedVariables
     nFixedBinaries = RelaxBinaryInvestmentConditions(mTEPES, mTEPES)
@@ -2082,12 +2113,19 @@ def SettingUpVariables(OptModel, mTEPES):
                     OptModel.vShutDown      [p,sc,n,nr].domain = UnitInterval
                     nFixedVariables += 3
 
-            # if min and max power coincide there are neither second block, nor operating reserve
+            # if min and max power coincide there are neither second block, nor operating reserve, nor ramp reserve
             if  mTEPES.pMaxPower2ndBlock [p,sc,n,nr] ==  0.0:
                 OptModel.vOutput2ndBlock [p,sc,n,nr].fix(0.0)
                 OptModel.vReserveUp      [p,sc,n,nr].fix(0.0)
                 OptModel.vReserveDown    [p,sc,n,nr].fix(0.0)
                 nFixedVariables += 3
+                if mTEPES.pIndRampReserves == 1:
+                    if mTEPES.pMaxPower2ndBlock[p, sc, n, nr] == 0.0 or mTEPES.pRampUp[nr] == 0.0:
+                        OptModel.vRampReserveUp[p,sc,n,nr].fix(0.0)
+                        OptModel.vRampReserveDw[p,sc,n,nr].fix(0.0)
+                        print(nFixedVariables)
+                        nFixedVariables += 2
+
             if  mTEPES.pIndOperReserveGen[       nr] ==  1:
                 OptModel.vReserveUp      [p,sc,n,nr].fix(0.0)
                 OptModel.vReserveDown    [p,sc,n,nr].fix(0.0)

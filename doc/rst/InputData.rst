@@ -345,6 +345,20 @@ These operating reserves must include Automatic Frequency Restoration Reserves (
 
 Internally, all the values below 1e-5 times the maximum system demand of each area will be converted into 0 by the model.
 
+Upward and downward ramp reserves
+---------------------------------
+
+A description of the data included in the files ``oT_Data_RampReserveUp.csv`` and ``oT_Data_RampReserveDown.csv`` follows:
+
+==========  ==============  ==========  ======  ===================================================================  ====
+Identifiers                                     Header  Description
+======================================  ======  ===================================================================  ====
+Period      Scenario        LoadLevel   Area    Upward/downward ramp reserves of the area for each load level        MW/h
+==========  ==============  ==========  ======  ===================================================================  ====
+
+The ramp reserves are typically associated with a specific additional proportion of the net demand.
+These files are optional. If not given the ramp reserve constraints are not formulated.
+
 Generation
 ----------
 A description of the data included for each (electricity and heat) generating unit in the file ``oT_Data_Generation.csv`` follows:
@@ -384,8 +398,11 @@ ProductionFunctionH2ToHeat  Production function from hydrogen (numerator) to hea
 Availability                Unit availability for area adequacy reserve margin (also called de-rating factor or capacity credit (CC) or Firm Capacity Equivalent (FCE) or the Effective Load-Carrying Capability (ELCC))  p.u.
 Inertia                     Unit inertia constant                                                                                                                                                                         s
 EFOR                        Equivalent Forced Outage Rate (probability that a generating unit will be unavailable due to forced outages during a given period)                                                            p.u.
-RampUp                      Maximum rate of increasing its output for generating units, or maximum rate of increasing its discharge rate or decreasing its charge rate for ESS units                                      MW/h
-RampDown                    Maximum rate of decreasing its output for generating units, or maximum rate of increasing its charge rate or decreasing its discharge rate for ESS units                                      MW/h
+RampUp                      Maximum rate of increasing its output for generating units, or maximum rate of increasing its discharge rate or decreasing its charge rate for ESS units.
+                            If left empty, no ramp up constraint is formulated for the generator.                                                                                                                         MW/h
+RampDown                    Maximum rate of decreasing its output for generating units, or maximum rate of increasing its charge rate or decreasing its discharge rate for ESS units.
+                            If left empty, no ramp down constraint is formulated for the generator.                                                                                                                       MW/h
+MW/h
 UpTime                      Minimum uptime                                                                                                                                                                                h
 DownTime                    Minimum downtime                                                                                                                                                                              h
 StableTime                  Minimum stable time (intended for nuclear units to be at their minimum load, if lower than the rated capacity, during this time).

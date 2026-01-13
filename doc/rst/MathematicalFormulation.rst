@@ -108,6 +108,12 @@ They are written in **uppercase** letters.
 :math:`UR^p_{\omega na}, DR^p_{\omega na}`  Upward and downward operating reserves for each area                GW
 ==========================================  ==================================================================  ====
 
+============================================  ==================================================================  ====
+**Ramp reserves**
+----------------------------------------------------------------------------------------------------------------------
+:math:`URR^p_{\omega na}, DRR^p_{\omega na}`  Upward and downward ramp reserves for each area                     GW/h
+============================================  ==================================================================  ====
+
 ==================================  ============================================================================  ====
 **Adequacy electricity system reserve margin**
 ----------------------------------------------------------------------------------------------------------------------
@@ -253,6 +259,8 @@ They are written in **lowercase** letters.
                                                                  A unit can provide simultaneously upward and downward reserves                                      GW
 :math:`ur'^p_{\omega ne}, dr'^p_{\omega ne}`                     Upward and downward operating reserves of an ESS as a consumption unit.
                                                                  A consumption unit can provide simultaneously upward and downward reserves                          GW
+:math:`urr^p_{\omega ng}, drr^p_{\omega ng}`                     Upward and downward ramp reserves of a non-renewable generating unit.
+                                                                 A unit can provide simultaneously upward and downward ramp reserves                                 GW/h
 :math:`ei^p_{\omega ne}`                                         Variable energy inflows of a candidate ESS (e.g., hydropower plant)                                 GW
 :math:`i^p_{\omega ne}`                                          ESS stored energy (inventory, reservoir energy, state of charge)                                    GWh
 :math:`s^p_{\omega ne}`                                          ESS spilled energy                                                                                  GWh
@@ -409,6 +417,14 @@ Upward and downward operating reserves provided for each area by non-renewable g
 
 :math:`\sum_{g \in a} dr^p_{\omega ng} + \sum_{e \in a} dr'^p_{\omega ne} = DR^p_{\omega na} \quad \forall p \omega na`
 
+Upward and downward ramp reserves provided for the system by non-renewable generators (including ESS when generating) [GW/h] «``eSystemRampUp``» «``eSystemRampDw``»
+
+:math:`\frac{\sum_g - p^p_{\omega,n-\nu,g} + p^p_{\omega ng} + urr^p_{\omega ng}}{DUR^p_{\omega n}} \geq \sum_a   URR^p_{\omega na} \quad \forall p \omega n`
+
+:math:`\frac{\sum_g - p^p_{\omega,n-\nu,g} + p^p_{\omega ng} + drr^p_{\omega ng}}{DUR^p_{\omega n}} \leq \sum_a - DRR^p_{\omega na} \quad \forall p \omega n`
+
+It is assumed that the ramp reserves provided by the generators can be shared among areas of the system.
+
 Ratio between downward and upward operating reserves for each area provided by non-renewable generators (including ESS when generating) and ESS, when charging, [GW] «``eReserveMinRatioDwUp``» «``eReserveMaxRatioDwUp``» «``eRsrvMinRatioDwUpESS``» «``eRsrvMaxRatioDwUpESS``».
 The corresponding constraints are not formulated if :math:`\underline{DtUR}=0` and :math:`\overline{DtUR}=1`.
 
@@ -474,9 +490,9 @@ Maximum and minimum output of the second block of a committed unit (all except t
 
 * G. Morales-España, J.M. Latorre, and A. Ramos "Tight and Compact MILP Formulation for the Thermal Unit Commitment Problem" IEEE Transactions on Power Systems 28 (4): 4897-4908, Nov 2013. `10.1109/TPWRS.2013.2251373 <https://doi.org/10.1109/TPWRS.2013.2251373>`_
 
-:math:`\frac{p^p_{\omega ng} + ur^p_{\omega ng}}{\overline{GP}^p_{\omega ng} - \underline{GP}^p_{\omega ng}} \leq uc^p_{\omega ng} - su^p_{\omega ng} - sd^p_{\omega,n+\nu,g} \quad \forall p \omega ng`
+:math:`\frac{p^p_{\omega ng} + ur^p_{\omega ng} + urr^p_{\omega ng}}{\overline{GP}^p_{\omega ng} - \underline{GP}^p_{\omega ng}} \leq uc^p_{\omega ng} - su^p_{\omega ng} - sd^p_{\omega,n+\nu,g} \quad \forall p \omega ng`
 
-:math:`p^p_{\omega ng} - dr^p_{\omega ng} \geq 0                \quad \forall p \omega ng`
+:math:`p^p_{\omega ng} - dr^p_{\omega ng} - drr^p_{\omega ng} \geq 0                \quad \forall p \omega ng`
 
 Maximum and minimum charge of a non-hydropower ESS [p.u.] «``eMaxCharge``» «``eMinCharge``»
 
@@ -734,6 +750,10 @@ The approach is based on the following equations [GW] [p.u.] «``eNetPosition``�
 :math:`0 \leq  p^p_{\omega ng}  \leq \overline{GP}^p_{\omega ng} - \underline{GP}^p_{\omega ng}    \quad \forall p \omega ng`
 
 :math:`0 \leq  c^p_{\omega ne}  \leq \overline{GC}^p_{\omega ne}                                   \quad \forall p \omega ne`
+
+:math:`0 \leq urr^p_{\omega ng} \leq \min(\overline{GP}^p_{\omega ng} - \underline{GP}^p_{\omega ng}, RU_g)  \quad \forall p \omega ng`
+
+:math:`0 \leq drr^p_{\omega ng} \leq \min(\overline{GP}^p_{\omega ng} - \underline{GP}^p_{\omega ng}, RD_g)  \quad \forall p \omega ng`
 
 :math:`\underline{I}^p_{\omega ne} \leq  i^p_{\omega ne}  \leq \overline{I}^p_{\omega ne}          \quad \forall p \omega ne`
 

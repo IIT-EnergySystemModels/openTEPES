@@ -1,8 +1,11 @@
 Change Log
 =============
 
-[4.18.8] - 2025-01-08
+[4.18.8] - 2025-01-13
 ---------------------
+- [CHANGED] modify eMaxOutput2ndBlock and eMinOutput2ndBlock to consider the ramp reserve provision
+- [CHANGED] create eSystemRampUp and eSystemRampDw constraints to satisfy the system ramping capability
+- [CHANGED] add the optional RampReserveUp and RampReserveDown input files to introduce ramping reserves per area
 - [FIXED] add domain change for fixed binary variables to avoid failures in getting the duals
 - [FIXED] fix the HiGHS behavior for getting dual variables
 - [CHANGED] add the GenerationCapturedSRMC and ConsumptionCapturedSRMC output files
