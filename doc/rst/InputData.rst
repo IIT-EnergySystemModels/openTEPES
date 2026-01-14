@@ -356,8 +356,8 @@ Identifiers                             Header  Description
 Period      Scenario        LoadLevel   Area    Upward/downward ramp reserves of the area for each load level        MW/h
 ==========  ==============  ==========  ======  ===================================================================  ====
 
-The ramp reserves are typically associated with a specific additional proportion of the net demand.
-These files are optional. If not given the ramp reserve constraints are not formulated.
+The ramp reserves are typically associated with a specific additional proportion of the net demand ramp. Ramp reserves protect the system against uncertainty in the VRES production.
+These files are optional. If not given, the ramp reserve constraints are not formulated.
 
 Generation
 ----------
