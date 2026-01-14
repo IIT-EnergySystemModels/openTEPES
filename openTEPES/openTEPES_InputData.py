@@ -2123,7 +2123,6 @@ def SettingUpVariables(OptModel, mTEPES):
                     if mTEPES.pMaxPower2ndBlock[p, sc, n, nr] == 0.0 or mTEPES.pRampUp[nr] == 0.0:
                         OptModel.vRampReserveUp[p,sc,n,nr].fix(0.0)
                         OptModel.vRampReserveDw[p,sc,n,nr].fix(0.0)
-                        print(nFixedVariables)
                         nFixedVariables += 2
 
             if  mTEPES.pIndOperReserveGen[       nr] ==  1:
