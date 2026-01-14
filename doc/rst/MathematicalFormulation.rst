@@ -419,9 +419,9 @@ Upward and downward operating reserves provided for each area by non-renewable g
 
 Upward and downward ramp reserves provided for the system by non-renewable generators (including ESS when generating) [GW/h] «``eSystemRampUp``» «``eSystemRampDw``»
 
-:math:`\frac{\sum_g - p^p_{\omega,n-\nu,g} + p^p_{\omega ng} + urr^p_{\omega ng}}{DUR^p_{\omega n}} \geq \sum_a   URR^p_{\omega na} \quad \forall p \omega n`
+:math:`\frac{\sum_g urr^p_{\omega ng}}{DUR^p_{\omega n}} \geq \sum_a URR^p_{\omega na} \quad \forall p \omega n`
 
-:math:`\frac{\sum_g - p^p_{\omega,n-\nu,g} + p^p_{\omega ng} + drr^p_{\omega ng}}{DUR^p_{\omega n}} \leq \sum_a - DRR^p_{\omega na} \quad \forall p \omega n`
+:math:`\frac{\sum_g drr^p_{\omega ng}}{DUR^p_{\omega n}} \geq \sum_a DRR^p_{\omega na} \quad \forall p \omega n`
 
 It is assumed that the ramp reserves provided by the generators can be shared among areas of the system.
 
