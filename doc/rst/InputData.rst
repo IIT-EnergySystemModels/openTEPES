@@ -282,12 +282,12 @@ Duration
 
 A description of the data included in the file ``oT_Data_Duration.csv`` follows:
 
-==========  ==============  ========== ==========  ===========================================================================================================================================================  ========
+==========  ==============  ========== ==========  ===============================================================================================================================================================  ========
 Identifiers                            Header      Description
-====================================== ==========  ===========================================================================================================================================================  ========
-Period      Scenario        LoadLevel  Duration    Duration of the load level. Load levels with duration 0 are ignored. For an hour, the duration must be 1. For quarter on an hour, the duration must be 0.25  h
+====================================== ==========  ===============================================================================================================================================================  ========
+Period      Scenario        LoadLevel  Duration    Duration of the load level. Load levels with duration 0 are ignored. For an hour, the duration must be 1. For **quarter on an hour**, the duration must be 0.25  h
 ...         ...             ...        Stage       Assignment of the load level to a stage
-==========  ==============  ========== ==========  ===========================================================================================================================================================  ========
+==========  ==============  ========== ==========  ===============================================================================================================================================================  ========
 
 It is a simple way to use isolated snapshots, representative days, or just the first three months instead of all the hours of a year to simplify the optimization problem. **All the load levels whose duration is different from 0 must have the same duration.**
 The duration is not intended to change for the load levels of a stage. Usually, duration is 1 hour (0.25 h if inputting data in quarters of an hour) or 0 if you do not want to use the load levels for some hours of the year. The parameter time step must be used to collapse consecutive load levels into one for the optimization problem.
