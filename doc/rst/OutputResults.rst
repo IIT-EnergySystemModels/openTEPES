@@ -1039,7 +1039,7 @@ File ``oT_Result_GenerationCostOperatingReserve.csv``
 ============  ==========  ==========  ==========  ==============================================
 Identifier                            Header      Description
 ====================================  ==========  ==============================================
-Period        Scenario    Load level  Generator   Operation reserve cost for the generation [M€]
+Period        Scenario    Load level  Generator   Operating reserve cost for the generation [M€]
 ============  ==========  ==========  ==========  ==============================================
 
 File ``oT_Result_ConsumptionCostOperatingReserve.csv``
@@ -1047,7 +1047,7 @@ File ``oT_Result_ConsumptionCostOperatingReserve.csv``
 ============  ==========  ==========  ==========  ===============================================
 Identifier                            Header      Description
 ====================================  ==========  ===============================================
-Period        Scenario    Load level  Pump        Operation reserve cost for the consumption [M€]
+Period        Scenario    Load level  Pump        Operating reserve cost for the consumption [M€]
 ============  ==========  ==========  ==========  ===============================================
 
 File ``oT_Result_GenerationCostEmission.csv``
@@ -1113,6 +1113,22 @@ Identifier                            Header          Description
 ====================================  ==============  ===========================================================
 Period        Scenario    Load level  ESS Generator   Operation revenues from the downward operating reserve [M€]
 ============  ==========  ==========  ==============  ===========================================================
+
+File ``oT_Result_RevenueRampReserveUp.csv``
+
+============  ==========  ==========  ==========  ==========================================================
+Identifier                            Header      Description
+====================================  ==========  ==========================================================
+Period        Scenario    Load level  Generator   Operation revenues from the upward ramp reserve [M€]
+============  ==========  ==========  ==========  ==========================================================
+
+File ``oT_Result_RevenueRampReserveDw.csv``
+
+============  ==========  ==========  ==========  ===========================================================
+Identifier                            Header      Description
+====================================  ==========  ===========================================================
+Period        Scenario    Load level  Generator   Operation revenues from the downward ramp reserve [M€]
+============  ==========  ==========  ==========  ===========================================================
 
 File ``oT_Result_GenerationCapturedSRMC.csv``
 

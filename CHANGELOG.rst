@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.18.8] - 2025-01-13
+[4.18.8] - 2025-01-15
 ---------------------
+- [CHANGED] create output files for ramp revenues
 - [CHANGED] modify eMaxOutput2ndBlock and eMinOutput2ndBlock to consider the ramp reserve provision
 - [CHANGED] create eSystemRampUp and eSystemRampDw constraints to satisfy the system ramping capability
 - [CHANGED] add the optional RampReserveUp and RampReserveDown input files to introduce ramping reserves per area
