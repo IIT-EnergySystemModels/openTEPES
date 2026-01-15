@@ -113,6 +113,8 @@ File                                       Description
 ``oT_Data_Inertia.csv``                    System inertia by area
 ``oT_Data_OperatingReserveUp.csv``         Upward   operating reserves (include aFRR and mFRR for electricity balancing from ENTSO-E)
 ``oT_Data_OperatingReserveDown.csv``       Downward operating reserves (include aFRR and mFRR for electricity balancing from ENTSO-E)
+``oT_Data_RampReserveUp.csv``              Upward   ramp reserves (optional file)
+``oT_Data_RampReserveDown.csv``            Downward ramp reserves (optional file)
 ``oT_Data_Generation.csv``                 Generation (electricity and heat) data
 ``oT_Data_VariableMaxGeneration.csv``      Variable maximum power generation  by load level
 ``oT_Data_VariableMinGeneration.csv``      Variable minimum power generation  by load level
@@ -345,8 +347,8 @@ These operating reserves must include Automatic Frequency Restoration Reserves (
 
 Internally, all the values below 1e-5 times the maximum system demand of each area will be converted into 0 by the model.
 
-Upward and downward ramp reserves
----------------------------------
+Upward and downward ramp reserves (optional files)
+--------------------------------------------------
 
 A description of the data included in the files ``oT_Data_RampReserveUp.csv`` and ``oT_Data_RampReserveDown.csv`` follows:
 
