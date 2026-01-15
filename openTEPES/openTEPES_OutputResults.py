@@ -131,7 +131,8 @@ def _write_var_to_db(con, var, name):
     name : str
         Variable/table name to use in the database.
     """
-    s = pd.Series(var.extract_values(), index=var.extract_values().keys())
+    values = var.extract_values()
+    s = pd.Series(values, index=values.keys())
     df = s.to_frame(name=name).reset_index()
     df = pd.concat(
         [
