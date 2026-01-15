@@ -202,21 +202,21 @@ def _write_constraint_to_db(con, constraint, name, model):
     """
     if not constraint.is_indexed():
         return
-    df = pd.DataFrame(
-        [
+
+    records = []
+    for index in constraint:
+        key = str(constraint.name) + str(index)
+        records.append(
             dict(
                 name=str(name),
                 index=index,
-                dual=model.pDuals[
-                    str(constraint.name) + str(index)
-                ],
+                dual=model.pDuals.get(key),
                 lower_bound=constraint[index].lb,
                 upper_bound=constraint[index].ub,
             )
-            for index in constraint
-        ]
-    )
+        )
 
+    df = pd.DataFrame(records)
     _set_df(con, f"c_{name}", df.reset_index())
 
 def write_model_to_db(model, filename):
