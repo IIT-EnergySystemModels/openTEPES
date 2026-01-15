@@ -228,30 +228,30 @@ def write_model_to_db(model, filename):
     model : pyomo.core.base.PyomoModel.ConcreteModel
     filename : str
     """
-    con = duckdb.connect(filename)
-    model_vars = model.component_map(ctype=pyo.Var)
-    for k in model_vars.keys():
-        var = model_vars[k]
-        name = var.getname()
-        _write_var_to_db(con, var, name)
+    with duckdb.connect(filename) as con:
+        model_vars = model.component_map(ctype=pyo.Var)
+        for k in model_vars.keys():
+            var = model_vars[k]
+            name = var.getname()
+            _write_var_to_db(con, var, name)
 
-    model_params = model.component_map(ctype=pyo.Param)
-    for k in model_params.keys():
-        param = model_params[k]
-        name = param.getname()
-        _write_param_to_db(con, param, name)
+        model_params = model.component_map(ctype=pyo.Param)
+        for k in model_params.keys():
+            param = model_params[k]
+            name = param.getname()
+            _write_param_to_db(con, param, name)
 
-    model_sets = model.component_map(ctype=pyo.Set)
-    for k in model_sets.keys():
-        s = model_sets[k]
-        name = s.getname()
-        _write_set_to_db(con, s, name)
+        model_sets = model.component_map(ctype=pyo.Set)
+        for k in model_sets.keys():
+            s = model_sets[k]
+            name = s.getname()
+            _write_set_to_db(con, s, name)
 
-    model_constraints = model.component_map(ctype=pyo.Constraint)
-    for k in model_constraints.keys():
-        constraint = model_constraints[k]
-        name = k
-        _write_constraint_to_db(con, constraint, name, model)
+        model_constraints = model.component_map(ctype=pyo.Constraint)
+        for k in model_constraints.keys():
+            constraint = model_constraints[k]
+            name = k
+            _write_constraint_to_db(con, constraint, name, model)
 
 # write parameters, variables, and duals
 # @profile
