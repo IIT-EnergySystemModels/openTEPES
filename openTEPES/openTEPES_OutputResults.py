@@ -160,7 +160,8 @@ def _write_param_to_db(con, param, name):
     name : str
         Parameter/table name to use in the database.
     """
-    s = pd.Series(param.extract_values(), index=param.extract_values().keys())
+    values = param.extract_values()
+    s = pd.Series(values, index=values.keys())
     df = s.to_frame(name=name).reset_index()
     _set_df(con, f"p_{name}", df)
 
