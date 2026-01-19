@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - January 13, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - January 19, 2026
 """
 
 import time
@@ -2652,11 +2652,13 @@ def SettingUpVariables(OptModel, mTEPES):
                 raise ValueError('### Sum of scenario probabilities different from 1 in period ', p)
 
         for es in mTEPES.es:
-            # detecting infeasibility: total min ESS output greater than total inflows, total max ESS charge lower than total outflows
-            if sum(mTEPES.pMinPowerElec[p,sc,n,es] for p,sc,n in mTEPES.psn if (p,es) in mTEPES.pes) - sum(mTEPES.pEnergyInflows [p,sc,n,es]() for p,sc,n in mTEPES.psn if (p,es) in mTEPES.pes) > 0.0:
+            # detecting infeasibility: total min ESS output greater than total inflows, total max ESS charge lower than total outflows, or no storage capacity for charging
+            if sum(mTEPES.pMinPowerElec[p,sc,n,es] for p,sc,n in mTEPES.psn if (p,es) in mTEPES.pes) - sum(mTEPES.pEnergyInflows [p,sc,n,es]() for p,sc,n in mTEPES.psn if (p,es) in mTEPES.pes) >  0.0:
                 raise ValueError('### Total minimum output greater than total inflows for ESS unit ', es, ' by ', sum(mTEPES.pMinPowerElec[p,sc,n,es] for p,sc,n in mTEPES.psn if (p,es) in mTEPES.pes) - sum(mTEPES.pEnergyInflows [p,sc,n,es]() for p,sc,n in mTEPES.psn if (p,es) in mTEPES.pes), ' GWh')
-            if sum(mTEPES.pMaxCharge   [p,sc,n,es] for p,sc,n in mTEPES.psn if (p,es) in mTEPES.pes) - sum(mTEPES.pEnergyOutflows[p,sc,n,es]() for p,sc,n in mTEPES.psn if (p,es) in mTEPES.pes) < 0.0:
+            if sum(mTEPES.pMaxCharge   [p,sc,n,es] for p,sc,n in mTEPES.psn if (p,es) in mTEPES.pes) - sum(mTEPES.pEnergyOutflows[p,sc,n,es]() for p,sc,n in mTEPES.psn if (p,es) in mTEPES.pes) <  0.0:
                 raise ValueError('### Total maximum charge lower than total outflows for ESS unit ',  es, ' by ', sum(mTEPES.pMaxCharge   [p,sc,n,es] for p,sc,n in mTEPES.psn if (p,es) in mTEPES.pes) - sum(mTEPES.pEnergyOutflows[p,sc,n,es]() for p,sc,n in mTEPES.psn if (p,es) in mTEPES.pes), ' GWh')
+            if max(mTEPES.pMaxCharge   [p,sc,n,es] for p,sc,n in mTEPES.psn if (p,es) in mTEPES.pes) and   max(mTEPES.pMaxStorage[p,sc,n,es]   for p,sc,n in mTEPES.psn if (p,es) in mTEPES.pes) == 0.0:
+                raise ValueError('### This ESS unit has no storage capacity for charging ',  es, ' by ', sum(mTEPES.pMaxCharge   [p,sc,n,es] for p,sc,n in mTEPES.psn if (p,es) in mTEPES.pes), ' MW ',   sum(mTEPES.pMaxStorage    [p,sc,n,es]   for p,sc,n in mTEPES.psn if (p,es) in mTEPES.pes), ' GWh')
 
         # detect inventory infeasibility
         for p,sc,n,es in mTEPES.ps*mTEPES.nesc:

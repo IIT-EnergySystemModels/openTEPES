@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.18.8] - 2025-01-15
+[4.18.8] - 2025-01-19
 ---------------------
+- [CHANGED] detect error of ESS unit with maximum charge and no maximum storage
 - [CHANGED] create output files for ramp revenues
 - [CHANGED] modify eMaxOutput2ndBlock and eMinOutput2ndBlock to consider the ramp reserve provision
 - [CHANGED] create eSystemRampUp and eSystemRampDw constraints to satisfy the system ramping capability
