@@ -2657,8 +2657,8 @@ def SettingUpVariables(OptModel, mTEPES):
                 raise ValueError('### Total minimum output greater than total inflows for ESS unit ', es, ' by ', sum(mTEPES.pMinPowerElec[p,sc,n,es] for p,sc,n in mTEPES.psn if (p,es) in mTEPES.pes) - sum(mTEPES.pEnergyInflows [p,sc,n,es]() for p,sc,n in mTEPES.psn if (p,es) in mTEPES.pes), ' GWh')
             if sum(mTEPES.pMaxCharge   [p,sc,n,es] for p,sc,n in mTEPES.psn if (p,es) in mTEPES.pes) - sum(mTEPES.pEnergyOutflows[p,sc,n,es]() for p,sc,n in mTEPES.psn if (p,es) in mTEPES.pes) <  0.0:
                 raise ValueError('### Total maximum charge lower than total outflows for ESS unit ',  es, ' by ', sum(mTEPES.pMaxCharge   [p,sc,n,es] for p,sc,n in mTEPES.psn if (p,es) in mTEPES.pes) - sum(mTEPES.pEnergyOutflows[p,sc,n,es]() for p,sc,n in mTEPES.psn if (p,es) in mTEPES.pes), ' GWh')
-            if max(mTEPES.pMaxCharge   [p,sc,n,es] for p,sc,n in mTEPES.psn if (p,es) in mTEPES.pes) and   max(mTEPES.pMaxStorage[p,sc,n,es]   for p,sc,n in mTEPES.psn if (p,es) in mTEPES.pes) == 0.0:
-                raise ValueError('### This ESS unit has no storage capacity for charging ',  es, ' by ', sum(mTEPES.pMaxCharge   [p,sc,n,es] for p,sc,n in mTEPES.psn if (p,es) in mTEPES.pes), ' MW ',   sum(mTEPES.pMaxStorage    [p,sc,n,es]   for p,sc,n in mTEPES.psn if (p,es) in mTEPES.pes), ' GWh')
+            if max(mTEPES.pMaxCharge[p,sc,n,es] for p,sc,n in mTEPES.psn if (p,es) in mTEPES.pes) and max(mTEPES.pMaxPowerElec[p,sc,n,es] for p,sc,n in mTEPES.psn if (p,es) in mTEPES.pes) and max(mTEPES.pMaxStorage[p,sc,n,es]   for p,sc,n in mTEPES.psn if (p,es) in mTEPES.pes) == 0.0:
+                raise ValueError('### This ESS unit has no storage capacity for charging ',  es, ' ', sum(mTEPES.pMaxCharge   [p,sc,n,es] for p,sc,n in mTEPES.psn if (p,es) in mTEPES.pes), ' MW ',   sum(mTEPES.pMaxStorage    [p,sc,n,es]   for p,sc,n in mTEPES.psn if (p,es) in mTEPES.pes), ' GWh')
 
         # detect inventory infeasibility
         for p,sc,n,es in mTEPES.ps*mTEPES.nesc:
