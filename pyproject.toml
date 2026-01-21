@@ -23,7 +23,6 @@ requires = [
   "jsonschema>=4.26.0",
   "matplotlib>=3.10.0",
   "networkx>=3.6.1",
-  "numpy>=2.0.2",
   "pandas>=2.2.2",
   "plotly>=5.24.1",
   "psutil>=5.9.5",
