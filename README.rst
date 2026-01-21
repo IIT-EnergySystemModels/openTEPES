@@ -104,7 +104,7 @@ It determines automatically optimal expansion plans that satisfy simultaneously 
   The period (year) must be represented by 8736 hours because several model concepts representing the system operation are based on weeks (168 hours) or months (made of 4 weeks, 672 hours).
 
 - **Stochastic**: several stochastic parameters that can influence the optimal generation, storage, and transmission expansion decisions are considered. The model considers stochastic
-  medium-term yearly uncertainties (scenarios) related to the system operation. These operation scenarios are associated with renewable energy sources, energy inflows and outflows, natural water inflows, operating reserves, inertia, and electricity, hydrogen, and heat demand.
+  medium-term yearly uncertainties (scenarios) related to the system operation. These operation scenarios are associated with renewable energy sources, energy inflows and outflows, natural water inflows, operating reserves, ramp reserves, inertia, and electricity, hydrogen, and heat demand.
 
 The objective function incorporates the two main quantifiable costs: **generation, storage, and transmission investment cost (CAPEX)** and **expected variable operation costs (including generation, consumption, emission, and reliability costs) (system OPEX)**.
 
@@ -123,10 +123,10 @@ Besides, it includes a representation of **Power to Heat (P2H)** by setting the 
 The main results of the model can be structured into these topics:
 
 - **Investment**: (generation, storage, hydro reservoirs, electric lines, hydrogen pipelines, and heat pipes) investment decisions and cost
-- **Operation**: unit commitment, startup, and shutdown of non-renewable units, unit output and aggregation by technologies (thermal, storage hydro, pumped-hydro storage, RES), RES curtailment, electric line, hydrogen pipeline, and heat pipe flows, line ohmic losses, node voltage angles, upward and downward operating reserves, ESS inventory levels, hydro reservoir volumes, power, hydrogen, and heat not served
+- **Operation**: unit commitment, startup, and shutdown of non-renewable units, unit output and aggregation by technologies (thermal, storage hydro, pumped-hydro storage, RES), RES curtailment, electric line, hydrogen pipeline, and heat pipe flows, line ohmic losses, node voltage angles, upward and downward operating reserves, upward and downward ramp reserves, ESS inventory levels, hydro reservoir volumes, power, hydrogen, and heat not served
 - **Emissions**: CO2 emissions by unit
 - **Marginal**: Locational Short-Run Marginal Costs (LSRMC), stored energy value, water volume value
-- **Economic**: operation, emission, and reliability costs and revenues from operation and operating reserves
+- **Economic**: operation, emission, and reliability costs and revenues from operation, operating reserves, and ramp reserves
 - **Flexibility**: flexibility provided by demand, by the different generation and consumption technologies, and by power not served
 
 Results are shown in csv files and graphical plots.
@@ -137,7 +137,7 @@ Installation
 ############
 `Installation guide <https://pascua.iit.comillas.edu/aramos/openTEPES_installation.pdf>`_.
 
-There are 2 ways to get all the required packages under Windows. We recommend using the Python distribution Miniconda. If you don't want to use it or already have an existing Python (version 3.11) installation, you can also download the required packages by yourself.
+There are 2 ways to get all the required packages under Windows. We recommend using the Python distribution Miniconda. If you don't want to use it or already have an existing Python installation, you can also download the required packages by yourself.
 
 Miniconda (recommended)
 =======================

@@ -55,7 +55,7 @@ Installation
 ------------
 `Installation guide <https://pascua.iit.comillas.edu/aramos/openTEPES_installation.pdf>`_.
 
-There are 2 ways to get all required packages under Windows. We recommend using the Python distribution `Miniconda <https://docs.anaconda.com/free/miniconda/index.html>`_. If you don't want to use it or already have an existing Python (version 3.10) installation, you can also download the required packages by yourself.
+There are 2 ways to get all required packages under Windows. We recommend using the Python distribution `Miniconda <https://docs.anaconda.com/free/miniconda/index.html>`_. If you don't want to use it or already have an existing Python installation, you can also download the required packages by yourself.
 
 
 **Miniconda (recommended)**
