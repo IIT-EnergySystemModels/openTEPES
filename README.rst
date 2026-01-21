@@ -96,7 +96,7 @@ It determines automatically optimal expansion plans that satisfy simultaneously 
 
   It represents hierarchically the different time scopes to make decisions in an electric system:
 
-  - Load level: one hour, e.g., 01-01 00:00:00+01:00 to 12-30 23:00:00+01:00, or quarter of an hour, e.g., 01-01 00:00:00+01:00 to 30-12 23:45:00+01:00
+  - Load level: one hour, e.g., 01-01 00:00:00+01:00 to 12-30 23:00:00+01:00, or **quarter of an hour**, e.g., 01-01 00:00:00+01:00 to 30-12 23:45:00+01:00
 
   The time division allows a user-defined flexible representation of the periods for evaluating the system operation. Moreover, it can be run with chronological periods of several consecutive hours (bi-hourly, tri-hourly resolution in case of hourly definition or half an hour in case of quarter of an hour definition) to decrease the computational burden without losing accuracy. The model can be run with a single period (year) or with several periods (years) to allow the analysis of the system's evolution.
   The time definition also allows for specifying disconnected representative periods (e.g., days, weeks) to evaluate the system operation.
