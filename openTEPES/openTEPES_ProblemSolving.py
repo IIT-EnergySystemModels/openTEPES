@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - January 07, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - January 21, 2026
 """
 
 import time
@@ -50,8 +50,8 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
         # Solver.options['RINSHeur'         ] = 100
         # Solver.options['EpGap'            ] = 0.01
         Solver.options['Threads'            ] = int((psutil.cpu_count(logical=True) + psutil.cpu_count(logical=False))/2)
-        Solver.options['TimeLimit'          ] =    36000
-        # Solver.options['ItLim'            ] = 36000000
+        Solver.options['TimeLimit'          ] =    72000
+        # Solver.options['ItLim'            ] = 72000000
     if SolverName == 'appsi_highs':
         FileName = f'{_path}/openTEPES_highs_{CaseName}_{p}_{sc}_{st}.log'
         if os.path.exists(FileName):
@@ -63,15 +63,15 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
         Solver.options['mip_rel_gap'            ] = 0.01
         Solver.options['parallel'               ] = 'on'
         Solver.options['threads'                ] = int((psutil.cpu_count(logical=True) + psutil.cpu_count(logical=False))/2)
-        Solver.options['time_limit'             ] =    36000
-        Solver.options['simplex_iteration_limit'] = 36000000
+        Solver.options['time_limit'             ] =    72000
+        Solver.options['simplex_iteration_limit'] = 72000000
     if SolverName == 'gams':
         FileName = f'{_path}/openTEPES_gams_{CaseName}_{p}_{sc}_{st}.log'
         solver_options = {
             'file COPT / cplex.opt / ; put COPT putclose "LPMethod 4" / "EpGap 0.01" / ; GAMS_MODEL.OptFile = 1 ; '
             'option SysOut  = off   ;',
             'option LP      = cplex ; option MIP     = cplex    ;',
-            'option ResLim  = 36000 ; option IterLim = 36000000 ;',
+            'option ResLim  = 72000 ; option IterLim = 72000000 ;',
             'option Threads = '+str(int((psutil.cpu_count(logical=True) + psutil.cpu_count(logical=False))/2))+' ;'
         }
 
