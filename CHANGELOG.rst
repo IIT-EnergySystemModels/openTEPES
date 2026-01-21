@@ -1,6 +1,10 @@
 Change Log
 =============
 
+[4.18.9] - 2025-01-21
+---------------------
+- [CHANGED] add output results to DuckDB database
+
 [4.18.8] - 2025-01-19
 ---------------------
 - [CHANGED] detect error of ESS unit with maximum charge and no maximum storage

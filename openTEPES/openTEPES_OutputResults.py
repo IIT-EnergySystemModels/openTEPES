@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - January 15, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - January 21, 2026
 """
 
 import time
@@ -103,6 +103,7 @@ def LinePlots(period, scenario, df, Category, X, Y, OperationType):
 
     return plot
 
+
 def _set_df(con, name: str, df: pd.DataFrame):
     """
     Insert a pandas DataFrame into an existing DuckDB table.
@@ -117,6 +118,7 @@ def _set_df(con, name: str, df: pd.DataFrame):
         DataFrame to insert into the target table.
     """
     con.cursor().execute(f"CREATE OR REPLACE TABLE '{name}' AS SELECT * FROM df;")
+
 
 def _write_var_to_db(con, var, name):
     """
@@ -143,6 +145,7 @@ def _write_var_to_db(con, var, name):
     )
     _set_df(con, f"v_{name}", df)
 
+
 def _write_param_to_db(con, param, name):
     """
     Write a Pyomo Param's values to DuckDB.
@@ -165,6 +168,7 @@ def _write_param_to_db(con, param, name):
     df = s.to_frame(name=name).reset_index()
     _set_df(con, f"p_{name}", df)
 
+
 def _write_set_to_db(con, set_, name):
     """
     Write a Pyomo Set's elements to DuckDB.
@@ -181,6 +185,7 @@ def _write_set_to_db(con, set_, name):
     s = pd.Series(set_.sorted_data())
     df = s.to_frame(name=name).reset_index()
     _set_df(con, f"s_{name}", df)
+
 
 def _write_constraint_to_db(con, constraint, name, model):
     """
@@ -220,6 +225,7 @@ def _write_constraint_to_db(con, constraint, name, model):
     df = pd.DataFrame(records)
     _set_df(con, f"c_{name}", df.reset_index())
 
+
 def write_model_to_db(model, filename):
     """
     Export Pyomo model components to a DuckDB database file.
@@ -254,6 +260,7 @@ def write_model_to_db(model, filename):
             name = k
             _write_constraint_to_db(con, constraint, name, model)
 
+
 # write parameters, variables, and duals
 # @profile
 def OutputResultsParVarCon(DirName, CaseName, OptModel, mTEPES):
@@ -277,39 +284,39 @@ def OutputResultsParVarCon(DirName, CaseName, OptModel, mTEPES):
     write_model_to_db(OptModel, f'{_path}/CaseDumpFolder_{CaseName}_{DateName}/oT_Case_{CaseName}.duckdb')
 
     # Extract and write parameters from the case
-    with open(f'{_path}/CaseDumpFolder_{CaseName}_{DateName}/oT_Case_{CaseName}_Parameters.csv', 'w', newline='') as csvfile:
-        writer = csv.writer(csvfile)
-        writer.writerow(['Name', 'Index', 'Value'])
-        for par in OptModel.component_objects(pyo.Param):
-            par_object = getattr(OptModel, str(par))
-            if par_object.is_indexed():
-                for index in par_object:
-                    if (isinstance(index, tuple) and par_object.mutable == False) or par_object.mutable == False:
-                        writer.writerow([str(par), index, par_object[index]])
-                    else:
-                        writer.writerow([str(par), index, par_object[index].value])
-            else:
-                writer.writerow        ([str(par), 'NA',  par_object.value])
-
-    # Extract and write variables
-    with open(f'{_path}/CaseDumpFolder_{CaseName}_{DateName}/oT_Case_{CaseName}_Variables.csv', 'w', newline='') as csvfile:
-        writer = csv.writer(csvfile)
-        writer.writerow(['Name', 'Index', 'Value', 'Lower Bound', 'Upper Bound'])
-        for var in OptModel.component_objects(pyo.Var, active=True):
-            var_object = getattr(OptModel, str(var))
-            for index in var_object:
-                writer.writerow([str(var), index, var_object[index].value, str(var_object[index].lb), str(var_object[index].ub)])
-
-    # Extract and write dual variables
-    with open(f'{_path}/CaseDumpFolder_{CaseName}_{DateName}/oT_Case_{CaseName}_Constraints.csv', 'w', newline='') as csvfile:
-        writer = csv.writer(csvfile)
-        writer.writerow(['Name', 'Index', 'Value', 'Lower Bound', 'Upper Bound'])
-        for con in OptModel.component_objects(pyo.Constraint, active=True):
-            con_object = getattr(OptModel, str(con))
-            if con.is_indexed():
-                for index in con_object:
-                    writer.writerow([str(con), index, mTEPES.pDuals[str(con_object.name)+str(index)], str(con_object[index].lb), str(con_object[index].ub)])
-                    # writer.writerow([str(con), index, OptModel.dual[con_object[index]], str(con_object[index].lb), str(con_object[index].ub)])
+    # with open(f'{_path}/CaseDumpFolder_{CaseName}_{DateName}/oT_Case_{CaseName}_Parameters.csv', 'w', newline='') as csvfile:
+    #     writer = csv.writer(csvfile)
+    #     writer.writerow(['Name', 'Index', 'Value'])
+    #     for par in OptModel.component_objects(pyo.Param):
+    #         par_object = getattr(OptModel, str(par))
+    #         if par_object.is_indexed():
+    #             for index in par_object:
+    #                 if (isinstance(index, tuple) and par_object.mutable == False) or par_object.mutable == False:
+    #                     writer.writerow([str(par), index, par_object[index]])
+    #                 else:
+    #                     writer.writerow([str(par), index, par_object[index].value])
+    #         else:
+    #             writer.writerow        ([str(par), 'NA',  par_object.value])
+    #
+    # # Extract and write variables
+    # with open(f'{_path}/CaseDumpFolder_{CaseName}_{DateName}/oT_Case_{CaseName}_Variables.csv', 'w', newline='') as csvfile:
+    #     writer = csv.writer(csvfile)
+    #     writer.writerow(['Name', 'Index', 'Value', 'Lower Bound', 'Upper Bound'])
+    #     for var in OptModel.component_objects(pyo.Var, active=True):
+    #         var_object = getattr(OptModel, str(var))
+    #         for index in var_object:
+    #             writer.writerow([str(var), index, var_object[index].value, str(var_object[index].lb), str(var_object[index].ub)])
+    #
+    # # Extract and write dual variables
+    # with open(f'{_path}/CaseDumpFolder_{CaseName}_{DateName}/oT_Case_{CaseName}_Constraints.csv', 'w', newline='') as csvfile:
+    #     writer = csv.writer(csvfile)
+    #     writer.writerow(['Name', 'Index', 'Value', 'Lower Bound', 'Upper Bound'])
+    #     for con in OptModel.component_objects(pyo.Constraint, active=True):
+    #         con_object = getattr(OptModel, str(con))
+    #         if con.is_indexed():
+    #             for index in con_object:
+    #                 writer.writerow([str(con), index, mTEPES.pDuals[str(con_object.name)+str(index)], str(con_object[index].lb), str(con_object[index].ub)])
+    #                 # writer.writerow([str(con), index, OptModel.dual[con_object[index]], str(con_object[index].lb), str(con_object[index].ub)])
 
     # NameList = ['Parameters', 'Variables', 'Constraints']
     #
