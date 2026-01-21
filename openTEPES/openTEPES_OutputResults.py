@@ -14,6 +14,7 @@ import plotly.io         as     pio
 import plotly.graph_objs as     go
 from   collections       import defaultdict
 from   colour            import Color
+import duckdb
 
 # from line_profiler import profile
 
@@ -102,6 +103,156 @@ def LinePlots(period, scenario, df, Category, X, Y, OperationType):
 
     return plot
 
+def _set_df(con, name: str, df: pd.DataFrame):
+    """
+    Insert a pandas DataFrame into an existing DuckDB table.
+
+    Parameters
+    ----------
+    con : duckdb.DuckDBPyConnection
+        Open DuckDB connection.
+    name : str
+        Target table name.
+    df : pandas.DataFrame
+        DataFrame to insert into the target table.
+    """
+    con.cursor().execute(f"CREATE OR REPLACE TABLE '{name}' AS SELECT * FROM df;")
+
+def _write_var_to_db(con, var, name):
+    """
+    Write a Pyomo Var's values and bounds to DuckDB.
+
+    Parameters
+    ----------
+    con : duckdb.DuckDBPyConnection
+        Open DuckDB connection.
+    var : pyomo.core.base.var.Var
+        Pyomo variable (indexed or scalar).
+    name : str
+        Variable/table name to use in the database.
+    """
+    values = var.extract_values()
+    s = pd.Series(values, index=values.keys())
+    df = s.to_frame(name=name).reset_index()
+    df = pd.concat(
+        [
+            df,
+            pd.DataFrame([dict(upper_bound=var[index].ub, lower_bound=var[index].lb) for index in var]),
+        ],
+        axis=1,
+    )
+    _set_df(con, f"v_{name}", df)
+
+def _write_param_to_db(con, param, name):
+    """
+    Write a Pyomo Param's values to DuckDB.
+
+    Creates/inserts into a table named `{name}` with:
+      - the Param index (via reset_index)
+      - a column named `{name}` containing the Param value
+
+    Parameters
+    ----------
+    con : duckdb.DuckDBPyConnection
+        Open DuckDB connection.
+    param : pyomo.core.base.param.Param
+        Pyomo parameter (indexed or scalar).
+    name : str
+        Parameter/table name to use in the database.
+    """
+    values = param.extract_values()
+    s = pd.Series(values, index=values.keys())
+    df = s.to_frame(name=name).reset_index()
+    _set_df(con, f"p_{name}", df)
+
+def _write_set_to_db(con, set_, name):
+    """
+    Write a Pyomo Set's elements to DuckDB.
+
+    Parameters
+    ----------
+    con : duckdb.DuckDBPyConnection
+        Open DuckDB connection.
+    set_ : pyomo.core.base.set.Set
+        Pyomo set.
+    name : str
+        Base name used to build the table name `s_{name}`.
+    """
+    s = pd.Series(set_.sorted_data())
+    df = s.to_frame(name=name).reset_index()
+    _set_df(con, f"s_{name}", df)
+
+def _write_constraint_to_db(con, constraint, name, model):
+    """
+    Write an indexed Pyomo Constraint's duals and bounds to DuckDB.
+
+    Parameters
+    ----------
+    con : duckdb.DuckDBPyConnection
+        Open DuckDB connection.
+    constraint : pyomo.core.base.constraint.Constraint
+        Pyomo constraint component (must be indexed; scalar constraints are skipped).
+    name : str
+        Constraint name used to build the table name `c_{name}`.
+    model : pyomo.core.base.PyomoModel.ConcreteModel
+        Model providing `pDuals` (mapping from constraint+index string to dual value).
+
+    Notes
+    -----
+    Non-indexed constraints are ignored
+    """
+    if not constraint.is_indexed():
+        return
+
+    records = []
+    for index in constraint:
+        key = str(constraint.name) + str(index)
+        records.append(
+            dict(
+                name=str(name),
+                index=index,
+                dual=model.pDuals.get(key),
+                lower_bound=constraint[index].lb,
+                upper_bound=constraint[index].ub,
+            )
+        )
+
+    df = pd.DataFrame(records)
+    _set_df(con, f"c_{name}", df.reset_index())
+
+def write_model_to_db(model, filename):
+    """
+    Export Pyomo model components to a DuckDB database file.
+
+    Parameters
+    ----------
+    model : pyomo.core.base.PyomoModel.ConcreteModel
+    filename : str
+    """
+    with duckdb.connect(filename) as con:
+        model_vars = model.component_map(ctype=pyo.Var)
+        for k in model_vars.keys():
+            var = model_vars[k]
+            name = var.getname()
+            _write_var_to_db(con, var, name)
+
+        model_params = model.component_map(ctype=pyo.Param)
+        for k in model_params.keys():
+            param = model_params[k]
+            name = param.getname()
+            _write_param_to_db(con, param, name)
+
+        model_sets = model.component_map(ctype=pyo.Set)
+        for k in model_sets.keys():
+            s = model_sets[k]
+            name = s.getname()
+            _write_set_to_db(con, s, name)
+
+        model_constraints = model.component_map(ctype=pyo.Constraint)
+        for k in model_constraints.keys():
+            constraint = model_constraints[k]
+            name = k
+            _write_constraint_to_db(con, constraint, name, model)
 
 # write parameters, variables, and duals
 # @profile
@@ -122,6 +273,8 @@ def OutputResultsParVarCon(DirName, CaseName, OptModel, mTEPES):
     if not os.path.exists(dump_folder):
         os.makedirs(dump_folder)
     DateName = str(datetime.datetime.now().strftime('%Y%m%d'))
+
+    write_model_to_db(OptModel, f'{_path}/CaseDumpFolder_{CaseName}_{DateName}/oT_Case_{CaseName}.duckdb')
 
     # Extract and write parameters from the case
     with open(f'{_path}/CaseDumpFolder_{CaseName}_{DateName}/oT_Case_{CaseName}_Parameters.csv', 'w', newline='') as csvfile:
