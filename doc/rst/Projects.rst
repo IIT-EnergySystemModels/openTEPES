@@ -4,6 +4,11 @@ Research Projects
 =================
 The model has been used in these research projects:
 
+- `Quantitative Framework for Forecasting PV Capture Prices and Evaluating Low-Price Risk in the Iberian Electricity Market. <https://www.iit.comillas.edu/publicacion/proyecto/en/Everest2025/Quantitative_Framework_for_Forecasting_PV_Capture_Prices_and_Evaluating_Low-Price_Risk_in_the_Iberian_Electricity_Market>`_, developed for **Everest Insurance**.
+  December 2025 - March 2026. `J.P. Chaves <https://www.iit.comillas.edu/people/jchaves>`_, `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `M.A. Ríos-Ocampo <https://www.iit.comillas.edu/people/marios>`_, `J.F. Gutiérrez <https://www.iit.comillas.edu/people/jGutiérrez>`_
+
+    It aims to to design, develop, and validate a robust, transparent, and fully explainable quantitative framework capable of forecasting Iberian day-ahead electricity prices and estimating the solar PV capture price for 2026–2027.
+
 - `Analysis of energy scenarios for Spain 2030-2050. <https://www.iit.comillas.edu/publicacion/proyecto/en/Naturgy_Escenarios_2024/An%c3%a1lisis_de_escenarios_energ%c3%a9ticos_para_Espa%c3%b1a_2030-2050>`_, developed for **Naturgy Innovahub SLU**.
   September 2024 - December 2024. `P. Linares <https://www.iit.comillas.edu/people/pedrol>`_, `J.P. Chaves <https://www.iit.comillas.edu/people/jchaves>`_, `A.F. Rodríguez Matas <https://www.iit.comillas.edu/people/afrmatas>`_
 
@@ -51,7 +56,7 @@ The model has been used in these research projects:
    :align: center
 
 - `Highly-efficient and flexible integration of biomass and renewable hydrogen for low-cost combined heat and power generation to the energy system (Bio-FlexGen) <https://bioflexgen.eu/>`_, developed for the **European Union**. September 2021 - August 2024.
-  `J.P. Chaves <https://www.iit.comillas.edu/people/jchaves>`_, `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `J.F. Gutierrez <https://www.iit.comillas.edu/people/jgutierrez>`_
+  `J.P. Chaves <https://www.iit.comillas.edu/people/jchaves>`_, `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `J.F. Gutiérrez <https://www.iit.comillas.edu/people/jGutiérrez>`_
 
     It aims to significantly increase the efficiency, flexibility, and cost effectiveness of renewable energy-based combined heat and power plants (CHP),
     enabling them to play a key role in integrating fluctuating renewable energy into the energy system and therefore making a significant contribution to the decarbonization of the energy system.
