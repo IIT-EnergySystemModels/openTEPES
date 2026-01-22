@@ -1,8 +1,10 @@
 Change Log
 =============
 
-[4.18.9] - 2025-01-21
+[4.18.9] - 2025-01-22
 ---------------------
+- [CHANGED] increase solution time limit for some solvers
+- [FIXED] errors in OutputResults module for considering generators not available in some periods
 - [CHANGED] add output results to DuckDB database
 
 [4.18.8] - 2025-01-19
