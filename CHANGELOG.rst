@@ -1,6 +1,11 @@
 Change Log
 =============
 
+[4.18.10] - 2025-01-22
+---------------------
+- [FIXED] errors in eMaxOutput2ndBlock and eMinOutput2ndBlock equations
+- [CHANGED] clean up some output results
+
 [4.18.9] - 2025-01-22
 ---------------------
 - [CHANGED] increase solution time limit for some solvers

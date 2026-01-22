@@ -693,7 +693,7 @@ GREEN  = "\033[32m"
 BLUE   = "\033[34m"
 RESET  = "\033[0m"
 
-print(GREEN + 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.9 - January 22, 2026' + RESET)
+print(GREEN + 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.10 - January 22, 2026' + RESET)
 print(BLUE  + '#### Academic research license - for non-commercial use only ####' + RESET + '\n')
 
 parser = argparse.ArgumentParser(description='Introducing main parameters...')
