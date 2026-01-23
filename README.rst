@@ -149,7 +149,10 @@ Miniconda (recommended)
 
    1. Launch a new Anaconda prompt (or terminal in any IDE)
    2. The `HiGHS <https://ergo-code.github.io/HiGHS/dev/installation/#Precompiled-Binaries>`_ is our recommendation if you want a free and open-source solver.
-   3. Install openTEPES dependencies via uv by ``uv pip install -r requirements.lock``
+   3. Install openTEPES dependencies via:
+
+    1. or pip by ``pip install openTEPES``
+    2. uv by ``uv pip install -r requirements.lock``
 
 Continue at `Get Started <#get-started>`_.
 
