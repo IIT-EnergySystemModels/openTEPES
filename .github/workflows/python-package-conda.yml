@@ -14,7 +14,7 @@ jobs:
 
       # 1) Install Conda (Miniforge) + activate an env
       - name: Set up Conda (Miniforge)
-      - uses: conda-incubator/setup-miniconda@v3
+        uses: conda-incubator/setup-miniconda@v3
         with:
           miniforge-variant: Miniforge3
           miniforge-version: latest
