@@ -41,7 +41,6 @@ jobs:
         shell: bash -l {0}
         run: |
           conda install -y -c conda-forge glpk cartopy
-          # install python deps from your lock file
           uv pip install --system -r requirements.lock
           pip install -e .
           pip install highspy
@@ -56,5 +55,4 @@ jobs:
       - name: Test with pytest
         shell: bash -l {0}
         run: |
-          conda install -y pytest
           pytest -vv tests/test_run.py
