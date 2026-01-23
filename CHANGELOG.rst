@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.18.10] - 2025-01-22
----------------------
+[4.18.10] - 2025-01-23
+----------------------
+- [CHANGED] clean up eMaxOutput2ndBlock and eMinOutput2ndBlock equations
 - [FIXED] errors in eMaxOutput2ndBlock and eMinOutput2ndBlock equations
 - [CHANGED] clean up some output results
 
