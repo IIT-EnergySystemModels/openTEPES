@@ -182,9 +182,18 @@ def _write_set_to_db(con, set_, name):
     name : str
         Base name used to build the table name `s_{name}`.
     """
-    s = pd.Series(set_.sorted_data())
-    df = s.to_frame(name=name).reset_index()
-    _set_df(con, f's_{name}', df)
+    from pyomo.common.sorting import sorted_robust
+
+    if set_.is_indexed():
+        rows = []
+        for idx in sorted_robust(set_.keys()):
+            for m in set_[idx].sorted_data():
+                rows.append((idx, m))
+        df = pd.DataFrame(rows, columns=["index", "member"])
+    else:
+        df = pd.DataFrame({"member": list(set_.sorted_data())})
+
+    _set_df(con, f"s_{name}", df)
 
 
 def _write_constraint_to_db(con, constraint, name, model):
