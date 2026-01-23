@@ -51,10 +51,8 @@ jobs:
           conda install -y flake8
           flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-
       - name: Test with pytest
         shell: bash -l {0}
         run: |
           conda install -y pytest
-#          python -m pip install -U pytest
           pytest -vv tests/test_run.py
