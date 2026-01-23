@@ -56,4 +56,5 @@ jobs:
         shell: bash -l {0}
         run: |
           conda install -y pytest
+#          python -m pip install -U pytest
           pytest -vv tests/test_run.py
