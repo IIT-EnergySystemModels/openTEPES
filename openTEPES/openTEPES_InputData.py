@@ -677,6 +677,7 @@ def DataConfiguration(mTEPES):
         mTEPES.psnchp    = Set(initialize = [(p,sc,n,chp)      for p,sc,n,chp      in mTEPES.psn*mTEPES.chp if (p,chp) in mTEPES.pchp])
         mTEPES.psnbo     = Set(initialize = [(p,sc,n,bo)       for p,sc,n,bo       in mTEPES.psn*mTEPES.bo  if (p,bo)  in mTEPES.pbo ])
         mTEPES.psnhp     = Set(initialize = [(p,sc,n,hp)       for p,sc,n,hp       in mTEPES.psn*mTEPES.hp  if (p,hp)  in mTEPES.php ])
+        mTEPES.psneb     = Set(initialize = [(p,sc,n,eb)       for p,sc,n,eb       in mTEPES.psn*mTEPES.eb  if (p,eb)  in mTEPES.peb ])
         mTEPES.psnes     = Set(initialize = [(p,sc,n,es)       for p,sc,n,es       in mTEPES.psn*mTEPES.es  if (p,es)  in mTEPES.pes ])
         mTEPES.psneh     = Set(initialize = [(p,sc,n,eh)       for p,sc,n,eh       in mTEPES.psn*mTEPES.eh  if (p,eh)  in mTEPES.peh ])
         mTEPES.psnec     = Set(initialize = [(p,sc,n,ec)       for p,sc,n,ec       in mTEPES.psn*mTEPES.ec  if (p,ec)  in mTEPES.pec ])
@@ -2082,7 +2083,6 @@ def SettingUpVariables(OptModel, mTEPES):
             '''
         nFixedVariables = 0
 
-        # fix the must-run existing units and their output
         # must-run units must produce at least their minimum output
         [OptModel.vTotalOutput[p,sc,n,g].setlb(mTEPES.pMinPowerElec[p,sc,n,g]) for p,sc,n,g in mTEPES.psng if mTEPES.pMustRun[g] == 1 and g not in mTEPES.gc]
 
@@ -2119,8 +2119,12 @@ def SettingUpVariables(OptModel, mTEPES):
                 OptModel.vReserveUp      [p,sc,n,nr].fix(0.0)
                 OptModel.vReserveDown    [p,sc,n,nr].fix(0.0)
                 nFixedVariables += 3
+                # fix the must-run existing units and their output
+                if mTEPES.pMustRun[nr] == 1 and mTEPES.pMaxPower2ndBlock[p,sc,n,nr] == 0.0 and nr not in mTEPES.gc:
+                    OptModel.vTotalOutput[p,sc,n,nr].fix(mTEPES.pMinPowerElec[p,sc,n,nr])
+                    nFixedVariables += 1
                 if mTEPES.pIndRampReserves == 1:
-                    if mTEPES.pMaxPower2ndBlock[p, sc, n, nr] == 0.0 or mTEPES.pRampUp[nr] == 0.0:
+                    if mTEPES.pMaxPower2ndBlock[p,sc,n,nr] == 0.0 or mTEPES.pRampUp[nr] == 0.0:
                         OptModel.vRampReserveUp[p,sc,n,nr].fix(0.0)
                         OptModel.vRampReserveDw[p,sc,n,nr].fix(0.0)
                         nFixedVariables += 2

@@ -1,8 +1,10 @@
 Change Log
 =============
 
-[4.18.10] - 2025-01-23
+[4.18.10] - 2025-01-25
 ----------------------
+- [CHANGED] avoid formulation of superfluous eTotalOutput constraints and fix additional vTotalOutput variable
+- [FIXED] errors in writing results to duckdb database
 - [CHANGED] clean up eMaxOutput2ndBlock and eMinOutput2ndBlock equations
 - [FIXED] errors in eMaxOutput2ndBlock and eMinOutput2ndBlock equations
 - [CHANGED] clean up some output results
