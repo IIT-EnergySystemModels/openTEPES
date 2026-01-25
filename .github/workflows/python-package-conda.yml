@@ -4,16 +4,16 @@ on: [push, pull_request]
 
 jobs:
   build-linux:
-    runs-on: ubuntu-latest
+    runs-on: [ubuntu-latest, macos-latest, windows-latest]
     strategy:
       matrix:
-        python-version: ["3.12"]
+        python-version: ["3.12", "3.13"]
 
     steps:
       - uses: actions/checkout@v4
 
       # 1) Install Conda (Miniforge) + activate an env
-      - name: Set up Conda (Miniforge)
+      - name: Set up Conda (Miniforge), set up Python ${{ matrix.python-version }}
         uses: conda-incubator/setup-miniconda@v3
         with:
           miniforge-variant: Miniforge3
