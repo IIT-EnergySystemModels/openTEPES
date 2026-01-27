@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - January 19, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - January 27, 2026
 """
 
 import time
@@ -515,7 +515,7 @@ def DataConfiguration(mTEPES):
 
     StartTime = time.time()
     #%% Getting the branches from the electric network data
-    sBr     = [(ni,nf) for (ni,nf,cc) in mTEPES.dFrame['dfNetwork'].index]
+    sBr     = [(ni,nf) for ni,nf,cc in mTEPES.dFrame['dfNetwork'].index]
     # Dropping duplicate keys
     sBrList = [(ni,nf) for n,(ni,nf)  in enumerate(sBr) if (ni,nf) not in sBr[:n]]
 
@@ -613,7 +613,7 @@ def DataConfiguration(mTEPES):
     #%% inverse index load level to stage
     mTEPES.dPar['pStageToLevel'] = mTEPES.dPar['pLevelToStage'].reset_index().set_index(['Period','Scenario','Stage'])['LoadLevel']
     #Filter only valid indices
-    mTEPES.dPar['pStageToLevel'] = mTEPES.dPar['pStageToLevel'].loc[mTEPES.dPar['pStageToLevel'].index.isin([(p,s,st) for (p,s) in mTEPES.ps for st in mTEPES.st]) & mTEPES.dPar['pStageToLevel'].isin(mTEPES.n)]
+    mTEPES.dPar['pStageToLevel'] = mTEPES.dPar['pStageToLevel'].loc[mTEPES.dPar['pStageToLevel'].index.isin([(p,s,st) for p,s in mTEPES.ps for st in mTEPES.st]) & mTEPES.dPar['pStageToLevel'].isin(mTEPES.n)]
     #Reorder the elements
     mTEPES.dPar['pStageToLevel'] = [(p,sc,st,n) for (p,sc,st),n in mTEPES.dPar['pStageToLevel'].items()]
     mTEPES.s2n = Set(initialize=mTEPES.dPar['pStageToLevel'], doc='Load level to stage')
@@ -723,7 +723,8 @@ def DataConfiguration(mTEPES):
             mTEPES.psnland = Set(initialize = [(p,sc,n,ni,nf,cc,nd) for p,sc,n,ni,nf,cc,nd in mTEPES.psnla*mTEPES.nd if (ni,nf,cc,nd) in mTEPES.dPar['pVariablePTDF'].columns])
 
         # assigning a node to an area
-        mTEPES.ndar = Set(initialize = [(nd,ar) for (nd,zn,ar) in mTEPES.ndzn*mTEPES.ar if (zn,ar) in mTEPES.znar])
+        mTEPES.ndar = Set(initialize = [(nd,ar) for nd,zn,ar in mTEPES.ndzn*mTEPES.ar if (zn,ar) in mTEPES.znar])
+        mTEPES.arnd = Set(initialize = [(ar,nd) for nd,   ar in mTEPES.ndar])
 
         # assigning a line to an area. Both nodes are in the same area. Cross-area lines are not included
         mTEPES.laar = Set(initialize = [(ni,nf,cc,ar) for ni,nf,cc,ar in mTEPES.la*mTEPES.ar if (ni,ar) in mTEPES.ndar and (nf,ar) in mTEPES.ndar])
@@ -820,9 +821,9 @@ def DataConfiguration(mTEPES):
 
     mTEPES.n2g = Set(initialize=mTEPES.dPar['pNodeToGen'].index, doc='node   to generator')
 
-    mTEPES.z2g = Set(doc='zone   to generator', initialize=[(zn,g) for (nd,g,zn      ) in mTEPES.n2g*mTEPES.zn             if (nd,zn) in mTEPES.ndzn                           ])
-    mTEPES.a2g = Set(doc='area   to generator', initialize=[(ar,g) for (nd,g,zn,ar   ) in mTEPES.n2g*mTEPES.znar           if (nd,zn) in mTEPES.ndzn                           ])
-    mTEPES.r2g = Set(doc='region to generator', initialize=[(rg,g) for (nd,g,zn,ar,rg) in mTEPES.n2g*mTEPES.znar*mTEPES.rg if (nd,zn) in mTEPES.ndzn and [ar,rg] in mTEPES.arrg])
+    mTEPES.z2g = Set(doc='zone   to generator', initialize=[(zn,g) for nd,g,zn       in mTEPES.n2g*mTEPES.zn             if (nd,zn) in mTEPES.ndzn                           ])
+    mTEPES.a2g = Set(doc='area   to generator', initialize=[(ar,g) for nd,g,zn,ar    in mTEPES.n2g*mTEPES.znar           if (nd,zn) in mTEPES.ndzn                           ])
+    mTEPES.r2g = Set(doc='region to generator', initialize=[(rg,g) for nd,g,zn,ar,rg in mTEPES.n2g*mTEPES.znar*mTEPES.rg if (nd,zn) in mTEPES.ndzn and [ar,rg] in mTEPES.arrg])
 
     # mTEPES.z2g  = Set(initialize = [(zn,g) for zn,g in mTEPES.zn*mTEPES.g if (zn,g) in pZone2Gen])
 
@@ -2201,7 +2202,7 @@ def SettingUpVariables(OptModel, mTEPES):
         # activate only period, scenario, and load levels to formulate
         mTEPES.del_component(mTEPES.st)
         mTEPES.del_component(mTEPES.n )
-        mTEPES.st = Set(doc='stages',      initialize=[stt for stt in mTEPES.stt if st == stt and mTEPES.pStageWeight[stt] and sum(1 for (p,sc,st,nn) in mTEPES.s2n)])
+        mTEPES.st = Set(doc='stages',      initialize=[stt for stt in mTEPES.stt if st == stt and mTEPES.pStageWeight[stt] and sum(1 for  p,sc,st,nn  in mTEPES.s2n)])
         mTEPES.n  = Set(doc='load levels', initialize=[nn  for nn  in mTEPES.nn  if                                                      (p,sc,st,nn) in mTEPES.s2n ])
 
         if mTEPES.n:
