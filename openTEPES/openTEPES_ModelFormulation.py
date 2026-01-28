@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - January 27, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - January 28, 2026
 """
 
 import time
@@ -1445,7 +1445,7 @@ def GenerationOperationModelFormulationRampMinTime(OptModel, mTEPES, pIndLogCons
                 return Constraint.Skip
         else:
             return Constraint.Skip
-    setattr(OptModel, f'eMinUpTime_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.t, rule=eMinUpTime  , doc='minimum up   time [p.u.]'))
+    setattr(OptModel, f'eMinUpTime_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.tr, rule=eMinUpTime  , doc='minimum up   time [p.u.]'))
 
     if pIndLogConsole == 1:
         print('eMinUpTime                ... ', len(getattr(OptModel, f'eMinUpTime_{p}_{sc}_{st}')), ' rows')
@@ -1458,7 +1458,7 @@ def GenerationOperationModelFormulationRampMinTime(OptModel, mTEPES, pIndLogCons
                 return Constraint.Skip
         else:
             return Constraint.Skip
-    setattr(OptModel, f'eMinDownTime_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.t, rule=eMinDownTime, doc='minimum down time [p.u.]'))
+    setattr(OptModel, f'eMinDownTime_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.tr, rule=eMinDownTime, doc='minimum down time [p.u.]'))
 
     if pIndLogConsole == 1:
         print('eMinDownTime              ... ', len(getattr(OptModel, f'eMinDownTime_{p}_{sc}_{st}')), ' rows')

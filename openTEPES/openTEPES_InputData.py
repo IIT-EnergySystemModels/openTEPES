@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - January 27, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - January 28, 2026
 """
 
 import time
@@ -527,7 +527,7 @@ def DataConfiguration(mTEPES):
     mTEPES.n      = Set(doc='load levels'                      , initialize=[nn     for nn   in mTEPES.nn  if sum(mTEPES.dPar['pDuration']  [p,sc,nn] for p,sc in mTEPES.ps) > 0])
     mTEPES.n2     = Set(doc='load levels'                      , initialize=[nn     for nn   in mTEPES.nn  if sum(mTEPES.dPar['pDuration']  [p,sc,nn] for p,sc in mTEPES.ps) > 0])
     mTEPES.g      = Set(doc='generating              units'    , initialize=[gg     for gg   in mTEPES.gg  if (mTEPES.dPar['pRatedMaxPowerElec'] [gg] >  0.0 or  mTEPES.dPar['pRatedMaxCharge'][gg] >  0.0   or  mTEPES.dPar['pRatedMaxPowerHeat']   [gg] >  0.0) and mTEPES.dPar['pElecGenPeriodIni'][gg] <= mTEPES.p.last() and mTEPES.dPar['pElecGenPeriodFin'][gg] >= mTEPES.p.first() and mTEPES.dPar['pGenToNode'].reset_index().set_index(['Generator']).isin(mTEPES.nd)['Node'][gg]])  # excludes generators with empty node
-    mTEPES.t      = Set(doc='thermal                 units'    , initialize=[g      for g    in mTEPES.g   if mTEPES.dPar['pRatedLinearOperCost'][g ] >  0.0])
+    mTEPES.tr     = Set(doc='thermal                 units'    , initialize=[g      for g    in mTEPES.g   if mTEPES.dPar['pRatedLinearOperCost'][g ] >  0.0])
     mTEPES.re     = Set(doc='RES                     units'    , initialize=[g      for g    in mTEPES.g   if mTEPES.dPar['pRatedLinearOperCost'][g ] == 0.0 and mTEPES.dPar['pRatedMaxStorage'][g] == 0.0   and mTEPES.dPar['pProductionFunctionH2'][g ] == 0.0 and mTEPES.dPar['pProductionFunctionHeat'][g ]       == 0.0  and mTEPES.dPar['pProductionFunctionHydro'][g ] == 0.0])
     mTEPES.es     = Set(doc='ESS                     units'    , initialize=[g      for g    in mTEPES.g   if     (mTEPES.dPar['pRatedMaxCharge'][g ] >  0.0 or  mTEPES.dPar['pRatedMaxStorage'][g] >  0.0    or mTEPES.dPar['pProductionFunctionH2'][g ]  > 0.0  or mTEPES.dPar['pProductionFunctionHeat'][g ]        > 0.0) and mTEPES.dPar['pProductionFunctionHydro'][g ] == 0.0])
     mTEPES.h      = Set(doc='hydro                   units'    , initialize=[g      for g    in mTEPES.g                                                                                                      if mTEPES.dPar['pProductionFunctionH2'][g ] == 0.0 and mTEPES.dPar['pProductionFunctionHeat'][g ]       == 0.0  and mTEPES.dPar['pProductionFunctionHydro'][g ]  > 0.0])
@@ -642,7 +642,7 @@ def DataConfiguration(mTEPES):
                     None: Sets are added directly to the mTEPES object.
                 '''
         mTEPES.pg        = Set(initialize = [(p,     g       ) for p,     g        in mTEPES.p  *mTEPES.g   if mTEPES.dPar['pElecGenPeriodIni'][g ] <= p and mTEPES.dPar['pElecGenPeriodFin'][g ] >= p])
-        mTEPES.pt        = Set(initialize = [(p,     t       ) for p,     t        in mTEPES.p  *mTEPES.t   if (p,t )  in mTEPES.pg])
+        mTEPES.ptr       = Set(initialize = [(p,     tr      ) for p,     tr       in mTEPES.p  *mTEPES.tr  if (p,tr)  in mTEPES.pg])
         mTEPES.pgc       = Set(initialize = [(p,     gc      ) for p,     gc       in mTEPES.p  *mTEPES.gc  if (p,gc)  in mTEPES.pg])
         mTEPES.pnr       = Set(initialize = [(p,     nr      ) for p,     nr       in mTEPES.p  *mTEPES.nr  if (p,nr)  in mTEPES.pg])
         mTEPES.pch       = Set(initialize = [(p,     ch      ) for p,     ch       in mTEPES.p  *mTEPES.ch  if (p,ch)  in mTEPES.pg])
@@ -670,7 +670,7 @@ def DataConfiguration(mTEPES):
         mTEPES.pseh      = Set(initialize = [(p,sc,  eh)       for p,sc,  eh       in mTEPES.ps *mTEPES.eh  if (p,eh)  in mTEPES.peh ])
         mTEPES.psn       = Set(initialize = [(p,sc,n   )       for p,sc,n          in mTEPES.ps *mTEPES.n   if mTEPES.dPar['pDuration'][p,sc,n]])
         mTEPES.psng      = Set(initialize = [(p,sc,n,g )       for p,sc,n,g        in mTEPES.psn*mTEPES.g   if (p,g )  in mTEPES.pg  ])
-        mTEPES.psnt      = Set(initialize = [(p,sc,n,t )       for p,sc,n,t        in mTEPES.psn*mTEPES.t   if (p,t )  in mTEPES.pt  ])
+        mTEPES.psntr     = Set(initialize = [(p,sc,n,tr)       for p,sc,n,tr       in mTEPES.psn*mTEPES.tr  if (p,tr)  in mTEPES.ptr ])
         mTEPES.psngc     = Set(initialize = [(p,sc,n,gc)       for p,sc,n,gc       in mTEPES.psn*mTEPES.gc  if (p,gc)  in mTEPES.pgc ])
         mTEPES.psngb     = Set(initialize = [(p,sc,n,gb)       for p,sc,n,gb       in mTEPES.psn*mTEPES.gb  if (p,gb)  in mTEPES.pgc ])
         mTEPES.psnre     = Set(initialize = [(p,sc,n,re)       for p,sc,n,re       in mTEPES.psn*mTEPES.re  if (p,re)  in mTEPES.pre ])
