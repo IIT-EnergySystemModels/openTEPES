@@ -1,6 +1,10 @@
 Change Log
 =============
 
+[4.18.12] - 2025-01-28
+----------------------
+- [CHANGED] reduce computation time in output results
+
 [4.18.10] - 2025-01-25
 ----------------------
 - [CHANGED] avoid formulation of superfluous eTotalOutput constraints and fix additional vTotalOutput variable
