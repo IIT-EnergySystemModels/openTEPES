@@ -45,7 +45,11 @@ Some maps of the electricity transmission network and the energy share of differ
    :scale: 20%
    :align: center
 
-The model also plots some additional plots. The CSV files used for outputting the results are briefly described in the following items.
+The model also plots some additional plots.
+
+All the results of the case are saved in DuckDB data base. By default this option is not used but you can easily activate it writing pIndDumpRawResults = 1 in lines 324 and 342 of openTEPES.py module.
+
+The CSV output files used for outputting the results are briefly described in the following items.
 
 The power is expressed in MW, energy or heat in GWh, and costs in million euros (M€). Hydrogen is expressed in tH2. Reservoir volume is expressed in hm\ :sup:`3`,
 and water flow in hm\ :sup:`3`/s. The energy transported in the electricity network is described in GWh-Mkm.
