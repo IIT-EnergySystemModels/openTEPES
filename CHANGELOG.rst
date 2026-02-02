@@ -3,6 +3,8 @@ Change Log
 
 [4.18.13] - 2025-02-02
 ----------------------
+- [CHANGED] detect lines with undefined nodes or circuits
+- [CHANGED] detect technologies not declared in the technology dictionary
 - [CHANGED] reduce interior point method tolerance for gurobi solver
 
 [4.18.12] - 2025-01-28
