@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - January 28, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 02, 2026
 """
 
 import time
@@ -37,11 +37,6 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         dictSets.load(filename=os.path.join(_path, filename), set=set_key, format='set')
         is_ordered = set_name not in {'gt', 'nd', 'ni', 'nf', 'cc', 'c2', 'ndzn', 'znar', 'arrg'}
         setattr(mTEPES, set_name, Set(initialize=dictSets[set_key], ordered=is_ordered, doc=f'{file_set_name}'))
-
-    # # Defining sets in the model
-    # for set_name, (file_set_name, set_key) in set_definitions.items():
-    #     is_ordered = set_name not in {'stt', 'gt', 'nd', 'ni', 'nf', 'cc', 'c2', 'ndzn', 'znar', 'arrg'}
-    #     setattr(model, set_name, Set(initialize=dictSets[set_key], ordered=is_ordered, doc=f'{file_set_name}'))
 
     # Constants
     DEFAULT_IDX_COLS = ['Period', 'Scenario', 'LoadLevel', 'Area', 'Generator', 'InitialNode', 'FinalNode', 'Circuit', 'Node', 'Stage']
@@ -828,6 +823,11 @@ def DataConfiguration(mTEPES):
     mTEPES.r2g = Set(doc='region to generator', initialize=[(rg,g) for nd,g,zn,ar,rg in mTEPES.n2g*mTEPES.znar*mTEPES.rg if (nd,zn) in mTEPES.ndzn and [ar,rg] in mTEPES.arrg])
 
     # mTEPES.z2g  = Set(initialize = [(zn,g) for zn,g in mTEPES.zn*mTEPES.g if (zn,g) in pZone2Gen])
+
+    # detect technologies not declared in the technology dictionary
+    for g in mTEPES.g:
+        if mTEPES.dPar['pGenToTechnology'].loc[g] not in mTEPES.gt:
+            raise ValueError(f"Generator '{g}' belongs to a technology not declared in the technology dictionary.")
 
     #%% inverse index generator to technology
     mTEPES.dPar['pTechnologyToGen'] = mTEPES.dPar['pGenToTechnology'].reset_index().set_index('Technology').set_axis(['Generator'], axis=1)[['Generator']]
