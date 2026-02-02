@@ -31,7 +31,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
         # Solver.options['Seed'          ] = 104729
         # Solver.options['Presolve'      ] = 2
         # Solver.options['RINS'          ] = 100
-        # Solver.options['BarConvTol'    ] = 1e-9
+        Solver.options['BarConvTol'      ] = 1e-10
         # Solver.options['BarQCPConvTol' ] = 0.025
         # Solver.options['IISFile'       ] = f'{_path}/openTEPES_gurobi_'+CaseName+'.ilp'        # should be uncommented to show results of IIS
         Solver.options['MIPGap'          ] = 0.01

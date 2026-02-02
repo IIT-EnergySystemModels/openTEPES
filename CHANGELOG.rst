@@ -1,6 +1,10 @@
 Change Log
 =============
 
+[4.18.13] - 2025-02-02
+----------------------
+- [CHANGED] reduce interior point method tolerance for gurobi solver
+
 [4.18.12] - 2025-01-28
 ----------------------
 - [CHANGED] reduce computation time in output results
