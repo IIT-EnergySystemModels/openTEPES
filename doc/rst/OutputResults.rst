@@ -71,8 +71,8 @@ All the results of the case are saved in DuckDB data base. By default this optio
 
 The CSV output files used for outputting the results are briefly described in the following items.
 
-The power is expressed in MW, energy or heat in GWh, marginal costs in €/MWh, and costs in million euros (M€). Hydrogen is expressed in tH2. Reservoir volume is expressed in hm\ :sup:`3`,
-and water flow in hm\ :sup:`3`/s. The energy transported in the electricity network is described in GWh-Mkm. In each file, the identifiers are described in the first columns, followed by the headers and the description of each variable.
+The power is expressed in **MW**, energy or heat in **GWh**, marginal costs in **€/MWh**, and costs in million euros **M€**. Hydrogen is expressed in **tH2**. Reservoir volume is expressed in hm\ :sup:`3`,
+and water flow in hm\ :sup:`3`/s. The energy transported in the electricity network is described in **GWh-Mkm**. In each file, the identifiers are described in the first columns, followed by the headers and the description of each variable.
 
 Investment/Retirement
 ---------------------
