@@ -537,6 +537,10 @@ def DataConfiguration(mTEPES):
     mTEPES.bc     = Set(doc='candidate boiler        units'    , initialize=[bo     for bo   in mTEPES.bo  if mTEPES.dPar['pGenInvestCost']      [bo] >  0.0])
     mTEPES.br     = Set(doc='all input       electric branches', initialize=sBrList        )
     mTEPES.ln     = Set(doc='all input       electric lines'   , initialize=mTEPES.dFrame['dfNetwork'].index)
+    # detect lines with undefined nodes or circuits
+    for ni,nf,cc in mTEPES.ln:
+        if ni not in mTEPES.nd or nf not in mTEPES.nd or cc not in mTEPES.cc:
+            raise ValueError(f"Line '{ni} {nf} {cc}' has a node or a circuit not defined in the corresponding dictionary.")
     if len(mTEPES.ln) != len(mTEPES.dFrame['dfNetwork'].index):
         raise ValueError('### Some electric lines are invalid ', len(mTEPES.ln), len(mTEPES.dFrame['dfNetwork'].index))
     mTEPES.la     = Set(doc='all real        electric lines'   , initialize=[ln     for ln   in mTEPES.ln if mTEPES.dPar['pLineX']              [ln] != 0.0 and mTEPES.dPar['pLineNTCFrw'][ln] > 0.0 and mTEPES.dPar['pLineNTCBck'][ln] > 0.0 and mTEPES.dPar['pElecNetPeriodIni'][ln]  <= mTEPES.p.last() and mTEPES.dPar['pElecNetPeriodFin'][ln]  >= mTEPES.p.first()])
