@@ -5,43 +5,63 @@ Output Results
 
 Some maps of the electricity transmission network and the energy share of different technologies are plotted.
 
-.. image:: ../img/oT_Map_Network_sSEP.png
-   :scale: 40%
-   :align: center
+Spain 2030 Electric System
 
 .. image:: ../img/oT_Plot_MapNetwork_ES2030.png
    :scale: 40%
    :align: center
 
+Canary Islands 2030 Electric Systems
+
 .. image:: ../img/oT_Plot_MapNetwork_ES2030_CI.png
    :scale: 40%
    :align: center
 
-.. image:: ../img/oT_Map_Network_MAF2030.png
-   :scale: 60%
-   :align: center
+Europe Technofriendly 2030 Electric System
 
 .. image:: ../img/oT_Map_Network_TF2030.png
    :scale: 40%
    :align: center
 
+Sweden 2045 Electric System
+
 .. image:: ../img/oT_Plot_MapNetwork_SE2045.png
    :scale: 20%
    :align: center
+
+Technology share for Europe ERAA 2030 Electric System
 
 .. image:: ../img/oT_Plot_TechnologyEnergy_ES_MAF2030.png
    :scale: 6%
    :align: center
 
-.. image:: ../img/oT_Plot_TechnologyOutput_2030_sc01_9n.png
-   :scale: 20%
-   :align: center
+Technology output for Europe ERAA 2030 Electric System
 
 .. image:: ../img/oT_Plot_TechnologyOutput_2030_sc01_MAF.png
    :scale: 55%
    :align: center
 
+Nigeria 2030 Electric System
+
 .. image:: ../img/oT_Plot_MapNetwork_NG2030.png
+   :scale: 20%
+   :align: center
+
+Kenia 2030 Electric System
+
+.. image:: ../img/Kenia2030.png
+   :scale: 20%
+   :align: center
+
+Tunisia 2030 Electric System
+
+.. image:: ../img/Tunisia2030.png
+   :scale: 20%
+   :align: center
+
+Uganda 2030 Electric System
+
+.. image:: ../img/Uganda2030.png
    :scale: 20%
    :align: center
 
