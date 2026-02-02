@@ -50,19 +50,19 @@ Nigeria 2030 Electric System
 Kenia 2030 Electric System
 
 .. image:: ../img/Kenia2030.png
-   :scale: 20%
+   :scale: 40%
    :align: center
 
 Tunisia 2030 Electric System
 
 .. image:: ../img/Tunisia2030.png
-   :scale: 20%
+   :scale: 40%
    :align: center
 
 Uganda 2030 Electric System
 
 .. image:: ../img/Uganda2030.png
-   :scale: 20%
+   :scale: 40%
    :align: center
 
 The model also plots some additional plots.
