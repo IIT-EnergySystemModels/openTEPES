@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.18.13] - 2025-02-02
+[4.18.13] - 2025-02-03
 ----------------------
+- [FIXED] errors in eMaxOutput2ndBlock and eMinOutput2ndBlock constraints when considering generators not available in some periods
 - [CHANGED] detect lines with undefined nodes or circuits
 - [CHANGED] detect technologies not declared in the technology dictionary
 - [CHANGED] reduce interior point method tolerance for gurobi solver
