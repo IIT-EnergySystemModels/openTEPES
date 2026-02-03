@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - January 28, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 03, 2026
 """
 
 import time
@@ -290,11 +290,10 @@ def GenerationOperationModelFormulationInvestment(OptModel, mTEPES, pIndLogConso
         print('eInstallConESS            ... ', len(getattr(OptModel, f'eInstallConESS_{p}_{sc}_{st}')), ' rows')
 
     def eUninstallGenComm(OptModel,n,gd):
-        if (p,gd) in mTEPES.pgd:
-            if gd in mTEPES.nr and gd not in mTEPES.eh and mTEPES.pMustRun[gd] == 0 and (mTEPES.pMinPowerElec[p,sc,n,gd] or mTEPES.pConstantVarCost[p,sc,n,gd]):
-                return OptModel.vCommitment[p,sc,n,gd]                                <= 1 - OptModel.vGenerationRetire[p,gd]
-            else:
-                return Constraint.Skip
+        if (p,gd) not in mTEPES.pgd:
+            return Constraint.Skip
+        if gd in mTEPES.nr and gd not in mTEPES.eh and mTEPES.pMustRun[gd] == 0 and (mTEPES.pMinPowerElec[p,sc,n,gd] or mTEPES.pConstantVarCost[p,sc,n,gd]):
+            return OptModel.vCommitment[p,sc,n,gd]                                <= 1 - OptModel.vGenerationRetire[p,gd]
         else:
             return Constraint.Skip
     setattr(OptModel, f'eUninstallGenComm_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.gd, rule=eUninstallGenComm, doc='commitment if uninstalled unit [p.u.]'))
@@ -303,11 +302,10 @@ def GenerationOperationModelFormulationInvestment(OptModel, mTEPES, pIndLogConso
         print('eUninstallGenComm         ... ', len(getattr(OptModel, f'eUninstallGenComm_{p}_{sc}_{st}')), ' rows')
 
     def eUninstallGenCap(OptModel,n,gd):
-        if (p,gd) in mTEPES.pgd:
-            if mTEPES.pMaxPowerElec[p,sc,n,gd]:
-                return OptModel.vTotalOutput[p,sc,n,gd] / mTEPES.pMaxPowerElec[p,sc,n,gd] <= 1 - OptModel.vGenerationRetire[p,gd]
-            else:
-                return Constraint.Skip
+        if (p,gd) not in mTEPES.pgd:
+            return Constraint.Skip
+        if mTEPES.pMaxPowerElec[p,sc,n,gd]:
+            return OptModel.vTotalOutput[p,sc,n,gd] / mTEPES.pMaxPowerElec[p,sc,n,gd] <= 1 - OptModel.vGenerationRetire[p,gd]
         else:
             return Constraint.Skip
     setattr(OptModel, f'eUninstallGenCap_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.gd, rule=eUninstallGenCap, doc='output if uninstalled gen unit [p.u.]'))
@@ -701,7 +699,9 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
 
     def eMaxCharge(OptModel,n,eh):
         # Check if generator is available in the period and has variable charging capacity
-        if (p,eh) not in mTEPES.peh or mTEPES.pMaxCharge2ndBlock[p,sc,n,eh] == 0.0:
+        if (p,eh) not in mTEPES.peh:
+            return Constraint.Skip
+        if mTEPES.pMaxCharge2ndBlock[p,sc,n,eh] == 0.0:
             return Constraint.Skip
         # Hydro units have commitment while ESS units are implicitly always committed
         if eh not in mTEPES.h:
@@ -1063,9 +1063,11 @@ def GenerationOperationModelFormulationCommitment(OptModel, mTEPES, pIndLogConso
             a2n[nr].append(ar)
 
     def eMaxOutput2ndBlock(OptModel,n,nr):
+        if (p,nr) not in mTEPES.pnr:
+            return Constraint.Skip
         if mTEPES.pMaxPower2ndBlock[p,sc,n,nr] == 0.0:
             return Constraint.Skip
-        if (p,nr) in mTEPES.pnr and (nr not in mTEPES.es or (nr in mTEPES.es and (mTEPES.pTotalMaxCharge[nr] or mTEPES.pTotalEnergyInflows[nr]))):
+        if (nr not in mTEPES.es or (nr in mTEPES.es and (mTEPES.pTotalMaxCharge[nr] or mTEPES.pTotalEnergyInflows[nr]))):
             if sum(mTEPES.pOperReserveUp[p,sc,n,ar] for ar in a2n[nr]):
                 if   mTEPES.pIndRampReserves == 0 or  sum(mTEPES.pRampReserveUp[p,sc,n,ar] for ar in mTEPES.ar) == 0.0:
                     if   mTEPES.pIndOperReserveGen[nr] != 1 and n != mTEPES.n.last():
@@ -1108,9 +1110,11 @@ def GenerationOperationModelFormulationCommitment(OptModel, mTEPES, pIndLogConso
         print('eMaxOutput2ndBlock        ... ', len(getattr(OptModel, f'eMaxOutput2ndBlock_{p}_{sc}_{st}')), ' rows')
 
     def eMinOutput2ndBlock(OptModel,n,nr):
+        if (p,nr) not in mTEPES.pnr:
+            return Constraint.Skip
         if mTEPES.pMaxPower2ndBlock[p,sc,n,nr] == 0.0:
             return Constraint.Skip
-        if (p,nr) in mTEPES.pnr and (nr not in mTEPES.es or (nr in mTEPES.es and (mTEPES.pTotalMaxCharge[nr] or mTEPES.pTotalEnergyInflows[nr]))):
+        if (nr not in mTEPES.es or (nr in mTEPES.es and (mTEPES.pTotalMaxCharge[nr] or mTEPES.pTotalEnergyInflows[nr]))):
             if sum(mTEPES.pOperReserveDw[p,sc,n,ar] for ar in a2n[nr]):
                 if   mTEPES.pIndOperReserveGen[nr] != 1 and (mTEPES.pIndRampReserves == 0 or  sum(mTEPES.pRampReserveDw[p,sc,n,ar] for ar in mTEPES.ar) == 0.0):
                     return  OptModel.vOutput2ndBlock[p,sc,n,nr] - OptModel.vReserveDown[p,sc,n,nr]                                      >= 0.0
@@ -1147,14 +1151,13 @@ def GenerationOperationModelFormulationCommitment(OptModel, mTEPES, pIndLogConso
         print('eTotalOutput              ... ', len(getattr(OptModel, f'eTotalOutput_{p}_{sc}_{st}')), ' rows')
 
     def eUCStrShut(OptModel,n,nr):
-        if (p,nr) in mTEPES.pnr:
-            if mTEPES.pMustRun[nr] == 0 and (mTEPES.pMinPowerElec[p,sc,n,nr] or mTEPES.pConstantVarCost[p,sc,n,nr]) and nr not in mTEPES.eh:
-                if n == mTEPES.n.first():
-                    return OptModel.vCommitment[p,sc,n,nr] - mTEPES.pInitialUC[p,sc,n,nr]()                 == OptModel.vStartUp[p,sc,n,nr] - OptModel.vShutDown[p,sc,n,nr]
-                else:
-                    return OptModel.vCommitment[p,sc,n,nr] - OptModel.vCommitment[p,sc,mTEPES.n.prev(n),nr] == OptModel.vStartUp[p,sc,n,nr] - OptModel.vShutDown[p,sc,n,nr]
+        if (p,nr) not in mTEPES.pnr or nr in mTEPES.eh:
+            return Constraint.Skip
+        if mTEPES.pMustRun[nr] == 0 and (mTEPES.pMinPowerElec[p,sc,n,nr] or mTEPES.pConstantVarCost[p,sc,n,nr]):
+            if n == mTEPES.n.first():
+                return OptModel.vCommitment[p,sc,n,nr] - mTEPES.pInitialUC[p,sc,n,nr]()                 == OptModel.vStartUp[p,sc,n,nr] - OptModel.vShutDown[p,sc,n,nr]
             else:
-                return Constraint.Skip
+                return OptModel.vCommitment[p,sc,n,nr] - OptModel.vCommitment[p,sc,mTEPES.n.prev(n),nr] == OptModel.vStartUp[p,sc,n,nr] - OptModel.vShutDown[p,sc,n,nr]
         else:
             return Constraint.Skip
     setattr(OptModel, f'eUCStrShut_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.nr, rule=eUCStrShut, doc='relation among commitment startup and shutdown [p.u.]'))
@@ -1163,13 +1166,11 @@ def GenerationOperationModelFormulationCommitment(OptModel, mTEPES, pIndLogConso
         print('eUCStrShut                ... ', len(getattr(OptModel, f'eUCStrShut_{p}_{sc}_{st}')), ' rows')
 
     def eStableStates(OptModel,n,nr):
-        if (p,nr) in mTEPES.pnr:
-            if mTEPES.pStableTime[nr] and mTEPES.pMaxPower2ndBlock[p,sc,n,nr]:
-                return OptModel.vStableState[p,sc,n,nr] + OptModel.vRampUpState[p,sc,n,nr] + OptModel.vRampDwState[p,sc,n,nr] == OptModel.vCommitment[p,sc,n,nr]
-            else:
-                return Constraint.Skip
-        else:
+        if (p,nr) not in mTEPES.pnr:
             return Constraint.Skip
+        if mTEPES.pStableTime[nr] == 0.0 or mTEPES.pMaxPower2ndBlock[p,sc,n,nr] == 0.0:
+            return Constraint.Skip
+        return OptModel.vStableState[p,sc,n,nr] + OptModel.vRampUpState[p,sc,n,nr] + OptModel.vRampDwState[p,sc,n,nr] == OptModel.vCommitment[p,sc,n,nr]
     setattr(OptModel, f'eStableStates_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.nr, rule=eStableStates, doc='relation among stable, ramp up and ramp down states [p.u.]'))
 
     if pIndLogConsole == 1:
@@ -1215,7 +1216,7 @@ def GenerationOperationModelFormulationCommitment(OptModel, mTEPES, pIndLogConso
         # Skip if there are one or fewer generators in the group
         if len(mTEPES.GeneratorsInYearlyGroup[group] & {nr for p,nr in mTEPES.pnr}) <= 1:
             return Constraint.Skip
-        return sum(OptModel.vMaxCommitmentYearly[p,sc,nr,group] + (OptModel.vCommitmentCons[p,sc,nr] if nr in mTEPES.h else 0) for nr in mTEPES.GeneratorsInYearlyGroup[group] if (p,nr) in mTEPES.pnr ) <= 1
+        return sum(OptModel.vMaxCommitmentYearly[p,sc,nr,group] + (OptModel.vCommitmentCons[p,sc,nr] if nr in mTEPES.h else 0) for nr in mTEPES.GeneratorsInYearlyGroup[group] if (p,nr) in mTEPES.pnr) <= 1
     setattr(OptModel, f'eExclusiveGensYearly_{p}_{sc}_{st}', Constraint(mTEPES.ExclusiveGroupsYearly, rule=eExclusiveGensYearly, doc='mutually exclusive generators'))
 
     if pIndLogConsole == 1:
@@ -1376,7 +1377,7 @@ def GenerationOperationModelFormulationRampMinTime(OptModel, mTEPES, pIndLogCons
         pEpsilon = 1e-4
 
     def eRampUpState(OptModel,n,nr):
-        if mTEPES.pStableTime[nr] and mTEPES.pMaxPower2ndBlock[p,sc,n,nr] and (p,nr) in mTEPES.pnr and mTEPES.pDuration[p,sc,n]():
+        if (p,nr) in mTEPES.pnr and mTEPES.pStableTime[nr] and mTEPES.pMaxPower2ndBlock[p,sc,n,nr] and mTEPES.pDuration[p,sc,n]():
             if pIndStableTimeDeadBand:
                 if mTEPES.pRampUp[nr]:
                     if n == mTEPES.n.first():
@@ -1407,7 +1408,7 @@ def GenerationOperationModelFormulationRampMinTime(OptModel, mTEPES, pIndLogCons
         print('eRampUpState              ... ', len(getattr(OptModel, f'eRampUpState_{p}_{sc}_{st}')), ' rows')
 
     def eRampDwState(OptModel,n,nr):
-        if mTEPES.pStableTime[nr] and mTEPES.pMaxPower2ndBlock[p,sc,n,nr] and (p,nr) in mTEPES.pnr and mTEPES.pDuration[p,sc,n]():
+        if (p,nr) in mTEPES.pnr and mTEPES.pStableTime[nr] and mTEPES.pMaxPower2ndBlock[p,sc,n,nr] and mTEPES.pDuration[p,sc,n]():
             if pIndStableTimeDeadBand:
                 if mTEPES.pRampDw[nr]:
                     if n == mTEPES.n.first():
