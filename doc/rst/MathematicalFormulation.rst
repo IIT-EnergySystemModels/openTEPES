@@ -162,7 +162,7 @@ They are written in **uppercase** letters.
 :math:`RU_g, RD_g`                                                 Ramp up/down of a non-renewable unit or maximum discharge/charge rate for ESS discharge/charge                            MW/h
 :math:`TU_t, TD_t`                                                 Minimum uptime and downtime of a thermal unit                                                                             h
 :math:`TS_t`                                                       Minimum stable time of a thermal unit                                                                                     h
-:math:`ST_e`                                                       Maximum shift time of an ESS unit (in particular, for demand side management)                                             h
+:math:`ST_e`                                                       Maximum shift time of an ESS unit (in particular, for demand side management or data center flexibility)                  h
 :math:`CSU_g, CSD_g`                                               Startup and shutdown cost of a committed unit                                                                             M€
 :math:`\tau_e`                                                     Storage cycle of the ESS (e.g., 1, 24, 168, 8736 h -for daily, weekly, monthly, yearly-)                                  h
 :math:`\rho_e`                                                     Outflow cycle of the ESS (e.g., 1, 24, 168, 8736 h -for hourly, daily, weekly, monthly, yearly-)                          h
@@ -466,7 +466,7 @@ The initial inventory of the ESS candidates divided by their initial storage :ma
 
 :math:`\frac{i^p_{\omega,0,e}}{I^p_{\omega e}} \leq uc^p_{\omega ne} \quad \forall p \omega ne, e \in CE`
 
-Maximum shift time of stored energy [GWh]. It is thought to be applied to demand side management «``eMaxShiftTime``»
+Maximum shift time of stored energy [GWh]. It is thought to be applied to demand side management or data center flexibility «``eMaxShiftTime``»
 
 :math:`DUR^p_{\omega n} EF_e gc^p_{\omega ne} \leq \sum_{n' = n}^{n+\frac{ST_e}{\nu}} DUR^p_{\omega n'} gp^p_{\omega n'e} \quad \forall p \omega ne`
 

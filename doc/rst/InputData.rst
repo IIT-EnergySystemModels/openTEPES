@@ -21,7 +21,7 @@ CCGT        Combined Cycle Gas Turbine
 CHP         Combined Heat and Power. Cogeneration (produces electricity and heat simultaneously)
 DC          Direct Current
 DCPF        DC Optimal Power Flow
-DR          Demand Response
+DR          Demand Response (e.g., interruptibility)
 DSM         Demand-Side Management (e.g., load shifting)
 DSR         Demand-Side Response (e.g., interruptibility)
 EB          Electric Boiler (Power to Heat: consumes electricity to produce heat)
@@ -70,7 +70,7 @@ File                           Description
 ``oT_Dict_Scenario.csv``       Scenario. Short-term uncertainties (scenarios) (e.g., s001 to s100, CY2025 to CY2030)
 ``oT_Dict_Stage.csv``          Stage
 ``oT_Dict_LoadLevel.csv``      Load level (e.g., 01-01 00:00:00+01:00 to 12-30 23:00:00+01:00). If is a datetime format. Load levels with duration 0 are ignored. 8736 load levels must represent the period (year).
-``oT_Dict_Generation.csv``     Generation units (thermal -nuclear, CCGT, OCGT, coal-, ESS -storage hydro modeled in energy or water, pumped-hydro storage PHS, battery BESS, electric vehicle EV, demand side management DSM, alkaline water electrolyzer AWE, solar thermal- and VRES -wind onshore and offshore, solar PV, run-of-the-river hydro-)
+``oT_Dict_Generation.csv``     Generation units (thermal -nuclear, CCGT, OCGT, coal-, ESS -storage hydro modeled in energy or water, pumped-hydro storage PHS, battery BESS, electric vehicle EV, demand side management DSM, data center flexibility, alkaline water electrolyzer AWE, solar thermal- and VRES -wind onshore and offshore, solar PV, run-of-the-river hydro-)
 ``oT_Dict_Technology.csv``     Generation technologies. The technology order is used in the temporal result plot.
 ``oT_Dict_Storage.csv``        ESS storage type (daily <12 h, weekly <40 h, monthly >60 h).
 ``oT_Dict_Node.csv``           Nodes. A node belongs to a defined zone. All the nodes must have a different name. Nodes can be physical or virtual (e.g., for representing the conventional industrial, commercial and residential demands, EV demand, and H2 demand).
@@ -443,8 +443,9 @@ VRE                                     Fuel-based variable cost (fuel cost x li
 Non-renewable                           All the generators except the RESS                                                                                                   *nr*
 ESS                                     It has MaximumCharge or MaximumStorage >0  or ProductionFunctionH2 or ProductionFunctionHeat >0  and ProductionFunctionHydro =0      *es*
 Hydro power plant (energy)              ESS with ProductionFunctionHydro =0                                                                                                  *es*
-Pumped-hydro storage (energy)           ESS with MaximumCharge >0                                                                                                            *es*
-Battery (BESS), load shifting (DSM)     ESS with MaximumCharge >0  (usually, StorageType daily)                                                                              *es*
+Pumped-hydro storage (energy)           ESS with MaximumCharge >0 and MaximumStorage >0                                                                                      *es*
+Battery (BESS), load shifting (DSM)     ESS with MaximumCharge >0 and MaximumStorage >0 (usually, StorageType daily)                                                         *es*
+Data center flexibility                 ESS with MaximumCharge >0 and MaximumStorage >0 (usually, StorageType daily)                                                         *es*
 Electric vehicle (EV)                   ESS with electric energy outflows                                                                                                    *es*
 Electrolyzer (ELZ)                      ESS with electric energy outflows and ProductionFunctionH2 >0  and ProductionFunctionHeat =0  and ProductionFunctionHydro =0         *el*
 Heat pump or electric boiler            ESS with ProductionFunctionHeat >0  and ProductionFunctionH2 =0  and ProductionFunctionHydro =0                                      *hp*
@@ -523,7 +524,7 @@ Period      Scenario        LoadLevel   Generator  Maximum (minimum) power consu
 Not all the generators must be defined as columns of these files, only those with values different from 0.
 
 To force an ESS to consume 0 a value (e.g., 0.1 MW) strictly >0, but not 0 (in which case the value will be ignored), must be introduced.
-It can also be used for upper-bounding and/or lower-bounding the consumption of any ESS (e.g., pumped-hydro storage, battery).
+It can also be used for upper-bounding and/or lower-bounding the consumption of any ESS (e.g., pumped-hydro storage, battery, DSM).
 If the user introduces a maximum consumption value lower than the minimum consumption value, the model will adjust the minimum consumption value to match the maximum.
 
 Internally, all the values below 1e-5 times the maximum system demand of each area will be converted into 0 by the model.
