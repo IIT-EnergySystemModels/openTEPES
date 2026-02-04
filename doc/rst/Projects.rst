@@ -96,7 +96,7 @@ The model has been used in these research projects:
    :scale: 30%
    :align: center
 
-- `Delivering the next generation of open Integrated Assessment MOdels for Net-zero, sustainable Development (DIAMOND) <https://climate-diamond.eu/>`_, developed for the **European Union**. October 2022 - August 2025.
+- `Delivering the next generation of open Integrated Assessment MOdels for Net-zero, sustainable Development (DIAMOND) <https://climate-diamond.eu/>`_, developed for the **European Union**. October 2022 - September 2026.
   `S. Lumbreras <https://www.iit.comillas.edu/people/slumbreras>`_, `L. Olmos <https://www.iit.comillas.edu/people/olmos>`_, `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_
 
     It will update, upgrade, and fully open six IAMs that are emblematic in scientific and policy processes, improving their sectoral and technological detail, spatiotemporal resolution, and geographic granularity.
