@@ -101,7 +101,7 @@ The model has been used in these research projects:
 
     It will update, upgrade, and fully open six IAMs that are emblematic in scientific and policy processes, improving their sectoral and technological detail, spatiotemporal resolution, and geographic granularity.
     It will further enhance modelling capacity to assess the feasibility and desirability of Paris-compliant mitigation pathways, their interplay with adaptation, circular economy, and other SDGs,
-    their distributional and equity effects, and their resilience to extremes, as well as robust risk management and investment strategies.
+    their distributional and equity effects, and their resilience to extremes, as well as robust risk management and investment strategies. In this project openTEPES is connected with `GCAM-Europe <https://github.com/bc3LC-GCAMEurope/gcam-core>`_, `OMNIA <https://github.com/CLIMATE-DIAMOND/OMNIA>`_ and `OPEN-PROM <https://github.com/e3modelling/OPEN-PROM>`_.
 
 .. image:: ../img/DIAMOND_prj.jpg
    :scale: 20%
