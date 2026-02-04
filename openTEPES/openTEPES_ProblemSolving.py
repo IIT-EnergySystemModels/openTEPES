@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - January 21, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 04, 2026
 """
 
 import time
@@ -31,7 +31,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
         # Solver.options['Seed'          ] = 104729
         # Solver.options['Presolve'      ] = 2
         # Solver.options['RINS'          ] = 100
-        Solver.options['BarConvTol'      ] = 1e-10
+        # Solver.options['BarConvTol'      ] = 1e-10
         # Solver.options['BarQCPConvTol' ] = 0.025
         # Solver.options['IISFile'       ] = f'{_path}/openTEPES_gurobi_'+CaseName+'.ilp'        # should be uncommented to show results of IIS
         Solver.options['MIPGap'          ] = 0.01
@@ -93,7 +93,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
     if SolverResults.solver.termination_condition == TerminationCondition.infeasible or SolverResults.solver.termination_condition == TerminationCondition.maxTimeLimit or SolverResults.solver.termination_condition == TerminationCondition.infeasible.maxIterations:
         log_infeasible_constraints(OptModel, log_expression=True, log_variables=True)
         logging.basicConfig(filename=f'{_path}/openTEPES_infeasibilities_{CaseName}_{p}_{sc}_{st}.log', level=logging.INFO)
-        raise ValueError('Problem infeasible')
+        raise ValueError(f'Problem infeasible for period {p}, scenario {sc}, stage {st}')
     SolverResults.write()                                                              # summary of the solver results
 
     #%% fix values of some variables to get duals and solve it again
