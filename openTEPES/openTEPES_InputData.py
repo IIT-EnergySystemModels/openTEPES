@@ -128,7 +128,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
             par[key] = 0
 
     # substitute NaN by 0
-    for key, df in dfs.items():
+    for key,df in dfs.items():
         if 'dfEmission' in key:
             df.fillna(math.inf, inplace=True)
         elif 'dfGeneration' in key:

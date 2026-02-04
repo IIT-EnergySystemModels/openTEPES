@@ -4,17 +4,17 @@ Research Projects
 =================
 The model has been used in these research projects:
 
-- `Quantitative Framework for Forecasting PV Capture Prices and Evaluating Low-Price Risk in the Iberian Electricity Market. <https://www.iit.comillas.edu/publicacion/proyecto/en/Everest2025/Quantitative_Framework_for_Forecasting_PV_Capture_Prices_and_Evaluating_Low-Price_Risk_in_the_Iberian_Electricity_Market>`_, developed for **Everest Insurance**.
+- `Quantitative Framework for Forecasting PV Capture Prices and Evaluating Low-Price Risk in the Iberian Electricity Market <https://www.iit.comillas.edu/publicacion/proyecto/en/Everest2025/Quantitative_Framework_for_Forecasting_PV_Capture_Prices_and_Evaluating_Low-Price_Risk_in_the_Iberian_Electricity_Market>`_, developed for **Everest Insurance**.
   December 2025 - March 2026. `J.P. Chaves <https://www.iit.comillas.edu/people/jchaves>`_, `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `M.A. Ríos-Ocampo <https://www.iit.comillas.edu/people/marios>`_, `J.F. Gutiérrez <https://www.iit.comillas.edu/people/jGutiérrez>`_
 
     It aims to to design, develop, and validate a robust, transparent, and fully explainable quantitative framework capable of forecasting Iberian day-ahead electricity prices and estimating the solar PV capture price for 2026–2027.
 
-- `Analysis of energy scenarios for Spain 2030-2050. <https://www.iit.comillas.edu/publicacion/proyecto/en/Naturgy_Escenarios_2024/An%c3%a1lisis_de_escenarios_energ%c3%a9ticos_para_Espa%c3%b1a_2030-2050>`_, developed for **Naturgy Innovahub SLU**.
+- `Analysis of energy scenarios for Spain 2030-2050 <https://www.iit.comillas.edu/publicacion/proyecto/en/Naturgy_Escenarios_2024/An%c3%a1lisis_de_escenarios_energ%c3%a9ticos_para_Espa%c3%b1a_2030-2050>`_, developed for **Naturgy Innovahub SLU**.
   September 2024 - December 2024. `P. Linares <https://www.iit.comillas.edu/people/pedrol>`_, `J.P. Chaves <https://www.iit.comillas.edu/people/jchaves>`_, `A.F. Rodríguez Matas <https://www.iit.comillas.edu/people/afrmatas>`_
 
     It aims to contribute to the design of robust investment strategies for Naturgy in the 2030-2050 horizon, with a case study for Spain.
 
-- `Quantifying the techno-economic benefits of distributed storage deployment and demand response. <https://www.iit.comillas.edu/publicacion/proyecto/en/SAMSO_BATERIAS_DR_2024/Cuantificaci%C3%B3n%20de%20los%20beneficios%20t%C3%A9cnico-econ%C3%B3micos%20del%20despliegue%20del%20almacenamiento%20distribuido%20y%20la%20respuesta%20de%20la%20demanda>`_, developed for **SAMSO, UNEF, AEPIBAL, PIMEC, OCTOPUS**.
+- `Quantifying the techno-economic benefits of distributed storage deployment and demand response <https://www.iit.comillas.edu/publicacion/proyecto/en/SAMSO_BATERIAS_DR_2024/Cuantificaci%C3%B3n%20de%20los%20beneficios%20t%C3%A9cnico-econ%C3%B3micos%20del%20despliegue%20del%20almacenamiento%20distribuido%20y%20la%20respuesta%20de%20la%20demanda>`_, developed for **SAMSO, UNEF, AEPIBAL, PIMEC, OCTOPUS**.
   September 2024 - January 2025. `C. Mateo <https://www.iit.comillas.edu/people/cmateo>`_, `J.P. Chaves <https://www.iit.comillas.edu/people/jchaves>`_, `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `F. Martín <https://www.iit.comillas.edu/people/fmartin>`_, `T. Gómez <https://www.iit.comillas.edu/people/tomas>`_, `M. Martínez <https://www.iit.comillas.edu/people/mmartinezv>`_
 
     It aims to quantify the value of distributed batteries and demand response in the context of the National Integrated Energy and Climate Plan (PNIEC).
