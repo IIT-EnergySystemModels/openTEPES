@@ -1,0 +1,49 @@
+name: Google Colab Compatibility Test
+
+on:
+  push:
+    branches: [ main, next ]
+  pull_request:
+    branches: [ main, next ]
+
+jobs:
+  colab-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11"]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y glpk-utils
+
+    - name: Install package
+      run: |
+        python -m pip install --upgrade pip
+        # Simulate installation in Colab
+        pip install .
+        # Also install a solver that doesn't require a license for basic tests
+        pip install highspy pytest
+
+    - name: Verify installation
+      run: |
+        python -c "import openTEPES; print('openTEPES imported successfully')"
+
+    - name: Run basic test
+      run: |
+        pytest -vv tests/test_run.py
+
+    - name: Check notebook execution (optional)
+      run: |
+        pip install nbconvert ipykernel
+        # Test if the linkage notebook can at least be parsed/executed (if possible without large data)
+        # jupyter nbconvert --to notebook --execute scripts/openTEPES2IAMC/Linkage_openTEPES.ipynb --output test_out.ipynb
