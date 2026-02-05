@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 03, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 05, 2026
 """
 
 import time
@@ -149,6 +149,11 @@ def GenerationOperationModelFormulationObjFunct(OptModel, mTEPES, pIndLogConsole
         if (nd,hp) in mTEPES.n2g:
             h2n[nd].append(hp)
 
+    g2a = defaultdict(list)
+    for ar,g in mTEPES.ar*mTEPES.g:
+        if (ar,g) in mTEPES.a2g:
+            g2a[ar].append(g)
+
     def eTotalGCost(OptModel,n):
         return OptModel.vTotalGCost[p,sc,n] == (mTEPES.pLoadLevelDuration[p,sc,n]() * sum(mTEPES.pLinearVarCost  [p,sc,n,nr] * OptModel.vTotalOutput    [p,sc,n,nr]                                              +
                                                                                           mTEPES.pConstantVarCost[p,sc,n,nr] * OptModel.vCommitment     [p,sc,n,nr] for nr in mTEPES.nr if (p,nr) in mTEPES.pnr) +
@@ -176,24 +181,24 @@ def GenerationOperationModelFormulationObjFunct(OptModel, mTEPES, pIndLogConsole
     setattr(OptModel, f'eTotalECost_{p}_{sc}_{st}', Constraint(mTEPES.n, rule=eTotalECost, doc='system emission cost [MEUR]'))
 
     def eTotalEmissionArea(OptModel,n,ar):
-        if mTEPES.pEmission[p,ar] < math.inf and sum(mTEPES.pEmissionRate[g] for g in mTEPES.g if (ar, g) in mTEPES.a2g and (p, g) in mTEPES.pg):
-            return OptModel.vTotalEmissionArea[p,sc,n,ar] == (mTEPES.pLoadLevelDuration[p,sc,n]() * sum(mTEPES.pEmissionRate[nr] * 1e-3 * OptModel.vTotalOutput    [p,sc,n,nr] for nr in mTEPES.nr if (ar,nr) in mTEPES.a2g and (p,nr) in mTEPES.pnr)    #1e-3 to change from tCO2/MWh to MtCO2/GWh
-                                                            + mTEPES.pLoadLevelDuration[p,sc,n]() * sum(mTEPES.pEmissionRate[bo] * 1e-3 * OptModel.vTotalOutputHeat[p,sc,n,bo] for bo in mTEPES.bo if (ar,bo) in mTEPES.a2g and (p,bo) in mTEPES.pbo))   #1e-3 to change from tCO2/MWh to MtCO2/GWh
+        if mTEPES.pEmission[p,ar] < math.inf and sum(mTEPES.pEmissionRate[g] for g in mTEPES.g if g in g2a[ar] and (p,g) in mTEPES.pg):
+            return OptModel.vTotalEmissionArea[p,sc,n,ar] == (mTEPES.pLoadLevelDuration[p,sc,n]() * sum(mTEPES.pEmissionRate[nr] * 1e-3 * OptModel.vTotalOutput    [p,sc,n,nr] for nr in mTEPES.nr if nr in g2a[ar] and (p,nr) in mTEPES.pnr)    #1e-3 to change from tCO2/MWh to MtCO2/GWh
+                                                            + mTEPES.pLoadLevelDuration[p,sc,n]() * sum(mTEPES.pEmissionRate[bo] * 1e-3 * OptModel.vTotalOutputHeat[p,sc,n,bo] for bo in mTEPES.bo if bo in g2a[ar] and (p,bo) in mTEPES.pbo))   #1e-3 to change from tCO2/MWh to MtCO2/GWh
         else:
             return Constraint.Skip
     setattr(OptModel, f'eTotalEmissionArea_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.ar, rule=eTotalEmissionArea, doc='area total emission [MtCO2 eq]'))
 
     def eTotalECostArea(OptModel,n,ar):
-        if sum(mTEPES.pEmissionVarCost[p,sc,n,g] for g in mTEPES.g if (ar,g) in mTEPES.a2g and (p,g) in mTEPES.pg):
-            return OptModel.vTotalECostArea[p,sc,n,ar] == (mTEPES.pLoadLevelDuration[p,sc,n]() * (sum(mTEPES.pEmissionVarCost[p,sc,n, g] * OptModel.vTotalOutput    [p,sc,n, g] for  g in mTEPES.g  if (ar, g) in mTEPES.a2g and (p, g) in mTEPES.pg )
-                                                                                                + sum(mTEPES.pEmissionVarCost[p,sc,n,bo] * OptModel.vTotalOutputHeat[p,sc,n,bo] for bo in mTEPES.bo if (ar,bo) in mTEPES.a2g and (p,bo) in mTEPES.pbo)))
+        if sum(mTEPES.pEmissionVarCost[p,sc,n,g] for g in mTEPES.g if g in g2a[ar] and (p,g) in mTEPES.pg):
+            return OptModel.vTotalECostArea[p,sc,n,ar] == (mTEPES.pLoadLevelDuration[p,sc,n]() * (sum(mTEPES.pEmissionVarCost[p,sc,n, g] * OptModel.vTotalOutput    [p,sc,n, g] for  g in mTEPES.g  if  g in g2a[ar] and (p, g) in mTEPES.pg )
+                                                                                                + sum(mTEPES.pEmissionVarCost[p,sc,n,bo] * OptModel.vTotalOutputHeat[p,sc,n,bo] for bo in mTEPES.bo if bo in g2a[ar] and (p,bo) in mTEPES.pbo)))
         else:
             return Constraint.Skip
     setattr(OptModel, f'eTotalECostArea_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.ar, rule=eTotalECostArea, doc='area emission cost [MEUR]'))
 
     def eTotalRESEnergyArea(OptModel,n,ar):
         if mTEPES.pRESEnergy[p,ar] and st == mTEPES.Last_st:
-            return OptModel.vTotalRESEnergyArea[p,sc,n,ar] == mTEPES.pLoadLevelDuration[p,sc,n]() * sum(OptModel.vTotalOutput[p,sc,n,re] for re in mTEPES.re if (ar,re) in mTEPES.a2g and (p,re) in mTEPES.pre)
+            return OptModel.vTotalRESEnergyArea[p,sc,n,ar] == mTEPES.pLoadLevelDuration[p,sc,n]() * sum(OptModel.vTotalOutput[p,sc,n,re] for re in mTEPES.re if re in g2a[ar] and (p,re) in mTEPES.pre)
         else:
             return Constraint.Skip
     setattr(OptModel, f'eTotalRESEnergyArea_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.ar, rule=eTotalRESEnergyArea, doc='area RES energy [GWh]'))
@@ -223,6 +228,11 @@ def GenerationOperationModelFormulationInvestment(OptModel, mTEPES, pIndLogConso
     print('Investment & operation var constraints ****')
 
     StartTime = time.time()
+
+    g2a = defaultdict(list)
+    for ar,g in mTEPES.ar*mTEPES.g:
+        if (ar,g) in mTEPES.a2g:
+            g2a[ar].append(g)
 
     def eInstallGenComm(OptModel,n,gc):
         if gc in mTEPES.nr and gc not in mTEPES.eh and gc not in mTEPES.bc and (p,gc) in mTEPES.pgc and (mTEPES.pMinPowerElec[p,sc,n,gc] or mTEPES.pConstantVarCost[p,sc,n,gc]):
@@ -314,10 +324,10 @@ def GenerationOperationModelFormulationInvestment(OptModel, mTEPES, pIndLogConso
         print('eUninstallGenCap          ... ', len(getattr(OptModel, f'eUninstallGenCap_{p}_{sc}_{st}')), ' rows')
 
     def eAdequacyReserveMarginElec(OptModel,ar):
-        if mTEPES.pReserveMargin[p,ar] and st == mTEPES.Last_st and sum(1 for gc in mTEPES.gc if (ar,gc) in mTEPES.a2g) and sum(mTEPES.pRatedMaxPowerElec[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]) for g in mTEPES.g if (ar,g) in mTEPES.a2g and g not in (mTEPES.gc or mTEPES.gd)) <= mTEPES.pDemandElecPeak[p,ar] * mTEPES.pReserveMargin[p,ar]:
-            return ((sum(                                       mTEPES.pRatedMaxPowerElec[g ] * mTEPES.pAvailability[g ]() / (1.0-mTEPES.pEFOR[g ]) for g  in mTEPES.g  if (p,g ) in mTEPES.pg  and (ar,g ) in mTEPES.a2g and g not in (mTEPES.gc or mTEPES.gd)) +
-                     sum(   OptModel.vGenerationInvest[p,gc]  * mTEPES.pRatedMaxPowerElec[gc] * mTEPES.pAvailability[gc]() / (1.0-mTEPES.pEFOR[gc]) for gc in mTEPES.gc if (p,gc) in mTEPES.pgc and (ar,gc) in mTEPES.a2g                                      ) +
-                     sum((1-OptModel.vGenerationRetire[p,gd]) * mTEPES.pRatedMaxPowerElec[gd] * mTEPES.pAvailability[gd]() / (1.0-mTEPES.pEFOR[gd]) for gd in mTEPES.gd if (p,gd) in mTEPES.pgd and (ar,gd) in mTEPES.a2g                                      ) ) >= mTEPES.pDemandElecPeak[p,ar] * mTEPES.pReserveMargin[p,ar])
+        if mTEPES.pReserveMargin[p,ar] and st == mTEPES.Last_st and sum(1 for gc in mTEPES.gc if gc in g2a[ar]) and sum(mTEPES.pRatedMaxPowerElec[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]) for g in mTEPES.g if (ar,g) in mTEPES.a2g and g not in (mTEPES.gc or mTEPES.gd)) <= mTEPES.pDemandElecPeak[p,ar] * mTEPES.pReserveMargin[p,ar]:
+            return ((sum(                                       mTEPES.pRatedMaxPowerElec[g ] * mTEPES.pAvailability[g ]() / (1.0-mTEPES.pEFOR[g ]) for g  in mTEPES.g  if (p,g ) in mTEPES.pg  and g  in g2a[ar] and g not in (mTEPES.gc or mTEPES.gd)) +
+                     sum(   OptModel.vGenerationInvest[p,gc]  * mTEPES.pRatedMaxPowerElec[gc] * mTEPES.pAvailability[gc]() / (1.0-mTEPES.pEFOR[gc]) for gc in mTEPES.gc if (p,gc) in mTEPES.pgc and gc in g2a[ar]                                      ) +
+                     sum((1-OptModel.vGenerationRetire[p,gd]) * mTEPES.pRatedMaxPowerElec[gd] * mTEPES.pAvailability[gd]() / (1.0-mTEPES.pEFOR[gd]) for gd in mTEPES.gd if (p,gd) in mTEPES.pgd and gd in g2a[ar]                                      ) ) >= mTEPES.pDemandElecPeak[p,ar] * mTEPES.pReserveMargin[p,ar])
         else:
             return Constraint.Skip
     setattr(OptModel, f'eAdequacyReserveMarginElec_{p}_{sc}_{st}', Constraint(mTEPES.ar, rule=eAdequacyReserveMarginElec, doc='electricity system adequacy reserve margin [p.u.]'))
@@ -328,9 +338,9 @@ def GenerationOperationModelFormulationInvestment(OptModel, mTEPES, pIndLogConso
     def eAdequacyReserveMarginHeat(OptModel,ar):
         if mTEPES.pIndHeat == 1:
             if mTEPES.pReserveMarginHeat[p,ar] and st == mTEPES.Last_st and sum(1 for gc in mTEPES.gc if (ar,gc) in mTEPES.a2g) and sum(mTEPES.pRatedMaxPowerHeat[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g])  for g in mTEPES.g if (ar,g) in mTEPES.a2g and g not in (mTEPES.gc or mTEPES.gd)) <= mTEPES.pDemandHeatPeak[p,ar] * mTEPES.pReserveMarginHeat[p,ar]:
-                return ((sum(                                       mTEPES.pRatedMaxPowerHeat[g ] * mTEPES.pAvailability[g ]() / (1.0-mTEPES.pEFOR[g ]) for g  in mTEPES.g  if (p,g ) in mTEPES.pg  and (ar,g ) in mTEPES.a2g and g not in (mTEPES.gc or mTEPES.gd)) +
-                         sum(   OptModel.vGenerationInvest[p,gc]  * mTEPES.pRatedMaxPowerHeat[gc] * mTEPES.pAvailability[gc]() / (1.0-mTEPES.pEFOR[gc]) for gc in mTEPES.gc if (p,gc) in mTEPES.pgc and (ar,gc) in mTEPES.a2g                                      ) +
-                         sum((1-OptModel.vGenerationRetire[p,gd]) * mTEPES.pRatedMaxPowerHeat[gd] * mTEPES.pAvailability[gd]() / (1.0-mTEPES.pEFOR[gd]) for gd in mTEPES.gd if (p,gd) in mTEPES.pgd and (ar,gd) in mTEPES.a2g                                      ) ) >= mTEPES.pDemandHeatPeak[p,ar] * mTEPES.pReserveMarginHeat[p,ar])
+                return ((sum(                                       mTEPES.pRatedMaxPowerHeat[g ] * mTEPES.pAvailability[g ]() / (1.0-mTEPES.pEFOR[g ]) for g  in mTEPES.g  if (p,g ) in mTEPES.pg  and g  in g2a[ar] and g not in (mTEPES.gc or mTEPES.gd)) +
+                         sum(   OptModel.vGenerationInvest[p,gc]  * mTEPES.pRatedMaxPowerHeat[gc] * mTEPES.pAvailability[gc]() / (1.0-mTEPES.pEFOR[gc]) for gc in mTEPES.gc if (p,gc) in mTEPES.pgc and gc in g2a[ar]                                      ) +
+                         sum((1-OptModel.vGenerationRetire[p,gd]) * mTEPES.pRatedMaxPowerHeat[gd] * mTEPES.pAvailability[gd]() / (1.0-mTEPES.pEFOR[gd]) for gd in mTEPES.gd if (p,gd) in mTEPES.pgd and gd in g2a[ar]                                      ) ) >= mTEPES.pDemandHeatPeak[p,ar] * mTEPES.pReserveMarginHeat[p,ar])
             else:
                 return Constraint.Skip
         else:
@@ -341,7 +351,7 @@ def GenerationOperationModelFormulationInvestment(OptModel, mTEPES, pIndLogConso
         print('eAdeqReserveMarginHeat    ... ', len(getattr(OptModel, f'eAdequacyReserveMarginHeat_{p}_{sc}_{st}')), ' rows')
 
     def eMaxSystemEmission(OptModel,ar):
-        if mTEPES.pEmission[p,ar] < math.inf and sum(mTEPES.pEmissionRate[nr] for nr in mTEPES.nr if (ar,nr) in mTEPES.a2g) and st == mTEPES.Last_st:
+        if mTEPES.pEmission[p,ar] < math.inf and sum(mTEPES.pEmissionRate[nr] for nr in mTEPES.nr if nr in g2a[ar]) and st == mTEPES.Last_st:
             # There is an emission limit, there are generators with emissions in the Area and it is the last stage
             return sum(OptModel.vTotalEmissionArea[p,sc,na,ar] for na in mTEPES.na) <= mTEPES.pEmission[p,ar]
         else:
@@ -409,7 +419,7 @@ def GenerationOperationModelFormulationDemand(OptModel, mTEPES, pIndLogConsole, 
 
     def eSystemInertia(OptModel,n,ar):
         if mTEPES.pSystemInertia[p,sc,n,ar] and sum(1 for nr in n2a[ar]):
-            return sum(OptModel.vCommitment[p,sc,n,nr] * mTEPES.pInertia[nr] for nr in mTEPES.nr if (ar,nr) in mTEPES.a2g) >= mTEPES.pSystemInertia[p,sc,n,ar]
+            return sum(OptModel.vCommitment[p,sc,n,nr] * mTEPES.pInertia[nr] for nr in mTEPES.nr if nr in n2a[ar]) >= mTEPES.pSystemInertia[p,sc,n,ar]
         else:
             return Constraint.Skip
     setattr(OptModel, f'eSystemInertia_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.ar, rule=eSystemInertia, doc='system inertia [s]'))

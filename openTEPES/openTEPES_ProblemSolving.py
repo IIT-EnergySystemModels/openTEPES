@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 04, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 05, 2026
 """
 
 import time
@@ -93,7 +93,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
     if SolverResults.solver.termination_condition == TerminationCondition.infeasible or SolverResults.solver.termination_condition == TerminationCondition.maxTimeLimit or SolverResults.solver.termination_condition == TerminationCondition.infeasible.maxIterations:
         log_infeasible_constraints(OptModel, log_expression=True, log_variables=True)
         logging.basicConfig(filename=f'{_path}/openTEPES_infeasibilities_{CaseName}_{p}_{sc}_{st}.log', level=logging.INFO)
-        raise ValueError(f'Problem infeasible for period {p}, scenario {sc}, stage {st}')
+        raise ValueError(f'### Problem infeasible for period {p}, scenario {sc}, stage {st}')
     SolverResults.write()                                                              # summary of the solver results
 
     #%% fix values of some variables to get duals and solve it again
