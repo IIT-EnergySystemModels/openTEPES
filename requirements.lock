@@ -30,9 +30,9 @@ contourpy==1.3.3
     # via matplotlib
 cycler==0.12.1
     # via matplotlib
-dill==0.3.8
+dill==0.4.1
     # via opentepes (pyproject.toml)
-duckdb==1.3.2
+duckdb==1.4.4
     # via opentepes (pyproject.toml)
 fonttools==4.61.1
     # via matplotlib
@@ -58,17 +58,17 @@ kiwisolver==1.4.9
     # via matplotlib
 markupsafe==3.0.3
     # via jinja2
-matplotlib==3.10.0
+matplotlib==3.10.8
     # via
     #   opentepes (pyproject.toml)
     #   ausankey
-narwhals==2.15.0
+narwhals==2.16.0
     # via
     #   altair
     #   plotly
 networkx==3.6.1
     # via opentepes (pyproject.toml)
-numpy==2.2.2
+numpy==2.4.2
     # via
     #   opentepes (pyproject.toml)
     #   ausankey
@@ -77,30 +77,30 @@ numpy==2.2.2
     #   pandas
     #   pydeck
     #   streamlit
-packaging==25.0
+packaging==26.0
     # via
     #   altair
     #   matplotlib
     #   plotly
     #   streamlit
-pandas==2.2.2
+pandas==2.3.3
     # via
     #   opentepes (pyproject.toml)
     #   ausankey
     #   streamlit
-pillow==11.3.0
+pillow==12.1.0
     # via
     #   matplotlib
     #   streamlit
-plotly==5.24.1
+plotly==6.5.2
     # via opentepes (pyproject.toml)
 ply==3.11
     # via pyomo
-protobuf==5.29.5
+protobuf==6.33.5
     # via streamlit
-psutil==5.9.5
+psutil==7.2.2
     # via opentepes (pyproject.toml)
-pyarrow==18.1.0
+pyarrow==23.0.0
     # via streamlit
 pydeck==0.9.1
     # via streamlit
@@ -118,7 +118,7 @@ referencing==0.37.0
     # via
     #   jsonschema
     #   jsonschema-specifications
-requests==2.32.4
+requests==2.32.5
     # via
     #   ampltools
     #   streamlit
@@ -130,13 +130,13 @@ six==1.17.0
     # via python-dateutil
 smmap==5.0.2
     # via gitdb
-streamlit==1.53.1
+streamlit==1.54.0
     # via opentepes (pyproject.toml)
-tenacity==9.1.2
+tenacity==9.1.3
     # via streamlit
 toml==0.10.2
     # via streamlit
-tornado==6.5.1
+tornado==6.5.4
     # via streamlit
 typing-extensions==4.15.0
     # via
@@ -145,7 +145,7 @@ typing-extensions==4.15.0
     #   streamlit
 tzdata==2025.3
     # via pandas
-urllib3==2.5.0
+urllib3==2.6.3
     # via requests
 watchdog==6.0.0
     # via streamlit
