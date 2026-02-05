@@ -68,7 +68,7 @@ narwhals==2.15.0
     #   plotly
 networkx==3.6.1
     # via opentepes (pyproject.toml)
-numpy==2.0.2
+numpy==2.2.2
     # via
     #   opentepes (pyproject.toml)
     #   ausankey
