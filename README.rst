@@ -239,7 +239,8 @@ It can be run in Binder:
 
 Expected Results
 ################
-.. image:: https://pascua.iit.comillas.edu/aramos/oT_Map_Network_TF2030.png
+
+.. image:: https://raw.githubusercontent.com/IIT-EnergySystemModels/openTEPES/refs/heads/master/doc/img/oT_Map_Network_TF2030.png
   :alt: Network map with investment decisions
   :width: 600px
   :align: center
