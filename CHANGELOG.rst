@@ -1,6 +1,12 @@
 Change Log
 =============
 
+[4.18.14] - 2025-02-06
+----------------------
+- [CHANGED] cleanup model formulation to avoid unnecessary computations and to improve readability
+- [FIXED] error in output results for case RTS24
+- [CHANGED] modify the generation inventory utilization for the candidate ESS to be wrt the invested storage capacity instead of the maximum storage capacity
+
 [4.18.13] - 2025-02-05
 ----------------------
 - [CHANGED] extensive use of a2g and t2g in input, model formulation, and output modules to avoid unnecessary computations and to improve readability
