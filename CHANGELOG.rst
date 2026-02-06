@@ -1,6 +1,10 @@
 Change Log
 =============
 
+[4.18.15] - 2025-02-07
+----------------------
+- [CHANGED] cleanup model formulation to avoid unnecessary computations and to improve readability
+
 [4.18.14] - 2025-02-06
 ----------------------
 - [CHANGED] cleanup model formulation to avoid unnecessary computations and to improve readability
