@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 06, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 07, 2026
 """
 
 import time
@@ -985,7 +985,7 @@ def ESSOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutpu
         OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='GWh',               aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(f'{_path}/oT_Result_GenerationInventory_{CaseName}.csv', sep=',')
 
         for p,sc,n,ec in mTEPES.psnec:
-            mTEPES.pMaxStorage[p,sc,n,ec] = mTEPES.pMaxStorage[p,sc,n,ec] * OptModel.vCommitment[p,sc,n,ec]
+            mTEPES.pMaxStorage[p,sc,n,ec] = mTEPES.pMaxStorage[p,sc,n,ec] * OptModel.vGenerationInvest[p,ec]()
 
         OutputToFile = pd.Series(data=[OptModel.vESSInventory[p,sc,n,es]()/(mTEPES.pMaxStorage[p,sc,n,es]+pEpsilon) for p,sc,n,es in sPSNES], index=pd.Index(sPSNES))
         OutputToFile = OutputToFile.fillna(0.0)
