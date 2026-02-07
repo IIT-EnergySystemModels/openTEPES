@@ -542,7 +542,7 @@ def DataConfiguration(mTEPES):
         if ni not in mTEPES.nd or nf not in mTEPES.nd or cc not in mTEPES.cc:
             raise ValueError(f'### Line {ni} {nf} {cc} has a node or a circuit not defined in the corresponding dictionary.')
     if len(mTEPES.ln) != len(mTEPES.dFrame['dfNetwork'].index):
-        raise ValueError('### Some electric lines are invalid ', len(mTEPES.ln), len(mTEPES.dFrame['dfNetwork'].index))
+        raise ValueError('### Some electric lines are invalid (not having reactance) ', len(mTEPES.ln), len(mTEPES.dFrame['dfNetwork'].index))
     mTEPES.la     = Set(doc='all real        electric lines'   , initialize=[ln     for ln   in mTEPES.ln if mTEPES.dPar['pLineX']              [ln] != 0.0 and mTEPES.dPar['pLineNTCFrw'][ln] > 0.0 and mTEPES.dPar['pLineNTCBck'][ln] > 0.0 and mTEPES.dPar['pElecNetPeriodIni'][ln]  <= mTEPES.p.last() and mTEPES.dPar['pElecNetPeriodFin'][ln]  >= mTEPES.p.first()])
     mTEPES.ls     = Set(doc='all real switch electric lines'   , initialize=[la     for la   in mTEPES.la if mTEPES.dPar['pIndBinLineSwitch']   [la]       ])
     mTEPES.lc     = Set(doc='candidate       electric lines'   , initialize=[la     for la   in mTEPES.la if mTEPES.dPar['pNetFixedCost']       [la] >  0.0])
