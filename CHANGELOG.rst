@@ -3,6 +3,7 @@ Change Log
 
 [4.18.15] - 2025-02-09
 ----------------------
+- [FIXED] fix error in eKirchhoff2ndLaw1 and eKirchhoff2ndLaw2 to avoid formulating for nonexistent lines in a certain year
 - [FIXED] fix eReserveUpIfEnergy and eReserveDwIfEnergy constraints
 - [CHANGED] cleanup model formulation and input data to improve readability
 
