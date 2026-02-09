@@ -4,6 +4,8 @@ Publications
 ============
 The **openTEPES** model has been used in these publications:
 
+- F. Labora, A. Ramos “Tight and Compact Formulations for Nuclear Power Plant Flexible Operation”  TechRxiv. February, 2026. `10.36227/techrxiv.177004916.61674766/v1 <https://doi.org/10.36227/techrxiv.177004916.61674766/v1>`_
+
 - F. Labora and A. Ramos, "`An Efficient and Tight Model for Nuclear Power Plant Constraints in Flexible Operation <https://fondation-hadamard.fr/media/filer_public/0a/b9/0ab99ac2-0e42-4497-bb76-94d3f25f3856/pgmodays_2025_book_of_abstracts1.pdf>`_, PGMO DAYS 2025, Paris-Saclay, France. November 2025.
 
 - E.F. Álvarez "`Improving Modelling for Optimal Transmission Expansion Planning <https://repositorio.comillas.edu/xmlui/bitstream/handle/11531/97587/TD00684.pdf?sequence=1&isAllowed=y>`_". PhD Thesis. Universidad Pontificia Comillas. January 2025. Directors: Andrés Ramos, Luis Olmos.
