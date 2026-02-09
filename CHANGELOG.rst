@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.18.15] - 2025-02-07
+[4.18.15] - 2025-02-09
 ----------------------
+- [FIXED] fix eReserveUpIfEnergy and eReserveDwIfEnergy constraints
 - [CHANGED] cleanup model formulation and input data to improve readability
 
 [4.18.14] - 2025-02-06
