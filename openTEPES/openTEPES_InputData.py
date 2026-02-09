@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 08, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 09, 2026
 """
 
 import time
@@ -1467,7 +1467,7 @@ def DataConfiguration(mTEPES):
     mTEPES.pEnergyInflows        = Param(mTEPES.psnes, initialize=mTEPES.dPar['pEnergyInflows'].to_dict()            , within=NonNegativeReals,    doc='Energy inflows',                         mutable=True)
     mTEPES.pEnergyOutflows       = Param(mTEPES.psnes, initialize=mTEPES.dPar['pEnergyOutflows'].to_dict()           , within=NonNegativeReals,    doc='Energy outflows',                        mutable=True)
     mTEPES.pMinStorage           = Param(mTEPES.psnes, initialize=mTEPES.dPar['pMinStorage'].to_dict()               , within=NonNegativeReals,    doc='ESS Minimum storage capacity'                        )
-    mTEPES.pMaxStorage           = Param(mTEPES.psnes, initialize=mTEPES.dPar['pMaxStorage'].to_dict()               , within=NonNegativeReals,    doc='ESS Maximum storage capacity'                        )
+    mTEPES.pMaxStorage           = Param(mTEPES.psnes, initialize=mTEPES.dPar['pMaxStorage'].to_dict()               , within=NonNegativeReals,    doc='ESS Maximum storage capacity',           mutable=True)
     mTEPES.pMinEnergy            = Param(mTEPES.psng , initialize=mTEPES.dPar['pVariableMinEnergy'].to_dict()        , within=NonNegativeReals,    doc='Unit minimum energy demand'                          )
     mTEPES.pMaxEnergy            = Param(mTEPES.psng , initialize=mTEPES.dPar['pVariableMaxEnergy'].to_dict()        , within=NonNegativeReals,    doc='Unit maximum energy demand'                          )
     mTEPES.pRatedMaxPowerElec    = Param(mTEPES.gg,    initialize=mTEPES.dPar['pRatedMaxPowerElec'].to_dict()        , within=NonNegativeReals,    doc='Rated maximum power'                                 )
@@ -1881,9 +1881,9 @@ def SettingUpVariables(OptModel, mTEPES):
         [OptModel.vEnergyInflows [p,sc,n,ec].setub(mTEPES.pEnergyInflows    [p,sc,n,ec]()) for p,sc,n,ec in mTEPES.psnec]
         [OptModel.vEnergyOutflows[p,sc,n,es].setub(mTEPES.pMaxCapacity      [p,sc,n,es]  ) for p,sc,n,es in mTEPES.psnes]
         [OptModel.vESSInventory  [p,sc,n,es].setlb(mTEPES.pMinStorage       [p,sc,n,es]  ) for p,sc,n,es in mTEPES.psnes]
-        [OptModel.vESSInventory  [p,sc,n,es].setub(mTEPES.pMaxStorage       [p,sc,n,es]  ) for p,sc,n,es in mTEPES.psnes]
+        [OptModel.vESSInventory  [p,sc,n,es].setub(mTEPES.pMaxStorage       [p,sc,n,es]()) for p,sc,n,es in mTEPES.psnes]
         [OptModel.vIniInventory  [p,sc,n,ec].setlb(mTEPES.pMinStorage       [p,sc,n,ec]  ) for p,sc,n,ec in mTEPES.psnec]
-        [OptModel.vIniInventory  [p,sc,n,ec].setub(mTEPES.pMaxStorage       [p,sc,n,ec]  ) for p,sc,n,ec in mTEPES.psnec]
+        [OptModel.vIniInventory  [p,sc,n,ec].setub(mTEPES.pMaxStorage       [p,sc,n,ec]()) for p,sc,n,ec in mTEPES.psnec]
 
         if mTEPES.pIndRampReserves:
             [OptModel.vRampReserveUp[p,sc,n,nr].setub(min(mTEPES.pMaxPower2ndBlock[p,sc,n,nr], mTEPES.pRampUp[nr])) if mTEPES.pRampUp[nr] else OptModel.vRampReserveUp[p,sc,n,nr].setub(mTEPES.pMaxPower2ndBlock[p,sc,n,nr]) for p,sc,n,nr in mTEPES.psnnr]
@@ -2184,8 +2184,8 @@ def SettingUpVariables(OptModel, mTEPES):
                 OptModel.vESSReserveUp   [p,sc,n,es].fix(0.0)
                 OptModel.vESSReserveDown [p,sc,n,es].fix(0.0)
                 nFixedVariables += 2
-            if  mTEPES.pMaxStorage       [p,sc,n,es] ==  0.0:
-                OptModel.vESSInventory   [p,sc,n,es].fix(0.0)
+            if  mTEPES.pMaxStorage       [p,sc,n,es]() == 0.0:
+                OptModel.vESSInventory   [p,sc,n,es].fix( 0.0)
                 nFixedVariables += 1
 
         if mTEPES.pIndHydroTopology:
@@ -2705,8 +2705,8 @@ def SettingUpVariables(OptModel, mTEPES):
                 raise ValueError('### Total minimum output greater than total inflows for ESS unit ', es, ' by ', sum(mTEPES.pMinPowerElec[p,sc,n,es]   for p,sc,n in mTEPES.psn if (p,es) in mTEPES.pes) -    sum(mTEPES.pEnergyInflows [p,sc,n,es]() for p,sc,n in mTEPES.psn if (p,es) in mTEPES.pes), ' GWh')
             if sum(mTEPES.pMaxCharge   [p,sc,n,es] for p,sc,n in mTEPES.psn if (p,es) in mTEPES.pes) -          sum(mTEPES.pEnergyOutflows[p,sc,n,es]() for p,sc,n in mTEPES.psn if (p,es) in mTEPES.pes) < 0.0:
                 raise ValueError('### Total maximum charge lower than total outflows for ESS unit ',  es, ' by ', sum(mTEPES.pMaxCharge   [p,sc,n,es]   for p,sc,n in mTEPES.psn if (p,es) in mTEPES.pes) -    sum(mTEPES.pEnergyOutflows[p,sc,n,es]() for p,sc,n in mTEPES.psn if (p,es) in mTEPES.pes), ' GWh')
-            if max(mTEPES.pMaxCharge   [p,sc,n,es] for p,sc,n in mTEPES.psn if (p,es) in mTEPES.pes) and          max(mTEPES.pMaxPowerElec[p,sc,n,es]   for p,sc,n in mTEPES.psn if (p,es) in mTEPES.pes) and      max(mTEPES.pMaxStorage[p,sc,n,es]   for p,sc,n in mTEPES.psn if (p,es) in mTEPES.pes) == 0.0:
-                raise ValueError('### This ESS unit has no storage capacity for charging ',  es, ' ',             sum(mTEPES.pMaxCharge   [p,sc,n,es]   for p,sc,n in mTEPES.psn if (p,es) in mTEPES.pes), ' MW ', sum(mTEPES.pMaxStorage[p,sc,n,es]   for p,sc,n in mTEPES.psn if (p,es) in mTEPES.pes), ' GWh')
+            if max(mTEPES.pMaxCharge   [p,sc,n,es] for p,sc,n in mTEPES.psn if (p,es) in mTEPES.pes) and          max(mTEPES.pMaxPowerElec[p,sc,n,es]   for p,sc,n in mTEPES.psn if (p,es) in mTEPES.pes) and      max(mTEPES.pMaxStorage[p,sc,n,es]() for p,sc,n in mTEPES.psn if (p,es) in mTEPES.pes) == 0.0:
+                raise ValueError('### This ESS unit has no storage capacity for charging ',  es, ' ',             sum(mTEPES.pMaxCharge   [p,sc,n,es]   for p,sc,n in mTEPES.psn if (p,es) in mTEPES.pes), ' MW ', sum(mTEPES.pMaxStorage[p,sc,n,es]() for p,sc,n in mTEPES.psn if (p,es) in mTEPES.pes), ' GWh')
 
         # detect inventory infeasibility
         for p,sc,n,es in mTEPES.ps*mTEPES.nesc:
@@ -2716,8 +2716,8 @@ def SettingUpVariables(OptModel, mTEPES):
                         if mTEPES.pIniInventory[p,sc,n,es]()                                        + sum(mTEPES.pDuration[p,sc,n2]()*(mTEPES.pEnergyInflows[p,sc,n2,es]() - mTEPES.pMinPowerElec[p,sc,n2,es] + mTEPES.pEfficiency[es]*mTEPES.pMaxCharge[p,sc,n2,es]) for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pStorageTimeStep[es]:mTEPES.n.ord(n)]) < mTEPES.pMinStorage[p,sc,n,es]:
                             raise ValueError('### Inventory equation violation ', p, sc, n, es, mTEPES.pIniInventory[p,sc,n,es]()                                        + sum(mTEPES.pDuration[p,sc,n2]()*(mTEPES.pEnergyInflows[p,sc,n2,es]() - mTEPES.pMinPowerElec[p,sc,n2,es] + mTEPES.pEfficiency[es]*mTEPES.pMaxCharge[p,sc,n2,es]) for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pStorageTimeStep[es]:mTEPES.n.ord(n)]), mTEPES.pMinStorage[p,sc,n,es])
                     elif mTEPES.n.ord(n) >  mTEPES.pStorageTimeStep[es]:
-                        if mTEPES.pMaxStorage[p,sc,mTEPES.n.prev(n,mTEPES.pStorageTimeStep[es]),es] + sum(mTEPES.pDuration[p,sc,n2]()*(mTEPES.pEnergyInflows[p,sc,n2,es]() - mTEPES.pMinPowerElec[p,sc,n2,es] + mTEPES.pEfficiency[es]*mTEPES.pMaxCharge[p,sc,n2,es]) for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pStorageTimeStep[es]:mTEPES.n.ord(n)]) < mTEPES.pMinStorage[p,sc,n,es]:
-                            raise ValueError('### Inventory equation violation ', p, sc, n, es, mTEPES.pMaxStorage[p,sc,mTEPES.n.prev(n,mTEPES.pStorageTimeStep[es]),es] + sum(mTEPES.pDuration[p,sc,n2]()*(mTEPES.pEnergyInflows[p,sc,n2,es]() - mTEPES.pMinPowerElec[p,sc,n2,es] + mTEPES.pEfficiency[es]*mTEPES.pMaxCharge[p,sc,n2,es]) for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pStorageTimeStep[es]:mTEPES.n.ord(n)]), mTEPES.pMinStorage[p,sc,n,es])
+                        if mTEPES.pMaxStorage[p,sc,mTEPES.n.prev(n,mTEPES.pStorageTimeStep[es]),es]() + sum(mTEPES.pDuration[p,sc,n2]()*(mTEPES.pEnergyInflows[p,sc,n2,es]() - mTEPES.pMinPowerElec[p,sc,n2,es] + mTEPES.pEfficiency[es]*mTEPES.pMaxCharge[p,sc,n2,es]) for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pStorageTimeStep[es]:mTEPES.n.ord(n)]) < mTEPES.pMinStorage[p,sc,n,es]:
+                            raise ValueError('### Inventory equation violation ', p, sc, n, es, mTEPES.pMaxStorage[p,sc,mTEPES.n.prev(n,mTEPES.pStorageTimeStep[es]),es]() + sum(mTEPES.pDuration[p,sc,n2]()*(mTEPES.pEnergyInflows[p,sc,n2,es]() - mTEPES.pMinPowerElec[p,sc,n2,es] + mTEPES.pEfficiency[es]*mTEPES.pMaxCharge[p,sc,n2,es]) for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pStorageTimeStep[es]:mTEPES.n.ord(n)]), mTEPES.pMinStorage[p,sc,n,es])
 
         # detect minimum energy infeasibility
         for p,sc,n,g in mTEPES.ps*mTEPES.ngen:
