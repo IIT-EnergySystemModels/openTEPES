@@ -437,7 +437,7 @@ The main characteristics that define each type of generator are the following:
 ======================================  ===================================================================================================================================  ==========
 Generator type                          Description                                                                                                                          Set name
 ======================================  ===================================================================================================================================  ==========
-Generator                               It has MaximumPower or MaximumCharge or MaximumPowerHeat >0                                                                          *g*
+Any generator                           It has MaximumPower or MaximumCharge or MaximumPowerHeat >0                                                                          *g*
 Thermal                                 Fuel-based variable cost (fuel cost x linear term + CO2 emission cost) >0                                                            *t*
 VRE                                     Fuel-based variable cost (fuel cost x linear term + CO2 emission cost) =0  and MaximumStorage =0.  It may have OMVariableCost >0     *re*
 Non-renewable                           All the generators except the RESS                                                                                                   *nr*
