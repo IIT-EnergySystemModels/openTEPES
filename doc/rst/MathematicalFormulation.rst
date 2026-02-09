@@ -4,7 +4,7 @@ Mathematical Formulation
 ========================
 Here we present the mathematical formulation of the optimization problem solved by the **openTEPES** model. See also some TEP-related publications:
 
-* F. Labora, A. Ramos “An Efficient and Tight Model for Nuclear Power Plant Constraints in Flexible Operation”  TechRxiv. July, 2025. `10.36227/techrxiv.175303856.68847882/v1 <https://doi.org/10.36227/techrxiv.175303856.68847882/v1>`_
+* F. Labora, A. Ramos “Tight and Compact Formulations for Nuclear Power Plant Flexible Operation”  TechRxiv. February, 2026. `10.36227/techrxiv.177004916.61674766/v1 <https://doi.org/10.36227/techrxiv.177004916.61674766/v1>`_
 
 * E.F. Álvarez, J.C. López, L. Olmos, A. Ramos "An Optimal Expansion Planning of Power Systems Considering Cycle-Based AC Optimal Power Flow" Sustainable Energy, Grids and Networks, May 2024. `10.1016/j.segan.2024.101413 <https://doi.org/10.1016/j.segan.2024.101413>`_
 
@@ -579,7 +579,7 @@ Maximum ramp down and ramp up for the charge of an ESS [p.u.] «``eRampUpCharge`
 Detection of ramp up and ramp down state for the second block of a non-renewable (thermal) unit with minimum stable time [p.u.] «``eRampUpState``» «``eRampDwState``».
 The parameter :math:`\epsilon` is added to detect if the generator is ramping up/down. It is defined in the code as 1e-4 (of the ramp up/down limit).
 
-* F. Labora, A. Ramos “An Efficient and Tight Model for Nuclear Power Plant Constraints in Flexible Operation”  TechRxiv. July, 2025. `10.36227/techrxiv.175303856.68847882/v1 <https://doi.org/10.36227/techrxiv.175303856.68847882/v1>`_
+* F. Labora, A. Ramos “Tight and Compact Formulations for Nuclear Power Plant Flexible Operation”  TechRxiv. February, 2026. `10.36227/techrxiv.177004916.61674766/v1 <https://doi.org/10.36227/techrxiv.177004916.61674766/v1>`_
 
 :math:`\frac{- p^p_{\omega,n-\nu,t} + p^p_{\omega nt}}{DUR^p_{\omega n} RU_t} \leq rsu^p_{\omega nt} - \epsilon \cdot rsd^p_{\omega nt} \quad \forall p \omega nt`
 
