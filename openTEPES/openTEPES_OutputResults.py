@@ -1538,11 +1538,11 @@ def OperationSummaryResults(DirName, CaseName, OptModel, mTEPES):
     else:
         RsrInvestmentCost = 0.0
     if mTEPES.pIndHydrogen:
-        H2InvestmentCost  = sum(mTEPES.pDiscountedWeight[p] * mTEPES.pH2PipeFixedCost[ni,nf,cc] * OptModel.vH2PipeInvest[p,ni,nf,cc] for ni,nf,cc in mTEPES.pc if (p,ni,nf,cc) in mTEPES.ppc)
+        H2InvestmentCost  = sum(mTEPES.pDiscountedWeight[p] * mTEPES.pH2PipeFixedCost[ni,nf,cc] * OptModel.vH2PipeInvest[p,ni,nf,cc]() for p,ni,nf,cc in mTEPES.ppc)
     else:
         H2InvestmentCost  = 0.0
     if mTEPES.pIndHeat:
-        HeatInvestmentCost = sum(mTEPES.pDiscountedWeight[p] * mTEPES.pHeatPipeFixedCost[ni,nf,cc] * OptModel.vHeatPipeInvest[p,ni,nf,cc] for ni,nf,cc in mTEPES.hc if (p,ni,nf,cc) in mTEPES.phc)
+        HeatInvestmentCost = sum(mTEPES.pDiscountedWeight[p] * mTEPES.pHeatPipeFixedCost[ni,nf,cc] * OptModel.vHeatPipeInvest[p,ni,nf,cc]() for p,ni,nf,cc in mTEPES.phc)
     else:
         HeatInvestmentCost  = 0.0
     NetInvestmentCost     = sum(mTEPES.pDiscountedWeight[p] * mTEPES.pNetFixedCost [ni,nf,cc] * OptModel.vNetworkInvest   [p,ni,nf,cc]() for p,ni,nf,cc in mTEPES.plc)
