@@ -328,7 +328,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     pIndAreaOutput = 1
 
     # indicators to control the number of output results
-    if pIndOutputResultsmTEPES.pIndHydrogen:
+    if pIndOutputResults:
         pIndDumpRawResults              = 0
         pIndInvestmentResults           = 1
         pIndGenerationOperationResults  = 1
