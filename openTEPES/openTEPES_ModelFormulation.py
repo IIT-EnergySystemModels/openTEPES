@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 09, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 11, 2026
 """
 
 import time
@@ -23,7 +23,9 @@ def TotalObjectiveFunction(OptModel, mTEPES, pIndLogConsole):
     OptModel.eTotalSCost = Objective(rule=eTotalSCost, sense=minimize, doc='total system cost [MEUR]')
 
     def eTotalTCost(OptModel):
-        return OptModel.vTotalSCost == OptModel.vTotalICost + sum(mTEPES.pDiscountedWeight[p] * mTEPES.pScenProb[p,sc]() * (OptModel.vTotalGCost[p,sc,n] + OptModel.vTotalCCost[p,sc,n] + OptModel.vTotalECost[p,sc,n] + OptModel.vTotalNCost[p,sc,n] + OptModel.vTotalRCost[p,sc,n]) for p,sc,n in mTEPES.psn)
+        return OptModel.vTotalSCost == OptModel.vTotalICost + (sum(mTEPES.pDiscountedWeight[p] * mTEPES.pScenProb[p,sc]() * (OptModel.vTotalGCost    [p,sc,n] + OptModel.vTotalCCost[p,sc,n] + OptModel.vTotalECost[p,sc,n] + OptModel.vTotalNCost[p,sc,n] + OptModel.vTotalRElecCost[p,sc,n]) for p,sc,n in mTEPES.psn) +
+                                                               sum(mTEPES.pDiscountedWeight[p] * mTEPES.pScenProb[p,sc]() *  OptModel.vTotalRH2Cost  [p,sc,n] for p,sc,n in mTEPES.psn if mTEPES.pIndHydrogen) +
+                                                               sum(mTEPES.pDiscountedWeight[p] * mTEPES.pScenProb[p,sc]() *  OptModel.vTotalRHeatCost[p,sc,n] for p,sc,n in mTEPES.psn if mTEPES.pIndHeat    ) )
     OptModel.eTotalTCost = Constraint(rule=eTotalTCost, doc='total system cost [MEUR]')
 
     GeneratingTime = time.time() - StartTime
@@ -32,37 +34,25 @@ def TotalObjectiveFunction(OptModel, mTEPES, pIndLogConsole):
 
 
 # @profile
-def InvestmentModelFormulation(OptModel, mTEPES, pIndLogConsole):
-    print('Investment           model formulation ****')
+def InvestmentElecModelFormulation(OptModel, mTEPES, pIndLogConsole):
+    print('Investment elec      model formulation ****')
 
     StartTime = time.time()
 
     def eTotalICost(OptModel):
-        if len(mTEPES.gc) + len(mTEPES.bc) + len(mTEPES.gd) + len(mTEPES.lc) == 0:
+        if len(mTEPES.gc) + len(mTEPES.gd) + len(mTEPES.lc) + len(mTEPES.rn) + len(mTEPES.pc) + len(mTEPES.hc) == 0:
             return Constraint.Skip
-        return OptModel.vTotalICost == sum(mTEPES.pDiscountedWeight[p] * OptModel.vTotalFCost[p] for p in mTEPES.p)
+        return OptModel.vTotalICost == (sum(mTEPES.pDiscountedWeight[p] * OptModel.vTotalFElecCost [p] for p in mTEPES.p if len(mTEPES.gc) + len(mTEPES.gd) + len(mTEPES.lc)) +
+                                        sum(mTEPES.pDiscountedWeight[p] * OptModel.vTotalFHydroCost[p] for p in mTEPES.p if len(mTEPES.rn)) +
+                                        sum(mTEPES.pDiscountedWeight[p] * OptModel.vTotalFH2Cost   [p] for p in mTEPES.p if len(mTEPES.pc)) +
+                                        sum(mTEPES.pDiscountedWeight[p] * OptModel.vTotalFHeatCost [p] for p in mTEPES.p if len(mTEPES.hc)) )
     OptModel.eTotalICost = Constraint(rule=eTotalICost, doc='system fixed    cost [MEUR]')
 
-    def eTotalFCost(OptModel,p):
-        if   len(mTEPES.gc) + len(mTEPES.bc) + len(mTEPES.gd) + len(mTEPES.lc)                                                    and mTEPES.pIndHydroTopology == 0 and mTEPES.pIndHydrogen == 0 and mTEPES.pIndHeat == 0:
-            return OptModel.vTotalFCost[p] == sum(mTEPES.pGenInvestCost[gc] * OptModel.vGenerationInvest[p,gc] for gc in mTEPES.gc if (p,gc) in mTEPES.pgc) +                                                                                                                 sum(mTEPES.pGenRetireCost[gd] * OptModel.vGenerationRetire[p,gd] for gd in mTEPES.gd if (p,gd) in mTEPES.pgd) + sum(mTEPES.pNetFixedCost[ni,nf,cc] * OptModel.vNetworkInvest[p,ni,nf,cc] for ni,nf,cc in mTEPES.lc if (p,ni,nf,cc) in mTEPES.plc)
-        elif len(mTEPES.gc) + len(mTEPES.bc) + len(mTEPES.gd) + len(mTEPES.lc)                  + len(mTEPES.pc)                  and mTEPES.pIndHydroTopology == 0 and mTEPES.pIndHydrogen == 1 and mTEPES.pIndHeat == 0:
-            return OptModel.vTotalFCost[p] == sum(mTEPES.pGenInvestCost[gc] * OptModel.vGenerationInvest[p,gc] for gc in mTEPES.gc if (p,gc) in mTEPES.pgc) +                                                                                                                 sum(mTEPES.pGenRetireCost[gd] * OptModel.vGenerationRetire[p,gd] for gd in mTEPES.gd if (p,gd) in mTEPES.pgd) + sum(mTEPES.pNetFixedCost[ni,nf,cc] * OptModel.vNetworkInvest[p,ni,nf,cc] for ni,nf,cc in mTEPES.lc if (p,ni,nf,cc) in mTEPES.plc) + sum(mTEPES.pH2PipeFixedCost[ni,nf,cc] * OptModel.vH2PipeInvest[p,ni,nf,cc] for ni,nf,cc in mTEPES.pc if (p,ni,nf,cc) in mTEPES.ppc)
-        elif len(mTEPES.gc) + len(mTEPES.bc) + len(mTEPES.gd) + len(mTEPES.lc) + len(mTEPES.rn)                                   and mTEPES.pIndHydroTopology == 1 and mTEPES.pIndHydrogen == 0 and mTEPES.pIndHeat == 0:
-            return OptModel.vTotalFCost[p] == sum(mTEPES.pGenInvestCost[gc] * OptModel.vGenerationInvest[p,gc] for gc in mTEPES.gc if (p,gc) in mTEPES.pgc) +                                                                                                                 sum(mTEPES.pGenRetireCost[gd] * OptModel.vGenerationRetire[p,gd] for gd in mTEPES.gd if (p,gd) in mTEPES.pgd) + sum(mTEPES.pNetFixedCost[ni,nf,cc] * OptModel.vNetworkInvest[p,ni,nf,cc] for ni,nf,cc in mTEPES.lc if (p,ni,nf,cc) in mTEPES.plc) +                                                                                                                                       sum(mTEPES.pRsrInvestCost[rc] * OptModel.vReservoirInvest[p,rc] for rc in mTEPES.rn if (p,rc) in mTEPES.prc)
-        elif len(mTEPES.gc) + len(mTEPES.bc) + len(mTEPES.gd) + len(mTEPES.lc) + len(mTEPES.rn) + len(mTEPES.pc)                  and mTEPES.pIndHydroTopology == 1 and mTEPES.pIndHydrogen == 1 and mTEPES.pIndHeat == 0:
-            return OptModel.vTotalFCost[p] == sum(mTEPES.pGenInvestCost[gc] * OptModel.vGenerationInvest[p,gc] for gc in mTEPES.gc if (p,gc) in mTEPES.pgc) +                                                                                                                 sum(mTEPES.pGenRetireCost[gd] * OptModel.vGenerationRetire[p,gd] for gd in mTEPES.gd if (p,gd) in mTEPES.pgd) + sum(mTEPES.pNetFixedCost[ni,nf,cc] * OptModel.vNetworkInvest[p,ni,nf,cc] for ni,nf,cc in mTEPES.lc if (p,ni,nf,cc) in mTEPES.plc) + sum(mTEPES.pH2PipeFixedCost[ni,nf,cc] * OptModel.vH2PipeInvest[p,ni,nf,cc] for ni,nf,cc in mTEPES.pc if (p,ni,nf,cc) in mTEPES.ppc) + sum(mTEPES.pRsrInvestCost[rc] * OptModel.vReservoirInvest[p,rc] for rc in mTEPES.rn if (p,rc) in mTEPES.prc)
-        elif len(mTEPES.gc) + len(mTEPES.bc) + len(mTEPES.gd) + len(mTEPES.lc)                                   + len(mTEPES.hc) and mTEPES.pIndHydroTopology == 0 and mTEPES.pIndHydrogen == 0 and mTEPES.pIndHeat == 1:
-            return OptModel.vTotalFCost[p] == sum(mTEPES.pGenInvestCost[gc] * OptModel.vGenerationInvest[p,gc] for gc in mTEPES.gc if (p,gc) in mTEPES.pgc) + sum(mTEPES.pGenInvestCost[bc] * OptModel.vGenerationInvest[p,bc] for bc in mTEPES.bc if (p,bc) in mTEPES.pbc) + sum(mTEPES.pGenRetireCost[gd] * OptModel.vGenerationRetire[p,gd] for gd in mTEPES.gd if (p,gd) in mTEPES.pgd) + sum(mTEPES.pNetFixedCost[ni,nf,cc] * OptModel.vNetworkInvest[p,ni,nf,cc] for ni,nf,cc in mTEPES.lc if (p,ni,nf,cc) in mTEPES.plc)                                                                                                                                                                                                                                                      + sum(mTEPES.pHeatPipeFixedCost[ni,nf,cc] * OptModel.vHeatPipeInvest[p,ni,nf,cc] for ni,nf,cc in mTEPES.hc if (p,ni,nf,cc) in mTEPES.phc)
-        elif len(mTEPES.gc) + len(mTEPES.bc) + len(mTEPES.gd) + len(mTEPES.lc)                  + len(mTEPES.pc) + len(mTEPES.hc) and mTEPES.pIndHydroTopology == 0 and mTEPES.pIndHydrogen == 1 and mTEPES.pIndHeat == 1:
-            return OptModel.vTotalFCost[p] == sum(mTEPES.pGenInvestCost[gc] * OptModel.vGenerationInvest[p,gc] for gc in mTEPES.gc if (p,gc) in mTEPES.pgc) + sum(mTEPES.pGenInvestCost[bc] * OptModel.vGenerationInvest[p,bc] for bc in mTEPES.bc if (p,bc) in mTEPES.pbc) + sum(mTEPES.pGenRetireCost[gd] * OptModel.vGenerationRetire[p,gd] for gd in mTEPES.gd if (p,gd) in mTEPES.pgd) + sum(mTEPES.pNetFixedCost[ni,nf,cc] * OptModel.vNetworkInvest[p,ni,nf,cc] for ni,nf,cc in mTEPES.lc if (p,ni,nf,cc) in mTEPES.plc) + sum(mTEPES.pH2PipeFixedCost[ni,nf,cc] * OptModel.vH2PipeInvest[p,ni,nf,cc] for ni,nf,cc in mTEPES.pc if (p,ni,nf,cc) in mTEPES.ppc)                                                                                                                + sum(mTEPES.pHeatPipeFixedCost[ni,nf,cc] * OptModel.vHeatPipeInvest[p,ni,nf,cc] for ni,nf,cc in mTEPES.hc if (p,ni,nf,cc) in mTEPES.phc)
-        elif len(mTEPES.gc) + len(mTEPES.bc) + len(mTEPES.gd) + len(mTEPES.lc) + len(mTEPES.rn)                  + len(mTEPES.hc) and mTEPES.pIndHydroTopology == 1 and mTEPES.pIndHydrogen == 0 and mTEPES.pIndHeat == 1:
-            return OptModel.vTotalFCost[p] == sum(mTEPES.pGenInvestCost[gc] * OptModel.vGenerationInvest[p,gc] for gc in mTEPES.gc if (p,gc) in mTEPES.pgc) + sum(mTEPES.pGenInvestCost[bc] * OptModel.vGenerationInvest[p,bc] for bc in mTEPES.bc if (p,bc) in mTEPES.pbc) + sum(mTEPES.pGenRetireCost[gd] * OptModel.vGenerationRetire[p,gd] for gd in mTEPES.gd if (p,gd) in mTEPES.pgd) + sum(mTEPES.pNetFixedCost[ni,nf,cc] * OptModel.vNetworkInvest[p,ni,nf,cc] for ni,nf,cc in mTEPES.lc if (p,ni,nf,cc) in mTEPES.plc) +                                                                                                                                       sum(mTEPES.pRsrInvestCost[rc] * OptModel.vReservoirInvest[p,rc] for rc in mTEPES.rn if (p,rc) in mTEPES.prc) + sum(mTEPES.pHeatPipeFixedCost[ni,nf,cc] * OptModel.vHeatPipeInvest[p,ni,nf,cc] for ni,nf,cc in mTEPES.hc if (p,ni,nf,cc) in mTEPES.phc)
-        elif len(mTEPES.gc) + len(mTEPES.bc) + len(mTEPES.gd) + len(mTEPES.lc) + len(mTEPES.rn) + len(mTEPES.pc) + len(mTEPES.hc) and mTEPES.pIndHydroTopology == 1 and mTEPES.pIndHydrogen == 1 and mTEPES.pIndHeat == 1:
-            return OptModel.vTotalFCost[p] == sum(mTEPES.pGenInvestCost[gc] * OptModel.vGenerationInvest[p,gc] for gc in mTEPES.gc if (p,gc) in mTEPES.pgc) + sum(mTEPES.pGenInvestCost[bc] * OptModel.vGenerationInvest[p,bc] for bc in mTEPES.bc if (p,bc) in mTEPES.pbc) + sum(mTEPES.pGenRetireCost[gd] * OptModel.vGenerationRetire[p,gd] for gd in mTEPES.gd if (p,gd) in mTEPES.pgd) + sum(mTEPES.pNetFixedCost[ni,nf,cc] * OptModel.vNetworkInvest[p,ni,nf,cc] for ni,nf,cc in mTEPES.lc if (p,ni,nf,cc) in mTEPES.plc) + sum(mTEPES.pH2PipeFixedCost[ni,nf,cc] * OptModel.vH2PipeInvest[p,ni,nf,cc] for ni,nf,cc in mTEPES.pc if (p,ni,nf,cc) in mTEPES.ppc) + sum(mTEPES.pRsrInvestCost[rc] * OptModel.vReservoirInvest[p,rc] for rc in mTEPES.rn if (p,rc) in mTEPES.prc) + sum(mTEPES.pHeatPipeFixedCost[ni,nf,cc] * OptModel.vHeatPipeInvest[p,ni,nf,cc] for ni,nf,cc in mTEPES.hc if (p,ni,nf,cc) in mTEPES.phc)
-        else:
+    def eTotalFElecCost(OptModel,p):
+        if len(mTEPES.gc) + len(mTEPES.gd) + len(mTEPES.lc) == 0:
             return Constraint.Skip
-    OptModel.eTotalFCost = Constraint(mTEPES.p, rule=eTotalFCost, doc='system fixed    cost [MEUR]')
+        return OptModel.vTotalFElecCost[p] == sum(mTEPES.pGenInvestCost[gc] * OptModel.vGenerationInvest[p,gc] for gc in mTEPES.gc if (p,gc) in mTEPES.pgc) + sum(mTEPES.pGenRetireCost[gd] * OptModel.vGenerationRetire[p,gd] for gd in mTEPES.gd if (p,gd) in mTEPES.pgd) + sum(mTEPES.pNetFixedCost[ni,nf,cc] * OptModel.vNetworkInvest[p,ni,nf,cc] for ni,nf,cc in mTEPES.lc if (p,ni,nf,cc) in mTEPES.plc)
+    OptModel.eTotalFElecCost = Constraint(mTEPES.p, rule=eTotalFElecCost, doc='system fixed elec cost [MEUR]')
 
     def eConsecutiveGenInvest(OptModel,p,gc):
         if p == mTEPES.p.first() or (mTEPES.p.prev(p,1),gc) not in mTEPES.pgc:
@@ -88,21 +78,78 @@ def InvestmentModelFormulation(OptModel, mTEPES, pIndLogConsole):
         return OptModel.vNetworkInvest       [mTEPES.p.prev(p,1),ni,nf,cc] + OptModel.vNetworkInvPer       [p,ni,nf,cc] == OptModel.vNetworkInvest       [p,ni,nf,cc]
     OptModel.eConsecutiveNetInvest = Constraint(mTEPES.plc, rule=eConsecutiveNetInvest, doc='electric network investment in consecutive periods')
 
+    GeneratingTime = time.time() - StartTime
+    if pIndLogConsole:
+        print('G&T electr investment o.f./constraints ... ', round(GeneratingTime), 's')
+
+
+# @profile
+def InvestmentHydroModelFormulation(OptModel, mTEPES, pIndLogConsole):
+    print('Investment hydro     model formulation ****')
+
+    StartTime = time.time()
+
+    def eTotalFHydroCost(OptModel,p):
+        if len(mTEPES.rn) == 0:
+            return Constraint.Skip
+        return OptModel.vTotalFHydroCost[p] == sum(mTEPES.pRsrInvestCost[rc] * OptModel.vReservoirInvest[p,rc] for rc in mTEPES.rn if (p,rc) in mTEPES.prc)
+    OptModel.eTotalFHydroCost = Constraint(mTEPES.p, rule=eTotalFHydroCost, doc='system fixed hydro cost [MEUR]')
+
+    def eConsecutiveRsrInvest(OptModel,p,rc):
+        if len(mTEPES.rn) == 0 or p == mTEPES.p.first() or (mTEPES.p.prev(p,1),rc) not in mTEPES.prc:
+            return Constraint.Skip
+        return OptModel.vReservoirInvest     [mTEPES.p.prev(p,1),rc      ] + OptModel.vReservoirInvPer     [p,rc      ] == OptModel.vReservoirInvest     [p,rc      ]
+    OptModel.eConsecutiveRsrInvest = Constraint(mTEPES.prc, rule=eConsecutiveRsrInvest, doc='reservoir investment in consecutive periods')
+
+    GeneratingTime = time.time() - StartTime
+    if pIndLogConsole:
+        print('Hydro      investment o.f./constraints ... ', round(GeneratingTime), 's')
+
+
+# @profile
+def InvestmentH2ModelFormulation(OptModel, mTEPES, pIndLogConsole):
+    print('Investment H2        model formulation ****')
+
+    StartTime = time.time()
+
+    def eTotalFH2Cost(OptModel,p):
+        if len(mTEPES.pc) == 0:
+            return Constraint.Skip
+        return OptModel.vTotalFH2Cost[p] == sum(mTEPES.pH2PipeFixedCost[ni,nf,cc] * OptModel.vH2PipeInvest[p,ni,nf,cc] for ni,nf,cc in mTEPES.pc if (p,ni,nf,cc) in mTEPES.ppc)
+    OptModel.eTotalFH2Cost = Constraint(mTEPES.p, rule=eTotalFH2Cost, doc='system fixed H2 cost [MEUR]')
+
     def eConsecutiveNetH2Invest(OptModel,p,ni,nf,cc):
-        if p == mTEPES.p.first() or (mTEPES.p.prev(p,1),ni,nf,cc) not in mTEPES.ppc:
+        if len(mTEPES.pc) == 0 or p == mTEPES.p.first() or (mTEPES.p.prev(p,1),ni,nf,cc) not in mTEPES.ppc:
             return Constraint.Skip
         return OptModel.vH2PipeInvest        [mTEPES.p.prev(p,1),ni,nf,cc] + OptModel.vH2PipeInvPer        [p,ni,nf,cc] == OptModel.vH2PipeInvest        [p,ni,nf,cc]
     OptModel.eConsecutiveNetH2Invest = Constraint(mTEPES.ppc, rule=eConsecutiveNetH2Invest, doc='H2 pipe network investment in consecutive periods')
 
+    GeneratingTime = time.time() - StartTime
+    if pIndLogConsole:
+        print('H2         investment o.f./constraints ... ', round(GeneratingTime), 's')
+
+
+# @profile
+def InvestmentHeatModelFormulation(OptModel, mTEPES, pIndLogConsole):
+    print('Investment heat      model formulation ****')
+
+    StartTime = time.time()
+
+    def eTotalFHeatCost(OptModel,p):
+        if len(mTEPES.hc) == 0:
+            return Constraint.Skip
+        return OptModel.vTotalHeatFCost[p] == sum(mTEPES.pHeatPipeFixedCost[ni,nf,cc] * OptModel.vHeatPipeInvest[p,ni,nf,cc] for ni,nf,cc in mTEPES.hc if (p,ni,nf,cc) in mTEPES.phc)
+    OptModel.eTotalFHeatCost = Constraint(mTEPES.p, rule=eTotalFHeatCost, doc='system fixed heat cost [MEUR]')
+
     def eConsecutiveNetHeatInvest(OptModel,p,ni,nf,cc):
-        if p == mTEPES.p.first() or (mTEPES.p.prev(p,1),ni,nf,cc) not in mTEPES.phc:
+        if len(mTEPES.hc) == 0 or p == mTEPES.p.first() or (mTEPES.p.prev(p,1),ni,nf,cc) not in mTEPES.phc:
             return Constraint.Skip
         return OptModel.vHeatPipeInvest     [mTEPES.p.prev(p,1),ni,nf,cc] + OptModel.vHeatPipeInvPer       [p,ni,nf,cc] == OptModel.vHeatPipeInvest      [p,ni,nf,cc]
     OptModel.eConsecutiveNetHeatInvest = Constraint(mTEPES.phc, rule=eConsecutiveNetHeatInvest, doc='heat pipe network investment in consecutive periods')
 
     GeneratingTime = time.time() - StartTime
     if pIndLogConsole:
-        print('Gen&transm investment o.f./constraints ... ', round(GeneratingTime), 's')
+        print('Heat       investment o.f./constraints ... ', round(GeneratingTime), 's')
 
 
 # @profile
@@ -123,24 +170,6 @@ def GenerationOperationModelFormulationObjFunct(OptModel, mTEPES, pIndLogConsole
     for ni,nf,cc in mTEPES.ha:
         lin [nf].append((ni,cc))
         lout[ni].append((nf,cc))
-
-    # nodes to electrolyzers (e2n)
-    e2n = defaultdict(list)
-    for nd,el in mTEPES.nd*mTEPES.el:
-        if (nd,el) in mTEPES.n2g:
-            e2n[nd].append(el)
-
-    # nodes to CHPs (c2n)
-    c2n = defaultdict(list)
-    for nd,ch in mTEPES.nd*mTEPES.ch:
-        if (nd,ch) in mTEPES.n2g:
-            c2n[nd].append(ch)
-
-    # nodes to heat pumps (h2n)
-    h2n = defaultdict(list)
-    for nd,hp in mTEPES.nd*mTEPES.hp:
-        if (nd,hp) in mTEPES.n2g:
-            h2n[nd].append(hp)
 
     g2a = defaultdict(list)
     for ar,g in mTEPES.ar*mTEPES.g:
@@ -196,16 +225,9 @@ def GenerationOperationModelFormulationObjFunct(OptModel, mTEPES, pIndLogConsole
         return OptModel.vTotalNCost[p,sc,n] == mTEPES.pLoadLevelDuration[p,sc,n]() * pEpsilon * sum(OptModel.vLineLosses[p,sc,n,ni,nf,cc] for ni,nf,cc in mTEPES.ll if (p,ni,nf,cc) in mTEPES.pll)
     setattr(OptModel, f'eTotalNCost_{p}_{sc}_{st}', Constraint(mTEPES.n, rule=eTotalNCost, doc='system variable network operation cost [MEUR]'))
 
-    def eTotalRCost(OptModel,n):
-        if   mTEPES.pIndHydrogen == 0 and mTEPES.pIndHeat == 0:
-            return OptModel.vTotalRCost[p,sc,n] == mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pENSCost * sum(OptModel.vENS[p,sc,n,nd] for nd in mTEPES.nd)
-        elif mTEPES.pIndHydrogen == 1 and mTEPES.pIndHeat == 0:
-            return OptModel.vTotalRCost[p,sc,n] == mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pENSCost * sum(OptModel.vENS[p,sc,n,nd] for nd in mTEPES.nd) + mTEPES.pH2NSCost * sum(OptModel.vH2NS[p,sc,n,nd] for nd in mTEPES.nd if sum(1 for el in e2n[nd]) + sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd]))
-        elif mTEPES.pIndHydrogen == 0 and mTEPES.pIndHeat == 1:
-            return OptModel.vTotalRCost[p,sc,n] == mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pENSCost * sum(OptModel.vENS[p,sc,n,nd] for nd in mTEPES.nd)                                                                                                                                                                  + mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pHeatNSCost * sum(OptModel.vHeatNS[p,sc,n,nd] for nd in mTEPES.nd if sum(1 for ch in c2n[nd]) + sum(1 for hp in h2n[nd]) + sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd]))
-        elif mTEPES.pIndHydrogen == 1 and mTEPES.pIndHeat == 1:
-            return OptModel.vTotalRCost[p,sc,n] == mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pENSCost * sum(OptModel.vENS[p,sc,n,nd] for nd in mTEPES.nd) + mTEPES.pH2NSCost * sum(OptModel.vH2NS[p,sc,n,nd] for nd in mTEPES.nd if sum(1 for el in e2n[nd]) + sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd])) + mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pHeatNSCost * sum(OptModel.vHeatNS[p,sc,n,nd] for nd in mTEPES.nd if sum(1 for ch in c2n[nd]) + sum(1 for hp in h2n[nd]) + sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd]))
-    setattr(OptModel, f'eTotalRCost_{p}_{sc}_{st}', Constraint(mTEPES.n, rule=eTotalRCost, doc='system reliability cost [MEUR]'))
+    def eTotalRElecCost(OptModel,n):
+        return OptModel.vTotalRElecCost[p,sc,n] == mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pENSCost * sum(OptModel.vENS[p,sc,n,nd] for nd in mTEPES.nd)
+    setattr(OptModel, f'eTotalRElecCost_{p}_{sc}_{st}', Constraint(mTEPES.n, rule=eTotalRElecCost, doc='elec system reliability cost [MEUR]'))
 
     GeneratingTime = time.time() - StartTime
     if pIndLogConsole:
@@ -213,7 +235,7 @@ def GenerationOperationModelFormulationObjFunct(OptModel, mTEPES, pIndLogConsole
 
 
 # @profile
-def GenerationOperationModelFormulationInvestment(OptModel, mTEPES, pIndLogConsole, p, sc, st):
+def GenerationOperationElecModelFormulationInvestment(OptModel, mTEPES, pIndLogConsole, p, sc, st):
     print('Investment & operation var constraints ****')
 
     StartTime = time.time()
@@ -253,15 +275,6 @@ def GenerationOperationModelFormulationInvestment(OptModel, mTEPES, pIndLogConso
     if pIndLogConsole:
         print('eInstallGenCap            ... ', len(getattr(OptModel, f'eInstallGenCap_{p}_{sc}_{st}')), ' rows')
 
-    def eInstallFHUCap(OptModel,n,bc):
-        if (p,bc) not in mTEPES.pbc or mTEPES.pMaxPowerHeat[p,sc,n,bc] == 0.0:
-            return Constraint.Skip
-        return OptModel.vTotalOutputHeat[p,sc,n,bc] / mTEPES.pMaxPowerHeat[p,sc,n,bc] <= OptModel.vGenerationInvest[p,bc]
-    setattr(OptModel, f'eInstallFHUCap_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.bc, rule=eInstallFHUCap, doc='heat production if installed fuel heating unit [p.u.]'))
-
-    if pIndLogConsole:
-        print('eInstallFHUCap            ... ', len(getattr(OptModel, f'eInstallFHUCap_{p}_{sc}_{st}')), ' rows')
-
     def eInstallConESS(OptModel,n,ec):
         if (p,ec) not in mTEPES.pec or mTEPES.pMaxCharge[p,sc,n,ec] == 0.0:
             return Constraint.Skip
@@ -290,7 +303,7 @@ def GenerationOperationModelFormulationInvestment(OptModel, mTEPES, pIndLogConso
         print('eUninstallGenCap          ... ', len(getattr(OptModel, f'eUninstallGenCap_{p}_{sc}_{st}')), ' rows')
 
     def eAdequacyReserveMarginElec(OptModel,ar):
-        if mTEPES.pReserveMargin[p,ar] and st == mTEPES.Last_st and sum(1 for gc in mTEPES.gc if gc in g2a[ar]) and sum(mTEPES.pRatedMaxPowerElec[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]) for g in mTEPES.g if (ar,g) in mTEPES.a2g and g not in (mTEPES.gc or mTEPES.gd)) <= mTEPES.pDemandElecPeak[p,ar] * mTEPES.pReserveMargin[p,ar]:
+        if mTEPES.pReserveMargin[p,ar] and st == mTEPES.Last_st and sum(1 for gc in mTEPES.gc if gc in g2a[ar]) and sum(mTEPES.pRatedMaxPowerElec[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]) for g in mTEPES.g if g in g2a[ar] and g not in (mTEPES.gc or mTEPES.gd)) <= mTEPES.pDemandElecPeak[p,ar] * mTEPES.pReserveMargin[p,ar]:
             return ((sum(                                       mTEPES.pRatedMaxPowerElec[g ] * mTEPES.pAvailability[g ]() / (1.0-mTEPES.pEFOR[g ]) for g  in mTEPES.g  if (p,g ) in mTEPES.pg  and g  in g2a[ar] and g not in (mTEPES.gc or mTEPES.gd)) +
                      sum(   OptModel.vGenerationInvest[p,gc]  * mTEPES.pRatedMaxPowerElec[gc] * mTEPES.pAvailability[gc]() / (1.0-mTEPES.pEFOR[gc]) for gc in mTEPES.gc if (p,gc) in mTEPES.pgc and gc in g2a[ar]                                      ) +
                      sum((1-OptModel.vGenerationRetire[p,gd]) * mTEPES.pRatedMaxPowerElec[gd] * mTEPES.pAvailability[gd]() / (1.0-mTEPES.pEFOR[gd]) for gd in mTEPES.gd if (p,gd) in mTEPES.pgd and gd in g2a[ar]                                      ) ) >= mTEPES.pDemandElecPeak[p,ar] * mTEPES.pReserveMargin[p,ar])
@@ -300,20 +313,6 @@ def GenerationOperationModelFormulationInvestment(OptModel, mTEPES, pIndLogConso
 
     if pIndLogConsole:
         print('eAdeqReserveMarginElec    ... ', len(getattr(OptModel, f'eAdequacyReserveMarginElec_{p}_{sc}_{st}')), ' rows')
-
-    def eAdequacyReserveMarginHeat(OptModel,ar):
-        if mTEPES.pIndHeat == 0:
-            return Constraint.Skip
-        if mTEPES.pReserveMarginHeat[p,ar] and st == mTEPES.Last_st and sum(1 for gc in mTEPES.gc if (ar,gc) in mTEPES.a2g) and sum(mTEPES.pRatedMaxPowerHeat[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]) for g in mTEPES.g if (ar,g) in mTEPES.a2g and g not in (mTEPES.gc or mTEPES.gd)) <= mTEPES.pDemandHeatPeak[p,ar] * mTEPES.pReserveMarginHeat[p,ar]:
-            return ((sum(                                       mTEPES.pRatedMaxPowerHeat[g ] * mTEPES.pAvailability[g ]() / (1.0-mTEPES.pEFOR[g ]) for g  in mTEPES.g  if (p,g ) in mTEPES.pg  and g  in g2a[ar] and g not in (mTEPES.gc or mTEPES.gd)) +
-                     sum(   OptModel.vGenerationInvest[p,gc]  * mTEPES.pRatedMaxPowerHeat[gc] * mTEPES.pAvailability[gc]() / (1.0-mTEPES.pEFOR[gc]) for gc in mTEPES.gc if (p,gc) in mTEPES.pgc and gc in g2a[ar]                                      ) +
-                     sum((1-OptModel.vGenerationRetire[p,gd]) * mTEPES.pRatedMaxPowerHeat[gd] * mTEPES.pAvailability[gd]() / (1.0-mTEPES.pEFOR[gd]) for gd in mTEPES.gd if (p,gd) in mTEPES.pgd and gd in g2a[ar]                                      ) ) >= mTEPES.pDemandHeatPeak[p,ar] * mTEPES.pReserveMarginHeat[p,ar])
-        else:
-            return Constraint.Skip
-    setattr(OptModel, f'eAdequacyReserveMarginHeat_{p}_{sc}_{st}', Constraint(mTEPES.ar, rule=eAdequacyReserveMarginHeat, doc='heat system adequacy reserve margin [p.u.]'))
-
-    if pIndLogConsole:
-        print('eAdeqReserveMarginHeat    ... ', len(getattr(OptModel, f'eAdequacyReserveMarginHeat_{p}_{sc}_{st}')), ' rows')
 
     def eMaxSystemEmission(OptModel,ar):
         if mTEPES.pEmission[p,ar] == math.inf or st != mTEPES.Last_st or sum(mTEPES.pEmissionRate[nr] for nr in mTEPES.nr if nr in g2a[ar]) == 0.0:
@@ -333,6 +332,43 @@ def GenerationOperationModelFormulationInvestment(OptModel, mTEPES, pIndLogConso
 
     if pIndLogConsole:
         print('eMinSystemRESEnergy       ... ', len(getattr(OptModel, f'eMinSystemRESEnergy_{p}_{sc}_{st}')), ' rows')
+
+    GeneratingTime = time.time() - StartTime
+    if pIndLogConsole:
+        print('Generating operation & investment      ... ', round(GeneratingTime), 's')
+
+
+# @profile
+def GenerationOperationHeatModelFormulationInvestment(OptModel, mTEPES, pIndLogConsole, p, sc, st):
+    print('Investment & operation var constraints ****')
+
+    StartTime = time.time()
+
+    g2a = defaultdict(list)
+    for ar,g in mTEPES.ar*mTEPES.g:
+        if (ar,g) in mTEPES.a2g:
+            g2a[ar].append(g)
+
+    def eInstallFHUCap(OptModel,n,bc):
+        if (p,bc) not in mTEPES.pbc or mTEPES.pMaxPowerHeat[p,sc,n,bc] == 0.0:
+            return Constraint.Skip
+        return OptModel.vTotalOutputHeat[p,sc,n,bc] / mTEPES.pMaxPowerHeat[p,sc,n,bc] <= OptModel.vGenerationInvest[p,bc]
+    setattr(OptModel, f'eInstallFHUCap_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.bc, rule=eInstallFHUCap, doc='heat production if installed fuel heating unit [p.u.]'))
+
+    if pIndLogConsole:
+        print('eInstallFHUCap            ... ', len(getattr(OptModel, f'eInstallFHUCap_{p}_{sc}_{st}')), ' rows')
+
+    def eAdequacyReserveMarginHeat(OptModel,ar):
+        if mTEPES.pReserveMarginHeat[p,ar] and st == mTEPES.Last_st and sum(1 for gc in mTEPES.gc if gc in g2a[ar]) and sum(mTEPES.pRatedMaxPowerHeat[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]) for g in mTEPES.g if g in g2a[ar] and g not in (mTEPES.gc or mTEPES.gd)) <= mTEPES.pDemandHeatPeak[p,ar] * mTEPES.pReserveMarginHeat[p,ar]:
+            return ((sum(                                       mTEPES.pRatedMaxPowerHeat[g ] * mTEPES.pAvailability[g ]() / (1.0-mTEPES.pEFOR[g ]) for g  in mTEPES.g  if (p,g ) in mTEPES.pg  and g  in g2a[ar] and g not in (mTEPES.gc or mTEPES.gd)) +
+                     sum(   OptModel.vGenerationInvest[p,gc]  * mTEPES.pRatedMaxPowerHeat[gc] * mTEPES.pAvailability[gc]() / (1.0-mTEPES.pEFOR[gc]) for gc in mTEPES.gc if (p,gc) in mTEPES.pgc and gc in g2a[ar]                                      ) +
+                     sum((1-OptModel.vGenerationRetire[p,gd]) * mTEPES.pRatedMaxPowerHeat[gd] * mTEPES.pAvailability[gd]() / (1.0-mTEPES.pEFOR[gd]) for gd in mTEPES.gd if (p,gd) in mTEPES.pgd and gd in g2a[ar]                                      ) ) >= mTEPES.pDemandHeatPeak[p,ar] * mTEPES.pReserveMarginHeat[p,ar])
+        else:
+            return Constraint.Skip
+    setattr(OptModel, f'eAdequacyReserveMarginHeat_{p}_{sc}_{st}', Constraint(mTEPES.ar, rule=eAdequacyReserveMarginHeat, doc='heat system adequacy reserve margin [p.u.]'))
+
+    if pIndLogConsole:
+        print('eAdeqReserveMarginHeat    ... ', len(getattr(OptModel, f'eAdequacyReserveMarginHeat_{p}_{sc}_{st}')), ' rows')
 
     GeneratingTime = time.time() - StartTime
     if pIndLogConsole:
@@ -1600,6 +1636,13 @@ def NetworkH2OperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, 
     if pIndLogConsole:
         print('eBalanceH2                ... ', len(getattr(OptModel, f'eBalanceH2_{p}_{sc}_{st}')), ' rows')
 
+    def eTotalRH2Cost(OptModel,n):
+        return OptModel.vTotalRH2Cost[p,sc,n] == mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pH2NSCost * sum(OptModel.vH2NS[p,sc,n,nd] for nd in mTEPES.nd if sum(1 for el in e2n[nd]) + sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd]))
+    setattr(OptModel, f'eTotalRH2Cost_{p}_{sc}_{st}', Constraint(mTEPES.n, rule=eTotalRH2Cost, doc='H2 system reliability cost [MEUR]'))
+
+    if pIndLogConsole:
+        print('eTotalRH2Cost             ... ', len(getattr(OptModel, f'eTotalRH2Cost_{p}_{sc}_{st}')), ' rows')
+
     GeneratingTime = time.time() - StartTime
     if pIndLogConsole:
         print('Generating hydrogen  operation         ... ', round(GeneratingTime), 's')
@@ -1619,6 +1662,18 @@ def NetworkHeatOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc
         lout[ni].append((nf,cc))
 
     # nodes to CHPs (c2n)
+    c2n = defaultdict(list)
+    for nd,ch in mTEPES.nd*mTEPES.ch:
+        if (nd,ch) in mTEPES.n2g:
+            c2n[nd].append(ch)
+
+    # nodes to heat pumps (h2n)
+    h2n = defaultdict(list)
+    for nd,hp in mTEPES.nd*mTEPES.hp:
+        if (nd,hp) in mTEPES.n2g:
+            h2n[nd].append(hp)
+
+    # nodes to CHPs (chp2n)
     chp2n = defaultdict(list)
     for nd,chp in mTEPES.nd*mTEPES.chp:
         if (nd,chp) in mTEPES.n2g:
@@ -1646,6 +1701,13 @@ def NetworkHeatOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc
 
     if pIndLogConsole:
         print('eBalanceHeat              ... ', len(getattr(OptModel, f'eBalanceHeat_{p}_{sc}_{st}')), ' rows')
+
+    def eTotalRHeatCost(OptModel,n):
+        return OptModel.vTotalRHeatCost[p,sc,n] == mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pHeatNSCost * sum(OptModel.vHeatNS[p,sc,n,nd] for nd in mTEPES.nd if sum(1 for ch in c2n[nd]) + sum(1 for hp in h2n[nd]) + sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd]))
+    setattr(OptModel, f'eTotalRHeatCost_{p}_{sc}_{st}', Constraint(mTEPES.n, rule=eTotalRHeatCost, doc='system reliability cost [MEUR]'))
+
+    if pIndLogConsole:
+        print('eTotalRHeatCost           ... ', len(getattr(OptModel, f'eTotalRHeatCost_{p}_{sc}_{st}')), ' rows')
 
     GeneratingTime = time.time() - StartTime
     if pIndLogConsole:

@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 09, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 11, 2026
 """
 
 # import dill as pickle
@@ -11,7 +11,7 @@ import pyomo.environ as pyo
 from   pyomo.environ import ConcreteModel, Set
 
 from .openTEPES_InputData        import InputData, DataConfiguration, SettingUpVariables
-from .openTEPES_ModelFormulation import TotalObjectiveFunction, InvestmentModelFormulation, GenerationOperationModelFormulationObjFunct, GenerationOperationModelFormulationInvestment, GenerationOperationModelFormulationDemand, GenerationOperationModelFormulationStorage, GenerationOperationModelFormulationReservoir, NetworkH2OperationModelFormulation, NetworkHeatOperationModelFormulation, GenerationOperationModelFormulationCommitment, GenerationOperationModelFormulationRampMinTime, NetworkSwitchingModelFormulation, NetworkOperationModelFormulation, NetworkCycles, CycleConstraints
+from .openTEPES_ModelFormulation import TotalObjectiveFunction, InvestmentElecModelFormulation, InvestmentHydroModelFormulation, InvestmentH2ModelFormulation, InvestmentHeatModelFormulation, GenerationOperationModelFormulationObjFunct, GenerationOperationElecModelFormulationInvestment, GenerationOperationHeatModelFormulationInvestment, GenerationOperationModelFormulationDemand, GenerationOperationModelFormulationStorage, GenerationOperationModelFormulationReservoir, NetworkH2OperationModelFormulation, NetworkHeatOperationModelFormulation, GenerationOperationModelFormulationCommitment, GenerationOperationModelFormulationRampMinTime, NetworkSwitchingModelFormulation, NetworkOperationModelFormulation, NetworkCycles, CycleConstraints
 from .openTEPES_ProblemSolving   import ProblemSolving
 from .openTEPES_OutputResults    import OutputResultsParVarCon, InvestmentResults, GenerationOperationResults, GenerationOperationHeatResults, ESSOperationResults, ReservoirOperationResults, NetworkH2OperationResults, NetworkHeatOperationResults, FlexibilityResults, NetworkOperationResults, MarginalResults, OperationSummaryResults, ReliabilityResults, CostSummaryResults, EconomicResults, NetworkMapResults
 
@@ -38,8 +38,8 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     idxDict['y'  ] = 1
 
     #%% model declaration
-    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.15 - February 09, 2026')
-    print(                 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.15 - February 09, 2026', file=open(f'{_path}/openTEPES_version_{CaseName}.log','w'))
+    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.15 - February 11, 2026')
+    print(                 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.15 - February 11, 2026', file=open(f'{_path}/openTEPES_version_{CaseName}.log','w'))
 
     pIndOutputResults = [j for i,j in idxDict.items() if i == pIndOutputResults][0]
     pIndLogConsole    = [j for i,j in idxDict.items() if i == pIndLogConsole   ][0]
@@ -65,8 +65,14 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
         mTEPES.Last_st = st
 
     # objective function and investment constraints
-    TotalObjectiveFunction    (mTEPES, mTEPES, pIndLogConsole)
-    InvestmentModelFormulation(mTEPES, mTEPES, pIndLogConsole)
+    TotalObjectiveFunction             (mTEPES, mTEPES, pIndLogConsole)
+    InvestmentElecModelFormulation     (mTEPES, mTEPES, pIndLogConsole)
+    if mTEPES.pIndHydroTopology:
+        InvestmentHydroModelFormulation(mTEPES, mTEPES, pIndLogConsole)
+    if mTEPES.pIndHydrogen:
+        InvestmentH2ModelFormulation   (mTEPES, mTEPES, pIndLogConsole)
+    if mTEPES.pIndHeat:
+        InvestmentHeatModelFormulation (mTEPES, mTEPES, pIndLogConsole)
 
     # initialize parameter for dual variables
     mTEPES.pDuals = {}
@@ -93,7 +99,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
         mTEPES.necc         = [(n,ec) for n,ec in mTEPES.n*mTEPES.ec if mTEPES.n.ord(n) %     mTEPES.pStorageTimeStep [ec] == 0]
         mTEPES.neso         = [(n,es) for n,es in mTEPES.n*mTEPES.es if mTEPES.n.ord(n) %     mTEPES.pOutflowsTimeStep[es] == 0]
         mTEPES.ngen         = [(n,g ) for n,g  in mTEPES.n*mTEPES.g  if mTEPES.n.ord(n) %     mTEPES.pEnergyTimeStep  [g ] == 0]
-        if mTEPES.pIndHydroTopology == 1:
+        if mTEPES.pIndHydroTopology:
             mTEPES.nhc      = [(n,h ) for n,h  in mTEPES.n*mTEPES.h  if mTEPES.n.ord(n) % sum(mTEPES.pReservoirTimeStep[rs] for rs in mTEPES.rs if (rs,h) in mTEPES.r2h) == 0]
             if sum(1 for h,rs in mTEPES.p2r):
                 mTEPES.np2c = [(n,h ) for n,h  in mTEPES.n*mTEPES.h  if sum(1 for rs in mTEPES.rs if (h,rs) in mTEPES.p2r) and mTEPES.n.ord(n) % sum(mTEPES.pReservoirTimeStep[rs] for rs in mTEPES.rs if (h,rs) in mTEPES.p2r) == 0]
@@ -123,25 +129,27 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
             print(f'Period {p}, Scenario {sc}, Stage {st}')
 
             # operation model objective function and constraints by stage
-            GenerationOperationModelFormulationObjFunct     (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
-            GenerationOperationModelFormulationInvestment   (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
-            GenerationOperationModelFormulationDemand       (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
-            GenerationOperationModelFormulationStorage      (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
-            if mTEPES.pIndHydroTopology == 1:
-                GenerationOperationModelFormulationReservoir(mTEPES, mTEPES, pIndLogConsole, p, sc, st)
-            if mTEPES.pIndHydrogen == 1:
-                NetworkH2OperationModelFormulation          (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
-            if mTEPES.pIndHeat == 1:
-                NetworkHeatOperationModelFormulation        (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
-            GenerationOperationModelFormulationCommitment   (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
-            GenerationOperationModelFormulationRampMinTime  (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
-            NetworkSwitchingModelFormulation                (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
-            NetworkOperationModelFormulation                (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
+            GenerationOperationModelFormulationObjFunct          (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
+            GenerationOperationElecModelFormulationInvestment    (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
+            if mTEPES.pIndHeat:
+                GenerationOperationHeatModelFormulationInvestment(mTEPES, mTEPES, pIndLogConsole, p, sc, st)
+            GenerationOperationModelFormulationDemand            (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
+            GenerationOperationModelFormulationStorage           (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
+            if mTEPES.pIndHydroTopology:
+                GenerationOperationModelFormulationReservoir     (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
+            if mTEPES.pIndHydrogen:
+                NetworkH2OperationModelFormulation               (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
+            if mTEPES.pIndHeat:
+                NetworkHeatOperationModelFormulation             (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
+            GenerationOperationModelFormulationCommitment        (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
+            GenerationOperationModelFormulationRampMinTime       (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
+            NetworkSwitchingModelFormulation                     (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
+            NetworkOperationModelFormulation                     (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
             # introduce cycle flow formulations
-            if pIndCycleFlow == 1:
+            if pIndCycleFlow:
                 if st == mTEPES.First_st:
-                    NetworkCycles                           (        mTEPES, pIndLogConsole           )
-                CycleConstraints                            (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
+                    NetworkCycles                                (        mTEPES, pIndLogConsole           )
+                CycleConstraints                                 (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
 
             # No generator investments and no generator retirements, and no line investments
             if (    sum(1 for pp,eb in mTEPES.peb if pp <= p) == 0 or mTEPES.pIndBinGenInvest()     == 2
@@ -197,7 +205,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
                         mTEPES.necc         = [(n,ec) for n,ec in mTEPES.n*mTEPES.ec if mTEPES.n.ord(n) %     mTEPES.pStorageTimeStep [ec] == 0]
                         mTEPES.neso         = [(n,es) for n,es in mTEPES.n*mTEPES.es if mTEPES.n.ord(n) %     mTEPES.pOutflowsTimeStep[es] == 0]
                         mTEPES.ngen         = [(n,g ) for n,g  in mTEPES.n*mTEPES.g  if mTEPES.n.ord(n) %     mTEPES.pEnergyTimeStep  [g ] == 0]
-                        if mTEPES.pIndHydroTopology == 1:
+                        if mTEPES.pIndHydroTopology:
                             mTEPES.nhc      = [(n,h ) for n,h  in mTEPES.n*mTEPES.h  if mTEPES.n.ord(n) % sum(mTEPES.pReservoirTimeStep[rs] for rs in mTEPES.rs if (rs,h) in mTEPES.r2h) == 0]
                             if sum(1 for h,rs in mTEPES.p2r):
                                 mTEPES.np2c = [(n,h ) for n,h  in mTEPES.n*mTEPES.h  if sum(1 for rs in mTEPES.rs if (h,rs) in mTEPES.p2r) and mTEPES.n.ord(n) % sum(mTEPES.pReservoirTimeStep[rs] for rs in mTEPES.rs if (h,rs) in mTEPES.p2r) == 0]
@@ -250,7 +258,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
                         mTEPES.necc         = [(n,ec) for n,ec in mTEPES.n*mTEPES.ec if mTEPES.n.ord(n) %     mTEPES.pStorageTimeStep [ec] == 0]
                         mTEPES.neso         = [(n,es) for n,es in mTEPES.n*mTEPES.es if mTEPES.n.ord(n) %     mTEPES.pOutflowsTimeStep[es] == 0]
                         mTEPES.ngen         = [(n,g ) for n,g  in mTEPES.n*mTEPES.g  if mTEPES.n.ord(n) %     mTEPES.pEnergyTimeStep  [g ] == 0]
-                        if mTEPES.pIndHydroTopology == 1:
+                        if mTEPES.pIndHydroTopology:
                             mTEPES.nhc      = [(n,h ) for n,h  in mTEPES.n*mTEPES.h  if mTEPES.n.ord(n) % sum(mTEPES.pReservoirTimeStep[rs] for rs in mTEPES.rs if (rs,h) in mTEPES.r2h) == 0]
                             if sum(1 for h,rs in mTEPES.p2r):
                                 mTEPES.np2c = [(n,h ) for n,h  in mTEPES.n*mTEPES.h  if sum(1 for rs in mTEPES.rs if (h,rs) in mTEPES.p2r) and mTEPES.n.ord(n) % sum(mTEPES.pReservoirTimeStep[rs] for rs in mTEPES.rs if (h,rs) in mTEPES.p2r) == 0]
@@ -287,7 +295,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     mTEPES.necc         = [(n,ec) for n,ec in mTEPES.n*mTEPES.ec if mTEPES.n.ord(n) %     mTEPES.pStorageTimeStep [ec] == 0]
     mTEPES.neso         = [(n,es) for n,es in mTEPES.n*mTEPES.es if mTEPES.n.ord(n) %     mTEPES.pOutflowsTimeStep[es] == 0]
     mTEPES.ngen         = [(n,g ) for n,g  in mTEPES.n*mTEPES.g  if mTEPES.n.ord(n) %     mTEPES.pEnergyTimeStep  [g ] == 0]
-    if mTEPES.pIndHydroTopology == 1:
+    if mTEPES.pIndHydroTopology:
         mTEPES.nhc      = [(n,h ) for n,h  in mTEPES.n*mTEPES.h  if mTEPES.n.ord(n) % sum(mTEPES.pReservoirTimeStep[rs] for rs in mTEPES.rs if (rs,h) in mTEPES.r2h) == 0]
         if sum(1 for h,rs in mTEPES.p2r):
             mTEPES.np2c = [(n,h ) for n,h  in mTEPES.n*mTEPES.h  if sum(1 for rs in mTEPES.rs if (h,rs) in mTEPES.p2r) and mTEPES.n.ord(n) % sum(mTEPES.pReservoirTimeStep[rs] for rs in mTEPES.rs if (h,rs) in mTEPES.p2r) == 0]
@@ -320,7 +328,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     pIndAreaOutput = 1
 
     # indicators to control the number of output results
-    if pIndOutputResults == 1:
+    if pIndOutputResultsmTEPES.pIndHydrogen:
         pIndDumpRawResults              = 0
         pIndInvestmentResults           = 1
         pIndGenerationOperationResults  = 1
@@ -361,35 +369,35 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     if pIndDumpRawResults:
         OutputResultsParVarCon(DirName, CaseName, mTEPES, mTEPES)
 
-    if pIndInvestmentResults           == 1:
+    if pIndInvestmentResults:
         InvestmentResults                 (DirName, CaseName, mTEPES, mTEPES, pIndTechnologyOutput,                 pIndPlotOutput)
-    if pIndGenerationOperationResults  == 1:
+    if pIndGenerationOperationResults:
         GenerationOperationResults        (DirName, CaseName, mTEPES, mTEPES, pIndTechnologyOutput, pIndAreaOutput, pIndPlotOutput)
-        if mTEPES.ch and mTEPES.pIndHeat == 1:
+        if mTEPES.ch and mTEPES.pIndHeat:
             GenerationOperationHeatResults(DirName, CaseName, mTEPES, mTEPES, pIndTechnologyOutput, pIndAreaOutput, pIndPlotOutput)
-    if pIndESSOperationResults         == 1 and mTEPES.es:
+    if pIndESSOperationResults         and mTEPES.es:
         ESSOperationResults               (DirName, CaseName, mTEPES, mTEPES, pIndTechnologyOutput, pIndAreaOutput, pIndPlotOutput)
-    if pIndReservoirOperationResults   == 1 and mTEPES.rs and mTEPES.pIndHydroTopology == 1:
+    if pIndReservoirOperationResults   and mTEPES.rs and mTEPES.pIndHydroTopology:
         ReservoirOperationResults         (DirName, CaseName, mTEPES, mTEPES, pIndTechnologyOutput,                 pIndPlotOutput)
-    if pIndNetworkH2OperationResults   == 1 and mTEPES.pa and mTEPES.pIndHydrogen == 1:
+    if pIndNetworkH2OperationResults   and mTEPES.pa and mTEPES.pIndHydrogen:
         NetworkH2OperationResults         (DirName, CaseName, mTEPES, mTEPES)
-    if pIndNetworkHeatOperationResults == 1 and mTEPES.ha and mTEPES.pIndHeat == 1:
+    if pIndNetworkHeatOperationResults and mTEPES.ha and mTEPES.pIndHeat:
         NetworkHeatOperationResults       (DirName, CaseName, mTEPES, mTEPES)
-    if pIndFlexibilityResults          == 1:
+    if pIndFlexibilityResults:
         FlexibilityResults                (DirName, CaseName, mTEPES, mTEPES)
-    if pIndReliabilityResults          == 1:
+    if pIndReliabilityResults:
         ReliabilityResults                (DirName, CaseName, mTEPES, mTEPES)
-    if pIndNetworkOperationResults     == 1:
+    if pIndNetworkOperationResults:
         NetworkOperationResults           (DirName, CaseName, mTEPES, mTEPES)
-    if pIndNetworkMapResults           == 1:
+    if pIndNetworkMapResults:
         NetworkMapResults                 (DirName, CaseName, mTEPES, mTEPES)
-    if pIndOperationSummaryResults     == 1:
+    if pIndOperationSummaryResults:
         OperationSummaryResults           (DirName, CaseName, mTEPES, mTEPES)
-    if pIndCostSummaryResults          == 1:
+    if pIndCostSummaryResults:
         CostSummaryResults                (DirName, CaseName, mTEPES, mTEPES)
-    if pIndMarginalResults             == 1:
+    if pIndMarginalResults:
         MarginalResults                   (DirName, CaseName, mTEPES, mTEPES,                 pIndPlotOutput)
-    if pIndEconomicResults             == 1:
+    if pIndEconomicResults:
         EconomicResults                   (DirName, CaseName, mTEPES, mTEPES, pIndAreaOutput, pIndPlotOutput)
 
     return mTEPES

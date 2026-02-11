@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 09, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 11, 2026
 """
 
 import time
@@ -140,24 +140,21 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
             df.fillna(0.0, inplace=True)
 
     # Define prefixes and suffixes
-    mTEPES.gen_frames_suffixes   = ['VariableMinGeneration', 'VariableMaxGeneration',
-                                    'VariableMinConsumption', 'VariableMaxConsumption',
-                                    'VariableMinStorage', 'VariableMaxStorage',
-                                    'EnergyInflows',
-                                    'EnergyOutflows',
-                                    'VariableMinEnergy', 'VariableMaxEnergy',
-                                    'VariableFuelCost',
-                                    'VariableEmissionCost',]
-    mTEPES.node_frames_suffixes  = ['Demand', 'Inertia']
-    mTEPES.area_frames_suffixes  = ['RampReserveUp', 'RampReserveDown', 'OperatingReserveUp', 'OperatingReserveDown', 'ReserveMargin', 'Emission', 'RESEnergy']
-    mTEPES.hydro_frames_suffixes = ['Reservoir', 'VariableMinVolume', 'VariableMaxVolume', 'HydroInflows', 'HydroOutflows']
-    mTEPES.hydrogen_frames_suffixes  = ['DemandHydrogen']
-    mTEPES.heat_frames_suffixes  = ['DemandHeat', 'ReserveMarginHeat']
-    mTEPES.frames_suffixes = (mTEPES.gen_frames_suffixes + mTEPES.node_frames_suffixes + mTEPES.area_frames_suffixes +
-                              mTEPES.hydro_frames_suffixes+ mTEPES.hydrogen_frames_suffixes + mTEPES.heat_frames_suffixes)
+    mTEPES.gen_frames_suffixes      = ['VariableMinGeneration',  'VariableMaxGeneration',
+                                       'VariableMinConsumption', 'VariableMaxConsumption',
+                                       'VariableMinStorage',     'VariableMaxStorage',
+                                       'EnergyInflows',          'EnergyOutflows',
+                                       'VariableMinEnergy',      'VariableMaxEnergy',
+                                       'VariableFuelCost',       'VariableEmissionCost',]
+    mTEPES.node_frames_suffixes     = ['Demand', 'Inertia']
+    mTEPES.area_frames_suffixes     = ['RampReserveUp', 'RampReserveDown', 'OperatingReserveUp', 'OperatingReserveDown', 'ReserveMargin', 'Emission', 'RESEnergy']
+    mTEPES.hydro_frames_suffixes    = ['Reservoir', 'VariableMinVolume', 'VariableMaxVolume', 'HydroInflows', 'HydroOutflows']
+    mTEPES.hydrogen_frames_suffixes = ['DemandHydrogen']
+    mTEPES.heat_frames_suffixes     = ['DemandHeat', 'ReserveMarginHeat']
+    mTEPES.frames_suffixes = mTEPES.gen_frames_suffixes + mTEPES.node_frames_suffixes + mTEPES.area_frames_suffixes + mTEPES.hydro_frames_suffixes + mTEPES.hydrogen_frames_suffixes + mTEPES.heat_frames_suffixes
 
     # Apply the condition to each specified column
-    for keys, df in dfs.items():
+    for keys,df in dfs.items():
         if [1 for suffix in mTEPES.gen_frames_suffixes if suffix in keys]:
             dfs[keys] = df.where(df > 0.0, 0.0)
 
@@ -1722,13 +1719,13 @@ def SettingUpVariables(OptModel, mTEPES):
             None: Variables are added directly to the mTEPES object.
         '''
         #%% variables
-        OptModel.vTotalSCost               = Var(                       within=NonNegativeReals, doc='total system                         cost      [MEUR]')
-        OptModel.vTotalICost               = Var(                       within=NonNegativeReals, doc='total system investment              cost      [MEUR]')
-        OptModel.vTotalFCost               = Var(mTEPES.p,     within=NonNegativeReals, doc='total system fixed                   cost      [MEUR]')
+        OptModel.vTotalSCost               = Var(              within=NonNegativeReals, doc='total system                         cost      [MEUR]')
+        OptModel.vTotalICost               = Var(              within=NonNegativeReals, doc='total system investment              cost      [MEUR]')
+        OptModel.vTotalFElecCost           = Var(mTEPES.p,     within=NonNegativeReals, doc='total system fixed elec              cost      [MEUR]')
         OptModel.vTotalGCost               = Var(mTEPES.psn,   within=NonNegativeReals, doc='total variable generation  operation cost      [MEUR]')
         OptModel.vTotalCCost               = Var(mTEPES.psn,   within=NonNegativeReals, doc='total variable consumption operation cost      [MEUR]')
         OptModel.vTotalECost               = Var(mTEPES.psn,   within=NonNegativeReals, doc='total system emission                cost      [MEUR]')
-        OptModel.vTotalRCost               = Var(mTEPES.psn,   within=NonNegativeReals, doc='total system reliability             cost      [MEUR]')
+        OptModel.vTotalRElecCost           = Var(mTEPES.psn,   within=NonNegativeReals, doc='total system reliability elec        cost      [MEUR]')
         OptModel.vTotalNCost               = Var(mTEPES.psn,   within=NonNegativeReals, doc='total network loss penalty operation cost      [MEUR]')
         OptModel.vTotalEmissionArea        = Var(mTEPES.psnar, within=NonNegativeReals, doc='total   area emission                         [MtCO2]')
         OptModel.vTotalECostArea           = Var(mTEPES.psnar, within=NonNegativeReals, doc='total   area emission                cost      [MEUR]')
@@ -1755,12 +1752,19 @@ def SettingUpVariables(OptModel, mTEPES):
         OptModel.vENS                      = Var(mTEPES.psnnd, within=NonNegativeReals, doc='energy not served in node                        [GW]')
 
         if mTEPES.pIndHydroTopology:
+            OptModel.vTotalFHydroCost      = Var(mTEPES.p,     within=NonNegativeReals, doc='total system fixed hydro             cost      [MEUR]')
             OptModel.vHydroInflows         = Var(mTEPES.psnrc, within=NonNegativeReals, doc='unscheduled inflows  of candidate hydro units  [m3/s]')
             OptModel.vHydroOutflows        = Var(mTEPES.psnrs, within=NonNegativeReals, doc='scheduled   outflows of all       hydro units  [m3/s]')
             OptModel.vReservoirVolume      = Var(mTEPES.psnrs, within=NonNegativeReals, doc='Reservoir volume                                [hm3]')
             OptModel.vReservoirSpillage    = Var(mTEPES.psnrs, within=NonNegativeReals, doc='Reservoir spillage                              [hm3]')
 
+        if mTEPES.pIndHydrogen:
+            OptModel.vTotalFH2Cost         = Var(mTEPES.p,     within=NonNegativeReals, doc='total system fixed H2                cost      [MEUR]')
+            OptModel.vTotalRH2Cost         = Var(mTEPES.psn,   within=NonNegativeReals, doc='total system reliability H2          cost      [MEUR]')
+
         if mTEPES.pIndHeat:
+            OptModel.vTotalFHeatCost       = Var(mTEPES.p,     within=NonNegativeReals, doc='total system fixed heat              cost      [MEUR]')
+            OptModel.vTotalRHeatCost       = Var(mTEPES.psn,   within=NonNegativeReals, doc='total system reliability heat        cost      [MEUR]')
             OptModel.vTotalOutputHeat      = Var(mTEPES.psng , within=NonNegativeReals, doc='total heat output of the boiler unit             [GW]')
             [OptModel.vTotalOutputHeat[p,sc,n,ch].setub(mTEPES.pMaxPowerHeat[p,sc,n,ch]) for p,sc,n,ch in mTEPES.psnch]
             [OptModel.vTotalOutputHeat[p,sc,n,ch].setlb(mTEPES.pMinPowerHeat[p,sc,n,ch]) for p,sc,n,ch in mTEPES.psnch]
