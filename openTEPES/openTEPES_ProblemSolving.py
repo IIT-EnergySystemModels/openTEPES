@@ -154,12 +154,12 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
 
     # save values of each stage
     for n in mTEPES.n:
-        OptModel.vTotalGCost[p,sc,n].fix        (OptModel.vTotalGCost[p,sc,n]()    )
-        OptModel.vTotalCCost[p,sc,n].fix        (OptModel.vTotalCCost[p,sc,n]()    )
-        OptModel.vTotalECost[p,sc,n].fix        (OptModel.vTotalECost[p,sc,n]()    )
-        OptModel.vTotalRElecCost[p,sc,n].fix    (OptModel.vTotalRElecCost[p,sc,n]())
+        OptModel.vTotalGCost        [p,sc,n].fix(OptModel.vTotalGCost    [p,sc,n]())
+        OptModel.vTotalCCost        [p,sc,n].fix(OptModel.vTotalCCost    [p,sc,n]())
+        OptModel.vTotalECost        [p,sc,n].fix(OptModel.vTotalECost    [p,sc,n]())
+        OptModel.vTotalRElecCost    [p,sc,n].fix(OptModel.vTotalRElecCost[p,sc,n]())
         if mTEPES.pIndHydrogen:
-            OptModel.vTotalRH2Cost[p,sc,n].fix  (OptModel.vTotalRH2Cost[p,sc,n]()  )
+            OptModel.vTotalRH2Cost  [p,sc,n].fix(OptModel.vTotalRH2Cost  [p,sc,n]())
         if mTEPES.pIndHeat:
             OptModel.vTotalRHeatCost[p,sc,n].fix(OptModel.vTotalRHeatCost[p,sc,n]())
 
@@ -197,9 +197,9 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
             print    ('  Total emission               cost [MEUR] ', mTEPES.pDiscountedWeight[pp] * sum(mTEPES.pScenProb         [pp,scc  ]() * OptModel.vTotalECost          [pp,scc,n    ]() for n        in mTEPES.n ))
             print    ('  Total network losses penalty cost [MEUR] ', mTEPES.pDiscountedWeight[pp] * sum(mTEPES.pScenProb         [pp,scc  ]() * OptModel.vTotalNCost          [pp,scc,n    ]() for n        in mTEPES.n ))
             print    ('  Total reliability electr     cost [MEUR] ', mTEPES.pDiscountedWeight[pp] * sum(mTEPES.pScenProb         [pp,scc  ]() * OptModel.vTotalRElecCost      [pp,scc,n    ]() for n        in mTEPES.n ))
-            if mTEPES.pIndHydrogen     :
+            if mTEPES.pIndHydrogen:
                 print('  Total reliability hydrogen   cost [MEUR] ', mTEPES.pDiscountedWeight[pp] * sum(mTEPES.pScenProb         [pp,scc  ]() * OptModel.vTotalRH2Cost        [pp,scc,n    ]() for n        in mTEPES.n ))
-            if mTEPES.pIndHeat         :
+            if mTEPES.pIndHeat:
                 print('  Total reliability heat       cost [MEUR] ', mTEPES.pDiscountedWeight[pp] * sum(mTEPES.pScenProb         [pp,scc  ]() * OptModel.vTotalRHeatCost      [pp,scc,n    ]() for n        in mTEPES.n ))
     else:
         print        (f'***** Period: {p}, Scenario: {sc}, Stage: {st} ******')
@@ -226,7 +226,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
         print        ('  Total reliability electr     cost [MEUR] ', mTEPES.pDiscountedWeight[p]  * sum(mTEPES.pScenProb         [p,sc    ]() * OptModel.vTotalRElecCost      [p,sc,n      ]() for n        in mTEPES.n ))
         if mTEPES.pIndHydrogen      and mTEPES.pc:
             print    ('  Total reliability H2         cost [MEUR] ', mTEPES.pDiscountedWeight[p]  * sum(mTEPES.pScenProb         [p,sc    ]() * OptModel.vTotalRH2Cost        [p,sc,n      ]() for n        in mTEPES.n ))
-        if mTEPES.pIndHeat and mTEPES.hc:
+        if mTEPES.pIndHeat          and mTEPES.hc:
             print    ('  Total reliability heat       cost [MEUR] ', mTEPES.pDiscountedWeight[p]  * sum(mTEPES.pScenProb         [p,sc    ]() * OptModel.vTotalRHeatCost      [p,sc,n      ]() for n        in mTEPES.n ))
 
     # Adding SolverResults to mTEPES
