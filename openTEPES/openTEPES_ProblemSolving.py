@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 05, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 13, 2026
 """
 
 import time
@@ -122,13 +122,13 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
     for gd in mTEPES.gd:
         if (p,gd) in mTEPES.pgd:
             OptModel.vGenerationRetire[p,gd].fix(        OptModel.vGenerationRetire[p,gd      ]())
+    for ni,nf,cc in mTEPES.lc:
+        if (p,ni,nf,cc) in mTEPES.plc:
+            OptModel.vNetworkInvest[p,ni,nf,cc].fix(     OptModel.vNetworkInvest   [p,ni,nf,cc]())
     if mTEPES.pIndHydroTopology:
         for rc in mTEPES.rn:
             if (p,rc) in mTEPES.prc:
                 OptModel.vReservoirInvest[p,rc].fix(     OptModel.vReservoirInvest [p,rc      ]())
-    for ni,nf,cc in mTEPES.lc:
-        if (p,ni,nf,cc) in mTEPES.plc:
-            OptModel.vNetworkInvest[p,ni,nf,cc].fix(     OptModel.vNetworkInvest   [p,ni,nf,cc]())
     if mTEPES.pIndHydrogen:
         for ni,nf,cc in mTEPES.pc:
             if (p,ni,nf,cc) in mTEPES.ppc:

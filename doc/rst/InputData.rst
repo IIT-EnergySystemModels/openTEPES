@@ -454,6 +454,8 @@ Fuel heating unit, fuel boiler          It has RatedMaxPowerElec =0  and RatedMa
 Hydrogen heating unit                   Fuel heating unit with ProductionFunctionH2ToHeat >0                                                                                 *hh*
 Hydro power plant (water)               It has ProductionFunctionHydro >0                                                                                                    *h*
 ======================================  ===================================================================================================================================  ==========
+Reservoir (water)                       It has water volume                                                                                                                  *rs*
+======================================  ===================================================================================================================================  ==========
 
 The model always considers a month of 672 hours, i.e., 4 weeks, not calendar months. The model assumes a year of 8736 hours, i.e., 52 weeks, not calendar years.
 

@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 11, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 13, 2026
 """
 
 import time
@@ -1528,9 +1528,9 @@ def OperationSummaryResults(DirName, CaseName, OptModel, mTEPES):
     FossilFuelGeneration  = sum(OptModel.vTotalOutput[p,sc,n,g]()*mTEPES.pLoadLevelDuration[p,sc,n]() for p,sc,n,g in mTEPES.psntr)
     # Ratio Total Investments [%]
     TotalInvestmentCost  = (sum(mTEPES.pDiscountedWeight[p] *                                   OptModel.vTotalFElecCost  [p   ]()          for p          in mTEPES.p if len(mTEPES.gc) + len(mTEPES.gd) + len(mTEPES.lc)) +
-                            sum(mTEPES.pDiscountedWeight[p] *                                   OptModel.vTotalFHydroCost [p   ]()          for p          in mTEPES.p if len(mTEPES.rn)) +
-                            sum(mTEPES.pDiscountedWeight[p] *                                   OptModel.vTotalFH2Cost    [p   ]()          for p          in mTEPES.p if len(mTEPES.pc)) +
-                            sum(mTEPES.pDiscountedWeight[p] *                                   OptModel.vTotalFHeatCost  [p   ]()          for p          in mTEPES.p if len(mTEPES.hc)))
+                            sum(mTEPES.pDiscountedWeight[p] *                                   OptModel.vTotalFHydroCost [p   ]()          for p          in mTEPES.p if mTEPES.rn) +
+                            sum(mTEPES.pDiscountedWeight[p] *                                   OptModel.vTotalFH2Cost    [p   ]()          for p          in mTEPES.p if mTEPES.pc) +
+                            sum(mTEPES.pDiscountedWeight[p] *                                   OptModel.vTotalFHeatCost  [p   ]()          for p          in mTEPES.p if mTEPES.hc))
     GenInvestmentCost     = sum(mTEPES.pDiscountedWeight[p] * mTEPES.pGenInvestCost[gc]       * OptModel.vGenerationInvest[p,gc]()          for p,gc       in mTEPES.pgc)
     GenRetirementCost     = sum(mTEPES.pDiscountedWeight[p] * mTEPES.pGenRetireCost[gd]       * OptModel.vGenerationRetire[p,gd]()          for p,gd       in mTEPES.pgd)
     if mTEPES.pIndHydroTopology:

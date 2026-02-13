@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 11, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 13, 2026
 """
 
 # import dill as pickle
@@ -38,8 +38,8 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     idxDict['y'  ] = 1
 
     #%% model declaration
-    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.15 - February 11, 2026')
-    print(                 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.15 - February 11, 2026', file=open(f'{_path}/openTEPES_version_{CaseName}.log','w'))
+    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.15 - February 13, 2026')
+    print(                 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.15 - February 13, 2026', file=open(f'{_path}/openTEPES_version_{CaseName}.log','w'))
 
     pIndOutputResults = [j for i,j in idxDict.items() if i == pIndOutputResults][0]
     pIndLogConsole    = [j for i,j in idxDict.items() if i == pIndLogConsole   ][0]
@@ -66,12 +66,13 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
 
     # objective function and investment constraints
     TotalObjectiveFunction             (mTEPES, mTEPES, pIndLogConsole)
-    InvestmentElecModelFormulation     (mTEPES, mTEPES, pIndLogConsole)
-    if mTEPES.pIndHydroTopology:
+    if len(mTEPES.gc) + len(mTEPES.gd) + len(mTEPES.lc) + len(mTEPES.rn) + len(mTEPES.pc) + len(mTEPES.hc):
+        InvestmentElecModelFormulation (mTEPES, mTEPES, pIndLogConsole)
+    if mTEPES.pIndHydroTopology and mTEPES.rn:
         InvestmentHydroModelFormulation(mTEPES, mTEPES, pIndLogConsole)
-    if mTEPES.pIndHydrogen:
+    if mTEPES.pIndHydrogen      and mTEPES.pc:
         InvestmentH2ModelFormulation   (mTEPES, mTEPES, pIndLogConsole)
-    if mTEPES.pIndHeat:
+    if mTEPES.pIndHeat          and mTEPES.hc:
         InvestmentHeatModelFormulation (mTEPES, mTEPES, pIndLogConsole)
 
     # initialize parameter for dual variables
