@@ -936,7 +936,7 @@ def ESSOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutpu
             OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0', 'level_1', 'level_2'], columns='level_3', values='GWh', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(f'{_path}/oT_Result_ConsumptionEnergy_{CaseName}.csv', sep=',')
 
         if pIndTechnologyOutput == 1 or pIndTechnologyOutput == 2:
-            OutputToFile = pd.Series(data=[sum(OutputToFile[p,sc,n,eh] for eh in e2e[et] if (p, eh) in mTEPES.peh and mTEPES.pRatedMaxCharge[eh]) for p,sc,n,et in mTEPES.psnet], index=mTEPES.psnet)
+            OutputToFile = pd.Series(data=[sum(OutputToFile[p,sc,n,eh] for eh in e2e[et] if (p,eh) in mTEPES.peh and mTEPES.pRatedMaxCharge[eh]) for p,sc,n,et in mTEPES.psnet], index=mTEPES.psnet)
             OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0', 'level_1', 'level_2'], columns='level_3', values='GWh').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(f'{_path}/oT_Result_TechnologyConsumptionEnergy_{CaseName}.csv', sep=',')
 
         if pIndPlotOutput:
@@ -1889,7 +1889,7 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES, pIndPlotOutput):
     OutputToFile.rename_axis(['Period', 'Scenario', 'LoadLevel', 'Area'], axis=0).rename_axis([None], axis=1).to_csv(f'{_path}/oT_Result_MarginalIncrementalVariableCost_{CaseName}.csv', sep=',')
     IncrementalGens = pd.Series('N/A', index=mTEPES.psnar).to_frame(name='Generator')
     for p,sc,n,ar in mTEPES.psnar:
-        if all(g not in mTEPES.eh and g not in mTEPES.bo and (p, g) in mTEPES.pg and g in g2a[ar] for g in mTEPES.g):
+        if all(g not in mTEPES.eh and g not in mTEPES.bo and (p,g) in mTEPES.pg and g in g2a[ar] for g in mTEPES.g):
             if len(OutputToFile.loc[(p,sc,n,ar)]) > 1:
                 IncrementalGens.loc[p,sc,n,ar] = OutputToFile.loc[[(p,sc,n,ar)]].squeeze().idxmin()
             else:
@@ -2215,7 +2215,7 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput, pIndPlo
                                 chart = PiePlots(p, sc, OutputToFile, 'Technology', '%')
                                 chart.save(f'{_path}/oT_Plot_TechnologyGenerationEnergy_{CaseName}_{p}_{sc}_{ar}.html', embed_options={'renderer': 'svg'})
 
-    sPSNARND   = [(p,sc,n,ar,nd)    for p,sc,n,ar,nd    in mTEPES.psn*mTEPES.arnd if sum(1 for g  in g2n[nd]) + sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd])]
+    sPSNARND = [(p,sc,n,ar,nd) for p,sc,n,ar,nd in mTEPES.psn*mTEPES.arnd if sum(1 for g  in g2n[nd]) + sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd])]
 
     # precompute valid technologies and resources per period to avoid recomputing for each tuple
     _valid_gt_per_p = {}
