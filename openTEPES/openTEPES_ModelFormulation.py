@@ -205,7 +205,7 @@ def GenerationOperationModelFormulationObjFunct(OptModel, mTEPES, pIndLogConsole
     def eTotalNCost(OptModel,n):
         if len(mTEPES.ll) == 0:
             return Constraint.Skip
-        return OptModel.vTotalNCost[p,sc,n] == mTEPES.pLoadLevelDuration[p,sc,n]() * pEpsilon * sum(OptModel.vLineLosses[p,sc,n,ni,nf,cc] for ni,nf,cc in mTEPES.ll if (p,ni,nf,cc) in mTEPES.pll)
+        return OptModel.vTotalNCost[p,sc,n] == pEpsilon * mTEPES.pLoadLevelDuration[p,sc,n]() * sum(OptModel.vLineLosses[p,sc,n,ni,nf,cc] for ni,nf,cc in mTEPES.ll if (p,ni,nf,cc) in mTEPES.pll)
     setattr(OptModel, f'eTotalNCost_{p}_{sc}_{st}', Constraint(mTEPES.n, rule=eTotalNCost, doc='system variable network operation cost [MEUR]'))
 
     def eTotalRElecCost(OptModel,n):
