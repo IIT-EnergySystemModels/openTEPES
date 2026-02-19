@@ -30,7 +30,7 @@
 
 **Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES)**
 
-*Simplicity and Transparency in Power Systems Planning*
+*Simplicity and Transparency in Energy Systems Planning*
 
 
 
