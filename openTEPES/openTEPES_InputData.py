@@ -64,9 +64,6 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         'NetworkHeat'      : ('pIndHeat'         , None, 'No heat energy carrier'              ),
     }
 
-    factor_1 = 1e-3
-    factor_2 = 1e-6
-
     # @profile
     def load_csv_with_index(path, file_name, idx_cols, header_levels=None):
         """
@@ -224,7 +221,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     # load parameters from dfParameter
     for col in dfs['dfParameter'].columns:
         if col in ['ENSCost', 'HNSCost', 'HTNSCost', 'SBase']:
-            par[f'p{col}'] = dfs['dfParameter'][col].iloc[0] * factor_1
+            par[f'p{col}'] = dfs['dfParameter'][col].iloc[0] * 1e-3
         elif col in ['TimeStep']:
             par[f'p{col}'] = dfs['dfParameter'][col].iloc[0].astype('int')
         else:
@@ -660,7 +657,7 @@ def DataConfiguration(mTEPES):
         mTEPES.pre       = Set(initialize = [(p,     re      ) for p,     re       in mTEPES.p  *mTEPES.re  if (p,re)  in mTEPES.pg])
         mTEPES.ph        = Set(initialize = [(p,     h       ) for p,     h        in mTEPES.p  *mTEPES.h   if (p,h )  in mTEPES.pg])
         mTEPES.pgd       = Set(initialize = [(p,     gd      ) for p,     gd       in mTEPES.p  *mTEPES.gd  if (p,gd)  in mTEPES.pg])
-        mTEPES.par       = Set(initialize = [(p,     ar      ) for p,     ar       in mTEPES.p  *mTEPES.ar                                                                                   ])
+        mTEPES.par       = Set(initialize = [(p,     ar      ) for p,     ar       in mTEPES.p  *mTEPES.ar                         ])
         mTEPES.pla       = Set(initialize = [(p,     ni,nf,cc) for p,     ni,nf,cc in mTEPES.p  *mTEPES.la  if mTEPES.dPar['pElecNetPeriodIni'][ni,nf,cc] <= p and mTEPES.dPar['pElecNetPeriodFin'][ni,nf,cc] >= p])
         mTEPES.plc       = Set(initialize = [(p,     ni,nf,cc) for p,     ni,nf,cc in mTEPES.p  *mTEPES.lc  if (p,ni,nf,cc) in mTEPES.pla])
         mTEPES.pll       = Set(initialize = [(p,     ni,nf,cc) for p,     ni,nf,cc in mTEPES.p  *mTEPES.ll  if (p,ni,nf,cc) in mTEPES.pla])
@@ -1995,6 +1992,7 @@ def SettingUpVariables(OptModel, mTEPES):
                 OptModel.vRampDwState[p,sc,n,nr].domain = UnitInterval
                 OptModel.vRampUpState[p,sc,n,nr].fix(0)
                 OptModel.vRampUpState[p,sc,n,nr].domain = UnitInterval
+                nFixedVariables += 3
 
         for p,sc,nr,  group in mTEPES.ps*mTEPES.ExclusiveGeneratorsYearly*mTEPES.ExclusiveGroups:
             if mTEPES.pIndBinUnitCommit[nr] == 0:
@@ -2069,6 +2067,7 @@ def SettingUpVariables(OptModel, mTEPES):
             [OptModel.vFlowElec  [p,sc,n,ni,nf,cc].setub( mTEPES.pMaxNTCFrw[p,sc,n,ni,nf,cc]                              ) for p,sc,n,ni,nf,cc in mTEPES.psnla]
         else:
             [OptModel.vLineLosses[p,sc,n,ni,nf,cc].fix(0.0                                                                ) for p,sc,n,ni,nf,cc in mTEPES.psnll]
+            nFixedVariables += sum(                    1                                                                    for p,sc,n,ni,nf,cc in mTEPES.psnll)
         [OptModel.vTheta         [p,sc,n,nd      ].setlb(-mTEPES.pMaxTheta [p,sc,n,nd      ]()                            ) for p,sc,n,nd       in mTEPES.psnnd]
         [OptModel.vTheta         [p,sc,n,nd      ].setub( mTEPES.pMaxTheta [p,sc,n,nd      ]()                            ) for p,sc,n,nd       in mTEPES.psnnd]
 
@@ -2176,7 +2175,7 @@ def SettingUpVariables(OptModel, mTEPES):
                 OptModel.vReserveDown    [p,sc,n,es].fix(0.0)
                 OptModel.vESSSpillage    [p,sc,n,es].fix(0.0)
                 OptModel.vESSInventory   [p,sc,n,es].fix(mTEPES.pIniInventory[p,sc,n,es])
-                nFixedVariables += 5
+                nFixedVariables += 6
             if  mTEPES.pMaxCharge2ndBlock[p,sc,n,es] ==  0.0:
                 OptModel.vCharge2ndBlock [p,sc,n,es].fix(0.0)
                 nFixedVariables += 1
@@ -2382,15 +2381,15 @@ def SettingUpVariables(OptModel, mTEPES):
     if mTEPES.pIndHydrogen:
         # fixing the H2 ENS in nodes with no hydrogen demand
         for p,sc,n,nd in mTEPES.psnnd:
-            if mTEPES.pDemandH2[p,sc,n,nd] ==   0.0:
-                OptModel.vH2NS [p,sc,n,nd].fix (0.0)
+            if mTEPES.pDemandH2[p,sc,n,nd] ==  0.0:
+                OptModel.vH2NS [p,sc,n,nd].fix(0.0)
                 nFixedVariables += 1
 
     if mTEPES.pIndHeat:
         # fixing the heat ENS in nodes with no heat demand
         for p,sc,n,nd in mTEPES.psnnd:
-            if mTEPES.pDemandHeat[p,sc,n,nd] ==   0.0:
-                OptModel.vHeatNS [p,sc,n,nd].fix (0.0)
+            if mTEPES.pDemandHeat[p,sc,n,nd] ==  0.0:
+                OptModel.vHeatNS [p,sc,n,nd].fix(0.0)
                 nFixedVariables += 1
 
     # @profile
@@ -2476,7 +2475,7 @@ def SettingUpVariables(OptModel, mTEPES):
         for p,g in mTEPES.pg:
             if g not in mTEPES.eb and mTEPES.pElecGenPeriodIni[g ] > p:
                 for sc,n in mTEPES.sc*mTEPES.n:
-                    OptModel.vTotalOutput   [p,sc,n,g].fix(0.0)
+                    OptModel.vTotalOutput[p,sc,n,g].fix(0.0)
                     nFixedVariables += 1
 
         for p,sc,nr in mTEPES.psnr:
@@ -2541,11 +2540,11 @@ def SettingUpVariables(OptModel, mTEPES):
             OptModel.vLineOffState[p,sc,n,ni,nf,cc].domain = UnitInterval
             nFixedVariables += 3
 
-    [OptModel.vLineLosses  [p,sc,n,ni,nf,cc].fix(0.0) for p,sc,n,ni,nf,cc in mTEPES.psnll if (ni,nf,cc) not in mTEPES.lc and mTEPES.pElecNetPeriodIni[ni,nf,cc] > p]
-    nFixedVariables     += sum(                  1    for p,sc,n,ni,nf,cc in mTEPES.psnll if (ni,nf,cc) not in mTEPES.lc and mTEPES.pElecNetPeriodIni[ni,nf,cc] > p)
+    [OptModel.vLineLosses  [p,sc,n,ni,nf,cc].fix(0.0) for p,sc,n,ni,nf,cc in mTEPES.psnll if (ni,nf,cc) not in mTEPES.lc and mTEPES.pElecNetPeriodIni [ni,nf,cc] > p]
+    nFixedVariables     += sum(                  1    for p,sc,n,ni,nf,cc in mTEPES.psnll if (ni,nf,cc) not in mTEPES.lc and mTEPES.pElecNetPeriodIni [ni,nf,cc] > p)
 
-    [OptModel.vFlowElec    [p,sc,n,ni,nf,cc].fix(0.0) for p,sc,n,ni,nf,cc in mTEPES.psnla if (ni,nf,cc) not in mTEPES.lc and mTEPES.pElecNetPeriodIni[ni,nf,cc] > p]
-    nFixedVariables     += sum(                  1    for p,sc,n,ni,nf,cc in mTEPES.psnla if (ni,nf,cc) not in mTEPES.lc and mTEPES.pElecNetPeriodIni[ni,nf,cc] > p)
+    [OptModel.vFlowElec    [p,sc,n,ni,nf,cc].fix(0.0) for p,sc,n,ni,nf,cc in mTEPES.psnla if (ni,nf,cc) not in mTEPES.lc and mTEPES.pElecNetPeriodIni [ni,nf,cc] > p]
+    nFixedVariables     += sum(                  1    for p,sc,n,ni,nf,cc in mTEPES.psnla if (ni,nf,cc) not in mTEPES.lc and mTEPES.pElecNetPeriodIni [ni,nf,cc] > p)
 
     if mTEPES.pIndHydrogen:
         [OptModel.vFlowH2  [p,sc,n,ni,nf,cc].fix(0.0) for p,sc,n,ni,nf,cc in mTEPES.psnpa if (ni,nf,cc) not in mTEPES.pc and mTEPES.pH2PipePeriodIni  [ni,nf,cc] > p]
