@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 20, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 23, 2026
 """
 
 import time
@@ -555,10 +555,6 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnolo
     StartTime = time.time()
 
     # generators to area (n2a)
-    # n2a = defaultdict(list)
-    # for ar,nr in mTEPES.ar*mTEPES.nr:
-    #     if (ar,nr) in mTEPES.a2g:
-    #         n2a[ar].append(nr)
     g2a = defaultdict(list)
     for ar,g in mTEPES.a2g:
         g2a[ar].append(g)
@@ -809,8 +805,9 @@ def GenerationOperationHeatResults(DirName, CaseName, OptModel, mTEPES, pIndTech
 
     # generators to area (g2a)
     g2a = defaultdict(list)
-    for ar,ch in mTEPES.a2g:
-        g2a[ar].append(ch)
+    for ar,ch in mTEPES.ar*mTEPES.ch:
+        if (ar,ch) in mTEPES.a2g:
+            g2a[ar].append(ch)
 
     # technology to generators (g2t)
     g2t = defaultdict(list)

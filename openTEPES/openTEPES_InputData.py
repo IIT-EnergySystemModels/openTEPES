@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 20, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 23, 2026
 """
 
 import time
@@ -64,7 +64,6 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         'NetworkHeat'      : ('pIndHeat'         , None, 'No heat energy carrier'              ),
     }
 
-    # @profile
     def load_csv_with_index(path, file_name, idx_cols, header_levels=None):
         """
         Load a CSV file into a DataFrame and set its index based on provided columns.
@@ -83,7 +82,6 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
             df.set_index(idx_to_set, inplace=True, drop=True)
         return df
 
-    # @profile
     def read_input_data(path, case_name):
         """
         Read all oT_Data files from the given directory, returning
@@ -173,7 +171,6 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     # reading additional data sets related to reservoirs and hydro
     try:
         import csv
-        # @profile
         def count_lines_in_csv(csv_file_path):
             with open(csv_file_path, 'r', newline='') as file:
                 reader = csv.reader(file)
@@ -278,7 +275,6 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     if par['pTimeStep'] > 1:
         # compute the demand as the mean over the time step load levels and assign it to active load levels. Idem for the remaining parameters
         # Skip mean calculation for empty DataFrames (either full of 0s or NaNs)
-        # @profile
         def ProcessParameter(pDataFrame: pd.DataFrame, pTimeStep: int) -> pd.DataFrame:
             if ((pDataFrame != 0) & (~pDataFrame.isna())).any().any():
                 pDataFrame = pDataFrame.rolling(pTimeStep).mean()
@@ -762,7 +758,6 @@ def DataConfiguration(mTEPES):
     # Due to backwards compatibility reasons instead of adding a new column to Data_Generation NoOperatingReserve column now accepts two inputs
     # They are separated by "|", if only one input is detected, both parameters are set to whatever the input is
 
-    # @profile
     def split_and_map(val):
         # Handle new format with double input. Detect if there is a | character
         if isinstance(val, str) and '|' in val:
@@ -844,7 +839,6 @@ def DataConfiguration(mTEPES):
         g2t[gt].append(g)
 
     # ESS and RES technologies
-    # @profile
     def Create_ESS_RES_Sets(mTEPES) -> None:
         mTEPES.ot = Set(doc='ESS         technologies', initialize=[gt for gt in mTEPES.gt if sum(1 for es in mTEPES.es if es in g2t[gt])])
         mTEPES.ht = Set(doc='hydro       technologies', initialize=[gt for gt in mTEPES.gt if sum(1 for h  in mTEPES.h  if h  in g2t[gt])])
@@ -858,12 +852,12 @@ def DataConfiguration(mTEPES):
         mTEPES.pset  = Set(initialize=[(p,sc,  et) for p,sc,  et in mTEPES.ps *mTEPES.et   if sum(1 for eh in mTEPES.eh if eh in g2t[et] and (p,eh) in mTEPES.peh)])
         mTEPES.psrt  = Set(initialize=[(p,sc,  rt) for p,sc,  rt in mTEPES.ps *mTEPES.rt   if sum(1 for re in mTEPES.re if re in g2t[rt] and (p,re) in mTEPES.pre)])
         mTEPES.psnt  = Set(initialize=[(p,sc,  nt) for p,sc,  nt in mTEPES.ps *mTEPES.nt   if sum(1 for nr in mTEPES.nr if nr in g2t[nt] and (p,nr) in mTEPES.pnr)])
-        mTEPES.psngt = Set(initialize=[(p,sc,n,gt) for p,sc,n,gt in mTEPES.psn*mTEPES.gt   if (p,sc,gt) in mTEPES.psgt])
-        mTEPES.psnot = Set(initialize=[(p,sc,n,ot) for p,sc,n,ot in mTEPES.psn*mTEPES.ot   if (p,sc,ot) in mTEPES.psot])
-        mTEPES.psnht = Set(initialize=[(p,sc,n,ht) for p,sc,n,ht in mTEPES.psn*mTEPES.ht   if (p,sc,ht) in mTEPES.psht])
-        mTEPES.psnet = Set(initialize=[(p,sc,n,et) for p,sc,n,et in mTEPES.psn*mTEPES.et   if (p,sc,et) in mTEPES.pset])
-        mTEPES.psnrt = Set(initialize=[(p,sc,n,rt) for p,sc,n,rt in mTEPES.psn*mTEPES.rt   if (p,sc,rt) in mTEPES.psrt])
-        mTEPES.psnnt = Set(initialize=[(p,sc,n,nt) for p,sc,n,nt in mTEPES.psn*mTEPES.nt   if (p,sc,nt) in mTEPES.psnt])
+        mTEPES.psngt = Set(initialize=[(p,sc,n,gt) for p,sc,n,gt in mTEPES.psn*mTEPES.gt   if (p,sc,  gt) in mTEPES.psgt ])
+        mTEPES.psnot = Set(initialize=[(p,sc,n,ot) for p,sc,n,ot in mTEPES.psn*mTEPES.ot   if (p,sc,n,ot) in mTEPES.psngt])
+        mTEPES.psnht = Set(initialize=[(p,sc,n,ht) for p,sc,n,ht in mTEPES.psn*mTEPES.ht   if (p,sc,n,ht) in mTEPES.psngt])
+        mTEPES.psnet = Set(initialize=[(p,sc,n,et) for p,sc,n,et in mTEPES.psn*mTEPES.et   if (p,sc,n,et) in mTEPES.psngt])
+        mTEPES.psnrt = Set(initialize=[(p,sc,n,rt) for p,sc,n,rt in mTEPES.psn*mTEPES.rt   if (p,sc,n,rt) in mTEPES.psngt])
+        mTEPES.psnnt = Set(initialize=[(p,sc,n,nt) for p,sc,n,nt in mTEPES.psn*mTEPES.nt   if (p,sc,n,nt) in mTEPES.psngt])
 
     Create_ESS_RES_Sets(mTEPES)
 
@@ -2215,9 +2209,8 @@ def SettingUpVariables(OptModel, mTEPES):
             mTEPES.go = Set(initialize=[g for g in sorted(mTEPES.pRatedLinearVarCost, key=mTEPES.pRatedLinearVarCost.__getitem__) if g not in mTEPES.h])
 
     g2a = defaultdict(list)
-    for ar,g in mTEPES.ar*mTEPES.g:
-        if (ar,g) in mTEPES.a2g:
-            g2a[ar].append(g)
+    for ar,g in mTEPES.a2g:
+        g2a[ar].append(g)
     n2a = defaultdict(list)
     for ar,nr in mTEPES.ar*mTEPES.nr:
         if (ar,nr) in mTEPES.a2g:
@@ -2473,18 +2466,18 @@ def SettingUpVariables(OptModel, mTEPES):
 
         # remove power plants and lines not installed in this period
         for p,g in mTEPES.pg:
-            if g not in mTEPES.eb and mTEPES.pElecGenPeriodIni[g ] > p:
+            if g not in mTEPES.eb and mTEPES.pElecGenPeriodIni[g ] > p or mTEPES.pElecGenPeriodFin[g ] < p:
                 for sc,n in mTEPES.sc*mTEPES.n:
                     OptModel.vTotalOutput[p,sc,n,g].fix(0.0)
                     nFixedVariables += 1
 
         for p,sc,nr in mTEPES.psnr:
-            if nr not in mTEPES.eb and mTEPES.pElecGenPeriodIni[nr] > p:
+            if nr not in mTEPES.eb and mTEPES.pElecGenPeriodIni[nr] > p or mTEPES.pElecGenPeriodFin[nr] < p:
                 OptModel.vMaxCommitment[p,sc,nr].fix(0)
                 OptModel.vMaxCommitment[p,sc,nr].domain = UnitInterval
                 nFixedVariables += 1
         for p,sc,n,nr in mTEPES.psnnr:
-            if nr not in mTEPES.eb and mTEPES.pElecGenPeriodIni[nr] > p:
+            if nr not in mTEPES.eb and mTEPES.pElecGenPeriodIni[nr] > p or mTEPES.pElecGenPeriodFin[nr] < p:
                 OptModel.vOutput2ndBlock[p,sc,n,nr].fix(0.0)
                 OptModel.vReserveUp     [p,sc,n,nr].fix(0.0)
                 OptModel.vReserveDown   [p,sc,n,nr].fix(0.0)
@@ -2497,7 +2490,7 @@ def SettingUpVariables(OptModel, mTEPES):
                 nFixedVariables += 6
 
         for p,sc,n,es in mTEPES.psnes:
-            if es not in mTEPES.ec and mTEPES.pElecGenPeriodIni[es] > p:
+            if es not in mTEPES.ec and mTEPES.pElecGenPeriodIni[es] > p or mTEPES.pElecGenPeriodFin[es] < p:
                 OptModel.vEnergyOutflows[p,sc,n,es].fix(0.0)
                 OptModel.vESSInventory  [p,sc,n,es].fix(0.0)
                 OptModel.vESSSpillage   [p,sc,n,es].fix(0.0)
@@ -2511,7 +2504,7 @@ def SettingUpVariables(OptModel, mTEPES):
 
         if mTEPES.pIndHydroTopology:
             for p,sc,n,rs in mTEPES.psnrs:
-                if rs not in mTEPES.rn and mTEPES.pRsrPeriodIni[rs] > p:
+                if rs not in mTEPES.rn and mTEPES.pRsrPeriodIni[rs] > p or mTEPES.pRsrPeriodFin[rs] < p:
                     OptModel.vHydroOutflows         [p,sc,n,rs].fix(0.0)
                     OptModel.vReservoirVolume       [p,sc,n,rs].fix(0.0)
                     OptModel.vReservoirSpillage     [p,sc,n,rs].fix(0.0)
@@ -2543,20 +2536,19 @@ def SettingUpVariables(OptModel, mTEPES):
     [OptModel.vLineLosses  [p,sc,n,ni,nf,cc].fix(0.0) for p,sc,n,ni,nf,cc in mTEPES.psnll if (ni,nf,cc) not in mTEPES.lc and (mTEPES.pElecNetPeriodIni [ni,nf,cc] > p or mTEPES.pElecNetPeriodFin [ni,nf,cc] < p)]
     nFixedVariables     += sum(                  1    for p,sc,n,ni,nf,cc in mTEPES.psnll if (ni,nf,cc) not in mTEPES.lc and (mTEPES.pElecNetPeriodIni [ni,nf,cc] > p or mTEPES.pElecNetPeriodFin [ni,nf,cc] < p))
 
-    [OptModel.vFlowElec    [p,sc,n,ni,nf,cc].fix(0.0) for p,sc,n,ni,nf,cc in mTEPES.psnle if mTEPES.pElecNetPeriodIni [ni,nf,cc] > p or mTEPES.pElecNetPeriodFin [ni,nf,cc] < p]
-    nFixedVariables     += sum(                  1    for p,sc,n,ni,nf,cc in mTEPES.psnle if mTEPES.pElecNetPeriodIni [ni,nf,cc] > p or mTEPES.pElecNetPeriodFin [ni,nf,cc] < p)
+    [OptModel.vFlowElec    [p,sc,n,ni,nf,cc].fix(0.0) for p,sc,n,ni,nf,cc in mTEPES.psnle if                                  mTEPES.pElecNetPeriodIni [ni,nf,cc] > p or mTEPES.pElecNetPeriodFin [ni,nf,cc] < p]
+    nFixedVariables     += sum(                  1    for p,sc,n,ni,nf,cc in mTEPES.psnle if                                  mTEPES.pElecNetPeriodIni [ni,nf,cc] > p or mTEPES.pElecNetPeriodFin [ni,nf,cc] < p)
 
     if mTEPES.pIndHydrogen:
-        [OptModel.vFlowH2  [p,sc,n,ni,nf,cc].fix(0.0) for p,sc,n,ni,nf,cc in mTEPES.psnpe if mTEPES.pH2PipePeriodIni  [ni,nf,cc] > p or mTEPES.pH2PipePeriodFin  [ni,nf,cc] < p]
-        nFixedVariables += sum(                  1    for p,sc,n,ni,nf,cc in mTEPES.psnpe if mTEPES.pH2PipePeriodIni  [ni,nf,cc] > p or mTEPES.pH2PipePeriodFin  [ni,nf,cc] < p)
+        [OptModel.vFlowH2  [p,sc,n,ni,nf,cc].fix(0.0) for p,sc,n,ni,nf,cc in mTEPES.psnpe if                                  mTEPES.pH2PipePeriodIni  [ni,nf,cc] > p or mTEPES.pH2PipePeriodFin  [ni,nf,cc] < p]
+        nFixedVariables += sum(                  1    for p,sc,n,ni,nf,cc in mTEPES.psnpe if                                  mTEPES.pH2PipePeriodIni  [ni,nf,cc] > p or mTEPES.pH2PipePeriodFin  [ni,nf,cc] < p)
 
     if mTEPES.pIndHeat:
-        [OptModel.vFlowHeat[p,sc,n,ni,nf,cc].fix(0.0) for p,sc,n,ni,nf,cc in mTEPES.psnhe if mTEPES.pHeatPipePeriodIni[ni,nf,cc] > p or mTEPES.pHeatPipePeriodFin[ni,nf,cc] < p]
-        nFixedVariables += sum(                  1    for p,sc,n,ni,nf,cc in mTEPES.psnhe if mTEPES.pHeatPipePeriodIni[ni,nf,cc] > p or mTEPES.pHeatPipePeriodFin[ni,nf,cc] < p)
+        [OptModel.vFlowHeat[p,sc,n,ni,nf,cc].fix(0.0) for p,sc,n,ni,nf,cc in mTEPES.psnhe if                                  mTEPES.pHeatPipePeriodIni[ni,nf,cc] > p or mTEPES.pHeatPipePeriodFin[ni,nf,cc] < p]
+        nFixedVariables += sum(                  1    for p,sc,n,ni,nf,cc in mTEPES.psnhe if                                  mTEPES.pHeatPipePeriodIni[ni,nf,cc] > p or mTEPES.pHeatPipePeriodFin[ni,nf,cc] < p)
 
     # tolerance to consider 0 an investment decision
     pEpsilon = 1e-4
-    # @profile
     def SetToZero(mTEPES, OptModel, pEpsilon) -> None:
         '''
         Set small numbers to 0.

@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 13, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 23, 2026
 """
 
 import time
@@ -153,9 +153,8 @@ def GenerationOperationModelFormulationObjFunct(OptModel, mTEPES, pIndLogConsole
     StartTime = time.time()
 
     g2a = defaultdict(list)
-    for ar,g in mTEPES.ar*mTEPES.g:
-        if (ar,g) in mTEPES.a2g:
-            g2a[ar].append(g)
+    for ar,g in mTEPES.a2g:
+        g2a[ar].append(g)
 
     def eTotalGCost(OptModel,n):
         return OptModel.vTotalGCost[p,sc,n] == (mTEPES.pLoadLevelDuration[p,sc,n]() * sum(mTEPES.pLinearVarCost  [p,sc,n,nr] * OptModel.vTotalOutput    [p,sc,n,nr]                                              +
@@ -224,9 +223,8 @@ def GenerationOperationElecModelFormulationInvestment(OptModel, mTEPES, pIndLogC
     StartTime = time.time()
 
     g2a = defaultdict(list)
-    for ar,g in mTEPES.ar*mTEPES.g:
-        if (ar,g) in mTEPES.a2g:
-            g2a[ar].append(g)
+    for ar,g in mTEPES.a2g:
+        g2a[ar].append(g)
 
     def eInstallGenComm(OptModel,n,gc):
         if gc in mTEPES.eh or gc in mTEPES.bc or gc not in mTEPES.nr or (p,gc) not in mTEPES.pgc or (mTEPES.pMinPowerElec[p,sc,n,gc] == 0.0 and mTEPES.pConstantVarCost[p,sc,n,gc] == 0.0):
@@ -328,9 +326,8 @@ def GenerationOperationHeatModelFormulationInvestment(OptModel, mTEPES, pIndLogC
     StartTime = time.time()
 
     g2a = defaultdict(list)
-    for ar,g in mTEPES.ar*mTEPES.g:
-        if (ar,g) in mTEPES.a2g:
-            g2a[ar].append(g)
+    for ar,g in mTEPES.a2g:
+        g2a[ar].append(g)
 
     def eInstallFHUCap(OptModel,n,bc):
         if (p,bc) not in mTEPES.pbc or mTEPES.pMaxPowerHeat[p,sc,n,bc] == 0.0:
@@ -413,7 +410,6 @@ def GenerationOperationModelFormulationDemand(OptModel, mTEPES, pIndLogConsole, 
         if not mTEPES.pOperReserveUp[p,sc,n,ar] or sum(1 for nr in n2a[ar] if (mTEPES.pIndOperReserveGen[nr] == 0 or mTEPES.pIndOperReserveCon[nr] == 0)) + sum(1 for eh in e2a[ar] if (mTEPES.pIndOperReserveGen[eh] == 0 or mTEPES.pIndOperReserveCon[eh] == 0)) == 0:
             return Constraint.Skip
         return sum(OptModel.vReserveUp  [p,sc,n,nr] for nr in n2a[ar] if mTEPES.pIndOperReserveGen[nr] == 0 and (p,nr) in mTEPES.pnr) + sum(OptModel.vESSReserveUp  [p,sc,n,eh] for eh in e2a[ar] if mTEPES.pIndOperReserveCon[eh] == 0 and (p,eh) in mTEPES.peh) == mTEPES.pOperReserveUp[p,sc,n,ar]
-
     setattr(OptModel, f'eOperReserveUp_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.ar, rule=eOperReserveUp, doc='up   operating reserve [GW]'))
 
     if pIndLogConsole:
@@ -424,7 +420,6 @@ def GenerationOperationModelFormulationDemand(OptModel, mTEPES, pIndLogConsole, 
         if not mTEPES.pOperReserveDw[p,sc,n,ar] or sum(1 for nr in n2a[ar] if (mTEPES.pIndOperReserveGen[nr] == 0 or mTEPES.pIndOperReserveCon[nr] == 0)) + sum(1 for eh in e2a[ar] if (mTEPES.pIndOperReserveGen[eh] == 0 or mTEPES.pIndOperReserveCon[eh] == 0)) == 0:
             return Constraint.Skip
         return sum(OptModel.vReserveDown[p,sc,n,nr] for nr in n2a[ar] if mTEPES.pIndOperReserveGen[nr] == 0 and (p,nr) in mTEPES.pnr) + sum(OptModel.vESSReserveDown[p,sc,n,eh] for eh in e2a[ar] if mTEPES.pIndOperReserveCon[eh] == 0 and (p,eh) in mTEPES.peh) == mTEPES.pOperReserveDw[p,sc,n,ar]
-
     setattr(OptModel, f'eOperReserveDw_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.ar, rule=eOperReserveDw, doc='down operating reserve [GW]'))
 
     if pIndLogConsole:
@@ -435,7 +430,6 @@ def GenerationOperationModelFormulationDemand(OptModel, mTEPES, pIndLogConsole, 
         if mTEPES.pMinRatioDwUp == 0.0 or mTEPES.pIndOperReserveGen[nr] or sum(mTEPES.pOperReserveUp[p,sc,n,ar] + mTEPES.pOperReserveDw[p,sc,n,ar] for ar in a2n[nr]) == 0.0 or mTEPES.pMaxPower2ndBlock[p,sc,n,nr] == 0.0:
             return Constraint.Skip
         return OptModel.vReserveDown[p,sc,n,nr] >= OptModel.vReserveUp[p,sc,n,nr] * mTEPES.pMinRatioDwUp
-
     setattr(OptModel, f'eReserveMinRatioDwUp_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.nr, rule=eReserveMinRatioDwUp, doc='minimum ratio down to up operating reserve [GW]'))
 
     if pIndLogConsole:
@@ -446,7 +440,6 @@ def GenerationOperationModelFormulationDemand(OptModel, mTEPES, pIndLogConsole, 
         if mTEPES.pMaxRatioDwUp >= 1.0 or mTEPES.pIndOperReserveGen[nr] or sum(mTEPES.pOperReserveUp[p,sc,n,ar] + mTEPES.pOperReserveDw[p,sc,n,ar] for ar in a2n[nr]) == 0.0 or mTEPES.pMaxPower2ndBlock[p,sc,n,nr] == 0.0:
             return Constraint.Skip
         return OptModel.vReserveDown[p,sc,n,nr] <= OptModel.vReserveUp[p,sc,n,nr] * mTEPES.pMaxRatioDwUp
-
     setattr(OptModel, f'eReserveMaxRatioDwUp_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.nr, rule=eReserveMaxRatioDwUp, doc='maximum ratio down to up operating reserve [GW]'))
 
     if pIndLogConsole:
@@ -484,7 +477,6 @@ def GenerationOperationModelFormulationDemand(OptModel, mTEPES, pIndLogConsole, 
             return  (OptModel.vOutput2ndBlock[p,sc,n,es] + OptModel.vReserveUp[p,sc,n,es])                                        / math.sqrt(mTEPES.pEfficiency[es]) <= (OptModel.vESSInventory[p,sc,n,es] - mTEPES.pMinStorage[p,sc,n,es]) / mTEPES.pDuration[p,sc,n]()
         else:
             return ((OptModel.vOutput2ndBlock[p,sc,n,es] + OptModel.vReserveUp[p,sc,n,es]) / mTEPES.pMinPowerElec[p,sc,n,es] + 1) / math.sqrt(mTEPES.pEfficiency[es]) <= (OptModel.vESSInventory[p,sc,n,es] - mTEPES.pMinStorage[p,sc,n,es]) / mTEPES.pDuration[p,sc,n]() / mTEPES.pMinPowerElec[p,sc,n,es]
-
     setattr(OptModel, f'eReserveUpIfEnergy_{p}_{sc}_{st}', Constraint(mTEPES.nesc, rule=eReserveUpIfEnergy, doc='up   operating reserve if energy available [GW]'))
 
     if pIndLogConsole:
@@ -1049,7 +1041,6 @@ def GenerationOperationModelFormulationCommitment(OptModel, mTEPES, pIndLogConso
         if len(mTEPES.GeneratorsInHourlyGroup[group] & {nr for p,nr in mTEPES.pnr}) <= 1:
             return Constraint.Skip
         return OptModel.vTotalOutput[p,sc,n,nr]/mTEPES.pMaxPowerElec[p,sc,n,nr] <= OptModel.vMaxCommitmentHourly[p,sc,n,nr,group]
-
     setattr(OptModel, f'eMaxCommitGenHourly_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.ExclusiveGroupsHourly*mTEPES.nr, rule=eMaxCommitGenHourly, doc='maximum of all the capacity factors'))
 
     if pIndLogConsole:
