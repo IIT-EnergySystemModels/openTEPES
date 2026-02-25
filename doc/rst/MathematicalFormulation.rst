@@ -172,6 +172,7 @@ They are written in **uppercase** letters.
 :math:`PF_h`                                                       Production function from water inflows to electricity                                                                     kWh/m\ :sup:`3`
 :math:`PF'_e`                                                      Production function from electricity to hydrogen of an electrolyzer                                                       kWh/kgH2
 :math:`PF''_e`                                                     Production function from electricity to heat of a heat pump or an electrical heater                                       kWh/kWh
+:math:`PF'''_e`                                                    Production function from H2 to heat of a boiler using H2                                                                  kgH2/kWh
 :math:`PH''_g`                                                     Power to heat ratio for a CHP :math:`\frac{\overline{GP}_g - \underline{GP}_g}{\overline{GH}_g - \underline{GH}_g}`       kWh/kWh
 :math:`\underline{I}^p_{\omega ne}, \overline{I}^p_{\omega ne}`    Minimum and maximum storage of an ESS (e.g., hydropower plant, closed-/open-loop pumped-storage hydro)                    GWh
 :math:`I^p_{\omega e}`                                             Initial storage of an ESS (e.g., hydropower plant, closed-/open-loop pumped-storage hydro)                                GWh
@@ -705,7 +706,7 @@ Given that there are disjunctive constraints, which are only correct with binary
 
 Balance of hydrogen generation by electrolyzers, hydrogen consumption from the hydrogen heater using it, and demand at each node [tH2] «``eBalanceH2``». A transport model is used to model the hydrogen network.
 
-:math:`\sum_{e \in i} \frac{DUR^p_{\omega n}}{PF'_e} gc^p_{\omega ne} - \sum_{g \in i} gh^p_{\omega ng} + hns^p_{\omega ni} = DUR^p_{\omega n} DH^p_{\omega ni} + \sum_{jc} fh^p_{\omega nijc} - \sum_{jc} fh^p_{\omega njic} \quad \forall p \omega ni`
+:math:`\sum_{e \in i} \frac{DUR^p_{\omega n}}{PF'_e} gc^p_{\omega ne} - \sum_{g \in i} DUR^p_{\omega n} PF'''_e gh^p_{\omega ng} + hns^p_{\omega ni} = DUR^p_{\omega n} DH^p_{\omega ni} + \sum_{jc} fh^p_{\omega nijc} - \sum_{jc} fh^p_{\omega njic} \quad \forall p \omega ni`
 
 **Heat network operation**
 
