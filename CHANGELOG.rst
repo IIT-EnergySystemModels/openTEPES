@@ -1,6 +1,10 @@
 Change Log
 =============
 
+[4.18.16RC1] - 2025-02-23
+----------------------
+- [CHANGED]
+
 [4.18.15] - 2025-02-23
 ----------------------
 - [CHANGED] cleanup model formulation, input data, and output results to improve readability and avoid unnecessary computations

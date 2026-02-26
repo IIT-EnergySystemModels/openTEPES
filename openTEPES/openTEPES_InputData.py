@@ -676,6 +676,7 @@ def DataConfiguration(mTEPES):
         mTEPES.psneb     = Set(initialize = [(p,sc,n,eb)       for p,sc,n,eb       in mTEPES.psn*mTEPES.eb  if (p,eb)  in mTEPES.peb ])
         mTEPES.psnes     = Set(initialize = [(p,sc,n,es)       for p,sc,n,es       in mTEPES.psn*mTEPES.es  if (p,es)  in mTEPES.pes ])
         mTEPES.psneh     = Set(initialize = [(p,sc,n,eh)       for p,sc,n,eh       in mTEPES.psn*mTEPES.eh  if (p,eh)  in mTEPES.peh ])
+        mTEPES.psnel     = Set(initialize = [(p,sc,n,el)       for p,sc,n,el       in mTEPES.psn*mTEPES.el  if (p,el)  in mTEPES.peh ])
         mTEPES.psnec     = Set(initialize = [(p,sc,n,ec)       for p,sc,n,ec       in mTEPES.psn*mTEPES.ec  if (p,ec)  in mTEPES.pec ])
         mTEPES.psnnd     = Set(initialize = [(p,sc,n,nd)       for p,sc,n,nd       in mTEPES.psn*mTEPES.nd                           ])
         mTEPES.psnar     = Set(initialize = [(p,sc,n,ar)       for p,sc,n,ar       in mTEPES.psn*mTEPES.ar                           ])
