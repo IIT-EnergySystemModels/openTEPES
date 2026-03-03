@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 23, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 03, 2026
 """
 
 import time
@@ -224,14 +224,14 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         else:
             par[f'p{col}'] = dfs['dfParameter'][col].iloc[0]
 
-    par['pPeriodWeight']         = dfs['dfPeriod']       ['Weight'        ].astype('int')                          # weights of periods                        [p.u.]
-    par['pScenProb']             = dfs['dfScenario']     ['Probability'   ].astype('float64')                      # probabilities of scenarios                [p.u.]
-    par['pStageWeight']          = dfs['dfStage']        ['Weight'        ].astype('float64')                      # weights of stages
-    par['pDuration']             = dfs['dfDuration']     ['Duration'      ] * par['pTimeStep']                     # duration of load levels                   [h]
-    par['pLevelToStage']         = dfs['dfDuration']     ['Stage'         ]                                        # load levels assignment to stages
-    par['pReserveMargin']        = dfs['dfReserveMargin']['ReserveMargin' ]                                        # minimum adequacy reserve margin           [p.u.]
-    par['pEmission']             = dfs['dfEmission']     ['CO2Emission'   ]                                        # maximum CO2 emission                      [MtCO2]
-    par['pRESEnergy']            = dfs['dfRESEnergy']    ['RESEnergy'     ]                                        # minimum RES energy                        [GWh]
+    par['pPeriodWeight']         = dfs['dfPeriod']       ['Weight'        ].astype('int')                            # weights of periods                        [p.u.]
+    par['pScenProb']             = dfs['dfScenario']     ['Probability'   ].astype('float64')                        # probabilities of scenarios                [p.u.]
+    par['pStageWeight']          = dfs['dfStage']        ['Weight'        ].astype('float64')                        # weights of stages
+    par['pDuration']             = dfs['dfDuration']     ['Duration'      ] * par['pTimeStep']                       # duration of load levels                   [h]
+    par['pLevelToStage']         = dfs['dfDuration']     ['Stage'         ]                                          # load levels assignment to stages
+    par['pReserveMargin']        = dfs['dfReserveMargin']['ReserveMargin' ]                                          # minimum adequacy reserve margin           [p.u.]
+    par['pEmission']             = dfs['dfEmission']     ['CO2Emission'   ]                                          # maximum CO2 emission                      [MtCO2]
+    par['pRESEnergy']            = dfs['dfRESEnergy']    ['RESEnergy'     ]                                          # minimum RES energy                        [GWh]
     par['pDemandElec']           = dfs['dfDemand'                ].reindex(columns=mTEPES.nd, fill_value=0.0) * 1e-3 # electric demand                           [GW]
     par['pSystemInertia']        = dfs['dfInertia'               ].reindex(columns=mTEPES.ar, fill_value=0.0)        # inertia                                   [s]
     par['pOperReserveUp']        = dfs['dfOperatingReserveUp'    ].reindex(columns=mTEPES.ar, fill_value=0.0) * 1e-3 # upward   operating reserve                [GW]
@@ -2069,6 +2069,7 @@ def SettingUpVariables(OptModel, mTEPES):
         if mTEPES.pIndHydrogen:
             OptModel.vFlowH2 = Var(mTEPES.psnpa, within=Reals,            doc='pipeline flow               [tH2]')
             OptModel.vH2NS   = Var(mTEPES.psnnd, within=NonNegativeReals, doc='hydrogen not served in node [tH2]')
+            OptModel.vH2Exc  = Var(mTEPES.psnnd, within=NonNegativeReals, doc='hydrogen excess     in node [tH2]')
             [OptModel.vFlowH2  [p,sc,n,ni,nf,cc].setlb(-mTEPES.pH2PipeNTCBck[ni,nf,cc])                           for p,sc,n,ni,nf,cc in mTEPES.psnpa]
             [OptModel.vFlowH2  [p,sc,n,ni,nf,cc].setub( mTEPES.pH2PipeNTCFrw[ni,nf,cc])                           for p,sc,n,ni,nf,cc in mTEPES.psnpa]
             [OptModel.vH2NS    [p,sc,n,nd      ].setub(mTEPES.pDuration[p,sc,n]()*mTEPES.pDemandH2Abs[p,sc,n,nd]) for p,sc,n,nd       in mTEPES.psnnd]

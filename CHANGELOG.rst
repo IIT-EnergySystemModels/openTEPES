@@ -1,11 +1,11 @@
 Change Log
 =============
 
-[4.18.16RC1] - 2025-02-23
-----------------------
-- [CHANGED]
+[4.18.16RC1] - 2026-03-03
+-------------------------
+- [CHANGED] added excess of hydrogen production penalized as hydrogen not served in the objective function
 
-[4.18.15] - 2025-02-23
+[4.18.15] - 2026-02-23
 ----------------------
 - [CHANGED] cleanup model formulation, input data, and output results to improve readability and avoid unnecessary computations
 - [CHANGED] separate H2 and heat constraints in functions to improve readability
@@ -13,13 +13,13 @@ Change Log
 - [FIXED] fix eReserveUpIfEnergy and eReserveDwIfEnergy constraints
 - [CHANGED] cleanup model formulation and input data to improve readability
 
-[4.18.14] - 2025-02-06
+[4.18.14] - 2026-02-06
 ----------------------
 - [CHANGED] cleanup model formulation to avoid unnecessary computations and to improve readability
 - [FIXED] error in output results for case RTS24
 - [CHANGED] modify the generation inventory utilization for the candidate ESS to be wrt the invested storage capacity instead of the maximum storage capacity
 
-[4.18.13] - 2025-02-05
+[4.18.13] - 2026-02-05
 ----------------------
 - [CHANGED] extensive use of a2g and t2g in input, model formulation, and output modules to avoid unnecessary computations and to improve readability
 - [FIXED] errors in eMaxOutput2ndBlock and eMinOutput2ndBlock constraints when considering generators not available in some periods
@@ -27,11 +27,11 @@ Change Log
 - [CHANGED] detect technologies not declared in the technology dictionary
 - [CHANGED] reduce interior point method tolerance for gurobi solver
 
-[4.18.12] - 2025-01-28
+[4.18.12] - 2026-01-28
 ----------------------
 - [CHANGED] reduce computation time in output results
 
-[4.18.10] - 2025-01-25
+[4.18.10] - 2026-01-25
 ----------------------
 - [CHANGED] avoid formulation of superfluous eTotalOutput constraints and fix additional vTotalOutput variable
 - [FIXED] errors in writing results to duckdb database
@@ -39,13 +39,13 @@ Change Log
 - [FIXED] errors in eMaxOutput2ndBlock and eMinOutput2ndBlock equations
 - [CHANGED] clean up some output results
 
-[4.18.9] - 2025-01-22
+[4.18.9] - 2026-01-22
 ---------------------
 - [CHANGED] increase solution time limit for some solvers
 - [FIXED] errors in OutputResults module for considering generators not available in some periods
 - [CHANGED] add output results to DuckDB database
 
-[4.18.8] - 2025-01-19
+[4.18.8] - 2026-01-19
 ---------------------
 - [CHANGED] detect error of ESS unit with maximum charge and no maximum storage
 - [CHANGED] create output files for ramp revenues
