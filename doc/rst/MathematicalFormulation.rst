@@ -343,7 +343,7 @@ Expected network operation cost [M€]. This cost penalizes with and :math:`\eps
 
 Electricity, hydrogen, and heat expected reliability cost [M€] «``eTotalRCost``»
 
-:math:`\sum_{p \omega ni}{DF^p P^p_{\omega} DUR^p_{\omega n} CENS  ens^p_{\omega ni}} + \sum_{p \omega ni}{DF^p P^p_{\omega} CHNS (hns^p_{\omega ni}+hex^p_{\omega ni})} + \sum_{p \omega ni}{DF^p P^p_{\omega} DUR^p_{\omega n} CHtNS htns^p_{\omega ni}}`
+:math:`\sum_{p \omega ni}{DF^p P^p_{\omega} DUR^p_{\omega n} CENS \; ens^p_{\omega ni}} + \sum_{p \omega ni}{DF^p P^p_{\omega} CHNS (hns^p_{\omega ni}+hex^p_{\omega ni})} + \sum_{p \omega ni}{DF^p P^p_{\omega} DUR^p_{\omega n} CHtNS \; htns^p_{\omega ni}}`
 
 All the periodical (annual) costs of a period :math:`p` are updated considering that the period (e.g., 2030) is replicated for a number of years defined by its weight :math:`WG^p` (e.g., 5 times) and discounted to the base year :math:`T` (e.g., 2020) with this discount factor :math:`DF^p = \frac{(1+\delta)^{WG^p}-1}{\delta(1+\delta)^{WG^p-1+p-T}}`.
 
