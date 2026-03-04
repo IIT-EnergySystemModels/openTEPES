@@ -341,7 +341,7 @@ Expected network operation cost [M€]. This cost penalizes with and :math:`\eps
 
 :math:`\sum_{p \omega nijc}{DF^p P^p_{\omega} DUR^p_{\omega n} \epsilon l^p_{\omega nijc}} +`
 
-Electricity, hydrogen, and heat expected reliability cost [M€] «``eTotalRCost``»
+Electricity, hydrogen, and heat expected reliability cost [M€] «``eTotalRElecCost``, ``eTotalRH2Cost``, ``eTotalRHeatCost``»
 
 :math:`\sum_{p \omega ni}{DF^p P^p_{\omega} DUR^p_{\omega n} CENS \; ens^p_{\omega ni}} + \sum_{p \omega ni}{DF^p P^p_{\omega} CHNS (hns^p_{\omega ni}+hex^p_{\omega ni})} + \sum_{p \omega ni}{DF^p P^p_{\omega} DUR^p_{\omega n} CHtNS \; htns^p_{\omega ni}}`
 
