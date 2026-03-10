@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.18.16RC1] - 2026-03-03
+[4.18.16RC1] - 2026-03-10
 -------------------------
+- [FIXED] fix computation of SRMC for hydrogen balance equation
 - [CHANGED] added excess of hydrogen production penalized as hydrogen not served in the objective function
 
 [4.18.15] - 2026-02-23

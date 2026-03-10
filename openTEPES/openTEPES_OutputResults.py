@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 23, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 10, 2026
 """
 
 import time
@@ -1920,7 +1920,7 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES, pIndPlotOutput):
 
         #%% outputting the LSRMC of H2
         sPSSTNND      = [(p,sc,st,n,nd) for p,sc,st,n,nd in mTEPES.s2n*mTEPES.nd if sum(1 for el in e2n[nd]) + sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd]) and (p,sc,n) in mTEPES.psn]
-        OutputResults = pd.Series(data=[mTEPES.pDuals["".join([f"eBalanceH2_{p}_{sc}_{st}('{n}', '{nd}')"])]/mTEPES.pPeriodProb[p,sc]()/mTEPES.pLoadLevelDuration[p,sc,n]() for p,sc,st,n,nd in sPSSTNND], index=pd.Index(sPSSTNND))
+        OutputResults = pd.Series(data=[mTEPES.pDuals["".join([f"eBalanceH2_{p}_{sc}_{st}('{n}', '{nd}')"])]/mTEPES.pPeriodProb[p,sc]() for p,sc,st,n,nd in sPSSTNND], index=pd.Index(sPSSTNND))
         OutputResults *= 1e3
         OutputResults.to_frame(name='LSRMCH2').reset_index().pivot_table(index=['level_0','level_1','level_3'], columns='level_4', values='LSRMCH2').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(f'{_path}/oT_Result_NetworkSRMCH2_{CaseName}.csv', sep=',')
 
