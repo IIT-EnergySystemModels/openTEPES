@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 03, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 10, 2026
 """
 
 import time
@@ -1569,11 +1569,11 @@ def DataConfiguration(mTEPES):
         mTEPES.pDemandHeat     = Param(mTEPES.psnnd, initialize=mTEPES.dPar['pDemandHeat'].to_dict()   ,  within=NonNegativeReals,    doc='Heat demand per hour'    )
         mTEPES.pDemandHeatAbs  = Param(mTEPES.psnnd, initialize=mTEPES.dPar['pDemandHeatAbs'].to_dict(),  within=NonNegativeReals,    doc='Heat demand'             )
 
-    mTEPES.pLoadLevelDuration = Param(mTEPES.psn,   initialize=0                        ,  within=NonNegativeIntegers, doc='Load level duration', mutable=True)
+    mTEPES.pLoadLevelDuration = Param(mTEPES.psn,   initialize=0.0                                     ,  within=NonNegativeReals,    doc='Load level duration', mutable=True)
     for p,sc,n in mTEPES.psn:
-        mTEPES.pLoadLevelDuration[p,sc,n] = mTEPES.pLoadLevelWeight[p,sc,n]() * mTEPES.pDuration[p,sc,n]()
+        mTEPES.pLoadLevelDuration[p,sc,n] = float(mTEPES.pLoadLevelWeight[p,sc,n]() * mTEPES.pDuration[p,sc,n]())
 
-    mTEPES.pPeriodProb         = Param(mTEPES.ps,    initialize=0.0                     ,  within=NonNegativeReals,   doc='Period probability',  mutable=True)
+    mTEPES.pPeriodProb         = Param(mTEPES.ps,    initialize=0.0                                    ,  within=NonNegativeReals,   doc='Period probability',  mutable=True)
     for p,sc in mTEPES.ps:
         # periods and scenarios are going to be solved together with their weight and probability
         mTEPES.pPeriodProb[p,sc] = mTEPES.pPeriodWeight[p] * mTEPES.pScenProb[p,sc]
@@ -1633,6 +1633,7 @@ def DataConfiguration(mTEPES):
 
     # load levels multiple of cycles for each ESS/generator
     mTEPES.nesc         = [(n,es) for n,es in mTEPES.n*mTEPES.es if mTEPES.n.ord(n) % mTEPES.pStorageTimeStep [es] == 0]
+    mTEPES.nesl         = [(n,el) for n,el in mTEPES.n*mTEPES.el if mTEPES.n.ord(n) % mTEPES.pStorageTimeStep [el] == 0]
     mTEPES.necc         = [(n,ec) for n,ec in mTEPES.n*mTEPES.ec if mTEPES.n.ord(n) % mTEPES.pStorageTimeStep [ec] == 0]
     mTEPES.neso         = [(n,es) for n,es in mTEPES.n*mTEPES.es if mTEPES.n.ord(n) % mTEPES.pOutflowsTimeStep[es] == 0]
     mTEPES.ngen         = [(n,g ) for n,g  in mTEPES.n*mTEPES.g  if mTEPES.n.ord(n) % mTEPES.pEnergyTimeStep  [g ] == 0]
