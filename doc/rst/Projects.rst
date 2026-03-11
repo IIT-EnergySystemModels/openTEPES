@@ -35,7 +35,7 @@ The model has been used in these research projects:
     It aims to develop a tool focused on determining the evolution of prices in the Spanish peninsular electricity system market from 2023 to 2050.
 
 - `Day-ahead market price simulation tool (HESIME) <https://www.iit.comillas.edu/publicacion/proyecto/en/HESIME/Herramienta_para_la_simulaci%c3%b3n_del_precio_del_mercado_diario_a_futuro>`_, developed for the **Ministry of Science and Innovation/State Research Agency** (MICIN/AEI/10.13039/501100011033) under the program **Public-Private Partnerships** with **NextGenerationEU/PRTR** funds (CPP2022-009809). April 2023 - March 2026.
-  `L. Olmos <https://www.iit.comillas.edu/people/olmos>`_, `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `S. Gómez Sánchez <https://www.iit.comillas.edu/people/sgomez>`_
+  `L. Olmos <https://www.iit.comillas.edu/people/olmos>`_, `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_, `S. Gómez Sánchez <https://www.iit.comillas.edu/people/sgomez>`_, `F. Labora <https://www.iit.comillas.edu/people/flabora>`_
 
 .. image:: ../img/ColabPP.jpg
    :scale: 30%
