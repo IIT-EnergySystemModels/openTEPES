@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - February 13, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 13, 2026
 """
 
 import time
@@ -82,7 +82,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
 
     if nUnfixedVars == 0:
         OptModel.dual = Suffix(direction=Suffix.IMPORT_EXPORT)
-        OptModel.rc   = Suffix(direction=Suffix.IMPORT_EXPORT)
+        # OptModel.rc   = Suffix(direction=Suffix.IMPORT_EXPORT)
 
     if SolverName == 'gams':
         SolverResults = Solver.solve(OptModel, tee=True, report_timing=True, symbolic_solver_labels=False, add_options=solver_options, logfile=FileName)
@@ -140,7 +140,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
 
     if nUnfixedVars > 0:
         OptModel.dual = Suffix(direction=Suffix.IMPORT_EXPORT)
-        OptModel.rc   = Suffix(direction=Suffix.IMPORT_EXPORT)
+        # OptModel.rc   = Suffix(direction=Suffix.IMPORT_EXPORT)
         SolverResults = Solver.solve(OptModel, tee=True, report_timing=True)
 
     # saving the dual variables for writing in output results
@@ -165,7 +165,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
 
     # delete dual and rc suffixes
     OptModel.del_component(OptModel.dual)
-    OptModel.del_component(OptModel.rc  )
+    # OptModel.del_component(OptModel.rc  )
 
     SolvingTime = time.time() - StartTime
 

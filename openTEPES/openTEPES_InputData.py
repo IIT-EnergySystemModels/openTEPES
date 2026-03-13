@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 10, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 13, 2026
 """
 
 import time
@@ -1425,6 +1425,7 @@ def DataConfiguration(mTEPES):
 
     mTEPES.pENSCost              = Param(initialize=mTEPES.dPar['pENSCost']            , within=NonNegativeReals,    doc='ENS cost'                                           )
     mTEPES.pH2NSCost             = Param(initialize=mTEPES.dPar['pHNSCost']            , within=NonNegativeReals,    doc='HNS cost'                                           )
+    mTEPES.pH2ExcCost            = Param(initialize=mTEPES.dPar['pHNSCost']*0.1        , within=NonNegativeReals,    doc='H2 excess cost'                                     )
     mTEPES.pHeatNSCost           = Param(initialize=mTEPES.dPar['pHTNSCost']           , within=NonNegativeReals,    doc='HTNS cost'                                          )
     mTEPES.pCO2Cost              = Param(initialize=mTEPES.dPar['pCO2Cost']            , within=NonNegativeReals,    doc='CO2 emission cost'                                  )
     mTEPES.pAnnualDiscRate       = Param(initialize=mTEPES.dPar['pAnnualDiscountRate'] , within=UnitInterval,        doc='Annual discount rate'                               )
