@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 13, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 16, 2026
 """
 
 import time
@@ -535,6 +535,8 @@ def DataConfiguration(mTEPES):
     for ni,nf,cc in mTEPES.ln:
         if ni not in mTEPES.nd or nf not in mTEPES.nd or cc not in mTEPES.cc:
             raise ValueError(f'### Line {ni} {nf} {cc} has a node or a circuit not defined in the corresponding dictionary.')
+        if ni == nf:
+            raise ValueError(f'### Line {ni} {nf} {cc} has equal initial and final nodes.')
     if len(mTEPES.ln) != len(mTEPES.dFrame['dfNetwork'].index):
         raise ValueError('### Some electric lines are invalid (not having reactance) ', len(mTEPES.ln), len(mTEPES.dFrame['dfNetwork'].index))
     mTEPES.la     = Set(doc='all real        electric lines'   , initialize=[ln     for ln   in mTEPES.ln if mTEPES.dPar['pLineX']              [ln] != 0.0 and mTEPES.dPar['pLineNTCFrw'][ln] > 0.0 and mTEPES.dPar['pLineNTCBck'][ln] > 0.0 and mTEPES.dPar['pElecNetPeriodIni'][ln]  <= mTEPES.p.last() and mTEPES.dPar['pElecNetPeriodFin'][ln]  >= mTEPES.p.first()])
