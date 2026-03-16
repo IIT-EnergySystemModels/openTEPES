@@ -57,11 +57,12 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
         if os.path.exists(FileName):
             os.remove(FileName)
         Solver.options['log_file'               ] = f'{_path}/openTEPES_highs_{CaseName}_{p}_{sc}_{st}.log'
-        Solver.options['solver'                 ] = 'simplex'
-        Solver.options['simplex_strategy'       ] = 3
+        Solver.options['solver'                 ] = 'choose'
+        Solver.options['simplex_strategy'       ] = 0
         Solver.options['run_crossover'          ] = 'on'
         Solver.options['mip_rel_gap'            ] = 0.01
-        Solver.options['parallel'               ] = 'on'
+        Solver.options['parallel'               ] = 'choose'
+        # Solver.options['primal_feasibility_tolerance'] = 1e-3
         Solver.options['threads'                ] = int((psutil.cpu_count(logical=True) + psutil.cpu_count(logical=False))/2)
         Solver.options['time_limit'             ] =    72000
         Solver.options['simplex_iteration_limit'] = 72000000
