@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 13, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 17, 2026
 """
 
 import time
@@ -22,11 +22,12 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
         FileName = f'{_path}/openTEPES_gurobi_{CaseName}_{p}_{sc}_{st}.log'
         if os.path.exists(FileName):
             os.remove(FileName)
+        Solver.options['OutputFlag'      ] = 1                                                 # suppress log file
         Solver.options['LogFile'         ] = f'{_path}/openTEPES_gurobi_{CaseName}_{p}_{sc}_{st}.log'
-        # Solver.options['OutputFlag'    ] = 0                                                 # suppress log file
         # Solver.options['SolutionTarget'] = 1                                                 # optimal solution with or without basic solutions
         Solver.options['Method'          ] = 2                                                 # barrier method
         Solver.options['Crossover'       ] = -1
+        Solver.options['DisplayInterval' ] = 100
         # Solver.options['MIPFocus'      ] = 3
         # Solver.options['Seed'          ] = 104729
         # Solver.options['Presolve'      ] = 2
@@ -95,7 +96,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
         log_infeasible_constraints(OptModel, log_expression=True, log_variables=True)
         logging.basicConfig(filename=f'{_path}/openTEPES_infeasibilities_{CaseName}_{p}_{sc}_{st}.log', level=logging.INFO)
         raise ValueError(f'### Problem infeasible for period {p}, scenario {sc}, stage {st}')
-    SolverResults.write()                                                              # summary of the solver results
+    # SolverResults.write()                                                              # summary of the solver results
 
     #%% fix values of some variables to get duals and solve it again
     # binary/continuous investment decisions are fixed to their optimal values
