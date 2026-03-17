@@ -660,7 +660,7 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
         print('eChargeDischarge          ... ', len(getattr(OptModel, f'eChargeDischarge_{p}_{sc}_{st}')), ' rows')
 
     def eESSTotalCharge(OptModel,n,eh):
-        # Check if generator is available in the period
+        # Check if the generator is available in the period
         # Constraint only applies to generators with charging capabilities
         if (p,eh) not in mTEPES.peh or mTEPES.pMaxCharge2ndBlock[p,sc,n,eh] == 0.0:
             return Constraint.Skip
@@ -674,7 +674,7 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
                 return OptModel.vESSTotalCharge[p,sc,n,eh] / mTEPES.pMinCharge[p,sc,n,eh] == 1.0 + (OptModel.vCharge2ndBlock[p,sc,n,eh] + mTEPES.pDwReserveActivation * OptModel.vESSReserveDown[p,sc,n,eh] - mTEPES.pUpReserveActivation * OptModel.vESSReserveUp[p,sc,n,eh]) / mTEPES.pMinCharge[p,sc,n,eh]
         # Hydro generator
         else:
-            # Check minimum charge to avoid dividing by 0. Dividing by MinCharge is more numerically stable
+            # Check the minimum charge to avoid dividing by 0. Dividing by MinCharge is more numerically stable
             if mTEPES.pMinCharge[p,sc,n,eh] == 0.0:
                 return OptModel.vESSTotalCharge[p,sc,n,eh]                                ==                                        OptModel.vCharge2ndBlock[p,sc,n,eh] + mTEPES.pDwReserveActivation * OptModel.vESSReserveDown[p,sc,n,eh] - mTEPES.pUpReserveActivation * OptModel.vESSReserveUp[p,sc,n,eh]
             else:
