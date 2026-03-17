@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 16, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 17, 2026
 """
 
 import time
@@ -2151,7 +2151,7 @@ def SettingUpVariables(OptModel, mTEPES):
                         OptModel.vRampReserveDw[p,sc,n,nr].fix(0.0)
                         nFixedVariables += 2
 
-            if  mTEPES.pIndOperReserveGen[nr] == 1 or mTEPES.pMaxPower2ndBlock [p,sc,n,nr] == 0.0:
+            if  mTEPES.pIndOperReserveGen[nr] or mTEPES.pMaxPower2ndBlock [p,sc,n,nr] == 0.0:
                 OptModel.vReserveUp  [p,sc,n,nr].fix(0.0)
                 OptModel.vReserveDown[p,sc,n,nr].fix(0.0)
                 nFixedVariables += 2
@@ -2179,7 +2179,7 @@ def SettingUpVariables(OptModel, mTEPES):
             if  mTEPES.pMaxCharge2ndBlock[p,sc,n,es] ==  0.0:
                 OptModel.vCharge2ndBlock [p,sc,n,es].fix(0.0)
                 nFixedVariables += 1
-            if  mTEPES.pMaxCharge2ndBlock[p,sc,n,es] ==  0.0 or mTEPES.pIndOperReserveCon[es]:
+            if  mTEPES.pIndOperReserveCon[es] or mTEPES.pMaxCharge2ndBlock[p,sc,n,es] == 0.0:
                 OptModel.vESSReserveUp   [p,sc,n,es].fix(0.0)
                 OptModel.vESSReserveDown [p,sc,n,es].fix(0.0)
                 nFixedVariables += 2
@@ -2198,7 +2198,7 @@ def SettingUpVariables(OptModel, mTEPES):
                 if  mTEPES.pMaxCharge2ndBlock[p,sc,n,h ] ==  0.0:
                     OptModel.vCharge2ndBlock [p,sc,n,h ].fix(0.0)
                     nFixedVariables += 1
-                if  mTEPES.pMaxCharge2ndBlock[p,sc,n,h ] ==  0.0 or mTEPES.pIndOperReserveCon[h ]:
+                if  mTEPES.pIndOperReserveCon[h ] or mTEPES.pMaxCharge2ndBlock[p,sc,n,h ] == 0.0:
                     OptModel.vESSReserveUp   [p,sc,n,h ].fix(0.0)
                     OptModel.vESSReserveDown [p,sc,n,h ].fix(0.0)
                     nFixedVariables += 2
