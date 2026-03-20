@@ -30,7 +30,7 @@ The objective function includes two main quantifiable costs: **investment costs 
 The model formulates a **two-stage stochastic optimization** problem that includes binary generation, storage, and electricity; hydrogen and heat network investment/retirement decisions; generation operation decisions (commitment, startup, and shutdown decisions are also binary); and electric line-switching decisions.
 Capacity expansion considers the adequacy system reserve margin, maximum CO2 emissions, and minimum and maximum energy constraints.
 
-The highly detailed operational model is an electric network-constrained unit commitment (NCUC) based on a tight, compact formulation that includes operating reserves and electric line-switching decisions via DC power flow (DCPF).
+The highly detailed operational model is an electric **network-constrained unit commitment (NCUC)** based on a tight, compact formulation that includes operating reserves and electric line-switching decisions via **DC power flow (DCPF)**.
 **Ohmic losses** in the electrical network are assumed to be proportional to the electrical line flow. It considers various **energy storage systems (ESS)**, including pumped-hydro storage, batteries, demand response, electric vehicles, solar thermal, and electrolyzers.
 
 The model also allows a representation of the **hydro system** based on volume and water inflow data, considering the water stream topology (**hydro cascade basins**). If they are unavailable, it runs using an energy-based representation of the hydro system.

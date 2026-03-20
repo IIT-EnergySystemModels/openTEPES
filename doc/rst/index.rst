@@ -49,6 +49,7 @@ Index
    :maxdepth: 2
    
    Introduction.rst
+   Characteristics.rst
    InputData.rst
    OutputResults.rst
    MathematicalFormulation.rst
