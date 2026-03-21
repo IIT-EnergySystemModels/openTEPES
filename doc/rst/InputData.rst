@@ -36,7 +36,6 @@ EV          Electric Vehicle
 FCE         Firm Capacity Equivalent (amount of reliable, always-available generation capacity that would provide the same level of system reliability as the resource being evaluated)
 FHU         Fuel Heating Unit (Fuel to Heat: consumes any fuel other than hydrogen to produce heat, e.g., biomass/natural gas/oil boiler)
 GEP         Generation Expansion Planning
-mFRR        Manual Frequency Restoration Reserve (a.k.a. tertiary reserve) helps to restore the required grid frequency of 50 Hz. It must be fully deployable after 12.5 minutes and has a minimum duration period of 5 minutes
 H2          Hydrogen
 HHU         Hydrogen Heating unit (Hydrogen to Heat: consumes hydrogen to produce heat)
 HNS         Hydrogen Not Served
@@ -44,6 +43,7 @@ HP          Heat Pump (Power to Heat: consumes electricity to produce heat)
 HTNS        Heat Not Served
 IRP         Integrated Resource Planning
 LCOE        Levelized Cost of Electricity
+mFRR        Manual Frequency Restoration Reserve (a.k.a. tertiary reserve) helps to restore the required grid frequency of 50 Hz. It must be fully deployable after 12.5 minutes and has a minimum duration period of 5 minutes
 NTC         Net Transfer Capacity (maximum power transfer between two nodes, zones, areas, or regions, considering the network constraints)
 OCGT        Open Cycle Gas Turbine
 PHS         Pumped-Hydro Storage
