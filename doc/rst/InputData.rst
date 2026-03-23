@@ -454,6 +454,7 @@ Fuel heating unit, fuel boiler          It has RatedMaxPowerElec =0  and RatedMa
 Hydrogen heating unit                   Fuel heating unit with ProductionFunctionH2ToHeat >0                                                                                 *hh*
 Hydro power plant (water)               It has ProductionFunctionHydro >0                                                                                                    *h*
 --------------------------------------  -----------------------------------------------------------------------------------------------------------------------------------  ----------
+--------------------------------------  -----------------------------------------------------------------------------------------------------------------------------------  ----------
 Reservoir (water)                       It has water volume                                                                                                                  *rs*
 ======================================  ===================================================================================================================================  ==========
 
@@ -479,7 +480,7 @@ Must-run non-renewable units are always committed, i.e., their commitment decisi
 
 EFOR is used to reduce the maximum and minimum power of the unit. For hydropower plants, it can be used to reduce their maximum power by the water head effect. It does not reduce the maximum charge.
 
-Those generators or ESS with fixed cost >0  are considered candidates and can be installed. The fixed cost is the product of the overnight investment cost (FixedInvestmentCost) and the fixed charge rate (FixedChargeRate).
+Those generators or ESS with fixed cost >0 are considered candidates and can be installed. The fixed cost is the product of the overnight investment cost (FixedInvestmentCost) and the fixed charge rate (FixedChargeRate).
 
 Maximum, minimum, and initial storage values are considered proportional to the invested capacity for the candidate ESS units if StorageInvestment is activated (Yes). This can be used for battery investment decisions where the investment can be continuous (StorageInvestment=Yes). For a particular hydro storage investment the dam investment is linked to this particular hydro and can't be made proportional (StorageInvestment=No).
 
@@ -490,6 +491,12 @@ A generator can be restricted to only be able to provide reserves while generati
 If the lower and upper bounds of investment/retirement decisions are very close (with a difference <1e-3) to 0 or 1, they are converted into 0 and 1.
 
 A hydrogen import can be represented by means of an electric generator with variable cost equal to the import cost and an electrolyzer with a production function ProductionFunctionH2 equal to 1. This generator must be located in an isolated electricity network (from the main one) and the electrolyzer must be located in a node linking this isolated electricity network and the hydrogen network.
+
+A summary of the main characteristics of the different types of hydro and ESS is shown in the following figure:
+
+.. image:: ../imgHydroAndESS.png
+   :scale: 40%
+   :align: center
 
 Variable maximum and minimum generation
 ---------------------------------------
