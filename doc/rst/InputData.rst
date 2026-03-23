@@ -453,7 +453,7 @@ CHP or fuel heating unit                It has RatedMaxPowerElec >0  and RatedMa
 Fuel heating unit, fuel boiler          It has RatedMaxPowerElec =0  and RatedMaxPowerHeat >0  and ProductionFunctionHeat =0                                                 *bo*
 Hydrogen heating unit                   Fuel heating unit with ProductionFunctionH2ToHeat >0                                                                                 *hh*
 Hydro power plant (water)               It has ProductionFunctionHydro >0                                                                                                    *h*
-======================================  ===================================================================================================================================  ==========
+--------------------------------------  -----------------------------------------------------------------------------------------------------------------------------------  ----------
 Reservoir (water)                       It has water volume                                                                                                                  *rs*
 ======================================  ===================================================================================================================================  ==========
 
