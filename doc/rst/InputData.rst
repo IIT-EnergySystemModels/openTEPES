@@ -494,7 +494,7 @@ A hydrogen import can be represented by means of an electric generator with vari
 
 A summary of the main characteristics of the different types of hydro and ESS is shown in the following figure:
 
-.. image:: ../imgHydroAndESS.png
+.. image:: ../img/HydroAndESS.png
    :scale: 40%
    :align: center
 
