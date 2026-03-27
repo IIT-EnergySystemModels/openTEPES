@@ -660,7 +660,7 @@
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <https://www.gnu.org/licenses/>.
 
-# Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 13, 2026
+# Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 27, 2026
 # simplicity and transparency in power systems planning
 
 # Developed by
@@ -693,7 +693,7 @@ GREEN  = "\033[32m"
 BLUE   = "\033[34m"
 RESET  = "\033[0m"
 
-print(GREEN + 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.16RC1 - March 13, 2026' + RESET)
+print(GREEN + 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.16RC1 - March 27, 2026' + RESET)
 print(BLUE  + '#### Academic research license - for non-commercial use only ####' + RESET + '\n')
 
 parser = argparse.ArgumentParser(description='Introducing main parameters...')
@@ -705,7 +705,7 @@ parser.add_argument('--result', type=str, default=None)
 
 DIR    = os.path.dirname(__file__)
 CASE   = '9n'
-SOLVER = 'highs' # 'gams', 'appsi_highs', 'gurobi'
+SOLVER = 'highs' # 'gams', 'appsi_highs', 'gurobi', 'appsi_gurobi'
 RESULT = 'Yes'
 LOG    = 'No'
 

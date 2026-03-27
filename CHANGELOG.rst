@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.18.16RC1] - 2026-03-16
+[4.18.16RC1] - 2026-03-27
 -------------------------
+- [CHANGED] introduced appsi_gurobi as solver
 - [CHANGED] changed HiGHS options
 - [CHANGED] detection of lines with same initial and final nodes
 - [FIXED] fix computation of SRMC for hydrogen balance equation
