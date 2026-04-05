@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 13, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 05, 2026
 """
 
 import time
@@ -1278,7 +1278,7 @@ def NetworkSwitchingModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st
     StartTime = time.time()
 
     def eLineStateCand(OptModel,n,ni,nf,cc):
-        if mTEPES.pIndBinSingleNode():
+        if mTEPES.pIndBinSingleNode() or (p,ni,nf,cc) not in mTEPES.plc:
             return Constraint.Skip
         if mTEPES.pIndBinLineSwitch[ni,nf,cc]:
             return OptModel.vLineCommit[p,sc,n,ni,nf,cc] <= OptModel.vNetworkInvest[p,ni,nf,cc]
@@ -1290,7 +1290,7 @@ def NetworkSwitchingModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st
         print('eLineStateCand            ... ', len(getattr(OptModel, f'eLineStateCand_{p}_{sc}_{st}')), ' rows')
 
     def eSWOnOff(OptModel,n,ni,nf,cc):
-        if mTEPES.pIndBinSingleNode() or mTEPES.pIndBinLineSwitch[ni,nf,cc] == 0 or (mTEPES.pSwOnTime[ni,nf,cc] <= 1 and mTEPES.pSwOffTime[ni,nf,cc] <= 1):
+        if mTEPES.pIndBinSingleNode() or mTEPES.pIndBinLineSwitch[ni,nf,cc] == 0 or (p,ni,nf,cc) not in mTEPES.pla or (mTEPES.pSwOnTime[ni,nf,cc] <= 1 and mTEPES.pSwOffTime[ni,nf,cc] <= 1):
             return Constraint.Skip
         if n == mTEPES.n.first():
             return OptModel.vLineCommit[p,sc,n,ni,nf,cc] - mTEPES.pInitialSwitch[p,sc,n,ni,nf,cc]()             == OptModel.vLineOnState[p,sc,n,ni,nf,cc] - OptModel.vLineOffState[p,sc,n,ni,nf,cc]
@@ -1302,7 +1302,7 @@ def NetworkSwitchingModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st
         print('eSWOnOff                  ... ', len(getattr(OptModel, f'eSWOnOff_{p}_{sc}_{st}')), ' rows')
 
     def eMinSwOnState(OptModel,n,ni,nf,cc):
-        if mTEPES.pIndBinSingleNode() or mTEPES.pIndBinLineSwitch[ni,nf,cc] == 0 or mTEPES.pSwOnTime [ni,nf,cc] <= 1 or mTEPES.n.ord(n) < mTEPES.pSwOnTime [ni,nf,cc]:
+        if mTEPES.pIndBinSingleNode() or mTEPES.pIndBinLineSwitch[ni,nf,cc] == 0 or (p,ni,nf,cc) not in mTEPES.pla or mTEPES.pSwOnTime [ni,nf,cc] <= 1 or mTEPES.n.ord(n) < mTEPES.pSwOnTime [ni,nf,cc]:
             return Constraint.Skip
         return sum(OptModel.vLineOnState [p,sc,n2,ni,nf,cc] for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pSwOnTime [ni,nf,cc]:mTEPES.n.ord(n)]) <=    OptModel.vLineCommit[p,sc,n,ni,nf,cc]
     setattr(OptModel, f'eMinSwOnState_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.la, rule=eMinSwOnState, doc='minimum switch on state [h]'))
@@ -1311,7 +1311,7 @@ def NetworkSwitchingModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st
         print('eMinSwOnState             ... ', len(getattr(OptModel, f'eMinSwOnState_{p}_{sc}_{st}')), ' rows')
 
     def eMinSwOffState(OptModel,n,ni,nf,cc):
-        if mTEPES.pIndBinSingleNode() or mTEPES.pIndBinLineSwitch[ni,nf,cc] == 0 or mTEPES.pSwOffTime[ni,nf,cc] <= 1 or mTEPES.n.ord(n) < mTEPES.pSwOffTime[ni,nf,cc]:
+        if mTEPES.pIndBinSingleNode() or mTEPES.pIndBinLineSwitch[ni,nf,cc] == 0 or (p,ni,nf,cc) not in mTEPES.pla or mTEPES.pSwOffTime[ni,nf,cc] <= 1 or mTEPES.n.ord(n) < mTEPES.pSwOffTime[ni,nf,cc]:
             return Constraint.Skip
         return sum(OptModel.vLineOffState[p,sc,n2,ni,nf,cc] for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pSwOffTime[ni,nf,cc]:mTEPES.n.ord(n)]) <= 1 - OptModel.vLineCommit[p,sc,n,ni,nf,cc]
     setattr(OptModel, f'eMinSwOffState_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.la, rule=eMinSwOffState, doc='minimum switch off state [h]'))
@@ -1331,7 +1331,7 @@ def NetworkOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st
     StartTime = time.time()
 
     def eNetCapacity1(OptModel,n,ni,nf,cc):
-        if mTEPES.pIndBinSingleNode() or ((ni,nf,cc) not in mTEPES.lc and mTEPES.pIndBinLineSwitch[ni,nf,cc] == 0):
+        if mTEPES.pIndBinSingleNode() or (p,ni,nf,cc) not in mTEPES.pla or ((ni,nf,cc) not in mTEPES.lc and mTEPES.pIndBinLineSwitch[ni,nf,cc] == 0):
             return Constraint.Skip
         return OptModel.vFlowElec[p,sc,n,ni,nf,cc] / mTEPES.pMaxNTCMax[p,sc,n,ni,nf,cc] >= - OptModel.vLineCommit[p,sc,n,ni,nf,cc]
     setattr(OptModel, f'eNetCapacity1_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.la, rule=eNetCapacity1, doc='maximum flow by existing network capacity [p.u.]'))
@@ -1340,7 +1340,7 @@ def NetworkOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st
         print('eNetCapacity1             ... ', len(getattr(OptModel, f'eNetCapacity1_{p}_{sc}_{st}')), ' rows')
 
     def eNetCapacity2(OptModel,n,ni,nf,cc):
-        if mTEPES.pIndBinSingleNode() or ((ni,nf,cc) not in mTEPES.lc and mTEPES.pIndBinLineSwitch[ni,nf,cc] == 0):
+        if mTEPES.pIndBinSingleNode() or (p,ni,nf,cc) not in mTEPES.pla or ((ni,nf,cc) not in mTEPES.lc and mTEPES.pIndBinLineSwitch[ni,nf,cc] == 0):
             return Constraint.Skip
         return OptModel.vFlowElec[p,sc,n,ni,nf,cc] / mTEPES.pMaxNTCMax[p,sc,n,ni,nf,cc] <=   OptModel.vLineCommit[p,sc,n,ni,nf,cc]
     setattr(OptModel, f'eNetCapacity2_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.la, rule=eNetCapacity2, doc='maximum flow by existing network capacity [p.u.]'))
@@ -1370,7 +1370,7 @@ def NetworkOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st
         print('eKirchhoff2ndLaw2         ... ', len(getattr(OptModel, f'eKirchhoff2ndLaw2_{p}_{sc}_{st}')), ' rows')
 
     def eLineLosses1(OptModel,n,ni,nf,cc):
-        if mTEPES.pIndBinSingleNode() or mTEPES.pIndPTDF or mTEPES.pIndBinNetLosses() == 0 or (ni,nf,cc) not in mTEPES.ll or (p,ni,nf,cc) not in mTEPES.pll:
+        if mTEPES.pIndBinSingleNode() or mTEPES.pIndPTDF or mTEPES.pIndBinNetLosses() == 0 or (p,ni,nf,cc) not in mTEPES.pll:
             return Constraint.Skip
         return OptModel.vLineLosses[p,sc,n,ni,nf,cc] >= - 0.5 * mTEPES.pLineLossFactor[ni,nf,cc] * OptModel.vFlowElec[p,sc,n,ni,nf,cc]
     setattr(OptModel, f'eLineLosses1_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.ll, rule=eLineLosses1, doc='ohmic losses for all the lines [GW]'))
@@ -1379,7 +1379,7 @@ def NetworkOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st
         print('eLineLosses1              ... ', len(getattr(OptModel, f'eLineLosses1_{p}_{sc}_{st}')), ' rows')
 
     def eLineLosses2(OptModel,n,ni,nf,cc):
-        if mTEPES.pIndBinSingleNode() or mTEPES.pIndPTDF or mTEPES.pIndBinNetLosses() == 0 or (ni,nf,cc) not in mTEPES.ll or (p,ni,nf,cc) not in mTEPES.pll:
+        if mTEPES.pIndBinSingleNode() or mTEPES.pIndPTDF or mTEPES.pIndBinNetLosses() == 0 or (p,ni,nf,cc) not in mTEPES.pll:
             return Constraint.Skip
         return OptModel.vLineLosses[p,sc,n,ni,nf,cc] >=   0.5 * mTEPES.pLineLossFactor[ni,nf,cc] * OptModel.vFlowElec[p,sc,n,ni,nf,cc]
     setattr(OptModel, f'eLineLosses2_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.ll, rule=eLineLosses2, doc='ohmic losses for all the lines [GW]'))
@@ -1404,7 +1404,7 @@ def NetworkOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st
     setattr(OptModel, f'eNetPosition_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.nd, rule=eNetPosition, doc='net position [GW]'))
 
     def eFlowBasedCalcu1(OptModel,n,ni,nf,cc):
-        if mTEPES.pIndBinSingleNode() or mTEPES.pIndPTDF == 0 or mTEPES.pIndBinLinePTDF[ni,nf,cc] == 0:
+        if mTEPES.pIndBinSingleNode() or mTEPES.pIndPTDF == 0 or mTEPES.pIndBinLinePTDF[ni,nf,cc] == 0 or (p,ni,nf,cc) not in mTEPES.pla:
             return Constraint.Skip
         if (ni,nf,cc) in mTEPES.lca:
             return OptModel.vFlowElec[p,sc,n,ni,nf,cc] - sum(mTEPES.pPTDF[p,sc,n,ni,nf,cc,nd] * OptModel.vNetPosition[p,sc,n,nd] for nd in mTEPES.nd if (p,sc,n,ni,nf,cc,nd) in mTEPES.psnland) >= - 1 + OptModel.vLineCommit[p,sc,n,ni,nf,cc]
@@ -1416,7 +1416,7 @@ def NetworkOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st
         print('eFlowBasedCalcu1          ... ', len(getattr(OptModel, f'eFlowBasedCalcu1_{p}_{sc}_{st}')), ' rows')
 
     def eFlowBasedCalcu2(OptModel,n,ni,nf,cc):
-        if mTEPES.pIndBinSingleNode() or mTEPES.pIndPTDF == 0 or mTEPES.pIndBinLinePTDF[ni,nf,cc] == 0:
+        if mTEPES.pIndBinSingleNode() or mTEPES.pIndPTDF == 0 or mTEPES.pIndBinLinePTDF[ni,nf,cc] == 0 or (p,ni,nf,cc) not in mTEPES.pla:
             return Constraint.Skip
         return OptModel.vFlowElec[p,sc,n,ni,nf,cc] - sum(mTEPES.pPTDF[p,sc,n,ni,nf,cc,nd] * OptModel.vNetPosition[p,sc,n,nd] for nd in mTEPES.nd if (p,sc,n,ni,nf,cc,nd) in mTEPES.psnland) <=   1 - OptModel.vLineCommit[p,sc,n,ni,nf,cc]
     setattr(OptModel, f'eFlowBasedCalcu2_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.lca, rule=eFlowBasedCalcu2, doc='flow based calculation [p.u.]'))
@@ -1425,7 +1425,7 @@ def NetworkOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st
         print('eFlowBasedCalcu2          ... ', len(getattr(OptModel, f'eFlowBasedCalcu2_{p}_{sc}_{st}')), ' rows')
 
     # def eSecurityMargingTTCFrw(OptModel,n,ni,nf,cc):
-    #     if mTEPES.pIndBinSingleNode()or mTEPES.pIndPTDF == 0 or mTEPES.pIndBinLinePTDF[ni,nf,cc] == 0 :
+    #     if mTEPES.pIndBinSingleNode()or mTEPES.pIndPTDF == 0 or mTEPES.pIndBinLinePTDF[ni,nf,cc] == 0 or (p,ni,nf,cc) not in mTEPES.pla:
     #         return Constraint.Skip
     #     return OptModel.vFlowElec[p,sc,n,ni,nf,cc] <=   mTEPES.pVariableTTCFrw[p,sc,n,ni,nf,cc]
     # setattr(OptModel, f'eSecurityMargingTTCFrw_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.lca, rule=eSecurityMargingTTCFrw, doc='security margin TTC for flow based calculation [p.u.]'))
@@ -1434,7 +1434,7 @@ def NetworkOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st
     #     print('eSecurityMargingTTCFrw... ', len(getattr(OptModel, f'eSecurityMargingTTCFrw_{p}_{sc}_{st}')), ' rows')
     #
     # def eSecurityMargingTTCBck(OptModel,n,ni,nf,cc):
-    #     if mTEPES.pIndBinSingleNode()or mTEPES.pIndPTDF == 0 or mTEPES.pIndBinLinePTDF[ni,nf,cc] == 0 :
+    #     if mTEPES.pIndBinSingleNode()or mTEPES.pIndPTDF == 0 or mTEPES.pIndBinLinePTDF[ni,nf,cc] == 0 or (p,ni,nf,cc) not in mTEPES.pla:
     #         return Constraint.Skip
     #     return OptModel.vFlowElec[p,sc,n,ni,nf,cc] >= - mTEPES.pVariableTTCBck[p,sc,n,ni,nf,cc]
     # setattr(OptModel, f'eSecurityMargingTTCBck_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.lca, rule=eSecurityMargingTTCBck, doc='security margin TTC for flow based calculation [p.u.]'))
@@ -1533,7 +1533,7 @@ def CycleConstraints(OptModel, mTEPES, pIndLogConsole, p, sc, st):
     #%% cycle Kirchhoff's second law with some candidate lines
     # this equation is formulated for every AC candidate line included in the cycle
     def eCycleKirchhoff2ndLawCnd1(OptModel,p,sc,n,cyc,nii,nff,cc):
-        if mTEPES.pIndPTDF:
+        if mTEPES.pIndPTDF or (p,nii,nff,cc) not in mTEPES.pla:
             return Constraint.Skip
         return (sum(OptModel.vFlowElec[p,sc,n,ni,nf,cc] * mTEPES.pLineX[ni,nf,cc] / mTEPES.pSBase for ni,nf in list(zip(mTEPES.ncd[cyc], mTEPES.ncd[cyc][1:] + mTEPES.ncd[cyc][:1])) for cc in mTEPES.cc if (ni,nf,cc) in mTEPES.uctc) -
                 sum(OptModel.vFlowElec[p,sc,n,ni,nf,cc] * mTEPES.pLineX[ni,nf,cc] / mTEPES.pSBase for nf,ni in list(zip(mTEPES.ncd[cyc], mTEPES.ncd[cyc][1:] + mTEPES.ncd[cyc][:1])) for cc in mTEPES.cc if (ni,nf,cc) in mTEPES.uctc) ) / mTEPES.pBigMTheta[cyc,nii,nff,cc] <=   1 - OptModel.vLineCommit[p,sc,n,nii,nff,cc]
@@ -1543,7 +1543,7 @@ def CycleConstraints(OptModel, mTEPES, pIndLogConsole, p, sc, st):
         print('eCycleKirchhoff2ndLC1     ... ', len(getattr(OptModel, f'eCycleKirchhoff2ndLawCnd1_{p}_{sc}_{st}')), ' rows')
 
     def eCycleKirchhoff2ndLawCnd2(OptModel,p,sc,n,cyc,nii,nff,cc):
-        if mTEPES.pIndPTDF:
+        if mTEPES.pIndPTDF or (p,nii,nff,cc) not in mTEPES.pla:
             return Constraint.Skip
         return (sum(OptModel.vFlowElec[p,sc,n,ni,nf,cc] * mTEPES.pLineX[ni,nf,cc] / mTEPES.pSBase for ni,nf in list(zip(mTEPES.ncd[cyc], mTEPES.ncd[cyc][1:] + mTEPES.ncd[cyc][:1])) for cc in mTEPES.cc if (ni,nf,cc) in mTEPES.uctc) -
                 sum(OptModel.vFlowElec[p,sc,n,ni,nf,cc] * mTEPES.pLineX[ni,nf,cc] / mTEPES.pSBase for nf,ni in list(zip(mTEPES.ncd[cyc], mTEPES.ncd[cyc][1:] + mTEPES.ncd[cyc][:1])) for cc in mTEPES.cc if (ni,nf,cc) in mTEPES.uctc) ) / mTEPES.pBigMTheta[cyc,nii,nff,cc] >= - 1 + OptModel.vLineCommit[p,sc,n,nii,nff,cc]
