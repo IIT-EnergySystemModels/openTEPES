@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 27, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 06, 2026
 """
 
 import time
@@ -11,6 +11,7 @@ from   pyomo.opt             import SolverFactory, SolverStatus, TerminationCond
 from   pyomo.util.infeasible import log_infeasible_constraints
 from   pyomo.environ         import Suffix, UnitInterval
 
+
 def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConsole, p, sc, st, ncall):
     print('Problem solving                        ####', ncall)
     _path = os.path.join(DirName, CaseName)
@@ -18,23 +19,24 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
 
     #%% solving the problem
     Solver = SolverFactory(SolverName)                                                       # select solver
-    if SolverName == 'gurobi' or SolverName == 'appsi_gurobi':
-        FileName = f'{_path}/openTEPES_gurobi_{CaseName}_{p}_{sc}_{st}.log'
+    FileName = f'{_path}/openTEPES_{SolverName}_{CaseName}_{p}_{sc}_{st}.log'
+    if SolverName != 'appsi_gurobi' or SolverName != 'gurobi_persistent':
         if os.path.exists(FileName):
             os.remove(FileName)
+    if SolverName == 'gurobi' or SolverName == 'appsi_gurobi':
         Solver.options['OutputFlag'      ] = 1                                                 # suppress log file
         Solver.options['LogFile'         ] = FileName
+        Solver.options['DisplayInterval' ] = 100
+        Solver.options['LPWarmStart'     ] = 2
         if ncall == 1:
             Solver.options['Method'      ] = 2                                                 # barrier method
         else:
             Solver.options['Method'      ] = -1
         Solver.options['Crossover'       ] = -1
-        Solver.options['DisplayInterval' ] = 100
         Solver.options['MIPGap'          ] = 0.01
         Solver.options['Threads'         ] = int((psutil.cpu_count(logical=True) + psutil.cpu_count(logical=False))/2)
         Solver.options['TimeLimit'       ] =    36000
         Solver.options['IterationLimit'  ] = 36000000
-        Solver.options['LPWarmStart'     ] = 2
         # Solver.options['SolutionTarget'] = 1                                                 # optimal solution with or without basic solutions
         # Solver.options['MIPFocus'      ] = 3
         # Solver.options['Seed'          ] = 104729
@@ -42,7 +44,20 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
         # Solver.options['RINS'          ] = 100
         # Solver.options['BarConvTol'    ] = 1e-10
         # Solver.options['BarQCPConvTol' ] = 0.025
+    if SolverName == 'gurobi_persistent':
+        Solver.set_instance(OptModel)
+        Solver.set_gurobi_param('OutputFlag',        1)
+        Solver.set_gurobi_param('LogFile',    FileName)
+        Solver.set_gurobi_param('DisplayInterval', 100)
+        Solver.set_gurobi_param('LPWarmStart',       2)
+        Solver.set_gurobi_param('Method',            2)
+        Solver.set_gurobi_param('Crossover',        -1)
+        Solver.set_gurobi_param('MIPGap',         0.01)
+        Solver.set_gurobi_param('Threads', int((psutil.cpu_count(logical=True) + psutil.cpu_count(logical=False))/2))
+        Solver.set_gurobi_param('TimeLimit',      36000   )
+        Solver.set_gurobi_param('IterationLimit', 36000000)
     if SolverName == 'appsi_gurobi':
+        Solver.set_instance(OptModel)
         Solver.update_config.check_for_new_or_removed_params      = False
         Solver.update_config.check_for_new_or_removed_vars        = False
         Solver.update_config.check_for_new_or_removed_constraints = False
@@ -53,24 +68,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
         Solver.config.load_solution                               = True
         Solver.config.warmstart                                   = True
         Solver.config.stream_solver                               = True
-    if SolverName == 'gurobi_persistent':
-        FileName = f'{_path}/openTEPES_gurobi_{CaseName}_{p}_{sc}_{st}.log'
-        if os.path.exists(FileName):
-            os.remove(FileName)
-        Solver.set_instance(OptModel, symbolic_solver_labels=True)
-        Solver.set_gurobi_param('OutputFlag',        1)
-        Solver.set_gurobi_param('DisplayInterval', 100)
-        Solver.set_gurobi_param('LogFile',    FileName)
-        Solver.set_gurobi_param('Method',            2)
-        Solver.set_gurobi_param('MIPGap',         0.01)
-        Solver.set_gurobi_param('Crossover',        -1)
-        Solver.set_gurobi_param('Threads', int((psutil.cpu_count(logical=True) + psutil.cpu_count(logical=False))/2))
-        Solver.set_gurobi_param('TimeLimit',      36000   )
-        Solver.set_gurobi_param('IterationLimit', 36000000)
     if SolverName == 'cplex':
-        FileName = f'{_path}/openTEPES_cplex_{CaseName}_{p}_{sc}_{st}.log'
-        if os.path.exists(FileName):
-            os.remove(FileName)
         # Solver.options['LogFile'          ] = FileName
         if ncall == 1:
             Solver.options['LPMethod'       ] = 4                                                 # barrier method
@@ -84,9 +82,6 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
         # Solver.options['RINSHeur'         ] = 100
         # Solver.options['EpGap'            ] = 0.01
     if SolverName == 'appsi_highs':
-        FileName = f'{_path}/openTEPES_highs_{CaseName}_{p}_{sc}_{st}.log'
-        if os.path.exists(FileName):
-            os.remove(FileName)
         Solver.options['log_file'               ] = FileName
         Solver.options['solver'                 ] = 'choose'
         Solver.options['simplex_strategy'       ] = 0
@@ -98,7 +93,6 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
         Solver.options['time_limit'             ] =    72000
         Solver.options['simplex_iteration_limit'] = 72000000
     if SolverName == 'gams':
-        FileName = f'{_path}/openTEPES_gams_{CaseName}_{p}_{sc}_{st}.log'
         solver_options = {
             'file COPT / cplex.opt / ; put COPT putclose "LPMethod 4" / "EpGap 0.01" / ; GAMS_MODEL.OptFile = 1 ; '
             'option SysOut  = off   ;',
@@ -171,22 +165,23 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
                 OptModel.vHeatPipeInvest[p,ni,nf,cc].fix(OptModel.vHeatPipeInvest  [p,ni,nf,cc]())
 
     if nUnfixedVars > 0:
-        print('Problem solving with fixed investments ####', ncall)
         ncall += 1
-        if SolverName == 'gurobi' or SolverName == 'appsi_gurobi':
-            FileName = f'{_path}/openTEPES_gurobi_{CaseName}_{p}_{sc}_{st}.log'
+        print('Problem solving with fixed investments ####', ncall)
+        FileName = f'{_path}/openTEPES_{SolverName}_{CaseName}_{p}_{sc}_{st}.log'
+        if SolverName != 'appsi_gurobi' or SolverName != 'gurobi_persistent':
             if os.path.exists(FileName):
                 os.remove(FileName)
+        if SolverName == 'gurobi' or SolverName == 'appsi_gurobi':
             Solver.options['OutputFlag'      ] = 1                                                 # suppress log file
             Solver.options['LogFile'         ] = FileName
+            Solver.options['DisplayInterval' ] = 100
+            Solver.options['LPWarmStart'     ] = 2
             Solver.options['Method'          ] = -1                                                 # barrier method
             Solver.options['Crossover'       ] = -1
-            Solver.options['DisplayInterval' ] = 100
             Solver.options['MIPGap'          ] = 0.01
             Solver.options['Threads'         ] = int((psutil.cpu_count(logical=True) + psutil.cpu_count(logical=False))/2)
             Solver.options['TimeLimit'       ] =    36000
             Solver.options['IterationLimit'  ] = 36000000
-            Solver.options['LPWarmStart'     ] = 2
             # Solver.options['SolutionTarget'] = 1                                                 # optimal solution with or without basic solutions
             # Solver.options['MIPFocus'      ] = 3
             # Solver.options['Seed'          ] = 104729
@@ -194,7 +189,20 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
             # Solver.options['RINS'          ] = 100
             # Solver.options['BarConvTol'    ] = 1e-10
             # Solver.options['BarQCPConvTol' ] = 0.025
+        if SolverName == 'gurobi_persistent':
+            Solver.set_instance(OptModel)
+            Solver.set_gurobi_param('OutputFlag',        1)
+            Solver.set_gurobi_param('LogFile',    FileName)
+            Solver.set_gurobi_param('DisplayInterval', 100)
+            Solver.set_gurobi_param('LPWarmStart',       2)
+            Solver.set_gurobi_param('Method',           -1)
+            Solver.set_gurobi_param('Crossover',        -1)
+            Solver.set_gurobi_param('MIPGap',         0.01)
+            Solver.set_gurobi_param('Threads', int((psutil.cpu_count(logical=True) + psutil.cpu_count(logical=False))/2))
+            Solver.set_gurobi_param('TimeLimit',      36000   )
+            Solver.set_gurobi_param('IterationLimit', 36000000)
         if SolverName == 'appsi_gurobi':
+            Solver.set_instance(OptModel)
             Solver.update_config.check_for_new_or_removed_params      = False
             Solver.update_config.check_for_new_or_removed_vars        = False
             Solver.update_config.check_for_new_or_removed_constraints = False
@@ -205,25 +213,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
             Solver.config.load_solution                               = True
             Solver.config.warmstart                                   = True
             Solver.config.stream_solver                               = True
-        if SolverName == 'gurobi_persistent':
-            FileName = f'{_path}/openTEPES_gurobi_{CaseName}_{p}_{sc}_{st}.log'
-            if os.path.exists(FileName):
-                os.remove(FileName)
-            Solver.set_instance(OptModel, symbolic_solver_labels=True)
-            Solver.set_gurobi_param('OutputFlag',        1)
-            Solver.set_gurobi_param('DisplayInterval', 100)
-            Solver.set_gurobi_param('LogFile',    FileName)
-            if ncall > 1:
-                Solver.set_gurobi_param('Method',       -1)
-            Solver.set_gurobi_param('MIPGap',         0.01)
-            Solver.set_gurobi_param('Crossover',        -1)
-            Solver.set_gurobi_param('Threads', int((psutil.cpu_count(logical=True) + psutil.cpu_count(logical=False))/2))
-            Solver.set_gurobi_param('TimeLimit',      36000   )
-            Solver.set_gurobi_param('IterationLimit', 36000000)
         if SolverName == 'cplex':
-            FileName = f'{_path}/openTEPES_cplex_{CaseName}_{p}_{sc}_{st}.log'
-            if os.path.exists(FileName):
-                os.remove(FileName)
             # Solver.options['LogFile'          ] = FileName
             if ncall == 1:
                 Solver.options['LPMethod'       ] = 4                                                 # barrier method
@@ -250,19 +240,18 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
     mTEPES.pDuals.update(pDuals)
 
     # save values of each stage
-    for n in mTEPES.n:
-        OptModel.vTotalGCost        [p,sc,n].fix(OptModel.vTotalGCost    [p,sc,n]())
-        OptModel.vTotalCCost        [p,sc,n].fix(OptModel.vTotalCCost    [p,sc,n]())
-        OptModel.vTotalECost        [p,sc,n].fix(OptModel.vTotalECost    [p,sc,n]())
-        OptModel.vTotalRElecCost    [p,sc,n].fix(OptModel.vTotalRElecCost[p,sc,n]())
-        if mTEPES.pIndHydrogen:
-            OptModel.vTotalRH2Cost  [p,sc,n].fix(OptModel.vTotalRH2Cost  [p,sc,n]())
-        if mTEPES.pIndHeat:
-            OptModel.vTotalRHeatCost[p,sc,n].fix(OptModel.vTotalRHeatCost[p,sc,n]())
+    # for n in mTEPES.n:
+    #     OptModel.vTotalGCost        [p,sc,n].fix(OptModel.vTotalGCost    [p,sc,n]())
+    #     OptModel.vTotalCCost        [p,sc,n].fix(OptModel.vTotalCCost    [p,sc,n]())
+    #     OptModel.vTotalECost        [p,sc,n].fix(OptModel.vTotalECost    [p,sc,n]())
+    #     OptModel.vTotalRElecCost    [p,sc,n].fix(OptModel.vTotalRElecCost[p,sc,n]())
+    #     if mTEPES.pIndHydrogen:
+    #         OptModel.vTotalRH2Cost  [p,sc,n].fix(OptModel.vTotalRH2Cost  [p,sc,n]())
+    #     if mTEPES.pIndHeat:
+    #         OptModel.vTotalRHeatCost[p,sc,n].fix(OptModel.vTotalRHeatCost[p,sc,n]())
 
-    # delete dual and rc suffixes
+    # delete dual suffix
     OptModel.del_component(OptModel.dual)
-    # OptModel.del_component(OptModel.rc  )
 
     SolvingTime = time.time() - StartTime
 

@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.18.16RC1] - 2026-04-05
+[4.18.16RC1] - 2026-04-06
 -------------------------
+- [CHANGED] clean up ProblemSolving module
 - [FIXED] fix model formulation for some lines not available until certain year
 - [CHANGED] introduced appsi_gurobi as solver
 - [CHANGED] changed HiGHS options
