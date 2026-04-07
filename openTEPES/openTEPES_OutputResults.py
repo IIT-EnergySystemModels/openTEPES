@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 10, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 07, 2026
 """
 
 import time
@@ -63,7 +63,7 @@ def AreaPlots(period, scenario, df, Category, X, Y, OperationType):
     # Define and build the chart
     # alt.data_transformers.enable('json')
     alt.data_transformers.disable_max_rows()
-    interval = alt.selection_interval(encodings=['x'])
+    interval  = alt.selection_interval(encodings=['x'])
     selection = alt.selection_point(fields=[Category], bind='legend')
 
     base  = alt.Chart(Results).mark_area().encode(x=alt.X(C_X, axis=alt.Axis(title='')), y=alt.Y(C_Y, axis=alt.Axis(title=Y)), color=alt.Color(C_C, scale=alt.Scale(scheme='category20c')), opacity=alt.condition(selection, alt.value(1), alt.value(0.2))).add_params(selection)
@@ -1181,28 +1181,9 @@ def NetworkH2OperationResults(DirName, CaseName, OptModel, mTEPES):
                 line_df.loc[(ni,nf),'nf'         ]  = nf
                 line_df.loc[(ni,nf),'cc'         ] += 1
 
-                if   0.0 <= line_df.loc[(ni,nf),'utilization'] <= 10.0:
-                    line_df.loc[(ni,nf),'color'] = colors[0]
-                if  10.0 <  line_df.loc[(ni,nf),'utilization'] <= 20.0:
-                    line_df.loc[(ni,nf),'color'] = colors[1]
-                if  20.0 <  line_df.loc[(ni,nf),'utilization'] <= 30.0:
-                    line_df.loc[(ni,nf),'color'] = colors[2]
-                if  30.0 <  line_df.loc[(ni,nf),'utilization'] <= 40.0:
-                    line_df.loc[(ni,nf),'color'] = colors[3]
-                if  40.0 <  line_df.loc[(ni,nf),'utilization'] <= 50.0:
-                    line_df.loc[(ni,nf),'color'] = colors[4]
-                if  50.0 <  line_df.loc[(ni,nf),'utilization'] <= 60.0:
-                    line_df.loc[(ni,nf),'color'] = colors[5]
-                if  60.0 <  line_df.loc[(ni,nf),'utilization'] <= 70.0:
-                    line_df.loc[(ni,nf),'color'] = colors[6]
-                if  70.0 <  line_df.loc[(ni,nf),'utilization'] <= 80.0:
-                    line_df.loc[(ni,nf),'color'] = colors[7]
-                if  80.0 <  line_df.loc[(ni,nf),'utilization'] <= 90.0:
-                    line_df.loc[(ni,nf),'color'] = colors[8]
-                if  90.0 <  line_df.loc[(ni,nf),'utilization'] <= 100.0:
-                    line_df.loc[(ni,nf),'color'] = colors[9]
-                if 100.0 <  line_df.loc[(ni,nf),'utilization']:
-                    line_df.loc[(ni,nf),'color'] = colors[10]
+                for i in range(len(colors)):
+                    if 10*i <= line_df.loc[(ni,nf),'utilization'] <= 10*(i+1):
+                        line_df.loc[(ni,nf),'color'] = colors[i]
 
         # Rounding to decimals of the numerical columns
         line_df = line_df.round(decimals=2)
@@ -1249,7 +1230,7 @@ def NetworkH2OperationResults(DirName, CaseName, OptModel, mTEPES):
     fig.add_trace(go.Scattermapbox(lat=line_df['lat'], lon=line_df['lon'], mode='markers', marker=go.scattermapbox.Marker(size=20, sizeref=1.1, sizemode='area', color='LightSkyBlue',), opacity=0, hoverinfo='text', text='<br>Line: '+line_df['ni']+' → '+line_df['nf']+'<br># circuits: '+line_df['cc'].astype(str)+'<br>NTC Forward: '+line_df['NTCFrw'].astype(str)+'<br>NTC Backward: '+line_df['NTCBck'].astype(str)+'<br>Power flow: '+line_df['vFlowH2'].astype(str)+'<br>Utilization [%]: '+line_df['utilization'].astype(str),))
 
     # Setting up the layout
-    fig.update_layout(title={'text': 'Hydrogen Network: {CaseName}<br>Period: {p}; Scenario: {sc}; LoadLevel: '+n, 'x': 0.5, 'xanchor': 'center', 'yanchor': 'top'}, font=dict(size=14), hovermode='closest', geo=dict(projection_type='azimuthal equal area', showland=True,), mapbox=dict(style='dark', accesstoken=token, bearing=0, center=dict(lat=(loc_df['Lat'].max()+loc_df['Lat'].min())*0.5, lon=(loc_df['Lon'].max()+loc_df['Lon'].min())*0.5), pitch=0, zoom=5), showlegend=False,)
+    fig.update_layout(title={'text': f'Hydrogen Network: {CaseName}<br>Period: {p}; Scenario: {sc}; LoadLevel: '+n, 'x': 0.5, 'xanchor': 'center', 'yanchor': 'top'}, font=dict(size=14), hovermode='closest', geo=dict(projection_type='azimuthal equal area', showland=True,), mapbox=dict(style='dark', accesstoken=token, bearing=0, center=dict(lat=(loc_df['Lat'].max()+loc_df['Lat'].min())*0.5, lon=(loc_df['Lon'].max()+loc_df['Lon'].min())*0.5), pitch=0, zoom=5), showlegend=False,)
 
     # Saving the figure
     fig.write_html(f'{_path}/oT_Plot_MapNetworkH2_{CaseName}.html')
@@ -1410,28 +1391,9 @@ def NetworkHeatOperationResults(DirName, CaseName, OptModel, mTEPES):
                 line_df.loc[(ni,nf),'nf']  = nf
                 line_df.loc[(ni,nf),'cc'] += 1
 
-                if   0.0 <= line_df.loc[(ni,nf),'utilization'] <= 10.0:
-                    line_df.loc[(ni,nf),'color'] = colors[0]
-                if  10.0 <  line_df.loc[(ni,nf),'utilization'] <= 20.0:
-                    line_df.loc[(ni,nf),'color'] = colors[1]
-                if  20.0 <  line_df.loc[(ni,nf),'utilization'] <= 30.0:
-                    line_df.loc[(ni,nf),'color'] = colors[2]
-                if  30.0 <  line_df.loc[(ni,nf),'utilization'] <= 40.0:
-                    line_df.loc[(ni,nf),'color'] = colors[3]
-                if  40.0 <  line_df.loc[(ni,nf),'utilization'] <= 50.0:
-                    line_df.loc[(ni,nf),'color'] = colors[4]
-                if  50.0 <  line_df.loc[(ni,nf),'utilization'] <= 60.0:
-                    line_df.loc[(ni,nf),'color'] = colors[5]
-                if  60.0 <  line_df.loc[(ni,nf),'utilization'] <= 70.0:
-                    line_df.loc[(ni,nf),'color'] = colors[6]
-                if  70.0 <  line_df.loc[(ni,nf),'utilization'] <= 80.0:
-                    line_df.loc[(ni,nf),'color'] = colors[7]
-                if  80.0 <  line_df.loc[(ni,nf),'utilization'] <= 90.0:
-                    line_df.loc[(ni,nf),'color'] = colors[8]
-                if  90.0 <  line_df.loc[(ni,nf),'utilization'] <= 100.0:
-                    line_df.loc[(ni,nf),'color'] = colors[9]
-                if 100.0 <  line_df.loc[(ni,nf),'utilization']:
-                    line_df.loc[(ni,nf),'color'] = colors[10]
+                for i in range(len(colors)):
+                    if 10*i <= line_df.loc[(ni,nf),'utilization'] <= 10*(i+1):
+                        line_df.loc[(ni,nf),'color'] = colors[i]
 
         # Rounding to decimals
         line_df = line_df.round(decimals=2)
@@ -1478,7 +1440,7 @@ def NetworkHeatOperationResults(DirName, CaseName, OptModel, mTEPES):
     fig.add_trace(go.Scattermapbox(lat=line_df['lat'], lon=line_df['lon'], mode='markers', marker=go.scattermapbox.Marker(size=20, sizeref=1.1, sizemode='area', color='LightSkyBlue',), opacity=0, hoverinfo='text', text='<br>Line: '+line_df['ni']+' → '+line_df['nf']+'<br># circuits: '+line_df['cc'].astype(str)+'<br>NTC Forward: '+line_df['NTCFrw'].astype(str)+'<br>NTC Backward: '+line_df['NTCBck'].astype(str)+'<br>Power flow: '+line_df['vFlowHeat'].astype(str)+'<br>Utilization [%]: '+line_df['utilization'].astype(str),))
 
     # Setting up the layout
-    fig.update_layout(title={'text': 'Heat Network: {CaseName}<br>Period: {p}; Scenario: {sc}; LoadLevel: '+n, 'x': 0.5, 'xanchor': 'center', 'yanchor': 'top'}, font=dict(size=14), hovermode='closest', geo=dict(projection_type='azimuthal equal area', showland=True,), mapbox=dict(style='dark', accesstoken=token, bearing=0, center=dict(lat=(loc_df['Lat'].max()+loc_df['Lat'].min())*0.5, lon=(loc_df['Lon'].max()+loc_df['Lon'].min())*0.5), pitch=0, zoom=5), showlegend=False,)
+    fig.update_layout(title={'text': f'Heat Network: {CaseName}<br>Period: {p}; Scenario: {sc}; LoadLevel: '+n, 'x': 0.5, 'xanchor': 'center', 'yanchor': 'top'}, font=dict(size=14), hovermode='closest', geo=dict(projection_type='azimuthal equal area', showland=True,), mapbox=dict(style='dark', accesstoken=token, bearing=0, center=dict(lat=(loc_df['Lat'].max()+loc_df['Lat'].min())*0.5, lon=(loc_df['Lon'].max()+loc_df['Lon'].min())*0.5), pitch=0, zoom=5), showlegend=False,)
 
     # Saving the figure
     fig.write_html(f'{_path}/oT_Plot_MapNetworkHeat_{CaseName}.html')
