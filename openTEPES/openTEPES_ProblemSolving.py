@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 06, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 08, 2026
 """
 
 import time
@@ -20,7 +20,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
     #%% solving the problem
     Solver = SolverFactory(SolverName)                                                       # select solver
     FileName = f'{_path}/openTEPES_{SolverName}_{CaseName}_{p}_{sc}_{st}.log'
-    if SolverName != 'appsi_gurobi' or SolverName != 'gurobi_persistent':
+    if SolverName != 'appsi_gurobi' and SolverName != 'gurobi_persistent':
         if os.path.exists(FileName):
             os.remove(FileName)
     if SolverName == 'gurobi' or SolverName == 'appsi_gurobi':
@@ -168,7 +168,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
         ncall += 1
         print('Problem solving with fixed investments ####', ncall)
         FileName = f'{_path}/openTEPES_{SolverName}_{CaseName}_{p}_{sc}_{st}.log'
-        if SolverName != 'appsi_gurobi' or SolverName != 'gurobi_persistent':
+        if SolverName != 'appsi_gurobi' and SolverName != 'gurobi_persistent':
             if os.path.exists(FileName):
                 os.remove(FileName)
         if SolverName == 'gurobi' or SolverName == 'appsi_gurobi':
