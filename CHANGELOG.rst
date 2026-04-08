@@ -3,6 +3,7 @@ Change Log
 
 [4.18.16RC1] - 2026-04-07
 -------------------------
+- [CHANGED] add H2 network utilization in output results
 - [FIXED] fix H2 and heat network map titles
 - [CHANGED] clean up ProblemSolving module
 - [FIXED] fix model formulation for some lines not available until certain year

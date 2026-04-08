@@ -871,6 +871,14 @@ Identifier                            Header                               Descr
 Period        Scenario    Load level  Initial node  Final node  Circuit    Hydrogen pipeline flow [tH2]
 ============  ==========  ==========  ============  ==========  =========  ============================
 
+File ``oT_Result_NetworkH2Utilization.csv``
+
+============  ==========  ==========  ============  ==========  ==========  ============================================================================
+Identifier                            Header                                Description
+====================================  ====================================  ============================================================================
+Period        Scenario    Load level  Initial node  Final node  Circuit     Hydrogen pipeline utilization (i.e., ratio between flow and capacity) [p.u.]
+============  ==========  ==========  ============  ==========  ==========  ============================================================================
+
 File ``oT_Result_NetworkHNS.csv``
 
 ============  ==========  ==========  ==========  ====================================
