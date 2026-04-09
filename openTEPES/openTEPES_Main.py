@@ -705,7 +705,7 @@ parser.add_argument('--result', type=str, default=None)
 
 DIR    = os.path.dirname(__file__)
 CASE   = '9n'
-SOLVER = 'highs'   # 'gams', 'appsi_highs', 'gurobi', 'gurobi_direct', 'gurobi_persistent', 'appsi_gurobi'
+SOLVER = 'highs'   # 'gams', 'highs', 'gurobi', 'gurobi_direct', 'gurobi_persistent', 'appsi_gurobi'
 RESULT = 'Yes'
 LOG    = 'No'
 
@@ -727,12 +727,12 @@ def main():
         args.solver = input('Input Solver Name (Default {}): '.format(SOLVER))
         if args.solver == '':
             args.solver = SOLVER
-        if args.solver == 'GAMS' or args.solver == 'Gams':
-            args.solver = 'gams'
-        if args.solver == 'HiGHS' or args.solver == 'HIGHS' or args.solver == 'highs' or args.solver == 'Highs':
+
+    # Normalize solver name to make comparisons case-insensitive.
+    if args.solver is not None:
+        args.solver = args.solver.strip().lower()
+        if args.solver == 'highs':
             args.solver = 'appsi_highs'
-        if args.solver == 'GUROBI' or args.solver == 'Gurobi':
-            args.solver = 'gurobi'
     if args.result is None:
         args.result = input('Would you like to write all the results? (Default {}): '.format(RESULT))
         if args.result == '':
