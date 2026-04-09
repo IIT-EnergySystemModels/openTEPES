@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 08, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 09, 2026
 """
 
 import time
@@ -23,15 +23,13 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
     if SolverName != 'appsi_gurobi' and SolverName != 'gurobi_persistent':
         if os.path.exists(FileName):
             os.remove(FileName)
-    if SolverName == 'gurobi' or SolverName == 'appsi_gurobi':
+    if SolverName == 'gurobi' or SolverName == 'gurobi_direct' or SolverName == 'appsi_gurobi':
         Solver.options['OutputFlag'      ] = 1                                                 # suppress log file
         Solver.options['LogFile'         ] = FileName
         Solver.options['DisplayInterval' ] = 100
-        Solver.options['LPWarmStart'     ] = 2
+        Solver.options['LPWarmStart'     ] =  2
         if ncall == 1:
-            Solver.options['Method'      ] = 2                                                 # barrier method
-        else:
-            Solver.options['Method'      ] = -1
+            Solver.options['Method'      ] =  2
         Solver.options['Crossover'       ] = -1
         Solver.options['MIPGap'          ] = 0.01
         Solver.options['Threads'         ] = int((psutil.cpu_count(logical=True) + psutil.cpu_count(logical=False))/2)
@@ -40,7 +38,6 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
         # Solver.options['SolutionTarget'] = 1                                                 # optimal solution with or without basic solutions
         # Solver.options['MIPFocus'      ] = 3
         # Solver.options['Seed'          ] = 104729
-        # Solver.options['Presolve'      ] = 2
         # Solver.options['RINS'          ] = 100
         # Solver.options['BarConvTol'    ] = 1e-10
         # Solver.options['BarQCPConvTol' ] = 0.025
@@ -50,7 +47,8 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
         Solver.set_gurobi_param('LogFile',    FileName)
         Solver.set_gurobi_param('DisplayInterval', 100)
         Solver.set_gurobi_param('LPWarmStart',       2)
-        Solver.set_gurobi_param('Method',            2)
+        if ncall == 1:
+            Solver.set_gurobi_param('Method',        2)
         Solver.set_gurobi_param('Crossover',        -1)
         Solver.set_gurobi_param('MIPGap',         0.01)
         Solver.set_gurobi_param('Threads', int((psutil.cpu_count(logical=True) + psutil.cpu_count(logical=False))/2))
@@ -72,8 +70,6 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
         # Solver.options['LogFile'          ] = FileName
         if ncall == 1:
             Solver.options['LPMethod'       ] = 4                                                 # barrier method
-        else:
-            Solver.options['LPMethod'       ] = 0                                                 # barrier method
         Solver.options['Threads'            ] = int((psutil.cpu_count(logical=True) + psutil.cpu_count(logical=False))/2)
         Solver.options['TimeLimit'          ] =    72000
         # Solver.options['BarCrossAlg'      ] = 0
@@ -112,7 +108,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
     if   SolverName == 'gams':
         SolverResults = Solver.solve(OptModel, tee=True, report_timing=True, symbolic_solver_labels=False, add_options=solver_options, logfile=FileName)
     elif SolverName == 'gurobi_persistent':
-        SolverResults = Solver.solve(OptModel, warmstart=False, keepfiles=False, tee=False, load_solutions=True, save_results=True, report_timing=False)
+        SolverResults = Solver.solve(OptModel, warmstart=True, keepfiles=False, tee=False, load_solutions=True, save_results=True, report_timing=False)
     else:
         SolverResults = Solver.solve(OptModel, tee=True, report_timing=True)
 
@@ -171,12 +167,11 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
         if SolverName != 'appsi_gurobi' and SolverName != 'gurobi_persistent':
             if os.path.exists(FileName):
                 os.remove(FileName)
-        if SolverName == 'gurobi' or SolverName == 'appsi_gurobi':
+        if SolverName == 'gurobi' or SolverName == 'gurobi_direct' or SolverName == 'appsi_gurobi':
             Solver.options['OutputFlag'      ] = 1                                                 # suppress log file
             Solver.options['LogFile'         ] = FileName
             Solver.options['DisplayInterval' ] = 100
-            Solver.options['LPWarmStart'     ] = 2
-            Solver.options['Method'          ] = -1                                                 # barrier method
+            Solver.options['LPWarmStart'     ] =  2
             Solver.options['Crossover'       ] = -1
             Solver.options['MIPGap'          ] = 0.01
             Solver.options['Threads'         ] = int((psutil.cpu_count(logical=True) + psutil.cpu_count(logical=False))/2)
@@ -185,7 +180,6 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
             # Solver.options['SolutionTarget'] = 1                                                 # optimal solution with or without basic solutions
             # Solver.options['MIPFocus'      ] = 3
             # Solver.options['Seed'          ] = 104729
-            # Solver.options['Presolve'      ] = 2
             # Solver.options['RINS'          ] = 100
             # Solver.options['BarConvTol'    ] = 1e-10
             # Solver.options['BarQCPConvTol' ] = 0.025
@@ -195,7 +189,6 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
             Solver.set_gurobi_param('LogFile',    FileName)
             Solver.set_gurobi_param('DisplayInterval', 100)
             Solver.set_gurobi_param('LPWarmStart',       2)
-            Solver.set_gurobi_param('Method',           -1)
             Solver.set_gurobi_param('Crossover',        -1)
             Solver.set_gurobi_param('MIPGap',         0.01)
             Solver.set_gurobi_param('Threads', int((psutil.cpu_count(logical=True) + psutil.cpu_count(logical=False))/2))
@@ -215,12 +208,8 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
             Solver.config.stream_solver                               = True
         if SolverName == 'cplex':
             # Solver.options['LogFile'          ] = FileName
-            if ncall == 1:
-                Solver.options['LPMethod'       ] = 4                                                 # barrier method
-            else:
-                Solver.options['LPMethod'       ] = 0
             Solver.options['Threads'            ] = int((psutil.cpu_count(logical=True) + psutil.cpu_count(logical=False))/2)
-            Solver.options['TimeLimit'          ] =    72000
+            Solver.options['TimeLimit'          ] = 72000
             # Solver.options['BarCrossAlg'      ] = 0
             # Solver.options['NumericalEmphasis'] = 1
             # Solver.options['PreInd'           ] = 1
@@ -236,8 +225,9 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
         if con.is_indexed():
             for index in con:
                 pDuals[str(con.name)+str(index)] = OptModel.dual[con[index]]
-
     mTEPES.pDuals.update(pDuals)
+    # delete dual suffix
+    OptModel.del_component(OptModel.dual)
 
     # save values of each stage
     # for n in mTEPES.n:
@@ -250,13 +240,10 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
     #     if mTEPES.pIndHeat:
     #         OptModel.vTotalRHeatCost[p,sc,n].fix(OptModel.vTotalRHeatCost[p,sc,n]())
 
-    # delete dual suffix
-    OptModel.del_component(OptModel.dual)
-
     SolvingTime = time.time() - StartTime
 
     #%% writing the results
-    print            ('  Problem size                         ... ', OptModel.model().nconstraints(), 'constraints, ', OptModel.model().nvariables()-mTEPES.nFixedVariables+1, 'variables')
+    print            ('  Problem size                         ... ', OptModel.model().nconstraints(), 'constraints, ', OptModel.model().nvariables()-mTEPES.nFixedVariables+1, 'variables', round(SolvingTime), 'seconds')
     print            ('  Solution time                        ... ', round(SolvingTime), 's')
     print            ('  Total system                 cost [MEUR] ', OptModel.vTotalSCost())
     if mTEPES.NoRepetition == 1:
