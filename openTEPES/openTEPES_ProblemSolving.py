@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 09, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 10, 2026
 """
 
 import time
@@ -43,6 +43,9 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
         # Solver.options['BarQCPConvTol' ] = 0.025
     if SolverName == 'gurobi_persistent':
         Solver.set_instance(OptModel)
+        # if ncall > 1:
+        #     for p,sc,n,el in mTEPES.psnel:
+        #         Solver.update_var(OptModel.vESSTotalCharge[p,sc,n,el])
         Solver.set_gurobi_param('OutputFlag',        1)
         Solver.set_gurobi_param('LogFile',    FileName)
         Solver.set_gurobi_param('DisplayInterval', 100)
@@ -243,9 +246,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
     SolvingTime = time.time() - StartTime
 
     #%% writing the results
-    print            ('  Problem size                         ... ', OptModel.model().nconstraints(), 'constraints, ', OptModel.model().nvariables()-mTEPES.nFixedVariables+1, 'variables', round(SolvingTime), 'seconds')
-    print            ('  Solution time                        ... ', round(SolvingTime), 's')
-    print            ('  Total system                 cost [MEUR] ', OptModel.vTotalSCost())
+    print            ('  Total system                 cost [MEUR] ', OptModel.vTotalSCost(), ' Constraints', OptModel.model().nconstraints(), ' Variables', OptModel.model().nvariables()-mTEPES.nFixedVariables+1, ' Seconds', round(SolvingTime))
     if mTEPES.NoRepetition == 1:
         for pp,scc in mTEPES.ps:
             print    (f'***** Period: {pp}, Scenario: {scc}, Stage: {st} ******')
