@@ -854,7 +854,10 @@ Hydrogen System Input Data
 ==========================
 
 These input files are specifically introduced to allow a representation of the hydrogen energy vector to supply the hydrogen demand produced with electricity or by any other means through the hydrogen network.
-If the hydrogen is only produced from electricity and there is no hydrogen transfer among nodes, the hydrogen demand can be represented by the energy outflows associated with the unit (i.e., electrolyzer).
+The hydro data are expressed in tH2. However, a very simple conversion can be applied to convert them into MWh by multiplying the tH2 values by 33.33 MWh/tH2 (the lower heating value of hydrogen).
+Suppose you want to represent the hydrogen demand in MWh instead of tH2. In that case, they can input the hydrogen demand in MWh in the file ``oT_Data_DemandHydrogen.csv`` and then convert it into tH2 by dividing the MWh values by 33.33 MWh/tH2.
+
+If the hydrogen is only produced from electricity and there is no hydrogen flows among nodes, the hydrogen demand can be represented by the energy outflows associated with the unit (i.e., electrolyzer) and no need to consider these hydrogen demand and network files.
 
 =========================================  ==================================
 File                                       Description
