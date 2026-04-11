@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - March 17, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 11, 2026
 """
 
 import time
@@ -931,7 +931,7 @@ def DataConfiguration(mTEPES):
 
     # variable emission cost [M€/GWh]
     mTEPES.dPar['pVariableEmissionCost'] = mTEPES.dPar['pVariableEmissionCost'].replace(0.0, mTEPES.dPar['pCO2Cost']) #[€/tCO2]
-    mTEPES.dPar['pEmissionVarCost']      = mTEPES.dPar['pEmissionRate'] * 1e-3 * mTEPES.dPar['pVariableEmissionCost']                 #[M€/GWh] = [tCO2/MWh] * 1e-3 * [€/tCO2]
+    mTEPES.dPar['pEmissionVarCost']      = mTEPES.dPar['pEmissionRate'] * 1e-3 * mTEPES.dPar['pVariableEmissionCost']                 # [M€/GWh] = [tCO2/MWh] * 1e-3 * [€/tCO2]
     mTEPES.dPar['pEmissionVarCost']      = mTEPES.dPar['pEmissionVarCost'].reindex(sorted(mTEPES.dPar['pEmissionVarCost'].columns), axis=1)
 
     # minimum up- and downtime and maximum shift time converted to an integer number of time steps
@@ -1122,9 +1122,9 @@ def DataConfiguration(mTEPES):
     mTEPES.dPar['pDemandElecPeak']          = pd.Series([0.0 for p,ar in mTEPES.par], index=mTEPES.par)
     mTEPES.dPar['pDemandHeatPeak']          = pd.Series([0.0 for p,ar in mTEPES.par], index=mTEPES.par)
     for p,ar in mTEPES.par:
-        # values < 1e-5 times the maximum demand for each area (an area is related to operating reserves procurement, i.e., country) are converted to 0
+        # values < 2e-5 times the maximum demand for each area (an area is related to operating reserves procurement, i.e., country) are converted to 0
         mTEPES.dPar['pDemandElecPeak'][p,ar] = mTEPES.dPar['pDemandElec'].loc[p,:,:][[nd for nd in d2a[ar]]].sum(axis=1).max()
-        mTEPES.dPar['pEpsilonElec']          = mTEPES.dPar['pDemandElecPeak'][p,ar]*1e-5
+        mTEPES.dPar['pEpsilonElec']          = mTEPES.dPar['pDemandElecPeak'][p,ar]*2e-5
 
         # these parameters are in GW
         mTEPES.dPar['pDemandElecPos']     [mTEPES.dPar['pDemandElecPos'] [[nd for nd in d2a[ar]]] <  mTEPES.dPar['pEpsilonElec']] = 0.0
@@ -1186,7 +1186,7 @@ def DataConfiguration(mTEPES):
 
         if mTEPES.dPar['pIndHeat']:
             mTEPES.dPar['pDemandHeatPeak'][p,ar] = mTEPES.dPar['pDemandHeat'].loc[p,:,:][[nd for nd in d2a[ar]]].sum(axis=1).max()
-            mTEPES.dPar['pEpsilonHeat']          = mTEPES.dPar['pDemandHeatPeak'][p,ar]*1e-5
+            mTEPES.dPar['pEpsilonHeat']          = mTEPES.dPar['pDemandHeatPeak'][p,ar]*2e-5
             mTEPES.dPar['pDemandHeat']             [mTEPES.dPar['pDemandHeat']    [[nd for nd in   d2a[ar]]] <  mTEPES.dPar['pEpsilonHeat']] = 0.0
             mTEPES.dPar['pHeatPipeNTCFrw'][mTEPES.dPar['pHeatPipeNTCFrw'] < mTEPES.dPar['pEpsilonElec']] = 0
             mTEPES.dPar['pHeatPipeNTCBck'][mTEPES.dPar['pHeatPipeNTCBck'] < mTEPES.dPar['pEpsilonElec']] = 0
@@ -1211,7 +1211,7 @@ def DataConfiguration(mTEPES):
     mTEPES.dPar['pEmissionVarCost']   = mTEPES.dPar['pEmissionVarCost'].loc  [:,mTEPES.g ]
 
     # replace < 0.0 by 0.0
-    mTEPES.dPar['pEpsilon'] = 1e-6
+    mTEPES.dPar['pEpsilon'] = 1e-6 # measure of how close two values are
     mTEPES.dPar['pMaxPower2ndBlock']  = mTEPES.dPar['pMaxPower2ndBlock'].where (mTEPES.dPar['pMaxPower2ndBlock']  > mTEPES.dPar['pEpsilon'], 0.0)
     mTEPES.dPar['pMaxCharge2ndBlock'] = mTEPES.dPar['pMaxCharge2ndBlock'].where(mTEPES.dPar['pMaxCharge2ndBlock'] > mTEPES.dPar['pEpsilon'], 0.0)
 
@@ -1316,7 +1316,7 @@ def DataConfiguration(mTEPES):
         mTEPES.dPar['pHeatPipeUpInvest']           = mTEPES.dPar['pHeatPipeUpInvest'].loc          [mTEPES.hc]
 
     # replace very small costs by 0
-    mTEPES.dPar['pEpsilon'] = 1e-5           # this value in EUR/GWh is lower than the O&M variable cost of any technology, independent of the area
+    mTEPES.dPar['pEpsilon'] = 2e-5           # this value in EUR/GWh is lower than the O&M variable cost of any technology, independent of the area
 
     mTEPES.dPar['pLinearVarCost']  [mTEPES.dPar['pLinearVarCost']  [[g for g in mTEPES.g]] < mTEPES.dPar['pEpsilon']] = 0.0
     mTEPES.dPar['pConstantVarCost'][mTEPES.dPar['pConstantVarCost'][[g for g in mTEPES.g]] < mTEPES.dPar['pEpsilon']] = 0.0

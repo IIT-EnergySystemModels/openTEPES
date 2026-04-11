@@ -1,6 +1,10 @@
 Change Log
 =============
 
+[4.18.17RC] - 2026-04-11
+-------------------------
+- [CHANGED] change from 1e-5 to 2e-5 tolerances to avoid extreme values in the optimization problem and to improve the robustness of the model
+
 [4.18.16] - 2026-04-10
 -------------------------
 - [CHANGED] add H2 network utilization in output results

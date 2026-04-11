@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 05, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 11, 2026
 """
 
 import time
@@ -169,8 +169,8 @@ def GenerationOperationModelFormulationObjFunct(OptModel, mTEPES, pIndLogConsole
                                                 mTEPES.pLoadLevelDuration[p,sc,n]() * sum(mTEPES.pLinearOMCost   [       re] * OptModel.vTotalOutput    [p,sc,n,re] for re in mTEPES.re if (p,re) in mTEPES.pre) )
     setattr(OptModel, f'eTotalGCost_{p}_{sc}_{st}', Constraint(mTEPES.n, rule=eTotalGCost, doc='system variable generation operation cost [MEUR]'))
 
-    # the small tolerance pEpsilon=1e-5 is added to avoid pumping/charging with curtailment/spillage
-    pEpsilon = 1e-5
+    # the small tolerance pEpsilon=2e-5 is added to avoid pumping/charging with curtailment/spillage
+    pEpsilon = 2e-5
     def eTotalCCost(OptModel,n):
         return OptModel.vTotalCCost    [p,sc,n] == mTEPES.pLoadLevelDuration[p,sc,n]() * sum((mTEPES.pLinearVarCost[p,sc,n,eh]+pEpsilon) * OptModel.vESSTotalCharge[p,sc,n,eh] for eh in mTEPES.eh if (p,eh) in mTEPES.peh and eh not in mTEPES.el)
     setattr(OptModel, f'eTotalCCost_{p}_{sc}_{st}', Constraint(mTEPES.n, rule=eTotalCCost, doc='system variable consumption operation cost [MEUR]'))
@@ -184,8 +184,8 @@ def GenerationOperationModelFormulationObjFunct(OptModel, mTEPES, pIndLogConsole
     def eTotalEmissionArea(OptModel,n,ar):
         if mTEPES.pEmission[p,ar] == math.inf or sum(mTEPES.pEmissionRate[g] for g in mTEPES.g if g in g2a[ar] and (p,g) in mTEPES.pg) == 0.0:
             return Constraint.Skip
-        return OptModel.vTotalEmissionArea[p,sc,n,ar] == (mTEPES.pLoadLevelDuration[p,sc,n]() * 1e-3 * (sum(mTEPES.pEmissionRate[nr] * OptModel.vTotalOutput    [p,sc,n,nr] for nr in mTEPES.nr if nr in g2a[ar] and (p,nr) in mTEPES.pnr)    #1e-3 to change from tCO2/MWh to MtCO2/GWh
-                                                                                                     +  sum(mTEPES.pEmissionRate[bo] * OptModel.vTotalOutputHeat[p,sc,n,bo] for bo in mTEPES.bo if bo in g2a[ar] and (p,bo) in mTEPES.pbo)))  #1e-3 to change from tCO2/MWh to MtCO2/GWh
+        return OptModel.vTotalEmissionArea[p,sc,n,ar] == (mTEPES.pLoadLevelDuration[p,sc,n]() * 1e-3 * (sum(mTEPES.pEmissionRate[nr] * OptModel.vTotalOutput    [p,sc,n,nr] for nr in mTEPES.nr if nr in g2a[ar] and (p,nr) in mTEPES.pnr)    # 1e-3 to change from tCO2/MWh to MtCO2/GWh
+                                                                                                     +  sum(mTEPES.pEmissionRate[bo] * OptModel.vTotalOutputHeat[p,sc,n,bo] for bo in mTEPES.bo if bo in g2a[ar] and (p,bo) in mTEPES.pbo)))  # 1e-3 to change from tCO2/MWh to MtCO2/GWh
     setattr(OptModel, f'eTotalEmissionArea_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.ar, rule=eTotalEmissionArea, doc='area total emission [MtCO2 eq]'))
 
     def eTotalECostArea(OptModel,n,ar):
