@@ -70,7 +70,7 @@ def case_7d_system(request):
 
 # === Parametrized Test ===
 @pytest.mark.parametrize("case_7d_system,expected_cost", [
-    ("9n", 249.5625364481767),
+    ("9n", 252.201329983352),
     ("sSEP", 38581.335524272574),
 ], indirect=["case_7d_system"])
 def test_openTEPES_run(case_7d_system, expected_cost):

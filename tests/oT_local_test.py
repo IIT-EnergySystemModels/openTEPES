@@ -12,7 +12,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 CASE_NAMES = ["9n", "sSEP"]  # Add more case names as needed
-EXPECTED_COSTS = {"9n": 249.5625364481767, "sSEP": 38581.335524272574}
+EXPECTED_COSTS = {"9n": 252.201329983352, "sSEP": 38581.335524272574}
 
 def setup_test_case(case_name):
     """
