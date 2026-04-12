@@ -1,9 +1,9 @@
 Change Log
 =============
 
-[4.18.17RC] - 2026-04-11
+[4.18.17RC] - 2026-04-12
 -------------------------
-- [CHANGED] change from 1e-5 to 2e-5 tolerances to avoid extreme values in the optimization problem and to improve the robustness of the model
+- [CHANGED] detection of generators with minimum and maximum energy constraints
 
 [4.18.16] - 2026-04-10
 -------------------------
