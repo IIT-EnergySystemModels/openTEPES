@@ -9,6 +9,12 @@ The model has been used in these research projects:
 
     It aims to to design, develop, and validate a robust, transparent, and fully explainable quantitative framework capable of forecasting Iberian day-ahead electricity prices and estimating the solar PV capture price for 2026–2027.
 
+- `Open-source modeling for electric company resource planning research <https://www.iit.comillas.edu/publicacion/proyecto/es/EPRI_openTEPES/Open-source_modeling_for_electric_company_resource_planning_research>`_, developed for **Electric Power Research Institute (EPRI)**.
+  March 2025 - December 2025. `A. Ramos <https://www.iit.comillas.edu/people/aramos>`_
+
+    The objective of this project is to better understand the existing functionalities of openTEPES, as well as explore additional capabilities of interest to EPRI that could be relevant for future studies.
+    These include energy storage, integrated energy systems considering gas, heat, and electric coupled networks, and hydro systems modeling, among others.
+
 - `Analysis of energy scenarios for Spain 2030-2050 <https://www.iit.comillas.edu/publicacion/proyecto/en/Naturgy_Escenarios_2024/An%c3%a1lisis_de_escenarios_energ%c3%a9ticos_para_Espa%c3%b1a_2030-2050>`_, developed for **Naturgy Innovahub SLU**.
   September 2024 - December 2024. `P. Linares <https://www.iit.comillas.edu/people/pedrol>`_, `J.P. Chaves <https://www.iit.comillas.edu/people/jchaves>`_, `A.F. Rodríguez Matas <https://www.iit.comillas.edu/people/afrmatas>`_
 
