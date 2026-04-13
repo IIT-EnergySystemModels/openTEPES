@@ -375,12 +375,12 @@ MutuallyExclusive           List of mutually exclusive sets to which the generat
 BinaryCommitment            Binary unit commitment decision                                                                                                                                                               Yes/No
 NoOperatingReserve          No contribution to operating reserve. Yes, if the unit doesn't contribute to the operating reserve                                                                                            Yes/No
 OutflowsIncompatibility     Outflows are incompatible with the charging process (e.g., electric vehicle). This is not the case of an electrolyzer                                                                         Yes/No
-StorageType                 Represents the time period (hour, day, week, month, year) over which the requirement that aggregate electricity production must equal aggregate consumption is enforced.
-                            If empty, Hourly by default                                                                                                                                                                   Hourly/Daily/Weekly/Monthly/Yearly
-OutflowsType                Represents the time period (hour, day, week, month, year) over which the specified amount of energy must be consumed/withdrawn from the storage unit.
-                            If empty, Hourly by default                                                                                                                                                                   Hourly/Daily/Weekly/Monthly/Yearly
-EnergyType                  Represents the time period (hour, day, week, month, year) over which the specified max/min amount of energy is to be produced by the unit
-                            If empty, Hourly by default                                                                                                                                                                   Hourly/Daily/Weekly/Monthly/Yearly
+StorageType                 Represents the time period (hour, day, week, month, year) over which the requirement that aggregate electricity production must equal aggregate consumption is enforced.                      Hourly/Daily/Weekly/Monthly/Yearly
+                            If empty, Hourly by default
+OutflowsType                Represents the time period (hour, day, week, month, year) over which the specified amount of energy must be consumed/withdrawn from the storage unit.                                         Hourly/Daily/Weekly/Monthly/Yearly
+                            If empty, Hourly by default
+EnergyType                  Represents the time period (hour, day, week, month, year) over which the specified max/min amount of energy is to be produced by the unit.                                                    Hourly/Daily/Weekly/Monthly/Yearly
+                            If empty, Hourly by default
 MustRun                     Must-run unit                                                                                                                                                                                 Yes/No
 InitialPeriod               Initial period (year) when the unit is installed or can be installed, if it is a candidate                                                                                                    Year
 FinalPeriod                 Final   period (year) when the unit is installed or can be installed, if it is a candidate                                                                                                    Year
@@ -822,7 +822,7 @@ BinaryInvestment      Binary reservoir investment decision                      
 FixedInvestmentCost   Overnight investment (capital -CAPEX- and fixed O&M -FOM-) cost                                                         M€
 FixedChargeRate       Fixed-charge rate to annualize the overnight investment cost                                                            p.u.
 InitialPeriod         Initial period (year) when the unit is installed or can be installed, if candidate                                      Year
-FinalPeriod           Final   period (year) when the unit is installed or can be installed, if the candidate                                      Year
+FinalPeriod           Final   period (year) when the unit is installed or can be installed, if candidate                                      Year
 ====================  ======================================================================================================================  ===================================
 
 The model always considers a month of 672 hours, i.e., 4 weeks, not calendar months. The model assumes a year of 8736 hours, i.e., 52 weeks, not calendar years.
