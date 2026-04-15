@@ -3,6 +3,7 @@ Change Log
 
 [4.18.17RC] - 2026-04-15
 -------------------------
+- [FIXED] fix case with multiple independent scenarios
 - [CHANGED] updated usage of appsi_gurobi and gurobi_persistent solvers
 - [CHANGED] detection of generators with minimum and maximum energy constraints
 

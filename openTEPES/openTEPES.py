@@ -50,6 +50,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
 
     # sector decomposition to get proxy of the hydrogen sector: 0 to solve the complete problem, 1 to solve sector decomposition
     pIndSectorDecomposition = 0
+    mTEPES.pIndSectorDecomposition = pIndSectorDecomposition
 
     # Reading sets and parameters
     InputData(DirName, CaseName, mTEPES, pIndLogConsole)
@@ -165,8 +166,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
                 and sum(1 for pp,hc in mTEPES.phc if pp <= p) == 0 or mTEPES.pIndBinNetHeatInvest() == 2):
 
                 # No minimum RES requirements and no emission limit
-                if  (max([mTEPES.pRESEnergy[p,ar] for ar in mTEPES.ar]) == 0
-                and (min([mTEPES.pEmission [p,ar] for ar in mTEPES.ar]) == math.inf or sum(mTEPES.pEmissionRate[nr] for nr in mTEPES.nr) == 0)):
+                if (max([mTEPES.pRESEnergy[p,ar] for ar in mTEPES.ar]) == 0 and (min([mTEPES.pEmission [p,ar] for ar in mTEPES.ar]) == math.inf or sum(mTEPES.pEmissionRate[nr] for nr in mTEPES.nr) == 0)):
 
                     if (p,sc) == mTEPES.ps.last() and st == mTEPES.Last_st and mTEPES.NoRepetition == 0:
                         mTEPES.NoRepetition = 1
@@ -190,8 +190,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
                             c.deactivate()
 
                 # Minimum RES requirements or emission limit
-                elif  (max([mTEPES.pRESEnergy[p,ar] for ar in mTEPES.ar]) > 0
-                   or (min([mTEPES.pEmission [p,ar] for ar in mTEPES.ar]) < math.inf and sum(mTEPES.pEmissionRate[nr] for nr in mTEPES.nr) > 0)):
+                elif (max([mTEPES.pRESEnergy[p,ar] for ar in mTEPES.ar]) > 0 or (min([mTEPES.pEmission [p,ar] for ar in mTEPES.ar]) < math.inf and sum(mTEPES.pEmissionRate[nr] for nr in mTEPES.nr) > 0)):
 
                     if st == mTEPES.Last_st and mTEPES.NoRepetition == 0:
 
@@ -232,12 +231,15 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
                             StartTime         = time.time()
                             print('Writing LP file                        ... ', round(WritingLPFileTime), 's')
 
-                        # there are investment decisions (it is an expansion and operation model), or there are system emission constraints
-                        ProblemSolving(DirName, CaseName, SolverName, mTEPES, mTEPES, pIndLogConsole, p, sc, st, mTEPES.p.ord(p)*mTEPES.sc.ord(sc)*mTEPES.st.ord(st))
+                        mTEPES.pScenProb[p,sc] = 1.0
+                        # there are system emission or RES requirement constraints
+                        ProblemSolving           (DirName, CaseName, SolverName, mTEPES, mTEPES, pIndLogConsole, p, sc, st, mTEPES.p.ord(p)*mTEPES.sc.ord(sc)*mTEPES.st.ord(st))
                         # if pIndSectorDecomposition and len(mTEPES.psnel):
-                        #     SectorDecomposition(DirName, CaseName, SolverName, mTEPES, mTEPES, pIndLogConsole, p, sc, st)
+                        #     ProblemSolving     (DirName, CaseName, SolverName, mTEPES, mTEPES, pIndLogConsole, p, sc, st, 1)
+                        #     SectorDecomposition(DirName, CaseName, SolverName, mTEPES, mTEPES, pIndLogConsole, p, sc, st   )
                         # else:
                         #     ProblemSolving     (DirName, CaseName, SolverName, mTEPES, mTEPES, pIndLogConsole, p, sc, st, mTEPES.p.ord(p)*mTEPES.sc.ord(sc)*mTEPES.st.ord(st))
+                        mTEPES.pScenProb[p,sc] = 0.0
 
                         # deactivate the constraints of the previous period and scenario
                         for c in mTEPES.component_objects(pyo.Constraint, active=True):
@@ -290,9 +292,10 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
                             print('Writing LP file                        ... ', round(WritingLPFileTime), 's')
 
                         # there are investment decisions (it is an expansion and operation model), or there are system emission constraints
-                        ProblemSolving(DirName, CaseName, SolverName, mTEPES, mTEPES, pIndLogConsole, p, sc, st, 1)
+                        ProblemSolving           (DirName, CaseName, SolverName, mTEPES, mTEPES, pIndLogConsole, p, sc, st, 1)
                         # if pIndSectorDecomposition and len(mTEPES.psnel):
-                        #     SectorDecomposition(DirName, CaseName, SolverName, mTEPES, mTEPES, pIndLogConsole, p, sc, st)
+                        #     ProblemSolving     (DirName, CaseName, SolverName, mTEPES, mTEPES, pIndLogConsole, p, sc, st, 1)
+                        #     SectorDecomposition(DirName, CaseName, SolverName, mTEPES, mTEPES, pIndLogConsole, p, sc, st   )
                         # else:
                         #     ProblemSolving     (DirName, CaseName, SolverName, mTEPES, mTEPES, pIndLogConsole, p, sc, st, 1)
 
