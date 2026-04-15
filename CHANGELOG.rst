@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.18.17RC] - 2026-04-12
+[4.18.17RC] - 2026-04-15
 -------------------------
+- [CHANGED] updated usage of appsi_gurobi and gurobi_persistent solvers
 - [CHANGED] detection of generators with minimum and maximum energy constraints
 
 [4.18.16] - 2026-04-10
