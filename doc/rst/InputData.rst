@@ -169,7 +169,7 @@ A description of the system parameters included in the file ``oT_Data_Parameter.
 Item                  Description
 ====================  =============================================================================================================  =========
 ENSCost               Cost of energy not served (ENS). Cost of load curtailment. Value of Lost Load (VoLL)                           €/MWh
-HNSCost               Cost of hydrogen not served (HNS). The cost of the H2 excess is one tenth of this value                        €/kgH2
+HNSCost               Cost of hydrogen not served (HNS). The cost of the H2 surplus is **half** of this value                        €/kgH2
 HTNSCost              Cost of heat not served (HTNS)                                                                                 €/MWh
 CO2Cost               Cost of CO2 emissions                                                                                          €/tCO2
 UpReserveActivation   Upward   reserve activation (proportion of upward   operating reserve deployed to produce energy, e.g., 0.15)  p.u.

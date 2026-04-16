@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.18.17RC] - 2026-04-15
+[4.18.17RC] - 2026-04-16
 -------------------------
+- [CHANGED] changed the penalty for hydrogen surplus to 0.5 the cost of hydrogen not served
 - [FIXED] fix case with multiple independent scenarios
 - [CHANGED] updated usage of appsi_gurobi and gurobi_persistent solvers
 - [CHANGED] detection of generators with minimum and maximum energy constraints
