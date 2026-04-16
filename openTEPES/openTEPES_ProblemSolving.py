@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 15, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 16, 2026
 """
 
 import time
@@ -60,8 +60,6 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
         else:
             for var in OptModel.component_data_objects(pyo.Var, active=True, descend_into=True):
                 Solver.update_var(var)
-            # for n,el in mTEPES.n*mTEPES.el:
-            #     Solver.update_var(OptModel.vESSTotalCharge[p,sc,n,el])
 
     if SolverName == 'gurobi' or SolverName == 'gurobi_direct' or SolverName == 'appsi_gurobi':
         Solver.options['OutputFlag'      ] = 1                                                 # suppress log file
