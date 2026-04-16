@@ -68,7 +68,10 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
         Solver.options['LogFile'         ] = FileName
         Solver.options['DisplayInterval' ] = 100
         Solver.options['LPWarmStart'     ] =  2
-        Solver.options['Method'          ] =  2
+        if ncall == 1:
+            Solver.options['Method'      ] =  2
+        else:
+            Solver.options['Method'      ] = -1
         Solver.options['Crossover'       ] = -1
         Solver.options['MIPGap'          ] = 0.01
         Solver.options['Threads'         ] = int((psutil.cpu_count(logical=True) + psutil.cpu_count(logical=False))/2)
@@ -85,7 +88,10 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
         Solver.set_gurobi_param('LogFile',    FileName)
         Solver.set_gurobi_param('DisplayInterval', 100)
         Solver.set_gurobi_param('LPWarmStart',       2)
-        Solver.set_gurobi_param('Method',            2)
+        if ncall == 1:
+            Solver.set_gurobi_param('Method',        2)
+        else:
+            Solver.set_gurobi_param('Method',       -1)
         Solver.set_gurobi_param('Crossover',        -1)
         Solver.set_gurobi_param('MIPGap',         0.01)
         Solver.set_gurobi_param('Threads', int((psutil.cpu_count(logical=True) + psutil.cpu_count(logical=False))/2))
@@ -93,7 +99,10 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
         Solver.set_gurobi_param('IterationLimit', 36000000)
     if SolverName == 'cplex':
         # Solver.options['LogFile'          ] = FileName
-        Solver.options['LPMethod'           ] = 4                                                 # barrier method
+        if ncall == 1:
+            Solver.options['LPMethod'       ] = 4
+        else:
+            Solver.options['LPMethod'       ] = 0
         Solver.options['Threads'            ] = int((psutil.cpu_count(logical=True) + psutil.cpu_count(logical=False))/2)
         Solver.options['TimeLimit'          ] =    72000
         # Solver.options['BarCrossAlg'      ] = 0
