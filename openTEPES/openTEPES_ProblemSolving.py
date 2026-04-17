@@ -108,10 +108,10 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
         # Solver.options['PreInd'           ] = 1
         # Solver.options['RINSHeur'         ] = 100
         # Solver.options['EpGap'            ] = 0.01
-    if SolverName == 'appsi_highs':
+    if SolverName == 'highs':
         Solver.options['log_file'               ] = FileName
         Solver.options['solver'                 ] = 'choose'
-        Solver.options['simplex_strategy'       ] = 0
+        Solver.options['simplex_strategy'       ] = 1
         Solver.options['run_crossover'          ] = 'on'
         Solver.options['mip_rel_gap'            ] = 0.01
         Solver.options['parallel'               ] = 'choose'

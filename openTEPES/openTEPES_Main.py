@@ -660,7 +660,7 @@
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <https://www.gnu.org/licenses/>.
 
-# Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 16, 2026
+# Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 17, 2026
 # simplicity and transparency in power systems planning
 
 # Developed by
@@ -693,7 +693,7 @@ GREEN  = "\033[32m"
 BLUE   = "\033[34m"
 RESET  = "\033[0m"
 
-print(GREEN + 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.17RC - April 16, 2026' + RESET)
+print(GREEN + 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.17RC - April 17, 2026' + RESET)
 print(BLUE  + '#### Academic research license - for non-commercial use only ####' + RESET + '\n')
 
 parser = argparse.ArgumentParser(description='Introducing main parameters...')
@@ -731,8 +731,6 @@ def main():
     # Normalize solver name to make comparisons case-insensitive.
     if args.solver is not None:
         args.solver = args.solver.strip().lower()
-        if args.solver == 'highs':
-            args.solver = 'appsi_highs'
     if args.result is None:
         args.result = input('Would you like to write all the results? (Default {}): '.format(RESULT))
         if args.result == '':

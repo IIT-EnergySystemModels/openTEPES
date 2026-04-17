@@ -1,8 +1,9 @@
 Change Log
 =============
 
-[4.18.17RC] - 2026-04-16
+[4.18.17RC] - 2026-04-17
 -------------------------
+- [CHANGED] changed the simplex strategy for highs and from appsi_highs to highs
 - [CHANGED] changed the penalty for hydrogen surplus to 0.5 the cost of hydrogen not served
 - [FIXED] fix case with multiple independent scenarios
 - [CHANGED] updated usage of appsi_gurobi and gurobi_persistent solvers
