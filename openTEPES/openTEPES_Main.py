@@ -686,7 +686,7 @@ import psutil
 import os
 import time
 # import pkg_resources
-from .openTEPES import openTEPES_run
+from .openTEPES import openTEPES_run, OUTPUT_CATEGORIES, OUTPUT_ALIASES
 
 
 GREEN  = "\033[32m"
@@ -701,7 +701,18 @@ parser.add_argument('--case',   type=str, default=None)
 parser.add_argument('--dir',    type=str, default=None)
 parser.add_argument('--solver', type=str, default=None)
 parser.add_argument('--log',    type=str, default=None)
-parser.add_argument('--result', type=str, default=None)
+parser.add_argument('--result', type=str, default=None,
+                    help="Yes/No — coarse-grained output toggle (kept for backward compatibility).")
+parser.add_argument('--results', type=str, default=None,
+                    help=("Comma-separated list of output categories: "
+                          + ", ".join(OUTPUT_CATEGORIES)
+                          + ". Aliases: 'min', 'full'. Overrides --result. "
+                          "Example: --results=cost,investment,economic,plots"))
+parser.add_argument('--no-plots', action="store_true", default=False,
+                    help="Disable HTML plot output (overrides 'plots' in --results).")
+parser.add_argument('--out',    type=str, default=None,
+                    help="Output directory for oT_Result_*.csv and oT_Plot_*.html. "
+                         "Default: <dir>/<case>.")
 
 DIR    = os.path.dirname(__file__)
 CASE   = '9n'
@@ -745,11 +756,34 @@ def main():
     import sys
     print(sys.argv)
     print(args)
-    model = openTEPES_run(args.dir, args.case, args.solver, args.result, args.log)
+
+    # Translate --results into a {category: bool} dict consumed by openTEPES_run.
+    output_spec = None
+    if args.results is not None:
+        items = [s.strip().lower() for s in args.results.split(",") if s.strip()]
+        expanded = []
+        for it in items:
+            if it in OUTPUT_ALIASES:
+                expanded.extend(OUTPUT_ALIASES[it])
+            else:
+                expanded.append(it)
+        unknown = [it for it in expanded if it not in OUTPUT_CATEGORIES]
+        if unknown:
+            sys.exit(f"Unknown --results categories: {unknown}. "
+                     f"Valid: {sorted(OUTPUT_CATEGORIES)} + aliases {sorted(OUTPUT_ALIASES)}.")
+        output_spec = {c: (c in expanded) for c in OUTPUT_CATEGORIES}
+    if args.no_plots:
+        output_spec = output_spec or {}
+        output_spec["plots"] = False
+
+    model = openTEPES_run(args.dir, args.case, args.solver, args.result, args.log,
+                          output_spec=output_spec, out_path=args.out)
     # Computing the elapsed time
     ElapsedTime = round(time.time() - StartTime)
     print('Total time                             ...  {} s'.format(ElapsedTime))
-    path_to_write_time = os.path.join(args.dir,args.case,f'openTEPES_time_{CASE}.log')
+    _time_log_dir = args.out if args.out else os.path.join(args.dir, args.case)
+    os.makedirs(_time_log_dir, exist_ok=True)
+    path_to_write_time = os.path.join(_time_log_dir, f'openTEPES_time_{args.case}.log')
     with open(path_to_write_time, 'w') as f:
         f.write(('Elapsed time ' + str(ElapsedTime) + ' s   on ' + platform.node() + ' [' + platform.system() + ' ' +
                  platform.release() + '; ' + str(psutil.cpu_count(logical=False)) + ' ' + platform.processor() +

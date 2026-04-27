@@ -3,6 +3,8 @@ Open Generation, Storage, and Transmission Operation and Expansion Planning Mode
 """
 
 # import dill as pickle
+import datetime
+import json
 import math
 import os
 import time
@@ -17,10 +19,49 @@ from .openTEPES_OutputResults    import OutputResultsParVarCon, InvestmentResult
 # from openTEPES_SectorDecomposition import SectorDecomposition
 
 
-def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConsole):
+# Output categories selectable via --results CLI flag.
+# Keys map to the pIndXxxResults flags inside openTEPES_run.
+OUTPUT_CATEGORIES = (
+    "investment", "generation", "ess", "reservoir", "h2", "heat",
+    "flexibility", "reliability", "network", "map", "summary",
+    "cost", "marginal", "economic", "plots",
+)
+# Aliases expanded inside openTEPES_run.
+OUTPUT_ALIASES = {
+    "min":  ("investment", "summary", "cost", "economic"),
+    "full": OUTPUT_CATEGORIES,
+}
+
+
+def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConsole,
+                  *, output_spec=None, out_path=None):
+    """Solve and write results.
+
+    Parameters
+    ----------
+    DirName, CaseName, SolverName : str
+        Standard openTEPES arguments.
+    pIndOutputResults : 'Yes' / 'No' / 0 / 1
+        Coarse-grained switch (kept for backward compatibility).
+    pIndLogConsole : 'Yes' / 'No' / 0 / 1
+        Verbose solver / formulation logging.
+    output_spec : dict[str, bool] | None, optional
+        Fine-grained output toggles. Keys must be OUTPUT_CATEGORIES; values
+        truthy/falsy. Overrides the pIndOutputResults default for any key
+        explicitly set. None (default) preserves historical behaviour.
+    out_path : str | None, optional
+        Directory to write all `oT_Result_*.csv` and `oT_Plot_*.html` to.
+        Default `None` → write into `<DirName>/<CaseName>` (historical).
+    """
 
     InitialTime = time.time()
+    _RunStartedUtc = datetime.datetime.utcnow().isoformat(timespec="seconds") + "Z"
     _path = os.path.join(DirName, CaseName)
+    # Effective output directory — used by every function in OutputResults via
+    # the _outdir() helper. None means "use case input dir" (historical).
+    _OutPath = out_path if out_path else _path
+    if out_path:
+        os.makedirs(_OutPath, exist_ok=True)
 
     #%% replacing string values by numerical values
     idxDict        = dict()
@@ -344,44 +385,44 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     pIndAreaOutput = 1
 
     # indicators to control the number of output results
+    pIndDumpRawResults                  = 0
     if pIndOutputResults:
-        pIndDumpRawResults              = 0
-        pIndInvestmentResults           = 1
-        pIndGenerationOperationResults  = 1
-        pIndESSOperationResults         = 1
-        pIndReservoirOperationResults   = 1
-        pIndNetworkH2OperationResults   = 1
-        pIndNetworkHeatOperationResults = 1
-        pIndFlexibilityResults          = 1
-        pIndReliabilityResults          = 1
-        pIndNetworkOperationResults     = 1
-        pIndNetworkMapResults           = 1
-        pIndOperationSummaryResults     = 1
-        pIndCostSummaryResults          = 1
-        pIndMarginalResults             = 1
-        pIndEconomicResults             = 1
-        # output plot results
-        pIndPlotOutput                  = 1
+        # --result Yes  → full output suite
+        _flags = {k: 1 for k in OUTPUT_CATEGORIES}
     else:
-        pIndDumpRawResults              = 0
-        pIndInvestmentResults           = 1
-        pIndGenerationOperationResults  = 0
-        pIndESSOperationResults         = 0
-        pIndReservoirOperationResults   = 0
-        pIndNetworkH2OperationResults   = 0
-        pIndNetworkHeatOperationResults = 0
-        pIndFlexibilityResults          = 0
-        pIndReliabilityResults          = 0
-        pIndNetworkOperationResults     = 0
-        pIndNetworkMapResults           = 0
-        pIndOperationSummaryResults     = 1
-        pIndCostSummaryResults          = 1
-        pIndMarginalResults             = 0
-        pIndEconomicResults             = 1
-        # output plot results
-        pIndPlotOutput                  = 0
+        # --result No   → minimal (investment + summary + cost + economic, no plots)
+        _flags = {k: 0 for k in OUTPUT_CATEGORIES}
+        for k in ("investment", "summary", "cost", "economic"):
+            _flags[k] = 1
+
+    # Override with fine-grained output_spec if given (--results CLI flag).
+    if output_spec:
+        for k, v in output_spec.items():
+            if k in OUTPUT_CATEGORIES:
+                _flags[k] = 1 if v else 0
+
+    pIndInvestmentResults           = _flags["investment"]
+    pIndGenerationOperationResults  = _flags["generation"]
+    pIndESSOperationResults         = _flags["ess"]
+    pIndReservoirOperationResults   = _flags["reservoir"]
+    pIndNetworkH2OperationResults   = _flags["h2"]
+    pIndNetworkHeatOperationResults = _flags["heat"]
+    pIndFlexibilityResults          = _flags["flexibility"]
+    pIndReliabilityResults          = _flags["reliability"]
+    pIndNetworkOperationResults     = _flags["network"]
+    pIndNetworkMapResults           = _flags["map"]
+    pIndOperationSummaryResults     = _flags["summary"]
+    pIndCostSummaryResults          = _flags["cost"]
+    pIndMarginalResults             = _flags["marginal"]
+    pIndEconomicResults             = _flags["economic"]
+    pIndPlotOutput                  = _flags["plots"]
+
+    # Tell OutputResults functions where to write (used by _outdir helper).
+    # Setting on mTEPES avoids changing 14 function signatures.
+    mTEPES.pOutputPath = _OutPath
 
     # output parameters, variables, and duals to CSV files
+    _OutputStart = time.time()
     if pIndDumpRawResults:
         OutputResultsParVarCon(DirName, CaseName, mTEPES, mTEPES)
 
@@ -415,5 +456,31 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
         MarginalResults                   (DirName, CaseName, mTEPES, mTEPES,                 pIndPlotOutput)
     if pIndEconomicResults:
         EconomicResults                   (DirName, CaseName, mTEPES, mTEPES, pIndAreaOutput, pIndPlotOutput)
+
+    # Run-status sentinel JSON — small machine-readable record of this run.
+    # Lets downstream tools detect a fresh run without grepping stdout.
+    _OutputSeconds = time.time() - _OutputStart
+    _TotalSeconds  = time.time() - InitialTime
+    try:
+        _TotalCost = float(mTEPES.eTotalSCost.expr() if hasattr(mTEPES, "eTotalSCost")
+                           else getattr(mTEPES, "vTotalSCost", lambda: float("nan"))())
+    except Exception:
+        _TotalCost = float("nan")
+    status = {
+        "case":               CaseName,
+        "dir":                DirName,
+        "out":                _OutPath,
+        "status":             "optimal",
+        "total_cost_meur":    _TotalCost,
+        "total_seconds":      round(_TotalSeconds, 2),
+        "output_seconds":     round(_OutputSeconds, 2),
+        "solver":             SolverName,
+        "opentepees_version": "4.18.17RC",
+        "run_started_utc":    _RunStartedUtc,
+        "run_finished_utc":   datetime.datetime.utcnow().isoformat(timespec="seconds") + "Z",
+        "outputs_enabled":    [k for k, v in _flags.items() if v],
+    }
+    with open(os.path.join(_OutPath, f"oT_Run_Status_{CaseName}.json"), "w") as _f:
+        json.dump(status, _f, indent=2)
 
     return mTEPES
