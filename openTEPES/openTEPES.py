@@ -458,23 +458,49 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
         EconomicResults                   (DirName, CaseName, mTEPES, mTEPES, pIndAreaOutput, pIndPlotOutput)
 
     # Run-status sentinel JSON — small machine-readable record of this run.
-    # Lets downstream tools detect a fresh run without grepping stdout.
+    # Lets downstream tools detect a fresh run and read top-level adequacy /
+    # cost numbers without parsing CSVs.
     _OutputSeconds = time.time() - _OutputStart
     _TotalSeconds  = time.time() - InitialTime
+    _SolveSeconds  = max(_TotalSeconds - _OutputSeconds, 0.0)
     try:
         _TotalCost = float(mTEPES.eTotalSCost.expr() if hasattr(mTEPES, "eTotalSCost")
                            else getattr(mTEPES, "vTotalSCost", lambda: float("nan"))())
     except Exception:
         _TotalCost = float("nan")
+    # ENS in MWh and HUE in hours — system-wide totals. Cheap to compute (one
+    # pass over vENS); skipped silently if the variable / index set is missing.
+    _EnsMwh = float("nan")
+    _HueH   = float("nan")
+    try:
+        if hasattr(mTEPES, "vENS") and hasattr(mTEPES, "psnnd"):
+            _ens_psn = {}  # (p, sc, n) -> sum_nd vENS[p,sc,n,nd]
+            for p, sc, n, nd in mTEPES.psnnd:
+                _ens_psn[(p, sc, n)] = _ens_psn.get((p, sc, n), 0.0) + float(mTEPES.vENS[p, sc, n, nd]())
+            _ens_mwh = 0.0
+            _hue_h   = 0.0
+            for (p, sc, n), val in _ens_psn.items():
+                _dur = float(mTEPES.pLoadLevelDuration[p, sc, n]())
+                _ens_mwh += val * _dur
+                if val > 0:
+                    _hue_h += _dur
+            _EnsMwh = round(_ens_mwh, 4)
+            _HueH   = round(_hue_h,   4)
+    except Exception:
+        pass
     status = {
         "case":               CaseName,
         "dir":                DirName,
         "out":                _OutPath,
         "status":             "optimal",
         "total_cost_meur":    _TotalCost,
-        "total_seconds":      round(_TotalSeconds, 2),
+        "ens_mwh":            _EnsMwh,
+        "hue_h":              _HueH,
+        "solve_seconds":      round(_SolveSeconds,  2),
         "output_seconds":     round(_OutputSeconds, 2),
+        "total_seconds":      round(_TotalSeconds,  2),
         "solver":             SolverName,
+        "backend":            getattr(mTEPES, "pOutputBackend", "csv"),
         "opentepees_version": "4.18.17RC",
         "run_started_utc":    _RunStartedUtc,
         "run_finished_utc":   datetime.datetime.utcnow().isoformat(timespec="seconds") + "Z",
