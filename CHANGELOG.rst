@@ -4,6 +4,7 @@ Change Log
 [Unreleased]
 -------------------------
 - [FIXED] fix Big-M coefficient for AC candidate disjunctive Kirchhoff voltage law (eKirchhoff2ndLaw1/2). DC and existing AC lines are unaffected.
+- [ADDED] post-solve warning when the voltage-angle bound pMaxTheta = pi/2 is (nearly) binding.
 
 [4.18.17RC] - 2026-04-17
 -------------------------

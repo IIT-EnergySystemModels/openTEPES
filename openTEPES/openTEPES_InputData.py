@@ -1334,34 +1334,30 @@ def DataConfiguration(mTEPES):
     for g in mTEPES.g:
         mTEPES.dPar['pRatedLinearVarCost'][g] += 1e-3*mTEPES.dPar['pEpsilon']*mTEPES.g.ord(g)
 
-    # BigM maximum flow to be used in the Kirchhoff's 2nd law disjunctive constraint
-    # For AC candidate lines the disjunctive form (eKirchhoff2ndLaw1/2) reads, after
-    # multiplying through by M:
+    # BigM maximum flow to be used in the Kirchhoff's 2nd law disjunctive constraint.
+    # For AC candidate lines (lca) the disjunctive form (eKirchhoff2ndLaw1/2) reads,
+    # after multiplying through by M:
     #     vFlowElec - (theta_i - theta_j) * pSBase / pLineX  <=  M * (1 - vLineCommit)
     # When vLineCommit = 0 the line is not built, vFlowElec is forced to 0 by
     # eNetCapacity1/2, but the angle term remains and is bounded only by the
     # natural Delta-theta range [-pi, pi] (theta is bounded by pMaxTheta = pi/2 at
-    # each bus). The minimum valid Big-M for the constraint to be redundant when
-    # vLineCommit = 0 is therefore  pi * pSBase / pLineX.  The previous heuristic
-    # of  1.5 * NTC  is too tight whenever  NTC < pi * pSBase / (1.5 * pLineX),
-    # which silently bounds Delta-theta on candidate corridors and can make G1
-    # (with candidates) cost more than G0 (without candidates) -- an artefact of
-    # the formulation rather than the physics.
+    # each bus). The minimum valid Big-M making the constraint redundant when
+    # vLineCommit = 0 is therefore  pi * pSBase / pLineX,  and any sufficiently small
+    # epsilon > 0 above that is enough. Existing AC lines (lea) appear in
+    # eKirchhoff2ndLaw1 only as an equality and use pLineNTC purely as a numerical
+    # normaliser. DC lines (led, lcd) are not subject to the disjunctive form at
+    # all -- their entries are left at 0.0 here and converted to 1.0 by the
+    # division-by-zero guard below; the values are never read by the formulation.
+    pMBigMEpsilon = 1e-3
     mTEPES.dPar['pBigMFlowBck'] = mTEPES.dPar['pLineNTCBck']*0.0
     mTEPES.dPar['pBigMFlowFrw'] = mTEPES.dPar['pLineNTCFrw']*0.0
     for lea in mTEPES.lea:
         mTEPES.dPar['pBigMFlowBck'].loc[lea] = mTEPES.dPar['pLineNTCBck'][lea]
         mTEPES.dPar['pBigMFlowFrw'].loc[lea] = mTEPES.dPar['pLineNTCFrw'][lea]
     for lca in mTEPES.lca:
-        M_angle_lca = math.pi * mTEPES.dPar['pSBase'] / mTEPES.dPar['pLineX'][lca] * 1.1
-        mTEPES.dPar['pBigMFlowBck'].loc[lca] = max(mTEPES.dPar['pLineNTCBck'][lca]*1.5, M_angle_lca)
-        mTEPES.dPar['pBigMFlowFrw'].loc[lca] = max(mTEPES.dPar['pLineNTCFrw'][lca]*1.5, M_angle_lca)
-    for led in mTEPES.led:
-        mTEPES.dPar['pBigMFlowBck'].loc[led] = mTEPES.dPar['pLineNTCBck'][led]
-        mTEPES.dPar['pBigMFlowFrw'].loc[led] = mTEPES.dPar['pLineNTCFrw'][led]
-    for lcd in mTEPES.lcd:
-        mTEPES.dPar['pBigMFlowBck'].loc[lcd] = mTEPES.dPar['pLineNTCBck'][lcd]*1.5
-        mTEPES.dPar['pBigMFlowFrw'].loc[lcd] = mTEPES.dPar['pLineNTCFrw'][lcd]*1.5
+        M_angle_lca = (1.0 + pMBigMEpsilon) * math.pi * mTEPES.dPar['pSBase'] / mTEPES.dPar['pLineX'][lca]
+        mTEPES.dPar['pBigMFlowBck'].loc[lca] = M_angle_lca
+        mTEPES.dPar['pBigMFlowFrw'].loc[lca] = M_angle_lca
 
     # if BigM are 0.0 then converted to 1.0 to avoid division by 0.0
     mTEPES.dPar['pBigMFlowBck'] = mTEPES.dPar['pBigMFlowBck'].where(mTEPES.dPar['pBigMFlowBck'] != 0.0, 1.0)

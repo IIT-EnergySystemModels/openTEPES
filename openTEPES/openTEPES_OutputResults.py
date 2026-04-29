@@ -1799,6 +1799,18 @@ def NetworkOperationResults(DirName, CaseName, OptModel, mTEPES):
     OutputToFile = pd.Series(data=[OptModel.vTheta[p,sc,n,nd]()                                   for p,sc,n,nd in mTEPES.psnnd], index=mTEPES.psnnd)
     OutputToFile.to_frame(name='rad').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='rad').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(f'{_path}/oT_Result_NetworkAngle_{CaseName}.csv', sep=',')
 
+    # warn if the voltage-angle bound (pMaxTheta = pi/2) is (nearly) binding -- this
+    # indicates either an undersized Big-M on AC candidate lines, an overconstrained
+    # network, or genuinely insufficient transmission. A binding pi/2 bound clips
+    # the DC-OPF solution non-physically and inflates costs.
+    pMaxThetaTol = 1e-2
+    pMaxThetaVal = math.pi / 2
+    pBindingTheta = OutputToFile.abs().ge((1.0 - pMaxThetaTol) * pMaxThetaVal)
+    if pBindingTheta.any():
+        nBinding = int(pBindingTheta.sum())
+        maxAbs   = float(OutputToFile.abs().max())
+        print(f'WARNING: voltage angle bound pMaxTheta = pi/2 is (nearly) binding in {nBinding} (period, scenario, loadlevel, node) entries; max|theta| = {maxAbs:.6f} rad ({maxAbs/pMaxThetaVal*100:.2f} %% of pi/2). Inspect oT_Result_NetworkAngle_{CaseName}.csv -- the bound may be clipping the DC-OPF solution.')
+
     OutputToFile = pd.Series(data=[OptModel.vENS[p,sc,n,nd]()                                     for p,sc,n,nd in mTEPES.psnnd], index=mTEPES.psnnd)
     OutputToFile *= 1e3
     OutputToFile.to_frame(name='MW' ).reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW' ).rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(f'{_path}/oT_Result_NetworkPNS_{CaseName}.csv', sep=',')
