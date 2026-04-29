@@ -1341,13 +1341,14 @@ def DataConfiguration(mTEPES):
     # When vLineCommit = 0 the line is not built, vFlowElec is forced to 0 by
     # eNetCapacity1/2, but the angle term remains and is bounded only by the
     # natural Delta-theta range [-pi, pi] (theta is bounded by pMaxTheta = pi/2 at
-    # each bus). The minimum valid Big-M making the constraint redundant when
-    # vLineCommit = 0 is therefore  pi * pSBase / pLineX,  and any sufficiently small
-    # epsilon > 0 above that is enough. Existing AC lines (lea) appear in
-    # eKirchhoff2ndLaw1 only as an equality and use pLineNTC purely as a numerical
-    # normaliser. DC lines (led, lcd) are not subject to the disjunctive form at
-    # all -- their entries are left at 0.0 here and converted to 1.0 by the
-    # division-by-zero guard below; the values are never read by the formulation.
+    # each bus). The angle bound is pi * pSBase / pLineX. The flow-side bound is
+    # pLineNTCBck. Take the max of the two so the Big-M is valid for both sides of
+    # the disjunction, and multiply by (1 + epsilon) for numerical slack. Existing
+    # AC lines (lea) appear in eKirchhoff2ndLaw1 only as an equality and use
+    # pLineNTC purely as a numerical normaliser. DC lines (led, lcd) are not
+    # subject to the disjunctive form at all -- their entries are left at 0.0 here
+    # and converted to 1.0 by the division-by-zero guard below; the values are
+    # never read by the formulation.
     pMBigMEpsilon = 1e-3
     mTEPES.dPar['pBigMFlowBck'] = mTEPES.dPar['pLineNTCBck']*0.0
     mTEPES.dPar['pBigMFlowFrw'] = mTEPES.dPar['pLineNTCFrw']*0.0
@@ -1355,7 +1356,7 @@ def DataConfiguration(mTEPES):
         mTEPES.dPar['pBigMFlowBck'].loc[lea] = mTEPES.dPar['pLineNTCBck'][lea]
         mTEPES.dPar['pBigMFlowFrw'].loc[lea] = mTEPES.dPar['pLineNTCFrw'][lea]
     for lca in mTEPES.lca:
-        M_angle_lca = (1.0 + pMBigMEpsilon) * math.pi * mTEPES.dPar['pSBase'] / mTEPES.dPar['pLineX'][lca]
+        M_angle_lca = (1.0 + pMBigMEpsilon) * max(mTEPES.dPar['pLineNTCBck'][lca], math.pi * mTEPES.dPar['pSBase'] / mTEPES.dPar['pLineX'][lca])
         mTEPES.dPar['pBigMFlowBck'].loc[lca] = M_angle_lca
         mTEPES.dPar['pBigMFlowFrw'].loc[lca] = M_angle_lca
 
