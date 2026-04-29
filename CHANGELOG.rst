@@ -3,7 +3,7 @@ Change Log
 
 [Unreleased]
 -------------------------
-- [FIXED] fix Big-M coefficient for AC candidate disjunctive Kirchhoff voltage law (eKirchhoff2ndLaw1/2): take max(1.5*pLineNTC, 1.1*pi*pSBase/pLineX) instead of 1.5*pLineNTC alone; the legacy heuristic was too tight whenever pLineNTC < pi*pSBase/(1.5*pLineX), silently bounding inter-bus angles on the candidate corridor whether or not the line was built and producing a cost(grid_with_candidates) > cost(grid_without_candidates) feasibility-nesting violation. DC and existing AC lines are unaffected.
+- [FIXED] fix Big-M coefficient for AC candidate disjunctive Kirchhoff voltage law (eKirchhoff2ndLaw1/2). DC and existing AC lines are unaffected.
 
 [4.18.17RC] - 2026-04-17
 -------------------------
