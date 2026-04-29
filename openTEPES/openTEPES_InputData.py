@@ -1335,14 +1335,27 @@ def DataConfiguration(mTEPES):
         mTEPES.dPar['pRatedLinearVarCost'][g] += 1e-3*mTEPES.dPar['pEpsilon']*mTEPES.g.ord(g)
 
     # BigM maximum flow to be used in the Kirchhoff's 2nd law disjunctive constraint
+    # For AC candidate lines the disjunctive form (eKirchhoff2ndLaw1/2) reads, after
+    # multiplying through by M:
+    #     vFlowElec - (theta_i - theta_j) * pSBase / pLineX  <=  M * (1 - vLineCommit)
+    # When vLineCommit = 0 the line is not built, vFlowElec is forced to 0 by
+    # eNetCapacity1/2, but the angle term remains and is bounded only by the
+    # natural Delta-theta range [-pi, pi] (theta is bounded by pMaxTheta = pi/2 at
+    # each bus). The minimum valid Big-M for the constraint to be redundant when
+    # vLineCommit = 0 is therefore  pi * pSBase / pLineX.  The previous heuristic
+    # of  1.5 * NTC  is too tight whenever  NTC < pi * pSBase / (1.5 * pLineX),
+    # which silently bounds Delta-theta on candidate corridors and can make G1
+    # (with candidates) cost more than G0 (without candidates) -- an artefact of
+    # the formulation rather than the physics.
     mTEPES.dPar['pBigMFlowBck'] = mTEPES.dPar['pLineNTCBck']*0.0
     mTEPES.dPar['pBigMFlowFrw'] = mTEPES.dPar['pLineNTCFrw']*0.0
     for lea in mTEPES.lea:
         mTEPES.dPar['pBigMFlowBck'].loc[lea] = mTEPES.dPar['pLineNTCBck'][lea]
         mTEPES.dPar['pBigMFlowFrw'].loc[lea] = mTEPES.dPar['pLineNTCFrw'][lea]
     for lca in mTEPES.lca:
-        mTEPES.dPar['pBigMFlowBck'].loc[lca] = mTEPES.dPar['pLineNTCBck'][lca]*1.5
-        mTEPES.dPar['pBigMFlowFrw'].loc[lca] = mTEPES.dPar['pLineNTCFrw'][lca]*1.5
+        M_angle_lca = math.pi * mTEPES.dPar['pSBase'] / mTEPES.dPar['pLineX'][lca] * 1.1
+        mTEPES.dPar['pBigMFlowBck'].loc[lca] = max(mTEPES.dPar['pLineNTCBck'][lca]*1.5, M_angle_lca)
+        mTEPES.dPar['pBigMFlowFrw'].loc[lca] = max(mTEPES.dPar['pLineNTCFrw'][lca]*1.5, M_angle_lca)
     for led in mTEPES.led:
         mTEPES.dPar['pBigMFlowBck'].loc[led] = mTEPES.dPar['pLineNTCBck'][led]
         mTEPES.dPar['pBigMFlowFrw'].loc[led] = mTEPES.dPar['pLineNTCFrw'][led]
