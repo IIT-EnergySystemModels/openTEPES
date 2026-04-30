@@ -491,7 +491,7 @@ A generator can belong to several mutually exclusive sets; their names must be s
 
 A generator can be restricted to only be able to provide reserves while generating or while consuming. The NoOperatingReserve entry accepts two inputs separated by a "|". The first value corresponds to operating reserves while generating, and the second is operating reserves while consuming power. If only one value is entered, both values are considered the same. If no value is entered, both values are considered "No".
 
-If the lower and upper bounds of investment/retirement decisions are very close (with a difference <1e-3) to 0 or 1, they are converted into 0 and 1.
+If the lower and upper bounds of investment/retirement decisions are very close (with a difference <1e-4) to 0 or 1, they are converted into 0 and 1. To forbid investment or retirement on a candidate, set the corresponding upper bound (``InvestmentUp`` or ``RetirementUp``) to ``1e-5``: it falls below the snap threshold and is internally converted to 0. A blank cell or 0 in these columns is interpreted as "no upper bound" (full ``p.u.`` allowed) and lets the candidate be freely chosen by the optimisation.
 
 A hydrogen import can be represented by means of an electric generator with variable cost equal to the import cost and an electrolyzer with a production function ProductionFunctionH2 equal to 1. This generator must be located in an isolated electricity network (from the main one) and the electrolyzer must be located in a node linking this isolated electricity network and the hydrogen network.
 
@@ -701,7 +701,7 @@ Reactance can take a negative value due to the approximation of three-winding tr
 
 Those lines with fixed cost >0 are considered candidates and can be installed. The fixed cost is the product of the overnight investment cost (FixedInvestmentCost) and the fixed charge rate (FixedChargeRate). The reactance of a candidate line doesn't change although the candidate line is invested partially.
 
-If the lower and upper bounds of investment decisions are very close (with a difference <1e-3) to 0 or 1, they are converted into 0 and 1.
+If the lower and upper bounds of investment decisions are very close (with a difference <1e-4) to 0 or 1, they are converted into 0 and 1. To forbid investment on a candidate line, set ``InvestmentUp`` to ``1e-5``: it falls below the snap threshold and is internally converted to 0. A blank cell or 0 in this column is interpreted as "no upper bound" (full ``p.u.`` allowed) and lets the candidate be freely chosen by the optimisation.
 
 Variable electric transmission line TTC forward and backward (optional files)
 ------------------------------------------------------------------------------
@@ -910,7 +910,7 @@ If there is no data for TTCBck, i.e., TTCBck is left empty or is equal to 0, the
 
 Those pipelines with fixed costs>0  are considered candidates and can be installed.
 
-If the lower and upper bounds of investment decisions are very close (with a difference <1e-3) to 0 or 1, they are converted into 0 and 1.
+If the lower and upper bounds of investment decisions are very close (with a difference <1e-4) to 0 or 1, they are converted into 0 and 1. To forbid investment on a candidate pipeline, set ``InvestmentUp`` to ``1e-5``: it falls below the snap threshold and is internally converted to 0. A blank cell or 0 in this column is interpreted as "no upper bound" (full ``p.u.`` allowed) and lets the candidate be freely chosen by the optimisation.
 
 Heat System Input Data
 ======================
@@ -981,7 +981,7 @@ If there is no data for TTCBck, i.e., TTCBck is left empty or is equal to 0, the
 
 Those pipelines with fixed costs>0  are considered candidates and can be installed.
 
-If the lower and upper bounds of investment decisions are very close (with a difference <1e-3) to 0 or 1, they are converted into 0 and 1.
+If the lower and upper bounds of investment decisions are very close (with a difference <1e-4) to 0 or 1, they are converted into 0 and 1. To forbid investment on a candidate pipeline, set ``InvestmentUp`` to ``1e-5``: it falls below the snap threshold and is internally converted to 0. A blank cell or 0 in this column is interpreted as "no upper bound" (full ``p.u.`` allowed) and lets the candidate be freely chosen by the optimisation.
 
 Flow-Based Market Coupling Method
 =================================
