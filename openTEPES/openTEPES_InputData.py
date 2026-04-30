@@ -124,14 +124,16 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         if key not in par.keys():
             par[key] = 0
 
-    # substitute NaN by 0
+    # substitute NaN by 0, with documented exceptions:
+    #   - Efficiency defaults to 1.0 (no losses) instead of 0.0
+    #   - upper-bound columns (InvestmentUp, RetirementUp) default to 1.0 (full p.u. allowed)
+    #     so that an explicit 0 in the CSV is preserved as "forbid investment / retirement"
+    upper_bound_defaults = {'Efficiency': 1.0, 'InvestmentUp': 1.0, 'RetirementUp': 1.0}
     for key,df in dfs.items():
         if 'dfEmission' in key:
             df.fillna(math.inf, inplace=True)
-        elif 'dfGeneration' in key:
-            # build a dict that gives 1.0 for 'Efficiency', 0.0 for everything else
-            fill_values = {col: (1.0 if col == 'Efficiency' else 0.0) for col in df.columns}
-            # one pass over the DataFrame
+        elif 'dfGeneration' in key or 'dfNetwork' in key:
+            fill_values = {col: upper_bound_defaults.get(col, 0.0) for col in df.columns}
             df.fillna(fill_values, inplace=True)
         else:
             df.fillna(0.0, inplace=True)
@@ -441,12 +443,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     par['pLineNTCBck']       = par['pLineNTCBck'].where      (par['pLineNTCBck']  > 0.0,   par['pLineNTCFrw'])
     # replace pLineNTCFrw = 0.0 by pLineNTCBck
     par['pLineNTCFrw']       = par['pLineNTCFrw'].where      (par['pLineNTCFrw']  > 0.0,   par['pLineNTCBck'])
-    # replace pGenUpInvest = 0.0 by 1.0
-    par['pGenUpInvest']      = par['pGenUpInvest'].where     (par['pGenUpInvest'] > 0.0,   1.0               )
-    # replace pGenUpRetire = 0.0 by 1.0
-    par['pGenUpRetire']      = par['pGenUpRetire'].where     (par['pGenUpRetire'] > 0.0,   1.0               )
-    # replace pNetUpInvest = 0.0 by 1.0
-    par['pNetUpInvest']      = par['pNetUpInvest'].where     (par['pNetUpInvest'] > 0.0,   1.0               )
+    # InvestmentUp / RetirementUp defaults are handled at CSV-load time (NaN -> 1.0);
+    # an explicit 0 in the input CSV is preserved as "forbid investment / retirement".
 
     # minimum up- and downtime converted to an integer number of time steps
     # par['pSwitchOnTime']  = round(par['pSwitchOnTime'] /par['pTimeStep']).astype('int')
@@ -468,8 +466,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         par['pH2PipeNTCBck']    = par['pH2PipeNTCBck'].where   (par['pH2PipeNTCBck']     > 0.0, par['pH2PipeNTCFrw'])
         # replace pH2PipeNTCFrw = 0.0 by pH2PipeNTCBck
         par['pH2PipeNTCFrw']    = par['pH2PipeNTCFrw'].where   (par['pH2PipeNTCFrw']     > 0.0, par['pH2PipeNTCBck'])
-        # replace pH2PipeUpInvest = 0.0 by 1.0
-        par['pH2PipeUpInvest']  = par['pH2PipeUpInvest'].where(par['pH2PipeUpInvest']    > 0.0, 1.0                 )
+        # InvestmentUp default (NaN -> 1.0) is handled at CSV-load time;
+        # an explicit 0 is preserved as "forbid investment".
 
     if par['pIndHeat']:
         par['pHeatPipeLength']       = dfs['dfNetworkHeat']['Length'             ]                                                           # heat pipe length                             [km]
@@ -487,8 +485,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         par['pHeatPipeNTCBck']       = par['pHeatPipeNTCBck'].where   (par['pHeatPipeNTCBck']     > 0.0, par['pHeatPipeNTCFrw'])
         # replace pHeatPipeNTCFrw = 0.0 by pHeatPipeNTCBck
         par['pHeatPipeNTCFrw']       = par['pHeatPipeNTCFrw'].where   (par['pHeatPipeNTCFrw']     > 0.0, par['pHeatPipeNTCBck'])
-        # replace pHeatPipeUpInvest = 0.0 by 1.0
-        par['pHeatPipeUpInvest']     = par['pHeatPipeUpInvest'].where (par['pHeatPipeUpInvest']   > 0.0, 1.0                   )
+        # InvestmentUp default (NaN -> 1.0) is handled at CSV-load time;
+        # an explicit 0 is preserved as "forbid investment".
 
     #%% storing the parameters in the model
     mTEPES.dFrame  = dfs

@@ -5,6 +5,7 @@ Change Log
 -------------------------
 - [FIXED] fix Big-M coefficient for AC candidate disjunctive Kirchhoff voltage law (eKirchhoff2ndLaw1/2). DC and existing AC lines are unaffected.
 - [ADDED] post-solve warning when the voltage-angle bound pMaxTheta = pi/2 is (nearly) binding.
+- [FIXED] InvestmentUp / RetirementUp = 0 in oT_Data_Generation_*, oT_Data_Network_*, oT_Data_NetworkHydrogen_*, oT_Data_NetworkHeat_* now correctly enforces "forbid investment / retirement". Previously the input pipeline filled NaN with 0 then silently overrode 0 with 1.0, conflating "no data" with "explicit 0" and contradicting the column's documented [p.u.] semantics. NaN/blank cells still default to 1.0 (the default is now applied at CSV-load time via fillna). **Migration note**: legacy CSVs that used 0 as a "no upper bound" sentinel must leave the cell blank (NaN) instead. Regression test added in tests/test_run.py.
 
 [4.18.17RC] - 2026-04-17
 -------------------------
