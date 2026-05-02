@@ -62,7 +62,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
                 Solver.update_var(var)
 
     if SolverName == 'gurobi' or SolverName == 'gurobi_direct' or SolverName == 'appsi_gurobi':
-        Solver.options['OutputFlag'      ] = 1                                                 # suppress log file
+        Solver.options['OutputFlag'      ] = 1
         Solver.options['LogFile'         ] = FileName
         Solver.options['DisplayInterval' ] = 100
         Solver.options['LPWarmStart'     ] =  2

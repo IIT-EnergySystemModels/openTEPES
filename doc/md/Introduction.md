@@ -1,7 +1,7 @@
-.. openTEPES documentation master file, created by Andres Ramos
+% openTEPES documentation master file, created by Andres Ramos
 
-Introduction
-============
+# Introduction
+
 The *Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS* **(openTEPES)** determines investment plans for new facilities (generators, ESS, electric lines, hydrogen pipelines, and heat pipes) to meet forecasted demand at minimum cost.
 The objective is to evaluate future needs for generation, storage, and electricity, hydrogen, and heat networks. The main results are the guidelines for the future structure of the generation, storage, and transmission systems.
 
@@ -14,7 +14,7 @@ It automatically determines optimal expansion plans that satisfy multiple attrib
 - **Dynamic (perfect foresight)**: the scope of the model corresponds to several periods (years) on a long-term horizon, for example, 2030, 2035, and 2040.
 
   It hierarchically represents the different time horizons for decision-making in an electricity (hydrogen or heat) system:
-  
+
 - Load level: one hour, e.g., 01-01 00:00:00+01:00 to 12-30 23:00:00+01:00, or **quarter of an hour**, e.g., 01-01 00:00:00+01:00 to 30-12 23:45:00+01:00
 
   The time division allows a user-defined flexible representation of the periods for evaluating the system operation. Moreover, it can be run with time intervals of several consecutive hours (bi-hourly or tri-hourly resolution,
@@ -24,9 +24,9 @@ It automatically determines optimal expansion plans that satisfy multiple attrib
 
 - **Stochastic**: several stochastic parameters are considered that can influence the optimal generation, storage, and transmission expansion decisions. The model considers stochastic
   medium-term annual uncertainties (scenarios) related to the system operation. These **operational scenarios** are associated with renewable energy sources, energy inflows and outflows, natural water inflows, operating reserves, ramp reserves, inertia, and electricity, hydrogen, and heat demand.
-  
+
 The objective function includes two main quantifiable costs: **investment costs for generation, storage, and transmission (CAPEX)** and **expected variable operation costs (including generation, consumption, emissions, and reliability costs) (system OPEX)**.
-  
+
 The model formulates a **two-stage stochastic optimization** problem that includes binary generation, storage, and electricity; hydrogen and heat network investment/retirement decisions; generation operation decisions (commitment, startup, and shutdown decisions are also binary); and electric line-switching decisions.
 Capacity expansion considers the adequacy system reserve margin, maximum CO2 emissions, and minimum and maximum energy constraints.
 
@@ -38,7 +38,7 @@ The model also allows a representation of the **hydro system** based on volume a
 Also, it includes a **Power-to-Hydrogen (P2H2)** representation, with hydrogen demand satisfied by electrolyzer-produced hydrogen (electricity consumed to produce hydrogen) and a hydrogen network to distribute it. Besides, it includes a **Power-to-Heat (P2H)** representation,
 with heat demand satisfied by heat pump or electric heater (electricity-consuming) production, and a heat network to distribute the heat. If they are unavailable, it runs on just the other energy carriers.
 The main results of the model can be structured into these topics:
-  
+
 - **Investment**: (generation, storage, hydro reservoirs, electric lines, hydrogen pipelines, and heat pipes) investment decisions and cost
 - **Operation**: unit commitment, startup, and shutdown of non-renewable units, unit output and aggregation by technologies (thermal, storage hydro, pumped-hydro storage, RES), RES curtailment, electric line, hydrogen pipeline, and heat pipe flows, line ohmic losses, node voltage angles, upward and downward operating reserves, upward and downward ramp reserves, ESS inventory levels, hydro reservoir volumes, power, hydrogen, and heat not served
 - **Emissions**: CO2 emissions by unit
@@ -48,5 +48,5 @@ The main results of the model can be structured into these topics:
 
 Results are shown in csv files and graphical plots.
 
-openTEPES is being used by `investors, market participants, system planners, and consultants <https://opentepes.readthedocs.io/en/latest/Projects.html>`_. A careful implementation has been carried out to avoid numerical problems by scaling parameters, variables, and equations of the optimization problem, allowing the model to be used for very large-scale cases, e.g., the European system with hourly detail.
+openTEPES is being used by [investors, market participants, system planners, and consultants](https://opentepes.readthedocs.io/en/latest/Projects.html). A careful implementation has been carried out to avoid numerical problems by scaling parameters, variables, and equations of the optimization problem, allowing the model to be used for very large-scale cases, e.g., the European system with hourly detail.
 For example, a European operation case study with hourly detail has reached 39.7 million constraints and 34.7 million variables of an LP problem. The mainland Spain operation case has reached 5.2 million constraints and 6.8 million variables (1.3 million binary).
