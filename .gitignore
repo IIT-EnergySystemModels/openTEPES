@@ -133,3 +133,13 @@ dmypy.json
 .pyre/
 *.lp
 *.lp
+
+# openTEPES run artifacts (test-case workspace pollution)
+oT_Result_*.csv
+oT_Run_Status_*.json
+oT_Plot_*.png
+oT_Plot_*.html
+*.pid
+
+# Code intelligence index (local tooling)
+.code_intel/
