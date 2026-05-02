@@ -1,12 +1,9 @@
 # Change Log
 
-## [Unreleased]
+## [4.18.17RC] - 2026-04-17
 
 - [FIXED] fix Big-M coefficient for AC candidate disjunctive Kirchhoff voltage law (eKirchhoff2ndLaw1/2). DC and existing AC lines are unaffected.
 - [ADDED] post-solve warning when the voltage-angle bound pMaxTheta = pi/2 is (nearly) binding.
-
-## [4.18.17RC] - 2026-04-17
-
 - [CHANGED] changed the simplex strategy for highs and from appsi_highs to highs
 - [CHANGED] changed the penalty for hydrogen surplus to 0.5 the cost of hydrogen not served
 - [FIXED] fix case with multiple independent scenarios
