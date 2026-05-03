@@ -76,12 +76,12 @@ Uganda 2030 Electric System (118 generators, 49 nodes, 205 lines) one scenario w
 
 The model also plots some additional plots.
 
-All the results of the case are saved in DuckDB data base. By default this option is not used but you can easily activate it writing pIndDumpRawResults = 1 in lines 324 and 342 of openTEPES.py module.
+All the results of the case are saved in **DuckDB** database. By default, this option is not used but you can easily activate it writing pIndDumpRawResults = 1 in lines 324 and 342 of openTEPES.py module.
 
 The CSV output files used for outputting the results are briefly described in the following items.
 
-The power is expressed in **MW**, energy or heat in **GWh**, marginal costs in **€/MWh**, and costs in million euros **M€**. Hydrogen is expressed in **tH2**. Reservoir volume is expressed in hm{sup}`3`,
-and water flow in hm{sup}`3`/s. The energy transported in the electricity network is described in **GWh-Mkm**. In each file, the identifiers are described in the first columns, followed by the headers and the description of each variable.
+The power is expressed in **MW**, energy or heat in **GWh**, marginal costs in **€/MWh**, and costs in million euros **M€**. Hydrogen is expressed in **tH2**. Reservoir volume is expressed in **hm{sup}`3`**,
+and water flow in **hm{sup}`3`/s**. The energy transported in the electricity network is described in **GWh-Mkm**. In each file, the identifiers are described in the first columns, followed by the headers and the description of each variable.
 
 ## Investment/Retirement
 
