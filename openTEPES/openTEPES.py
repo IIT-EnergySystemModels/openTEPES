@@ -502,7 +502,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
         "total_seconds":      round(_TotalSeconds,  2),
         "solver":             SolverName,
         "backend":            getattr(mTEPES, "pOutputBackend", "csv"),
-        "opentepees_version": "4.18.17RC",
+        "opentepes_version":  "4.18.17RC",
         "run_started_utc":    _RunStartedUtc,
         "run_finished_utc":   datetime.datetime.utcnow().isoformat(timespec="seconds") + "Z",
         "outputs_enabled":    [k for k, v in _flags.items() if v],
