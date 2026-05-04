@@ -200,12 +200,12 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
                 CycleConstraints                                 (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
 
             # No generator investments and no generator retirements, and no line investments
-            if (    (sum(1 for pp,eb in mTEPES.peb if pp <= p) == 0 or mTEPES.pIndBinGenInvest()     == 2)
-                and (sum(1 for pp,gd in mTEPES.pgd if pp <= p) == 0 or mTEPES.pIndBinGenRetire()     == 2)
-                and (sum(1 for pp,rc in mTEPES.prc if pp <= p) == 0 or mTEPES.pIndBinRsrInvest()     == 2)
-                and (sum(1 for pp,lc in mTEPES.plc if pp <= p) == 0 or mTEPES.pIndBinNetElecInvest() == 2)
-                and (sum(1 for pp,pc in mTEPES.ppc if pp <= p) == 0 or mTEPES.pIndBinNetH2Invest()   == 2)
-                and (sum(1 for pp,hc in mTEPES.phc if pp <= p) == 0 or mTEPES.pIndBinNetHeatInvest() == 2)):
+            if (    (sum(1 for pp,eb       in mTEPES.peb if pp <= p) == 0 or mTEPES.pIndBinGenInvest()     == 2)
+                and (sum(1 for pp,gd       in mTEPES.pgd if pp <= p) == 0 or mTEPES.pIndBinGenRetire()     == 2)
+                and (sum(1 for pp,rc       in mTEPES.prc if pp <= p) == 0 or mTEPES.pIndBinRsrInvest()     == 2)
+                and (sum(1 for pp,ni,nf,cc in mTEPES.plc if pp <= p) == 0 or mTEPES.pIndBinNetElecInvest() == 2)
+                and (sum(1 for pp,ni,nf,cc in mTEPES.ppc if pp <= p) == 0 or mTEPES.pIndBinNetH2Invest()   == 2)
+                and (sum(1 for pp,ni,nf,cc in mTEPES.phc if pp <= p) == 0 or mTEPES.pIndBinNetHeatInvest() == 2)):
 
                 # No minimum RES requirements and no emission limit
                 if (max([mTEPES.pRESEnergy[p,ar] for ar in mTEPES.ar]) == 0 and (min([mTEPES.pEmission [p,ar] for ar in mTEPES.ar]) == math.inf or sum(mTEPES.pEmissionRate[nr] for nr in mTEPES.nr) == 0)):
@@ -289,12 +289,12 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
                                 c.deactivate()
 
             # generator investments or generator retirements, or line investments
-            elif (  (sum(1 for pp,eb in mTEPES.peb if pp <= p) > 0 and mTEPES.pIndBinGenInvest()     < 2)
-                 or (sum(1 for pp,gd in mTEPES.pgd if pp <= p) > 0 and mTEPES.pIndBinGenRetire()     < 2)
-                 or (sum(1 for pp,rc in mTEPES.prc if pp <= p) > 0 and mTEPES.pIndBinRsrInvest()     < 2)
-                 or (sum(1 for pp,lc in mTEPES.plc if pp <= p) > 0 and mTEPES.pIndBinNetElecInvest() < 2)
-                 or (sum(1 for pp,pc in mTEPES.ppc if pp <= p) > 0 and mTEPES.pIndBinNetH2Invest()   < 2)
-                 or (sum(1 for pp,hc in mTEPES.phc if pp <= p) > 0 and mTEPES.pIndBinNetHeatInvest() < 2)):
+            elif (  (sum(1 for pp,eb       in mTEPES.peb if pp <= p) > 0 and mTEPES.pIndBinGenInvest()     < 2)
+                 or (sum(1 for pp,gd       in mTEPES.pgd if pp <= p) > 0 and mTEPES.pIndBinGenRetire()     < 2)
+                 or (sum(1 for pp,rc       in mTEPES.prc if pp <= p) > 0 and mTEPES.pIndBinRsrInvest()     < 2)
+                 or (sum(1 for pp,ni,nf,cc in mTEPES.plc if pp <= p) > 0 and mTEPES.pIndBinNetElecInvest() < 2)
+                 or (sum(1 for pp,ni,nf,cc in mTEPES.ppc if pp <= p) > 0 and mTEPES.pIndBinNetH2Invest()   < 2)
+                 or (sum(1 for pp,ni,nf,cc in mTEPES.phc if pp <= p) > 0 and mTEPES.pIndBinNetHeatInvest() < 2)):
 
                     if (p,sc) == mTEPES.ps.last() and st == mTEPES.Last_st and mTEPES.NoRepetition == 0:
                         mTEPES.NoRepetition = 1
