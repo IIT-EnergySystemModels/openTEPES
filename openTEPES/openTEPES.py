@@ -28,6 +28,7 @@ OUTPUT_CATEGORIES = (
 )
 # Aliases expanded inside openTEPES_run.
 OUTPUT_ALIASES = {
+    "none": (),                                              # sentinel-only — for inner-loop / feasibility-check solves
     "min":  ("investment", "summary", "cost", "economic"),
     "full": OUTPUT_CATEGORIES,
 }
