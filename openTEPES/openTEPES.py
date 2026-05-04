@@ -507,7 +507,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
         "run_finished_utc":   datetime.datetime.utcnow().isoformat(timespec="seconds") + "Z",
         "outputs_enabled":    [k for k, v in _flags.items() if v],
     }
-    with open(os.path.join(_OutPath, f"oT_Run_Status_{CaseName}.json"), "w") as _f:
+    with open(os.path.join(_OutPath, f"openTEPES_Run_Status_{CaseName}.json"), "w") as _f:
         json.dump(status, _f, indent=2)
 
     return mTEPES
