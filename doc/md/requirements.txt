@@ -1,5 +1,4 @@
 urllib3[secure]==2.0.0
-OpenSSL==1.1.1
 sphinx
 myst-parser
 sphinx-rtd-theme
