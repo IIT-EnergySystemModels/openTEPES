@@ -38,3 +38,7 @@ requires = [
 
 [tool.flit.scripts]
 openTEPES_Main = "openTEPES:main"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]

@@ -20,7 +20,7 @@ def case_7d_system(request):
             os.path.join(os.path.dirname(__file__), "../openTEPES")
         ),
         CaseName=case_name,
-        SolverName="glpk",  # or "gurobi" or "appsi_highs"
+        SolverName="appsi_highs",  # or "gurobi" or "glpk"
         pIndLogConsole=0,
         pIndOutputResults=0,
     )

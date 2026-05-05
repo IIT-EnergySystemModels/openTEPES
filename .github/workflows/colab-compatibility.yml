@@ -22,16 +22,11 @@ jobs:
         python-version: '3.11'
         cache: 'pip'
 
-    - name: Install system dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y glpk-utils
-
     - name: Install openTEPES
       run: |
         python -m pip install --upgrade pip
         pip install .
-        pip install pytest
+        pip install pytest highspy
 
     - name: Run tests
       run: |
