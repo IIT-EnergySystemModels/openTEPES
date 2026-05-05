@@ -27,7 +27,7 @@ release = ''
 # ones.
 extensions = [
     'sphinx.ext.todo',
-    'sphinx.ext.githubpages'
+    'sphinx.ext.githubpages',
     'myst_parser'
 ]
 
