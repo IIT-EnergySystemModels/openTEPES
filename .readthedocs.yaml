@@ -31,3 +31,4 @@ python:
       extra_requirements:
         - build
         - docs
+    - requirements: docs/requirements.txt
