@@ -48,14 +48,14 @@ Contact: <mailto:andres.ramos@comillas.edu>
 ```{toctree}
 :maxdepth: 2
 
-Introduction.rst
-Characteristics.rst
-InputData.rst
-OutputResults.rst
-MathematicalFormulation.rst
-Projects.rst
-Papers.rst
-Download.rst
-QA.rst
-ContactUs.rst
+Introduction.md
+Characteristics.md
+InputData.md
+OutputResults.md
+MathematicalFormulation.md
+Projects.md
+Papers.md
+Download.md
+QA.md
+ContactUs.md
 ```

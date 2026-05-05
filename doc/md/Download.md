@@ -52,6 +52,7 @@ Source code can be downloaded from [GitHub](https://github.com/IIT-EnergySystemM
 
 This model is a work in progress and will be updated accordingly. If you want to subscribe to the **openTEPES** model updates, send an email to <mailto:andres.ramos@comillas.edu>
 
+(installation)=
 ## Installation
 
 [Installation guide](https://pascua.iit.comillas.edu/aramos/openTEPES_installation.pdf).
@@ -71,7 +72,7 @@ There are 2 ways to get all required packages under Windows. We recommend using 
    2. [HiGHS](https://pypi.org/project/highspy/) is our recommendation if you want a free and open-source solver.
    3. Install openTEPES via pip by `pip install openTEPES`
 
-Continue at [Get Started](#get-started).
+Continue at {ref}`get-started`.
 
 **GitHub Repository (the hard way)**
 
@@ -110,6 +111,7 @@ GAMS
 The openTEPES model can also be solved with [GAMS](https://www.gams.com/) and a valid [GAMS license](https://www.gams.com/buy_gams/) for a solver. The GAMS language is not included in the openTEPES package and must be installed separately.
 This option is activated by calling the openTEPES model with the solver name 'gams'.
 
+(get-started)=
 ## Get started
 
 Developers
@@ -118,7 +120,7 @@ By cloning the [openTEPES repository](https://github.com/IIT-EnergySystemModels/
 
 Users
 
-If you are not planning on developing, please follow the instructions of the [Installation](#installation).
+If you are not planning on developing, please follow the instructions in {ref}`installation`.
 
 Once installation is complete, openTEPES can be executed in a test mode by using a command prompt.
 In the directory of your choice, open and execute the openTEPES_run.py script by using the following on the command prompt (Windows) or Terminal (Linux). (Depending on what your standard Python version is, you might need to call `python3` instead of `python`.):
