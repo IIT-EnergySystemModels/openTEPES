@@ -35,6 +35,8 @@
   > Stochasticity (scenarios)
   >
   > Binary investment decisions (candidate generators, storage, transmission lines), operation decisions (commitment, startup, shutdown), and mutual exclusivity between units
+  >
+  > Sectors to consider (electricity, heat, hydrogen, hydro basins, etc.)
 
 - As a rule of thumb, a linear optimization problem requires 1 GB of memory for every 1 million rows
 
@@ -42,7 +44,7 @@
 
 ## First steps
 
-- openTEPES is provided with [seven case studies](https://opentepes.readthedocs.io/en/latest/Download.html#cases). Each one has varied characteristics
+- openTEPES is provided with some [case studies](https://opentepes.readthedocs.io/en/latest/Download.html#cases). Each one has varied characteristics
 - Check that you can run them on your PC. Some of them may not run if you have a PC with small RAM memory
 
 ## Potential issues
@@ -55,9 +57,9 @@
 
 ## Some tips
 
-On building an appropriate set of input data files for a case study that can be run on openTEPES:
+On building an appropriate set of **input data files** for a case study that can be run on openTEPES:
 
-- How can I strongly reduce the size of the case study for testing purposes
+- How can I strongly **reduce the size** of the case study for testing purposes
 
   > Delete the duration (column D in `oT_Data_Duration`) of the load levels you want to ignore. For example, if you delete the duration beyond the first 168 hours, you are considering just the first week of the year in the case study
   >
@@ -65,33 +67,33 @@ On building an appropriate set of input data files for a case study that can be 
   >
   > For working with representative stages, see, for example, the [9n7y case study](https://opentepes.readthedocs.io/en/latest/Download.html#cases)
 
-- Relaxing the binary condition of binary variables
+- **Relaxing the binary condition** of binary variables
 
   > In the `oT_Data_Option` file, you can force or relax the binary condition of the binary variables.
   >
   > Besides, in `oT_Data_Generation` and `oT_Data_Network` they can also be relaxed individually for each generator or transmission line.
 
-- How to ignore a scenario or a period
+- How to **ignore a scenario or a period**
 
   > Assign probability 0.0 to the scenario in `oT_Data_Scenario` or weight 0.0 to the period in `oT_Data_Period`
 
-- How to ignore a generator
+- How to **ignore a generator**
 
   > Don’t assign a node to it in `oT_Data_Generation`, i.e., leave the node column empty
   >
   > Set the initial period where the generator can be in operation beyond the year of study in `oT_Data_Generation`
 
-- How to ignore a line
+- How to **ignore a line**
 
   > Set the initial period where the line can be in operation beyond the year of study in `oT_Data_Network`
 
-- All the empty cells of the CSV files are substituted internally by openTEPES with 0.0
+- All the **empty cells** of the CSV files are substituted internally by openTEPES with 0.0
 
   > Therefore, if you want to set the generation of a solar PV to 0.0 at night, then you must put a small value, 0.000001, that will be substituted internally by openTEPES with 0.0. If the cell is left empty, openTEPES will consider the rated capacity of the solar PV unit defined in `oT_Data_Generation` as the generation at night.
 
 - There is no need to include the column for a certain resource within an input data file if there is no data to be defined for this resource within that file. Empty columns don’t need to be included in the input data CSV files, including `oT_Data_VariableMaxGeneration`, `oT_Data_VariableMinGeneration`, `oT_Data_VariableMaxConsumption`, `oT_Data_VariableMinConsumption`, etc.
 
-On analyzing output data:
+On analyzing **output results**:
 
 - Make sure the problem-solving process has been successfully completed, reaching optimality (console log and solver log file provide information on this).
 
