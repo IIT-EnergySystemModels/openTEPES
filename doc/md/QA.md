@@ -38,7 +38,7 @@
   >
   > Sectors to consider (electricity, heat, hydrogen, hydro basins, etc.)
 
-- As a rule of thumb, a linear optimization problem requires **1 GB of memory for every 1 million rows** and **1 GB of memory for every 1 million columns**. For a mixed-integer linear optimization problem, the requirements are much higher, and they depend on the number of binary variables and the number of constraints that include them.
+- As a rule of thumb, a linear optimization problem requires **1 GB of memory for every 1 million rows**. For a mixed-integer linear optimization problem, the requirements are much higher, and they depend on the number of binary variables and the number of constraints that include them.
 
 - So, depending on the size of the optimization problem and the available memory, you may or may not be able to run it on your PC. As an example, the case studies provided can be run on a laptop with 32 GB of memory.
 
@@ -89,9 +89,9 @@ On building an appropriate set of **input data files** for a case study that can
 
 - All the **empty cells** of the CSV files are substituted internally by openTEPES with 0.0
 
-  > Therefore, if you want to set the generation of a solar PV to 0.0 at night, then you must put a small value, 0.000001, that will be substituted internally by openTEPES with 0.0. If the cell is left empty, openTEPES will consider the rated capacity of the solar PV unit defined in `oT_Data_Generation` as the generation at night.
+  > Therefore, if you want to set the generation of a solar PV to 0.0 at night, then you must put a small value, 0.000001, that will be substituted internally by openTEPES with 0.0. If the cell is left empty, openTEPES will consider the **rated capacity** of the solar PV unit defined in `oT_Data_Generation` as the generation at night.
 
-- There is no need to include the column for a certain resource within an input data file if there is no data to be defined for this resource within that file. Empty columns don’t need to be included in the input data CSV files, including `oT_Data_VariableMaxGeneration`, `oT_Data_VariableMinGeneration`, `oT_Data_VariableMaxConsumption`, `oT_Data_VariableMinConsumption`, etc.
+- There is no need to include the column for a certain resource (generator) within an input data file if there is no data to be defined for this resource within that file. Empty columns don’t need to be included in some input data CSV files, including `oT_Data_VariableMaxGeneration`, `oT_Data_VariableMinGeneration`, `oT_Data_VariableMaxConsumption`, `oT_Data_VariableMinConsumption`, etc., but at least an empty column with the name of the resource must be included in the file header
 
 On analyzing **output results**:
 
@@ -101,9 +101,9 @@ On analyzing **output results**:
 
 - Check the level of the overall system variables in the output **energy balance files** (e.g., `oT_Result_BalanceEnergyPerArea`, `oT_Result_BalanceEnergyPerTech`) to assess whether they seem to make sense. Focus first on certain specific variables, including the ones that follow:
 
-  > Non-served energy amounts
+  > Non-served energy amount
   >
-  > Amounts of spilled and curtailed energy
+  > Amount of spilled and curtailed energy
   >
   > Overall output by technology, if you have some reference levels for this to compare to
 
