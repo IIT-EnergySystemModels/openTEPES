@@ -4,7 +4,7 @@
 
 ## How can I install it?
 
-- openTEPES has been tested to be used in Microsoft Windows and Ubuntu (a Linux distribution)
+- openTEPES has been tested to be used in Microsoft Windows, Ubuntu (a Linux distribution), and macOS operating systems
 
 - The installation documentation can be found on
 
