@@ -4,15 +4,15 @@
 
 ## How can I install it?
 
-- openTEPES has been tested to be used in Microsoft Windows, Ubuntu (a Linux distribution), and macOS operating systems
+- openTEPES has been tested to be used in Microsoft Windows, Ubuntu (a Linux distribution), and macOS **operating systems**
 
-- The installation documentation can be found on
+- The **installation** documentation can be found on
 
   > [https://opentepes.readthedocs.io/en/latest/Download.html](https://opentepes.readthedocs.io/en/latest/Download.html)
   >
   > [https://pascua.iit.comillas.edu/aramos/openTEPES_installation.pdf](https://pascua.iit.comillas.edu/aramos/openTEPES_installation.pdf)
 
-- We recommend using these solvers
+- We recommend using these **solvers**
 
   > [Gurobi](https://www.gurobi.com/products/gurobi-optimizer/) because there is a license that is free of charge for academic usage
   >
@@ -24,7 +24,7 @@
 
 - openTEPES requirements depend on the case study
 
-- The main dimensions to take care of are:
+- The **main dimensions** to take care of are:
 
   > Time (periods, load levels). For example, select one every five years or use representative days or define time step 2-3 hours instead of 1 hour
   >
@@ -38,7 +38,7 @@
   >
   > Sectors to consider (electricity, heat, hydrogen, hydro basins, etc.)
 
-- As a rule of thumb, a linear optimization problem requires 1 GB of memory for every 1 million rows
+- As a rule of thumb, a linear optimization problem requires **1 GB of memory for every 1 million rows** and **1 GB of memory for every 1 million columns**. For a mixed-integer linear optimization problem, the requirements are much higher, and they depend on the number of binary variables and the number of constraints that include them.
 
 - So, depending on the size of the optimization problem and the available memory, you may or may not be able to run it on your PC. As an example, the case studies provided can be run on a laptop with 32 GB of memory.
 
@@ -50,8 +50,8 @@
 ## Potential issues
 
 - Check that any item you define (generator, node, technology, area, etc.) is included in the corresponding dictionary (`oT_Dict_Generation`, `oT_Dict_Node`, `oT_Dict_Technology`, `oT_Dict_Area`, etc.). Otherwise, the optimization problem will not run
-- openTEPES is implicitly a network model. Therefore, at least two nodes and one electrical transmission line connecting them must be defined
-- At least one generator must be defined. A thermal generator has a variable cost greater than zero (the product of fuel cost times the linear term ≠ 0). A variable renewable energy unit has zero variable cost (the product of fuel cost times the linear term = 0)
+- openTEPES is implicitly a network model. Therefore, **at least two different nodes** and one electrical transmission line connecting them must be defined
+- **At least one generator** must be defined. A thermal generator has a variable cost greater than zero (the product of fuel cost times the linear term ≠ 0). A variable renewable energy unit has zero variable cost (the product of fuel cost times the linear term = 0)
 - Check the correspondence between the resources you define for the system in the case study to be run and the nodes where they are deemed to be located. The location within the grid of any resource defined must be specified.
 - Check that all the demand in the system within the case study is in a node that can be served with the energy output of some resources located in any node that is connected/to be connected to the former, possibly including generation representing energy not served (ENS).
 
@@ -99,7 +99,7 @@ On analyzing **output results**:
 
 - If the problem-solving process has not produced an optimal solution, check if the system conditions defined within the input data files are too tight, i.e., the system may not have been provided with large enough flexibility for the model to find the optimal problem solution. If this may be the case, some problem constraints could/should be relaxed to allow the model to compute an optimal solution.
 
-- Check the level of the overall system variables in the output energy balance files (e.g., `oT_Result_BalanceEnergyPerArea`, `oT_Result_BalanceEnergyPerTech`) to assess whether they seem to make sense. Focus first on certain specific variables, including the ones that follow:
+- Check the level of the overall system variables in the output **energy balance files** (e.g., `oT_Result_BalanceEnergyPerArea`, `oT_Result_BalanceEnergyPerTech`) to assess whether they seem to make sense. Focus first on certain specific variables, including the ones that follow:
 
   > Non-served energy amounts
   >
