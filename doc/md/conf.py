@@ -92,7 +92,7 @@ html_show_sphinx = False
 html_theme_options = {
     'analytics_id': 'UA-515200-2',  #  Provided by Google in your dashboard
     'description': 'version 4.18.17RC',
-    'body_max_width' : 'none',
+    'body_max_width': 'none',
     'page_width': 'auto',
     'font_family': 'Georgia'
 }

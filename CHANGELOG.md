@@ -1,7 +1,8 @@
 # Change Log
 
-## [4.18.17RC] - 2026-05-04
+## [4.18.17RC] - 2026-05-06
 
+- [FIXED] control of non-existing electrolyzer output in OutputResults module
 - [FIXED] control of generator investments and retirements, and line investments in openTEPES.py
 - [FIXED] write voltage angle only if existing in the optimization problem.
 - [FIXED] fix Big-M coefficient for AC candidate disjunctive Kirchhoff voltage law (eKirchhoff2ndLaw1/2). DC and existing AC lines are unaffected.

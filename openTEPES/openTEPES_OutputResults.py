@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 04, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 06, 2026
 """
 
 import time
@@ -1114,11 +1114,11 @@ def NetworkH2OperationResults(DirName, CaseName, OptModel, mTEPES):
     sPSNARND   = [(p,sc,n,ar,nd)    for p,sc,n,ar,nd    in mTEPES.psn*mTEPES.arnd if sum(1 for el in e2n[nd]) + sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd])]
     sPSNARNDGT = [(p,sc,n,ar,nd,gt) for p,sc,n,ar,nd,gt in sPSNARND*mTEPES.gt     if sum(1 for el in e2t[gt] if (p,el) in mTEPES.pg)                                      ]
 
-    OutputResults2 = pd.Series(data=[ sum(OptModel.vESSTotalCharge[p,sc,n,el      ]()*mTEPES.pLoadLevelDuration[p,sc,n]()/mTEPES.pProductionFunctionH2[el] for el in mTEPES.el if el in e2n[nd] and el in e2t[gt]) for p,sc,n,ar,nd,gt in sPSNARNDGT], index=pd.Index(sPSNARNDGT)).to_frame(name='Generation'       ).reset_index().pivot_table(index=['level_0','level_1','level_2','level_3','level_4'], columns='level_5', values='Generation', aggfunc='sum')
-    OutputResults3 = pd.Series(data=[     OptModel.vH2NS          [p,sc,n,nd      ]()                                                                                                                              for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='HydrogenNotServed')
-    OutputResults4 = pd.Series(data=[-      mTEPES.pDemandH2      [p,sc,n,nd      ]  *mTEPES.pLoadLevelDuration[p,sc,n]()                                                                                          for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='HydrogenDemand'   )
-    OutputResults5 = pd.Series(data=[-sum(OptModel.vFlowH2        [p,sc,n,nd,nf,cc]()                                                                 for nf,cc in lout[nd])                                       for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='HydrogenFlowOut'  )
-    OutputResults6 = pd.Series(data=[ sum(OptModel.vFlowH2        [p,sc,n,ni,nd,cc]()                                                                 for ni,cc in lin [nd])                                       for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='HydrogenFlowIn'   )
+    OutputResults2 = pd.Series(data=[ sum(OptModel.vESSTotalCharge[p,sc,n,el      ]()*mTEPES.pLoadLevelDuration[p,sc,n]()/mTEPES.pProductionFunctionH2[el] for el in mTEPES.el if (p,el) in mTEPES.pes and el in e2n[nd] and el in e2t[gt]) for p,sc,n,ar,nd,gt in sPSNARNDGT], index=pd.Index(sPSNARNDGT)).to_frame(name='Generation'       ).reset_index().pivot_table(index=['level_0','level_1','level_2','level_3','level_4'], columns='level_5', values='Generation', aggfunc='sum')
+    OutputResults3 = pd.Series(data=[     OptModel.vH2NS          [p,sc,n,nd      ]()                                                                                                                                                       for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='HydrogenNotServed')
+    OutputResults4 = pd.Series(data=[-      mTEPES.pDemandH2      [p,sc,n,nd      ]  *mTEPES.pLoadLevelDuration[p,sc,n]()                                                                                                                   for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='HydrogenDemand'   )
+    OutputResults5 = pd.Series(data=[-sum(OptModel.vFlowH2        [p,sc,n,nd,nf,cc]()                                                                      for nf,cc in lout[nd])                                                           for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='HydrogenFlowOut'  )
+    OutputResults6 = pd.Series(data=[ sum(OptModel.vFlowH2        [p,sc,n,ni,nd,cc]()                                                                      for ni,cc in lin [nd])                                                           for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='HydrogenFlowIn'   )
     OutputResults  = pd.concat([OutputResults2, OutputResults3, OutputResults4, OutputResults5, OutputResults6], axis=1)
 
     # OutputResults.stack().rename_axis(['Period', 'Scenario', 'LoadLevel', 'Area', 'Node', 'Technology'], axis=0).reset_index().rename(columns={0: 'tH2'}, inplace=False).to_csv(f'{_path}/oT_Result_BalanceHydrogen_{CaseName}.csv', index=False, sep=',')
