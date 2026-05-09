@@ -371,9 +371,28 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     for c in mTEPES.component_objects(pyo.Constraint):
         c.activate()
 
-    # assign probability 1 to all the periods and scenarios
-    for p,sc in mTEPES.ps:
-        mTEPES.pScenProb[p,sc] = 1.0
+    # Output convention follows the two intended modes:
+    #   - Case 2 (no expansion decisions): the per-scenario solve loop above
+    #     used pScenProb=1.0 for each scenario individually. Reset all
+    #     probabilities to 1.0 so cost-summary writers aggregate the
+    #     independent deterministic solves as a sum.
+    #   - Case 1 (with expansion decisions): the joint solve at the last
+    #     (p,sc) used the input probabilities to minimise probability-
+    #     weighted expected cost. Preserve those probabilities so the
+    #     output reports that same expected cost — otherwise the writers
+    #     would over-count by ~N_scenarios.
+    _hasExpansion = (
+            (sum(1 for _ in mTEPES.peb) > 0 and mTEPES.pIndBinGenInvest()     < 2)
+        or  (sum(1 for _ in mTEPES.pgd) > 0 and mTEPES.pIndBinGenRetire()     < 2)
+        or  (sum(1 for _ in mTEPES.prc) > 0 and mTEPES.pIndBinRsrInvest()     < 2)
+        or  (sum(1 for _ in mTEPES.plc) > 0 and mTEPES.pIndBinNetElecInvest() < 2)
+        or  (sum(1 for _ in mTEPES.ppc) > 0 and mTEPES.pIndBinNetH2Invest()   < 2)
+        or  (sum(1 for _ in mTEPES.phc) > 0 and mTEPES.pIndBinNetHeatInvest() < 2)
+    )
+    if not _hasExpansion:
+        # assign probability 1 to all the periods and scenarios
+        for p,sc in mTEPES.ps:
+            mTEPES.pScenProb[p,sc] = 1.0
 
     # pickle the case study data
     # with open(dump_folder+f'/oT_Case_{CaseName}.pkl','wb') as f:
