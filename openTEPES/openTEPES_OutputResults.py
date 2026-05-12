@@ -1217,10 +1217,15 @@ def NetworkH2OperationResults(DirName, CaseName, OptModel, mTEPES):
     n = list(mTEPES.n)[0]
 
     if len(mTEPES.sc) > 1:
+        sc = None
         for scc in mTEPES.sc:
             if (p,scc) in mTEPES.ps:
                 if abs(mTEPES.pScenProb[p,scc]() - 1.0) < pEpsilon:
                     sc = scc
+        if sc is None:
+            # Joint-with-expansion case keeps input pScenProb (non-uniform, e.g. Savage);
+            # no scenario carries prob=1.0, so pick the first for the snapshot.
+            sc = next(iter(mTEPES.sc))
     else:
         sc = list(mTEPES.sc)[0]
 
@@ -1427,10 +1432,15 @@ def NetworkHeatOperationResults(DirName, CaseName, OptModel, mTEPES):
     n = list(mTEPES.n)[0]
 
     if len(mTEPES.sc) > 1:
+        sc = None
         for scc in mTEPES.sc:
             if (p,scc) in mTEPES.ps:
                 if abs(mTEPES.pScenProb[p,scc]() - 1.0) < pEpsilon:
                     sc = scc
+        if sc is None:
+            # Joint-with-expansion case keeps input pScenProb (non-uniform, e.g. Savage);
+            # no scenario carries prob=1.0, so pick the first for the snapshot.
+            sc = next(iter(mTEPES.sc))
     else:
         sc = list(mTEPES.sc)[0]
 
@@ -2734,10 +2744,15 @@ def NetworkMapResults(DirName, CaseName, OptModel, mTEPES):
     n = list(mTEPES.n)[0]
 
     if len(mTEPES.sc) > 1:
+        sc = None
         for scc in mTEPES.sc:
             if (p,scc) in mTEPES.ps:
                 if abs(mTEPES.pScenProb[p,scc]() - 1.0) < pEpsilon:
                     sc = scc
+        if sc is None:
+            # Joint-with-expansion case keeps input pScenProb (non-uniform, e.g. Savage);
+            # no scenario carries prob=1.0, so pick the first for the snapshot.
+            sc = next(iter(mTEPES.sc))
     else:
         sc = list(mTEPES.sc)[0]
 
