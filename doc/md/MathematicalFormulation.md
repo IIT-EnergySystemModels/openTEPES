@@ -404,134 +404,210 @@ All the periodical (annual) costs of a period $p$ are updated considering that t
 
 Investment and retirement decisions in consecutive years «`eConsecutiveGenInvest`» «`eConsecutiveGenRetire`» «`eConsecutiveRsrInvest`» «`eConsecutiveNetInvest`» «`eConsecutiveNetH2Invest`» «`eConsecutiveNetHeatInvest`»
 
-$icg^{p-1}_g \leq icg^p_g \quad \forall pg, g \in CG$
+```{math}
+icg^{p-1}_g \leq icg^p_g \quad \forall pg, g \in CG
+```
 
-$rcg^{p-1}_g \leq rcg^p_g \quad \forall pg, g \in CG$
+```{math}
+rcg^{p-1}_g \leq rcg^p_g \quad \forall pg, g \in CG
+```
 
-$icr^{p-1}_{e'} \leq icr^p_{e'} \quad \forall pe', e' \in CR$
+```{math}
+icr^{p-1}_{e'} \leq icr^p_{e'} \quad \forall pe', e' \in CR
+```
 
-$ict^{p-1}_{ijc} \leq ict^p_{ijc} \quad \forall pijc, ijc \in CL$
+```{math}
+ict^{p-1}_{ijc} \leq ict^p_{ijc} \quad \forall pijc, ijc \in CL
+```
 
-$ich^{p-1}_{ijc} \leq ich^p_{ijc} \quad \forall pijc, ijc \in CH$
+```{math}
+ich^{p-1}_{ijc} \leq ich^p_{ijc} \quad \forall pijc, ijc \in CH
+```[openTEPES_Main.py](../../../../openTEPES/openTEPES_Main.py)
 
-$icp^{p-1}_{ijc} \leq icp^p_{ijc} \quad \forall pijc, ijc \in CP$
+```{math}
+icp^{p-1}_{ijc} \leq icp^p_{ijc} \quad \forall pijc, ijc \in CP
+```
 
 **Generation operation**
 
 Commitment decision bounded by the investment decision for candidate committed units (all except the VRE units) [p.u.] «`eInstallGenComm`»
 
-$uc^p_{\omega ng} \leq icg^p_g \quad \forall p \omega ng, g \in CG$
+```{math}
+uc^p_{\omega ng} \leq icg^p_g \quad \forall p \omega ng, g \in CG
+```
 
 Commitment decision bounded by the investment or retirement decision for candidate ESS [p.u.] «`eInstallESSComm`» «`eUninstallGenComm`»
 
-$uc^p_{\omega ne} \leq icg^p_e \quad \forall p \omega ne, e \in CE$
+```{math}
+uc^p_{\omega ne} \leq icg^p_e \quad \forall p \omega ne, e \in CE
+```
 
-$uc^p_{\omega ne} \leq 1-rcg^p_e \quad \forall p \omega ne, e \in CE$
+```{math}
+uc^p_{\omega ne} \leq 1-rcg^p_e \quad \forall p \omega ne, e \in CE
+```
 
 Output and consumption bounded by investment or retirement decision for candidate ESS [p.u.] «`eInstallGenCap`» «`eUninstallGenCap`» «`eInstallConESS`»
 
-$\frac{gp^p_{\omega ng}}{\overline{GP}^p_{\omega ng}} \leq icg^p_g \quad \forall p \omega ng, g \in CG$
+```{math}
+\frac{gp^p_{\omega ng}}{\overline{GP}^p_{\omega ng}} \leq icg^p_g \quad \forall p \omega ng, g \in CG
+```
 
-$\frac{gp^p_{\omega ng}}{\overline{GP}^p_{\omega ng}} \leq 1 - rcg^p_g \quad \forall p \omega ng, g \in CG$
+```{math}
+\frac{gp^p_{\omega ng}}{\overline{GP}^p_{\omega ng}} \leq 1 - rcg^p_g \quad \forall p \omega ng, g \in CG
+```
 
-$\frac{gc^p_{\omega ne}}{\overline{GP}^p_{\omega ne}} \leq icg^p_e \quad \forall p \omega ne, e \in CE$
+```{math}
+\frac{gc^p_{\omega ne}}{\overline{GP}^p_{\omega ne}} \leq icg^p_e \quad \forall p \omega ne, e \in CE
+```
 
 Heat production with fuel heater bounded by investment decision for candidate fuel heater [p.u.] «`eInstallFHUCap`»
 
-$\frac{gh^p_{\omega ng}}{\overline{GH}^p_{\omega ng}} \leq icg^p_g \quad \forall p \omega ng, g \in CB$
+```{math}
+\frac{gh^p_{\omega ng}}{\overline{GH}^p_{\omega ng}} \leq icg^p_g \quad \forall p \omega ng, g \in CB
+```
 
 Adequacy electricity system reserve margin [p.u.] «`eAdequacyReserveMarginElec`»
 
-$\sum_{g \in a, EG} \overline{GP}_g A_g + \sum_{g \in a, CG} icg^p_g \overline{GP}_g A_g \geq PD_{pa} RME_{pa} \quad \forall pa$
+```{math}
+\sum_{g \in a, EG} \overline{GP}_g A_g + \sum_{g \in a, CG} icg^p_g \overline{GP}_g A_g \geq PD_{pa} RME_{pa} \quad \forall pa
+```
 
 Adequacy heat system reserve margin [p.u.] «`eAdequacyReserveMarginHeat`»
 
-$\sum_{g \in a, EB} \overline{GH}_g A_g + \sum_{g \in a, CB} icg^p_g \overline{GH}_g A_g \geq PD_{pa} RMH_{pa} \quad \forall pa$
+```{math}
+\sum_{g \in a, EB} \overline{GH}_g A_g + \sum_{g \in a, CB} icg^p_g \overline{GH}_g A_g \geq PD_{pa} RMH_{pa} \quad \forall pa
+```
 
 Maximum CO2 emission per period, scenario, and area [MtC02] «`eMaxSystemEmission`»
 
-$\sum_{ng, g \in a} {DUR^p_{\omega n} ER_g gp^p_{\omega ng}} \leq EL_{pa} \quad \forall p \omega a$
+```{math}
+\sum_{ng, g \in a} {DUR^p_{\omega n} ER_g gp^p_{\omega ng}} \leq EL_{pa} \quad \forall p \omega a
+```
 
 Minimum RES energy per period, scenario, and area [GW] «`eMinSystemRESEnergy`» «`eTotalRESEnergyArea`»
 
-$\frac{\sum_{ng} {DUR^p_{\omega n} gp^p_{\omega ng}}}{\sum_{n} {DUR^p_{\omega n}}} \geq \frac{RL_{pa}}{\sum_{n} {DUR^p_{\omega n}}}  \quad \forall p \omega a$
+```{math}
+\frac{\sum_{ng} {DUR^p_{\omega n} gp^p_{\omega ng}}}{\sum_{n} {DUR^p_{\omega n}}} \geq \frac{RL_{pa}}{\sum_{n} {DUR^p_{\omega n}}}  \quad \forall p \omega a
+```
 
 Balance of electricity generation and demand at each node with ohmic losses [GW] «`eBalanceElec`»
 
-$\sum_{g \in i} gp^p_{\omega ng} - \sum_{e \in i} gc^p_{\omega ne} + ens^p_{\omega ni} = D^p_{\omega ni} + \sum_{jc} l^p_{\omega nijc} + \sum_{jc} l^p_{\omega njic} + \sum_{jc} f^p_{\omega nijc} - \sum_{jc} f^p_{\omega njic} \quad \forall p \omega ni$
+```{math}
+\sum_{g \in i} gp^p_{\omega ng} - \sum_{e \in i} gc^p_{\omega ne} + ens^p_{\omega ni} = D^p_{\omega ni} + \sum_{jc} l^p_{\omega nijc} + \sum_{jc} l^p_{\omega njic} + \sum_{jc} f^p_{\omega nijc} - \sum_{jc} f^p_{\omega njic} \quad \forall p \omega ni
+```
 
 The sum of the inertia of the committed units must satisfy the system inertia for each area [s] «`eSystemInertia`»
 
-$\sum_{g \in a} GI_g uc^p_{\omega ng} \geq SI^p_{\omega na} \quad \forall p \omega na$
+```{math}
+\sum_{g \in a} GI_g uc^p_{\omega ng} \geq SI^p_{\omega na} \quad \forall p \omega na
+```
 
 Upward and downward operating reserves provided for each area by non-renewable generators (including ESS when generating) and ESS, when charging, [GW] «`eOperReserveUp`» «`eOperReserveDw`»
 
-$\sum_{g \in a} ur^p_{\omega ng} + \sum_{e \in a} ur'^p_{\omega ne} = UR^p_{\omega na} \quad \forall p \omega na$
+```{math}
+\sum_{g \in a} ur^p_{\omega ng} + \sum_{e \in a} ur'^p_{\omega ne} = UR^p_{\omega na} \quad \forall p \omega na
+```
 
-$\sum_{g \in a} dr^p_{\omega ng} + \sum_{e \in a} dr'^p_{\omega ne} = DR^p_{\omega na} \quad \forall p \omega na$
+```{math}
+\sum_{g \in a} dr^p_{\omega ng} + \sum_{e \in a} dr'^p_{\omega ne} = DR^p_{\omega na} \quad \forall p \omega na
+```
 
 Upward and downward ramp reserves provided for the system by non-renewable generators (including ESS when generating) [GW/h] «`eSystemRampUp`» «`eSystemRampDw`»
 
-$\frac{\sum_g urr^p_{\omega ng}}{DUR^p_{\omega n}} \geq \sum_a URR^p_{\omega na} \quad \forall p \omega n$
+```{math}
+\frac{\sum_g urr^p_{\omega ng}}{DUR^p_{\omega n}} \geq \sum_a URR^p_{\omega na} \quad \forall p \omega n
+```
 
-$\frac{\sum_g drr^p_{\omega ng}}{DUR^p_{\omega n}} \geq \sum_a DRR^p_{\omega na} \quad \forall p \omega n$
+```{math}
+\frac{\sum_g drr^p_{\omega ng}}{DUR^p_{\omega n}} \geq \sum_a DRR^p_{\omega na} \quad \forall p \omega n
+```
 
 It is assumed that the ramp reserves provided by the generators can be shared among areas of the system.
 
 Ratio between downward and upward operating reserves for each area provided by non-renewable generators (including ESS when generating) and ESS, when charging, [GW] «`eReserveMinRatioDwUp`» «`eReserveMaxRatioDwUp`» «`eRsrvMinRatioDwUpESS`» «`eRsrvMaxRatioDwUpESS`».
 The corresponding constraints are not formulated if $\underline{DtUR}=0$ and $\overline{DtUR}=1$.
 
-$\underline{DtUR} \: ur^p_{\omega ng}  \leq dr^p_{\omega ng}  \leq \overline{DtUR} \: ur^p_{\omega ng}  \quad \forall p \omega ng$
+```{math}
+\underline{DtUR} \: ur^p_{\omega ng}  \leq dr^p_{\omega ng}  \leq \overline{DtUR} \: ur^p_{\omega ng}  \quad \forall p \omega ng
+```
 
-$\underline{DtUR} \: ur'^p_{\omega ne} \leq dr'^p_{\omega ne} \leq \overline{DtUR} \: ur'^p_{\omega ne} \quad \forall p \omega ne$
+```{math}
+\underline{DtUR} \: ur'^p_{\omega ne} \leq dr'^p_{\omega ne} \leq \overline{DtUR} \: ur'^p_{\omega ne} \quad \forall p \omega ne
+```
 
 VRES units (i.e., those with linear variable cost equal to 0 and no storage capacity) do not contribute to the operating reserves.
 
 Operating reserves from ESS can only be provided if enough energy is available for producing [GW] «`eReserveUpIfEnergy`»
 
-$(\frac{p^p_{\omega ne} + ur^p_{\omega ne}}{\underline{GP}^p_{\omega ne}} + 1) \frac{1}{\sqrt{EF_e'}} \leq \frac{i^p_{\omega ne} - \underline{I}^p_{wne}}{DUR^p_{\omega n} \underline{GP}^p_{\omega ne}} \quad \forall p \omega ne$
+```{math}
+(\frac{p^p_{\omega ne} + ur^p_{\omega ne}}{\underline{GP}^p_{\omega ne}} + 1) \frac{1}{\sqrt{EF_e'}} \leq \frac{i^p_{\omega ne} - \underline{I}^p_{wne}}{DUR^p_{\omega n} \underline{GP}^p_{\omega ne}} \quad \forall p \omega ne
+```
 
 or if there is enough storage capacity left for storing [GW] «`eESSReserveDwIfEnergy`»
 
-$(\frac{c^p_{\omega ne} + dr'^p_{\omega ne}}{\underline{GC}^p_{\omega ne}} + 1) \sqrt{EF_e'} \leq \frac{\overline{I}^p_{\omega ne} - i^p_{\omega ne}}{DUR^p_{\omega n} \underline{GC}^p_{\omega ne}} \quad \forall p \omega ne$
+```{math}
+(\frac{c^p_{\omega ne} + dr'^p_{\omega ne}}{\underline{GC}^p_{\omega ne}} + 1) \sqrt{EF_e'} \leq \frac{\overline{I}^p_{\omega ne} - i^p_{\omega ne}}{DUR^p_{\omega n} \underline{GC}^p_{\omega ne}} \quad \forall p \omega ne
+```
 
 Maximum and minimum relative inventory of ESS candidates (only for load levels multiple of 1, 24, 168, 8736 h depending on the ESS storage type, represented as $n|\tau_e$) constrained by the ESS commitment decision times the maximum capacity [p.u.] «`eMaxInventory2Comm`» «`eMinInventory2Comm`»
 
-$\frac{i^p_{\omega ne}}{\overline{I}^p_{\omega ne}}  \leq uc^p_{\omega ne} \quad \forall p \omega ne, n|\tau_e, e \in CE$
+```{math}
+\frac{i^p_{\omega ne}}{\overline{I}^p_{\omega ne}}  \leq uc^p_{\omega ne} \quad \forall p \omega ne, n|\tau_e, e \in CE
+```
 
-$\frac{i^p_{\omega ne}}{\underline{I}^p_{\omega ne}} \geq uc^p_{\omega ne} \quad \forall p \omega ne, n|\tau_e, e \in CE$
+```{math}
+\frac{i^p_{\omega ne}}{\underline{I}^p_{\omega ne}} \geq uc^p_{\omega ne} \quad \forall p \omega ne, n|\tau_e, e \in CE
+```
 
 Energy inflows of ESS candidates (only for load levels multiple of 1, 24, 168, 8736 h, depending on the ESS storage type, represented as $n|\tau_e$) constrained by the ESS commitment decision times the energy inflows data [p.u.] «`eInflows2Comm`»
 
-$\frac{ei^p_{\omega ne}}{EI^p_{\omega ne}} \leq uc^p_{\omega ne} \quad \forall p \omega ne, n|\tau_e, e \in CE$
+```{math}
+\frac{ei^p_{\omega ne}}{EI^p_{\omega ne}} \leq uc^p_{\omega ne} \quad \forall p \omega ne, n|\tau_e, e \in CE
+```
 
 ESS energy inventory (only for load levels multiple of 1, 24, 168 h depending on the ESS storage type, represented as $n|\tau_e$) [GWh] «`eESSInventory`»
 
-$i^p_{\omega,n-\frac{\tau_e}{\nu},e} + \sum_{n' = n-\frac{\tau_e}{\nu}}^n DUR^p_{\omega n'} (EI^p_{\omega n'e} - go^p_{\omega n'e} - \frac{1}{\sqrt{EF_e}} gp^p_{\omega n'e} + \sqrt{EF_e} gc^p_{\omega n'e}) = i^p_{\omega ne} + s^p_{\omega ne} \quad \forall p \omega ne, n|\tau_e, e \in EE$
+```{math}
+i^p_{\omega,n-\frac{\tau_e}{\nu},e} + \sum_{n' = n-\frac{\tau_e}{\nu}}^n DUR^p_{\omega n'} (EI^p_{\omega n'e} - go^p_{\omega n'e} - \frac{1}{\sqrt{EF_e}} gp^p_{\omega n'e} + \sqrt{EF_e} gc^p_{\omega n'e}) = i^p_{\omega ne} + s^p_{\omega ne} \quad \forall p \omega ne, n|\tau_e, e \in EE
+```
 
-$i^p_{\omega,n-\frac{\tau_e}{\nu},e} + \sum_{n' = n-\frac{\tau_e}{\nu}}^n DUR^p_{\omega n'} (ei^p_{\omega n'e} - go^p_{\omega n'e} - \frac{1}{\sqrt{EF_e}} gp^p_{\omega n'e} + \sqrt{EF_e} gc^p_{\omega n'e}) = i^p_{\omega ne} + s^p_{\omega ne} \quad \forall p \omega ne, n|\tau_e, e \in CE$
+```{math}
+i^p_{\omega,n-\frac{\tau_e}{\nu},e} + \sum_{n' = n-\frac{\tau_e}{\nu}}^n DUR^p_{\omega n'} (ei^p_{\omega n'e} - go^p_{\omega n'e} - \frac{1}{\sqrt{EF_e}} gp^p_{\omega n'e} + \sqrt{EF_e} gc^p_{\omega n'e}) = i^p_{\omega ne} + s^p_{\omega ne} \quad \forall p \omega ne, n|\tau_e, e \in CE
+```
 
 The initial inventory of the ESS candidates divided by its initial storage $I^p_{\omega e}$ is equal to the final reservoir divided by its initial storage [p.u.] «`eIniFinInventory`».
 
-$\frac{i^p_{\omega,0,e}}{I^p_{\omega e}} = \frac{i^p_{\omega,N,e}}{I^p_{\omega e}} \quad \forall p \omega e, e \in CE$
+```{math}
+\frac{i^p_{\omega,0,e}}{I^p_{\omega e}} = \frac{i^p_{\omega,N,e}}{I^p_{\omega e}} \quad \forall p \omega e, e \in CE
+```
 
 The initial inventory of the ESS candidates divided by their initial storage $I^p_{\omega e}$ is fixed to the commitment decision [p.u.] «`eIniInventory`».
 
-$\frac{i^p_{\omega,0,e}}{I^p_{\omega e}} \leq uc^p_{\omega ne} \quad \forall p \omega ne, e \in CE$
+```{math}
+\frac{i^p_{\omega,0,e}}{I^p_{\omega e}} \leq uc^p_{\omega ne} \quad \forall p \omega ne, e \in CE
+```
 
 Maximum shift time of stored energy [GWh]. It is thought to be applied to demand side management or data center flexibility «`eMaxShiftTime`»
 
-$DUR^p_{\omega n} EF_e gc^p_{\omega ne} \leq \sum_{n' = n}^{n+\frac{ST_e}{\nu}} DUR^p_{\omega n'} gp^p_{\omega n'e} \quad \forall p \omega ne$
+```{math}
+DUR^p_{\omega n} EF_e gc^p_{\omega ne} \leq \sum_{n' = n}^{n+\frac{ST_e}{\nu}} DUR^p_{\omega n'} gp^p_{\omega n'e} \quad \forall p \omega ne
+```
 
 ESS outflows (only for load levels multiple of 1, 24, 168, 672, and 8736 h, depending on the ESS outflow cycle, represented as $n|\rho_e$) must be satisfied [GWh] «`eEnergyOutflows`»
 
-$\sum_{n' = n-\frac{\rho_e}{\nu}}^n (go^p_{\omega n'e} - EO^p_{\omega n'e}) DUR^p_{\omega n'} = 0 \quad \forall p \omega ne, n|\rho_e$
+```{math}
+\sum_{n' = n-\frac{\rho_e}{\nu}}^n (go^p_{\omega n'e} - EO^p_{\omega n'e}) DUR^p_{\omega n'} = 0 \quad \forall p \omega ne, n|\rho_e
+```
 
 Maximum and minimum energy production (only for load levels multiple of 24, 168, 672, 8736 h depending on the unit energy type, represented as $n|\sigma_g$) must be satisfied [GWh] «`eMaximumEnergy`» «`eMinimumEnergy`»
 
-$\sum_{n' = n-\frac{\sigma_g}{\nu}}^n (gp^p_{\omega n'g} - \overline{E}^p_{\omega n'g})  DUR^p_{\omega n'} \leq 0 \quad \forall p \omega ng, n|\sigma_g$
+```{math}
+\sum_{n' = n-\frac{\sigma_g}{\nu}}^n (gp^p_{\omega n'g} - \overline{E}^p_{\omega n'g})  DUR^p_{\omega n'} \leq 0 \quad \forall p \omega ng, n|\sigma_g
+```
 
-$\sum_{n' = n-\frac{\sigma_g}{\nu}}^n (gp^p_{\omega n'g} - \underline{E}^p_{\omega n'g}) DUR^p_{\omega n'} \geq 0 \quad \forall p \omega ng, n|\sigma_g$
+```{math}
+\sum_{n' = n-\frac{\sigma_g}{\nu}}^n (gp^p_{\omega n'g} - \underline{E}^p_{\omega n'g}) DUR^p_{\omega n'} \geq 0 \quad \forall p \omega ng, n|\sigma_g
+```
 
 Maximum and minimum output of the second block of a committed unit (all except the VRES units) [p.u.] «`eMaxOutput2ndBlock`» «`eMinOutput2ndBlock`»
 
@@ -540,75 +616,113 @@ Maximum and minimum output of the second block of a committed unit (all except t
 - 7. Morales-España, A. Ramos, and J. Garcia-Gonzalez "An MIP Formulation for Joint Market-Clearing of Energy and Reserves Based on Ramp Scheduling" IEEE Transactions on Power Systems 29 (1): 476-488, Jan 2014. [10.1109/TPWRS.2013.2259601](https://doi.org/10.1109/TPWRS.2013.2259601)
 - 7. Morales-España, J.M. Latorre, and A. Ramos "Tight and Compact MILP Formulation for the Thermal Unit Commitment Problem" IEEE Transactions on Power Systems 28 (4): 4897-4908, Nov 2013. [10.1109/TPWRS.2013.2251373](https://doi.org/10.1109/TPWRS.2013.2251373)
 
-$\frac{p^p_{\omega ng} + ur^p_{\omega ng} + urr^p_{\omega ng}}{\overline{GP}^p_{\omega ng} - \underline{GP}^p_{\omega ng}} \leq uc^p_{\omega ng} - su^p_{\omega ng} - sd^p_{\omega,n+\nu,g} \quad \forall p \omega ng$
+```{math}
+\frac{p^p_{\omega ng} + ur^p_{\omega ng} + urr^p_{\omega ng}}{\overline{GP}^p_{\omega ng} - \underline{GP}^p_{\omega ng}} \leq uc^p_{\omega ng} - su^p_{\omega ng} - sd^p_{\omega,n+\nu,g} \quad \forall p \omega ng
+```
 
-$p^p_{\omega ng} - dr^p_{\omega ng} - drr^p_{\omega ng} \geq 0                \quad \forall p \omega ng$
+```{math}
+p^p_{\omega ng} - dr^p_{\omega ng} - drr^p_{\omega ng} \geq 0                \quad \forall p \omega ng
+```
 
 Maximum and minimum charge of a non-hydropower ESS [p.u.] «`eMaxCharge`» «`eMinCharge`»
 
-$\frac{c^p_{\omega ne} + dr'^p_{\omega ne}}{\overline{GC}^p_{\omega ne} - \underline{GC}^p_{\omega ne}} \leq 1 \quad \forall p \omega ne$
+```{math}
+\frac{c^p_{\omega ne} + dr'^p_{\omega ne}}{\overline{GC}^p_{\omega ne} - \underline{GC}^p_{\omega ne}} \leq 1 \quad \forall p \omega ne
+```
 
-$c^p_{\omega ne} - ur'^p_{\omega ne} \geq 0 \quad \forall p \omega ne$
+```{math}
+c^p_{\omega ne} - ur'^p_{\omega ne} \geq 0 \quad \forall p \omega ne
+```
 
 Maximum charge of a hydro unit [p.u.] «`eMaxCharge`»
 
-$\frac{c^p_{\omega ne} + dr'^p_{\omega ne}}{\overline{GC}^p_{\omega ne} - \underline{GC}^p_{\omega ne}} \leq ucc^p_{\omega ng} \quad \forall p \omega ne$
+```{math}
+\frac{c^p_{\omega ne} + dr'^p_{\omega ne}}{\overline{GC}^p_{\omega ne} - \underline{GC}^p_{\omega ne}} \leq ucc^p_{\omega ng} \quad \forall p \omega ne
+```
 
 Incompatibility between charge and discharge, including the activation energy in the worst direction, of a non-hydropower ESS [p.u.] «`eChargeDischarge`»
 
-$\frac{p^p_{\omega ne} + URA \: ur^p_{\omega ne}}{\overline{GP}^p_{\omega ne} - \underline{GP}^p_{\omega ne}} + \frac{c^p_{\omega ne} + DRA \: dr'^p_{\omega ne}}{\overline{GC}^p_{\omega ne} - \underline{GC}^p_{\omega ne}} \leq 1 \quad \forall p \omega ne$
+```{math}
+\frac{p^p_{\omega ne} + URA \: ur^p_{\omega ne}}{\overline{GP}^p_{\omega ne} - \underline{GP}^p_{\omega ne}} + \frac{c^p_{\omega ne} + DRA \: dr'^p_{\omega ne}}{\overline{GC}^p_{\omega ne} - \underline{GC}^p_{\omega ne}} \leq 1 \quad \forall p \omega ne
+```
 
 Incompatibility between charge and discharge of a hydro unit [p.u.] «`eChargeDischarge`»
 
-$uc^p_{\omega ng} + ucc^p_{\omega ng} \leq 1 \quad \forall p \omega ne$
+```{math}
+uc^p_{\omega ng} + ucc^p_{\omega ng} \leq 1 \quad \forall p \omega ne
+```
 
 Total output of a committed unit (all except the VRES units) [GW] «`eTotalOutput`»
 
-$\frac{gp^p_{\omega ng}}{\underline{GP}^p_{\omega ng}} = uc^p_{\omega ng} + \frac{p^p_{\omega ng} + URA \: ur^p_{\omega ng} - DRA \: dr^p_{\omega ng}}{\underline{GP}^p_{\omega ng}} \quad \forall p \omega ng$
+```{math}
+\frac{gp^p_{\omega ng}}{\underline{GP}^p_{\omega ng}} = uc^p_{\omega ng} + \frac{p^p_{\omega ng} + URA \: ur^p_{\omega ng} - DRA \: dr^p_{\omega ng}}{\underline{GP}^p_{\omega ng}} \quad \forall p \omega ng
+```
 
 Total charge of a non-hydropower ESS [GW] «`eESSTotalCharge`»
 
-$\frac{gc^p_{\omega ne}}{\underline{GC}^p_{\omega ne}} = 1 + \frac{c^p_{\omega ne} - URA \: ur'^p_{\omega ne} + DRA \: dr'^p_{\omega ne}}{\underline{GC}^p_{\omega ne}} \quad \forall p \omega ne$
+```{math}
+\frac{gc^p_{\omega ne}}{\underline{GC}^p_{\omega ne}} = 1 + \frac{c^p_{\omega ne} - URA \: ur'^p_{\omega ne} + DRA \: dr'^p_{\omega ne}}{\underline{GC}^p_{\omega ne}} \quad \forall p \omega ne
+```
 
 Total charge of a hydro unit [GW] «`eESSTotalCharge`»
 
-$\frac{gc^p_{\omega ne}}{\underline{GC}^p_{\omega ne}} = ucc^p_{\omega ng} + \frac{c^p_{\omega ne} - URA \: ur'^p_{\omega ne} + DRA \: dr'^p_{\omega ne}}{\underline{GC}^p_{\omega ne}} \quad \forall p \omega ne$
+```{math}
+\frac{gc^p_{\omega ne}}{\underline{GC}^p_{\omega ne}} = ucc^p_{\omega ng} + \frac{c^p_{\omega ne} - URA \: ur'^p_{\omega ne} + DRA \: dr'^p_{\omega ne}}{\underline{GC}^p_{\omega ne}} \quad \forall p \omega ne
+```
 
 Incompatibility between charge and outflows use of an ESS [p.u.] «`eChargeOutflows`»
 
-$\frac{go^p_{\omega ne} + c^p_{\omega ne}}{\overline{GC}^p_{\omega ne} - \underline{GC}^p_{\omega ne}} \leq 1 \quad \forall p \omega ne$
+```{math}
+\frac{go^p_{\omega ne} + c^p_{\omega ne}}{\overline{GC}^p_{\omega ne} - \underline{GC}^p_{\omega ne}} \leq 1 \quad \forall p \omega ne
+```
 
 Logical relation between commitment, startup, and shutdown status of a committed unit (all except the VRES units) [p.u.] «`eUCStrShut`»
 
-$uc^p_{\omega ng} - uc^p_{\omega,n-\nu,g} = su^p_{\omega ng} - sd^p_{\omega ng} \quad \forall p \omega ng$
+```{math}
+uc^p_{\omega ng} - uc^p_{\omega,n-\nu,g} = su^p_{\omega ng} - sd^p_{\omega ng} \quad \forall p \omega ng
+```
 
 Logical relation between stable, ramp up, and ramp down states (generating units with stable time) [p.u.] «`eStableStates`»
 
-$rss^p_{\omega nt} + rsu^p_{\omega nt} + rsd^p_{\omega nt} = uc^p_{\omega nt} \quad \forall p \omega nt$
+```{math}
+rss^p_{\omega nt} + rsu^p_{\omega nt} + rsd^p_{\omega nt} = uc^p_{\omega nt} \quad \forall p \omega nt
+```
 
 Maximum commitment of a committable unit (all except the VRES units) for all the load levels [p.u.] «`eMaxCommitmentYearly`»
 
-$uc^p_{\omega ng} \leq uc'^p_{\omega g} \quad \forall p \omega ng$
+```{math}
+uc^p_{\omega ng} \leq uc'^p_{\omega g} \quad \forall p \omega ng
+```
 
 Maximum commitment of a committable unit (all except the VRES units) for all the load levels [p.u.] «`eMaxCommitmentHourly`»
 
-$uc^p_{\omega ng} \leq uc'^p_{\omega ng} \quad \forall p \omega ng$
+```{math}
+uc^p_{\omega ng} \leq uc'^p_{\omega ng} \quad \forall p \omega ng
+```
 
 Maximum of all the capacity factors [p.u.] «`eMaxCommitGenYearly`»
 
-$\frac{gp^p_{\omega ng}}{\overline{GP}_g} \leq uc'^p_{\omega g} \quad \forall p \omega ng$
+```{math}
+\frac{gp^p_{\omega ng}}{\overline{GP}_g} \leq uc'^p_{\omega g} \quad \forall p \omega ng
+```
 
 Maximum of all the capacity factors [p.u.] «`eMaxCommitGenHourly`»
 
-$\frac{gp^p_{\omega ng}}{\overline{GP}_g} \leq uc'^p_{\omega ng} \quad \forall p \omega ng$
+```{math}
+\frac{gp^p_{\omega ng}}{\overline{GP}_g} \leq uc'^p_{\omega ng} \quad \forall p \omega ng
+```
 
 Yearly mutually exclusive $g$ and $g'$ units (e.g., thermal, ESS, VRES units) [p.u.] «`eExclusiveGensYearly`»
 
-$uc'^p_{\omega g} + uc'^p_{\omega g'} + ucc'^p_{\omega g} + ucc'^p_{\omega g'} \leq 1 \quad \forall p \omega gg'$
+```{math}
+uc'^p_{\omega g} + uc'^p_{\omega g'} + ucc'^p_{\omega g} + ucc'^p_{\omega g'} \leq 1 \quad \forall p \omega gg'
+```
 
 Hourly mutually exclusive $g$ and $g'$ units (e.g., thermal, ESS, VRES units) [p.u.] «`eExclusiveGensHourly`»
 
-$uc'^p_{\omega ng} + uc'^p_{\omega ng'} + ucc'^p_{\omega ng} + ucc'^p_{\omega ng'} \leq 1 \quad \forall p \omega ngg'$
+```{math}
+uc'^p_{\omega ng} + uc'^p_{\omega ng'} + ucc'^p_{\omega ng} + ucc'^p_{\omega ng'} \leq 1 \quad \forall p \omega ngg'
+```
 
 Initial commitment of the units for every period, scenario, and stage is determined by the model based on the merit order loading, including the VRES and ESS units.
 
@@ -616,117 +730,181 @@ Maximum ramp up and ramp down for the second block of a non-renewable (thermal, 
 
 - 16. Damcı-Kurt, S. Küçükyavuz, D. Rajan, and A. Atamtürk, “A polyhedral study of production ramping,” Math. Program., vol. 158, no. 1–2, pp. 175–205, Jul. 2016. [10.1007/s10107-015-0919-9](https://doi.org/10.1007/s10107-015-0919-9)
 
-$\frac{- p^p_{\omega,n-\nu,g} - dr^p_{\omega,n-\nu,g} + p^p_{\omega ng} + ur^p_{\omega ng}}{DUR^p_{\omega n} RU_g} \leq   uc^p_{\omega ng}      - su^p_{\omega ng} \quad \forall p \omega ng$
+```{math}
+\frac{- p^p_{\omega,n-\nu,g} - dr^p_{\omega,n-\nu,g} + p^p_{\omega ng} + ur^p_{\omega ng}}{DUR^p_{\omega n} RU_g} \leq   uc^p_{\omega ng}      - su^p_{\omega ng} \quad \forall p \omega ng
+```
 
-$\frac{- p^p_{\omega,n-\nu,g} - ur^p_{\omega,n-\nu,g} + p^p_{\omega ng} + dr^p_{\omega ng}}{DUR^p_{\omega n} RD_g} \geq - uc^p_{\omega,n-\nu,g} + sd^p_{\omega ng} \quad \forall p \omega ng$
+```{math}
+\frac{- p^p_{\omega,n-\nu,g} - ur^p_{\omega,n-\nu,g} + p^p_{\omega ng} + dr^p_{\omega ng}}{DUR^p_{\omega n} RD_g} \geq - uc^p_{\omega,n-\nu,g} + sd^p_{\omega ng} \quad \forall p \omega ng
+```
 
 Maximum ramp down and ramp up for the charge of an ESS [p.u.] «`eRampUpCharge`» «`eRampDwCharge`»
 
-$\frac{- c^p_{\omega,n-\nu,e} - ur^p_{\omega,n-\nu,e} + c^p_{\omega ne} + dr^p_{\omega ne}}{DUR^p_{\omega n} RD_e} \leq   1 \quad \forall p \omega ne$
+```{math}
+\frac{- c^p_{\omega,n-\nu,e} - ur^p_{\omega,n-\nu,e} + c^p_{\omega ne} + dr^p_{\omega ne}}{DUR^p_{\omega n} RD_e} \leq   1 \quad \forall p \omega ne
+```
 
-$\frac{- c^p_{\omega,n-\nu,e} + dr^p_{\omega,n-\nu,e} + c^p_{\omega ne} - ur^p_{\omega ne}}{DUR^p_{\omega n} RU_e} \geq - 1 \quad \forall p \omega ne$
+```{math}
+\frac{- c^p_{\omega,n-\nu,e} + dr^p_{\omega,n-\nu,e} + c^p_{\omega ne} - ur^p_{\omega ne}}{DUR^p_{\omega n} RU_e} \geq - 1 \quad \forall p \omega ne
+```
 
 Detection of ramp up and ramp down state for the second block of a non-renewable (thermal) unit with minimum stable time [p.u.] «`eRampUpState`» «`eRampDwState`».
 The parameter $\epsilon$ is added to detect if the generator is ramping up/down. It is defined in the code as 1e-4 (of the ramp up/down limit).
 
 - 6. Labora, A. Ramos “Tight and Compact Formulations for Nuclear Power Plant Flexible Operation” TechRxiv. February, 2026. [10.36227/techrxiv.177004916.61674766/v1](https://doi.org/10.36227/techrxiv.177004916.61674766/v1)
 
-$\frac{- p^p_{\omega,n-\nu,t} + p^p_{\omega nt}}{DUR^p_{\omega n} RU_t} \leq rsu^p_{\omega nt} - \epsilon \cdot rsd^p_{\omega nt} \quad \forall p \omega nt$
+```{math}
+\frac{- p^p_{\omega,n-\nu,t} + p^p_{\omega nt}}{DUR^p_{\omega n} RU_t} \leq rsu^p_{\omega nt} - \epsilon \cdot rsd^p_{\omega nt} \quad \forall p \omega nt
+```
 
-$\frac{  p^p_{\omega,n-\nu,t} - p^p_{\omega nt}}{DUR^p_{\omega n} RD_t} \leq rsd^p_{\omega nt} - \epsilon \cdot rsu^p_{\omega nt} \quad \forall p \omega nt$
+```{math}
+\frac{  p^p_{\omega,n-\nu,t} - p^p_{\omega nt}}{DUR^p_{\omega n} RD_t} \leq rsd^p_{\omega nt} - \epsilon \cdot rsu^p_{\omega nt} \quad \forall p \omega nt
+```
 
 The model can also consider a dead band, which means that ramps below a certain threshold in p.u. set by $\epsilon$ should not be restricted. In this case, the $\epsilon$ is defined in the code as 1e-2 (of the ramp up/down limit).
 
-$\frac{- p^p_{\omega,n-\nu,t} + p^p_{\omega nt}}{DUR^p_{\omega n} RU_t} \leq rsu^p_{\omega nt} - \epsilon (rsd^p_{\omega nt} - rss^p_{\omega nt}) \quad \forall p \omega nt$
+```{math}
+\frac{- p^p_{\omega,n-\nu,t} + p^p_{\omega nt}}{DUR^p_{\omega n} RU_t} \leq rsu^p_{\omega nt} - \epsilon (rsd^p_{\omega nt} - rss^p_{\omega nt}) \quad \forall p \omega nt
+```
 
-$\frac{  p^p_{\omega,n-\nu,t} - p^p_{\omega nt}}{DUR^p_{\omega n} RD_t} \leq rsd^p_{\omega nt} - \epsilon (rsu^p_{\omega nt} - rss^p_{\omega nt}) \quad \forall p \omega nt$
+```{math}
+\frac{  p^p_{\omega,n-\nu,t} - p^p_{\omega nt}}{DUR^p_{\omega n} RD_t} \leq rsd^p_{\omega nt} - \epsilon (rsu^p_{\omega nt} - rss^p_{\omega nt}) \quad \forall p \omega nt
+```
 
 Minimum up time and down time of thermal unit [p.u.] «`eMinUpTime`» «`eMinDownTime`»
 
 - 4. Rajan and S. Takriti, “Minimum up/down polytopes of the unit commitment problem with start-up costs,” IBM, New York, Technical Report RC23628, 2005. <https://pdfs.semanticscholar.org/b886/42e36b414d5929fed48593d0ac46ae3e2070.pdf>
 
-$\sum_{n'=n+\nu-TU_t}^n su^p_{\omega n't} \leq     uc^p_{\omega nt} \quad \forall p \omega nt$
+```{math}
+\sum_{n'=n+\nu-TU_t}^n su^p_{\omega n't} \leq     uc^p_{\omega nt} \quad \forall p \omega nt
+```
 
-$\sum_{n'=n+\nu-TD_t}^n sd^p_{\omega n't} \leq 1 - uc^p_{\omega nt} \quad \forall p \omega nt$
+```{math}
+\sum_{n'=n+\nu-TD_t}^n sd^p_{\omega n't} \leq 1 - uc^p_{\omega nt} \quad \forall p \omega nt
+```
 
 Minimum stable time of a thermal unit [p.u.] «`eMinStableTime`»
 In the code you can select a simplified (first) or the tight computational efficient formulation (second). With the simplified formulation ramp down maneuvers can no longer be split into several periods to avoid restrictions.
 
-$rsu^p_{\omega nt} + \sum_{n'=n-TS_t}^{n-\nu} rsd^p_{\omega n't} \leq 1 \quad \forall p \omega nt$
+```{math}
+rsu^p_{\omega nt} + \sum_{n'=n-TS_t}^{n-\nu} rsd^p_{\omega n't} \leq 1 \quad \forall p \omega nt
+```
 
-$rsu^p_{\omega nt} + rsd^p_{\omega n't} \leq 1 \quad \forall p \omega nn't, n' \in [n-TS_t,n-\nu]$
+```{math}
+rsu^p_{\omega nt} + rsd^p_{\omega n't} \leq 1 \quad \forall p \omega nn't, n' \in [n-TS_t,n-\nu]
+```
 
 **Reservoir operation**
 
 Maximum and minimum relative volume of reservoir candidates (only for load levels multiple of 1, 24, 168, 8736 h depending on the reservoir volume type, represented as $n|\tau_{e'}$) constrained by the hydro commitment decision times the maximum capacity [p.u.] «`eMaxVolume2Comm`» «`eMinVolume2Comm`»
 
-$\frac{i'^p_{\omega ne'}}{\overline{I'}^p_{\omega ne'}}  \leq \sum_{h \in dw(e')} uc^p_{\omega nh} \quad \forall p \omega ne', e' \in CR$
+```{math}
+\frac{i'^p_{\omega ne'}}{\overline{I'}^p_{\omega ne'}}  \leq \sum_{h \in dw(e')} uc^p_{\omega nh} \quad \forall p \omega ne', e' \in CR
+```
 
-$\frac{i'^p_{\omega ne'}}{\underline{I'}^p_{\omega ne'}} \geq \sum_{h \in dw(e')} uc^p_{\omega nh} \quad \forall p \omega ne', e' \in CR$
+```{math}
+\frac{i'^p_{\omega ne'}}{\underline{I'}^p_{\omega ne'}} \geq \sum_{h \in dw(e')} uc^p_{\omega nh} \quad \forall p \omega ne', e' \in CR
+```
 
 Operating reserves from a hydropower plant can only be provided if enough water is available for turbining at the upstream reservoirs [GW] «`eTrbReserveUpIfUpstream`»
 
-$\frac{p^p_{\omega nh} + ur^p_{\omega nh} + uc^p_{\omega ng}}{\underline{GP}^p_{\omega ng}} \leq \frac{\sum_{e' \in up(h)}  i'^p_{\omega ne'} - \underline{I'}^p_{\omega ng}}{DUR^p_{\omega n}} \quad \forall p \omega nh$
+```{math}
+\frac{p^p_{\omega nh} + ur^p_{\omega nh} + uc^p_{\omega ng}}{\underline{GP}^p_{\omega ng}} \leq \frac{\sum_{e' \in up(h)}  i'^p_{\omega ne'} - \underline{I'}^p_{\omega ng}}{DUR^p_{\omega n}} \quad \forall p \omega nh
+```
 
 and if there is enough spare volume to store the water downstream «`eTrbReserveUpIfDownstream`»
 
-$\frac{p^p_{\omega nh} + ur^p_{\omega nh} + uc^p_{\omega ng}}{\underline{GP}^p_{\omega ng}} \leq \frac{\sum_{e' \in dw(h)}  \overline{I'}^p_{\omega ng} - i'^p_{\omega ne'}} {DUR^p_{\omega n}} \quad \forall p \omega nh$
+```{math}
+\frac{p^p_{\omega nh} + ur^p_{\omega nh} + uc^p_{\omega ng}}{\underline{GP}^p_{\omega ng}} \leq \frac{\sum_{e' \in dw(h)}  \overline{I'}^p_{\omega ng} - i'^p_{\omega ne'}} {DUR^p_{\omega n}} \quad \forall p \omega nh
+```
 
 Operating reserves while pumping can only be provided if there is enough available water downstream to pump «`ePmpReserveDwIfUpstream`»
 
-$\frac{(c^p_{\omega nh} + dr^p_{\omega nh) * EF_e'} + ucc^p_{\omega ng}}{\underline{GC}^p_{\omega ng}} + \leq \frac{\sum_{e' \in up(h)} \overline{I'}^p_{\omega ng} - i'^p_{\omega ne'}}{DUR^p_{\omega n}} \quad \forall p \omega nh$
+```{math}
+\frac{(c^p_{\omega nh} + dr^p_{\omega nh) * EF_e'} + ucc^p_{\omega ng}}{\underline{GC}^p_{\omega ng}} + \leq \frac{\sum_{e' \in up(h)} \overline{I'}^p_{\omega ng} - i'^p_{\omega ne'}}{DUR^p_{\omega n}} \quad \forall p \omega nh
+```
 
 and if there is enough spare volume to store the water upstream «`ePmpReserveDwIfUpstream`»
 
-$\frac{(c^p_{\omega nh} + dr^p_{\omega nh) * EF_e'} + ucc^p_{\omega ng}}{\underline{GC}^p_{\omega ng}} + \leq \frac{\sum_{e' \in up(h)}  i'^p_{\omega ne'} - \underline{I'}^p_{\omega ng}}{DUR^p_{\omega n}} \quad \forall p \omega nh$
+```{math}
+\frac{(c^p_{\omega nh} + dr^p_{\omega nh) * EF_e'} + ucc^p_{\omega ng}}{\underline{GC}^p_{\omega ng}} + \leq \frac{\sum_{e' \in up(h)}  i'^p_{\omega ne'} - \underline{I'}^p_{\omega ng}}{DUR^p_{\omega n}} \quad \forall p \omega nh
+```
 
 Water volume for each hydro reservoir (only for load levels multiple of 1, 24, 168 h, depending on the reservoir storage type, represented as $n|\tau_{e'}$) \[hm{sup}`3`\] «`eHydroInventory`»
 
-$i'^p_{\omega,n-\frac{\tau_e'}{\nu},e'} + \sum_{n' = n-\frac{\tau_e'}{\nu}}^n DUR^p_{\omega n'} (0.0036 HI^p_{\omega n'e'} - 0.0036 ho^p_{\omega n'e'} - \sum_{h \in dw(e')} gp^p_{\omega n'h} / PF_h + \sum_{h \in up(e')} gp^p_{\omega n'h} / PF_h +$
-$+ \sum_{h \in up(e')} EF_e' gc^p_{\omega n'h} / PF_h - \sum_{h \in dw(h)} EF_e' gc^p_{\omega n'h} / PF_h) = i'^p_{\omega ne'} + s'^p_{\omega ne'} - \sum_{e'' \in up(e')} s'^p_{\omega ne''} \quad \forall p \omega ne', n|\tau_{e'}, e' \in ER$
+```{math}
+i'^p_{\omega,n-\frac{\tau_e'}{\nu},e'} + \sum_{n' = n-\frac{\tau_e'}{\nu}}^n DUR^p_{\omega n'} (0.0036 HI^p_{\omega n'e'} - 0.0036 ho^p_{\omega n'e'} - \sum_{h \in dw(e')} gp^p_{\omega n'h} / PF_h + \sum_{h \in up(e')} gp^p_{\omega n'h} / PF_h +
+```
+```{math}
++ \sum_{h \in up(e')} EF_e' gc^p_{\omega n'h} / PF_h - \sum_{h \in dw(h)} EF_e' gc^p_{\omega n'h} / PF_h) = i'^p_{\omega ne'} + s'^p_{\omega ne'} - \sum_{e'' \in up(e')} s'^p_{\omega ne''} \quad \forall p \omega ne', n|\tau_{e'}, e' \in ER
+```
 
-$i'^p_{\omega,n-\frac{\tau_e'}{\nu},e'} + \sum_{n' = n-\frac{\tau_e'}{\nu}}^n DUR^p_{\omega n'} (0.0036 hi^p_{\omega n'e'} - 0.0036 ho^p_{\omega n'e'} - \sum_{h \in dw(e')} gp^p_{\omega n'h} / PF_h + \sum_{h \in up(e')} gp^p_{\omega n'h} / PF_h +$
-$+ \sum_{h \in up(e')} EF_e' gc^p_{\omega n'h} / PF_h - \sum_{h \in dw(h)} EF_e' gc^p_{\omega n'h} / PF_h) = i'^p_{\omega ne'} + s'^p_{\omega ne'} - \sum_{e'' \in up(e')} s'^p_{\omega ne''} \quad \forall p \omega ne', n|\tau_{e'}, e' \in CR$
+```{math}
+i'^p_{\omega,n-\frac{\tau_e'}{\nu},e'} + \sum_{n' = n-\frac{\tau_e'}{\nu}}^n DUR^p_{\omega n'} (0.0036 hi^p_{\omega n'e'} - 0.0036 ho^p_{\omega n'e'} - \sum_{h \in dw(e')} gp^p_{\omega n'h} / PF_h + \sum_{h \in up(e')} gp^p_{\omega n'h} / PF_h +
+```
+```{math}
++ \sum_{h \in up(e')} EF_e' gc^p_{\omega n'h} / PF_h - \sum_{h \in dw(h)} EF_e' gc^p_{\omega n'h} / PF_h) = i'^p_{\omega ne'} + s'^p_{\omega ne'} - \sum_{e'' \in up(e')} s'^p_{\omega ne''} \quad \forall p \omega ne', n|\tau_{e'}, e' \in CR
+```
 
 The initial volume of the hydro reservoir divided by its initial volume $I^p_{\omega e'}$ is equal to the final reservoir divided by its initial volume [p.u.] «`eIniFinVolume`».
 
-$\frac{i'^p_{\omega,0,e'}}{I^p_{\omega e'}} = \frac{i'^p_{\omega,N,e'}}{I^p_{\omega e'}} \quad \forall p \omega e', e' \in CR$
+```{math}
+\frac{i'^p_{\omega,0,e'}}{I^p_{\omega e'}} = \frac{i'^p_{\omega,N,e'}}{I^p_{\omega e'}} \quad \forall p \omega e', e' \in CR
+```
 
 Hydro outflows (only for load levels multiple of 1, 24, 168, 672, and 8736 h, depending on the ESS outflow cycle, represented as $n|\rho_e$) must be satisfied \[m{sup}`3`/s\] «`eHydroOutflows`»
 
-$\sum_{n' = n-\frac{\rho_e'}{\nu}}^n (ho^p_{\omega n'e'} - HO^p_{\omega n'e'}) DUR^p_{\omega n'} = 0 \quad \forall p \omega ne', n|\rho_e'$
+```{math}
+\sum_{n' = n-\frac{\rho_e'}{\nu}}^n (ho^p_{\omega n'e'} - HO^p_{\omega n'e'}) DUR^p_{\omega n'} = 0 \quad \forall p \omega ne', n|\rho_e'
+```
 
 **Electricity network operation**
 
 Logical relation between transmission investment and switching {0,1} «`eLineStateCand`»
 
-$swt^p_{\omega nijc} \leq ict^p_{ijc} \quad \forall p \omega nijc, ijc \in CL$
+```{math}
+swt^p_{\omega nijc} \leq ict^p_{ijc} \quad \forall p \omega nijc, ijc \in CL
+```
 
 Logical relation between switching state, switch-on and switch-off status of a line [p.u.] «`eSWOnOff`»
 
-$swt^p_{\omega nijc} - swt^p_{\omega,n-\nu,ijc} = son^p_{\omega nijc} - sof^p_{\omega nijc} \quad \forall p \omega nijc$
+```{math}
+swt^p_{\omega nijc} - swt^p_{\omega,n-\nu,ijc} = son^p_{\omega nijc} - sof^p_{\omega nijc} \quad \forall p \omega nijc
+```
 
 The initial status of the lines is pre-defined as switched on.
 
 Minimum switch-on and switch-off state of a line [h] «`eMinSwOnState`» «`eMinSwOffState`»
 
-$\sum_{n'=n+\nu-SON_{ijc}}^n son^p_{\omega n'ijc} \leq     swt^p_{\omega nijc} \quad \forall p \omega nijc$
+```{math}
+\sum_{n'=n+\nu-SON_{ijc}}^n son^p_{\omega n'ijc} \leq     swt^p_{\omega nijc} \quad \forall p \omega nijc
+```
 
-$\sum_{n'=n+\nu-SOF_{ijc}}^n sof^p_{\omega n'ijc} \leq 1 - swt^p_{\omega nijc} \quad \forall p \omega nijc$
+```{math}
+\sum_{n'=n+\nu-SOF_{ijc}}^n sof^p_{\omega n'ijc} \leq 1 - swt^p_{\omega nijc} \quad \forall p \omega nijc
+```
 
 Power flow limit in transmission lines [p.u.] «`eNetCapacity1`» «`eNetCapacity2`»
 
-$- swt^p_{\omega nijc} \leq \frac{f^p_{\omega nijc}}{\overline{F}^p_{\omega nijc}} \leq swt^p_{\omega nijc} \quad \forall p \omega nijc$
+```{math}
+- swt^p_{\omega nijc} \leq \frac{f^p_{\omega nijc}}{\overline{F}^p_{\omega nijc}} \leq swt^p_{\omega nijc} \quad \forall p \omega nijc
+```
 
 DC Optimal power flow for existing and non-switchable, and candidate and switchable AC-type lines (Kirchhoff's second law) [rad] «`eKirchhoff2ndLaw1`» «`eKirchhoff2ndLaw2`»
 
-$\frac{f^p_{\omega nijc}}{\overline{F}'_{ijc}} - (\theta^p_{\omega ni} - \theta^p_{\omega nj})\frac{S_B}{X_{ijc}\overline{F}'_{ijc}} = 0 \quad \forall p \omega nijc, ijc \in EL$
+```{math}
+\frac{f^p_{\omega nijc}}{\overline{F}'_{ijc}} - (\theta^p_{\omega ni} - \theta^p_{\omega nj})\frac{S_B}{X_{ijc}\overline{F}'_{ijc}} = 0 \quad \forall p \omega nijc, ijc \in EL
+```
 
-$-1+swt^p_{\omega nijc} \leq \frac{f^p_{\omega nijc}}{\overline{F}'_{ijc}} - (\theta^p_{\omega ni} - \theta^p_{\omega nj})\frac{S_B}{X_{ijc}\overline{F}'_{ijc}} \leq 1-swt^p_{\omega nijc} \quad \forall p \omega nijc, ijc \in CL$
+```{math}
+-1+swt^p_{\omega nijc} \leq \frac{f^p_{\omega nijc}}{\overline{F}'_{ijc}} - (\theta^p_{\omega ni} - \theta^p_{\omega nj})\frac{S_B}{X_{ijc}\overline{F}'_{ijc}} \leq 1-swt^p_{\omega nijc} \quad \forall p \omega nijc, ijc \in CL
+```
 
 Half ohmic losses are linearly approximated as a function of the power flow [GW] «`eLineLosses1`» «`eLineLosses2`»
 
-$- \frac{L_{ijc}}{2} f^p_{\omega nijc} \leq l^p_{\omega nijc} \geq \frac{L_{ijc}}{2} f^p_{\omega nijc} \quad \forall p \omega nijc$
+```{math}
+- \frac{L_{ijc}}{2} f^p_{\omega nijc} \leq l^p_{\omega nijc} \geq \frac{L_{ijc}}{2} f^p_{\omega nijc} \quad \forall p \omega nijc
+```
 
 **Cycle constraints** for AC existing lines with DC optimal power flow formulation [rad] «`eCycleKirchhoff2ndLawCnd1`» «`eCycleKirchhoff2ndLawCnd2`». To activate these constraints you must put pIndCycleFlow = 1 in line 49 of the openTEPES.py file.
 It usually improves the computational performance of the model. See the cycle constraints for the AC power flow formulation in the following reference:
@@ -735,19 +913,27 @@ It usually improves the computational performance of the model. See the cycle co
 
 Kirchhoff's second law is substituted by a cycle power flow formulation for cycles with only AC existing lines [rad]
 
-$\sum_{ijc \in cy} f^p_{\omega nijc} \frac{X_{ijc}}{S_B} = 0 \quad \forall p \omega n,cy, cy \in CY$
+```{math}
+\sum_{ijc \in cy} f^p_{\omega nijc} \frac{X_{ijc}}{S_B} = 0 \quad \forall p \omega n,cy, cy \in CY
+```
 
 and disjunctive constraints for cycles with some AC candidate line [rad]
 
-$-1+ict_{i'j'c'}  \leq \frac{\sum_{ijc \in cy} f^p_{\omega nijc} \frac{X_{ijc}}{S_B}}{\overline{θ}'_{cy,i'j'c'}} \leq 1-ict_{i'j'c'} \quad \forall p \omega n,cy,i'j'c', cy \in CY, i'j'c' \in CLC$
+```{math}
+-1+ict_{i'j'c'}  \leq \frac{\sum_{ijc \in cy} f^p_{\omega nijc} \frac{X_{ijc}}{S_B}}{\overline{θ}'_{cy,i'j'c'}} \leq 1-ict_{i'j'c'} \quad \forall p \omega n,cy,i'j'c', cy \in CY, i'j'c' \in CLC
+```
 
 Flows in AC existing parallel circuits are inversely proportional to their reactances [GW] «`eFlowParallelCandidate1`» «`eFlowParallelCandidate2`»
 
-$f^p_{\omega nijc} = \frac{X_{ijc'}}{X_{ijc}} f^p_{\omega nijc'} \quad \forall p \omega nijcc', ijc \in EL, ijc' \in EL$
+```{math}
+f^p_{\omega nijc} = \frac{X_{ijc'}}{X_{ijc}} f^p_{\omega nijc'} \quad \forall p \omega nijcc', ijc \in EL, ijc' \in EL
+```
 
 and disjunctive constraints in AC candidate parallel circuits are inversely proportional to their reactances [p.u.]
 
-$-1+ict_{ijc'} \leq \frac{f^p_{\omega nijc} - \frac{X_{ijc'}}{X_{ijc}} f^p_{\omega nijc'}}{\overline{F}^p_{\omega nijc}} \leq 1-ict_{ijc'} \quad \forall p \omega nijcc', ijc \in EL, ijc' \in CL$
+```{math}
+-1+ict_{ijc'} \leq \frac{f^p_{\omega nijc} - \frac{X_{ijc'}}{X_{ijc}} f^p_{\omega nijc'}}{\overline{F}^p_{\omega nijc}} \leq 1-ict_{ijc'} \quad \forall p \omega nijcc', ijc \in EL, ijc' \in CL
+```
 
 Given that there are disjunctive constraints, which are only correct with binary AC investment variables, this cycle-based formulation must be used only with binary AC investment decisions.
 
@@ -755,17 +941,23 @@ Given that there are disjunctive constraints, which are only correct with binary
 
 Balance of hydrogen generation by electrolyzers, hydrogen consumption from the hydrogen heater using it, and demand at each node [tH2] «`eBalanceH2`». A transport model is used to model the hydrogen network.
 
-$\sum_{e \in i} \frac{DUR^p_{\omega n}}{PF'_e} gc^p_{\omega ne} - \sum_{g \in i} DUR^p_{\omega n} PF'''_e gh^p_{\omega ng} + hns^p_{\omega ni} - hex^p_{\omega ni} = DUR^p_{\omega n} DH^p_{\omega ni} + \sum_{jc} fh^p_{\omega nijc} - \sum_{jc} fh^p_{\omega njic} \quad \forall p \omega ni$
+```{math}
+\sum_{e \in i} \frac{DUR^p_{\omega n}}{PF'_e} gc^p_{\omega ne} - \sum_{g \in i} DUR^p_{\omega n} PF'''_e gh^p_{\omega ng} + hns^p_{\omega ni} - hex^p_{\omega ni} = DUR^p_{\omega n} DH^p_{\omega ni} + \sum_{jc} fh^p_{\omega nijc} - \sum_{jc} fh^p_{\omega njic} \quad \forall p \omega ni
+```
 
 **Heat network operation**
 
 Energy conversion from any energy type to heating [p.u.] («`eEnergy2Heat`»)
 
-$gh_{ne} = \frac{DUR^p_{\omega n}}{PF''_e} gc_{ne} \quad \forall ne$
+```{math}
+gh_{ne} = \frac{DUR^p_{\omega n}}{PF''_e} gc_{ne} \quad \forall ne
+```
 
 Balance of heat generation produced by CHPs and fuel heaters respectively and demand at each node [GW] «`eBalanceHeat`». A transport model is used to model the heat network.
 
-$\sum_{g \in i} gh^p_{\omega ng} + htns^p_{\omega ni} = DUR^p_{\omega n} DHt^p_{\omega ni} + \sum_{jc} fp^p_{\omega nijc} - \sum_{jc} fp^p_{\omega njic} \quad \forall p \omega ni$
+```{math}
+\sum_{g \in i} gh^p_{\omega ng} + htns^p_{\omega ni} = DUR^p_{\omega n} DHt^p_{\omega ni} + \sum_{jc} fp^p_{\omega nijc} - \sum_{jc} fp^p_{\omega njic} \quad \forall p \omega ni
+```
 
 **Flow-based market coupling method**
 
@@ -775,64 +967,114 @@ It is based on the flow-based approach presented in:
 
 The approach is based on the following equations [GW] [p.u.] «`eNetPosition`», «`eFlowBasedCalcu1`» and «`eFlowBasedCalcu2`»:
 
-$f^p_{\omega nijc} = \sum_{i'} PTDF_{nijci'} (\sum_{g \in i'} gp^p_{\omega ng} - \sum_{e \in i'} gc^p_{\omega ne} + ens^p_{\omega ni'} - D^p_{\omega ni'})  \quad \forall p \omega n, ijc, i', ijc' \in EL$
+```{math}
+f^p_{\omega nijc} = \sum_{i'} PTDF_{nijci'} (\sum_{g \in i'} gp^p_{\omega ng} - \sum_{e \in i'} gc^p_{\omega ne} + ens^p_{\omega ni'} - D^p_{\omega ni'})  \quad \forall p \omega n, ijc, i', ijc' \in EL
+```
 
-$-1+ict_{ijc'} \leq f^p_{\omega nijc} - \sum_{i'} PTDF_{nijci'} (\sum_{g \in i'} gp^p_{\omega ng} - \sum_{e \in i'} gc^p_{\omega ne} + ens^p_{\omega ni'} - D^p_{\omega ni'}) \leq 1-ict_{ijc'} \quad \forall p \omega nijcc', i', ijc \in EL, ijc' \in CL$
+```{math}
+-1+ict_{ijc'} \leq f^p_{\omega nijc} - \sum_{i'} PTDF_{nijci'} (\sum_{g \in i'} gp^p_{\omega ng} - \sum_{e \in i'} gc^p_{\omega ne} + ens^p_{\omega ni'} - D^p_{\omega ni'}) \leq 1-ict_{ijc'} \quad \forall p \omega nijcc', i', ijc \in EL, ijc' \in CL
+```
 
 **Bounds on generation and ESS variables** [GW]
 
-$0 \leq gp^p_{\omega ng}  \leq \overline{GP}^p_{\omega ng}                                   \quad \forall p \omega ng$
+```{math}
+0 \leq gp^p_{\omega ng}  \leq \overline{GP}^p_{\omega ng}                                   \quad \forall p \omega ng
+```
 
-$0 \leq go^p_{\omega ne}  \leq \max(\overline{GP}^p_{\omega ne},\overline{GC}^p_{\omega ne}) \quad \forall p \omega ne$
+```{math}
+0 \leq go^p_{\omega ne}  \leq \max(\overline{GP}^p_{\omega ne},\overline{GC}^p_{\omega ne}) \quad \forall p \omega ne
+```
 
-$0 \leq gc^p_{\omega ne}  \leq \overline{GC}^p_{\omega ne}                                   \quad \forall p \omega ne$
+```{math}
+0 \leq gc^p_{\omega ne}  \leq \overline{GC}^p_{\omega ne}                                   \quad \forall p \omega ne
+```
 
-$\underline{GH}^p_{\omega ng} \leq gh^p_{\omega ng} \leq \overline{GH}^p_{\omega ng}         \quad \forall p \omega ng$
+```{math}
+\underline{GH}^p_{\omega ng} \leq gh^p_{\omega ng} \leq \overline{GH}^p_{\omega ng}         \quad \forall p \omega ng
+```
 
-$0 \leq ur^p_{\omega ng}  \leq \overline{GP}^p_{\omega ng} - \underline{GP}^p_{\omega ng}    \quad \forall p \omega ng$
+```{math}
+0 \leq ur^p_{\omega ng}  \leq \overline{GP}^p_{\omega ng} - \underline{GP}^p_{\omega ng}    \quad \forall p \omega ng
+```
 
-$0 \leq ur'^p_{\omega ne} \leq \overline{GC}^p_{\omega ne} - \underline{GC}^p_{\omega ne}    \quad \forall p \omega ne$
+```{math}
+0 \leq ur'^p_{\omega ne} \leq \overline{GC}^p_{\omega ne} - \underline{GC}^p_{\omega ne}    \quad \forall p \omega ne
+```
 
-$0 \leq dr^p_{\omega ng}  \leq \overline{GP}^p_{\omega ng} - \underline{GP}^p_{\omega ng}    \quad \forall p \omega ng$
+```{math}
+0 \leq dr^p_{\omega ng}  \leq \overline{GP}^p_{\omega ng} - \underline{GP}^p_{\omega ng}    \quad \forall p \omega ng
+```
 
-$0 \leq dr'^p_{\omega ne} \leq \overline{GC}^p_{\omega ne} - \underline{GC}^p_{\omega ne}    \quad \forall p \omega ne$
+```{math}
+0 \leq dr'^p_{\omega ne} \leq \overline{GC}^p_{\omega ne} - \underline{GC}^p_{\omega ne}    \quad \forall p \omega ne
+```
 
-$0 \leq  p^p_{\omega ng}  \leq \overline{GP}^p_{\omega ng} - \underline{GP}^p_{\omega ng}    \quad \forall p \omega ng$
+```{math}
+0 \leq  p^p_{\omega ng}  \leq \overline{GP}^p_{\omega ng} - \underline{GP}^p_{\omega ng}    \quad \forall p \omega ng
+```
 
-$0 \leq  c^p_{\omega ne}  \leq \overline{GC}^p_{\omega ne}                                   \quad \forall p \omega ne$
+```{math}
+0 \leq  c^p_{\omega ne}  \leq \overline{GC}^p_{\omega ne}                                   \quad \forall p \omega ne
+```
 
-$0 \leq urr^p_{\omega ng} \leq \min(\overline{GP}^p_{\omega ng} - \underline{GP}^p_{\omega ng}, RU_g)  \quad \forall p \omega ng$
+```{math}
+0 \leq urr^p_{\omega ng} \leq \min(\overline{GP}^p_{\omega ng} - \underline{GP}^p_{\omega ng}, RU_g)  \quad \forall p \omega ng
+```
 
-$0 \leq drr^p_{\omega ng} \leq \min(\overline{GP}^p_{\omega ng} - \underline{GP}^p_{\omega ng}, RD_g)  \quad \forall p \omega ng$
+```{math}
+0 \leq drr^p_{\omega ng} \leq \min(\overline{GP}^p_{\omega ng} - \underline{GP}^p_{\omega ng}, RD_g)  \quad \forall p \omega ng
+```
 
-$\underline{I}^p_{\omega ne} \leq  i^p_{\omega ne}  \leq \overline{I}^p_{\omega ne}          \quad \forall p \omega ne$
+```{math}
+\underline{I}^p_{\omega ne} \leq  i^p_{\omega ne}  \leq \overline{I}^p_{\omega ne}          \quad \forall p \omega ne
+```
 
-$0 \leq  s^p_{\omega ne}                                                                     \quad \forall p \omega ne$
+```{math}
+0 \leq  s^p_{\omega ne}                                                                     \quad \forall p \omega ne
+```
 
-$0 \leq ens^p_{\omega ni} \leq D^p_{\omega ni}                                               \quad \forall p \omega ni$
+```{math}
+0 \leq ens^p_{\omega ni} \leq D^p_{\omega ni}                                               \quad \forall p \omega ni
+```
 
 **Bounds on reservoir variables** \[m{sup}`3`/s, hm{sup}`3`\]
 
-$0 \leq ho^p_{\omega ne'} \leq \sum_{h \in dw(e')} \overline{GP}^p_{\omega nh} / PF_h   \quad \forall p \omega ne'$
+```{math}
+0 \leq ho^p_{\omega ne'} \leq \sum_{h \in dw(e')} \overline{GP}^p_{\omega nh} / PF_h   \quad \forall p \omega ne'
+```
 
-$\underline{I'}^p_{\omega ne'} \leq i'^p_{\omega ne'} \leq \overline{I'}^p_{\omega ne'} \quad \forall p \omega ne'$
+```{math}
+\underline{I'}^p_{\omega ne'} \leq i'^p_{\omega ne'} \leq \overline{I'}^p_{\omega ne'} \quad \forall p \omega ne'
+```
 
-$0 \leq s'^p_{\omega ne'}                                                               \quad \forall p \omega ne'$
+```{math}
+0 \leq s'^p_{\omega ne'}                                                               \quad \forall p \omega ne'
+```
 
 **Bounds on electricity network variables** [GW]
 
-$0 \leq l^p_{\omega nijc} \leq \frac{L_{ijc}}{2} \overline{F}^p_{\omega nijc}  \quad \forall p \omega nijc$
+```{math}
+0 \leq l^p_{\omega nijc} \leq \frac{L_{ijc}}{2} \overline{F}^p_{\omega nijc}  \quad \forall p \omega nijc
+```
 
-$- \overline{F}_{nijc} \leq f^p_{\omega nijc} \leq \overline{F}^p_{\omega nnijc} \quad \forall p \omega nijc, ijc \in EL$
+```{math}
+- \overline{F}_{nijc} \leq f^p_{\omega nijc} \leq \overline{F}^p_{\omega nnijc} \quad \forall p \omega nijc, ijc \in EL
+```
 
 Voltage angle of the reference node fixed to 0 for each scenario, period, and load level [rad]
 
-$\theta^p_{\omega n,node_{ref}} = 0$
+```{math}
+\theta^p_{\omega n,node_{ref}} = 0
+```
 
 **Bounds on hydrogen network variables** [tH2]
 
-$- \overline{FH}_{ijc} \leq fh^p_{\omega nijc} \leq \overline{FH}_{ijc} \quad \forall p \omega nijc, ijc \in EP$
+```{math}
+- \overline{FH}_{ijc} \leq fh^p_{\omega nijc} \leq \overline{FH}_{ijc} \quad \forall p \omega nijc, ijc \in EP
+```
 
 **Bounds on heat network variables** [GW]
 
-$- \overline{FP}_{ijc} \leq fp^p_{\omega nijc} \leq \overline{FP}_{ijc} \quad \forall p \omega nijc, ijc \in EP$
+```{math}
+- \overline{FP}_{ijc} \leq fp^p_{\omega nijc} \leq \overline{FP}_{ijc} \quad \forall p \omega nijc, ijc \in EP
+```
