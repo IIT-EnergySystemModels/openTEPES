@@ -1,4 +1,6 @@
-﻿.. openTEPES documentation master file, created by Andres Ramos
+﻿---
+openTEPES documentation master file, created by Andres Ramos
+---
 
 # Research Projects
 

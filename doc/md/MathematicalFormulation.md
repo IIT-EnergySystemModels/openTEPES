@@ -1,10 +1,12 @@
-﻿.. openTEPES documentation master file, created by Andres Ramos
+﻿---
+openTEPES documentation master file, created by Andres Ramos
+---
 
 # Mathematical Formulation
 
 Here we present the mathematical formulation of the optimization problem solved by the **openTEPES** model. See also some TEP-related publications:
 
-- FLabora, A. Ramos “Tight and Compact Formulations for Nuclear Power Plant Flexible Operation” TechRxiv. February, 2026. [10.36227/techrxiv.177004916.61674766/v1](https://doi.org/10.36227/techrxiv.177004916.61674766/v1)
+- F. Labora, A. Ramos “Tight and Compact Formulations for Nuclear Power Plant Flexible Operation” TechRxiv. February, 2026. [10.36227/techrxiv.177004916.61674766/v1](https://doi.org/10.36227/techrxiv.177004916.61674766/v1)
 - E.F. Álvarez, J.C. López, L. Olmos, A. Ramos "An Optimal Expansion Planning of Power Systems Considering Cycle-Based AC Optimal Power Flow" Sustainable Energy, Grids and Networks, May 2024. [10.1016/j.segan.2024.101413](https://doi.org/10.1016/j.segan.2024.101413)
 - E.F. Álvarez, L. Olmos, A. Ramos, K. Antoniadou-Plytaria, D. Steen, and L.A. Tuan “Values and Impacts of Incorporating Local Flexibility Services in Transmission Expansion Planning” Electric Power Systems Research 212, July 2022. [10.1016/j.epsr.2022.108480](https://doi.org/10.1016/j.epsr.2022.108480)
 - A. Ramos, E. Quispe, S. Lumbreras "[OpenTEPES: Open-source Transmission and Generation Expansion Planning](https://www.sciencedirect.com/science/article/pii/S235271102200053X/pdfft?md5=ece8d3328c853a4795eda29acd2ad140&pid=1-s2.0-S235271102200053X-main.pdf)"
@@ -612,9 +614,9 @@ Maximum and minimum energy production (only for load levels multiple of 24, 168,
 Maximum and minimum output of the second block of a committed unit (all except the VRES units) [p.u.] «`eMaxOutput2ndBlock`» «`eMinOutput2ndBlock`»
 
 - D.A. Tejada-Arango, S. Lumbreras, P. Sánchez-Martín, and A. Ramos "Which Unit-Commitment Formulation is Best? A Systematic Comparison" IEEE Transactions on Power Systems 35 (4): 2926-2936, Jul 2020 [10.1109/TPWRS.2019.2962024](https://doi.org/10.1109/TPWRS.2019.2962024)
-- 3. Gentile, G. Morales-España, and A. Ramos "A tight MIP formulation of the unit commitment problem with start-up and shut-down constraints" EURO Journal on Computational Optimization 5 (1), 177-201, Mar 2017. [10.1007/s13675-016-0066-y](https://doi.org/10.1007/s13675-016-0066-y)
-- 7. Morales-España, A. Ramos, and J. Garcia-Gonzalez "An MIP Formulation for Joint Market-Clearing of Energy and Reserves Based on Ramp Scheduling" IEEE Transactions on Power Systems 29 (1): 476-488, Jan 2014. [10.1109/TPWRS.2013.2259601](https://doi.org/10.1109/TPWRS.2013.2259601)
-- 7. Morales-España, J.M. Latorre, and A. Ramos "Tight and Compact MILP Formulation for the Thermal Unit Commitment Problem" IEEE Transactions on Power Systems 28 (4): 4897-4908, Nov 2013. [10.1109/TPWRS.2013.2251373](https://doi.org/10.1109/TPWRS.2013.2251373)
+- C. Gentile, G. Morales-España, and A. Ramos "A tight MIP formulation of the unit commitment problem with start-up and shut-down constraints" EURO Journal on Computational Optimization 5 (1), 177-201, Mar 2017. [10.1007/s13675-016-0066-y](https://doi.org/10.1007/s13675-016-0066-y)
+- G. Morales-España, A. Ramos, and J. Garcia-Gonzalez "An MIP Formulation for Joint Market-Clearing of Energy and Reserves Based on Ramp Scheduling" IEEE Transactions on Power Systems 29 (1): 476-488, Jan 2014. [10.1109/TPWRS.2013.2259601](https://doi.org/10.1109/TPWRS.2013.2259601)
+- G. Morales-España, J.M. Latorre, and A. Ramos "Tight and Compact MILP Formulation for the Thermal Unit Commitment Problem" IEEE Transactions on Power Systems 28 (4): 4897-4908, Nov 2013. [10.1109/TPWRS.2013.2251373](https://doi.org/10.1109/TPWRS.2013.2251373)
 
 ```{math}
 \frac{p^p_{\omega ng} + ur^p_{\omega ng} + urr^p_{\omega ng}}{\overline{GP}^p_{\omega ng} - \underline{GP}^p_{\omega ng}} \leq uc^p_{\omega ng} - su^p_{\omega ng} - sd^p_{\omega,n+\nu,g} \quad \forall p \omega ng
@@ -728,7 +730,7 @@ Initial commitment of the units for every period, scenario, and stage is determi
 
 Maximum ramp up and ramp down for the second block of a non-renewable (thermal, hydro) unit [p.u.] «`eRampUp`» «`eRampDw`»
 
-- 16. Damcı-Kurt, S. Küçükyavuz, D. Rajan, and A. Atamtürk, “A polyhedral study of production ramping,” Math. Program., vol. 158, no. 1–2, pp. 175–205, Jul. 2016. [10.1007/s10107-015-0919-9](https://doi.org/10.1007/s10107-015-0919-9)
+- P. Damcı-Kurt, S. Küçükyavuz, D. Rajan, and A. Atamtürk, “A polyhedral study of production ramping,” Math. Program., vol. 158, no. 1–2, pp. 175–205, Jul. 2016. [10.1007/s10107-015-0919-9](https://doi.org/10.1007/s10107-015-0919-9)
 
 ```{math}
 \frac{- p^p_{\omega,n-\nu,g} - dr^p_{\omega,n-\nu,g} + p^p_{\omega ng} + ur^p_{\omega ng}}{DUR^p_{\omega n} RU_g} \leq   uc^p_{\omega ng}      - su^p_{\omega ng} \quad \forall p \omega ng
@@ -751,7 +753,7 @@ Maximum ramp down and ramp up for the charge of an ESS [p.u.] «`eRampUpCharge`�
 Detection of ramp up and ramp down state for the second block of a non-renewable (thermal) unit with minimum stable time [p.u.] «`eRampUpState`» «`eRampDwState`».
 The parameter {math}`\epsilon` is added to detect if the generator is ramping up/down. It is defined in the code as 1e-4 (of the ramp up/down limit).
 
-- 6. Labora, A. Ramos “Tight and Compact Formulations for Nuclear Power Plant Flexible Operation” TechRxiv. February, 2026. [10.36227/techrxiv.177004916.61674766/v1](https://doi.org/10.36227/techrxiv.177004916.61674766/v1)
+- F. Labora, A. Ramos “Tight and Compact Formulations for Nuclear Power Plant Flexible Operation” TechRxiv. February, 2026. [10.36227/techrxiv.177004916.61674766/v1](https://doi.org/10.36227/techrxiv.177004916.61674766/v1)
 
 ```{math}
 \frac{- p^p_{\omega,n-\nu,t} + p^p_{\omega nt}}{DUR^p_{\omega n} RU_t} \leq rsu^p_{\omega nt} - \epsilon \cdot rsd^p_{\omega nt} \quad \forall p \omega nt
@@ -773,7 +775,7 @@ The model can also consider a dead band, which means that ramps below a certain 
 
 Minimum up time and down time of thermal unit [p.u.] «`eMinUpTime`» «`eMinDownTime`»
 
-- 4. Rajan and S. Takriti, “Minimum up/down polytopes of the unit commitment problem with start-up costs,” IBM, New York, Technical Report RC23628, 2005. <https://pdfs.semanticscholar.org/b886/42e36b414d5929fed48593d0ac46ae3e2070.pdf>
+- D. Rajan and S. Takriti, “Minimum up/down polytopes of the unit commitment problem with start-up costs,” IBM, New York, Technical Report RC23628, 2005. <https://pdfs.semanticscholar.org/b886/42e36b414d5929fed48593d0ac46ae3e2070.pdf>
 
 ```{math}
 \sum_{n'=n+\nu-TU_t}^n su^p_{\omega n't} \leq     uc^p_{\omega nt} \quad \forall p \omega nt
