@@ -4,17 +4,17 @@
 
 Here we present the mathematical formulation of the optimization problem solved by the **openTEPES** model. See also some TEP-related publications:
 
-- 6. Labora, A. Ramos “Tight and Compact Formulations for Nuclear Power Plant Flexible Operation” TechRxiv. February, 2026. [10.36227/techrxiv.177004916.61674766/v1](https://doi.org/10.36227/techrxiv.177004916.61674766/v1)
+- FLabora, A. Ramos “Tight and Compact Formulations for Nuclear Power Plant Flexible Operation” TechRxiv. February, 2026. [10.36227/techrxiv.177004916.61674766/v1](https://doi.org/10.36227/techrxiv.177004916.61674766/v1)
 - E.F. Álvarez, J.C. López, L. Olmos, A. Ramos "An Optimal Expansion Planning of Power Systems Considering Cycle-Based AC Optimal Power Flow" Sustainable Energy, Grids and Networks, May 2024. [10.1016/j.segan.2024.101413](https://doi.org/10.1016/j.segan.2024.101413)
 - E.F. Álvarez, L. Olmos, A. Ramos, K. Antoniadou-Plytaria, D. Steen, and L.A. Tuan “Values and Impacts of Incorporating Local Flexibility Services in Transmission Expansion Planning” Electric Power Systems Research 212, July 2022. [10.1016/j.epsr.2022.108480](https://doi.org/10.1016/j.epsr.2022.108480)
 - A. Ramos, E. Quispe, S. Lumbreras "[OpenTEPES: Open-source Transmission and Generation Expansion Planning](https://www.sciencedirect.com/science/article/pii/S235271102200053X/pdfft?md5=ece8d3328c853a4795eda29acd2ad140&pid=1-s2.0-S235271102200053X-main.pdf)"
   *SoftwareX* 18: June 2022. [10.1016/j.softx.2022.101070](https://doi.org/10.1016/j.softx.2022.101070)
-- 19. Lumbreras, H. Abdi, A. Ramos, and M. Moradi "Introduction: The Key Role of the Transmission Network" in the book S. Lumbreras, H. Abdi, A. Ramos (eds.) "Transmission Expansion Planning: The Network Challenges of the Energy Transition" Springer, 2020 ISBN 9783030494278 [10.1007/978-3-030-49428-5_1](https://link.springer.com/chapter/10.1007/978-3-030-49428-5_1)
-- 19. Lumbreras, F. Banez-Chicharro, A. Ramos "Optimal Transmission Expansion Planning in Real-Sized Power Systems with High Renewable Penetration" Electric Power Systems Research 49, 76-88, Aug 2017 [10.1016/j.epsr.2017.04.020](https://doi.org/10.1016/j.epsr.2017.04.020)
-- 19. Lumbreras, A. Ramos "The new challenges to transmission expansion planning. Survey of recent practice and literature review" Electric Power Systems Research 134: 19-29, May 2016 [10.1016/j.epsr.2015.10.013](https://doi.org/10.1016/j.epsr.2015.10.013)
-- 17. Ploussard, L. Olmos and A. Ramos "A search space reduction method for transmission expansion planning using an iterative refinement of the DC Load Flow model" IEEE Transactions on Power Systems 35 (1): 152-162, Jan 2020 [10.1109/TPWRS.2019.2930719](https://doi.org/10.1109/TPWRS.2019.2930719)
-- 17. Ploussard, L. Olmos and A. Ramos "An efficient network reduction method for transmission expansion planning using multicut problem and Kron" reduction IEEE Transactions on Power Systems 33 (6): 6120-6130, Nov 2018 [10.1109/TPWRS.2018.2842301](https://doi.org/10.1109/TPWRS.2018.2842301)
-- 17. Ploussard, L. Olmos and A. Ramos "An operational state aggregation technique for transmission expansion planning based on line benefits" IEEE Transactions on Power Systems 32 (4): 2744-2755, Oct 2017 [10.1109/TPWRS.2016.2614368](https://doi.org/10.1109/TPWRS.2016.2614368)
+- S. Lumbreras, H. Abdi, A. Ramos, and M. Moradi "Introduction: The Key Role of the Transmission Network" in the book S. Lumbreras, H. Abdi, A. Ramos (eds.) "Transmission Expansion Planning: The Network Challenges of the Energy Transition" Springer, 2020 ISBN 9783030494278 [10.1007/978-3-030-49428-5_1](https://link.springer.com/chapter/10.1007/978-3-030-49428-5_1)
+- S. Lumbreras, F. Banez-Chicharro, A. Ramos "Optimal Transmission Expansion Planning in Real-Sized Power Systems with High Renewable Penetration" Electric Power Systems Research 49, 76-88, Aug 2017 [10.1016/j.epsr.2017.04.020](https://doi.org/10.1016/j.epsr.2017.04.020)
+- S. Lumbreras, A. Ramos "The new challenges to transmission expansion planning. Survey of recent practice and literature review" Electric Power Systems Research 134: 19-29, May 2016 [10.1016/j.epsr.2015.10.013](https://doi.org/10.1016/j.epsr.2015.10.013)
+- Q. Ploussard, L. Olmos and A. Ramos "A search space reduction method for transmission expansion planning using an iterative refinement of the DC Load Flow model" IEEE Transactions on Power Systems 35 (1): 152-162, Jan 2020 [10.1109/TPWRS.2019.2930719](https://doi.org/10.1109/TPWRS.2019.2930719)
+- Q. Ploussard, L. Olmos and A. Ramos "An efficient network reduction method for transmission expansion planning using multicut problem and Kron" reduction IEEE Transactions on Power Systems 33 (6): 6120-6130, Nov 2018 [10.1109/TPWRS.2018.2842301](https://doi.org/10.1109/TPWRS.2018.2842301)
+- Q. Ploussard, L. Olmos and A. Ramos "An operational state aggregation technique for transmission expansion planning based on line benefits" IEEE Transactions on Power Systems 32 (4): 2744-2755, Oct 2017 [10.1109/TPWRS.2016.2614368](https://doi.org/10.1109/TPWRS.2016.2614368)
 
 ## Indices
 
@@ -360,29 +360,41 @@ The names in parentheses correspond to the names of the constraints in the code.
 
 Electricity, heat, and hydrogen generation, (energy and reservoir) storage, and (electricity, hydrogen, and heat) network investment cost plus retirement cost [M€] «`eTotalFCost`» «`eTotalICost`»
 
-$\sum_{p} DF^p [\sum_{g} CFG_g icg^p_g + \sum_{g} CFR_g rcg^p_g + \sum_{e'} CFE_{e'} icr^p_{e'} + \sum_{ijc} CFT_{ijc} ict^p_{ijc} + \sum_{ijc} CFH_{ijc} ich^p_{ijc} + \sum_{ijc} CFP_{ijc} icp^p_{ijc}] +$
+```{math}
+\sum_{p} DF^p [\sum_{g} CFG_g icg^p_g + \sum_{g} CFR_g rcg^p_g + \sum_{e'} CFE_{e'} icr^p_{e'} + \sum_{ijc} CFT_{ijc} ict^p_{ijc} + \sum_{ijc} CFH_{ijc} ich^p_{ijc} + \sum_{ijc} CFP_{ijc} icp^p_{ijc}] +
+```
 
 Electricity, heat, and hydrogen expected generation operation cost [M€] «`eTotalGCost`»
 
-$\sum_{p \omega ng} {DF^p [P^p_{\omega} DUR^p_{\omega n} (CV^p_{\omega ng} gp^p_{\omega ng} + CF^p_{\omega ng} uc^p_{\omega ng}) + CSU_g su^p_{\omega ng} + CSD_g sd^p_{\omega ng} + CR_g ur^p_{\omega ng} + CR_g dr^p_{\omega ng}]} +$
+```{math}
+\sum_{p \omega ng} {DF^p [P^p_{\omega} DUR^p_{\omega n} (CV^p_{\omega ng} gp^p_{\omega ng} + CF^p_{\omega ng} uc^p_{\omega ng}) + CSU_g su^p_{\omega ng} + CSD_g sd^p_{\omega ng} + CR_g ur^p_{\omega ng} + CR_g dr^p_{\omega ng}]} +
+```
 
 Expected consumption operation cost [M€] «`eTotalCCost`»
 
-$\sum_{p \omega ne}{DF^p P^p_{\omega} DUR^p_{\omega n} CV_e gc^p_{\omega ne}} +$
+```{math}
+\sum_{p \omega ne}{DF^p P^p_{\omega} DUR^p_{\omega n} CV_e gc^p_{\omega ne}} +
+```
 
 Expected generation emission cost [M€] «`eTotalECost`» «`eTotalECostArea`»
 
-$\sum_{p \omega ng} {DF^p P^p_{\omega} DUR^p_{\omega n} CE^p_{\omega ng} gp^p_{\omega ng}} +$
+```{math}
+\sum_{p \omega ng} {DF^p P^p_{\omega} DUR^p_{\omega n} CE^p_{\omega ng} gp^p_{\omega ng}} +
+```
 
 Expected network operation cost [M€]. This cost penalizes with and $\epsilon$ the superfluous network losses done with spillage/curtailment «`eTotalNCost`»
 
-$\sum_{p \omega nijc}{DF^p P^p_{\omega} DUR^p_{\omega n} \epsilon l^p_{\omega nijc}} +$
+```{math}
+\sum_{p \omega nijc}{DF^p P^p_{\omega} DUR^p_{\omega n} \epsilon l^p_{\omega nijc}} +
+```
 
 Electricity, hydrogen, and heat expected reliability cost [M€] «`eTotalRElecCost`, `eTotalRH2Cost`, `eTotalRHeatCost`»
 
 The penalty for hydrogen surplus is `0.5 CHNS`, which is a common assumption to consider that the cost of hydrogen surplus is much lower than the cost of hydrogen not served, and it is internally done by the model.
 
-$\sum_{p \omega ni}{DF^p P^p_{\omega} DUR^p_{\omega n} CENS \; ens^p_{\omega ni}} + \sum_{p \omega ni}{DF^p P^p_{\omega} CHNS (hns^p_{\omega ni}+0.5 hex^p_{\omega ni})} + \sum_{p \omega ni}{DF^p P^p_{\omega} DUR^p_{\omega n} CHtNS \; htns^p_{\omega ni}}$
+```{math}
+\sum_{p \omega ni}{DF^p P^p_{\omega} DUR^p_{\omega n} CENS \; ens^p_{\omega ni}} + \sum_{p \omega ni}{DF^p P^p_{\omega} CHNS (hns^p_{\omega ni}+0.5 hex^p_{\omega ni})} + \sum_{p \omega ni}{DF^p P^p_{\omega} DUR^p_{\omega n} CHtNS \; htns^p_{\omega ni}}
+```
 
 All the periodical (annual) costs of a period $p$ are updated considering that the period (e.g., 2030) is replicated for a number of years defined by its weight $WG^p$ (e.g., 5 times) and discounted to the base year $T$ (e.g., 2020) with this discount factor $DF^p = \frac{(1+\delta)^{WG^p}-1}{\delta(1+\delta)^{WG^p-1+p-T}}$.
 
