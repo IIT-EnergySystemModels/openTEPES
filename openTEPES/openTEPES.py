@@ -34,8 +34,13 @@ OUTPUT_ALIASES = {
 }
 
 
+DEFAULT_GZIP_PATTERNS = (
+    "Generation", "Consumption", "Balance", "MarketResults", "Network",
+)
+
+
 def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConsole,
-                  *, output_spec=None, out_path=None):
+                  *, output_spec=None, out_path=None, gzip_patterns=None):
     """Solve and write results.
 
     Parameters
@@ -53,6 +58,13 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     out_path : str | None, optional
         Directory to write all `oT_Result_*.csv` and `oT_Plot_*.html` to.
         Default `None` → write into `<DirName>/<CaseName>` (historical).
+    gzip_patterns : tuple[str, ...] | None, optional
+        If set, every `oT_Result_<prefix>*.csv` whose `<prefix>` starts with
+        any entry in `gzip_patterns` is gzip-compressed in place after all
+        writers finish. Default `None` → no compression (historical). Pandas
+        reads `.csv.gz` transparently; note that `.csv.gz` cannot be opened
+        directly in Excel — users who inspect outputs in Excel should leave
+        this disabled.
     """
 
     InitialTime = time.time()
@@ -477,6 +489,31 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     if pIndEconomicResults:
         EconomicResults                   (DirName, CaseName, mTEPES, mTEPES, pIndAreaOutput, pIndPlotOutput)
 
+    # Optional post-write gzip pass. Rewrite every oT_Result_<prefix>*.csv
+    # whose <prefix> matches one of the requested patterns as .csv.gz.
+    # Pandas reads .csv.gz transparently; Excel does not.
+    _GzipFiles  = 0
+    _GzipMbSaved = 0.0
+    if gzip_patterns:
+        import gzip as _gz
+        import shutil as _shutil
+        _patterns = tuple(gzip_patterns)
+        for _fn in os.listdir(_OutPath):
+            if not (_fn.startswith("oT_Result_") and _fn.endswith(".csv")):
+                continue
+            _stem = _fn[len("oT_Result_"):]
+            if not any(_stem.startswith(_p) for _p in _patterns):
+                continue
+            _src = os.path.join(_OutPath, _fn)
+            _src_size = os.path.getsize(_src)
+            _dst = _src + ".gz"
+            with open(_src, "rb") as _fi, _gz.open(_dst, "wb") as _fo:
+                _shutil.copyfileobj(_fi, _fo)
+            _dst_size = os.path.getsize(_dst)
+            os.remove(_src)
+            _GzipFiles  += 1
+            _GzipMbSaved += (_src_size - _dst_size) / (1024 * 1024)
+
     # Run-status sentinel JSON — small machine-readable record of this run.
     # Lets downstream tools detect a fresh run and read top-level adequacy /
     # cost numbers without parsing CSVs.
@@ -525,6 +562,9 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
         "run_started_utc":    _RunStartedUtc,
         "run_finished_utc":   datetime.datetime.utcnow().isoformat(timespec="seconds") + "Z",
         "outputs_enabled":    [k for k, v in _flags.items() if v],
+        "gzip_patterns":      list(gzip_patterns) if gzip_patterns else None,
+        "gzip_files":         _GzipFiles,
+        "gzip_mb_saved":      round(_GzipMbSaved, 2),
     }
     with open(os.path.join(_OutPath, f"openTEPES_Run_Status_{CaseName}.json"), "w") as _f:
         json.dump(status, _f, indent=2)
