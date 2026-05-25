@@ -35,7 +35,7 @@ OUTPUT_ALIASES = {
 
 
 def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConsole,
-                  *, output_spec=None, out_path=None):
+                  *, output_spec=None, out_path=None, gzip_threshold_mb=None):
     """Solve and write results.
 
     Parameters
@@ -53,6 +53,10 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     out_path : str | None, optional
         Directory to write all `oT_Result_*.csv` and `oT_Plot_*.html` to.
         Default `None` → write into `<DirName>/<CaseName>` (historical).
+    gzip_threshold_mb : float | None, optional
+        If set, every `oT_Result_*.csv` whose size is at least this many MB is
+        gzip-compressed in place after all writers finish. Default `None` → no
+        compression (historical). Pandas reads `.csv.gz` transparently.
     """
 
     InitialTime = time.time()
@@ -477,6 +481,29 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     if pIndEconomicResults:
         EconomicResults                   (DirName, CaseName, mTEPES, mTEPES, pIndAreaOutput, pIndPlotOutput)
 
+    # Optional post-write gzip pass. Rewrite every oT_Result_*.csv that meets
+    # the size threshold as .csv.gz (pandas reads either extension natively).
+    _GzipFiles  = 0
+    _GzipMbSaved = 0.0
+    if gzip_threshold_mb is not None:
+        import gzip as _gz
+        import shutil as _shutil
+        _threshold_bytes = float(gzip_threshold_mb) * 1024 * 1024
+        for _fn in os.listdir(_OutPath):
+            if not (_fn.startswith("oT_Result_") and _fn.endswith(".csv")):
+                continue
+            _src = os.path.join(_OutPath, _fn)
+            _src_size = os.path.getsize(_src)
+            if _src_size < _threshold_bytes:
+                continue
+            _dst = _src + ".gz"
+            with open(_src, "rb") as _fi, _gz.open(_dst, "wb") as _fo:
+                _shutil.copyfileobj(_fi, _fo)
+            _dst_size = os.path.getsize(_dst)
+            os.remove(_src)
+            _GzipFiles  += 1
+            _GzipMbSaved += (_src_size - _dst_size) / (1024 * 1024)
+
     # Run-status sentinel JSON — small machine-readable record of this run.
     # Lets downstream tools detect a fresh run and read top-level adequacy /
     # cost numbers without parsing CSVs.
@@ -525,6 +552,9 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
         "run_started_utc":    _RunStartedUtc,
         "run_finished_utc":   datetime.datetime.utcnow().isoformat(timespec="seconds") + "Z",
         "outputs_enabled":    [k for k, v in _flags.items() if v],
+        "gzip_threshold_mb":  gzip_threshold_mb,
+        "gzip_files":         _GzipFiles,
+        "gzip_mb_saved":      round(_GzipMbSaved, 2),
     }
     with open(os.path.join(_OutPath, f"openTEPES_Run_Status_{CaseName}.json"), "w") as _f:
         json.dump(status, _f, indent=2)

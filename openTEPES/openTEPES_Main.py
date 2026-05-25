@@ -713,6 +713,12 @@ parser.add_argument('--no-plots', action="store_true", default=False,
 parser.add_argument('--out',    type=str, default=None,
                     help="Output directory for oT_Result_*.csv and oT_Plot_*.html. "
                          "Default: <dir>/<case>.")
+parser.add_argument('--gzip-large-csvs', action="store_true", default=False,
+                    help="After writing results, gzip every oT_Result_*.csv whose "
+                         "uncompressed size is at least --gzip-threshold-mb. "
+                         "Default: off (CSVs written plain).")
+parser.add_argument('--gzip-threshold-mb', type=float, default=5.0,
+                    help="Threshold in MB for --gzip-large-csvs. Default: 5.")
 
 DIR    = os.path.dirname(__file__)
 CASE   = '9n'
@@ -776,8 +782,10 @@ def main():
         output_spec = output_spec or {}
         output_spec["plots"] = False
 
+    gzip_threshold_mb = args.gzip_threshold_mb if args.gzip_large_csvs else None
     model = openTEPES_run(args.dir, args.case, args.solver, args.result, args.log,
-                          output_spec=output_spec, out_path=args.out)
+                          output_spec=output_spec, out_path=args.out,
+                          gzip_threshold_mb=gzip_threshold_mb)
     # Computing the elapsed time
     ElapsedTime = round(time.time() - StartTime)
     print('Total time                             ...  {} s'.format(ElapsedTime))
