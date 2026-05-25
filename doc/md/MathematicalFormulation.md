@@ -508,7 +508,7 @@ The sum of the inertia of the committed units must satisfy the system inertia fo
 \sum_{g \in a} GI_g uc^p_{\omega ng} \geq SI^p_{\omega na} \quad \forall p \omega na
 ```
 
-Upward and downward operating reserves provided for each area by non-renewable generators (including ESS when generating) and ESS, when charging, [GW] «`eOperReserveUp`» «`eOperReserveDw`»
+Upward and downward operating reserves provided for each area by non-renewable generators (including ESS when generating) and ESS, when charging [GW] «`eOperReserveUp`» «`eOperReserveDw`»
 
 ```{math}
 \sum_{g \in a} ur^p_{\omega ng} + \sum_{e \in a} ur'^p_{\omega ne} = UR^p_{\omega na} \quad \forall p \omega na
@@ -516,6 +516,34 @@ Upward and downward operating reserves provided for each area by non-renewable g
 
 ```{math}
 \sum_{g \in a} dr^p_{\omega ng} + \sum_{e \in a} dr'^p_{\omega ne} = DR^p_{\omega na} \quad \forall p \omega na
+```
+
+Upward and downward operating reserve activation provided for each area by non-renewable generators (including ESS when generating) and ESS, when charging [GW] «`eOperReserveUpEnergy`» «`eOperReserveDwEnergy`»
+
+```{math}
+\sum_{g \in a} ura^p_{\omega ng} + \sum_{e \in a} ura'^p_{\omega ne} = URA^p_{\omega na} \quad \forall p \omega na
+```
+
+```{math}
+\sum_{g \in a} dra^p_{\omega ng} + \sum_{e \in a} dra'^p_{\omega ne} = DRA^p_{\omega na} \quad \forall p \omega na
+```
+
+Upward and downward operating reserve activation lower than the upward and downward operating reserves provided for each non-renewable generators (including ESS when generating) and ESS, when charging, [GW] «`eReserveUpEnergy`» «`eReserveDwEnergy`» «`eESSReserveUpEnergy`» «`eESSReserveDwEnergy`»
+
+```{math}
+ura^p_{\omega ng} \leq ur^p_{\omega ng} \quad \forall p \omega ng
+```
+
+```{math}
+ura'^p_{\omega ng} \leq ur'^p_{\omega ng} \quad \forall p \omega ne
+```
+
+```{math}
+dra^p_{\omega ng} \leq dr^p_{\omega ng} \quad \forall p \omega ng
+```
+
+```{math}
+dra'^p_{\omega ng} \leq dr'^p_{\omega ng} \quad \forall p \omega ne
 ```
 
 Upward and downward ramp reserves provided for the system by non-renewable generators (including ESS when generating) [GW/h] «`eSystemRampUp`» «`eSystemRampDw`»

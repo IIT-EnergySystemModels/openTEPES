@@ -522,6 +522,46 @@ def GenerationOperationModelFormulationDemand(OptModel, mTEPES, pIndLogConsole, 
     if pIndLogConsole:
         print('eOperReserveDwEnergy      ... ', len(getattr(OptModel, f'eOperReserveDwEnergy_{p}_{sc}_{st}')), ' rows')
 
+    def eReserveUpEnergy(OptModel,n,nr):
+        # Skip if there is no minimum up/down reserve ratio or no reserves are needed in the Area where the generator is located or generator cannot provide reserves while generating power
+        if mTEPES.pIndReserveActivation == 0 or mTEPES.pIndOperReserveGen[nr] or sum(mTEPES.pOperReserveUp[p,sc,n,ar] + mTEPES.pOperReserveDw[p,sc,n,ar] for ar in a2n[nr]) == 0.0 or mTEPES.pMaxPower2ndBlock[p,sc,n,nr] == 0.0:
+            return Constraint.Skip
+        return OptModel.vReserveUpEnergy[p,sc,n,nr] <= OptModel.vReserveUp[p,sc,n,nr]
+    setattr(OptModel, f'eReserveUpEnergy_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.nr, rule=eReserveUpEnergy, doc='operating reserve activation lower than offered [GW]'))
+
+    if pIndLogConsole:
+        print('eReserveUpEnergy          ... ', len(getattr(OptModel, f'eReserveUpEnergy_{p}_{sc}_{st}')), ' rows')
+
+    def eReserveDwEnergy(OptModel,n,nr):
+        # Skip if there is no minimum up/down reserve ratio or no reserves are needed in the Area where the generator is located or generator cannot provide reserves while generating power
+        if mTEPES.pIndReserveActivation == 0 or mTEPES.pIndOperReserveGen[nr] or sum(mTEPES.pOperReserveUp[p,sc,n,ar] + mTEPES.pOperReserveDw[p,sc,n,ar] for ar in a2n[nr]) == 0.0 or mTEPES.pMaxPower2ndBlock[p,sc,n,nr] == 0.0:
+            return Constraint.Skip
+        return OptModel.vReserveDownEnergy[p,sc,n,nr] <= OptModel.vReserveDown[p,sc,n,nr]
+    setattr(OptModel, f'eReserveDwEnergy_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.nr, rule=eReserveDwEnergy, doc='operating reserve activation lower than offered [GW]'))
+
+    if pIndLogConsole:
+        print('eReserveDwEnergy          ... ', len(getattr(OptModel, f'eReserveDwEnergy_{p}_{sc}_{st}')), ' rows')
+
+    def eESSReserveUpEnergy(OptModel,n,eh):
+        # Skip if there is no minimum up/down reserve ratio or no reserves are needed in the Area where the generator is located or generator cannot provide reserves while generating power
+        if mTEPES.pIndReserveActivation == 0 or mTEPES.pIndOperReserveGen[eh] or sum(mTEPES.pOperReserveUp[p,sc,n,ar] + mTEPES.pOperReserveDw[p,sc,n,ar] for ar in a2n[eh]) == 0.0 or mTEPES.pMaxPower2ndBlock[p,sc,n,eh] == 0.0:
+            return Constraint.Skip
+        return OptModel.vESSReserveUpEnergy[p,sc,n,eh] <= OptModel.vESSReserveUp[p,sc,n,eh]
+    setattr(OptModel, f'eESSReserveUpEnergy_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.eh, rule=eESSReserveUpEnergy, doc='operating reserve activation lower than offered [GW]'))
+
+    if pIndLogConsole:
+        print('eESSReserveUpEnergy       ... ', len(getattr(OptModel, f'eESSReserveUpEnergy_{p}_{sc}_{st}')), ' rows')
+
+    def eESSReserveDwEnergy(OptModel,n,eh):
+        # Skip if there is no minimum up/down reserve ratio or no reserves are needed in the Area where the generator is located or generator cannot provide reserves while generating power
+        if mTEPES.pIndReserveActivation == 0 or mTEPES.pIndOperReserveGen[eh] or sum(mTEPES.pOperReserveUp[p,sc,n,ar] + mTEPES.pOperReserveDw[p,sc,n,ar] for ar in a2n[eh]) == 0.0 or mTEPES.pMaxPower2ndBlock[p,sc,n,eh] == 0.0:
+            return Constraint.Skip
+        return OptModel.vESSReserveDownEnergy[p,sc,n,eh] <= OptModel.vESSReserveDown[p,sc,n,eh]
+    setattr(OptModel, f'eESSReserveDwEnergy_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.eh, rule=eESSReserveDwEnergy, doc='operating reserve activation lower than offered [GW]'))
+
+    if pIndLogConsole:
+        print('eESSReserveDwEnergy       ... ', len(getattr(OptModel, f'eESSReserveDwEnergy_{p}_{sc}_{st}')), ' rows')
+
     def eBalanceElec(OptModel,n,nd):
         if sum(1 for g in g2n[nd]) + sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd]) == 0:
             return Constraint.Skip
