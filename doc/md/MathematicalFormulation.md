@@ -528,7 +528,7 @@ Upward and downward operating reserve activation provided for each area by non-r
 \sum_{g \in a} dra^p_{\omega ng} + \sum_{e \in a} dra'^p_{\omega ne} = DRA^p_{\omega na} \quad \forall p \omega na
 ```
 
-Upward and downward operating reserve activation lower than the upward and downward operating reserves provided for each non-renewable generators (including ESS when generating) and ESS, when charging, [GW] «`eReserveUpEnergy`» «`eReserveDwEnergy`» «`eESSReserveUpEnergy`» «`eESSReserveDwEnergy`»
+Upward and downward operating reserve activation lower than the upward and downward operating reserves provided for each non-renewable generators (including ESS when generating) and ESS, when charging [GW] «`eReserveUpEnergy`» «`eReserveDwEnergy`» «`eESSReserveUpEnergy`» «`eESSReserveDwEnergy`»
 
 ```{math}
 ura^p_{\omega ng} \leq ur^p_{\omega ng} \quad \forall p \omega ng
@@ -558,7 +558,7 @@ Upward and downward ramp reserves provided for the system by non-renewable gener
 
 It is assumed that the ramp reserves provided by the generators can be shared among areas of the system.
 
-Ratio between downward and upward operating reserves for each area provided by non-renewable generators (including ESS when generating) and ESS, when charging, [GW] «`eReserveMinRatioDwUp`» «`eReserveMaxRatioDwUp`» «`eRsrvMinRatioDwUpESS`» «`eRsrvMaxRatioDwUpESS`».
+Ratio between downward and upward operating reserves for each area provided by non-renewable generators (including ESS when generating) and ESS, when charging [GW] «`eReserveMinRatioDwUp`» «`eReserveMaxRatioDwUp`» «`eRsrvMinRatioDwUpESS`» «`eRsrvMaxRatioDwUpESS`».
 The corresponding constraints are not formulated if {math}`\underline{DtUR}=0` and {math}`\overline{DtUR}=1`.
 
 ```{math}
