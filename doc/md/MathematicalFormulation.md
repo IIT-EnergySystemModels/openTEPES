@@ -535,7 +535,7 @@ ura^p_{\omega ng} \leq ur^p_{\omega ng} \quad \forall p \omega ng
 ```
 
 ```{math}
-ura'^p_{\omega ng} \leq ur'^p_{\omega ng} \quad \forall p \omega ne
+ura'^p_{\omega ne} \leq ur'^p_{\omega ne} \quad \forall p \omega ne
 ```
 
 ```{math}
@@ -543,7 +543,7 @@ dra^p_{\omega ng} \leq dr^p_{\omega ng} \quad \forall p \omega ng
 ```
 
 ```{math}
-dra'^p_{\omega ng} \leq dr'^p_{\omega ng} \quad \forall p \omega ne
+dra'^p_{\omega ne} \leq dr'^p_{\omega ne} \quad \forall p \omega ne
 ```
 
 Upward and downward ramp reserves provided for the system by non-renewable generators (including ESS when generating) [GW/h] «`eSystemRampUp`» «`eSystemRampDw`»
