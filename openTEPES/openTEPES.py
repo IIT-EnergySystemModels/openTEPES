@@ -453,13 +453,30 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     # Setting on mTEPES avoids changing 14 function signatures.
     mTEPES.pOutputPath = _OutPath
 
-    # output parameters, variables, and duals to CSV files
+    # Output results to CSV files. Writers are ordered so that small,
+    # KPI/structural tables (cost summary, investment decisions, operation
+    # summary, reliability indexes, flexibility metrics) are written FIRST;
+    # bulky hourly tables (Generation/ESS/Network/Marginal/Economic) come
+    # AFTER. If a batch is interrupted mid-output (kill / timeout / disk
+    # full), the headline numbers from every solved case are preserved.
+    # HTML plot writers run LAST.
     _OutputStart = time.time()
-    if pIndDumpRawResults:
-        OutputResultsParVarCon(DirName, CaseName, mTEPES, mTEPES)
 
+    # --- headline tables (small, structural) ---
     if pIndInvestmentResults:
         InvestmentResults                 (DirName, CaseName, mTEPES, mTEPES, pIndTechnologyOutput,                 pIndPlotOutput)
+    if pIndCostSummaryResults:
+        CostSummaryResults                (DirName, CaseName, mTEPES, mTEPES)
+    if pIndOperationSummaryResults:
+        OperationSummaryResults           (DirName, CaseName, mTEPES, mTEPES)
+    if pIndReliabilityResults:
+        ReliabilityResults                (DirName, CaseName, mTEPES, mTEPES)
+    if pIndFlexibilityResults:
+        FlexibilityResults                (DirName, CaseName, mTEPES, mTEPES)
+
+    # --- bulky hourly tables ---
+    if pIndDumpRawResults:
+        OutputResultsParVarCon            (DirName, CaseName, mTEPES, mTEPES)
     if pIndGenerationOperationResults:
         GenerationOperationResults        (DirName, CaseName, mTEPES, mTEPES, pIndTechnologyOutput, pIndAreaOutput, pIndPlotOutput)
         if mTEPES.ch and mTEPES.pIndHeat:
@@ -472,22 +489,16 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
         NetworkH2OperationResults         (DirName, CaseName, mTEPES, mTEPES)
     if pIndNetworkHeatOperationResults and mTEPES.ha and mTEPES.pIndHeat:
         NetworkHeatOperationResults       (DirName, CaseName, mTEPES, mTEPES)
-    if pIndFlexibilityResults:
-        FlexibilityResults                (DirName, CaseName, mTEPES, mTEPES)
-    if pIndReliabilityResults:
-        ReliabilityResults                (DirName, CaseName, mTEPES, mTEPES)
     if pIndNetworkOperationResults:
         NetworkOperationResults           (DirName, CaseName, mTEPES, mTEPES)
-    if pIndNetworkMapResults:
-        NetworkMapResults                 (DirName, CaseName, mTEPES, mTEPES)
-    if pIndOperationSummaryResults:
-        OperationSummaryResults           (DirName, CaseName, mTEPES, mTEPES)
-    if pIndCostSummaryResults:
-        CostSummaryResults                (DirName, CaseName, mTEPES, mTEPES)
     if pIndMarginalResults:
         MarginalResults                   (DirName, CaseName, mTEPES, mTEPES,                 pIndPlotOutput)
     if pIndEconomicResults:
         EconomicResults                   (DirName, CaseName, mTEPES, mTEPES, pIndAreaOutput, pIndPlotOutput)
+
+    # --- plots (slow, not data-critical) ---
+    if pIndNetworkMapResults:
+        NetworkMapResults                 (DirName, CaseName, mTEPES, mTEPES)
 
     # Optional post-write gzip pass. Rewrite every oT_Result_<prefix>*.csv
     # whose <prefix> matches one of the requested patterns as .csv.gz.
