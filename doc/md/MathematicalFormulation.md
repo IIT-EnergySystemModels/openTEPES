@@ -295,6 +295,10 @@ They are written in **lowercase** letters.
                                                                  A unit can provide simultaneously upward and downward reserves                                      GW
 :math:`ur'^p_{\omega ne}, dr'^p_{\omega ne}`                     Upward and downward operating reserves of an ESS as a consumption unit.
                                                                  A consumption unit can provide simultaneously upward and downward reserves                          GW
+:math:`ura^p_{\omega ng}, dra^p_{\omega ng}`                     Upward and downward operating reserve activation of a non-renewable generating unit.
+                                                                 A unit can provide simultaneously upward and downward reserves                                      GW
+:math:`ura'^p_{\omega ne}, dra'^p_{\omega ne}`                   Upward and downward operating reserve activation of an ESS as a consumption unit.
+                                                                 A consumption unit can provide simultaneously upward and downward reserves                          GW
 :math:`urr^p_{\omega ng}, drr^p_{\omega ng}`                     Upward and downward ramp reserves of a non-renewable generating unit.
                                                                  A unit can provide simultaneously upward and downward ramp reserves                                 GW/h
 :math:`ei^p_{\omega ne}`                                         Variable energy inflows of a candidate ESS (e.g., hydropower plant)                                 GW
@@ -648,6 +652,12 @@ Incompatibility between charge and discharge, including the activation energy in
 \frac{p^p_{\omega ne} + URA \: ur^p_{\omega ne}}{\overline{GP}^p_{\omega ne} - \underline{GP}^p_{\omega ne}} + \frac{c^p_{\omega ne} + DRA \: dr'^p_{\omega ne}}{\overline{GC}^p_{\omega ne} - \underline{GC}^p_{\omega ne}} \leq 1 \quad \forall p \omega ne
 ```
 
+If there are operating reserve activation files, the constraint is:
+
+```{math}
+\frac{p^p_{\omega ne} + ura^p_{\omega ne}}{\overline{GP}^p_{\omega ne} - \underline{GP}^p_{\omega ne}} + \frac{c^p_{\omega ne} + dra'^p_{\omega ne}}{\overline{GC}^p_{\omega ne} - \underline{GC}^p_{\omega ne}} \leq 1 \quad \forall p \omega ne
+```
+
 Incompatibility between charge and discharge of a hydro unit [p.u.] «`eChargeDischarge`»
 
 ```{math}
@@ -660,16 +670,34 @@ Total output of a committed unit (all except the VRES units) [GW] «`eTotalOutpu
 \frac{gp^p_{\omega ng}}{\underline{GP}^p_{\omega ng}} = uc^p_{\omega ng} + \frac{p^p_{\omega ng} + URA \: ur^p_{\omega ng} - DRA \: dr^p_{\omega ng}}{\underline{GP}^p_{\omega ng}} \quad \forall p \omega ng
 ```
 
+If there are operating reserve activation files, the constraint is:
+
+```{math}
+\frac{gp^p_{\omega ng}}{\underline{GP}^p_{\omega ng}} = uc^p_{\omega ng} + \frac{p^p_{\omega ng} + ura^p_{\omega ng} - dra^p_{\omega ng}}{\underline{GP}^p_{\omega ng}} \quad \forall p \omega ng
+```
+
 Total charge of a non-hydropower ESS [GW] «`eESSTotalCharge`»
 
 ```{math}
 \frac{gc^p_{\omega ne}}{\underline{GC}^p_{\omega ne}} = 1 + \frac{c^p_{\omega ne} - URA \: ur'^p_{\omega ne} + DRA \: dr'^p_{\omega ne}}{\underline{GC}^p_{\omega ne}} \quad \forall p \omega ne
 ```
 
+If there are operating reserve activation files, the constraint is:
+
+```{math}
+\frac{gc^p_{\omega ne}}{\underline{GC}^p_{\omega ne}} = 1 + \frac{c^p_{\omega ne} - ura'^p_{\omega ne} + dra'^p_{\omega ne}}{\underline{GC}^p_{\omega ne}} \quad \forall p \omega ne
+```
+
 Total charge of a hydro unit [GW] «`eESSTotalCharge`»
 
 ```{math}
 \frac{gc^p_{\omega ne}}{\underline{GC}^p_{\omega ne}} = ucc^p_{\omega ng} + \frac{c^p_{\omega ne} - URA \: ur'^p_{\omega ne} + DRA \: dr'^p_{\omega ne}}{\underline{GC}^p_{\omega ne}} \quad \forall p \omega ne
+```
+
+If there are operating reserve activation files, the constraint is:
+
+```{math}
+\frac{gc^p_{\omega ne}}{\underline{GC}^p_{\omega ne}} = ucc^p_{\omega ng} + \frac{c^p_{\omega ne} - ura'^p_{\omega ne} + dra'^p_{\omega ne}}{\underline{GC}^p_{\omega ne}} \quad \forall p \omega ne
 ```
 
 Incompatibility between charge and outflows use of an ESS [p.u.] «`eChargeOutflows`»

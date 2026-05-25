@@ -5,6 +5,8 @@
 
 ## [4.18.17RC] - 2026-05-06
 
+- [CHANGED] introduction of new optional files for the operating reserve activation as an alternative to the UpReserveActivation and DwReserveActivation parameters in Data_Parameter file
+- [CHANGED] modify the change of the scenario probabilities to 1.0 if there are no investment decisions
 - [FIXED] control of non-existing electrolyzer output in OutputResults module
 - [FIXED] control of generator investments and retirements, and line investments in openTEPES.py
 - [FIXED] write voltage angle only if existing in the optimization problem.

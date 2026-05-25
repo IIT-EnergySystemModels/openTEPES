@@ -91,39 +91,41 @@ See the hydropower system section at the end of this page to learn how to define
 
 This is the list of the input data files and their brief description.
 
-| File                                 | Description                                                                                                                                                                    |
-| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `oT_Data_Option.csv`                 | Options of use of the **openTEPES** model                                                                                                                                      |
-| `oT_Data_Parameter.csv`              | General system parameters                                                                                                                                                      |
-| `oT_Data_Period.csv`                 | Weight of each period                                                                                                                                                          |
-| `oT_Data_Scenario.csv`               | Short-term uncertainties                                                                                                                                                       |
-| `oT_Data_Stage.csv`                  | Weight of each stage                                                                                                                                                           |
-| `oT_Data_ReserveMargin.csv`          | Minimum adequacy reserve margin for each area and period                                                                                                                       |
-| `oT_Data_Emission.csv`               | Maximum CO2 emissions of the electric system                                                                                                                                   |
-| `oT_Data_RESEnergy.csv`              | Minimum RES energy for each area and period                                                                                                                                    |
-| `oT_Data_Duration.csv`               | Duration of the load levels                                                                                                                                                    |
-| `oT_Data_Demand.csv`                 | Electricity demand                                                                                                                                                             |
-| `oT_Data_Inertia.csv`                | System inertia by area                                                                                                                                                         |
-| `oT_Data_OperatingReserveUp.csv`     | Upward operating reserves (include aFRR and mFRR for electricity balancing from ENTSO-E)                                                                                       |
-| `oT_Data_OperatingReserveDown.csv`   | Downward operating reserves (include aFRR and mFRR for electricity balancing from ENTSO-E)                                                                                     |
-| `oT_Data_RampReserveUp.csv`          | Upward ramp reserves (optional file)                                                                                                                                           |
-| `oT_Data_RampReserveDown.csv`        | Downward ramp reserves (optional file)                                                                                                                                         |
-| `oT_Data_Generation.csv`             | Generation (electricity and heat) data                                                                                                                                         |
-| `oT_Data_VariableMaxGeneration.csv`  | Variable maximum power generation by load level                                                                                                                                |
-| `oT_Data_VariableMinGeneration.csv`  | Variable minimum power generation by load level                                                                                                                                |
-| `oT_Data_VariableMaxConsumption.csv` | Variable maximum power consumption by load level                                                                                                                               |
-| `oT_Data_VariableMinConsumption.csv` | Variable minimum power consumption by load level                                                                                                                               |
-| `oT_Data_VariableFuelCost.csv`       | Variable fuel cost by load level                                                                                                                                               |
-| `oT_Data_EnergyInflows.csv`          | Energy inflows into an ESS by load level                                                                                                                                       |
-| `oT_Data_EnergyOutflows.csv`         | Energy outflows from an ESS for Power-to-X (H2 production, EV mobility, heat production, or water irrigation) by load level                                                    |
-| `oT_Data_VariableMaxStorage.csv`     | Maximum amount of energy stored in the ESS by load level                                                                                                                       |
-| `oT_Data_VariableMinStorage.csv`     | Minimum amount of energy stored in the ESS by load level                                                                                                                       |
-| `oT_Data_VariableMaxEnergy.csv`      | Maximum amount of energy produced/consumed by the unit by time interval (the amount of energy considered corresponds to the aggregate over the interval defined by EnergyType) |
-| `oT_Data_VariableMinEnergy.csv`      | Minimum amount of energy produced/consumed by the unit by time interval (the amount of energy considered corresponds to the aggregate over the interval defined by EnergyType) |
-| `oT_Data_Network.csv`                | Electricity network data                                                                                                                                                       |
-| `oT_Data_VariableTTCFrw.csv`         | Maximum electric transmission line TTC forward flow by load level (optional file)                                                                                              |
-| `oT_Data_VariableTTCBck.csv`         | Maximum electric transmission line TTC backward flow by load level (optional file)                                                                                             |
-| `oT_Data_NodeLocation.csv`           | Node location in latitude and longitude                                                                                                                                        |
+| File                                     | Description                                                                                                                                                                    |
+|------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `oT_Data_Option.csv`                     | Options of use of the **openTEPES** model                                                                                                                                      |
+| `oT_Data_Parameter.csv`                  | General system parameters                                                                                                                                                      |
+| `oT_Data_Period.csv`                     | Weight of each period                                                                                                                                                          |
+| `oT_Data_Scenario.csv`                   | Short-term uncertainties                                                                                                                                                       |
+| `oT_Data_Stage.csv`                      | Weight of each stage                                                                                                                                                           |
+| `oT_Data_ReserveMargin.csv`              | Minimum adequacy reserve margin for each area and period                                                                                                                       |
+| `oT_Data_Emission.csv`                   | Maximum CO2 emissions of the electric system                                                                                                                                   |
+| `oT_Data_RESEnergy.csv`                  | Minimum RES energy for each area and period                                                                                                                                    |
+| `oT_Data_Duration.csv`                   | Duration of the load levels                                                                                                                                                    |
+| `oT_Data_Demand.csv`                     | Electricity demand                                                                                                                                                             |
+| `oT_Data_Inertia.csv`                    | System inertia by area                                                                                                                                                         |
+| `oT_Data_OperatingReserveUp.csv`         | Upward operating reserves (include aFRR and mFRR for electricity balancing from ENTSO-E)                                                                                       |
+| `oT_Data_OperatingReserveDown.csv`       | Downward operating reserves (include aFRR and mFRR for electricity balancing from ENTSO-E)                                                                                     |
+| `oT_Data_OperatingReserveUpEnergy.csv`   | Upward operating reserves activation (include aFRR and mFRR for electricity balancing from ENTSO-E) (optional file)                                                            |
+| `oT_Data_OperatingReserveDownEnergy.csv` | Downward operating reserves activation (include aFRR and mFRR for electricity balancing from ENTSO-E) (optional file)                                                          |
+| `oT_Data_RampReserveUp.csv`              | Upward ramp reserves (optional file)                                                                                                                                           |
+| `oT_Data_RampReserveDown.csv`            | Downward ramp reserves (optional file)                                                                                                                                         |
+| `oT_Data_Generation.csv`                 | Generation (electricity and heat) data                                                                                                                                         |
+| `oT_Data_VariableMaxGeneration.csv`      | Variable maximum power generation by load level                                                                                                                                |
+| `oT_Data_VariableMinGeneration.csv`      | Variable minimum power generation by load level                                                                                                                                |
+| `oT_Data_VariableMaxConsumption.csv`     | Variable maximum power consumption by load level                                                                                                                               |
+| `oT_Data_VariableMinConsumption.csv`     | Variable minimum power consumption by load level                                                                                                                               |
+| `oT_Data_VariableFuelCost.csv`           | Variable fuel cost by load level                                                                                                                                               |
+| `oT_Data_EnergyInflows.csv`              | Energy inflows into an ESS by load level                                                                                                                                       |
+| `oT_Data_EnergyOutflows.csv`             | Energy outflows from an ESS for Power-to-X (H2 production, EV mobility, heat production, or water irrigation) by load level                                                    |
+| `oT_Data_VariableMaxStorage.csv`         | Maximum amount of energy stored in the ESS by load level                                                                                                                       |
+| `oT_Data_VariableMinStorage.csv`         | Minimum amount of energy stored in the ESS by load level                                                                                                                       |
+| `oT_Data_VariableMaxEnergy.csv`          | Maximum amount of energy produced/consumed by the unit by time interval (the amount of energy considered corresponds to the aggregate over the interval defined by EnergyType) |
+| `oT_Data_VariableMinEnergy.csv`          | Minimum amount of energy produced/consumed by the unit by time interval (the amount of energy considered corresponds to the aggregate over the interval defined by EnergyType) |
+| `oT_Data_Network.csv`                    | Electricity network data                                                                                                                                                       |
+| `oT_Data_VariableTTCFrw.csv`             | Maximum electric transmission line TTC forward flow by load level (optional file)                                                                                              |
+| `oT_Data_VariableTTCBck.csv`             | Maximum electric transmission line TTC backward flow by load level (optional file)                                                                                             |
+| `oT_Data_NodeLocation.csv`               | Node location in latitude and longitude                                                                                                                                        |
 
 Only the columns indicated in this document will be read in any input file. For example, you can add a column for comments or additional information as needed, but the model will not read it.
 
@@ -331,6 +333,23 @@ Period      Scenario        LoadLevel   Area    Upward/downward operating reserv
 
 Given that the operating reserves depend on the area, assigning an area to a country can be sensible.
 These operating reserves must include Automatic Frequency Restoration Reserves (aFRR) (a.k.a. secondary reserve, deployed \<5 min) and Manual Frequency Restoration Reserves (mFRR) (a.k.a. tertiary reserve, deployed \<12.5 min) for electricity balancing from ENTSO-E.
+
+Internally, all the values below 1e-5 times the maximum system demand of each area will be converted into 0 by the model.
+
+## Upward and downward operating reserve activation (optional files)
+
+A description of the data included in the files `oT_Data_OperatingReserveUpEnergy.csv` and `oT_Data_OperatingReserveDownEnergy.csv` follows:
+
+```{eval-rst}
+==========  ==============  ==========  ======  =============================================================================  ==
+Identifiers                             Header  Description
+======================================  ======  =============================================================================  ==
+Period      Scenario        LoadLevel   Area    Upward/downward operating reserve activation of the area for each load level   MW
+==========  ==============  ==========  ======  =============================================================================  ==
+```
+
+Given that the operating reserves depend on the area, assigning an area to a country can be sensible.
+These operating reserves must include the activation of the Automatic Frequency Restoration Reserves (aFRR) (a.k.a. secondary reserve, deployed \<5 min) and Manual Frequency Restoration Reserves (mFRR) (a.k.a. tertiary reserve, deployed \<12.5 min) for electricity balancing from ENTSO-E.
 
 Internally, all the values below 1e-5 times the maximum system demand of each area will be converted into 0 by the model.
 
