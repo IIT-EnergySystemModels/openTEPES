@@ -7,7 +7,7 @@
 - [FIXED] write voltage angle only if existing in the optimization problem.
 - [FIXED] fix Big-M coefficient for AC candidate disjunctive Kirchhoff voltage law (eKirchhoff2ndLaw1/2). DC and existing AC lines are unaffected.
 - [ADDED] post-solve warning when the voltage-angle bound pMaxTheta = pi/2 is (nearly) binding.
-- [ADDED] opt-in `--gzip-large-csvs` / `--gzip-threshold-mb` CLI flags. After writing, every `oT_Result_*.csv` at or above the threshold (default 5 MB) is rewritten as `.csv.gz`. Pandas reads `.csv.gz` transparently. Sentinel JSON gains `gzip_threshold_mb`, `gzip_files`, `gzip_mb_saved`. Default behaviour unchanged.
+- [ADDED] opt-in `--gzip-large-csvs` / `--gzip-patterns` CLI flags. After writing, every `oT_Result_*.csv` whose name (after the leading `oT_Result_`) starts with one of the configured prefixes is rewritten as `.csv.gz`. Default prefix set: `Generation, Consumption, Balance, MarketResults, Network`. Pandas reads `.csv.gz` transparently; Excel does not. Sentinel JSON gains `gzip_patterns`, `gzip_files`, `gzip_mb_saved`. Default behaviour unchanged.
 - [CHANGED] changed the simplex strategy for highs and from appsi_highs to highs
 - [CHANGED] changed the penalty for hydrogen surplus to 0.5 the cost of hydrogen not served
 - [FIXED] fix case with multiple independent scenarios

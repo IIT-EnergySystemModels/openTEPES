@@ -686,7 +686,7 @@ import psutil
 import os
 import time
 # import pkg_resources
-from .openTEPES import openTEPES_run, OUTPUT_CATEGORIES, OUTPUT_ALIASES
+from .openTEPES import openTEPES_run, OUTPUT_CATEGORIES, OUTPUT_ALIASES, DEFAULT_GZIP_PATTERNS
 
 
 GREEN  = "\033[32m"
@@ -714,11 +714,16 @@ parser.add_argument('--out',    type=str, default=None,
                     help="Output directory for oT_Result_*.csv and oT_Plot_*.html. "
                          "Default: <dir>/<case>.")
 parser.add_argument('--gzip-large-csvs', action="store_true", default=False,
-                    help="After writing results, gzip every oT_Result_*.csv whose "
-                         "uncompressed size is at least --gzip-threshold-mb. "
-                         "Default: off (CSVs written plain).")
-parser.add_argument('--gzip-threshold-mb', type=float, default=5.0,
-                    help="Threshold in MB for --gzip-large-csvs. Default: 5.")
+                    help="After writing results, gzip every oT_Result_*.csv "
+                         "whose name starts with one of the prefixes given by "
+                         "--gzip-patterns. Default: off (CSVs written plain). "
+                         "NOTE: .csv.gz files cannot be opened directly in "
+                         "Excel; pandas reads them natively.")
+parser.add_argument('--gzip-patterns', type=str, default=None,
+                    help=("Comma-separated list of name-prefixes (after the "
+                          "leading 'oT_Result_') selecting which result CSVs "
+                          "to gzip. Used with --gzip-large-csvs. Default: "
+                          + ",".join(DEFAULT_GZIP_PATTERNS) + "."))
 
 DIR    = os.path.dirname(__file__)
 CASE   = '9n'
@@ -782,10 +787,15 @@ def main():
         output_spec = output_spec or {}
         output_spec["plots"] = False
 
-    gzip_threshold_mb = args.gzip_threshold_mb if args.gzip_large_csvs else None
+    gzip_patterns = None
+    if args.gzip_large_csvs:
+        if args.gzip_patterns is not None:
+            gzip_patterns = tuple(s.strip() for s in args.gzip_patterns.split(",") if s.strip())
+        else:
+            gzip_patterns = DEFAULT_GZIP_PATTERNS
     model = openTEPES_run(args.dir, args.case, args.solver, args.result, args.log,
                           output_spec=output_spec, out_path=args.out,
-                          gzip_threshold_mb=gzip_threshold_mb)
+                          gzip_patterns=gzip_patterns)
     # Computing the elapsed time
     ElapsedTime = round(time.time() - StartTime)
     print('Total time                             ...  {} s'.format(ElapsedTime))
