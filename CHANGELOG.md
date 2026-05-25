@@ -1,11 +1,9 @@
 # Change Log
 
-## Unreleased
+## [4.18.17RC] - 2026-05-25 Unreleased in PyPI
+
 - [ADDED] opt-in `--gzip-large-csvs` / `--gzip-patterns` CLI flags. After writing, every `oT_Result_*.csv` whose name (after the leading `oT_Result_`) starts with one of the configured prefixes is rewritten as `.csv.gz`. Default prefix set: `Generation, Consumption, Balance, MarketResults, Network`. Pandas reads `.csv.gz` transparently; Excel does not. Sentinel JSON gains `gzip_patterns`, `gzip_files`, `gzip_mb_saved`. Default behaviour unchanged.
 - [CHANGED] reorder output writers in `openTEPES_run` so small KPI/structural tables (`InvestmentResults`, `CostSummaryResults`, `OperationSummaryResults`, `ReliabilityResults`, `FlexibilityResults`) are written before bulky hourly tables (Generation, ESS, Network, Marginal, Economic). HTML map plots run last. Resilient to mid-output interruptions: headline numbers from every solved case survive a kill/timeout/disk-full. No behavioural change beyond write order.
-
-## [4.18.17RC] - 2026-05-06
-
 - [CHANGED] introduction of new optional files for the operating reserve activation as an alternative to the UpReserveActivation and DwReserveActivation parameters in Data_Parameter file
 - [CHANGED] modify the change of the scenario probabilities to 1.0 if there are no investment decisions
 - [FIXED] control of non-existing electrolyzer output in OutputResults module
