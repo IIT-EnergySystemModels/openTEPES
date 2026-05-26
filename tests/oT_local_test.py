@@ -11,8 +11,13 @@ from openTEPES.openTEPES import openTEPES_run
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-CASE_NAMES = ["9n", "sSEP"]  # Add more case names as needed
-EXPECTED_COSTS = {"9n": 252.201329983352, "sSEP": 38581.335524272574}
+CASE_NAMES = ["9n", "sSEP", "9n_PTDF"]  # Add more case names as needed
+EXPECTED_COSTS = {
+    "9n":      252.201329983352,
+    "sSEP":    38581.335524272574,
+    # 9n_PTDF exercises multi-level-header tables (VariableTTCFrw/Bck, VariablePTDF).
+    "9n_PTDF": 447.3850166556059,
+}
 
 def setup_test_case(case_name):
     """
