@@ -39,6 +39,46 @@ DEFAULT_GZIP_PATTERNS = (
 )
 
 
+# Single source of truth for output-writer dispatch in openTEPES_run.
+# Each entry is (category_key, writer_fn, extra_args_keys, guard_fn) where:
+#   - category_key matches a key in OUTPUT_CATEGORIES; the writer fires only
+#     when the corresponding _flags[category_key] is truthy.
+#   - extra_args_keys is a tuple of names looked up in a per-run extras dict
+#     ("tech" -> pIndTechnologyOutput, "area" -> pIndAreaOutput,
+#      "plot" -> pIndPlotOutput). They are spread after (DirName, CaseName,
+#     mTEPES, mTEPES) when calling writer_fn.
+#   - guard_fn is None or a callable(mTEPES) -> bool. When non-None, it must
+#     return truthy for the writer to fire (used for model-state guards such
+#     as `mTEPES.es` for ESSOperationResults).
+# Order in the tuple is the dispatch order. Tiering preserved from PR #118:
+# headline tables first, bulky hourly tables next, plots last. The raw
+# parameter/variable/constraint dump (OutputResultsParVarCon) is gated by
+# pIndDumpRawResults (not a CLI-selectable category) and stays special-cased
+# in the dispatch loop.
+OUTPUT_REGISTRY = (
+    # --- headline tables (small, structural) ---
+    ("investment",  InvestmentResults,              ("tech", "plot"),         None),
+    ("cost",        CostSummaryResults,             (),                       None),
+    ("summary",     OperationSummaryResults,        (),                       None),
+    ("reliability", ReliabilityResults,             (),                       None),
+    ("flexibility", FlexibilityResults,             (),                       None),
+
+    # --- bulky hourly tables ---
+    ("generation",  GenerationOperationResults,     ("tech", "area", "plot"), None),
+    ("generation",  GenerationOperationHeatResults, ("tech", "area", "plot"), lambda m: bool(m.ch and m.pIndHeat)),
+    ("ess",         ESSOperationResults,            ("tech", "area", "plot"), lambda m: bool(m.es)),
+    ("reservoir",   ReservoirOperationResults,      ("tech", "plot"),         lambda m: bool(m.rs and m.pIndHydroTopology)),
+    ("h2",          NetworkH2OperationResults,      (),                       lambda m: bool(m.pa and m.pIndHydrogen)),
+    ("heat",        NetworkHeatOperationResults,    (),                       lambda m: bool(m.ha and m.pIndHeat)),
+    ("network",     NetworkOperationResults,        (),                       None),
+    ("marginal",    MarginalResults,                ("plot",),                None),
+    ("economic",    EconomicResults,                ("area", "plot"),         None),
+
+    # --- plots (slow, not data-critical) ---
+    ("map",         NetworkMapResults,              (),                       None),
+)
+
+
 def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConsole,
                   *, output_spec=None, out_path=None, gzip_patterns=None):
     """Solve and write results.
@@ -453,52 +493,29 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     # Setting on mTEPES avoids changing 14 function signatures.
     mTEPES.pOutputPath = _OutPath
 
-    # Output results to CSV files. Writers are ordered so that small,
-    # KPI/structural tables (cost summary, investment decisions, operation
-    # summary, reliability indexes, flexibility metrics) are written FIRST;
-    # bulky hourly tables (Generation/ESS/Network/Marginal/Economic) come
-    # AFTER. If a batch is interrupted mid-output (kill / timeout / disk
-    # full), the headline numbers from every solved case are preserved.
-    # HTML plot writers run LAST.
+    # Output results to CSV files. Dispatched via OUTPUT_REGISTRY (defined
+    # at module top): each entry fires when its category flag is truthy AND
+    # its model-state guard (if any) returns truthy. Registry order is the
+    # dispatch order — headlines first, bulky hourly tables next, plots
+    # last (per PR #118).
     _OutputStart = time.time()
 
-    # --- headline tables (small, structural) ---
-    if pIndInvestmentResults:
-        InvestmentResults                 (DirName, CaseName, mTEPES, mTEPES, pIndTechnologyOutput,                 pIndPlotOutput)
-    if pIndCostSummaryResults:
-        CostSummaryResults                (DirName, CaseName, mTEPES, mTEPES)
-    if pIndOperationSummaryResults:
-        OperationSummaryResults           (DirName, CaseName, mTEPES, mTEPES)
-    if pIndReliabilityResults:
-        ReliabilityResults                (DirName, CaseName, mTEPES, mTEPES)
-    if pIndFlexibilityResults:
-        FlexibilityResults                (DirName, CaseName, mTEPES, mTEPES)
-
-    # --- bulky hourly tables ---
+    # Raw parameter/variable/constraint dump is gated by pIndDumpRawResults
+    # (hardcoded, not a CLI category), so it stays a pre-loop special case.
     if pIndDumpRawResults:
         OutputResultsParVarCon            (DirName, CaseName, mTEPES, mTEPES)
-    if pIndGenerationOperationResults:
-        GenerationOperationResults        (DirName, CaseName, mTEPES, mTEPES, pIndTechnologyOutput, pIndAreaOutput, pIndPlotOutput)
-        if mTEPES.ch and mTEPES.pIndHeat:
-            GenerationOperationHeatResults(DirName, CaseName, mTEPES, mTEPES, pIndTechnologyOutput, pIndAreaOutput, pIndPlotOutput)
-    if pIndESSOperationResults         and mTEPES.es:
-        ESSOperationResults               (DirName, CaseName, mTEPES, mTEPES, pIndTechnologyOutput, pIndAreaOutput, pIndPlotOutput)
-    if pIndReservoirOperationResults   and mTEPES.rs and mTEPES.pIndHydroTopology:
-        ReservoirOperationResults         (DirName, CaseName, mTEPES, mTEPES, pIndTechnologyOutput,                 pIndPlotOutput)
-    if pIndNetworkH2OperationResults   and mTEPES.pa and mTEPES.pIndHydrogen:
-        NetworkH2OperationResults         (DirName, CaseName, mTEPES, mTEPES)
-    if pIndNetworkHeatOperationResults and mTEPES.ha and mTEPES.pIndHeat:
-        NetworkHeatOperationResults       (DirName, CaseName, mTEPES, mTEPES)
-    if pIndNetworkOperationResults:
-        NetworkOperationResults           (DirName, CaseName, mTEPES, mTEPES)
-    if pIndMarginalResults:
-        MarginalResults                   (DirName, CaseName, mTEPES, mTEPES,                 pIndPlotOutput)
-    if pIndEconomicResults:
-        EconomicResults                   (DirName, CaseName, mTEPES, mTEPES, pIndAreaOutput, pIndPlotOutput)
 
-    # --- plots (slow, not data-critical) ---
-    if pIndNetworkMapResults:
-        NetworkMapResults                 (DirName, CaseName, mTEPES, mTEPES)
+    _extras = {
+        "tech": pIndTechnologyOutput,
+        "area": pIndAreaOutput,
+        "plot": pIndPlotOutput,
+    }
+    for _key, _fn, _extra_keys, _guard in OUTPUT_REGISTRY:
+        if not _flags[_key]:
+            continue
+        if _guard is not None and not _guard(mTEPES):
+            continue
+        _fn(DirName, CaseName, mTEPES, mTEPES, *(_extras[k] for k in _extra_keys))
 
     # Optional post-write gzip pass. Rewrite every oT_Result_<prefix>*.csv
     # whose <prefix> matches one of the requested patterns as .csv.gz.
