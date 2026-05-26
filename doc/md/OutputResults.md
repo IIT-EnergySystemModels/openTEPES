@@ -313,7 +313,7 @@ Period        Scenario    Load level  Generator       Upward ramp surplus [MW]
 ============  ==========  ==========  ==============  ===============================
 ```
 
-File `oT_Result_GenerationRampDwSurplus.csv`
+File `oT_Result_GenerationRampDownSurplus.csv`
 
 The downward ramp surplus is the additional downward ramp capacity available from a generator until it reaches its maximum downward ramp capacity.
 
@@ -1325,7 +1325,7 @@ Period        Scenario    Load level  ESS Generator   Operation revenues from th
 ============  ==========  ==========  ==============  ==========================================================
 ```
 
-File `oT_Result_RevenueOperatingReserveDw.csv`
+File `oT_Result_RevenueOperatingReserveDown.csv`
 
 ```{eval-rst}
 ============  ==========  ==========  ==========  ===========================================================
@@ -1335,7 +1335,7 @@ Period        Scenario    Load level  Generator   Operation revenues from the do
 ============  ==========  ==========  ==========  ===========================================================
 ```
 
-File `oT_Result_RevenueOperatingReserveDwESS.csv`
+File `oT_Result_RevenueOperatingReserveDownESS.csv`
 
 ```{eval-rst}
 ============  ==========  ==========  ==============  ===========================================================
