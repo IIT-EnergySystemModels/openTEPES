@@ -351,7 +351,9 @@ Period      Scenario        LoadLevel   Area    Upward/downward operating reserv
 Given that the operating reserves depend on the area, assigning an area to a country can be sensible.
 These operating reserves must include the activation of the Automatic Frequency Restoration Reserves (aFRR) (a.k.a. secondary reserve, deployed \<5 min) and Manual Frequency Restoration Reserves (mFRR) (a.k.a. tertiary reserve, deployed \<12.5 min) for electricity balancing from ENTSO-E.
 
-Internally, all the values below 1e-5 times the maximum system demand of each area will be converted into 0 by the model.
+The values of the upward/downward operating reserve activation must be lower or equal than the upward/downward operating reserve requirement. If not, they are lowered by the model. Besides, all the values below 1e-5 times the maximum system demand of each area will be converted into 0 by the model.
+
+These files are optional. If not given, the upward and downward operating reserve constraints are not formulated.
 
 ## Upward and downward ramp reserves (optional files)
 
