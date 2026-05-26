@@ -594,7 +594,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
         "gzip_files":         _GzipFiles,
         "gzip_mb_saved":      round(_GzipMbSaved, 2),
     }
-    with open(os.path.join(_OutPath, f"openTEPES_Run_Status_{CaseName}.json"), "w") as _f:
+    with open(os.path.join(_OutPath, f'openTEPES_run_status_{CaseName}.json'), 'w') as _f:
         json.dump(status, _f, indent=2)
 
     return mTEPES

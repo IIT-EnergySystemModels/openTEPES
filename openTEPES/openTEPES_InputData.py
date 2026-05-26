@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 25, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 26, 2026
 """
 
 import time
@@ -1150,7 +1150,10 @@ def DataConfiguration(mTEPES):
         if mTEPES.dPar['pIndReserveActivation']:
             mTEPES.dPar['pOperReserveUpEnergy'][mTEPES.dPar['pOperReserveUpEnergy'] [[      ar ]] <  mTEPES.dPar['pEpsilonElec']] = 0.0
             mTEPES.dPar['pOperReserveDwEnergy'][mTEPES.dPar['pOperReserveDwEnergy'] [[      ar ]] <  mTEPES.dPar['pEpsilonElec']] = 0.0
-    
+            # operating reserve activation can't be greater than operating reserve requirement
+            mTEPES.dPar['pOperReserveUpEnergy'][mTEPES.dPar['pOperReserveUpEnergy'] [[      ar ]] >  mTEPES.dPar['pOperReserveUp'][[ar]]] = mTEPES.dPar['pOperReserveUp'][[ar]]
+            mTEPES.dPar['pOperReserveDwEnergy'][mTEPES.dPar['pOperReserveDwEnergy'] [[      ar ]] >  mTEPES.dPar['pOperReserveDw'][[ar]]] = mTEPES.dPar['pOperReserveDw'][[ar]]
+
         if g2a[ar]:
             mTEPES.dPar['pMinPowerElec']  [mTEPES.dPar['pMinPowerElec']  [[g  for  g in g2a[ar]]] <  mTEPES.dPar['pEpsilonElec']] = 0.0
             mTEPES.dPar['pMaxPowerElec']  [mTEPES.dPar['pMaxPowerElec']  [[g  for  g in g2a[ar]]] <  mTEPES.dPar['pEpsilonElec']] = 0.0
