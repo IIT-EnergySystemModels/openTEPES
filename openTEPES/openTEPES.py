@@ -13,6 +13,7 @@ import pyomo.environ as pyo
 from   pyomo.environ import ConcreteModel, Set
 
 from .openTEPES_InputData        import InputData, DataConfiguration, SettingUpVariables
+from .openTEPES_InputSource      import open_source
 from .openTEPES_ModelFormulation import TotalObjectiveFunction, InvestmentElecModelFormulation, InvestmentHydroModelFormulation, InvestmentH2ModelFormulation, InvestmentHeatModelFormulation, GenerationOperationModelFormulationObjFunct, GenerationOperationElecModelFormulationInvestment, GenerationOperationHeatModelFormulationInvestment, GenerationOperationModelFormulationDemand, GenerationOperationModelFormulationStorage, GenerationOperationModelFormulationReservoir, NetworkH2OperationModelFormulation, NetworkHeatOperationModelFormulation, GenerationOperationModelFormulationCommitment, GenerationOperationModelFormulationRampMinTime, NetworkSwitchingModelFormulation, NetworkOperationModelFormulation, NetworkCycles, CycleConstraints
 from .openTEPES_ProblemSolving   import ProblemSolving
 from .openTEPES_OutputResults    import OutputResultsParVarCon, InvestmentResults, GenerationOperationResults, GenerationOperationHeatResults, ESSOperationResults, ReservoirOperationResults, NetworkH2OperationResults, NetworkHeatOperationResults, FlexibilityResults, NetworkOperationResults, MarginalResults, OperationSummaryResults, ReliabilityResults, CostSummaryResults, EconomicResults, NetworkMapResults
@@ -109,11 +110,36 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
 
     InitialTime = time.time()
     _RunStartedUtc = datetime.datetime.utcnow().isoformat(timespec="seconds") + "Z"
+
+    # If the caller pointed at a .duckdb file (CaseName carries the
+    # suffix), open it as a DuckDBSource; InputData reads tables from
+    # this source instead of from disk. CSV cases get a CSVSource later
+    # inside InputData (or here if we want to keep the source object on
+    # the model from the start).
+    _db_input_origin_dir = None
+    _input_path_candidate = os.path.join(DirName, CaseName)
+    _input_source = None
+    if os.path.isfile(_input_path_candidate) and _input_path_candidate.endswith(".duckdb"):
+        _db_input_origin_dir = os.path.dirname(os.path.abspath(_input_path_candidate))
+        _input_source = open_source(_input_path_candidate)
+        # The (DirName, CaseName) pair still drives output paths and per-run
+        # log filenames downstream. Use the DB's parent dir and its embedded
+        # case name to keep those file conventions stable.
+        DirName  = _db_input_origin_dir
+        CaseName = _input_source.case_name
+
     _path = os.path.join(DirName, CaseName)
     # Effective output directory — used by every function in OutputResults via
     # the _outdir() helper. None means "use case input dir" (historical).
-    _OutPath = out_path if out_path else _path
+    # For DuckDB inputs without an explicit out_path, default to the parent
+    # directory of the .duckdb file (the case dir under it does not exist).
     if out_path:
+        _OutPath = out_path
+    elif _db_input_origin_dir is not None:
+        _OutPath = _db_input_origin_dir
+    else:
+        _OutPath = _path
+    if out_path or _db_input_origin_dir is not None:
         os.makedirs(_OutPath, exist_ok=True)
 
     #%% replacing string values by numerical values
@@ -134,7 +160,12 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
 
     #%% model declaration
     mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.17RC - May 25, 2026')
+    # In DuckDB-input mode _path may not exist on disk (the case lives in
+    # the DB, not in a directory). Ensure the version-log target exists.
+    os.makedirs(_path, exist_ok=True)
     print(                 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.17RC - May 25, 2026', file=open(f'{_path}/openTEPES_version_{CaseName}.log','w'))
+    if _input_source is not None:
+        mTEPES.pInputSource = _input_source
 
     pIndOutputResults = [j for i,j in idxDict.items() if i == pIndOutputResults][0]
     pIndLogConsole    = [j for i,j in idxDict.items() if i == pIndLogConsole   ][0]
@@ -146,11 +177,13 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     pIndSectorDecomposition = 0
     mTEPES.pIndSectorDecomposition = pIndSectorDecomposition
 
-    # Reading sets and parameters
-    InputData(DirName, CaseName, mTEPES, pIndLogConsole)
+    # Reading sets and parameters. InputData also stores dfs/par on
+    # mTEPES (mTEPES.dFrame / mTEPES.dPar) for backward compatibility,
+    # but DataConfiguration takes them explicitly to avoid that coupling.
+    dfs, par = InputData(DirName, CaseName, mTEPES, pIndLogConsole)
 
     # Define sets and parameters
-    DataConfiguration(mTEPES)
+    DataConfiguration(mTEPES, dfs, par)
 
     # Define variables
     SettingUpVariables(mTEPES, mTEPES)
@@ -596,5 +629,9 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     }
     with open(os.path.join(_OutPath, f'openTEPES_run_status_{CaseName}.json'), 'w') as _f:
         json.dump(status, _f, indent=2)
+
+    # Close the DuckDB connection if we opened one.
+    if _input_source is not None:
+        _input_source.close()
 
     return mTEPES

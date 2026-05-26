@@ -799,9 +799,17 @@ def main():
     # Computing the elapsed time
     ElapsedTime = round(time.time() - StartTime)
     print('Total time                             ...  {} s'.format(ElapsedTime))
-    _time_log_dir = args.out if args.out else os.path.join(args.dir, args.case)
+    # When the case is a .duckdb file, the inputs were materialised to a
+    # tempdir already removed by openTEPES_run; fall back to args.dir.
+    if args.out:
+        _time_log_dir = args.out
+    elif args.case.endswith(".duckdb"):
+        _time_log_dir = args.dir
+    else:
+        _time_log_dir = os.path.join(args.dir, args.case)
     os.makedirs(_time_log_dir, exist_ok=True)
-    path_to_write_time = os.path.join(_time_log_dir, f'openTEPES_time_{args.case}.log')
+    _time_log_case_tag = args.case[:-len(".duckdb")] if args.case.endswith(".duckdb") else args.case
+    path_to_write_time = os.path.join(_time_log_dir, f'openTEPES_time_{_time_log_case_tag}.log')
     with open(path_to_write_time, 'w') as f:
         f.write(('Elapsed time ' + str(ElapsedTime) + ' s   on ' + platform.node() + ' [' + platform.system() + ' ' +
                  platform.release() + '; ' + str(psutil.cpu_count(logical=False)) + ' ' + platform.processor() +
