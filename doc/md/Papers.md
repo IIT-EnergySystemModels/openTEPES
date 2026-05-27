@@ -32,8 +32,7 @@ The **openTEPES** model has been used in these publications:
   *Energy Reports* 8: 4041-4057, November 2022. [10.1016/j.egyr.2022.03.032](https://doi.org/10.1016/j.egyr.2022.03.032)
 - E.F. Alvarez, L. Olmos, A. Ramos, K. Antoniadou-Plytaria, D. Steen, and L.A. Tuan "[Values and Impacts of Incorporating Local Flexibility Services in Transmission Expansion Planning](https://www.sciencedirect.com/science/article/pii/S0378779622005958/pdfft?md5=3f3561c0e3e0ba68aaf3d25ccdd2ac8f&pid=1-s2.0-S0378779622005958-main.pdf)"
   *Electric Power Systems Research* 212, July 2022. [10.1016/j.epsr.2022.108480](https://doi.org/10.1016/j.epsr.2022.108480)
-- E.F. Alvarez, L. Olmos, A. Ramos, K. Antoniadou-Plytaria, D. Steen, and L.A. Tuan "[Values and Impacts of Incorporating Local Flexibility Services in Transmission Expansion Planning - PSCC2024](https://pscc.epfl.ch/rms/modules/request.php?module=oc_program&action=view.php&id=1731&file=1/1731.pdf)"
-  *PSCC 2022*. Porto, Portugal. June 2022.
+- E.F. Alvarez, L. Olmos, A. Ramos, K. Antoniadou-Plytaria, D. Steen, and L.A. Tuan "Values and Impacts of Incorporating Local Flexibility Services in Transmission Expansion Planning" *PSCC 2022*. Porto, Portugal. June 2022.
 - A. Ramos, E. Quispe, S. Lumbreras "[OpenTEPES: Open-source Transmission and Generation Expansion Planning](https://www.sciencedirect.com/science/article/pii/S235271102200053X/pdfft?md5=ece8d3328c853a4795eda29acd2ad140&pid=1-s2.0-S235271102200053X-main.pdf)"
   *SoftwareX* 18: June 2022. [10.1016/j.softx.2022.101070](https://doi.org/10.1016/j.softx.2022.101070)
 - A. Ramos, S. Huclin, J.P. Chaves "Analysis of different storage technologies in the Spain NECP for 2030" *IEA Wind Task 25 Spring 2022 meeting*. May 2022.
