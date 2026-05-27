@@ -132,7 +132,7 @@ def InvestmentHeatModelFormulation(OptModel, mTEPES, pIndLogConsole):
     StartTime = time.time()
 
     def eTotalFHeatCost(OptModel,p):
-        return OptModel.vTotalHeatFCost[p] == sum(mTEPES.pHeatPipeFixedCost[ni,nf,cc] * OptModel.vHeatPipeInvest[p,ni,nf,cc] for ni,nf,cc in mTEPES.hc if (p,ni,nf,cc) in mTEPES.phc)
+        return OptModel.vTotalFHeatCost[p] == sum(mTEPES.pHeatPipeFixedCost[ni,nf,cc] * OptModel.vHeatPipeInvest[p,ni,nf,cc] for ni,nf,cc in mTEPES.hc if (p,ni,nf,cc) in mTEPES.phc)
     OptModel.eTotalFHeatCost = Constraint(mTEPES.p, rule=eTotalFHeatCost, doc='system fixed heat cost [MEUR]')
 
     def eConsecutiveNetHeatInvest(OptModel,p,ni,nf,cc):
