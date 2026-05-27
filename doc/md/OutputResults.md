@@ -237,6 +237,26 @@ Period        Scenario    Load level  Generator   Downward operating reserve of 
 ============  ==========  ==========  ==========  =================================================
 ```
 
+File `oT_Result_GenerationOperatingReserveUpEnergy.csv`
+
+```{eval-rst}
+============  ==========  ==========  ==========  =======================================================
+Identifier                            Header      Description
+====================================  ==========  =======================================================
+Period        Scenario    Load level  Generator   Upward operating reserve energy of each generator [MW]
+============  ==========  ==========  ==========  =======================================================
+```
+
+File `oT_Result_GenerationOperatingReserveDownEnergy.csv`
+
+```{eval-rst}
+============  ==========  ==========  ==========  ========================================================
+Identifier                            Header      Description
+====================================  ==========  ========================================================
+Period        Scenario    Load level  Generator   Downward operating reserve energy of each generator [MW]
+============  ==========  ==========  ==========  ========================================================
+```
+
 File `oT_Result_GenerationRampReserveUp.csv`
 
 ```{eval-rst}
@@ -487,6 +507,26 @@ Period        Scenario    Load level  Technology  Downward operating reserve [MW
 ============  ==========  ==========  ==========  ==========================================
 ```
 
+File `oT_Result_TechnologyOperatingReserveUpEnergy.csv`
+
+```{eval-rst}
+============  ==========  ==========  ==========  ==========================================
+Identifier                            Header      Description
+====================================  ==========  ==========================================
+Period        Scenario    Load level  Technology  Upward operating reserve energy [MW]
+============  ==========  ==========  ==========  ==========================================
+```
+
+File `oT_Result_TechnologyOperatingReserveDownEnergy.csv`
+
+```{eval-rst}
+============  ==========  ==========  ==========  ==========================================
+Identifier                            Header      Description
+====================================  ==========  ==========================================
+Period        Scenario    Load level  Technology  Downward operating reserve energy [MW]
+============  ==========  ==========  ==========  ==========================================
+```
+
 File `oT_Result_TechnologySpillage.csv`
 
 Energy spillage refers to the energy that cannot be stored in the ESS due to its storage capacity limitations.
@@ -577,7 +617,7 @@ Period        Scenario    Load level  Generator   Consumed/charged energy for ea
 ============  ==========  ==========  ==========  ==========================================
 ```
 
-File `oT_Result_ConsumptionReserveUp.csv`
+File `oT_Result_ConsumptionOperatingReserveUpESS.csv`
 
 ```{eval-rst}
 ============  ==========  ==========  ==========  =================================================
@@ -587,7 +627,7 @@ Period        Scenario    Load level  Generator   Upward operating reserve of ea
 ============  ==========  ==========  ==========  =================================================
 ```
 
-File `oT_Result_ConsumptionReserveDown.csv`
+File `oT_Result_ConsumptionOperatingReserveDownESS.csv`
 
 ```{eval-rst}
 ============  ==========  ==========  ==========  ===================================================
@@ -595,6 +635,26 @@ Identifier                            Header      Description
 ====================================  ==========  ===================================================
 Period        Scenario    Load level  Generator   Downward operating reserve of each pump/charge [MW]
 ============  ==========  ==========  ==========  ===================================================
+```
+
+File `oT_Result_ConsumptionOperatingReserveUpEnergyESS.csv`
+
+```{eval-rst}
+============  ==========  ==========  ==========  ========================================================
+Identifier                            Header      Description
+====================================  ==========  ========================================================
+Period        Scenario    Load level  Generator   Upward operating reserve energy of each pump/charge [MW]
+============  ==========  ==========  ==========  ========================================================
+```
+
+File `oT_Result_ConsumptionOperatingReserveDownEnergyESS.csv`
+
+```{eval-rst}
+============  ==========  ==========  ==========  ==========================================================
+Identifier                            Header      Description
+====================================  ==========  ==========================================================
+Period        Scenario    Load level  Generator   Downward operating reserve energy of each pump/charge [MW]
+============  ==========  ==========  ==========  ==========================================================
 ```
 
 File `oT_Result_GenerationConsumptionRatio.csv`
@@ -676,21 +736,41 @@ Period        Scenario    Load level  Technology  Energy (Outflows in ESS) [GWh]
 File `oT_Result_TechnologyOperatingReserveUpESS.csv`
 
 ```{eval-rst}
-============  ==========  ==========  ==========  ==========================================
+============  ==========  ==========  ==========  =================================================
 Identifier                            Header      Description
-====================================  ==========  ==========================================
-Period        Scenario    Load level  Technology  Upward operating reserve [MW]
-============  ==========  ==========  ==========  ==========================================
+====================================  ==========  =================================================
+Period        Scenario    Load level  Technology  Upward operating reserve of each pump/charge [MW]
+============  ==========  ==========  ==========  =================================================
 ```
 
 File `oT_Result_TechnologyOperatingReserveDownESS.csv`
 
 ```{eval-rst}
-============  ==========  ==========  ==========  ==========================================
+============  ==========  ==========  ==========  ===================================================
 Identifier                            Header      Description
-====================================  ==========  ==========================================
-Period        Scenario    Load level  Technology  Downward operating reserve [MW]
-============  ==========  ==========  ==========  ==========================================
+====================================  ==========  ===================================================
+Period        Scenario    Load level  Technology  Downward operating reserve of each pump/charge [MW]
+============  ==========  ==========  ==========  ===================================================
+```
+
+File `oT_Result_TechnologyOperatingReserveUpEnergyESS.csv`
+
+```{eval-rst}
+============  ==========  ==========  ==========  ========================================================
+Identifier                            Header      Description
+====================================  ==========  ========================================================
+Period        Scenario    Load level  Technology  Upward operating reserve energy of each pump/charge [MW]
+============  ==========  ==========  ==========  ========================================================
+```
+
+File `oT_Result_TechnologyOperatingReserveDownEnergyESS.csv`
+
+```{eval-rst}
+============  ==========  ==========  ==========  ==========================================================
+Identifier                            Header      Description
+====================================  ==========  ==========================================================
+Period        Scenario    Load level  Technology  Downward operating reserve energy of each pump/charge [MW]
+============  ==========  ==========  ==========  ==========================================================
 ```
 
 File `oT_Result_GenerationInventory.csv`
