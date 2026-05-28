@@ -706,7 +706,7 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
         # Constraint only relevant to generators which can consume and generate power
         if (p,eh) not in mTEPES.peh or mTEPES.pMaxPower2ndBlock [p,sc,n,eh] == 0.0 or mTEPES.pMaxCharge2ndBlock[p,sc,n,eh] == 0.0:
             return Constraint.Skip
-        #Hydro generators can have binary commitment, energy modeled ESS do not have commitment
+        # Hydro generators can have binary commitment, energy modeled ESS do not have commitment
         # ESS Generator
         if eh not in mTEPES.h and mTEPES.pIndReserveActivation == 0:
             return ((OptModel.vOutput2ndBlock[p,sc,n,eh] + mTEPES.pUpReserveActivation * OptModel.vReserveUp     [p,sc,n,eh]) / mTEPES.pMaxPower2ndBlock [p,sc,n,eh] +
