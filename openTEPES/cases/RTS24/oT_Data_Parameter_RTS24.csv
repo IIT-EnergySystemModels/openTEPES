@@ -1,0 +1,2 @@
+ENSCost,HNSCost,HTNSCost,CO2Cost,AnnualDiscountRate,ReferenceNode,TimeStep,UpReserveActivation,DwReserveActivation,MinRatioDwUp,MaxRatioDwUp,EconomicBaseYear,SBase
+10000,10000,10000,96.525,0.04,N_113,2,0.25,0.3,0,1,2020,100
