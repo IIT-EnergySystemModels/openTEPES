@@ -25,6 +25,12 @@ Scripts are provided to exchange information with Integrated Assessment Models (
 
 It has been used by the **Ministry for the Ecological Transition and the Demographic Challenge (MITECO)** to analyze the electricity sector in the latest Spanish [National Energy and Climate Plan (NECP) Update 2023-2030](https://www.miteco.gob.es/content/dam/miteco/es/energia/files-1/pniec-2023-2030/PNIEC_2024_240924.pdf) in September 2024.
 
+# Architecture
+
+The package is organised in six layers, from input/output (pure pandas, no Pyomo) up to result aggregation. Each layer is a subpackage so concerns are addressable in code and the parallelisation modes (per-case sweep, in-memory overlay, post-build hot-swap) become first-class architectural seams.
+
+![Architecture diagram](/doc/img/openTEPES_architecture.svg)
+
 # How to Cite
 
 If you use openTEPES for a scientific publication, we would appreciate it if you cite the following paper:
