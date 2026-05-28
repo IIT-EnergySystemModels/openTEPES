@@ -35,13 +35,13 @@ Besides, it also requires the following packages:
 
 Here, you have the input files of:
 
-- a [static small case study of 9 nodes](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/9n),
-- a [dynamic (multiyear) small case study of 9 nodes](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/9n7y) with 13 representative weeks per year,
-- another one like a [small Spanish system](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/sSEP),
-- a [modified RTS24 case study](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/RTS24),
-- the [static Reliability Test System Grid Modernization Lab Consortium (RTS-GMLC)](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/RTS-GMLC),
-- a [dynamic (multiyear) Reliability Test System Grid Modernization Lab Consortium (RTS-GMLC)](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/RTS-GMLC_6y) with 13 representative weeks per year, and
-- a [Nigeria 2030 case study](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/NG2030).
+- a [static small case study of 9 nodes](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/9n),
+- a [dynamic (multiyear) small case study of 9 nodes](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/9n7y) with 13 representative weeks per year,
+- another one like a [small Spanish system](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/sSEP),
+- a [modified RTS24 case study](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/RTS24),
+- the [static Reliability Test System Grid Modernization Lab Consortium (RTS-GMLC)](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/RTS-GMLC),
+- a [dynamic (multiyear) Reliability Test System Grid Modernization Lab Consortium (RTS-GMLC)](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/RTS-GMLC_6y) with 13 representative weeks per year, and
+- a [Nigeria 2030 case study](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/NG2030).
 
 ## Code
 
@@ -133,7 +133,7 @@ Then, four parameters (case, dir, solver, results, and console log) will be aske
 
 **Remark:** at this step, only press enter for each input and openTEPES will be executed with the default parameters.
 
-After this in a directory of your choice, make a copy of the [9n](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/9n) or [sSEP](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/sSEP) case to create a new case of your choice but using the current format of the CSV files.
+After this in a directory of your choice, make a copy of the [9n](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/9n) or [sSEP](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/sSEP) case to create a new case of your choice but using the current format of the CSV files.
 A proper execution by `openTEPES_Main` can be made by introducing the new case and the directory of your choice. Note that the solver is **glpk** by default, but it can be changed to other solvers that Pyomo supports (e.g., gurobi, highs).
 
 Then, the **results** should be written in the folder that is called with the case name. The results contain plots and summary spreadsheets for multiple optimized energy scenarios, periods, and load levels, as well as the investment decisions.

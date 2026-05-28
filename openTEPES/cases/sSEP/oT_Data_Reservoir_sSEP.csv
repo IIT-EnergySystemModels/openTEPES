@@ -1,0 +1,8 @@
+Reservoir,StorageType,OutflowsType,InitialPeriod,FinalPeriod,InitialStorage,MinimumStorage,MaximumStorage,FixedInvestmentCost,FixedChargeRate,BinaryInvestment
+R_Azutan,Weekly,,2020,2050,5.485,5.2,5.77,,,
+R_Valdecanas,Weekly,,2020,2050,68.2975,19,117.595,,,
+R_TorrejonTajo,Weekly,,2020,2050,8.485,7.74,9.23,,,
+R_TorrejonTietar,Weekly,,2020,2050,0.81,0.58,1.04,,,
+R_JoseMariaOriol,Weekly,,2020,2050,169.8,79.2,260.4,,,
+R_Cedillo,Weekly,,2020,2050,18.49,17.79,19.19,,,
+R_GuijoGranadilla,Daily,,2020,2050,0.16,0.16,0.16,,,
