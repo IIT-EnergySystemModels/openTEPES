@@ -70,8 +70,10 @@ def case_7d_system(request):
 
 # === Parametrized Test ===
 @pytest.mark.parametrize("case_7d_system,expected_cost", [
-    ("9n", 252.201329983352),
-    ("sSEP", 38581.335524272574),
+    ("9n",      252.201329983352),
+    ("sSEP",    38581.335524272574),
+    # 9n_PTDF exercises the multi-level-header tables (VariableTTCFrw/Bck, VariablePTDF).
+    ("9n_PTDF", 447.3850166556059),
 ], indirect=["case_7d_system"])
 def test_openTEPES_run(case_7d_system, expected_cost):
     """
