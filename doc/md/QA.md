@@ -115,4 +115,4 @@ On analyzing **many scenarios**:
 
 - If there are several scenarios to be analyzed, and they are not linked by investment decisions, the model automatically solves one scenario after the other and presents the results for all the scenarios in the output data files. In this case, the results for each scenario can be easily identified by the scenario name in the corresponding column header of the output data files. This can be limiting if there are many scenarios and the system is large.
 
-- In the second case, it may be more convenient to run the scenarios one by one (each scenario located in a different folder), and save the results for each scenario in the corresponding folder. This can be done by running simultaneously several consoles.
+- In the second case, it may be more convenient to run the scenarios one by one (each scenario located in a different folder), and save the results for each scenario in the corresponding folder. This can be done by running openTEPES simultaneously in several consoles.
