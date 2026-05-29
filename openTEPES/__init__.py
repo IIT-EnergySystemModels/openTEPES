@@ -16,10 +16,10 @@ Open Generation, Storage, and Transmission Operation and Expansion Planning Mode
 """
 __version__ = "4.18.17RC"
 
-from . import oT_IO, oT_Solver
+from . import src
 from .openTEPES_Main             import main
 from .openTEPES                  import *
 from .openTEPES_InputData        import *
 from .openTEPES_ModelFormulation import *
-from .oT_Solver.ProblemSolving   import *
+from .src.openTEPES_Solver_ProblemSolving import *
 from .openTEPES_OutputResults    import *
