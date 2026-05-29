@@ -1,0 +1,436 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1140 1450" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#444"/>
+    </marker>
+    <marker id="arrowP" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#7a4a8a"/>
+    </marker>
+    <style>
+      .title       { font-size: 23px; font-weight: 800; fill: #111; }
+      .subtitle    { font-size: 13px; fill: #555; }
+      .layer-tag   { font-size: 12px; font-weight: 700; fill: #fff; letter-spacing: 0.5px; }
+      .layer-name  { font-size: 17px; font-weight: 800; fill: #fff; }
+      .layer-note  { font-size: 10px; fill: #fff; opacity: 0.92; font-style: italic; }
+      .mod         { font-size: 13px; font-weight: 700; fill: #1a1a1a; }
+      .mod-sub     { font-size: 10px; fill: #666; }
+      .mod-flag    { font-size: 10px; font-weight: 700; fill: #7a4a8a; }
+      .sector-tag  { font-size: 10px; font-weight: 700; fill: #555; letter-spacing: 0.5px; }
+      .arrow-lbl   { font-size: 11px; fill: #444; font-style: italic; }
+      .arrow-lblP  { font-size: 11px; fill: #7a4a8a; font-style: italic; font-weight: 700; }
+      .footer      { font-size: 11px; fill: #666; }
+    </style>
+  </defs>
+
+  <rect width="1140" height="1450" fill="#fafafa"/>
+
+  <!-- Header -->
+  <text x="570" y="32" text-anchor="middle" class="title">Proposed openTEPES architecture (layered, sector-parallel, sweep-aware)</text>
+  <text x="570" y="52" text-anchor="middle" class="subtitle">Pure-pandas I/O  ▸  Pyomo construction  ▸  Formulation  ▸  Solver  ▸  Results — symmetric Elec / Heat / H2 / Hydro · runner orchestrates sweeps</text>
+
+  <!-- ================== LAYER 1: ENTRY ================== -->
+  <g>
+    <rect x="20" y="75" width="1100" height="85" rx="10" fill="#eef2fa" stroke="#4a5a8a" stroke-width="1.5"/>
+    <rect x="20" y="75" width="140" height="85" rx="10" fill="#4a5a8a"/>
+    <text x="90" y="105" text-anchor="middle" class="layer-tag">LAYER 1</text>
+    <text x="90" y="124" text-anchor="middle" class="layer-name">Entry</text>
+    <text x="90" y="142" text-anchor="middle" class="layer-note">CLI + orchestration</text>
+
+    <rect x="180" y="93" width="155" height="48" rx="8" fill="#fff" stroke="#4a5a8a" stroke-width="1.2"/>
+    <text x="257" y="112" text-anchor="middle" class="mod">cli.py</text>
+    <text x="257" y="128" text-anchor="middle" class="mod-sub">argparse + dispatch</text>
+
+    <text x="355" y="120" class="arrow-lbl">▶</text>
+
+    <rect x="375" y="93" width="155" height="48" rx="8" fill="#fff" stroke="#4a5a8a" stroke-width="1.2"/>
+    <text x="452" y="112" text-anchor="middle" class="mod">run.py</text>
+    <text x="452" y="128" text-anchor="middle" class="mod-sub">single-solve pipeline</text>
+
+    <text x="550" y="120" class="arrow-lblP">▶ sweep</text>
+
+    <rect x="610" y="93" width="170" height="48" rx="8" fill="#fff" stroke="#7a4a8a" stroke-width="1.5"/>
+    <text x="695" y="112" text-anchor="middle" class="mod">runner.py</text>
+    <text x="695" y="128" text-anchor="middle" class="mod-sub">parallel sweep orchestrator</text>
+
+    <rect x="800" y="93" width="305" height="48" rx="8" fill="#f6effa" stroke="#7a4a8a" stroke-width="1.0" stroke-dasharray="3 3"/>
+    <text x="952" y="111" text-anchor="middle" class="mod-flag">backends: multiprocessing · joblib</text>
+    <text x="952" y="127" text-anchor="middle" class="mod-flag">slurm · dask · mpi · ray</text>
+  </g>
+
+  <!-- arrow 1 -->
+  <line x1="570" y1="165" x2="570" y2="195" stroke="#444" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- ================== LAYER 2: I/O ================== -->
+  <g>
+    <rect x="20" y="200" width="1100" height="110" rx="10" fill="#e8f5ed" stroke="#2e7d5f" stroke-width="1.5"/>
+    <rect x="20" y="200" width="140" height="110" rx="10" fill="#2e7d5f"/>
+    <text x="90" y="230" text-anchor="middle" class="layer-tag">LAYER 2</text>
+    <text x="90" y="251" text-anchor="middle" class="layer-name">io/</text>
+    <text x="90" y="268" text-anchor="middle" class="layer-note">no pyomo —</text>
+    <text x="90" y="281" text-anchor="middle" class="layer-note">pure pandas / SQL</text>
+    <text x="90" y="294" text-anchor="middle" class="layer-note">DataFrames out</text>
+
+    <rect x="175" y="225" width="140" height="62" rx="8" fill="#fff" stroke="#2e7d5f" stroke-width="1.2"/>
+    <text x="245" y="247" text-anchor="middle" class="mod">schema.py</text>
+    <text x="245" y="263" text-anchor="middle" class="mod-sub">TABLE_SPECS</text>
+    <text x="245" y="277" text-anchor="middle" class="mod-sub">single source of truth</text>
+
+    <rect x="325" y="225" width="140" height="62" rx="8" fill="#fff" stroke="#2e7d5f" stroke-width="1.2"/>
+    <text x="395" y="247" text-anchor="middle" class="mod">source.py</text>
+    <text x="395" y="263" text-anchor="middle" class="mod-sub">InputSource ABC</text>
+    <text x="395" y="277" text-anchor="middle" class="mod-sub">open_source() · shapes</text>
+
+    <rect x="475" y="225" width="140" height="62" rx="8" fill="#fff" stroke="#2e7d5f" stroke-width="1.2"/>
+    <text x="545" y="247" text-anchor="middle" class="mod">csv_source.py</text>
+    <text x="545" y="263" text-anchor="middle" class="mod-sub">CSVSource</text>
+    <text x="545" y="277" text-anchor="middle" class="mod-sub">historical backend</text>
+
+    <rect x="625" y="225" width="150" height="62" rx="8" fill="#fff" stroke="#2e7d5f" stroke-width="1.2"/>
+    <text x="700" y="247" text-anchor="middle" class="mod">duckdb_source.py</text>
+    <text x="700" y="263" text-anchor="middle" class="mod-sub">DuckDBSource</text>
+    <text x="700" y="277" text-anchor="middle" class="mod-sub">streaming SQL backend</text>
+
+    <rect x="785" y="225" width="155" height="62" rx="8" fill="#fff" stroke="#7a4a8a" stroke-width="1.5"/>
+    <text x="862" y="246" text-anchor="middle" class="mod">cases.py</text>
+    <text x="862" y="261" text-anchor="middle" class="mod-flag">★ sweep-enabling</text>
+    <text x="862" y="275" text-anchor="middle" class="mod-sub">Case = baseline + overlay</text>
+
+    <rect x="950" y="225" width="155" height="62" rx="8" fill="#fff" stroke="#2e7d5f" stroke-width="1.2" stroke-dasharray="4 3"/>
+    <text x="1027" y="247" text-anchor="middle" class="mod">parquet_source.py</text>
+    <text x="1027" y="263" text-anchor="middle" class="mod-sub" font-style="italic">future</text>
+    <text x="1027" y="277" text-anchor="middle" class="mod-sub" font-style="italic">drop-in backend</text>
+  </g>
+
+  <!-- arrow 2 -->
+  <line x1="570" y1="315" x2="570" y2="355" stroke="#444" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="585" y="338" class="arrow-lbl">DataFrames + (optional) overlay</text>
+
+  <!-- ================== LAYER 3: MODEL ================== -->
+  <g>
+    <rect x="20" y="360" width="1100" height="110" rx="10" fill="#faecdc" stroke="#b5651d" stroke-width="1.5"/>
+    <rect x="20" y="360" width="140" height="110" rx="10" fill="#b5651d"/>
+    <text x="90" y="390" text-anchor="middle" class="layer-tag">LAYER 3</text>
+    <text x="90" y="411" text-anchor="middle" class="layer-name">model/</text>
+    <text x="90" y="428" text-anchor="middle" class="layer-note">Pyomo Sets,</text>
+    <text x="90" y="441" text-anchor="middle" class="layer-note">Params, Variables</text>
+    <text x="90" y="454" text-anchor="middle" class="layer-note">(no constraints yet)</text>
+
+    <rect x="200" y="383" width="180" height="65" rx="8" fill="#fff" stroke="#b5651d" stroke-width="1.2"/>
+    <text x="290" y="404" text-anchor="middle" class="mod">sets.py</text>
+    <text x="290" y="420" text-anchor="middle" class="mod-sub">Period, Scenario, Stage,</text>
+    <text x="290" y="434" text-anchor="middle" class="mod-sub">LoadLevel, Node, Generator…</text>
+
+    <rect x="400" y="383" width="190" height="65" rx="8" fill="#fff" stroke="#7a4a8a" stroke-width="1.5"/>
+    <text x="495" y="403" text-anchor="middle" class="mod">params.py</text>
+    <text x="495" y="418" text-anchor="middle" class="mod-flag">★ all Params: mutable=True</text>
+    <text x="495" y="431" text-anchor="middle" class="mod-sub">signature: (model, source,</text>
+    <text x="495" y="443" text-anchor="middle" class="mod-sub">overlay=None)</text>
+
+    <rect x="610" y="383" width="170" height="65" rx="8" fill="#fff" stroke="#b5651d" stroke-width="1.2"/>
+    <text x="695" y="404" text-anchor="middle" class="mod">derived.py</text>
+    <text x="695" y="420" text-anchor="middle" class="mod-sub">DataConfiguration</text>
+    <text x="695" y="434" text-anchor="middle" class="mod-sub">derived sets &amp; flags</text>
+
+    <rect x="800" y="383" width="170" height="65" rx="8" fill="#fff" stroke="#b5651d" stroke-width="1.2"/>
+    <text x="885" y="404" text-anchor="middle" class="mod">variables.py</text>
+    <text x="885" y="420" text-anchor="middle" class="mod-sub">SettingUpVariables</text>
+    <text x="885" y="434" text-anchor="middle" class="mod-sub">decision Vars + bounds</text>
+
+    <text x="985" y="402" class="mod-sub">splits the</text>
+    <text x="985" y="417" class="mod-sub">2 896-line</text>
+    <text x="985" y="432" class="mod-sub">InputData.py</text>
+  </g>
+
+  <!-- arrow 3 -->
+  <line x1="570" y1="475" x2="570" y2="515" stroke="#444" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="585" y="498" class="arrow-lbl">mTEPES (ConcreteModel + Sets + Params + Vars)</text>
+
+  <!-- ================== LAYER 4: FORMULATION ================== -->
+  <g>
+    <rect x="20" y="520" width="1100" height="240" rx="10" fill="#fae6e0" stroke="#b03030" stroke-width="1.5"/>
+    <rect x="20" y="520" width="140" height="240" rx="10" fill="#b03030"/>
+    <text x="90" y="550" text-anchor="middle" class="layer-tag">LAYER 4</text>
+    <text x="90" y="571" text-anchor="middle" class="layer-name">formulation/</text>
+    <text x="90" y="590" text-anchor="middle" class="layer-note">Pyomo Constraints</text>
+    <text x="90" y="603" text-anchor="middle" class="layer-note">+ Objective</text>
+    <text x="90" y="623" text-anchor="middle" class="layer-note">sector-symmetric</text>
+
+    <!-- Cross-sector column -->
+    <text x="240" y="543" text-anchor="middle" class="sector-tag">CROSS-SECTOR</text>
+    <rect x="180" y="550" width="130" height="42" rx="8" fill="#fff" stroke="#b03030" stroke-width="1.2"/>
+    <text x="245" y="567" text-anchor="middle" class="mod">objective.py</text>
+    <text x="245" y="583" text-anchor="middle" class="mod-sub">TotalObjective</text>
+
+    <rect x="180" y="600" width="130" height="42" rx="8" fill="#fff" stroke="#b03030" stroke-width="1.2"/>
+    <text x="245" y="617" text-anchor="middle" class="mod">investment.py</text>
+    <text x="245" y="633" text-anchor="middle" class="mod-sub">all 4 sectors</text>
+
+    <rect x="180" y="650" width="130" height="42" rx="8" fill="#fff" stroke="#b03030" stroke-width="1.2"/>
+    <text x="245" y="667" text-anchor="middle" class="mod">commitment.py</text>
+    <text x="245" y="683" text-anchor="middle" class="mod-sub">ramp · min-time</text>
+
+    <rect x="180" y="700" width="130" height="42" rx="8" fill="#fff" stroke="#b03030" stroke-width="1.2"/>
+    <text x="245" y="717" text-anchor="middle" class="mod">cycles.py</text>
+    <text x="245" y="733" text-anchor="middle" class="mod-sub">NetworkCycles</text>
+
+    <!-- Electricity column -->
+    <text x="380" y="543" text-anchor="middle" class="sector-tag">ELECTRICITY</text>
+    <rect x="320" y="550" width="130" height="42" rx="8" fill="#fff" stroke="#b03030" stroke-width="1.2"/>
+    <text x="385" y="567" text-anchor="middle" class="mod">operation.py</text>
+    <text x="385" y="583" text-anchor="middle" class="mod-sub">demand · storage</text>
+
+    <rect x="320" y="600" width="130" height="42" rx="8" fill="#fff" stroke="#b03030" stroke-width="1.2"/>
+    <text x="385" y="617" text-anchor="middle" class="mod">network.py</text>
+    <text x="385" y="633" text-anchor="middle" class="mod-sub">flow · switching</text>
+
+    <!-- Heat column -->
+    <text x="520" y="543" text-anchor="middle" class="sector-tag">HEAT</text>
+    <rect x="460" y="550" width="130" height="42" rx="8" fill="#fff" stroke="#b03030" stroke-width="1.2"/>
+    <text x="525" y="567" text-anchor="middle" class="mod">operation.py</text>
+    <text x="525" y="583" text-anchor="middle" class="mod-sub">demand</text>
+
+    <rect x="460" y="600" width="130" height="42" rx="8" fill="#fff" stroke="#b03030" stroke-width="1.2"/>
+    <text x="525" y="617" text-anchor="middle" class="mod">network.py</text>
+    <text x="525" y="633" text-anchor="middle" class="mod-sub">pipe flow</text>
+
+    <!-- Hydrogen column -->
+    <text x="660" y="543" text-anchor="middle" class="sector-tag">HYDROGEN</text>
+    <rect x="600" y="550" width="130" height="42" rx="8" fill="#fff" stroke="#b03030" stroke-width="1.2"/>
+    <text x="665" y="567" text-anchor="middle" class="mod">operation.py</text>
+    <text x="665" y="583" text-anchor="middle" class="mod-sub">demand · electrolyser</text>
+
+    <rect x="600" y="600" width="130" height="42" rx="8" fill="#fff" stroke="#b03030" stroke-width="1.2"/>
+    <text x="665" y="617" text-anchor="middle" class="mod">network.py</text>
+    <text x="665" y="633" text-anchor="middle" class="mod-sub">pipe flow</text>
+
+    <!-- Hydro column -->
+    <text x="800" y="543" text-anchor="middle" class="sector-tag">HYDRO</text>
+    <rect x="740" y="550" width="130" height="42" rx="8" fill="#fff" stroke="#b03030" stroke-width="1.2"/>
+    <text x="805" y="567" text-anchor="middle" class="mod">reservoir.py</text>
+    <text x="805" y="583" text-anchor="middle" class="mod-sub">water balance</text>
+
+    <rect x="740" y="600" width="130" height="42" rx="8" fill="#fff" stroke="#b03030" stroke-width="1.2"/>
+    <text x="805" y="617" text-anchor="middle" class="mod">cascade.py</text>
+    <text x="805" y="633" text-anchor="middle" class="mod-sub">inflow · pumping</text>
+
+    <!-- Future sector column -->
+    <text x="940" y="543" text-anchor="middle" class="sector-tag">+ FUTURE</text>
+    <rect x="880" y="550" width="130" height="42" rx="8" fill="#fff" stroke="#b03030" stroke-width="1.2" stroke-dasharray="4 3"/>
+    <text x="945" y="567" text-anchor="middle" class="mod">district_cool/</text>
+    <text x="945" y="583" text-anchor="middle" class="mod-sub" font-style="italic">drop-in folder</text>
+
+    <rect x="880" y="600" width="130" height="42" rx="8" fill="#fff" stroke="#b03030" stroke-width="1.2" stroke-dasharray="4 3"/>
+    <text x="945" y="617" text-anchor="middle" class="mod">ccus/</text>
+    <text x="945" y="633" text-anchor="middle" class="mod-sub" font-style="italic">drop-in folder</text>
+
+    <text x="1030" y="568" text-anchor="end" class="mod-sub" transform="rotate(-90, 1030, 568)">
+      splits 1 771-line ModelFormulation.py
+    </text>
+  </g>
+
+  <!-- arrow 4 -->
+  <line x1="570" y1="765" x2="570" y2="805" stroke="#444" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="585" y="788" class="arrow-lbl">LP / MILP ready to solve</text>
+
+  <!-- ================== LAYER 5: SOLVER ================== -->
+  <g>
+    <rect x="20" y="810" width="1100" height="80" rx="10" fill="#efebf7" stroke="#5d4a8a" stroke-width="1.5"/>
+    <rect x="20" y="810" width="140" height="80" rx="10" fill="#5d4a8a"/>
+    <text x="90" y="839" text-anchor="middle" class="layer-tag">LAYER 5</text>
+    <text x="90" y="858" text-anchor="middle" class="layer-name">solver/</text>
+    <text x="90" y="876" text-anchor="middle" class="layer-note">solver-agnostic</text>
+
+    <rect x="200" y="827" width="170" height="46" rx="8" fill="#fff" stroke="#5d4a8a" stroke-width="1.2"/>
+    <text x="285" y="845" text-anchor="middle" class="mod">solve.py</text>
+    <text x="285" y="862" text-anchor="middle" class="mod-sub">ProblemSolving entry</text>
+
+    <rect x="395" y="827" width="170" height="46" rx="8" fill="#fff" stroke="#5d4a8a" stroke-width="1.2"/>
+    <text x="480" y="845" text-anchor="middle" class="mod">options/</text>
+    <text x="480" y="862" text-anchor="middle" class="mod-sub">gurobi · cplex · highs · cbc</text>
+
+    <rect x="590" y="827" width="170" height="46" rx="8" fill="#fff" stroke="#5d4a8a" stroke-width="1.2"/>
+    <text x="675" y="845" text-anchor="middle" class="mod">tuning.py</text>
+    <text x="675" y="862" text-anchor="middle" class="mod-sub">barrier · scaling · numerics</text>
+
+    <rect x="785" y="827" width="220" height="46" rx="8" fill="#fff" stroke="#7a4a8a" stroke-width="1.5"/>
+    <text x="895" y="844" text-anchor="middle" class="mod">resolve.py</text>
+    <text x="895" y="860" text-anchor="middle" class="mod-flag">★ hot-swap re-solve loop</text>
+  </g>
+
+  <!-- post-build hot-swap loop arrow (right side, Layer 5 back to Layer 3) -->
+  <path d="M 1010 850 Q 1090 850 1090 415 Q 1090 388 970 388" stroke="#7a4a8a" stroke-width="1.6" fill="none" stroke-dasharray="6 4" marker-end="url(#arrowP)"/>
+  <text x="1098" y="630" class="arrow-lblP" transform="rotate(-90, 1098, 630)">Mode C: Param.store_values() + re-solve</text>
+
+  <!-- arrow 5 -->
+  <line x1="570" y1="895" x2="570" y2="935" stroke="#444" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="585" y="918" class="arrow-lbl">solved mTEPES</text>
+
+  <!-- ================== LAYER 6: RESULTS ================== -->
+  <g>
+    <rect x="20" y="940" width="1100" height="240" rx="10" fill="#e8eef3" stroke="#336688" stroke-width="1.5"/>
+    <rect x="20" y="940" width="140" height="240" rx="10" fill="#336688"/>
+    <text x="90" y="970" text-anchor="middle" class="layer-tag">LAYER 6</text>
+    <text x="90" y="991" text-anchor="middle" class="layer-name">results/</text>
+    <text x="90" y="1010" text-anchor="middle" class="layer-note">extract → CSV / DB /</text>
+    <text x="90" y="1023" text-anchor="middle" class="layer-note">plots / aggregates</text>
+    <text x="90" y="1043" text-anchor="middle" class="layer-note">sector-mirrored</text>
+    <text x="90" y="1056" text-anchor="middle" class="layer-note">to formulation/</text>
+
+    <!-- Cross-sector column -->
+    <text x="240" y="963" text-anchor="middle" class="sector-tag">CROSS-SECTOR</text>
+    <rect x="180" y="970" width="130" height="38" rx="8" fill="#fff" stroke="#336688" stroke-width="1.2"/>
+    <text x="245" y="987" text-anchor="middle" class="mod">export.py</text>
+    <text x="245" y="1001" text-anchor="middle" class="mod-sub">ParVarCon · DB</text>
+
+    <rect x="180" y="1015" width="130" height="38" rx="8" fill="#fff" stroke="#336688" stroke-width="1.2"/>
+    <text x="245" y="1032" text-anchor="middle" class="mod">summary.py</text>
+    <text x="245" y="1046" text-anchor="middle" class="mod-sub">OperationSummary</text>
+
+    <rect x="180" y="1060" width="130" height="38" rx="8" fill="#fff" stroke="#336688" stroke-width="1.2"/>
+    <text x="245" y="1077" text-anchor="middle" class="mod">economics.py</text>
+    <text x="245" y="1091" text-anchor="middle" class="mod-sub">cost · marginal · econ</text>
+
+    <rect x="180" y="1105" width="130" height="38" rx="8" fill="#fff" stroke="#336688" stroke-width="1.2"/>
+    <text x="245" y="1122" text-anchor="middle" class="mod">reliability.py</text>
+    <text x="245" y="1136" text-anchor="middle" class="mod-sub">LOLE · HUE · ENS</text>
+
+    <!-- Electricity column -->
+    <text x="380" y="963" text-anchor="middle" class="sector-tag">ELECTRICITY</text>
+    <rect x="320" y="970" width="130" height="38" rx="8" fill="#fff" stroke="#336688" stroke-width="1.2"/>
+    <text x="385" y="987" text-anchor="middle" class="mod">investment.py</text>
+    <text x="385" y="1001" text-anchor="middle" class="mod-sub">capacity additions</text>
+
+    <rect x="320" y="1015" width="130" height="38" rx="8" fill="#fff" stroke="#336688" stroke-width="1.2"/>
+    <text x="385" y="1032" text-anchor="middle" class="mod">generation.py</text>
+    <text x="385" y="1046" text-anchor="middle" class="mod-sub">dispatch · ESS</text>
+
+    <rect x="320" y="1060" width="130" height="38" rx="8" fill="#fff" stroke="#336688" stroke-width="1.2"/>
+    <text x="385" y="1077" text-anchor="middle" class="mod">network.py</text>
+    <text x="385" y="1091" text-anchor="middle" class="mod-sub">flows · switching</text>
+
+    <rect x="320" y="1105" width="130" height="38" rx="8" fill="#fff" stroke="#336688" stroke-width="1.2"/>
+    <text x="385" y="1122" text-anchor="middle" class="mod">flexibility.py</text>
+    <text x="385" y="1136" text-anchor="middle" class="mod-sub">ramping · reserves</text>
+
+    <!-- Heat column -->
+    <text x="520" y="963" text-anchor="middle" class="sector-tag">HEAT</text>
+    <rect x="460" y="970" width="130" height="38" rx="8" fill="#fff" stroke="#336688" stroke-width="1.2"/>
+    <text x="525" y="987" text-anchor="middle" class="mod">generation.py</text>
+    <text x="525" y="1001" text-anchor="middle" class="mod-sub">heat dispatch</text>
+
+    <rect x="460" y="1015" width="130" height="38" rx="8" fill="#fff" stroke="#336688" stroke-width="1.2"/>
+    <text x="525" y="1032" text-anchor="middle" class="mod">network.py</text>
+    <text x="525" y="1046" text-anchor="middle" class="mod-sub">pipe flow</text>
+
+    <!-- H2 column -->
+    <text x="660" y="963" text-anchor="middle" class="sector-tag">HYDROGEN</text>
+    <rect x="600" y="970" width="130" height="38" rx="8" fill="#fff" stroke="#336688" stroke-width="1.2"/>
+    <text x="665" y="987" text-anchor="middle" class="mod">production.py</text>
+    <text x="665" y="1001" text-anchor="middle" class="mod-sub">electrolyser</text>
+
+    <rect x="600" y="1015" width="130" height="38" rx="8" fill="#fff" stroke="#336688" stroke-width="1.2"/>
+    <text x="665" y="1032" text-anchor="middle" class="mod">network.py</text>
+    <text x="665" y="1046" text-anchor="middle" class="mod-sub">pipe flow</text>
+
+    <!-- Hydro column -->
+    <text x="800" y="963" text-anchor="middle" class="sector-tag">HYDRO</text>
+    <rect x="740" y="970" width="130" height="38" rx="8" fill="#fff" stroke="#336688" stroke-width="1.2"/>
+    <text x="805" y="987" text-anchor="middle" class="mod">reservoir.py</text>
+    <text x="805" y="1001" text-anchor="middle" class="mod-sub">volume · spill</text>
+
+    <rect x="740" y="1015" width="130" height="38" rx="8" fill="#fff" stroke="#336688" stroke-width="1.2"/>
+    <text x="805" y="1032" text-anchor="middle" class="mod">cascade.py</text>
+    <text x="805" y="1046" text-anchor="middle" class="mod-sub">inflow · cascade</text>
+
+    <!-- Visual + Sweeps column -->
+    <text x="940" y="963" text-anchor="middle" class="sector-tag">VISUAL / SWEEPS</text>
+    <rect x="880" y="970" width="130" height="38" rx="8" fill="#fff" stroke="#336688" stroke-width="1.2"/>
+    <text x="945" y="987" text-anchor="middle" class="mod">plots.py</text>
+    <text x="945" y="1001" text-anchor="middle" class="mod-sub">pie · area · line</text>
+
+    <rect x="880" y="1015" width="130" height="38" rx="8" fill="#fff" stroke="#336688" stroke-width="1.2"/>
+    <text x="945" y="1032" text-anchor="middle" class="mod">maps.py</text>
+    <text x="945" y="1046" text-anchor="middle" class="mod-sub">NetworkMap (folium)</text>
+
+    <rect x="880" y="1060" width="130" height="38" rx="8" fill="#fff" stroke="#7a4a8a" stroke-width="1.5"/>
+    <text x="945" y="1077" text-anchor="middle" class="mod">aggregate.py</text>
+    <text x="945" y="1091" text-anchor="middle" class="mod-flag">★ merge sweep outputs</text>
+
+    <rect x="880" y="1105" width="130" height="38" rx="8" fill="#fff" stroke="#336688" stroke-width="1.2" stroke-dasharray="4 3"/>
+    <text x="945" y="1122" text-anchor="middle" class="mod">mcda.py</text>
+    <text x="945" y="1136" text-anchor="middle" class="mod-sub" font-style="italic">optional · ext tooling</text>
+
+    <text x="1060" y="1100" text-anchor="end" class="mod-sub" transform="rotate(-90, 1060, 1100)">
+      splits 2 835-line OutputResults.py
+    </text>
+  </g>
+
+  <!-- ================== TESTS / OUTPUTS ================== -->
+  <g>
+    <rect x="20" y="1195" width="1100" height="80" rx="10" fill="#f3f3f3" stroke="#999" stroke-width="1.2" stroke-dasharray="5 4"/>
+    <text x="50" y="1218" class="sector-tag">TESTS &amp; OUTPUTS</text>
+
+    <rect x="180" y="1222" width="160" height="42" rx="8" fill="#fff" stroke="#777" stroke-width="1.0"/>
+    <text x="260" y="1240" text-anchor="middle" class="mod">tests/parity</text>
+    <text x="260" y="1255" text-anchor="middle" class="mod-sub">CSV ↔ DuckDB</text>
+
+    <rect x="355" y="1222" width="160" height="42" rx="8" fill="#fff" stroke="#777" stroke-width="1.0"/>
+    <text x="435" y="1240" text-anchor="middle" class="mod">tests/e2e</text>
+    <text x="435" y="1255" text-anchor="middle" class="mod-sub">9n · 9n_PTDF · sSEP</text>
+
+    <rect x="530" y="1222" width="160" height="42" rx="8" fill="#fff" stroke="#777" stroke-width="1.0"/>
+    <text x="610" y="1240" text-anchor="middle" class="mod">tests/sweep</text>
+    <text x="610" y="1255" text-anchor="middle" class="mod-sub">runner integration</text>
+
+    <rect x="705" y="1222" width="195" height="42" rx="8" fill="#fff" stroke="#777" stroke-width="1.0"/>
+    <text x="802" y="1240" text-anchor="middle" class="mod">CSV + DuckDB</text>
+    <text x="802" y="1255" text-anchor="middle" class="mod-sub">oT_Result_*.csv · *.duckdb</text>
+
+    <rect x="915" y="1222" width="190" height="42" rx="8" fill="#fff" stroke="#777" stroke-width="1.0"/>
+    <text x="1010" y="1240" text-anchor="middle" class="mod">plots + maps + aggregate</text>
+    <text x="1010" y="1255" text-anchor="middle" class="mod-sub">PNG · HTML · sweep tables</text>
+  </g>
+
+  <!-- ================== PARALLELISATION MODES PANEL ================== -->
+  <g>
+    <rect x="20" y="1290" width="1100" height="125" rx="10" fill="#f6effa" stroke="#7a4a8a" stroke-width="1.5"/>
+    <rect x="20" y="1290" width="140" height="125" rx="10" fill="#7a4a8a"/>
+    <text x="90" y="1320" text-anchor="middle" class="layer-tag">SWEEP MODES</text>
+    <text x="90" y="1341" text-anchor="middle" class="layer-name">parallel</text>
+    <text x="90" y="1361" text-anchor="middle" class="layer-note">runner.py</text>
+    <text x="90" y="1374" text-anchor="middle" class="layer-note">orchestrates</text>
+    <text x="90" y="1387" text-anchor="middle" class="layer-note">all three modes</text>
+
+    <!-- Mode A -->
+    <rect x="180" y="1303" width="295" height="100" rx="8" fill="#fff" stroke="#7a4a8a" stroke-width="1.4"/>
+    <text x="327" y="1322" text-anchor="middle" class="mod">A · pre-build sweep</text>
+    <text x="327" y="1337" text-anchor="middle" class="mod-flag">workers diverge at LAYER 2 (io/)</text>
+    <text x="327" y="1354" text-anchor="middle" class="mod-sub">each worker reads its own perturbed source,</text>
+    <text x="327" y="1368" text-anchor="middle" class="mod-sub">builds its own model, solves independently</text>
+    <text x="327" y="1383" text-anchor="middle" class="mod-sub">cost: full I/O + build + solve per worker</text>
+    <text x="327" y="1397" text-anchor="middle" class="mod-sub">use: scenario ensembles · slurm arrays</text>
+
+    <!-- Mode B -->
+    <rect x="485" y="1303" width="305" height="100" rx="8" fill="#fff" stroke="#7a4a8a" stroke-width="1.4"/>
+    <text x="637" y="1322" text-anchor="middle" class="mod">B · in-memory overlay</text>
+    <text x="637" y="1337" text-anchor="middle" class="mod-flag">workers diverge at LAYER 3 (model/)</text>
+    <text x="637" y="1354" text-anchor="middle" class="mod-sub">shared baseline DataFrames in RAM;</text>
+    <text x="637" y="1368" text-anchor="middle" class="mod-sub">each worker applies its own overlay dict</text>
+    <text x="637" y="1383" text-anchor="middle" class="mod-sub">cost: build + solve per worker (no re-I/O)</text>
+    <text x="637" y="1397" text-anchor="middle" class="mod-sub">use: parameter sweeps · Monte-Carlo demand</text>
+
+    <!-- Mode C -->
+    <rect x="800" y="1303" width="305" height="100" rx="8" fill="#fff" stroke="#7a4a8a" stroke-width="1.4"/>
+    <text x="952" y="1322" text-anchor="middle" class="mod">C · post-build hot-swap</text>
+    <text x="952" y="1337" text-anchor="middle" class="mod-flag">workers diverge at LAYER 5 (solver/)</text>
+    <text x="952" y="1354" text-anchor="middle" class="mod-sub">one built model, Param.store_values() +</text>
+    <text x="952" y="1368" text-anchor="middle" class="mod-sub">re-solve under fork() copy-on-write</text>
+    <text x="952" y="1383" text-anchor="middle" class="mod-sub">cost: solve only (cheapest)</text>
+    <text x="952" y="1397" text-anchor="middle" class="mod-sub">needs: mutable=True · Unix fork · warm start</text>
+  </g>
+
+  <text x="570" y="1437" text-anchor="middle" class="footer">
+    Each box ↔ one file (~150–400 lines). Caps every module at ~1 000 LoC. Adding a new sector = new folder in Layer 4 + Layer 6 + entry in schema.py. ★ marks sweep-enabling additions.
+  </text>
+</svg>

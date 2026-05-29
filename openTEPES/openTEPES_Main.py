@@ -725,7 +725,7 @@ parser.add_argument('--gzip-patterns', type=str, default=None,
                           "to gzip. Used with --gzip-large-csvs. Default: "
                           + ",".join(DEFAULT_GZIP_PATTERNS) + "."))
 
-DIR    = os.path.dirname(__file__)
+DIR    = os.path.join(os.path.dirname(__file__), "cases")
 CASE   = '9n'
 SOLVER = 'highs'   # 'gams', 'highs', 'gurobi', 'gurobi_direct', 'gurobi_persistent', 'appsi_gurobi'
 RESULT = 'Yes'

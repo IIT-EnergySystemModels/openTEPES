@@ -25,6 +25,12 @@ Scripts are provided to exchange information with Integrated Assessment Models (
 
 It has been used by the **Ministry for the Ecological Transition and the Demographic Challenge (MITECO)** to analyze the electricity sector in the latest Spanish [National Energy and Climate Plan (NECP) Update 2023-2030](https://www.miteco.gob.es/content/dam/miteco/es/energia/files-1/pniec-2023-2030/PNIEC_2024_240924.pdf) in September 2024.
 
+# Architecture
+
+The package is organised in six layers, from input/output (pure pandas, no Pyomo) up to result aggregation. The split-out modules live in the `src/` package and encode their layer in the file name (`openTEPES_IO_*` for input/output, `openTEPES_Solver_*` for the solver layer), so concerns are addressable in code and the parallelisation modes (per-case sweep, in-memory overlay, post-build hot-swap) become first-class architectural seams.
+
+![Architecture diagram](/doc/img/openTEPES_architecture.svg)
+
 # How to Cite
 
 If you use openTEPES for a scientific publication, we would appreciate it if you cite the following paper:
@@ -191,7 +197,7 @@ Then, four parameters (case, dir, solver, results, and console log) will be aske
 
 **Remark:** at this step, only press enter for each input, and openTEPES will be executed with the default parameters.
 
-After this in a directory of your choice, make a copy of the [9n](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/9n) or [sSEP](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/sSEP) case to create a new case of your choice but using the current format of the CSV files.
+After this in a directory of your choice, make a copy of the [9n](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/9n) or [sSEP](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/sSEP) case to create a new case of your choice but using the current format of the CSV files.
 A proper execution by `openTEPES_Main` can be made by introducing the new case and the directory of your choice. Note that the solver is **glpk** by default, but it can be changed to other solvers that Pyomo supports (e.g., gurobi, highs).
 
 Then, the **results** should be written in the folder that is called with the case name. The results contain plots and summary spreadsheets for multiple optimized energy scenarios, periods, and load levels, as well as the investment decisions.
