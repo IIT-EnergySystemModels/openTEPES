@@ -1,5 +1,5 @@
 """
-openTEPES.oT_Solver.Persistent — persistent-solver lifecycle for ``appsi_gurobi`` and ``gurobi_persistent``.
+openTEPES.src.openTEPES_Solver_Persistent — persistent-solver lifecycle for ``appsi_gurobi`` and ``gurobi_persistent``.
 
 The ``ncall`` counter in ``ProblemSolving`` distinguishes the first solve of a given Pyomo instance (which must
 ``set_instance`` once) from subsequent solves in the stage loop (which only need to update vars / params /

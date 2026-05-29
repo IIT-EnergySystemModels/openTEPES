@@ -1,5 +1,5 @@
 """
-openTEPES.oT_Solver.Benders — classical L-shaped Benders decomposition for transmission expansion.
+openTEPES.src.openTEPES_Solver_Benders — classical L-shaped Benders decomposition for transmission expansion.
 
 Master problem
 --------------
@@ -112,7 +112,7 @@ def lshaped(mTEPES, solver_name: str = "highs", max_iter: int = 20, tol: float =
     candidates = list(mTEPES.plc)
     if not candidates:
         raise ValueError(
-            "openTEPES.oT_Solver.Benders.lshaped requires at least one candidate transmission line "
+            "openTEPES.src.openTEPES_Solver_Benders.lshaped requires at least one candidate transmission line "
             "(mTEPES.plc is empty — no row in oT_Data_Network has FixedInvestmentCost > 0)."
         )
 

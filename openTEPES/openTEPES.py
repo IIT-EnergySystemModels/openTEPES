@@ -13,9 +13,9 @@ import pyomo.environ as pyo
 from   pyomo.environ import ConcreteModel, Set
 
 from .openTEPES_InputData        import InputData, DataConfiguration, SettingUpVariables
-from .oT_IO                      import open_source
+from .src                       import open_source
 from .openTEPES_ModelFormulation import TotalObjectiveFunction, InvestmentElecModelFormulation, InvestmentHydroModelFormulation, InvestmentH2ModelFormulation, InvestmentHeatModelFormulation, GenerationOperationModelFormulationObjFunct, GenerationOperationElecModelFormulationInvestment, GenerationOperationHeatModelFormulationInvestment, GenerationOperationModelFormulationDemand, GenerationOperationModelFormulationStorage, GenerationOperationModelFormulationReservoir, NetworkH2OperationModelFormulation, NetworkHeatOperationModelFormulation, GenerationOperationModelFormulationCommitment, GenerationOperationModelFormulationRampMinTime, NetworkSwitchingModelFormulation, NetworkOperationModelFormulation, NetworkCycles, CycleConstraints
-from .oT_Solver.ProblemSolving   import ProblemSolving
+from .src                       import ProblemSolving
 from .openTEPES_OutputResults    import OutputResultsParVarCon, InvestmentResults, GenerationOperationResults, GenerationOperationHeatResults, ESSOperationResults, ReservoirOperationResults, NetworkH2OperationResults, NetworkHeatOperationResults, FlexibilityResults, NetworkOperationResults, MarginalResults, OperationSummaryResults, ReliabilityResults, CostSummaryResults, EconomicResults, NetworkMapResults
 # from openTEPES_SectorDecomposition import SectorDecomposition
 

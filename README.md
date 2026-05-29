@@ -27,7 +27,7 @@ It has been used by the **Ministry for the Ecological Transition and the Demogra
 
 # Architecture
 
-The package is organised in six layers, from input/output (pure pandas, no Pyomo) up to result aggregation. Each layer is a subpackage so concerns are addressable in code and the parallelisation modes (per-case sweep, in-memory overlay, post-build hot-swap) become first-class architectural seams.
+The package is organised in six layers, from input/output (pure pandas, no Pyomo) up to result aggregation. The split-out modules live in the `src/` package and encode their layer in the file name (`openTEPES_IO_*` for input/output, `openTEPES_Solver_*` for the solver layer), so concerns are addressable in code and the parallelisation modes (per-case sweep, in-memory overlay, post-build hot-swap) become first-class architectural seams.
 
 ![Architecture diagram](/doc/img/openTEPES_architecture.svg)
 

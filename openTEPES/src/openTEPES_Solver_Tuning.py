@@ -1,5 +1,5 @@
 """
-openTEPES.oT_Solver.Tuning — per-solver option presets for the initial solve and the fix-and-resolve LP pass.
+openTEPES.src.openTEPES_Solver_Tuning — per-solver option presets for the initial solve and the fix-and-resolve LP pass.
 
 Each solver family (Gurobi, CPLEX, HiGHS, GAMS) has a distinct option-setting API; ``apply_solver_options()``
 centralises the dispatch so ``ProblemSolving`` does not need to know which solver it is talking to. The function

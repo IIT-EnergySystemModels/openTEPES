@@ -61,7 +61,7 @@ def snapshot(case_path: str) -> dict:
     # Late imports so a parity probe in a freshly-cloned tree doesn't
     # error if optional deps are missing at import time.
     from openTEPES.openTEPES_InputData import InputData
-    from openTEPES.oT_IO import open_source
+    from openTEPES.src import open_source
 
     mTEPES = ConcreteModel("parity_probe")
     p = Path(case_path)

@@ -1,5 +1,5 @@
 """
-openTEPES.oT_IO.DuckDBSource — in-process ``.duckdb`` backend.
+openTEPES.src.openTEPES_IO_DuckDBSource — in-process ``.duckdb`` backend.
 
 Reads stream through SQL into DataFrames directly — no temporary CSV materialisation, no extra disk I/O round-trip.
 ``duckdb`` is an optional dependency; the import is lazy and the ``_HAS_DUCKDB`` flag is consulted by
@@ -15,7 +15,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from .Schema import (
+from .openTEPES_IO_Schema import (
     PASSTHROUGH,
     TABLE_SPECS,
     UNPIVOT_SINGLE_ROW,
@@ -23,7 +23,7 @@ from .Schema import (
     WIDE_TO_LONG,
     _SPEC_BY_CSV_STEM,
 )
-from .Source import InputSource, _apply_index
+from .openTEPES_IO_Source import InputSource, _apply_index
 
 _HAS_DUCKDB = True
 try:
