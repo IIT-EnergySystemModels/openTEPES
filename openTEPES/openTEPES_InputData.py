@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 26, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 29, 2026
 """
 
 import time
@@ -554,7 +554,7 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
         if ni == nf:
             raise ValueError(f'### Line {ni} {nf} {cc} has equal initial and final nodes.')
     if len(mTEPES.ln) != len(dfs['dfNetwork'].index):
-        raise ValueError('### Some electric lines are invalid (not having reactance) ', len(mTEPES.ln), len(dfs['dfNetwork'].index))
+        raise ValueError('### Some electric lines are invalid (not having reactance or are repeated) ', len(mTEPES.ln), len(dfs['dfNetwork'].index))
     mTEPES.la     = Set(doc='all real        electric lines'   , initialize=[ln     for ln   in mTEPES.ln if par['pLineX']              [ln] != 0.0 and par['pLineNTCFrw'][ln] > 0.0 and par['pLineNTCBck'][ln] > 0.0 and par['pElecNetPeriodIni'][ln]  <= mTEPES.p.last() and par['pElecNetPeriodFin'][ln]  >= mTEPES.p.first()])
     mTEPES.ls     = Set(doc='all real switch electric lines'   , initialize=[la     for la   in mTEPES.la if par['pIndBinLineSwitch']   [la]       ])
     mTEPES.lc     = Set(doc='candidate       electric lines'   , initialize=[la     for la   in mTEPES.la if par['pNetFixedCost']       [la] >  0.0])
