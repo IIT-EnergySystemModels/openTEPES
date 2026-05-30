@@ -89,33 +89,33 @@ and water flow in hm{sup}`3`/s. The energy transported in the electricity networ
 
 File `oT_Result_GenerationInvestment.csv`
 
-| Identifier | Header    | Description                      |
-| ---------- | --------- | -------------------------------- |
-| Period     | Generator | Generation investment power [MW] |
+| Identifier | Header    | Description                                        |
+| ---------- | --------- |----------------------------------------------------|
+| Period     | Generator | Generation investment power up to this period [MW] |
 
 File `oT_Result_GenerationInvestmentPerUnit.csv`
 
-| Identifier | Header    | Description                           |
-| ---------- | --------- | ------------------------------------- |
-| Period     | Generator | Generation investment decision [p.u.] |
+| Identifier | Header    | Description                                             |
+| ---------- | --------- |---------------------------------------------------------|
+| Period     | Generator | Generation investment decision up to this period [p.u.] |
 
 File `oT_Result_GenerationRetirement.csv`
 
-| Identifier | Header    | Description                      |
-| ---------- | --------- | -------------------------------- |
-| Period     | Generator | Generation retirement power [MW] |
+| Identifier | Header    | Description                                        |
+| ---------- | --------- |----------------------------------------------------|
+| Period     | Generator | Generation retirement power up to this period [MW] |
 
 File `oT_Result_GenerationRetirementPerUnit.csv`
 
-| Identifier | Header    | Description                           |
-| ---------- | --------- | ------------------------------------- |
-| Period     | Generator | Generation retirement decision [p.u.] |
+| Identifier | Header    | Description                                             |
+| ---------- | --------- |---------------------------------------------------------|
+| Period     | Generator | Generation retirement decision up to this period [p.u.] |
 
 File `oT_Result_TechnologyInvestment.csv`
 
-| Identifier | Header    | Description                      |
-| ---------- | --------- | -------------------------------- |
-| Period     | Generator | Technology investment power [MW] |
+| Identifier | Header    | Description                                        |
+| ---------- | --------- |----------------------------------------------------|
+| Period     | Generator | Technology investment power up to this period [MW] |
 
 File `oT_Result_TechnologyInvestmentCost.csv`
 
