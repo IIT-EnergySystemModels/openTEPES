@@ -89,33 +89,33 @@ and water flow in hm{sup}`3`/s. The energy transported in the electricity networ
 
 File `oT_Result_GenerationInvestment.csv`
 
-| Identifier | Header    | Description                                        |
-| ---------- | --------- |----------------------------------------------------|
-| Period     | Generator | Generation investment power up to this period [MW] |
+| Identifier | Header    | Description                                                   |
+| ---------- | --------- |---------------------------------------------------------------|
+| Period     | Generator | Cumulative generation investment power up to this period [MW] |
 
 File `oT_Result_GenerationInvestmentPerUnit.csv`
 
-| Identifier | Header    | Description                                             |
-| ---------- | --------- |---------------------------------------------------------|
-| Period     | Generator | Generation investment decision up to this period [p.u.] |
+| Identifier | Header    | Description                                                        |
+| ---------- | --------- |--------------------------------------------------------------------|
+| Period     | Generator | Cumulative generation investment decision up to this period [p.u.] |
 
 File `oT_Result_GenerationRetirement.csv`
 
-| Identifier | Header    | Description                                        |
-| ---------- | --------- |----------------------------------------------------|
-| Period     | Generator | Generation retirement power up to this period [MW] |
+| Identifier | Header    | Description                                                   |
+| ---------- | --------- |---------------------------------------------------------------|
+| Period     | Generator | Cumulative generation retirement power up to this period [MW] |
 
 File `oT_Result_GenerationRetirementPerUnit.csv`
 
-| Identifier | Header    | Description                                             |
-| ---------- | --------- |---------------------------------------------------------|
-| Period     | Generator | Generation retirement decision up to this period [p.u.] |
+| Identifier | Header    | Description                                                        |
+| ---------- | --------- |--------------------------------------------------------------------|
+| Period     | Generator | Cumulative generation retirement decision up to this period [p.u.] |
 
 File `oT_Result_TechnologyInvestment.csv`
 
-| Identifier | Header    | Description                                        |
-| ---------- | --------- |----------------------------------------------------|
-| Period     | Generator | Technology investment power up to this period [MW] |
+| Identifier | Header    | Description                                                   |
+| ---------- | --------- |---------------------------------------------------------------|
+| Period     | Generator | Cumulative technology investment power up to this period [MW] |
 
 File `oT_Result_TechnologyInvestmentCost.csv`
 
@@ -138,21 +138,21 @@ File `oT_Result_TechnologyRetirement.csv`
 File `oT_Result_NetworkInvestmentPerUnit.csv`
 
 ```{eval-rst}
-==========  ============  ==========  ==========  ===============================================
+==========  ============  ==========  ==========  ============================================================================
 Identifier  Header                                Description
-==========  ====================================  ===============================================
-Period      Initial node  Final node  Circuit     Electricity network investment decision [p.u.]
-==========  ============  ==========  ==========  ===============================================
+==========  ====================================  ============================================================================
+Period      Initial node  Final node  Circuit     Cumulative electricity network investment decision up to this period [p.u.]
+==========  ============  ==========  ==========  ============================================================================
 ```
 
 File `oT_Result_NetworkInvestmentMWkm.csv`
 
 ```{eval-rst}
-==========  ============  ==========  ==========  ======================================
+==========  ============  ==========  ==========  ===================================================================
 Identifier  Header                                Description
-==========  ====================================  ======================================
-Period      Initial node  Final node  Circuit     Electricity network investment [MWkm]
-==========  ============  ==========  ==========  ======================================
+==========  ====================================  ===================================================================
+Period      Initial node  Final node  Circuit     Cumulative electricity network investment up to this period [MWkm]
+==========  ============  ==========  ==========  ===================================================================
 ```
 
 File `oT_Result_ReserveMargin.csv`
@@ -563,24 +563,24 @@ Period        Scenario    Load level  Area        Node        Demand    Demand c
 File `oT_Result_MarketResultsTechnologyInvestment.csv`
 
 ```{eval-rst}
-============  ==========  ============  =========================================
+============  ==========  ============  ======================================================================
 Identifier                Header        Description
-========================  ============  =========================================
-Period        Technology  Power         Power investment on each technology [MW]
+========================  ============  ======================================================================
+Period        Technology  Power         Cumulative power investment on each technology up to this period [MW]
 ...           ...         Cost          Investment cost [M€]
 ...           ...         Energy        Energy produced [GWh]
 ...           ...         LCOE          Levelized Cost of Electricity [€/MWh]
-============  ==========  ============  =========================================
+============  ==========  ============  ======================================================================
 ```
 
 File `oT_Result_MarketResultsGenerationInvestment.csv`
 
 ```{eval-rst}
-============  ==========  ============  =========================================
+============  ==========  ============  =====================================================================
 Identifier                Header        Description
-========================  ============  =========================================
-Period        Generator   Power         Power investment on each generator [MW]
-============  ==========  ============  =========================================
+========================  ============  =====================================================================
+Period        Generator   Power         Cumulative power investment on each generator up to this period [MW]
+============  ==========  ============  =====================================================================
 ```
 
 File `oT_Result_MarketResultsGeneration.csv`
