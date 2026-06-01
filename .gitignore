@@ -137,6 +137,7 @@ dmypy.json
 # openTEPES run artifacts (test-case workspace pollution)
 oT_Result_*.csv
 oT_Run_Status_*.json
+openTEPES_[Rr]un_[Ss]tatus_*.json
 oT_Plot_*.png
 oT_Plot_*.html
 *.pid
