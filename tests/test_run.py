@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 
 from openTEPES.openTEPES import openTEPES_run
-from openTEPES.src import lshaped
+from openTEPES.openTEPES_ProblemSolvingBenders import lshaped
 
 
 # === Fixture: single-stage 7-day system ===

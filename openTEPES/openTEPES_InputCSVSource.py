@@ -1,5 +1,5 @@
 """
-openTEPES.src.openTEPES_IO_CSVSource — file-system CSV backend.
+openTEPES.openTEPES_InputCSVSource — file-system CSV backend.
 
 Preserves today's behaviour bit-for-bit: every read uses ``pd.read_csv`` with ``encoding="utf-8-sig"`` so the
 optional BOM emitted by Excel is stripped silently.
@@ -10,8 +10,8 @@ from pathlib import Path
 
 import pandas as pd
 
-from .openTEPES_IO_Schema import WIDE_MULTILEVEL_TO_LONG, _SPEC_BY_CSV_STEM
-from .openTEPES_IO_Source import InputSource, _apply_index
+from .openTEPES_InputSchema import WIDE_MULTILEVEL_TO_LONG, _SPEC_BY_CSV_STEM
+from .openTEPES_InputSource import InputSource, _apply_index
 
 
 class CSVSource(InputSource):

@@ -1,5 +1,5 @@
 """
-openTEPES.src.openTEPES_Solver_DualExtraction — fix-and-resolve pass that recovers shadow prices on a MIP solution.
+openTEPES.openTEPES_ProblemSolvingDualExtraction — fix-and-resolve pass that recovers shadow prices on a MIP solution.
 
 After an initial MIP solve, ``fix_for_duals()`` fixes every binary/integer variable to its optimal value and
 relaxes its domain to ``UnitInterval`` so the model becomes a pure LP; ``ProblemSolving`` then re-solves it

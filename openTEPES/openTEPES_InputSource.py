@@ -1,5 +1,5 @@
 """
-openTEPES.src.openTEPES_IO_Source — ``InputSource`` ABC, ``open_source()`` factory, and post-read shape helpers shared by every
+openTEPES.openTEPES_InputSource — ``InputSource`` ABC, ``open_source()`` factory, and post-read shape helpers shared by every
 backend.
 
 Selection rules of ``open_source(path)``:
@@ -19,7 +19,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from .openTEPES_IO_Schema import (
+from .openTEPES_InputSchema import (
     DEFAULT_IDX_COLS,
     UNPIVOT_SINGLE_ROW,
     WIDE_TO_LONG,
@@ -70,10 +70,10 @@ def open_source(path: str | os.PathLike) -> InputSource:
     """
     p = Path(path).expanduser()
     if p.is_dir():
-        from .openTEPES_IO_CSVSource import CSVSource  # local import keeps duckdb-free environments importing Source.py cleanly
+        from .openTEPES_InputCSVSource import CSVSource  # local import keeps duckdb-free environments importing Source.py cleanly
         return CSVSource(p)
     if p.is_file() and p.suffix == ".duckdb":
-        from .openTEPES_IO_DuckDBSource import DuckDBSource, _HAS_DUCKDB
+        from .openTEPES_InputDuckDBSource import DuckDBSource, _HAS_DUCKDB
         if not _HAS_DUCKDB:
             raise ImportError("duckdb is required to read .duckdb input sources; install it with `pip install duckdb`")
         return DuckDBSource(p)

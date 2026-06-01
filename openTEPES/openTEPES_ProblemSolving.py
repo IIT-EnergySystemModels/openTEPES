@@ -1,5 +1,5 @@
 """
-openTEPES.src.openTEPES_Solver_ProblemSolving — per-stage solve orchestrator.
+openTEPES.openTEPES_ProblemSolving — per-stage solve orchestrator.
 
 Composes the three Layer 5.a primitives:
 
@@ -26,9 +26,9 @@ from pyomo.environ import Suffix
 from pyomo.opt import TerminationCondition
 from pyomo.util.infeasible import log_infeasible_constraints
 
-from .openTEPES_Solver_DualExtraction import collect_duals, fix_for_duals
-from .openTEPES_Solver_Persistent import prepare_for_resolve, setup_solver
-from .openTEPES_Solver_Tuning import apply_resolve_options, apply_solver_options
+from .openTEPES_ProblemSolvingDualExtraction import collect_duals, fix_for_duals
+from .openTEPES_ProblemSolvingPersistent import prepare_for_resolve, setup_solver
+from .openTEPES_ProblemSolvingTuning import apply_resolve_options, apply_solver_options
 
 
 def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConsole, p, sc, st, ncall):

@@ -1,5 +1,5 @@
 """
-openTEPES.src.openTEPES_Solver_Tuning — per-solver option presets for the initial solve and the fix-and-resolve LP pass.
+openTEPES.openTEPES_ProblemSolvingTuning — per-solver option presets for the initial solve and the fix-and-resolve LP pass.
 
 Each solver family (Gurobi, CPLEX, HiGHS, GAMS) has a distinct option-setting API; ``apply_solver_options()``
 centralises the dispatch so ``ProblemSolving`` does not need to know which solver it is talking to. The function
@@ -12,9 +12,10 @@ why the function returns an optional ``solver_options`` value for the caller to 
 ``apply_resolve_options()`` is the lighter pass used between the initial MIP solve and the fix-and-resolve LP
 pass — it just switches the solver to ``Method=-1`` / ``LPMethod=0`` for warm-restart behaviour.
 
-Thread count defaults to half the available logical+physical cores; tune via the dedicated NESP-side
-``CLAUDE.md`` (``Crossover=0`` / ``BarHomogeneous=1`` etc. for the Nordic-scale stochastic LPs) if needed —
-those values are deliberately NOT upstreamed here because they cause regressions on smaller cases.
+Thread count defaults to half the available logical+physical cores. Numerically hard large-scale
+stochastic LPs may need solver-specific barrier tuning (e.g. ``Crossover``, ``BarHomogeneous``,
+``ScaleFlag``, ``NumericFocus`` for Gurobi); set those per deployment, since the right values are
+case-dependent and can regress smaller cases.
 """
 from __future__ import annotations
 

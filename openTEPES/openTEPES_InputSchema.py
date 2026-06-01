@@ -1,5 +1,5 @@
 """
-openTEPES.src.openTEPES_IO_Schema — declarative catalogue of every input table.
+openTEPES.openTEPES_InputSchema — declarative catalogue of every input table.
 
 Each ``TABLE_SPECS`` entry is the tuple ``(csv_stem_prefix, db_table, kind, kwargs)``. Backends consume this single
 catalogue to know (i) which stems exist, (ii) the DuckDB table name they correspond to, (iii) the read-side transform

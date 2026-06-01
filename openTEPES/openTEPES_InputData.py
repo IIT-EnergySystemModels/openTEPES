@@ -10,7 +10,8 @@ from   collections   import defaultdict
 from   pyomo.environ import Set, Param, Var, Binary, NonNegativeReals, NonNegativeIntegers, PositiveReals, PositiveIntegers, Reals, UnitInterval, Any
 from   pyomo.environ import Block, Boolean
 
-from .src import open_source, df_to_set_values, CSVSource, InputSource
+from .openTEPES_InputSource    import open_source, df_to_set_values, InputSource
+from .openTEPES_InputCSVSource import CSVSource
 
 # from line_profiler import profile
 
