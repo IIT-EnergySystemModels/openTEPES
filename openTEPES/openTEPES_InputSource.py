@@ -19,12 +19,24 @@ from pathlib import Path
 
 import pandas as pd
 
-from .openTEPES_InputSchema import (
-    DEFAULT_IDX_COLS,
-    UNPIVOT_SINGLE_ROW,
-    WIDE_TO_LONG,
-    _SPEC_BY_CSV_STEM,
-)
+# Support running this file directly (e.g. VS Code "Run Python File"), where __package__ is empty and the
+# relative import below has no parent package; fall back to an absolute package import in that case.
+try:
+    from .openTEPES_InputSchema import (
+        DEFAULT_IDX_COLS,
+        UNPIVOT_SINGLE_ROW,
+        WIDE_TO_LONG,
+        _SPEC_BY_CSV_STEM,
+    )
+except ImportError:
+    import sys
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from openTEPES.openTEPES_InputSchema import (
+        DEFAULT_IDX_COLS,
+        UNPIVOT_SINGLE_ROW,
+        WIDE_TO_LONG,
+        _SPEC_BY_CSV_STEM,
+    )
 
 
 class InputSource(abc.ABC):

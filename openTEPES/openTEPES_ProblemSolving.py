@@ -26,9 +26,18 @@ from pyomo.environ import Suffix
 from pyomo.opt import TerminationCondition
 from pyomo.util.infeasible import log_infeasible_constraints
 
-from .openTEPES_ProblemSolvingDualExtraction import collect_duals, fix_for_duals
-from .openTEPES_ProblemSolvingPersistent import prepare_for_resolve, setup_solver
-from .openTEPES_ProblemSolvingTuning import apply_resolve_options, apply_solver_options
+# Support running this file directly (e.g. VS Code "Run Python File"), where __package__ is empty and the
+# relative imports below have no parent package; fall back to absolute package imports in that case.
+try:
+    from .openTEPES_ProblemSolvingDualExtraction import collect_duals, fix_for_duals
+    from .openTEPES_ProblemSolvingPersistent import prepare_for_resolve, setup_solver
+    from .openTEPES_ProblemSolvingTuning import apply_resolve_options, apply_solver_options
+except ImportError:
+    import os, sys
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from openTEPES.openTEPES_ProblemSolvingDualExtraction import collect_duals, fix_for_duals
+    from openTEPES.openTEPES_ProblemSolvingPersistent import prepare_for_resolve, setup_solver
+    from openTEPES.openTEPES_ProblemSolvingTuning import apply_resolve_options, apply_solver_options
 
 
 def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConsole, p, sc, st, ncall):
