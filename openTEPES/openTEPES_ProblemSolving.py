@@ -1,233 +1,92 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - April 16, 2026
-"""
+openTEPES.openTEPES_ProblemSolving — per-stage solve orchestrator.
 
-import time
-import os
-import pyomo.environ as pyo
-import psutil
+Composes the three Layer 5.a primitives:
+
+  * ``Persistent.setup_solver``       set up (or reuse) the solver instance; handles ``appsi_gurobi`` /
+                                      ``gurobi_persistent`` ``ncall`` lifecycle.
+  * ``Tuning.apply_solver_options``   set per-solver option presets (Gurobi / CPLEX / HiGHS / GAMS).
+  * ``DualExtraction.fix_for_duals``  fix integers + investments after the initial solve so the LP
+                                      re-solve recovers shadow prices.
+  * ``DualExtraction.collect_duals``  copy active-constraint duals into ``mTEPES.pDuals`` after the resolve.
+
+The cost-reporting block at the end (printing investment / operation / reliability components per period and
+scenario) stays inline here for now; it will move to Layer 6 ``results/`` in a follow-on PR. Behaviour is
+byte-identical to the pre-split ``openTEPES_ProblemSolving.py`` (verified by the full ``tests/test_run.py``
+matrix).
+"""
+from __future__ import annotations
+
 import logging
-from   pyomo.opt             import SolverFactory, SolverStatus, TerminationCondition
-from   pyomo.util.infeasible import log_infeasible_constraints
-from   pyomo.environ         import Suffix, UnitInterval
+import os
+import time
+
+import pyomo.environ as pyo
+from pyomo.environ import Suffix
+from pyomo.opt import TerminationCondition
+from pyomo.util.infeasible import log_infeasible_constraints
+
+from .openTEPES_ProblemSolvingDualExtraction import collect_duals, fix_for_duals
+from .openTEPES_ProblemSolvingPersistent import prepare_for_resolve, setup_solver
+from .openTEPES_ProblemSolvingTuning import apply_resolve_options, apply_solver_options
 
 
 def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConsole, p, sc, st, ncall):
-    print('Problem solving                        ####', ncall)
+    print("Problem solving                        ####", ncall)
     _path = os.path.join(DirName, CaseName)
     StartTime = time.time()
 
-    FileName = f'{_path}/openTEPES_{SolverName}_{CaseName}_{p}_{sc}_{st}.log'
+    FileName = f"{_path}/openTEPES_{SolverName}_{CaseName}_{p}_{sc}_{st}.log"
 
-    #%% solving the problem
-    if SolverName != 'appsi_gurobi' and SolverName != 'gurobi_persistent':
-        Solver = SolverFactory(SolverName)
-        if os.path.exists(FileName):
-            os.remove(FileName)
-    elif SolverName == 'appsi_gurobi':
-        if not hasattr(OptModel, '_appsi_gurobi_solver'):
-            OptModel._appsi_gurobi_solver = SolverFactory(SolverName)
-        Solver = OptModel._appsi_gurobi_solver
-        if ncall == 1 or not getattr(OptModel, '_appsi_gurobi_initialized', False):
-            Solver.set_instance(OptModel)
-            OptModel._appsi_gurobi_initialized = True
-        else:
-            if mTEPES.pIndSectorDecomposition == 0:
-                Solver.update_config.check_for_new_or_removed_params      = True
-                Solver.update_config.check_for_new_or_removed_vars        = True
-                Solver.update_config.check_for_new_or_removed_constraints = True
-                Solver.update_config.update_params                        = True
-                Solver.update_config.update_vars                          = True
-                Solver.update_config.update_constraints                   = True
-            else:
-                Solver.update_config.check_for_new_or_removed_params      = False
-                Solver.update_config.check_for_new_or_removed_vars        = False
-                Solver.update_config.check_for_new_or_removed_constraints = False
-                Solver.update_config.update_params                        = False
-                Solver.update_config.update_vars                          = True
-                Solver.update_config.update_constraints                   = False
-            Solver.update_config.update_named_expressions                 = False
-            Solver.config.load_solution                                   = True
-            Solver.config.warmstart                                       = True
-            Solver.config.stream_solver                                   = True
-    elif SolverName == 'gurobi_persistent':
-        if not hasattr(OptModel, '_gurobi_persistent_solver'):
-            OptModel._gurobi_persistent_solver = SolverFactory(SolverName)
-        Solver = OptModel._gurobi_persistent_solver
-        if ncall == 1 or not getattr(OptModel, '_gurobi_persistent_initialized', False):
-            Solver.set_instance(OptModel)
-            OptModel._gurobi_persistent_initialized = True
-        else:
-            for var in OptModel.component_data_objects(pyo.Var, active=True, descend_into=True):
-                Solver.update_var(var)
+    # ---- Set up solver (persistent or one-shot) ----
+    Solver = setup_solver(OptModel, SolverName, FileName, ncall, mTEPES)
+    solver_options = apply_solver_options(Solver, SolverName, FileName, ncall)
 
-    if SolverName == 'gurobi' or SolverName == 'gurobi_direct' or SolverName == 'appsi_gurobi':
-        Solver.options['OutputFlag'      ] = 1
-        Solver.options['LogFile'         ] = FileName
-        Solver.options['DisplayInterval' ] = 100
-        Solver.options['LPWarmStart'     ] =  2
-        if ncall == 1:
-            Solver.options['Method'      ] =  2
-        else:
-            Solver.options['Method'      ] = -1
-        Solver.options['Crossover'       ] = -1
-        Solver.options['MIPGap'          ] = 0.01
-        Solver.options['Threads'         ] = int((psutil.cpu_count(logical=True) + psutil.cpu_count(logical=False))/2)
-        Solver.options['TimeLimit'       ] =    36000
-        Solver.options['IterationLimit'  ] = 36000000
-        # Solver.options['SolutionTarget'] = 1                                                 # optimal solution with or without basic solutions
-        # Solver.options['MIPFocus'      ] = 3
-        # Solver.options['Seed'          ] = 104729
-        # Solver.options['RINS'          ] = 100
-        # Solver.options['BarConvTol'    ] = 1e-10
-        # Solver.options['BarQCPConvTol' ] = 0.025
-    if SolverName == 'gurobi_persistent':
-        Solver.set_gurobi_param('OutputFlag',        1)
-        Solver.set_gurobi_param('LogFile',    FileName)
-        Solver.set_gurobi_param('DisplayInterval', 100)
-        Solver.set_gurobi_param('LPWarmStart',       2)
-        if ncall == 1:
-            Solver.set_gurobi_param('Method',        2)
-        else:
-            Solver.set_gurobi_param('Method',       -1)
-        Solver.set_gurobi_param('Crossover',        -1)
-        Solver.set_gurobi_param('MIPGap',         0.01)
-        Solver.set_gurobi_param('Threads', int((psutil.cpu_count(logical=True) + psutil.cpu_count(logical=False))/2))
-        Solver.set_gurobi_param('TimeLimit',      36000   )
-        Solver.set_gurobi_param('IterationLimit', 36000000)
-    if SolverName == 'cplex':
-        # Solver.options['LogFile'          ] = FileName
-        if ncall == 1:
-            Solver.options['LPMethod'       ] = 4
-        else:
-            Solver.options['LPMethod'       ] = 0
-        Solver.options['Threads'            ] = int((psutil.cpu_count(logical=True) + psutil.cpu_count(logical=False))/2)
-        Solver.options['TimeLimit'          ] =    72000
-        # Solver.options['BarCrossAlg'      ] = 0
-        # Solver.options['NumericalEmphasis'] = 1
-        # Solver.options['PreInd'           ] = 1
-        # Solver.options['RINSHeur'         ] = 100
-        # Solver.options['EpGap'            ] = 0.01
-    if SolverName == 'highs':
-        Solver.options['log_file'               ] = FileName
-        Solver.options['solver'                 ] = 'choose'
-        Solver.options['simplex_strategy'       ] = 1
-        Solver.options['run_crossover'          ] = 'on'
-        Solver.options['mip_rel_gap'            ] = 0.01
-        Solver.options['parallel'               ] = 'choose'
-        # Solver.options['primal_feasibility_tolerance'] = 1e-3
-        Solver.options['threads'                ] = int((psutil.cpu_count(logical=True) + psutil.cpu_count(logical=False))/2)
-        Solver.options['time_limit'             ] =    72000
-        Solver.options['simplex_iteration_limit'] = 72000000
-    if SolverName == 'gams':
-        solver_options = {
-            'file COPT / cplex.opt / ; put COPT putclose "LPMethod 4" / "EpGap 0.01" / ; GAMS_MODEL.OptFile = 1 ; '
-            'option SysOut  = off   ;',
-            'option LP      = cplex ; option MIP     = cplex    ;',
-            'option ResLim  = 72000 ; option IterLim = 72000000 ;',
-            'option Threads = '+str(int((psutil.cpu_count(logical=True) + psutil.cpu_count(logical=False))/2))+' ;'
-        }
-
+    # ---- Count integer/binary vars; pure-LP cases get the dual Suffix up front ----
     nUnfixedVars = 0
     for var in OptModel.component_data_objects(pyo.Var, active=True, descend_into=True):
-        if not var.is_continuous() and not var.is_fixed() and var.value != None:
+        if not var.is_continuous() and not var.is_fixed() and var.value is not None:
             nUnfixedVars += 1
-
     if nUnfixedVars == 0:
         OptModel.dual = Suffix(direction=Suffix.IMPORT_EXPORT)
 
-    if   SolverName == 'gams':
-        SolverResults = Solver.solve(OptModel, tee=True, report_timing=True, symbolic_solver_labels=False, add_options=solver_options, logfile=FileName)
-    elif SolverName == 'gurobi_persistent':
-        SolverResults = Solver.solve(OptModel, tee=True, report_timing=True, warmstart=True, keepfiles=False, load_solutions=True, save_results=False)
+    # ---- Initial solve ----
+    if SolverName == "gams":
+        SolverResults = Solver.solve(OptModel, tee=True, report_timing=True, symbolic_solver_labels=False,
+                                     add_options=solver_options, logfile=FileName)
+    elif SolverName == "gurobi_persistent":
+        SolverResults = Solver.solve(OptModel, tee=True, report_timing=True, warmstart=True,
+                                     keepfiles=False, load_solutions=True, save_results=False)
     else:
         SolverResults = Solver.solve(OptModel, tee=True, report_timing=True)
 
-    print('Termination condition: ', SolverResults.solver.termination_condition)
-    if SolverResults.solver.termination_condition == TerminationCondition.infeasible or SolverResults.solver.termination_condition == TerminationCondition.maxTimeLimit or SolverResults.solver.termination_condition == TerminationCondition.infeasible.maxIterations:
+    print("Termination condition: ", SolverResults.solver.termination_condition)
+    if (SolverResults.solver.termination_condition == TerminationCondition.infeasible
+            or SolverResults.solver.termination_condition == TerminationCondition.maxTimeLimit
+            or SolverResults.solver.termination_condition == TerminationCondition.infeasible.maxIterations):
         log_infeasible_constraints(OptModel, log_expression=True, log_variables=True)
-        logging.basicConfig(filename=f'{_path}/openTEPES_infeasibilities_{CaseName}_{p}_{sc}_{st}.log', level=logging.INFO)
-        raise ValueError(f'### Problem infeasible for period {p}, scenario {sc}, stage {st}')
+        logging.basicConfig(filename=f"{_path}/openTEPES_infeasibilities_{CaseName}_{p}_{sc}_{st}.log",
+                            level=logging.INFO)
+        raise ValueError(f"### Problem infeasible for period {p}, scenario {sc}, stage {st}")
 
-    #%% fix values of some variables to get duals and solve it again
-    # binary/continuous investment decisions are fixed to their optimal values
-    # binary            operation  decisions are fixed to their optimal values
-    # if NoRepetition == 1, all variables are fixed
-    # if NoRepetition == 0, only the variables of the current period and scenario are fixed
-    nUnfixedVars = 0
-    if mTEPES.NoRepetition == 1:
-        for var in OptModel.component_data_objects(pyo.Var, active=True, descend_into=True):
-            if not var.is_continuous() and not var.is_fixed() and var.value != None:
-                var.fixed  = True          # fix the current value
-                var.domain = UnitInterval  # change the domain to continuous
-                nUnfixedVars += 1
-    else:
-        for var in OptModel.component_data_objects(pyo.Var, active=True, descend_into=True):
-            if not var.is_continuous() and not var.is_fixed() and var.value != None and var.index()[0] == p and var.index()[1] == sc:
-                var.fixed  = True          # fix the current value
-                var.domain = UnitInterval  # change the domain to continuous
-                nUnfixedVars += 1
-
-    # continuous investment decisions are fixed to their optimal values
-    for eb in mTEPES.eb:
-        if (p,eb) in mTEPES.peb:
-            OptModel.vGenerationInvest[p,eb].fix(        OptModel.vGenerationInvest[p,eb      ]())
-    for gd in mTEPES.gd:
-        if (p,gd) in mTEPES.pgd:
-            OptModel.vGenerationRetire[p,gd].fix(        OptModel.vGenerationRetire[p,gd      ]())
-    for ni,nf,cc in mTEPES.lc:
-        if (p,ni,nf,cc) in mTEPES.plc:
-            OptModel.vNetworkInvest[p,ni,nf,cc].fix(     OptModel.vNetworkInvest   [p,ni,nf,cc]())
-    if mTEPES.pIndHydroTopology:
-        for rc in mTEPES.rn:
-            if (p,rc) in mTEPES.prc:
-                OptModel.vReservoirInvest[p,rc].fix(     OptModel.vReservoirInvest [p,rc      ]())
-    if mTEPES.pIndHydrogen:
-        for ni,nf,cc in mTEPES.pc:
-            if (p,ni,nf,cc) in mTEPES.ppc:
-                OptModel.vH2PipeInvest  [p,ni,nf,cc].fix(OptModel.vH2PipeInvest    [p,ni,nf,cc]())
-    if mTEPES.pIndHeat:
-        for ni,nf,cc in mTEPES.hc:
-            if (p,ni,nf,cc) in mTEPES.phc:
-                OptModel.vHeatPipeInvest[p,ni,nf,cc].fix(OptModel.vHeatPipeInvest  [p,ni,nf,cc]())
+    # ---- Fix integers + investments; re-solve as LP to recover duals ----
+    nUnfixedVars = fix_for_duals(OptModel, mTEPES, p, sc)
 
     if nUnfixedVars > 0:
-        print('Problem solving with fixed investments ####', ncall)
+        print("Problem solving with fixed investments ####", ncall)
         ncall += 1
-
-        if SolverName == 'appsi_gurobi':
-            Solver.update_config.check_for_new_or_removed_params      = False
-            Solver.update_config.check_for_new_or_removed_vars        = False
-            Solver.update_config.check_for_new_or_removed_constraints = False
-            Solver.update_config.update_params                        = False
-            Solver.update_config.update_vars                          = True
-            Solver.update_config.update_constraints                   = False
-        if SolverName == 'gurobi_persistent':
-            for var in OptModel.component_data_objects(pyo.Var, active=True, descend_into=True):
-                Solver.update_var(var)
-
-        if SolverName == 'gurobi' or SolverName == 'gurobi_direct' or SolverName == 'appsi_gurobi':
-            Solver.options         ['Method'  ] = -1
-        if SolverName == 'gurobi_persistent':
-            Solver.set_gurobi_param('Method',     -1)
-        if SolverName == 'cplex':
-            Solver.options         ['LPMethod'] =  0
+        prepare_for_resolve(OptModel, Solver, SolverName)
+        apply_resolve_options(Solver, SolverName)
 
         OptModel.dual = Suffix(direction=Suffix.IMPORT_EXPORT)
-        if SolverName == 'gurobi_persistent':
-            SolverResults = Solver.solve(OptModel, tee=True, report_timing=True, warmstart=True, keepfiles=False, load_solutions=True, save_results=False)
+        if SolverName == "gurobi_persistent":
+            SolverResults = Solver.solve(OptModel, tee=True, report_timing=True, warmstart=True,
+                                         keepfiles=False, load_solutions=True, save_results=False)
         else:
             SolverResults = Solver.solve(OptModel, tee=True, report_timing=True)
 
-    # saving the dual variables for writing in output results
-    pDuals = {}
-    for con in OptModel.component_objects(pyo.Constraint, active=True):
-        if con.is_indexed():
-            for index in con:
-                pDuals[str(con.name)+str(index)] = OptModel.dual[con[index]]
-    mTEPES.pDuals.update(pDuals)
-    # delete dual suffix
-    OptModel.del_component(OptModel.dual)
+    # ---- Collect duals into mTEPES.pDuals (used by MarginalResults / EconomicResults) ----
+    collect_duals(OptModel, mTEPES)
 
     # save values of each stage
     # for n in mTEPES.n:
@@ -242,7 +101,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
 
     SolvingTime = time.time() - StartTime
 
-    #%% writing the results
+    # ---- Cost-summary report (stays inline; moves to Layer 6 results/ in a follow-on PR) ----
     print            ('  Total system                 cost [MEUR] ', OptModel.vTotalSCost(), ' Constraints', OptModel.model().nconstraints(), ' Variables', OptModel.model().nvariables()-mTEPES.nFixedVariables+1, ' Seconds', round(SolvingTime))
     if mTEPES.NoRepetition == 1:
         for pp,scc in mTEPES.ps:

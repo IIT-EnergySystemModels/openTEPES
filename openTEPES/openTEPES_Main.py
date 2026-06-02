@@ -660,7 +660,7 @@
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <https://www.gnu.org/licenses/>.
 
-# Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 25, 2026
+# Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 1, 2026
 # simplicity and transparency in power systems planning
 
 # Developed by
@@ -693,7 +693,7 @@ GREEN  = "\033[32m"
 BLUE   = "\033[34m"
 RESET  = "\033[0m"
 
-print(GREEN + 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.17RC - May 25, 2026' + RESET)
+print(GREEN + 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.17RC - June 1, 2026' + RESET)
 print(BLUE  + '#### Academic research license - for non-commercial use only ####' + RESET + '\n')
 
 parser = argparse.ArgumentParser(description='Introducing main parameters...')
@@ -725,7 +725,7 @@ parser.add_argument('--gzip-patterns', type=str, default=None,
                           "to gzip. Used with --gzip-large-csvs. Default: "
                           + ",".join(DEFAULT_GZIP_PATTERNS) + "."))
 
-DIR    = os.path.dirname(__file__)
+DIR    = os.path.join(os.path.dirname(__file__), "cases")
 CASE   = '9n'
 SOLVER = 'highs'   # 'gams', 'highs', 'gurobi', 'gurobi_direct', 'gurobi_persistent', 'appsi_gurobi'
 RESULT = 'Yes'

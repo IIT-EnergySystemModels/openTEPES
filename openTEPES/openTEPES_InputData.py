@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 29, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 1, 2026
 """
 
 import time
@@ -10,12 +10,8 @@ from   collections   import defaultdict
 from   pyomo.environ import Set, Param, Var, Binary, NonNegativeReals, NonNegativeIntegers, PositiveReals, PositiveIntegers, Reals, UnitInterval, Any
 from   pyomo.environ import Block, Boolean
 
-from .openTEPES_InputSource import (
-    open_source,
-    df_to_set_values,
-    CSVSource,
-    InputSource,
-)
+from .openTEPES_InputSource    import open_source, df_to_set_values, InputSource
+from .openTEPES_InputCSVSource import CSVSource
 
 # from line_profiler import profile
 
