@@ -10,8 +10,16 @@ from   collections   import defaultdict
 from   pyomo.environ import Set, Param, Var, Binary, NonNegativeReals, NonNegativeIntegers, PositiveReals, PositiveIntegers, Reals, UnitInterval, Any
 from   pyomo.environ import Block, Boolean
 
-from .openTEPES_InputSource    import open_source, df_to_set_values, InputSource
-from .openTEPES_InputCSVSource import CSVSource
+# Support running this file directly (e.g. VS Code "Run Python File"), where __package__ is empty and the
+# relative imports below have no parent package; fall back to absolute package imports in that case.
+try:
+    from .openTEPES_InputSource    import open_source, df_to_set_values, InputSource
+    from .openTEPES_InputCSVSource import CSVSource
+except ImportError:
+    import os, sys
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from openTEPES.openTEPES_InputSource    import open_source, df_to_set_values, InputSource
+    from openTEPES.openTEPES_InputCSVSource import CSVSource
 
 # from line_profiler import profile
 

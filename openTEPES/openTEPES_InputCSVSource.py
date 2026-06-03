@@ -10,8 +10,16 @@ from pathlib import Path
 
 import pandas as pd
 
-from .openTEPES_InputSchema import WIDE_MULTILEVEL_TO_LONG, _SPEC_BY_CSV_STEM
-from .openTEPES_InputSource import InputSource, _apply_index
+# Support running this file directly (e.g. VS Code "Run Python File"), where __package__ is empty and the
+# relative imports below have no parent package; fall back to absolute package imports in that case.
+try:
+    from .openTEPES_InputSchema import WIDE_MULTILEVEL_TO_LONG, _SPEC_BY_CSV_STEM
+    from .openTEPES_InputSource import InputSource, _apply_index
+except ImportError:
+    import os, sys
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from openTEPES.openTEPES_InputSchema import WIDE_MULTILEVEL_TO_LONG, _SPEC_BY_CSV_STEM
+    from openTEPES.openTEPES_InputSource import InputSource, _apply_index
 
 
 class CSVSource(InputSource):
