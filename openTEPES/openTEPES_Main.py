@@ -700,9 +700,12 @@ GREEN  = "\033[32m"
 BLUE   = "\033[34m"
 RESET  = "\033[0m"
 
+<<<<<<< Updated upstream
 print(GREEN + 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.17RC - June 3, 2026' + RESET)
 print(BLUE  + '#### Academic research license - for non-commercial use only ####' + RESET + '\n')
 
+=======
+>>>>>>> Stashed changes
 parser = argparse.ArgumentParser(description='Introducing main parameters...')
 parser.add_argument('--case',    type=str, default=None)
 parser.add_argument('--dir',     type=str, default=None)
@@ -823,4 +826,6 @@ def main():
     return model
 
 if __name__ == '__main__':
+    print(GREEN + 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.17RC - June 2, 2026' + RESET)
+    print(BLUE  + '#### Academic research license - for non-commercial use only ####' + RESET + '\n')
     model = main()
