@@ -20,14 +20,21 @@
       .arrow-lbl   { font-size: 11px; fill: #444; font-style: italic; }
       .arrow-lblP  { font-size: 11px; fill: #7a4a8a; font-style: italic; font-weight: 700; }
       .footer      { font-size: 11px; fill: #666; }
+      .legend      { font-size: 11px; font-weight: 700; fill: #333; }
     </style>
   </defs>
 
   <rect width="1140" height="1450" fill="#fafafa"/>
 
   <!-- Header -->
-  <text x="570" y="32" text-anchor="middle" class="title">Proposed openTEPES architecture (layered, sector-parallel, sweep-aware)</text>
+  <text x="570" y="32" text-anchor="middle" class="title">openTEPES layered architecture — implemented and planned</text>
   <text x="570" y="52" text-anchor="middle" class="subtitle">Pure-pandas I/O  ▸  Pyomo construction  ▸  Formulation  ▸  Solver  ▸  Results — symmetric Elec / Heat / H2 / Hydro · runner orchestrates sweeps</text>
+
+  <!-- Legend: implemented vs planned -->
+  <rect x="724" y="60" width="18" height="13" rx="3" fill="#d4efdf" stroke="#2e7d5f" stroke-width="1.1"/>
+  <text x="747" y="71" class="legend">implemented (merged)</text>
+  <rect x="905" y="60" width="18" height="13" rx="3" fill="#fff" stroke="#888" stroke-width="1.1"/>
+  <text x="928" y="71" class="legend">planned</text>
 
   <!-- ================== LAYER 1: ENTRY ================== -->
   <g>
@@ -66,28 +73,28 @@
     <rect x="20" y="200" width="1100" height="110" rx="10" fill="#e8f5ed" stroke="#2e7d5f" stroke-width="1.5"/>
     <rect x="20" y="200" width="140" height="110" rx="10" fill="#2e7d5f"/>
     <text x="90" y="230" text-anchor="middle" class="layer-tag">LAYER 2</text>
-    <text x="90" y="251" text-anchor="middle" class="layer-name">io/</text>
-    <text x="90" y="268" text-anchor="middle" class="layer-note">no pyomo —</text>
-    <text x="90" y="281" text-anchor="middle" class="layer-note">pure pandas / SQL</text>
-    <text x="90" y="294" text-anchor="middle" class="layer-note">DataFrames out</text>
+    <text x="90" y="251" text-anchor="middle" class="layer-name">I/O</text>
+    <text x="90" y="266" text-anchor="middle" class="layer-note">openTEPES_Input*.py</text>
+    <text x="90" y="279" text-anchor="middle" class="layer-note">no pyomo — pure</text>
+    <text x="90" y="292" text-anchor="middle" class="layer-note">pandas / SQL</text>
 
-    <rect x="175" y="225" width="140" height="62" rx="8" fill="#fff" stroke="#2e7d5f" stroke-width="1.2"/>
-    <text x="245" y="247" text-anchor="middle" class="mod">schema.py</text>
+    <rect x="175" y="225" width="140" height="62" rx="8" fill="#d4efdf" stroke="#2e7d5f" stroke-width="1.2"/>
+    <text x="245" y="247" text-anchor="middle" class="mod">InputSchema.py</text>
     <text x="245" y="263" text-anchor="middle" class="mod-sub">TABLE_SPECS</text>
     <text x="245" y="277" text-anchor="middle" class="mod-sub">single source of truth</text>
 
-    <rect x="325" y="225" width="140" height="62" rx="8" fill="#fff" stroke="#2e7d5f" stroke-width="1.2"/>
-    <text x="395" y="247" text-anchor="middle" class="mod">source.py</text>
+    <rect x="325" y="225" width="140" height="62" rx="8" fill="#d4efdf" stroke="#2e7d5f" stroke-width="1.2"/>
+    <text x="395" y="247" text-anchor="middle" class="mod">InputSource.py</text>
     <text x="395" y="263" text-anchor="middle" class="mod-sub">InputSource ABC</text>
     <text x="395" y="277" text-anchor="middle" class="mod-sub">open_source() · shapes</text>
 
-    <rect x="475" y="225" width="140" height="62" rx="8" fill="#fff" stroke="#2e7d5f" stroke-width="1.2"/>
-    <text x="545" y="247" text-anchor="middle" class="mod">csv_source.py</text>
+    <rect x="475" y="225" width="140" height="62" rx="8" fill="#d4efdf" stroke="#2e7d5f" stroke-width="1.2"/>
+    <text x="545" y="247" text-anchor="middle" class="mod">InputCSVSource.py</text>
     <text x="545" y="263" text-anchor="middle" class="mod-sub">CSVSource</text>
     <text x="545" y="277" text-anchor="middle" class="mod-sub">historical backend</text>
 
-    <rect x="625" y="225" width="150" height="62" rx="8" fill="#fff" stroke="#2e7d5f" stroke-width="1.2"/>
-    <text x="700" y="247" text-anchor="middle" class="mod">duckdb_source.py</text>
+    <rect x="625" y="225" width="150" height="62" rx="8" fill="#d4efdf" stroke="#2e7d5f" stroke-width="1.2"/>
+    <text x="700" y="247" text-anchor="middle" class="mod">InputDuckDBSource.py</text>
     <text x="700" y="263" text-anchor="middle" class="mod-sub">DuckDBSource</text>
     <text x="700" y="277" text-anchor="middle" class="mod-sub">streaming SQL backend</text>
 
@@ -111,10 +118,10 @@
     <rect x="20" y="360" width="1100" height="110" rx="10" fill="#faecdc" stroke="#b5651d" stroke-width="1.5"/>
     <rect x="20" y="360" width="140" height="110" rx="10" fill="#b5651d"/>
     <text x="90" y="390" text-anchor="middle" class="layer-tag">LAYER 3</text>
-    <text x="90" y="411" text-anchor="middle" class="layer-name">model/</text>
-    <text x="90" y="428" text-anchor="middle" class="layer-note">Pyomo Sets,</text>
-    <text x="90" y="441" text-anchor="middle" class="layer-note">Params, Variables</text>
-    <text x="90" y="454" text-anchor="middle" class="layer-note">(no constraints yet)</text>
+    <text x="90" y="411" text-anchor="middle" class="layer-name">Model</text>
+    <text x="90" y="427" text-anchor="middle" class="layer-note">openTEPES_InputData.py</text>
+    <text x="90" y="440" text-anchor="middle" class="layer-note">(one file today —</text>
+    <text x="90" y="453" text-anchor="middle" class="layer-note">planned split)</text>
 
     <rect x="200" y="383" width="180" height="65" rx="8" fill="#fff" stroke="#b5651d" stroke-width="1.2"/>
     <text x="290" y="404" text-anchor="middle" class="mod">sets.py</text>
@@ -151,10 +158,11 @@
     <rect x="20" y="520" width="1100" height="240" rx="10" fill="#fae6e0" stroke="#b03030" stroke-width="1.5"/>
     <rect x="20" y="520" width="140" height="240" rx="10" fill="#b03030"/>
     <text x="90" y="550" text-anchor="middle" class="layer-tag">LAYER 4</text>
-    <text x="90" y="571" text-anchor="middle" class="layer-name">formulation/</text>
-    <text x="90" y="590" text-anchor="middle" class="layer-note">Pyomo Constraints</text>
-    <text x="90" y="603" text-anchor="middle" class="layer-note">+ Objective</text>
-    <text x="90" y="623" text-anchor="middle" class="layer-note">sector-symmetric</text>
+    <text x="90" y="568" text-anchor="middle" class="layer-name">Formulation</text>
+    <text x="90" y="585" text-anchor="middle" class="layer-note">openTEPES_Model-</text>
+    <text x="90" y="598" text-anchor="middle" class="layer-note">Formulation.py</text>
+    <text x="90" y="615" text-anchor="middle" class="layer-note">(one file today —</text>
+    <text x="90" y="628" text-anchor="middle" class="layer-note">planned split)</text>
 
     <!-- Cross-sector column -->
     <text x="240" y="543" text-anchor="middle" class="sector-tag">CROSS-SECTOR</text>
@@ -238,28 +246,37 @@
     <rect x="20" y="810" width="1100" height="80" rx="10" fill="#efebf7" stroke="#5d4a8a" stroke-width="1.5"/>
     <rect x="20" y="810" width="140" height="80" rx="10" fill="#5d4a8a"/>
     <text x="90" y="839" text-anchor="middle" class="layer-tag">LAYER 5</text>
-    <text x="90" y="858" text-anchor="middle" class="layer-name">solver/</text>
-    <text x="90" y="876" text-anchor="middle" class="layer-note">solver-agnostic</text>
+    <text x="90" y="855" text-anchor="middle" class="layer-name">Solver</text>
+    <text x="90" y="871" text-anchor="middle" class="layer-note">openTEPES_Problem-</text>
+    <text x="90" y="883" text-anchor="middle" class="layer-note">Solving*.py</text>
 
-    <rect x="200" y="827" width="170" height="46" rx="8" fill="#fff" stroke="#5d4a8a" stroke-width="1.2"/>
-    <text x="285" y="845" text-anchor="middle" class="mod">solve.py</text>
-    <text x="285" y="862" text-anchor="middle" class="mod-sub">ProblemSolving entry</text>
+    <rect x="170" y="827" width="145" height="46" rx="8" fill="#d4efdf" stroke="#5d4a8a" stroke-width="1.2"/>
+    <text x="242" y="845" text-anchor="middle" class="mod">ProblemSolving.py</text>
+    <text x="242" y="862" text-anchor="middle" class="mod-sub">orchestrator entry</text>
 
-    <rect x="395" y="827" width="170" height="46" rx="8" fill="#fff" stroke="#5d4a8a" stroke-width="1.2"/>
-    <text x="480" y="845" text-anchor="middle" class="mod">options/</text>
-    <text x="480" y="862" text-anchor="middle" class="mod-sub">gurobi · cplex · highs · cbc</text>
+    <rect x="322" y="827" width="145" height="46" rx="8" fill="#d4efdf" stroke="#5d4a8a" stroke-width="1.2"/>
+    <text x="394" y="845" text-anchor="middle" class="mod">…Tuning.py</text>
+    <text x="394" y="862" text-anchor="middle" class="mod-sub">solver options</text>
 
-    <rect x="590" y="827" width="170" height="46" rx="8" fill="#fff" stroke="#5d4a8a" stroke-width="1.2"/>
-    <text x="675" y="845" text-anchor="middle" class="mod">tuning.py</text>
-    <text x="675" y="862" text-anchor="middle" class="mod-sub">barrier · scaling · numerics</text>
+    <rect x="474" y="827" width="145" height="46" rx="8" fill="#d4efdf" stroke="#5d4a8a" stroke-width="1.2"/>
+    <text x="546" y="845" text-anchor="middle" class="mod">…DualExtraction.py</text>
+    <text x="546" y="862" text-anchor="middle" class="mod-sub">duals via re-solve</text>
 
-    <rect x="785" y="827" width="220" height="46" rx="8" fill="#fff" stroke="#7a4a8a" stroke-width="1.5"/>
-    <text x="895" y="844" text-anchor="middle" class="mod">resolve.py</text>
-    <text x="895" y="860" text-anchor="middle" class="mod-flag">★ hot-swap re-solve loop</text>
+    <rect x="626" y="827" width="145" height="46" rx="8" fill="#d4efdf" stroke="#5d4a8a" stroke-width="1.2"/>
+    <text x="698" y="845" text-anchor="middle" class="mod">…Persistent.py</text>
+    <text x="698" y="862" text-anchor="middle" class="mod-sub">appsi persistent</text>
+
+    <rect x="778" y="827" width="145" height="46" rx="8" fill="#d4efdf" stroke="#5d4a8a" stroke-width="1.2"/>
+    <text x="850" y="845" text-anchor="middle" class="mod">…Benders.py</text>
+    <text x="850" y="862" text-anchor="middle" class="mod-sub">L-shaped decomp</text>
+
+    <rect x="930" y="827" width="145" height="46" rx="8" fill="#fff" stroke="#7a4a8a" stroke-width="1.5"/>
+    <text x="1002" y="844" text-anchor="middle" class="mod">resolve.py</text>
+    <text x="1002" y="860" text-anchor="middle" class="mod-flag">★ hot-swap (Mode C)</text>
   </g>
 
   <!-- post-build hot-swap loop arrow (right side, Layer 5 back to Layer 3) -->
-  <path d="M 1010 850 Q 1090 850 1090 415 Q 1090 388 970 388" stroke="#7a4a8a" stroke-width="1.6" fill="none" stroke-dasharray="6 4" marker-end="url(#arrowP)"/>
+  <path d="M 1075 850 Q 1090 850 1090 415 Q 1090 388 970 388" stroke="#7a4a8a" stroke-width="1.6" fill="none" stroke-dasharray="6 4" marker-end="url(#arrowP)"/>
   <text x="1098" y="630" class="arrow-lblP" transform="rotate(-90, 1098, 630)">Mode C: Param.store_values() + re-solve</text>
 
   <!-- arrow 5 -->
@@ -271,11 +288,11 @@
     <rect x="20" y="940" width="1100" height="240" rx="10" fill="#e8eef3" stroke="#336688" stroke-width="1.5"/>
     <rect x="20" y="940" width="140" height="240" rx="10" fill="#336688"/>
     <text x="90" y="970" text-anchor="middle" class="layer-tag">LAYER 6</text>
-    <text x="90" y="991" text-anchor="middle" class="layer-name">results/</text>
-    <text x="90" y="1010" text-anchor="middle" class="layer-note">extract → CSV / DB /</text>
-    <text x="90" y="1023" text-anchor="middle" class="layer-note">plots / aggregates</text>
-    <text x="90" y="1043" text-anchor="middle" class="layer-note">sector-mirrored</text>
-    <text x="90" y="1056" text-anchor="middle" class="layer-note">to formulation/</text>
+    <text x="90" y="988" text-anchor="middle" class="layer-name">Results</text>
+    <text x="90" y="1004" text-anchor="middle" class="layer-note">openTEPES_Output-</text>
+    <text x="90" y="1016" text-anchor="middle" class="layer-note">Results.py</text>
+    <text x="90" y="1033" text-anchor="middle" class="layer-note">(one file today —</text>
+    <text x="90" y="1046" text-anchor="middle" class="layer-note">planned split)</text>
 
     <!-- Cross-sector column -->
     <text x="240" y="963" text-anchor="middle" class="sector-tag">CROSS-SECTOR</text>
@@ -431,6 +448,6 @@
   </g>
 
   <text x="570" y="1437" text-anchor="middle" class="footer">
-    Each box ↔ one file (~150–400 lines). Caps every module at ~1 000 LoC. Adding a new sector = new folder in Layer 4 + Layer 6 + entry in schema.py. ★ marks sweep-enabling additions.
+    Each box ↔ one module (~150–400 lines). Green = implemented (merged upstream); white = planned (names indicative). Adding a sector = new modules in Layer 4 + Layer 6 + an entry in openTEPES_InputSchema.py. ★ marks sweep-enabling additions.
   </text>
 </svg>
