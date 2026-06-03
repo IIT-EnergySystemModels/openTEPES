@@ -10,7 +10,12 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
+  # Fast tier: lint + tests that do NOT solve a model. Cheap, so it runs on
+  # every operating system and every supported Python version. This is where
+  # cross-platform and cross-Python problems (imports, packaging, syntax that
+  # needs a newer Python) are caught.
+  fast:
+    name: fast (lint + unit) - ${{ matrix.os }} / py${{ matrix.python-version }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -32,21 +37,17 @@ jobs:
           channels: conda-forge,defaults
           channel-priority: strict
 
-      - name: Show conda info
-        shell: bash -l {0}
-        run: |
-          conda info
-          python --version
-
       - name: Set up uv
         uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+          cache-dependency-glob: requirements.lock
 
       - name: Install dependencies
         shell: bash -l {0}
         run: |
           conda install -y -c conda-forge flake8 pytest
           uv pip install --system -r requirements.lock
-          uv pip install --system highspy
           pip install -e .
 
       - name: Lint with flake8 (syntax errors only)
@@ -54,7 +55,53 @@ jobs:
         run: |
           flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
 
-      - name: Test with pytest
+      - name: Run unit tests (no solve)
         shell: bash -l {0}
         run: |
-          pytest -vv tests/
+          pytest -vv -m "not solve" tests/
+
+  # Solve tier: the full model suite (every case, multi-stage, Benders). The
+  # model maths is the same on every platform, so re-solving on all 9 combos
+  # adds little. We solve once per operating system on a single Python version.
+  # Cross-Python coverage is already provided by the fast tier above.
+  solve:
+    name: solve (full model suite) - ${{ matrix.os }} / py${{ matrix.python-version }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: ["3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Conda (Miniforge) + Python ${{ matrix.python-version }}
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          miniforge-variant: Miniforge3
+          miniforge-version: latest
+          auto-update-conda: true
+          activate-environment: ci
+          python-version: ${{ matrix.python-version }}
+          channels: conda-forge,defaults
+          channel-priority: strict
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+          cache-dependency-glob: requirements.lock
+
+      - name: Install dependencies
+        shell: bash -l {0}
+        run: |
+          conda install -y -c conda-forge flake8 pytest pytest-timeout
+          uv pip install --system -r requirements.lock
+          uv pip install --system highspy
+          pip install -e .
+
+      - name: Run solve tests (per-test timeout guards a stuck solver)
+        shell: bash -l {0}
+        run: |
+          pytest -vv -m solve --timeout=1800 tests/

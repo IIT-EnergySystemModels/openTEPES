@@ -42,3 +42,6 @@ openTEPES_Main = "openTEPES:main"
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
+markers = [
+  "solve: builds and solves an openTEPES model (slow; needs an LP/MIP solver). Run with '-m solve'; skip with '-m \"not solve\"'.",
+]

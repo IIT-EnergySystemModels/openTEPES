@@ -122,6 +122,76 @@ def case_multi_stage_7d_system(request):
         original_resenergy_df.to_csv(RESEnergy_csv)
 
 
+# === Fixture: 7-day system with one or more Option-file overrides ===
+@pytest.fixture
+def case_7d_binary(request):
+    """
+    Like ``case_7d_system`` / ``case_multi_stage_7d_system``, but also overrides one or more columns of the
+    ``oT_Data_Option_*`` file before solving (and restores them afterwards). Used to switch on a binary
+    investment decision so the integer-investment (MILP) code path is exercised.
+
+    ``request.param`` is a dict: ``{"case": <name>, "multi_stage": <bool>, "options": {<column>: <value>}}``.
+    The Duration / RESEnergy / Stage truncation matches the single- or multi-stage 7-day fixture depending on
+    ``multi_stage``.
+    """
+    cfg = request.param
+    case_name = cfg["case"]
+    multi = cfg.get("multi_stage", False)
+    options = cfg.get("options", {})
+    data = dict(
+        DirName=os.path.abspath(os.path.join(os.path.dirname(__file__), "../openTEPES/cases")),
+        CaseName=case_name,
+        SolverName="highs",
+        pIndLogConsole=0,
+        pIndOutputResults=0,
+    )
+    case_dir = os.path.join(data["DirName"], case_name)
+    duration_csv = os.path.join(case_dir, f"oT_Data_Duration_{case_name}.csv")
+    RESEnergy_csv = os.path.join(case_dir, f"oT_Data_RESEnergy_{case_name}.csv")
+    stage_csv = os.path.join(case_dir, f"oT_Data_Stage_{case_name}.csv")
+    option_csv = os.path.join(case_dir, f"oT_Data_Option_{case_name}.csv")
+
+    original_duration = pd.read_csv(duration_csv, index_col=[0, 1, 2])
+    original_resenergy = pd.read_csv(RESEnergy_csv, index_col=[0, 1])
+    original_stage = None if multi else pd.read_csv(stage_csv, index_col=[0])
+    original_option = pd.read_csv(option_csv)
+
+    try:
+        if multi:
+            df = original_duration.reset_index()
+            df["__rownum"] = df.groupby(["Period", "Scenario", "Stage"]).cumcount()
+            df.loc[df["__rownum"] >= 168, "Duration"] = np.nan
+            df.drop(columns="__rownum").set_index(["Period", "Scenario", "LoadLevel"]).to_csv(duration_csv)
+        else:
+            df = original_duration.copy()
+            df.iloc[168:, df.columns.get_loc("Duration")] = np.nan
+            df.to_csv(duration_csv)
+
+        df = original_resenergy.copy()
+        df["RESEnergy"] = df["RESEnergy"].astype(float)
+        df["RESEnergy"] = np.nan
+        df.to_csv(RESEnergy_csv)
+
+        if not multi:
+            df = original_stage.copy()
+            df.iloc[:, df.columns.get_loc("Weight")] = 52
+            df.to_csv(stage_csv)
+
+        df = original_option.copy()
+        for col, val in options.items():
+            df[col] = val
+        df.to_csv(option_csv, index=False)
+
+        yield data
+
+    finally:
+        original_duration.to_csv(duration_csv)
+        original_resenergy.to_csv(RESEnergy_csv)
+        if not multi:
+            original_stage.to_csv(stage_csv)
+        original_option.to_csv(option_csv, index=False)
+
+
 # === Parametrized single-stage test ===
 #
 # Feature coverage matrix (single-stage block):
@@ -138,6 +208,7 @@ def case_multi_stage_7d_system(request):
 # mechanism). The 7-day fixture truncates Duration globally to the first 168 h and forces StageWeight=52 so one
 # representative week stands in for the full year. For multi-stage rolling (representative weeks per stage), see
 # the test_openTEPES_run_multi_stage block below.
+@pytest.mark.solve
 @pytest.mark.parametrize("case_7d_system,expected_cost", [
     # 9n — minimal 9-node electricity case; reference for new cases per the openTEPES QA page.
     ("9n",        252.201329983352),
@@ -183,6 +254,7 @@ def test_openTEPES_run(case_7d_system, expected_cost):
 #   case        electricity   multi-year (dynamic)   multi-stage rolling   representative weeks
 #   9n7y        ✓ losses      ✓ (7 periods 2020-2050) ✓ (13 stages × 4w)    ✓ (one week per stage)
 #
+@pytest.mark.solve
 @pytest.mark.parametrize("case_multi_stage_7d_system,expected_cost", [
     # 9n7y exercises the multi-stage rolling layout (13 stages × 4-week weight each = 52 weeks / period × 7 periods).
     # Cost reproducible to 13 significant figures across reruns under HiGHS.
@@ -215,6 +287,7 @@ def test_openTEPES_run_multi_stage(case_multi_stage_7d_system, expected_cost):
 # This is a compatibility guard for the layered-architecture restructure: every future refactor must keep
 # vNetworkInvest cleanly separable as a master decision and the rest of the model usable as an LP
 # subproblem with valid duals on the fixing constraint. If a refactor breaks this, the test fails.
+@pytest.mark.solve
 @pytest.mark.parametrize("case_7d_system", ["9n"], indirect=["case_7d_system"])
 def test_benders_lshaped_matches_joint_lp(case_7d_system):
     """L-shaped Benders on 9n must converge to the joint-LP total cost within 1e-4 relative tolerance."""
@@ -236,3 +309,34 @@ def test_benders_lshaped_matches_joint_lp(case_7d_system):
         f"Benders total cost diverges from joint LP by {rel_err:.2e} "
         f"(Benders={result['total_cost']:.6f}, joint={joint_cost:.6f})"
     )
+
+
+# === Binary (MILP) investment test ===
+#
+# Every other case here solves the investment variables as a continuous relaxation, so no other test
+# exercises an integer investment decision — the defining feature of an expansion-planning model. This
+# switches on a binary network-investment decision: vNetworkInvest becomes a {0,1} build/don't-build
+# variable on 9n's single candidate line (Node_1 <-> Node_4 dc1). The result differs from the continuous
+# case (254.337 vs 252.201 MEUR) because the binary decision forces a full line build. It also guards the
+# MIP dual recovery in ProblemSolving: a binary first solve must not ask HiGHS for duals it cannot give,
+# and the fix-and-resolve LP pass must still produce the shadow prices the economic outputs need.
+#
+# Binary GENERATION investment (IndBinGenInvest on 9n7y, the only bundled case with generation candidates:
+# CCGT_5..) is the natural companion, but 9n7y is multi-stage and the resulting MIP runs many minutes under
+# HiGHS — too slow for CI. It is deferred until a small single-stage case with generation candidates exists;
+# the binary network case below already covers the integer-investment code path and the MIP dual recovery.
+@pytest.mark.solve
+@pytest.mark.parametrize("case_7d_binary,expected_cost", [
+    ({"case": "9n", "multi_stage": False, "options": {"IndBinNetInvest": 1}}, 254.3373931950719),
+], indirect=["case_7d_binary"])
+def test_binary_investment(case_7d_binary, expected_cost):
+    """A binary (MILP) investment decision solves and matches the expected total cost."""
+    print("Running binary-investment test case:", case_7d_binary["CaseName"])
+    mTEPES = openTEPES_run(**case_7d_binary)
+
+    assert mTEPES is not None, "Model instance returned is None."
+
+    actual_cost = pyo.value(mTEPES.eTotalSCost)
+    print(f"Expected cost: {expected_cost:.5f}, Actual cost: {actual_cost:.5f}")
+
+    np.testing.assert_approx_equal(actual_cost, expected_cost)
