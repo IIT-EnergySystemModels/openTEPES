@@ -660,7 +660,7 @@
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <https://www.gnu.org/licenses/>.
 
-# Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 2, 2026
+# Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 03, 2026
 # simplicity and transparency in power systems planning
 
 # Developed by
@@ -704,33 +704,16 @@ print(GREEN + 'Open Generation, Storage, and Transmission Operation and Expansio
 print(BLUE  + '#### Academic research license - for non-commercial use only ####' + RESET + '\n')
 
 parser = argparse.ArgumentParser(description='Introducing main parameters...')
-parser.add_argument('--case',   type=str, default=None)
-parser.add_argument('--dir',    type=str, default=None)
-parser.add_argument('--solver', type=str, default=None)
-parser.add_argument('--log',    type=str, default=None)
-parser.add_argument('--result', type=str, default=None,
-                    help="Yes/No — coarse-grained output toggle (kept for backward compatibility).")
-parser.add_argument('--results', type=str, default=None,
-                    help=("Comma-separated list of output categories: "
-                          + ", ".join(OUTPUT_CATEGORIES)
-                          + ". Aliases: 'min', 'full'. Overrides --result. "
-                          "Example: --results=cost,investment,economic,plots"))
-parser.add_argument('--no-plots', action="store_true", default=False,
-                    help="Disable HTML plot output (overrides 'plots' in --results).")
-parser.add_argument('--out',    type=str, default=None,
-                    help="Output directory for oT_Result_*.csv and oT_Plot_*.html. "
-                         "Default: <dir>/<case>.")
-parser.add_argument('--gzip-large-csvs', action="store_true", default=False,
-                    help="After writing results, gzip every oT_Result_*.csv "
-                         "whose name starts with one of the prefixes given by "
-                         "--gzip-patterns. Default: off (CSVs written plain). "
-                         "NOTE: .csv.gz files cannot be opened directly in "
-                         "Excel; pandas reads them natively.")
-parser.add_argument('--gzip-patterns', type=str, default=None,
-                    help=("Comma-separated list of name-prefixes (after the "
-                          "leading 'oT_Result_') selecting which result CSVs "
-                          "to gzip. Used with --gzip-large-csvs. Default: "
-                          + ",".join(DEFAULT_GZIP_PATTERNS) + "."))
+parser.add_argument('--case',    type=str, default=None)
+parser.add_argument('--dir',     type=str, default=None)
+parser.add_argument('--solver',  type=str, default=None)
+parser.add_argument('--log',     type=str, default=None)
+parser.add_argument('--result',  type=str, default=None, help="Yes/No — coarse-grained output toggle (kept for backward compatibility).")
+parser.add_argument('--results', type=str, default=None, help=("Comma-separated list of output categories: " + ", ".join(OUTPUT_CATEGORIES) + ". Aliases: 'min', 'full'. Overrides --result. Example: --results=cost,investment,economic,plots"))
+parser.add_argument('--no-plots', action="store_true", default=False, help="Disable HTML plot output (overrides 'plots' in --results).")
+parser.add_argument('--out',     type=str, default=None, help="Output directory for oT_Result_*.csv and oT_Plot_*.html. Default: <dir>/<case>.")
+parser.add_argument('--gzip-large-csvs', action="store_true", default=False, help="After writing results, gzip every oT_Result_*.csv whose name starts with one of the prefixes given by --gzip-patterns. Default: off (CSVs written plain). NOTE: .csv.gz files cannot be opened directly in Excel; pandas reads them natively.")
+parser.add_argument('--gzip-patterns', type=str, default=None, help=("Comma-separated list of name-prefixes (after the leading 'oT_Result_') selecting which result CSVs to gzip. Used with --gzip-large-csvs. Default: " + ",".join(DEFAULT_GZIP_PATTERNS) + "."))
 
 DIR    = os.path.join(os.path.dirname(__file__), "cases")
 CASE   = '9n'
@@ -756,8 +739,7 @@ def main():
     # If the case does not exist in args.dir, also try the parent directory when the base directory is the default cases directory.
     _normalized_dir = os.path.normpath(os.path.abspath(args.dir))
     _candidate_case_path = os.path.join(_normalized_dir, args.case)
-    if (not os.path.exists(_candidate_case_path)
-            and os.path.basename(_normalized_dir).lower() == "cases"):
+    if (not os.path.exists(_candidate_case_path) and os.path.basename(_normalized_dir).lower() == "cases"):
         _parent_dir = os.path.dirname(_normalized_dir)
         _parent_candidate_case_path = os.path.join(_parent_dir, args.case)
         if os.path.exists(_parent_candidate_case_path):
