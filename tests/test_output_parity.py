@@ -1,10 +1,10 @@
-"""Unit tests for the OutputResults parity harness (_output_parity_test).
+"""Tests for the result-file comparison tool (_output_parity_test).
 
-These exercise the snapshot/diff logic on synthetic ``oT_Result_*.csv`` files
-— no solve required, so they run in milliseconds. The full solve-based
-protocol (snapshot master vs the split branch under ``PYTHONHASHSEED=0`` and
-assert an empty diff) is documented in the module docstring and used manually
-when validating PR #3b.
+These tests build small fake ``oT_Result_*.csv`` files and check that the
+snapshot/compare logic behaves correctly. No model is solved, so they run in
+milliseconds. The real use of the tool (snapshot the results before and after
+a change to the output code and check they are identical) is described in the
+tool's own docstring.
 """
 import numpy as np
 import pandas as pd

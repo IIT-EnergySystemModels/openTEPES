@@ -1,21 +1,25 @@
-"""Parity probe for the OutputResults refactor.
+"""Check that two runs produce the same result files.
 
-Snapshots every ``oT_Result_*.csv`` (and ``.csv.gz``) that a solve writes
-into a case output directory, capturing each table's shape, columns, and
-values so two snapshots can be diff'd with a float tolerance. Used to prove
-that splitting ``openTEPES_OutputResults.py`` into flat per-concern modules
-leaves the written results bit-for-bit (within tolerance) unchanged:
+This is the output-side version of ``_input_parity_test.py``. It takes a
+"snapshot" of every ``oT_Result_*.csv`` (and ``.csv.gz``) file a run writes
+to a case folder, saving each table's size, column names and values. Two
+snapshots can then be compared: numbers are compared with a small tolerance,
+text labels exactly.
 
-    # on master
-    python -m openTEPES._output_parity_test snapshot <case_out_dir> before.pkl
-    # on the split branch, after re-solving the same case
-    python -m openTEPES._output_parity_test snapshot <case_out_dir> after.pkl
+It is meant for safely changing the output code. If you reorganise
+``openTEPES_OutputResults.py``, the result files should stay the same. To
+check that, take a snapshot before and after the change and compare them:
+
+    # before the change
+    python -m openTEPES._output_parity_test snapshot <case_output_folder> before.pkl
+    # after the change, having run the same case again
+    python -m openTEPES._output_parity_test snapshot <case_output_folder> after.pkl
     python -m openTEPES._output_parity_test diff before.pkl after.pkl
 
-``diff`` exits 0 when the two snapshots agree (same files, shapes, columns,
-and numeric values within ``rtol``/``atol``), 1 otherwise. The harness is
-intentionally code-version-agnostic: it reads only the CSVs on disk, so the
-two snapshots may come from different checkouts of the package.
+``diff`` exits with code 0 if the two snapshots match (same files, sizes,
+columns and numbers within tolerance) and 1 if they differ. The tool only
+reads the CSV files on disk, so the two snapshots can come from two
+different versions of the code.
 """
 from __future__ import annotations
 
@@ -27,9 +31,9 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
-# Default float tolerance for value comparison. Solves are deterministic for
-# a given solver/seed, so outputs should agree far tighter than this; the
-# slack absorbs CSV round-tripping (float repr) and harmless reorderings.
+# How close two numbers must be to count as equal. The same case solved
+# twice should match much more tightly than this; the small margin just
+# absorbs rounding from writing numbers out to CSV and reading them back.
 RTOL = 1e-9
 ATOL = 1e-9
 
@@ -47,14 +51,14 @@ def _result_stem(name: str) -> str:
 
 
 def _infer_case_tokens(stems: list[str]) -> list[str]:
-    """Longest common trailing ``_``-token run shared by every stem.
+    """Find the case name shared by all result file names.
 
-    Result files are ``oT_Result_<Table>_<CaseName>``; table names differ
-    between files while the ``<CaseName>`` suffix (which may itself contain
-    underscores, e.g. ``SE2035_EP_G0``) is shared. The common trailing tokens
-    are therefore exactly the case name — robust to underscores in either the
-    table name or the case name. Returns [] when nothing is shared (single
-    file, or all distinct), leaving stems unstripped.
+    Result files are named ``oT_Result_<Table>_<CaseName>``. The table part
+    is different in every file, but the case name at the end is the same. So
+    the words (split on ``_``) that all the names share at the end are the
+    case name. This works even when the case name has underscores in it, such
+    as ``SE2035_EP_G0``. Returns [] if there is nothing shared (only one
+    file), in which case the names are left as they are.
     """
     if len(stems) < 2:
         return []
@@ -65,8 +69,8 @@ def _infer_case_tokens(stems: list[str]) -> list[str]:
             common.append(tail[0])
         else:
             break
-    # Never strip the whole stem away (would happen if a table name equals the
-    # case name); keep at least one leading token.
+    # Keep at least the first word of each name, so a table whose name happens
+    # to match the case name is not erased completely.
     if common and len(common) >= min(len(t) for t in token_lists):
         common = common[: -1]
     return list(reversed(common))
@@ -80,11 +84,10 @@ def _strip_case_suffix(stem: str, case_tokens: list[str]) -> str:
 
 
 def _serialise_csv(path: Path) -> dict[str, Any]:
-    """Read one result CSV into a comparable snapshot record.
+    """Read one result CSV into a record we can compare later.
 
-    Numeric columns are stored as a float ndarray (NaN-preserving); the
-    object/string block is stored separately so categorical labels are
-    compared exactly while numbers get tolerance.
+    Number columns and text columns are kept apart, so that numbers can be
+    compared with a tolerance and text labels can be compared exactly.
     """
     df = pd.read_csv(path)
     num = df.select_dtypes(include=[np.number])
@@ -100,7 +103,9 @@ def _serialise_csv(path: Path) -> dict[str, Any]:
 
 
 def snapshot(out_dir: str) -> dict[str, Any]:
-    """Snapshot every result CSV in ``out_dir`` keyed by case-agnostic name."""
+    """Snapshot every result CSV in ``out_dir``, keyed by table name (the
+    case name is removed so snapshots of the same case under different names
+    still match)."""
     p = Path(out_dir)
     if not p.is_dir():
         raise NotADirectoryError(f"{out_dir} is not a directory")
@@ -118,12 +123,12 @@ def _compare_table(a: dict, b: dict, rtol: float, atol: float) -> str | None:
         return f"shape {a['shape']} vs {b['shape']}"
     if a["cols"] != b["cols"]:
         return f"columns differ: {a['cols'][:4]}... vs {b['cols'][:4]}..."
-    # Object/categorical block: exact match.
+    # Text columns: must match exactly.
     if a["obj_cols"] != b["obj_cols"]:
-        return f"object columns differ: {a['obj_cols']} vs {b['obj_cols']}"
+        return f"text columns differ: {a['obj_cols']} vs {b['obj_cols']}"
     if a["obj"].shape and not np.array_equal(a["obj"], b["obj"]):
-        return "categorical/label values differ"
-    # Numeric block: tolerance.
+        return "text/label values differ"
+    # Number columns: compared with a tolerance.
     if a["num_cols"] != b["num_cols"]:
         return f"numeric columns differ: {a['num_cols']} vs {b['num_cols']}"
     ax, bx = a["num"], b["num"]
