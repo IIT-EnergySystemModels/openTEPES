@@ -1,4 +1,5 @@
 import os
+import shutil
 import pytest
 import pyomo.environ as pyo
 import numpy as np
@@ -122,13 +123,18 @@ def case_multi_stage_7d_system(request):
         original_resenergy_df.to_csv(RESEnergy_csv)
 
 
-# === Fixture: 7-day system with one or more Option-file overrides ===
+# === Fixture: 7-day system on a private copy, with one or more Option-file overrides ===
 @pytest.fixture
-def case_7d_binary(request):
+def case_7d_binary(request, tmp_path):
     """
-    Like ``case_7d_system`` / ``case_multi_stage_7d_system``, but also overrides one or more columns of the
-    ``oT_Data_Option_*`` file before solving (and restores them afterwards). Used to switch on a binary
-    investment decision so the integer-investment (MILP) code path is exercised.
+    Like ``case_7d_system`` / ``case_multi_stage_7d_system``, but runs on a private copy of the case in a
+    temporary folder and also overrides one or more columns of the ``oT_Data_Option_*`` file. Used to switch
+    on a binary investment decision so the integer-investment (MILP) code path is exercised.
+
+    Running on a copy (instead of editing the case in place) gives this test its own folder for the solver
+    log files. On Windows the solver can still hold a log file open after a solve, so when several 9n tests
+    reuse the shared case folder one of them fails trying to delete the stale log ("file in use"); a private
+    folder per test avoids that. The copy is removed automatically with ``tmp_path``, so there is no restore.
 
     ``request.param`` is a dict: ``{"case": <name>, "multi_stage": <bool>, "options": {<column>: <value>}}``.
     The Duration / RESEnergy / Stage truncation matches the single- or multi-stage 7-day fixture depending on
@@ -138,58 +144,50 @@ def case_7d_binary(request):
     case_name = cfg["case"]
     multi = cfg.get("multi_stage", False)
     options = cfg.get("options", {})
-    data = dict(
-        DirName=os.path.abspath(os.path.join(os.path.dirname(__file__), "../openTEPES/cases")),
-        CaseName=case_name,
-        SolverName="highs",
-        pIndLogConsole=0,
-        pIndOutputResults=0,
-    )
-    case_dir = os.path.join(data["DirName"], case_name)
+
+    src_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../openTEPES/cases", case_name))
+    case_dir = os.path.join(str(tmp_path), case_name)
+    # Copy only the input data; skip any run artifacts (logs, results, plots) left in the source folder.
+    shutil.copytree(src_dir, case_dir,
+                    ignore=shutil.ignore_patterns("openTEPES_*", "oT_Result_*", "oT_Plot_*", "*.html"))
+
     duration_csv = os.path.join(case_dir, f"oT_Data_Duration_{case_name}.csv")
     RESEnergy_csv = os.path.join(case_dir, f"oT_Data_RESEnergy_{case_name}.csv")
     stage_csv = os.path.join(case_dir, f"oT_Data_Stage_{case_name}.csv")
     option_csv = os.path.join(case_dir, f"oT_Data_Option_{case_name}.csv")
 
-    original_duration = pd.read_csv(duration_csv, index_col=[0, 1, 2])
-    original_resenergy = pd.read_csv(RESEnergy_csv, index_col=[0, 1])
-    original_stage = None if multi else pd.read_csv(stage_csv, index_col=[0])
-    original_option = pd.read_csv(option_csv)
+    if multi:
+        df = pd.read_csv(duration_csv, index_col=[0, 1, 2]).reset_index()
+        df["__rownum"] = df.groupby(["Period", "Scenario", "Stage"]).cumcount()
+        df.loc[df["__rownum"] >= 168, "Duration"] = np.nan
+        df.drop(columns="__rownum").set_index(["Period", "Scenario", "LoadLevel"]).to_csv(duration_csv)
+    else:
+        df = pd.read_csv(duration_csv, index_col=[0, 1, 2])
+        df.iloc[168:, df.columns.get_loc("Duration")] = np.nan
+        df.to_csv(duration_csv)
 
-    try:
-        if multi:
-            df = original_duration.reset_index()
-            df["__rownum"] = df.groupby(["Period", "Scenario", "Stage"]).cumcount()
-            df.loc[df["__rownum"] >= 168, "Duration"] = np.nan
-            df.drop(columns="__rownum").set_index(["Period", "Scenario", "LoadLevel"]).to_csv(duration_csv)
-        else:
-            df = original_duration.copy()
-            df.iloc[168:, df.columns.get_loc("Duration")] = np.nan
-            df.to_csv(duration_csv)
+    df = pd.read_csv(RESEnergy_csv, index_col=[0, 1])
+    df["RESEnergy"] = df["RESEnergy"].astype(float)
+    df["RESEnergy"] = np.nan
+    df.to_csv(RESEnergy_csv)
 
-        df = original_resenergy.copy()
-        df["RESEnergy"] = df["RESEnergy"].astype(float)
-        df["RESEnergy"] = np.nan
-        df.to_csv(RESEnergy_csv)
+    if not multi:
+        df = pd.read_csv(stage_csv, index_col=[0])
+        df.iloc[:, df.columns.get_loc("Weight")] = 52
+        df.to_csv(stage_csv)
 
-        if not multi:
-            df = original_stage.copy()
-            df.iloc[:, df.columns.get_loc("Weight")] = 52
-            df.to_csv(stage_csv)
+    df = pd.read_csv(option_csv)
+    for col, val in options.items():
+        df[col] = val
+    df.to_csv(option_csv, index=False)
 
-        df = original_option.copy()
-        for col, val in options.items():
-            df[col] = val
-        df.to_csv(option_csv, index=False)
-
-        yield data
-
-    finally:
-        original_duration.to_csv(duration_csv)
-        original_resenergy.to_csv(RESEnergy_csv)
-        if not multi:
-            original_stage.to_csv(stage_csv)
-        original_option.to_csv(option_csv, index=False)
+    yield dict(
+        DirName=str(tmp_path),
+        CaseName=case_name,
+        SolverName="highs",
+        pIndLogConsole=0,
+        pIndOutputResults=0,
+    )
 
 
 # === Parametrized single-stage test ===
