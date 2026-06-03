@@ -29,7 +29,7 @@ It has been used by the **Ministry for the Ecological Transition and the Demogra
 
 The package is organised in six layers, from input/output (pure pandas, no Pyomo) up to result aggregation. Each module encodes its layer in the file name alongside the other `openTEPES_*.py` modules at the package root — `openTEPES_Input*` for the input-source layer (`openTEPES_InputSchema`, `openTEPES_InputSource`, `openTEPES_InputCSVSource`, `openTEPES_InputDuckDBSource`) and `openTEPES_ProblemSolving*` for the solver layer (`openTEPES_ProblemSolving`, `openTEPES_ProblemSolvingBenders`, `openTEPES_ProblemSolvingDualExtraction`, `openTEPES_ProblemSolvingPersistent`, `openTEPES_ProblemSolvingTuning`) — so concerns are addressable in code and the parallelisation modes (per-case sweep, in-memory overlay, post-build hot-swap) become first-class architectural seams.
 
-![Architecture diagram](/doc/img/openTEPES_architecture.svg)
+![Architecture diagram](/doc/img/openTEPES_architecture.png)
 
 # How to Cite
 
