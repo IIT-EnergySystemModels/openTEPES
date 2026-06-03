@@ -18,7 +18,7 @@ try:
     from .openTEPES_InputData        import InputData, DataConfiguration, SettingUpVariables
     from .openTEPES_InputSource      import open_source
     from .openTEPES_ModelFormulation import TotalObjectiveFunction, InvestmentElecModelFormulation, InvestmentHydroModelFormulation, InvestmentH2ModelFormulation, InvestmentHeatModelFormulation, GenerationOperationModelFormulationObjFunct, GenerationOperationElecModelFormulationInvestment, GenerationOperationHeatModelFormulationInvestment, GenerationOperationModelFormulationDemand, GenerationOperationModelFormulationStorage, GenerationOperationModelFormulationReservoir, NetworkH2OperationModelFormulation, NetworkHeatOperationModelFormulation, GenerationOperationModelFormulationCommitment, GenerationOperationModelFormulationRampMinTime, NetworkSwitchingModelFormulation, NetworkOperationModelFormulation, NetworkCycles, CycleConstraints
-    from .openTEPES_ProblemSolving  import ProblemSolving
+    from .openTEPES_ProblemSolving   import ProblemSolving
     from .openTEPES_OutputResults    import OutputResultsParVarCon, InvestmentResults, GenerationOperationResults, GenerationOperationHeatResults, ESSOperationResults, ReservoirOperationResults, NetworkH2OperationResults, NetworkHeatOperationResults, FlexibilityResults, NetworkOperationResults, MarginalResults, OperationSummaryResults, ReliabilityResults, CostSummaryResults, EconomicResults, NetworkMapResults
 except ImportError:
     import sys
@@ -26,18 +26,14 @@ except ImportError:
     from openTEPES.openTEPES_InputData        import InputData, DataConfiguration, SettingUpVariables
     from openTEPES.openTEPES_InputSource      import open_source
     from openTEPES.openTEPES_ModelFormulation import TotalObjectiveFunction, InvestmentElecModelFormulation, InvestmentHydroModelFormulation, InvestmentH2ModelFormulation, InvestmentHeatModelFormulation, GenerationOperationModelFormulationObjFunct, GenerationOperationElecModelFormulationInvestment, GenerationOperationHeatModelFormulationInvestment, GenerationOperationModelFormulationDemand, GenerationOperationModelFormulationStorage, GenerationOperationModelFormulationReservoir, NetworkH2OperationModelFormulation, NetworkHeatOperationModelFormulation, GenerationOperationModelFormulationCommitment, GenerationOperationModelFormulationRampMinTime, NetworkSwitchingModelFormulation, NetworkOperationModelFormulation, NetworkCycles, CycleConstraints
-    from openTEPES.openTEPES_ProblemSolving  import ProblemSolving
+    from openTEPES.openTEPES_ProblemSolving   import ProblemSolving
     from openTEPES.openTEPES_OutputResults    import OutputResultsParVarCon, InvestmentResults, GenerationOperationResults, GenerationOperationHeatResults, ESSOperationResults, ReservoirOperationResults, NetworkH2OperationResults, NetworkHeatOperationResults, FlexibilityResults, NetworkOperationResults, MarginalResults, OperationSummaryResults, ReliabilityResults, CostSummaryResults, EconomicResults, NetworkMapResults
 # from openTEPES_SectorDecomposition import SectorDecomposition
 
 
 # Output categories selectable via --results CLI flag.
 # Keys map to the pIndXxxResults flags inside openTEPES_run.
-OUTPUT_CATEGORIES = (
-    "investment", "generation", "ess", "reservoir", "h2", "heat",
-    "flexibility", "reliability", "network", "map", "summary",
-    "cost", "marginal", "economic", "plots",
-)
+OUTPUT_CATEGORIES = ("investment", "generation", "ess", "reservoir", "h2", "heat", "flexibility", "reliability", "network", "map", "summary", "cost", "marginal", "economic", "plots",)
 # Aliases expanded inside openTEPES_run.
 OUTPUT_ALIASES = {
     "none": (),                                              # sentinel-only — for inner-loop / feasibility-check solves
