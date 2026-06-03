@@ -51,12 +51,20 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
     Solver = setup_solver(OptModel, SolverName, FileName, ncall, mTEPES)
     solver_options = apply_solver_options(Solver, SolverName, FileName, ncall)
 
-    # ---- Count integer/binary vars; pure-LP cases get the dual Suffix up front ----
-    nUnfixedVars = 0
+    # ---- Decide whether to attach the dual Suffix before the initial solve ----
+    # Only a pure-LP model can return duals from its first solve, so the Suffix is
+    # attached up front only when there is no unfixed integer/binary variable. A MIP
+    # gets its duals later, from the fix-and-resolve LP pass below. The variable's
+    # value is deliberately NOT checked here: before the first solve every value is
+    # None, so an investment MIP (whose binary variables have no starting value) would
+    # otherwise look like an LP, get the Suffix, and crash when HiGHS is asked for
+    # duals it does not have for a MIP. Unit-commitment MIPs hid this because their
+    # binary variables are given starting values.
+    nIntegerVars = 0
     for var in OptModel.component_data_objects(pyo.Var, active=True, descend_into=True):
-        if not var.is_continuous() and not var.is_fixed() and var.value is not None:
-            nUnfixedVars += 1
-    if nUnfixedVars == 0:
+        if not var.is_continuous() and not var.is_fixed():
+            nIntegerVars += 1
+    if nIntegerVars == 0:
         OptModel.dual = Suffix(direction=Suffix.IMPORT_EXPORT)
 
     # ---- Initial solve ----
