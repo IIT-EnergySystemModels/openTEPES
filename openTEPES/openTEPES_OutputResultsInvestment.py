@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 28, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 03, 2026
 
 Investment and retirement results.
 
@@ -10,11 +10,17 @@ LCOE, and cost-per-MW tables, plus optional Altair plots.
 """
 
 import time
+import os
 import pandas            as     pd
 import altair            as     alt
 from   collections       import defaultdict
 
-from   .openTEPES_OutputResultsCommon import _outdir
+try:
+    from .openTEPES_OutputResultsCommon import _outdir
+except ImportError:
+    import sys
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from openTEPES.openTEPES_OutputResultsCommon import _outdir
 
 
 # @profile

@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 28, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 03, 2026
 
 Raw parameter, variable, set, and constraint dump.
 
@@ -19,7 +19,12 @@ import pandas            as     pd
 import pyomo.environ     as     pyo
 import duckdb
 
-from   .openTEPES_OutputResultsCommon import _outdir
+try:
+    from .openTEPES_OutputResultsCommon import _outdir
+except ImportError:
+    import sys
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from openTEPES.openTEPES_OutputResultsCommon import _outdir
 
 
 def _set_df(con, name: str, df: pd.DataFrame):

@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 28, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 03, 2026
 
 Generation operation results, electricity and heat.
 
@@ -11,11 +11,17 @@ combined heat-and-power and heat-only units.
 """
 
 import time
+import os
 import pandas            as     pd
 import altair            as     alt
 from   collections       import defaultdict
 
-from   .openTEPES_OutputResultsCommon import _outdir, AreaPlots, PiePlots
+try:
+    from .openTEPES_OutputResultsCommon import _outdir, AreaPlots, PiePlots
+except ImportError:
+    import sys
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from openTEPES.openTEPES_OutputResultsCommon import _outdir, AreaPlots, PiePlots
 
 
 # @profile

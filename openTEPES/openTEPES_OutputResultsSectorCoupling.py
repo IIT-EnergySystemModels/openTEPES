@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 28, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 03, 2026
 
 Sector-coupling network operation results, hydrogen and heat.
 
@@ -20,8 +20,14 @@ import plotly.graph_objs as     go
 from   collections       import defaultdict
 from   colour            import Color
 
-from   .openTEPES_OutputResultsCommon    import _outdir
-from   .openTEPES_OutputResultsMapCommon import make_flow_series, pick_snapshot
+try:
+    from .openTEPES_OutputResultsCommon import _outdir
+    from .openTEPES_OutputResultsMapCommon import make_flow_series, pick_snapshot
+except ImportError:
+    import sys
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from openTEPES.openTEPES_OutputResultsCommon import _outdir
+    from openTEPES.openTEPES_OutputResultsMapCommon import make_flow_series, pick_snapshot
 
 
 def NetworkH2OperationResults(DirName, CaseName, OptModel, mTEPES):

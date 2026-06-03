@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - May 28, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 03, 2026
 
 Energy-storage and reservoir operation results.
 
@@ -11,10 +11,16 @@ marginal water value.
 """
 
 import time
+import os
 import pandas            as     pd
 from   collections       import defaultdict
 
-from   .openTEPES_OutputResultsCommon import _outdir, AreaPlots, PiePlots, LinePlots
+try:
+    from .openTEPES_OutputResultsCommon import _outdir, AreaPlots, PiePlots, LinePlots
+except ImportError:
+    import sys
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from openTEPES.openTEPES_OutputResultsCommon import _outdir, AreaPlots, PiePlots, LinePlots
 
 
 def ESSOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutput, pIndAreaOutput, pIndPlotOutput):
@@ -120,11 +126,10 @@ def ESSOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutpu
         OutputToFile = pd.Series(data=[OptModel.vESSInventory[p,sc,n,es]()                                          for p,sc,n,es in sPSNES], index=pd.Index(sPSNES))
         OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='GWh',               aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(f'{_path}/oT_Result_GenerationInventory_{CaseName}.csv', sep=',')
 
-        if mTEPES.ec:
-           for p,sc,n,ec in mTEPES.psnec:
-               mTEPES.pMaxStorage[p,sc,n,ec] = mTEPES.pMaxStorage[p,sc,n,ec]() * OptModel.vGenerationInvest[p,ec]()
-
-        OutputToFile = pd.Series(data=[OptModel.vESSInventory[p,sc,n,es]()/(mTEPES.pMaxStorage[p,sc,n,es]()+pEpsilon) for p,sc,n,es in sPSNES], index=pd.Index(sPSNES))
+        # Inventory-utilization denominator: candidate ESS scale their max storage by the build decision.
+        # Compute the scaling inline instead of mutating mTEPES.pMaxStorage, which used to leak the scaled
+        # value to any later read of the parameter (the mutation persisted past this function).
+        OutputToFile = pd.Series(data=[OptModel.vESSInventory[p,sc,n,es]()/(mTEPES.pMaxStorage[p,sc,n,es]()*(OptModel.vGenerationInvest[p,es]() if (p,sc,n,es) in mTEPES.psnec else 1.0)+pEpsilon) for p,sc,n,es in sPSNES], index=pd.Index(sPSNES))
         OutputToFile = OutputToFile.fillna(0.0)
         OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='GWh', dropna=False, aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(f'{_path}/oT_Result_GenerationInventoryUtilization_{CaseName}.csv', sep=',')
 
@@ -197,7 +202,7 @@ def ReservoirOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnolog
     #%% outputting the water volume values
     OutputResults = []
     sPSSTNES      = [(p,sc,st,n,rs) for p,sc,st,n,rs in mTEPES.s2n*mTEPES.rs if (p,sc,n,rs) in mTEPES.psnrs]
-    OutputToFile = pd.Series(data=[abs(mTEPES.pDuals["".join([f"eHydroInventory_{p}_{sc}_{st}('{n}', '{rs}')"])])*1e3 for p,sc,st,n,rs in sPSSTNES], index=pd.Index(sPSSTNES))
+    OutputToFile = pd.Series(data=[abs(mTEPES.pDuals[f"eHydroInventory_{p}_{sc}_{st}('{n}', '{rs}')"])*1e3 for p,sc,st,n,rs in sPSSTNES], index=pd.Index(sPSSTNES))
     if len(OutputToFile):
         OutputToFile.to_frame(name='WaterValue').reset_index().pivot_table(index=['level_0','level_1','level_3'], columns='level_4', values='WaterValue').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(f'{_path}/oT_Result_MarginalWaterValue_{CaseName}.csv', sep=',')
 
