@@ -752,6 +752,18 @@ def main():
         args.case   = input('Input Case   Name (Default {}): '.format(CASE))
         if args.case == '':
             args.case = CASE
+
+    # If the case does not exist in args.dir, also try the parent directory when the base directory is the default cases directory.
+    _normalized_dir = os.path.normpath(os.path.abspath(args.dir))
+    _candidate_case_path = os.path.join(_normalized_dir, args.case)
+    if (not os.path.exists(_candidate_case_path)
+            and os.path.basename(_normalized_dir).lower() == "cases"):
+        _parent_dir = os.path.dirname(_normalized_dir)
+        _parent_candidate_case_path = os.path.join(_parent_dir, args.case)
+        if os.path.exists(_parent_candidate_case_path):
+            args.dir = _parent_dir
+            print(f"Case '{args.case}' not found in '{_candidate_case_path}'. Falling back to '{args.dir}'.")
+
     if args.solver is None:
         args.solver = input('Input Solver Name (Default {}): '.format(SOLVER))
         if args.solver == '':
