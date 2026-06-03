@@ -6,9 +6,9 @@ to a case folder, saving each table's size, column names and values. Two
 snapshots can then be compared: numbers are compared with a small tolerance,
 text labels exactly.
 
-It is meant for safely changing the output code. If you reorganise
-``openTEPES_OutputResults.py``, the result files should stay the same. To
-check that, take a snapshot before and after the change and compare them:
+It is meant for safely changing the output code. If you reorganise the
+``openTEPES_OutputResults*.py`` modules, the result files should stay the
+same. To check that, take a snapshot before and after the change and compare:
 
     # before the change
     python -m openTEPES._output_parity_test snapshot <case_output_folder> before.pkl
