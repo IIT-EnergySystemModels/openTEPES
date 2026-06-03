@@ -6,9 +6,10 @@ Sector-coupling network operation results, hydrogen and heat.
 This module writes the operation of the hydrogen pipeline network and the
 heat pipe network: nodal balances per technology, node, and area, pipe
 flows, utilization, and not-served energy, plus a Plotly map of each network.
-The two ``oT_make_series`` / ``oT_selecting_data`` helpers stay nested inside
-each function because they close over a different per-sector membership set
-(``ppa`` for hydrogen, ``pha`` for heat).
+The ``oT_selecting_data`` helper stays nested in each function because it
+builds a sector-specific node and line frame (``ppa`` for hydrogen, ``pha``
+for heat). The shared flow-series and snapshot-selection helpers live in
+``openTEPES_OutputResultsMapCommon``.
 """
 
 import time
@@ -19,7 +20,8 @@ import plotly.graph_objs as     go
 from   collections       import defaultdict
 from   colour            import Color
 
-from   .openTEPES_OutputResultsCommon import _outdir
+from   .openTEPES_OutputResultsCommon    import _outdir
+from   .openTEPES_OutputResultsMapCommon import make_flow_series, pick_snapshot
 
 
 def NetworkH2OperationResults(DirName, CaseName, OptModel, mTEPES):
@@ -82,9 +84,6 @@ def NetworkH2OperationResults(DirName, CaseName, OptModel, mTEPES):
 
     # plot hydrogen network map
     # Sub functions
-    def oT_make_series(_var, _sets, _factor):
-        return pd.Series(data=[_var[p,sc,n,ni,nf,cc]()*_factor for p,sc,n,ni,nf,cc in _sets if (p,ni,nf,cc) in mTEPES.ppa], index=pd.Index(list(_sets)))
-
     def oT_selecting_data(p,sc,n):
         # Nodes data
         pio.renderers.default = 'chrome'
@@ -103,7 +102,7 @@ def NetworkH2OperationResults(DirName, CaseName, OptModel, mTEPES):
         loc_df = loc_df.reset_index().rename(columns={'Type': 'Scenario'}, inplace=False)
 
         # Edges data
-        OutputToFile = oT_make_series(OptModel.vFlowH2, mTEPES.psnpa, 1)
+        OutputToFile = make_flow_series(OptModel.vFlowH2, mTEPES.psnpa, 1, mTEPES.ppa)
         OutputToFile.index.names = ['Period', 'Scenario', 'LoadLevel', 'InitialNode', 'FinalNode', 'Circuit']
         OutputToFile = OutputToFile.to_frame(name='tH2')
 
@@ -146,24 +145,7 @@ def NetworkH2OperationResults(DirName, CaseName, OptModel, mTEPES):
 
         return loc_df, line_df
 
-    # tolerance to avoid division by 0
-    pEpsilon = 1e-6
-
-    p = list(mTEPES.p)[0]
-    n = list(mTEPES.n)[0]
-
-    if len(mTEPES.sc) > 1:
-        sc = None
-        for scc in mTEPES.sc:
-            if (p,scc) in mTEPES.ps:
-                if abs(mTEPES.pScenProb[p,scc]() - 1.0) < pEpsilon:
-                    sc = scc
-        if sc is None:
-            # Joint-with-expansion case keeps input pScenProb (non-uniform, e.g. Savage);
-            # no scenario carries prob=1.0, so pick the first for the snapshot.
-            sc = next(iter(mTEPES.sc))
-    else:
-        sc = list(mTEPES.sc)[0]
+    p, sc, n = pick_snapshot(mTEPES)
 
     loc_df, line_df = oT_selecting_data(p,sc,n)
 
@@ -297,9 +279,6 @@ def NetworkHeatOperationResults(DirName, CaseName, OptModel, mTEPES):
 
     # plot heat network map
     # Sub functions
-    def oT_make_series(_var, _sets, _factor):
-        return pd.Series(data=[_var[p,sc,n,ni,nf,cc]()*_factor for p,sc,n,ni,nf,cc in _sets if (p,ni,nf,cc) in mTEPES.pha], index=pd.Index(list(_sets)))
-
     def oT_selecting_data(p,sc,n):
         # Nodes data
         pio.renderers.default = 'chrome'
@@ -318,7 +297,7 @@ def NetworkHeatOperationResults(DirName, CaseName, OptModel, mTEPES):
         loc_df = loc_df.reset_index().rename(columns={'Type': 'Scenario'}, inplace=False)
 
         # Edges data
-        OutputToFile = oT_make_series(OptModel.vFlowHeat, mTEPES.psnha, 1)
+        OutputToFile = make_flow_series(OptModel.vFlowHeat, mTEPES.psnha, 1, mTEPES.pha)
         OutputToFile.index.names = ['Period', 'Scenario', 'LoadLevel', 'InitialNode', 'FinalNode', 'Circuit']
         OutputToFile = OutputToFile.to_frame(name='MW')
 
@@ -361,24 +340,7 @@ def NetworkHeatOperationResults(DirName, CaseName, OptModel, mTEPES):
 
         return loc_df, line_df
 
-    # tolerance to consider avoid division by 0
-    pEpsilon = 1e-6
-
-    p = list(mTEPES.p)[0]
-    n = list(mTEPES.n)[0]
-
-    if len(mTEPES.sc) > 1:
-        sc = None
-        for scc in mTEPES.sc:
-            if (p,scc) in mTEPES.ps:
-                if abs(mTEPES.pScenProb[p,scc]() - 1.0) < pEpsilon:
-                    sc = scc
-        if sc is None:
-            # Joint-with-expansion case keeps input pScenProb (non-uniform, e.g. Savage);
-            # no scenario carries prob=1.0, so pick the first for the snapshot.
-            sc = next(iter(mTEPES.sc))
-    else:
-        sc = list(mTEPES.sc)[0]
+    p, sc, n = pick_snapshot(mTEPES)
 
     loc_df, line_df = oT_selecting_data(p,sc,n)
 
