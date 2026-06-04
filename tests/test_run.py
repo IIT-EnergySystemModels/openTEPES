@@ -199,6 +199,7 @@ def case_7d_binary(request, tmp_path):
 #   sSEP        ✓             ✓ (H2 demand+network+9 H2 gens)  ✓ (7 reservoirs + pumped hydro)  ramps+min-time
 #   9n_PTDF     ✓ losses                                       ✓ (multi-level headers)
 #   9n_heat     ✓ losses                                              ✓ (pIndHeat=1)
+#   9n_H2       ✓ losses     ✓ (2 electrolyzers + H2 demand + H2 pipes; pIndHydrogen=1)
 #   NG2030      ✓ losses                                                                                ✓
 #   RTS-GMLC    ✓                                                                  ramps+min-time
 #
@@ -218,6 +219,9 @@ def case_7d_binary(request, tmp_path):
     ("9n_PTDF",   447.3850166556059),
     # 9n_heat exercises the heat-sector code path (pIndHeat=1). Added in PR #121.
     ("9n_heat",   247.19623713906003),
+    # 9n_H2 exercises the hydrogen-sector code path (pIndHydrogen=1) on the minimal 9-node system: 2 electrolyzers,
+    # hydrogen demand at three nodes, and a hydrogen pipe network. The H2 counterpart of 9n_heat. Added in PR #128.
+    ("9n_H2",     259.5471530239396),
     # NG2030 — Nigeria 2030 baseline, multi-area state-level network (~37 nodes). Single-node mode active.
     ("NG2030",    1041.3415582681946),
     # RTS-GMLC — single-stage variant of the GMLC reference system; exercises ramp and min-up/down-time binaries.
