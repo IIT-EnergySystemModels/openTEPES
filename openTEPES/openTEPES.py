@@ -19,7 +19,15 @@ try:
     from .openTEPES_InputSource      import open_source
     from .openTEPES_ModelFormulation import TotalObjectiveFunction, InvestmentElecModelFormulation, InvestmentHydroModelFormulation, InvestmentH2ModelFormulation, InvestmentHeatModelFormulation, GenerationOperationModelFormulationObjFunct, GenerationOperationElecModelFormulationInvestment, GenerationOperationHeatModelFormulationInvestment, GenerationOperationModelFormulationDemand, GenerationOperationModelFormulationStorage, GenerationOperationModelFormulationReservoir, NetworkH2OperationModelFormulation, NetworkHeatOperationModelFormulation, GenerationOperationModelFormulationCommitment, GenerationOperationModelFormulationRampMinTime, NetworkSwitchingModelFormulation, NetworkOperationModelFormulation, NetworkCycles, CycleConstraints
     from .openTEPES_ProblemSolving   import ProblemSolving
-    from .openTEPES_OutputResults    import OutputResultsParVarCon, InvestmentResults, GenerationOperationResults, GenerationOperationHeatResults, ESSOperationResults, ReservoirOperationResults, NetworkH2OperationResults, NetworkHeatOperationResults, FlexibilityResults, NetworkOperationResults, MarginalResults, OperationSummaryResults, ReliabilityResults, CostSummaryResults, EconomicResults, NetworkMapResults
+    from .openTEPES_OutputResultsRawDump        import OutputResultsParVarCon
+    from .openTEPES_OutputResultsInvestment     import InvestmentResults
+    from .openTEPES_OutputResultsGeneration     import GenerationOperationResults, GenerationOperationHeatResults
+    from .openTEPES_OutputResultsStorage        import ESSOperationResults, ReservoirOperationResults
+    from .openTEPES_OutputResultsHydrogen       import NetworkH2OperationResults
+    from .openTEPES_OutputResultsHeat           import NetworkHeatOperationResults
+    from .openTEPES_OutputResultsNetwork        import NetworkOperationResults, NetworkMapResults
+    from .openTEPES_OutputResultsEconomic       import MarginalResults, CostSummaryResults, EconomicResults
+    from .openTEPES_OutputResultsSummary        import OperationSummaryResults, FlexibilityResults, ReliabilityResults
 except ImportError:
     import sys
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -27,7 +35,15 @@ except ImportError:
     from openTEPES.openTEPES_InputSource      import open_source
     from openTEPES.openTEPES_ModelFormulation import TotalObjectiveFunction, InvestmentElecModelFormulation, InvestmentHydroModelFormulation, InvestmentH2ModelFormulation, InvestmentHeatModelFormulation, GenerationOperationModelFormulationObjFunct, GenerationOperationElecModelFormulationInvestment, GenerationOperationHeatModelFormulationInvestment, GenerationOperationModelFormulationDemand, GenerationOperationModelFormulationStorage, GenerationOperationModelFormulationReservoir, NetworkH2OperationModelFormulation, NetworkHeatOperationModelFormulation, GenerationOperationModelFormulationCommitment, GenerationOperationModelFormulationRampMinTime, NetworkSwitchingModelFormulation, NetworkOperationModelFormulation, NetworkCycles, CycleConstraints
     from openTEPES.openTEPES_ProblemSolving   import ProblemSolving
-    from openTEPES.openTEPES_OutputResults    import OutputResultsParVarCon, InvestmentResults, GenerationOperationResults, GenerationOperationHeatResults, ESSOperationResults, ReservoirOperationResults, NetworkH2OperationResults, NetworkHeatOperationResults, FlexibilityResults, NetworkOperationResults, MarginalResults, OperationSummaryResults, ReliabilityResults, CostSummaryResults, EconomicResults, NetworkMapResults
+    from openTEPES.openTEPES_OutputResultsRawDump        import OutputResultsParVarCon
+    from openTEPES.openTEPES_OutputResultsInvestment     import InvestmentResults
+    from openTEPES.openTEPES_OutputResultsGeneration     import GenerationOperationResults, GenerationOperationHeatResults
+    from openTEPES.openTEPES_OutputResultsStorage        import ESSOperationResults, ReservoirOperationResults
+    from openTEPES.openTEPES_OutputResultsHydrogen       import NetworkH2OperationResults
+    from openTEPES.openTEPES_OutputResultsHeat           import NetworkHeatOperationResults
+    from openTEPES.openTEPES_OutputResultsNetwork        import NetworkOperationResults, NetworkMapResults
+    from openTEPES.openTEPES_OutputResultsEconomic       import MarginalResults, CostSummaryResults, EconomicResults
+    from openTEPES.openTEPES_OutputResultsSummary        import OperationSummaryResults, FlexibilityResults, ReliabilityResults
 # from openTEPES_SectorDecomposition import SectorDecomposition
 
 

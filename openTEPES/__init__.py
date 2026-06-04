@@ -26,4 +26,13 @@ from .openTEPES_InputData         import *
 from .openTEPES_ModelFormulation  import *
 from .openTEPES_ProblemSolving        import *
 from .openTEPES_ProblemSolvingBenders import *
-from .openTEPES_OutputResults     import *
+from .openTEPES_OutputResultsCommon         import *
+from .openTEPES_OutputResultsRawDump        import *
+from .openTEPES_OutputResultsInvestment     import *
+from .openTEPES_OutputResultsGeneration     import *
+from .openTEPES_OutputResultsStorage        import *
+from .openTEPES_OutputResultsHydrogen       import *
+from .openTEPES_OutputResultsHeat           import *
+from .openTEPES_OutputResultsNetwork        import *
+from .openTEPES_OutputResultsEconomic       import *
+from .openTEPES_OutputResultsSummary        import *

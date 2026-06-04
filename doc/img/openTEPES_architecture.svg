@@ -289,98 +289,56 @@
     <rect x="20" y="940" width="140" height="240" rx="10" fill="#336688"/>
     <text x="90" y="970" text-anchor="middle" class="layer-tag">LAYER 6</text>
     <text x="90" y="988" text-anchor="middle" class="layer-name">Results</text>
-    <text x="90" y="1004" text-anchor="middle" class="layer-note">openTEPES_Output-</text>
-    <text x="90" y="1016" text-anchor="middle" class="layer-note">Results.py</text>
-    <text x="90" y="1033" text-anchor="middle" class="layer-note">(one file today —</text>
-    <text x="90" y="1046" text-anchor="middle" class="layer-note">planned split)</text>
-
-    <!-- Cross-sector column -->
-    <text x="240" y="963" text-anchor="middle" class="sector-tag">CROSS-SECTOR</text>
-    <rect x="180" y="970" width="130" height="38" rx="8" fill="#fff" stroke="#336688" stroke-width="1.2"/>
-    <text x="245" y="987" text-anchor="middle" class="mod">export.py</text>
-    <text x="245" y="1001" text-anchor="middle" class="mod-sub">ParVarCon · DB</text>
-
-    <rect x="180" y="1015" width="130" height="38" rx="8" fill="#fff" stroke="#336688" stroke-width="1.2"/>
-    <text x="245" y="1032" text-anchor="middle" class="mod">summary.py</text>
-    <text x="245" y="1046" text-anchor="middle" class="mod-sub">OperationSummary</text>
-
-    <rect x="180" y="1060" width="130" height="38" rx="8" fill="#fff" stroke="#336688" stroke-width="1.2"/>
-    <text x="245" y="1077" text-anchor="middle" class="mod">economics.py</text>
-    <text x="245" y="1091" text-anchor="middle" class="mod-sub">cost · marginal · econ</text>
-
-    <rect x="180" y="1105" width="130" height="38" rx="8" fill="#fff" stroke="#336688" stroke-width="1.2"/>
-    <text x="245" y="1122" text-anchor="middle" class="mod">reliability.py</text>
-    <text x="245" y="1136" text-anchor="middle" class="mod-sub">LOLE · HUE · ENS</text>
-
-    <!-- Electricity column -->
-    <text x="380" y="963" text-anchor="middle" class="sector-tag">ELECTRICITY</text>
-    <rect x="320" y="970" width="130" height="38" rx="8" fill="#fff" stroke="#336688" stroke-width="1.2"/>
-    <text x="385" y="987" text-anchor="middle" class="mod">investment.py</text>
-    <text x="385" y="1001" text-anchor="middle" class="mod-sub">capacity additions</text>
-
-    <rect x="320" y="1015" width="130" height="38" rx="8" fill="#fff" stroke="#336688" stroke-width="1.2"/>
-    <text x="385" y="1032" text-anchor="middle" class="mod">generation.py</text>
-    <text x="385" y="1046" text-anchor="middle" class="mod-sub">dispatch · ESS</text>
-
-    <rect x="320" y="1060" width="130" height="38" rx="8" fill="#fff" stroke="#336688" stroke-width="1.2"/>
-    <text x="385" y="1077" text-anchor="middle" class="mod">network.py</text>
-    <text x="385" y="1091" text-anchor="middle" class="mod-sub">flows · switching</text>
-
-    <rect x="320" y="1105" width="130" height="38" rx="8" fill="#fff" stroke="#336688" stroke-width="1.2"/>
-    <text x="385" y="1122" text-anchor="middle" class="mod">flexibility.py</text>
-    <text x="385" y="1136" text-anchor="middle" class="mod-sub">ramping · reserves</text>
-
-    <!-- Heat column -->
-    <text x="520" y="963" text-anchor="middle" class="sector-tag">HEAT</text>
-    <rect x="460" y="970" width="130" height="38" rx="8" fill="#fff" stroke="#336688" stroke-width="1.2"/>
-    <text x="525" y="987" text-anchor="middle" class="mod">generation.py</text>
-    <text x="525" y="1001" text-anchor="middle" class="mod-sub">heat dispatch</text>
-
-    <rect x="460" y="1015" width="130" height="38" rx="8" fill="#fff" stroke="#336688" stroke-width="1.2"/>
-    <text x="525" y="1032" text-anchor="middle" class="mod">network.py</text>
-    <text x="525" y="1046" text-anchor="middle" class="mod-sub">pipe flow</text>
-
-    <!-- H2 column -->
-    <text x="660" y="963" text-anchor="middle" class="sector-tag">HYDROGEN</text>
-    <rect x="600" y="970" width="130" height="38" rx="8" fill="#fff" stroke="#336688" stroke-width="1.2"/>
-    <text x="665" y="987" text-anchor="middle" class="mod">production.py</text>
-    <text x="665" y="1001" text-anchor="middle" class="mod-sub">electrolyser</text>
-
-    <rect x="600" y="1015" width="130" height="38" rx="8" fill="#fff" stroke="#336688" stroke-width="1.2"/>
-    <text x="665" y="1032" text-anchor="middle" class="mod">network.py</text>
-    <text x="665" y="1046" text-anchor="middle" class="mod-sub">pipe flow</text>
-
-    <!-- Hydro column -->
-    <text x="800" y="963" text-anchor="middle" class="sector-tag">HYDRO</text>
-    <rect x="740" y="970" width="130" height="38" rx="8" fill="#fff" stroke="#336688" stroke-width="1.2"/>
-    <text x="805" y="987" text-anchor="middle" class="mod">reservoir.py</text>
-    <text x="805" y="1001" text-anchor="middle" class="mod-sub">volume · spill</text>
-
-    <rect x="740" y="1015" width="130" height="38" rx="8" fill="#fff" stroke="#336688" stroke-width="1.2"/>
-    <text x="805" y="1032" text-anchor="middle" class="mod">cascade.py</text>
-    <text x="805" y="1046" text-anchor="middle" class="mod-sub">inflow · cascade</text>
-
-    <!-- Visual + Sweeps column -->
-    <text x="940" y="963" text-anchor="middle" class="sector-tag">VISUAL / SWEEPS</text>
-    <rect x="880" y="970" width="130" height="38" rx="8" fill="#fff" stroke="#336688" stroke-width="1.2"/>
-    <text x="945" y="987" text-anchor="middle" class="mod">plots.py</text>
-    <text x="945" y="1001" text-anchor="middle" class="mod-sub">pie · area · line</text>
-
-    <rect x="880" y="1015" width="130" height="38" rx="8" fill="#fff" stroke="#336688" stroke-width="1.2"/>
-    <text x="945" y="1032" text-anchor="middle" class="mod">maps.py</text>
-    <text x="945" y="1046" text-anchor="middle" class="mod-sub">NetworkMap (folium)</text>
-
-    <rect x="880" y="1060" width="130" height="38" rx="8" fill="#fff" stroke="#7a4a8a" stroke-width="1.5"/>
-    <text x="945" y="1077" text-anchor="middle" class="mod">aggregate.py</text>
-    <text x="945" y="1091" text-anchor="middle" class="mod-flag">★ merge sweep outputs</text>
-
-    <rect x="880" y="1105" width="130" height="38" rx="8" fill="#fff" stroke="#336688" stroke-width="1.2" stroke-dasharray="4 3"/>
-    <text x="945" y="1122" text-anchor="middle" class="mod">mcda.py</text>
-    <text x="945" y="1136" text-anchor="middle" class="mod-sub" font-style="italic">optional · ext tooling</text>
-
-    <text x="1060" y="1100" text-anchor="end" class="mod-sub" transform="rotate(-90, 1060, 1100)">
-      splits 2 835-line OutputResults.py
-    </text>
+    <text x="90" y="1004" text-anchor="middle" class="layer-note">openTEPES_Output</text>
+    <text x="90" y="1016" text-anchor="middle" class="layer-note">Results*.py</text>
+    <text x="90" y="1033" text-anchor="middle" class="layer-note">11 flat concern</text>
+    <text x="90" y="1046" text-anchor="middle" class="layer-note">modules (split done)</text>
+    <text x="247" y="962" text-anchor="middle" class="sector-tag">RAW · INVEST</text>
+    <text x="391" y="962" text-anchor="middle" class="sector-tag">DISPATCH</text>
+    <text x="535" y="962" text-anchor="middle" class="sector-tag">NETWORKS</text>
+    <text x="679" y="962" text-anchor="middle" class="sector-tag">ECON · SUMMARY</text>
+    <text x="823" y="962" text-anchor="middle" class="sector-tag">SHARED</text>
+    <text x="967" y="962" text-anchor="middle" class="sector-tag">SWEEPS · planned</text>
+    <rect x="178" y="970" width="138" height="40" rx="8" fill="#d4efdf" stroke="#2e7d5f" stroke-width="1.2"/>
+    <text x="247" y="988" text-anchor="middle" class="mod">…RawDump.py</text>
+    <text x="247" y="1002" text-anchor="middle" class="mod-sub">ParVarCon · DB dump</text>
+    <rect x="178" y="1016" width="138" height="40" rx="8" fill="#d4efdf" stroke="#2e7d5f" stroke-width="1.2"/>
+    <text x="247" y="1034" text-anchor="middle" class="mod">…Investment.py</text>
+    <text x="247" y="1048" text-anchor="middle" class="mod-sub">capacity additions</text>
+    <rect x="322" y="970" width="138" height="40" rx="8" fill="#d4efdf" stroke="#2e7d5f" stroke-width="1.2"/>
+    <text x="391" y="988" text-anchor="middle" class="mod">…Generation.py</text>
+    <text x="391" y="1002" text-anchor="middle" class="mod-sub">elec + heat dispatch</text>
+    <rect x="322" y="1016" width="138" height="40" rx="8" fill="#d4efdf" stroke="#2e7d5f" stroke-width="1.2"/>
+    <text x="391" y="1034" text-anchor="middle" class="mod">…Storage.py</text>
+    <text x="391" y="1048" text-anchor="middle" class="mod-sub">ESS · reservoir</text>
+    <rect x="466" y="970" width="138" height="40" rx="8" fill="#d4efdf" stroke="#2e7d5f" stroke-width="1.2"/>
+    <text x="535" y="988" text-anchor="middle" class="mod">…Network.py</text>
+    <text x="535" y="1002" text-anchor="middle" class="mod-sub">elec flows · map</text>
+    <rect x="466" y="1016" width="138" height="40" rx="8" fill="#d4efdf" stroke="#2e7d5f" stroke-width="1.2"/>
+    <text x="535" y="1034" text-anchor="middle" class="mod">…Hydrogen.py</text>
+    <text x="535" y="1048" text-anchor="middle" class="mod-sub">H2 pipe network</text>
+    <rect x="466" y="1062" width="138" height="40" rx="8" fill="#d4efdf" stroke="#2e7d5f" stroke-width="1.2"/>
+    <text x="535" y="1080" text-anchor="middle" class="mod">…Heat.py</text>
+    <text x="535" y="1094" text-anchor="middle" class="mod-sub">heat pipe network</text>
+    <rect x="610" y="970" width="138" height="40" rx="8" fill="#d4efdf" stroke="#2e7d5f" stroke-width="1.2"/>
+    <text x="679" y="988" text-anchor="middle" class="mod">…Economic.py</text>
+    <text x="679" y="1002" text-anchor="middle" class="mod-sub">cost · marginal · econ</text>
+    <rect x="610" y="1016" width="138" height="40" rx="8" fill="#d4efdf" stroke="#2e7d5f" stroke-width="1.2"/>
+    <text x="679" y="1034" text-anchor="middle" class="mod">…Summary.py</text>
+    <text x="679" y="1048" text-anchor="middle" class="mod-sub">summary · flex · reliab</text>
+    <rect x="754" y="970" width="138" height="40" rx="8" fill="#d4efdf" stroke="#2e7d5f" stroke-width="1.2"/>
+    <text x="823" y="988" text-anchor="middle" class="mod">…Common.py</text>
+    <text x="823" y="1002" text-anchor="middle" class="mod-sub">out-dir · Altair plots</text>
+    <rect x="754" y="1016" width="138" height="40" rx="8" fill="#d4efdf" stroke="#2e7d5f" stroke-width="1.2"/>
+    <text x="823" y="1034" text-anchor="middle" class="mod">…MapCommon.py</text>
+    <text x="823" y="1048" text-anchor="middle" class="mod-sub">flow-series · snapshot</text>
+    <text x="535" y="1108" text-anchor="middle" class="mod-flag">▲ Hydrogen + Heat split from sector-coupling (PR #128)</text>
+    <rect x="898" y="970" width="138" height="40" rx="8" fill="#fff" stroke="#7a4a8a" stroke-width="1.5"/>
+    <text x="967" y="988" text-anchor="middle" class="mod">aggregate.py</text>
+    <text x="967" y="1002" text-anchor="middle" class="mod-flag">★ merge sweep outputs</text>
+    <rect x="898" y="1016" width="138" height="40" rx="8" fill="#fff" stroke="#336688" stroke-width="1.2" stroke-dasharray="4 3"/>
+    <text x="967" y="1034" text-anchor="middle" class="mod">mcda.py</text>
+    <text x="967" y="1048" text-anchor="middle" class="mod-sub" font-style="italic">optional · ext tooling</text>
   </g>
 
   <!-- ================== TESTS / OUTPUTS ================== -->
