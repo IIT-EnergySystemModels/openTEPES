@@ -31,7 +31,8 @@ from .openTEPES_OutputResultsRawDump        import *
 from .openTEPES_OutputResultsInvestment     import *
 from .openTEPES_OutputResultsGeneration     import *
 from .openTEPES_OutputResultsStorage        import *
-from .openTEPES_OutputResultsSectorCoupling import *
+from .openTEPES_OutputResultsHydrogen       import *
+from .openTEPES_OutputResultsHeat           import *
 from .openTEPES_OutputResultsNetwork        import *
 from .openTEPES_OutputResultsEconomic       import *
 from .openTEPES_OutputResultsSummary        import *

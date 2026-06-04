@@ -23,7 +23,8 @@ try:
     from .openTEPES_OutputResultsInvestment     import InvestmentResults
     from .openTEPES_OutputResultsGeneration     import GenerationOperationResults, GenerationOperationHeatResults
     from .openTEPES_OutputResultsStorage        import ESSOperationResults, ReservoirOperationResults
-    from .openTEPES_OutputResultsSectorCoupling import NetworkH2OperationResults, NetworkHeatOperationResults
+    from .openTEPES_OutputResultsHydrogen       import NetworkH2OperationResults
+    from .openTEPES_OutputResultsHeat           import NetworkHeatOperationResults
     from .openTEPES_OutputResultsNetwork        import NetworkOperationResults, NetworkMapResults
     from .openTEPES_OutputResultsEconomic       import MarginalResults, CostSummaryResults, EconomicResults
     from .openTEPES_OutputResultsSummary        import OperationSummaryResults, FlexibilityResults, ReliabilityResults
@@ -38,7 +39,8 @@ except ImportError:
     from openTEPES.openTEPES_OutputResultsInvestment     import InvestmentResults
     from openTEPES.openTEPES_OutputResultsGeneration     import GenerationOperationResults, GenerationOperationHeatResults
     from openTEPES.openTEPES_OutputResultsStorage        import ESSOperationResults, ReservoirOperationResults
-    from openTEPES.openTEPES_OutputResultsSectorCoupling import NetworkH2OperationResults, NetworkHeatOperationResults
+    from openTEPES.openTEPES_OutputResultsHydrogen       import NetworkH2OperationResults
+    from openTEPES.openTEPES_OutputResultsHeat           import NetworkHeatOperationResults
     from openTEPES.openTEPES_OutputResultsNetwork        import NetworkOperationResults, NetworkMapResults
     from openTEPES.openTEPES_OutputResultsEconomic       import MarginalResults, CostSummaryResults, EconomicResults
     from openTEPES.openTEPES_OutputResultsSummary        import OperationSummaryResults, FlexibilityResults, ReliabilityResults
