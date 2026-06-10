@@ -29,13 +29,23 @@ from   pyomo.environ import Set
 # Support running this file directly (e.g. VS Code "Run Python File"), where __package__ is empty and the
 # relative imports below have no parent package; fall back to absolute package imports in that case.
 try:
-    from .openTEPES_ModelFormulation import GenerationOperationModelFormulationObjFunct, GenerationOperationElecModelFormulationInvestment, GenerationOperationHeatModelFormulationInvestment, GenerationOperationModelFormulationDemand, GenerationOperationModelFormulationStorage, GenerationOperationModelFormulationReservoir, NetworkH2OperationModelFormulation, NetworkHeatOperationModelFormulation, GenerationOperationModelFormulationCommitment, GenerationOperationModelFormulationRampMinTime, NetworkSwitchingModelFormulation, NetworkOperationModelFormulation, NetworkCycles, CycleConstraints
-    from .openTEPES_ProblemSolving   import ProblemSolving
+    from .openTEPES_ModelFormulationObjective   import GenerationOperationModelFormulationObjFunct
+    from .openTEPES_ModelFormulationInvestment  import GenerationOperationElecModelFormulationInvestment, GenerationOperationHeatModelFormulationInvestment
+    from .openTEPES_ModelFormulationElectricity import GenerationOperationModelFormulationDemand, GenerationOperationModelFormulationStorage, GenerationOperationModelFormulationCommitment, GenerationOperationModelFormulationRampMinTime, NetworkSwitchingModelFormulation, NetworkOperationModelFormulation, NetworkCycles, CycleConstraints
+    from .openTEPES_ModelFormulationHydro       import GenerationOperationModelFormulationReservoir
+    from .openTEPES_ModelFormulationHydrogen    import NetworkH2OperationModelFormulation
+    from .openTEPES_ModelFormulationHeat        import NetworkHeatOperationModelFormulation
+    from .openTEPES_ProblemSolving              import ProblemSolving
 except ImportError:
     import sys
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    from openTEPES.openTEPES_ModelFormulation import GenerationOperationModelFormulationObjFunct, GenerationOperationElecModelFormulationInvestment, GenerationOperationHeatModelFormulationInvestment, GenerationOperationModelFormulationDemand, GenerationOperationModelFormulationStorage, GenerationOperationModelFormulationReservoir, NetworkH2OperationModelFormulation, NetworkHeatOperationModelFormulation, GenerationOperationModelFormulationCommitment, GenerationOperationModelFormulationRampMinTime, NetworkSwitchingModelFormulation, NetworkOperationModelFormulation, NetworkCycles, CycleConstraints
-    from openTEPES.openTEPES_ProblemSolving   import ProblemSolving
+    from openTEPES.openTEPES_ModelFormulationObjective   import GenerationOperationModelFormulationObjFunct
+    from openTEPES.openTEPES_ModelFormulationInvestment  import GenerationOperationElecModelFormulationInvestment, GenerationOperationHeatModelFormulationInvestment
+    from openTEPES.openTEPES_ModelFormulationElectricity import GenerationOperationModelFormulationDemand, GenerationOperationModelFormulationStorage, GenerationOperationModelFormulationCommitment, GenerationOperationModelFormulationRampMinTime, NetworkSwitchingModelFormulation, NetworkOperationModelFormulation, NetworkCycles, CycleConstraints
+    from openTEPES.openTEPES_ModelFormulationHydro       import GenerationOperationModelFormulationReservoir
+    from openTEPES.openTEPES_ModelFormulationHydrogen    import NetworkH2OperationModelFormulation
+    from openTEPES.openTEPES_ModelFormulationHeat        import NetworkHeatOperationModelFormulation
+    from openTEPES.openTEPES_ProblemSolving              import ProblemSolving
 
 
 def StageIterativeSolving(mTEPES, DirName, CaseName, SolverName, pIndLogConsole, _path, pIndCycleFlow):

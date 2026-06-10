@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 4, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 5, 2026
 """
 
 # import dill as pickle
@@ -17,7 +17,8 @@ from   pyomo.environ import ConcreteModel, Set
 try:
     from .openTEPES_InputData        import InputData, DataConfiguration, SettingUpVariables
     from .openTEPES_InputSource      import open_source
-    from .openTEPES_ModelFormulation import TotalObjectiveFunction, InvestmentElecModelFormulation, InvestmentHydroModelFormulation, InvestmentH2ModelFormulation, InvestmentHeatModelFormulation
+    from .openTEPES_ModelFormulationObjective  import TotalObjectiveFunction
+    from .openTEPES_ModelFormulationInvestment import InvestmentElecModelFormulation, InvestmentHydroModelFormulation, InvestmentH2ModelFormulation, InvestmentHeatModelFormulation
     from .openTEPES_ProblemSolvingStageIter import StageIterativeSolving
     from .openTEPES_OutputResultsRawDump        import OutputResultsParVarCon
     from .openTEPES_OutputResultsInvestment     import InvestmentResults
@@ -33,7 +34,8 @@ except ImportError:
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     from openTEPES.openTEPES_InputData        import InputData, DataConfiguration, SettingUpVariables
     from openTEPES.openTEPES_InputSource      import open_source
-    from openTEPES.openTEPES_ModelFormulation import TotalObjectiveFunction, InvestmentElecModelFormulation, InvestmentHydroModelFormulation, InvestmentH2ModelFormulation, InvestmentHeatModelFormulation
+    from openTEPES.openTEPES_ModelFormulationObjective  import TotalObjectiveFunction
+    from openTEPES.openTEPES_ModelFormulationInvestment import InvestmentElecModelFormulation, InvestmentHydroModelFormulation, InvestmentH2ModelFormulation, InvestmentHeatModelFormulation
     from openTEPES.openTEPES_ProblemSolvingStageIter import StageIterativeSolving
     from openTEPES.openTEPES_OutputResultsRawDump        import OutputResultsParVarCon
     from openTEPES.openTEPES_OutputResultsInvestment     import InvestmentResults
@@ -182,11 +184,11 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     idxDict['y'  ] = 1
 
     #%% model declaration
-    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.17RC - June 4, 2026')
+    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.17RC - June 5, 2026')
     # In DuckDB-input mode _path may not exist on disk (the case lives in
     # the DB, not in a directory). Ensure the version-log target exists.
     os.makedirs(_path, exist_ok=True)
-    print(                 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.17RC - June 4, 2026', file=open(f'{_path}/openTEPES_version_{CaseName}.log','w'))
+    print(                 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.17RC - June 5, 2026', file=open(f'{_path}/openTEPES_version_{CaseName}.log','w'))
     if _input_source is not None:
         mTEPES.pInputSource = _input_source
 

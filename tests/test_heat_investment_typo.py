@@ -1,6 +1,7 @@
 """Regression test for the heat investment formulation typo.
 
-`openTEPES_ModelFormulation.py:135` looked up `vTotalHeatFCost` but the
+`openTEPES_ModelFormulationInvestment.py` (`InvestmentHeatModelFormulation`,
+formerly in `openTEPES_ModelFormulation.py`) looked up `vTotalHeatFCost` but the
 variable is `vTotalFHeatCost` (defined at `openTEPES_InputData.py:1823`,
 used correctly at line 52 and `OutputResults.py:1566`). The bug was
 dormant because no in-tree case had a candidate heat pipe — the
@@ -20,7 +21,7 @@ from pyomo.environ import (
     Var,
 )
 
-from openTEPES.openTEPES_ModelFormulation import InvestmentHeatModelFormulation
+from openTEPES.openTEPES_ModelFormulationInvestment import InvestmentHeatModelFormulation
 
 
 def _build_minimal_heat_invest_model() -> ConcreteModel:
