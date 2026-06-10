@@ -24,8 +24,9 @@ from .openTEPES_InputCSVSource    import *
 from .openTEPES_InputDuckDBSource import *
 from .openTEPES_InputData         import *
 from .openTEPES_ModelFormulation  import *
-from .openTEPES_ProblemSolving        import *
-from .openTEPES_ProblemSolvingBenders import *
+from .openTEPES_ProblemSolving          import *
+from .openTEPES_ProblemSolvingStageIter import *
+from .openTEPES_ProblemSolvingBenders   import *
 from .openTEPES_OutputResultsCommon         import *
 from .openTEPES_OutputResultsRawDump        import *
 from .openTEPES_OutputResultsInvestment     import *

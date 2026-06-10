@@ -250,33 +250,37 @@
     <text x="90" y="871" text-anchor="middle" class="layer-note">openTEPES_Problem-</text>
     <text x="90" y="883" text-anchor="middle" class="layer-note">Solving*.py</text>
 
-    <rect x="170" y="827" width="145" height="46" rx="8" fill="#d4efdf" stroke="#5d4a8a" stroke-width="1.2"/>
-    <text x="242" y="845" text-anchor="middle" class="mod">ProblemSolving.py</text>
-    <text x="242" y="862" text-anchor="middle" class="mod-sub">orchestrator entry</text>
+    <rect x="168" y="827" width="128" height="46" rx="8" fill="#d4efdf" stroke="#5d4a8a" stroke-width="1.2"/>
+    <text x="232" y="845" text-anchor="middle" class="mod">ProblemSolving.py</text>
+    <text x="232" y="862" text-anchor="middle" class="mod-sub">orchestrator entry</text>
 
-    <rect x="322" y="827" width="145" height="46" rx="8" fill="#d4efdf" stroke="#5d4a8a" stroke-width="1.2"/>
-    <text x="394" y="845" text-anchor="middle" class="mod">…Tuning.py</text>
-    <text x="394" y="862" text-anchor="middle" class="mod-sub">solver options</text>
+    <rect x="303" y="827" width="128" height="46" rx="8" fill="#d4efdf" stroke="#5d4a8a" stroke-width="1.2"/>
+    <text x="367" y="845" text-anchor="middle" class="mod">…StageIter.py</text>
+    <text x="367" y="862" text-anchor="middle" class="mod-sub">stage loop</text>
 
-    <rect x="474" y="827" width="145" height="46" rx="8" fill="#d4efdf" stroke="#5d4a8a" stroke-width="1.2"/>
-    <text x="546" y="845" text-anchor="middle" class="mod">…DualExtraction.py</text>
-    <text x="546" y="862" text-anchor="middle" class="mod-sub">duals via re-solve</text>
+    <rect x="438" y="827" width="128" height="46" rx="8" fill="#d4efdf" stroke="#5d4a8a" stroke-width="1.2"/>
+    <text x="502" y="845" text-anchor="middle" class="mod">…Tuning.py</text>
+    <text x="502" y="862" text-anchor="middle" class="mod-sub">solver options</text>
 
-    <rect x="626" y="827" width="145" height="46" rx="8" fill="#d4efdf" stroke="#5d4a8a" stroke-width="1.2"/>
-    <text x="698" y="845" text-anchor="middle" class="mod">…Persistent.py</text>
-    <text x="698" y="862" text-anchor="middle" class="mod-sub">appsi persistent</text>
+    <rect x="573" y="827" width="128" height="46" rx="8" fill="#d4efdf" stroke="#5d4a8a" stroke-width="1.2"/>
+    <text x="637" y="845" text-anchor="middle" class="mod">…DualExtraction.py</text>
+    <text x="637" y="862" text-anchor="middle" class="mod-sub">duals via re-solve</text>
 
-    <rect x="778" y="827" width="145" height="46" rx="8" fill="#d4efdf" stroke="#5d4a8a" stroke-width="1.2"/>
-    <text x="850" y="845" text-anchor="middle" class="mod">…Benders.py</text>
-    <text x="850" y="862" text-anchor="middle" class="mod-sub">L-shaped decomp</text>
+    <rect x="708" y="827" width="128" height="46" rx="8" fill="#d4efdf" stroke="#5d4a8a" stroke-width="1.2"/>
+    <text x="772" y="845" text-anchor="middle" class="mod">…Persistent.py</text>
+    <text x="772" y="862" text-anchor="middle" class="mod-sub">appsi persistent</text>
 
-    <rect x="930" y="827" width="145" height="46" rx="8" fill="#fff" stroke="#7a4a8a" stroke-width="1.5"/>
-    <text x="1002" y="844" text-anchor="middle" class="mod">resolve.py</text>
-    <text x="1002" y="860" text-anchor="middle" class="mod-flag">★ hot-swap (Mode C)</text>
+    <rect x="843" y="827" width="128" height="46" rx="8" fill="#d4efdf" stroke="#5d4a8a" stroke-width="1.2"/>
+    <text x="907" y="845" text-anchor="middle" class="mod">…Benders.py</text>
+    <text x="907" y="862" text-anchor="middle" class="mod-sub">L-shaped decomp</text>
+
+    <rect x="978" y="827" width="128" height="46" rx="8" fill="#fff" stroke="#7a4a8a" stroke-width="1.5"/>
+    <text x="1042" y="844" text-anchor="middle" class="mod">resolve.py</text>
+    <text x="1042" y="860" text-anchor="middle" class="mod-flag">★ hot-swap (Mode C)</text>
   </g>
 
   <!-- post-build hot-swap loop arrow (right side, Layer 5 back to Layer 3) -->
-  <path d="M 1075 850 Q 1090 850 1090 415 Q 1090 388 970 388" stroke="#7a4a8a" stroke-width="1.6" fill="none" stroke-dasharray="6 4" marker-end="url(#arrowP)"/>
+  <path d="M 1106 850 Q 1120 850 1120 415 Q 1120 388 970 388" stroke="#7a4a8a" stroke-width="1.6" fill="none" stroke-dasharray="6 4" marker-end="url(#arrowP)"/>
   <text x="1098" y="630" class="arrow-lblP" transform="rotate(-90, 1098, 630)">Mode C: Param.store_values() + re-solve</text>
 
   <!-- arrow 5 -->
