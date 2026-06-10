@@ -23,7 +23,12 @@ from .openTEPES_InputSource       import *
 from .openTEPES_InputCSVSource    import *
 from .openTEPES_InputDuckDBSource import *
 from .openTEPES_InputData         import *
-from .openTEPES_ModelFormulation  import *
+from .openTEPES_ModelFormulationObjective   import *
+from .openTEPES_ModelFormulationInvestment  import *
+from .openTEPES_ModelFormulationElectricity import *
+from .openTEPES_ModelFormulationHydro       import *
+from .openTEPES_ModelFormulationHydrogen    import *
+from .openTEPES_ModelFormulationHeat        import *
 from .openTEPES_ProblemSolving          import *
 from .openTEPES_ProblemSolvingStageIter import *
 from .openTEPES_ProblemSolvingBenders   import *

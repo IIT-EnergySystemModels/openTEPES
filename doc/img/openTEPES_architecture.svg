@@ -157,84 +157,58 @@
   <g>
     <rect x="20" y="520" width="1100" height="240" rx="10" fill="#fae6e0" stroke="#b03030" stroke-width="1.5"/>
     <rect x="20" y="520" width="140" height="240" rx="10" fill="#b03030"/>
-    <text x="90" y="550" text-anchor="middle" class="layer-tag">LAYER 4</text>
-    <text x="90" y="568" text-anchor="middle" class="layer-name">Formulation</text>
-    <text x="90" y="585" text-anchor="middle" class="layer-note">openTEPES_Model-</text>
-    <text x="90" y="598" text-anchor="middle" class="layer-note">Formulation.py</text>
-    <text x="90" y="615" text-anchor="middle" class="layer-note">(one file today —</text>
-    <text x="90" y="628" text-anchor="middle" class="layer-note">planned split)</text>
+    <text x="90" y="560" text-anchor="middle" class="layer-tag">LAYER 4</text>
+    <text x="90" y="580" text-anchor="middle" class="layer-name">Formulation</text>
+    <text x="90" y="600" text-anchor="middle" class="layer-note">openTEPES_Model-</text>
+    <text x="90" y="613" text-anchor="middle" class="layer-note">Formulation*.py</text>
+    <text x="90" y="630" text-anchor="middle" class="layer-note">(six files,</text>
+    <text x="90" y="643" text-anchor="middle" class="layer-note">one per concern)</text>
 
-    <!-- Cross-sector column -->
-    <text x="240" y="543" text-anchor="middle" class="sector-tag">CROSS-SECTOR</text>
-    <rect x="180" y="550" width="130" height="42" rx="8" fill="#fff" stroke="#b03030" stroke-width="1.2"/>
-    <text x="245" y="567" text-anchor="middle" class="mod">objective.py</text>
-    <text x="245" y="583" text-anchor="middle" class="mod-sub">TotalObjective</text>
+    <!-- cross-sector modules -->
+    <text x="318" y="548" text-anchor="middle" class="sector-tag">CROSS-SECTOR</text>
+    <rect x="170" y="556" width="140" height="66" rx="8" fill="#d4efdf" stroke="#b03030" stroke-width="1.2"/>
+    <text x="240" y="578" text-anchor="middle" class="mod">…Objective.py</text>
+    <text x="240" y="594" text-anchor="middle" class="mod-sub">total cost o.f.</text>
+    <text x="240" y="608" text-anchor="middle" class="mod-sub">+ stage costs</text>
 
-    <rect x="180" y="600" width="130" height="42" rx="8" fill="#fff" stroke="#b03030" stroke-width="1.2"/>
-    <text x="245" y="617" text-anchor="middle" class="mod">investment.py</text>
-    <text x="245" y="633" text-anchor="middle" class="mod-sub">all 4 sectors</text>
+    <rect x="325" y="556" width="140" height="66" rx="8" fill="#d4efdf" stroke="#b03030" stroke-width="1.2"/>
+    <text x="395" y="578" text-anchor="middle" class="mod">…Investment.py</text>
+    <text x="395" y="594" text-anchor="middle" class="mod-sub">4 sectors + adequacy</text>
+    <text x="395" y="608" text-anchor="middle" class="mod-sub">emission · RES</text>
 
-    <rect x="180" y="650" width="130" height="42" rx="8" fill="#fff" stroke="#b03030" stroke-width="1.2"/>
-    <text x="245" y="667" text-anchor="middle" class="mod">commitment.py</text>
-    <text x="245" y="683" text-anchor="middle" class="mod-sub">ramp · min-time</text>
+    <!-- one file per energy sector -->
+    <text x="788" y="548" text-anchor="middle" class="sector-tag">ENERGY SECTORS  —  one file each</text>
+    <rect x="480" y="556" width="165" height="66" rx="8" fill="#d4efdf" stroke="#b03030" stroke-width="1.2"/>
+    <text x="562" y="578" text-anchor="middle" class="mod">…Electricity.py</text>
+    <text x="562" y="594" text-anchor="middle" class="mod-sub">demand · reserves · storage</text>
+    <text x="562" y="608" text-anchor="middle" class="mod-sub">UC · network · cycles</text>
 
-    <rect x="180" y="700" width="130" height="42" rx="8" fill="#fff" stroke="#b03030" stroke-width="1.2"/>
-    <text x="245" y="717" text-anchor="middle" class="mod">cycles.py</text>
-    <text x="245" y="733" text-anchor="middle" class="mod-sub">NetworkCycles</text>
+    <rect x="660" y="556" width="140" height="66" rx="8" fill="#d4efdf" stroke="#b03030" stroke-width="1.2"/>
+    <text x="730" y="578" text-anchor="middle" class="mod">…Hydro.py</text>
+    <text x="730" y="594" text-anchor="middle" class="mod-sub">reservoir</text>
+    <text x="730" y="608" text-anchor="middle" class="mod-sub">water balance</text>
 
-    <!-- Electricity column -->
-    <text x="380" y="543" text-anchor="middle" class="sector-tag">ELECTRICITY</text>
-    <rect x="320" y="550" width="130" height="42" rx="8" fill="#fff" stroke="#b03030" stroke-width="1.2"/>
-    <text x="385" y="567" text-anchor="middle" class="mod">operation.py</text>
-    <text x="385" y="583" text-anchor="middle" class="mod-sub">demand · storage</text>
+    <rect x="815" y="556" width="140" height="66" rx="8" fill="#d4efdf" stroke="#b03030" stroke-width="1.2"/>
+    <text x="885" y="578" text-anchor="middle" class="mod">…Hydrogen.py</text>
+    <text x="885" y="594" text-anchor="middle" class="mod-sub">H2 network</text>
+    <text x="885" y="608" text-anchor="middle" class="mod-sub">balance</text>
 
-    <rect x="320" y="600" width="130" height="42" rx="8" fill="#fff" stroke="#b03030" stroke-width="1.2"/>
-    <text x="385" y="617" text-anchor="middle" class="mod">network.py</text>
-    <text x="385" y="633" text-anchor="middle" class="mod-sub">flow · switching</text>
+    <rect x="965" y="556" width="140" height="66" rx="8" fill="#d4efdf" stroke="#b03030" stroke-width="1.2"/>
+    <text x="1035" y="578" text-anchor="middle" class="mod">…Heat.py</text>
+    <text x="1035" y="594" text-anchor="middle" class="mod-sub">heat network</text>
+    <text x="1035" y="608" text-anchor="middle" class="mod-sub">power-to-heat</text>
 
-    <!-- Heat column -->
-    <text x="520" y="543" text-anchor="middle" class="sector-tag">HEAT</text>
-    <rect x="460" y="550" width="130" height="42" rx="8" fill="#fff" stroke="#b03030" stroke-width="1.2"/>
-    <text x="525" y="567" text-anchor="middle" class="mod">operation.py</text>
-    <text x="525" y="583" text-anchor="middle" class="mod-sub">demand</text>
+    <!-- planned, within / alongside these files -->
+    <text x="240" y="650" text-anchor="middle" class="sector-tag">+ PLANNED</text>
+    <rect x="170" y="658" width="475" height="62" rx="8" fill="#fff" stroke="#b03030" stroke-width="1.2" stroke-dasharray="4 3"/>
+    <text x="407" y="680" text-anchor="middle" class="mod-flag">within …Electricity.py:  dc_opf / ac_opf  ·  unit commitment on/off</text>
+    <text x="407" y="697" text-anchor="middle" class="mod-sub" font-style="italic">selectable formulation builders — picked by which functions the driver calls</text>
+    <text x="407" y="711" text-anchor="middle" class="mod-sub" font-style="italic">same idea splits Heat / Hydrogen / Hydro into operation + network later</text>
 
-    <rect x="460" y="600" width="130" height="42" rx="8" fill="#fff" stroke="#b03030" stroke-width="1.2"/>
-    <text x="525" y="617" text-anchor="middle" class="mod">network.py</text>
-    <text x="525" y="633" text-anchor="middle" class="mod-sub">pipe flow</text>
-
-    <!-- Hydrogen column -->
-    <text x="660" y="543" text-anchor="middle" class="sector-tag">HYDROGEN</text>
-    <rect x="600" y="550" width="130" height="42" rx="8" fill="#fff" stroke="#b03030" stroke-width="1.2"/>
-    <text x="665" y="567" text-anchor="middle" class="mod">operation.py</text>
-    <text x="665" y="583" text-anchor="middle" class="mod-sub">demand · electrolyser</text>
-
-    <rect x="600" y="600" width="130" height="42" rx="8" fill="#fff" stroke="#b03030" stroke-width="1.2"/>
-    <text x="665" y="617" text-anchor="middle" class="mod">network.py</text>
-    <text x="665" y="633" text-anchor="middle" class="mod-sub">pipe flow</text>
-
-    <!-- Hydro column -->
-    <text x="800" y="543" text-anchor="middle" class="sector-tag">HYDRO</text>
-    <rect x="740" y="550" width="130" height="42" rx="8" fill="#fff" stroke="#b03030" stroke-width="1.2"/>
-    <text x="805" y="567" text-anchor="middle" class="mod">reservoir.py</text>
-    <text x="805" y="583" text-anchor="middle" class="mod-sub">water balance</text>
-
-    <rect x="740" y="600" width="130" height="42" rx="8" fill="#fff" stroke="#b03030" stroke-width="1.2"/>
-    <text x="805" y="617" text-anchor="middle" class="mod">cascade.py</text>
-    <text x="805" y="633" text-anchor="middle" class="mod-sub">inflow · pumping</text>
-
-    <!-- Future sector column -->
-    <text x="940" y="543" text-anchor="middle" class="sector-tag">+ FUTURE</text>
-    <rect x="880" y="550" width="130" height="42" rx="8" fill="#fff" stroke="#b03030" stroke-width="1.2" stroke-dasharray="4 3"/>
-    <text x="945" y="567" text-anchor="middle" class="mod">district_cool/</text>
-    <text x="945" y="583" text-anchor="middle" class="mod-sub" font-style="italic">drop-in folder</text>
-
-    <rect x="880" y="600" width="130" height="42" rx="8" fill="#fff" stroke="#b03030" stroke-width="1.2" stroke-dasharray="4 3"/>
-    <text x="945" y="617" text-anchor="middle" class="mod">ccus/</text>
-    <text x="945" y="633" text-anchor="middle" class="mod-sub" font-style="italic">drop-in folder</text>
-
-    <text x="1030" y="568" text-anchor="end" class="mod-sub" transform="rotate(-90, 1030, 568)">
-      splits 1 771-line ModelFormulation.py
-    </text>
+    <rect x="660" y="658" width="445" height="62" rx="8" fill="#fff" stroke="#b03030" stroke-width="1.2" stroke-dasharray="4 3"/>
+    <text x="882" y="680" text-anchor="middle" class="mod-flag">new sector files:  district cooling  ·  CCUS</text>
+    <text x="882" y="697" text-anchor="middle" class="mod-sub" font-style="italic">drop-in: add one file per new energy carrier,</text>
+    <text x="882" y="711" text-anchor="middle" class="mod-sub" font-style="italic">no edits to the existing sectors</text>
   </g>
 
   <!-- arrow 4 -->
