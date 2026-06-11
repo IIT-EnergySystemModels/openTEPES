@@ -35,9 +35,12 @@ Besides, it also requires the following packages:
 
 Here, you have the input files of:
 
-- a [static small case study of 9 nodes](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/9n),
+- a [static small case study of 9 nodes](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/9n), the minimal electricity example and the recommended starting point for building a new case,
+- the same [9-node case solved with a PTDF network formulation](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/9n_PTDF), which uses power transfer distribution factors and total transfer capacities instead of the angle-based DC power flow,
+- the same [9-node case coupled with a heat network](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/9n_heat), which adds heat demand and a heat pipe network on top of the electricity system,
+- the same [9-node case coupled with a hydrogen network](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/9n_H2), which adds electrolyzers, hydrogen demand, and a hydrogen pipe network on top of the electricity system,
 - a [dynamic (multiyear) small case study of 9 nodes](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/9n7y) with 13 representative weeks per year,
-- another one like a [small Spanish system](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/sSEP),
+- another one like a [small Spanish system](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/sSEP), which also includes a hydrogen network,
 - a [modified RTS24 case study](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/RTS24),
 - the [static Reliability Test System Grid Modernization Lab Consortium (RTS-GMLC)](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/RTS-GMLC),
 - a [dynamic (multiyear) Reliability Test System Grid Modernization Lab Consortium (RTS-GMLC)](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/RTS-GMLC_6y) with 13 representative weeks per year, and
