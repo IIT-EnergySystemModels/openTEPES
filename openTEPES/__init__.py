@@ -23,6 +23,8 @@ from .openTEPES_InputSource       import *
 from .openTEPES_InputCSVSource    import *
 from .openTEPES_InputDuckDBSource import *
 from .openTEPES_InputData         import *
+from .openTEPES_DataConfiguration import *
+from .openTEPES_SettingUpVariables import *
 from .openTEPES_ModelFormulationObjective   import *
 from .openTEPES_ModelFormulationInvestment  import *
 from .openTEPES_ModelFormulationElectricity import *

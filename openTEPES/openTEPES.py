@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 5, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 11, 2026
 """
 
 # import dill as pickle
@@ -15,7 +15,9 @@ from   pyomo.environ import ConcreteModel, Set
 # Support running this file directly (e.g. VS Code "Run Python File"), where __package__ is empty and the
 # relative imports below have no parent package; fall back to absolute package imports in that case.
 try:
-    from .openTEPES_InputData        import InputData, DataConfiguration, SettingUpVariables
+    from .openTEPES_InputData         import InputData
+    from .openTEPES_DataConfiguration import DataConfiguration
+    from .openTEPES_SettingUpVariables import SettingUpVariables
     from .openTEPES_InputSource      import open_source
     from .openTEPES_ModelFormulationObjective  import TotalObjectiveFunction
     from .openTEPES_ModelFormulationInvestment import InvestmentElecModelFormulation, InvestmentHydroModelFormulation, InvestmentH2ModelFormulation, InvestmentHeatModelFormulation
@@ -32,7 +34,9 @@ try:
 except ImportError:
     import sys
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    from openTEPES.openTEPES_InputData        import InputData, DataConfiguration, SettingUpVariables
+    from openTEPES.openTEPES_InputData         import InputData
+    from openTEPES.openTEPES_DataConfiguration import DataConfiguration
+    from openTEPES.openTEPES_SettingUpVariables import SettingUpVariables
     from openTEPES.openTEPES_InputSource      import open_source
     from openTEPES.openTEPES_ModelFormulationObjective  import TotalObjectiveFunction
     from openTEPES.openTEPES_ModelFormulationInvestment import InvestmentElecModelFormulation, InvestmentHydroModelFormulation, InvestmentH2ModelFormulation, InvestmentHeatModelFormulation
