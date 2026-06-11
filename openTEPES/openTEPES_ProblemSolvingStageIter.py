@@ -138,7 +138,7 @@ def StageIterativeSolving(mTEPES, DirName, CaseName, SolverName, pIndLogConsole,
                 and (sum(1 for pp,ni,nf,cc in mTEPES.phc if pp <= p) == 0 or mTEPES.pIndBinNetHeatInvest() == 2)):
 
                 # No minimum RES requirements and no emission limit
-                if (max([mTEPES.pRESEnergy[p,ar] for ar in mTEPES.ar]) == 0 and (min([mTEPES.pEmission [p,ar] for ar in mTEPES.ar]) == math.inf or sum(mTEPES.pEmissionRate[nr] for nr in mTEPES.nr) == 0)):
+                if (max([mTEPES.pRESEnergy[p,ar]() for ar in mTEPES.ar]) == 0 and (min([mTEPES.pEmission [p,ar] for ar in mTEPES.ar]) == math.inf or sum(mTEPES.pEmissionRate[nr] for nr in mTEPES.nr) == 0)):
 
                     if (p,sc) == mTEPES.ps.last() and st == mTEPES.Last_st and mTEPES.NoRepetition == 0:
                         mTEPES.NoRepetition = 1
@@ -162,7 +162,7 @@ def StageIterativeSolving(mTEPES, DirName, CaseName, SolverName, pIndLogConsole,
                             c.deactivate()
 
                 # Minimum RES requirements or emission limit
-                elif (max([mTEPES.pRESEnergy[p,ar] for ar in mTEPES.ar]) > 0 or (min([mTEPES.pEmission [p,ar] for ar in mTEPES.ar]) < math.inf and sum(mTEPES.pEmissionRate[nr] for nr in mTEPES.nr) > 0)):
+                elif (max([mTEPES.pRESEnergy[p,ar]() for ar in mTEPES.ar]) > 0 or (min([mTEPES.pEmission [p,ar] for ar in mTEPES.ar]) < math.inf and sum(mTEPES.pEmissionRate[nr] for nr in mTEPES.nr) > 0)):
 
                     if st == mTEPES.Last_st and mTEPES.NoRepetition == 0:
 

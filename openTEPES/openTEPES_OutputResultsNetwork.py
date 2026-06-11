@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 03, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 11, 2026
 
 Electric network operation results and network map.
 
@@ -138,7 +138,7 @@ def NetworkMapResults(DirName, CaseName, OptModel, mTEPES):
         for nd,zn in mTEPES.ndzn:
             loc_df.loc[nd,'Lon'   ] = mTEPES.pNodeLon[nd]
             loc_df.loc[nd,'Zone'  ] = zn
-            loc_df.loc[nd,'Demand'] = mTEPES.pDemandElec[p,sc,n,nd]*1e3
+            loc_df.loc[nd,'Demand'] = mTEPES.pDemandElec[p,sc,n,nd]()*1e3
 
         loc_df = loc_df.reset_index().rename(columns={'Type': 'Scenario'}, inplace=False)
 
