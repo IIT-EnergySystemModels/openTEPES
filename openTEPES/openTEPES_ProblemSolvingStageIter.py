@@ -1,6 +1,4 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 12, 2026
-
 openTEPES.openTEPES_ProblemSolvingStageIter — stage-by-stage formulate-and-solve driver.
 
 ``StageIterativeSolving`` runs the model's per-stage loop: for every ``(period, scenario, stage)`` it activates

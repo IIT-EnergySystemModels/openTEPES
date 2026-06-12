@@ -1,29 +1,11 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 12, 2026
-
 openTEPES.openTEPES_ProblemSolvingResolve — Mode C post-build hot-swap re-solve.
 
-Re-solve an already-built openTEPES model under a sequence of parameter overlays without
-rebuilding it. Building the model is the slow step on large cases (tens of seconds), so
-re-using one built model across many parameter values is the cheapest way to run a
-parametric sweep, a sensitivity study, or a Monte-Carlo on parameter values.
-
-Only Params declared ``mutable=True`` can be hot-swapped. The operational sweep set
-promoted for Mode C is::
-
-    pDemandElec  pENSCost  pLinearVarCost  pEFOR  pReserveMargin  pRESEnergy
-
-(see ``openTEPES_DataConfiguration.py``). Structural and topology Params stay immutable
-because they are read in build-time Python conditionals; changing them needs a rebuild
-(RFC Modes A / B).
-
-An overlay is a dict mapping a Param name to its new values::
-
-    {"pDemandElec": {(p, sc, n, nd): value, ...}}   # indexed Param: dict of index -> value
-    {"pENSCost": 12000.0}                            # scalar Param: a single value
-
-``overlay_scaled`` builds the common "scale the current values by a factor" overlay.
-
+Re-solve an already-built model once per parameter overlay without rebuilding it, so a
+sweep, sensitivity study or Monte-Carlo reuses the one slow build. Only ``mutable=True``
+Params can be hot-swapped: the operational set ``pDemandElec``, ``pENSCost``,
+``pLinearVarCost``, ``pEFOR``, ``pReserveMargin``, ``pRESEnergy``. See ``resolve`` for the
+overlay format. Single-process building block for the fork()-based parallel runner (RFC PR #7).
 """
 from __future__ import annotations
 
@@ -43,34 +25,12 @@ def overlay_scaled(OptModel, param_name: str, factor: float) -> dict:
 def resolve(OptModel, SolverName: str, overlays, *, restore: bool = True, tee: bool = False):
     """Re-solve ``OptModel`` once per overlay, swapping mutable Param values in place.
 
-    Parameters
-    ----------
-    OptModel :
-        An already-built (and usually already-solved) openTEPES model.
-    SolverName : str
-        Any non-persistent solver name (``gurobi``, ``highs``, ``cplex``, ``glpk`` ...).
-        Each call re-reads the current mutable Param values, so no explicit solver update
-        is needed. Persistent backends (``appsi_gurobi`` / ``gurobi_persistent``) are not
-        yet supported here and need an ``update_params`` pass; use a one-shot solver.
-    overlays : list of dict
-        Each dict maps a mutable Param name to new values (a dict ``index -> value`` for an
-        indexed Param, or a scalar for a scalar Param). Every overlay is applied **relative
-        to the baseline** (the Param values at call time), not to the previous overlay: the
-        touched Params are reset to their baseline values before each overlay is stored, so
-        ``[{"pDemandElec": ...}, {"pENSCost": ...}]`` solves demand-only then ENS-cost-only.
-        An empty dict ``{}`` re-solves the baseline unchanged.
-    restore : bool, default True
-        Restore the original Param values after the sweep so the model can be reused. With
-        ``restore=False`` the last overlay stays applied.
-    tee : bool, default False
-        Stream solver output.
-
-    Returns
-    -------
-    list of dict
-        One entry per overlay: ``{"overlay": i, "status": <termination condition>,
-        "total_cost_meur": <float or None>}``. ``total_cost_meur`` is None when the solve
-        did not reach an optimal solution.
+    ``overlays`` is a list of dicts, each mapping a mutable Param name to new values (a
+    dict ``index -> value`` for an indexed Param, or a scalar). Each overlay is applied
+    relative to the baseline (values at call time), not cumulatively; ``{}`` re-solves the
+    baseline. With ``restore`` (default) the baseline is restored at the end. ``SolverName``
+    must be a non-persistent solver. Returns one dict per overlay with the termination
+    condition and total system cost (None if not optimal).
     """
     overlays = list(overlays)
 
