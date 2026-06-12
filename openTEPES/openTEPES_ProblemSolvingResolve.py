@@ -1,4 +1,6 @@
 """
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 11, 2026
+
 openTEPES.openTEPES_ProblemSolvingResolve — Mode C post-build hot-swap re-solve.
 
 Re-solve an already-built model once per parameter overlay without rebuilding it, so a
