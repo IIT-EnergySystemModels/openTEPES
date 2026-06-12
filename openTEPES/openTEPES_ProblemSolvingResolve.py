@@ -24,8 +24,6 @@ An overlay is a dict mapping a Param name to its new values::
 
 ``overlay_scaled`` builds the common "scale the current values by a factor" overlay.
 
-This is the single-process building block. The fork()-based parallel runner of RFC PR #7
-composes it across worker processes (build once in the master, fork, resolve in each child).
 """
 from __future__ import annotations
 
