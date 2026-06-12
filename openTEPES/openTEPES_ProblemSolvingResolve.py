@@ -5,7 +5,7 @@ Re-solve an already-built model once per parameter overlay without rebuilding it
 sweep, sensitivity study or Monte-Carlo reuses the one slow build. Only ``mutable=True``
 Params can be hot-swapped: the operational set ``pDemandElec``, ``pENSCost``,
 ``pLinearVarCost``, ``pEFOR``, ``pReserveMargin``, ``pRESEnergy``. See ``resolve`` for the
-overlay format. Single-process building block for the fork()-based parallel runner (RFC PR #7).
+overlay format.
 """
 from __future__ import annotations
 
