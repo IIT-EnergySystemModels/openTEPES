@@ -351,8 +351,9 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
                            else getattr(mTEPES, "vTotalSCost", lambda: float("nan"))())
     except Exception:
         _TotalCost = float("nan")
-    # ENS in MWh and HUE in hours — system-wide totals. Cheap to compute (one
-    # pass over vENS); skipped silently if the variable / index set is missing.
+    # ENS in MWh and HUE in hours — system-wide totals. vENS is in GW (the model's internal power unit), so
+    # GW x h is converted to MWh with a factor 1e3. Cheap to compute (one pass over vENS); skipped silently
+    # if the variable / index set is missing.
     _EnsMwh = float("nan")
     _HueH   = float("nan")
     try:
@@ -364,7 +365,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
             _hue_h   = 0.0
             for (p, sc, n), val in _ens_psn.items():
                 _dur = float(mTEPES.pLoadLevelDuration[p, sc, n]())
-                _ens_mwh += val * _dur
+                _ens_mwh += val * _dur * 1e3
                 if val > 0:
                     _hue_h += _dur
             _EnsMwh = round(_ens_mwh, 4)

@@ -7,6 +7,7 @@ import pandas as pd
 
 from openTEPES.openTEPES import openTEPES_run
 from openTEPES.openTEPES_ProblemSolvingBenders import lshaped
+from openTEPES.openTEPES_ProblemSolvingResolve import resolve, overlay_scaled
 
 
 # === Fixture: single-stage 7-day system ===
@@ -311,6 +312,37 @@ def test_benders_lshaped_matches_joint_lp(case_7d_system):
         f"Benders total cost diverges from joint LP by {rel_err:.2e} "
         f"(Benders={result['total_cost']:.6f}, joint={joint_cost:.6f})"
     )
+
+
+# === Mode C hot-swap re-solve test ===
+#
+# Builds 9n once via openTEPES_run, then re-solves it under parameter overlays without rebuilding
+# (openTEPES_ProblemSolvingResolve.resolve). An identity overlay must reproduce the from-build
+# objective exactly: this is the Mode C parity guarantee, since the hot-swap path feeds the same
+# mutable Param into the same constraint expressions as the build path — there is no separate
+# "baked-in" code path. A +10% demand overlay must raise total cost, and restoring the baseline
+# must return the objective to its original value (store_values reversibility).
+@pytest.mark.solve
+@pytest.mark.parametrize("case_7d_system", ["9n"], indirect=["case_7d_system"])
+def test_mode_c_resolve_demand_hot_swap(case_7d_system):
+    """Mode C: re-solve 9n under demand overlays without rebuilding; identity == build, +10% > build."""
+    mTEPES = openTEPES_run(**case_7d_system)
+    base = mTEPES.vTotalSCost()
+
+    identity = resolve(mTEPES, "highs", [{}])
+    assert identity[0]["status"] == "optimal"
+    assert identity[0]["total_cost_meur"] == pytest.approx(base, rel=1e-7)
+
+    # Two overlays in one sweep: overlays must be independent (each applied relative to the
+    # baseline, not to the previous overlay), so the empty second overlay must reproduce the
+    # baseline cost even though the first overlay raised demand.
+    sweep = resolve(mTEPES, "highs", [overlay_scaled(mTEPES, "pDemandElec", 1.10), {}], restore=True)
+    assert sweep[0]["status"] == "optimal"
+    assert sweep[0]["total_cost_meur"] > base
+    assert sweep[1]["total_cost_meur"] == pytest.approx(base, rel=1e-7)
+
+    restored = resolve(mTEPES, "highs", [{}])
+    assert restored[0]["total_cost_meur"] == pytest.approx(base, rel=1e-7)
 
 
 # === Binary (MILP) investment test ===

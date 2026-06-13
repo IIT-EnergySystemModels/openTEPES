@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 03, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 11, 2026
 
 Marginal, cost-summary, and economic results.
 
@@ -75,7 +75,7 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES, pIndPlotOutput):
 
     #%% outputting the incremental variable cost of each Generator (neither ESS nor boilers) with power surplus
     sPSNARG      = [(p,sc,n,ar,g) for p,sc,n,ar,g in mTEPES.psn*mTEPES.a2g if g not in mTEPES.eh and g not in mTEPES.bo and (p,g) in mTEPES.pg]
-    OutputToFile = pd.Series(data=[(mTEPES.pLinearVarCost[p,sc,n,g]+mTEPES.pEmissionVarCost[p,sc,n,g]) if OptModel.vTotalOutput[p,sc,n,g].ub - OptModel.vTotalOutput[p,sc,n,g]() > pEpsilon else math.inf for p,sc,n,ar,g in sPSNARG], index=pd.Index(sPSNARG))
+    OutputToFile = pd.Series(data=[(mTEPES.pLinearVarCost[p,sc,n,g]()+mTEPES.pEmissionVarCost[p,sc,n,g]) if OptModel.vTotalOutput[p,sc,n,g].ub - OptModel.vTotalOutput[p,sc,n,g]() > pEpsilon else math.inf for p,sc,n,ar,g in sPSNARG], index=pd.Index(sPSNARG))
     OutputToFile *= 1e3
 
     OutputToFile = OutputToFile.to_frame(name='EUR/MWh').reset_index().pivot_table(index=['level_0','level_1','level_2','level_3'], columns='level_4', values='EUR/MWh')
@@ -148,15 +148,15 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES, pIndPlotOutput):
                 chart = LinePlots(p, sc, OptModel.LSRMCHeat, 'Node', 'LoadLevel', 'EUR/GJ', 'average')
                 chart.save(f'{_path}/oT_Plot_NetworkSRMCHeat_{CaseName}_{p}_{sc}.html', embed_options={'renderer': 'svg'})
 
-    if sum(mTEPES.pReserveMargin[:,:]):
+    if sum(mTEPES.pReserveMargin[idx]() for idx in mTEPES.pReserveMargin):
         if mTEPES.gc:
-            sPSSTAR           = [(p,sc,st,ar) for p,sc,st,ar in mTEPES.ps*mTEPES.st*mTEPES.ar if mTEPES.pReserveMargin[p,ar] and st == mTEPES.Last_st and sum(1 for g in mTEPES.g if g in g2a[ar]) and (p,sc,n) in mTEPES.psn and sum(mTEPES.pRatedMaxPowerElec[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]) for g in mTEPES.g if g in g2a[ar] and g not in (mTEPES.gc or mTEPES.gd)) <= mTEPES.pDemandElecPeak[p,ar] * mTEPES.pReserveMargin[p,ar]]
+            sPSSTAR           = [(p,sc,st,ar) for p,sc,st,ar in mTEPES.ps*mTEPES.st*mTEPES.ar if mTEPES.pReserveMargin[p,ar]() and st == mTEPES.Last_st and sum(1 for g in mTEPES.g if g in g2a[ar]) and (p,sc,n) in mTEPES.psn and sum(mTEPES.pRatedMaxPowerElec[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]()) for g in mTEPES.g if g in g2a[ar] and g not in (mTEPES.gc or mTEPES.gd)) <= mTEPES.pDemandElecPeak[p,ar] * mTEPES.pReserveMargin[p,ar]()]
             if sPSSTAR:
                 OutputResults = pd.Series(data=[mTEPES.pDuals[f'eAdequacyReserveMarginElec_{p}_{sc}_{st}{ar}'] for p,sc,st,ar in sPSSTAR], index=pd.Index(sPSSTAR))
                 OutputResults.to_frame(name='RM').reset_index().pivot_table(index=['level_0','level_1'], columns='level_3', values='RM').rename_axis(['Period', 'Scenario'], axis=0).rename_axis([None], axis=1).to_csv(f'{_path}/oT_Result_MarginalReserveMargin_{CaseName}.csv', sep=',')
 
     if mTEPES.pIndHeat and mTEPES.gc and sum(mTEPES.pReserveMarginHeat[:,:]):
-        sPSSTAR           = [(p,sc,st,ar) for p,sc,st,ar in mTEPES.ps*mTEPES.st*mTEPES.ar if mTEPES.pReserveMarginHeat[p,ar] and st == mTEPES.Last_st and sum(1 for g in mTEPES.g if g in g2a[ar]) and (p,sc,n) in mTEPES.psn and sum(mTEPES.pRatedMaxPowerHeat[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]) for g in mTEPES.g if g in g2a[ar] and g not in (mTEPES.gc or mTEPES.gd)) <= mTEPES.pDemandHeatPeak[p,ar] * mTEPES.pReserveMarginHeat[p,ar]]
+        sPSSTAR           = [(p,sc,st,ar) for p,sc,st,ar in mTEPES.ps*mTEPES.st*mTEPES.ar if mTEPES.pReserveMarginHeat[p,ar] and st == mTEPES.Last_st and sum(1 for g in mTEPES.g if g in g2a[ar]) and (p,sc,n) in mTEPES.psn and sum(mTEPES.pRatedMaxPowerHeat[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]()) for g in mTEPES.g if g in g2a[ar] and g not in (mTEPES.gc or mTEPES.gd)) <= mTEPES.pDemandHeatPeak[p,ar] * mTEPES.pReserveMarginHeat[p,ar]]
         if sPSSTAR:
             OutputResults = pd.Series(data=[mTEPES.pDuals[f'eAdequacyReserveMarginHeat_{p}_{sc}_{st}{ar}'] for p,sc,st,ar in sPSSTAR], index=pd.Index(sPSSTAR))
             OutputResults.to_frame(name='RM').reset_index().pivot_table(index=['level_0','level_1'], columns='level_3', values='RM').rename_axis(['Period', 'Scenario'], axis=0).rename_axis([None], axis=1).to_csv(f'{_path}/oT_Result_MarginalReserveMarginHeat_{CaseName}.csv', sep=',')
@@ -166,7 +166,7 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES, pIndPlotOutput):
         OutputResults = pd.Series(data=[mTEPES.pDuals[f'eMaxSystemEmission_{p}_{sc}_{st}{ar}'] for p,sc,st,ar in sPSSTAR], index=pd.Index(sPSSTAR))
         OutputResults.to_frame(name='EM').reset_index().pivot_table(index=['level_0','level_1'], columns='level_3', values='EM').rename_axis(['Period', 'Scenario'], axis=0).rename_axis([None], axis=1).to_csv(f'{_path}/oT_Result_MarginalEmission_{CaseName}.csv', sep=',')
 
-    sPSSTAR           = [(p,sc,st,ar) for p,sc,st,ar in mTEPES.ps*mTEPES.st*mTEPES.ar if mTEPES.pRESEnergy[p,ar] and st == mTEPES.Last_st and (p,sc,n) in mTEPES.psn]
+    sPSSTAR           = [(p,sc,st,ar) for p,sc,st,ar in mTEPES.ps*mTEPES.st*mTEPES.ar if mTEPES.pRESEnergy[p,ar]() and st == mTEPES.Last_st and (p,sc,n) in mTEPES.psn]
     if sPSSTAR:
         OutputResults = pd.Series(data=[mTEPES.pDuals[f'eMinSystemRESEnergy_{p}_{sc}_{st}{ar}'] for p,sc,st,ar in sPSSTAR], index=pd.Index(sPSSTAR))
         OutputResults *= 1e-3*sum(mTEPES.pLoadLevelDuration[p,sc,na]() for na in mTEPES.na)
@@ -272,7 +272,7 @@ def CostSummaryResults(DirName, CaseName, OptModel, mTEPES):
         CostSummary.loc[CostSummary['Period'] == p, 'MEUR/year'] = CostSummary.loc[CostSummary['Period'] == p, 'MEUR'] / mTEPES.pDiscountedWeight[p]
     CostSummary.to_csv(f'{_path}/oT_Result_CostSummary_{CaseName}.csv', sep=',', index=False)
 
-    # DemPayment   = pd.Series(data=[mTEPES.pDiscountedWeight[p] * sum(mTEPES.pScenProb     [p,sc]() * mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pDemandElec[p,sc,n,nd] * OptModel.LSRMC            [p,sc,n,nd] for sc,n,nd in mTEPES.sc*mTEPES.n*mTEPES.nd if (p,sc) in mTEPES.ps )/1e3 for p in mTEPES.p], index=mTEPES.p).to_frame(name='Demand Payment'            ).stack()
+    # DemPayment   = pd.Series(data=[mTEPES.pDiscountedWeight[p] * sum(mTEPES.pScenProb     [p,sc]() * mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pDemandElec[p,sc,n,nd]() * OptModel.LSRMC            [p,sc,n,nd] for sc,n,nd in mTEPES.sc*mTEPES.n*mTEPES.nd if (p,sc) in mTEPES.ps )/1e3 for p in mTEPES.p], index=mTEPES.p).to_frame(name='Demand Payment'            ).stack()
 
     WritingResultsTime = time.time() - StartTime
     print('Writing          cost summary results  ... ', round(WritingResultsTime), 's')
@@ -374,7 +374,7 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput, pIndPlo
         OutputResults03 = pd.Series(data=[ sum(OptModel.vTotalOutput   [p,sc,n,eh      ]()*mTEPES.pLoadLevelDuration[p,sc,n]() for eh in e2n[nd] if (p,eh) in mTEPES.peh and eh in e2e[et]                        ) for p,sc,n,ar,nd,et in sPSNARNDET], index=pd.Index(sPSNARNDET)).to_frame(name='Generation'     ).reset_index().pivot_table(index=['level_0','level_1','level_2','level_3','level_4'], columns='level_5', values='Generation' , aggfunc='sum')
         OutputResults04 = pd.Series(data=[-sum(OptModel.vESSTotalCharge[p,sc,n,eh      ]()*mTEPES.pLoadLevelDuration[p,sc,n]() for eh in e2n[nd] if (p,eh) in mTEPES.peh and eh in e2e[et]                        ) for p,sc,n,ar,nd,et in sPSNARNDET], index=pd.Index(sPSNARNDET)).to_frame(name='Consumption'    ).reset_index().pivot_table(index=['level_0','level_1','level_2','level_3','level_4'], columns='level_5', values='Consumption', aggfunc='sum').rename(columns={et: et+str(' -') for et in mTEPES.et})
     OutputResults05     = pd.Series(data=[     OptModel.vENS           [p,sc,n,nd      ]()*mTEPES.pLoadLevelDuration[p,sc,n]()                                                                                      for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='EnergyNotServed')
-    OutputResults06     = pd.Series(data=[-  mTEPES.pDemandElec        [p,sc,n,nd      ]  *mTEPES.pLoadLevelDuration[p,sc,n]()                                                                                      for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='EnergyDemand'   )
+    OutputResults06     = pd.Series(data=[-  mTEPES.pDemandElec        [p,sc,n,nd      ]()  *mTEPES.pLoadLevelDuration[p,sc,n]()                                                                                      for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='EnergyDemand'   )
     OutputResults07     = pd.Series(data=[-sum(OptModel.vFlowElec      [p,sc,n,nd,nf,cc]()*mTEPES.pLoadLevelDuration[p,sc,n]() for nf,cc in lout [nd] if (p,nd,nf,cc) in mTEPES.pla                               ) for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='EnergyFlowOut'  )
     OutputResults08     = pd.Series(data=[ sum(OptModel.vFlowElec      [p,sc,n,ni,nd,cc]()*mTEPES.pLoadLevelDuration[p,sc,n]() for ni,cc in lin  [nd] if (p,ni,nd,cc) in mTEPES.pla                               ) for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='EnergyFlowIn'   )
     if mTEPES.ll:
@@ -429,7 +429,7 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput, pIndPlo
         OutputResults03 = pd.Series(data=[    OptModel.vTotalOutput   [p,sc,n,eh      ]()*mTEPES.pLoadLevelDuration[p,sc,n]()                                                       for p,sc,n,ar,nd,eh in sPSNARNDEH], index=pd.Index(sPSNARNDEH)).to_frame(name='Generation'     ).reset_index().pivot_table(index=['level_0','level_1','level_2','level_3','level_4'], columns='level_5', values='Generation' , aggfunc='sum')
         OutputResults04 = pd.Series(data=[   -OptModel.vESSTotalCharge[p,sc,n,eh      ]()*mTEPES.pLoadLevelDuration[p,sc,n]()                                                       for p,sc,n,ar,nd,eh in sPSNARNDEH], index=pd.Index(sPSNARNDEH)).to_frame(name='Consumption'    ).reset_index().pivot_table(index=['level_0','level_1','level_2','level_3','level_4'], columns='level_5', values='Consumption', aggfunc='sum').rename(columns={et: et+str(' -') for et in mTEPES.et})
     OutputResults05     = pd.Series(data=[    OptModel.vENS           [p,sc,n,nd      ]()*mTEPES.pLoadLevelDuration[p,sc,n]()                                                       for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='EnergyNotServed')
-    OutputResults06     = pd.Series(data=[   -mTEPES.pDemandElec      [p,sc,n,nd      ]  *mTEPES.pLoadLevelDuration[p,sc,n]()                                                       for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='EnergyDemand'   )
+    OutputResults06     = pd.Series(data=[   -mTEPES.pDemandElec      [p,sc,n,nd      ]()  *mTEPES.pLoadLevelDuration[p,sc,n]()                                                       for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='EnergyDemand'   )
     OutputResults08     = pd.Series(data=[sum(OptModel.vFlowElec      [p,sc,n,ni,nd,cc]()*mTEPES.pLoadLevelDuration[p,sc,n]() for ni,cc in lin  [nd] if (p,ni,nd,cc) in mTEPES.pla) for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='EnergyFlowIn'   )
     if mTEPES.ll:
         OutputResults09 = pd.Series(data=[-sum(OptModel.vLineLosses   [p,sc,n,nd,nf,cc]()*mTEPES.pLoadLevelDuration[p,sc,n]() for nf,cc in loutl[nd] if (p,nd,nf,cc) in mTEPES.pla) for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='LineLossesOut'  )
@@ -473,7 +473,7 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput, pIndPlo
     # df['NodeFin'] = df['Node']
     # df.pivot_table(index=['Period', 'Scenario', 'LoadLevel', 'Area', 'Node', 'AreaFin', 'NodeFin'], columns='Technology', values=0, aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel', 'Area', 'Node', 'AreaFin', 'NodeFin'], axis=0).reset_index().rename(columns={0: 'GWh'}, inplace=False).to_csv(f'{_path}/oT_Result_BalanceEnergyPerNetwork_{CaseName}.csv', index=False, sep=',')
 
-    OutputToFile = pd.Series(data=[(mTEPES.pDiscountedWeight[p] * mTEPES.pScenProb[p,sc]() * mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pLinearVarCost  [p,sc,n,nr] * OptModel.vTotalOutput[p,sc,n,nr]() +
+    OutputToFile = pd.Series(data=[(mTEPES.pDiscountedWeight[p] * mTEPES.pScenProb[p,sc]() * mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pLinearVarCost  [p,sc,n,nr]() * OptModel.vTotalOutput[p,sc,n,nr]() +
                                     mTEPES.pDiscountedWeight[p] * mTEPES.pScenProb[p,sc]() * mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pConstantVarCost[p,sc,n,nr] * OptModel.vCommitment [p,sc,n,nr]() +
                                     mTEPES.pDiscountedWeight[p] * mTEPES.pScenProb[p,sc]() * mTEPES.pLoadLevelWeight  [p,sc,n]() * mTEPES.pStartUpCost    [       nr] * OptModel.vStartUp    [p,sc,n,nr]() +
                                     mTEPES.pDiscountedWeight[p] * mTEPES.pScenProb[p,sc]() * mTEPES.pLoadLevelWeight  [p,sc,n]() * mTEPES.pShutDownCost   [       nr] * OptModel.vShutDown   [p,sc,n,nr]()) for p,sc,n,nr in mTEPES.psnnr], index=mTEPES.psnnr)
@@ -491,7 +491,7 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput, pIndPlo
             OutputToFile.to_frame(name='MEUR').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MEUR', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(f'{_path}/oT_Result_GenerationCostOperatingReserve_{CaseName}.csv', sep=',')
 
     if mTEPES.psnehc:
-        OutputToFile = pd.Series(data=[ mTEPES.pDiscountedWeight[p] * mTEPES.pScenProb[p,sc]() * mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pLinearVarCost[p,sc,n,eh] * OptModel.vESSTotalCharge[p,sc,n,eh]() for p,sc,n,eh in mTEPES.psnehc], index=mTEPES.psnehc)
+        OutputToFile = pd.Series(data=[ mTEPES.pDiscountedWeight[p] * mTEPES.pScenProb[p,sc]() * mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pLinearVarCost[p,sc,n,eh]() * OptModel.vESSTotalCharge[p,sc,n,eh]() for p,sc,n,eh in mTEPES.psnehc], index=mTEPES.psnehc)
         OutputToFile.to_frame(name='MEUR').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MEUR', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(f'{_path}/oT_Result_ConsumptionCostOperation_{CaseName}.csv', sep=',')
         if sum(mTEPES.pIndOperReserveGen[eh] for eh in mTEPES.eh if mTEPES.pIndOperReserveGen[eh] == 0) + sum(mTEPES.pIndOperReserveCon[eh] for eh in mTEPES.eh if mTEPES.pIndOperReserveCon[eh] == 0):
             OutputToFile = pd.Series(data=[(mTEPES.pDiscountedWeight[p] * mTEPES.pScenProb[p,sc]() * mTEPES.pLoadLevelWeight[p,sc,n]() * mTEPES.pOperReserveCost[eh] * OptModel.vESSReserveUp  [p,sc,n,eh]() +
@@ -525,7 +525,7 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput, pIndPlo
                     if mTEPES.nr:
                         sPSNNR = [(p,sc,n,nr) for p,sc,n,nr in mTEPES.psnnr if nr in n2a[ar]]
                         if sPSNNR:
-                            OutputResults1 =     pd.Series(data=[(mTEPES.pDiscountedWeight[p] * mTEPES.pScenProb[p,sc]() * mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pLinearVarCost  [p,sc,n,nr] * OptModel.vTotalOutput[p,sc,n,nr]() +
+                            OutputResults1 =     pd.Series(data=[(mTEPES.pDiscountedWeight[p] * mTEPES.pScenProb[p,sc]() * mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pLinearVarCost  [p,sc,n,nr]() * OptModel.vTotalOutput[p,sc,n,nr]() +
                                                                   mTEPES.pDiscountedWeight[p] * mTEPES.pScenProb[p,sc]() * mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pConstantVarCost[p,sc,n,nr] * OptModel.vCommitment [p,sc,n,nr]() +
                                                                   mTEPES.pDiscountedWeight[p] * mTEPES.pScenProb[p,sc]() * mTEPES.pLoadLevelWeight  [p,sc,n]() * mTEPES.pStartUpCost    [       nr] * OptModel.vStartUp    [p,sc,n,nr]() +
                                                                   mTEPES.pDiscountedWeight[p] * mTEPES.pScenProb[p,sc]() * mTEPES.pLoadLevelWeight  [p,sc,n]() * mTEPES.pShutDownCost   [       nr] * OptModel.vShutDown   [p,sc,n,nr]()) for p,sc,n,nr in sPSNNR], index=pd.Index(sPSNNR))
@@ -553,8 +553,8 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput, pIndPlo
                     if mTEPES.psnehc:
                         sPSNES = [(p,sc,n,eh) for p,sc,n,eh in mTEPES.psnehc if eh in g2a[ar]]
                         if sPSNES:
-                            if sum(mTEPES.pLinearVarCost  [:,:,:,:]):
-                                OutputResults4 = pd.Series(data=[ mTEPES.pDiscountedWeight[p] * mTEPES.pScenProb[p,sc]() * mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pLinearVarCost  [p,sc,n,eh] * OptModel.vESSTotalCharge[p,sc,n,eh]()  for p,sc,n,eh in sPSNES], index=pd.Index(sPSNES))
+                            if sum(mTEPES.pLinearVarCost[idx]() for idx in mTEPES.pLinearVarCost):
+                                OutputResults4 = pd.Series(data=[ mTEPES.pDiscountedWeight[p] * mTEPES.pScenProb[p,sc]() * mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pLinearVarCost  [p,sc,n,eh]() * OptModel.vESSTotalCharge[p,sc,n,eh]()  for p,sc,n,eh in sPSNES], index=pd.Index(sPSNES))
                                 OutputResults4 = Transformation1(OutputResults4, 'Operation Cost Consumption')
                             if sum(mTEPES.pIndOperReserveGen[eh] for eh in mTEPES.eh if mTEPES.pIndOperReserveCon[eh] == 0) + sum(mTEPES.pIndOperReserveGen[eh] for eh in mTEPES.eh if mTEPES.pIndOperReserveCon[eh] == 0):
                                 OutputResults5 = pd.Series(data=[(mTEPES.pDiscountedWeight[p] * mTEPES.pScenProb[p,sc]() * mTEPES.pLoadLevelWeight  [p,sc,n]() * mTEPES.pOperReserveCost[       eh] * OptModel.vESSReserveUp  [p,sc,n,eh]() +
@@ -630,9 +630,9 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput, pIndPlo
             else:
                 ChargeRev     = pd.Series(data=[0.0 for gc in mTEPES.gc], index=mTEPES.gc, dtype='float64')
 
-    if sum(mTEPES.pReserveMargin[:,:]):
+    if sum(mTEPES.pReserveMargin[idx]() for idx in mTEPES.pReserveMargin):
         if mTEPES.gc:
-            sPSSTARGC           = [(p,sc,st,ar,gc) for p,sc,st,ar,gc in mTEPES.ps*mTEPES.st*mTEPES.ar*mTEPES.gc if gc in g2a[ar] and (p,gc) in mTEPES.pgc and mTEPES.pReserveMargin[p,ar] and st == mTEPES.Last_st and sum(1 for gc in mTEPES.gc if gc in g2a[ar]) and sum(mTEPES.pRatedMaxPowerElec[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]) for g in mTEPES.g if g in g2a[ar] and g not in (mTEPES.gc or mTEPES.gd)) <= mTEPES.pDemandElecPeak[p,ar] * mTEPES.pReserveMargin[p,ar]]
+            sPSSTARGC           = [(p,sc,st,ar,gc) for p,sc,st,ar,gc in mTEPES.ps*mTEPES.st*mTEPES.ar*mTEPES.gc if gc in g2a[ar] and (p,gc) in mTEPES.pgc and mTEPES.pReserveMargin[p,ar]() and st == mTEPES.Last_st and sum(1 for gc in mTEPES.gc if gc in g2a[ar]) and sum(mTEPES.pRatedMaxPowerElec[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]()) for g in mTEPES.g if g in g2a[ar] and g not in (mTEPES.gc or mTEPES.gd)) <= mTEPES.pDemandElecPeak[p,ar] * mTEPES.pReserveMargin[p,ar]()]
             OutputToResRev      = pd.Series(data=[mTEPES.pDuals[f'eAdequacyReserveMarginElec_{p}_{sc}_{st}{ar}']*mTEPES.pRatedMaxPowerElec[gc]*mTEPES.pAvailability[gc]() for p,sc,st,ar,gc in sPSSTARGC], index=pd.Index(sPSSTARGC))
             ResRev              = pd.Series(data=[0.0 for gc in mTEPES.gc], index=mTEPES.gc, dtype='float64')
             if sPSSTARGC:
@@ -751,16 +751,16 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput, pIndPlo
         RampDwRev     = pd.Series(data=[0.0 for gc in mTEPES.gc], index=mTEPES.gc, dtype='float64')
 
     if mTEPES.gc:
-        GenCost = pd.Series(data=[sum(mTEPES.pDiscountedWeight[p] * mTEPES.pScenProb[p,sc]() * mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pLinearVarCost  [p,sc,n,gc] * OptModel.vTotalOutput   [p,sc,n,gc]() +
+        GenCost = pd.Series(data=[sum(mTEPES.pDiscountedWeight[p] * mTEPES.pScenProb[p,sc]() * mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pLinearVarCost  [p,sc,n,gc]() * OptModel.vTotalOutput   [p,sc,n,gc]() +
                                       mTEPES.pDiscountedWeight[p] * mTEPES.pScenProb[p,sc]() * mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pConstantVarCost[p,sc,n,gc] * OptModel.vCommitment    [p,sc,n,gc]() +
                                       mTEPES.pDiscountedWeight[p] * mTEPES.pScenProb[p,sc]() * mTEPES.pLoadLevelWeight  [p,sc,n]() * mTEPES.pStartUpCost    [       gc] * OptModel.vStartUp       [p,sc,n,gc]() +
                                       mTEPES.pDiscountedWeight[p] * mTEPES.pScenProb[p,sc]() * mTEPES.pLoadLevelWeight  [p,sc,n]() * mTEPES.pShutDownCost   [       gc] * OptModel.vShutDown      [p,sc,n,gc]() for p,sc,n in mTEPES.psn if (p,gc) in mTEPES.pgc) if  gc in mTEPES.nr else
-                                  sum(mTEPES.pDiscountedWeight[p] * mTEPES.pScenProb[p,sc]() * mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pLinearVarCost  [p,sc,n,gc] * OptModel.vTotalOutput   [p,sc,n,gc]() for p,sc,n in mTEPES.psn if (p,gc) in mTEPES.pgc) for gc in mTEPES.gc], index=mTEPES.gc, dtype='float64')
+                                  sum(mTEPES.pDiscountedWeight[p] * mTEPES.pScenProb[p,sc]() * mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pLinearVarCost  [p,sc,n,gc]() * OptModel.vTotalOutput   [p,sc,n,gc]() for p,sc,n in mTEPES.psn if (p,gc) in mTEPES.pgc) for gc in mTEPES.gc], index=mTEPES.gc, dtype='float64')
         EmsCost = pd.Series(data=[sum(mTEPES.pDiscountedWeight[p] * mTEPES.pScenProb[p,sc]() * mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pEmissionVarCost[p,sc,n,gc] * OptModel.vTotalOutput   [p,sc,n,gc]() for p,sc,n in mTEPES.psn if (p,gc) in mTEPES.pgc) for gc in mTEPES.gc], index=mTEPES.gc, dtype='float64')
         OpGCost = pd.Series(data=[sum(mTEPES.pDiscountedWeight[p] * mTEPES.pScenProb[p,sc]() * mTEPES.pLoadLevelWeight  [p,sc,n]() * mTEPES.pOperReserveCost[       gc] * OptModel.vReserveUp     [p,sc,n,gc]() +
                                       mTEPES.pDiscountedWeight[p] * mTEPES.pScenProb[p,sc]() * mTEPES.pLoadLevelWeight  [p,sc,n]() * mTEPES.pOperReserveCost[       gc] * OptModel.vReserveDown   [p,sc,n,gc]() for p,sc,n in mTEPES.psn if (p,gc) in mTEPES.pgc) if  gc in mTEPES.nr else
                                   0.0                                                                                                                                                                                                                             for gc in mTEPES.gc], index=mTEPES.gc, dtype='float64')
-        CnsCost = pd.Series(data=[sum(mTEPES.pDiscountedWeight[p] * mTEPES.pScenProb[p,sc]() * mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pLinearVarCost  [p,sc,n,ec] * OptModel.vESSTotalCharge[p,sc,n,ec]() for p,sc,n in mTEPES.psn if (p,ec) in mTEPES.pec) for ec in mTEPES.ec], index=mTEPES.ec, dtype='float64')
+        CnsCost = pd.Series(data=[sum(mTEPES.pDiscountedWeight[p] * mTEPES.pScenProb[p,sc]() * mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pLinearVarCost  [p,sc,n,ec]() * OptModel.vESSTotalCharge[p,sc,n,ec]() for p,sc,n in mTEPES.psn if (p,ec) in mTEPES.pec) for ec in mTEPES.ec], index=mTEPES.ec, dtype='float64')
         OpCCost = pd.Series(data=[sum(mTEPES.pDiscountedWeight[p] * mTEPES.pScenProb[p,sc]() * mTEPES.pLoadLevelWeight  [p,sc,n]() * mTEPES.pOperReserveCost[       ec] * OptModel.vESSReserveUp  [p,sc,n,ec]() +
                                       mTEPES.pDiscountedWeight[p] * mTEPES.pScenProb[p,sc]() * mTEPES.pLoadLevelWeight  [p,sc,n]() * mTEPES.pOperReserveCost[       ec] * OptModel.vESSReserveDown[p,sc,n,ec]() for p,sc,n in mTEPES.psn if (p,ec) in mTEPES.pec) for ec in mTEPES.ec], index=mTEPES.ec, dtype='float64')
 

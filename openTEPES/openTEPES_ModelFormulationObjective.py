@@ -1,4 +1,6 @@
 """
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 11, 2026
+
 openTEPES.openTEPES_ModelFormulationObjective — total-cost objective and the per-stage operation-cost accumulation constraints.
 """
 from __future__ import annotations
@@ -85,7 +87,7 @@ def GenerationOperationModelFormulationObjFunct(OptModel, mTEPES, pIndLogConsole
     setattr(OptModel, f'eTotalECostArea_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.ar, rule=eTotalECostArea, doc='area emission cost [MEUR]'))
 
     def eTotalRESEnergyArea(OptModel,n,ar):
-        if mTEPES.pRESEnergy[p,ar] == 0.0 or st != mTEPES.Last_st:
+        if mTEPES.pRESEnergy[p,ar]() == 0.0 or st != mTEPES.Last_st:
             return Constraint.Skip
         return OptModel.vTotalRESEnergyArea[p,sc,n,ar] == mTEPES.pLoadLevelDuration[p,sc,n]() * sum(OptModel.vTotalOutput[p,sc,n,re] for re in mTEPES.re if re in g2a[ar] and (p,re) in mTEPES.pre)
     setattr(OptModel, f'eTotalRESEnergyArea_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.ar, rule=eTotalRESEnergyArea, doc='area RES energy [GWh]'))

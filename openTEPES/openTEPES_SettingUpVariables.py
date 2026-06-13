@@ -1,4 +1,6 @@
 """
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 11, 2026
+
 openTEPES.openTEPES_SettingUpVariables — creates the decision variables and their bounds, fixes the generators' commitment, relaxes or forbids investment conditions, zeroes out epsilon values, and screens for infeasibilities. Runs after DataConfiguration.
 """
 from __future__ import annotations
@@ -590,14 +592,14 @@ def SettingUpVariables(OptModel, mTEPES):
             for ar in mTEPES.ar:
                 pSystemOutput = 0.0
                 for nr in n2a[ar]:
-                    if mTEPES.pMustRun[nr] == 1 and (p,nr) in mTEPES.pnr and pSystemOutput < sum(mTEPES.pDemandElec[n1,nd] for nd in d2a[ar]):
+                    if mTEPES.pMustRun[nr] == 1 and (p,nr) in mTEPES.pnr and pSystemOutput < sum(mTEPES.pDemandElec[n1,nd]() for nd in d2a[ar]):
                         mTEPES.pInitialOutput[n1,nr] = mTEPES.pMaxPowerElec [n1,nr]
                         mTEPES.pInitialUC    [n1,nr] = 1
                         pSystemOutput               += mTEPES.pInitialOutput[n1,nr]()
 
                 # determine the initially committed units and their output at the first load level of each period, scenario, and stage
                 for go in o2a[ar]:
-                    if mTEPES.pMustRun[go] == 0 and (p,go) in mTEPES.pg and pSystemOutput < sum(mTEPES.pDemandElec[n1,nd] for nd in d2a[ar]):
+                    if mTEPES.pMustRun[go] == 0 and (p,go) in mTEPES.pg and pSystemOutput < sum(mTEPES.pDemandElec[n1,nd]() for nd in d2a[ar]):
                         if go in mTEPES.re:
                             mTEPES.pInitialOutput[n1,go] = mTEPES.pMaxPowerElec [n1,go]
                         else:
@@ -725,7 +727,7 @@ def SettingUpVariables(OptModel, mTEPES):
 
     # fixing the ENS in nodes with no demand
     for p,sc,n,nd in mTEPES.psnnd:
-        if mTEPES.pDemandElec[p,sc,n,nd] <=  0.0:
+        if mTEPES.pDemandElec[p,sc,n,nd]() <=  0.0:
             OptModel.vENS    [p,sc,n,nd].fix(0.0)
             nFixedVariables += 1
 
@@ -1080,16 +1082,16 @@ def SettingUpVariables(OptModel, mTEPES):
 
         # detecting reserve margin infeasibility
         for p,ar in mTEPES.p*mTEPES.ar:
-            if     sum(mTEPES.pRatedMaxPowerElec[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]) for g in g2a[ar] if (p,g) in mTEPES.pg) < mTEPES.pDemandElecPeak[p,ar] * mTEPES.pReserveMargin[p,ar]:
-                raise     ValueError('### Electricity reserve margin infeasibility ', p,ar, sum(mTEPES.pRatedMaxPowerElec[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]) for g in mTEPES.g if (p,g) in mTEPES.pg and g in g2a[ar]), mTEPES.pDemandElecPeak[p,ar] * mTEPES.pReserveMargin[p,ar])
+            if     sum(mTEPES.pRatedMaxPowerElec[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]()) for g in g2a[ar] if (p,g) in mTEPES.pg) < mTEPES.pDemandElecPeak[p,ar] * mTEPES.pReserveMargin[p,ar]():
+                raise     ValueError('### Electricity reserve margin infeasibility ', p,ar, sum(mTEPES.pRatedMaxPowerElec[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]()) for g in mTEPES.g if (p,g) in mTEPES.pg and g in g2a[ar]), mTEPES.pDemandElecPeak[p,ar] * mTEPES.pReserveMargin[p,ar]())
 
             if mTEPES.pIndHeat:
-                if sum(mTEPES.pRatedMaxPowerHeat[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]) for g in g2a[ar] if (p,g) in mTEPES.pg) < mTEPES.pDemandHeatPeak[p,ar] * mTEPES.pReserveMarginHeat[p,ar]:
-                    raise ValueError('### Heat reserve margin infeasibility ',        p,ar, sum(mTEPES.pRatedMaxPowerHeat[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]) for g in mTEPES.g if (p,g) in mTEPES.pg and g in g2a[ar]), mTEPES.pDemandHeatPeak[p,ar] * mTEPES.pReserveMargin[p,ar])
+                if sum(mTEPES.pRatedMaxPowerHeat[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]()) for g in g2a[ar] if (p,g) in mTEPES.pg) < mTEPES.pDemandHeatPeak[p,ar] * mTEPES.pReserveMarginHeat[p,ar]:
+                    raise ValueError('### Heat reserve margin infeasibility ',        p,ar, sum(mTEPES.pRatedMaxPowerHeat[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]()) for g in mTEPES.g if (p,g) in mTEPES.pg and g in g2a[ar]), mTEPES.pDemandHeatPeak[p,ar] * mTEPES.pReserveMargin[p,ar]())
 
         for p,sc,ar in mTEPES.ps*mTEPES.ar:
-            if mTEPES.pRESEnergy[p,ar] > sum(mTEPES.pDemandElec[p,sc,n,nd]*mTEPES.pLoadLevelDuration[p,sc,n]() for n,nd in mTEPES.n*d2a[ar] if (p,sc,n,nd) in mTEPES.psnnd):
-                raise ValueError('### Minimum renewable energy requirement exceeds the demand ', p, sc, ar, mTEPES.pRESEnergy[p,ar], sum(mTEPES.pDemandElec[p,sc,n,nd] for n,nd in mTEPES.n*d2a[ar] if (p,sc,n,nd) in mTEPES.psnnd))
+            if mTEPES.pRESEnergy[p,ar]() > sum(mTEPES.pDemandElec[p,sc,n,nd]()*mTEPES.pLoadLevelDuration[p,sc,n]() for n,nd in mTEPES.n*d2a[ar] if (p,sc,n,nd) in mTEPES.psnnd):
+                raise ValueError('### Minimum renewable energy requirement exceeds the demand ', p, sc, ar, mTEPES.pRESEnergy[p,ar](), sum(mTEPES.pDemandElec[p,sc,n,nd]() for n,nd in mTEPES.n*d2a[ar] if (p,sc,n,nd) in mTEPES.psnnd))
 
     DetectInfeasibilities(mTEPES)
 
@@ -1108,7 +1110,7 @@ def SettingUpVariables(OptModel, mTEPES):
         mTEPES.IndependentPeriods = True
         for p in mTEPES.p:
             if (    (min([mTEPES.pEmission[p,ar] for ar in mTEPES.ar]) == math.inf or sum(mTEPES.pEmissionRate[nr] for nr in mTEPES.nr) == 0)  # No emissions
-                and (max([mTEPES.pRESEnergy[p,ar] for ar in mTEPES.ar]) == 0)):                                                                # No minimum RES requirements
+                and (max([mTEPES.pRESEnergy[p,ar]() for ar in mTEPES.ar]) == 0)):                                                                # No minimum RES requirements
             # Stages are independent from each other
                 StIndep = True
                 mTEPES.IndependentStages[p] = True

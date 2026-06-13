@@ -1,4 +1,6 @@
 """
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 11, 2026
+
 openTEPES.openTEPES_DataConfiguration — builds the derived sets and parameters on the model: instrumental sets, ESS/RES sets, and the flag-driven branches (hydro topology, hydrogen, heat, PTDF). Runs after InputData has read the raw sets and parameters.
 """
 from __future__ import annotations
@@ -985,7 +987,7 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     mTEPES.pIndVarTTC            = Param(initialize=par['pIndVarTTC']           , within=Binary,              doc='Indicator of using or not variable TTC'                                 )
     mTEPES.pIndPTDF              = Param(initialize=par['pIndPTDF']             , within=Binary,              doc='Indicator of using or not the Flow-based method'                        )
 
-    mTEPES.pENSCost              = Param(initialize=par['pENSCost']             , within=NonNegativeReals,    doc='ENS cost'                                           )
+    mTEPES.pENSCost              = Param(initialize=par['pENSCost']             , within=NonNegativeReals,    doc='ENS cost'                                           , mutable=True)
     mTEPES.pH2NSCost             = Param(initialize=par['pHNSCost']             , within=NonNegativeReals,    doc='HNS cost'                                           )
     mTEPES.pH2ExcCost            = Param(initialize=par['pHNSCost']*0.5         , within=NonNegativeReals,    doc='H2 excess cost'                                     )
     mTEPES.pHeatNSCost           = Param(initialize=par['pHTNSCost']            , within=NonNegativeReals,    doc='HTNS cost'                                          )
@@ -999,11 +1001,11 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     mTEPES.pTimeStep             = Param(initialize=par['pTimeStep']            , within=PositiveIntegers,    doc='Unitary time step'                                  )
     mTEPES.pEconomicBaseYear     = Param(initialize=par['pEconomicBaseYear']    , within=PositiveIntegers,    doc='Base year'                                          )
 
-    mTEPES.pReserveMargin        = Param(mTEPES.par,   initialize=par['pReserveMargin'].to_dict()            , within=NonNegativeReals,    doc='Adequacy reserve margin'                             )
+    mTEPES.pReserveMargin        = Param(mTEPES.par,   initialize=par['pReserveMargin'].to_dict()            , within=NonNegativeReals,    doc='Adequacy reserve margin'                             , mutable=True)
     mTEPES.pEmission             = Param(mTEPES.par,   initialize=par['pEmission'].to_dict()                 , within=NonNegativeReals,    doc='Maximum CO2 emission'                                )
-    mTEPES.pRESEnergy            = Param(mTEPES.par,   initialize=par['pRESEnergy'].to_dict()                , within=NonNegativeReals,    doc='Minimum RES energy'                                  )
+    mTEPES.pRESEnergy            = Param(mTEPES.par,   initialize=par['pRESEnergy'].to_dict()                , within=NonNegativeReals,    doc='Minimum RES energy'                                  , mutable=True)
     mTEPES.pDemandElecPeak       = Param(mTEPES.par,   initialize=par['pDemandElecPeak'].to_dict()           , within=NonNegativeReals,    doc='Peak electric demand'                                )
-    mTEPES.pDemandElec           = Param(mTEPES.psnnd, initialize=par['pDemandElec'].to_dict()               , within=           Reals,    doc='Electric demand'                                     )
+    mTEPES.pDemandElec           = Param(mTEPES.psnnd, initialize=par['pDemandElec'].to_dict()               , within=           Reals,    doc='Electric demand'                                     , mutable=True)
     mTEPES.pDemandElecPos        = Param(mTEPES.psnnd, initialize=par['pDemandElecPos'].to_dict()            , within=NonNegativeReals,    doc='Electric demand positive'                            )
     mTEPES.pPeriodWeight         = Param(mTEPES.p,     initialize=par['pPeriodWeight'].to_dict()             , within=NonNegativeReals,    doc='Period weight',                          mutable=True)
     mTEPES.pDiscountedWeight     = Param(mTEPES.p,     initialize=par['pDiscountedWeight'].to_dict()         , within=NonNegativeReals,    doc='Discount factor'                                     )
@@ -1035,9 +1037,9 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     mTEPES.pElecGenPeriodIni     = Param(mTEPES.gg,    initialize=par['pElecGenPeriodIni'].to_dict()         , within=PositiveIntegers,    doc='installation year',                                  )
     mTEPES.pElecGenPeriodFin     = Param(mTEPES.gg,    initialize=par['pElecGenPeriodFin'].to_dict()         , within=PositiveIntegers,    doc='retirement   year',                                  )
     mTEPES.pAvailability         = Param(mTEPES.gg,    initialize=par['pAvailability'].to_dict()             , within=UnitInterval    ,    doc='unit availability',                      mutable=True)
-    mTEPES.pEFOR                 = Param(mTEPES.gg,    initialize=par['pEFOR'].to_dict()                     , within=UnitInterval    ,    doc='EFOR'                                                )
+    mTEPES.pEFOR                 = Param(mTEPES.gg,    initialize=par['pEFOR'].to_dict()                     , within=UnitInterval    ,    doc='EFOR'                                                , mutable=True)
     mTEPES.pRatedLinearVarCost   = Param(mTEPES.gg,    initialize=par['pRatedLinearVarCost'].to_dict()       , within=NonNegativeReals,    doc='Linear   variable cost'                              )
-    mTEPES.pLinearVarCost        = Param(mTEPES.psng , initialize=par['pLinearVarCost'].to_dict()            , within=NonNegativeReals,    doc='Linear   variable cost'                              )
+    mTEPES.pLinearVarCost        = Param(mTEPES.psng , initialize=par['pLinearVarCost'].to_dict()            , within=NonNegativeReals,    doc='Linear   variable cost'                              , mutable=True)
     mTEPES.pConstantVarCost      = Param(mTEPES.psng , initialize=par['pConstantVarCost'].to_dict()          , within=NonNegativeReals,    doc='Constant variable cost'                              )
     mTEPES.pLinearOMCost         = Param(mTEPES.gg,    initialize=par['pLinearOMCost'].to_dict()             , within=NonNegativeReals,    doc='Linear   O&M      cost'                              )
     mTEPES.pOperReserveCost      = Param(mTEPES.gg,    initialize=par['pOperReserveCost'].to_dict()          , within=NonNegativeReals,    doc='Operating reserve cost'                              )
