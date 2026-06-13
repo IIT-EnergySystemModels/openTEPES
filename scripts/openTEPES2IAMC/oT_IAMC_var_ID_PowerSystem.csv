@@ -1,0 +1,18 @@
+,Variable,Unit,Description
+NodeToZone,,,Location of nodes at zones
+ZoneToArea,,,Location of zones at areas
+AreaToRegion,,,Location of areas at regions
+OperatingReserveUp,Network|Electricity|Reserve|Requirement|Operating Reserve|Up,MW,Upward   operating reserves for each load level
+OperatingReserveDown,Network|Electricity|Reserve|Requirement|Operating Reserve|Down,MW,Downward operating reserves for each load level
+PowerDemand,Final Energy|Electricity,EJ/yr,Demand of the node in the load level
+ENSCost,Energy Not Serve Cost|Electricity,EUR/MWh,Cost of energy not served. Cost of load curtailment. Value of Lost Load (VoLL)
+CO2Cost,Price|Carbon,EUR/t CO2,Cost of CO2 emissions
+Sbase,,MW,Base power used in the DCLF
+ReferenceNode,,,Reference node used in the DCLF
+TimeStep,,hour,"Duration of the time step for the load levels (hourly, bi-hourly, trihourly, etc.)."
+IndBinGenInvest,,"[0,1]",IndBinGenInvest
+IndBinNetInvest,,"[0,1]",IndBinNetInvest
+IndBinGenOperat,,"[0,1]",IndBinGenOperat
+IndNetLosses,,"[0,1]",IndNetLosses
+Scenario Probability,,%,Probability of scenarios
+Duration,,"[0,1]",Duration of the load level. Load levels with duration 0 are ignored
