@@ -1,7 +1,8 @@
 # Change Log
 
-## [4.18.17RC] - 2026-06-11 Unreleased in PyPI
+## [4.18.17RC] - 2026-06-13 Unreleased in PyPI
 
+- [CHANGED] fix some errors in writing H2 and heat network output results
 - [FIXED] `setup_solver` no longer crashes on Windows when an earlier in-process solve still holds the stale log file open.
 - [FIXED] deprecated `datetime.utcnow()` replaced with timezone-aware UTC; emitted timestamp unchanged.
 - [ADDED] Mode C post-build hot-swap re-solve (`openTEPES_ProblemSolvingResolve.py`): `resolve(OptModel, SolverName, overlays)` re-solves a built model once per parameter overlay without rebuilding, so a sweep reuses the single slow build; `overlay_scaled` makes a scale-factor overlay. Overlays apply relative to the baseline, which is restored at the end. Only `mutable=True` Params hot-swap, so the operational set (`pDemandElec`, `pENSCost`, `pLinearVarCost`, `pEFOR`, `pReserveMargin`, `pRESEnergy`) is promoted to mutable and read by call in the build-time guards; structural and topology Params stay immutable. No behaviour change: 9n solves bit-identical (164.382043867 MEUR, `PYTHONHASHSEED=0`). New test `test_mode_c_resolve_demand_hot_swap`.

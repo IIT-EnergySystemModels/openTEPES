@@ -1,0 +1,32 @@
+,Variable,Unit,Description,CSV,idx
+Node,,,Location of the generator at the node,oT_Data_Generation,0
+Technology,,,"Technology of the generator (nuclear, coal, CCGT, OCGT, ESS, etc.)",oT_Data_Generation,0
+StorageType,,"[Daily, Weekly, Monthly]","Storage type (daily, weekly, monthly, etc.)",oT_Data_Generation,1
+MustRun,,"[Yes, No]",Must-run unit,oT_Data_Generation,0
+MaximumPower,Maximum Active Power|Electricity,MW,Rated maximum power,oT_Data_Generation,0
+MinimumPower,,MW,Rated minimum power,oT_Data_Generation,0
+MaximumCharge,Maximum Charge|Electricity,MW,"Maximum charge when storing energy the energy storage system (ESS includes hydro, battery, etc.) unit.",oT_Data_Generation,1
+InitialStorage,Initial Storage Level|Electricity,GWh,Initial ESS storage,oT_Data_Generation,1
+MaximumStorage,Maximum Storage|Electricity,GWh,Maximum ESS storage capacity,oT_Data_Generation,1
+MinimumStorage,Minimum Storage|Electricity,GWh,Minimum ESS storage capacity,oT_Data_Generation,1
+Efficiency,Roundtrip Efficiency|Electricity,-,ESS efficiency ,oT_Data_Generation,1
+RampUp,Maximum Ramping|Up|Electricity,MW/h,Upward ramp limit,oT_Data_Generation,0
+RampDown,Maximum Ramping|Down|Electricity,MW/h,Downward ramp limit,oT_Data_Generation,0
+UpTime,Minimum On Duration|Electricity,hour,Minimum uptime,oT_Data_Generation,0
+DownTime,Minimum Off Duration|Electricity,hour,Minimum downtime,oT_Data_Generation,0
+FuelCost,Price|Primary Energy,EUR/GJ,Fuel cost per unit,oT_Data_Generation,0
+LinearTerm,Variable Cost|Electricity,EUR/MWh,Linear term (slope) of the heat rate straight line,oT_Data_Generation,0
+ConstantTerm,Operational Cost|Constant Term|Electricity Generation,Mcal/hour,Constant term (intercept) of the heat rate straight line,oT_Data_Generation,0
+OMVariableCost,Operation and Maintenance Cost|Electricity,EUR/MWh,Operation and Maintenance cost per unit,oT_Data_Generation,0
+StartUpCost,Start-Up Cost|Electricity,EUR,Startup heat  cost per unit,oT_Data_Generation,0
+ShutDownCost,Shut-Down Cost|Electricity,EUR,Shutdown heat  cost per unit,oT_Data_Generation,0
+CO2EmissionRate,Emissions|CO2|Electricity,t CO2/GWh,CO2 emission cost per unit,oT_Data_Generation,0
+FixedCost,,EUR,Generation fixed cost per unit,oT_Data_Generation,0
+FixedChargeRate,,,Generation fixed charge per unit,oT_Data_Generation,0
+BinaryInvestment,,"[Yes, No]",Binary power plant investment decision,,0
+VariableMaxPower,Maximum Active Power|Electricity,MW,Dynamic variable maximum power ,oT_Data_VariableMaxGeneration,1
+VariableMinPower,Minimum Active Power|Electricity,MW,Dynamic variable minimum power ,oT_Data_VariableMinGeneration,1
+VariableMaxStorage,Maximum Storage|Electricity,GWh,Dynamic variable maximum storage,oT_Data_VariableMaxStorage,1
+VariableMinStorage,Minimum Storage|Electricity,GWh,Dynamic variable minimum storage,oT_Data_VariableMinStorage,1
+ESSEnergyInflows,Inflows|Electricity,GWh,Dynamic energy inflows,oT_Data_ESSEnergyInflows,1
+VariableCost,Variable Cost|Electricity,EUR/MWh,Linear term (slope) of the heat rate straight line,oT_Data_Generation,0

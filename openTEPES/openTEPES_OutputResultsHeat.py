@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 03, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 15, 2026
 
 Heat network operation results.
 
@@ -75,8 +75,8 @@ def NetworkHeatOperationResults(DirName, CaseName, OptModel, mTEPES):
     OutputResults4 = pd.Series(data=[ sum(OptModel.vTotalOutputHeat[p,sc,n,ch      ]()*mTEPES.pLoadLevelDuration[p,sc,n]()                                    for ch in mTEPES.ch if ch in c2n[nd] and ch in c2t[gt] and ch     in mTEPES.bo) for p,sc,n,ar,nd,gt in sPSNARNDGT], index=pd.Index(sPSNARNDGT)).to_frame(name='GenerationBoilers'  ).reset_index().pivot_table(index=['level_0','level_1','level_2','level_3','level_4'], columns='level_5', values='GenerationBoilers'  , aggfunc='sum')
     OutputResults5 = pd.Series(data=[     OptModel.vHeatNS         [p,sc,n,nd      ]()*mTEPES.pLoadLevelDuration[p,sc,n]()                                                                                                                    for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='HeatNotServed')
     OutputResults6 = pd.Series(data=[-      mTEPES.pDemandHeat     [p,sc,n,nd      ]  *mTEPES.pLoadLevelDuration[p,sc,n]()                                                                                                                    for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='HeatDemand'   )
-    OutputResults7 = pd.Series(data=[-sum(OptModel.vFlowHeat       [p,sc,n,nd,nf,cc]()*mTEPES.pLoadLevelDuration[p,sc,n]()                                    for nf,cc in lout[nd])                                                          for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='HeatFlowOut'  )
-    OutputResults8 = pd.Series(data=[ sum(OptModel.vFlowHeat       [p,sc,n,ni,nd,cc]()*mTEPES.pLoadLevelDuration[p,sc,n]()                                    for ni,cc in lin [nd])                                                          for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='HeatFlowIn'   )
+    OutputResults7 = pd.Series(data=[-sum(OptModel.vFlowHeat       [p,sc,n,nd,nf,cc]()*mTEPES.pLoadLevelDuration[p,sc,n]()                                    for nf,cc in lout[nd] if (p,nd,nf,cc) in mTEPES.pha)                            for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='HeatFlowOut'  )
+    OutputResults8 = pd.Series(data=[ sum(OptModel.vFlowHeat       [p,sc,n,ni,nd,cc]()*mTEPES.pLoadLevelDuration[p,sc,n]()                                    for ni,cc in lin [nd] if (p,ni,nd,cc) in mTEPES.pha)                            for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='HeatFlowIn'   )
     OutputResults  = pd.concat([OutputResults2, OutputResults3, OutputResults4, OutputResults5, OutputResults6, OutputResults7, OutputResults8], axis=1)
 
     # OutputResults.stack().rename_axis(['Period', 'Scenario', 'LoadLevel', 'Area', 'Node', 'Technology'], axis=0).reset_index().rename(columns={0: 'GWh'}, inplace=False).to_csv(f'{_path}/oT_Result_BalanceHeat_{CaseName}.csv', index=False, sep=',')
