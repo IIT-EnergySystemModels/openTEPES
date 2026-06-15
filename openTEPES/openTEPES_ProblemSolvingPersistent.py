@@ -29,12 +29,9 @@ def setup_solver(OptModel, SolverName: str, FileName: str, ncall: int, mTEPES):
     if SolverName != "appsi_gurobi" and SolverName != "gurobi_persistent":
         Solver = SolverFactory(SolverName)
         if os.path.exists(FileName):
-            # A solver instance from an earlier in-process solve (e.g. the HiGHS interface, which keeps its
-            # log file open for the lifetime of the underlying highspy.Highs object) can still hold this log
-            # file open. The interface creates reference cycles, so that prior object is not freed until a GC
-            # pass runs. On Windows an open file cannot be deleted, so force collection first to release any
-            # orphaned handle. Removal is then best-effort: if the file is still locked we leave it in place
-            # rather than failing the solve, since the solver truncates the log when it re-opens it.
+            # A prior in-process solve may still hold this log open (the HiGHS interface keeps it open until
+            # GC frees the highspy object); on Windows an open file cannot be deleted. Collect first, then
+            # remove best-effort: a still-locked log is left in place, since the solver truncates it on re-open.
             gc.collect()
             try:
                 os.remove(FileName)
