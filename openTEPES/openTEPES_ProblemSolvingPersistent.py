@@ -12,6 +12,7 @@ entirely — ``setup_solver()`` just calls ``SolverFactory(SolverName)`` and cle
 """
 from __future__ import annotations
 
+import gc
 import os
 
 import pyomo.environ as pyo
@@ -28,7 +29,17 @@ def setup_solver(OptModel, SolverName: str, FileName: str, ncall: int, mTEPES):
     if SolverName != "appsi_gurobi" and SolverName != "gurobi_persistent":
         Solver = SolverFactory(SolverName)
         if os.path.exists(FileName):
-            os.remove(FileName)
+            # A solver instance from an earlier in-process solve (e.g. the HiGHS interface, which keeps its
+            # log file open for the lifetime of the underlying highspy.Highs object) can still hold this log
+            # file open. The interface creates reference cycles, so that prior object is not freed until a GC
+            # pass runs. On Windows an open file cannot be deleted, so force collection first to release any
+            # orphaned handle. Removal is then best-effort: if the file is still locked we leave it in place
+            # rather than failing the solve, since the solver truncates the log when it re-opens it.
+            gc.collect()
+            try:
+                os.remove(FileName)
+            except OSError:
+                pass
         return Solver
 
     if SolverName == "appsi_gurobi":
