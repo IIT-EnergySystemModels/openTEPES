@@ -74,7 +74,7 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutput,
 
         if pIndTechnologyOutput == 1 or pIndTechnologyOutput == 2:
             # Ordering data to plot the investment decision
-            OutputResults1 = pd.Series(data=[gt for p,eb,gt in mTEPES.peb*mTEPES.gt if (p,eb) in mTEPES.peb and eb in g2t[gt]], index=mTEPES.peb)
+            OutputResults1 = pd.Series(data=[gt for p,eb,gt in mTEPES.peb*mTEPES.gt if eb in g2t[gt]], index=mTEPES.peb)
             OutputResults1 = OutputResults1.to_frame(name='Technology')
             OutputResults2 = OutputToFile
             OutputResults  = pd.concat([OutputResults1, OutputResults2], axis=1)
@@ -82,6 +82,18 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutput,
             OutputResults  = OutputResults.reset_index().groupby(['Period', 'Technology']).sum(numeric_only=True)
             OutputResults['MW'] = round(OutputResults['MW'], 2)
             OutputResults.reset_index().pivot_table(index=['Period'], columns=['Technology'], values='MW').rename_axis(['Period'], axis=0).to_csv(f'{_path}/oT_Result_TechnologyInvestment_{CaseName}.csv', index=True, sep=',')
+
+            # if pIndAreaOutput:
+            #     for ar in mTEPES.ar:
+            #         if sum(1 for g in g2a[ar]):
+            #             OutputResults1 = pd.Series(data=[gt for p,eb,gt in mTEPES.peb*mTEPES.gt if eb in g2t[gt] and eb in g2a[ar]], index=mTEPES.peb)
+            #             OutputResults1 = OutputResults1.to_frame(name='Technology')
+            #             OutputResults2 = OutputToFile
+            #             OutputResults  = pd.concat([OutputResults1, OutputResults2], axis=1)
+            #             OutputResults.index.names = ['Period', 'Generator']
+            #             OutputResults  = OutputResults.reset_index().groupby(['Period', 'Technology']).sum(numeric_only=True)
+            #             OutputResults['MW'] = round(OutputResults['MW'], 2)
+            #             OutputResults.reset_index().pivot_table(index=['Period'], columns=['Technology'], values='MW').rename_axis(['Period'], axis=0).to_csv(f'{_path}/oT_Result_TechnologyInvestment_{CaseName}_{ar}.csv', index=True, sep=',')
 
             MarketResultsInv = pd.DataFrame()
             MarketResultsInv = pd.concat([MarketResultsInv, OutputResults], axis=1)
