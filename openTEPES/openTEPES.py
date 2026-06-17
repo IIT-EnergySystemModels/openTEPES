@@ -138,7 +138,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     """
 
     InitialTime = time.time()
-    _RunStartedUtc = datetime.datetime.utcnow().isoformat(timespec="seconds") + "Z"
+    _RunStartedUtc = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None).isoformat(timespec="seconds") + "Z"
 
     # If the caller pointed at a .duckdb file (CaseName carries the
     # suffix), open it as a DuckDBSource; InputData reads tables from
@@ -387,7 +387,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
         "backend":            getattr(mTEPES, "pOutputBackend", "csv"),
         "opentepes_version":  "4.18.17RC",
         "run_started_utc":    _RunStartedUtc,
-        "run_finished_utc":   datetime.datetime.utcnow().isoformat(timespec="seconds") + "Z",
+        "run_finished_utc":   datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None).isoformat(timespec="seconds") + "Z",
         "outputs_enabled":    [k for k, v in _flags.items() if v],
         "gzip_patterns":      list(gzip_patterns) if gzip_patterns else None,
         "gzip_files":         _GzipFiles,

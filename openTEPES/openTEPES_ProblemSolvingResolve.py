@@ -3,9 +3,8 @@ Open Generation, Storage, and Transmission Operation and Expansion Planning Mode
 
 openTEPES.openTEPES_ProblemSolvingResolve — Mode C post-build hot-swap re-solve.
 
-Re-solve an already-built model once per parameter overlay without rebuilding it, so a
-sweep, sensitivity study or Monte-Carlo reuses the one slow build. Only ``mutable=True``
-Params can be hot-swapped: the operational set ``pDemandElec``, ``pENSCost``,
+Re-solve a built model once per parameter overlay without rebuilding, so a sweep reuses the
+one slow build. Only ``mutable=True`` Params hot-swap: ``pDemandElec``, ``pENSCost``,
 ``pLinearVarCost``, ``pEFOR``, ``pReserveMargin``, ``pRESEnergy``. See ``resolve`` for the
 overlay format.
 """
@@ -16,9 +15,9 @@ from pyomo.opt import TerminationCondition
 
 
 def overlay_scaled(OptModel, param_name: str, factor: float) -> dict:
-    """Return an overlay that scales every current value of ``param_name`` by ``factor``.
+    """Return an overlay scaling every current value of ``param_name`` by ``factor``.
 
-    Example: ``overlay_scaled(model, "pDemandElec", 1.10)`` for a 10 % demand uplift.
+    E.g. ``overlay_scaled(model, "pDemandElec", 1.10)`` for a 10 % demand uplift.
     """
     param = getattr(OptModel, param_name)
     return {param_name: {idx: val * factor for idx, val in param.extract_values().items()}}
@@ -27,18 +26,16 @@ def overlay_scaled(OptModel, param_name: str, factor: float) -> dict:
 def resolve(OptModel, SolverName: str, overlays, *, restore: bool = True, tee: bool = False):
     """Re-solve ``OptModel`` once per overlay, swapping mutable Param values in place.
 
-    ``overlays`` is a list of dicts, each mapping a mutable Param name to new values (a
-    dict ``index -> value`` for an indexed Param, or a scalar). Each overlay is applied
-    relative to the baseline (values at call time), not cumulatively; ``{}`` re-solves the
-    baseline. With ``restore`` (default) the baseline is restored at the end. ``SolverName``
-    must be a non-persistent solver. Returns one dict per overlay with the termination
+    ``overlays`` is a list of dicts mapping a mutable Param name to new values (``index ->
+    value``, or a scalar). Each overlay applies relative to the baseline, not cumulatively;
+    ``{}`` re-solves the baseline. ``restore`` (default) restores the baseline at the end.
+    ``SolverName`` must be non-persistent. Returns one dict per overlay with the termination
     condition and total system cost (None if not optimal).
     """
     overlays = list(overlays)
 
-    # Snapshot the baseline values of every Param any overlay touches. The snapshot serves
-    # two purposes: resetting the touched Params before each overlay (so overlays are
-    # independent, not cumulative) and the optional restore at the end of the sweep.
+    # Snapshot the baseline of every touched Param: used to reset before each overlay (so
+    # overlays are independent, not cumulative) and for the optional restore at the end.
     touched = set()
     for ov in overlays:
         touched.update(ov.keys())
