@@ -2,6 +2,7 @@
 
 ## [4.18.17RC] - 2026-06-13 Unreleased in PyPI
 
+- [ADDED] add CSV output file TechnologyInvestment per area 
 - [CHANGED] change eOperReserveUpEnergy and eOperReserveDwEnergy to system-wide constraints, instead of area constraints
 - [CHANGED] fix some errors in writing H2 and heat network output results
 - [FIXED] `setup_solver` no longer crashes on Windows when an earlier in-process solve still holds the stale log file open.

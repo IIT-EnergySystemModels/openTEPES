@@ -117,6 +117,12 @@ File `oT_Result_TechnologyInvestment.csv`
 | ---------- | --------- |---------------------------------------------------------------|
 | Period     | Generator | Cumulative technology investment power up to this period [MW] |
 
+File `oT_Result_TechnologyInvestment_AreaName.csv`
+
+| Identifier | Header    | Description                                                            |
+| ---------- | --------- |------------------------------------------------------------------------|
+| Period     | Generator | Cumulative technology investment power per area up to this period [MW] |
+
 File `oT_Result_TechnologyInvestmentCost.csv`
 
 | Identifier | Header    | Description                     |

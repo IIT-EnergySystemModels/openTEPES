@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 03, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 17, 2026
 
 Investment and retirement results.
 
@@ -24,7 +24,7 @@ except ImportError:
 
 
 # @profile
-def InvestmentResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutput, pIndPlotOutput):
+def InvestmentResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutput, pIndAreaOutput, pIndPlotOutput):
     #%% outputting the investment decisions
     _path = _outdir(DirName, CaseName, mTEPES)
     StartTime = time.time()
@@ -67,10 +67,18 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutput,
                 GenInvestToArea.index.names = ['Period', 'Area', 'Generator']
                 chart = alt.Chart(GenInvestToArea.reset_index()).mark_bar().encode(x='Generator:O', y='sum(MW):Q', color='Area:N', column='Period:N').properties(width=600, height=400)
                 chart.save(f'{_path}/oT_Plot_GenerationInvestmentPerArea_{CaseName}.html', embed_options={'renderer':'svg'})
+            if pIndPlotOutput or pIndAreaOutput:
                 TechInvestToArea = pd.Series(data=[sum(OutputToFile['MW'][p,eb] for eb in mTEPES.eb if (p,eb) in mTEPES.peb and eb in g2t[gt] and eb in g2a[ar]) for p,ar,gt in mTEPES.par*mTEPES.gt], index=mTEPES.par*mTEPES.gt).to_frame(name='MW')
                 TechInvestToArea.index.names = ['Period', 'Area', 'Technology']
+            if pIndPlotOutput:
                 chart = alt.Chart(TechInvestToArea.reset_index()).mark_bar().encode(x='Technology:O', y='sum(MW):Q', color='Area:N', column='Period:N').properties(width=600, height=400)
                 chart.save(f'{_path}/oT_Plot_TechnologyInvestmentPerArea_{CaseName}.html', embed_options={'renderer':'svg'})
+            if pIndAreaOutput:
+                for ar in mTEPES.ar:
+                    if sum(1 for g in g2a[ar]):
+                        TechInvestArea = TechInvestToArea.xs(ar, level='Area').copy()
+                        TechInvestArea['MW'] = TechInvestArea['MW'].round(2)
+                        TechInvestArea.reset_index().pivot_table(index=['Period'], columns=['Technology'], values='MW', aggfunc='sum', fill_value=0).rename_axis(['Period'], axis=0).to_csv(f'{_path}/oT_Result_TechnologyInvestment_{CaseName}_{ar}.csv', index=True, sep=',')
 
         if pIndTechnologyOutput == 1 or pIndTechnologyOutput == 2:
             # Ordering data to plot the investment decision
@@ -82,18 +90,6 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutput,
             OutputResults  = OutputResults.reset_index().groupby(['Period', 'Technology']).sum(numeric_only=True)
             OutputResults['MW'] = round(OutputResults['MW'], 2)
             OutputResults.reset_index().pivot_table(index=['Period'], columns=['Technology'], values='MW').rename_axis(['Period'], axis=0).to_csv(f'{_path}/oT_Result_TechnologyInvestment_{CaseName}.csv', index=True, sep=',')
-
-            # if pIndAreaOutput:
-            #     for ar in mTEPES.ar:
-            #         if sum(1 for g in g2a[ar]):
-            #             OutputResults1 = pd.Series(data=[gt for p,eb,gt in mTEPES.peb*mTEPES.gt if eb in g2t[gt] and eb in g2a[ar]], index=mTEPES.peb)
-            #             OutputResults1 = OutputResults1.to_frame(name='Technology')
-            #             OutputResults2 = OutputToFile
-            #             OutputResults  = pd.concat([OutputResults1, OutputResults2], axis=1)
-            #             OutputResults.index.names = ['Period', 'Generator']
-            #             OutputResults  = OutputResults.reset_index().groupby(['Period', 'Technology']).sum(numeric_only=True)
-            #             OutputResults['MW'] = round(OutputResults['MW'], 2)
-            #             OutputResults.reset_index().pivot_table(index=['Period'], columns=['Technology'], values='MW').rename_axis(['Period'], axis=0).to_csv(f'{_path}/oT_Result_TechnologyInvestment_{CaseName}_{ar}.csv', index=True, sep=',')
 
             MarketResultsInv = pd.DataFrame()
             MarketResultsInv = pd.concat([MarketResultsInv, OutputResults], axis=1)
