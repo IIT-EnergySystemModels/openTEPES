@@ -68,14 +68,16 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutput,
                 chart = alt.Chart(GenInvestToArea.reset_index()).mark_bar().encode(x='Generator:O', y='sum(MW):Q', color='Area:N', column='Period:N').properties(width=600, height=400)
                 chart.save(f'{_path}/oT_Plot_GenerationInvestmentPerArea_{CaseName}.html', embed_options={'renderer':'svg'})
             if pIndPlotOutput or pIndAreaOutput:
-                TechInvestToArea = pd.Series(data=[sum(OutputToFile['MW'][p,eb] for eb in mTEPES.eb if (p,eb) in mTEPES.peb and eb in g2t[gt] and eb in g2a[ar]) for p,ar,gt in mTEPES.par*mTEPES.gt], index=mTEPES.par*mTEPES.gt).to_frame(name='MW')
-                TechInvestToArea.index.names = ['Period', 'Area', 'Technology']
+                sPARGT = [(p,ar,gt) for p,ar in mTEPES.par for gt in mTEPES.gt if sum(1 for eb in g2t[gt] if (p,eb) in mTEPES.peb)]
+                if len(sPARGT):
+                    TechInvestToArea = pd.Series(data=[sum(OutputToFile['MW'][p,eb] for eb in mTEPES.eb if (p,eb) in mTEPES.peb and eb in g2t[gt] and eb in g2a[ar]) for p,ar,gt in sPARGT], index=pd.MultiIndex.from_tuples(sPARGT)).to_frame(name='MW')
+                    TechInvestToArea.index.names = ['Period', 'Area', 'Technology']
             if pIndPlotOutput:
                 chart = alt.Chart(TechInvestToArea.reset_index()).mark_bar().encode(x='Technology:O', y='sum(MW):Q', color='Area:N', column='Period:N').properties(width=600, height=400)
                 chart.save(f'{_path}/oT_Plot_TechnologyInvestmentPerArea_{CaseName}.html', embed_options={'renderer':'svg'})
             if pIndAreaOutput:
                 for ar in mTEPES.ar:
-                    if sum(1 for g in g2a[ar]):
+                    if sum(1 for eb in mTEPES.eb if eb in g2a[ar]):
                         TechInvestArea = TechInvestToArea.xs(ar, level='Area').copy()
                         TechInvestArea['MW'] = TechInvestArea['MW'].round(2)
                         TechInvestArea.reset_index().pivot_table(index=['Period'], columns=['Technology'], values='MW', aggfunc='sum', fill_value=0).rename_axis(['Period'], axis=0).to_csv(f'{_path}/oT_Result_TechnologyInvestment_{CaseName}_{ar}.csv', index=True, sep=',')
