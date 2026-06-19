@@ -86,7 +86,7 @@ def GenerationOperationModelFormulationDemand(OptModel, mTEPES, pIndLogConsole, 
 
     def eReserveMinRatioDwUp(OptModel,n,nr):
         # Skip if there is no minimum up/down reserve ratio or no reserves are needed in the Area where the generator is located or generator cannot provide reserves while generating power
-        if mTEPES.pMinRatioDwUp == 0.0 or mTEPES.pIndOperReserveGen[nr] or sum(mTEPES.pOperReserveUp[p,sc,n,ar] + mTEPES.pOperReserveDw[p,sc,n,ar] for ar in a2n[nr]) == 0.0 or mTEPES.pMaxPower2ndBlock[p,sc,n,nr] == 0.0:
+        if mTEPES.pMinRatioDwUp == 0.0 or mTEPES.pIndOperReserveGen[nr] or (p,nr) not in mTEPES.pnr or sum(mTEPES.pOperReserveUp[p,sc,n,ar] + mTEPES.pOperReserveDw[p,sc,n,ar] for ar in a2n[nr]) == 0.0 or mTEPES.pMaxPower2ndBlock[p,sc,n,nr] == 0.0:
             return Constraint.Skip
         return OptModel.vReserveDown[p,sc,n,nr] >= OptModel.vReserveUp[p,sc,n,nr] * mTEPES.pMinRatioDwUp
     setattr(OptModel, f'eReserveMinRatioDwUp_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.nr, rule=eReserveMinRatioDwUp, doc='minimum ratio down to up operating reserve [GW]'))
@@ -96,7 +96,7 @@ def GenerationOperationModelFormulationDemand(OptModel, mTEPES, pIndLogConsole, 
 
     def eReserveMaxRatioDwUp(OptModel,n,nr):
         # Skip if there is no maximum up/down reserve ratio or no reserves are needed in the Area where the generator is located or generator cannot provide reserves while generating power
-        if mTEPES.pMaxRatioDwUp >= 1.0 or mTEPES.pIndOperReserveGen[nr] or sum(mTEPES.pOperReserveUp[p,sc,n,ar] + mTEPES.pOperReserveDw[p,sc,n,ar] for ar in a2n[nr]) == 0.0 or mTEPES.pMaxPower2ndBlock[p,sc,n,nr] == 0.0:
+        if mTEPES.pMaxRatioDwUp >= 1.0 or mTEPES.pIndOperReserveGen[nr] or (p,nr) not in mTEPES.pnr or sum(mTEPES.pOperReserveUp[p,sc,n,ar] + mTEPES.pOperReserveDw[p,sc,n,ar] for ar in a2n[nr]) == 0.0 or mTEPES.pMaxPower2ndBlock[p,sc,n,nr] == 0.0:
             return Constraint.Skip
         return OptModel.vReserveDown[p,sc,n,nr] <= OptModel.vReserveUp[p,sc,n,nr] * mTEPES.pMaxRatioDwUp
     setattr(OptModel, f'eReserveMaxRatioDwUp_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.nr, rule=eReserveMaxRatioDwUp, doc='maximum ratio down to up operating reserve [GW]'))
@@ -106,7 +106,7 @@ def GenerationOperationModelFormulationDemand(OptModel, mTEPES, pIndLogConsole, 
 
     def eRsrvMinRatioDwUpESS(OptModel,n,eh):
         # Skip if there is no minimum up/down reserve ratio or no reserves are needed in the Area where the generator is located or generator cannot provide reserves while generating power
-        if mTEPES.pMinRatioDwUp == 0.0 or mTEPES.pIndOperReserveCon[nr] or sum(mTEPES.pOperReserveUp[p,sc,n,ar] + mTEPES.pOperReserveDw[p,sc,n,ar] for ar in a2n[nr]) == 0.0 or mTEPES.pMaxPower2ndBlock[p,sc,n,nr] == 0.0:
+        if mTEPES.pMinRatioDwUp == 0.0 or mTEPES.pIndOperReserveCon[eh] or (p,eh) not in mTEPES.peh or sum(mTEPES.pOperReserveUp[p,sc,n,ar] + mTEPES.pOperReserveDw[p,sc,n,ar] for ar in a2n[nr]) == 0.0 or mTEPES.pMaxPower2ndBlock[p,sc,n,nr] == 0.0:
             return Constraint.Skip
         return OptModel.vESSReserveDown[p,sc,n,eh] >= OptModel.vESSReserveUp[p,sc,n,eh] * mTEPES.pMinRatioDwUp
     setattr(OptModel, f'eRsrvMinRatioDwUpESS_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.eh, rule=eRsrvMinRatioDwUpESS, doc='minimum ratio down to up operating reserve [GW]'))
@@ -116,7 +116,7 @@ def GenerationOperationModelFormulationDemand(OptModel, mTEPES, pIndLogConsole, 
 
     def eRsrvMaxRatioDwUpESS(OptModel,n,eh):
         # Skip if there is no maximum up/down reserve ratio or no reserves are needed in the Area where the generator is located or generator cannot provide reserves while generating power
-        if mTEPES.pMaxRatioDwUp >= 1.0 or mTEPES.pIndOperReserveCon[nr] or sum(mTEPES.pOperReserveUp[p,sc,n,ar] + mTEPES.pOperReserveDw[p,sc,n,ar] for ar in a2n[nr]) == 0.0 or mTEPES.pMaxPower2ndBlock[p,sc,n,nr] == 0.0:
+        if mTEPES.pMaxRatioDwUp >= 1.0 or mTEPES.pIndOperReserveCon[eh] or (p,eh) not in mTEPES.peh or sum(mTEPES.pOperReserveUp[p,sc,n,ar] + mTEPES.pOperReserveDw[p,sc,n,ar] for ar in a2n[nr]) == 0.0 or mTEPES.pMaxPower2ndBlock[p,sc,n,nr] == 0.0:
             return Constraint.Skip
         return OptModel.vESSReserveDown[p,sc,n,eh] <= OptModel.vESSReserveUp[p,sc,n,eh] * mTEPES.pMaxRatioDwUp
     setattr(OptModel, f'eRsrvMaxRatioDwUpESS_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.eh, rule=eRsrvMaxRatioDwUpESS, doc='maximum ratio down to up operating reserve [GW]'))
