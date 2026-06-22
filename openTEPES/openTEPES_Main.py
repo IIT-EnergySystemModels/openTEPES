@@ -741,7 +741,7 @@ def main():
         _parent_candidate_case_path = os.path.join(_parent_dir, args.case)
         if os.path.exists(_parent_candidate_case_path):
             args.dir = _parent_dir
-            print(f"Case '{args.case}' not found in '{_candidate_case_path}'. Falling back to '{args.dir}'.")
+            print(f"Case '{args.case}' not found in '{_candidate_case_path}'.\nFalling back to '{args.dir}'.")
 
     if args.solver is None:
         args.solver = input('Input Solver Name (Default {}): '.format(SOLVER))
