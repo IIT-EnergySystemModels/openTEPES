@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 11, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 23, 2026
 
 Marginal, cost-summary, and economic results.
 
@@ -181,7 +181,10 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES, pIndPlotOutput):
 
         if pIndPlotOutput:
             MarginalUpOperatingReserve = OutputResults.to_frame(name='UORM').reset_index().pivot_table(index=['level_0','level_1','level_3','level_4'], values='UORM').rename_axis(['level_0','level_1','level_2','level_3'], axis=0).loc[:,:,:,:]
+            available_period_scenario = set(MarginalUpOperatingReserve.index.droplevel([2,3]).unique().tolist())
             for p,sc in mTEPES.ps:
+                if (p,sc) not in available_period_scenario:
+                    continue
                 chart = LinePlots(p, sc, MarginalUpOperatingReserve, 'Area', 'LoadLevel', 'EUR/MW', 'sum')
                 chart.save(f'{_path}/oT_Plot_MarginalOperatingReserveUpward_{CaseName}_{p}_{sc}.html', embed_options={'renderer': 'svg'})
 
@@ -194,7 +197,10 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES, pIndPlotOutput):
 
         if pIndPlotOutput:
             MarginalDwOperatingReserve = OutputResults.to_frame(name='DORM').reset_index().pivot_table(index=['level_0','level_1','level_3','level_4'], values='DORM').rename_axis(['level_0','level_1','level_2','level_3'], axis=0).loc[:,:,:,:]
+            available_period_scenario = set(MarginalDwOperatingReserve.index.droplevel([2,3]).unique().tolist())
             for p,sc in mTEPES.ps:
+                if (p,sc) not in available_period_scenario:
+                    continue
                 chart = LinePlots(p, sc, MarginalDwOperatingReserve, 'Area', 'LoadLevel', 'EUR/MW', 'sum')
                 chart.save(f'{_path}/oT_Plot_MarginalOperatingReserveDownward_{CaseName}_{p}_{sc}.html', embed_options={'renderer': 'svg'})
 
