@@ -5,7 +5,7 @@ import time          # count clock time
 import os
 
 StartTime = time.time()
-ModelName = 'openTEPES 2.0.5'
+ModelName = 'openTEPES 4.18.17'
 # DirName   = Path('C:/Users/Erik/Documents/GitHub/openTEPES_PRO/openTEPES')
 DirName   = Path('C:/Users/aramos/OneDrive - Universidad Pontificia Comillas/Andres/openTEPES')
 CaseName  = 'EAPP'                              # To select the case
