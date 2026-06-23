@@ -8,6 +8,7 @@ import pandas as pd
 from openTEPES.openTEPES import openTEPES_run
 from openTEPES.openTEPES_ProblemSolvingBenders import lshaped
 from openTEPES.openTEPES_ProblemSolvingResolve import resolve, overlay_scaled
+from openTEPES import openTEPES_Runner, openTEPES_Cases
 
 
 # === Fixture: single-stage 7-day system ===
@@ -374,3 +375,82 @@ def test_binary_investment(case_7d_binary, expected_cost):
     print(f"Expected cost: {expected_cost:.5f}, Actual cost: {actual_cost:.5f}")
 
     np.testing.assert_approx_equal(actual_cost, expected_cost)
+
+
+# === Mode A sweep-runner tests ===
+#
+# openTEPES_Runner.run drives many cases through openTEPES_run with a chosen backend (Mode A,
+# RFC §4.1: each worker loads its own source, builds, solves, writes). The runner never returns
+# the Pyomo model — that cannot cross a process boundary — so it reads back the per-case
+# openTEPES_run_status_*.json and returns one summary dict per case, in input order, regardless of
+# backend. A case that raises is captured as status="error" so one bad pathway does not lose the
+# rest of the sweep.
+@pytest.mark.solve
+@pytest.mark.parametrize("case_7d_system", ["9n"], indirect=["case_7d_system"])
+def test_mode_a_runner_serial_parity(case_7d_system, tmp_path):
+    """A single-case serial sweep reproduces a direct openTEPES_run cost and echoes the label."""
+    d = case_7d_system
+    base_model = openTEPES_run(d["DirName"], d["CaseName"], d["SolverName"], 0, 0)
+    base_cost  = base_model.vTotalSCost()
+
+    records = openTEPES_Runner.run(
+        [openTEPES_Cases.Case(d["DirName"], d["CaseName"], out_path=str(tmp_path / "c1"), label="first")],
+        d["SolverName"], mode="pre-build", backend="serial",
+        pIndOutputResults=0, pIndLogConsole=0,
+    )
+    assert len(records) == 1
+    assert records[0]["status"] == "optimal"
+    assert records[0]["label"] == "first"
+    assert records[0]["total_cost_meur"] == pytest.approx(base_cost, rel=1e-6)
+
+
+@pytest.mark.solve
+@pytest.mark.parametrize("case_7d_system", ["9n"], indirect=["case_7d_system"])
+def test_mode_a_runner_multi_case_and_error(case_7d_system, tmp_path):
+    """A multi-case serial sweep preserves input order, isolates outputs, and captures a bad case."""
+    d = case_7d_system
+    cases = [
+        openTEPES_Cases.Case(d["DirName"], d["CaseName"], out_path=str(tmp_path / "good1"), label="good1"),
+        openTEPES_Cases.Case(str(tmp_path), "DOES_NOT_EXIST", out_path=str(tmp_path / "broken"), label="broken"),
+        openTEPES_Cases.Case(d["DirName"], d["CaseName"], out_path=str(tmp_path / "good2"), label="good2"),
+    ]
+    records = openTEPES_Runner.run(cases, d["SolverName"], mode="pre-build", backend="serial",
+                                   pIndOutputResults=0, pIndLogConsole=0)
+
+    assert [r["label"] for r in records] == ["good1", "broken", "good2"]
+    assert records[0]["status"] == "optimal"
+    assert records[2]["status"] == "optimal"
+    assert records[1]["status"] == "error"
+    assert "error" in records[1]
+    # The two good cases solved to the same cost from independent output directories.
+    assert records[0]["total_cost_meur"] == pytest.approx(records[2]["total_cost_meur"], rel=1e-9)
+
+
+@pytest.mark.solve
+@pytest.mark.parametrize("case_7d_system", ["9n"], indirect=["case_7d_system"])
+def test_mode_a_runner_multiprocessing(case_7d_system, tmp_path):
+    """The multiprocessing backend returns the same per-case summaries, in input order."""
+    d = case_7d_system
+    cases = [
+        openTEPES_Cases.Case(d["DirName"], d["CaseName"], out_path=str(tmp_path / "w1"), label="w1"),
+        openTEPES_Cases.Case(d["DirName"], d["CaseName"], out_path=str(tmp_path / "w2"), label="w2"),
+    ]
+    records = openTEPES_Runner.run(cases, d["SolverName"], mode="pre-build",
+                                   backend="multiprocessing", n_workers=2,
+                                   pIndOutputResults=0, pIndLogConsole=0)
+    assert [r["label"] for r in records] == ["w1", "w2"]
+    assert all(r["status"] == "optimal" for r in records)
+    assert records[0]["total_cost_meur"] == pytest.approx(records[1]["total_cost_meur"], rel=1e-9)
+
+
+def test_mode_a_runner_guards():
+    """Unsupported modes, overlays, and backends are rejected without touching a solver."""
+    case = openTEPES_Cases.Case("dir", "case")
+    with pytest.raises(NotImplementedError):
+        openTEPES_Runner.run([case], "highs", mode="in-memory")
+    with pytest.raises(NotImplementedError):
+        openTEPES_Runner.run([case], "highs", mode="hot-swap")
+    with pytest.raises(NotImplementedError):
+        openTEPES_Runner.run([openTEPES_Cases.Case("dir", "case", overlay={"pDemandElec": {}})], "highs")
+    with pytest.raises(ValueError):
+        openTEPES_Runner.run([case], "highs", backend="dask")

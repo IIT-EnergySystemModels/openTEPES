@@ -56,7 +56,7 @@
 
     <text x="550" y="120" class="arrow-lblP">▶ sweep</text>
 
-    <rect x="610" y="93" width="170" height="48" rx="8" fill="#fff" stroke="#7a4a8a" stroke-width="1.5"/>
+    <rect x="610" y="93" width="170" height="48" rx="8" fill="#d4efdf" stroke="#4a5a8a" stroke-width="1.2"/>
     <text x="695" y="112" text-anchor="middle" class="mod">runner.py</text>
     <text x="695" y="128" text-anchor="middle" class="mod-sub">parallel sweep orchestrator</text>
 
@@ -98,7 +98,7 @@
     <text x="700" y="263" text-anchor="middle" class="mod-sub">DuckDBSource</text>
     <text x="700" y="277" text-anchor="middle" class="mod-sub">streaming SQL backend</text>
 
-    <rect x="785" y="225" width="155" height="62" rx="8" fill="#fff" stroke="#7a4a8a" stroke-width="1.5"/>
+    <rect x="785" y="225" width="155" height="62" rx="8" fill="#d4efdf" stroke="#2e7d5f" stroke-width="1.2"/>
     <text x="862" y="246" text-anchor="middle" class="mod">cases.py</text>
     <text x="862" y="261" text-anchor="middle" class="mod-flag">★ sweep-enabling</text>
     <text x="862" y="275" text-anchor="middle" class="mod-sub">Case = baseline + overlay</text>
@@ -243,7 +243,7 @@
     <text x="907" y="845" text-anchor="middle" class="mod">…Benders.py</text>
     <text x="907" y="862" text-anchor="middle" class="mod-sub">L-shaped decomp</text>
 
-    <rect x="978" y="827" width="128" height="46" rx="8" fill="#fff" stroke="#7a4a8a" stroke-width="1.5"/>
+    <rect x="978" y="827" width="128" height="46" rx="8" fill="#d4efdf" stroke="#5d4a8a" stroke-width="1.2"/>
     <text x="1042" y="844" text-anchor="middle" class="mod">resolve.py</text>
     <text x="1042" y="860" text-anchor="middle" class="mod-flag">★ hot-swap (Mode C)</text>
   </g>
