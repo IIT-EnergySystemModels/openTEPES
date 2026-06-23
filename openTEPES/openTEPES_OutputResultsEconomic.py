@@ -183,10 +183,9 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES, pIndPlotOutput):
             MarginalUpOperatingReserve = OutputResults.to_frame(name='UORM').reset_index().pivot_table(index=['level_0','level_1','level_3','level_4'], values='UORM').rename_axis(['level_0','level_1','level_2','level_3'], axis=0).loc[:,:,:,:]
             available_period_scenario = set(MarginalUpOperatingReserve.index.droplevel([2,3]).unique().tolist())
             for p,sc in mTEPES.ps:
-                if (p,sc) not in available_period_scenario:
-                    continue
-                chart = LinePlots(p, sc, MarginalUpOperatingReserve, 'Area', 'LoadLevel', 'EUR/MW', 'sum')
-                chart.save(f'{_path}/oT_Plot_MarginalOperatingReserveUpward_{CaseName}_{p}_{sc}.html', embed_options={'renderer': 'svg'})
+                if (p,sc) in available_period_scenario:
+                    chart = LinePlots(p, sc, MarginalUpOperatingReserve, 'Area', 'LoadLevel', 'EUR/MW', 'sum')
+                    chart.save(f'{_path}/oT_Plot_MarginalOperatingReserveUpward_{CaseName}_{p}_{sc}.html', embed_options={'renderer': 'svg'})
 
     #%% outputting the down operating reserve marginal
     if sum(mTEPES.pOperReserveDw[:,:,:,:]) and sum(1 for ar,nr in mTEPES.ar*mTEPES.nr if nr in n2a[ar] if (mTEPES.pIndOperReserveGen[nr] == 0 or mTEPES.pIndOperReserveCon[nr] == 0)) + sum(1 for ar,es in mTEPES.ar*mTEPES.es if es in e2a[ar] if (mTEPES.pIndOperReserveGen[es] == 0 or mTEPES.pIndOperReserveCon[es] == 0)):
@@ -199,10 +198,9 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES, pIndPlotOutput):
             MarginalDwOperatingReserve = OutputResults.to_frame(name='DORM').reset_index().pivot_table(index=['level_0','level_1','level_3','level_4'], values='DORM').rename_axis(['level_0','level_1','level_2','level_3'], axis=0).loc[:,:,:,:]
             available_period_scenario = set(MarginalDwOperatingReserve.index.droplevel([2,3]).unique().tolist())
             for p,sc in mTEPES.ps:
-                if (p,sc) not in available_period_scenario:
-                    continue
-                chart = LinePlots(p, sc, MarginalDwOperatingReserve, 'Area', 'LoadLevel', 'EUR/MW', 'sum')
-                chart.save(f'{_path}/oT_Plot_MarginalOperatingReserveDownward_{CaseName}_{p}_{sc}.html', embed_options={'renderer': 'svg'})
+                if (p,sc) in available_period_scenario:
+                    chart = LinePlots(p, sc, MarginalDwOperatingReserve, 'Area', 'LoadLevel', 'EUR/MW', 'sum')
+                    chart.save(f'{_path}/oT_Plot_MarginalOperatingReserveDownward_{CaseName}_{p}_{sc}.html', embed_options={'renderer': 'svg'})
 
     #%% outputting the water values
     if mTEPES.es:
