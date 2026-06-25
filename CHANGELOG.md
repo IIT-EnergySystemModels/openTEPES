@@ -1,7 +1,8 @@
 # Change Log
 
-## [4.18.17RC] - 2026-06-23 Unreleased in PyPI
+## [4.18.17RC] - 2026-06-25 Unreleased in PyPI
 
+- [FIXED] formulation of eOperReserveUpEnergy and eOperReserveDwEnergy constraints
 - [FIXED] failure in plotting up and down operating reserve marginals when the constraint has not been formulated
 - [ADDED] Mode A pre-build sweep runner (`openTEPES_Runner.py` + `openTEPES_Cases.py`): `run(cases, solver_name, backend=...)` runs many cases through `openTEPES_run`, one independent build-and-solve per case, over a `serial` (default), `multiprocessing`, or `joblib` backend. A `Case` names one input source (a CSV directory or a `.duckdb` file) plus an optional output directory and label. The runner reads back each case's `openTEPES_run_status_*.json` and returns one summary dict per case in input order, so nothing has to pickle the Pyomo model across workers; a case that raises is captured as `status="error"` instead of aborting the sweep. Additive only — no existing module changes, and a single-case serial sweep reproduces a direct `openTEPES_run`. Mode B (in-memory overlay) and Mode C (`openTEPES_ProblemSolvingResolve`) are separate. New tests in `tests/test_run.py`. The architecture diagram (`doc/img/openTEPES_architecture.svg` and the rendered `.png`) marks the `runner.py` and `cases.py` boxes implemented, and also the `resolve.py` box now that Mode C has merged.
 - [ADDED] add CSV output file TechnologyInvestment per area 
