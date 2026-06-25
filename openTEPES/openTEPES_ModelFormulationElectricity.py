@@ -159,9 +159,9 @@ def GenerationOperationModelFormulationDemand(OptModel, mTEPES, pIndLogConsole, 
 
     def eOperReserveUpEnergy(OptModel,n):
         # Skip if there are no upward operating reserves activation or there are no generators in this area which can provide reserves
-        if mTEPES.pIndReserveActivation == 0 or sum(mTEPES.pOperReserveUpEnergy[p,sc,n,ar] for ar in mTEPES.ar) == 0.0 or sum(1 for nr,ar in mTEPES.nr*mTEPES.ar if (ar,nr) in mTEPES.a2g and (mTEPES.pIndOperReserveGen[nr] == 0 or mTEPES.pIndOperReserveCon[nr] == 0)) + sum(1 for eh,ar in mTEPES.eh*mTEPES.ar if (ar,eh) in mTEPES.a2g and (mTEPES.pIndOperReserveGen[eh] == 0 or mTEPES.pIndOperReserveCon[eh] == 0)) == 0:
+        if mTEPES.pIndReserveActivation == 0 or sum(mTEPES.pOperReserveUpEnergy[p,sc,n,ar] for ar in mTEPES.ar) == 0.0 or sum(1 for nr in mTEPES.nr if (mTEPES.pIndOperReserveGen[nr] == 0 or mTEPES.pIndOperReserveCon[nr] == 0) and (p,nr) in mTEPES.pnr) + sum(1 for eh in mTEPES.eh if (mTEPES.pIndOperReserveGen[eh] == 0 or mTEPES.pIndOperReserveCon[eh] == 0) and (p,eh) in mTEPES.peh) == 0:
             return Constraint.Skip
-        return sum(OptModel.vReserveUpEnergy  [p,sc,n,nr] for nr,ar in mTEPES.nr*mTEPES.ar if (ar,nr) in mTEPES.a2g and mTEPES.pIndOperReserveGen[nr] == 0 and (p,nr) in mTEPES.pnr) + sum(OptModel.vESSReserveUpEnergy  [p,sc,n,eh] for eh,ar in mTEPES.eh*mTEPES.ar if (ar,eh) in mTEPES.a2g and mTEPES.pIndOperReserveCon[eh] == 0 and (p,eh) in mTEPES.peh) == sum(mTEPES.pOperReserveUpEnergy[p,sc,n,ar] for ar in mTEPES.ar)
+        return sum(OptModel.vReserveUpEnergy  [p,sc,n,nr] for nr in mTEPES.nr if mTEPES.pIndOperReserveGen[nr] == 0 and (p,nr) in mTEPES.pnr) + sum(OptModel.vESSReserveUpEnergy  [p,sc,n,eh] for eh in mTEPES.eh if mTEPES.pIndOperReserveCon[eh] == 0 and (p,eh) in mTEPES.peh) == sum(mTEPES.pOperReserveUpEnergy[p,sc,n,ar] for ar in mTEPES.ar)
     setattr(OptModel, f'eOperReserveUpEnergy_{p}_{sc}_{st}', Constraint(mTEPES.n, rule=eOperReserveUpEnergy, doc='up   operating reserve activation [GW]'))
 
     if pIndLogConsole:
@@ -169,9 +169,9 @@ def GenerationOperationModelFormulationDemand(OptModel, mTEPES, pIndLogConsole, 
 
     def eOperReserveDwEnergy(OptModel,n):
         # Skip if there are no upward operating reserves activation or there are no generators in this area which can provide reserves
-        if mTEPES.pIndReserveActivation == 0 or sum(mTEPES.pOperReserveDwEnergy[p,sc,n,ar] for ar in mTEPES.ar) == 0.0 or sum(1 for nr,ar in mTEPES.nr*mTEPES.ar if (ar,nr) in mTEPES.a2g and (mTEPES.pIndOperReserveGen[nr] == 0 or mTEPES.pIndOperReserveCon[nr] == 0)) + sum(1 for eh,ar in mTEPES.eh*mTEPES.ar if (ar,eh) in mTEPES.a2g and (mTEPES.pIndOperReserveGen[eh] == 0 or mTEPES.pIndOperReserveCon[eh] == 0)) == 0:
+        if mTEPES.pIndReserveActivation == 0 or sum(mTEPES.pOperReserveDwEnergy[p,sc,n,ar] for ar in mTEPES.ar) == 0.0 or sum(1 for nr in mTEPES.nr if (mTEPES.pIndOperReserveGen[nr] == 0 or mTEPES.pIndOperReserveCon[nr] == 0) and (p,nr) in mTEPES.pnr) + sum(1 for eh in mTEPES.eh if (mTEPES.pIndOperReserveGen[eh] == 0 or mTEPES.pIndOperReserveCon[eh] == 0) and (p,eh) in mTEPES.peh) == 0:
             return Constraint.Skip
-        return sum(OptModel.vReserveDownEnergy[p,sc,n,nr] for nr,ar in mTEPES.nr*mTEPES.ar if (ar,nr) in mTEPES.a2g and mTEPES.pIndOperReserveGen[nr] == 0 and (p,nr) in mTEPES.pnr) + sum(OptModel.vESSReserveDownEnergy[p,sc,n,eh] for eh,ar in mTEPES.eh*mTEPES.ar if (ar,eh) in mTEPES.a2g and mTEPES.pIndOperReserveCon[eh] == 0 and (p,eh) in mTEPES.peh) == sum(mTEPES.pOperReserveDwEnergy[p,sc,n,ar] for ar in mTEPES.ar)
+        return sum(OptModel.vReserveDownEnergy[p,sc,n,nr] for nr in mTEPES.nr if mTEPES.pIndOperReserveGen[nr] == 0 and (p,nr) in mTEPES.pnr) + sum(OptModel.vESSReserveDownEnergy[p,sc,n,eh] for eh in mTEPES.eh if mTEPES.pIndOperReserveCon[eh] == 0 and (p,eh) in mTEPES.peh) == sum(mTEPES.pOperReserveDwEnergy[p,sc,n,ar] for ar in mTEPES.ar)
     setattr(OptModel, f'eOperReserveDwEnergy_{p}_{sc}_{st}', Constraint(mTEPES.n, rule=eOperReserveDwEnergy, doc='down operating reserve activation [GW]'))
 
     if pIndLogConsole:
