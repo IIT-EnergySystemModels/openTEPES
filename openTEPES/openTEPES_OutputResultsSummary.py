@@ -130,21 +130,21 @@ def OperationSummaryResults(DirName, CaseName, OptModel, mTEPES):
         K09 = pd.Series(data={'Rate of return for VRE technologies [%]'                                 : 0.0                                           }).to_frame(name='Value')
 
     OutputResults = pd.concat([K01, K02, K03, K05, K04, K10, K11, K06, K07, K08, K09], axis=0)
-    OutputResults.to_csv(f'{_path}/oT_Result_SummaryKPIs_{CaseName}.csv', sep=',', index=True)
+    OutputResults.oT.write(f'{_path}/oT_Result_SummaryKPIs_{CaseName}.csv', sep=',', index=True)
 
     # LCOE per technology
     if mTEPES.gc:
         GenTechInvestCost = pd.Series(data=[sum(mTEPES.pDiscountedWeight[p] * mTEPES.pGenInvestCost[gc]           * OptModel.vGenerationInvest[p,gc]() for p,     gc in mTEPES.pgc   if gc in g2t[gt]) for gt in mTEPES.gt], index=mTEPES.gt)
         GenTechInjection  = pd.Series(data=[sum(mTEPES.pDiscountedWeight[p] * mTEPES.pLoadLevelDuration[p,sc,n]() * OptModel.vTotalOutput[p,sc,n,gc]() for p,sc,n,gc in mTEPES.psngc if gc in g2t[gt]) for gt in mTEPES.gt], index=mTEPES.gt)
         GenTechInvestCost *= 1e3
-        LCOE = GenTechInvestCost.div(GenTechInjection).to_frame(name='EUR/MWh').rename_axis(['Technology'], axis=0).to_csv(f'{_path}/oT_Result_TechnologyLCOE_{CaseName}.csv', index=True, sep=',')
+        LCOE = GenTechInvestCost.div(GenTechInjection).to_frame(name='EUR/MWh').rename_axis(['Technology'], axis=0).oT.write(f'{_path}/oT_Result_TechnologyLCOE_{CaseName}.csv', index=True, sep=',')
 
     # LCOH per technology
     if mTEPES.gb:
         GenTechInvestCost = pd.Series(data=[sum(mTEPES.pDiscountedWeight[p] * mTEPES.pGenInvestCost[gb]           * OptModel.vGenerationInvest[p,gb]()     for p,     gb in mTEPES.pgb   if gb in g2t[gt]) for gt in mTEPES.gt], index=mTEPES.gt)
         GenTechInjection  = pd.Series(data=[sum(mTEPES.pDiscountedWeight[p] * mTEPES.pLoadLevelDuration[p,sc,n]() * OptModel.vTotalOutputHeat[p,sc,n,gb]() for p,sc,n,gb in mTEPES.psngb if gb in g2t[gt]) for gt in mTEPES.gt], index=mTEPES.gt)
         GenTechInvestCost *= 1e3
-        LCOH = GenTechInvestCost.div(GenTechInjection).to_frame(name='EUR/MWh').rename_axis(['Technology'], axis=0).to_csv(f'{_path}/oT_Result_TechnologyLCOH_{CaseName}.csv', index=True, sep=',')
+        LCOH = GenTechInvestCost.div(GenTechInjection).to_frame(name='EUR/MWh').rename_axis(['Technology'], axis=0).oT.write(f'{_path}/oT_Result_TechnologyLCOH_{CaseName}.csv', index=True, sep=',')
 
     WritingResultsTime = time.time() - StartTime
     StartTime = time.time()
@@ -254,7 +254,7 @@ def FlexibilityResults(DirName, CaseName, OptModel, mTEPES):
     NetTechnologyOutput  = pd.Series([0.0] * len(mTEPES.psngt), index=mTEPES.psngt)
     for p,sc,n,gt in mTEPES.psngt:
         NetTechnologyOutput[p,sc,n,gt] = TechnologyOutput[p,sc,n,gt] - MeanTechnologyOutput[gt]
-    NetTechnologyOutput.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(f'{_path}/oT_Result_FlexibilityTechnology_{CaseName}.csv', sep=',')
+    NetTechnologyOutput.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_FlexibilityTechnology_{CaseName}.csv', sep=',')
 
     if mTEPES.es:
         OutputToFile = pd.Series(data=[sum(OptModel.vTotalOutput[p,sc,n,es]() for es in o2e[ot] if (p,es) in mTEPES.pes) for p,sc,n,ot in mTEPES.psnot], index=mTEPES.psnot)
@@ -264,22 +264,22 @@ def FlexibilityResults(DirName, CaseName, OptModel, mTEPES):
         NetESSTechnologyOutput  = pd.Series([0.0] * len(mTEPES.psnot), index=mTEPES.psnot)
         for p,sc,n,ot in mTEPES.psnot:
             NetESSTechnologyOutput[p,sc,n,ot] = MeanESSTechnologyOutput[ot] - ESSTechnologyOutput[p,sc,n,ot]
-        NetESSTechnologyOutput.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(f'{_path}/oT_Result_FlexibilityTechnologyESS_{CaseName}.csv', sep=',')
+        NetESSTechnologyOutput.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_FlexibilityTechnologyESS_{CaseName}.csv', sep=',')
 
     MeanDemand   = pd.Series(data=[sum(mTEPES.pDemandElec[p,sc,n,nd]() for nd in d2a[ar])                  for p,sc,n,ar in mTEPES.psnar], index=mTEPES.psnar).groupby(level=3).mean()
     OutputToFile = pd.Series(data=[sum(mTEPES.pDemandElec[p,sc,n,nd]() for nd in d2a[ar]) - MeanDemand[ar] for p,sc,n,ar in mTEPES.psnar], index=mTEPES.psnar)
     OutputToFile *= 1e3
-    OutputToFile.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(f'{_path}/oT_Result_FlexibilityDemand_{CaseName}.csv', sep=',')
+    OutputToFile.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_FlexibilityDemand_{CaseName}.csv', sep=',')
 
     MeanENS      = pd.Series(data=[sum(OptModel.vENS[p,sc,n,nd]() for nd in d2a[ar])               for p,sc,n,ar in mTEPES.psnar], index=mTEPES.psnar).groupby(level=3).mean()
     OutputToFile = pd.Series(data=[sum(OptModel.vENS[p,sc,n,nd]() for nd in d2a[ar]) - MeanENS[ar] for p,sc,n,ar in mTEPES.psnar], index=mTEPES.psnar)
     OutputToFile *= 1e3
-    OutputToFile.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(f'{_path}/oT_Result_FlexibilityPNS_{CaseName}.csv', sep=',')
+    OutputToFile.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_FlexibilityPNS_{CaseName}.csv', sep=',')
 
     MeanFlow     = pd.Series(data=[sum(OptModel.vFlowElec[p,sc,n,nd,nf,cc]() for nd,nf,cc,af in mTEPES.laar if nd in d2a[ar] and nf in d2a[af] and af != ar and (p,nd,nf,cc) in mTEPES.pla)                for p,sc,n,ar in mTEPES.psnar], index=mTEPES.psnar).groupby(level=3).mean()
     OutputToFile = pd.Series(data=[sum(OptModel.vFlowElec[p,sc,n,nd,nf,cc]() for nd,nf,cc,af in mTEPES.laar if nd in d2a[ar] and nf in d2a[af] and af != ar and (p,nd,nf,cc) in mTEPES.pla) - MeanFlow[ar] for p,sc,n,ar in mTEPES.psnar], index=mTEPES.psnar)
     OutputToFile *= 1e3
-    OutputToFile.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(f'{_path}/oT_Result_FlexibilityNetwork_{CaseName}.csv', sep=',')
+    OutputToFile.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_FlexibilityNetwork_{CaseName}.csv', sep=',')
 
     WritingResultsTime = time.time() - StartTime
     StartTime = time.time()
@@ -317,8 +317,8 @@ def ReliabilityResults(DirName, CaseName, OptModel, mTEPES):
     OutputToFile  = OutputToFile2 - OutputToFile1
     OutputToFile  *= 1e3
     OutputToFile  = OutputToFile.to_frame(name='MW')
-    OutputToFile.reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(f'{_path}/oT_Result_NetDemandNetwork_{CaseName}.csv', sep=',')
-    OutputToFile.reset_index().pivot_table(index=['level_0','level_1','level_2'],                    values='MW', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).to_csv(f'{_path}/oT_Result_NetDemand_{CaseName}.csv', sep=',')
+    OutputToFile.reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_NetDemandNetwork_{CaseName}.csv', sep=',')
+    OutputToFile.reset_index().pivot_table(index=['level_0','level_1','level_2'],                    values='MW', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_NetDemand_{CaseName}.csv', sep=',')
 
     # Determination of the index: Reserve Margin
     OutputToFile1 = pd.Series(data=[0.0 for p,sc in mTEPES.ps], index=mTEPES.ps)
@@ -328,8 +328,8 @@ def ReliabilityResults(DirName, CaseName, OptModel, mTEPES):
         OutputToFile2[p,sc] = pDemandElec.loc  [(p,sc)].reset_index().pivot_table(index=['level_0'], values=0, aggfunc='sum')[0].max()
     ReserveMargin1 =  OutputToFile1 - OutputToFile2
     ReserveMargin2 = (OutputToFile1 - OutputToFile2)/OutputToFile2
-    ReserveMargin1.to_frame(name='MW'  ).rename_axis(['Period', 'Scenario'], axis=0).to_csv(f'{_path}/oT_Result_ReserveMargin_{CaseName}.csv',        sep=',')
-    ReserveMargin2.to_frame(name='p.u.').rename_axis(['Period', 'Scenario'], axis=0).to_csv(f'{_path}/oT_Result_ReserveMarginPerUnit_{CaseName}.csv', sep=',')
+    ReserveMargin1.to_frame(name='MW'  ).rename_axis(['Period', 'Scenario'], axis=0).oT.write(f'{_path}/oT_Result_ReserveMargin_{CaseName}.csv',        sep=',')
+    ReserveMargin2.to_frame(name='p.u.').rename_axis(['Period', 'Scenario'], axis=0).oT.write(f'{_path}/oT_Result_ReserveMarginPerUnit_{CaseName}.csv', sep=',')
 
     # Determination of the index: Largest Unit
     OutputToFile = pd.Series(data=[0.0 for p,sc in mTEPES.ps], index=mTEPES.ps)
@@ -337,7 +337,7 @@ def ReliabilityResults(DirName, CaseName, OptModel, mTEPES):
         OutputToFile[p,sc] = pMaxPowerElec.loc[(p,sc)].reset_index().pivot_table(index=['level_1'], values=0, aggfunc='sum')[0].max()
 
     LargestUnit  = ReserveMargin1/OutputToFile
-    LargestUnit.to_frame(name='p.u.').rename_axis(['Period', 'Scenario'], axis=0).to_csv(f'{_path}/oT_Result_LargestUnitPerUnit_{CaseName}.csv', index=True, sep=',')
+    LargestUnit.to_frame(name='p.u.').rename_axis(['Period', 'Scenario'], axis=0).oT.write(f'{_path}/oT_Result_LargestUnitPerUnit_{CaseName}.csv', index=True, sep=',')
 
     WritingResultsTime = time.time() - StartTime
     print('Writing           reliability indexes  ... ', round(WritingResultsTime), 's')
