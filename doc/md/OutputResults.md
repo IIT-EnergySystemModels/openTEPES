@@ -493,7 +493,7 @@ Period        Scenario    Load level  Technology   CO2 emission per area [MtCO2]
 ============  ==========  ==========  ==========  =================================
 ```
 
-File `oT_Result_TechnologyOperatingReserveUp.csv`
+File `oT_Result_TechnologyGenOperatingReserveUp.csv`
 
 ```{eval-rst}
 ============  ==========  ==========  ==========  ==========================================
@@ -503,7 +503,7 @@ Period        Scenario    Load level  Technology  Upward operating reserve [MW]
 ============  ==========  ==========  ==========  ==========================================
 ```
 
-File `oT_Result_TechnologyOperatingReserveDown.csv`
+File `oT_Result_TechnologyGenOperatingReserveDown.csv`
 
 ```{eval-rst}
 ============  ==========  ==========  ==========  ==========================================
@@ -513,7 +513,7 @@ Period        Scenario    Load level  Technology  Downward operating reserve [MW
 ============  ==========  ==========  ==========  ==========================================
 ```
 
-File `oT_Result_TechnologyOperatingReserveUpEnergy.csv`
+File `oT_Result_TechnologyGenOperatingReserveUpEnergy.csv`
 
 ```{eval-rst}
 ============  ==========  ==========  ==========  ==========================================
@@ -523,7 +523,7 @@ Period        Scenario    Load level  Technology  Upward operating reserve energ
 ============  ==========  ==========  ==========  ==========================================
 ```
 
-File `oT_Result_TechnologyOperatingReserveDownEnergy.csv`
+File `oT_Result_TechnologyGenOperatingReserveDownEnergy.csv`
 
 ```{eval-rst}
 ============  ==========  ==========  ==========  ==========================================
@@ -623,7 +623,7 @@ Period        Scenario    Load level  Generator   Consumed/charged energy for ea
 ============  ==========  ==========  ==========  ==========================================
 ```
 
-File `oT_Result_ConsumptionOperatingReserveUpESS.csv`
+File `oT_Result_ConsumptionOperatingReserveUp.csv`
 
 ```{eval-rst}
 ============  ==========  ==========  ==========  =================================================
@@ -633,7 +633,7 @@ Period        Scenario    Load level  Generator   Upward operating reserve of ea
 ============  ==========  ==========  ==========  =================================================
 ```
 
-File `oT_Result_ConsumptionOperatingReserveDownESS.csv`
+File `oT_Result_ConsumptionOperatingReserveDown.csv`
 
 ```{eval-rst}
 ============  ==========  ==========  ==========  ===================================================
@@ -643,7 +643,7 @@ Period        Scenario    Load level  Generator   Downward operating reserve of 
 ============  ==========  ==========  ==========  ===================================================
 ```
 
-File `oT_Result_ConsumptionOperatingReserveUpEnergyESS.csv`
+File `oT_Result_ConsumptionOperatingReserveUpEnergy.csv`
 
 ```{eval-rst}
 ============  ==========  ==========  ==========  ========================================================
@@ -653,7 +653,7 @@ Period        Scenario    Load level  Generator   Upward operating reserve energ
 ============  ==========  ==========  ==========  ========================================================
 ```
 
-File `oT_Result_ConsumptionOperatingReserveDownEnergyESS.csv`
+File `oT_Result_ConsumptionOperatingReserveDownEnergy.csv`
 
 ```{eval-rst}
 ============  ==========  ==========  ==========  ==========================================================
@@ -739,7 +739,7 @@ Period        Scenario    Load level  Technology  Energy (Outflows in ESS) [GWh]
 ============  ==========  ==========  ==========  ==========================================
 ```
 
-File `oT_Result_TechnologyOperatingReserveUpESS.csv`
+File `oT_Result_TechnologyConOperatingReserveUp.csv`
 
 ```{eval-rst}
 ============  ==========  ==========  ==========  =================================================
@@ -749,7 +749,7 @@ Period        Scenario    Load level  Technology  Upward operating reserve of ea
 ============  ==========  ==========  ==========  =================================================
 ```
 
-File `oT_Result_TechnologyOperatingReserveDownESS.csv`
+File `oT_Result_TechnologyConOperatingReserveDown.csv`
 
 ```{eval-rst}
 ============  ==========  ==========  ==========  ===================================================
@@ -759,7 +759,7 @@ Period        Scenario    Load level  Technology  Downward operating reserve of 
 ============  ==========  ==========  ==========  ===================================================
 ```
 
-File `oT_Result_TechnologyOperatingReserveUpEnergyESS.csv`
+File `oT_Result_TechnologyConOperatingReserveUpEnergy.csv`
 
 ```{eval-rst}
 ============  ==========  ==========  ==========  ========================================================
@@ -769,7 +769,7 @@ Period        Scenario    Load level  Technology  Upward operating reserve energ
 ============  ==========  ==========  ==========  ========================================================
 ```
 
-File `oT_Result_TechnologyOperatingReserveDownEnergyESS.csv`
+File `oT_Result_TechnologyConOperatingReserveDownEnergy.csv`
 
 ```{eval-rst}
 ============  ==========  ==========  ==========  ==========================================================
