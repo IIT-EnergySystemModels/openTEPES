@@ -31,7 +31,6 @@ try:
     from .openTEPES_OutputResultsNetwork       import NetworkOperationResults, NetworkMapResults
     from .openTEPES_OutputResultsEconomic      import MarginalResults, CostSummaryResults, EconomicResults
     from .openTEPES_OutputResultsSummary       import OperationSummaryResults, FlexibilityResults, ReliabilityResults
-    from .openTEPES_OutputResultsSink          import ResultSink, set_active_sink, clear_active_sink
 except ImportError:
     import sys
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -51,7 +50,6 @@ except ImportError:
     from openTEPES.openTEPES_OutputResultsNetwork       import NetworkOperationResults, NetworkMapResults
     from openTEPES.openTEPES_OutputResultsEconomic      import MarginalResults, CostSummaryResults, EconomicResults
     from openTEPES.openTEPES_OutputResultsSummary       import OperationSummaryResults, FlexibilityResults, ReliabilityResults
-    from openTEPES.openTEPES_OutputResultsSink          import ResultSink, set_active_sink, clear_active_sink
 # from openTEPES_SectorDecomposition import SectorDecomposition
 
 
@@ -112,7 +110,7 @@ OUTPUT_REGISTRY = (
 
 
 def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConsole,
-                  *, output_spec=None, out_path=None, gzip_patterns=None, output_format="csv"):
+                  *, output_spec=None, out_path=None, gzip_patterns=None):
     """Solve and write results.
 
     Parameters
@@ -137,13 +135,6 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
         reads `.csv.gz` transparently; note that `.csv.gz` cannot be opened
         directly in Excel — users who inspect outputs in Excel should leave
         this disabled.
-    output_format : {'csv', 'duckdb', 'both'}, optional
-        Where the result tables go. ``'csv'`` (default) writes the historical
-        ``oT_Result_*.csv`` files only. ``'duckdb'`` writes one
-        ``oT_Results_<CaseName>.duckdb`` (one table per result) and no CSVs.
-        ``'both'`` writes both. The same in-memory frame is written to each
-        target, so the DuckDB copy is not re-read from the CSV. One DuckDB file
-        per case keeps a parallel sweep single-writer-safe.
     """
 
     InitialTime = time.time()
@@ -299,7 +290,6 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     # Tell OutputResults functions where to write (used by _outdir helper).
     # Setting on mTEPES avoids changing 14 function signatures.
     mTEPES.pOutputPath = _OutPath
-    mTEPES.pOutputBackend = output_format
 
     # Output results to CSV files. Dispatched via OUTPUT_REGISTRY (defined
     # at module top): each entry fires when its category flag is truthy AND
@@ -318,25 +308,12 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
         "area": pIndAreaOutput,
         "plot": pIndPlotOutput,
     }
-    # When DuckDB output is requested, install a per-case sink the .oT accessor
-    # routes every result write through. 'csv' leaves no sink, so the accessor
-    # falls back to plain to_csv and the run is byte-identical to before. The
-    # sink is opened here (in this worker, after any fork) and closed below.
-    _result_sink = None
-    if output_format != "csv":
-        _result_sink = ResultSink(_OutPath, CaseName, fmt=output_format)
-        set_active_sink(_result_sink)
-    try:
-        for _key, _fn, _extra_keys, _guard in OUTPUT_REGISTRY:
-            if not _flags[_key]:
-                continue
-            if _guard is not None and not _guard(mTEPES):
-                continue
-            _fn(DirName, CaseName, mTEPES, mTEPES, *(_extras[k] for k in _extra_keys))
-    finally:
-        if _result_sink is not None:
-            _result_sink.close()
-            clear_active_sink()
+    for _key, _fn, _extra_keys, _guard in OUTPUT_REGISTRY:
+        if not _flags[_key]:
+            continue
+        if _guard is not None and not _guard(mTEPES):
+            continue
+        _fn(DirName, CaseName, mTEPES, mTEPES, *(_extras[k] for k in _extra_keys))
 
     # Optional post-write gzip pass. Rewrite every oT_Result_<prefix>*.csv
     # whose <prefix> matches one of the requested patterns as .csv.gz.

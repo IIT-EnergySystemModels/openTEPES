@@ -34,7 +34,6 @@ from .openTEPES_ModelFormulationHeat        import *
 from .openTEPES_ProblemSolving          import *
 from .openTEPES_ProblemSolvingStageIter import *
 from .openTEPES_ProblemSolvingBenders   import *
-from .openTEPES_OutputResultsSink           import *
 from .openTEPES_OutputResultsCommon         import *
 from .openTEPES_OutputResultsRawDump        import *
 from .openTEPES_OutputResultsInvestment     import *
@@ -45,4 +44,3 @@ from .openTEPES_OutputResultsHeat           import *
 from .openTEPES_OutputResultsNetwork        import *
 from .openTEPES_OutputResultsEconomic       import *
 from .openTEPES_OutputResultsSummary        import *
-from .openTEPES_ResultAggregate             import *
