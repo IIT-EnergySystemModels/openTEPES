@@ -138,10 +138,10 @@
     <text x="800" y="420" text-anchor="middle" class="mod-sub">SettingUpVariables</text>
     <text x="800" y="434" text-anchor="middle" class="mod-sub">decision Vars + bounds</text>
 
-    <text x="945" y="402" class="mod-sub">★ planned (within</text>
-    <text x="945" y="417" class="mod-sub">InputData): split</text>
-    <text x="945" y="432" class="mod-sub">sets/params, mutable</text>
-    <text x="945" y="447" class="mod-sub">Params + overlay</text>
+    <text x="945" y="402" class="mod-sub">mutable Params + overlay:</text>
+    <text x="945" y="417" class="mod-sub">done (Mode C / Mode B).</text>
+    <text x="945" y="432" class="mod-sub">★ planned: split sets</text>
+    <text x="945" y="447" class="mod-sub">vs params in InputData</text>
   </g>
 
   <!-- arrow 3 -->
@@ -264,14 +264,14 @@
     <text x="90" y="988" text-anchor="middle" class="layer-name">Results</text>
     <text x="90" y="1004" text-anchor="middle" class="layer-note">openTEPES_Output</text>
     <text x="90" y="1016" text-anchor="middle" class="layer-note">Results*.py</text>
-    <text x="90" y="1033" text-anchor="middle" class="layer-note">11 flat concern</text>
+    <text x="90" y="1033" text-anchor="middle" class="layer-note">12 flat concern</text>
     <text x="90" y="1046" text-anchor="middle" class="layer-note">modules (split done)</text>
     <text x="247" y="962" text-anchor="middle" class="sector-tag">RAW · INVEST</text>
     <text x="391" y="962" text-anchor="middle" class="sector-tag">DISPATCH</text>
     <text x="535" y="962" text-anchor="middle" class="sector-tag">NETWORKS</text>
     <text x="679" y="962" text-anchor="middle" class="sector-tag">ECON · SUMMARY</text>
     <text x="823" y="962" text-anchor="middle" class="sector-tag">SHARED</text>
-    <text x="967" y="962" text-anchor="middle" class="sector-tag">SWEEPS · planned</text>
+    <text x="967" y="962" text-anchor="middle" class="sector-tag">SWEEPS</text>
     <rect x="178" y="970" width="138" height="40" rx="8" fill="#d4efdf" stroke="#2e7d5f" stroke-width="1.2"/>
     <text x="247" y="988" text-anchor="middle" class="mod">…RawDump.py</text>
     <text x="247" y="1002" text-anchor="middle" class="mod-sub">ParVarCon · DB dump</text>
@@ -305,8 +305,11 @@
     <rect x="754" y="1016" width="138" height="40" rx="8" fill="#d4efdf" stroke="#2e7d5f" stroke-width="1.2"/>
     <text x="823" y="1034" text-anchor="middle" class="mod">…MapCommon.py</text>
     <text x="823" y="1048" text-anchor="middle" class="mod-sub">flow-series · snapshot</text>
+    <rect x="754" y="1062" width="138" height="40" rx="8" fill="#d4efdf" stroke="#2e7d5f" stroke-width="1.2"/>
+    <text x="823" y="1080" text-anchor="middle" class="mod">…Sink.py</text>
+    <text x="823" y="1094" text-anchor="middle" class="mod-sub">DuckDB / CSV result sink</text>
     <text x="535" y="1108" text-anchor="middle" class="mod-flag">▲ Hydrogen + Heat split from sector-coupling (PR #128)</text>
-    <rect x="898" y="970" width="138" height="40" rx="8" fill="#fff" stroke="#7a4a8a" stroke-width="1.5"/>
+    <rect x="898" y="970" width="138" height="40" rx="8" fill="#d4efdf" stroke="#7a4a8a" stroke-width="1.5"/>
     <text x="967" y="988" text-anchor="middle" class="mod">aggregate.py</text>
     <text x="967" y="1002" text-anchor="middle" class="mod-flag">★ merge sweep outputs</text>
     <rect x="898" y="1016" width="138" height="40" rx="8" fill="#fff" stroke="#336688" stroke-width="1.2" stroke-dasharray="4 3"/>
