@@ -418,8 +418,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     par['pNetFixedCost']               = dfs['dfNetwork']     ['FixedInvestmentCost'       ] *             dfs['dfNetwork']['FixedChargeRate']           # electric network    fixed cost               [MEUR]
     par['pIndBinLineSwitch']           = dfs['dfNetwork']     ['Switching'                 ]                                                             # binary electric line switching  decision     [Yes]
     par['pIndBinLineInvest']           = dfs['dfNetwork']     ['BinaryInvestment'          ]                                                             # binary electric line investment decision     [Yes]
-    # par['pSwitchOnTime']               = dfs['dfNetwork']     ['SwOnTime'                  ].astype('int')                                               # minimum on  time                             [h]
-    # par['pSwitchOffTime']              = dfs['dfNetwork']     ['SwOffTime'                 ].astype('int')                                               # minimum off time                             [h]
+    par['pSwitchOnTime']               = (dfs['dfNetwork']['SwOnTime' ].astype('int') if 'SwOnTime'  in dfs['dfNetwork'].columns else pd.Series(0, index=dfs['dfNetwork'].index, dtype='int'))  # minimum on  time [h]
+    par['pSwitchOffTime']              = (dfs['dfNetwork']['SwOffTime'].astype('int') if 'SwOffTime' in dfs['dfNetwork'].columns else pd.Series(0, index=dfs['dfNetwork'].index, dtype='int'))  # minimum off time [h]
     par['pAngMin']                     = dfs['dfNetwork']     ['AngMin'                    ] * math.pi / 180                                             # Min phase angle difference                   [rad]
     par['pAngMax']                     = dfs['dfNetwork']     ['AngMax'                    ] * math.pi / 180                                             # Max phase angle difference                   [rad]
     par['pNetLoInvest']                = dfs['dfNetwork']     ['InvestmentLo'              ]                                                             # Lower bound of the investment decision       [p.u.]
@@ -441,9 +441,9 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     # replace pNetUpInvest = 0.0 by 1.0
     par['pNetUpInvest']      = par['pNetUpInvest'].where     (par['pNetUpInvest'] > 0.0,   1.0               )
 
-    # minimum up- and downtime converted to an integer number of time steps
-    # par['pSwitchOnTime']  = round(par['pSwitchOnTime'] /par['pTimeStep']).astype('int')
-    # par['pSwitchOffTime'] = round(par['pSwitchOffTime']/par['pTimeStep']).astype('int')
+    # minimum switching on/off time converted to an integer number of time steps
+    par['pSwitchOnTime']  = round(par['pSwitchOnTime'] /par['pTimeStep']).astype('int')
+    par['pSwitchOffTime'] = round(par['pSwitchOffTime']/par['pTimeStep']).astype('int')
 
     if par['pIndHydrogen']:
         par['pH2PipeLength']       = dfs['dfNetworkHydrogen']['Length'             ]                                                         # hydrogen line length                         [km]
