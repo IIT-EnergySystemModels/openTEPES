@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 11, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 29, 2026
 
 openTEPES.openTEPES_SettingUpVariables — creates the decision variables and their bounds, fixes the generators' commitment, relaxes or forbids investment conditions, zeroes out epsilon values, and screens for infeasibilities. Runs after DataConfiguration.
 """
@@ -380,8 +380,9 @@ def SettingUpVariables(OptModel, mTEPES):
         if mTEPES.pIndVarTTC:
             # lines with TTC and TTCBck = 0 are disconnected and the flow is fixed to 0
             sPSNLA = [(p,sc,n,ni,nf,cc) for p,sc,n,ni,nf,cc in mTEPES.psnla if mTEPES.pMaxNTCFrw[p,sc,n,ni,nf,cc] == 0.0 and mTEPES.pMaxNTCBck[p,sc,n,ni,nf,cc] == 0.0]
-            [OptModel.vFlowElec[p,sc,n,ni,nf,cc].fix(0.0) for p,sc,n,ni,nf,cc in sPSNLA]
-            nFixedVariables += sum(                    1  for p,sc,n,ni,nf,cc in sPSNLA)
+            if len(sPSNLA):
+                [OptModel.vFlowElec[p,sc,n,ni,nf,cc].fix(0.0) for p,sc,n,ni,nf,cc in sPSNLA]
+                nFixedVariables += sum(                    1  for p,sc,n,ni,nf,cc in sPSNLA)
 
         if mTEPES.pIndPTDF:
             OptModel.vNetPosition = Var(mTEPES.psnnd, within=Reals, doc='net position in node [GW]')
@@ -700,6 +701,27 @@ def SettingUpVariables(OptModel, mTEPES):
                 nFixedVariables += 1
                 if mTEPES.pIndReserveActivation:
                     OptModel.vESSReserveDownEnergy[p,sc,n,es].fix(0.0)
+                    nFixedVariables += 1
+
+    # if no operating reserve activation is required, no variables are needed
+    for p,sc,n in mTEPES.psn:
+        if mTEPES.pIndReserveActivation and sum(mTEPES.pOperReserveUpEnergy[p,sc,n,ar] for ar in mTEPES.ar) == 0.0:
+            for nr in mTEPES.nr:
+                if mTEPES.pIndOperReserveGen[nr] == 0 and (p,nr) in mTEPES.pnr:
+                    OptModel.vReserveUpEnergy  [p,sc,n,nr].fix(0.0)
+                    nFixedVariables += 1
+            for eh in mTEPES.eh:
+                if (mTEPES.pIndOperReserveGen[eh] == 0 or mTEPES.pIndOperReserveCon[eh] == 0) and (p,eh) in mTEPES.peh:
+                    OptModel.vESSReserveUpEnergy  [p,sc,n,eh].fix(0.0)
+                    nFixedVariables += 1
+        if mTEPES.pIndReserveActivation and sum(mTEPES.pOperReserveDwEnergy[p,sc,n,ar] for ar in mTEPES.ar) == 0.0:
+            for nr in mTEPES.nr:
+                if mTEPES.pIndOperReserveGen[nr] == 0 and (p,nr) in mTEPES.pnr:
+                   OptModel.vReserveDownEnergy[p,sc,n,nr].fix(0.0)
+                   nFixedVariables += 1
+            for eh in mTEPES.eh:
+                if (mTEPES.pIndOperReserveGen[eh] == 0 or mTEPES.pIndOperReserveCon[eh] == 0) and (p,eh) in mTEPES.peh:
+                    OptModel.vESSReserveDownEnergy[p,sc,n,eh].fix(0.0)
                     nFixedVariables += 1
 
     # if there are no energy outflows, no variable is needed

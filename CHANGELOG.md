@@ -1,7 +1,8 @@
 # Change Log
 
-## [4.18.17RC] - 2026-06-25 Unreleased in PyPI
+## [4.18.17RC] - 2026-06-29 Unreleased in PyPI
 
+- [CHANGED] fix the energy activation variables if no operating reserve activation constraint is formulated in a time step
 - [ADDED] Mode B in-memory overlay sweep (RFC §4.2): `openTEPES_Runner.run(mode="in-memory")` reads the baseline case once into a new `openTEPES_InMemorySource` and re-uses it per case through an overlay (a data-table stem mapped to a scale factor, a `df->df` callable, or a replacement frame), so a parameter sweep pays the input I/O once and only rebuilds + solves per case (forked workers share the baseline copy-on-write). `openTEPES_run` gains `input_source=` to read from an already-open `InputSource`; `InputSource` gains `list_dict_stems()` (implemented in `CSVSource` and `DuckDBSource`). Additive only — an identity overlay reproduces a direct run (9n parity). New tests in `tests/test_run.py`. The architecture diagram's sweep-modes panel now marks all three modes (A, B, C) implemented.
 - [FIXED] the twelve technology- and consumption-level operating-reserve result writers in `openTEPES_OutputResultsGeneration.py` used plain `to_csv`, so they bypassed the result sink and were missing from the DuckDB output. They now use `.oT.write` like every other writer, so the DuckDB file has one table per result CSV again (fixes `test_output_format_both_csv_parity`).
 - [CHANGED] change names of the operating reserve file results
