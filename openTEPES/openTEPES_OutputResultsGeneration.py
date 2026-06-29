@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 28, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 29, 2026
 
 Generation operation results, electricity and heat.
 
@@ -102,7 +102,7 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnolo
                 if pIndTechnologyOutput == 0 or pIndTechnologyOutput == 2:
                     OutputToFile.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_ConsumptionOperatingReserveUpEnergy_{CaseName}.csv', sep=',')
                 if pIndTechnologyOutput == 1 or pIndTechnologyOutput == 2:
-                    OutputToFile = pd.Series(data=[sum(OutputToFile[p,sc,n,eh] for eh in n2n[nt] if (p,eh) in mTEPES.peh) for p,sc,n,et in mTEPES.psnet], index=mTEPES.psnet)
+                    OutputToFile = pd.Series(data=[sum(OutputToFile[p,sc,n,eh] for eh in e2e[et] if (p,eh) in mTEPES.peh and mTEPES.pRatedMaxCharge[eh]) for p,sc,n,et in mTEPES.psnet], index=mTEPES.psnet)
                     OutputToFile.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_TechnologyConOperatingReserveUpEnergy_{CaseName}.csv', sep=',')
 
     if sum(mTEPES.pOperReserveDw[:,:,:,:]):
@@ -143,7 +143,7 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnolo
                 if pIndTechnologyOutput == 0 or pIndTechnologyOutput == 2:
                     OutputToFile.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_ConsumptionOperatingReserveDownEnergy_{CaseName}.csv', sep=',')
                 if pIndTechnologyOutput == 1 or pIndTechnologyOutput == 2:
-                    OutputToFile = pd.Series(data=[sum(OutputToFile[p,sc,n,eh] for eh in n2n[nt] if (p,eh) in mTEPES.peh) for p,sc,n,et in mTEPES.psnet], index=mTEPES.psnet)
+                    OutputToFile = pd.Series(data=[sum(OutputToFile[p,sc,n,eh] for eh in e2e[et] if (p,eh) in mTEPES.peh and mTEPES.pRatedMaxCharge[eh]) for p,sc,n,et in mTEPES.psnet], index=mTEPES.psnet)
                     OutputToFile.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_TechnologyConOperatingReserveDownEnergy_{CaseName}.csv', sep=',')
 
     if pIndPlotOutput and mTEPES.nr and mTEPES.pIndRampReserves and sum(mTEPES.pRampReserveUp[:,:,:,:]):
