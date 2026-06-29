@@ -65,6 +65,15 @@ class InputSource(abc.ABC):
         (``VariableTTC*``, ``VariablePTDF``). Raises ``FileNotFoundError`` if the stem is absent.
         """
 
+    @abc.abstractmethod
+    def list_dict_stems(self) -> set[str]:
+        """Stems of dimension (``oT_Dict_``) tables present in the source (without the ``oT_Dict_`` prefix or the
+        ``_<casename>.csv`` suffix).
+
+        ``list_data_stems`` covers the ``oT_Data_`` tables; this covers the dimension dicts. Together they let the
+        in-memory materialiser (Mode B) read a whole case once and hand forked workers a shared baseline.
+        """
+
     def close(self) -> None:  # default no-op
         pass
 

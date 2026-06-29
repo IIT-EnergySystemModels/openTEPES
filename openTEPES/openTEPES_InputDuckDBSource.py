@@ -93,6 +93,15 @@ class DuckDBSource(InputSource):
                 stems.add(csv_prefix[len("oT_Data_"):])
         return stems
 
+    def list_dict_stems(self) -> set[str]:
+        stems: set[str] = set()
+        for csv_prefix, db_table, kind, _ in TABLE_SPECS:
+            if not csv_prefix.startswith("oT_Dict_"):
+                continue
+            if self._table_present(db_table):
+                stems.add(csv_prefix[len("oT_Dict_"):])
+        return stems
+
     def read_dict(self, stem: str) -> pd.DataFrame:
         spec = self._table_for(f"oT_Dict_{stem}")
         if spec is None or not self._table_present(spec[0]):

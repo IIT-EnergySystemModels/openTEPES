@@ -445,17 +445,49 @@ def test_mode_a_runner_multiprocessing(case_7d_system, tmp_path):
     assert records[0]["total_cost_meur"] == pytest.approx(records[1]["total_cost_meur"], rel=1e-9)
 
 
-def test_mode_a_runner_guards():
-    """Unsupported modes, overlays, and backends are rejected without touching a solver."""
+# === Mode B — in-memory overlay sweep (RFC §4.2) ===
+# openTEPES_Runner.run(mode="in-memory") reads the baseline case once into an InMemorySource, then
+# runs every case from it through openTEPES_run(input_source=...). An empty (identity) overlay must
+# reproduce the direct-build cost — it reads exactly the same baseline frames — proving the in-memory
+# path is faithful to reading from disk. A +10% demand overlay must strictly raise total system cost.
+@pytest.mark.solve
+@pytest.mark.parametrize("case_7d_system", ["9n"], indirect=["case_7d_system"])
+def test_mode_b_runner_overlay_parity(case_7d_system, tmp_path):
+    """Mode B: identity overlay == direct build cost; a +10% demand overlay raises it."""
+    d = case_7d_system
+    base_model = openTEPES_run(d["DirName"], d["CaseName"], d["SolverName"], 0, 0)
+    base_cost = base_model.vTotalSCost()
+
+    cases = [
+        openTEPES_Cases.Case(d["DirName"], d["CaseName"], out_path=str(tmp_path / "identity"), label="identity"),
+        openTEPES_Cases.Case(d["DirName"], d["CaseName"], out_path=str(tmp_path / "demand_110"),
+                             label="demand_110", overlay={"Demand": 1.10}),
+    ]
+    records = openTEPES_Runner.run(cases, d["SolverName"], mode="in-memory", backend="serial",
+                                   pIndOutputResults=0, pIndLogConsole=0)
+
+    assert [r["label"] for r in records] == ["identity", "demand_110"]
+    assert all(r["status"] == "optimal" for r in records)
+    # The identity overlay reads the same baseline frames as a direct build → same cost.
+    assert records[0]["total_cost_meur"] == pytest.approx(base_cost, rel=1e-6)
+    # Scaling every demand value up by 10% strictly raises the total system cost.
+    assert records[1]["total_cost_meur"] > records[0]["total_cost_meur"]
+
+
+def test_runner_guards():
+    """Unsupported modes/backends, a Mode-A overlay, and a Mode-B case without out_path are rejected before solving."""
     case = openTEPES_Cases.Case("dir", "case")
+    # Mode A (pre-build) rejects an overlay — that is Mode B's input.
     with pytest.raises(NotImplementedError):
-        openTEPES_Runner.run([case], "highs", mode="in-memory")
-    with pytest.raises(NotImplementedError):
+        openTEPES_Runner.run([openTEPES_Cases.Case("dir", "case", overlay={"Demand": 1.1})], "highs")
+    # Unknown mode and unknown backend are rejected.
+    with pytest.raises(ValueError):
         openTEPES_Runner.run([case], "highs", mode="hot-swap")
-    with pytest.raises(NotImplementedError):
-        openTEPES_Runner.run([openTEPES_Cases.Case("dir", "case", overlay={"pDemandElec": {}})], "highs")
     with pytest.raises(ValueError):
         openTEPES_Runner.run([case], "highs", backend="dask")
+    # Mode B needs a distinct out_path per case so results do not collide on the shared baseline dir.
+    with pytest.raises(ValueError):
+        openTEPES_Runner.run([case], "highs", mode="in-memory")
 
 
 # === Result sink (DuckDB output) and sweep aggregate ===

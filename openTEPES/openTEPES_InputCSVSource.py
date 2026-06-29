@@ -53,6 +53,18 @@ class CSVSource(InputSource):
                     stems.add(inner)
         return stems
 
+    def list_dict_stems(self) -> set[str]:
+        stems: set[str] = set()
+        suffix = f"_{self.case_name}.csv"
+        for p in self.case_dir.glob("oT_Dict_*.csv"):
+            name = p.name
+            if name.endswith(suffix):
+                # 'oT_Dict_<stem>_<case>.csv'
+                inner = name[len("oT_Dict_"):-len(suffix)]
+                if inner:
+                    stems.add(inner)
+        return stems
+
     def read_dict(self, stem: str) -> pd.DataFrame:
         path = self.case_dir / f"oT_Dict_{stem}_{self.case_name}.csv"
         if not path.exists():
