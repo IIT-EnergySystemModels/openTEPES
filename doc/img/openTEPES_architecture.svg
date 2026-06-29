@@ -351,7 +351,7 @@
     <text x="90" y="1387" text-anchor="middle" class="layer-note">all three modes</text>
 
     <!-- Mode A -->
-    <rect x="180" y="1303" width="295" height="100" rx="8" fill="#fff" stroke="#7a4a8a" stroke-width="1.4"/>
+    <rect x="180" y="1303" width="295" height="100" rx="8" fill="#d4efdf" stroke="#7a4a8a" stroke-width="1.4"/>
     <text x="327" y="1322" text-anchor="middle" class="mod">A · pre-build sweep</text>
     <text x="327" y="1337" text-anchor="middle" class="mod-flag">workers diverge at LAYER 2 (io/)</text>
     <text x="327" y="1354" text-anchor="middle" class="mod-sub">each worker reads its own perturbed source,</text>
@@ -360,7 +360,7 @@
     <text x="327" y="1397" text-anchor="middle" class="mod-sub">use: scenario ensembles · slurm arrays</text>
 
     <!-- Mode B -->
-    <rect x="485" y="1303" width="305" height="100" rx="8" fill="#fff" stroke="#7a4a8a" stroke-width="1.4"/>
+    <rect x="485" y="1303" width="305" height="100" rx="8" fill="#d4efdf" stroke="#7a4a8a" stroke-width="1.4"/>
     <text x="637" y="1322" text-anchor="middle" class="mod">B · in-memory overlay</text>
     <text x="637" y="1337" text-anchor="middle" class="mod-flag">workers diverge at LAYER 3 (model/)</text>
     <text x="637" y="1354" text-anchor="middle" class="mod-sub">shared baseline DataFrames in RAM;</text>
@@ -369,7 +369,7 @@
     <text x="637" y="1397" text-anchor="middle" class="mod-sub">use: parameter sweeps · Monte-Carlo demand</text>
 
     <!-- Mode C -->
-    <rect x="800" y="1303" width="305" height="100" rx="8" fill="#fff" stroke="#7a4a8a" stroke-width="1.4"/>
+    <rect x="800" y="1303" width="305" height="100" rx="8" fill="#d4efdf" stroke="#7a4a8a" stroke-width="1.4"/>
     <text x="952" y="1322" text-anchor="middle" class="mod">C · post-build hot-swap</text>
     <text x="952" y="1337" text-anchor="middle" class="mod-flag">workers diverge at LAYER 5 (solver/)</text>
     <text x="952" y="1354" text-anchor="middle" class="mod-sub">one built model, Param.store_values() +</text>
