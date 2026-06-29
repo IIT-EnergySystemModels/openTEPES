@@ -203,7 +203,8 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     idxDict        = dict()
     idxDict[0    ] = 0
     idxDict[0.0  ] = 0
-    idxDict[0.0  ] = 0
+    idxDict[1    ] = 1
+    idxDict[1.0  ] = 1
     idxDict['No' ] = 0
     idxDict['NO' ] = 0
     idxDict['no' ] = 0
