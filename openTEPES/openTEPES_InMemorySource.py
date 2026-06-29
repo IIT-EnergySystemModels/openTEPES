@@ -1,4 +1,6 @@
 """
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 29, 2026
+
 openTEPES.openTEPES_InMemorySource — in-memory input backend for the Mode B sweep (RFC §4.2).
 
 A ``CSVSource`` or ``DuckDBSource`` reads the case from disk on every build. Mode B reads the baseline once into RAM and
