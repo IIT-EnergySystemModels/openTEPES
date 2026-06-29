@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 17, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 29, 2026
 """
 
 # import dill as pickle
@@ -112,7 +112,8 @@ OUTPUT_REGISTRY = (
 
 
 def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConsole,
-                  *, output_spec=None, out_path=None, gzip_patterns=None, output_format="csv"):
+                  *, output_spec=None, out_path=None, gzip_patterns=None, output_format="csv",
+                  input_source=None):
     """Solve and write results.
 
     Parameters
@@ -144,6 +145,13 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
         ``'both'`` writes both. The same in-memory frame is written to each
         target, so the DuckDB copy is not re-read from the CSV. One DuckDB file
         per case keeps a parallel sweep single-writer-safe.
+    input_source : InputSource | None, optional
+        An already-open input source to read the case from, bypassing the
+        ``(DirName, CaseName)`` path sniff. Used by the Mode B sweep
+        (``openTEPES_Runner.run(mode="in-memory")``) to hand each worker a shared
+        in-memory baseline plus an overlay. ``CaseName`` and ``DirName`` are
+        taken from the source; pass ``out_path`` so per-worker results land in
+        distinct directories. Default ``None`` preserves historical behaviour.
     """
 
     InitialTime = time.time()
@@ -155,16 +163,27 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     # inside InputData (or here if we want to keep the source object on
     # the model from the start).
     _db_input_origin_dir = None
-    _input_path_candidate = os.path.join(DirName, CaseName)
     _input_source = None
-    if os.path.isfile(_input_path_candidate) and _input_path_candidate.endswith(".duckdb"):
-        _db_input_origin_dir = os.path.dirname(os.path.abspath(_input_path_candidate))
-        _input_source = open_source(_input_path_candidate)
-        # The (DirName, CaseName) pair still drives output paths and per-run
-        # log filenames downstream. Use the DB's parent dir and its embedded
-        # case name to keep those file conventions stable.
-        DirName  = _db_input_origin_dir
+    if input_source is not None:
+        # Mode B / direct injection: the caller supplies an already-open source
+        # (e.g. an InMemorySource carrying baseline frames + an overlay).
+        # Skip the path sniff and read through it; take CaseName/DirName from
+        # the source so the log and output filename conventions stay stable.
+        # The caller is expected to pass out_path so per-worker results do not
+        # collide on the shared baseline directory.
+        _input_source = input_source
         CaseName = _input_source.case_name
+        DirName  = getattr(_input_source, "dir_name", DirName) or DirName
+    else:
+        _input_path_candidate = os.path.join(DirName, CaseName)
+        if os.path.isfile(_input_path_candidate) and _input_path_candidate.endswith(".duckdb"):
+            _db_input_origin_dir = os.path.dirname(os.path.abspath(_input_path_candidate))
+            _input_source = open_source(_input_path_candidate)
+            # The (DirName, CaseName) pair still drives output paths and per-run
+            # log filenames downstream. Use the DB's parent dir and its embedded
+            # case name to keep those file conventions stable.
+            DirName  = _db_input_origin_dir
+            CaseName = _input_source.case_name
 
     _path = os.path.join(DirName, CaseName)
     # Effective output directory — used by every function in OutputResults via
