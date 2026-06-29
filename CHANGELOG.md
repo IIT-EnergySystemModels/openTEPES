@@ -2,6 +2,7 @@
 
 ## [4.18.17RC] - 2026-06-25 Unreleased in PyPI
 
+- [FIXED] the twelve technology- and consumption-level operating-reserve result writers in `openTEPES_OutputResultsGeneration.py` used plain `to_csv`, so they bypassed the result sink and were missing from the DuckDB output. They now use `.oT.write` like every other writer, so the DuckDB file has one table per result CSV again (fixes `test_output_format_both_csv_parity`).
 - [CHANGED] change names of the operating reserve file results
 - [ADDED] DuckDB result output and a sweep merger (`openTEPES_OutputResultsSink.py` + `openTEPES_ResultAggregate.py`), the output-side mirror of the DuckDB input source. `openTEPES_run` gains `output_format` (`"csv"` default / `"duckdb"` / `"both"`); with DuckDB on, each case also writes one `oT_Results_<case>.duckdb` (one table per result) straight from the in-memory frame. A pandas `oT` accessor routes every writer's `.oT.write(path, ...)` through the sink; with no sink it is plain `to_csv`, so a `"csv"` run is byte-identical (output parity on 9n / 9n_heat / 9n_H2). One DuckDB per case keeps a sweep single-writer-safe. `aggregate(sources, out_path, to=...)` stacks a sweep's cases into one long table per result with a leading `case` column, reading the per-case DuckDBs or CSV folders, and writes `oT_Sweep_<Table>.csv` and/or one `oT_Sweep.duckdb`. `openTEPES_Runner.run` exposes both as opt-in `output_format` / `aggregate_to`. New tests in `tests/test_run.py`.
 - [FIXED] formulation of eOperReserveUpEnergy and eOperReserveDwEnergy constraints
