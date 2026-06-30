@@ -574,7 +574,7 @@ VRES units (i.e., those with linear variable cost equal to 0 and no storage capa
 Operating reserves from ESS can only be provided if enough energy is available for producing [GWh] «`eReserveUpIfEnergy`»
 
 ```{math}
-\frac{(p^p_{\omega ne} + ur^p_{\omega ne} + \underline{GP}^p_{\omega ne})DUR^p_{\omega n}}{\sqrt{EF_e'}} \leq i^p_{\omega ne} - \underline{I}^p_{wne} \quad \forall p \omega ne
+\frac{(p^p_{\omega ne} + ur'^p_{\omega ne} + \underline{GP}^p_{\omega ne})DUR^p_{\omega n}}{\sqrt{EF_e'}} \leq i^p_{\omega ne} - \underline{I}^p_{wne} \quad \forall p \omega ne
 ```
 
 or if there is enough storage capacity left for storing [GWh] «`eESSReserveDwIfEnergy`»
@@ -677,7 +677,7 @@ Maximum charge of a hydro unit [p.u.] «`eMaxCharge`»
 Incompatibility between charge and discharge, including the activation energy in the worst direction, of a non-hydropower ESS [p.u.] «`eChargeDischarge`»
 
 ```{math}
-\frac{p^p_{\omega ne} + URA \: ur^p_{\omega ne}}{\overline{GP}^p_{\omega ne} - \underline{GP}^p_{\omega ne}} + \frac{c^p_{\omega ne} + DRA \: dr'^p_{\omega ne}}{\overline{GC}^p_{\omega ne} - \underline{GC}^p_{\omega ne}} \leq 1 \quad \forall p \omega ne
+\frac{p^p_{\omega ne} + URA \: ur'^p_{\omega ne}}{\overline{GP}^p_{\omega ne} - \underline{GP}^p_{\omega ne}} + \frac{c^p_{\omega ne} + DRA \: dr'^p_{\omega ne}}{\overline{GC}^p_{\omega ne} - \underline{GC}^p_{\omega ne}} \leq 1 \quad \forall p \omega ne
 ```
 
 If there are operating reserve activation files, the constraint is:
@@ -799,11 +799,11 @@ Maximum ramp up and ramp down for the second block of a non-renewable (thermal, 
 Maximum ramp down and ramp up for the charge of an ESS [p.u.] «`eRampUpCharge`» «`eRampDwCharge`»
 
 ```{math}
-\frac{- c^p_{\omega,n-\nu,e} - ur^p_{\omega,n-\nu,e} + c^p_{\omega ne} + dr^p_{\omega ne}}{DUR^p_{\omega n} RD_e} \leq   1 \quad \forall p \omega ne
+\frac{- c^p_{\omega,n-\nu,e} - ur'^p_{\omega,n-\nu,e} + c^p_{\omega ne} + dr'^p_{\omega ne}}{DUR^p_{\omega n} RD_e} \leq   1 \quad \forall p \omega ne
 ```
 
 ```{math}
-\frac{- c^p_{\omega,n-\nu,e} + dr^p_{\omega,n-\nu,e} + c^p_{\omega ne} - ur^p_{\omega ne}}{DUR^p_{\omega n} RU_e} \geq - 1 \quad \forall p \omega ne
+\frac{- c^p_{\omega,n-\nu,e} + dr'^p_{\omega,n-\nu,e} + c^p_{\omega ne} - ur'^p_{\omega ne}}{DUR^p_{\omega n} RU_e} \geq - 1 \quad \forall p \omega ne
 ```
 
 Detection of ramp up and ramp down state for the second block of a non-renewable (thermal) unit with minimum stable time [p.u.] «`eRampUpState`» «`eRampDwState`».
