@@ -683,7 +683,7 @@ Incompatibility between charge and discharge, including the activation energy in
 If there are operating reserve activation files, the constraint is:
 
 ```{math}
-\frac{p^p_{\omega ne} + ura^p_{\omega ne}}{\overline{GP}^p_{\omega ne} - \underline{GP}^p_{\omega ne}} + \frac{c^p_{\omega ne} + dra'^p_{\omega ne}}{\overline{GC}^p_{\omega ne} - \underline{GC}^p_{\omega ne}} \leq 1 \quad \forall p \omega ne
+\frac{p^p_{\omega ne} + ura'^p_{\omega ne}}{\overline{GP}^p_{\omega ne} - \underline{GP}^p_{\omega ne}} + \frac{c^p_{\omega ne} + dra'^p_{\omega ne}}{\overline{GC}^p_{\omega ne} - \underline{GC}^p_{\omega ne}} \leq 1 \quad \forall p \omega ne
 ```
 
 Incompatibility between charge and discharge of a hydro unit [p.u.] «`eChargeDischarge`»
