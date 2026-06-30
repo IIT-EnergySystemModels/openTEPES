@@ -518,14 +518,14 @@ Upward and downward operating reserves provided for each area by non-renewable g
 \sum_{g \in a} dr^p_{\omega ng} + \sum_{e \in a} dr'^p_{\omega ne} = DR^p_{\omega na} \quad \forall p \omega na
 ```
 
-Upward and downward operating reserve activation provided for each area by non-renewable generators (including ESS when generating) and ESS, when charging [GW] «`eOperReserveUpEnergy`» «`eOperReserveDwEnergy`»
+Upward and downward operating reserve activation provided for all the areas by non-renewable generators (including ESS when generating) and ESS, when charging [GW] «`eOperReserveUpEnergy`» «`eOperReserveDwEnergy`»
 
 ```{math}
-\sum_{g \in a} ura^p_{\omega ng} + \sum_{e \in a} ura'^p_{\omega ne} = URA^p_{\omega na} \quad \forall p \omega na
+\sum_g ura^p_{\omega ng} + \sum_e ura'^p_{\omega ne} = \sum_a URA^p_{\omega na} \quad \forall p \omega n
 ```
 
 ```{math}
-\sum_{g \in a} dra^p_{\omega ng} + \sum_{e \in a} dra'^p_{\omega ne} = DRA^p_{\omega na} \quad \forall p \omega na
+\sum_g dra^p_{\omega ng} + \sum_e dra'^p_{\omega ne} = \sum_a DRA^p_{\omega na} \quad \forall p \omega n
 ```
 
 Upward and downward operating reserve activation lower than the upward and downward operating reserves provided for each non-renewable generators (including ESS when generating) and ESS, when charging [GW] «`eReserveUpEnergy`» «`eReserveDwEnergy`» «`eESSReserveUpEnergy`» «`eESSReserveDwEnergy`»
