@@ -574,7 +574,7 @@ VRES units (i.e., those with linear variable cost equal to 0 and no storage capa
 Operating reserves from ESS can only be provided if enough energy is available for producing [GWh] «`eReserveUpIfEnergy`»
 
 ```{math}
-(\frac{(p^p_{\omega ne} + ur^p_{\omega ne} + \underline{GP}^p_{\omega ne})DUR^p_{\omega n}}{\sqrt{EF_e'} \leq i^p_{\omega ne} - \underline{I}^p_{wne} \quad \forall p \omega ne
+\frac{(p^p_{\omega ne} + ur^p_{\omega ne} + \underline{GP}^p_{\omega ne})DUR^p_{\omega n}}{\sqrt{EF_e'}} \leq i^p_{\omega ne} - \underline{I}^p_{wne} \quad \forall p \omega ne
 ```
 
 or if there is enough storage capacity left for storing [GWh] «`eESSReserveDwIfEnergy`»
