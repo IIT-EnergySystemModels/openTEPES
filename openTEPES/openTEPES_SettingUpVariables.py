@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 29, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 01, 2026
 
 openTEPES.openTEPES_SettingUpVariables — creates the decision variables and their bounds, fixes the generators' commitment, relaxes or forbids investment conditions, zeroes out epsilon values, and screens for infeasibilities. Runs after DataConfiguration.
 """
@@ -442,10 +442,11 @@ def SettingUpVariables(OptModel, mTEPES):
         nFixedVariables += sum(                1  for p,sc,n,g in sPSNG)
 
         for p,sc,n,nr in mTEPES.psnnr:
-            # must-run existing units or units with no minimum power, or ESS existing units are always committed and must produce at least their minimum output
+            # must-run existing units or units with no minimum power or units with variable min power > 0, or ESS existing units are always committed and must produce at least their minimum output
             # not applicable to mutually exclusive units
             if   len(mTEPES.ExclusiveGroups) == 0:
-                if ((mTEPES.pMustRun[nr] and nr not in mTEPES.gc) or (mTEPES.pMinPowerElec[p,sc,n,nr] == 0.0 and mTEPES.pConstantVarCost[p,sc,n,nr] == 0.0) or nr in mTEPES.es) and nr not in mTEPES.ec and nr not in mTEPES.h:
+                if ((mTEPES.pMustRun[nr] and nr not in mTEPES.gc) or (mTEPES.pMinPowerElec[p,sc,n,nr] == 0.0 and mTEPES.pConstantVarCost[p,sc,n,nr] == 0.0) or mTEPES.pVariableMinPowerElec[p,sc,n,nr] > 0.0 or nr in mTEPES.es) and nr not in mTEPES.ec and nr not in mTEPES.h:
+                    print('load level ', n, ' generator ', nr)
                     OptModel.vCommitment    [p,sc,n,nr].fix(1)
                     OptModel.vCommitment    [p,sc,n,nr].domain = UnitInterval
                     OptModel.vStartUp       [p,sc,n,nr].fix(0)

@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 11, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 01, 2026
 
 openTEPES.openTEPES_DataConfiguration — builds the derived sets and parameters on the model: instrumental sets, ESS/RES sets, and the flag-driven branches (hydro topology, hydrogen, heat, PTDF). Runs after InputData has read the raw sets and parameters.
 """
@@ -447,6 +447,8 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
         par['pMinVolume'] = par['pVariableMinVolume'].replace   (0.0, par['pRatedMinVolume']   )
         par['pMaxVolume'] = par['pVariableMaxVolume'].replace   (0.0, par['pRatedMaxVolume']   )
 
+    par['pVariableMinPowerElec'] = par['pVariableMinPowerElec'].where(par['pVariableMinPowerElec'] > 0.0, 0.0)
+
     par['pMinPowerElec']  = par['pMinPowerElec'].where(par['pMinPowerElec'] > 0.0, 0.0)
     par['pMaxPowerElec']  = par['pMaxPowerElec'].where(par['pMaxPowerElec'] > 0.0, 0.0)
     par['pMinCharge']     = par['pMinCharge'].where   (par['pMinCharge']    > 0.0, 0.0)
@@ -573,25 +575,26 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
                     print('### Initial volume greater than maximum volume ', p, sc, st, rs)
 
     # drop load levels with duration 0
-    par['pDuration']            = par['pDuration'].loc            [mTEPES.psn  ]
-    par['pDemandElec']          = par['pDemandElec'].loc          [mTEPES.psn  ]
-    par['pSystemInertia']       = par['pSystemInertia'].loc       [mTEPES.psnar]
-    par['pOperReserveUp']       = par['pOperReserveUp'].loc       [mTEPES.psnar]
-    par['pOperReserveDw']       = par['pOperReserveDw'].loc       [mTEPES.psnar]
-    par['pMinPowerElec']        = par['pMinPowerElec'].loc        [mTEPES.psn  ]
-    par['pMaxPowerElec']        = par['pMaxPowerElec'].loc        [mTEPES.psn  ]
-    par['pMinCharge']           = par['pMinCharge'].loc           [mTEPES.psn  ]
-    par['pMaxCharge']           = par['pMaxCharge'].loc           [mTEPES.psn  ]
-    par['pEnergyInflows']       = par['pEnergyInflows'].loc       [mTEPES.psn  ]
-    par['pEnergyOutflows']      = par['pEnergyOutflows'].loc      [mTEPES.psn  ]
-    par['pIniInventory']        = par['pIniInventory'].loc        [mTEPES.psn  ]
-    par['pMinStorage']          = par['pMinStorage'].loc          [mTEPES.psn  ]
-    par['pMaxStorage']          = par['pMaxStorage'].loc          [mTEPES.psn  ]
-    par['pVariableMaxEnergy']   = par['pVariableMaxEnergy'].loc   [mTEPES.psn  ]
-    par['pVariableMinEnergy']   = par['pVariableMinEnergy'].loc   [mTEPES.psn  ]
-    par['pLinearVarCost']       = par['pLinearVarCost'].loc       [mTEPES.psn  ]
-    par['pConstantVarCost']     = par['pConstantVarCost'].loc     [mTEPES.psn  ]
-    par['pEmissionVarCost']     = par['pEmissionVarCost'].loc     [mTEPES.psn  ]
+    par['pDuration']             = par['pDuration'].loc            [mTEPES.psn  ]
+    par['pDemandElec']           = par['pDemandElec'].loc          [mTEPES.psn  ]
+    par['pSystemInertia']        = par['pSystemInertia'].loc       [mTEPES.psnar]
+    par['pOperReserveUp']        = par['pOperReserveUp'].loc       [mTEPES.psnar]
+    par['pOperReserveDw']        = par['pOperReserveDw'].loc       [mTEPES.psnar]
+    par['pVariableMinPowerElec'] = par['pVariableMinPowerElec'].loc[mTEPES.psn  ]
+    par['pMinPowerElec']         = par['pMinPowerElec'].loc        [mTEPES.psn  ]
+    par['pMaxPowerElec']         = par['pMaxPowerElec'].loc        [mTEPES.psn  ]
+    par['pMinCharge']            = par['pMinCharge'].loc           [mTEPES.psn  ]
+    par['pMaxCharge']            = par['pMaxCharge'].loc           [mTEPES.psn  ]
+    par['pEnergyInflows']        = par['pEnergyInflows'].loc       [mTEPES.psn  ]
+    par['pEnergyOutflows']       = par['pEnergyOutflows'].loc      [mTEPES.psn  ]
+    par['pIniInventory']         = par['pIniInventory'].loc        [mTEPES.psn  ]
+    par['pMinStorage']           = par['pMinStorage'].loc          [mTEPES.psn  ]
+    par['pMaxStorage']           = par['pMaxStorage'].loc          [mTEPES.psn  ]
+    par['pVariableMaxEnergy']    = par['pVariableMaxEnergy'].loc   [mTEPES.psn  ]
+    par['pVariableMinEnergy']    = par['pVariableMinEnergy'].loc   [mTEPES.psn  ]
+    par['pLinearVarCost']        = par['pLinearVarCost'].loc       [mTEPES.psn  ]
+    par['pConstantVarCost']      = par['pConstantVarCost'].loc     [mTEPES.psn  ]
+    par['pEmissionVarCost']      = par['pEmissionVarCost'].loc     [mTEPES.psn  ]
 
     par['pRatedLinearOperCost'] = par['pRatedLinearFuelCost'].loc [mTEPES.g    ]
     par['pRatedLinearVarCost']  = par['pRatedLinearFuelCost'].loc [mTEPES.g    ]
@@ -681,6 +684,8 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
 
 
         if g2a[ar]:
+            par['pVariableMinPowerElec'][par['pVariableMinPowerElec'][[g for g in g2a[ar]]] < par['pEpsilonElec']] = 0.0
+
             par['pMinPowerElec']  [par['pMinPowerElec']  [[g  for  g in g2a[ar]]] <  par['pEpsilonElec']] = 0.0
             par['pMaxPowerElec']  [par['pMaxPowerElec']  [[g  for  g in g2a[ar]]] <  par['pEpsilonElec']] = 0.0
             par['pMinCharge']     [par['pMinCharge']     [[es for es in e2a[ar]]] <  par['pEpsilonElec']] = 0.0
@@ -739,23 +744,24 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
             par['pHeatPipeNTCBck'][par['pHeatPipeNTCBck'] < par['pEpsilonElec']] = 0
 
     # drop generators not g or es or eh or ch
-    par['pMinPowerElec']      = par['pMinPowerElec'].loc     [:,mTEPES.g ]
-    par['pMaxPowerElec']      = par['pMaxPowerElec'].loc     [:,mTEPES.g ]
-    par['pMinCharge']         = par['pMinCharge'].loc        [:,mTEPES.eh]
-    par['pMaxCharge']         = par['pMaxCharge'].loc        [:,mTEPES.eh]
-    par['pMaxPower2ndBlock']  = par['pMaxPower2ndBlock'].loc [:,mTEPES.g ]
-    par['pMaxCharge2ndBlock'] = par['pMaxCharge2ndBlock'].loc[:,mTEPES.eh]
-    par['pMaxCapacity']       = par['pMaxCapacity'].loc      [:,mTEPES.eh]
-    par['pEnergyInflows']     = par['pEnergyInflows'].loc    [:,mTEPES.es]
-    par['pEnergyOutflows']    = par['pEnergyOutflows'].loc   [:,mTEPES.es]
-    par['pIniInventory']      = par['pIniInventory'].loc     [:,mTEPES.es]
-    par['pMinStorage']        = par['pMinStorage'].loc       [:,mTEPES.es]
-    par['pMaxStorage']        = par['pMaxStorage'].loc       [:,mTEPES.es]
-    par['pVariableMaxEnergy'] = par['pVariableMaxEnergy'].loc[:,mTEPES.g ]
-    par['pVariableMinEnergy'] = par['pVariableMinEnergy'].loc[:,mTEPES.g ]
-    par['pLinearVarCost']     = par['pLinearVarCost'].loc    [:,mTEPES.g ]
-    par['pConstantVarCost']   = par['pConstantVarCost'].loc  [:,mTEPES.g ]
-    par['pEmissionVarCost']   = par['pEmissionVarCost'].loc  [:,mTEPES.g ]
+    par['pVariableMinPowerElec'] = par['pVariableMinPowerElec'].loc[:,mTEPES.g ]
+    par['pMinPowerElec']         = par['pMinPowerElec'].loc        [:,mTEPES.g ]
+    par['pMaxPowerElec']         = par['pMaxPowerElec'].loc        [:,mTEPES.g ]
+    par['pMinCharge']            = par['pMinCharge'].loc           [:,mTEPES.eh]
+    par['pMaxCharge']            = par['pMaxCharge'].loc           [:,mTEPES.eh]
+    par['pMaxPower2ndBlock']     = par['pMaxPower2ndBlock'].loc    [:,mTEPES.g ]
+    par['pMaxCharge2ndBlock']    = par['pMaxCharge2ndBlock'].loc   [:,mTEPES.eh]
+    par['pMaxCapacity']          = par['pMaxCapacity'].loc         [:,mTEPES.eh]
+    par['pEnergyInflows']        = par['pEnergyInflows'].loc       [:,mTEPES.es]
+    par['pEnergyOutflows']       = par['pEnergyOutflows'].loc      [:,mTEPES.es]
+    par['pIniInventory']         = par['pIniInventory'].loc        [:,mTEPES.es]
+    par['pMinStorage']           = par['pMinStorage'].loc          [:,mTEPES.es]
+    par['pMaxStorage']           = par['pMaxStorage'].loc          [:,mTEPES.es]
+    par['pVariableMaxEnergy']    = par['pVariableMaxEnergy'].loc   [:,mTEPES.g ]
+    par['pVariableMinEnergy']    = par['pVariableMinEnergy'].loc   [:,mTEPES.g ]
+    par['pLinearVarCost']        = par['pLinearVarCost'].loc       [:,mTEPES.g ]
+    par['pConstantVarCost']      = par['pConstantVarCost'].loc     [:,mTEPES.g ]
+    par['pEmissionVarCost']      = par['pEmissionVarCost'].loc     [:,mTEPES.g ]
 
     # replace < 0.0 by 0.0
     par['pEpsilon'] = 1e-6
@@ -924,23 +930,24 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
         df = df[df.index.isin(set)]
         return df
 
-    par['pMinPowerElec']      = filter_rows(par['pMinPowerElec']     , mTEPES.psng )
-    par['pMaxPowerElec']      = filter_rows(par['pMaxPowerElec']     , mTEPES.psng )
-    par['pMinCharge']         = filter_rows(par['pMinCharge']        , mTEPES.psneh)
-    par['pMaxCharge']         = filter_rows(par['pMaxCharge']        , mTEPES.psneh)
-    par['pMaxCapacity']       = filter_rows(par['pMaxCapacity']      , mTEPES.psneh)
-    par['pMaxPower2ndBlock']  = filter_rows(par['pMaxPower2ndBlock'] , mTEPES.psng )
-    par['pMaxCharge2ndBlock'] = filter_rows(par['pMaxCharge2ndBlock'], mTEPES.psneh)
-    par['pEnergyInflows']     = filter_rows(par['pEnergyInflows']    , mTEPES.psnes)
-    par['pEnergyOutflows']    = filter_rows(par['pEnergyOutflows']   , mTEPES.psnes)
-    par['pMinStorage']        = filter_rows(par['pMinStorage']       , mTEPES.psnes)
-    par['pMaxStorage']        = filter_rows(par['pMaxStorage']       , mTEPES.psnes)
-    par['pVariableMaxEnergy'] = filter_rows(par['pVariableMaxEnergy'], mTEPES.psng )
-    par['pVariableMinEnergy'] = filter_rows(par['pVariableMinEnergy'], mTEPES.psng )
-    par['pLinearVarCost']     = filter_rows(par['pLinearVarCost']    , mTEPES.psng )
-    par['pConstantVarCost']   = filter_rows(par['pConstantVarCost']  , mTEPES.psng )
-    par['pEmissionVarCost']   = filter_rows(par['pEmissionVarCost']  , mTEPES.psng )
-    par['pIniInventory']      = filter_rows(par['pIniInventory']     , mTEPES.psnes)
+    par['pVariableMinPowerElec'] = filter_rows(par['pVariableMinPowerElec'], mTEPES.psng )
+    par['pMinPowerElec']         = filter_rows(par['pMinPowerElec']        , mTEPES.psng )
+    par['pMaxPowerElec']         = filter_rows(par['pMaxPowerElec']        , mTEPES.psng )
+    par['pMinCharge']            = filter_rows(par['pMinCharge']           , mTEPES.psneh)
+    par['pMaxCharge']            = filter_rows(par['pMaxCharge']           , mTEPES.psneh)
+    par['pMaxCapacity']          = filter_rows(par['pMaxCapacity']         , mTEPES.psneh)
+    par['pMaxPower2ndBlock']     = filter_rows(par['pMaxPower2ndBlock']    , mTEPES.psng )
+    par['pMaxCharge2ndBlock']    = filter_rows(par['pMaxCharge2ndBlock']   , mTEPES.psneh)
+    par['pEnergyInflows']        = filter_rows(par['pEnergyInflows']       , mTEPES.psnes)
+    par['pEnergyOutflows']       = filter_rows(par['pEnergyOutflows']      , mTEPES.psnes)
+    par['pMinStorage']           = filter_rows(par['pMinStorage']          , mTEPES.psnes)
+    par['pMaxStorage']           = filter_rows(par['pMaxStorage']          , mTEPES.psnes)
+    par['pVariableMaxEnergy']    = filter_rows(par['pVariableMaxEnergy']   , mTEPES.psng )
+    par['pVariableMinEnergy']    = filter_rows(par['pVariableMinEnergy']   , mTEPES.psng )
+    par['pLinearVarCost']        = filter_rows(par['pLinearVarCost']       , mTEPES.psng )
+    par['pConstantVarCost']      = filter_rows(par['pConstantVarCost']     , mTEPES.psng )
+    par['pEmissionVarCost']      = filter_rows(par['pEmissionVarCost']     , mTEPES.psng )
+    par['pIniInventory']         = filter_rows(par['pIniInventory']        , mTEPES.psnes)
 
     par['pDemandElec']        = filter_rows(par['pDemandElec']       , mTEPES.psnnd)
     par['pDemandElecPos']     = filter_rows(par['pDemandElecPos']    , mTEPES.psnnd)
@@ -1017,6 +1024,7 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     mTEPES.pSystemInertia        = Param(mTEPES.psnar, initialize=par['pSystemInertia'].to_dict()            , within=NonNegativeReals,    doc='System inertia'                                      )
     mTEPES.pOperReserveUp        = Param(mTEPES.psnar, initialize=par['pOperReserveUp'].to_dict()            , within=NonNegativeReals,    doc='up   operating reserve'                              )
     mTEPES.pOperReserveDw        = Param(mTEPES.psnar, initialize=par['pOperReserveDw'].to_dict()            , within=NonNegativeReals,    doc='down operating reserve'                              )
+    mTEPES.pVariableMinPowerElec = Param(mTEPES.psng , initialize=par['pVariableMinPowerElec'].to_dict()     , within=NonNegativeReals,    doc='Minimum electric power from VariableMinGeneration'   )
     mTEPES.pMinPowerElec         = Param(mTEPES.psng , initialize=par['pMinPowerElec'].to_dict()             , within=NonNegativeReals,    doc='Minimum electric power'                              )
     mTEPES.pMaxPowerElec         = Param(mTEPES.psng , initialize=par['pMaxPowerElec'].to_dict()             , within=NonNegativeReals,    doc='Maximum electric power'                              )
     mTEPES.pMinCharge            = Param(mTEPES.psneh, initialize=par['pMinCharge'].to_dict()                , within=NonNegativeReals,    doc='Minimum charge'                                      )

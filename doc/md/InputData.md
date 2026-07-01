@@ -518,6 +518,8 @@ To force a generator to produce 0, a small value (e.g., 0.1 MW) strictly >0, but
 It can also be used for upper-bounding and/or lower-bounding the output of any generator (e.g., run-of-the-river hydro, wind).
 If the user introduces a minimum generation value greater than the maximum, the model will adjust the minimum generation value to match the maximum.
 
+If a thermal unit has a variable minimum generation > 0 in a certain load level, it is considered committed in this load level.
+
 Internally, all the values below 1e-5 times the maximum system demand of each area will be converted into 0 by the model.
 
 ## Variable maximum and minimum consumption
