@@ -446,7 +446,6 @@ def SettingUpVariables(OptModel, mTEPES):
             # not applicable to mutually exclusive units
             if   len(mTEPES.ExclusiveGroups) == 0:
                 if ((mTEPES.pMustRun[nr] and nr not in mTEPES.gc) or (mTEPES.pMinPowerElec[p,sc,n,nr] == 0.0 and mTEPES.pConstantVarCost[p,sc,n,nr] == 0.0) or mTEPES.pVariableMinPowerElec[p,sc,n,nr] > 0.0 or nr in mTEPES.es) and nr not in mTEPES.ec and nr not in mTEPES.h:
-                    print('load level ', n, ' generator ', nr)
                     OptModel.vCommitment    [p,sc,n,nr].fix(1)
                     OptModel.vCommitment    [p,sc,n,nr].domain = UnitInterval
                     OptModel.vStartUp       [p,sc,n,nr].fix(0)
