@@ -1,0 +1,11 @@
+,Variable,Unit,Description
+vGenerationInvest,,"[0, 1]",Generation investment decision exists in a year
+vCommitment,,"[0, 1]",Commitment of the unit
+vStartUp,,"[0, 1]",StartUp of the unit
+vShutDown,,"[0, 1]",ShutDown of the unit
+vTotalOutput,,MW,Total output of the unit
+vESSCharge,Energy Charge|Electricity|Energy Storage System,MW,ESS charge power
+vReserveUp,Operating Reserve|Up|Electricity,MW,Operating reserve up
+vReserveDown,Operating Reserve|Down|Electricity,MW,Operating reserve down
+vESSInventory,Stored Energy Inventory|Electricity|Energy Storage System,GWh,ESS inventory
+vESSSpillage,Spillage|Electricity|Energy Storage System,GWh,ESS spillage

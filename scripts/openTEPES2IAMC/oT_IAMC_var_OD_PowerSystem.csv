@@ -1,0 +1,4 @@
+,Variable,Unit,Description
+vTotalFCost,,MEUR,Total system fixed cost
+vTotalVCost,,MEUR,Total system variable cost
+vTotalECost,,MEUR,Total system emission cost

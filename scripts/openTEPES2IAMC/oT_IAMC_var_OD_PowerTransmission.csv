@@ -1,0 +1,7 @@
+,Variable,Unit,Description
+vNetworkInvest,Investment|Electricity|Transmission|Line,"[0,1]",Network investment decision exists in a year
+vLineLosses,Line Losses|Electricity|Transmission|Line,MW,Half line losses
+vFlow,Active Power Flow|Electricity|Transmission|Line,MW,Power Flow through lines
+vTheta,Voltage Angle|Electricity,rad,Voltage angle per node
+vPNS,,MW,Power not served
+vSRMC,Price|Secondary Energy|Electricity,EUR/MWh,Locational Short-Mun Marginal Cost
