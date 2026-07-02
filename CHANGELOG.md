@@ -2,7 +2,7 @@
 
 ## [4.18.17RC] - 2026-07-02 Unreleased in PyPI
 
-- [FIXED] CI on the sector/stage Benders commit. `openTEPES_ProblemSolvingStageSolve.py` called the cycle-flow builders through an undefined `oTM` alias with undefined flags; it now calls `NetworkCycles` and `CycleConstraints` directly, like the stage iterator (DC cycle path). `openTEPES_ProblemSolvingSectorDecomposition.py` now imports `ProblemSolving` relatively, so the installed package finds it.
+- [FIXED] CI on the sector/stage Benders commit. `openTEPES_ProblemSolvingStageSolve.py` called the cycle-flow builders through an undefined `oTM` alias with undefined flags; it now calls `NetworkCycles` and `CycleConstraints` directly, like the stage iterator (DC cycle path). `openTEPES_ProblemSolvingSectorDecomposition.py` and `openTEPES_ProblemSolvingStageDecomposition.py` now use the same relative-import guard as the other split modules, so they import both when installed and when run as a script.
 - [ADDED] added sector and stage Benders decomposition
 - [CHANGED] if a thermal unit has a variable minimum generation > 0 in a load level it is considered committed in this load level
 - [CHANGED] fix the energy activation variables if no operating reserve activation constraint is formulated in a time step
