@@ -1,7 +1,8 @@
 # Change Log
 
-## [4.18.17RC] - 2026-07-01 Unreleased in PyPI
+## [4.18.17RC] - 2026-07-02 Unreleased in PyPI
 
+- [ADDED] added sector and stage Benders decomposition
 - [CHANGED] if a thermal unit has a variable minimum generation > 0 in a load level it is considered committed in this load level
 - [CHANGED] fix the energy activation variables if no operating reserve activation constraint is formulated in a time step
 - [ADDED] Mode B in-memory overlay sweep (RFC §4.2): `openTEPES_Runner.run(mode="in-memory")` reads the baseline case once into a new `openTEPES_InMemorySource` and re-uses it per case through an overlay (a data-table stem mapped to a scale factor, a `df->df` callable, or a replacement frame), so a parameter sweep pays the input I/O once and only rebuilds + solves per case (forked workers share the baseline copy-on-write). `openTEPES_run` gains `input_source=` to read from an already-open `InputSource`; `InputSource` gains `list_dict_stems()` (implemented in `CSVSource` and `DuckDBSource`). Additive only — an identity overlay reproduces a direct run (9n parity). New tests in `tests/test_run.py`. The architecture diagram's sweep-modes panel now marks all three modes (A, B, C) implemented.

@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 11, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 02, 2026
 
 openTEPES.openTEPES_ProblemSolvingStageIter — stage-by-stage formulate-and-solve driver.
 
@@ -17,7 +17,7 @@ After the loop it rebuilds the full stage / load-level sets, reactivates every c
 scenario probabilities so the output writers report the intended (per-scenario sum, or expected-value) cost.
 
 This is a pure move out of ``openTEPES_run`` — the loop body is unchanged, so results are identical. It sets up
-the seam that later orchestration drivers (Mode C re-solve, sector / Benders decomposition) build on.
+the seam that later orchestration drivers (Mode C re-solve, sector / time decomposition) build on.
 """
 from __future__ import annotations
 
@@ -31,30 +31,34 @@ from   pyomo.environ import Set
 # Support running this file directly (e.g. VS Code "Run Python File"), where __package__ is empty and the
 # relative imports below have no parent package; fall back to absolute package imports in that case.
 try:
-    from .openTEPES_ModelFormulationObjective   import GenerationOperationModelFormulationObjFunct
-    from .openTEPES_ModelFormulationInvestment  import GenerationOperationElecModelFormulationInvestment, GenerationOperationHeatModelFormulationInvestment
-    from .openTEPES_ModelFormulationElectricity import GenerationOperationModelFormulationDemand, GenerationOperationModelFormulationStorage, GenerationOperationModelFormulationCommitment, GenerationOperationModelFormulationRampMinTime, NetworkSwitchingModelFormulation, NetworkOperationModelFormulation, NetworkCycles, CycleConstraints
-    from .openTEPES_ModelFormulationHydro       import GenerationOperationModelFormulationReservoir
-    from .openTEPES_ModelFormulationHydrogen    import NetworkH2OperationModelFormulation
-    from .openTEPES_ModelFormulationHeat        import NetworkHeatOperationModelFormulation
-    from .openTEPES_ProblemSolving              import ProblemSolving
+    from .openTEPES_ModelFormulationObjective         import GenerationOperationModelFormulationObjFunct
+    from .openTEPES_ModelFormulationInvestment        import GenerationOperationElecModelFormulationInvestment, GenerationOperationHeatModelFormulationInvestment
+    from .openTEPES_ModelFormulationElectricity       import GenerationOperationModelFormulationDemand, GenerationOperationModelFormulationStorage, GenerationOperationModelFormulationCommitment, GenerationOperationModelFormulationRampMinTime, NetworkSwitchingModelFormulation, NetworkOperationModelFormulation, NetworkCycles, CycleConstraints
+    from .openTEPES_ModelFormulationHydro             import GenerationOperationModelFormulationReservoir
+    from .openTEPES_ModelFormulationHydrogen          import NetworkH2OperationModelFormulation
+    from .openTEPES_ModelFormulationHeat              import NetworkHeatOperationModelFormulation
+    from .openTEPES_ProblemSolving                    import ProblemSolving
+    from .openTEPES_ProblemSolvingSectorDecomposition import SectorDecomposition
+    from .openTEPES_ProblemSolvingStageDecomposition   import StageDecomposition
 except ImportError:
     import sys
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    from openTEPES.openTEPES_ModelFormulationObjective   import GenerationOperationModelFormulationObjFunct
-    from openTEPES.openTEPES_ModelFormulationInvestment  import GenerationOperationElecModelFormulationInvestment, GenerationOperationHeatModelFormulationInvestment
-    from openTEPES.openTEPES_ModelFormulationElectricity import GenerationOperationModelFormulationDemand, GenerationOperationModelFormulationStorage, GenerationOperationModelFormulationCommitment, GenerationOperationModelFormulationRampMinTime, NetworkSwitchingModelFormulation, NetworkOperationModelFormulation, NetworkCycles, CycleConstraints
-    from openTEPES.openTEPES_ModelFormulationHydro       import GenerationOperationModelFormulationReservoir
-    from openTEPES.openTEPES_ModelFormulationHydrogen    import NetworkH2OperationModelFormulation
-    from openTEPES.openTEPES_ModelFormulationHeat        import NetworkHeatOperationModelFormulation
-    from openTEPES.openTEPES_ProblemSolving              import ProblemSolving
+    from openTEPES.openTEPES_ModelFormulationObjective         import GenerationOperationModelFormulationObjFunct
+    from openTEPES.openTEPES_ModelFormulationInvestment        import GenerationOperationElecModelFormulationInvestment, GenerationOperationHeatModelFormulationInvestment
+    from openTEPES.openTEPES_ModelFormulationElectricity       import GenerationOperationModelFormulationDemand, GenerationOperationModelFormulationStorage, GenerationOperationModelFormulationCommitment, GenerationOperationModelFormulationRampMinTime, NetworkSwitchingModelFormulation, NetworkOperationModelFormulation, NetworkCycles, CycleConstraints
+    from openTEPES.openTEPES_ModelFormulationHydro             import GenerationOperationModelFormulationReservoir
+    from openTEPES.openTEPES_ModelFormulationHydrogen          import NetworkH2OperationModelFormulation
+    from openTEPES.openTEPES_ModelFormulationHeat              import NetworkHeatOperationModelFormulation
+    from openTEPES.openTEPES_ProblemSolving                    import ProblemSolving
+    from openTEPES.openTEPES_ProblemSolvingSectorDecomposition import SectorDecomposition
+    from openTEPES.openTEPES_ProblemSolvingStageDecomposition   import StageDecomposition
 
 
 def StageIterativeSolving(mTEPES, DirName, CaseName, SolverName, pIndLogConsole, _path, pIndCycleFlow):
     """Run the per-stage formulate-and-solve loop in place on ``mTEPES``.
 
     ``mTEPES`` must already carry the objective, the investment constraints, ``First_st`` / ``Last_st`` and an
-    initialised ``pDuals`` dict (all set up by ``openTEPES_run`` before this call). ``_path`` is the case path
+    initialized ``pDuals`` dict (all set up by ``openTEPES_run`` before this call). ``_path`` is the case path
     used for optional LP-file dumps; ``pIndCycleFlow`` toggles the cycle-flow network formulation.
     """
     # initialize the set of load levels up to the current stage
@@ -207,12 +211,11 @@ def StageIterativeSolving(mTEPES, DirName, CaseName, SolverName, pIndLogConsole,
 
                         mTEPES.pScenProb[p,sc] = 1.0
                         # there are system emission or RES requirement constraints
-                        ProblemSolving           (DirName, CaseName, SolverName, mTEPES, mTEPES, pIndLogConsole, p, sc, st, mTEPES.p.ord(p)*mTEPES.sc.ord(sc)*mTEPES.st.ord(st))
-                        # if pIndSectorDecomposition and len(mTEPES.psnel):
-                        #     ProblemSolving     (DirName, CaseName, SolverName, mTEPES, mTEPES, pIndLogConsole, p, sc, st, 1)
-                        #     SectorDecomposition(DirName, CaseName, SolverName, mTEPES, mTEPES, pIndLogConsole, p, sc, st   )
-                        # else:
-                        #     ProblemSolving     (DirName, CaseName, SolverName, mTEPES, mTEPES, pIndLogConsole, p, sc, st, mTEPES.p.ord(p)*mTEPES.sc.ord(sc)*mTEPES.st.ord(st))
+                        if mTEPES.pIndSectorDecomposition and len(mTEPES.psnel):
+                            ProblemSolving     (DirName, CaseName, SolverName, mTEPES, mTEPES, pIndLogConsole, p, sc, st, 1)
+                            SectorDecomposition(DirName, CaseName, SolverName, mTEPES, mTEPES, pIndLogConsole, p, sc, st   )
+                        else:
+                            ProblemSolving     (DirName, CaseName, SolverName, mTEPES, mTEPES, pIndLogConsole, p, sc, st, mTEPES.p.ord(p)*mTEPES.sc.ord(sc)*mTEPES.st.ord(st))
                         mTEPES.pScenProb[p,sc] = 0.0
 
                         # deactivate the constraints of the previous period and scenario
@@ -266,12 +269,14 @@ def StageIterativeSolving(mTEPES, DirName, CaseName, SolverName, pIndLogConsole,
                             print('Writing LP file                        ... ', round(WritingLPFileTime), 's')
 
                         # there are investment decisions (it is an expansion and operation model), or there are system emission constraints
-                        ProblemSolving           (DirName, CaseName, SolverName, mTEPES, mTEPES, pIndLogConsole, p, sc, st, 1)
-                        # if pIndSectorDecomposition and len(mTEPES.psnel):
-                        #     ProblemSolving     (DirName, CaseName, SolverName, mTEPES, mTEPES, pIndLogConsole, p, sc, st, 1)
-                        #     SectorDecomposition(DirName, CaseName, SolverName, mTEPES, mTEPES, pIndLogConsole, p, sc, st   )
-                        # else:
-                        #     ProblemSolving     (DirName, CaseName, SolverName, mTEPES, mTEPES, pIndLogConsole, p, sc, st, 1)
+                        if mTEPES.pIndSectorDecomposition and len(mTEPES.psnel):
+                            ProblemSolving       (DirName, CaseName, SolverName, mTEPES, mTEPES, pIndLogConsole, p, sc, st, 1)
+                            SectorDecomposition  (DirName, CaseName, SolverName, mTEPES, mTEPES, pIndLogConsole, p, sc, st   )
+                        else:
+                            if mTEPES.pIndCompleteProblem == 1:
+                                ProblemSolving   (DirName, CaseName, SolverName, mTEPES, mTEPES, pIndLogConsole, p, sc, st, 1)
+                            else:
+                                StageDecomposition(DirName, CaseName, SolverName, mTEPES, mTEPES, pIndLogConsole, p, sc, st, _path, pIndCycleFlow)
 
     mTEPES.del_component(mTEPES.st)
     mTEPES.del_component(mTEPES.n )

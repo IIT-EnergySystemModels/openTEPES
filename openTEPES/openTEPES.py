@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 29, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 02, 2026
 """
 
 # import dill as pickle
@@ -52,7 +52,6 @@ except ImportError:
     from openTEPES.openTEPES_OutputResultsEconomic      import MarginalResults, CostSummaryResults, EconomicResults
     from openTEPES.openTEPES_OutputResultsSummary       import OperationSummaryResults, FlexibilityResults, ReliabilityResults
     from openTEPES.openTEPES_OutputResultsSink          import ResultSink, set_active_sink, clear_active_sink
-# from openTEPES_SectorDecomposition import SectorDecomposition
 
 
 # Output categories selectable via --results CLI flag.
@@ -217,11 +216,11 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     idxDict['y'  ] = 1
 
     #%% model declaration
-    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.17RC - June 5, 2026')
+    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.17RC - July 02, 2026')
     # In DuckDB-input mode _path may not exist on disk (the case lives in
     # the DB, not in a directory). Ensure the version-log target exists.
     os.makedirs(_path, exist_ok=True)
-    print(                 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.17RC - June 5, 2026', file=open(f'{_path}/openTEPES_version_{CaseName}.log','w'))
+    print(                 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.17RC - July 02, 2026', file=open(f'{_path}/openTEPES_version_{CaseName}.log','w'))
     if _input_source is not None:
         mTEPES.pInputSource = _input_source
 
@@ -231,9 +230,16 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     # introduce cycle flow formulations in DC and AC load flow
     pIndCycleFlow = 0
 
-    # sector decomposition to get proxy of the hydrogen sector: 0 to solve the complete problem, 1 to solve sector decomposition
+    # sector decomposition to get proxy of the hydrogen sector: 0 to solve the complete problem, 1 to solve sector Benders decomposition
     pIndSectorDecomposition = 0
     mTEPES.pIndSectorDecomposition = pIndSectorDecomposition
+
+    # solve the complete problem directly or by time Benders decomposition
+    pIndCompleteProblem = 1
+    pIndSequentialSolving = 1
+    mTEPES.pIndCompleteProblem = pIndCompleteProblem
+    mTEPES.pIndSequentialSolving = pIndSequentialSolving
+    mTEPES.pBdTol = 1e-6
 
     # Reading sets and parameters. InputData also stores dfs/par on
     # mTEPES (mTEPES.dFrame / mTEPES.dPar) for backward compatibility,

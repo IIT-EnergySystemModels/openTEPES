@@ -84,7 +84,10 @@ def OperationSummaryResults(DirName, CaseName, OptModel, mTEPES):
         NetInvCostVRESInsCap = 0.0
     # Rate of return for VRE technologies
     # warning division and multiplication
-    VRETechRevenue     = sum(mTEPES.pDuals[f"eBalanceElec_{p}_{sc}_{st}('{n}', '{nd}')"]/mTEPES.pPeriodProb[p,sc]()/mTEPES.pLoadLevelDuration[p,sc,n]()*OptModel.vTotalOutput[p,sc,n,gc]() for p,sc,st,n,nd,gc in mTEPES.s2n*mTEPES.n2g if gc in g2n[nd] and (p,sc,n,gc) in mTEPES.psnre and sum(1 for g in g2n[nd]) + sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd]))
+    if hasattr(mTEPES, 'pDuals') and mTEPES.pDuals is not None and hasattr(mTEPES.pDuals, '__len__') and len(mTEPES.pDuals) > 0:
+        VRETechRevenue = sum(mTEPES.pDuals[f"eBalanceElec_{p}_{sc}_{st}('{n}', '{nd}')"]/mTEPES.pPeriodProb[p,sc]()/mTEPES.pLoadLevelDuration[p,sc,n]()*OptModel.vTotalOutput[p,sc,n,gc]() for p,sc,st,n,nd,gc in mTEPES.s2n*mTEPES.n2g if gc in g2n[nd] and (p,sc,n,gc) in mTEPES.psnre and sum(1 for g in g2n[nd]) + sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd]))
+    else:
+        VRETechRevenue = 0.0
     VREInvCostCapacity = sum(mTEPES.pDiscountedWeight[p]*mTEPES.pGenInvestCost[gc]*OptModel.vGenerationInvest[p,gc]() for p,gc in mTEPES.pgc if gc in mTEPES.re)
 
     K01     = pd.Series(data={'Ratio Fossil Fuel Generation/Total Generation [%]'                       : FossilFuelGeneration / TotalGeneration    *1e2}).to_frame(name='Value')
