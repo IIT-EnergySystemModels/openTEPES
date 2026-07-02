@@ -12,7 +12,7 @@ from   collections   import defaultdict
 from   pyomo.environ import ConcreteModel, Set, RangeSet, Var, NonNegativeReals, Reals, Constraint, ConstraintList, Objective, minimize, Suffix
 from   pyomo.opt     import SolverFactory
 from   pyomo.contrib import appsi
-from   openTEPES_ProblemSolving import ProblemSolving
+from   .openTEPES_ProblemSolving import ProblemSolving
 
 
 def SectorDecomposition(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConsole, p, sc, st):

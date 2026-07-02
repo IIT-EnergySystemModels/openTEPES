@@ -196,11 +196,8 @@ def StageSolve(OptModel, mTEPES, DirName, CaseName, SolverName, pIndLogConsole, 
                     # introduce cycle flow formulations
                     if pIndCycleFlow == 1:
                         if st == mTEPES.stt.first():
-                            oTM.NetworkCycles      (          mTEPES, pIndLogConsole, pIndPowerFlow)
-                        if pIndPowerFlow == 0:
-                            oTM.CycleConstraints   (OptModel, mTEPES, pIndLogConsole, p, sc, st)
-                        elif pIndPowerFlow == 2:
-                            oTM.CycleConstraints_AC(OptModel, mTEPES, pIndLogConsole, p, sc, st)
+                            NetworkCycles          (          mTEPES, pIndLogConsole           )
+                        CycleConstraints           (OptModel, mTEPES, pIndLogConsole, p, sc, st)
                 else:
                     # activate all the constraints by stage
                     for c in OptModel.component_objects(pyo.Constraint):
@@ -348,7 +345,7 @@ def StageSolve(OptModel, mTEPES, DirName, CaseName, SolverName, pIndLogConsole, 
                     if mTEPES.n1.ord(n1) == mTEPES.n.ord(n):
                         mTEPES.pInitialSwitch    [p,sc,n1,ni,nf,cc] = mTEPES.pInitialSwitch_Saved    [p,sc,n,ni,nf,cc]
 
-                if pIndWriteLP == 1:
+                if pIndLogConsole:
                     StartTime      = time.time()
                     # OptModel.write(_path+f'/openTEPES_Sbp_itBd{itBd}_{p}_{sc}_{st}_{CaseName}.lp', io_options={'symbolic_solver_labels': True})
                     GeneratingTime = time.time() - StartTime
