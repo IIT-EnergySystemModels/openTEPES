@@ -9,7 +9,7 @@ The model has been used in these research projects:
 - [Quantitative Framework for Forecasting PV Capture Prices and Evaluating Low-Price Risk in the Iberian Electricity Market](https://www.iit.comillas.edu/publicacion/proyecto/en/Everest2025/Quantitative_Framework_for_Forecasting_PV_Capture_Prices_and_Evaluating_Low-Price_Risk_in_the_Iberian_Electricity_Market), developed for **Everest Insurance**.
   December 2025 - March 2026. [J.P. Chaves](https://www.iit.comillas.edu/people/jchaves), [A. Ramos](https://www.iit.comillas.edu/people/aramos), [M.A. Ríos-Ocampo](https://www.iit.comillas.edu/people/marios), [J.F. Gutiérrez](https://www.iit.comillas.edu/people/jGutiérrez)
 
-  > It aims to to design, develop, and validate a robust, transparent, and fully explainable quantitative framework capable of forecasting Iberian day-ahead electricity prices and estimating the solar PV capture price for 2026–2027.
+  > It aims to design, develop, and validate a robust, transparent, and fully explainable quantitative framework capable of forecasting Iberian day-ahead electricity prices and estimating the solar PV capture price for 2026–2027.
 
 - [Open-source modeling for electric company resource planning research](https://www.iit.comillas.edu/publicacion/proyecto/es/EPRI_openTEPES/Open-source_modeling_for_electric_company_resource_planning_research), developed for **Electric Power Research Institute (EPRI)**.
   March 2025 - December 2025. [A. Ramos](https://www.iit.comillas.edu/people/aramos)
@@ -55,10 +55,10 @@ The model has been used in these research projects:
 
   > It aims to develop an open toolbox populated with state-of-the-art models for analyzing long-term pathways to sustainable, secure, and competitive energy systems in Africa.
   > The Toolbox will build on EU projects like openENTRANCE, Plan4RES, and FocusAfrica, and will adapt and further develop open models in accordance with the African context and needs.
-  > The models are scalable and can be applied to cities, industries, and countries. Furthermore, the main objective of OpenMod4Africa is capacity building among energy models in academia.
+  > The models are scalable and can be applied to cities, industries, and countries. Furthermore, the main objective of OpenMod4Africa is capacity building among energy modelers in academia.
   > Four African universities will be actively involved in adapting models and conducting two regional case studies. The additional capacity and the open Toolbox will enable the universities
-  > to train new generations of energy modelling experts for the energy industries in Africa.
-  > openTEPES is part of the Africa [open energy system modelling toolbox](https://africaenergymodels.net/), which is a suite of open and linked state-of-the-art open-source energy system models for Africa.
+  > to train new generations of energy modeling experts for the energy industries in Africa.
+  > openTEPES is part of the Africa [open energy system modeling toolbox](https://africaenergymodels.net/), which is a suite of open and linked state-of-the-art open-source energy system models for Africa.
 
 ```{image} ../img/OM4A.png
 :align: center
@@ -66,7 +66,7 @@ The model has been used in these research projects:
 ```
 
 - [Highly-efficient and flexible integration of biomass and renewable hydrogen for low-cost combined heat and power generation to the energy system (Bio-FlexGen)](https://bioflexgen.eu/), developed for the **European Union**. September 2021 - August 2024.
-  [J.P. Chaves](https://www.iit.comillas.edu/people/jchaves), [A. Ramos](https://www.iit.comillas.edu/people/aramos), [J.F. Gutiérrez](https://www.iit.comillas.edu/people/jGutiérrez)
+  [J.P. Chaves](https://www.iit.comillas.edu/people/jchaves), [A. Ramos](https://www.iit.comillas.edu/people/aramos), [J.F. Gutiérrez](https://www.iit.comillas.edu/people/jgutierrez)
 
   > It aims to significantly increase the efficiency, flexibility, and cost effectiveness of renewable energy-based combined heat and power plants (CHP),
   > enabling them to play a key role in integrating fluctuating renewable energy into the energy system and therefore making a significant contribution to the decarbonization of the energy system.
@@ -79,7 +79,7 @@ The model has been used in these research projects:
 - [Analysis of the role of pumped-hydro storage power plants in the Spanish NECP 2030](https://www.iit.comillas.edu/proyectos/mostrar_proyecto.php.en?nombre_abreviado=IBD_PNIEC_Bbo), developed for **Iberdrola**.
   July 2023 - October 2023. [A. Ramos](https://www.iit.comillas.edu/people/aramos), [P. Linares](https://www.iit.comillas.edu/people/pedrol), [J.P. Chaves](https://www.iit.comillas.edu/people/jchaves), [M. Rivier](https://www.iit.comillas.edu/people/michel), [T. Gómez](https://www.iit.comillas.edu/people/tomas)
 
-  > It aims to evaluate the role pumped-hydro storage power plants in the Spanish NECP 2030.
+  > It aims to evaluate the role of pumped-hydro storage power plants in the Spanish NECP 2030.
 
 - [Support in the preparation of the application to the call on innovative energy storage systems](https://www.iit.comillas.edu/proyectos/mostrar_proyecto.php.en?nombre_abreviado=GlideEnergySoporteProyectosAlmacenamiento), developed for **Glide Energy**.
   June 2023 - October 2023. [L. Rouco](https://www.iit.comillas.edu/people/rouco), [A. Ramos](https://www.iit.comillas.edu/people/aramos), [F.M. Echavarren](https://www.iit.comillas.edu/people/pacoec), [R. Cossent](https://www.iit.comillas.edu/people/rcossent)
@@ -113,8 +113,8 @@ The model has been used in these research projects:
   [S. Lumbreras](https://www.iit.comillas.edu/people/slumbreras), [L. Olmos](https://www.iit.comillas.edu/people/olmos), [A. Ramos](https://www.iit.comillas.edu/people/aramos)
 
   > It will update, upgrade, and fully open six IAMs that are emblematic in scientific and policy processes, improving their sectoral and technological detail, spatiotemporal resolution, and geographic granularity.
-  > It will further enhance modelling capacity to assess the feasibility and desirability of Paris-compliant mitigation pathways, their interplay with adaptation, circular economy, and other SDGs,
-  > their distributional and equity effects, and their resilience to extremes, as well as robust risk management and investment strategies. In this project openTEPES is connected with [GCAM-Europe](https://github.com/bc3LC-GCAMEurope/gcam-core), [OMNIA](https://github.com/CLIMATE-DIAMOND/OMNIA) and [OPEN-PROM](https://github.com/e3modelling/OPEN-PROM).
+  > It will further enhance modeling capacity to assess the feasibility and desirability of Paris-compliant mitigation pathways, their interplay with adaptation, circular economy, and other SDGs,
+  > their distributional and equity effects, and their resilience to extremes, as well as robust risk management and investment strategies. In this project openTEPES is connected with [GCAM-Europe](https://github.com/bc3LC-GCAMEurope/gcam-core), [OMNIA](https://github.com/CLIMATE-DIAMOND/OMNIA) and [OPEN-PROM](https://github.com/e3modeling/OPEN-PROM).
 
 ```{image} ../img/DIAMOND_prj.jpg
 :align: center
@@ -143,7 +143,7 @@ The model has been used in these research projects:
   [C. Mateo](https://www.iit.comillas.edu/people/cmateo), [D. Santos Oliveira](https://www.iit.comillas.edu/people/doliveira), [M.S. Gómez Pérez](https://www.iit.comillas.edu/people/mgomezp)
 
   > It aims to provide the knowledge to inform the development of future energy and climate policies at the national and European levels. In support of this aim, ECEMF proposes a range of activities to achieve five objectives and meet the four challenges set out in the call text.
-  > ECEMF’s program of events and novel IT-based communications channel will enable researchers to identify and co-develop the most pressing policy-relevant research questions with a range of stakeholders to meet ambitious European energy and climate policy goals,
+  > ECEMF's program of events and novel IT-based communications channel will enable researchers to identify and co-develop the most pressing policy-relevant research questions with a range of stakeholders to meet ambitious European energy and climate policy goals,
   > in particular, the European Green Deal and the transformation to a climate-neutral society.
   >
   > [Electricity flexibility for the future EU power sector](https://www.ecemf.eu/insights/insights_electricity_flexibility_eu_power_sector/).
@@ -156,7 +156,7 @@ The model has been used in these research projects:
 :scale: 10%
 ```
 
-- [Assessment of the storage needs for the Spanish electric system in a horizon 2020-2050 with a large share of renewables](https://www.iit.comillas.edu/proyectos/mostrar_proyecto.php.en?nombre_abreviado=IDAE_Almacenamiento), developed for
+- [Assessment of the storage needs for the Spanish electric system over the 2020-2050 horizon with a large share of renewables](https://www.iit.comillas.edu/proyectos/mostrar_proyecto.php.en?nombre_abreviado=IDAE_Almacenamiento), developed for
   the **Instituto para la Diversificación y Ahorro de la Energía (IDAE)**. January 2021 - June 2022.
   [A. Ramos](https://www.iit.comillas.edu/people/aramos), [P. Linares](https://www.iit.comillas.edu/people/pedrol), [J.P. Chaves](https://www.iit.comillas.edu/people/jchaves),
   [J. García](https://www.iit.comillas.edu/people/javiergg), [S. Wogrin](https://www.iit.comillas.edu/people/swogrin), [J.J. Valentín](https://www.iit.comillas.edu/people/jjvalentin)
@@ -172,14 +172,14 @@ The model has been used in these research projects:
   > It aims to investigate new technologies and simulation models in the field of renewable generation, storage systems, flexible demand management, and operation of the distribution network.
   > A 100% renewable and decarbonized energy mix is sought, effectively integrated into the electrical system of the future in a flexible, efficient, and safe way.
 
-- [Improving energy system modelling tools and capacity](https://www.iit.comillas.edu/proyectos/mostrar_proyecto.php.en?nombre_abreviado=REFORMS), developed for the **European Commission**.
+- [Improving energy system modeling tools and capacity](https://www.iit.comillas.edu/proyectos/mostrar_proyecto.php.en?nombre_abreviado=REFORMS), developed for the **European Commission**.
   October 2020 - June 2022.
   [S. Lumbreras](https://www.iit.comillas.edu/people/slumbreras), [A. Ramos](https://www.iit.comillas.edu/people/aramos), [P. Linares](https://www.iit.comillas.edu/people/pedrol), [D. Santos](https://www.iit.comillas.edu/people/doliveira),
   [M. Pérez-Bravo](https://www.iit.comillas.edu/people/mperezb), [A.F. Rodríguez Matas](https://www.iit.comillas.edu/people/afrmatas), [J.C. Romero](https://www.iit.comillas.edu/people/jcromero)
 
-  > It aims to improve the description of the Spanish energy system in the model TIMES-SINERGIA, from the technologies considered or a higher time resolution to the detailed modeling of the power sector, such as the inclusion of transmission constraints, with openTEPES.
+  > It aims to improve the description of the Spanish energy system in the model TIMES-SINERGIA, from the technologies considered and higher time resolution to the detailed modeling of the power sector, such as the inclusion of transmission constraints, with openTEPES.
 
-- [MODESC – Platform of innovative models for speeding the energy transition towards a decarbonized economy](https://www.iit.comillas.edu/proyectos/mostrar_proyecto.php.en?nombre_abreviado=MODESC_RETOS), developed for the **Ministry of Science and Innovation** under **Retos Colaboración 2019** program (RTC2019-007315-3).
+- [MODESC – Platform of innovative models for speeding the energy transition toward a decarbonized economy](https://www.iit.comillas.edu/proyectos/mostrar_proyecto.php.en?nombre_abreviado=MODESC_RETOS), developed for the **Ministry of Science and Innovation** under **Retos Colaboración 2019** program (RTC2019-007315-3).
   September 2020 - December 2023.
   [T. Gómez](https://www.iit.comillas.edu/people/tomas), [M. Rivier](https://www.iit.comillas.edu/people/michel), [J.P. Chaves](https://www.iit.comillas.edu/people/jchaves),
   [A. Ramos](https://www.iit.comillas.edu/people/aramos), [P. Linares](https://www.iit.comillas.edu/people/pedrol), [F. Martín](https://www.iit.comillas.edu/people/fmartin),
@@ -196,8 +196,8 @@ The model has been used in these research projects:
   [L. Olmos](https://www.iit.comillas.edu/people/olmos), [S. Lumbreras](https://www.iit.comillas.edu/people/slumbreras), [A. Ramos](https://www.iit.comillas.edu/people/aramos),
   [E. Alvarez](https://www.iit.comillas.edu/people/ealvarezq)
 
-  > It aims to develop, use, and disseminate an open, transparent, and integrated modelling platform for assessing low-carbon transition pathways in Europe.
-  > It is integrated into the [open energy system modelling platform](https://openenergymodels.net/), helping model Europe's energy system, and is in the list of [energy models published under open-source licenses](https://wiki.openmod-initiative.org/wiki/Open_Models).
+  > It aims to develop, use, and disseminate an open, transparent, and integrated modeling platform for assessing low-carbon transition pathways in Europe.
+  > It is integrated into the [open energy system modeling platform](https://openenergymodels.net/), helping model Europe's energy system, and is in the list of [energy models published under open-source licenses](https://wiki.openmod-initiative.org/wiki/Open_Models).
 
 ```{image} ../img/open-entrance_logo.png
 :align: center

@@ -66,7 +66,7 @@ The dictionaries include all the possible elements of the corresponding sets in 
 | `oT_Dict_Period.csv`     | Period (e.g., 2030, 2035). **It must be a positive integer**                                                                                                                                                                                                                                                                                    |
 | `oT_Dict_Scenario.csv`   | Scenario. Short-term uncertainties (scenarios) (e.g., s001 to s100, CY2025 to CY2030)                                                                                                                                                                                                                                                           |
 | `oT_Dict_Stage.csv`      | Stage                                                                                                                                                                                                                                                                                                                                           |
-| `oT_Dict_LoadLevel.csv`  | Load level (e.g., 01-01 00:00:00+01:00 to 12-30 23:00:00+01:00). If is a datetime format. Load levels with duration 0 are ignored. 8736 load levels must represent the period (year).                                                                                                                                                           |
+| `oT_Dict_LoadLevel.csv`  | Load level (e.g., 01-01 00:00:00+01:00 to 12-30 23:00:00+01:00). If it is in datetime format. Load levels with duration 0 are ignored. 8736 load levels must represent the period (year).                                                                                                                                                           |
 | `oT_Dict_Generation.csv` | Generation units (thermal -nuclear, CCGT, OCGT, coal-, ESS -storage hydro modeled in energy or water, pumped-hydro storage PHS, battery BESS, electric vehicle EV, demand side management DSM, data center flexibility, alkaline water electrolyzer AWE, solar thermal- and VRES -wind onshore and offshore, solar PV, run-of-the-river hydro-) |
 | `oT_Dict_Technology.csv` | Generation technologies. The technology order is used in the temporal result plot.                                                                                                                                                                                                                                                              |
 | `oT_Dict_Storage.csv`    | ESS storage type (daily \<12 h, weekly \<40 h, monthly >60 h).                                                                                                                                                                                                                                                                                  |
@@ -81,9 +81,9 @@ Assignment of nodes to zones, zones to areas, and areas to regions.
 
 | File                       | Dictionary   | Description                    |
 | -------------------------- | ------------ | ------------------------------ |
-| `oT_Dict_NodeToZone.csv`   | NodeToZone   | Assignment of nodes at zones   |
-| `oT_Dict_ZoneToArea.csv`   | ZoneToArea   | Assignment of zones at areas   |
-| `oT_Dict_AreaToRegion.csv` | AreaToRegion | Assignment of areas at regions |
+| `oT_Dict_NodeToZone.csv`   | NodeToZone   | Assignment of nodes to zones   |
+| `oT_Dict_ZoneToArea.csv`   | ZoneToArea   | Assignment of zones to areas   |
+| `oT_Dict_AreaToRegion.csv` | AreaToRegion | Assignment of areas to regions |
 
 See the hydropower system section at the end of this page to learn how to define the basin topology (connection among reservoirs and hydropower plants). Some additional dictionaries and data files are needed.
 
@@ -148,7 +148,7 @@ A description of the options included in the file `oT_Data_Option.csv` follows:
 | IndBinLineCommit    | Indicator of binary transmission switching decisions                                                  | {0 continuous, 1 binary}                            |
 | IndBinNetLosses     | Indicator of network losses                                                                           | {0 lossless, 1 ohmic losses}                        |
 
-Suppose the investment decisions are ignored (IndBinGenInvest, IndBinGenRetirement, and IndBinNetInvest take value 2) or there are no investment decisions. In that case, all the scenarios with a probability >0 are solved sequentially (assuming a probability of 1), and the periods are considered with a weight of 1.
+If the investment decisions are ignored (IndBinGenInvest, IndBinGenRetirement, and IndBinNetInvest take value 2) or there are none, all the scenarios with a probability >0 are solved sequentially (assuming a probability of 1), and the periods are given a weight of 1.
 
 If you select the single node option (IndBinSingleNode takes value 1), the line capacity constraints are relaxed (i.e., flows can exceed these capacities), but line flows are obtained and presented in the result files. The line losses are considered 0.
 
@@ -272,7 +272,7 @@ A description of the data included in the file `oT_Data_Duration.csv` follows:
 ==========  ==============  ========== ==========  ===============================================================================================================================================================  ========
 Identifiers                            Header      Description
 ====================================== ==========  ===============================================================================================================================================================  ========
-Period      Scenario        LoadLevel  Duration    Duration of the load level. Load levels with duration 0 are ignored. For an hour, the duration must be 1. For **quarter on an hour**, the duration must be 0.25  h
+Period      Scenario        LoadLevel  Duration    Duration of the load level. Load levels with duration 0 are ignored. For an hour, the duration must be 1. For **quarter of an hour**, the duration must be 0.25  h
 ...         ...             ...        Stage       Assignment of the load level to a stage
 ==========  ==============  ========== ==========  ===============================================================================================================================================================  ========
 ```
@@ -300,7 +300,7 @@ Period      Scenario        LoadLevel   Node    Power demand of the node for eac
 ```
 
 The electricity demand can be negative for the (transmission) nodes with (renewable) generation at lower voltage levels. This negative demand is equivalent to generating that power amount in this node.
-Internally, if positive demand (or above if negative demand) 1e-5 times the maximum system demand of each area, all the values below will be converted into 0 by the model.
+Internally, all the values below 1e-5 times the maximum system demand of each area (or above its negative, for negative demand) will be converted into 0 by the model.
 
 ## System inertia
 
@@ -351,7 +351,7 @@ Period      Scenario        LoadLevel   Area    Upward/downward operating reserv
 Given that the operating reserves depend on the area, assigning an area to a country can be sensible.
 These operating reserves must include the activation of the Automatic Frequency Restoration Reserves (aFRR) (a.k.a. secondary reserve, deployed \<5 min) and Manual Frequency Restoration Reserves (mFRR) (a.k.a. tertiary reserve, deployed \<12.5 min) for electricity balancing from ENTSO-E.
 
-The values of the upward/downward operating reserve activation must be lower or equal than the upward/downward operating reserve requirement. If not, they are lowered by the model. Besides, all the values below 1e-5 times the maximum system demand of each area will be converted into 0 by the model.
+The values of the upward/downward operating reserve activation must be lower than or equal to the upward/downward operating reserve requirement; otherwise, the model lowers them. All the values below 1e-5 times the maximum system demand of each area are converted into 0 by the model.
 
 These files are optional. If not given, the upward and downward operating reserve activation constraints are not formulated. If given, then the parameters UpReserveActivation and DwReserveActivation are not used, and the values of the upward/downward operating reserve activation are directly read from these files.
 
@@ -377,7 +377,7 @@ A description of the data included for each (electricity and heat) generating un
 | Header                     | Description                                                                                                                                                                                                                                                                                                           |                                    |
 | -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
 | Generator                  | Name of the generator. Each generator must have a unique name.                                                                                                                                                                                                                                                        |                                    |
-| Node                       | Name of the node where the generator is located. **If left empty or assigned to a non existing node, the generator is ignored**                                                                                                                                                                                       |                                    |
+| Node                       | Name of the node where the generator is located. **If left empty or assigned to a non-existing node, the generator is ignored**                                                                                                                                                                                       |                                    |
 | Technology                 | Technology of the generator (nuclear, coal, CCGT, OCGT, ESS, solar, wind, biomass, etc.)                                                                                                                                                                                                                              |                                    |
 | MutuallyExclusive          | List of mutually exclusive sets to which the generator belongs. Only one generator per set can be committed simultaneously. It is computationally demanding.                                                                                                                                                          |                                    |
 | BinaryCommitment           | Binary unit commitment decision                                                                                                                                                                                                                                                                                       | Yes/No                             |
@@ -410,7 +410,6 @@ A description of the data included for each (electricity and heat) generating un
 | EFOR                       | Equivalent Forced Outage Rate (probability that a generating unit will be unavailable due to forced outages during a given period)                                                                                                                                                                                    | p.u.                               |
 | RampUp                     | Maximum rate of increasing its output for generating units, or maximum rate of increasing its discharge rate or decreasing its charge rate for ESS units. If left empty, no ramp up constraint is formulated for the generator.                                                                                       | MW/h                               |
 | RampDown                   | Maximum rate of decreasing its output for generating units, or maximum rate of increasing its charge rate or decreasing its discharge rate for ESS units. If left empty, no ramp down constraint is formulated for the generator.                                                                                     | MW/h                               |
-| MW/h                       |                                                                                                                                                                                                                                                                                                                       |                                    |
 | UpTime                     | Minimum uptime                                                                                                                                                                                                                                                                                                        | h                                  |
 | DownTime                   | Minimum downtime                                                                                                                                                                                                                                                                                                      | h                                  |
 | StableTime                 | Minimum stable time (intended for nuclear units to be at their minimum load, if lower than the rated capacity, during this time). Power variations (ramp up/ramp down) below 1% are not considered for activating the minimum stable time                                                                             | h                                  |
@@ -441,7 +440,7 @@ The main characteristics that define each type of generator are the following:
 | Any generator                       | It has MaximumPower or MaximumCharge or MaximumPowerHeat >0                                                                    | *g*      |
 | Thermal                             | Fuel-based variable cost (fuel cost x linear term + CO2 emission cost) >0                                                      | *t*      |
 | VRE                                 | Fuel-based variable cost (fuel cost x linear term + CO2 emission cost) =0 and MaximumStorage =0. It may have OMVariableCost >0 | *re*     |
-| Non-renewable                       | All the generators except the RESS                                                                                             | *nr*     |
+| Non-renewable                       | All the generators except the RES                                                                                             | *nr*     |
 | ESS                                 | It has MaximumCharge or MaximumStorage >0 or ProductionFunctionH2 or ProductionFunctionHeat >0 and ProductionFunctionHydro =0  | *es*     |
 | Hydro power plant (energy)          | ESS with ProductionFunctionHydro =0                                                                                            | *es*     |
 | Pumped-hydro storage (energy)       | ESS with MaximumCharge >0 and MaximumStorage >0                                                                                | *es*     |
@@ -454,7 +453,6 @@ The main characteristics that define each type of generator are the following:
 | Fuel heating unit, fuel boiler      | It has RatedMaxPowerElec =0 and RatedMaxPowerHeat >0 and ProductionFunctionHeat =0                                             | *bo*     |
 | Hydrogen heating unit               | Fuel heating unit with ProductionFunctionH2ToHeat >0                                                                           | *hh*     |
 | Hydro power plant (water)           | It has ProductionFunctionHydro >0                                                                                              | *h*      |
-|                                     |                                                                                                                                |          |
 | Reservoir (water)                   | It has water volume                                                                                                            | *rs*     |
 
 The model always considers a month of 672 hours, i.e., 4 weeks, not calendar months. The model assumes a year of 8736 hours, i.e., 52 weeks, not calendar years.
@@ -471,7 +469,7 @@ The initial storage of the ESSs is also fixed at the beginning and end of each s
 A generator with operation cost (sum of the fuel and emission cost, excluding O&M cost) >0 is considered a non-renewable unit. If the unit has no operation cost and its maximum storage =0,
 It is considered a renewable unit. If its maximum storage is >0, with or without operation cost, it is regarded as an ESS.
 
-A very small variable O&M cost (not below 0.01 €/MWh, otherwise it will be converted to 0 by the model) for the ESS can be used to avoid pumping with avoided curtailment (at no cost) and afterwards discharged as spillage.
+A very small variable O&M cost for the ESS (not below 0.01 €/MWh; otherwise the model converts it to 0) can prevent it from pumping with avoided curtailment (at no cost) and then discharging as spillage.
 
 The startup cost of a generating unit refers to the expenses incurred when bringing a power generation unit online, from an idle state to a point where it can produce electricity.
 
@@ -487,9 +485,9 @@ A generator can belong to several mutually exclusive sets; their names must be s
 
 A generator can be restricted to only be able to provide reserves while generating or while consuming. The NoOperatingReserve entry accepts two inputs separated by a "|". The first value corresponds to operating reserves while generating, and the second is operating reserves while consuming power. If only one value is entered, both values are considered the same. If no value is entered, both values are considered "No".
 
-If the lower and upper bounds of investment/retirement decisions are very close (with a difference \<1e-4) to 0 or 1, they are converted into 0 and 1. To forbid investment or retirement on a candidate, set the corresponding upper bound (`InvestmentUp` or `RetirementUp`) to `1e-5`: it falls below the snap threshold and is internally converted to 0. A blank cell or 0 in these columns is interpreted as "no upper bound" (full `p.u.` allowed) and lets the candidate be freely chosen by the optimisation.
+If the lower and upper bounds of investment/retirement decisions are very close (with a difference \<1e-4) to 0 or 1, they are converted into 0 and 1. To forbid investment or retirement on a candidate, set the corresponding upper bound (`InvestmentUp` or `RetirementUp`) to `1e-5`: it falls below the snap threshold and is internally converted to 0. A blank cell or 0 in these columns is interpreted as "no upper bound" (full `p.u.` allowed) and lets the candidate be freely chosen by the optimization.
 
-A hydrogen import can be represented by means of an electric generator with variable cost equal to the import cost and an electrolyzer with a production function ProductionFunctionH2 equal to 1. This generator must be located in an isolated electricity network (from the main one) and the electrolyzer must be located in a node linking this isolated electricity network and the hydrogen network.
+A hydrogen import can be represented with an electric generator whose variable cost equals the import cost and an electrolyzer whose production function ProductionFunctionH2 equals 1. This generator must be located in an isolated electricity network (from the main one) and the electrolyzer must be located in a node linking this isolated electricity network and the hydrogen network.
 
 A summary of the main characteristics of the different types of hydro and ESS is shown in the following figure:
 
@@ -516,7 +514,7 @@ This information can be used to consider scheduled outages or weather-dependent 
 
 To force a generator to produce 0, a small value (e.g., 0.1 MW) strictly >0, but not 0 (in which case the value will be ignored), must be introduced. This is needed to limit the solar production at night, for example.
 It can also be used for upper-bounding and/or lower-bounding the output of any generator (e.g., run-of-the-river hydro, wind).
-If the user introduces a minimum generation value greater than the maximum, the model will adjust the minimum generation value to match the maximum.
+If the user introduces a minimum generation value greater than the maximum, the model lowers it to match the maximum.
 
 If a thermal unit has a variable minimum generation > 0 in a certain load level, it is considered committed in this load level.
 
@@ -538,7 +536,7 @@ Not all the generators must be defined as columns of these files, only those wit
 
 To force an ESS to consume 0 a value (e.g., 0.1 MW) strictly >0, but not 0 (in which case the value will be ignored), must be introduced.
 It can also be used for upper-bounding and/or lower-bounding the consumption of any ESS (e.g., pumped-hydro storage, battery, DSM).
-If the user introduces a maximum consumption value lower than the minimum consumption value, the model will adjust the minimum consumption value to match the maximum.
+If the user introduces a maximum consumption value lower than the minimum, the model lowers the minimum to match the maximum.
 
 Internally, all the values below 1e-5 times the maximum system demand of each area will be converted into 0 by the model.
 
@@ -632,7 +630,7 @@ Period      Scenario        LoadLevel   Generator  Maximum (minimum) storage of 
 Not all the generators must be defined as columns of these files, only those with values different from 0.
 
 It can also be used for upper-bounding and/or lower-bounding the storage of any generator (e.g., storage hydro).
-If the user introduces a maximum storage value lower than the minimum, the model will adjust the minimum storage value to match the maximum.
+If the user introduces a maximum storage value lower than the minimum, the model lowers the minimum to match the maximum.
 
 For example, these data can define the operating guide (rule) curves for the ESS.
 
@@ -651,7 +649,7 @@ Period      Scenario        LoadLevel   Generator  Maximum (minimum) power of th
 Not all the generators must be defined as columns of these files, only those with values different from 0.
 
 It can also be used for upper-bounding and/or lower-bounding the energy of any generator (e.g., storage hydro).
-If the user introduces a maximum power value lower than the minimum, the model will adjust the minimum power value to match the maximum.
+If the user introduces a maximum power value lower than the minimum, the model lowers the minimum to match the maximum.
 
 For example, these data can be used to define the minimum and/or maximum energy to be produced hourly, daily, weekly, monthly, or yearly (depending on the energy type).
 
@@ -666,7 +664,6 @@ A description of the circuit (initial node, final node, circuit) data included i
 | InitialNode         | Name of the initial node of the transmission line                                                                                                                                                                 |        |
 | FinalNode           | Name of the final node of the transmission line                                                                                                                                                                   |        |
 | Circuit             | Name of the circuit (if there are several circuits between two nodes, they must have different names)                                                                                                             |        |
-| InitialNode         | Name of the initial node of the transmission line                                                                                                                                                                 |        |
 | LineType            | Line type {AC, DC, Transformer, Converter}. AC lines can be subject to Kirchhoff's second law. DC lines, transformers, and converters are not subject to Kirchhoff's second law.                                  |        |
 | Switching           | The transmission line can switch on/off                                                                                                                                                                           | Yes/No |
 | InitialPeriod       | Initial period (year) when the unit is installed or can be installed, if candidate                                                                                                                                | Year   |
@@ -702,7 +699,7 @@ Reactance can take a negative value due to the approximation of three-winding tr
 
 Those lines with fixed cost >0 are considered candidates and can be installed. The fixed cost is the product of the overnight investment cost (FixedInvestmentCost) and the fixed charge rate (FixedChargeRate). The reactance of a candidate line doesn't change although the candidate line is invested partially.
 
-If the lower and upper bounds of investment decisions are very close (with a difference \<1e-4) to 0 or 1, they are converted into 0 and 1. To forbid investment on a candidate line, set `InvestmentUp` to `1e-5`: it falls below the snap threshold and is internally converted to 0. A blank cell or 0 in this column is interpreted as "no upper bound" (full `p.u.` allowed) and lets the candidate be freely chosen by the optimisation.
+If the lower and upper bounds of investment decisions are very close (with a difference \<1e-4) to 0 or 1, they are converted into 0 and 1. To forbid investment on a candidate line, set `InvestmentUp` to `1e-5`: it falls below the snap threshold and is internally converted to 0. A blank cell or 0 in this column is interpreted as "no upper bound" (full `p.u.` allowed) and lets the candidate be freely chosen by the optimization.
 
 ## Variable electric transmission line TTC forward and backward (optional files)
 
@@ -721,7 +718,7 @@ Not all the electric transmission lines must be defined as columns of these file
 This information can be used to consider the transmission line's weather-dependent maximum capacity.
 
 To force the flow of a transmission line to be 0, a small value (e.g., 0.1 MW) strictly >0, but not 0 (in which case the value will be ignored), must be introduced.
-Suppose the user introduces a minimum transmission line capacity value that is greater than the maximum transmission line capacity value. In that case, the model will adjust the minimum transmission line capacity value to match the maximum.
+If the user introduces a minimum transmission line capacity greater than the maximum, the model lowers the minimum to match the maximum.
 
 If you want to force the flow of a transmission line to be equal to a value, introduce the same value (with opposite sign) in both files (e.g., 125 MW in `oT_Data_VariableTTCFrw.csv` and -125 MW in `oT_Data_VariableTTCBck.csv`) or vice versa.
 
@@ -789,7 +786,7 @@ A description of the data included in the file `oT_Data_HydroOutflows.csv` follo
 ==========  ==============  ==========  =========  ===================================================  =============
 Identifiers                             Header     Description
 ======================================  =========  ===================================================  =============
-Period      Scenario        LoadLevel   Reservoir  Water outflows by load level (e.g., for irrigation   m\ :sup:`3`/s
+Period      Scenario        LoadLevel   Reservoir  Water outflows by load level (e.g., for irrigation)  m\ :sup:`3`/s
 ==========  ==============  ==========  =========  ===================================================  =============
 ```
 
@@ -843,17 +840,17 @@ Period      Scenario        LoadLevel   Reservoir  Maximum (minimum) reservoir v
 Not all the reservoirs must be defined as columns of these files, only those with values different from 0.
 
 It can be used also for upper-bounding and/or lower-bounding the volume of any reservoir.
-If the user introduces a maximum volume value that is lower than the minimum volume value, the model will adjust the minimum volume value to match the maximum.
+If the user introduces a maximum volume value lower than the minimum, the model lowers the minimum to match the maximum.
 
 For example, these data can be used to define the operating guide (rule) curves for the hydro reservoirs.
 
 # Hydrogen System Input Data
 
 These input files are specifically introduced to allow a representation of the hydrogen energy vector to supply the hydrogen demand produced with electricity or by any other means through the hydrogen network.
-The hydro data are expressed in tH2. However, a very simple conversion can be applied to convert them into MWh by multiplying the tH2 values by 33.33 MWh/tH2 (the lower heating value of hydrogen).
-Suppose you want to represent the hydrogen demand in MWh instead of tH2. In that case, they can input the hydrogen demand in MWh in the file `oT_Data_DemandHydrogen.csv` and then convert it into tH2 by dividing the MWh values by 33.33 MWh/tH2.
+The hydrogen data are expressed in tH2. However, a very simple conversion can be applied to convert them into MWh by multiplying the tH2 values by 33.33 MWh/tH2 (the lower heating value of hydrogen).
+To represent the hydrogen demand in MWh instead of tH2, input it in MWh in the file `oT_Data_DemandHydrogen.csv` and convert it into tH2 by dividing the MWh values by 33.33 MWh/tH2.
 
-If the hydrogen is only produced from electricity and there is no hydrogen flows among nodes, the hydrogen demand can be represented by the energy outflows associated with the unit (i.e., electrolyzer) and no need to consider these hydrogen demand and network files.
+If hydrogen is produced only from electricity, with no hydrogen flows among nodes, the hydrogen demand can be represented by the energy outflows associated with the unit (i.e., electrolyzer), and these hydrogen demand and network files are not needed.
 
 | File                          | Description                    |
 | ----------------------------- | ------------------------------ |
@@ -872,7 +869,7 @@ Period      Scenario        LoadLevel   Node    Hydrogen demand of the node for 
 ==========  ==============  ==========  ======  ===============================================  =====
 ```
 
-Internally, all the values below if positive demand (or above if negative demand) 1e-5 times the maximum system demand of each area will be converted into 0 by the model.
+Internally, all the values below 1e-5 times the maximum system demand of each area (or above its negative, for negative demand) will be converted into 0 by the model.
 
 ## Hydrogen transmission pipeline network
 
@@ -898,12 +895,12 @@ If there is no data for TTCBck, i.e., TTCBck is left empty or is equal to 0, the
 
 Those pipelines with fixed costs>0 are considered candidates and can be installed.
 
-If the lower and upper bounds of investment decisions are very close (with a difference \<1e-4) to 0 or 1, they are converted into 0 and 1. To forbid investment on a candidate pipeline, set `InvestmentUp` to `1e-5`: it falls below the snap threshold and is internally converted to 0. A blank cell or 0 in this column is interpreted as "no upper bound" (full `p.u.` allowed) and lets the candidate be freely chosen by the optimisation.
+If the lower and upper bounds of investment decisions are very close (with a difference \<1e-4) to 0 or 1, they are converted into 0 and 1. To forbid investment on a candidate pipeline, set `InvestmentUp` to `1e-5`: it falls below the snap threshold and is internally converted to 0. A blank cell or 0 in this column is interpreted as "no upper bound" (full `p.u.` allowed) and lets the candidate be freely chosen by the optimization.
 
 # Heat System Input Data
 
 These input files are specifically introduced to allow a representation of the heat energy vector to supply heat demand produced with electricity or with any fuel through the heat network.
-Suppose the heat is only produced from electricity without heat transfer among nodes. In that case, the heat demand can be represented by the energy outflows associated with the unit (i.e., heat pump or electric boiler).
+If heat is produced only from electricity, with no heat transfer among nodes, the heat demand can be represented by the energy outflows associated with the unit (i.e., heat pump or electric boiler).
 
 | File                            | Description                |
 | ------------------------------- | -------------------------- |
@@ -934,7 +931,7 @@ Period      Scenario        LoadLevel   Node    Heat demand of the node for each
 ==========  ==============  ==========  ======  ===============================================  ======
 ```
 
-Internally, if positive demand (or above if negative demand) is 1e-5 times the maximum system demand of each area, all the values below will be converted into 0 by the model.
+Internally, all the values below 1e-5 times the maximum system demand of each area (or above its negative, for negative demand) will be converted into 0 by the model.
 
 ## Heat transmission pipeline network
 
@@ -943,7 +940,7 @@ A description of the circuit (initial node, final node, circuit) data included i
 | Header              | Description                                                                                                                                                  |        |
 | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------ |
 | InitialPeriod       | Initial period (year) when the unit is installed or can be installed, if candidate                                                                           | Year   |
-| FinalPeriod         | Final period (year) when the unit is installed or can be installed, if the candidate                                                                         | Year   |
+| FinalPeriod         | Final period (year) when the unit is installed or can be installed, if candidate                                                                             | Year   |
 | Length              | Pipeline length (only used for reporting purposes). If not defined, computed as 1.1 times the geographical distance                                          | km     |
 | TTC                 | Total transfer capacity (maximum permissible heat flow) in forward direction. Static pipeline rating                                                         | MW     |
 | TTCBck              | Total transfer capacity (maximum permissible heat flow) in backward direction. Static pipeline rating                                                        | MW     |
@@ -960,7 +957,7 @@ If there is no data for TTCBck, i.e., TTCBck is left empty or is equal to 0, the
 
 Those pipelines with fixed costs>0 are considered candidates and can be installed.
 
-If the lower and upper bounds of investment decisions are very close (with a difference \<1e-4) to 0 or 1, they are converted into 0 and 1. To forbid investment on a candidate pipeline, set `InvestmentUp` to `1e-5`: it falls below the snap threshold and is internally converted to 0. A blank cell or 0 in this column is interpreted as "no upper bound" (full `p.u.` allowed) and lets the candidate be freely chosen by the optimisation.
+If the lower and upper bounds of investment decisions are very close (with a difference \<1e-4) to 0 or 1, they are converted into 0 and 1. To forbid investment on a candidate pipeline, set `InvestmentUp` to `1e-5`: it falls below the snap threshold and is internally converted to 0. A blank cell or 0 in this column is interpreted as "no upper bound" (full `p.u.` allowed) and lets the candidate be freely chosen by the optimization.
 
 # Flow-Based Market Coupling Method
 

@@ -6,7 +6,7 @@ openTEPES documentation master file, created by Andres Ramos
 
 ## How can I install it?
 
-- openTEPES has been tested to be used in Microsoft Windows, Ubuntu (a Linux distribution), and macOS **operating systems**
+- openTEPES has been tested for use in Microsoft Windows, Ubuntu (a Linux distribution), and macOS **operating systems**
 
 - The **installation** documentation can be found on
 
@@ -28,7 +28,7 @@ openTEPES documentation master file, created by Andres Ramos
 
 - The **main dimensions** to take care of are:
 
-  > Time (periods, load levels). For example, select one every five years or use representative days or define time step 2-3 hours instead of 1 hour
+  > Time (periods, load levels). For example, select one every five years, use representative days, or define a 2-3 hour time step instead of 1 hour
   >
   > Generating units. Use generation types instead of generating units
   >
@@ -73,7 +73,7 @@ On building an appropriate set of **input data files** for a case study that can
 
   > In the `oT_Data_Option` file, you can force or relax the binary condition of the binary variables.
   >
-  > Besides, in `oT_Data_Generation` and `oT_Data_Network` they can also be relaxed individually for each generator or transmission line.
+  > They can also be relaxed individually for each generator or transmission line in `oT_Data_Generation` and `oT_Data_Network`.
 
 - How to **ignore a scenario or a period**
 
@@ -81,7 +81,7 @@ On building an appropriate set of **input data files** for a case study that can
 
 - How to **ignore a generator**
 
-  > Don’t assign a node to it in `oT_Data_Generation`, i.e., leave the node column empty
+  > Don't assign a node to it in `oT_Data_Generation`, i.e., leave the node column empty
   >
   > Set the initial period where the generator can be in operation beyond the year of study in `oT_Data_Generation`
 
@@ -93,7 +93,7 @@ On building an appropriate set of **input data files** for a case study that can
 
   > Therefore, if you want to set the generation of a solar PV to 0.0 at night, then you must put a small value, 0.000001, that will be substituted internally by openTEPES with 0.0. If the cell is left empty, openTEPES will consider the **rated capacity** of the solar PV unit defined in `oT_Data_Generation` as the generation at night.
 
-- There is no need to include the column for a certain resource (generator) within an input data file if there is no data to be defined for this resource within that file. Empty columns don’t need to be included in some input data CSV files, including `oT_Data_VariableMaxGeneration`, `oT_Data_VariableMinGeneration`, `oT_Data_VariableMaxConsumption`, `oT_Data_VariableMinConsumption`, etc., but at least an empty column with the name of the resource must be included in the file header
+- There is no need to include the column for a certain resource (generator) within an input data file if there is no data to be defined for this resource within that file. Empty columns don't need to be included in some input data CSV files, including `oT_Data_VariableMaxGeneration`, `oT_Data_VariableMinGeneration`, `oT_Data_VariableMaxConsumption`, `oT_Data_VariableMinConsumption`, etc., but at least an empty column with the name of the resource must be included in the file header
 
 On analyzing **output results**:
 

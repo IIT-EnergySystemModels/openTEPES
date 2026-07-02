@@ -16,7 +16,7 @@ openTEPES documentation master file, created by Andres Ramos
 
 [Andrés Ramos](https://pascua.iit.comillas.edu/aramos/Ramos_CV.htm)
 
-<mailto:andres.ramos@comillas.edu>
+[andres.ramos@comillas.edu](mailto:andres.ramos@comillas.edu)
 
 Universidad Pontificia Comillas
 

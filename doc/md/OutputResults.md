@@ -55,7 +55,7 @@ Nigeria 2030 Electric System (144 generators, 37 nodes, 163 lines) three scenari
 :scale: 20%
 ```
 
-Kenia 2030-2040-2050 Electric System (127 generators, 47 nodes, 74 lines) one scenario with hourly resolution
+Kenya 2030-2040-2050 Electric System (127 generators, 47 nodes, 74 lines) one scenario with hourly resolution
 
 ```{image} ../img/Kenia2030.png
 :align: center
@@ -78,7 +78,7 @@ Uganda 2030 Electric System (118 generators, 49 nodes, 205 lines) one scenario w
 
 The model also plots some additional plots.
 
-All the results of the case are saved in **DuckDB** database. By default, this option is not used but you can easily activate it writing pIndDumpRawResults = 1 in lines 324 and 342 of openTEPES.py module.
+All the results of the case are saved in a **DuckDB** database. By default, this option is not used, but you can easily activate it by writing pIndDumpRawResults = 1 in lines 324 and 342 of openTEPES.py module.
 
 The CSV output files used for outputting the results are briefly described in the following items.
 

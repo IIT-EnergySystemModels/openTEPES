@@ -15,7 +15,7 @@ Here we present the mathematical formulation of the optimization problem solved 
 - S. Lumbreras, F. Banez-Chicharro, A. Ramos "Optimal Transmission Expansion Planning in Real-Sized Power Systems with High Renewable Penetration" Electric Power Systems Research 49, 76-88, Aug 2017 [10.1016/j.epsr.2017.04.020](https://doi.org/10.1016/j.epsr.2017.04.020)
 - S. Lumbreras, A. Ramos "The new challenges to transmission expansion planning. Survey of recent practice and literature review" Electric Power Systems Research 134: 19-29, May 2016 [10.1016/j.epsr.2015.10.013](https://doi.org/10.1016/j.epsr.2015.10.013)
 - Q. Ploussard, L. Olmos and A. Ramos "A search space reduction method for transmission expansion planning using an iterative refinement of the DC Load Flow model" IEEE Transactions on Power Systems 35 (1): 152-162, Jan 2020. [10.1109/TPWRS.2019.2930719](https://doi.org/10.1109/TPWRS.2019.2930719)
-- Q. Ploussard, L. Olmos and A. Ramos "An efficient network reduction method for transmission expansion planning using multicut problem and Kron" reduction IEEE Transactions on Power Systems 33 (6): 6120-6130, Nov 2018. [10.1109/TPWRS.2018.2842301](https://doi.org/10.1109/TPWRS.2018.2842301)
+- Q. Ploussard, L. Olmos and A. Ramos "An efficient network reduction method for transmission expansion planning using a multicut problem and Kron reduction" IEEE Transactions on Power Systems 33 (6): 6120-6130, Nov 2018. [10.1109/TPWRS.2018.2842301](https://doi.org/10.1109/TPWRS.2018.2842301)
 - Q. Ploussard, L. Olmos and A. Ramos "An operational state aggregation technique for transmission expansion planning based on line benefits" IEEE Transactions on Power Systems 32 (4): 2744-2755, Oct 2017. [10.1109/TPWRS.2016.2614368](https://doi.org/10.1109/TPWRS.2016.2614368)
 
 ## Indices
@@ -307,7 +307,7 @@ They are written in **lowercase** letters.
 :math:`uc^p_{\omega ng}, su^p_{\omega ng}, sd^p_{\omega ng}`     Commitment, startup, and shutdown of a generation unit per load level                               {0,1}
 :math:`rss^p_{\omega nt}, rsu^p_{\omega nt}, rsd^p_{\omega nt}`  Stable, ramp up, and ramp down states of a generation unit with minimum stable time per load level  {0,1}
 :math:`uc'^p_{\omega g}, uc'^p_{\omega ng}`                      Maximum commitment of a generation unit for all the load levels or for each load level.
-                                                                 If any generator in a exclusion group is an installation/retirement candidate, it is assumed
+                                                                 If any generator in an exclusion group is an installation/retirement candidate, it is assumed
                                                                  exclusivity per period :math:`uc'^p_{\omega g}`. When all mutually exclusive generators exist,
                                                                  it is assumed that the exclusivity is per load level :math:`uc'^p_{\omega ng}`.                     {0,1}
 ===============================================================  ==================================================================================================  ======
@@ -332,7 +332,7 @@ They are written in **lowercase** letters.
 **Electricity transmission system**
 ------------------------------------------------------------------------------------------------------------------------------------------------------------
 :math:`ict^p_{ijc}`                                                       Candidate transmission installed or not                                      {0,1}
-:math:`swt^p_{\omega nijc}, son^p_{\omega nijc}, sof^p_{\omega nijc}`     Switching state, switch-on, and switch-off of an transmission electric line  {0,1}
+:math:`swt^p_{\omega nijc}, son^p_{\omega nijc}, sof^p_{\omega nijc}`     Switching state, switch-on, and switch-off of a transmission electric line   {0,1}
 :math:`f^p_{\omega nijc}`                                                 Power flow through an electric transmission line                             GW
 :math:`l^p_{\omega nijc}`                                                 Half ohmic losses of an electric transmission line                           GW
 :math:`\theta^p_{\omega ni}`                                              Voltage angle of a node                                                      rad
@@ -359,7 +359,7 @@ They are written in **lowercase** letters.
 
 ## Equations
 
-In this section, we replicate the mathematical formulation written in the code, which is specially oriented to numerical stability and efficiency, to make it easier for people to understand.
+In this section, we replicate the mathematical formulation written in the code, which is specifically oriented toward numerical stability and efficiency, to make it easier to understand.
 The names in parentheses correspond to the names of the constraints in the code.
 
 **Objective function**: minimization of total (investment and operation) cost for the multi-period scope of the model
@@ -388,7 +388,7 @@ Expected generation emission cost [M€] «`eTotalECost`» «`eTotalECostArea`»
 \sum_{p \omega ng} {DF^p P^p_{\omega} DUR^p_{\omega n} CE^p_{\omega ng} gp^p_{\omega ng}} +
 ```
 
-Expected network operation cost [M€]. This cost penalizes with and {math}`\epsilon` the superfluous network losses done with spillage/curtailment «`eTotalNCost`»
+Expected network operation cost [M€]. This cost penalizes with an {math}`\epsilon` the superfluous network losses done with spillage/curtailment «`eTotalNCost`»
 
 ```{math}
 \sum_{p \omega nijc}{DF^p P^p_{\omega} DUR^p_{\omega n} \epsilon l^p_{\omega nijc}} +
@@ -574,7 +574,7 @@ VRES units (i.e., those with linear variable cost equal to 0 and no storage capa
 Operating reserves from ESS can only be provided if enough energy is available for producing [GWh] «`eReserveUpIfEnergy`»
 
 ```{math}
-\frac{(p^p_{\omega ne} + ur'^p_{\omega ne} + \underline{GP}^p_{\omega ne})DUR^p_{\omega n}}{\sqrt{EF_e'}} \leq i^p_{\omega ne} - \underline{I}^p_{wne} \quad \forall p \omega ne
+\frac{(p^p_{\omega ne} + ur'^p_{\omega ne} + \underline{GP}^p_{\omega ne})DUR^p_{\omega n}}{\sqrt{EF_e'}} \leq i^p_{\omega ne} - \underline{I}^p_{\omega ne} \quad \forall p \omega ne
 ```
 
 or if there is enough storage capacity left for storing [GWh] «`eESSReserveDwIfEnergy`»
@@ -842,7 +842,7 @@ Minimum up time and down time of thermal unit [p.u.] «`eMinUpTime`» «`eMinDow
 ```
 
 Minimum stable time of a thermal unit [p.u.] «`eMinStableTime`»
-In the code you can select a simplified (first) or the tight computational efficient formulation (second). With the simplified formulation ramp down maneuvers can no longer be split into several periods to avoid restrictions.
+In the code you can select a simplified (first) or the tight computational efficient formulation (second). With the simplified formulation, ramp down maneuvers can no longer be split into several periods to avoid restrictions.
 
 ```{math}
 rsu^p_{\omega nt} + \sum_{n'=n-TS_t}^{n-\nu} rsd^p_{\omega n't} \leq 1 \quad \forall p \omega nt
@@ -879,13 +879,13 @@ and if there is enough spare volume to store the water downstream «`eTrbReserve
 Operating reserves while pumping can only be provided if there is enough available water downstream to pump «`ePmpReserveDwIfUpstream`»
 
 ```{math}
-\frac{(c^p_{\omega nh} + dr^p_{\omega nh) * EF_e'} + ucc^p_{\omega ng}}{\underline{GC}^p_{\omega ng}} + \leq \frac{\sum_{e' \in up(h)} \overline{I'}^p_{\omega ng} - i'^p_{\omega ne'}}{DUR^p_{\omega n}} \quad \forall p \omega nh
+\frac{(c^p_{\omega nh} + dr^p_{\omega nh}) EF_e' + ucc^p_{\omega ng}}{\underline{GC}^p_{\omega ng}} \leq \frac{\sum_{e' \in up(h)} \overline{I'}^p_{\omega ng} - i'^p_{\omega ne'}}{DUR^p_{\omega n}} \quad \forall p \omega nh
 ```
 
 and if there is enough spare volume to store the water upstream «`ePmpReserveDwIfUpstream`»
 
 ```{math}
-\frac{(c^p_{\omega nh} + dr^p_{\omega nh) * EF_e'} + ucc^p_{\omega ng}}{\underline{GC}^p_{\omega ng}} + \leq \frac{\sum_{e' \in up(h)}  i'^p_{\omega ne'} - \underline{I'}^p_{\omega ng}}{DUR^p_{\omega n}} \quad \forall p \omega nh
+\frac{(c^p_{\omega nh} + dr^p_{\omega nh}) EF_e' + ucc^p_{\omega ng}}{\underline{GC}^p_{\omega ng}} \leq \frac{\sum_{e' \in up(h)}  i'^p_{\omega ne'} - \underline{I'}^p_{\omega ng}}{DUR^p_{\omega n}} \quad \forall p \omega nh
 ```
 
 Water volume for each hydro reservoir (only for load levels multiple of 1, 24, 168 h, depending on the reservoir storage type, represented as {math}`n|\tau_{e'}`) \[hm{sup}`3`\] «`eHydroInventory`»
@@ -978,7 +978,7 @@ Kirchhoff's second law is substituted by a cycle power flow formulation for cycl
 and disjunctive constraints for cycles with some AC candidate line [rad]
 
 ```{math}
--1+ict_{i'j'c'}  \leq \frac{\sum_{ijc \in cy} f^p_{\omega nijc} \frac{X_{ijc}}{S_B}}{\overline{θ}'_{cy,i'j'c'}} \leq 1-ict_{i'j'c'} \quad \forall p \omega n,cy,i'j'c', cy \in CY, i'j'c' \in CLC
+-1+ict_{i'j'c'}  \leq \frac{\sum_{ijc \in cy} f^p_{\omega nijc} \frac{X_{ijc}}{S_B}}{\overline{\theta}'_{cy,i'j'c'}} \leq 1-ict_{i'j'c'} \quad \forall p \omega n,cy,i'j'c', cy \in CY, i'j'c' \in CLC
 ```
 
 Flows in AC existing parallel circuits are inversely proportional to their reactances [GW] «`eFlowParallelCandidate1`» «`eFlowParallelCandidate2`»
@@ -1116,7 +1116,7 @@ f^p_{\omega nijc} = \sum_{i'} PTDF_{nijci'} (\sum_{g \in i'} gp^p_{\omega ng} - 
 ```
 
 ```{math}
-- \overline{F}_{nijc} \leq f^p_{\omega nijc} \leq \overline{F}^p_{\omega nnijc} \quad \forall p \omega nijc, ijc \in EL
+- \overline{F}^p_{\omega nijc} \leq f^p_{\omega nijc} \leq \overline{F}^p_{\omega nijc} \quad \forall p \omega nijc, ijc \in EL
 ```
 
 Voltage angle of the reference node fixed to 0 for each scenario, period, and load level [rad]

@@ -24,7 +24,7 @@ conda install                glpk
 The openTEPES model can also be solved with [GAMS](https://www.gams.com/) and a valid [GAMS license](https://www.gams.com/buy_gams/) for a solver. The GAMS language is not included in the openTEPES package and must be installed separately.
 This option is activated by calling the openTEPES model with the solver name 'gams'.
 
-Besides, it also requires the following packages:
+It also requires the following packages:
 
 - [Pandas](https://pandas.pydata.org/) for inputting data and outputting results
 - [psutil](https://pypi.org/project/psutil/) for detecting the number of CPUs
@@ -40,7 +40,7 @@ Here, you have the input files of:
 - the same [9-node case coupled with a heat network](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/9n_heat), which adds heat demand and a heat pipe network on top of the electricity system,
 - the same [9-node case coupled with a hydrogen network](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/9n_H2), which adds electrolyzers, hydrogen demand, and a hydrogen pipe network on top of the electricity system,
 - a [dynamic (multiyear) small case study of 9 nodes](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/9n7y) with 13 representative weeks per year,
-- another one like a [small Spanish system](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/sSEP), which also includes a hydrogen network,
+- another case, a [small Spanish system](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/sSEP), which also includes a hydrogen network,
 - a [modified RTS24 case study](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/RTS24),
 - the [static Reliability Test System Grid Modernization Lab Consortium (RTS-GMLC)](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/RTS-GMLC),
 - a [dynamic (multiyear) Reliability Test System Grid Modernization Lab Consortium (RTS-GMLC)](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/RTS-GMLC_6y) with 13 representative weeks per year, and
@@ -55,7 +55,7 @@ The **openTEPES** code is provided under the [GNU Affero General Public License]
 
 Source code can be downloaded from [GitHub](https://github.com/IIT-EnergySystemModels/openTEPES) or installed with [pip](https://pypi.org/project/openTEPES/)
 
-This model is a work in progress and will be updated accordingly. If you want to subscribe to the **openTEPES** model updates, send an email to <mailto:andres.ramos@comillas.edu>
+This model is a work in progress and will be updated accordingly. If you want to subscribe to the **openTEPES** model updates, send an email to [andres.ramos@comillas.edu](mailto:andres.ramos@comillas.edu)
 
 (installation)=
 ## Installation
@@ -88,30 +88,30 @@ Continue at {ref}`get-started`.
 
 **Solvers**
 
-HiGHS
+**HiGHS**
 
 The [HiGHS solver](https://pypi.org/project/highspy/) can also be used. It can be installed using: `pip install highspy`.
 
-Gurobi
+**Gurobi**
 
 Another recommendation is the use of [Gurobi solver](https://www.gurobi.com/). However, it is a commercial solver but more powerful than open-source solvers for large-scale problems.
 As a commercial solver, it needs a license that is free of charge for academic usage by signing up in [Gurobi webpage](https://pages.gurobi.com/registration/). You can also ask for an [evaluation license](https://www.gurobi.com/downloads/request-an-evaluation-license/) for 30 days to test the solver.
 It can be installed using: `conda install -c gurobi gurobi` and then ask for an academic or commercial license. Activate the license on your computer using the `grbgetkey` command (you need to be in a university internet domain if you are installing an academic license).
 
-GLPK
+**GLPK**
 
 As an easy option for installation, we have the free and open-source [GLPK solver](https://www.gnu.org/software/glpk/). However, it takes too much time for large-scale problems. It can be installed using: `conda install glpk`.
 
-CBC
+**CBC**
 
 The [CBC solver](https://github.com/coin-or/Cbc) is also another free and open-source solver. For Windows users, the effective way to install the CBC solver is to download the binaries from this [site](https://www.coin-or.org/download/binary/Cbc/), copy and paste the *cbc.exe* file to the PATH that is the "bin" directory of the Anaconda or Miniconda environment. Under Linux, it can be installed using: `conda install -c conda-forge coincbc`.
 
-Mosek
+**Mosek**
 
-Another alternative is the [Mosek solver](https://www.mosek.com/). Note that it is a commercial solver, and you need a license for it. Mosek is a good alternative to deal with QPs, SOCPs, and SDPs problems. You only need to use `conda install -c mosek mosek` for installation and request a license (academic or commercial). To request the academic one, you can request [here](https://www.mosek.com/products/academic-licenses/).
-Moreover, Mosek brings a [license guide](https://docs.mosek.com/9.2/licensing/index.html). But if you request an academic license, you will receive the license by email, and you only need to locate it in the following path `C:\Users\<username>\mosek` on your computer.
+Another alternative is the [Mosek solver](https://www.mosek.com/). Note that it is a commercial solver, and you need a license for it. Mosek is a good alternative to deal with QPs, SOCPs, and SDP problems. You only need to use `conda install -c mosek mosek` for installation and request a license (academic or commercial). To request the academic one, you can request [here](https://www.mosek.com/products/academic-licenses/).
+Mosek also provides a [license guide](https://docs.mosek.com/9.2/licensing/index.html). If you request an academic license, you will receive it by email and only need to place it in the path `C:\Users\<username>\mosek` on your computer.
 
-GAMS
+**GAMS**
 
 The openTEPES model can also be solved with [GAMS](https://www.gams.com/) and a valid [GAMS license](https://www.gams.com/buy_gams/) for a solver. The GAMS language is not included in the openTEPES package and must be installed separately.
 This option is activated by calling the openTEPES model with the solver name 'gams'.
@@ -132,14 +132,14 @@ In the directory of your choice, open and execute the openTEPES_run.py script by
 
 > `openTEPES_Main`
 
-Then, four parameters (case, dir, solver, results, and console log) will be asked for.
+Then, five parameters (case, dir, solver, results, and console log) will be asked for.
 
 **Remark:** at this step, only press enter for each input and openTEPES will be executed with the default parameters.
 
 After this in a directory of your choice, make a copy of the [9n](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/9n) or [sSEP](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/sSEP) case to create a new case of your choice but using the current format of the CSV files.
 A proper execution by `openTEPES_Main` can be made by introducing the new case and the directory of your choice. Note that the solver is **glpk** by default, but it can be changed to other solvers that Pyomo supports (e.g., gurobi, highs).
 
-Then, the **results** should be written in the folder that is called with the case name. The results contain plots and summary spreadsheets for multiple optimized energy scenarios, periods, and load levels, as well as the investment decisions.
+Then, the **results** are written to the folder named after the case. The results contain plots and summary spreadsheets for multiple optimized energy scenarios, periods, and load levels, as well as the investment decisions.
 
 **Note that** there is an alternative way to run the model by creating a new script **script.py**, and write the following:
 
