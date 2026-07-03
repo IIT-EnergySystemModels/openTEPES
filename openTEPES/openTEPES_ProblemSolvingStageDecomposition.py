@@ -12,8 +12,14 @@ import pyomo.environ as pyo
 from   pyomo.environ import ConcreteModel, Set, RangeSet, Param, Var, NonNegativeReals, Binary, UnitInterval, Reals, Constraint, Objective, minimize, Suffix
 from   pyomo.opt     import SolverFactory
 
-from . import openTEPES_ProblemSolvingStageSolve   as oSS
-from . import openTEPES_ModelFormulationInvestment as oMFI
+try:
+    from . import openTEPES_ProblemSolvingStageSolve   as oSS
+    from . import openTEPES_ModelFormulationInvestment as oMFI
+except ImportError:
+    import sys
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from openTEPES import openTEPES_ProblemSolvingStageSolve   as oSS
+    from openTEPES import openTEPES_ModelFormulationInvestment as oMFI
 
 
 def StageDecomposition(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConsole, p, sc, st, _path, pIndCycleFlow):
