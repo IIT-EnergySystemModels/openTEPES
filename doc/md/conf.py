@@ -101,7 +101,7 @@ html_theme_options = {
     'body_max_width': 'none',
     'page_width': 'auto',
     'font_family': 'Georgia',
-    'sidebar_width': '240px',   # <- ancho de navegación
+    'sidebar_width': '280px',   # <- ancho de navegación
 }
 html_js_files = [
     '../custom.js',
