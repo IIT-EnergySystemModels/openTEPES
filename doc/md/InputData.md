@@ -959,7 +959,7 @@ Those pipelines with fixed costs>0 are considered candidates and can be installe
 
 If the lower and upper bounds of investment decisions are very close (with a difference \<1e-4) to 0 or 1, they are converted into 0 and 1. To forbid investment on a candidate pipeline, set `InvestmentUp` to `1e-5`: it falls below the snap threshold and is internally converted to 0. A blank cell or 0 in this column is interpreted as "no upper bound" (full `p.u.` allowed) and lets the candidate be freely chosen by the optimization.
 
-# Flow-Based Market Coupling Method
+# Flow-Based Market Coupling
 
 This input file is introduced explicitly to allow the flow-based market coupling method. If they are not available, the model runs with the DCOPF method.
 
