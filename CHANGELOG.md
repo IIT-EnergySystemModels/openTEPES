@@ -2,6 +2,7 @@
 
 ## [4.18.17RC] - 2026-07-03 Unreleased in PyPI
 
+- [ADDED] two figures on the parameter-sweep page: a concept diagram of the three modes as a reuse matrix over the pipeline, and a Mode B flow diagram drawn against the shipped `openTEPES_Runner` / `openTEPES_Cases` API. Static images in `doc/img/`; no code change.
 - [CHANGED] documentation: new Read the Docs page for parameter sweeps (Modes A/B/C via `openTEPES_Runner` + `openTEPES_Cases` and `resolve`). Document the `output_format` DuckDB result output and the `aggregate` sweep merger in OutputResults, the `.duckdb` input option and the integer form of the Yes/No flags in InputData, and Benders decomposition in Characteristics. No model or behaviour change.
 - [ADDED] a CI `docs` job builds the Read the Docs site with warnings treated as errors, so a broken cross-reference or a missing toctree entry fails the PR; `conf.py` silences only the project's front-matter convention warning.
 - [FIXED] CI on the sector/stage Benders commit. `openTEPES_ProblemSolvingStageSolve.py` called the cycle-flow builders through an undefined `oTM` alias with undefined flags; it now calls `NetworkCycles` and `CycleConstraints` directly, like the stage iterator (DC cycle path). `openTEPES_ProblemSolvingSectorDecomposition.py` and `openTEPES_ProblemSolvingStageDecomposition.py` now use the same relative-import guard as the other split modules, so they import both when installed and when run as a script.

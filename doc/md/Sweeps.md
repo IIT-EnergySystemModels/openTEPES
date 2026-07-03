@@ -12,6 +12,12 @@ Many studies run the same model over many related cases — scenario ensembles, 
 | B — in-memory overlay | build + solve (input read once) | build + solve | one baseline perturbed by a scale factor or a table patch |
 | C — post-build hot-swap | solve only (built once) | solve | one built model re-solved over a range of parameter values |
 
+```{image} ../img/sweep_modes.png
+:alt: The three sweep modes as a reuse matrix over the openTEPES pipeline; each mode reuses more stages, so each case costs less.
+:width: 100%
+:align: center
+```
+
 ## Mode A — pre-build sweep
 
 Each case reads its own input source, builds its own model, solves, and writes its own results. It is the most general mode: the cases may differ in any way, since nothing is shared between them.
@@ -49,6 +55,12 @@ openTEPES_Runner.run(
 ```
 
 The input is read once; each worker only rebuilds and solves. An identity overlay reproduces a direct run.
+
+```{image} ../img/sweep_mode_b.png
+:alt: Mode B flow — the baseline is read once into an InMemorySource, each worker patches a table and rebuilds, and the results are merged by aggregate().
+:width: 100%
+:align: center
+```
 
 ## Mode C — post-build hot-swap
 
