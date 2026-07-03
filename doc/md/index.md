@@ -55,6 +55,7 @@ Characteristics.md
 InputData.md
 OutputResults.md
 MathematicalFormulation.md
+SolutionMethods.md
 Projects.md
 Papers.md
 Download.md
