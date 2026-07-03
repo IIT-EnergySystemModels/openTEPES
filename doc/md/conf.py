@@ -94,7 +94,8 @@ html_theme_options = {
     'description': 'version 4.18.17RC',
     'body_max_width': 'none',
     'page_width': 'auto',
-    'font_family': 'Georgia'
+    'font_family': 'Georgia',
+    'sidebar_width': '320px',   # <- ancho de navegación
 }
 html_js_files = [
     '../custom.js',
