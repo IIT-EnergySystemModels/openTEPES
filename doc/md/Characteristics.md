@@ -47,3 +47,11 @@ openTEPES documentation master file, created by Andres Ramos
 - **Solver independence**
 
   > Any solver can be used that supports linear and mixed-integer linear programming (LP and MILP), such as Gurobi, CPLEX, CBC, GLPK, and HiGHS. The model is implemented in Python using the Pyomo optimization modeling language, which provides a high-level interface for defining optimization problems and supports multiple solvers.
+
+- **Parameter sweeps** to run the same model over many related cases
+
+  > A single runner drives scenario ensembles and sensitivity studies in three modes, trading set-up cost for reuse: re-read the input per case, re-use one in-memory baseline through an overlay, or re-solve one built model. See {doc}`Sweeps`.
+
+- **Benders decomposition** for transmission expansion (experimental)
+
+  > A classical L-shaped decomposition splits the investment master (line-building decisions) from the operation subproblem, which is solved as an LP whose duals build the Benders cuts. It is off by default and reproduces the joint solution; the sector-decomposition extension is under development.

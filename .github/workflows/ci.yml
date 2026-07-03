@@ -105,3 +105,24 @@ jobs:
         shell: bash -l {0}
         run: |
           pytest -vv -m solve --timeout=1800 tests/
+
+  # Docs tier: build the Read the Docs site with warnings treated as errors, so
+  # a broken cross-reference, a missing toctree entry, or a bad directive fails
+  # the PR. No solver or model dependency, so it runs once on Linux.
+  docs:
+    name: docs (sphinx build)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install doc dependencies
+        run: pip install -r doc/md/requirements.txt
+
+      - name: Build docs (warnings are errors)
+        run: sphinx-build -b html -W --keep-going doc/md doc/_build/html

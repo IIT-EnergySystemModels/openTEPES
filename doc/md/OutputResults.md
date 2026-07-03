@@ -78,7 +78,9 @@ Uganda 2030 Electric System (118 generators, 49 nodes, 205 lines) one scenario w
 
 The model also plots some additional plots.
 
-All the results of the case are saved in a **DuckDB** database. By default, this option is not used, but you can easily activate it by writing pIndDumpRawResults = 1 in lines 324 and 342 of openTEPES.py module.
+The processed result tables can be written as CSV files (the default), a **DuckDB** database, or both. Pass `output_format="csv"`, `"duckdb"`, or `"both"` to `openTEPES_run` (or to `openTEPES_Runner.run`). With DuckDB on, the case also writes one `oT_Results_<CaseName>.duckdb` holding one table per result file. A `"csv"` run is byte-identical to earlier versions, so switching format changes only where the results are stored, not their values. One database per case keeps a parameter sweep single-writer-safe; see {doc}`Sweeps`.
+
+Separately, the raw parameters, variables, and constraints can be dumped to a DuckDB database for debugging by setting `pIndDumpRawResults = 1` in the `openTEPES.py` module. This is off by default.
 
 The CSV output files used for outputting the results are briefly described in the following items.
 

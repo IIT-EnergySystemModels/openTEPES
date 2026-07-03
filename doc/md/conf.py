@@ -58,6 +58,12 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
 
+# Every page's front matter is a plain title string, not a YAML dict, which
+# MyST flags as `myst.topmatter`. That is the project convention, so silence it;
+# a warnings-as-errors build (CI docs job) then fails only on real problems such
+# as a broken cross-reference or a missing toctree entry.
+suppress_warnings = ['myst.topmatter']
+
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for

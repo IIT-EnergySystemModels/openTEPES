@@ -147,6 +147,8 @@ Then, the **results** are written to the folder named after the case. The result
 >
 > `openTEPES_run(<dir>, <case>, <solver>, <results>, <log>)`
 
+A case can be a CSV directory or a single `.duckdb` file (see {doc}`InputData`). To run many related cases at once — scenario ensembles or sensitivity sweeps — see {doc}`Sweeps`.
+
 **Run the Tutorial**
 
 It can be run in Binder:
