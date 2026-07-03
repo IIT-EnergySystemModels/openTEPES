@@ -82,6 +82,28 @@ The processed result tables can be written as CSV files (the default), a **DuckD
 
 Separately, the raw parameters, variables, and constraints can be dumped to a DuckDB database for debugging by setting `pIndDumpRawResults = 1` in the `openTEPES.py` module. This is off by default.
 
+## Working with the DuckDB results
+
+With `output_format="duckdb"` (or `"both"`) each case writes `oT_Results_<CaseName>.duckdb`, holding one table per result file. The table name is the result name without the `oT_Result_` prefix and the `_<case>` suffix — so `oT_Result_TechnologyInvestment_9n.csv` becomes the table `TechnologyInvestment`. Query it with any DuckDB client, and load any result straight into a DataFrame:
+
+```python
+import duckdb
+
+con = duckdb.connect("9n/oT_Results_9n.duckdb", read_only=True)
+con.execute("SHOW TABLES").df()                          # every result is one table
+con.execute("DESCRIBE TechnologyInvestment").df()        # its columns
+df = con.execute("SELECT * FROM TechnologyInvestment").df()   # a result as pandas
+```
+
+Across a sweep, `aggregate(..., to="duckdb")` writes one `oT_Sweep.duckdb` whose tables (`oT_Sweep_<Table>`) carry a leading `case` column, so a whole scan is one query. `case` is a SQL keyword, so quote it:
+
+```python
+con = duckdb.connect("out/oT_Sweep.duckdb", read_only=True)
+con.execute('SELECT * FROM oT_Sweep_TechnologyInvestment WHERE "case" = \'d110\'').df()
+```
+
+The DuckDB and CSV outputs hold the same numbers, so this is purely a convenience for querying and joining results with SQL instead of globbing and concatenating CSVs.
+
 The CSV output files used for outputting the results are briefly described in the following items.
 
 The power is expressed in **MW**, energy or heat in **GWh**, marginal costs in **€/MWh**, and costs in million euros **M€**. Hydrogen is expressed in **tH2**. Reservoir volume is expressed in hm{sup}`3`,

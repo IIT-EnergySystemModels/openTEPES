@@ -56,10 +56,10 @@ InputData.md
 OutputResults.md
 MathematicalFormulation.md
 SolutionMethods.md
+Sweeps.md
 Projects.md
 Papers.md
 Download.md
-Sweeps.md
 QA.md
 ContactUs.md
 ```
