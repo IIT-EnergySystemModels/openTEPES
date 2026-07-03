@@ -6,6 +6,10 @@ openTEPES documentation master file, created by Andres Ramos
 
 All the input files must be in a folder with the name of the case study.
 
+Alternatively, the whole case can be a single `.duckdb` file instead of a folder of CSV files. `openTEPES_run` selects the backend from the path: a directory is read as CSV (the historical default), while a `.duckdb` file is read through the DuckDB backend. DuckDB is an optional dependency, imported only when such a file is opened, so CSV-only setups need nothing extra. Both forms produce byte-identical results and are interchangeable everywhere a case is named.
+
+The `Yes`/`No` option flags below also accept an integer `1` (or `1.0`) in place of `Yes` and `0` in place of `No`.
+
 ## Acronyms
 
 | Acronym | Description                                                                                                                                                                                                                                |
