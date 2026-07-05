@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 01, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 05, 2026
 
 openTEPES.openTEPES_SettingUpVariables — creates the decision variables and their bounds, fixes the generators' commitment, relaxes or forbids investment conditions, zeroes out epsilon values, and screens for infeasibilities. Runs after DataConfiguration.
 """
@@ -273,8 +273,10 @@ def SettingUpVariables(OptModel, mTEPES):
         for p,ni,nf,cc in mTEPES.plc:
             if mTEPES.pIndBinNetElecInvest() == 2 or (mTEPES.pIndBinNetElecInvest() == 1 and mTEPES.pIndBinLineInvest[ni,nf,cc] == 0):
                 OptModel.vNetworkInvest       [p,ni,nf,cc].domain = UnitInterval
+                OptModel.vNetworkInvPer       [p,ni,nf,cc].domain = UnitInterval
             if mTEPES.pIndBinNetElecInvest() == 2:
                 OptModel.vNetworkInvest       [p,ni,nf,cc].fix(0)
+                OptModel.vNetworkInvPer       [p,ni,nf,cc].fix(0)
                 nFixedVariables += 1
 
         # relax binary condition in reservoir investment decisions
