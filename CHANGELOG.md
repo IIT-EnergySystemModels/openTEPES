@@ -1,8 +1,8 @@
 # Change Log
 
-## [4.18.17RC] - 2026-07-06 Unreleased in PyPI
+## [4.18.17RC] - 2026-07-07 Unreleased in PyPI
 
-- [CHANGED] change NetworkOperationResults for reducing execution time
+- [CHANGED] change OutputResultsNetwork and OutputResultsEconomic for reducing execution time
 - [FIXED] fix vNetworkInvPer at the same time that vNetworkInvest to avoid having vNetworkInvPer as binary variables when there are relaxed investments
 - [ADDED] two figures on the multiple-runs page: a concept diagram of the three modes as a reuse matrix over the pipeline, and a Mode B flow diagram drawn against the shipped `openTEPES_Runner` / `openTEPES_Cases` API. Static images in `doc/img/`; no code change.
 - [CHANGED] retitled the sweep page to "Multiple runs" (the code still calls a related set of runs a sweep) and expanded each mode with its mechanics — backends and the status-JSON round-trip for Modes A/B, the mutable-Param `store_values` hot-swap and non-persistent-solver requirement for Mode C. Fixed the Mode C note: the shipped `resolve` loop is serial and cross-platform, not Unix-only (fork copy-on-write belongs to Mode B's multiprocessing backend).

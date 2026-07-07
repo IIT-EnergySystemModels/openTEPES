@@ -1,17 +1,12 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 06, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 07, 2026
 
 Electric network operation results and network map.
 
-This module writes the electricity transmission operation: line commitment
-and switching, power flows per node and per area, transport, utilization,
-losses, voltage angles, and not-served power and energy. The map function
-draws a Plotly map of the power network coloured by line utilization. Both
-work on electric data only; the hydrogen and heat network maps live in the
-sector-coupling module. The ``oT_selecting_data`` helper stays nested in the
-map function because it builds the electric node and line frame (line set
-``pla``). The shared flow-series and snapshot-selection helpers live in
-``openTEPES_OutputResultsMapCommon``.
+This module writes the electricity transmission operation: line commitment and switching, power flows per node and per area, transport, utilization, losses,
+voltage angles, and not-served power and energy. The map function draws a Plotly map of the power network coloured by line utilization. Both work on electric
+data only; the hydrogen and heat network maps live in the sector-coupling module. The ``oT_selecting_data`` helper stays nested in the map function because it
+builds the electric node and line frame (line set ``pla``). The shared flow-series and snapshot-selection helpers live in ``openTEPES_OutputResultsMapCommon``.
 """
 
 import time
@@ -37,10 +32,8 @@ def NetworkOperationResults(DirName, CaseName, OptModel, mTEPES):
     _path = _outdir(DirName, CaseName, mTEPES)
     StartTime = time.time()
 
-    # cache the Pyomo evaluations reused across the outputs below. Each call to a
-    # variable/parameter (e.g. vFlowElec[...]()) is costly, so evaluate the electric
-    # flow, the load-level duration and the period probability once per index and
-    # reuse the results instead of re-querying the model for every output file.
+    # cache the Pyomo evaluations reused across the outputs below. Each call to a variable/parameter (e.g. vFlowElec[...]()) is costly, so evaluate the electric
+    # flow, the load-level duration and the period probability once per index and reuse the results instead of re-querying the model for every output file.
     Flow = {}
     Dur  = {}
     Prob = {}
@@ -74,16 +67,14 @@ def NetworkOperationResults(DirName, CaseName, OptModel, mTEPES):
     OutputToFile = pd.pivot_table(OutputToFile.to_frame(name='MW'), values='MW', index=['Period', 'Scenario', 'LoadLevel'], columns=['InitialNode', 'FinalNode', 'Circuit'], fill_value=0.0).rename_axis([None, None, None], axis=1)
     OutputToFile.reset_index().oT.write(f'{_path}/oT_Result_NetworkFlowElecPerNode_{CaseName}.csv', index=False, sep=',')
 
-    # map each node to its area(s) once and expand the line flows to area pairs
-    # directly. This avoids materialising the psnla x ar x ar product (potentially
+    # map each node to its area(s) once and expand the line flows to area pairs directly. This avoids materialising the psnla x ar x ar product (potentially
     # millions of tuples) only to discard almost all of them with the membership filter.
     Nd2Ar = {}
     for nd, ar in mTEPES.ndar:
         Nd2Ar.setdefault(nd, []).append(ar)
     PSNLAARAR = [(p,sc,n,ni,nf,cc,ai,af) for p,sc,n,ni,nf,cc in mTEPES.psnla for ai in Nd2Ar.get(ni, []) for af in Nd2Ar.get(nf, [])]
 
-    # the per-area energy series is identical for both output files below, so build
-    # it once and pivot it two different ways rather than recomputing it twice.
+    # the per-area energy series is identical for both output files below, so build it once and pivot it two different ways rather than recomputing it twice.
     OutputEnergy = pd.Series(data=[Flow[p,sc,n,ni,nf,cc]*Dur[p,sc,n] for p,sc,n,ni,nf,cc,ai,af in PSNLAARAR], index=pd.Index(PSNLAARAR))
     OutputEnergy.index.names = ['Period', 'Scenario', 'LoadLevel', 'InitialNode', 'FinalNode', 'Circuit', 'InitialArea', 'FinalArea']
 
@@ -118,10 +109,8 @@ def NetworkOperationResults(DirName, CaseName, OptModel, mTEPES):
         OutputToFile = pd.Series(data=[OptModel.vTheta[p,sc,n,nd]()                                   for p,sc,n,nd in mTEPES.psnnd], index=mTEPES.psnnd)
         OutputToFile.to_frame(name='rad').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='rad').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_NetworkAngle_{CaseName}.csv', sep=',')
 
-        # warn if the voltage-angle bound (pMaxTheta = pi/2) is (nearly) binding -- this
-        # indicates either an undersized Big-M on AC candidate lines, an overconstrained
-        # network, or genuinely insufficient transmission. A binding pi/2 bound clips
-        # the DC-OPF solution non-physically and inflates costs.
+        # warn if the voltage-angle bound (pMaxTheta = pi/2) is (nearly) binding -- this indicates either an undersized Big-M on AC candidate lines,
+        # an overconstrained network, or genuinely insufficient transmission. A binding pi/2 bound clips the DC-OPF solution non-physically and inflates costs.
         pMaxThetaTol = 1e-2
         pMaxThetaVal = math.pi / 2
         pBindingTheta = OutputToFile.abs().ge((1.0 - pMaxThetaTol) * pMaxThetaVal)
