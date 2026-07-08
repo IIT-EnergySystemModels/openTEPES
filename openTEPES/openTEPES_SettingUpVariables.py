@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 05, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 08, 2026
 
 openTEPES.openTEPES_SettingUpVariables — creates the decision variables and their bounds, fixes the generators' commitment, relaxes or forbids investment conditions, zeroes out epsilon values, and screens for infeasibilities. Runs after DataConfiguration.
 """
@@ -149,8 +149,9 @@ def SettingUpVariables(OptModel, mTEPES):
             OptModel.vRampUpState          = Var(mTEPES.psnnr, within=UnitInterval,     initialize=0.0, doc='ramp up   state of the unit                                    [0,1]')
             OptModel.vRampDwState          = Var(mTEPES.psnnr, within=UnitInterval,     initialize=0.0, doc='ramp down state of the unit                                    [0,1]')
 
-            OptModel.vMaxCommitmentYearly  = Var(mTEPES.psnr ,mTEPES.ExclusiveGroupsYearly, within=UnitInterval, initialize=0.0, doc='maximum commitment of the unit yearly [0,1]')
-            OptModel.vMaxCommitmentHourly  = Var(mTEPES.psnnr,mTEPES.ExclusiveGroupsHourly, within=UnitInterval, initialize=0.0, doc='maximum commitment of the unit hourly [0,1]')
+            OptModel.vMaxCommitmentYearly     = Var(mTEPES.psnr ,mTEPES.ExclusiveGroupsYearly, within=UnitInterval, initialize=0.0, doc='maximum commitment             of the unit yearly [0,1]')
+            OptModel.vMaxCommitmentConsYearly = Var(mTEPES.psnr ,mTEPES.ExclusiveGroupsYearly, within=UnitInterval, initialize=0.0, doc='maximum consumption commitment of the unit yearly [0,1]')
+            OptModel.vMaxCommitmentHourly     = Var(mTEPES.psnnr,mTEPES.ExclusiveGroupsHourly, within=UnitInterval, initialize=0.0, doc='maximum commitment             of the unit hourly [0,1]')
 
             if mTEPES.pIndHydroTopology:
                 OptModel.vCommitmentCons   = Var(mTEPES.psnh,  within=UnitInterval,     doc='consumption commitment of the unit                                             [0,1]')
@@ -163,8 +164,9 @@ def SettingUpVariables(OptModel, mTEPES):
             OptModel.vRampUpState          = Var(mTEPES.psnnr, within=Binary,           initialize=0  , doc='ramp up   state of the unit                              {0,1}')
             OptModel.vRampDwState          = Var(mTEPES.psnnr, within=Binary,           initialize=0  , doc='ramp down state of the unit                              {0,1}')
 
-            OptModel.vMaxCommitmentYearly  = Var(mTEPES.psnr ,mTEPES.ExclusiveGroupsYearly, within=Binary, initialize=0.0, doc='maximum commitment of the unit yearly [0,1]')
-            OptModel.vMaxCommitmentHourly  = Var(mTEPES.psnnr,mTEPES.ExclusiveGroupsHourly, within=Binary, initialize=0.0, doc='maximum commitment of the unit hourly [0,1]')
+            OptModel.vMaxCommitmentYearly     = Var(mTEPES.psnr ,mTEPES.ExclusiveGroupsYearly, within=Binary, initialize=0.0, doc='maximum commitment             of the unit yearly [0,1]')
+            OptModel.vMaxCommitmentConsYearly = Var(mTEPES.psnr ,mTEPES.ExclusiveGroupsYearly, within=Binary, initialize=0.0, doc='maximum consumption commitment of the unit yearly [0,1]')
+            OptModel.vMaxCommitmentHourly     = Var(mTEPES.psnnr,mTEPES.ExclusiveGroupsHourly, within=Binary, initialize=0.0, doc='maximum commitment             of the unit hourly [0,1]')
             if mTEPES.pIndHydroTopology:
                 OptModel.vCommitmentCons   = Var(mTEPES.psnh,  within=Binary,           doc='consumption commitment of the unit                    {0,1}')
 
@@ -323,7 +325,8 @@ def SettingUpVariables(OptModel, mTEPES):
 
         for p,sc,nr,  group in mTEPES.ps*mTEPES.ExclusiveGeneratorsYearly*mTEPES.ExclusiveGroups:
             if mTEPES.pIndBinUnitCommit[nr] == 0:
-                OptModel.vMaxCommitmentYearly[p,sc,  nr,group].domain = UnitInterval
+                OptModel.vMaxCommitmentYearly    [p,sc,nr,group].domain = UnitInterval
+                OptModel.vMaxCommitmentConsYearly[p,sc,nr,group].domain = UnitInterval
         for p,sc,n,nr,group in mTEPES.psn*mTEPES.ExclusiveGeneratorsHourly*mTEPES.ExclusiveGroups:
             if mTEPES.pIndBinUnitCommit[nr] == 0:
                 OptModel.vMaxCommitmentHourly[p,sc,n,nr,group].domain = UnitInterval
@@ -1130,13 +1133,11 @@ def SettingUpVariables(OptModel, mTEPES):
         and (len(mTEPES.gd) == 0 or mTEPES.pIndBinGenRetire()     == 2)   # No retirements
         and (len(mTEPES.lc) == 0 or mTEPES.pIndBinNetElecInvest() == 2)): # No line candidates
         # Periods and scenarios are independent each other
-        ScIndep = True
         mTEPES.IndependentPeriods = True
         for p in mTEPES.p:
             if (    (min([mTEPES.pEmission[p,ar] for ar in mTEPES.ar]) == math.inf or sum(mTEPES.pEmissionRate[nr] for nr in mTEPES.nr) == 0)  # No emissions
                 and (max([mTEPES.pRESEnergy[p,ar]() for ar in mTEPES.ar]) == 0)):                                                                # No minimum RES requirements
             # Stages are independent from each other
-                StIndep = True
                 mTEPES.IndependentStages[p] = True
     if all(mTEPES.IndependentStages[p]() for p in mTEPES.pp):
         mTEPES.IndependentStages2 = True

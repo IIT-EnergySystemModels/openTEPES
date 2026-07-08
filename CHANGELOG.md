@@ -1,7 +1,8 @@
 # Change Log
 
-## [4.18.17RC] - 2026-07-07 Unreleased in PyPI
+## [4.18.17RC] - 2026-07-08 Unreleased in PyPI
 
+- [FIXED] fix syntactic errors in openTEPES_ModelFormulationElectricity
 - [CHANGED] change OutputResultsNetwork and OutputResultsEconomic for reducing execution time
 - [FIXED] fix vNetworkInvPer at the same time that vNetworkInvest to avoid having vNetworkInvPer as binary variables when there are relaxed investments
 - [ADDED] two figures on the multiple-runs page: a concept diagram of the three modes as a reuse matrix over the pipeline, and a Mode B flow diagram drawn against the shipped `openTEPES_Runner` / `openTEPES_Cases` API. Static images in `doc/img/`; no code change.

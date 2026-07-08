@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 01, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 08, 2026
 
 openTEPES.openTEPES_ModelFormulationElectricity — electricity-sector formulation: demand balance, operating reserves and inertia, storage (ESS), unit commitment and ramping, line switching, DC network operation, and the cycle-based network constraints. Granular per-concern functions so a caller can pick which to build (e.g. with or without unit commitment).
 """
@@ -108,7 +108,7 @@ def GenerationOperationModelFormulationDemand(OptModel, mTEPES, pIndLogConsole, 
 
     def eRsrvMinRatioDwUpESS(OptModel,n,eh):
         # Skip if there is no minimum up/down reserve ratio or no reserves are needed in the Area where the generator is located or generator cannot provide reserves while generating power
-        if mTEPES.pMinRatioDwUp == 0.0 or mTEPES.pIndOperReserveCon[eh] or (p,eh) not in mTEPES.peh or sum(mTEPES.pOperReserveUp[p,sc,n,ar] + mTEPES.pOperReserveDw[p,sc,n,ar] for ar in a2n[nr]) == 0.0 or mTEPES.pMaxPower2ndBlock[p,sc,n,nr] == 0.0:
+        if mTEPES.pMinRatioDwUp == 0.0 or mTEPES.pIndOperReserveCon[eh] or (p,eh) not in mTEPES.peh or sum(mTEPES.pOperReserveUp[p,sc,n,ar] + mTEPES.pOperReserveDw[p,sc,n,ar] for ar in a2e[eh]) == 0.0 or mTEPES.pMaxPower2ndBlock[p,sc,n,eh] == 0.0:
             return Constraint.Skip
         return OptModel.vESSReserveDown[p,sc,n,eh] >= OptModel.vESSReserveUp[p,sc,n,eh] * mTEPES.pMinRatioDwUp
     setattr(OptModel, f'eRsrvMinRatioDwUpESS_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.eh, rule=eRsrvMinRatioDwUpESS, doc='minimum ratio down to up operating reserve [GW]'))
@@ -118,7 +118,7 @@ def GenerationOperationModelFormulationDemand(OptModel, mTEPES, pIndLogConsole, 
 
     def eRsrvMaxRatioDwUpESS(OptModel,n,eh):
         # Skip if there is no maximum up/down reserve ratio or no reserves are needed in the Area where the generator is located or generator cannot provide reserves while generating power
-        if mTEPES.pMaxRatioDwUp >= 1.0 or mTEPES.pIndOperReserveCon[eh] or (p,eh) not in mTEPES.peh or sum(mTEPES.pOperReserveUp[p,sc,n,ar] + mTEPES.pOperReserveDw[p,sc,n,ar] for ar in a2n[nr]) == 0.0 or mTEPES.pMaxPower2ndBlock[p,sc,n,nr] == 0.0:
+        if mTEPES.pMaxRatioDwUp >= 1.0 or mTEPES.pIndOperReserveCon[eh] or (p,eh) not in mTEPES.peh or sum(mTEPES.pOperReserveUp[p,sc,n,ar] + mTEPES.pOperReserveDw[p,sc,n,ar] for ar in a2e[eh]) == 0.0 or mTEPES.pMaxPower2ndBlock[p,sc,n,eh] == 0.0:
             return Constraint.Skip
         return OptModel.vESSReserveDown[p,sc,n,eh] <= OptModel.vESSReserveUp[p,sc,n,eh] * mTEPES.pMaxRatioDwUp
     setattr(OptModel, f'eRsrvMaxRatioDwUpESS_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.eh, rule=eRsrvMaxRatioDwUpESS, doc='maximum ratio down to up operating reserve [GW]'))
@@ -214,8 +214,8 @@ def GenerationOperationModelFormulationDemand(OptModel, mTEPES, pIndLogConsole, 
         print('eReserveDwEnergy          ... ', len(getattr(OptModel, f'eReserveDwEnergy_{p}_{sc}_{st}')), ' rows')
 
     def eESSReserveUpEnergy(OptModel,n,eh):
-        # Skip if there is no minimum up/down reserve ratio or no reserves are needed in the Area where the generator is located or generator cannot provide reserves while generating power
-        if mTEPES.pIndReserveActivation == 0 or mTEPES.pIndOperReserveGen[eh] or sum(mTEPES.pOperReserveUp[p,sc,n,ar] + mTEPES.pOperReserveDw[p,sc,n,ar] for ar in a2n[eh]) == 0.0 or mTEPES.pMaxPower2ndBlock[p,sc,n,eh] == 0.0:
+        # Skip if there is no minimum up/down reserve ratio or no reserves are needed in the Area where the generator is located or generator cannot provide reserves while consuming power
+        if mTEPES.pIndReserveActivation == 0 or mTEPES.pIndOperReserveCon[eh] or sum(mTEPES.pOperReserveUp[p,sc,n,ar] + mTEPES.pOperReserveDw[p,sc,n,ar] for ar in a2e[eh]) == 0.0 or mTEPES.pMaxPower2ndBlock[p,sc,n,eh] == 0.0:
             return Constraint.Skip
         return OptModel.vESSReserveUpEnergy[p,sc,n,eh] <= OptModel.vESSReserveUp[p,sc,n,eh]
     setattr(OptModel, f'eESSReserveUpEnergy_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.eh, rule=eESSReserveUpEnergy, doc='operating reserve activation lower than offered [GW]'))
@@ -224,8 +224,8 @@ def GenerationOperationModelFormulationDemand(OptModel, mTEPES, pIndLogConsole, 
         print('eESSReserveUpEnergy       ... ', len(getattr(OptModel, f'eESSReserveUpEnergy_{p}_{sc}_{st}')), ' rows')
 
     def eESSReserveDwEnergy(OptModel,n,eh):
-        # Skip if there is no minimum up/down reserve ratio or no reserves are needed in the Area where the generator is located or generator cannot provide reserves while generating power
-        if mTEPES.pIndReserveActivation == 0 or mTEPES.pIndOperReserveGen[eh] or sum(mTEPES.pOperReserveUp[p,sc,n,ar] + mTEPES.pOperReserveDw[p,sc,n,ar] for ar in a2n[eh]) == 0.0 or mTEPES.pMaxPower2ndBlock[p,sc,n,eh] == 0.0:
+        # Skip if there is no minimum up/down reserve ratio or no reserves are needed in the Area where the generator is located or generator cannot provide reserves while consuming power
+        if mTEPES.pIndReserveActivation == 0 or mTEPES.pIndOperReserveCon[eh] or sum(mTEPES.pOperReserveUp[p,sc,n,ar] + mTEPES.pOperReserveDw[p,sc,n,ar] for ar in a2e[eh]) == 0.0 or mTEPES.pMaxPower2ndBlock[p,sc,n,eh] == 0.0:
             return Constraint.Skip
         return OptModel.vESSReserveDownEnergy[p,sc,n,eh] <= OptModel.vESSReserveDown[p,sc,n,eh]
     setattr(OptModel, f'eESSReserveDwEnergy_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.eh, rule=eESSReserveDwEnergy, doc='operating reserve activation lower than offered [GW]'))
@@ -605,22 +605,38 @@ def GenerationOperationModelFormulationCommitment(OptModel, mTEPES, pIndLogConso
         # Skip if there are one or fewer generators in the group
         if len(mTEPES.GeneratorsInYearlyGroup[group] & {nr for p,nr in mTEPES.pnr}) <= 1:
             return Constraint.Skip
-        return OptModel.vCommitment[p,sc,n,nr]                               <= OptModel.vMaxCommitmentYearly[p,sc,nr,group]
+        return OptModel.vCommitment[p,sc,n,nr]                                  <= OptModel.vMaxCommitmentYearly[p,sc,nr,group]
 
     setattr(OptModel, f'eMaxCommitmentYearly_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.ExclusiveGroupsYearly*mTEPES.nr, rule=eMaxCommitmentYearly, doc='maximum of all the commitments [p.u.]'))
 
     if pIndLogConsole:
         print('eMaxCommitmentYearly      ... ', len(getattr(OptModel, f'eMaxCommitmentYearly_{p}_{sc}_{st}')), ' rows')
 
+    def eMaxCommitmentConsYearly(OptModel,n,group,nr):
+        # Skip if generator not available on period
+        # Skip if the generator is not part of the exclusive group
+        # Skip if the generator has no consumption commitment (only hydro units do)
+        if (p,nr) not in mTEPES.pnr or nr not in mTEPES.GeneratorsInYearlyGroup[group] or nr not in mTEPES.h:
+            return Constraint.Skip
+        # Skip if there are one or fewer generators in the group
+        if len(mTEPES.GeneratorsInYearlyGroup[group] & {nr for p,nr in mTEPES.pnr}) <= 1:
+            return Constraint.Skip
+        return OptModel.vCommitmentCons[p,sc,n,nr]                           <= OptModel.vMaxCommitmentConsYearly[p,sc,nr,group]
+
+    setattr(OptModel, f'eMaxCommitmentConsYearly_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.ExclusiveGroupsYearly*mTEPES.nr, rule=eMaxCommitmentConsYearly, doc='maximum of all the consumption commitments [p.u.]'))
+
+    if pIndLogConsole:
+        print('eMaxCommitmentConsYearly  ... ', len(getattr(OptModel, f'eMaxCommitmentConsYearly_{p}_{sc}_{st}')), ' rows')
+
     def eMaxCommitGenYearly(OptModel,n,group,nr):
         # Skip if generator not available on period
         # Skip if the generator is not part of the exclusive group
         if (p,nr) not in mTEPES.pnr or nr not in mTEPES.GeneratorsInYearlyGroup[group]:
             return Constraint.Skip
-        # Avoid division by 0. If Maximum power is 0 this equation is not needed anyways
+        # Avoid division by 0. If Maximum power is 0 this equation is not needed anyway
         if mTEPES.pMaxPowerElec[p,sc,n,nr] == 0.0:
             return Constraint.Skip
-        # Skip if there are one or less generators in the group
+        # Skip if there are one or fewer generators in the group
         if len(mTEPES.GeneratorsInYearlyGroup[group] & {nr for p,nr in mTEPES.pnr}) <= 1:
             return Constraint.Skip
         return OptModel.vTotalOutput[p,sc,n,nr]/mTEPES.pMaxPowerElec[p,sc,n,nr] <= OptModel.vMaxCommitmentYearly[p,sc,nr,group]
@@ -633,7 +649,7 @@ def GenerationOperationModelFormulationCommitment(OptModel, mTEPES, pIndLogConso
         # Skip if there are one or fewer generators in the group
         if len(mTEPES.GeneratorsInYearlyGroup[group] & {nr for p,nr in mTEPES.pnr}) <= 1:
             return Constraint.Skip
-        return sum(OptModel.vMaxCommitmentYearly[p,sc,nr,group] + (OptModel.vCommitmentCons[p,sc,nr] if nr in mTEPES.h else 0) for nr in mTEPES.GeneratorsInYearlyGroup[group] if (p,nr) in mTEPES.pnr) <= 1
+        return sum(OptModel.vMaxCommitmentYearly[p,sc,nr,group] + (OptModel.vMaxCommitmentConsYearly[p,sc,nr,group] if nr in mTEPES.h else 0) for nr in mTEPES.GeneratorsInYearlyGroup[group] if (p,nr) in mTEPES.pnr) <= 1
     setattr(OptModel, f'eExclusiveGensYearly_{p}_{sc}_{st}', Constraint(mTEPES.ExclusiveGroupsYearly, rule=eExclusiveGensYearly, doc='mutually exclusive generators'))
 
     if pIndLogConsole:
@@ -758,10 +774,10 @@ def GenerationOperationModelFormulationRampMinTime(OptModel, mTEPES, pIndLogCons
                 return Constraint.Skip
         else:
             return Constraint.Skip
-    setattr(OptModel, f'eRampUpChr_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.eh, rule=eRampUpCharge, doc='maximum ramp up   charge [p.u.]'))
+    setattr(OptModel, f'eRampUpCharge_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.eh, rule=eRampUpCharge, doc='maximum ramp up   charge [p.u.]'))
 
     if pIndLogConsole:
-        print('eRampUpChr                ... ', len(getattr(OptModel, f'eRampUpChr_{p}_{sc}_{st}')), ' rows')
+        print('eRampUpCharge             ... ', len(getattr(OptModel, f'eRampUpChr_{p}_{sc}_{st}')), ' rows')
 
     def eRampDwCharge(OptModel,n,eh):
         if (p,eh) in mTEPES.peh:
