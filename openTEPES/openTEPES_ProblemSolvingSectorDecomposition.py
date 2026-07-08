@@ -102,7 +102,7 @@ def SectorDecomposition(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLog
         if  mTEPES.pTotalMaxCharge[el] == 0.0 and mTEPES.pTotalEnergyInflows[el] == 0.0:
             mMaster.vTotalOutput     [p,sc,n,el].fix( 0.0)
             mMaster.vOutput2ndBlock  [p,sc,n,el].fix( 0.0)
-            mMaster.vRelerveUp       [p,sc,n,el].fix( 0.0)
+            mMaster.vReserveUp       [p,sc,n,el].fix( 0.0)
             mMaster.vReserveDown     [p,sc,n,el].fix( 0.0)
             mMaster.vESSSpillage     [p,sc,n,el].fix( 0.0)
             mMaster.vESSInventory    [p,sc,n,el].fix( 0.0)

@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import time
 from collections import defaultdict
-from pyomo.environ import Constraint, Set
+from pyomo.environ import Constraint
 
 
 def GenerationOperationModelFormulationReservoir(OptModel, mTEPES, pIndLogConsole, p, sc, st):
@@ -120,7 +120,7 @@ def GenerationOperationModelFormulationReservoir(OptModel, mTEPES, pIndLogConsol
     def eIniFinVolume(OptModel,n,rs):
         if (p,rs) not in mTEPES.prs or (p,sc,st,n) not in mTEPES.s2n or mTEPES.n.ord(n) != mTEPES.pReservoirTimeStep[rs]:
             return Constraint.Skip
-        return OptModel.vIniVolume[p,sc,n,rs] == OptModel.vHydroInventory[p,sc,mTEPES.n.last(),rs]
+        return OptModel.vIniVolume[p,sc,n,rs] == OptModel.vReservoirVolume[p,sc,mTEPES.n.last(),rs]
     setattr(OptModel, f'eIniFinVolume_{p}_{sc}_{st}', Constraint(mTEPES.nrcc, rule=eIniFinVolume, doc='Initial equal to final volume for reservoir candidates [p.u.]'))
 
     if pIndLogConsole:
