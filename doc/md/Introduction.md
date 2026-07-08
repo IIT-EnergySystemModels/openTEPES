@@ -17,7 +17,7 @@ It automatically determines optimal expansion plans that satisfy multiple attrib
 
   It hierarchically represents the different time horizons for decision-making in an electricity (hydrogen or heat) system:
 
-- Load level: one hour, e.g., 01-01 00:00:00+01:00 to 12-30 23:00:00+01:00, or **quarter of an hour**, e.g., 01-01 00:00:00+01:00 to 30-12 23:45:00+01:00
+- Load level: one hour, e.g., 01-01 00:00:00+01:00 to 12-30 23:00:00+01:00, or **quarter of an hour**, e.g., 01-01 00:00:00+01:00 to 12-30 23:45:00+01:00
 
   The time division allows a flexible, user-defined representation of the periods for evaluating system operation. It can also be run with time intervals of several consecutive hours (bi-hourly or tri-hourly resolution,
   depending on the hourly or quarter-hour definition) to reduce computational burden without sacrificing accuracy. The model can be run with a single period (year) or several periods (years) to analyze the system's evolution.

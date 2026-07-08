@@ -15,7 +15,7 @@ openTEPES documentation master file, created by Andres Ramos
 - **Two-stage stochastic optimization** problem that includes binary generation, storage, and electricity; hydrogen and heat network investment/retirement decisions; generation operation decisions (commitment, startup, and shutdown decisions are also binary); and electric line-switching decisions.
   Capacity expansion considers the system adequacy reserve margin, maximum CO2 emissions, and minimum and maximum energy constraints.
 
-  > If no candidates are provided the model runs without expansion, so it can be used to evaluate the operation of the system in a given year or several years. The model can also be used to evaluate the expansion of just one of the energy carriers (generation and storage, electric lines, hydrogen pipelines, or heat pipes) by providing candidates for that carrier and not for the others.
+  > If no candidates are provided, the model runs without expansion, so it can be used to evaluate the operation of the system in a given year or several years. The model can also be used to evaluate the expansion of just one of the energy carriers (generation and storage, electric lines, hydrogen pipelines, or heat pipes) by providing candidates for that carrier and not for the others.
 
 - **Economic dispatch and network-constrained unit commitment (NCUC)** of the electric system
 
