@@ -13,7 +13,7 @@ def GenerationOperationModelFormulationReservoir(OptModel, mTEPES, pIndLogConsol
 
     StartTime = time.time()
 
-    # area to generators (a2e)
+    # area to generators (a2h)
     a2h = defaultdict(list)
     for ar,h in mTEPES.ar*mTEPES.h:
         if (ar,h) in mTEPES.a2g:
