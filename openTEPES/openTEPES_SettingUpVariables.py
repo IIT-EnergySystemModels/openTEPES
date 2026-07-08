@@ -513,8 +513,8 @@ def SettingUpVariables(OptModel, mTEPES):
                 OptModel.vESSInventory   [p,sc,n,es].fix(mTEPES.pIniInventory[p,sc,n,es])
                 nFixedVariables += 6
                 if mTEPES.pIndReserveActivation:
-                    OptModel.vReserveUpEnergy  [p,sc,n,nr].fix(0.0)
-                    OptModel.vReserveDownEnergy[p,sc,n,nr].fix(0.0)
+                    OptModel.vReserveUpEnergy  [p,sc,n,es].fix(0.0)
+                    OptModel.vReserveDownEnergy[p,sc,n,es].fix(0.0)
                     nFixedVariables += 2
             if  mTEPES.pMaxCharge2ndBlock[p,sc,n,es] ==  0.0:
                 OptModel.vCharge2ndBlock [p,sc,n,es].fix(0.0)
@@ -860,9 +860,10 @@ def SettingUpVariables(OptModel, mTEPES):
 
         for p,sc,nr in mTEPES.psnr:
             if nr not in mTEPES.eb and mTEPES.pElecGenPeriodIni[nr] > p or mTEPES.pElecGenPeriodFin[nr] < p:
-                OptModel.vMaxCommitment[p,sc,nr].fix(0)
-                OptModel.vMaxCommitment[p,sc,nr].domain = UnitInterval
-                nFixedVariables += 1
+                for group in mTEPES.ExclusiveGroupsYearly:
+                    OptModel.vMaxCommitmentYearly[p,sc,nr,group].fix(0)
+                    OptModel.vMaxCommitmentYearly[p,sc,nr,group].domain = UnitInterval
+                    nFixedVariables += 1
         for p,sc,n,nr in mTEPES.psnnr:
             if nr not in mTEPES.eb and mTEPES.pElecGenPeriodIni[nr] > p or mTEPES.pElecGenPeriodFin[nr] < p:
                 OptModel.vOutput2ndBlock[p,sc,n,nr].fix(0.0)

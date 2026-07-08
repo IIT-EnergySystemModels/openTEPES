@@ -1,4 +1,5 @@
 """
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 05, 2026
 openTEPES.openTEPES_ProblemSolvingTuning — per-solver option presets for the initial solve and the fix-and-resolve LP pass.
 
 Each solver family (Gurobi, CPLEX, HiGHS, GAMS) has a distinct option-setting API; ``apply_solver_options()``
@@ -58,7 +59,7 @@ def apply_solver_options(Solver, SolverName: str, FileName: str, ncall: int):
         Solver.set_gurobi_param("Crossover",      -1)
         Solver.set_gurobi_param("MIPGap",       0.01)
         Solver.set_gurobi_param("Threads",     _threads())
-        Solver.set_gurobi_param("TimeLimit",     36000)
+        Solver.set_gurobi_param("TimeLimit",      36000)
         Solver.set_gurobi_param("IterationLimit", 36000000)
         return None
 

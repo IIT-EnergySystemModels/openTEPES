@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 29, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 08, 2026
 
 openTEPES.openTEPES_InMemorySource — in-memory input backend for the Mode B sweep (RFC §4.2).
 
@@ -31,7 +31,7 @@ except ImportError:
 def _apply_overlay(df: pd.DataFrame, transform) -> pd.DataFrame:
     """Return ``df`` perturbed by ``transform`` (number, callable, or replacement DataFrame). ``df`` is a private copy."""
     if isinstance(transform, pd.DataFrame):
-        return transform
+        return transform.copy()
     if callable(transform):
         return transform(df)
     if isinstance(transform, (int, float)) and not isinstance(transform, bool):

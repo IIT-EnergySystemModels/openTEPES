@@ -1,4 +1,5 @@
 """
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 29, 2026
 openTEPES.openTEPES_InputSource — ``InputSource`` ABC, ``open_source()`` factory, and post-read shape helpers shared by every
 backend.
 

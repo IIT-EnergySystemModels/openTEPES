@@ -1,4 +1,5 @@
 """
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 03, 2026
 openTEPES.openTEPES_InputSchema — declarative catalogue of every input table.
 
 Each ``TABLE_SPECS`` entry is the tuple ``(csv_stem_prefix, db_table, kind, kwargs)``. Backends consume this single

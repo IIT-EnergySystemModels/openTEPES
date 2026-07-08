@@ -1,4 +1,5 @@
 """
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 08, 2026
 openTEPES.openTEPES_ModelFormulationHydro — hydropower reservoir operation: water balance, volume limits and outflows.
 """
 from __future__ import annotations

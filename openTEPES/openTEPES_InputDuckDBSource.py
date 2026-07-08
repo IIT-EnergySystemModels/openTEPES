@@ -1,4 +1,5 @@
 """
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 29, 2026
 openTEPES.openTEPES_InputDuckDBSource — in-process ``.duckdb`` backend.
 
 Reads stream through SQL into DataFrames directly — no temporary CSV materialisation, no extra disk I/O round-trip.

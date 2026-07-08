@@ -1,4 +1,5 @@
 """
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 29, 2026
 openTEPES.openTEPES_InputCSVSource — file-system CSV backend.
 
 Preserves today's behaviour bit-for-bit: every read uses ``pd.read_csv`` with ``encoding="utf-8-sig"`` so the

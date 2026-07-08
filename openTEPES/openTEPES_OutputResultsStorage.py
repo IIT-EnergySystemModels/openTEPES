@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 03, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 08, 2026
 
 Energy-storage and reservoir operation results.
 
@@ -179,6 +179,13 @@ def ReservoirOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnolog
         if (ht,h) in mTEPES.t2g:
             o2h[ht].append(h)
 
+    # technology to reservoirs (o2rs): each reservoir is associated with the technology of its downstream hydropower plant, i.e., (rs,h) in r2h
+    o2rs = defaultdict(list)
+    for rs,h in mTEPES.r2h:
+        for ht in mTEPES.ht:
+            if (ht,h) in mTEPES.t2g and rs not in o2rs[ht]:
+                o2rs[ht].append(rs)
+
     # tolerance to avoid division by 0
     pEpsilon = 1e-6
 
@@ -196,7 +203,7 @@ def ReservoirOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnolog
         OutputToFile.to_frame(name='hm3').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='hm3',               aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_ReservoirSpillage_{CaseName}.csv', sep=',')
 
     if pIndTechnologyOutput == 1 or pIndTechnologyOutput == 2:
-        OutputToFile = pd.Series(data=[sum(OutputToFile[p,sc,n,rs] for rs in mTEPES.rs if (n,rs) in mTEPES.nrsc) for p,sc,n,ht in mTEPES.psnht], index=mTEPES.psnht)
+        OutputToFile = pd.Series(data=[sum(OutputToFile[p,sc,n,rs] for rs in o2rs[ht] if (n,rs) in mTEPES.nrsc and (p,rs) in mTEPES.prs) for p,sc,n,ht in mTEPES.psnht], index=mTEPES.psnht)
         OutputToFile.to_frame(name='hm3').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='hm3',               aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_TechnologyReservoirSpillage_{CaseName}.csv', sep=',')
 
     #%% outputting the water volume values

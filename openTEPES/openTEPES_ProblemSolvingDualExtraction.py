@@ -1,4 +1,5 @@
 """
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 03, 2026
 openTEPES.openTEPES_ProblemSolvingDualExtraction — fix-and-resolve pass that recovers shadow prices on a MIP solution.
 
 After an initial MIP solve, ``fix_for_duals()`` fixes every binary/integer variable to its optimal value and

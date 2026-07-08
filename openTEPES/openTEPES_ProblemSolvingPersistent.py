@@ -1,4 +1,5 @@
 """
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 17, 2026
 openTEPES.openTEPES_ProblemSolvingPersistent — persistent-solver lifecycle for ``appsi_gurobi`` and ``gurobi_persistent``.
 
 The ``ncall`` counter in ``ProblemSolving`` distinguishes the first solve of a given Pyomo instance (which must
