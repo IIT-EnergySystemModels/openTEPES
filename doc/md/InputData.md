@@ -189,7 +189,7 @@ A description of the system parameters included in the file `oT_Data_Parameter.c
 | AnnualDiscountRate  | Annual discount rate                                                                                                                                                                                                                                            | p.u.   |
 
 A time step greater than one hour is a convenient way to reduce the load levels of the time scope. The moving average of the demand, upward/downward operating reserves, variable generation/consumption/storage, and ESS energy inflows/outflows
-over the time step load levels is assigned to active load levels (e.g., the mean value of the three hours is associated with the third hour in a trihourly time step).
+over the time step load levels is assigned to active load levels (e.g., the mean value of the three hours is associated with the third hour in a tri-hourly time step).
 
 Generators can provide upward and downward operating reserves simultaneously. The upward and downward activation proportions define the amount of upward and downward operating reserves that will be deployed to produce energy.
 In case of having both upward and downward operating reserves, the activation of both may cancel the energy produced.
@@ -320,7 +320,7 @@ Internally, all the values below 1e-5 times the maximum system demand of each ar
 
 ## System inertia
 
-A description of the data included in the files `oT_Data_Inertia.csv` follows:
+A description of the data included in the file `oT_Data_Inertia.csv` follows:
 
 ```{eval-rst}
 ==========  ==============  ==========  ======  ================================================  ==
@@ -333,7 +333,7 @@ Period      Scenario        LoadLevel   Area    System inertia of the area for e
 Given that the system inertia depends on the area, assigning an area as a country can be sensible. The system inertia can impose a minimum synchronous power and, consequently, force the commitment of at least some rotating units.
 Each generating unit can contribute to the system inertia. The system inertia is the sum of the inertia of all the committed units in the area.
 
-Internally, all the values below 1e-5 times the maximum system electricity demand of each area will be converted to 0 by the model.
+Internally, all the values below 1e-5 times the maximum system electricity demand of each area will be converted into 0 by the model.
 
 ## Upward and downward operating reserves
 
@@ -483,7 +483,7 @@ The initial storage of the ESSs is also fixed at the beginning and end of each s
 (end of the first stage and beginning of the second stage) in case of two stages, each with 4368 hours.
 
 A generator with operation cost (sum of the fuel and emission cost, excluding O&M cost) >0 is considered a non-renewable unit. If the unit has no operation cost and its maximum storage =0,
-It is considered a renewable unit. If its maximum storage is >0, with or without operation cost, it is regarded as an ESS.
+it is considered a renewable unit. If its maximum storage is >0, with or without operation cost, it is regarded as an ESS.
 
 A very small variable O&M cost for the ESS (not below 0.01 €/MWh; otherwise the model converts it to 0) can prevent it from pumping with avoided curtailment (at no cost) and then discharging as spillage.
 
@@ -550,7 +550,7 @@ Period      Scenario        LoadLevel   Generator  Maximum (minimum) power consu
 
 Not all the generators must be defined as columns of these files, only those with values different from 0.
 
-To force an ESS to consume 0 a value (e.g., 0.1 MW) strictly >0, but not 0 (in which case the value will be ignored), must be introduced.
+To force an ESS to consume 0, a value (e.g., 0.1 MW) strictly >0, but not 0 (in which case the value will be ignored), must be introduced.
 It can also be used for upper-bounding and/or lower-bounding the consumption of any ESS (e.g., pumped-hydro storage, battery, DSM).
 If the user introduces a maximum consumption value lower than the minimum, the model lowers the minimum to match the maximum.
 
