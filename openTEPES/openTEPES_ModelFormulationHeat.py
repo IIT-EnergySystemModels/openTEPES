@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import time
 from collections import defaultdict
-from pyomo.environ import Constraint, Set
+from pyomo.environ import Constraint
 
 
 def NetworkHeatOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st):
