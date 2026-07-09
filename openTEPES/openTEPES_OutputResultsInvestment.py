@@ -171,7 +171,7 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutput,
                 chart.save(f'{_path}/oT_Plot_TechnologyRetirementPerArea_{CaseName}.html', embed_options={'renderer':'svg'})
 
         if pIndTechnologyOutput == 1 or pIndTechnologyOutput == 2:
-            # Ordering data to plot the investment retirement
+            # Ordering data to plot the retirement decision
             OutputResults1 = pd.Series(data=[gt for p,gd,gt in mTEPES.pgd*mTEPES.gt if gd in g2t[gt]], index=mTEPES.pgd)
             OutputResults1 = OutputResults1.to_frame(name='Technology')
             OutputResults2 = OutputToFile

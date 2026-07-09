@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 15, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 09, 2026
 
 Hydrogen network operation results.
 
@@ -111,7 +111,7 @@ def NetworkH2OperationResults(DirName, CaseName, OptModel, mTEPES):
         OutputToFile.index.names = ['Period', 'Scenario', 'LoadLevel', 'InitialNode', 'FinalNode', 'Circuit']
         OutputToFile = OutputToFile.to_frame(name='tH2')
 
-        # tolerance to consider avoid division by 0
+        # tolerance to avoid division by 0
         pEpsilon = 1e-6
 
         line_df = pd.DataFrame(data={'NTCFrw': pd.Series(data=[mTEPES.pH2PipeNTCFrw[i] + pEpsilon for i in mTEPES.pa], index=mTEPES.pa),
@@ -162,7 +162,7 @@ def NetworkH2OperationResults(DirName, CaseName, OptModel, mTEPES):
         pos_dict[iata] = (x[index], y[index])
 
     # Setting up the figure
-    token = open(DIR+f'/openTEPES.mapbox_token').read()
+    token = open(DIR+'/openTEPES.mapbox_token').read()
 
     fig = go.Figure()
 

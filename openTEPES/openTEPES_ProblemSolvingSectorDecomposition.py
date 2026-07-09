@@ -1,17 +1,15 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 02, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 09, 2026
 """
 
 import math
 import os
 import time
 import psutil
-import pyomo.environ as pyo
 import pandas as pd
 from   collections   import defaultdict
 from   pyomo.environ import ConcreteModel, Set, RangeSet, Var, NonNegativeReals, Reals, Constraint, ConstraintList, Objective, minimize, Suffix
 from   pyomo.opt     import SolverFactory
-from   pyomo.contrib import appsi
 try:
     from .openTEPES_ProblemSolving import ProblemSolving
 except ImportError:
@@ -166,7 +164,7 @@ def SectorDecomposition(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLog
             return Constraint.Skip
         # Hydro units have commitment while ESS units are implicitly always committed
         if eh not in mTEPES.h:
-            # ESS units only need this constraint when they can offer operating reserves and the systems demands reserves
+            # ESS units only need this constraint when they can offer operating reserves and the system demands reserves
             if mTEPES.pIndOperReserveCon[eh] or sum(mTEPES.pOperReserveDw[p,sc,n,ar] for ar in a2e[eh]) == 0.0:
                 return Constraint.Skip
             # ESS case equation
@@ -201,7 +199,6 @@ def SectorDecomposition(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLog
 
     pTotalSCost_it = pd.Series([0.0]*len(mMaster.itBd), index=mMaster.itBd)
     # pMasterCost_it = pd.Series([0.0]*len(mMaster.itBd), index=mMaster.itBd)
-    Z_Lower_it     = pd.Series([0.0]*len(mMaster.itBd), index=mMaster.itBd)
 
     if len(mTEPES.psnel):
         pESSTotalCharge            = pd.Series([0.0]*len(mMaster.itBd*mTEPES.psnel), index=mMaster.itBd*mTEPES.psnel)
@@ -269,9 +266,9 @@ def SectorDecomposition(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLog
             # solving the master problem
             StartTime = time.time()
             if SolverName in ('gurobi', 'gurobi_direct', 'appsi_gurobi'):
-                MasterResults = SolverMst.solve(mMaster, tee=False, report_timing=False)
+                SolverMst.solve(mMaster, tee=False, report_timing=False)
             if SolverName == 'gurobi_persistent':
-                MasterResults = SolverMst.solve(mMaster, tee=False, report_timing=False, warmstart=True, keepfiles=False, load_solutions=True, save_results=False)
+                SolverMst.solve(mMaster, tee=False, report_timing=False, warmstart=True, keepfiles=False, load_solutions=True, save_results=False)
             MstSolvingTime = time.time() - StartTime
             StartTime = time.time()
 

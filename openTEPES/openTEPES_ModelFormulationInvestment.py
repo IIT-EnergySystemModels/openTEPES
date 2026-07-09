@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 08, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 09, 2026
 
 openTEPES.openTEPES_ModelFormulationInvestment — investment variables and constraints (electricity, hydro, H2, heat) plus the installed-capacity, adequacy-reserve-margin and emission / RES-energy limits.
 """
@@ -8,7 +8,7 @@ from __future__ import annotations
 import time
 import math
 from collections import defaultdict
-from pyomo.environ import Constraint, Set
+from pyomo.environ import Constraint
 
 
 def InvestmentElecModelFormulation(OptModel, mTEPES, pIndLogConsole):

@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 08, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 09, 2026
 
 openTEPES.openTEPES_ModelFormulationElectricity — electricity-sector formulation: demand balance, operating reserves and inertia, storage (ESS), unit commitment and ramping, line switching, DC network operation, and the cycle-based network constraints. Granular per-concern functions so a caller can pick which to build (e.g. with or without unit commitment).
 """
@@ -341,7 +341,7 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
             return Constraint.Skip
         # Hydro units have commitment while ESS units are implicitly always committed
         if eh not in mTEPES.h:
-            # ESS units only need this constraint when they can offer operating reserves and the systems demands reserves
+            # ESS units only need this constraint when they can offer operating reserves and the system demands reserves
             if mTEPES.pIndOperReserveCon[eh] or sum(mTEPES.pOperReserveDw[p,sc,n,ar] for ar in a2e[eh]) == 0.0:
                 return Constraint.Skip
             # ESS case equation
@@ -675,7 +675,7 @@ def GenerationOperationModelFormulationCommitment(OptModel, mTEPES, pIndLogConso
 
     def eMaxCommitGenHourly(OptModel,n,group,nr):
         # Skip if generator not available on period or the generator is not part of the exclusive group
-        # Avoid division by 0. If Maximum power is 0 this equation is not needed anyways
+        # Avoid division by 0. If Maximum power is 0 this equation is not needed anyway
         if (p,nr) not in mTEPES.pnr or nr not in mTEPES.GeneratorsInHourlyGroup[group] or mTEPES.pMaxPowerElec[p,sc,n,nr] == 0.0:
             return Constraint.Skip
         # Skip if there are one or fewer generators in the group
@@ -689,7 +689,7 @@ def GenerationOperationModelFormulationCommitment(OptModel, mTEPES, pIndLogConso
 
     def eExclusiveGensHourly(OptModel,n,group):
         # Skip if there are one or fewer generators in the group
-        # This is written in a different way to the rest of the code to avoid variable shadowing due to comprehension
+        # This is written in a different way from the rest of the code to avoid variable shadowing due to comprehension
         if len(mTEPES.GeneratorsInHourlyGroup[group] & {gen for period,gen in mTEPES.pnr if period == p}) <= 1:
             return Constraint.Skip
         return sum(OptModel.vMaxCommitmentHourly[p,sc,n,nr,group] + (OptModel.vCommitmentCons[p,sc,n,nr] if nr in mTEPES.h else 0) for nr in mTEPES.GeneratorsInHourlyGroup[group] if (p,nr) in mTEPES.pnr) <= 1
@@ -1120,7 +1120,7 @@ def NetworkCycles(mTEPES, pIndLogConsole):
     # cycles with AC existing and candidate lines
     mTEPES.ncc = nx.cycle_basis(NetworkGraph, list(mTEPES.rf)[0])
 
-    # cycles added due to consider candidate lines
+    # cycles added due to considering candidate lines
     mTEPES.ncd = [nc for nc in mTEPES.ncc if nc not in mTEPES.nce]
 
     # determining the set of unique existing and candidate circuits (only one in case of several circuits in //) and the parallel circuits

@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 08, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 09, 2026
 
 openTEPES.openTEPES_SettingUpVariables — creates the decision variables and their bounds, fixes the generators' commitment, relaxes or forbids investment conditions, zeroes out epsilon values, and screens for infeasibilities. Runs after DataConfiguration.
 """
@@ -350,7 +350,7 @@ def SettingUpVariables(OptModel, mTEPES):
         '''
                 Create electricity, hydrogen and heat-flow-related variables.
 
-                This function takes a mTEPES instance and adds the variables necessary to model power, hydrogen and heat flows in a network.
+                This function takes an mTEPES instance and adds the variables necessary to model power, hydrogen and heat flows in a network.
 
                 Parameters:
                     mTEPES: The instance of mTEPES.
@@ -1055,7 +1055,7 @@ def SettingUpVariables(OptModel, mTEPES):
         '''
         Detect model infeasibilities.
 
-        This function takes a mTEPES instance and checks for different infeasibilities.
+        This function takes an mTEPES instance and checks for different infeasibilities.
 
         Parameters:
             mTEPES: The instance of mTEPES.
@@ -1133,7 +1133,7 @@ def SettingUpVariables(OptModel, mTEPES):
     if (    (len(mTEPES.gc) == 0 or mTEPES.pIndBinGenInvest()     == 2)   # No candidates
         and (len(mTEPES.gd) == 0 or mTEPES.pIndBinGenRetire()     == 2)   # No retirements
         and (len(mTEPES.lc) == 0 or mTEPES.pIndBinNetElecInvest() == 2)): # No line candidates
-        # Periods and scenarios are independent each other
+        # Periods and scenarios are independent of each other
         mTEPES.IndependentPeriods = True
         for p in mTEPES.p:
             if (    (min([mTEPES.pEmission[p,ar] for ar in mTEPES.ar]) == math.inf or sum(mTEPES.pEmissionRate[nr] for nr in mTEPES.nr) == 0)  # No emissions

@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 08, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 09, 2026
 openTEPES.openTEPES_ModelFormulationHydro — hydropower reservoir operation: water balance, volume limits and outflows.
 """
 from __future__ import annotations
@@ -54,7 +54,7 @@ def GenerationOperationModelFormulationReservoir(OptModel, mTEPES, pIndLogConsol
         print('eTrbReserveUpIfUpstream   ... ', len(getattr(OptModel, f'eTrbReserveUpIfUpstream_{p}_{sc}_{st}')), ' rows')
 
     def eTrbReserveUpIfDownstream(OptModel,n,h):
-        #There must be enough spare reservoir capacity downstream of a turbine to fit all the possible water (scheduled + reserves)
+        # There must be enough spare reservoir capacity downstream of a turbine to fit all the possible water (scheduled + reserves)
         # Skip if generator is not available in the period or turbine cannot provide reserves or no reserves are demanded in the area where the turbine is located or turbine cannot generate at variable power
         if mTEPES.pIndOperReserveGen[h] or (p,h) not in mTEPES.ph or sum(mTEPES.pOperReserveUp[p,sc,n,ar] for ar in a2h[h]) == 0.0 or mTEPES.pMaxPower2ndBlock [p,sc,n,h] == 0.0:
             return Constraint.Skip
@@ -85,7 +85,7 @@ def GenerationOperationModelFormulationReservoir(OptModel, mTEPES, pIndLogConsol
 
     def ePmpReserveDwIfDownstream(OptModel, n, h):
         # There must be enough water downstream for the pump to draw from in case it needs to operate at the maximum capacity offered (scheduled + reserves)
-        # Skip if pump is not available in the period or pump cannot provide reserves or pump is not connected to any reservoir orno reserves are demanded in the area where the turbine is located or pump cannot consume at variable power
+        # Skip if pump is not available in the period or pump cannot provide reserves or pump is not connected to any reservoir or no reserves are demanded in the area where the turbine is located or pump cannot consume at variable power
         if mTEPES.pIndOperReserveCon[h] or (p, h) not in mTEPES.ph or sum(1 for rs in mTEPES.rs if (h,rs) in mTEPES.p2r) == 0 or sum(mTEPES.pOperReserveDw[p,sc,n,ar] for ar in a2h[h]) == 0.0 or mTEPES.pMaxCharge2ndBlock[p,sc,n,h] == 0.0:
             return Constraint.Skip
         # Avoid dividing by 0 if pump has no minimum charge

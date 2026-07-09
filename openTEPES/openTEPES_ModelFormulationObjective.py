@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 11, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 09, 2026
 
 openTEPES.openTEPES_ModelFormulationObjective — total-cost objective and the per-stage operation-cost accumulation constraints.
 """
@@ -8,7 +8,7 @@ from __future__ import annotations
 import time
 import math
 from collections import defaultdict
-from pyomo.environ import Constraint, Objective, minimize, Set
+from pyomo.environ import Constraint, Objective, minimize
 
 
 def TotalObjectiveFunction(OptModel, mTEPES, pIndLogConsole):
@@ -75,8 +75,8 @@ def GenerationOperationModelFormulationObjFunct(OptModel, mTEPES, pIndLogConsole
     def eTotalEmissionArea(OptModel,n,ar):
         if mTEPES.pEmission[p,ar] == math.inf or sum(mTEPES.pEmissionRate[g] for g in mTEPES.g if g in g2a[ar] and (p,g) in mTEPES.pg) == 0.0:
             return Constraint.Skip
-        return OptModel.vTotalEmissionArea[p,sc,n,ar] == (mTEPES.pLoadLevelDuration[p,sc,n]() * 1e-3 * (sum(mTEPES.pEmissionRate[nr] * OptModel.vTotalOutput    [p,sc,n,nr] for nr in mTEPES.nr if nr in g2a[ar] and (p,nr) in mTEPES.pnr)    # 1e-3 to change from tCO2/MWh to MtCO2/GWh
-                                                                                                     +  sum(mTEPES.pEmissionRate[bo] * OptModel.vTotalOutputHeat[p,sc,n,bo] for bo in mTEPES.bo if bo in g2a[ar] and (p,bo) in mTEPES.pbo)))  # 1e-3 to change from tCO2/MWh to MtCO2/GWh
+        return OptModel.vTotalEmissionArea[p,sc,n,ar] == (mTEPES.pLoadLevelDuration[p,sc,n]() * 1e-3 * (sum(mTEPES.pEmissionRate[nr] * OptModel.vTotalOutput    [p,sc,n,nr] for nr in mTEPES.nr if nr in g2a[ar] and (p,nr) in mTEPES.pnr)    # 1e-3 to convert from tCO2/MWh to MtCO2/GWh
+                                                                                                     +  sum(mTEPES.pEmissionRate[bo] * OptModel.vTotalOutputHeat[p,sc,n,bo] for bo in mTEPES.bo if bo in g2a[ar] and (p,bo) in mTEPES.pbo)))  # 1e-3 to convert from tCO2/MWh to MtCO2/GWh
     setattr(OptModel, f'eTotalEmissionArea_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.ar, rule=eTotalEmissionArea, doc='area total emission [MtCO2 eq]'))
 
     def eTotalECostArea(OptModel,n,ar):

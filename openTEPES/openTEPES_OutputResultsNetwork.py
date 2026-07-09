@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 07, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 09, 2026
 
 Electric network operation results and network map.
 
@@ -242,7 +242,7 @@ def NetworkMapResults(DirName, CaseName, OptModel, mTEPES):
         pos_dict[iata] = (x[index], y[index])
 
     # Setting up the figure
-    token = open(DIR+f'/openTEPES.mapbox_token').read()
+    token = open(DIR+'/openTEPES.mapbox_token').read()
 
     fig = go.Figure()
 

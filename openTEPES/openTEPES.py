@@ -1,16 +1,14 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 02, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 09, 2026
 """
 
 # import dill as pickle
 import datetime
 import json
-import math
 import os
 import time
 
-import pyomo.environ as pyo
-from   pyomo.environ import ConcreteModel, Set
+from   pyomo.environ import ConcreteModel
 
 # Support running this file directly (e.g. VS Code "Run Python File"), where __package__ is empty and the
 # relative imports below have no parent package; fall back to absolute package imports in that case.
@@ -103,7 +101,7 @@ OUTPUT_REGISTRY = (
     ("heat",        NetworkHeatOperationResults,    (),                       lambda m: bool(m.ha and m.pIndHeat)),
     ("network",     NetworkOperationResults,        (),                       None),
     ("marginal",    MarginalResults,                ("plot",),                None),
-    ("economic",    EconomicResults,                ("area", "plot"),         None),
+    ("economic",    EconomicResults,                (        "area", "plot"), None),
 
     # --- plots (slow, not data-critical) ---
     ("map",         NetworkMapResults,              (),                       None),
@@ -230,7 +228,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     # introduce cycle flow formulations in DC and AC load flow
     pIndCycleFlow = 0
 
-    # sector decomposition to get proxy of the hydrogen sector: 0 to solve the complete problem, 1 to solve sector Benders decomposition
+    # sector decomposition to get a proxy of the hydrogen sector: 0 to solve the complete problem, 1 to solve by sector Benders decomposition
     pIndSectorDecomposition = 0
     mTEPES.pIndSectorDecomposition = pIndSectorDecomposition
 
@@ -286,7 +284,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     # output results only for every unit (0), only for every technology (1), or for both (2)
     pIndTechnologyOutput = 2
 
-    # output results just for the system (0) or for every area (1). Areas correspond usually to countries
+    # output results just for the system (0) or for every area (1). Areas usually correspond to countries
     pIndAreaOutput = 1
 
     # indicators to control the number of output results
@@ -306,20 +304,8 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
             if k in OUTPUT_CATEGORIES:
                 _flags[k] = 1 if v else 0
 
-    pIndInvestmentResults           = _flags["investment"]
-    pIndGenerationOperationResults  = _flags["generation"]
-    pIndESSOperationResults         = _flags["ess"]
-    pIndReservoirOperationResults   = _flags["reservoir"]
-    pIndNetworkH2OperationResults   = _flags["h2"]
-    pIndNetworkHeatOperationResults = _flags["heat"]
-    pIndFlexibilityResults          = _flags["flexibility"]
-    pIndReliabilityResults          = _flags["reliability"]
-    pIndNetworkOperationResults     = _flags["network"]
-    pIndNetworkMapResults           = _flags["map"]
-    pIndOperationSummaryResults     = _flags["summary"]
-    pIndCostSummaryResults          = _flags["cost"]
-    pIndMarginalResults             = _flags["marginal"]
-    pIndEconomicResults             = _flags["economic"]
+    # Only pIndPlotOutput is still read directly (via _extras below); every other
+    # output category is dispatched straight from _flags through OUTPUT_REGISTRY.
     pIndPlotOutput                  = _flags["plots"]
 
     # Tell OutputResults functions where to write (used by _outdir helper).

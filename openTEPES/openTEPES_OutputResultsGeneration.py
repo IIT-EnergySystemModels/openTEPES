@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 29, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 09, 2026
 
 Generation operation results, electricity and heat.
 
@@ -170,7 +170,7 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnolo
     OutputToFile *= 1e3
     OutputToFile.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_Generation_{CaseName}.csv', sep=',')
 
-    # tolerance to consider 0 a number
+    # tolerance to treat a number as 0
     pEpsilon = 1e-6
 
     sPSNG        = [(p,sc,n,g) for p,sc,n,g in mTEPES.psng if OptModel.vTotalOutput[p,sc,n,g].ub - OptModel.vTotalOutput[p,sc,n,g]() > pEpsilon]
@@ -337,7 +337,7 @@ def GenerationOperationHeatResults(DirName, CaseName, OptModel, mTEPES, pIndTech
     OutputToFile *= 1e3
     OutputToFile.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_GenerationHeat_{CaseName}.csv', sep=',')
 
-    # tolerance to consider 0 a number
+    # tolerance to treat a number as 0
     pEpsilon = 1e-6
 
     sPSNG        = [(p,sc,n,ch) for p,sc,n,ch in mTEPES.psnch if OptModel.vTotalOutputHeat[p,sc,n,ch].ub and OptModel.vTotalOutputHeat[p,sc,n,ch].ub       - OptModel.vTotalOutputHeat[p,sc,n,ch]() > pEpsilon]

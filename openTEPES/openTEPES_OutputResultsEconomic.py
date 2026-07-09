@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 08, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 09, 2026
 
 Marginal, cost-summary, and economic results.
 
@@ -67,7 +67,7 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES, pIndPlotOutput):
     for ar,g in mTEPES.a2g:
         g2a[ar].append(g)
 
-    # tolerance to consider 0 a number
+    # tolerance to treat a number as 0
     pEpsilon = 1e-6
 
     #%% outputting the incremental variable cost of each Generator (neither ESS nor boilers) with power surplus

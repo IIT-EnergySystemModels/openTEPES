@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 02, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 09, 2026
 
 openTEPES.openTEPES_ProblemSolvingStageIter — stage-by-stage formulate-and-solve driver.
 
@@ -67,7 +67,7 @@ def StageIterativeSolving(mTEPES, DirName, CaseName, SolverName, pIndLogConsole,
     # iterative model formulation for each stage of a year
     for p,sc,st in mTEPES.ps*mTEPES.stt:
 
-        # control for not repeating the stages in case of several ones
+        # control to avoid repeating the stages when there are several of them
         mTEPES.NoRepetition = 0
 
         # activate only load levels to formulate
@@ -157,7 +157,7 @@ def StageIterativeSolving(mTEPES, DirName, CaseName, SolverName, pIndLogConsole,
                         StartTime         = time.time()
                         print('Writing LP file                        ... ', round(WritingLPFileTime), 's')
 
-                    # there are no expansion decisions, or they are ignored (it is an operation model), or there are no system emission nor minimum RES constraints
+                    # there are no expansion decisions, or they are ignored (it is an operation model), or there are no system emission or minimum RES constraints
                     mTEPES.pScenProb[p,sc] = 1.0
                     ProblemSolving(DirName, CaseName, SolverName, mTEPES, mTEPES, pIndLogConsole, p, sc, st, mTEPES.p.ord(p)*mTEPES.sc.ord(sc)*mTEPES.st.ord(st))
                     mTEPES.pScenProb[p,sc] = 0.0

@@ -1,12 +1,12 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 10, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 09, 2026
 openTEPES.openTEPES_ModelFormulationHydrogen — hydrogen network operation: H2 balance and hydrogen-not-served cost.
 """
 from __future__ import annotations
 
 import time
 from collections import defaultdict
-from pyomo.environ import Constraint, Set
+from pyomo.environ import Constraint
 
 
 def NetworkH2OperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st):
@@ -27,7 +27,7 @@ def NetworkH2OperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, 
         if (nd,el) in mTEPES.n2g:
             l2n[nd].append(el)
 
-    # nodes to fuel heater using H2 (b2n)
+    # nodes to fuel heaters using H2 (b2n)
     b2n = defaultdict(list)
     for nd,hh in mTEPES.nd*mTEPES.hh:
         if (nd,hh) in mTEPES.n2g:

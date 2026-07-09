@@ -5,10 +5,7 @@ Open Generation, Storage, and Transmission Operation and Expansion Planning Mode
 import os
 import time
 import psutil
-import subprocess
-import importlib
 import pandas as pd
-import pyomo.environ as pyo
 from   pyomo.environ import ConcreteModel, Set, RangeSet, Param, Var, NonNegativeReals, Binary, UnitInterval, Reals, Constraint, Objective, minimize, Suffix
 from   pyomo.opt     import SolverFactory
 
@@ -128,7 +125,7 @@ def StageDecomposition(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogC
             # in normal Benders iterations
             if itBdFinal < oSS.FINAL_ITERATION:
                 # solving master problem
-                SolverResultsMst = Solver.solve(mMaster)
+                Solver.solve(mMaster)
                 pTotalSCost      = mMaster.vTotalSCost()
 
                 # storing the master solution and fixing investment decision for the subproblem
@@ -198,7 +195,6 @@ def StageDecomposition(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogC
                 mMaster.del_component(mMaster.eBd_Cuts)
             # add one cut
             mMaster.iter.add(itBd)
-            iter = mMaster.iter
             mMaster.eBd_Cuts = Constraint(mMaster.iter, rule=eBd_Cuts, doc='Benders cuts')
             # Benders cuts are considered as lazy
             # for iter in mMaster.iter:

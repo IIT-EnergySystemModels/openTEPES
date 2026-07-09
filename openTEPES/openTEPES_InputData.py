@@ -1,14 +1,12 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 3, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 09, 2026
 """
 
 import time
 import math
 import os
 import pandas        as pd
-from   collections   import defaultdict
-from   pyomo.environ import Set, Param, Var, Binary, NonNegativeReals, NonNegativeIntegers, PositiveReals, PositiveIntegers, Reals, UnitInterval, Any
-from   pyomo.environ import Block, Boolean
+from   pyomo.environ import Set
 
 # Support running this file directly (e.g. VS Code "Run Python File"), where __package__ is empty and the
 # relative imports below have no parent package; fall back to absolute package imports in that case.
@@ -18,7 +16,7 @@ try:
 except ImportError:
     import os, sys
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    from openTEPES.openTEPES_InputSource    import open_source, df_to_set_values, InputSource
+    from openTEPES.openTEPES_InputSource    import df_to_set_values, InputSource
     from openTEPES.openTEPES_InputCSVSource import CSVSource
 
 # from line_profiler import profile
@@ -127,12 +125,12 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         return dfs, par
 
     dfs, par = read_input_data()
-    # if 'pIndRampReserves', 'pIndReserveActivation', 'pIndVarTTC', 'pIndPTDF', 'pIndHydroTopology', 'pIndHydrogen', 'pIndHeat' not in par include them and set value to zero
+    # if 'pIndRampReserves', 'pIndReserveActivation', 'pIndVarTTC', 'pIndPTDF', 'pIndHydroTopology', 'pIndHydrogen', 'pIndHeat' are not in par, add them and set their value to zero
     for key in ['pIndRampReserves', 'pIndReserveActivation', 'pIndVarTTC', 'pIndPTDF', 'pIndHydroTopology', 'pIndHydrogen', 'pIndHeat']:
         if key not in par.keys():
             par[key] = 0
 
-    # substitute NaN by 0
+    # replace NaN with 0
     for key,df in dfs.items():
         if 'dfEmission' in key:
             df.fillna(math.inf, inplace=True)
@@ -261,7 +259,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         par['pDemandHeat']        = dfs['dfDemandHeat']          [mTEPES.nd] * 1e-3                                  # heat     demand                           [GW]
 
     if par['pTimeStep'] > 1:
-        # compute the demand as the mean over the time step load levels and assign it to active load levels. Idem for the remaining parameters
+        # compute the demand as the mean over the time step load levels and assign it to active load levels. The same applies to the remaining parameters
         # Skip mean calculation for empty DataFrames (either full of 0s or NaNs)
         def ProcessParameter(pDataFrame: pd.DataFrame, pTimeStep: int) -> pd.DataFrame:
             if ((pDataFrame != 0) & (~pDataFrame.isna())).any().any():

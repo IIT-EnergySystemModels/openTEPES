@@ -314,7 +314,7 @@ def StageSolve(OptModel, mTEPES, DirName, CaseName, SolverName, pIndLogConsole, 
                 OptModel.del_component    (getattr(OptModel, f'eTotalOCost_{p}_{sc}_{st}'))
 
                 if itBdFinal < FINAL_ITERATION:
-                    # in the final iteration constraints can't be deleted to get the all output results
+                    # in the final iteration constraints can't be deleted to get all the output results
                     for c in OptModel.component_objects(pyo.Constraint):
                         c.deactivate()
 

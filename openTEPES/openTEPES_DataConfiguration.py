@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 01, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 09, 2026
 
 openTEPES.openTEPES_DataConfiguration — builds the derived sets and parameters on the model: instrumental sets, ESS/RES sets, and the flag-driven branches (hydro topology, hydrogen, heat, PTDF). Runs after InputData has read the raw sets and parameters.
 """
@@ -43,7 +43,7 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     # Dropping duplicate keys
     sBrList = [(ni,nf) for n,(ni,nf)  in enumerate(sBr) if (ni,nf) not in sBr[:n]]
 
-    #%% defining subsets: active load levels (n,n2), thermal units (t), RES units (r), ESS units (es), candidate gen units (gc), candidate ESS units (ec), all the electric lines (la), candidate electric lines (lc), candidate DC electric lines (cd), existing DC electric lines (cd), electric lines with losses (ll), reference node (rf), and reactive generating units (gq)
+    #%% defining subsets: active load levels (n,n2), thermal units (t), RES units (r), ESS units (es), candidate gen units (gc), candidate ESS units (ec), all the electric lines (la), candidate electric lines (lc), candidate DC electric lines (cd), existing DC electric lines (ed), electric lines with losses (ll), reference node (rf), and reactive generating units (gq)
     mTEPES.p      = Set(doc='periods'                          , initialize=[pp     for pp   in mTEPES.pp  if par['pPeriodWeight']       [pp] >  0.0 and sum(par['pDuration'][pp,sc,n] for sc,n in mTEPES.scc*mTEPES.nn)])
     mTEPES.sc     = Set(doc='scenarios'                        , initialize=[scc    for scc  in mTEPES.scc                                                  ])
     mTEPES.ps     = Set(doc='periods/scenarios'                , initialize=[(p,sc) for p,sc in mTEPES.p*mTEPES.sc if par['pScenProb'] [p,sc] >  0.0 and sum(par['pDuration'][p,sc,n ] for    n in            mTEPES.nn)])
@@ -120,7 +120,7 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
         par['pVariableNTCFrw'] = par['pVariableNTCFrw'].reindex(columns=mTEPES.la, fill_value=0.0) * dfs['dfNetwork']['SecurityFactor']      # variable NTC forward  direction because of the security factor
         par['pVariableNTCBck'] = par['pVariableNTCBck'].reindex(columns=mTEPES.la, fill_value=0.0) * dfs['dfNetwork']['SecurityFactor']      # variable NTC backward direction because of the security factor
     if par['pIndPTDF']:
-        # get the level_3, level_4, and level_5 from multiindex of pVariablePTDF
+        # get the level_3, level_4, and level_5 from the multiindex of pVariablePTDF
         PTDF_columns = par['pVariablePTDF'].columns
         PTDF_lines   = PTDF_columns.droplevel([3]).drop_duplicates()
         par['pIndBinLinePTDF'].loc[:] = par['pIndBinLinePTDF'].index.isin(PTDF_lines).astype(float)
@@ -153,7 +153,7 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     #     if mTEPES.st.ord(st) > 1 and pStageDuration[st] != pStageDuration[mTEPES.st.prev(st)]:
     #         assert (0 == 1)
 
-    # delete all the load level belonging to stages with duration equal to zero
+    # delete all the load levels belonging to stages with duration equal to zero
     mTEPES.del_component(mTEPES.n )
     mTEPES.del_component(mTEPES.n2)
     mTEPES.n  = Set(doc='load levels', initialize=[nn for nn in mTEPES.nn if sum(par['pDuration'][p,sc,nn] for p,sc in mTEPES.ps) > 0])
@@ -292,8 +292,8 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     par['pMustRun']                  = par['pMustRun'].map             (idxDict)
 
     # Operating reserves can be provided while generating or while consuming
-    # So there is need for two options to decide if the unit is able to provide them
-    # Due to backwards compatibility reasons instead of adding a new column to Data_Generation NoOperatingReserve column now accepts two inputs
+    # So there is a need for two options to decide if the unit is able to provide them
+    # Due to backwards compatibility reasons, instead of adding a new column to Data_Generation, the NoOperatingReserve column now accepts two inputs
     # They are separated by "|", if only one input is detected, both parameters are set to whatever the input is
 
     def split_and_map(val):
@@ -302,7 +302,7 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
             gen, cons = val.split('|', 1)
             return pd.Series([idxDict.get(gen.strip(), 0), idxDict.get(cons.strip(), 0)])
         else:
-        # If no | character is found, both options are set to the inputted value
+        # If no | character is found, both options are set to the input value
             mapped = idxDict.get(val, 0)
             return pd.Series([mapped, mapped])
 
@@ -477,7 +477,7 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     par['pStableTime'] = round(par['pStableTime']/mTEPES.pDurationNZMax).astype('int')
     par['pShiftTime']  = round(par['pShiftTime'] /mTEPES.pDurationNZMax).astype('int')
 
-    # %% definition of the time-steps leap to observe the stored energy at an ESS
+    # %% definition of the time-step leap to observe the stored energy at an ESS
     idxCycle            = dict()
     idxCycle[0        ] = 1
     idxCycle[0.0      ] = 1
@@ -514,7 +514,7 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     par['pStorageTimeStep']  = par['pStorageTimeStep'].where(par['pStorageTimeStep'] <= par['pStageDuration'].min(), par['pStageDuration'].min())
 
     if par['pIndHydroTopology']:
-        # %% definition of the time-steps leap to observe the stored energy at a reservoir
+        # %% definition of the time-step leap to observe the stored energy at a reservoir
         idxCycleRsr            = dict()
         idxCycleRsr[0        ] = 1
         idxCycleRsr[0.0      ] = 1
@@ -697,7 +697,7 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
             par['pMaxStorage']    [par['pMaxStorage']    [[es for es in e2a[ar]]] <  par['pEpsilonElec']] = 0.0
             par['pIniInventory']  [par['pIniInventory']  [[es for es in e2a[ar]]] <  par['pEpsilonElec']] = 0.0
 
-            # the pEpsilonElec units are in GW while the volume is in hm3 and teh hydro inflows in m3/s
+            # the pEpsilonElec units are in GW while the volume is in hm3 and the hydro inflows in m3/s
             if par['pIndHydroTopology']:
                 par['pMinVolume']    [par['pMinVolume']    [[rs for rs in r2a[ar]]] < par['pEpsilonElec']] = 0.0
                 par['pMaxVolume']    [par['pMaxVolume']    [[rs for rs in r2a[ar]]] < par['pEpsilonElec']] = 0.0
@@ -887,7 +887,7 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     for g in mTEPES.g:
         par['pRatedLinearVarCost'][g] += 1e-3*par['pEpsilon']*mTEPES.g.ord(g)
 
-    # BigM maximum flow to be used in the Kirchhoff's 2nd law disjunctive constraint.
+    # BigM maximum flow to be used in Kirchhoff's 2nd law disjunctive constraint.
     # For AC candidate lines (lca) the disjunctive form (eKirchhoff2ndLaw1/2) reads,
     # after multiplying through by M:
     #     vFlowElec - (theta_i - theta_j) * pSBase / pLineX  <=  M * (1 - vLineCommit)
@@ -913,7 +913,7 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
         par['pBigMFlowBck'].loc[lca] = M_angle_lca
         par['pBigMFlowFrw'].loc[lca] = M_angle_lca
 
-    # if BigM are 0.0 then converted to 1.0 to avoid division by 0.0
+    # if BigM values are 0.0 then converted to 1.0 to avoid division by 0.0
     par['pBigMFlowBck'] = par['pBigMFlowBck'].where(par['pBigMFlowBck'] != 0.0, 1.0)
     par['pBigMFlowFrw'] = par['pBigMFlowFrw'].where(par['pBigMFlowFrw'] != 0.0, 1.0)
 
