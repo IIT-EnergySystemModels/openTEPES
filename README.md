@@ -13,7 +13,7 @@
 
 The **openTEPES** model has been developed at the [Instituto de Investigación Tecnológica (IIT)](https://www.iit.comillas.edu/index.php.en) of the [Universidad Pontificia Comillas](https://www.comillas.edu/en/).
 
-The **openTEPES** model presents a decision support system for defining the **integrated generation, storage, and transmission resource planning** (IRP, GEP+SEP+TEP) -**Capacity Expansion Planning** (CEP) or **Integrated Resource Planning** (IRP)- of a **large-scale electric system** at a tactical level (i.e., time horizons of 5-20 years),
+The **openTEPES** model presents a decision support system for defining the **integrated generation, storage, and transmission resource planning** (IRP, GEP+SEP+TEP) -**Capacity Expansion Planning** (CEP) or **Integrated Resource Planning** (IRP)- of a **large-scale electric system** at the tactical level (i.e., time horizons of 5-20 years),
 defined as a set of **dynamic investment decisions for generation, storage, and (electricity, hydrogen, and heat) networks for multiple future years**. It is a tool for energy system planners to support the energy transition toward a **decarbonized, reliable, and affordable energy system**.
 
 The [openTEPES complete documentation](https://opentepes.readthedocs.io/en/latest/index.html) presents the input data, output results, mathematical formulation, download and installation, and the research projects where the model has been used.
@@ -21,7 +21,7 @@ The [openTEPES complete documentation](https://opentepes.readthedocs.io/en/lates
 It is integrated into the [open energy system modeling platform](https://openenergymodels.net/), helping model Europe's energy system, and is in the list of [energy models published under open-source licenses](https://wiki.openmod-initiative.org/wiki/Open_Models).
 It is also part of [Africa's open energy system modeling toolbox](https://africaenergymodels.net/models/), which is a suite of open and linked state-of-the-art open-source energy system models for Africa, and of the [African Energy Modelling Network Open-Source Tools](https://africanenergymodellingnetwork.net/en/focus-area-3-open-source-tools-and-data).
 
-Scripts are provided to exchange information with Integrated Assessment Models (IAM) using their [nomenclature and data formats](https://nomenclature-iamc.readthedocs.io/en/stable/).
+Scripts are provided to exchange information with Integrated Assessment Models (IAMs) using their [nomenclature and data formats](https://nomenclature-iamc.readthedocs.io/en/stable/).
 
 It has been used by the **Ministry for the Ecological Transition and the Demographic Challenge (MITECO)** to analyze the electricity sector in the latest Spanish [National Energy and Climate Plan (NECP) Update 2023-2030](https://www.miteco.gob.es/content/dam/miteco/es/energia/files-1/pniec-2023-2030/PNIEC_2024_240924.pdf) in September 2024.
 
@@ -66,7 +66,7 @@ Contact: [andres.ramos@comillas.edu](mailto:andres.ramos@comillas.edu)
 # Description
 
 **openTEPES** determines investment plans for new facilities (generators, ESS, electric lines, hydrogen pipelines, and heat pipes) to meet forecasted demand at minimum cost.
-The objective is to evaluate future needs for generation, storage, and electricity, hydrogen, and heat networks. The main results are the guidelines for the future structure of the generation, storage, and transmission systems.
+The objective is to evaluate future needs for generation and storage, and for electricity, hydrogen, and heat networks. The main results are the guidelines for the future structure of the generation, storage, and transmission systems.
 
 The **openTEPES** model represents a decision support system for defining the **integrated generation, storage, and transmission resource planning** (IRP, GEP+SEP+TEP) of a **large-scale electric system** at the tactical level (i.e., time horizons of 5-20 years),
 defined as a set of **dynamic investment decisions for generation, storage, and (electricity, hydrogen, and heat) networks for several future years**. It is a tool for energy system planners to support the energy transition toward a **decarbonized, reliable, and affordable energy system**.
@@ -78,7 +78,7 @@ It automatically determines optimal expansion plans that satisfy multiple attrib
 
   It hierarchically represents the different time horizons for decision-making in an electricity (hydrogen or heat) system:
 
-- Load level: one hour, e.g., 01-01 00:00:00+01:00 to 12-30 23:00:00+01:00, or **quarter of an hour**, e.g., 01-01 00:00:00+01:00 to 30-12 23:45:00+01:00
+- Load level: one hour, e.g., 01-01 00:00:00+01:00 to 12-30 23:00:00+01:00, or **quarter of an hour**, e.g., 01-01 00:00:00+01:00 to 12-30 23:45:00+01:00
 
   The time division allows a flexible, user-defined representation of the periods for evaluating system operation. It can also be run with time intervals of several consecutive hours (bi-hourly or tri-hourly resolution,
   depending on the hourly or quarter-hour definition) to reduce computational burden without sacrificing accuracy. The model can be run with a single period (year) or several periods (years) to analyze the system's evolution.
@@ -91,7 +91,7 @@ It automatically determines optimal expansion plans that satisfy multiple attrib
 The objective function includes two main quantifiable costs: **investment costs for generation, storage, and transmission (CAPEX)** and **expected variable operation costs (including generation, consumption, emissions, and reliability costs) (system OPEX)**.
 
 The model formulates a **two-stage stochastic optimization** problem that includes binary generation, storage, and electricity; hydrogen and heat network investment/retirement decisions; generation operation decisions (commitment, startup, and shutdown decisions are also binary); and electric line-switching decisions.
-Capacity expansion considers the adequacy system reserve margin, maximum CO2 emissions, and minimum and maximum energy constraints.
+Capacity expansion considers the system adequacy reserve margin, maximum CO2 emissions, and minimum and maximum energy constraints.
 
 The highly detailed operational model is an electric network-constrained unit commitment (NCUC) based on a tight, compact formulation that includes operating reserves and electric line-switching decisions via DC power flow (DCPF).
 **Ohmic losses** in the electrical network are assumed to be proportional to the electrical line flow. It considers various **energy storage systems (ESS)**, including pumped-hydro storage, batteries, demand response, electric vehicles, solar thermal, and electrolyzers.
@@ -155,7 +155,7 @@ This solver is activated by calling the openTEPES model with the solver name 'ap
 
 ## Gurobi
 
-Another recommendation is the use of [Gurobi solver](https://www.gurobi.com/). However, it is a commercial solver but more powerful than open-source solvers for large-scale problems.
+Another recommendation is the use of [Gurobi solver](https://www.gurobi.com/). It is a commercial solver, more powerful than open-source solvers for large-scale problems.
 As a commercial solver, it needs a license that is free of charge for academic usage by signing up on the [Gurobi webpage](https://pages.gurobi.com/registration/). You can also ask for an [evaluation license](https://www.gurobi.com/downloads/request-an-evaluation-license/) for 30 days to test the solver.
 It can be installed using: `conda install -c gurobi gurobi` and then ask for an academic or commercial license. Activate the license on your computer using the `grbgetkey` command (you need to be in a university internet domain if you are installing an academic license).
 
@@ -165,7 +165,7 @@ As an easy option for installation, we have the free and open-source [GLPK solve
 
 ## CBC
 
-The [CBC solver](https://github.com/coin-or/Cbc) is also another free and open-source solver. For Windows users, the effective way to install the CBC solver is to download the binaries from this [site](https://www.coin-or.org/download/binary/Cbc/), copy and paste the *cbc.exe* file to the PATH that is the "bin" directory of the Anaconda or Miniconda environment. Under Linux, it can be installed using: `conda install -c conda-forge coincbc`.
+The [CBC solver](https://github.com/coin-or/Cbc) is another free and open-source solver. For Windows users, the effective way to install the CBC solver is to download the binaries from this [site](https://www.coin-or.org/download/binary/Cbc/), copy and paste the *cbc.exe* file to the PATH that is the "bin" directory of the Anaconda or Miniconda environment. Under Linux, it can be installed using: `conda install -c conda-forge coincbc`.
 
 ## Mosek
 
@@ -196,7 +196,7 @@ Then, five parameters (case, dir, solver, results, and console log) will be aske
 
 **Remark:** at this step, only press enter for each input, and openTEPES will be executed with the default parameters.
 
-After this in a directory of your choice, make a copy of the [9n](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/9n) or [sSEP](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/sSEP) case to create a new case of your choice but using the current format of the CSV files.
+After this, in a directory of your choice, make a copy of the [9n](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/9n) or [sSEP](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/sSEP) case to create a new case of your choice but using the current format of the CSV files.
 A proper execution by `openTEPES_Main` can be made by introducing the new case and the directory of your choice. Note that the solver is **glpk** by default, but it can be changed to other solvers that Pyomo supports (e.g., gurobi, highs).
 
 Then, the **results** are written to the folder named after the case. The results contain plots and summary spreadsheets for multiple optimized energy scenarios, periods, and load levels, as well as the investment decisions.
