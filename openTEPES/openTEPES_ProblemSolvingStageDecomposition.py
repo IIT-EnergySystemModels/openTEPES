@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 02, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 09, 2026
 """
 
 import os
@@ -109,7 +109,7 @@ def StageDecomposition(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogC
     itBdFinal = 0
     itBdOptml = 0
     for itBd in mMaster.itBd:
-        if ((abs(1-Z_Lower/Z_Upper) > mTEPES.pBdTol or itBd == 1) and Z_Lower < Z_Upper) or itBdFinal <= 9999:
+        if ((abs(1-Z_Lower/Z_Upper) > mTEPES.pBdTol or itBd == 1) and Z_Lower < Z_Upper) or itBdFinal <= oSS.FINAL_ITERATION:
 
             if SolverName == 'gurobi':
                 Solver.options['OutputFlag'] = 0
@@ -126,7 +126,7 @@ def StageDecomposition(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogC
                 print('Writing MST LP file iteration', itBd, '       ... ', round(WritingLPFileTime), 's')
 
             # in normal Benders iterations
-            if itBdFinal < 9999:
+            if itBdFinal < oSS.FINAL_ITERATION:
                 # solving master problem
                 SolverResultsMst = Solver.solve(mMaster)
                 pTotalSCost      = mMaster.vTotalSCost()
@@ -159,27 +159,27 @@ def StageDecomposition(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogC
             if itBd == 1:
                 mMaster.vTheta.free()
 
-            oSS.StageSolve(OptModel, mTEPES, DirName, CaseName, SolverName, pIndLogConsole, _path, pIndCycleFlow, itBd, itBdFinal)
+            oSS.StageSolve(OptModel, mTEPES, DirName, CaseName, SolverName, pIndLogConsole, pIndCycleFlow, itBd, itBdFinal)
 
             pTotalOCost          = mTEPES.pTotalOCost()
             pTotalOCost_it[itBd] = pTotalOCost
 
             # save the iteration if the o.f. strictly improves
-            if Z_Upper >= pTotalSCost - mMaster.vTheta() + pTotalOCost and itBdFinal < 9999:
+            if Z_Upper >= pTotalSCost - mMaster.vTheta() + pTotalOCost and itBdFinal < oSS.FINAL_ITERATION:
                 itBdOptml = itBd
                 print('Iteration Optimal ', itBdOptml)
 
             # updating lower and upper bound
             Z_Lower =                  pTotalSCost
-            if itBdFinal < 9999:
+            if itBdFinal < oSS.FINAL_ITERATION:
                 Z_Upper = min(Z_Upper, pTotalSCost - mMaster.vTheta() + pTotalOCost)
             OptModel.vTotalSCost = Z_Upper
             print('Iteration         ', itBd, ' Lower bound [MEUR]  ... ', Z_Lower)
             print('Iteration         ', itBd, ' Upper bound [MEUR]  ... ', Z_Upper)
 
             # after convergence allow a final iteration with the optimal solution of the master problem
-            if abs(1 - Z_Lower/Z_Upper) < mTEPES.pBdTol and itBd > 1 and itBdFinal < 9999:
-                itBdFinal  = 9999
+            if abs(1 - Z_Lower/Z_Upper) < mTEPES.pBdTol and itBd > 1 and itBdFinal < oSS.FINAL_ITERATION:
+                itBdFinal  = oSS.FINAL_ITERATION
                 print('Iteration Final   ', itBdFinal)
             else:
                 itBdFinal += 1

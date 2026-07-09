@@ -1,7 +1,8 @@
 # Change Log
 
-## [4.18.17RC] - 2026-07-08 Unreleased in PyPI
+## [4.18.17RC] - 2026-07-09 Unreleased in PyPI
 
+- [FIXED] fix syntactic errors in time Benders decomposition modules
 - [FIXED] fix syntactic errors in openTEPES_ModelFormulationElectricity
 - [CHANGED] change OutputResultsNetwork and OutputResultsEconomic for reducing execution time
 - [FIXED] fix vNetworkInvPer at the same time that vNetworkInvest to avoid having vNetworkInvPer as binary variables when there are relaxed investments
