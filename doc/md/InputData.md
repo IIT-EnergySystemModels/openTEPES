@@ -18,7 +18,17 @@ con.execute("SHOW TABLES").df()                       # one table per input, plu
 con.execute("SELECT Value FROM schema_metadata WHERE Key = 'source_case'").fetchone()   # the case name
 ```
 
-openTEPES *reads* a DuckDB case but does not create one: author your cases as CSV, or build the DuckDB from your CSV files with an ingest step that follows this schema. A schema-aware tool that emits a DuckDB case from a CSV case is planned.
+Two tools in `scripts/openTEPES_DuckDB/` convert a case between the two forms. `Tool_CSV_to_DuckDB` writes a CSV case to a `.duckdb`, and `Tool_DuckDB_to_CSV` exports a `.duckdb` back to CSV folders:
+
+```bash
+# CSV case  ->  .duckdb
+python scripts/openTEPES_DuckDB/Tool_CSV_to_DuckDB.py openTEPES/cases/9n
+
+# .duckdb  ->  CSV case
+python scripts/openTEPES_DuckDB/Tool_DuckDB_to_CSV.py openTEPES/cases/9n_duckdb/9n.duckdb --out openTEPES/cases/9n_from_db
+```
+
+Both tools are driven by the same schema as the DuckDB reader, so a converted case reads back identically. A `.duckdb` file is a generated artefact — the CSV folders are the versioned source, so `.duckdb` files are git-ignored and you regenerate them with the tool. The bundled `9n` case ships in both forms as an example: `openTEPES/cases/9n` (CSV) and `openTEPES/cases/9n_duckdb/9n.duckdb` (a ready-to-run DuckDB input).
 
 The `Yes`/`No` option flags below also accept an integer `1` (or `1.0`) in place of `Yes` and `0` in place of `No`.
 

@@ -2,6 +2,7 @@
 
 ## [4.18.17RC] - 2026-07-09 Unreleased in PyPI
 
+- [CHANGED] update InputData docs: the CSV<->DuckDB converter tools now exist (drop the "planned" note), with the bundled `9n` DuckDB example.
 - [FIXED] fix syntactic errors in time Benders decomposition modules
 - [FIXED] fix syntactic errors in openTEPES_ModelFormulationElectricity
 - [CHANGED] change OutputResultsNetwork and OutputResultsEconomic for reducing execution time
