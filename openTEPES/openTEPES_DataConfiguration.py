@@ -768,6 +768,20 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     par['pMaxPower2ndBlock']  = par['pMaxPower2ndBlock'].where (par['pMaxPower2ndBlock']  > par['pEpsilon'], 0.0)
     par['pMaxCharge2ndBlock'] = par['pMaxCharge2ndBlock'].where(par['pMaxCharge2ndBlock'] > par['pEpsilon'], 0.0)
 
+    # validate CHP power ranges (boilers exempt) so the power-to-heat ratio below is well defined
+    if par['pIndHeat']:
+        for ch in mTEPES.ch:
+            if ch not in mTEPES.bo:
+                if par['pRatedMaxPowerHeat'][ch] <= par['pRatedMinPowerHeat'][ch]:
+                    raise ValueError(f'### CHP {ch} has a non-positive heat     power range.')
+                if par['pRatedMaxPowerElec'][ch] <= par['pRatedMinPowerElec'][ch]:
+                    raise ValueError(f'### CHP {ch} has a non-positive electric power range.')
+        # heat demand at a node with no heat generator and no heat pipe is skipped by eBalanceHeat
+        pHeatServedNode = {nd for nd,g in mTEPES.n2g if g in mTEPES.chp} | {nd for ni,nf,cc in mTEPES.ha for nd in (ni,nf)}
+        for nd in mTEPES.nd:
+            if nd not in pHeatServedNode and par['pDemandHeat'][nd].max() > 0.0:
+                print(f'### Warning: node {nd} has heat demand but no heat generator or pipe.')
+
     # computation of the power-to-heat ratio of the CHP units
     # heat ratio of boiler units is fixed to 1.0
     par['pPower2HeatRatio']   = pd.Series([1.0 if ch in mTEPES.bo else (par['pRatedMaxPowerElec'][ch]-par['pRatedMinPowerElec'][ch])/(par['pRatedMaxPowerHeat'][ch]-par['pRatedMinPowerHeat'][ch]) for ch in mTEPES.ch], index=mTEPES.ch)
