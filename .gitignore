@@ -149,5 +149,7 @@ oT_Plot_*.html
 tmp/
 
 # DuckDB inputs/outputs are generated artefacts (built from CSVs by the writer, or written by a run),
-# so they are not tracked. Cases are versioned as CSV; regenerate a .duckdb with Tool_openTEPES_CSV_to_DuckDB.
+# so they are not tracked. Cases are versioned as CSV; regenerate a .duckdb with Tool_CSV_to_DuckDB.
 *.duckdb
+# Exception: one worked example of a DuckDB input case, kept so users can run the DuckDB backend out of the box.
+!openTEPES/cases/9n_duckdb/9n.duckdb
