@@ -249,6 +249,30 @@ def test_openTEPES_run(case_7d_system, expected_cost):
     np.testing.assert_approx_equal(actual_cost, expected_cost)
 
 
+# === Solve from a DuckDB input ===
+#
+# The DuckDB input backend is only tested at read time (input parity) elsewhere; no other test solves a model
+# from a .duckdb. This writes the 7-day-trimmed 9n case to a .duckdb and solves straight from it, asserting the
+# same total cost as the CSV run above, so the whole input -> model -> solve path through the DuckDB backend is
+# covered. It reuses the case_7d_system fixture (which trims the CSV case and restores it afterwards); the .duckdb
+# is written into the test's tmp dir, so the tracked example case is untouched.
+@pytest.mark.solve
+@pytest.mark.parametrize("case_7d_system", ["9n"], indirect=["case_7d_system"])
+def test_openTEPES_run_from_duckdb(case_7d_system, tmp_path):
+    import sys
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "scripts", "openTEPES_DuckDB"))
+    from Tool_CSV_to_DuckDB import write_case
+
+    case_dir = os.path.join(case_7d_system["DirName"], case_7d_system["CaseName"])
+    db_path = write_case(case_dir, tmp_path / "9n.duckdb")
+
+    mTEPES = openTEPES_run(str(tmp_path), db_path.name, case_7d_system["SolverName"], 0, 0)
+
+    assert mTEPES is not None, "Model instance returned is None."
+    actual_cost = pyo.value(mTEPES.eTotalSCost)
+    np.testing.assert_approx_equal(actual_cost, 252.201329983352)  # same reference as the CSV 9n run above
+
+
 # === Parametrized multi-stage test (one representative week per stage) ===
 #
 # Covers the "representative stages" temporal-reduction pattern that the openTEPES QA page documents — i.e. each

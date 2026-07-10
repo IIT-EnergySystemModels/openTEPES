@@ -33,3 +33,20 @@ def test_csv_duckdb_csv_roundtrip(case_name, tmp_path):
     out_dir = export_case(db_path, tmp_path / f"{case_name}_from_db")
     diffs = compare_snapshots(base, snapshot(str(out_dir)))
     assert not diffs, f"{case_name}: CSV vs exported CSV differ:\n" + "\n".join(diffs[:10])
+
+
+def test_shipped_example_duckdb_matches_9n_csv():
+    """The tracked example openTEPES/cases/9n_duckdb/9n.duckdb must stay in sync with the 9n CSV case.
+
+    It is the one .duckdb committed to the repo; it is generated from the 9n CSV case. If someone edits that CSV
+    case and forgets to regenerate the .duckdb, the example goes stale. This compares the two the same way the
+    round-trip test does, catching that drift.
+    """
+    csv_case = os.path.join(CASES_DIR, "9n")
+    example_db = os.path.join(CASES_DIR, "9n_duckdb", "9n.duckdb")
+    diffs = compare_snapshots(snapshot(csv_case), snapshot(example_db))
+    assert not diffs, (
+        "openTEPES/cases/9n_duckdb/9n.duckdb is stale vs the 9n CSV case — regenerate it with\n"
+        "  python scripts/openTEPES_DuckDB/Tool_CSV_to_DuckDB.py openTEPES/cases/9n "
+        "--db openTEPES/cases/9n_duckdb/9n.duckdb\n" + "\n".join(diffs[:10])
+    )
