@@ -1,20 +1,23 @@
 """
-openTEPES_InputDuckDBWriter — write a CSV case to a ``.duckdb`` input file.
+Tool_CSV_to_DuckDB — write an openTEPES CSV case to a ``.duckdb`` input file.
 
-Offline case-prep utility (not part of the core model). The inverse of ``openTEPES_InputDuckDBSource``: read every
-``oT_Data_*`` / ``oT_Dict_*`` CSV of a case and store it in the long / key-value / passthrough shape the DuckDB
-backend reads back. Both sides are driven by the same ``openTEPES_InputSchema.TABLE_SPECS``, so the writer and the
-reader cannot drift. A ``schema_metadata`` table records the case name, which ``DuckDBSource`` requires.
+Offline case-prep utility (not part of the core model). The inverse of ``Tool_DuckDB_to_CSV`` and of the in-package
+``openTEPES_InputDuckDBSource`` reader: read every ``oT_Data_*`` / ``oT_Dict_*`` CSV of a case and store it in the
+long / key-value / passthrough shape the DuckDB backend reads back. Both sides are driven by the same
+``openTEPES_InputSchema.TABLE_SPECS``, so the writer and the reader cannot drift. A ``schema_metadata`` table records
+the case name, which ``DuckDBSource`` requires.
 
 The metadata is deliberately limited to the case name and schema version — no timestamp or absolute path — so the
 same CSV case always produces the same tables (a regenerated DB compares equal to a committed one, input for input).
 
-Needs openTEPES installed (it imports ``openTEPES_InputSchema``). Run it through the CLI wrapper:
+Needs openTEPES installed (it imports ``openTEPES_InputSchema``). Run it as a script:
 
-    python scripts/openTEPES_CSV_to_DuckDB/Tool_openTEPES_CSV_to_DuckDB.py cases/9n
+    python scripts/openTEPES_DuckDB/Tool_CSV_to_DuckDB.py cases/9n
+    python scripts/openTEPES_DuckDB/Tool_CSV_to_DuckDB.py cases/9n --db out/9n.duckdb
 """
 from __future__ import annotations
 
+import argparse
 from pathlib import Path
 
 import pandas as pd
@@ -26,8 +29,6 @@ from openTEPES.openTEPES_InputSchema import (
     WIDE_MULTILEVEL_TO_LONG,
     WIDE_TO_LONG,
 )
-
-__all__ = ["write_case"]
 
 
 # ---- CSV -> DB-table transforms (the exact inverse of DuckDBSource's _reconstruct_* helpers)
@@ -119,3 +120,18 @@ def write_case(case_dir, db_path=None, case_name: str | None = None) -> Path:
     finally:
         con.close()
     return db_path
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Write an openTEPES CSV case to a .duckdb input file.")
+    parser.add_argument("case_dir", type=Path, help="Case directory with oT_Data_*.csv and oT_Dict_*.csv files.")
+    parser.add_argument("--case-name", default=None, help="Case name (default: detected from oT_Data_Parameter_*.csv).")
+    parser.add_argument("--db", type=Path, default=None, help="Output .duckdb path (default: <case_dir>/../<case>.duckdb).")
+    args = parser.parse_args()
+
+    db_path = write_case(args.case_dir, args.db, args.case_name)
+    print(f"wrote {db_path} ({db_path.stat().st_size / 1024:.1f} KB)")
+
+
+if __name__ == "__main__":
+    main()
