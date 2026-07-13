@@ -777,7 +777,7 @@ def GenerationOperationModelFormulationRampMinTime(OptModel, mTEPES, pIndLogCons
     setattr(OptModel, f'eRampUpCharge_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.eh, rule=eRampUpCharge, doc='maximum ramp up   charge [p.u.]'))
 
     if pIndLogConsole:
-        print('eRampUpCharge             ... ', len(getattr(OptModel, f'eRampUpChr_{p}_{sc}_{st}')), ' rows')
+        print('eRampUpCharge             ... ', len(getattr(OptModel, f'eRampUpCharge_{p}_{sc}_{st}')), ' rows')
 
     def eRampDwCharge(OptModel,n,eh):
         if (p,eh) in mTEPES.peh:
@@ -790,10 +790,10 @@ def GenerationOperationModelFormulationRampMinTime(OptModel, mTEPES, pIndLogCons
                 return Constraint.Skip
         else:
             return Constraint.Skip
-    setattr(OptModel, f'eRampDwChr_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.eh, rule=eRampDwCharge, doc='maximum ramp down charge [p.u.]'))
+    setattr(OptModel, f'eRampDwCharge_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.eh, rule=eRampDwCharge, doc='maximum ramp down charge [p.u.]'))
 
     if pIndLogConsole:
-        print('eRampDwChr                ... ', len(getattr(OptModel, f'eRampDwChr_{p}_{sc}_{st}')), ' rows')
+        print('eRampDwCharge             ... ', len(getattr(OptModel, f'eRampDwCharge_{p}_{sc}_{st}')), ' rows')
 
     pIndSimplexFormulation = True  # Parameter to choose if minimum stable time should be physically accurate or computationally efficient. True for efficiency, False for accuracy
     pIndStableTimeDeadBand = True  # Parameter to choose if ramps below a certain threshold set by pEpsilon should not be restricted. True for having dead band, False for restricting all ramps
