@@ -76,15 +76,21 @@ Uganda 2030 Electric System (118 generators, 49 nodes, 205 lines) one scenario w
 :scale: 40%
 ```
 
-The model also plots some additional plots.
+The model also generates some additional plots.
 
-The processed result tables can be written as CSV files (the default), a **DuckDB** database, or both. Pass `output_format="csv"`, `"duckdb"`, or `"both"` to `openTEPES_run` (or to `openTEPES_Runner.run`). With DuckDB on, the case also writes one `oT_Results_<CaseName>.duckdb` holding one table per result file. A `"csv"` run is byte-identical to earlier versions, so switching format changes only where the results are stored, not their values. One database per case keeps a parameter sweep single-writer-safe; see {doc}`Sweeps`.
+The processed result tables can be written as CSV files (the default), a **DuckDB** database, or both. Pass `output_format="csv"`, `"duckdb"`, or `"both"` to
+`openTEPES_run` (or to `openTEPES_Runner.run`). With DuckDB on, the case also writes one `oT_Results_<CaseName>.duckdb` holding one table per result file. A
+`"csv"` run is byte-identical to earlier versions, so switching format changes only where the results are stored, not their values. One database per case keeps
+a parameter sweep single-writer-safe; see {doc}`Sweeps`.
 
-Separately, the raw parameters, variables, and constraints can be dumped to a DuckDB database for debugging by setting `pIndDumpRawResults = 1` in the `openTEPES.py` module. This is off by default.
+Separately, the raw parameters, variables, and constraints can be dumped to a DuckDB database for debugging by setting `pIndDumpRawResults = 1` in the
+`openTEPES.py` module. This is off by default.
 
 ## Working with the DuckDB results
 
-With `output_format="duckdb"` (or `"both"`) each case writes `oT_Results_<CaseName>.duckdb`, holding one table per result file. The table name is the result name without the `oT_Result_` prefix and the `_<case>` suffix — so `oT_Result_TechnologyInvestment_9n.csv` becomes the table `TechnologyInvestment`. Query it with any DuckDB client, and load any result straight into a DataFrame:
+With `output_format="duckdb"` (or `"both"`) each case writes `oT_Results_<CaseName>.duckdb`, holding one table per result file. The table name is the result
+name without the `oT_Result_` prefix and the `_<case>` suffix — so `oT_Result_TechnologyInvestment_9n.csv` becomes the table `TechnologyInvestment`. Query it
+with any DuckDB client, and load any result straight into a DataFrame:
 
 ```python
 import duckdb
@@ -95,19 +101,23 @@ con.execute("DESCRIBE TechnologyInvestment").df()        # its columns
 df = con.execute("SELECT * FROM TechnologyInvestment").df()   # a result as pandas
 ```
 
-Across a sweep, `aggregate(..., to="duckdb")` writes one `oT_Sweep.duckdb` whose tables (`oT_Sweep_<Table>`) carry a leading `case` column, so a whole scan is one query. `case` is a SQL keyword, so quote it:
+Across a sweep, `aggregate(..., to="duckdb")` writes one `oT_Sweep.duckdb` whose tables (`oT_Sweep_<Table>`) carry a leading `case` column, so a whole scan is
+one query. `case` is a SQL keyword, so quote it:
 
 ```python
 con = duckdb.connect("out/oT_Sweep.duckdb", read_only=True)
 con.execute('SELECT * FROM oT_Sweep_TechnologyInvestment WHERE "case" = \'d110\'').df()
 ```
 
-The DuckDB and CSV outputs hold the same numbers, so this is purely a convenience for querying and joining results with SQL instead of globbing and concatenating CSVs.
+The DuckDB and CSV outputs hold the same numbers, so this is purely a convenience for querying and joining results with SQL instead of globbing and
+concatenating CSVs.
 
-The CSV output files used for outputting the results are briefly described in the following items.
+The CSV output files are briefly described in the following items.
 
-The power is expressed in **MW**, energy or heat in **GWh**, marginal costs in **€/MWh**, and costs in million euros **M€**. Hydrogen is expressed in **tH2**. Reservoir volume is expressed in hm{sup}`3`,
-and water flow in hm{sup}`3`/s. The energy transported in the electricity network is described in **GWh-Mkm**. In each file, the identifiers are described in the first columns, followed by the headers and the description of each variable.
+The power is expressed in **MW**, energy or heat in **GWh**, marginal costs in **€/MWh**, and costs in million euros **M€**. Hydrogen is expressed in **tH2**.
+Reservoir volume is expressed in hm{sup}`3`,
+and water flow in hm{sup}`3`/s. The energy transported in the electricity network is expressed in **GWh-Mkm**. In each file, the identifiers are described in
+the first columns, followed by the headers and the description of each variable.
 
 ## Investment/Retirement
 
@@ -319,7 +329,8 @@ Period        Scenario    Load level  Generator   Output (discharge in ESS) [MW]
 
 File `oT_Result_NetDemand.csv`
 
-VRES are variable renewable energy sources (e.g., wind and solar), units with null linear variable cost and no storage capacity. The net demand is the demand minus the VRES.
+VRES are variable renewable energy sources (e.g., wind and solar), units with null linear variable cost and no storage capacity. The net demand is the demand
+minus the VRES.
 
 ```{eval-rst}
 ============  ==========  ==========  ===================================
@@ -341,7 +352,7 @@ Period        Scenario    Load level  Node        Electricity net demand (demand
 
 File `oT_Result_GenerationSurplus.csv`
 
-The surplus power is the additional generation available from a generator beyond its maximum power.
+The surplus power is the additional generation available from a generator up to its maximum power.
 
 ```{eval-rst}
 ============  ==========  ==========  ==============  ===============================
@@ -926,8 +937,8 @@ Period        Scenario    Technology  Area        Generation, consumption, flows
 ```
 
 Positive values represent generation, and negative values represent demand or consumption. The sum of the values per area (column) must be 0.
-EnergyFlowIn and EnergyFlowOut are the sum of the incoming and outgoing flows of the corresponding area nodes. Only if the network is like an antenna, these values
-will represent the import/export of energy to/from other areas.
+EnergyFlowIn and EnergyFlowOut are the sum of the incoming and outgoing flows of the corresponding area nodes. These values represent the import/export of
+energy to/from other areas only if the network is like an antenna.
 
 File `oT_Result_BalanceEnergyPerNode.csv`
 
@@ -1485,7 +1496,8 @@ Period        Scenario    Load level  Generator   Captured SRMC when generating 
 ============  ==========  ==========  ==========  ======================================
 ```
 
-SRMC is the short-run marginal cost. It is computed for each load level as the generator output multiplied by the SRMC, divided by the mean output of each stage.
+SRMC is the short-run marginal cost. It is computed for each load level as the generator output multiplied by the SRMC, divided by the mean output of each
+stage.
 
 File `oT_Result_ConsumptionCapturedSRMC.csv`
 
@@ -1497,7 +1509,8 @@ Period        Scenario    Load level  Generator   Captured SRMC when pumping/cha
 ============  ==========  ==========  ==========  ============================================
 ```
 
-SRMC is the short-run marginal cost. It is computed for each load level as the ESS consumption multiplied by the SRMC divided by the mean consumption of each stage.
+SRMC is the short-run marginal cost. It is computed for each load level as the ESS consumption multiplied by the SRMC, divided by the mean consumption of each
+stage.
 
 ## Marginal information
 
@@ -1565,7 +1578,8 @@ Period        Scenario    Load level  Node        Locational Short-Run Marginal 
 ============  ==========  ==========  ==========  ===================================================================================================
 ```
 
-These short-run marginal costs (SRMC) are obtained after fixing the binary and continuous investment decisions and the binary operation decisions to their optimal values.
+These short-run marginal costs (SRMC) are obtained after fixing the binary and continuous investment decisions and the binary operation decisions to their
+optimal values.
 Remember that binary decisions are not affected by marginal changes.
 
 File `oT_Result_NetworkSRMCH2.csv`
@@ -1578,7 +1592,8 @@ Period        Scenario    Load level  Node        Locational Short-Run Marginal 
 ============  ==========  ==========  ==========  ==================================================
 ```
 
-These short-run marginal costs (SRMC) are obtained after fixing the binary and continuous investment decisions and the binary operation decisions to their optimal values.
+These short-run marginal costs (SRMC) are obtained after fixing the binary and continuous investment decisions and the binary operation decisions to their
+optimal values.
 Remember that binary decisions are not affected by marginal changes.
 
 File `oT_Result_NetworkSRMCHeat.csv`
@@ -1591,7 +1606,8 @@ Period        Scenario    Load level  Node        Locational Short-Run Marginal 
 ============  ==========  ==========  ==========  ====================================================
 ```
 
-These short-run marginal costs (SRMC) are obtained after fixing the binary and continuous investment decisions and the binary operation decisions to their optimal values.
+These short-run marginal costs (SRMC) are obtained after fixing the binary and continuous investment decisions and the binary operation decisions to their
+optimal values.
 Remember that binary decisions are not affected by marginal changes.
 
 File `oT_Result_MarginalEnergyValue.csv`
