@@ -8,7 +8,7 @@ openTEPES documentation master file, created by Andres Ramos
 
 - openTEPES has been tested for use in Microsoft Windows, Ubuntu (a Linux distribution), and macOS **operating systems**
 
-- The **installation** documentation can be found on
+- The **installation** documentation can be found at
 
   > [https://opentepes.readthedocs.io/en/latest/Download.html](https://opentepes.readthedocs.io/en/latest/Download.html)
   >
@@ -16,56 +16,65 @@ openTEPES documentation master file, created by Andres Ramos
 
 - We recommend using these **solvers**
 
-  > [Gurobi](https://www.gurobi.com/products/gurobi-optimizer/) because there is a license that is free of charge for academic usage
+  > [Gurobi](https://www.gurobi.com/products/gurobi-optimizer/) because there is a license that is free of charge for academic use
   >
   > [HiGHS](https://ergo-code.github.io/HiGHS/dev/installation/#Precompiled-Binaries) as a free solver
   >
-  > [GAMS/CPLEX](https://www.gams.com/) for those institutions having the corresponding licenses
+  > [GAMS/CPLEX](https://www.gams.com/) for those institutions that have the corresponding licenses
 
 ## What PC do I need?
 
 - openTEPES requirements depend on the case study
 
-- The **main dimensions** to take care of are:
+- The **main dimensions** to consider are:
 
-  > Time (periods, load levels). For example, select one every five years, use representative days, or define a 2-3 hour time step instead of 1 hour
+  > Time (periods, load levels). For example, select one year out of every five, use representative days, or define a 2-3 hour time step instead of 1 hour
   >
   > Generating units. Use generation types instead of generating units
   >
-  > Network (nodes, lines, transportation or DC power flow, ohmic losses). Use a reduced network (corridors) with fewer nodes and lines, transport model instead of DC power flow, or ignore ohmic losses
+  > Network (nodes, lines, transportation or DC power flow, ohmic losses). Use a reduced network (corridors) with fewer nodes and lines, transport model instead
+  > of DC power flow, or ignore ohmic losses
   >
   > Stochasticity (scenarios)
   >
-  > Binary investment decisions (candidate generators, storage, transmission lines), operation decisions (commitment, startup, shutdown), and mutual exclusivity between units
+  > Binary investment decisions (candidate generators, storage, transmission lines), operation decisions (commitment, startup, shutdown), and mutual exclusivity
+  > between units
   >
   > Sectors to consider (electricity, heat, hydrogen, hydro basins, etc.)
 
-- As a rule of thumb, a linear optimization problem requires **1 GB of memory for every 1 million rows**. For a mixed-integer linear optimization problem, the requirements are much higher, and they depend on the number of binary variables and the number of constraints that include them.
+- As a rule of thumb, a linear optimization problem requires **1 GB of memory for every 1 million rows**. For a mixed-integer linear optimization problem, the
+  requirements are much higher, and they depend on the number of binary variables and the number of constraints that include them.
 
-- So, depending on the size of the optimization problem and the available memory, you may or may not be able to run it on your PC. As an example, the case studies provided can be run on a laptop with 32 GB of memory.
+- So, depending on the size of the optimization problem and the available memory, you may or may not be able to run it on your PC. As an example, the case
+  studies provided can be run on a laptop with 32 GB of memory.
 
 ## First steps
 
 - openTEPES is provided with some [case studies](https://opentepes.readthedocs.io/en/latest/Download.html#cases). Each one has varied characteristics
-- Check that you can run them on your PC. Some of them may not run if you have a PC with small RAM memory
+- Check that you can run them on your PC. Some of them may not run if you have a PC with little RAM
 
 ## Potential issues
 
-- Check that any item you define (generator, node, technology, area, etc.) is included in the corresponding dictionary (`oT_Dict_Generation`, `oT_Dict_Node`, `oT_Dict_Technology`, `oT_Dict_Area`, etc.). Otherwise, the optimization problem will not run
+- Check that any item you define (generator, node, technology, area, etc.) is included in the corresponding dictionary (`oT_Dict_Generation`, `oT_Dict_Node`,
+  `oT_Dict_Technology`, `oT_Dict_Area`, etc.). Otherwise, the optimization problem will not run
 - openTEPES is implicitly a network model. Therefore, **at least two different nodes** and one electrical transmission line connecting them must be defined
-- **At least one generator** must be defined. A thermal generator has a variable cost greater than zero (the product of fuel cost times the linear term ≠ 0). A variable renewable energy unit has zero variable cost (the product of fuel cost times the linear term = 0)
-- Check the correspondence between the resources you define for the system in the case study to be run and the nodes where they are deemed to be located. The location within the grid of any resource defined must be specified.
-- Check that all the demand in the system within the case study is in a node that can be served with the energy output of some resources located in any node that is connected/to be connected to the former, possibly including generation representing energy not served (ENS).
+- **At least one generator** must be defined. A thermal generator has a variable cost greater than zero (the product of fuel cost times the linear term ≠ 0). A
+  variable renewable energy unit has zero variable cost (the product of fuel cost times the linear term = 0)
+- Check the correspondence between the resources you define for the system in the case study to be run and the nodes where they are meant to be located. The
+  location within the grid of any resource defined must be specified.
+- Check that all the demand in the system within the case study is in a node that can be served with the energy output of some resources located in any node
+  that is connected/to be connected to the former, possibly including generation representing energy not served (ENS).
 
 ## Some tips
 
 On building an appropriate set of **input data files** for a case study that can be run on openTEPES:
 
-- How can I strongly **reduce the size** of the case study for testing purposes
+- How can I strongly **reduce the size** of the case study for testing purposes?
 
-  > Delete the duration (column D in `oT_Data_Duration`) of the load levels you want to ignore. For example, if you delete the duration beyond the first 168 hours, you are considering just the first week of the year in the case study
+  > Delete the duration (column D in `oT_Data_Duration`) of the load levels you want to ignore. For example, if you delete the duration beyond the first 168
+  > hours, you are considering just the first week of the year in the case study
   >
-  > Put a time step of 2 or 3 hours in the `oT_Data_Parameter` file. This will reduce the number of load levels by 2 or 3
+  > Put a time step of 2 or 3 hours in the `oT_Data_Parameter` file. This will reduce the number of load levels by a factor of 2 or 3
   >
   > For working with representative stages, see, for example, the [9n7y case study](https://opentepes.readthedocs.io/en/latest/Download.html#cases)
 
@@ -81,7 +90,7 @@ On building an appropriate set of **input data files** for a case study that can
 
 - How to **ignore a generator**
 
-  > Don't assign a node to it in `oT_Data_Generation`, i.e., leave the node column empty
+  > Do not assign a node to it in `oT_Data_Generation`, i.e., leave the node column empty
   >
   > Set the initial period where the generator can be in operation beyond the year of study in `oT_Data_Generation`
 
@@ -89,19 +98,28 @@ On building an appropriate set of **input data files** for a case study that can
 
   > Set the initial period where the line can be in operation beyond the year of study in `oT_Data_Network`
 
-- All the **empty cells** of the CSV files are substituted internally by openTEPES with 0.0
+- All the **empty cells** of the CSV files are replaced internally by openTEPES with 0.0
 
-  > Therefore, if you want to set the generation of a solar PV to 0.0 at night, then you must put a small value, 0.000001, that will be substituted internally by openTEPES with 0.0. If the cell is left empty, openTEPES will consider the **rated capacity** of the solar PV unit defined in `oT_Data_Generation` as the generation at night.
+  > Therefore, if you want to set the generation of a solar PV to 0.0 at night, then you must put a small value, 0.000001, that will be replaced internally by
+  > openTEPES with 0.0. If the cell is left empty, openTEPES will consider the **rated capacity** of the solar PV unit defined in `oT_Data_Generation` as the
+  > generation at night.
 
-- There is no need to include the column for a certain resource (generator) within an input data file if there is no data to be defined for this resource within that file. Empty columns don't need to be included in some input data CSV files, including `oT_Data_VariableMaxGeneration`, `oT_Data_VariableMinGeneration`, `oT_Data_VariableMaxConsumption`, `oT_Data_VariableMinConsumption`, etc., but at least an empty column with the name of the resource must be included in the file header
+- There is no need to include the column for a certain resource (generator) within an input data file if there is no data to be defined for this resource within
+  that file. Empty columns do not need to be included in some input data CSV files, including `oT_Data_VariableMaxGeneration`, `oT_Data_VariableMinGeneration`,
+  `oT_Data_VariableMaxConsumption`, `oT_Data_VariableMinConsumption`, etc., but at least an empty column with the name of the resource must be included in the
+  file header
 
 On analyzing **output results**:
 
-- Make sure the problem-solving process has been successfully completed, reaching optimality (console log and solver log file provide information on this).
+- Make sure the problem-solving process has been successfully completed, reaching optimality (the console log and the solver log file provide information on
+  this).
 
-- If the problem-solving process has not produced an optimal solution, check if the system conditions defined within the input data files are too tight, i.e., the system may not have been provided with large enough flexibility for the model to find the optimal problem solution. If this may be the case, some problem constraints could/should be relaxed to allow the model to compute an optimal solution.
+- If the problem-solving process has not produced an optimal solution, check if the system conditions defined within the input data files are too tight, i.e.,
+  the system may not have been provided with large enough flexibility for the model to find the optimal problem solution. If this may be the case, some problem
+  constraints could/should be relaxed to allow the model to compute an optimal solution.
 
-- Check the level of the overall system variables in the output **energy balance files** (e.g., `oT_Result_BalanceEnergyPerArea`, `oT_Result_BalanceEnergyPerTech`) to assess whether they seem to make sense. Focus first on certain specific variables, including the ones that follow:
+- Check the level of the overall system variables in the output **energy balance files** (e.g., `oT_Result_BalanceEnergyPerArea`,
+  `oT_Result_BalanceEnergyPerTech`) to assess whether they seem to make sense. Focus first on certain specific variables, including the ones that follow:
 
   > Non-served energy amount
   >
@@ -109,10 +127,14 @@ On analyzing **output results**:
   >
   > Overall output by technology, if you have some reference levels for this to compare to
 
-- Whenever the level of some variables at the system level does not seem to be reasonable, check the output data file for the energy balance at the area (country) level, to try to locate in which area within the system the problem may be located
+- Whenever the level of some variables at the system level does not seem to be reasonable, check the output data file for the energy balance at the area
+  (country) level, to try to identify in which area within the system the problem may be located
 
 On analyzing **many scenarios**:
 
-- If there are several scenarios to be analyzed, and they are not linked by investment decisions, the model automatically solves one scenario after the other and presents the results for all the scenarios in the output data files. In this case, the results for each scenario can be easily identified by the scenario name in the corresponding column header of the output data files. This can be limiting if there are many scenarios and the system is large.
+- If there are several scenarios to be analyzed, and they are not linked by investment decisions, the model automatically solves one scenario after the other
+  and presents the results for all the scenarios in the output data files. In this case, the results for each scenario can be easily identified by the scenario
+  name in the corresponding column header of the output data files. This can be limiting if there are many scenarios and the system is large.
 
-- In the second case, it may be more convenient to run the scenarios one by one (each scenario located in a different folder), and save the results for each scenario in the corresponding folder. This can be done by running openTEPES simultaneously in several consoles.
+- In that case, it may be more convenient to run the scenarios one by one (each scenario located in a different folder), and save the results for each scenario
+  in the corresponding folder. This can be done by running openTEPES simultaneously in several consoles.
