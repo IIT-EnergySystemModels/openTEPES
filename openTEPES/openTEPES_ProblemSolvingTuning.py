@@ -20,11 +20,19 @@ case-dependent and can regress smaller cases.
 """
 from __future__ import annotations
 
+import os
+
 import psutil
 
 
 def _threads() -> int:
-    """Default thread count: half of (logical + physical) cores, rounded down."""
+    """Thread count for the solver: ``--threads`` or ``OTEPES_THREADS`` when set to a positive integer, else half of the
+    (logical + physical) cores, rounded down. Capping it lets cases run side by side, each taking a slice of the cores
+    instead of all claiming half the machine.
+    """
+    env = os.environ.get("OTEPES_THREADS", "").strip()
+    if env.isdigit() and int(env) > 0:
+        return int(env)
     return int((psutil.cpu_count(logical=True) + psutil.cpu_count(logical=False)) / 2)
 
 

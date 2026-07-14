@@ -711,6 +711,15 @@ parser.add_argument('--no-plots',                default=False, help="Disable HT
 parser.add_argument('--out',           type=str, default=None,  help="Output directory for oT_Result_*.csv and oT_Plot_*.html. Default: <dir>/<case>.")
 parser.add_argument('--gzip-large-csvs',         default=False, help="After writing results, gzip every oT_Result_*.csv whose name starts with one of the prefixes given by --gzip-patterns. Default: off (CSVs written plain). NOTE: .csv.gz files cannot be opened directly in Excel; pandas reads them natively.", action="store_true")
 parser.add_argument('--gzip-patterns', type=str, default=None,  help=("Comma-separated list of name-prefixes (after the leading 'oT_Result_') selecting which result CSVs to gzip. Used with --gzip-large-csvs. Default: " + ",".join(DEFAULT_GZIP_PATTERNS) + "."))
+def _positive_int(value: str) -> int:
+    n = int(value)
+    if n < 1:
+        raise argparse.ArgumentTypeError("must be a positive integer")
+    return n
+
+
+parser.add_argument('--threads',       type=_positive_int, default=None,
+                    help="Cap the solver thread count. Default: half of (logical + physical) cores. Also set by OTEPES_THREADS.")
 
 DIR    = os.path.join(os.path.dirname(__file__), "cases")
 CASE   = '9n'
@@ -724,6 +733,10 @@ def main():
     StartTime = time.time()
     # Parsing the arguments
     args = parser.parse_args()
+
+    if args.threads is not None:
+        os.environ["OTEPES_THREADS"] = str(args.threads)   # _threads() reads it, so the flag wins over the variable
+
     if args.dir is None:
         args.dir    = input('Input Dir    Name (Default {}): '.format(DIR))
         if args.dir == '':
