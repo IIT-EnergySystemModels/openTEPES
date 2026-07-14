@@ -231,7 +231,12 @@ def run(cases, solver_name, *, mode="pre-build", backend="serial", n_workers=1,
                 records = [_run_one(*args) for args in work]
             elif backend == "multiprocessing":
                 import multiprocessing as mp
-                with mp.Pool(processes=n_workers) as pool:
+                # Start the workers fresh. A forked worker inherits the parent's solver globals, and HiGHS fixes its
+                # thread count on the first solve and then refuses to change it — so a parent that has already solved
+                # would hand the worker a scheduler it cannot resize to its slice of the budget. Mode A re-reads its
+                # inputs per case anyway, so it has nothing to gain from fork.
+                ctx = mp.get_context("spawn")
+                with ctx.Pool(processes=n_workers) as pool:
                     records = pool.starmap(_run_one, work)
             elif backend == "joblib":
                 try:
