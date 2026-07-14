@@ -16,15 +16,18 @@ import glob
 import json
 import os
 import sys
+from contextlib import contextmanager
 
 try:
     from .openTEPES import openTEPES_run
     from .openTEPES_ResultAggregate import aggregate
+    from .openTEPES_ProblemSolvingTuning import _threads
 except ImportError:
     import sys
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     from openTEPES.openTEPES import openTEPES_run
     from openTEPES.openTEPES_ResultAggregate import aggregate
+    from openTEPES.openTEPES_ProblemSolvingTuning import _threads
 
 
 def _status_dir(case):
@@ -110,6 +113,28 @@ def _run_one_in_memory(case, baseline, solver_name, output_spec, gzip_patterns,
     return summary
 
 
+@contextmanager
+def _worker_thread_budget(backend, n_workers):
+    """Give each worker its slice of the thread budget for the duration of the sweep.
+
+    Workers call ``_threads()`` in their own process, so each would otherwise take the full default
+    and the sweep would ask for ``n_workers`` machines. A count the user set is left alone.
+    """
+    chosen = os.environ.get("OTEPES_THREADS", "").strip()
+    if backend == "serial" or n_workers <= 1 or chosen:
+        yield
+        return
+    previous = os.environ.get("OTEPES_THREADS")
+    os.environ["OTEPES_THREADS"] = str(max(1, _threads() // n_workers))
+    try:
+        yield
+    finally:
+        if previous is None:
+            os.environ.pop("OTEPES_THREADS", None)
+        else:
+            os.environ["OTEPES_THREADS"] = previous
+
+
 def _run_in_memory(cases, solver_name, *, backend, n_workers, output_spec, gzip_patterns,
                    pIndOutputResults, pIndLogConsole, output_format):
     """Mode B dispatch: read each distinct baseline once, then run every case from it. Returns one summary per case."""
@@ -172,6 +197,9 @@ def run(cases, solver_name, *, mode="pre-build", backend="serial", n_workers=1,
     stem to a number / callable / DataFrame, see ``InMemorySource``) and requires a
     distinct ``out_path`` per case.
 
+    A parallel sweep splits the solver thread budget across its ``n_workers``, so they ask for one
+    machine between them, not one each. ``--threads`` / ``OTEPES_THREADS`` overrides that.
+
     ``output_format`` (``"csv"`` / ``"duckdb"`` / ``"both"``) selects each case's
     result format (see ``openTEPES_run``); each worker writes its own per-case
     DuckDB so a parallel sweep stays single-writer-safe. ``aggregate_to``, if set
@@ -181,42 +209,48 @@ def run(cases, solver_name, *, mode="pre-build", backend="serial", n_workers=1,
     """
     cases = list(cases)
 
-    if mode == "in-memory":
-        records = _run_in_memory(
-            cases, solver_name, backend=backend, n_workers=n_workers, output_spec=output_spec,
-            gzip_patterns=gzip_patterns, pIndOutputResults=pIndOutputResults,
-            pIndLogConsole=pIndLogConsole, output_format=output_format,
-        )
-    elif mode == "pre-build":
-        for case in cases:
-            if case.overlay is not None:
-                raise NotImplementedError(
-                    f"Case.overlay is for Mode B (in-memory overlay) and is not supported in Mode A "
-                    f"(mode='pre-build'); case label={case.label!r} set an overlay. Use mode='in-memory'."
-                )
+    with _worker_thread_budget(backend, n_workers):
+        if mode == "in-memory":
+            records = _run_in_memory(
+                cases, solver_name, backend=backend, n_workers=n_workers, output_spec=output_spec,
+                gzip_patterns=gzip_patterns, pIndOutputResults=pIndOutputResults,
+                pIndLogConsole=pIndLogConsole, output_format=output_format,
+            )
+        elif mode == "pre-build":
+            for case in cases:
+                if case.overlay is not None:
+                    raise NotImplementedError(
+                        f"Case.overlay is for Mode B (in-memory overlay) and is not supported in Mode A "
+                        f"(mode='pre-build'); case label={case.label!r} set an overlay. Use mode='in-memory'."
+                    )
 
-        work = [(case, solver_name, output_spec, gzip_patterns, pIndOutputResults, pIndLogConsole, output_format)
-                for case in cases]
+            work = [(case, solver_name, output_spec, gzip_patterns, pIndOutputResults, pIndLogConsole, output_format)
+                    for case in cases]
 
-        if backend == "serial":
-            records = [_run_one(*args) for args in work]
-        elif backend == "multiprocessing":
-            import multiprocessing as mp
-            with mp.Pool(processes=n_workers) as pool:
-                records = pool.starmap(_run_one, work)
-        elif backend == "joblib":
-            try:
-                from joblib import Parallel, delayed
-            except ImportError as exc:
-                raise ImportError("backend='joblib' requires joblib (pip install joblib).") from exc
-            records = Parallel(n_jobs=n_workers)(delayed(_run_one)(*args) for args in work)
+            if backend == "serial":
+                records = [_run_one(*args) for args in work]
+            elif backend == "multiprocessing":
+                import multiprocessing as mp
+                # Start the workers fresh. A forked worker inherits the parent's solver globals, and HiGHS fixes its
+                # thread count on the first solve and then refuses to change it — so a parent that has already solved
+                # would hand the worker a scheduler it cannot resize to its slice of the budget. Mode A re-reads its
+                # inputs per case anyway, so it has nothing to gain from fork.
+                ctx = mp.get_context("spawn")
+                with ctx.Pool(processes=n_workers) as pool:
+                    records = pool.starmap(_run_one, work)
+            elif backend == "joblib":
+                try:
+                    from joblib import Parallel, delayed
+                except ImportError as exc:
+                    raise ImportError("backend='joblib' requires joblib (pip install joblib).") from exc
+                records = Parallel(n_jobs=n_workers)(delayed(_run_one)(*args) for args in work)
+            else:
+                raise ValueError(f"unknown backend {backend!r}; expected 'serial', 'multiprocessing', or 'joblib'.")
         else:
-            raise ValueError(f"unknown backend {backend!r}; expected 'serial', 'multiprocessing', or 'joblib'.")
-    else:
-        raise ValueError(
-            f"unknown mode {mode!r}; expected 'pre-build' (Mode A) or 'in-memory' (Mode B). "
-            "Mode C (post-build hot-swap) lives in openTEPES_ProblemSolvingResolve.resolve."
-        )
+            raise ValueError(
+                f"unknown mode {mode!r}; expected 'pre-build' (Mode A) or 'in-memory' (Mode B). "
+                "Mode C (post-build hot-swap) lives in openTEPES_ProblemSolvingResolve.resolve."
+            )
 
     if aggregate_to:
         solved = [(case, rec) for case, rec in zip(cases, records) if rec.get("status") != "error"]
