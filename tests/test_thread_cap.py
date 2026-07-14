@@ -3,11 +3,14 @@
 The fallback is the test that matters: with nothing set, or with a value that is not a positive
 integer, ``_threads()`` must return what it always did, so existing runs do not move.
 """
+import os
+
 import psutil
 import pytest
 
 from openTEPES.openTEPES_Main import parser
 from openTEPES.openTEPES_ProblemSolvingTuning import _threads
+from openTEPES.openTEPES_Runner import _worker_thread_budget
 
 
 def _default() -> int:
@@ -45,3 +48,23 @@ def test_flag_wins_over_the_environment(monkeypatch):
     args = parser.parse_args(["--threads", "2"])
     monkeypatch.setenv("OTEPES_THREADS", str(args.threads))   # what openTEPES_Main.main() does
     assert _threads() == 2
+
+
+def test_a_parallel_sweep_splits_the_budget_and_restores_it(monkeypatch):
+    monkeypatch.delenv("OTEPES_THREADS", raising=False)
+    with _worker_thread_budget("multiprocessing", 4):
+        assert _threads() == max(1, _default() // 4)
+    assert "OTEPES_THREADS" not in os.environ
+
+
+def test_a_count_the_user_set_survives_the_sweep(monkeypatch):
+    monkeypatch.setenv("OTEPES_THREADS", "3")
+    with _worker_thread_budget("multiprocessing", 4):
+        assert _threads() == 3
+
+
+@pytest.mark.parametrize("backend,n_workers", [("serial", 1), ("serial", 4), ("multiprocessing", 1)])
+def test_one_case_at_a_time_keeps_the_default(monkeypatch, backend, n_workers):
+    monkeypatch.delenv("OTEPES_THREADS", raising=False)
+    with _worker_thread_budget(backend, n_workers):
+        assert _threads() == _default()
