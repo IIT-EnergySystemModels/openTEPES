@@ -133,6 +133,11 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     # replace NaN with 0 (only on numeric columns to avoid dtype errors on string columns)
     for key,df in dfs.items():
         num_cols = df.select_dtypes(include='number').columns
+        # A blank cell in a text column arrives as NaN from the CSV reader but as None from DuckDB.
+        # Both mean "not given", so write NaN in every text column and the model sees the same case
+        # whichever way it was read.
+        for col in df.columns.difference(num_cols):
+            df[col] = df[col].where(df[col].notna(), math.nan)
         if 'dfEmission' in key:
             df.fillna({col: math.inf for col in num_cols}, inplace=True)
         elif 'dfGeneration' in key:

@@ -98,6 +98,26 @@ def snapshot(case_path: str) -> dict:
     return out
 
 
+def _blanks_aware_equal(ax: np.ndarray, bx: np.ndarray) -> bool:
+    """Compare two non-numeric arrays, counting a blank in the same slot on both sides as equal.
+
+    ``np.array_equal`` cannot do this on its own. It reports an array holding a NaN as different
+    from itself, because NaN never equals NaN, and on a pandas NA it raises instead of answering.
+    Text columns hold a blank wherever the case leaves a cell empty, so fall back to pandas, which
+    treats two blanks in the same place as equal. Try ``np.array_equal`` first all the same: it is
+    the cheap path, and it still counts two arrays as equal when only their dtypes differ.
+    """
+    try:
+        if np.array_equal(ax, bx):
+            return True
+    except Exception:  # noqa: BLE001 - a pandas NA makes the elementwise comparison ambiguous
+        pass
+    try:
+        return pd.DataFrame(ax).equals(pd.DataFrame(bx))
+    except Exception:  # noqa: BLE001 - fall back to "different" if the values resist comparison
+        return False
+
+
 def _values_equal(a: Any, b: Any) -> tuple[bool, str]:
     if isinstance(a, dict) and a.get("__df__") and isinstance(b, dict) and b.get("__df__"):
         if a["shape"] != b["shape"]:
@@ -111,7 +131,7 @@ def _values_equal(a: Any, b: Any) -> tuple[bool, str]:
                                np.nan_to_num(bx.astype(float)),
                                rtol=0, atol=1e-12, equal_nan=True):
                     return True, ""
-            elif np.array_equal(ax, bx):
+            elif _blanks_aware_equal(ax, bx):
                 return True, ""
         except Exception as e:
             return False, f"df compare err: {e}"
@@ -128,7 +148,7 @@ def _values_equal(a: Any, b: Any) -> tuple[bool, str]:
                            rtol=0, atol=1e-12, equal_nan=True):
                 return True, ""
             return False, "series values differ"
-        if np.array_equal(ax, bx):
+        if _blanks_aware_equal(ax, bx):
             return True, ""
         return False, "series values differ"
     if isinstance(a, dict) and isinstance(b, dict):

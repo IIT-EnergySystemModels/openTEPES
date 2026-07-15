@@ -2,6 +2,8 @@
 
 ## [4.18.17RC] - 2026-07-15 Unreleased in PyPI
 
+- [FIXED] a blank cell in a text column now reads as NaN whichever backend the case comes from. The CSV reader gives NaN but DuckDB gives None, and limiting the NaN fill to numeric columns exposed the difference, which failed the CSV<->DuckDB round-trip tests.
+- [FIXED] the input parity probe now compares text columns that contain blanks. It used `numpy.array_equal`, which reports an array holding NaN as different from itself.
 - [ADDED] add some control for avoiding formulating eInstallGenCap
 - [FIXED] validate CHP power ranges before building the power-to-heat ratio, raising a clear error instead of a division by zero, and warn on heat demand at a node with no heat generator or pipe
 - [CHANGED] update InputData docs: the CSV<->DuckDB converter tools now exist (drop the "planned" note), with the bundled `9n` DuckDB example.
