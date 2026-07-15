@@ -128,7 +128,7 @@ Users
 If you are not planning on developing, please follow the instructions in {ref}`installation`.
 
 Once installation is complete, openTEPES can be executed in test mode from a command prompt.
-In the directory of your choice, run the following on the command prompt (Windows) or terminal (Linux). (Depending on your default Python version, you might need to call `python3` instead of `python`.):
+In the directory of your choice, open and execute the **openTEPES_run.py** script by using the following on the command prompt (Windows) or terminal (Linux). (Depending on your default Python version, you might need to call `python3` instead of `python`.):
 
 > `openTEPES_Main`
 

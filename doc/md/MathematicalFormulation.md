@@ -153,7 +153,7 @@ They are written in **uppercase** letters.
 ==================================  ================================================================  =====
 **Maximum CO2 emission**
 -----------------------------------------------------------------------------------------------------------
-:math:`EL_{pa}`                     Maximum CO2 emission for each period, scenario, and area          MtCO2
+:math:`EL_{pa}`                     Maximum CO2 emission for each period and area                     MtCO2
 ==================================  ================================================================  =====
 ```
 
@@ -161,7 +161,7 @@ They are written in **uppercase** letters.
 ==================================  ================================================================  =====
 **Minimum RES energy**
 -----------------------------------------------------------------------------------------------------------
-:math:`RL_{pa}`                     Minimum RES energy for each period, scenario, and area            GWh
+:math:`RL_{pa}`                     Minimum RES energy for each period and area                       GWh
 ==================================  ================================================================  =====
 ```
 
@@ -916,7 +916,7 @@ and if there is enough spare volume to store the water downstream «`eTrbReserve
 \frac{p^p_{\omega nh} + ur^p_{\omega nh} + uc^p_{\omega ng}}{\underline{GP}^p_{\omega ng}} \leq \frac{\sum_{e' \in dw(h)}  \overline{I'}^p_{\omega ng} - i'^p_{\omega ne'}} {DUR^p_{\omega n}} \quad \forall p \omega nh
 ```
 
-Operating reserves while pumping can only be provided if there is enough available water downstream to pump «`ePmpReserveDwIfUpstream`»
+Operating reserves while pumping can only be provided if there is enough available water downstream to pump «`ePmpReserveDwIfDownstream`»
 
 ```{math}
 \frac{(c^p_{\omega nh} + dr^p_{\omega nh}) EF_e' + ucc^p_{\omega ng}}{\underline{GC}^p_{\omega ng}} \leq \frac{\sum_{e' \in up(h)} \overline{I'}^p_{\omega ng} - i'^p_{\omega ne'}}{DUR^p_{\omega n}} \quad \forall p \omega nh
@@ -1005,7 +1005,7 @@ DC optimal power flow for existing and non-switchable, and candidate and switcha
 Half ohmic losses are linearly approximated as a function of the power flow [GW] «`eLineLosses1`» «`eLineLosses2`»
 
 ```{math}
-- \frac{L_{ijc}}{2} f^p_{\omega nijc} \leq l^p_{\omega nijc} \geq \frac{L_{ijc}}{2} f^p_{\omega nijc} \quad \forall p \omega nijc
+l^p_{\omega nijc} \geq - \frac{L_{ijc}}{2} f^p_{\omega nijc}, \quad l^p_{\omega nijc} \geq \frac{L_{ijc}}{2} f^p_{\omega nijc} \quad \forall p \omega nijc
 ```
 
 **Cycle constraints** for AC existing lines with DC optimal power flow formulation [rad] «`eCycleKirchhoff2ndLawCnd1`» «`eCycleKirchhoff2ndLawCnd2`». To

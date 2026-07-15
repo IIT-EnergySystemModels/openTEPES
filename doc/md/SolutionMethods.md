@@ -74,9 +74,9 @@ Only DC candidate lines are allowed, in order to keep convexity in the subproble
 
 There are three possibilities for solving the decomposed problem (file `openTEPES_ProblemSolvingStageSolve`):
 
-1. **In parallel**:  writes the LP file for the solver and sends the problems to a queue. It only works with the serial solver manager factory.
-2. **Sequentially**: writes the LP file for the solver and solves each stage sequentially.
-3. **Sequentially**: loads the problem in memory and solves each stage sequentially. It takes a lot of time to load the problem in memory.
+1. **In parallel**: writes the LP file for the solver and sends the problems to a queue. It only works with the serial solver manager factory.
+2. **Sequentially (LP file)**: writes the LP file for the solver and solves each stage sequentially.
+3. **Sequentially (in memory)**: loads the problem in memory and solves each stage sequentially. It takes a lot of time to load the problem in memory.
 
 ## Sector Benders decomposition
 

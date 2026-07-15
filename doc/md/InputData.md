@@ -50,7 +50,7 @@ The `Yes`/`No` option flags below also accept an integer `1` (or `1.0`) in place
 | CCGT    | Combined Cycle Gas Turbine                                                                                                                                                                                                                 |
 | CHP     | Combined Heat and Power. Cogeneration (produces electricity and heat simultaneously)                                                                                                                                                       |
 | DC      | Direct Current                                                                                                                                                                                                                             |
-| DCPF    | DC Optimal Power Flow                                                                                                                                                                                                                      |
+| DCPF    | DC Power Flow                                                                                                                                                                                                                              |
 | DR      | Demand Response (e.g., interruptibility)                                                                                                                                                                                                   |
 | DSM     | Demand-Side Management (e.g., load shifting)                                                                                                                                                                                               |
 | DSR     | Demand-Side Response (e.g., interruptibility)                                                                                                                                                                                              |
@@ -251,7 +251,7 @@ A description of the data included in the file `oT_Data_Stage.csv` follows:
 
 | Identifier | Header | Description          |
 | ---------- | ------ | -------------------- |
-| Scenario   | Weight | Weight of each stage |
+| Stage      | Weight | Weight of each stage |
 
 This weight defines equivalent (representative) periods (e.g., one representative week with a weight of 52 or four representative weeks, each with a weight of
 13).
@@ -673,7 +673,7 @@ Period      Scenario        LoadLevel   Generator  Energy inflows by load level 
 
 Not all the generators need to be defined as columns of this file, only those with values different from 0.
 
-If you have daily energy inflow data, just input the daily amount during the first hour of every day to see if the ESS has daily or weekly storage capacity.
+If you have daily energy inflow data, just input the daily amount during the first hour of every day if the ESS has daily or weekly storage capacity.
 
 Internally, all the values below 1e-5 times the maximum system demand of each area will be converted into 0 by the model.
 
@@ -875,7 +875,7 @@ Period      Scenario        LoadLevel   Reservoir  Natural water inflows by load
 
 All the reservoirs must be defined as columns in this file.
 
-If you have daily natural water inflow data, just input the daily amount during the first hour of every day to see if the reservoir has daily or weekly storage
+If you have daily natural water inflow data, just input the daily amount during the first hour of every day if the reservoir has daily or weekly storage
 capacity.
 
 Internally, all the values below 1e-5 times the maximum system demand of each area will be converted into 0 by the model.
@@ -1003,7 +1003,7 @@ A description of the circuit (initial node, final node, circuit) data included i
 | InvestmentLo        | Lower bound of investment decision                                                                                                                             | p.u.   |
 | InvestmentUp        | Upper bound of investment decision                                                                                                                             | p.u.   |
 
-The initial and final nodes are where the transmission line starts and ends. They must be different.
+The initial and final nodes are where the hydrogen pipeline starts and ends. They must be different.
 
 If there is no data for TTCBck, i.e., TTCBck is left empty or is equal to 0, the TTC replaces it in the code. Internally, all the TTC and TTCBck values below
 1e-5 times the maximum system demand of each area will be converted into 0 by the model.
@@ -1073,7 +1073,7 @@ A description of the circuit (initial node, final node, circuit) data included i
 | InvestmentLo        | Lower bound of investment decision                                                                                                                             | p.u.   |
 | InvestmentUp        | Upper bound of investment decision                                                                                                                             | p.u.   |
 
-The initial and final nodes are where the transmission line starts and ends. They must be different.
+The initial and final nodes are where the heat pipe starts and ends. They must be different.
 
 If there is no data for TTCBck, i.e., TTCBck is left empty or is equal to 0, the TTC replaces it in the code. Internally, all the TTC and TTCBck values below
 1e-5 times the maximum system demand of each area will be converted into 0 by the model.

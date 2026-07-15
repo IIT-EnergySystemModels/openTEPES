@@ -10,7 +10,7 @@ The model has been used in these research projects:
   Market](https://www.iit.comillas.edu/publicacion/proyecto/en/Everest2025/Quantitative_Framework_for_Forecasting_PV_Capture_Prices_and_Evaluating_Low-Price_Risk_in_the_Iberian_Electricity_Market),
   developed for **Everest Insurance**.
   December 2025 - March 2026. [J.P. Chaves](https://www.iit.comillas.edu/people/jchaves), [A. Ramos](https://www.iit.comillas.edu/people/aramos), [M.A.
-  Ríos-Ocampo](https://www.iit.comillas.edu/people/marios), [J.F. Gutiérrez](https://www.iit.comillas.edu/people/jGutiérrez)
+  Ríos-Ocampo](https://www.iit.comillas.edu/people/marios), [J.F. Gutiérrez](https://www.iit.comillas.edu/people/jgutierrez)
 
   > It aims to design, develop, and validate a robust, transparent, and fully explainable quantitative framework capable of forecasting Iberian day-ahead
   > electricity prices and estimating the solar PV capture price for 2026–2027.
