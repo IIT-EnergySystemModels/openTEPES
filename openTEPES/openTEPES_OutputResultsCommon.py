@@ -106,9 +106,9 @@ def LinePlots(period, scenario, df, Category, X, Y, OperationType):
     interval = alt.selection_interval(encodings=['x'])
     selection = alt.selection_point(fields=[Category], bind='legend')
 
-    base  = alt.Chart(Results).mark_line().encode(x=alt.X(C_X, axis=alt.Axis(title='')), y=alt.Y(C_Y, axis=alt.Axis(title=Y)), color=alt.Color(C_C, scale=alt.Scale(scheme='category20c')), opacity=alt.condition(selection, alt.value(1), alt.value(0.2))).add_params(selection)
+    base  = alt.Chart(Results).mark_line().encode(x=alt.X(C_X, axis=alt.Axis(title='')), y=alt.Y(C_Y, axis=alt.Axis(title=Y)), color=alt.Color(C_C, scale=alt.Scale(scheme='category20c')), opacity=alt.condition(selection, alt.value(1), alt.value(0.2)))
     chart = base.encode(alt.X(C_X, axis=alt.Axis(title='')).scale(domain=interval)).properties(width=1200, height=450)
-    view  = base.add_params(interval).properties(width=1200, height=50)
-    plot  = alt.vconcat(chart, view)
+    view  = base.properties(width=1200, height=50)
+    plot  = alt.vconcat(chart, view).add_params(selection, interval)
 
     return plot

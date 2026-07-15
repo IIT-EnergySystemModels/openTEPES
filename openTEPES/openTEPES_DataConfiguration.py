@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 09, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 15, 2026
 
 openTEPES.openTEPES_DataConfiguration — builds the derived sets and parameters on the model: instrumental sets, ESS/RES sets, and the flag-driven branches (hydro topology, hydrogen, heat, PTDF). Runs after InputData has read the raw sets and parameters.
 """
@@ -275,21 +275,23 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     idxDict['no' ] = 0
     idxDict['N'  ] = 0
     idxDict['n'  ] = 0
+    idxDict[1    ] = 1
+    idxDict[1.0  ] = 1
     idxDict['Yes'] = 1
     idxDict['YES'] = 1
     idxDict['yes'] = 1
     idxDict['Y'  ] = 1
     idxDict['y'  ] = 1
 
-    par['pIndBinUnitInvest']         = par['pIndBinUnitInvest'].map    (idxDict)
-    par['pIndBinUnitRetire']         = par['pIndBinUnitRetire'].map    (idxDict)
-    par['pIndBinUnitCommit']         = par['pIndBinUnitCommit'].map    (idxDict)
-    par['pIndBinStorInvest']         = par['pIndBinStorInvest'].map    (idxDict)
-    par['pIndBinLineInvest']         = par['pIndBinLineInvest'].map    (idxDict)
-    par['pIndBinLineSwitch']         = par['pIndBinLineSwitch'].map    (idxDict)
+    par['pIndBinUnitInvest']         = par['pIndBinUnitInvest'].map    (idxDict).fillna(0)
+    par['pIndBinUnitRetire']         = par['pIndBinUnitRetire'].map    (idxDict).fillna(0)
+    par['pIndBinUnitCommit']         = par['pIndBinUnitCommit'].map    (idxDict).fillna(0)
+    par['pIndBinStorInvest']         = par['pIndBinStorInvest'].map    (idxDict).fillna(0)
+    par['pIndBinLineInvest']         = par['pIndBinLineInvest'].map    (idxDict).fillna(0)
+    par['pIndBinLineSwitch']         = par['pIndBinLineSwitch'].map    (idxDict).fillna(0)
     # par['pIndOperReserve']           = par['pIndOperReserve'].map      (idxDict)
-    par['pIndOutflowIncomp']         = par['pIndOutflowIncomp'].map    (idxDict)
-    par['pMustRun']                  = par['pMustRun'].map             (idxDict)
+    par['pIndOutflowIncomp']         = par['pIndOutflowIncomp'].map    (idxDict).fillna(0)
+    par['pMustRun']                  = par['pMustRun'].map             (idxDict).fillna(0)
 
     # Operating reserves can be provided while generating or while consuming
     # So there is a need for two options to decide if the unit is able to provide them
@@ -313,13 +315,13 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     par['pIndOperReserveCon'] = pd.Series(par['pIndOperReserveCon'], index=par['pIndOperReserve'].index)
 
     if par['pIndHydroTopology']:
-        par['pIndBinRsrvInvest']     = par['pIndBinRsrvInvest'].map    (idxDict)
+        par['pIndBinRsrvInvest']     = par['pIndBinRsrvInvest'].map    (idxDict).fillna(0)
 
     if par['pIndHydrogen']:
-        par['pIndBinH2PipeInvest']   = par['pIndBinH2PipeInvest'].map  (idxDict)
+        par['pIndBinH2PipeInvest']   = par['pIndBinH2PipeInvest'].map  (idxDict).fillna(0)
 
     if par['pIndHeat']:
-        par['pIndBinHeatPipeInvest'] = par['pIndBinHeatPipeInvest'].map(idxDict)
+        par['pIndBinHeatPipeInvest'] = par['pIndBinHeatPipeInvest'].map(idxDict).fillna(0)
 
     # define AC existing  lines     non-switchable lines
     mTEPES.lea = Set(doc='AC existing  lines and non-switchable lines', initialize=[le for le in mTEPES.le if  par['pIndBinLineSwitch'][le] == 0                                            and not par['pLineType'][le] == 'DC'])
@@ -505,9 +507,9 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     idxEnergy['Monthly'] = round( 672/mTEPES.pDurationNZMax)
     idxEnergy['Yearly' ] = round(8736/mTEPES.pDurationNZMax)
 
-    par['pStorageTimeStep']  = par['pStorageType' ].map(idxCycle                                                                                                             ).astype('int')
-    par['pOutflowsTimeStep'] = par['pOutflowsType'].map(idxOutflows).where(par['pEnergyOutflows'].sum()                                              > 0.0, other = 1).astype('int')
-    par['pEnergyTimeStep']   = par['pEnergyType'  ].map(idxEnergy  ).where(par['pVariableMinEnergy'].sum() + par['pVariableMaxEnergy'].sum() > 0.0, other = 1).astype('int')
+    par['pStorageTimeStep']  = par['pStorageType' ].map(idxCycle   ).fillna(1)                                                                                              .astype('int')
+    par['pOutflowsTimeStep'] = par['pOutflowsType'].map(idxOutflows).fillna(1).where(par['pEnergyOutflows'].sum()                                              > 0.0, other = 1).astype('int')
+    par['pEnergyTimeStep']   = par['pEnergyType'  ].map(idxEnergy  ).fillna(1).where(par['pVariableMinEnergy'].sum() + par['pVariableMaxEnergy'].sum() > 0.0, other = 1).astype('int')
 
     par['pStorageTimeStep']  = pd.concat([par['pStorageTimeStep'], par['pOutflowsTimeStep'], par['pEnergyTimeStep']], axis=1).min(axis=1)
     # cycle time step can't exceed the stage duration
@@ -533,8 +535,8 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
         idxWaterOut['Monthly'] = round( 672/mTEPES.pDurationNZMax)
         idxWaterOut['Yearly' ] = round(8736/mTEPES.pDurationNZMax)
 
-        par['pCycleRsrTimeStep'] = par['pReservoirType'].map(idxCycleRsr).astype('int')
-        par['pWaterOutTimeStep'] = par['pWaterOutfType'].map(idxWaterOut).astype('int')
+        par['pCycleRsrTimeStep'] = par['pReservoirType'].map(idxCycleRsr).fillna(1).astype('int')
+        par['pWaterOutTimeStep'] = par['pWaterOutfType'].map(idxWaterOut).fillna(1).astype('int')
 
         par['pReservoirTimeStep'] = pd.concat([par['pCycleRsrTimeStep'], par['pWaterOutTimeStep']], axis=1).min(axis=1)
         # cycle water step can't exceed the stage duration
@@ -1186,8 +1188,8 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     mTEPES.pNetFixedCost     = Param(mTEPES.lc,    initialize=par['pNetFixedCost'].to_dict()    , within=NonNegativeReals,    doc='Electric line fixed cost'                                          )
     mTEPES.pIndBinLineInvest = Param(mTEPES.la,    initialize=par['pIndBinLineInvest'].to_dict(), within=Binary          ,    doc='Binary electric line investment decision'                          )
     mTEPES.pIndBinLineSwitch = Param(mTEPES.la,    initialize=par['pIndBinLineSwitch'].to_dict(), within=Binary          ,    doc='Binary electric line switching  decision'                          )
-    mTEPES.pSwOnTime       = Param(mTEPES.la,    initialize=par['pSwitchOnTime'].to_dict()    , within=NonNegativeIntegers, doc='Minimum switching on  time'                                        )
-    mTEPES.pSwOffTime      = Param(mTEPES.la,    initialize=par['pSwitchOffTime'].to_dict()   , within=NonNegativeIntegers, doc='Minimum switching off time'                                        )
+    mTEPES.pSwOnTime         = Param(mTEPES.la,    initialize=par['pSwitchOnTime'].to_dict()    , within=NonNegativeIntegers, doc='Minimum switching on  time'                                        )
+    mTEPES.pSwOffTime        = Param(mTEPES.la,    initialize=par['pSwitchOffTime'].to_dict()   , within=NonNegativeIntegers, doc='Minimum switching off time'                                        )
     mTEPES.pBigMFlowBck      = Param(mTEPES.la,    initialize=par['pBigMFlowBck'].to_dict()     , within=NonNegativeReals,    doc='Maximum backward capacity',                            mutable=True)
     mTEPES.pBigMFlowFrw      = Param(mTEPES.la,    initialize=par['pBigMFlowFrw'].to_dict()     , within=NonNegativeReals,    doc='Maximum forward  capacity',                            mutable=True)
     mTEPES.pMaxTheta         = Param(mTEPES.psnnd, initialize=par['pMaxTheta'].to_dict()        , within=NonNegativeReals,    doc='Maximum voltage angle',                                mutable=True)

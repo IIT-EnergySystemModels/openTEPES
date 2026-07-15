@@ -4,7 +4,7 @@ openTEPES documentation master file, created by Andres Ramos
 
 # Download & Installation
 
-The **openTEPES** model has been tested using the latest versions of [Python 3.13.7](https://www.python.org/) and [Pyomo 6.10.1](https://pyomo.readthedocs.io/en/stable/), and it uses [Gurobi 13.0.2](https://www.gurobi.com/products/gurobi-optimizer/) as a commercial MIP solver, for which a free academic license is available.
+The **openTEPES** model has been tested using the latest versions of [Python 3.14.6](https://www.python.org/) and [Pyomo 6.10.1](https://pyomo.readthedocs.io/en/stable/), and it uses [Gurobi 13.0.2](https://www.gurobi.com/products/gurobi-optimizer/) as a commercial MIP solver, for which a free academic license is available.
 It uses Pyomo so that it is independent of the preferred solver. Alternatively, you can use one of the free solvers [HiGHS 1.15.1](https://pypi.org/project/highspy/), [SCIP 10.0.2](https://www.scipopt.org/index.php#download), [GLPK 5.0](https://www.gnu.org/software/glpk/),
 or [CBC 2.10.13](https://github.com/coin-or/Cbc/releases). You can list the serial solver interfaces available under Pyomo with this call:
 

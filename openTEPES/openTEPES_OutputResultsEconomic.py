@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 09, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 15, 2026
 
 Marginal, cost-summary, and economic results.
 
@@ -407,6 +407,10 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput, pIndPlo
     if mTEPES.ll:
         OutputResults  = pd.concat([OutputResults,OutputResults09,OutputResults10]                                , axis=1)
 
+    # Merge duplicate columns that arise when a technology belongs to multiple sets (gt ∩ rt, gt ∩ et, …)
+    if OutputResults.columns.duplicated().any():
+        OutputResults = OutputResults.T.groupby(level=0).sum().T
+
     OutputResults.stack().reset_index().pivot_table(index=['level_0','level_1','level_2','level_3','level_4'], columns='level_5', values=0, aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel', 'Area', 'Node'], axis=0).oT.write(f'{_path}/oT_Result_BalanceEnergyPerTech_{CaseName}.csv', sep=',')
     OutputResults.stack().reset_index().pivot_table(index=['level_0','level_1','level_2'          ,'level_5'], columns='level_4', values=0, aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel', 'Technology'  ], axis=0).oT.write(f'{_path}/oT_Result_BalanceEnergyPerNode_{CaseName}.csv', sep=',')
     OutputResults.stack().reset_index().pivot_table(index=['level_0','level_1'                    ,'level_5'], columns='level_3', values=0, aggfunc='sum').rename_axis(['Period', 'Scenario'             , 'Technology'  ], axis=0).oT.write(f'{_path}/oT_Result_BalanceEnergyPerArea_{CaseName}.csv', sep=',')
@@ -459,6 +463,8 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput, pIndPlo
 
     MarketResultsDem *= -1e3
     MarketResultsDem = pd.concat([MarketResultsDem.sum(axis=1), OutputResults], axis=1)
+    if MarketResultsDem.columns.duplicated().any():
+        MarketResultsDem = MarketResultsDem.T.groupby(level=0).sum().T
     MarketResultsDem.stack().reset_index().pivot_table(index=['level_0','level_1','level_2','level_3','level_4'], columns='level_5', values=0, aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel', 'Area', 'Node'], axis=0).rename(columns={0: 'Demand [MWh]', 1: 'LSRMC [EUR/MWh]'}, inplace=False).oT.write(f'{_path}/oT_Result_MarketResultsDemand_{CaseName}.csv', sep=',')
 
     MarketResultsGen     = pd.DataFrame()
@@ -480,6 +486,8 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput, pIndPlo
     OutputResults12.index = [idx[:6] for idx in OutputResults12.index]
 
     MarketResultsGen *= 1e3
+    if MarketResultsGen.columns.duplicated().any():
+        MarketResultsGen = MarketResultsGen.T.groupby(level=0).sum().T
     MarketResultsGen = pd.concat([MarketResultsGen.stack(), OutputResults11, OutputResults12], axis=1)
     MarketResultsGen.reset_index().pivot_table(index=['level_0','level_1','level_2','level_3','level_4','level_5']).rename_axis(['Period', 'Scenario', 'LoadLevel', 'Area', 'Node', 'Generator'], axis=0).rename(columns={0: 'Generation [MWh]', 1: 'Curtailment [MWh]', 2: 'Emissions [MtCO2]'}, inplace=False).oT.write(f'{_path}/oT_Result_MarketResultsGeneration_{CaseName}.csv', sep=',')
 

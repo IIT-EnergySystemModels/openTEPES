@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 09, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 15, 2026
 """
 
 import time
@@ -130,17 +130,18 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         if key not in par.keys():
             par[key] = 0
 
-    # replace NaN with 0
+    # replace NaN with 0 (only on numeric columns to avoid dtype errors on string columns)
     for key,df in dfs.items():
+        num_cols = df.select_dtypes(include='number').columns
         if 'dfEmission' in key:
-            df.fillna(math.inf, inplace=True)
+            df.fillna({col: math.inf for col in num_cols}, inplace=True)
         elif 'dfGeneration' in key:
             # build a dict that gives 1.0 for 'Efficiency', 0.0 for everything else
-            fill_values = {col: (1.0 if col == 'Efficiency' else 0.0) for col in df.columns}
+            fill_values = {col: (1.0 if col == 'Efficiency' else 0.0) for col in num_cols}
             # one pass over the DataFrame
             df.fillna(fill_values, inplace=True)
         else:
-            df.fillna(0.0, inplace=True)
+            df.fillna({col: 0.0 for col in num_cols}, inplace=True)
 
     # Define prefixes and suffixes
     mTEPES.gen_frames_suffixes      = ['VariableMinGeneration',  'VariableMaxGeneration',

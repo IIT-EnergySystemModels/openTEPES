@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 09, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 15, 2026
 
 Hydrogen network operation results.
 
@@ -63,6 +63,10 @@ def NetworkH2OperationResults(DirName, CaseName, OptModel, mTEPES):
     OutputResults5 = pd.Series(data=[-sum(OptModel.vFlowH2        [p,sc,n,nd,nf,cc]()                                                                      for nf,cc in lout[nd] if (p,nd,nf,cc) in mTEPES.ppa)                                                           for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='HydrogenFlowOut'  )
     OutputResults6 = pd.Series(data=[ sum(OptModel.vFlowH2        [p,sc,n,ni,nd,cc]()                                                                      for ni,cc in lin [nd] if (p,ni,nd,cc) in mTEPES.ppa)                                                           for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='HydrogenFlowIn'   )
     OutputResults  = pd.concat([OutputResults2, OutputResults3, OutputResults4, OutputResults5, OutputResults6], axis=1)
+
+    # Merge duplicate columns that arise when a technology belongs to multiple generator sets
+    if OutputResults.columns.duplicated().any():
+        OutputResults = OutputResults.T.groupby(level=0).sum().T
 
     # OutputResults.stack().rename_axis(['Period', 'Scenario', 'LoadLevel', 'Area', 'Node', 'Technology'], axis=0).reset_index().rename(columns={0: 'tH2'}, inplace=False).to_csv(f'{_path}/oT_Result_BalanceHydrogen_{CaseName}.csv', index=False, sep=',')
 
