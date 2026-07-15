@@ -1,7 +1,8 @@
 # Change Log
 
-## [4.18.17RC] - 2026-07-09 Unreleased in PyPI
+## [4.18.17RC] - 2026-07-15 Unreleased in PyPI
 
+- [ADDED] add some control for avoiding formulating eInstallGenCap
 - [FIXED] validate CHP power ranges before building the power-to-heat ratio, raising a clear error instead of a division by zero, and warn on heat demand at a node with no heat generator or pipe
 - [CHANGED] update InputData docs: the CSV<->DuckDB converter tools now exist (drop the "planned" note), with the bundled `9n` DuckDB example.
 - [FIXED] fix syntactic errors in time Benders decomposition modules

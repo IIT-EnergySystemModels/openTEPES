@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 09, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 15, 2026
 
 openTEPES.openTEPES_ModelFormulationInvestment — investment variables and constraints (electricity, hydro, H2, heat) plus the installed-capacity, adequacy-reserve-margin and emission / RES-energy limits.
 """
@@ -132,7 +132,7 @@ def GenerationOperationElecModelFormulationInvestment(OptModel, mTEPES, pIndLogC
         g2a[ar].append(g)
 
     def eInstallGenComm(OptModel,n,gc):
-        if gc in mTEPES.eh or gc in mTEPES.bc or gc not in mTEPES.nr or (p,gc) not in mTEPES.pgc or (mTEPES.pMinPowerElec[p,sc,n,gc] == 0.0 and mTEPES.pConstantVarCost[p,sc,n,gc] == 0.0):
+        if gc in mTEPES.es or gc in mTEPES.bc or gc not in mTEPES.nr or (p,gc) not in mTEPES.pgc or (mTEPES.pMinPowerElec[p,sc,n,gc] == 0.0 and mTEPES.pConstantVarCost[p,sc,n,gc] == 0.0):
             return Constraint.Skip
         if mTEPES.pMustRun[gc] == 0:
             return OptModel.vCommitment[p,sc,n,gc] <= OptModel.vGenerationInvest[p,gc]
@@ -153,7 +153,7 @@ def GenerationOperationElecModelFormulationInvestment(OptModel, mTEPES, pIndLogC
         print('eInstallESSComm           ... ', len(getattr(OptModel, f'eInstallESSComm_{p}_{sc}_{st}')), ' rows')
 
     def eInstallGenCap(OptModel,n,gc):
-        if (p,gc) not in mTEPES.pgc or mTEPES.pMaxPowerElec[p,sc,n,gc] == 0.0:
+        if gc in mTEPES.bc or (p,gc) not in mTEPES.pgc or (mTEPES.pMinPowerElec[p,sc,n,gc] != 0.0 or mTEPES.pConstantVarCost[p,sc,n,gc] != 0.0) or mTEPES.pMaxPowerElec[p,sc,n,gc] == 0.0:
             return Constraint.Skip
         return OptModel.vTotalOutput   [p,sc,n,gc] / mTEPES.pMaxPowerElec [p,sc,n,gc] <= OptModel.vGenerationInvest[p,gc]
     setattr(OptModel, f'eInstallGenCap_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.gc, rule=eInstallGenCap, doc='output if installed gen unit [p.u.]'))
