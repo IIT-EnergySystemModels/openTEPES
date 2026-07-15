@@ -72,6 +72,7 @@ The model has been used in these research projects:
   Sánchez](https://www.iit.comillas.edu/people/sgomez), [F. Labora](https://www.iit.comillas.edu/people/flabora)
 
 ```{image} ../img/ColabPP.jpg
+:alt: Logo of the Spanish Public-Private Collaboration funding programme
 :align: center
 :scale: 30%
 ```
@@ -95,6 +96,7 @@ The model has been used in these research projects:
   > open-source energy system models for Africa.
 
 ```{image} ../img/OM4A.png
+:alt: OpenMod4Africa project logo
 :align: center
 :scale: 40%
 ```
@@ -109,6 +111,7 @@ The model has been used in these research projects:
   > decarbonization of the energy system.
 
 ```{image} ../img/BioFlexGen.png
+:alt: BioFlexGen project logo
 :align: center
 :scale: 50%
 ```
@@ -148,6 +151,7 @@ The model has been used in these research projects:
   > ([Resumen Proyecto AVANHID](https://pascua.iit.comillas.edu/aramos/papers/AVANHID.pdf))
 
 ```{image} ../img/ColabPP.jpg
+:alt: Logo of the Spanish Public-Private Collaboration funding programme
 :align: center
 :scale: 30%
 ```
@@ -161,6 +165,7 @@ The model has been used in these research projects:
   Valarezo](https://www.iit.comillas.edu/people/ovalarezo), [M. Mohammed](https://www.iit.comillas.edu/people/mmohammed)
 
 ```{image} ../img/ColabPP.jpg
+:alt: Logo of the Spanish Public-Private Collaboration funding programme
 :align: center
 :scale: 30%
 ```
@@ -179,6 +184,7 @@ The model has been used in these research projects:
   > [OPEN-PROM](https://github.com/e3modeling/OPEN-PROM).
 
 ```{image} ../img/DIAMOND_prj.jpg
+:alt: DIAMOND project logo
 :align: center
 :scale: 20%
 ```
@@ -225,6 +231,7 @@ The model has been used in these research projects:
   > To what extent does the implementation of smart charging of electric vehicles lower investment costs?
 
 ```{image} ../img/ECEMF.png
+:alt: ECEMF project logo
 :align: center
 :scale: 10%
 ```
@@ -281,6 +288,7 @@ The model has been used in these research projects:
   > the electricity system, including the electrification of the energy demand.
 
 ```{image} ../img/micinn_aei.png
+:alt: Logo of the Spanish Ministry of Science and Innovation and the State Research Agency (AEI)
 :align: center
 :scale: 30%
 ```
@@ -296,6 +304,7 @@ The model has been used in these research projects:
   > [energy models published under open-source licenses](https://wiki.openmod-initiative.org/wiki/Open_Models).
 
 ```{image} ../img/open-entrance_logo.png
+:alt: openENTRANCE project logo
 :align: center
 :scale: 40%
 ```

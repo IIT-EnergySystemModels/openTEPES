@@ -9,6 +9,7 @@ Some maps of the electricity transmission network and the energy share of differ
 Spain 2030 Electric System (321 generators, 15 nodes, 27 lines) one scenario with hourly resolution
 
 ```{image} ../img/oT_Plot_MapNetwork_ES2030.png
+:alt: Network map of the Spain 2030 electric system
 :align: center
 :scale: 40%
 ```
@@ -16,6 +17,7 @@ Spain 2030 Electric System (321 generators, 15 nodes, 27 lines) one scenario wit
 Canary Islands 2030 Electric Systems (94 generators, 7 nodes, 6 lines) one scenario with hourly resolution
 
 ```{image} ../img/oT_Plot_MapNetwork_ES2030_CI.png
+:alt: Network map of the Canary Islands 2030 electric systems
 :align: center
 :scale: 40%
 ```
@@ -23,6 +25,7 @@ Canary Islands 2030 Electric Systems (94 generators, 7 nodes, 6 lines) one scena
 Europe TechnoFriendly 2030 Electric System (1632 generators, 84 nodes, 497 lines) one scenario with hourly resolution
 
 ```{image} ../img/oT_Map_Network_TF2030.png
+:alt: Network map of the Europe TechnoFriendly 2030 electric system
 :align: center
 :scale: 40%
 ```
@@ -30,6 +33,7 @@ Europe TechnoFriendly 2030 Electric System (1632 generators, 84 nodes, 497 lines
 Sweden 2045 Electric and Heat Systems (49 generators, 8 nodes, 6 lines) one scenario with hourly resolution
 
 ```{image} ../img/oT_Plot_MapNetwork_SE2045.png
+:alt: Network map of the Sweden 2045 electric and heat systems
 :align: center
 :scale: 20%
 ```
@@ -37,6 +41,7 @@ Sweden 2045 Electric and Heat Systems (49 generators, 8 nodes, 6 lines) one scen
 Technology share for Europe ERAA 2030 Electric System
 
 ```{image} ../img/oT_Plot_TechnologyEnergy_ES_MAF2030.png
+:alt: Technology share for the Europe ERAA 2030 electric system
 :align: center
 :scale: 6%
 ```
@@ -44,6 +49,7 @@ Technology share for Europe ERAA 2030 Electric System
 Technology output for Europe ERAA 2030 Electric System
 
 ```{image} ../img/oT_Plot_TechnologyOutput_2030_sc01_MAF.png
+:alt: Technology output for the Europe ERAA 2030 electric system
 :align: center
 :scale: 55%
 ```
@@ -51,6 +57,7 @@ Technology output for Europe ERAA 2030 Electric System
 Nigeria 2030 Electric System (144 generators, 37 nodes, 163 lines) three scenarios with hourly resolution
 
 ```{image} ../img/oT_Plot_MapNetwork_NG2030.png
+:alt: Network map of the Nigeria 2030 electric system
 :align: center
 :scale: 20%
 ```
@@ -58,6 +65,7 @@ Nigeria 2030 Electric System (144 generators, 37 nodes, 163 lines) three scenari
 Kenya 2030-2040-2050 Electric System (127 generators, 47 nodes, 74 lines) one scenario with hourly resolution
 
 ```{image} ../img/Kenia2030.png
+:alt: Network map of the Kenya 2030-2040-2050 electric system
 :align: center
 :scale: 40%
 ```
@@ -65,6 +73,7 @@ Kenya 2030-2040-2050 Electric System (127 generators, 47 nodes, 74 lines) one sc
 Tunisia 2030 Electric System (111 generators, 47 nodes, 88 lines) one scenario with hourly resolution
 
 ```{image} ../img/Tunisia2030.png
+:alt: Network map of the Tunisia 2030 electric system
 :align: center
 :scale: 40%
 ```
@@ -72,6 +81,7 @@ Tunisia 2030 Electric System (111 generators, 47 nodes, 88 lines) one scenario w
 Uganda 2030 Electric System (118 generators, 49 nodes, 205 lines) one scenario with hourly resolution
 
 ```{image} ../img/Uganda2030.png
+:alt: Network map of the Uganda 2030 electric system
 :align: center
 :scale: 40%
 ```

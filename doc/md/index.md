@@ -3,11 +3,13 @@ openTEPES documentation master file, created by Andres Ramos
 ---
 
 ```{image} /../img/Escudo.png
+:alt: Coat of arms of Universidad Pontificia Comillas
 :align: left
 :scale: 70%
 ```
 
 ```{image} /../img/IIT40.png
+:alt: IIT 40th anniversary logo
 :align: right
 :scale: 20%
 ```
@@ -51,6 +53,7 @@ Instituto de Investigación Tecnológica, Alberto Aguilera 23, 28015 Madrid, Spa
 Contact: [andres.ramos@comillas.edu](mailto:andres.ramos@comillas.edu)
 
 ```{image} /../img/GitHub.png
+:alt: GitHub logo
 :align: left
 :scale: 20%
 ```

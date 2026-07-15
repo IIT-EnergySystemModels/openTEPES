@@ -5,11 +5,13 @@ openTEPES documentation master file, created by Andres Ramos
 # Contact Us
 
 ```{image} ../img/Escudo.png
+:alt: Coat of arms of Universidad Pontificia Comillas
 :align: right
 :scale: 70%
 ```
 
 ```{image} ../img/logoIIT.png
+:alt: Logo of the Instituto de Investigación Tecnológica (IIT)
 :align: right
 :scale: 15%
 ```

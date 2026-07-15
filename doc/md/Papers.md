@@ -40,6 +40,7 @@ The **openTEPES** model has been used in these publications:
   Conference*, July 2023. ([Presentation_2ndWorld_storage_need](https://pascua.iit.comillas.edu/aramos/papers/Linares_etal_openTEPESWorldConference.pdf))
 
 ```{image} ../img/ConferenceOpenTEPES_banner.png
+:alt: Banner of the openTEPES International Conference, July 2023
 :align: center
 :scale: 5%
 ```

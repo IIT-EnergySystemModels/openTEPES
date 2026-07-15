@@ -576,6 +576,7 @@ node linking this isolated electricity network and the hydrogen network.
 A summary of the main characteristics of the different types of hydro and ESS is shown in the following figure:
 
 ```{image} ../img/HydroAndESS.png
+:alt: Summary of the main characteristics of the different types of hydro and ESS units
 :align: center
 :scale: 40%
 ```

@@ -154,6 +154,7 @@ A case can be a CSV directory or a single `.duckdb` file (see {doc}`InputData`).
 The tutorial can be run in Binder:
 
 ```{image} /../img/binder.png
+:alt: Binder badge: launch the openTEPES tutorial
 :align: left
 :scale: 30%
 :target: https://mybinder.org/v2/gh/IIT-EnergySystemModels/openTEPES-tutorial/HEAD
