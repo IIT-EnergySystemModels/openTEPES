@@ -98,7 +98,9 @@ def _serialise_csv(path: Path) -> dict[str, Any]:
         "num_cols": list(map(str, num.columns)),
         "num": num.to_numpy(dtype=float) if num.shape[1] else np.empty((len(df), 0)),
         "obj_cols": list(map(str, obj.columns)),
-        "obj": obj.astype(str).to_numpy() if obj.shape[1] else np.empty((len(df), 0), dtype=object),
+        # fillna after the cast: pandas 2 turns a blank into the text "None", but pandas 3 keeps it
+        # missing, and a missing value is never equal to itself, so the labels would never compare equal.
+        "obj": obj.astype(str).fillna("<NA>").to_numpy() if obj.shape[1] else np.empty((len(df), 0), dtype=object),
     }
 
 

@@ -2,6 +2,8 @@
 
 ## [4.18.17RC] - 2026-07-15 Unreleased in PyPI
 
+- [FIXED] the output parity check now compares text labels correctly on pandas 3. pandas 2 turned a blank label into the text "None", but pandas 3 keeps it missing, and a missing value never equals itself, so two identical runs were reported as different.
+- [CHANGED] allow pandas 3 and refresh the pinned dependencies. openTEPES now accepts `pandas>=2.2.2,<4`, and `requirements.lock` moves to pandas 3.0.3. streamlit moves to 1.59.2 in the same step, because streamlit 1.55 and older require pandas 2 and would otherwise block the upgrade.
 - [FIXED] a blank cell in a text column now reads as NaN whichever backend the case comes from. The CSV reader gives NaN but DuckDB gives None, and limiting the NaN fill to numeric columns exposed the difference, which failed the CSV<->DuckDB round-trip tests.
 - [FIXED] the input parity probe now compares text columns that contain blanks. It used `numpy.array_equal`, which reports an array holding NaN as different from itself.
 - [ADDED] add some control for avoiding formulating eInstallGenCap
