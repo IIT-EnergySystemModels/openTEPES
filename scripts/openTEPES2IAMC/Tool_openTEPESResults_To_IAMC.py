@@ -74,8 +74,22 @@ ResultFiles = {
     "GenerationOperatingReserveDown": {"header": [0      ], "index_col": [0, 1, 2]},
     "GenerationInventory":            {"header": [0      ], "index_col": [0, 1, 2]},
     "GenerationSpillage":             {"header": [0      ], "index_col": [0, 1, 2]},
+    "Demand":                         {"header": [0      ], "index_col": [0, 1, 2]},
 }
 
+# Additional openTEPES input files to convert to IAMC format.
+# Demand has the same structure as operational results:
+# index = Period, Scenario, LoadLevel and columns = nodes.
+InputFiles = {
+    "Demand": {
+        "filename": f"oT_Data_Demand_{CaseName}.csv",
+        "header": [0],
+        "index_col": [0, 1, 2],
+    },
+    "Network": {
+        "filename": f"oT_Data_Network_{CaseName}.csv",
+    },
+}
 
 def ReadIAMCFiles() -> dict[str, pd.DataFrame]:
     """Load IAMC variable-definition CSV files as DataFrames.
@@ -123,6 +137,32 @@ def ReadCaseResults() -> dict[str, pd.DataFrame]:
         Results[Name] = pd.read_csv(FilePath, **ReadOpts)
     return Results
 
+def ReadInputData() -> dict[str, pd.DataFrame]:
+    """Read additional openTEPES input data files."""
+
+    Inputs: dict[str, pd.DataFrame] = {}
+
+    # Demand input (same structure as operational results)
+    DemandFile = DataDir / CaseName / InputFiles["Demand"]["filename"]
+
+    if DemandFile.is_file():
+        Inputs["Demand"] = pd.read_csv(
+            DemandFile,
+            header=InputFiles["Demand"]["header"],
+            index_col=InputFiles["Demand"]["index_col"],
+        )
+    else:
+        print(f"WARNING: input file not found, skipping: {DemandFile.name}")
+
+    # Network input
+    NetworkFile = DataDir / CaseName / InputFiles["Network"]["filename"]
+
+    if NetworkFile.is_file():
+        Inputs["Network"] = pd.read_csv(NetworkFile)
+    else:
+        print(f"WARNING: input file not found, skipping: {NetworkFile.name}")
+
+    return Inputs
 
 # Definition row (variable name and unit) that each result maps to: (definition file key, row label in that file).
 ResultDefinitions = {
@@ -142,8 +182,22 @@ ResultDefinitions = {
     "GenerationOperatingReserveDown": ("generation",   "vReserveDown"),
     "GenerationInventory":            ("generation",   "vESSInventory"),
     "GenerationSpillage":             ("generation",   "vESSSpillage"),
+    "Demand":                         ("system",       "Demand"),
 }
 
+# Additional openTEPES input files to convert to IAMC format.
+# Demand has the same structure as operational results:
+# index = Period, Scenario, LoadLevel and columns = nodes.
+InputFiles = {
+    "Demand": {
+        "filename": f"oT_Data_Demand_{CaseName}.csv",
+        "header": [0],
+        "index_col": [0, 1, 2],
+    },
+    "Network": {
+        "filename": f"oT_Data_Network_{CaseName}.csv",
+    },
+}
 
 def WriteResultToIAMC(ResultName: str, df: pd.DataFrame, IAMCVars: dict[str, pd.DataFrame], OutputPath: Path | None = None) -> pd.DataFrame:
     """Convert one openTEPES result table to IAMC wide format and write it.
@@ -194,7 +248,7 @@ def WriteResultToIAMC(ResultName: str, df: pd.DataFrame, IAMCVars: dict[str, pd.
     Long = df.stack(list(df.columns.names), future_stack=True).rename("Value").reset_index()
 
     # Region: "initial|final|circuit" for lines, or the plain node name for per-node results.
-    Region = Long["InitialNode"] + "|" + Long["FinalNode"] + "|" + Long["Circuit"] if "InitialNode" in Long.columns else Long["Node"]
+    Region = Long["InitialNode"] + "|" + Long["Circuit"] + ">" + Long["FinalNode"] + "|" + Long["Circuit"] if "InitialNode" in Long.columns else Long["Node"]
     # Scenario: prefix the case name; results without a Scenario level (e.g. investment) carry just the case name.
     Scenario = CaseName + "|" + Long["Scenario"] if "Scenario" in Long.columns else CaseName
     # Subannual: the LoadLevel time step when available, otherwise empty (e.g. investment has no time step).
@@ -223,9 +277,118 @@ def WriteResultToIAMC(ResultName: str, df: pd.DataFrame, IAMCVars: dict[str, pd.
     return IAMC
 
 
+def WriteNetworkParameterToIAMC(
+    ParameterName: str,
+    ColumnName: str,
+    df: pd.DataFrame,
+    IAMCVars: dict[str, pd.DataFrame],
+    Period: int,
+    OutputPath: Path | None = None,
+) -> pd.DataFrame:
+    """Convert transmission network parameters from oT_Data_Network to IAMC."""
+
+    DefinitionFile = "transmission"
+
+    VariableName = IAMCVars[DefinitionFile].loc[
+        ParameterName, "Variable"
+    ]
+
+    UnitName = IAMCVars[DefinitionFile].loc[
+        ParameterName, "Unit"
+    ]
+
+    IAMC = pd.DataFrame({
+        "model": ModelVersion,
+        "scenario": CaseName,
+        "region": (
+            df["InitialNode"]
+            + "|"
+            + df["Circuit"]
+            + ">"
+            + df["FinalNode"]
+            + "|"
+            + df["Circuit"]
+        ),
+        "variable": VariableName,
+        "unit": UnitName,
+        "subannual": "",
+        "Period": Period,
+        "value": df[ColumnName],
+    })
+
+    IAMC = IAMC.pivot(
+        index=[
+            "model",
+            "scenario",
+            "region",
+            "variable",
+            "unit",
+            "subannual",
+        ],
+        columns="Period",
+        values="value",
+    ).reset_index()
+
+    IAMC.columns.name = None
+
+    if OutputPath is None:
+        OutputPath = (
+            DataDir /
+            f"oT_IAMC_{ParameterName}_{ModelVersion}_{CaseName}.csv"
+        )
+
+    IAMC.to_csv(OutputPath, index=False)
+
+    print(
+        f"Written {len(IAMC)} rows to {OutputPath.name}"
+    )
+
+    return IAMC
+
 if __name__ == "__main__":
+
     IAMCVars = ReadIAMCFiles()
+
+    # Existing result conversion
     Results = ReadCaseResults()
+
     for Name, df in Results.items():
         IAMC = WriteResultToIAMC(Name, df, IAMCVars)
         print(IAMC.head(3).to_string(index=False))
+
+
+    # New input-data conversion
+    Inputs = ReadInputData()
+
+
+    # Demand conversion
+    if "Demand" in Inputs:
+        IAMC = WriteResultToIAMC(
+            "Demand",
+            Inputs["Demand"],
+            IAMCVars,
+        )
+
+        print(IAMC.head(3).to_string(index=False))
+
+
+    # Network parameters conversion
+    if "Network" in Inputs:
+
+        Network = Inputs["Network"]
+
+        for ParameterName, ColumnName in [
+            ("TTC", "TTC"),
+            ("Length", "Length"),
+            ("FixedInvestmentCost", "FixedInvestmentCost"),
+        ]:
+
+            IAMC = WriteNetworkParameterToIAMC(
+                ParameterName,
+                ColumnName,
+                Network,
+                IAMCVars,
+                Period=Inputs["Demand"].index.get_level_values("Period")[0],
+            )
+
+            print(IAMC.head(3).to_string(index=False))

@@ -5,3 +5,6 @@ vFlow,Active Power Flow|Electricity|Transmission|Line,MW,Power Flow through line
 vTheta,Voltage Angle|Electricity,rad,Voltage angle per node
 vPNS,,MW,Power not served
 vSRMC,Price|Secondary Energy|Electricity,EUR/MWh,Locational Short-Mun Marginal Cost
+TTC,Network|Electricity|Capacity,MW,"Maximum flow of a transmission line between 2 regions (i.e. aggregate-regions, countries, nuts1, nuts2, nuts3, or nodes). Total transfer capacity (TTC). (maximum permissible thermal load)"
+FixedInvestmentCost,Network|Electricity|Investment,EUR,Fixed cost of the line. Overnight investment (capital) cost
+Length,Network|Electricity|Length,km,Length of the line

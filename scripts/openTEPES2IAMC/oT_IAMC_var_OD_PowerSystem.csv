@@ -2,3 +2,4 @@
 vTotalFCost,,MEUR,Total system fixed cost
 vTotalVCost,,MEUR,Total system variable cost
 vTotalECost,,MEUR,Total system emission cost
+Demand,Final Energy|Electricity,MW,Demand

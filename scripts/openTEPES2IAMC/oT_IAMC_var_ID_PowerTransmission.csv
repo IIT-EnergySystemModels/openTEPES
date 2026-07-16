@@ -8,6 +8,7 @@ Susceptance,,-,Susceptance of the line
 TAP,,,Tap of the line
 TTC,Network|Electricity|Capacity,MW,"Maximum flow of a transmission line between 2 regions (i.e. aggregate-regions, countries, nuts1, nuts2, nuts3, or nodes). Total transfer capacity (TTC). (maximum permissible thermal load)"
 SecurityFactor,Network|Electricity|Security Factor,-,Security factor to consider approximately N-1 contingencies. NTC = TTC x SecurityFactor
-FixedCost,Network|Electricity|Investment,EUR,Fixed cost of the line. Overnight investment (capital) cost
+FixedInvestmentCost,Network|Electricity|Investment,EUR,Fixed cost of the line. Overnight investment (capital) cost
 FixedChargeRate,Network|Electricity|Fixed Charge Rate,,Fixed charge rate to annualize the overnight investment cost. The Fixed Charge Rate (FCR) is the percentage of the total investment cost that is required over the project life per year to cover the minimal annual revenue requirements.
 BinaryInvestment,Network|Electricity|Binary Investment,"[Yes, No]",Binary line/circuit investment decision
+Length,Network|Electricity|Length,km,Length of the line
