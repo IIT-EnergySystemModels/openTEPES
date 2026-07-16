@@ -372,6 +372,39 @@ def test_mode_c_resolve_demand_hot_swap(case_7d_system):
     assert restored[0]["total_cost_meur"] == pytest.approx(base, rel=1e-7)
 
 
+@pytest.mark.solve
+@pytest.mark.parametrize("case_7d_system", ["9n"], indirect=["case_7d_system"])
+def test_mode_c_resolve_reoptimises_investment(case_7d_system):
+    """A demand rise in a Mode C sweep must move the investment plan, not just add unserved energy.
+
+    The solve fixes the plan to read the duals; resolve releases it first. Without that release the line
+    investment stays at its baseline value and the reported cost is too high (issue #148).
+    """
+    mTEPES = openTEPES_run(**case_7d_system)
+    line = next(iter(mTEPES.vNetworkInvest))
+    base_invest = mTEPES.vNetworkInvest[line]()
+
+    resolve(mTEPES, "highs", [overlay_scaled(mTEPES, "pDemandElec", 1.5)], restore=False)
+    assert mTEPES.vNetworkInvest[line]() > base_invest + 1e-3
+    assert not any(mTEPES.vNetworkInvest[i].fixed for i in mTEPES.vNetworkInvest)
+
+
+@pytest.mark.solve
+@pytest.mark.parametrize("case_7d_system", ["9n"], indirect=["case_7d_system"])
+def test_mode_c_resolve_rejects_unreachable_overlay(case_7d_system):
+    """resolve refuses an overlay the built model does not read live, instead of swapping it silently.
+
+    ``pEFOR`` is mutable but 9n has no generation candidates, so the adequacy constraint that reads it is
+    skipped and no live constraint references it; a misspelt name is unreachable too. Both must raise rather
+    than return an unchanged cost.
+    """
+    mTEPES = openTEPES_run(**case_7d_system)
+    with pytest.raises(ValueError, match="does not read them live"):
+        resolve(mTEPES, "highs", [{"pEFOR": mTEPES.pEFOR.extract_values()}])
+    with pytest.raises(ValueError, match="does not read them live"):
+        resolve(mTEPES, "highs", [{"pDemandElecc": {}}])
+
+
 # === Binary (MILP) investment test ===
 #
 # Every other case here solves the investment variables as a continuous relaxation, so no other test
