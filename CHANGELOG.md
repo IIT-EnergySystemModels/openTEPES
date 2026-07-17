@@ -1,7 +1,9 @@
 # Change Log
 
-## [4.18.17RC] - 2026-07-15 Unreleased in PyPI
+## [4.18.17RC] - 2026-07-16 Unreleased in PyPI
 
+- [FIXED] a Mode C sweep now re-optimises the investment plan (issue #148). The solve fixes the plan to read the duals, and resolve released that before, so a demand rise was met with unserved energy instead of new build and the cost was too high. resolve now calls unfix_for_duals first. Adds a test that the line investment moves under a demand overlay.
+- [ADDED] resolve now rejects an overlay the built model does not read live, instead of swapping it silently. A misspelt name raises, and so does a mutable Param the built model does not reference — either captured as a constant with pX[...]() or read only by a constraint that was skipped for the case. On 9n the adequacy and RES-energy constraints are skipped (no generation candidates), so pEFOR, pReserveMargin and pRESEnergy have no live effect and an overlay of them raises.
 - [FIXED] the output parity check now compares text labels correctly on pandas 3. pandas 2 turned a blank label into the text "None", but pandas 3 keeps it missing, and a missing value never equals itself, so two identical runs were reported as different.
 - [CHANGED] allow pandas 3 and refresh the pinned dependencies. openTEPES now accepts `pandas>=2.2.2,<4`, and `requirements.lock` moves to pandas 3.0.3. streamlit moves to 1.59.2 in the same step, because streamlit 1.55 and older require pandas 2 and would otherwise block the upgrade.
 - [FIXED] a blank cell in a text column now reads as NaN whichever backend the case comes from. The CSV reader gives NaN but DuckDB gives None, and limiting the NaN fill to numeric columns exposed the difference, which failed the CSV<->DuckDB round-trip tests.
