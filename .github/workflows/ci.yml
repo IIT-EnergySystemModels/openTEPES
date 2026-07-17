@@ -98,7 +98,7 @@ jobs:
         run: |
           conda install -y -c conda-forge flake8 pytest pytest-timeout
           uv pip install --system -r requirements.lock
-          uv pip install --system highspy
+          uv pip install --system "highspy==1.15.1"
           pip install -e .
 
       - name: Run solve tests (per-test timeout guards a stuck solver)
@@ -140,7 +140,7 @@ jobs:
         run: |
           conda install -y -c conda-forge flake8 pytest pytest-timeout
           uv pip install --system -r requirements.lock
-          uv pip install --system highspy
+          uv pip install --system "highspy==1.15.1"
           pip install -e .
           uv pip install --system "pandas>=2.2.2,<3"
 
