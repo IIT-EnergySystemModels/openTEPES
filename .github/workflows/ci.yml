@@ -106,6 +106,50 @@ jobs:
         run: |
           pytest -vv -m solve --timeout=1800 tests/
 
+  # Pandas 2 floor: the lock pins pandas 3, but pyproject still supports pandas 2
+  # (>=2.2.2,<4), so nothing would exercise the older end of the range. This job
+  # installs the lock, pins pandas back to the 2.x floor, and runs the unit and
+  # solve tests. One combo is enough: the variable is the pandas version, not the
+  # platform.
+  pandas2:
+    name: pandas 2 floor (unit + solve) - ubuntu-latest / py3.12
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Conda (Miniforge) + Python 3.12
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          miniforge-variant: Miniforge3
+          miniforge-version: latest
+          auto-update-conda: true
+          activate-environment: ci
+          python-version: "3.12"
+          channels: conda-forge,defaults
+          channel-priority: strict
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+          cache-dependency-glob: requirements.lock
+
+      - name: Install dependencies, then pin pandas to the 2.x floor
+        shell: bash -l {0}
+        run: |
+          conda install -y -c conda-forge flake8 pytest pytest-timeout
+          uv pip install --system -r requirements.lock
+          uv pip install --system highspy
+          pip install -e .
+          uv pip install --system "pandas>=2.2.2,<3"
+
+      - name: Run unit and solve tests
+        shell: bash -l {0}
+        run: |
+          pytest -vv -m "not solve" tests/
+          pytest -vv -m solve --timeout=1800 tests/
+
   # Docs tier: build the Read the Docs site with warnings treated as errors, so
   # a broken cross-reference, a missing toctree entry, or a bad directive fails
   # the PR. No solver or model dependency, so it runs once on Linux.

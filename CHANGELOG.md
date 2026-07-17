@@ -1,6 +1,8 @@
 # Change Log
 
-## [4.18.17RC] - 2026-07-16 Unreleased in PyPI
+## [4.18.17RC] - 2026-07-17 Unreleased in PyPI
+
+- [ADDED] a CI job that runs the unit and solve tests with pandas pinned to the 2.x floor (issue #150). The lock pins pandas 3, so without this nothing exercised the older end of the supported `pandas>=2.2.2,<4` range.
 
 - [FIXED] a Mode C sweep now re-optimises the investment plan (issue #148). The solve fixes the plan to read the duals, and resolve released that before, so a demand rise was met with unserved energy instead of new build and the cost was too high. resolve now calls unfix_for_duals first. Adds a test that the line investment moves under a demand overlay.
 - [ADDED] resolve now rejects an overlay the built model does not read live, instead of swapping it silently. A misspelt name raises, and so does a mutable Param the built model does not reference — either captured as a constant with pX[...]() or read only by a constraint that was skipped for the case. On 9n the adequacy and RES-energy constraints are skipped (no generation candidates), so pEFOR, pReserveMargin and pRESEnergy have no live effect and an overlay of them raises.
