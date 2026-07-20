@@ -14,8 +14,8 @@
 The **openTEPES** model has been developed at the [Instituto de Investigación Tecnológica (IIT)](https://www.iit.comillas.edu/index.php.en) of the [Universidad
 Pontificia Comillas](https://www.comillas.edu/en/).
 
-The **openTEPES** model presents a decision support system for defining the **integrated generation, storage, and transmission resource planning** (IRP,
-GEP+SEP+TEP) -**Capacity Expansion Planning** (CEP) or **Integrated Resource Planning** (IRP)- of a **large-scale electric system** at the tactical level (i.e.,
+The **openTEPES** model is a decision support system for defining the **integrated generation, storage, and transmission resource planning**
+(GEP+SEP+TEP) —**Capacity Expansion Planning** (CEP) or **Integrated Resource Planning** (IRP)— of a **large-scale electric system** at the tactical level (i.e.,
 time horizons of 5-20 years),
 defined as a set of **dynamic investment decisions for generation, storage, and (electricity, hydrogen, and heat) networks for multiple future years**. It is a
 tool for energy system planners to support the energy transition toward a **decarbonized, reliable, and affordable energy system**.
@@ -38,7 +38,7 @@ Spanish [National Energy and Climate Plan (NECP) Update
 
 # Architecture
 
-The package is organized in six layers, from input/output (pure pandas, no Pyomo) up to result aggregation. Each module encodes its layer in the file name
+The package is organized into six layers, from input/output (pure pandas, no Pyomo) up to result aggregation. Each module encodes its layer in the file name
 alongside the other `openTEPES_*.py` modules at the package root — `openTEPES_Input*` for the input-source layer (`openTEPES_InputSchema`,
 `openTEPES_InputSource`, `openTEPES_InputCSVSource`, `openTEPES_InputDuckDBSource`) and `openTEPES_ProblemSolving*` for the solver layer
 (`openTEPES_ProblemSolving`, `openTEPES_ProblemSolvingBenders`, `openTEPES_ProblemSolvingDualExtraction`, `openTEPES_ProblemSolvingPersistent`,
@@ -49,10 +49,10 @@ become first-class architectural seams.
 
 # How to Cite
 
-If you use openTEPES for a scientific publication, we would appreciate it if you cite the following paper:
+If you use openTEPES for a scientific publication, we would appreciate it if you cited the following paper:
 
 **A. Ramos, E. Quispe, S. Lumbreras** ["OpenTEPES: Open-source Transmission and Generation Expansion
-Planning"](https://www.sciencedirect.com/science/article/pii/S235271102200053X) SoftwareX 18: June 2022
+Planning"](https://www.sciencedirect.com/science/article/pii/S235271102200053X), SoftwareX 18, June 2022,
 [10.1016/j.softx.2022.101070](https://doi.org/10.1016/j.softx.2022.101070).
 
 If your work relies heavily on the software, we also encourage you to cite the repository directly.
@@ -90,13 +90,13 @@ minimum cost.
 The objective is to evaluate future needs for generation and storage, and for electricity, hydrogen, and heat networks. The main results are the guidelines for
 the future structure of the generation, storage, and transmission systems.
 
-The **openTEPES** model represents a decision support system for defining the **integrated generation, storage, and transmission resource planning** (IRP,
+The **openTEPES** model is a decision support system for defining the **integrated generation, storage, and transmission resource planning** (IRP,
 GEP+SEP+TEP) of a **large-scale electric system** at the tactical level (i.e., time horizons of 5-20 years),
-defined as a set of **dynamic investment decisions for generation, storage, and (electricity, hydrogen, and heat) networks for several future years**. It is a
+defined as a set of **dynamic investment decisions for generation, storage, and (electricity, hydrogen, and heat) networks for multiple future years**. It is a
 tool for energy system planners to support the energy transition toward a **decarbonized, reliable, and affordable energy system**.
 The user predefines the expansion candidates, and the model determines the optimal decisions among them.
 
-It automatically determines optimal expansion plans that satisfy multiple attributes simultaneously. Its main features are:
+It automatically determines optimal expansion plans that satisfy multiple criteria simultaneously. Its main features are:
 
 - **Dynamic (perfect foresight)**: the scope of the model corresponds to several periods (years) on a long-term horizon, for example, 2030, 2035, and 2040.
 
@@ -110,7 +110,7 @@ It automatically determines optimal expansion plans that satisfy multiple attrib
   (year) or several periods (years) to analyze the system's evolution.
   The time definition also allows for specifying disconnected representative periods (e.g., days or weeks) to evaluate system operation. The period (year) must
   be represented by 8736 hours because several model features representing
-  the system operation are based on weeks (168 hours) or lunar months (made of 4 weeks, 672 hours).
+  the system operation are based on weeks (168 hours) or lunar months (made up of 4 weeks, i.e., 672 hours).
 
 - **Stochastic**: several stochastic parameters that can influence the optimal generation, storage, and transmission expansion decisions are considered. The
   model considers stochastic
@@ -118,7 +118,7 @@ It automatically determines optimal expansion plans that satisfy multiple attrib
   energy inflows and outflows, natural water inflows, operating reserves, ramp reserves, inertia, and electricity, hydrogen, and heat demand.
 
 The objective function includes two main quantifiable costs: **investment costs for generation, storage, and transmission (CAPEX)** and **expected variable
-operation costs (including generation, consumption, emissions, and reliability costs) (system OPEX)**.
+operation costs (system OPEX), including generation, consumption, emissions, and reliability costs**.
 
 The model formulates a **two-stage stochastic optimization** problem that includes binary generation, storage, and (electricity, hydrogen, and heat) network
 investment/retirement decisions; generation operation decisions (commitment, startup, and shutdown decisions are also binary); and electric line-switching
@@ -131,19 +131,19 @@ reserves and electric line-switching decisions via DC power flow (DCPF).
 including pumped-hydro storage, batteries, demand response, electric vehicles, solar thermal, and electrolyzers.
 
 The model also allows a representation of the **hydro system** based on volume and water inflow data, considering the water stream topology (**hydro cascade
-basins**). If they are unavailable, it runs using an energy-based representation of the hydro system.
+basins**). If these data are unavailable, it runs using an energy-based representation of the hydro system.
 
 It also includes a **Power-to-Hydrogen (P2H2)** representation, with hydrogen demand satisfied by electrolyzer-produced hydrogen (electricity consumed to
 produce hydrogen) and a hydrogen network to distribute it, and a **Power-to-Heat (P2H)** representation,
-with heat demand satisfied by heat pumps or electric heaters (which consume electricity), and a heat network to distribute the heat. If they are unavailable, it
-runs with just the other energy carriers.
+with heat demand satisfied by heat pumps or electric heaters (which consume electricity), and a heat network to distribute the heat.
+If hydrogen and heat are not considered, the model runs with just the other energy carriers.
 
 The main results of the model can be structured into these topics:
 
 - **Investment**: investment decisions and costs for generation, storage, hydro reservoirs, electric lines, hydrogen pipelines, and heat pipes
-- **Operation**: unit commitment, startup, and shutdown of non-renewable units, unit output and aggregation by technologies (thermal, storage hydro,
-  pumped-hydro storage, RES), RES curtailment, electric line, hydrogen pipeline, and heat pipe flows, line ohmic losses, node voltage angles, upward and
-  downward operating reserves, upward and downward ramp reserves, ESS inventory levels, hydro reservoir volumes, power, hydrogen, and heat not served
+- **Operation**: unit commitment, startup, and shutdown of non-renewable units; unit output and aggregation by technologies (thermal, storage hydro,
+  pumped-hydro storage, RES); RES curtailment; electric line, hydrogen pipeline, and heat pipe flows; line ohmic losses; node voltage angles; upward and
+  downward operating reserves; upward and downward ramp reserves; ESS inventory levels; hydro reservoir volumes; and power, hydrogen, and heat not served
 - **Emissions**: CO2 emissions by unit
 - **Marginal**: Locational Short-Run Marginal Costs (LSRMC), stored energy value, water volume value
 - **Economic**: operation, emission, and reliability costs and revenues from operation, operating reserves, and ramp reserves
@@ -161,25 +161,25 @@ Spain operation case has reached 5.2 million constraints and 6.8 million variabl
 
 [Installation guide](https://pascua.iit.comillas.edu/aramos/openTEPES_installation.pdf).
 
-There are two ways to get all the required packages under Windows. We recommend using the Python distribution Miniconda. If you don't want to use it or already
+There are two ways to get all the required packages under Windows. We recommend using the Python distribution Miniconda. If you do not want to use it or already
 have an existing Python installation, you can also download the required packages on your own.
 
 ## Miniconda (recommended)
 
-1. [Miniconda](https://docs.conda.io/en/latest/miniconda.html). Choose the 64-bit installer if possible.
+1. Install [Miniconda](https://docs.conda.io/en/latest/miniconda.html). Choose the 64-bit installer if possible.
 
    1. During the installation procedure, keep both checkboxes "modify the PATH" and "register Python" selected! If only higher Python versions are available,
-      you can switch to a specific Python version by typing `conda install python==<version>`
+      you can switch to a specific Python version by typing `conda install python==<version>`.
    2. **Remark:** if Anaconda or Miniconda was installed previously, please check that Python is registered in the environment variables.
 
 2. **Packages and Solver**:
 
    1. Launch a new Anaconda prompt (or terminal in any IDE)
    2. [HiGHS](https://ergo-code.github.io/HiGHS/dev/installation/#Precompiled-Binaries) is our recommendation if you want a free and open-source solver.
-   3. Install openTEPES dependencies via:
+   3. Install openTEPES dependencies:
 
-   > 1. pip by `pip install openTEPES`
-   > 2. uv by `uv pip install -r requirements.lock`
+   > 1. via pip: `pip install openTEPES`
+   > 2. via uv: `uv pip install -r requirements.lock`
 
 Continue at [Get Started](#get-started).
 
@@ -188,7 +188,7 @@ Continue at [Get Started](#get-started).
 1. Clone the openTEPES repository
 2. Launch the Anaconda prompt (or terminal in any IDE)
 3. Navigate to the repository directory with `cd "C:\Users\<username>\...\openTEPES"`. (Note that the path is where the repository was cloned.)
-4. Install openTEPES dependencies via uv by `uv pip install -r requirements.lock`
+4. Install openTEPES dependencies via uv: `uv pip install -r requirements.lock`
 5. Install openTEPES via pip by running `pip install .`
 
 # Solvers
@@ -201,9 +201,9 @@ This solver is activated by calling the openTEPES model with the solver name 'ap
 
 ## Gurobi
 
-Another recommendation is the use of the [Gurobi solver](https://www.gurobi.com/). It is a commercial solver, but it is more powerful than open-source solvers
+Another recommendation is to use the [Gurobi solver](https://www.gurobi.com/). It is a commercial solver, but it is more powerful than open-source solvers
 for large-scale problems.
-As a commercial solver, it needs a license that is free of charge for academic use by signing up on the [Gurobi
+As a commercial solver, it requires a license, which is free of charge for academic use and can be obtained by signing up on the [Gurobi
 website](https://pages.gurobi.com/registration/). You can also ask for a 30-day [evaluation
 license](https://www.gurobi.com/downloads/request-an-evaluation-license/) to test the solver.
 It can be installed using: `conda install -c gurobi gurobi`, and then you can request an academic or commercial license. Activate the license on your computer
@@ -211,21 +211,21 @@ using the `grbgetkey` command (you need to be in a university internet domain if
 
 ## GLPK
 
-As an easy option for installation, we have the free and open-source [GLPK solver](https://www.gnu.org/software/glpk/). However, it can be very slow for
+An easy option to install is the free and open-source [GLPK solver](https://www.gnu.org/software/glpk/). However, it can be very slow for
 large-scale problems. It can be installed using: `conda install glpk`.
 
 ## CBC
 
 The [CBC solver](https://github.com/coin-or/Cbc) is another free and open-source solver. For Windows users, the easiest way to install the CBC solver is to
-download the binaries from this [site](https://www.coin-or.org/download/binary/Cbc/), copy the *cbc.exe* file into the "bin" directory of your Anaconda or
+download the binaries from this [site](https://www.coin-or.org/download/binary/Cbc/) and copy the *cbc.exe* file into the "bin" directory of your Anaconda or
 Miniconda environment (which is on the PATH). Under Linux, it can be installed using: `conda install -c conda-forge coincbc`.
 
 ## Mosek
 
 Another alternative is the [Mosek solver](https://www.mosek.com/). Note that it is a commercial solver, and you need a license for it. Mosek is a good
-alternative to deal with QP, SOCP, and SDP problems. You only need to run `conda install -c mosek mosek` for installation and then request a license (academic
-or commercial). You can apply for an academic license [here](https://www.mosek.com/products/academic-licenses/).
-Mosek also provides a [license guide](https://docs.mosek.com/9.2/licensing/index.html). If you request an academic license, you will receive it by email and
+alternative for dealing with QP, SOCP, and SDP problems. You only need to run `conda install -c mosek mosek` for installation and then request a license
+(academic or commercial). You can apply for an academic license [here](https://www.mosek.com/products/academic-licenses/).
+Mosek also provides a [license guide](https://docs.mosek.com/latest/licensing/index.html). If you request an academic license, you will receive it by email and
 only need to place it in the path `C:\Users\<username>\mosek` on your computer.
 
 ## GAMS
@@ -246,8 +246,8 @@ help will be greatly appreciated.
 If you are not planning on developing, please follow the instructions in the [openTEPES installation](#installation).
 
 Once installation is complete, [openTEPES](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master) can be executed in test mode from a command prompt.
-In the directory of your choice, open and execute the openTEPES_run.py script by using the following on the command prompt (Windows) or terminal (Linux).
-(Depending on your default Python version, you might need to call `python3` instead of `python`.):
+In the directory of your choice, run the `openTEPES_Main` command by typing the following in the command prompt (Windows) or terminal (Linux);
+depending on your default Python version, you might need to call `python3` instead of `python`:
 
 > `openTEPES_Main`
 
