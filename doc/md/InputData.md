@@ -73,7 +73,7 @@ The `Yes`/`No` option flags below also accept an integer `1` (or `1.0`) in place
 | HTNS    | Heat Not Served                                                                                                                                                                                                                            |
 | IRP     | Integrated Resource Planning                                                                                                                                                                                                               |
 | LCOE    | Levelized Cost of Electricity                                                                                                                                                                                                              |
-| mFRR    | Manual Frequency Restoration Reserve (a.k.a. tertiary reserve) helps to restore the required grid frequency of 50 Hz. It must be fully deployable after 12.5 minutes and has a minimum duration of 5 minutes                               |
+| mFRR    | Manual Frequency Restoration Reserve (a.k.a. tertiary reserve) helps to restore the required grid frequency of 50 Hz. It must be fully deployable within 12.5 minutes and has a minimum duration of 5 minutes                               |
 | NTC     | Net Transfer Capacity (maximum power transfer between two nodes, zones, areas, or regions, considering the network constraints)                                                                                                            |
 | OCGT    | Open Cycle Gas Turbine                                                                                                                                                                                                                     |
 | PHS     | Pumped-Hydro Storage                                                                                                                                                                                                                       |
@@ -86,7 +86,7 @@ The `Yes`/`No` option flags below also accept an integer `1` (or `1.0`) in place
 | TTC     | Total Transfer Capacity (maximum amount of electric power that can be transferred over the transmission network between two areas under ideal operating conditions, while maintaining system security as defined by operational standards) |
 | VoLL    | Value of Lost Load (maximum amount of money that a customer is willing to pay to avoid an interruption of 1 kWh of electricity supply). Common values are between 1000 and 10000 €/MWh                                                     |
 | VRE     | Variable Renewable Energy                                                                                                                                                                                                                  |
-| VRES    | Variable Renewable Energy Source (units with null linear variable cost and no storage capacity. Do not contribute to the operating reserves)                                                                                               |
+| VRES    | Variable Renewable Energy Source (units with null linear variable cost and no storage capacity. They do not contribute to the operating reserves)                                                                                               |
 
 ## Dictionaries. Sets
 
@@ -102,11 +102,11 @@ The dictionaries include all the possible elements of the corresponding sets in 
 | `oT_Dict_Generation.csv` | Generation units (thermal -nuclear, CCGT, OCGT, coal-, ESS -storage hydro modeled in energy or water, pumped-hydro storage PHS, battery BESS, electric vehicle EV, demand side management DSM, data center flexibility, alkaline water electrolyzer AWE, solar thermal- and VRES -wind onshore and offshore, solar PV, run-of-the-river hydro-) |
 | `oT_Dict_Technology.csv` | Generation technologies. The technology order is used in the temporal result plot.                                                                                                                                                                                                                                                              |
 | `oT_Dict_Storage.csv`    | ESS storage type (daily \<12 h, weekly \<40 h, monthly >60 h).                                                                                                                                                                                                                                                                                  |
-| `oT_Dict_Node.csv`       | Nodes. A node belongs to a defined zone. All the nodes must have a different name. Nodes can be physical or virtual (e.g., for representing the conventional industrial, commercial, and residential demands, EV demand, and H2 demand).                                                                                                        |
-| `oT_Dict_Zone.csv`       | Zones. A zone belongs to a defined area. All the zones must have a different name.                                                                                                                                                                                                                                                              |
-| `oT_Dict_Area.csv`       | Areas. An area belongs to a defined region. All the areas must have a different name. Long-term adequacy, inertia, and operating reserves are associated with areas.                                                                                                                                                                            |
-| `oT_Dict_Region.csv`     | Regions (e.g., Continental South West Europe which includes Spain, France, and Portugal). All the regions must have a different name.                                                                                                                                                                                                           |
-| `oT_Dict_Circuit.csv`    | Circuits (e.g., ac1, ac2 for AC lines, dc1 for DC lines). All the circuits must have a different name.                                                                                                                                                                                                                                          |
+| `oT_Dict_Node.csv`       | Nodes. A node belongs to a defined zone. All the nodes must have different names. Nodes can be physical or virtual (e.g., for representing the conventional industrial, commercial, and residential demands, EV demand, and H2 demand).                                                                                                        |
+| `oT_Dict_Zone.csv`       | Zones. A zone belongs to a defined area. All the zones must have different names.                                                                                                                                                                                                                                                              |
+| `oT_Dict_Area.csv`       | Areas. An area belongs to a defined region. All the areas must have different names. Long-term adequacy, inertia, and operating reserves are associated with areas.                                                                                                                                                                            |
+| `oT_Dict_Region.csv`     | Regions (e.g., Continental South West Europe which includes Spain, France, and Portugal). All the regions must have different names.                                                                                                                                                                                                           |
+| `oT_Dict_Circuit.csv`    | Circuits (e.g., ac1, ac2 for AC lines, dc1 for DC lines). All the circuits must have different names.                                                                                                                                                                                                                                          |
 | `oT_Dict_Line.csv`       | Line type (AC, DC)                                                                                                                                                                                                                                                                                                                              |
 
 Assignment of nodes to zones, zones to areas, and areas to regions.
@@ -137,10 +137,10 @@ This is the list of the input data files with a brief description of each.
 | `oT_Data_Duration.csv`                   | Duration of the load levels                                                                                                                                                    |
 | `oT_Data_Demand.csv`                     | Electricity demand                                                                                                                                                             |
 | `oT_Data_Inertia.csv`                    | System inertia by area                                                                                                                                                         |
-| `oT_Data_OperatingReserveUp.csv`         | Upward operating reserves (include aFRR and mFRR for electricity balancing from ENTSO-E)                                                                                       |
-| `oT_Data_OperatingReserveDown.csv`       | Downward operating reserves (include aFRR and mFRR for electricity balancing from ENTSO-E)                                                                                     |
-| `oT_Data_OperatingReserveUpEnergy.csv`   | Upward operating reserves activation (include aFRR and mFRR for electricity balancing from ENTSO-E) (optional file)                                                            |
-| `oT_Data_OperatingReserveDownEnergy.csv` | Downward operating reserves activation (include aFRR and mFRR for electricity balancing from ENTSO-E) (optional file)                                                          |
+| `oT_Data_OperatingReserveUp.csv`         | Upward operating reserves (including aFRR and mFRR for electricity balancing from ENTSO-E)                                                                                       |
+| `oT_Data_OperatingReserveDown.csv`       | Downward operating reserves (including aFRR and mFRR for electricity balancing from ENTSO-E)                                                                                     |
+| `oT_Data_OperatingReserveUpEnergy.csv`   | Upward operating reserve activation (including aFRR and mFRR for electricity balancing from ENTSO-E) (optional file)                                                            |
+| `oT_Data_OperatingReserveDownEnergy.csv` | Downward operating reserve activation (including aFRR and mFRR for electricity balancing from ENTSO-E) (optional file)                                                          |
 | `oT_Data_RampReserveUp.csv`              | Upward ramp reserves (optional file)                                                                                                                                           |
 | `oT_Data_RampReserveDown.csv`            | Downward ramp reserves (optional file)                                                                                                                                         |
 | `oT_Data_Generation.csv`                 | Generation (electricity and heat) data                                                                                                                                         |
@@ -149,6 +149,7 @@ This is the list of the input data files with a brief description of each.
 | `oT_Data_VariableMaxConsumption.csv`     | Variable maximum power consumption by load level                                                                                                                               |
 | `oT_Data_VariableMinConsumption.csv`     | Variable minimum power consumption by load level                                                                                                                               |
 | `oT_Data_VariableFuelCost.csv`           | Variable fuel cost by load level                                                                                                                                               |
+| `oT_Data_VariableEmissionCost.csv`       | Variable emission cost by load level                                                                                                                                           |
 | `oT_Data_EnergyInflows.csv`              | Energy inflows into an ESS by load level                                                                                                                                       |
 | `oT_Data_EnergyOutflows.csv`             | Energy outflows from an ESS for Power-to-X (H2 production, EV mobility, heat production, or water irrigation) by load level                                                    |
 | `oT_Data_VariableMaxStorage.csv`         | Maximum amount of energy stored in the ESS by load level                                                                                                                       |
@@ -208,8 +209,8 @@ A description of the system parameters included in the file `oT_Data_Parameter.c
 | EconomicBaseYear    | Base year for economic parameters affected by the discount rate                                                                                                                                                                                                 | year   |
 | AnnualDiscountRate  | Annual discount rate                                                                                                                                                                                                                                            | p.u.   |
 
-A time step greater than one hour is a convenient way to reduce the load levels of the time scope. The moving average of the demand, upward/downward operating
-reserves, variable generation/consumption/storage, and ESS energy inflows/outflows
+A time step greater than one hour is a convenient way to reduce the number of load levels in the time scope. The moving average of the demand,
+upward/downward operating reserves, variable generation/consumption/storage, and ESS energy inflows/outflows
 over the time step load levels is assigned to active load levels (e.g., the mean value of the three hours is associated with the third hour in a tri-hourly time
 step).
 
@@ -332,7 +333,7 @@ The stage duration, as the sum of the duration of all the load levels, must be l
 type, or any energy type (all given in the generation data), and a multiple of it.
 Consecutive stages are not connected, i.e., no constraints link the operation at different stages. Consequently, the storage type cannot exceed the duration of
 the stage (i.e., if the stage lasts for 168 hours, the storage type can only be hourly or daily).
-Therefore, the objective function with several stages will be slightly higher than in the case of a single stage.
+Therefore, the objective function value with several stages will be slightly higher than in the case of a single stage.
 
 The initial storage of the ESSs is also fixed at the beginning and end of each stage. For example, the initial storage level is set for hour 8736 in the case of
 a single stage or for hours 4368 and 4369
@@ -555,10 +556,10 @@ Maximum, minimum, and initial storage values are considered proportional to the 
 (Yes). This can be used for battery investment decisions where the investment can be continuous (StorageInvestment=Yes). For a particular hydro storage
 investment, the dam investment is linked to this particular hydro and cannot be made proportional (StorageInvestment=No).
 
-A generator can belong to several mutually exclusive sets; their names must be separated by "|" when entered. So if Generator1 belongs to Set1 and Set2, the
-data entry should be "Set1|Set2". If any of the generators in a group are installation/retirement candidates, it is assumed that exclusivity is yearly, so only
-one can be committed during the whole period. When all mutually exclusive generators in a set are installed and functioning, it is assumed that the exclusivity
-is hourly, and which generator is committed can change every load level.
+A generator can belong to several mutually exclusive sets; their names must be separated by "|" when entered. For example, if Generator1 belongs to Set1 and
+Set2, the data entry should be "Set1|Set2". If any of the generators in a group are installation/retirement candidates, it is assumed that exclusivity is
+yearly, so only one can be committed during the whole period. When all mutually exclusive generators in a set are installed and functioning, it is assumed that the exclusivity
+is hourly, and which generator is committed can change at every load level.
 
 A generator can be restricted to providing reserves only while generating or only while consuming. The NoOperatingReserve entry accepts two inputs separated by
 a "|". The first value corresponds to operating reserves while generating, and the second is operating reserves while consuming power. If only one value is
@@ -602,7 +603,7 @@ needed to limit the solar production at night, for example.
 It can also be used for upper-bounding and/or lower-bounding the output of any generator (e.g., run-of-the-river hydro, wind).
 If the user enters a minimum generation value greater than the maximum, the model lowers it to match the maximum.
 
-If a thermal unit has a variable minimum generation > 0 in a certain load level, it is considered committed in this load level.
+If a thermal unit has a variable minimum generation > 0 in a certain load level, it is considered committed in that load level.
 
 Internally, all the values below 1e-5 times the maximum system demand of each area will be converted into 0 by the model.
 
@@ -694,12 +695,12 @@ Period      Scenario        LoadLevel   Generator  Energy outflows by load level
 
 Not all the generators need to be defined as columns of this file, only those with values different from 0.
 
-These energy outflows can represent the electric energy extracted from an ESS to produce H2 from electrolyzers, move EVs, produce heat, or as hydro outflows for
-irrigation.
+These energy outflows can represent the electric energy extracted from an ESS to produce H2 from electrolyzers, move EVs, or produce heat, or the hydro
+outflows for irrigation.
 Using these outflows is incompatible with the charge of the ESS within the same time step (as the discharge of a battery is incompatible with the charge in the
 same hour).
 
-If you have hourly/daily/weekly/monthly/yearly outflow data, you can just input the hourly/daily/weekly/monthly/yearly amount at the first hour of every
+If you have hourly/daily/weekly/monthly/yearly outflow data, you can just input the daily/weekly/monthly/yearly amount at the first hour of every
 day/week/month/year.
 
 Internally, all the values below 1e-5 times the maximum system demand of each area will be converted into 0 by the model.
@@ -851,7 +852,7 @@ The dictionaries include all the possible elements of the corresponding sets in 
 | ----------------------- | ----------- |
 | `oT_Dict_Reservoir.csv` | Reservoirs  |
 
-The information contained in these input files determines the topology of the hydro basins and how water flows along the different
+The information contained in these input files determines the topology of the hydro basins and how water flows through the different
 hydropower and pumped-hydro power plants and reservoirs. These relations follow the water downstream direction.
 
 | File                                 | Dictionary             | Description                                                                                  |
@@ -895,7 +896,7 @@ Period      Scenario        LoadLevel   Reservoir  Water outflows by load level 
 
 All the reservoirs must be defined as columns in this file.
 
-These water outflows can be used to represent the water outflows for irrigation.
+These water outflows can be used to represent the water needed for irrigation.
 
 If you have hourly/daily/weekly/monthly/yearly water outflow data, you can just input the daily/weekly/monthly/yearly amount at the first hour of every
 day/week/month/year.
@@ -997,7 +998,7 @@ A description of the circuit (initial node, final node, circuit) data included i
 | Length              | Pipeline length (only used for reporting purposes). If not defined, computed as 1.1 times the geographical distance                                            | km     |
 | TTC                 | Total transfer capacity (maximum permissible hydrogen flow) in forward direction. Static pipeline rating                                                       | tH2    |
 | TTCBck              | Total transfer capacity (maximum permissible hydrogen flow) in backward direction. Static pipeline rating                                                      | tH2    |
-| SecurityFactor      | Security factor to consider approximately N-1 contingencies. NTC = TTC x SecurityFactor. The security factors cannot all be 0; otherwise, there is no network. | p.u.   |
+| SecurityFactor      | Security factor to consider approximately N-1 contingencies. NTC = TTC x SecurityFactor. The security factors cannot all be 0; otherwise, there is no network capacity. | p.u.   |
 | FixedInvestmentCost | Overnight investment (capital -CAPEX- and fixed O&M -FOM-) cost                                                                                                | M€     |
 | FixedChargeRate     | Fixed-charge rate to annualize the overnight investment cost                                                                                                   | p.u.   |
 | BinaryInvestment    | Binary pipeline investment decision                                                                                                                            | Yes/No |
@@ -1067,7 +1068,7 @@ A description of the circuit (initial node, final node, circuit) data included i
 | Length              | Pipeline length (only used for reporting purposes). If not defined, computed as 1.1 times the geographical distance                                            | km     |
 | TTC                 | Total transfer capacity (maximum permissible heat flow) in forward direction. Static pipeline rating                                                           | MW     |
 | TTCBck              | Total transfer capacity (maximum permissible heat flow) in backward direction. Static pipeline rating                                                          | MW     |
-| SecurityFactor      | Security factor to consider approximately N-1 contingencies. NTC = TTC x SecurityFactor. The security factors cannot all be 0; otherwise, there is no network. | p.u.   |
+| SecurityFactor      | Security factor to consider approximately N-1 contingencies. NTC = TTC x SecurityFactor. The security factors cannot all be 0; otherwise, there is no network capacity. | p.u.   |
 | FixedInvestmentCost | Overnight investment (capital -CAPEX- and fixed O&M -FOM-) cost                                                                                                | M€     |
 | FixedChargeRate     | Fixed-charge rate to annualize the overnight investment cost                                                                                                   | p.u.   |
 | BinaryInvestment    | Binary pipeline investment decision                                                                                                                            | Yes/No |

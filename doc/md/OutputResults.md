@@ -6,7 +6,7 @@ openTEPES documentation master file, created by Andres Ramos
 
 Some maps of the electricity transmission network and the energy share of different technologies are plotted.
 
-Spain 2030 Electric System (321 generators, 15 nodes, 27 lines) one scenario with hourly resolution
+Spain 2030 Electric System (321 generators, 15 nodes, 27 lines), one scenario with hourly resolution
 
 ```{image} ../img/oT_Plot_MapNetwork_ES2030.png
 :alt: Network map of the Spain 2030 electric system
@@ -14,7 +14,7 @@ Spain 2030 Electric System (321 generators, 15 nodes, 27 lines) one scenario wit
 :scale: 40%
 ```
 
-Canary Islands 2030 Electric Systems (94 generators, 7 nodes, 6 lines) one scenario with hourly resolution
+Canary Islands 2030 Electric Systems (94 generators, 7 nodes, 6 lines), one scenario with hourly resolution
 
 ```{image} ../img/oT_Plot_MapNetwork_ES2030_CI.png
 :alt: Network map of the Canary Islands 2030 electric systems
@@ -22,7 +22,7 @@ Canary Islands 2030 Electric Systems (94 generators, 7 nodes, 6 lines) one scena
 :scale: 40%
 ```
 
-Europe TechnoFriendly 2030 Electric System (1632 generators, 84 nodes, 497 lines) one scenario with hourly resolution
+Europe TechnoFriendly 2030 Electric System (1632 generators, 84 nodes, 497 lines), one scenario with hourly resolution
 
 ```{image} ../img/oT_Map_Network_TF2030.png
 :alt: Network map of the Europe TechnoFriendly 2030 electric system
@@ -30,7 +30,7 @@ Europe TechnoFriendly 2030 Electric System (1632 generators, 84 nodes, 497 lines
 :scale: 40%
 ```
 
-Sweden 2045 Electric and Heat Systems (49 generators, 8 nodes, 6 lines) one scenario with hourly resolution
+Sweden 2045 Electric and Heat Systems (49 generators, 8 nodes, 6 lines), one scenario with hourly resolution
 
 ```{image} ../img/oT_Plot_MapNetwork_SE2045.png
 :alt: Network map of the Sweden 2045 electric and heat systems
@@ -54,7 +54,7 @@ Technology output for Europe ERAA 2030 Electric System
 :scale: 55%
 ```
 
-Nigeria 2030 Electric System (144 generators, 37 nodes, 163 lines) three scenarios with hourly resolution
+Nigeria 2030 Electric System (144 generators, 37 nodes, 163 lines), three scenarios with hourly resolution
 
 ```{image} ../img/oT_Plot_MapNetwork_NG2030.png
 :alt: Network map of the Nigeria 2030 electric system
@@ -62,7 +62,7 @@ Nigeria 2030 Electric System (144 generators, 37 nodes, 163 lines) three scenari
 :scale: 20%
 ```
 
-Kenya 2030-2040-2050 Electric System (127 generators, 47 nodes, 74 lines) one scenario with hourly resolution
+Kenya 2030-2040-2050 Electric System (127 generators, 47 nodes, 74 lines), one scenario with hourly resolution
 
 ```{image} ../img/Kenia2030.png
 :alt: Network map of the Kenya 2030-2040-2050 electric system
@@ -70,7 +70,7 @@ Kenya 2030-2040-2050 Electric System (127 generators, 47 nodes, 74 lines) one sc
 :scale: 40%
 ```
 
-Tunisia 2030 Electric System (111 generators, 47 nodes, 88 lines) one scenario with hourly resolution
+Tunisia 2030 Electric System (111 generators, 47 nodes, 88 lines), one scenario with hourly resolution
 
 ```{image} ../img/Tunisia2030.png
 :alt: Network map of the Tunisia 2030 electric system
@@ -78,7 +78,7 @@ Tunisia 2030 Electric System (111 generators, 47 nodes, 88 lines) one scenario w
 :scale: 40%
 ```
 
-Uganda 2030 Electric System (118 generators, 49 nodes, 205 lines) one scenario with hourly resolution
+Uganda 2030 Electric System (118 generators, 49 nodes, 205 lines), one scenario with hourly resolution
 
 ```{image} ../img/Uganda2030.png
 :alt: Network map of the Uganda 2030 electric system
@@ -98,7 +98,7 @@ Separately, the raw parameters, variables, and constraints can be dumped to a Du
 
 ## Working with the DuckDB results
 
-With `output_format="duckdb"` (or `"both"`) each case writes `oT_Results_<CaseName>.duckdb`, holding one table per result file. The table name is the result
+With `output_format="duckdb"` (or `"both"`), each case writes `oT_Results_<CaseName>.duckdb`, holding one table per result file. The table name is the result
 name without the `oT_Result_` prefix and the `_<case>` suffix — so `oT_Result_TechnologyInvestment_9n.csv` becomes the table `TechnologyInvestment`. Query it
 with any DuckDB client, and load any result straight into a DataFrame:
 
@@ -122,9 +122,9 @@ con.execute('SELECT * FROM oT_Sweep_TechnologyInvestment WHERE "case" = \'d110\'
 The DuckDB and CSV outputs hold the same numbers, so this is purely a convenience for querying and joining results with SQL instead of globbing and
 concatenating CSVs.
 
-The CSV output files are briefly described in the following items.
+The CSV output files are briefly described in the following sections.
 
-The power is expressed in **MW**, energy or heat in **GWh**, marginal costs in **€/MWh**, and costs in million euros **M€**. Hydrogen is expressed in **tH2**.
+The power is expressed in **MW**, energy or heat in **GWh**, marginal costs in **€/MWh**, and costs in millions of euros (**M€**). Hydrogen is expressed in **tH2**.
 Reservoir volume is expressed in hm{sup}`3`,
 and water flow in hm{sup}`3`/s. The energy transported in the electricity network is expressed in **GWh-Mkm**. In each file, the identifiers are described in
 the first columns, followed by the headers and the description of each variable.
@@ -398,7 +398,7 @@ Period        Scenario    Load level  Generator       Downward ramp surplus [MW]
 
 File `oT_Result_GenerationCurtailment.csv`
 
-The curtailment power is the curtailed power (i.e., not used to satisfy the electricity demand) of variable renewable energy sources (VRES).
+The curtailed power is the power from variable renewable energy sources (VRES) that is not used to satisfy the electricity demand.
 
 ```{eval-rst}
 ============  ==========  ==========  ==============  ===============================
@@ -465,16 +465,6 @@ File `oT_Result_TechnologyGeneration.csv`
 Identifier                            Header      Description
 ====================================  ==========  =================================
 Period        Scenario    Load level  Technology  Output (discharge in ESS) [MW]
-============  ==========  ==========  ==========  =================================
-```
-
-File `oT_Result_TechnologyConsumption.csv`
-
-```{eval-rst}
-============  ==========  ==========  ==========  =================================
-Identifier                            Header      Description
-====================================  ==========  =================================
-Period        Scenario    Load level  Technology  Consumption (charge in ESS) [MW]
 ============  ==========  ==========  ==========  =================================
 ```
 
@@ -740,7 +730,7 @@ File `oT_Result_TechnologyConsumption.csv`
 ============  ==========  ==========  ==========  ==========================================
 Identifier                            Header      Description
 ====================================  ==========  ==========================================
-Period        Scenario    Load level  Technology  Charged power for each ESS [MW]
+Period        Scenario    Load level  Technology  Consumption (charge in ESS) [MW]
 ============  ==========  ==========  ==========  ==========================================
 ```
 
@@ -858,16 +848,16 @@ File `oT_Result_GenerationSpillageRelative.csv`
 
 | Identifier |          |            | Header    | Description                                            |
 | ---------- | -------- | ---------- | --------- | ------------------------------------------------------ |
-| Period     | Scenario | Load level | Generator | Spilled energy for each ESS wrt the energy inflows [%] |
+| Period     | Scenario | Load level | Generator | Spilled energy for each ESS w.r.t. the energy inflows [%] |
 
 File `oT_Result_SummaryGeneration.csv`
 
 ```{eval-rst}
-============  ==========  ==========  ============  ==============================================
+============  ==========  ==========  ============  ================================================
 Identifier                            Header        Description
-====================================  ============  ==============================================
-Period        Scenario    Load level  Generator     Generation output (to be used as pivot table)
-============  ==========  ==========  ============  ==============================================
+====================================  ============  ================================================
+Period        Scenario    Load level  Generator     Generation output (to be used as a pivot table)
+============  ==========  ==========  ============  ================================================
 ```
 
 ## Reservoir operation
@@ -948,7 +938,7 @@ Period        Scenario    Technology  Area        Generation, consumption, flows
 
 Positive values represent generation, and negative values represent demand or consumption. The sum of the values per area (column) must be 0.
 EnergyFlowIn and EnergyFlowOut are the sum of the incoming and outgoing flows of the corresponding area nodes. These values represent the import/export of
-energy to/from other areas only if the network is like an antenna.
+energy to/from other areas only if the network is radial (like an antenna).
 
 File `oT_Result_BalanceEnergyPerNode.csv`
 
@@ -1095,11 +1085,11 @@ Period        Scenario    Load level  Node        Energy not served by node [GWh
 File `oT_Result_SummaryNetwork.csv`
 
 ```{eval-rst}
-============  ==========  ==========  =======  ============================================
+============  ==========  ==========  =======  ==============================================
 Identifier                            Header   Description
-====================================  =======  ============================================
-Period        Scenario    Load level  Node     Network output (to be used as pivot table)
-============  ==========  ==========  =======  ============================================
+====================================  =======  ==============================================
+Period        Scenario    Load level  Node     Network output (to be used as a pivot table)
+============  ==========  ==========  =======  ==============================================
 ```
 
 ## Hydrogen balance and network operation
