@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 15, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 20, 2026
 
 openTEPES.openTEPES_DataConfiguration — builds the derived sets and parameters on the model: instrumental sets, ESS/RES sets, and the flag-driven branches (hydro topology, hydrogen, heat, PTDF). Runs after InputData has read the raw sets and parameters.
 """
@@ -270,6 +270,8 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     idxDict = dict()
     idxDict[0    ] = 0
     idxDict[0.0  ] = 0
+    idxDict['0'  ] = 0
+    idxDict['0.0'] = 0
     idxDict['No' ] = 0
     idxDict['NO' ] = 0
     idxDict['no' ] = 0
@@ -277,6 +279,8 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     idxDict['n'  ] = 0
     idxDict[1    ] = 1
     idxDict[1.0  ] = 1
+    idxDict['1'  ] = 1
+    idxDict['1.0'] = 1
     idxDict['Yes'] = 1
     idxDict['YES'] = 1
     idxDict['yes'] = 1
@@ -602,8 +606,8 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     par['pConstantVarCost']      = par['pConstantVarCost'].loc     [mTEPES.psn  ]
     par['pEmissionVarCost']      = par['pEmissionVarCost'].loc     [mTEPES.psn  ]
 
-    par['pRatedLinearOperCost'] = par['pRatedLinearFuelCost'].loc [mTEPES.g    ]
-    par['pRatedLinearVarCost']  = par['pRatedLinearFuelCost'].loc [mTEPES.g    ]
+    par['pRatedLinearOperCost'] = par['pRatedLinearOperCost'].loc [mTEPES.g    ]
+    par['pRatedLinearVarCost']  = par['pRatedLinearVarCost'].loc  [mTEPES.g    ]
 
     # drop generators not es
     par['pEfficiency']          = par['pEfficiency'].loc          [mTEPES.eh   ]
