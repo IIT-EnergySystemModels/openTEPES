@@ -1294,4 +1294,3 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
 
     SettingUpDataTime = time.time() - StartTime
     print('Setting up input data                  ... ', round(SettingUpDataTime), 's')
-    
