@@ -38,7 +38,7 @@ Here are the input files for:
 - a [static small case study of 9 nodes](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/9n), the minimal electricity example and the recommended starting point for building a new case,
 - the same [9-node case solved with a PTDF network formulation](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/9n_PTDF), which uses power transfer distribution factors and total transfer capacities instead of the angle-based DC power flow,
 - the same [9-node case coupled with a heat network](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/9n_heat), which adds heat demand and a heat pipe network on top of the electricity system,
-- the same [9-node case coupled with a hydrogen network](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/9n_H2), which adds electrolyzers, hydrogen demand, and a hydrogen pipe network on top of the electricity system,
+- the same [9-node case coupled with a hydrogen network](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/9n_H2), which adds electrolyzers, hydrogen demand, and a hydrogen pipeline network on top of the electricity system,
 - a [dynamic (multiyear) small case study of 9 nodes](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/9n7y) with 13 representative weeks per year,
 - another case, a [small Spanish system](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/sSEP), which also includes a hydrogen network,
 - a [modified RTS24 case study](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/RTS24),
@@ -62,13 +62,13 @@ This model is a work in progress and will be updated accordingly. If you want to
 
 [Installation guide](https://pascua.iit.comillas.edu/aramos/openTEPES_installation.pdf).
 
-There are two ways to get all the required packages under Windows. We recommend using the Python distribution [Miniconda](https://docs.anaconda.com/free/miniconda/index.html). If you don't want to use it or already have an existing Python installation, you can also download the required packages on your own.
+There are two ways to get all the required packages under Windows. We recommend using the Python distribution [Miniconda](https://docs.anaconda.com/free/miniconda/index.html). If you do not want to use it or already have an existing Python installation, you can also download the required packages on your own.
 
 **Miniconda (recommended)**
 
-1. [Miniconda](https://docs.anaconda.com/free/miniconda/index.html). Choose the 64-bit installer if possible.
+1. Install [Miniconda](https://docs.anaconda.com/free/miniconda/index.html). Choose the 64-bit installer if possible.
 
-   1. During the installation procedure, keep both checkboxes "modify the PATH" and "register Python" selected! If only higher Python versions are available, you can switch to a specific Python version by typing `conda install python=<version>`
+   1. During the installation procedure, keep both checkboxes "modify the PATH" and "register Python" selected! If only higher Python versions are available, you can switch to a specific Python version by typing `conda install python=<version>`.
    2. **Remark:** if Anaconda or Miniconda was installed previously, please check that Python is registered in the environment variables.
 
 2. **Packages and Solver**:
@@ -94,13 +94,13 @@ The [HiGHS solver](https://pypi.org/project/highspy/) can also be used. It can b
 
 **Gurobi**
 
-Another recommendation is the use of the [Gurobi solver](https://www.gurobi.com/). It is a commercial solver, but it is more powerful than open-source solvers for large-scale problems.
-As a commercial solver, it needs a license, which is free of charge for academic use by signing up on the [Gurobi website](https://pages.gurobi.com/registration/). You can also ask for a 30-day [evaluation license](https://www.gurobi.com/downloads/request-an-evaluation-license/) to test the solver.
+Another recommendation is to use the [Gurobi solver](https://www.gurobi.com/). It is a commercial solver, but it is more powerful than open-source solvers for large-scale problems.
+As a commercial solver, it requires a license, which is free of charge for academic use and can be obtained by signing up on the [Gurobi website](https://pages.gurobi.com/registration/). You can also ask for a 30-day [evaluation license](https://www.gurobi.com/downloads/request-an-evaluation-license/) to test the solver.
 It can be installed using `conda install -c gurobi gurobi`, and then you can request an academic or commercial license. Activate the license on your computer using the `grbgetkey` command (you need to be in a university internet domain if you are installing an academic license).
 
 **GLPK**
 
-As an easy option for installation, there is the free and open-source [GLPK solver](https://www.gnu.org/software/glpk/). However, it can be very slow for large-scale problems. It can be installed using: `conda install glpk`.
+An easy option to install is the free and open-source [GLPK solver](https://www.gnu.org/software/glpk/). However, it can be very slow for large-scale problems. It can be installed using: `conda install glpk`.
 
 **CBC**
 
@@ -109,7 +109,7 @@ The [CBC solver](https://github.com/coin-or/Cbc) is another free and open-source
 **Mosek**
 
 Another alternative is the [Mosek solver](https://www.mosek.com/). Note that it is a commercial solver, and you need a license for it. Mosek is a good alternative for dealing with QP, SOCP, and SDP problems. You only need to run `conda install -c mosek mosek` for installation and then request a license (academic or commercial). You can apply for an academic license [here](https://www.mosek.com/products/academic-licenses/).
-Mosek also provides a [license guide](https://docs.mosek.com/9.2/licensing/index.html). If you request an academic license, you will receive it by email and only need to place it in the path `C:\Users\<username>\mosek` on your computer.
+Mosek also provides a [license guide](https://docs.mosek.com/latest/licensing/index.html). If you request an academic license, you will receive it by email and only need to place it in the path `C:\Users\<username>\mosek` on your computer.
 
 **GAMS**
 
@@ -128,7 +128,7 @@ Users
 If you are not planning on developing, please follow the instructions in {ref}`installation`.
 
 Once installation is complete, openTEPES can be executed in test mode from a command prompt.
-In the directory of your choice, open and execute the **openTEPES_run.py** script by using the following on the command prompt (Windows) or terminal (Linux). (Depending on your default Python version, you might need to call `python3` instead of `python`.):
+In the directory of your choice, run the `openTEPES_Main` command by typing the following in the command prompt (Windows) or terminal (Linux); depending on your default Python version, you might need to call `python3` instead of `python`:
 
 > `openTEPES_Main`
 

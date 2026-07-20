@@ -8,8 +8,8 @@ openTEPES documentation master file, created by Andres Ramos
 
   > The objective is to evaluate future needs for generation and storage, and for electricity, hydrogen, and heat networks. The main results are the guidelines for the future structure of the generation, storage, and transmission systems.
   >
-  > It represents a decision support system for defining the **integrated generation, storage, and transmission resource planning** (IRP, GEP+SEP+TEP) of a **large-scale electric system** at the tactical level (i.e., time horizons of 5-20 years),
-  > defined as a set of **dynamic investment decisions for generation, storage, and (electricity, hydrogen, and heat) networks for several future years**. It is a tool for energy system planners to support the energy transition toward a **decarbonized, reliable, and affordable energy system**.
+  > It is a decision support system for defining the **integrated generation, storage, and transmission resource planning** (IRP, GEP+SEP+TEP) of a **large-scale electric system** at the tactical level (i.e., time horizons of 5-20 years),
+  > defined as a set of **dynamic investment decisions for generation, storage, and (electricity, hydrogen, and heat) networks for multiple future years**. It is a tool for energy system planners to support the energy transition toward a **decarbonized, reliable, and affordable energy system**.
   > The user predefines the expansion candidates, and the model determines the optimal decisions among them.
 
 - **Two-stage stochastic optimization** problem that includes binary generation, storage, and (electricity, hydrogen, and heat) network investment/retirement decisions; generation operation decisions (commitment, startup, and shutdown decisions are also binary); and electric line-switching decisions.
@@ -30,7 +30,7 @@ openTEPES documentation master file, created by Andres Ramos
 
 - **Energy storage systems (ESS)**, including pumped-hydro storage, batteries, demand response, electric vehicles, solar thermal, and electrolyzers
 
-  > They are technologies that store energy in one form and release it later when needed. In electric power systems, ESS help balance supply and demand, improve reliability, provide flexibility, and support the integration of variable renewable energy sources. Common examples include batteries, pumped hydro storage, and hydrogen-based storage.
+  > They are technologies that store energy in one form and release it later when needed. In electric power systems, ESS help balance supply and demand, improve reliability, provide flexibility, and support the integration of variable renewable energy sources. Common examples include batteries, pumped-hydro storage, and hydrogen-based storage.
 
 - **Hydro system basin**
 

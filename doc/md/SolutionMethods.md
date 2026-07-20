@@ -65,7 +65,7 @@ June 2013 [10.1109/PTC.2013.6652091](https://dx.doi.org/10.1109/PTC.2013.6652091
 
 It solves the complete model, decomposed by the stage Benders decomposition method (file `openTEPES_ProblemSolvingStageDecomposition`). The master problem
 determines the investment decisions and the subproblem the operation decisions. The subproblem is solved by stages (e.g., weeks or months).
-The duration of the stage (weekly -168 h- or monthly -672 h- or quarterly -2184 h-) is what makes sense from a system operation point of view.
+The duration of the stage (weekly —168 h—, monthly —672 h—, or quarterly —2184 h—) is chosen based on what makes sense from a system operation point of view.
 This value must be larger than or equal to the shortest duration of any storage type (e.g., weekly).
 
 Inventory levels of ESS at the end of every stage are fixed for the decomposition, i.e., consecutive stages are not tied to each other.
@@ -76,7 +76,7 @@ There are three possibilities for solving the decomposed problem (file `openTEPE
 
 1. **In parallel**: writes the LP file for the solver and sends the problems to a queue. It only works with the serial solver manager factory.
 2. **Sequentially (LP file)**: writes the LP file for the solver and solves each stage sequentially.
-3. **Sequentially (in memory)**: loads the problem in memory and solves each stage sequentially. It takes a lot of time to load the problem in memory.
+3. **Sequentially (in memory)**: loads the problem in memory and solves each stage sequentially. It takes a long time to load the problem in memory.
 
 ## Sector Benders decomposition
 

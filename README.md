@@ -154,7 +154,7 @@ Results are shown in CSV files and graphical plots.
 openTEPES is being used by [investors, market participants, system planners, and consultants](https://opentepes.readthedocs.io/en/latest/Projects.html). A
 careful implementation has been carried out to avoid numerical problems by scaling parameters, variables, and equations of the optimization problem, allowing
 the model to be used for very large-scale cases, e.g., the European system with hourly detail.
-For example, a European operation case study with hourly detail has reached 39.7 million constraints and 34.7 million variables in an LP problem. The mainland
+For example, a European operation case study with hourly detail has reached 49.1 million constraints and 57.3 million variables in an LP problem. The mainland
 Spain operation case has reached 5.2 million constraints and 6.8 million variables (1.3 million binary).
 
 # Installation

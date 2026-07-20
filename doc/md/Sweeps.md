@@ -62,7 +62,7 @@ just without the copy-on-write saving). Mode B needs a distinct `out_path` per c
 
 **The overlay** maps a data-table stem (e.g. `"Demand"`) to one of:
 
-- a **number** — multiply every numeric value of that table (a uniform scale, `1.10` for +10 %);
+- a **number** — multiply every numeric value of that table (a uniform scale, `1.10` for +10%);
 - a **`df -> df` callable** — any transform of the baseline frame;
 - a **replacement DataFrame** — swap the table outright (in the wide, indexed shape the model reads).
 

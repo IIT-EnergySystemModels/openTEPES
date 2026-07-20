@@ -32,7 +32,7 @@ openTEPES documentation master file, created by Andres Ramos
   >
   > Generating units. Use generation types instead of generating units
   >
-  > Network (nodes, lines, transportation or DC power flow, ohmic losses). Use a reduced network (corridors) with fewer nodes and lines, transport model instead
+  > Network (nodes, lines, transport or DC power flow, ohmic losses). Use a reduced network (corridors) with fewer nodes and lines, transport model instead
   > of DC power flow, or ignore ohmic losses
   >
   > Stochasticity (scenarios)
@@ -69,12 +69,12 @@ openTEPES documentation master file, created by Andres Ramos
 
 On building an appropriate set of **input data files** for a case study that can be run on openTEPES:
 
-- How can I strongly **reduce the size** of the case study for testing purposes?
+- How can I significantly **reduce the size** of the case study for testing purposes?
 
   > Delete the duration (column D in `oT_Data_Duration`) of the load levels you want to ignore. For example, if you delete the duration beyond the first 168
   > hours, you are considering just the first week of the year in the case study
   >
-  > Put a time step of 2 or 3 hours in the `oT_Data_Parameter` file. This will reduce the number of load levels by a factor of 2 or 3
+  > Set a time step of 2 or 3 hours in the `oT_Data_Parameter` file. This will reduce the number of load levels by a factor of 2 or 3
   >
   > For working with representative stages, see, for example, the [9n7y case study](https://opentepes.readthedocs.io/en/latest/Download.html#cases)
 
@@ -100,7 +100,7 @@ On building an appropriate set of **input data files** for a case study that can
 
 - All the **empty cells** of the CSV files are replaced internally by openTEPES with 0.0
 
-  > Therefore, if you want to set the generation of a solar PV to 0.0 at night, then you must put a small value, 0.000001, that will be replaced internally by
+  > Therefore, if you want to set the generation of a solar PV to 0.0 at night, then you must enter a small value, 0.000001, that will be replaced internally by
   > openTEPES with 0.0. If the cell is left empty, openTEPES will consider the **rated capacity** of the solar PV unit defined in `oT_Data_Generation` as the
   > generation at night.
 
@@ -115,7 +115,7 @@ On analyzing **output results**:
   this).
 
 - If the problem-solving process has not produced an optimal solution, check if the system conditions defined within the input data files are too tight, i.e.,
-  the system may not have been provided with large enough flexibility for the model to find the optimal problem solution. If this may be the case, some problem
+  the system may not have been provided with large enough flexibility for the model to find the optimal problem solution. If this is the case, some problem
   constraints could/should be relaxed to allow the model to compute an optimal solution.
 
 - Check the level of the overall system variables in the output **energy balance files** (e.g., `oT_Result_BalanceEnergyPerArea`,

@@ -9,13 +9,13 @@ facilities (generators, ESS, electric lines, hydrogen pipelines, and heat pipes)
 The objective is to evaluate future needs for generation and storage, and for electricity, hydrogen, and heat networks. The main results are the guidelines for
 the future structure of the generation, storage, and transmission systems.
 
-The **openTEPES** model represents a decision support system for defining the **integrated generation, storage, and transmission resource planning** (IRP,
+The **openTEPES** model is a decision support system for defining the **integrated generation, storage, and transmission resource planning** (IRP,
 GEP+SEP+TEP) of a **large-scale electric system** at the tactical level (i.e., time horizons of 5-20 years),
-defined as a set of **dynamic investment decisions for generation, storage, and (electricity, hydrogen, and heat) networks for several future years**. It is a
+defined as a set of **dynamic investment decisions for generation, storage, and (electricity, hydrogen, and heat) networks for multiple future years**. It is a
 tool for energy system planners to support the energy transition toward a **decarbonized, reliable, and affordable energy system**.
 The user predefines the expansion candidates, and the model determines the optimal decisions among them.
 
-It automatically determines optimal expansion plans that satisfy multiple attributes simultaneously. Its main features are:
+It automatically determines optimal expansion plans that satisfy multiple criteria simultaneously. Its main features are:
 
 - **Dynamic (perfect foresight)**: the scope of the model corresponds to several periods (years) on a long-term horizon, for example, 2030, 2035, and 2040.
 
@@ -29,7 +29,7 @@ It automatically determines optimal expansion plans that satisfy multiple attrib
   (year) or several periods (years) to analyze the system's evolution.
   The time definition also allows for specifying disconnected representative periods (e.g., days or weeks) to evaluate system operation. The period (year) must
   be represented by 8736 hours because several model features representing
-  the system operation are based on weeks (168 hours) or lunar months (made of 4 weeks, 672 hours).
+  the system operation are based on weeks (168 hours) or lunar months (made up of 4 weeks, i.e., 672 hours).
 
 - **Stochastic**: several stochastic parameters that can influence the optimal generation, storage, and transmission expansion decisions are considered. The
   model considers stochastic
@@ -37,7 +37,7 @@ It automatically determines optimal expansion plans that satisfy multiple attrib
   energy inflows and outflows, natural water inflows, operating reserves, ramp reserves, inertia, and electricity, hydrogen, and heat demand.
 
 The objective function includes two main quantifiable costs: **investment costs for generation, storage, and transmission (CAPEX)** and **expected variable
-operation costs (including generation, consumption, emissions, and reliability costs) (system OPEX)**.
+operation costs (system OPEX), including generation, consumption, emissions, and reliability costs**.
 
 The model formulates a **two-stage stochastic optimization** problem that includes binary generation, storage, and (electricity, hydrogen, and heat) network
 investment/retirement decisions; generation operation decisions (commitment, startup, and shutdown decisions are also binary); and electric line-switching
@@ -50,19 +50,19 @@ operating reserves and electric line-switching decisions via **DC power flow (DC
 including pumped-hydro storage, batteries, demand response, electric vehicles, solar thermal, and electrolyzers.
 
 The model also allows a representation of the **hydro system** based on volume and water inflow data, considering the water stream topology (**hydro cascade
-basins**). If they are unavailable, it runs using an energy-based representation of the hydro system.
+basins**). If these data are unavailable, it runs using an energy-based representation of the hydro system.
 
 It also includes a **Power-to-Hydrogen (P2H2)** representation, with hydrogen demand satisfied by electrolyzer-produced hydrogen (electricity consumed to
 produce hydrogen) and a hydrogen network to distribute it, and a **Power-to-Heat (P2H)** representation,
-with heat demand satisfied by heat pumps or electric heaters (which consume electricity), and a heat network to distribute the heat. If they are unavailable, it
-runs with just the other energy carriers.
+with heat demand satisfied by heat pumps or electric heaters (which consume electricity), and a heat network to distribute the heat.
+If hydrogen and heat are not considered, the model runs with just the other energy carriers.
 
 The main results of the model can be structured into these topics:
 
 - **Investment**: investment decisions and costs for generation, storage, hydro reservoirs, electric lines, hydrogen pipelines, and heat pipes
-- **Operation**: unit commitment, startup, and shutdown of non-renewable units, unit output and aggregation by technologies (thermal, storage hydro,
-  pumped-hydro storage, RES), RES curtailment, electric line, hydrogen pipeline, and heat pipe flows, line ohmic losses, node voltage angles, upward and
-  downward operating reserves, upward and downward ramp reserves, ESS inventory levels, hydro reservoir volumes, power, hydrogen, and heat not served
+- **Operation**: unit commitment, startup, and shutdown of non-renewable units; unit output and aggregation by technologies (thermal, storage hydro,
+  pumped-hydro storage, RES); RES curtailment; electric line, hydrogen pipeline, and heat pipe flows; line ohmic losses; node voltage angles; upward and
+  downward operating reserves; upward and downward ramp reserves; ESS inventory levels; hydro reservoir volumes; and power, hydrogen, and heat not served
 - **Emissions**: CO2 emissions by unit
 - **Marginal**: Locational Short-Run Marginal Costs (LSRMC), stored energy value, water volume value
 - **Economic**: operation, emission, and reliability costs and revenues from operation, operating reserves, and ramp reserves
