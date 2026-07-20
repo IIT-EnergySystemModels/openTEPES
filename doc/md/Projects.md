@@ -20,7 +20,7 @@ The model has been used in these research projects:
   for **Electric Power Research Institute (EPRI)**.
   March 2025 - December 2025. [A. Ramos](https://www.iit.comillas.edu/people/aramos)
 
-  > The objective of this project is to better understand the existing functionalities of openTEPES, as well as explore additional capabilities of interest to
+  > The objective of this project is to better understand the existing functionalities of openTEPES, as well as to explore additional capabilities of interest to
   > EPRI that could be relevant for future studies.
   > These include energy storage, integrated energy systems considering gas, heat, and electric coupled networks, and hydro systems modeling, among others.
 
@@ -39,7 +39,7 @@ The model has been used in these research projects:
   Ramos](https://www.iit.comillas.edu/people/aramos), [F. Martín](https://www.iit.comillas.edu/people/fmartin), [T.
   Gómez](https://www.iit.comillas.edu/people/tomas), [M. Martínez](https://www.iit.comillas.edu/people/mmartinezv)
 
-  > It aims to quantify the value of distributed batteries and demand response in the context of the National Integrated Energy and Climate Plan (PNIEC).
+  > It aims to quantify the value of distributed batteries and demand response in the context of the National Energy and Climate Plan (NECP).
 
 - [Application of the ENTSO-E cost-benefit analysis method to Conso II pumped-hydro
   storage](https://www.iit.comillas.edu/publicacion/proyecto/en/IberdrolaConsoIIENTSOE/Aplicaci%c3%b3n_de_la_metodolog%c3%ada_ENTSO-E_de_an%c3%a1lisis_de_coste_beneficio_al_proyecto_de_la_CH_Conso_II),
@@ -66,7 +66,7 @@ The model has been used in these research projects:
 
 - [Day-ahead market price simulation tool
   (HESIME)](https://www.iit.comillas.edu/publicacion/proyecto/en/HESIME/Herramienta_para_la_simulaci%c3%b3n_del_precio_del_mercado_diario_a_futuro), developed
-  for the **Ministry of Science and Innovation/State Research Agency** (MICIN/AEI/10.13039/501100011033) under the program **Public-Private Partnerships** with
+  for the **Ministry of Science and Innovation/State Research Agency** (MICIN/AEI/10.13039/501100011033) under the **Public-Private Partnerships** program with
   **NextGenerationEU/PRTR** funds (CPP2022-009809). April 2023 - March 2026.
   [L. Olmos](https://www.iit.comillas.edu/people/olmos), [A. Ramos](https://www.iit.comillas.edu/people/aramos), [S. Gómez
   Sánchez](https://www.iit.comillas.edu/people/sgomez), [F. Labora](https://www.iit.comillas.edu/people/flabora)
@@ -130,8 +130,8 @@ The model has been used in these research projects:
   June 2023 - October 2023. [L. Rouco](https://www.iit.comillas.edu/people/rouco), [A. Ramos](https://www.iit.comillas.edu/people/aramos), [F.M.
   Echavarren](https://www.iit.comillas.edu/people/pacoec), [R. Cossent](https://www.iit.comillas.edu/people/rcossent)
 
-  > It is aimed at supporting Glide Energy in the preparation of the application to the call of the Spanish Ministry of Ecological Transition (MITECO) on
-  > innovative energy storage systems.
+  > It aims to support Glide Energy in the preparation of the application to the call of the Spanish Ministry for the Ecological Transition and the Demographic
+  > Challenge (MITECO) on innovative energy storage systems.
 
 - [Analysis of the technical and economic benefits of solar thermal generation in the Spanish peninsular
   system](https://www.iit.comillas.edu/proyectos/mostrar_proyecto.php.en?nombre_abreviado=ProTermosolar_Presentacion), developed for **ProTermosolar**.
@@ -141,7 +141,7 @@ The model has been used in these research projects:
   > peninsular system.
 
 - Hydro generation advanced systems: modeling, control, and optimized integration to the system (AVANHID), developed for the **Ministry of Science and
-  Innovation/State Research Agency** (MICIN/AEI/10.13039/501100011033) under the program **Public-Private Partnerships** with **NextGenerationEU/PRTR** funds
+  Innovation/State Research Agency** (MICIN/AEI/10.13039/501100011033) under the **Public-Private Partnerships** program with **NextGenerationEU/PRTR** funds
   (CPP2021-009114). October 2022 - November 2025.
   [A. Ramos](https://www.iit.comillas.edu/people/aramos), [J.M. Latorre](https://www.iit.comillas.edu/people/jesuslc), [P.
   Dueñas](https://www.iit.comillas.edu/people/pduenas), [L. Rouco](https://www.iit.comillas.edu/people/rouco), [L.
@@ -157,8 +157,8 @@ The model has been used in these research projects:
 ```
 
 - Local markets for energy communities: designing efficient markets and assessing the integration from the electricity system perspective (OptiREC), developed
-  for the **Ministry of Science and Innovation/State Research Agency** (MICIN/AEI/10.13039/501100011033) under the program **Strategic projects oriented to the
-  ecological transition and digital transition** with **NextGenerationEU/PRTR** funds (TED2021-131365B-C43). December 2022 - July 2025.
+  for the **Ministry of Science and Innovation/State Research Agency** (MICIN/AEI/10.13039/501100011033) under the **Strategic projects oriented to the
+  ecological transition and digital transition** program with **NextGenerationEU/PRTR** funds (TED2021-131365B-C43). December 2022 - July 2025.
   [A. Ramos](https://www.iit.comillas.edu/people/aramos), [J.P. Chaves](https://www.iit.comillas.edu/people/jchaves), [J.M.
   Latorre](https://www.iit.comillas.edu/people/jesuslc), [J. García](https://www.iit.comillas.edu/people/javiergg), [M.
   Troncia](https://www.iit.comillas.edu/people/mtroncia), [S.A. Mansouri](https://www.iit.comillas.edu/people/smansouri), [O.M.
@@ -209,7 +209,7 @@ The model has been used in these research projects:
   Chaves](https://www.iit.comillas.edu/people/jchaves),
   [P. Linares](https://www.iit.comillas.edu/people/pedrol), [J.J. Valentín](https://www.iit.comillas.edu/people/jjvalentin)
 
-  > It aims to analyze the impact on the electricity markets of the mainland Spanish system of the high penetration of electric vehicles in a 2030 scenario.
+  > It aims to analyze the impact of the high penetration of electric vehicles on the electricity markets of the mainland Spanish system in a 2030 scenario.
 
 - [European Climate and Energy Modelling Forum (ECEMF)](https://ecemf.eu/), developed for the **European Union**.
   May 2021 - December 2024.
@@ -249,7 +249,7 @@ The model has been used in these research projects:
 
 - [FlexEner. New 100% renewable, flexible and robust energy system for the integration of new technologies in generation, networks and demand -
   Scenarios](https://www.iit.comillas.edu/proyectos/mostrar_proyecto.php.en?nombre_abreviado=FLEXENER_IBD-GEN_ESCENARIOS), developed for **Iberdrola** under
-  **Misiones CDTI 2019** program (MIG-20201002).
+  the **Misiones CDTI 2019** program (MIG-20201002).
   October 2020 - December 2023.
   [M. Rivier](https://www.iit.comillas.edu/people/michel), [T. Gómez](https://www.iit.comillas.edu/people/tomas), [A.
   Sánchez](https://www.iit.comillas.edu/people/alvaro),
@@ -271,12 +271,12 @@ The model has been used in these research projects:
   [M. Pérez-Bravo](https://www.iit.comillas.edu/people/mperezb), [A.F. Rodríguez Matas](https://www.iit.comillas.edu/people/afrmatas), [J.C.
   Romero](https://www.iit.comillas.edu/people/jcromero)
 
-  > It aims to improve the description of the Spanish energy system in the model TIMES-SINERGIA, from the technologies considered and higher time resolution to
+  > It aims to improve the description of the Spanish energy system in the TIMES-SINERGIA model, from the technologies considered and higher time resolution to
   > the detailed modeling of the power sector, such as the inclusion of transmission constraints, with openTEPES.
 
 - [MODESC – Platform of innovative models for speeding the energy transition toward a decarbonized
   economy](https://www.iit.comillas.edu/proyectos/mostrar_proyecto.php.en?nombre_abreviado=MODESC_RETOS), developed for the **Ministry of Science and
-  Innovation** under **Retos Colaboración 2019** program (RTC2019-007315-3).
+  Innovation** under the **Retos Colaboración 2019** program (RTC2019-007315-3).
   September 2020 - December 2023.
   [T. Gómez](https://www.iit.comillas.edu/people/tomas), [M. Rivier](https://www.iit.comillas.edu/people/michel), [J.P.
   Chaves](https://www.iit.comillas.edu/people/jchaves),
@@ -284,7 +284,7 @@ The model has been used in these research projects:
   Martín](https://www.iit.comillas.edu/people/fmartin),
   [L. Herding](https://www.iit.comillas.edu/people/lherding)
 
-  > It aims to develop a global platform that integrates innovative energy simulation and impact assessment models that allow speeding up the decarbonization of
+  > It aims to develop a global platform that integrates innovative energy simulation and impact assessment models that help speed up the decarbonization of
   > the electricity system, including the electrification of the energy demand.
 
 ```{image} ../img/micinn_aei.png
