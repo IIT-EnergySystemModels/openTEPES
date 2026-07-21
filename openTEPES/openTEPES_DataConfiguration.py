@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 20, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 21, 2026
 
 openTEPES.openTEPES_DataConfiguration — builds the derived sets and parameters on the model: instrumental sets, ESS/RES sets, and the flag-driven branches (hydro topology, hydrogen, heat, PTDF). Runs after InputData has read the raw sets and parameters.
 """
@@ -750,8 +750,8 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
             par['pDemandHeatPeak'][p,ar] = par['pDemandHeat'].loc[p,:,:][[nd for nd in d2a[ar]]].sum(axis=1).max()
             par['pEpsilonHeat']          = par['pDemandHeatPeak'][p,ar]*1e-5
             par['pDemandHeat']             [par['pDemandHeat']    [[nd for nd in   d2a[ar]]] <  par['pEpsilonHeat']] = 0.0
-            par['pHeatPipeNTCFrw'][par['pHeatPipeNTCFrw'] < par['pEpsilonElec']] = 0
-            par['pHeatPipeNTCBck'][par['pHeatPipeNTCBck'] < par['pEpsilonElec']] = 0
+            par['pHeatPipeNTCFrw'][par['pHeatPipeNTCFrw'] < par['pEpsilonHeat']] = 0
+            par['pHeatPipeNTCBck'][par['pHeatPipeNTCBck'] < par['pEpsilonHeat']] = 0
 
     # drop generators not g or es or eh or ch
     par['pVariableMinPowerElec'] = par['pVariableMinPowerElec'].loc[:,mTEPES.g ]
@@ -944,9 +944,6 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     # maximum voltage angle
     par['pMaxTheta'] = par['pDemandElec']*0.0 + math.pi/2
     par['pMaxTheta'] = par['pMaxTheta'].loc[mTEPES.psn]
-
-    # this option avoids a warning in the following assignments
-    pd.options.mode.chained_assignment = None
 
     # @profile
     def filter_rows(df, set):
