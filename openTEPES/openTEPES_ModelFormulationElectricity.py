@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 21, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 09, 2026
 
 openTEPES.openTEPES_ModelFormulationElectricity — electricity-sector formulation: demand balance, operating reserves and inertia, storage (ESS), unit commitment and ramping, line switching, DC network operation, and the cycle-based network constraints. Granular per-concern functions so a caller can pick which to build (e.g. with or without unit commitment).
 """
@@ -1158,7 +1158,7 @@ def NetworkCycles(mTEPES, pIndLogConsole):
 
 
 # @profile
-def CycleConstraints(OptModel, mTEPES, pIndLogConsole):
+def CycleConstraints(OptModel, mTEPES, pIndLogConsole, p, sc, st):
     print('Network              cycle constraints ****')
 
     StartTime = time.time()
@@ -1169,7 +1169,7 @@ def CycleConstraints(OptModel, mTEPES, pIndLogConsole):
 
     #%% cycle Kirchhoff's second law with some candidate lines
     # this equation is formulated for every AC candidate line included in the cycle
-    def eCycleKirchhoff2ndLawCnd1(OptModel,n,cyc,nii,nff,cc):
+    def eCycleKirchhoff2ndLawCnd1(OptModel,p,sc,n,cyc,nii,nff,cc):
         if mTEPES.pIndPTDF or (p,nii,nff,cc) not in mTEPES.pla:
             return Constraint.Skip
         return (sum(OptModel.vFlowElec[p,sc,n,ni,nf,cc] * mTEPES.pLineX[ni,nf,cc] / mTEPES.pSBase for ni,nf in list(zip(mTEPES.ncd[cyc], mTEPES.ncd[cyc][1:] + mTEPES.ncd[cyc][:1])) for cc in mTEPES.cc if (ni,nf,cc) in mTEPES.uctc) -
@@ -1179,7 +1179,7 @@ def CycleConstraints(OptModel, mTEPES, pIndLogConsole):
     if pIndLogConsole:
         print('eCycleKirchhoff2ndLC1     ... ', len(getattr(OptModel, f'eCycleKirchhoff2ndLawCnd1_{p}_{sc}_{st}')), ' rows')
 
-    def eCycleKirchhoff2ndLawCnd2(OptModel,n,cyc,nii,nff,cc):
+    def eCycleKirchhoff2ndLawCnd2(OptModel,p,sc,n,cyc,nii,nff,cc):
         if mTEPES.pIndPTDF or (p,nii,nff,cc) not in mTEPES.pla:
             return Constraint.Skip
         return (sum(OptModel.vFlowElec[p,sc,n,ni,nf,cc] * mTEPES.pLineX[ni,nf,cc] / mTEPES.pSBase for ni,nf in list(zip(mTEPES.ncd[cyc], mTEPES.ncd[cyc][1:] + mTEPES.ncd[cyc][:1])) for cc in mTEPES.cc if (ni,nf,cc) in mTEPES.uctc) -
@@ -1189,7 +1189,7 @@ def CycleConstraints(OptModel, mTEPES, pIndLogConsole):
     if pIndLogConsole:
         print('eCycleKirchhoff2ndLC2     ... ', len(getattr(OptModel, f'eCycleKirchhoff2ndLawCnd2_{p}_{sc}_{st}')), ' rows')
 
-    def eFlowParallelCandidate1(OptModel,n,ni,nf,cc,c2):
+    def eFlowParallelCandidate1(OptModel,p,sc,n,ni,nf,cc,c2):
         if (cc < c2 and (ni,nf,cc) in mTEPES.lea and (ni,nf,c2) in mTEPES.lca) and mTEPES.pIndPTDF == 0:
             return (OptModel.vFlowElec[p,sc,n,ni,nf,cc] - OptModel.vFlowElec[p,sc,n,ni,nf,c2] * mTEPES.pLineX[ni,nf,c2] / mTEPES.pLineX[ni,nf,cc]) / max(mTEPES.pMaxNTCBck[p,sc,n,ni,nf,cc],mTEPES.pMaxNTCFrw[p,sc,n,ni,nf,cc]) <=   1 - OptModel.vLineCommit[p,sc,n,ni,nf,c2]
         else:
@@ -1199,7 +1199,7 @@ def CycleConstraints(OptModel, mTEPES, pIndLogConsole):
     if pIndLogConsole:
         print('eFlowParallelCnddate1     ... ', len(getattr(OptModel, f'eFlowParallelCandidate1_{p}_{sc}_{st}')), ' rows')
 
-    def eFlowParallelCandidate2(OptModel,n,ni,nf,cc,c2):
+    def eFlowParallelCandidate2(OptModel,p,sc,n,ni,nf,cc,c2):
         if (cc < c2 and (ni,nf,cc) in mTEPES.lea and (ni,nf,c2) in mTEPES.lca) and mTEPES.pIndPTDF == 0:
             return (OptModel.vFlowElec[p,sc,n,ni,nf,cc] - OptModel.vFlowElec[p,sc,n,ni,nf,c2] * mTEPES.pLineX[ni,nf,c2] / mTEPES.pLineX[ni,nf,cc]) / max(mTEPES.pMaxNTCBck[p,sc,n,ni,nf,cc],mTEPES.pMaxNTCFrw[p,sc,n,ni,nf,cc]) >= - 1 + OptModel.vLineCommit[p,sc,n,ni,nf,c2]
         else:
