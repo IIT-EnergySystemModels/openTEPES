@@ -1,9 +1,5 @@
 """
-<<<<<<< HEAD
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 21, 2026
-=======
 Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 15, 2026
->>>>>>> parent of c6df1ef9 (Update openTEPES_DataConfiguration.py)
 
 openTEPES.openTEPES_DataConfiguration — builds the derived sets and parameters on the model: instrumental sets, ESS/RES sets, and the flag-driven branches (hydro topology, hydrogen, heat, PTDF). Runs after InputData has read the raw sets and parameters.
 """
@@ -274,11 +270,6 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     idxDict = dict()
     idxDict[0    ] = 0
     idxDict[0.0  ] = 0
-<<<<<<< HEAD
-    # idxDict['0'  ] = 0
-    # idxDict['0.0'] = 0
-=======
->>>>>>> parent of c6df1ef9 (Update openTEPES_DataConfiguration.py)
     idxDict['No' ] = 0
     idxDict['NO' ] = 0
     idxDict['no' ] = 0
@@ -286,11 +277,6 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     idxDict['n'  ] = 0
     idxDict[1    ] = 1
     idxDict[1.0  ] = 1
-<<<<<<< HEAD
-    # idxDict['1'  ] = 1
-    # idxDict['1.0'] = 1
-=======
->>>>>>> parent of c6df1ef9 (Update openTEPES_DataConfiguration.py)
     idxDict['Yes'] = 1
     idxDict['YES'] = 1
     idxDict['yes'] = 1
@@ -572,8 +558,11 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
         par['pIniVolume'] = pd.DataFrame([par['pInitialVolume']   ]*len(mTEPES.psn), index=mTEPES.psn, columns=mTEPES.rs)
 
     # initial inventory must be between minimum and maximum
+    # stage of each (p,sc,n), to check only load levels that belong to an active stage
+    pLevelToStg = {(p,sc,n): st for p,sc,st,n in mTEPES.s2n}
     for p,sc,n,es in mTEPES.psnes:
-        if (p,sc,st,n) in mTEPES.s2n and mTEPES.n.ord(n) == par['pStorageTimeStep'][es]:
+        st = pLevelToStg.get((p,sc,n))
+        if st is not None and mTEPES.n.ord(n) == par['pStorageTimeStep'][es]:
             if  par['pIniInventory'].at[(p,sc,n),es] < par['pMinStorage'].at[(p,sc,n),es]:
                 par['pIniInventory'].at[(p,sc,n),es] = par['pMinStorage'].at[(p,sc,n),es]
                 print('### Initial inventory lower than minimum storage ', p, sc, st, es)
@@ -582,7 +571,8 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
                 print('### Initial inventory greater than maximum storage ', p, sc, st, es)
     if par['pIndHydroTopology']:
         for p,sc,n,rs in mTEPES.psnrs:
-            if (p,sc,st,n) in mTEPES.s2n and mTEPES.n.ord(n) == par['pReservoirTimeStep'][rs]:
+            st = pLevelToStg.get((p,sc,n))
+            if st is not None and mTEPES.n.ord(n) == par['pReservoirTimeStep'][rs]:
                 if  par['pIniVolume'].at[(p,sc,n),rs] < par['pMinVolume'].at[(p,sc,n),rs]:
                     par['pIniVolume'].at[(p,sc,n),rs] = par['pMinVolume'].at[(p,sc,n),rs]
                     print('### Initial volume lower than minimum volume ',   p, sc, st, rs)
@@ -756,8 +746,8 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
             par['pDemandHeatPeak'][p,ar] = par['pDemandHeat'].loc[p,:,:][[nd for nd in d2a[ar]]].sum(axis=1).max()
             par['pEpsilonHeat']          = par['pDemandHeatPeak'][p,ar]*1e-5
             par['pDemandHeat']             [par['pDemandHeat']    [[nd for nd in   d2a[ar]]] <  par['pEpsilonHeat']] = 0.0
-            par['pHeatPipeNTCFrw'][par['pHeatPipeNTCFrw'] < par['pEpsilonHeat']] = 0
-            par['pHeatPipeNTCBck'][par['pHeatPipeNTCBck'] < par['pEpsilonHeat']] = 0
+            par['pHeatPipeNTCFrw'][par['pHeatPipeNTCFrw'] < par['pEpsilonElec']] = 0
+            par['pHeatPipeNTCBck'][par['pHeatPipeNTCBck'] < par['pEpsilonElec']] = 0
 
     # drop generators not g or es or eh or ch
     par['pVariableMinPowerElec'] = par['pVariableMinPowerElec'].loc[:,mTEPES.g ]
@@ -868,7 +858,7 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
 
     par['pMaxNTCBck']                  = par['pMaxNTCBck'].loc             [:,mTEPES.la]
     par['pMaxNTCFrw']                  = par['pMaxNTCFrw'].loc             [:,mTEPES.la]
-    par['pMaxNTCMax']                  = par['pMaxNTCFrw'].loc             [:,mTEPES.la]
+    par['pMaxNTCMax']                  = par['pMaxNTCMax'].loc             [:,mTEPES.la]
 
     if par['pIndHydroTopology']:
         # drop generators not h
@@ -950,6 +940,9 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     # maximum voltage angle
     par['pMaxTheta'] = par['pDemandElec']*0.0 + math.pi/2
     par['pMaxTheta'] = par['pMaxTheta'].loc[mTEPES.psn]
+
+    # this option avoids a warning in the following assignments
+    pd.options.mode.chained_assignment = None
 
     # @profile
     def filter_rows(df, set):
@@ -1282,7 +1275,7 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
 
     if par['pIndHeat']:
         # if line length = 0 changed to geographical distance with an additional 10%
-        for ni,nf,cc in mTEPES.pa:
+        for ni,nf,cc in mTEPES.ha:
             if  mTEPES.pHeatPipeLength[ni,nf,cc]() == 0.0:
                 mTEPES.pHeatPipeLength[ni,nf,cc]   =  1.1 * 6371 * 2 * math.asin(math.sqrt(math.pow(math.sin((mTEPES.pNodeLat[nf]-mTEPES.pNodeLat[ni])*math.pi/180/2),2) + math.cos(mTEPES.pNodeLat[ni]*math.pi/180)*math.cos(mTEPES.pNodeLat[nf]*math.pi/180)*math.pow(math.sin((mTEPES.pNodeLon[nf]-mTEPES.pNodeLon[ni])*math.pi/180/2),2)))
 
