@@ -858,7 +858,7 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
 
     par['pMaxNTCBck']                  = par['pMaxNTCBck'].loc             [:,mTEPES.la]
     par['pMaxNTCFrw']                  = par['pMaxNTCFrw'].loc             [:,mTEPES.la]
-    par['pMaxNTCMax']                  = par['pMaxNTCFrw'].loc             [:,mTEPES.la]
+    par['pMaxNTCMax']                  = par['pMaxNTCMax'].loc             [:,mTEPES.la]
 
     if par['pIndHydroTopology']:
         # drop generators not h
@@ -1272,7 +1272,7 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
 
     if par['pIndHeat']:
         # if line length = 0 changed to geographical distance with an additional 10%
-        for ni,nf,cc in mTEPES.pa:
+        for ni,nf,cc in mTEPES.ha:
             if  mTEPES.pHeatPipeLength[ni,nf,cc]() == 0.0:
                 mTEPES.pHeatPipeLength[ni,nf,cc]   =  1.1 * 6371 * 2 * math.asin(math.sqrt(math.pow(math.sin((mTEPES.pNodeLat[nf]-mTEPES.pNodeLat[ni])*math.pi/180/2),2) + math.cos(mTEPES.pNodeLat[ni]*math.pi/180)*math.cos(mTEPES.pNodeLat[nf]*math.pi/180)*math.pow(math.sin((mTEPES.pNodeLon[nf]-mTEPES.pNodeLon[ni])*math.pi/180/2),2)))
 
