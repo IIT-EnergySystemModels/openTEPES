@@ -271,6 +271,7 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     idxDict[0    ] = 0
     idxDict[0.0  ] = 0
     idxDict['0'  ] = 0
+    idxDict['0.0'] = 0
     idxDict['No' ] = 0
     idxDict['NO' ] = 0
     idxDict['no' ] = 0
@@ -279,6 +280,7 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     idxDict[1    ] = 1
     idxDict[1.0  ] = 1
     idxDict['1'  ] = 1
+    idxDict['1.0'] = 1
     idxDict['Yes'] = 1
     idxDict['YES'] = 1
     idxDict['yes'] = 1
