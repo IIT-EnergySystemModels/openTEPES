@@ -92,40 +92,30 @@ def SettingUpVariables(OptModel, mTEPES):
 
         if mTEPES.pIndBinGenInvest() != 1:
             OptModel.vGenerationInvest     = Var(mTEPES.peb,   within=UnitInterval,     doc='generation       investment decision exists in a year [0,1]')
-            # OptModel.vGenerationInvPer     = Var(mTEPES.peb,   within=UnitInterval,     doc='generation       investment decision done   in a year [0,1]')
         else:
             OptModel.vGenerationInvest     = Var(mTEPES.peb,   within=Binary,           doc='generation       investment decision exists in a year {0,1}')
-            # OptModel.vGenerationInvPer     = Var(mTEPES.peb,   within=Binary,           doc='generation       investment decision done   in a year {0,1}')
 
         if mTEPES.pIndBinGenRetire() != 1:
             OptModel.vGenerationRetire     = Var(mTEPES.pgd,   within=UnitInterval,     doc='generation       retirement decision exists in a year [0,1]')
-            # OptModel.vGenerationRetPer     = Var(mTEPES.pgd,   within=UnitInterval,     doc='generation       retirement decision exists in a year [0,1]')
         else:
             OptModel.vGenerationRetire     = Var(mTEPES.pgd,   within=Binary,           doc='generation       retirement decision exists in a year {0,1}')
-            # OptModel.vGenerationRetPer     = Var(mTEPES.pgd,   within=Binary,           doc='generation       retirement decision exists in a year {0,1}')
 
         if mTEPES.pIndBinNetElecInvest() != 1:
             OptModel.vNetworkInvest        = Var(mTEPES.plc,   within=UnitInterval,     doc='electric network investment decision exists in a year [0,1]')
-            # OptModel.vNetworkInvPer        = Var(mTEPES.plc,   within=UnitInterval,     doc='electric network investment decision exists in a year [0,1]')
         else:
             OptModel.vNetworkInvest        = Var(mTEPES.plc,   within=Binary,           doc='electric network investment decision exists in a year {0,1}')
-            # OptModel.vNetworkInvPer        = Var(mTEPES.plc,   within=Binary,           doc='electric network investment decision exists in a year {0,1}')
 
         if mTEPES.pIndHydroTopology:
             if mTEPES.pIndBinRsrInvest() != 1:
                 OptModel.vReservoirInvest  = Var(mTEPES.prc,   within=UnitInterval,     doc='reservoir        investment decision exists in a year [0,1]')
-                # OptModel.vReservoirInvPer  = Var(mTEPES.prc,   within=UnitInterval,     doc='reservoir        investment decision exists in a year [0,1]')
             else:
                 OptModel.vReservoirInvest  = Var(mTEPES.prc,   within=Binary,           doc='reservoir        investment decision exists in a year {0,1}')
-                # OptModel.vReservoirInvPer  = Var(mTEPES.prc,   within=Binary,           doc='reservoir        investment decision exists in a year {0,1}')
 
         if mTEPES.pIndHydrogen:
             if mTEPES.pIndBinNetH2Invest() != 1:
                 OptModel.vH2PipeInvest     = Var(mTEPES.ppc,   within=UnitInterval,     doc='hydrogen network investment decision exists in a year [0,1]')
-                # OptModel.vH2PipeInvPer     = Var(mTEPES.ppc,   within=UnitInterval,     doc='hydrogen network investment decision exists in a year [0,1]')
             else:
                 OptModel.vH2PipeInvest     = Var(mTEPES.ppc,   within=Binary,           doc='hydrogen network investment decision exists in a year {0,1}')
-                # OptModel.vH2PipeInvPer     = Var(mTEPES.ppc,   within=Binary,           doc='hydrogen network investment decision exists in a year {0,1}')
 
         if mTEPES.pIndHeat:
             if mTEPES.pIndBinGenInvest() != 1:
@@ -133,13 +123,10 @@ def SettingUpVariables(OptModel, mTEPES):
                 # OptModel.vGenerationInvPerHeat = Var(mTEPES.pbc,   within=UnitInterval, doc='generation       investment decision done   in a year [0,1]')
             else:
                 OptModel.vGenerationInvestHeat = Var(mTEPES.pbc,   within=Binary,       doc='generation       investment decision exists in a year {0,1}')
-                # OptModel.vGenerationInvPerHeat = Var(mTEPES.pbc,   within=Binary,       doc='generation       investment decision done   in a year {0,1}')
             if mTEPES.pIndBinNetHeatInvest() != 1:
                 OptModel.vHeatPipeInvest       = Var(mTEPES.phc,   within=UnitInterval, doc='heat network investment decision exists in a year [0,1]'    )
-                # OptModel.vHeatPipeInvPer       = Var(mTEPES.phc,   within=UnitInterval, doc='heat network investment decision exists in a year [0,1]'    )
             else:
                 OptModel.vHeatPipeInvest       = Var(mTEPES.phc,   within=Binary,       doc='heat network investment decision exists in a year {0,1}'    )
-                # OptModel.vHeatPipeInvPer       = Var(mTEPES.phc,   within=Binary,       doc='heat network investment decision exists in a year {0,1}'    )
 
         if mTEPES.pIndBinGenOperat() == 0:
             OptModel.vCommitment           = Var(mTEPES.psnnr, within=UnitInterval,     initialize=0.0, doc='commitment      of the unit                                    [0,1]')
@@ -275,10 +262,8 @@ def SettingUpVariables(OptModel, mTEPES):
         for p,ni,nf,cc in mTEPES.plc:
             if mTEPES.pIndBinNetElecInvest() == 2 or (mTEPES.pIndBinNetElecInvest() == 1 and mTEPES.pIndBinLineInvest[ni,nf,cc] == 0):
                 OptModel.vNetworkInvest       [p,ni,nf,cc].domain = UnitInterval
-                # OptModel.vNetworkInvPer       [p,ni,nf,cc].domain = UnitInterval
             if mTEPES.pIndBinNetElecInvest() == 2:
                 OptModel.vNetworkInvest       [p,ni,nf,cc].fix(0)
-                # OptModel.vNetworkInvPer       [p,ni,nf,cc].fix(0)
                 nFixedVariables += 1
 
         # relax binary condition in reservoir investment decisions
