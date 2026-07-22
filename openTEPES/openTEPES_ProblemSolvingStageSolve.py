@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 09, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 22, 2026
 """
 
 import os
@@ -177,8 +177,8 @@ def StageSolve(OptModel, mTEPES, DirName, CaseName, SolverName, pIndLogConsole, 
                     # introduce cycle flow formulations
                     if pIndCycleFlow == 1:
                         if st == mTEPES.stt.first():
-                            NetworkCycles          (          mTEPES, pIndLogConsole           )
-                        CycleConstraints           (OptModel, mTEPES, pIndLogConsole, p, sc, st)
+                            NetworkCycles                                (        mTEPES, pIndLogConsole           )
+                        CycleConstraints                                 (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
                 else:
                     # activate all the constraints by stage
                     for c in OptModel.component_objects(pyo.Constraint):

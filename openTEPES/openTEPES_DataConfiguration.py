@@ -946,7 +946,7 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     par['pMaxTheta'] = par['pMaxTheta'].loc[mTEPES.psn]
 
     # this option avoids a warning in the following assignments
-    pd.options.mode.chained_assignment = None
+    # pd.options.mode.chained_assignment = None
 
     # @profile
     def filter_rows(df, set):
