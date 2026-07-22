@@ -120,7 +120,6 @@ def SettingUpVariables(OptModel, mTEPES):
         if mTEPES.pIndHeat:
             if mTEPES.pIndBinGenInvest() != 1:
                 OptModel.vGenerationInvestHeat = Var(mTEPES.pbc,   within=UnitInterval, doc='generation       investment decision exists in a year [0,1]')
-                # OptModel.vGenerationInvPerHeat = Var(mTEPES.pbc,   within=UnitInterval, doc='generation       investment decision done   in a year [0,1]')
             else:
                 OptModel.vGenerationInvestHeat = Var(mTEPES.pbc,   within=Binary,       doc='generation       investment decision exists in a year {0,1}')
             if mTEPES.pIndBinNetHeatInvest() != 1:
