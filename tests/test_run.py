@@ -214,18 +214,18 @@ def case_7d_binary(request, tmp_path):
 @pytest.mark.solve
 @pytest.mark.parametrize("case_7d_system,expected_cost", [
     # 9n — minimal 9-node electricity case; reference for new cases per the openTEPES QA page.
-    ("9n",        252.201329983352),
+    ("9n",        238.5141906543151),
     # sSEP — small Spanish system. Exercises the hydrogen sector (DemandHydrogen + NetworkHydrogen + 9 H2-related
     # generators) AND water-reservoir hydropower (7 reservoirs, reservoir maps, inflows/outflows/MaxVolume, pumped
     # hydro). pIndHydrogen / pIndHydroSystem code paths live here.
     ("sSEP",      38581.335524272574),
     # 9n_PTDF exercises the multi-level-header tables (VariableTTCFrw/Bck, VariablePTDF).
-    ("9n_PTDF",   447.3850166556059),
+    ("9n_PTDF",   500.1114692260149),
     # 9n_heat exercises the heat-sector code path (pIndHeat=1). Added in PR #121.
-    ("9n_heat",   247.19623713906003),
+    ("9n_heat",   234.5040485349081),
     # 9n_H2 exercises the hydrogen-sector code path (pIndHydrogen=1) on the minimal 9-node system: 2 electrolyzers,
     # hydrogen demand at three nodes, and a hydrogen pipe network. The H2 counterpart of 9n_heat. Added in PR #128.
-    ("9n_H2",     259.5471530239396),
+    ("9n_H2",     245.02388843520743),
     # NG2030 — Nigeria 2030 baseline, multi-area state-level network (~37 nodes). Single-node mode active.
     ("NG2030",    1041.3415582681946),
     # RTS-GMLC — single-stage variant of the GMLC reference system; exercises ramp and min-up/down-time binaries.
@@ -270,7 +270,7 @@ def test_openTEPES_run_from_duckdb(case_7d_system, tmp_path):
 
     assert mTEPES is not None, "Model instance returned is None."
     actual_cost = pyo.value(mTEPES.eTotalSCost)
-    np.testing.assert_approx_equal(actual_cost, 252.201329983352)  # same reference as the CSV 9n run above
+    np.testing.assert_approx_equal(actual_cost, 238.5141906543151)  # same reference as the CSV 9n run above
 
 
 # === Parametrized multi-stage test (one representative week per stage) ===
@@ -288,7 +288,7 @@ def test_openTEPES_run_from_duckdb(case_7d_system, tmp_path):
 @pytest.mark.parametrize("case_multi_stage_7d_system,expected_cost", [
     # 9n7y exercises the multi-stage rolling layout (13 stages × 4-week weight each = 52 weeks / period × 7 periods).
     # Cost reproducible to 13 significant figures across reruns under HiGHS.
-    ("9n7y", 9019.299277297196),
+    ("9n7y", 9047.829359499794),
     # RTS-GMLC_6y is a candidate (6 periods × 13 stages); deferred until its full multi-stage solve time under HiGHS
     # is characterised on CI hardware — the multi-stage fixture itself is verified correct via 9n7y.
 ], indirect=["case_multi_stage_7d_system"])
@@ -411,7 +411,7 @@ def test_mode_c_resolve_rejects_unreachable_overlay(case_7d_system):
 # exercises an integer investment decision — the defining feature of an expansion-planning model. This
 # switches on a binary network-investment decision: vNetworkInvest becomes a {0,1} build/don't-build
 # variable on 9n's single candidate line (Node_1 <-> Node_4 dc1). The result differs from the continuous
-# case (254.337 vs 252.201 MEUR) because the binary decision forces a full line build. It also guards the
+# case (238.823 vs 238.514 MEUR) because the binary decision forces a full line build. It also guards the
 # MIP dual recovery in ProblemSolving: a binary first solve must not ask HiGHS for duals it cannot give,
 # and the fix-and-resolve LP pass must still produce the shadow prices the economic outputs need.
 #
@@ -421,7 +421,7 @@ def test_mode_c_resolve_rejects_unreachable_overlay(case_7d_system):
 # the binary network case below already covers the integer-investment code path and the MIP dual recovery.
 @pytest.mark.solve
 @pytest.mark.parametrize("case_7d_binary,expected_cost", [
-    ({"case": "9n", "multi_stage": False, "options": {"IndBinNetInvest": 1}}, 254.3373931950719),
+    ({"case": "9n", "multi_stage": False, "options": {"IndBinNetInvest": 1}}, 238.82295305023092),
 ], indirect=["case_7d_binary"])
 def test_binary_investment(case_7d_binary, expected_cost):
     """A binary (MILP) investment decision solves and matches the expected total cost."""

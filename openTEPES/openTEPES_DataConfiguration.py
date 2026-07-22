@@ -270,6 +270,8 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     idxDict = dict()
     idxDict[0    ] = 0
     idxDict[0.0  ] = 0
+    idxDict['0'  ] = 0
+    idxDict['0.0'] = 0
     idxDict['No' ] = 0
     idxDict['NO' ] = 0
     idxDict['no' ] = 0
@@ -277,6 +279,8 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     idxDict['n'  ] = 0
     idxDict[1    ] = 1
     idxDict[1.0  ] = 1
+    idxDict['1'  ] = 1
+    idxDict['1.0'] = 1
     idxDict['Yes'] = 1
     idxDict['YES'] = 1
     idxDict['yes'] = 1
@@ -602,8 +606,8 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     par['pConstantVarCost']      = par['pConstantVarCost'].loc     [mTEPES.psn  ]
     par['pEmissionVarCost']      = par['pEmissionVarCost'].loc     [mTEPES.psn  ]
 
-    par['pRatedLinearOperCost'] = par['pRatedLinearFuelCost'].loc [mTEPES.g    ]
-    par['pRatedLinearVarCost']  = par['pRatedLinearFuelCost'].loc [mTEPES.g    ]
+    par['pRatedLinearOperCost'] = par['pRatedLinearOperCost'].loc [mTEPES.g    ]
+    par['pRatedLinearVarCost']  = par['pRatedLinearVarCost'].loc  [mTEPES.g    ]
 
     # drop generators not es
     par['pEfficiency']          = par['pEfficiency'].loc          [mTEPES.eh   ]
@@ -654,7 +658,7 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     r2a = defaultdict(list)
     for ar,rs in mTEPES.ar*mTEPES.rs:
         for h in mTEPES.h:
-            if (ar,h) in mTEPES.a2g and sum(1 for h in mTEPES.h if (rs,h) in mTEPES.r2h or (h,rs) in mTEPES.h2r or (rs,h) in mTEPES.r2p or (h,rs) in mTEPES.p2r) and rs not in r2a[ar]:
+            if (ar,h) in mTEPES.a2g and ((rs,h) in mTEPES.r2h or (h,rs) in mTEPES.h2r or (rs,h) in mTEPES.r2p or (h,rs) in mTEPES.p2r) and rs not in r2a[ar]:
                 r2a[ar].append(rs)
     n2a = defaultdict(list)
     for ar,nr in mTEPES.ar*mTEPES.nr:
@@ -746,8 +750,8 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
             par['pDemandHeatPeak'][p,ar] = par['pDemandHeat'].loc[p,:,:][[nd for nd in d2a[ar]]].sum(axis=1).max()
             par['pEpsilonHeat']          = par['pDemandHeatPeak'][p,ar]*1e-5
             par['pDemandHeat']             [par['pDemandHeat']    [[nd for nd in   d2a[ar]]] <  par['pEpsilonHeat']] = 0.0
-            par['pHeatPipeNTCFrw'][par['pHeatPipeNTCFrw'] < par['pEpsilonElec']] = 0
-            par['pHeatPipeNTCBck'][par['pHeatPipeNTCBck'] < par['pEpsilonElec']] = 0
+            par['pHeatPipeNTCFrw'][par['pHeatPipeNTCFrw'] < par['pEpsilonHeat']] = 0
+            par['pHeatPipeNTCBck'][par['pHeatPipeNTCBck'] < par['pEpsilonHeat']] = 0
 
     # drop generators not g or es or eh or ch
     par['pVariableMinPowerElec'] = par['pVariableMinPowerElec'].loc[:,mTEPES.g ]
