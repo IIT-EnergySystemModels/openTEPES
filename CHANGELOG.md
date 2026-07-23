@@ -1,7 +1,8 @@
 # Change Log
 
-## [4.18.17RC] - 2026-07-22 Unreleased in PyPI
+## [4.18.17RC] - 2026-07-23 Unreleased in PyPI
 
+- [FIXED] fix typo in technology consumption output 
 - [CHANGED] remove the investment decisions per year, just keeping the cumulative investment variables.
 - [ADDED] a CI job that runs the tests with pandas pinned to the 2.x floor, since the lock pins pandas 3 and nothing else exercised the older end of `pandas>=2.2.2,<4` (issue #150).
 - [CHANGED] pin `highspy==1.15.1` in the CI and Colab workflows, so a solve result is reproducible from the lock and a HiGHS release cannot fail an unrelated PR (issue #151).
