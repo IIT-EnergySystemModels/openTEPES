@@ -1,7 +1,8 @@
 # Change Log
 
-## [4.18.17RC] - 2026-07-23 Unreleased in PyPI
+## [4.18.17RC] - 2026-07-24 Unreleased in PyPI
 
+- [FIXED] allow negative values of H2 demand to consider imports 
 - [FIXED] fix typo in technology consumption output 
 - [CHANGED] remove the investment decisions per year, just keeping the cumulative investment variables.
 - [ADDED] a CI job that runs the tests with pandas pinned to the 2.x floor, since the lock pins pandas 3 and nothing else exercised the older end of `pandas>=2.2.2,<4` (issue #150).
