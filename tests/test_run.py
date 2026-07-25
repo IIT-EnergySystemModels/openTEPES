@@ -412,12 +412,28 @@ def test_mode_c_resolve_rejects_unreachable_overlay(case_7d_system):
 # overlay. It must return the SAME costs as the default non-persistent path. Both sides here run Gurobi, so
 # the comparison isolates persistent-vs-not, not a solver difference. Skipped when Gurobi is unavailable, as
 # the rest of the suite runs on HiGHS.
+def _gurobi_unrestricted():
+    """True only if Gurobi is importable AND its licence can solve past the size-limited (free) 2000-variable
+    cap. openTEPES ships gurobipy, so CI has it but only a size-limited licence; the 9n solve here has ~500k
+    variables, so this returns False on CI and the parity test skips rather than failing on the size limit.
+    """
+    try:
+        import gurobipy as gp
+        m = gp.Model()
+        m.Params.OutputFlag = 0
+        m.addVars(2500)   # over the 2000-variable size-limited cap
+        m.optimize()
+        return True
+    except Exception:
+        return False
+
+
 @pytest.mark.solve
 @pytest.mark.parametrize("case_7d_system", ["9n"], indirect=["case_7d_system"])
 def test_mode_c_resolve_warm_resolve_parity(case_7d_system, monkeypatch):
     """--warm-resolve (persistent Gurobi) must reproduce the default non-persistent Mode C costs on 9n."""
-    if not pyo.SolverFactory("gurobi_persistent").available(exception_flag=False):
-        pytest.skip("Gurobi (gurobi_persistent) not available")
+    if not _gurobi_unrestricted():
+        pytest.skip("Gurobi with an unrestricted (non-size-limited) licence not available")
 
     mTEPES = openTEPES_run(**case_7d_system)
     overlays = [overlay_scaled(mTEPES, "pDemandElec", f) for f in (1.00, 1.05, 1.10)]
