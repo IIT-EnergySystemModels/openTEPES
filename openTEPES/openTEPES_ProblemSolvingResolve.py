@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 16, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 25, 2026
 
 openTEPES.openTEPES_ProblemSolvingResolve — Mode C post-build hot-swap re-solve.
 
@@ -19,11 +19,13 @@ from pyomo.core.expr import identify_mutable_parameters
 
 try:
     from .openTEPES_ProblemSolvingDualExtraction import unfix_for_duals
+    from .openTEPES_ProblemSolvingWarmSweep import enabled as _warm_resolve_enabled, resolve_persistent
 except ImportError:  # direct run: no parent package
     import os
     import sys
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
     from openTEPES_ProblemSolvingDualExtraction import unfix_for_duals
+    from openTEPES_ProblemSolvingWarmSweep import enabled as _warm_resolve_enabled, resolve_persistent
 
 
 def _live_mutable_params(OptModel) -> set[str]:
@@ -91,6 +93,15 @@ def resolve(OptModel, SolverName: str, overlays, *, restore: bool = True, tee: b
     # Snapshot the baseline of every touched Param: used to reset before each overlay (so
     # overlays are independent, not cumulative) and for the optional restore at the end.
     baseline = {name: getattr(OptModel, name).extract_values() for name in touched}
+
+    # opt-in (default OFF): keep one persistent Gurobi instance and warm dual-simplex the re-solves
+    # instead of re-exporting the whole model per overlay. Falls through to the standard path when OFF.
+    if _warm_resolve_enabled():
+        results = resolve_persistent(OptModel, overlays, baseline, touched, tee=tee)
+        if restore:
+            for name, values in baseline.items():
+                getattr(OptModel, name).store_values(values)
+        return results
 
     Solver = SolverFactory(SolverName)
     results = []

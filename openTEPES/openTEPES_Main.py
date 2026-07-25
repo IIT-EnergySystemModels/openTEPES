@@ -660,7 +660,7 @@
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <https://www.gnu.org/licenses/>.
 
-# Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 24, 2026
+# Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 25, 2026
 # simplicity and transparency in power systems planning
 
 # Developed by
@@ -720,6 +720,17 @@ def _positive_int(value: str) -> int:
 
 parser.add_argument('--threads',       type=_positive_int, default=None,
                     help="Cap the solver thread count. Default: half of (logical + physical) cores. Also set by OTEPES_THREADS.")
+parser.add_argument('--warm-resolve',            default=False, action="store_true",
+                    help="Persistent re-solves (Mode C hot-swap sweep, or a gurobi_persistent stage loop) use warm dual "
+                         "simplex with a barrier fallback. Gurobi only; no effect for Mode A/B or non-Gurobi solvers. "
+                         "Also set by OTEPES_WARM_RESOLVE.")
+parser.add_argument('--warm-resolve-cap', type=_positive_int, default=None,
+                    help="Time cap (s) for each warm dual-simplex re-solve before falling back to barrier. "
+                         "Default 60. Also set by OTEPES_WARM_RESOLVE_CAP.")
+parser.add_argument('--warm-resolve-simplex',    default=False, action="store_true",
+                    help="EXPERIMENTAL: with --warm-resolve, use warm dual simplex instead of barrier for the "
+                         "re-solves. Erratic on large/degenerate LPs and slower for objective (cost) sweeps; only "
+                         "helps small RHS/bound sweeps. Default is barrier. Also set by OTEPES_WARM_RESOLVE_SIMPLEX.")
 
 DIR    = os.path.join(os.path.dirname(__file__), "cases")
 CASE   = '9n'
@@ -736,6 +747,13 @@ def main():
 
     if args.threads is not None:
         os.environ["OTEPES_THREADS"] = str(args.threads)   # _threads() reads it, so the flag wins over the variable
+
+    if args.warm_resolve:
+        os.environ["OTEPES_WARM_RESOLVE"] = "1"             # warm-resolve helpers read the env, so the flag wins
+    if args.warm_resolve_cap is not None:
+        os.environ["OTEPES_WARM_RESOLVE_CAP"] = str(args.warm_resolve_cap)
+    if args.warm_resolve_simplex:
+        os.environ["OTEPES_WARM_RESOLVE_SIMPLEX"] = "1"     # deeper opt-in: warm dual simplex instead of barrier
 
     if args.dir is None:
         args.dir    = input('Input Dir    Name (Default {}): '.format(DIR))
