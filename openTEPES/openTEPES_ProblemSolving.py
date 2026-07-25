@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 05, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 25, 2026
 openTEPES.openTEPES_ProblemSolving — per-stage solve orchestrator.
 
 Composes the three Layer 5.a primitives:
@@ -33,12 +33,14 @@ try:
     from .openTEPES_ProblemSolvingDualExtraction import collect_duals, fix_for_duals
     from .openTEPES_ProblemSolvingPersistent import prepare_for_resolve, setup_solver
     from .openTEPES_ProblemSolvingTuning import apply_resolve_options, apply_solver_options
+    from .openTEPES_ProblemSolvingWarmSweep import fallback_if_stalled  # opt-in (default OFF)
 except ImportError:
     import os, sys
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     from openTEPES.openTEPES_ProblemSolvingDualExtraction import collect_duals, fix_for_duals
     from openTEPES.openTEPES_ProblemSolvingPersistent import prepare_for_resolve, setup_solver
     from openTEPES.openTEPES_ProblemSolvingTuning import apply_resolve_options, apply_solver_options
+    from openTEPES.openTEPES_ProblemSolvingWarmSweep import fallback_if_stalled  # opt-in (default OFF)
 
 
 def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConsole, p, sc, st, ncall):
@@ -73,10 +75,15 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
         SolverResults = Solver.solve(OptModel, tee=True, report_timing=True, symbolic_solver_labels=False,
                                      add_options=solver_options, logfile=FileName)
     elif SolverName == "gurobi_persistent":
-        SolverResults = Solver.solve(OptModel, tee=True, report_timing=True, warmstart=True,
-                                     keepfiles=False, load_solutions=True, save_results=False)
+        _solve_kwargs = dict(tee=True, report_timing=True, warmstart=True,
+                             keepfiles=False, load_solutions=True, save_results=False)
+        SolverResults = Solver.solve(OptModel, **_solve_kwargs)
+        # opt-in (default OFF): if a capped warm-simplex stage-loop re-solve stalled, redo with barrier.
+        SolverResults = fallback_if_stalled(Solver, OptModel, SolverName, ncall, SolverResults, _solve_kwargs)
     else:
-        SolverResults = Solver.solve(OptModel, tee=True, report_timing=True)
+        _solve_kwargs = dict(tee=True, report_timing=True)
+        SolverResults = Solver.solve(OptModel, **_solve_kwargs)
+        SolverResults = fallback_if_stalled(Solver, OptModel, SolverName, ncall, SolverResults, _solve_kwargs)
 
     print("Termination condition: ", SolverResults.solver.termination_condition)
     if (SolverResults.solver.termination_condition == TerminationCondition.infeasible

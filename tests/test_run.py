@@ -405,6 +405,61 @@ def test_mode_c_resolve_rejects_unreachable_overlay(case_7d_system):
         resolve(mTEPES, "highs", [{"pDemandElecc": {}}])
 
 
+# === Mode C --warm-resolve parity test ===
+#
+# --warm-resolve routes Mode C through a persistent Gurobi solver (resolve_persistent): the model is exported
+# once and each overlay pushes only the changed constraints, instead of re-exporting the whole model per
+# overlay. It must return the SAME costs as the default non-persistent path. Both sides here run Gurobi, so
+# the comparison isolates persistent-vs-not, not a solver difference. Skipped when Gurobi is unavailable, as
+# the rest of the suite runs on HiGHS.
+def _gurobi_unrestricted():
+    """True only if Gurobi is importable AND its licence can solve past the size-limited (free) 2000-variable
+    cap. openTEPES ships gurobipy, so CI has it but only a size-limited licence; the 9n solve here has ~500k
+    variables, so this returns False on CI and the parity test skips rather than failing on the size limit.
+    """
+    try:
+        import gurobipy as gp
+        m = gp.Model()
+        m.Params.OutputFlag = 0
+        m.addVars(2500)   # over the 2000-variable size-limited cap
+        m.optimize()
+        return True
+    except Exception:
+        return False
+
+
+@pytest.mark.solve
+@pytest.mark.parametrize("case_7d_system", ["9n"], indirect=["case_7d_system"])
+def test_mode_c_resolve_warm_resolve_parity(case_7d_system, monkeypatch):
+    """--warm-resolve (persistent Gurobi) must reproduce the default non-persistent Mode C costs on 9n."""
+    if not _gurobi_unrestricted():
+        pytest.skip("Gurobi with an unrestricted (non-size-limited) licence not available")
+
+    mTEPES = openTEPES_run(**case_7d_system)
+    overlays = [overlay_scaled(mTEPES, "pDemandElec", f) for f in (1.00, 1.05, 1.10)]
+
+    monkeypatch.delenv("OTEPES_WARM_RESOLVE", raising=False)          # flag OFF: non-persistent baseline
+    off = resolve(mTEPES, "gurobi", overlays, restore=True)
+
+    # Spy on resolve_persistent so the flag-ON run is proven to take the persistent path; without this a flag
+    # that silently did nothing would still pass the cost comparison.
+    import openTEPES.openTEPES_ProblemSolvingResolve as _resolve_mod
+    calls = {"n": 0}
+    _real = _resolve_mod.resolve_persistent
+    monkeypatch.setattr(_resolve_mod, "resolve_persistent",
+                        lambda *a, **k: (calls.__setitem__("n", calls["n"] + 1), _real(*a, **k))[1])
+
+    monkeypatch.setenv("OTEPES_WARM_RESOLVE", "1")                    # flag ON: -> resolve_persistent (barrier)
+    on = resolve(mTEPES, "gurobi", overlays, restore=True)
+
+    assert calls["n"] == 1, "the --warm-resolve flag did not route through resolve_persistent"
+    assert [r["status"] for r in on] == ["optimal"] * len(overlays)
+    for i, (base, warm) in enumerate(zip(off, on)):
+        assert warm["total_cost_meur"] == pytest.approx(base["total_cost_meur"], rel=1e-6), (
+            f"overlay {i}: warm-resolve cost {warm['total_cost_meur']} != baseline {base['total_cost_meur']}"
+        )
+
+
 # === Binary (MILP) investment test ===
 #
 # Every other case here solves the investment variables as a continuous relaxation, so no other test
