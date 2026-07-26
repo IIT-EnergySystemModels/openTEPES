@@ -563,10 +563,10 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
         if st is not None and mTEPES.n.ord(n) == par['pStorageTimeStep'][es]:
             if  par['pIniInventory'].at[(p,sc,n),es] < par['pMinStorage'].at[(p,sc,n),es]:
                 par['pIniInventory'].at[(p,sc,n),es] = par['pMinStorage'].at[(p,sc,n),es]
-                print('### Initial inventory lower than minimum storage ',   p, sc, st, es)
+                print('### Initial inventory lower than minimum storage ',    p,sc,st,es)
             if  par['pIniInventory'].at[(p,sc,n),es] > par['pMaxStorage'].at[(p,sc,n),es]:
                 par['pIniInventory'].at[(p,sc,n),es] = par['pMaxStorage'].at[(p,sc,n),es]
-                print('### Initial inventory greater than maximum storage ', p, sc, st, es)
+                print('### Initial inventory greater than maximum storage ',  p,sc,st,es)
     if par['pIndHydroTopology']:
         for p,sc,n,rs in mTEPES.psnrs:
             st = pLevelToStg.get((p,sc,n))
@@ -1031,11 +1031,11 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     mTEPES.pTimeStep             = Param(initialize=par['pTimeStep']            , within=PositiveIntegers,    doc='Unitary time step'                                  )
     mTEPES.pEconomicBaseYear     = Param(initialize=par['pEconomicBaseYear']    , within=PositiveIntegers,    doc='Base year'                                          )
 
-    mTEPES.pReserveMargin        = Param(mTEPES.par,   initialize=par['pReserveMargin'].to_dict()            , within=NonNegativeReals,    doc='Adequacy reserve margin'                             , mutable=True)
+    mTEPES.pReserveMargin        = Param(mTEPES.par,   initialize=par['pReserveMargin'].to_dict()            , within=NonNegativeReals,    doc='Adequacy reserve margin'               , mutable=True)
     mTEPES.pEmission             = Param(mTEPES.par,   initialize=par['pEmission'].to_dict()                 , within=NonNegativeReals,    doc='Maximum CO2 emission'                                )
-    mTEPES.pRESEnergy            = Param(mTEPES.par,   initialize=par['pRESEnergy'].to_dict()                , within=NonNegativeReals,    doc='Minimum RES energy'                                  , mutable=True)
+    mTEPES.pRESEnergy            = Param(mTEPES.par,   initialize=par['pRESEnergy'].to_dict()                , within=NonNegativeReals,    doc='Minimum RES energy'                    , mutable=True)
     mTEPES.pDemandElecPeak       = Param(mTEPES.par,   initialize=par['pDemandElecPeak'].to_dict()           , within=NonNegativeReals,    doc='Peak electric demand'                                )
-    mTEPES.pDemandElec           = Param(mTEPES.psnnd, initialize=par['pDemandElec'].to_dict()               , within=           Reals,    doc='Electric demand'                                     , mutable=True)
+    mTEPES.pDemandElec           = Param(mTEPES.psnnd, initialize=par['pDemandElec'].to_dict()               , within=           Reals,    doc='Electric demand'                       , mutable=True)
     mTEPES.pDemandElecPos        = Param(mTEPES.psnnd, initialize=par['pDemandElecPos'].to_dict()            , within=NonNegativeReals,    doc='Electric demand positive'                            )
     mTEPES.pPeriodWeight         = Param(mTEPES.p,     initialize=par['pPeriodWeight'].to_dict()             , within=NonNegativeReals,    doc='Period weight',                          mutable=True)
     mTEPES.pDiscountedWeight     = Param(mTEPES.p,     initialize=par['pDiscountedWeight'].to_dict()         , within=NonNegativeReals,    doc='Discount factor'                                     )
