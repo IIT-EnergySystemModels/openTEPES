@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 25, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 26, 2026
 
 openTEPES.openTEPES_SettingUpVariables — creates the decision variables and their bounds, fixes the generators' commitment, relaxes or forbids investment conditions, zeroes out epsilon values, and screens for infeasibilities. Runs after DataConfiguration.
 """
@@ -754,11 +754,11 @@ def SettingUpVariables(OptModel, mTEPES):
 
     # fixing the ENS in nodes with no demand
     for p,sc,n,nd in mTEPES.psnnd:
-        if mTEPES.pDemandElec[p,sc,n,nd]() <=  0.0:
+        if mTEPES.pDemandElec[p,sc,n,nd]() <= 0.0:
             OptModel.vENS    [p,sc,n,nd].fix(0.0)
             nFixedVariables += 1
-        if sum(1 for g in g2n[nd] if (p,g) in mTEPES.pg) + sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd]) == 0:
-            OptModel.vENS    [p,sc,n,nd].fix(mTEPES.pDemandElec[p,sc,n,nd])
+        if sum(1 for g in g2n[nd] if (p,g) in mTEPES.pg) + sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd]) == 0 and mTEPES.pDemandElec[p,sc,n,nd]() > 0.0:
+            OptModel.vENS    [p,sc,n,nd].fix(mTEPES.pDemandElec[p,sc,n,nd]())
             nFixedVariables += 1
 
     if mTEPES.pIndHydrogen:
