@@ -2,6 +2,7 @@
 
 ## [4.18.17RC] - 2026-07-25 Unreleased in PyPI
 
+- [FIXED] skip the ESS downward-reserve energy constraint for units with no storage, and keep `pDemandElec` live in the electric balance, unbreaking master CI.
 - [FIXED] fix some minor errors in model formulation 
 - [ADDED] `--warm-resolve` runs a Mode C sweep through one persistent Gurobi instance instead of re-exporting the model per overlay: the model is set up once and each overlay pushes only the constraints that read a swapped Param. Barrier by default, so costs match the non-persistent path (new parity test on 9n); the saving is the avoided re-export and grows with the sweep length. `--warm-resolve-simplex` adds warm dual simplex, time-capped with a barrier fallback, for small RHS/bound sweeps only — it is erratic on large or objective-side changes, so it stays off by default. Gurobi only; no effect for Mode A/B or non-Gurobi solvers. Default off leaves every existing path unchanged.
 - [FIXED] allow negative values of H2 demand to consider imports 
