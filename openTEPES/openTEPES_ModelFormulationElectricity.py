@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 26, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 28, 2026
 
 openTEPES.openTEPES_ModelFormulationElectricity — electricity-sector formulation: demand balance, operating reserves and inertia, storage (ESS), unit commitment and ramping, line switching, DC network operation, and the cycle-based network constraints. Granular per-concern functions so a caller can pick which to build (e.g. with or without unit commitment).
 """
@@ -131,7 +131,7 @@ def GenerationOperationModelFormulationDemand(OptModel, mTEPES, pIndLogConsole, 
         # This means they must have enough stored energy to provide all reserves if they were to have 100% activation
         # Skip if generator is not available in the period or generator cannot provide operating reserves while generating power or no upward reserves are needed in the area where the generator is located or the ESS has no charging capabilities and receives no Inflows
         # Skip if generator cannot provide operating reserves while generating power or no upward reserves are needed in the area where the generator is located or the ESS has no charging capabilities and receives no Inflows
-        if (p,es) not in mTEPES.pes or mTEPES.pIndOperReserveCon[es] or mTEPES.pMaxPower2ndBlock [p,sc,n,es] == 0.0 or sum(mTEPES.pOperReserveUp[p,sc,n,ar] for ar in a2e[es]) == 0.0 or (mTEPES.pTotalMaxCharge[es] == 0.0 and mTEPES.pTotalEnergyInflows[es] == 0.0):
+        if (p,es) not in mTEPES.pes or mTEPES.pIndOperReserveCon[es] or mTEPES.pMaxPower2ndBlock [p,sc,n,es] == 0.0 or mTEPES.pMaxStorage[p,sc,n,es]() == 0.0 or sum(mTEPES.pOperReserveUp[p,sc,n,ar] for ar in a2e[es]) == 0.0 or (mTEPES.pTotalMaxCharge[es] == 0.0 and mTEPES.pTotalEnergyInflows[es] == 0.0):
             return Constraint.Skip
         else:
             return (OptModel.vOutput2ndBlock[p,sc,n,es] + OptModel.vReserveUp[p,sc,n,es] + mTEPES.pMinPowerElec[p,sc,n,es]) * mTEPES.pDuration[p,sc,n]() / math.sqrt(mTEPES.pEfficiency[es]) <= OptModel.vESSInventory[p,sc,n,es] - mTEPES.pMinStorage[p,sc,n,es]
