@@ -203,7 +203,7 @@ def case_7d_binary(request, tmp_path):
 #   sSEP        ✓             ✓ (H2 demand+network+9 H2 gens)  ✓ (7 reservoirs + pumped hydro)  ramps+min-time
 #   9n_PTDF     ✓ losses                                       ✓ (multi-level headers)
 #   9n_heat     ✓ losses                                              ✓ (pIndHeat=1)
-#   9n_H2       ✓ losses     ✓ (2 electrolyzers + H2 demand + H2 pipes; pIndHydrogen=1)
+#   9n_H2       ✓ losses     ✓ (2 electrolyzers as ESS with energy outflows + storage; pIndHydrogen=0)
 #   NG2030      ✓ losses                                                                                ✓
 #   RTS-GMLC    ✓                                                                  ramps+min-time
 #
@@ -223,9 +223,11 @@ def case_7d_binary(request, tmp_path):
     ("9n_PTDF",   500.1114692260149),
     # 9n_heat exercises the heat-sector code path (pIndHeat=1). Added in PR #121.
     ("9n_heat",   234.5040485349081),
-    # 9n_H2 exercises the hydrogen-sector code path (pIndHydrogen=1) on the minimal 9-node system: 2 electrolyzers,
-    # hydrogen demand at three nodes, and a hydrogen pipe network. The H2 counterpart of 9n_heat. Added in PR #128.
-    ("9n_H2",     245.02388843520743),
+    # 9n_H2 exercises the documented electrolyzer archetype on the minimal 9-node system: an ESS with electric
+    # energy outflows, a storage buffer and a weekly outflow cycle. The hydrogen demand is expressed as the
+    # electricity the electrolyzers must draw to make it, so the H2 network sector is off (pIndHydrogen=0) and
+    # the hydrogen network path is covered by sSEP. Added in PR #128, changed to this archetype later.
+    ("9n_H2",     242.89492215294186),
     # NG2030 — Nigeria 2030 baseline, multi-area state-level network (~37 nodes). Single-node mode active.
     ("NG2030",    1041.3415582681946),
     # RTS-GMLC — single-stage variant of the GMLC reference system; exercises ramp and min-up/down-time binaries.
@@ -247,6 +249,127 @@ def test_openTEPES_run(case_7d_system, expected_cost):
     print(f"Expected cost: {expected_cost:.5f}, Actual cost: {actual_cost:.5f}")
 
     np.testing.assert_approx_equal(actual_cost, expected_cost)
+
+
+# === 9n_H2: the electrolyzer archetype ===
+#
+# 9n_H2 models its two electrolyzers the way the documentation defines the "Electrolyzer (ELZ)" unit type: an ESS
+# with electric energy outflows, a storage buffer, and an outflow cycle longer than one hour. The hydrogen demand
+# is expressed as the electricity the electrolyzers must draw to make it, so the H2 network sector is off here and
+# the hydrogen network path is covered by sSEP instead.
+#
+# The four tests below pin the parts that make the archetype actually do something. Without them the case can keep
+# solving and keep matching a cost while the storage quietly becomes dead weight, which is the failure mode these
+# guard against.
+
+
+def _electrolyzer_names(mTEPES):
+    """Names of the electrolyzer units in a solved model."""
+    return [el for el in mTEPES.el]
+
+
+@pytest.mark.solve
+@pytest.mark.parametrize("case_7d_system", ["9n_H2"], indirect=["case_7d_system"])
+def test_9n_H2_outflow_constraint_is_built(case_7d_system):
+    """
+    The energy-outflow constraint must exist.
+
+    ``eEnergyOutflows`` is only written at load levels that are a whole multiple of the outflow cycle. If the cycle
+    is longer than the horizon, no load level qualifies and the constraint is skipped everywhere, silently removing
+    the electrolyzers' obligation to produce anything. The case would still solve, and the cost would simply fall to
+    the one for a system with no electrolyzers at all, so nothing else in the suite would notice.
+    """
+    mTEPES = openTEPES_run(**case_7d_system)
+
+    outflow_constraints = [
+        c for c in mTEPES.component_objects(pyo.Constraint)
+        if c.name.startswith("eEnergyOutflows")
+    ]
+    assert outflow_constraints, "no eEnergyOutflows constraint was built at all"
+
+    rows = sum(len(c) for c in outflow_constraints)
+    assert rows > 0, (
+        "eEnergyOutflows was built but has no rows, so the outflow cycle is longer than the horizon "
+        "and the electrolyzers have no production obligation"
+    )
+
+
+@pytest.mark.solve
+@pytest.mark.parametrize("case_7d_system", ["9n_H2"], indirect=["case_7d_system"])
+def test_9n_H2_energy_outflows_are_met(case_7d_system):
+    """Over the horizon, each electrolyzer withdraws exactly the energy the case asks it to withdraw."""
+    mTEPES = openTEPES_run(**case_7d_system)
+
+    for el in _electrolyzer_names(mTEPES):
+        withdrawn = sum(
+            mTEPES.vEnergyOutflows[p, sc, n, es].value * mTEPES.pDuration[p, sc, n]()
+            for p, sc, n, es in mTEPES.psnes if es == el
+        )
+        required = sum(
+            mTEPES.pEnergyOutflows[p, sc, n, es]() * mTEPES.pDuration[p, sc, n]()
+            for p, sc, n, es in mTEPES.psnes if es == el
+        )
+        assert required > 0.0, f"{el} has no outflow requirement, so the archetype is not being exercised"
+        np.testing.assert_allclose(withdrawn, required, rtol=1e-6)
+
+
+@pytest.mark.solve
+@pytest.mark.parametrize("case_7d_system", ["9n_H2"], indirect=["case_7d_system"])
+def test_9n_H2_electrolyzer_consumption_is_flexible(case_7d_system):
+    """
+    The electrolyzer must be free to choose when it draws its electricity, and must stay inside its buffer.
+
+    This is the behaviour the archetype exists to provide: the outflow fixes how much energy is withdrawn over a
+    cycle, not when it is drawn, so consumption should vary across the week rather than track a flat profile.
+
+    Note this test does not assert the buffer actually fills. The 7-day fixture is exactly one weekly cycle, and
+    within a single cycle the withdrawal is free to move too, so the electrolyzer can shift its charging without
+    ever storing anything. Storage only becomes necessary to move energy between cycles, which needs a horizon
+    longer than one week.
+    """
+    mTEPES = openTEPES_run(**case_7d_system)
+
+    for el in _electrolyzer_names(mTEPES):
+        charge = [
+            mTEPES.vESSTotalCharge[p, sc, n, es].value
+            for p, sc, n, es in mTEPES.psnes if es == el
+        ]
+        inventory = [
+            mTEPES.vESSInventory[p, sc, n, es].value
+            for p, sc, n, es in mTEPES.psnes if es == el
+        ]
+        capacity = max(
+            mTEPES.pMaxStorage[p, sc, n, es]()
+            for p, sc, n, es in mTEPES.psnes if es == el
+        )
+
+        assert capacity > 0.0, f"{el} has no storage capacity"
+        assert max(charge) > 0.0, f"{el} never consumes anything"
+        assert max(charge) - min(charge) > 1e-6, (
+            f"{el} draws a flat profile, so its consumption is not being shifted in time"
+        )
+        assert max(inventory) <= capacity + 1e-6, f"{el} inventory exceeds its storage capacity"
+        assert min(inventory) >= -1e-6, f"{el} inventory goes negative"
+
+
+@pytest.mark.solve
+@pytest.mark.parametrize("case_7d_system", ["9n_H2"], indirect=["case_7d_system"])
+def test_9n_H2_electrolyzers_do_not_spill(case_7d_system):
+    """
+    An electrolyzer must not spill the electricity it consumes.
+
+    With no storage and no outflows, the inventory balance is satisfied by sending the whole charge to
+    ``vESSSpillage``, which carries no cost. The case still solves and the reported spillage equals every unit of
+    electricity the electrolyzer drew. Real outflows give that energy somewhere to go, so spillage returns to zero.
+    """
+    mTEPES = openTEPES_run(**case_7d_system)
+
+    for el in _electrolyzer_names(mTEPES):
+        spilled = sum(
+            mTEPES.vESSSpillage[p, sc, n, es].value * mTEPES.pDuration[p, sc, n]()
+            for p, sc, n, es in mTEPES.psnes if es == el
+        )
+        assert spilled == pytest.approx(0.0, abs=1e-6), f"{el} spills {spilled} GWh of the electricity it consumed"
 
 
 # === Solve from a DuckDB input ===
