@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 15, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 29, 2026
 
 Hydrogen network operation results.
 
@@ -54,21 +54,21 @@ def NetworkH2OperationResults(DirName, CaseName, OptModel, mTEPES):
         if (gt,el) in mTEPES.t2g:
             e2t[gt].append(el)
 
-    sPSNARND   = [(p,sc,n,ar,nd)    for p,sc,n,ar,nd    in mTEPES.psn*mTEPES.arnd if sum(1 for el in e2n[nd]) + sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd])]
-    sPSNARNDGT = [(p,sc,n,ar,nd,gt) for p,sc,n,ar,nd,gt in sPSNARND*mTEPES.gt     if sum(1 for el in e2t[gt] if (p,el) in mTEPES.pg)                                      ]
+    sPSNARND   = [(p,sc,n,ar,nd)    for p,sc,n,ar,nd    in mTEPES.psn*mTEPES.arnd if sum(1 for el in e2n[nd]) + sum(1 for hh in b2n[nd]) + sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd])]
+    sPSNARNDGT = [(p,sc,n,ar,nd,gt) for p,sc,n,ar,nd,gt in sPSNARND*mTEPES.gt     if sum(1 for el in e2t[gt] if (p,el) in mTEPES.pg) + sum(1 for hh in g2t[gt] if (p,hh) in mTEPES.phh)              ]
 
-    OutputResults2 = pd.Series(data=[ sum(OptModel.vESSTotalCharge[p,sc,n,el      ]()*mTEPES.pLoadLevelDuration[p,sc,n]()/mTEPES.pProductionFunctionH2[el] for el in mTEPES.el if (p,el) in mTEPES.pes and el in e2n[nd] and el in e2t[gt]) for p,sc,n,ar,nd,gt in sPSNARNDGT], index=pd.Index(sPSNARNDGT)).to_frame(name='Generation'       ).reset_index().pivot_table(index=['level_0','level_1','level_2','level_3','level_4'], columns='level_5', values='Generation', aggfunc='sum')
-    OutputResults3 = pd.Series(data=[     OptModel.vH2NS          [p,sc,n,nd      ]()                                                                                                                                                       for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='HydrogenNotServed')
-    OutputResults4 = pd.Series(data=[-      mTEPES.pDemandH2      [p,sc,n,nd      ]  *mTEPES.pLoadLevelDuration[p,sc,n]()                                                                                                                   for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='HydrogenDemand'   )
-    OutputResults5 = pd.Series(data=[-sum(OptModel.vFlowH2        [p,sc,n,nd,nf,cc]()                                                                      for nf,cc in lout[nd] if (p,nd,nf,cc) in mTEPES.ppa)                                                           for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='HydrogenFlowOut'  )
-    OutputResults6 = pd.Series(data=[ sum(OptModel.vFlowH2        [p,sc,n,ni,nd,cc]()                                                                      for ni,cc in lin [nd] if (p,ni,nd,cc) in mTEPES.ppa)                                                           for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='HydrogenFlowIn'   )
+    OutputResults2 = pd.Series(data=[ sum(OptModel.vESSTotalCharge [p,sc,n,el      ]()*mTEPES.pLoadLevelDuration[p,sc,n]()/mTEPES.pProductionFunctionH2      [el] for el in e2n[nd] if (p,el) in mTEPES.pes and el in e2t[gt]) for p,sc,n,ar,nd,gt in sPSNARNDGT], index=pd.Index(sPSNARNDGT)).to_frame(name='Generation'         ).reset_index().pivot_table(index=['level_0','level_1','level_2','level_3','level_4'], columns='level_5', values='Generation'         , aggfunc='sum')
+    OutputResults2 = pd.Series(data=[ sum(OptModel.vTotalOutputHeat[p,sc,n,hh      ]()*mTEPES.pLoadLevelDuration[p,sc,n]()/mTEPES.pProductionFunctionH2ToHeat[hh] for hh in b2n[nd] if (p,hh) in mTEPES.phh and hh in g2t[gt]) for p,sc,n,ar,nd,gt in sPSNARNDGT], index=pd.Index(sPSNARNDGT)).to_frame(name='ConsumptionH2ToHeat').reset_index().pivot_table(index=['level_0','level_1','level_2','level_3','level_4'], columns='level_5', values='ConsumptionH2ToHeat', aggfunc='sum')
+    OutputResults3 = pd.Series(data=[     OptModel.vH2NS           [p,sc,n,nd      ]()                                                                                                                                         for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='HydrogenNotServed'  )
+    OutputResults3 = pd.Series(data=[    -OptModel.vH2Exc          [p,sc,n,nd      ]()                                                                                                                                         for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='HydrogenExcess'     )
+    OutputResults4 = pd.Series(data=[-      mTEPES.pDemandH2       [p,sc,n,nd      ]  *mTEPES.pLoadLevelDuration[p,sc,n]()                                                                                                     for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='HydrogenDemand'     )
+    OutputResults5 = pd.Series(data=[-sum(OptModel.vFlowH2         [p,sc,n,nd,nf,cc]()                                                                      for nf,cc in lout[nd] if (p,nd,nf,cc) in mTEPES.ppa)               for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='HydrogenFlowOut'    )
+    OutputResults6 = pd.Series(data=[ sum(OptModel.vFlowH2         [p,sc,n,ni,nd,cc]()                                                                      for ni,cc in lin [nd] if (p,ni,nd,cc) in mTEPES.ppa)               for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='HydrogenFlowIn'     )
     OutputResults  = pd.concat([OutputResults2, OutputResults3, OutputResults4, OutputResults5, OutputResults6], axis=1)
 
     # Merge duplicate columns that arise when a technology belongs to multiple generator sets
     if OutputResults.columns.duplicated().any():
         OutputResults = OutputResults.T.groupby(level=0).sum().T
-
-    # OutputResults.stack().rename_axis(['Period', 'Scenario', 'LoadLevel', 'Area', 'Node', 'Technology'], axis=0).reset_index().rename(columns={0: 'tH2'}, inplace=False).to_csv(f'{_path}/oT_Result_BalanceHydrogen_{CaseName}.csv', index=False, sep=',')
 
     OutputResults.stack().reset_index().pivot_table(index=['level_0','level_1','level_2','level_3','level_4'], columns='level_5', values=0, aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel', 'Area', 'Node'], axis=0).oT.write(f'{_path}/oT_Result_BalanceHydrogenPerTech_{CaseName}.csv', sep=',')
     OutputResults.stack().reset_index().pivot_table(index=['level_0','level_1','level_2'          ,'level_5'], columns='level_4', values=0, aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel', 'Technology'  ], axis=0).oT.write(f'{_path}/oT_Result_BalanceHydrogenPerNode_{CaseName}.csv', sep=',')
@@ -95,8 +95,6 @@ def NetworkH2OperationResults(DirName, CaseName, OptModel, mTEPES):
     # Sub functions
     def oT_selecting_data(p,sc,n):
         # Nodes data
-        pio.renderers.default = 'chrome'
-
         loc_df = pd.Series(data=[mTEPES.pNodeLat[i] for i in mTEPES.nd], index=mTEPES.nd).to_frame(name='Lat')
         loc_df['Lon'   ] =  0.0
         loc_df['Zone'  ] =  ''
@@ -168,6 +166,7 @@ def NetworkH2OperationResults(DirName, CaseName, OptModel, mTEPES):
     # Setting up the figure
     token = open(DIR+'/openTEPES.mapbox_token').read()
 
+    pio.renderers.default = 'chrome'
     fig = go.Figure()
 
     # Add nodes

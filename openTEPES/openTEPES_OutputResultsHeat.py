@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 15, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 29, 2026
 
 Heat network operation results.
 
@@ -70,20 +70,18 @@ def NetworkHeatOperationResults(DirName, CaseName, OptModel, mTEPES):
     sPSNARND   = [(p,sc,n,ar,nd)    for p,sc,n,ar,nd    in mTEPES.psn*mTEPES.arnd if sum(1 for ch in c2n[nd]) + sum(1 for hp in h2n[nd]) + sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd])]
     sPSNARNDGT = [(p,sc,n,ar,nd,gt) for p,sc,n,ar,nd,gt in sPSNARND*mTEPES.gt     if sum(1 for ch in c2t[gt] if (p,ch) in mTEPES.pg) + sum(1 for hp in h2t[gt] if (p,hp) in mTEPES.pg)               ]
 
-    OutputResults2 = pd.Series(data=[ sum(OptModel.vESSTotalCharge [p,sc,n,hp      ]()*mTEPES.pLoadLevelDuration[p,sc,n]()/mTEPES.pProductionFunctionHeat[hp] for hp in mTEPES.hp if hp in h2n[nd] and hp in h2t[gt])                         for p,sc,n,ar,nd,gt in sPSNARNDGT], index=pd.Index(sPSNARNDGT)).to_frame(name='GenerationHeatPumps').reset_index().pivot_table(index=['level_0','level_1','level_2','level_3','level_4'], columns='level_5', values='GenerationHeatPumps', aggfunc='sum')
-    OutputResults3 = pd.Series(data=[ sum(OptModel.vTotalOutput    [p,sc,n,ch      ]()*mTEPES.pLoadLevelDuration[p,sc,n]()/mTEPES.pPower2HeatRatio       [ch] for ch in mTEPES.ch if ch in c2n[nd] and ch in c2t[gt] and ch not in mTEPES.bo) for p,sc,n,ar,nd,gt in sPSNARNDGT], index=pd.Index(sPSNARNDGT)).to_frame(name='GenerationCHPs'     ).reset_index().pivot_table(index=['level_0','level_1','level_2','level_3','level_4'], columns='level_5', values='GenerationCHPs'     , aggfunc='sum')
-    OutputResults4 = pd.Series(data=[ sum(OptModel.vTotalOutputHeat[p,sc,n,ch      ]()*mTEPES.pLoadLevelDuration[p,sc,n]()                                    for ch in mTEPES.ch if ch in c2n[nd] and ch in c2t[gt] and ch     in mTEPES.bo) for p,sc,n,ar,nd,gt in sPSNARNDGT], index=pd.Index(sPSNARNDGT)).to_frame(name='GenerationBoilers'  ).reset_index().pivot_table(index=['level_0','level_1','level_2','level_3','level_4'], columns='level_5', values='GenerationBoilers'  , aggfunc='sum')
-    OutputResults5 = pd.Series(data=[     OptModel.vHeatNS         [p,sc,n,nd      ]()*mTEPES.pLoadLevelDuration[p,sc,n]()                                                                                                                    for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='HeatNotServed')
-    OutputResults6 = pd.Series(data=[-      mTEPES.pDemandHeat     [p,sc,n,nd      ]  *mTEPES.pLoadLevelDuration[p,sc,n]()                                                                                                                    for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='HeatDemand'   )
-    OutputResults7 = pd.Series(data=[-sum(OptModel.vFlowHeat       [p,sc,n,nd,nf,cc]()*mTEPES.pLoadLevelDuration[p,sc,n]()                                    for nf,cc in lout[nd] if (p,nd,nf,cc) in mTEPES.pha)                            for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='HeatFlowOut'  )
-    OutputResults8 = pd.Series(data=[ sum(OptModel.vFlowHeat       [p,sc,n,ni,nd,cc]()*mTEPES.pLoadLevelDuration[p,sc,n]()                                    for ni,cc in lin [nd] if (p,ni,nd,cc) in mTEPES.pha)                            for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='HeatFlowIn'   )
+    OutputResults2 = pd.Series(data=[ sum(OptModel.vESSTotalCharge [p,sc,n,hp      ]()*mTEPES.pLoadLevelDuration[p,sc,n]()/mTEPES.pProductionFunctionHeat[hp] for hp in h2n[nd] if (p,hp) in mTEPES.php and hp in h2t[gt])                         for p,sc,n,ar,nd,gt in sPSNARNDGT], index=pd.Index(sPSNARNDGT)).to_frame(name='GenerationHeatPumps').reset_index().pivot_table(index=['level_0','level_1','level_2','level_3','level_4'], columns='level_5', values='GenerationHeatPumps', aggfunc='sum')
+    OutputResults3 = pd.Series(data=[ sum(OptModel.vTotalOutput    [p,sc,n,ch      ]()*mTEPES.pLoadLevelDuration[p,sc,n]()/mTEPES.pPower2HeatRatio       [ch] for ch in c2n[nd] if (p,ch) in mTEPES.pch and ch in c2t[gt] and ch not in mTEPES.bo) for p,sc,n,ar,nd,gt in sPSNARNDGT], index=pd.Index(sPSNARNDGT)).to_frame(name='GenerationCHPs'     ).reset_index().pivot_table(index=['level_0','level_1','level_2','level_3','level_4'], columns='level_5', values='GenerationCHPs'     , aggfunc='sum')
+    OutputResults4 = pd.Series(data=[ sum(OptModel.vTotalOutputHeat[p,sc,n,ch      ]()*mTEPES.pLoadLevelDuration[p,sc,n]()                                    for ch in c2n[nd] if (p,ch) in mTEPES.pch and ch in c2t[gt] and ch     in mTEPES.bo) for p,sc,n,ar,nd,gt in sPSNARNDGT], index=pd.Index(sPSNARNDGT)).to_frame(name='GenerationBoilers'  ).reset_index().pivot_table(index=['level_0','level_1','level_2','level_3','level_4'], columns='level_5', values='GenerationBoilers'  , aggfunc='sum')
+    OutputResults5 = pd.Series(data=[     OptModel.vHeatNS         [p,sc,n,nd      ]()*mTEPES.pLoadLevelDuration[p,sc,n]()                                                                                                                         for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='HeatNotServed')
+    OutputResults6 = pd.Series(data=[-      mTEPES.pDemandHeat     [p,sc,n,nd      ]  *mTEPES.pLoadLevelDuration[p,sc,n]()                                                                                                                         for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='HeatDemand'   )
+    OutputResults7 = pd.Series(data=[-sum(OptModel.vFlowHeat       [p,sc,n,nd,nf,cc]()*mTEPES.pLoadLevelDuration[p,sc,n]()                                    for nf,cc in lout[nd] if (p,nd,nf,cc) in mTEPES.pha)                                 for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='HeatFlowOut'  )
+    OutputResults8 = pd.Series(data=[ sum(OptModel.vFlowHeat       [p,sc,n,ni,nd,cc]()*mTEPES.pLoadLevelDuration[p,sc,n]()                                    for ni,cc in lin [nd] if (p,ni,nd,cc) in mTEPES.pha)                                 for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='HeatFlowIn'   )
     OutputResults  = pd.concat([OutputResults2, OutputResults3, OutputResults4, OutputResults5, OutputResults6, OutputResults7, OutputResults8], axis=1)
 
     # Merge duplicate columns that arise when a technology belongs to multiple generator sets
     if OutputResults.columns.duplicated().any():
         OutputResults = OutputResults.T.groupby(level=0).sum().T
-
-    # OutputResults.stack().rename_axis(['Period', 'Scenario', 'LoadLevel', 'Area', 'Node', 'Technology'], axis=0).reset_index().rename(columns={0: 'GWh'}, inplace=False).to_csv(f'{_path}/oT_Result_BalanceHeat_{CaseName}.csv', index=False, sep=',')
 
     OutputResults.stack().reset_index().pivot_table(index=['level_0','level_1','level_2','level_3','level_4'], columns='level_5', values=0, aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel', 'Area', 'Node'], axis=0).oT.write(f'{_path}/oT_Result_BalanceHeatPerTech_{CaseName}.csv', sep=',')
     OutputResults.stack().reset_index().pivot_table(index=['level_0','level_1','level_2'          ,'level_5'], columns='level_4', values=0, aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel', 'Technology'  ], axis=0).oT.write(f'{_path}/oT_Result_BalanceHeatPerNode_{CaseName}.csv', sep=',')
@@ -108,7 +106,7 @@ def NetworkHeatOperationResults(DirName, CaseName, OptModel, mTEPES):
 
     if mTEPES.ha:
         OutputResults = pd.Series(data=[OptModel.vFlowHeat[p,sc,n,ni,nf,cc]()*(mTEPES.pLoadLevelDuration[p,sc,n]()*mTEPES.pPeriodProb[p,sc]())*(mTEPES.pHeatPipeLength[ni,nf,cc]()*1e-3) for p,sc,n,ni,nf,cc in mTEPES.psnha], index=mTEPES.psnha)
-        OutputResults.index.names = ['Scenario', 'Period', 'LoadLevel', 'InitialNode', 'FinalNode', 'Circuit']
+        OutputResults.index.names = ['Period', 'Scenario', 'LoadLevel', 'InitialNode', 'FinalNode', 'Circuit']
         OutputResults = OutputResults.reset_index().groupby(['InitialNode', 'FinalNode', 'Circuit']).sum(numeric_only=True)[0]
         OutputResults.to_frame(name='GWh-Mkm').rename_axis(['InitialNode', 'FinalNode', 'Circuit'], axis=0).reset_index().oT.write(f'{_path}/oT_Result_NetworkEnergyHeatTransport_{CaseName}.csv', index=False, sep=',')
 
@@ -128,8 +126,6 @@ def NetworkHeatOperationResults(DirName, CaseName, OptModel, mTEPES):
     # Sub functions
     def oT_selecting_data(p,sc,n):
         # Nodes data
-        pio.renderers.default = 'chrome'
-
         loc_df = pd.Series(data=[mTEPES.pNodeLat[i] for i in mTEPES.nd], index=mTEPES.nd).to_frame(name='Lat')
         loc_df['Lon'   ] =  0.0
         loc_df['Zone'  ] =  ''
@@ -201,6 +197,7 @@ def NetworkHeatOperationResults(DirName, CaseName, OptModel, mTEPES):
     # Setting up the figure
     token = open(DIR+'/openTEPES.mapbox_token').read()
 
+    pio.renderers.default = 'chrome'
     fig = go.Figure()
 
     # Add nodes

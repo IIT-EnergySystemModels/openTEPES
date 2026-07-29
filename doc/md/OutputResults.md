@@ -1268,6 +1268,56 @@ Period        Scenario    Load level  Area        Node        Technology  Genera
 ============  ==========  ==========  ==========  ==========  ==========  ======================================
 ```
 
+File `oT_Result_NetworkEnergyHeatPerArea.csv`
+
+```{eval-rst}
+============  ==========  ==========  ============  ==========  =======================
+Identifier                            Header                    Description
+============  ==========  ==========  ========================  =======================
+Period        Scenario    Load level  Initial area  Final area  Area flow energy [GWh]
+============  ==========  ==========  ============  ==========  =======================
+```
+
+File `oT_Result_NetworkEnergyHeatTotalPerArea.csv`
+
+```{eval-rst}
+============  ==========  ============  ==========  =======================
+Identifier                Header                    Description
+============  ==========  ========================  =======================
+Period        Scenario    Initial area  Final area  Area flow energy [GWh]
+============  ==========  ============  ==========  =======================
+```
+
+File `oT_Result_NetworkEnergyHeatTransport.csv`
+
+```{eval-rst}
+============  ==========  ==========  ============  ==========  =========  ============================
+Identifier                            Header                               Description
+====================================  ===================================  ============================
+Period        Scenario    Load level  Initial node  Final node  Circuit    Energy transported [GWh-Mkm]
+============  ==========  ==========  ============  ==========  =========  ============================
+```
+
+File `oT_Result_NetworkHeatUtilization.csv`
+
+```{eval-rst}
+============  ==========  ==========  ============  ==========  ==========  ===================================================================
+Identifier                            Header                                Description
+====================================  ====================================  ===================================================================
+Period        Scenario    Load level  Initial node  Final node  Circuit     Pipeline utilization (i.e., ratio between flow and capacity) [p.u.]
+============  ==========  ==========  ============  ==========  ==========  ===================================================================
+```
+
+File `oT_Result_NetworkHeatNS.csv`
+
+```{eval-rst}
+============  ==========  ==========  ==========  ==========================================
+Identifier                            Header      Description
+====================================  ==========  ==========================================
+Period        Scenario    Load level  Node        Heat not served by node [MW]
+============  ==========  ==========  ==========  ==========================================
+```
+
 File `oT_Result_NetworkFlowHeatPerNode.csv`
 
 ```{eval-rst}
