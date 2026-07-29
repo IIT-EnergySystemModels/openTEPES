@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 09, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 29, 2026
 """
 
 import math
@@ -21,7 +21,10 @@ except ImportError:
 def SectorDecomposition(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConsole, p, sc, st):
     print('Sector Benders decomposition           ****')
     _path = os.path.join(DirName, CaseName)
-    InitialTime = time.time()
+
+    StartTime = time.time()
+
+    n2list = list(mTEPES.n2)
 
     # Benders tolerance
     pBdTol = 1e-4
@@ -145,14 +148,14 @@ def SectorDecomposition(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLog
             return Constraint.Skip
         if   mTEPES.n.ord(n) == mTEPES.pStorageTimeStep[es]:
             if es not in mTEPES.ec:
-                return mTEPES.pIniInventory[p,sc,n,es]()                                           + sum(mTEPES.pDuration[p,sc,n2]()*(mTEPES.pEnergyInflows[p,sc,n2,es]() - mMaster.vEnergyOutflows[p,sc,n2,es] - mMaster.vTotalOutput[p,sc,n2,es] / math.sqrt(mTEPES.pEfficiency[es]) + math.sqrt(mTEPES.pEfficiency[es]) * mMaster.vESSTotalCharge[p,sc,n2,es]) for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pStorageTimeStep[es]:mTEPES.n.ord(n)]) == mMaster.vESSInventory[p,sc,n,es] + mMaster.vESSSpillage[p,sc,n,es]
+                return mTEPES.pIniInventory[p,sc,n,es]()                                           + sum(mTEPES.pDuration[p,sc,n2]()*(mTEPES.pEnergyInflows[p,sc,n2,es]() - mMaster.vEnergyOutflows[p,sc,n2,es] - mMaster.vTotalOutput[p,sc,n2,es] / math.sqrt(mTEPES.pEfficiency[es]) + math.sqrt(mTEPES.pEfficiency[es]) * mMaster.vESSTotalCharge[p,sc,n2,es]) for n2 in n2list[mTEPES.n.ord(n)-mTEPES.pStorageTimeStep[es]:mTEPES.n.ord(n)]) == mMaster.vESSInventory[p,sc,n,es] + mMaster.vESSSpillage[p,sc,n,es]
             else:
-                return mMaster.vIniInventory[p,sc,n,es]                                            + sum(mTEPES.pDuration[p,sc,n2]()*(mMaster.vEnergyInflows[p,sc,n2,es]  - mMaster.vEnergyOutflows[p,sc,n2,es] - mMaster.vTotalOutput[p,sc,n2,es] / math.sqrt(mTEPES.pEfficiency[es]) + math.sqrt(mTEPES.pEfficiency[es]) * mMaster.vESSTotalCharge[p,sc,n2,es]) for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pStorageTimeStep[es]:mTEPES.n.ord(n)]) == mMaster.vESSInventory[p,sc,n,es] + mMaster.vESSSpillage[p,sc,n,es]
+                return mMaster.vIniInventory[p,sc,n,es]                                            + sum(mTEPES.pDuration[p,sc,n2]()*(mMaster.vEnergyInflows[p,sc,n2,es]  - mMaster.vEnergyOutflows[p,sc,n2,es] - mMaster.vTotalOutput[p,sc,n2,es] / math.sqrt(mTEPES.pEfficiency[es]) + math.sqrt(mTEPES.pEfficiency[es]) * mMaster.vESSTotalCharge[p,sc,n2,es]) for n2 in n2list[mTEPES.n.ord(n)-mTEPES.pStorageTimeStep[es]:mTEPES.n.ord(n)]) == mMaster.vESSInventory[p,sc,n,es] + mMaster.vESSSpillage[p,sc,n,es]
         elif mTEPES.n.ord(n) >  mTEPES.pStorageTimeStep[es]:
             if es not in mTEPES.ec:
-                return mMaster.vESSInventory[p,sc,mTEPES.n.prev(n,mTEPES.pStorageTimeStep[es]),es] + sum(mTEPES.pDuration[p,sc,n2]()*(mTEPES.pEnergyInflows[p,sc,n2,es]() - mMaster.vEnergyOutflows[p,sc,n2,es] - mMaster.vTotalOutput[p,sc,n2,es] / math.sqrt(mTEPES.pEfficiency[es]) + math.sqrt(mTEPES.pEfficiency[es]) * mMaster.vESSTotalCharge[p,sc,n2,es]) for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pStorageTimeStep[es]:mTEPES.n.ord(n)]) == mMaster.vESSInventory[p,sc,n,es] + mMaster.vESSSpillage[p,sc,n,es]
+                return mMaster.vESSInventory[p,sc,mTEPES.n.prev(n,mTEPES.pStorageTimeStep[es]),es] + sum(mTEPES.pDuration[p,sc,n2]()*(mTEPES.pEnergyInflows[p,sc,n2,es]() - mMaster.vEnergyOutflows[p,sc,n2,es] - mMaster.vTotalOutput[p,sc,n2,es] / math.sqrt(mTEPES.pEfficiency[es]) + math.sqrt(mTEPES.pEfficiency[es]) * mMaster.vESSTotalCharge[p,sc,n2,es]) for n2 in n2list[mTEPES.n.ord(n)-mTEPES.pStorageTimeStep[es]:mTEPES.n.ord(n)]) == mMaster.vESSInventory[p,sc,n,es] + mMaster.vESSSpillage[p,sc,n,es]
             else:
-                return mMaster.vESSInventory[p,sc,mTEPES.n.prev(n,mTEPES.pStorageTimeStep[es]),es] + sum(mTEPES.pDuration[p,sc,n2]()*(mMaster.vEnergyInflows[p,sc,n2,es]  - mMaster.vEnergyOutflows[p,sc,n2,es] - mMaster.vTotalOutput[p,sc,n2,es] / math.sqrt(mTEPES.pEfficiency[es]) + math.sqrt(mTEPES.pEfficiency[es]) * mMaster.vESSTotalCharge[p,sc,n2,es]) for n2 in list(mTEPES.n2)[mTEPES.n.ord(n)-mTEPES.pStorageTimeStep[es]:mTEPES.n.ord(n)]) == mMaster.vESSInventory[p,sc,n,es] + mMaster.vESSSpillage[p,sc,n,es]
+                return mMaster.vESSInventory[p,sc,mTEPES.n.prev(n,mTEPES.pStorageTimeStep[es]),es] + sum(mTEPES.pDuration[p,sc,n2]()*(mMaster.vEnergyInflows[p,sc,n2,es]  - mMaster.vEnergyOutflows[p,sc,n2,es] - mMaster.vTotalOutput[p,sc,n2,es] / math.sqrt(mTEPES.pEfficiency[es]) + math.sqrt(mTEPES.pEfficiency[es]) * mMaster.vESSTotalCharge[p,sc,n2,es]) for n2 in n2list[mTEPES.n.ord(n)-mTEPES.pStorageTimeStep[es]:mTEPES.n.ord(n)]) == mMaster.vESSInventory[p,sc,n,es] + mMaster.vESSSpillage[p,sc,n,es]
         else:
             return Constraint.Skip
     setattr(mMaster, f'eESSInventory_{p}_{sc}_{st}', Constraint(mTEPES.nesl, rule=eESSInventory, doc='ESS inventory balance [GWh]'))
@@ -449,7 +452,7 @@ def SectorDecomposition(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLog
                 # Benders cuts are considered as lazy
                 # SolverMst.set_linear_constraint_attr(new_cut, 'Lazy', 1)
 
-    SolvingTime = time.time() - InitialTime
+    SolvingTime = time.time() - StartTime
     print('Sector Benders decomposition           ****')
     print('  Total system                 cost [MEUR] ', Z_Upper, ' Seconds', round(SolvingTime))
 
