@@ -595,7 +595,7 @@ VRES units (i.e., those with linear variable cost equal to 0 and no storage capa
 Operating reserves from ESS can only be provided if enough energy is available for production [GWh] «`eReserveUpIfEnergy`»
 
 ```{math}
-\frac{(p^p_{\omega ne} + ur'^p_{\omega ne} + \underline{GP}^p_{\omega ne})DUR^p_{\omega n}}{\sqrt{EF_e'}} \leq i^p_{\omega ne} - \underline{I}^p_{\omega ne} \quad \forall p \omega ne
+\frac{(p^p_{\omega ne} + ur^p_{\omega ne} + \underline{GP}^p_{\omega ne})DUR^p_{\omega n}}{\sqrt{EF_e'}} \leq i^p_{\omega ne} - \underline{I}^p_{\omega ne} \quad \forall p \omega ne
 ```
 
 or if there is enough storage capacity left for charging [GWh] «`eESSReserveDwIfEnergy`»
@@ -779,6 +779,12 @@ Maximum commitment of a committable unit (all except the VRES units) for all the
 
 ```{math}
 uc^p_{\omega ng} \leq uc'^p_{\omega g} \quad \forall p \omega ng
+```
+
+Maximum commitment of a committable unit (all except the VRES units) for all the load levels [p.u.] «`eMaxCommitmentConsYearly`»
+
+```{math}
+ucc^p_{\omega ng} \leq ucc'^p_{\omega g} \quad \forall p \omega ng
 ```
 
 Maximum commitment of a committable unit (all except the VRES units) for each load level [p.u.] «`eMaxCommitmentHourly`»
