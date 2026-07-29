@@ -771,12 +771,18 @@ def SettingUpVariables(OptModel, mTEPES):
             if mTEPES.pDemandH2[p,sc,n,nd] ==  0.0:
                 OptModel.vH2NS [p,sc,n,nd].fix(0.0)
                 nFixedVariables += 1
+            if sum(1 for el in l2n[nd]) + sum(1 for hh in b2n[nd]) + sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd]) == 0 and mTEPES.pDemandH2[p,sc,n,nd]() > 0.0:
+                OptModel.vH2NS [p,sc,n,nd].fix(mTEPES.pDemandH2[p,sc,n,nd]())
+                nFixedVariables += 1
 
     if mTEPES.pIndHeat:
         # fixing the heat ENS in nodes with no heat demand
         for p,sc,n,nd in mTEPES.psnnd:
             if mTEPES.pDemandHeat[p,sc,n,nd] ==  0.0:
                 OptModel.vHeatNS [p,sc,n,nd].fix(0.0)
+                nFixedVariables += 1
+            if sum(1 for ch in chp2n[nd]) + sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd]) == 0 and mTEPES.pDemandHeat[p,sc,n,nd]() > 0.0:
+                OptModel.vHeatNS [p,sc,n,nd].fix(mTEPES.pDemandHeat[p,sc,n,nd]())
                 nFixedVariables += 1
 
     # @profile

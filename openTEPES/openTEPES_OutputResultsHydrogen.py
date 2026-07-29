@@ -42,11 +42,17 @@ def NetworkH2OperationResults(DirName, CaseName, OptModel, mTEPES):
         lin [nf].append((ni,cc))
         lout[ni].append((nf,cc))
 
-    # nodes to electrolyzers (e2n)
-    e2n = defaultdict(list)
+    # nodes to electrolyzers (l2n)
+    l2n = defaultdict(list)
     for nd,el in mTEPES.nd*mTEPES.el:
         if (nd,el) in mTEPES.n2g:
-            e2n[nd].append(el)
+            l2n[nd].append(el)
+
+    # nodes to fuel heaters using H2 (b2n)
+    b2n = defaultdict(list)
+    for nd,hh in mTEPES.nd*mTEPES.hh:
+        if (nd,hh) in mTEPES.n2g:
+            b2n[nd].append(hh)
 
     # electrolyzers to technology (e2t)
     e2t = defaultdict(list)
@@ -54,10 +60,10 @@ def NetworkH2OperationResults(DirName, CaseName, OptModel, mTEPES):
         if (gt,el) in mTEPES.t2g:
             e2t[gt].append(el)
 
-    sPSNARND   = [(p,sc,n,ar,nd)    for p,sc,n,ar,nd    in mTEPES.psn*mTEPES.arnd if sum(1 for el in e2n[nd]) + sum(1 for hh in b2n[nd]) + sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd])]
+    sPSNARND   = [(p,sc,n,ar,nd)    for p,sc,n,ar,nd    in mTEPES.psn*mTEPES.arnd if sum(1 for el in l2n[nd]) + sum(1 for hh in b2n[nd]) + sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd])]
     sPSNARNDGT = [(p,sc,n,ar,nd,gt) for p,sc,n,ar,nd,gt in sPSNARND*mTEPES.gt     if sum(1 for el in e2t[gt] if (p,el) in mTEPES.pg) + sum(1 for hh in g2t[gt] if (p,hh) in mTEPES.phh)              ]
 
-    OutputResults2 = pd.Series(data=[ sum(OptModel.vESSTotalCharge [p,sc,n,el      ]()*mTEPES.pLoadLevelDuration[p,sc,n]()/mTEPES.pProductionFunctionH2      [el] for el in e2n[nd] if (p,el) in mTEPES.pes and el in e2t[gt]) for p,sc,n,ar,nd,gt in sPSNARNDGT], index=pd.Index(sPSNARNDGT)).to_frame(name='Generation'         ).reset_index().pivot_table(index=['level_0','level_1','level_2','level_3','level_4'], columns='level_5', values='Generation'         , aggfunc='sum')
+    OutputResults2 = pd.Series(data=[ sum(OptModel.vESSTotalCharge [p,sc,n,el      ]()*mTEPES.pLoadLevelDuration[p,sc,n]()/mTEPES.pProductionFunctionH2      [el] for el in l2n[nd] if (p,el) in mTEPES.pes and el in e2t[gt]) for p,sc,n,ar,nd,gt in sPSNARNDGT], index=pd.Index(sPSNARNDGT)).to_frame(name='Generation'         ).reset_index().pivot_table(index=['level_0','level_1','level_2','level_3','level_4'], columns='level_5', values='Generation'         , aggfunc='sum')
     OutputResults2 = pd.Series(data=[ sum(OptModel.vTotalOutputHeat[p,sc,n,hh      ]()*mTEPES.pLoadLevelDuration[p,sc,n]()/mTEPES.pProductionFunctionH2ToHeat[hh] for hh in b2n[nd] if (p,hh) in mTEPES.phh and hh in g2t[gt]) for p,sc,n,ar,nd,gt in sPSNARNDGT], index=pd.Index(sPSNARNDGT)).to_frame(name='ConsumptionH2ToHeat').reset_index().pivot_table(index=['level_0','level_1','level_2','level_3','level_4'], columns='level_5', values='ConsumptionH2ToHeat', aggfunc='sum')
     OutputResults3 = pd.Series(data=[     OptModel.vH2NS           [p,sc,n,nd      ]()                                                                                                                                         for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='HydrogenNotServed'  )
     OutputResults3 = pd.Series(data=[    -OptModel.vH2Exc          [p,sc,n,nd      ]()                                                                                                                                         for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='HydrogenExcess'     )
@@ -87,7 +93,7 @@ def NetworkH2OperationResults(DirName, CaseName, OptModel, mTEPES):
     OutputToFile = pd.pivot_table(OutputToFile.to_frame(name='p.u.'), values='p.u.', index=['Period', 'Scenario', 'LoadLevel'], columns=['InitialNode', 'FinalNode', 'Circuit'], fill_value=0.0).rename_axis([None, None, None], axis=1)
     OutputToFile.reset_index().oT.write(f'{_path}/oT_Result_NetworkH2Utilization_{CaseName}.csv', index=False, sep=',')
 
-    sPSNND = [(p,sc,n,nd) for p,sc,n,nd in mTEPES.psnnd if sum(1 for el in e2n[nd]) + sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd])]
+    sPSNND = [(p,sc,n,nd) for p,sc,n,nd in mTEPES.psnnd if sum(1 for el in l2n[nd]) + sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd])]
     OutputToFile = pd.Series(data=[OptModel.vH2NS[p,sc,n,nd]() for p,sc,n,nd in sPSNND], index=pd.Index(sPSNND))
     OutputToFile.to_frame(name='tH2').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='tH2').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_NetworkHNS_{CaseName}.csv', sep=',')
 

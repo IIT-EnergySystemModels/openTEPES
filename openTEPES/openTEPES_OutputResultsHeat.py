@@ -49,17 +49,23 @@ def NetworkHeatOperationResults(DirName, CaseName, OptModel, mTEPES):
         if (nd,ch) in mTEPES.n2g:
             c2n[nd].append(ch)
 
-    # CHPs to technology (c2t)
-    c2t = defaultdict(list)
-    for gt,ch in mTEPES.gt*mTEPES.ch:
-        if (gt,ch) in mTEPES.t2g:
-            c2t[gt].append(ch)
-
     # nodes to heat pumps (h2n)
     h2n = defaultdict(list)
     for nd,hp in mTEPES.nd*mTEPES.hp:
         if (nd,hp) in mTEPES.n2g:
             h2n[nd].append(hp)
+
+    # nodes to CHPs (chp2n)
+    chp2n = defaultdict(list)
+    for nd,chp in mTEPES.nd*mTEPES.chp:
+        if (nd,chp) in mTEPES.n2g:
+            chp2n[nd].append(chp)
+
+    # CHPs to technology (c2t)
+    c2t = defaultdict(list)
+    for gt,ch in mTEPES.gt*mTEPES.ch:
+        if (gt,ch) in mTEPES.t2g:
+            c2t[gt].append(ch)
 
     # heat pumps to technology (h2t)
     h2t = defaultdict(list)
@@ -67,7 +73,7 @@ def NetworkHeatOperationResults(DirName, CaseName, OptModel, mTEPES):
         if (gt,hp) in mTEPES.t2g:
             h2t[gt].append(hp)
 
-    sPSNARND   = [(p,sc,n,ar,nd)    for p,sc,n,ar,nd    in mTEPES.psn*mTEPES.arnd if sum(1 for ch in c2n[nd]) + sum(1 for hp in h2n[nd]) + sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd])]
+    sPSNARND   = [(p,sc,n,ar,nd)    for p,sc,n,ar,nd    in mTEPES.psn*mTEPES.arnd if sum(1 for ch in chp2n[nd]) + sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd]) == 0]
     sPSNARNDGT = [(p,sc,n,ar,nd,gt) for p,sc,n,ar,nd,gt in sPSNARND*mTEPES.gt     if sum(1 for ch in c2t[gt] if (p,ch) in mTEPES.pg) + sum(1 for hp in h2t[gt] if (p,hp) in mTEPES.pg)               ]
 
     OutputResults2 = pd.Series(data=[ sum(OptModel.vESSTotalCharge [p,sc,n,hp      ]()*mTEPES.pLoadLevelDuration[p,sc,n]()/mTEPES.pProductionFunctionHeat[hp] for hp in h2n[nd] if (p,hp) in mTEPES.php and hp in h2t[gt])                         for p,sc,n,ar,nd,gt in sPSNARNDGT], index=pd.Index(sPSNARNDGT)).to_frame(name='GenerationHeatPumps').reset_index().pivot_table(index=['level_0','level_1','level_2','level_3','level_4'], columns='level_5', values='GenerationHeatPumps', aggfunc='sum')
@@ -117,7 +123,7 @@ def NetworkHeatOperationResults(DirName, CaseName, OptModel, mTEPES):
     OutputToFile.index.names = ['Period', 'Scenario', 'LoadLevel', 'InitialNode', 'FinalNode', 'Circuit']
     OutputToFile = pd.pivot_table(OutputToFile.to_frame(name='p.u.'), values='p.u.', index=['Period', 'Scenario', 'LoadLevel'], columns=['InitialNode', 'FinalNode', 'Circuit'], fill_value=0.0).rename_axis([None, None, None], axis=1)
     OutputToFile.reset_index().oT.write(f'{_path}/oT_Result_NetworkHeatUtilization_{CaseName}.csv', index=False, sep=',')
-    sPSNND = [(p,sc,n,nd) for p,sc,n,nd in mTEPES.psnnd if sum(1 for ch in c2n[nd]) + sum(1 for hp in h2n[nd]) + sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd])]
+    sPSNND = [(p,sc,n,nd) for p,sc,n,nd in mTEPES.psnnd if sum(1 for ch in chp2n[nd]) + sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd])]
     OutputToFile = pd.Series(data=[OptModel.vHeatNS[p,sc,n,nd]() for p,sc,n,nd in sPSNND], index=pd.Index(sPSNND))
     OutputToFile *= 1e3
     OutputToFile.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_NetworkHeatNS_{CaseName}.csv', sep=',')
