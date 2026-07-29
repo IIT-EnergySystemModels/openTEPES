@@ -1011,7 +1011,7 @@ def SettingUpVariables(OptModel, mTEPES):
         [OptModel.vNetworkInvest   [p,ni,nf,cc].setub(mTEPES.pNetUpInvest[ni,nf,cc]()) for p,ni,nf,cc in mTEPES.plc]
 
         if mTEPES.pIndHydroTopology:
-            for rc in mTEPES.rc:
+            for rc in mTEPES.rn:
                 if  mTEPES.pRsrLoInvest[  rc]() <       pEpsilon:
                     mTEPES.pRsrLoInvest[  rc]   = 0
                 if  mTEPES.pRsrUpInvest[  rc]() <       pEpsilon:
