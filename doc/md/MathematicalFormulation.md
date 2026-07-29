@@ -376,11 +376,13 @@ The names in parentheses correspond to the names of the constraints in the code.
 
 **Objective function**: minimization of total (investment and operation) cost for the multi-period scope of the model
 
-Electricity, heat, and hydrogen generation, (energy and reservoir) storage, and (electricity, hydrogen, and heat) network investment cost plus retirement cost
-[M€] «`eTotalFCost`» «`eTotalICost`»
+Electricity, heat, and hydrogen generation, (energy and reservoir) storage, and (electricity, hydrogen, and heat) network investment cost plus retirement cost [M€]
+
+System fixed costs by sector (investment and fixed operation costs):
+«`eTotalFElecCost`» (electricity), «`eTotalFHydroCost`» (hydro), «`eTotalFH2Cost`» (hydrogen), «`eTotalFHeatCost`» (heat); aggregated as «`eTotalICost`»
 
 ```{math}
-\sum_{p} DF^p [\sum_{g} CFG_g icg^p_g + \sum_{g} CFR_g rcg^p_g + \sum_{e'} CFE_{e'} icr^p_{e'} + \sum_{ijc} CFT_{ijc} ict^p_{ijc} + \sum_{ijc} CFH_{ijc} ich^p_{ijc} + \sum_{ijc} CFP_{ijc} icp^p_{ijc}] +
+eTotalICost = \sum_{p} DF^p [\sum_{g} CFG_g icg^p_g + \sum_{g} CFR_g rcg^p_g + \sum_{e'} CFE_{e'} icr^p_{e'} + \sum_{ijc} CFT_{ijc} ict^p_{ijc} + \sum_{ijc} CFH_{ijc} ich^p_{ijc} + \sum_{ijc} CFP_{ijc} icp^p_{ijc}] +
 ```
 
 Electricity, heat, and hydrogen expected generation operation cost [M€] «`eTotalGCost`»

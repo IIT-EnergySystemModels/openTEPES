@@ -121,10 +121,6 @@ def SettingUpVariables(OptModel, mTEPES):
                 OptModel.vH2PipeInvest     = Var(mTEPES.ppc,   within=Binary,           doc='hydrogen network investment decision exists in a year {0,1}')
 
         if mTEPES.pIndHeat:
-            if mTEPES.pIndBinGenInvest() != 1:
-                OptModel.vGenerationInvestHeat = Var(mTEPES.pbc,   within=UnitInterval, doc='generation       investment decision exists in a year [0,1]')
-            else:
-                OptModel.vGenerationInvestHeat = Var(mTEPES.pbc,   within=Binary,       doc='generation       investment decision exists in a year {0,1}')
             if mTEPES.pIndBinNetHeatInvest() != 1:
                 OptModel.vHeatPipeInvest       = Var(mTEPES.phc,   within=UnitInterval, doc='heat network investment decision exists in a year [0,1]'    )
             else:
@@ -766,6 +762,12 @@ def SettingUpVariables(OptModel, mTEPES):
     for nd,el in mTEPES.nd*mTEPES.el:
         if (nd,el) in mTEPES.n2g:
             l2n[nd].append(el)
+
+    # nodes to fuel heaters using H2 (b2n)
+    b2n = defaultdict(list)
+    for nd,hh in mTEPES.nd*mTEPES.hh:
+        if (nd,hh) in mTEPES.n2g:
+            b2n[nd].append(hh)
 
     # nodes to CHPs (chp2n)
     chp2n = defaultdict(list)
