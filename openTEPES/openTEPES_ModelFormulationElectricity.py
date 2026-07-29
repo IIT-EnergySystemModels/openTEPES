@@ -918,6 +918,8 @@ def NetworkSwitchingModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st
 
     StartTime = time.time()
 
+    n2list = list(mTEPES.n2)
+
     def eLineStateCand(OptModel,n,ni,nf,cc):
         if mTEPES.pIndBinSingleNode() or (p,ni,nf,cc) not in mTEPES.plc:
             return Constraint.Skip
