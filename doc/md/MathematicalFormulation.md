@@ -911,25 +911,25 @@ Operating reserves from a hydropower plant can only be provided if enough water 
 «`eTrbReserveUpIfUpstream`»
 
 ```{math}
-\frac{p^p_{\omega nh} + ur^p_{\omega nh} + uc^p_{\omega nh}}{\underline{GP}^p_{\omega nh}} \leq \frac{\sum_{e' \in up(h)}  i'^p_{\omega ne'} - \underline{I'}^p_{\omega ne'}}{DUR^p_{\omega n}} \quad \forall p \omega nh
+\frac{p^p_{\omega nh} + ur^p_{\omega nh}}{\underline{GP}^p_{\omega nh}} + uc^p_{\omega nh} \leq \frac{\sum_{rs \in up(h)}  (v^p_{\omega nrs} - \underline{I}^p_{\omega nrs}) \cdot PF_h}{DUR^p_{\omega n}} \quad \forall p \omega nh
 ```
 
 and if there is enough spare volume to store the water downstream «`eTrbReserveUpIfDownstream`»
 
 ```{math}
-\frac{p^p_{\omega nh} + ur^p_{\omega nh} + uc^p_{\omega nh}}{\underline{GP}^p_{\omega nh}} \leq \frac{\sum_{e' \in dw(h)}  \overline{I'}^p_{\omega ne'} - i'^p_{\omega ne'}} {DUR^p_{\omega n}} \quad \forall p \omega nh
+\frac{p^p_{\omega nh} + ur^p_{\omega nh}}{\underline{GP}^p_{\omega nh}} + uc^p_{\omega nh} \leq \frac{\sum_{rs \in dw(h)}  (\overline{I}^p_{\omega nrs} - v^p_{\omega nrs}) \cdot PF_h}{DUR^p_{\omega n}} \quad \forall p \omega nh
 ```
 
 Operating reserves while pumping can only be provided if there is enough available water downstream to pump «`ePmpReserveDwIfDownstream`»
 
 ```{math}
-\frac{(c^p_{\omega nh} + dr^p_{\omega nh}) EF_e' + ucc^p_{\omega nh}}{\underline{GC}^p_{\omega nh}} \leq \frac{\sum_{e' \in up(h)} \overline{I'}^p_{\omega ne'} - i'^p_{\omega ne'}}{DUR^p_{\omega n}} \quad \forall p \omega nh
+\left(\frac{c^p_{\omega nh} + dr^p_{\omega nh}}{\underline{GC}^p_{\omega nh}} + ucc^p_{\omega nh}\right) \cdot EF_h \leq \frac{\sum_{rs \in dw(h)} (v^p_{\omega nrs} - \underline{I}^p_{\omega nrs}) \cdot PF_h}{DUR^p_{\omega n}} \quad \forall p \omega nh
 ```
 
 and if there is enough spare volume to store the water upstream «`ePmpReserveDwIfUpstream`»
 
 ```{math}
-\frac{(c^p_{\omega nh} + dr^p_{\omega nh}) EF_e' + ucc^p_{\omega nh}}{\underline{GC}^p_{\omega nh}} \leq \frac{\sum_{e' \in up(h)}  i'^p_{\omega ne'} - \underline{I'}^p_{\omega ne'}}{DUR^p_{\omega n}} \quad \forall p \omega nh
+\left(\frac{c^p_{\omega nh} + dr^p_{\omega nh}}{\underline{GC}^p_{\omega nh}} + ucc^p_{\omega nh}\right) \cdot EF_h \leq \frac{\sum_{rs \in up(h)}  (\overline{I}^p_{\omega nrs} - v^p_{\omega nrs}) \cdot PF_h}{DUR^p_{\omega n}} \quad \forall p \omega nh
 ```
 
 Water volume for each hydro reservoir (only for load levels that are multiples of 1, 24, 168 h, depending on the reservoir storage type, represented as

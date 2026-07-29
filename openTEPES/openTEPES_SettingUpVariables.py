@@ -77,6 +77,7 @@ def SettingUpVariables(OptModel, mTEPES):
             OptModel.vHydroOutflows        = Var(mTEPES.psnrs, within=NonNegativeReals, doc='scheduled   outflows of all       hydro units  [m3/s]')
             OptModel.vReservoirVolume      = Var(mTEPES.psnrs, within=NonNegativeReals, doc='Reservoir volume                                [hm3]')
             OptModel.vReservoirSpillage    = Var(mTEPES.psnrs, within=NonNegativeReals, doc='Reservoir spillage                              [hm3]')
+            OptModel.vIniVolume            = Var(mTEPES.psnrc, within=NonNegativeReals, doc='initial volume for reservoir candidates         [hm3]')
 
         if mTEPES.pIndHydrogen:
             OptModel.vTotalFH2Cost         = Var(mTEPES.p,     within=NonNegativeReals, doc='total system fixed H2                cost      [MEUR]')
@@ -220,6 +221,8 @@ def SettingUpVariables(OptModel, mTEPES):
             [OptModel.vHydroOutflows  [p,sc,n,rs].setub(mTEPES.pMaxOutflows [p,sc,n,rs]  ) for p,sc,n,rs in mTEPES.psnrs]
             [OptModel.vReservoirVolume[p,sc,n,rs].setlb(mTEPES.pMinVolume   [p,sc,n,rs]  ) for p,sc,n,rs in mTEPES.psnrs]
             [OptModel.vReservoirVolume[p,sc,n,rs].setub(mTEPES.pMaxVolume   [p,sc,n,rs]  ) for p,sc,n,rs in mTEPES.psnrs]
+            [OptModel.vIniVolume      [p,sc,n,rc].setlb(mTEPES.pMinVolume   [p,sc,n,rc]  ) for p,sc,n,rc in mTEPES.psnrc]
+            [OptModel.vIniVolume      [p,sc,n,rc].setub(mTEPES.pMaxVolume   [p,sc,n,rc]  ) for p,sc,n,rc in mTEPES.psnrc]
 
     setVariableBounds(mTEPES, mTEPES)
 
@@ -755,6 +758,18 @@ def SettingUpVariables(OptModel, mTEPES):
     for nd,eh in mTEPES.nd*mTEPES.eh:
         if (nd,eh) in mTEPES.n2g:
             e2n[nd].append(eh)
+
+    # nodes to electrolyzers (l2n)
+    l2n = defaultdict(list)
+    for nd,el in mTEPES.nd*mTEPES.el:
+        if (nd,el) in mTEPES.n2g:
+            l2n[nd].append(el)
+
+    # nodes to CHPs (chp2n)
+    chp2n = defaultdict(list)
+    for nd,chp in mTEPES.nd*mTEPES.chp:
+        if (nd,chp) in mTEPES.n2g:
+            chp2n[nd].append(chp)
 
     # fixing the ENS in nodes with no demand
     for p,sc,n,nd in mTEPES.psnnd:
