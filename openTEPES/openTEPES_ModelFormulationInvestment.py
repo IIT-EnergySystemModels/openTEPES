@@ -201,7 +201,7 @@ def GenerationOperationElecModelFormulationInvestment(OptModel, mTEPES, pIndLogC
         print('eAdeqReserveMarginElec    ... ', len(getattr(OptModel, f'eAdequacyReserveMarginElec_{p}_{sc}_{st}')), ' rows')
 
     def eMaxSystemEmission(OptModel,ar):
-        if mTEPES.pEmission[p,ar] == math.inf or st != mTEPES.Last_st or sum(mTEPES.pEmissionRate[nr] for nr in mTEPES.nr if nr in g2a[ar]) == 0.0:
+        if math.isinf(mTEPES.pEmission[p,ar]) or st != mTEPES.Last_st or sum(mTEPES.pEmissionRate[nr] for nr in mTEPES.nr if nr in g2a[ar]) == 0.0:
             return Constraint.Skip
         # There is an emission limit, there are generators with emissions in the Area and it is the last stage
         return sum(OptModel.vTotalEmissionArea[p,sc,na,ar] for na in mTEPES.na) <= mTEPES.pEmission[p,ar]

@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 09, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 30, 2026
 
 openTEPES.openTEPES_ModelFormulationObjective — total-cost objective and the per-stage operation-cost accumulation constraints.
 """
@@ -20,22 +20,24 @@ def TotalObjectiveFunction(OptModel, mTEPES, pIndLogConsole):
         return OptModel.vTotalSCost
     OptModel.eTotalSCost = Objective(rule=eTotalSCost, sense=minimize, doc='total system cost [MEUR]')
 
+    pScenFactor = {(p,sc): mTEPES.pDiscountedWeight[p] * mTEPES.pScenProb[p,sc]() for p,sc in mTEPES.ps}
+
     def eTotalTCost(OptModel):
-        return OptModel.vTotalSCost == OptModel.vTotalICost + (sum(mTEPES.pDiscountedWeight[p] * mTEPES.pScenProb[p,sc]() * (OptModel.vTotalGCost    [p,sc,n] +
-                                                                                                                             OptModel.vTotalCCost    [p,sc,n] +
-                                                                                                                             OptModel.vTotalECost    [p,sc,n] +
-                                                                                                                             OptModel.vTotalNCost    [p,sc,n] +
-                                                                                                                             OptModel.vTotalRElecCost[p,sc,n]) for p,sc,n in mTEPES.psn                       ) +
-                                                               sum(mTEPES.pDiscountedWeight[p] * mTEPES.pScenProb[p,sc]() *  OptModel.vTotalRH2Cost  [p,sc,n]  for p,sc,n in mTEPES.psn if mTEPES.pIndHydrogen) +
-                                                               sum(mTEPES.pDiscountedWeight[p] * mTEPES.pScenProb[p,sc]() *  OptModel.vTotalRHeatCost[p,sc,n]  for p,sc,n in mTEPES.psn if mTEPES.pIndHeat    ) )
+        vTotalTCost = OptModel.vTotalICost + sum(pScenFactor[p,sc] * (OptModel.vTotalGCost    [p,sc,n] +
+                                                                      OptModel.vTotalCCost    [p,sc,n] +
+                                                                      OptModel.vTotalECost    [p,sc,n] +
+                                                                      OptModel.vTotalNCost    [p,sc,n] +
+                                                                      OptModel.vTotalRElecCost[p,sc,n]) for p,sc,n in mTEPES.psn)
+        if mTEPES.pIndHydrogen:
+            vTotalTCost += sum(pScenFactor[p,sc] * OptModel.vTotalRH2Cost  [p,sc,n] for p,sc,n in mTEPES.psn)
+        if mTEPES.pIndHeat:
+            vTotalTCost += sum(pScenFactor[p,sc] * OptModel.vTotalRHeatCost[p,sc,n] for p,sc,n in mTEPES.psn)
+        return OptModel.vTotalSCost == vTotalTCost
     OptModel.eTotalTCost = Constraint(rule=eTotalTCost, doc='total system cost [MEUR]')
 
     GeneratingTime = time.time() - StartTime
     if pIndLogConsole:
         print('Total fixed and variable costs         ... ', round(GeneratingTime), 's')
-
-
-# @profile
 
 
 def GenerationOperationModelFormulationObjFunct(OptModel, mTEPES, pIndLogConsole, p, sc, st):
@@ -67,16 +69,25 @@ def GenerationOperationModelFormulationObjFunct(OptModel, mTEPES, pIndLogConsole
     setattr(OptModel, f'eTotalCCost_{p}_{sc}_{st}', Constraint(mTEPES.n, rule=eTotalCCost, doc='system variable consumption operation cost [MEUR]'))
 
     def eTotalECost(OptModel,n):
-        if sum(mTEPES.pEmissionVarCost[p,sc,n,g] for g in mTEPES.g if (p,g) in mTEPES.pg) == 0.0:
+        if not any(mTEPES.pEmissionVarCost[p,sc,n,g] for g in mTEPES.g if (p,g) in mTEPES.pg):
             return Constraint.Skip
         return OptModel.vTotalECost[p,sc,n] == sum(OptModel.vTotalECostArea[p,sc,n,ar] for ar in mTEPES.ar)
     setattr(OptModel, f'eTotalECost_{p}_{sc}_{st}', Constraint(mTEPES.n, rule=eTotalECost, doc='system emission cost [MEUR]'))
 
+    pIndEmissionArea = {ar: mTEPES.pEmission[p,ar] != math.inf and any(mTEPES.pEmissionRate[g] for g in mTEPES.g if g in g2a[ar] and (p,g) in mTEPES.pg) for ar in mTEPES.ar}
+
+    g2a = defaultdict(set)
+    for ar,g in mTEPES.a2g:
+        g2a[ar].add(g)
+
+    nr2a = {ar: [nr for nr in mTEPES.nr if nr in g2a[ar] and (p,nr) in mTEPES.pnr] for ar in mTEPES.ar}
+    bo2a = {ar: [bo for bo in mTEPES.bo if bo in g2a[ar] and (p,bo) in mTEPES.pbo] for ar in mTEPES.ar}
+
     def eTotalEmissionArea(OptModel,n,ar):
-        if mTEPES.pEmission[p,ar] == math.inf or sum(mTEPES.pEmissionRate[g] for g in mTEPES.g if g in g2a[ar] and (p,g) in mTEPES.pg) == 0.0:
+        if not pIndEmissionArea[ar]:
             return Constraint.Skip
-        return OptModel.vTotalEmissionArea[p,sc,n,ar] == (mTEPES.pLoadLevelDuration[p,sc,n]() * 1e-3 * (sum(mTEPES.pEmissionRate[nr] * OptModel.vTotalOutput    [p,sc,n,nr] for nr in mTEPES.nr if nr in g2a[ar] and (p,nr) in mTEPES.pnr)    # 1e-3 to convert from tCO2/MWh to MtCO2/GWh
-                                                                                                     +  sum(mTEPES.pEmissionRate[bo] * OptModel.vTotalOutputHeat[p,sc,n,bo] for bo in mTEPES.bo if bo in g2a[ar] and (p,bo) in mTEPES.pbo)))  # 1e-3 to convert from tCO2/MWh to MtCO2/GWh
+    return OptModel.vTotalEmissionArea[p,sc,n,ar] == (mTEPES.pLoadLevelDuration[p,sc,n]() * 1e-3 * (sum(mTEPES.pEmissionRate[nr] * OptModel.vTotalOutput    [p,sc,n,nr] for nr in nr2a[ar])    # 1e-3 to convert from tCO2/MWh to MtCO2/GWh
+                                                                                                 +  sum(mTEPES.pEmissionRate[bo] * OptModel.vTotalOutputHeat[p,sc,n,bo] for bo in bo2a[ar])))  # 1e-3 to convert from tCO2/MWh to MtCO2/GWh
     setattr(OptModel, f'eTotalEmissionArea_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.ar, rule=eTotalEmissionArea, doc='area total emission [MtCO2 eq]'))
 
     def eTotalECostArea(OptModel,n,ar):
@@ -105,6 +116,3 @@ def GenerationOperationModelFormulationObjFunct(OptModel, mTEPES, pIndLogConsole
     GeneratingTime = time.time() - StartTime
     if pIndLogConsole:
         print('Operation cost        o.f.             ... ', round(GeneratingTime), 's')
-
-
-# @profile

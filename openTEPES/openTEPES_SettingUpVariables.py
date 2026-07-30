@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 29, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 30, 2026
 
 openTEPES.openTEPES_SettingUpVariables — creates the decision variables and their bounds, fixes the generators' commitment, relaxes or forbids investment conditions, zeroes out epsilon values, and screens for infeasibilities. Runs after DataConfiguration.
 """
@@ -1168,8 +1168,8 @@ def SettingUpVariables(OptModel, mTEPES):
         # Periods and scenarios are independent of each other
         mTEPES.IndependentPeriods = True
         for p in mTEPES.p:
-            if (    (min([mTEPES.pEmission[p,ar] for ar in mTEPES.ar]) == math.inf or sum(mTEPES.pEmissionRate[nr] for nr in mTEPES.nr) == 0)  # No emissions
-                and (max([mTEPES.pRESEnergy[p,ar]() for ar in mTEPES.ar]) == 0)):                                                                # No minimum RES requirements
+            if (    (math.isinf(min([mTEPES.pEmission[p,ar] for ar in mTEPES.ar])) or sum(mTEPES.pEmissionRate[nr] for nr in mTEPES.nr) == 0)  # No emissions
+                and (max([mTEPES.pRESEnergy[p,ar]() for ar in mTEPES.ar]) == 0.0)):                                                                # No minimum RES requirements
             # Stages are independent from each other
                 mTEPES.IndependentStages[p] = True
     if all(mTEPES.IndependentStages[p]() for p in mTEPES.pp):
