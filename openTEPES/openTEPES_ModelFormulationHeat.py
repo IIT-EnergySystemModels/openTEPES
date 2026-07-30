@@ -15,17 +15,17 @@ def NetworkHeatOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc
     StartTime = time.time()
 
     # incoming and outgoing pipelines (lin) (lout)
-    lin  = defaultdict(list)
-    lout = defaultdict(list)
+    lin  = defaultdict(set)
+    lout = defaultdict(set)
     for ni,nf,cc in mTEPES.ha:
-        lin [nf].append((ni,cc))
-        lout[ni].append((nf,cc))
+        lin [nf].add((ni,cc))
+        lout[ni].add((nf,cc))
 
     # nodes to CHPs (chp2n)
-    chp2n = defaultdict(list)
+    chp2n = defaultdict(set)
     for nd,chp in mTEPES.nd*mTEPES.chp:
         if (nd,chp) in mTEPES.n2g:
-            chp2n[nd].append(chp)
+            chp2n[nd].add(chp)
 
     def eEnergy2Heat(OptModel,n,chp):
         if   (p,chp) in mTEPES.pchp and chp in mTEPES.ch and chp not in mTEPES.bo:

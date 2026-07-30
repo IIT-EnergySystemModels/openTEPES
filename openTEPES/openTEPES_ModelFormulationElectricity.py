@@ -19,43 +19,43 @@ def GenerationOperationModelFormulationDemand(OptModel, mTEPES, pIndLogConsole, 
     StartTime = time.time()
 
     # incoming and outgoing lines (lin) (lout) and lines with losses (linl) (loutl)
-    lin   = defaultdict(list)
-    linl  = defaultdict(list)
-    lout  = defaultdict(list)
-    loutl = defaultdict(list)
+    lin   = defaultdict(set)
+    linl  = defaultdict(set)
+    lout  = defaultdict(set)
+    loutl = defaultdict(set)
     for ni,nf,cc in mTEPES.la:
-        lin  [nf].append((ni,cc))
-        lout [ni].append((nf,cc))
+        lin  [nf].add((ni,cc))
+        lout [ni].add((nf,cc))
     for ni,nf,cc in mTEPES.ll:
-        linl [nf].append((ni,cc))
-        loutl[ni].append((nf,cc))
+        linl [nf].add((ni,cc))
+        loutl[ni].add((nf,cc))
 
     # nodes to generators (g2n)
-    g2n = defaultdict(list)
+    g2n = defaultdict(set)
     for nd,g in mTEPES.n2g:
-        g2n[nd].append(g)
-    e2n = defaultdict(list)
+        g2n[nd].add(g)
+    e2n = defaultdict(set)
     for nd,eh in mTEPES.nd*mTEPES.eh:
         if (nd,eh) in mTEPES.n2g:
-            e2n[nd].append(eh)
-    l2n = defaultdict(list)
+            e2n[nd].add(eh)
+    l2n = defaultdict(set)
     for nd,el in mTEPES.nd*mTEPES.el:
         if (nd,el) in mTEPES.n2g:
-            l2n[nd].append(el)
+            l2n[nd].add(el)
 
     # area to generators (e2a) (n2a) and generators to area (a2e) (a2n)
-    e2a = defaultdict(list)
-    a2e = defaultdict(list)
+    e2a = defaultdict(set)
+    a2e = defaultdict(set)
     for ar,eh in mTEPES.ar*mTEPES.eh:
         if (ar,eh) in mTEPES.a2g:
-            e2a[ar].append(eh)
-            a2e[eh].append(ar)
-    n2a = defaultdict(list)
-    a2n = defaultdict(list)
+            e2a[ar].add(eh)
+            a2e[eh].add(ar)
+    n2a = defaultdict(set)
+    a2n = defaultdict(set)
     for ar,nr in mTEPES.ar*mTEPES.nr:
         if (ar,nr) in mTEPES.a2g:
-            n2a[ar].append(nr)
-            a2n[nr].append(ar)
+            n2a[ar].add(nr)
+            a2n[nr].add(ar)
 
     def eSystemInertia(OptModel,n,ar):
         if mTEPES.pSystemInertia[p,sc,n,ar] == 0.0 or sum(1 for nr in n2a[ar] if (p,nr) in mTEPES.pnr) == 0:
@@ -257,10 +257,10 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
     n2list = list(mTEPES.n2)
 
     # generators to area (a2e)
-    a2e = defaultdict(list)
+    a2e = defaultdict(set)
     for ar,eh in mTEPES.ar*mTEPES.eh:
         if (ar,eh) in mTEPES.a2g:
-            a2e[eh].append(ar)
+            a2e[eh].add(ar)
 
     def eMaxInventory2Comm(OptModel,n,ec):
         if mTEPES.pIndBinStorInvest[ec] == 0 or (p,ec) not in mTEPES.pec or mTEPES.pMaxStorage[p,sc,n,ec]() == 0.0:
@@ -480,10 +480,10 @@ def GenerationOperationModelFormulationCommitment(OptModel, mTEPES, pIndLogConso
     StartTime = time.time()
 
     # generators to area (a2n)
-    a2n = defaultdict(list)
+    a2n = defaultdict(set)
     for ar,nr in mTEPES.ar*mTEPES.nr:
         if (ar,nr) in mTEPES.a2g:
-            a2n[nr].append(ar)
+            a2n[nr].add(ar)
 
     def eMaxOutput2ndBlock(OptModel,n,nr):
         if (p,nr) not in mTEPES.pnr or mTEPES.pMaxPower2ndBlock[p,sc,n,nr] == 0.0:
@@ -1031,13 +1031,13 @@ def NetworkOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st
         print('eLineLosses2              ... ', len(getattr(OptModel, f'eLineLosses2_{p}_{sc}_{st}')), ' rows')
 
     # nodes to generators (g2n)
-    g2n = defaultdict(list)
+    g2n = defaultdict(set)
     for nd,g in mTEPES.n2g:
-        g2n[nd].append(g)
-    e2n = defaultdict(list)
+        g2n[nd].add(g)
+    e2n = defaultdict(set)
     for nd,eh in mTEPES.nd*mTEPES.eh:
         if (nd,eh) in mTEPES.n2g:
-            e2n[nd].append(eh)
+            e2n[nd].add(eh)
 
     def eNetPosition(OptModel,n,nd):
         if mTEPES.pIndBinSingleNode() or mTEPES.pIndPTDF == 0:

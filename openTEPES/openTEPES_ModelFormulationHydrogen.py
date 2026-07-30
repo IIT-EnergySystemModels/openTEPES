@@ -15,23 +15,23 @@ def NetworkH2OperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, 
     StartTime = time.time()
 
     # incoming and outgoing pipelines (lin) (lout)
-    lin  = defaultdict(list)
-    lout = defaultdict(list)
+    lin  = defaultdict(set)
+    lout = defaultdict(set)
     for ni,nf,cc in mTEPES.pa:
-        lin [nf].append((ni,cc))
-        lout[ni].append((nf,cc))
+        lin [nf].add((ni,cc))
+        lout[ni].add((nf,cc))
 
     # nodes to electrolyzers (l2n)
-    l2n = defaultdict(list)
+    l2n = defaultdict(set)
     for nd,el in mTEPES.nd*mTEPES.el:
         if (nd,el) in mTEPES.n2g:
-            l2n[nd].append(el)
+            l2n[nd].add(el)
 
     # nodes to fuel heaters using H2 (b2n)
-    b2n = defaultdict(list)
+    b2n = defaultdict(set)
     for nd,hh in mTEPES.nd*mTEPES.hh:
         if (nd,hh) in mTEPES.n2g:
-            b2n[nd].append(hh)
+            b2n[nd].add(hh)
 
     def eBalanceH2(OptModel,n,nd):
         if sum(1 for el in l2n[nd]) + sum(1 for hh in b2n[nd]) + sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd]) == 0:
