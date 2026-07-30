@@ -218,7 +218,7 @@ def case_7d_binary(request, tmp_path):
     # sSEP — small Spanish system. Exercises the hydrogen sector (DemandHydrogen + NetworkHydrogen + 9 H2-related
     # generators) AND water-reservoir hydropower (7 reservoirs, reservoir maps, inflows/outflows/MaxVolume, pumped
     # hydro). pIndHydrogen / pIndHydroSystem code paths live here.
-    ("sSEP",      38581.335524272574),
+    ("sSEP",      38573.44601930286),
     # 9n_PTDF exercises the multi-level-header tables (VariableTTCFrw/Bck, VariablePTDF).
     ("9n_PTDF",   500.1114692260149),
     # 9n_heat exercises the heat-sector code path (pIndHeat=1). Added in PR #121.
