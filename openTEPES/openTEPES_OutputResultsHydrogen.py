@@ -60,6 +60,10 @@ def NetworkH2OperationResults(DirName, CaseName, OptModel, mTEPES):
         if (gt,el) in mTEPES.t2g:
             e2t[gt].append(el)
 
+    g2t = defaultdict(list)
+    for gt,g in mTEPES.t2g:
+        g2t[gt].append(g)
+
     sPSNARND   = [(p,sc,n,ar,nd)    for p,sc,n,ar,nd    in mTEPES.psn*mTEPES.arnd if sum(1 for el in l2n[nd]) + sum(1 for hh in b2n[nd]) + sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd])]
     sPSNARNDGT = [(p,sc,n,ar,nd,gt) for p,sc,n,ar,nd,gt in sPSNARND*mTEPES.gt     if sum(1 for el in e2t[gt] if (p,el) in mTEPES.pg) + sum(1 for hh in g2t[gt] if (p,hh) in mTEPES.phh)              ]
 
