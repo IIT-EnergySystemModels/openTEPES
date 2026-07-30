@@ -86,8 +86,8 @@ def GenerationOperationModelFormulationObjFunct(OptModel, mTEPES, pIndLogConsole
     def eTotalEmissionArea(OptModel,n,ar):
         if not pIndEmissionArea[ar]:
             return Constraint.Skip
-    return OptModel.vTotalEmissionArea[p,sc,n,ar] == (mTEPES.pLoadLevelDuration[p,sc,n]() * 1e-3 * (sum(mTEPES.pEmissionRate[nr] * OptModel.vTotalOutput    [p,sc,n,nr] for nr in nr2a[ar])    # 1e-3 to convert from tCO2/MWh to MtCO2/GWh
-                                                                                                 +  sum(mTEPES.pEmissionRate[bo] * OptModel.vTotalOutputHeat[p,sc,n,bo] for bo in bo2a[ar])))  # 1e-3 to convert from tCO2/MWh to MtCO2/GWh
+        return OptModel.vTotalEmissionArea[p,sc,n,ar] == (mTEPES.pLoadLevelDuration[p,sc,n]() * 1e-3 * (sum(mTEPES.pEmissionRate[nr] * OptModel.vTotalOutput    [p,sc,n,nr] for nr in nr2a[ar])    # 1e-3 to convert from tCO2/MWh to MtCO2/GWh
+                                                                                                     +  sum(mTEPES.pEmissionRate[bo] * OptModel.vTotalOutputHeat[p,sc,n,bo] for bo in bo2a[ar])))  # 1e-3 to convert from tCO2/MWh to MtCO2/GWh
     setattr(OptModel, f'eTotalEmissionArea_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.ar, rule=eTotalEmissionArea, doc='area total emission [MtCO2 eq]'))
 
     def eTotalECostArea(OptModel,n,ar):
