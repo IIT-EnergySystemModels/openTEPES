@@ -718,15 +718,13 @@ def _positive_int(value: str) -> int:
     return n
 
 
-parser.add_argument('--threads',       type=_positive_int, default=None,
+parser.add_argument('--threads',          type=_positive_int, default=None,
                     help="Cap the solver thread count. Default: half of (logical + physical) cores. Also set by OTEPES_THREADS.")
 parser.add_argument('--warm-resolve',            default=False, action="store_true",
                     help="Persistent re-solves (Mode C hot-swap sweep, or a gurobi_persistent stage loop) use warm dual "
-                         "simplex with a barrier fallback. Gurobi only; no effect for Mode A/B or non-Gurobi solvers. "
-                         "Also set by OTEPES_WARM_RESOLVE.")
+                         "simplex with a barrier fallback. Gurobi only; no effect for Mode A/B or non-Gurobi solvers. Also set by OTEPES_WARM_RESOLVE.")
 parser.add_argument('--warm-resolve-cap', type=_positive_int, default=None,
-                    help="Time cap (s) for each warm dual-simplex re-solve before falling back to barrier. "
-                         "Default 60. Also set by OTEPES_WARM_RESOLVE_CAP.")
+                    help="Time cap (s) for each warm dual-simplex re-solve before falling back to barrier. Default 60. Also set by OTEPES_WARM_RESOLVE_CAP.")
 parser.add_argument('--warm-resolve-simplex',    default=False, action="store_true",
                     help="EXPERIMENTAL: with --warm-resolve, use warm dual simplex instead of barrier for the "
                          "re-solves. Erratic on large/degenerate LPs and slower for objective (cost) sweeps; only "
