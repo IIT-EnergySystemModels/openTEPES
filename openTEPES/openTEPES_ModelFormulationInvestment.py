@@ -16,6 +16,8 @@ def InvestmentElecModelFormulation(OptModel, mTEPES, pIndLogConsole):
 
     StartTime = time.time()
 
+    pIndElecInvest = len(mTEPES.gc) + len(mTEPES.gd) + len(mTEPES.lc) > 0
+
     def eTotalICost(OptModel):
         if not (mTEPES.gc or mTEPES.gd or mTEPES.lc or mTEPES.rn or mTEPES.pc or mTEPES.hc):
             return Constraint.Skip
