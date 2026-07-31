@@ -3,11 +3,8 @@ Open Generation, Storage, and Transmission Operation and Expansion Planning Mode
 
 Energy-storage and reservoir operation results.
 
-This module writes the hourly storage operation: energy outflows,
-consumption (charging), generation-to-consumption ratio, inventory and its
-utilization, and spillage, per unit and per technology, with optional Altair
-plots. The reservoir function reports hydro reservoir volume, spillage, and
-marginal water value.
+This module writes the hourly storage operation: energy outflows, consumption (charging), generation-to-consumption ratio, inventory and its
+utilization, and spillage, per unit and per technology, with optional Altair plots. The reservoir function reports hydro reservoir volume, spillage, and marginal water value.
 """
 
 import time
@@ -31,7 +28,7 @@ def ESSOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutpu
     # generators to area (e2a)
     e2a = defaultdict(set)
     for ar,eh in mTEPES.a2g:
-        if (ar,eh) in mTEPES.eh:
+        if g in mTEPES.eh:
             e2a[ar].add(g)
 
     # technology to generators (e2e) (o2e)
