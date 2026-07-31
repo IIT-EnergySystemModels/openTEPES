@@ -29,43 +29,43 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES, pIndPlotOutput):
     StartTime = time.time()
 
     # incoming and outgoing lines (lin) (lout)
-    lin  = defaultdict(list)
-    lout = defaultdict(list)
+    lin  = defaultdict(set)
+    lout = defaultdict(set)
     for ni,nf,cc in mTEPES.la:
-        lin [nf].append((ni,cc))
-        lout[ni].append((nf,cc))
+        lin [nf].add((ni,cc))
+        lout[ni].add((nf,cc))
 
     # nodes to generators (g2n)
-    g2n = defaultdict(list)
+    g2n = defaultdict(set)
     for nd,g in mTEPES.n2g:
-        g2n[nd].append(g)
+        g2n[nd].add(g)
 
     # nodes to CHPs (c2n), to heat pumps (h2n), to electrolyzers (e2n)
-    c2n = defaultdict(list)
+    c2n = defaultdict(set)
     for nd,ch in mTEPES.nd*mTEPES.ch:
         if (nd,ch) in mTEPES.n2g:
-            c2n[nd].append(ch)
-    h2n = defaultdict(list)
+            c2n[nd].add(ch)
+    h2n = defaultdict(set)
     for nd,hp in mTEPES.nd*mTEPES.hp:
         if (nd,hp) in mTEPES.n2g:
-            h2n[nd].append(hp)
-    e2n = defaultdict(list)
+            h2n[nd].add(hp)
+    e2n = defaultdict(set)
     for nd,el in mTEPES.nd*mTEPES.el:
         if (nd,el) in mTEPES.n2g:
-            e2n[nd].append(el)
+            e2n[nd].add(el)
 
     # generators to area (e2a) (n2a)
-    e2a = defaultdict(list)
+    e2a = defaultdict(set)
     for ar,es in mTEPES.ar*mTEPES.es:
         if (ar,es) in mTEPES.a2g:
-            e2a[ar].append(es)
-    n2a = defaultdict(list)
+            e2a[ar].add(es)
+    n2a = defaultdict(set)
     for ar,nr in mTEPES.ar*mTEPES.nr:
         if (ar,nr) in mTEPES.a2g:
-            n2a[ar].append(nr)
-    g2a = defaultdict(list)
+            n2a[ar].add(nr)
+    g2a = defaultdict(set)
     for ar,g in mTEPES.a2g:
-        g2a[ar].append(g)
+        g2a[ar].add(g)
 
     # tolerance to treat a number as 0
     pEpsilon = 1e-6
@@ -105,11 +105,11 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES, pIndPlotOutput):
     if mTEPES.pIndHydrogen:
 
         # incoming and outgoing lines (lin) (lout)
-        lin  = defaultdict(list)
-        lout = defaultdict(list)
+        lin  = defaultdict(set)
+        lout = defaultdict(set)
         for ni,nf,cc in mTEPES.pa:
-            lin [nf].append((ni,cc))
-            lout[ni].append((nf,cc))
+            lin [nf].add((ni,cc))
+            lout[ni].add((nf,cc))
 
         #%% outputting the LSRMC of H2
         sPSSTNND      = [(p,sc,st,n,nd) for p,sc,st,n,nd in mTEPES.s2n*mTEPES.nd if len(e2n[nd]) + len(lout[nd]) + len(lin[nd]) and (p,sc,n) in mTEPES.psn]
@@ -126,11 +126,11 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES, pIndPlotOutput):
 
     if mTEPES.pIndHeat:
         # incoming and outgoing lines (lin) (lout)
-        lin  = defaultdict(list)
-        lout = defaultdict(list)
+        lin  = defaultdict(set)
+        lout = defaultdict(set)
         for ni,nf,cc in mTEPES.ha:
-            lin [nf].append((ni,cc))
-            lout[ni].append((nf,cc))
+            lin [nf].add((ni,cc))
+            lout[ni].add((nf,cc))
 
         #%% outputting the LSRMC of heat
         sPSSTNND      = [(p,sc,st,n,nd) for p,sc,st,n,nd in mTEPES.s2n*mTEPES.nd if len(c2n[nd]) + len(h2n[nd]) + len(lout[nd]) + len(lin[nd]) and (p,sc,n) in mTEPES.psn]
@@ -300,55 +300,55 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput, pIndPlo
 
     # %% Power balance per period, scenario, and load level
     # incoming and outgoing lines (lin) (lout)
-    lin   = defaultdict(list)
-    linl  = defaultdict(list)
-    lout  = defaultdict(list)
-    loutl = defaultdict(list)
+    lin   = defaultdict(set)
+    linl  = defaultdict(set)
+    lout  = defaultdict(set)
+    loutl = defaultdict(set)
     for ni,nf,cc in mTEPES.la:
-        lin  [nf].append((ni,cc))
-        lout [ni].append((nf,cc))
+        lin  [nf].add((ni,cc))
+        lout [ni].add((nf,cc))
     for ni,nf,cc in mTEPES.ll:
-        linl [nf].append((ni,cc))
-        loutl[ni].append((nf,cc))
+        linl [nf].add((ni,cc))
+        loutl[ni].add((nf,cc))
 
     # generators to nodes (g2n) (e2n)
-    g2n = defaultdict(list)
+    g2n = defaultdict(set)
     for nd,g in mTEPES.n2g:
-        g2n[nd].append(g)
-    e2n = defaultdict(list)
+        g2n[nd].add(g)
+    e2n = defaultdict(set)
     for nd,eh in mTEPES.nd*mTEPES.eh:
         if (nd,eh) in mTEPES.n2g:
-            e2n[nd].append(eh)
-    r2n = defaultdict(list)
+            e2n[nd].add(eh)
+    r2n = defaultdict(set)
     for nd,re in mTEPES.nd*mTEPES.re:
         if (nd,re) in mTEPES.n2g:
-            r2n[nd].append(re)
+            r2n[nd].add(re)
 
     # generators to area (n2a)(g2a)
-    n2a = defaultdict(list)
+    n2a = defaultdict(set)
     for ar,nr in mTEPES.ar*mTEPES.nr:
         if (ar,nr) in mTEPES.a2g:
-            n2a[ar].append(nr)
-    g2a = defaultdict(list)
+            n2a[ar].add(nr)
+    g2a = defaultdict(set)
     for ar,g in mTEPES.a2g:
-        g2a[ar].append(g)
+        g2a[ar].add(g)
 
     # generators to technology (o2e) (g2t)
-    e2e = defaultdict(list)
+    e2e = defaultdict(set)
     for et,eh in mTEPES.et*mTEPES.eh:
         if (et,eh) in mTEPES.t2g:
-            e2e[et].append(eh)
-    o2e = defaultdict(list)
+            e2e[et].add(eh)
+    o2e = defaultdict(set)
     for ot,es in mTEPES.ot*mTEPES.es:
         if (ot,es) in mTEPES.t2g:
-            o2e[ot].append(es)
-    r2r = defaultdict(list)
+            o2e[ot].add(es)
+    r2r = defaultdict(set)
     for rt,re in mTEPES.rt*mTEPES.re:
         if (rt,re) in mTEPES.t2g:
-            r2r[rt].append(re)
-    g2t = defaultdict(list)
+            r2r[rt].add(re)
+    g2t = defaultdict(set)
     for gt,g in mTEPES.t2g:
-        g2t[gt].append(g)
+        g2t[gt].add(g)
 
     if sum(1 for ar in mTEPES.ar if sum(1 for g in g2a[ar])) > 1:
         if pIndAreaOutput:

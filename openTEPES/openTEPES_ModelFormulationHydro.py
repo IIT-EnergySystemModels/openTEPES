@@ -17,10 +17,10 @@ def GenerationOperationModelFormulationReservoir(OptModel, mTEPES, pIndLogConsol
     n2list = list(mTEPES.n2)
 
     # generators to area (a2h)
-    a2h = defaultdict(list)
+    a2h = defaultdict(set)
     for ar,h in mTEPES.ar*mTEPES.h:
         if (ar,h) in mTEPES.a2g:
-            a2h[h].append(ar)
+            a2h[h].add(ar)
 
     def eMaxVolume2Comm(OptModel,n,rc):
         if mTEPES.pIndBinRsrInvest[rc]() == 0 or (p,rc) not in mTEPES.prc or sum(mTEPES.pMaxCharge[p,sc,n,h] + mTEPES.pMaxPowerElec[p,sc,n,h] for h in mTEPES.h if (rc,h) in mTEPES.r2h) == 0.0 or mTEPES.pMaxVolume[p,sc,n,rc] == 0.0:
