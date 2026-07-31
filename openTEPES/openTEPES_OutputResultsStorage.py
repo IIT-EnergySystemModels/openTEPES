@@ -27,7 +27,7 @@ def ESSOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutpu
 
     # generators to area (e2a)
     e2a = defaultdict(set)
-    for ar,eh in mTEPES.a2g:
+    for ar,g in mTEPES.a2g:
         if g in mTEPES.eh:
             e2a[ar].add(g)
 
