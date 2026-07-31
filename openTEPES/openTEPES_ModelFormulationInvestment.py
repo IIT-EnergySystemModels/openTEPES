@@ -119,7 +119,7 @@ def InvestmentHeatModelFormulation(OptModel, mTEPES, pIndLogConsole):
     def eConsecutiveNetHeatInvest(OptModel,p,ni,nf,cc):
         if p == mTEPES.p.first() or (mTEPES.p.prev(p,1),ni,nf,cc) not in mTEPES.phc:
             return Constraint.Skip
-        return OptModel.vHeatPipeInvest     [mTEPES.p.prev(p,1),ni,nf,cc] <= OptModel.vHeatPipeInvest       [p,ni,nf,cc]
+        return OptModel.vHeatPipeInvest      [mTEPES.p.prev(p,1),ni,nf,cc] <= OptModel.vHeatPipeInvest      [p,ni,nf,cc]
     OptModel.eConsecutiveNetHeatInvest = Constraint(mTEPES.phc, rule=eConsecutiveNetHeatInvest, doc='heat pipe network investment in consecutive periods')
 
     GeneratingTime = time.time() - StartTime
