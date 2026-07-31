@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 30, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 31, 2026
 
 openTEPES.openTEPES_ModelFormulationInvestment — investment variables and constraints (electricity, hydro, H2, heat) plus the installed-capacity, adequacy-reserve-margin and emission / RES-energy limits.
 """
@@ -196,13 +196,13 @@ def GenerationOperationElecModelFormulationInvestment(OptModel, mTEPES, pIndLogC
     if pIndLogConsole:
         print('eUninstallGenCap          ... ', len(getattr(OptModel, f'eUninstallGenCap_{p}_{sc}_{st}')), ' rows')
 
-    pFirmCapacity = {ar: sum(mTEPES.pRatedMaxPowerElec[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]()) for g in mTEPES.g if (p,g) in mTEPES.pg and g in g2a[ar] and g not in mTEPES.gc and g not in mTEPES.gd) for ar in mTEPES.ar}
+    pExistingFirmCapacity = {ar: sum(mTEPES.pRatedMaxPowerElec[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]()) for g in g2a[ar] if (p,g) in mTEPES.pg and g not in mTEPES.gc and g not in mTEPES.gd) for ar in mTEPES.ar}
 
     def eAdequacyReserveMarginElec(OptModel,ar):
-        if mTEPES.pReserveMargin[p,ar]() and st == mTEPES.Last_st and any(gc for gc in mTEPES.gc if (p,gc) in mTEPES.pgc and gc in g2a[ar]) and pFirmCapacity[ar] <= mTEPES.pDemandElecPeak[p,ar] * mTEPES.pReserveMargin[p,ar]():
-            return (pFirmCapacity[ar] +
+        if mTEPES.pReserveMargin[p,ar]() and st == mTEPES.Last_st and any(gc for gc in mTEPES.gc if (p,gc) in mTEPES.pgc and gc in g2a[ar]) and pExistingFirmCapacity[ar] <= mTEPES.pDemandElecPeak[p,ar] * mTEPES.pReserveMargin[p,ar]():
+            return (pExistingFirmCapacity[ar] +
                     sum(   OptModel.vGenerationInvest[p,gc]  * mTEPES.pRatedMaxPowerElec[gc] * mTEPES.pAvailability[gc]() / (1.0-mTEPES.pEFOR[gc]()) for gc in mTEPES.gc if gc in g2a[ar] and (p,gc) in mTEPES.pgc) +
-                    sum((1-OptModel.vGenerationRetire[p,gd]) * mTEPES.pRatedMaxPowerElec[gd] * mTEPES.pAvailability[gd]() / (1.0-mTEPES.pEFOR[gd]()) for gd in mTEPES.gd if gd in g2a[ar] and (p,gd) in mTEPES.pgd) ) >= mTEPES.pDemandElecPeak[p,ar] * mTEPES.pReserveMargin[p,ar]()
+                    sum((1-OptModel.vGenerationRetire[p,gd]) * mTEPES.pRatedMaxPowerElec[gd] * mTEPES.pAvailability[gd]() / (1.0-mTEPES.pEFOR[gd]()) for gd in mTEPES.gd if gd in g2a[ar] and (p,gd) in mTEPES.pgd) >= mTEPES.pDemandElecPeak[p,ar] * mTEPES.pReserveMargin[p,ar]())
         else:
             return Constraint.Skip
     setattr(OptModel, f'eAdequacyReserveMarginElec_{p}_{sc}_{st}', Constraint(mTEPES.ar, rule=eAdequacyReserveMarginElec, doc='electricity system adequacy reserve margin [p.u.]'))
@@ -255,11 +255,13 @@ def GenerationOperationHeatModelFormulationInvestment(OptModel, mTEPES, pIndLogC
     if pIndLogConsole:
         print('eInstallFHUCap            ... ', len(getattr(OptModel, f'eInstallFHUCap_{p}_{sc}_{st}')), ' rows')
 
+    pExistingFirmCapacity = {ar: sum(mTEPES.pRatedMaxPowerHeat[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]()) for g in g2a[ar] if (p,g) in mTEPES.pg and g not in mTEPES.gc and g not in mTEPES.gd) for ar in mTEPES.ar}
+
     def eAdequacyReserveMarginHeat(OptModel,ar):
-        if mTEPES.pReserveMarginHeat[p,ar] and st == mTEPES.Last_st and sum(1 for gc in mTEPES.gc if (p,gc) in mTEPES.pgc and gc in g2a[ar]) and sum(mTEPES.pRatedMaxPowerHeat[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]()) for g in mTEPES.g if (p,g) in mTEPES.pg and g in g2a[ar] and g not in mTEPES.gc and g not in mTEPES.gd) <= mTEPES.pDemandHeatPeak[p,ar] * mTEPES.pReserveMarginHeat[p,ar]:
-            return ((sum(                                       mTEPES.pRatedMaxPowerHeat[g ] * mTEPES.pAvailability[g ]() / (1.0-mTEPES.pEFOR[g ]()) for g  in mTEPES.g  if g  in g2a[ar] and (p,g ) in mTEPES.pg  and g not in mTEPES.gc and g not in mTEPES.gd) +
-                     sum(   OptModel.vGenerationInvest[p,gc]  * mTEPES.pRatedMaxPowerHeat[gc] * mTEPES.pAvailability[gc]() / (1.0-mTEPES.pEFOR[gc]()) for gc in mTEPES.gc if gc in g2a[ar] and (p,gc) in mTEPES.pgc                                              ) +
-                     sum((1-OptModel.vGenerationRetire[p,gd]) * mTEPES.pRatedMaxPowerHeat[gd] * mTEPES.pAvailability[gd]() / (1.0-mTEPES.pEFOR[gd]()) for gd in mTEPES.gd if gd in g2a[ar] and (p,gd) in mTEPES.pgd                                              ) ) >= mTEPES.pDemandHeatPeak[p,ar] * mTEPES.pReserveMarginHeat[p,ar])
+        if mTEPES.pReserveMarginHeat[p,ar] and st == mTEPES.Last_st and sum(1 for gc in g2a[ar] if (p,gc) in mTEPES.pgc) and pExistingFirmCapacity[ar] <= mTEPES.pDemandHeatPeak[p,ar] * mTEPES.pReserveMarginHeat[p,ar]:
+            return (pExistingFirmCapacity[ar] +
+                    sum(   OptModel.vGenerationInvest[p,gc]  * mTEPES.pRatedMaxPowerHeat[gc] * mTEPES.pAvailability[gc]() / (1.0-mTEPES.pEFOR[gc]()) for gc in mTEPES.gc if gc in g2a[ar] and (p,gc) in mTEPES.pgc) +
+                    sum((1-OptModel.vGenerationRetire[p,gd]) * mTEPES.pRatedMaxPowerHeat[gd] * mTEPES.pAvailability[gd]() / (1.0-mTEPES.pEFOR[gd]()) for gd in mTEPES.gd if gd in g2a[ar] and (p,gd) in mTEPES.pgd) >= mTEPES.pDemandHeatPeak[p,ar] * mTEPES.pReserveMarginHeat[p,ar])
         else:
             return Constraint.Skip
     setattr(OptModel, f'eAdequacyReserveMarginHeat_{p}_{sc}_{st}', Constraint(mTEPES.ar, rule=eAdequacyReserveMarginHeat, doc='heat system adequacy reserve margin [p.u.]'))

@@ -1,12 +1,10 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 17, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 31, 2026
 
 Investment and retirement results.
 
-This module writes the expansion-planning decisions: generation and storage
-build-out, generation retirements, and transmission line investment. It
-reports them per unit, per technology, and per area, with investment cost,
-LCOE, and cost-per-MW tables, plus optional Altair plots.
+This module writes the expansion-planning decisions: generation and storage build-out, generation retirements, and transmission line investment.
+It reports them per unit, per technology, and per area, with investment cost, LCOE, and cost-per-MW tables, plus optional Altair plots.
 """
 
 import time
@@ -30,17 +28,17 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutput,
     StartTime = time.time()
 
     # generators to technology (g2t)
-    g2t = defaultdict(list)
+    g2t = defaultdict(set)
     for gt,g in mTEPES.t2g:
-        g2t[gt].append(g)
+        g2t[gt].add(g)
 
     if mTEPES.eb:
 
         # generators to area (g2a)
-        g2a = defaultdict(list)
-        for ar,eb in mTEPES.ar*mTEPES.eb:
-            if (ar,eb) in mTEPES.a2g:
-                g2a[ar].append(eb)
+        g2a = defaultdict(set)
+        for ar,g in  mTEPES.a2g:
+            if g in mTEPES.eb:
+                g2a[ar].add(g)
 
         # tolerance to avoid division by 0
         pEpsilon = 1e-6
@@ -142,10 +140,10 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutput,
     if mTEPES.gd:
 
         # generators to area (g2a)
-        g2a = defaultdict(list)
-        for ar,gd in mTEPES.ar*mTEPES.gd:
-            if (ar,gd) in mTEPES.a2g:
-                g2a[ar].append(gd)
+        g2a = defaultdict(set)
+        for ar,g in mTEPES.a2g:
+            if g in mTEPES.gd:
+                g2a[ar].add(g)
 
         if pIndTechnologyOutput == 0 or pIndTechnologyOutput == 2:
             # Saving generation retirement

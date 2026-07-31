@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 29, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 31, 2026
 
 Hydrogen network operation results.
 
@@ -36,33 +36,33 @@ def NetworkH2OperationResults(DirName, CaseName, OptModel, mTEPES):
     StartTime = time.time()
 
     # incoming and outgoing pipelines (lin) (lout)
-    lin  = defaultdict(list)
-    lout = defaultdict(list)
+    lin  = defaultdict(set)
+    lout = defaultdict(set)
     for ni,nf,cc in mTEPES.pa:
-        lin [nf].append((ni,cc))
-        lout[ni].append((nf,cc))
+        lin [nf].add((ni,cc))
+        lout[ni].add((nf,cc))
 
     # nodes to electrolyzers (l2n)
-    l2n = defaultdict(list)
+    l2n = defaultdict(set)
     for nd,el in mTEPES.nd*mTEPES.el:
         if (nd,el) in mTEPES.n2g:
-            l2n[nd].append(el)
+            l2n[nd].add(el)
 
     # nodes to fuel heaters using H2 (b2n)
-    b2n = defaultdict(list)
-    for nd,hh in mTEPES.nd*mTEPES.hh:
-        if (nd,hh) in mTEPES.n2g:
-            b2n[nd].append(hh)
+    b2n = defaultdict(set)
+    for nd,g in mTEPES.n2g:
+        if g in mTEPES.hh:
+            b2n[nd].add(g)
 
     # electrolyzers to technology (e2t)
-    e2t = defaultdict(list)
-    for gt,el in mTEPES.gt*mTEPES.el:
-        if (gt,el) in mTEPES.t2g:
-            e2t[gt].append(el)
-
-    g2t = defaultdict(list)
+    e2t = defaultdict(set)
     for gt,g in mTEPES.t2g:
-        g2t[gt].append(g)
+        if g in mTEPES.el:
+            e2t[gt].add(g)
+
+    g2t = defaultdict(set)
+    for gt,g in mTEPES.t2g:
+        g2t[gt].add(g)
 
     sPSNARND   = [(p,sc,n,ar,nd)    for p,sc,n,ar,nd    in mTEPES.psn*mTEPES.arnd if sum(1 for el in l2n[nd]) + sum(1 for hh in b2n[nd]) + sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd])]
     sPSNARNDGT = [(p,sc,n,ar,nd,gt) for p,sc,n,ar,nd,gt in sPSNARND*mTEPES.gt     if sum(1 for el in e2t[gt] if (p,el) in mTEPES.pg) + sum(1 for hh in g2t[gt] if (p,hh) in mTEPES.phh)              ]

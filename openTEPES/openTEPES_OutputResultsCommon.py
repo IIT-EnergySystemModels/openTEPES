@@ -3,11 +3,8 @@ Open Generation, Storage, and Transmission Operation and Expansion Planning Mode
 
 Shared helpers used by every openTEPES_OutputResults<Concern> module.
 
-This module holds the small pieces that more than one results module needs:
-the output-directory resolver and the three Altair plot builders. Each
-concern module imports from here so the logic lives in one place and the
-plot styling stays the same across investment, generation, storage,
-economic, and network outputs.
+This module holds the small pieces that more than one results module needs: the output-directory resolver and the three Altair plot builders. Each
+concern module imports from here so the logic lives in one place and the plot styling stays the same across investment, generation, storage, economic, and network outputs.
 """
 
 import os

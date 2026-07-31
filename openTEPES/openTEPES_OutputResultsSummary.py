@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 09, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 31, 2026
 
 System summary, flexibility, and reliability results.
 
@@ -29,26 +29,26 @@ def OperationSummaryResults(DirName, CaseName, OptModel, mTEPES):
 
     # %%  Power balance per period, scenario, and load level
     # incoming and outgoing lines (lin) (lout) and lines with losses (linl) (loutl)
-    lin   = defaultdict(list)
-    linl  = defaultdict(list)
-    lout  = defaultdict(list)
-    loutl = defaultdict(list)
+    lin   = defaultdict(set)
+    linl  = defaultdict(set)
+    lout  = defaultdict(set)
+    loutl = defaultdict(set)
     for ni,nf,cc in mTEPES.la:
-        lin  [nf].append((ni,cc))
-        lout [ni].append((nf,cc))
+        lin  [nf].add((ni,cc))
+        lout [ni].add((nf,cc))
     for ni,nf,cc in mTEPES.ll:
-        linl [nf].append((ni,cc))
-        loutl[ni].append((nf,cc))
+        linl [nf].add((ni,cc))
+        loutl[ni].add((nf,cc))
 
     # generators to nodes (g2n)
-    g2n = defaultdict(list)
+    g2n = defaultdict(set)
     for nd,g in mTEPES.n2g:
-        g2n[nd].append(g)
+        g2n[nd].add(g)
 
     # generators to technology (g2t)
-    g2t = defaultdict(list)
+    g2t = defaultdict(set)
     for gt,g in mTEPES.t2g:
-        g2t[gt].append(g)
+        g2t[gt].add(g)
 
     # Ratio Fossil Fuel Generation/Total Generation [%]
     TotalGeneration       = sum(OptModel.vTotalOutput[p,sc,n,g]()*mTEPES.pLoadLevelDuration[p,sc,n]() for p,sc,n,g in mTEPES.psng )
@@ -232,23 +232,22 @@ def FlexibilityResults(DirName, CaseName, OptModel, mTEPES):
     StartTime = time.time()
 
     # generators to technology (o2e)
-    o2e = defaultdict(list)
-    for ot,es in mTEPES.ot*mTEPES.es:
-        if (ot,es) in mTEPES.t2g:
-            o2e[ot].append(es)
-    e2e = defaultdict(list)
-    for et,eh in mTEPES.et*mTEPES.eh:
-        if (et,eh) in mTEPES.t2g:
-            e2e[et].append(eh)
-    g2t = defaultdict(list)
+    o2e = defaultdict(set)
+    for ot,g in mTEPES.t2g:
+        if g in mTEPES.es:
+            o2e[ot].add(g)
+    e2e = defaultdict(set)
+    for et,g in mTEPES.t2g:
+        if g in mTEPES.eh:
+            e2e[et].add(g)
+    g2t = defaultdict(set)
     for gt,g in mTEPES.t2g:
-        g2t[gt].append(g)
+        g2t[gt].add(g)
 
     # nodes to area (d2a)
-    d2a = defaultdict(list)
-    for ar,nd in mTEPES.ar*mTEPES.nd:
-        if (nd,ar) in mTEPES.ndar:
-            d2a[ar].append(nd)
+    d2a = defaultdict(set)
+    for nd,ar in mTEPES.ndar:
+        d2a[ar].add(nd)
 
     OutputToFile         = pd.Series(data=[sum(OptModel.vTotalOutput[p,sc,n,g]() for g in g2t[gt] if (p,g) in mTEPES.pg) for p,sc,n,gt in mTEPES.psngt], index=mTEPES.psngt)
     OutputToFile *= 1e3
@@ -295,10 +294,10 @@ def ReliabilityResults(DirName, CaseName, OptModel, mTEPES):
     _path = _outdir(DirName, CaseName, mTEPES)
     StartTime = time.time()
 
-    r2r = defaultdict(list)
+    r2r = defaultdict(set)
     for rt,re in mTEPES.rt*mTEPES.re:
         if (rt,re) in mTEPES.t2g:
-            r2r[rt].append(re)
+            r2r[rt].add(re)
 
     pDemandElec    = pd.Series(data=[mTEPES.pDemandElec[p,sc,n,nd]() for p,sc,n,nd in mTEPES.psnnd ], index=mTEPES.psnnd).sort_index()
     ExistCapacity  = [(p,sc,n,g) for p,sc,n,g in mTEPES.psng if g not in mTEPES.gc]

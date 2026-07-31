@@ -1,12 +1,10 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 09, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 31, 2026
 
 Generation operation results, electricity and heat.
 
-This module writes the hourly generation operation: unit commitment,
-start-up and shut-down, operating and ramp reserves, output and surplus,
-curtailment, energy, and emissions, per generator, per technology, and per
-area, with optional Altair plots. The heat function reports the same for
+This module writes the hourly generation operation: unit commitment, start-up and shut-down, operating and ramp reserves, output and surplus,
+curtailment, energy, and emissions, per generator, per technology, and per area, with optional Altair plots. The heat function reports the same for
 combined heat-and-power and heat-only units.
 """
 
@@ -31,29 +29,26 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnolo
     StartTime = time.time()
 
     # generators to area (n2a)
-    g2a = defaultdict(list)
+    g2a = defaultdict(set)
     for ar,g in mTEPES.a2g:
-        g2a[ar].append(g)
+        g2a[ar].add(g)
 
     # technology to generators (o2e) (n2n) (r2r) (g2t)
-    e2e = defaultdict(list)
-    for et,eh in mTEPES.et*mTEPES.eh:
-        if (et,eh) in mTEPES.t2g:
-            e2e[et].append(eh)
-    n2n = defaultdict(list)
-    for nt,nr in mTEPES.nt*mTEPES.nr:
-        if (nt,nr) in mTEPES.t2g:
-            n2n[nt].append(nr)
-    g2n = defaultdict(list)
+    e2e = defaultdict(set)
+    for et,g in mTEPES.t2g:
+        if g in mTEPES.eh:
+            e2e[et].add(g)
+    n2n = defaultdict(set)
+    for nt,g in mTEPES.t2g:
+        if g in mTEPES.nr:
+            n2n[nt].add(g)
+    r2r = defaultdict(set)
+    for rt,g in mTEPES.t2g:
+        if g in mTEPES.re:
+            r2r[rt].add(g)
+    g2t = defaultdict(set)
     for gt,g in mTEPES.t2g:
-        g2n[gt].append(g)
-    r2r = defaultdict(list)
-    for rt,re in mTEPES.rt*mTEPES.re:
-        if (rt,re) in mTEPES.t2g:
-            r2r[rt].append(re)
-    g2t = defaultdict(list)
-    for gt,g in mTEPES.t2g:
-        g2t[gt].append(g)
+        g2t[gt].add(g)
 
     if mTEPES.nr:
         if pIndTechnologyOutput == 0 or pIndTechnologyOutput == 2:
@@ -316,15 +311,15 @@ def GenerationOperationHeatResults(DirName, CaseName, OptModel, mTEPES, pIndTech
     StartTime = time.time()
 
     # generators to area (g2a)
-    g2a = defaultdict(list)
-    for ar,ch in mTEPES.ar*mTEPES.ch:
-        if (ar,ch) in mTEPES.a2g:
-            g2a[ar].append(ch)
+    g2a = defaultdict(set)
+    for ar,g in mTEPES.a2g:
+        if g in mTEPES.ch:
+            g2a[ar].add(g)
 
     # technology to generators (g2t)
-    g2t = defaultdict(list)
-    for gt,chp in mTEPES.t2g:
-        g2t[gt].append(chp)
+    g2t = defaultdict(set)
+    for gt,g in mTEPES.t2g:
+        g2t[gt].add(g)
 
     # for p,sc,n,ch in mTEPES.psnch:
     #     if ch not in mTEPES.bo:

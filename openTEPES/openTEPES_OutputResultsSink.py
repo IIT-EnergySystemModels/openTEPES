@@ -3,15 +3,11 @@ Open Generation, Storage, and Transmission Operation and Expansion Planning Mode
 
 Result sink: write each result table to CSV and/or one per-case DuckDB file.
 
-The output-side mirror of ``openTEPES_InputSource``. Every result writer ends in
-``<frame>.oT.write(path, ...)``; the ``oT`` accessor (registered here on DataFrame
-and Series) routes the write through the process-active ``ResultSink``. With no
-sink it is plain ``to_csv`` -- so a CSV run and "Run Python File" are unchanged;
-with a sink it writes the CSV and/or stores the same in-memory frame as one table
-in ``oT_Results_<case>.duckdb`` (not re-read from the CSV).
+The output-side mirror of ``openTEPES_InputSource``. Every result writer ends in ``<frame>.oT.write(path, ...)``; the ``oT`` accessor (registered here on DataFrame
+and Series) routes the write through the process-active ``ResultSink``. With no sink it is plain ``to_csv`` -- so a CSV run and "Run Python File" are unchanged;
+with a sink it writes the CSV and/or stores the same in-memory frame as one table in ``oT_Results_<case>.duckdb`` (not re-read from the CSV).
 
-``openTEPES_run`` sets the active sink around the output loop. One DuckDB per case
-keeps a parallel sweep single-writer-safe; the sink is opened in the worker after
+``openTEPES_run`` sets the active sink around the output loop. One DuckDB per case keeps a parallel sweep single-writer-safe; the sink is opened in the worker after
 any fork, never carried across one.
 """
 from __future__ import annotations

@@ -3,12 +3,9 @@ Open Generation, Storage, and Transmission Operation and Expansion Planning Mode
 
 Raw parameter, variable, set, and constraint dump.
 
-This module writes the full Pyomo model to a DuckDB file: every variable
-with its bounds, every parameter value, every set's members, and every
-indexed constraint's dual and bounds. It is the raw debugging dump used by
-``OutputResultsParVarCon`` and is gated by ``pIndDumpRawResults`` in the run
-driver, not by a CLI-selectable result category. The DuckDB-writing helpers
-below have this dump as their only consumer, so they live here rather than in
+This module writes the full Pyomo model to a DuckDB file: every variable with its bounds, every parameter value, every set's members, and every
+indexed constraint's dual and bounds. It is the raw debugging dump used by ``OutputResultsParVarCon`` and is gated by ``pIndDumpRawResults`` in the run
+driver, not by a CLI-selectable result category. The DuckDB-writing helpers below have this dump as their only consumer, so they live here rather than in
 the shared Common module.
 """
 

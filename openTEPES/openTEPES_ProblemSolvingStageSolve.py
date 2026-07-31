@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 30, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 31, 2026
 """
 
 import os
@@ -149,16 +149,13 @@ def StageSolve(OptModel, mTEPES, DirName, CaseName, SolverName, pIndLogConsole, 
 
                 # operation model o.f. by stage
                 def eTotalOCost(OptModel):
-                    vTotalOCost =     sum(pScenFactor[p,sc] * (OptModel.vTotalGCost    [p,sc,n] +
-                                                               OptModel.vTotalCCost    [p,sc,n] +
-                                                               OptModel.vTotalECost    [p,sc,n] +
-                                                               OptModel.vTotalNCost    [p,sc,n] +
-                                                               OptModel.vTotalRElecCost[p,sc,n]) for p,sc,n in mTEPES.psn)
-                    if mTEPES.pIndHydrogen:
-                        vTotalOCost += sum(pScenFactor[p,sc] * OptModel.vTotalRH2Cost  [p,sc,n]  for p,sc,n in mTEPES.psn)
-                    if mTEPES.pIndHeat:
-                        vTotalOCost += sum(pScenFactor[p,sc] * OptModel.vTotalRHeatCost[p,sc,n]  for p,sc,n in mTEPES.psn)
-                    return vTotalOCost
+                    return (sum(pScenFactor[p,sc] * (OptModel.vTotalGCost    [p,sc,n] +
+                                                     OptModel.vTotalCCost    [p,sc,n] +
+                                                     OptModel.vTotalECost    [p,sc,n] +
+                                                     OptModel.vTotalNCost    [p,sc,n] +
+                                                     OptModel.vTotalRElecCost[p,sc,n]) for p,sc,n in mTEPES.psn                       ) +
+                            sum(pScenFactor[p,sc] *  OptModel.vTotalRH2Cost  [p,sc,n]  for p,sc,n in mTEPES.psn if mTEPES.pIndHydrogen) +
+                            sum(pScenFactor[p,sc] *  OptModel.vTotalRHeatCost[p,sc,n]  for p,sc,n in mTEPES.psn if mTEPES.pIndHeat    ) )
                 setattr(OptModel, f'eTotalOCost_{p}_{sc}_{st}', Objective(rule=eTotalOCost, sense=minimize, doc='total system operation cost [MEUR]'))
 
                 if itBd == 1:
