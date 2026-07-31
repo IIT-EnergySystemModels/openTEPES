@@ -31,29 +31,29 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnolo
     StartTime = time.time()
 
     # generators to area (n2a)
-    g2a = defaultdict(set)
+    g2a = defaultdict(list)
     for ar,g in mTEPES.a2g:
-        g2a[ar].add(g)
+        g2a[ar].append(g)
 
     # technology to generators (o2e) (n2n) (r2r) (g2t)
-    e2e = defaultdict(set)
+    e2e = defaultdict(list)
     for et,eh in mTEPES.et*mTEPES.eh:
         if (et,eh) in mTEPES.t2g:
-            e2e[et].add(eh)
-    n2n = defaultdict(set)
+            e2e[et].append(eh)
+    n2n = defaultdict(list)
     for nt,nr in mTEPES.nt*mTEPES.nr:
         if (nt,nr) in mTEPES.t2g:
-            n2n[nt].add(nr)
-    g2n = defaultdict(set)
+            n2n[nt].append(nr)
+    g2n = defaultdict(list)
     for gt,g in mTEPES.t2g:
-        g2n[gt].add(g)
-    r2r = defaultdict(set)
+        g2n[gt].append(g)
+    r2r = defaultdict(list)
     for rt,re in mTEPES.rt*mTEPES.re:
         if (rt,re) in mTEPES.t2g:
-            r2r[rt].add(re)
-    g2t = defaultdict(set)
+            r2r[rt].append(re)
+    g2t = defaultdict(list)
     for gt,g in mTEPES.t2g:
-        g2t[gt].add(g)
+        g2t[gt].append(g)
 
     if mTEPES.nr:
         if pIndTechnologyOutput == 0 or pIndTechnologyOutput == 2:
@@ -316,15 +316,15 @@ def GenerationOperationHeatResults(DirName, CaseName, OptModel, mTEPES, pIndTech
     StartTime = time.time()
 
     # generators to area (g2a)
-    g2a = defaultdict(set)
+    g2a = defaultdict(list)
     for ar,ch in mTEPES.ar*mTEPES.ch:
         if (ar,ch) in mTEPES.a2g:
-            g2a[ar].add(ch)
+            g2a[ar].append(ch)
 
     # technology to generators (g2t)
-    g2t = defaultdict(set)
+    g2t = defaultdict(list)
     for gt,chp in mTEPES.t2g:
-        g2t[gt].add(chp)
+        g2t[gt].append(chp)
 
     # for p,sc,n,ch in mTEPES.psnch:
     #     if ch not in mTEPES.bo:

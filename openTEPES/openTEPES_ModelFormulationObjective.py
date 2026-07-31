@@ -45,9 +45,9 @@ def GenerationOperationModelFormulationObjFunct(OptModel, mTEPES, pIndLogConsole
 
     StartTime = time.time()
 
-    g2a = defaultdict(set)
+    g2a = defaultdict(list)
     for ar,g in mTEPES.a2g:
-        g2a[ar].add(g)
+        g2a[ar].append(g)
 
     def eTotalGCost(OptModel,n):
         return OptModel.vTotalGCost[p,sc,n] == (mTEPES.pLoadLevelDuration[p,sc,n]() * sum(mTEPES.pLinearVarCost  [p,sc,n,nr] * OptModel.vTotalOutput    [p,sc,n,nr]                                              +
