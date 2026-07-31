@@ -42,19 +42,19 @@ def InvestmentElecModelFormulation(OptModel, mTEPES, pIndLogConsole):
     OptModel.eTotalFElecCost = Constraint(mTEPES.p, rule=eTotalFElecCost, doc='electricity system fixed cost [MEUR]')
 
     def eConsecutiveGenInvest(OptModel,p,gc):
-        if p == mTEPES.p.first() or (mTEPES.p.prev(p,1),gc) not in mTEPES.pgc:
+        if not mTEPES.gc or p == mTEPES.p.first() or (mTEPES.p.prev(p,1),gc) not in mTEPES.pgc:
             return Constraint.Skip
         return OptModel.vGenerationInvest    [mTEPES.p.prev(p,1),gc      ] <= OptModel.vGenerationInvest    [p,gc      ]
     OptModel.eConsecutiveGenInvest = Constraint(mTEPES.pgc, rule=eConsecutiveGenInvest, doc='generation investment in consecutive periods')
 
     def eConsecutiveGenRetire(OptModel,p,gd):
-        if p == mTEPES.p.first() or (mTEPES.p.prev(p,1),gd) not in mTEPES.pgd:
+        if not mTEPES.gd or p == mTEPES.p.first() or (mTEPES.p.prev(p,1),gd) not in mTEPES.pgd:
             return Constraint.Skip
         return OptModel.vGenerationRetire    [mTEPES.p.prev(p,1),gd      ] <= OptModel.vGenerationRetire    [p,gd      ]
     OptModel.eConsecutiveGenRetire = Constraint(mTEPES.pgd, rule=eConsecutiveGenRetire, doc='generation retirement in consecutive periods')
 
     def eConsecutiveNetInvest(OptModel,p,ni,nf,cc):
-        if p == mTEPES.p.first() or (mTEPES.p.prev(p,1),ni,nf,cc) not in mTEPES.plc:
+        if not mTEPES.lc or p == mTEPES.p.first() or (mTEPES.p.prev(p,1),ni,nf,cc) not in mTEPES.plc:
             return Constraint.Skip
         return OptModel.vNetworkInvest       [mTEPES.p.prev(p,1),ni,nf,cc] <= OptModel.vNetworkInvest       [p,ni,nf,cc]
     OptModel.eConsecutiveNetInvest = Constraint(mTEPES.plc, rule=eConsecutiveNetInvest, doc='electric network investment in consecutive periods')
@@ -75,7 +75,7 @@ def InvestmentHydroModelFormulation(OptModel, mTEPES, pIndLogConsole):
     OptModel.eTotalFHydroCost = Constraint(mTEPES.p, rule=eTotalFHydroCost, doc='system fixed hydro cost [MEUR]')
 
     def eConsecutiveRsrInvest(OptModel,p,rc):
-        if p == mTEPES.p.first() or (mTEPES.p.prev(p,1),rc) not in mTEPES.prc:
+        if not mTEPES.rc or p == mTEPES.p.first() or (mTEPES.p.prev(p,1),rc) not in mTEPES.prc:
             return Constraint.Skip
         return OptModel.vReservoirInvest     [mTEPES.p.prev(p,1),rc      ] <= OptModel.vReservoirInvest     [p,rc      ]
     OptModel.eConsecutiveRsrInvest = Constraint(mTEPES.prc, rule=eConsecutiveRsrInvest, doc='reservoir investment in consecutive periods')
@@ -96,7 +96,7 @@ def InvestmentH2ModelFormulation(OptModel, mTEPES, pIndLogConsole):
     OptModel.eTotalFH2Cost = Constraint(mTEPES.p, rule=eTotalFH2Cost, doc='system fixed H2 cost [MEUR]')
 
     def eConsecutiveNetH2Invest(OptModel,p,ni,nf,cc):
-        if p == mTEPES.p.first() or (mTEPES.p.prev(p,1),ni,nf,cc) not in mTEPES.ppc:
+        if not mTEPES.pc or p == mTEPES.p.first() or (mTEPES.p.prev(p,1),ni,nf,cc) not in mTEPES.ppc:
             return Constraint.Skip
         return OptModel.vH2PipeInvest        [mTEPES.p.prev(p,1),ni,nf,cc] <= OptModel.vH2PipeInvest        [p,ni,nf,cc]
     OptModel.eConsecutiveNetH2Invest = Constraint(mTEPES.ppc, rule=eConsecutiveNetH2Invest, doc='H2 pipe network investment in consecutive periods')
@@ -117,7 +117,7 @@ def InvestmentHeatModelFormulation(OptModel, mTEPES, pIndLogConsole):
     OptModel.eTotalFHeatCost = Constraint(mTEPES.p, rule=eTotalFHeatCost, doc='system fixed heat cost [MEUR]')
 
     def eConsecutiveNetHeatInvest(OptModel,p,ni,nf,cc):
-        if p == mTEPES.p.first() or (mTEPES.p.prev(p,1),ni,nf,cc) not in mTEPES.phc:
+        if not mTEPES.hc or p == mTEPES.p.first() or (mTEPES.p.prev(p,1),ni,nf,cc) not in mTEPES.phc:
             return Constraint.Skip
         return OptModel.vHeatPipeInvest     [mTEPES.p.prev(p,1),ni,nf,cc] <= OptModel.vHeatPipeInvest       [p,ni,nf,cc]
     OptModel.eConsecutiveNetHeatInvest = Constraint(mTEPES.phc, rule=eConsecutiveNetHeatInvest, doc='heat pipe network investment in consecutive periods')
