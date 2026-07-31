@@ -38,25 +38,25 @@ def SectorDecomposition(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLog
     pSectorProxyPeriodFile = os.path.join(_path, f'oT_Result_SectorProxyPerPeriod_{CaseName}.csv')
 
     # generators to technology (g2t)
-    g2t = defaultdict(set)
+    g2t = defaultdict(list)
     for gt,g in mTEPES.t2g:
-        g2t[gt].add(g)
+        g2t[gt].append(g)
 
-    n2l = defaultdict(set)
+    n2l = defaultdict(list)
     for nd,el in mTEPES.nd*mTEPES.el:
         if (nd,el) in mTEPES.n2g:
-            n2l[el].add(nd)
+            n2l[el].append(nd)
 
     # area to generators (a2e)
-    a2e = defaultdict(set)
+    a2e = defaultdict(list)
     for ar,el in mTEPES.ar*mTEPES.el:
         if (ar,el) in mTEPES.a2g:
-            a2e[el].add(ar)
+            a2e[el].append(ar)
 
-    e2a = defaultdict(set)
+    e2a = defaultdict(list)
     for ar,el in mTEPES.ar*mTEPES.el:
         if (ar,el) in mTEPES.a2g:
-            e2a[ar].add(el)
+            e2a[ar].append(el)
 
     mMaster = ConcreteModel('Master problem')
     # maximum number of Benders iterations

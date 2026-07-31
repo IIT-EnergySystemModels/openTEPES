@@ -37,41 +37,41 @@ def NetworkHeatOperationResults(DirName, CaseName, OptModel, mTEPES):
     StartTime = time.time()
 
     # incoming and outgoing heat pipes (lin) (lout)
-    lin  = defaultdict(set)
-    lout = defaultdict(set)
+    lin  = defaultdict(list)
+    lout = defaultdict(list)
     for ni,nf,cc in mTEPES.ha:
-        lin [nf].add((ni,cc))
-        lout[ni].add((nf,cc))
+        lin [nf].append((ni,cc))
+        lout[ni].append((nf,cc))
 
     # nodes to CHPs (c2n)
-    c2n = defaultdict(set)
+    c2n = defaultdict(list)
     for nd,ch in mTEPES.nd*mTEPES.ch:
         if (nd,ch) in mTEPES.n2g:
-            c2n[nd].add(ch)
+            c2n[nd].append(ch)
 
     # nodes to heat pumps (h2n)
-    h2n = defaultdict(set)
+    h2n = defaultdict(list)
     for nd,hp in mTEPES.nd*mTEPES.hp:
         if (nd,hp) in mTEPES.n2g:
-            h2n[nd].add(hp)
+            h2n[nd].append(hp)
 
     # nodes to CHPs (chp2n)
-    chp2n = defaultdict(set)
+    chp2n = defaultdict(list)
     for nd,chp in mTEPES.nd*mTEPES.chp:
         if (nd,chp) in mTEPES.n2g:
-            chp2n[nd].add(chp)
+            chp2n[nd].append(chp)
 
     # CHPs to technology (c2t)
-    c2t = defaultdict(set)
+    c2t = defaultdict(list)
     for gt,ch in mTEPES.gt*mTEPES.ch:
         if (gt,ch) in mTEPES.t2g:
-            c2t[gt].add(ch)
+            c2t[gt].append(ch)
 
     # heat pumps to technology (h2t)
-    h2t = defaultdict(set)
+    h2t = defaultdict(list)
     for gt,hp in mTEPES.gt*mTEPES.hp:
         if (gt,hp) in mTEPES.t2g:
-            h2t[gt].add(hp)
+            h2t[gt].append(hp)
 
     sPSNARND   = [(p,sc,n,ar,nd)    for p,sc,n,ar,nd    in mTEPES.psn*mTEPES.arnd if sum(1 for ch in chp2n[nd]) + sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd]) == 0]
     sPSNARNDGT = [(p,sc,n,ar,nd,gt) for p,sc,n,ar,nd,gt in sPSNARND*mTEPES.gt     if sum(1 for ch in c2t[gt] if (p,ch) in mTEPES.pg) + sum(1 for hp in h2t[gt] if (p,hp) in mTEPES.pg)               ]

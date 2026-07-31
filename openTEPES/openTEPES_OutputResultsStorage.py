@@ -29,20 +29,20 @@ def ESSOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutpu
     StartTime = time.time()
 
     # generators to area (e2a)
-    e2a = defaultdict(set)
+    e2a = defaultdict(list)
     for ar,eh in mTEPES.ar*mTEPES.eh:
         if (ar,eh) in mTEPES.a2g:
-            e2a[ar].add(eh)
+            e2a[ar].append(eh)
 
     # technology to generators (e2e) (o2e)
-    e2e = defaultdict(set)
+    e2e = defaultdict(list)
     for et,eh in mTEPES.et*mTEPES.eh:
         if (et,eh) in mTEPES.t2g:
-            e2e[et].add(eh)
-    o2e = defaultdict(set)
+            e2e[et].append(eh)
+    o2e = defaultdict(list)
     for ot,es in mTEPES.ot*mTEPES.es:
         if (ot,es) in mTEPES.t2g:
-            o2e[ot].add(es)
+            o2e[ot].append(es)
 
     OutputToFile = pd.Series(data=[OptModel.vEnergyOutflows[p,sc,n,es]() for p,sc,n,es in mTEPES.psnes], index=mTEPES.psnes)
     OutputToFile *= 1e3
@@ -175,17 +175,17 @@ def ReservoirOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnolog
     StartTime = time.time()
 
     # technology to hydro units (o2h)
-    o2h = defaultdict(set)
+    o2h = defaultdict(list)
     for ht,h in mTEPES.ht*mTEPES.h:
         if (ht,h) in mTEPES.t2g:
-            o2h[ht].add(h)
+            o2h[ht].append(h)
 
     # technology to reservoirs (o2rs): each reservoir is associated with the technology of its downstream hydropower plant, i.e., (rs,h) in r2h
-    o2rs = defaultdict(set)
+    o2rs = defaultdict(list)
     for rs,h in mTEPES.r2h:
         for ht in mTEPES.ht:
             if (ht,h) in mTEPES.t2g and rs not in o2rs[ht]:
-                o2rs[ht].add(rs)
+                o2rs[ht].append(rs)
 
     # tolerance to avoid division by 0
     pEpsilon = 1e-6

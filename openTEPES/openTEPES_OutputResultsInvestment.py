@@ -30,17 +30,17 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutput,
     StartTime = time.time()
 
     # generators to technology (g2t)
-    g2t = defaultdict(set)
+    g2t = defaultdict(list)
     for gt,g in mTEPES.t2g:
-        g2t[gt].add(g)
+        g2t[gt].append(g)
 
     if mTEPES.eb:
 
         # generators to area (g2a)
-        g2a = defaultdict(set)
+        g2a = defaultdict(list)
         for ar,eb in mTEPES.ar*mTEPES.eb:
             if (ar,eb) in mTEPES.a2g:
-                g2a[ar].add(eb)
+                g2a[ar].append(eb)
 
         # tolerance to avoid division by 0
         pEpsilon = 1e-6
@@ -142,10 +142,10 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutput,
     if mTEPES.gd:
 
         # generators to area (g2a)
-        g2a = defaultdict(set)
+        g2a = defaultdict(list)
         for ar,gd in mTEPES.ar*mTEPES.gd:
             if (ar,gd) in mTEPES.a2g:
-                g2a[ar].add(gd)
+                g2a[ar].append(gd)
 
         if pIndTechnologyOutput == 0 or pIndTechnologyOutput == 2:
             # Saving generation retirement
