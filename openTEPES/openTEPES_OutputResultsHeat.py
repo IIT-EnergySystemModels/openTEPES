@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 01, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 29, 2026
 
 Heat network operation results.
 
@@ -37,33 +37,39 @@ def NetworkHeatOperationResults(DirName, CaseName, OptModel, mTEPES):
     StartTime = time.time()
 
     # incoming and outgoing heat pipes (lin) (lout)
-    lin  = defaultdict(set)
-    lout = defaultdict(set)
+    lin  = defaultdict(list)
+    lout = defaultdict(list)
     for ni,nf,cc in mTEPES.ha:
-        lin [nf].add((ni,cc))
-        lout[ni].add((nf,cc))
+        lin [nf].append((ni,cc))
+        lout[ni].append((nf,cc))
 
     # nodes to CHPs (c2n)
     c2n = defaultdict(set)
-    # nodes to heat pumps (h2n)
-    h2n = defaultdict(set)
-    # nodes to CHPs (chp2n)
-    chp2n = defaultdict(set)
     for nd,g in mTEPES.n2g:
         if g in mTEPES.ch:
             c2n[nd].add(g)
+
+    # nodes to heat pumps (h2n)
+    h2n = defaultdict(set)
+    for nd,g in mTEPES.n2g:
         if g in mTEPES.hp:
             h2n[nd].add(g)
+
+    # nodes to CHPs (chp2n)
+    chp2n = defaultdict(set)
+    for nd,g in mTEPES.n2g:
         if g in mTEPES.chp:
             chp2n[nd].add(g)
 
     # CHPs to technology (c2t)
     c2t = defaultdict(set)
-    # heat pumps to technology (h2t)
-    h2t = defaultdict(set)
     for gt,g in mTEPES.t2g:
         if g in mTEPES.ch:
             c2t[gt].add(g)
+
+    # heat pumps to technology (h2t)
+    h2t = defaultdict(set)
+    for gt,g in mTEPES.t2g:
         if g in mTEPES.hp:
             h2t[gt].add(g)
 

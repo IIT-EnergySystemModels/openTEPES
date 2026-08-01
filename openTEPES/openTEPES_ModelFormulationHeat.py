@@ -1,6 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 01, 2026
-
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 29, 2026
 openTEPES.openTEPES_ModelFormulationHeat — heat network operation: power-to-heat conversion, heat balance and heat-not-served cost.
 """
 from __future__ import annotations
@@ -16,17 +15,17 @@ def NetworkHeatOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc
     StartTime = time.time()
 
     # incoming and outgoing pipelines (lin) (lout)
-    lin  = defaultdict(set)
-    lout = defaultdict(set)
+    lin  = defaultdict(list)
+    lout = defaultdict(list)
     for ni,nf,cc in mTEPES.ha:
-        lin [nf].add((ni,cc))
-        lout[ni].add((nf,cc))
+        lin [nf].append((ni,cc))
+        lout[ni].append((nf,cc))
 
     # nodes to CHPs (chp2n)
-    chp2n = defaultdict(set)
-    for nd,g in mTEPES.n2g:
-        if g in mTEPES.chp:
-            chp2n[nd].add(g)
+    chp2n = defaultdict(list)
+    for nd,chp in mTEPES.nd*mTEPES.chp:
+        if (nd,chp) in mTEPES.n2g:
+            chp2n[nd].append(chp)
 
     def eEnergy2Heat(OptModel,n,chp):
         if   (p,chp) in mTEPES.pchp and chp in mTEPES.ch and chp not in mTEPES.bo:

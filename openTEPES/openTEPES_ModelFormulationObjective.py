@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 01, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 30, 2026
 
 openTEPES.openTEPES_ModelFormulationObjective — total-cost objective and the per-stage operation-cost accumulation constraints.
 """
@@ -45,12 +45,9 @@ def GenerationOperationModelFormulationObjFunct(OptModel, mTEPES, pIndLogConsole
 
     StartTime = time.time()
 
-    g2a = defaultdict(set)
+    g2a = defaultdict(list)
     for ar,g in mTEPES.a2g:
-        g2a[ar].add(g)
-
-    nr2a = {ar: [nr for nr in mTEPES.nr if nr in g2a[ar] and (p,nr) in mTEPES.pnr] for ar in mTEPES.ar}
-    bo2a = {ar: [bo for bo in mTEPES.bo if bo in g2a[ar] and (p,bo) in mTEPES.pbo] for ar in mTEPES.ar}
+        g2a[ar].append(g)
 
     def eTotalGCost(OptModel,n):
         return OptModel.vTotalGCost[p,sc,n] == (mTEPES.pLoadLevelDuration[p,sc,n]() * sum(mTEPES.pLinearVarCost  [p,sc,n,nr] * OptModel.vTotalOutput    [p,sc,n,nr]                                              +
@@ -78,6 +75,13 @@ def GenerationOperationModelFormulationObjFunct(OptModel, mTEPES, pIndLogConsole
     setattr(OptModel, f'eTotalECost_{p}_{sc}_{st}', Constraint(mTEPES.n, rule=eTotalECost, doc='system emission cost [MEUR]'))
 
     pIndEmissionArea = {ar: mTEPES.pEmission[p,ar] != math.inf and any(mTEPES.pEmissionRate[g] for g in mTEPES.g if g in g2a[ar] and (p,g) in mTEPES.pg) for ar in mTEPES.ar}
+
+    g2a = defaultdict(set)
+    for ar,g in mTEPES.a2g:
+        g2a[ar].add(g)
+
+    nr2a = {ar: [nr for nr in mTEPES.nr if nr in g2a[ar] and (p,nr) in mTEPES.pnr] for ar in mTEPES.ar}
+    bo2a = {ar: [bo for bo in mTEPES.bo if bo in g2a[ar] and (p,bo) in mTEPES.pbo] for ar in mTEPES.ar}
 
     def eTotalEmissionArea(OptModel,n,ar):
         if not pIndEmissionArea[ar]:
