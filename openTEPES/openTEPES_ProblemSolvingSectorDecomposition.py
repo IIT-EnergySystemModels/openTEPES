@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 29, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 01, 2026
 """
 
 import math
@@ -38,25 +38,22 @@ def SectorDecomposition(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLog
     pSectorProxyPeriodFile = os.path.join(_path, f'oT_Result_SectorProxyPerPeriod_{CaseName}.csv')
 
     # generators to technology (g2t)
-    g2t = defaultdict(list)
+    g2t = defaultdict(set)
     for gt,g in mTEPES.t2g:
-        g2t[gt].append(g)
+        g2t[gt].add(g)
 
-    n2l = defaultdict(list)
-    for nd,el in mTEPES.nd*mTEPES.el:
-        if (nd,el) in mTEPES.n2g:
-            n2l[el].append(nd)
+    n2l = defaultdict(set)
+    for nd,g in mTEPES.n2g:
+        if g in mTEPES.el:
+            n2l[g].add(nd)
 
     # area to generators (a2e)
-    a2e = defaultdict(list)
-    for ar,el in mTEPES.ar*mTEPES.el:
-        if (ar,el) in mTEPES.a2g:
-            a2e[el].append(ar)
-
-    e2a = defaultdict(list)
-    for ar,el in mTEPES.ar*mTEPES.el:
-        if (ar,el) in mTEPES.a2g:
-            e2a[ar].append(el)
+    a2e = defaultdict(set)
+    e2a = defaultdict(set)
+    for ar,g in mTEPES.a2g:
+        if g in mTEPES.el:
+            a2e[g].add(ar)
+            e2a[ar].add(g)
 
     mMaster = ConcreteModel('Master problem')
     # maximum number of Benders iterations
