@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 01, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 30, 2026
 
 openTEPES.openTEPES_SettingUpVariables — creates the decision variables and their bounds, fixes the generators' commitment, relaxes or forbids investment conditions, zeroes out epsilon values, and screens for infeasibilities. Runs after DataConfiguration.
 """
@@ -547,27 +547,31 @@ def SettingUpVariables(OptModel, mTEPES):
         else:
             mTEPES.go = Set(initialize=[g for g in sorted(mTEPES.pRatedLinearVarCost, key=mTEPES.pRatedLinearVarCost.__getitem__) if g not in mTEPES.h])
 
-    g2a = defaultdict(set)
-    n2a = defaultdict(set)
-    a2n = defaultdict(set)
-    e2a = defaultdict(set)
-    a2e = defaultdict(set)
-    o2a = defaultdict(set)
+    g2a = defaultdict(list)
     for ar,g in mTEPES.a2g:
-        g2a[ar].add(g)
-        if g in mTEPES.nr:
-            n2a[ar].add(g)
-            a2n[g].add(ar)
-        if g in mTEPES.es:
-            e2a[ar].add(g)
-            a2e[g].add(ar)
-        if g in mTEPES.go:
-            o2a[ar].add(g)
+        g2a[ar].append(g)
+    n2a = defaultdict(list)
+    a2n = defaultdict(list)
+    for ar,nr in mTEPES.ar*mTEPES.nr:
+        if (ar,nr) in mTEPES.a2g:
+            n2a[ar].append(nr)
+            a2n[nr].append(ar)
+    e2a = defaultdict(list)
+    a2e = defaultdict(list)
+    for ar,es in mTEPES.ar*mTEPES.es:
+        if (ar,es) in mTEPES.a2g:
+            e2a[ar].append(es)
+            a2e[es].append(ar)
+    o2a = defaultdict(list)
+    for ar,go in mTEPES.ar*mTEPES.go:
+        if (ar,go) in mTEPES.a2g:
+            o2a[ar].append(go)
 
     # nodes to area (d2a)
-    d2a = defaultdict(set)
-    for nd,ar in mTEPES.ndar:
-        d2a[ar].add(nd)
+    d2a = defaultdict(list)
+    for ar,nd in mTEPES.ar*mTEPES.nd:
+        if (nd,ar) in mTEPES.ndar:
+            d2a[ar].append(nd)
 
     for p,sc,st in mTEPES.ps*mTEPES.stt:
         # activate only period, scenario, and load levels to formulate
@@ -738,31 +742,38 @@ def SettingUpVariables(OptModel, mTEPES):
             nFixedVariables += 1
 
     # incoming and outgoing lines (lin) (lout) and lines with losses (linl) (loutl)
-    lin   = defaultdict(set)
-    lout  = defaultdict(set)
+    lin   = defaultdict(list)
+    lout  = defaultdict(list)
     for ni,nf,cc in mTEPES.la:
-        lin  [nf].add((ni,cc))
-        lout [ni].add((nf,cc))
+        lin  [nf].append((ni,cc))
+        lout [ni].append((nf,cc))
 
     # nodes to generators (g2n)
-    g2n = defaultdict(set)
-    e2n = defaultdict(set)
-    # nodes to electrolyzers (l2n)
-    l2n = defaultdict(set)
-    # nodes to fuel heaters using H2 (b2n)
-    b2n = defaultdict(set)
-    # nodes to CHPs (chp2n)
-    chp2n = defaultdict(set)
+    g2n = defaultdict(list)
     for nd,g in mTEPES.n2g:
-        g2n[nd].add(g)
-        if g in mTEPES.eh:
-            e2n[nd].add(g)
-        if g in mTEPES.el:
-            l2n[nd].add(g)
-        if g in mTEPES.hh:
-            b2n[nd].add(g)
-        if g in mTEPES.chp:
-            chp2n[nd].add(g)
+        g2n[nd].append(g)
+    e2n = defaultdict(list)
+    for nd,eh in mTEPES.nd*mTEPES.eh:
+        if (nd,eh) in mTEPES.n2g:
+            e2n[nd].append(eh)
+
+    # nodes to electrolyzers (l2n)
+    l2n = defaultdict(list)
+    for nd,el in mTEPES.nd*mTEPES.el:
+        if (nd,el) in mTEPES.n2g:
+            l2n[nd].append(el)
+
+    # nodes to fuel heaters using H2 (b2n)
+    b2n = defaultdict(list)
+    for nd,hh in mTEPES.nd*mTEPES.hh:
+        if (nd,hh) in mTEPES.n2g:
+            b2n[nd].append(hh)
+
+    # nodes to CHPs (chp2n)
+    chp2n = defaultdict(list)
+    for nd,chp in mTEPES.nd*mTEPES.chp:
+        if (nd,chp) in mTEPES.n2g:
+            chp2n[nd].append(chp)
 
     # fixing the ENS in nodes with no demand
     for p,sc,n,nd in mTEPES.psnnd:
