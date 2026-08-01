@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 24, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 01, 2026
 
 openTEPES.openTEPES_DataConfiguration — builds the derived sets and parameters on the model: instrumental sets, ESS/RES sets, and the flag-driven branches (hydro topology, hydrogen, heat, PTDF). Runs after InputData has read the raw sets and parameters.
 """
@@ -372,9 +372,9 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
 
     mTEPES.t2g = Set(initialize=par['pTechnologyToGen'].index, doc='technology to generator')
 
-    g2t = defaultdict(list)
+    g2t = defaultdict(set)
     for gt,g in mTEPES.t2g:
-        g2t[gt].append(g)
+        g2t[gt].add(g)
 
     # ESS and RES technologies
     def Create_ESS_RES_Sets(mTEPES) -> None:
@@ -648,27 +648,25 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
         par['pVariablePTDF']    = par['pVariablePTDF'].loc    [mTEPES.psn]
 
     # generators to area (g2a) (e2a) (n2a)
-    g2a = defaultdict(list)
-    for ar,g  in mTEPES.a2g:
-        g2a[ar].append(g )
-    e2a = defaultdict(list)
-    for ar,es in mTEPES.ar*mTEPES.es:
-        if (ar,es) in mTEPES.a2g:
-            e2a[ar].append(es)
-    r2a = defaultdict(list)
+    g2a = defaultdict(set)
+    e2a = defaultdict(set)
+    n2a = defaultdict(set)
+    for ar,g in mTEPES.a2g:
+        g2a[ar].add(g)
+        if g in mTEPES.es:
+            e2a[ar].add(g)
+        if g in mTEPES.nr:
+            n2a[ar].add(g)
+    r2a = defaultdict(set)
     for ar,rs in mTEPES.ar*mTEPES.rs:
         for h in mTEPES.h:
             if (ar,h) in mTEPES.a2g and ((rs,h) in mTEPES.r2h or (h,rs) in mTEPES.h2r or (rs,h) in mTEPES.r2p or (h,rs) in mTEPES.p2r) and rs not in r2a[ar]:
-                r2a[ar].append(rs)
-    n2a = defaultdict(list)
-    for ar,nr in mTEPES.ar*mTEPES.nr:
-        if (ar,nr) in mTEPES.a2g:
-            n2a[ar].append(nr)
+                r2a[ar].add(rs)
 
     # nodes to area (d2a)
-    d2a = defaultdict(list)
+    d2a = defaultdict(set)
     for nd,ar in mTEPES.ndar:
-        d2a[ar].append(nd)
+        d2a[ar].add(nd)
 
     # small values are converted to 0
     for p,ar in mTEPES.par:
