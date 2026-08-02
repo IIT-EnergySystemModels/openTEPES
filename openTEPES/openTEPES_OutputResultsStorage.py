@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 31, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 02, 2026
 
 Energy-storage and reservoir operation results.
 
@@ -33,13 +33,12 @@ def ESSOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutpu
 
     # technology to generators (e2e) (o2e)
     e2e = defaultdict(set)
-    for et,g in mTEPES.t2g:
-        if g in mTEPES.eh:
-            e2e[et].add(g)
     o2e = defaultdict(set)
-    for ot,g in mTEPES.t2g:
+    for gt,g in mTEPES.t2g:
+        if g in mTEPES.eh:
+            e2e[gt].add(g)
         if g in mTEPES.es:
-            o2e[ot].add(g)
+            o2e[gt].add(g)
 
     OutputToFile = pd.Series(data=[OptModel.vEnergyOutflows[p,sc,n,es]() for p,sc,n,es in mTEPES.psnes], index=mTEPES.psnes)
     OutputToFile *= 1e3

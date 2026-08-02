@@ -3,10 +3,8 @@ Open Generation, Storage, and Transmission Operation and Expansion Planning Mode
 
 Heat network operation results.
 
-This module writes the operation of the heat pipe network: nodal balances per
-technology, node, and area, pipe flows, utilization, and not-served heat, plus
-a Plotly map of the network. The ``oT_selecting_data`` helper stays nested in
-the function because it builds the heat node and line frame (``pha``). The
+This module writes the operation of the heat pipe network: nodal balances per technology, node, and area, pipe flows, utilization, and not-served heat, plus
+a Plotly map of the network. The ``oT_selecting_data`` helper stays nested in the function because it builds the heat node and line frame (``pha``). The
 shared flow-series and snapshot-selection helpers live in
 ``openTEPES_OutputResultsMapCommon``.
 """

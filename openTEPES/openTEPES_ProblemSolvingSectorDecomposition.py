@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 01, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 02, 2026
 """
 
 import math
@@ -52,8 +52,7 @@ def SectorDecomposition(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLog
     e2a = defaultdict(set)
     for ar,g in mTEPES.a2g:
         if g in mTEPES.el:
-            a2e[g].add(ar)
-            e2a[ar].add(g)
+            a2e[g].add(ar); e2a[ar].add(g)
 
     mMaster = ConcreteModel('Master problem')
     # maximum number of Benders iterations

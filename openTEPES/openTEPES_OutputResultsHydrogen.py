@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 31, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 02, 2026
 
 Hydrogen network operation results.
 
@@ -44,25 +44,21 @@ def NetworkH2OperationResults(DirName, CaseName, OptModel, mTEPES):
 
     # nodes to electrolyzers (l2n)
     l2n = defaultdict(set)
-    for nd,el in mTEPES.nd*mTEPES.el:
-        if (nd,el) in mTEPES.n2g:
-            l2n[nd].add(el)
-
     # nodes to fuel heaters using H2 (b2n)
     b2n = defaultdict(set)
     for nd,g in mTEPES.n2g:
+        if g in mTEPES.el:
+            l2n[nd].add(g)
         if g in mTEPES.hh:
             b2n[nd].add(g)
 
+    g2t = defaultdict(set)
     # electrolyzers to technology (e2t)
     e2t = defaultdict(set)
     for gt,g in mTEPES.t2g:
+        g2t[gt].add(g)
         if g in mTEPES.el:
             e2t[gt].add(g)
-
-    g2t = defaultdict(set)
-    for gt,g in mTEPES.t2g:
-        g2t[gt].add(g)
 
     sPSNARND   = [(p,sc,n,ar,nd)    for p,sc,n,ar,nd    in mTEPES.psn*mTEPES.arnd if sum(1 for el in l2n[nd]) + sum(1 for hh in b2n[nd]) + sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd])]
     sPSNARNDGT = [(p,sc,n,ar,nd,gt) for p,sc,n,ar,nd,gt in sPSNARND*mTEPES.gt     if sum(1 for el in e2t[gt] if (p,el) in mTEPES.pg) + sum(1 for hh in g2t[gt] if (p,hh) in mTEPES.phh)              ]

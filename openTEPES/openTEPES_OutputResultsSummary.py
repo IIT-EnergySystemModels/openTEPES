@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 31, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 02, 2026
 
 System summary, flexibility, and reliability results.
 
@@ -233,16 +233,14 @@ def FlexibilityResults(DirName, CaseName, OptModel, mTEPES):
 
     # generators to technology (o2e)
     o2e = defaultdict(set)
-    for ot,g in mTEPES.t2g:
-        if g in mTEPES.es:
-            o2e[ot].add(g)
     e2e = defaultdict(set)
-    for et,g in mTEPES.t2g:
-        if g in mTEPES.eh:
-            e2e[et].add(g)
     g2t = defaultdict(set)
     for gt,g in mTEPES.t2g:
         g2t[gt].add(g)
+        if g in mTEPES.es:
+            o2e[gt].add(g)
+        if g in mTEPES.eh:
+            e2e[gt].add(g)
 
     # nodes to area (d2a)
     d2a = defaultdict(set)
@@ -295,9 +293,9 @@ def ReliabilityResults(DirName, CaseName, OptModel, mTEPES):
     StartTime = time.time()
 
     r2r = defaultdict(set)
-    for rt,re in mTEPES.rt*mTEPES.re:
-        if (rt,re) in mTEPES.t2g:
-            r2r[rt].add(re)
+    for gt,g in mTEPES.t2g:
+        if g in mTEPES.re:
+            r2r[gt].add(g)
 
     pDemandElec    = pd.Series(data=[mTEPES.pDemandElec[p,sc,n,nd]() for p,sc,n,nd in mTEPES.psnnd ], index=mTEPES.psnnd).sort_index()
     ExistCapacity  = [(p,sc,n,g) for p,sc,n,g in mTEPES.psng if g not in mTEPES.gc]

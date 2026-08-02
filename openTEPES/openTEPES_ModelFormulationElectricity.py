@@ -48,11 +48,9 @@ def GenerationOperationModelFormulationDemand(OptModel, mTEPES, pIndLogConsole, 
     a2n = defaultdict(set)
     for ar,g in mTEPES.a2g:
         if g in mTEPES.eh:
-            e2a[ar].add(g)
-            a2e[g].add(ar)
+            e2a[ar].add(g); a2e[g].add(ar)
         if g in mTEPES.nr:
-            n2a[ar].add(g)
-            a2n[g].add(ar)
+            n2a[ar].add(g); a2n[g].add(ar)
 
     def eSystemInertia(OptModel,n,ar):
         if mTEPES.pSystemInertia[p,sc,n,ar] == 0.0 or sum(1 for nr in n2a[ar] if (p,nr) in mTEPES.pnr) == 0:
