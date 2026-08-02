@@ -274,9 +274,10 @@ def CostSummaryResults(DirName, CaseName, OptModel, mTEPES):
     else:
         HeatRelCost = pd.Series(data=[0.0                                                                                                            for p in mTEPES.p], index=mTEPES.p).to_frame(name='Reliability Cost Heat'     ).stack()
     CostSummary    = pd.concat([GenInvCost, GenRetCost, NetInvCost, RsrInvCost, H2InvCost, HeatInvCost, GenCost, ConCost, EmiCost, NetCost, ElecRelCost, H2RelCost, HeatRelCost]).reset_index().rename(columns={'level_0': 'Period', 'level_1': 'Cost', 0: 'MEUR'})
-    CostSummary['MEUR/year'] = CostSummary['MEUR'] / CostSummary['Period'].map(lambda p: mTEPES.pDiscountedWeight[p])
-    w = OutputResults.apply(lambda r: mTEPES.pDiscountedWeight[r['Period']] * mTEPES.pScenProb[r['Period'], r['Scenario']](), axis=1)
-    OutputResults['MEUR/year'] = OutputResults['MEUR'] / w
+
+    CostSummary['MEUR/year'] = CostSummary['MEUR']
+    for p in mTEPES.p:
+        CostSummary.loc[CostSummary['Period'] == p, 'MEUR/year'] = CostSummary.loc[CostSummary['Period'] == p, 'MEUR'] / mTEPES.pDiscountedWeight[p]
     CostSummary.oT.write(f'{_path}/oT_Result_CostSummary_{CaseName}.csv', sep=',', index=False)
 
     # DemPayment   = pd.Series(data=[sum(pScenFactor     [p,sc] * mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pDemandElec[p,sc,n,nd]() * OptModel.LSRMC            [p,sc,n,nd] for sc,n,nd in mTEPES.sc*mTEPES.n*mTEPES.nd if (p,sc) in mTEPES.ps )/1e3 for p in mTEPES.p], index=mTEPES.p).to_frame(name='Demand Payment'            ).stack()
