@@ -548,20 +548,17 @@ def SettingUpVariables(OptModel, mTEPES):
             mTEPES.go = Set(initialize=[g for g in sorted(mTEPES.pRatedLinearVarCost, key=mTEPES.pRatedLinearVarCost.__getitem__) if g not in mTEPES.h])
 
     g2a = defaultdict(list)
-    for ar,g in mTEPES.a2g:
-        g2a[ar].append(g)
     n2a = defaultdict(list)
     a2n = defaultdict(list)
-    for ar,nr in mTEPES.ar*mTEPES.nr:
-        if (ar,nr) in mTEPES.a2g:
-            n2a[ar].append(nr)
-            a2n[nr].append(ar)
     e2a = defaultdict(list)
     a2e = defaultdict(list)
-    for ar,es in mTEPES.ar*mTEPES.es:
-        if (ar,es) in mTEPES.a2g:
-            e2a[ar].append(es)
-            a2e[es].append(ar)
+    for ar,g in mTEPES.a2g:
+        g2a[ar].append(g)
+        if g in mTEPES.nr:
+            n2a[ar].append(g); a2n[g].append(ar)
+        if g in mTEPES.es:
+            e2a[ar].append(g); a2e[g].append(ar)
+
     o2a = defaultdict(list)
     for ar,go in mTEPES.ar*mTEPES.go:
         if (ar,go) in mTEPES.a2g:
@@ -569,9 +566,8 @@ def SettingUpVariables(OptModel, mTEPES):
 
     # nodes to area (d2a)
     d2a = defaultdict(list)
-    for ar,nd in mTEPES.ar*mTEPES.nd:
-        if (nd,ar) in mTEPES.ndar:
-            d2a[ar].append(nd)
+    for nd,ar in mTEPES.ndar:
+        d2a[ar].append(nd)
 
     for p,sc,st in mTEPES.ps*mTEPES.stt:
         # activate only period, scenario, and load levels to formulate
