@@ -472,8 +472,8 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput, pIndPlo
     OutputResults12 = pd.Series(data=[ OptModel.vTotalOutput    [p,sc,n,g]()*mTEPES.pLoadLevelDuration[p,sc,n]()*mTEPES.pEmissionRate[g]/1e3                                         if g not in mTEPES.bo else
                                        OptModel.vTotalOutputHeat[p,sc,n,g]()*mTEPES.pLoadLevelDuration[p,sc,n]()*mTEPES.pEmissionRate[g]/1e3                                                                    for p,sc,n,ar,nd,g in sPSNARNDG], index=pd.Index(sPSNARNDG))
 
-    OutputResults11 = OutputResults11.droplevel(-1)
-    OutputResults12 = OutputResults12.droplevel(-1)
+    OutputResults11.index = [idx[:6] for idx in OutputResults11.index]
+    OutputResults12.index = [idx[:6] for idx in OutputResults12.index]
 
     MarketResultsGen *= 1e3
     if MarketResultsGen.columns.duplicated().any():
