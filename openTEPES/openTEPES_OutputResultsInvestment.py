@@ -149,16 +149,17 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutput,
             if g in mTEPES.gd:
                 g2a[ar].add(g)
 
+        # Saving generation retirement
+        OutputToFile = pd.Series(data=[OptModel.vGenerationRetire[p,gd]()                                                               for p,gd in mTEPES.pgd], index=mTEPES.pgd)
+        OutputToFile = OutputToFile.fillna(0).to_frame(name='RetirementDecision').reset_index().rename(columns={'level_0': 'Period', 'level_1': 'Generator'})
         if pIndUnitOutput:
-            # Saving generation retirement
-            OutputToFile = pd.Series(data=[OptModel.vGenerationRetire[p,gd]()                                                               for p,gd in mTEPES.pgd], index=mTEPES.pgd)
-            OutputToFile = OutputToFile.fillna(0).to_frame(name='RetirementDecision').reset_index().rename(columns={'level_0': 'Period', 'level_1': 'Generator'})
             OutputToFile.pivot_table(index=['Period'], columns=['Generator'], values='RetirementDecision').rename_axis(['Period'], axis=0).oT.write(f'{_path}/oT_Result_GenerationRetirementPerUnit_{CaseName}.csv', index=True, sep=',')
-            OutputToFile = pd.Series(data=[OptModel.vGenerationRetire[p,gd]()*max(mTEPES.pRatedMaxPowerElec[gd],mTEPES.pRatedMaxCharge[gd]) for p,gd in mTEPES.pgd], index=mTEPES.pgd)
-            OutputToFile *= 1e3
-            OutputToFile = OutputToFile.fillna(0).to_frame(name='MW'                ).reset_index().rename(columns={'level_0': 'Period', 'level_1': 'Generator'})
+        OutputToFile = pd.Series(data=[OptModel.vGenerationRetire[p,gd]()*max(mTEPES.pRatedMaxPowerElec[gd],mTEPES.pRatedMaxCharge[gd]) for p,gd in mTEPES.pgd], index=mTEPES.pgd)
+        OutputToFile *= 1e3
+        OutputToFile = OutputToFile.fillna(0).to_frame(name='MW'                ).reset_index().rename(columns={'level_0': 'Period', 'level_1': 'Generator'})
+        if pIndUnitOutput:
             OutputToFile.pivot_table(index=['Period'], columns=['Generator'], values='MW').rename_axis(['Period'], axis=0).oT.write(f'{_path}/oT_Result_GenerationRetirement_{CaseName}.csv', index=True, sep=',')
-            OutputToFile = OutputToFile.set_index(['Period', 'Generator'])
+        OutputToFile = OutputToFile.set_index(['Period', 'Generator'])
 
         if sum(1 for ar in mTEPES.ar if sum(1 for g in g2a[ar])) > 1:
             if pIndPlotOutput:
@@ -181,7 +182,7 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutput,
             OutputResults.index.names = ['Period', 'Generator']
             OutputResults  = OutputResults.reset_index().groupby(['Period', 'Technology']).sum(numeric_only=True)
             OutputResults['MW'] = round(OutputResults['MW'], 2)
-            OutputResults.reset_index().pivot_table(index=['Period'], columns=['Technology'], values='MW').rename_axis([None], axis=0).oT.write(f'{_path}/oT_Result_TechnologyRetirement_{CaseName}.csv', sep=',', index=False)
+            OutputResults.reset_index().pivot_table(index=['Period'], columns=['Technology'], values='MW').rename_axis(['Period'], axis=0).oT.write(f'{_path}/oT_Result_TechnologyRetirement_{CaseName}.csv', index=True, sep=',')
 
             if pIndPlotOutput:
                 chart = alt.Chart(OutputResults.reset_index()).mark_bar().encode(x='Technology:O', y='sum(MW):Q', color='Technology:N', column='Period:N').properties(width=600, height=400)
