@@ -204,13 +204,11 @@ def OutputResultsParVarCon(DirName, CaseName, OptModel, mTEPES):
     #     OptModel = pickle.load(f)
     # output parameters, variables, and constraints
 
-    # dump_folder = f'{_path}/CaseDumpFolder_{CaseName}_'+str(datetime.datetime.now().strftime('%Y%m%d'))+f'/'
-    dump_folder = os.path.join(DirName, CaseName, f'CaseDumpFolder_{CaseName}_'+str(datetime.datetime.now().strftime('%Y%m%d')))
-    if not os.path.exists(dump_folder):
-        os.makedirs(dump_folder)
-    DateName = str(datetime.datetime.now().strftime('%Y%m%d'))
+    DateName    = str(datetime.datetime.now().strftime('%Y%m%d'))
+    dump_folder = os.path.join(_path, f'CaseDumpFolder_{CaseName}_{DateName}')
+    os.makedirs(dump_folder, exist_ok=True)
 
-    write_model_to_db(OptModel, f'{_path}/CaseDumpFolder_{CaseName}_{DateName}/oT_Case_{CaseName}.duckdb')
+    write_model_to_db(OptModel, os.path.join(dump_folder, f'oT_Case_{CaseName}.duckdb'))
 
     # Extract and write parameters from the case
     # with open(f'{_path}/CaseDumpFolder_{CaseName}_{DateName}/oT_Case_{CaseName}_Parameters.csv', 'w', newline='') as csvfile:
