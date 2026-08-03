@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 31, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 03, 2026
 
 openTEPES.openTEPES_ModelFormulationInvestment — investment variables and constraints (electricity, hydro, H2, heat) plus the installed-capacity, adequacy-reserve-margin and emission / RES-energy limits.
 """
@@ -75,7 +75,7 @@ def InvestmentHydroModelFormulation(OptModel, mTEPES, pIndLogConsole):
     OptModel.eTotalFHydroCost = Constraint(mTEPES.p, rule=eTotalFHydroCost, doc='system fixed hydro cost [MEUR]')
 
     def eConsecutiveRsrInvest(OptModel,p,rc):
-        if not mTEPES.rc or p == mTEPES.p.first() or (mTEPES.p.prev(p,1),rc) not in mTEPES.prc:
+        if not mTEPES.rn or p == mTEPES.p.first() or (mTEPES.p.prev(p,1),rc) not in mTEPES.prc:
             return Constraint.Skip
         return OptModel.vReservoirInvest     [mTEPES.p.prev(p,1),rc      ] <= OptModel.vReservoirInvest     [p,rc      ]
     OptModel.eConsecutiveRsrInvest = Constraint(mTEPES.prc, rule=eConsecutiveRsrInvest, doc='reservoir investment in consecutive periods')
@@ -140,7 +140,7 @@ def GenerationOperationElecModelFormulationInvestment(OptModel, mTEPES, pIndLogC
         g2a[ar].add(g)
 
     def eInstallGenComm(OptModel,n,gc):
-        if gc in mTEPES.es or gc in mTEPES.bc or gc not in mTEPES.nr or (p,gc) not in mTEPES.pgc or (mTEPES.pMinPowerElec[p,sc,n,gc] == 0.0 and mTEPES.pConstantVarCost[p,sc,n,gc] == 0.0):
+        if gc in mTEPES.eh or gc in mTEPES.bc or gc not in mTEPES.nr or (p,gc) not in mTEPES.pgc or (mTEPES.pMinPowerElec[p,sc,n,gc] == 0.0 and mTEPES.pConstantVarCost[p,sc,n,gc] == 0.0):
             return Constraint.Skip
         if mTEPES.pMustRun[gc] == 0:
             return OptModel.vCommitment[p,sc,n,gc] <= OptModel.vGenerationInvest[p,gc]
@@ -211,7 +211,7 @@ def GenerationOperationElecModelFormulationInvestment(OptModel, mTEPES, pIndLogC
         print('eAdeqReserveMarginElec    ... ', len(getattr(OptModel, f'eAdequacyReserveMarginElec_{p}_{sc}_{st}')), ' rows')
 
     def eMaxSystemEmission(OptModel,ar):
-        if math.isinf(mTEPES.pEmission[p,ar]) or st != mTEPES.Last_st or sum(mTEPES.pEmissionRate[nr] for nr in mTEPES.nr if nr in g2a[ar]) == 0.0:
+        if math.isinf(mTEPES.pEmission[p,ar]) or st != mTEPES.Last_st or sum(mTEPES.pEmissionRate[g] for g in mTEPES.g if g in g2a[ar] and (g in mTEPES.nr or g in mTEPES.bo)) == 0.0:
             return Constraint.Skip
         # There is an emission limit, there are generators with emissions in the Area and it is the last stage
         return sum(OptModel.vTotalEmissionArea[p,sc,na,ar] for na in mTEPES.na) <= mTEPES.pEmission[p,ar]
