@@ -3,11 +3,8 @@ Open Generation, Storage, and Transmission Operation and Expansion Planning Mode
 
 Shared helpers for the network-map plots.
 
-The hydrogen, heat, and electricity network maps each build a flow series and
-each pick a single (period, scenario, load level) snapshot to draw. Those two
-steps were identical across the three maps, so they live here. The rest of
-each map (node and edge styling, demand and capacity scaling) is sector
-specific and stays in its own module.
+The hydrogen, heat, and electricity network maps each build a flow series and each pick a single (period, scenario, load level) snapshot to draw. Those two
+steps were identical across the three maps, so they live here. The rest of each map (node and edge styling, demand and capacity scaling) is sector specific and stays in its own module.
 """
 
 import pandas as pd

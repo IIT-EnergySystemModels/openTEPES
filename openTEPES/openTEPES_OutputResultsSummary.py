@@ -3,10 +3,8 @@ Open Generation, Storage, and Transmission Operation and Expansion Planning Mode
 
 System summary, flexibility, and reliability results.
 
-This module writes the headline system indicators: summary KPIs and levelized
-costs (OperationSummaryResults), flexibility measures by technology, storage,
-demand, and network (FlexibilityResults), and the reliability indexes -- net
-demand, reserve margin, and largest unit (ReliabilityResults).
+This module writes the headline system indicators: summary KPIs and levelized costs (OperationSummaryResults), flexibility measures by technology, storage,
+demand, and network (FlexibilityResults), and the reliability indexes -- net demand, reserve margin, and largest unit (ReliabilityResults).
 """
 
 import time

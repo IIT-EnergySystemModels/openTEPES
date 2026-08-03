@@ -3,12 +3,9 @@ Open Generation, Storage, and Transmission Operation and Expansion Planning Mode
 
 Hydrogen network operation results.
 
-This module writes the operation of the hydrogen pipeline network: nodal
-balances per technology, node, and area, pipe flows, utilization, and
-not-served hydrogen, plus a Plotly map of the network. The ``oT_selecting_data``
-helper stays nested in the function because it builds the hydrogen node and
-line frame (``ppa``). The shared flow-series and snapshot-selection helpers
-live in ``openTEPES_OutputResultsMapCommon``.
+This module writes the operation of the hydrogen pipeline network: nodal balances per technology, node, and area, pipe flows, utilization, and
+not-served hydrogen, plus a Plotly map of the network. The ``oT_selecting_data`` helper stays nested in the function because it builds the hydrogen node and
+line frame (``ppa``). The shared flow-series and snapshot-selection helpers live in ``openTEPES_OutputResultsMapCommon``.
 """
 
 import time

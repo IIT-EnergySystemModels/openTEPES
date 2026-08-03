@@ -5,8 +5,7 @@ Marginal, cost-summary, and economic results.
 
 This module writes the price and money side of the solution: locational short-run marginal costs (electricity, hydrogen, heat), reserve-margin, emission, and
 RES-energy marginals, and water values (MarginalResults); the system cost breakdown by period (CostSummaryResults); and the full economic report -- energy
-balances, market results, operation costs, revenues, and per-generator cost recovery (EconomicResults). These functions read the dual values stored in
-``mTEPES.pDuals``.
+balances, market results, operation costs, revenues, and per-generator cost recovery (EconomicResults). These functions read the dual values stored in ``mTEPES.pDuals``.
 """
 
 import time
