@@ -94,7 +94,7 @@ def ESSOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutpu
         if sum(1 for ar in mTEPES.ar if sum(1 for eh in e2a[ar])) > 1:
             if pIndAreaOutput:
                 for ar in mTEPES.ar:
-                    if sum(1 for eh in e2a[ar] if eh in e2e[et]):
+                    if sum(1 for eh in e2a[ar]):
                         sPSNET = [(p,sc,n,et) for p,sc,n,et in mTEPES.psnet if sum(1 for eh in e2a[ar] if (p,sc,n,eh) in mTEPES.psnehc and eh in e2e[et])]
                         if sPSNET:
                             OutputToFile = pd.Series(data=[sum(-OptModel.vESSTotalCharge[p,sc,n,eh]() * mTEPES.pLoadLevelDuration[p,sc,n]() for eh in e2a[ar] if (p,sc,n,eh) in mTEPES.psnehc and eh in e2e[et]) for p,sc,n,et in sPSNET], index=pd.Index(sPSNET))
