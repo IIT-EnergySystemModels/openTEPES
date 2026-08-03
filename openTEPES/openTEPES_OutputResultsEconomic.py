@@ -517,13 +517,13 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput, pIndPlo
         if pIndAreaOutput:
             for ar in mTEPES.ar:
                 if len(g2a[ar]):
-                    OutputResults1 = pd.DataFrame(data={'MEUR': [0.0]}, index=pd.Index([(p,sc,'Operation Cost Generation'         ) for p,sc in mTEPES.ps]))
-                    OutputResults2 = pd.DataFrame(data={'MEUR': [0.0]}, index=pd.Index([(p,sc,'Operating Reserve Cost Generation' ) for p,sc in mTEPES.ps]))
-                    OutputResults3 = pd.DataFrame(data={'MEUR': [0.0]}, index=pd.Index([(p,sc,'O&M Cost Generation'               ) for p,sc in mTEPES.ps]))
-                    OutputResults4 = pd.DataFrame(data={'MEUR': [0.0]}, index=pd.Index([(p,sc,'Operation Cost Consumption'        ) for p,sc in mTEPES.ps]))
-                    OutputResults5 = pd.DataFrame(data={'MEUR': [0.0]}, index=pd.Index([(p,sc,'Operating Reserve Cost Consumption') for p,sc in mTEPES.ps]))
-                    OutputResults6 = pd.DataFrame(data={'MEUR': [0.0]}, index=pd.Index([(p,sc,'Emission Cost'                     ) for p,sc in mTEPES.ps]))
-                    OutputResults7 = pd.DataFrame(data={'MEUR': [0.0]}, index=pd.Index([(p,sc,'Reliability Cost'                  ) for p,sc in mTEPES.ps]))
+                    OutputResults1 = pd.DataFrame(data={'MEUR': 0.0}, index=pd.Index([(p,sc,'Operation Cost Generation'         ) for p,sc in mTEPES.ps]))
+                    OutputResults2 = pd.DataFrame(data={'MEUR': 0.0}, index=pd.Index([(p,sc,'Operating Reserve Cost Generation' ) for p,sc in mTEPES.ps]))
+                    OutputResults3 = pd.DataFrame(data={'MEUR': 0.0}, index=pd.Index([(p,sc,'O&M Cost Generation'               ) for p,sc in mTEPES.ps]))
+                    OutputResults4 = pd.DataFrame(data={'MEUR': 0.0}, index=pd.Index([(p,sc,'Operation Cost Consumption'        ) for p,sc in mTEPES.ps]))
+                    OutputResults5 = pd.DataFrame(data={'MEUR': 0.0}, index=pd.Index([(p,sc,'Operating Reserve Cost Consumption') for p,sc in mTEPES.ps]))
+                    OutputResults6 = pd.DataFrame(data={'MEUR': 0.0}, index=pd.Index([(p,sc,'Emission Cost'                     ) for p,sc in mTEPES.ps]))
+                    OutputResults7 = pd.DataFrame(data={'MEUR': 0.0}, index=pd.Index([(p,sc,'Reliability Cost'                  ) for p,sc in mTEPES.ps]))
 
                     if mTEPES.nr:
                         sPSNNR = [(p,sc,n,nr) for p,sc,n,nr in mTEPES.psnnr if nr in n2a[ar]]
@@ -603,8 +603,8 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput, pIndPlo
             OutputResults.to_frame(name='EUR/MWh').reset_index().pivot_table(index=['level_0','level_1','level_3'], columns='level_5', values='EUR/MWh').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_ConsumptionCapturedSRMC_{CaseName}.csv', sep=',')
 
         if mTEPES.gc:
-            GenRev    = []
-            ChargeRev = []
+            GenRev    = pd.Series(data=[0.0 for gc in mTEPES.gc], index=mTEPES.gc, dtype='float64')
+            ChargeRev = pd.Series(data=[0.0 for gc in mTEPES.gc], index=mTEPES.gc, dtype='float64')
             sPSSTNNDGC1            = [(p,sc,st,n,nd,gc) for p,sc,st,n,nd,gc in mTEPES.s2n*mTEPES.n2g if (p,sc,n,gc) in mTEPES.psngc]
             OutputToGenRev         = pd.Series(data=[mTEPES.pDuals[f"eBalanceElec_{p}_{sc}_{st}('{n}', '{nd}')"]/mTEPES.pPeriodProb[p,sc]()/mTEPES.pLoadLevelDuration[p,sc,n]()*OptModel.vTotalOutput   [p,sc,n,gc]() for p,sc,st,n,nd,gc in sPSSTNNDGC1], index=pd.Index(sPSSTNNDGC1))
             GenRev.append(OutputToGenRev)
