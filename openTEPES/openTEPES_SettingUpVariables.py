@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 02, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 03, 2026
 
 openTEPES.openTEPES_SettingUpVariables — creates the decision variables and their bounds, fixes the generators' commitment, relaxes or forbids investment conditions, zeroes out epsilon values, and screens for infeasibilities. Runs after DataConfiguration.
 """
@@ -122,9 +122,9 @@ def SettingUpVariables(OptModel, mTEPES):
 
         if mTEPES.pIndHeat:
             if mTEPES.pIndBinNetHeatInvest() != 1:
-                OptModel.vHeatPipeInvest       = Var(mTEPES.phc,   within=UnitInterval, doc='heat network investment decision exists in a year [0,1]'    )
+                OptModel.vHeatPipeInvest   = Var(mTEPES.phc,   within=UnitInterval, doc='heat network investment decision exists in a year [0,1]'    )
             else:
-                OptModel.vHeatPipeInvest       = Var(mTEPES.phc,   within=Binary,       doc='heat network investment decision exists in a year {0,1}'    )
+                OptModel.vHeatPipeInvest   = Var(mTEPES.phc,   within=Binary,       doc='heat network investment decision exists in a year {0,1}'    )
 
         if mTEPES.pIndBinGenOperat() == 0:
             OptModel.vCommitment           = Var(mTEPES.psnnr, within=UnitInterval,     initialize=0.0, doc='commitment      of the unit                                    [0,1]')
@@ -559,7 +559,7 @@ def SettingUpVariables(OptModel, mTEPES):
         if g in mTEPES.es:
             e2a[ar].add(g); a2e[g].add(ar)
 
-    # this set can't be integrated upward because mTEPES.go is an ordered ser
+    # this set can't be integrated upward because mTEPES.go is an ordered set and it uses (list)
     o2a = defaultdict(list)
     for ar,go in mTEPES.ar*mTEPES.go:
         if (ar,go) in mTEPES.a2g:
@@ -770,7 +770,7 @@ def SettingUpVariables(OptModel, mTEPES):
         if mTEPES.pDemandElec[p,sc,n,nd]() <= 0.0:
             OptModel.vENS    [p,sc,n,nd].fix(0.0)
             nFixedVariables += 1
-        if sum(1 for g in g2n[nd] if (p,g) in mTEPES.pg) + sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd]) == 0 and mTEPES.pDemandElec[p,sc,n,nd]() > 0.0:
+        if sum(1 for g in g2n[nd] if (p,g) in mTEPES.pg) + len(lout[nd]) + len(lin[nd]) == 0 and mTEPES.pDemandElec[p,sc,n,nd]() > 0.0:
             OptModel.vENS    [p,sc,n,nd].fix(mTEPES.pDemandElec[p,sc,n,nd]())
             nFixedVariables += 1
 
@@ -780,7 +780,7 @@ def SettingUpVariables(OptModel, mTEPES):
             if mTEPES.pDemandH2[p,sc,n,nd] ==  0.0:
                 OptModel.vH2NS [p,sc,n,nd].fix(0.0)
                 nFixedVariables += 1
-            if sum(1 for el in l2n[nd]) + sum(1 for hh in b2n[nd]) + sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd]) == 0 and mTEPES.pDemandH2[p,sc,n,nd]() > 0.0:
+            if len(l2n[nd]) + len(b2n[nd]) + len(lout[nd]) + len(lin[nd]) == 0 and mTEPES.pDemandH2[p,sc,n,nd]() > 0.0:
                 OptModel.vH2NS [p,sc,n,nd].fix(mTEPES.pDemandH2[p,sc,n,nd]())
                 nFixedVariables += 1
 
@@ -790,7 +790,7 @@ def SettingUpVariables(OptModel, mTEPES):
             if mTEPES.pDemandHeat[p,sc,n,nd] ==  0.0:
                 OptModel.vHeatNS [p,sc,n,nd].fix(0.0)
                 nFixedVariables += 1
-            if sum(1 for ch in chp2n[nd]) + sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd]) == 0 and mTEPES.pDemandHeat[p,sc,n,nd]() > 0.0:
+            if len(chp2n[nd]) + len(lout[nd]) + len(lin[nd]) == 0 and mTEPES.pDemandHeat[p,sc,n,nd]() > 0.0:
                 OptModel.vHeatNS [p,sc,n,nd].fix(mTEPES.pDemandHeat[p,sc,n,nd]())
                 nFixedVariables += 1
 

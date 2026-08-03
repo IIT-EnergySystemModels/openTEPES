@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 02, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 03, 2026
 
 Marginal, cost-summary, and economic results.
 
@@ -254,7 +254,7 @@ def CostSummaryResults(DirName, CaseName, OptModel, mTEPES):
     else:
         H2InvCost  = pd.Series(data=[0.0                                                                                                                                                                    for p in mTEPES.p], index=mTEPES.p).to_frame(name='Investment Cost Hydrogen'  ).stack()
     if mTEPES.pIndHeat:
-        HeatInvCost = pd.Series(data=[mTEPES.pDiscountedWeight[p] * sum(mTEPES.pHeatPipeFixedCost[ni,nf,cc] * OptModel.vHeatPipeInvest[p,ni,nf,cc] for ni,nf,cc in mTEPES.hc if (p,ni,nf,cc) in mTEPES.phc) for p in mTEPES.p], index=mTEPES.p).to_frame(name='Investment Cost Heat'      ).stack()
+        HeatInvCost = pd.Series(data=[mTEPES.pDiscountedWeight[p] * sum(mTEPES.pHeatPipeFixedCost[ni,nf,cc] * OptModel.vHeatPipeInvest[p,ni,nf,cc]() for ni,nf,cc in mTEPES.hc if (p,ni,nf,cc) in mTEPES.phc) for p in mTEPES.p], index=mTEPES.p).to_frame(name='Investment Cost Heat'      ).stack()
     else:
         HeatInvCost = pd.Series(data=[0.0                                                                                                                                                                  for p in mTEPES.p], index=mTEPES.p).to_frame(name='Investment Cost Heat'      ).stack()
     # cache the (scenario, load level) product once; it is reused by every operation-cost series below instead of rebuilding the Pyomo set product for each period and each cost
@@ -338,10 +338,10 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput, pIndPlo
         if g in mTEPES.re:
             r2r[gt].add(g)
 
-    if sum(1 for ar in mTEPES.ar if sum(1 for g in g2a[ar])) > 1:
+    if sum(1 for ar in mTEPES.ar if len(g2a[ar])) > 1:
         if pIndAreaOutput:
             for ar in mTEPES.ar:
-                if sum(1 for g in g2a[ar]):
+                if len(g2a[ar]):
                     sPSNGT = [(p,sc,n,gt) for p,sc,n,gt in mTEPES.psngt if sum(1 for g in g2t[gt] if g in g2a[ar] and (p,g) in mTEPES.pg)]
                     if sPSNGT:
                         OutputToFile = pd.Series(data=[sum(OptModel.vTotalOutput[p,sc,n,g]()*mTEPES.pLoadLevelDuration[p,sc,n]() for g in g2t[gt] if g in g2a[ar] and (p,g) in mTEPES.pg) for p,sc,n,gt in sPSNGT], index=pd.Index(sPSNGT))
@@ -352,7 +352,7 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput, pIndPlo
                                 chart = PiePlots(p, sc, OutputToFile, 'Technology', '%')
                                 chart.save(f'{_path}/oT_Plot_TechnologyGenerationEnergy_{CaseName}_{p}_{sc}_{ar}.html', embed_options={'renderer': 'svg'})
 
-    sPSNARND = [(p,sc,n,ar,nd) for p,sc,n,ar,nd in mTEPES.psn*mTEPES.arnd if sum(1 for g  in g2n[nd]) + sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd])]
+    sPSNARND = [(p,sc,n,ar,nd) for p,sc,n,ar,nd in mTEPES.psn*mTEPES.arnd if len(g2n[nd]) + len(lout[nd]) + len(lin[nd])]
 
     # precompute valid technologies and resources per period to avoid recomputing for each tuple
     _valid_gt_per_p = {}
@@ -404,7 +404,7 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput, pIndPlo
     OutputResults.stack().reset_index().pivot_table(index=['level_0','level_1'                    ,'level_5'], columns='level_3', values=0, aggfunc='sum').rename_axis(['Period', 'Scenario'             , 'Technology'  ], axis=0).oT.write(f'{_path}/oT_Result_BalanceEnergyPerArea_{CaseName}.csv', sep=',')
 
     #%% outputting the demand and the LSRMC of electricity
-    sPSSTNARND    = [(p,sc,st,n,ar,nd) for p,sc,st,n,ar,nd in mTEPES.s2n*mTEPES.arnd if sum(1 for g in g2n[nd]) + sum(1 for nf,cc in lout[nd]) + sum(1 for ni,cc in lin[nd]) and (p,sc,n) in mTEPES.psn]
+    sPSSTNARND    = [(p,sc,st,n,ar,nd) for p,sc,st,n,ar,nd in mTEPES.s2n*mTEPES.arnd if len(g2n[nd]) + len(lout[nd]) + len(lin[nd]) and (p,sc,n) in mTEPES.psn]
 
     pHasDuals = hasattr(mTEPES, 'pDuals') and mTEPES.pDuals is not None and hasattr(mTEPES.pDuals, '__len__') and len(mTEPES.pDuals) > 0
 
@@ -523,10 +523,10 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput, pIndPlo
         df = df.reset_index().pivot_table(index=['level_0', 'level_1', 'Cost'], values='MEUR', aggfunc='sum')
         return df
 
-    if sum(1 for ar in mTEPES.ar if sum(1 for g in g2a[ar])) > 1:
+    if sum(1 for ar in mTEPES.ar if len(g2a[ar])) > 1:
         if pIndAreaOutput:
             for ar in mTEPES.ar:
-                if sum(1 for g in g2a[ar]):
+                if len(g2a[ar]):
                     OutputResults1 = pd.DataFrame(data={'MEUR': [0.0]}, index=pd.Index([(p,sc,'Operation Cost Generation'         ) for p,sc in mTEPES.ps]))
                     OutputResults2 = pd.DataFrame(data={'MEUR': [0.0]}, index=pd.Index([(p,sc,'Operating Reserve Cost Generation' ) for p,sc in mTEPES.ps]))
                     OutputResults3 = pd.DataFrame(data={'MEUR': [0.0]}, index=pd.Index([(p,sc,'O&M Cost Generation'               ) for p,sc in mTEPES.ps]))
