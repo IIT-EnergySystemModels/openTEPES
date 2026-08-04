@@ -264,9 +264,9 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
         InvestmentElecModelFormulation (mTEPES, mTEPES, pIndLogConsole)
     if mTEPES.pIndHydroTopology and mTEPES.rn:
         InvestmentHydroModelFormulation(mTEPES, mTEPES, pIndLogConsole)
-    if mTEPES.pIndHydrogen      and mTEPES.pc:
+    if mTEPES.pIndHydrogen()      and mTEPES.pc:
         InvestmentH2ModelFormulation   (mTEPES, mTEPES, pIndLogConsole)
-    if mTEPES.pIndHeat          and mTEPES.hc:
+    if mTEPES.pIndHeat()          and mTEPES.hc:
         InvestmentHeatModelFormulation (mTEPES, mTEPES, pIndLogConsole)
 
     # initialize parameter for dual variables

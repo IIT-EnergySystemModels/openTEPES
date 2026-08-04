@@ -93,7 +93,7 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES, pIndPlotOutput):
                 chart = LinePlots(p, sc, OptModel.LSRMC, 'Node', 'LoadLevel', 'EUR/MWh', 'average')
                 chart.save(f'{_path}/oT_Plot_NetworkSRMC_{CaseName}_{p}_{sc}.html', embed_options={'renderer': 'svg'})
 
-    if mTEPES.pIndHydrogen and pHasDuals:
+    if mTEPES.pIndHydrogen() and pHasDuals:
 
         # incoming and outgoing lines (lin) (lout)
         lin  = defaultdict(set)
@@ -114,7 +114,7 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES, pIndPlotOutput):
                 chart = LinePlots(p, sc, OptModel.LSRMCH2, 'Node', 'LoadLevel', 'EUR/tH2', 'average')
                 chart.save(f'{_path}/oT_Plot_NetworkSRMCH2_{CaseName}_{p}_{sc}.html', embed_options={'renderer': 'svg'})
 
-    if mTEPES.pIndHeat and pHasDuals:
+    if mTEPES.pIndHeat() and pHasDuals:
         # incoming and outgoing lines (lin) (lout)
         lin  = defaultdict(set)
         lout = defaultdict(set)
@@ -144,7 +144,7 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES, pIndPlotOutput):
             OutputResults = pd.Series(data=[mTEPES.pDuals[f'eAdequacyReserveMarginElec_{p}_{sc}_{st}{ar}'] for p,sc,st,ar in sPSSTAR], index=pd.Index(sPSSTAR))
             OutputResults.to_frame(name='RM').reset_index().pivot_table(index=['level_0','level_1'], columns='level_3', values='RM').rename_axis(['Period', 'Scenario'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_MarginalReserveMargin_{CaseName}.csv', sep=',')
 
-    if mTEPES.pIndHeat and (mTEPES.gc or mTEPES.gd) and sum(mTEPES.pReserveMarginHeat[:,:]) and pHasDuals:
+    if mTEPES.pIndHeat() and (mTEPES.gc or mTEPES.gd) and sum(mTEPES.pReserveMarginHeat[:,:]) and pHasDuals:
         # the firm-capacity sum per area does not depend on (period, scenario, stage); precompute it once per area
         pExistingFirmCapacity = {(p,ar): sum(mTEPES.pRatedMaxPowerHeat[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]()) for g in g2a[ar] if (p,g) in mTEPES.pg and g not in mTEPES.gc and g not in mTEPES.gd) for p in mTEPES.p for ar in mTEPES.ar}
         sPSSTAR               = [(p,sc,st,ar) for p,sc,st,ar in mTEPES.ps*mTEPES.st*mTEPES.ar if mTEPES.pReserveMarginHeat[p,ar] and st == mTEPES.Last_st and len(g2a[ar]) and pExistingFirmCapacity[p,ar] <= mTEPES.pDemandHeatPeak[p,ar] * mTEPES.pReserveMarginHeat[p,ar]]
@@ -238,11 +238,11 @@ def CostSummaryResults(DirName, CaseName, OptModel, mTEPES):
         RsrInvCost = pd.Series(data=[mTEPES.pDiscountedWeight[p] * sum(mTEPES.pRsrInvestCost[rc  ]          * OptModel.vReservoirInvest [p,rc  ]()  for rc   in mTEPES.rn    if (p,rc) in mTEPES.prc)         for p in mTEPES.p], index=mTEPES.p).to_frame(name='Investment Cost Reservoir' ).stack()
     else:
         RsrInvCost = pd.Series(data=[0.0                                                                                                                                                                      for p in mTEPES.p], index=mTEPES.p).to_frame(name='Investment Cost Reservoir' ).stack()
-    if mTEPES.pIndHydrogen:
+    if mTEPES.pIndHydrogen():
         H2InvCost  = pd.Series(data=[mTEPES.pDiscountedWeight[p] * sum(mTEPES.pH2PipeFixedCost[ni,nf,cc]    * OptModel.vH2PipeInvest[p,ni,nf,cc]() for ni,nf,cc in mTEPES.pc if (p,ni,nf,cc) in mTEPES.ppc)   for p in mTEPES.p], index=mTEPES.p).to_frame(name='Investment Cost Hydrogen'  ).stack()
     else:
         H2InvCost  = pd.Series(data=[0.0                                                                                                                                                                      for p in mTEPES.p], index=mTEPES.p).to_frame(name='Investment Cost Hydrogen'  ).stack()
-    if mTEPES.pIndHeat:
+    if mTEPES.pIndHeat():
         HeatInvCost = pd.Series(data=[mTEPES.pDiscountedWeight[p] * sum(mTEPES.pHeatPipeFixedCost[ni,nf,cc] * OptModel.vHeatPipeInvest[p,ni,nf,cc]() for ni,nf,cc in mTEPES.hc if (p,ni,nf,cc) in mTEPES.phc) for p in mTEPES.p], index=mTEPES.p).to_frame(name='Investment Cost Heat'      ).stack()
     else:
         HeatInvCost = pd.Series(data=[0.0                                                                                                                                                                     for p in mTEPES.p], index=mTEPES.p).to_frame(name='Investment Cost Heat'      ).stack()
@@ -254,11 +254,11 @@ def CostSummaryResults(DirName, CaseName, OptModel, mTEPES):
     EmiCost         = pd.Series(data=[sum(pScenFactor[p,sc] * OptModel.vTotalECost      [p,sc,n]()  for sc,n in pScN if (p,sc) in mTEPES.ps ) for p in mTEPES.p], index=mTEPES.p).to_frame(name='Emission Cost'             ).stack()
     NetCost         = pd.Series(data=[sum(pScenFactor[p,sc] * OptModel.vTotalNCost      [p,sc,n]()  for sc,n in pScN if (p,sc) in mTEPES.ps ) for p in mTEPES.p], index=mTEPES.p).to_frame(name='Operation Cost Network'    ).stack()
     ElecRelCost     = pd.Series(data=[sum(pScenFactor[p,sc] * OptModel.vTotalRElecCost  [p,sc,n]()  for sc,n in pScN if (p,sc) in mTEPES.ps ) for p in mTEPES.p], index=mTEPES.p).to_frame(name='Reliability Cost'          ).stack()
-    if mTEPES.pIndHydrogen:
+    if mTEPES.pIndHydrogen():
         H2RelCost   = pd.Series(data=[sum(pScenFactor[p,sc] * OptModel.vTotalRH2Cost    [p,sc,n]()  for sc,n in pScN if (p,sc) in mTEPES.ps ) for p in mTEPES.p], index=mTEPES.p).to_frame(name='Reliability Cost Hydrogen' ).stack()
     else:
         H2RelCost   = pd.Series(data=[0.0                                                                                                     for p in mTEPES.p], index=mTEPES.p).to_frame(name='Reliability Cost Hydrogen' ).stack()
-    if mTEPES.pIndHeat:
+    if mTEPES.pIndHeat():
         HeatRelCost = pd.Series(data=[sum(pScenFactor[p,sc] * OptModel.vTotalRHeatCost  [p,sc,n]()  for sc,n in pScN if (p,sc) in mTEPES.ps ) for p in mTEPES.p], index=mTEPES.p).to_frame(name='Reliability Cost Heat'     ).stack()
     else:
         HeatRelCost = pd.Series(data=[0.0                                                                                                     for p in mTEPES.p], index=mTEPES.p).to_frame(name='Reliability Cost Heat'     ).stack()

@@ -28,9 +28,9 @@ def TotalObjectiveFunction(OptModel, mTEPES, pIndLogConsole):
                                                                       OptModel.vTotalECost    [p,sc,n] +
                                                                       OptModel.vTotalNCost    [p,sc,n] +
                                                                       OptModel.vTotalRElecCost[p,sc,n]) for p,sc,n in mTEPES.psn)
-        if mTEPES.pIndHydrogen:
+        if mTEPES.pIndHydrogen():
             vTotalTCost += sum(pScenFactor[p,sc] * OptModel.vTotalRH2Cost  [p,sc,n] for p,sc,n in mTEPES.psn)
-        if mTEPES.pIndHeat:
+        if mTEPES.pIndHeat():
             vTotalTCost += sum(pScenFactor[p,sc] * OptModel.vTotalRHeatCost[p,sc,n] for p,sc,n in mTEPES.psn)
         return OptModel.vTotalSCost == vTotalTCost
     OptModel.eTotalTCost = Constraint(rule=eTotalTCost, doc='total system cost [MEUR]')

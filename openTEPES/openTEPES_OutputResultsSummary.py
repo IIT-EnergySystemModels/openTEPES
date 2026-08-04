@@ -62,11 +62,11 @@ def OperationSummaryResults(DirName, CaseName, OptModel, mTEPES):
         RsrInvestmentCost = sum(mTEPES.pDiscountedWeight[p] * mTEPES.pRsrInvestCost[rc]       * OptModel.vReservoirInvest [p,rc]()          for p,rc       in mTEPES.prc)
     else:
         RsrInvestmentCost = 0.0
-    if mTEPES.pIndHydrogen:
+    if mTEPES.pIndHydrogen():
         H2InvestmentCost  = sum(mTEPES.pDiscountedWeight[p] * mTEPES.pH2PipeFixedCost[ni,nf,cc] * OptModel.vH2PipeInvest[p,ni,nf,cc]()      for p,ni,nf,cc in mTEPES.ppc)
     else:
         H2InvestmentCost  = 0.0
-    if mTEPES.pIndHeat:
+    if mTEPES.pIndHeat():
         HeatInvestmentCost = sum(mTEPES.pDiscountedWeight[p] * mTEPES.pHeatPipeFixedCost[ni,nf,cc] * OptModel.vHeatPipeInvest[p,ni,nf,cc]() for p,ni,nf,cc in mTEPES.phc)
     else:
         HeatInvestmentCost  = 0.0

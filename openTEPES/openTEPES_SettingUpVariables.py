@@ -81,11 +81,11 @@ def SettingUpVariables(OptModel, mTEPES):
             OptModel.vReservoirSpillage    = Var(mTEPES.psnrs, within=NonNegativeReals, doc='Reservoir spillage                              [hm3]')
             OptModel.vIniVolume            = Var(mTEPES.psnrc, within=NonNegativeReals, doc='initial volume for reservoir candidates         [hm3]')
 
-        if mTEPES.pIndHydrogen:
+        if mTEPES.pIndHydrogen():
             OptModel.vTotalFH2Cost         = Var(mTEPES.p,     within=NonNegativeReals, doc='total system fixed H2                cost      [MEUR]')
             OptModel.vTotalRH2Cost         = Var(mTEPES.psn,   within=NonNegativeReals, doc='total system reliability H2          cost      [MEUR]')
 
-        if mTEPES.pIndHeat:
+        if mTEPES.pIndHeat():
             OptModel.vTotalFHeatCost       = Var(mTEPES.p,     within=NonNegativeReals, doc='total system fixed heat              cost      [MEUR]')
             OptModel.vTotalRHeatCost       = Var(mTEPES.psn,   within=NonNegativeReals, doc='total system reliability heat        cost      [MEUR]')
             OptModel.vTotalOutputHeat      = Var(mTEPES.psng , within=NonNegativeReals, doc='total heat output of the boiler unit             [GW]')
@@ -114,13 +114,13 @@ def SettingUpVariables(OptModel, mTEPES):
             else:
                 OptModel.vReservoirInvest  = Var(mTEPES.prc,   within=Binary,           doc='reservoir        investment decision exists in a year {0,1}')
 
-        if mTEPES.pIndHydrogen:
+        if mTEPES.pIndHydrogen():
             if mTEPES.pIndBinNetH2Invest() != 1:
                 OptModel.vH2PipeInvest     = Var(mTEPES.ppc,   within=UnitInterval,     doc='hydrogen network investment decision exists in a year [0,1]')
             else:
                 OptModel.vH2PipeInvest     = Var(mTEPES.ppc,   within=Binary,           doc='hydrogen network investment decision exists in a year {0,1}')
 
-        if mTEPES.pIndHeat:
+        if mTEPES.pIndHeat():
             if mTEPES.pIndBinNetHeatInvest() != 1:
                 OptModel.vHeatPipeInvest   = Var(mTEPES.phc,   within=UnitInterval, doc='heat network investment decision exists in a year [0,1]'    )
             else:
@@ -276,7 +276,7 @@ def SettingUpVariables(OptModel, mTEPES):
                     nFixedVariables += 1
 
         # relax binary condition in hydrogen network investment decisions
-        if mTEPES.pIndHydrogen:
+        if mTEPES.pIndHydrogen():
             for p,ni,nf,cc in mTEPES.ppc:
                 if mTEPES.pIndBinNetH2Invest() == 2 or (mTEPES.pIndBinNetH2Invest() == 1 and mTEPES.pIndBinH2PipeInvest[ni,nf,cc] == 0):
                     OptModel.vH2PipeInvest  [p,ni,nf,cc].domain = UnitInterval
@@ -284,7 +284,7 @@ def SettingUpVariables(OptModel, mTEPES):
                     OptModel.vH2PipeInvest  [p,ni,nf,cc].fix(0)
                     nFixedVariables += 1
 
-        if mTEPES.pIndHeat:
+        if mTEPES.pIndHeat():
             # relax binary condition in heat network investment decisions
             for p,ni,nf,cc in mTEPES.phc:
                 if mTEPES.pIndBinNetHeatInvest() == 2 or (mTEPES.pIndBinNetHeatInvest() == 1 and mTEPES.pIndBinHeatPipeInvest[ni,nf,cc] == 0):
@@ -387,7 +387,7 @@ def SettingUpVariables(OptModel, mTEPES):
         [OptModel.vTheta         [p,sc,n,nd      ].setlb(-mTEPES.pMaxTheta [p,sc,n,nd      ]()                            ) for p,sc,n,nd       in mTEPES.psnnd]
         [OptModel.vTheta         [p,sc,n,nd      ].setub( mTEPES.pMaxTheta [p,sc,n,nd      ]()                            ) for p,sc,n,nd       in mTEPES.psnnd]
 
-        if mTEPES.pIndHydrogen:
+        if mTEPES.pIndHydrogen():
             OptModel.vFlowH2 = Var(mTEPES.psnpa, within=Reals,            doc='pipeline flow               [tH2]')
             OptModel.vH2NS   = Var(mTEPES.psnnd, within=NonNegativeReals, doc='hydrogen not served in node [tH2]')
             OptModel.vH2Exc  = Var(mTEPES.psnnd, within=NonNegativeReals, doc='hydrogen excess     in node [tH2]')
@@ -395,7 +395,7 @@ def SettingUpVariables(OptModel, mTEPES):
             [OptModel.vFlowH2  [p,sc,n,ni,nf,cc].setub( mTEPES.pH2PipeNTCFrw[ni,nf,cc])                           for p,sc,n,ni,nf,cc in mTEPES.psnpa]
             [OptModel.vH2NS    [p,sc,n,nd      ].setub(mTEPES.pDuration[p,sc,n]()*mTEPES.pDemandH2Pos[p,sc,n,nd]) for p,sc,n,nd       in mTEPES.psnnd]
 
-        if mTEPES.pIndHeat:
+        if mTEPES.pIndHeat():
             OptModel.vFlowHeat = Var(mTEPES.psnha, within=Reals,            doc='heat pipe flow          [GW]')
             OptModel.vHeatNS   = Var(mTEPES.psnnd, within=NonNegativeReals, doc='heat not served in node [GW]')
             [OptModel.vFlowHeat[p,sc,n,ni,nf,cc].setlb(-mTEPES.pHeatPipeNTCBck[ni,nf,cc])                            for p,sc,n,ni,nf,cc in mTEPES.psnha]
@@ -774,7 +774,7 @@ def SettingUpVariables(OptModel, mTEPES):
             OptModel.vENS    [p,sc,n,nd].fix(mTEPES.pDemandElec[p,sc,n,nd]())
             nFixedVariables += 1
 
-    if mTEPES.pIndHydrogen:
+    if mTEPES.pIndHydrogen():
         # fixing the H2 ENS in nodes with no hydrogen demand
         for p,sc,n,nd in mTEPES.psnnd:
             if mTEPES.pDemandH2[p,sc,n,nd] ==  0.0:
@@ -784,7 +784,7 @@ def SettingUpVariables(OptModel, mTEPES):
                 OptModel.vH2NS [p,sc,n,nd].fix(mTEPES.pDemandH2[p,sc,n,nd]())
                 nFixedVariables += 1
 
-    if mTEPES.pIndHeat:
+    if mTEPES.pIndHeat():
         # fixing the heat ENS in nodes with no heat demand
         for p,sc,n,nd in mTEPES.psnnd:
             if mTEPES.pDemandHeat[p,sc,n,nd] ==  0.0:
@@ -851,7 +851,7 @@ def SettingUpVariables(OptModel, mTEPES):
                 #     OptModel.vReservoirInvPer[p,rc].domain = UnitInterval
                 #     nFixedVariables += 1
 
-        if mTEPES.pIndHydrogen:
+        if mTEPES.pIndHydrogen():
             for p,ni,nf,cc in mTEPES.ppc:
                 if mTEPES.pH2PipePeriodIni[ni,nf,cc] > p:
                     OptModel.vH2PipeInvest[p,ni,nf,cc].fix(0)
@@ -862,7 +862,7 @@ def SettingUpVariables(OptModel, mTEPES):
                 #     OptModel.vH2PipeInvPer[p,ni,nf,cc].domain = UnitInterval
                 #     nFixedVariables += 1
 
-        if mTEPES.pIndHeat:
+        if mTEPES.pIndHeat():
             for p,ni,nf,cc in mTEPES.phc:
                 if mTEPES.pHeatPipePeriodIni[ni,nf,cc] > p:
                     OptModel.vHeatPipeInvest[p,ni,nf,cc].fix(0)
@@ -961,11 +961,11 @@ def SettingUpVariables(OptModel, mTEPES):
     [OptModel.vFlowElec    [p,sc,n,ni,nf,cc].fix(0.0) for p,sc,n,ni,nf,cc in mTEPES.psnle if                                  mTEPES.pElecNetPeriodIni [ni,nf,cc] > p or mTEPES.pElecNetPeriodFin [ni,nf,cc] < p]
     nFixedVariables     += sum(                  1    for p,sc,n,ni,nf,cc in mTEPES.psnle if                                  mTEPES.pElecNetPeriodIni [ni,nf,cc] > p or mTEPES.pElecNetPeriodFin [ni,nf,cc] < p)
 
-    if mTEPES.pIndHydrogen:
+    if mTEPES.pIndHydrogen():
         [OptModel.vFlowH2  [p,sc,n,ni,nf,cc].fix(0.0) for p,sc,n,ni,nf,cc in mTEPES.psnpe if                                  mTEPES.pH2PipePeriodIni  [ni,nf,cc] > p or mTEPES.pH2PipePeriodFin  [ni,nf,cc] < p]
         nFixedVariables += sum(                  1    for p,sc,n,ni,nf,cc in mTEPES.psnpe if                                  mTEPES.pH2PipePeriodIni  [ni,nf,cc] > p or mTEPES.pH2PipePeriodFin  [ni,nf,cc] < p)
 
-    if mTEPES.pIndHeat:
+    if mTEPES.pIndHeat():
         [OptModel.vFlowHeat[p,sc,n,ni,nf,cc].fix(0.0) for p,sc,n,ni,nf,cc in mTEPES.psnhe if                                  mTEPES.pHeatPipePeriodIni[ni,nf,cc] > p or mTEPES.pHeatPipePeriodFin[ni,nf,cc] < p]
         nFixedVariables += sum(                  1    for p,sc,n,ni,nf,cc in mTEPES.psnhe if                                  mTEPES.pHeatPipePeriodIni[ni,nf,cc] > p or mTEPES.pHeatPipePeriodFin[ni,nf,cc] < p)
 
@@ -1040,7 +1040,7 @@ def SettingUpVariables(OptModel, mTEPES):
             [OptModel.vReservoirInvest [p,rc].setlb(mTEPES.pRsrLoInvest[rc]()) for p,rc in mTEPES.prc]
             [OptModel.vReservoirInvest [p,rc].setub(mTEPES.pRsrUpInvest[rc]()) for p,rc in mTEPES.prc]
 
-        if mTEPES.pIndHydrogen:
+        if mTEPES.pIndHydrogen():
             for ni,nf,cc in mTEPES.pc:
                 if  mTEPES.pH2PipeLoInvest[  ni,nf,cc]() <       pEpsilon:
                     mTEPES.pH2PipeLoInvest[  ni,nf,cc]   = 0
@@ -1055,7 +1055,7 @@ def SettingUpVariables(OptModel, mTEPES):
             [OptModel.vH2PipeInvest       [p,ni,nf,cc].setlb(mTEPES.pH2PipeLoInvest[ni,nf,cc]()) for p,ni,nf,cc in mTEPES.ppc]
             [OptModel.vH2PipeInvest       [p,ni,nf,cc].setub(mTEPES.pH2PipeUpInvest[ni,nf,cc]()) for p,ni,nf,cc in mTEPES.ppc]
 
-        if mTEPES.pIndHeat:
+        if mTEPES.pIndHeat():
             for ni,nf,cc in mTEPES.hc:
                 if  mTEPES.pHeatPipeLoInvest[  ni,nf,cc]() <       pEpsilon:
                     mTEPES.pHeatPipeLoInvest[  ni,nf,cc]   = 0
@@ -1135,7 +1135,7 @@ def SettingUpVariables(OptModel, mTEPES):
             if     sum(mTEPES.pRatedMaxPowerElec[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]()) for g in g2a[ar] if (p,g) in mTEPES.pg) < mTEPES.pDemandElecPeak[p,ar] * mTEPES.pReserveMargin[p,ar]():
                 raise     ValueError('### Electricity reserve margin infeasibility ', p,ar, sum(mTEPES.pRatedMaxPowerElec[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]()) for g in mTEPES.g if (p,g) in mTEPES.pg and g in g2a[ar]), mTEPES.pDemandElecPeak[p,ar] * mTEPES.pReserveMargin[p,ar]())
 
-            if mTEPES.pIndHeat:
+            if mTEPES.pIndHeat():
                 if sum(mTEPES.pRatedMaxPowerHeat[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]()) for g in g2a[ar] if (p,g) in mTEPES.pg) < mTEPES.pDemandHeatPeak[p,ar] * mTEPES.pReserveMarginHeat[p,ar]:
                     raise ValueError('### Heat reserve margin infeasibility ',        p,ar, sum(mTEPES.pRatedMaxPowerHeat[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]()) for g in mTEPES.g if (p,g) in mTEPES.pg and g in g2a[ar]), mTEPES.pDemandHeatPeak[p,ar] * mTEPES.pReserveMarginHeat[p,ar]())
 

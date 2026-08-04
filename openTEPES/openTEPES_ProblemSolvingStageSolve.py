@@ -155,21 +155,21 @@ def StageSolve(OptModel, mTEPES, DirName, CaseName, SolverName, pIndLogConsole, 
                                                      OptModel.vTotalNCost    [p,sc,n] +
                                                      OptModel.vTotalRElecCost[p,sc,n]) for p,sc,n in mTEPES.psn                       ) +
                             sum(pScenFactor[p,sc] *  OptModel.vTotalRH2Cost  [p,sc,n]  for p,sc,n in mTEPES.psn if mTEPES.pIndHydrogen) +
-                            sum(pScenFactor[p,sc] *  OptModel.vTotalRHeatCost[p,sc,n]  for p,sc,n in mTEPES.psn if mTEPES.pIndHeat    ) )
+                            sum(pScenFactor[p,sc] *  OptModel.vTotalRHeatCost[p,sc,n]  for p,sc,n in mTEPES.psn if mTEPES.pIndHeat()    ) )
                 setattr(OptModel, f'eTotalOCost_{p}_{sc}_{st}', Objective(rule=eTotalOCost, sense=minimize, doc='total system operation cost [MEUR]'))
 
                 if itBd == 1:
                     # operation model constraints by stage
                     GenerationOperationElecModelFormulationInvestment    (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
-                    if mTEPES.pIndHeat:
+                    if mTEPES.pIndHeat():
                         GenerationOperationHeatModelFormulationInvestment(mTEPES, mTEPES, pIndLogConsole, p, sc, st)
                     GenerationOperationModelFormulationDemand            (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
                     GenerationOperationModelFormulationStorage           (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
                     if mTEPES.pIndHydroTopology:
                         GenerationOperationModelFormulationReservoir     (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
-                    if mTEPES.pIndHydrogen:
+                    if mTEPES.pIndHydrogen():
                         NetworkH2OperationModelFormulation               (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
-                    if mTEPES.pIndHeat:
+                    if mTEPES.pIndHeat():
                         NetworkHeatOperationModelFormulation             (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
                     GenerationOperationModelFormulationCommitment        (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
                     GenerationOperationModelFormulationRampMinTime       (mTEPES, mTEPES, pIndLogConsole, p, sc, st)

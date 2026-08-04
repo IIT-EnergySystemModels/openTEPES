@@ -114,15 +114,15 @@ def StageIterativeSolving(mTEPES, DirName, CaseName, SolverName, pIndLogConsole,
             # operation model objective function and constraints by stage
             GenerationOperationModelFormulationObjFunct          (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
             GenerationOperationElecModelFormulationInvestment    (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
-            if mTEPES.pIndHeat:
+            if mTEPES.pIndHeat():
                 GenerationOperationHeatModelFormulationInvestment(mTEPES, mTEPES, pIndLogConsole, p, sc, st)
             GenerationOperationModelFormulationDemand            (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
             GenerationOperationModelFormulationStorage           (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
             if mTEPES.pIndHydroTopology:
                 GenerationOperationModelFormulationReservoir     (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
-            if mTEPES.pIndHydrogen:
+            if mTEPES.pIndHydrogen():
                 NetworkH2OperationModelFormulation               (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
-            if mTEPES.pIndHeat:
+            if mTEPES.pIndHeat():
                 NetworkHeatOperationModelFormulation             (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
             GenerationOperationModelFormulationCommitment        (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
             GenerationOperationModelFormulationRampMinTime       (mTEPES, mTEPES, pIndLogConsole, p, sc, st)

@@ -85,11 +85,11 @@ def fix_for_duals(OptModel, mTEPES, p, sc) -> int:
         for rc in mTEPES.rn:
             if (p, rc) in mTEPES.prc:
                 _fix_investment(OptModel.vReservoirInvest[p, rc])
-    if mTEPES.pIndHydrogen:
+    if mTEPES.pIndHydrogen():
         for ni, nf, cc in mTEPES.pc:
             if (p, ni, nf, cc) in mTEPES.ppc:
                 _fix_investment(OptModel.vH2PipeInvest[p, ni, nf, cc])
-    if mTEPES.pIndHeat:
+    if mTEPES.pIndHeat():
         for ni, nf, cc in mTEPES.hc:
             if (p, ni, nf, cc) in mTEPES.phc:
                 _fix_investment(OptModel.vHeatPipeInvest[p, ni, nf, cc])
