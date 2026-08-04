@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 03, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 04, 2026
 
 openTEPES.openTEPES_DataConfiguration — builds the derived sets and parameters on the model: instrumental sets, ESS/RES sets, and the flag-driven branches (hydro topology, hydrogen, heat, PTDF). Runs after InputData has read the raw sets and parameters.
 """
@@ -378,18 +378,18 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
 
     # ESS and RES technologies
     def Create_ESS_RES_Sets(mTEPES) -> None:
-        mTEPES.ot = Set(doc='ESS         technologies', initialize=[gt for gt in mTEPES.gt if sum(1 for es in mTEPES.es if es in g2t[gt])])
-        mTEPES.ht = Set(doc='hydro       technologies', initialize=[gt for gt in mTEPES.gt if sum(1 for h  in mTEPES.h  if h  in g2t[gt])])
-        mTEPES.et = Set(doc='ESS & hydro technologies', initialize=[gt for gt in mTEPES.gt if sum(1 for eh in mTEPES.eh if eh in g2t[gt])])
-        mTEPES.rt = Set(doc='    RES     technologies', initialize=[gt for gt in mTEPES.gt if sum(1 for re in mTEPES.re if re in g2t[gt])])
-        mTEPES.nt = Set(doc='non-RES     technologies', initialize=[gt for gt in mTEPES.gt if sum(1 for nr in mTEPES.nr if nr in g2t[gt])])
+        mTEPES.ot = Set(doc='ESS         technologies', initialize=[gt for gt in mTEPES.gt if len([es for es in mTEPES.es if es in g2t[gt]])])
+        mTEPES.ht = Set(doc='hydro       technologies', initialize=[gt for gt in mTEPES.gt if len([h  for h  in mTEPES.h  if h  in g2t[gt]])])
+        mTEPES.et = Set(doc='ESS & hydro technologies', initialize=[gt for gt in mTEPES.gt if len([eh for eh in mTEPES.eh if eh in g2t[gt]])])
+        mTEPES.rt = Set(doc='    RES     technologies', initialize=[gt for gt in mTEPES.gt if len([re for re in mTEPES.re if re in g2t[gt]])])
+        mTEPES.nt = Set(doc='non-RES     technologies', initialize=[gt for gt in mTEPES.gt if len([nr for nr in mTEPES.nr if nr in g2t[gt]])])
 
-        mTEPES.psgt  = Set(initialize=[(p,sc,  gt) for p,sc,  gt in mTEPES.ps *mTEPES.gt   if sum(1 for g  in mTEPES.g  if g  in g2t[gt] and (p,g ) in mTEPES.pg )])
-        mTEPES.psot  = Set(initialize=[(p,sc,  ot) for p,sc,  ot in mTEPES.ps *mTEPES.ot   if sum(1 for es in mTEPES.es if es in g2t[ot] and (p,es) in mTEPES.pes)])
-        mTEPES.psht  = Set(initialize=[(p,sc,  ht) for p,sc,  ht in mTEPES.ps *mTEPES.ht   if sum(1 for h  in mTEPES.h  if h  in g2t[ht] and (p,h ) in mTEPES.ph )])
-        mTEPES.pset  = Set(initialize=[(p,sc,  et) for p,sc,  et in mTEPES.ps *mTEPES.et   if sum(1 for eh in mTEPES.eh if eh in g2t[et] and (p,eh) in mTEPES.peh)])
-        mTEPES.psrt  = Set(initialize=[(p,sc,  rt) for p,sc,  rt in mTEPES.ps *mTEPES.rt   if sum(1 for re in mTEPES.re if re in g2t[rt] and (p,re) in mTEPES.pre)])
-        mTEPES.psnt  = Set(initialize=[(p,sc,  nt) for p,sc,  nt in mTEPES.ps *mTEPES.nt   if sum(1 for nr in mTEPES.nr if nr in g2t[nt] and (p,nr) in mTEPES.pnr)])
+        mTEPES.psgt  = Set(initialize=[(p,sc,  gt) for p,sc,  gt in mTEPES.ps *mTEPES.gt   if len([g  for g  in mTEPES.g  if g  in g2t[gt] and (p,g ) in mTEPES.pg ])])
+        mTEPES.psot  = Set(initialize=[(p,sc,  ot) for p,sc,  ot in mTEPES.ps *mTEPES.ot   if len([es for es in mTEPES.es if es in g2t[ot] and (p,es) in mTEPES.pes])])
+        mTEPES.psht  = Set(initialize=[(p,sc,  ht) for p,sc,  ht in mTEPES.ps *mTEPES.ht   if len([h  for h  in mTEPES.h  if h  in g2t[ht] and (p,h ) in mTEPES.ph ])])
+        mTEPES.pset  = Set(initialize=[(p,sc,  et) for p,sc,  et in mTEPES.ps *mTEPES.et   if len([eh for eh in mTEPES.eh if eh in g2t[et] and (p,eh) in mTEPES.peh])])
+        mTEPES.psrt  = Set(initialize=[(p,sc,  rt) for p,sc,  rt in mTEPES.ps *mTEPES.rt   if len([re for re in mTEPES.re if re in g2t[rt] and (p,re) in mTEPES.pre])])
+        mTEPES.psnt  = Set(initialize=[(p,sc,  nt) for p,sc,  nt in mTEPES.ps *mTEPES.nt   if len([nr for nr in mTEPES.nr if nr in g2t[nt] and (p,nr) in mTEPES.pnr])])
         mTEPES.psngt = Set(initialize=[(p,sc,n,gt) for p,sc,n,gt in mTEPES.psn*mTEPES.gt   if (p,sc,  gt) in mTEPES.psgt ])
         mTEPES.psnot = Set(initialize=[(p,sc,n,ot) for p,sc,n,ot in mTEPES.psn*mTEPES.ot   if (p,sc,n,ot) in mTEPES.psngt])
         mTEPES.psnht = Set(initialize=[(p,sc,n,ht) for p,sc,n,ht in mTEPES.psn*mTEPES.ht   if (p,sc,n,ht) in mTEPES.psngt])
@@ -1237,20 +1237,36 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     mTEPES.neso         = [(n,es) for n,es in mTEPES.n*mTEPES.es if mTEPES.n.ord(n) % mTEPES.pOutflowsTimeStep[es] == 0]
     mTEPES.ngen         = [(n,g ) for n,g  in mTEPES.n*mTEPES.g  if mTEPES.n.ord(n) % mTEPES.pEnergyTimeStep  [g ] == 0]
     if par['pIndHydroTopology']:
-        if sum(1 for h,rs in mTEPES.h2r):
-            mTEPES.nh2c = [(n,h ) for n,h  in mTEPES.n*mTEPES.h                                                         if mTEPES.n.ord(n) % sum(mTEPES.pReservoirTimeStep[rs] for rs in mTEPES.rs if (h,rs) in mTEPES.h2r) == 0]
+        if len(mTEPES.h2r):
+            mTEPES.nh2c = []
+            for n,h in mTEPES.n*mTEPES.h:
+                time_step = sum(mTEPES.pReservoirTimeStep[rs] for rs in mTEPES.rs if (h,rs) in mTEPES.h2r)
+                if time_step and mTEPES.n.ord(n) % time_step == 0:
+                    mTEPES.nh2c.append((n,h))
         else:
             mTEPES.nh2c = []
-        if sum(1 for rs,h in mTEPES.r2h):
-            mTEPES.nhc  = [(n,h ) for n,h  in mTEPES.n*mTEPES.h                                                         if mTEPES.n.ord(n) % sum(mTEPES.pReservoirTimeStep[rs] for rs in mTEPES.rs if (rs,h) in mTEPES.r2h) == 0]
+        if len(mTEPES.r2h):
+            mTEPES.nhc  = []
+            for n,h in mTEPES.n*mTEPES.h:
+                time_step = sum(mTEPES.pReservoirTimeStep[rs] for rs in mTEPES.rs if (rs,h) in mTEPES.r2h)
+                if time_step and mTEPES.n.ord(n) % time_step == 0:
+                    mTEPES.nhc.append((n,h))
         else:
             mTEPES.nhc  = []
-        if sum(1 for h,rs in mTEPES.p2r):
-            mTEPES.np2c = [(n,h ) for n,h  in mTEPES.n*mTEPES.h  if sum(1 for rs in mTEPES.rs if (h,rs) in mTEPES.p2r) and mTEPES.n.ord(n) % sum(mTEPES.pReservoirTimeStep[rs] for rs in mTEPES.rs if (h,rs) in mTEPES.p2r) == 0]
+        if len(mTEPES.p2r):
+            mTEPES.np2c = []
+            for n,h in mTEPES.n*mTEPES.h:
+                time_step = sum(mTEPES.pReservoirTimeStep[rs] for rs in mTEPES.rs if (h,rs) in mTEPES.p2r)
+                if time_step and mTEPES.n.ord(n) % time_step == 0:
+                    mTEPES.np2c.append((n,h))
         else:
             mTEPES.np2c = []
-        if sum(1 for rs,h in mTEPES.r2p):
-            mTEPES.npc  = [(n,h ) for n,h  in mTEPES.n*mTEPES.h  if sum(1 for rs in mTEPES.rs if (rs,h) in mTEPES.r2p) and mTEPES.n.ord(n) % sum(mTEPES.pReservoirTimeStep[rs] for rs in mTEPES.rs if (rs,h) in mTEPES.r2p) == 0]
+        if len(mTEPES.r2p):
+            mTEPES.npc  = []
+            for n,h in mTEPES.n*mTEPES.h:
+                time_step = sum(mTEPES.pReservoirTimeStep[rs] for rs in mTEPES.rs if (rs,h) in mTEPES.r2p)
+                if time_step and mTEPES.n.ord(n) % time_step == 0:
+                    mTEPES.npc.append((n,h))
         else:
             mTEPES.npc  = []
         mTEPES.nrsc     = [(n,rs) for n,rs in mTEPES.n*mTEPES.rs if mTEPES.n.ord(n) % mTEPES.pReservoirTimeStep[rs] == 0]
