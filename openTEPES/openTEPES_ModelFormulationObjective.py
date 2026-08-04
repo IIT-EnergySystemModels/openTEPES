@@ -45,6 +45,11 @@ def GenerationOperationModelFormulationObjFunct(OptModel, mTEPES, pIndLogConsole
 
     StartTime = time.time()
 
+    # the small tolerance pEpsilonCharge=1e-5 is added to avoid pumping/charging with curtailment/spillage
+    pEpsilonCharge = 1e-5
+    # the small tolerance pEpsilonLosses=1e-5 prices the ohmic losses so that the solver does not leave them slack
+    pEpsilonLosses = 1e-5
+
     g2a = defaultdict(set)
     for ar,g in mTEPES.a2g:
         g2a[ar].add(g)
@@ -65,10 +70,8 @@ def GenerationOperationModelFormulationObjFunct(OptModel, mTEPES, pIndLogConsole
                                                 mTEPES.pLoadLevelDuration[p,sc,n]() * sum(mTEPES.pLinearOMCost   [       re] * OptModel.vTotalOutput    [p,sc,n,re] for re in mTEPES.re if (p,re) in mTEPES.pre) )
     setattr(OptModel, f'eTotalGCost_{p}_{sc}_{st}', Constraint(mTEPES.n, rule=eTotalGCost, doc='system variable generation operation cost [MEUR]'))
 
-    # the small tolerance pEpsilon=1e-5 is added to avoid pumping/charging with curtailment/spillage
-    pEpsilon = 1e-5
     def eTotalCCost(OptModel,n):
-        return OptModel.vTotalCCost    [p,sc,n] == mTEPES.pLoadLevelDuration[p,sc,n]() * sum((mTEPES.pLinearVarCost[p,sc,n,eh]+pEpsilon) * OptModel.vESSTotalCharge[p,sc,n,eh] for eh in mTEPES.eh if (p,eh) in mTEPES.peh and eh not in mTEPES.el)
+        return OptModel.vTotalCCost    [p,sc,n] == mTEPES.pLoadLevelDuration[p,sc,n]() * sum((mTEPES.pLinearVarCost[p,sc,n,eh]+pEpsilonCharge) * OptModel.vESSTotalCharge[p,sc,n,eh] for eh in mTEPES.eh if (p,eh) in mTEPES.peh and eh not in mTEPES.el)
     setattr(OptModel, f'eTotalCCost_{p}_{sc}_{st}', Constraint(mTEPES.n, rule=eTotalCCost, doc='system variable consumption operation cost [MEUR]'))
 
     def eTotalECost(OptModel,n):
@@ -77,17 +80,17 @@ def GenerationOperationModelFormulationObjFunct(OptModel, mTEPES, pIndLogConsole
         return OptModel.vTotalECost[p,sc,n] == sum(OptModel.vTotalECostArea[p,sc,n,ar] for ar in mTEPES.ar)
     setattr(OptModel, f'eTotalECost_{p}_{sc}_{st}', Constraint(mTEPES.n, rule=eTotalECost, doc='system emission cost [MEUR]'))
 
-    pIndEmissionArea = {ar: mTEPES.pEmission[p,ar] != math.inf and any(mTEPES.pEmissionRate[g] for g in mTEPES.g if g in g2a[ar] and (p,g) in mTEPES.pg) for ar in mTEPES.ar}
+    pIndEmissionArea = {ar: mTEPES.pEmission[p,ar] != math.inf and any(mTEPES.pEmissionRate[g] for g in g2a[ar] and (p,g) in mTEPES.pg) for ar in mTEPES.ar}
 
     def eTotalEmissionArea(OptModel,n,ar):
         if not pIndEmissionArea[ar]:
             return Constraint.Skip
-        return OptModel.vTotalEmissionArea[p,sc,n,ar] == (mTEPES.pLoadLevelDuration[p,sc,n]() * 1e-3 * (sum(mTEPES.pEmissionRate[nr] * OptModel.vTotalOutput    [p,sc,n,nr] for nr in nr2a[ar])    # 1e-3 to convert from tCO2/MWh to MtCO2/GWh
-                                                                                                     +  sum(mTEPES.pEmissionRate[bo] * OptModel.vTotalOutputHeat[p,sc,n,bo] for bo in bo2a[ar])))  # 1e-3 to convert from tCO2/MWh to MtCO2/GWh
+        return OptModel.vTotalEmissionArea[p,sc,n,ar] == (mTEPES.pLoadLevelDuration[p,sc,n]() * 1e-3 * (sum(mTEPES.pEmissionRate[g ] * OptModel.vTotalOutput    [p,sc,n,g ] for g  in g2a [ar] and g not in mTEPES.bo)    # 1e-3 to convert from tCO2/MWh to MtCO2/GWh
+                                                                                                     +  sum(mTEPES.pEmissionRate[bo] * OptModel.vTotalOutputHeat[p,sc,n,bo] for bo in bo2a[ar]                       )))  # 1e-3 to convert from tCO2/MWh to MtCO2/GWh
     setattr(OptModel, f'eTotalEmissionArea_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.ar, rule=eTotalEmissionArea, doc='area total emission [MtCO2 eq]'))
 
     def eTotalECostArea(OptModel,n,ar):
-        if sum(mTEPES.pEmissionVarCost[p,sc,n,g] for g in mTEPES.g if g in g2a[ar] and (p,g) in mTEPES.pg) == 0.0:
+        if not any(mTEPES.pEmissionVarCost[p,sc,n,g] for g in g2a[ar] if (p,g) in mTEPES.pg):
             return Constraint.Skip
         return OptModel.vTotalECostArea[p,sc,n,ar] == (mTEPES.pLoadLevelDuration[p,sc,n]() * (sum(mTEPES.pEmissionVarCost[p,sc,n,nr] * OptModel.vTotalOutput    [p,sc,n,nr] for nr in nr2a[ar])
                                                                                             + sum(mTEPES.pEmissionVarCost[p,sc,n,bo] * OptModel.vTotalOutputHeat[p,sc,n,bo] for bo in bo2a[ar])))
@@ -102,7 +105,7 @@ def GenerationOperationModelFormulationObjFunct(OptModel, mTEPES, pIndLogConsole
     def eTotalNCost(OptModel,n):
         if len(mTEPES.ll) == 0:
             return Constraint.Skip
-        return OptModel.vTotalNCost[p,sc,n] == pEpsilon * mTEPES.pLoadLevelDuration[p,sc,n]() * sum(OptModel.vLineLosses[p,sc,n,ni,nf,cc] for ni,nf,cc in mTEPES.ll if (p,ni,nf,cc) in mTEPES.pll)
+        return OptModel.vTotalNCost[p,sc,n] == pEpsilonLosses * mTEPES.pLoadLevelDuration[p,sc,n]() * sum(OptModel.vLineLosses[p,sc,n,ni,nf,cc] for ni,nf,cc in mTEPES.ll if (p,ni,nf,cc) in mTEPES.pll)
     setattr(OptModel, f'eTotalNCost_{p}_{sc}_{st}', Constraint(mTEPES.n, rule=eTotalNCost, doc='system variable network operation cost [MEUR]'))
 
     def eTotalRElecCost(OptModel,n):

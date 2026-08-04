@@ -211,7 +211,7 @@ def GenerationOperationElecModelFormulationInvestment(OptModel, mTEPES, pIndLogC
         print('eAdeqReserveMarginElec    ... ', len(getattr(OptModel, f'eAdequacyReserveMarginElec_{p}_{sc}_{st}')), ' rows')
 
     def eMaxSystemEmission(OptModel,ar):
-        if math.isinf(mTEPES.pEmission[p,ar]) or st != mTEPES.Last_st or sum(mTEPES.pEmissionRate[g] for g in mTEPES.g if g in g2a[ar] and (g in mTEPES.nr or g in mTEPES.bo)) == 0.0:
+        if math.isinf(mTEPES.pEmission[p,ar]) or st != mTEPES.Last_st or sum(mTEPES.pEmissionRate[g] for g in g2a[ar]) == 0.0:
             return Constraint.Skip
         # There is an emission limit, there are generators with emissions in the Area and it is the last stage
         return sum(OptModel.vTotalEmissionArea[p,sc,na,ar] for na in mTEPES.na) <= mTEPES.pEmission[p,ar]
@@ -226,7 +226,7 @@ def GenerationOperationElecModelFormulationInvestment(OptModel, mTEPES, pIndLogC
         if mTEPES.pRESEnergy[p,ar]() == 0.0 or st != mTEPES.Last_st:
             return Constraint.Skip
         return sum(OptModel.vTotalRESEnergyArea[p,sc,na,ar] for na in mTEPES.na)/pTotalDuration >= mTEPES.pRESEnergy[p,ar]/pTotalDuration
-    setattr(OptModel, f'eMinSystemRESEnergy_{p}_{sc}_{st}', Constraint(mTEPES.ar, rule=eMinSystemRESEnergy, doc='minimum RES energy [GW]'))
+    setattr(OptModel, f'eMinSystemRESEnergy_{p}_{sc}_{st}', Constraint(mTEPES.ar, rule=eMinSystemRESEnergy, doc='minimum RES energy, expressed as average power over the stage [GW]'))
 
     if pIndLogConsole:
         print('eMinSystemRESEnergy       ... ', len(getattr(OptModel, f'eMinSystemRESEnergy_{p}_{sc}_{st}')), ' rows')

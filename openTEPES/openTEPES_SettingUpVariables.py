@@ -1133,11 +1133,11 @@ def SettingUpVariables(OptModel, mTEPES):
         # detecting reserve margin infeasibility
         for p,ar in mTEPES.p*mTEPES.ar:
             if     sum(mTEPES.pRatedMaxPowerElec[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]()) for g in g2a[ar] if (p,g) in mTEPES.pg) < mTEPES.pDemandElecPeak[p,ar] * mTEPES.pReserveMargin[p,ar]():
-                raise     ValueError('### Electricity reserve margin infeasibility ', p,ar, sum(mTEPES.pRatedMaxPowerElec[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]()) for g in mTEPES.g if (p,g) in mTEPES.pg and g in g2a[ar]), mTEPES.pDemandElecPeak[p,ar] * mTEPES.pReserveMargin[p,ar]())
+                raise     ValueError('### Electricity reserve margin infeasibility ', p,ar, sum(mTEPES.pRatedMaxPowerElec[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]()) for g in g2a[ar] if (p,g) in mTEPES.pg), mTEPES.pDemandElecPeak[p,ar] * mTEPES.pReserveMargin[p,ar]())
 
             if mTEPES.pIndHeat():
                 if sum(mTEPES.pRatedMaxPowerHeat[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]()) for g in g2a[ar] if (p,g) in mTEPES.pg) < mTEPES.pDemandHeatPeak[p,ar] * mTEPES.pReserveMarginHeat[p,ar]:
-                    raise ValueError('### Heat reserve margin infeasibility ',        p,ar, sum(mTEPES.pRatedMaxPowerHeat[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]()) for g in mTEPES.g if (p,g) in mTEPES.pg and g in g2a[ar]), mTEPES.pDemandHeatPeak[p,ar] * mTEPES.pReserveMarginHeat[p,ar]())
+                    raise ValueError('### Heat reserve margin infeasibility ',        p,ar, sum(mTEPES.pRatedMaxPowerHeat[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]()) for g in g2a[ar] if (p,g) in mTEPES.pg), mTEPES.pDemandHeatPeak[p,ar] * mTEPES.pReserveMarginHeat[p,ar]())
 
         for p,sc,ar in mTEPES.ps*mTEPES.ar:
             if mTEPES.pRESEnergy[p,ar]() > sum(mTEPES.pDemandElec[p,sc,n,nd]()*mTEPES.pLoadLevelDuration[p,sc,n]() for n,nd in mTEPES.n*d2a[ar] if (p,sc,n,nd) in mTEPES.psnnd):

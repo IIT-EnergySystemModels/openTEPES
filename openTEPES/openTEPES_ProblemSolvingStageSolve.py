@@ -153,8 +153,8 @@ def StageSolve(OptModel, mTEPES, DirName, CaseName, SolverName, pIndLogConsole, 
                                                      OptModel.vTotalCCost    [p,sc,n] +
                                                      OptModel.vTotalECost    [p,sc,n] +
                                                      OptModel.vTotalNCost    [p,sc,n] +
-                                                     OptModel.vTotalRElecCost[p,sc,n]) for p,sc,n in mTEPES.psn                       ) +
-                            sum(pScenFactor[p,sc] *  OptModel.vTotalRH2Cost  [p,sc,n]  for p,sc,n in mTEPES.psn if mTEPES.pIndHydrogen) +
+                                                     OptModel.vTotalRElecCost[p,sc,n]) for p,sc,n in mTEPES.psn                         ) +
+                            sum(pScenFactor[p,sc] *  OptModel.vTotalRH2Cost  [p,sc,n]  for p,sc,n in mTEPES.psn if mTEPES.pIndHydrogen()) +
                             sum(pScenFactor[p,sc] *  OptModel.vTotalRHeatCost[p,sc,n]  for p,sc,n in mTEPES.psn if mTEPES.pIndHeat()    ) )
                 setattr(OptModel, f'eTotalOCost_{p}_{sc}_{st}', Objective(rule=eTotalOCost, sense=minimize, doc='total system operation cost [MEUR]'))
 
