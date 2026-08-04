@@ -5,35 +5,29 @@ openTEPES.openTEPES_ProblemSolvingBenders — classical L-shaped Benders decompo
 Master problem
 --------------
 
-* Decision variables: ``x[p, ni, nf, cc]`` for every candidate transmission line in ``mTEPES.plc`` (the
-  set of ``(Period, InitialNode, FinalNode, Circuit)`` tuples whose ``FixedInvestmentCost > 0``).
-* Recourse variable ``theta`` approximates the **full** system total cost ``eTotalSCost`` (operation +
-  investment) as a function of master decisions. Investment cost is therefore baked into the cuts; the
-  master objective is simply ``min theta``.
-* Benders cuts accumulated across iterations: ``theta >= eTotalSCost(x*) + dual^T (x - x*)`` where the
-  dual is the multiplier on the subproblem's fixing constraint at ``x = x*``.
+* Decision variables: ``x[p, ni, nf, cc]`` for every candidate transmission line in ``mTEPES.plc`` (the   set of ``(Period, InitialNode, FinalNode, Circuit)`` tuples whose ``FixedInvestmentCost > 0``).
+* Recourse variable ``theta`` approximates the **full** system total cost ``eTotalSCost`` (operation + investment) as a function of master decisions. Investment cost is therefore baked into the cuts; the master objective is simply ``min theta``.
+* Benders cuts accumulated across iterations: ``theta >= eTotalSCost(x*) + dual^T (x - x*)`` where the dual is the multiplier on the subproblem's fixing constraint at ``x = x*``.
 
 Subproblem
 ----------
 
-The full openTEPES model with every candidate ``vNetworkInvest`` pinned to the master's decision via an
-explicit equality constraint ``vNetworkInvest[k] == benders_x[k]`` (mutable ``Param`` ``benders_x``).
-The dual on this constraint is exactly ``∂(eTotalSCost) / ∂(vNetworkInvest[k])`` at the current master
-solution — which is what the Benders cut needs. Pyomo's ``rc`` Suffix on ``Var.fix()`` is not reliably
-populated by every solver (HiGHS in particular leaves it empty), so the explicit-constraint approach is
-solver-portable.
+The full openTEPES model with every candidate ``vNetworkInvest`` pinned to the master's decision via an explicit equality constraint
+``vNetworkInvest[k] == benders_x[k]`` (mutable ``Param`` ``benders_x``).
+The dual on this constraint is exactly ``∂(eTotalSCost) / ∂(vNetworkInvest[k])`` at the current master solution — which is what the Benders cut
+needs. Pyomo's ``rc`` Suffix on ``Var.fix()`` is not reliably populated by every solver (HiGHS in particular leaves it empty), so the
+explicit-constraint approach is solver-portable.
 
 Scope
 -----
 
-This is a deliberately minimal driver — single deterministic case, no multi-cut, no trust region, no
-binary investments (subproblem must be LP for the duals to be valid). Intended as a **compatibility guard**
-for the layered-architecture restructure: every future refactor must keep this Benders loop converging to
-the joint-LP optimum on the bundled CI cases. The full Benders / sector decomposition driver with stochastic
-support is RFC PR #9 (``solver/decomposition/``).
+This is a deliberately minimal driver — single deterministic case, no multi-cut, no trust region, no binary investments
+(subproblem must be LP for the duals to be valid). Intended as a **compatibility guard** for the layered-architecture restructure:
+every future refactor must keep this Benders loop converging to the joint-LP optimum on the bundled CI cases.
+The full Benders / sector decomposition driver with stochastic support is RFC PR #9 (``solver/decomposition/``).
 
-Validation: on the bundled ``9n`` case (one candidate line, single-stage 7-day fixture), ``lshaped()``
-converges in ≤ 10 iterations to the joint-LP total cost within 1e-4 relative tolerance.
+Validation: on the bundled ``9n`` case (one candidate line, single-stage 7-day fixture), ``lshaped()`` converges in ≤ 10 iterations
+to the joint-LP total cost within 1e-4 relative tolerance.
 """
 from __future__ import annotations
 

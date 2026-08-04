@@ -1,23 +1,22 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 09, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - august 04, 2026
 
 openTEPES.openTEPES_ProblemSolvingStageIter — stage-by-stage formulate-and-solve driver.
 
-``StageIterativeSolving`` runs the model's per-stage loop: for every ``(period, scenario, stage)`` it activates
-only that stage's load levels, builds the operation constraints for the stage, and calls ``ProblemSolving`` once
-the stage's part of the model is in place. Two solve paths are preserved exactly as they were inside
-``openTEPES_run``:
+``StageIterativeSolving`` runs the model's per-stage loop: for every ``(period, scenario, stage)`` it activates only that stage's load levels,
+builds the operation constraints for the stage, and calls ``ProblemSolving`` once the stage's part of the model is in place.
+Two solve paths are preserved exactly as they were inside ``openTEPES_run``:
 
-  * **no expansion / no system limits** — each scenario is solved on its own as a deterministic operation model
-    (``pScenProb`` is set to 1.0 for that single scenario, the solve runs, then its constraints are deactivated);
-  * **with expansion decisions or a system emission / RES-energy limit** — one joint stochastic solve is run at
-    the last ``(period, scenario)`` over all stages, using the input scenario probabilities.
+  * **no expansion / no system limits** — each scenario is solved on its own as a deterministic operation model (``pScenProb`` is set to 1.0
+    for that single scenario, the solve runs, then its constraints are deactivated);
+  * **with expansion decisions or a system emission / RES-energy limit** — one joint stochastic solve is run at the last ``(period, scenario)``
+    over all stages, using the input scenario probabilities.
 
-After the loop it rebuilds the full stage / load-level sets, reactivates every constraint, and restores the
-scenario probabilities so the output writers report the intended (per-scenario sum, or expected-value) cost.
+After the loop it rebuilds the full stage / load-level sets, reactivates every constraint, and restores the scenario probabilities so the output
+writers report the intended (per-scenario sum, or expected-value) cost.
 
-This is a pure move out of ``openTEPES_run`` — the loop body is unchanged, so results are identical. It sets up
-the seam that later orchestration drivers (Mode C re-solve, sector / time decomposition) build on.
+This is a pure move out of ``openTEPES_run`` — the loop body is unchanged, so results are identical. It sets up the seam that later
+orchestration drivers (Mode C re-solve, sector / time decomposition) build on.
 """
 from __future__ import annotations
 
@@ -85,11 +84,11 @@ def StageIterativeSolving(mTEPES, DirName, CaseName, SolverName, pIndLogConsole,
         mTEPES.ngen         = [(n,g ) for n,g  in mTEPES.n*mTEPES.g  if mTEPES.n.ord(n) %     mTEPES.pEnergyTimeStep  [g ] == 0]
         if mTEPES.pIndHydroTopology:
             mTEPES.nhc      = [(n,h ) for n,h  in mTEPES.n*mTEPES.h  if mTEPES.n.ord(n) % sum(mTEPES.pReservoirTimeStep[rs] for rs in mTEPES.rs if (rs,h) in mTEPES.r2h) == 0]
-            if sum(1 for h,rs in mTEPES.p2r):
+            if len(mTEPES.p2r):
                 mTEPES.np2c = [(n,h ) for n,h  in mTEPES.n*mTEPES.h  if sum(1 for rs in mTEPES.rs if (h,rs) in mTEPES.p2r) and mTEPES.n.ord(n) % sum(mTEPES.pReservoirTimeStep[rs] for rs in mTEPES.rs if (h,rs) in mTEPES.p2r) == 0]
             else:
                 mTEPES.np2c = []
-            if sum(1 for rs,h in mTEPES.r2p):
+            if len(mTEPES.r2p):
                 mTEPES.npc  = [(n,h ) for n,h  in mTEPES.n*mTEPES.h  if sum(1 for rs in mTEPES.rs if (rs,h) in mTEPES.r2p) and mTEPES.n.ord(n) % sum(mTEPES.pReservoirTimeStep[rs] for rs in mTEPES.rs if (rs,h) in mTEPES.r2p) == 0]
             else:
                 mTEPES.npc = []
@@ -189,11 +188,11 @@ def StageIterativeSolving(mTEPES, DirName, CaseName, SolverName, pIndLogConsole,
                         mTEPES.ngen         = [(n,g ) for n,g  in mTEPES.n*mTEPES.g  if mTEPES.n.ord(n) %     mTEPES.pEnergyTimeStep  [g ] == 0]
                         if mTEPES.pIndHydroTopology:
                             mTEPES.nhc      = [(n,h ) for n,h  in mTEPES.n*mTEPES.h  if mTEPES.n.ord(n) % sum(mTEPES.pReservoirTimeStep[rs] for rs in mTEPES.rs if (rs,h) in mTEPES.r2h) == 0]
-                            if sum(1 for h,rs in mTEPES.p2r):
+                            if len(mTEPES.p2r):
                                 mTEPES.np2c = [(n,h ) for n,h  in mTEPES.n*mTEPES.h  if sum(1 for rs in mTEPES.rs if (h,rs) in mTEPES.p2r) and mTEPES.n.ord(n) % sum(mTEPES.pReservoirTimeStep[rs] for rs in mTEPES.rs if (h,rs) in mTEPES.p2r) == 0]
                             else:
                                 mTEPES.np2c = []
-                            if sum(1 for rs,h in mTEPES.r2p):
+                            if len(mTEPES.r2p):
                                 mTEPES.npc  = [(n,h ) for n,h  in mTEPES.n*mTEPES.h  if sum(1 for rs in mTEPES.rs if (rs,h) in mTEPES.r2p) and mTEPES.n.ord(n) % sum(mTEPES.pReservoirTimeStep[rs] for rs in mTEPES.rs if (rs,h) in mTEPES.r2p) == 0]
                             else:
                                 mTEPES.npc  = []
@@ -248,12 +247,12 @@ def StageIterativeSolving(mTEPES, DirName, CaseName, SolverName, pIndLogConsole,
                         mTEPES.ngen         = [(n,g ) for n,g  in mTEPES.n*mTEPES.g  if mTEPES.n.ord(n) %     mTEPES.pEnergyTimeStep  [g ] == 0]
                         if mTEPES.pIndHydroTopology:
                             mTEPES.nhc      = [(n,h ) for n,h  in mTEPES.n*mTEPES.h  if mTEPES.n.ord(n) % sum(mTEPES.pReservoirTimeStep[rs] for rs in mTEPES.rs if (rs,h) in mTEPES.r2h) == 0]
-                            if sum(1 for h,rs in mTEPES.p2r):
-                                mTEPES.np2c = [(n,h ) for n,h  in mTEPES.n*mTEPES.h  if sum(1 for rs in mTEPES.rs if (h,rs) in mTEPES.p2r) and mTEPES.n.ord(n) % sum(mTEPES.pReservoirTimeStep[rs] for rs in mTEPES.rs if (h,rs) in mTEPES.p2r) == 0]
+                            if len(mTEPES.p2r):
+                                mTEPES.np2c = [(n,h ) for n,h  in mTEPES.n*mTEPES.h  if len([rs for rs in mTEPES.rs if (h,rs) in mTEPES.p2r]) and mTEPES.n.ord(n) % sum(mTEPES.pReservoirTimeStep[rs] for rs in mTEPES.rs if (h,rs) in mTEPES.p2r) == 0]
                             else:
                                 mTEPES.np2c = []
-                            if sum(1 for rs,h in mTEPES.r2p):
-                                mTEPES.npc  = [(n,h ) for n,h  in mTEPES.n*mTEPES.h  if sum(1 for rs in mTEPES.rs if (rs,h) in mTEPES.r2p) and mTEPES.n.ord(n) % sum(mTEPES.pReservoirTimeStep[rs] for rs in mTEPES.rs if (rs,h) in mTEPES.r2p) == 0]
+                            if len(mTEPES.r2p):
+                                mTEPES.npc  = [(n,h ) for n,h  in mTEPES.n*mTEPES.h  if len([rs for rs in mTEPES.rs if (rs,h) in mTEPES.r2p]) and mTEPES.n.ord(n) % sum(mTEPES.pReservoirTimeStep[rs] for rs in mTEPES.rs if (rs,h) in mTEPES.r2p) == 0]
                             else:
                                 mTEPES.npc  = []
                             mTEPES.nrsc     = [(n,rs) for n,rs in mTEPES.n*mTEPES.rs if mTEPES.n.ord(n) %     mTEPES.pReservoirTimeStep[rs] == 0]
@@ -292,12 +291,12 @@ def StageIterativeSolving(mTEPES, DirName, CaseName, SolverName, pIndLogConsole,
     mTEPES.ngen         = [(n,g ) for n,g  in mTEPES.n*mTEPES.g  if mTEPES.n.ord(n) %     mTEPES.pEnergyTimeStep  [g ] == 0]
     if mTEPES.pIndHydroTopology:
         mTEPES.nhc      = [(n,h ) for n,h  in mTEPES.n*mTEPES.h  if mTEPES.n.ord(n) % sum(mTEPES.pReservoirTimeStep[rs] for rs in mTEPES.rs if (rs,h) in mTEPES.r2h) == 0]
-        if sum(1 for h,rs in mTEPES.p2r):
-            mTEPES.np2c = [(n,h ) for n,h  in mTEPES.n*mTEPES.h  if sum(1 for rs in mTEPES.rs if (h,rs) in mTEPES.p2r) and mTEPES.n.ord(n) % sum(mTEPES.pReservoirTimeStep[rs] for rs in mTEPES.rs if (h,rs) in mTEPES.p2r) == 0]
+        if len(mTEPES.p2r):
+            mTEPES.np2c = [(n,h ) for n,h  in mTEPES.n*mTEPES.h  if len([rs for rs in mTEPES.rs if (h,rs) in mTEPES.p2r]) and mTEPES.n.ord(n) % sum(mTEPES.pReservoirTimeStep[rs] for rs in mTEPES.rs if (h,rs) in mTEPES.p2r) == 0]
         else:
             mTEPES.np2c = []
-        if sum(1 for rs,h in mTEPES.r2p):
-            mTEPES.npc  = [(n,h ) for n,h  in mTEPES.n*mTEPES.h  if sum(1 for rs in mTEPES.rs if (rs,h) in mTEPES.r2p) and mTEPES.n.ord(n) % sum(mTEPES.pReservoirTimeStep[rs] for rs in mTEPES.rs if (rs,h) in mTEPES.r2p) == 0]
+        if len(mTEPES.r2p):
+            mTEPES.npc  = [(n,h ) for n,h  in mTEPES.n*mTEPES.h  if len([rs for rs in mTEPES.rs if (rs,h) in mTEPES.r2p]) and mTEPES.n.ord(n) % sum(mTEPES.pReservoirTimeStep[rs] for rs in mTEPES.rs if (rs,h) in mTEPES.r2p) == 0]
         else:
             mTEPES.npc  = []
         mTEPES.nrsc     = [(n,rs) for n,rs in mTEPES.n*mTEPES.rs if mTEPES.n.ord(n) %     mTEPES.pReservoirTimeStep[rs] == 0]

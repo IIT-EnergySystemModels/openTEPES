@@ -1,21 +1,20 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 25, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 05, 2026
+
 openTEPES.openTEPES_ProblemSolvingTuning — per-solver option presets for the initial solve and the fix-and-resolve LP pass.
 
-Each solver family (Gurobi, CPLEX, HiGHS, GAMS) has a distinct option-setting API; ``apply_solver_options()``
-centralises the dispatch so ``ProblemSolving`` does not need to know which solver it is talking to. The function
-also picks the right barrier / simplex method depending on whether this is the first solve (``ncall == 1`` →
-barrier ``Method=2``) or a warm-restart (``ncall > 1`` → automatic ``Method=-1``).
+Each solver family (Gurobi, CPLEX, HiGHS, GAMS) has a distinct option-setting API; ``apply_solver_options()`` centralises the dispatch so
+``ProblemSolving`` does not need to know which solver it is talking to. The function also picks the right barrier / simplex method depending on
+whether this is the first solve (``ncall == 1`` → barrier ``Method=2``) or a warm-restart (``ncall > 1`` → automatic ``Method=-1``).
 
-For GAMS, options are returned as a set of additional CLI strings rather than set on ``Solver.options``; that is
-why the function returns an optional ``solver_options`` value for the caller to forward to ``Solver.solve()``.
+For GAMS, options are returned as a set of additional CLI strings rather than set on ``Solver.options``; that is why the function returns an
+optional ``solver_options`` value for the caller to forward to ``Solver.solve()``.
 
-``apply_resolve_options()`` is the lighter pass used between the initial MIP solve and the fix-and-resolve LP
-pass — it just switches the solver to ``Method=-1`` / ``LPMethod=0`` for warm-restart behaviour.
+``apply_resolve_options()`` is the lighter pass used between the initial MIP solve and the fix-and-resolve LP pass — it just switches the solver
+to ``Method=-1`` / ``LPMethod=0`` for warm-restart behaviour.
 
-Thread count defaults to half the available logical+physical cores. Numerically hard large-scale
-stochastic LPs may need solver-specific barrier tuning (e.g. ``Crossover``, ``BarHomogeneous``,
-``ScaleFlag``, ``NumericFocus`` for Gurobi); set those per deployment, since the right values are
+Thread count defaults to half the available logical+physical cores. Numerically hard large-scale stochastic LPs may need solver-specific barrier
+tuning (e.g. ``Crossover``, ``BarHomogeneous``, ``ScaleFlag``, ``NumericFocus`` for Gurobi); set those per deployment, since the right values are
 case-dependent and can regress smaller cases.
 """
 from __future__ import annotations
@@ -23,12 +22,6 @@ from __future__ import annotations
 import os
 
 import psutil
-
-# opt-in (default OFF): warm dual-simplex sweep mode for Mode C re-solves.
-try:
-    from .openTEPES_ProblemSolvingWarmSweep import apply_resolve_method as _apply_warm_sweep_resolve
-except ImportError:
-    from openTEPES.openTEPES_ProblemSolvingWarmSweep import apply_resolve_method as _apply_warm_sweep_resolve
 
 
 def _threads() -> int:
@@ -62,7 +55,6 @@ def apply_solver_options(Solver, SolverName: str, FileName: str, ncall: int):
         # Solver.options["RINS"]          = 100
         # Solver.options["BarConvTol"]    = 1e-10
         # Solver.options["BarQCPConvTol"] = 0.025
-        _apply_warm_sweep_resolve(Solver, SolverName, ncall)  # opt-in: override to capped dual simplex when ON
         return None
 
     if SolverName == "gurobi_persistent":
@@ -76,7 +68,6 @@ def apply_solver_options(Solver, SolverName: str, FileName: str, ncall: int):
         Solver.set_gurobi_param("Threads",     _threads())
         Solver.set_gurobi_param("TimeLimit",      36000)
         Solver.set_gurobi_param("IterationLimit", 36000000)
-        _apply_warm_sweep_resolve(Solver, SolverName, ncall)  # opt-in: override to capped dual simplex when ON
         return None
 
     if SolverName == "cplex":

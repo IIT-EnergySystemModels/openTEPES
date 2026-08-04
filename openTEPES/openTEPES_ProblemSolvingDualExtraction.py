@@ -1,22 +1,21 @@
 """
 Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 16, 2026
+
 openTEPES.openTEPES_ProblemSolvingDualExtraction — fix-and-resolve pass that recovers shadow prices on a MIP solution.
 
-After an initial MIP solve, ``fix_for_duals()`` fixes every binary/integer variable to its optimal value and
-relaxes its domain to ``UnitInterval`` so the model becomes a pure LP; ``ProblemSolving`` then re-solves it
-with a ``dual`` Suffix attached, and ``collect_duals()`` walks every active constraint to copy the dual values
-into ``mTEPES.pDuals`` for downstream consumption by ``MarginalResults`` / ``EconomicResults`` (LMPs, water
-values, H2 marginals, …).
+After an initial MIP solve, ``fix_for_duals()`` fixes every binary/integer variable to its optimal value and relaxes its domain to ``UnitInterval``,
+so the model becomes a pure LP; ``ProblemSolving`` then re-solves it with a ``dual`` Suffix attached, and ``collect_duals()`` walks every active
+constraint to copy the dual values into ``mTEPES.pDuals`` for downstream consumption by ``MarginalResults`` / ``EconomicResults``
+(LMPs, water values, H2 marginals, …).
 
-The fixing of continuous investment variables (lines 172-192 of the original ``ProblemSolving.py``) is
-preserved exactly — those decisions are pinned even on a fully-LP case, ensuring the second solve cannot
-revise the investment plan.
+The fixing of continuous investment variables (lines 172-192 of the original ``ProblemSolving.py``) is preserved exactly — those decisions are pinned
+even on a fully-LP case, ensuring the second solve cannot revise the investment plan.
 
-``NoRepetition`` controls scope: when set, every binary var across every ``(p, sc)`` is fixed; otherwise only
-the current ``(p, sc)`` block is fixed (the rest stays as it was at the end of the previous stage solve).
+``NoRepetition`` controls scope: when set, every binary var across every ``(p, sc)`` is fixed; otherwise only the current ``(p, sc)`` block is fixed
+(the rest stays as it was at the end of the previous stage solve).
 
-``fix_for_duals`` records what it changed on the model, so ``unfix_for_duals`` can put it back. A Mode C
-sweep needs that: the fixed plan is right for reading duals but wrong for re-optimising.
+``fix_for_duals`` records what it changed on the model, so ``unfix_for_duals`` can put it back. A Mode C sweep needs that: the fixed plan is right
+for reading duals but wrong for re-optimising.
 """
 from __future__ import annotations
 

@@ -53,7 +53,7 @@ def RebuildStageAndLoadLevelSets(mTEPES):
     mTEPES.del_component(mTEPES.n )
     mTEPES.del_component(mTEPES.n2)
     mTEPES.st = Set(doc='stages',      initialize=[stt for stt in mTEPES.stt if mTEPES.pStageWeight[stt] and sum(1 for p,sc,stt,nn in mTEPES.s2n)])
-    ActiveLoadLevels = [nn for nn in mTEPES.nn if sum(1 for p,sc,st in mTEPES.ps*mTEPES.st if (p,sc,st, nn) in mTEPES.s2n)]
+    ActiveLoadLevels = [nn for nn in mTEPES.nn if sum(1 for p,sc,st in mTEPES.ps*mTEPES.st if (p,sc,st,nn) in mTEPES.s2n)]
     mTEPES.n  = Set(doc='load levels', initialize=ActiveLoadLevels)
     mTEPES.n2 = Set(doc='load levels', initialize=ActiveLoadLevels)
 
