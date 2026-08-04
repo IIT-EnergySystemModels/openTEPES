@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 03, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 04, 2026
 
 Investment and retirement results.
 
@@ -62,7 +62,7 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutput,
             OutputToFile.pivot_table(index=['Period', 'Generator'], values='MW').rename_axis(['Period', 'Generator'], axis=0).rename(columns={'MW': 'Power [MW]'}, inplace=False).oT.write(f'{_path}/oT_Result_MarketResultsGenerationInvestment_{CaseName}.csv', index=True, sep=',')
         OutputToFile = OutputToFile.set_index(['Period', 'Generator'])
 
-        if sum(1 for ar in mTEPES.ar if sum(1 for g in g2a[ar])) > 1:
+        if sum(1 for ar in mTEPES.ar if len(g2a[ar])) > 1:
             if pIndPlotOutput:
                 sPAREB           = [(p,ar,eb) for p,ar,eb in mTEPES.par*mTEPES.eb if (p,eb) in mTEPES.peb and eb in g2a[ar]]
                 GenInvestToArea  = pd.Series(data=[OutputToFile['MW'][p,eb] for p,ar,eb in sPAREB], index=pd.Index(sPAREB)).to_frame(name='MW')
@@ -161,7 +161,7 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutput,
             OutputToFile.pivot_table(index=['Period'], columns=['Generator'], values='MW').rename_axis(['Period'], axis=0).oT.write(f'{_path}/oT_Result_GenerationRetirement_{CaseName}.csv', index=True, sep=',')
         OutputToFile = OutputToFile.set_index(['Period', 'Generator'])
 
-        if sum(1 for ar in mTEPES.ar if sum(1 for g in g2a[ar])) > 1:
+        if sum(1 for ar in mTEPES.ar if len(g2a[ar])) > 1:
             if pIndPlotOutput:
                 sPARGD           = [(p,ar,gd) for p,ar,gd in mTEPES.par*mTEPES.gd if (p,gd) in mTEPES.pgd and gd in g2a[ar]]
                 GenRetireToArea  = pd.Series(data=[OutputToFile['MW'][p,gd] for p,ar,gd in sPARGD], index=pd.Index(sPARGD)).to_frame(name='MW')
