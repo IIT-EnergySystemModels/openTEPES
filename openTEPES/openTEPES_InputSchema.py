@@ -1,5 +1,6 @@
 """
 Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 03, 2026
+
 openTEPES.openTEPES_InputSchema — declarative catalogue of every input table.
 
 Each ``TABLE_SPECS`` entry is the tuple ``(csv_stem_prefix, db_table, kind, kwargs)``. Backends consume this single
@@ -12,16 +13,14 @@ The four transform kinds:
   * ``PASSTHROUGH``                table is stored long in DB and consumed long by ``InputData``; ``pk_cols`` declares
                                    the primary key (auto-detection via ``DEFAULT_IDX_COLS`` is the fallback).
   * ``WIDE_TO_LONG``               table is stored long in DB; on read, the value column is pivoted across the
-                                   ``entity`` column to recover the wide CSV shape keyed on ``(Period, Scenario,
-                                   LoadLevel)``.
+                                   ``entity`` column to recover the wide CSV shape keyed on ``(Period, Scenario, LoadLevel)``.
   * ``WIDE_MULTILEVEL_TO_LONG``    same as ``WIDE_TO_LONG`` but ``entity_cols`` carries 3 or 4 column names that
-                                   together form a multi-level column header (used by ``VariableTTC*`` and
-                                   ``VariablePTDF``).
+                                   together form a multi-level column header (used by ``VariableTTC*`` and ``VariablePTDF``).
   * ``UNPIVOT_SINGLE_ROW``         table is stored as ``(Name, Value)`` rows in DB; on read, it is pivoted to the
                                    single-row, many-column CSV shape used by ``oT_Data_Parameter`` and ``oT_Data_Option``.
 
-Adding a new input table is two lines: extend ``TABLE_SPECS`` with the entry, optionally extend ``DEFAULT_IDX_COLS``
-if the primary key uses an index column the catalogue has not seen before. No Pyomo dependency, no I/O dependency.
+Adding a new input table is two lines: extend ``TABLE_SPECS`` with the entry, optionally extend ``DEFAULT_IDX_COLS`` if the primary key uses an index column
+the catalogue has not seen before. No Pyomo dependency, no I/O dependency.
 """
 from __future__ import annotations
 

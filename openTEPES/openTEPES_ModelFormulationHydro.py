@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 04, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 05, 2026
 
 openTEPES.openTEPES_ModelFormulationHydro — hydropower reservoir operation: water balance, volume limits and outflows.
 """
@@ -24,7 +24,7 @@ def GenerationOperationModelFormulationReservoir(OptModel, mTEPES, pIndLogConsol
             h2a[g].add(ar)
 
     def eMaxVolume2Comm(OptModel,n,rc):
-        if mTEPES.pIndBinRsrInvest[rc]() == 0 or (p,rc) not in mTEPES.prc or sum(mTEPES.pMaxCharge[p,sc,n,h] + mTEPES.pMaxPowerElec[p,sc,n,h] for h in mTEPES.h if (rc,h) in mTEPES.r2h) == 0.0 or mTEPES.pMaxVolume[p,sc,n,rc] == 0.0:
+        if mTEPES.pIndBinRsrInvest() == 0 or (p,rc) not in mTEPES.prc or sum(mTEPES.pMaxCharge[p,sc,n,h] + mTEPES.pMaxPowerElec[p,sc,n,h] for h in mTEPES.h if (rc,h) in mTEPES.r2h) == 0.0 or mTEPES.pMaxVolume[p,sc,n,rc] == 0.0:
             return Constraint.Skip
         return OptModel.vReservoirVolume[p,sc,n,rc] / mTEPES.pMaxVolume[p,sc,n,rc] <= sum(OptModel.vCommitment[p,sc,n,h] for h in mTEPES.h if (rc,h) in mTEPES.r2h)
     setattr(OptModel, f'eMaxVolume2Comm_{p}_{sc}_{st}', Constraint(mTEPES.nrcc, rule=eMaxVolume2Comm, doc='Reservoir maximum volume limited by commitment [p.u.]'))
@@ -33,7 +33,7 @@ def GenerationOperationModelFormulationReservoir(OptModel, mTEPES, pIndLogConsol
         print('eMaxVolume2Comm           ... ', len(getattr(OptModel, f'eMaxVolume2Comm_{p}_{sc}_{st}')), ' rows')
 
     def eMinVolume2Comm(OptModel,n,rc):
-        if mTEPES.pIndBinRsrInvest[rc]() == 0 or (p,rc) not in mTEPES.prc or sum(mTEPES.pMaxCharge[p,sc,n,h] + mTEPES.pMaxPowerElec[p,sc,n,h] for h in mTEPES.h if (rc,h) in mTEPES.r2h) == 0.0 or mTEPES.pMinVolume[p,sc,n,rc] == 0.0:
+        if mTEPES.pIndBinRsrInvest() == 0 or (p,rc) not in mTEPES.prc or sum(mTEPES.pMaxCharge[p,sc,n,h] + mTEPES.pMaxPowerElec[p,sc,n,h] for h in mTEPES.h if (rc,h) in mTEPES.r2h) == 0.0 or mTEPES.pMinVolume[p,sc,n,rc] == 0.0:
             return Constraint.Skip
         return OptModel.vReservoirVolume[p,sc,n,rc] / mTEPES.pMinVolume[p,sc,n,rc] >= sum(OptModel.vCommitment[p,sc,n,h] for h in mTEPES.h if (rc,h) in mTEPES.r2h) / len([h for h in mTEPES.h if (rc,h) in mTEPES.r2h])
     setattr(OptModel, f'eMinVolume2Comm_{p}_{sc}_{st}', Constraint(mTEPES.nrcc, rule=eMinVolume2Comm, doc='Reservoir minimum volume limited by commitment [p.u.]'))

@@ -1,5 +1,6 @@
 """
 Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 03, 2026
+
 openTEPES.openTEPES_ProblemSolvingBenders — classical L-shaped Benders decomposition for transmission expansion.
 
 Master problem

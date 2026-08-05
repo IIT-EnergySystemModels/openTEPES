@@ -1,13 +1,13 @@
 """
 Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 29, 2026
+
 openTEPES.openTEPES_InputDuckDBSource — in-process ``.duckdb`` backend.
 
-Reads stream through SQL into DataFrames directly — no temporary CSV materialisation, no extra disk I/O round-trip.
-``duckdb`` is an optional dependency; the import is lazy and the ``_HAS_DUCKDB`` flag is consulted by
-``Source.open_source()`` before constructing a ``DuckDBSource``.
+Reads stream through SQL into DataFrames directly — no temporary CSV materialisation, no extra disk I/O round-trip. ``duckdb`` is an optional dependency;
+the import is lazy and the ``_HAS_DUCKDB`` flag is consulted by ``Source.open_source()`` before constructing a ``DuckDBSource``.
 
-The DB is opened read-only. ``schema_metadata.source_case`` is consulted at connection time so the case name follows
-the same rule as the CSV backend (``oT_Data_Parameter_*.csv`` filename for CSV, ``schema_metadata`` for DuckDB).
+The DB is opened read-only. ``schema_metadata.source_case`` is consulted at connection time so the case name follows the same rule as the CSV backend
+(``oT_Data_Parameter_*.csv`` filename for CSV, ``schema_metadata`` for DuckDB).
 """
 from __future__ import annotations
 

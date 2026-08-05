@@ -3,11 +3,9 @@ Open Generation, Storage, and Transmission Operation and Expansion Planning Mode
 
 Sweep merger: stack each result table across the cases of a sweep.
 
-``aggregate(sources, out_path, to=...)`` reads each case's results -- a per-case
-``oT_Results_<case>.duckdb`` if present, else its ``oT_Result_*.csv`` folder -- and
-stacks them into one long table per result with a leading ``case`` column. It returns
-the merged tables and can write ``oT_Sweep_<Table>.csv`` and/or one ``oT_Sweep.duckdb``.
-Cases with a slightly different column set are aligned by column union.
+``aggregate(sources, out_path, to=...)`` reads each case's results -- a per-case ``oT_Results_<case>.duckdb`` if present, else its ``oT_Result_*.csv`` folder
+-- and stacks them into one long table per result with a leading ``case`` column. It returns the merged tables and can write ``oT_Sweep_<Table>.csv`` and/or
+one ``oT_Sweep.duckdb``. Cases with a slightly different column set are aligned by column union.
 """
 from __future__ import annotations
 

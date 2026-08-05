@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 31, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 05, 2026
 """
 
 import os
@@ -87,13 +87,13 @@ def ReportInfeasible(itBd, p, sc, st):
     print('Subproblem          infeasible iteration', itBd, ', period', p, ', scenario', sc, ', stage', st)
 
 def StageSolve(OptModel, mTEPES, DirName, CaseName, SolverName, pIndLogConsole, pIndCycleFlow, itBd, itBdFinal):
-    if   mTEPES.pIndSequentialSolving == 0:
+    if   mTEPES.pIndSequentialSolving() == 0:
         print('Solving stages in parallel             ****')
-    elif mTEPES.pIndSequentialSolving == 1:
+    elif mTEPES.pIndSequentialSolving() == 1:
         print('Solving stages sequentially w LP file  ****')
-    elif mTEPES.pIndSequentialSolving == 2:
+    elif mTEPES.pIndSequentialSolving() == 2:
         print('Solving stages sequentially in memory  ****')
-    elif mTEPES.pIndSequentialSolving == 3:
+    elif mTEPES.pIndSequentialSolving() == 3:
         print('Solving stages by sensitivity analysis ****')
 
     _path = os.path.join(DirName, CaseName)
@@ -108,7 +108,7 @@ def StageSolve(OptModel, mTEPES, DirName, CaseName, SolverName, pIndLogConsole, 
 
     # the parallel path (pIndSequentialSolving == 0) queues one subproblem per stage into a single, persistent
     # solver manager; create it and its handle bookkeeping once here instead of recreating them on every iteration
-    if mTEPES.pIndSequentialSolving == 0:
+    if mTEPES.pIndSequentialSolving() == 0:
         solver_manager    = SolverManagerFactory('serial')
         action_handle_map = {}
         action_handles    = []
@@ -124,18 +124,18 @@ def StageSolve(OptModel, mTEPES, DirName, CaseName, SolverName, pIndLogConsole, 
         if len(mTEPES.n):
             ObjVal = None
 
-            if mTEPES.pIndSequentialSolving <= 2 or (mTEPES.pIndSequentialSolving == 3 and st == mTEPES.stt.first()) or (mTEPES.pIndSequentialSolving == 3 and itBdFinal == FINAL_ITERATION):
+            if mTEPES.pIndSequentialSolving() <= 2 or (mTEPES.pIndSequentialSolving() == 3 and st == mTEPES.stt.first()) or (mTEPES.pIndSequentialSolving() == 3 and itBdFinal == FINAL_ITERATION):
 
-                if mTEPES.pIndSequentialSolving == 3 and st == mTEPES.stt.first() and not hasattr(mTEPES, 'n1'):
+                if mTEPES.pIndSequentialSolving() == 3 and st == mTEPES.stt.first() and not hasattr(mTEPES, 'n1'):
                     # load level of the first stage (created once and reused across Benders iterations)
                     mTEPES.n1 = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.pDuration and (st,nn) in mTEPES.s2n)
 
-                if mTEPES.pIndSequentialSolving == 3 and st == mTEPES.stt.first() and itBd == 1:
+                if mTEPES.pIndSequentialSolving() == 3 and st == mTEPES.stt.first() and itBd == 1:
                     # save all the parameters that depend on load level
                     for ParamName, IndexSet in STAGE_PARAMS:
                         setattr(mTEPES, ParamName + '_Saved', Param(getattr(mTEPES, IndexSet), initialize=getattr(mTEPES, ParamName).extract_values()))
 
-                if mTEPES.pIndSequentialSolving == 3 and st == mTEPES.stt.first() and itBdFinal == FINAL_ITERATION:
+                if mTEPES.pIndSequentialSolving() == 3 and st == mTEPES.stt.first() and itBdFinal == FINAL_ITERATION:
                     # delete and reload all the parameters that depend on load level from their saved copies
                     for ParamName, IndexSet in STAGE_PARAMS:
                         mTEPES.del_component(getattr(mTEPES, ParamName))
@@ -165,7 +165,7 @@ def StageSolve(OptModel, mTEPES, DirName, CaseName, SolverName, pIndLogConsole, 
                         GenerationOperationHeatModelFormulationInvestment(mTEPES, mTEPES, pIndLogConsole, p, sc, st)
                     GenerationOperationModelFormulationDemand            (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
                     GenerationOperationModelFormulationStorage           (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
-                    if mTEPES.pIndHydroTopology:
+                    if mTEPES.pIndHydroTopology():
                         GenerationOperationModelFormulationReservoir     (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
                     if mTEPES.pIndHydrogen():
                         NetworkH2OperationModelFormulation               (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
@@ -188,7 +188,7 @@ def StageSolve(OptModel, mTEPES, DirName, CaseName, SolverName, pIndLogConsole, 
                             c.activate()
 
                 # send the problem to the solver
-                if   mTEPES.pIndSequentialSolving == 0:
+                if   mTEPES.pIndSequentialSolving() == 0:
                     Solver = SolverFactory(SolverName, symbolic_solver_labels=False)
                     ApplyGurobiSubproblemOptions(Solver, SolverName, _path+'/openTEPES_gurobi_Sbp_'+CaseName+'.log')
                     action_handle = solver_manager.queue(OptModel, opt=Solver, warmstart=False, keepfiles=False, tee=False, load_solutions=True, report_timing=False)
@@ -203,10 +203,10 @@ def StageSolve(OptModel, mTEPES, DirName, CaseName, SolverName, pIndLogConsole, 
                                 pTotalOCost += ObjVal
                             else:
                                 ReportInfeasible(itBd, p, sc, st)
-                elif mTEPES.pIndSequentialSolving == 1 or mTEPES.pIndSequentialSolving == 3:
+                elif mTEPES.pIndSequentialSolving() == 1 or mTEPES.pIndSequentialSolving() == 3:
                     Solver = SolverFactory(SolverName, symbolic_solver_labels=False)
                     ApplyGurobiSubproblemOptions(Solver, SolverName, _path+'/openTEPES_gurobi_Sbp_'+CaseName+'.log')
-                elif mTEPES.pIndSequentialSolving == 2:
+                elif mTEPES.pIndSequentialSolving() == 2:
                     Solver = SolverFactory('gurobi_persistent', profile_memory=10)
                     # Solver.set_gurobi_param('OutputFlag', 0)
                     # Solver.set_gurobi_param('LogFile',   _path+'/openTEPES_gurobi_Sbp_'+CaseName+'.log')
@@ -227,20 +227,20 @@ def StageSolve(OptModel, mTEPES, DirName, CaseName, SolverName, pIndLogConsole, 
                 GeneratingTime = time.time() - StartTime
                 StartTime      = time.time()
 
-                if mTEPES.pIndSequentialSolving == 2:
+                if mTEPES.pIndSequentialSolving() == 2:
                     print('Writing subproblem   in memory iteration', itBd, ', period', p, ', scenario', sc, ', stage', st, ' ... ', round(GeneratingTime), 's')
                 else:
                     print('Writing subproblem     LP file iteration', itBd, ', period', p, ', scenario', sc, ', stage', st, ' ... ', round(GeneratingTime), 's')
 
                 # mode 0 was already queued to the solver manager above; only the sequential modes solve here
-                if   mTEPES.pIndSequentialSolving == 1 or mTEPES.pIndSequentialSolving == 3:
+                if   mTEPES.pIndSequentialSolving() == 1 or mTEPES.pIndSequentialSolving() == 3:
                     SolverResults = Solver.solve(OptModel, warmstart=False,                  tee=False,                                         report_timing=False)
                     if SolverResults.solver.termination_condition == TerminationCondition.optimal:
                         ObjVal = getattr(OptModel, f'eTotalOCost_{p}_{sc}_{st}').expr()
                         pTotalOCost += ObjVal
                     else:
                         ReportInfeasible(itBd, p, sc, st)
-                elif mTEPES.pIndSequentialSolving == 2:
+                elif mTEPES.pIndSequentialSolving() == 2:
                     SolverResults = Solver.solve(OptModel, warmstart=False, keepfiles=False, tee=False, load_solutions=True, save_results=True, report_timing=False)
                     if SolverResults.solver.termination_condition == TerminationCondition.optimal:
                         ObjVal = Solver.get_model_attr('ObjVal')
@@ -251,9 +251,9 @@ def StageSolve(OptModel, mTEPES, DirName, CaseName, SolverName, pIndLogConsole, 
                 # get the duals for the Benders cuts
                 AccumulateBendersDuals(OptModel, mTEPES, p, sc, st, mTEPES.n, pGenerationInvestMarginalG, pGenerationInvestMarginalR, pGenerationInvestMarginalE, pNetworkInvestMarginalCap)
 
-            elif (mTEPES.pIndSequentialSolving == 3 and st != mTEPES.stt.first()) or (mTEPES.pIndSequentialSolving == 3 and itBdFinal < FINAL_ITERATION):
+            elif (mTEPES.pIndSequentialSolving() == 3 and st != mTEPES.stt.first()) or (mTEPES.pIndSequentialSolving() == 3 and itBdFinal < FINAL_ITERATION):
                 GeneratingTime = time.time() - StartTime
-                if   mTEPES.pIndSequentialSolving == 3:
+                if   mTEPES.pIndSequentialSolving() == 3:
                     print('Writing subproblem sensitivity iteration', itBd, ', period', p, ', scenario', sc, ', stage', st, ' ... ', round(GeneratingTime), 's')
 
                 if SolverName in ('appsi_highs', 'highs'):
@@ -311,7 +311,7 @@ def StageSolve(OptModel, mTEPES, DirName, CaseName, SolverName, pIndLogConsole, 
                 # get the duals for the Benders cuts
                 AccumulateBendersDuals(OptModel, mTEPES, p, sc, mTEPES.stt.first(), mTEPES.n1, pGenerationInvestMarginalG, pGenerationInvestMarginalR, pGenerationInvestMarginalE, pNetworkInvestMarginalCap)
 
-            if mTEPES.pIndSequentialSolving <= 2:
+            if mTEPES.pIndSequentialSolving() <= 2:
                 # o.f. must be deleted on every Benders iteration
                 OptModel.del_component    (getattr(OptModel, f'eTotalOCost_{p}_{sc}_{st}'))
 
@@ -320,7 +320,7 @@ def StageSolve(OptModel, mTEPES, DirName, CaseName, SolverName, pIndLogConsole, 
                     for c in OptModel.component_objects(pyo.Constraint):
                         c.deactivate()
 
-            if mTEPES.pIndSequentialSolving == 3 and st == mTEPES.stt.last() and itBdFinal < FINAL_ITERATION:
+            if mTEPES.pIndSequentialSolving() == 3 and st == mTEPES.stt.last() and itBdFinal < FINAL_ITERATION:
                 # delete the o.f.
                 OptModel.del_component    (getattr(OptModel, f'eTotalOCost_{p}_{sc}_{mTEPES.stt.first()}'))
 
@@ -330,11 +330,11 @@ def StageSolve(OptModel, mTEPES, DirName, CaseName, SolverName, pIndLogConsole, 
 
             GeneratingTime = time.time() - StartTime
 
-            if mTEPES.pIndSequentialSolving > 0:
+            if mTEPES.pIndSequentialSolving() > 0:
                 print('Solving                        iteration', itBd, ', period', p, ', scenario', sc, ', stage', st, ' ... ', round(GeneratingTime), 's   Total system operation cost [MEUR] ... ', ObjVal)
 
     # retrieve the stage solution from the solver
-    if mTEPES.pIndSequentialSolving == 0:
+    if mTEPES.pIndSequentialSolving() == 0:
         for this_action_handle in action_handles:
             solved_name   = action_handle_map         [this_action_handle]
             SolverResults = solver_manager.get_results(this_action_handle)

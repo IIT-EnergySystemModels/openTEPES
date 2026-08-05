@@ -77,8 +77,8 @@ def NetworkHeatOperationResults(DirName, CaseName, OptModel, mTEPES):
     OutputResults  = pd.concat([OutputResults2, OutputResults3, OutputResults4, OutputResults5, OutputResults6, OutputResults7, OutputResults8], axis=1)
 
     # Merge duplicate columns that arise when a technology belongs to multiple generator sets
-    # if OutputResults.columns.duplicated().any():
-    #     OutputResults = OutputResults.T.groupby(level=0).sum().T
+    if OutputResults.columns.duplicated().any():
+        OutputResults = OutputResults.T.groupby(level=0).sum().T
 
     OutputResults.stack().reset_index().pivot_table(index=['level_0','level_1','level_2','level_3','level_4'], columns='level_5', values=0, aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel', 'Area', 'Node'], axis=0).oT.write(f'{_path}/oT_Result_BalanceHeatPerTech_{CaseName}.csv', sep=',')
     OutputResults.stack().reset_index().pivot_table(index=['level_0','level_1','level_2'          ,'level_5'], columns='level_4', values=0, aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel', 'Technology'  ], axis=0).oT.write(f'{_path}/oT_Result_BalanceHeatPerNode_{CaseName}.csv', sep=',')
@@ -97,8 +97,8 @@ def NetworkHeatOperationResults(DirName, CaseName, OptModel, mTEPES):
     PSNHAARAR = [(p,sc,n,ni,nf,cc,ai,af) for p,sc,n,ni,nf,cc in mTEPES.psnha for ai in Nd2Ar.get(ni, []) for af in Nd2Ar.get(nf, [])]
     OutputToFile = pd.Series(data=[OptModel.vFlowHeat[p,sc,n,ni,nf,cc]()*mTEPES.pLoadLevelDuration[p,sc,n]() for p,sc,n,ni,nf,cc,ai,af in PSNHAARAR], index=pd.Index(PSNHAARAR))
     OutputToFile.index.names = ['Period', 'Scenario', 'LoadLevel', 'InitialNode', 'FinalNode', 'Circuit', 'InitialArea', 'FinalArea']
-    OutputToFile = pd.pivot_table(OutputToFile.to_frame(name='GWh'), values='GWh', index=['Period', 'Scenario', 'LoadLevel'], columns=['InitialArea', 'FinalArea'], fill_value=0.0).rename_axis([None, None], axis=1).reset_index().oT.write(f'{_path}/oT_Result_NetworkEnergyHeatPerArea_{CaseName}.csv',      index=False, sep=',')
-    OutputToFile = pd.pivot_table(OutputToFile.to_frame(name='GWh'), values='GWh', index=['Period', 'Scenario'],              columns=['InitialArea', 'FinalArea'], fill_value=0.0).rename_axis([None, None], axis=1).reset_index().oT.write(f'{_path}/oT_Result_NetworkEnergyHeatTotalPerArea_{CaseName}.csv', index=False, sep=',')
+    OutputToFile1 = pd.pivot_table(OutputToFile.to_frame(name='GWh'), values='GWh', index=['Period', 'Scenario', 'LoadLevel'], columns=['InitialArea', 'FinalArea'], fill_value=0.0).rename_axis([None, None], axis=1).reset_index().oT.write(f'{_path}/oT_Result_NetworkEnergyHeatPerArea_{CaseName}.csv',      index=False, sep=',')
+    OutputToFile2 = pd.pivot_table(OutputToFile.to_frame(name='GWh'), values='GWh', index=['Period', 'Scenario'],              columns=['InitialArea', 'FinalArea'], fill_value=0.0).rename_axis([None, None], axis=1).reset_index().oT.write(f'{_path}/oT_Result_NetworkEnergyHeatTotalPerArea_{CaseName}.csv', index=False, sep=',')
 
     if mTEPES.ha:
         OutputResults = pd.Series(data=[OptModel.vFlowHeat[p,sc,n,ni,nf,cc]()*(mTEPES.pLoadLevelDuration[p,sc,n]()*mTEPES.pPeriodProb[p,sc]())*(mTEPES.pHeatPipeLength[ni,nf,cc]()*1e-3) for p,sc,n,ni,nf,cc in mTEPES.psnha], index=mTEPES.psnha)

@@ -1,14 +1,10 @@
 """Check that two runs produce the same result files.
 
-This is the output-side version of ``_input_parity_test.py``. It takes a
-"snapshot" of every ``oT_Result_*.csv`` (and ``.csv.gz``) file a run writes
-to a case folder, saving each table's size, column names and values. Two
-snapshots can then be compared: numbers are compared with a small tolerance,
-text labels exactly.
+This is the output-side version of ``_input_parity_test.py``. It takes a "snapshot" of every ``oT_Result_*.csv`` (and ``.csv.gz``) file a run writes to a case
+folder, saving each table's size, column names and values. Two snapshots can then be compared: numbers are compared with a small tolerance, text labels exactly.
 
-It is meant for safely changing the output code. If you reorganise the
-``openTEPES_OutputResults*.py`` modules, the result files should stay the
-same. To check that, take a snapshot before and after the change and compare:
+It is meant for safely changing the output code. If you reorganise the ``openTEPES_OutputResults*.py`` modules, the result files should stay the same.
+To check that, take a snapshot before and after the change and compare:
 
     # before the change
     python -m openTEPES._output_parity_test snapshot <case_output_folder> before.pkl
@@ -16,10 +12,8 @@ same. To check that, take a snapshot before and after the change and compare:
     python -m openTEPES._output_parity_test snapshot <case_output_folder> after.pkl
     python -m openTEPES._output_parity_test diff before.pkl after.pkl
 
-``diff`` exits with code 0 if the two snapshots match (same files, sizes,
-columns and numbers within tolerance) and 1 if they differ. The tool only
-reads the CSV files on disk, so the two snapshots can come from two
-different versions of the code.
+``diff`` exits with code 0 if the two snapshots match (same files, sizes, columns and numbers within tolerance) and 1 if they differ. The tool only
+reads the CSV files on disk, so the two snapshots can come from two different versions of the code.
 """
 from __future__ import annotations
 

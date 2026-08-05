@@ -105,7 +105,7 @@ def NetworkOperationResults(DirName, CaseName, OptModel, mTEPES):
         OutputToFile = pd.pivot_table(OutputToFile.to_frame(name='p.u.'), values='p.u.', index=['Period', 'Scenario', 'LoadLevel'], columns=['InitialNode', 'FinalNode', 'Circuit'], fill_value=0.0).rename_axis([None, None, None], axis=1)
         OutputToFile.reset_index().oT.write(f'{_path}/oT_Result_NetworkLosses_{CaseName}.csv', index=False, sep=',')
 
-    if mTEPES.pIndBinSingleNode() == 0 and mTEPES.pIndPTDF == 0:
+    if mTEPES.pIndBinSingleNode() == 0 and mTEPES.pIndPTDF() == 0:
         OutputToFile = pd.Series(data=[OptModel.vTheta[p,sc,n,nd]()                                   for p,sc,n,nd in mTEPES.psnnd], index=mTEPES.psnnd)
         OutputToFile.to_frame(name='rad').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='rad').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_NetworkAngle_{CaseName}.csv', sep=',')
 

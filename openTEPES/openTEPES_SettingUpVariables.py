@@ -1,7 +1,8 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 03, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 05, 2026
 
-openTEPES.openTEPES_SettingUpVariables — creates the decision variables and their bounds, fixes the generators' commitment, relaxes or forbids investment conditions, zeroes out epsilon values, and screens for infeasibilities. Runs after DataConfiguration.
+openTEPES.openTEPES_SettingUpVariables — creates the decision variables and their bounds, fixes the generators' commitment, relaxes or forbids investment conditions,
+zeroes out epsilon values, and screens for infeasibilities. Runs after DataConfiguration.
 """
 from __future__ import annotations
 
@@ -55,11 +56,11 @@ def SettingUpVariables(OptModel, mTEPES):
         OptModel.vESSSpillage              = Var(mTEPES.psnes, within=NonNegativeReals, doc='ESS spillage                                    [GWh]')
         OptModel.vIniInventory             = Var(mTEPES.psnec, within=NonNegativeReals, doc='initial inventory for ESS candidate             [GWh]')
 
-        if mTEPES.pIndRampReserves:
+        if mTEPES.pIndRampReserves():
             OptModel.vRampReserveUp        = Var(mTEPES.psnnr, within=NonNegativeReals, doc='ramp up   reserve of the unit                  [GW/h]')
             OptModel.vRampReserveDw        = Var(mTEPES.psnnr, within=NonNegativeReals, doc='ramp down reserve of the unit                  [GW/h]')
 
-        if mTEPES.pIndReserveActivation:
+        if mTEPES.pIndReserveActivation():
             OptModel.vReserveUpEnergy      = Var(mTEPES.psnnr, within=NonNegativeReals, doc='up   reserve activation of the unit              [GW]')
             OptModel.vReserveDownEnergy    = Var(mTEPES.psnnr, within=NonNegativeReals, doc='down reserve activation of the unit              [GW]')
 
@@ -69,11 +70,11 @@ def SettingUpVariables(OptModel, mTEPES):
         OptModel.vESSReserveDown           = Var(mTEPES.psneh, within=NonNegativeReals, doc='ESS down operating reserve                       [GW]')
         OptModel.vENS                      = Var(mTEPES.psnnd, within=NonNegativeReals, doc='energy not served in node                        [GW]')
 
-        if mTEPES.pIndReserveActivation:
+        if mTEPES.pIndReserveActivation():
             OptModel.vESSReserveUpEnergy   = Var(mTEPES.psneh, within=NonNegativeReals, doc='ESS up   reserve activation of the unit          [GW]')
             OptModel.vESSReserveDownEnergy = Var(mTEPES.psneh, within=NonNegativeReals, doc='ESS down reserve activation of the unit          [GW]')
 
-        if mTEPES.pIndHydroTopology:
+        if mTEPES.pIndHydroTopology():
             OptModel.vTotalFHydroCost      = Var(mTEPES.p,     within=NonNegativeReals, doc='total system fixed hydro             cost      [MEUR]')
             OptModel.vHydroInflows         = Var(mTEPES.psnrc, within=NonNegativeReals, doc='unscheduled inflows  of candidate hydro units  [m3/s]')
             OptModel.vHydroOutflows        = Var(mTEPES.psnrs, within=NonNegativeReals, doc='scheduled   outflows of all       hydro units  [m3/s]')
@@ -108,7 +109,7 @@ def SettingUpVariables(OptModel, mTEPES):
         else:
             OptModel.vNetworkInvest        = Var(mTEPES.plc,   within=Binary,           doc='electric network investment decision exists in a year {0,1}')
 
-        if mTEPES.pIndHydroTopology:
+        if mTEPES.pIndHydroTopology():
             if mTEPES.pIndBinRsrInvest() != 1:
                 OptModel.vReservoirInvest  = Var(mTEPES.prc,   within=UnitInterval,     doc='reservoir        investment decision exists in a year [0,1]')
             else:
@@ -138,7 +139,7 @@ def SettingUpVariables(OptModel, mTEPES):
             OptModel.vMaxCommitmentConsYearly = Var(mTEPES.psnr ,mTEPES.ExclusiveGroupsYearly, within=UnitInterval, initialize=0.0, doc='maximum consumption commitment of the unit yearly [0,1]')
             OptModel.vMaxCommitmentHourly     = Var(mTEPES.psnnr,mTEPES.ExclusiveGroupsHourly, within=UnitInterval, initialize=0.0, doc='maximum commitment             of the unit hourly [0,1]')
 
-            if mTEPES.pIndHydroTopology:
+            if mTEPES.pIndHydroTopology():
                 OptModel.vCommitmentCons   = Var(mTEPES.psnh,  within=UnitInterval,     doc='consumption commitment of the unit                                             [0,1]')
 
         else:
@@ -152,7 +153,7 @@ def SettingUpVariables(OptModel, mTEPES):
             OptModel.vMaxCommitmentYearly     = Var(mTEPES.psnr ,mTEPES.ExclusiveGroupsYearly, within=Binary, initialize=0.0, doc='maximum commitment             of the unit yearly [0,1]')
             OptModel.vMaxCommitmentConsYearly = Var(mTEPES.psnr ,mTEPES.ExclusiveGroupsYearly, within=Binary, initialize=0.0, doc='maximum consumption commitment of the unit yearly [0,1]')
             OptModel.vMaxCommitmentHourly     = Var(mTEPES.psnnr,mTEPES.ExclusiveGroupsHourly, within=Binary, initialize=0.0, doc='maximum commitment             of the unit hourly [0,1]')
-            if mTEPES.pIndHydroTopology:
+            if mTEPES.pIndHydroTopology():
                 OptModel.vCommitmentCons   = Var(mTEPES.psnh,  within=Binary,           doc='consumption commitment of the unit                    {0,1}')
 
         if mTEPES.pIndBinLineCommit() == 0:
@@ -196,11 +197,11 @@ def SettingUpVariables(OptModel, mTEPES):
         [OptModel.vIniInventory  [p,sc,n,ec].setlb(mTEPES.pMinStorage       [p,sc,n,ec]  ) for p,sc,n,ec in mTEPES.psnec]
         [OptModel.vIniInventory  [p,sc,n,ec].setub(mTEPES.pMaxStorage       [p,sc,n,ec]()) for p,sc,n,ec in mTEPES.psnec]
 
-        if mTEPES.pIndRampReserves:
+        if mTEPES.pIndRampReserves():
             [OptModel.vRampReserveUp[p,sc,n,nr].setub(min(mTEPES.pMaxPower2ndBlock[p,sc,n,nr], mTEPES.pRampUp[nr])) if mTEPES.pRampUp[nr] else OptModel.vRampReserveUp[p,sc,n,nr].setub(mTEPES.pMaxPower2ndBlock[p,sc,n,nr]) for p,sc,n,nr in mTEPES.psnnr]
             [OptModel.vRampReserveDw[p,sc,n,nr].setub(min(mTEPES.pMaxPower2ndBlock[p,sc,n,nr], mTEPES.pRampDw[nr])) if mTEPES.pRampDw[nr] else OptModel.vRampReserveDw[p,sc,n,nr].setub(mTEPES.pMaxPower2ndBlock[p,sc,n,nr]) for p,sc,n,nr in mTEPES.psnnr]
 
-        if mTEPES.pIndReserveActivation:
+        if mTEPES.pIndReserveActivation():
             [OptModel.vReserveUpEnergy  [p,sc,n,nr].setub(mTEPES.pMaxPower2ndBlock[p,sc,n,nr]) for p,sc,n,nr in mTEPES.psnnr]
             [OptModel.vReserveDownEnergy[p,sc,n,nr].setub(mTEPES.pMaxPower2ndBlock[p,sc,n,nr]) for p,sc,n,nr in mTEPES.psnnr]
 
@@ -210,11 +211,11 @@ def SettingUpVariables(OptModel, mTEPES):
         [OptModel.vESSReserveDown[p,sc,n,eh].setub(mTEPES.pMaxCharge2ndBlock[p,sc,n,eh]  ) for p,sc,n,eh in mTEPES.psneh]
         [OptModel.vENS           [p,sc,n,nd].setub(mTEPES.pDemandElecPos    [p,sc,n,nd]  ) for p,sc,n,nd in mTEPES.psnnd]
 
-        if mTEPES.pIndReserveActivation:
+        if mTEPES.pIndReserveActivation():
             [OptModel.vESSReserveUpEnergy  [p,sc,n,eh].setub(mTEPES.pMaxCharge2ndBlock[p,sc,n,eh]) for p,sc,n,eh in mTEPES.psneh]
             [OptModel.vESSReserveDownEnergy[p,sc,n,eh].setub(mTEPES.pMaxCharge2ndBlock[p,sc,n,eh]) for p,sc,n,eh in mTEPES.psneh]
 
-        if mTEPES.pIndHydroTopology:
+        if mTEPES.pIndHydroTopology():
             [OptModel.vHydroInflows   [p,sc,n,rc].setub(mTEPES.pHydroInflows[p,sc,n,rc]()) for p,sc,n,rc in mTEPES.psnrc]
             [OptModel.vHydroOutflows  [p,sc,n,rs].setub(mTEPES.pMaxOutflows [p,sc,n,rs]  ) for p,sc,n,rs in mTEPES.psnrs]
             [OptModel.vReservoirVolume[p,sc,n,rs].setlb(mTEPES.pMinVolume   [p,sc,n,rs]  ) for p,sc,n,rs in mTEPES.psnrs]
@@ -267,7 +268,7 @@ def SettingUpVariables(OptModel, mTEPES):
                 nFixedVariables += 1
 
         # relax binary condition in reservoir investment decisions
-        if mTEPES.pIndHydroTopology:
+        if mTEPES.pIndHydroTopology():
             for p,rc in mTEPES.prc:
                 if mTEPES.pIndBinRsrInvest() == 2 or (mTEPES.pIndBinRsrInvest() == 1 and mTEPES.pIndBinRsrvInvest[rc] == 0):
                     OptModel.vReservoirInvest [p,rc      ].domain = UnitInterval
@@ -315,7 +316,7 @@ def SettingUpVariables(OptModel, mTEPES):
         for p,sc,n,nr,group in mTEPES.psnnr*mTEPES.ExclusiveGroupsHourly:
             if mTEPES.pIndBinUnitCommit[nr] == 0:
                 OptModel.vMaxCommitmentHourly[p,sc,n,nr,group].domain = UnitInterval
-        if mTEPES.pIndHydroTopology:
+        if mTEPES.pIndHydroTopology():
             for p,sc,n,h in mTEPES.psnh:
                 if mTEPES.pIndBinUnitCommit[h] == 0 or mTEPES.pMaxCharge[p,sc,n,h] == 0.0:
                     OptModel.vCommitmentCons[p,sc,n,h].domain = UnitInterval
@@ -367,14 +368,14 @@ def SettingUpVariables(OptModel, mTEPES):
         OptModel.vFlowElec   = Var(mTEPES.psnla, within=Reals,            doc='electric flow    [GW]')
         OptModel.vTheta      = Var(mTEPES.psnnd, within=Reals,            doc='voltage angle   [rad]')
 
-        if mTEPES.pIndVarTTC:
+        if mTEPES.pIndVarTTC():
             # lines with TTC and TTCBck = 0 are disconnected and the flow is fixed to 0
             sPSNLA = [(p,sc,n,ni,nf,cc) for p,sc,n,ni,nf,cc in mTEPES.psnla if mTEPES.pMaxNTCFrw[p,sc,n,ni,nf,cc] == 0.0 and mTEPES.pMaxNTCBck[p,sc,n,ni,nf,cc] == 0.0]
             if len(sPSNLA):
                 [OptModel.vFlowElec[p,sc,n,ni,nf,cc].fix(0.0) for p,sc,n,ni,nf,cc in sPSNLA]
                 nFixedVariables += sum(                    1  for p,sc,n,ni,nf,cc in sPSNLA)
 
-        if mTEPES.pIndPTDF:
+        if mTEPES.pIndPTDF():
             OptModel.vNetPosition = Var(mTEPES.psnnd, within=Reals, doc='net position in node [GW]')
 
         if mTEPES.pIndBinSingleNode() == 0:
@@ -462,7 +463,7 @@ def SettingUpVariables(OptModel, mTEPES):
                 if mTEPES.pMustRun[nr] and nr not in mTEPES.gc:
                     OptModel.vTotalOutput[p,sc,n,nr].fix(mTEPES.pMinPowerElec[p,sc,n,nr])
                     nFixedVariables += 1
-                if mTEPES.pIndRampReserves:
+                if mTEPES.pIndRampReserves():
                     if mTEPES.pRampUp[nr] == 0.0:
                         OptModel.vRampReserveUp[p,sc,n,nr].fix(0.0)
                         OptModel.vRampReserveDw[p,sc,n,nr].fix(0.0)
@@ -472,7 +473,7 @@ def SettingUpVariables(OptModel, mTEPES):
                 OptModel.vReserveUp  [p,sc,n,nr].fix(0.0)
                 OptModel.vReserveDown[p,sc,n,nr].fix(0.0)
                 nFixedVariables += 2
-                if mTEPES.pIndReserveActivation:
+                if mTEPES.pIndReserveActivation():
                     OptModel.vReserveUpEnergy  [p,sc,n,nr].fix(0.0)
                     OptModel.vReserveDownEnergy[p,sc,n,nr].fix(0.0)
                     nFixedVariables += 2
@@ -497,7 +498,7 @@ def SettingUpVariables(OptModel, mTEPES):
                 OptModel.vESSSpillage    [p,sc,n,es].fix(0.0)
                 OptModel.vESSInventory   [p,sc,n,es].fix(mTEPES.pIniInventory[p,sc,n,es])
                 nFixedVariables += 6
-                if mTEPES.pIndReserveActivation:
+                if mTEPES.pIndReserveActivation():
                     OptModel.vReserveUpEnergy  [p,sc,n,es].fix(0.0)
                     OptModel.vReserveDownEnergy[p,sc,n,es].fix(0.0)
                     nFixedVariables += 2
@@ -508,7 +509,7 @@ def SettingUpVariables(OptModel, mTEPES):
                 OptModel.vESSReserveUp   [p,sc,n,es].fix(0.0)
                 OptModel.vESSReserveDown [p,sc,n,es].fix(0.0)
                 nFixedVariables += 2
-                if mTEPES.pIndReserveActivation:
+                if mTEPES.pIndReserveActivation():
                     OptModel.vESSReserveUpEnergy  [p,sc,n,es].fix(0.0)
                     OptModel.vESSReserveDownEnergy[p,sc,n,es].fix(0.0)
                     nFixedVariables += 2
@@ -516,7 +517,7 @@ def SettingUpVariables(OptModel, mTEPES):
                 OptModel.vESSInventory   [p,sc,n,es].fix( 0.0)
                 nFixedVariables += 1
 
-        if mTEPES.pIndHydroTopology:
+        if mTEPES.pIndHydroTopology():
             for p,sc,n,h in mTEPES.psnh:
                 # ESS with no charge capacity or not storage capacity can't charge
                 if  mTEPES.pMaxCharge        [p,sc,n,h ] ==  0.0:
@@ -531,7 +532,7 @@ def SettingUpVariables(OptModel, mTEPES):
                     OptModel.vESSReserveUp   [p,sc,n,h ].fix(0.0)
                     OptModel.vESSReserveDown [p,sc,n,h ].fix(0.0)
                     nFixedVariables += 2
-                    if mTEPES.pIndReserveActivation:
+                    if mTEPES.pIndReserveActivation():
                         OptModel.vESSReserveUpEnergy  [p,sc,n,h ].fix(0.0)
                         OptModel.vESSReserveDownEnergy[p,sc,n,h ].fix(0.0)
                         nFixedVariables += 2
@@ -542,7 +543,7 @@ def SettingUpVariables(OptModel, mTEPES):
     if mTEPES.tq:
         mTEPES.go = Set(initialize=[g for g in sorted(mTEPES.pRatedLinearVarCost, key=mTEPES.pRatedLinearVarCost.__getitem__) if g not in mTEPES.sq])
     else:
-        if mTEPES.pIndHydroTopology:
+        if mTEPES.pIndHydroTopology():
             mTEPES.go = Set(initialize=[g for g in sorted(mTEPES.pRatedLinearVarCost, key=mTEPES.pRatedLinearVarCost.__getitem__)])
         else:
             mTEPES.go = Set(initialize=[g for g in sorted(mTEPES.pRatedLinearVarCost, key=mTEPES.pRatedLinearVarCost.__getitem__) if g not in mTEPES.h])
@@ -612,7 +613,7 @@ def SettingUpVariables(OptModel, mTEPES):
                 if es not in mTEPES.ec and (p,es) in mTEPES.pes:
                     OptModel.vESSInventory[p,sc,mTEPES.n.last(),es].fix(mTEPES.pIniInventory[p,sc,mTEPES.n.last(),es])
 
-            if mTEPES.pIndHydroTopology:
+            if mTEPES.pIndHydroTopology():
                 # fixing the reservoir volume at the last load level of the stage for every period and scenario if between storage limits
                 for rs in mTEPES.rs:
                     if rs not in mTEPES.rn:
@@ -641,7 +642,7 @@ def SettingUpVariables(OptModel, mTEPES):
     #             OptModel.vESSInventory[p,sc,n,es].fix(mTEPES.pIniInventory[p,sc,n,es])
     #             nFixedVariables += 1
 
-    # if mTEPES.pIndHydroTopology:
+    # if mTEPES.pIndHydroTopology():
         # fixing the reservoir volume at the end of the following pReservoirTimeStep (daily, weekly, monthly) if between storage limits, i.e.,
         # for daily reservoir is fixed at the end of the week, for weekly reservoir is fixed at the end of the month, for monthly reservoir is fixed at the end of the year
         # for p,sc,n,rs in mTEPES.psnrs:
@@ -670,13 +671,13 @@ def SettingUpVariables(OptModel, mTEPES):
             if mTEPES.pOperReserveUp    [p,sc,n,ar] ==  0.0:
                 OptModel.vReserveUp     [p,sc,n,nr].fix(0.0)
                 nFixedVariables += 1
-                if mTEPES.pIndReserveActivation:
+                if mTEPES.pIndReserveActivation():
                     OptModel.vReserveUpEnergy[p,sc,n,nr].fix(0.0)
                     nFixedVariables += 1
             if mTEPES.pOperReserveDw    [p,sc,n,ar] ==  0.0:
                 OptModel.vReserveDown   [p,sc,n,nr].fix(0.0)
                 nFixedVariables += 1
-                if mTEPES.pIndReserveActivation:
+                if mTEPES.pIndReserveActivation():
                     OptModel.vReserveDownEnergy[p,sc,n,nr].fix(0.0)
                     nFixedVariables += 1
     for p,sc,n,es in mTEPES.psnes:
@@ -684,19 +685,19 @@ def SettingUpVariables(OptModel, mTEPES):
             if mTEPES.pOperReserveUp    [p,sc,n,ar] ==  0.0:
                 OptModel.vESSReserveUp  [p,sc,n,es].fix(0.0)
                 nFixedVariables += 1
-                if mTEPES.pIndReserveActivation:
+                if mTEPES.pIndReserveActivation():
                     OptModel.vESSReserveUpEnergy[p,sc,n,es].fix(0.0)
                     nFixedVariables += 1
             if mTEPES.pOperReserveDw    [p,sc,n,ar] ==  0.0:
                 OptModel.vESSReserveDown[p,sc,n,es].fix(0.0)
                 nFixedVariables += 1
-                if mTEPES.pIndReserveActivation:
+                if mTEPES.pIndReserveActivation():
                     OptModel.vESSReserveDownEnergy[p,sc,n,es].fix(0.0)
                     nFixedVariables += 1
 
     # if no operating reserve activation is required, no variables are needed
     for p,sc,n in mTEPES.psn:
-        if mTEPES.pIndReserveActivation and sum(mTEPES.pOperReserveUpEnergy[p,sc,n,ar] for ar in mTEPES.ar) == 0.0:
+        if mTEPES.pIndReserveActivation() and sum(mTEPES.pOperReserveUpEnergy[p,sc,n,ar] for ar in mTEPES.ar) == 0.0:
             for nr in mTEPES.nr:
                 if mTEPES.pIndOperReserveGen[nr] == 0 and (p,nr) in mTEPES.pnr:
                     OptModel.vReserveUpEnergy  [p,sc,n,nr].fix(0.0)
@@ -705,7 +706,7 @@ def SettingUpVariables(OptModel, mTEPES):
                 if (mTEPES.pIndOperReserveGen[eh] == 0 or mTEPES.pIndOperReserveCon[eh] == 0) and (p,eh) in mTEPES.peh:
                     OptModel.vESSReserveUpEnergy  [p,sc,n,eh].fix(0.0)
                     nFixedVariables += 1
-        if mTEPES.pIndReserveActivation and sum(mTEPES.pOperReserveDwEnergy[p,sc,n,ar] for ar in mTEPES.ar) == 0.0:
+        if mTEPES.pIndReserveActivation() and sum(mTEPES.pOperReserveDwEnergy[p,sc,n,ar] for ar in mTEPES.ar) == 0.0:
             for nr in mTEPES.nr:
                 if mTEPES.pIndOperReserveGen[nr] == 0 and (p,nr) in mTEPES.pnr:
                    OptModel.vReserveDownEnergy[p,sc,n,nr].fix(0.0)
@@ -723,7 +724,7 @@ def SettingUpVariables(OptModel, mTEPES):
                     OptModel.vEnergyOutflows[p,sc,n,es].fix(0.0)
                     nFixedVariables += 1
 
-    if mTEPES.pIndHydroTopology:
+    if mTEPES.pIndHydroTopology():
         # if there are no hydro outflows, no variable is needed
         for rs in mTEPES.rs:
             if sum(mTEPES.pHydroOutflows[p,sc,n,rs]() for p,sc,n in mTEPES.psn if (p,rs) in mTEPES.prs) == 0.0:
@@ -840,7 +841,7 @@ def SettingUpVariables(OptModel, mTEPES):
             #     OptModel.vNetworkInvPer[p,ni,nf,cc].domain = UnitInterval
             #     nFixedVariables += 1
 
-        if mTEPES.pIndHydroTopology:
+        if mTEPES.pIndHydroTopology():
             for p,rc in mTEPES.prc:
                 if mTEPES.pRsrPeriodIni[rc] > p:
                     OptModel.vReservoirInvest[p,rc].fix(0)
@@ -891,7 +892,7 @@ def SettingUpVariables(OptModel, mTEPES):
                 OptModel.vOutput2ndBlock[p,sc,n,nr].fix(0.0)
                 OptModel.vReserveUp     [p,sc,n,nr].fix(0.0)
                 OptModel.vReserveDown   [p,sc,n,nr].fix(0.0)
-                if mTEPES.pIndReserveActivation:
+                if mTEPES.pIndReserveActivation():
                     OptModel.vReserveUpEnergy  [p,sc,n,nr].fix(0.0)
                     OptModel.vReserveDownEnergy[p,sc,n,nr].fix(0.0)
                     nFixedVariables += 2
@@ -912,7 +913,7 @@ def SettingUpVariables(OptModel, mTEPES):
                 OptModel.vCharge2ndBlock[p,sc,n,es].fix(0.0)
                 OptModel.vESSReserveUp  [p,sc,n,es].fix(0.0)
                 OptModel.vESSReserveDown[p,sc,n,es].fix(0.0)
-                if mTEPES.pIndReserveActivation:
+                if mTEPES.pIndReserveActivation():
                     OptModel.vESSReserveUpEnergy  [p,sc,n,es].fix(0.0)
                     OptModel.vESSReserveDownEnergy[p,sc,n,es].fix(0.0)
                     nFixedVariables += 2
@@ -920,7 +921,7 @@ def SettingUpVariables(OptModel, mTEPES):
                 mTEPES.pEnergyInflows   [p,sc,n,es] =   0.0
                 nFixedVariables += 7
 
-        if mTEPES.pIndHydroTopology:
+        if mTEPES.pIndHydroTopology():
             for p,sc,n,rs in mTEPES.psnrs:
                 if rs not in mTEPES.rn and (mTEPES.pRsrPeriodIni[rs] > p or mTEPES.pRsrPeriodFin[rs] < p):
                     OptModel.vHydroOutflows         [p,sc,n,rs].fix(0.0)
@@ -936,7 +937,7 @@ def SettingUpVariables(OptModel, mTEPES):
                             OptModel.vESSReserveUp  [p,sc,n,h ].fix(0.0)
                             OptModel.vESSReserveDown[p,sc,n,h ].fix(0.0)
                             nFixedVariables += 4
-                            if mTEPES.pIndReserveActivation:
+                            if mTEPES.pIndReserveActivation():
                                 OptModel.vESSReserveUpEnergy  [p,sc,n,h ].fix(0.0)
                                 OptModel.vESSReserveDownEnergy[p,sc,n,h ].fix(0.0)
                                 nFixedVariables += 2
@@ -1025,7 +1026,7 @@ def SettingUpVariables(OptModel, mTEPES):
         [OptModel.vNetworkInvest   [p,ni,nf,cc].setlb(mTEPES.pNetLoInvest[ni,nf,cc]()) for p,ni,nf,cc in mTEPES.plc]
         [OptModel.vNetworkInvest   [p,ni,nf,cc].setub(mTEPES.pNetUpInvest[ni,nf,cc]()) for p,ni,nf,cc in mTEPES.plc]
 
-        if mTEPES.pIndHydroTopology:
+        if mTEPES.pIndHydroTopology():
             for rc in mTEPES.rn:
                 if  mTEPES.pRsrLoInvest[  rc]() <       pEpsilon:
                     mTEPES.pRsrLoInvest[  rc]   = 0
@@ -1189,7 +1190,7 @@ def SettingUpVariables(OptModel, mTEPES):
                 Stage.neso = [(n,es) for n,es in Stage.n*mTEPES.es if Stage.n.ord(n) % mTEPES.pOutflowsTimeStep[es] == 0]
                 Stage.ngen = [(n,g ) for n,g  in Stage.n*mTEPES.g  if Stage.n.ord(n) % mTEPES.pEnergyTimeStep[g]    == 0]
 
-                if mTEPES.pIndHydroTopology:
+                if mTEPES.pIndHydroTopology():
                     Stage.nhc      = [(n,h ) for n,h  in Stage.n*mTEPES.h  if Stage.n.ord(n) % sum(mTEPES.pReservoirTimeStep[rs] for rs in mTEPES.rs if (rs,h) in mTEPES.r2h) == 0]
                     if sum(1 for h,rs in mTEPES.p2r):
                         Stage.np2c = [(n,h ) for n,h  in Stage.n*mTEPES.h  if sum(1 for rs in mTEPES.rs if (h,rs) in mTEPES.p2r) and Stage.n.ord(n) % sum(mTEPES.pReservoirTimeStep[rs] for rs in mTEPES.rs if (h,rs) in mTEPES.p2r) == 0]

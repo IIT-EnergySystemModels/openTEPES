@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 09, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 05, 2026
 """
 
 # import dill as pickle
@@ -8,7 +8,7 @@ import json
 import os
 import time
 
-from   pyomo.environ import ConcreteModel
+from   pyomo.environ import ConcreteModel, Param, Binary
 
 # Support running this file directly (e.g. VS Code "Run Python File"), where __package__ is empty and the
 # relative imports below have no parent package; fall back to absolute package imports in that case.
@@ -230,13 +230,13 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
 
     # sector decomposition to get a proxy of the hydrogen sector: 0 to solve the complete problem, 1 to solve by sector Benders decomposition
     pIndSectorDecomposition = 0
-    mTEPES.pIndSectorDecomposition = pIndSectorDecomposition
+    mTEPES.pIndSectorDecomposition = Param(initialize=pIndSectorDecomposition, within=Binary, doc='Indicator of sector decomposition', mutable=True)
 
     # solve the complete problem directly or by time Benders decomposition
-    pIndCompleteProblem = 1
+    pIndCompleteProblem   = 1
     pIndSequentialSolving = 1
-    mTEPES.pIndCompleteProblem = pIndCompleteProblem
-    mTEPES.pIndSequentialSolving = pIndSequentialSolving
+    mTEPES.pIndCompleteProblem   = Param(initialize=pIndCompleteProblem ,  within=Binary, doc='Indicator of solving the complete problem', mutable=True)
+    mTEPES.pIndSequentialSolving = Param(initialize=pIndSequentialSolving, within=Binary, doc='Indicator of sequential solving',           mutable=True)
     mTEPES.pBdTol = 1e-6
 
     # Reading sets and parameters. InputData also stores dfs/par on
@@ -262,7 +262,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     TotalObjectiveFunction             (mTEPES, mTEPES, pIndLogConsole)
     if len(mTEPES.gc) + len(mTEPES.gd) + len(mTEPES.lc) + len(mTEPES.rn) + len(mTEPES.pc) + len(mTEPES.hc):
         InvestmentElecModelFormulation (mTEPES, mTEPES, pIndLogConsole)
-    if mTEPES.pIndHydroTopology and mTEPES.rn:
+    if mTEPES.pIndHydroTopology() and mTEPES.rn:
         InvestmentHydroModelFormulation(mTEPES, mTEPES, pIndLogConsole)
     if mTEPES.pIndHydrogen()      and mTEPES.pc:
         InvestmentH2ModelFormulation   (mTEPES, mTEPES, pIndLogConsole)

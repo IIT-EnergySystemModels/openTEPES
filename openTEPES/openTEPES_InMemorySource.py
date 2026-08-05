@@ -3,10 +3,10 @@ Open Generation, Storage, and Transmission Operation and Expansion Planning Mode
 
 openTEPES.openTEPES_InMemorySource — in-memory input backend for the Mode B sweep (RFC §4.2).
 
-A ``CSVSource`` or ``DuckDBSource`` reads the case from disk on every build. Mode B reads the baseline once into RAM and
-re-uses it: ``InMemorySource.materialize(open_source(path))`` captures every dimension dict and data table as a DataFrame,
-and ``baseline.with_overlay({...})`` returns a cheap clone that perturbs a few tables. Forked workers share the baseline
-frames copy-on-write, so a parameter sweep pays the I/O once and only rebuilds + solves per worker.
+A ``CSVSource`` or ``DuckDBSource`` reads the case from disk on every build. Mode B reads the baseline once into RAM and re-uses it:
+``InMemorySource.materialize(open_source(path))`` captures every dimension dict and data table as a DataFrame, and
+``baseline.with_overlay({...})`` returns a cheap clone that perturbs a few tables. Forked workers share the baseline frames copy-on-write,
+so a parameter sweep pays the I/O once and only rebuilds + solves per worker.
 
 The overlay maps a data-table stem (e.g. ``"Demand"``) to one of:
 

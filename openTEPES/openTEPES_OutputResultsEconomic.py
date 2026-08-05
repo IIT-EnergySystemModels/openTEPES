@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 03, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 05, 2026
 
 Marginal, cost-summary, and economic results.
 
@@ -90,7 +90,7 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES, pIndPlotOutput):
 
         if pIndPlotOutput:
             for p,sc in mTEPES.ps:
-                chart = LinePlots(p, sc, OptModel.LSRMC, 'Node', 'LoadLevel', 'EUR/MWh', 'average')
+                chart = LinePlots(p, sc, OptModel.LSRMC, 'Node', 'LoadLevel', 'EUR/MWh')
                 chart.save(f'{_path}/oT_Plot_NetworkSRMC_{CaseName}_{p}_{sc}.html', embed_options={'renderer': 'svg'})
 
     if mTEPES.pIndHydrogen() and pHasDuals:
@@ -111,7 +111,7 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES, pIndPlotOutput):
 
         if pIndPlotOutput:
             for p,sc in mTEPES.ps:
-                chart = LinePlots(p, sc, OptModel.LSRMCH2, 'Node', 'LoadLevel', 'EUR/tH2', 'average')
+                chart = LinePlots(p, sc, OptModel.LSRMCH2, 'Node', 'LoadLevel', 'EUR/tH2')
                 chart.save(f'{_path}/oT_Plot_NetworkSRMCH2_{CaseName}_{p}_{sc}.html', embed_options={'renderer': 'svg'})
 
     if mTEPES.pIndHeat() and pHasDuals:
@@ -132,7 +132,7 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES, pIndPlotOutput):
 
         if pIndPlotOutput:
             for p,sc in mTEPES.ps:
-                chart = LinePlots(p, sc, OptModel.LSRMCHeat, 'Node', 'LoadLevel', 'EUR/GJ', 'average')
+                chart = LinePlots(p, sc, OptModel.LSRMCHeat, 'Node', 'LoadLevel', 'EUR/GJ')
                 chart.save(f'{_path}/oT_Plot_NetworkSRMCHeat_{CaseName}_{p}_{sc}.html', embed_options={'renderer': 'svg'})
 
     if (mTEPES.gc or mTEPES.gd) and sum(mTEPES.pReserveMargin[:,:]()) and pHasDuals:
@@ -175,7 +175,7 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES, pIndPlotOutput):
             available_period_scenario = set(MarginalUpOperatingReserve.index.droplevel([2,3]).unique().tolist())
             for p,sc in mTEPES.ps:
                 if (p,sc) in available_period_scenario:
-                    chart = LinePlots(p, sc, MarginalUpOperatingReserve, 'Area', 'LoadLevel', 'EUR/MW', 'sum')
+                    chart = LinePlots(p, sc, MarginalUpOperatingReserve, 'Area', 'LoadLevel', 'EUR/MW')
                     chart.save(f'{_path}/oT_Plot_MarginalOperatingReserveUp_{CaseName}_{p}_{sc}.html', embed_options={'renderer': 'svg'})
 
     #%% outputting the down operating reserve marginal
@@ -189,7 +189,7 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES, pIndPlotOutput):
             available_period_scenario = set(MarginalDwOperatingReserve.index.droplevel([2,3]).unique().tolist())
             for p,sc in mTEPES.ps:
                 if (p,sc) in available_period_scenario:
-                    chart = LinePlots(p, sc, MarginalDwOperatingReserve, 'Area', 'LoadLevel', 'EUR/MW', 'sum')
+                    chart = LinePlots(p, sc, MarginalDwOperatingReserve, 'Area', 'LoadLevel', 'EUR/MW')
                     chart.save(f'{_path}/oT_Plot_MarginalOperatingReserveDown_{CaseName}_{p}_{sc}.html', embed_options={'renderer': 'svg'})
 
     #%% outputting the water values
@@ -201,7 +201,7 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES, pIndPlotOutput):
         if pIndPlotOutput and len(OutputToFile):
             WaterValue = OutputToFile.to_frame(name='WaterValue').reset_index().pivot_table(index=['level_0','level_1','level_3','level_4'], values='WaterValue').rename_axis(['level_0','level_1','level_2','level_3'], axis=0).loc[:,:,:,:]
             for p,sc in mTEPES.ps:
-                chart = LinePlots(p, sc, WaterValue, 'Generator', 'LoadLevel', 'EUR/MWh', 'average')
+                chart = LinePlots(p, sc, WaterValue, 'Generator', 'LoadLevel', 'EUR/MWh')
                 chart.save(f'{_path}/oT_Plot_MarginalEnergyValue_{CaseName}_{p}_{sc}.html', embed_options={'renderer': 'svg'})
 
     # #%% Reduced cost for NetworkInvestment
@@ -230,18 +230,18 @@ def CostSummaryResults(DirName, CaseName, OptModel, mTEPES):
     _path = _outdir(DirName, CaseName, mTEPES)
     StartTime = time.time()
 
-    # SysCost      = pd.Series(data=[                                                                  OptModel.vTotalSCost()                                                                                         ], index=['']    ).to_frame(name='Total          System Cost').stack()
-    GenInvCost     = pd.Series(data=[mTEPES.pDiscountedWeight[p] * sum(mTEPES.pGenInvestCost[gc  ]          * OptModel.vGenerationInvest[p,gc  ]()  for gc   in mTEPES.gc    if (p,gc) in mTEPES.pgc)         for p in mTEPES.p], index=mTEPES.p).to_frame(name='Investment Cost Generation').stack()
-    GenRetCost     = pd.Series(data=[mTEPES.pDiscountedWeight[p] * sum(mTEPES.pGenRetireCost[gd  ]          * OptModel.vGenerationRetire[p,gd  ]()  for gd   in mTEPES.gd    if (p,gd) in mTEPES.pgd)         for p in mTEPES.p], index=mTEPES.p).to_frame(name='Retirement Cost Generation').stack()
-    NetInvCost     = pd.Series(data=[mTEPES.pDiscountedWeight[p] * sum(mTEPES.pNetFixedCost [lc  ]          * OptModel.vNetworkInvest   [p,lc  ]()  for lc   in mTEPES.lc    if (p,lc) in mTEPES.plc)         for p in mTEPES.p], index=mTEPES.p).to_frame(name='Investment Cost Network'   ).stack()
-    if mTEPES.pIndHydroTopology:
-        RsrInvCost = pd.Series(data=[mTEPES.pDiscountedWeight[p] * sum(mTEPES.pRsrInvestCost[rc  ]          * OptModel.vReservoirInvest [p,rc  ]()  for rc   in mTEPES.rn    if (p,rc) in mTEPES.prc)         for p in mTEPES.p], index=mTEPES.p).to_frame(name='Investment Cost Reservoir' ).stack()
+    # SysCost       = pd.Series(data=[                                                                  OptModel.vTotalSCost()                                                                                         ], index=['']    ).to_frame(name='Total          System Cost').stack()
+    GenInvCost      = pd.Series(data=[mTEPES.pDiscountedWeight[p] * sum(mTEPES.pGenInvestCost[gc  ]          * OptModel.vGenerationInvest[p,gc  ]()  for gc   in mTEPES.gc    if (p,gc) in mTEPES.pgc)         for p in mTEPES.p], index=mTEPES.p).to_frame(name='Investment Cost Generation').stack()
+    GenRetCost      = pd.Series(data=[mTEPES.pDiscountedWeight[p] * sum(mTEPES.pGenRetireCost[gd  ]          * OptModel.vGenerationRetire[p,gd  ]()  for gd   in mTEPES.gd    if (p,gd) in mTEPES.pgd)         for p in mTEPES.p], index=mTEPES.p).to_frame(name='Retirement Cost Generation').stack()
+    NetInvCost      = pd.Series(data=[mTEPES.pDiscountedWeight[p] * sum(mTEPES.pNetFixedCost [lc  ]          * OptModel.vNetworkInvest   [p,lc  ]()  for lc   in mTEPES.lc    if (p,lc) in mTEPES.plc)         for p in mTEPES.p], index=mTEPES.p).to_frame(name='Investment Cost Network'   ).stack()
+    if mTEPES.pIndHydroTopology():
+        RsrInvCost  = pd.Series(data=[mTEPES.pDiscountedWeight[p] * sum(mTEPES.pRsrInvestCost[rc  ]          * OptModel.vReservoirInvest [p,rc  ]()  for rc   in mTEPES.rn    if (p,rc) in mTEPES.prc)         for p in mTEPES.p], index=mTEPES.p).to_frame(name='Investment Cost Reservoir' ).stack()
     else:
-        RsrInvCost = pd.Series(data=[0.0                                                                                                                                                                      for p in mTEPES.p], index=mTEPES.p).to_frame(name='Investment Cost Reservoir' ).stack()
+        RsrInvCost  = pd.Series(data=[0.0                                                                                                                                                                      for p in mTEPES.p], index=mTEPES.p).to_frame(name='Investment Cost Reservoir' ).stack()
     if mTEPES.pIndHydrogen():
-        H2InvCost  = pd.Series(data=[mTEPES.pDiscountedWeight[p] * sum(mTEPES.pH2PipeFixedCost[ni,nf,cc]    * OptModel.vH2PipeInvest[p,ni,nf,cc]() for ni,nf,cc in mTEPES.pc if (p,ni,nf,cc) in mTEPES.ppc)   for p in mTEPES.p], index=mTEPES.p).to_frame(name='Investment Cost Hydrogen'  ).stack()
+        H2InvCost   = pd.Series(data=[mTEPES.pDiscountedWeight[p] * sum(mTEPES.pH2PipeFixedCost  [ni,nf,cc] * OptModel.vH2PipeInvest[p,ni,nf,cc]() for ni,nf,cc in mTEPES.pc if (p,ni,nf,cc) in mTEPES.ppc)   for p in mTEPES.p], index=mTEPES.p).to_frame(name='Investment Cost Hydrogen'  ).stack()
     else:
-        H2InvCost  = pd.Series(data=[0.0                                                                                                                                                                      for p in mTEPES.p], index=mTEPES.p).to_frame(name='Investment Cost Hydrogen'  ).stack()
+        H2InvCost   = pd.Series(data=[0.0                                                                                                                                                                      for p in mTEPES.p], index=mTEPES.p).to_frame(name='Investment Cost Hydrogen'  ).stack()
     if mTEPES.pIndHeat():
         HeatInvCost = pd.Series(data=[mTEPES.pDiscountedWeight[p] * sum(mTEPES.pHeatPipeFixedCost[ni,nf,cc] * OptModel.vHeatPipeInvest[p,ni,nf,cc]() for ni,nf,cc in mTEPES.hc if (p,ni,nf,cc) in mTEPES.phc) for p in mTEPES.p], index=mTEPES.p).to_frame(name='Investment Cost Heat'      ).stack()
     else:
@@ -690,7 +690,7 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput, pIndPlo
     else:
         DwRev             = pd.Series(data=[0.0 for gc in mTEPES.gc], index=mTEPES.gc, dtype='float64')
 
-    if mTEPES.pIndRampReserves and sum(mTEPES.pRampReserveUp[:,:,:,:]) and pHasDuals:
+    if mTEPES.pIndRampReserves() and sum(mTEPES.pRampReserveUp[:,:,:,:]) and pHasDuals:
         sPSSTNNR          = [(p,sc,st,n,nr) for p,sc,st,n,nr in mTEPES.s2n*mTEPES.nr if sum(mTEPES.pRampReserveUp[p,sc,n,ar] for ar in mTEPES.ar) and (p,sc,n,nr) in mTEPES.psnnr]
         if sPSSTNNR:
             OutputResults = pd.Series(data=[mTEPES.pDuals[f"eSystemRampUp_{p}_{sc}_{st}{n}"]/mTEPES.pPeriodProb[p,sc]()*OptModel.vRampReserveUp[p,sc,n,nr]() for p,sc,st,n,nr in sPSSTNNR], index=pd.Index(sPSSTNNR))
@@ -717,7 +717,7 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput, pIndPlo
     else:
         RampUpRev             = pd.Series(data=[0.0 for gc in mTEPES.gc], index=mTEPES.gc, dtype='float64')
 
-    if mTEPES.pIndRampReserves and sum(mTEPES.pRampReserveDw[:,:,:,:]) and pHasDuals:
+    if mTEPES.pIndRampReserves() and sum(mTEPES.pRampReserveDw[:,:,:,:]) and pHasDuals:
         sPSSTNNR          = [(p,sc,st,n,nr) for p,sc,st,n,nr in mTEPES.s2n*mTEPES.nr if sum(mTEPES.pRampReserveDw[p,sc,n,ar] for ar in mTEPES.ar) and (p,sc,n,nr) in mTEPES.psnnr]
         if sPSSTNNR:
             OutputResults = pd.Series(data=[mTEPES.pDuals[f"eSystemRampDw_{p}_{sc}_{st}{n}"]/mTEPES.pPeriodProb[p,sc]()*OptModel.vRampReserveDw[p,sc,n,nr]() for p,sc,st,n,nr in sPSSTNNR], index=pd.Index(sPSSTNNR))

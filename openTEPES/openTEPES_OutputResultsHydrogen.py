@@ -70,8 +70,8 @@ def NetworkH2OperationResults(DirName, CaseName, OptModel, mTEPES):
     OutputResults  = pd.concat([OutputResults2, OutputResults3, OutputResults4, OutputResults5, OutputResults6, OutputResults7, OutputResults8], axis=1)
 
     # Merge duplicate columns that arise when a technology belongs to multiple generator sets
-    # if OutputResults.columns.duplicated().any():
-    #     OutputResults = OutputResults.T.groupby(level=0).sum().T
+    if OutputResults.columns.duplicated().any():
+        OutputResults = OutputResults.T.groupby(level=0).sum().T
 
     OutputResults.stack().reset_index().pivot_table(index=['level_0','level_1','level_2','level_3','level_4'], columns='level_5', values=0, aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel', 'Area', 'Node'], axis=0).oT.write(f'{_path}/oT_Result_BalanceHydrogenPerTech_{CaseName}.csv', sep=',')
     OutputResults.stack().reset_index().pivot_table(index=['level_0','level_1','level_2'          ,'level_5'], columns='level_4', values=0, aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel', 'Technology'  ], axis=0).oT.write(f'{_path}/oT_Result_BalanceHydrogenPerNode_{CaseName}.csv', sep=',')

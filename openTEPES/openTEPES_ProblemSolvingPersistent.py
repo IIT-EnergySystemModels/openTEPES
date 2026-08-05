@@ -1,15 +1,14 @@
 """
 Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 17, 2026
+
 openTEPES.openTEPES_ProblemSolvingPersistent — persistent-solver lifecycle for ``appsi_gurobi`` and ``gurobi_persistent``.
 
-The ``ncall`` counter in ``ProblemSolving`` distinguishes the first solve of a given Pyomo instance (which must
-``set_instance`` once) from subsequent solves in the stage loop (which only need to update vars / params /
-constraints). This module owns the bookkeeping flags ``_appsi_gurobi_initialized`` /
-``_gurobi_persistent_initialized`` and the ``update_config`` toggles that control what gets pushed into the
-persistent Gurobi instance between solves.
+The ``ncall`` counter in ``ProblemSolving`` distinguishes the first solve of a given Pyomo instance (which must ``set_instance`` once) from subsequent solves
+in the stage loop (which only need to update vars / params / constraints). This module owns the bookkeeping flags ``_appsi_gurobi_initialized`` /
+``_gurobi_persistent_initialized`` and the ``update_config`` toggles that control what gets pushed into the persistent Gurobi instance between solves.
 
-Non-persistent solvers (``gurobi``, ``gurobi_direct``, ``cplex``, ``highs``, ``gams``, ``glpk``) bypass this layer
-entirely — ``setup_solver()`` just calls ``SolverFactory(SolverName)`` and clears any stale log file.
+Non-persistent solvers (``gurobi``, ``gurobi_direct``, ``cplex``, ``highs``, ``gams``, ``glpk``) bypass this layer entirely — ``setup_solver()`` just calls
+``SolverFactory(SolverName)`` and clears any stale log file.
 """
 from __future__ import annotations
 
@@ -48,7 +47,7 @@ def setup_solver(OptModel, SolverName: str, FileName: str, ncall: int, mTEPES):
             Solver.set_instance(OptModel)
             OptModel._appsi_gurobi_initialized = True
         else:
-            if mTEPES.pIndSectorDecomposition == 0:
+            if mTEPES.pIndSectorDecomposition() == 0:
                 Solver.update_config.check_for_new_or_removed_params      = True
                 Solver.update_config.check_for_new_or_removed_vars        = True
                 Solver.update_config.check_for_new_or_removed_constraints = True

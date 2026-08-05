@@ -1,7 +1,7 @@
 """
 Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 29, 2026
-openTEPES.openTEPES_InputSource — ``InputSource`` ABC, ``open_source()`` factory, and post-read shape helpers shared by every
-backend.
+
+openTEPES.openTEPES_InputSource — ``InputSource`` ABC, ``open_source()`` factory, and post-read shape helpers shared by every backend.
 
 Selection rules of ``open_source(path)``:
 
@@ -9,8 +9,8 @@ Selection rules of ``open_source(path)``:
   * file with ``.duckdb``    → ``DuckDBSource(path)``.
   * anything else            → ``ValueError``.
 
-Backends are imported lazily so a parity probe in a freshly-cloned tree without ``duckdb`` installed still resolves
-``InputSource`` and ``open_source`` for the CSV path.
+Backends are imported lazily so a parity probe in a freshly-cloned tree without ``duckdb`` installed still resolves ``InputSource`` and
+``open_source`` for the CSV path.
 """
 from __future__ import annotations
 

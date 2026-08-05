@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - august 04, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 05, 2026
 
 openTEPES.openTEPES_ProblemSolvingStageIter — stage-by-stage formulate-and-solve driver.
 
@@ -82,7 +82,7 @@ def StageIterativeSolving(mTEPES, DirName, CaseName, SolverName, pIndLogConsole,
         mTEPES.necc         = [(n,ec) for n,ec in mTEPES.n*mTEPES.ec if mTEPES.n.ord(n) %     mTEPES.pStorageTimeStep [ec] == 0]
         mTEPES.neso         = [(n,es) for n,es in mTEPES.n*mTEPES.es if mTEPES.n.ord(n) %     mTEPES.pOutflowsTimeStep[es] == 0]
         mTEPES.ngen         = [(n,g ) for n,g  in mTEPES.n*mTEPES.g  if mTEPES.n.ord(n) %     mTEPES.pEnergyTimeStep  [g ] == 0]
-        if mTEPES.pIndHydroTopology:
+        if mTEPES.pIndHydroTopology():
             mTEPES.nhc      = [(n,h ) for n,h  in mTEPES.n*mTEPES.h  if mTEPES.n.ord(n) % sum(mTEPES.pReservoirTimeStep[rs] for rs in mTEPES.rs if (rs,h) in mTEPES.r2h) == 0]
             if len(mTEPES.p2r):
                 mTEPES.np2c = [(n,h ) for n,h  in mTEPES.n*mTEPES.h  if sum(1 for rs in mTEPES.rs if (h,rs) in mTEPES.p2r) and mTEPES.n.ord(n) % sum(mTEPES.pReservoirTimeStep[rs] for rs in mTEPES.rs if (h,rs) in mTEPES.p2r) == 0]
@@ -118,7 +118,7 @@ def StageIterativeSolving(mTEPES, DirName, CaseName, SolverName, pIndLogConsole,
                 GenerationOperationHeatModelFormulationInvestment(mTEPES, mTEPES, pIndLogConsole, p, sc, st)
             GenerationOperationModelFormulationDemand            (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
             GenerationOperationModelFormulationStorage           (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
-            if mTEPES.pIndHydroTopology:
+            if mTEPES.pIndHydroTopology():
                 GenerationOperationModelFormulationReservoir     (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
             if mTEPES.pIndHydrogen():
                 NetworkH2OperationModelFormulation               (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
@@ -186,7 +186,7 @@ def StageIterativeSolving(mTEPES, DirName, CaseName, SolverName, pIndLogConsole,
                         mTEPES.necc         = [(n,ec) for n,ec in mTEPES.n*mTEPES.ec if mTEPES.n.ord(n) %     mTEPES.pStorageTimeStep [ec] == 0]
                         mTEPES.neso         = [(n,es) for n,es in mTEPES.n*mTEPES.es if mTEPES.n.ord(n) %     mTEPES.pOutflowsTimeStep[es] == 0]
                         mTEPES.ngen         = [(n,g ) for n,g  in mTEPES.n*mTEPES.g  if mTEPES.n.ord(n) %     mTEPES.pEnergyTimeStep  [g ] == 0]
-                        if mTEPES.pIndHydroTopology:
+                        if mTEPES.pIndHydroTopology():
                             mTEPES.nhc      = [(n,h ) for n,h  in mTEPES.n*mTEPES.h  if mTEPES.n.ord(n) % sum(mTEPES.pReservoirTimeStep[rs] for rs in mTEPES.rs if (rs,h) in mTEPES.r2h) == 0]
                             if len(mTEPES.p2r):
                                 mTEPES.np2c = [(n,h ) for n,h  in mTEPES.n*mTEPES.h  if sum(1 for rs in mTEPES.rs if (h,rs) in mTEPES.p2r) and mTEPES.n.ord(n) % sum(mTEPES.pReservoirTimeStep[rs] for rs in mTEPES.rs if (h,rs) in mTEPES.p2r) == 0]
@@ -210,7 +210,7 @@ def StageIterativeSolving(mTEPES, DirName, CaseName, SolverName, pIndLogConsole,
 
                         mTEPES.pScenProb[p,sc] = 1.0
                         # there are system emission or RES requirement constraints
-                        if mTEPES.pIndSectorDecomposition and len(mTEPES.psnel):
+                        if mTEPES.pIndSectorDecomposition() and len(mTEPES.psnel):
                             ProblemSolving     (DirName, CaseName, SolverName, mTEPES, mTEPES, pIndLogConsole, p, sc, st, 1)
                             SectorDecomposition(DirName, CaseName, SolverName, mTEPES, mTEPES, pIndLogConsole, p, sc, st   )
                         else:
@@ -245,7 +245,7 @@ def StageIterativeSolving(mTEPES, DirName, CaseName, SolverName, pIndLogConsole,
                         mTEPES.necc         = [(n,ec) for n,ec in mTEPES.n*mTEPES.ec if mTEPES.n.ord(n) %     mTEPES.pStorageTimeStep [ec] == 0]
                         mTEPES.neso         = [(n,es) for n,es in mTEPES.n*mTEPES.es if mTEPES.n.ord(n) %     mTEPES.pOutflowsTimeStep[es] == 0]
                         mTEPES.ngen         = [(n,g ) for n,g  in mTEPES.n*mTEPES.g  if mTEPES.n.ord(n) %     mTEPES.pEnergyTimeStep  [g ] == 0]
-                        if mTEPES.pIndHydroTopology:
+                        if mTEPES.pIndHydroTopology():
                             mTEPES.nhc      = [(n,h ) for n,h  in mTEPES.n*mTEPES.h  if mTEPES.n.ord(n) % sum(mTEPES.pReservoirTimeStep[rs] for rs in mTEPES.rs if (rs,h) in mTEPES.r2h) == 0]
                             if len(mTEPES.p2r):
                                 mTEPES.np2c = [(n,h ) for n,h  in mTEPES.n*mTEPES.h  if len([rs for rs in mTEPES.rs if (h,rs) in mTEPES.p2r]) and mTEPES.n.ord(n) % sum(mTEPES.pReservoirTimeStep[rs] for rs in mTEPES.rs if (h,rs) in mTEPES.p2r) == 0]
@@ -268,11 +268,11 @@ def StageIterativeSolving(mTEPES, DirName, CaseName, SolverName, pIndLogConsole,
                             print('Writing LP file                        ... ', round(WritingLPFileTime), 's')
 
                         # there are investment decisions (it is an expansion and operation model), or there are system emission constraints
-                        if mTEPES.pIndSectorDecomposition and len(mTEPES.psnel):
+                        if mTEPES.pIndSectorDecomposition() and len(mTEPES.psnel):
                             ProblemSolving       (DirName, CaseName, SolverName, mTEPES, mTEPES, pIndLogConsole, p, sc, st, 1)
                             SectorDecomposition  (DirName, CaseName, SolverName, mTEPES, mTEPES, pIndLogConsole, p, sc, st   )
                         else:
-                            if mTEPES.pIndCompleteProblem == 1:
+                            if mTEPES.pIndCompleteProblem() == 1:
                                 ProblemSolving   (DirName, CaseName, SolverName, mTEPES, mTEPES, pIndLogConsole, p, sc, st, 1)
                             else:
                                 StageDecomposition(DirName, CaseName, SolverName, mTEPES, mTEPES, pIndLogConsole, p, sc, st, _path, pIndCycleFlow)
@@ -289,7 +289,7 @@ def StageIterativeSolving(mTEPES, DirName, CaseName, SolverName, pIndLogConsole,
     mTEPES.necc         = [(n,ec) for n,ec in mTEPES.n*mTEPES.ec if mTEPES.n.ord(n) %     mTEPES.pStorageTimeStep [ec] == 0]
     mTEPES.neso         = [(n,es) for n,es in mTEPES.n*mTEPES.es if mTEPES.n.ord(n) %     mTEPES.pOutflowsTimeStep[es] == 0]
     mTEPES.ngen         = [(n,g ) for n,g  in mTEPES.n*mTEPES.g  if mTEPES.n.ord(n) %     mTEPES.pEnergyTimeStep  [g ] == 0]
-    if mTEPES.pIndHydroTopology:
+    if mTEPES.pIndHydroTopology():
         mTEPES.nhc      = [(n,h ) for n,h  in mTEPES.n*mTEPES.h  if mTEPES.n.ord(n) % sum(mTEPES.pReservoirTimeStep[rs] for rs in mTEPES.rs if (rs,h) in mTEPES.r2h) == 0]
         if len(mTEPES.p2r):
             mTEPES.np2c = [(n,h ) for n,h  in mTEPES.n*mTEPES.h  if len([rs for rs in mTEPES.rs if (h,rs) in mTEPES.p2r]) and mTEPES.n.ord(n) % sum(mTEPES.pReservoirTimeStep[rs] for rs in mTEPES.rs if (h,rs) in mTEPES.p2r) == 0]

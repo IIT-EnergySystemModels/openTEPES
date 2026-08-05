@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 16, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 05, 2026
 
 openTEPES.openTEPES_ProblemSolvingDualExtraction — fix-and-resolve pass that recovers shadow prices on a MIP solution.
 
@@ -81,7 +81,7 @@ def fix_for_duals(OptModel, mTEPES, p, sc) -> int:
     for ni, nf, cc in mTEPES.lc:
         if (p, ni, nf, cc) in mTEPES.plc:
             _fix_investment(OptModel.vNetworkInvest[p, ni, nf, cc])
-    if mTEPES.pIndHydroTopology:
+    if mTEPES.pIndHydroTopology():
         for rc in mTEPES.rn:
             if (p, rc) in mTEPES.prc:
                 _fix_investment(OptModel.vReservoirInvest[p, rc])

@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 04, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 05, 2026
 
 Generation operation results, electricity and heat.
 
@@ -71,7 +71,7 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnolo
                 OutputToFile = pd.Series(data=[sum(OutputToFile[p,sc,n,nr] for nr in n2n[nt] if (p,nr) in mTEPES.pnr) for p,sc,n,nt in mTEPES.psnnt], index=mTEPES.psnnt)
                 OutputToFile.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_TechnologyGenOperatingReserveUp_{CaseName}.csv', sep=',')
 
-            if mTEPES.pIndReserveActivation == 1:
+            if mTEPES.pIndReserveActivation() == 1:
                 OutputToFile = pd.Series(data=[OptModel.vReserveUpEnergy[p,sc,n,nr]() for p,sc,n,nr in mTEPES.psnnr], index=mTEPES.psnnr)
                 OutputToFile = OutputToFile.fillna(0.0)
                 OutputToFile *= 1e3
@@ -91,7 +91,7 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnolo
                 OutputToFile = pd.Series(data=[sum(OutputToFile[p,sc,n,eh] for eh in e2e[et] if (p,eh) in mTEPES.peh and mTEPES.pRatedMaxCharge[eh]) for p,sc,n,et in mTEPES.psnet], index=mTEPES.psnet)
                 OutputToFile.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_TechnologyConOperatingReserveUp_{CaseName}.csv', sep=',')
 
-            if mTEPES.pIndReserveActivation == 1:
+            if mTEPES.pIndReserveActivation() == 1:
                 OutputToFile = pd.Series(data=[OptModel.vESSReserveUpEnergy[p,sc,n,eh]() for p,sc,n,eh in mTEPES.psnehc], index=mTEPES.psnehc)
                 OutputToFile = OutputToFile.fillna(0.0)
                 OutputToFile *= 1e3
@@ -112,7 +112,7 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnolo
                 OutputToFile = pd.Series(data=[sum(OutputToFile[p,sc,n,nr] for nr in n2n[nt] if (p,nr) in mTEPES.pnr) for p,sc,n,nt in mTEPES.psnnt], index=mTEPES.psnnt)
                 OutputToFile.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_TechnologyGenOperatingReserveDown_{CaseName}.csv', sep=',')
 
-            if mTEPES.pIndReserveActivation == 1:
+            if mTEPES.pIndReserveActivation() == 1:
                 OutputToFile = pd.Series(data=[OptModel.vReserveDownEnergy[p,sc,n,nr]() for p,sc,n,nr in mTEPES.psnnr], index=mTEPES.psnnr)
                 OutputToFile = OutputToFile.fillna(0.0)
                 OutputToFile *= 1e3
@@ -132,7 +132,7 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnolo
                 OutputToFile = pd.Series(data=[sum(OutputToFile[p,sc,n,eh] for eh in e2e[et] if (p,eh) in mTEPES.peh and mTEPES.pRatedMaxCharge[eh]) for p,sc,n,et in mTEPES.psnet], index=mTEPES.psnet)
                 OutputToFile.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_TechnologyConOperatingReserveDown_{CaseName}.csv', sep=',')
 
-            if mTEPES.pIndReserveActivation == 1:
+            if mTEPES.pIndReserveActivation() == 1:
                 OutputToFile = pd.Series(data=[OptModel.vESSReserveDownEnergy[p,sc,n,eh]() for p,sc,n,eh in mTEPES.psnehc], index=mTEPES.psnehc)
                 OutputToFile = OutputToFile.fillna(0.0)
                 OutputToFile *= 1e3
@@ -142,7 +142,7 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnolo
                     OutputToFile = pd.Series(data=[sum(OutputToFile[p,sc,n,eh] for eh in e2e[et] if (p,eh) in mTEPES.peh and mTEPES.pRatedMaxCharge[eh]) for p,sc,n,et in mTEPES.psnet], index=mTEPES.psnet)
                     OutputToFile.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_TechnologyConOperatingReserveDownEnergy_{CaseName}.csv', sep=',')
 
-    if mTEPES.nr and mTEPES.pIndRampReserves and sum(mTEPES.pOperReserveUp[:,:,:,:]):
+    if mTEPES.nr and mTEPES.pIndRampReserves() and sum(mTEPES.pOperReserveUp[:,:,:,:]):
         OutputToFile = pd.Series(data=[OptModel.vRampReserveUp[p,sc,n,nr]() for p,sc,n,nr in mTEPES.psnnr], index=mTEPES.psnnr)
         OutputToFile = OutputToFile.fillna(0.0)
         OutputToFile *= 1e3
@@ -152,7 +152,7 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnolo
             OutputToFile = pd.Series(data=[sum(OutputToFile[p,sc,n,nr] for nr in n2n[nt] if (p,nr) in mTEPES.pnr) for p,sc,n,nt in mTEPES.psnnt], index=mTEPES.psnnt)
             OutputToFile.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_TechnologyRampReserveUp_{CaseName}.csv', sep=',')
 
-    if mTEPES.nr and mTEPES.pIndRampReserves and sum(mTEPES.pOperReserveDw[:,:,:,:]):
+    if mTEPES.nr and mTEPES.pIndRampReserves() and sum(mTEPES.pOperReserveDw[:,:,:,:]):
         OutputToFile = pd.Series(data=[OptModel.vRampReserveDw[p,sc,n,nr]() for p,sc,n,nr in mTEPES.psnnr], index=mTEPES.psnnr)
         OutputToFile = OutputToFile.fillna(0.0)
         OutputToFile *= 1e3
@@ -274,7 +274,7 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnolo
         if pIndPlotOutput:
             TechnologyOutput = OutputToFile.loc[:,:,:,:]
             for p,sc in mTEPES.ps:
-                chart = AreaPlots(p, sc, TechnologyOutput, 'Technology', 'LoadLevel', 'MW', 'sum')
+                chart = AreaPlots(p, sc, TechnologyOutput, 'Technology', 'LoadLevel', 'MW')
                 chart.save(f'{_path}/oT_Plot_TechnologyGeneration_{CaseName}_{p}_{sc}.html', embed_options={'renderer': 'svg'})
 
         OutputToFile = pd.Series(data=[sum(OptModel.vTotalOutput[p,sc,n,g]()*mTEPES.pLoadLevelDuration[p,sc,n]() for g in g2t[gt] if (p,g) in mTEPES.pg) for p,sc,n,gt in mTEPES.psngt], index=mTEPES.psngt)
@@ -357,7 +357,7 @@ def GenerationOperationHeatResults(DirName, CaseName, OptModel, mTEPES, pIndTech
         if pIndPlotOutput:
             TechnologyOutput = OutputToFile.loc[:,:,:,:]
             for p,sc in mTEPES.ps:
-                chart = AreaPlots(p, sc, TechnologyOutput, 'Technology', 'LoadLevel', 'MW', 'sum')
+                chart = AreaPlots(p, sc, TechnologyOutput, 'Technology', 'LoadLevel', 'MW')
                 chart.save(f'{_path}/oT_Plot_TechnologyGenerationHeat_{CaseName}_{p}_{sc}.html', embed_options={'renderer': 'svg'})
 
         OutputToFile = pd.Series(data=[sum(OptModel.vTotalOutputHeat[p,sc,n,chp]()*mTEPES.pLoadLevelDuration[p,sc,n]() for chp in g2t[gt] if (p,chp) in mTEPES.pchp) for p,sc,n,gt in sPSNGT], index=pd.Index(sPSNGT))

@@ -3,12 +3,11 @@ Open Generation, Storage, and Transmission Operation and Expansion Planning Mode
 
 openTEPES.openTEPES_Runner — Mode A and Mode B sweep runner.
 
-Run many cases through ``openTEPES_run`` with a chosen backend. Mode A (``mode="pre-build"``,
-RFC §4.1): each case loads its own source, builds, solves, and writes its own results. Mode B
-(``mode="in-memory"``, RFC §4.2): the baseline case is read once into RAM and every case re-uses
-it through an ``InMemorySource`` plus an overlay, so the sweep pays the I/O once and only rebuilds
-+ solves per worker (forked workers share the baseline frames copy-on-write). Mode C (post-build
-hot-swap) lives in ``openTEPES_ProblemSolvingResolve``.
+Run many cases through ``openTEPES_run`` with a chosen backend.
+Mode A (``mode="pre-build"``, RFC §4.1): each case loads its own source, builds, solves, and writes its own results.
+Mode B (``mode="in-memory"``, RFC §4.2): the baseline case is read once into RAM and every case re-uses it through an ``InMemorySource`` plus an overlay,
+so the sweep pays the I/O once and only rebuilds + solves per worker (forked workers share the baseline frames copy-on-write).
+Mode C (post-build hot-swap) lives in ``openTEPES_ProblemSolvingResolve``.
 """
 from __future__ import annotations
 

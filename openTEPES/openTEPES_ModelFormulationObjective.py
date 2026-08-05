@@ -80,13 +80,13 @@ def GenerationOperationModelFormulationObjFunct(OptModel, mTEPES, pIndLogConsole
         return OptModel.vTotalECost[p,sc,n] == sum(OptModel.vTotalECostArea[p,sc,n,ar] for ar in mTEPES.ar)
     setattr(OptModel, f'eTotalECost_{p}_{sc}_{st}', Constraint(mTEPES.n, rule=eTotalECost, doc='system emission cost [MEUR]'))
 
-    pIndEmissionArea = {ar: mTEPES.pEmission[p,ar] != math.inf and any(mTEPES.pEmissionRate[g] for g in g2a[ar] and (p,g) in mTEPES.pg) for ar in mTEPES.ar}
+    pIndEmissionArea = {ar: mTEPES.pEmission[p,ar] != math.inf and any(mTEPES.pEmissionRate[g] for g in g2a[ar] if (p,g) in mTEPES.pg) for ar in mTEPES.ar}
 
     def eTotalEmissionArea(OptModel,n,ar):
         if not pIndEmissionArea[ar]:
             return Constraint.Skip
-        return OptModel.vTotalEmissionArea[p,sc,n,ar] == (mTEPES.pLoadLevelDuration[p,sc,n]() * 1e-3 * (sum(mTEPES.pEmissionRate[g ] * OptModel.vTotalOutput    [p,sc,n,g ] for g  in g2a [ar] and g not in mTEPES.bo)    # 1e-3 to convert from tCO2/MWh to MtCO2/GWh
-                                                                                                     +  sum(mTEPES.pEmissionRate[bo] * OptModel.vTotalOutputHeat[p,sc,n,bo] for bo in bo2a[ar]                       )))  # 1e-3 to convert from tCO2/MWh to MtCO2/GWh
+        return OptModel.vTotalEmissionArea[p,sc,n,ar] == (mTEPES.pLoadLevelDuration[p,sc,n]() * 1e-3 * (sum(mTEPES.pEmissionRate[g ] * OptModel.vTotalOutput    [p,sc,n,g ] for g  in g2a [ar] if g not in mTEPES.bo)    # 1e-3 to convert from tCO2/MWh to MtCO2/GWh
+                                                                                                     +  sum(mTEPES.pEmissionRate[bo] * OptModel.vTotalOutputHeat[p,sc,n,bo] for bo in bo2a[ar]                      )))  # 1e-3 to convert from tCO2/MWh to MtCO2/GWh
     setattr(OptModel, f'eTotalEmissionArea_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.ar, rule=eTotalEmissionArea, doc='area total emission [MtCO2 eq]'))
 
     def eTotalECostArea(OptModel,n,ar):

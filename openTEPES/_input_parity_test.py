@@ -1,12 +1,9 @@
 """Parity probe for the InputData refactor.
 
-Loads a case via ``InputData`` and snapshots every model-visible piece of
-state: each Pyomo ``Set`` (as a sorted list), every ``mTEPES.dFrame[k]``
+Loads a case via ``InputData`` and snapshots every model-visible piece of state: each Pyomo ``Set`` (as a sorted list), every ``mTEPES.dFrame[k]``
 DataFrame, and every ``mTEPES.dPar[k]`` value. Snapshots are picklable.
 
-Two snapshots can be diff'd with ``compare_snapshots(a, b)``; the diff
-result is a list of human-readable strings describing every key whose
-value disagrees.
+Two snapshots can be diff'd with ``compare_snapshots(a, b)``; the diff result is a list of human-readable strings describing every key whose value disagrees.
 
 Used like:
 
