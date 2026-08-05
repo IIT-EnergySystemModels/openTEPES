@@ -69,7 +69,7 @@ def GenerationOperationModelFormulationDemand(OptModel, mTEPES, pIndLogConsole, 
 
     def eOperReserveUp(OptModel,n,ar):
         # Skip if there are no upward operating reserves or there are no generators in this area which can provide reserves
-        if mTEPES.pOperReserveUp[p,sc,n,ar] == 0.0 or mTEPES.pOperReserveUp[p,sc,n,ar] == 0.0 or len(nr2aRsrv[ar]) + len(eh2aRsrv[ar]) == 0:
+        if mTEPES.pOperReserveUp[p,sc,n,ar] == 0.0 or len(nr2aRsrv[ar]) + len(eh2aRsrv[ar]) == 0:
             return Constraint.Skip
         return sum(OptModel.vReserveUp  [p,sc,n,nr] for nr in n2a[ar] if mTEPES.pIndOperReserveGen[nr] == 0 and (p,nr) in mTEPES.pnr) + sum(OptModel.vESSReserveUp  [p,sc,n,eh] for eh in e2a[ar] if mTEPES.pIndOperReserveCon[eh] == 0 and (p,eh) in mTEPES.peh) == mTEPES.pOperReserveUp[p,sc,n,ar]
     setattr(OptModel, f'eOperReserveUp_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.ar, rule=eOperReserveUp, doc='up   operating reserve [GW]'))
@@ -79,7 +79,7 @@ def GenerationOperationModelFormulationDemand(OptModel, mTEPES, pIndLogConsole, 
 
     def eOperReserveDw(OptModel,n,ar):
         # Skip if there are no downward operating reserves or there are no generators in this area which can provide reserves
-        if mTEPES.pOperReserveDw[p,sc,n,ar] == 0.0 or mTEPES.pOperReserveUp[p,sc,n,ar] == 0.0 or len(nr2aRsrv[ar]) + len(eh2aRsrv[ar]) == 0:
+        if mTEPES.pOperReserveDw[p,sc,n,ar] == 0.0 or len(nr2aRsrv[ar]) + len(eh2aRsrv[ar]) == 0:
             return Constraint.Skip
         return sum(OptModel.vReserveDown[p,sc,n,nr] for nr in n2a[ar] if mTEPES.pIndOperReserveGen[nr] == 0 and (p,nr) in mTEPES.pnr) + sum(OptModel.vESSReserveDown[p,sc,n,eh] for eh in e2a[ar] if mTEPES.pIndOperReserveCon[eh] == 0 and (p,eh) in mTEPES.peh) == mTEPES.pOperReserveDw[p,sc,n,ar]
     setattr(OptModel, f'eOperReserveDw_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.ar, rule=eOperReserveDw, doc='down operating reserve [GW]'))
