@@ -1,13 +1,13 @@
 [build-system]
-requires = ["flit_core >=2,<4"]
+requires = ["flit_core >=3.2,<4"]
 build-backend = "flit_core.buildapi"
 
-[tool.flit.metadata]
-module = "openTEPES"
-dist-name = "openTEPES"
-author = "IIT-EnergySystemModels"
-author-email = "andres.ramos@comillas.edu"
-home-page = "https://opentepes.readthedocs.io/en/latest/index.html"
+[project]
+name = "openTEPES"
+dynamic = ["version", "description"]
+authors = [{name = "IIT-EnergySystemModels", email = "andres.ramos@comillas.edu"}]
+readme = "README.md"
+requires-python = ">=3.11"
 classifiers = [
   "Development Status :: 5 - Production/Stable","Intended Audience :: Science/Research",
   "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
@@ -15,9 +15,7 @@ classifiers = [
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",]
-requires-python = ">=3.11"
-description-file = "README.md"
-requires = [
+dependencies = [
   "altair>=5.5,<6",
   "amplpy>=0.16.0,<1",
   "ausankey>=1.8,<2",
@@ -36,7 +34,10 @@ requires = [
   "streamlit>=1.51.0,<2",
   ]
 
-[tool.flit.scripts]
+[project.urls]
+Home = "https://opentepes.readthedocs.io/en/latest/index.html"
+
+[project.scripts]
 openTEPES_Main = "openTEPES:main"
 
 [tool.pytest.ini_options]
