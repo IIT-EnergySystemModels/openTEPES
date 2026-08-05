@@ -1,7 +1,8 @@
 # Change Log
 
-## [4.18.17RC] - 2026-07-29 Unreleased in PyPI
+## [4.18.17RC] - 2026-08-05 Unreleased in PyPI
 
+- [FIXED] many small errors detected with Claude Fable
 - [FIXED]  fix typo for skipping the eReserveUpIfEnergy constraint condition and substitute list(mTEPES.n2) by n2list for performance improvement
 - [CHANGED] the `9n_H2` example case now models its two electrolyzers the way the documentation defines the "Electrolyzer (ELZ)" unit type: an ESS with electric energy outflows, a storage buffer of 1.512 GWh each, and a weekly outflow cycle. The hydrogen demand is expressed as the electricity the electrolyzers must draw to produce it (0.3 tH2/h at 60 kWh/kgH2 gives 18 MW, split between the two units), so the hydrogen network sector is off in this case and the network path stays covered by `sSEP`. Before this, the electrolyzers had no storage and no outflows, so their inventory was pinned at zero and every unit of electricity they consumed was written off as ESS spillage, which carries no cost. Over a year the case now costs 168.342 MEUR instead of 170.532, because the electrolyzers can choose when to draw their electricity instead of producing in lockstep with an hourly hydrogen demand. Four tests were added to pin the behaviour, and the expected cost of the 7-day regression run moves to 242.89492215294186.
 - [FIXED] skip the ESS downward-reserve energy constraint for units with no storage, and keep `pDemandElec` live in the electric balance, unbreaking master CI.
