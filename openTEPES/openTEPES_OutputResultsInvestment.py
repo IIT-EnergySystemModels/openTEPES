@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 04, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 05, 2026
 
 Investment and retirement results.
 
@@ -74,15 +74,15 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutput,
                 if len(sPARGT):
                     TechInvestToArea = pd.Series(data=[sum(OutputToFile['MW'][p,eb] for eb in mTEPES.eb if (p,eb) in mTEPES.peb and eb in g2t[gt] and eb in g2a[ar]) for p,ar,gt in sPARGT], index=pd.MultiIndex.from_tuples(sPARGT)).to_frame(name='MW')
                     TechInvestToArea.index.names = ['Period', 'Area', 'Technology']
-                if pIndPlotOutput:
-                    chart = alt.Chart(TechInvestToArea.reset_index()).mark_bar().encode(x='Technology:O', y='sum(MW):Q', color='Area:N', column='Period:N').properties(width=600, height=400)
-                    chart.save(f'{_path}/oT_Plot_TechnologyInvestmentPerArea_{CaseName}.html', embed_options={'renderer':'svg'})
-                if pIndAreaOutput:
-                    for ar in mTEPES.ar:
-                        if sum(1 for eb in mTEPES.eb if eb in g2a[ar]):
-                            TechInvestArea = TechInvestToArea.xs(ar, level='Area').copy()
-                            TechInvestArea['MW'] = TechInvestArea['MW'].round(2)
-                            TechInvestArea.reset_index().pivot_table(index=['Period'], columns=['Technology'], values='MW', aggfunc='sum', fill_value=0).rename_axis(['Period'], axis=0).oT.write(f'{_path}/oT_Result_TechnologyInvestment_{CaseName}_{ar}.csv', index=True, sep=',')
+                    if pIndPlotOutput:
+                        chart = alt.Chart(TechInvestToArea.reset_index()).mark_bar().encode(x='Technology:O', y='sum(MW):Q', color='Area:N', column='Period:N').properties(width=600, height=400)
+                        chart.save(f'{_path}/oT_Plot_TechnologyInvestmentPerArea_{CaseName}.html', embed_options={'renderer':'svg'})
+                    if pIndAreaOutput:
+                        for ar in mTEPES.ar:
+                            if sum(1 for eb in mTEPES.eb if eb in g2a[ar]):
+                                TechInvestArea = TechInvestToArea.xs(ar, level='Area').copy()
+                                TechInvestArea['MW'] = TechInvestArea['MW'].round(2)
+                                TechInvestArea.reset_index().pivot_table(index=['Period'], columns=['Technology'], values='MW', aggfunc='sum', fill_value=0).rename_axis(['Period'], axis=0).oT.write(f'{_path}/oT_Result_TechnologyInvestment_{CaseName}_{ar}.csv', index=True, sep=',')
 
         if pIndTechOutput:
             # Ordering data to plot the investment decision
@@ -95,8 +95,7 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutput,
             OutputResults['MW'] = round(OutputResults['MW'], 2)
             OutputResults.reset_index().pivot_table(index=['Period'], columns=['Technology'], values='MW').rename_axis(['Period'], axis=0).oT.write(f'{_path}/oT_Result_TechnologyInvestment_{CaseName}.csv', index=True, sep=',')
 
-            MarketResultsInv = pd.DataFrame()
-            MarketResultsInv = pd.concat([MarketResultsInv, OutputResults], axis=1)
+            MarketResultsInv = OutputResults.copy()
 
             if pIndPlotOutput:
                 chart = alt.Chart(OutputResults.reset_index()).mark_bar().encode(x='Technology:O', y='sum(MW):Q', color='Technology:N', column='Period:N').properties(width=600, height=400)
@@ -124,10 +123,10 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutput,
             GenTechInjection  = pd.Series(data=[sum(mTEPES.pDiscountedWeight[p] * mTEPES.pLoadLevelDuration[p,sc,n]() * OptModel.vTotalOutput[p,sc,n,eb]() for sc,n,eb in mTEPES.sc*mTEPES.n*mTEPES.eb if eb in g2t[gt] and (p,sc,n,eb) in mTEPES.psneb) for p,gt in mTEPES.p*mTEPES.gt], index=mTEPES.p*mTEPES.gt)
             GenTechInjection.name = 'Generation'
             MarketResultsInv  = pd.concat([MarketResultsInv, GenTechInjection], axis=1)
-            LCOE = GenTechInvestCost.div(GenTechInjection)
+            LCOE = GenTechInvestCost.div(GenTechInjection + pEpsilon)
             LCOE.name = 'LCOE'
             MarketResultsInv = pd.concat([MarketResultsInv, LCOE], axis=1)
-            MarketResultsInv.stack().reset_index().pivot_table(index=['level_0','level_1'], columns='level_2', values=0, aggfunc='sum').rename_axis(['Period', 'Technology'], axis=0).rename(columns={'MW': 'Power [MW]', 'MEUR': 'Cost [MEUR]', 'Generation': 'Generation [GWh]', 'LCOE': 'LCOE [EUR/MWh]'}, inplace=False).oT.write(f'{_path}/oT_Result_MarketResultsTechnologyInvestment_{CaseName}.csv', sep=',')
+            MarketResultsInv.stack().reset_index().pivot_table(index=['level_0','level_1'], columns='level_2', values=0, aggfunc='sum').rename_axis(['Period', 'Technology'], axis=0).rename(columns={'MW': 'Power [MW]', 'MEUR': 'Cost [MEUR]', 'Generation': 'Discounted generation [GWh]', 'LCOE': 'LCOE [EUR/MWh]'}, inplace=False).oT.write(f'{_path}/oT_Result_MarketResultsTechnologyInvestment_{CaseName}.csv', sep=',')
 
             if pIndPlotOutput:
                 chart = alt.Chart(OutputResults.reset_index()).mark_bar().encode(x='Technology:O', y='sum(MEUR):Q', color='Technology:N', column='Period:N').properties(width=600, height=400)

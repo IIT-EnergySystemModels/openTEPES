@@ -1,12 +1,11 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 01, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 05, 2026
 
 Heat network operation results.
 
 This module writes the operation of the heat pipe network: nodal balances per technology, node, and area, pipe flows, utilization, and not-served heat, plus
 a Plotly map of the network. The ``oT_selecting_data`` helper stays nested in the function because it builds the heat node and line frame (``pha``). The
-shared flow-series and snapshot-selection helpers live in
-``openTEPES_OutputResultsMapCommon``.
+shared flow-series and snapshot-selection helpers live in ``openTEPES_OutputResultsMapCommon``.
 """
 
 import time
@@ -66,7 +65,7 @@ def NetworkHeatOperationResults(DirName, CaseName, OptModel, mTEPES):
             h2t[gt].add(g)
 
     sPSNARND   = [(p,sc,n,ar,nd)    for p,sc,n,ar,nd    in mTEPES.psn*mTEPES.arnd if len(chp2n[nd]) + len(lout[nd]) + len(lin[nd])]
-    sPSNARNDGT = [(p,sc,n,ar,nd,gt) for p,sc,n,ar,nd,gt in sPSNARND*mTEPES.gt     if sum(1 for ch in c2t[gt] if (p,ch) in mTEPES.pg) + sum(1 for hp in h2t[gt] if (p,hp) in mTEPES.pg)               ]
+    sPSNARNDGT = [(p,sc,n,ar,nd,gt) for p,sc,n,ar,nd,gt in sPSNARND*mTEPES.gt     if sum(1 for ch in c2t[gt] if (p,ch) in mTEPES.pch) + sum(1 for hp in h2t[gt] if (p,hp) in mTEPES.php)             ]
 
     OutputResults2 = pd.Series(data=[ sum(OptModel.vESSTotalCharge [p,sc,n,hp      ]()*mTEPES.pLoadLevelDuration[p,sc,n]()/mTEPES.pProductionFunctionHeat[hp] for hp in h2n[nd] if (p,hp) in mTEPES.php and hp in h2t[gt])                         for p,sc,n,ar,nd,gt in sPSNARNDGT], index=pd.Index(sPSNARNDGT)).to_frame(name='GenerationHeatPumps').reset_index().pivot_table(index=['level_0','level_1','level_2','level_3','level_4'], columns='level_5', values='GenerationHeatPumps', aggfunc='sum')
     OutputResults3 = pd.Series(data=[ sum(OptModel.vTotalOutput    [p,sc,n,ch      ]()*mTEPES.pLoadLevelDuration[p,sc,n]()/mTEPES.pPower2HeatRatio       [ch] for ch in c2n[nd] if (p,ch) in mTEPES.pch and ch in c2t[gt] and ch not in mTEPES.bo) for p,sc,n,ar,nd,gt in sPSNARNDGT], index=pd.Index(sPSNARNDGT)).to_frame(name='GenerationCHPs'     ).reset_index().pivot_table(index=['level_0','level_1','level_2','level_3','level_4'], columns='level_5', values='GenerationCHPs'     , aggfunc='sum')
@@ -78,8 +77,8 @@ def NetworkHeatOperationResults(DirName, CaseName, OptModel, mTEPES):
     OutputResults  = pd.concat([OutputResults2, OutputResults3, OutputResults4, OutputResults5, OutputResults6, OutputResults7, OutputResults8], axis=1)
 
     # Merge duplicate columns that arise when a technology belongs to multiple generator sets
-    if OutputResults.columns.duplicated().any():
-        OutputResults = OutputResults.T.groupby(level=0).sum().T
+    # if OutputResults.columns.duplicated().any():
+    #     OutputResults = OutputResults.T.groupby(level=0).sum().T
 
     OutputResults.stack().reset_index().pivot_table(index=['level_0','level_1','level_2','level_3','level_4'], columns='level_5', values=0, aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel', 'Area', 'Node'], axis=0).oT.write(f'{_path}/oT_Result_BalanceHeatPerTech_{CaseName}.csv', sep=',')
     OutputResults.stack().reset_index().pivot_table(index=['level_0','level_1','level_2'          ,'level_5'], columns='level_4', values=0, aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel', 'Technology'  ], axis=0).oT.write(f'{_path}/oT_Result_BalanceHeatPerNode_{CaseName}.csv', sep=',')
@@ -91,16 +90,15 @@ def NetworkHeatOperationResults(DirName, CaseName, OptModel, mTEPES):
     OutputToFile = pd.pivot_table(OutputToFile.to_frame(name='MW'), values='MW', index=['Period', 'Scenario', 'LoadLevel'], columns=['InitialNode', 'FinalNode', 'Circuit'], fill_value=0.0).rename_axis([None, None, None], axis=1)
     OutputToFile.reset_index().oT.write(f'{_path}/oT_Result_NetworkFlowHeatPerNode_{CaseName}.csv', index=False, sep=',')
 
-    PSNHAARAR = [(p,sc,n,ni,nf,cc,ai,af) for p,sc,n,ni,nf,cc,ai,af in mTEPES.psnha*mTEPES.ar*mTEPES.ar if (ni,ai) in mTEPES.ndar and (nf,af) in mTEPES.ndar]
+    # map each node to its area(s) once and expand the pipe flows to area pairs directly
+    Nd2Ar = {}
+    for nd,ar in mTEPES.ndar:
+        Nd2Ar.setdefault(nd, []).append(ar)
+    PSNHAARAR = [(p,sc,n,ni,nf,cc,ai,af) for p,sc,n,ni,nf,cc in mTEPES.psnha for ai in Nd2Ar.get(ni, []) for af in Nd2Ar.get(nf, [])]
     OutputToFile = pd.Series(data=[OptModel.vFlowHeat[p,sc,n,ni,nf,cc]()*mTEPES.pLoadLevelDuration[p,sc,n]() for p,sc,n,ni,nf,cc,ai,af in PSNHAARAR], index=pd.Index(PSNHAARAR))
     OutputToFile.index.names = ['Period', 'Scenario', 'LoadLevel', 'InitialNode', 'FinalNode', 'Circuit', 'InitialArea', 'FinalArea']
-    OutputToFile = pd.pivot_table(OutputToFile.to_frame(name='GWh'), values='GWh', index=['Period', 'Scenario', 'LoadLevel'], columns=['InitialArea', 'FinalArea'], fill_value=0.0).rename_axis([None, None], axis=1)
-    OutputToFile.reset_index().oT.write(f'{_path}/oT_Result_NetworkEnergyHeatPerArea_{CaseName}.csv', index=False, sep=',')
-
-    OutputToFile = pd.Series(data=[OptModel.vFlowHeat[p,sc,n,ni,nf,cc]()*mTEPES.pLoadLevelDuration[p,sc,n]() for p,sc,n,ni,nf,cc,ai,af in PSNHAARAR], index=pd.Index(PSNHAARAR))
-    OutputToFile.index.names = ['Period', 'Scenario', 'LoadLevel', 'InitialNode', 'FinalNode', 'Circuit', 'InitialArea', 'FinalArea']
-    OutputToFile = pd.pivot_table(OutputToFile.to_frame(name='GWh'), values='GWh', index=['Period', 'Scenario'], columns=['InitialArea', 'FinalArea'], fill_value=0.0).rename_axis([None, None], axis=1)
-    OutputToFile.reset_index().oT.write(f'{_path}/oT_Result_NetworkEnergyHeatTotalPerArea_{CaseName}.csv', index=False, sep=',')
+    OutputToFile = pd.pivot_table(OutputToFile.to_frame(name='GWh'), values='GWh', index=['Period', 'Scenario', 'LoadLevel'], columns=['InitialArea', 'FinalArea'], fill_value=0.0).rename_axis([None, None], axis=1).reset_index().oT.write(f'{_path}/oT_Result_NetworkEnergyHeatPerArea_{CaseName}.csv',      index=False, sep=',')
+    OutputToFile = pd.pivot_table(OutputToFile.to_frame(name='GWh'), values='GWh', index=['Period', 'Scenario'],              columns=['InitialArea', 'FinalArea'], fill_value=0.0).rename_axis([None, None], axis=1).reset_index().oT.write(f'{_path}/oT_Result_NetworkEnergyHeatTotalPerArea_{CaseName}.csv', index=False, sep=',')
 
     if mTEPES.ha:
         OutputResults = pd.Series(data=[OptModel.vFlowHeat[p,sc,n,ni,nf,cc]()*(mTEPES.pLoadLevelDuration[p,sc,n]()*mTEPES.pPeriodProb[p,sc]())*(mTEPES.pHeatPipeLength[ni,nf,cc]()*1e-3) for p,sc,n,ni,nf,cc in mTEPES.psnha], index=mTEPES.psnha)
@@ -135,7 +133,7 @@ def NetworkHeatOperationResults(DirName, CaseName, OptModel, mTEPES):
             loc_df.loc[nd,'Zone'  ] = zn
             loc_df.loc[nd,'Demand'] = mTEPES.pDemandHeat[p,sc,n,nd]
 
-        loc_df = loc_df.reset_index().rename(columns={'Type': 'Scenario'}, inplace=False)
+        loc_df = loc_df.reset_index()
 
         # Edges data
         OutputToFile = make_flow_series(OptModel.vFlowHeat, mTEPES.psnha, 1, mTEPES.pha)
@@ -147,6 +145,7 @@ def NetworkHeatOperationResults(DirName, CaseName, OptModel, mTEPES):
 
         line_df = pd.DataFrame(data={'NTCFrw': pd.Series(data=[mTEPES.pHeatPipeNTCFrw[i] + pEpsilon for i in mTEPES.ha], index=mTEPES.ha),
                                      'NTCBck': pd.Series(data=[mTEPES.pHeatPipeNTCBck[i] + pEpsilon for i in mTEPES.ha], index=mTEPES.ha)}, index=mTEPES.ha)
+        line_df = line_df.groupby(level=[0,1]).sum(numeric_only=False)
         line_df['vFlowHeat'  ] = 0.0
         line_df['utilization'] = 0.0
         line_df['color'      ] = ''
@@ -157,7 +156,6 @@ def NetworkHeatOperationResults(DirName, CaseName, OptModel, mTEPES):
         line_df['nf'         ] = ''
         line_df['cc'         ] = 0
 
-        line_df = line_df.groupby(level=[0,1]).sum(numeric_only=False)
         ncolors = 11
         colors = list(Color('lightgreen').range_to(Color('darkred'), ncolors))
         colors = ['rgb'+str(x.rgb) for x in colors]
@@ -172,9 +170,8 @@ def NetworkHeatOperationResults(DirName, CaseName, OptModel, mTEPES):
                 line_df.loc[(ni,nf),'nf']  = nf
                 line_df.loc[(ni,nf),'cc'] += 1
 
-                for i in range(len(colors)):
-                    if 10*i <= line_df.loc[(ni,nf),'utilization'] <= 10*(i+1):
-                        line_df.loc[(ni,nf),'color'] = colors[i]
+                pColorIndex = min(int(line_df.loc[(ni,nf),'utilization'] // 10), ncolors-1)
+                line_df.loc[(ni,nf),'color'] = colors[max(pColorIndex, 0)]
 
         # Rounding to decimals
         line_df = line_df.round(decimals=2)
@@ -193,7 +190,8 @@ def NetworkHeatOperationResults(DirName, CaseName, OptModel, mTEPES):
         pos_dict[iata] = (x[index], y[index])
 
     # Setting up the figure
-    token = open(DIR+'/openTEPES.mapbox_token').read()
+    with open(os.path.join(DIR, 'openTEPES.mapbox_token')) as f:
+        token = f.read()
 
     pio.renderers.default = 'chrome'
     fig = go.Figure()

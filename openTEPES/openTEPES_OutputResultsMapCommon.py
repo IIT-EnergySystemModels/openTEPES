@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 03, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 05, 2026
 
 Shared helpers for the network-map plots.
 
@@ -13,10 +13,10 @@ import pandas as pd
 def make_flow_series(var, sets, factor, membership):
     """Flow values for the lines in `membership`, scaled by `factor`.
 
-    `p, sc, n` come from iterating `sets`, so this does not capture any
-    enclosing scope and can live as a plain module function.
+    `p, sc, n` come from iterating `sets`, so this does not capture any enclosing scope and can live as a plain module function.
     """
-    return pd.Series(data=[var[p,sc,n,ni,nf,cc]()*factor for p,sc,n,ni,nf,cc in sets if (p,ni,nf,cc) in membership], index=pd.Index(list(sets)))
+    sKeys = [(p,sc,n,ni,nf,cc) for p,sc,n,ni,nf,cc in sets if (p,ni,nf,cc) in membership]
+    return pd.Series(data=[var[Key]()*factor for Key in sKeys], index=pd.Index(sKeys))
 
 
 def pick_snapshot(mTEPES):

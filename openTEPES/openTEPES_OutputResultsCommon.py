@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 03, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 05, 2026
 
 Shared helpers used by every openTEPES_OutputResults<Concern> module.
 
@@ -15,15 +15,12 @@ import altair as     alt
 def _outdir(DirName, CaseName, mTEPES):
     """Return effective output directory.
 
-    If `mTEPES.pOutputPath` is set (by openTEPES_run when --out is given) use it;
-    otherwise fall back to the case input directory `<DirName>/<CaseName>` —
+    If `mTEPES.pOutputPath` is set (by openTEPES_run when --out is given) use it; otherwise fall back to the case input directory `<DirName>/<CaseName>` —
     preserving the historical behavior. Path is created on first call.
     """
     path = getattr(mTEPES, "pOutputPath", None) or os.path.join(DirName, CaseName)
     os.makedirs(path, exist_ok=True)
     return path
-
-# from line_profiler import profile
 
 
 # Definition of Pie plots
@@ -31,21 +28,19 @@ def _outdir(DirName, CaseName, mTEPES):
 def PiePlots(period, scenario, df, Category, Value):
     df                    = df.reset_index()
     df                    = df.loc[(df['level_0'] == period) & (df['level_1'] == scenario)]
-    df                    = df.set_index(['level_0','level_1','level_2','level_3'])
     OutputToPlot          = df.reset_index().groupby(['level_3']).sum(numeric_only=True)
     OutputToPlot['%'    ] = (OutputToPlot[0] / OutputToPlot[0].sum()) * 100.0
     OutputToPlot          = OutputToPlot.reset_index().rename(columns={'level_3': Category, 0: 'GWh'})
     OutputToPlot['GWh'  ] = round(OutputToPlot['GWh'], 1)
     OutputToPlot['%'    ] = round(OutputToPlot['%'  ], 1)
     OutputToPlot          = OutputToPlot[(OutputToPlot[['GWh']] != 0).all(axis=1)]
-    OutputToPlot['Label'] = [OutputToPlot[Category][i] + ' (' + str(OutputToPlot['%'][i]) + ' %' + ', ' + str(OutputToPlot['GWh'][i]) + ' GWh' + ')' for i in OutputToPlot.index]
+    OutputToPlot['Label'] = OutputToPlot[Category] + ' (' + OutputToPlot['%'].astype(str) + ' %, ' + OutputToPlot['GWh'].astype(str) + ' GWh)'
     ComposedCategory      = Category+':N'
     ComposedValue         = Value   +':Q'
 
     base  = alt.Chart(OutputToPlot).encode(theta=alt.Theta(ComposedValue, type='quantitative', stack=True), color=alt.Color(ComposedCategory, scale=alt.Scale(scheme='category20c'), type='nominal', legend=alt.Legend(title=Category))).properties(width=800, height=800)
     pie   = base.mark_arc(outerRadius=240)
     text  = base.mark_text(radius=340, size=15).encode(text='Label:N')
-    chart = pie+text
     # chart = chart.resolve_scale(theta='independent')
     chart = alt.layer(pie, text, data=OutputToPlot).resolve_scale(theta='independent')
 
@@ -54,14 +49,14 @@ def PiePlots(period, scenario, df, Category, Value):
 
 # Definition of Area plots
 # @profile
-def AreaPlots(period, scenario, df, Category, X, Y, OperationType):
+def AreaPlots(period, scenario, df, Category, X, Y):
     Results = df.loc[period,scenario,:,:]
     Results = Results.reset_index().rename(columns={'level_0': X, 'level_1': Category, 0: Y})
     # Change the format of the LoadLevel
     Results[X] = Results[X].str[:14]
     Results[X] = (Results[X]+'+01:00')
     Results[X] = (str(period)+'-'+Results[X])
-    Results[X] = pd.to_datetime(Results[X], format='%Y-%m-%d %H:%M:%S%z', errors='coerce')
+    Results[X] = pd.to_datetime(Results[X], format='%Y-%m-%d %H:%M:%S%z', errors='raise')
     # Composed Names
     C_C = Category+':N'
 
@@ -83,7 +78,7 @@ def AreaPlots(period, scenario, df, Category, X, Y, OperationType):
 
 # Definition of Line plots
 # @profile
-def LinePlots(period, scenario, df, Category, X, Y, OperationType):
+def LinePlots(period, scenario, df, Category, X, Y):
     Results = df.loc[period,scenario,:,:].rename_axis(['level_0', 'level_1'], axis=0)
     Results.columns = [0]
     Results = Results.reset_index().rename(columns={'level_0': X, 'level_1': Category, 0: Y})
@@ -91,7 +86,7 @@ def LinePlots(period, scenario, df, Category, X, Y, OperationType):
     Results[X] = Results[X].str[:14]
     Results[X] = (Results[X]+'+01:00')
     Results[X] = (str(period)+'-'+Results[X])
-    Results[X] = pd.to_datetime(Results[X], format='%Y-%m-%d %H:%M:%S%z', errors='coerce')
+    Results[X] = pd.to_datetime(Results[X], format='%Y-%m-%d %H:%M:%S%z', errors='raise')
     # Composed Names
     C_C = Category+':N'
 
