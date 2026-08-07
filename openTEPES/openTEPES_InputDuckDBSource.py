@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 29, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 07, 2026
 
 openTEPES.openTEPES_InputDuckDBSource — in-process ``.duckdb`` backend.
 
@@ -16,8 +16,8 @@ from pathlib import Path
 
 import pandas as pd
 
-# Support running this file directly (e.g. VS Code "Run Python File"), where __package__ is empty and the
-# relative imports below have no parent package; fall back to absolute package imports in that case.
+# Support running this file directly (e.g. VS Code "Run Python File"), where __package__ is empty and the relative imports below have no parent package;
+# fall back to absolute package imports in that case.
 try:
     from .openTEPES_InputSchema import (
         PASSTHROUGH,
@@ -58,15 +58,13 @@ class DuckDBSource(InputSource):
                 f"{self.db_path}: schema_metadata.source_case is missing — DB was not produced by the C2 ingest script?"
             )
         self.case_name = row[0]
-        # Pre-fetch existing DB table names (cheap; speeds up the list_data_stems / table-presence checks called many
-        # times).
+        # Pre-fetch existing DB table names (cheap; speeds up the list_data_stems / table-presence checks called many times).
         rows = self._con.execute("SELECT table_name FROM information_schema.tables").fetchall()
         self._existing_tables: set[str] = {r[0] for r in rows}
 
     @property
     def dir_name(self) -> str:
-        # openTEPES_run still uses DirName for output paths. Anchor the output to the .duckdb's parent so results
-        # survive the source's close.
+        # openTEPES_run still uses DirName for output paths. Anchor the output to the .duckdb's parent so results survive the source's close.
         return str(self.db_path.parent)
 
     def close(self) -> None:
@@ -131,8 +129,8 @@ class DuckDBSource(InputSource):
             return self._reconstruct_single_row(db_table, **kwargs)
 
         if kind == WIDE_MULTILEVEL_TO_LONG:
-            # The reconstruction already has the multi-level column shape plus the (Period, Scenario, LoadLevel) row
-            # index that the CSV reader produces — no _apply_index needed.
+            # The reconstruction already has the multi-level column shape plus the (Period, Scenario, LoadLevel) row index that the CSV reader produces —
+            # no _apply_index needed.
             return self._reconstruct_wide_multilevel(db_table, **kwargs)
 
         raise ValueError(f"unknown spec kind for {stem}: {kind}")
@@ -142,26 +140,24 @@ class DuckDBSource(InputSource):
     def _reconstruct_wide(self, table_name: str, *, entity: str, value: str) -> pd.DataFrame:
         df = self._con.execute(f"SELECT * FROM {table_name}").df()
         id_cols = ["Period", "Scenario", "LoadLevel"]
-        wide = df.pivot_table(index=id_cols, columns=entity, values=value, dropna=False, sort=False).reset_index()
+        wide = df.pivot(index=id_cols, columns=entity, values=value).reset_index()
         wide.columns.name = None
         return wide
 
     def _reconstruct_single_row(self, table_name: str, *, value_type: str) -> pd.DataFrame:
         df = self._con.execute(f"SELECT * FROM {table_name}").df()
-        header = ",".join(str(n) for n in df["Name"])
-        row = ",".join("" if pd.isna(v) else str(v) for v in df["Value"])
-        return pd.read_csv(StringIO(header + "\n" + row))
+        row = {str(name): (None if pd.isna(value) else value) for name, value in zip(df["Name"], df["Value"])}
+        return pd.DataFrame([row]).infer_objects()
 
     def _reconstruct_wide_multilevel(self, table_name: str, *, entity_cols: list[str], value: str) -> pd.DataFrame:
         """Pivot the long DB table back to multi-level-column wide shape.
 
-        Matches the pandas quirk where ``pd.read_csv(..., header=[0..N-1], index_col=[0,1,2])`` yields
-        ``index.names = [None, None, None]`` and ``columns.names = ['Period', None, ...]``. Preserving this lets
-        downstream CSV/DB consumers see identical DataFrames.
+        Matches the pandas quirk where ``pd.read_csv(..., header=[0..N-1], index_col=[0,1,2])`` yields ``index.names = [None, None, None]`` and
+        ``columns.names = ['Period', None, ...]``. Preserving this lets downstream CSV/DB consumers see identical DataFrames.
         """
         df = self._con.execute(f"SELECT * FROM {table_name}").df()
         id_cols = ["Period", "Scenario", "LoadLevel"]
-        wide = df.pivot_table(index=id_cols, columns=entity_cols, values=value, dropna=False, sort=False)
+        wide = df.pivot(index=id_cols, columns=entity_cols, values=value)
         wide.index.names = [None, None, None]
         wide.columns.names = ["Period"] + [None] * (len(entity_cols) - 1)
         return wide

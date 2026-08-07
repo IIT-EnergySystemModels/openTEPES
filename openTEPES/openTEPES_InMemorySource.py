@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 08, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 07, 2026
 
 openTEPES.openTEPES_InMemorySource — in-memory input backend for the Mode B sweep (RFC §4.2).
 
@@ -33,8 +33,11 @@ def _apply_overlay(df: pd.DataFrame, transform) -> pd.DataFrame:
     if isinstance(transform, pd.DataFrame):
         return transform.copy()
     if callable(transform):
-        return transform(df)
-    if isinstance(transform, (int, float)) and not isinstance(transform, bool):
+        pResult = transform(df)
+        if not isinstance(pResult, pd.DataFrame):
+            raise TypeError(f"overlay callable must return a DataFrame; got {type(pResult).__name__} (did it modify df in place and return None?)")
+        return pResult
+    if isinstance(transform, (int, float, numbers.Real)) and not isinstance(transform, bool):
         num_cols = df.select_dtypes(include="number").columns
         df[num_cols] = df[num_cols] * transform
         return df
@@ -65,6 +68,7 @@ class InMemorySource(InputSource):
             try:
                 data_frames[stem] = source.read_data(stem)
             except FileNotFoundError:
+                print(f'WARNING: oT_Data_{stem} was listed by the source but could not be read; the in-memory case will not have it')
                 continue
         dict_frames = {stem: source.read_dict(stem) for stem in source.list_dict_stems()}
         dir_name = getattr(source, "dir_name", "")

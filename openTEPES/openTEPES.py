@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 05, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 07, 2026
 """
 
 # import dill as pickle
@@ -10,8 +10,8 @@ import time
 
 from   pyomo.environ import ConcreteModel, Param, Binary
 
-# Support running this file directly (e.g. VS Code "Run Python File"), where __package__ is empty and the
-# relative imports below have no parent package; fall back to absolute package imports in that case.
+# Support running this file directly (e.g. VS Code "Run Python File"), where __package__ is empty and the relative imports below have no parent package;
+# fall back to absolute package imports in that case.
 try:
     from .openTEPES_InputData                  import InputData
     from .openTEPES_DataConfiguration          import DataConfiguration
@@ -52,8 +52,7 @@ except ImportError:
     from openTEPES.openTEPES_OutputResultsSink          import ResultSink, set_active_sink, clear_active_sink
 
 
-# Output categories selectable via --results CLI flag.
-# Keys map to the pIndXxxResults flags inside openTEPES_run.
+# Output categories selectable via --results CLI flag. Keys map to the pIndXxxResults flags inside openTEPES_run.
 OUTPUT_CATEGORIES = ("investment", "generation", "ess", "reservoir", "h2", "heat", "flexibility", "reliability", "network", "map", "summary", "cost", "marginal", "economic", "plots",)
 # Aliases expanded inside openTEPES_run.
 OUTPUT_ALIASES = {
@@ -68,22 +67,14 @@ DEFAULT_GZIP_PATTERNS = (
 )
 
 
-# Single source of truth for output-writer dispatch in openTEPES_run.
-# Each entry is (category_key, writer_fn, extra_args_keys, guard_fn) where:
-#   - category_key matches a key in OUTPUT_CATEGORIES; the writer fires only
-#     when the corresponding _flags[category_key] is truthy.
-#   - extra_args_keys is a tuple of names looked up in a per-run extras dict
-#     ("tech" -> pIndTechnologyOutput, "area" -> pIndAreaOutput,
-#      "plot" -> pIndPlotOutput). They are spread after (DirName, CaseName,
-#     mTEPES, mTEPES) when calling writer_fn.
-#   - guard_fn is None or a callable(mTEPES) -> bool. When non-None, it must
-#     return truthy for the writer to fire (used for model-state guards such
+# Single source of truth for output-writer dispatch in openTEPES_run. Each entry is (category_key, writer_fn, extra_args_keys, guard_fn) where:
+#   - category_key matches a key in OUTPUT_CATEGORIES; the writer fires only when the corresponding _flags[category_key] is truthy.
+#   - extra_args_keys is a tuple of names looked up in a per-run extras dict ("tech" -> pIndTechnologyOutput, "area" -> pIndAreaOutput, "plot" -> pIndPlotOutput).
+#     They are spread after (DirName, CaseName, mTEPES, mTEPES) when calling writer_fn.
+#   - guard_fn is None or a callable(mTEPES) -> bool. When non-None, it must return truthy for the writer to fire (used for model-state guards such
 #     as `mTEPES.es` for ESSOperationResults).
-# Order in the tuple is the dispatch order. Tiering preserved from PR #118:
-# headline tables first, bulky hourly tables next, plots last. The raw
-# parameter/variable/constraint dump (OutputResultsParVarCon) is gated by
-# pIndDumpRawResults (not a CLI-selectable category) and stays special-cased
-# in the dispatch loop.
+# Order in the tuple is the dispatch order. Tiering preserved from PR #118: headline tables first, bulky hourly tables next, plots last. The raw
+# parameter/variable/constraint dump (OutputResultsParVarCon) is gated by pIndDumpRawResults (not a CLI-selectable category) and stays special-cased in the dispatch loop.
 OUTPUT_REGISTRY = (
     # --- headline tables (small, structural) ---
     ("investment",  InvestmentResults,              ("tech", "area", "plot"), None),
@@ -122,52 +113,35 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     pIndLogConsole : 'Yes' / 'No' / 0 / 1
         Verbose solver / formulation logging.
     output_spec : dict[str, bool] | None, optional
-        Fine-grained output toggles. Keys must be OUTPUT_CATEGORIES; values
-        truthy/falsy. Overrides the pIndOutputResults default for any key
-        explicitly set. None (default) preserves historical behaviour.
+        Fine-grained output toggles. Keys must be OUTPUT_CATEGORIES; values truthy/falsy. Overrides the pIndOutputResults default for any key
+        explicitly set. None (default) preserves historical behavior.
     out_path : str | None, optional
-        Directory to write all `oT_Result_*.csv` and `oT_Plot_*.html` to.
-        Default `None` → write into `<DirName>/<CaseName>` (historical).
+        Directory to write all `oT_Result_*.csv` and `oT_Plot_*.html` to Default `None` → write into `<DirName>/<CaseName>` (historical).
     gzip_patterns : tuple[str, ...] | None, optional
-        If set, every `oT_Result_<prefix>*.csv` whose `<prefix>` starts with
-        any entry in `gzip_patterns` is gzip-compressed in place after all
-        writers finish. Default `None` → no compression (historical). Pandas
-        reads `.csv.gz` transparently; note that `.csv.gz` cannot be opened
-        directly in Excel — users who inspect outputs in Excel should leave
-        this disabled.
+        If set, every `oT_Result_<prefix>*.csv` whose `<prefix>` starts with any entry in `gzip_patterns` is gzip-compressed in place after all
+        writers finish. Default `None` → no compression (historical). Pandas reads `.csv.gz` transparently; note that `.csv.gz` cannot be opened
+        directly in Excel — users who inspect outputs in Excel should leave this disabled.
     output_format : {'csv', 'duckdb', 'both'}, optional
-        Where the result tables go. ``'csv'`` (default) writes the historical
-        ``oT_Result_*.csv`` files only. ``'duckdb'`` writes one
-        ``oT_Results_<CaseName>.duckdb`` (one table per result) and no CSVs.
-        ``'both'`` writes both. The same in-memory frame is written to each
-        target, so the DuckDB copy is not re-read from the CSV. One DuckDB file
-        per case keeps a parallel sweep single-writer-safe.
+        Where the result tables go. ``'csv'`` (default) writes the historical ``oT_Result_*.csv`` files only. ``'duckdb'`` writes one
+        ``oT_Results_<CaseName>.duckdb`` (one table per result) and no CSVs. ``'both'`` writes both. The same in-memory frame is written to each
+        target, so the DuckDB copy is not re-read from the CSV. One DuckDB file per case keeps a parallel sweep single-writer-safe.
     input_source : InputSource | None, optional
-        An already-open input source to read the case from, bypassing the
-        ``(DirName, CaseName)`` path sniff. Used by the Mode B sweep
-        (``openTEPES_Runner.run(mode="in-memory")``) to hand each worker a shared
-        in-memory baseline plus an overlay. ``CaseName`` and ``DirName`` are
-        taken from the source; pass ``out_path`` so per-worker results land in
-        distinct directories. Default ``None`` preserves historical behaviour.
+        An already-open input source to read the case from, bypassing the ``(DirName, CaseName)`` path sniff. Used by the Mode B sweep
+        (``openTEPES_Runner.run(mode="in-memory")``) to hand each worker a shared in-memory baseline plus an overlay. ``CaseName`` and ``DirName`` are
+        taken from the source; pass ``out_path`` so per-worker results land in distinct directories. Default ``None`` preserves historical behaviour.
     """
 
     InitialTime = time.time()
     _RunStartedUtc = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None).isoformat(timespec="seconds") + "Z"
 
-    # If the caller pointed at a .duckdb file (CaseName carries the
-    # suffix), open it as a DuckDBSource; InputData reads tables from
-    # this source instead of from disk. CSV cases get a CSVSource later
-    # inside InputData (or here if we want to keep the source object on
-    # the model from the start).
+    # If the caller pointed at a .duckdb file (CaseName carries the suffix), open it as a DuckDBSource; InputData reads tables from this source instead of
+    # from disk. CSV cases get a CSVSource later inside InputData (or here if we want to keep the source object on the model from the start).
     _db_input_origin_dir = None
     _input_source = None
     if input_source is not None:
-        # Mode B / direct injection: the caller supplies an already-open source
-        # (e.g. an InMemorySource carrying baseline frames + an overlay).
-        # Skip the path sniff and read through it; take CaseName/DirName from
-        # the source so the log and output filename conventions stay stable.
-        # The caller is expected to pass out_path so per-worker results do not
-        # collide on the shared baseline directory.
+        # Mode B / direct injection: the caller supplies an already-open source (e.g. an InMemorySource carrying baseline frames + an overlay).
+        # Skip the path sniff and read through it; take CaseName/DirName from the source so the log and output filename conventions stay stable.
+        # The caller is expected to pass out_path so per-worker results do not collide on the shared baseline directory.
         _input_source = input_source
         CaseName = _input_source.case_name
         DirName  = getattr(_input_source, "dir_name", DirName) or DirName
@@ -176,17 +150,14 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
         if os.path.isfile(_input_path_candidate) and _input_path_candidate.endswith(".duckdb"):
             _db_input_origin_dir = os.path.dirname(os.path.abspath(_input_path_candidate))
             _input_source = open_source(_input_path_candidate)
-            # The (DirName, CaseName) pair still drives output paths and per-run
-            # log filenames downstream. Use the DB's parent dir and its embedded
+            # The (DirName, CaseName) pair still drives output paths and per-run log filenames downstream. Use the DB's parent dir and its embedded
             # case name to keep those file conventions stable.
             DirName  = _db_input_origin_dir
             CaseName = _input_source.case_name
 
     _path = os.path.join(DirName, CaseName)
-    # Effective output directory — used by every function in OutputResults via
-    # the _outdir() helper. None means "use case input dir" (historical).
-    # For DuckDB inputs without an explicit out_path, default to the parent
-    # directory of the .duckdb file (the case dir under it does not exist).
+    # Effective output directory — used by every function in OutputResults via the _outdir() helper. None means "use case input dir" (historical).
+    # For DuckDB inputs without an explicit out_path, default to the parent directory of the .duckdb file (the case dir under it does not exist).
     if out_path:
         _OutPath = out_path
     elif _db_input_origin_dir is not None:
@@ -214,11 +185,10 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     idxDict['y'  ] = 1
 
     #%% model declaration
-    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.17 - August 05, 2026')
-    # In DuckDB-input mode _path may not exist on disk (the case lives in
-    # the DB, not in a directory). Ensure the version-log target exists.
+    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.18RC - August 07, 2026')
+    # In DuckDB-input mode _path may not exist on disk (the case lives in the DB, not in a directory). Ensure the version-log target exists.
     os.makedirs(_path, exist_ok=True)
-    print(                 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.17 - August 05, 2026', file=open(f'{_path}/openTEPES_version_{CaseName}.log','w'))
+    print(                 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.18RC - August 07, 2026', file=open(f'{_path}/openTEPES_version_{CaseName}.log','w'))
     if _input_source is not None:
         mTEPES.pInputSource = _input_source
 
@@ -239,8 +209,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     mTEPES.pIndSequentialSolving = Param(initialize=pIndSequentialSolving, within=Binary, doc='Indicator of sequential solving',           mutable=True)
     mTEPES.pBdTol = 1e-6
 
-    # Reading sets and parameters. InputData also stores dfs/par on
-    # mTEPES (mTEPES.dFrame / mTEPES.dPar) for backward compatibility,
+    # Reading sets and parameters. InputData also stores dfs/par on mTEPES (mTEPES.dFrame / mTEPES.dPar) for backward compatibility,
     # but DataConfiguration takes them explicitly to avoid that coupling.
     dfs, par = InputData(DirName, CaseName, mTEPES, pIndLogConsole)
 
@@ -272,13 +241,11 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     # initialize parameter for dual variables
     mTEPES.pDuals = {}
 
-    # iterative formulation and solve for every stage of the year. The per-stage operation model and the two
-    # solve paths (deterministic per scenario, or one joint stochastic solve) live in
-    # openTEPES_ProblemSolvingStageIter; this is a pure extraction, so results are unchanged.
+    # iterative formulation and solve for every stage of the year. The per-stage operation model and the two solve paths (deterministic per scenario,
+    # or one joint stochastic solve) live in openTEPES_ProblemSolvingStageIter; this is a pure extraction, so results are unchanged.
     StageIterativeSolving(mTEPES, DirName, CaseName, SolverName, pIndLogConsole, _path, pIndCycleFlow)
 
-    # pickle the case study data
-    # with open(dump_folder+f'/oT_Case_{CaseName}.pkl','wb') as f:
+    # pickle the case study data with open(dump_folder+f'/oT_Case_{CaseName}.pkl','wb') as f:
     #     pickle.dump(mTEPES, f, pickle.HIGHEST_PROTOCOL)
 
     # output results only for every unit (0), only for every technology (1), or for both (2)
@@ -288,7 +255,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     pIndAreaOutput = 1
 
     # indicators to control the number of output results
-    pIndDumpRawResults                  = 0
+    pIndDumpRawResults = 0
     if pIndOutputResults:
         # --result Yes  → full output suite
         _flags = {k: 1 for k in OUTPUT_CATEGORIES}
@@ -304,24 +271,18 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
             if k in OUTPUT_CATEGORIES:
                 _flags[k] = 1 if v else 0
 
-    # Only pIndPlotOutput is still read directly (via _extras below); every other
-    # output category is dispatched straight from _flags through OUTPUT_REGISTRY.
+    # Only pIndPlotOutput is still read directly (via _extras below); every other output category is dispatched straight from _flags through OUTPUT_REGISTRY.
     pIndPlotOutput                  = _flags["plots"]
 
-    # Tell OutputResults functions where to write (used by _outdir helper).
-    # Setting on mTEPES avoids changing 14 function signatures.
+    # Tell OutputResults functions where to write (used by _outdir helper). Setting on mTEPES avoids changing 14 function signatures.
     mTEPES.pOutputPath = _OutPath
     mTEPES.pOutputBackend = output_format
 
-    # Output results to CSV files. Dispatched via OUTPUT_REGISTRY (defined
-    # at module top): each entry fires when its category flag is truthy AND
-    # its model-state guard (if any) returns truthy. Registry order is the
-    # dispatch order — headlines first, bulky hourly tables next, plots
-    # last (per PR #118).
+    # Output results to CSV files. Dispatched via OUTPUT_REGISTRY (defined at module top): each entry fires when its category flag is truthy AND
+    # its model-state guard (if any) returns truthy. Registry order is the dispatch order — headlines first, bulky hourly tables next, plots last (per PR #118).
     _OutputStart = time.time()
 
-    # Raw parameter/variable/constraint dump is gated by pIndDumpRawResults
-    # (hardcoded, not a CLI category), so it stays a pre-loop special case.
+    # Raw parameter/variable/constraint dump is gated by pIndDumpRawResults (hardcoded, not a CLI category), so it stays a pre-loop special case.
     if pIndDumpRawResults:
         OutputResultsParVarCon            (DirName, CaseName, mTEPES, mTEPES)
 
@@ -330,10 +291,8 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
         "area": pIndAreaOutput,
         "plot": pIndPlotOutput,
     }
-    # When DuckDB output is requested, install a per-case sink the .oT accessor
-    # routes every result write through. 'csv' leaves no sink, so the accessor
-    # falls back to plain to_csv and the run is byte-identical to before. The
-    # sink is opened here (in this worker, after any fork) and closed below.
+    # When DuckDB output is requested, install a per-case sink the .oT accessor routes every result write through. 'csv' leaves no sink, so the accessor
+    # falls back to plain to_csv and the run is byte-identical to before. The sink is opened here (in this worker, after any fork) and closed below.
     _result_sink = None
     if output_format != "csv":
         _result_sink = ResultSink(_OutPath, CaseName, fmt=output_format)
@@ -350,8 +309,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
             _result_sink.close()
             clear_active_sink()
 
-    # Optional post-write gzip pass. Rewrite every oT_Result_<prefix>*.csv
-    # whose <prefix> matches one of the requested patterns as .csv.gz.
+    # Optional post-write gzip pass. Rewrite every oT_Result_<prefix>*.csv whose <prefix> matches one of the requested patterns as .csv.gz.
     # Pandas reads .csv.gz transparently; Excel does not.
     _GzipFiles  = 0
     _GzipMbSaved = 0.0
@@ -375,9 +333,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
             _GzipFiles  += 1
             _GzipMbSaved += (_src_size - _dst_size) / (1024 * 1024)
 
-    # Run-status sentinel JSON — small machine-readable record of this run.
-    # Lets downstream tools detect a fresh run and read top-level adequacy /
-    # cost numbers without parsing CSVs.
+    # Run-status sentinel JSON — small machine-readable record of this run. Let's downstream tools detect a fresh run and read top-level adequacy / cost numbers without parsing CSVs.
     _OutputSeconds = time.time() - _OutputStart
     _TotalSeconds  = time.time() - InitialTime
     _SolveSeconds  = max(_TotalSeconds - _OutputSeconds, 0.0)
@@ -387,8 +343,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     except Exception:
         _TotalCost = float("nan")
     # ENS in MWh and HUE in hours — system-wide totals. vENS is in GW (the model's internal power unit), so
-    # GW x h is converted to MWh with a factor 1e3. Cheap to compute (one pass over vENS); skipped silently
-    # if the variable / index set is missing.
+    # GW x h is converted to MWh with a factor 1e3. Cheap to compute (one pass over vENS); skipped silently if the variable / index set is missing.
     _EnsMwh = float("nan")
     _HueH   = float("nan")
     try:
@@ -420,7 +375,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
         "total_seconds":      round(_TotalSeconds,  2),
         "solver":             SolverName,
         "backend":            getattr(mTEPES, "pOutputBackend", "csv"),
-        "opentepes_version":  "4.18.17",
+        "opentepes_version":  "4.18.18RC",
         "run_started_utc":    _RunStartedUtc,
         "run_finished_utc":   datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None).isoformat(timespec="seconds") + "Z",
         "outputs_enabled":    [k for k, v in _flags.items() if v],

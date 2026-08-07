@@ -1,6 +1,10 @@
 # Change Log
 
-## [4.18.17RC] - 2026-08-05 Unreleased in PyPI
+## [4.18.18RC] - 2026-08-07 Unreleased in PyPI
+
+- [FIXED] fix small errors and typos in input data modules
+
+## [4.18.17] - 2026-08-05
 
 - [FIXED] many small errors detected with Claude Fable
 - [FIXED]  fix typo for skipping the eReserveUpIfEnergy constraint condition and substitute list(mTEPES.n2) by n2list for performance improvement

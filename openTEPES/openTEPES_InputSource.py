@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 29, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 07, 2026
 
 openTEPES.openTEPES_InputSource — ``InputSource`` ABC, ``open_source()`` factory, and post-read shape helpers shared by every backend.
 
@@ -9,8 +9,7 @@ Selection rules of ``open_source(path)``:
   * file with ``.duckdb``    → ``DuckDBSource(path)``.
   * anything else            → ``ValueError``.
 
-Backends are imported lazily so a parity probe in a freshly-cloned tree without ``duckdb`` installed still resolves ``InputSource`` and
-``open_source`` for the CSV path.
+Backends are imported lazily so a parity probe in a freshly-cloned tree without ``duckdb`` installed still resolves ``InputSource`` and open_source`` for the CSV path.
 """
 from __future__ import annotations
 
@@ -20,8 +19,8 @@ from pathlib import Path
 
 import pandas as pd
 
-# Support running this file directly (e.g. VS Code "Run Python File"), where __package__ is empty and the
-# relative import below has no parent package; fall back to an absolute package import in that case.
+# Support running this file directly (e.g. VS Code "Run Python File"), where __package__ is empty and the relative import below has no parent package;
+# fall back to an absolute package import in that case.
 try:
     from .openTEPES_InputSchema import (
         DEFAULT_IDX_COLS,
@@ -58,9 +57,8 @@ class InputSource(abc.ABC):
     def read_data(self, stem: str, header_levels: list[int] | None = None) -> pd.DataFrame:
         """Return a data table in the wide-format-indexed shape that ``InputData`` expects.
 
-        For Pattern-3 tables, the value column is pivoted out and the entity becomes columns. For multi-row tables
-        with key columns, those are set as the index. For single-row tables (``Option`` / ``Parameter``), no index
-        is set.
+        For Pattern-3 tables, the value column is pivoted out and the entity becomes columns. For multi-row tables with key columns, those are set as the index.
+        For single-row tables (``Option`` / ``Parameter``), no index is set.
 
         ``header_levels`` mirrors ``pd.read_csv(header=...)`` for the few files that use multi-level column headers
         (``VariableTTC*``, ``VariablePTDF``). Raises ``FileNotFoundError`` if the stem is absent.
@@ -68,11 +66,10 @@ class InputSource(abc.ABC):
 
     @abc.abstractmethod
     def list_dict_stems(self) -> set[str]:
-        """Stems of dimension (``oT_Dict_``) tables present in the source (without the ``oT_Dict_`` prefix or the
-        ``_<casename>.csv`` suffix).
+        """Stems of dimension (``oT_Dict_``) tables present in the source (without the ``oT_Dict_`` prefix or the ``_<casename>.csv`` suffix).
 
-        ``list_data_stems`` covers the ``oT_Data_`` tables; this covers the dimension dicts. Together they let the
-        in-memory materialiser (Mode B) read a whole case once and hand forked workers a shared baseline.
+        ``list_data_stems`` covers the ``oT_Data_`` tables; this covers the dimension dicts. Together they let the in-memory materializer (Mode B)
+        read a whole case once and hand forked workers a shared baseline.
         """
 
     def close(self) -> None:  # default no-op
@@ -92,10 +89,16 @@ def open_source(path: str | os.PathLike) -> InputSource:
     """
     p = Path(path).expanduser()
     if p.is_dir():
-        from .openTEPES_InputCSVSource import CSVSource  # local import keeps duckdb-free environments importing Source.py cleanly
+        try:
+            from .openTEPES_InputCSVSource import CSVSource  # local import keeps duckdb-free environments importing Source.py cleanly
+        except ImportError:
+            from openTEPES.openTEPES_InputCSVSource import CSVSource
         return CSVSource(p)
     if p.is_file() and p.suffix == ".duckdb":
-        from .openTEPES_InputDuckDBSource import DuckDBSource, _HAS_DUCKDB
+        try:
+            from .openTEPES_InputDuckDBSource import DuckDBSource, _HAS_DUCKDB
+        except ImportError:
+            from openTEPES.openTEPES_InputDuckDBSource import DuckDBSource, _HAS_DUCKDB
         if not _HAS_DUCKDB:
             raise ImportError("duckdb is required to read .duckdb input sources; install it with `pip install duckdb`")
         return DuckDBSource(p)
@@ -107,11 +110,9 @@ def _apply_index(df: pd.DataFrame, stem: str) -> pd.DataFrame:
 
     Priority for choosing the index columns:
       1. ``pk_cols`` from the table's TABLE_SPECS entry (preferred — explicit).
-      2. Auto-detection from DEFAULT_IDX_COLS (fallback for stems not in the spec, e.g. optional hydropower / heat /
-         H2 tables).
+      2. Auto-detection from DEFAULT_IDX_COLS (fallback for stems not in the spec, e.g. optional hydropower / heat / H2 tables).
 
-    Wide-format tables (post-pivot) always end up keyed on ``[Period, Scenario, LoadLevel]`` and are handled by the
-    WIDE_TO_LONG spec path before this function is called.
+    Wide-format tables (post-pivot) always end up keyed on ``[Period, Scenario, LoadLevel]`` and are handled by the WIDE_TO_LONG spec path before this function is called.
     """
     spec = _SPEC_BY_CSV_STEM.get(f"oT_Data_{stem}")
     if spec is not None:
@@ -121,9 +122,9 @@ def _apply_index(df: pd.DataFrame, stem: str) -> pd.DataFrame:
         elif kind == UNPIVOT_SINGLE_ROW:
             return df  # single-row tables carry no index
         else:  # PASSTHROUGH
-            idx_cols = kwargs.get("pk_cols") or [c for c in df.columns if c in DEFAULT_IDX_COLS]
+            idx_cols = kwargs.get("pk_cols") or [c for c in DEFAULT_IDX_COLS if c in df.columns]
     else:
-        idx_cols = [c for c in df.columns if c in DEFAULT_IDX_COLS]
+        idx_cols = [c for c in DEFAULT_IDX_COLS if c in df.columns]
 
     if idx_cols:
         df = df.set_index(idx_cols, drop=True)

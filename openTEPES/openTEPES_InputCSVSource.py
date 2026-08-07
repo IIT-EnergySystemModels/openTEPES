@@ -1,5 +1,6 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 29, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 07, 2026
+
 openTEPES.openTEPES_InputCSVSource — file-system CSV backend.
 
 Preserves today's behaviour bit-for-bit: every read uses ``pd.read_csv`` with ``encoding="utf-8-sig"`` so the optional BOM emitted by Excel is stripped silently.
@@ -37,9 +38,10 @@ class CSVSource(InputSource):
 
     @staticmethod
     def _detect_case_name(case_dir: Path) -> str | None:
-        for p in case_dir.glob("oT_Data_Parameter_*.csv"):
-            return p.stem[len("oT_Data_Parameter_"):]
-        return None
+        names = sorted(p.stem[len("oT_Data_Parameter_"):] for p in case_dir.glob("oT_Data_Parameter_*.csv"))
+        if len(names) > 1:
+            raise ValueError(f"{case_dir}: several cases share this directory ({', '.join(names)}); keep one case per directory")
+        return names[0] if names else None
 
     def list_data_stems(self) -> set[str]:
         stems: set[str] = set()

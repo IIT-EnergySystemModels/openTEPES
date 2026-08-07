@@ -1,23 +1,18 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - June 03, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 07, 2026
 
 openTEPES.openTEPES_InputSchema — declarative catalogue of every input table.
 
-Each ``TABLE_SPECS`` entry is the tuple ``(csv_stem_prefix, db_table, kind, kwargs)``. Backends consume this single
-catalogue to know (i) which stems exist, (ii) the DuckDB table name they correspond to, (iii) the read-side transform
-required to recover the CSV-shaped DataFrame, and (iv) extra metadata such as primary-key columns or entity/value
-names for long↔wide pivots.
+Each ``TABLE_SPECS`` entry is the tuple ``(csv_stem_prefix, db_table, kind, kwargs)``. Backends consume this single catalogue to know (i) which stems exist,
+(ii) the DuckDB table name they correspond to, (iii) the read-side transform required to recover the CSV-shaped DataFrame, and (iv) extra metadata such as
+primary-key columns or entity/value names for long↔wide pivots.
 
 The four transform kinds:
 
-  * ``PASSTHROUGH``                table is stored long in DB and consumed long by ``InputData``; ``pk_cols`` declares
-                                   the primary key (auto-detection via ``DEFAULT_IDX_COLS`` is the fallback).
-  * ``WIDE_TO_LONG``               table is stored long in DB; on read, the value column is pivoted across the
-                                   ``entity`` column to recover the wide CSV shape keyed on ``(Period, Scenario, LoadLevel)``.
-  * ``WIDE_MULTILEVEL_TO_LONG``    same as ``WIDE_TO_LONG`` but ``entity_cols`` carries 3 or 4 column names that
-                                   together form a multi-level column header (used by ``VariableTTC*`` and ``VariablePTDF``).
-  * ``UNPIVOT_SINGLE_ROW``         table is stored as ``(Name, Value)`` rows in DB; on read, it is pivoted to the
-                                   single-row, many-column CSV shape used by ``oT_Data_Parameter`` and ``oT_Data_Option``.
+  * ``PASSTHROUGH``             table is stored long in DB and consumed long by ``InputData``; ``pk_cols`` declares the primary key (auto-detection via ``DEFAULT_IDX_COLS`` is the fallback).
+  * ``WIDE_TO_LONG``            table is stored long in DB; on read, the value column is pivoted across the ``entity`` column to recover the wide CSV shape keyed on ``(Period, Scenario, LoadLevel)``.
+  * ``WIDE_MULTILEVEL_TO_LONG`` same as ``WIDE_TO_LONG`` but ``entity_cols`` carries 3 or 4 column names that together form a multi-level column header (used by ``VariableTTC*`` and ``VariablePTDF``).
+  * ``UNPIVOT_SINGLE_ROW``      table is stored as ``(Name, Value)`` rows in DB; on read, it is pivoted to the single-row, many-column CSV shape used by ``oT_Data_Parameter`` and ``oT_Data_Option``.
 
 Adding a new input table is two lines: extend ``TABLE_SPECS`` with the entry, optionally extend ``DEFAULT_IDX_COLS`` if the primary key uses an index column
 the catalogue has not seen before. No Pyomo dependency, no I/O dependency.
@@ -26,15 +21,14 @@ from __future__ import annotations
 
 
 # ---------------------------------------------------------------------------
-# Transform-kind constants. Kept as bare module-level strings (not an Enum) so that ``TABLE_SPECS`` stays grep-friendly
-# from any editor and so external tooling reading the catalogue does not have to import the Enum class.
+# Transform-kind constants. Kept as bare module-level strings (not an Enum) so that ``TABLE_SPECS`` stays grep-friendly from any editor and so external
+# tooling reading the catalogue does not have to import the Enum class.
 # ---------------------------------------------------------------------------
 
 PASSTHROUGH = "passthrough"
 WIDE_TO_LONG = "wide_to_long"
 WIDE_MULTILEVEL_TO_LONG = "wide_multilevel_to_long"
 UNPIVOT_SINGLE_ROW = "unpivot_single_row"
-
 
 # ---------------------------------------------------------------------------
 # Spec catalogue. Single source of truth across backends, the C2 migrator, and the case-management CLI.
@@ -61,15 +55,13 @@ TABLE_SPECS: list[tuple[str, str, str, dict]] = [
     ("oT_Dict_AreaToRegion",    "area_to_region",   PASSTHROUGH, {}),
 
     # --- Entity config (long-format already) ---
-    # pk_cols: explicit primary key. Replaces the SPECIAL_IDX_COLS map InputData used to keep — declaring it next to
-    # the table avoids two places of truth.
+    # pk_cols: explicit primary key. Replaces the SPECIAL_IDX_COLS map InputData used to keep — declaring it next to the table avoids two places of truth.
     ("oT_Data_Generation",      "generation_config",     PASSTHROUGH, dict(pk_cols=["Generator"])),
     ("oT_Data_Network",         "network_config",        PASSTHROUGH, dict(pk_cols=["InitialNode", "FinalNode", "Circuit"])),
     ("oT_Data_NodeLocation",    "node_location",         PASSTHROUGH, dict(pk_cols=["Node"])),
 
     # --- Scalar / probability tables ---
-    # pk_cols: same explicit declaration; auto-detect via DEFAULT_IDX_COLS would also work but the explicit form is
-    # grep-friendly.
+    # pk_cols: same explicit declaration; auto-detect via DEFAULT_IDX_COLS would also work but the explicit form is grep-friendly.
     ("oT_Data_Scenario",        "scenario_probability",  PASSTHROUGH, dict(pk_cols=["Period", "Scenario"])),
     ("oT_Data_Period",          "period_weight",         PASSTHROUGH, dict(pk_cols=["Period"])),
     ("oT_Data_Stage",           "stage_weight",          PASSTHROUGH, dict(pk_cols=["Stage"])),
@@ -125,23 +117,20 @@ TABLE_SPECS: list[tuple[str, str, str, dict]] = [
     ("oT_Data_RampReserveDown", "ramp_reserve_down",    WIDE_TO_LONG, dict(entity="Area", value="Reserve")),
 
     # =====================================================================
-    # Operating-reserve activation (Area-keyed, paired with OperatingReserve*).
-    # Optional; only present when pIndReserveActivation is on.
+    # Operating-reserve activation (Area-keyed, paired with OperatingReserve*). Optional; only present when pIndReserveActivation is on.
     # =====================================================================
     ("oT_Data_OperatingReserveUpEnergy",   "operating_reserve_up_energy",   WIDE_TO_LONG, dict(entity="Area", value="Reserve")),
     ("oT_Data_OperatingReserveDownEnergy", "operating_reserve_down_energy", WIDE_TO_LONG, dict(entity="Area", value="Reserve")),
 
     # =====================================================================
-    # Hydrogen sector (sSEP). NetworkHydrogen mirrors Network (3-col composite PK). DemandHydrogen mirrors Demand
-    # (Node-keyed wide).
+    # Hydrogen sector (sSEP). NetworkHydrogen mirrors Network (3-col composite PK). DemandHydrogen mirrors Demand (Node-keyed wide).
     # =====================================================================
     ("oT_Data_NetworkHydrogen", "network_hydrogen_config", PASSTHROUGH,  dict(pk_cols=["InitialNode", "FinalNode", "Circuit"])),
     ("oT_Data_DemandHydrogen",  "demand_hydrogen",         WIDE_TO_LONG, dict(entity="Node", value="Demand")),
 
     # =====================================================================
-    # Heat sector. Structurally identical to the hydrogen counterparts; included here so heat-bearing cases load via
-    # DuckDB mode without further spec changes. Schema is inferred from FLAG_MAPPING — verify column names against a
-    # real heat-bearing case before relying on these.
+    # Heat sector. Structurally identical to the hydrogen counterparts; included here so heat-bearing cases load via DuckDB mode without further spec changes.
+    # Schema is inferred from FLAG_MAPPING — verify column names against a real heat-bearing case before relying on these.
     # =====================================================================
     ("oT_Data_NetworkHeat",       "network_heat_config",  PASSTHROUGH,  dict(pk_cols=["InitialNode", "FinalNode", "Circuit"])),
     ("oT_Data_DemandHeat",        "demand_heat",          WIDE_TO_LONG, dict(entity="Node", value="Demand")),
@@ -152,8 +141,7 @@ TABLE_SPECS: list[tuple[str, str, str, dict]] = [
     #   VariableTTCFrw/Bck  -> (InitialNode, FinalNode, Circuit)        N=3
     #   VariablePTDF        -> (InitialNode, FinalNode, Circuit, Node)  N=4
     # DB long shape: (Period, Scenario, LoadLevel, *entity_cols, <value>).
-    # Read-side reconstruction (CSV mode and DuckDB mode) preserves the pandas quirky multi-level index naming so
-    # downstream consumers see identical DataFrames.
+    # Read-side reconstruction (CSV mode and DuckDB mode) preserves the pandas quirky multi-level index naming so downstream consumers see identical DataFrames.
     # =====================================================================
     ("oT_Data_VariableTTCFrw",  "variable_ttc_frw",  WIDE_MULTILEVEL_TO_LONG,
         dict(entity_cols=["InitialNode", "FinalNode", "Circuit"], value="TTC")),
@@ -166,14 +154,11 @@ TABLE_SPECS: list[tuple[str, str, str, dict]] = [
 # csv_stem_prefix -> (db_table, kind, kwargs). Derived lookup so backends can find a spec in O(1) without scanning.
 _SPEC_BY_CSV_STEM: dict[str, tuple[str, str, dict]] = {s[0]: (s[1], s[2], s[3]) for s in TABLE_SPECS}
 
-
 # ---------------------------------------------------------------------------
-# Columns to scan for index when a stem is not declared in TABLE_SPECS (e.g. hydropower / heat / H2 tables that
-# aren't yet in the C2 spec). Kept here so backend code does not duplicate the list.
+# Columns to scan for index when a stem is not declared in TABLE_SPECS (e.g. hydropower / heat / H2 tables that aren't yet in the C2 spec).
+# Kept here so backend code does not duplicate the list.
 # ---------------------------------------------------------------------------
 
 DEFAULT_IDX_COLS: list[str] = [
-    "Period", "Scenario", "LoadLevel", "Area", "Generator",
-    "InitialNode", "FinalNode", "Circuit", "Node", "Stage",
-    "Reservoir",  # Optional hydro tables key on this.
+    "Period", "Scenario", "LoadLevel", "Area", "Generator", "InitialNode", "FinalNode", "Circuit", "Node", "Stage", "Reservoir",  # Optional hydro tables key on this.
 ]

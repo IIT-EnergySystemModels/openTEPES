@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 04, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 07, 2026
 
 openTEPES.openTEPES_DataConfiguration — builds the derived sets and parameters on the model: instrumental sets, ESS/RES sets, and the flag-driven branches (hydro topology, hydrogen, heat, PTDF). Runs after InputData has read the raw sets and parameters.
 """
@@ -34,8 +34,8 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     StartTime = time.time()
     #%% Getting the branches from the electric network data
     sBr     = [(ni,nf) for ni,nf,cc in dfs['dfNetwork'].index]
-    # Dropping duplicate keys
-    sBrList = [(ni,nf) for n,(ni,nf)  in enumerate(sBr) if (ni,nf) not in sBr[:n]]
+    # Dropping duplicate keys, keeping the first appearance
+    sBrList = list(dict.fromkeys(sBr))
 
     #%% defining subsets: active load levels (n,n2), thermal units (t), RES units (r), ESS units (es), candidate gen units (gc), candidate ESS units (ec), all the electric lines (la), candidate electric lines (lc), candidate DC electric lines (cd), existing DC electric lines (ed), electric lines with losses (ll), reference node (rf), and reactive generating units (gq)
     mTEPES.p      = Set(doc='periods'                          , initialize=[pp     for pp   in mTEPES.pp  if par['pPeriodWeight']       [pp] >  0.0 and sum(par['pDuration'][pp,sc,n] for sc,n in mTEPES.scc*mTEPES.nn)])
@@ -43,8 +43,12 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     mTEPES.ps     = Set(doc='periods/scenarios'                , initialize=[(p,sc) for p,sc in mTEPES.p*mTEPES.sc if par['pScenProb'] [p,sc] >  0.0 and sum(par['pDuration'][p,sc,n ] for    n in            mTEPES.nn)])
     mTEPES.st     = Set(doc='stages'                           , initialize=[stt    for stt  in mTEPES.stt if par['pStageWeight']       [stt] >  0.0])
     mTEPES.n      = Set(doc='load levels'                      , initialize=[nn     for nn   in mTEPES.nn  if sum(par['pDuration']  [p,sc,nn] for p,sc in mTEPES.ps) > 0])
-    mTEPES.n2     = Set(doc='load levels'                      , initialize=[nn     for nn   in mTEPES.nn  if sum(par['pDuration']  [p,sc,nn] for p,sc in mTEPES.ps) > 0])
-    mTEPES.g      = Set(doc='generating              units'    , initialize=[gg     for gg   in mTEPES.gg  if (par['pRatedMaxPowerElec'] [gg] >  0.0 or  par['pRatedMaxCharge'][gg] >  0.0   or  par['pRatedMaxPowerHeat']   [gg] >  0.0) and par['pElecGenPeriodIni'][gg] <= mTEPES.p.last() and par['pElecGenPeriodFin'][gg] >= mTEPES.p.first() and par['pGenToNode'].reset_index().set_index(['Generator']).isin(mTEPES.nd)['Node'][gg]])  # excludes generators with empty node
+    mTEPES.n2     = Set(doc='load levels, alias of n'          , initialize=[nn     for nn   in mTEPES.nn  if sum(par['pDuration']  [p,sc,nn] for p,sc in mTEPES.ps) > 0])
+    # the generator-to-node membership test and the period bounds do not depend on gg: compute them once
+    pGenHasNode  = par['pGenToNode'].reset_index().set_index(['Generator']).isin(mTEPES.nd)['Node']
+    pFirstPeriod = mTEPES.p.first()
+    pLastPeriod  = mTEPES.p.last()
+    mTEPES.g      = Set(doc='generating              units'    , initialize=[gg     for gg   in mTEPES.gg  if (par['pRatedMaxPowerElec'] [gg] >  0.0 or  par['pRatedMaxCharge'][gg] >  0.0   or  par['pRatedMaxPowerHeat']   [gg] >  0.0) and par['pElecGenPeriodIni'][gg] <= pLastPeriod and par['pElecGenPeriodFin'][gg] >= pFirstPeriod and pGenHasNode[gg]])  # excludes generators with empty node
     mTEPES.tr     = Set(doc='thermal                 units'    , initialize=[g      for g    in mTEPES.g   if par['pRatedLinearOperCost'][g ] >  0.0])
     mTEPES.re     = Set(doc='RES                     units'    , initialize=[g      for g    in mTEPES.g   if par['pRatedLinearOperCost'][g ] == 0.0 and par['pRatedMaxStorage'][g] == 0.0   and par['pProductionFunctionH2'      ][g ] == 0.0 and par['pProductionFunctionHeat'][g ] == 0.0  and par['pProductionFunctionHydro'][g ] == 0.0])
     mTEPES.es     = Set(doc='ESS                     units'    , initialize=[g      for g    in mTEPES.g   if     (par['pRatedMaxCharge'][g ] >  0.0 or  par['pRatedMaxStorage'][g] >  0.0    or par['pProductionFunctionH2'      ][g ]  > 0.0  or par['pProductionFunctionHeat'][g ]  > 0.0) and par['pProductionFunctionHydro'][g ] == 0.0])
@@ -67,27 +71,27 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
         if ni == nf:
             raise ValueError(f'### Line {ni} {nf} {cc} has equal initial and final nodes.')
     if len(mTEPES.ln) != len(dfs['dfNetwork'].index):
-        raise ValueError('### Some electric lines are invalid (not having reactance or are repeated) ', len(mTEPES.ln), len(dfs['dfNetwork'].index))
-    mTEPES.la     = Set(doc='all real        electric lines'   , initialize=[ln     for ln   in mTEPES.ln if par['pLineX']              [ln] != 0.0 and par['pLineNTCFrw'][ln] > 0.0 and par['pLineNTCBck'][ln] > 0.0 and par['pElecNetPeriodIni'][ln]  <= mTEPES.p.last() and par['pElecNetPeriodFin'][ln]  >= mTEPES.p.first()])
+        raise ValueError('### Some electric lines are repeated in oT_Data_Network ', len(mTEPES.ln), len(dfs['dfNetwork'].index))
+    mTEPES.la     = Set(doc='all real        electric lines'   , initialize=[ln     for ln   in mTEPES.ln if par['pLineX']              [ln] != 0.0 and par['pLineNTCFrw'][ln] > 0.0 and par['pLineNTCBck'][ln] > 0.0 and par['pElecNetPeriodIni'][ln]  <= pLastPeriod and par['pElecNetPeriodFin'][ln]  >= pFirstPeriod])
     mTEPES.ls     = Set(doc='all real switch electric lines'   , initialize=[la     for la   in mTEPES.la if par['pIndBinLineSwitch']   [la]       ])
     mTEPES.lc     = Set(doc='candidate       electric lines'   , initialize=[la     for la   in mTEPES.la if par['pNetFixedCost']       [la] >  0.0])
     mTEPES.cd     = Set(doc='candidate    DC electric lines'   , initialize=[la     for la   in mTEPES.la if par['pNetFixedCost']       [la] >  0.0 and par['pLineType'][la] == 'DC'])
     mTEPES.ed     = Set(doc='existing     DC electric lines'   , initialize=[la     for la   in mTEPES.la if par['pNetFixedCost']       [la] == 0.0 and par['pLineType'][la] == 'DC'])
     mTEPES.ll     = Set(doc='loss            electric lines'   , initialize=[la     for la   in mTEPES.la if par['pLineLossFactor']     [la] >  0.0 and par['pIndBinNetLosses'] > 0 ])
     mTEPES.rf     = Set(doc='reference node'                   , initialize=[par['pReferenceNode']])
-    mTEPES.gq     = Set(doc='gen    reactive units'            , initialize=[gg     for gg   in mTEPES.gg if par['pRMaxReactivePower']  [gg] >  0.0 and                                                                    par['pElecGenPeriodIni'][gg]  <= mTEPES.p.last() and par['pElecGenPeriodFin'][gg]  >= mTEPES.p.first()])
-    mTEPES.sq     = Set(doc='synchr reactive units'            , initialize=[gg     for gg   in mTEPES.gg if par['pRMaxReactivePower']  [gg] >  0.0 and par['pGenToTechnology'][gg] == 'SynchronousCondenser'  and par['pElecGenPeriodIni'][gg]  <= mTEPES.p.last() and par['pElecGenPeriodFin'][gg]  >= mTEPES.p.first()])
+    mTEPES.gq     = Set(doc='gen    reactive units'            , initialize=[gg     for gg   in mTEPES.gg if par['pRMaxReactivePower']  [gg] >  0.0 and                                                            par['pElecGenPeriodIni'][gg]  <= pLastPeriod and par['pElecGenPeriodFin'][gg]  >= pFirstPeriod])
+    mTEPES.sq     = Set(doc='synchr reactive units'            , initialize=[gg     for gg   in mTEPES.gg if par['pRMaxReactivePower']  [gg] >  0.0 and par['pGenToTechnology'][gg] == 'SynchronousCondenser'  and par['pElecGenPeriodIni'][gg]  <= pLastPeriod and par['pElecGenPeriodFin'][gg]  >= pFirstPeriod])
     mTEPES.sqc    = Set(doc='synchr reactive candidate')
     mTEPES.shc    = Set(doc='shunt           candidate')
     if par['pIndHydroTopology']:
-        mTEPES.rn = Set(doc='candidate reservoirs'             , initialize=[rs     for rs   in mTEPES.rs if par['pRsrInvestCost']      [rs] >  0.0 and                                                                    par['pRsrPeriodIni'][rs]      <= mTEPES.p.last() and par['pRsrPeriodFin'][rs]      >= mTEPES.p.first()])
+        mTEPES.rn = Set(doc='candidate reservoirs'             , initialize=[rs     for rs   in mTEPES.rs if par['pRsrInvestCost']      [rs] >  0.0 and                                                            par['pRsrPeriodIni'][rs]      <= pLastPeriod and par['pRsrPeriodFin'][rs]      >= pFirstPeriod])
     else:
         mTEPES.rn = Set(doc='candidate reservoirs'             , initialize=[])
     if par['pIndHydrogen']:
         mTEPES.pn = Set(doc='all input hydrogen pipes'         , initialize=dfs['dfNetworkHydrogen'].index)
         if len(mTEPES.pn) != len(dfs['dfNetworkHydrogen'].index):
             raise ValueError('### Some hydrogen pipes are invalid ', len(mTEPES.pn), len(dfs['dfNetworkHydrogen'].index))
-        mTEPES.pa = Set(doc='all real  hydrogen pipes'         , initialize=[pn     for pn   in mTEPES.pn if par['pH2PipeNTCFrw']       [pn] >  0.0 and par['pH2PipeNTCBck'][pn] > 0.0 and                         par['pH2PipePeriodIni'][pn]   <= mTEPES.p.last() and par['pH2PipePeriodFin'][pn]   >= mTEPES.p.first()])
+        mTEPES.pa = Set(doc='all real  hydrogen pipes'         , initialize=[pn     for pn   in mTEPES.pn if par['pH2PipeNTCFrw']       [pn] >  0.0 and par['pH2PipeNTCBck'][pn] > 0.0 and                         par['pH2PipePeriodIni'][pn]   <= pLastPeriod and par['pH2PipePeriodFin'][pn]   >= pFirstPeriod])
         mTEPES.pc = Set(doc='candidate hydrogen pipes'         , initialize=[pa     for pa   in mTEPES.pa if par['pH2PipeFixedCost']    [pa] >  0.0])
         # existing hydrogen pipelines (pe)
         mTEPES.pe = mTEPES.pa - mTEPES.pc
@@ -95,12 +99,13 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
         mTEPES.pn = Set(doc='all input hydrogen pipes'         , initialize=[])
         mTEPES.pa = Set(doc='all real  hydrogen pipes'         , initialize=[])
         mTEPES.pc = Set(doc='candidate hydrogen pipes'         , initialize=[])
+        mTEPES.pe = Set(doc='existing  hydrogen pipes'         , initialize=[])
 
     if par['pIndHeat']:
         mTEPES.hn = Set(doc='all input heat pipes'             , initialize=dfs['dfNetworkHeat'].index)
         if len(mTEPES.hn) != len(dfs['dfNetworkHeat'].index):
             raise ValueError('### Some heat pipes are invalid ', len(mTEPES.hn), len(dfs['dfNetworkHeat'].index))
-        mTEPES.ha = Set(doc='all real  heat pipes'             , initialize=[hn     for hn   in mTEPES.hn if par['pHeatPipeNTCFrw']     [hn] >  0.0 and par['pHeatPipeNTCBck'][hn] > 0.0 and par['pHeatPipePeriodIni'][hn] <= mTEPES.p.last() and par['pHeatPipePeriodFin'][hn] >= mTEPES.p.first()])
+        mTEPES.ha = Set(doc='all real  heat pipes'             , initialize=[hn     for hn   in mTEPES.hn if par['pHeatPipeNTCFrw']     [hn] >  0.0 and par['pHeatPipeNTCBck'][hn] > 0.0 and par['pHeatPipePeriodIni'][hn] <= pLastPeriod and par['pHeatPipePeriodFin'][hn] >= pFirstPeriod])
         mTEPES.hc = Set(doc='candidate heat pipes'             , initialize=[ha     for ha   in mTEPES.ha if par['pHeatPipeFixedCost']  [ha] >  0.0])
         # existing heat pipes (he)
         mTEPES.he = mTEPES.ha - mTEPES.hc
@@ -108,6 +113,7 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
         mTEPES.hn = Set(doc='all input heat pipes'             , initialize=[])
         mTEPES.ha = Set(doc='all real  heat pipes'             , initialize=[])
         mTEPES.hc = Set(doc='candidate heat pipes'             , initialize=[])
+        mTEPES.he = Set(doc='existing  heat pipes'             , initialize=[])
 
     par['pIndBinLinePTDF'] = pd.Series(index=mTEPES.la, data=0.0)                                                              # indicate if the line has a PTDF or not
     if par['pIndVarTTC']:
@@ -143,16 +149,19 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     mTEPES.s2n = Set(initialize=par['pStageToLevel'], doc='Load level to stage')
     # all the stages must have the same duration
     par['pStageDuration'] = pd.Series([sum(par['pDuration'][p,sc,n] for p,sc,st2,n in mTEPES.s2n if st2 == st) for st in mTEPES.st], index=mTEPES.st)
-    # for st in mTEPES.st:
-    #     if mTEPES.st.ord(st) > 1 and pStageDuration[st] != pStageDuration[mTEPES.st.prev(st)]:
-    #         assert (0 == 1)
+    for st in mTEPES.st:
+        if mTEPES.st.ord(st) > 1 and par['pStageDuration'][st] != par['pStageDuration'][mTEPES.st.prev(st)]:
+            raise ValueError(f'### Stage {st} has a duration of {par["pStageDuration"][st]} h, different from the previous stage; all stages must have the same duration')
 
     # delete all the load levels belonging to stages with duration equal to zero
+    pZeroStages = {st for st in mTEPES.st if par['pStageDuration'][st] == 0}
+    pZeroLevels = {n for p,sc,st,n in mTEPES.s2n if st in pZeroStages}
     mTEPES.del_component(mTEPES.n )
     mTEPES.del_component(mTEPES.n2)
-    mTEPES.n  = Set(doc='load levels', initialize=[nn for nn in mTEPES.nn if sum(par['pDuration'][p,sc,nn] for p,sc in mTEPES.ps) > 0])
-    mTEPES.n2 = Set(doc='load levels', initialize=[nn for nn in mTEPES.nn if sum(par['pDuration'][p,sc,nn] for p,sc in mTEPES.ps) > 0])
-    # instrumental sets
+    mTEPES.n  = Set(doc='load levels'            , initialize=[nn for nn in mTEPES.nn if sum(par['pDuration'][p,sc,nn] for p,sc in mTEPES.ps) > 0 and nn not in pZeroLevels])
+    mTEPES.n2 = Set(doc='load levels, alias of n', initialize=[nn for nn in mTEPES.nn if sum(par['pDuration'][p,sc,nn] for p,sc in mTEPES.ps) > 0 and nn not in pZeroLevels])
+
+
     # @profile
     def CreateInstrumentalSets(mTEPES, pIndHydroTopology, pIndHydrogen, pIndHeat, pIndPTDF) -> None:
         '''

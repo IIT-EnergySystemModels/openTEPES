@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 15, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 07, 2026
 """
 
 import time
@@ -11,10 +11,10 @@ from   pyomo.environ import Set
 # Support running this file directly (e.g. VS Code "Run Python File"), where __package__ is empty and the
 # relative imports below have no parent package; fall back to absolute package imports in that case.
 try:
-    from .openTEPES_InputSource    import open_source, df_to_set_values, InputSource
-    from .openTEPES_InputCSVSource import CSVSource
+    from .openTEPES_InputSource             import df_to_set_values, InputSource
+    from .openTEPES_InputCSVSource          import CSVSource
 except ImportError:
-    import os, sys
+    import sys
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     from openTEPES.openTEPES_InputSource    import df_to_set_values, InputSource
     from openTEPES.openTEPES_InputCSVSource import CSVSource
@@ -29,10 +29,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     _path = os.path.join(DirName, CaseName)
     StartTime = time.time()
 
-    # set_definitions: maps each mTEPES Set attribute to the underlying
-    # dictionary file stem and whether the Set is ordered. The 'ordered'
-    # flag was previously a hardcoded membership check in the read loop;
-    # making it declarative keeps the policy next to the data.
+    # set_definitions: maps each mTEPES Set attribute to the underlying dictionary file stem and whether the Set is ordered. The 'ordered'
+    # flag was previously a hardcoded membership check in the read loop; making it declarative keeps the policy next to the data.
     set_definitions = {
         # attr   (dict_stem,      ordered)
         'pp':    ('Period',       True ),
@@ -55,21 +53,19 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         'arrg':  ('AreaToRegion', False),
     }
 
-    # Source resolution: prefer mTEPES.pInputSource if openTEPES_run set
-    # one (DuckDB or CSV); otherwise build a CSVSource from (DirName,
-    # CaseName). The CSV path through CSVSource is byte-identical to the
-    # historical pd.read_csv calls.
+    # Source resolution: prefer mTEPES.pInputSource if openTEPES_run set one (DuckDB or CSV); otherwise build a CSVSource from (DirName,
+    # CaseName). The CSV path through CSVSource is byte-identical to the historical pd.read_csv calls.
     source: InputSource = getattr(mTEPES, "pInputSource", None) or CSVSource(_path)
     mTEPES.pInputSource = source  # make accessible to DataConfiguration etc.
 
-    # Reading dictionaries through the source. df_to_set_values converts
-    # a 1-col DataFrame -> list of values, an n-col DataFrame -> list of
-    # tuples (relation/membership), which is exactly the shape
-    # Set(initialize=...) accepts.
+    # Reading dictionaries through the source. df_to_set_values converts a 1-col DataFrame -> list of values, an n-col DataFrame -> list of
+    # tuples (relation/membership), which is exactly the shape Set(initialize=...) accepts.
+    # the same dimension dict backs several sets (nd/ni/nf, cc/c2): read it once
+    pDictCache: dict[str, list] = {}
     for set_name, (dict_stem, is_ordered) in set_definitions.items():
-        df = source.read_dict(dict_stem)
-        values = df_to_set_values(df)
-        setattr(mTEPES, set_name, Set(initialize=values, ordered=is_ordered, doc=dict_stem))
+        if dict_stem not in pDictCache:
+            pDictCache[dict_stem] = df_to_set_values(source.read_dict(dict_stem))
+        setattr(mTEPES, set_name, Set(initialize=pDictCache[dict_stem], ordered=is_ordered, doc=dict_stem))
 
     HEADER_LEVELS = {
         'VariableTTCFrw': [0, 1, 2   ],
@@ -99,9 +95,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     def read_input_data():
         """Read every oT_Data table the source knows about.
 
-        Returns (dfs, par) — dfs maps 'df{stem}' to its wide-format
-        (indexed where applicable) DataFrame; par carries the per-feature
-        availability flags driven by FLAG_MAPPING.
+        Returns (dfs, par) — dfs maps 'df{stem}' to its wide-format (indexed where applicable) DataFrame; par carries the per-feature availability flags driven by FLAG_MAPPING.
         """
         dfs: dict[str, pd.DataFrame] = {}
         par: dict[str, int] = {}
@@ -114,13 +108,13 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
                 if dp_key:
                     par[dp_key] = 1
             except FileNotFoundError:
-                print(f'WARNING: table not found: oT_Data_{fs}_{CaseName}.csv')
+                # the stem was listed but the table is gone: an optional table that vanished between listing and reading
+                print(f'WARNING: table listed but not found, skipped: oT_Data_{fs} (source: {source.case_name})')
                 if dp_key:
                     par[dp_key] = 0
             except Exception as e:
-                print(f'No data for {fs}: {e}')
-                if dp_key:
-                    par[dp_key] = 0
+                # a table that is present but unreadable is a data error, not an absent feature: fail loudly
+                raise RuntimeError(f'oT_Data_{fs}: present in the source but could not be read ({type(e).__name__}: {e})') from e
 
         return dfs, par
 
@@ -133,14 +127,13 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     # replace NaN with 0 (only on numeric columns to avoid dtype errors on string columns)
     for key,df in dfs.items():
         num_cols = df.select_dtypes(include='number').columns
-        # A blank cell in a text column arrives as NaN from the CSV reader but as None from DuckDB.
-        # Both mean "not given", so write NaN in every text column and the model sees the same case
-        # whichever way it was read.
+        # A blank cell in a text column arrives as NaN from the CSV reader but as None from DuckDB. Both mean "not given", so write NaN in every text column and
+        # the model sees the same case whichever way it was read.
         for col in df.columns.difference(num_cols):
             df[col] = df[col].where(df[col].notna(), math.nan)
-        if 'dfEmission' in key:
+        if   key == 'dfEmission':
             df.fillna({col: math.inf for col in num_cols}, inplace=True)
-        elif 'dfGeneration' in key:
+        elif key == 'dfGeneration':
             # build a dict that gives 1.0 for 'Efficiency', 0.0 for everything else
             fill_values = {col: (1.0 if col == 'Efficiency' else 0.0) for col in num_cols}
             # one pass over the DataFrame
@@ -171,6 +164,9 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     print('Reading the CSV files                  ...  {} s'.format(reading_time))
     StartTime = time.time()
 
+    if 'dfGeneration' not in dfs:
+        raise RuntimeError(f'oT_Data_Generation_{CaseName}: the generation table is mandatory and could not be read')
+
     if (dfs['dfGeneration']['Efficiency'] == 0.0).any():
         print('WARNING: Efficiency values of 0.0 are not valid. They have been changed to 1.0.')
         print("If you want to disable charging, set 'MaximumCharge' to 0.0 or leave it empty.")
@@ -180,9 +176,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     for key, df in dfs.items():
         if pIndLogConsole and any(suffix in key for suffix in mTEPES.frames_suffixes):
             print(f'{key}:\n', df.describe(), '\n')
-    # Optional reservoir / hydro topology dicts. Each is present in the
-    # source iff the user populated the corresponding oT_Dict_*.csv (or
-    # DB table); an absent / empty dict yields an empty Pyomo Set.
+    # Optional reservoir / hydro topology dicts. Each is present in the source iff the user populated the corresponding oT_Dict_*.csv (or DB table);
+    # an absent / empty dict yields an empty Pyomo Set.
     reservoir_dicts = [
         ('rs',  'Reservoir',                 'reservoirs'                 ),
         ('r2h', 'ReservoirToHydro',          'reservoir to hydro'         ),
@@ -196,8 +191,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         values = df_to_set_values(df) if not df.empty else []
         setattr(mTEPES, set_name, Set(initialize=values, doc=doc))
 
-    # load parameters from dfOption — single-row 0/1 binary flags.
-    # Direct int() avoids the unusual .iloc[0].astype('int') pattern
+    # load parameters from dfOption — single-row 0/1 binary flags. Direct int() avoids the unusual .iloc[0].astype('int') pattern
     # (astype on a numpy scalar works but is unidiomatic).
     for col in dfs['dfOption'].columns:
         par[f'p{col}'] = int(dfs['dfOption'][col].iloc[0])
@@ -487,10 +481,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         # replace pHeatPipeUpInvest = 0.0 by 1.0
         par['pHeatPipeUpInvest']     = par['pHeatPipeUpInvest'].where (par['pHeatPipeUpInvest']   > 0.0, 1.0                   )
 
-    #%% storing the parameters on the model for backward compatibility
-    # (external consumers that pickle mTEPES or inspect inputs post-load
-    # rely on these). New callers should consume dfs/par from the return
-    # value instead.
+    #%% storing the parameters on the model for backward compatibility (external consumers that pickle mTEPES or inspect inputs post-load
+    # rely on these). New callers should consume dfs/par from the return value instead.
     mTEPES.dFrame  = dfs
     mTEPES.dPar    = par
 
