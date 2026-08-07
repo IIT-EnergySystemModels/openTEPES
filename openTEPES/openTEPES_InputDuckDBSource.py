@@ -138,16 +138,27 @@ class DuckDBSource(InputSource):
     # ---- shape reconstruction (mirror of the C2 emit logic)
 
     def _reconstruct_wide(self, table_name: str, *, entity: str, value: str) -> pd.DataFrame:
-        df = self._con.execute(f"SELECT * FROM {table_name}").df()
+        df      = self._con.execute(f"SELECT * FROM {table_name}").df()
         id_cols = ["Period", "Scenario", "LoadLevel"]
-        wide = df.pivot(index=id_cols, columns=entity, values=value).reset_index()
+        # pivot (not pivot_table) so duplicate keys raise instead of being silently averaged. pivot sorts the columns,
+        # while the CSV reader keeps the order the entities appear in the file: restore that order.
+        pOrder  = list(dict.fromkeys(df[entity]))
+        wide    = df.pivot(index=id_cols, columns=entity, values=value)[pOrder].reset_index()
         wide.columns.name = None
         return wide
 
     def _reconstruct_single_row(self, table_name: str, *, value_type: str) -> pd.DataFrame:
-        df = self._con.execute(f"SELECT * FROM {table_name}").df()
+        df  = self._con.execute(f"SELECT * FROM {table_name}").df()
         row = {str(name): (None if pd.isna(value) else value) for name, value in zip(df["Name"], df["Value"])}
-        return pd.DataFrame([row]).infer_objects()
+        out = pd.DataFrame([row])
+        # The DB stores Value as VARCHAR, so every parameter arrives as text. The CSV reader infers a column's dtype from its content,
+        # and InputData relies on that (e.g. pENSCost is multiplied by 1e-3); recover it here, converting a column only when the whole
+        # column parses as a number so that text parameters such as the solver name stay text.
+        for col in out.columns:
+            converted = pd.to_numeric(out[col], errors='coerce')
+            if converted.notna().all():
+                out[col] = converted
+        return out
 
     def _reconstruct_wide_multilevel(self, table_name: str, *, entity_cols: list[str], value: str) -> pd.DataFrame:
         """Pivot the long DB table back to multi-level-column wide shape.
@@ -155,9 +166,11 @@ class DuckDBSource(InputSource):
         Matches the pandas quirk where ``pd.read_csv(..., header=[0..N-1], index_col=[0,1,2])`` yields ``index.names = [None, None, None]`` and
         ``columns.names = ['Period', None, ...]``. Preserving this lets downstream CSV/DB consumers see identical DataFrames.
         """
-        df = self._con.execute(f"SELECT * FROM {table_name}").df()
+        df      = self._con.execute(f"SELECT * FROM {table_name}").df()
         id_cols = ["Period", "Scenario", "LoadLevel"]
-        wide = df.pivot(index=id_cols, columns=entity_cols, values=value)
+        # same as _reconstruct_wide: pivot raises on duplicate keys but sorts the columns, so restore the file order
+        pOrder  = list(dict.fromkeys(df[entity_cols].itertuples(index=False, name=None)))
+        wide    = df.pivot(index=id_cols, columns=entity_cols, values=value)[pOrder]
         wide.index.names = [None, None, None]
         wide.columns.names = ["Period"] + [None] * (len(entity_cols) - 1)
         return wide
