@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 05, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 09, 2026
 """
 
 import os
@@ -121,7 +121,7 @@ def StageSolve(OptModel, mTEPES, DirName, CaseName, SolverName, pIndLogConsole, 
         # activate only period, scenario, and load levels to formulate
         RebuildStageAndLoadLevelSets(mTEPES)
 
-        if len(mTEPES.n):
+        if mTEPES.n:
             ObjVal = None
 
             if mTEPES.pIndSequentialSolving() <= 2 or (mTEPES.pIndSequentialSolving() == 3 and st == mTEPES.stt.first()) or (mTEPES.pIndSequentialSolving() == 3 and itBdFinal == FINAL_ITERATION):

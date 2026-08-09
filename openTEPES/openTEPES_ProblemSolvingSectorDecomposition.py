@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 02, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 09, 2026
 """
 
 import math
@@ -199,7 +199,7 @@ def SectorDecomposition(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLog
     pTotalSCost_it = pd.Series([0.0]*len(mMaster.itBd), index=mMaster.itBd)
     # pMasterCost_it = pd.Series([0.0]*len(mMaster.itBd), index=mMaster.itBd)
 
-    if len(mTEPES.psnel):
+    if mTEPES.psnel:
         pESSTotalCharge            = pd.Series([0.0]*len(mMaster.itBd*mTEPES.psnel), index=mMaster.itBd*mTEPES.psnel)
         # pCharge2ndBlock            = pd.Series([0.0]*len(mMaster.itBd*mTEPES.psnel), index=mMaster.itBd*mTEPES.psnel)
         # pESSReserveUp              = pd.Series([0.0]*len(mMaster.itBd*mTEPES.psnel), index=mMaster.itBd*mTEPES.psnel)

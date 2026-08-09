@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 07, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 09, 2026
 """
 
 # import dill as pickle
@@ -229,7 +229,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
 
     # objective function and investment constraints
     TotalObjectiveFunction             (mTEPES, mTEPES, pIndLogConsole)
-    if len(mTEPES.gc) + len(mTEPES.gd) + len(mTEPES.lc) + len(mTEPES.rn) + len(mTEPES.pc) + len(mTEPES.hc):
+    if mTEPES.gc or mTEPES.gd or mTEPES.lc or mTEPES.rn or mTEPES.pc or mTEPES.hc:
         InvestmentElecModelFormulation (mTEPES, mTEPES, pIndLogConsole)
     if mTEPES.pIndHydroTopology() and mTEPES.rn:
         InvestmentHydroModelFormulation(mTEPES, mTEPES, pIndLogConsole)
