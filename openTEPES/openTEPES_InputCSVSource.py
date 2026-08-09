@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 07, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 09, 2026
 
 openTEPES.openTEPES_InputCSVSource — file-system CSV backend.
 
@@ -67,11 +67,20 @@ class CSVSource(InputSource):
                     stems.add(inner)
         return stems
 
+    @staticmethod
+    def _read_csv(path, **kwargs):
+        """Read a case CSV, falling back to cp1252 for files Excel saved with a Spanish locale (0xD1 = 'Ñ' and friends)."""
+        try:
+            return pd.read_csv(path, encoding="utf-8-sig", **kwargs)
+        except UnicodeDecodeError:
+            print(f'WARNING: {path.name} is not UTF-8; falling back to cp1252. Re-save it as UTF-8 to silence this warning.')
+            return pd.read_csv(path, encoding="cp1252", **kwargs)
+
     def read_dict(self, stem: str) -> pd.DataFrame:
         path = self.case_dir / f"oT_Dict_{stem}_{self.case_name}.csv"
         if not path.exists():
             return pd.DataFrame()
-        return pd.read_csv(path, encoding="utf-8-sig")
+        return self._read_csv(path)
 
     def read_data(self, stem: str, header_levels: list[int] | None = None) -> pd.DataFrame:
         path = self.case_dir / f"oT_Data_{stem}_{self.case_name}.csv"
@@ -83,8 +92,8 @@ class CSVSource(InputSource):
         if header_levels is None and spec and spec[1] == WIDE_MULTILEVEL_TO_LONG:
             header_levels = list(range(len(spec[2]["entity_cols"])))
         if header_levels:
-            return pd.read_csv(path, encoding="utf-8-sig", header=header_levels, index_col=[0, 1, 2])
-        df = pd.read_csv(path, encoding="utf-8-sig")
+            return self._read_csv(path, header=header_levels, index_col=[0, 1, 2])
+        df = self._read_csv(path)
         # Option / Parameter are single-row, leave as-is (no index).
         if stem in ("Option", "Parameter"):
             return df

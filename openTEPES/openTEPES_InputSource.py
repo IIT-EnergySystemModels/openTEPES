@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 07, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 09, 2026
 
 openTEPES.openTEPES_InputSource — ``InputSource`` ABC, ``open_source()`` factory, and post-read shape helpers shared by every backend.
 
@@ -118,7 +118,11 @@ def _apply_index(df: pd.DataFrame, stem: str) -> pd.DataFrame:
     if spec is not None:
         _, kind, kwargs = spec
         if kind == WIDE_TO_LONG:
-            idx_cols = ["Period", "Scenario", "LoadLevel"]
+            # a wide CSV keys on its first three columns; openTEPES cases leave that header blank about as often as they fill it in,
+            # so take them by position when the names are absent instead of failing
+            idx_cols = [c for c in ("Period", "Scenario", "LoadLevel") if c in df.columns]
+            if len(idx_cols) != 3:
+                idx_cols = list(df.columns[:3])
         elif kind == UNPIVOT_SINGLE_ROW:
             return df  # single-row tables carry no index
         else:  # PASSTHROUGH

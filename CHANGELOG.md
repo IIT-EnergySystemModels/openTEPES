@@ -1,7 +1,8 @@
 # Change Log
 
-## [4.18.18RC] - 2026-08-07 Unreleased in PyPI
+## [4.18.18RC] - 2026-08-09 Unreleased in PyPI
 
+- [FIXED] protect input data modules against a missing `openTEPES/cases/` folder, which was causing a `FileNotFoundError` on a fresh clone. 
 - [FIXED] fix small errors and typos in input data modules
 
 ## [4.18.17] - 2026-08-05

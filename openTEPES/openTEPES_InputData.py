@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 07, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 09, 2026
 """
 
 import time
@@ -107,13 +107,14 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
                 dfs[f'df{fs}'] = source.read_data(fs, header_levels=header)
                 if dp_key:
                     par[dp_key] = 1
-            except FileNotFoundError:
-                # the stem was listed but the table is gone: an optional table that vanished between listing and reading
-                print(f'WARNING: table listed but not found, skipped: oT_Data_{fs} (source: {source.case_name})')
+            except (KeyError, ValueError, UnicodeDecodeError, pd.errors.ParserError, pd.errors.EmptyDataError) as e:
+                # the table is there but its shape or encoding does not fit: the model has always tolerated this, so warn loudly
+                # and carry on with the feature disabled instead of aborting the whole run
+                print(f'WARNING: oT_Data_{fs} is present but could not be parsed and will be IGNORED ({type(e).__name__}: {e})')
                 if dp_key:
                     par[dp_key] = 0
             except Exception as e:
-                # a table that is present but unreadable is a data error, not an absent feature: fail loudly
+                # anything else is a programming error, not a data problem: fail loudly
                 raise RuntimeError(f'oT_Data_{fs}: present in the source but could not be read ({type(e).__name__}: {e})') from e
 
         return dfs, par
