@@ -18,6 +18,8 @@ Overlays target ``oT_Data_*`` tables (the wide frames the model reads); dimensio
 """
 from __future__ import annotations
 
+import numbers
+
 import pandas as pd
 
 try:
@@ -37,7 +39,9 @@ def _apply_overlay(df: pd.DataFrame, transform) -> pd.DataFrame:
         if not isinstance(pResult, pd.DataFrame):
             raise TypeError(f"overlay callable must return a DataFrame; got {type(pResult).__name__} (did it modify df in place and return None?)")
         return pResult
-    if isinstance(transform, (int, float, numbers.Real)) and not isinstance(transform, bool):
+    # numbers.Real covers int, float and the NumPy scalar types (np.int64 is not a subclass of int); bool is a subclass
+    # of int and is excluded on purpose, so that a stray True does not silently scale a table by 1.
+    if isinstance(transform, numbers.Real) and not isinstance(transform, bool):
         num_cols = df.select_dtypes(include="number").columns
         df[num_cols] = df[num_cols] * transform
         return df
