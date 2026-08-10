@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 05, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 10, 2026
 
 openTEPES.openTEPES_SettingUpVariables — creates the decision variables and their bounds, fixes the generators' commitment, relaxes or forbids investment conditions,
 zeroes out epsilon values, and screens for infeasibilities. Runs after DataConfiguration.
@@ -1028,20 +1028,23 @@ def SettingUpVariables(OptModel, mTEPES):
         [OptModel.vNetworkInvest   [p,ni,nf,cc].setlb(mTEPES.pNetLoInvest[ni,nf,cc]()) for p,ni,nf,cc in mTEPES.plc]
         [OptModel.vNetworkInvest   [p,ni,nf,cc].setub(mTEPES.pNetUpInvest[ni,nf,cc]()) for p,ni,nf,cc in mTEPES.plc]
 
-        if mTEPES.pIndHydroTopology():
-            for rc in mTEPES.rn:
-                if  mTEPES.pRsrLoInvest[  rc]() <       pEpsilon:
-                    mTEPES.pRsrLoInvest[  rc]   = 0
-                if  mTEPES.pRsrUpInvest[  rc]() <       pEpsilon:
-                    mTEPES.pRsrUpInvest[  rc]   = 0
-                if  mTEPES.pRsrLoInvest[  rc]() > 1.0 - pEpsilon:
-                    mTEPES.pRsrLoInvest[  rc]   = 1
-                if  mTEPES.pRsrUpInvest[  rc]() > 1.0 - pEpsilon:
-                    mTEPES.pRsrUpInvest[  rc]   = 1
-                if  mTEPES.pRsrLoInvest[  rc]() >   mTEPES.pRsrUpInvest[rc]():
-                    mTEPES.pRsrLoInvest[  rc]   =   mTEPES.pRsrUpInvest[rc]()
-            [OptModel.vReservoirInvest [p,rc].setlb(mTEPES.pRsrLoInvest[rc]()) for p,rc in mTEPES.prc]
-            [OptModel.vReservoirInvest [p,rc].setub(mTEPES.pRsrUpInvest[rc]()) for p,rc in mTEPES.prc]
+        # Reservoir investment bounds: pRsrLoInvest / pRsrUpInvest are read here but never created — openTEPES_DataConfiguration does not
+        # declare them and there is no plan to. The whole block therefore raised AttributeError on line 1 of the loop for any case with
+        # pIndHydroTopology on. Commented out until the two Params exist; the electric and H2 twins above and below are unaffected.
+        # if mTEPES.pIndHydroTopology():
+        #     for rc in mTEPES.rn:
+        #         if  mTEPES.pRsrLoInvest[  rc]() <       pEpsilon:
+        #             mTEPES.pRsrLoInvest[  rc]   = 0
+        #         if  mTEPES.pRsrUpInvest[  rc]() <       pEpsilon:
+        #             mTEPES.pRsrUpInvest[  rc]   = 0
+        #         if  mTEPES.pRsrLoInvest[  rc]() > 1.0 - pEpsilon:
+        #             mTEPES.pRsrLoInvest[  rc]   = 1
+        #         if  mTEPES.pRsrUpInvest[  rc]() > 1.0 - pEpsilon:
+        #             mTEPES.pRsrUpInvest[  rc]   = 1
+        #         if  mTEPES.pRsrLoInvest[  rc]() >   mTEPES.pRsrUpInvest[rc]():
+        #             mTEPES.pRsrLoInvest[  rc]   =   mTEPES.pRsrUpInvest[rc]()
+        #     [OptModel.vReservoirInvest [p,rc].setlb(mTEPES.pRsrLoInvest[rc]()) for p,rc in mTEPES.prc]
+        #     [OptModel.vReservoirInvest [p,rc].setub(mTEPES.pRsrUpInvest[rc]()) for p,rc in mTEPES.prc]
 
         if mTEPES.pIndHydrogen():
             for ni,nf,cc in mTEPES.pc:

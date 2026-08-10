@@ -13,23 +13,23 @@ from   pyomo.environ import ConcreteModel, Param, Binary
 # Support running this file directly (e.g. VS Code "Run Python File"), where __package__ is empty and the relative imports below have no parent package;
 # fall back to absolute package imports in that case.
 try:
-    from .openTEPES_InputData                  import InputData
-    from .openTEPES_DataConfiguration          import DataConfiguration
-    from .openTEPES_SettingUpVariables         import SettingUpVariables
-    from .openTEPES_InputSource                import open_source
-    from .openTEPES_ModelFormulationObjective  import TotalObjectiveFunction
-    from .openTEPES_ModelFormulationInvestment import InvestmentElecModelFormulation, InvestmentHydroModelFormulation, InvestmentH2ModelFormulation, InvestmentHeatModelFormulation
-    from .openTEPES_ProblemSolvingStageIter    import StageIterativeSolving
-    from .openTEPES_OutputResultsRawDump       import OutputResultsParVarCon
-    from .openTEPES_OutputResultsInvestment    import InvestmentResults
-    from .openTEPES_OutputResultsGeneration    import GenerationOperationResults, GenerationOperationHeatResults
-    from .openTEPES_OutputResultsStorage       import ESSOperationResults, ReservoirOperationResults
-    from .openTEPES_OutputResultsHydrogen      import NetworkH2OperationResults
-    from .openTEPES_OutputResultsHeat          import NetworkHeatOperationResults
-    from .openTEPES_OutputResultsNetwork       import NetworkOperationResults, NetworkMapResults
-    from .openTEPES_OutputResultsEconomic      import MarginalResults, CostSummaryResults, EconomicResults
-    from .openTEPES_OutputResultsSummary       import OperationSummaryResults, FlexibilityResults, ReliabilityResults
-    from .openTEPES_OutputResultsSink          import ResultSink, set_active_sink, clear_active_sink
+    from          .openTEPES_InputData                  import InputData
+    from          .openTEPES_DataConfiguration          import DataConfiguration
+    from          .openTEPES_SettingUpVariables         import SettingUpVariables
+    from          .openTEPES_InputSource                import open_source
+    from          .openTEPES_ModelFormulationObjective  import TotalObjectiveFunction
+    from          .openTEPES_ModelFormulationInvestment import InvestmentElecModelFormulation, InvestmentHydroModelFormulation, InvestmentH2ModelFormulation, InvestmentHeatModelFormulation
+    from          .openTEPES_ProblemSolvingStageIter    import StageIterativeSolving
+    from          .openTEPES_OutputResultsRawDump       import OutputResultsParVarCon
+    from          .openTEPES_OutputResultsInvestment    import InvestmentResults
+    from          .openTEPES_OutputResultsGeneration    import GenerationOperationResults, GenerationOperationHeatResults
+    from          .openTEPES_OutputResultsStorage       import ESSOperationResults, ReservoirOperationResults
+    from          .openTEPES_OutputResultsHydrogen      import NetworkH2OperationResults
+    from          .openTEPES_OutputResultsHeat          import NetworkHeatOperationResults
+    from          .openTEPES_OutputResultsNetwork       import NetworkOperationResults, NetworkMapResults
+    from          .openTEPES_OutputResultsEconomic      import MarginalResults, CostSummaryResults, EconomicResults
+    from          .openTEPES_OutputResultsSummary       import OperationSummaryResults, FlexibilityResults, ReliabilityResults
+    from          .openTEPES_OutputResultsSink          import ResultSink, set_active_sink, clear_active_sink
 except ImportError:
     import sys
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -338,8 +338,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     _TotalSeconds  = time.time() - InitialTime
     _SolveSeconds  = max(_TotalSeconds - _OutputSeconds, 0.0)
     try:
-        _TotalCost = float(mTEPES.eTotalSCost.expr() if hasattr(mTEPES, "eTotalSCost")
-                           else getattr(mTEPES, "vTotalSCost", lambda: float("nan"))())
+        _TotalCost = float(mTEPES.eTotalSCost.expr() if hasattr(mTEPES, "eTotalSCost") else getattr(mTEPES, "vTotalSCost", lambda: float("nan"))())
     except Exception:
         _TotalCost = float("nan")
     # ENS in MWh and HUE in hours — system-wide totals. vENS is in GW (the model's internal power unit), so
@@ -348,13 +347,13 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     _HueH   = float("nan")
     try:
         if hasattr(mTEPES, "vENS") and hasattr(mTEPES, "psnnd"):
-            _ens_psn = {}  # (p, sc, n) -> sum_nd vENS[p,sc,n,nd]
-            for p, sc, n, nd in mTEPES.psnnd:
-                _ens_psn[(p, sc, n)] = _ens_psn.get((p, sc, n), 0.0) + float(mTEPES.vENS[p, sc, n, nd]())
+            _ens_psn = {}  # (p,sc,n) -> sum_nd vENS[p,sc,n,nd]
+            for p,sc,n,nd in mTEPES.psnnd:
+                _ens_psn[(p,sc,n)] = _ens_psn.get((p,sc,n), 0.0) + float(mTEPES.vENS[p,sc,n,nd]())
             _ens_mwh = 0.0
             _hue_h   = 0.0
-            for (p, sc, n), val in _ens_psn.items():
-                _dur = float(mTEPES.pLoadLevelDuration[p, sc, n]())
+            for (p,sc,n), val in _ens_psn.items():
+                _dur = float(mTEPES.pLoadLevelDuration[p,sc,n]())
                 _ens_mwh += val * _dur * 1e3
                 if val > 0:
                     _hue_h += _dur
