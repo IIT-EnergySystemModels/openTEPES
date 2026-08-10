@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 09, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 10, 2026
 """
 
 import os
@@ -37,14 +37,14 @@ FINAL_ITERATION = 9999
 
 # load-level-dependent parameters saved/restored around the sensitivity-analysis stage loop (mode 3): (parameter name, index-set name)
 STAGE_PARAMS = (
-    ('pDuration',      'nn'  ), ('pLoadLevelDuration', 'nn'   ),
-    ('pDemand',        'psnnd'), ('pMaxTheta',         'psnnd'),
-    ('pSystemInertia', 'psnar'), ('pOperReserveUp',    'psnar'), ('pOperReserveDw',     'psnar'),
-    ('pInitialOutput', 'psng' ), ('pInitialUC',        'psng' ), ('pIniInventory',      'psng' ),
-    ('pMinPowerElec',  'psng' ), ('pMaxPowerElec',     'psng' ), ('pMinCharge',         'psng' ),
-    ('pMaxCharge',     'psng' ), ('pMaxPower2ndBlock',  'psng'), ('pMaxCharge2ndBlock', 'psng' ),
-    ('pEnergyInflows', 'psng' ), ('pEnergyOutflows',   'psng' ), ('pMinStorage',        'psng' ),
-    ('pMaxStorage',    'psng' ), ('pInitialSwitch',    'psnln'),
+    ('pDuration',      'nn'   ), ('pLoadLevelDuration', 'nn'   ),
+    ('pDemandElec',    'psnnd'), ('pMaxTheta',          'psnnd'),
+    ('pSystemInertia', 'psnar'), ('pOperReserveUp',     'psnar'), ('pOperReserveDw',     'psnar'),
+    ('pInitialOutput', 'psng' ), ('pInitialUC',         'psng' ), ('pIniInventory',      'psng' ),
+    ('pMinPowerElec',  'psng' ), ('pMaxPowerElec',      'psng' ), ('pMinCharge',         'psng' ),
+    ('pMaxCharge',     'psng' ), ('pMaxPower2ndBlock',  'psng' ), ('pMaxCharge2ndBlock', 'psng' ),
+    ('pEnergyInflows', 'psng' ), ('pEnergyOutflows',    'psng' ), ('pMinStorage',        'psng' ),
+    ('pMaxStorage',    'psng' ), ('pInitialSwitch',     'psnln'),
 )
 
 def RebuildStageAndLoadLevelSets(mTEPES):
@@ -270,7 +270,7 @@ def StageSolve(OptModel, mTEPES, DirName, CaseName, SolverName, pIndLogConsole, 
                 for p,sc in mTEPES.ps:
                     for n1,n in StagePairs:
                         for nd in mTEPES.nd:
-                            mTEPES.pDemand           [p,sc,n1,nd] = mTEPES.pDemand_Saved           [p,sc,n,nd]
+                            mTEPES.pDemandElec       [p,sc,n1,nd] = mTEPES.pDemandElec_Saved       [p,sc,n,nd]
                             mTEPES.pMaxTheta         [p,sc,n1,nd] = mTEPES.pMaxTheta_Saved         [p,sc,n,nd]
                         for ar in mTEPES.ar:
                             mTEPES.pSystemInertia    [p,sc,n1,ar] = mTEPES.pSystemInertia_Saved    [p,sc,n,ar]
