@@ -16,19 +16,19 @@ from   pyomo.common.timing import HierarchicalTimer
 # Support running this file directly (e.g. VS Code "Run Python File"), where __package__ is empty and the
 # relative imports below have no parent package; fall back to absolute package imports in that case.
 try:
-    from .openTEPES_ModelFormulationInvestment        import GenerationOperationElecModelFormulationInvestment, GenerationOperationHeatModelFormulationInvestment
-    from .openTEPES_ModelFormulationElectricity       import GenerationOperationModelFormulationDemand, GenerationOperationModelFormulationStorage, GenerationOperationModelFormulationCommitment, GenerationOperationModelFormulationRampMinTime, NetworkSwitchingModelFormulation, NetworkOperationModelFormulation, NetworkCycles, CycleConstraints
-    from .openTEPES_ModelFormulationHydro             import GenerationOperationModelFormulationReservoir
-    from .openTEPES_ModelFormulationHydrogen          import NetworkH2OperationModelFormulation
-    from .openTEPES_ModelFormulationHeat              import NetworkHeatOperationModelFormulation
+    from          .openTEPES_ModelFormulationInvestment  import GenerationOperationElecModelFormulationInvestment, GenerationOperationHeatModelFormulationInvestment
+    from          .openTEPES_ModelFormulationElectricity import GenerationOperationModelFormulationDemand, GenerationOperationModelFormulationStorage, GenerationOperationModelFormulationCommitment, GenerationOperationModelFormulationRampMinTime, NetworkSwitchingModelFormulation, NetworkOperationModelFormulation, NetworkCycles, CycleConstraints
+    from          .openTEPES_ModelFormulationHydro       import GenerationOperationModelFormulationReservoir
+    from          .openTEPES_ModelFormulationHydrogen    import NetworkH2OperationModelFormulation
+    from          .openTEPES_ModelFormulationHeat        import NetworkHeatOperationModelFormulation
 except ImportError:
     import sys
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    from openTEPES.openTEPES_ModelFormulationInvestment        import GenerationOperationElecModelFormulationInvestment, GenerationOperationHeatModelFormulationInvestment
-    from openTEPES.openTEPES_ModelFormulationElectricity       import GenerationOperationModelFormulationDemand, GenerationOperationModelFormulationStorage, GenerationOperationModelFormulationCommitment, GenerationOperationModelFormulationRampMinTime, NetworkSwitchingModelFormulation, NetworkOperationModelFormulation, NetworkCycles, CycleConstraints
-    from openTEPES.openTEPES_ModelFormulationHydro             import GenerationOperationModelFormulationReservoir
-    from openTEPES.openTEPES_ModelFormulationHydrogen          import NetworkH2OperationModelFormulation
-    from openTEPES.openTEPES_ModelFormulationHeat              import NetworkHeatOperationModelFormulation
+    from openTEPES.openTEPES_ModelFormulationInvestment  import GenerationOperationElecModelFormulationInvestment, GenerationOperationHeatModelFormulationInvestment
+    from openTEPES.openTEPES_ModelFormulationElectricity import GenerationOperationModelFormulationDemand, GenerationOperationModelFormulationStorage, GenerationOperationModelFormulationCommitment, GenerationOperationModelFormulationRampMinTime, NetworkSwitchingModelFormulation, NetworkOperationModelFormulation, NetworkCycles, CycleConstraints
+    from openTEPES.openTEPES_ModelFormulationHydro       import GenerationOperationModelFormulationReservoir
+    from openTEPES.openTEPES_ModelFormulationHydrogen    import NetworkH2OperationModelFormulation
+    from openTEPES.openTEPES_ModelFormulationHeat        import NetworkHeatOperationModelFormulation
 
 timer = HierarchicalTimer()
 
@@ -128,7 +128,7 @@ def StageSolve(OptModel, mTEPES, DirName, CaseName, SolverName, pIndLogConsole, 
 
                 if mTEPES.pIndSequentialSolving() == 3 and st == mTEPES.stt.first() and not hasattr(mTEPES, 'n1'):
                     # load level of the first stage (created once and reused across Benders iterations)
-                    mTEPES.n1 = Set(initialize=mTEPES.nn,  ordered=True, doc='load levels', filter=lambda mTEPES,nn: nn in mTEPES.pDuration and (st,nn) in mTEPES.s2n)
+                    mTEPES.n1 = Set(initialize=[nn for nn in mTEPES.nn if nn in mTEPES.pDuration and (st,nn) in mTEPES.s2n], ordered=True, doc='load levels')
 
                 if mTEPES.pIndSequentialSolving() == 3 and st == mTEPES.stt.first() and itBd == 1:
                     # save all the parameters that depend on load level

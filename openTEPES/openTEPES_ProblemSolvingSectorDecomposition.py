@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 09, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 10, 2026
 """
 
 import math
@@ -11,7 +11,7 @@ from   collections   import defaultdict
 from   pyomo.environ import ConcreteModel, Set, RangeSet, Var, NonNegativeReals, Reals, Constraint, ConstraintList, Objective, minimize, Suffix
 from   pyomo.opt     import SolverFactory
 try:
-    from .openTEPES_ProblemSolving import ProblemSolving
+    from          .openTEPES_ProblemSolving import ProblemSolving
 except ImportError:
     import sys
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -484,7 +484,7 @@ def SectorDecomposition(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLog
 
     # period aggregation over all Scenario and LoadLevel values
     pSectorProxyPeriodSrc = pSectorProxyDF.copy()
-    pPeriodDur = pSectorProxyPeriodSrc.apply(lambda r: mTEPES.pLoadLevelDuration[r['Period'], r['Scenario'], r['LoadLevel']](), axis=1)
+    pPeriodDur = pd.Series(data=[mTEPES.pLoadLevelDuration[p,sc,n]() for p,sc,n in zip(pSectorProxyPeriodSrc['Period'], pSectorProxyPeriodSrc['Scenario'], pSectorProxyPeriodSrc['LoadLevel'])], index=pSectorProxyPeriodSrc.index)
     pConsCols  = [col for col in pSectorProxyPeriodSrc.columns if col.startswith('Consumption_')]
     pMargCols  = [col for col in pSectorProxyPeriodSrc.columns if col.startswith('Marginal_'   )]
     pProdCols  = [col for col in pSectorProxyPeriodSrc.columns if col.startswith('Production_' )]
