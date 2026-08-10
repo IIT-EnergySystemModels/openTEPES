@@ -13,7 +13,7 @@ import pandas            as     pd
 from   collections       import defaultdict
 
 try:
-    from .openTEPES_OutputResultsCommon import _outdir
+    from          .openTEPES_OutputResultsCommon import _outdir
 except ImportError:
     import sys
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -247,21 +247,19 @@ def FlexibilityResults(DirName, CaseName, OptModel, mTEPES):
 
     OutputToFile         = pd.Series(data=[sum(OptModel.vTotalOutput[p,sc,n,g]() for g in g2t[gt] if (p,g) in mTEPES.pg) for p,sc,n,gt in mTEPES.psngt], index=mTEPES.psngt)
     OutputToFile *= 1e3
-    TechnologyOutput     = OutputToFile.loc[:,:,:,:]
     MeanTechnologyOutput = OutputToFile.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).mean()
     NetTechnologyOutput  = pd.Series([0.0] * len(mTEPES.psngt), index=mTEPES.psngt)
     for p,sc,n,gt in mTEPES.psngt:
-        NetTechnologyOutput[p,sc,n,gt] = TechnologyOutput[p,sc,n,gt] - MeanTechnologyOutput[gt]
+        NetTechnologyOutput[p,sc,n,gt] = OutputToFile[p,sc,n,gt] - MeanTechnologyOutput[gt]
     NetTechnologyOutput.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_FlexibilityTechnology_{CaseName}.csv', sep=',')
 
     if mTEPES.es:
         OutputToFile = pd.Series(data=[sum(OptModel.vTotalOutput[p,sc,n,es]() for es in o2e[ot] if (p,es) in mTEPES.pes) for p,sc,n,ot in mTEPES.psnot], index=mTEPES.psnot)
         OutputToFile *= 1e3
-        ESSTechnologyOutput     = -OutputToFile.loc[:,:,:,:]
         MeanESSTechnologyOutput = -OutputToFile.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).mean()
         NetESSTechnologyOutput  = pd.Series([0.0] * len(mTEPES.psnot), index=mTEPES.psnot)
         for p,sc,n,ot in mTEPES.psnot:
-            NetESSTechnologyOutput[p,sc,n,ot] = MeanESSTechnologyOutput[ot] - ESSTechnologyOutput[p,sc,n,ot]
+            NetESSTechnologyOutput[p,sc,n,ot] = MeanESSTechnologyOutput[ot] + OutputToFile[p,sc,n,ot]
         NetESSTechnologyOutput.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_FlexibilityTechnologyESS_{CaseName}.csv', sep=',')
 
     MeanDemand   = pd.Series(data=[sum(mTEPES.pDemandElec[p,sc,n,nd]() for nd in d2a[ar])                  for p,sc,n,ar in mTEPES.psnar], index=mTEPES.psnar).groupby(level=3).mean()

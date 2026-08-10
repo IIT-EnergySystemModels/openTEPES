@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 09, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 10, 2026
 
 Generation operation results, electricity and heat.
 
@@ -168,7 +168,10 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnolo
                     OutputToFile = OutputToFile[[(p,eh) in mTEPES.peh and eh in pEh2TechCharge for p,sc,n,eh in OutputToFile.index]].rename(index=pEh2TechCharge, level=3).groupby(level=[0,1,2,3]).sum().reindex(pIdxPSNET, fill_value=0.0)
                     OutputToFile.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_TechnologyConOperatingReserveDownEnergy_{CaseName}.csv', sep=',')
 
-    if mTEPES.nr and mTEPES.pIndRampReserves() and any(mTEPES.pRampReserveUp[idx] for idx in mTEPES.pRampReserveUp):
+    pHasRampReserveUp = hasattr(mTEPES, 'pRampReserveUp') and any(mTEPES.pRampReserveUp[idx] for idx in mTEPES.pRampReserveUp)
+    pHasRampReserveDw = hasattr(mTEPES, 'pRampReserveDw') and any(mTEPES.pRampReserveDw[idx] for idx in mTEPES.pRampReserveDw)
+
+    if mTEPES.nr and mTEPES.pIndRampReserves() and pHasRampReserveUp:
         OutputToFile = pd.Series(data=[OptModel.vRampReserveUp[p,sc,n,nr]() for p,sc,n,nr in mTEPES.psnnr], index=mTEPES.psnnr)
         OutputToFile = OutputToFile.fillna(0.0)
         OutputToFile *= 1e3
@@ -178,7 +181,7 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnolo
             OutputToFile = OutputToFile[[(p,nr) in mTEPES.pnr and nr in pNr2Tech for p,sc,n,nr in OutputToFile.index]].rename(index=pNr2Tech, level=3).groupby(level=[0,1,2,3]).sum().reindex(pIdxPSNNT, fill_value=0.0)
             OutputToFile.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_TechnologyRampReserveUp_{CaseName}.csv', sep=',')
 
-    if mTEPES.nr and mTEPES.pIndRampReserves() and any(mTEPES.pRampReserveDw[idx] for idx in mTEPES.pRampReserveDw):
+    if mTEPES.nr and mTEPES.pIndRampReserves() and pHasRampReserveDw:
         OutputToFile = pd.Series(data=[OptModel.vRampReserveDw[p,sc,n,nr]() for p,sc,n,nr in mTEPES.psnnr], index=mTEPES.psnnr)
         OutputToFile = OutputToFile.fillna(0.0)
         OutputToFile *= 1e3

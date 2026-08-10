@@ -90,7 +90,9 @@ def ESSOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutpu
 
         if pIndPlotOutput:
             OutputToFile *= -1.0
-            if OutputToFile.sum() < 0.0:
+            # the series is built negative on line 77 and turned positive by the flip above, so the former `sum() < 0.0` test could never
+            # pass and this chart was never produced. Ask whether there is any consumption at all, which also avoids an empty pie.
+            if (OutputToFile != 0.0).any():
                 for p,sc in mTEPES.ps:
                     chart = PiePlots(p, sc, OutputToFile, 'Technology', '%')
                     chart.save(f'{_path}/oT_Plot_TechnologyConsumptionEnergy_{CaseName}_{p}_{sc}.html', embed_options={'renderer': 'svg'})
@@ -218,7 +220,7 @@ def ReservoirOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnolog
         OutputToFile.to_frame(name='WaterValue').reset_index().pivot_table(index=['level_0','level_1','level_3'], columns='level_4', values='WaterValue').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_MarginalWaterValue_{CaseName}.csv', sep=',')
 
     if pIndPlotOutput and len(OutputToFile):
-        WaterValue = OutputToFile.to_frame(name='WaterValue').reset_index().pivot_table(index=['level_0','level_1','level_3','level_4'], values='WaterValue').rename_axis(['level_0','level_1','level_2','level_3'], axis=0).loc[:,:,:,:]
+        WaterValue = OutputToFile.to_frame(name='WaterValue').reset_index().pivot_table(index=['level_0','level_1','level_3','level_4'], values='WaterValue').rename_axis(['level_0','level_1','level_2','level_3'], axis=0)
         for p,sc in mTEPES.ps:
             chart = LinePlots(p, sc, WaterValue, 'Generator', 'LoadLevel', 'EUR/dam3')
             chart.save(f'{_path}/oT_Plot_MarginalWaterValue_{CaseName}_{p}_{sc}.html', embed_options={'renderer': 'svg'})

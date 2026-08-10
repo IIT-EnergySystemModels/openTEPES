@@ -161,7 +161,9 @@ def SettingUpVariables(OptModel, mTEPES):
         else:
             OptModel.vLineCommit           = Var(mTEPES.psnla, within=Binary,           doc='line switching      of the electric line              {0,1}')
 
-        if sum(mTEPES.pIndBinLineSwitch[:,:,:]):
+        # pIndBinLineSwitch is Binary and not mutable, so Param[idx] is a plain value: any() short-circuits on the first switchable line
+        # instead of summing the whole 3-D Param, and must NOT be called with ()
+        if any(mTEPES.pIndBinLineSwitch[idx] for idx in mTEPES.pIndBinLineSwitch):
             if mTEPES.pIndBinSingleNode() == 0 and mTEPES.pIndBinLineCommit() == 0:
                 OptModel.vLineOnState      = Var(mTEPES.psnla, within=UnitInterval,     doc='switching on  state of the electric line              [0,1]')
                 OptModel.vLineOffState     = Var(mTEPES.psnla, within=UnitInterval,     doc='switching off state of the electric line              [0,1]')
@@ -355,7 +357,7 @@ def SettingUpVariables(OptModel, mTEPES):
                 nFixedVariables += 1
 
         # no on/off state for lines if no switching decision is modeled
-        if sum(mTEPES.pIndBinLineSwitch[:,:,:]):
+        if any(mTEPES.pIndBinLineSwitch[idx] for idx in mTEPES.pIndBinLineSwitch):
              for p,sc,n,ni,nf,cc in mTEPES.psnla:
                  if mTEPES.pIndBinLineSwitch[ni,nf,cc] == 0:
                      OptModel.vLineOnState [p,sc,n,ni,nf,cc].fix(0)
