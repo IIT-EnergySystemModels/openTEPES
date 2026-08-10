@@ -485,9 +485,6 @@ def SectorDecomposition(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLog
     # period aggregation over all Scenario and LoadLevel values
     pSectorProxyPeriodSrc = pSectorProxyDF.copy()
     pPeriodDur = pd.Series(data=[mTEPES.pLoadLevelDuration[p,sc,n]() for p,sc,n in zip(pSectorProxyPeriodSrc['Period'], pSectorProxyPeriodSrc['Scenario'], pSectorProxyPeriodSrc['LoadLevel'])], index=pSectorProxyPeriodSrc.index)
-    pConsCols  = [col for col in pSectorProxyPeriodSrc.columns if col.startswith('Consumption_')]
-    pMargCols  = [col for col in pSectorProxyPeriodSrc.columns if col.startswith('Marginal_'   )]
-    pProdCols  = [col for col in pSectorProxyPeriodSrc.columns if col.startswith('Production_' )]
     if pConsCols:
         pSectorProxyPeriodSrc[pConsCols] = pSectorProxyPeriodSrc[pConsCols].mul(pPeriodDur, axis=0)*1e-3
     if pProdCols:
