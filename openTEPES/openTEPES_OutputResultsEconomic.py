@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 10, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 11, 2026
 
 Marginal, cost-summary, and economic results.
 
@@ -274,20 +274,20 @@ def CostSummaryResults(DirName, CaseName, OptModel, mTEPES):
         HeatInvCost = pd.Series(data=[0.0                                                                                                                                                                     for p in mTEPES.p], index=mTEPES.p).to_frame(name='Investment Cost Heat'      ).stack()
     # cache the (scenario, load level) product once; it is reused by every operation-cost series below instead of rebuilding the Pyomo set product for each period and each cost
     pScenFactor = {(p,sc): mTEPES.pDiscountedWeight[p] * mTEPES.pScenProb[p,sc]() for p,sc in mTEPES.ps}
-    pScN            = [(sc,n) for sc,n in mTEPES.sc*mTEPES.n]
-    GenCost         = pd.Series(data=[sum(pScenFactor[p,sc] * OptModel.vTotalGCost      [p,sc,n]()  for sc,n in pScN if (p,sc) in mTEPES.ps ) for p in mTEPES.p], index=mTEPES.p).to_frame(name='Operation Cost Generation' ).stack()
-    ConCost         = pd.Series(data=[sum(pScenFactor[p,sc] * OptModel.vTotalCCost      [p,sc,n]()  for sc,n in pScN if (p,sc) in mTEPES.ps ) for p in mTEPES.p], index=mTEPES.p).to_frame(name='Operation Cost Consumption').stack()
-    EmiCost         = pd.Series(data=[sum(pScenFactor[p,sc] * OptModel.vTotalECost      [p,sc,n]()  for sc,n in pScN if (p,sc) in mTEPES.ps ) for p in mTEPES.p], index=mTEPES.p).to_frame(name='Emission Cost'             ).stack()
-    NetCost         = pd.Series(data=[sum(pScenFactor[p,sc] * OptModel.vTotalNCost      [p,sc,n]()  for sc,n in pScN if (p,sc) in mTEPES.ps ) for p in mTEPES.p], index=mTEPES.p).to_frame(name='Operation Cost Network'    ).stack()
-    ElecRelCost     = pd.Series(data=[sum(pScenFactor[p,sc] * OptModel.vTotalRElecCost  [p,sc,n]()  for sc,n in pScN if (p,sc) in mTEPES.ps ) for p in mTEPES.p], index=mTEPES.p).to_frame(name='Reliability Cost'          ).stack()
+    pSNofP          = {p: [(sc,n) for sc in mTEPES.sc if (p,sc) in mTEPES.ps for n in mTEPES.n] for p in mTEPES.p}
+    GenCost         = pd.Series(data=[sum(pScenFactor[p,sc] * OptModel.vTotalGCost    [p,sc,n]() for sc,n in pSNofP[p]) for p in mTEPES.p], index=mTEPES.p).to_frame(name='Operation Cost Generation' ).stack()
+    ConCost         = pd.Series(data=[sum(pScenFactor[p,sc] * OptModel.vTotalCCost    [p,sc,n]() for sc,n in pSNofP[p]) for p in mTEPES.p], index=mTEPES.p).to_frame(name='Operation Cost Consumption').stack()
+    EmiCost         = pd.Series(data=[sum(pScenFactor[p,sc] * OptModel.vTotalECost    [p,sc,n]() for sc,n in pSNofP[p]) for p in mTEPES.p], index=mTEPES.p).to_frame(name='Emission Cost'             ).stack()
+    NetCost         = pd.Series(data=[sum(pScenFactor[p,sc] * OptModel.vTotalNCost    [p,sc,n]() for sc,n in pSNofP[p]) for p in mTEPES.p], index=mTEPES.p).to_frame(name='Operation Cost Network'    ).stack()
+    ElecRelCost     = pd.Series(data=[sum(pScenFactor[p,sc] * OptModel.vTotalRElecCost[p,sc,n]() for sc,n in pSNofP[p]) for p in mTEPES.p], index=mTEPES.p).to_frame(name='Reliability Cost'          ).stack()
     if mTEPES.pIndHydrogen():
-        H2RelCost   = pd.Series(data=[sum(pScenFactor[p,sc] * OptModel.vTotalRH2Cost    [p,sc,n]()  for sc,n in pScN if (p,sc) in mTEPES.ps ) for p in mTEPES.p], index=mTEPES.p).to_frame(name='Reliability Cost Hydrogen' ).stack()
+        H2RelCost   = pd.Series(data=[sum(pScenFactor[p,sc] * OptModel.vTotalRH2Cost  [p,sc,n]() for sc,n in pSNofP[p]) for p in mTEPES.p], index=mTEPES.p).to_frame(name='Reliability Cost Hydrogen' ).stack()
     else:
-        H2RelCost   = pd.Series(data=[0.0                                                                                                     for p in mTEPES.p], index=mTEPES.p).to_frame(name='Reliability Cost Hydrogen' ).stack()
+        H2RelCost   = pd.Series(data=[0.0                                                                               for p in mTEPES.p], index=mTEPES.p).to_frame(name='Reliability Cost Hydrogen' ).stack()
     if mTEPES.pIndHeat():
-        HeatRelCost = pd.Series(data=[sum(pScenFactor[p,sc] * OptModel.vTotalRHeatCost  [p,sc,n]()  for sc,n in pScN if (p,sc) in mTEPES.ps ) for p in mTEPES.p], index=mTEPES.p).to_frame(name='Reliability Cost Heat'     ).stack()
+        HeatRelCost = pd.Series(data=[sum(pScenFactor[p,sc] * OptModel.vTotalRHeatCost[p,sc,n]() for sc,n in pSNofP[p]) for p in mTEPES.p], index=mTEPES.p).to_frame(name='Reliability Cost Heat'     ).stack()
     else:
-        HeatRelCost = pd.Series(data=[0.0                                                                                                     for p in mTEPES.p], index=mTEPES.p).to_frame(name='Reliability Cost Heat'     ).stack()
+        HeatRelCost = pd.Series(data=[0.0                                                                               for p in mTEPES.p], index=mTEPES.p).to_frame(name='Reliability Cost Heat'     ).stack()
     CostSummary    = pd.concat([GenInvCost, GenRetCost, NetInvCost, RsrInvCost, H2InvCost, HeatInvCost, GenCost, ConCost, EmiCost, NetCost, ElecRelCost, H2RelCost, HeatRelCost]).reset_index().rename(columns={'level_0': 'Period', 'level_1': 'Cost', 0: 'MEUR'})
 
     CostSummary['MEUR/year'] = CostSummary['MEUR']

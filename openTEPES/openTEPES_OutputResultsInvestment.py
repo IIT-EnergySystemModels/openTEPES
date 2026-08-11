@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 05, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 11, 2026
 
 Investment and retirement results.
 
@@ -14,7 +14,7 @@ import altair            as     alt
 from   collections       import defaultdict
 
 try:
-    from .openTEPES_OutputResultsCommon import _outdir
+    from          .openTEPES_OutputResultsCommon import _outdir
 except ImportError:
     import sys
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -35,6 +35,8 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutput,
     g2t = defaultdict(set)
     for gt,g in mTEPES.t2g:
         g2t[gt].add(g)
+
+    pGen2Tech = {g: gt for gt in mTEPES.gt for g in g2t[gt]}
 
     if mTEPES.eb:
 
@@ -70,23 +72,25 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutput,
                 chart = alt.Chart(GenInvestToArea.reset_index()).mark_bar().encode(x='Generator:O', y='sum(MW):Q', color='Area:N', column='Period:N').properties(width=600, height=400)
                 chart.save(f'{_path}/oT_Plot_GenerationInvestmentPerArea_{CaseName}.html', embed_options={'renderer':'svg'})
             if pIndPlotOutput or pIndAreaOutput:
-                sPARGT = [(p,ar,gt) for p,ar in mTEPES.par for gt in mTEPES.gt if sum(1 for eb in g2t[gt] if (p,eb) in mTEPES.peb)]
+                pTechHasCand = {(p,gt) for p in mTEPES.p for gt in mTEPES.gt if any((p,eb) in mTEPES.peb for eb in g2t[gt])}
+                sPARGT       = [(p,ar,gt) for p,ar in mTEPES.par for gt in mTEPES.gt if (p,gt) in pTechHasCand]
                 if len(sPARGT):
-                    TechInvestToArea = pd.Series(data=[sum(OutputToFile['MW'][p,eb] for eb in mTEPES.eb if (p,eb) in mTEPES.peb and eb in g2t[gt] and eb in g2a[ar]) for p,ar,gt in sPARGT], index=pd.MultiIndex.from_tuples(sPARGT)).to_frame(name='MW')
+                    pInvestMW        = OutputToFile['MW'].to_dict()
+                    TechInvestToArea = pd.Series(data=[sum(pInvestMW[p,eb] for eb in g2t[gt] & g2a[ar] if (p,eb) in mTEPES.peb) for p,ar,gt in sPARGT], index=pd.MultiIndex.from_tuples(sPARGT)).to_frame(name='MW')
                     TechInvestToArea.index.names = ['Period', 'Area', 'Technology']
                     if pIndPlotOutput:
                         chart = alt.Chart(TechInvestToArea.reset_index()).mark_bar().encode(x='Technology:O', y='sum(MW):Q', color='Area:N', column='Period:N').properties(width=600, height=400)
                         chart.save(f'{_path}/oT_Plot_TechnologyInvestmentPerArea_{CaseName}.html', embed_options={'renderer':'svg'})
                     if pIndAreaOutput:
                         for ar in mTEPES.ar:
-                            if sum(1 for eb in mTEPES.eb if eb in g2a[ar]):
+                            if g2a[ar]:
                                 TechInvestArea = TechInvestToArea.xs(ar, level='Area').copy()
                                 TechInvestArea['MW'] = TechInvestArea['MW'].round(2)
                                 TechInvestArea.reset_index().pivot_table(index=['Period'], columns=['Technology'], values='MW', aggfunc='sum', fill_value=0).rename_axis(['Period'], axis=0).oT.write(f'{_path}/oT_Result_TechnologyInvestment_{CaseName}_{ar}.csv', index=True, sep=',')
 
         if pIndTechOutput:
             # Ordering data to plot the investment decision
-            OutputResults1 = pd.Series(data=[gt for p,eb,gt in mTEPES.peb*mTEPES.gt if eb in g2t[gt]], index=mTEPES.peb)
+            OutputResults1 = pd.Series(data=[pGen2Tech[eb] for p,eb in mTEPES.peb], index=mTEPES.peb)
             OutputResults1 = OutputResults1.to_frame(name='Technology')
             OutputResults2 = OutputToFile
             OutputResults  = pd.concat([OutputResults1, OutputResults2], axis=1)
@@ -106,7 +110,7 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutput,
             OutputToFile   = pd.Series(data=[mTEPES.pDiscountedWeight[p] * mTEPES.pGenInvestCost[eb] * OptModel.vGenerationInvest[p,eb]() for p,eb in mTEPES.peb], index=mTEPES.peb)
             OutputToFile   = OutputToFile.fillna(0).to_frame(name='MEUR').reset_index().rename(columns={'level_0': 'Period', 'level_1': 'Generator'}).set_index(['Period', 'Generator'])
 
-            OutputResults1 = pd.Series(data=[gt for p,eb,gt in mTEPES.peb*mTEPES.gt if eb in g2t[gt]], index=mTEPES.peb)
+            OutputResults1 = pd.Series(data=[pGen2Tech[eb] for p,eb in mTEPES.peb], index=mTEPES.peb)
             OutputResults1 = OutputResults1.to_frame(name='Technology')
             OutputResults2 = OutputToFile
             OutputResults  = pd.concat([OutputResults1, OutputResults2], axis=1)
@@ -120,7 +124,10 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutput,
 
             GenTechInvestCost = pd.Series(data=[sum(mTEPES.pDiscountedWeight[p] * mTEPES.pGenInvestCost[eb]           * OptModel.vGenerationInvest[p,eb]() for      eb in                    mTEPES.eb if eb in g2t[gt] and (p,     eb) in mTEPES.peb  ) for p,gt in mTEPES.p*mTEPES.gt], index=mTEPES.p*mTEPES.gt)
             GenTechInvestCost *= 1e3
-            GenTechInjection  = pd.Series(data=[sum(mTEPES.pDiscountedWeight[p] * mTEPES.pLoadLevelDuration[p,sc,n]() * OptModel.vTotalOutput[p,sc,n,eb]() for sc,n,eb in mTEPES.sc*mTEPES.n*mTEPES.eb if eb in g2t[gt] and (p,sc,n,eb) in mTEPES.psneb) for p,gt in mTEPES.p*mTEPES.gt], index=mTEPES.p*mTEPES.gt)
+            pTechInjection    = defaultdict(float)
+            for p,sc,n,eb in mTEPES.psneb:
+                pTechInjection[p,pGen2Tech[eb]] += mTEPES.pDiscountedWeight[p] * mTEPES.pLoadLevelDuration[p,sc,n]() * OptModel.vTotalOutput[p,sc,n,eb]()
+            GenTechInjection  = pd.Series(data=[pTechInjection[p,gt] for p,gt in mTEPES.p*mTEPES.gt], index=mTEPES.p*mTEPES.gt)
             GenTechInjection.name = 'Generation'
             MarketResultsInv  = pd.concat([MarketResultsInv, GenTechInjection], axis=1)
             LCOE = GenTechInvestCost.div(GenTechInjection + pEpsilon)
@@ -132,7 +139,7 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutput,
                 chart = alt.Chart(OutputResults.reset_index()).mark_bar().encode(x='Technology:O', y='sum(MEUR):Q', color='Technology:N', column='Period:N').properties(width=600, height=400)
                 chart.save(f'{_path}/oT_Plot_TechnologyInvestmentCost_{CaseName}.html', embed_options={'renderer':'svg'})
 
-            sPGT = [(p,gt) for p,gt in mTEPES.p*mTEPES.gt if sum(1 for eb in mTEPES.eb if (p,eb) in mTEPES.peb and eb in g2t[gt])]
+            sPGT = [(p,gt) for p,gt in mTEPES.p*mTEPES.gt if any((p,eb) in mTEPES.peb for eb in g2t[gt])]
             OutputResults = pd.Series(data=[OutputResults['MEUR'][p,gt]/(OutputResults0['MW'][p,gt]+pEpsilon) for p,gt in sPGT], index=pd.Index(sPGT)).to_frame(name='MEUR/MW')
             OutputResults.reset_index().pivot_table(index=['level_0'], columns='level_1', values='MEUR/MW').rename_axis(['Period'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_TechnologyInvestmentCostPerMW_{CaseName}.csv', index=True, sep=',')
 
@@ -167,14 +174,15 @@ def InvestmentResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutput,
                 GenRetireToArea.index.names = ['Period', 'Area', 'Generator']
                 chart = alt.Chart(GenRetireToArea.reset_index()).mark_bar().encode(x='Generator:O', y='sum(MW):Q', color='Area:N', column='Period:N').properties(width=600, height=400)
                 chart.save(f'{_path}/oT_Plot_GenerationRetirementPerArea_{CaseName}.html', embed_options={'renderer':'svg'})
-                TechRetireToArea = pd.Series(data=[sum(OutputToFile['MW'][p,gd] for gd in mTEPES.gd if (p,gd) in mTEPES.pgd and gd in g2t[gt] and gd in g2a[ar]) for p,ar,gt in mTEPES.par*mTEPES.gt], index=mTEPES.par*mTEPES.gt).to_frame(name='MW')
+                pRetireMW        = OutputToFile['MW'].to_dict()
+                TechRetireToArea = pd.Series(data=[sum(pRetireMW[p,gd] for gd in mTEPES.gd if (p,gd) in mTEPES.pgd and gd in g2t[gt] and gd in g2a[ar]) for p,ar,gt in mTEPES.par*mTEPES.gt], index=mTEPES.par*mTEPES.gt).to_frame(name='MW')
                 TechRetireToArea.index.names = ['Period', 'Area', 'Technology'    ]
-                chart = alt.Chart(TechRetireToArea.reset_index()).mark_bar().encode(x='Technology:O',     y='sum(MW):Q', color='Area:N', column='Period:N').properties(width=600, height=400)
+                chart = alt.Chart(TechRetireToArea.reset_index()).mark_bar().encode(x='Technology:O', y='sum(MW):Q', color='Area:N', column='Period:N').properties(width=600, height=400)
                 chart.save(f'{_path}/oT_Plot_TechnologyRetirementPerArea_{CaseName}.html', embed_options={'renderer':'svg'})
 
         if pIndTechOutput:
             # Ordering data to plot the retirement decision
-            OutputResults1 = pd.Series(data=[gt for p,gd,gt in mTEPES.pgd*mTEPES.gt if gd in g2t[gt]], index=mTEPES.pgd)
+            OutputResults1 = pd.Series(data=[pGen2Tech[gd] for p,gd in mTEPES.pgd], index=mTEPES.pgd)
             OutputResults1 = OutputResults1.to_frame(name='Technology')
             OutputResults2 = OutputToFile
             OutputResults  = pd.concat([OutputResults1, OutputResults2], axis=1)
