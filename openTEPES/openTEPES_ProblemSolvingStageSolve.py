@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 10, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 11, 2026
 """
 
 import os
@@ -128,7 +128,7 @@ def StageSolve(OptModel, mTEPES, DirName, CaseName, SolverName, pIndLogConsole, 
 
                 if mTEPES.pIndSequentialSolving() == 3 and st == mTEPES.stt.first() and not hasattr(mTEPES, 'n1'):
                     # load level of the first stage (created once and reused across Benders iterations)
-                    mTEPES.n1 = Set(initialize=[nn for nn in mTEPES.nn if nn in mTEPES.pDuration and (st,nn) in mTEPES.s2n], ordered=True, doc='load levels')
+                    mTEPES.n1 = Set(initialize=[nn for nn in mTEPES.nn if nn in mTEPES.pDuration and (p,sc,st,nn) in mTEPES.s2n], ordered=True, doc='load levels')
 
                 if mTEPES.pIndSequentialSolving() == 3 and st == mTEPES.stt.first() and itBd == 1:
                     # save all the parameters that depend on load level

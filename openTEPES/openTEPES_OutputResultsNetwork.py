@@ -15,15 +15,16 @@ import math
 import pandas            as     pd
 import plotly.io         as     pio
 import plotly.graph_objs as     go
+from   collections       import defaultdict
 from   colour            import Color
 
 try:
-    from .openTEPES_OutputResultsCommon import _outdir
-    from .openTEPES_OutputResultsMapCommon import make_flow_series, pick_snapshot
+    from          .openTEPES_OutputResultsCommon    import _outdir
+    from          .openTEPES_OutputResultsMapCommon import make_flow_series, pick_snapshot
 except ImportError:
     import sys
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    from openTEPES.openTEPES_OutputResultsCommon import _outdir
+    from openTEPES.openTEPES_OutputResultsCommon    import _outdir
     from openTEPES.openTEPES_OutputResultsMapCommon import make_flow_series, pick_snapshot
 
 
@@ -34,19 +35,13 @@ def NetworkOperationResults(DirName, CaseName, OptModel, mTEPES):
 
     # cache the Pyomo evaluations reused across the outputs below. Each call to a variable/parameter (e.g. vFlowElec[...]()) is costly, so evaluate the electric
     # flow, the load-level duration and the period probability once per index and reuse the results instead of re-querying the model for every output file.
-    Flow = {}
-    Dur  = {}
-    Prob = {}
-    for Key in mTEPES.psnla:
-        Flow[Key] = OptModel.vFlowElec[Key]()
-        Psn = Key[:3]
-        Ps  = Key[:2]
-        if Psn not in Dur:
-            Dur[Psn] = mTEPES.pLoadLevelDuration[Psn]()
-        if Ps not in Prob:
-            Prob[Ps] = mTEPES.pPeriodProb[Ps]()
+    # pLoadLevelDuration and pPeriodProb are declared over psn and ps, so build their caches from those sets directly. Deriving them from psnla instead cost one
+    # tuple slice and one membership test per line and load level, to end up with the very same |psn| and |ps| entries.
+    Dur  = {Psn: mTEPES.pLoadLevelDuration[Psn]() for Psn in mTEPES.psn  }
+    Prob = {Ps:  mTEPES.pPeriodProb       [Ps ]() for Ps  in mTEPES.ps   }
+    Flow = {Key: OptModel.vFlowElec       [Key]() for Key in mTEPES.psnla}
 
-    if sum(mTEPES.pIndBinLineSwitch[:, :, :]):
+    if any(mTEPES.pIndBinLineSwitch[idx] for idx in mTEPES.pIndBinLineSwitch):
         if mTEPES.lc:
             OutputToFile = pd.Series(data=[OptModel.vLineCommit  [p,sc,n,ni,nf,cc]() for p,sc,n,ni,nf,cc in mTEPES.psnla], index=mTEPES.psnla)
             OutputToFile.index.names = ['Period', 'Scenario', 'LoadLevel', 'InitialNode', 'FinalNode', 'Circuit']
@@ -88,7 +83,7 @@ def NetworkOperationResults(DirName, CaseName, OptModel, mTEPES):
         LineLength = {la: mTEPES.pLineLength[la]() for la in mTEPES.la}
         OutputResults = pd.Series(data=[Flow[p,sc,n,ni,nf,cc]*Dur[p,sc,n]*Prob[p,sc]*LineLength[ni,nf,cc]*1e-3 for p,sc,n,ni,nf,cc in mTEPES.psnla], index=mTEPES.psnla)
         OutputResults.index.names = ['Scenario', 'Period', 'LoadLevel', 'InitialNode', 'FinalNode', 'Circuit']
-        OutputResults = OutputResults.reset_index().groupby(['InitialNode', 'FinalNode', 'Circuit']).sum(numeric_only=True)[0]
+        OutputResults = OutputResults.groupby(level=[3,4,5]).sum()
         OutputResults.to_frame(name='GWh-Mkm').rename_axis(['InitialNode', 'FinalNode', 'Circuit'], axis=0).reset_index().oT.write(f'{_path}/oT_Result_NetworkEnergyElecTransport_{CaseName}.csv', index=False, sep=',')
 
     # tolerance to avoid division by 0
@@ -119,13 +114,8 @@ def NetworkOperationResults(DirName, CaseName, OptModel, mTEPES):
             maxAbs   = float(OutputToFile.abs().max())
             print(f'WARNING: voltage angle bound pMaxTheta = pi/2 is (nearly) binding in {nBinding} (period, scenario, loadlevel, node) entries; max|theta| = {maxAbs:.6f} rad ({maxAbs/pMaxThetaVal*100:.2f} %% of pi/2).\nInspect oT_Result_NetworkAngle_{CaseName}.csv -- the bound may be clipping the DC-OPF solution.')
 
-    # vENS feeds both the power (MW) and the energy (GWh) files, so evaluate it once
-    Ens = {}
-    for Key in mTEPES.psnnd:
-        Ens[Key] = OptModel.vENS[Key]()
-        Psn = Key[:3]
-        if Psn not in Dur:
-            Dur[Psn] = mTEPES.pLoadLevelDuration[Psn]()
+    # vENS feeds both the power (MW) and the energy (GWh) files, so evaluate it once. Dur already covers every load level, so it needs no completion here
+    Ens = {Key: OptModel.vENS[Key]() for Key in mTEPES.psnnd}
 
     OutputToFile = pd.Series(data=[Ens[k] for k in mTEPES.psnnd], index=mTEPES.psnnd)
     OutputToFile *= 1e3
@@ -151,16 +141,14 @@ def NetworkMapResults(DirName, CaseName, OptModel, mTEPES):
         # Nodes data
         pio.renderers.default = 'chrome'
 
+        # build each column in one pass instead of writing three scalar .loc cells per node. Nodes that have no zone keep the defaults the columns used to be
+        # initialised with, which is what the loop left them at by never visiting them
+        pNode2Zone = dict(mTEPES.ndzn)
         loc_df = pd.Series(data=[mTEPES.pNodeLat[i] for i in mTEPES.nd], index=mTEPES.nd).to_frame(name='Lat')
-        loc_df['Lon'   ] =  0.0
-        loc_df['Zone'  ] =  ''
-        loc_df['Demand'] =  0.0
+        loc_df['Lon'   ] = [mTEPES.pNodeLon[nd]                 if nd in pNode2Zone else 0.0 for nd in loc_df.index]
+        loc_df['Zone'  ] = [pNode2Zone[nd]                      if nd in pNode2Zone else ''  for nd in loc_df.index]
+        loc_df['Demand'] = [mTEPES.pDemandElec[p,sc,n,nd]()*1e3 if nd in pNode2Zone else 0.0 for nd in loc_df.index]
         loc_df['Size'  ] = 15.0
-
-        for nd,zn in mTEPES.ndzn:
-            loc_df.loc[nd,'Lon'   ] = mTEPES.pNodeLon[nd]
-            loc_df.loc[nd,'Zone'  ] = zn
-            loc_df.loc[nd,'Demand'] = mTEPES.pDemandElec[p,sc,n,nd]()*1e3
 
         loc_df = loc_df.reset_index().rename(columns={'Type': 'Scenario'}, inplace=False)
 
@@ -176,54 +164,69 @@ def NetworkMapResults(DirName, CaseName, OptModel, mTEPES):
                                      'NTCBck': pd.Series(data=[mTEPES.pLineNTCBck[la] * 1e3 + pEpsilon for la in mTEPES.la], index=mTEPES.la)}, index=mTEPES.la)
 
         line_df = line_df.groupby(level=[0,1]).sum(numeric_only=False)
-        line_df['vFlowElec'  ] = 0.0
-        line_df['utilization'] = 0.0
-        line_df['color'      ] = ''
-        line_df['voltage'    ] = 0.0
-        line_df['width'      ] = 0.0
-        line_df['lon'        ] = 0.0
-        line_df['lat'        ] = 0.0
-        line_df['ni'         ] = ''
-        line_df['nf'         ] = ''
-        line_df['cc'         ] = 0
 
         ncolors = 11
         colors = list(Color('lightgreen').range_to(Color('darkred'), ncolors))
         colors = ['rgb'+str(x.rgb) for x in colors]
 
+        # accumulate per node pair in plain dictionaries and write the columns once at the end. Reading and writing line_df.loc[(ni,nf),'col'] meant about
+        # twenty-five scalar lookups on a MultiIndex per line. The sequence of updates below is unchanged, so each derived value still comes from the same
+        # circuit as before: the utilization and the colour from the accumulated flow, the voltage and the width from the last circuit of the pair.
+        pMW     = OutputToFile['MW'].to_dict()
+        pNTCFrw = line_df['NTCFrw' ].to_dict()
+        pNTCBck = line_df['NTCBck' ].to_dict()
+        pFlow   = defaultdict(float)
+        pCirc   = defaultdict(int  )
+        pUtil   = {}
+        pColor  = {}
+        pVolt   = {}
+        pWidth  = {}
+        pLon    = {}
+        pLat    = {}
+
         for ni,nf,cc in mTEPES.la:
             if (p,ni,nf,cc) in mTEPES.pla:
-                line_df.loc[(ni,nf),'vFlowElec'  ] += OutputToFile['MW'][p,sc,n,ni,nf,cc]
-                line_df.loc[(ni,nf),'utilization']  = max(line_df.loc[(ni,nf),'vFlowElec']/line_df.loc[(ni,nf),'NTCFrw'],-line_df.loc[(ni,nf),'vFlowElec']/line_df.loc[(ni,nf),'NTCBck'])*100.0
-                line_df.loc[(ni,nf),'lon'        ]  = (mTEPES.pNodeLon[ni]+mTEPES.pNodeLon[nf]) * 0.5
-                line_df.loc[(ni,nf),'lat'        ]  = (mTEPES.pNodeLat[ni]+mTEPES.pNodeLat[nf]) * 0.5
-                line_df.loc[(ni,nf),'ni'         ]  = ni
-                line_df.loc[(ni,nf),'nf'         ]  = nf
-                line_df.loc[(ni,nf),'cc'         ] += 1
+                pFlow[ni,nf] += pMW[p,sc,n,ni,nf,cc]
+                pUtil[ni,nf]  = max(pFlow[ni,nf]/pNTCFrw[ni,nf],-pFlow[ni,nf]/pNTCBck[ni,nf])*100.0
+                pLon [ni,nf]  = (mTEPES.pNodeLon[ni]+mTEPES.pNodeLon[nf]) * 0.5
+                pLat [ni,nf]  = (mTEPES.pNodeLat[ni]+mTEPES.pNodeLat[nf]) * 0.5
+                pCirc[ni,nf] += 1
 
                 for i in range(len(colors)):
-                    if 10*i <= line_df.loc[(ni,nf),'utilization'] <= 10*(i+1):
-                        line_df.loc[(ni,nf),'color'] = colors[i]
+                    if 10*i <= pUtil[ni,nf] <= 10*(i+1):
+                        pColor[ni,nf] = colors[i]
 
                 # assigning black color to lines with utilization > 100%
-                if line_df.loc[(ni,nf),'utilization'] > 100:
-                    line_df.loc[(ni,nf),'color'] = 'rgb(0,0,0)'
+                if pUtil[ni,nf] > 100:
+                    pColor[ni,nf] = 'rgb(0,0,0)'
 
-                line_df.loc[(ni,nf),'voltage'] = mTEPES.pLineVoltage[ni,nf,cc]
-                if   700 < line_df.loc[(ni,nf),'voltage'] <= 900:
-                    line_df.loc[(ni,nf),'width'] = 4
-                elif 500 < line_df.loc[(ni,nf),'voltage'] <= 700:
-                    line_df.loc[(ni,nf),'width'] = 3
-                elif 350 < line_df.loc[(ni,nf),'voltage'] <= 500:
-                    line_df.loc[(ni,nf),'width'] = 2.5
-                elif 290 < line_df.loc[(ni,nf),'voltage'] <= 350:
-                    line_df.loc[(ni,nf),'width'] = 2
-                elif 200 < line_df.loc[(ni,nf),'voltage'] <= 290:
-                    line_df.loc[(ni,nf),'width'] = 1.5
-                elif  50 < line_df.loc[(ni,nf),'voltage'] <= 200:
-                    line_df.loc[(ni,nf),'width'] = 1
+                pVolt[ni,nf] = mTEPES.pLineVoltage[ni,nf,cc]
+                if   700 < pVolt[ni,nf] <= 900:
+                    pWidth[ni,nf] = 4
+                elif 500 < pVolt[ni,nf] <= 700:
+                    pWidth[ni,nf] = 3
+                elif 350 < pVolt[ni,nf] <= 500:
+                    pWidth[ni,nf] = 2.5
+                elif 290 < pVolt[ni,nf] <= 350:
+                    pWidth[ni,nf] = 2
+                elif 200 < pVolt[ni,nf] <= 290:
+                    pWidth[ni,nf] = 1.5
+                elif  50 < pVolt[ni,nf] <= 200:
+                    pWidth[ni,nf] = 1
                 else:
-                    line_df.loc[(ni,nf),'width'] = 0.5
+                    pWidth[ni,nf] = 0.5
+
+        # the defaults below are the ones the columns used to be initialised with, so node pairs left untouched by the loop keep exactly the same values
+        line_df['vFlowElec'  ] = [pFlow .get(la, 0.0) for la in line_df.index]
+        line_df['utilization'] = [pUtil .get(la, 0.0) for la in line_df.index]
+        line_df['color'      ] = [pColor.get(la, '' ) for la in line_df.index]
+        line_df['voltage'    ] = [pVolt .get(la, 0.0) for la in line_df.index]
+        line_df['width'      ] = [pWidth.get(la, 0.0) for la in line_df.index]
+        line_df['lon'        ] = [pLon  .get(la, 0.0) for la in line_df.index]
+        line_df['lat'        ] = [pLat  .get(la, 0.0) for la in line_df.index]
+        line_df['ni'         ] = [ni if (ni,nf) in pCirc else '' for ni,nf in line_df.index]
+        line_df['nf'         ] = [nf if (ni,nf) in pCirc else '' for ni,nf in line_df.index]
+        line_df['cc'         ] = [pCirc .get(la, 0  ) for la in line_df.index]
 
         # Rounding to decimals
         line_df = line_df.round(decimals=2)
