@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 13, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 05, 2026
 
 openTEPES.openTEPES_ModelFormulationElectricity — electricity-sector formulation: demand balance, operating reserves and inertia, storage (ESS),
 unit commitment and ramping, line switching, DC network operation, and the cycle-based network constraints. Granular per-concern functions so
@@ -153,15 +153,15 @@ def GenerationOperationModelFormulationDemand(OptModel, mTEPES, pIndLogConsole, 
     if pIndLogConsole:
         print('eESSReserveDwIfEnergy     ... ', len(getattr(OptModel, f'eESSReserveDwIfEnergy_{p}_{sc}_{st}')), ' rows')
 
-    # units that can provide reserve activations in this period; the lists do not depend on the area, so they are plain lists on purpose
-    nrRsrvAct = [nr for nr in mTEPES.nr if mTEPES.pIndOperReserveGen[nr] == 0 and (p,nr) in mTEPES.pnr]
-    ehRsrvAct = [eh for eh in mTEPES.eh if mTEPES.pIndOperReserveCon[eh] == 0 and (p,eh) in mTEPES.peh]
+    # generators and ESS of every area that can provide operating reserves in this period, filtered once instead of per load level
+    nr2aRsrv = {ar: [nr for nr in mTEPES.nr if mTEPES.pIndOperReserveGen[nr] == 0 and (p,nr) in mTEPES.pnr] for ar in mTEPES.ar}
+    eh2aRsrv = {ar: [eh for eh in mTEPES.eh if mTEPES.pIndOperReserveCon[eh] == 0 and (p,eh) in mTEPES.peh] for ar in mTEPES.ar}
 
     def eOperReserveUpEnergy(OptModel,n):
         # Skip if there are no upward operating reserves activation or there are no generators in this area which can provide reserves
-        if mTEPES.pIndReserveActivation() == 0 or sum(mTEPES.pOperReserveUpEnergy[p,sc,n,ar] for ar in mTEPES.ar) == 0.0 or len(nrRsrvAct) + len(ehRsrvAct) == 0:
+        if mTEPES.pIndReserveActivation() == 0 or sum(mTEPES.pOperReserveUpEnergy[p,sc,n,ar] for ar in mTEPES.ar) == 0.0 or len(nr2aRsrv[ar]) + len(eh2aRsrv[ar]) == 0:
             return Constraint.Skip
-        return sum(OptModel.vReserveUpEnergy  [p,sc,n,nr] for nr in nrRsrvAct if mTEPES.pIndOperReserveGen[nr] == 0 and (p,nr) in mTEPES.pnr) + sum(OptModel.vESSReserveUpEnergy  [p,sc,n,eh] for eh in ehRsrvAct if mTEPES.pIndOperReserveCon[eh] == 0 and (p,eh) in mTEPES.peh) == sum(mTEPES.pOperReserveUpEnergy[p,sc,n,ar] for ar in mTEPES.ar)
+        return sum(OptModel.vReserveUpEnergy  [p,sc,n,nr] for nr in mTEPES.nr if mTEPES.pIndOperReserveGen[nr] == 0 and (p,nr) in mTEPES.pnr) + sum(OptModel.vESSReserveUpEnergy  [p,sc,n,eh] for eh in mTEPES.eh if mTEPES.pIndOperReserveCon[eh] == 0 and (p,eh) in mTEPES.peh) == sum(mTEPES.pOperReserveUpEnergy[p,sc,n,ar] for ar in mTEPES.ar)
     setattr(OptModel, f'eOperReserveUpEnergy_{p}_{sc}_{st}', Constraint(mTEPES.n, rule=eOperReserveUpEnergy, doc='up   operating reserve activation [GW]'))
 
     if pIndLogConsole:
@@ -169,9 +169,9 @@ def GenerationOperationModelFormulationDemand(OptModel, mTEPES, pIndLogConsole, 
 
     def eOperReserveDwEnergy(OptModel,n):
         # Skip if there are no upward operating reserves activation or there are no generators in this area which can provide reserves
-        if mTEPES.pIndReserveActivation() == 0 or sum(mTEPES.pOperReserveDwEnergy[p,sc,n,ar] for ar in mTEPES.ar) == 0.0 or len(nrRsrvAct) + len(ehRsrvAct) == 0:
+        if mTEPES.pIndReserveActivation() == 0 or sum(mTEPES.pOperReserveDwEnergy[p,sc,n,ar] for ar in mTEPES.ar) == 0.0 or len(nr2aRsrv[ar]) + len(eh2aRsrv[ar]) == 0:
             return Constraint.Skip
-        return sum(OptModel.vReserveDownEnergy[p,sc,n,nr] for nr in nrRsrvAct if mTEPES.pIndOperReserveGen[nr] == 0 and (p,nr) in mTEPES.pnr) + sum(OptModel.vESSReserveDownEnergy[p,sc,n,eh] for eh in ehRsrvAct if mTEPES.pIndOperReserveCon[eh] == 0 and (p,eh) in mTEPES.peh) == sum(mTEPES.pOperReserveDwEnergy[p,sc,n,ar] for ar in mTEPES.ar)
+        return sum(OptModel.vReserveDownEnergy[p,sc,n,nr] for nr in mTEPES.nr if mTEPES.pIndOperReserveGen[nr] == 0 and (p,nr) in mTEPES.pnr) + sum(OptModel.vESSReserveDownEnergy[p,sc,n,eh] for eh in mTEPES.eh if mTEPES.pIndOperReserveCon[eh] == 0 and (p,eh) in mTEPES.peh) == sum(mTEPES.pOperReserveDwEnergy[p,sc,n,ar] for ar in mTEPES.ar)
     setattr(OptModel, f'eOperReserveDwEnergy_{p}_{sc}_{st}', Constraint(mTEPES.n, rule=eOperReserveDwEnergy, doc='down operating reserve activation [GW]'))
 
     if pIndLogConsole:
@@ -603,16 +603,13 @@ def GenerationOperationModelFormulationCommitment(OptModel, mTEPES, pIndLogConso
     if pIndLogConsole:
         print('eStableStates             ... ', len(getattr(OptModel, f'eStableStates_{p}_{sc}_{st}')), ' rows')
 
-    pnrGensAll    = {gen for period,gen in mTEPES.pnr}
-    pnrGensP      = {gen for period,gen in mTEPES.pnr if period == p}
-    pYearlyActive = {group: len(mTEPES.GeneratorsInYearlyGroup[group] & pnrGensAll) > 1 for group in mTEPES.ExclusiveGroupsYearly}
-    pHourlyActive = {group: len(mTEPES.GeneratorsInHourlyGroup[group] & pnrGensP  ) > 1 for group in mTEPES.ExclusiveGroupsHourly}
-
     def eMaxCommitmentYearly(OptModel,n,group,nr):
         # Skip if generator not available on period
         # Skip if the generator is not part of the exclusive group
+        if (p,nr) not in mTEPES.pnr or nr not in mTEPES.GeneratorsInYearlyGroup[group]:
+            return Constraint.Skip
         # Skip if there are one or fewer generators in the group
-        if (p,nr) not in mTEPES.pnr or nr not in mTEPES.GeneratorsInYearlyGroup[group] or not pYearlyActive[group]:
+        if len(mTEPES.GeneratorsInYearlyGroup[group] & {nr for p,nr in mTEPES.pnr}) <= 1:
             return Constraint.Skip
         return OptModel.vCommitment[p,sc,n,nr]                                  <= OptModel.vMaxCommitmentYearly[p,sc,nr,group]
 
@@ -625,8 +622,10 @@ def GenerationOperationModelFormulationCommitment(OptModel, mTEPES, pIndLogConso
         # Skip if generator not available on period
         # Skip if the generator is not part of the exclusive group
         # Skip if the generator has no consumption commitment (only hydro units do)
+        if (p,nr) not in mTEPES.pnr or nr not in mTEPES.GeneratorsInYearlyGroup[group] or nr not in mTEPES.h:
+            return Constraint.Skip
         # Skip if there are one or fewer generators in the group
-        if (p,nr) not in mTEPES.pnr or nr not in mTEPES.GeneratorsInYearlyGroup[group] or nr not in mTEPES.h or not pYearlyActive[group]:
+        if len(mTEPES.GeneratorsInYearlyGroup[group] & {nr for p,nr in mTEPES.pnr}) <= 1:
             return Constraint.Skip
         return OptModel.vCommitmentCons[p,sc,n,nr]                           <= OptModel.vMaxCommitmentConsYearly[p,sc,nr,group]
 
@@ -638,9 +637,13 @@ def GenerationOperationModelFormulationCommitment(OptModel, mTEPES, pIndLogConso
     def eMaxCommitGenYearly(OptModel,n,group,nr):
         # Skip if generator not available on period
         # Skip if the generator is not part of the exclusive group
+        if (p,nr) not in mTEPES.pnr or nr not in mTEPES.GeneratorsInYearlyGroup[group]:
+            return Constraint.Skip
         # Avoid division by 0. If Maximum power is 0 this equation is not needed anyway
+        if mTEPES.pMaxPowerElec[p,sc,n,nr] == 0.0:
+            return Constraint.Skip
         # Skip if there are one or fewer generators in the group
-        if (p,nr) not in mTEPES.pnr or nr not in mTEPES.GeneratorsInYearlyGroup[group] or  mTEPES.pMaxPowerElec[p,sc,n,nr] == 0.0 or not pYearlyActive[group]:
+        if len(mTEPES.GeneratorsInYearlyGroup[group] & {nr for p,nr in mTEPES.pnr}) <= 1:
             return Constraint.Skip
         return OptModel.vTotalOutput[p,sc,n,nr]/mTEPES.pMaxPowerElec[p,sc,n,nr] <= OptModel.vMaxCommitmentYearly[p,sc,nr,group]
     setattr(OptModel, f'eMaxCommitGenYearly_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.ExclusiveGroupsYearly*mTEPES.nr, rule=eMaxCommitGenYearly, doc='maximum of all the capacity factors'))
@@ -650,7 +653,7 @@ def GenerationOperationModelFormulationCommitment(OptModel, mTEPES, pIndLogConso
 
     def eExclusiveGensYearly(OptModel,group):
         # Skip if there are one or fewer generators in the group
-        if not pYearlyActive[group]:
+        if len(mTEPES.GeneratorsInYearlyGroup[group] & {nr for p,nr in mTEPES.pnr}) <= 1:
             return Constraint.Skip
         return sum(OptModel.vMaxCommitmentYearly[p,sc,nr,group] + (OptModel.vMaxCommitmentConsYearly[p,sc,nr,group] if nr in mTEPES.h else 0) for nr in mTEPES.GeneratorsInYearlyGroup[group] if (p,nr) in mTEPES.pnr) <= 1
     setattr(OptModel, f'eExclusiveGensYearly_{p}_{sc}_{st}', Constraint(mTEPES.ExclusiveGroupsYearly, rule=eExclusiveGensYearly, doc='mutually exclusive generators'))
@@ -665,8 +668,10 @@ def GenerationOperationModelFormulationCommitment(OptModel, mTEPES, pIndLogConso
     def eMaxCommitmentHourly(OptModel,n,group,nr):
         # Skip if generator not available on period
         # Skip if the generator is not part of the exclusive group
+        if (p,nr) not in mTEPES.pnr or nr not in mTEPES.GeneratorsInHourlyGroup[group]:
+            return Constraint.Skip
         # Skip if there are one or fewer generators in the group
-        if (p,nr) not in mTEPES.pnr or nr not in mTEPES.GeneratorsInHourlyGroup[group] or not pHourlyActive[group]:
+        if len(mTEPES.GeneratorsInHourlyGroup[group] & {nr for p,nr in mTEPES.pnr}) <= 1:
             return Constraint.Skip
         return OptModel.vCommitment[p,sc,n,nr]                               <= OptModel.vMaxCommitmentHourly[p,sc,n,nr,group]
     setattr(OptModel, f'eMaxCommitmentHourly_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.ExclusiveGroupsHourly*mTEPES.nr, rule=eMaxCommitmentHourly, doc='maximum of all the commitments [p.u.]'))
@@ -677,8 +682,10 @@ def GenerationOperationModelFormulationCommitment(OptModel, mTEPES, pIndLogConso
     def eMaxCommitGenHourly(OptModel,n,group,nr):
         # Skip if generator not available on period or the generator is not part of the exclusive group
         # Avoid division by 0. If Maximum power is 0 this equation is not needed anyway
+        if (p,nr) not in mTEPES.pnr or nr not in mTEPES.GeneratorsInHourlyGroup[group] or mTEPES.pMaxPowerElec[p,sc,n,nr] == 0.0:
+            return Constraint.Skip
         # Skip if there are one or fewer generators in the group
-        if (p,nr) not in mTEPES.pnr or nr not in mTEPES.GeneratorsInHourlyGroup[group] or mTEPES.pMaxPowerElec[p,sc,n,nr] == 0.0 or not pHourlyActive[group]:
+        if len(mTEPES.GeneratorsInHourlyGroup[group] & {nr for period,nr in mTEPES.pnr if period == p}) <= 1:
             return Constraint.Skip
         return OptModel.vTotalOutput[p,sc,n,nr]/mTEPES.pMaxPowerElec[p,sc,n,nr] <= OptModel.vMaxCommitmentHourly[p,sc,n,nr,group]
     setattr(OptModel, f'eMaxCommitGenHourly_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.ExclusiveGroupsHourly*mTEPES.nr, rule=eMaxCommitGenHourly, doc='maximum of all the capacity factors'))
@@ -690,7 +697,7 @@ def GenerationOperationModelFormulationCommitment(OptModel, mTEPES, pIndLogConso
         # Skip if there are one or fewer generators in the group
         # This is written in a different way from the rest of the code to avoid variable shadowing due to comprehension
         pnrGens = {gen for period, gen in mTEPES.pnr if period == p}
-        if not pHourlyActive[group]:
+        if len(mTEPES.GeneratorsInHourlyGroup[group] & pnrGens) <= 1:
             return Constraint.Skip
         return sum(OptModel.vMaxCommitmentHourly[p,sc,n,nr,group] + (OptModel.vCommitmentCons[p,sc,n,nr] if nr in mTEPES.h else 0) for nr in mTEPES.GeneratorsInHourlyGroup[group] if (p,nr) in mTEPES.pnr) <= 1
     setattr(OptModel, f'eExclusiveGensHourly_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.ExclusiveGroupsHourly, rule=eExclusiveGensHourly, doc='mutually exclusive generators'))
@@ -1142,12 +1149,8 @@ def NetworkCycles(mTEPES, pIndLogConsole):
     # unique and parallel circuits of candidate lines
     mTEPES.uctc = Set(doc='unique   circuits', initialize=[laa for laa in mTEPES.laa if laa in pUniqueCircuits['0/1']])
     mTEPES.cyc  = RangeSet(0,len(mTEPES.ncd)-1)
-    # edges of every cycle, computed once instead of per (cycle, candidate line) pair, same hoist as in CycleConstraints. The list keeps the cycle order for
-    # the pBigMTheta sums below; the set makes the membership tests O(1) instead of a scan of the cycle
-    pCycleEdges    = {cyc: list(zip(mTEPES.ncd[cyc], mTEPES.ncd[cyc][1:] + mTEPES.ncd[cyc][:1])) for cyc in mTEPES.cyc}
-    pCycleEdgesSet = {cyc: set(pCycleEdges[cyc]) for cyc in mTEPES.cyc}
     # candidate lines included in every cycle
-    mTEPES.lcac = Set(doc='AC candidate circuits in a cycle', initialize=[(cyc,ni,nf,cc) for cyc,ni,nf,cc in mTEPES.cyc*mTEPES.lca if (ni,nf) in pCycleEdgesSet[cyc] or (nf,ni) in pCycleEdgesSet[cyc]])
+    mTEPES.lcac = Set(doc='AC candidate circuits in a cycle', initialize=[(cyc,ni,nf,cc) for cyc,ni,nf,cc in mTEPES.cyc*mTEPES.lca if (ni,nf) in list(zip(mTEPES.ncd[cyc], mTEPES.ncd[cyc][1:] + mTEPES.ncd[cyc][:1])) or (nf,ni) in list(zip(mTEPES.ncd[cyc], mTEPES.ncd[cyc][1:] + mTEPES.ncd[cyc][:1]))])
 
     pBigMTheta = pd.DataFrame(0, index=pd.MultiIndex.from_tuples(mTEPES.cyc*mTEPES.lca, names=('No.Cycle', 'NodeI', 'NodeF', 'Circuit')), columns=['rad'])
     # for cyc,nii,nff,ccc in mTEPES.cyc*mTEPES.lca:
@@ -1155,9 +1158,9 @@ def NetworkCycles(mTEPES, pIndLogConsole):
     #         pBigMTheta.loc[cyc,nii,nff,ccc] = (sum(max(mTEPES.pLineNTCBck[ni,nf,cc],mTEPES.pLineNTCFrw[ni,nf,cc]) * mTEPES.pLineX[ni,nf,cc] / mTEPES.pSBase for ni,nf in list(zip(mTEPES.ncd[cyc], mTEPES.ncd[cyc][1:] + mTEPES.ncd[cyc][:1])) for cc in mTEPES.cc if (ni,nf,cc) in mTEPES.uctc) +
     #                                            sum(max(mTEPES.pLineNTCBck[ni,nf,cc],mTEPES.pLineNTCFrw[ni,nf,cc]) * mTEPES.pLineX[ni,nf,cc] / mTEPES.pSBase for nf,ni in list(zip(mTEPES.ncd[cyc], mTEPES.ncd[cyc][1:] + mTEPES.ncd[cyc][:1])) for cc in mTEPES.cc if (ni,nf,cc) in mTEPES.uctc) )
     for cyc,nii,nff,ccc in mTEPES.cyc*mTEPES.lca:
-        if (nii,nff) in pCycleEdgesSet[cyc] or (nff,nii) in pCycleEdgesSet[cyc]:
-            pBigMTheta.loc[cyc,nii,nff,ccc] = (sum(max(mTEPES.pLineNTCBck[ni,nf,cc],mTEPES.pLineNTCFrw[ni,nf,cc]) * mTEPES.pLineX[ni,nf,cc] / mTEPES.pSBase for ni,nf in pCycleEdges[cyc] for cc in mTEPES.cc if (ni,nf,cc) in mTEPES.uctc and (ni!=nii or nf!=nff)) +
-                                               sum(max(mTEPES.pLineNTCBck[ni,nf,cc],mTEPES.pLineNTCFrw[ni,nf,cc]) * mTEPES.pLineX[ni,nf,cc] / mTEPES.pSBase for nf,ni in pCycleEdges[cyc] for cc in mTEPES.cc if (ni,nf,cc) in mTEPES.uctc and (ni!=nii or nf!=nff)) )
+        if (nii,nff) in list(zip(mTEPES.ncd[cyc], mTEPES.ncd[cyc][1:] + mTEPES.ncd[cyc][:1])) or (nff,nii) in list(zip(mTEPES.ncd[cyc], mTEPES.ncd[cyc][1:] + mTEPES.ncd[cyc][:1])):
+            pBigMTheta.loc[cyc,nii,nff,ccc] = (sum(max(mTEPES.pLineNTCBck[ni,nf,cc],mTEPES.pLineNTCFrw[ni,nf,cc]) * mTEPES.pLineX[ni,nf,cc] / mTEPES.pSBase for ni,nf in list(zip(mTEPES.ncd[cyc], mTEPES.ncd[cyc][1:] + mTEPES.ncd[cyc][:1])) for cc in mTEPES.cc if (ni,nf,cc) in mTEPES.uctc and (ni!=nii or nf!=nff)) +
+                                               sum(max(mTEPES.pLineNTCBck[ni,nf,cc],mTEPES.pLineNTCFrw[ni,nf,cc]) * mTEPES.pLineX[ni,nf,cc] / mTEPES.pSBase for nf,ni in list(zip(mTEPES.ncd[cyc], mTEPES.ncd[cyc][1:] + mTEPES.ncd[cyc][:1])) for cc in mTEPES.cc if (ni,nf,cc) in mTEPES.uctc and (ni!=nii or nf!=nff)) )
 
     mTEPES.pBigMTheta = Param(mTEPES.cyc, mTEPES.lca, initialize=pBigMTheta['rad'].to_dict(), doc='big M for an AC candidate line in a cycle [rad]')
 

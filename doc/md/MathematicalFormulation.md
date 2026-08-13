@@ -952,7 +952,7 @@ i'^p_{\omega,n-\frac{\tau_e'}{\nu},e'} + \sum_{n' = n-\frac{\tau_e'}{\nu}}^n DUR
 ```
 
 The initial volume of the hydro reservoir divided by its initial volume {math}`I^p_{\omega e'}` is equal to the final volume divided by its initial volume
-[hm{sup}`3`\] «`eIniFinVolume`».
+[p.u.] «`eIniFinVolume`».
 
 ```{math}
 \frac{i'^p_{\omega,0,e'}}{I^p_{\omega e'}} = \frac{i'^p_{\omega,N,e'}}{I^p_{\omega e'}} \quad \forall p \omega e', e' \in CR
