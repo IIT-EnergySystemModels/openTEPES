@@ -57,6 +57,13 @@ def GenerationOperationModelFormulationObjFunct(OptModel, mTEPES, pIndLogConsole
     nr2a = {ar: [nr for nr in mTEPES.nr if nr in g2a[ar] and (p,nr) in mTEPES.pnr] for ar in mTEPES.ar}
     bo2a = {ar: [bo for bo in mTEPES.bo if bo in g2a[ar] and (p,bo) in mTEPES.pbo] for ar in mTEPES.ar}
 
+    # generators available in the period, filtered once here; the emission-cost guards below re-tested '(p,g) in mTEPES.pg' once per load level and generator
+    pGensP        = [g for g in mTEPES.g if (p,g) in mTEPES.pg]
+    g2aP          = {ar: [g for g in g2a[ar] if (p,g) in mTEPES.pg] for ar in mTEPES.ar}
+    # existence of an emission cost per load level and per (load level, area), evaluated once before registering the rules; any() keeps the short-circuit
+    pHasEmiCostN  = {n: any(mTEPES.pEmissionVarCost[p,sc,n,g] for g in pGensP) for n in mTEPES.n}
+    pHasEmiCostNA = {(n,ar): any(mTEPES.pEmissionVarCost[p,sc,n,g] for g in g2aP[ar]) for n in mTEPES.n for ar in mTEPES.ar}
+
     def eTotalGCost(OptModel,n):
         return OptModel.vTotalGCost[p,sc,n] == (mTEPES.pLoadLevelDuration[p,sc,n]() * sum(mTEPES.pLinearVarCost  [p,sc,n,nr] * OptModel.vTotalOutput    [p,sc,n,nr]                                              +
                                                                                           mTEPES.pConstantVarCost[p,sc,n,nr] * OptModel.vCommitment     [p,sc,n,nr] for nr in mTEPES.nr if (p,nr) in mTEPES.pnr) +
@@ -75,7 +82,7 @@ def GenerationOperationModelFormulationObjFunct(OptModel, mTEPES, pIndLogConsole
     setattr(OptModel, f'eTotalCCost_{p}_{sc}_{st}', Constraint(mTEPES.n, rule=eTotalCCost, doc='system variable consumption operation cost [MEUR]'))
 
     def eTotalECost(OptModel,n):
-        if not any(mTEPES.pEmissionVarCost[p,sc,n,g] for g in mTEPES.g if (p,g) in mTEPES.pg):
+        if not pHasEmiCostN[n]:
             return Constraint.Skip
         return OptModel.vTotalECost[p,sc,n] == sum(OptModel.vTotalECostArea[p,sc,n,ar] for ar in mTEPES.ar)
     setattr(OptModel, f'eTotalECost_{p}_{sc}_{st}', Constraint(mTEPES.n, rule=eTotalECost, doc='system emission cost [MEUR]'))
@@ -90,7 +97,7 @@ def GenerationOperationModelFormulationObjFunct(OptModel, mTEPES, pIndLogConsole
     setattr(OptModel, f'eTotalEmissionArea_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.ar, rule=eTotalEmissionArea, doc='area total emission [MtCO2 eq]'))
 
     def eTotalECostArea(OptModel,n,ar):
-        if not any(mTEPES.pEmissionVarCost[p,sc,n,g] for g in g2a[ar] if (p,g) in mTEPES.pg):
+        if not pHasEmiCostNA[n,ar]:
             return Constraint.Skip
         return OptModel.vTotalECostArea[p,sc,n,ar] == (mTEPES.pLoadLevelDuration[p,sc,n]() * (sum(mTEPES.pEmissionVarCost[p,sc,n,nr] * OptModel.vTotalOutput    [p,sc,n,nr] for nr in nr2a[ar])
                                                                                             + sum(mTEPES.pEmissionVarCost[p,sc,n,bo] * OptModel.vTotalOutputHeat[p,sc,n,bo] for bo in bo2a[ar])))
