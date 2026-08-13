@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 04, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 13, 2026
 
 Energy-storage and reservoir operation results.
 
@@ -13,7 +13,7 @@ import pandas            as     pd
 from   collections       import defaultdict
 
 try:
-    from .openTEPES_OutputResultsCommon import _outdir, AreaPlots, PiePlots, LinePlots
+    from          .openTEPES_OutputResultsCommon import _outdir, AreaPlots, PiePlots, LinePlots
 except ImportError:
     import sys
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -44,12 +44,18 @@ def ESSOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutpu
         if g in mTEPES.es:
             o2e[gt].add(g)
 
+    # member-to-technology maps and target indexes for the vectorised technology aggregations below; from_tuples raises on an empty set, hence the guards
+    pEs2Tech       = {es: ot for ot in mTEPES.ot for es in o2e[ot]}
+    pEh2TechCharge = {eh: et for et in mTEPES.et for eh in e2e[et] if mTEPES.pRatedMaxCharge[eh]}
+    pIdxPSNOT      = pd.MultiIndex.from_tuples(mTEPES.psnot) if len(mTEPES.psnot) else None
+    pIdxPSNET      = pd.MultiIndex.from_tuples(mTEPES.psnet) if len(mTEPES.psnet) else None
+
     OutputToFile = pd.Series(data=[OptModel.vEnergyOutflows[p,sc,n,es]() for p,sc,n,es in mTEPES.psnes], index=mTEPES.psnes)
     OutputToFile *= 1e3
     OutputToFile.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_GenerationOutflows_{CaseName}.csv', sep=',')
 
     if pIndTechOutput:
-        OutputToFile = pd.Series(data=[sum(OutputToFile[p,sc,n,es] for es in o2e[ot] if (p,es) in mTEPES.pes) for p,sc,n,ot in mTEPES.psnot], index=mTEPES.psnot)
+        OutputToFile = OutputToFile[[(p,es) in mTEPES.pes and es in pEs2Tech for p,sc,n,es in OutputToFile.index]].rename(index=pEs2Tech, level=3).groupby(level=[0,1,2,3]).sum().reindex(pIdxPSNOT, fill_value=0.0)
         OutputToFile.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_TechnologyOutflows_{CaseName}.csv', sep=',')
 
     # Check if there are any ESS with consumption capabilities
@@ -61,12 +67,19 @@ def ESSOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutpu
 
         # tolerance to consider that an ESS is not producing or consuming
         pEpsilon = 1e-6
-        OutputToFile = pd.Series(data=[0.0 for p,sc,n,eh in mTEPES.psnehc], index=mTEPES.psnehc)
+        pRatioValues = []
         for p,sc,n,eh in mTEPES.psnehc:
-            OutputToFile[p,sc,n,eh] = -1.0                                                                         if OptModel.vESSTotalCharge[p,sc,n,eh]() and OptModel.vTotalOutput   [p,sc,n,eh]() <= pEpsilon * mTEPES.pMaxPowerElec[p,sc,n,eh]                                          else OutputToFile[p,sc,n,eh]
-            OutputToFile[p,sc,n,eh] =  1.0                                                                         if OptModel.vTotalOutput   [p,sc,n,eh]() and OptModel.vESSTotalCharge[p,sc,n,eh]() <= pEpsilon * mTEPES.pMaxCharge   [p,sc,n,eh]                                          else OutputToFile[p,sc,n,eh]
-            if OptModel.vTotalOutput[p,sc,n,eh]() and OptModel.vESSTotalCharge[p,sc,n,eh]():
-                OutputToFile[p,sc,n,eh] = OptModel.vTotalOutput[p,sc,n,eh]()/OptModel.vESSTotalCharge[p,sc,n,eh]() if OptModel.vTotalOutput   [p,sc,n,eh]() >  pEpsilon * mTEPES.pMaxPowerElec[p,sc,n,eh] or OptModel.vESSTotalCharge[p,sc,n,eh]() > pEpsilon * mTEPES.pMaxCharge[p,sc,n,eh] else OutputToFile[p,sc,n,eh]
+            pTotalOutput = OptModel.vTotalOutput   [p,sc,n,eh]()
+            pTotalCharge = OptModel.vESSTotalCharge[p,sc,n,eh]()
+            pRatio       = 0.0
+            if pTotalCharge and pTotalOutput <= pEpsilon * mTEPES.pMaxPowerElec[p,sc,n,eh]:
+                pRatio = -1.0
+            if pTotalOutput and pTotalCharge <= pEpsilon * mTEPES.pMaxCharge   [p,sc,n,eh]:
+                pRatio =  1.0
+            if pTotalOutput and pTotalCharge and (pTotalOutput > pEpsilon * mTEPES.pMaxPowerElec[p,sc,n,eh] or pTotalCharge > pEpsilon * mTEPES.pMaxCharge[p,sc,n,eh]):
+                pRatio = pTotalOutput/pTotalCharge
+            pRatioValues.append(pRatio)
+        OutputToFile = pd.Series(data=pRatioValues, index=mTEPES.psnehc)
         OutputToFile.to_frame(name='p.u.').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='p.u.', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_GenerationConsumptionRatio_{CaseName}.csv', sep=',')
 
         if pIndTechOutput:
@@ -79,13 +92,13 @@ def ESSOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutpu
             OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0', 'level_1', 'level_2'], columns='level_3', values='GWh', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_ConsumptionEnergy_{CaseName}.csv', sep=',')
 
         if pIndTechOutput:
-            OutputToFile = pd.Series(data=[sum(OutputToFile[p,sc,n,eh] for eh in e2e[et] if (p,eh) in mTEPES.peh and mTEPES.pRatedMaxCharge[eh]) for p,sc,n,et in mTEPES.psnet], index=mTEPES.psnet)
+            OutputToFile = OutputToFile[[(p,eh) in mTEPES.peh and eh in pEh2TechCharge for p,sc,n,eh in OutputToFile.index]].rename(index=pEh2TechCharge, level=3).groupby(level=[0,1,2,3]).sum().reindex(pIdxPSNET, fill_value=0.0)
             OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0', 'level_1', 'level_2'], columns='level_3', values='GWh').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_TechnologyConsumptionEnergy_{CaseName}.csv', sep=',')
 
         if pIndPlotOutput:
             TechnologyCharge = OutputToFile.loc[:, :, :, :]
             for p,sc in mTEPES.ps:
-                chart = AreaPlots(p, sc, TechnologyCharge, 'Technology', 'LoadLevel', 'MW')
+                chart = AreaPlots(p, sc, TechnologyCharge, 'Technology', 'LoadLevel', 'GWh')
                 chart.save(f'{_path}/oT_Plot_TechnologyConsumption_{CaseName}_{p}_{sc}.html', embed_options={'renderer': 'svg'})
 
         if pIndPlotOutput:
@@ -97,11 +110,11 @@ def ESSOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutpu
                     chart = PiePlots(p, sc, OutputToFile, 'Technology', '%')
                     chart.save(f'{_path}/oT_Plot_TechnologyConsumptionEnergy_{CaseName}_{p}_{sc}.html', embed_options={'renderer': 'svg'})
 
-        if sum(1 for ar in mTEPES.ar if len(e2a[ar])) > 1:
+        if sum(1 for ar in mTEPES.ar if e2a[ar]) > 1:
             if pIndAreaOutput:
                 for ar in mTEPES.ar:
                     if len(e2a[ar]):
-                        sPSNET = [(p,sc,n,et) for p,sc,n,et in mTEPES.psnet if sum(1 for eh in e2a[ar] if (p,sc,n,eh) in mTEPES.psnehc and eh in e2e[et])]
+                        sPSNET = [(p,sc,n,et) for p,sc,n,et in mTEPES.psnet if any((p,sc,n,eh) in mTEPES.psnehc and eh in e2e[et] for eh in e2a[ar])]
                         if sPSNET:
                             OutputToFile = pd.Series(data=[sum(-OptModel.vESSTotalCharge[p,sc,n,eh]() * mTEPES.pLoadLevelDuration[p,sc,n]() for eh in e2a[ar] if (p,sc,n,eh) in mTEPES.psnehc and eh in e2e[et]) for p,sc,n,et in sPSNET], index=pd.Index(sPSNET))
                             OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0', 'level_1', 'level_2'], columns='level_3', values='GWh', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_TechnologyConsumptionEnergy_{CaseName}_{ar}.csv', sep=',')
@@ -117,7 +130,7 @@ def ESSOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutpu
         OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='GWh', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_GenerationOutflowsEnergy_{CaseName}.csv', sep=',')
 
     if pIndTechOutput:
-        OutputToFile = pd.Series(data=[sum(OutputToFile[p,sc,n,es] for es in o2e[ot] if (p,es) in mTEPES.pes) for p,sc,n,ot in mTEPES.psnot], index=mTEPES.psnot)
+        OutputToFile = OutputToFile[[(p,es) in mTEPES.pes and es in pEs2Tech for p,sc,n,es in OutputToFile.index]].rename(index=pEs2Tech, level=3).groupby(level=[0,1,2,3]).sum().reindex(pIdxPSNOT, fill_value=0.0)
         OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='GWh', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_TechnologyOutflowsEnergy_{CaseName}.csv', sep=',')
 
 
@@ -145,10 +158,14 @@ def ESSOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutpu
         OutputToFile = pd.Series(data=[OutputToFile[p,sc,n,es] for p,sc,n,es,ot in sPSNESOT], index=pd.Index(sPSNESOT))
         OutputToFile.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_4', values='GWh', aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_TechnologySpillage_{CaseName}.csv', sep=',')
 
-    OutputToFile1 = pd.Series(data=[(OptModel.vTotalOutput[p,sc,n,es].ub*OptModel.vGenerationInvest[p,es]() - OptModel.vTotalOutput[p,sc,n,es]())*mTEPES.pLoadLevelDuration[p,sc,n]() if es in mTEPES.ec else
-                                    (OptModel.vTotalOutput[p,sc,n,es].ub                                    - OptModel.vTotalOutput[p,sc,n,es]())*mTEPES.pLoadLevelDuration[p,sc,n]() for p,sc,n,es in mTEPES.psnes], index=mTEPES.psnes)
-    OutputToFile2 = pd.Series(data=[(OptModel.vTotalOutput[p,sc,n,es].ub*OptModel.vGenerationInvest[p,es]()                                     )*mTEPES.pLoadLevelDuration[p,sc,n]() if es in mTEPES.ec else
-                                    (OptModel.vTotalOutput[p,sc,n,es].ub                                                                        )*mTEPES.pLoadLevelDuration[p,sc,n]() for p,sc,n,es in mTEPES.psnes], index=mTEPES.psnes)
+    pSpillage1 = []
+    pSpillage2 = []
+    for p,sc,n,es in mTEPES.psnes:
+        pUpperBound = OptModel.vTotalOutput[p,sc,n,es].ub * (OptModel.vGenerationInvest[p,es]() if es in mTEPES.ec else 1.0) * mTEPES.pLoadLevelDuration[p,sc,n]()
+        pSpillage1.append(pUpperBound - OptModel.vTotalOutput[p,sc,n,es]()*mTEPES.pLoadLevelDuration[p,sc,n]())
+        pSpillage2.append(pUpperBound)
+    OutputToFile1 = pd.Series(data=pSpillage1, index=mTEPES.psnes)
+    OutputToFile2 = pd.Series(data=pSpillage2, index=mTEPES.psnes)
     OutputToFile1 = OutputToFile1.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_3'], values='GWh', aggfunc='sum').rename_axis(['Period', 'Scenario', 'Generator'], axis=0).rename_axis([None], axis=1)
     OutputToFile2 = OutputToFile2.to_frame(name='GWh').reset_index().pivot_table(index=['level_0','level_1','level_3'], values='GWh', aggfunc='sum').rename_axis(['Period', 'Scenario', 'Generator'], axis=0).rename_axis([None], axis=1)
 
@@ -159,8 +176,10 @@ def ESSOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnologyOutpu
         OutputToFile.oT.write(f'{_path}/oT_Result_GenerationSpillageRelative_{CaseName}.csv', sep=',')
 
     if pIndTechOutput:
-        OutputToFile1 = pd.Series(data=[sum(OutputToFile1['GWh'][p,sc,es] for es in o2e[ot] if (p,es) in mTEPES.pes) for p,sc,ot in mTEPES.psot], index=mTEPES.psot)
-        OutputToFile2 = pd.Series(data=[sum(OutputToFile2['GWh'][p,sc,es] for es in o2e[ot] if (p,es) in mTEPES.pes) for p,sc,ot in mTEPES.psot], index=mTEPES.psot)
+        pSpill1 = OutputToFile1['GWh'].to_dict()
+        pSpill2 = OutputToFile2['GWh'].to_dict()
+        OutputToFile1 = pd.Series(data=[sum(pSpill1[p,sc,es] for es in o2e[ot] if (p,es) in mTEPES.pes) for p,sc,ot in mTEPES.psot], index=mTEPES.psot)
+        OutputToFile2 = pd.Series(data=[sum(pSpill2[p,sc,es] for es in o2e[ot] if (p,es) in mTEPES.pes) for p,sc,ot in mTEPES.psot], index=mTEPES.psot)
         OutputToFile  = OutputToFile1.div(OutputToFile2)*1e2
         OutputToFile  = OutputToFile.fillna(0.0)
         OutputToFile.to_frame(name='%').rename_axis(['Period', 'Scenario', 'Technology'], axis=0).oT.write(f'{_path}/oT_Result_TechnologySpillageRelative_{CaseName}.csv', index=True, sep=',')
@@ -210,7 +229,9 @@ def ReservoirOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnolog
         OutputToFile.to_frame(name='hm3').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='hm3',               aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_ReservoirSpillage_{CaseName}.csv', sep=',')
 
     if pIndTechOutput:
-        OutputToFile = pd.Series(data=[sum(OutputToFile[p,sc,n,rs] for rs in o2rs[ht] if (n,rs) in mTEPES.nrsc and (p,rs) in mTEPES.prs) for p,sc,n,ht in mTEPES.psnht], index=mTEPES.psnht)
+        pRs2Tech  = {rs: ht for ht in mTEPES.ht for rs in o2rs[ht]}
+        pIdxPSNHT = pd.MultiIndex.from_tuples(mTEPES.psnht) if len(mTEPES.psnht) else None
+        OutputToFile = OutputToFile[[(n,rs) in mTEPES.nrsc and (p,rs) in mTEPES.prs and rs in pRs2Tech for p,sc,n,rs in OutputToFile.index]].rename(index=pRs2Tech, level=3).groupby(level=[0,1,2,3]).sum().reindex(pIdxPSNHT, fill_value=0.0)
         OutputToFile.to_frame(name='hm3').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='hm3',               aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_TechnologyReservoirSpillage_{CaseName}.csv', sep=',')
 
     #%% outputting the water volume values
