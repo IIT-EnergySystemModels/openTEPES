@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 04, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 13, 2026
 
 openTEPES.openTEPES_ModelFormulationInvestment — investment variables and constraints (electricity, hydro, H2, heat) plus the installed-capacity, adequacy-reserve-margin and emission / RES-energy limits.
 """
@@ -127,9 +127,6 @@ def InvestmentHeatModelFormulation(OptModel, mTEPES, pIndLogConsole):
         print('Heat       investment o.f./constraints ... ', round(GeneratingTime), 's')
 
 
-# @profile
-
-
 def GenerationOperationElecModelFormulationInvestment(OptModel, mTEPES, pIndLogConsole, p, sc, st):
     print('Investment & operation var constraints ****')
 
@@ -139,6 +136,7 @@ def GenerationOperationElecModelFormulationInvestment(OptModel, mTEPES, pIndLogC
     for ar,g in mTEPES.a2g:
         g2a[ar].add(g)
 
+    # only thermal generators and ESS units can be committed, i.e. must run or not, depending on the installed capacity
     def eInstallGenComm(OptModel,n,gc):
         if gc in mTEPES.eh or gc in mTEPES.bc or gc not in mTEPES.nr or (p,gc) not in mTEPES.pgc or (mTEPES.pMinPowerElec[p,sc,n,gc] == 0.0 and mTEPES.pConstantVarCost[p,sc,n,gc] == 0.0):
             return Constraint.Skip
@@ -211,7 +209,7 @@ def GenerationOperationElecModelFormulationInvestment(OptModel, mTEPES, pIndLogC
         print('eAdeqReserveMarginElec    ... ', len(getattr(OptModel, f'eAdequacyReserveMarginElec_{p}_{sc}_{st}')), ' rows')
 
     def eMaxSystemEmission(OptModel,ar):
-        if math.isinf(mTEPES.pEmission[p,ar]) or st != mTEPES.Last_st or sum(mTEPES.pEmissionRate[g] for g in g2a[ar]) == 0.0:
+        if math.isinf(mTEPES.pEmission[p,ar]) or st != mTEPES.Last_st or not any(mTEPES.pEmissionRate[g] for g in g2a[ar] if (p,g) in mTEPES.pg):
             return Constraint.Skip
         # There is an emission limit, there are generators with emissions in the Area and it is the last stage
         return sum(OptModel.vTotalEmissionArea[p,sc,na,ar] for na in mTEPES.na) <= mTEPES.pEmission[p,ar]
