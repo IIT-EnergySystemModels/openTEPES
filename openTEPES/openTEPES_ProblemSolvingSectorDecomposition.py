@@ -1,5 +1,5 @@
-"""
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 10, 2026
+﻿"""
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 16, 2026
 """
 
 import math
@@ -22,7 +22,8 @@ def SectorDecomposition(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLog
     print('Sector Benders decomposition           ****')
     _path = os.path.join(DirName, CaseName)
 
-    StartTime = time.time()
+    # function-entry instant, on its own name: StartTime is reset by every LP-writing and solving phase inside the loop, so the final total must not read it
+    FuncStartTime = time.time()
 
     n2list = list(mTEPES.n2)
 
@@ -42,12 +43,13 @@ def SectorDecomposition(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLog
     for gt,g in mTEPES.t2g:
         g2t[gt].add(g)
 
-    n2l = defaultdict(set)
+    # node of each electrolyzer (n2l): el -> nd; a plain dict because the eBalance dual keys need THE single node of the unit
+    n2l = {}
     for nd,g in mTEPES.n2g:
-        if g in mTEPES.el:
-            n2l[g].add(nd)
+        if g in mTEPES.el and g not in n2l:
+            n2l[g] = nd
 
-    # area to generators (a2e)
+    # generators to area (a2e)
     a2e = defaultdict(set)
     e2a = defaultdict(set)
     for ar,g in mTEPES.a2g:
@@ -88,43 +90,49 @@ def SectorDecomposition(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLog
     [mMaster.vIniInventory  [p,sc,n,el].setlb(mTEPES.pMinStorage       [p,sc,n,el]  ) for p,sc,n,el in mTEPES.psnel]
     [mMaster.vIniInventory  [p,sc,n,el].setub(mTEPES.pMaxStorage       [p,sc,n,el]()) for p,sc,n,el in mTEPES.psnel]
 
-    for p,sc,n,el in mTEPES.psnel:
+    # the loop variables are pp,scc (not p,sc) on purpose: p,sc are the function arguments and are used later to name log/lp files and the ProblemSolving call
+    for pp,scc,n,el in mTEPES.psnel:
         # if no max power, no total output
-        if mTEPES.pMaxPowerElec      [p,sc,n,el]   == 0.0:
-            mMaster.vTotalOutput     [p,sc,n,el].fix( 0.0)
+        if mTEPES.pMaxPowerElec      [pp,scc,n,el]   == 0.0:
+            mMaster.vTotalOutput     [pp,scc,n,el].fix( 0.0)
         # ESS with no charge capacity
-        if  mTEPES.pMaxCharge        [p,sc,n,el]   == 0.0:
-            mMaster.vESSTotalCharge  [p,sc,n,el].fix( 0.0)
+        if  mTEPES.pMaxCharge        [pp,scc,n,el]   == 0.0:
+            mMaster.vESSTotalCharge  [pp,scc,n,el].fix( 0.0)
         # ESS with no charge capacity and no inflows can't produce
         if  mTEPES.pTotalMaxCharge[el] == 0.0 and mTEPES.pTotalEnergyInflows[el] == 0.0:
-            mMaster.vTotalOutput     [p,sc,n,el].fix( 0.0)
-            mMaster.vOutput2ndBlock  [p,sc,n,el].fix( 0.0)
-            mMaster.vReserveUp       [p,sc,n,el].fix( 0.0)
-            mMaster.vReserveDown     [p,sc,n,el].fix( 0.0)
-            mMaster.vESSSpillage     [p,sc,n,el].fix( 0.0)
-            mMaster.vESSInventory    [p,sc,n,el].fix( 0.0)
-        if  mTEPES.pMaxCharge2ndBlock[p,sc,n,el]   == 0.0:
-            mMaster.vCharge2ndBlock  [p,sc,n,el].fix( 0.0)
-        if  mTEPES.pMaxCharge2ndBlock[p,sc,n,el]   == 0.0 or mTEPES.pIndOperReserveCon[el]:
-            mMaster.vESSReserveUp    [p,sc,n,el].fix( 0.0)
-            mMaster.vESSReserveDown  [p,sc,n,el].fix( 0.0)
-        if  mTEPES.pMaxStorage       [p,sc,n,el]() == 0.0:
-            mMaster.vESSInventory    [p,sc,n,el].fix( 0.0)
+            mMaster.vTotalOutput     [pp,scc,n,el].fix( 0.0)
+            mMaster.vOutput2ndBlock  [pp,scc,n,el].fix( 0.0)
+            mMaster.vReserveUp       [pp,scc,n,el].fix( 0.0)
+            mMaster.vReserveDown     [pp,scc,n,el].fix( 0.0)
+            mMaster.vESSSpillage     [pp,scc,n,el].fix( 0.0)
+            mMaster.vESSInventory    [pp,scc,n,el].fix( 0.0)
+        if  mTEPES.pMaxCharge2ndBlock[pp,scc,n,el]   == 0.0:
+            mMaster.vCharge2ndBlock  [pp,scc,n,el].fix( 0.0)
+        if  mTEPES.pMaxCharge2ndBlock[pp,scc,n,el]   == 0.0 or mTEPES.pIndOperReserveCon[el]:
+            mMaster.vESSReserveUp    [pp,scc,n,el].fix( 0.0)
+            mMaster.vESSReserveDown  [pp,scc,n,el].fix( 0.0)
+        if  mTEPES.pMaxStorage       [pp,scc,n,el]() == 0.0:
+            mMaster.vESSInventory    [pp,scc,n,el].fix( 0.0)
 
     # if no operating reserve is required, no variables are needed
-    for p,sc,n,ar,el in mTEPES.psn*mTEPES.ar*mTEPES.el:
-        if el in e2a[ar] and (p,sc,n,el) in mTEPES.psnel:
-            if mTEPES.pOperReserveUp   [p,sc,n,ar] ==  0.0:
-                mMaster.vESSReserveUp  [p,sc,n,el].fix(0.0)
-            if mTEPES.pOperReserveDw   [p,sc,n,ar] ==  0.0:
-                mMaster.vESSReserveDown[p,sc,n,el].fix(0.0)
+    # iterate the sparse psnel and, per electrolyzer, its areas: the former psn x ar x el product discarded almost every tuple with its double filter
+    for pp,scc,n,el in mTEPES.psnel:
+        for ar in a2e[el]:
+            if mTEPES.pOperReserveUp   [pp,scc,n,ar] ==  0.0:
+                mMaster.vESSReserveUp  [pp,scc,n,el].fix(0.0)
+            if mTEPES.pOperReserveDw   [pp,scc,n,ar] ==  0.0:
+                mMaster.vESSReserveDown[pp,scc,n,el].fix(0.0)
 
     # if there are no energy outflows, no variable is needed
+    # accumulate per electrolyzer in one pass over psnel instead of re-scanning the whole psn once per unit; psnel is exactly psn x el filtered by peh
+    pAccEnergyOutflows = defaultdict(float)
+    for pp,scc,n,el in mTEPES.psnel:
+        pAccEnergyOutflows[el] += mTEPES.pEnergyOutflows[pp,scc,n,el]()
     for el in mTEPES.el:
-        if sum(mTEPES.pEnergyOutflows[p,sc,n,el]() for p,sc,n in mTEPES.psn if (p,el) in mTEPES.peh) == 0.0:
-            for p,sc,n in mTEPES.psn:
-                if (p,el) in mTEPES.peh:
-                    mMaster.vEnergyOutflows[p,sc,n,el].fix(0.0)
+        if pAccEnergyOutflows[el] == 0.0:
+            for pp,scc,n in mTEPES.psn:
+                if (pp,el) in mTEPES.peh:
+                    mMaster.vEnergyOutflows[pp,scc,n,el].fix(0.0)
 
     def eTotalSCost(mMaster):
         return mMaster.vTotalSCost
@@ -310,31 +318,32 @@ def SectorDecomposition(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLog
             if itBdFinal < 9999:
 
                 # storing the master solution and fixing electrolyzer decisions for the subproblem
-                for p,sc,n,el in mTEPES.psnel:
-                    pESSTotalCharge         [itBd,p,sc,n,el] = 0.0 if itBd == 1 else mMaster.vESSTotalCharge[p,sc,n,el]()
-                    # pESSTotalCharge           [itBd,p,sc,n,el] = OptModel.vESSTotalCharge[p,sc,n,el]() if itBd == 1 else mMaster.vESSTotalCharge[p,sc,n,el]()
-                    # pCharge2ndBlock         [itBd,p,sc,n,el] = OptModel.vCharge2ndBlock[p,sc,n,el]() if itBd == 1 else mMaster.vCharge2ndBlock[p,sc,n,el]()
-                    # pESSReserveUp           [itBd,p,sc,n,el] = OptModel.vESSReserveUp  [p,sc,n,el]() if itBd == 1 else mMaster.vESSReserveUp  [p,sc,n,el]()
-                    # pESSReserveDown         [itBd,p,sc,n,el] = OptModel.vESSReserveDown[p,sc,n,el]() if itBd == 1 else mMaster.vESSReserveDown[p,sc,n,el]()
-                    # pEnergyOutflows         [itBd,p,sc,n,el] = OptModel.vEnergyOutflows[p,sc,n,el]() if ItBd == 1 else mMaster.vEnergyOutflows[p,sc,n,el]()
-                    # OptModel.vESSTotalCharge[     p,sc,n,el].fix  (pESSTotalCharge[itBd,p,sc,n,el])
-                    OptModel.vESSTotalCharge[     p,sc,n,el].setlb(pESSTotalCharge[itBd,p,sc,n,el])
-                    OptModel.vESSTotalCharge[     p,sc,n,el].setub(pESSTotalCharge[itBd,p,sc,n,el])
-                    # OptModel.vCharge2ndBlock[     p,sc,n,el].fix(pCharge2ndBlock [itBd,p,sc,n,el])
-                    # OptModel.vESSReserveUp  [     p,sc,n,el].fix(pESSReserveUp   [itBd,p,sc,n,el])
-                    # OptModel.vESSReserveDown[     p,sc,n,el].fix(pESSReserveDown [itBd,p,sc,n,el])
-                    # OptModel.vEnergyOutflows[     p,sc,n,el].fix(pvEnergyOutflows[itBd,p,sc,n,el])
+                # the loop variables are pp,scc (not p,sc) on purpose: p,sc are the function arguments and name the log/lp files and the ProblemSolving call
+                for pp,scc,n,el in mTEPES.psnel:
+                    pESSTotalCharge         [itBd,pp,scc,n,el] = 0.0 if itBd == 1 else mMaster.vESSTotalCharge[pp,scc,n,el]()
+                    # pESSTotalCharge           [itBd,pp,scc,n,el] = OptModel.vESSTotalCharge[pp,scc,n,el]() if itBd == 1 else mMaster.vESSTotalCharge[pp,scc,n,el]()
+                    # pCharge2ndBlock         [itBd,pp,scc,n,el] = OptModel.vCharge2ndBlock[pp,scc,n,el]() if itBd == 1 else mMaster.vCharge2ndBlock[pp,scc,n,el]()
+                    # pESSReserveUp           [itBd,pp,scc,n,el] = OptModel.vESSReserveUp  [pp,scc,n,el]() if itBd == 1 else mMaster.vESSReserveUp  [pp,scc,n,el]()
+                    # pESSReserveDown         [itBd,pp,scc,n,el] = OptModel.vESSReserveDown[pp,scc,n,el]() if itBd == 1 else mMaster.vESSReserveDown[pp,scc,n,el]()
+                    # pEnergyOutflows         [itBd,pp,scc,n,el] = OptModel.vEnergyOutflows[pp,scc,n,el]() if ItBd == 1 else mMaster.vEnergyOutflows[pp,scc,n,el]()
+                    # OptModel.vESSTotalCharge[     pp,scc,n,el].fix  (pESSTotalCharge[itBd,pp,scc,n,el])
+                    OptModel.vESSTotalCharge[     pp,scc,n,el].setlb(pESSTotalCharge[itBd,pp,scc,n,el])
+                    OptModel.vESSTotalCharge[     pp,scc,n,el].setub(pESSTotalCharge[itBd,pp,scc,n,el])
+                    # OptModel.vCharge2ndBlock[     pp,scc,n,el].fix(pCharge2ndBlock [itBd,pp,scc,n,el])
+                    # OptModel.vESSReserveUp  [     pp,scc,n,el].fix(pESSReserveUp   [itBd,pp,scc,n,el])
+                    # OptModel.vESSReserveDown[     pp,scc,n,el].fix(pESSReserveDown [itBd,pp,scc,n,el])
+                    # OptModel.vEnergyOutflows[     pp,scc,n,el].fix(pvEnergyOutflows[itBd,pp,scc,n,el])
             else:
                 # fixing electrolyzer decisions for the subproblem for the final Benders iteration
-                for p,sc,n,el in mTEPES.psnel:
-                    pESSTotalCharge         [itBd,p,sc,n,el] =     pESSTotalCharge[itBdOptml,p,sc,n,el]
-                    # OptModel.vESSTotalCharge[     p,sc,n,el].fix  (pESSTotalCharge[itBdOptml,p,sc,n,el])
-                    OptModel.vESSTotalCharge[     p,sc,n,el].setlb(pESSTotalCharge[itBdOptml,p,sc,n,el])
-                    OptModel.vESSTotalCharge[     p,sc,n,el].setub(pESSTotalCharge[itBdOptml,p,sc,n,el])
-                    # OptModel.vCharge2ndBlock[     p,sc,n,el].fix(pCharge2ndBlock [itBdOptml,p,sc,n,el])
-                    # OptModel.vESSReserveUp  [     p,sc,n,el].fix(pESSReserveUp   [itBdOptml,p,sc,n,el])
-                    # OptModel.vESSReserveDown[     p,sc,n,el].fix(pESSReserveDown [itBdOptml,p,sc,n,el])
-                    # OptModel.vEnergyOutflows[     p,sc,n,el].fix(pvEnergyOutflows[itBdOptml,p,sc,n,el])
+                for pp,scc,n,el in mTEPES.psnel:
+                    pESSTotalCharge         [itBd,pp,scc,n,el] =     pESSTotalCharge[itBdOptml,pp,scc,n,el]
+                    # OptModel.vESSTotalCharge[     pp,scc,n,el].fix  (pESSTotalCharge[itBdOptml,pp,scc,n,el])
+                    OptModel.vESSTotalCharge[     pp,scc,n,el].setlb(pESSTotalCharge[itBdOptml,pp,scc,n,el])
+                    OptModel.vESSTotalCharge[     pp,scc,n,el].setub(pESSTotalCharge[itBdOptml,pp,scc,n,el])
+                    # OptModel.vCharge2ndBlock[     pp,scc,n,el].fix(pCharge2ndBlock [itBdOptml,pp,scc,n,el])
+                    # OptModel.vESSReserveUp  [     pp,scc,n,el].fix(pESSReserveUp   [itBdOptml,pp,scc,n,el])
+                    # OptModel.vESSReserveDown[     pp,scc,n,el].fix(pESSReserveDown [itBdOptml,pp,scc,n,el])
+                    # OptModel.vEnergyOutflows[     pp,scc,n,el].fix(pvEnergyOutflows[itBdOptml,pp,scc,n,el])
 
             if pIndLogConsole:
                 StartTime         = time.time()
@@ -363,33 +372,33 @@ def SectorDecomposition(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLog
 
             # get the duals for the Benders cuts
             pESSTotalChargeMarginal = pd.Series([0.0] * len(mTEPES.psnel), index=mTEPES.psnel)
-            for p,sc,n,el in mTEPES.psnel:
+            for pp,scc,n,el in mTEPES.psnel:
                 if el in mTEPES.ec:
-                    pESSTotalChargeMarginal    [p,sc,n,el] -= mTEPES.pDuals[ f"eInstallConESS_{p}_{sc}_{st}('{n}', '{el}')"]        /mTEPES.pMaxCharge[p,sc,n,el]
-                pESSTotalChargeMarginal        [p,sc,n,el] += mTEPES.pDuals[   f"eBalanceElec_{p}_{sc}_{st}('{n}', '{n2l[el][0]}')"]
-                pESSTotalChargeMarginal        [p,sc,n,el] -= mTEPES.pDuals[  f"eESSInventory_{p}_{sc}_{st}('{n}', '{el}')"]        *mTEPES.pDuration[p,sc,n]()*math.sqrt(mTEPES.pEfficiency[el])
+                    pESSTotalChargeMarginal    [pp,scc,n,el] -= mTEPES.pDuals[ f"eInstallConESS_{pp}_{scc}_{st}('{n}', '{el}')"]     /mTEPES.pMaxCharge[pp,scc,n,el]
+                pESSTotalChargeMarginal        [pp,scc,n,el] += mTEPES.pDuals[   f"eBalanceElec_{pp}_{scc}_{st}('{n}', '{n2l[el]}')"]
+                pESSTotalChargeMarginal        [pp,scc,n,el] -= mTEPES.pDuals[  f"eESSInventory_{pp}_{scc}_{st}('{n}', '{el}')"]     *mTEPES.pDuration[pp,scc,n]()*math.sqrt(mTEPES.pEfficiency[el])
                 if mTEPES.pShiftTime[el]:
-                    pESSTotalChargeMarginal    [p,sc,n,el] -= mTEPES.pDuals[  f"eMaxShiftTime_{p}_{sc}_{st}('{n}', '{el}')"]        *mTEPES.pDuration[p,sc,n]()*          mTEPES.pEfficiency[el]
-                pESSTotalChargeMarginal        [p,sc,n,el] -= mTEPES.pDuals[f"eESSTotalCharge_{p}_{sc}_{st}('{n}', '{el}')"]
-                pESSTotalChargeMarginal        [p,sc,n,el] -= mTEPES.pDuals[     f"eBalanceH2_{p}_{sc}_{st}('{n}', '{n2l[el][0]}')"]*mTEPES.pDuration[p,sc,n]()/mTEPES.pProductionFunctionH2[el]
-                pESSTotalChargeMarginal_it[itBd,p,sc,n,el] = pESSTotalChargeMarginal[p,sc,n,el]
+                    pESSTotalChargeMarginal    [pp,scc,n,el] -= mTEPES.pDuals[  f"eMaxShiftTime_{pp}_{scc}_{st}('{n}', '{el}')"]     *mTEPES.pDuration[pp,scc,n]()*          mTEPES.pEfficiency[el]
+                pESSTotalChargeMarginal        [pp,scc,n,el] -= mTEPES.pDuals[f"eESSTotalCharge_{pp}_{scc}_{st}('{n}', '{el}')"]
+                pESSTotalChargeMarginal        [pp,scc,n,el] -= mTEPES.pDuals[     f"eBalanceH2_{pp}_{scc}_{st}('{n}', '{n2l[el]}')"]*mTEPES.pDuration[pp,scc,n]()/mTEPES.pProductionFunctionH2[el]
+                pESSTotalChargeMarginal_it[itBd,pp,scc,n,el] = pESSTotalChargeMarginal[pp,scc,n,el]
 
             # save one row per (iteration, period, scenario, load level) and one independent column per electrolyzer
             pRowsByKey = {}
-            for p,sc,n,el in mTEPES.psnel:
-                pKey = (p, sc, n, itBd)
+            for pp,scc,n,el in mTEPES.psnel:
+                pKey = (pp, scc, n, itBd)
                 if pKey not in pRowsByKey:
-                    pRowsByKey[pKey] = {'Iteration': itBd, 'Period': p, 'Scenario': sc, 'LoadLevel': n,'TotalSystemCost_[MEUR]': pTotalSCost_it[itBd]}
-                pRowsByKey[pKey][f'Consumption_{el}_[MW]'  ] = - pESSTotalCharge           [itBd,p,sc,n,el]*1e3
-                pRowsByKey[pKey][f'Marginal_{el}_[EUR/MWh]'] = - pESSTotalChargeMarginal_it[itBd,p,sc,n,el]
+                    pRowsByKey[pKey] = {'Iteration': itBd, 'Period': pp, 'Scenario': scc, 'LoadLevel': n,'TotalSystemCost_[MEUR]': pTotalSCost_it[itBd]}
+                pRowsByKey[pKey][f'Consumption_{el}_[MW]'  ] = - pESSTotalCharge           [itBd,pp,scc,n,el]*1e3
+                pRowsByKey[pKey][f'Marginal_{el}_[EUR/MWh]'] = - pESSTotalChargeMarginal_it[itBd,pp,scc,n,el]
 
             sPSNGT = [(p,sc,n,gt) for p,sc,n,gt in mTEPES.psngt if sum(1 for g in g2t[gt] if (p,g) in mTEPES.pg)]
             if sPSNGT:
                 OutputToFile = pd.Series(data=[sum(OptModel.vTotalOutput[p,sc,n,g]() for g in g2t[gt] if (p,g) in mTEPES.pg) for p,sc,n,gt in sPSNGT], index=pd.Index(sPSNGT))
                 OutputToFile *= 1e3
                 # add one production column per technology to the same rows
-                for (p,sc,n,gt), val in OutputToFile.items():
-                    pKey = (p, sc, n, itBd)
+                for (pp,scc,n,gt), val in OutputToFile.items():
+                    pKey = (pp, scc, n, itBd)
                     if pKey in pRowsByKey:
                         pRowsByKey[pKey][f'Production_{gt}_[MW]'] = val
             pSectorProxyRows.extend(pRowsByKey.values())
@@ -448,20 +457,18 @@ def SectorDecomposition(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLog
                 # Benders cuts are considered as lazy
                 # SolverMst.set_linear_constraint_attr(new_cut, 'Lazy', 1)
 
-    SolvingTime = time.time() - StartTime
+    SolvingTime = time.time() - FuncStartTime
     print('Sector Benders decomposition           ****')
     print('  Total system                 cost [MEUR] ', Z_Upper, ' Seconds', round(SolvingTime))
 
     pDuals = {}
+    pCutDualByIter = {}
     # eBd_Cuts is a ConstraintList indexed by iteration (1,2,...)
-    for iter in range(1, itBd):
+    for iter in range(1,itBd):
         try:
             pDuals[f'eBd_Cuts{iter}'] = mMaster.dual[mMaster.eBd_Cuts[iter]]
         except KeyError:
             pDuals[f'eBd_Cuts{iter}'] = None
-
-    pCutDualByIter = {}
-    for iter in range(1,itBd):
         pCutDualByIter[iter] = pDuals.get('eBd_Cuts'+str(iter), None)
 
     # add one dual value per iteration row in BendersConvergence

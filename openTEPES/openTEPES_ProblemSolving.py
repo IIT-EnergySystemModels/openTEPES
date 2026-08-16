@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 10, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 16, 2026
 openTEPES.openTEPES_ProblemSolving — per-stage solve orchestrator.
 
 Composes the three Layer 5.a primitives:
@@ -85,10 +85,9 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
     print("Termination condition: ", SolverResults.solver.termination_condition)
     if (SolverResults.solver.termination_condition == TerminationCondition.infeasible
             or SolverResults.solver.termination_condition == TerminationCondition.maxTimeLimit
-            or SolverResults.solver.termination_condition == TerminationCondition.infeasible.maxIterations):
+            or SolverResults.solver.termination_condition == TerminationCondition.maxIterations):
+        logging.basicConfig(filename=f"{_path}/openTEPES_infeasibilities_{CaseName}_{p}_{sc}_{st}.log", level=logging.INFO)
         log_infeasible_constraints(OptModel, log_expression=True, log_variables=True)
-        logging.basicConfig(filename=f"{_path}/openTEPES_infeasibilities_{CaseName}_{p}_{sc}_{st}.log",
-                            level=logging.INFO)
         raise ValueError(f"### Problem infeasible for period {p}, scenario {sc}, stage {st}")
 
     # ---- Fix integers + investments; re-solve as LP to recover duals ----

@@ -1,5 +1,5 @@
-"""
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 10, 2026
+﻿"""
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 16, 2026
 
 openTEPES.openTEPES_SettingUpVariables — creates the decision variables and their bounds, fixes the generators' commitment, relaxes or forbids investment conditions,
 zeroes out epsilon values, and screens for infeasibilities. Runs after DataConfiguration.
@@ -481,8 +481,13 @@ def SettingUpVariables(OptModel, mTEPES):
                     nFixedVariables += 2
 
         # total energy inflows per storage
-        pTotalEnergyInflows = pd.Series([sum(mTEPES.pEnergyInflows[p,sc,n,es]() for p,sc,n in mTEPES.psn if (p,sc,n,es) in mTEPES.psnes) for es in mTEPES.es], index=mTEPES.es)
-        pTotalMaxCharge     = pd.Series([sum(mTEPES.pMaxCharge[p,sc,n,es]       for p,sc,n in mTEPES.psn if (p,sc,n,es) in mTEPES.psnes) for es in mTEPES.es], index=mTEPES.es)
+        pAccEnergyInflows = defaultdict(float)
+        pAccMaxCharge     = defaultdict(float)
+        for p,sc,n,es in mTEPES.psnes:
+            pAccEnergyInflows[es] += mTEPES.pEnergyInflows[p,sc,n,es]()
+            pAccMaxCharge    [es] += mTEPES.pMaxCharge    [p,sc,n,es]
+        pTotalEnergyInflows = pd.Series([pAccEnergyInflows[es] for es in mTEPES.es], index=mTEPES.es)
+        pTotalMaxCharge     = pd.Series([pAccMaxCharge    [es] for es in mTEPES.es], index=mTEPES.es)
         mTEPES.pTotalEnergyInflows = Param(mTEPES.es, initialize=pTotalEnergyInflows.to_dict(), within=NonNegativeReals, doc='Total energy outflows')
         mTEPES.pTotalMaxCharge     = Param(mTEPES.es, initialize=pTotalMaxCharge.to_dict(),     within=NonNegativeReals, doc='Total maximum charge' )
 
@@ -498,7 +503,7 @@ def SettingUpVariables(OptModel, mTEPES):
                 OptModel.vReserveUp      [p,sc,n,es].fix(0.0)
                 OptModel.vReserveDown    [p,sc,n,es].fix(0.0)
                 OptModel.vESSSpillage    [p,sc,n,es].fix(0.0)
-                OptModel.vESSInventory   [p,sc,n,es].fix(mTEPES.pIniInventory[p,sc,n,es])
+                OptModel.vESSInventory   [p,sc,n,es].fix(mTEPES.pIniInventory[p,sc,n,es]())
                 nFixedVariables += 6
                 if mTEPES.pIndReserveActivation():
                     OptModel.vReserveUpEnergy  [p,sc,n,es].fix(0.0)
@@ -577,8 +582,8 @@ def SettingUpVariables(OptModel, mTEPES):
         # activate only period, scenario, and load levels to formulate
         mTEPES.del_component(mTEPES.st)
         mTEPES.del_component(mTEPES.n )
-        mTEPES.st = Set(doc='stages',      initialize=[stt for stt in mTEPES.stt if st == stt and mTEPES.pStageWeight[stt] and sum(1 for  p,sc,st,nn  in mTEPES.s2n)])
-        mTEPES.n  = Set(doc='load levels', initialize=[nn  for nn  in mTEPES.nn  if                                                      (p,sc,st,nn) in mTEPES.s2n ])
+        mTEPES.st = Set(doc='stages',      initialize=[stt for stt in mTEPES.stt if st == stt and mTEPES.pStageWeight[stt] and sum(1 for nn in mTEPES.nn if (p,sc,stt,nn) in mTEPES.s2n)])
+        mTEPES.n  = Set(doc='load levels', initialize=[nn  for nn  in mTEPES.nn  if                              (p,sc,st,nn) in mTEPES.s2n])
 
         if mTEPES.n:
             # determine the first load level of each stage
@@ -586,15 +591,16 @@ def SettingUpVariables(OptModel, mTEPES):
             # commit the units of each area and their output at the first load level of each stage
             for ar in mTEPES.ar:
                 pSystemOutput = 0.0
+                pAreaDemand   = sum(mTEPES.pDemandElec[n1,nd]() for nd in d2a[ar])
                 for nr in n2a[ar]:
-                    if mTEPES.pMustRun[nr] == 1 and (p,nr) in mTEPES.pnr and pSystemOutput < sum(mTEPES.pDemandElec[n1,nd]() for nd in d2a[ar]):
+                    if mTEPES.pMustRun[nr] == 1 and (p,nr) in mTEPES.pnr and pSystemOutput < pAreaDemand:
                         mTEPES.pInitialOutput[n1,nr] = mTEPES.pMaxPowerElec [n1,nr]
                         mTEPES.pInitialUC    [n1,nr] = 1
                         pSystemOutput               += mTEPES.pInitialOutput[n1,nr]()
 
                 # determine the initially committed units and their output at the first load level of each period, scenario, and stage
                 for go in o2a[ar]:
-                    if mTEPES.pMustRun[go] == 0 and (p,go) in mTEPES.pg and pSystemOutput < sum(mTEPES.pDemandElec[n1,nd]() for nd in d2a[ar]):
+                    if mTEPES.pMustRun[go] == 0 and (p,go) in mTEPES.pg and pSystemOutput < pAreaDemand:
                         if go in mTEPES.re:
                             mTEPES.pInitialOutput[n1,go] = mTEPES.pMaxPowerElec [n1,go]
                         else:
@@ -613,7 +619,7 @@ def SettingUpVariables(OptModel, mTEPES):
             # fixing the ESS inventory at the last load level of the stage for every period and scenario if between storage limits
             for es in mTEPES.es:
                 if es not in mTEPES.ec and (p,es) in mTEPES.pes:
-                    OptModel.vESSInventory[p,sc,mTEPES.n.last(),es].fix(mTEPES.pIniInventory[p,sc,mTEPES.n.last(),es])
+                    OptModel.vESSInventory[p,sc,mTEPES.n.last(),es].fix(mTEPES.pIniInventory[p,sc,mTEPES.n.last(),es]())
 
             if mTEPES.pIndHydroTopology():
                 # fixing the reservoir volume at the last load level of the stage for every period and scenario if between storage limits
@@ -624,24 +630,24 @@ def SettingUpVariables(OptModel, mTEPES):
     # activate all the periods, scenarios, and load levels again
     mTEPES.del_component(mTEPES.st)
     mTEPES.del_component(mTEPES.n )
-    mTEPES.st = Set(doc='stages',      initialize=[stt for stt in mTEPES.stt if mTEPES.pStageWeight[stt] and sum(1 for                    (p,sc,stt,nn) in mTEPES.s2n)])
-    mTEPES.n  = Set(doc='load levels', initialize=[nn  for nn  in mTEPES.nn  if                              sum(1 for st in mTEPES.st if (p,sc,st, nn) in mTEPES.s2n)])
+    mTEPES.st = Set(doc='stages',      initialize=[stt for stt in mTEPES.stt if mTEPES.pStageWeight[stt] and sum(1 for pp,scc,stt2,nn in mTEPES.s2n if stt2 == stt)])
+    mTEPES.n  = Set(doc='load levels', initialize=[nn  for nn  in mTEPES.nn  if sum(1 for pp,scc,stt2 in mTEPES.ps*mTEPES.st if (pp,scc,stt2,nn) in mTEPES.s2n)])
 
     # fixing the ESS inventory at the end of the following pStorageTimeStep (daily, weekly, monthly) if between storage limits, i.e.,
     # for daily ESS is fixed at the end of the week, for weekly ESS is fixed at the end of the month, for monthly ESS is fixed at the end of the year
     # for p,sc,n,es in mTEPES.psnes:
     #     if es not in mTEPES.ec:
     #         if mTEPES.pStorageType[es] == 'Hourly'  and mTEPES.n.ord(n) % int(  24/mTEPES.pTimeStep()) == 0:
-    #             OptModel.vESSInventory[p,sc,n,es].fix(mTEPES.pIniInventory[p,sc,n,es])
+    #             OptModel.vESSInventory[p,sc,n,es].fix(mTEPES.pIniInventory[p,sc,n,es]())
     #             nFixedVariables += 1
     #         if mTEPES.pStorageType[es] == 'Daily'   and mTEPES.n.ord(n) % int( 168/mTEPES.pTimeStep()) == 0:
-    #             OptModel.vESSInventory[p,sc,n,es].fix(mTEPES.pIniInventory[p,sc,n,es])
+    #             OptModel.vESSInventory[p,sc,n,es].fix(mTEPES.pIniInventory[p,sc,n,es]())
     #             nFixedVariables += 1
     #         if mTEPES.pStorageType[es] == 'Weekly'  and mTEPES.n.ord(n) % int( 672/mTEPES.pTimeStep()) == 0:
-    #             OptModel.vESSInventory[p,sc,n,es].fix(mTEPES.pIniInventory[p,sc,n,es])
+    #             OptModel.vESSInventory[p,sc,n,es].fix(mTEPES.pIniInventory[p,sc,n,es]())
     #             nFixedVariables += 1
     #         if mTEPES.pStorageType[es] == 'Monthly' and mTEPES.n.ord(n) % int(8736/mTEPES.pTimeStep()) == 0:
-    #             OptModel.vESSInventory[p,sc,n,es].fix(mTEPES.pIniInventory[p,sc,n,es])
+    #             OptModel.vESSInventory[p,sc,n,es].fix(mTEPES.pIniInventory[p,sc,n,es]())
     #             nFixedVariables += 1
 
     # if mTEPES.pIndHydroTopology():
@@ -719,8 +725,12 @@ def SettingUpVariables(OptModel, mTEPES):
                     nFixedVariables += 1
 
     # if there are no energy outflows, no variable is needed
+    # accumulate per unit in one pass over psnes instead of re-scanning the whole psn once per ESS; psnes is exactly psn x es filtered by pes
+    pAccEnergyOutflows = defaultdict(float)
+    for p,sc,n,es in mTEPES.psnes:
+        pAccEnergyOutflows[es] += mTEPES.pEnergyOutflows[p,sc,n,es]()
     for es in mTEPES.es:
-        if sum(mTEPES.pEnergyOutflows[p,sc,n,es]() for p,sc,n in mTEPES.psn if (p,es) in mTEPES.pes) == 0.0:
+        if pAccEnergyOutflows[es] == 0.0:
             for p,sc,n in mTEPES.psn:
                 if (p,es) in mTEPES.pes:
                     OptModel.vEnergyOutflows[p,sc,n,es].fix(0.0)
@@ -728,8 +738,12 @@ def SettingUpVariables(OptModel, mTEPES):
 
     if mTEPES.pIndHydroTopology():
         # if there are no hydro outflows, no variable is needed
+        # same one-pass accumulation over psnrs, which is exactly psn x rs filtered by prs
+        pAccHydroOutflows = defaultdict(float)
+        for p,sc,n,rs in mTEPES.psnrs:
+            pAccHydroOutflows[rs] += mTEPES.pHydroOutflows[p,sc,n,rs]()
         for rs in mTEPES.rs:
-            if sum(mTEPES.pHydroOutflows[p,sc,n,rs]() for p,sc,n in mTEPES.psn if (p,rs) in mTEPES.prs) == 0.0:
+            if pAccHydroOutflows[rs] == 0.0:
                 for p,sc,n in mTEPES.psn:
                     if (p,rs) in mTEPES.prs:
                         OptModel.vHydroOutflows[p,sc,n,rs].fix(0.0)
@@ -783,8 +797,8 @@ def SettingUpVariables(OptModel, mTEPES):
             if mTEPES.pDemandH2[p,sc,n,nd] ==  0.0:
                 OptModel.vH2NS [p,sc,n,nd].fix(0.0)
                 nFixedVariables += 1
-            if len(l2n[nd]) + len(b2n[nd]) + len(lout[nd]) + len(lin[nd]) == 0 and mTEPES.pDemandH2[p,sc,n,nd]() > 0.0:
-                OptModel.vH2NS [p,sc,n,nd].fix(mTEPES.pDemandH2[p,sc,n,nd]())
+            if len(l2n[nd]) + len(b2n[nd]) + len(lout[nd]) + len(lin[nd]) == 0 and mTEPES.pDemandH2[p,sc,n,nd] > 0.0:
+                OptModel.vH2NS [p,sc,n,nd].fix(mTEPES.pDemandH2[p,sc,n,nd])
                 nFixedVariables += 1
 
     if mTEPES.pIndHeat():
@@ -793,8 +807,8 @@ def SettingUpVariables(OptModel, mTEPES):
             if mTEPES.pDemandHeat[p,sc,n,nd] ==  0.0:
                 OptModel.vHeatNS [p,sc,n,nd].fix(0.0)
                 nFixedVariables += 1
-            if len(chp2n[nd]) + len(lout[nd]) + len(lin[nd]) == 0 and mTEPES.pDemandHeat[p,sc,n,nd]() > 0.0:
-                OptModel.vHeatNS [p,sc,n,nd].fix(mTEPES.pDemandHeat[p,sc,n,nd]())
+            if len(chp2n[nd]) + len(lout[nd]) + len(lin[nd]) == 0 and mTEPES.pDemandHeat[p,sc,n,nd] > 0.0:
+                OptModel.vHeatNS [p,sc,n,nd].fix(mTEPES.pDemandHeat[p,sc,n,nd])
                 nFixedVariables += 1
 
     # @profile
@@ -948,15 +962,18 @@ def SettingUpVariables(OptModel, mTEPES):
     nFixedInstallationsAndRetirements = AvoidForbiddenInstallationsAndRetirements(mTEPES, mTEPES)
     nFixedVariables += nFixedInstallationsAndRetirements
 
+    pHasLineSwitch = any(mTEPES.pIndBinLineSwitch[idx] for idx in mTEPES.pIndBinLineSwitch)
     for p,sc,n,ni,nf,cc in mTEPES.psnle:
         if mTEPES.pElecNetPeriodIni[ni,nf,cc] > p or mTEPES.pElecNetPeriodFin[ni,nf,cc] < p:
             OptModel.vLineCommit  [p,sc,n,ni,nf,cc].fix(0)
             OptModel.vLineCommit  [p,sc,n,ni,nf,cc].domain = UnitInterval
-            OptModel.vLineOnState [p,sc,n,ni,nf,cc].fix(0)
-            OptModel.vLineOnState [p,sc,n,ni,nf,cc].domain = UnitInterval
-            OptModel.vLineOffState[p,sc,n,ni,nf,cc].fix(0)
-            OptModel.vLineOffState[p,sc,n,ni,nf,cc].domain = UnitInterval
-            nFixedVariables += 3
+            nFixedVariables += 1
+            if pHasLineSwitch:
+                OptModel.vLineOnState [p,sc,n,ni,nf,cc].fix(0)
+                OptModel.vLineOnState [p,sc,n,ni,nf,cc].domain = UnitInterval
+                OptModel.vLineOffState[p,sc,n,ni,nf,cc].fix(0)
+                OptModel.vLineOffState[p,sc,n,ni,nf,cc].domain = UnitInterval
+                nFixedVariables += 2
 
     [OptModel.vLineLosses  [p,sc,n,ni,nf,cc].fix(0.0) for p,sc,n,ni,nf,cc in mTEPES.psnll if (ni,nf,cc) not in mTEPES.lc and (mTEPES.pElecNetPeriodIni [ni,nf,cc] > p or mTEPES.pElecNetPeriodFin [ni,nf,cc] < p)]
     nFixedVariables     += sum(                  1    for p,sc,n,ni,nf,cc in mTEPES.psnll if (ni,nf,cc) not in mTEPES.lc and (mTEPES.pElecNetPeriodIni [ni,nf,cc] > p or mTEPES.pElecNetPeriodFin [ni,nf,cc] < p))
@@ -1143,7 +1160,7 @@ def SettingUpVariables(OptModel, mTEPES):
 
             if mTEPES.pIndHeat():
                 if sum(mTEPES.pRatedMaxPowerHeat[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]()) for g in g2a[ar] if (p,g) in mTEPES.pg) < mTEPES.pDemandHeatPeak[p,ar] * mTEPES.pReserveMarginHeat[p,ar]:
-                    raise ValueError('### Heat reserve margin infeasibility ',        p,ar, sum(mTEPES.pRatedMaxPowerHeat[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]()) for g in g2a[ar] if (p,g) in mTEPES.pg), mTEPES.pDemandHeatPeak[p,ar] * mTEPES.pReserveMarginHeat[p,ar]())
+                    raise ValueError('### Heat reserve margin infeasibility ',        p,ar, sum(mTEPES.pRatedMaxPowerHeat[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]()) for g in g2a[ar] if (p,g) in mTEPES.pg), mTEPES.pDemandHeatPeak[p,ar] * mTEPES.pReserveMarginHeat[p,ar])
 
         for p,sc,ar in mTEPES.ps*mTEPES.ar:
             if mTEPES.pRESEnergy[p,ar]() > sum(mTEPES.pDemandElec[p,sc,n,nd]()*mTEPES.pLoadLevelDuration[p,sc,n]() for n,nd in mTEPES.n*d2a[ar] if (p,sc,n,nd) in mTEPES.psnnd):
@@ -1156,19 +1173,20 @@ def SettingUpVariables(OptModel, mTEPES):
     mTEPES.IndependentPeriods = Param(           domain=Boolean, initialize=False, mutable=True)
     mTEPES.IndependentStages  = Param(mTEPES.pp, domain=Boolean, initialize=False, mutable=True)
     mTEPES.IndependentStages2 = Param(           domain=Boolean, initialize=False, mutable=True)
-    mTEPES.Parallel           = Param(           domain=Boolean, initialize=False, mutable=True)
-    mTEPES.Parallel           = True
+    # initialized directly to its effective value: it used to be created False and overwritten to True unconditionally on the next line. Kept mutable for
+    # external tooling; note that no module in this tree consumes Parallel (nor IndependentPeriods/IndependentStages*) yet
+    mTEPES.Parallel           = Param(           domain=Boolean, initialize=True,  mutable=True)
     if (    (len(mTEPES.gc) == 0 or mTEPES.pIndBinGenInvest()     == 2)   # No candidates
         and (len(mTEPES.gd) == 0 or mTEPES.pIndBinGenRetire()     == 2)   # No retirements
         and (len(mTEPES.lc) == 0 or mTEPES.pIndBinNetElecInvest() == 2)): # No line candidates
         # Periods and scenarios are independent of each other
         mTEPES.IndependentPeriods = True
         for p in mTEPES.p:
-            if (    (math.isinf(min([mTEPES.pEmission[p,ar] for ar in mTEPES.ar])) or sum(mTEPES.pEmissionRate[nr] for nr in mTEPES.nr) == 0)  # No emissions
+            if (    (math.isinf(min([mTEPES.pEmission[p,ar] for ar in mTEPES.ar])) or not any(mTEPES.pEmissionRate[nr] for nr in mTEPES.nr))  # No emissions
                 and (max([mTEPES.pRESEnergy[p,ar]() for ar in mTEPES.ar]) == 0.0)):                                                                # No minimum RES requirements
             # Stages are independent from each other
                 mTEPES.IndependentStages[p] = True
-    if all(mTEPES.IndependentStages[p]() for p in mTEPES.pp):
+    if all(mTEPES.IndependentStages[p]() for p in mTEPES.p):
         mTEPES.IndependentStages2 = True
 
     mTEPES.Period = Block(mTEPES.p)

@@ -1,5 +1,5 @@
-"""
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 11, 2026
+﻿"""
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 16, 2026
 """
 
 import os
@@ -37,14 +37,14 @@ FINAL_ITERATION = 9999
 
 # load-level-dependent parameters saved/restored around the sensitivity-analysis stage loop (mode 3): (parameter name, index-set name)
 STAGE_PARAMS = (
-    ('pDuration',      'nn'   ), ('pLoadLevelDuration', 'nn'   ),
+    ('pDuration',      'psn'  ), ('pLoadLevelDuration', 'psn'  ),
     ('pDemandElec',    'psnnd'), ('pMaxTheta',          'psnnd'),
     ('pSystemInertia', 'psnar'), ('pOperReserveUp',     'psnar'), ('pOperReserveDw',     'psnar'),
-    ('pInitialOutput', 'psng' ), ('pInitialUC',         'psng' ), ('pIniInventory',      'psng' ),
-    ('pMinPowerElec',  'psng' ), ('pMaxPowerElec',      'psng' ), ('pMinCharge',         'psng' ),
-    ('pMaxCharge',     'psng' ), ('pMaxPower2ndBlock',  'psng' ), ('pMaxCharge2ndBlock', 'psng' ),
-    ('pEnergyInflows', 'psng' ), ('pEnergyOutflows',    'psng' ), ('pMinStorage',        'psng' ),
-    ('pMaxStorage',    'psng' ), ('pInitialSwitch',     'psnln'),
+    ('pInitialOutput', 'psng' ), ('pInitialUC',         'psng' ), ('pIniInventory',      'psnes'),
+    ('pMinPowerElec',  'psng' ), ('pMaxPowerElec',      'psng' ), ('pMinCharge',         'psneh'),
+    ('pMaxCharge',     'psneh'), ('pMaxPower2ndBlock',  'psng' ), ('pMaxCharge2ndBlock', 'psneh'),
+    ('pEnergyInflows', 'psnes'), ('pEnergyOutflows',    'psnes'), ('pMinStorage',        'psnes'),
+    ('pMaxStorage',    'psnes'), ('pInitialSwitch',     'psnla'),
 )
 
 def RebuildStageAndLoadLevelSets(mTEPES):
@@ -52,7 +52,7 @@ def RebuildStageAndLoadLevelSets(mTEPES):
     mTEPES.del_component(mTEPES.st)
     mTEPES.del_component(mTEPES.n )
     mTEPES.del_component(mTEPES.n2)
-    mTEPES.st = Set(doc='stages',      initialize=[stt for stt in mTEPES.stt if mTEPES.pStageWeight[stt] and sum(1 for p,sc,stt,nn in mTEPES.s2n)])
+    mTEPES.st = Set(doc='stages',      initialize=[stt for stt in mTEPES.stt if mTEPES.pStageWeight[stt] and sum(1 for pp,scc,stt2,nn in mTEPES.s2n if stt2 == stt)])
     ActiveLoadLevels = [nn for nn in mTEPES.nn if sum(1 for p,sc,st in mTEPES.ps*mTEPES.st if (p,sc,st,nn) in mTEPES.s2n)]
     mTEPES.n  = Set(doc='load levels', initialize=ActiveLoadLevels)
     mTEPES.n2 = Set(doc='load levels', initialize=ActiveLoadLevels)
@@ -71,13 +71,13 @@ def ApplyGurobiSubproblemOptions(Solver, SolverName, LogFile):
 def AccumulateBendersDuals(OptModel, mTEPES, p, sc, StageLabel, LoadLevels, MarginalG, MarginalR, MarginalE, MarginalCap):
     # accumulate the shadow prices of the investment-linking constraints for the Benders cuts; shared by the stage-loop and sensitivity paths
     for gc       in mTEPES.gc:
-        MarginalG  [p,gc      ] += sum(OptModel.dual[getattr(OptModel, f'eInstalGenComm_{p}_{sc}_{StageLabel}')  [n,gc]] + OptModel.dual[getattr(OptModel, f'eInstalGenCap_{p}_{sc}_{StageLabel}')[n,gc]] for n in LoadLevels)
+        MarginalG  [p,gc      ] += sum(OptModel.dual[getattr(OptModel, f'eInstallGenComm_{p}_{sc}_{StageLabel}')  [n,gc]] + OptModel.dual[getattr(OptModel, f'eInstallGenCap_{p}_{sc}_{StageLabel}')[n,gc]] for n in LoadLevels)
         mTEPES.pGenerationInvestMarginalG[p,gc      ]  = MarginalG  [p,gc     ]
     for gd       in mTEPES.gd:
-        MarginalR  [p,gd      ] += sum(OptModel.dual[getattr(OptModel, f'eUninstalGenComm_{p}_{sc}_{StageLabel}')[n,gd]] + OptModel.dual[getattr(OptModel, f'eUninstalGenCap_{p}_{sc}_{StageLabel}')[n,gd]] for n in LoadLevels)
+        MarginalR  [p,gd      ] += sum(OptModel.dual[getattr(OptModel, f'eUninstallGenComm_{p}_{sc}_{StageLabel}')[n,gd]] + OptModel.dual[getattr(OptModel, f'eUninstallGenCap_{p}_{sc}_{StageLabel}')[n,gd]] for n in LoadLevels)
         mTEPES.pGenerationInvestMarginalR[p,gd      ]  = MarginalR  [p,gd     ]
     for ec       in mTEPES.ec:
-        MarginalE  [p,ec      ] += sum(OptModel.dual[getattr(OptModel, f'eInstalConESS_{p}_{sc}_{StageLabel}')   [n,ec]]                                                                            for n in LoadLevels)
+        MarginalE  [p,ec      ] += sum(OptModel.dual[getattr(OptModel, f'eInstallConESS_{p}_{sc}_{StageLabel}')   [n,ec]]                                                                            for n in LoadLevels)
         mTEPES.pGenerationInvestMarginalE[p,ec      ]  = MarginalE  [p,ec     ]
     for ni,nf,cc in mTEPES.lc:
         MarginalCap[p,ni,nf,cc] += sum(OptModel.dual[getattr(OptModel, f'eLineStateCand_{p}_{sc}_{StageLabel}')[n,ni,nf,cc]]                                                                        for n in LoadLevels)
@@ -128,7 +128,7 @@ def StageSolve(OptModel, mTEPES, DirName, CaseName, SolverName, pIndLogConsole, 
 
                 if mTEPES.pIndSequentialSolving() == 3 and st == mTEPES.stt.first() and not hasattr(mTEPES, 'n1'):
                     # load level of the first stage (created once and reused across Benders iterations)
-                    mTEPES.n1 = Set(initialize=[nn for nn in mTEPES.nn if nn in mTEPES.pDuration and (p,sc,st,nn) in mTEPES.s2n], ordered=True, doc='load levels')
+                    mTEPES.n1 = Set(initialize=[nn for nn in mTEPES.nn if (p,sc,nn) in mTEPES.pDuration and (p,sc,st,nn) in mTEPES.s2n], ordered=True, doc='load levels')
 
                 if mTEPES.pIndSequentialSolving() == 3 and st == mTEPES.stt.first() and itBd == 1:
                     # save all the parameters that depend on load level
@@ -147,15 +147,18 @@ def StageSolve(OptModel, mTEPES, DirName, CaseName, SolverName, pIndLogConsole, 
 
                 pScenFactor = {(p,sc): mTEPES.pDiscountedWeight[p] * mTEPES.pScenProb[p,sc]() for p,sc in mTEPES.ps}
 
-                # operation model o.f. by stage
+                # operation model o.f. by stage; the H2/heat flags do not depend on the tuple, so they select the whole addend instead of being re-evaluated per tuple
                 def eTotalOCost(OptModel):
-                    return (sum(pScenFactor[p,sc] * (OptModel.vTotalGCost    [p,sc,n] +
-                                                     OptModel.vTotalCCost    [p,sc,n] +
-                                                     OptModel.vTotalECost    [p,sc,n] +
-                                                     OptModel.vTotalNCost    [p,sc,n] +
-                                                     OptModel.vTotalRElecCost[p,sc,n]) for p,sc,n in mTEPES.psn                         ) +
-                            sum(pScenFactor[p,sc] *  OptModel.vTotalRH2Cost  [p,sc,n]  for p,sc,n in mTEPES.psn if mTEPES.pIndHydrogen()) +
-                            sum(pScenFactor[p,sc] *  OptModel.vTotalRHeatCost[p,sc,n]  for p,sc,n in mTEPES.psn if mTEPES.pIndHeat()    ) )
+                    vTotalOCost = sum(pScenFactor[p,sc] * (OptModel.vTotalGCost    [p,sc,n] +
+                                                           OptModel.vTotalCCost    [p,sc,n] +
+                                                           OptModel.vTotalECost    [p,sc,n] +
+                                                           OptModel.vTotalNCost    [p,sc,n] +
+                                                           OptModel.vTotalRElecCost[p,sc,n]) for p,sc,n in mTEPES.psn)
+                    if mTEPES.pIndHydrogen():
+                        vTotalOCost += sum(pScenFactor[p,sc] * OptModel.vTotalRH2Cost  [p,sc,n] for p,sc,n in mTEPES.psn)
+                    if mTEPES.pIndHeat():
+                        vTotalOCost += sum(pScenFactor[p,sc] * OptModel.vTotalRHeatCost[p,sc,n] for p,sc,n in mTEPES.psn)
+                    return vTotalOCost
                 setattr(OptModel, f'eTotalOCost_{p}_{sc}_{st}', Objective(rule=eTotalOCost, sense=minimize, doc='total system operation cost [MEUR]'))
 
                 if itBd == 1:
@@ -267,31 +270,31 @@ def StageSolve(OptModel, mTEPES, DirName, CaseName, SolverName, pIndLogConsole, 
                 for n1,n in StagePairs:
                     mTEPES.pDuration         [     n1   ] = mTEPES.pDuration_Saved         [     n   ]
                     mTEPES.pLoadLevelDuration[     n1   ] = mTEPES.pLoadLevelDuration_Saved[     n   ]
-                for p,sc in mTEPES.ps:
+                for pp,scc in mTEPES.ps:
                     for n1,n in StagePairs:
                         for nd in mTEPES.nd:
-                            mTEPES.pDemandElec       [p,sc,n1,nd] = mTEPES.pDemandElec_Saved       [p,sc,n,nd]
-                            mTEPES.pMaxTheta         [p,sc,n1,nd] = mTEPES.pMaxTheta_Saved         [p,sc,n,nd]
+                            mTEPES.pDemandElec       [pp,scc,n1,nd] = mTEPES.pDemandElec_Saved       [pp,scc,n,nd]
+                            mTEPES.pMaxTheta         [pp,scc,n1,nd] = mTEPES.pMaxTheta_Saved         [pp,scc,n,nd]
                         for ar in mTEPES.ar:
-                            mTEPES.pSystemInertia    [p,sc,n1,ar] = mTEPES.pSystemInertia_Saved    [p,sc,n,ar]
-                            mTEPES.pOperReserveUp    [p,sc,n1,ar] = mTEPES.pOperReserveUp_Saved    [p,sc,n,ar]
-                            mTEPES.pOperReserveDw    [p,sc,n1,ar] = mTEPES.pOperReserveDw_Saved    [p,sc,n,ar]
+                            mTEPES.pSystemInertia    [pp,scc,n1,ar] = mTEPES.pSystemInertia_Saved    [pp,scc,n,ar]
+                            mTEPES.pOperReserveUp    [pp,scc,n1,ar] = mTEPES.pOperReserveUp_Saved    [pp,scc,n,ar]
+                            mTEPES.pOperReserveDw    [pp,scc,n1,ar] = mTEPES.pOperReserveDw_Saved    [pp,scc,n,ar]
                         for g in mTEPES.g:
-                            mTEPES.pInitialOutput    [p,sc,n1,g ] = mTEPES.pInitialOutput_Saved    [p,sc,n,g ]
-                            mTEPES.pInitialUC        [p,sc,n1,g ] = mTEPES.pInitialUC_Saved        [p,sc,n,g ]
-                            mTEPES.pIniInventory     [p,sc,n1,g ] = mTEPES.pIniInventory_Saved     [p,sc,n,g ]
-                            mTEPES.pMinPowerElec     [p,sc,n1,g ] = mTEPES.pMinPowerElec_Saved     [p,sc,n,g ]
-                            mTEPES.pMaxPowerElec     [p,sc,n1,g ] = mTEPES.pMaxPowerElec_Saved     [p,sc,n,g ]
-                            mTEPES.pMinCharge        [p,sc,n1,g ] = mTEPES.pMinCharge_Saved        [p,sc,n,g ]
-                            mTEPES.pMaxCharge        [p,sc,n1,g ] = mTEPES.pMaxCharge_Saved        [p,sc,n,g ]
-                            mTEPES.pMaxPower2ndBlock [p,sc,n1,g ] = mTEPES.pMaxPower2ndBlock_Saved [p,sc,n,g ]
-                            mTEPES.pMaxCharge2ndBlock[p,sc,n1,g ] = mTEPES.pMaxCharge2ndBlock_Saved[p,sc,n,g ]
-                            mTEPES.pEnergyInflows    [p,sc,n1,g ] = mTEPES.pEnergyInflows_Saved    [p,sc,n,g ]
-                            mTEPES.pEnergyOutflows   [p,sc,n1,g ] = mTEPES.pEnergyOutflows_Saved   [p,sc,n,g ]
-                            mTEPES.pMinStorage       [p,sc,n1,g ] = mTEPES.pMinStorage_Saved       [p,sc,n,g ]
-                            mTEPES.pMaxStorage       [p,sc,n1,g ] = mTEPES.pMaxStorage_Saved       [p,sc,n,g ]
-                        for ni,nf,cc in mTEPES.ln:
-                            mTEPES.pInitialSwitch    [p,sc,n1,ni,nf,cc] = mTEPES.pInitialSwitch_Saved    [p,sc,n,ni,nf,cc]
+                            mTEPES.pInitialOutput    [pp,scc,n1,g ] = mTEPES.pInitialOutput_Saved    [pp,scc,n,g ]
+                            mTEPES.pInitialUC        [pp,scc,n1,g ] = mTEPES.pInitialUC_Saved        [pp,scc,n,g ]
+                            mTEPES.pIniInventory     [pp,scc,n1,g ] = mTEPES.pIniInventory_Saved     [pp,scc,n,g ]
+                            mTEPES.pMinPowerElec     [pp,scc,n1,g ] = mTEPES.pMinPowerElec_Saved     [pp,scc,n,g ]
+                            mTEPES.pMaxPowerElec     [pp,scc,n1,g ] = mTEPES.pMaxPowerElec_Saved     [pp,scc,n,g ]
+                            mTEPES.pMinCharge        [pp,scc,n1,g ] = mTEPES.pMinCharge_Saved        [pp,scc,n,g ]
+                            mTEPES.pMaxCharge        [pp,scc,n1,g ] = mTEPES.pMaxCharge_Saved        [pp,scc,n,g ]
+                            mTEPES.pMaxPower2ndBlock [pp,scc,n1,g ] = mTEPES.pMaxPower2ndBlock_Saved [pp,scc,n,g ]
+                            mTEPES.pMaxCharge2ndBlock[pp,scc,n1,g ] = mTEPES.pMaxCharge2ndBlock_Saved[pp,scc,n,g ]
+                            mTEPES.pEnergyInflows    [pp,scc,n1,g ] = mTEPES.pEnergyInflows_Saved    [pp,scc,n,g ]
+                            mTEPES.pEnergyOutflows   [pp,scc,n1,g ] = mTEPES.pEnergyOutflows_Saved   [pp,scc,n,g ]
+                            mTEPES.pMinStorage       [pp,scc,n1,g ] = mTEPES.pMinStorage_Saved       [pp,scc,n,g ]
+                            mTEPES.pMaxStorage       [pp,scc,n1,g ] = mTEPES.pMaxStorage_Saved       [pp,scc,n,g ]
+                        for ni,nf,cc in mTEPES.la:
+                            mTEPES.pInitialSwitch    [pp,scc,n1,ni,nf,cc] = mTEPES.pInitialSwitch_Saved    [pp,scc,n,ni,nf,cc]
 
                 if pIndLogConsole == 1:
                     StartTime      = time.time()

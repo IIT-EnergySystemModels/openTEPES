@@ -1,5 +1,5 @@
-"""
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 09, 2026
+﻿"""
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 16, 2026
 """
 
 import os
@@ -22,7 +22,8 @@ except ImportError:
 def StageDecomposition(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConsole, p, sc, st, _path, pIndCycleFlow):
     print('Time Benders decomposition             ****')
     _path = os.path.join(DirName, CaseName)
-    StartTime = time.time()
+    # function-entry instant, on its own name: StartTime is reset by the LP-writing phase inside the loop, so the final total must not read it
+    FuncStartTime = time.time()
 
     mMaster = ConcreteModel('Master problem')
     # maximum number of Benders iterations
@@ -99,7 +100,7 @@ def StageDecomposition(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogC
 
     # initialization
     Z_Lower = float('-inf')
-    Z_Upper = float(' inf')
+    Z_Upper = float('inf' )
 
     # Benders algorithm
     mMaster.vTheta.fix(0)
@@ -129,28 +130,29 @@ def StageDecomposition(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogC
                 pTotalSCost      = mMaster.vTotalSCost()
 
                 # storing the master solution and fixing investment decision for the subproblem
-                for p,gc       in mTEPES.pgc:
-                    pGenerationInvest         [itBd,p,gc      ] = mMaster.vGenerationInvest[          p,gc      ]()
-                    OptModel.vGenerationInvest[     p,gc      ].fix(      pGenerationInvest[itBd,     p,gc      ])
-                for p,gd       in mTEPES.pgd:
-                    pGenerationRetire         [itBd,p,gd      ] = mMaster.vGenerationRetire[          p,gd      ]()
-                    OptModel.vGenerationRetire[     p,gd      ].fix(      pGenerationRetire[itBd,     p,gd      ])
-                for p,ni,nf,cc in mTEPES.plc:
-                    pNetworkInvest            [itBd,p,ni,nf,cc] = mMaster.vNetworkInvest   [          p,ni,nf,cc]()
-                    OptModel.vNetworkInvest   [     p,ni,nf,cc].fix(      pNetworkInvest   [itBd,     p,ni,nf,cc])
+                # the loop variables are pp (not p) on purpose: p is the function argument and names the master log/lp files of this (p,sc,st)
+                for pp,gc      in mTEPES.pgc:
+                    pGenerationInvest         [itBd,pp,gc     ] = mMaster.vGenerationInvest[          pp,gc     ]()
+                    OptModel.vGenerationInvest[     pp,gc     ].fix(      pGenerationInvest[itBd,     pp,gc     ])
+                for pp,gd      in mTEPES.pgd:
+                    pGenerationRetire         [itBd,pp,gd     ] = mMaster.vGenerationRetire[          pp,gd     ]()
+                    OptModel.vGenerationRetire[     pp,gd     ].fix(      pGenerationRetire[itBd,     pp,gd     ])
+                for pp,ni,nf,cc in mTEPES.plc:
+                    pNetworkInvest            [itBd,pp,ni,nf,cc] = mMaster.vNetworkInvest   [          pp,ni,nf,cc]()
+                    OptModel.vNetworkInvest   [     pp,ni,nf,cc].fix(      pNetworkInvest   [itBd,     pp,ni,nf,cc])
             else:
                 # fixing investment decision for the subproblem for the final Benders iteration
-                for p          in mTEPES.p:
-                    OptModel.vTotalFElecCost  [     p         ].fix(      mMaster.vTotalFElecCost[p]())
-                for p,gc       in mTEPES.pgc:
-                    pGenerationInvest         [itBd,p,gc      ] =         pGenerationInvest[itBdOptml,p,gc      ]
-                    OptModel.vGenerationInvest[     p,gc      ].fix(      pGenerationInvest[itBdOptml,p,gc      ])
-                for p,gd       in mTEPES.pgd:
-                    pGenerationRetire         [itBd,p,gd      ] =         pGenerationRetire[itBdOptml,p,gd      ]
-                    OptModel.vGenerationRetire[     p,gd      ].fix(      pGenerationRetire[itBdOptml,p,gd      ])
-                for p,ni,nf,cc in mTEPES.plc:
-                    pNetworkInvest            [itBd,p,ni,nf,cc] =         pNetworkInvest   [itBdOptml,p,ni,nf,cc]
-                    OptModel.vNetworkInvest   [     p,ni,nf,cc].fix(      pNetworkInvest   [itBdOptml,p,ni,nf,cc])
+                for pp         in mTEPES.p:
+                    OptModel.vTotalFElecCost  [     pp        ].fix(      mMaster.vTotalFElecCost[pp]())
+                for pp,gc      in mTEPES.pgc:
+                    pGenerationInvest         [itBd,pp,gc     ] =         pGenerationInvest[itBdOptml,pp,gc     ]
+                    OptModel.vGenerationInvest[     pp,gc     ].fix(      pGenerationInvest[itBdOptml,pp,gc     ])
+                for pp,gd      in mTEPES.pgd:
+                    pGenerationRetire         [itBd,pp,gd     ] =         pGenerationRetire[itBdOptml,pp,gd     ]
+                    OptModel.vGenerationRetire[     pp,gd     ].fix(      pGenerationRetire[itBdOptml,pp,gd     ])
+                for pp,ni,nf,cc in mTEPES.plc:
+                    pNetworkInvest            [itBd,pp,ni,nf,cc] =         pNetworkInvest   [itBdOptml,pp,ni,nf,cc]
+                    OptModel.vNetworkInvest   [     pp,ni,nf,cc].fix(      pNetworkInvest   [itBdOptml,pp,ni,nf,cc])
 
             # after the first iteration free vTheta
             if itBd == 1:
@@ -181,14 +183,14 @@ def StageDecomposition(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogC
             else:
                 itBdFinal += 1
 
-            for p,gc       in mTEPES.pgc:
-                pGenerationInvestMarginalG_it[itBd,p,gc      ] = mTEPES.pGenerationInvestMarginalG[p,gc      ]()
-            for p,gd       in mTEPES.pgd:
-                pGenerationInvestMarginalR_it[itBd,p,gd      ] = mTEPES.pGenerationInvestMarginalR[p,gd      ]()
-            for p,ec       in mTEPES.pec:
-                pGenerationInvestMarginalE_it[itBd,p,ec      ] = mTEPES.pGenerationInvestMarginalE[p,ec      ]()
-            for p,ni,nf,cc in mTEPES.plc:
-                pNetworkInvestMarginalCap_it [itBd,p,ni,nf,cc] = mTEPES.pNetworkInvestMarginalCap [p,ni,nf,cc]()
+            for pp,gc      in mTEPES.pgc:
+                pGenerationInvestMarginalG_it[itBd,pp,gc     ] = mTEPES.pGenerationInvestMarginalG[pp,gc     ]()
+            for pp,gd      in mTEPES.pgd:
+                pGenerationInvestMarginalR_it[itBd,pp,gd     ] = mTEPES.pGenerationInvestMarginalR[pp,gd     ]()
+            for pp,ec      in mTEPES.pec:
+                pGenerationInvestMarginalE_it[itBd,pp,ec     ] = mTEPES.pGenerationInvestMarginalE[pp,ec     ]()
+            for pp,ni,nf,cc in mTEPES.plc:
+                pNetworkInvestMarginalCap_it [itBd,pp,ni,nf,cc] = mTEPES.pNetworkInvestMarginalCap [pp,ni,nf,cc]()
 
             # delete Benders cuts because they are regenerated in each iteration
             if itBd > 1:
@@ -200,7 +202,7 @@ def StageDecomposition(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogC
             # for iter in mMaster.iter:
             #     Solver.set_linear_constraint_attr(mMaster.eBd_Cuts[iter], 'Lazy', 1)
     
-    SolvingTime = time.time() - StartTime
+    SolvingTime = time.time() - FuncStartTime
     print('Time Benders decomposition             ... ', round(SolvingTime), 's')
     
     print('Total system cost [MEUR]                   ', Z_Upper)

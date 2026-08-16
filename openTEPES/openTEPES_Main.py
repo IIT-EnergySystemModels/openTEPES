@@ -660,7 +660,7 @@
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <https://www.gnu.org/licenses/>.
 
-# Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 13, 2026
+# Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 16, 2026
 # simplicity and transparency in power systems planning
 
 # Developed by
@@ -684,6 +684,7 @@ import argparse
 import platform
 import psutil
 import os
+import sys
 import time
 # import pkg_resources
 # Support running this file directly (e.g. VS Code "Run Python File"), where __package__ is empty and the
@@ -787,13 +788,6 @@ def main():
         args.log = input('Would you like to write log information (seconds and rows) to console? (Default {}): '.format(LOG))
         if args.log == '':
             args.log = LOG
-    print(args.case)
-    print(args.dir)
-    print(args.solver)
-    import sys
-    print(sys.argv)
-    print(args)
-
     # Translate --results into a {category: bool} dict consumed by openTEPES_run.
     output_spec = None
     if args.results is not None:
@@ -848,6 +842,6 @@ def main():
     return model
 
 if __name__ == '__main__':
-    print(GREEN + 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.18RC - August 13, 2026' + RESET)
+    print(GREEN + 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.18RC - August 16, 2026' + RESET)
     print(BLUE  + '#### Academic research license - for non-commercial use only ####' + RESET + '\n')
     model = main()

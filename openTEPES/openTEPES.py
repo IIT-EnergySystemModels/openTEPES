@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 13, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 16, 2026
 """
 
 # import dill as pickle
@@ -168,11 +168,10 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
         os.makedirs(_OutPath, exist_ok=True)
 
     #%% replacing string values by numerical values
+    # the integer keys also match their float spellings (0.0, 1.0): Python hashes 0.0 as 0 and 1.0 as 1, so no separate float entries are needed
     idxDict        = dict()
     idxDict[0    ] = 0
-    idxDict[0.0  ] = 0
     idxDict[1    ] = 1
-    idxDict[1.0  ] = 1
     idxDict['No' ] = 0
     idxDict['NO' ] = 0
     idxDict['no' ] = 0
@@ -192,8 +191,12 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     if _input_source is not None:
         mTEPES.pInputSource = _input_source
 
-    pIndOutputResults = [j for i,j in idxDict.items() if i == pIndOutputResults][0]
-    pIndLogConsole    = [j for i,j in idxDict.items() if i == pIndLogConsole   ][0]
+    # direct lookup instead of a linear scan; an unknown value used to die with a bare IndexError, now it names the offending value and the accepted ones
+    try:
+        pIndOutputResults = idxDict[pIndOutputResults]
+        pIndLogConsole    = idxDict[pIndLogConsole   ]
+    except KeyError as e:
+        raise ValueError(f'### Invalid Yes/No option value {e.args[0]!r} for pIndOutputResults or pIndLogConsole; accepted values: {list(idxDict)}') from None
 
     # introduce cycle flow formulations in DC and AC load flow
     pIndCycleFlow = 0

@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 05, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 16, 2026
 
 openTEPES.openTEPES_ProblemSolvingDualExtraction — fix-and-resolve pass that recovers shadow prices on a MIP solution.
 
@@ -55,7 +55,8 @@ def fix_for_duals(OptModel, mTEPES, p, sc) -> int:
     else:
         for var in OptModel.component_data_objects(pyo.Var, active=True, descend_into=True):
             if (not var.is_continuous() and not var.is_fixed() and var.value is not None
-                    and var.index()[0] == p and var.index()[1] == sc):
+                    and var.index()[0] == p and var.index()[1] == sc
+                    and (len(var.index()) < 3 or var.index()[2] not in mTEPES.nn or var.index()[2] in mTEPES.na)):
                 relaxed.setdefault(id(var), (var, var.domain))
                 var.fixed  = True
                 var.domain = UnitInterval
