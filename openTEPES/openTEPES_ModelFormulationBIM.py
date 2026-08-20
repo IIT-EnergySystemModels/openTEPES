@@ -44,7 +44,7 @@ import math
 import time
 from collections import defaultdict
 
-from pyomo.environ import Constraint, Reals, Var
+from pyomo.environ import Constraint, Reals, Var, tan
 
 
 def _tap(mTEPES, la):
@@ -224,35 +224,26 @@ def NetworkBIMOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc,
         _band(+1, 'eBIMAngleUp')
         _band(-1, 'eBIMAngleLo')
 
-    # --- the loop condition ---------------------------------------------------------------------------------------------------------------------
-    # arg(W_ij) is the angle difference, and in W space nothing ties it around a loop. Linearised at the operating point: for the small angles a
-    # transmission network runs at, arg(W_ij) is well approximated by vWim / vWre, and the sum of that around a cycle must vanish. This is a
-    # LINEAR constraint, so it tightens the relaxation without leaving the convex world.
+    # --- the loop condition ------------------------------------------------------------------------------------------------------------------
+    # The tangent equality PowerModels uses in ACTPowerModel:  Wim == tan(theta_i - theta_j) Wre.
+    #
+    # In W space the angle lives in arg(W_ij) and nothing ties it around a loop, so a solution can carry branch flows that no set of bus angles
+    # reproduces. Measured on 9n_AC without this, the recovered angles missed closing by 3.6e-04 rad. Tying them to vTheta -- which is a NODE
+    # POTENTIAL, so its differences sum to zero around any cycle by construction -- is what makes them consistent. That is also why PowerModels has no
+    # cycle constraints anywhere: once an angle variable exists, the loop condition follows from the tangent coupling.
+    #
+    # An earlier version summed Wim / Vnom^2 around each independent cycle instead. It cut the loop mismatch about fourfold and moved the objective
+    # only in the eighth digit, because arg(W_ij) is Wim/Wre and not Wim over a constant.
+    #
+    # The tangent is non-convex, so this turns the relaxation into something closer to the exact model and needs a non-linear solver. Mode 2 already
+    # wants ipopt for the reasons in the header.
     if pMode == 2 and mTEPES.pIndACCycle():
-        import networkx as nx
-        G = nx.Graph()
-        for la in mTEPES.laa:
-            G.add_edge(la[0], la[1])
-        pCycles = nx.cycle_basis(G)
-        pEdge = {}
-        for la in mTEPES.laa:
-            pEdge.setdefault((la[0], la[1]), la)
-
-        def eBIMCycle(OptModel, n, k):
-            pCyc, pTerms = pCycles[k], []
-            for a, b in zip(pCyc, pCyc[1:] + pCyc[:1]):
-                if (a, b) in pEdge and _live(pEdge[(a, b)]):
-                    la = pEdge[(a, b)]
-                    pTerms.append(  OptModel.vWim[(p,sc,n)+la] / mTEPES.pVNom() ** 2)
-                elif (b, a) in pEdge and _live(pEdge[(b, a)]):
-                    la = pEdge[(b, a)]
-                    pTerms.append(- OptModel.vWim[(p,sc,n)+la] / mTEPES.pVNom() ** 2)
-            if not pTerms:
+        def eBIMTangent(OptModel, n, ni, nf, cc):
+            if not _live((ni,nf,cc)):
                 return Constraint.Skip
-            return sum(pTerms) == 0.0
-        setattr(OptModel, f'eBIMCycle_{p}_{sc}_{st}',
-                Constraint(mTEPES.n, range(len(pCycles)), rule=eBIMCycle, doc='loop condition around an independent cycle [rad]'))
-        if pIndLogConsole:
-            print(f'eBIMCycle                 ...  {len(pCycles)} cycles')
+            return (OptModel.vWim[p,sc,n,ni,nf,cc]
+                    == tan(OptModel.vTheta[p,sc,n,ni] - OptModel.vTheta[p,sc,n,nf]) * OptModel.vWre[p,sc,n,ni,nf,cc])
+        setattr(OptModel, f'eBIMTangent_{p}_{sc}_{st}',
+                Constraint(mTEPES.n*mTEPES.laa, rule=eBIMTangent, doc='angle tied to the voltage product, ACT form'))
 
     print('Generating BIM network constraints     ... ', round(time.time() - StartTime), 's')
