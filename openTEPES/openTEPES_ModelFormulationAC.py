@@ -36,7 +36,7 @@ by ``eLineStateCand`` for a candidate, and free for a switchable one. Gating on 
 gating on the investment variable releases only the first, and line switching then misbehaves silently, because ``eKirchhoff2ndLaw1/2`` — which
 carries that release in the DC model — is skipped under AC.
 
-**The angle-to-flow relation is ``|V_i||V_j| sin(theta_ij) = x P + r Q``**, with the sign explicit. Deriving it through the admittance matrix invites
+**The angle-to-flow relation is ``|V_i||V_j| sin(theta_ij) = x P - r Q``**, with the sign explicit. Deriving it through the admittance matrix invites
 an error: the off-diagonal entry carries the opposite sign to the series admittance. Checked against an exact AC power flow — for a lossless branch it
 collapses to ``theta = x P``, matching DC. It holds for the SERIES flow, which is what this model carries; the line charging is lumped at the buses.
 The envelope divides that numerator by the voltage product, and the extreme of the quotient sits at the small end of the voltage band when the
@@ -135,6 +135,12 @@ def NetworkACOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, 
     for nd, sh in mTEPES.n2sh:
         sh2nd[nd].append(sh)
 
+    # HVDC converter model, if any. pConvTan is tan(acos(pf)): the reactive power a station draws per unit of active power it carries (LCC), or the
+    # most it can supply or absorb at its rating (VSC).
+    pConvLCC = mTEPES.pIndACConverter() == 1 and bool(mTEPES.lad)
+    pConvVSC = mTEPES.pIndACConverter() == 2 and bool(mTEPES.lad)
+    pConvTan = math.tan(math.acos(min(max(mTEPES.pConverterPF(), 1e-3), 1.0)))
+
     # A shunt conductance draws active power. It is zero in almost every case, so the whole active-shunt block is built only when some device has one.
     pShuntG = any(mTEPES.pBusGshb[sh]() for sh in mTEPES.sh) if mTEPES.sh else False
 
@@ -187,11 +193,67 @@ def NetworkACOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, 
     if pIndLogConsole:
         print('eBalanceElec (AC)         ... ', len(getattr(OptModel, f'eBalanceElec_{p}_{sc}_{st}')), ' rows')
 
+    # The two halves of |P_dc|. Only their DIFFERENCE is pinned to the flow, so nothing forces the minimal split and the pair can both be inflated,
+    # overstating the converter draw.
+    #
+    # The pressure that keeps it near-minimal is that the draw has to be served by something. Where reactive power is scarce that is enough; where it
+    # is free at both terminals the direction is flat and the solver is indifferent. Measured on 9n_AC the slack was 0.24 MW on a 320 MW link, about
+    # 0.08%, which is small but not zero and is NOT a numerical artefact — it is the flat direction being exercised.
+    #
+    # The error is one-signed: pos + neg can only exceed |P|, never fall short, so the converter draw is over-estimated and the AC system is asked for
+    # more compensation than it truly needs, not less. That is the safe direction for a planning model. Pinning it exactly would need a binary per
+    # link per hour to choose the flow direction, which is a real cost in a MILP for a bounded and conservative error.
+    if pConvLCC:
+        def eDCFlowSplit(OptModel, n, ni, nf, cc):
+            if not _live((ni,nf,cc)):
+                return Constraint.Skip
+            return (OptModel.vDCFlowPos[p,sc,n,ni,nf,cc] - OptModel.vDCFlowNeg[p,sc,n,ni,nf,cc]
+                    == OptModel.vFlowElec[p,sc,n,ni,nf,cc])
+        setattr(OptModel, f'eDCFlowSplit_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.lad, rule=eDCFlowSplit, doc='signed parts of the DC link flow [GW]'))
+
+        # Only one half may be non-zero, so pos + neg is exactly |P|. Without this the pair can both be inflated, and because the converter draw enters
+        # the reactive balance with a minus, a node with surplus reactive power gains by doing so: the converter becomes a free reactive sink and the
+        # surplus never appears in oT_Result_NetworkReactiveNotServed.
+        def eDCFlowDirPos(OptModel, n, ni, nf, cc):
+            if not _live((ni,nf,cc)):
+                return Constraint.Skip
+            return OptModel.vDCFlowPos[p,sc,n,ni,nf,cc] <= mTEPES.pLineNTCMax[ni,nf,cc] * OptModel.vDCFlowDir[p,sc,n,ni,nf,cc]
+        setattr(OptModel, f'eDCFlowDirPos_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.lad, rule=eDCFlowDirPos, doc='forward part only when the flow is forward [GW]'))
+
+        def eDCFlowDirNeg(OptModel, n, ni, nf, cc):
+            if not _live((ni,nf,cc)):
+                return Constraint.Skip
+            return OptModel.vDCFlowNeg[p,sc,n,ni,nf,cc] <= mTEPES.pLineNTCMax[ni,nf,cc] * (1 - OptModel.vDCFlowDir[p,sc,n,ni,nf,cc])
+        setattr(OptModel, f'eDCFlowDirNeg_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.lad, rule=eDCFlowDirNeg, doc='reverse part only when the flow is reverse [GW]'))
+
+    # A converter that is not there supplies nothing. vLineCommit is fixed at 1 for a DC link that is neither switchable nor a candidate, so for those
+    # this is slack; for a candidate it is what stops the model taking free reactive support from a link it never builds.
+    if pConvVSC:
+        def _eQConvOff(vVar, pName):
+            def rule(OptModel, n, ni, nf, cc, s=+1):
+                if not _live((ni,nf,cc)):
+                    return Constraint.Skip
+                pQMax = pConvTan * mTEPES.pLineNTCMax[ni,nf,cc]
+                return (vVar[p,sc,n,ni,nf,cc] <=  pQMax * OptModel.vLineCommit[p,sc,n,ni,nf,cc]) if s > 0 else \
+                       (vVar[p,sc,n,ni,nf,cc] >= -pQMax * OptModel.vLineCommit[p,sc,n,ni,nf,cc])
+            return rule
+
+        for vVar, pStem in ((OptModel.vQConvFrw, 'eQConvFrw'), (OptModel.vQConvBck, 'eQConvBck')):
+            setattr(OptModel, f'{pStem}OffUp_{p}_{sc}_{st}',
+                    Constraint(mTEPES.n*mTEPES.lad, rule=lambda m, n, ni, nf, cc, v=vVar: _eQConvOff(v, '')(m, n, ni, nf, cc, +1),
+                               doc='an out-of-service converter injects nothing [Gvar]'))
+            setattr(OptModel, f'{pStem}OffLo_{p}_{sc}_{st}',
+                    Constraint(mTEPES.n*mTEPES.lad, rule=lambda m, n, ni, nf, cc, v=vVar: _eQConvOff(v, '')(m, n, ni, nf, cc, -1),
+                               doc='an out-of-service converter absorbs nothing [Gvar]'))
+
     # --- (12) reactive power balance -------------------------------------------------------------------------------------------------------------
     def eBalanceReact(OptModel, n, nd):
         # the demand test matters: a node fed only by an HVDC link has no AC branch and no reactive device, but it still has reactive demand, and
         # skipping here would drop that demand from the model altogether instead of surfacing it as vQNSPos
-        if not (q2n[nd] or acOut[nd] or acIn[nd] or sh2nd[nd] or mTEPES.pReactiveDemand[p,sc,n,nd]()):
+        # DC terminals count too once a converter model is on: a node whose only connection is an HVDC link still has a converter sitting on it,
+        # and skipping here would drop that reactive draw or supply from the model entirely.
+        if not (q2n[nd] or acOut[nd] or acIn[nd] or sh2nd[nd] or mTEPES.pReactiveDemand[p,sc,n,nd]()
+                or ((pConvLCC or pConvVSC) and (dcOut[nd] or dcIn[nd]))):
             return Constraint.Skip
         return (sum(OptModel.vReactiveTotalOutput[p,sc,n,gq] for gq in q2n[nd] if (p,gq) in mTEPES.pgq)
               + sum(OptModel.vQShunt[p,sc,n,sh] for sh in sh2nd[nd] if (p,sc,n,sh) in mTEPES.psnsh)
@@ -203,6 +265,12 @@ def NetworkACOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, 
               + OptModel.vQNSPos[p,sc,n,nd] - OptModel.vQNSNeg[p,sc,n,nd]
               - sum(OptModel.vFlowReactFrw[(p,sc,n)+la] for la in acOut[nd])
               - sum(OptModel.vFlowReactBck[(p,sc,n)+la] for la in acIn [nd])
+              # HVDC converters. An LCC station DRAWS reactive power at both terminals, proportional to the active power it transfers; a VSC station
+              # supplies or absorbs it within its rating. The two enter with opposite signs, which is exactly why a single loss factor cannot stand in
+              # for either of them.
+              - (pConvTan * sum(OptModel.vDCFlowPos[(p,sc,n)+la] + OptModel.vDCFlowNeg[(p,sc,n)+la] for la in dcOut[nd] + dcIn[nd]) if pConvLCC else 0.0)
+              + (             sum(OptModel.vQConvFrw[(p,sc,n)+la] for la in dcOut[nd])
+                            + sum(OptModel.vQConvBck[(p,sc,n)+la] for la in dcIn [nd])                                             if pConvVSC else 0.0)
               == mTEPES.pReactiveDemand[p,sc,n,nd])
     setattr(OptModel, f'eBalanceReact_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.nd, rule=eBalanceReact, doc='reactive load generation balance [Gvar]'))
     if pIndLogConsole:
@@ -569,6 +637,9 @@ def NetworkACCurrentModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st
 # The names are checked against the model at run time and a miss is reported. An earlier version listed 'vMaxCommitment', which is not a variable in
 # this codebase at all (the real ones are vMaxCommitmentYearly, vMaxCommitmentConsYearly and vMaxCommitmentHourly), and getattr simply returned None,
 # so the entry did nothing and said nothing. A stale name here means the plan quietly moves and the pass silently becomes a re-optimisation.
+# Of the list below, only these exist on every model. The rest depend on options the case may not use, so their absence is not a defect.
+RESTORE_ALWAYS = ('vCommitment', 'vStartUp', 'vShutDown')
+
 RESTORE_FIXED = ('vCommitment', 'vCommitmentCons', 'vStartUp', 'vShutDown',
                  'vStableState', 'vRampUpState', 'vRampDwState',
                  'vMaxCommitmentYearly', 'vMaxCommitmentConsYearly', 'vMaxCommitmentHourly',
@@ -631,11 +702,15 @@ def ACRestorationPass(OptModel, mTEPES, SolverName='ipopt', pIndLogConsole=0):
 
     # Then by NAME, for the decisions that must not move even when they have been relaxed to a continuous range: a relaxed commitment or investment
     # variable is not discrete, so the sweep above leaves it free, and the pass would re-optimise the plan instead of restoring it.
+    # Most of these are declared conditionally -- a case with no hydrogen has no vH2PipeInvest, a case with no switching has no vLineOnState -- so
+    # "absent" is normal and only vCommitment is present on every run. Warning about every optional name told the user the plan was free to move on
+    # essentially every run, which was false and trained them to ignore the message.
     pMissing = []
     for pName in RESTORE_FIXED:
         vVar = getattr(OptModel, pName, None)
         if vVar is None:
-            pMissing.append(pName)
+            if pName in RESTORE_ALWAYS:
+                pMissing.append(pName)
             continue
         for idx in vVar:
             if vVar[idx].value is not None and not vVar[idx].fixed:
@@ -675,15 +750,36 @@ def ACRestorationPass(OptModel, mTEPES, SolverName='ipopt', pIndLogConsole=0):
             if c is not None:
                 c.deactivate()
 
-        def eAngleRestored(OptModel, n, ni, nf, cc, p=p, sc=sc):
-            # |Vi/tau| |Vj| sin(theta_i - theta_j) = (x P + r Q) / S, the exact series relation. vW is bounded below by a positive number, so the
+        # An out-of-service branch must be released here exactly as eAngleEnvUp/Lo release it. Without that, a candidate inside its period window gets
+        # a bare equality: eCurrentLimit drives its current to zero, hence P = Q = 0, and the equality then reads sin(theta_i - theta_j) = 0 and pins
+        # two buses together through a line that was never built. Written as a pair of inequalities because the release carries vLineCommit and Pyomo
+        # will not take a ranged inequality with a variable bound.
+        # The band is recomputed here rather than borrowed: pBandM is a local of NetworkACOperationModelFormulation and is not in scope in this
+        # function. Referencing it across the two was a NameError that only the restoration tests could see.
+        pBandM = {la: math.pi + max(abs(mTEPES.pMaxAngleDiff[la]), abs(mTEPES.pMinAngleDiff[la])) for la in mTEPES.laa}
+
+        def _pReleasedBand(OptModel, n, la):
+            return pBandM[la] * (1 - OptModel.vLineCommit[(p,sc,n)+la])
+
+        def eAngleRestoredUp(OptModel, n, ni, nf, cc, p=p, sc=sc):
+            # |Vi/tau| |Vj| sin(theta_i - theta_j) = (x P - r Q) / S, the exact series relation. MINUS: see the derivation at eAngleEnvM. vW is bounded below by a positive number, so the
             # square roots are safe. eAngleBandUp/Lo stay active: they are valid bounds on the angle and they help the solver.
             return (sqrt(OptModel.vW[p,sc,n,ni] * _tap2(mTEPES, (ni,nf,cc))) * sqrt(OptModel.vW[p,sc,n,nf])
                     * sin(OptModel.vTheta[p,sc,n,ni] - OptModel.vTheta[p,sc,n,nf])
-                    == (mTEPES.pLineX[ni,nf,cc] * OptModel.vFlowElec    [p,sc,n,ni,nf,cc]
-                      - mTEPES.pLineR[ni,nf,cc] * OptModel.vFlowReactFrw[p,sc,n,ni,nf,cc]) / pSBase)
-        setattr(OptModel, f'eAngleRestored_{p}_{sc}_{st}',
-                Constraint(pKeys, rule=eAngleRestored, doc='exact angle-to-flow relation, restoration pass'))
+                    <= (mTEPES.pLineX[ni,nf,cc] * OptModel.vFlowElec    [p,sc,n,ni,nf,cc]
+                      - mTEPES.pLineR[ni,nf,cc] * OptModel.vFlowReactFrw[p,sc,n,ni,nf,cc]) / pSBase
+                      + _pReleasedBand(OptModel, n, (ni,nf,cc)))
+        setattr(OptModel, f'eAngleRestoredUp_{p}_{sc}_{st}',
+                Constraint(pKeys, rule=eAngleRestoredUp, doc='exact angle-to-flow relation, upper, restoration pass'))
+
+        def eAngleRestoredLo(OptModel, n, ni, nf, cc, p=p, sc=sc):
+            return (sqrt(OptModel.vW[p,sc,n,ni] * _tap2(mTEPES, (ni,nf,cc))) * sqrt(OptModel.vW[p,sc,n,nf])
+                    * sin(OptModel.vTheta[p,sc,n,ni] - OptModel.vTheta[p,sc,n,nf])
+                    >= (mTEPES.pLineX[ni,nf,cc] * OptModel.vFlowElec    [p,sc,n,ni,nf,cc]
+                      - mTEPES.pLineR[ni,nf,cc] * OptModel.vFlowReactFrw[p,sc,n,ni,nf,cc]) / pSBase
+                      - _pReleasedBand(OptModel, n, (ni,nf,cc)))
+        setattr(OptModel, f'eAngleRestoredLo_{p}_{sc}_{st}',
+                Constraint(pKeys, rule=eAngleRestoredLo, doc='exact angle-to-flow relation, lower, restoration pass'))
 
         def eCurrentRestored(OptModel, n, ni, nf, cc, p=p, sc=sc):
             return (OptModel.vFlowElec[p,sc,n,ni,nf,cc] ** 2 + OptModel.vFlowReactFrw[p,sc,n,ni,nf,cc] ** 2

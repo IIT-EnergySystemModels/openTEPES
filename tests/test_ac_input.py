@@ -761,3 +761,103 @@ def test_restoration_makes_the_relaxation_exact(tmp_path):
         pWorst = max(pWorst, abs(pGap))
 
     assert pWorst < 1e-6, f"the restored solution should satisfy the exact current equality, worst gap {pWorst:.2e}"
+
+
+# --------------------------------------------------------------------------------------------------------------------
+# HVDC converters
+# --------------------------------------------------------------------------------------------------------------------
+
+def _case_with_built_dc(tmp_path, name, converter, hours=4):
+    """9n_AC with its DC candidate forced into service, so a converter actually carries power.
+
+    Left to itself the candidate is not built and the converter terms are all multiplied by a zero flow, which would
+    let a broken converter model pass a test unnoticed.
+    """
+    dir_name, case = _tiny_ac_case(tmp_path, name, hours=hours, model_type=0, restore=0)
+    net = os.path.join(dir_name, case, f"oT_Data_Network_{case}.csv")
+    df  = pd.read_csv(net)
+    dc  = df["LineType"] == "DC"
+    assert dc.any(), "9n_AC is expected to ship a DC candidate"
+    df.loc[dc, "InvestmentLo"] = 1.0                      # force it built
+    df.loc[dc, "InvestmentUp"] = 1.0
+    df.to_csv(net, index=False)
+
+    opt = os.path.join(dir_name, case, f"oT_Data_Option_{case}.csv")
+    d   = pd.read_csv(opt)
+    d["IndACConverter"] = converter
+    d.to_csv(opt, index=False)
+    return dir_name, case
+
+
+def test_converter_option_is_validated(tmp_path):
+    dir_name, case = _clone(tmp_path, "9n_AC", "9n_badconv")
+    opt = os.path.join(dir_name, case, f"oT_Data_Option_{case}.csv")
+    df = pd.read_csv(opt); df["IndACConverter"] = 3; df.to_csv(opt, index=False)
+    with pytest.raises(NotImplementedError, match="IndACConverter"):
+        _build(dir_name, case)
+
+
+def test_lcc_converter_draws_reactive_power_at_both_ends(tmp_path):
+    """An LCC station is a reactive LOAD at each terminal, tan(acos(pf)) times the active power it transfers.
+
+    Checked against the model rather than the solution: the two halves of |P_dc| must sum to the flow's magnitude, and
+    the draw must appear at both ends of the link."""
+    from openTEPES.openTEPES import openTEPES_run
+
+    dir_name, case = _case_with_built_dc(tmp_path, "9n_lcc", converter=1)
+    mTEPES = openTEPES_run(str(dir_name), case, "gurobi", 0, 0)
+
+    assert hasattr(mTEPES, "vDCFlowPos"), "the LCC model must split the DC flow to reach |P|"
+    pSeen = False
+    for (p, sc, n, ni, nf, cc) in mTEPES.psnlad:
+        pFlow = mTEPES.vFlowElec  [p, sc, n, ni, nf, cc]()
+        pPos  = mTEPES.vDCFlowPos [p, sc, n, ni, nf, cc]()
+        pNeg  = mTEPES.vDCFlowNeg [p, sc, n, ni, nf, cc]()
+        assert pPos - pNeg == pytest.approx(pFlow, abs=1e-7), "the split must reproduce the flow"
+        # Exact, because vDCFlowDir lets only one half be non-zero. An earlier version pinned only the difference and
+        # this test asserted near-minimality, which nothing enforced: the pair could be inflated, and since the draw
+        # enters the reactive balance with a minus, a node with surplus reactive power actively gains by inflating it.
+        # The converter became a free reactive sink and the surplus vanished from the results.
+        assert pPos + pNeg == pytest.approx(abs(pFlow), abs=1e-6), (
+            f"pos+neg must be exactly |P|: |P| = {abs(pFlow)} but pos+neg = {pPos + pNeg}")
+        if abs(pFlow) > 1e-6:
+            pSeen = True
+    assert pSeen, "the DC link carried no power, so this test proved nothing about the converter"
+
+
+def test_vsc_converter_can_supply_reactive_power(tmp_path):
+    """A VSC station is a controllable source or sink, so it must be able to take either sign, unlike an LCC."""
+    from openTEPES.openTEPES import openTEPES_run
+
+    dir_name, case = _case_with_built_dc(tmp_path, "9n_vsc", converter=2)
+    mTEPES = openTEPES_run(str(dir_name), case, "gurobi", 0, 0)
+
+    assert hasattr(mTEPES, "vQConvFrw"), "the VSC model must give each terminal a reactive variable"
+    assert not hasattr(mTEPES, "vDCFlowPos"), "the VSC model has no need of the |P| split"
+    for k in mTEPES.psnlad:
+        lo, up = mTEPES.vQConvFrw[k].lb, mTEPES.vQConvFrw[k].ub
+        assert lo is not None and lo < 0.0 < up, f"a VSC terminal must span zero, got [{lo}, {up}]"
+
+
+def test_unbuilt_hvdc_candidate_is_not_a_free_statcom(tmp_path):
+    """A converter on a link that was never built must supply no reactive power.
+
+    Left ungated, vQConvFrw/Bck are bounded only by the converter rating, so the solver takes reactive support at both
+    ends of a candidate it declines to build -- and then declines to build the shunts and condensers it really needs.
+    The other VSC test forces the link into service, so it cannot see this."""
+    from openTEPES.openTEPES import openTEPES_run
+
+    dir_name, case = _tiny_ac_case(tmp_path, "9n_vscoff", model_type=0, restore=0)
+    net = os.path.join(dir_name, case, f"oT_Data_Network_{case}.csv")
+    df  = pd.read_csv(net)
+    dc  = df["LineType"] == "DC"
+    df.loc[dc, "InvestmentLo"] = 0.0
+    df.loc[dc, "InvestmentUp"] = 0.0                      # forbid building it
+    df.to_csv(net, index=False)
+    opt = os.path.join(dir_name, case, f"oT_Data_Option_{case}.csv")
+    d   = pd.read_csv(opt); d["IndACConverter"] = 2; d.to_csv(opt, index=False)
+
+    mTEPES = openTEPES_run(str(dir_name), case, "gurobi", 0, 0)
+    for k in mTEPES.psnlad:
+        assert abs(mTEPES.vQConvFrw[k]()) < 1e-6, f"an unbuilt converter supplied {mTEPES.vQConvFrw[k]()} Gvar"
+        assert abs(mTEPES.vQConvBck[k]()) < 1e-6, f"an unbuilt converter supplied {mTEPES.vQConvBck[k]()} Gvar"

@@ -234,7 +234,13 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     #   pIndACRestore    0 = report the relaxed solution as it stands (default)
     #                    1 = after solving, hold the plan and re-solve the network at the exact current equality on a non-linear
     #                        solver, so the reported operating point satisfies the AC equations. See ACRestorationPass.
-    for key in ['pIndACPowerFlow', 'pIndACModelType', 'pIndACRestore']:
+    #   pIndACConverter  0 = HVDC links carry active power only, with no converter (default, and what the DC model has always done)
+    #                    1 = line-commutated converters: each station DRAWS reactive power, tan(acos(pf)) times the active power it
+    #                        transfers, at both ends. This is the realistic default for classic HVDC and it makes the AC system need
+    #                        more compensation, not less.
+    #                    2 = voltage-source converters: each station is a controllable reactive source or sink within its rating, so
+    #                        it behaves like a STATCOM and RELIEVES the AC system instead of burdening it.
+    for key in ['pIndACPowerFlow', 'pIndACModelType', 'pIndACRestore', 'pIndACConverter']:
         par.setdefault(key, 0)
     if par['pIndACPowerFlow'] not in (0, 1):
         raise NotImplementedError(f"IndACPowerFlow = {par['pIndACPowerFlow']} is not implemented; use 0 (DC) or 1 (bus-injection AC)")
@@ -242,6 +248,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         raise NotImplementedError(f"IndACModelType = {par['pIndACModelType']} is not implemented; use 0 (SOCP), 1 (piecewise linear) or 2 (NLP)")
     if par['pIndACRestore'] not in (0, 1):
         raise NotImplementedError(f"IndACRestore = {par['pIndACRestore']} is not implemented; use 0 (off) or 1 (exact restoration pass)")
+    if par['pIndACConverter'] not in (0, 1, 2):
+        raise NotImplementedError(f"IndACConverter = {par['pIndACConverter']} is not implemented; use 0 (none), 1 (LCC) or 2 (VSC)")
 
     # load parameters from dfParameter — single-row mixed scalars.
     for col in dfs['dfParameter'].columns:

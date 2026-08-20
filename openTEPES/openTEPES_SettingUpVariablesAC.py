@@ -209,5 +209,47 @@ def SettingUpVariablesAC(OptModel, mTEPES):
                 pIMax = (mTEPES.pLineSmax[ni,nf,cc] / mTEPES.pSBase / (mTEPES.pVMinBus[ni] * mTEPES.pLineTapFactor[ni,nf,cc])) ** 2
                 OptModel.vLineLosses[p,sc,n,ni,nf,cc].setub(0.5 * mTEPES.pLineR[ni,nf,cc] * pIMax * mTEPES.pSBase)
 
+    # --- HVDC converters -------------------------------------------------------------------------------------------------------------------------
+    # A DC link embedded in an AC system has a converter station at each end, and openTEPES has always modelled the link as active power transfer with
+    # a linear loss factor and nothing else. That is only harmless while no case has a built DC link: the two technologies get the reactive side
+    # wrong in OPPOSITE directions, so the error cannot be folded into the loss factor.
+    if mTEPES.pIndACConverter() and mTEPES.lad:
+        pConvTan = math.tan(math.acos(min(max(mTEPES.pConverterPF(), 1e-3), 1.0)))
+
+        if mTEPES.pIndACConverter() == 1:
+            # LCC. The station draws reactive power in proportion to the active power it transfers, whichever way that power flows, so the model needs
+            # |P_dc|. Splitting it into two non-negative parts is exact at the optimum: the draw has to be served by the AC system, so the solver has
+            # every reason to take the smallest split rather than inflate both halves.
+            OptModel.vDCFlowPos = Var(mTEPES.psnlad, within=NonNegativeReals, doc='DC link active power, forward part [GW]')
+            OptModel.vDCFlowNeg = Var(mTEPES.psnlad, within=NonNegativeReals, doc='DC link active power, reverse part [GW]')
+            # A binary per link per load level to pick the direction, so that pos + neg is exactly |P|.
+            #
+            # Pinning only the difference is NOT a conservative approximation, which is what an earlier version of this claimed. The draw enters the
+            # reactive balance with a MINUS, so at a node whose line charging exceeds its demand the model WANTS the pair inflated: doing so absorbs
+            # the surplus for free instead of paying for vQNSNeg, and a genuine reactive over-supply disappears from the results instead of being
+            # reported. The error is not one-signed at all, so it has to be removed rather than bounded.
+            #
+            # The cost is one binary per DC link per load level, and only when the LCC model is switched on. DC links are few.
+            OptModel.vDCFlowDir = Var(mTEPES.psnlad, within=Binary, doc='DC link flow direction, 1 forward {0,1}')
+            for p, sc, n, ni, nf, cc in mTEPES.psnlad:
+                pBox = mTEPES.pLineNTCMax[ni,nf,cc]
+                OptModel.vDCFlowPos[p,sc,n,ni,nf,cc].setub(pBox)
+                OptModel.vDCFlowNeg[p,sc,n,ni,nf,cc].setub(pBox)
+
+        else:
+            # VSC. The station is a controllable reactive source or sink at each terminal, bounded by what the converter can hold at its rating. The
+            # bound is a box rather than the true capability circle: the circle would be a cone, which the piecewise model type cannot take, and the
+            # box is the same shape the synchronous condensers already use.
+            OptModel.vQConvFrw = Var(mTEPES.psnlad, within=Reals, doc='reactive power at the converter on the ni side [Gvar]')
+            OptModel.vQConvBck = Var(mTEPES.psnlad, within=Reals, doc='reactive power at the converter on the nf side [Gvar]')
+            # The bounds have to span zero, because eQConvOff below forces the pair to zero when the link is not in service. A converter that is not
+            # there supplies nothing: without that gate an unbuilt HVDC CANDIDATE hands the system a free STATCOM at both ends, so the model declines
+            # to build shunts and condensers it actually needs and the link's own investment decision is distorted.
+            for p, sc, n, ni, nf, cc in mTEPES.psnlad:
+                pQMax = pConvTan * mTEPES.pLineNTCMax[ni,nf,cc]
+                for v in (OptModel.vQConvFrw, OptModel.vQConvBck):
+                    v[p,sc,n,ni,nf,cc].setlb(-pQMax)
+                    v[p,sc,n,ni,nf,cc].setub( pQMax)
+
     print('Setting up AC variables                ... ', round(time.time() - StartTime), 's')
     return nFixedVariables

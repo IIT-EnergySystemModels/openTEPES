@@ -202,7 +202,10 @@ def ACMarginalResults(DirName, CaseName, OptModel, mTEPES):
     # branch, no shunt and no reactive unit, and omitting it here drops the marginal for exactly the node the constraint exists to cover.
     pNodeHasBalance = {}
     for nd in mTEPES.nd:
-        pHas = any(nd == la[0] or nd == la[1] for la in mTEPES.laa) or any(mTEPES.pReactiveDemand[p,sc,n,nd]() for p,sc,n in mTEPES.psn)
+        pHas = (any(nd == la[0] or nd == la[1] for la in mTEPES.laa)
+                or any(mTEPES.pReactiveDemand[p,sc,n,nd]() for p,sc,n in mTEPES.psn)
+                # a converter model puts a reactive term on an HVDC terminal, so eBalanceReact builds there too
+                or (mTEPES.pIndACConverter() and any(nd == la[0] or nd == la[1] for la in mTEPES.lad)))
         if not pHas:
             # n2gq, not n2g filtered by gq: a synchronous condenser is not in mTEPES.g and so not in n2g, which would skip a node whose only reactive
             # device is a condenser and leave its marginal unwritten.

@@ -42,6 +42,9 @@ AC_SCALAR_DEFAULTS = {
     'pVMax':         1.05,
     'pCapacitivePF': 0.95,   # leading power factor limit for reactive-capable units
     'pInductivePF':  0.95,   # lagging power factor limit
+    # Converter power factor, used for both HVDC converter models. 0.85 gives tan(acos(pf)) = 0.62, which is in the usual range for a
+    # line-commutated station: an LCC draws roughly half to two thirds of the transferred active power as reactive power.
+    'pConverterPF':  0.85,
 }
 
 # Columns oT_Data_BusShunt must provide. Missing ones are filled with the default rather than raising, so a minimal shunt table stays valid.
@@ -185,6 +188,7 @@ def ConfigureACData(mTEPES, dfs, par):
         raise ValueError(f'oT_Data_Network: AngMin must be below AngMax on line(s) {bad}')
 
     # --- branch index set ------------------------------------------------------------------------------------------------------------------------
+    mTEPES.psnlad = Set(doc='psn x DC branch', initialize=[(p,sc,n,ni,nf,cc) for p,sc,n in mTEPES.psn for ni,nf,cc in mTEPES.lad if (p,ni,nf,cc) in mTEPES.pla])
     mTEPES.psnlaa = Set(doc='psn x AC branch', initialize=[(p,sc,n,ni,nf,cc) for p,sc,n in mTEPES.psn for ni,nf,cc in mTEPES.laa if (p,ni,nf,cc) in mTEPES.pla])
 
     # --- cycles: not computed ---------------------------------------------------------------------------------------------------------------------
@@ -301,6 +305,7 @@ def ConfigureACData(mTEPES, dfs, par):
     mTEPES.pVMax             = Param(initialize=par['pVMax']        , within=NonNegativeReals, doc='Maximum voltage magnitude [p.u.]')
     mTEPES.pCapacitivePF     = Param(initialize=par['pCapacitivePF'], within=NonNegativeReals, doc='Capacitive power factor limit [p.u.]')
     mTEPES.pInductivePF      = Param(initialize=par['pInductivePF'] , within=NonNegativeReals, doc='Inductive  power factor limit [p.u.]')
+    mTEPES.pConverterPF      = Param(initialize=par['pConverterPF'] , within=NonNegativeReals, doc='HVDC converter power factor [p.u.]')
 
     if par['pIndBusShunt']:
         mTEPES.pBusGshb            = Param(mTEPES.sh, initialize=par['pBusGshb'].loc[list(mTEPES.sh)].to_dict()           , within=Reals,            doc='Shunt conductance [p.u.]'                  , mutable=True)
