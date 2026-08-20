@@ -504,65 +504,80 @@ on the withdrawn 18.0088 figure and does not stand.
 That the restoration converges where the cold exact solve does not is itself the practical argument for it: starting
 from the relaxed solution is what makes the non-convex problem tractable at this size.
 
-# 15. Validation against pandapower: the solutions are not AC-realisable on a meshed network
+# 15. Validation against physics computed outside openTEPES
 
-Every check up to here was openTEPES against itself. The relaxation gap says the cone is closed; it does not say the
-equations behind it are the right equations, and it cannot say whether the answer is a physical operating point.
+Every other check here compares the model against itself. The relaxation gap says the cone is closed; the envelope, the
+band and the restoration all measure the model against its own definition of the relations they enforce. None of that
+can detect a consistently wrong premise, and one had gone undetected through ten code reviews (section 16).
 
-## 15.1 The angles are not AC angles
+`prototypes/ac_formulations/validate.py` runs three checks on any solved AC case, cheapest first:
 
-Feeding the solved bus voltages and angles into pandapower's `makeYbus` and computing `S = V conj(Ybus V)` gives
-mismatches of **217 MW and 296 Mvar**. That is not a coding error in the model: the branch flow formulation determines
-`|V|`, `P`, `Q` and the current, while the angle is tied to the flows only through a polyhedral ENVELOPE, which has
-slack. Measured on 9n_AC the relation `|Vi||Vj| sin(theta_ij) = (xP + rQ)/S` is off by up to `3.8e-03` p.u., and since
-`dP/dtheta` is about `V^2/X ~ 10` p.u. per radian, a few milliradians becomes a few hundred MW.
+  * **branch residual** — the model's own branch flows against the textbook pi-model computed from its own voltages and
+    angles. The formula is derived from scratch, so it depends on no openTEPES constraint.
+  * **loop residual** — each branch's angle recovered from its own flows, summed around every independent cycle. The
+    branch flow model works in `|V|^2`, `P`, `Q` and current; angles never appear in its core equations. On a radial
+    network that is complete, on a meshed one the recovered angles must also close around every loop.
+  * **power flow error** — the network rebuilt in pandapower from the same r, x, b and tap data, the setpoints
+    openTEPES chose injected, and Newton-Raphson run. Other people's code, same inputs, same voltages or not.
 
-**`oT_Result_NetworkVoltageAngle` is therefore not the AC angle and must not be read as one.**
+## 15.1 Result on 9n_AC
 
-## 15.2 The deeper problem: the loops do not close
+| load level | dP [MW] | dQ [Mvar] | loop [rad] | dV [p.u.] | dAngle [rad] |
+|------------|--------:|----------:|-----------:|----------:|-------------:|
+| 01-01 01:00 | 0.00001 | 0.00006 | 4.3e-10 | **0.000000002** | **0.0** |
+| 01-01 03:00 | 0.00001 | 0.00006 | 4.2e-10 | **0.000000002** | **0.0** |
+| 01-01 05:00 | 0.00001 | 0.00006 | 4.1e-10 | **0.000000002** | **0.0** |
 
-The angle across a branch follows exactly from its own flows, `sin(theta_ij) = (xP + rQ)/(|Vi||Vj|)`. Recovering it per
-branch and summing around each independent cycle of the 9-bus network gives:
+**The formulation is confirmed by an independent implementation**, with line charging, bus shunts and an HVDC candidate
+all in play. This is the check that ten code reviews structurally could not perform.
 
-| load level | worst loop mismatch |
-|------------|--------------------:|
-| 01-01 01:00 | 1.102e-02 rad = 0.632 deg |
-| 01-01 03:00 | 1.106e-02 rad = 0.634 deg |
-| 01-01 05:00 | 1.107e-02 rad = 0.634 deg |
+## 15.2 Two traps in the validation itself, not the model
 
-A cycle that does not close means **no assignment of bus angles reproduces these flows**. The solution satisfies every
-branch flow equation, has a cone tight to 1e-16 after the restoration pass, and is still not a physical AC operating
-point.
+Both cost real time and both produced convincing wrong numbers:
 
-Independently: rebuilding the network in pandapower from the same r, x, b data, injecting the setpoints openTEPES
-chose, and running Newton-Raphson gives bus voltages that differ from openTEPES's by up to **0.0130 p.u.** — thirteen
-per cent of the 0.95 to 1.05 band.
+**Use the susceptance actually in service, not the nameplate.** 9n_AC ships `Capacitor_1` as a candidate that the model
+declines to build, so `vQShunt` is zero while `pBusBshb` still holds its 0.300 rating. Injecting the rating put 299
+Mvar into the network that the solution never contained, and moved every bus voltage by 0.013 p.u. — which looked
+exactly like a model error.
 
-## 15.3 What this means, and what it does not
+**HVDC links carry active power that must appear at both ends.** Leaving them out of the rebuilt network moves the
+voltages too. It happened to change nothing on 9n_AC only because its DC candidate is not built.
 
-It does **not** mean the formulation is wrong as a relaxation. The objective remains a valid lower bound, and on a
-RADIAL network the angles can always be recovered by walking the tree, so the question does not arise. Distribution
-feeders, which is what the branch flow model was built for, are radial.
+A third false lead is worth recording: zeroing the line charging halved the voltage gap, which pointed hard at the
+charging model. It was the shunt error interacting with it. An intermediate measurement that moves in the expected
+direction is not evidence of the expected cause.
 
-It does mean that on a MESHED network — every transmission case here, 9n_AC included — the reported voltages, angles
-and flows are not an operating point the system could actually take up.
+## 15.3 Result on RTS-GMLC, with real transformer taps
 
-The missing ingredient is the loop condition: the recovered angles must sum to zero around every independent cycle.
-That is exactly the subject of the cycle-based AC OPF paper this design took its bearings from. The cycle basis was
-computed in an early version of `ConfigureACData` and removed during review as dead code, which it was — the
-constraints that would have used it were never written. Removing the unused computation was right; the gap it left
-visible is that the constraints themselves are missing.
+9n_AC has no off-nominal tap, so it cannot exercise the transformer path. RTS-GMLC does: 73 buses, 120 branches and 16
+transformers at 1.015 and 1.03. Twelve hours of the peak week, restoration on:
 
-## 15.4 Status
+| load level | dP [MW] | dQ [Mvar] | loop [rad] | dV [p.u.] | dAngle [rad] |
+|------------|--------:|----------:|-----------:|----------:|-------------:|
+| 08-23 02:00 | 0.00000 | 0.00000 | 7.6e-14 | **0.000000002** | 0.0 |
+| 08-23 03:00 | 0.00000 | 0.00000 | 2.2e-13 | **0.000000002** | 1e-09 |
+| 08-23 04:00 | 0.00000 | 0.00000 | 1.0e-12 | **0.000000002** | 1e-09 |
 
-`RTS-GMLC_AC`, `RTS-GMLC_AC_Oper` and `9n_AC` are all meshed. Until the loop constraints exist, an AC run from this
-branch should be read as: a valid lower bound on cost, correct branch loadings in the relaxed sense, and voltages and
-angles that are indicative rather than physical.
+**The tap convention is confirmed against an independent transformer model.** `pLineTapFactor = 1/tau` applied to the
+sending-end squared voltage matches what pandapower does with `vn_hv_kv = kv * tau`, on a meshed network with sixteen
+of them. Until now that convention rested on a derivation and on `test_tap_reaches_the_voltage_drop`, which asserts the
+same convention it was written from — it could not have caught an inverted tap.
+
+Note the relaxation gap on this run: tight on all 120 branches at 3.61e-10, where the relaxed solve leaves 21 of 120
+loose (section 12.2). That is the restoration pass doing its work on the case that needs it.
+
+## 15.4 What is not yet covered
+
+Both cases run here are single-period. Nothing has been validated across a multi-period build, where the investment
+decisions and the period windows interact with the branch sets.
 
 # 16. The angle relation had the wrong sign
 
-Section 15 found that the solutions were not AC-realisable and pointed at a missing loop condition. That was the
-symptom. The cause was simpler and worse: `eAngleEnvM` computed the envelope numerator as `x*P + r*Q`. It is a minus.
+The validation of section 15 first came back with the solutions not AC-realisable: the recovered angles missed closing
+around the cycles by 0.634 degrees, which reads as a missing loop condition. That was the symptom. The cause was
+simpler and worse: `eAngleEnvM` computed the envelope numerator as `x*P + r*Q`. It is a minus.
+
+(Section 15 now reports the corrected model, so the failing numbers below are the historical ones.)
 
 From `S_ij = V_i' conj((V_i' - V_j) y)` with `y = (r - jx)/z^2`:
 
@@ -596,9 +611,9 @@ again on the corrected model. The direction of every conclusion held; the magnit
   * The relaxed plan understates its own cost by **57 %**, not 32 %.
   * The exact model no longer solves on RTS from a cold start, so there is no measured true optimum for that case.
 
-## 16.3 What is still open
+## 16.3 Resolved
 
-The pandapower Newton-Raphson comparison still shows bus voltages 0.0130 p.u. apart, unchanged by the sign fix. Since
-the pi-model check now agrees to 1e-5 MW, the branch equations are right and the remaining gap is in how that
-validation script assembles the network — `create_impedance` is a two-port element, not a plain series impedance. It
-has not been resolved, and until it is, the Newton-Raphson figure should not be quoted either way.
+The Newton-Raphson gap that section 15 reported as open was in the validation script, not the model: it injected a
+candidate shunt's nameplate rating for a device the model had declined to build. With that corrected the power flow
+agrees to 2e-09 p.u. See section 15.2. `create_impedance` was suspected and was not the cause — rebuilding the lines
+from explicit ohms changed the answer by nothing at all.
