@@ -441,15 +441,29 @@ build 27.5 million rows is the 8,736 hour horizon, nothing else.
 
 ## 12.1a How far the horizon goes, and what stops it
 
-| horizon | rows | columns | barrier factor | barrier | wall | cone loose |
-|---------|-----:|--------:|---------------:|--------:|-----:|-----------:|
-| 1 day, 24 h    |     54,855 |     46,707 |     — |      — |   5.9 s |  9 of 120 |
-| 1 week, 168 h  |    528,423 |    770,531 |     — |      — |  97.5 s | 21 of 120 |
-| 1 month, 720 h |  2,266,671 |  3,302,232 | **2.4 GB** | **86.0 s** | 622.4 s | 38 of 120 |
-| 1 year, 8736 h | 27,509,055 | 40,048,784 | **30.0 GB** | — | 10 h cap | — |
+| horizon | rows | columns | barrier factor | barrier | iterations | wall | cone loose |
+|---------|-----:|--------:|---------------:|--------:|-----------:|-----:|-----------:|
+| 1 day, 24 h     |     54,855 |     46,707 |          — |       — |  — |   5.9 s |  9 of 120 |
+| 1 week, 168 h   |    528,423 |    770,531 |          — |       — |  — |  97.5 s | 21 of 120 |
+| 1 month, 720 h  |  2,266,671 |  3,302,232 | **2.4 GB** |  **86.0 s** | 73 | 622.4 s | 38 of 120 |
+| 3 months, 2184 h|  6,876,807 | 10,015,924 | **7.0 GB** | **255.3 s** | 79 |  pending |   pending |
+| 1 year, 8736 h  | 27,509,055 | 40,048,784 | **30.0 GB**|       — |  — | 10 h cap | — |
 
-Rows and factor memory both scale LINEARLY with the horizon: a month is 8.2% of a year's hours and 8.2% of its rows,
-2.4 GB against 30.0 GB. The constraint matrix is block-banded in time, so that is what should happen.
+**Memory is linear in the horizon** and **the barrier is linear in rows**, both measured rather than assumed:
+
+| horizon | rows | GB per Mrow | barrier s per Mrow |
+|---------|-----:|------------:|-------------------:|
+| 1 month  |  2.27M | 1.06 | 37.9 |
+| 3 months |  6.88M | 1.02 | 37.1 |
+| 1 year   | 27.51M | 1.09 | — |
+
+Three months is 25.0% of the year's hours, 25.0% of its rows and 23.3% of its factor. The constraint matrix is
+block-banded in time, so that is what should happen, and it makes the 30 GB estimate for the year a measurement rather
+than an extrapolation.
+
+The barrier surprise is that it does not degrade: 2.97x the time for 3.03x the rows, with the iteration count almost
+flat at 73 then 79. Carrying that to the full year gives roughly 85 to 90 iterations and **about 17 minutes of
+barrier**, provided the factor is resident. The 10 h cap is not the binding constraint; the 24 GB of RAM is.
 
 **The full-year case is memory-bound, not hard.** Gurobi's own estimate for it is 4 seconds per barrier iteration; the
 observed iterations took 500 to 1,400 seconds, about 150x slower, because a 30 GB factor does not fit the 24 GB machine
