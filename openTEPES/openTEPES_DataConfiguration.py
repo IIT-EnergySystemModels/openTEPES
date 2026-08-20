@@ -11,6 +11,15 @@ import pandas        as pd
 from   collections   import defaultdict
 from   pyomo.environ import Set, Param, Binary, NonNegativeReals, NonNegativeIntegers, PositiveReals, PositiveIntegers, Reals, UnitInterval, Any
 
+# Support running this file directly (e.g. VS Code "Run Python File"), where __package__ is empty and the relative import below has no parent package;
+# fall back to an absolute package import in that case.
+try:
+    from .openTEPES_InputDataAC          import ConfigureACData
+except ImportError:
+    import os, sys
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from openTEPES.openTEPES_InputDataAC import ConfigureACData
+
 
 # @profile
 def DataConfiguration(mTEPES, dfs=None, par=None):
@@ -77,10 +86,28 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     mTEPES.lc     = Set(doc='candidate       electric lines'   , initialize=[la     for la   in mTEPES.la if par['pNetFixedCost']       [la] >  0.0])
     mTEPES.cd     = Set(doc='candidate    DC electric lines'   , initialize=[la     for la   in mTEPES.la if par['pNetFixedCost']       [la] >  0.0 and par['pLineType'][la] == 'DC'])
     mTEPES.ed     = Set(doc='existing     DC electric lines'   , initialize=[la     for la   in mTEPES.la if par['pNetFixedCost']       [la] == 0.0 and par['pLineType'][la] == 'DC'])
-    mTEPES.ll     = Set(doc='loss            electric lines'   , initialize=[la     for la   in mTEPES.la if par['pLineLossFactor']     [la] >  0.0 and par['pIndBinNetLosses'] > 0 ])
+    # Under AC the loss of a branch is intrinsic to its flow equations — it is r*vCurr, present whether or not anyone asked for it — so every AC branch
+    # belongs in the loss set. pIndBinNetLosses governs the DC loss-FACTOR approximation, which is a modelling choice; it should not decide whether a
+    # loss that exists gets reported. Measured on RTS-GMLC_AC, which ships with the flag off: the balance carried 183 MW of losses while every loss
+    # report showed zero, because they all key on this set.
+    # mTEPES.laa is built about 250 lines below this point, so the AC test here is on the line type directly rather than on set membership.
+    if par.get('pIndACPowerFlow', 0):
+        mTEPES.ll = Set(doc='loss            electric lines'   , initialize=[la     for la   in mTEPES.la if par['pLineType'][la] != 'DC' or (par['pLineLossFactor'][la] > 0.0 and par['pIndBinNetLosses'] > 0)])
+    else:
+        mTEPES.ll = Set(doc='loss            electric lines'   , initialize=[la     for la   in mTEPES.la if par['pLineLossFactor']     [la] >  0.0 and par['pIndBinNetLosses'] > 0 ])
     mTEPES.rf     = Set(doc='reference node'                   , initialize=[par['pReferenceNode']])
     mTEPES.gq     = Set(doc='gen    reactive units'            , initialize=[gg     for gg   in mTEPES.gg if par['pRMaxReactivePower']  [gg] >  0.0 and                                                            par['pElecGenPeriodIni'][gg]  <= pLastPeriod and par['pElecGenPeriodFin'][gg]  >= pFirstPeriod])
-    mTEPES.sq     = Set(doc='synchr reactive units'            , initialize=[gg     for gg   in mTEPES.gg if par['pRMaxReactivePower']  [gg] >  0.0 and par['pGenToTechnology'][gg] == 'SynchronousCondenser'  and par['pElecGenPeriodIni'][gg]  <= pLastPeriod and par['pElecGenPeriodFin'][gg]  >= pFirstPeriod])
+    # Membership is by physics, not by the technology string. A reactive-capable device with no active output — an SVC or a STATCOM entered the
+    # obvious way — is a reactive-only device even when nobody typed 'SynchronousCondenser'. The test is on the rated power itself, not on absence
+    # from mTEPES.g: g also excludes units for a blank node or an out-of-window period, which are not reactive-only devices at all. All THREE
+    # capabilities have to be zero — a charge-only ESS or a heat-only boiler has zero rated electric power but is emphatically not a condenser,
+    # and treating one as such both drops it from the merit-order set go and, if it is a candidate, charges its cost twice: once through
+    # vGenerationInvest and once through vSynchInvest, with two independent build decisions for one device.
+    # The electric test is on the NAMEPLATE rating, not the derated one: pRatedMaxPowerElec is MaximumPower*(1-EFOR), which is also zero for a real
+    # generator entered with EFOR = 1.0, and such a unit is a derated generator, not a condenser.
+    # Keying on the name alone left such a unit out of
+    # sq, hence out of sqc, so a CANDIDATE one carried no investment gate and no cost: free rated Mvar at every load level.
+    mTEPES.sq     = Set(doc='synchr reactive units'            , initialize=[gg     for gg   in mTEPES.gg if par['pRMaxReactivePower']  [gg] >  0.0 and (par['pGenToTechnology'][gg] == 'SynchronousCondenser' or (par['pNameplateMaxPowerElec'][gg] == 0.0 and par['pRatedMaxCharge'][gg] == 0.0 and par['pRatedMaxPowerHeat'][gg] == 0.0)) and par['pElecGenPeriodIni'][gg]  <= pLastPeriod and par['pElecGenPeriodFin'][gg]  >= pFirstPeriod])
     mTEPES.sqc    = Set(doc='synchr reactive candidate')
     mTEPES.shc    = Set(doc='shunt           candidate')
     if par['pIndHydroTopology']:
@@ -1023,6 +1050,8 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     mTEPES.pIndHeat              = Param(initialize=par['pIndHeat']             , within=Binary,              doc='Indicator of heat     demand and pipe     network'                      )
     mTEPES.pIndVarTTC            = Param(initialize=par['pIndVarTTC']           , within=Binary,              doc='Indicator of using or not variable TTC'                                 )
     mTEPES.pIndPTDF              = Param(initialize=par['pIndPTDF']             , within=Binary,              doc='Indicator of using or not the Flow-based method'                        )
+    mTEPES.pIndACPowerFlow       = Param(initialize=par['pIndACPowerFlow']      , within=NonNegativeIntegers, doc='Indicator of the AC power flow model: 0 DC, 1 bus-injection'            )
+    mTEPES.pIndACModelType       = Param(initialize=par['pIndACModelType']      , within=NonNegativeIntegers, doc='Indicator of the AC model type: 0 SOCP, 1 piecewise linear, 2 exact NLP'            )
 
     mTEPES.pENSCost              = Param(initialize=par['pENSCost']             , within=NonNegativeReals,    doc='ENS cost'                                           , mutable=True)
     mTEPES.pH2NSCost             = Param(initialize=par['pHNSCost']             , within=NonNegativeReals,    doc='HNS cost'                                           )
@@ -1187,6 +1216,10 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
         mTEPES.pPeriodProb[p,sc] = mTEPES.pPeriodWeight[p] * mTEPES.pScenProb[p,sc]
 
     par['pMaxTheta'] = filter_rows(par['pMaxTheta'], mTEPES.psnnd)
+
+    # AC optimal power flow sets and parameters. Called before the network parameter block below because it fills in the AngMin/AngMax defaults that
+    # pAngMin/pAngMax are built from. A no-op when IndACPowerFlow is 0.
+    ConfigureACData(mTEPES, dfs, par)
 
     mTEPES.pLineLossFactor   = Param(mTEPES.ll,    initialize=par['pLineLossFactor'].to_dict()  , within=           Reals,    doc='Loss factor'                                                       )
     mTEPES.pLineR            = Param(mTEPES.la,    initialize=par['pLineR'].to_dict()           , within=NonNegativeReals,    doc='Resistance'                                                        )

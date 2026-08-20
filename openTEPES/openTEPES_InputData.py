@@ -13,11 +13,13 @@ from   pyomo.environ import Set
 try:
     from .openTEPES_InputSource             import df_to_set_values, InputSource
     from .openTEPES_InputCSVSource          import CSVSource
+    from .openTEPES_InputDataAC             import ReadACInputData
 except ImportError:
     import sys
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     from openTEPES.openTEPES_InputSource    import df_to_set_values, InputSource
     from openTEPES.openTEPES_InputCSVSource import CSVSource
+    from openTEPES.openTEPES_InputDataAC    import ReadACInputData
 
 # from line_profiler import profile
 
@@ -92,6 +94,21 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         'NetworkHeat'               : ('pIndHeat'             , None, 'No heat energy carrier'              ),
     }
 
+    # Tables only the AC optimal power flow consumes. Unlike the hydrogen and heat tables, whose mere presence switches the sector on, these are driven
+    # by an explicit option flag — so a case can carry AC data and still be run as DC. ReactiveDemand is a full time series, hence worth not reading.
+    AC_ONLY_STEMS = {'ReactiveDemand', 'BusShunt'}
+
+    def _peek_option(flag: str) -> int:
+        """Read one flag out of oT_Data_Option before the main read loop. The table is a single row, so this is cheap."""
+        try:
+            df = source.read_data('Option')
+            # the conversion belongs inside the try as well: a blank cell reads as NaN and int(NaN) raises, which would abort here rather than warn
+            return int(df[flag].iloc[0]) if flag in df.columns else 0
+        except Exception:
+            # The main read loop below tolerates a malformed Option table with a warning and carries on. This peek runs first, so it must not be the
+            # stricter of the two: a table that used to warn would otherwise abort the run before the loop is ever reached.
+            return 0
+
     def read_input_data():
         """Read every oT_Data table the source knows about.
 
@@ -100,7 +117,17 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         dfs: dict[str, pd.DataFrame] = {}
         par: dict[str, int] = {}
 
-        for fs in source.list_data_stems():
+        pIndAC = _peek_option('IndACPowerFlow')
+
+        # Remember what the source OFFERED, so the AC reader can tell "this case has no shunts" from "this case has shunts that failed to arrive".
+        # Only the second is worth a warning, and it is otherwise silent: _peek_option swallows every exception and returns 0, which skips the AC
+        # stems, while the main loop below still reads IndACPowerFlow = 1 and the AC model is built with no reactive compensation at all.
+        pStems = list(source.list_data_stems())
+        par['pBusShuntOffered'] = 1 if 'BusShunt' in pStems else 0
+
+        for fs in pStems:
+            if fs in AC_ONLY_STEMS and not pIndAC:
+                continue
             dp_key, _, _ = FLAG_MAPPING.get(fs, (None, None, None))
             header = HEADER_LEVELS.get(fs)
             try:
@@ -197,6 +224,20 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     for col in dfs['dfOption'].columns:
         par[f'p{col}'] = int(dfs['dfOption'][col].iloc[0])
 
+    # Option flags a case may leave out of oT_Data_Option entirely. Absent means the historical behaviour: DC network, no AC model.
+    #   pIndACPowerFlow  0 = DC (default), 1 = bus-injection AC. Branch-flow (DistFlow) is deliberately not offered: Bose & Low prove its SOC
+    #                    relaxation gives the same bound as the bus-injection one, so it would be a second formulation with nothing to show for it.
+    #   pIndACModelType  0 = SOCP relaxation (default, the only option that returns a valid bound)
+    #                    1 = piecewise-linear branch flow, a MILP and therefore the only variant that scales to a full year
+    #                    2 = exact NLP, for the Phase 7 validation pass with the binaries fixed
+    # See doc/design/AC_OPF_Formulation_Choices.md for why these three and not the rest.
+    for key in ['pIndACPowerFlow', 'pIndACModelType']:
+        par.setdefault(key, 0)
+    if par['pIndACPowerFlow'] not in (0, 1):
+        raise NotImplementedError(f"IndACPowerFlow = {par['pIndACPowerFlow']} is not implemented; use 0 (DC) or 1 (bus-injection AC)")
+    if par['pIndACModelType'] not in (0, 1, 2):
+        raise NotImplementedError(f"IndACModelType = {par['pIndACModelType']} is not implemented; use 0 (SOCP), 1 (piecewise linear) or 2 (NLP)")
+
     # load parameters from dfParameter — single-row mixed scalars.
     for col in dfs['dfParameter'].columns:
         v = dfs['dfParameter'][col].iloc[0]
@@ -258,6 +299,9 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     if par['pIndHeat']:
         par['pReserveMarginHeat'] = dfs['dfReserveMarginHeat']   ['ReserveMargin']                                   # minimum adequacy reserve margin           [p.u.]
         par['pDemandHeat']        = dfs['dfDemandHeat']          [mTEPES.nd] * 1e-3                                  # heat     demand                           [GW]
+
+    # AC optimal power flow tables. Called here so the reactive demand is averaged on the same rolling window as the active demand just below.
+    ReadACInputData(dfs, par, mTEPES, pIndLogConsole)
 
     if par['pTimeStep'] > 1:
         # compute the demand as the mean over the time step load levels and assign it to active load levels. The same applies to the remaining parameters
@@ -349,6 +393,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     par['pEFOR']                       = dfs['dfGeneration']  ['EFOR'                      ]                                                             # EFOR                                         [p.u.]
     par['pRatedMinPowerElec']          = dfs['dfGeneration']  ['MinimumPower'              ] * 1e-3 * (1.0-dfs['dfGeneration']['EFOR'])                  # rated minimum electric power                 [GW]
     par['pRatedMaxPowerElec']          = dfs['dfGeneration']  ['MaximumPower'              ] * 1e-3 * (1.0-dfs['dfGeneration']['EFOR'])                  # rated maximum electric power                 [GW]
+    par['pNameplateMaxPowerElec']      = dfs['dfGeneration']  ['MaximumPower'              ] * 1e-3                                                      # nameplate maximum electric power, NOT derated[GW]
     par['pRatedMinPowerHeat']          = dfs['dfGeneration']  ['MinimumPowerHeat'          ] * 1e-3 * (1.0-dfs['dfGeneration']['EFOR'])                  # rated minimum heat     power                 [GW]
     par['pRatedMaxPowerHeat']          = dfs['dfGeneration']  ['MaximumPowerHeat'          ] * 1e-3 * (1.0-dfs['dfGeneration']['EFOR'])                  # rated maximum heat     power                 [GW]
     par['pRatedLinearFuelCost']        = dfs['dfGeneration']  ['LinearTerm'                ] * 1e-3 *      dfs['dfGeneration']['FuelCost']               # fuel     term variable cost                  [MEUR/GWh]
@@ -380,6 +425,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     par['pOutflowsType']               = dfs['dfGeneration']  ['OutflowsType'              ]                                                             #               ESS outflows type
     par['pEnergyType']                 = dfs['dfGeneration']  ['EnergyType'                ]                                                             #               unit  energy type
     par['pRMaxReactivePower']          = dfs['dfGeneration']  ['MaximumReactivePower'      ] * 1e-3                                                      # rated maximum reactive power                 [Gvar]
+    par['pRMinReactivePower']          = dfs['dfGeneration']  ['MinimumReactivePower'      ] * 1e-3                                                      # rated minimum reactive power                 [Gvar]
     par['pGenLoInvest']                = dfs['dfGeneration']  ['InvestmentLo'              ]                                                             # Lower bound of the investment decision       [p.u.]
     par['pGenUpInvest']                = dfs['dfGeneration']  ['InvestmentUp'              ]                                                             # Upper bound of the investment decision       [p.u.]
     par['pGenLoRetire']                = dfs['dfGeneration']  ['RetirementLo'              ]                                                             # Lower bound of the retirement decision       [p.u.]

@@ -27,6 +27,7 @@ try:
     from          .openTEPES_OutputResultsHydrogen      import NetworkH2OperationResults
     from          .openTEPES_OutputResultsHeat          import NetworkHeatOperationResults
     from          .openTEPES_OutputResultsNetwork       import NetworkOperationResults, NetworkMapResults
+    from          .openTEPES_OutputResultsAC            import ACRelaxationDiagnostic, ACNetworkOperationResults, ACMarginalResults
     from          .openTEPES_OutputResultsEconomic      import MarginalResults, CostSummaryResults, EconomicResults
     from          .openTEPES_OutputResultsSummary       import OperationSummaryResults, FlexibilityResults, ReliabilityResults
     from          .openTEPES_OutputResultsSink          import ResultSink, set_active_sink, clear_active_sink
@@ -47,17 +48,20 @@ except ImportError:
     from openTEPES.openTEPES_OutputResultsHydrogen      import NetworkH2OperationResults
     from openTEPES.openTEPES_OutputResultsHeat          import NetworkHeatOperationResults
     from openTEPES.openTEPES_OutputResultsNetwork       import NetworkOperationResults, NetworkMapResults
+    from openTEPES.openTEPES_OutputResultsAC            import ACRelaxationDiagnostic, ACNetworkOperationResults, ACMarginalResults
     from openTEPES.openTEPES_OutputResultsEconomic      import MarginalResults, CostSummaryResults, EconomicResults
     from openTEPES.openTEPES_OutputResultsSummary       import OperationSummaryResults, FlexibilityResults, ReliabilityResults
     from openTEPES.openTEPES_OutputResultsSink          import ResultSink, set_active_sink, clear_active_sink
 
 
 # Output categories selectable via --results CLI flag. Keys map to the pIndXxxResults flags inside openTEPES_run.
-OUTPUT_CATEGORIES = ("investment", "generation", "ess", "reservoir", "h2", "heat", "flexibility", "reliability", "network", "map", "summary", "cost", "marginal", "economic", "plots",)
+OUTPUT_CATEGORIES = ("investment", "generation", "ess", "reservoir", "h2", "heat", "flexibility", "reliability", "network", "acnetwork", "acdiag", "map", "summary", "cost", "marginal", "economic", "plots",)
 # Aliases expanded inside openTEPES_run.
 OUTPUT_ALIASES = {
     "none": (),                                              # sentinel-only — for inner-loop / feasibility-check solves
-    "min":  ("investment", "summary", "cost", "economic"),
+    # acdiag is the relaxation gap alone, two small files: it says whether the AC currents, losses and voltages mean anything, so it is never
+    # optional. acnetwork is the eight hourly wide tables and stays out of the mode whose purpose is to be minimal.
+    "min":  ("investment", "summary", "cost", "economic", "acdiag"),
     "full": OUTPUT_CATEGORIES,
 }
 
@@ -91,6 +95,9 @@ OUTPUT_REGISTRY = (
     ("h2",          NetworkH2OperationResults,      (),                       lambda m: bool(m.pa and m.pIndHydrogen)),
     ("heat",        NetworkHeatOperationResults,    (),                       lambda m: bool(m.ha and m.pIndHeat)),
     ("network",     NetworkOperationResults,        (),                       None),
+    ("acdiag",      ACRelaxationDiagnostic,         (),                       lambda m: m.pIndACPowerFlow()),
+    ("acnetwork",   ACNetworkOperationResults,      (),                       lambda m: m.pIndACPowerFlow()),
+    ("acnetwork",   ACMarginalResults,              (),                       lambda m: m.pIndACPowerFlow()),
     ("marginal",    MarginalResults,                ("plot",),                None),
     ("economic",    EconomicResults,                (        "area", "plot"), None),
 
@@ -222,6 +229,36 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     # Define variables
     SettingUpVariables(mTEPES, mTEPES)
 
+    # The cycle formulation is a way of eliminating vTheta from the DC model: it deletes eKirchhoff2ndLaw1/2 and imposes sum(x*flow) = 0 around each
+    # independent cycle instead. Under the AC model those constraints are never built, so CycleConstraints would try to delete components that do not
+    # exist. The AC analogue of the loop condition is sum(arctan(vWS/vWC)) = 0, which is non-convex and is handled by the tangent bounds plus the
+    # Phase 7 restoration instead. Refuse the combination rather than fail obscurely deep in the stage loop.
+    if pIndCycleFlow and mTEPES.pIndACPowerFlow():
+        raise ValueError('The cycle flow formulation applies to the DC network model only; it cannot be combined with IndACPowerFlow. '
+                         'See doc/design/AC_OPF_Formulation_Choices.md section 4.')
+
+    # Single-node mode fixes every vLineLosses to zero, and under AC that variable is tied to the exact loss 0.5*r*vCurr, so the fix drives vCurr to
+    # zero and the current definition then drives P and Q to zero on every AC branch. The result is not "the network ignored" but "every node
+    # islanded": load is met by ENS everywhere and nothing says why. The two options mean opposite things — one asks for no network, the other for a
+    # detailed one — so refuse rather than produce a silently empty answer.
+    if mTEPES.pIndBinSingleNode() and mTEPES.pIndACPowerFlow():
+        raise ValueError('IndBinSingleNode ignores the network entirely and cannot be combined with IndACPowerFlow, which models it in detail. '
+                         'Switch one of the two off.')
+
+    # Variable TTC gives each branch a rating per load level. Under AC the thermal limit is written on vCurr from the STATIC pLineSmax, and the AC
+    # flow boxes replace the per-load-level pMaxNTCFrw/Bck bounds, so the varying ratings would be read in and then ignored. Worse, the variable-TTC
+    # block fixes only vFlowElec to zero for a branch whose rating is zero at that load level; under AC the reactive flow, the far-end flow and the
+    # current stay free, so a branch the case declared out of service still carries reactive power and losses.
+    if mTEPES.pIndVarTTC() and mTEPES.pIndACPowerFlow():
+        raise ValueError('IndVarTTC is not supported together with IndACPowerFlow: the AC thermal limit is written on the current from the static '
+                         'rating, so per-load-level ratings would be silently ignored. See doc/design/AC_OPF_Implementation_Plan.md.')
+
+    # PTDF pins vFlowElec to sum(pPTDF * vNetPosition) as a hard equality and re-imposes a DC-style nodal balance through eNetPosition. Under AC the
+    # branch flow equations already determine vFlowElec, so the two together over-determine it: infeasible if you are lucky, quietly wrong if not.
+    if mTEPES.pIndPTDF() and mTEPES.pIndACPowerFlow():
+        raise ValueError('IndPTDF is a DC network representation and cannot be combined with IndACPowerFlow: both determine the branch flows, and '
+                         'together they over-determine them. Switch one of the two off.')
+
     # first/last stage
     FirstST = 0
     for st in mTEPES.st:
@@ -232,7 +269,9 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
 
     # objective function and investment constraints
     TotalObjectiveFunction             (mTEPES, mTEPES, pIndLogConsole)
-    if mTEPES.gc or mTEPES.gd or mTEPES.lc or mTEPES.rn or mTEPES.pc or mTEPES.hc:
+    # shc/sqc carry the AC reactive candidates. Their cost terms live inside eTotalFElecCost, so a case whose only expansion is a shunt or a
+    # synchronous condenser needs this block built too — otherwise the objective has no fixed-cost term at all and the devices come out free.
+    if mTEPES.gc or mTEPES.gd or mTEPES.lc or mTEPES.rn or mTEPES.pc or mTEPES.hc or mTEPES.shc or mTEPES.sqc:
         InvestmentElecModelFormulation (mTEPES, mTEPES, pIndLogConsole)
     if mTEPES.pIndHydroTopology() and mTEPES.rn:
         InvestmentHydroModelFormulation(mTEPES, mTEPES, pIndLogConsole)
@@ -265,7 +304,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     else:
         # --result No   → minimal (investment + summary + cost + economic, no plots)
         _flags = {k: 0 for k in OUTPUT_CATEGORIES}
-        for k in ("investment", "summary", "cost", "economic"):
+        for k in ("investment", "summary", "cost", "economic", "acdiag"):
             _flags[k] = 1
 
     # Override with fine-grained output_spec if given (--results CLI flag).

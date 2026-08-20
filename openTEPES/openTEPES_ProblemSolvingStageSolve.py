@@ -18,6 +18,7 @@ from   pyomo.common.timing import HierarchicalTimer
 try:
     from          .openTEPES_ModelFormulationInvestment  import GenerationOperationElecModelFormulationInvestment, GenerationOperationHeatModelFormulationInvestment
     from          .openTEPES_ModelFormulationElectricity import GenerationOperationModelFormulationDemand, GenerationOperationModelFormulationStorage, GenerationOperationModelFormulationCommitment, GenerationOperationModelFormulationRampMinTime, NetworkSwitchingModelFormulation, NetworkOperationModelFormulation, NetworkCycles, CycleConstraints
+    from           .openTEPES_ModelFormulationAC import NetworkACOperationModelFormulation, NetworkACCurrentModelFormulation
     from          .openTEPES_ModelFormulationHydro       import GenerationOperationModelFormulationReservoir
     from          .openTEPES_ModelFormulationHydrogen    import NetworkH2OperationModelFormulation
     from          .openTEPES_ModelFormulationHeat        import NetworkHeatOperationModelFormulation
@@ -26,6 +27,7 @@ except ImportError:
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     from openTEPES.openTEPES_ModelFormulationInvestment  import GenerationOperationElecModelFormulationInvestment, GenerationOperationHeatModelFormulationInvestment
     from openTEPES.openTEPES_ModelFormulationElectricity import GenerationOperationModelFormulationDemand, GenerationOperationModelFormulationStorage, GenerationOperationModelFormulationCommitment, GenerationOperationModelFormulationRampMinTime, NetworkSwitchingModelFormulation, NetworkOperationModelFormulation, NetworkCycles, CycleConstraints
+    from openTEPES.openTEPES_ModelFormulationAC import NetworkACOperationModelFormulation, NetworkACCurrentModelFormulation
     from openTEPES.openTEPES_ModelFormulationHydro       import GenerationOperationModelFormulationReservoir
     from openTEPES.openTEPES_ModelFormulationHydrogen    import NetworkH2OperationModelFormulation
     from openTEPES.openTEPES_ModelFormulationHeat        import NetworkHeatOperationModelFormulation
@@ -178,6 +180,12 @@ def StageSolve(OptModel, mTEPES, DirName, CaseName, SolverName, pIndLogConsole, 
                     GenerationOperationModelFormulationRampMinTime       (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
                     NetworkSwitchingModelFormulation                     (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
                     NetworkOperationModelFormulation                     (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
+                    # This path builds its own call list rather than walking FORMULATION_REGISTRY, so the AC constraints have to be named here too.
+                    # Without them the model has NO electricity nodal balance at all under AC: GenerationOperationModelFormulationDemand skips
+                    # eBalanceElec when pIndACPowerFlow is set, on the understanding that the AC formulation supplies it, and here nothing did.
+                    if mTEPES.pIndACPowerFlow():
+                        NetworkACOperationModelFormulation               (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
+                        NetworkACCurrentModelFormulation                 (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
 
                     # introduce cycle flow formulations
                     if pIndCycleFlow == 1:

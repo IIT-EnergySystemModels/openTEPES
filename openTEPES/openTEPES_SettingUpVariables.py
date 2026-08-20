@@ -12,6 +12,15 @@ import pandas        as pd
 from   collections   import defaultdict
 from   pyomo.environ import Set, Param, Var, Binary, NonNegativeReals, NonNegativeIntegers, Reals, UnitInterval, Block, Boolean
 
+# Support running this file directly (e.g. VS Code "Run Python File"), where __package__ is empty and the relative import below has no parent package;
+# fall back to an absolute package import in that case.
+try:
+    from .openTEPES_SettingUpVariablesAC          import SettingUpVariablesAC
+except ImportError:
+    import os, sys
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from openTEPES.openTEPES_SettingUpVariablesAC import SettingUpVariablesAC
+
 
 # @profile
 def SettingUpVariables(OptModel, mTEPES):
@@ -1167,6 +1176,10 @@ def SettingUpVariables(OptModel, mTEPES):
                 raise ValueError('### Minimum renewable energy requirement exceeds the demand ', p, sc, ar, mTEPES.pRESEnergy[p,ar](), sum(mTEPES.pDemandElec[p,sc,n,nd]() for n,nd in mTEPES.n*d2a[ar] if (p,sc,n,nd) in mTEPES.psnnd))
 
     DetectInfeasibilities(mTEPES)
+
+    # AC optimal power flow variables. Kept in their own module rather than inline: this function is already 1,200 lines, and the AC block is
+    # self-contained. A no-op when IndACPowerFlow is 0.
+    nFixedVariables += SettingUpVariablesAC(OptModel, mTEPES)
 
     mTEPES.nFixedVariables    = Param(initialize=round(nFixedVariables), within=NonNegativeIntegers, doc='Number of fixed variables')
 

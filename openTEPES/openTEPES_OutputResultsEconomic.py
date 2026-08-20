@@ -279,6 +279,28 @@ def CostSummaryResults(DirName, CaseName, OptModel, mTEPES):
     ConCost         = pd.Series(data=[sum(pScenFactor[p,sc] * OptModel.vTotalCCost    [p,sc,n]() for sc,n in pSNofP[p]) for p in mTEPES.p], index=mTEPES.p).to_frame(name='Operation Cost Consumption').stack()
     EmiCost         = pd.Series(data=[sum(pScenFactor[p,sc] * OptModel.vTotalECost    [p,sc,n]() for sc,n in pSNofP[p]) for p in mTEPES.p], index=mTEPES.p).to_frame(name='Emission Cost'             ).stack()
     NetCost         = pd.Series(data=[sum(pScenFactor[p,sc] * OptModel.vTotalNCost    [p,sc,n]() for sc,n in pSNofP[p]) for p in mTEPES.p], index=mTEPES.p).to_frame(name='Operation Cost Network'    ).stack()
+
+    # The AC reactive investments have their own row: their cost is inside vTotalFElecCost and therefore inside the reported total, so without a row
+    # here the summary no longer adds up to the total system cost.
+    if mTEPES.pIndACPowerFlow() and (mTEPES.shc or mTEPES.sqc):
+        ReactInvCost = pd.Series(data=[mTEPES.pDiscountedWeight[p] * (sum(mTEPES.pShuntFixedCost[sh] * OptModel.vShuntInvest[p,sh]() for sh in mTEPES.shc if (p,sh) in mTEPES.pshc)
+                                                                    + sum(mTEPES.pSynchFixedCost[sq] * OptModel.vSynchInvest[p,sq]() for sq in mTEPES.sqc if (p,sq) in mTEPES.psqc)) for p in mTEPES.p], index=mTEPES.p).to_frame(name='Investment Cost Reactive'  ).stack()
+    else:
+        ReactInvCost = pd.Series(data=[0.0                                                                                                                                           for p in mTEPES.p], index=mTEPES.p).to_frame(name='Investment Cost Reactive'  ).stack()
+
+    # The AC current penalty is broken out of the network operation cost rather than left inside it. On 9n_AC it is 3.83 of 157.27 MEUR — 2.4% of the
+    # reported total — and merged into 'Operation Cost Network' a reader takes it for ohmic losses, which are a tiny fraction of that number. It is a
+    # numerical device, not a physical cost, so it is named as one. See the pEpsilonCurrent block in openTEPES_ModelFormulationObjective.
+    if mTEPES.pIndACPowerFlow():
+        try:
+            from .openTEPES_ModelFormulationObjective          import AC_CURRENT_PENALTY as pEpsCurr
+        except ImportError:
+            from openTEPES.openTEPES_ModelFormulationObjective import AC_CURRENT_PENALTY as pEpsCurr
+        CurrPen  = pd.Series(data=[sum(pScenFactor[p,sc] * pEpsCurr * mTEPES.pLoadLevelDuration[p,sc,n]() * sum(OptModel.vCurr[p,sc,n,ni,nf,cc]() for ni,nf,cc in mTEPES.laa if (p,ni,nf,cc) in mTEPES.pla) for sc,n in pSNofP[p]) for p in mTEPES.p], index=mTEPES.p).to_frame(name='AC Current Penalty'        ).stack()
+        # subtract by value: both are one entry per period in the same order, but their stacked indices carry different row names
+        NetCost  = NetCost.sub(CurrPen.values)
+    else:
+        CurrPen  = pd.Series(data=[0.0                                                                                                                                               for p in mTEPES.p], index=mTEPES.p).to_frame(name='AC Current Penalty'        ).stack()
     ElecRelCost     = pd.Series(data=[sum(pScenFactor[p,sc] * OptModel.vTotalRElecCost[p,sc,n]() for sc,n in pSNofP[p]) for p in mTEPES.p], index=mTEPES.p).to_frame(name='Reliability Cost'          ).stack()
     if mTEPES.pIndHydrogen():
         H2RelCost   = pd.Series(data=[sum(pScenFactor[p,sc] * OptModel.vTotalRH2Cost  [p,sc,n]() for sc,n in pSNofP[p]) for p in mTEPES.p], index=mTEPES.p).to_frame(name='Reliability Cost Hydrogen' ).stack()
@@ -288,7 +310,7 @@ def CostSummaryResults(DirName, CaseName, OptModel, mTEPES):
         HeatRelCost = pd.Series(data=[sum(pScenFactor[p,sc] * OptModel.vTotalRHeatCost[p,sc,n]() for sc,n in pSNofP[p]) for p in mTEPES.p], index=mTEPES.p).to_frame(name='Reliability Cost Heat'     ).stack()
     else:
         HeatRelCost = pd.Series(data=[0.0                                                                               for p in mTEPES.p], index=mTEPES.p).to_frame(name='Reliability Cost Heat'     ).stack()
-    CostSummary    = pd.concat([GenInvCost, GenRetCost, NetInvCost, RsrInvCost, H2InvCost, HeatInvCost, GenCost, ConCost, EmiCost, NetCost, ElecRelCost, H2RelCost, HeatRelCost]).reset_index().rename(columns={'level_0': 'Period', 'level_1': 'Cost', 0: 'MEUR'})
+    CostSummary    = pd.concat([GenInvCost, GenRetCost, NetInvCost, ReactInvCost, RsrInvCost, H2InvCost, HeatInvCost, GenCost, ConCost, EmiCost, NetCost, CurrPen, ElecRelCost, H2RelCost, HeatRelCost]).reset_index().rename(columns={'level_0': 'Period', 'level_1': 'Cost', 0: 'MEUR'})
 
     CostSummary['MEUR/year'] = CostSummary['MEUR']
     for p in mTEPES.p:
@@ -412,10 +434,29 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput, pIndPlo
     OutputResults05     = pd.Series(data=[     OptModel.vENS           [p,sc,n,nd      ]()*mTEPES.pLoadLevelDuration[p,sc,n]()                                                                                      for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='EnergyNotServed')
     OutputResults06     = pd.Series(data=[-  mTEPES.pDemandElec        [p,sc,n,nd      ]()  *mTEPES.pLoadLevelDuration[p,sc,n]()                                                                                      for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='EnergyDemand'   )
     OutputResults07     = pd.Series(data=[-sum(OptModel.vFlowElec      [p,sc,n,nd,nf,cc]()*mTEPES.pLoadLevelDuration[p,sc,n]() for nf,cc in lout [nd] if (p,nd,nf,cc) in mTEPES.pla                               ) for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='EnergyFlowOut'  )
-    OutputResults08     = pd.Series(data=[ sum(OptModel.vFlowElec      [p,sc,n,ni,nd,cc]()*mTEPES.pLoadLevelDuration[p,sc,n]() for ni,cc in lin  [nd] if (p,ni,nd,cc) in mTEPES.pla                               ) for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='EnergyFlowIn'   )
+    # Under AC the loss lives INSIDE the pair (vFlowElec, vFlowElecBck) — eBalanceElecAC carries no separate loss term for an AC branch — so the
+    # arriving energy is -vFlowElecBck and the loss must not be subtracted a second time. Taking the sending-end value and then also subtracting
+    # vLineLosses at both ends leaves oT_Result_BalanceEnergyPerNode / PerTech / PerArea short by roughly the total AC losses. HVDC links keep the DC
+    # treatment: sending-end flow with the loss factor accounted separately.
+    if mTEPES.pIndACPowerFlow():
+        OutputResults08 = pd.Series(data=[(-sum(OptModel.vFlowElecBck  [p,sc,n,ni,nd,cc]()                                    for ni,cc in lin  [nd] if (p,ni,nd,cc) in mTEPES.pla and (ni,nd,cc) in mTEPES.laa)
+                                           +sum(OptModel.vFlowElec     [p,sc,n,ni,nd,cc]()                                    for ni,cc in lin  [nd] if (p,ni,nd,cc) in mTEPES.pla and (ni,nd,cc) in mTEPES.lad))*mTEPES.pLoadLevelDuration[p,sc,n]() for p,sc,n,ar,nd in sPSNARND], index=pd.Index(sPSNARND)).to_frame(name='EnergyFlowIn'   )
+    else:
+        OutputResults08 = pd.Series(data=[ sum(OptModel.vFlowElec      [p,sc,n,ni,nd,cc]()*mTEPES.pLoadLevelDuration[p,sc,n]() for ni,cc in lin  [nd] if (p,ni,nd,cc) in mTEPES.pla                               ) for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='EnergyFlowIn'   )
     if mTEPES.ll:
-        OutputResults09 = pd.Series(data=[-sum(OptModel.vLineLosses    [p,sc,n,nd,nf,cc]()*mTEPES.pLoadLevelDuration[p,sc,n]() for nf,cc in loutl[nd] if (p,nd,nf,cc) in mTEPES.pla                               ) for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='LineLossesOut'  )
-        OutputResults10 = pd.Series(data=[-sum(OptModel.vLineLosses    [p,sc,n,ni,nd,cc]()*mTEPES.pLoadLevelDuration[p,sc,n]() for ni,cc in linl [nd] if (p,ni,nd,cc) in mTEPES.pla                               ) for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='LineLossesIn'   )
+        # only branches whose loss is NOT already inside the reported flows, i.e. the DC ones once AC is on
+        _lossOK = (lambda la: la in mTEPES.lad) if mTEPES.pIndACPowerFlow() else (lambda la: True)
+        OutputResults09 = pd.Series(data=[-sum(OptModel.vLineLosses    [p,sc,n,nd,nf,cc]()*mTEPES.pLoadLevelDuration[p,sc,n]() for nf,cc in loutl[nd] if (p,nd,nf,cc) in mTEPES.pla and _lossOK((nd,nf,cc))     ) for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='LineLossesOut'  )
+        OutputResults10 = pd.Series(data=[-sum(OptModel.vLineLosses    [p,sc,n,ni,nd,cc]()*mTEPES.pLoadLevelDuration[p,sc,n]() for ni,cc in linl [nd] if (p,ni,nd,cc) in mTEPES.pla and _lossOK((ni,nd,cc))     ) for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='LineLossesIn'   )
+
+    # A shunt with a non-zero conductance draws active power and eBalanceElecAC carries that term, so the report needs it too or the rows sum to the
+    # shunt draw instead of to zero. The variable only exists when some device actually has a conductance, which is why this is conditional.
+    pHasPShunt = mTEPES.pIndACPowerFlow() and hasattr(OptModel, 'vPShunt')
+    if pHasPShunt:
+        pShuntAt = defaultdict(list)
+        for nd, sh in mTEPES.n2sh:
+            pShuntAt[nd].append(sh)
+        OutputResults11 = pd.Series(data=[sum(OptModel.vPShunt[p,sc,n,sh]() for sh in pShuntAt[nd] if (p,sc,n,sh) in mTEPES.psnsh)*mTEPES.pLoadLevelDuration[p,sc,n]() for p,sc,n,ar,nd in sPSNARND], index=pd.Index(sPSNARND)).to_frame(name='ShuntDraw'      )
 
     OutputResults = pd.DataFrame()
     # Check if there are any non-RES generators
@@ -428,6 +469,8 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput, pIndPlo
     OutputResults      = pd.concat([OutputResults,OutputResults05,OutputResults06,OutputResults07,OutputResults08],axis=1)
     if mTEPES.ll:
         OutputResults  = pd.concat([OutputResults,OutputResults09,OutputResults10]                                ,axis=1)
+    if pHasPShunt:
+        OutputResults  = pd.concat([OutputResults,OutputResults11]                                                ,axis=1)
 
     # Merge duplicate columns that arise when a technology belongs to multiple sets (gt ∩ rt, gt ∩ et, …)
     if OutputResults.columns.duplicated().any():
@@ -483,8 +526,11 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput, pIndPlo
     # frames written below take 04, 06, 09 and 10, and the generation block takes 01, 02 and 03. Two full passes over sPSNARND removed.
     OutputResults06     = pd.Series(data=[   -mTEPES.pDemandElec      [p,sc,n,nd      ]()  *mTEPES.pLoadLevelDuration[p,sc,n]()                                                       for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='EnergyDemand'   )
     if mTEPES.ll:
-        OutputResults09 = pd.Series(data=[-sum(OptModel.vLineLosses   [p,sc,n,nd,nf,cc]()*mTEPES.pLoadLevelDuration[p,sc,n]() for nf,cc in loutl[nd] if (p,nd,nf,cc) in mTEPES.pla) for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='LineLossesOut'  )
-        OutputResults10 = pd.Series(data=[-sum(OptModel.vLineLosses   [p,sc,n,ni,nd,cc]()*mTEPES.pLoadLevelDuration[p,sc,n]() for ni,cc in linl [nd] if (p,ni,nd,cc) in mTEPES.pla) for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='LineLossesIn'   )
+        # same reason as the balance-report pair above: under AC the loss is already inside vFlowElec/vFlowElecBck, so adding vLineLosses again
+        # overstates the demand column of oT_Result_MarketResultsDemand and therefore the demand payment computed from it and the LSRMC
+        _lossOK2 = (lambda la: la in mTEPES.lad) if mTEPES.pIndACPowerFlow() else (lambda la: True)
+        OutputResults09 = pd.Series(data=[-sum(OptModel.vLineLosses   [p,sc,n,nd,nf,cc]()*mTEPES.pLoadLevelDuration[p,sc,n]() for nf,cc in loutl[nd] if (p,nd,nf,cc) in mTEPES.pla and _lossOK2((nd,nf,cc))) for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='LineLossesOut'  )
+        OutputResults10 = pd.Series(data=[-sum(OptModel.vLineLosses   [p,sc,n,ni,nd,cc]()*mTEPES.pLoadLevelDuration[p,sc,n]() for ni,cc in linl [nd] if (p,ni,nd,cc) in mTEPES.pla and _lossOK2((ni,nd,cc))) for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='LineLossesIn'   )
 
     MarketResultsDem     = pd.DataFrame()
     if mTEPES.eh:

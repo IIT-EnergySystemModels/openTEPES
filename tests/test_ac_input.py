@@ -1,0 +1,675 @@
+"""Input-side checks for the AC optimal power flow (Phase 0-1).
+
+These tests build the model up to DataConfiguration only — no solve — so they run in seconds. They cover:
+
+  * a DC case is untouched by the AC code path;
+  * the AC-only tables are not even read when IndACPowerFlow is 0, so carrying AC data costs a DC run nothing;
+  * the derived branch model (G, B, Smax, tap factor) is what the impedance implies;
+  * the two input traps that silently produce a wrong or infeasible AC model — a blank Tap column and a blank AngMin/AngMax pair.
+"""
+import math
+import os
+import shutil
+
+import pandas as pd
+import pytest
+from pyomo.environ import ConcreteModel
+
+from openTEPES.openTEPES_DataConfiguration import DataConfiguration
+from openTEPES.openTEPES_InputData import InputData
+
+CASES_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "openTEPES", "cases"))
+
+
+def _build(dir_name, case_name):
+    """Read and configure a case, returning (model, dfs, par)."""
+    mTEPES = ConcreteModel(case_name)
+    dfs, par = InputData(dir_name, case_name, mTEPES, 0)
+    DataConfiguration(mTEPES, dfs, par)
+    return mTEPES, dfs, par
+
+
+def _clone(tmp_path, source_case, new_name):
+    """Copy a bundled case into tmp_path under a new name and return (dir, name)."""
+    case_dir = tmp_path / new_name
+    shutil.copytree(os.path.join(CASES_DIR, source_case), case_dir)
+    for f in os.listdir(case_dir):
+        if source_case in f:
+            os.rename(case_dir / f, case_dir / f.replace(source_case, new_name))
+    return str(tmp_path), new_name
+
+
+def _edit_csv(case_dir, case_name, stem, edit, index_col=0):
+    path = os.path.join(case_dir, case_name, f"oT_Data_{stem}_{case_name}.csv")
+    df = pd.read_csv(path, index_col=index_col)
+    edit(df)
+    df.to_csv(path)
+
+
+# --------------------------------------------------------------------------------------------------------------------
+# The DC path is unchanged
+# --------------------------------------------------------------------------------------------------------------------
+
+def test_dc_case_has_no_ac_data():
+    mTEPES, _, _ = _build(CASES_DIR, "9n")
+    assert mTEPES.pIndACPowerFlow() == 0
+    assert mTEPES.pIndACModelType() == 0
+    for attr in ("pLineG", "pLineB", "pLineSmax", "pLineTapFactor", "pReactiveDemand", "sh"):
+        assert not hasattr(mTEPES, attr), f"{attr} must not exist on a DC run"
+
+
+def test_ac_tables_not_read_when_flag_is_off(tmp_path):
+    """A case can carry AC data and still be run as DC. The reactive demand is a full time series, so skipping the read matters."""
+    dir_name, name = _clone(tmp_path, "9n_AC", "9n_off")
+    _edit_csv(dir_name, name, "Option", lambda df: df.__setitem__("IndACPowerFlow", 0), index_col=None)
+
+    _, dfs, par = _build(dir_name, name)
+    assert par["pIndACPowerFlow"] == 0
+    assert "dfReactiveDemand" not in dfs
+    assert "dfBusShunt" not in dfs
+
+
+# --------------------------------------------------------------------------------------------------------------------
+# The AC path
+# --------------------------------------------------------------------------------------------------------------------
+
+def test_ac_case_builds_sets_and_parameters():
+    mTEPES, _, _ = _build(CASES_DIR, "9n_AC")
+
+    assert mTEPES.pIndACPowerFlow() == 1
+    assert set(mTEPES.she) == {"Reactor_1"}
+    assert set(mTEPES.shc) == {"Capacitor_1"}
+    assert set(mTEPES.sh) == set(mTEPES.she) | set(mTEPES.shc)
+    assert dict(mTEPES.n2sh) or list(mTEPES.n2sh)          # the node map is populated
+    assert len(mTEPES.gq) > 0
+
+    # the rated reactive limits do not vary with the load level, so they are indexed on gq, not on psn x gq
+    assert len(mTEPES.pMaxReactivePower) == len(mTEPES.gq)
+    assert len(mTEPES.pMinReactivePower) == len(mTEPES.gq)
+
+
+def test_derived_branch_model_matches_the_impedance():
+    mTEPES, _, _ = _build(CASES_DIR, "9n_AC")
+    for la in mTEPES.laa:
+        r, x = mTEPES.pLineR[la], mTEPES.pLineX[la]
+        z2 = r**2 + x**2
+        assert mTEPES.pLineG[la] == pytest.approx( r / z2)
+        assert mTEPES.pLineB[la] == pytest.approx(-x / z2)
+        # an inductive branch has negative series susceptance and non-negative conductance
+        assert mTEPES.pLineB[la] < 0.0
+        assert mTEPES.pLineG[la] >= 0.0
+        # the apparent power rating is the larger of the two directional ratings, security factor already applied
+        assert mTEPES.pLineSmax[la] == pytest.approx(max(mTEPES.pLineNTCFrw[la], mTEPES.pLineNTCBck[la]))
+
+
+def test_reactive_demand_is_averaged_like_the_active_demand():
+    """The CSV is in Mvar and the model works in Gvar. On a case with TimeStep > 1 both demands must also go through the
+    same rolling window, otherwise the power factor the case was built with drifts load level by load level."""
+    mTEPES, dfs, par = _build(CASES_DIR, "9n_AC")
+    raw = dfs["dfReactiveDemand"]
+    step = par["pTimeStep"]
+
+    for p, sc, n in list(mTEPES.psn)[:5]:
+        row = raw.index.get_loc((p, sc, n))
+        for nd in list(mTEPES.nd)[:3]:
+            window = raw[nd].iloc[max(0, row - step + 1): row + 1]
+            expected = window.mean() * 1e-3 if len(window) == step else 0.0
+            assert mTEPES.pReactiveDemand[p, sc, n, nd]() == pytest.approx(expected, abs=1e-9)
+
+    # The 9n_AC case is built at a fixed 0.30 ratio, which survives only if both series were averaged the same way.
+    # The tolerance is 1 % because the reactive demand is stored rounded to 3 decimals in Mvar, so on a lightly
+    # loaded node the rounding alone moves the ratio by a few parts in a thousand. Anything larger than that would
+    # mean the two series went through different windows, which is what this is really checking.
+    for p, sc, n in list(mTEPES.psn)[:5]:
+        for nd in list(mTEPES.nd)[:3]:
+            act = mTEPES.pDemandElec[p, sc, n, nd]()
+            if act > 1e-3:                      # skip near-zero nodes, where rounding dominates entirely
+                assert mTEPES.pReactiveDemand[p, sc, n, nd]() / act == pytest.approx(0.30, rel=1e-2)
+
+
+# --------------------------------------------------------------------------------------------------------------------
+# The two input traps
+# --------------------------------------------------------------------------------------------------------------------
+
+def test_blank_tap_becomes_unity(tmp_path):
+    """A blank Tap column arrives as 0.0 meaning 'not a transformer'. Inverting it directly would divide by zero and
+    zero out every mutual admittance term, which is what the reference implementation in openTEPES_PRO does."""
+    dir_name, name = _clone(tmp_path, "9n_AC", "9n_notap")
+    _edit_csv(dir_name, name, "Network", lambda df: df.__setitem__("Tap", 0.0), index_col=[0, 1, 2])
+
+    mTEPES, _, _ = _build(dir_name, name)
+    for la in mTEPES.la:
+        assert mTEPES.pLineTapFactor[la] == pytest.approx(1.0)
+
+
+def test_real_tap_is_inverted_once(tmp_path):
+    """A tap of 1.02 rather than 1.25: the tap now reaches the constraints, and a uniform 1.25 on every branch of a
+    9-bus system genuinely cannot hold a 0.95-1.05 voltage band, so bound tightening rejects it. Real transformer
+    taps are a few per cent (RTS-GMLC ships 1.015 and 1.03)."""
+    dir_name, name = _clone(tmp_path, "9n_AC", "9n_tap")
+    _edit_csv(dir_name, name, "Network", lambda df: df.__setitem__("Tap", 1.02), index_col=[0, 1, 2])
+
+    mTEPES, _, _ = _build(dir_name, name)
+    for la in mTEPES.la:
+        assert mTEPES.pLineTapFactor[la] == pytest.approx(1.0 / 1.02)
+
+
+def _single_stage(mTEPES, p, sc, st):
+    """Collapse the model to one stage and two load levels so a single (p, sc, st) formulation call can be built."""
+    from pyomo.environ import Set
+
+    mTEPES.del_component(mTEPES.st); mTEPES.del_component(mTEPES.n); mTEPES.del_component(mTEPES.n2)
+    levels = [nn for nn in mTEPES.nn if (p, sc, st, nn) in mTEPES.s2n][:2]
+    mTEPES.st = Set(initialize=[st]); mTEPES.n = Set(initialize=levels); mTEPES.n2 = Set(initialize=levels)
+    mTEPES.na = Set(initialize=levels); mTEPES.First_st = st; mTEPES.Last_st = st; mTEPES.NoRepetition = 0
+    mTEPES.nesc = []; mTEPES.necc = []; mTEPES.neso = []
+    mTEPES.ngen = [(n, g) for n, g in mTEPES.n * mTEPES.g]
+    return levels
+
+
+def _coefficient_on(expr, var):
+    """Linear coefficient of ``var`` in ``expr``, read by evaluation rather than by picking the expression apart."""
+    from pyomo.core.expr.visitor import identify_variables
+    from pyomo.environ import value
+
+    for v in identify_variables(expr):
+        v.set_value(0.0)
+    base = value(expr)
+    var.set_value(1.0)
+    return value(expr) - base
+
+
+@pytest.mark.parametrize("tap", [1.00, 1.05])
+def test_tap_reaches_the_voltage_drop(tmp_path, tap):
+    """The tap was once computed, stored, documented and tested, and then read by no constraint at all, so every
+    transformer solved as 1:1 with nothing in the output saying so. The sending-end voltage in the drop equation must
+    carry (1/tap)^2."""
+    from openTEPES.openTEPES_ModelFormulationAC import NetworkACOperationModelFormulation
+    from openTEPES.openTEPES_SettingUpVariables import SettingUpVariables
+
+    dir_name, name = _clone(tmp_path, "9n_AC", f"9n_tapc{str(tap).replace('.', '')}")
+    _edit_csv(dir_name, name, "Network", lambda df: df.__setitem__("Tap", tap), index_col=[0, 1, 2])
+    mTEPES, _, _ = _build(dir_name, name)
+    SettingUpVariables(mTEPES, mTEPES)
+
+    p, sc = list(mTEPES.ps)[0]
+    st = list(mTEPES.stt)[0]
+    levels = _single_stage(mTEPES, p, sc, st)
+    NetworkACOperationModelFormulation(mTEPES, mTEPES, 0, p, sc, st)
+
+    con = getattr(mTEPES, f"eVoltageDropUp_{p}_{sc}_{st}")
+    n0 = levels[0]
+    key = next(k for k in con if k[0] == n0)
+    ni = key[1]
+    coef = _coefficient_on(con[key].body, mTEPES.vW[p, sc, n0, ni])
+    assert coef == pytest.approx(-(1.0 / tap) ** 2, rel=1e-9), (
+        f"tap {tap}: vW[ni] carries {coef}, expected {-(1.0 / tap) ** 2}")
+
+
+def test_blank_angle_limits_open_to_half_pi(tmp_path):
+    """AngMin = AngMax = 0 is how a case that never filled the columns arrives. Taken literally it pins every angle
+    difference to zero, which makes the AC model infeasible the moment any power flows."""
+    dir_name, name = _clone(tmp_path, "9n_AC", "9n_noang")
+
+    def blank(df):
+        df["AngMin"] = 0.0
+        df["AngMax"] = 0.0
+
+    _edit_csv(dir_name, name, "Network", blank, index_col=[0, 1, 2])
+
+    mTEPES, _, _ = _build(dir_name, name)
+    for la in mTEPES.la:
+        assert mTEPES.pAngMin[la]() == pytest.approx(-math.pi / 2)
+        assert mTEPES.pAngMax[la]() == pytest.approx( math.pi / 2)
+
+
+def test_inverted_angle_limits_raise(tmp_path):
+    dir_name, name = _clone(tmp_path, "9n_AC", "9n_badang")
+
+    def swap(df):
+        df["AngMin"] =  30.0
+        df["AngMax"] = -30.0
+
+    _edit_csv(dir_name, name, "Network", swap, index_col=[0, 1, 2])
+
+    with pytest.raises(ValueError, match="AngMin must be below AngMax"):
+        _build(dir_name, name)
+
+
+def test_inverted_voltage_band_raises(tmp_path):
+    dir_name, name = _clone(tmp_path, "9n_AC", "9n_badv")
+
+    def swap(df):
+        df["VMin"] = 1.10
+        df["VMax"] = 0.90
+
+    _edit_csv(dir_name, name, "Parameter", swap, index_col=None)
+
+    with pytest.raises(ValueError, match="must be below VMax"):
+        _build(dir_name, name)
+
+
+# --------------------------------------------------------------------------------------------------------------------
+# Bound tightening
+# --------------------------------------------------------------------------------------------------------------------
+
+def test_bound_tightening_never_loosens():
+    """The tightened angle bound may only shrink the declared one."""
+    for case in ("9n_AC", "RTS-GMLC_AC"):
+        mTEPES, _, _ = _build(CASES_DIR, case)
+        for la in mTEPES.laa:
+            declared = min(abs(mTEPES.pAngMin[la]()), abs(mTEPES.pAngMax[la]()))
+            assert 0.0 < mTEPES.pMaxAngleDiff[la] <= declared + 1e-12
+
+
+def test_tightened_angle_bound_is_what_the_thermal_limit_implies():
+    """|Vi||Vj| sin(theta) = xP + rQ gives |sin theta| <= |S|*z / Vmin^2. Two things have to be right in |S|, and both
+    were wrong once: the rating is in GVA so it needs dividing by pSBase to meet a per-unit impedance, and the apparent
+    power the model actually implies is Smax*Vmax/Vmin, not Smax, because the thermal limit is l <= (Smax/Vmin)^2 and
+    the cone gives P^2+Q^2 <= vW*l. Assuming either away makes the bound a restriction that can cut off the optimum."""
+    for case in ("9n_AC", "RTS-GMLC_AC"):
+        mTEPES, _, par = _build(CASES_DIR, case)
+        for la in list(mTEPES.laa)[:40]:
+            z = math.hypot(mTEPES.pLineR[la], mTEPES.pLineX[la])
+            smax = mTEPES.pLineSmax[la] / mTEPES.pSBase * par["pVMax"] / par["pVMin"]
+            # the sending-end voltage the series impedance sees carries the tap, so the divisor is (Vmin/tap) * Vmin
+            tapf = mTEPES.pLineTapFactor[la]
+            implied = math.asin(min(1.0, smax * z / (par["pVMin"] * tapf * par["pVMin"])))
+            # the two sides are carried separately: collapsing them to min(|AngMin|, |AngMax|) would cut off range the
+            # case explicitly permits on a branch whose declared limits are not symmetric
+            assert mTEPES.pMaxAngleDiff[la] == pytest.approx(min( abs(mTEPES.pAngMax[la]()),  implied), rel=1e-9)
+            assert mTEPES.pMinAngleDiff[la] == pytest.approx(max(-abs(mTEPES.pAngMin[la]()), -implied), rel=1e-9)
+
+
+def test_asymmetric_angle_limits_are_not_collapsed(tmp_path):
+    """A branch whose declared limits are not symmetric must keep both sides. The tightening once took
+    min(|AngMin|, |AngMax|) and imposed it symmetrically, which silently removed range the data allows.
+
+    The declared values have to be TIGHTER than what the thermal limit implies or there is nothing to preserve: on
+    9n_AC the implied bound is only 2-4 degrees, so a declared -50/+20 is clamped symmetrically and the asymmetry
+    never reaches the model."""
+    dir_name, name = _clone(tmp_path, "9n_AC", "9n_asym")
+
+    def asym(df):
+        df["AngMin"] = -3.0
+        df["AngMax"] = 1.0
+
+    _edit_csv(dir_name, name, "Network", asym, index_col=[0, 1, 2])
+    mTEPES, _, _ = _build(dir_name, name)
+    pSeen = False
+    for la in mTEPES.laa:
+        hi, lo = mTEPES.pMaxAngleDiff[la], mTEPES.pMinAngleDiff[la]
+        assert hi <= math.radians(1.0) + 1e-12
+        assert lo >= math.radians(-3.0) - 1e-12
+        if lo < -hi - 1e-9:
+            pSeen = True
+    assert pSeen, "no branch kept an asymmetric band, so the two sides are still being collapsed"
+
+
+def test_tightening_shrinks_the_envelope_slack():
+    """The angle envelope's slack is tan(t/2) - t/2 per branch, and shrinking it is the whole reason the tightening runs
+    before the variables are declared.
+
+    The thresholds here are deliberately modest, and the history is worth keeping: an earlier version of the tightening
+    dropped the /pSBase conversion and so reported a bound ten times tighter than the model implies, which made the
+    measured improvement look like three orders of magnitude on every case. With the valid bound the median branch on
+    RTS-GMLC improves about 47x and the WORST branch only about 3.5x. A test that demanded more than the physics gives
+    would have to be relaxed every time the tightening was corrected, which is the wrong way round.
+    """
+    import statistics
+    for case, min_median, min_worst in (("9n_AC", 100.0, 50.0), ("RTS-GMLC_AC", 10.0, 2.0)):
+        mTEPES, _, _ = _build(CASES_DIR, case)
+        slack = lambda t: math.tan(t / 2) - t / 2
+        declared  = [slack(min(abs(mTEPES.pAngMin[la]()), abs(mTEPES.pAngMax[la]()))) for la in mTEPES.laa]
+        tightened = [slack(mTEPES.pMaxAngleDiff[la])                                  for la in mTEPES.laa]
+        assert statistics.median(declared) / statistics.median(tightened) > min_median, f"{case}: median slack barely moved"
+        assert max(declared) / max(tightened) > min_worst, f"{case}: worst-case slack barely moved"
+
+
+def test_voltage_bounds_stay_inside_the_declared_band():
+    for case in ("9n_AC", "RTS-GMLC_AC"):
+        mTEPES, _, par = _build(CASES_DIR, case)
+        for nd in mTEPES.nd:
+            assert par["pVMin"] - 1e-12 <= mTEPES.pVMinBus[nd] <= mTEPES.pVMaxBus[nd] <= par["pVMax"] + 1e-12
+
+
+# --------------------------------------------------------------------------------------------------------------------
+# Branch-flow variables
+# --------------------------------------------------------------------------------------------------------------------
+
+def _build_with_vars(dir_name, case_name):
+    from openTEPES.openTEPES_SettingUpVariables import SettingUpVariables
+    mTEPES, dfs, par = _build(dir_name, case_name)
+    SettingUpVariables(mTEPES, mTEPES)
+    return mTEPES
+
+
+def test_ac_variables_exist_with_the_right_index_sets():
+    mTEPES = _build_with_vars(CASES_DIR, "9n_AC")
+    assert len(mTEPES.vW)    == len(mTEPES.psnnd)
+    assert len(mTEPES.vCurr) == len(mTEPES.psnlaa)
+    assert len(mTEPES.vFlowElecBck)  == len(mTEPES.psnlaa)
+    assert len(mTEPES.vFlowReactFrw) == len(mTEPES.psnlaa)
+    assert len(mTEPES.vFlowReactBck) == len(mTEPES.psnlaa)
+    assert len(mTEPES.vReactiveTotalOutput) == len(mTEPES.psngq)
+    assert len(mTEPES.vQShunt) == len(mTEPES.psnsh)
+    # the bus-injection voltage products belong to a formulation this model does not use
+    for gone in ("vWC", "vWS", "bp", "psnbp"):
+        assert not hasattr(mTEPES, gone), f"{gone} is left over from the bus-injection formulation"
+
+
+def test_voltage_variable_uses_the_tightened_per_bus_bounds():
+    mTEPES = _build_with_vars(CASES_DIR, "9n_AC")
+    for p, sc, n, nd in list(mTEPES.psnnd)[:40]:
+        assert mTEPES.vW[p, sc, n, nd].lb == pytest.approx(mTEPES.pVMinBus[nd] ** 2)
+        assert mTEPES.vW[p, sc, n, nd].ub == pytest.approx(mTEPES.pVMaxBus[nd] ** 2)
+
+
+def test_reference_bus_voltage_is_fixed():
+    mTEPES = _build_with_vars(CASES_DIR, "9n_AC")
+    ref = mTEPES.rf.first()
+    for p, sc, n in list(mTEPES.psn)[:10]:
+        assert mTEPES.vW[p, sc, n, ref].fixed
+        assert mTEPES.vW[p, sc, n, ref].value == pytest.approx(1.0)
+
+
+def test_current_limit_uses_the_rating_at_the_lowest_voltage():
+    """Chowdhury et al. (7): the squared-current limit is (Smax/Vmin)^2. Using the tightened per-bus minimum rather
+    than the global one matters, because the global value makes the limit permissive by (Vmax/Vmin) in apparent power."""
+    mTEPES = _build_with_vars(CASES_DIR, "9n_AC")
+    for p, sc, n, ni, nf, cc in list(mTEPES.psnlaa)[:40]:
+        expected = (mTEPES.pLineSmax[ni, nf, cc] / mTEPES.pVMinBus[ni]) ** 2
+        assert mTEPES.vCurr[p, sc, n, ni, nf, cc].ub == pytest.approx(expected)
+
+
+def test_dc_case_declares_no_ac_variables():
+    mTEPES = _build_with_vars(CASES_DIR, "9n")
+    for attr in ("vW", "vCurr", "vFlowElecBck", "vFlowReactFrw", "vQShunt", "vShuntInvest"):
+        assert not hasattr(mTEPES, attr), f"{attr} must not exist on a DC run"
+
+
+# --------------------------------------------------------------------------------------------------------------------
+# Formulation selection
+# --------------------------------------------------------------------------------------------------------------------
+
+@pytest.mark.parametrize("model_type", [0, 1, 2])
+def test_supported_ac_model_types_are_accepted(tmp_path, model_type):
+    dir_name, name = _clone(tmp_path, "9n_AC", f"9n_mt{model_type}")
+    _edit_csv(dir_name, name, "Option", lambda df: df.__setitem__("IndACModelType", model_type), index_col=None)
+    mTEPES, _, _ = _build(dir_name, name)
+    assert mTEPES.pIndACModelType() == model_type
+
+
+def test_unsupported_ac_model_type_is_rejected(tmp_path):
+    dir_name, name = _clone(tmp_path, "9n_AC", "9n_mtbad")
+    _edit_csv(dir_name, name, "Option", lambda df: df.__setitem__("IndACModelType", 7), index_col=None)
+    with pytest.raises(NotImplementedError, match="IndACModelType"):
+        _build(dir_name, name)
+
+
+def test_branch_flow_formulation_is_rejected(tmp_path):
+    """DistFlow is deliberately not offered: its SOC relaxation gives the same bound as the bus-injection one."""
+    dir_name, name = _clone(tmp_path, "9n_AC", "9n_bfm")
+    _edit_csv(dir_name, name, "Option", lambda df: df.__setitem__("IndACPowerFlow", 2), index_col=None)
+    with pytest.raises(NotImplementedError, match="IndACPowerFlow"):
+        _build(dir_name, name)
+
+
+def test_lpac_reduces_to_dc_on_a_lossless_branch():
+    """The LPAC substitution vW -> 1+2phi, vWC -> cs+phi_i+phi_j, vWS -> dtheta turns the exact W-space branch equation
+    into DC power flow when the branch is lossless and the voltages sit at nominal. This is the property that lets the
+    same equation serve both formulations, so it is worth pinning down."""
+    r, x, tap = 0.0, 0.05, 1.0
+    z2 = r**2 + x**2
+    pG, pB = r / z2, -x / z2
+
+    def p_from_w(w_i, wc, ws):
+        return pG * tap**2 * w_i - tap * pG * wc - tap * pB * ws
+
+    for deg in (2, 5, 10, 20, 30):
+        dth = math.radians(deg)
+        assert p_from_w(1.0, 1.0, dth) == pytest.approx(dth / x)              # LPAC == DC exactly
+        assert p_from_w(1.0, math.cos(dth), math.sin(dth)) == pytest.approx(math.sin(dth) / x)   # exact AC
+
+
+# --------------------------------------------------------------------------------------------------------------------
+# Investment decisions must cost something
+# --------------------------------------------------------------------------------------------------------------------
+
+def test_candidate_shunts_are_priced_in_the_objective():
+    """A candidate shunt appears in the disjunctions that switch its reactive injection on. If it appears nowhere in
+    the objective the device is free and the model builds every one that helps, which is a silent modelling error
+    rather than a visible one."""
+    from openTEPES.openTEPES_ModelFormulationInvestment import InvestmentElecModelFormulation
+    from openTEPES.openTEPES_ModelFormulationObjective import TotalObjectiveFunction
+    from openTEPES.openTEPES_SettingUpVariables import SettingUpVariables
+
+    mTEPES, _, _ = _build(CASES_DIR, "9n_AC")
+    SettingUpVariables(mTEPES, mTEPES)
+    assert mTEPES.shc, "the 9n_AC case is expected to carry a candidate shunt"
+    assert all(mTEPES.pShuntFixedCost[sh] > 0.0 for sh in mTEPES.shc)
+
+    TotalObjectiveFunction(mTEPES, mTEPES, 0)
+    InvestmentElecModelFormulation(mTEPES, mTEPES, 0)
+
+    # every candidate shunt's investment variable must appear in the fixed-cost constraint
+    body = str(mTEPES.eTotalFElecCost[mTEPES.p.first()].body)
+    for p_, sh in mTEPES.pshc:
+        assert "vShuntInvest" in body, "vShuntInvest is absent from eTotalFElecCost, so the device is free"
+
+
+# --------------------------------------------------------------------------------------------------------------------
+# AC results
+# --------------------------------------------------------------------------------------------------------------------
+
+def test_ac_output_category_is_registered_and_never_optional():
+    """The relaxation diagnostic tells a user whether any other AC number can be trusted, so it must survive the
+    minimal output setting rather than only appearing under --results full.
+
+    It sits in its own category: 'acdiag' is two small files and belongs in the minimal mode, while 'acnetwork' is
+    eight hourly wide tables and does not."""
+    from openTEPES.openTEPES import OUTPUT_ALIASES, OUTPUT_CATEGORIES, OUTPUT_REGISTRY
+
+    assert "acnetwork" in OUTPUT_CATEGORIES
+    assert "acdiag"    in OUTPUT_CATEGORIES
+    assert "acdiag"    in OUTPUT_ALIASES["min"], "the relaxation diagnostic must survive the minimal output mode"
+    assert "acnetwork" not in OUTPUT_ALIASES["min"], "the hourly AC tables do not belong in the minimal output mode"
+
+    entries = [e for e in OUTPUT_REGISTRY if e[0] in ("acnetwork", "acdiag")]
+    assert len(entries) == 3, "expected the diagnostic, operation and marginal writers"
+    for _key, _fn, _extra, guard in entries:
+        assert guard is not None, "the AC writers must be guarded so a DC run never calls them"
+
+
+def test_ac_writers_run_on_an_ac_case(tmp_path):
+    """The DC test below only proves the writers return early. Nothing exercised them on an AC model, which is how a
+    free name survived a refactor: splitting the relaxation diagnostic out of the operation writer left `sBranch`
+    defined in one function and referenced in the other, so every AC run raised NameError after solving.
+
+    The model is not solved — the values are filled in directly. That is enough to catch a name or key error in the
+    writers, which is what this is for, and it keeps the test to seconds rather than minutes."""
+    from pyomo.environ import Var
+
+    from openTEPES.openTEPES_OutputResultsAC import (ACMarginalResults, ACNetworkOperationResults,
+                                                     ACRelaxationDiagnostic)
+    from openTEPES.openTEPES_SettingUpVariables import SettingUpVariables
+
+    mTEPES, _, _ = _build(CASES_DIR, "9n_AC")
+    SettingUpVariables(mTEPES, mTEPES)
+    for var in mTEPES.component_objects(Var, active=True):
+        for idx in var:
+            if var[idx].value is None:
+                lo, hi = var[idx].lb, var[idx].ub
+                var[idx].value = 0.0 if lo is None or lo <= 0.0 <= (hi if hi is not None else 0.0) else lo
+
+    mTEPES.pOutputPath = str(tmp_path)
+    mTEPES.pOutputBackend = "csv"
+    ACRelaxationDiagnostic(CASES_DIR, "9n_AC", mTEPES, mTEPES)
+    ACNetworkOperationResults(CASES_DIR, "9n_AC", mTEPES, mTEPES)
+    ACMarginalResults(CASES_DIR, "9n_AC", mTEPES, mTEPES)
+
+    written = {q.name for q in tmp_path.rglob("oT_Result_*.csv")}
+    assert any("ACRelaxationGap" in w for w in written), f"no relaxation gap file written, got {sorted(written)}"
+    assert any("NetworkVoltageMagnitude" in w for w in written), f"no voltage file written, got {sorted(written)}"
+
+
+def test_ac_writers_are_no_ops_on_a_dc_case(tmp_path):
+    from openTEPES.openTEPES_OutputResultsAC import ACMarginalResults, ACNetworkOperationResults, ACRelaxationDiagnostic
+
+    mTEPES, _, _ = _build(CASES_DIR, "9n")
+    mTEPES.pOutputPath = str(tmp_path)
+    mTEPES.pOutputBackend = "csv"
+    ACRelaxationDiagnostic(CASES_DIR, "9n", mTEPES, mTEPES)
+    ACNetworkOperationResults(CASES_DIR, "9n", mTEPES, mTEPES)
+    ACMarginalResults(CASES_DIR, "9n", mTEPES, mTEPES)
+    assert not list(tmp_path.glob("*.csv")), "a DC run must write no AC result files"
+
+
+# --------------------------------------------------------------------------------------------------------------------
+# Synchronous condensers: zero MW, positive Mvar
+# --------------------------------------------------------------------------------------------------------------------
+
+def _add_condenser(tmp_path, name, invest_cost):
+    """Clone 9n_AC and add a synchronous condenser: zero active power, positive reactive capability."""
+    dir_name, case = _clone(tmp_path, "9n_AC", name)
+    base = os.path.join(dir_name, case)
+
+    tech = os.path.join(base, f"oT_Dict_Technology_{case}.csv")
+    tdf = pd.read_csv(tech)
+    if "SynchronousCondenser" not in tdf.iloc[:, 0].values:
+        tdf = pd.concat([tdf, pd.DataFrame({tdf.columns[0]: ["SynchronousCondenser"]})], ignore_index=True)
+        tdf.to_csv(tech, index=False)
+
+    gdict = os.path.join(base, f"oT_Dict_Generation_{case}.csv")
+    gdf = pd.read_csv(gdict)
+    gdf = pd.concat([gdf, pd.DataFrame({gdf.columns[0]: ["SynCon_1"]})], ignore_index=True)
+    gdf.to_csv(gdict, index=False)
+
+    gen_path = os.path.join(base, f"oT_Data_Generation_{case}.csv")
+    gen = pd.read_csv(gen_path)
+    row = gen.iloc[0].copy()
+    for c in gen.select_dtypes("number").columns:
+        row[c] = 0.0
+    row[gen.columns[0]] = "SynCon_1"
+    row["Node"] = "Node_5"
+    row["Technology"] = "SynchronousCondenser"
+    row["MaximumPower"] = 0.0                     # this is the whole point: no active power at all
+    row["MaximumReactivePower"] = 120.0
+    row["MinimumReactivePower"] = -80.0
+    row["InitialPeriod"], row["FinalPeriod"] = 2020, 2050
+    row["FixedInvestmentCost"], row["FixedChargeRate"] = invest_cost, 0.06
+    row["Efficiency"] = 1.0
+    gen = pd.concat([gen, row.to_frame().T], ignore_index=True)
+    gen.to_csv(gen_path, index=False)
+    return dir_name, case
+
+
+def test_zero_mw_condenser_survives_into_the_reactive_sets(tmp_path):
+    """A synchronous condenser has MaximumPower = 0, so it never enters mTEPES.g and therefore never enters pg. The
+    reactive sets must key on the unit's own period window instead, or they come out empty for exactly the units they
+    exist to hold."""
+    dir_name, case = _add_condenser(tmp_path, "9n_sc", invest_cost=0.0)
+    mTEPES, _, _ = _build(dir_name, case)
+
+    assert "SynCon_1" not in set(mTEPES.g), "a zero-MW unit is not a generating unit"
+    assert "SynCon_1" in set(mTEPES.gq), "but it is a reactive-capable unit"
+    assert "SynCon_1" in set(mTEPES.sq), "and a synchronous condenser"
+    assert ("Node_5", "SynCon_1") in mTEPES.n2gq, "it must reach the reactive balance through n2gq"
+    assert any(gq == "SynCon_1" for p, gq in mTEPES.pgq), "and be available in at least one period"
+    assert any(k[3] == "SynCon_1" for k in mTEPES.psngq), "so that it gets a reactive output variable"
+
+
+def test_candidate_condenser_is_priced_and_switchable(tmp_path):
+    from openTEPES.openTEPES_ModelFormulationInvestment import InvestmentElecModelFormulation
+    from openTEPES.openTEPES_ModelFormulationObjective import TotalObjectiveFunction
+    from openTEPES.openTEPES_SettingUpVariables import SettingUpVariables
+
+    dir_name, case = _add_condenser(tmp_path, "9n_scc", invest_cost=5.0)
+    mTEPES, _, _ = _build(dir_name, case)
+    assert "SynCon_1" in set(mTEPES.sqc), "a positive investment cost makes it a candidate"
+    assert mTEPES.pSynchFixedCost["SynCon_1"] == pytest.approx(5.0 * 0.06)
+
+    SettingUpVariables(mTEPES, mTEPES)
+    assert hasattr(mTEPES, "vSynchInvest")
+    TotalObjectiveFunction(mTEPES, mTEPES, 0)
+    InvestmentElecModelFormulation(mTEPES, mTEPES, 0)
+    assert "vSynchInvest" in str(mTEPES.eTotalFElecCost[mTEPES.p.first()].body), \
+        "vSynchInvest is absent from eTotalFElecCost, so the condenser is free"
+
+
+def test_existing_condenser_needs_no_investment_variable(tmp_path):
+    from openTEPES.openTEPES_SettingUpVariables import SettingUpVariables
+
+    dir_name, case = _add_condenser(tmp_path, "9n_sce", invest_cost=0.0)
+    mTEPES, _, _ = _build(dir_name, case)
+    assert "SynCon_1" in set(mTEPES.sqe) and not mTEPES.sqc
+    SettingUpVariables(mTEPES, mTEPES)
+    assert not hasattr(mTEPES, "vSynchInvest"), "an existing device needs no build decision"
+
+
+# --------------------------------------------------------------------------------------------------------------------
+# Candidate AC lines: neither bundled case has one, so build one
+# --------------------------------------------------------------------------------------------------------------------
+
+def _with_candidate_ac_line(tmp_path, name):
+    """Clone 9n_AC and turn one existing AC line into a candidate by giving it an investment cost."""
+    dir_name, case = _clone(tmp_path, "9n_AC", name)
+    path = os.path.join(dir_name, case, f"oT_Data_Network_{case}.csv")
+    df = pd.read_csv(path)
+    ac = df.index[(df["LineType"] == "AC")][0]
+    df.loc[ac, "FixedInvestmentCost"] = 50.0
+    df.loc[ac, "FixedChargeRate"] = 0.06
+    df.to_csv(path, index=False)
+    return dir_name, case, (df.loc[ac, "InitialNode"], df.loc[ac, "FinalNode"], df.loc[ac, "Circuit"])
+
+
+def test_candidate_ac_line_is_recognised(tmp_path):
+    dir_name, case, la = _with_candidate_ac_line(tmp_path, "9n_cand")
+    mTEPES, _, _ = _build(dir_name, case)
+    assert la in set(mTEPES.lc), "the line should be a candidate"
+    assert la in set(mTEPES.lca), "and an AC candidate"
+
+
+def test_unbuilt_candidate_ac_line_carries_nothing_and_couples_nothing(tmp_path):
+    """An unbuilt candidate must not carry current and must not tie its two bus voltages together. The DC model gets
+    this from pBigMFlow*(1 - vLineCommit) in eKirchhoff2ndLaw, which is skipped under AC — so the AC model has to
+    supply it, and at first it did not: the line was free transmission."""
+    from pyomo.environ import Constraint, Set, SolverFactory, value
+
+    from openTEPES.openTEPES_ModelFormulationInvestment import InvestmentElecModelFormulation
+    from openTEPES.openTEPES_ModelFormulationObjective import TotalObjectiveFunction
+    from openTEPES.openTEPES_ProblemSolvingStageIter import FORMULATION_REGISTRY
+    from openTEPES.openTEPES_SettingUpVariables import SettingUpVariables
+
+    dir_name, case, la = _with_candidate_ac_line(tmp_path, "9n_cand2")
+    mTEPES, dfs, par = _build(dir_name, case)
+    SettingUpVariables(mTEPES, mTEPES)
+
+    p, sc = list(mTEPES.ps)[0]
+    st = list(mTEPES.stt)[0]
+    mTEPES.del_component(mTEPES.st); mTEPES.del_component(mTEPES.n); mTEPES.del_component(mTEPES.n2)
+    levels = [nn for nn in mTEPES.nn if (p, sc, st, nn) in mTEPES.s2n][:2]
+    mTEPES.st = Set(initialize=[st]); mTEPES.n = Set(initialize=levels); mTEPES.n2 = Set(initialize=levels)
+    mTEPES.na = Set(initialize=levels); mTEPES.First_st = st; mTEPES.Last_st = st; mTEPES.NoRepetition = 0
+    mTEPES.nesc = []; mTEPES.necc = []; mTEPES.neso = []
+    mTEPES.ngen = [(n, g) for n, g in mTEPES.n * mTEPES.g]
+
+    TotalObjectiveFunction(mTEPES, mTEPES, 0)
+    InvestmentElecModelFormulation(mTEPES, mTEPES, 0)
+    for _lab, fn, guard in FORMULATION_REGISTRY:
+        if guard is not None and not guard(mTEPES):
+            continue
+        fn(mTEPES, mTEPES, 0, p, sc, st)
+    for c in mTEPES.component_objects(Constraint, active=True):
+        if any(k in c.name for k in ("RESEnergy", "Emission")):
+            c.deactivate()
+
+    # force the line NOT to be built, then check it is electrically absent
+    mTEPES.vNetworkInvest[p, la[0], la[1], la[2]].fix(0.0)
+    res = SolverFactory("gurobi").solve(mTEPES)
+    assert str(res.solver.termination_condition) == "optimal", "the network should still be feasible without the candidate"
+
+    n0 = levels[0]
+    assert abs(value(mTEPES.vCurr[p, sc, n0, la]))          < 1e-6, "an unbuilt line carries current"
+    assert abs(value(mTEPES.vFlowElec[p, sc, n0, la]))      < 1e-4, "an unbuilt line carries active power"
+    assert abs(value(mTEPES.vFlowReactFrw[p, sc, n0, la]))  < 1e-4, "an unbuilt line carries reactive power"

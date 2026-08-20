@@ -11,6 +11,11 @@ from collections import defaultdict
 from pyomo.environ import Constraint, Objective, minimize
 
 
+# Module level so that CostSummaryResults reports exactly the penalty the objective charged. Two hard-coded copies would drift, and the cost
+# summary would stop adding up to the reported total — which is the failure the AC Current Penalty row exists to prevent.
+AC_CURRENT_PENALTY = 1e-3
+
+
 def TotalObjectiveFunction(OptModel, mTEPES, pIndLogConsole):
     print('Total cost o.f.      model formulation ****')
 
@@ -49,6 +54,23 @@ def GenerationOperationModelFormulationObjFunct(OptModel, mTEPES, pIndLogConsole
     pEpsilonCharge = 1e-5
     # the small tolerance pEpsilonLosses=1e-5 prices the ohmic losses so that the solver does not leave them slack
     pEpsilonLosses = 1e-5
+    # The same idea for the AC branch current, which carries the slack of the conic / piecewise inequality. This one is NOT a pure tie-breaker and the
+    # value is a real modelling choice, so it is worth being explicit about what it buys and what it costs.
+    #
+    # What it fixes. vCurr enters as an INEQUALITY, and the voltage drop w_j = w_i - 2(rP+xQ) + z^2*l means a LARGER current raises the downstream
+    # voltage. Where the extra loss is served by a zero-cost unit nothing opposes that, so the relaxation buys voltage with current that is not there.
+    # Measured on 9n_AC at 1e-5: branch Node_4-Node_5 sits at its thermal bound, vCurr = 0.4489, while the physical value is 0.0891 — five times over,
+    # and the reported voltage at the far end is not supported by any real flow.
+    #
+    # What it costs. At 1e-3 the penalty is about an order of magnitude above the loss it stands in for on 9n_AC (r ~ 0.002 p.u., pSBase 1 GVA), so it
+    # does not merely break a tie: between 1e-5 and 1e-3 the dispatch moves by roughly 29 GWh of generation and reported losses go from 0.54% to
+    # 0.84%. The 0.84% figure is the physically consistent one — the cone is tight on all 12 branches there and loose on 2 at 1e-5 — but the extra
+    # generation is partly this penalty talking, and it feeds through to the eBalanceElec duals reported as locational prices.
+    #
+    # 1e-3 is kept because a solution whose currents are real is worth more than an undistorted one whose voltages are fiction, and because the gap
+    # diagnostic in openTEPES_OutputResultsAC reports exactly when this has failed. Anyone reading marginal prices off an AC run should know the
+    # penalty is in them. See doc/design/AC_OPF_Prototype_Results.md.
+    pEpsilonCurrent = AC_CURRENT_PENALTY
 
     g2a = defaultdict(set)
     for ar,g in mTEPES.a2g:
@@ -110,13 +132,26 @@ def GenerationOperationModelFormulationObjFunct(OptModel, mTEPES, pIndLogConsole
     setattr(OptModel, f'eTotalRESEnergyArea_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.ar, rule=eTotalRESEnergyArea, doc='area RES energy [GWh]'))
 
     def eTotalNCost(OptModel,n):
-        if len(mTEPES.ll) == 0:
+        if len(mTEPES.ll) == 0 and not mTEPES.pIndACPowerFlow():
             return Constraint.Skip
-        return OptModel.vTotalNCost[p,sc,n] == pEpsilonLosses * mTEPES.pLoadLevelDuration[p,sc,n]() * sum(OptModel.vLineLosses[p,sc,n,ni,nf,cc] for ni,nf,cc in mTEPES.ll if (p,ni,nf,cc) in mTEPES.pll)
+        pLossCost = pEpsilonLosses * mTEPES.pLoadLevelDuration[p,sc,n]() * sum(OptModel.vLineLosses[p,sc,n,ni,nf,cc] for ni,nf,cc in mTEPES.ll if (p,ni,nf,cc) in mTEPES.pll)
+        if mTEPES.pIndACPowerFlow():
+            # The AC branch current enters the model as an INEQUALITY — a cone under IndACModelType 0, a piecewise staircase under 1 — so nothing
+            # forces vCurr down to the boundary where it equals (P^2+Q^2)/vW. Normally the nodal balance does it, because a larger current means a
+            # See the pEpsilonCurrent block at the top of this function for what this buys, what it costs, and why the value is what it is.
+            # Note the units: pEpsilonLosses multiplies a loss in GW, this multiplies a dimensionless per-unit current, so the two are not comparable
+            # and this one's size relative to the loss it stands in for depends on pSBase.
+            pLossCost += pEpsilonCurrent * mTEPES.pLoadLevelDuration[p,sc,n]() * sum(OptModel.vCurr[p,sc,n,ni,nf,cc] for ni,nf,cc in mTEPES.laa if (p,ni,nf,cc) in mTEPES.pla)
+        return OptModel.vTotalNCost[p,sc,n] == pLossCost
     setattr(OptModel, f'eTotalNCost_{p}_{sc}_{st}', Constraint(mTEPES.n, rule=eTotalNCost, doc='system variable network operation cost [MEUR]'))
 
     def eTotalRElecCost(OptModel,n):
-        return OptModel.vTotalRElecCost[p,sc,n] == mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pENSCost * sum(OptModel.vENS[p,sc,n,nd] for nd in mTEPES.nd)
+        pCost = mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pENSCost * sum(OptModel.vENS[p,sc,n,nd] for nd in mTEPES.nd)
+        if mTEPES.pIndACPowerFlow():
+            # Reactive power not served is priced at the same rate as active. The number is a penalty, not a valuation: its job is to make the slack a
+            # last resort and to leave a visible trace in the results when the reactive side cannot be met, rather than an infeasible model.
+            pCost += mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pENSCost * sum(OptModel.vQNSPos[p,sc,n,nd] + OptModel.vQNSNeg[p,sc,n,nd] for nd in mTEPES.nd)
+        return OptModel.vTotalRElecCost[p,sc,n] == pCost
     setattr(OptModel, f'eTotalRElecCost_{p}_{sc}_{st}', Constraint(mTEPES.n, rule=eTotalRElecCost, doc='elec system reliability cost [MEUR]'))
 
     GeneratingTime = time.time() - StartTime
