@@ -63,9 +63,16 @@ def _vhi_from(mTEPES, la):
 
 
 def NetworkACOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st):
-    """Add the AC network constraints for one (period, scenario, stage)."""
+    """Add the AC network constraints for one (period, scenario, stage).
+
+    The nodal balances, the shunts, the reactive capability and the HVDC converters are shared by every AC formulation and are built here for all of
+    them. Only the branch flow relations -- the voltage drop, the far-end flow definitions, the current limit and the angle envelope -- are specific
+    to mode 1; bus injection supplies its own in openTEPES_ModelFormulationBIM. Guarding the WHOLE function on mode 1 left modes 2 and 3 with no
+    power balance at all, because the DC balance is already skipped whenever AC is on.
+    """
     if not mTEPES.pIndACPowerFlow():
         return
+    pBFM = mTEPES.pIndACPowerFlow() == 1
 
     print('AC network operation model constraints ****')
     StartTime = time.time()
@@ -235,147 +242,152 @@ def NetworkACOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, 
     if pIndLogConsole:
         print('eBalanceReact             ... ', len(getattr(OptModel, f'eBalanceReact_{p}_{sc}_{st}')), ' rows')
 
-    # --- the far end of the branch, and the loss -------------------------------------------------------------------------------------------------
-    # Power arriving at nf is what entered at ni less the series loss, so the power leaving nf into the branch is its negative. Chowdhury et al. write
-    # (P_ij - r_ij l_ij) inline and carry no far-end variable; one is kept here so vLineLosses can be defined and every existing loss report stays
-    # correct. Declaring it without these equations leaves it free, and the model then reports zero losses.
-    def eFlowElecBck(OptModel, n, ni, nf, cc):
-        if not _live((ni,nf,cc)):
-            return Constraint.Skip
-        return (OptModel.vFlowElecBck[p,sc,n,ni,nf,cc]
-                == -OptModel.vFlowElec[p,sc,n,ni,nf,cc] + mTEPES.pLineR[ni,nf,cc] * OptModel.vCurr[p,sc,n,ni,nf,cc] * pSBase)
-    setattr(OptModel, f'eFlowElecBck_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.laa, rule=eFlowElecBck, doc='active power leaving nf into the branch [GW]'))
+    # ONLY the branch flow relations are mode 1. Everything after this block -- the reactive capability limits, the idle-unit gate, the
+    # shunt definitions and the condenser investment gates -- is shared by every AC formulation, so it must not sit behind this guard.
+    # An earlier version returned here instead of wrapping, which left bus injection with no reactive capability limit at all: generators
+    # supplied their full nameplate Mvar untied to any active output, and used eight times the reactive power branch flow did.
+    if pBFM:
+        # --- the far end of the branch, and the loss -------------------------------------------------------------------------------------------------
+        # Power arriving at nf is what entered at ni less the series loss, so the power leaving nf into the branch is its negative. Chowdhury et al. write
+        # (P_ij - r_ij l_ij) inline and carry no far-end variable; one is kept here so vLineLosses can be defined and every existing loss report stays
+        # correct. Declaring it without these equations leaves it free, and the model then reports zero losses.
+        def eFlowElecBck(OptModel, n, ni, nf, cc):
+            if not _live((ni,nf,cc)):
+                return Constraint.Skip
+            return (OptModel.vFlowElecBck[p,sc,n,ni,nf,cc]
+                    == -OptModel.vFlowElec[p,sc,n,ni,nf,cc] + mTEPES.pLineR[ni,nf,cc] * OptModel.vCurr[p,sc,n,ni,nf,cc] * pSBase)
+        setattr(OptModel, f'eFlowElecBck_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.laa, rule=eFlowElecBck, doc='active power leaving nf into the branch [GW]'))
 
-    def eFlowReactBck(OptModel, n, ni, nf, cc):
-        if not _live((ni,nf,cc)):
-            return Constraint.Skip
-        return (OptModel.vFlowReactBck[p,sc,n,ni,nf,cc]
-                == -OptModel.vFlowReactFrw[p,sc,n,ni,nf,cc] + mTEPES.pLineX[ni,nf,cc] * OptModel.vCurr[p,sc,n,ni,nf,cc] * pSBase)
-    setattr(OptModel, f'eFlowReactBck_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.laa, rule=eFlowReactBck, doc='reactive power leaving nf into the branch [Gvar]'))
+        def eFlowReactBck(OptModel, n, ni, nf, cc):
+            if not _live((ni,nf,cc)):
+                return Constraint.Skip
+            return (OptModel.vFlowReactBck[p,sc,n,ni,nf,cc]
+                    == -OptModel.vFlowReactFrw[p,sc,n,ni,nf,cc] + mTEPES.pLineX[ni,nf,cc] * OptModel.vCurr[p,sc,n,ni,nf,cc] * pSBase)
+        setattr(OptModel, f'eFlowReactBck_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.laa, rule=eFlowReactBck, doc='reactive power leaving nf into the branch [Gvar]'))
 
-    def eLineLossesAC(OptModel, n, ni, nf, cc):
-        if not _live((ni,nf,cc)) or (p,ni,nf,cc) not in mTEPES.pll:
-            return Constraint.Skip
-        # vLineLosses is documented as HALF the branch loss, and the output layer multiplies by two
-        return (OptModel.vLineLosses[p,sc,n,ni,nf,cc]
-                == 0.5 * (OptModel.vFlowElec[p,sc,n,ni,nf,cc] + OptModel.vFlowElecBck[p,sc,n,ni,nf,cc]))
-    setattr(OptModel, f'eLineLossesAC_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.laa, rule=eLineLossesAC, doc='half the exact AC branch loss [GW]'))
+        def eLineLossesAC(OptModel, n, ni, nf, cc):
+            if not _live((ni,nf,cc)) or (p,ni,nf,cc) not in mTEPES.pll:
+                return Constraint.Skip
+            # vLineLosses is documented as HALF the branch loss, and the output layer multiplies by two
+            return (OptModel.vLineLosses[p,sc,n,ni,nf,cc]
+                    == 0.5 * (OptModel.vFlowElec[p,sc,n,ni,nf,cc] + OptModel.vFlowElecBck[p,sc,n,ni,nf,cc]))
+        setattr(OptModel, f'eLineLossesAC_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.laa, rule=eLineLossesAC, doc='half the exact AC branch loss [GW]'))
 
-    # --- (7) the thermal limit, gated on service -------------------------------------------------------------------------------------------------
-    # A branch out of service carries no current, and with vCurr driven to zero the current definition — cone or staircase — forces both flows to zero
-    # too, because vW is bounded below by a positive number. One constraint therefore gates P, Q and the loss together. vLineCommit is fixed at 1 for
-    # a line that is neither switchable nor a candidate, so for those this is a plain thermal limit.
-    def eCurrentLimit(OptModel, n, ni, nf, cc):
-        if not _live((ni,nf,cc)):
-            return Constraint.Skip
-        pIMax = (mTEPES.pLineSmax[ni,nf,cc] / pSBase / _vlo_from(mTEPES, (ni,nf,cc))) ** 2
-        return OptModel.vCurr[p,sc,n,ni,nf,cc] <= pIMax * OptModel.vLineCommit[p,sc,n,ni,nf,cc]
-    setattr(OptModel, f'eCurrentLimit_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.laa, rule=eCurrentLimit, doc='thermal limit, released out of service [p.u.]'))
+        # --- (7) the thermal limit, gated on service -------------------------------------------------------------------------------------------------
+        # A branch out of service carries no current, and with vCurr driven to zero the current definition — cone or staircase — forces both flows to zero
+        # too, because vW is bounded below by a positive number. One constraint therefore gates P, Q and the loss together. vLineCommit is fixed at 1 for
+        # a line that is neither switchable nor a candidate, so for those this is a plain thermal limit.
+        def eCurrentLimit(OptModel, n, ni, nf, cc):
+            if not _live((ni,nf,cc)):
+                return Constraint.Skip
+            pIMax = (mTEPES.pLineSmax[ni,nf,cc] / pSBase / _vlo_from(mTEPES, (ni,nf,cc))) ** 2
+            return OptModel.vCurr[p,sc,n,ni,nf,cc] <= pIMax * OptModel.vLineCommit[p,sc,n,ni,nf,cc]
+        setattr(OptModel, f'eCurrentLimit_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.laa, rule=eCurrentLimit, doc='thermal limit, released out of service [p.u.]'))
 
-    # --- (9) voltage drop ------------------------------------------------------------------------------------------------------------------------
-    # The big-M is derived from the three terms of the expression rather than guessed. The flow term dominates and was omitted once, leaving an
-    # arbitrary constant as the only thing keeping the relaxation valid.
-    def _pDropExpr(n, ni, nf, cc):
-        return (OptModel.vW[p,sc,n,nf] - OptModel.vW[p,sc,n,ni] * _tap2(mTEPES, (ni,nf,cc))
-                + 2.0 * (mTEPES.pLineR[ni,nf,cc] * OptModel.vFlowElec    [p,sc,n,ni,nf,cc]
-                       + mTEPES.pLineX[ni,nf,cc] * OptModel.vFlowReactFrw[p,sc,n,ni,nf,cc]) / pSBase
-                - mTEPES.pLineZ2[ni,nf,cc] * OptModel.vCurr[p,sc,n,ni,nf,cc])
+        # --- (9) voltage drop ------------------------------------------------------------------------------------------------------------------------
+        # The big-M is derived from the three terms of the expression rather than guessed. The flow term dominates and was omitted once, leaving an
+        # arbitrary constant as the only thing keeping the relaxation valid.
+        def _pDropExpr(n, ni, nf, cc):
+            return (OptModel.vW[p,sc,n,nf] - OptModel.vW[p,sc,n,ni] * _tap2(mTEPES, (ni,nf,cc))
+                    + 2.0 * (mTEPES.pLineR[ni,nf,cc] * OptModel.vFlowElec    [p,sc,n,ni,nf,cc]
+                           + mTEPES.pLineX[ni,nf,cc] * OptModel.vFlowReactFrw[p,sc,n,ni,nf,cc]) / pSBase
+                    - mTEPES.pLineZ2[ni,nf,cc] * OptModel.vCurr[p,sc,n,ni,nf,cc])
 
-    pDropM = {}
-    for la in mTEPES.laa:
-        ni, nf, cc = la
-        pFlow = 2.0 * _z(mTEPES, la) * _smax_pu(mTEPES, la)                                                    # |2(rP+xQ)|/S, by Cauchy-Schwarz
-        pLoss = mTEPES.pLineZ2[la] * (mTEPES.pLineSmax[la] / pSBase / _vlo_from(mTEPES, la)) ** 2
-        pDropM[la] = (max((mTEPES.pVMaxBus[nf] ** 2 - _vlo_from(mTEPES, la) ** 2) + pFlow,         0.0),        # largest the expression can be
-                      min((mTEPES.pVMinBus[nf] ** 2 - _vhi_from(mTEPES, la) ** 2) - pFlow - pLoss, 0.0))       # and the smallest
+        pDropM = {}
+        for la in mTEPES.laa:
+            ni, nf, cc = la
+            pFlow = 2.0 * _z(mTEPES, la) * _smax_pu(mTEPES, la)                                                    # |2(rP+xQ)|/S, by Cauchy-Schwarz
+            pLoss = mTEPES.pLineZ2[la] * (mTEPES.pLineSmax[la] / pSBase / _vlo_from(mTEPES, la)) ** 2
+            pDropM[la] = (max((mTEPES.pVMaxBus[nf] ** 2 - _vlo_from(mTEPES, la) ** 2) + pFlow,         0.0),        # largest the expression can be
+                          min((mTEPES.pVMinBus[nf] ** 2 - _vhi_from(mTEPES, la) ** 2) - pFlow - pLoss, 0.0))       # and the smallest
 
-    def eVoltageDropUp(OptModel, n, ni, nf, cc):
-        if not _live((ni,nf,cc)):
-            return Constraint.Skip
-        return _pDropExpr(n,ni,nf,cc) <= pDropM[ni,nf,cc][0] * (1 - OptModel.vLineCommit[p,sc,n,ni,nf,cc])
-    setattr(OptModel, f'eVoltageDropUp_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.laa, rule=eVoltageDropUp, doc='voltage drop along an AC branch, upper [p.u.]'))
+        def eVoltageDropUp(OptModel, n, ni, nf, cc):
+            if not _live((ni,nf,cc)):
+                return Constraint.Skip
+            return _pDropExpr(n,ni,nf,cc) <= pDropM[ni,nf,cc][0] * (1 - OptModel.vLineCommit[p,sc,n,ni,nf,cc])
+        setattr(OptModel, f'eVoltageDropUp_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.laa, rule=eVoltageDropUp, doc='voltage drop along an AC branch, upper [p.u.]'))
 
-    def eVoltageDropLo(OptModel, n, ni, nf, cc):
-        if not _live((ni,nf,cc)):
-            return Constraint.Skip
-        return _pDropExpr(n,ni,nf,cc) >= pDropM[ni,nf,cc][1] * (1 - OptModel.vLineCommit[p,sc,n,ni,nf,cc])
-    setattr(OptModel, f'eVoltageDropLo_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.laa, rule=eVoltageDropLo, doc='voltage drop along an AC branch, lower [p.u.]'))
-    if pIndLogConsole:
-        print('eVoltageDrop              ... ', 2*len(getattr(OptModel, f'eVoltageDropUp_{p}_{sc}_{st}')), ' rows')
+        def eVoltageDropLo(OptModel, n, ni, nf, cc):
+            if not _live((ni,nf,cc)):
+                return Constraint.Skip
+            return _pDropExpr(n,ni,nf,cc) >= pDropM[ni,nf,cc][1] * (1 - OptModel.vLineCommit[p,sc,n,ni,nf,cc])
+        setattr(OptModel, f'eVoltageDropLo_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.laa, rule=eVoltageDropLo, doc='voltage drop along an AC branch, lower [p.u.]'))
+        if pIndLogConsole:
+            print('eVoltageDrop              ... ', 2*len(getattr(OptModel, f'eVoltageDropUp_{p}_{sc}_{st}')), ' rows')
 
-    # --- (16)/(17) the angle envelope ------------------------------------------------------------------------------------------------------------
-    def eAngleEnvM(OptModel, n, ni, nf, cc):
-        if not _live((ni,nf,cc)):
-            return Constraint.Skip
-        # MINUS, not plus. With y = (r - jx)/z^2, P = [(v_i^2 - v_i v_j cos th) r + (v_i v_j sin th) x]/z^2 and Q the same with x and -r, so
-        # x P - r Q = v_i v_j sin th. Written as a plus it costs 38 MW of branch flow error and closes no network loop, and no self-consistency
-        # check can see it: the envelope, the band and the gap all measure the model against its own definition of this relation.
-        return (OptModel.vMPos[p,sc,n,ni,nf,cc] - OptModel.vMNeg[p,sc,n,ni,nf,cc]
-                == (mTEPES.pLineX[ni,nf,cc] * OptModel.vFlowElec    [p,sc,n,ni,nf,cc]
-                  - mTEPES.pLineR[ni,nf,cc] * OptModel.vFlowReactFrw[p,sc,n,ni,nf,cc]) / pSBase)
-    setattr(OptModel, f'eAngleEnvM_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.laa, rule=eAngleEnvM, doc='signed parts of the envelope numerator [p.u.]'))
+        # --- (16)/(17) the angle envelope ------------------------------------------------------------------------------------------------------------
+        def eAngleEnvM(OptModel, n, ni, nf, cc):
+            if not _live((ni,nf,cc)):
+                return Constraint.Skip
+            # MINUS, not plus. With y = (r - jx)/z^2, P = [(v_i^2 - v_i v_j cos th) r + (v_i v_j sin th) x]/z^2 and Q the same with x and -r, so
+            # x P - r Q = v_i v_j sin th. Written as a plus it costs 38 MW of branch flow error and closes no network loop, and no self-consistency
+            # check can see it: the envelope, the band and the gap all measure the model against its own definition of this relation.
+            return (OptModel.vMPos[p,sc,n,ni,nf,cc] - OptModel.vMNeg[p,sc,n,ni,nf,cc]
+                    == (mTEPES.pLineX[ni,nf,cc] * OptModel.vFlowElec    [p,sc,n,ni,nf,cc]
+                      - mTEPES.pLineR[ni,nf,cc] * OptModel.vFlowReactFrw[p,sc,n,ni,nf,cc]) / pSBase)
+        setattr(OptModel, f'eAngleEnvM_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.laa, rule=eAngleEnvM, doc='signed parts of the envelope numerator [p.u.]'))
 
-    # vMPos and vMNeg are only tied to their DIFFERENCE above, and adding the same amount to both relaxes BOTH envelope inequalities, because the two
-    # appear with different voltage divisors. That is free slack — on a 0.95-1.05 band it comes to roughly 18% of the implied angle bound per branch,
-    # which loosens how tightly the reported angles are tied to the flows. Capping the sum removes it without cutting anything off: the minimal split
-    # (vMPos, vMNeg) = (max(M,0), max(-M,0)) always satisfies it, and the envelope is tightest at that split anyway.
-    def eAngleEnvMSum(OptModel, n, ni, nf, cc):
-        if not _live((ni,nf,cc)):
-            return Constraint.Skip
-        return (OptModel.vMPos[p,sc,n,ni,nf,cc] + OptModel.vMNeg[p,sc,n,ni,nf,cc]
-                <= _z(mTEPES, (ni,nf,cc)) * _smax_pu(mTEPES, (ni,nf,cc)))
-    setattr(OptModel, f'eAngleEnvMSum_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.laa, rule=eAngleEnvMSum, doc='minimal split of the envelope numerator [p.u.]'))
+        # vMPos and vMNeg are only tied to their DIFFERENCE above, and adding the same amount to both relaxes BOTH envelope inequalities, because the two
+        # appear with different voltage divisors. That is free slack — on a 0.95-1.05 band it comes to roughly 18% of the implied angle bound per branch,
+        # which loosens how tightly the reported angles are tied to the flows. Capping the sum removes it without cutting anything off: the minimal split
+        # (vMPos, vMNeg) = (max(M,0), max(-M,0)) always satisfies it, and the envelope is tightest at that split anyway.
+        def eAngleEnvMSum(OptModel, n, ni, nf, cc):
+            if not _live((ni,nf,cc)):
+                return Constraint.Skip
+            return (OptModel.vMPos[p,sc,n,ni,nf,cc] + OptModel.vMNeg[p,sc,n,ni,nf,cc]
+                    <= _z(mTEPES, (ni,nf,cc)) * _smax_pu(mTEPES, (ni,nf,cc)))
+        setattr(OptModel, f'eAngleEnvMSum_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.laa, rule=eAngleEnvMSum, doc='minimal split of the envelope numerator [p.u.]'))
 
-    # Both sides carry the same release, so a branch out of service imposes no angle relation on the two buses it would have joined. Releasing only
-    # one side leaves the other binding on an unbuilt candidate, which is a quiet way to force a build.
-    # vTheta is bounded at +/- pi/2, so the difference spans [-pi, pi] and a release of pi alone is not always enough: for a branch whose limits sit
-    # on ONE side, say +5 to +30 degrees, eAngleBandLo would still read theta_ij >= 0.087 - pi, which is tighter than the variable range and so keeps
-    # coupling two buses joined only by an unbuilt candidate. Adding the branch's own widest limit clears it in every case.
-    pBandM = {la: math.pi + max(abs(mTEPES.pMaxAngleDiff[la]), abs(mTEPES.pMinAngleDiff[la])) for la in mTEPES.laa}
+        # Both sides carry the same release, so a branch out of service imposes no angle relation on the two buses it would have joined. Releasing only
+        # one side leaves the other binding on an unbuilt candidate, which is a quiet way to force a build.
+        # vTheta is bounded at +/- pi/2, so the difference spans [-pi, pi] and a release of pi alone is not always enough: for a branch whose limits sit
+        # on ONE side, say +5 to +30 degrees, eAngleBandLo would still read theta_ij >= 0.087 - pi, which is tighter than the variable range and so keeps
+        # coupling two buses joined only by an unbuilt candidate. Adding the branch's own widest limit clears it in every case.
+        pBandM = {la: math.pi + max(abs(mTEPES.pMaxAngleDiff[la]), abs(mTEPES.pMinAngleDiff[la])) for la in mTEPES.laa}
 
-    def _pRelease(n, la):
-        return pBandM[la] * (1 - OptModel.vLineCommit[(p,sc,n)+la])
+        def _pRelease(n, la):
+            return pBandM[la] * (1 - OptModel.vLineCommit[(p,sc,n)+la])
 
-    def eAngleEnvUp(OptModel, n, ni, nf, cc):
-        if not _live((ni,nf,cc)):
-            return Constraint.Skip
-        # the polyhedral envelope is derived for a symmetric band, so it takes the wider of the two sides: a wider envelope is still a valid
-        # relaxation, while the true asymmetric limits are imposed by eAngleBandUp/Lo below.
-        t = max(mTEPES.pMaxAngleDiff[ni,nf,cc], -mTEPES.pMinAngleDiff[ni,nf,cc])
-        return (OptModel.vTheta[p,sc,n,ni] - OptModel.vTheta[p,sc,n,nf]
-                <= ( OptModel.vMPos[p,sc,n,ni,nf,cc] / (_vlo_from(mTEPES, (ni,nf,cc)) * mTEPES.pVMinBus[nf])
-                   - OptModel.vMNeg[p,sc,n,ni,nf,cc] / (_vhi_from(mTEPES, (ni,nf,cc)) * mTEPES.pVMaxBus[nf])) / math.cos(t/2)
-                   + math.tan(t/2) - t/2 + _pRelease(n,(ni,nf,cc)))
-    setattr(OptModel, f'eAngleEnvUp_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.laa, rule=eAngleEnvUp, doc='upper envelope on the angle difference [rad]'))
+        def eAngleEnvUp(OptModel, n, ni, nf, cc):
+            if not _live((ni,nf,cc)):
+                return Constraint.Skip
+            # the polyhedral envelope is derived for a symmetric band, so it takes the wider of the two sides: a wider envelope is still a valid
+            # relaxation, while the true asymmetric limits are imposed by eAngleBandUp/Lo below.
+            t = max(mTEPES.pMaxAngleDiff[ni,nf,cc], -mTEPES.pMinAngleDiff[ni,nf,cc])
+            return (OptModel.vTheta[p,sc,n,ni] - OptModel.vTheta[p,sc,n,nf]
+                    <= ( OptModel.vMPos[p,sc,n,ni,nf,cc] / (_vlo_from(mTEPES, (ni,nf,cc)) * mTEPES.pVMinBus[nf])
+                       - OptModel.vMNeg[p,sc,n,ni,nf,cc] / (_vhi_from(mTEPES, (ni,nf,cc)) * mTEPES.pVMaxBus[nf])) / math.cos(t/2)
+                       + math.tan(t/2) - t/2 + _pRelease(n,(ni,nf,cc)))
+        setattr(OptModel, f'eAngleEnvUp_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.laa, rule=eAngleEnvUp, doc='upper envelope on the angle difference [rad]'))
 
-    def eAngleEnvLo(OptModel, n, ni, nf, cc):
-        if not _live((ni,nf,cc)):
-            return Constraint.Skip
-        # the polyhedral envelope is derived for a symmetric band, so it takes the wider of the two sides: a wider envelope is still a valid
-        # relaxation, while the true asymmetric limits are imposed by eAngleBandUp/Lo below.
-        t = max(mTEPES.pMaxAngleDiff[ni,nf,cc], -mTEPES.pMinAngleDiff[ni,nf,cc])
-        return (OptModel.vTheta[p,sc,n,ni] - OptModel.vTheta[p,sc,n,nf]
-                >= ( OptModel.vMPos[p,sc,n,ni,nf,cc] / (_vhi_from(mTEPES, (ni,nf,cc)) * mTEPES.pVMaxBus[nf])
-                   - OptModel.vMNeg[p,sc,n,ni,nf,cc] / (_vlo_from(mTEPES, (ni,nf,cc)) * mTEPES.pVMinBus[nf])) / math.cos(t/2)
-                   - math.tan(t/2) + t/2 - _pRelease(n,(ni,nf,cc)))
-    setattr(OptModel, f'eAngleEnvLo_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.laa, rule=eAngleEnvLo, doc='lower envelope on the angle difference [rad]'))
+        def eAngleEnvLo(OptModel, n, ni, nf, cc):
+            if not _live((ni,nf,cc)):
+                return Constraint.Skip
+            # the polyhedral envelope is derived for a symmetric band, so it takes the wider of the two sides: a wider envelope is still a valid
+            # relaxation, while the true asymmetric limits are imposed by eAngleBandUp/Lo below.
+            t = max(mTEPES.pMaxAngleDiff[ni,nf,cc], -mTEPES.pMinAngleDiff[ni,nf,cc])
+            return (OptModel.vTheta[p,sc,n,ni] - OptModel.vTheta[p,sc,n,nf]
+                    >= ( OptModel.vMPos[p,sc,n,ni,nf,cc] / (_vhi_from(mTEPES, (ni,nf,cc)) * mTEPES.pVMaxBus[nf])
+                       - OptModel.vMNeg[p,sc,n,ni,nf,cc] / (_vlo_from(mTEPES, (ni,nf,cc)) * mTEPES.pVMinBus[nf])) / math.cos(t/2)
+                       - math.tan(t/2) + t/2 - _pRelease(n,(ni,nf,cc)))
+        setattr(OptModel, f'eAngleEnvLo_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.laa, rule=eAngleEnvLo, doc='lower envelope on the angle difference [rad]'))
 
-    # Two one-sided constraints rather than one banded one. The release term carries vLineCommit, so a ranged inequality would have a VARIABLE bound
-    # on each side, and Pyomo refuses to normalise that: 'Ranged Inequality with a variable lower bound'. Only a case with a candidate or switchable
-    # AC branch reaches it, which is why the bundled cases did not show it.
-    def eAngleBandUp(OptModel, n, ni, nf, cc):
-        if not _live((ni,nf,cc)):
-            return Constraint.Skip
-        return (OptModel.vTheta[p,sc,n,ni] - OptModel.vTheta[p,sc,n,nf]
-                <= mTEPES.pMaxAngleDiff[ni,nf,cc] + _pRelease(n,(ni,nf,cc)))
-    setattr(OptModel, f'eAngleBandUp_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.laa, rule=eAngleBandUp, doc='tightened angle-difference band, upper [rad]'))
+        # Two one-sided constraints rather than one banded one. The release term carries vLineCommit, so a ranged inequality would have a VARIABLE bound
+        # on each side, and Pyomo refuses to normalise that: 'Ranged Inequality with a variable lower bound'. Only a case with a candidate or switchable
+        # AC branch reaches it, which is why the bundled cases did not show it.
+        def eAngleBandUp(OptModel, n, ni, nf, cc):
+            if not _live((ni,nf,cc)):
+                return Constraint.Skip
+            return (OptModel.vTheta[p,sc,n,ni] - OptModel.vTheta[p,sc,n,nf]
+                    <= mTEPES.pMaxAngleDiff[ni,nf,cc] + _pRelease(n,(ni,nf,cc)))
+        setattr(OptModel, f'eAngleBandUp_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.laa, rule=eAngleBandUp, doc='tightened angle-difference band, upper [rad]'))
 
-    def eAngleBandLo(OptModel, n, ni, nf, cc):
-        if not _live((ni,nf,cc)):
-            return Constraint.Skip
-        return (OptModel.vTheta[p,sc,n,ni] - OptModel.vTheta[p,sc,n,nf]
-                >= mTEPES.pMinAngleDiff[ni,nf,cc] - _pRelease(n,(ni,nf,cc)))
-    setattr(OptModel, f'eAngleBandLo_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.laa, rule=eAngleBandLo, doc='tightened angle-difference band, lower [rad]'))
+        def eAngleBandLo(OptModel, n, ni, nf, cc):
+            if not _live((ni,nf,cc)):
+                return Constraint.Skip
+            return (OptModel.vTheta[p,sc,n,ni] - OptModel.vTheta[p,sc,n,nf]
+                    >= mTEPES.pMinAngleDiff[ni,nf,cc] - _pRelease(n,(ni,nf,cc)))
+        setattr(OptModel, f'eAngleBandLo_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.laa, rule=eAngleBandLo, doc='tightened angle-difference band, lower [rad]'))
 
     # --- reactive capability ---------------------------------------------------------------------------------------------------------------------
     # A machine that is off supplies nothing, and one that is on supplies at most tan(acos(pf)) times its active output. Without this a unit that is
@@ -495,7 +507,7 @@ def NetworkACCurrentModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st
     spans ``Smax*Vmax/Vmin``, matching what the other two admit: sizing it on ``Smax`` alone silently gives the piecewise variant a tighter feasible
     set than the formulation it approximates.
     """
-    if not mTEPES.pIndACPowerFlow():
+    if mTEPES.pIndACPowerFlow() != 1:
         return
 
     pModelType = mTEPES.pIndACModelType()
@@ -616,7 +628,7 @@ def ACRestorationPass(OptModel, mTEPES, SolverName='ipopt', pIndLogConsole=0):
 
     Returns a dict of before/after figures, or None when there is nothing to do.
     """
-    if not mTEPES.pIndACPowerFlow():
+    if mTEPES.pIndACPowerFlow() != 1:                          # it swaps the branch flow current and angle relations
         return None
     if mTEPES.pIndACModelType() == 2:
         print('AC restoration                         ...  skipped, the model already uses the exact current definition')

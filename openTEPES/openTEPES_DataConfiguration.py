@@ -1050,10 +1050,11 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     mTEPES.pIndHeat              = Param(initialize=par['pIndHeat']             , within=Binary,              doc='Indicator of heat     demand and pipe     network'                      )
     mTEPES.pIndVarTTC            = Param(initialize=par['pIndVarTTC']           , within=Binary,              doc='Indicator of using or not variable TTC'                                 )
     mTEPES.pIndPTDF              = Param(initialize=par['pIndPTDF']             , within=Binary,              doc='Indicator of using or not the Flow-based method'                        )
-    mTEPES.pIndACPowerFlow       = Param(initialize=par['pIndACPowerFlow']      , within=NonNegativeIntegers, doc='Indicator of the AC power flow model: 0 DC, 1 bus-injection'            )
+    mTEPES.pIndACPowerFlow       = Param(initialize=par['pIndACPowerFlow']      , within=NonNegativeIntegers, doc='AC power flow model: 0 DC, 1 branch flow, 2 bus injection W space, 3 bus injection rectangular'            )
     mTEPES.pIndACModelType       = Param(initialize=par['pIndACModelType']      , within=NonNegativeIntegers, doc='Indicator of the AC model type: 0 SOCP, 1 piecewise linear, 2 exact NLP'            )
     mTEPES.pIndACRestore         = Param(initialize=par['pIndACRestore']        , within=NonNegativeIntegers, doc='Indicator of the exact AC restoration pass: 0 off, 1 on'                 )
     mTEPES.pIndACConverter       = Param(initialize=par['pIndACConverter']      , within=NonNegativeIntegers, doc='Indicator of the HVDC converter model: 0 none, 1 LCC, 2 VSC'             )
+    mTEPES.pIndACCycle           = Param(initialize=par['pIndACCycle']          , within=NonNegativeIntegers, doc='Loop condition around each independent cycle: 0 off, 1 on'               )
 
     mTEPES.pENSCost              = Param(initialize=par['pENSCost']             , within=NonNegativeReals,    doc='ENS cost'                                           , mutable=True)
     mTEPES.pH2NSCost             = Param(initialize=par['pHNSCost']             , within=NonNegativeReals,    doc='HNS cost'                                           )

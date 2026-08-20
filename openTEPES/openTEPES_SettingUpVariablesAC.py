@@ -65,7 +65,8 @@ def SettingUpVariablesAC(OptModel, mTEPES):
     OptModel.vFlowElecBck  = Var(mTEPES.psnlaa, within=Reals, doc='active   power flow leaving nf towards ni [GW]'  )
     OptModel.vFlowReactFrw = Var(mTEPES.psnlaa, within=Reals, doc='reactive power flow leaving ni towards nf [Gvar]')
     OptModel.vFlowReactBck = Var(mTEPES.psnlaa, within=Reals, doc='reactive power flow leaving nf towards ni [Gvar]')
-    OptModel.vCurr         = Var(mTEPES.psnlaa, within=NonNegativeReals, initialize=0.0, doc='squared current magnitude through the branch [p.u.]')
+    if mTEPES.pIndACPowerFlow() == 1:                       # squared current is a branch flow variable; bus injection carries no analogue
+        OptModel.vCurr     = Var(mTEPES.psnlaa, within=NonNegativeReals, initialize=0.0, doc='squared current magnitude through the branch [p.u.]')
 
     for p, sc, n, ni, nf, cc in mTEPES.psnlaa:
         # |I| is capped by the rating at the lowest voltage the impedance sees at the SENDING end, tap included. The apparent power at either end is
@@ -90,7 +91,8 @@ def SettingUpVariablesAC(OptModel, mTEPES):
         # prototype overloaded on replay (doc/design/AC_OPF_Prototype_Results.md section 2).
         # vCurr is per unit, so the rating has to be per unit too: pLineSmax is in GVA and pSBase is the GVA base. Omitting the division is invisible
         # on a case whose base happens to be 1 GVA and wrong by a factor of ten on one whose base is 100 MVA.
-        OptModel.vCurr        [p,sc,n,ni,nf,cc].setub(pImaxPu ** 2)
+        if mTEPES.pIndACPowerFlow() == 1:
+            OptModel.vCurr    [p,sc,n,ni,nf,cc].setub(pImaxPu ** 2)
 
     # --- reactive power injection ----------------------------------------------------------------------------------------------------------------
     # The rated range is only a box. eReactiveCapability in openTEPES_ModelFormulationAC ties the output to the unit's actual state: a generator that

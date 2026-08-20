@@ -407,11 +407,38 @@ def test_unsupported_ac_model_type_is_rejected(tmp_path):
         _build(dir_name, name)
 
 
-def test_branch_flow_formulation_is_rejected(tmp_path):
-    """DistFlow is deliberately not offered: its SOC relaxation gives the same bound as the bus-injection one."""
-    dir_name, name = _clone(tmp_path, "9n_AC", "9n_bfm")
-    _edit_csv(dir_name, name, "Option", lambda df: df.__setitem__("IndACPowerFlow", 2), index_col=None)
+@pytest.mark.parametrize("mode", [0, 1, 2, 3])
+def test_supported_ac_power_flow_models_are_accepted(tmp_path, mode):
+    """0 DC, 1 branch flow, 2 bus injection in W space, 3 bus injection in rectangular coordinates.
+
+    An earlier version of this test asserted that 2 was REJECTED, on the reasoning that Bose and Low prove the two SOC
+    relaxations give the same bound so a second formulation would show nothing. That is a statement about the optimal
+    value, not about conditioning or solve time, which is the question the second formulation exists to answer."""
+    dir_name, name = _clone(tmp_path, "9n_AC", f"9n_pf{mode}")
+    _edit_csv(dir_name, name, "Option", lambda df: df.__setitem__("IndACPowerFlow", mode), index_col=None)
+    mTEPES, _, _ = _build(dir_name, name)
+    assert mTEPES.pIndACPowerFlow() == mode
+
+
+def test_unsupported_ac_power_flow_model_is_rejected(tmp_path):
+    dir_name, name = _clone(tmp_path, "9n_AC", "9n_pfbad")
+    _edit_csv(dir_name, name, "Option", lambda df: df.__setitem__("IndACPowerFlow", 4), index_col=None)
     with pytest.raises(NotImplementedError, match="IndACPowerFlow"):
+        _build(dir_name, name)
+
+
+@pytest.mark.parametrize("mode", [1, 3])
+def test_cycle_option_is_refused_where_it_says_nothing(tmp_path, mode):
+    """The loop condition is meaningful only in W space. Under branch flow the angle is an explicit node potential, so
+    the sum around any cycle is identically zero; under rectangular coordinates the voltages are explicit."""
+    dir_name, name = _clone(tmp_path, "9n_AC", f"9n_cyc{mode}")
+
+    def opt(df):
+        df["IndACPowerFlow"] = mode
+        df["IndACCycle"] = 1
+
+    _edit_csv(dir_name, name, "Option", opt, index_col=None)
+    with pytest.raises(NotImplementedError, match="IndACCycle"):
         _build(dir_name, name)
 
 

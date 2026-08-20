@@ -37,6 +37,7 @@ try:
     from .openTEPES_ModelFormulationHydrogen          import NetworkH2OperationModelFormulation
     from .openTEPES_ModelFormulationHeat              import NetworkHeatOperationModelFormulation
     from .openTEPES_ModelFormulationAC                import NetworkACOperationModelFormulation, NetworkACCurrentModelFormulation
+    from .openTEPES_ModelFormulationBIM               import NetworkBIMOperationModelFormulation
     from .openTEPES_ProblemSolving                    import ProblemSolving
     from .openTEPES_ProblemSolvingSectorDecomposition import SectorDecomposition
     from .openTEPES_ProblemSolvingStageDecomposition   import StageDecomposition
@@ -50,6 +51,7 @@ except ImportError:
     from openTEPES.openTEPES_ModelFormulationHydrogen          import NetworkH2OperationModelFormulation
     from openTEPES.openTEPES_ModelFormulationHeat              import NetworkHeatOperationModelFormulation
     from openTEPES.openTEPES_ModelFormulationAC                import NetworkACOperationModelFormulation, NetworkACCurrentModelFormulation
+    from openTEPES.openTEPES_ModelFormulationBIM              import NetworkBIMOperationModelFormulation
     from openTEPES.openTEPES_ProblemSolving                    import ProblemSolving
     from openTEPES.openTEPES_ProblemSolvingSectorDecomposition import SectorDecomposition
     from openTEPES.openTEPES_ProblemSolvingStageDecomposition   import StageDecomposition
@@ -77,6 +79,7 @@ FORMULATION_REGISTRY = (
     ("network-elec",  NetworkOperationModelFormulation,                   None),
     ("network-ac",    NetworkACOperationModelFormulation,                 lambda m: m.pIndACPowerFlow()),
     ("ac-current",    NetworkACCurrentModelFormulation,                   lambda m: m.pIndACPowerFlow()),
+    ("network-bim",   NetworkBIMOperationModelFormulation,                lambda m: m.pIndACPowerFlow() in (2, 3)),
 )
 
 

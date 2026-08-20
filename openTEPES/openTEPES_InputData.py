@@ -225,8 +225,15 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         par[f'p{col}'] = int(dfs['dfOption'][col].iloc[0])
 
     # Option flags a case may leave out of oT_Data_Option entirely. Absent means the historical behaviour: DC network, no AC model.
-    #   pIndACPowerFlow  0 = DC (default), 1 = bus-injection AC. Branch-flow (DistFlow) is deliberately not offered: Bose & Low prove its SOC
-    #                    relaxation gives the same bound as the bus-injection one, so it would be a second formulation with nothing to show for it.
+    #   pIndACPowerFlow  0 = DC (default)
+    #                    1 = branch flow: |V|^2, |I|^2 and P, Q per branch, with the angle carried as a node potential
+    #                    2 = bus injection in W space: W_ii = |V_i|^2 and W_ij = V_i conj(V_j) per branch, relaxed by a second-order cone
+    #                    3 = bus injection in rectangular coordinates: V = e + jf, the exact non-convex equations, for a non-linear solver
+    #                    Bose & Low prove 1 and 2 give the SAME bound. That is a statement about the optimal value, not about conditioning, solve
+    #                    time or behaviour inside branch and bound, which is why both are offered and measured rather than one assumed better.
+    #   pIndACCycle      0 = off (default), 1 = add the loop condition sum(arg W_ij) = 0 around each independent cycle.
+    #                    Meaningful only for 2: in W space the angle lives in arg(W_ij) and nothing ties it around a loop. For 1 the angle is an
+    #                    explicit node potential so the sum is identically zero and the constraint says nothing; for 3 the voltages are explicit.
     #   pIndACModelType  0 = SOCP relaxation (default, the only option that returns a valid bound)
     #                    1 = piecewise-linear branch flow, a MILP and therefore the only variant that scales to a full year
     #                    2 = exact NLP, for the Phase 7 validation pass with the binaries fixed
@@ -240,10 +247,16 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     #                        more compensation, not less.
     #                    2 = voltage-source converters: each station is a controllable reactive source or sink within its rating, so
     #                        it behaves like a STATCOM and RELIEVES the AC system instead of burdening it.
-    for key in ['pIndACPowerFlow', 'pIndACModelType', 'pIndACRestore', 'pIndACConverter']:
+    for key in ['pIndACPowerFlow', 'pIndACModelType', 'pIndACRestore', 'pIndACConverter', 'pIndACCycle']:
         par.setdefault(key, 0)
-    if par['pIndACPowerFlow'] not in (0, 1):
-        raise NotImplementedError(f"IndACPowerFlow = {par['pIndACPowerFlow']} is not implemented; use 0 (DC) or 1 (bus-injection AC)")
+    if par['pIndACPowerFlow'] not in (0, 1, 2, 3):
+        raise NotImplementedError(f"IndACPowerFlow = {par['pIndACPowerFlow']} is not implemented; use 0 (DC), 1 (branch flow), "
+                                  f"2 (bus injection, W space) or 3 (bus injection, rectangular)")
+    if par['pIndACCycle'] not in (0, 1):
+        raise NotImplementedError(f"IndACCycle = {par['pIndACCycle']} is not implemented; use 0 (off) or 1 (loop condition)")
+    if par['pIndACCycle'] and par['pIndACPowerFlow'] != 2:
+        raise NotImplementedError('IndACCycle applies only to IndACPowerFlow = 2. Under branch flow the angle is a node potential, so the loop '
+                                  'condition is identically satisfied; under rectangular coordinates the voltages are explicit.')
     if par['pIndACModelType'] not in (0, 1, 2):
         raise NotImplementedError(f"IndACModelType = {par['pIndACModelType']} is not implemented; use 0 (SOCP), 1 (piecewise linear) or 2 (NLP)")
     if par['pIndACRestore'] not in (0, 1):

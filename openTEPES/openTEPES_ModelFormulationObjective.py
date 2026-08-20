@@ -123,7 +123,7 @@ def GenerationOperationModelFormulationObjFunct(OptModel, mTEPES, pIndLogConsole
         if len(mTEPES.ll) == 0 and not mTEPES.pIndACPowerFlow():
             return Constraint.Skip
         pLossCost = pEpsilonLosses * mTEPES.pLoadLevelDuration[p,sc,n]() * sum(OptModel.vLineLosses[p,sc,n,ni,nf,cc] for ni,nf,cc in mTEPES.ll if (p,ni,nf,cc) in mTEPES.pll)
-        if mTEPES.pIndACPowerFlow():
+        if mTEPES.pIndACPowerFlow() == 1:                      # vCurr exists only under branch flow
             # The AC branch current enters the model as an INEQUALITY — a cone under IndACModelType 0, a piecewise staircase under 1 — so nothing
             # forces vCurr down to the boundary where it equals (P^2+Q^2)/vW. Normally the nodal balance does it, because a larger current means a
             # See the pEpsilonCurrent block at the top of this function for what this buys, what it costs, and why the value is what it is.

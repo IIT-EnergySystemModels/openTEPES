@@ -49,7 +49,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
 
     # ---- Set up solver (persistent or one-shot) ----
     Solver = setup_solver(OptModel, SolverName, FileName, ncall, mTEPES)
-    solver_options = apply_solver_options(Solver, SolverName, FileName, ncall)
+    solver_options = apply_solver_options(Solver, SolverName, FileName, ncall, mTEPES)
 
     # ---- Decide whether to attach the dual Suffix before the initial solve ----
     # Only a pure-LP model can return duals from its first solve, so the Suffix is

@@ -291,7 +291,7 @@ def CostSummaryResults(DirName, CaseName, OptModel, mTEPES):
     # The AC current penalty is broken out of the network operation cost rather than left inside it. On 9n_AC it is 3.83 of 157.27 MEUR — 2.4% of the
     # reported total — and merged into 'Operation Cost Network' a reader takes it for ohmic losses, which are a tiny fraction of that number. It is a
     # numerical device, not a physical cost, so it is named as one. See the pEpsilonCurrent block in openTEPES_ModelFormulationObjective.
-    if mTEPES.pIndACPowerFlow():
+    if mTEPES.pIndACPowerFlow() == 1:                          # the current penalty prices vCurr, which only branch flow has
         try:
             from .openTEPES_ModelFormulationObjective          import AC_CURRENT_PENALTY as pEpsCurr
         except ImportError:

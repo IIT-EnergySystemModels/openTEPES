@@ -75,9 +75,10 @@ def ACRelaxationDiagnostic(DirName, CaseName, OptModel, mTEPES):
 
     # Pyomo variable access is costly, so evaluate each index once and reuse.
     pW     = {k: OptModel.vW           [k]() for k in mTEPES.psnnd }
-    pCurr  = {k: OptModel.vCurr        [k]() for k in mTEPES.psnlaa}
     pPfr   = {k: OptModel.vFlowElec    [k]() for k in mTEPES.psnlaa}
     pQfr   = {k: OptModel.vFlowReactFrw[k]() for k in mTEPES.psnlaa}
+    pMode  = mTEPES.pIndACPowerFlow()
+    pCurr  = {k: OptModel.vCurr[k]() for k in mTEPES.psnlaa} if pMode == 1 else {}
 
     # ---------------------------------------------------------------------------------------------------------------------------------------------
     # the relaxation diagnostic: everything ACNetworkOperationResults writes depends on this being small
@@ -86,7 +87,14 @@ def ACRelaxationDiagnostic(DirName, CaseName, OptModel, mTEPES):
     for k in mTEPES.psnlaa:
         p, sc, n, ni, nf, cc = k
         pNorm = max(mTEPES.pLineSmax[ni,nf,cc] ** 2, 1e-12)
-        pGap[k] = (pW[p,sc,n,ni] * mTEPES.pLineTapFactor[ni,nf,cc] ** 2 * pCurr[k] * pSBase ** 2 - pPfr[k] ** 2 - pQfr[k] ** 2) / pNorm
+        if pMode == 1:
+            pGap[k] = (pW[p,sc,n,ni] * mTEPES.pLineTapFactor[ni,nf,cc] ** 2 * pCurr[k] * pSBase ** 2 - pPfr[k] ** 2 - pQfr[k] ** 2) / pNorm
+        elif pMode == 2:
+            # the slack in vWre^2 + vWim^2 <= vW_i vW_j, the same quantity the cone relaxes, normalised the same way
+            pGap[k] = (pW[p,sc,n,ni] * pW[p,sc,n,nf]
+                       - OptModel.vWre[k]() ** 2 - OptModel.vWim[k]() ** 2) * pSBase ** 2 / pNorm
+        else:
+            pGap[k] = 0.0                                      # rectangular carries the exact products; there is no relaxation to measure
 
     sBranch = list(mTEPES.psnlaa)
     _pivot_branch(sBranch, [pGap[k] for k in sBranch], 'p.u. of Smax^2', _path, CaseName, 'ACRelaxationGap')
@@ -128,7 +136,8 @@ def ACNetworkOperationResults(DirName, CaseName, OptModel, mTEPES):
     pSBase = mTEPES.pSBase
 
     pW     = {k: OptModel.vW           [k]() for k in mTEPES.psnnd }
-    pCurr  = {k: OptModel.vCurr        [k]() for k in mTEPES.psnlaa}
+    # vCurr exists only under branch flow; bus injection reports the flows and voltages it does have
+    pCurr  = {k: OptModel.vCurr[k]() for k in mTEPES.psnlaa} if mTEPES.pIndACPowerFlow() == 1 else None
     pPfr   = {k: OptModel.vFlowElec    [k]() for k in mTEPES.psnlaa}
     pQfr   = {k: OptModel.vFlowReactFrw[k]() for k in mTEPES.psnlaa}
     pQbck  = {k: OptModel.vFlowReactBck[k]() for k in mTEPES.psnlaa}
@@ -164,7 +173,8 @@ def ACNetworkOperationResults(DirName, CaseName, OptModel, mTEPES):
     # Losses come straight from the two ends and need no loss factor. They are the same quantity vLineLosses carries, reported here per branch in MW
     # rather than as the half-loss the DC reports use.
     _pivot_branch(sBranch, [(pPfr[k] + pPbck[k]) * 1e3        for k in sBranch], 'MW',   _path, CaseName, 'NetworkLossesAC')
-    _pivot_branch(sBranch, [math.sqrt(max(pCurr[k], 0.0))      for k in sBranch], 'p.u.', _path, CaseName, 'NetworkCurrent')
+    if pCurr is not None:                                  # branch flow carries |I|^2 directly; bus injection does not
+        _pivot_branch(sBranch, [math.sqrt(max(pCurr[k], 0.0)) for k in sBranch], 'p.u.', _path, CaseName, 'NetworkCurrent')
 
     # Apparent-power loading against the branch rating. This is the number the DC network map cannot produce, because under DC the binding limit is on
     # active power alone.

@@ -16,10 +16,12 @@ from   pyomo.environ import Set, Param, Var, Binary, NonNegativeReals, NonNegati
 # fall back to an absolute package import in that case.
 try:
     from .openTEPES_SettingUpVariablesAC          import SettingUpVariablesAC
+    from .openTEPES_ModelFormulationBIM           import SettingUpVariablesBIM
 except ImportError:
     import os, sys
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     from openTEPES.openTEPES_SettingUpVariablesAC import SettingUpVariablesAC
+    from openTEPES.openTEPES_ModelFormulationBIM  import SettingUpVariablesBIM
 
 
 # @profile
@@ -1180,6 +1182,7 @@ def SettingUpVariables(OptModel, mTEPES):
     # AC optimal power flow variables. Kept in their own module rather than inline: this function is already 1,200 lines, and the AC block is
     # self-contained. A no-op when IndACPowerFlow is 0.
     nFixedVariables += SettingUpVariablesAC(OptModel, mTEPES)
+    nFixedVariables += SettingUpVariablesBIM(OptModel, mTEPES)
 
     mTEPES.nFixedVariables    = Param(initialize=round(nFixedVariables), within=NonNegativeIntegers, doc='Number of fixed variables')
 
