@@ -54,7 +54,7 @@ import math
 import time
 from collections import defaultdict
 
-from pyomo.environ import Constraint, NonNegativeReals, RangeSet, Var
+from pyomo.environ import Constraint, NonNegativeReals, Objective, RangeSet, SolverFactory, Var, sin, sqrt
 
 # Segments in the piecewise linearisation of each square term. Ten is where the loss error stops improving materially on the bundled cases while the
 # model is still an order of magnitude smaller than at twenty-five: 0.42 MW at L=4, 0.08 at L=10, 0.01 at L=25.
@@ -280,9 +280,16 @@ def NetworkACOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, 
     def eAngleEnvM(OptModel, n, ni, nf, cc):
         if not _live((ni,nf,cc)):
             return Constraint.Skip
+        # MINUS, not plus. From S_ij = V_i' conj((V_i' - V_j) y) with y = (r - jx)/z^2:
+        #     P = [(v_i^2 - v_i v_j cos th) r + (v_i v_j sin th) x] / z^2
+        #     Q = [(v_i^2 - v_i v_j cos th) x - (v_i v_j sin th) r] / z^2
+        # so x P - r Q = (v_i v_j sin th)(x^2 + r^2)/z^2 = v_i v_j sin th, and the r Q term enters with a minus.
+        # This was written as a plus and the error was invisible to every self-consistency check, because the envelope, the band and the relaxation
+        # gap all measure the model against its own definition. It showed up only against the pi-model computed from the same voltages and angles:
+        # 38 MW of branch flow error with the plus, 0.00001 MW with the minus.
         return (OptModel.vMPos[p,sc,n,ni,nf,cc] - OptModel.vMNeg[p,sc,n,ni,nf,cc]
                 == (mTEPES.pLineX[ni,nf,cc] * OptModel.vFlowElec    [p,sc,n,ni,nf,cc]
-                  + mTEPES.pLineR[ni,nf,cc] * OptModel.vFlowReactFrw[p,sc,n,ni,nf,cc]) / pSBase)
+                  - mTEPES.pLineR[ni,nf,cc] * OptModel.vFlowReactFrw[p,sc,n,ni,nf,cc]) / pSBase)
     setattr(OptModel, f'eAngleEnvM_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.laa, rule=eAngleEnvM, doc='signed parts of the envelope numerator [p.u.]'))
 
     # vMPos and vMNeg are only tied to their DIFFERENCE above, and adding the same amount to both relaxes BOTH envelope inequalities, because the two
@@ -298,8 +305,13 @@ def NetworkACOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, 
 
     # Both sides carry the same release, so a branch out of service imposes no angle relation on the two buses it would have joined. Releasing only
     # one side leaves the other binding on an unbuilt candidate, which is a quiet way to force a build.
+    # vTheta is bounded at +/- pi/2, so the difference spans [-pi, pi] and a release of pi alone is not always enough: for a branch whose limits sit
+    # on ONE side, say +5 to +30 degrees, eAngleBandLo would still read theta_ij >= 0.087 - pi, which is tighter than the variable range and so keeps
+    # coupling two buses joined only by an unbuilt candidate. Adding the branch's own widest limit clears it in every case.
+    pBandM = {la: math.pi + max(abs(mTEPES.pMaxAngleDiff[la]), abs(mTEPES.pMinAngleDiff[la])) for la in mTEPES.laa}
+
     def _pRelease(n, la):
-        return math.pi * (1 - OptModel.vLineCommit[(p,sc,n)+la])
+        return pBandM[la] * (1 - OptModel.vLineCommit[(p,sc,n)+la])
 
     def eAngleEnvUp(OptModel, n, ni, nf, cc):
         if not _live((ni,nf,cc)):
@@ -352,6 +364,19 @@ def NetworkACOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, 
 
     def _pHasOutput(gq):
         return gq not in pCondenser and gq in mTEPES.g and (p, gq) in mTEPES.pg
+
+    # A unit derated to nothing (EFOR = 1.0) has a non-zero NAMEPLATE rating, so it is not a reactive-only device and not in sq; and it has zero
+    # available power, so it is not in g either. It therefore escapes both the capability constraints below and the condenser gate, and would deliver
+    # its full rated Mvar at every load level for free. It cannot run, so it supplies nothing.
+    pIdleReactive = [gq for gq in mTEPES.gq if gq not in pCondenser and gq not in mTEPES.g]
+
+    def eReactiveIdle(OptModel, n, gq):
+        if (p,gq) not in mTEPES.pgq:
+            return Constraint.Skip
+        return OptModel.vReactiveTotalOutput[p,sc,n,gq] == 0.0
+    if pIdleReactive:
+        setattr(OptModel, f'eReactiveIdle_{p}_{sc}_{st}',
+                Constraint(mTEPES.n*pIdleReactive, rule=eReactiveIdle, doc='a unit with no available power supplies no reactive power [Gvar]'))
 
     def eReactiveCapabilityUp(OptModel, n, gq):
         if (p,gq) not in mTEPES.pgq or not _pHasOutput(gq):
@@ -451,6 +476,14 @@ def NetworkACCurrentModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st
         return
 
     pModelType = mTEPES.pIndACModelType()
+
+    # Record which blocks carry a relaxed current definition. ACRestorationPass needs this and cannot recover it by pulling constraint names apart,
+    # because a period label is free-form and may itself contain an underscore.
+    if not hasattr(mTEPES, 'pACCurrentBlocks'):
+        mTEPES.pACCurrentBlocks = []
+    if (p, sc, st) not in mTEPES.pACCurrentBlocks:
+        mTEPES.pACCurrentBlocks.append((p, sc, st))
+
     print(f'AC current definition   ({["SOCP", "piecewise linear", "exact NLP"][pModelType]}) ****')
     StartTime = time.time()
     pSBase = mTEPES.pSBase
@@ -528,3 +561,172 @@ def NetworkACCurrentModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st
         setattr(OptModel, f'eCurrentExact_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.laa, rule=eCurrentExact, doc='exact branch current definition'))
 
     print('Generating AC current definition       ... ', round(time.time() - StartTime), 's')
+
+
+# Decisions held at their relaxed values through the restoration: the point of the pass is to recover the physical operating point behind a plan, not
+# to let the plan move. Continuous operation — output, flows, voltages — stays free, because it has to absorb the true losses.
+#
+# The names are checked against the model at run time and a miss is reported. An earlier version listed 'vMaxCommitment', which is not a variable in
+# this codebase at all (the real ones are vMaxCommitmentYearly, vMaxCommitmentConsYearly and vMaxCommitmentHourly), and getattr simply returned None,
+# so the entry did nothing and said nothing. A stale name here means the plan quietly moves and the pass silently becomes a re-optimisation.
+RESTORE_FIXED = ('vCommitment', 'vCommitmentCons', 'vStartUp', 'vShutDown',
+                 'vStableState', 'vRampUpState', 'vRampDwState',
+                 'vMaxCommitmentYearly', 'vMaxCommitmentConsYearly', 'vMaxCommitmentHourly',
+                 'vLineCommit', 'vLineOnState', 'vLineOffState',
+                 'vGenerationInvest', 'vGenerationRetire', 'vNetworkInvest', 'vReservoirInvest',
+                 'vShuntInvest', 'vSynchInvest', 'vH2PipeInvest', 'vHeatPipeInvest')
+
+
+def ACRestorationPass(OptModel, mTEPES, SolverName='ipopt', pIndLogConsole=0):
+    """Re-solve a relaxed AC solution at the exact current equality, with the discrete decisions held fixed.
+
+    The cone and the staircase both leave ``vCurr`` free above the value the flows imply. Where the cone is tight that costs nothing — measured on
+    9n_AC the relaxed and exact optima agree to four decimal places. Where it is loose it costs a great deal: on a 24 hour RTS-GMLC window the
+    relaxed total was 15.37 MEUR against 18.01 MEUR exact, so the relaxation understated the true cost by 14.7%.
+
+    This pass keeps the plan and corrects the physics. Commitment, switching and every investment stay where the relaxed solve put them; the current
+    definition becomes the equality; the network re-solves on a non-linear solver. The result is an operating point that satisfies the AC equations,
+    and the difference between the two objectives is what the relaxation was hiding.
+
+    Returns a dict of before/after figures, or None when there is nothing to do.
+    """
+    if not mTEPES.pIndACPowerFlow():
+        return None
+    if mTEPES.pIndACModelType() == 2:
+        print('AC restoration                         ...  skipped, the model already uses the exact current definition')
+        return None
+
+    pBlocks = getattr(mTEPES, 'pACCurrentBlocks', [])
+    if not pBlocks:
+        print('### WARNING: AC restoration found no current-definition blocks to restore; nothing was done.')
+        return None
+
+    StartTime = time.time()
+    pSBase    = mTEPES.pSBase
+    pBefore   = OptModel.vTotalSCost()
+
+    # The stage loop deactivates each block's constraints once it has moved past them, so the whole model has to be live again before re-solving.
+    # Only the blocks recorded above are touched: constraints deactivated for other reasons are left alone.
+    nWoken = 0
+    for p, sc, st in pBlocks:
+        pSuffix = f'_{p}_{sc}_{st}'
+        for c in OptModel.component_objects(Constraint):
+            if c.name.endswith(pSuffix) and not c.active:
+                c.activate()
+                nWoken += 1
+
+    # Hold the plan, in two passes.
+    #
+    # First by DOMAIN: ipopt cannot accept a discrete variable at all, so every binary or integer column is fixed whatever it is called. This is the
+    # backstop that makes the pass safe against a variable being added or renamed later.
+    nFixed = 0
+    for vVar in OptModel.component_objects(Var, active=True):
+        for idx in vVar:
+            vData = vVar[idx]
+            if vData.fixed or vData.value is None:
+                continue
+            if vData.is_binary() or vData.is_integer():
+                vData.fix(vData.value)
+                nFixed += 1
+
+    # Then by NAME, for the decisions that must not move even when they have been relaxed to a continuous range: a relaxed commitment or investment
+    # variable is not discrete, so the sweep above leaves it free, and the pass would re-optimise the plan instead of restoring it.
+    pMissing = []
+    for pName in RESTORE_FIXED:
+        vVar = getattr(OptModel, pName, None)
+        if vVar is None:
+            pMissing.append(pName)
+            continue
+        for idx in vVar:
+            if vVar[idx].value is not None and not vVar[idx].fixed:
+                vVar[idx].fix(vVar[idx].value)
+                nFixed += 1
+    if pMissing:
+        print(f'### WARNING: AC restoration expected to hold {pMissing} but no such variables exist on this model. If they were renamed, the plan is '
+              f'free to move and this pass is re-optimising rather than restoring.')
+
+    # Swap the relaxation for the equality, on the relaxed constraint's OWN index set so the two cover exactly the same branches and load levels.
+    nRows = 0
+    for p, sc, st in pBlocks:
+        pRelaxed = None
+        for pStem in ('eCurrentSOC', 'eCurrentPWL'):
+            c = getattr(OptModel, f'{pStem}_{p}_{sc}_{st}', None)
+            if c is not None:
+                pRelaxed = c
+        if pRelaxed is None:
+            continue
+        # the staircase carries its own segment machinery, which has to go with it
+        for pStem in ('eCurrentSOC', 'eCurrentPWL', 'eSegSumP', 'eSegSumQ'):
+            c = getattr(OptModel, f'{pStem}_{p}_{sc}_{st}', None)
+            if c is not None:
+                c.deactivate()
+
+        pKeys = list(pRelaxed.keys())
+
+        # The angle envelope has to go too, and this is the half that matters most.
+        #
+        # vTheta is a node potential, so the sum of (theta_i - theta_j) around any cycle is identically zero and a "cycle constraint" on it would say
+        # nothing. What is loose is the tie between the angles and the FLOWS: the envelope only brackets it. Recovering each branch's angle from its
+        # own flows and summing around the cycles of 9n_AC gave a mismatch of 0.634 degrees, which means no set of bus angles reproduces those flows —
+        # the solution was not an AC operating point at all, however tight the cone was. Imposing the relation exactly closes the loops by
+        # construction, because the angles are node potentials and now genuinely carry the flows.
+        for pStem in ('eAngleEnvUp', 'eAngleEnvLo', 'eAngleEnvM', 'eAngleEnvMSum'):
+            c = getattr(OptModel, f'{pStem}_{p}_{sc}_{st}', None)
+            if c is not None:
+                c.deactivate()
+
+        def eAngleRestored(OptModel, n, ni, nf, cc, p=p, sc=sc):
+            # |Vi/tau| |Vj| sin(theta_i - theta_j) = (x P + r Q) / S, the exact series relation. vW is bounded below by a positive number, so the
+            # square roots are safe. eAngleBandUp/Lo stay active: they are valid bounds on the angle and they help the solver.
+            return (sqrt(OptModel.vW[p,sc,n,ni] * _tap2(mTEPES, (ni,nf,cc))) * sqrt(OptModel.vW[p,sc,n,nf])
+                    * sin(OptModel.vTheta[p,sc,n,ni] - OptModel.vTheta[p,sc,n,nf])
+                    == (mTEPES.pLineX[ni,nf,cc] * OptModel.vFlowElec    [p,sc,n,ni,nf,cc]
+                      - mTEPES.pLineR[ni,nf,cc] * OptModel.vFlowReactFrw[p,sc,n,ni,nf,cc]) / pSBase)
+        setattr(OptModel, f'eAngleRestored_{p}_{sc}_{st}',
+                Constraint(pKeys, rule=eAngleRestored, doc='exact angle-to-flow relation, restoration pass'))
+
+        def eCurrentRestored(OptModel, n, ni, nf, cc, p=p, sc=sc):
+            return (OptModel.vFlowElec[p,sc,n,ni,nf,cc] ** 2 + OptModel.vFlowReactFrw[p,sc,n,ni,nf,cc] ** 2
+                    == OptModel.vW[p,sc,n,ni] * _tap2(mTEPES, (ni,nf,cc)) * OptModel.vCurr[p,sc,n,ni,nf,cc] * pSBase ** 2)
+        setattr(OptModel, f'eCurrentRestored_{p}_{sc}_{st}',
+                Constraint(pKeys, rule=eCurrentRestored, doc='exact branch current, restoration pass'))
+        nRows += len(pKeys)
+
+    if not nRows:
+        print('### WARNING: AC restoration found no relaxed current constraints to replace; nothing was done.')
+        return None
+
+    # Exactly one objective may be active for the solve.
+    pObjectives = [o for o in OptModel.component_objects(Objective) if o.active]
+    if len(pObjectives) != 1:
+        for o in pObjectives:
+            o.deactivate()
+        OptModel.eTotalSCost.activate()
+
+    print(f'AC restoration                         ...  {nRows} branch-hours at the exact equality, {nFixed} decisions held, '
+          f'{nWoken} constraints reactivated')
+
+    Solver  = SolverFactory(SolverName)
+    Results = Solver.solve(OptModel, tee=bool(pIndLogConsole))
+    pStatus = str(Results.solver.termination_condition)
+
+    if pStatus not in ('optimal', 'locallyOptimal', 'feasible'):
+        print(f'### WARNING: the AC restoration did not converge ({pStatus}). The relaxed solution is unchanged in the results, and it is a LOWER '
+              f'bound on the true cost, not the true cost.')
+        return {'status': pStatus, 'before': pBefore, 'after': None, 'seconds': time.time() - StartTime}
+
+    pAfter = OptModel.vTotalSCost()
+    pGap   = 100.0 * (pAfter - pBefore) / abs(pAfter) if pAfter else 0.0
+
+    # The duals in mTEPES.pDuals belong to the relaxed solve and describe a solution that no longer exists. Reporting them beside the restored primal
+    # values would publish locational prices from one operating point and voltages, flows and costs from another, differing by exactly the amount this
+    # pass just moved. Clearing them makes the marginal writers skip: OutputResultsEconomic guards on pHasDuals and ACMarginalResults on key presence,
+    # so an absent price is reported as absent rather than as a wrong number.
+    if getattr(mTEPES, 'pDuals', None):
+        mTEPES.pDuals = {}
+        print('AC restoration                         ...  marginal prices dropped: the duals were the relaxed solve\'s and do not describe the '
+              'restored operating point. Re-run with IndACRestore = 0 if you need them.')
+    print(f'AC restoration                         ...  {pStatus}, total cost {pBefore:.4f} -> {pAfter:.4f} MEUR '
+          f'({pGap:+.2f}% the relaxation was understating), {round(time.time() - StartTime)} s')
+    return {'status': pStatus, 'before': pBefore, 'after': pAfter, 'gap_percent': pGap, 'rows': nRows,
+            'fixed': nFixed, 'seconds': time.time() - StartTime}

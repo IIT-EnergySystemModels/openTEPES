@@ -422,57 +422,183 @@ the same sweep should be run before anyone quotes RTS-GMLC marginal prices.
 
 # 12. What AC costs against DC, measured on the same week
 
-Section 11 left the CPU question open on a real network. Two cases were built to close it: `RTS-GMLC_Oper` and
-`RTS-GMLC_AC_Oper`, the same 168 hours (the week containing the annual peak, 23-30 August, peak 10,212 MW) over the
-same 73 buses and 120 branches, one under the DC network model and one under AC.
+*Re-measured after the angle-relation sign fix of section 16. Sizes are unchanged by that fix; the costs and the
+tightness were taken again.*
 
-Note first that `RTS-GMLC_AC` carries **no candidates of any kind** — no generation, no network, no shunts. It is
-already an operation-only case. What makes the full-year build 27.5 million rows is the 8,736 hour horizon, nothing
-else. An earlier reading of this as an investment-loop problem was simply wrong.
+`RTS-GMLC_Oper` and `RTS-GMLC_AC_Oper` are the same 168 hours (the week containing the annual peak, 23-30 August, peak
+10,212 MW) over the same 73 buses and 120 branches, one under the DC network model and one under AC.
+
+`RTS-GMLC_AC` carries **no candidates of any kind**. It is already an operation-only case, and what makes the full-year
+build 27.5 million rows is the 8,736 hour horizon, nothing else.
 
 ## 12.1 Size and time
 
-|                | rows    | columns | nonzeros  | wall  |
-|----------------|--------:|--------:|----------:|------:|
-| DC             |  98,343 | 123,227 |   423,978 |   8.9 s |
-| AC (SOCP)      | 528,423 | 770,531 | 2,424,390 | 103.7 s |
-| **AC / DC**    |  **5.4x** | **6.3x** | **5.7x** | **11.7x** |
+|             | rows    | columns | wall    |
+|-------------|--------:|--------:|--------:|
+| DC          |  98,343 | 123,227 |   9.7 s |
+| AC (SOCP)   | 528,423 | 770,531 |  97.5 s |
+| **AC / DC** | **5.4x** | **6.3x** | **10.1x** |
 
 The AC formulation writes 18 constraints per branch per hour where the DC one writes 7, and adds six variables per
-branch plus two per bus, so a factor of five to six on size is structural rather than a defect. Time grows faster than
-size, as expected for an interior point method on a larger and denser problem.
+branch plus two per bus, so a factor of five to six on size is structural. Time grows faster than size, as expected for
+an interior point method on a larger and denser problem.
 
-For scale, the full-year AC case is 27.5 million rows and 40 million columns, and a barrier solve had not finished
-after nine hours. The matrix range is 1e-05 to 3e+02, so the model is well conditioned; the cost is size.
+The full-year AC case is 27.5 million rows and 40 million columns. Gurobi worked on it for 36,125 seconds, reached a
+barrier gap of 5e-09, and terminated with status `aborted`; it does not complete on this machine. The matrix range is
+1e-05 to 3e+02, so the model is well conditioned and the cost is size, not numerics.
 
 ## 12.2 The relaxation is not tight on this network
 
-More important than the timing:
+    ### WARNING: the AC relaxation is not tight on 21 of 120 branches (worst 0.901 of Smax^2)
 
-    ### WARNING: the AC relaxation is not tight on 21 of 120 branches (worst 0.927 of Smax^2)
+Twenty-one of 120 branches, worst gap 0.901 of `Smax^2`. Before the sign fix this read 21 of 120 at 0.927, so **the
+loose cone on RTS is real and was not an artefact of the sign error**. On 9n_AC the cone is tight on all twelve
+branches. The nine-bus case was never going to reveal this.
 
-| branch | worst gap [p.u. of Smax^2] |
-|--------|---------------------------:|
-| Node_102 - Node_106 | 0.927 |
-| Node_202 - Node_206 | 0.820 |
-| Node_302 - Node_306 | 0.703 |
-| Node_101 - Node_103 | 0.108 |
-| Node_303 - Node_309 | 0.100 |
+# 13. The exact model, and where it can and cannot be solved
 
-On 9n_AC the cone is tight on all twelve branches to 1e-07. On RTS-GMLC it is loose on 21 of 120, and on three of them
-the slack is most of the branch rating. **The reported current, loss and loading on those branches are not supported by
-the flows**, so they should not be read as physical.
+ipopt 3.14.19, `IndACModelType = 2`.
 
-The three worst are the same branch position in each of the three RTS areas, which points at the network structure
-rather than at a data error in one place.
+| case | model | solver | cone gap | wall | total cost |
+|------|-------|--------|---------:|-----:|-----------:|
+| 9n, 24 h  | SOCP  | gurobi | 3.61e-05 |   1.6 s | 0.5462323 MEUR |
+| 9n, 24 h  | exact | ipopt  | 2.94e-16 |   2.2 s | 0.5462331 MEUR |
+| RTS, 24 h | SOCP  | gurobi | **1.110, loose on 9 of 120** |   5.9 s | 15.3720 MEUR |
+| RTS, 24 h | exact | ipopt  | — | 729.9 s | **infeasible** |
 
-This is what the diagnostic exists for, and it is the argument for keeping it in the minimal output set: a user who
-looked only at the voltages and currents would have no way to know that a sixth of the branches carry numbers that do
-not mean what they appear to. It also tempers section 11 — the current penalty closes the gap on a nine-bus network and
-does not close it here.
+Where the cone is tight the relaxed answer *is* the AC answer: 9n_AC agrees to seven significant figures, a difference
+of 0.00014 %.
 
-## 12.3 What has not been done
+**On RTS the exact model no longer solves from a cold start.** ipopt ran for 730 seconds and stopped at "problem
+infeasible". With the wrong sign it converged to 18.0088 MEUR, and that figure appeared in an earlier version of this
+section as the true optimum. It was produced by a model with the wrong angle relation and has been withdrawn; there is
+currently **no measured exact optimum for RTS**.
 
-Phase 7, the restoration pass that would solve an exact AC power flow on the relaxed solution and report the true
-values, is the answer to a loose cone and it has not been built. It needs ipopt. Until it exists, an AC run on a meshed
-network should be read together with `oT_Result_ACRelaxationGapSummary`, branch by branch.
+Two readings are open and they have not been separated: the corrected feasible set may simply be harder for a cold
+interior-point start, or ipopt may be reaching local infeasibility on a non-convex problem and need a starting point.
+The restoration pass in section 14 converges on the same case from the relaxed solution, which favours the second.
+
+# 14. The restoration pass
+
+`ACRestorationPass`, switched on with `IndACRestore = 1`. After the ordinary solve it holds the plan — commitment,
+switching and every investment stay where the relaxed solve put them — swaps the relaxed current definition for the
+exact equality and the angle envelope for the exact angle relation, and re-solves the network on ipopt.
+
+On the 24 hour RTS-GMLC window, where the cone is loose on 9 of 120 branches:
+
+| what | total cost |
+|------|-----------:|
+| SOCP, as reported                    | 15.3720 MEUR |
+| **the same plan with exact physics** | **24.1073 MEUR** |
+
+**The SOCP reported 15.37 MEUR for a schedule that actually costs 24.11 — it understated its own plan by 57 %.**
+Before the sign fix this gap was 32 %; with the correct physics it is larger, not smaller.
+
+After the pass the relaxation gap is 3.04e-16 across all 120 branches, so the reported currents, losses and voltages
+are the ones the AC equations give. It cost 197.9 s against 5.9 s for the relaxed solve alone.
+
+What cannot be said any more is how far that plan is from the best achievable, because the free exact optimum for RTS
+is not available (section 13). The earlier claim that the relaxed plan was 12.9 % worse than the exact optimum rested
+on the withdrawn 18.0088 figure and does not stand.
+
+That the restoration converges where the cold exact solve does not is itself the practical argument for it: starting
+from the relaxed solution is what makes the non-convex problem tractable at this size.
+
+# 15. Validation against pandapower: the solutions are not AC-realisable on a meshed network
+
+Every check up to here was openTEPES against itself. The relaxation gap says the cone is closed; it does not say the
+equations behind it are the right equations, and it cannot say whether the answer is a physical operating point.
+
+## 15.1 The angles are not AC angles
+
+Feeding the solved bus voltages and angles into pandapower's `makeYbus` and computing `S = V conj(Ybus V)` gives
+mismatches of **217 MW and 296 Mvar**. That is not a coding error in the model: the branch flow formulation determines
+`|V|`, `P`, `Q` and the current, while the angle is tied to the flows only through a polyhedral ENVELOPE, which has
+slack. Measured on 9n_AC the relation `|Vi||Vj| sin(theta_ij) = (xP + rQ)/S` is off by up to `3.8e-03` p.u., and since
+`dP/dtheta` is about `V^2/X ~ 10` p.u. per radian, a few milliradians becomes a few hundred MW.
+
+**`oT_Result_NetworkVoltageAngle` is therefore not the AC angle and must not be read as one.**
+
+## 15.2 The deeper problem: the loops do not close
+
+The angle across a branch follows exactly from its own flows, `sin(theta_ij) = (xP + rQ)/(|Vi||Vj|)`. Recovering it per
+branch and summing around each independent cycle of the 9-bus network gives:
+
+| load level | worst loop mismatch |
+|------------|--------------------:|
+| 01-01 01:00 | 1.102e-02 rad = 0.632 deg |
+| 01-01 03:00 | 1.106e-02 rad = 0.634 deg |
+| 01-01 05:00 | 1.107e-02 rad = 0.634 deg |
+
+A cycle that does not close means **no assignment of bus angles reproduces these flows**. The solution satisfies every
+branch flow equation, has a cone tight to 1e-16 after the restoration pass, and is still not a physical AC operating
+point.
+
+Independently: rebuilding the network in pandapower from the same r, x, b data, injecting the setpoints openTEPES
+chose, and running Newton-Raphson gives bus voltages that differ from openTEPES's by up to **0.0130 p.u.** — thirteen
+per cent of the 0.95 to 1.05 band.
+
+## 15.3 What this means, and what it does not
+
+It does **not** mean the formulation is wrong as a relaxation. The objective remains a valid lower bound, and on a
+RADIAL network the angles can always be recovered by walking the tree, so the question does not arise. Distribution
+feeders, which is what the branch flow model was built for, are radial.
+
+It does mean that on a MESHED network — every transmission case here, 9n_AC included — the reported voltages, angles
+and flows are not an operating point the system could actually take up.
+
+The missing ingredient is the loop condition: the recovered angles must sum to zero around every independent cycle.
+That is exactly the subject of the cycle-based AC OPF paper this design took its bearings from. The cycle basis was
+computed in an early version of `ConfigureACData` and removed during review as dead code, which it was — the
+constraints that would have used it were never written. Removing the unused computation was right; the gap it left
+visible is that the constraints themselves are missing.
+
+## 15.4 Status
+
+`RTS-GMLC_AC`, `RTS-GMLC_AC_Oper` and `9n_AC` are all meshed. Until the loop constraints exist, an AC run from this
+branch should be read as: a valid lower bound on cost, correct branch loadings in the relaxed sense, and voltages and
+angles that are indicative rather than physical.
+
+# 16. The angle relation had the wrong sign
+
+Section 15 found that the solutions were not AC-realisable and pointed at a missing loop condition. That was the
+symptom. The cause was simpler and worse: `eAngleEnvM` computed the envelope numerator as `x*P + r*Q`. It is a minus.
+
+From `S_ij = V_i' conj((V_i' - V_j) y)` with `y = (r - jx)/z^2`:
+
+    P = [(v_i^2 - v_i v_j cos th) r + (v_i v_j sin th) x] / z^2
+    Q = [(v_i^2 - v_i v_j cos th) x - (v_i v_j sin th) r] / z^2
+
+so `x P - r Q = (v_i v_j sin th)(x^2 + r^2)/z^2 = v_i v_j sin th`.
+
+## 16.1 How it was found, and why nothing found it sooner
+
+Comparing openTEPES's own branch flows against the textbook pi-model computed from openTEPES's own voltages and angles:
+
+| | with `x P + r Q` | with `x P - r Q` |
+|---|---:|---:|
+| worst branch flow error | **38 MW / 3.3 Mvar** | **0.00001 MW / 0.00006 Mvar** |
+| worst loop closure over 4 cycles | 0.634 deg | **6.1e-18 rad** |
+
+Ten code reviews did not find it, and neither did the relaxation gap, the angle band, the envelope or the restoration
+pass. Every one of those measures the model against **its own definition** of the relation. The error was only visible
+against an equation derived independently. A self-consistency check cannot detect a consistently wrong premise.
+
+The bad sign was also repeated in the module docstrings of `openTEPES_BoundTightening` and
+`openTEPES_SettingUpVariablesAC`, so the comments agreed with the code and confirmed it to a reader.
+
+## 16.2 What it changed
+
+Fixed in `eAngleEnvM`, in the restoration's exact angle relation, and in the comments. Sections 12 to 14 were measured
+again on the corrected model. The direction of every conclusion held; the magnitudes moved:
+
+  * The loose cone on RTS is real: 21 of 120 branches before and after.
+  * The relaxed plan understates its own cost by **57 %**, not 32 %.
+  * The exact model no longer solves on RTS from a cold start, so there is no measured true optimum for that case.
+
+## 16.3 What is still open
+
+The pandapower Newton-Raphson comparison still shows bus voltages 0.0130 p.u. apart, unchanged by the sign fix. Since
+the pi-model check now agrees to 1e-5 MW, the branch equations are right and the remaining gap is in how that
+validation script assembles the network — `create_impedance` is a two-port element, not a plain series impedance. It
+has not been resolved, and until it is, the Newton-Raphson figure should not be quoted either way.

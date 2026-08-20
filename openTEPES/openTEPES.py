@@ -20,6 +20,7 @@ try:
     from          .openTEPES_ModelFormulationObjective  import TotalObjectiveFunction
     from          .openTEPES_ModelFormulationInvestment import InvestmentElecModelFormulation, InvestmentHydroModelFormulation, InvestmentH2ModelFormulation, InvestmentHeatModelFormulation
     from          .openTEPES_ProblemSolvingStageIter    import StageIterativeSolving
+    from          .openTEPES_ModelFormulationAC        import ACRestorationPass
     from          .openTEPES_OutputResultsRawDump       import OutputResultsParVarCon
     from          .openTEPES_OutputResultsInvestment    import InvestmentResults
     from          .openTEPES_OutputResultsGeneration    import GenerationOperationResults, GenerationOperationHeatResults
@@ -41,6 +42,7 @@ except ImportError:
     from openTEPES.openTEPES_ModelFormulationObjective  import TotalObjectiveFunction
     from openTEPES.openTEPES_ModelFormulationInvestment import InvestmentElecModelFormulation, InvestmentHydroModelFormulation, InvestmentH2ModelFormulation, InvestmentHeatModelFormulation
     from openTEPES.openTEPES_ProblemSolvingStageIter    import StageIterativeSolving
+    from openTEPES.openTEPES_ModelFormulationAC        import ACRestorationPass
     from openTEPES.openTEPES_OutputResultsRawDump       import OutputResultsParVarCon
     from openTEPES.openTEPES_OutputResultsInvestment    import InvestmentResults
     from openTEPES.openTEPES_OutputResultsGeneration    import GenerationOperationResults, GenerationOperationHeatResults
@@ -286,6 +288,12 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     # iterative formulation and solve for every stage of the year. The per-stage operation model and the two solve paths (deterministic per scenario,
     # or one joint stochastic solve) live in openTEPES_ProblemSolvingStageIter; this is a pure extraction, so results are unchanged.
     StageIterativeSolving(mTEPES, DirName, CaseName, SolverName, pIndLogConsole, _path, pIndCycleFlow)
+
+    # The relaxed AC optimum is a LOWER bound on the true one, and how much lower depends entirely on whether the cone came out tight. This pass holds
+    # the plan the relaxed solve produced and re-solves the network at the exact equality, so the reported operating point satisfies the AC equations.
+    # It runs on ipopt regardless of the solver used above, because no mixed-integer solver takes the non-convex equality.
+    if mTEPES.pIndACPowerFlow() and mTEPES.pIndACRestore():
+        ACRestorationPass(mTEPES, mTEPES, 'ipopt', pIndLogConsole)
 
     # pickle the case study data with open(dump_folder+f'/oT_Case_{CaseName}.pkl','wb') as f:
     #     pickle.dump(mTEPES, f, pickle.HIGHEST_PROTOCOL)

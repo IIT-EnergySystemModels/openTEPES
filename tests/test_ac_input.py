@@ -673,3 +673,91 @@ def test_unbuilt_candidate_ac_line_carries_nothing_and_couples_nothing(tmp_path)
     assert abs(value(mTEPES.vCurr[p, sc, n0, la]))          < 1e-6, "an unbuilt line carries current"
     assert abs(value(mTEPES.vFlowElec[p, sc, n0, la]))      < 1e-4, "an unbuilt line carries active power"
     assert abs(value(mTEPES.vFlowReactFrw[p, sc, n0, la]))  < 1e-4, "an unbuilt line carries reactive power"
+
+
+# --------------------------------------------------------------------------------------------------------------------
+# The exact restoration pass
+# --------------------------------------------------------------------------------------------------------------------
+
+def _tiny_ac_case(tmp_path, name, hours=4, model_type=0, restore=1):
+    """A few hours of 9n_AC, with the annual RES target scaled to the horizon.
+
+    An annual energy target does not survive a truncated horizon: left at its full-year value it exceeds the demand of
+    the hours that remain and the case is infeasible before any AC question is reached.
+    """
+    dir_name, case = _clone(tmp_path, "9n_AC", name)
+    dur  = pd.read_csv(os.path.join(dir_name, case, f"oT_Data_Duration_{case}.csv"))
+    keep = set(dur.loc[: hours - 1, "LoadLevel"])
+    full = len(dur)
+    for f in os.listdir(os.path.join(dir_name, case)):
+        if not f.endswith(".csv"):
+            continue
+        path = os.path.join(dir_name, case, f)
+        df = pd.read_csv(path)
+        if "LoadLevel" in df.columns:
+            df[df["LoadLevel"].isin(keep)].to_csv(path, index=False)
+
+    res = os.path.join(dir_name, case, f"oT_Data_RESEnergy_{case}.csv")
+    df  = pd.read_csv(res)
+    df["RESEnergy"] = pd.to_numeric(df["RESEnergy"], errors="coerce").fillna(0.0) * hours / full
+    df.to_csv(res, index=False)
+
+    opt = os.path.join(dir_name, case, f"oT_Data_Option_{case}.csv")
+    df  = pd.read_csv(opt)
+    df.loc[:, "IndACModelType"] = model_type
+    df["IndACRestore"] = restore
+    df.to_csv(opt, index=False)
+    return dir_name, case
+
+
+def test_restoration_option_is_validated(tmp_path):
+    """A value that is not 0 or 1 must be refused, not silently treated as off.
+
+    The earlier version of this test only asserted the default was 0, which the validation branch is not needed to
+    satisfy — it would have passed just as happily with the check deleted."""
+    mTEPES, _, _ = _build(CASES_DIR, "9n_AC")
+    assert mTEPES.pIndACRestore() == 0, "the restoration pass must be off unless a case asks for it"
+
+    dir_name, case = _clone(tmp_path, "9n_AC", "9n_badrestore")
+    opt = os.path.join(dir_name, case, f"oT_Data_Option_{case}.csv")
+    df = pd.read_csv(opt)
+    df["IndACRestore"] = 2
+    df.to_csv(opt, index=False)
+    with pytest.raises(NotImplementedError, match="IndACRestore"):
+        _build(dir_name, case)
+
+
+def test_restoration_is_skipped_when_nothing_to_restore(tmp_path):
+    """Type 2 is already exact, so there is no relaxation to replace and the pass must decline rather than rebuild."""
+    from openTEPES.openTEPES_ModelFormulationAC import ACRestorationPass
+
+    mTEPES, _, _ = _build(CASES_DIR, "9n_AC")
+    mTEPES.pIndACModelType._data[None] = 2
+    assert ACRestorationPass(mTEPES, mTEPES, "ipopt", 0) is None
+
+    mTEPES.pIndACModelType._data[None] = 0
+    assert ACRestorationPass(mTEPES, mTEPES, "ipopt", 0) is None, "no recorded blocks means nothing to do"
+
+
+def test_restoration_makes_the_relaxation_exact(tmp_path):
+    """The whole point: after the pass the cone is closed and the cost is the cost of the plan, not below it.
+
+    On a case whose cone is already tight the restoration should barely move the objective. It must never move it DOWN:
+    the relaxed solve is a lower bound, so making the same plan physical can only cost the same or more.
+    """
+    from openTEPES.openTEPES import openTEPES_run
+
+    dir_name, case = _tiny_ac_case(tmp_path, "9n_restore")
+    mTEPES = openTEPES_run(str(dir_name), case, "gurobi", 0, 0)
+
+    pSBase = mTEPES.pSBase
+    pWorst = 0.0
+    for k in mTEPES.psnlaa:
+        p, sc, n, ni, nf, cc = k
+        pNorm = max(mTEPES.pLineSmax[ni, nf, cc] ** 2, 1e-12)
+        pGap = (mTEPES.vW[p, sc, n, ni]() * mTEPES.pLineTapFactor[ni, nf, cc] ** 2
+                * mTEPES.vCurr[k]() * pSBase ** 2
+                - mTEPES.vFlowElec[k]() ** 2 - mTEPES.vFlowReactFrw[k]() ** 2) / pNorm
+        pWorst = max(pWorst, abs(pGap))
+
+    assert pWorst < 1e-6, f"the restored solution should satisfy the exact current equality, worst gap {pWorst:.2e}"

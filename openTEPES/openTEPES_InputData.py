@@ -231,12 +231,17 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     #                    1 = piecewise-linear branch flow, a MILP and therefore the only variant that scales to a full year
     #                    2 = exact NLP, for the Phase 7 validation pass with the binaries fixed
     # See doc/design/AC_OPF_Formulation_Choices.md for why these three and not the rest.
-    for key in ['pIndACPowerFlow', 'pIndACModelType']:
+    #   pIndACRestore    0 = report the relaxed solution as it stands (default)
+    #                    1 = after solving, hold the plan and re-solve the network at the exact current equality on a non-linear
+    #                        solver, so the reported operating point satisfies the AC equations. See ACRestorationPass.
+    for key in ['pIndACPowerFlow', 'pIndACModelType', 'pIndACRestore']:
         par.setdefault(key, 0)
     if par['pIndACPowerFlow'] not in (0, 1):
         raise NotImplementedError(f"IndACPowerFlow = {par['pIndACPowerFlow']} is not implemented; use 0 (DC) or 1 (bus-injection AC)")
     if par['pIndACModelType'] not in (0, 1, 2):
         raise NotImplementedError(f"IndACModelType = {par['pIndACModelType']} is not implemented; use 0 (SOCP), 1 (piecewise linear) or 2 (NLP)")
+    if par['pIndACRestore'] not in (0, 1):
+        raise NotImplementedError(f"IndACRestore = {par['pIndACRestore']} is not implemented; use 0 (off) or 1 (exact restoration pass)")
 
     # load parameters from dfParameter — single-row mixed scalars.
     for col in dfs['dfParameter'].columns:

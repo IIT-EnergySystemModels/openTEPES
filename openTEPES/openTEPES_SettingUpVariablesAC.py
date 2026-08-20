@@ -116,7 +116,7 @@ def SettingUpVariablesAC(OptModel, mTEPES):
     # valid for either sign. The split is not forced to be the minimal one; any split with vMPos - vMNeg = M is still a valid relaxation, only weaker.
     OptModel.vMPos = Var(mTEPES.psnlaa, within=NonNegativeReals, initialize=0.0, doc='positive part of the angle-envelope numerator [p.u.]')
     OptModel.vMNeg = Var(mTEPES.psnlaa, within=NonNegativeReals, initialize=0.0, doc='negative part of the angle-envelope numerator [p.u.]')
-    # |M| = |x*P + r*Q| <= z*|S| by Cauchy-Schwarz, with z = sqrt(r^2+x^2) and |S| reaching Smax*Vmax/Vmin. Using (x+r)*Smax instead is SMALLER than
+    # |M| = |x*P - r*Q| <= z*|S| by Cauchy-Schwarz, with z = sqrt(r^2+x^2) and |S| reaching Smax*Vmax/Vmin. Using (x+r)*Smax instead is SMALLER than
     # that whenever r << x, which is the normal case, and eAngleEnvM is an equality — so a box derived that way does not make the model conservative,
     # it makes it infeasible. A non-positive reactance would also flip the sign of the bound, so the magnitude is taken.
     for p, sc, n, ni, nf, cc in mTEPES.psnlaa:

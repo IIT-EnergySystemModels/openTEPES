@@ -13,8 +13,8 @@ number instead turns the relaxation into a restriction — at +/-30 degrees the 
 
 Two propagations, both derived from constraints already in the formulation.
 
-**Angle, from the thermal limit.** The branch flow model gives ``|V_i||V_j| sin(theta_i - theta_j) = x*P + r*Q``. The apparent power through the
-branch is limited, so by Cauchy-Schwarz ``|x*P + r*Q| <= Smax*sqrt(r^2+x^2) = Smax*z``. Dividing by the smallest the voltage product can be:
+**Angle, from the thermal limit.** The branch flow model gives ``|V_i||V_j| sin(theta_i - theta_j) = x*P - r*Q``. The apparent power through the
+branch is limited, so by Cauchy-Schwarz ``|x*P - r*Q| <= Smax*sqrt(r^2+x^2) = Smax*z`` (the bound is the same either way). Dividing by the smallest the voltage product can be:
 
     |sin(theta_ij)| <= Smax * z / (Vmin_i * Vmin_j)      =>      |theta_ij| <= arcsin(min(1, Smax*z/(Vmin_i*Vmin_j)))
 
@@ -92,7 +92,13 @@ def TightenACBounds(mTEPES, par, pIndLogConsole=0):
     # which can cut off the do-not-build plan.
     # mTEPES.lc (candidates) and mTEPES.ls (switchable) are already built by the time this runs and carry exactly this distinction. They are used in
     # preference to the par Series, whose index has been remapped by this point in DataConfiguration.
-    pReleasable = set(mTEPES.lc) | set(mTEPES.ls)
+    # A branch also drops out of the model in periods outside its own commissioning window: SettingUpVariables fixes its vLineCommit to 0 and
+    # eVoltageDropUp/Lo is skipped for it. pVMinBus and pVMaxBus are per bus and shared across every period, so a bound justified by a branch that
+    # exists only from period 2 would still be imposed in period 1. Propagate only across branches that are in service in EVERY period.
+    pFirst, pLast = mTEPES.p.first(), mTEPES.p.last()
+    pReleasable = set(mTEPES.lc) | set(mTEPES.ls) | {
+        la for la in branches
+        if par['pElecNetPeriodIni'][la] > pFirst or par['pElecNetPeriodFin'][la] < pLast}
     incident = defaultdict(list)
     for la in branches:
         if la in pReleasable:
