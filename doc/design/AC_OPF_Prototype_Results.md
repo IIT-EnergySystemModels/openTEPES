@@ -439,13 +439,36 @@ build 27.5 million rows is the 8,736 hour horizon, nothing else.
 | AC (SOCP)   | 528,423 | 770,531 |  97.5 s |
 | **AC / DC** | **5.4x** | **6.3x** | **10.1x** |
 
+## 12.1a How far the horizon goes, and what stops it
+
+| horizon | rows | columns | barrier factor | barrier | wall | cone loose |
+|---------|-----:|--------:|---------------:|--------:|-----:|-----------:|
+| 1 day, 24 h    |     54,855 |     46,707 |     — |      — |   5.9 s |  9 of 120 |
+| 1 week, 168 h  |    528,423 |    770,531 |     — |      — |  97.5 s | 21 of 120 |
+| 1 month, 720 h |  2,266,671 |  3,302,232 | **2.4 GB** | **86.0 s** | 622.4 s | 38 of 120 |
+| 1 year, 8736 h | 27,509,055 | 40,048,784 | **30.0 GB** | — | 10 h cap | — |
+
+Rows and factor memory both scale LINEARLY with the horizon: a month is 8.2% of a year's hours and 8.2% of its rows,
+2.4 GB against 30.0 GB. The constraint matrix is block-banded in time, so that is what should happen.
+
+**The full-year case is memory-bound, not hard.** Gurobi's own estimate for it is 4 seconds per barrier iteration; the
+observed iterations took 500 to 1,400 seconds, about 150x slower, because a 30 GB factor does not fit the 24 GB machine
+it ran on and the solve paged. It then hit openTEPES's 36,000 s limit at a barrier gap of 4.95e-09 — essentially
+converged — and Pyomo reported `aborted`, which is the time limit and not a numerical failure. An earlier version of
+this section read that as "it does not complete", which was wrong.
+
+The month is the largest horizon that fits in 24 GB, and its barrier takes 86 seconds. The remaining 536 s of its wall
+time is Pyomo building the model and writing results, not solving. On a machine with 40 GB or more the full year should
+solve well inside the existing 10 h cap.
+
+Note the last column: the share of branches where the cone is loose grows with the horizon, 9 of 120 over a day to 38
+of 120 over a month. More hours means more lightly loaded branch-hours, which is where the relaxation goes slack.
+
 The AC formulation writes 18 constraints per branch per hour where the DC one writes 7, and adds six variables per
 branch plus two per bus, so a factor of five to six on size is structural. Time grows faster than size, as expected for
 an interior point method on a larger and denser problem.
 
-The full-year AC case is 27.5 million rows and 40 million columns. Gurobi worked on it for 36,125 seconds, reached a
-barrier gap of 5e-09, and terminated with status `aborted`; it does not complete on this machine. The matrix range is
-1e-05 to 3e+02, so the model is well conditioned and the cost is size, not numerics.
+The matrix range is 1e-05 to 3e+02, so the model is well conditioned throughout; see 12.1a for what the horizon costs.
 
 ## 12.2 The relaxation is not tight on this network
 

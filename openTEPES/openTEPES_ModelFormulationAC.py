@@ -1,52 +1,19 @@
 """
 Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 19, 2026
 
-openTEPES.openTEPES_ModelFormulationAC — AC network constraints on the branch flow model.
+openTEPES.openTEPES_ModelFormulationAC — AC network constraints on the branch flow model. No-ops when ``IndACPowerFlow`` is 0.
 
-Two functions, both no-ops when ``IndACPowerFlow`` is 0 and both registered as rows of ``FORMULATION_REGISTRY``:
+Formulation: Chowdhury, Kamalasadan & Paudyal (IEEE TPWRS 39(1), 2024), embedded in expansion planning by Alvarez, Lopez, Olmos & Ramos
+(SEGAN 39:101413, 2024).
 
-  * ``NetworkACOperationModelFormulation`` — everything shared by all three AC formulations.
-  * ``NetworkACCurrentModelFormulation``   — the one equation that is not shared, ``vCurr = (P^2 + Q^2) / vW``.
+  * ``NetworkACOperationModelFormulation`` — voltage drop, active and reactive balance, angle envelope, thermal limit, shunts, reactive capability,
+    HVDC converters. ``eBalanceElec`` keeps its DC name and index: ten places read its dual back by string.
+  * ``NetworkACCurrentModelFormulation``   — ``vCurr = (P^2 + Q^2) / vW`` as a cone, a staircase or the exact equation (``IndACModelType``).
+  * ``ACRestorationPass``                  — re-solves the network at the exact current and angle equations on ipopt with the plan held fixed
+    (``IndACRestore``), so the reported operating point satisfies the AC equations.
 
-Formulation: the branch flow model of Chowdhury, Kamalasadan & Paudyal (IEEE TPWRS 39(1), 2024) as embedded in expansion planning by Alvarez, Lopez,
-Olmos & Ramos (SEGAN 39:101413, 2024). Constraint numbers below are theirs.
-
-  (9)      eVoltageDropUp/Lo   vW_j = vW_i - 2(r P + x Q)/S + (r^2+x^2) vCurr, released out of service
-  (11)     eBalanceElec        the AC branch of the existing active power balance — SAME NAME, see below
-  (12)     eBalanceReact       the reactive counterpart, with a slack so infeasibility is diagnosable
-  (16)(17) eAngleEnvUp/Lo      the convex envelope tying the angle difference to the branch flows
-  (6a-c)   eShuntQ*            reactive injection from a bus shunt device
-  (7)      eCurrentLimit       the thermal limit, gated on service
-  --       eFlowElecBck        the far end of the branch, from which the loss follows
-  --       eLineLossesAC       vLineLosses defined exactly, so every existing loss report stays correct
-
-Four things here are load-bearing, and each was got wrong once.
-
-**``eBalanceElec`` keeps its name and its ``(n, nd)`` index.** ``collect_duals`` stores every dual as ``str(name) + str(index)``, and ten places across
-``OutputResultsEconomic``, ``OutputResultsSummary`` and ``ProblemSolvingSectorDecomposition`` read the literal
-``f"eBalanceElec_{p}_{sc}_{st}('{n}', '{nd}')"`` back out for locational marginal prices, generator revenues and the sector-decomposition cut. The rule
-bound to the name differs under AC; the constraint's identity does not.
-
-**HVDC lines are in the active balance.** ``mTEPES.laa`` holds AC branches only, and the DC ``eBalanceElec`` is skipped under AC, so building the
-balance from ``laa`` alone drops every HVDC link out of the model — it can then carry nothing, so it is never worth building, silently. DC branches
-(``mTEPES.lad``) appear here exactly as they do in the DC balance: a controllable flow with the loss factor and no Kirchhoff voltage law.
-
-**The gate is ``vLineCommit``, not ``vNetworkInvest``.** ``vLineCommit`` is fixed to 1 for an existing non-switchable line, tied to ``vNetworkInvest``
-by ``eLineStateCand`` for a candidate, and free for a switchable one. Gating on it releases an unbuilt candidate AND a line switched out of service;
-gating on the investment variable releases only the first, and line switching then misbehaves silently, because ``eKirchhoff2ndLaw1/2`` — which
-carries that release in the DC model — is skipped under AC.
-
-**The angle-to-flow relation is ``|V_i||V_j| sin(theta_ij) = x P - r Q``**, with the sign explicit. Deriving it through the admittance matrix invites
-an error: the off-diagonal entry carries the opposite sign to the series admittance. Checked against an exact AC power flow — for a lossless branch it
-collapses to ``theta = x P``, matching DC. It holds for the SERIES flow, which is what this model carries; the line charging is lumped at the buses.
-The envelope divides that numerator by the voltage product, and the extreme of the quotient sits at the small end of the voltage band when the
-numerator is positive and the large end when it is negative, so one divisor cannot serve both signs — hence the split into ``vMPos`` / ``vMNeg``.
-With a single divisor the two bounds cross and the model is infeasible for any reverse flow.
-
-The cyclic constraint (15) is deliberately **not** built. Both papers impose it because they eliminate the angles and write the cycle sums on the
-flows; with ``vTheta`` explicit the sum round any closed cycle telescopes to zero identically. Measured on both bundled cases, the envelope and the
-cyclic equation together move the objective by exactly zero — doc/design/AC_OPF_Prototype_Results.md section 10. The envelope is kept because without
-it ``vTheta`` is unconstrained and the reported angles would be meaningless, not because it tightens anything.
+The angle relation is ``|V_i||V_j| sin(theta_ij) = x P - r Q``. MINUS; the derivation is at ``eAngleEnvM``. Written as a plus it costs 38 MW of branch
+flow error and no self-consistency check can see it — ``prototypes/ac_formulations/validate.py`` can.
 """
 from __future__ import annotations
 
@@ -193,16 +160,8 @@ def NetworkACOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, 
     if pIndLogConsole:
         print('eBalanceElec (AC)         ... ', len(getattr(OptModel, f'eBalanceElec_{p}_{sc}_{st}')), ' rows')
 
-    # The two halves of |P_dc|. Only their DIFFERENCE is pinned to the flow, so nothing forces the minimal split and the pair can both be inflated,
-    # overstating the converter draw.
-    #
-    # The pressure that keeps it near-minimal is that the draw has to be served by something. Where reactive power is scarce that is enough; where it
-    # is free at both terminals the direction is flat and the solver is indifferent. Measured on 9n_AC the slack was 0.24 MW on a 320 MW link, about
-    # 0.08%, which is small but not zero and is NOT a numerical artefact — it is the flat direction being exercised.
-    #
-    # The error is one-signed: pos + neg can only exceed |P|, never fall short, so the converter draw is over-estimated and the AC system is asked for
-    # more compensation than it truly needs, not less. That is the safe direction for a planning model. Pinning it exactly would need a binary per
-    # link per hour to choose the flow direction, which is a real cost in a MILP for a bounded and conservative error.
+    # The two halves of |P_dc|. Pinning only the difference is NOT conservative: the draw enters the reactive balance with a MINUS, so a node whose
+    # charging exceeds its demand gains by inflating both halves, absorbing the surplus for free and hiding it from the results. vDCFlowDir fixes it.
     if pConvLCC:
         def eDCFlowSplit(OptModel, n, ni, nf, cc):
             if not _live((ni,nf,cc)):
@@ -348,13 +307,9 @@ def NetworkACOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, 
     def eAngleEnvM(OptModel, n, ni, nf, cc):
         if not _live((ni,nf,cc)):
             return Constraint.Skip
-        # MINUS, not plus. From S_ij = V_i' conj((V_i' - V_j) y) with y = (r - jx)/z^2:
-        #     P = [(v_i^2 - v_i v_j cos th) r + (v_i v_j sin th) x] / z^2
-        #     Q = [(v_i^2 - v_i v_j cos th) x - (v_i v_j sin th) r] / z^2
-        # so x P - r Q = (v_i v_j sin th)(x^2 + r^2)/z^2 = v_i v_j sin th, and the r Q term enters with a minus.
-        # This was written as a plus and the error was invisible to every self-consistency check, because the envelope, the band and the relaxation
-        # gap all measure the model against its own definition. It showed up only against the pi-model computed from the same voltages and angles:
-        # 38 MW of branch flow error with the plus, 0.00001 MW with the minus.
+        # MINUS, not plus. With y = (r - jx)/z^2, P = [(v_i^2 - v_i v_j cos th) r + (v_i v_j sin th) x]/z^2 and Q the same with x and -r, so
+        # x P - r Q = v_i v_j sin th. Written as a plus it costs 38 MW of branch flow error and closes no network loop, and no self-consistency
+        # check can see it: the envelope, the band and the gap all measure the model against its own definition of this relation.
         return (OptModel.vMPos[p,sc,n,ni,nf,cc] - OptModel.vMNeg[p,sc,n,ni,nf,cc]
                 == (mTEPES.pLineX[ni,nf,cc] * OptModel.vFlowElec    [p,sc,n,ni,nf,cc]
                   - mTEPES.pLineR[ni,nf,cc] * OptModel.vFlowReactFrw[p,sc,n,ni,nf,cc]) / pSBase)

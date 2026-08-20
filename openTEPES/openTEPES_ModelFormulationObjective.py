@@ -54,22 +54,10 @@ def GenerationOperationModelFormulationObjFunct(OptModel, mTEPES, pIndLogConsole
     pEpsilonCharge = 1e-5
     # the small tolerance pEpsilonLosses=1e-5 prices the ohmic losses so that the solver does not leave them slack
     pEpsilonLosses = 1e-5
-    # The same idea for the AC branch current, which carries the slack of the conic / piecewise inequality. This one is NOT a pure tie-breaker and the
-    # value is a real modelling choice, so it is worth being explicit about what it buys and what it costs.
-    #
-    # What it fixes. vCurr enters as an INEQUALITY, and the voltage drop w_j = w_i - 2(rP+xQ) + z^2*l means a LARGER current raises the downstream
-    # voltage. Where the extra loss is served by a zero-cost unit nothing opposes that, so the relaxation buys voltage with current that is not there.
-    # Measured on 9n_AC at 1e-5: branch Node_4-Node_5 sits at its thermal bound, vCurr = 0.4489, while the physical value is 0.0891 — five times over,
-    # and the reported voltage at the far end is not supported by any real flow.
-    #
-    # What it costs. At 1e-3 the penalty is about an order of magnitude above the loss it stands in for on 9n_AC (r ~ 0.002 p.u., pSBase 1 GVA), so it
-    # does not merely break a tie: between 1e-5 and 1e-3 the dispatch moves by roughly 29 GWh of generation and reported losses go from 0.54% to
-    # 0.84%. The 0.84% figure is the physically consistent one — the cone is tight on all 12 branches there and loose on 2 at 1e-5 — but the extra
-    # generation is partly this penalty talking, and it feeds through to the eBalanceElec duals reported as locational prices.
-    #
-    # 1e-3 is kept because a solution whose currents are real is worth more than an undistorted one whose voltages are fiction, and because the gap
-    # diagnostic in openTEPES_OutputResultsAC reports exactly when this has failed. Anyone reading marginal prices off an AC run should know the
-    # penalty is in them. See doc/design/AC_OPF_Prototype_Results.md.
+    # Prices the AC branch current. NOT a pure tie-breaker: vCurr enters as an inequality and a larger current raises the downstream voltage
+    # through the drop equation, so where the extra loss is free the relaxation buys voltage with current that is not there. At 1e-5 on 9n_AC a
+    # branch sat at its thermal bound carrying a fifth of that current. At 1e-3 it is about 2.4% of total system cost and enters the eBalanceElec
+    # duals reported as locational prices, so it is broken out as its own row in the cost summary. See doc/design/AC_OPF_Prototype_Results.md 11.
     pEpsilonCurrent = AC_CURRENT_PENALTY
 
     g2a = defaultdict(set)

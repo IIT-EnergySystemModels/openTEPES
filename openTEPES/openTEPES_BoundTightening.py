@@ -3,35 +3,17 @@ Open Generation, Storage, and Transmission Operation and Expansion Planning Mode
 
 openTEPES.openTEPES_BoundTightening — shrink the AC voltage and angle bounds before the variables are declared.
 
-This is not an optimisation to switch on later. The angle envelope that couples the branch flows to the voltage angles carries a slack of
-``tan(theta_max/2) - theta_max/2`` per branch, which grows fast with the angle bound: at the +/-60 degrees RTS-GMLC ships, the slack is 3 degrees per
-branch, so across a five-branch cycle the cyclic constraint has 15 degrees of room and barely binds.
-See doc/design/AC_OPF_Prototype_Results.md section 4.
+The angle envelope carries a slack of ``tan(t/2) - t/2`` per branch, which grows fast with the angle bound, so a tighter bound is worth having. The
+tightening must be VALID: it may use only inequalities the model already implies, or it turns the relaxation into a restriction. Picking smaller
+numbers instead raised the RTS-GMLC objective 108% at +/-30 degrees and went infeasible at +/-20.
 
-The tightening must be *valid*: it may only use inequalities the model already implies, so it cannot cut off the true optimum. Picking a smaller
-number instead turns the relaxation into a restriction — at +/-30 degrees the RTS-GMLC objective rose 108% and at +/-20 degrees it went infeasible.
+Two propagations, both per unit (``pLineSmax`` is GVA, ``pSBase`` is the GVA base):
 
-Two propagations, both derived from constraints already in the formulation.
+  * angle, from the thermal limit — ``|theta_ij| <= arcsin(min(1, Smax z / (Vmin_i Vmin_j)))``, with ``Smax`` the rating the model actually admits,
+    ``Smax Vmax / Vmin``, and the sending voltage carrying the tap.
+  * voltage, from the drop equation — swept to a fixed point from the reference bus.
 
-**Angle, from the thermal limit.** The branch flow model gives ``|V_i||V_j| sin(theta_i - theta_j) = x*P - r*Q``. The apparent power through the
-branch is limited, so by Cauchy-Schwarz ``|x*P - r*Q| <= Smax*sqrt(r^2+x^2) = Smax*z`` (the bound is the same either way). Dividing by the smallest the voltage product can be:
-
-    |sin(theta_ij)| <= Smax * z / (Vmin_i * Vmin_j)      =>      |theta_ij| <= arcsin(min(1, Smax*z/(Vmin_i*Vmin_j)))
-
-**Everything here is in per unit.** ``pLineSmax`` is in GVA and ``pSBase`` is the GVA base, so the rating has to be divided by ``pSBase`` before it
-meets a per-unit impedance. Omitting that is invisible on a case whose base is 1 GVA and wrong by a factor of ten on one whose base is 100 MVA.
-
-**The rating that the model actually implies.** The thermal limit is written on the current, ``l <= (Smax/Vmin)^2``, and the cone gives
-``P^2 + Q^2 <= vW*l <= Vmax^2 * (Smax/Vmin)^2``. So the apparent power the model permits is ``Smax*Vmax/Vmin``, not ``Smax``. Using the smaller value
-would tighten the angle bound by a further factor ``Vmax/Vmin`` with nothing implying it, which is exactly the kind of unjustified tightening this
-module exists to avoid.
-
-**Voltage, from the drop equation.** ``u_j = u_i - 2(r*P + x*Q) + z^2*l`` with the same bound on ``|r*P + x*Q|`` and ``0 <= l <= (Smax/Vmin)^2`` gives
-
-    u_j >= u_i_min - 2*Smax*z        and        u_j <= u_i_max + 2*Smax*z + z^2*(Smax/Vmin)^2
-
-Each incident branch yields a valid bound, so the tightest is the largest of the lower bounds and the smallest of the upper bounds. Sweeping to a
-fixed point propagates the reference bus's fixed voltage outwards.
+Only branches always in service may propagate a voltage bound: a candidate, a switchable or an out-of-window branch has its drop equation released.
 """
 from __future__ import annotations
 

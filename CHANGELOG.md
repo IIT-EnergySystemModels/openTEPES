@@ -2,6 +2,16 @@
 
 ## [4.18.18RC] - 2026-08-16 Unreleased in PyPI
 
+- [ADDED] AC optimal power flow, on with `IndACPowerFlow`. Branch flow model; the current definition is a second-order
+  cone, a piecewise staircase or the exact non-linear equation (`IndACModelType`). Adds voltage and angle bound
+  tightening, bus shunts, generator reactive capability and synchronous condensers. `IndACRestore` re-solves the network
+  at the exact equations on ipopt to recover a physical operating point. New cases `9n_AC`, `RTS-GMLC_AC`,
+  `RTS-GMLC_AC_Oper`, `RTS-GMLC_Oper`. Refused with cycle flow, single node, variable TTC and PTDF. Off by default.
+- [ADDED] HVDC converter models, `IndACConverter`: line-commutated draws reactive power at both terminals,
+  voltage-source supplies or absorbs it within the converter rating. `ConverterPF` sets the power factor.
+- [FIXED] the AC angle-to-flow relation used `x*P + r*Q`; it is `x*P - r*Q`. Branch flows were wrong by up to 38 MW and
+  the recovered angles did not close around network loops.
+
 - [CHANGED] improve performance in some modules
 - [CHANGED] modify OutputResultsGeneration to improve performance 
 - [FIXED] protect input data modules against a missing `openTEPES/cases/` folder, which was causing a `FileNotFoundError` on a fresh clone. 
