@@ -419,3 +419,60 @@ it is why the value sits in one place with this note attached.
 
 The sweep is 9n_AC only. RTS-GMLC has a smaller `pSBase`, so the ratio of penalty to physical loss is worse there, and
 the same sweep should be run before anyone quotes RTS-GMLC marginal prices.
+
+# 12. What AC costs against DC, measured on the same week
+
+Section 11 left the CPU question open on a real network. Two cases were built to close it: `RTS-GMLC_Oper` and
+`RTS-GMLC_AC_Oper`, the same 168 hours (the week containing the annual peak, 23-30 August, peak 10,212 MW) over the
+same 73 buses and 120 branches, one under the DC network model and one under AC.
+
+Note first that `RTS-GMLC_AC` carries **no candidates of any kind** — no generation, no network, no shunts. It is
+already an operation-only case. What makes the full-year build 27.5 million rows is the 8,736 hour horizon, nothing
+else. An earlier reading of this as an investment-loop problem was simply wrong.
+
+## 12.1 Size and time
+
+|                | rows    | columns | nonzeros  | wall  |
+|----------------|--------:|--------:|----------:|------:|
+| DC             |  98,343 | 123,227 |   423,978 |   8.9 s |
+| AC (SOCP)      | 528,423 | 770,531 | 2,424,390 | 103.7 s |
+| **AC / DC**    |  **5.4x** | **6.3x** | **5.7x** | **11.7x** |
+
+The AC formulation writes 18 constraints per branch per hour where the DC one writes 7, and adds six variables per
+branch plus two per bus, so a factor of five to six on size is structural rather than a defect. Time grows faster than
+size, as expected for an interior point method on a larger and denser problem.
+
+For scale, the full-year AC case is 27.5 million rows and 40 million columns, and a barrier solve had not finished
+after nine hours. The matrix range is 1e-05 to 3e+02, so the model is well conditioned; the cost is size.
+
+## 12.2 The relaxation is not tight on this network
+
+More important than the timing:
+
+    ### WARNING: the AC relaxation is not tight on 21 of 120 branches (worst 0.927 of Smax^2)
+
+| branch | worst gap [p.u. of Smax^2] |
+|--------|---------------------------:|
+| Node_102 - Node_106 | 0.927 |
+| Node_202 - Node_206 | 0.820 |
+| Node_302 - Node_306 | 0.703 |
+| Node_101 - Node_103 | 0.108 |
+| Node_303 - Node_309 | 0.100 |
+
+On 9n_AC the cone is tight on all twelve branches to 1e-07. On RTS-GMLC it is loose on 21 of 120, and on three of them
+the slack is most of the branch rating. **The reported current, loss and loading on those branches are not supported by
+the flows**, so they should not be read as physical.
+
+The three worst are the same branch position in each of the three RTS areas, which points at the network structure
+rather than at a data error in one place.
+
+This is what the diagnostic exists for, and it is the argument for keeping it in the minimal output set: a user who
+looked only at the voltages and currents would have no way to know that a sixth of the branches carry numbers that do
+not mean what they appear to. It also tempers section 11 — the current penalty closes the gap on a nine-bus network and
+does not close it here.
+
+## 12.3 What has not been done
+
+Phase 7, the restoration pass that would solve an exact AC power flow on the relaxed solution and report the true
+values, is the answer to a loose cone and it has not been built. It needs ipopt. Until it exists, an AC run on a meshed
+network should be read together with `oT_Result_ACRelaxationGapSummary`, branch by branch.
