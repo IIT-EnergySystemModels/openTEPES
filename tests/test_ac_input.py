@@ -1133,3 +1133,31 @@ def test_incompatible_options_are_reported_together(tmp_path):
     pText = str(e.value)
     assert "IndBinSingleNode" in pText and "IndPTDF" in pText, "only one of the two conflicts was reported"
     assert "1." in pText and "2." in pText, "the conflicts were not listed"
+
+
+@pytest.mark.parametrize("pf, mt, cyc, solver", [
+    (1, 0, 0, "gurobi"),   # branch flow, second-order cone
+    (1, 1, 0, "gurobi"),   # branch flow, piecewise linear
+    (1, 2, 0, "ipopt"),    # branch flow, exact
+    (2, 0, 0, "ipopt"),    # bus injection in W space
+    (2, 0, 1, "ipopt"),    # bus injection in W space with the loop condition
+    (3, 0, 0, "ipopt"),    # bus injection in rectangular coordinates
+])
+def test_every_formulation_solves_and_writes_its_results(tmp_path, pf, mt, cyc, solver):
+    """Each formulation end to end, solve and output, not just built.
+
+    Every AC solve test before this one used branch flow. That left the writers untested for the bus injection
+    formulations, and one of them crashed: in W space without the loop condition vTheta is declared but constrained by
+    nothing, so the solver leaves it unset and the power flow residual tried to build a phasor from None.
+    """
+    from openTEPES.openTEPES import openTEPES_run
+
+    dir_name, case = _tiny_ac_case(tmp_path, f"9n_f{pf}{mt}{cyc}", hours=2, model_type=mt, restore=0)
+    _edit_csv(dir_name, case, "Option", lambda df: (df.__setitem__("IndACPowerFlow", pf),
+                                                    df.__setitem__("IndACCycle", cyc)), index_col=None)
+    mTEPES = openTEPES_run(dir_name, case, solver, 0, 0)
+
+    assert mTEPES.pIndACPowerFlow() == pf
+    assert mTEPES.vTotalSCost() > 0.0, "the solve returned no cost"
+
+

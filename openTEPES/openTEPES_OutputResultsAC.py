@@ -132,7 +132,8 @@ def ACRelaxationDiagnostic(DirName, CaseName, OptModel, mTEPES):
     # would compare the flow equations with themselves and pass whatever they said.
     #
     # Until now this check lived in prototypes/ and needed pandapower, which openTEPES does not ship, so a user could not run it at all.
-    if hasattr(OptModel, 'vVre') or hasattr(OptModel, 'vTheta'):
+    pFirst = next(iter(mTEPES.psn), None)
+    if pFirst is not None and NM.angles_available(mTEPES, OptModel, *pFirst):
         pRows = []
         for p, sc, n in mTEPES.psn:
             wP, wQ = NM.branch_residuals(mTEPES, OptModel, p, sc, n)
@@ -145,6 +146,9 @@ def ACRelaxationDiagnostic(DirName, CaseName, OptModel, mTEPES):
             # A relaxed solve is not expected to sit exactly on the series relation, so this is reported rather than judged. What it catches is a
             # residual of a size no tolerance explains, which is what a wrong branch equation looks like.
             print(f'AC power flow residual                   ... worst {wP:.5f} MW, {wQ:.5f} Mvar against the bus voltages')
+    elif pFirst is not None:
+        print('AC power flow residual                   ... not available: this formulation carries no nodal voltage angle. '
+              'Set IndACCycle = 1 to tie it to a node potential.')
 
     print('Writing  AC relaxation diagnostic       ... ', round(time.time() - StartTime), 's')
 

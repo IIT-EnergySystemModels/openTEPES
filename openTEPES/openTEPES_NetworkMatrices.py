@@ -116,6 +116,22 @@ def ptdf(mTEPES, p, pTolerance=1e-10, pSlack=None):
             if abs(pFull[l, i]) > pTolerance}
 
 
+def angles_available(mTEPES, OptModel, p, sc, n):
+    """Whether a nodal voltage PHASOR can be formed at all for this solution.
+
+    In W space the angle lives in arg(W_ij), which is a per-branch quantity: unless IndACCycle ties it to a node
+    potential, vTheta is declared but appears in no constraint and the solver leaves it unset. There is then no nodal
+    phasor to recompute a flow from, and the residual check below has nothing to say. Branch flow and the rectangular
+    formulation both carry the phasor and are unaffected.
+    """
+    if hasattr(OptModel, 'vVre'):
+        return True
+    for nd in mTEPES.nd:
+        if (p,sc,n,nd) in mTEPES.psnnd:
+            return OptModel.vTheta[p,sc,n,nd].value is not None
+    return False
+
+
 def _voltage(mTEPES, OptModel, p, sc, n, nd):
     """The complex bus voltage, from whichever representation the active formulation uses."""
     if hasattr(OptModel, 'vVre'):                                  # rectangular: the parts are the variables
