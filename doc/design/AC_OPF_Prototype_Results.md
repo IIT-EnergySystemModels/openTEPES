@@ -425,10 +425,11 @@ the same sweep should be run before anyone quotes RTS-GMLC marginal prices.
 *Re-measured after the angle-relation sign fix of section 16. Sizes are unchanged by that fix; the costs and the
 tightness were taken again.*
 
-> **Every RTS figure in this section was measured on a system with no reactive compensation.** Neither `RTS-GMLC_AC`
-> nor `RTS-GMLC_AC_Oper` carried a shunt table until 21 August 2026, so the three 100 Mvar reactors RTS-GMLC puts on
-> buses 106, 206 and 306 were absent. Section 14.1 shows what they change; the 168 hour AC case falls from 61.65 to
-> 60.00 MEUR. Sections 13 and 14 have been re-measured with the reactors in place; this one has not.
+> **Re-measured with the reactors in place.** Neither `RTS-GMLC_AC` nor `RTS-GMLC_AC_Oper` carried a shunt table until
+> 21 August 2026, so every earlier figure here was taken on a system with no reactive compensation at all. Section 14.1
+> shows what they change. The three month and full year rows of 12.1a are the exception: they were not re-solved,
+> because they need 7 GB and 30 GB, and their sizes move by 3 rows per hour, which does not affect what they are used
+> for.
 
 `RTS-GMLC_Oper` and `RTS-GMLC_AC_Oper` are the same 168 hours (the week containing the annual peak, 23-30 August, peak
 10,212 MW) over the same 73 buses and 120 branches, one under the DC network model and one under AC.
@@ -438,21 +439,34 @@ build 27.5 million rows is the 8,736 hour horizon, nothing else.
 
 ## 12.1 Size and time
 
-|             | rows    | columns | wall    |
-|-------------|--------:|--------:|--------:|
-| DC          |  98,343 | 123,227 |   9.7 s |
-| AC (SOCP)   | 528,423 | 770,531 |  97.5 s |
-| **AC / DC** | **5.4x** | **6.3x** | **10.1x** |
+|             | rows     | columns  | wall     | total cost   |
+|-------------|---------:|---------:|---------:|-------------:|
+| DC          |   98,343 |  123,227 |   14.8 s | 36.5834 MEUR |
+| AC (SOCP)   |  528,927 |  771,035 |  121.7 s | 59.9967 MEUR |
+| **AC / DC** | **5.4x** | **6.3x** | **8.2x** |              |
+
+The DC figures are unchanged to the digit by adding the reactors, which is the right answer: a shunt has no place in a
+DC model and never reaches it. The AC model grew by exactly **504 rows and 504 columns**, which is 3 reactors over 168
+hours. Wall times are indicative rather than comparable with the earlier run: this machine was doing other work.
 
 ## 12.1a How far the horizon goes, and what stops it
 
-| horizon | rows | columns | barrier factor | barrier | iterations | wall | cone loose |
-|---------|-----:|--------:|---------------:|--------:|-----------:|-----:|-----------:|
-| 1 day, 24 h     |     54,855 |     46,707 |          — |       — |  — |   5.9 s |  9 of 120 |
-| 1 week, 168 h   |    528,423 |    770,531 |          — |       — |  — |  97.5 s | 21 of 120 |
-| 1 month, 720 h  |  2,266,671 |  3,302,232 | **2.4 GB** |  **86.0 s** | 73 | 622.4 s | 38 of 120 |
-| 3 months, 2184 h|  6,876,807 | 10,015,924 | **7.0 GB** | **255.3 s** | 79 |  pending |   pending |
-| 1 year, 8736 h  | 27,509,055 | 40,048,784 | **30.0 GB**|       — |  — | 10 h cap | — |
+| horizon | rows | columns | barrier factor | wall | cone loose |
+|---------|-----:|--------:|---------------:|-----:|-----------:|
+| 1 day, 24 h     |     75,087 |    110,130 |          — |   11.4 s | 17 of 120 |
+| 1 week, 168 h   |    528,927 |    771,035 |          — |  121.7 s | 31 of 120 |
+| 1 month, 720 h  |  2,268,831 |  3,300,025 | **2.4 GB** | 1113.7 s | 43 of 120 |
+| 3 months, 2184 h|  6,876,807 | 10,015,924 | **7.0 GB** | not re-solved | — |
+| 1 year, 8736 h  | 27,509,055 | 40,048,784 | **30.0 GB**| not re-solved | — |
+
+The first three rows are measured with the reactors: 24 and 168 hours from `RTS-GMLC_AC_Oper`, which is a 168 hour case,
+and the month from `RTS-GMLC_AC` truncated, because the week case cannot supply a longer horizon. The bottom two rows
+are the earlier figures, kept for their sizes, which the reactors move by 3 rows per hour and so do not change what the
+rows are used for. They were not re-solved: they need 7 GB and 30 GB.
+
+The 24 hour row does not match the one this table used to carry, 54,855 rows against 75,087 now. That row came from the
+`RTS_SOC24` case which was not kept, the same case behind the withdrawn figures of sections 13 and 14. The rows above
+name the case they come from so this does not happen again.
 
 **Memory is linear in the horizon** and **the barrier is linear in rows**, both measured rather than assumed:
 
@@ -491,11 +505,23 @@ The matrix range is 1e-05 to 3e+02, so the model is well conditioned throughout;
 
 ## 12.2 The relaxation is not tight on this network
 
-    ### WARNING: the AC relaxation is not tight on 21 of 120 branches (worst 0.901 of Smax^2)
+Measured again with the reactors in place, over the 168 hour window:
 
-Twenty-one of 120 branches, worst gap 0.901 of `Smax^2`. Before the sign fix this read 21 of 120 at 0.927, so **the
-loose cone on RTS is real and was not an artefact of the sign error**. On 9n_AC the cone is tight on all twelve
-branches. The nine-bus case was never going to reveal this.
+| what was measured | loose branches | worst gap |
+|-------------------|---------------:|----------:|
+| before the reactors, current penalty on | 21 of 120 | 0.901 |
+| **with the reactors, current penalty on** | **31 of 120** | **0.120** |
+| with the reactors, current penalty off | 79 of 120 | 1.211 |
+
+The reactors cut the worst gap by a factor of seven and left MORE branches marginally loose. Severity down, spread up:
+compensating the system stops any one branch being badly wrong and leaves a larger number slightly wrong.
+
+The third row is the one to read alongside section 13.1. The penalty charges the current, which pins the relaxation to
+the cone boundary, so the first two rows measure the penalty as much as the network. With it off, two thirds of the
+branches are loose.
+
+The horizon matters too, and in the same direction as before the reactors: 17 of 120 over a day, 31 over a week, 43
+over a month. More hours means more lightly loaded branch-hours, which is where the relaxation goes slack.
 
 # 13. The exact model, and where it can and cannot be solved
 

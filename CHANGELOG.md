@@ -24,6 +24,9 @@
   `oT_Data_Option`. They were fixed in the code, so no case could select them, and the four stage-solving strategies the
   model implements were all unreachable. `IndSequentialSolving` was also declared binary while its own code branches on
   four values. The defaults are the values that used to be in force.
+- [FIXED] the AC design notes measured the RTS-GMLC network against DC on a system with no reactive compensation. The
+  comparison, the horizon table and the relaxation tightness are measured again with the reactors: the DC model is
+  unchanged to the digit, as it should be, and the AC one grows by exactly 3 rows per hour.
 - [FIXED] the AC design notes reported that the exact model could not be solved on RTS-GMLC from a cold start. It can;
   the earlier attempt was made on a system with no reactive compensation. Sections 13 and 14 have been re-measured with
   the reactors in place and now record the case definition, and a new section shows that the current penalty is what
