@@ -21,6 +21,22 @@ from openTEPES.openTEPES_InputData import InputData
 CASES_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "openTEPES", "cases"))
 
 
+def _solver_or_skip(name):
+    """Return the solver name, or skip when it is not installed.
+
+    CI carries HiGHS only, which is an LP/MIP solver: it cannot express the second-order cone of IndACModelType 0, the
+    non-linear equations of 2, or either bus-injection formulation. Those tests skip there rather than fail, and the
+    piecewise variant, which is a MILP, is what CI actually exercises.
+    """
+    from pyomo.environ import SolverFactory
+    try:
+        if not SolverFactory(name).available(exception_flag=False):
+            pytest.skip(f"solver {name} is not available")
+    except Exception:
+        pytest.skip(f"solver {name} is not available")
+    return name
+
+
 def _build(dir_name, case_name):
     """Read and configure a case, returning (model, dfs, par)."""
     mTEPES = ConcreteModel(case_name)
@@ -693,7 +709,7 @@ def test_unbuilt_candidate_ac_line_carries_nothing_and_couples_nothing(tmp_path)
 
     # force the line NOT to be built, then check it is electrically absent
     mTEPES.vNetworkInvest[p, la[0], la[1], la[2]].fix(0.0)
-    res = SolverFactory("gurobi").solve(mTEPES)
+    res = SolverFactory(_solver_or_skip("gurobi")).solve(mTEPES)
     assert str(res.solver.termination_condition) == "optimal", "the network should still be feasible without the candidate"
 
     n0 = levels[0]
@@ -760,12 +776,13 @@ def test_restoration_is_skipped_when_nothing_to_restore(tmp_path):
 
     mTEPES, _, _ = _build(CASES_DIR, "9n_AC")
     mTEPES.pIndACModelType._data[None] = 2
-    assert ACRestorationPass(mTEPES, mTEPES, "ipopt", 0) is None
+    assert ACRestorationPass(mTEPES, mTEPES, _solver_or_skip("ipopt"), 0) is None
 
     mTEPES.pIndACModelType._data[None] = 0
-    assert ACRestorationPass(mTEPES, mTEPES, "ipopt", 0) is None, "no recorded blocks means nothing to do"
+    assert ACRestorationPass(mTEPES, mTEPES, _solver_or_skip("ipopt"), 0) is None, "no recorded blocks means nothing to do"
 
 
+@pytest.mark.solve
 def test_restoration_makes_the_relaxation_exact(tmp_path):
     """The whole point: after the pass the cone is closed and the cost is the cost of the plan, not below it.
 
@@ -775,7 +792,7 @@ def test_restoration_makes_the_relaxation_exact(tmp_path):
     from openTEPES.openTEPES import openTEPES_run
 
     dir_name, case = _tiny_ac_case(tmp_path, "9n_restore")
-    mTEPES = openTEPES_run(str(dir_name), case, "gurobi", 0, 0)
+    mTEPES = openTEPES_run(str(dir_name), case, _solver_or_skip("gurobi"), 0, 0)
 
     pSBase = mTEPES.pSBase
     pWorst = 0.0
@@ -882,6 +899,7 @@ def test_converter_option_is_validated(tmp_path):
         _build(dir_name, case)
 
 
+@pytest.mark.solve
 def test_lcc_converter_draws_reactive_power_at_both_ends(tmp_path):
     """An LCC station is a reactive LOAD at each terminal, tan(acos(pf)) times the active power it transfers.
 
@@ -890,7 +908,7 @@ def test_lcc_converter_draws_reactive_power_at_both_ends(tmp_path):
     from openTEPES.openTEPES import openTEPES_run
 
     dir_name, case = _case_with_built_dc(tmp_path, "9n_lcc", converter=1)
-    mTEPES = openTEPES_run(str(dir_name), case, "gurobi", 0, 0)
+    mTEPES = openTEPES_run(str(dir_name), case, _solver_or_skip("gurobi"), 0, 0)
 
     assert hasattr(mTEPES, "vDCFlowPos"), "the LCC model must split the DC flow to reach |P|"
     pSeen = False
@@ -910,12 +928,13 @@ def test_lcc_converter_draws_reactive_power_at_both_ends(tmp_path):
     assert pSeen, "the DC link carried no power, so this test proved nothing about the converter"
 
 
+@pytest.mark.solve
 def test_vsc_converter_can_supply_reactive_power(tmp_path):
     """A VSC station is a controllable source or sink, so it must be able to take either sign, unlike an LCC."""
     from openTEPES.openTEPES import openTEPES_run
 
     dir_name, case = _case_with_built_dc(tmp_path, "9n_vsc", converter=2)
-    mTEPES = openTEPES_run(str(dir_name), case, "gurobi", 0, 0)
+    mTEPES = openTEPES_run(str(dir_name), case, _solver_or_skip("gurobi"), 0, 0)
 
     assert hasattr(mTEPES, "vQConvFrw"), "the VSC model must give each terminal a reactive variable"
     assert not hasattr(mTEPES, "vDCFlowPos"), "the VSC model has no need of the |P| split"
@@ -924,6 +943,7 @@ def test_vsc_converter_can_supply_reactive_power(tmp_path):
         assert lo is not None and lo < 0.0 < up, f"a VSC terminal must span zero, got [{lo}, {up}]"
 
 
+@pytest.mark.solve
 def test_unbuilt_hvdc_candidate_is_not_a_free_statcom(tmp_path):
     """A converter on a link that was never built must supply no reactive power.
 
@@ -942,7 +962,7 @@ def test_unbuilt_hvdc_candidate_is_not_a_free_statcom(tmp_path):
     opt = os.path.join(dir_name, case, f"oT_Data_Option_{case}.csv")
     d   = pd.read_csv(opt); d["IndACConverter"] = 2; d.to_csv(opt, index=False)
 
-    mTEPES = openTEPES_run(str(dir_name), case, "gurobi", 0, 0)
+    mTEPES = openTEPES_run(str(dir_name), case, _solver_or_skip("gurobi"), 0, 0)
     for k in mTEPES.psnlad:
         assert abs(mTEPES.vQConvFrw[k]()) < 1e-6, f"an unbuilt converter supplied {mTEPES.vQConvFrw[k]()} Gvar"
         assert abs(mTEPES.vQConvBck[k]()) < 1e-6, f"an unbuilt converter supplied {mTEPES.vQConvBck[k]()} Gvar"
@@ -1050,6 +1070,7 @@ def _ptdf_case(tmp_path, name, **options):
     return case_dir, case
 
 
+@pytest.mark.solve
 def test_computed_ptdf_reproduces_the_dc_flows(tmp_path):
     """The criterion for the whole feature: on a fixed topology the computed factors must give the SAME flows as the
     angle formulation they stand in for. Anything else means the susceptance matrix disagrees with the constraint."""
@@ -1059,8 +1080,8 @@ def test_computed_ptdf_reproduces_the_dc_flows(tmp_path):
     pDirA, pCaseA = _ptdf_case(tmp_path, "9n_ptdfA", IndPTDF=0, **pCommon)
     pDirB, pCaseB = _ptdf_case(tmp_path, "9n_ptdfB", IndPTDF=2, **pCommon)
 
-    mA = openTEPES_run(pDirA, pCaseA, "gurobi", 0, 0)
-    mB = openTEPES_run(pDirB, pCaseB, "gurobi", 0, 0)
+    mA = openTEPES_run(pDirA, pCaseA, _solver_or_skip("highs"), 0, 0)
+    mB = openTEPES_run(pDirB, pCaseB, _solver_or_skip("highs"), 0, 0)
 
     assert mB.pIndPTDF() == 2 and hasattr(mB, "pPTDFCalc"), "the computed factors were never built"
     # not indexed by load level: the topology is fixed for a period, so an hourly index would repeat itself
@@ -1071,6 +1092,7 @@ def test_computed_ptdf_reproduces_the_dc_flows(tmp_path):
     assert abs(mA.vTotalSCost() - mB.vTotalSCost()) < 1e-9
 
 
+@pytest.mark.solve
 def test_computed_ptdf_is_refused_when_the_topology_can_change(tmp_path):
     """A PTDF matrix belongs to one topology. A candidate or switchable AC line can change it, and the factors would
     then be stale in a way nothing detects, so the combination is refused rather than approximated."""
@@ -1089,7 +1111,7 @@ def test_computed_ptdf_is_refused_when_the_topology_can_change(tmp_path):
     _edit_csv(case_dir, case, "Network", edit, index_col=None)
 
     with pytest.raises(ValueError, match="one fixed topology"):
-        openTEPES_run(case_dir, case, "gurobi", 0, 0)
+        openTEPES_run(case_dir, case, _solver_or_skip("highs"), 0, 0)
 
 
 def test_ptdf_flag_and_table_must_agree(tmp_path):
@@ -1104,12 +1126,13 @@ def test_ptdf_flag_and_table_must_agree(tmp_path):
 # How the problem is solved, and how conflicting options are reported
 # --------------------------------------------------------------------------------------------------------------------
 
+@pytest.mark.solve
 def test_the_execution_flags_come_from_the_case(tmp_path):
     """These four were literals in openTEPES.py, so none of the four stage-solving strategies could be selected."""
     from openTEPES.openTEPES import openTEPES_run
 
     case_dir, case = _ptdf_case(tmp_path, "9n_exec", IndSequentialSolving=2, IndCompleteProblem=1)
-    mTEPES = openTEPES_run(case_dir, case, "gurobi", 0, 0)
+    mTEPES = openTEPES_run(case_dir, case, _solver_or_skip("highs"), 0, 0)
     assert mTEPES.pIndSequentialSolving() == 2, "the case's choice of stage solving did not reach the model"
 
 
@@ -1120,6 +1143,7 @@ def test_a_stage_solving_strategy_outside_the_four_is_refused(tmp_path):
         _build(case_dir, case)
 
 
+@pytest.mark.solve
 def test_incompatible_options_are_reported_together(tmp_path):
     """One conflict at a time meant fixing one and being told about the next. All of them are collected instead."""
     from openTEPES.openTEPES import openTEPES_run
@@ -1128,7 +1152,7 @@ def test_incompatible_options_are_reported_together(tmp_path):
     _edit_csv(case_dir, case, "Option", lambda df: (df.__setitem__("IndBinSingleNode", 1),
                                                     df.__setitem__("IndPTDF", 2)), index_col=None)
     with pytest.raises(ValueError) as e:
-        openTEPES_run(case_dir, case, "gurobi", 0, 0)
+        openTEPES_run(case_dir, case, _solver_or_skip("highs"), 0, 0)
 
     pText = str(e.value)
     assert "IndBinSingleNode" in pText and "IndPTDF" in pText, "only one of the two conflicts was reported"
@@ -1143,6 +1167,7 @@ def test_incompatible_options_are_reported_together(tmp_path):
     (2, 0, 1, "ipopt"),    # bus injection in W space with the loop condition
     (3, 0, 0, "ipopt"),    # bus injection in rectangular coordinates
 ])
+@pytest.mark.solve
 def test_every_formulation_solves_and_writes_its_results(tmp_path, pf, mt, cyc, solver):
     """Each formulation end to end, solve and output, not just built.
 
@@ -1155,7 +1180,7 @@ def test_every_formulation_solves_and_writes_its_results(tmp_path, pf, mt, cyc, 
     dir_name, case = _tiny_ac_case(tmp_path, f"9n_f{pf}{mt}{cyc}", hours=2, model_type=mt, restore=0)
     _edit_csv(dir_name, case, "Option", lambda df: (df.__setitem__("IndACPowerFlow", pf),
                                                     df.__setitem__("IndACCycle", cyc)), index_col=None)
-    mTEPES = openTEPES_run(dir_name, case, solver, 0, 0)
+    mTEPES = openTEPES_run(dir_name, case, _solver_or_skip(solver), 0, 0)
 
     assert mTEPES.pIndACPowerFlow() == pf
     assert mTEPES.vTotalSCost() > 0.0, "the solve returned no cost"
@@ -1184,6 +1209,7 @@ def _pglib_case(tmp_path, name, ind_ac_power_flow):
     (1, "gurobi", -2.0,  0.0),   # the cone is a relaxation: at or below the optimum
     (3, "ipopt",  -0.5,  0.5),   # the exact model should land on it
 ])
+@pytest.mark.solve
 def test_pglib_case118_against_the_published_optimum(tmp_path, monkeypatch, pf, solver, lo, hi):
     """The one check in this suite measured against a number somebody else computed.
 
@@ -1196,7 +1222,7 @@ def test_pglib_case118_against_the_published_optimum(tmp_path, monkeypatch, pf, 
     from openTEPES.openTEPES import openTEPES_run
 
     dir_name, case = _pglib_case(tmp_path, f"p118_{pf}", pf)
-    mTEPES = openTEPES_run(dir_name, case, solver, 0, 0)
+    mTEPES = openTEPES_run(dir_name, case, _solver_or_skip(solver), 0, 0)
 
     pUSD = mTEPES.vTotalSCost() * 1e6
     pDev = 100.0 * (pUSD - PGLIB_OPTIMUM) / PGLIB_OPTIMUM

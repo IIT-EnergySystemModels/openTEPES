@@ -843,3 +843,48 @@ def test_runner_output_format_and_aggregate(case_7d_system, tmp_path):
     finally:
         con.close()
     assert labels == ["c1", "c2"]
+
+
+@pytest.mark.solve
+def test_ac_case_solves_and_writes_its_results(tmp_path):
+    """One AC case end to end on the solver CI actually has.
+
+    Until this, no test in this file touched the AC model, so the whole end-to-end layer -- the writers, the output
+    formats, the economic summary -- had never seen an AC run. That is how a crash in the AC result writer reached a
+    pull request: the AC suite builds models and solves small ones, but nothing exercised this path.
+
+    The piecewise variant is the one HiGHS can take. IndACModelType 0 is a second-order cone and 2 is non-linear, and
+    HiGHS is an LP/MIP solver: it rejects both with 'does not support expressions of degree None'. A week of RTS-GMLC
+    was measured for this slot and is not viable, spending more than eleven minutes in the root LP alone against a
+    thirty minute per-test timeout; the nine-bus case at 24 hours takes about a second and covers the same writers.
+    """
+    case_name = "9n_AC"
+    case_dir  = _private_case_copy(case_name, tmp_path)
+
+    pDur = os.path.join(case_dir, f"oT_Data_Duration_{case_name}.csv")
+    dur = pd.read_csv(pDur)
+    dur.loc[24:, "Duration"] = 0
+    dur.to_csv(pDur, index=False)
+
+    # the annual RES energy target does not survive truncation: it would exceed the demand of the hours that remain
+    pRes = os.path.join(case_dir, f"oT_Data_RESEnergy_{case_name}.csv")
+    res = pd.read_csv(pRes)
+    for col in res.columns[2:]:
+        res[col] = 0.0
+    res.to_csv(pRes, index=False)
+
+    pOpt = os.path.join(case_dir, f"oT_Data_Option_{case_name}.csv")
+    opt = pd.read_csv(pOpt)
+    opt["IndACModelType"] = 1
+    opt.to_csv(pOpt, index=False)
+
+    # the fourth argument is pIndOutputResults: the writers are what this test is for, so they have to run
+    mTEPES = openTEPES_run(str(tmp_path), case_name, "highs", 1, 0)
+
+    assert mTEPES.pIndACPowerFlow() == 1
+    assert mTEPES.vTotalSCost() == pytest.approx(0.5297399465, rel=1e-6)
+
+    # the writers are the point of this test, so check they produced the AC results rather than only the cost
+    written = [f for f in os.listdir(case_dir) if f.startswith("oT_Result_")]
+    for expected in ("NetworkVoltageMagnitude", "NetworkFlowReactiveFrw", "ACPowerFlowResidual"):
+        assert any(expected in f for f in written), f"the AC writers did not produce {expected}"
