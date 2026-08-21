@@ -789,6 +789,64 @@ def test_restoration_makes_the_relaxation_exact(tmp_path):
 
     assert pWorst < 1e-6, f"the restored solution should satisfy the exact current equality, worst gap {pWorst:.2e}"
 
+    # and the operating point must be PHYSICAL, which the cone gap alone does not say: recompute each branch flow from
+    # the bus voltages and compare. Relaxed, the same case sits about 68 MW off the series relation; restored it is
+    # within a watt. A tight cone with a wrong branch equation would pass the check above and fail this one.
+    import openTEPES.openTEPES_NetworkMatrices as NM
+    pP = pQ = 0.0
+    for p, sc, n in mTEPES.psn:
+        wP, wQ = NM.branch_residuals(mTEPES, mTEPES, p, sc, n)
+        pP, pQ = max(pP, wP), max(pQ, wQ)
+    assert pP < 1e-3 and pQ < 1e-3, f"the restored flows do not match the bus voltages: {pP:.5f} MW, {pQ:.5f} Mvar"
+
+
+def test_the_b_matrix_leaves_out_the_dc_links():
+    """The susceptance matrix is a Kirchhoff object. A point-to-point DC link carries what its converters are told to
+    carry, so putting it in the matrix would make the model believe power splits across it by impedance."""
+    import openTEPES.openTEPES_NetworkMatrices as NM
+    mTEPES, _, _ = _build(CASES_DIR, "9n")
+    p = mTEPES.p.first()
+
+    pBranches = [la for la, *_ in NM.ac_branches(mTEPES, p)]
+    assert pBranches, "no AC branches were found at all"
+    assert set(pBranches) <= set(mTEPES.laa), "a branch outside the model's own AC set reached the matrix"
+    assert not (set(pBranches) & (set(mTEPES.cd) | set(mTEPES.ed))), "a DC link reached the susceptance matrix"
+
+    pBbus, pBf, _, _ = NM.b_matrices(mTEPES, p)
+    # every row of Bbus sums to zero: a common angle shift moves no power
+    assert abs(pBbus.sum(axis=1)).max() < 1e-9
+    assert abs(pBbus - pBbus.T).max() < 1e-9, "the susceptance matrix must be symmetric"
+    # every row of Bf sums to zero for the same reason
+    assert abs(pBf.sum(axis=1)).max() < 1e-9
+
+
+def test_the_ptdf_does_not_depend_on_the_reference_node():
+    """The factors change with the reference; the FLOWS a balanced injection produces must not.
+
+    This is the property that matters, and it catches an assembly error without needing a solve. Note that PTDF rows do
+    NOT sum to zero: injecting one unit at every bus and withdrawing all of it at the reference is a balanced pattern
+    that genuinely moves power towards the reference.
+    """
+    import openTEPES.openTEPES_NetworkMatrices as NM
+    mTEPES, _, _ = _build(CASES_DIR, "9n")
+    p = mTEPES.p.first()
+    pNodes = list(mTEPES.nd)
+
+    pRef = mTEPES.rf.first()
+    pOther = next(nd for nd in pNodes if nd != pRef)
+    pA = NM.ptdf(mTEPES, p, pSlack=pRef)
+    pB = NM.ptdf(mTEPES, p, pSlack=pOther)
+    assert all(nd != pRef   for (_, _, _, nd) in pA), "the reference node must carry no distribution factor"
+    assert all(nd != pOther for (_, _, _, nd) in pB), "the reference node must carry no distribution factor"
+
+    # a balanced injection: one unit in at the first bus, one unit out at the last
+    pInj = {nd: 0.0 for nd in pNodes}
+    pInj[pNodes[0]], pInj[pNodes[-1]] = 1.0, -1.0
+    for la, *_ in NM.ac_branches(mTEPES, p):
+        fA = sum(pA.get((la[0], la[1], la[2], nd), 0.0) * pInj[nd] for nd in pNodes)
+        fB = sum(pB.get((la[0], la[1], la[2], nd), 0.0) * pInj[nd] for nd in pNodes)
+        assert abs(fA - fB) < 1e-9, f"branch {la} flow moved with the reference node: {fA} vs {fB}"
+
 
 # --------------------------------------------------------------------------------------------------------------------
 # HVDC converters

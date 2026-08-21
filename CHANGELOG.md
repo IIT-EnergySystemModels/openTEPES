@@ -20,6 +20,15 @@
   units, so the model chooses how many are in service. Follows the VAR source model of Alvarez, Paredes and Rider, IET
   Generation, Transmission and Distribution 13(13), 2019. Units are chained to remove equivalent permutations. One unit
   by default.
+- [ADDED] an AC power flow residual check, written to `oT_Result_ACPowerFlowResidual` and reported on the console. It
+  recomputes each branch flow from the bus voltages and compares it with the flow the model reports, so a user can tell
+  whether a solved case is physical. This was only possible before with pandapower, which openTEPES does not ship. The
+  relaxation gap answers a different question: it says whether the cone is tight, not whether the operating point is
+  physical. On `9n_AC` the relaxed solution is about 68 MW off the series relation and the restored one is within
+  0.00001 MW.
+- [ADDED] `openTEPES_NetworkMatrices.py`, which turns the branch data into the objects that need a view of the whole
+  network: the susceptance matrices, the DC power transfer distribution factors, and the residual check above. DC links
+  are excluded from all of them.
 - [ADDED] the resolved configuration is printed at the start of every run: the network model in force, the AC settings,
   the reactive demand and shunt counts that reached the model, and the other active features. A case whose flags do not
   say what the author intended now shows it before the solve rather than after.

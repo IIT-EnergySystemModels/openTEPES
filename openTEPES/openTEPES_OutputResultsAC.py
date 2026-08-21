@@ -24,6 +24,8 @@ import time
 
 import pandas as pd
 
+import openTEPES.openTEPES_NetworkMatrices as NM
+
 try:
     from          .openTEPES_OutputResultsCommon import _outdir
 except ImportError:
@@ -122,6 +124,27 @@ def ACRelaxationDiagnostic(DirName, CaseName, OptModel, mTEPES):
                   f'validation pass before using them.')
         else:
             print(f'AC relaxation tight on all {len(pWorst)} branches (worst {max(pWorst.values(), default=0.0):.2e} of Smax^2)')
+
+    # --- do the reported flows satisfy the AC equations? --------------------------------------------------------------------------------------
+    # The relaxation gap above says whether the CONE is tight. It does not say whether the operating point is physical: a tight cone with a wrong
+    # branch equation is still wrong, which is exactly how the angle-relation sign error survived ten reviews. This recomputes each branch flow from
+    # the bus VOLTAGES through the series relation and compares it with the flow the model reports. Deriving it from the flow variables instead
+    # would compare the flow equations with themselves and pass whatever they said.
+    #
+    # Until now this check lived in prototypes/ and needed pandapower, which openTEPES does not ship, so a user could not run it at all.
+    if hasattr(OptModel, 'vVre') or hasattr(OptModel, 'vTheta'):
+        pRows = []
+        for p, sc, n in mTEPES.psn:
+            wP, wQ = NM.branch_residuals(mTEPES, OptModel, p, sc, n)
+            pRows.append((p, sc, n, wP, wQ))
+        if pRows:
+            pd.DataFrame(pRows, columns=['Period', 'Scenario', 'LoadLevel', 'WorstP [MW]', 'WorstQ [Mvar]']).oT.write(
+                f'{_path}/oT_Result_ACPowerFlowResidual_{CaseName}.csv', index=False, sep=',')
+            wP = max(r[3] for r in pRows)
+            wQ = max(r[4] for r in pRows)
+            # A relaxed solve is not expected to sit exactly on the series relation, so this is reported rather than judged. What it catches is a
+            # residual of a size no tolerance explains, which is what a wrong branch equation looks like.
+            print(f'AC power flow residual                   ... worst {wP:.5f} MW, {wQ:.5f} Mvar against the bus voltages')
 
     print('Writing  AC relaxation diagnostic       ... ', round(time.time() - StartTime), 's')
 
