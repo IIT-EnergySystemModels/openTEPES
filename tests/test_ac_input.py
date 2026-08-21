@@ -1098,3 +1098,38 @@ def test_ptdf_flag_and_table_must_agree(tmp_path):
     case_dir, case = _ptdf_case(tmp_path, "9n_ptdfD", IndPTDF=1, IndBinNetLosses=0)
     with pytest.raises(ValueError, match="no such table"):
         _build(case_dir, case)
+
+
+# --------------------------------------------------------------------------------------------------------------------
+# How the problem is solved, and how conflicting options are reported
+# --------------------------------------------------------------------------------------------------------------------
+
+def test_the_execution_flags_come_from_the_case(tmp_path):
+    """These four were literals in openTEPES.py, so none of the four stage-solving strategies could be selected."""
+    from openTEPES.openTEPES import openTEPES_run
+
+    case_dir, case = _ptdf_case(tmp_path, "9n_exec", IndSequentialSolving=2, IndCompleteProblem=1)
+    mTEPES = openTEPES_run(case_dir, case, "gurobi", 0, 0)
+    assert mTEPES.pIndSequentialSolving() == 2, "the case's choice of stage solving did not reach the model"
+
+
+def test_a_stage_solving_strategy_outside_the_four_is_refused(tmp_path):
+    """The flag used to be declared Binary while its own code branched on four values."""
+    case_dir, case = _ptdf_case(tmp_path, "9n_exec2", IndSequentialSolving=7)
+    with pytest.raises(NotImplementedError, match="IndSequentialSolving"):
+        _build(case_dir, case)
+
+
+def test_incompatible_options_are_reported_together(tmp_path):
+    """One conflict at a time meant fixing one and being told about the next. All of them are collected instead."""
+    from openTEPES.openTEPES import openTEPES_run
+
+    case_dir, case = _clone(tmp_path, "9n_AC", "9n_clash")
+    _edit_csv(case_dir, case, "Option", lambda df: (df.__setitem__("IndBinSingleNode", 1),
+                                                    df.__setitem__("IndPTDF", 2)), index_col=None)
+    with pytest.raises(ValueError) as e:
+        openTEPES_run(case_dir, case, "gurobi", 0, 0)
+
+    pText = str(e.value)
+    assert "IndBinSingleNode" in pText and "IndPTDF" in pText, "only one of the two conflicts was reported"
+    assert "1." in pText and "2." in pText, "the conflicts were not listed"

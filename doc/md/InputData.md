@@ -189,6 +189,18 @@ A description of the options included in the file `oT_Data_Option.csv` follows:
 | IndACConverter      | Indicator of the HVDC converter model                                                                 | {0 none, 1 line-commutated, 2 voltage-source}       |
 | IndBinShuntSwitch   | Indicator of the hourly on/off state of a switchable bus shunt                                        | {0 continuous, 1 binary}                            |
 | IndPTDF             | Indicator of the flow-based market coupling method and where its factors come from                    | {0 off, 1 read from the case, 2 computed from the reactances} |
+| IndCycleFlow            | Indicator of the cycle flow formulation of Kirchhoff's second law (DC only)                       | {0 per branch, 1 per cycle}                         |
+| IndCompleteProblem      | Indicator of solving the complete problem or decomposing it in time                               | {0 time Benders decomposition, 1 complete}          |
+| IndSectorDecomposition  | Indicator of Benders decomposition by sector                                                      | {0 one problem, 1 by sector}                        |
+| IndSequentialSolving    | Indicator of how the stages are solved                                                            | {0 in parallel, 1 sequentially through an LP file, 2 sequentially in memory, 3 by sensitivity analysis} |
+
+The last four options say how the problem is **solved** rather than what is modelled. They were fixed in the code until
+version 4.18.18 and could not be selected from a case; the defaults above are the values that were in force then, so a
+case that says nothing behaves as it always did.
+
+All the indicators belong in `oT_Data_Option`. `oT_Data_Parameter` holds the numeric scalars. An indicator placed in the
+parameter file is still honoured, and the run says so, but the next reader of the case will look for it in the option
+file and not find it.
 
 If the investment decisions are ignored (IndBinGenInvest, IndBinGenRetirement, and IndBinNetInvest take value 2) or there are none, all the scenarios with a
 probability >0 are solved sequentially (assuming a probability of 1), and the periods are given a weight of 1.

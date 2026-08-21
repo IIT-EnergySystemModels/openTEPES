@@ -276,6 +276,28 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         raise ValueError('IndPTDF = 2 computes the factors from the reactances, but the case also provides '
                          'oT_Data_VariablePTDF. Remove the table, or use IndPTDF = 1 to read it.')
 
+    # How the problem is solved, as opposed to what is modelled. These were literals in openTEPES.py until now, so no case
+    # could select any of them. The defaults are the values that used to be hard-coded.
+    #   pIndCycleFlow            0 = Kirchhoff's second law per branch (default), 1 = cycle formulation. DC only.
+    #   pIndSectorDecomposition  0 = one problem (default), 1 = Benders decomposition by sector
+    #   pIndCompleteProblem      1 = solve the complete problem (default), 0 = time Benders decomposition
+    #   pIndSequentialSolving    0 = stages in parallel, 1 = sequentially through an LP file (default),
+    #                            2 = sequentially in memory, 3 = by sensitivity analysis
+    for pKey, pDefault, pAllowed in (('pIndCycleFlow', 0, (0, 1)), ('pIndSectorDecomposition', 0, (0, 1)),
+                                     ('pIndCompleteProblem', 1, (0, 1)), ('pIndSequentialSolving', 1, (0, 1, 2, 3))):
+        par.setdefault(pKey, pDefault)
+        if par[pKey] not in pAllowed:
+            raise NotImplementedError(f'{pKey[1:]} = {par[pKey]} is not implemented; use one of {list(pAllowed)}')
+
+    # oT_Data_Option is where the indicators belong; oT_Data_Parameter is for the numeric scalars. Both are read, because
+    # a flag that only reaches one of them used to build a different model from the one the case asked for, but a flag in
+    # the wrong file is still worth saying out loud: the next reader of the case will look in Option and not find it.
+    pOptionCols = set(dfs['dfOption'].columns) if 'dfOption' in dfs else set()
+    pMisplaced  = sorted(c for c in dfs['dfParameter'].columns if c.startswith('Ind') and c not in pOptionCols)
+    if pMisplaced:
+        print(f'### WARNING: {", ".join(pMisplaced)} found in oT_Data_Parameter. They are honoured, but they belong in '
+              f'oT_Data_Option, which is where a reader of the case will look for them.')
+
     par.setdefault('pIndBinShuntSwitch', 1)
     if par['pIndBinShuntSwitch'] not in (0, 1):
         raise NotImplementedError(f"IndBinShuntSwitch = {par['pIndBinShuntSwitch']} is not implemented; use 1 (binary) or 0 (relaxed)")

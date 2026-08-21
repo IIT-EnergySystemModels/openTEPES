@@ -8,7 +8,7 @@ import json
 import os
 import time
 
-from   pyomo.environ import ConcreteModel, Param, Binary
+from   pyomo.environ import ConcreteModel, Param, Binary, NonNegativeIntegers
 
 # Support running this file directly (e.g. VS Code "Run Python File"), where __package__ is empty and the relative imports below have no parent package;
 # fall back to absolute package imports in that case.
@@ -109,6 +109,51 @@ OUTPUT_REGISTRY = (
 
 
 
+def ValidateConfiguration(mTEPES, pIndCycleFlow):
+    """Check every combination of options at once and report all of them together.
+
+    Collected rather than raised one at a time on purpose. These checks used to sit apart from each other, so a case with
+    three incompatible flags was told about one, fixed it, and was told about the next. The list below fits on a screen
+    and can be worked through in a single pass.
+    """
+    pProblems = []
+
+    if pIndCycleFlow and mTEPES.pIndACPowerFlow():
+        pProblems.append('IndCycleFlow applies to the DC network model only and cannot be combined with IndACPowerFlow. '
+                         'See doc/design/AC_OPF_Formulation_Choices.md section 4.')
+
+    # Single-node mode fixes every vLineLosses to zero, and under AC that variable is tied to the exact loss 0.5*r*vCurr, so the fix drives vCurr to
+    # zero and the current definition then drives P and Q to zero on every AC branch. The result is not "the network ignored" but "every node
+    # islanded": load is met by ENS everywhere and nothing says why.
+    if mTEPES.pIndBinSingleNode() and mTEPES.pIndACPowerFlow():
+        pProblems.append('IndBinSingleNode ignores the network entirely and cannot be combined with IndACPowerFlow, which models it in detail. '
+                         'Switch one of the two off.')
+
+    # Variable TTC gives each branch a rating per load level. Under AC the thermal limit is written on vCurr from the STATIC pLineSmax, so the varying
+    # ratings would be read in and then ignored; and a branch the case declared out of service would still carry reactive power and losses.
+    if mTEPES.pIndVarTTC() and mTEPES.pIndACPowerFlow():
+        pProblems.append('IndVarTTC cannot be combined with IndACPowerFlow: the AC thermal limit is written on the current from the static rating, '
+                         'so per-load-level ratings would be silently ignored. See doc/design/AC_OPF_Implementation_Plan.md.')
+
+    # PTDF pins vFlowElec to sum(pPTDF * vNetPosition) as a hard equality. Under AC the branch flow equations already determine vFlowElec, so the two
+    # together over-determine it: infeasible if you are lucky, quietly wrong if not.
+    if mTEPES.pIndPTDF() and mTEPES.pIndACPowerFlow():
+        pProblems.append('IndPTDF is a DC network representation and cannot be combined with IndACPowerFlow: both determine the branch flows, and '
+                         'together they over-determine them. Switch one of the two off.')
+
+    # A PTDF matrix belongs to ONE topology. Computing it fixes that topology at build time, so a case that can change it invalidates the factors the
+    # moment a decision differs from the assumption. Generation, storage and DC-link candidates are fine: none of them enter the susceptance matrix.
+    if mTEPES.pIndPTDF() == 2 and mTEPES.lca:
+        pOffenders = ', '.join('-'.join(la) for la in list(mTEPES.lca)[:5])
+        pProblems.append(f'IndPTDF = 2 computes the factors for one fixed topology, and this case can change it: '
+                         f'{len(mTEPES.lca)} AC line(s) are candidates or switchable ({pOffenders}'
+                         f'{", ..." if len(mTEPES.lca) > 5 else ""}). Use IndPTDF = 1 and supply factors per load '
+                         f'level, or remove the candidate and switchable AC lines.')
+
+    if pProblems:
+        raise ValueError('The options of this case cannot be combined:\n' + '\n'.join(f'  {i}. {t}' for i, t in enumerate(pProblems, 1)))
+
+
 def ReportConfiguration(mTEPES):
     """Print the configuration the model RESOLVED to, not the one the case files appear to ask for.
 
@@ -141,6 +186,11 @@ def ReportConfiguration(mTEPES):
         pSw = len(mTEPES.shw) if hasattr(mTEPES, 'shw') else 0
         print(f'  bus shunt devices                    ... {pSh} ({pSw} switchable)')
 
+    pSolve = {0: 'stages in parallel', 1: 'stages sequentially, LP file', 2: 'stages sequentially, in memory',
+              3: 'stages by sensitivity analysis'}
+    print(f'  problem                              ... {"complete" if mTEPES.pIndCompleteProblem() else "time Benders decomposition"}'
+          f'{", sector Benders decomposition" if mTEPES.pIndSectorDecomposition() else ""}')
+    print(f'  stage solving                        ... {pSolve.get(mTEPES.pIndSequentialSolving(), mTEPES.pIndSequentialSolving())}')
     print(f'  network losses                       ... {"on" if mTEPES.pIndBinNetLosses() else "off"}')
     print(f'  flow-based coupling (IndPTDF)        ... {"on" if mTEPES.pIndPTDF() else "off"}')
     # PTDF is a lossless representation: the loss constraints are skipped whenever it is on, so a case asking for both
@@ -253,23 +303,24 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     except KeyError as e:
         raise ValueError(f'### Invalid Yes/No option value {e.args[0]!r} for pIndOutputResults or pIndLogConsole; accepted values: {list(idxDict)}') from None
 
-    # introduce cycle flow formulations in DC and AC load flow
-    pIndCycleFlow = 0
-
-    # sector decomposition to get a proxy of the hydrogen sector: 0 to solve the complete problem, 1 to solve by sector Benders decomposition
-    pIndSectorDecomposition = 0
-    mTEPES.pIndSectorDecomposition = Param(initialize=pIndSectorDecomposition, within=Binary, doc='Indicator of sector decomposition', mutable=True)
-
-    # solve the complete problem directly or by time Benders decomposition
-    pIndCompleteProblem   = 1
-    pIndSequentialSolving = 1
-    mTEPES.pIndCompleteProblem   = Param(initialize=pIndCompleteProblem ,  within=Binary, doc='Indicator of solving the complete problem', mutable=True)
-    mTEPES.pIndSequentialSolving = Param(initialize=pIndSequentialSolving, within=Binary, doc='Indicator of sequential solving',           mutable=True)
     mTEPES.pBdTol = 1e-6
 
     # Reading sets and parameters. InputData also stores dfs/par on mTEPES (mTEPES.dFrame / mTEPES.dPar) for backward compatibility,
     # but DataConfiguration takes them explicitly to avoid that coupling.
     dfs, par = InputData(DirName, CaseName, mTEPES, pIndLogConsole)
+
+    # How the problem is SOLVED, as opposed to what is modelled. These four were literals in this file until now, so a
+    # case could not select any of them: the four stage-solving strategies below were all implemented and none reachable.
+    # The defaults are the values that used to be hard-coded, so a case that says nothing behaves exactly as before.
+    pIndCycleFlow           = par['pIndCycleFlow']
+    pIndSectorDecomposition = par['pIndSectorDecomposition']
+    pIndCompleteProblem     = par['pIndCompleteProblem']
+    pIndSequentialSolving   = par['pIndSequentialSolving']
+    mTEPES.pIndSectorDecomposition = Param(initialize=pIndSectorDecomposition, within=Binary,             doc='Sector Benders decomposition: 0 complete problem, 1 by sector', mutable=True)
+    mTEPES.pIndCompleteProblem     = Param(initialize=pIndCompleteProblem,     within=Binary,             doc='Solve the complete problem: 0 by time decomposition, 1 complete', mutable=True)
+    # NOT Binary: StageSolve branches on 0 parallel, 1 sequential with an LP file, 2 sequential in memory and
+    # 3 sensitivity analysis. Declaring it Binary made two of its own strategies impossible to select.
+    mTEPES.pIndSequentialSolving   = Param(initialize=pIndSequentialSolving,   within=NonNegativeIntegers, doc='Stage solving: 0 parallel, 1 sequential LP file, 2 sequential in memory, 3 sensitivity', mutable=True)
 
     # Define sets and parameters
     DataConfiguration(mTEPES, dfs, par)
@@ -281,44 +332,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     # independent cycle instead. Under the AC model those constraints are never built, so CycleConstraints would try to delete components that do not
     # exist. The AC analogue of the loop condition is sum(arctan(vWS/vWC)) = 0, which is non-convex and is handled by the tangent bounds plus the
     # Phase 7 restoration instead. Refuse the combination rather than fail obscurely deep in the stage loop.
-    if pIndCycleFlow and mTEPES.pIndACPowerFlow():
-        raise ValueError('The cycle flow formulation applies to the DC network model only; it cannot be combined with IndACPowerFlow. '
-                         'See doc/design/AC_OPF_Formulation_Choices.md section 4.')
-
-    # Single-node mode fixes every vLineLosses to zero, and under AC that variable is tied to the exact loss 0.5*r*vCurr, so the fix drives vCurr to
-    # zero and the current definition then drives P and Q to zero on every AC branch. The result is not "the network ignored" but "every node
-    # islanded": load is met by ENS everywhere and nothing says why. The two options mean opposite things — one asks for no network, the other for a
-    # detailed one — so refuse rather than produce a silently empty answer.
-    if mTEPES.pIndBinSingleNode() and mTEPES.pIndACPowerFlow():
-        raise ValueError('IndBinSingleNode ignores the network entirely and cannot be combined with IndACPowerFlow, which models it in detail. '
-                         'Switch one of the two off.')
-
-    # Variable TTC gives each branch a rating per load level. Under AC the thermal limit is written on vCurr from the STATIC pLineSmax, and the AC
-    # flow boxes replace the per-load-level pMaxNTCFrw/Bck bounds, so the varying ratings would be read in and then ignored. Worse, the variable-TTC
-    # block fixes only vFlowElec to zero for a branch whose rating is zero at that load level; under AC the reactive flow, the far-end flow and the
-    # current stay free, so a branch the case declared out of service still carries reactive power and losses.
-    if mTEPES.pIndVarTTC() and mTEPES.pIndACPowerFlow():
-        raise ValueError('IndVarTTC is not supported together with IndACPowerFlow: the AC thermal limit is written on the current from the static '
-                         'rating, so per-load-level ratings would be silently ignored. See doc/design/AC_OPF_Implementation_Plan.md.')
-
-    # PTDF pins vFlowElec to sum(pPTDF * vNetPosition) as a hard equality and re-imposes a DC-style nodal balance through eNetPosition. Under AC the
-    # branch flow equations already determine vFlowElec, so the two together over-determine it: infeasible if you are lucky, quietly wrong if not.
-    if mTEPES.pIndPTDF() and mTEPES.pIndACPowerFlow():
-        raise ValueError('IndPTDF is a DC network representation and cannot be combined with IndACPowerFlow: both determine the branch flows, and '
-                         'together they over-determine them. Switch one of the two off.')
-
-    # A PTDF matrix belongs to ONE topology. Computing it means fixing that topology at build time, so a case that can
-    # change it invalidates the factors the moment a decision differs from the assumption: the flows stay plausible and
-    # stop being right. Generation and storage candidates are fine, and so are candidate DC links, because none of them
-    # enter the susceptance matrix. mTEPES.lca is exactly the offending set, AC candidate OR switchable lines.
-    # Supplying the factors instead (IndPTDF = 1) is not refused: the table is indexed by load level, so a user who
-    # knows how the topology moves can say so.
-    if mTEPES.pIndPTDF() == 2 and mTEPES.lca:
-        pOffenders = ', '.join('-'.join(la) for la in list(mTEPES.lca)[:5])
-        raise ValueError(f'IndPTDF = 2 computes the factors for one fixed topology, and this case can change it: '
-                         f'{len(mTEPES.lca)} AC line(s) are candidates or switchable ({pOffenders}'
-                         f'{", ..." if len(mTEPES.lca) > 5 else ""}). Use IndPTDF = 1 and supply factors per load '
-                         f'level, or remove the candidate and switchable AC lines.')
+    ValidateConfiguration(mTEPES, pIndCycleFlow)
 
     ReportConfiguration(mTEPES)
 

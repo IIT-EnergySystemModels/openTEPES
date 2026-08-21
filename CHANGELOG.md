@@ -20,6 +20,11 @@
   units, so the model chooses how many are in service. Follows the VAR source model of Alvarez, Paredes and Rider, IET
   Generation, Transmission and Distribution 13(13), 2019. Units are chained to remove equivalent permutations. One unit
   by default.
+- [ADDED] `IndCycleFlow`, `IndCompleteProblem`, `IndSectorDecomposition` and `IndSequentialSolving` can now be set from
+  `oT_Data_Option`. They were fixed in the code, so no case could select them, and the four stage-solving strategies the
+  model implements were all unreachable. `IndSequentialSolving` was also declared binary while its own code branches on
+  four values. The defaults are the values that used to be in force.
+- [CHANGED] the checks on incompatible options are made in one pass and reported together, instead of one at a time.
 - [ADDED] `IndPTDF` is now an explicit three-valued option: 0 off, 1 reads the factors from `oT_Data_VariablePTDF`, and
   2 computes them from the reactances, so a case no longer has to produce them in another tool and paste in a table that
   openTEPES cannot check against its own network. The flag used to be implied by the presence of the table, which stays
