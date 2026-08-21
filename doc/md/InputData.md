@@ -818,6 +818,29 @@ If the lower and upper bounds of investment decisions are very close (with a dif
 on a candidate line, set `InvestmentUp` to `1e-5`: it falls below the snap threshold and is internally converted to 0. A blank cell or 0 in this column is
 interpreted as "no upper bound" (full `p.u.` allowed) and lets the candidate be freely chosen by the optimization.
 
+## Running an AC optimal power flow
+
+The AC model is off by default. To switch it on, set `IndACPowerFlow` in `oT_Data_Option.csv` and give the case the two
+AC-only files described below. Three cases ship ready to run:
+
+| case | what it is |
+|:-----|:-----------|
+| `9n_AC` | nine nodes, small enough to solve in seconds |
+| `RTS-GMLC_AC_Oper` | RTS-GMLC over the week containing the annual peak |
+| `RTS-GMLC_AC` | RTS-GMLC over a full year |
+
+```
+from openTEPES.openTEPES import openTEPES_run
+openTEPES_run('openTEPES/cases', '9n_AC', 'gurobi', 0, 0)
+```
+
+`IndACPowerFlow = 1` is the branch flow model and solves with a linear-conic solver such as Gurobi. Values 2 and 3 are
+the bus-injection models and need a non-linear solver such as ipopt, as does `IndACModelType = 2`. The run prints the
+configuration it resolved to before it solves, so the mode in force is visible without reading the case files.
+
+The results are described under [AC network operation](OutputResults.md); two of them say whether the answer can be
+trusted, and the note there explains why they are not substitutes for each other.
+
 ## Reactive power demand (optional file, AC only)
 
 The file `oT_Data_ReactiveDemand.csv` gives the reactive power demand of every node at every load level, in MVAr, with the same

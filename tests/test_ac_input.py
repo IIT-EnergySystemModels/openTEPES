@@ -1161,3 +1161,49 @@ def test_every_formulation_solves_and_writes_its_results(tmp_path, pf, mt, cyc, 
     assert mTEPES.vTotalSCost() > 0.0, "the solve returned no cost"
 
 
+# --------------------------------------------------------------------------------------------------------------------
+# Validation against a published benchmark
+# --------------------------------------------------------------------------------------------------------------------
+
+PGLIB_CASE118 = os.path.join(os.path.dirname(__file__), "data", "pglib_opf_case118_ieee.m")
+PGLIB_OPTIMUM = 97214.0          # pglib-opf BASELINE.md, case118_ieee under typical operating conditions, $/h
+
+
+def _pglib_case(tmp_path, name, ind_ac_power_flow):
+    """Convert the vendored MATPOWER file into a one hour openTEPES AC case under tmp_path."""
+    import importlib.util
+    pSpec = importlib.util.spec_from_file_location(
+        "pglib_conv", os.path.join(os.path.dirname(__file__), "..", "prototypes", "ac_formulations", "pglib.py"))
+    pglib = importlib.util.module_from_spec(pSpec)
+    pSpec.loader.exec_module(pglib)
+    pglib.write_case(pglib.read_matpower(PGLIB_CASE118), str(tmp_path), name, ind_ac_power_flow=ind_ac_power_flow)
+    return str(tmp_path), name
+
+
+@pytest.mark.parametrize("pf, solver, lo, hi", [
+    (1, "gurobi", -2.0,  0.0),   # the cone is a relaxation: at or below the optimum
+    (3, "ipopt",  -0.5,  0.5),   # the exact model should land on it
+])
+def test_pglib_case118_against_the_published_optimum(tmp_path, monkeypatch, pf, solver, lo, hi):
+    """The one check in this suite measured against a number somebody else computed.
+
+    The current penalty is switched off. It charges a per-unit current with an absolute coefficient, so its weight
+    depends on the case's SBase, and on this 100 MVA case it is large enough to move the answer by more than the thing
+    being measured. See the pEpsilonCurrent block in openTEPES_ModelFormulationObjective.
+    """
+    import openTEPES.openTEPES_ModelFormulationObjective as obj
+    monkeypatch.setattr(obj, "AC_CURRENT_PENALTY", 0.0)
+    from openTEPES.openTEPES import openTEPES_run
+
+    dir_name, case = _pglib_case(tmp_path, f"p118_{pf}", pf)
+    mTEPES = openTEPES_run(dir_name, case, solver, 0, 0)
+
+    pUSD = mTEPES.vTotalSCost() * 1e6
+    pDev = 100.0 * (pUSD - PGLIB_OPTIMUM) / PGLIB_OPTIMUM
+    assert lo < pDev < hi, f"case118 came to {pUSD:,.0f} $/h, {pDev:+.3f}% from the published {PGLIB_OPTIMUM:,.0f}"
+
+    # no load shed and no reactive slack, or the comparison is not with pglib's problem
+    pDur = mTEPES.pLoadLevelDuration
+    assert sum(mTEPES.vENS[k]() * pDur[k[:3]]() for k in mTEPES.vENS) * 1e3 < 1e-3
+
+
