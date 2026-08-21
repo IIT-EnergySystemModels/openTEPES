@@ -1059,13 +1059,20 @@ def NetworkOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st
     if pIndLogConsole:
         print('eNetPosition              ... ', len(getattr(OptModel, f'eNetPosition_{p}_{sc}_{st}')), ' rows')
 
+    # The factors come from the case (IndPTDF = 1) or from the reactances (IndPTDF = 2). The computed ones carry no load
+    # level index: the topology is fixed for a period, so an hourly index would repeat the same numbers every hour.
+    def _pFlowBased(OptModel,n,ni,nf,cc):
+        if mTEPES.pIndPTDF() == 2:
+            return sum(mTEPES.pPTDFCalc[p,ni,nf,cc,nd] * OptModel.vNetPosition[p,sc,n,nd] for nd in mTEPES.nd if (p,ni,nf,cc,nd) in mTEPES.pland)
+        return     sum(mTEPES.pPTDF[p,sc,n,ni,nf,cc,nd] * OptModel.vNetPosition[p,sc,n,nd] for nd in mTEPES.nd if (p,sc,n,ni,nf,cc,nd) in mTEPES.psnland)
+
     def eFlowBasedCalcu1(OptModel,n,ni,nf,cc):
         if mTEPES.pIndBinSingleNode() or mTEPES.pIndPTDF() == 0 or mTEPES.pIndBinLinePTDF[ni,nf,cc] == 0 or (p,ni,nf,cc) not in mTEPES.pla:
             return Constraint.Skip
         if (ni,nf,cc) in mTEPES.lca:
-            return OptModel.vFlowElec[p,sc,n,ni,nf,cc] - sum(mTEPES.pPTDF[p,sc,n,ni,nf,cc,nd] * OptModel.vNetPosition[p,sc,n,nd] for nd in mTEPES.nd if (p,sc,n,ni,nf,cc,nd) in mTEPES.psnland) >= - 1 + OptModel.vLineCommit[p,sc,n,ni,nf,cc]
+            return OptModel.vFlowElec[p,sc,n,ni,nf,cc] - _pFlowBased(OptModel,n,ni,nf,cc) >= - 1 + OptModel.vLineCommit[p,sc,n,ni,nf,cc]
         else:
-            return OptModel.vFlowElec[p,sc,n,ni,nf,cc] - sum(mTEPES.pPTDF[p,sc,n,ni,nf,cc,nd] * OptModel.vNetPosition[p,sc,n,nd] for nd in mTEPES.nd if (p,sc,n,ni,nf,cc,nd) in mTEPES.psnland) ==   0
+            return OptModel.vFlowElec[p,sc,n,ni,nf,cc] - _pFlowBased(OptModel,n,ni,nf,cc) ==   0
     setattr(OptModel, f'eFlowBasedCalcu1_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.la, rule=eFlowBasedCalcu1, doc='flow based calculation [p.u.]'))
 
     if pIndLogConsole:
@@ -1074,7 +1081,7 @@ def NetworkOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st
     def eFlowBasedCalcu2(OptModel,n,ni,nf,cc):
         if mTEPES.pIndBinSingleNode() or mTEPES.pIndPTDF() == 0 or mTEPES.pIndBinLinePTDF[ni,nf,cc] == 0 or (p,ni,nf,cc) not in mTEPES.pla:
             return Constraint.Skip
-        return OptModel.vFlowElec[p,sc,n,ni,nf,cc] - sum(mTEPES.pPTDF[p,sc,n,ni,nf,cc,nd] * OptModel.vNetPosition[p,sc,n,nd] for nd in mTEPES.nd if (p,sc,n,ni,nf,cc,nd) in mTEPES.psnland) <=   1 - OptModel.vLineCommit[p,sc,n,ni,nf,cc]
+        return OptModel.vFlowElec[p,sc,n,ni,nf,cc] - _pFlowBased(OptModel,n,ni,nf,cc) <=   1 - OptModel.vLineCommit[p,sc,n,ni,nf,cc]
     setattr(OptModel, f'eFlowBasedCalcu2_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.lca, rule=eFlowBasedCalcu2, doc='flow based calculation [p.u.]'))
 
     if pIndLogConsole:

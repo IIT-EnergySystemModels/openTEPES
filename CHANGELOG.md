@@ -20,6 +20,11 @@
   units, so the model chooses how many are in service. Follows the VAR source model of Alvarez, Paredes and Rider, IET
   Generation, Transmission and Distribution 13(13), 2019. Units are chained to remove equivalent permutations. One unit
   by default.
+- [ADDED] `IndPTDF` is now an explicit three-valued option: 0 off, 1 reads the factors from `oT_Data_VariablePTDF`, and
+  2 computes them from the reactances, so a case no longer has to produce them in another tool and paste in a table that
+  openTEPES cannot check against its own network. The flag used to be implied by the presence of the table, which stays
+  the default when a case says nothing. Mode 2 is refused when the case has candidate or switchable AC lines, because
+  the factors belong to one topology. On `9n` the computed factors reproduce the angle formulation's flows exactly.
 - [ADDED] an AC power flow residual check, written to `oT_Result_ACPowerFlowResidual` and reported on the console. It
   recomputes each branch flow from the bus voltages and compares it with the flow the model reports, so a user can tell
   whether a solved case is physical. This was only possible before with pandapower, which openTEPES does not ship. The

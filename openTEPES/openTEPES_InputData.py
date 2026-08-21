@@ -260,6 +260,22 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     #                       0 = the same state relaxed to [0,1], which keeps an AC run continuous at the cost of letting a bank sit half in
     for key in ['pIndACPowerFlow', 'pIndACModelType', 'pIndACRestore', 'pIndACConverter', 'pIndACCycle']:
         par.setdefault(key, 0)
+    #   pIndPTDF         0 = no flow-based coupling (default)
+    #                    1 = read the factors from oT_Data_VariablePTDF
+    #                    2 = compute them from the reactances, so the factors cannot disagree with the network beside them
+    # The flag used to be implied by the presence of the table alone. That still works, and is the default when the case
+    # says nothing, but an explicit value now wins and a value that contradicts the case is an error rather than a guess.
+    pPTDFOffered = 1 if 'dfVariablePTDF' in dfs else 0
+    par['pIndPTDF'] = int(par.get('pIndPTDF', pPTDFOffered))
+    if par['pIndPTDF'] not in (0, 1, 2):
+        raise NotImplementedError(f"IndPTDF = {par['pIndPTDF']} is not implemented; use 0 (off), 1 (read from the case) or 2 (computed)")
+    if par['pIndPTDF'] == 1 and not pPTDFOffered:
+        raise ValueError('IndPTDF = 1 reads the factors from oT_Data_VariablePTDF, and the case has no such table. '
+                         'Use IndPTDF = 2 to have them computed from the reactances, or 0 to switch flow-based coupling off.')
+    if par['pIndPTDF'] == 2 and pPTDFOffered:
+        raise ValueError('IndPTDF = 2 computes the factors from the reactances, but the case also provides '
+                         'oT_Data_VariablePTDF. Remove the table, or use IndPTDF = 1 to read it.')
+
     par.setdefault('pIndBinShuntSwitch', 1)
     if par['pIndBinShuntSwitch'] not in (0, 1):
         raise NotImplementedError(f"IndBinShuntSwitch = {par['pIndBinShuntSwitch']} is not implemented; use 1 (binary) or 0 (relaxed)")
@@ -324,7 +340,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     if par['pIndVarTTC']:
         par['pVariableNTCFrw'] = dfs['dfVariableTTCFrw'] * 1e-3                                                      # variable TTC forward                      [GW]
         par['pVariableNTCBck'] = dfs['dfVariableTTCBck'] * 1e-3                                                      # variable TTC backward                     [GW]
-    if par['pIndPTDF']:
+    if par['pIndPTDF'] == 1:
         par['pVariablePTDF']   = dfs['dfVariablePTDF']                                                               # variable PTDF                             [p.u.]
 
     if par['pIndHydroTopology']:
@@ -382,7 +398,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
             par['pVariableNTCFrw']    = ProcessParameter(par['pVariableNTCFrw'],       par['pTimeStep'])
             par['pVariableNTCBck']    = ProcessParameter(par['pVariableNTCBck'],       par['pTimeStep'])
 
-        if par['pIndPTDF']:
+        if par['pIndPTDF'] == 1:
             par['pVariablePTDF']      = ProcessParameter(par['pVariablePTDF'],         par['pTimeStep'])
 
         if par['pIndHydroTopology']:

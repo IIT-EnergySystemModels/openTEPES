@@ -188,6 +188,7 @@ A description of the options included in the file `oT_Data_Option.csv` follows:
 | IndACCycle          | Indicator of the loop condition around each independent cycle (only used when IndACPowerFlow is 2)    | {0 off, 1 on}                                       |
 | IndACConverter      | Indicator of the HVDC converter model                                                                 | {0 none, 1 line-commutated, 2 voltage-source}       |
 | IndBinShuntSwitch   | Indicator of the hourly on/off state of a switchable bus shunt                                        | {0 continuous, 1 binary}                            |
+| IndPTDF             | Indicator of the flow-based market coupling method and where its factors come from                    | {0 off, 1 read from the case, 2 computed from the reactances} |
 
 If the investment decisions are ignored (IndBinGenInvest, IndBinGenRetirement, and IndBinNetInvest take value 2) or there are none, all the scenarios with a
 probability >0 are solved sequentially (assuming a probability of 1), and the periods are given a weight of 1.
@@ -875,6 +876,26 @@ Internally, all the values below 1e-5 times the maximum system demand of each ar
 
 If the variables TTCFrw and TTCBck are both very small (e.g., 0.000001) for any time step, they are set to 0, and the line flow is forced to be 0, i.e., the
 line is switched off.
+
+## Power transfer distribution factors
+
+With `IndPTDF = 1` the factors are read from `oT_Data_VariablePTDF.csv`, which carries one column per branch and node and
+one row per load level. With `IndPTDF = 2` they are computed from the `Reactance` column of the network file instead, so
+they cannot disagree with the network beside them, and no table is needed. Asking to read a table that is not there, or
+to compute factors beside a table, is an error rather than a silent choice between them. A case that provides the table
+and says nothing about the flag keeps working as before.
+
+The computed factors cover every AC line. DC links are left out: a point-to-point link carries what its converters are
+told to carry, so it does not obey Kirchhoff's voltage law and has no place in a susceptance matrix.
+
+`IndPTDF = 2` is refused when the case has candidate or switchable AC lines. The factors belong to one topology, and a
+decision that changes the topology would leave them stale in a way nothing detects: the flows stay plausible and stop
+being right. Candidate generators, candidate storage and candidate DC links are all fine, because none of them enter the
+susceptance matrix. A case that does change its AC topology can still use `IndPTDF = 1`, where the table is indexed by
+load level and the user says how the factors move.
+
+Flow-based coupling is a lossless representation. The loss constraints are skipped whenever it is on, so a case that also
+asks for `IndBinNetLosses` gets no losses; the run says so at the start.
 
 ## Node location
 

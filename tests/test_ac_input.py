@@ -1034,3 +1034,67 @@ def test_the_rts_cases_carry_the_three_reactors_from_the_source_data(case):
 
     # -1.0 p.u. on a 100 MVA base is 100 Mvar absorbed at nominal voltage
     assert mTEPES.pBusBshb["Reactor_106"]() * mTEPES.pSBase * 1e3 == pytest.approx(-100.0)
+
+
+# --------------------------------------------------------------------------------------------------------------------
+# Computed power transfer distribution factors
+# --------------------------------------------------------------------------------------------------------------------
+
+def _ptdf_case(tmp_path, name, **options):
+    """A 9n clone with the given Option flags, operation only so two runs compare like for like."""
+    case_dir, case = _clone(tmp_path, "9n", name)
+    def edit(df):
+        for k, v in options.items():
+            df[k] = v
+    _edit_csv(case_dir, case, "Option", edit, index_col=None)
+    return case_dir, case
+
+
+def test_computed_ptdf_reproduces_the_dc_flows(tmp_path):
+    """The criterion for the whole feature: on a fixed topology the computed factors must give the SAME flows as the
+    angle formulation they stand in for. Anything else means the susceptance matrix disagrees with the constraint."""
+    from openTEPES.openTEPES import openTEPES_run
+
+    pCommon = dict(IndBinNetLosses=0, IndBinNetInvest=2, IndBinGenInvest=2)
+    pDirA, pCaseA = _ptdf_case(tmp_path, "9n_ptdfA", IndPTDF=0, **pCommon)
+    pDirB, pCaseB = _ptdf_case(tmp_path, "9n_ptdfB", IndPTDF=2, **pCommon)
+
+    mA = openTEPES_run(pDirA, pCaseA, "gurobi", 0, 0)
+    mB = openTEPES_run(pDirB, pCaseB, "gurobi", 0, 0)
+
+    assert mB.pIndPTDF() == 2 and hasattr(mB, "pPTDFCalc"), "the computed factors were never built"
+    # not indexed by load level: the topology is fixed for a period, so an hourly index would repeat itself
+    assert all(len(k) == 5 for k in mB.pland), "the computed factors should carry no load level index"
+
+    pWorst = max(abs(mA.vFlowElec[k]() - mB.vFlowElec[k]()) for k in mA.psnla if k in mB.psnla) * 1e3
+    assert pWorst < 1e-6, f"computed PTDF moved the flows by {pWorst:.6f} MW against the angle formulation"
+    assert abs(mA.vTotalSCost() - mB.vTotalSCost()) < 1e-9
+
+
+def test_computed_ptdf_is_refused_when_the_topology_can_change(tmp_path):
+    """A PTDF matrix belongs to one topology. A candidate or switchable AC line can change it, and the factors would
+    then be stale in a way nothing detects, so the combination is refused rather than approximated."""
+    from openTEPES.openTEPES import openTEPES_run
+
+    case_dir, case = _ptdf_case(tmp_path, "9n_ptdfC", IndPTDF=2, IndBinNetLosses=0)
+
+    # Make one AC line a candidate. BOTH columns matter: the model's cost is FixedInvestmentCost * FixedChargeRate, so
+    # setting the cost alone leaves it at zero and the line stays existing.
+    def edit(df):
+        pAC = [i for i in df.index if str(df.loc[i, "LineType"]).upper() != "DC"]
+        df.loc[:, "FixedInvestmentCost"] = 0.0
+        df.loc[:, "FixedChargeRate"]     = 0.0
+        df.loc[pAC[0], "FixedInvestmentCost"] = 1.0
+        df.loc[pAC[0], "FixedChargeRate"]     = 0.1
+    _edit_csv(case_dir, case, "Network", edit, index_col=None)
+
+    with pytest.raises(ValueError, match="one fixed topology"):
+        openTEPES_run(case_dir, case, "gurobi", 0, 0)
+
+
+def test_ptdf_flag_and_table_must_agree(tmp_path):
+    """Asking to read factors that are not there, or to compute factors beside a table, is an error rather than a
+    silent precedence rule. The old behaviour, where the table's presence alone decided, stays the default."""
+    case_dir, case = _ptdf_case(tmp_path, "9n_ptdfD", IndPTDF=1, IndBinNetLosses=0)
+    with pytest.raises(ValueError, match="no such table"):
+        _build(case_dir, case)

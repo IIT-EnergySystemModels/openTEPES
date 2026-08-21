@@ -307,6 +307,19 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
         raise ValueError('IndPTDF is a DC network representation and cannot be combined with IndACPowerFlow: both determine the branch flows, and '
                          'together they over-determine them. Switch one of the two off.')
 
+    # A PTDF matrix belongs to ONE topology. Computing it means fixing that topology at build time, so a case that can
+    # change it invalidates the factors the moment a decision differs from the assumption: the flows stay plausible and
+    # stop being right. Generation and storage candidates are fine, and so are candidate DC links, because none of them
+    # enter the susceptance matrix. mTEPES.lca is exactly the offending set, AC candidate OR switchable lines.
+    # Supplying the factors instead (IndPTDF = 1) is not refused: the table is indexed by load level, so a user who
+    # knows how the topology moves can say so.
+    if mTEPES.pIndPTDF() == 2 and mTEPES.lca:
+        pOffenders = ', '.join('-'.join(la) for la in list(mTEPES.lca)[:5])
+        raise ValueError(f'IndPTDF = 2 computes the factors for one fixed topology, and this case can change it: '
+                         f'{len(mTEPES.lca)} AC line(s) are candidates or switchable ({pOffenders}'
+                         f'{", ..." if len(mTEPES.lca) > 5 else ""}). Use IndPTDF = 1 and supply factors per load '
+                         f'level, or remove the candidate and switchable AC lines.')
+
     ReportConfiguration(mTEPES)
 
     # first/last stage
