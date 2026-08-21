@@ -162,7 +162,7 @@ def SettingUpVariablesAC(OptModel, mTEPES):
             # A CANDIDATE device can be off, and off means zero injection, so its range has to contain zero. For a capacitor both endpoints above are
             # strictly positive, so taking them as the bounds would put the lower bound above the zero that eShuntQOff1/2 force when it is not built —
             # and the only way to satisfy both is to build it. That makes the investment decision unavoidable regardless of its cost.
-            if sh in mTEPES.shc:
+            if sh in mTEPES.shc or sh in mTEPES.shw:
                 pQ1, pQ2 = min(0.0, pQ1, pQ2), max(0.0, pQ1, pQ2)
             OptModel.vQShunt[p,sc,n,sh].setlb(min(pQ1, pQ2))
             OptModel.vQShunt[p,sc,n,sh].setub(max(pQ1, pQ2))
@@ -175,10 +175,19 @@ def SettingUpVariablesAC(OptModel, mTEPES):
                 nd  = mTEPES.sh2n[sh]
                 pP1 = -mTEPES.pBusGshb[sh]() * mTEPES.pVMinBus[nd] ** 2 * mTEPES.pSBase
                 pP2 = -mTEPES.pBusGshb[sh]() * mTEPES.pVMaxBus[nd] ** 2 * mTEPES.pSBase
-                if sh in mTEPES.shc:                       # a candidate can be off, so its range has to contain zero
+                if sh in mTEPES.shc or sh in mTEPES.shw:   # a candidate or a switchable device can be off, so its range has to contain zero
                     pP1, pP2 = min(0.0, pP1, pP2), max(0.0, pP1, pP2)
                 OptModel.vPShunt[p,sc,n,sh].setlb(min(pP1, pP2))
                 OptModel.vPShunt[p,sc,n,sh].setub(max(pP1, pP2))
+
+        # A switchable shunt carries an on/off state per hour, exactly as a switchable line does. Binary is the physical truth for a
+        # mechanically switched bank; the relaxed form exists for the same reason pIndBinLineCommit offers one, to keep an AC run continuous.
+        # Without this state an existing shunt is wired in permanently and a case that needs it open at light load cannot say so.
+        if mTEPES.shw:
+            if mTEPES.pIndBinShuntSwitch() == 0:
+                OptModel.vShuntSwitch = Var(mTEPES.psnshw, within=UnitInterval, doc='shunt device in service in an hour [0,1]')
+            else:
+                OptModel.vShuntSwitch = Var(mTEPES.psnshw, within=Binary,       doc='shunt device in service in an hour {0,1}')
 
         if mTEPES.shc:
             # A candidate shunt is switched by an investment decision. Existing devices are always in service and get no variable at all rather than

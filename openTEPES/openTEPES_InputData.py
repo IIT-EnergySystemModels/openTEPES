@@ -256,8 +256,13 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     #                        more compensation, not less.
     #                    2 = voltage-source converters: each station is a controllable reactive source or sink within its rating, so
     #                        it behaves like a STATCOM and RELIEVES the AC system instead of burdening it.
+    #   pIndBinShuntSwitch  1 = a switchable shunt is discrete, on or off (default, and what a mechanically switched bank actually does)
+    #                       0 = the same state relaxed to [0,1], which keeps an AC run continuous at the cost of letting a bank sit half in
     for key in ['pIndACPowerFlow', 'pIndACModelType', 'pIndACRestore', 'pIndACConverter', 'pIndACCycle']:
         par.setdefault(key, 0)
+    par.setdefault('pIndBinShuntSwitch', 1)
+    if par['pIndBinShuntSwitch'] not in (0, 1):
+        raise NotImplementedError(f"IndBinShuntSwitch = {par['pIndBinShuntSwitch']} is not implemented; use 1 (binary) or 0 (relaxed)")
     if par['pIndACPowerFlow'] not in (0, 1, 2, 3):
         raise NotImplementedError(f"IndACPowerFlow = {par['pIndACPowerFlow']} is not implemented; use 0 (DC), 1 (branch flow), "
                                   f"2 (bus injection, W space) or 3 (bus injection, rectangular)")

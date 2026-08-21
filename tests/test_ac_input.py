@@ -888,3 +888,32 @@ def test_unbuilt_hvdc_candidate_is_not_a_free_statcom(tmp_path):
     for k in mTEPES.psnlad:
         assert abs(mTEPES.vQConvFrw[k]()) < 1e-6, f"an unbuilt converter supplied {mTEPES.vQConvFrw[k]()} Gvar"
         assert abs(mTEPES.vQConvBck[k]()) < 1e-6, f"an unbuilt converter supplied {mTEPES.vQConvBck[k]()} Gvar"
+
+
+def test_a_switchable_shunt_can_open_at_an_hour(tmp_path):
+    """An existing shunt marked Switchable gets an hourly on/off state and is free to open.
+
+    Without it an existing device is wired in permanently, so the only way to model a bank that must be out at light load was to delete it from the
+    case, which also removes it at peak.
+    """
+    case_dir, case = _clone(tmp_path, "9n_AC", "9n_SWI")
+    _edit_csv(case_dir, case, "BusShunt", lambda df: df.__setitem__("Switchable", [1, 0]))
+    mTEPES = _build_with_vars(case_dir, case)
+
+    assert list(mTEPES.shw) == ["Reactor_1"], "the marked device did not reach the switchable set"
+    assert hasattr(mTEPES, "vShuntSwitch"), "no hourly state was created for a switchable shunt"
+    assert len(mTEPES.vShuntSwitch) == len(mTEPES.psnshw) > 0
+
+    for k in mTEPES.psnshw:
+        assert k[3] == "Reactor_1"
+        # the state has to reach zero, otherwise 'switchable' means nothing
+        assert mTEPES.vShuntSwitch[k].lb == 0.0 and mTEPES.vShuntSwitch[k].ub == 1.0
+        # and the injection range must contain zero, the same trap the candidate devices already avoid
+        assert mTEPES.vQShunt[k].lb <= 0.0 <= mTEPES.vQShunt[k].ub, "an open shunt cannot inject zero"
+
+
+def test_an_unmarked_shunt_keeps_no_hourly_state(tmp_path):
+    """The default is unchanged: a case written before the column existed gets no state and no extra columns."""
+    mTEPES = _build_with_vars(CASES_DIR, "9n_AC")
+    assert len(mTEPES.shw) == 0
+    assert not hasattr(mTEPES, "vShuntSwitch"), "an unmarked case paid for a switching variable"

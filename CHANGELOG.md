@@ -11,6 +11,11 @@
   voltage-source supplies or absorbs it within the converter rating. `ConverterPF` sets the power factor.
 - [FIXED] the AC angle-to-flow relation used `x*P + r*Q`; it is `x*P - r*Q`. Branch flows were wrong by up to 38 MW and
   the recovered angles did not close around network loops.
+- [ADDED] hourly on/off state for bus shunts. A new `Switchable` column in `oT_Data_BusShunt` gives a device a state per
+  hour, so a capacitor bank can be opened at light load instead of being wired in for every hour of the year. Existing
+  devices stay fixed unless the column says otherwise, so nothing changes for a case written before it. `IndBinShuntSwitch`
+  chooses a discrete state (default) or a relaxed one. On a 24 hour 9n_AC window with a 300 Mvar bank the switchable
+  device costs 0.55 MEUR against 0.68 for the same bank fixed in service.
 
 - [CHANGED] improve performance in some modules
 - [CHANGED] modify OutputResultsGeneration to improve performance 

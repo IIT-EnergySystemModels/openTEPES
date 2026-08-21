@@ -430,28 +430,43 @@ def NetworkACOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, 
         def _pShuntM(sh):
             return abs(mTEPES.pBusBshb[sh]()) * mTEPES.pVMaxBus[mTEPES.sh2n[sh]] ** 2 * pSBase
 
+        # Devices split three ways. A fixed existing shunt is wired in and always injects, so it gets a plain equality. A switchable device has an
+        # hourly on/off state and a candidate a per-period build decision; both are the SAME disjunction and differ only in which variable plays the
+        # state, so they share one set of constraints. A device that is both is switched hourly and may only close in an hour once it has been built.
+        pDisj = [sh for sh in mTEPES.sh if sh in mTEPES.shc or sh in mTEPES.shw]
+
+        def _state(m, n, sh):
+            return m.vShuntSwitch[p,sc,n,sh] if sh in mTEPES.shw else m.vShuntInvest[p,sh]
+
         def eShuntQExisting(OptModel, n, sh):
-            if (p,sc,n,sh) not in mTEPES.psnsh or sh not in mTEPES.she:
+            if (p,sc,n,sh) not in mTEPES.psnsh or sh not in mTEPES.she or sh in mTEPES.shw:
                 return Constraint.Skip
             return OptModel.vQShunt[p,sc,n,sh] == mTEPES.pBusBshb[sh] * OptModel.vW[p,sc,n,mTEPES.sh2n[sh]] * pSBase
         setattr(OptModel, f'eShuntQExisting_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.sh, rule=eShuntQExisting, doc='reactive injection of an existing shunt [Gvar]'))
 
-        if mTEPES.shc:
-            # A candidate injects Bshb*vW when built and exactly nothing when not: two inequalities to pin it to the physics when built, two to force
-            # it to zero when not. The device's own rating is the big-M, so the disjunction is as tight as the device.
-            def _cand(rule_body, name, doc):
+        if pDisj:
+            # A device in service injects Bshb*vW and out of service exactly nothing: two inequalities to pin it to the physics when in, two to force
+            # it to zero when out. The device's own rating is the big-M, so the disjunction is as tight as the device.
+            def _cand(rule_body, name, doc, pSub=None):
+                pOn = pDisj if pSub is None else pSub
                 def rule(OptModel, n, sh):
-                    if (p,sc,n,sh) not in mTEPES.psnsh or sh not in mTEPES.shc:
+                    if (p,sc,n,sh) not in mTEPES.psnsh or sh not in pOn:
                         return Constraint.Skip
                     return rule_body(OptModel, n, sh)
                 setattr(OptModel, f'{name}_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.sh, rule=rule, doc=doc))
 
             _cand(lambda m, n, sh: (m.vQShunt[p,sc,n,sh] - mTEPES.pBusBshb[sh] * m.vW[p,sc,n,mTEPES.sh2n[sh]] * pSBase
-                                    <=  _pShuntM(sh) * (1 - m.vShuntInvest[p,sh])), 'eShuntQCandUp', 'candidate shunt injection when built [Gvar]')
+                                    <=  _pShuntM(sh) * (1 - _state(m, n, sh))), 'eShuntQCandUp', 'shunt injection when in service [Gvar]')
             _cand(lambda m, n, sh: (m.vQShunt[p,sc,n,sh] - mTEPES.pBusBshb[sh] * m.vW[p,sc,n,mTEPES.sh2n[sh]] * pSBase
-                                    >= -_pShuntM(sh) * (1 - m.vShuntInvest[p,sh])), 'eShuntQCandLo', 'candidate shunt injection when built [Gvar]')
-            _cand(lambda m, n, sh: m.vQShunt[p,sc,n,sh] <=  _pShuntM(sh) * m.vShuntInvest[p,sh], 'eShuntQOffUp', 'an unbuilt shunt injects nothing [Gvar]')
-            _cand(lambda m, n, sh: m.vQShunt[p,sc,n,sh] >= -_pShuntM(sh) * m.vShuntInvest[p,sh], 'eShuntQOffLo', 'an unbuilt shunt injects nothing [Gvar]')
+                                    >= -_pShuntM(sh) * (1 - _state(m, n, sh))), 'eShuntQCandLo', 'shunt injection when in service [Gvar]')
+            _cand(lambda m, n, sh: m.vQShunt[p,sc,n,sh] <=  _pShuntM(sh) * _state(m, n, sh), 'eShuntQOffUp', 'a shunt out of service injects nothing [Gvar]')
+            _cand(lambda m, n, sh: m.vQShunt[p,sc,n,sh] >= -_pShuntM(sh) * _state(m, n, sh), 'eShuntQOffLo', 'a shunt out of service injects nothing [Gvar]')
+
+            # a candidate that is also switchable may only close in an hour if the investment was made
+            pBoth = [sh for sh in mTEPES.shc if sh in mTEPES.shw]
+            if pBoth:
+                _cand(lambda m, n, sh: m.vShuntSwitch[p,sc,n,sh] <= m.vShuntInvest[p,sh], 'eShuntSwitchInvest',
+                      'a switchable candidate shunt closes only once built [0,1]', pBoth)
 
         # the active side of the same device, present only when some shunt has a conductance
         if pShuntG:
@@ -459,18 +474,18 @@ def NetworkACOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, 
                 return abs(mTEPES.pBusGshb[sh]()) * mTEPES.pVMaxBus[mTEPES.sh2n[sh]] ** 2 * pSBase
 
             def eShuntPExisting(OptModel, n, sh):
-                if (p,sc,n,sh) not in mTEPES.psnsh or sh not in mTEPES.she:
+                if (p,sc,n,sh) not in mTEPES.psnsh or sh not in mTEPES.she or sh in mTEPES.shw:
                     return Constraint.Skip
                 return OptModel.vPShunt[p,sc,n,sh] == -mTEPES.pBusGshb[sh] * OptModel.vW[p,sc,n,mTEPES.sh2n[sh]] * pSBase
             setattr(OptModel, f'eShuntPExisting_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.sh, rule=eShuntPExisting, doc='active draw of an existing shunt [GW]'))
 
-            if mTEPES.shc:
+            if pDisj:
                 _cand(lambda m, n, sh: (m.vPShunt[p,sc,n,sh] + mTEPES.pBusGshb[sh] * m.vW[p,sc,n,mTEPES.sh2n[sh]] * pSBase
-                                        <=  _pShuntMG(sh) * (1 - m.vShuntInvest[p,sh])), 'eShuntPCandUp', 'candidate shunt draw when built [GW]')
+                                        <=  _pShuntMG(sh) * (1 - _state(m, n, sh))), 'eShuntPCandUp', 'shunt draw when in service [GW]')
                 _cand(lambda m, n, sh: (m.vPShunt[p,sc,n,sh] + mTEPES.pBusGshb[sh] * m.vW[p,sc,n,mTEPES.sh2n[sh]] * pSBase
-                                        >= -_pShuntMG(sh) * (1 - m.vShuntInvest[p,sh])), 'eShuntPCandLo', 'candidate shunt draw when built [GW]')
-                _cand(lambda m, n, sh: m.vPShunt[p,sc,n,sh] <=  _pShuntMG(sh) * m.vShuntInvest[p,sh], 'eShuntPOffUp', 'an unbuilt shunt draws nothing [GW]')
-                _cand(lambda m, n, sh: m.vPShunt[p,sc,n,sh] >= -_pShuntMG(sh) * m.vShuntInvest[p,sh], 'eShuntPOffLo', 'an unbuilt shunt draws nothing [GW]')
+                                        >= -_pShuntMG(sh) * (1 - _state(m, n, sh))), 'eShuntPCandLo', 'shunt draw when in service [GW]')
+                _cand(lambda m, n, sh: m.vPShunt[p,sc,n,sh] <=  _pShuntMG(sh) * _state(m, n, sh), 'eShuntPOffUp', 'a shunt out of service draws nothing [GW]')
+                _cand(lambda m, n, sh: m.vPShunt[p,sc,n,sh] >= -_pShuntMG(sh) * _state(m, n, sh), 'eShuntPOffLo', 'a shunt out of service draws nothing [GW]')
 
     # --- candidate synchronous condensers --------------------------------------------------------------------------------------------------------
     if mTEPES.sqc:
@@ -612,7 +627,8 @@ RESTORE_FIXED = ('vCommitment', 'vCommitmentCons', 'vStartUp', 'vShutDown',
                  'vMaxCommitmentYearly', 'vMaxCommitmentConsYearly', 'vMaxCommitmentHourly',
                  'vLineCommit', 'vLineOnState', 'vLineOffState',
                  'vGenerationInvest', 'vGenerationRetire', 'vNetworkInvest', 'vReservoirInvest',
-                 'vShuntInvest', 'vSynchInvest', 'vH2PipeInvest', 'vHeatPipeInvest')
+                 'vShuntInvest', 'vSynchInvest', 'vH2PipeInvest', 'vHeatPipeInvest',
+                 'vShuntSwitch')
 
 
 def ACRestorationPass(OptModel, mTEPES, SolverName='ipopt', pIndLogConsole=0):

@@ -57,6 +57,7 @@ SHUNT_COLUMN_DEFAULTS = {
     'FixedInvestmentCost': 0.0,
     'FixedChargeRate':     0.0,
     'BinaryInvestment':    0,
+    'Switchable':          0,
     'InvestmentLo':        0.0,
     'InvestmentUp':        0.0,
 }
@@ -113,6 +114,7 @@ def ReadACInputData(dfs, par, mTEPES, pIndLogConsole):
             print(f'WARNING: bus shunt(s) {pSilent} give a FixedInvestmentCost but no FixedChargeRate, so their annualised cost is zero. '
                   f'They will be treated as existing devices, always in service and free.')
         par['pShuntBinUnitInvest'] = dfShunt['BinaryInvestment'    ]
+        par['pShuntSwitchable']    = dfShunt['Switchable'          ]                                          # hourly on/off state [0,1]
         par['pShuntLoInvest']      = dfShunt['InvestmentLo'        ]
         par['pShuntUpInvest']      = dfShunt['InvestmentUp'        ].where(dfShunt['InvestmentUp'] > 0.0, 1.0)
         par['pIndBusShunt']        = 1
@@ -218,6 +220,10 @@ def ConfigureACData(mTEPES, dfs, par):
     mTEPES.sh  = Set(doc='bus shunt devices',       initialize=sShunt)
     mTEPES.she = Set(doc='existing  shunt devices', initialize=[sh for sh in sShunt if par['pShuntFixedCost'][sh] == 0.0])
     mTEPES.shc = Set(doc='candidate shunt devices', initialize=[sh for sh in sShunt if par['pShuntFixedCost'][sh] >  0.0])
+    # A switchable device carries an on/off state per hour. Devices are fixed unless the case says otherwise, so a table written before this
+    # column existed keeps behaving exactly as it did.
+    sShuntSw   = [sh for sh in sShunt if par['pShuntSwitchable'][sh] == 1]
+    mTEPES.shw = Set(doc='switchable shunt devices', initialize=sShuntSw)
 
     # Synchronous condensers split into existing and candidate on their investment cost, read straight from the generation table rather than from
     # par['pGenInvestCost']: that series is narrowed to mTEPES.eb at openTEPES_DataConfiguration.py:833, which runs before this function, and a
@@ -245,6 +251,8 @@ def ConfigureACData(mTEPES, dfs, par):
     pGenFi = pGenTable['FinalPeriod'  ].astype(float).fillna(0.0).replace(0.0, 3000.0)
 
     mTEPES.psnsh = Set(doc='psn x shunt',                  initialize=[(p,sc,n,sh) for p,sc,n in mTEPES.psn for sh in sShunt
+                                                                       if par['pShuntPeriodIni'][sh] <= p and par['pShuntPeriodFin'][sh] >= p])
+    mTEPES.psnshw= Set(doc='psn x switchable shunt',       initialize=[(p,sc,n,sh) for p,sc,n in mTEPES.psn for sh in sShuntSw
                                                                        if par['pShuntPeriodIni'][sh] <= p and par['pShuntPeriodFin'][sh] >= p])
     mTEPES.pgq   = Set(doc='period x reactive unit',       initialize=[(p,gq) for p in mTEPES.p for gq in mTEPES.gq
                                                                        if pGenIn[gq] <= p and pGenFi[gq] >= p])

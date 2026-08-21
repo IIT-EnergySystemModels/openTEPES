@@ -193,6 +193,13 @@ def ACNetworkOperationResults(DirName, CaseName, OptModel, mTEPES):
         _write(sShunt, [OptModel.vQShunt[k]() * 1e3 for k in sShunt], 'Mvar',
                ['Period', 'Scenario', 'LoadLevel', 'Shunt'], ['Shunt'], _path, CaseName, 'ShuntReactivePower')
 
+        # the hourly in-service state, for the devices that have one. Q alone is ambiguous: a bank that is open and one that is closed on a bus
+        # sitting at zero volts both report zero.
+        if mTEPES.shw:
+            sSwitch = list(mTEPES.psnshw)
+            _write(sSwitch, [OptModel.vShuntSwitch[k]() for k in sSwitch], 'p.u.',
+                   ['Period', 'Scenario', 'LoadLevel', 'Shunt'], ['Shunt'], _path, CaseName, 'ShuntCommitment')
+
     print('Writing  AC network operation results  ... ', round(time.time() - StartTime), 's')
 
 
