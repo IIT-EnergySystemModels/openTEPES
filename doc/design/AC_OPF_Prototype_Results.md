@@ -572,6 +572,41 @@ record 15.3720 and 9 of 120, on what should be the same 24 hours of the same cas
 two and has not been identified. The old figures are therefore withdrawn rather than replaced, and a like-for-like
 restatement needs the original case definition recovered first.
 
+## 14.2 The four formulations, compared fairly
+
+24 hour RTS-GMLC window, reactors in place, `AC_CURRENT_PENALTY` set to zero. The rectangular model is the reference:
+it is the exact non-convex problem, so the two relaxations should sit at or below it.
+
+| formulation                        | solver | cost (MEUR) | gap    | wall   | variables | constraints |
+|------------------------------------|--------|------------:|-------:|-------:|----------:|------------:|
+| branch flow, SOCP                  | gurobi |     5.52590 | 0.065% |  4.3 s |    66,363 |      57,807 |
+| bus injection, W space, SOCP       | ipopt  |     5.52575 | 0.068% |  8.5 s |    75,003 |      49,167 |
+| bus injection, W space, + tangent  | ipopt  |     5.52903 | 0.009% |  9.2 s |    75,003 |      52,047 |
+| **bus injection, rectangular**     | ipopt  | **5.52951** |      — | 18.9 s |    66,987 |      42,279 |
+
+**All four agree to within 0.07%.** Branch flow and bus injection in W space differ by 0.003%, which is Bose and Low's
+equivalence showing up as a measurement rather than a citation. The tangent coupling closes most of what remains, at
+about 8% more constraints and almost no extra time.
+
+Branch flow is the fastest by a factor of two and the only one a linear-conic solver handles, at the cost of the most
+constraints. Rectangular carries the fewest constraints and the most time, which is what an exact non-convex problem on
+an interior-point solver should look like.
+
+**Two corrections had to be made before this table meant anything.** Both inflated the apparent spread:
+
+* The reactors were missing (section 14.1). Without them the relaxation is loose and the numbers move by tens of
+  per cent.
+* `AC_CURRENT_PENALTY` is charged on `vCurr`, which **only branch flow has**. With the default 1e-3 the same window
+  gives 8.06 MEUR for branch flow against 5.53 for rectangular, and branch flow appears 46% worse than an exact model
+  it should bound from below. That is the penalty, not the formulation. Any comparison across formulations has to zero
+  it; any comparison of costs against another tool has to zero it too.
+
+An earlier reading of the 8.06 against 5.53 was that the rectangular model must be missing constraints. It was not,
+though the check did turn up a real gap: the angle-difference band was built for W space only, so rectangular ran with
+no band at all. Fixing it changed neither this window nor the pglib case118 check of section 15, which still comes out
+at 97,100 dollars against a published 97,214. **That 0.117% remains unexplained.** The band was the obvious candidate,
+since pglib imposes 30 degrees, and it has now been ruled out by measurement rather than argument.
+
 # 15. Validation against physics computed outside openTEPES
 
 Every other check here compares the model against itself. The relaxation gap says the cone is closed; the envelope, the

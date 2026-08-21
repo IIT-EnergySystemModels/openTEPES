@@ -20,6 +20,8 @@
   units, so the model chooses how many are in service. Follows the VAR source model of Alvarez, Paredes and Rider, IET
   Generation, Transmission and Distribution 13(13), 2019. Units are chained to remove equivalent permutations. One unit
   by default.
+- [FIXED] the angle-difference band was built for the W-space formulation only, so `IndACPowerFlow = 3` ran with no band
+  at all.
 - [FIXED] the RTS-GMLC AC cases carried no shunt table, so the three 100 Mvar reactors on buses 106, 206 and 306 were
   missing and both ran with no reactive compensation. `RTS-GMLC_AC_Oper` falls from 61.65 to 60.00 MEUR; `RTS-GMLC_AC` is
   a full year and was not re-solved.

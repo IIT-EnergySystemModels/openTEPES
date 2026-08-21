@@ -207,8 +207,20 @@ def NetworkBIMOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc,
     # that TightenACBounds computes and the comparison would flatter branch flow for a reason that has nothing to do with the representation.
     # The same band branch flow imposes on vTheta. It still defeats the barrier even with the cone in standard form, so the rotated form was NOT the
     # cause -- an earlier version of this comment said it was, on one experiment, and that was wrong.
-    if pMode == 2:
+    # Both modes, not just W space. Rectangular carried no angle band at all until this was noticed, which left mode 3 solving a DIFFERENT problem
+    # from modes 1 and 2: on a 24 hour RTS window it returned 5.53 MEUR against 8.06 for branch flow, below a valid relaxation of the same system,
+    # which is only possible if the feasible set is larger. It also let the pglib case118 check land 0.117% BELOW the published optimum, because
+    # pglib imposes a 30 degree band that our model was ignoring.
+    if pMode in (2, 3):
         pTanMax = math.tan(math.pi / 2 * 0.999)                 # the band is clamped below pi/2, but keep tan finite whatever arrives
+
+        def _wparts(OptModel, n, ni, nf, cc):
+            """(Wre, Wim) of W_ij = V_i conj(V_j), from whichever voltage representation is active."""
+            if pMode == 2:
+                return OptModel.vWre[p,sc,n,ni,nf,cc], OptModel.vWim[p,sc,n,ni,nf,cc]
+            pEi, pFi = OptModel.vVre[p,sc,n,ni], OptModel.vVim[p,sc,n,ni]
+            pEj, pFj = OptModel.vVre[p,sc,n,nf], OptModel.vVim[p,sc,n,nf]
+            return pEi * pEj + pFi * pFj, pFi * pEj - pEi * pFj
 
         def _band(pSign, pName):
             def rule(OptModel, n, ni, nf, cc):
@@ -216,10 +228,11 @@ def NetworkBIMOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc,
                     return Constraint.Skip
                 pLim = mTEPES.pMaxAngleDiff[ni,nf,cc] if pSign > 0 else mTEPES.pMinAngleDiff[ni,nf,cc]
                 pTan = max(-pTanMax, min(pTanMax, math.tan(pLim)))
+                pRe, pIm = _wparts(OptModel, n, ni, nf, cc)
                 if pSign > 0:
-                    return OptModel.vWim[p,sc,n,ni,nf,cc] <= pTan * OptModel.vWre[p,sc,n,ni,nf,cc]
-                return     OptModel.vWim[p,sc,n,ni,nf,cc] >= pTan * OptModel.vWre[p,sc,n,ni,nf,cc]
-            setattr(OptModel, f'{pName}_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.laa, rule=rule, doc='angle-difference band in W space'))
+                    return pIm <= pTan * pRe
+                return     pIm >= pTan * pRe
+            setattr(OptModel, f'{pName}_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.laa, rule=rule, doc='angle-difference band'))
 
         _band(+1, 'eBIMAngleUp')
         _band(-1, 'eBIMAngleLo')
