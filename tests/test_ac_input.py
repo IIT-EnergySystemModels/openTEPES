@@ -1207,3 +1207,31 @@ def test_pglib_case118_against_the_published_optimum(tmp_path, monkeypatch, pf, 
     assert sum(mTEPES.vENS[k]() * pDur[k[:3]]() for k in mTEPES.vENS) * 1e3 < 1e-3
 
 
+def test_the_current_price_is_case_data(tmp_path):
+    """The value that closes the cone is a property of the case, not a constant the model can pick.
+
+    Measured on a tight cone, 9n_AC needs 1e-3, RTS-GMLC 1e-4 and pglib case118 1e-6 — a thousandfold spread between
+    cases, and RTS and case118 share a per-unit base, so it does not follow from SBase either. Too small and the
+    relaxation buys voltage with current that is not there; too large and it distorts the dispatch, by 16% on RTS at
+    1e-3. IndACRestore is the way to a physical operating point that costs nothing in the objective.
+    """
+    mTEPES, _, _ = _build(CASES_DIR, "9n_AC")
+    assert mTEPES.pEpsilonCurrent() == pytest.approx(1e-3), "9n_AC should carry the value that closes its own cone"
+
+    mRTS, _, _ = _build(CASES_DIR, "RTS-GMLC_AC_Oper")
+    assert mRTS.pEpsilonCurrent() == pytest.approx(1e-4), "the RTS cases calibrate an order of magnitude lower"
+
+    # a case that says nothing falls back to the module default, so nothing changes for cases written before this
+    case_dir, case = _clone(tmp_path, "9n_AC", "9n_noeps")
+    _edit_csv(case_dir, case, "Parameter", lambda df: df.drop(columns=["EpsilonCurrent"], inplace=True), index_col=None)
+    mDef, _, _ = _build(case_dir, case)
+    from openTEPES.openTEPES_ModelFormulationObjective import AC_CURRENT_PENALTY
+    assert mDef.pEpsilonCurrent() == pytest.approx(AC_CURRENT_PENALTY)
+
+
+def test_a_negative_current_price_is_refused(tmp_path):
+    """It prices a current. A negative price would pay the relaxation to inflate it, which is the failure it exists to stop."""
+    case_dir, case = _clone(tmp_path, "9n_AC", "9n_negeps")
+    _edit_csv(case_dir, case, "Parameter", lambda df: df.__setitem__("EpsilonCurrent", -1.0), index_col=None)
+    with pytest.raises(ValueError, match="EpsilonCurrent"):
+        _build(case_dir, case)

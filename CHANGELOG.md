@@ -24,6 +24,11 @@
   `oT_Data_Option`. They were fixed in the code, so no case could select them, and the four stage-solving strategies the
   model implements were all unreachable. `IndSequentialSolving` was also declared binary while its own code branches on
   four values. The defaults are the values that used to be in force.
+- [ADDED] `EpsilonCurrent` in `oT_Data_Parameter` sets the price on the AC branch current per case. It was a constant in
+  the code, and the value that closes the second-order cone turns out to depend on the case: 1e-3 for `9n_AC`, 1e-4 for
+  the RTS-GMLC cases and 1e-6 for pglib case118, which is a thousandfold spread. At 1e-3 the RTS cases were paying a 16%
+  dispatch distortion and reporting a relaxed cost above the exact optimum. The bundled cases now carry calibrated
+  values; a case that says nothing keeps the previous default.
 - [CHANGED] the AC current penalty is priced into the objective but is no longer part of the reported system cost. It is
   a numerical device that stops the relaxation buying voltage with current that is not there, not money, and on a 168
   hour RTS-GMLC window it came to 14.43 MEUR of a 60.00 MEUR reported total, a quarter of the figure. The solve is

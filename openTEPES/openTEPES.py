@@ -182,6 +182,7 @@ def ReportConfiguration(mTEPES):
         print(f'  reactive demand                      ... {pQd:.1f} Mvar over the horizon')
         if pQd == 0.0:
             print('  ### WARNING: an AC run with no reactive demand anywhere. Check that oT_Data_ReactiveDemand reached the model.')
+        print(f'  current price (EpsilonCurrent)       ... {mTEPES.pEpsilonCurrent():g}')
         pSh = len(mTEPES.sh) if hasattr(mTEPES, 'sh') else 0
         pSw = len(mTEPES.shw) if hasattr(mTEPES, 'shw') else 0
         print(f'  bus shunt devices                    ... {pSh} ({pSw} switchable)')

@@ -298,6 +298,16 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         print(f'### WARNING: {", ".join(pMisplaced)} found in oT_Data_Parameter. They are honoured, but they belong in '
               f'oT_Data_Option, which is where a reader of the case will look for them.')
 
+    # How hard the AC branch current is priced. It has to be case data: the value that closes the cone depends on the cost
+    # scale and the loading of the case, not on anything the model can derive. Measured on a tight cone, 9n_AC needs 1e-3,
+    # RTS-GMLC 1e-4 and pglib case118 1e-6 — a thousandfold spread. Too small and the relaxation buys voltage with current
+    # that is not there; too large and it distorts the dispatch, by 16% on RTS-GMLC at 1e-3. IndACRestore is the way to a
+    # physical operating point that costs nothing in the objective, so this can be kept small.
+    from openTEPES.openTEPES_ModelFormulationObjective import AC_CURRENT_PENALTY as pDefaultEps
+    par.setdefault('pEpsilonCurrent', pDefaultEps)
+    if float(par['pEpsilonCurrent']) < 0.0:
+        raise ValueError(f"EpsilonCurrent = {par['pEpsilonCurrent']} is negative; it prices the branch current and must be at least 0")
+
     par.setdefault('pIndBinShuntSwitch', 1)
     if par['pIndBinShuntSwitch'] not in (0, 1):
         raise NotImplementedError(f"IndBinShuntSwitch = {par['pIndBinShuntSwitch']} is not implemented; use 1 (binary) or 0 (relaxed)")

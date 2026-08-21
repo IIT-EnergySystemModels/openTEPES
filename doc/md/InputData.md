@@ -841,6 +841,30 @@ configuration it resolved to before it solves, so the mode in force is visible w
 The results are described under [AC network operation](OutputResults.md); two of them say whether the answer can be
 trusted, and the note there explains why they are not substitutes for each other.
 
+### The price on the branch current
+
+The AC branch current enters the model as an inequality, so nothing forces it down to the value the flows imply. A small
+price on it does, and `EpsilonCurrent` in `oT_Data_Parameter.csv` sets that price.
+
+It has to be given per case. The value that closes the cone depends on the cost scale and the loading of the case, and
+measured on a tight cone the bundled cases span three orders of magnitude:
+
+| case | SBase | EpsilonCurrent | what a larger value costs |
+|:-----|------:|---------------:|:--------------------------|
+| `9n_AC`            | 1000 MVA | 1e-3 | — |
+| `RTS-GMLC_AC`      |  100 MVA | 1e-4 | 1e-3 raises the dispatch cost by 16% |
+| pglib case118      |  100 MVA | 1e-6 | 1e-3 raises it by 17% |
+
+RTS-GMLC and case118 share a base and still differ by two orders of magnitude, so the value does not follow from `SBase`
+either. Too small and the relaxation buys voltage with current that is not there; too large and it distorts the dispatch
+and can push the relaxed cost **above** the exact optimum, which is not something a relaxation should ever do.
+
+The price is a conditioning aid, not the route to a physical answer. `IndACRestore = 1` re-solves the network at the
+exact equations afterwards and costs nothing in the objective, so `EpsilonCurrent` can be kept small and the restoration
+pass relied on instead. A case that sets nothing keeps the previous default.
+
+The price steers the solve but is not part of the reported system cost; it is reported beside it.
+
 ## Reactive power demand (optional file, AC only)
 
 The file `oT_Data_ReactiveDemand.csv` gives the reactive power demand of every node at every load level, in MVAr, with the same

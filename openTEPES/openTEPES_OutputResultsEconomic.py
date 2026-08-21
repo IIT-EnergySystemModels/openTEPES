@@ -293,10 +293,7 @@ def CostSummaryResults(DirName, CaseName, OptModel, mTEPES):
     # is 14.43 MEUR against a 45.56 MEUR system cost — and its row is named so that nobody adds it into the total. It is a numerical device, not
     # money. See the pEpsilonCurrent block in openTEPES_ModelFormulationObjective.
     if mTEPES.pIndACPowerFlow() == 1:                          # the current penalty prices vCurr, which only branch flow has
-        try:
-            from .openTEPES_ModelFormulationObjective          import AC_CURRENT_PENALTY as pEpsCurr
-        except ImportError:
-            from openTEPES.openTEPES_ModelFormulationObjective import AC_CURRENT_PENALTY as pEpsCurr
+        pEpsCurr = mTEPES.pEpsilonCurrent()
         CurrPen  = pd.Series(data=[sum(pScenFactor[p,sc] * pEpsCurr * mTEPES.pLoadLevelDuration[p,sc,n]() * sum(OptModel.vCurr[p,sc,n,ni,nf,cc]() for ni,nf,cc in mTEPES.laa if (p,ni,nf,cc) in mTEPES.pla) for sc,n in pSNofP[p]) for p in mTEPES.p], index=mTEPES.p).to_frame(name='AC Current Penalty (not in total)').stack()
     else:
         CurrPen  = pd.Series(data=[0.0                                                                                                                                               for p in mTEPES.p], index=mTEPES.p).to_frame(name='AC Current Penalty (not in total)').stack()

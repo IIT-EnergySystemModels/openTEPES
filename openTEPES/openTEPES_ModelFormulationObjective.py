@@ -62,7 +62,8 @@ def GenerationOperationModelFormulationObjFunct(OptModel, mTEPES, pIndLogConsole
     # through the drop equation, so where the extra loss is free the relaxation buys voltage with current that is not there. At 1e-5 on 9n_AC a
     # branch sat at its thermal bound carrying a fifth of that current. At 1e-3 it is about 2.4% of total system cost and enters the eBalanceElec
     # duals reported as locational prices, so it is broken out as its own row in the cost summary. See doc/design/AC_OPF_Prototype_Results.md 11.
-    pEpsilonCurrent = AC_CURRENT_PENALTY
+    # AC_CURRENT_PENALTY is only the default now; a case sets EpsilonCurrent in oT_Data_Parameter to override it.
+    pEpsilonCurrent = mTEPES.pEpsilonCurrent() if hasattr(mTEPES, 'pEpsilonCurrent') else AC_CURRENT_PENALTY
 
     g2a = defaultdict(set)
     for ar,g in mTEPES.a2g:
