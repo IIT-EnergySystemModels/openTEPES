@@ -425,6 +425,11 @@ the same sweep should be run before anyone quotes RTS-GMLC marginal prices.
 *Re-measured after the angle-relation sign fix of section 16. Sizes are unchanged by that fix; the costs and the
 tightness were taken again.*
 
+> **Every RTS figure in sections 12 to 14 was measured on a system with no reactive compensation.** Neither
+> `RTS-GMLC_AC` nor `RTS-GMLC_AC_Oper` carried a shunt table until 21 August 2026, so the three 100 Mvar reactors
+> RTS-GMLC puts on buses 106, 206 and 306 were absent. Section 14.1 shows what they change. The 168 hour AC case falls
+> from 61.65 to 60.00 MEUR.
+
 `RTS-GMLC_Oper` and `RTS-GMLC_AC_Oper` are the same 168 hours (the week containing the annual peak, 23-30 August, peak
 10,212 MW) over the same 73 buses and 120 branches, one under the DC network model and one under AC.
 
@@ -500,7 +505,7 @@ ipopt 3.14.19, `IndACModelType = 2`.
 |------|-------|--------|---------:|-----:|-----------:|
 | 9n, 24 h  | SOCP  | gurobi | 3.61e-05 |   1.6 s | 0.5462323 MEUR |
 | 9n, 24 h  | exact | ipopt  | 2.94e-16 |   2.2 s | 0.5462331 MEUR |
-| RTS, 24 h | SOCP  | gurobi | **1.110, loose on 9 of 120** |   5.9 s | 15.3720 MEUR |
+| RTS, 24 h | SOCP  | gurobi | **1.110, loose on 9 of 120** |   5.9 s | 15.3720 MEUR *(no reactors, withdrawn)* |
 | RTS, 24 h | exact | ipopt  | — | 729.9 s | **infeasible** |
 
 Where the cone is tight the relaxed answer *is* the AC answer: 9n_AC agrees to seven significant figures, a difference
@@ -531,6 +536,8 @@ On the 24 hour RTS-GMLC window, where the cone is loose on 9 of 120 branches:
 **The SOCP reported 15.37 MEUR for a schedule that actually costs 24.11 — it understated its own plan by 57 %.**
 Before the sign fix this gap was 32 %; with the correct physics it is larger, not smaller.
 
+**Both figures were measured without the reactors, and neither could be reproduced.** See section 14.1.
+
 After the pass the relaxation gap is 3.04e-16 across all 120 branches, so the reported currents, losses and voltages
 are the ones the AC equations give. It cost 197.9 s against 5.9 s for the relaxed solve alone.
 
@@ -540,6 +547,30 @@ on the withdrawn 18.0088 figure and does not stand.
 
 That the restoration converges where the cold exact solve does not is itself the practical argument for it: starting
 from the relaxed solution is what makes the non-convex problem tractable at this size.
+
+## 14.1 What the missing reactors were doing
+
+The RTS cases carried no shunt table, so the three 100 Mvar reactors on buses 106, 206 and 306 were absent from every
+measurement above. A fresh 24 hour window cut from `RTS-GMLC_AC_Oper`, solved as an SOCP with and without them:
+
+| 24 h window | SOCP | same plan, exact physics | understated by | cone |
+|-------------|-----:|-------------------------:|---------------:|------|
+| no reactors   | 8.4499 MEUR | 15.8607 MEUR | **88 %** | loose on 4 of 120, worst 0.853 |
+| **reactors**  | **8.0639 MEUR** | **8.1629 MEUR** | **1.2 %** | **tight on all 120** |
+
+**Most of the looseness on RTS was the missing reactive compensation, not the network.** With the reactors in place the
+cone is tight on every branch and the relaxed cost is within 1.2 % of its own plan under exact physics. Section 12.2
+read the loose cone as a property of this network; on a system carrying its own compensation it largely is not.
+
+The same holds at 168 hours: `RTS-GMLC_AC_Oper` falls from 61.65 to 60.00 MEUR. The direction is what the physics asks
+for. The 138 kV lines generate charging reactive, voltages sit against the 1.05 ceiling either way, and without the
+reactors that surplus had to be absorbed by generators at a cost.
+
+**These numbers do not restate sections 13 and 14, and are not comparable with them.** The `RTS_SOC24` case those
+sections used was not kept, and this window is not it: the rebuild gives 8.4499 MEUR and 4 loose branches where they
+record 15.3720 and 9 of 120, on what should be the same 24 hours of the same case. Something else differs between the
+two and has not been identified. The old figures are therefore withdrawn rather than replaced, and a like-for-like
+restatement needs the original case definition recovered first.
 
 # 15. Validation against physics computed outside openTEPES
 

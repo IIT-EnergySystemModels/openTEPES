@@ -11,21 +11,18 @@
   voltage-source supplies or absorbs it within the converter rating. `ConverterPF` sets the power factor.
 - [FIXED] the AC angle-to-flow relation used `x*P + r*Q`; it is `x*P - r*Q`. Branch flows were wrong by up to 38 MW and
   the recovered angles did not close around network loops.
-- [ADDED] hourly on/off state for bus shunts. A new `Switchable` column in `oT_Data_BusShunt` gives a device a state per
-  hour, so a capacitor bank can be opened at light load instead of being wired in for every hour of the year. Existing
-  devices stay fixed unless the column says otherwise, so nothing changes for a case written before it. `IndBinShuntSwitch`
-  chooses a discrete state (default) or a relaxed one. On a 24 hour 9n_AC window with a 300 Mvar bank the switchable
-  device costs 0.55 MEUR against 0.68 for the same bank fixed in service.
-- [FIXED] neither `RTS-GMLC_AC` nor `RTS-GMLC_AC_Oper` had a shunt table, so the three 100 Mvar reactors RTS-GMLC puts on
-  buses 106, 206 and 306 were missing and both systems ran with no reactive compensation at all. On `RTS-GMLC_AC_Oper`,
-  which is small enough to solve twice, adding them lowers the cost from 61.65 to 60.00 MEUR: the 138 kV lines generate
-  charging reactive, and without the reactors that surplus had to be absorbed by generators instead. `RTS-GMLC_AC` is a
-  full year and was not re-solved.
-- [ADDED] stepped shunt banks, through a `Units` column in `oT_Data_BusShunt`. A row with `Units = N` becomes a bank of
-  N identical units, so the model chooses how many units are in service rather than a single on or off. This follows the
-  VAR source model in Alvarez, Paredes and Rider, IET Generation, Transmission and Distribution 13(13), 2019, where a bus
-  carries an integer count of sources of fixed susceptance. Units of one bank are chained, so the solver does not walk
-  through equivalent permutations of the same answer. The default is one unit, so existing cases are unaffected.
+- [FIXED] `IndACPowerFlow` is now read from `oT_Data_Parameter` as well as `oT_Data_Option`. A case that put the flag in
+  the wrong table built an AC model but skipped the reactive demand and shunt tables, and reported the result as solved.
+- [ADDED] hourly on/off state for bus shunts, with a `Switchable` column in `oT_Data_BusShunt`. A bank can be opened at
+  light load instead of wired in all year. `IndBinShuntSwitch` picks a discrete state, the default, or a relaxed one.
+  Devices stay fixed unless marked, so existing cases are unchanged.
+- [ADDED] stepped shunt banks, with a `Units` column in `oT_Data_BusShunt`. `Units = N` gives a bank of N identical
+  units, so the model chooses how many are in service. Follows the VAR source model of Alvarez, Paredes and Rider, IET
+  Generation, Transmission and Distribution 13(13), 2019. Units are chained to remove equivalent permutations. One unit
+  by default.
+- [FIXED] the RTS-GMLC AC cases carried no shunt table, so the three 100 Mvar reactors on buses 106, 206 and 306 were
+  missing and both ran with no reactive compensation. `RTS-GMLC_AC_Oper` falls from 61.65 to 60.00 MEUR; `RTS-GMLC_AC` is
+  a full year and was not re-solved.
 
 - [CHANGED] improve performance in some modules
 - [CHANGED] modify OutputResultsGeneration to improve performance 
