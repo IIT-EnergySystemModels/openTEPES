@@ -20,6 +20,9 @@
   units, so the model chooses how many are in service. Follows the VAR source model of Alvarez, Paredes and Rider, IET
   Generation, Transmission and Distribution 13(13), 2019. Units are chained to remove equivalent permutations. One unit
   by default.
+- [ADDED] the resolved configuration is printed at the start of every run: the network model in force, the AC settings,
+  the reactive demand and shunt counts that reached the model, and the other active features. A case whose flags do not
+  say what the author intended now shows it before the solve rather than after.
 - [FIXED] the angle-difference band was built for the W-space formulation only, so `IndACPowerFlow = 3` ran with no band
   at all.
 - [FIXED] the RTS-GMLC AC cases carried no shunt table, so the three 100 Mvar reactors on buses 106, 206 and 306 were

@@ -108,6 +108,52 @@ OUTPUT_REGISTRY = (
 )
 
 
+
+def ReportConfiguration(mTEPES):
+    """Print the configuration the model RESOLVED to, not the one the case files appear to ask for.
+
+    The two can differ, and when they do the run still finishes and still reports a solved case. IndACPowerFlow written
+    into oT_Data_Parameter rather than oT_Data_Option used to build a full AC model whose reactive demand and shunt
+    tables were never read: 1438 Mvar of load silently became zero, and only a warning marked it. The counts below are
+    read back off the built model, so a table that did not arrive shows up as a zero here before the solve rather than
+    as a puzzling result after it.
+    """
+    pAC = {0: 'DC', 1: 'AC, branch flow', 2: 'AC, bus injection (W space)', 3: 'AC, bus injection (rectangular)'}
+    print('')
+    print('Configuration                          ****')
+    print(f'  network model                        ... {pAC.get(mTEPES.pIndACPowerFlow(), mTEPES.pIndACPowerFlow())}')
+
+    if mTEPES.pIndACPowerFlow():
+        pType = {0: 'SOCP relaxation', 1: 'piecewise linear', 2: 'exact non-linear'}
+        print(f'  AC current definition                ... {pType.get(mTEPES.pIndACModelType(), mTEPES.pIndACModelType())}')
+        print(f'  AC restoration pass                  ... {"on" if mTEPES.pIndACRestore() else "off"}')
+        if mTEPES.pIndACPowerFlow() == 2:
+            print(f'  loop condition (IndACCycle)          ... {"on" if mTEPES.pIndACCycle() else "off"}')
+        pConv = {0: 'none', 1: 'line-commutated', 2: 'voltage-source'}
+        print(f'  HVDC converters                      ... {pConv.get(mTEPES.pIndACConverter(), mTEPES.pIndACConverter())}')
+
+        # the two AC-only tables, reported as what reached the model rather than as what the case directory holds
+        pQd = sum(mTEPES.pReactiveDemand[k]() for k in mTEPES.psnnd) * 1e3 if hasattr(mTEPES, 'pReactiveDemand') else 0.0
+        print(f'  reactive demand                      ... {pQd:.1f} Mvar over the horizon')
+        if pQd == 0.0:
+            print('  ### WARNING: an AC run with no reactive demand anywhere. Check that oT_Data_ReactiveDemand reached the model.')
+        pSh = len(mTEPES.sh) if hasattr(mTEPES, 'sh') else 0
+        pSw = len(mTEPES.shw) if hasattr(mTEPES, 'shw') else 0
+        print(f'  bus shunt devices                    ... {pSh} ({pSw} switchable)')
+
+    print(f'  network losses                       ... {"on" if mTEPES.pIndBinNetLosses() else "off"}')
+    print(f'  flow-based coupling (IndPTDF)        ... {"on" if mTEPES.pIndPTDF() else "off"}')
+    # PTDF is a lossless representation: the loss constraints are skipped whenever it is on, so a case asking for both
+    # gets no losses at all. That is not wrong, but it is not what the case asked for either, so say so.
+    if mTEPES.pIndPTDF() and mTEPES.pIndBinNetLosses():
+        print('  ### NOTE: IndPTDF is a lossless representation, so IndBinNetLosses is ignored and no losses are modelled.')
+    pOn = [pName for pName, pFlag in (('variable TTC', mTEPES.pIndVarTTC()), ('hydro topology', mTEPES.pIndHydroTopology()),
+                                      ('hydrogen', mTEPES.pIndHydrogen()), ('heat', mTEPES.pIndHeat()),
+                                      ('single node', mTEPES.pIndBinSingleNode())) if pFlag]
+    print(f'  other active features                ... {", ".join(pOn) if pOn else "none"}')
+    print('')
+
+
 def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConsole,
                   *, output_spec=None, out_path=None, gzip_patterns=None, output_format="csv",
                   input_source=None):
@@ -260,6 +306,8 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     if mTEPES.pIndPTDF() and mTEPES.pIndACPowerFlow():
         raise ValueError('IndPTDF is a DC network representation and cannot be combined with IndACPowerFlow: both determine the branch flows, and '
                          'together they over-determine them. Switch one of the two off.')
+
+    ReportConfiguration(mTEPES)
 
     # first/last stage
     FirstST = 0
