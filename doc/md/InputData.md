@@ -182,6 +182,12 @@ A description of the options included in the file `oT_Data_Option.csv` follows:
 | IndBinSingleNode    | Indicator of single node case study                                                                   | {0 network, 1 single node}                          |
 | IndBinLineCommit    | Indicator of binary transmission switching decisions                                                  | {0 continuous, 1 binary}                            |
 | IndBinNetLosses     | Indicator of network losses                                                                           | {0 lossless, 1 ohmic losses}                        |
+| IndACPowerFlow      | Indicator of the AC optimal power flow and its formulation                                            | {0 DC, 1 branch flow, 2 bus injection W space, 3 bus injection rectangular} |
+| IndACModelType      | Indicator of how the branch current is written (only used when IndACPowerFlow is 1)                   | {0 second-order cone, 1 piecewise linear, 2 exact non-linear} |
+| IndACRestore        | Indicator of the restoration pass that makes the reported operating point physical                    | {0 off, 1 on}                                       |
+| IndACCycle          | Indicator of the loop condition around each independent cycle (only used when IndACPowerFlow is 2)    | {0 off, 1 on}                                       |
+| IndACConverter      | Indicator of the HVDC converter model                                                                 | {0 none, 1 line-commutated, 2 voltage-source}       |
+| IndBinShuntSwitch   | Indicator of the hourly on/off state of a switchable bus shunt                                        | {0 continuous, 1 binary}                            |
 
 If the investment decisions are ignored (IndBinGenInvest, IndBinGenRetirement, and IndBinNetInvest take value 2) or there are none, all the scenarios with a
 probability >0 are solved sequentially (assuming a probability of 1), and the periods are given a weight of 1.
@@ -798,6 +804,49 @@ invested.
 If the lower and upper bounds of investment decisions are very close (with a difference \<1e-4) to 0 or 1, they are converted into 0 and 1. To forbid investment
 on a candidate line, set `InvestmentUp` to `1e-5`: it falls below the snap threshold and is internally converted to 0. A blank cell or 0 in this column is
 interpreted as "no upper bound" (full `p.u.` allowed) and lets the candidate be freely chosen by the optimization.
+
+## Reactive power demand (optional file, AC only)
+
+The file `oT_Data_ReactiveDemand.csv` gives the reactive power demand of every node at every load level, in MVAr, with the same
+shape as `oT_Data_Demand.csv`. It is read only when IndACPowerFlow is different from 0.
+
+An AC run with no reactive demand anywhere is almost always a mistake rather than a case with unity power factor, so the model
+reports the total it read at the start of the run.
+
+## Bus shunt devices (optional file, AC only)
+
+The file `oT_Data_BusShunt.csv` describes the reactors and capacitor banks connected to a bus. It is read only when
+IndACPowerFlow is different from 0.
+
+| File | Dictionary | Description |
+|:-----|:----------:|:------------|
+| oT_Data_BusShunt | sh | Bus shunt devices |
+
+| Identifier | Description |
+|:-----------|:------------|
+| Shunt | Name of the device |
+| Node  | Bus the device is connected to |
+
+| Parameter           | Description | Unit |
+|:--------------------|:------------|:-----|
+| InitialPeriod       | Initial period when the device is available | Year |
+| FinalPeriod         | Final period when the device is available | Year |
+| Gshb                | Shunt conductance, per unit on SBase, referred to the nominal voltage of the bus | p.u. |
+| Bshb                | Shunt susceptance, per unit on SBase, referred to the nominal voltage of the bus. Positive is a capacitor, which injects reactive power; negative is a reactor, which absorbs it | p.u. |
+| FixedInvestmentCost | Fixed investment cost. A device with a cost is a candidate; one without is existing plant | MEUR |
+| FixedChargeRate     | Fixed-charge rate to annualise the investment cost | p.u. |
+| BinaryInvestment    | Binary or continuous investment decision for this device | Yes/No |
+| InvestmentLo        | Lower bound of the investment decision | p.u. |
+| InvestmentUp        | Upper bound of the investment decision | p.u. |
+| Switchable          | Whether the device has an on/off state per load level. Without it an existing device is in service every hour of the horizon, so a bank that must be open at light load cannot be represented | Yes/No |
+| Units               | Number of identical units the device stands for. With a value above 1 the model chooses how many are in service, so a stepped bank is a count rather than a single on or off | Integer |
+
+The reactive power a device injects is `Bshb * |V|^2 * SBase`, so it varies with the voltage: at the upper voltage limit a bank
+delivers about 10% more than its nameplate. The rating at nominal voltage in MVAr is `Bshb * SBase`, with SBase in MVA. A
+device of -1.0 p.u. on a 100 MVA base is therefore a 100 MVAr reactor.
+
+Each unit of a bank carries the full susceptance of one unit, not a share of the bank. `Units = 4` with `Bshb = 0.075` on a
+1000 MVA base is four 75 MVAr steps, not four 18.75 MVAr steps.
 
 ## Variable electric transmission line TTC forward and backward (optional files)
 
