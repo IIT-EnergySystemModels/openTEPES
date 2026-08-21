@@ -954,3 +954,23 @@ def test_a_bank_without_units_is_a_single_device(tmp_path):
     mTEPES = _build_with_vars(CASES_DIR, "9n_AC")
     assert sorted(mTEPES.sh) == ["Capacitor_1", "Reactor_1"]
     assert len(mTEPES.shp) == 0
+
+
+def test_the_rts_case_carries_the_three_reactors_from_the_source_data():
+    """RTS-GMLC puts a 100 Mvar reactor on buses 106, 206 and 306 and nothing anywhere else.
+
+    They live in RTS_Data/SourceData/bus.csv under 'MVAR Shunt B', where the value is Mvar at one per unit voltage. On this case's 100 MVA base that
+    is Bshb = -1.0. The case carried no shunt table at all before, so the system had no reactors and the reported operating point was not RTS-GMLC's.
+    """
+    mTEPES, _, _ = _build(CASES_DIR, "RTS-GMLC_AC_Oper")
+
+    assert sorted(mTEPES.sh) == ["Reactor_106", "Reactor_206", "Reactor_306"]
+    assert mTEPES.pSBase == 0.1, "the conversion below assumes a 100 MVA base expressed in GVA"
+    for sh in mTEPES.sh:
+        assert mTEPES.pBusBshb[sh]() == pytest.approx(-1.0), "not the -100 Mvar the source data gives"
+        assert mTEPES.pBusGshb[sh]() == 0.0, "the source data gives no shunt conductance"
+        # they are fixed plant, not investment candidates and not switchable
+        assert sh in mTEPES.she and sh not in mTEPES.shc and sh not in mTEPES.shw
+
+    # -1.0 p.u. on a 100 MVA base is 100 Mvar absorbed at nominal voltage
+    assert mTEPES.pBusBshb["Reactor_106"]() * mTEPES.pSBase * 1e3 == pytest.approx(-100.0)
