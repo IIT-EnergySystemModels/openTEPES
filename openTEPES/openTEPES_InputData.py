@@ -99,15 +99,24 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     AC_ONLY_STEMS = {'ReactiveDemand', 'BusShunt'}
 
     def _peek_option(flag: str) -> int:
-        """Read one flag out of oT_Data_Option before the main read loop. The table is a single row, so this is cheap."""
-        try:
-            df = source.read_data('Option')
-            # the conversion belongs inside the try as well: a blank cell reads as NaN and int(NaN) raises, which would abort here rather than warn
-            return int(df[flag].iloc[0]) if flag in df.columns else 0
-        except Exception:
-            # The main read loop below tolerates a malformed Option table with a warning and carries on. This peek runs first, so it must not be the
-            # stricter of the two: a table that used to warn would otherwise abort the run before the loop is ever reached.
-            return 0
+        """Read one flag out of oT_Data_Option, or out of oT_Data_Parameter when that is where the case put it.
+
+        Both tables are single rows, so this is cheap. Looking in BOTH matters: the main read loop below copies every
+        Parameter column into ``par``, so a case that puts IndACPowerFlow there builds a full AC model. If this peek
+        only consulted Option it would answer 0, skip ReactiveDemand and BusShunt, and the run would go all the way to
+        a solved AC case carrying no reactive demand and no shunts -- a wrong model that looks like a right one.
+        """
+        for stem in ('Option', 'Parameter'):
+            try:
+                df = source.read_data(stem)
+                # the conversion belongs inside the try as well: a blank cell reads as NaN and int(NaN) raises
+                if flag in df.columns:
+                    return int(df[flag].iloc[0])
+            except Exception:
+                continue
+        # The main read loop below tolerates a malformed Option table with a warning and carries on. This peek runs first, so it must not be the
+        # stricter of the two: a table that used to warn would otherwise abort the run before the loop is ever reached.
+        return 0
 
     def read_input_data():
         """Read every oT_Data table the source knows about.
