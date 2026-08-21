@@ -425,10 +425,10 @@ the same sweep should be run before anyone quotes RTS-GMLC marginal prices.
 *Re-measured after the angle-relation sign fix of section 16. Sizes are unchanged by that fix; the costs and the
 tightness were taken again.*
 
-> **Every RTS figure in sections 12 to 14 was measured on a system with no reactive compensation.** Neither
-> `RTS-GMLC_AC` nor `RTS-GMLC_AC_Oper` carried a shunt table until 21 August 2026, so the three 100 Mvar reactors
-> RTS-GMLC puts on buses 106, 206 and 306 were absent. Section 14.1 shows what they change. The 168 hour AC case falls
-> from 61.65 to 60.00 MEUR.
+> **Every RTS figure in this section was measured on a system with no reactive compensation.** Neither `RTS-GMLC_AC`
+> nor `RTS-GMLC_AC_Oper` carried a shunt table until 21 August 2026, so the three 100 Mvar reactors RTS-GMLC puts on
+> buses 106, 206 and 306 were absent. Section 14.1 shows what they change; the 168 hour AC case falls from 61.65 to
+> 60.00 MEUR. Sections 13 and 14 have been re-measured with the reactors in place; this one has not.
 
 `RTS-GMLC_Oper` and `RTS-GMLC_AC_Oper` are the same 168 hours (the week containing the annual peak, 23-30 August, peak
 10,212 MW) over the same 73 buses and 120 branches, one under the DC network model and one under AC.
@@ -499,26 +499,46 @@ branches. The nine-bus case was never going to reveal this.
 
 # 13. The exact model, and where it can and cannot be solved
 
-ipopt 3.14.19, `IndACModelType = 2`.
+*Re-measured with the reactors in place and the current penalty set to zero. The case is defined below so this can be
+repeated: `9n_AC` and `RTS-GMLC_AC_Oper` cut to their first 24 load levels, `IndACPowerFlow = 1`, `IndACRestore = 0`,
+the annual RES energy target zeroed because it does not survive truncation, and `AC_CURRENT_PENALTY = 0.0`. The earlier
+version of this section named a case that was not kept, which is why its figures could only be withdrawn.*
 
-| case | model | solver | cone gap | wall | total cost |
-|------|-------|--------|---------:|-----:|-----------:|
-| 9n, 24 h  | SOCP  | gurobi | 3.61e-05 |   1.6 s | 0.5462323 MEUR |
-| 9n, 24 h  | exact | ipopt  | 2.94e-16 |   2.2 s | 0.5462331 MEUR |
-| RTS, 24 h | SOCP  | gurobi | **1.110, loose on 9 of 120** |   5.9 s | 15.3720 MEUR *(no reactors, withdrawn)* |
-| RTS, 24 h | exact | ipopt  | — | 729.9 s | **infeasible** |
+ipopt 3.14.19 for the exact model, gurobi for the cone.
 
-Where the cone is tight the relaxed answer *is* the AC answer: 9n_AC agrees to seven significant figures, a difference
-of 0.00014 %.
+| case | model | solver | cone | wall | total cost |
+|------|-------|--------|------|-----:|-----------:|
+| 9n, 24 h  | SOCP  | gurobi | **loose on 8 of 12**, worst 1.110 |    2.2 s | 0.518023 MEUR |
+| 9n, 24 h  | exact | ipopt  | tight, 2.32e-16                   |    3.0 s | 0.529997 MEUR |
+| RTS, 24 h | SOCP  | gurobi | **loose on 5 of 120**, worst 0.560 |   10.5 s | 5.525900 MEUR |
+| RTS, 24 h | exact | ipopt  | tight, 1.73e-16                   | 1212.1 s | 5.526068 MEUR |
 
-**On RTS the exact model no longer solves from a cold start.** ipopt ran for 730 seconds and stopped at "problem
-infeasible". With the wrong sign it converged to 18.0088 MEUR, and that figure appeared in an earlier version of this
-section as the true optimum. It was produced by a model with the wrong angle relation and has been withdrawn; there is
-currently **no measured exact optimum for RTS**.
+**The exact model does solve on RTS.** ipopt reports `Optimal Solution Found`. The earlier reading, that it stopped at
+"problem infeasible" from a cold start, was measured on a system with no reactive compensation at all; with the three
+reactors in place it converges. It costs 1212 s against 10.5 s for the cone, a factor of 115, which is the real argument
+against using it as the working model rather than any difficulty in solving it.
 
-Two readings are open and they have not been separated: the corrected feasible set may simply be harder for a cold
-interior-point start, or ipopt may be reaching local infeasibility on a non-convex problem and need a starting point.
-The restoration pass in section 14 converges on the same case from the relaxed solution, which favours the second.
+The relaxation gap is **2.26 % on 9n and 0.003 % on RTS**. The small case is the loose one, which is the opposite of
+what section 12.2 concluded and of what intuition suggests. Twelve branches with a loose cone on 8 of them beat 120
+branches with a loose cone on 5.
+
+## 13.1 The current penalty is what makes the cone look tight
+
+The same 9n case, the same 24 hours, changing only `AC_CURRENT_PENALTY`:
+
+| penalty | SOCP | exact | cone |
+|---------|-----:|------:|------|
+| 0       | 0.518023 MEUR  | 0.529997 MEUR  | **loose on 8 of 12** |
+| 1e-3    | 0.5462318 MEUR | 0.5462307 MEUR | tight on all 12, worst 4.8e-06 |
+
+The penalty charges `vCurr`, and the cheapest `vCurr` consistent with the flows is the one on the cone boundary, so
+charging for it pins the relaxation to that boundary. With the penalty on, the relaxed and exact costs agree to six
+figures and the cone reports itself tight; with it off, the same case has a 2.26 % gap and a cone loose on two thirds of
+its branches.
+
+**A tightness measured with the penalty on is measuring the penalty.** The earlier version of this section read the
+agreement to seven figures as "where the cone is tight the relaxed answer is the AC answer". The agreement was real and
+the reading was wrong: what it showed was the penalty doing its work, and the cost it reported carried the penalty too.
 
 # 14. The restoration pass
 
@@ -526,27 +546,21 @@ The restoration pass in section 14 converges on the same case from the relaxed s
 switching and every investment stay where the relaxed solve put them — swaps the relaxed current definition for the
 exact equality and the angle envelope for the exact angle relation, and re-solves the network on ipopt.
 
-On the 24 hour RTS-GMLC window, where the cone is loose on 9 of 120 branches:
+On the 24 hour RTS-GMLC window of section 13, where the cone is loose on 5 of 120 branches:
 
 | what | total cost |
 |------|-----------:|
-| SOCP, as reported                    | 15.3720 MEUR |
-| **the same plan with exact physics** | **24.1073 MEUR** |
+| SOCP, as reported                     | 5.525900 MEUR |
+| **the same plan with exact physics**  | **5.556286 MEUR** |
+| the true optimum, exact from a cold start | 5.526068 MEUR |
 
-**The SOCP reported 15.37 MEUR for a schedule that actually costs 24.11 — it understated its own plan by 57 %.**
-Before the sign fix this gap was 32 %; with the correct physics it is larger, not smaller.
+Three numbers rather than two, because they answer different questions. The relaxation understates its own plan by
+**0.55 %**: that is the gap between the first two rows, and it is what the pass corrects. The relaxation gap proper is
+0.003 %, the distance from the first row to the third. And the relaxed **plan** is 0.55 % worse than the best plan
+available, because the pass holds the commitment the relaxed solve chose and only makes it physical.
 
-**Both figures were measured without the reactors, and neither could be reproduced.** See section 14.1.
-
-After the pass the relaxation gap is 3.04e-16 across all 120 branches, so the reported currents, losses and voltages
-are the ones the AC equations give. It cost 197.9 s against 5.9 s for the relaxed solve alone.
-
-What cannot be said any more is how far that plan is from the best achievable, because the free exact optimum for RTS
-is not available (section 13). The earlier claim that the relaxed plan was 12.9 % worse than the exact optimum rested
-on the withdrawn 18.0088 figure and does not stand.
-
-That the restoration converges where the cold exact solve does not is itself the practical argument for it: starting
-from the relaxed solution is what makes the non-convex problem tractable at this size.
+The pass cost 265.5 s against 10.5 s for the relaxed solve alone, and 1212 s for the exact model from a cold start. It
+is the cheaper of the two routes to a physical operating point.
 
 ## 14.1 What the missing reactors were doing
 
@@ -566,11 +580,11 @@ The same holds at 168 hours: `RTS-GMLC_AC_Oper` falls from 61.65 to 60.00 MEUR. 
 for. The 138 kV lines generate charging reactive, voltages sit against the 1.05 ceiling either way, and without the
 reactors that surplus had to be absorbed by generators at a cost.
 
-**These numbers do not restate sections 13 and 14, and are not comparable with them.** The `RTS_SOC24` case those
-sections used was not kept, and this window is not it: the rebuild gives 8.4499 MEUR and 4 loose branches where they
-record 15.3720 and 9 of 120, on what should be the same 24 hours of the same case. Something else differs between the
-two and has not been identified. The old figures are therefore withdrawn rather than replaced, and a like-for-like
-restatement needs the original case definition recovered first.
+The old figures of sections 13 and 14 were never reproduced. The `RTS_SOC24` case they used was not kept, and a rebuilt
+24 hour window gives 8.4499 MEUR and 4 loose branches where they recorded 15.3720 and 9 of 120, on what should be the
+same hours of the same case. What differs has not been identified. Those sections have since been **re-derived from
+scratch** on a case whose definition is written down, rather than restated, and the old numbers are gone rather than
+corrected.
 
 ## 14.2 The four formulations, compared fairly
 
