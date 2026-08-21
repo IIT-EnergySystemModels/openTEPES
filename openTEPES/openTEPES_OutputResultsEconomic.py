@@ -288,19 +288,18 @@ def CostSummaryResults(DirName, CaseName, OptModel, mTEPES):
     else:
         ReactInvCost = pd.Series(data=[0.0                                                                                                                                           for p in mTEPES.p], index=mTEPES.p).to_frame(name='Investment Cost Reactive'  ).stack()
 
-    # The AC current penalty is broken out of the network operation cost rather than left inside it. On 9n_AC it is 3.83 of 157.27 MEUR — 2.4% of the
-    # reported total — and merged into 'Operation Cost Network' a reader takes it for ohmic losses, which are a tiny fraction of that number. It is a
-    # numerical device, not a physical cost, so it is named as one. See the pEpsilonCurrent block in openTEPES_ModelFormulationObjective.
+    # The AC current penalty is priced into the objective but is NOT part of the system cost, so it no longer has to be subtracted back out of the
+    # network operation cost: vTotalNCost never carried it. It is reported here because its size is worth knowing — on a 168 hour RTS-GMLC window it
+    # is 14.43 MEUR against a 45.56 MEUR system cost — and its row is named so that nobody adds it into the total. It is a numerical device, not
+    # money. See the pEpsilonCurrent block in openTEPES_ModelFormulationObjective.
     if mTEPES.pIndACPowerFlow() == 1:                          # the current penalty prices vCurr, which only branch flow has
         try:
             from .openTEPES_ModelFormulationObjective          import AC_CURRENT_PENALTY as pEpsCurr
         except ImportError:
             from openTEPES.openTEPES_ModelFormulationObjective import AC_CURRENT_PENALTY as pEpsCurr
-        CurrPen  = pd.Series(data=[sum(pScenFactor[p,sc] * pEpsCurr * mTEPES.pLoadLevelDuration[p,sc,n]() * sum(OptModel.vCurr[p,sc,n,ni,nf,cc]() for ni,nf,cc in mTEPES.laa if (p,ni,nf,cc) in mTEPES.pla) for sc,n in pSNofP[p]) for p in mTEPES.p], index=mTEPES.p).to_frame(name='AC Current Penalty'        ).stack()
-        # subtract by value: both are one entry per period in the same order, but their stacked indices carry different row names
-        NetCost  = NetCost.sub(CurrPen.values)
+        CurrPen  = pd.Series(data=[sum(pScenFactor[p,sc] * pEpsCurr * mTEPES.pLoadLevelDuration[p,sc,n]() * sum(OptModel.vCurr[p,sc,n,ni,nf,cc]() for ni,nf,cc in mTEPES.laa if (p,ni,nf,cc) in mTEPES.pla) for sc,n in pSNofP[p]) for p in mTEPES.p], index=mTEPES.p).to_frame(name='AC Current Penalty (not in total)').stack()
     else:
-        CurrPen  = pd.Series(data=[0.0                                                                                                                                               for p in mTEPES.p], index=mTEPES.p).to_frame(name='AC Current Penalty'        ).stack()
+        CurrPen  = pd.Series(data=[0.0                                                                                                                                               for p in mTEPES.p], index=mTEPES.p).to_frame(name='AC Current Penalty (not in total)').stack()
     ElecRelCost     = pd.Series(data=[sum(pScenFactor[p,sc] * OptModel.vTotalRElecCost[p,sc,n]() for sc,n in pSNofP[p]) for p in mTEPES.p], index=mTEPES.p).to_frame(name='Reliability Cost'          ).stack()
     if mTEPES.pIndHydrogen():
         H2RelCost   = pd.Series(data=[sum(pScenFactor[p,sc] * OptModel.vTotalRH2Cost  [p,sc,n]() for sc,n in pSNofP[p]) for p in mTEPES.p], index=mTEPES.p).to_frame(name='Reliability Cost Hydrogen' ).stack()

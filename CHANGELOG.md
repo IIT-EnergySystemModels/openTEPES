@@ -24,6 +24,10 @@
   `oT_Data_Option`. They were fixed in the code, so no case could select them, and the four stage-solving strategies the
   model implements were all unreachable. `IndSequentialSolving` was also declared binary while its own code branches on
   four values. The defaults are the values that used to be in force.
+- [CHANGED] the AC current penalty is priced into the objective but is no longer part of the reported system cost. It is
+  a numerical device that stops the relaxation buying voltage with current that is not there, not money, and on a 168
+  hour RTS-GMLC window it came to 14.43 MEUR of a 60.00 MEUR reported total, a quarter of the figure. The solve is
+  unchanged; `vTotalSCost` now reports 45.56 MEUR for that case and the penalty is reported beside it.
 - [FIXED] the AC design notes measured the RTS-GMLC network against DC on a system with no reactive compensation. The
   comparison, the horizon table and the relaxation tightness are measured again with the reactors: the DC model is
   unchanged to the digit, as it should be, and the AC one grows by exactly 3 rows per hour.

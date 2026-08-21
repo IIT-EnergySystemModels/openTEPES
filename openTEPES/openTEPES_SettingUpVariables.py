@@ -53,6 +53,9 @@ def SettingUpVariables(OptModel, mTEPES):
         OptModel.vTotalECost               = Var(mTEPES.psn,   within=NonNegativeReals, doc='total system emission                cost      [MEUR]')
         OptModel.vTotalRElecCost           = Var(mTEPES.psn,   within=NonNegativeReals, doc='total system reliability elec        cost      [MEUR]')
         OptModel.vTotalNCost               = Var(mTEPES.psn,   within=NonNegativeReals, doc='total network loss penalty operation cost      [MEUR]')
+        # The AC current penalty is carried apart from the network cost so that it can be priced into the OBJECTIVE, which is what makes it work,
+        # without entering vTotalSCost, which is what everything reports. It is a numerical device, not money.
+        OptModel.vTotalNPenalty            = Var(mTEPES.psn,   within=NonNegativeReals, doc='AC current penalty, steers the solve, not a cost [MEUR]')
         OptModel.vTotalEmissionArea        = Var(mTEPES.psnar, within=NonNegativeReals, doc='total   area emission                         [MtCO2]')
         OptModel.vTotalECostArea           = Var(mTEPES.psnar, within=NonNegativeReals, doc='total   area emission                cost      [MEUR]')
         OptModel.vTotalRESEnergyArea       = Var(mTEPES.psnar, within=NonNegativeReals, doc='        RES energy                              [GWh]')

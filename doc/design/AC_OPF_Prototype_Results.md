@@ -562,6 +562,11 @@ charging for it pins the relaxation to that boundary. With the penalty on, the r
 figures and the cone reports itself tight; with it off, the same case has a 2.26 % gap and a cone loose on two thirds of
 its branches.
 
+Since 4.18.18 the penalty is priced into the OBJECTIVE but is no longer part of `vTotalSCost`, so it steers the solve
+without appearing in the reported cost. On the 168 hour window that moves the reported total from 59.9967 to 45.5634
+MEUR; the objective, and therefore the solution, is unchanged. The tables above and in section 13 predate that split and
+report the objective, penalty included.
+
 **A tightness measured with the penalty on is measuring the penalty.** The earlier version of this section read the
 agreement to seven figures as "where the cone is tight the relaxed answer is the AC answer". The agreement was real and
 the reading was wrong: what it showed was the penalty doing its work, and the cost it reported carried the penalty too.
