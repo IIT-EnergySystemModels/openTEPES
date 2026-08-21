@@ -603,9 +603,40 @@ an interior-point solver should look like.
 
 An earlier reading of the 8.06 against 5.53 was that the rectangular model must be missing constraints. It was not,
 though the check did turn up a real gap: the angle-difference band was built for W space only, so rectangular ran with
-no band at all. Fixing it changed neither this window nor the pglib case118 check of section 15, which still comes out
-at 97,100 dollars against a published 97,214. **That 0.117% remains unexplained.** The band was the obvious candidate,
-since pglib imposes 30 degrees, and it has now been ruled out by measurement rather than argument.
+no band at all. Fixing it changed neither this window nor the pglib case118 check, which the next section explains.
+
+## 14.3 Why pglib case118 comes out below the published optimum
+
+Section 15 reports 97,100 dollars per hour against a published 97,214, which is 0.117% BELOW a figure nothing should
+beat. The cause is the **form of the thermal limit**, not a missing constraint.
+
+openTEPES writes the limit on the CURRENT, `l <= (Smax/Vmin)^2`, so with the cone the apparent power it admits is
+`Smax * V_i / Vmin`, which reaches `Smax * Vmax / Vmin` at the top of the voltage band. pglib imposes a flat
+`|S| <= rateA`. On case118 the band is 0.94 to 1.06, so the allowance is 1.1277.
+
+Two branches of our solution sit above their rating, and the worst is at exactly that allowance:
+
+| branch | apparent power |
+|--------|---------------:|
+| N_100 - N_103 | **112.8 % of rating** |
+| N_49 - N_69   | 107.0 % of rating |
+
+112.8% against an allowance of 112.77% is the whole of it. Scaling every rating by `Vmin/Vmax`, which makes the admitted
+apparent power `rateA * V_i / Vmax` and so never more than `rateA`, brackets the reference from the other side:
+
+| ratings | objective | against the published 97,214 |
+|---------|----------:|-----------------------------:|
+| as given, current-based limit | 97,100 | -0.117 % |
+| scaled by `Vmin/Vmax`         | 97,431 | +0.223 % |
+
+The published value sits between the two, which is what a limit that is looser on one side and tighter on the other
+should produce.
+
+**Neither convention is wrong.** A thermal limit is a heating limit and heating follows the current, so writing it on
+the current is the more physical of the two; a flat cap on apparent power is the more common. The point is only that the
+two are not the same constraint, so an objective compared against pglib is not compared like for like unless the ratings
+are adjusted. The SOC gap of section 15 is unaffected: it is measured between our own relaxed and exact solves, which
+share the convention.
 
 # 15. Validation against physics computed outside openTEPES
 
