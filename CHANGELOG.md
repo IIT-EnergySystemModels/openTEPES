@@ -16,10 +16,11 @@
   devices stay fixed unless the column says otherwise, so nothing changes for a case written before it. `IndBinShuntSwitch`
   chooses a discrete state (default) or a relaxed one. On a 24 hour 9n_AC window with a 300 Mvar bank the switchable
   device costs 0.55 MEUR against 0.68 for the same bank fixed in service.
-- [FIXED] the `RTS-GMLC_AC_Oper` case had no shunt table, so the three 100 Mvar reactors RTS-GMLC puts on buses 106, 206
-  and 306 were missing and the system had no reactive compensation at all. Adding them lowers the cost of the case from
-  61.65 to 60.00 MEUR: the 138 kV lines generate charging reactive, and without the reactors that surplus had to be
-  absorbed by generators instead.
+- [FIXED] neither `RTS-GMLC_AC` nor `RTS-GMLC_AC_Oper` had a shunt table, so the three 100 Mvar reactors RTS-GMLC puts on
+  buses 106, 206 and 306 were missing and both systems ran with no reactive compensation at all. On `RTS-GMLC_AC_Oper`,
+  which is small enough to solve twice, adding them lowers the cost from 61.65 to 60.00 MEUR: the 138 kV lines generate
+  charging reactive, and without the reactors that surplus had to be absorbed by generators instead. `RTS-GMLC_AC` is a
+  full year and was not re-solved.
 - [ADDED] stepped shunt banks, through a `Units` column in `oT_Data_BusShunt`. A row with `Units = N` becomes a bank of
   N identical units, so the model chooses how many units are in service rather than a single on or off. This follows the
   VAR source model in Alvarez, Paredes and Rider, IET Generation, Transmission and Distribution 13(13), 2019, where a bus

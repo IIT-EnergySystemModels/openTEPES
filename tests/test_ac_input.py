@@ -956,13 +956,15 @@ def test_a_bank_without_units_is_a_single_device(tmp_path):
     assert len(mTEPES.shp) == 0
 
 
-def test_the_rts_case_carries_the_three_reactors_from_the_source_data():
+@pytest.mark.parametrize("case", ["RTS-GMLC_AC", "RTS-GMLC_AC_Oper"])
+def test_the_rts_cases_carry_the_three_reactors_from_the_source_data(case):
     """RTS-GMLC puts a 100 Mvar reactor on buses 106, 206 and 306 and nothing anywhere else.
 
-    They live in RTS_Data/SourceData/bus.csv under 'MVAR Shunt B', where the value is Mvar at one per unit voltage. On this case's 100 MVA base that
-    is Bshb = -1.0. The case carried no shunt table at all before, so the system had no reactors and the reported operating point was not RTS-GMLC's.
+    They live in RTS_Data/SourceData/bus.csv under 'MVAR Shunt B', where the value is Mvar at one per unit voltage. On these cases' 100 MVA base that
+    is Bshb = -1.0. Neither case carried a shunt table before, so the systems had no reactive compensation at all and the operating points they
+    reported were not RTS-GMLC's.
     """
-    mTEPES, _, _ = _build(CASES_DIR, "RTS-GMLC_AC_Oper")
+    mTEPES, _, _ = _build(CASES_DIR, case)
 
     assert sorted(mTEPES.sh) == ["Reactor_106", "Reactor_206", "Reactor_306"]
     assert mTEPES.pSBase == 0.1, "the conversion below assumes a 100 MVA base expressed in GVA"
