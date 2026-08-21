@@ -917,3 +917,40 @@ def test_an_unmarked_shunt_keeps_no_hourly_state(tmp_path):
     mTEPES = _build_with_vars(CASES_DIR, "9n_AC")
     assert len(mTEPES.shw) == 0
     assert not hasattr(mTEPES, "vShuntSwitch"), "an unmarked case paid for a switching variable"
+
+
+def test_a_bank_of_units_becomes_one_device_per_unit(tmp_path):
+    """Units = N expands a row into N identical devices and chains them, so the decision is how many are in service.
+
+    Follows the VAR source model of Alvarez, Paredes and Rider: a bus carries an integer count of sources of fixed susceptance, not a continuous one.
+    """
+    case_dir, case = _clone(tmp_path, "9n_AC", "9n_BANK")
+
+    def edit(df):
+        df["Switchable"] = [0, 1]
+        df["Units"] = [1, 4]                                  # the capacitor becomes a four unit bank
+    _edit_csv(case_dir, case, "BusShunt", edit)
+    mTEPES = _build_with_vars(case_dir, case)
+
+    units = [sh for sh in mTEPES.sh if sh.startswith("Capacitor_1_u")]
+    assert units == ["Capacitor_1_u1", "Capacitor_1_u2", "Capacitor_1_u3", "Capacitor_1_u4"]
+    assert "Capacitor_1" not in list(mTEPES.sh), "the original row survived alongside its own units"
+    assert len(mTEPES.sh) == 5, "one reactor plus four capacitor units"
+
+    # every unit carries the FULL susceptance of one unit, not a share of the bank
+    for u in units:
+        assert mTEPES.pBusBshb[u]() == pytest.approx(0.3)
+
+    # consecutive pairs only, so the chain is u1 -> u2 -> u3 -> u4 and not every combination
+    assert sorted(tuple(x) for x in mTEPES.shp) == [
+        ("Capacitor_1_u1", "Capacitor_1_u2"),
+        ("Capacitor_1_u2", "Capacitor_1_u3"),
+        ("Capacitor_1_u3", "Capacitor_1_u4"),
+    ]
+
+
+def test_a_bank_without_units_is_a_single_device(tmp_path):
+    """The default is one unit, so a case written before the column existed is untouched."""
+    mTEPES = _build_with_vars(CASES_DIR, "9n_AC")
+    assert sorted(mTEPES.sh) == ["Capacitor_1", "Reactor_1"]
+    assert len(mTEPES.shp) == 0

@@ -468,6 +468,26 @@ def NetworkACOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, 
                 _cand(lambda m, n, sh: m.vShuntSwitch[p,sc,n,sh] <= m.vShuntInvest[p,sh], 'eShuntSwitchInvest',
                       'a switchable candidate shunt closes only once built [0,1]', pBoth)
 
+        # Units of one bank are identical, so on their own the states would let branch and bound walk every permutation of the same answer: three
+        # units of a four unit bank can be in service in four different ways that cost the same. Requiring a unit to follow the one before it leaves
+        # exactly one of those, and turns the states of a bank into the count that are in service.
+        if mTEPES.shp:
+            def eShuntStepOrder(OptModel, n, sh, sn):
+                if (p,sc,n,sh) not in mTEPES.psnsh or sh not in mTEPES.shw:
+                    return Constraint.Skip
+                return OptModel.vShuntSwitch[p,sc,n,sn] <= OptModel.vShuntSwitch[p,sc,n,sh]
+            setattr(OptModel, f'eShuntStepOrder_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.shp, rule=eShuntStepOrder,
+                    doc='a bank unit is in service only if the one before it is [0,1]'))
+
+            # The same for the build decision, which has no hour index. It repeats identically for each scenario and stage; the rows are redundant
+            # rather than wrong, and an AC case normally carries one of each.
+            def eShuntBuildOrder(OptModel, sh, sn):
+                if sh not in mTEPES.shc or (p,sh) not in mTEPES.pshc:
+                    return Constraint.Skip
+                return OptModel.vShuntInvest[p,sn] <= OptModel.vShuntInvest[p,sh]
+            setattr(OptModel, f'eShuntBuildOrder_{p}_{sc}_{st}', Constraint(mTEPES.shp, rule=eShuntBuildOrder,
+                    doc='a bank unit is built only if the one before it is [0,1]'))
+
         # the active side of the same device, present only when some shunt has a conductance
         if pShuntG:
             def _pShuntMG(sh):

@@ -58,6 +58,7 @@ SHUNT_COLUMN_DEFAULTS = {
     'FixedChargeRate':     0.0,
     'BinaryInvestment':    0,
     'Switchable':          0,
+    'Units':               1,
     'InvestmentLo':        0.0,
     'InvestmentUp':        0.0,
 }
@@ -101,6 +102,27 @@ def ReadACInputData(dfs, par, mTEPES, pIndLogConsole):
         for col, default in SHUNT_COLUMN_DEFAULTS.items():
             if col in dfShunt.columns and default is not None:      # Node is mandatory and has no default to fill with
                 dfShunt[col] = dfShunt[col].fillna(default)
+        # A device with Units > 1 is a bank of that many IDENTICAL units. The decision is then how many units are in service, not a continuous
+        # susceptance -- the VAR source model of Alvarez, Paredes and Rider (IET GTD 13(13), 2019), where a bus carries an integer count of sources
+        # of fixed susceptance. Expanding the bank into one device per unit here means every set, variable, constraint and result downstream handles
+        # it with the machinery that already exists for single devices, and the count in service is simply how many are on.
+        pUnits = dfShunt['Units'].fillna(1).astype(float).round().astype(int).clip(lower=1)
+        par['pShuntStepPairs'] = []
+        if (pUnits > 1).any():
+            pRows = []
+            for sh in dfShunt.index:
+                if pUnits[sh] == 1:
+                    pRows.append(dfShunt.loc[[sh]])
+                    continue
+                pNames = [f'{sh}_u{k + 1}' for k in range(pUnits[sh])]
+                pBank  = pd.concat([dfShunt.loc[[sh]]] * pUnits[sh])
+                pBank.index = pNames
+                pRows.append(pBank)
+                # consecutive pairs, so the ordering constraint can break the permutation symmetry between identical units
+                par['pShuntStepPairs'] += list(zip(pNames, pNames[1:]))
+            dfShunt = pd.concat(pRows)
+            dfs['dfBusShunt'] = dfShunt
+
         par['pShuntToNode']        = dfShunt['Node'                ]
         par['pShuntPeriodIni']     = dfShunt['InitialPeriod'       ]
         par['pShuntPeriodFin']     = dfShunt['FinalPeriod'         ].where(dfShunt['FinalPeriod'] != 0, 3000)
@@ -125,6 +147,7 @@ def ReadACInputData(dfs, par, mTEPES, pIndLogConsole):
             print('### WARNING: the case provides an oT_Data_BusShunt table but it did not reach the model, so the system has been built with no bus '
                   'shunt devices and no reactive compensation from them. Check that the table was read.')
         par['pIndBusShunt']        = 0
+        par['pShuntStepPairs']     = []
 
     # --- scalars ---------------------------------------------------------------------------------------------------------------------------------
     # Voltage limits and power-factor limits come from oT_Data_Parameter. They are read by the generic scalar loop in InputData when the columns are
@@ -224,6 +247,9 @@ def ConfigureACData(mTEPES, dfs, par):
     # column existed keeps behaving exactly as it did.
     sShuntSw   = [sh for sh in sShunt if par['pShuntSwitchable'][sh] == 1]
     mTEPES.shw = Set(doc='switchable shunt devices', initialize=sShuntSw)
+    # consecutive units of one bank, restricted to the devices that survived the period window
+    mTEPES.shp = Set(doc='ordered pairs of sibling bank units', dimen=2,
+                     initialize=[(a, b) for a, b in par.get('pShuntStepPairs', []) if a in sShunt and b in sShunt])
 
     # Synchronous condensers split into existing and candidate on their investment cost, read straight from the generation table rather than from
     # par['pGenInvestCost']: that series is narrowed to mTEPES.eb at openTEPES_DataConfiguration.py:833, which runs before this function, and a

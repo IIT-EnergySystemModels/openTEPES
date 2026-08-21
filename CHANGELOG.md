@@ -16,6 +16,11 @@
   devices stay fixed unless the column says otherwise, so nothing changes for a case written before it. `IndBinShuntSwitch`
   chooses a discrete state (default) or a relaxed one. On a 24 hour 9n_AC window with a 300 Mvar bank the switchable
   device costs 0.55 MEUR against 0.68 for the same bank fixed in service.
+- [ADDED] stepped shunt banks, through a `Units` column in `oT_Data_BusShunt`. A row with `Units = N` becomes a bank of
+  N identical units, so the model chooses how many units are in service rather than a single on or off. This follows the
+  VAR source model in Alvarez, Paredes and Rider, IET Generation, Transmission and Distribution 13(13), 2019, where a bus
+  carries an integer count of sources of fixed susceptance. Units of one bank are chained, so the solver does not walk
+  through equivalent permutations of the same answer. The default is one unit, so existing cases are unaffected.
 
 - [CHANGED] improve performance in some modules
 - [CHANGED] modify OutputResultsGeneration to improve performance 
