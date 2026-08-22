@@ -22,7 +22,7 @@ CASES_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "openT
 
 
 def _solver_or_skip(name):
-    """Return the solver name, or skip when it is not installed.
+    """Return the solver name, or skip when it cannot be used here.
 
     CI carries HiGHS only, which is an LP/MIP solver: it cannot express the second-order cone of IndACModelType 0, the
     non-linear equations of 2, or either bus-injection formulation. Those tests skip there rather than fail, and the
@@ -35,6 +35,22 @@ def _solver_or_skip(name):
     except Exception:
         pytest.skip(f"solver {name} is not available")
     return name
+
+
+def _solve_or_skip(name, model, **kwargs):
+    """Solve, or skip if the solver is present but cannot take a model this size.
+
+    Availability is not the same question as usability. gurobipy installs as an ordinary dependency and carries a free
+    size-limited licence, so SolverFactory('gurobi').available() is True on a runner that then fails the solve with
+    "Model too large for size-limited license". Checking availability alone let that through and failed CI.
+    """
+    from pyomo.environ import SolverFactory
+    try:
+        return SolverFactory(_solver_or_skip(name)).solve(model, **kwargs)
+    except Exception as e:
+        if "size-limited" in str(e) or "too large" in str(e).lower():
+            pytest.skip(f"{name} licence cannot take a model this size")
+        raise
 
 
 def _build(dir_name, case_name):
@@ -673,6 +689,7 @@ def test_candidate_ac_line_is_recognised(tmp_path):
     assert la in set(mTEPES.lca), "and an AC candidate"
 
 
+@pytest.mark.solve
 def test_unbuilt_candidate_ac_line_carries_nothing_and_couples_nothing(tmp_path):
     """An unbuilt candidate must not carry current and must not tie its two bus voltages together. The DC model gets
     this from pBigMFlow*(1 - vLineCommit) in eKirchhoff2ndLaw, which is skipped under AC — so the AC model has to
@@ -709,7 +726,7 @@ def test_unbuilt_candidate_ac_line_carries_nothing_and_couples_nothing(tmp_path)
 
     # force the line NOT to be built, then check it is electrically absent
     mTEPES.vNetworkInvest[p, la[0], la[1], la[2]].fix(0.0)
-    res = SolverFactory(_solver_or_skip("gurobi")).solve(mTEPES)
+    res = _solve_or_skip("gurobi", mTEPES)
     assert str(res.solver.termination_condition) == "optimal", "the network should still be feasible without the candidate"
 
     n0 = levels[0]
@@ -770,6 +787,7 @@ def test_restoration_option_is_validated(tmp_path):
         _build(dir_name, case)
 
 
+@pytest.mark.solve
 def test_restoration_is_skipped_when_nothing_to_restore(tmp_path):
     """Type 2 is already exact, so there is no relaxation to replace and the pass must decline rather than rebuild."""
     from openTEPES.openTEPES_ModelFormulationAC import ACRestorationPass
