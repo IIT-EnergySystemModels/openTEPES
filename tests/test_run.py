@@ -855,8 +855,8 @@ def test_ac_case_solves_and_writes_its_results(tmp_path):
 
     The piecewise variant is the one HiGHS can take. IndACModelType 0 is a second-order cone and 2 is non-linear, and
     HiGHS is an LP/MIP solver: it rejects both with 'does not support expressions of degree None'. A week of RTS-GMLC
-    was measured for this slot and is not viable, spending more than eleven minutes in the root LP alone against a
-    thirty minute per-test timeout; the nine-bus case at 24 hours takes about a second and covers the same writers.
+    was measured for this slot and takes 9189 s, two and a half hours, against a thirty minute per-test timeout and on a
+    machine faster than a runner. The nine-bus case at 24 hours takes about a second and covers the same writers.
     """
     case_name = "9n_AC"
     case_dir  = _private_case_copy(case_name, tmp_path)

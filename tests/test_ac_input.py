@@ -1245,7 +1245,7 @@ def test_the_current_price_is_case_data(tmp_path):
     assert mTEPES.pEpsilonCurrent() == pytest.approx(1e-3), "9n_AC should carry the value that closes its own cone"
 
     mRTS, _, _ = _build(CASES_DIR, "RTS-GMLC_AC_Oper")
-    assert mRTS.pEpsilonCurrent() == pytest.approx(1e-4), "the RTS cases calibrate an order of magnitude lower"
+    assert mRTS.pEpsilonCurrent() == pytest.approx(1e-6), "the RTS cases calibrate for a valid bound, not a tight cone"
 
     # a case that says nothing falls back to the module default, so nothing changes for cases written before this
     case_dir, case = _clone(tmp_path, "9n_AC", "9n_noeps")

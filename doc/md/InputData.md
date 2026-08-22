@@ -849,15 +849,19 @@ price on it does, and `EpsilonCurrent` in `oT_Data_Parameter.csv` sets that pric
 It has to be given per case. The value that closes the cone depends on the cost scale and the loading of the case, and
 measured on a tight cone the bundled cases span three orders of magnitude:
 
-| case | SBase | EpsilonCurrent | what a larger value costs |
-|:-----|------:|---------------:|:--------------------------|
-| `9n_AC`            | 1000 MVA | 1e-3 | — |
-| `RTS-GMLC_AC`      |  100 MVA | 1e-4 | 1e-3 raises the dispatch cost by 16% |
-| pglib case118      |  100 MVA | 1e-6 | 1e-3 raises it by 17% |
+| case | SBase | EpsilonCurrent | why |
+|:-----|------:|---------------:|:----|
+| `9n_AC`            | 1000 MVA | 1e-3 | the value that closes its cone |
+| `RTS-GMLC_AC`      |  100 MVA | 1e-6 | keeps the relaxed cost below the exact optimum; 1e-4 closes the cone but raises the cost 0.7% above it, and 1e-3 by 16% |
+| pglib case118      |  100 MVA | 1e-6 | closes the cone outright; 1e-3 raises the cost 17% |
 
 RTS-GMLC and case118 share a base and still differ by two orders of magnitude, so the value does not follow from `SBase`
 either. Too small and the relaxation buys voltage with current that is not there; too large and it distorts the dispatch
 and can push the relaxed cost **above** the exact optimum, which is not something a relaxation should ever do.
+
+The RTS cases are set for the second of those: at 1e-6 the relaxed cost stays below the exact optimum and the cone is
+loose on about 0.4% of branch-hours, which `IndACRestore` then resolves. Closing the cone outright there would need 1e-4
+and would cost the bound. Which of the two matters is a choice, and it is the case that makes it.
 
 The price is a conditioning aid, not the route to a physical answer. `IndACRestore = 1` re-solves the network at the
 exact equations afterwards and costs nothing in the objective, so `EpsilonCurrent` can be kept small and the restoration
