@@ -1095,13 +1095,26 @@ def test_the_rts_cases_carry_the_three_reactors_from_the_source_data(case):
 # Computed power transfer distribution factors
 # --------------------------------------------------------------------------------------------------------------------
 
-def _ptdf_case(tmp_path, name, **options):
-    """A 9n clone with the given Option flags, operation only so two runs compare like for like."""
+def _ptdf_case(tmp_path, name, hours=None, **options):
+    """A 9n clone with the given Option flags, operation only so two runs compare like for like.
+
+    ``hours`` truncates the horizon. The full year is 8736 load levels, which HiGHS takes past the thirty minute CI
+    timeout on a runner even though Gurobi finishes it here in seconds; a test that only needs to watch a flag reach the
+    model has no business solving a year.
+    """
     case_dir, case = _clone(tmp_path, "9n", name)
     def edit(df):
         for k, v in options.items():
             df[k] = v
     _edit_csv(case_dir, case, "Option", edit, index_col=None)
+    if hours is not None:
+        def cut(df):
+            df.loc[hours:, "Duration"] = 0
+        _edit_csv(case_dir, case, "Duration", cut, index_col=None)
+        def wipe(df):
+            for col in df.columns[2:]:
+                df[col] = 0.0
+        _edit_csv(case_dir, case, "RESEnergy", wipe, index_col=None)
     return case_dir, case
 
 
@@ -1111,9 +1124,10 @@ def test_computed_ptdf_reproduces_the_dc_flows(tmp_path):
     angle formulation they stand in for. Anything else means the susceptance matrix disagrees with the constraint."""
     from openTEPES.openTEPES import openTEPES_run
 
+    # 24 hours, not the full year: this solves TWICE, and a year of it on HiGHS runs past the CI timeout
     pCommon = dict(IndBinNetLosses=0, IndBinNetInvest=2, IndBinGenInvest=2)
-    pDirA, pCaseA = _ptdf_case(tmp_path, "9n_ptdfA", IndPTDF=0, **pCommon)
-    pDirB, pCaseB = _ptdf_case(tmp_path, "9n_ptdfB", IndPTDF=2, **pCommon)
+    pDirA, pCaseA = _ptdf_case(tmp_path, "9n_ptdfA", hours=24, IndPTDF=0, **pCommon)
+    pDirB, pCaseB = _ptdf_case(tmp_path, "9n_ptdfB", hours=24, IndPTDF=2, **pCommon)
 
     mA = _run_or_skip(pDirA, pCaseA, "highs", 0, 0)
     mB = _run_or_skip(pDirB, pCaseB, "highs", 0, 0)
@@ -1166,7 +1180,7 @@ def test_the_execution_flags_come_from_the_case(tmp_path):
     """These four were literals in openTEPES.py, so none of the four stage-solving strategies could be selected."""
     from openTEPES.openTEPES import openTEPES_run
 
-    case_dir, case = _ptdf_case(tmp_path, "9n_exec", IndSequentialSolving=2, IndCompleteProblem=1)
+    case_dir, case = _ptdf_case(tmp_path, "9n_exec", hours=24, IndSequentialSolving=2, IndCompleteProblem=1)
     mTEPES = _run_or_skip(case_dir, case, "highs", 0, 0)
     assert mTEPES.pIndSequentialSolving() == 2, "the case's choice of stage solving did not reach the model"
 
