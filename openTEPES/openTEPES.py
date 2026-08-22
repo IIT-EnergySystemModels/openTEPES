@@ -207,7 +207,7 @@ def ReportConfiguration(mTEPES):
 
 def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConsole,
                   *, output_spec=None, out_path=None, gzip_patterns=None, output_format="csv",
-                  input_source=None):
+                  input_source=None, option_overrides=None):
     """Solve and write results.
 
     Parameters
@@ -308,7 +308,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
 
     # Reading sets and parameters. InputData also stores dfs/par on mTEPES (mTEPES.dFrame / mTEPES.dPar) for backward compatibility,
     # but DataConfiguration takes them explicitly to avoid that coupling.
-    dfs, par = InputData(DirName, CaseName, mTEPES, pIndLogConsole)
+    dfs, par = InputData(DirName, CaseName, mTEPES, pIndLogConsole, option_overrides=option_overrides)
 
     # How the problem is SOLVED, as opposed to what is modelled. These four were literals in this file until now, so a
     # case could not select any of them: the four stage-solving strategies below were all implemented and none reachable.

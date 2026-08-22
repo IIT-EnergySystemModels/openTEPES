@@ -20,6 +20,10 @@
   units, so the model chooses how many are in service. Follows the VAR source model of Alvarez, Paredes and Rider, IET
   Generation, Transmission and Distribution 13(13), 2019. Units are chained to remove equivalent permutations. One unit
   by default.
+- [ADDED] `--option Key=Value` on the command line overrides an entry of `oT_Data_Option` or `oT_Data_Parameter` for a
+  single run. Repeatable and comma-separated. One case can then be run under several formulations without copying it;
+  the bundled `9n` and `9n_AC` differ by two cells and are otherwise the same 34 MB. Switching the AC model on this way
+  also pulls in the AC-only input files, so an overridden run reads what a case with the flag set would.
 - [ADDED] `IndCycleFlow`, `IndCompleteProblem`, `IndSectorDecomposition` and `IndSequentialSolving` can now be set from
   `oT_Data_Option`. They were fixed in the code, so no case could select them, and the four stage-solving strategies the
   model implements were all unreachable. `IndSequentialSolving` was also declared binary while its own code branches on

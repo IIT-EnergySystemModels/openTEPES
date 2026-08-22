@@ -1332,3 +1332,48 @@ def test_the_licence_guard_skips_instead_of_failing(monkeypatch):
     monkeypatch.setattr(driver, "openTEPES_run", lambda *a, **k: (_ for _ in ()).throw(RuntimeError("something else")))
     with pytest.raises(RuntimeError, match="something else"):
         _run_or_skip("dir", "case", "highs", 0, 0)
+
+
+# --------------------------------------------------------------------------------------------------------------------
+# Command-line option overrides
+# --------------------------------------------------------------------------------------------------------------------
+
+def test_an_override_changes_the_formulation_without_copying_the_case(tmp_path):
+    """One case, several formulations. 9n and 9n_AC differ by two cells and are two 34 MB directories; comparing DC
+    against AC on the same system should not mean duplicating every CSV and letting the two copies drift."""
+    mTEPES = ConcreteModel("9n_AC")
+    dfs, par = InputData(CASES_DIR, "9n_AC", mTEPES, 0, option_overrides={"IndACPowerFlow": "0"})
+    assert par["pIndACPowerFlow"] == 0, "the override did not reach the parameter dictionary"
+
+    mDefault = ConcreteModel("9n_AC")
+    _, pDefault = InputData(CASES_DIR, "9n_AC", mDefault, 0)
+    assert pDefault["pIndACPowerFlow"] == 1, "the case itself should be unchanged"
+
+
+def test_an_override_that_switches_ac_on_also_pulls_in_the_ac_tables(tmp_path):
+    """The trap this had to avoid. ReactiveDemand and BusShunt are read only if a peek run BEFORE the main read says
+    the AC model is on. A flag given on the command line has to reach that peek too, or the run builds a full AC model
+    with no reactive demand and no shunts and reports it as solved."""
+    case_dir, case = _clone(tmp_path, "9n_AC", "9n_ovr")
+    _edit_csv(case_dir, case, "Option", lambda df: df.__setitem__("IndACPowerFlow", 0), index_col=None)
+
+    # read as the case asks, which is DC: the AC-only tables are skipped
+    mOff = ConcreteModel(case)
+    pOffDfs, _ = InputData(case_dir, case, mOff, 0)
+    assert "dfReactiveDemand" not in pOffDfs, "a DC read should not pull in the AC-only tables"
+
+    # now the same case with the flag overridden on
+    mOn = ConcreteModel(case)
+    dfs, par = InputData(case_dir, case, mOn, 0, option_overrides={"IndACPowerFlow": "1"})
+    assert "dfReactiveDemand" in dfs, "switching AC on by override did not bring in the reactive demand"
+    assert "dfBusShunt" in dfs, "switching AC on by override did not bring in the shunts"
+    assert par["pReactiveDemand"].to_numpy().sum() > 0.0, "the reactive demand arrived empty"
+
+
+def test_a_malformed_override_is_refused():
+    """Key=Value, or an error. A pair without '=' would otherwise be dropped in silence."""
+    import openTEPES.openTEPES_Main as cli
+    assert hasattr(cli, "parser"), "the CLI parser is where --option is defined"
+    pOpt = [a for a in cli.parser._actions if "--option" in getattr(a, "option_strings", [])]
+    assert pOpt and pOpt[0].nargs is None and pOpt[0].__class__.__name__ == "_AppendAction", \
+        "--option should be repeatable"

@@ -25,7 +25,7 @@ except ImportError:
 
 
 # @profile
-def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
+def InputData(DirName, CaseName, mTEPES, pIndLogConsole, option_overrides=None):
     print('Input data                             ****')
 
     _path = os.path.join(DirName, CaseName)
@@ -106,6 +106,13 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         only consulted Option it would answer 0, skip ReactiveDemand and BusShunt, and the run would go all the way to
         a solved AC case carrying no reactive demand and no shunts -- a wrong model that looks like a right one.
         """
+        # the overrides first: a flag given on the command line has to reach this peek as well, or an AC run started that
+        # way would skip ReactiveDemand and BusShunt and solve a system with no reactive demand and no shunts
+        if option_overrides and flag in option_overrides:
+            try:
+                return int(option_overrides[flag])
+            except (TypeError, ValueError):
+                return 0
         for stem in ('Option', 'Parameter'):
             try:
                 df = source.read_data(stem)
@@ -260,6 +267,24 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     #                       0 = the same state relaxed to [0,1], which keeps an AC run continuous at the cost of letting a bank sit half in
     for key in ['pIndACPowerFlow', 'pIndACModelType', 'pIndACRestore', 'pIndACConverter', 'pIndACCycle']:
         par.setdefault(key, 0)
+    # Command-line overrides land here: after both tables have been read, so they win, and before the validation below,
+    # so a bad value is refused with the same message a bad cell in the case would get.
+    if option_overrides:
+        for pKey, pVal in option_overrides.items():
+            pName = pKey if pKey.startswith('p') and pKey[1:2].isupper() else f'p{pKey}'
+            pCast = pVal
+            if isinstance(pVal, str):
+                try:
+                    pCast = int(pVal)
+                except ValueError:
+                    try:
+                        pCast = float(pVal)
+                    except ValueError:
+                        pCast = pVal
+            par[pName] = pCast
+        print(f'### NOTE: option(s) overridden on the command line: '
+              f'{", ".join(f"{k}={v}" for k, v in option_overrides.items())}')
+
     #   pIndPTDF         0 = no flow-based coupling (default)
     #                    1 = read the factors from oT_Data_VariablePTDF
     #                    2 = compute them from the reactances, so the factors cannot disagree with the network beside them

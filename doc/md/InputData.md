@@ -834,6 +834,19 @@ from openTEPES.openTEPES import openTEPES_run
 openTEPES_run('openTEPES/cases', '9n_AC', 'gurobi', 0, 0)
 ```
 
+Any option can be overridden for a single run with `--option Key=Value`, which is repeatable and accepts a
+comma-separated list. One case can then be run under several formulations without copying it:
+
+```
+openTEPES_Main --dir openTEPES/cases --case 9n_AC --option IndACPowerFlow=0                  # as DC
+openTEPES_Main --dir openTEPES/cases --case 9n_AC --option IndACPowerFlow=1                  # branch flow
+openTEPES_Main --dir openTEPES/cases --case 9n_AC --option IndACPowerFlow=3 --solver ipopt   # rectangular
+```
+
+The bundled `9n` and `9n_AC` differ by two cells and are otherwise the same 34 MB of data, which is what the override
+saves. Switching the AC model on this way also brings in the AC-only input files, so an overridden run reads the same
+tables a case with the flag set would.
+
 `IndACPowerFlow = 1` is the branch flow model and solves with a linear-conic solver such as Gurobi. Values 2 and 3 are
 the bus-injection models and need a non-linear solver such as ipopt, as does `IndACModelType = 2`. The run prints the
 configuration it resolved to before it solves, so the mode in force is visible without reading the case files.
