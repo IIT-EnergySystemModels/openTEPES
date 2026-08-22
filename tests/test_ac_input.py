@@ -13,6 +13,7 @@ import shutil
 
 import pandas as pd
 import pytest
+from _pytest.outcomes import Skipped
 from pyomo.environ import ConcreteModel
 
 from openTEPES.openTEPES_DataConfiguration import DataConfiguration
@@ -35,6 +36,22 @@ def _solver_or_skip(name):
     except Exception:
         pytest.skip(f"solver {name} is not available")
     return name
+
+
+def _run_or_skip(dir_name, case, name, *args, **kwargs):
+    """openTEPES_run, or skip if the solver is present but cannot take a model this size.
+
+    Most tests reach the solver through openTEPES_run rather than SolverFactory, so guarding only the direct calls left
+    them exposed: seven of them failed CI with "Model too large for size-limited license" while the guard sat on the one
+    test that did not need it.
+    """
+    from openTEPES.openTEPES import openTEPES_run
+    try:
+        return openTEPES_run(dir_name, case, _solver_or_skip(name), *args, **kwargs)
+    except Exception as e:
+        if "size-limited" in str(e) or "too large" in str(e).lower():
+            pytest.skip(f"{name} licence cannot take a model this size")
+        raise
 
 
 def _solve_or_skip(name, model, **kwargs):
@@ -810,7 +827,7 @@ def test_restoration_makes_the_relaxation_exact(tmp_path):
     from openTEPES.openTEPES import openTEPES_run
 
     dir_name, case = _tiny_ac_case(tmp_path, "9n_restore")
-    mTEPES = openTEPES_run(str(dir_name), case, _solver_or_skip("gurobi"), 0, 0)
+    mTEPES = _run_or_skip(str(dir_name), case, "gurobi", 0, 0)
 
     pSBase = mTEPES.pSBase
     pWorst = 0.0
@@ -926,7 +943,7 @@ def test_lcc_converter_draws_reactive_power_at_both_ends(tmp_path):
     from openTEPES.openTEPES import openTEPES_run
 
     dir_name, case = _case_with_built_dc(tmp_path, "9n_lcc", converter=1)
-    mTEPES = openTEPES_run(str(dir_name), case, _solver_or_skip("gurobi"), 0, 0)
+    mTEPES = _run_or_skip(str(dir_name), case, "gurobi", 0, 0)
 
     assert hasattr(mTEPES, "vDCFlowPos"), "the LCC model must split the DC flow to reach |P|"
     pSeen = False
@@ -952,7 +969,7 @@ def test_vsc_converter_can_supply_reactive_power(tmp_path):
     from openTEPES.openTEPES import openTEPES_run
 
     dir_name, case = _case_with_built_dc(tmp_path, "9n_vsc", converter=2)
-    mTEPES = openTEPES_run(str(dir_name), case, _solver_or_skip("gurobi"), 0, 0)
+    mTEPES = _run_or_skip(str(dir_name), case, "gurobi", 0, 0)
 
     assert hasattr(mTEPES, "vQConvFrw"), "the VSC model must give each terminal a reactive variable"
     assert not hasattr(mTEPES, "vDCFlowPos"), "the VSC model has no need of the |P| split"
@@ -980,7 +997,7 @@ def test_unbuilt_hvdc_candidate_is_not_a_free_statcom(tmp_path):
     opt = os.path.join(dir_name, case, f"oT_Data_Option_{case}.csv")
     d   = pd.read_csv(opt); d["IndACConverter"] = 2; d.to_csv(opt, index=False)
 
-    mTEPES = openTEPES_run(str(dir_name), case, _solver_or_skip("gurobi"), 0, 0)
+    mTEPES = _run_or_skip(str(dir_name), case, "gurobi", 0, 0)
     for k in mTEPES.psnlad:
         assert abs(mTEPES.vQConvFrw[k]()) < 1e-6, f"an unbuilt converter supplied {mTEPES.vQConvFrw[k]()} Gvar"
         assert abs(mTEPES.vQConvBck[k]()) < 1e-6, f"an unbuilt converter supplied {mTEPES.vQConvBck[k]()} Gvar"
@@ -1098,8 +1115,8 @@ def test_computed_ptdf_reproduces_the_dc_flows(tmp_path):
     pDirA, pCaseA = _ptdf_case(tmp_path, "9n_ptdfA", IndPTDF=0, **pCommon)
     pDirB, pCaseB = _ptdf_case(tmp_path, "9n_ptdfB", IndPTDF=2, **pCommon)
 
-    mA = openTEPES_run(pDirA, pCaseA, _solver_or_skip("highs"), 0, 0)
-    mB = openTEPES_run(pDirB, pCaseB, _solver_or_skip("highs"), 0, 0)
+    mA = _run_or_skip(pDirA, pCaseA, "highs", 0, 0)
+    mB = _run_or_skip(pDirB, pCaseB, "highs", 0, 0)
 
     assert mB.pIndPTDF() == 2 and hasattr(mB, "pPTDFCalc"), "the computed factors were never built"
     # not indexed by load level: the topology is fixed for a period, so an hourly index would repeat itself
@@ -1129,7 +1146,7 @@ def test_computed_ptdf_is_refused_when_the_topology_can_change(tmp_path):
     _edit_csv(case_dir, case, "Network", edit, index_col=None)
 
     with pytest.raises(ValueError, match="one fixed topology"):
-        openTEPES_run(case_dir, case, _solver_or_skip("highs"), 0, 0)
+        _run_or_skip(case_dir, case, "highs", 0, 0)
 
 
 def test_ptdf_flag_and_table_must_agree(tmp_path):
@@ -1150,7 +1167,7 @@ def test_the_execution_flags_come_from_the_case(tmp_path):
     from openTEPES.openTEPES import openTEPES_run
 
     case_dir, case = _ptdf_case(tmp_path, "9n_exec", IndSequentialSolving=2, IndCompleteProblem=1)
-    mTEPES = openTEPES_run(case_dir, case, _solver_or_skip("highs"), 0, 0)
+    mTEPES = _run_or_skip(case_dir, case, "highs", 0, 0)
     assert mTEPES.pIndSequentialSolving() == 2, "the case's choice of stage solving did not reach the model"
 
 
@@ -1170,7 +1187,7 @@ def test_incompatible_options_are_reported_together(tmp_path):
     _edit_csv(case_dir, case, "Option", lambda df: (df.__setitem__("IndBinSingleNode", 1),
                                                     df.__setitem__("IndPTDF", 2)), index_col=None)
     with pytest.raises(ValueError) as e:
-        openTEPES_run(case_dir, case, _solver_or_skip("highs"), 0, 0)
+        _run_or_skip(case_dir, case, "highs", 0, 0)
 
     pText = str(e.value)
     assert "IndBinSingleNode" in pText and "IndPTDF" in pText, "only one of the two conflicts was reported"
@@ -1198,7 +1215,7 @@ def test_every_formulation_solves_and_writes_its_results(tmp_path, pf, mt, cyc, 
     dir_name, case = _tiny_ac_case(tmp_path, f"9n_f{pf}{mt}{cyc}", hours=2, model_type=mt, restore=0)
     _edit_csv(dir_name, case, "Option", lambda df: (df.__setitem__("IndACPowerFlow", pf),
                                                     df.__setitem__("IndACCycle", cyc)), index_col=None)
-    mTEPES = openTEPES_run(dir_name, case, _solver_or_skip(solver), 0, 0)
+    mTEPES = _run_or_skip(dir_name, case, solver, 0, 0)
 
     assert mTEPES.pIndACPowerFlow() == pf
     assert mTEPES.vTotalSCost() > 0.0, "the solve returned no cost"
@@ -1240,7 +1257,7 @@ def test_pglib_case118_against_the_published_optimum(tmp_path, monkeypatch, pf, 
     from openTEPES.openTEPES import openTEPES_run
 
     dir_name, case = _pglib_case(tmp_path, f"p118_{pf}", pf)
-    mTEPES = openTEPES_run(dir_name, case, _solver_or_skip(solver), 0, 0)
+    mTEPES = _run_or_skip(dir_name, case, solver, 0, 0)
 
     pUSD = mTEPES.vTotalSCost() * 1e6
     pDev = 100.0 * (pUSD - PGLIB_OPTIMUM) / PGLIB_OPTIMUM
@@ -1279,3 +1296,25 @@ def test_a_negative_current_price_is_refused(tmp_path):
     _edit_csv(case_dir, case, "Parameter", lambda df: df.__setitem__("EpsilonCurrent", -1.0), index_col=None)
     with pytest.raises(ValueError, match="EpsilonCurrent"):
         _build(case_dir, case)
+
+
+def test_the_licence_guard_skips_instead_of_failing(monkeypatch):
+    """The guard itself, because it has been wrong twice and neither time was caught locally.
+
+    gurobipy installs as an ordinary dependency with a free size-limited licence, so on a runner the solver is present,
+    reports itself available, and then refuses the model. Checking availability is not the same as checking usability.
+    Locally the licence is unrestricted, so this path never runs unless it is forced, and it went to CI broken twice.
+    """
+    import openTEPES.openTEPES as driver
+
+    def _too_large(*a, **k):
+        raise RuntimeError("Model too large for size-limited license; visit https://gurobi.com/unrestricted")
+
+    monkeypatch.setattr(driver, "openTEPES_run", _too_large)
+    with pytest.raises(Skipped):
+        _run_or_skip("dir", "case", "highs", 0, 0)
+
+    # and an unrelated failure must still surface rather than being quietly skipped
+    monkeypatch.setattr(driver, "openTEPES_run", lambda *a, **k: (_ for _ in ()).throw(RuntimeError("something else")))
+    with pytest.raises(RuntimeError, match="something else"):
+        _run_or_skip("dir", "case", "highs", 0, 0)
