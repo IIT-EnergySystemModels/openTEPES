@@ -36,6 +36,8 @@ try:
     from .openTEPES_ModelFormulationHydro             import GenerationOperationModelFormulationReservoir
     from .openTEPES_ModelFormulationHydrogen          import NetworkH2OperationModelFormulation
     from .openTEPES_ModelFormulationHeat              import NetworkHeatOperationModelFormulation
+    from .openTEPES_ModelFormulationAC                import NetworkACOperationModelFormulation, NetworkACCurrentModelFormulation
+    from .openTEPES_ModelFormulationBIM               import NetworkBIMOperationModelFormulation
     from .openTEPES_ProblemSolving                    import ProblemSolving
     from .openTEPES_ProblemSolvingSectorDecomposition import SectorDecomposition
     from .openTEPES_ProblemSolvingStageDecomposition   import StageDecomposition
@@ -48,9 +50,37 @@ except ImportError:
     from openTEPES.openTEPES_ModelFormulationHydro             import GenerationOperationModelFormulationReservoir
     from openTEPES.openTEPES_ModelFormulationHydrogen          import NetworkH2OperationModelFormulation
     from openTEPES.openTEPES_ModelFormulationHeat              import NetworkHeatOperationModelFormulation
+    from openTEPES.openTEPES_ModelFormulationAC                import NetworkACOperationModelFormulation, NetworkACCurrentModelFormulation
+    from openTEPES.openTEPES_ModelFormulationBIM              import NetworkBIMOperationModelFormulation
     from openTEPES.openTEPES_ProblemSolving                    import ProblemSolving
     from openTEPES.openTEPES_ProblemSolvingSectorDecomposition import SectorDecomposition
     from openTEPES.openTEPES_ProblemSolvingStageDecomposition   import StageDecomposition
+
+
+# Single source of truth for the per-stage operation-model build, mirroring OUTPUT_REGISTRY in openTEPES.py. Each entry is
+# (label, builder_fn, guard_fn) where:
+#   - builder_fn is called as fn(mTEPES, mTEPES, pIndLogConsole, p, sc, st);
+#   - guard_fn is None or a callable(mTEPES) -> bool, evaluated ONCE per stage. Keeping the feature test here rather than inside a
+#     Constraint rule matters: a rule fires once per index, so on a national case at hourly resolution a flag test inside the rule is
+#     evaluated millions of times for a value that cannot change during the build.
+# Order is the build order and is significant: the objective-function terms must exist before the constraints that reference them.
+FORMULATION_REGISTRY = (
+    ("objective",     GenerationOperationModelFormulationObjFunct,        None),
+    ("invest-elec",   GenerationOperationElecModelFormulationInvestment,  None),
+    ("invest-heat",   GenerationOperationHeatModelFormulationInvestment,  lambda m: m.pIndHeat()),
+    ("demand",        GenerationOperationModelFormulationDemand,          None),
+    ("storage",       GenerationOperationModelFormulationStorage,         None),
+    ("reservoir",     GenerationOperationModelFormulationReservoir,       lambda m: m.pIndHydroTopology()),
+    ("network-h2",    NetworkH2OperationModelFormulation,                 lambda m: m.pIndHydrogen()),
+    ("network-heat",  NetworkHeatOperationModelFormulation,               lambda m: m.pIndHeat()),
+    ("commitment",    GenerationOperationModelFormulationCommitment,      None),
+    ("ramp-mintime",  GenerationOperationModelFormulationRampMinTime,     None),
+    ("net-switching", NetworkSwitchingModelFormulation,                   None),
+    ("network-elec",  NetworkOperationModelFormulation,                   None),
+    ("network-ac",    NetworkACOperationModelFormulation,                 lambda m: m.pIndACPowerFlow()),
+    ("ac-current",    NetworkACCurrentModelFormulation,                   lambda m: m.pIndACPowerFlow()),
+    ("network-bim",   NetworkBIMOperationModelFormulation,                lambda m: m.pIndACPowerFlow() in (2, 3)),
+)
 
 
 def StageIterativeSolving(mTEPES, DirName, CaseName, SolverName, pIndLogConsole, _path, pIndCycleFlow):
@@ -111,23 +141,12 @@ def StageIterativeSolving(mTEPES, DirName, CaseName, SolverName, pIndLogConsole,
 
             print(f'Period {p}, Scenario {sc}, Stage {st}')
 
-            # operation model objective function and constraints by stage
-            GenerationOperationModelFormulationObjFunct          (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
-            GenerationOperationElecModelFormulationInvestment    (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
-            if mTEPES.pIndHeat():
-                GenerationOperationHeatModelFormulationInvestment(mTEPES, mTEPES, pIndLogConsole, p, sc, st)
-            GenerationOperationModelFormulationDemand            (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
-            GenerationOperationModelFormulationStorage           (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
-            if mTEPES.pIndHydroTopology():
-                GenerationOperationModelFormulationReservoir     (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
-            if mTEPES.pIndHydrogen():
-                NetworkH2OperationModelFormulation               (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
-            if mTEPES.pIndHeat():
-                NetworkHeatOperationModelFormulation             (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
-            GenerationOperationModelFormulationCommitment        (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
-            GenerationOperationModelFormulationRampMinTime       (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
-            NetworkSwitchingModelFormulation                     (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
-            NetworkOperationModelFormulation                     (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
+            # operation model objective function and constraints by stage, dispatched from FORMULATION_REGISTRY (defined at module top).
+            # Each row is (label, builder, guard); the guard is evaluated once per stage, not once per constraint index.
+            for _label, _fn, _guard in FORMULATION_REGISTRY:
+                if _guard is not None and not _guard(mTEPES):
+                    continue
+                _fn(mTEPES, mTEPES, pIndLogConsole, p, sc, st)
             # introduce cycle flow formulations
             if pIndCycleFlow:
                 if st == mTEPES.First_st:
@@ -140,7 +159,12 @@ def StageIterativeSolving(mTEPES, DirName, CaseName, SolverName, pIndLogConsole,
                 and (sum(1 for pp,rc       in mTEPES.prc if pp <= p) == 0 or mTEPES.pIndBinRsrInvest()     == 2)
                 and (sum(1 for pp,ni,nf,cc in mTEPES.plc if pp <= p) == 0 or mTEPES.pIndBinNetElecInvest() == 2)
                 and (sum(1 for pp,ni,nf,cc in mTEPES.ppc if pp <= p) == 0 or mTEPES.pIndBinNetH2Invest()   == 2)
-                and (sum(1 for pp,ni,nf,cc in mTEPES.phc if pp <= p) == 0 or mTEPES.pIndBinNetHeatInvest() == 2)):
+                and (sum(1 for pp,ni,nf,cc in mTEPES.phc if pp <= p) == 0 or mTEPES.pIndBinNetHeatInvest() == 2)
+                # AC reactive compensation is an expansion decision too. Without these two a case whose only candidates are shunts or synchronous
+                # condensers takes the per-stage operation branch, where the investment variables are re-optimised in every stage solve and never
+                # fixed between them — so the reported build plan is whatever the last stage happened to choose.
+                and (not mTEPES.pIndACPowerFlow() or sum(1 for pp,sh in mTEPES.pshc if pp <= p) == 0 or mTEPES.pIndBinNetElecInvest() == 2)
+                and (not mTEPES.pIndACPowerFlow() or sum(1 for pp,sq in mTEPES.psqc if pp <= p) == 0 or mTEPES.pIndBinGenInvest()     == 2)):
 
                 # No minimum RES requirements and no emission limit
                 if (max([mTEPES.pRESEnergy[p,ar]() for ar in mTEPES.ar]) == 0 and (min([mTEPES.pEmission [p,ar] for ar in mTEPES.ar]) == math.inf or not any(mTEPES.pEmissionRate[nr] for nr in mTEPES.nr))):
@@ -228,7 +252,11 @@ def StageIterativeSolving(mTEPES, DirName, CaseName, SolverName, pIndLogConsole,
                  or (sum(1 for pp,rc       in mTEPES.prc if pp <= p) > 0 and mTEPES.pIndBinRsrInvest()     < 2)
                  or (sum(1 for pp,ni,nf,cc in mTEPES.plc if pp <= p) > 0 and mTEPES.pIndBinNetElecInvest() < 2)
                  or (sum(1 for pp,ni,nf,cc in mTEPES.ppc if pp <= p) > 0 and mTEPES.pIndBinNetH2Invest()   < 2)
-                 or (sum(1 for pp,ni,nf,cc in mTEPES.phc if pp <= p) > 0 and mTEPES.pIndBinNetHeatInvest() < 2)):
+                 or (sum(1 for pp,ni,nf,cc in mTEPES.phc if pp <= p) > 0 and mTEPES.pIndBinNetHeatInvest() < 2)
+                 # the mirror of the two AC clauses in the if above. Without them a case whose only candidates are shunts or condensers fails
+                 # both tests and the stage is never solved at all.
+                 or (mTEPES.pIndACPowerFlow() and sum(1 for pp,sh in mTEPES.pshc if pp <= p) > 0 and mTEPES.pIndBinNetElecInvest() < 2)
+                 or (mTEPES.pIndACPowerFlow() and sum(1 for pp,sq in mTEPES.psqc if pp <= p) > 0 and mTEPES.pIndBinGenInvest()     < 2)):
 
                     if (p,sc) == mTEPES.ps.last() and st == mTEPES.Last_st and mTEPES.NoRepetition == 0:
                         mTEPES.NoRepetition = 1
@@ -324,6 +352,8 @@ def StageIterativeSolving(mTEPES, DirName, CaseName, SolverName, pIndLogConsole,
         or  (sum(1 for _ in mTEPES.plc) > 0 and mTEPES.pIndBinNetElecInvest() < 2)
         or  (sum(1 for _ in mTEPES.ppc) > 0 and mTEPES.pIndBinNetH2Invest()   < 2)
         or  (sum(1 for _ in mTEPES.phc) > 0 and mTEPES.pIndBinNetHeatInvest() < 2)
+        or  (mTEPES.pIndACPowerFlow() and sum(1 for _ in mTEPES.pshc) > 0 and mTEPES.pIndBinNetElecInvest() < 2)
+        or  (mTEPES.pIndACPowerFlow() and sum(1 for _ in mTEPES.psqc) > 0 and mTEPES.pIndBinGenInvest()     < 2)
     )
     if not _hasExpansion:
         # assign probability 1 to all the periods and scenarios

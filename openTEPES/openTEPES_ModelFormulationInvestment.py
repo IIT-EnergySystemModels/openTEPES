@@ -16,10 +16,10 @@ def InvestmentElecModelFormulation(OptModel, mTEPES, pIndLogConsole):
 
     StartTime = time.time()
 
-    pIndElecInvest = len(mTEPES.gc) + len(mTEPES.gd) + len(mTEPES.lc) > 0
+    pIndElecInvest = len(mTEPES.gc) + len(mTEPES.gd) + len(mTEPES.lc) > 0 or (mTEPES.pIndACPowerFlow() and len(mTEPES.shc) + len(mTEPES.sqc) > 0)
 
     def eTotalICost(OptModel):
-        if not (mTEPES.gc or mTEPES.gd or mTEPES.lc or mTEPES.rn or mTEPES.pc or mTEPES.hc):
+        if not (mTEPES.gc or mTEPES.gd or mTEPES.lc or mTEPES.rn or mTEPES.pc or mTEPES.hc or pIndElecInvest):
             return Constraint.Skip
         vICost = 0.0
         if pIndElecInvest:
@@ -33,12 +33,26 @@ def InvestmentElecModelFormulation(OptModel, mTEPES, pIndLogConsole):
         return OptModel.vTotalICost == vICost
     OptModel.eTotalICost = Constraint(rule=eTotalICost, doc='system fixed cost [MEUR]')
 
+    # Candidate bus shunts are priced here alongside the other electricity-system investments. Without this the shunt investment variable appears only
+    # in the disjunctions that switch its reactive injection on, so the device is free and the model builds every one that helps.
+    pShuntInvest = mTEPES.pIndACPowerFlow() and bool(mTEPES.shc)
+    pSynchInvest = mTEPES.pIndACPowerFlow() and bool(mTEPES.sqc)
+
+    # This function is also called with the Benders master model, which declares only the generation and network investment variables. Rather than let
+    # that surface as an AttributeError deep in an expression, say what is wrong. Even with the variables added the decomposition would be incomplete,
+    # because eBd_Cuts carries no term for these decisions — so this is a real limitation, not a missing declaration.
+    if (pShuntInvest and not hasattr(OptModel, 'vShuntInvest')) or (pSynchInvest and not hasattr(OptModel, 'vSynchInvest')):
+        raise ValueError('AC shunt or synchronous condenser candidates are not supported by the Benders decomposition path: the master model carries '
+                         'no variable for them and the cuts carry no term. Run with IndCompleteProblem = 1.')
+
     def eTotalFElecCost(OptModel,p):
-        if not (mTEPES.gc or mTEPES.gd or mTEPES.lc):
+        if not (mTEPES.gc or mTEPES.gd or mTEPES.lc or pShuntInvest or pSynchInvest):
             return Constraint.Skip
         return (OptModel.vTotalFElecCost[p] == sum(mTEPES.pGenInvestCost     [gc] * OptModel.vGenerationInvest   [p,gc] for gc       in mTEPES.gc if       (p,gc) in mTEPES.pgc) +
                                                sum(mTEPES.pGenRetireCost     [gd] * OptModel.vGenerationRetire   [p,gd] for gd       in mTEPES.gd if       (p,gd) in mTEPES.pgd) +
-                                               sum(mTEPES.pNetFixedCost[ni,nf,cc] * OptModel.vNetworkInvest[p,ni,nf,cc] for ni,nf,cc in mTEPES.lc if (p,ni,nf,cc) in mTEPES.plc) )
+                                               sum(mTEPES.pNetFixedCost[ni,nf,cc] * OptModel.vNetworkInvest[p,ni,nf,cc] for ni,nf,cc in mTEPES.lc if (p,ni,nf,cc) in mTEPES.plc) +
+                                              (sum(mTEPES.pShuntFixedCost   [sh] * OptModel.vShuntInvest      [p,sh] for sh          in mTEPES.shc if      (p,sh) in mTEPES.pshc) if pShuntInvest else 0.0) +
+                                              (sum(mTEPES.pSynchFixedCost   [sq] * OptModel.vSynchInvest      [p,sq] for sq          in mTEPES.sqc if      (p,sq) in mTEPES.psqc) if pSynchInvest else 0.0) )
     OptModel.eTotalFElecCost = Constraint(mTEPES.p, rule=eTotalFElecCost, doc='electricity system fixed cost [MEUR]')
 
     def eConsecutiveGenInvest(OptModel,p,gc):

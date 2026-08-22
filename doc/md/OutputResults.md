@@ -1092,6 +1092,42 @@ Period        Scenario    Load level  Node     Network output (to be used as a p
 ============  ==========  ==========  =======  ==============================================
 ```
 
+## AC network operation (only when IndACPowerFlow is different from 0)
+
+These files are written only for an AC run. Powers are in MW and MVAr, voltages in per unit and angles in radians.
+
+| File | Description |
+|:-----|:------------|
+| oT_Result_NetworkVoltageMagnitude   | Voltage magnitude of every node at every load level |
+| oT_Result_NetworkVoltageAngle       | Voltage angle of every node at every load level |
+| oT_Result_NetworkFlowReactiveFrw    | Reactive power flow of every branch, sending end |
+| oT_Result_NetworkFlowReactiveBck    | Reactive power flow of every branch, receiving end |
+| oT_Result_NetworkCurrent            | Current magnitude of every branch |
+| oT_Result_NetworkLossesAC           | Ohmic losses of every branch, from the exact relation rather than the linear loss factor |
+| oT_Result_NetworkUtilizationAC      | Apparent power of every branch as a percentage of its rating |
+| oT_Result_NetworkReactiveNotServed  | Reactive power not served, split into the part missing and the part that could not be absorbed |
+| oT_Result_ShuntReactivePower        | Reactive power injected by every bus shunt device |
+| oT_Result_ShuntCommitment           | In-service state of every switchable shunt, per load level. A zero injection alone cannot tell an open bank from a closed one on a bus at zero volts |
+| oT_Result_MarginalReactive          | Marginal price of reactive power at every node, the dual of the reactive balance |
+
+### Diagnostics
+
+Two files say whether the reported operating point can be trusted, and they answer different questions.
+
+| File | Description |
+|:-----|:------------|
+| oT_Result_ACRelaxationGap        | Gap of the second-order cone on every branch and load level, per unit of the squared rating |
+| oT_Result_ACRelaxationGapSummary | The worst gap per branch, sorted, which is the one to scan first |
+| oT_Result_ACPowerFlowResidual    | Worst mismatch, in MW and MVAr, between the reported branch flows and the ones the bus voltages imply |
+
+The relaxation gap says whether the **cone** is tight. The residual says whether the operating point is **physical**: it
+recomputes each branch flow from the bus voltages through the series relation and compares. A tight cone with a wrong branch
+equation would pass the first and fail the second, so the two are not substitutes.
+
+A relaxed solve is not expected to sit exactly on the series relation and the residual is reported rather than judged. On the
+bundled `9n_AC` case the relaxed solution is about 68 MW off; with `IndACRestore = 1` the same case comes back within 0.00001
+MW. A residual of a size no tolerance explains is what a wrong branch equation looks like.
+
 ## Hydrogen balance and network operation
 
 File `oT_Result_BalanceHydrogen.csv`

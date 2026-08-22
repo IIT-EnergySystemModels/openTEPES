@@ -8,7 +8,7 @@ import json
 import os
 import time
 
-from   pyomo.environ import ConcreteModel, Param, Binary
+from   pyomo.environ import ConcreteModel, Param, Binary, NonNegativeIntegers
 
 # Support running this file directly (e.g. VS Code "Run Python File"), where __package__ is empty and the relative imports below have no parent package;
 # fall back to absolute package imports in that case.
@@ -20,6 +20,7 @@ try:
     from          .openTEPES_ModelFormulationObjective  import TotalObjectiveFunction
     from          .openTEPES_ModelFormulationInvestment import InvestmentElecModelFormulation, InvestmentHydroModelFormulation, InvestmentH2ModelFormulation, InvestmentHeatModelFormulation
     from          .openTEPES_ProblemSolvingStageIter    import StageIterativeSolving
+    from          .openTEPES_ModelFormulationAC        import ACRestorationPass
     from          .openTEPES_OutputResultsRawDump       import OutputResultsParVarCon
     from          .openTEPES_OutputResultsInvestment    import InvestmentResults
     from          .openTEPES_OutputResultsGeneration    import GenerationOperationResults, GenerationOperationHeatResults
@@ -27,6 +28,7 @@ try:
     from          .openTEPES_OutputResultsHydrogen      import NetworkH2OperationResults
     from          .openTEPES_OutputResultsHeat          import NetworkHeatOperationResults
     from          .openTEPES_OutputResultsNetwork       import NetworkOperationResults, NetworkMapResults
+    from          .openTEPES_OutputResultsAC            import ACRelaxationDiagnostic, ACNetworkOperationResults, ACMarginalResults
     from          .openTEPES_OutputResultsEconomic      import MarginalResults, CostSummaryResults, EconomicResults
     from          .openTEPES_OutputResultsSummary       import OperationSummaryResults, FlexibilityResults, ReliabilityResults
     from          .openTEPES_OutputResultsSink          import ResultSink, set_active_sink, clear_active_sink
@@ -40,6 +42,7 @@ except ImportError:
     from openTEPES.openTEPES_ModelFormulationObjective  import TotalObjectiveFunction
     from openTEPES.openTEPES_ModelFormulationInvestment import InvestmentElecModelFormulation, InvestmentHydroModelFormulation, InvestmentH2ModelFormulation, InvestmentHeatModelFormulation
     from openTEPES.openTEPES_ProblemSolvingStageIter    import StageIterativeSolving
+    from openTEPES.openTEPES_ModelFormulationAC        import ACRestorationPass
     from openTEPES.openTEPES_OutputResultsRawDump       import OutputResultsParVarCon
     from openTEPES.openTEPES_OutputResultsInvestment    import InvestmentResults
     from openTEPES.openTEPES_OutputResultsGeneration    import GenerationOperationResults, GenerationOperationHeatResults
@@ -47,17 +50,20 @@ except ImportError:
     from openTEPES.openTEPES_OutputResultsHydrogen      import NetworkH2OperationResults
     from openTEPES.openTEPES_OutputResultsHeat          import NetworkHeatOperationResults
     from openTEPES.openTEPES_OutputResultsNetwork       import NetworkOperationResults, NetworkMapResults
+    from openTEPES.openTEPES_OutputResultsAC            import ACRelaxationDiagnostic, ACNetworkOperationResults, ACMarginalResults
     from openTEPES.openTEPES_OutputResultsEconomic      import MarginalResults, CostSummaryResults, EconomicResults
     from openTEPES.openTEPES_OutputResultsSummary       import OperationSummaryResults, FlexibilityResults, ReliabilityResults
     from openTEPES.openTEPES_OutputResultsSink          import ResultSink, set_active_sink, clear_active_sink
 
 
 # Output categories selectable via --results CLI flag. Keys map to the pIndXxxResults flags inside openTEPES_run.
-OUTPUT_CATEGORIES = ("investment", "generation", "ess", "reservoir", "h2", "heat", "flexibility", "reliability", "network", "map", "summary", "cost", "marginal", "economic", "plots",)
+OUTPUT_CATEGORIES = ("investment", "generation", "ess", "reservoir", "h2", "heat", "flexibility", "reliability", "network", "acnetwork", "acdiag", "map", "summary", "cost", "marginal", "economic", "plots",)
 # Aliases expanded inside openTEPES_run.
 OUTPUT_ALIASES = {
     "none": (),                                              # sentinel-only — for inner-loop / feasibility-check solves
-    "min":  ("investment", "summary", "cost", "economic"),
+    # acdiag is the relaxation gap alone, two small files: it says whether the AC currents, losses and voltages mean anything, so it is never
+    # optional. acnetwork is the eight hourly wide tables and stays out of the mode whose purpose is to be minimal.
+    "min":  ("investment", "summary", "cost", "economic", "acdiag"),
     "full": OUTPUT_CATEGORIES,
 }
 
@@ -91,12 +97,112 @@ OUTPUT_REGISTRY = (
     ("h2",          NetworkH2OperationResults,      (),                       lambda m: bool(m.pa and m.pIndHydrogen)),
     ("heat",        NetworkHeatOperationResults,    (),                       lambda m: bool(m.ha and m.pIndHeat)),
     ("network",     NetworkOperationResults,        (),                       None),
+    ("acdiag",      ACRelaxationDiagnostic,         (),                       lambda m: m.pIndACPowerFlow()),
+    ("acnetwork",   ACNetworkOperationResults,      (),                       lambda m: m.pIndACPowerFlow()),
+    ("acnetwork",   ACMarginalResults,              (),                       lambda m: m.pIndACPowerFlow()),
     ("marginal",    MarginalResults,                ("plot",),                None),
     ("economic",    EconomicResults,                (        "area", "plot"), None),
 
     # --- plots (slow, not data-critical) ---
     ("map",         NetworkMapResults,              (),                       None),
 )
+
+
+
+def ValidateConfiguration(mTEPES, pIndCycleFlow):
+    """Check every combination of options at once and report all of them together.
+
+    Collected rather than raised one at a time on purpose. These checks used to sit apart from each other, so a case with
+    three incompatible flags was told about one, fixed it, and was told about the next. The list below fits on a screen
+    and can be worked through in a single pass.
+    """
+    pProblems = []
+
+    if pIndCycleFlow and mTEPES.pIndACPowerFlow():
+        pProblems.append('IndCycleFlow applies to the DC network model only and cannot be combined with IndACPowerFlow. '
+                         'See doc/design/AC_OPF_Formulation_Choices.md section 4.')
+
+    # Single-node mode fixes every vLineLosses to zero, and under AC that variable is tied to the exact loss 0.5*r*vCurr, so the fix drives vCurr to
+    # zero and the current definition then drives P and Q to zero on every AC branch. The result is not "the network ignored" but "every node
+    # islanded": load is met by ENS everywhere and nothing says why.
+    if mTEPES.pIndBinSingleNode() and mTEPES.pIndACPowerFlow():
+        pProblems.append('IndBinSingleNode ignores the network entirely and cannot be combined with IndACPowerFlow, which models it in detail. '
+                         'Switch one of the two off.')
+
+    # Variable TTC gives each branch a rating per load level. Under AC the thermal limit is written on vCurr from the STATIC pLineSmax, so the varying
+    # ratings would be read in and then ignored; and a branch the case declared out of service would still carry reactive power and losses.
+    if mTEPES.pIndVarTTC() and mTEPES.pIndACPowerFlow():
+        pProblems.append('IndVarTTC cannot be combined with IndACPowerFlow: the AC thermal limit is written on the current from the static rating, '
+                         'so per-load-level ratings would be silently ignored. See doc/design/AC_OPF_Implementation_Plan.md.')
+
+    # PTDF pins vFlowElec to sum(pPTDF * vNetPosition) as a hard equality. Under AC the branch flow equations already determine vFlowElec, so the two
+    # together over-determine it: infeasible if you are lucky, quietly wrong if not.
+    if mTEPES.pIndPTDF() and mTEPES.pIndACPowerFlow():
+        pProblems.append('IndPTDF is a DC network representation and cannot be combined with IndACPowerFlow: both determine the branch flows, and '
+                         'together they over-determine them. Switch one of the two off.')
+
+    # A PTDF matrix belongs to ONE topology. Computing it fixes that topology at build time, so a case that can change it invalidates the factors the
+    # moment a decision differs from the assumption. Generation, storage and DC-link candidates are fine: none of them enter the susceptance matrix.
+    if mTEPES.pIndPTDF() == 2 and mTEPES.lca:
+        pOffenders = ', '.join('-'.join(la) for la in list(mTEPES.lca)[:5])
+        pProblems.append(f'IndPTDF = 2 computes the factors for one fixed topology, and this case can change it: '
+                         f'{len(mTEPES.lca)} AC line(s) are candidates or switchable ({pOffenders}'
+                         f'{", ..." if len(mTEPES.lca) > 5 else ""}). Use IndPTDF = 1 and supply factors per load '
+                         f'level, or remove the candidate and switchable AC lines.')
+
+    if pProblems:
+        raise ValueError('The options of this case cannot be combined:\n' + '\n'.join(f'  {i}. {t}' for i, t in enumerate(pProblems, 1)))
+
+
+def ReportConfiguration(mTEPES):
+    """Print the configuration the model RESOLVED to, not the one the case files appear to ask for.
+
+    The two can differ, and when they do the run still finishes and still reports a solved case. IndACPowerFlow written
+    into oT_Data_Parameter rather than oT_Data_Option used to build a full AC model whose reactive demand and shunt
+    tables were never read: 1438 Mvar of load silently became zero, and only a warning marked it. The counts below are
+    read back off the built model, so a table that did not arrive shows up as a zero here before the solve rather than
+    as a puzzling result after it.
+    """
+    pAC = {0: 'DC', 1: 'AC, branch flow', 2: 'AC, bus injection (W space)', 3: 'AC, bus injection (rectangular)'}
+    print('')
+    print('Configuration                          ****')
+    print(f'  network model                        ... {pAC.get(mTEPES.pIndACPowerFlow(), mTEPES.pIndACPowerFlow())}')
+
+    if mTEPES.pIndACPowerFlow():
+        pType = {0: 'SOCP relaxation', 1: 'piecewise linear', 2: 'exact non-linear'}
+        print(f'  AC current definition                ... {pType.get(mTEPES.pIndACModelType(), mTEPES.pIndACModelType())}')
+        print(f'  AC restoration pass                  ... {"on" if mTEPES.pIndACRestore() else "off"}')
+        if mTEPES.pIndACPowerFlow() == 2:
+            print(f'  loop condition (IndACCycle)          ... {"on" if mTEPES.pIndACCycle() else "off"}')
+        pConv = {0: 'none', 1: 'line-commutated', 2: 'voltage-source'}
+        print(f'  HVDC converters                      ... {pConv.get(mTEPES.pIndACConverter(), mTEPES.pIndACConverter())}')
+
+        # the two AC-only tables, reported as what reached the model rather than as what the case directory holds
+        pQd = sum(mTEPES.pReactiveDemand[k]() for k in mTEPES.psnnd) * 1e3 if hasattr(mTEPES, 'pReactiveDemand') else 0.0
+        print(f'  reactive demand                      ... {pQd:.1f} Mvar over the horizon')
+        if pQd == 0.0:
+            print('  ### WARNING: an AC run with no reactive demand anywhere. Check that oT_Data_ReactiveDemand reached the model.')
+        print(f'  current price (EpsilonCurrent)       ... {mTEPES.pEpsilonCurrent():g}')
+        pSh = len(mTEPES.sh) if hasattr(mTEPES, 'sh') else 0
+        pSw = len(mTEPES.shw) if hasattr(mTEPES, 'shw') else 0
+        print(f'  bus shunt devices                    ... {pSh} ({pSw} switchable)')
+
+    pSolve = {0: 'stages in parallel', 1: 'stages sequentially, LP file', 2: 'stages sequentially, in memory',
+              3: 'stages by sensitivity analysis'}
+    print(f'  problem                              ... {"complete" if mTEPES.pIndCompleteProblem() else "time Benders decomposition"}'
+          f'{", sector Benders decomposition" if mTEPES.pIndSectorDecomposition() else ""}')
+    print(f'  stage solving                        ... {pSolve.get(mTEPES.pIndSequentialSolving(), mTEPES.pIndSequentialSolving())}')
+    print(f'  network losses                       ... {"on" if mTEPES.pIndBinNetLosses() else "off"}')
+    print(f'  flow-based coupling (IndPTDF)        ... {"on" if mTEPES.pIndPTDF() else "off"}')
+    # PTDF is a lossless representation: the loss constraints are skipped whenever it is on, so a case asking for both
+    # gets no losses at all. That is not wrong, but it is not what the case asked for either, so say so.
+    if mTEPES.pIndPTDF() and mTEPES.pIndBinNetLosses():
+        print('  ### NOTE: IndPTDF is a lossless representation, so IndBinNetLosses is ignored and no losses are modelled.')
+    pOn = [pName for pName, pFlag in (('variable TTC', mTEPES.pIndVarTTC()), ('hydro topology', mTEPES.pIndHydroTopology()),
+                                      ('hydrogen', mTEPES.pIndHydrogen()), ('heat', mTEPES.pIndHeat()),
+                                      ('single node', mTEPES.pIndBinSingleNode())) if pFlag]
+    print(f'  other active features                ... {", ".join(pOn) if pOn else "none"}')
+    print('')
 
 
 def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConsole,
@@ -198,29 +304,38 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     except KeyError as e:
         raise ValueError(f'### Invalid Yes/No option value {e.args[0]!r} for pIndOutputResults or pIndLogConsole; accepted values: {list(idxDict)}') from None
 
-    # introduce cycle flow formulations in DC and AC load flow
-    pIndCycleFlow = 0
-
-    # sector decomposition to get a proxy of the hydrogen sector: 0 to solve the complete problem, 1 to solve by sector Benders decomposition
-    pIndSectorDecomposition = 0
-    mTEPES.pIndSectorDecomposition = Param(initialize=pIndSectorDecomposition, within=Binary, doc='Indicator of sector decomposition', mutable=True)
-
-    # solve the complete problem directly or by time Benders decomposition
-    pIndCompleteProblem   = 1
-    pIndSequentialSolving = 1
-    mTEPES.pIndCompleteProblem   = Param(initialize=pIndCompleteProblem ,  within=Binary, doc='Indicator of solving the complete problem', mutable=True)
-    mTEPES.pIndSequentialSolving = Param(initialize=pIndSequentialSolving, within=Binary, doc='Indicator of sequential solving',           mutable=True)
     mTEPES.pBdTol = 1e-6
 
     # Reading sets and parameters. InputData also stores dfs/par on mTEPES (mTEPES.dFrame / mTEPES.dPar) for backward compatibility,
     # but DataConfiguration takes them explicitly to avoid that coupling.
     dfs, par = InputData(DirName, CaseName, mTEPES, pIndLogConsole)
 
+    # How the problem is SOLVED, as opposed to what is modelled. These four were literals in this file until now, so a
+    # case could not select any of them: the four stage-solving strategies below were all implemented and none reachable.
+    # The defaults are the values that used to be hard-coded, so a case that says nothing behaves exactly as before.
+    pIndCycleFlow           = par['pIndCycleFlow']
+    pIndSectorDecomposition = par['pIndSectorDecomposition']
+    pIndCompleteProblem     = par['pIndCompleteProblem']
+    pIndSequentialSolving   = par['pIndSequentialSolving']
+    mTEPES.pIndSectorDecomposition = Param(initialize=pIndSectorDecomposition, within=Binary,             doc='Sector Benders decomposition: 0 complete problem, 1 by sector', mutable=True)
+    mTEPES.pIndCompleteProblem     = Param(initialize=pIndCompleteProblem,     within=Binary,             doc='Solve the complete problem: 0 by time decomposition, 1 complete', mutable=True)
+    # NOT Binary: StageSolve branches on 0 parallel, 1 sequential with an LP file, 2 sequential in memory and
+    # 3 sensitivity analysis. Declaring it Binary made two of its own strategies impossible to select.
+    mTEPES.pIndSequentialSolving   = Param(initialize=pIndSequentialSolving,   within=NonNegativeIntegers, doc='Stage solving: 0 parallel, 1 sequential LP file, 2 sequential in memory, 3 sensitivity', mutable=True)
+
     # Define sets and parameters
     DataConfiguration(mTEPES, dfs, par)
 
     # Define variables
     SettingUpVariables(mTEPES, mTEPES)
+
+    # The cycle formulation is a way of eliminating vTheta from the DC model: it deletes eKirchhoff2ndLaw1/2 and imposes sum(x*flow) = 0 around each
+    # independent cycle instead. Under the AC model those constraints are never built, so CycleConstraints would try to delete components that do not
+    # exist. The AC analogue of the loop condition is sum(arctan(vWS/vWC)) = 0, which is non-convex and is handled by the tangent bounds plus the
+    # Phase 7 restoration instead. Refuse the combination rather than fail obscurely deep in the stage loop.
+    ValidateConfiguration(mTEPES, pIndCycleFlow)
+
+    ReportConfiguration(mTEPES)
 
     # first/last stage
     FirstST = 0
@@ -232,7 +347,9 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
 
     # objective function and investment constraints
     TotalObjectiveFunction             (mTEPES, mTEPES, pIndLogConsole)
-    if mTEPES.gc or mTEPES.gd or mTEPES.lc or mTEPES.rn or mTEPES.pc or mTEPES.hc:
+    # shc/sqc carry the AC reactive candidates. Their cost terms live inside eTotalFElecCost, so a case whose only expansion is a shunt or a
+    # synchronous condenser needs this block built too — otherwise the objective has no fixed-cost term at all and the devices come out free.
+    if mTEPES.gc or mTEPES.gd or mTEPES.lc or mTEPES.rn or mTEPES.pc or mTEPES.hc or mTEPES.shc or mTEPES.sqc:
         InvestmentElecModelFormulation (mTEPES, mTEPES, pIndLogConsole)
     if mTEPES.pIndHydroTopology() and mTEPES.rn:
         InvestmentHydroModelFormulation(mTEPES, mTEPES, pIndLogConsole)
@@ -247,6 +364,12 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     # iterative formulation and solve for every stage of the year. The per-stage operation model and the two solve paths (deterministic per scenario,
     # or one joint stochastic solve) live in openTEPES_ProblemSolvingStageIter; this is a pure extraction, so results are unchanged.
     StageIterativeSolving(mTEPES, DirName, CaseName, SolverName, pIndLogConsole, _path, pIndCycleFlow)
+
+    # The relaxed AC optimum is a LOWER bound on the true one, and how much lower depends entirely on whether the cone came out tight. This pass holds
+    # the plan the relaxed solve produced and re-solves the network at the exact equality, so the reported operating point satisfies the AC equations.
+    # It runs on ipopt regardless of the solver used above, because no mixed-integer solver takes the non-convex equality.
+    if mTEPES.pIndACPowerFlow() and mTEPES.pIndACRestore():
+        ACRestorationPass(mTEPES, mTEPES, 'ipopt', pIndLogConsole)
 
     # pickle the case study data with open(dump_folder+f'/oT_Case_{CaseName}.pkl','wb') as f:
     #     pickle.dump(mTEPES, f, pickle.HIGHEST_PROTOCOL)
@@ -265,7 +388,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     else:
         # --result No   → minimal (investment + summary + cost + economic, no plots)
         _flags = {k: 0 for k in OUTPUT_CATEGORIES}
-        for k in ("investment", "summary", "cost", "economic"):
+        for k in ("investment", "summary", "cost", "economic", "acdiag"):
             _flags[k] = 1
 
     # Override with fine-grained output_spec if given (--results CLI flag).

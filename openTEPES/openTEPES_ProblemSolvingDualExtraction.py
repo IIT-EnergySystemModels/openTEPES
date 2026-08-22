@@ -94,6 +94,15 @@ def fix_for_duals(OptModel, mTEPES, p, sc) -> int:
         for ni, nf, cc in mTEPES.hc:
             if (p, ni, nf, cc) in mTEPES.phc:
                 _fix_investment(OptModel.vHeatPipeInvest[p, ni, nf, cc])
+    if mTEPES.pIndACPowerFlow():
+        # Shunt and synchronous-condenser investments are continuous when their binary flag is off, so they are not caught by the binary sweep above.
+        # Leaving them free lets the resolve revise the plan the duals are supposed to price, which is the whole thing this function exists to prevent.
+        for sh in mTEPES.shc:
+            if (p, sh) in mTEPES.pshc:
+                _fix_investment(OptModel.vShuntInvest[p, sh])
+        for sq in mTEPES.sqc:
+            if (p, sq) in mTEPES.psqc:
+                _fix_investment(OptModel.vSynchInvest[p, sq])
 
     return nUnfixedVars
 

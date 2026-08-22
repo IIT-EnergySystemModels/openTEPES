@@ -11,16 +11,25 @@ from collections import defaultdict
 from pyomo.environ import Constraint, Objective, minimize
 
 
+# Module level so that CostSummaryResults reports exactly the penalty the objective charged. Two hard-coded copies would drift, and the cost
+# summary would stop adding up to the reported total — which is the failure the AC Current Penalty row exists to prevent.
+AC_CURRENT_PENALTY = 1e-3
+
+
 def TotalObjectiveFunction(OptModel, mTEPES, pIndLogConsole):
     print('Total cost o.f.      model formulation ****')
 
     StartTime = time.time()
 
-    def eTotalSCost(OptModel):
-        return OptModel.vTotalSCost
-    OptModel.eTotalSCost = Objective(rule=eTotalSCost, sense=minimize, doc='total system cost [MEUR]')
-
     pScenFactor = {(p,sc): mTEPES.pDiscountedWeight[p] * mTEPES.pScenProb[p,sc]() for p,sc in mTEPES.ps}
+
+    # The objective is the system cost PLUS the AC current penalty; vTotalSCost is the system cost alone. The penalty has to be priced to do its job,
+    # which is to stop the relaxation buying voltage with current that is not there, but it is a numerical device and not money: on a 168 hour
+    # RTS-GMLC window it came to 14.43 MEUR of a 60.00 MEUR reported total, a quarter of the figure, and it reached the reported prices through the
+    # eBalanceElec duals. Keeping it out of vTotalSCost keeps it out of every writer and every cost summary without changing what the solver does.
+    def eTotalSCost(OptModel):
+        return OptModel.vTotalSCost + sum(pScenFactor[p,sc] * OptModel.vTotalNPenalty[p,sc,n] for p,sc,n in mTEPES.psn)
+    OptModel.eTotalSCost = Objective(rule=eTotalSCost, sense=minimize, doc='total system cost plus the AC current penalty [MEUR]')
 
     def eTotalTCost(OptModel):
         vTotalTCost = OptModel.vTotalICost + sum(pScenFactor[p,sc] * (OptModel.vTotalGCost    [p,sc,n] +
@@ -49,6 +58,12 @@ def GenerationOperationModelFormulationObjFunct(OptModel, mTEPES, pIndLogConsole
     pEpsilonCharge = 1e-5
     # the small tolerance pEpsilonLosses=1e-5 prices the ohmic losses so that the solver does not leave them slack
     pEpsilonLosses = 1e-5
+    # Prices the AC branch current. NOT a pure tie-breaker: vCurr enters as an inequality and a larger current raises the downstream voltage
+    # through the drop equation, so where the extra loss is free the relaxation buys voltage with current that is not there. At 1e-5 on 9n_AC a
+    # branch sat at its thermal bound carrying a fifth of that current. At 1e-3 it is about 2.4% of total system cost and enters the eBalanceElec
+    # duals reported as locational prices, so it is broken out as its own row in the cost summary. See doc/design/AC_OPF_Prototype_Results.md 11.
+    # AC_CURRENT_PENALTY is only the default now; a case sets EpsilonCurrent in oT_Data_Parameter to override it.
+    pEpsilonCurrent = mTEPES.pEpsilonCurrent() if hasattr(mTEPES, 'pEpsilonCurrent') else AC_CURRENT_PENALTY
 
     g2a = defaultdict(set)
     for ar,g in mTEPES.a2g:
@@ -110,13 +125,30 @@ def GenerationOperationModelFormulationObjFunct(OptModel, mTEPES, pIndLogConsole
     setattr(OptModel, f'eTotalRESEnergyArea_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.ar, rule=eTotalRESEnergyArea, doc='area RES energy [GWh]'))
 
     def eTotalNCost(OptModel,n):
-        if len(mTEPES.ll) == 0:
+        if len(mTEPES.ll) == 0 and not mTEPES.pIndACPowerFlow():
             return Constraint.Skip
-        return OptModel.vTotalNCost[p,sc,n] == pEpsilonLosses * mTEPES.pLoadLevelDuration[p,sc,n]() * sum(OptModel.vLineLosses[p,sc,n,ni,nf,cc] for ni,nf,cc in mTEPES.ll if (p,ni,nf,cc) in mTEPES.pll)
+        pLossCost = pEpsilonLosses * mTEPES.pLoadLevelDuration[p,sc,n]() * sum(OptModel.vLineLosses[p,sc,n,ni,nf,cc] for ni,nf,cc in mTEPES.ll if (p,ni,nf,cc) in mTEPES.pll)
+        return OptModel.vTotalNCost[p,sc,n] == pLossCost
     setattr(OptModel, f'eTotalNCost_{p}_{sc}_{st}', Constraint(mTEPES.n, rule=eTotalNCost, doc='system variable network operation cost [MEUR]'))
 
+    # The AC branch current enters the model as an INEQUALITY — a cone under IndACModelType 0, a piecewise staircase under 1 — so nothing forces vCurr
+    # down to the boundary where it equals (P^2+Q^2)/vW. Pricing it does. See the pEpsilonCurrent block at the top of this function for what that buys
+    # and what it costs. It sits in its own variable rather than inside vTotalNCost so that it reaches the objective without reaching the reported
+    # cost. Note the units: pEpsilonLosses multiplies a loss in GW, this multiplies a dimensionless per-unit current, so the two are not comparable and
+    # this one's size relative to the loss it stands in for depends on pSBase.
+    def eTotalNPenalty(OptModel,n):
+        if mTEPES.pIndACPowerFlow() != 1:                      # vCurr exists only under branch flow
+            return Constraint.Skip
+        return OptModel.vTotalNPenalty[p,sc,n] == pEpsilonCurrent * mTEPES.pLoadLevelDuration[p,sc,n]() * sum(OptModel.vCurr[p,sc,n,ni,nf,cc] for ni,nf,cc in mTEPES.laa if (p,ni,nf,cc) in mTEPES.pla)
+    setattr(OptModel, f'eTotalNPenalty_{p}_{sc}_{st}', Constraint(mTEPES.n, rule=eTotalNPenalty, doc='AC current penalty, objective only [MEUR]'))
+
     def eTotalRElecCost(OptModel,n):
-        return OptModel.vTotalRElecCost[p,sc,n] == mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pENSCost * sum(OptModel.vENS[p,sc,n,nd] for nd in mTEPES.nd)
+        pCost = mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pENSCost * sum(OptModel.vENS[p,sc,n,nd] for nd in mTEPES.nd)
+        if mTEPES.pIndACPowerFlow():
+            # Reactive power not served is priced at the same rate as active. The number is a penalty, not a valuation: its job is to make the slack a
+            # last resort and to leave a visible trace in the results when the reactive side cannot be met, rather than an infeasible model.
+            pCost += mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pENSCost * sum(OptModel.vQNSPos[p,sc,n,nd] + OptModel.vQNSNeg[p,sc,n,nd] for nd in mTEPES.nd)
+        return OptModel.vTotalRElecCost[p,sc,n] == pCost
     setattr(OptModel, f'eTotalRElecCost_{p}_{sc}_{st}', Constraint(mTEPES.n, rule=eTotalRElecCost, doc='elec system reliability cost [MEUR]'))
 
     GeneratingTime = time.time() - StartTime

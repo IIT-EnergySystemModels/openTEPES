@@ -13,11 +13,13 @@ from   pyomo.environ import Set
 try:
     from .openTEPES_InputSource             import df_to_set_values, InputSource
     from .openTEPES_InputCSVSource          import CSVSource
+    from .openTEPES_InputDataAC             import ReadACInputData
 except ImportError:
     import sys
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     from openTEPES.openTEPES_InputSource    import df_to_set_values, InputSource
     from openTEPES.openTEPES_InputCSVSource import CSVSource
+    from openTEPES.openTEPES_InputDataAC    import ReadACInputData
 
 # from line_profiler import profile
 
@@ -92,6 +94,30 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         'NetworkHeat'               : ('pIndHeat'             , None, 'No heat energy carrier'              ),
     }
 
+    # Tables only the AC optimal power flow consumes. Unlike the hydrogen and heat tables, whose mere presence switches the sector on, these are driven
+    # by an explicit option flag — so a case can carry AC data and still be run as DC. ReactiveDemand is a full time series, hence worth not reading.
+    AC_ONLY_STEMS = {'ReactiveDemand', 'BusShunt'}
+
+    def _peek_option(flag: str) -> int:
+        """Read one flag out of oT_Data_Option, or out of oT_Data_Parameter when that is where the case put it.
+
+        Both tables are single rows, so this is cheap. Looking in BOTH matters: the main read loop below copies every
+        Parameter column into ``par``, so a case that puts IndACPowerFlow there builds a full AC model. If this peek
+        only consulted Option it would answer 0, skip ReactiveDemand and BusShunt, and the run would go all the way to
+        a solved AC case carrying no reactive demand and no shunts -- a wrong model that looks like a right one.
+        """
+        for stem in ('Option', 'Parameter'):
+            try:
+                df = source.read_data(stem)
+                # the conversion belongs inside the try as well: a blank cell reads as NaN and int(NaN) raises
+                if flag in df.columns:
+                    return int(df[flag].iloc[0])
+            except Exception:
+                continue
+        # The main read loop below tolerates a malformed Option table with a warning and carries on. This peek runs first, so it must not be the
+        # stricter of the two: a table that used to warn would otherwise abort the run before the loop is ever reached.
+        return 0
+
     def read_input_data():
         """Read every oT_Data table the source knows about.
 
@@ -100,7 +126,17 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         dfs: dict[str, pd.DataFrame] = {}
         par: dict[str, int] = {}
 
-        for fs in source.list_data_stems():
+        pIndAC = _peek_option('IndACPowerFlow')
+
+        # Remember what the source OFFERED, so the AC reader can tell "this case has no shunts" from "this case has shunts that failed to arrive".
+        # Only the second is worth a warning, and it is otherwise silent: _peek_option swallows every exception and returns 0, which skips the AC
+        # stems, while the main loop below still reads IndACPowerFlow = 1 and the AC model is built with no reactive compensation at all.
+        pStems = list(source.list_data_stems())
+        par['pBusShuntOffered'] = 1 if 'BusShunt' in pStems else 0
+
+        for fs in pStems:
+            if fs in AC_ONLY_STEMS and not pIndAC:
+                continue
             dp_key, _, _ = FLAG_MAPPING.get(fs, (None, None, None))
             header = HEADER_LEVELS.get(fs)
             try:
@@ -197,6 +233,99 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     for col in dfs['dfOption'].columns:
         par[f'p{col}'] = int(dfs['dfOption'][col].iloc[0])
 
+    # Option flags a case may leave out of oT_Data_Option entirely. Absent means the historical behaviour: DC network, no AC model.
+    #   pIndACPowerFlow  0 = DC (default)
+    #                    1 = branch flow: |V|^2, |I|^2 and P, Q per branch, with the angle carried as a node potential
+    #                    2 = bus injection in W space: W_ii = |V_i|^2 and W_ij = V_i conj(V_j) per branch, relaxed by a second-order cone
+    #                    3 = bus injection in rectangular coordinates: V = e + jf, the exact non-convex equations, for a non-linear solver
+    #                    Bose & Low prove 1 and 2 give the SAME bound. That is a statement about the optimal value, not about conditioning, solve
+    #                    time or behaviour inside branch and bound, which is why both are offered and measured rather than one assumed better.
+    #   pIndACCycle      0 = off (default), 1 = add the loop condition sum(arg W_ij) = 0 around each independent cycle.
+    #                    Meaningful only for 2: in W space the angle lives in arg(W_ij) and nothing ties it around a loop. For 1 the angle is an
+    #                    explicit node potential so the sum is identically zero and the constraint says nothing; for 3 the voltages are explicit.
+    #   pIndACModelType  0 = SOCP relaxation (default, the only option that returns a valid bound)
+    #                    1 = piecewise-linear branch flow, a MILP and therefore the only variant that scales to a full year
+    #                    2 = exact NLP, for the Phase 7 validation pass with the binaries fixed
+    # See doc/design/AC_OPF_Formulation_Choices.md for why these three and not the rest.
+    #   pIndACRestore    0 = report the relaxed solution as it stands (default)
+    #                    1 = after solving, hold the plan and re-solve the network at the exact current equality on a non-linear
+    #                        solver, so the reported operating point satisfies the AC equations. See ACRestorationPass.
+    #   pIndACConverter  0 = HVDC links carry active power only, with no converter (default, and what the DC model has always done)
+    #                    1 = line-commutated converters: each station DRAWS reactive power, tan(acos(pf)) times the active power it
+    #                        transfers, at both ends. This is the realistic default for classic HVDC and it makes the AC system need
+    #                        more compensation, not less.
+    #                    2 = voltage-source converters: each station is a controllable reactive source or sink within its rating, so
+    #                        it behaves like a STATCOM and RELIEVES the AC system instead of burdening it.
+    #   pIndBinShuntSwitch  1 = a switchable shunt is discrete, on or off (default, and what a mechanically switched bank actually does)
+    #                       0 = the same state relaxed to [0,1], which keeps an AC run continuous at the cost of letting a bank sit half in
+    for key in ['pIndACPowerFlow', 'pIndACModelType', 'pIndACRestore', 'pIndACConverter', 'pIndACCycle']:
+        par.setdefault(key, 0)
+    #   pIndPTDF         0 = no flow-based coupling (default)
+    #                    1 = read the factors from oT_Data_VariablePTDF
+    #                    2 = compute them from the reactances, so the factors cannot disagree with the network beside them
+    # The flag used to be implied by the presence of the table alone. That still works, and is the default when the case
+    # says nothing, but an explicit value now wins and a value that contradicts the case is an error rather than a guess.
+    pPTDFOffered = 1 if 'dfVariablePTDF' in dfs else 0
+    par['pIndPTDF'] = int(par.get('pIndPTDF', pPTDFOffered))
+    if par['pIndPTDF'] not in (0, 1, 2):
+        raise NotImplementedError(f"IndPTDF = {par['pIndPTDF']} is not implemented; use 0 (off), 1 (read from the case) or 2 (computed)")
+    if par['pIndPTDF'] == 1 and not pPTDFOffered:
+        raise ValueError('IndPTDF = 1 reads the factors from oT_Data_VariablePTDF, and the case has no such table. '
+                         'Use IndPTDF = 2 to have them computed from the reactances, or 0 to switch flow-based coupling off.')
+    if par['pIndPTDF'] == 2 and pPTDFOffered:
+        raise ValueError('IndPTDF = 2 computes the factors from the reactances, but the case also provides '
+                         'oT_Data_VariablePTDF. Remove the table, or use IndPTDF = 1 to read it.')
+
+    # How the problem is solved, as opposed to what is modelled. These were literals in openTEPES.py until now, so no case
+    # could select any of them. The defaults are the values that used to be hard-coded.
+    #   pIndCycleFlow            0 = Kirchhoff's second law per branch (default), 1 = cycle formulation. DC only.
+    #   pIndSectorDecomposition  0 = one problem (default), 1 = Benders decomposition by sector
+    #   pIndCompleteProblem      1 = solve the complete problem (default), 0 = time Benders decomposition
+    #   pIndSequentialSolving    0 = stages in parallel, 1 = sequentially through an LP file (default),
+    #                            2 = sequentially in memory, 3 = by sensitivity analysis
+    for pKey, pDefault, pAllowed in (('pIndCycleFlow', 0, (0, 1)), ('pIndSectorDecomposition', 0, (0, 1)),
+                                     ('pIndCompleteProblem', 1, (0, 1)), ('pIndSequentialSolving', 1, (0, 1, 2, 3))):
+        par.setdefault(pKey, pDefault)
+        if par[pKey] not in pAllowed:
+            raise NotImplementedError(f'{pKey[1:]} = {par[pKey]} is not implemented; use one of {list(pAllowed)}')
+
+    # oT_Data_Option is where the indicators belong; oT_Data_Parameter is for the numeric scalars. Both are read, because
+    # a flag that only reaches one of them used to build a different model from the one the case asked for, but a flag in
+    # the wrong file is still worth saying out loud: the next reader of the case will look in Option and not find it.
+    pOptionCols = set(dfs['dfOption'].columns) if 'dfOption' in dfs else set()
+    pMisplaced  = sorted(c for c in dfs['dfParameter'].columns if c.startswith('Ind') and c not in pOptionCols)
+    if pMisplaced:
+        print(f'### WARNING: {", ".join(pMisplaced)} found in oT_Data_Parameter. They are honoured, but they belong in '
+              f'oT_Data_Option, which is where a reader of the case will look for them.')
+
+    # How hard the AC branch current is priced. It has to be case data: the value that closes the cone depends on the cost
+    # scale and the loading of the case, not on anything the model can derive. Measured on a tight cone, 9n_AC needs 1e-3,
+    # RTS-GMLC 1e-4 and pglib case118 1e-6 — a thousandfold spread. Too small and the relaxation buys voltage with current
+    # that is not there; too large and it distorts the dispatch, by 16% on RTS-GMLC at 1e-3. IndACRestore is the way to a
+    # physical operating point that costs nothing in the objective, so this can be kept small.
+    from openTEPES.openTEPES_ModelFormulationObjective import AC_CURRENT_PENALTY as pDefaultEps
+    par.setdefault('pEpsilonCurrent', pDefaultEps)
+    if float(par['pEpsilonCurrent']) < 0.0:
+        raise ValueError(f"EpsilonCurrent = {par['pEpsilonCurrent']} is negative; it prices the branch current and must be at least 0")
+
+    par.setdefault('pIndBinShuntSwitch', 1)
+    if par['pIndBinShuntSwitch'] not in (0, 1):
+        raise NotImplementedError(f"IndBinShuntSwitch = {par['pIndBinShuntSwitch']} is not implemented; use 1 (binary) or 0 (relaxed)")
+    if par['pIndACPowerFlow'] not in (0, 1, 2, 3):
+        raise NotImplementedError(f"IndACPowerFlow = {par['pIndACPowerFlow']} is not implemented; use 0 (DC), 1 (branch flow), "
+                                  f"2 (bus injection, W space) or 3 (bus injection, rectangular)")
+    if par['pIndACCycle'] not in (0, 1):
+        raise NotImplementedError(f"IndACCycle = {par['pIndACCycle']} is not implemented; use 0 (off) or 1 (loop condition)")
+    if par['pIndACCycle'] and par['pIndACPowerFlow'] != 2:
+        raise NotImplementedError('IndACCycle applies only to IndACPowerFlow = 2. Under branch flow the angle is a node potential, so the loop '
+                                  'condition is identically satisfied; under rectangular coordinates the voltages are explicit.')
+    if par['pIndACModelType'] not in (0, 1, 2):
+        raise NotImplementedError(f"IndACModelType = {par['pIndACModelType']} is not implemented; use 0 (SOCP), 1 (piecewise linear) or 2 (NLP)")
+    if par['pIndACRestore'] not in (0, 1):
+        raise NotImplementedError(f"IndACRestore = {par['pIndACRestore']} is not implemented; use 0 (off) or 1 (exact restoration pass)")
+    if par['pIndACConverter'] not in (0, 1, 2):
+        raise NotImplementedError(f"IndACConverter = {par['pIndACConverter']} is not implemented; use 0 (none), 1 (LCC) or 2 (VSC)")
+
     # load parameters from dfParameter — single-row mixed scalars.
     for col in dfs['dfParameter'].columns:
         v = dfs['dfParameter'][col].iloc[0]
@@ -243,7 +372,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     if par['pIndVarTTC']:
         par['pVariableNTCFrw'] = dfs['dfVariableTTCFrw'] * 1e-3                                                      # variable TTC forward                      [GW]
         par['pVariableNTCBck'] = dfs['dfVariableTTCBck'] * 1e-3                                                      # variable TTC backward                     [GW]
-    if par['pIndPTDF']:
+    if par['pIndPTDF'] == 1:
         par['pVariablePTDF']   = dfs['dfVariablePTDF']                                                               # variable PTDF                             [p.u.]
 
     if par['pIndHydroTopology']:
@@ -258,6 +387,9 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     if par['pIndHeat']:
         par['pReserveMarginHeat'] = dfs['dfReserveMarginHeat']   ['ReserveMargin']                                   # minimum adequacy reserve margin           [p.u.]
         par['pDemandHeat']        = dfs['dfDemandHeat']          [mTEPES.nd] * 1e-3                                  # heat     demand                           [GW]
+
+    # AC optimal power flow tables. Called here so the reactive demand is averaged on the same rolling window as the active demand just below.
+    ReadACInputData(dfs, par, mTEPES, pIndLogConsole)
 
     if par['pTimeStep'] > 1:
         # compute the demand as the mean over the time step load levels and assign it to active load levels. The same applies to the remaining parameters
@@ -298,7 +430,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
             par['pVariableNTCFrw']    = ProcessParameter(par['pVariableNTCFrw'],       par['pTimeStep'])
             par['pVariableNTCBck']    = ProcessParameter(par['pVariableNTCBck'],       par['pTimeStep'])
 
-        if par['pIndPTDF']:
+        if par['pIndPTDF'] == 1:
             par['pVariablePTDF']      = ProcessParameter(par['pVariablePTDF'],         par['pTimeStep'])
 
         if par['pIndHydroTopology']:
@@ -349,6 +481,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     par['pEFOR']                       = dfs['dfGeneration']  ['EFOR'                      ]                                                             # EFOR                                         [p.u.]
     par['pRatedMinPowerElec']          = dfs['dfGeneration']  ['MinimumPower'              ] * 1e-3 * (1.0-dfs['dfGeneration']['EFOR'])                  # rated minimum electric power                 [GW]
     par['pRatedMaxPowerElec']          = dfs['dfGeneration']  ['MaximumPower'              ] * 1e-3 * (1.0-dfs['dfGeneration']['EFOR'])                  # rated maximum electric power                 [GW]
+    par['pNameplateMaxPowerElec']      = dfs['dfGeneration']  ['MaximumPower'              ] * 1e-3                                                      # nameplate maximum electric power, NOT derated[GW]
     par['pRatedMinPowerHeat']          = dfs['dfGeneration']  ['MinimumPowerHeat'          ] * 1e-3 * (1.0-dfs['dfGeneration']['EFOR'])                  # rated minimum heat     power                 [GW]
     par['pRatedMaxPowerHeat']          = dfs['dfGeneration']  ['MaximumPowerHeat'          ] * 1e-3 * (1.0-dfs['dfGeneration']['EFOR'])                  # rated maximum heat     power                 [GW]
     par['pRatedLinearFuelCost']        = dfs['dfGeneration']  ['LinearTerm'                ] * 1e-3 *      dfs['dfGeneration']['FuelCost']               # fuel     term variable cost                  [MEUR/GWh]
@@ -380,6 +513,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     par['pOutflowsType']               = dfs['dfGeneration']  ['OutflowsType'              ]                                                             #               ESS outflows type
     par['pEnergyType']                 = dfs['dfGeneration']  ['EnergyType'                ]                                                             #               unit  energy type
     par['pRMaxReactivePower']          = dfs['dfGeneration']  ['MaximumReactivePower'      ] * 1e-3                                                      # rated maximum reactive power                 [Gvar]
+    par['pRMinReactivePower']          = dfs['dfGeneration']  ['MinimumReactivePower'      ] * 1e-3                                                      # rated minimum reactive power                 [Gvar]
     par['pGenLoInvest']                = dfs['dfGeneration']  ['InvestmentLo'              ]                                                             # Lower bound of the investment decision       [p.u.]
     par['pGenUpInvest']                = dfs['dfGeneration']  ['InvestmentUp'              ]                                                             # Upper bound of the investment decision       [p.u.]
     par['pGenLoRetire']                = dfs['dfGeneration']  ['RetirementLo'              ]                                                             # Lower bound of the retirement decision       [p.u.]

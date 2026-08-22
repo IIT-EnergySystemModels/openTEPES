@@ -237,15 +237,24 @@ def GenerationOperationModelFormulationDemand(OptModel, mTEPES, pIndLogConsole, 
     if pIndLogConsole:
         print('eESSReserveDwEnergy       ... ', len(getattr(OptModel, f'eESSReserveDwEnergy_{p}_{sc}_{st}')), ' rows')
 
+    pACNetwork = mTEPES.pIndACPowerFlow()          # hoisted: a rule fires once per index, the flag cannot change during the build
+
     def eBalanceElec(OptModel,n,nd):
+        # Under the AC model the balance is rebuilt by openTEPES_ModelFormulationAC under this same name, because ten places read its dual back by
+        # string. Building the DC version first would be overwritten, so skip it here rather than pay for it.
+        if pACNetwork:
+            return Constraint.Skip
         if len([g for g in g2n[nd] if (p,g) in mTEPES.pg]) + len(lout[nd]) + len(lin[nd]) == 0:
             return Constraint.Skip
         return (sum(OptModel.vTotalOutput[p,sc,n,g] for g in g2n[nd] if (p,g) in mTEPES.pg) - sum(OptModel.vESSTotalCharge[p,sc,n,eh] for eh in e2n[nd] if (p,eh) in mTEPES.peh) + OptModel.vENS[p,sc,n,nd] -
                 sum(OptModel.vLineLosses[p,sc,n,nd,nf,cc] for nf,cc in loutl[nd] if (p,nd,nf,cc) in mTEPES.pll) - sum(OptModel.vFlowElec[p,sc,n,nd,nf,cc] for nf,cc in lout[nd] if (p,nd,nf,cc) in mTEPES.pla) -
                 sum(OptModel.vLineLosses[p,sc,n,ni,nd,cc] for ni,cc in linl [nd] if (p,ni,nd,cc) in mTEPES.pll) + sum(OptModel.vFlowElec[p,sc,n,ni,nd,cc] for ni,cc in lin [nd] if (p,ni,nd,cc) in mTEPES.pla)) == mTEPES.pDemandElec[p,sc,n,nd]
-    setattr(OptModel, f'eBalanceElec_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.nd, rule=eBalanceElec, doc='electric load generation balance [GW]'))
+    # Under AC the component is created by openTEPES_ModelFormulationAC under this same name. Creating an empty one here first would make Pyomo
+    # warn about an implicit replacement, so don't create it at all.
+    if not pACNetwork:
+        setattr(OptModel, f'eBalanceElec_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.nd, rule=eBalanceElec, doc='electric load generation balance [GW]'))
 
-    if pIndLogConsole:
+    if pIndLogConsole and not pACNetwork:
         print('eBalanceElec              ... ', len(getattr(OptModel, f'eBalanceElec_{p}_{sc}_{st}')), ' rows')
 
     GeneratingTime = time.time() - StartTime
@@ -990,7 +999,7 @@ def NetworkOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st
         print('eNetCapacity2             ... ', len(getattr(OptModel, f'eNetCapacity2_{p}_{sc}_{st}')), ' rows')
 
     def eKirchhoff2ndLaw1(OptModel,n,ni,nf,cc):
-        if mTEPES.pIndBinSingleNode() or mTEPES.pIndPTDF() or (p,ni,nf,cc) not in mTEPES.pla or mTEPES.pMaxNTCFrw[p,sc,n,ni,nf,cc]+mTEPES.pMaxNTCBck[p,sc,n,ni,nf,cc] == 0.0:
+        if mTEPES.pIndACPowerFlow() or mTEPES.pIndBinSingleNode() or mTEPES.pIndPTDF() or (p,ni,nf,cc) not in mTEPES.pla or mTEPES.pMaxNTCFrw[p,sc,n,ni,nf,cc]+mTEPES.pMaxNTCBck[p,sc,n,ni,nf,cc] == 0.0:
             return Constraint.Skip
         if (ni,nf,cc) in mTEPES.lca:
             return OptModel.vFlowElec[p,sc,n,ni,nf,cc] / mTEPES.pBigMFlowBck[ni,nf,cc]() - (OptModel.vTheta[p,sc,n,ni] - OptModel.vTheta[p,sc,n,nf]) / mTEPES.pLineX[ni,nf,cc] / mTEPES.pBigMFlowBck[ni,nf,cc]() * mTEPES.pSBase >= - 1 + OptModel.vLineCommit[p,sc,n,ni,nf,cc]
@@ -1002,7 +1011,7 @@ def NetworkOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st
         print('eKirchhoff2ndLaw1         ... ', len(getattr(OptModel, f'eKirchhoff2ndLaw1_{p}_{sc}_{st}')), ' rows')
 
     def eKirchhoff2ndLaw2(OptModel,n,ni,nf,cc):
-        if mTEPES.pIndBinSingleNode() or mTEPES.pIndPTDF() or (p,ni,nf,cc) not in mTEPES.pla or mTEPES.pMaxNTCFrw[p,sc,n,ni,nf,cc]+mTEPES.pMaxNTCBck[p,sc,n,ni,nf,cc] == 0.0:
+        if mTEPES.pIndACPowerFlow() or mTEPES.pIndBinSingleNode() or mTEPES.pIndPTDF() or (p,ni,nf,cc) not in mTEPES.pla or mTEPES.pMaxNTCFrw[p,sc,n,ni,nf,cc]+mTEPES.pMaxNTCBck[p,sc,n,ni,nf,cc] == 0.0:
             return Constraint.Skip
         return OptModel.vFlowElec[p,sc,n,ni,nf,cc] / mTEPES.pBigMFlowFrw[ni,nf,cc]() - (OptModel.vTheta[p,sc,n,ni] - OptModel.vTheta[p,sc,n,nf]) / mTEPES.pLineX[ni,nf,cc] / mTEPES.pBigMFlowFrw[ni,nf,cc]() * mTEPES.pSBase <=   1 - OptModel.vLineCommit[p,sc,n,ni,nf,cc]
     setattr(OptModel, f'eKirchhoff2ndLaw2_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.lca, rule=eKirchhoff2ndLaw2, doc='flow for each AC candidate line [rad]'))
@@ -1011,7 +1020,9 @@ def NetworkOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st
         print('eKirchhoff2ndLaw2         ... ', len(getattr(OptModel, f'eKirchhoff2ndLaw2_{p}_{sc}_{st}')), ' rows')
 
     def eLineLosses1(OptModel,n,ni,nf,cc):
-        if mTEPES.pIndBinSingleNode() or mTEPES.pIndPTDF() or mTEPES.pIndBinNetLosses() == 0 or (p,ni,nf,cc) not in mTEPES.pll:
+        # Under AC the loss of an AC branch comes from vFlowElec + vFlowElecBck (eLineLossesAC). A DC branch has no AC physics, so it keeps the
+        # loss factor — dropping it there would make every HVDC link lossless.
+        if (mTEPES.pIndACPowerFlow() and (ni,nf,cc) in mTEPES.laa) or mTEPES.pIndBinSingleNode() or mTEPES.pIndPTDF() or mTEPES.pIndBinNetLosses() == 0 or (p,ni,nf,cc) not in mTEPES.pll:
             return Constraint.Skip
         return OptModel.vLineLosses[p,sc,n,ni,nf,cc] >= - 0.5 * mTEPES.pLineLossFactor[ni,nf,cc] * OptModel.vFlowElec[p,sc,n,ni,nf,cc]
     setattr(OptModel, f'eLineLosses1_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.ll, rule=eLineLosses1, doc='ohmic losses for all the lines [GW]'))
@@ -1020,7 +1031,9 @@ def NetworkOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st
         print('eLineLosses1              ... ', len(getattr(OptModel, f'eLineLosses1_{p}_{sc}_{st}')), ' rows')
 
     def eLineLosses2(OptModel,n,ni,nf,cc):
-        if mTEPES.pIndBinSingleNode() or mTEPES.pIndPTDF() or mTEPES.pIndBinNetLosses() == 0 or (p,ni,nf,cc) not in mTEPES.pll:
+        # Under AC the loss of an AC branch comes from vFlowElec + vFlowElecBck (eLineLossesAC). A DC branch has no AC physics, so it keeps the
+        # loss factor — dropping it there would make every HVDC link lossless.
+        if (mTEPES.pIndACPowerFlow() and (ni,nf,cc) in mTEPES.laa) or mTEPES.pIndBinSingleNode() or mTEPES.pIndPTDF() or mTEPES.pIndBinNetLosses() == 0 or (p,ni,nf,cc) not in mTEPES.pll:
             return Constraint.Skip
         return OptModel.vLineLosses[p,sc,n,ni,nf,cc] >=   0.5 * mTEPES.pLineLossFactor[ni,nf,cc] * OptModel.vFlowElec[p,sc,n,ni,nf,cc]
     setattr(OptModel, f'eLineLosses2_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.ll, rule=eLineLosses2, doc='ohmic losses for all the lines [GW]'))
@@ -1046,13 +1059,20 @@ def NetworkOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st
     if pIndLogConsole:
         print('eNetPosition              ... ', len(getattr(OptModel, f'eNetPosition_{p}_{sc}_{st}')), ' rows')
 
+    # The factors come from the case (IndPTDF = 1) or from the reactances (IndPTDF = 2). The computed ones carry no load
+    # level index: the topology is fixed for a period, so an hourly index would repeat the same numbers every hour.
+    def _pFlowBased(OptModel,n,ni,nf,cc):
+        if mTEPES.pIndPTDF() == 2:
+            return sum(mTEPES.pPTDFCalc[p,ni,nf,cc,nd] * OptModel.vNetPosition[p,sc,n,nd] for nd in mTEPES.nd if (p,ni,nf,cc,nd) in mTEPES.pland)
+        return     sum(mTEPES.pPTDF[p,sc,n,ni,nf,cc,nd] * OptModel.vNetPosition[p,sc,n,nd] for nd in mTEPES.nd if (p,sc,n,ni,nf,cc,nd) in mTEPES.psnland)
+
     def eFlowBasedCalcu1(OptModel,n,ni,nf,cc):
         if mTEPES.pIndBinSingleNode() or mTEPES.pIndPTDF() == 0 or mTEPES.pIndBinLinePTDF[ni,nf,cc] == 0 or (p,ni,nf,cc) not in mTEPES.pla:
             return Constraint.Skip
         if (ni,nf,cc) in mTEPES.lca:
-            return OptModel.vFlowElec[p,sc,n,ni,nf,cc] - sum(mTEPES.pPTDF[p,sc,n,ni,nf,cc,nd] * OptModel.vNetPosition[p,sc,n,nd] for nd in mTEPES.nd if (p,sc,n,ni,nf,cc,nd) in mTEPES.psnland) >= - 1 + OptModel.vLineCommit[p,sc,n,ni,nf,cc]
+            return OptModel.vFlowElec[p,sc,n,ni,nf,cc] - _pFlowBased(OptModel,n,ni,nf,cc) >= - 1 + OptModel.vLineCommit[p,sc,n,ni,nf,cc]
         else:
-            return OptModel.vFlowElec[p,sc,n,ni,nf,cc] - sum(mTEPES.pPTDF[p,sc,n,ni,nf,cc,nd] * OptModel.vNetPosition[p,sc,n,nd] for nd in mTEPES.nd if (p,sc,n,ni,nf,cc,nd) in mTEPES.psnland) ==   0
+            return OptModel.vFlowElec[p,sc,n,ni,nf,cc] - _pFlowBased(OptModel,n,ni,nf,cc) ==   0
     setattr(OptModel, f'eFlowBasedCalcu1_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.la, rule=eFlowBasedCalcu1, doc='flow based calculation [p.u.]'))
 
     if pIndLogConsole:
@@ -1061,7 +1081,7 @@ def NetworkOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, st
     def eFlowBasedCalcu2(OptModel,n,ni,nf,cc):
         if mTEPES.pIndBinSingleNode() or mTEPES.pIndPTDF() == 0 or mTEPES.pIndBinLinePTDF[ni,nf,cc] == 0 or (p,ni,nf,cc) not in mTEPES.pla:
             return Constraint.Skip
-        return OptModel.vFlowElec[p,sc,n,ni,nf,cc] - sum(mTEPES.pPTDF[p,sc,n,ni,nf,cc,nd] * OptModel.vNetPosition[p,sc,n,nd] for nd in mTEPES.nd if (p,sc,n,ni,nf,cc,nd) in mTEPES.psnland) <=   1 - OptModel.vLineCommit[p,sc,n,ni,nf,cc]
+        return OptModel.vFlowElec[p,sc,n,ni,nf,cc] - _pFlowBased(OptModel,n,ni,nf,cc) <=   1 - OptModel.vLineCommit[p,sc,n,ni,nf,cc]
     setattr(OptModel, f'eFlowBasedCalcu2_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.lca, rule=eFlowBasedCalcu2, doc='flow based calculation [p.u.]'))
 
     if pIndLogConsole:

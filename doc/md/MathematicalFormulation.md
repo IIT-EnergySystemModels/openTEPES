@@ -45,6 +45,7 @@ Here we present the mathematical formulation of the optimization problem solved 
 :math:`h \in dw(e')`     Hydro or pumped-storage hydropower plant :math:`h` downstream of reservoir :math:`e'`
 :math:`e'' \in up(e')`   Reservoir :math:`e''` upstream of reservoir :math:`e'`
 :math:`i, j`             Node
+:math:`s`                Bus shunt device (reactor or capacitor bank). Each device is connected to a node :math:`s \in i`
 :math:`z`                Zone. Each node belongs to a zone :math:`i \in z`
 :math:`a`                Area. Each zone belongs to an area :math:`z \in a`
 :math:`r`                Region. Each area belongs to a region :math:`a \in r`
@@ -262,6 +263,29 @@ The net transfer capacity of a hydrogen transmission pipeline can be different i
 
 The net transfer capacity of a heat pipe can be different in each direction. However, here it is presented as equal for simplicity.
 
+```{eval-rst}
+=========================================================  ===============================================================================  ====
+**AC optimal power flow**
+------------------------------------------------------------------------------------------------------------------------------------------------
+:math:`R_{ijc}`                                            Resistance of an electric transmission line                                      p.u.
+:math:`Z^2_{ijc}`                                          Squared magnitude of the series impedance, :math:`R^2_{ijc}+X^2_{ijc}`           p.u.
+:math:`G_{ijc}, B_{ijc}`                                   Series conductance and susceptance, :math:`G+\jmath B = 1/(R+\jmath X)`          p.u.
+:math:`BC_{ijc}`                                           Total charging susceptance of the pi model, half at each end                     p.u.
+:math:`T_{ijc}`                                            Tap factor. The series impedance sees :math:`T_{ijc}` times the sending voltage  p.u.
+:math:`\overline{S}_{ijc}`                                 Apparent power rating of an AC line                                              GVA 
+:math:`\underline{V}_i, \overline{V}_i`                    Voltage magnitude limits of a node, after bound tightening                       p.u.
+:math:`V^{nom}`                                            Nominal voltage magnitude                                                        p.u.
+:math:`\underline{\theta}_{ijc}, \overline{\theta}_{ijc}`  Angle difference limits of a line, after bound tightening                        rad 
+:math:`GS_s, BS_s`                                         Conductance and susceptance of a shunt device, per unit on :math:`S_B`           p.u.
+:math:`PF^{cap}, PF^{ind}`                                 Capacitive and inductive power factor limits of a generator                      p.u.
+:math:`QD^p_{\omega ni}`                                   Reactive power demand of a node                                                  Gvar
+:math:`PTDF_{ijc,k}`                                       Power transfer distribution factor of a line for an injection at node :math:`k`  p.u.
+=========================================================  ===============================================================================  ====
+```
+
+Used only when `IndACPowerFlow` is different from 0. The reactance :math:`X_{ijc}` and the base power :math:`S_B` are
+the ones already defined for the electricity transmission system.
+
 ## Variables
 
 They are written in **lowercase** letters.
@@ -367,6 +391,29 @@ They are written in **lowercase** letters.
 :math:`fp^p_{\omega nijc}`                                                Heat flow through a heat pipe                                   GW
 ========================================================================  ==============================================================  ======
 ```
+
+```{eval-rst}
+==================================================  ========================================================  =====
+**AC optimal power flow**
+-------------------------------------------------------------------------------------------------------------------
+:math:`w^p_{\omega ni}`                             Squared voltage magnitude of a node, :math:`|V_i|^2`      p.u. 
+:math:`vr^p_{\omega ni}, vm^p_{\omega ni}`          Real and imaginary parts of the voltage of a node         p.u. 
+:math:`cu^p_{\omega nijc}`                          Squared current magnitude of a line, :math:`|I_{ij}|^2`   p.u. 
+:math:`q^p_{\omega nijc}, q'^p_{\omega nijc}`       Reactive power flow of a line, sending and receiving end  Gvar 
+:math:`f'^p_{\omega nijc}`                          Active power flow of a line, receiving end                GW   
+:math:`wr^p_{\omega nijc}, wm^p_{\omega nijc}`      Real and imaginary parts of :math:`W_{ij}=V_i V_j^*`      p.u. 
+:math:`qg^p_{\omega ng}`                            Reactive power output of a generator                      Gvar 
+:math:`qs^p_{\omega ns}`                            Reactive power injected by a shunt device                 Gvar 
+:math:`us^p_{\omega ns}`                            In-service state of a switchable shunt device             {0,1}
+:math:`ics_s`                                       Candidate shunt device installed or not                   {0,1}
+:math:`qns^{+p}_{\omega ni}, qns^{-p}_{\omega ni}`  Reactive power not served and not absorbed                Gvar 
+:math:`np^p_{\omega ni}`                            Net position of a node, used by the flow-based method     GW   
+==================================================  ========================================================  =====
+```
+
+Used only when `IndACPowerFlow` is different from 0. The voltage angle :math:`\theta^p_{\omega ni}`, the active power
+flow :math:`f^p_{\omega nijc}` and the half ohmic losses :math:`l^p_{\omega nijc}` are the ones already defined for
+the electricity transmission system.
 
 ## Equations
 
@@ -1038,6 +1085,162 @@ Flows in AC existing parallel circuits are inversely proportional to their react
 ```{math}
 f^p_{\omega nijc} = \frac{X_{ijc'}}{X_{ijc}} f^p_{\omega nijc'} \quad \forall p \omega nijcc', ijc \in EL, ijc' \in EL
 ```
+
+**AC optimal power flow**. Replaces the DC branch flow equation when `IndACPowerFlow` is different from 0. The value
+selects the formulation: 1 branch flow, 2 bus injection in :math:`W` space, 3 bus injection in rectangular coordinates.
+
+Reactive power balance [Gvar] «`eBalanceReact`»
+
+```{math}
+\sum_{g \in i} qg^p_{\omega ng} + \sum_{s \in i} qs^p_{\omega ns} + w^p_{\omega ni} S_B \sum_{ijc \in i} \frac{BC_{ijc}}{2} + qns^{+p}_{\omega ni} - qns^{-p}_{\omega ni} - \sum_{ijc} q^p_{\omega nijc} + \sum_{jic} q'^p_{\omega njic} = QD^p_{\omega ni} \quad \forall p \omega ni
+```
+
+:math:`qns^{+}` is reactive power the system cannot supply and :math:`qns^{-}` reactive power it cannot absorb; too much
+capacitive support fails through the second. The charging of a switchable or candidate line enters at :math:`V^{nom}`
+instead of :math:`w^p_{\omega ni}`, the only term of this balance that is not exact.
+
+Voltage drop along a line in service [p.u.] «`eVoltageDropUp`» «`eVoltageDropLo`»
+
+```{math}
+w^p_{\omega nj} = T^2_{ijc} w^p_{\omega ni} - \frac{2 (R_{ijc} f^p_{\omega nijc} + X_{ijc} q^p_{\omega nijc})}{S_B} + Z^2_{ijc} cu^p_{\omega nijc} \quad \forall p \omega nijc
+```
+
+Definition of the line current [p.u.] «`eCurrentSOC`»
+
+```{math}
+(f^p_{\omega nijc})^2 + (q^p_{\omega nijc})^2 \leq w^p_{\omega ni} T^2_{ijc} cu^p_{\omega nijc} S_B^2 \quad \forall p \omega nijc
+```
+
+The only relaxed constraint of the formulation. As an equality it is the exact definition; as written it is a rotated
+second-order cone and the model is convex. `IndACModelType` selects the cone (0), a piecewise linear staircase that
+keeps the problem a MILP (1), or the equality, which needs a non-linear solver (2).
+
+Thermal limit, released out of service [p.u.] «`eCurrentLimit`»
+
+```{math}
+cu^p_{\omega nijc} \leq \left( \frac{\overline{S}_{ijc}}{S_B \underline{V}_i T_{ijc}} \right)^2 swt^p_{\omega nijc} \quad \forall p \omega nijc
+```
+
+The limit is on the current, so the apparent power admitted is :math:`\overline{S}_{ijc} \overline{V}_i / \underline{V}_i`.
+
+Ohmic losses [GW] «`eLineLossesAC`»
+
+```{math}
+2 \, l^p_{\omega nijc} = f^p_{\omega nijc} + f'^p_{\omega nijc} \quad \forall p \omega nijc
+```
+
+Angle recovered from the flows [p.u.] «`eAngleEnvM`» «`eAngleEnvMSum`» «`eAngleEnvUp`» «`eAngleEnvLo`»
+
+```{math}
+|V_i| |V_j| \sin(\theta^p_{\omega ni} - \theta^p_{\omega nj}) = \frac{X_{ijc} f^p_{\omega nijc} - R_{ijc} q^p_{\omega nijc}}{S_B} \quad \forall p \omega nijc
+```
+
+Note the minus. The product of the two magnitudes is not a variable here, so the relation is imposed as an envelope over
+the voltage band rather than as an equality.
+
+Angle difference band [rad] «`eAngleBandUp`» «`eAngleBandLo`»
+
+```{math}
+\underline{\theta}_{ijc} \leq \theta^p_{\omega ni} - \theta^p_{\omega nj} \leq \overline{\theta}_{ijc} \quad \forall p \omega nijc
+```
+
+**Bus injection formulations**. The voltage products :math:`W_{ij}=V_i V_j^*` replace the current. With
+`IndACPowerFlow` = 2 their parts are variables; with 3 they are formed from :math:`vr` and :math:`vm` and the model is
+the exact non-convex problem.
+
+Line flows [GW, Gvar] «`eBIMFlowP`» «`eBIMFlowQ`» «`eBIMFlowPBck`» «`eBIMFlowQBck`»
+
+```{math}
+f^p_{\omega nijc} = S_B \left[ G_{ijc} T^2_{ijc} w^p_{\omega ni} - T_{ijc} (G_{ijc} wr^p_{\omega nijc} + B_{ijc} wm^p_{\omega nijc}) \right] \quad \forall p \omega nijc
+```
+
+```{math}
+q^p_{\omega nijc} = S_B \left[ -B_{ijc} T^2_{ijc} w^p_{\omega ni} - T_{ijc} (G_{ijc} wm^p_{\omega nijc} - B_{ijc} wr^p_{\omega nijc}) \right] \quad \forall p \omega nijc
+```
+
+These are the series flows; the charging is added by the reactive balance, and including it here as well would count it
+twice.
+
+Second-order cone relaxation of the rank-one condition «`eBIMCone`»
+
+```{math}
+(wr^p_{\omega nijc})^2 + (wm^p_{\omega nijc})^2 \leq w^p_{\omega ni} w^p_{\omega nj} \quad \forall p \omega nijc
+```
+
+Apparent power limit, gated on service [GVA] «`eBIMSLimit`»
+
+```{math}
+(f^p_{\omega nijc})^2 + (q^p_{\omega nijc})^2 \leq \left( \frac{\overline{S}_{ijc}}{\underline{V}_i T_{ijc}} \right)^2 w^p_{\omega ni} \, swt^p_{\omega nijc} \quad \forall p \omega nijc
+```
+
+Angle difference band [p.u.] «`eBIMAngleUp`» «`eBIMAngleLo`», linear because :math:`\arg(W_{ij}) = wm/wr`
+
+```{math}
+\tan(\underline{\theta}_{ijc}) \, wr^p_{\omega nijc} \leq wm^p_{\omega nijc} \leq \tan(\overline{\theta}_{ijc}) \, wr^p_{\omega nijc} \quad \forall p \omega nijc
+```
+
+Squared voltage magnitude, rectangular formulation only «`eVoltageSquare`»
+
+```{math}
+w^p_{\omega ni} = (vr^p_{\omega ni})^2 + (vm^p_{\omega ni})^2 \quad \forall p \omega ni
+```
+
+Loop condition, :math:`W` space only, switched on with `IndACCycle` «`eBIMTangent`»
+
+```{math}
+wm^p_{\omega nijc} = \tan(\theta^p_{\omega ni} - \theta^p_{\omega nj}) \, wr^p_{\omega nijc} \quad \forall p \omega nijc
+```
+
+Nothing in :math:`W` space ties the angle around a loop, so a solution can carry flows that no set of bus angles
+reproduces. Tying it to a node potential removes that. The tangent is non-convex and needs a non-linear solver.
+
+Reactive power capability of a generator [Gvar] «`eReactiveCapabilityUp`» «`eReactiveCapabilityLo`» «`eReactiveIdle`»
+
+```{math}
+- \tan(\arccos(PF^{ind})) \, gp^p_{\omega ng} \leq qg^p_{\omega ng} \leq \tan(\arccos(PF^{cap})) \, gp^p_{\omega ng} \quad \forall p \omega ng
+```
+
+A synchronous condenser is the exception: it has no active capability and is limited by its own reactive bounds.
+
+Reactive power of a shunt device wired in [Gvar] «`eShuntQExisting`»
+
+```{math}
+qs^p_{\omega ns} = BS_s \, w^p_{\omega ni} \, S_B \quad \forall p \omega ns, s \in i
+```
+
+The injection follows the square of the voltage, so a bank delivers about 10% more than its nameplate at
+:math:`\overline{V}_i`. A device with a conductance also draws :math:`-GS_s w^p_{\omega ni} S_B` of active power.
+
+A switchable or candidate device is the same relation under a disjunction [Gvar] «`eShuntQCandUp`» «`eShuntQCandLo`»
+«`eShuntQOffUp`» «`eShuntQOffLo`»
+
+```{math}
+| qs^p_{\omega ns} - BS_s w^p_{\omega ni} S_B | \leq M_s (1 - x), \qquad | qs^p_{\omega ns} | \leq M_s \, x \quad \forall p \omega ns
+```
+
+with :math:`M_s = |BS_s| \overline{V}_i^2 S_B` and :math:`x` the state that applies: :math:`us^p_{\omega ns}` for a
+switchable device, :math:`ics_s` for a candidate one. A device that is both may close only once built,
+:math:`us^p_{\omega ns} \leq ics_s` «`eShuntSwitchInvest`». A bank of :math:`N` identical units is expanded into
+:math:`N` devices whose states are chained, so the count in service is its position «`eShuntStepOrder`»
+«`eShuntBuildOrder`»
+
+```{math}
+us^p_{\omega n s_{k+1}} \leq us^p_{\omega n s_k} \quad \forall p \omega n k
+```
+
+**Flow-based market coupling**. Switched on with `IndPTDF`, as an alternative to the DC branch flow equation. It cannot
+be combined with the AC formulations, which already determine the flows.
+
+Net position of a node [GW] «`eNetPosition`» and the line flow it implies [GW] «`eFlowBasedCalcu1`» «`eFlowBasedCalcu2`»
+
+```{math}
+np^p_{\omega ni} = \sum_{g \in i} gp^p_{\omega ng} - \sum_{e \in i} gc^p_{\omega ne} + ens^p_{\omega ni} - ED^p_{\omega ni}, \qquad f^p_{\omega nijc} = \sum_{k} PTDF_{ijc,k} \, np^p_{\omega nk} \quad \forall p \omega nijc
+```
+
+With `IndPTDF` = 1 the factors are read from the case; with 2 they are computed as :math:`PTDF = B_f B^{-1}`, with
+:math:`B` built on :math:`1/X_{ijc}`, the reference node removed and the DC links left out. The computed factors are
+refused when the case has candidate or switchable AC lines, because they belong to one topology. The representation is
+lossless.
 
 and disjunctive constraints ensure that flows in AC candidate parallel circuits are inversely proportional to their reactances [p.u.]
 

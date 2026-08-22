@@ -11,6 +11,15 @@ import pandas        as pd
 from   collections   import defaultdict
 from   pyomo.environ import Set, Param, Binary, NonNegativeReals, NonNegativeIntegers, PositiveReals, PositiveIntegers, Reals, UnitInterval, Any
 
+# Support running this file directly (e.g. VS Code "Run Python File"), where __package__ is empty and the relative import below has no parent package;
+# fall back to an absolute package import in that case.
+try:
+    from .openTEPES_InputDataAC          import ConfigureACData
+except ImportError:
+    import os, sys
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from openTEPES.openTEPES_InputDataAC import ConfigureACData
+
 
 # @profile
 def DataConfiguration(mTEPES, dfs=None, par=None):
@@ -77,10 +86,28 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     mTEPES.lc     = Set(doc='candidate       electric lines'   , initialize=[la     for la   in mTEPES.la if par['pNetFixedCost']       [la] >  0.0])
     mTEPES.cd     = Set(doc='candidate    DC electric lines'   , initialize=[la     for la   in mTEPES.la if par['pNetFixedCost']       [la] >  0.0 and par['pLineType'][la] == 'DC'])
     mTEPES.ed     = Set(doc='existing     DC electric lines'   , initialize=[la     for la   in mTEPES.la if par['pNetFixedCost']       [la] == 0.0 and par['pLineType'][la] == 'DC'])
-    mTEPES.ll     = Set(doc='loss            electric lines'   , initialize=[la     for la   in mTEPES.la if par['pLineLossFactor']     [la] >  0.0 and par['pIndBinNetLosses'] > 0 ])
+    # Under AC the loss of a branch is intrinsic to its flow equations — it is r*vCurr, present whether or not anyone asked for it — so every AC branch
+    # belongs in the loss set. pIndBinNetLosses governs the DC loss-FACTOR approximation, which is a modelling choice; it should not decide whether a
+    # loss that exists gets reported. Measured on RTS-GMLC_AC, which ships with the flag off: the balance carried 183 MW of losses while every loss
+    # report showed zero, because they all key on this set.
+    # mTEPES.laa is built about 250 lines below this point, so the AC test here is on the line type directly rather than on set membership.
+    if par.get('pIndACPowerFlow', 0):
+        mTEPES.ll = Set(doc='loss            electric lines'   , initialize=[la     for la   in mTEPES.la if par['pLineType'][la] != 'DC' or (par['pLineLossFactor'][la] > 0.0 and par['pIndBinNetLosses'] > 0)])
+    else:
+        mTEPES.ll = Set(doc='loss            electric lines'   , initialize=[la     for la   in mTEPES.la if par['pLineLossFactor']     [la] >  0.0 and par['pIndBinNetLosses'] > 0 ])
     mTEPES.rf     = Set(doc='reference node'                   , initialize=[par['pReferenceNode']])
     mTEPES.gq     = Set(doc='gen    reactive units'            , initialize=[gg     for gg   in mTEPES.gg if par['pRMaxReactivePower']  [gg] >  0.0 and                                                            par['pElecGenPeriodIni'][gg]  <= pLastPeriod and par['pElecGenPeriodFin'][gg]  >= pFirstPeriod])
-    mTEPES.sq     = Set(doc='synchr reactive units'            , initialize=[gg     for gg   in mTEPES.gg if par['pRMaxReactivePower']  [gg] >  0.0 and par['pGenToTechnology'][gg] == 'SynchronousCondenser'  and par['pElecGenPeriodIni'][gg]  <= pLastPeriod and par['pElecGenPeriodFin'][gg]  >= pFirstPeriod])
+    # Membership is by physics, not by the technology string. A reactive-capable device with no active output — an SVC or a STATCOM entered the
+    # obvious way — is a reactive-only device even when nobody typed 'SynchronousCondenser'. The test is on the rated power itself, not on absence
+    # from mTEPES.g: g also excludes units for a blank node or an out-of-window period, which are not reactive-only devices at all. All THREE
+    # capabilities have to be zero — a charge-only ESS or a heat-only boiler has zero rated electric power but is emphatically not a condenser,
+    # and treating one as such both drops it from the merit-order set go and, if it is a candidate, charges its cost twice: once through
+    # vGenerationInvest and once through vSynchInvest, with two independent build decisions for one device.
+    # The electric test is on the NAMEPLATE rating, not the derated one: pRatedMaxPowerElec is MaximumPower*(1-EFOR), which is also zero for a real
+    # generator entered with EFOR = 1.0, and such a unit is a derated generator, not a condenser.
+    # Keying on the name alone left such a unit out of
+    # sq, hence out of sqc, so a CANDIDATE one carried no investment gate and no cost: free rated Mvar at every load level.
+    mTEPES.sq     = Set(doc='synchr reactive units'            , initialize=[gg     for gg   in mTEPES.gg if par['pRMaxReactivePower']  [gg] >  0.0 and (par['pGenToTechnology'][gg] == 'SynchronousCondenser' or (par['pNameplateMaxPowerElec'][gg] == 0.0 and par['pRatedMaxCharge'][gg] == 0.0 and par['pRatedMaxPowerHeat'][gg] == 0.0)) and par['pElecGenPeriodIni'][gg]  <= pLastPeriod and par['pElecGenPeriodFin'][gg]  >= pFirstPeriod])
     mTEPES.sqc    = Set(doc='synchr reactive candidate')
     mTEPES.shc    = Set(doc='shunt           candidate')
     if par['pIndHydroTopology']:
@@ -119,11 +146,16 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     if par['pIndVarTTC']:
         par['pVariableNTCFrw'] = par['pVariableNTCFrw'].reindex(columns=mTEPES.la, fill_value=0.0) * dfs['dfNetwork']['SecurityFactor']      # variable NTC forward  direction because of the security factor
         par['pVariableNTCBck'] = par['pVariableNTCBck'].reindex(columns=mTEPES.la, fill_value=0.0) * dfs['dfNetwork']['SecurityFactor']      # variable NTC backward direction because of the security factor
-    if par['pIndPTDF']:
+    if par['pIndPTDF'] == 1:
         # get the level_3, level_4, and level_5 from the multiindex of pVariablePTDF
         PTDF_columns = par['pVariablePTDF'].columns
         PTDF_lines   = PTDF_columns.droplevel([3]).drop_duplicates()
         par['pIndBinLinePTDF'].loc[:] = par['pIndBinLinePTDF'].index.isin(PTDF_lines).astype(float)
+    elif par['pIndPTDF'] == 2:
+        # computed factors cover every AC line, so the table's column list no longer decides which lines take part.
+        # mTEPES.laa does not exist yet at this point in the build, hence the test on the line type.
+        par['pIndBinLinePTDF'].loc[:] = [0.0 if str(par['pLineType'][la]).upper() == 'DC' else 1.0
+                                         for la in par['pIndBinLinePTDF'].index]
 
     # non-RES units, they can be committed and also contribute to the operating reserves
     mTEPES.nr = mTEPES.g - mTEPES.re
@@ -256,7 +288,7 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
         else:
             mTEPES.phc   = Set(initialize = [])
 
-        if pIndPTDF:
+        if pIndPTDF == 1:
             mTEPES.psnland = Set(initialize = [(p,sc,n,ni,nf,cc,nd) for p,sc,n,ni,nf,cc,nd in mTEPES.psnla*mTEPES.nd if (ni,nf,cc,nd) in par['pVariablePTDF'].columns])
 
         # assigning a node to an area
@@ -653,7 +685,7 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     if par['pIndVarTTC']:
         par['pVariableNTCFrw']  = par['pVariableNTCFrw'].loc  [mTEPES.psn]
         par['pVariableNTCBck']  = par['pVariableNTCBck'].loc  [mTEPES.psn]
-    if par['pIndPTDF']:
+    if par['pIndPTDF'] == 1:
         par['pVariablePTDF']    = par['pVariablePTDF'].loc    [mTEPES.psn]
 
     # generators to area (g2a) (e2a) (n2a)
@@ -997,7 +1029,7 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     par['pMaxNTCFrw']               = filter_rows(par['pMaxNTCFrw']           , mTEPES.psnla)
     par['pMaxNTCMax']               = filter_rows(par['pMaxNTCMax']           , mTEPES.psnla)
 
-    if par['pIndPTDF']:
+    if par['pIndPTDF'] == 1:
         par['pPTDF'] = par['pVariablePTDF'].stack(level=list(range(par['pVariablePTDF'].columns.nlevels)), future_stack=True)
         par['pPTDF'].index.set_names(['Period', 'Scenario', 'LoadLevel', 'InitialNode', 'FinalNode', 'Circuit', 'Node'], inplace=True)
         # filter rows to keep the same as mTEPES.psnland
@@ -1022,7 +1054,14 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     mTEPES.pIndHydrogen          = Param(initialize=par['pIndHydrogen']         , within=Binary,              doc='Indicator of hydrogen demand and pipeline network'                      )
     mTEPES.pIndHeat              = Param(initialize=par['pIndHeat']             , within=Binary,              doc='Indicator of heat     demand and pipe     network'                      )
     mTEPES.pIndVarTTC            = Param(initialize=par['pIndVarTTC']           , within=Binary,              doc='Indicator of using or not variable TTC'                                 )
-    mTEPES.pIndPTDF              = Param(initialize=par['pIndPTDF']             , within=Binary,              doc='Indicator of using or not the Flow-based method'                        )
+    mTEPES.pIndPTDF              = Param(initialize=par['pIndPTDF']             , within=NonNegativeIntegers, doc='Flow-based method: 0 off, 1 factors from the case, 2 computed'          )
+    mTEPES.pIndACPowerFlow       = Param(initialize=par['pIndACPowerFlow']      , within=NonNegativeIntegers, doc='AC power flow model: 0 DC, 1 branch flow, 2 bus injection W space, 3 bus injection rectangular'            )
+    mTEPES.pIndACModelType       = Param(initialize=par['pIndACModelType']      , within=NonNegativeIntegers, doc='Indicator of the AC model type: 0 SOCP, 1 piecewise linear, 2 exact NLP'            )
+    mTEPES.pIndACRestore         = Param(initialize=par['pIndACRestore']        , within=NonNegativeIntegers, doc='Indicator of the exact AC restoration pass: 0 off, 1 on'                 )
+    mTEPES.pIndACConverter       = Param(initialize=par['pIndACConverter']      , within=NonNegativeIntegers, doc='Indicator of the HVDC converter model: 0 none, 1 LCC, 2 VSC'             )
+    mTEPES.pIndACCycle           = Param(initialize=par['pIndACCycle']          , within=NonNegativeIntegers, doc='Loop condition around each independent cycle: 0 off, 1 on'               )
+    mTEPES.pIndBinShuntSwitch    = Param(initialize=par['pIndBinShuntSwitch']   , within=Binary,              doc='Hourly shunt on/off state: 1 binary, 0 relaxed'                         )
+    mTEPES.pEpsilonCurrent       = Param(initialize=float(par['pEpsilonCurrent']), within=NonNegativeReals,    doc='Price on the AC branch current, per case'                               )
 
     mTEPES.pENSCost              = Param(initialize=par['pENSCost']             , within=NonNegativeReals,    doc='ENS cost'                                           , mutable=True)
     mTEPES.pH2NSCost             = Param(initialize=par['pHNSCost']             , within=NonNegativeReals,    doc='HNS cost'                                           )
@@ -1134,7 +1173,7 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
         mTEPES.pProductionFunctionHeat     = Param(mTEPES.hp,    initialize=par['pProductionFunctionHeat'].to_dict()    , within=NonNegativeReals, doc='Production function of an CHP plant'      )
         mTEPES.pProductionFunctionH2ToHeat = Param(mTEPES.hh,    initialize=par['pProductionFunctionH2ToHeat'].to_dict(), within=NonNegativeReals, doc='Production function of an boiler using H2')
 
-    if par['pIndPTDF']:
+    if par['pIndPTDF'] == 1:
         mTEPES.pPTDF                       = Param(mTEPES.psnland, initialize=par['pPTDF'].to_dict()                    , within=Reals           , doc='Power transfer distribution factor'       )
 
     if par['pIndHydroTopology']:
@@ -1187,6 +1226,10 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
         mTEPES.pPeriodProb[p,sc] = mTEPES.pPeriodWeight[p] * mTEPES.pScenProb[p,sc]
 
     par['pMaxTheta'] = filter_rows(par['pMaxTheta'], mTEPES.psnnd)
+
+    # AC optimal power flow sets and parameters. Called before the network parameter block below because it fills in the AngMin/AngMax defaults that
+    # pAngMin/pAngMax are built from. A no-op when IndACPowerFlow is 0.
+    ConfigureACData(mTEPES, dfs, par)
 
     mTEPES.pLineLossFactor   = Param(mTEPES.ll,    initialize=par['pLineLossFactor'].to_dict()  , within=           Reals,    doc='Loss factor'                                                       )
     mTEPES.pLineR            = Param(mTEPES.la,    initialize=par['pLineR'].to_dict()           , within=NonNegativeReals,    doc='Resistance'                                                        )
@@ -1325,6 +1368,21 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     mTEPES.pInitialOutput = Param(mTEPES.psng , initialize=par['pInitialOutput'].to_dict(), within=NonNegativeReals, doc='unit initial output',     mutable=True)
     mTEPES.pInitialUC     = Param(mTEPES.psng , initialize=par['pInitialUC'].to_dict()    , within=Binary,           doc='unit initial commitment', mutable=True)
     mTEPES.pInitialSwitch = Param(mTEPES.psnla, initialize=par['pInitialSwitch'].to_dict(), within=Binary,           doc='line initial switching',  mutable=True)
+
+    # --- computed power transfer distribution factors ---------------------------------------------------------------------------------------------
+    # Deliberately NOT indexed by load level. The factors depend on the topology, which is fixed for a period, so an
+    # hourly index would store the same numbers once per hour: for a year of RTS-GMLC that is 8,736 x 120 x 73 entries
+    # of duplicated data. The read-from-table path keeps its hourly index because a case may legitimately vary it.
+    # This runs here rather than beside the other PTDF code because it needs pLineX, which is declared above.
+    if par['pIndPTDF'] == 2:
+        import openTEPES.openTEPES_NetworkMatrices as NM
+        pFactors = {}
+        for p in mTEPES.p:
+            for (ni,nf,cc,nd), v in NM.ptdf(mTEPES, p).items():
+                pFactors[p,ni,nf,cc,nd] = v
+        mTEPES.pland     = Set(doc='period x line x node with a computed factor', dimen=5, initialize=sorted(pFactors))
+        mTEPES.pPTDFCalc = Param(mTEPES.pland, initialize=pFactors, within=Reals, doc='Computed power transfer distribution factor')
+        print(f'Computing PTDF from the reactances     ...  {len(pFactors)} factors over {len(mTEPES.p)} period(s)')
 
     SettingUpDataTime = time.time() - StartTime
     print('Setting up input data                  ... ', round(SettingUpDataTime), 's')

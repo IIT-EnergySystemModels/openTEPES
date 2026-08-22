@@ -2,6 +2,68 @@
 
 ## [4.18.18RC] - 2026-08-16 Unreleased in PyPI
 
+- [ADDED] AC optimal power flow, on with `IndACPowerFlow`. Branch flow model; the current definition is a second-order
+  cone, a piecewise staircase or the exact non-linear equation (`IndACModelType`). Adds voltage and angle bound
+  tightening, bus shunts, generator reactive capability and synchronous condensers. `IndACRestore` re-solves the network
+  at the exact equations on ipopt to recover a physical operating point. New cases `9n_AC`, `RTS-GMLC_AC`,
+  `RTS-GMLC_AC_Oper`, `RTS-GMLC_Oper`. Refused with cycle flow, single node, variable TTC and PTDF. Off by default.
+- [ADDED] HVDC converter models, `IndACConverter`: line-commutated draws reactive power at both terminals,
+  voltage-source supplies or absorbs it within the converter rating. `ConverterPF` sets the power factor.
+- [FIXED] the AC angle-to-flow relation used `x*P + r*Q`; it is `x*P - r*Q`. Branch flows were wrong by up to 38 MW and
+  the recovered angles did not close around network loops.
+- [FIXED] `IndACPowerFlow` is now read from `oT_Data_Parameter` as well as `oT_Data_Option`. A case that put the flag in
+  the wrong table built an AC model but skipped the reactive demand and shunt tables, and reported the result as solved.
+- [ADDED] hourly on/off state for bus shunts, with a `Switchable` column in `oT_Data_BusShunt`. A bank can be opened at
+  light load instead of wired in all year. `IndBinShuntSwitch` picks a discrete state, the default, or a relaxed one.
+  Devices stay fixed unless marked, so existing cases are unchanged.
+- [ADDED] stepped shunt banks, with a `Units` column in `oT_Data_BusShunt`. `Units = N` gives a bank of N identical
+  units, so the model chooses how many are in service. Follows the VAR source model of Alvarez, Paredes and Rider, IET
+  Generation, Transmission and Distribution 13(13), 2019. Units are chained to remove equivalent permutations. One unit
+  by default.
+- [ADDED] `IndCycleFlow`, `IndCompleteProblem`, `IndSectorDecomposition` and `IndSequentialSolving` can now be set from
+  `oT_Data_Option`. They were fixed in the code, so no case could select them, and the four stage-solving strategies the
+  model implements were all unreachable. `IndSequentialSolving` was also declared binary while its own code branches on
+  four values. The defaults are the values that used to be in force.
+- [ADDED] `EpsilonCurrent` in `oT_Data_Parameter` sets the price on the AC branch current per case. It was a constant in
+  the code, and the value it needs turns out to depend on the case: 1e-3 for `9n_AC` and 1e-6 for the RTS-GMLC cases and
+  for pglib case118, a thousandfold spread. At 1e-3 the RTS cases were paying a 16%
+  dispatch distortion and reporting a relaxed cost above the exact optimum. The bundled cases now carry calibrated
+  values; a case that says nothing keeps the previous default.
+- [CHANGED] the AC current penalty is priced into the objective but is no longer part of the reported system cost. It is
+  a numerical device that stops the relaxation buying voltage with current that is not there, not money, and on a 168
+  hour RTS-GMLC window it came to 14.43 MEUR of a 60.00 MEUR reported total, a quarter of the figure. The solve is
+  unchanged; `vTotalSCost` now reports 45.56 MEUR for that case and the penalty is reported beside it.
+- [FIXED] the AC design notes measured the RTS-GMLC network against DC on a system with no reactive compensation. The
+  comparison, the horizon table and the relaxation tightness are measured again with the reactors: the DC model is
+  unchanged to the digit, as it should be, and the AC one grows by exactly 3 rows per hour.
+- [FIXED] the AC design notes reported that the exact model could not be solved on RTS-GMLC from a cold start. It can;
+  the earlier attempt was made on a system with no reactive compensation. Sections 13 and 14 have been re-measured with
+  the reactors in place and now record the case definition, and a new section shows that the current penalty is what
+  made the second-order cone appear tight.
+- [CHANGED] the checks on incompatible options are made in one pass and reported together, instead of one at a time.
+- [ADDED] `IndPTDF` is now an explicit three-valued option: 0 off, 1 reads the factors from `oT_Data_VariablePTDF`, and
+  2 computes them from the reactances, so a case no longer has to produce them in another tool and paste in a table that
+  openTEPES cannot check against its own network. The flag used to be implied by the presence of the table, which stays
+  the default when a case says nothing. Mode 2 is refused when the case has candidate or switchable AC lines, because
+  the factors belong to one topology. On `9n` the computed factors reproduce the angle formulation's flows exactly.
+- [ADDED] an AC power flow residual check, written to `oT_Result_ACPowerFlowResidual` and reported on the console. It
+  recomputes each branch flow from the bus voltages and compares it with the flow the model reports, so a user can tell
+  whether a solved case is physical. This was only possible before with pandapower, which openTEPES does not ship. The
+  relaxation gap answers a different question: it says whether the cone is tight, not whether the operating point is
+  physical. On `9n_AC` the relaxed solution is about 68 MW off the series relation and the restored one is within
+  0.00001 MW.
+- [ADDED] `openTEPES_NetworkMatrices.py`, which turns the branch data into the objects that need a view of the whole
+  network: the susceptance matrices, the DC power transfer distribution factors, and the residual check above. DC links
+  are excluded from all of them.
+- [ADDED] the resolved configuration is printed at the start of every run: the network model in force, the AC settings,
+  the reactive demand and shunt counts that reached the model, and the other active features. A case whose flags do not
+  say what the author intended now shows it before the solve rather than after.
+- [FIXED] the angle-difference band was built for the W-space formulation only, so `IndACPowerFlow = 3` ran with no band
+  at all.
+- [FIXED] the RTS-GMLC AC cases carried no shunt table, so the three 100 Mvar reactors on buses 106, 206 and 306 were
+  missing and both ran with no reactive compensation. `RTS-GMLC_AC_Oper` falls from 61.65 to 60.00 MEUR; `RTS-GMLC_AC` is
+  a full year and was not re-solved.
+
 - [CHANGED] improve performance in some modules
 - [CHANGED] modify OutputResultsGeneration to improve performance 
 - [FIXED] protect input data modules against a missing `openTEPES/cases/` folder, which was causing a `FileNotFoundError` on a fresh clone. 

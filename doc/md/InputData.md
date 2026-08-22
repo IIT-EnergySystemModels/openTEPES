@@ -182,6 +182,25 @@ A description of the options included in the file `oT_Data_Option.csv` follows:
 | IndBinSingleNode    | Indicator of single node case study                                                                   | {0 network, 1 single node}                          |
 | IndBinLineCommit    | Indicator of binary transmission switching decisions                                                  | {0 continuous, 1 binary}                            |
 | IndBinNetLosses     | Indicator of network losses                                                                           | {0 lossless, 1 ohmic losses}                        |
+| IndACPowerFlow      | Indicator of the AC optimal power flow and its formulation                                            | {0 DC, 1 branch flow, 2 bus injection W space, 3 bus injection rectangular} |
+| IndACModelType      | Indicator of how the branch current is written (only used when IndACPowerFlow is 1)                   | {0 second-order cone, 1 piecewise linear, 2 exact non-linear} |
+| IndACRestore        | Indicator of the restoration pass that makes the reported operating point physical                    | {0 off, 1 on}                                       |
+| IndACCycle          | Indicator of the loop condition around each independent cycle (only used when IndACPowerFlow is 2)    | {0 off, 1 on}                                       |
+| IndACConverter      | Indicator of the HVDC converter model                                                                 | {0 none, 1 line-commutated, 2 voltage-source}       |
+| IndBinShuntSwitch   | Indicator of the hourly on/off state of a switchable bus shunt                                        | {0 continuous, 1 binary}                            |
+| IndPTDF             | Indicator of the flow-based market coupling method and where its factors come from                    | {0 off, 1 read from the case, 2 computed from the reactances} |
+| IndCycleFlow            | Indicator of the cycle flow formulation of Kirchhoff's second law (DC only)                       | {0 per branch, 1 per cycle}                         |
+| IndCompleteProblem      | Indicator of solving the complete problem or decomposing it in time                               | {0 time Benders decomposition, 1 complete}          |
+| IndSectorDecomposition  | Indicator of Benders decomposition by sector                                                      | {0 one problem, 1 by sector}                        |
+| IndSequentialSolving    | Indicator of how the stages are solved                                                            | {0 in parallel, 1 sequentially through an LP file, 2 sequentially in memory, 3 by sensitivity analysis} |
+
+The last four options say how the problem is **solved** rather than what is modelled. They were fixed in the code until
+version 4.18.18 and could not be selected from a case; the defaults above are the values that were in force then, so a
+case that says nothing behaves as it always did.
+
+All the indicators belong in `oT_Data_Option`. `oT_Data_Parameter` holds the numeric scalars. An indicator placed in the
+parameter file is still honoured, and the run says so, but the next reader of the case will look for it in the option
+file and not find it.
 
 If the investment decisions are ignored (IndBinGenInvest, IndBinGenRetirement, and IndBinNetInvest take value 2) or there are none, all the scenarios with a
 probability >0 are solved sequentially (assuming a probability of 1), and the periods are given a weight of 1.
@@ -799,6 +818,100 @@ If the lower and upper bounds of investment decisions are very close (with a dif
 on a candidate line, set `InvestmentUp` to `1e-5`: it falls below the snap threshold and is internally converted to 0. A blank cell or 0 in this column is
 interpreted as "no upper bound" (full `p.u.` allowed) and lets the candidate be freely chosen by the optimization.
 
+## Running an AC optimal power flow
+
+The AC model is off by default. To switch it on, set `IndACPowerFlow` in `oT_Data_Option.csv` and give the case the two
+AC-only files described below. Three cases ship ready to run:
+
+| case | what it is |
+|:-----|:-----------|
+| `9n_AC` | nine nodes, small enough to solve in seconds |
+| `RTS-GMLC_AC_Oper` | RTS-GMLC over the week containing the annual peak |
+| `RTS-GMLC_AC` | RTS-GMLC over a full year |
+
+```
+from openTEPES.openTEPES import openTEPES_run
+openTEPES_run('openTEPES/cases', '9n_AC', 'gurobi', 0, 0)
+```
+
+`IndACPowerFlow = 1` is the branch flow model and solves with a linear-conic solver such as Gurobi. Values 2 and 3 are
+the bus-injection models and need a non-linear solver such as ipopt, as does `IndACModelType = 2`. The run prints the
+configuration it resolved to before it solves, so the mode in force is visible without reading the case files.
+
+The results are described under [AC network operation](OutputResults.md); two of them say whether the answer can be
+trusted, and the note there explains why they are not substitutes for each other.
+
+### The price on the branch current
+
+The AC branch current enters the model as an inequality, so nothing forces it down to the value the flows imply. A small
+price on it does, and `EpsilonCurrent` in `oT_Data_Parameter.csv` sets that price.
+
+It has to be given per case. The value that closes the cone depends on the cost scale and the loading of the case, and
+measured on a tight cone the bundled cases span three orders of magnitude:
+
+| case | SBase | EpsilonCurrent | why |
+|:-----|------:|---------------:|:----|
+| `9n_AC`            | 1000 MVA | 1e-3 | the value that closes its cone |
+| `RTS-GMLC_AC`      |  100 MVA | 1e-6 | keeps the relaxed cost below the exact optimum; 1e-4 closes the cone but raises the cost 0.7% above it, and 1e-3 by 16% |
+| pglib case118      |  100 MVA | 1e-6 | closes the cone outright; 1e-3 raises the cost 17% |
+
+RTS-GMLC and case118 share a base and still differ by two orders of magnitude, so the value does not follow from `SBase`
+either. Too small and the relaxation buys voltage with current that is not there; too large and it distorts the dispatch
+and can push the relaxed cost **above** the exact optimum, which is not something a relaxation should ever do.
+
+The RTS cases are set for the second of those: at 1e-6 the relaxed cost stays below the exact optimum and the cone is
+loose on about 0.4% of branch-hours, which `IndACRestore` then resolves. Closing the cone outright there would need 1e-4
+and would cost the bound. Which of the two matters is a choice, and it is the case that makes it.
+
+The price is a conditioning aid, not the route to a physical answer. `IndACRestore = 1` re-solves the network at the
+exact equations afterwards and costs nothing in the objective, so `EpsilonCurrent` can be kept small and the restoration
+pass relied on instead. A case that sets nothing keeps the previous default.
+
+The price steers the solve but is not part of the reported system cost; it is reported beside it.
+
+## Reactive power demand (optional file, AC only)
+
+The file `oT_Data_ReactiveDemand.csv` gives the reactive power demand of every node at every load level, in MVAr, with the same
+shape as `oT_Data_Demand.csv`. It is read only when IndACPowerFlow is different from 0.
+
+An AC run with no reactive demand anywhere is almost always a mistake rather than a case with unity power factor, so the model
+reports the total it read at the start of the run.
+
+## Bus shunt devices (optional file, AC only)
+
+The file `oT_Data_BusShunt.csv` describes the reactors and capacitor banks connected to a bus. It is read only when
+IndACPowerFlow is different from 0.
+
+| File | Dictionary | Description |
+|:-----|:----------:|:------------|
+| oT_Data_BusShunt | sh | Bus shunt devices |
+
+| Identifier | Description |
+|:-----------|:------------|
+| Shunt | Name of the device |
+| Node  | Bus the device is connected to |
+
+| Parameter           | Description | Unit |
+|:--------------------|:------------|:-----|
+| InitialPeriod       | Initial period when the device is available | Year |
+| FinalPeriod         | Final period when the device is available | Year |
+| Gshb                | Shunt conductance, per unit on SBase, referred to the nominal voltage of the bus | p.u. |
+| Bshb                | Shunt susceptance, per unit on SBase, referred to the nominal voltage of the bus. Positive is a capacitor, which injects reactive power; negative is a reactor, which absorbs it | p.u. |
+| FixedInvestmentCost | Fixed investment cost. A device with a cost is a candidate; one without is existing plant | MEUR |
+| FixedChargeRate     | Fixed-charge rate to annualise the investment cost | p.u. |
+| BinaryInvestment    | Binary or continuous investment decision for this device | Yes/No |
+| InvestmentLo        | Lower bound of the investment decision | p.u. |
+| InvestmentUp        | Upper bound of the investment decision | p.u. |
+| Switchable          | Whether the device has an on/off state per load level. Without it an existing device is in service every hour of the horizon, so a bank that must be open at light load cannot be represented | Yes/No |
+| Units               | Number of identical units the device stands for. With a value above 1 the model chooses how many are in service, so a stepped bank is a count rather than a single on or off | Integer |
+
+The reactive power a device injects is `Bshb * |V|^2 * SBase`, so it varies with the voltage: at the upper voltage limit a bank
+delivers about 10% more than its nameplate. The rating at nominal voltage in MVAr is `Bshb * SBase`, with SBase in MVA. A
+device of -1.0 p.u. on a 100 MVA base is therefore a 100 MVAr reactor.
+
+Each unit of a bank carries the full susceptance of one unit, not a share of the bank. `Units = 4` with `Bshb = 0.075` on a
+1000 MVA base is four 75 MVAr steps, not four 18.75 MVAr steps.
+
 ## Variable electric transmission line TTC forward and backward (optional files)
 
 A description of the data included in the files `oT_Data_VariableTTCFrw.csv` and `oT_Data_VariableTTCBck.csv` follows:
@@ -826,6 +939,26 @@ Internally, all the values below 1e-5 times the maximum system demand of each ar
 
 If the variables TTCFrw and TTCBck are both very small (e.g., 0.000001) for any time step, they are set to 0, and the line flow is forced to be 0, i.e., the
 line is switched off.
+
+## Power transfer distribution factors
+
+With `IndPTDF = 1` the factors are read from `oT_Data_VariablePTDF.csv`, which carries one column per branch and node and
+one row per load level. With `IndPTDF = 2` they are computed from the `Reactance` column of the network file instead, so
+they cannot disagree with the network beside them, and no table is needed. Asking to read a table that is not there, or
+to compute factors beside a table, is an error rather than a silent choice between them. A case that provides the table
+and says nothing about the flag keeps working as before.
+
+The computed factors cover every AC line. DC links are left out: a point-to-point link carries what its converters are
+told to carry, so it does not obey Kirchhoff's voltage law and has no place in a susceptance matrix.
+
+`IndPTDF = 2` is refused when the case has candidate or switchable AC lines. The factors belong to one topology, and a
+decision that changes the topology would leave them stale in a way nothing detects: the flows stay plausible and stop
+being right. Candidate generators, candidate storage and candidate DC links are all fine, because none of them enter the
+susceptance matrix. A case that does change its AC topology can still use `IndPTDF = 1`, where the table is indexed by
+load level and the user says how the factors move.
+
+Flow-based coupling is a lossless representation. The loss constraints are skipped whenever it is on, so a case that also
+asks for `IndBinNetLosses` gets no losses; the run says so at the start.
 
 ## Node location
 
