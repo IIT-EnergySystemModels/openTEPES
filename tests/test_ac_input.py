@@ -300,11 +300,17 @@ def test_inverted_voltage_band_raises(tmp_path):
 
 # --------------------------------------------------------------------------------------------------------------------
 # Bound tightening
+#
+# These use RTS-GMLC_AC_Oper rather than RTS-GMLC_AC. The two carry the SAME network -- 73 nodes, 120 branches, and
+# tightened angle and voltage bounds that compare bit-identical -- because the operational case is a week of the same
+# system. Tightening is a property of the network and not of the horizon, so the shorter case tests the same thing.
+# Building the full year costs 70.5 s against 2.0 s, five times over, which is most of why the unit CI job took forty
+# minutes.
 # --------------------------------------------------------------------------------------------------------------------
 
 def test_bound_tightening_never_loosens():
     """The tightened angle bound may only shrink the declared one."""
-    for case in ("9n_AC", "RTS-GMLC_AC"):
+    for case in ("9n_AC", "RTS-GMLC_AC_Oper"):
         mTEPES, _, _ = _build(CASES_DIR, case)
         for la in mTEPES.laa:
             declared = min(abs(mTEPES.pAngMin[la]()), abs(mTEPES.pAngMax[la]()))
@@ -316,7 +322,7 @@ def test_tightened_angle_bound_is_what_the_thermal_limit_implies():
     were wrong once: the rating is in GVA so it needs dividing by pSBase to meet a per-unit impedance, and the apparent
     power the model actually implies is Smax*Vmax/Vmin, not Smax, because the thermal limit is l <= (Smax/Vmin)^2 and
     the cone gives P^2+Q^2 <= vW*l. Assuming either away makes the bound a restriction that can cut off the optimum."""
-    for case in ("9n_AC", "RTS-GMLC_AC"):
+    for case in ("9n_AC", "RTS-GMLC_AC_Oper"):
         mTEPES, _, par = _build(CASES_DIR, case)
         for la in list(mTEPES.laa)[:40]:
             z = math.hypot(mTEPES.pLineR[la], mTEPES.pLineX[la])
@@ -366,7 +372,7 @@ def test_tightening_shrinks_the_envelope_slack():
     would have to be relaxed every time the tightening was corrected, which is the wrong way round.
     """
     import statistics
-    for case, min_median, min_worst in (("9n_AC", 100.0, 50.0), ("RTS-GMLC_AC", 10.0, 2.0)):
+    for case, min_median, min_worst in (("9n_AC", 100.0, 50.0), ("RTS-GMLC_AC_Oper", 10.0, 2.0)):
         mTEPES, _, _ = _build(CASES_DIR, case)
         slack = lambda t: math.tan(t / 2) - t / 2
         declared  = [slack(min(abs(mTEPES.pAngMin[la]()), abs(mTEPES.pAngMax[la]()))) for la in mTEPES.laa]
@@ -376,7 +382,7 @@ def test_tightening_shrinks_the_envelope_slack():
 
 
 def test_voltage_bounds_stay_inside_the_declared_band():
-    for case in ("9n_AC", "RTS-GMLC_AC"):
+    for case in ("9n_AC", "RTS-GMLC_AC_Oper"):
         mTEPES, _, par = _build(CASES_DIR, case)
         for nd in mTEPES.nd:
             assert par["pVMin"] - 1e-12 <= mTEPES.pVMinBus[nd] <= mTEPES.pVMaxBus[nd] <= par["pVMax"] + 1e-12
