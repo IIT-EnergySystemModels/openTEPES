@@ -14,8 +14,26 @@ from openTEPES.openTEPES_OutputResultsSink import ResultSink, set_active_sink, c
 
 
 # === Fixture: single-stage 7-day system ===
+def _private_case_copy(case_name, tmp_path):
+    """Copy a bundled case into ``tmp_path`` and return its folder.
+
+    The 7-day fixtures used to edit the bundled case in place and put it back in a ``finally``. That works until the
+    run does not reach the finally: a timeout, a Ctrl-C or a crash leaves the case truncated on disk. It then gets
+    worse, because the next run reads the CORRUPTED file as its "original" and restores to that, so the damage
+    becomes permanent and silent. It happened here -- sSEP was left with StageWeight 52 and a rewritten Duration
+    table after a suite run was killed on a timeout.
+
+    A private copy has no restore step to miss. It also gives each test its own folder for solver logs, which is
+    why ``case_7d_binary`` already worked this way.
+    """
+    src = os.path.abspath(os.path.join(os.path.dirname(__file__), "../openTEPES/cases", case_name))
+    dst = os.path.join(str(tmp_path), case_name)
+    shutil.copytree(src, dst, ignore=shutil.ignore_patterns("openTEPES_*", "oT_Result_*", "oT_Plot_*", "*.html"))
+    return dst
+
+
 @pytest.fixture
-def case_7d_system(request):
+def case_7d_system(request, tmp_path):
     """
     Temporarily modify the input files of a single-stage case to simulate a 7-day system, then restore the originals
     afterwards. Duration is truncated globally to the first 168 hours; StageWeight is forced to 52 (one stage stands
@@ -25,62 +43,31 @@ def case_7d_system(request):
     stages 2..N, which causes ``pStorageTimeStep`` to fail against ``PositiveIntegers``).
     """
     case_name = request.param
-    data = dict(
-        DirName=os.path.abspath(
-            os.path.join(os.path.dirname(__file__), "../openTEPES/cases")
-        ),
-        CaseName=case_name,
-        SolverName="highs",  # or "gurobi" or "glpk"
-        pIndLogConsole=0,
-        pIndOutputResults=0,
-    )
+    case_dir  = _private_case_copy(case_name, tmp_path)
+    data = dict(DirName=str(tmp_path), CaseName=case_name, SolverName="highs", pIndLogConsole=0, pIndOutputResults=0)
 
-    # File paths
-    duration_csv = os.path.join(
-        data["DirName"], data["CaseName"], f"oT_Data_Duration_{case_name}.csv"
-    )
-    RESEnergy_csv = os.path.join(
-        data["DirName"], data["CaseName"], f"oT_Data_RESEnergy_{case_name}.csv"
-    )
-    stage_csv = os.path.join(
-        data["DirName"], data["CaseName"], f"oT_Data_Stage_{case_name}.csv"
-    )
+    duration_csv  = os.path.join(case_dir, f"oT_Data_Duration_{case_name}.csv")
+    RESEnergy_csv = os.path.join(case_dir, f"oT_Data_RESEnergy_{case_name}.csv")
+    stage_csv     = os.path.join(case_dir, f"oT_Data_Stage_{case_name}.csv")
 
-    # Backup original data
-    original_duration_df = pd.read_csv(duration_csv, index_col=[0, 1, 2])
-    original_resenergy_df = pd.read_csv(RESEnergy_csv, index_col=[0, 1])
-    original_stage_df = pd.read_csv(stage_csv, index_col=[0])
+    df = pd.read_csv(duration_csv, index_col=[0, 1, 2])
+    df.iloc[168:, df.columns.get_loc("Duration")] = np.nan
+    df.to_csv(duration_csv)
 
-    try:
-        # Modify Duration: keep only first 168 hours (1 week)
-        df = original_duration_df.copy()
-        df.iloc[168:, df.columns.get_loc("Duration")] = np.nan
-        df.to_csv(duration_csv)
+    df = pd.read_csv(RESEnergy_csv, index_col=[0, 1])
+    df["RESEnergy"] = df["RESEnergy"].astype(float)
+    df["RESEnergy"] = np.nan
+    df.to_csv(RESEnergy_csv)
 
-        # Modify RESEnergy: set all to NaN
-        df = original_resenergy_df.copy()
-        col = "RESEnergy"
-        df[col] = df[col].astype(float)  # ✅ Ensure float dtype
-        df[col] = np.nan                 # ✅ Now safe to set NaN
-        df.to_csv(RESEnergy_csv)
+    df = pd.read_csv(stage_csv, index_col=[0])
+    df.iloc[:, df.columns.get_loc("Weight")] = 52
+    df.to_csv(stage_csv)
 
-        # Modify Stage Weight: force all weights to 52 (weeks)
-        df = original_stage_df.copy()
-        df.iloc[:, df.columns.get_loc("Weight")] = 52
-        df.to_csv(stage_csv)
-
-        yield data
-
-    finally:
-        # Restore original files
-        original_duration_df.to_csv(duration_csv)
-        original_resenergy_df.to_csv(RESEnergy_csv)
-        original_stage_df.to_csv(stage_csv)
+    yield data
 
 
-# === Fixture: multi-stage 7-day-per-stage system ===
 @pytest.fixture
-def case_multi_stage_7d_system(request):
+def case_multi_stage_7d_system(request, tmp_path):
     """
     Multi-stage variant of ``case_7d_system``. Keeps the first 168 hours of each ``(Period, Scenario, Stage)`` group
     in the Duration table — i.e. one representative week per stage — and leaves ``StageWeight`` as authored (so the
@@ -91,40 +78,24 @@ def case_multi_stage_7d_system(request):
     ``pStorageTimeStep``.
     """
     case_name = request.param
-    data = dict(
-        DirName=os.path.abspath(
-            os.path.join(os.path.dirname(__file__), "../openTEPES/cases")
-        ),
-        CaseName=case_name,
-        SolverName="highs",
-        pIndLogConsole=0,
-        pIndOutputResults=0,
-    )
+    case_dir  = _private_case_copy(case_name, tmp_path)
+    data = dict(DirName=str(tmp_path), CaseName=case_name, SolverName="highs", pIndLogConsole=0, pIndOutputResults=0)
 
-    duration_csv = os.path.join(data["DirName"], data["CaseName"], f"oT_Data_Duration_{case_name}.csv")
-    RESEnergy_csv = os.path.join(data["DirName"], data["CaseName"], f"oT_Data_RESEnergy_{case_name}.csv")
+    duration_csv  = os.path.join(case_dir, f"oT_Data_Duration_{case_name}.csv")
+    RESEnergy_csv = os.path.join(case_dir, f"oT_Data_RESEnergy_{case_name}.csv")
 
-    original_duration_df = pd.read_csv(duration_csv, index_col=[0, 1, 2])
-    original_resenergy_df = pd.read_csv(RESEnergy_csv, index_col=[0, 1])
+    # Per-stage truncation: keep first 168 rows of each (Period, Scenario, Stage) group; NaN the rest.
+    df = pd.read_csv(duration_csv, index_col=[0, 1, 2]).reset_index()
+    df["__rownum"] = df.groupby(["Period", "Scenario", "Stage"]).cumcount()
+    df.loc[df["__rownum"] >= 168, "Duration"] = np.nan
+    df.drop(columns="__rownum").set_index(["Period", "Scenario", "LoadLevel"]).to_csv(duration_csv)
 
-    try:
-        # Per-stage truncation: keep first 168 rows of each (Period, Scenario, Stage) group; NaN the rest.
-        df = original_duration_df.reset_index()
-        df["__rownum"] = df.groupby(["Period", "Scenario", "Stage"]).cumcount()
-        df.loc[df["__rownum"] >= 168, "Duration"] = np.nan
-        df.drop(columns="__rownum").set_index(["Period", "Scenario", "LoadLevel"]).to_csv(duration_csv)
+    df = pd.read_csv(RESEnergy_csv, index_col=[0, 1])
+    df["RESEnergy"] = df["RESEnergy"].astype(float)
+    df["RESEnergy"] = np.nan
+    df.to_csv(RESEnergy_csv)
 
-        # Wipe RESEnergy (same as the single-stage fixture).
-        df = original_resenergy_df.copy()
-        df["RESEnergy"] = df["RESEnergy"].astype(float)
-        df["RESEnergy"] = np.nan
-        df.to_csv(RESEnergy_csv)
-
-        yield data
-
-    finally:
-        original_duration_df.to_csv(duration_csv)
-        original_resenergy_df.to_csv(RESEnergy_csv)
+    yield data
 
 
 # === Fixture: 7-day system on a private copy, with one or more Option-file overrides ===
