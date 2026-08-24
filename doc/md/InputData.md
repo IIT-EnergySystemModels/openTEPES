@@ -227,6 +227,11 @@ A description of the system parameters included in the file `oT_Data_Parameter.c
 | TimeStep            | Number of time steps grouped together. If the duration is 1 h and the time step is 2, two consecutive hours are grouped into one load level for the optimization problem. If the duration is 0.25 h and the time step is 4, the load level represents one hour. |        |
 | EconomicBaseYear    | Base year for economic parameters affected by the discount rate                                                                                                                                                                                                 | year   |
 | AnnualDiscountRate  | Annual discount rate                                                                                                                                                                                                                                            | p.u.   |
+| VMin, VNom, VMax    | Minimum, nominal and maximum voltage magnitude of a node. Used only when IndACPowerFlow is different from 0                                                                                                                                                      | p.u.   |
+| CapacitivePF        | Capacitive power factor limit of a generator, i.e. the most reactive power it may supply relative to its active output. Used only when IndACPowerFlow is different from 0                                                                                        | p.u.   |
+| InductivePF         | Inductive power factor limit of a generator, i.e. the most reactive power it may absorb relative to its active output. Used only when IndACPowerFlow is different from 0                                                                                         | p.u.   |
+| ConverterPF         | Power factor of an HVDC converter station. Used only when IndACConverter is different from 0                                                                                                                                                                     | p.u.   |
+| EpsilonCurrent      | Price on the AC branch current. See "The price on the branch current" below. Used only when IndACPowerFlow is 1                                                                                                                                                  | p.u.   |
 
 A time step greater than one hour is a convenient way to reduce the number of load levels in the time scope. The moving average of the demand,
 upward/downward operating reserves, variable generation/consumption/storage, and ESS energy inflows/outflows
@@ -843,9 +848,8 @@ openTEPES_Main --dir openTEPES/cases --case 9n_AC --option IndACPowerFlow=1     
 openTEPES_Main --dir openTEPES/cases --case 9n_AC --option IndACPowerFlow=3 --solver ipopt   # rectangular
 ```
 
-The bundled `9n` and `9n_AC` differ by two cells and are otherwise the same 34 MB of data, which is what the override
-saves. Switching the AC model on this way also brings in the AC-only input files, so an overridden run reads the same
-tables a case with the flag set would.
+The bundled `9n` and `9n_AC` differ by two cells and hold the same 34 MB of data otherwise. Switching the AC model on
+this way also brings in the AC-only input files, so an overridden run reads the same tables as a case with the flag set.
 
 `IndACPowerFlow = 1` is the branch flow model and solves with a linear-conic solver such as Gurobi. Values 2 and 3 are
 the bus-injection models and need a non-linear solver such as ipopt, as does `IndACModelType = 2`. The run prints the
@@ -869,26 +873,25 @@ measured on a tight cone the bundled cases span three orders of magnitude:
 | pglib case118      |  100 MVA | 1e-6 | closes the cone outright; 1e-3 raises the cost 17% |
 
 RTS-GMLC and case118 share a base and still differ by two orders of magnitude, so the value does not follow from `SBase`
-either. Too small and the relaxation buys voltage with current that is not there; too large and it distorts the dispatch
-and can push the relaxed cost **above** the exact optimum, which is not something a relaxation should ever do.
+either. A value too small leaves the relaxation slack; a value too large changes the dispatch and can raise the relaxed
+cost above the exact optimum, so it no longer bounds it.
 
-The RTS cases are set for the second of those: at 1e-6 the relaxed cost stays below the exact optimum and the cone is
-loose on about 0.4% of branch-hours, which `IndACRestore` then resolves. Closing the cone outright there would need 1e-4
-and would cost the bound. Which of the two matters is a choice, and it is the case that makes it.
+The RTS cases use 1e-6: the relaxed cost stays below the exact optimum and the cone is loose on about 0.4% of
+branch-hours, which `IndACRestore` resolves. Closing the cone there instead would take 1e-4 and the bound would be lost.
 
-The price is a conditioning aid, not the route to a physical answer. `IndACRestore = 1` re-solves the network at the
-exact equations afterwards and costs nothing in the objective, so `EpsilonCurrent` can be kept small and the restoration
-pass relied on instead. A case that sets nothing keeps the previous default.
+`IndACRestore = 1` re-solves the network at the exact equations after the solve and adds nothing to the objective, so
+`EpsilonCurrent` may be kept small and the restoration pass used for a physical operating point. A case that sets
+nothing keeps the previous default.
 
-The price steers the solve but is not part of the reported system cost; it is reported beside it.
+The price steers the solve and is not part of the reported system cost; it is reported beside it.
 
 ## Reactive power demand (optional file, AC only)
 
 The file `oT_Data_ReactiveDemand.csv` gives the reactive power demand of every node at every load level, in MVAr, with the same
 shape as `oT_Data_Demand.csv`. It is read only when IndACPowerFlow is different from 0.
 
-An AC run with no reactive demand anywhere is almost always a mistake rather than a case with unity power factor, so the model
-reports the total it read at the start of the run.
+The model reports the total reactive demand it read at the start of the run, so a case where the file did not arrive is
+visible before the solve.
 
 ## Bus shunt devices (optional file, AC only)
 

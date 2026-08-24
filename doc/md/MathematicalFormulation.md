@@ -280,6 +280,8 @@ The net transfer capacity of a heat pipe can be different in each direction. How
 :math:`PF^{cap}, PF^{ind}`                                 Capacitive and inductive power factor limits of a generator                      p.u.
 :math:`QD^p_{\omega ni}`                                   Reactive power demand of a node                                                  Gvar
 :math:`PTDF_{ijc,k}`                                       Power transfer distribution factor of a line for an injection at node :math:`k`  p.u.
+:math:`qc^p_{\omega nijc}`                                 Reactive power at an HVDC converter terminal                                     Gvar
+:math:`f^{+p}_{\omega nijc}, f^{-p}_{\omega nijc}`         Positive and negative parts of a DC link flow                                    GW  
 =========================================================  ===============================================================================  ====
 ```
 
@@ -1095,9 +1097,9 @@ Reactive power balance [Gvar] «`eBalanceReact`»
 \sum_{g \in i} qg^p_{\omega ng} + \sum_{s \in i} qs^p_{\omega ns} + w^p_{\omega ni} S_B \sum_{ijc \in i} \frac{BC_{ijc}}{2} + qns^{+p}_{\omega ni} - qns^{-p}_{\omega ni} - \sum_{ijc} q^p_{\omega nijc} + \sum_{jic} q'^p_{\omega njic} = QD^p_{\omega ni} \quad \forall p \omega ni
 ```
 
-:math:`qns^{+}` is reactive power the system cannot supply and :math:`qns^{-}` reactive power it cannot absorb; too much
-capacitive support fails through the second. The charging of a switchable or candidate line enters at :math:`V^{nom}`
-instead of :math:`w^p_{\omega ni}`, the only term of this balance that is not exact.
+:math:`qns^{+}` is reactive power not supplied and :math:`qns^{-}` reactive power not absorbed. The charging of a
+switchable or candidate line enters at :math:`V^{nom}` rather than at :math:`w^p_{\omega ni}`, which is the one
+approximation in this balance: the exact term multiplies the voltage by the commitment decision.
 
 Voltage drop along a line in service [p.u.] «`eVoltageDropUp`» «`eVoltageDropLo`»
 
@@ -1135,8 +1137,8 @@ Angle recovered from the flows [p.u.] «`eAngleEnvM`» «`eAngleEnvMSum`» «`eA
 |V_i| |V_j| \sin(\theta^p_{\omega ni} - \theta^p_{\omega nj}) = \frac{X_{ijc} f^p_{\omega nijc} - R_{ijc} q^p_{\omega nijc}}{S_B} \quad \forall p \omega nijc
 ```
 
-Note the minus. The product of the two magnitudes is not a variable here, so the relation is imposed as an envelope over
-the voltage band rather than as an equality.
+The product of the two voltage magnitudes is not a variable of this formulation, so the relation is imposed as an
+envelope over the voltage band rather than as an equality.
 
 Angle difference band [rad] «`eAngleBandUp`» «`eAngleBandLo`»
 
@@ -1226,6 +1228,28 @@ switchable device, :math:`ics_s` for a candidate one. A device that is both may 
 
 ```{math}
 us^p_{\omega n s_{k+1}} \leq us^p_{\omega n s_k} \quad \forall p \omega n k
+```
+
+**HVDC converters**. Switched on with `IndACConverter`, which selects the model: 1 line-commutated, 2 voltage-source.
+Each terminal of a DC link then exchanges reactive power with the AC node it sits on, and that term enters the reactive
+balance above. :math:`PF^{conv}` is the converter power factor and :math:`T^{conv} = \tan(\arccos(PF^{conv}))`.
+
+A line-commutated converter draws reactive power at BOTH terminals, in proportion to the active power it carries
+«`eDCFlowSplit`» «`eDCFlowDirPos`» «`eDCFlowDirNeg`»
+
+```{math}
+f^p_{\omega nijc} = f^{+p}_{\omega nijc} - f^{-p}_{\omega nijc}, \qquad f^{+p}_{\omega nijc} \leq \overline{F}_{ijc} \, y^p_{\omega nijc}, \qquad f^{-p}_{\omega nijc} \leq \overline{F}_{ijc} (1 - y^p_{\omega nijc}) \quad \forall p \omega nijc
+```
+
+with the reactive draw at each terminal equal to :math:`T^{conv} (f^{+} + f^{-})`. The flow is split into its positive
+and negative parts because the draw follows the magnitude of the active power, not its sign; :math:`y` is a binary that
+keeps only one part non-zero.
+
+A voltage-source converter supplies or absorbs reactive power within its rating, independently at each terminal, and is
+released only while the link is in service «`eQConvFrwOffUp`» «`eQConvFrwOffLo`» «`eQConvBckOffUp`» «`eQConvBckOffLo`»
+
+```{math}
+- T^{conv} \overline{F}_{ijc} \, uc^p_{\omega nijc} \leq qc^p_{\omega nijc} \leq T^{conv} \overline{F}_{ijc} \, uc^p_{\omega nijc} \quad \forall p \omega nijc
 ```
 
 **Flow-based market coupling**. Switched on with `IndPTDF`, as an alternative to the DC branch flow equation. It cannot
