@@ -28,6 +28,9 @@ from pyomo.environ import Constraint, NonNegativeReals, Objective, RangeSet, Sol
 PWL_SEGMENTS = 10
 
 
+# Tangent lines used to approximate the converter capability disc. Twelve leaves the bound loose by 1/cos(pi/12), i.e. 3.5%.
+CONV_CUTS = 12
+
 def _smax_pu(mTEPES, la):
     """Largest apparent power the model permits on a branch, in per unit.
 
@@ -211,6 +214,42 @@ def NetworkACOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, 
             setattr(OptModel, f'{pStem}OffLo_{p}_{sc}_{st}',
                     Constraint(mTEPES.n*mTEPES.lad, rule=lambda m, n, ni, nf, cc, v=vVar: _eQConvOff(v, '')(m, n, ni, nf, cc, -1),
                                doc='an out-of-service converter absorbs nothing [Gvar]'))
+
+    # --- converter capability: the station rating is on the APPARENT power ------------------------------------------------------------------------
+    # Active and reactive power were bounded separately, so a station could sit at P = NTC and Q = tan(acos(pf)) NTC at the same time and deliver
+    # |S| = NTC / pf. At the default power factor of 0.85 that is 17.6% more apparent power than the converter has, and 5.3% at 0.95.
+    #
+    # The limit is a disc, P^2 + Q^2 <= S^2, and it is written as a ring of linear cuts rather than as that disc. Two reasons. A quadratic constraint
+    # would put a cone into IndACModelType = 1, whose whole purpose is to stay a MILP that an LP/MIP solver can take, and on a tightly rated link the
+    # disc made the barrier stop with "numerical trouble" where the same case solved without it.
+    #
+    # CONV_CUTS tangent lines circumscribe the disc, so the bound is loose by 1/cos(pi/CONV_CUTS): 3.5% at 12 cuts. That is an approximation, and it
+    # is a fifth of the 17.6% it replaces.
+    if pConvLCC or pConvVSC:
+        def eConvSLimit(OptModel, n, ni, nf, cc, k=0, pSide=+1):
+            if not _live((ni,nf,cc)):
+                return Constraint.Skip
+            pSmax = mTEPES.pLineNTCMax[ni,nf,cc]
+            if pConvVSC:
+                pQ = OptModel.vQConvFrw[p,sc,n,ni,nf,cc] if pSide > 0 else OptModel.vQConvBck[p,sc,n,ni,nf,cc]
+                pAng = 2.0 * math.pi * k / CONV_CUTS
+                return (math.cos(pAng) * OptModel.vFlowElec[p,sc,n,ni,nf,cc] + math.sin(pAng) * pQ <= pSmax)
+            # An LCC draws tan(acos(pf)) |P|, so P^2 + Q^2 = P^2 (1 + tan^2) and the disc collapses to a linear bound on |P|, exactly and with no
+            # cuts. |P| is already split for the reactive draw.
+            return (OptModel.vDCFlowPos[p,sc,n,ni,nf,cc] + OptModel.vDCFlowNeg[p,sc,n,ni,nf,cc]
+                    <= pSmax * min(max(mTEPES.pConverterPF(), 1e-3), 1.0))
+
+        if pConvLCC:
+            setattr(OptModel, f'eConvSLimit_{p}_{sc}_{st}',
+                    Constraint(mTEPES.n*mTEPES.lad, rule=lambda m, n, ni, nf, cc: eConvSLimit(m, n, ni, nf, cc),
+                               doc='converter apparent power within its rating [GVA]'))
+        else:
+            for pSide, pTag in ((+1, 'Frw'), (-1, 'Bck')):
+                for k in range(CONV_CUTS):
+                    setattr(OptModel, f'eConvSLimit{pTag}{k}_{p}_{sc}_{st}',
+                            Constraint(mTEPES.n*mTEPES.lad,
+                                       rule=lambda m, n, ni, nf, cc, kk=k, t=pSide: eConvSLimit(m, n, ni, nf, cc, kk, t),
+                                       doc='converter apparent power within its rating [GVA]'))
 
     # --- (12) reactive power balance -------------------------------------------------------------------------------------------------------------
     def eBalanceReact(OptModel, n, nd):

@@ -1252,6 +1252,18 @@ released only while the link is in service «`eQConvFrwOffUp`» «`eQConvFrwOffL
 - T^{conv} \overline{F}_{ijc} \, uc^p_{\omega nijc} \leq qc^p_{\omega nijc} \leq T^{conv} \overline{F}_{ijc} \, uc^p_{\omega nijc} \quad \forall p \omega nijc
 ```
 
+The station rating bounds the apparent power at each terminal «`eConvSLimit`»
+
+```{math}
+(f^p_{\omega nijc})^2 + (qc^p_{\omega nijc})^2 \leq \overline{F}_{ijc}^2 \quad \forall p \omega nijc
+```
+
+It is imposed as a ring of tangent lines rather than as the disc itself, so that the piecewise variant of
+`IndACModelType` remains a mixed-integer linear problem. The bound is therefore loose by
+:math:`1/\cos(\pi/n)` for :math:`n` lines, which is 3.5% at the twelve used. For a line-commutated converter the
+reactive power is a fixed ratio of the active power, so the same limit reduces to
+:math:`|f^p_{\omega nijc}| \leq \overline{F}_{ijc} PF^{conv}` and is exact.
+
 **Flow-based market coupling**. Switched on with `IndPTDF`, as an alternative to the DC branch flow equation. It cannot
 be combined with the AC formulations, which already determine the flows.
 

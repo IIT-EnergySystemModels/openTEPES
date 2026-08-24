@@ -1383,3 +1383,80 @@ def test_a_malformed_override_is_refused():
     pOpt = [a for a in cli.parser._actions if "--option" in getattr(a, "option_strings", [])]
     assert pOpt and pOpt[0].nargs is None and pOpt[0].__class__.__name__ == "_AppendAction", \
         "--option should be repeatable"
+
+
+@pytest.mark.solve
+def test_the_two_converter_models_push_the_cost_in_opposite_directions(tmp_path):
+    """The sign of the converter effect, which the other converter tests do not reach.
+
+    They check the mechanism: that the LCC model splits the DC flow, that a VSC terminal spans zero. Neither checks
+    what the converter does to the system. An LCC station draws reactive power at both terminals and so costs the
+    system something; a VSC station supplies or absorbs it within its rating and so relieves the system. A sign error
+    in either term of the reactive balance would leave both mechanisms intact and reverse this.
+
+    The DC link of 9n_AC is a candidate, and over a short horizon it is not worth building, so it is forced into
+    service here. Without that the link carries nothing and all three settings give the same answer.
+    """
+    from openTEPES.openTEPES import openTEPES_run
+
+    dir_name, case = _clone(tmp_path, "9n_AC", "9n_conv")
+
+    def force_dc(df):
+        pDC = df["LineType"].astype(str).str.upper() == "DC"
+        assert pDC.any(), "9n_AC should carry a DC link for this test to mean anything"
+        df.loc[pDC, "InvestmentLo"] = 1.0
+        df.loc[pDC, "InvestmentUp"] = 1.0
+    _edit_csv(dir_name, case, "Network", force_dc, index_col=None)
+    _edit_csv(dir_name, case, "Duration", lambda df: df.__setitem__("Duration", [1] * 4 + [0] * (len(df) - 4)), index_col=None)
+    _edit_csv(dir_name, case, "RESEnergy", lambda df: [df.__setitem__(c, 0.0) for c in df.columns[2:]], index_col=None)
+
+    pCost = {}
+    for pConv in (0, 1, 2):
+        _edit_csv(dir_name, case, "Option", lambda df, v=pConv: df.__setitem__("IndACConverter", v), index_col=None)
+        mTEPES = _run_or_skip(dir_name, case, "gurobi", 0, 0)
+        pCost[pConv] = mTEPES.vTotalSCost()
+
+    assert pCost[1] > pCost[0], f"an LCC station draws reactive power, so it cannot be free: {pCost[1]} vs {pCost[0]}"
+    assert pCost[2] < pCost[0], f"a VSC station supplies reactive power, so it cannot cost more: {pCost[2]} vs {pCost[0]}"
+
+
+@pytest.mark.solve
+def test_a_converter_stays_within_its_apparent_power_rating(tmp_path):
+    """Active and reactive power used to be bounded separately, so a station could hold P = NTC and Q = tan(acos(pf))
+    NTC at once and deliver NTC/pf: 17.6% over its rating at the default power factor of 0.85.
+
+    The disc is approximated by CONV_CUTS tangent lines rather than written as a cone, so that IndACModelType = 1 stays
+    a MILP and so that a tightly rated link does not stop the barrier. The bound is therefore loose by
+    1/cos(pi/CONV_CUTS), 3.5% at twelve cuts. An LCC draws a fixed ratio of its active power, so its bound collapses to
+    a linear one and is exact.
+    """
+    import math
+    from openTEPES.openTEPES_ModelFormulationAC import CONV_CUTS
+
+    dir_name, case = _clone(tmp_path, "9n_AC", "9n_srating")
+
+    def squeeze(df):
+        pDC = df["LineType"].astype(str).str.upper() == "DC"
+        df.loc[pDC, ["InvestmentLo", "InvestmentUp"]] = 1.0
+        df.loc[pDC, "TTC"] = 150.0                      # small enough that the converter is pushed onto its rating
+    _edit_csv(dir_name, case, "Network", squeeze, index_col=None)
+    _edit_csv(dir_name, case, "Duration", lambda df: df.__setitem__("Duration", [1] * 4 + [0] * (len(df) - 4)), index_col=None)
+    _edit_csv(dir_name, case, "RESEnergy", lambda df: [df.__setitem__(c, 0.0) for c in df.columns[2:]], index_col=None)
+
+    pSlack = 1.0 / math.cos(math.pi / CONV_CUTS)
+    for pConv, pBound in ((1, 1.0 + 1e-6), (2, pSlack + 1e-6)):
+        _edit_csv(dir_name, case, "Option", lambda df, v=pConv: df.__setitem__("IndACConverter", v), index_col=None)
+        mTEPES = _run_or_skip(dir_name, case, "gurobi", 0, 0)
+
+        pTan = math.tan(math.acos(mTEPES.pConverterPF()))
+        pWorst = 0.0
+        for k in mTEPES.psnla:
+            la = k[3:]
+            if la not in set(mTEPES.lad):
+                continue
+            pP = mTEPES.vFlowElec[k]()
+            pQ = mTEPES.vQConvFrw[k]() if pConv == 2 else pTan * abs(pP)
+            pWorst = max(pWorst, math.hypot(pP, pQ) / float(mTEPES.pLineNTCMax[la]))
+
+        assert pWorst > 0.9, "the link was not loaded enough for this test to mean anything"
+        assert pWorst <= pBound, f"converter {pConv} reached {pWorst:.4f} of its rating, above {pBound:.4f}"

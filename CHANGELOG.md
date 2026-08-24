@@ -7,6 +7,10 @@
   tightening, bus shunts, generator reactive capability and synchronous condensers. `IndACRestore` re-solves the network
   at the exact equations on ipopt to recover a physical operating point. New cases `9n_AC`, `RTS-GMLC_AC`,
   `RTS-GMLC_AC_Oper`, `RTS-GMLC_Oper`. Refused with cycle flow, single node, variable TTC and PTDF. Off by default.
+- [FIXED] an HVDC converter was bounded separately in active and reactive power, so a station could hold both at their
+  limits at once and deliver more apparent power than its rating: 17.6% more at the default power factor of 0.85. The
+  rating now bounds the apparent power, as a ring of tangent lines so that `IndACModelType = 1` stays a mixed-integer
+  linear problem. The bound is loose by 3.5% for a voltage-source converter and exact for a line-commutated one.
 - [ADDED] HVDC converter models, `IndACConverter`: line-commutated draws reactive power at both terminals,
   voltage-source supplies or absorbs it within the converter rating. `ConverterPF` sets the power factor.
 - [FIXED] the AC angle-to-flow relation used `x*P + r*Q`; it is `x*P - r*Q`. Branch flows were wrong by up to 38 MW and
