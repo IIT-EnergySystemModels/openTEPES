@@ -1636,7 +1636,7 @@ def NetworkACOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, 
 
         # Only one half may be non-zero, so pos + neg is exactly |P|. Without this the pair can both be inflated, and because the converter draw enters
         # the reactive balance with a minus, a node with surplus reactive power gains by doing so: the converter becomes a free reactive sink and the
-        # surplus never appears in oT_Result_NetworkReactiveNotServed.
+        # surplus never appears in oT_Result_NetworkQNS.
         def eDCFlowDirPos(OptModel, n, ni, nf, cc):
             if not _live((ni,nf,cc)):
                 return Constraint.Skip

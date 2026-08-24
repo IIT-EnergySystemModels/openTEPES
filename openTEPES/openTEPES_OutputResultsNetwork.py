@@ -421,7 +421,7 @@ def ACNetworkOperationResults(DirName, CaseName, OptModel, mTEPES):
     # line charging delivers. Without this the slack does its job in the solve and leaves no trace anywhere — a case whose reactive demand cannot be
     # met simply solves with a larger reliability cost and nothing says which node or how much. That is the failure it exists to make visible.
     pQNS = [(OptModel.vQNSPos[k]() - OptModel.vQNSNeg[k]()) * 1e3 for k in sNode]
-    _pivot_node(sNode, pQNS, 'Mvar', _path, CaseName, 'NetworkReactiveNotServed')
+    _pivot_node(sNode, pQNS, 'Mvar', _path, CaseName, 'NetworkQNS')
     # Tested per entry, not on the sum. Summing |slack| over every node and every load level accumulates solver residue — about 2e-06 Mvar across
     # ~79k entries on a converged 9n_AC run — so a total-based test fires on essentially every run and prints a shortfall of 0.000 Mvar.
     if pQNS:
@@ -429,7 +429,7 @@ def ACNetworkOperationResults(DirName, CaseName, OptModel, mTEPES):
         if abs(pQNS[pWorstQ]) > QNS_REPORT_THRESHOLD:
             pShort = sum(abs(q) for q in pQNS)
             print(f'### WARNING: the reactive balance used slack at some nodes, worst {pQNS[pWorstQ]:+.3f} Mvar at {sNode[pWorstQ][3]} '
-                  f'({pShort:.3f} Mvar summed over all nodes and load levels). See oT_Result_NetworkReactiveNotServed_{CaseName}.csv — the reactive '
+                  f'({pShort:.3f} Mvar summed over all nodes and load levels). See oT_Result_NetworkQNS_{CaseName}.csv — the reactive '
                   f'demand there is not being met by the system, it is being met by the slack.')
 
     # ---------------------------------------------------------------------------------------------------------------------------------------------
@@ -451,7 +451,7 @@ def ACNetworkOperationResults(DirName, CaseName, OptModel, mTEPES):
         ni, nf, cc = k[3:]
         pRating = mTEPES.pLineSmax[ni,nf,cc]
         pLoading[k] = 100.0 * math.hypot(pPfr[k], pQfr[k]) / pRating if pRating > 0.0 else 0.0
-    _pivot_branch(sBranch, [pLoading[k] for k in sBranch], '%', _path, CaseName, 'NetworkUtilizationAC')
+    _pivot_branch(sBranch, [pLoading[k] for k in sBranch], '%', _path, CaseName, 'NetworkElecUtilizationAC')
 
     # ---------------------------------------------------------------------------------------------------------------------------------------------
     # shunt devices

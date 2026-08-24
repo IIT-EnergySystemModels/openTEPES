@@ -1,4 +1,4 @@
-﻿---
+---
 openTEPES documentation master file, created by Andres Ramos
 ---
 
@@ -1104,8 +1104,8 @@ These files are written only for an AC run. Powers are in MW and MVAr, voltages 
 | oT_Result_NetworkFlowReactiveBck    | Reactive power flow of every branch, receiving end |
 | oT_Result_NetworkCurrent            | Current magnitude of every branch |
 | oT_Result_NetworkLossesAC           | Ohmic losses of every branch, from the exact relation rather than the linear loss factor |
-| oT_Result_NetworkUtilizationAC      | Apparent power of every branch as a percentage of its rating |
-| oT_Result_NetworkReactiveNotServed  | Reactive power not served, split into the part missing and the part that could not be absorbed |
+| oT_Result_NetworkElecUtilizationAC  | Apparent power of every branch as a percentage of its rating |
+| oT_Result_NetworkQNS                | Reactive power not served, split into the part missing and the part that could not be absorbed |
 | oT_Result_ShuntReactivePower        | Reactive power injected by every bus shunt device |
 | oT_Result_ShuntCommitment           | In-service state of every switchable shunt, per load level |
 | oT_Result_MarginalReactive          | Marginal price of reactive power at every node, the dual of the reactive balance |

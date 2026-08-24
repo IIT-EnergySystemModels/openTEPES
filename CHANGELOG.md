@@ -2,6 +2,17 @@
 
 ## [4.18.18RC] - 2026-08-23 Unreleased in PyPI
 
+- [CHANGED] the AC work adds no new files. Everything it introduced now sits in the module that already owned that
+  concern: reading and bound tightening in `openTEPES_InputData.py`, the network matrices and the AC set-up in
+  `openTEPES_DataConfiguration.py`, the AC variables in `openTEPES_SettingUpVariables.py`, the branch flow and bus
+  injection formulations, the converter models and the restoration pass in `openTEPES_ModelFormulationElectricity.py`,
+  and the AC results in `openTEPES_OutputResultsNetwork.py`. Seven modules became none. No behaviour changes: the
+  function names and their callers are the same, only the file they live in moved.
+- [CHANGED] two AC result files are renamed to match the families they belong to. `NetworkReactiveNotServed` is
+  `NetworkQNS`, which is what the rest of the not-served family looks like (`NetworkENS`, `NetworkPNS`, `NetworkHNS`)
+  and what the variable behind it has always been called (`vQNSPos`, `vQNSNeg`). `NetworkUtilizationAC` is
+  `NetworkElecUtilizationAC`, so the carrier comes before the word as in `NetworkElecUtilization` and
+  `NetworkHeatUtilization`. Neither name has been released, so nothing downstream depends on them.
 - [CHANGED] the Linux solve job in CI now installs ipopt, so the AC formulations it could not reach are tested. HiGHS
   cannot express a nonlinear constraint at all, which left the second-order cone, the exact non-linear model and the AC
   restoration pass skipped on every runner, and the cone is the default. A conic solver is not needed for this: the
@@ -42,10 +53,12 @@
 - [CHANGED] update the architecture diagram (`doc/img/openTEPES_architecture.svg` and the rendered `.png`) so it
   matches the code after the AC work. Layer 4 said "six files, one per concern" and now says eight, with a new
   `ELECTRICITY NETWORK — pick one` bracket under `…Electricity.py` holding the three interchangeable network models:
-  DC (inside `…Electricity.py`), `…ModelFormulationAC.py` (branch flow) and `…ModelFormulationBIM.py` (bus injection).
-  The box that used to plan `dc_opf / ac_opf` as selectable builders is what this replaces, so a planned item becomes
-  an implemented one. Layer 6 goes from twelve concern modules to thirteen with `…OutputResultsAC.py` in the networks
-  column. Layer 3 gains one line naming the four modules the AC path adds there, built only when `IndACPowerFlow > 0`.
+  DC, branch flow and bus injection, all three inside `…Electricity.py`. The three are labelled DC, BF and BIM: the
+  middle box used to read AC, which is wrong beside BIM because bus injection is an AC model too. The functions keep
+  their `AC` names, and correctly so — `NetworkACOperationModelFormulation` and `NetworkACCurrentModelFormulation` run
+  for every AC mode and only their interior is gated on branch flow, which is why BIM alone needs a distinguishing name. The box that used to plan `dc_opf / ac_opf`
+  as selectable builders is what this replaces, so a planned item becomes an implemented one. Layer 6 names the AC
+  results inside `…Network.py`, and Layer 3 says which of its modules gain AC code when `IndACPowerFlow > 0`.
   The AC files sit under electricity rather than beside Hydro, Hydrogen and Heat, because they are a choice of network
   model and not a new energy carrier. No other layer changes.
 - [ADDED] AC optimal power flow, on with `IndACPowerFlow`. Branch flow model; the current definition is a second-order
@@ -110,9 +123,9 @@
   relaxation gap answers a different question: it says whether the cone is tight, not whether the operating point is
   physical. On `9n_AC` the relaxed solution is about 68 MW off the series relation and the restored one is within
   0.00001 MW.
-- [ADDED] `openTEPES_NetworkMatrices.py`, which turns the branch data into the objects that need a view of the whole
-  network: the susceptance matrices, the DC power transfer distribution factors, and the residual check above. DC links
-  are excluded from all of them.
+- [ADDED] the network matrices in `openTEPES_DataConfiguration.py`, which turn the branch data into the objects that
+  need a view of the whole network: the susceptance matrices, the DC power transfer distribution factors, and the
+  residual check above. DC links are excluded from all of them.
 - [ADDED] the resolved configuration is printed at the start of every run: the network model in force, the AC settings,
   the reactive demand and shunt counts that reached the model, and the other active features. A case whose flags do not
   say what the author intended now shows it before the solve rather than after.
