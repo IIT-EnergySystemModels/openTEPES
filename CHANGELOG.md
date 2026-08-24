@@ -1,7 +1,8 @@
 # Change Log
 
-## [4.18.18RC] - 2026-08-16 Unreleased in PyPI
+## [4.18.18RC] - 2026-08-23 Unreleased in PyPI
 
+- [FIXED] plot of network maps
 - [CHANGED] improve performance in some modules
 - [CHANGED] modify OutputResultsGeneration to improve performance 
 - [FIXED] protect input data modules against a missing `openTEPES/cases/` folder, which was causing a `FileNotFoundError` on a fresh clone. 
