@@ -2,6 +2,12 @@
 
 ## [4.18.18RC] - 2026-08-16 Unreleased in PyPI
 
+- [FIXED] the bus injection formulation in W space failed intermittently when the loop condition was off. `vTheta`
+  appears in no constraint there, so the solver sets some nodes and leaves others unset, and which ones varies between
+  runs. The guard that decides whether a nodal voltage phasor can be formed returned on the FIRST node it found, so
+  whenever that node happened to carry a value it reported the angles available and the residual check then built a
+  phasor from `None` at a later node and raised `TypeError`. It now tests every node. This is what made
+  `IndACPowerFlow = 2` with `IndACCycle = 0` fail once in every few runs of the test suite.
 - [CHANGED] update the architecture diagram (`doc/img/openTEPES_architecture.svg` and the rendered `.png`) so it
   matches the code after the AC work. Layer 4 said "six files, one per concern" and now says eight, with a new
   `ELECTRICITY NETWORK — pick one` bracket under `…Electricity.py` holding the three interchangeable network models:

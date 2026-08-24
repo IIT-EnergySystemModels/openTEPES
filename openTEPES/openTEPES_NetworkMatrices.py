@@ -126,10 +126,16 @@ def angles_available(mTEPES, OptModel, p, sc, n):
     """
     if hasattr(OptModel, 'vVre'):
         return True
+    # EVERY node, not the first one. vTheta is unconstrained here, so the solver is free to leave some nodes set and others unset, and it does. Testing
+    # only the first node reports the angles available whenever that one happens to carry a value, and _voltage then builds a phasor from None at a
+    # later node. That is an intermittent crash, because which nodes come back set varies between solvers and between runs of the same solver.
+    pAny = False
     for nd in mTEPES.nd:
         if (p,sc,n,nd) in mTEPES.psnnd:
-            return OptModel.vTheta[p,sc,n,nd].value is not None
-    return False
+            pAny = True
+            if OptModel.vTheta[p,sc,n,nd].value is None:
+                return False
+    return pAny
 
 
 def _voltage(mTEPES, OptModel, p, sc, n, nd):

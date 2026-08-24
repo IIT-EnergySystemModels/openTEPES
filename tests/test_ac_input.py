@@ -1421,6 +1421,34 @@ def test_the_two_converter_models_push_the_cost_in_opposite_directions(tmp_path)
 
 
 @pytest.mark.solve
+def test_the_angle_guard_looks_at_every_node_not_just_the_first(tmp_path):
+    """In W space without the loop condition vTheta is in no constraint, so the solver sets some nodes and leaves
+    others unset, and which ones vary between runs. The guard used to return on the first node it found: whenever that
+    one happened to carry a value it reported the angles available, and the residual check then built a phasor from
+    None at a later node and raised TypeError. That is what made this formulation fail intermittently.
+    """
+    from openTEPES import openTEPES_NetworkMatrices as NM
+
+    dir_name, case = _tiny_ac_case(tmp_path, "9n_angleguard", hours=2, model_type=0, restore=0)
+    _edit_csv(dir_name, case, "Option", lambda df: (df.__setitem__("IndACPowerFlow", 2),
+                                                    df.__setitem__("IndACCycle", 0)), index_col=None)
+    mTEPES = _run_or_skip(dir_name, case, "gurobi", 0, 0)
+
+    p, sc, n = next(iter(mTEPES.psnnd))[:3]
+    sNodes = [nd for nd in mTEPES.nd if (p, sc, n, nd) in mTEPES.psnnd]
+    assert len(sNodes) > 1, "needs more than one node for the first-node bug to be expressible"
+
+    for nd in sNodes:
+        mTEPES.vTheta[p, sc, n, nd].value = 0.0
+    assert NM.angles_available(mTEPES, mTEPES, p, sc, n)
+
+    # clear one that is NOT the first, which is the case the old guard let through
+    mTEPES.vTheta[p, sc, n, sNodes[-1]].value = None
+    assert not NM.angles_available(mTEPES, mTEPES, p, sc, n), (
+        "the guard reported angles available with a later node unset, so a phasor would be built from None")
+
+
+@pytest.mark.solve
 def test_a_converter_stays_within_its_apparent_power_rating(tmp_path):
     """Active and reactive power used to be bounded separately, so a station could hold P = NTC and Q = tan(acos(pf))
     NTC at once and deliver NTC/pf: 17.6% over its rating at the default power factor of 0.85.
