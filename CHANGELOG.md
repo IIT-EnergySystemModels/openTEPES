@@ -2,6 +2,15 @@
 
 ## [4.18.18RC] - 2026-08-16 Unreleased in PyPI
 
+- [CHANGED] update the architecture diagram (`doc/img/openTEPES_architecture.svg` and the rendered `.png`) so it
+  matches the code after the AC work. Layer 4 said "six files, one per concern" and now says eight, with a new
+  `ELECTRICITY NETWORK — pick one` bracket under `…Electricity.py` holding the three interchangeable network models:
+  DC (inside `…Electricity.py`), `…ModelFormulationAC.py` (branch flow) and `…ModelFormulationBIM.py` (bus injection).
+  The box that used to plan `dc_opf / ac_opf` as selectable builders is what this replaces, so a planned item becomes
+  an implemented one. Layer 6 goes from twelve concern modules to thirteen with `…OutputResultsAC.py` in the networks
+  column. Layer 3 gains one line naming the four modules the AC path adds there, built only when `IndACPowerFlow > 0`.
+  The AC files sit under electricity rather than beside Hydro, Hydrogen and Heat, because they are a choice of network
+  model and not a new energy carrier. No other layer changes.
 - [ADDED] AC optimal power flow, on with `IndACPowerFlow`. Branch flow model; the current definition is a second-order
   cone, a piecewise staircase or the exact non-linear equation (`IndACModelType`). Adds voltage and angle bound
   tightening, bus shunts, generator reactive capability and synchronous condensers. `IndACRestore` re-solves the network
