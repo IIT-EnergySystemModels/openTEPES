@@ -1,6 +1,6 @@
 # Change Log
 
-## [4.18.18RC] - 2026-08-16 Unreleased in PyPI
+## [4.18.18RC] - 2026-08-23 Unreleased in PyPI
 
 - [CHANGED] the Linux solve job in CI now installs ipopt, so the AC formulations it could not reach are tested. HiGHS
   cannot express a nonlinear constraint at all, which left the second-order cone, the exact non-linear model and the AC
@@ -122,6 +122,7 @@
   missing and both ran with no reactive compensation. `RTS-GMLC_AC_Oper` falls from 61.65 to 60.00 MEUR; `RTS-GMLC_AC` is
   a full year and was not re-solved.
 
+- [FIXED] plot of network maps
 - [CHANGED] improve performance in some modules
 - [CHANGED] modify OutputResultsGeneration to improve performance 
 - [FIXED] protect input data modules against a missing `openTEPES/cases/` folder, which was causing a `FileNotFoundError` on a fresh clone. 

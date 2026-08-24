@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 09, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 23, 2026
 """
 
 import time
@@ -218,7 +218,10 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole, option_overrides=None):
     # show some statistics of the data
     for key, df in dfs.items():
         if pIndLogConsole and any(suffix in key for suffix in mTEPES.frames_suffixes):
-            print(f'{key}:\n', df.describe(), '\n')
+            if df.shape[1] == 0:
+                print(f'{key}: DataFrame without columns (shape={df.shape}). describe() is omitted.\n')
+            else:
+                print(f'{key}:\n', df.describe(), '\n')
     # Optional reservoir / hydro topology dicts. Each is present in the source iff the user populated the corresponding oT_Dict_*.csv (or DB table);
     # an absent / empty dict yields an empty Pyomo Set.
     reservoir_dicts = [

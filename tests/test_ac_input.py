@@ -233,7 +233,7 @@ def test_tap_reaches_the_voltage_drop(tmp_path, tap):
     """The tap was once computed, stored, documented and tested, and then read by no constraint at all, so every
     transformer solved as 1:1 with nothing in the output saying so. The sending-end voltage in the drop equation must
     carry (1/tap)^2."""
-    from openTEPES.openTEPES_ModelFormulationAC import NetworkACOperationModelFormulation
+    from openTEPES.openTEPES_ModelFormulationElectricity import NetworkACOperationModelFormulation
     from openTEPES.openTEPES_SettingUpVariables import SettingUpVariables
 
     dir_name, name = _clone(tmp_path, "9n_AC", f"9n_tapc{str(tap).replace('.', '')}")
@@ -572,7 +572,7 @@ def test_ac_writers_run_on_an_ac_case(tmp_path):
     writers, which is what this is for, and it keeps the test to seconds rather than minutes."""
     from pyomo.environ import Var
 
-    from openTEPES.openTEPES_OutputResultsAC import (ACMarginalResults, ACNetworkOperationResults,
+    from openTEPES.openTEPES_OutputResultsNetwork import (ACMarginalResults, ACNetworkOperationResults,
                                                      ACRelaxationDiagnostic)
     from openTEPES.openTEPES_SettingUpVariables import SettingUpVariables
 
@@ -596,7 +596,7 @@ def test_ac_writers_run_on_an_ac_case(tmp_path):
 
 
 def test_ac_writers_are_no_ops_on_a_dc_case(tmp_path):
-    from openTEPES.openTEPES_OutputResultsAC import ACMarginalResults, ACNetworkOperationResults, ACRelaxationDiagnostic
+    from openTEPES.openTEPES_OutputResultsNetwork import ACMarginalResults, ACNetworkOperationResults, ACRelaxationDiagnostic
 
     mTEPES, _, _ = _build(CASES_DIR, "9n")
     mTEPES.pOutputPath = str(tmp_path)
@@ -813,7 +813,7 @@ def test_restoration_option_is_validated(tmp_path):
 @pytest.mark.solve
 def test_restoration_is_skipped_when_nothing_to_restore(tmp_path):
     """Type 2 is already exact, so there is no relaxation to replace and the pass must decline rather than rebuild."""
-    from openTEPES.openTEPES_ModelFormulationAC import ACRestorationPass
+    from openTEPES.openTEPES_ModelFormulationElectricity import ACRestorationPass
 
     mTEPES, _, _ = _build(CASES_DIR, "9n_AC")
     mTEPES.pIndACModelType._data[None] = 2
@@ -853,7 +853,7 @@ def test_restoration_makes_the_relaxation_exact(tmp_path):
     # and the operating point must be PHYSICAL, which the cone gap alone does not say: recompute each branch flow from
     # the bus voltages and compare. Relaxed, the same case sits about 68 MW off the series relation; restored it is
     # within a watt. A tight cone with a wrong branch equation would pass the check above and fail this one.
-    import openTEPES.openTEPES_NetworkMatrices as NM
+    import openTEPES.openTEPES_DataConfiguration as NM
     pP = pQ = 0.0
     for p, sc, n in mTEPES.psn:
         wP, wQ = NM.branch_residuals(mTEPES, mTEPES, p, sc, n)
@@ -864,7 +864,7 @@ def test_restoration_makes_the_relaxation_exact(tmp_path):
 def test_the_b_matrix_leaves_out_the_dc_links():
     """The susceptance matrix is a Kirchhoff object. A point-to-point DC link carries what its converters are told to
     carry, so putting it in the matrix would make the model believe power splits across it by impedance."""
-    import openTEPES.openTEPES_NetworkMatrices as NM
+    import openTEPES.openTEPES_DataConfiguration as NM
     mTEPES, _, _ = _build(CASES_DIR, "9n")
     p = mTEPES.p.first()
 
@@ -888,7 +888,7 @@ def test_the_ptdf_does_not_depend_on_the_reference_node():
     NOT sum to zero: injecting one unit at every bus and withdrawing all of it at the reference is a balanced pattern
     that genuinely moves power towards the reference.
     """
-    import openTEPES.openTEPES_NetworkMatrices as NM
+    import openTEPES.openTEPES_DataConfiguration as NM
     mTEPES, _, _ = _build(CASES_DIR, "9n")
     p = mTEPES.p.first()
     pNodes = list(mTEPES.nd)
@@ -1433,7 +1433,7 @@ def test_the_angle_guard_looks_at_every_node_not_just_the_first(tmp_path):
     one happened to carry a value it reported the angles available, and the residual check then built a phasor from
     None at a later node and raised TypeError. That is what made this formulation fail intermittently.
     """
-    from openTEPES import openTEPES_NetworkMatrices as NM
+    from openTEPES import openTEPES_DataConfiguration as NM
 
     dir_name, case = _tiny_ac_case(tmp_path, "9n_angleguard", hours=2, model_type=0, restore=0)
     _edit_csv(dir_name, case, "Option", lambda df: (df.__setitem__("IndACPowerFlow", 2),
@@ -1506,7 +1506,7 @@ def test_a_converter_stays_within_its_apparent_power_rating(tmp_path):
     a linear one and is exact.
     """
     import math
-    from openTEPES.openTEPES_ModelFormulationAC import CONV_CUTS
+    from openTEPES.openTEPES_ModelFormulationElectricity import CONV_CUTS
 
     dir_name, case = _clone(tmp_path, "9n_AC", "9n_srating")
 

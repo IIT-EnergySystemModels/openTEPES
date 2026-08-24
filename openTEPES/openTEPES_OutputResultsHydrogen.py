@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 13, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 23, 2026
 
 Hydrogen network operation results.
 
@@ -111,7 +111,8 @@ def NetworkH2OperationResults(DirName, CaseName, OptModel, mTEPES):
         # Nodes data
         # build each column in one pass instead of writing three scalar .loc cells per node. Nodes that have no zone keep the defaults the columns used to be
         # initialised with, which is what the loop left them at by never visiting them
-        pNode2Zone = dict(mTEPES.ndzn)
+        # a comprehension, NOT dict(mTEPES.ndzn): dict() on a Pyomo scalar Set goes through the component API and yields {None: <the Set>}, never the elements
+        pNode2Zone = {nd: zn for nd,zn in mTEPES.ndzn}
         loc_df = pd.Series(data=[mTEPES.pNodeLat[i] for i in mTEPES.nd], index=mTEPES.nd).to_frame(name='Lat')
         loc_df['Lon'   ] = [mTEPES.pNodeLon[nd]          if nd in pNode2Zone else 0.0 for nd in loc_df.index]
         loc_df['Zone'  ] = [pNode2Zone[nd]               if nd in pNode2Zone else ''  for nd in loc_df.index]
@@ -134,7 +135,8 @@ def NetworkH2OperationResults(DirName, CaseName, OptModel, mTEPES):
 
         ncolors = 11
         colors = list(Color('lightgreen').range_to(Color('darkred'), ncolors))
-        colors = ['rgb'+str(x.rgb) for x in colors]
+        # hex, not 'rgb'+str(x.rgb): colour's .rgb components are 0-1 while CSS rgb() expects 0-255, so the browser rounded every line to near-black
+        colors = [x.hex_l for x in colors]
 
         # accumulate per node pair in plain dictionaries and write the columns once at the end. Reading and writing line_df.loc[(ni,nf),'col'] meant about
         # fifteen scalar lookups on a MultiIndex per pipe. The sequence of updates is unchanged: utilization and colour come from the accumulated flow, so

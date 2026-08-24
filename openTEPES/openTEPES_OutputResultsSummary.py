@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 11, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 23, 2026
 
 System summary, flexibility, and reliability results.
 
@@ -228,8 +228,9 @@ def OperationSummaryResults(DirName, CaseName, OptModel, mTEPES):
 
     ndzn = pd.DataFrame(mTEPES.ndzn).set_index(0)
     ndar = pd.DataFrame(mTEPES.ndar).set_index(0)
-    pNode2Zone         = dict(mTEPES.ndzn)
-    pNode2Area         = dict(mTEPES.ndar)
+    # comprehensions, NOT dict(mTEPES.ndzn): dict() on a Pyomo scalar Set goes through the component API and yields {None: <the Set>}, never the elements
+    pNode2Zone         = {nd: zn for nd,zn in mTEPES.ndzn}
+    pNode2Area         = {nd: ar for nd,ar in mTEPES.ndar}
     sPSNND             = [(p,sc,n,nd) for p,sc,n,nd in mTEPES.psnnd if nd in pNodeConnected]
     OutputResults1     = pd.Series(data=[ ndzn[1][nd]                                                                                                                           for p,sc,n,nd in sPSNND], index=pd.Index(sPSNND)).to_frame(name='Zone'               )
     OutputResults2     = pd.Series(data=[ ndar[1][nd]                                                                                                                           for p,sc,n,nd in sPSNND], index=pd.Index(sPSNND)).to_frame(name='Area'               )
@@ -338,17 +339,31 @@ def ReliabilityResults(DirName, CaseName, OptModel, mTEPES):
     _path = _outdir(DirName, CaseName, mTEPES)
     StartTime = time.time()
 
+    # Ensure tuple-like indexes are promoted to MultiIndex before groupby(level=...).
+    def _ensure_multiindex(series, names):
+        if isinstance(series.index, pd.MultiIndex):
+            return series
+        if len(series.index) == 0:
+            series.index = pd.MultiIndex.from_tuples([], names=names)
+            return series
+        if len(series.index) > 0 and isinstance(series.index[0], tuple):
+            series.index = pd.MultiIndex.from_tuples(series.index, names=names)
+        return series
+
     r2r = defaultdict(set)
     for gt,g in mTEPES.t2g:
         if g in mTEPES.re:
             r2r[gt].add(g)
 
     pDemandElec    = pd.Series(data=[mTEPES.pDemandElec[p,sc,n,nd]() for p,sc,n,nd in mTEPES.psnnd ], index=mTEPES.psnnd).sort_index()
+    pDemandElec    = _ensure_multiindex(pDemandElec, ['Period', 'Scenario', 'LoadLevel', 'Node'])
     ExistCapacity  = [(p,sc,n,g) for p,sc,n,g in mTEPES.psng if g not in mTEPES.gc]
     pExistMaxPower = pd.Series(data=[mTEPES.pMaxPowerElec[p,sc,n,g ] for p,sc,n,g  in ExistCapacity], index=pd.Index(ExistCapacity))
+    pExistMaxPower = _ensure_multiindex(pExistMaxPower, ['Period', 'Scenario', 'LoadLevel', 'Generator'])
     if mTEPES.gc:
         CandCapacity  = [(p,sc,n,gc) for p,sc,n,gc in mTEPES.psngc]
         pCandMaxPower = pd.Series(data=[mTEPES.pMaxPowerElec[p,sc,n,g ] * OptModel.vGenerationInvest[p,g]() for p,sc,n,g in CandCapacity], index=pd.Index(CandCapacity))
+        pCandMaxPower = _ensure_multiindex(pCandMaxPower, ['Period', 'Scenario', 'LoadLevel', 'Generator'])
         pMaxPowerElec = pd.concat([pExistMaxPower, pCandMaxPower])
     else:
         pMaxPowerElec = pExistMaxPower
@@ -390,3 +405,4 @@ def ReliabilityResults(DirName, CaseName, OptModel, mTEPES):
 
     WritingResultsTime = time.time() - StartTime
     print('Writing           reliability indexes  ... ', round(WritingResultsTime), 's')
+

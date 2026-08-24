@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 22, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 23, 2026
 
 Electric network operation results and network map.
 
@@ -143,10 +143,12 @@ def NetworkMapResults(DirName, CaseName, OptModel, mTEPES):
         pio.renderers.default = 'chrome'
 
         # build each column in one pass instead of writing three scalar .loc cells per node. Nodes that have no zone keep the defaults the columns used to be
-        # initialised with, which is what the loop left them at by never visiting them
-        pNode2Zone = dict(mTEPES.ndzn)
+        # initialized with, which is what the loop left them at by never visiting them
+        # a comprehension, NOT dict(mTEPES.ndzn): dict() on a Pyomo scalar Set goes through the component API and yields {None: <the Set>}, never the elements
+        pNode2Zone = {nd: zn for nd,zn in mTEPES.ndzn}
         loc_df = pd.Series(data=[mTEPES.pNodeLat[i] for i in mTEPES.nd], index=mTEPES.nd).to_frame(name='Lat')
         loc_df['Lon'   ] = [mTEPES.pNodeLon[nd]                 if nd in pNode2Zone else 0.0 for nd in loc_df.index]
+        loc_df['Lat'   ] = [mTEPES.pNodeLat[nd]                 if nd in pNode2Zone else 0.0 for nd in loc_df.index]
         loc_df['Zone'  ] = [pNode2Zone[nd]                      if nd in pNode2Zone else ''  for nd in loc_df.index]
         loc_df['Demand'] = [mTEPES.pDemandElec[p,sc,n,nd]()*1e3 if nd in pNode2Zone else 0.0 for nd in loc_df.index]
         loc_df['Size'  ] = 15.0
@@ -168,7 +170,8 @@ def NetworkMapResults(DirName, CaseName, OptModel, mTEPES):
 
         ncolors = 11
         colors = list(Color('lightgreen').range_to(Color('darkred'), ncolors))
-        colors = ['rgb'+str(x.rgb) for x in colors]
+        # hex, not 'rgb'+str(x.rgb): colour's .rgb components are 0-1 while CSS rgb() expects 0-255, so the browser rounded every line to near-black
+        colors = [x.hex_l for x in colors]
 
         # accumulate per node pair in plain dictionaries and write the columns once at the end. Reading and writing line_df.loc[(ni,nf),'col'] meant about
         # twenty-five scalar lookups on a MultiIndex per line. The sequence of updates below is unchanged, so each derived value still comes from the same
@@ -217,17 +220,17 @@ def NetworkMapResults(DirName, CaseName, OptModel, mTEPES):
                 else:
                     pWidth[ni,nf] = 0.5
 
-        # the defaults below are the ones the columns used to be initialised with, so node pairs left untouched by the loop keep exactly the same values
-        line_df['vFlowElec'  ] = [pFlow .get(la, 0.0) for la in line_df.index]
-        line_df['utilization'] = [pUtil .get(la, 0.0) for la in line_df.index]
+        # the defaults below are the ones the columns used to be initialized with, so node pairs left untouched by the loop keep exactly the same values
+        line_df['vFlowElec'  ] = [pFlow.get (la, 0.0) for la in line_df.index]
+        line_df['utilization'] = [pUtil.get (la, 0.0) for la in line_df.index]
         line_df['color'      ] = [pColor.get(la, '' ) for la in line_df.index]
-        line_df['voltage'    ] = [pVolt .get(la, 0.0) for la in line_df.index]
+        line_df['voltage'    ] = [pVolt.get (la, 0.0) for la in line_df.index]
         line_df['width'      ] = [pWidth.get(la, 0.0) for la in line_df.index]
-        line_df['lon'        ] = [pLon  .get(la, 0.0) for la in line_df.index]
-        line_df['lat'        ] = [pLat  .get(la, 0.0) for la in line_df.index]
+        line_df['lon'        ] = [pLon.get  (la, 0.0) for la in line_df.index]
+        line_df['lat'        ] = [pLat.get  (la, 0.0) for la in line_df.index]
         line_df['ni'         ] = [ni if (ni,nf) in pCirc else '' for ni,nf in line_df.index]
         line_df['nf'         ] = [nf if (ni,nf) in pCirc else '' for ni,nf in line_df.index]
-        line_df['cc'         ] = [pCirc .get(la, 0  ) for la in line_df.index]
+        line_df['cc'         ] = [pCirc.get (la, 0  ) for la in line_df.index]
 
         # Rounding to decimals
         line_df = line_df.round(decimals=2)
