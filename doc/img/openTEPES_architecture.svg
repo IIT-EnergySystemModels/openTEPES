@@ -150,7 +150,7 @@
 
   <!-- ================== LAYER 4: FORMULATION ================== -->
   <g>
-    <text x="550" y="462" text-anchor="middle" class="mod-sub" font-style="italic">AC adds …InputDataAC.py · …BoundTightening.py · …SettingUpVariablesAC.py · …NetworkMatrices.py when IndACPowerFlow &gt; 0</text>
+    <text x="550" y="462" text-anchor="middle" class="mod-sub" font-style="italic">AC reading, bound tightening, network matrices and AC variables live in these three modules, built when IndACPowerFlow &gt; 0</text>
 
     <rect x="20" y="520" width="1100" height="240" rx="10" fill="#fae6e0" stroke="#b03030" stroke-width="1.5"/>
     <rect x="20" y="520" width="140" height="240" rx="10" fill="#b03030"/>
@@ -158,7 +158,7 @@
     <text x="90" y="580" text-anchor="middle" class="layer-name">Formulation</text>
     <text x="90" y="600" text-anchor="middle" class="layer-note">openTEPES_Model-</text>
     <text x="90" y="613" text-anchor="middle" class="layer-note">Formulation*.py</text>
-    <text x="90" y="630" text-anchor="middle" class="layer-note">(eight files,</text>
+    <text x="90" y="630" text-anchor="middle" class="layer-note">(six files,</text>
     <text x="90" y="643" text-anchor="middle" class="layer-note">one per concern)</text>
 
     <!-- cross-sector modules -->
@@ -204,14 +204,14 @@
     <line x1="567" y1="650" x2="567" y2="664" stroke="#b03030" stroke-width="1.2"/>
     <rect x="180" y="664" width="145" height="44" rx="8" fill="#d4efdf" stroke="#b03030" stroke-width="1.2"/>
     <text x="252" y="682" text-anchor="middle" class="mod">DC</text>
-    <text x="252" y="697" text-anchor="middle" class="mod-sub">in …Electricity.py</text>
+    <text x="252" y="697" text-anchor="middle" class="mod-sub">linearised · 0</text>
     <rect x="335" y="664" width="145" height="44" rx="8" fill="#d4efdf" stroke="#b03030" stroke-width="1.2"/>
-    <text x="407" y="682" text-anchor="middle" class="mod">…AC.py</text>
-    <text x="407" y="697" text-anchor="middle" class="mod-sub">branch flow · SOCP/MILP/NLP</text>
+    <text x="407" y="682" text-anchor="middle" class="mod">BF</text>
+    <text x="407" y="697" text-anchor="middle" class="mod-sub">branch flow · 1</text>
     <rect x="490" y="664" width="155" height="44" rx="8" fill="#d4efdf" stroke="#b03030" stroke-width="1.2"/>
-    <text x="567" y="682" text-anchor="middle" class="mod">…BIM.py</text>
-    <text x="567" y="697" text-anchor="middle" class="mod-sub">W · rectangular</text>
-    <text x="407" y="724" text-anchor="middle" class="mod-sub" font-style="italic">picked by IndACPowerFlow</text>
+    <text x="567" y="682" text-anchor="middle" class="mod">BIM</text>
+    <text x="567" y="697" text-anchor="middle" class="mod-sub">bus injection · 2, 3</text>
+    <text x="407" y="724" text-anchor="middle" class="mod-sub" font-style="italic">all three in …Electricity.py, picked by IndACPowerFlow</text>
 
     <!-- planned -->
     <text x="882" y="650" text-anchor="middle" class="sector-tag">+ PLANNED</text>
@@ -324,8 +324,8 @@
     <text x="823" y="1080" text-anchor="middle" class="mod">…Sink.py</text>
     <text x="823" y="1094" text-anchor="middle" class="mod-sub">DuckDB / CSV result sink</text>
     <rect x="466" y="1108" width="138" height="40" rx="8" fill="#d4efdf" stroke="#2e7d5f" stroke-width="1.2"/>
-    <text x="535" y="1126" text-anchor="middle" class="mod">…AC.py</text>
-    <text x="535" y="1140" text-anchor="middle" class="mod-sub">voltages · Q · residuals</text>
+    <text x="535" y="1126" text-anchor="middle" class="mod">AC</text>
+    <text x="535" y="1140" text-anchor="middle" class="mod-sub">voltages · Q · in …Network.py</text>
     <text x="535" y="1166" text-anchor="middle" class="mod-flag">▲ Hydrogen + Heat split from sector-coupling (PR #128)</text>
     <rect x="898" y="970" width="138" height="40" rx="8" fill="#d4efdf" stroke="#7a4a8a" stroke-width="1.5"/>
     <text x="967" y="988" text-anchor="middle" class="mod">aggregate.py</text>

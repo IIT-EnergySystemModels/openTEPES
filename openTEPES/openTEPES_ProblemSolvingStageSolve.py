@@ -1,4 +1,4 @@
-﻿"""
+"""
 Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 16, 2026
 """
 
@@ -18,7 +18,7 @@ from   pyomo.common.timing import HierarchicalTimer
 try:
     from          .openTEPES_ModelFormulationInvestment  import GenerationOperationElecModelFormulationInvestment, GenerationOperationHeatModelFormulationInvestment
     from          .openTEPES_ModelFormulationElectricity import GenerationOperationModelFormulationDemand, GenerationOperationModelFormulationStorage, GenerationOperationModelFormulationCommitment, GenerationOperationModelFormulationRampMinTime, NetworkSwitchingModelFormulation, NetworkOperationModelFormulation, NetworkCycles, CycleConstraints
-    from           .openTEPES_ModelFormulationAC import NetworkACOperationModelFormulation, NetworkACCurrentModelFormulation
+    from           .openTEPES_ModelFormulationElectricity import NetworkACOperationModelFormulation, NetworkACCurrentModelFormulation
     from          .openTEPES_ModelFormulationHydro       import GenerationOperationModelFormulationReservoir
     from          .openTEPES_ModelFormulationHydrogen    import NetworkH2OperationModelFormulation
     from          .openTEPES_ModelFormulationHeat        import NetworkHeatOperationModelFormulation
@@ -27,7 +27,7 @@ except ImportError:
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     from openTEPES.openTEPES_ModelFormulationInvestment  import GenerationOperationElecModelFormulationInvestment, GenerationOperationHeatModelFormulationInvestment
     from openTEPES.openTEPES_ModelFormulationElectricity import GenerationOperationModelFormulationDemand, GenerationOperationModelFormulationStorage, GenerationOperationModelFormulationCommitment, GenerationOperationModelFormulationRampMinTime, NetworkSwitchingModelFormulation, NetworkOperationModelFormulation, NetworkCycles, CycleConstraints
-    from openTEPES.openTEPES_ModelFormulationAC import NetworkACOperationModelFormulation, NetworkACCurrentModelFormulation
+    from openTEPES.openTEPES_ModelFormulationElectricity import NetworkACOperationModelFormulation, NetworkACCurrentModelFormulation
     from openTEPES.openTEPES_ModelFormulationHydro       import GenerationOperationModelFormulationReservoir
     from openTEPES.openTEPES_ModelFormulationHydrogen    import NetworkH2OperationModelFormulation
     from openTEPES.openTEPES_ModelFormulationHeat        import NetworkHeatOperationModelFormulation

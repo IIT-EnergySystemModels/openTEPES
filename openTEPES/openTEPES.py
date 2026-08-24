@@ -20,7 +20,7 @@ try:
     from          .openTEPES_ModelFormulationObjective  import TotalObjectiveFunction
     from          .openTEPES_ModelFormulationInvestment import InvestmentElecModelFormulation, InvestmentHydroModelFormulation, InvestmentH2ModelFormulation, InvestmentHeatModelFormulation
     from          .openTEPES_ProblemSolvingStageIter    import StageIterativeSolving
-    from          .openTEPES_ModelFormulationAC        import ACRestorationPass
+    from          .openTEPES_ModelFormulationElectricity        import ACRestorationPass
     from          .openTEPES_OutputResultsRawDump       import OutputResultsParVarCon
     from          .openTEPES_OutputResultsInvestment    import InvestmentResults
     from          .openTEPES_OutputResultsGeneration    import GenerationOperationResults, GenerationOperationHeatResults
@@ -28,7 +28,7 @@ try:
     from          .openTEPES_OutputResultsHydrogen      import NetworkH2OperationResults
     from          .openTEPES_OutputResultsHeat          import NetworkHeatOperationResults
     from          .openTEPES_OutputResultsNetwork       import NetworkOperationResults, NetworkMapResults
-    from          .openTEPES_OutputResultsAC            import ACRelaxationDiagnostic, ACNetworkOperationResults, ACMarginalResults
+    from          .openTEPES_OutputResultsNetwork            import ACRelaxationDiagnostic, ACNetworkOperationResults, ACMarginalResults
     from          .openTEPES_OutputResultsEconomic      import MarginalResults, CostSummaryResults, EconomicResults
     from          .openTEPES_OutputResultsSummary       import OperationSummaryResults, FlexibilityResults, ReliabilityResults
     from          .openTEPES_OutputResultsSink          import ResultSink, set_active_sink, clear_active_sink
@@ -42,7 +42,7 @@ except ImportError:
     from openTEPES.openTEPES_ModelFormulationObjective  import TotalObjectiveFunction
     from openTEPES.openTEPES_ModelFormulationInvestment import InvestmentElecModelFormulation, InvestmentHydroModelFormulation, InvestmentH2ModelFormulation, InvestmentHeatModelFormulation
     from openTEPES.openTEPES_ProblemSolvingStageIter    import StageIterativeSolving
-    from openTEPES.openTEPES_ModelFormulationAC        import ACRestorationPass
+    from openTEPES.openTEPES_ModelFormulationElectricity        import ACRestorationPass
     from openTEPES.openTEPES_OutputResultsRawDump       import OutputResultsParVarCon
     from openTEPES.openTEPES_OutputResultsInvestment    import InvestmentResults
     from openTEPES.openTEPES_OutputResultsGeneration    import GenerationOperationResults, GenerationOperationHeatResults
@@ -50,7 +50,7 @@ except ImportError:
     from openTEPES.openTEPES_OutputResultsHydrogen      import NetworkH2OperationResults
     from openTEPES.openTEPES_OutputResultsHeat          import NetworkHeatOperationResults
     from openTEPES.openTEPES_OutputResultsNetwork       import NetworkOperationResults, NetworkMapResults
-    from openTEPES.openTEPES_OutputResultsAC            import ACRelaxationDiagnostic, ACNetworkOperationResults, ACMarginalResults
+    from openTEPES.openTEPES_OutputResultsNetwork            import ACRelaxationDiagnostic, ACNetworkOperationResults, ACMarginalResults
     from openTEPES.openTEPES_OutputResultsEconomic      import MarginalResults, CostSummaryResults, EconomicResults
     from openTEPES.openTEPES_OutputResultsSummary       import OperationSummaryResults, FlexibilityResults, ReliabilityResults
     from openTEPES.openTEPES_OutputResultsSink          import ResultSink, set_active_sink, clear_active_sink

@@ -1,4 +1,4 @@
-﻿"""
+"""
 Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 16, 2026
 
 openTEPES.openTEPES_ProblemSolvingStageIter — stage-by-stage formulate-and-solve driver.
@@ -36,8 +36,8 @@ try:
     from .openTEPES_ModelFormulationHydro             import GenerationOperationModelFormulationReservoir
     from .openTEPES_ModelFormulationHydrogen          import NetworkH2OperationModelFormulation
     from .openTEPES_ModelFormulationHeat              import NetworkHeatOperationModelFormulation
-    from .openTEPES_ModelFormulationAC                import NetworkACOperationModelFormulation, NetworkACCurrentModelFormulation
-    from .openTEPES_ModelFormulationBIM               import NetworkBIMOperationModelFormulation
+    from .openTEPES_ModelFormulationElectricity                import NetworkACOperationModelFormulation, NetworkACCurrentModelFormulation
+    from .openTEPES_ModelFormulationElectricity               import NetworkBIMOperationModelFormulation
     from .openTEPES_ProblemSolving                    import ProblemSolving
     from .openTEPES_ProblemSolvingSectorDecomposition import SectorDecomposition
     from .openTEPES_ProblemSolvingStageDecomposition   import StageDecomposition
@@ -50,8 +50,8 @@ except ImportError:
     from openTEPES.openTEPES_ModelFormulationHydro             import GenerationOperationModelFormulationReservoir
     from openTEPES.openTEPES_ModelFormulationHydrogen          import NetworkH2OperationModelFormulation
     from openTEPES.openTEPES_ModelFormulationHeat              import NetworkHeatOperationModelFormulation
-    from openTEPES.openTEPES_ModelFormulationAC                import NetworkACOperationModelFormulation, NetworkACCurrentModelFormulation
-    from openTEPES.openTEPES_ModelFormulationBIM              import NetworkBIMOperationModelFormulation
+    from openTEPES.openTEPES_ModelFormulationElectricity                import NetworkACOperationModelFormulation, NetworkACCurrentModelFormulation
+    from openTEPES.openTEPES_ModelFormulationElectricity              import NetworkBIMOperationModelFormulation
     from openTEPES.openTEPES_ProblemSolving                    import ProblemSolving
     from openTEPES.openTEPES_ProblemSolvingSectorDecomposition import SectorDecomposition
     from openTEPES.openTEPES_ProblemSolvingStageDecomposition   import StageDecomposition
