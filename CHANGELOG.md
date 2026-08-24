@@ -2,6 +2,15 @@
 
 ## [4.18.18RC] - 2026-08-16 Unreleased in PyPI
 
+- [FIXED] the architecture diagram drew the Mode C arrow, from `resolve.py` back to `SettingUpVariables.py`, outside
+  the page background, which stopped 45 px short of the canvas. The arrow is routed inside it and its rotated label is
+  gone, because it repeated the sweep-modes panel word for word. The footer no longer runs off both edges.
+- [CHANGED] the wording in the architecture diagram is plainer. Claims about the design gave way to descriptions of it:
+  "single source of truth" is now "column and type specs", "drop-in backend" is "same InputSource interface", and
+  "cost: solve only (cheapest)" drops the judgement. The planned boxes were checked against the code and all five are
+  still planned: `parquet_source.py`, `mcda.py`, the district cooling and CCUS sector files, the sets-against-params
+  split in `InputData`, and the `cli.py` / `run.py` split, whose work is done today by `openTEPES_Main.py` and
+  `openTEPES.py` in one piece each.
 - [FIXED] the bus injection formulation in W space failed intermittently when the loop condition was off. `vTheta`
   appears in no constraint there, so the solver sets some nodes and leaves others unset, and which ones varies between
   runs. The guard that decides whether a nodal voltage phasor can be formed returned on the FIRST node it found, so
