@@ -265,7 +265,7 @@
   </g>
 
   <!-- post-build hot-swap loop arrow (right side, Layer 5 back to Layer 3) -->
-  <path d="M 1106 850 Q 1132 850 1132 415 Q 1132 388 930 388" stroke="#7a4a8a" stroke-width="1.6" fill="none" stroke-dasharray="6 4" marker-end="url(#arrowP)"/>
+  <path d="M 1106 850 L 1116 850 Q 1132 850 1132 834 L 1132 404 Q 1132 388 1116 388 L 930 388" stroke="#7a4a8a" stroke-width="1.6" fill="none" stroke-dasharray="6 4" marker-end="url(#arrowP)"/>
 
   <!-- arrow 5 -->
   <line x1="570" y1="895" x2="570" y2="935" stroke="#444" stroke-width="2" marker-end="url(#arrow)"/>

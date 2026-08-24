@@ -4,7 +4,10 @@
 
 - [FIXED] the architecture diagram drew the Mode C arrow, from `resolve.py` back to `SettingUpVariables.py`, outside
   the page background, which stopped 45 px short of the canvas. The arrow is routed inside it and its rotated label is
-  gone, because it repeated the sweep-modes panel word for word. The footer no longer runs off both edges.
+  gone, because it repeated the sweep-modes panel word for word. Its two corners are now the same shape: each was a
+  single quadratic curve spanning the whole segment, so one bend swept over 435 px and the other over 27 px and they
+  did not look like a pair. They are quarter turns of equal radius with straight runs between. The footer no longer
+  runs off both edges.
 - [CHANGED] the wording in the architecture diagram is plainer. Claims about the design gave way to descriptions of it:
   "single source of truth" is now "column and type specs", "drop-in backend" is "same InputSource interface", and
   "cost: solve only (cheapest)" drops the judgement. The planned boxes were checked against the code and all five are
