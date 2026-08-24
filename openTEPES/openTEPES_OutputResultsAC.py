@@ -227,6 +227,23 @@ def ACNetworkOperationResults(DirName, CaseName, OptModel, mTEPES):
             _write(sSwitch, [OptModel.vShuntSwitch[k]() for k in sSwitch], 'p.u.',
                    ['Period', 'Scenario', 'LoadLevel', 'Shunt'], ['Shunt'], _path, CaseName, 'ShuntCommitment')
 
+    # ---------------------------------------------------------------------------------------------------------------------------------------------
+    # HVDC converter stations
+    # ---------------------------------------------------------------------------------------------------------------------------------------------
+    # Both stations of a link, summed, in MW. Without this the loss is real in the solve and invisible afterwards: it leaves as extra generation with
+    # nothing naming where it went, and a link that quietly eats a few per cent of what it carries looks like a link that carries everything.
+    pLossNL = mTEPES.pConverterNoLoadLoss()   if mTEPES.pIndACConverter() else 0.0
+    pLossMG = mTEPES.pConverterMarginalLoss() if mTEPES.pIndACConverter() else 0.0
+    if mTEPES.lad and (pLossNL or pLossMG):
+        sLink = list(mTEPES.psnlad)
+        pConvLoss = []
+        for k in sLink:
+            la = k[3:]
+            pAbsP = (OptModel.vDCFlowPos[k]() + OptModel.vDCFlowNeg[k]()) if hasattr(OptModel, 'vDCFlowPos') else abs(OptModel.vFlowElec[k]())
+            # two stations, one at each end, each charged the same way
+            pConvLoss.append(2.0 * (pLossNL * float(mTEPES.pLineNTCMax[la]) * OptModel.vLineCommit[k]() + pLossMG * pAbsP) * 1e3)
+        _pivot_branch(sLink, pConvLoss, 'MW', _path, CaseName, 'NetworkConverterLosses')
+
     print('Writing  AC network operation results  ... ', round(time.time() - StartTime), 's')
 
 

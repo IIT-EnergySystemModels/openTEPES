@@ -1118,6 +1118,7 @@ Three files describe how far the reported operating point is from the exact AC e
 |:-----|:------------|
 | oT_Result_ACRelaxationGap        | Gap of the second-order cone on every branch and load level, per unit of the squared rating |
 | oT_Result_ACRelaxationGapSummary | The worst gap per branch, sorted in decreasing order |
+| oT_Result_NetworkConverterLosses | Active power lost in the HVDC converter stations of each link, both terminals summed. Written only when a converter model and a loss are both on |
 | oT_Result_ACPowerFlowResidual    | Worst mismatch, in MW and MVAr, between the reported branch flows and the ones the bus voltages imply |
 
 The relaxation gap measures the second-order cone. The residual recomputes each branch flow from the bus voltages through

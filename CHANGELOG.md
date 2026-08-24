@@ -8,6 +8,14 @@
   whenever that node happened to carry a value it reported the angles available and the residual check then built a
   phasor from `None` at a later node and raised `TypeError`. It now tests every node. This is what made
   `IndACPowerFlow = 2` with `IndACCycle = 0` fail once in every few runs of the test suite.
+- [ADDED] HVDC converter station losses, set per case with `ConverterNoLoadLoss` and `ConverterMarginalLoss` in
+  `oT_Data_Parameter`. Each terminal of a DC link carries a station, and each station is charged separately: the
+  no-load part is drawn while the link is in service, as a fraction of the link rating, and the marginal part is drawn
+  on the power the station carries, either direction. Both default to zero, so a case that does not ask for them gets
+  the results it got before. Reported per link in `oT_Result_NetworkConverterLosses`. Only read when `IndACConverter`
+  selects a converter model. Switching a loss on also brings in the flow-direction binary the line-commutated model
+  already uses, including under the voltage-source model, because without it the model can inflate both halves of the
+  link flow and discard surplus energy into a loss that does not exist.
 - [CHANGED] update the architecture diagram (`doc/img/openTEPES_architecture.svg` and the rendered `.png`) so it
   matches the code after the AC work. Layer 4 said "six files, one per concern" and now says eight, with a new
   `ELECTRICITY NETWORK — pick one` bracket under `…Electricity.py` holding the three interchangeable network models:

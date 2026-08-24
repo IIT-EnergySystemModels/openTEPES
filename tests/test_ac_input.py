@@ -1449,6 +1449,47 @@ def test_the_angle_guard_looks_at_every_node_not_just_the_first(tmp_path):
 
 
 @pytest.mark.solve
+def test_converter_station_losses_are_paid_and_scale_with_the_flow(tmp_path):
+    """A converter station is not free to pass power through. Each terminal draws a no-load loss while the link is in
+    service and a marginal loss on what it carries, so a link that used to deliver everything it took now delivers
+    less, and the system has to generate the difference.
+
+    The test drives the marginal loss only, because the no-load part is a constant on a link that is always in service
+    and so cannot be seen in a cost difference against a case where the link is equally always in service.
+    """
+    dir_name, case = _clone(tmp_path, "9n_AC", "9n_convloss")
+
+    def force_dc(df):
+        pDC = df["LineType"].astype(str).str.upper() == "DC"
+        assert pDC.any(), "9n_AC should carry a DC link for this test to mean anything"
+        df.loc[pDC, ["InvestmentLo", "InvestmentUp"]] = 1.0
+    _edit_csv(dir_name, case, "Network",   force_dc, index_col=None)
+    _edit_csv(dir_name, case, "Duration",  lambda df: df.__setitem__("Duration", [1] * 4 + [0] * (len(df) - 4)), index_col=None)
+    _edit_csv(dir_name, case, "RESEnergy", lambda df: [df.__setitem__(c, 0.0) for c in df.columns[2:]], index_col=None)
+    _edit_csv(dir_name, case, "Option",    lambda df: df.__setitem__("IndACConverter", 2), index_col=None)
+
+    pCost, pFlow = {}, {}
+    for pLoss in (0.0, 0.02):
+        _edit_csv(dir_name, case, "Parameter",
+                  lambda df, v=pLoss: df.__setitem__("ConverterMarginalLoss", v), index_col=None)
+        mTEPES = _run_or_skip(dir_name, case, "gurobi", 0, 0)
+        pCost[pLoss] = mTEPES.vTotalSCost()
+        pFlow[pLoss] = max(abs(mTEPES.vFlowElec[k]()) for k in mTEPES.psnla if k[3:] in set(mTEPES.lad))
+
+        if pLoss:
+            # the split has to be exactly |P|, or the model can dump energy into a loss that does not exist
+            for k in mTEPES.psnla:
+                if k[3:] in set(mTEPES.lad):
+                    pPos, pNeg = mTEPES.vDCFlowPos[k](), mTEPES.vDCFlowNeg[k]()
+                    assert min(pPos, pNeg) < 1e-6, f"both halves of the DC flow are non-zero: {pPos}, {pNeg}"
+                    assert abs((pPos + pNeg) - abs(mTEPES.vFlowElec[k]())) < 1e-6
+
+    assert pFlow[0.0] > 1e-3, "the DC link carried nothing, so the test would pass for the wrong reason"
+    assert pCost[0.02] > pCost[0.0], (
+        f"converter losses were free: {pCost[0.02]} against {pCost[0.0]}")
+
+
+@pytest.mark.solve
 def test_a_converter_stays_within_its_apparent_power_rating(tmp_path):
     """Active and reactive power used to be bounded separately, so a station could hold P = NTC and Q = tan(acos(pf))
     NTC at once and deliver NTC/pf: 17.6% over its rating at the default power factor of 0.85.

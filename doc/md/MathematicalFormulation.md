@@ -1264,6 +1264,20 @@ It is imposed as a ring of tangent lines rather than as the disc itself, so that
 reactive power is a fixed ratio of the active power, so the same limit reduces to
 :math:`|f^p_{\omega nijc}| \leq \overline{F}_{ijc} PF^{conv}` and is exact.
 
+Each terminal also carries a station loss, set by `ConverterNoLoadLoss` :math:`(L^{nl})` and `ConverterMarginalLoss`
+:math:`(L^{mg})`. The no-load part is drawn while the link is in service and the marginal part on the power the station
+carries, so a link is charged twice, once at each end. Both default to zero, and the terms enter the active power
+balance of the terminal node
+
+```{math}
+L^{nl} \overline{F}_{ijc} \, sw^p_{\omega nijc} + L^{mg} \left( f^{+,p}_{\omega nijc} + f^{-,p}_{\omega nijc} \right)
+```
+
+where :math:`f^{+}` and :math:`f^{-}` are the two non-negative halves of the link flow, so that their sum is
+:math:`|f|`. The split is made exact by the same direction binary the line-commutated model uses, and switching a loss
+on brings that binary in even under the voltage-source model: without it the model could inflate both halves and
+discard surplus energy into a loss that does not exist.
+
 **Flow-based market coupling**. Switched on with `IndPTDF`, as an alternative to the DC branch flow equation. It cannot
 be combined with the AC formulations, which already determine the flows.
 

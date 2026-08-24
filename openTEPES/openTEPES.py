@@ -176,6 +176,9 @@ def ReportConfiguration(mTEPES):
             print(f'  loop condition (IndACCycle)          ... {"on" if mTEPES.pIndACCycle() else "off"}')
         pConv = {0: 'none', 1: 'line-commutated', 2: 'voltage-source'}
         print(f'  HVDC converters                      ... {pConv.get(mTEPES.pIndACConverter(), mTEPES.pIndACConverter())}')
+        if mTEPES.pIndACConverter() and (mTEPES.pConverterNoLoadLoss() or mTEPES.pConverterMarginalLoss()):
+            print(f'  converter station losses             ... {mTEPES.pConverterNoLoadLoss()*100:.3f}% of the rating standing, '
+                  f'{mTEPES.pConverterMarginalLoss()*100:.3f}% of what it carries, at each of the two stations')
 
         # the two AC-only tables, reported as what reached the model rather than as what the case directory holds
         pQd = sum(mTEPES.pReactiveDemand[k]() for k in mTEPES.psnnd) * 1e3 if hasattr(mTEPES, 'pReactiveDemand') else 0.0

@@ -45,6 +45,12 @@ AC_SCALAR_DEFAULTS = {
     # Converter power factor, used for both HVDC converter models. 0.85 gives tan(acos(pf)) = 0.62, which is in the usual range for a
     # line-commutated station: an LCC draws roughly half to two thirds of the transferred active power as reactive power.
     'pConverterPF':  0.85,
+    # Converter station losses, one station. Zero by default, so a case that does not ask for them gets exactly the results it got before.
+    # NoLoad is a fraction of the link rating and is paid whenever the link is in service; Marginal is a fraction of the power the station
+    # carries. A modern VSC station is roughly 0.001 and 0.010, an LCC station roughly 0.001 and 0.007. Both stations of a link are charged,
+    # so a link with the VSC figures loses about 2% of what it carries, plus 0.2% of its rating standing.
+    'pConverterNoLoadLoss':   0.0,
+    'pConverterMarginalLoss': 0.0,
 }
 
 # Columns oT_Data_BusShunt must provide. Missing ones are filled with the default rather than raising, so a minimal shunt table stays valid.
@@ -163,6 +169,12 @@ def ReadACInputData(dfs, par, mTEPES, pIndLogConsole):
 
     if par['pVMin'] >= par['pVMax']:
         raise ValueError(f"VMin ({par['pVMin']}) must be below VMax ({par['pVMax']})")
+
+    # A converter that loses a quarter of what it carries is a data error, not a converter. The bound is loose on purpose: it is there to catch a
+    # percentage entered as 2 instead of 0.02, which would otherwise solve and quietly report a link that consumes more than it delivers.
+    for key in ('pConverterNoLoadLoss', 'pConverterMarginalLoss'):
+        if par[key] >= 0.25:
+            raise ValueError(f"{key[1:]} = {par[key]} is a fraction, not a percentage; 0.02 means 2%")
 
     if pIndLogConsole:
         print('Reading AC input data                  ... ', round(time.time() - StartTime), 's')
@@ -340,6 +352,8 @@ def ConfigureACData(mTEPES, dfs, par):
     mTEPES.pCapacitivePF     = Param(initialize=par['pCapacitivePF'], within=NonNegativeReals, doc='Capacitive power factor limit [p.u.]')
     mTEPES.pInductivePF      = Param(initialize=par['pInductivePF'] , within=NonNegativeReals, doc='Inductive  power factor limit [p.u.]')
     mTEPES.pConverterPF      = Param(initialize=par['pConverterPF'] , within=NonNegativeReals, doc='HVDC converter power factor [p.u.]')
+    mTEPES.pConverterNoLoadLoss   = Param(initialize=par['pConverterNoLoadLoss']  , within=NonNegativeReals, doc='HVDC converter no-load loss, one station, per unit of the link rating [p.u.]')
+    mTEPES.pConverterMarginalLoss = Param(initialize=par['pConverterMarginalLoss'], within=NonNegativeReals, doc='HVDC converter marginal loss, one station, per unit of the power it carries [p.u.]')
 
     if par['pIndBusShunt']:
         mTEPES.pBusGshb            = Param(mTEPES.sh, initialize=par['pBusGshb'].loc[list(mTEPES.sh)].to_dict()           , within=Reals,            doc='Shunt conductance [p.u.]'                  , mutable=True)

@@ -227,7 +227,10 @@ def SettingUpVariablesAC(OptModel, mTEPES):
     if mTEPES.pIndACConverter() and mTEPES.lad:
         pConvTan = math.tan(math.acos(min(max(mTEPES.pConverterPF(), 1e-3), 1.0)))
 
-        if mTEPES.pIndACConverter() == 1:
+        # Station losses need |P_dc| whichever converter technology is modelled, so they pull in the same split the LCC reactive draw needs.
+        pConvLoss = bool(mTEPES.pConverterNoLoadLoss() or mTEPES.pConverterMarginalLoss())
+
+        if mTEPES.pIndACConverter() == 1 or pConvLoss:
             # LCC. The station draws reactive power in proportion to the active power it transfers, whichever way that power flows, so the model needs
             # |P_dc|. Splitting it into two non-negative parts is exact at the optimum: the draw has to be served by the AC system, so the solver has
             # every reason to take the smallest split rather than inflate both halves.
@@ -247,7 +250,7 @@ def SettingUpVariablesAC(OptModel, mTEPES):
                 OptModel.vDCFlowPos[p,sc,n,ni,nf,cc].setub(pBox)
                 OptModel.vDCFlowNeg[p,sc,n,ni,nf,cc].setub(pBox)
 
-        else:
+        if mTEPES.pIndACConverter() == 2:
             # VSC. The station is a controllable reactive source or sink at each terminal, bounded by what the converter can hold at its rating. The
             # bound is a box rather than the true capability circle: the circle would be a cone, which the piecewise model type cannot take, and the
             # box is the same shape the synchronous condensers already use.

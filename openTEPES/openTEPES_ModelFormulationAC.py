@@ -118,6 +118,13 @@ def NetworkACOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, 
     pConvVSC = mTEPES.pIndACConverter() == 2 and bool(mTEPES.lad)
     pConvTan = math.tan(math.acos(min(max(mTEPES.pConverterPF(), 1e-3), 1.0)))
 
+    # Converter station losses. Each terminal of a DC link carries a station, and each station is charged separately, which is the same convention the
+    # existing DC line loss factor already uses. The no-load part is paid whenever the link is in service; the marginal part is paid on what the
+    # station carries, either way it flows. Both are zero unless the case asks for them.
+    pConvLossNL = mTEPES.pConverterNoLoadLoss()   if (pConvLCC or pConvVSC) else 0.0
+    pConvLossMG = mTEPES.pConverterMarginalLoss() if (pConvLCC or pConvVSC) else 0.0
+    pConvLoss   = bool(pConvLossNL or pConvLossMG)
+
     # A shunt conductance draws active power. It is zero in almost every case, so the whole active-shunt block is built only when some device has one.
     pShuntG = any(mTEPES.pBusGshb[sh]() for sh in mTEPES.sh) if mTEPES.sh else False
 
@@ -165,6 +172,11 @@ def NetworkACOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, 
               + sum(OptModel.vFlowElec  [(p,sc,n)+la] for la in dcIn [nd])
               - sum(OptModel.vLineLosses[(p,sc,n)+la] for la in dcOut[nd] if (p,)+la in mTEPES.pll)
               - sum(OptModel.vLineLosses[(p,sc,n)+la] for la in dcIn [nd] if (p,)+la in mTEPES.pll)
+              # HVDC converter stations. The station standing at this node draws its no-load loss while the link is in service and its marginal loss on
+              # whatever it carries. vLineCommit is fixed at 1 for a link that is neither switchable nor a candidate, so for those the first term is a
+              # constant and costs the solver nothing.
+              - (pConvLossNL * sum(mTEPES.pLineNTCMax[la] * OptModel.vLineCommit[(p,sc,n)+la] for la in dcOut[nd] + dcIn[nd]) if pConvLossNL else 0.0)
+              - (pConvLossMG * sum(OptModel.vDCFlowPos[(p,sc,n)+la] + OptModel.vDCFlowNeg[(p,sc,n)+la] for la in dcOut[nd] + dcIn[nd]) if pConvLossMG else 0.0)
               == mTEPES.pDemandElec[p,sc,n,nd])
     setattr(OptModel, f'eBalanceElec_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.nd, rule=eBalanceElecAC, doc='electric load generation balance [GW]'))
     if pIndLogConsole:
@@ -172,7 +184,7 @@ def NetworkACOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, 
 
     # The two halves of |P_dc|. Pinning only the difference is NOT conservative: the draw enters the reactive balance with a MINUS, so a node whose
     # charging exceeds its demand gains by inflating both halves, absorbing the surplus for free and hiding it from the results. vDCFlowDir fixes it.
-    if pConvLCC:
+    if pConvLCC or pConvLoss:
         def eDCFlowSplit(OptModel, n, ni, nf, cc):
             if not _live((ni,nf,cc)):
                 return Constraint.Skip
