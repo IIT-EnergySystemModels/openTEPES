@@ -32,6 +32,10 @@
   `oT_Data_Option`. They were fixed in the code, so no case could select them, and the four stage-solving strategies the
   model implements were all unreachable. `IndSequentialSolving` was also declared binary while its own code branches on
   four values. The defaults are the values that used to be in force.
+- [FIXED] the AC design notes did not record what the price on the branch current does to the locational prices. It is
+  in the objective, so it is in the duals of the nodal balance, and the distortion is not a level shift: it moves prices
+  relative to one another. Section 17 measures it. At the value the code carried before it became case data the worst
+  nodal price moved by 140 EUR/MWh against a spread of 200; at the value the RTS cases now carry it is 1.53.
 - [ADDED] `EpsilonCurrent` in `oT_Data_Parameter` sets the price on the AC branch current per case. It was a constant in
   the code, and the value it needs turns out to depend on the case: 1e-3 for `9n_AC` and 1e-6 for the RTS-GMLC cases and
   for pglib case118, a thousandfold spread. At 1e-3 the RTS cases were paying a 16%

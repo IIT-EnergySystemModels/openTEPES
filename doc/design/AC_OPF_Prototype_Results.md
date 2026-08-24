@@ -796,3 +796,54 @@ The Newton-Raphson gap that section 15 reported as open was in the validation sc
 candidate shunt's nameplate rating for a device the model had declined to build. With that corrected the power flow
 agrees to 2e-09 p.u. See section 15.2. `create_impedance` was suspected and was not the cause — rebuilding the lines
 from explicit ohms changed the answer by nothing at all.
+
+# 17. The current penalty and the locational prices
+
+The price on the branch current (`EpsilonCurrent`, section 13.1) is in the objective, so it is in the duals of
+`eBalanceElec`, which are the locational prices. Measured on a 24 hour RTS-GMLC window with `IndACPowerFlow = 1` and
+`IndACModelType = 0`, against the same window solved with the price at zero. The reference has 1752 prices, a mean of
+81.62 EUR/MWh and a spread of 200.23 EUR/MWh across nodes and hours.
+
+| `EpsilonCurrent` | level shift | worst deviation | worst with the level shift removed |
+|-----------------:|------------:|----------------:|-----------------------------------:|
+| 1e-6 |  +0.019 |   1.531 |   1.550 |
+| 1e-5 |  -0.023 |   4.151 |   4.128 |
+| 1e-4 |  +1.273 |  24.231 |  25.504 |
+| 1e-3 | +16.464 | 139.513 | 155.977 |
+
+**The distortion is not a level shift.** Removing the mean movement leaves the worst deviation where it was, and at the
+two larger values slightly above it. The prices move relative to one another, which is the quantity a comparison of
+nodal against zonal pricing reads.
+
+At 1e-3, the value the code carried until the price became case data, the worst price is displaced by 140 EUR/MWh
+against a spread of 200. At 1e-4 it is 24. At the 1e-6 the RTS cases now carry it is 1.53, which is 0.8% of the spread
+and 1.9% of the mean. The calibration in section 13.1 was chosen to keep the relaxed cost below the exact optimum; it
+also happens to be the value that leaves the prices least disturbed.
+
+## 17.1 Taking the prices from the restoration pass instead
+
+`IndACRestore` reaches an operating point that satisfies the AC equations, and it discards the duals when it does,
+because those belong to the relaxed solve and describe a different point. That leaves a choice between a physical
+operating point and a set of prices, and not both.
+
+The restoration holds every discrete decision fixed and keeps the original cost objective, so the problem it solves is a
+continuous non-linear one whose nodal balance duals are marginal costs of demand. Recovering them is mechanically
+straightforward: ipopt returns multipliers through Pyomo, and attaching the `dual` suffix before the restoration solve
+and calling `collect_duals` afterwards produced 1017 duals, 36 of them nodal prices, on an 8 hour 9n_AC window.
+
+**The values were not validated and the attempt was reverted.** Compared against the relaxed prices for the same case:
+
+| | result |
+|---|---|
+| prices agreeing within 1 EUR/MWh | **0 of 36** |
+| worst difference | 65.19 EUR/MWh |
+| Node_1, hour 07:00 | +15.02 relaxed, **-50.15** restored |
+| movement in total cost from the pass | +0.11% |
+
+Prices that move by 65 EUR/MWh while the cost they price moves by a tenth of a percent are not explained by the
+restored problem being non-convex and its multipliers local. The divergence is at every node and includes a change of
+sign, which points at something systematic rather than at a local solution.
+
+Publishing prices that cannot be accounted for is worse than publishing none, so the pass still discards the duals and
+says so. The path is open and worth taking: it would remove the distortion measured above entirely, since the prices
+would come from a point that needs no penalty to be physical. It needs the divergence explained first.
