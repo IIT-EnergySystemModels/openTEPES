@@ -10,6 +10,9 @@
   for gurobi and CI has no licence for it, so the default formulation was never solved on a runner. Linux only, since
   ipopt's convergence depends on how MUMPS was built and a platform-dependent solver makes for flaky tests. This tests
   that the paths build and solve; it does not stand in for a conic solver certifying the bound.
+- [CHANGED] the test that checks the restoration pass closes the cone asked for gurobi, which no runner has a licence
+  for, so it was skipped everywhere and the pass had no CI coverage even after ipopt arrived. It uses ipopt now: the
+  outer solve is the cone, which is convex, and the pass itself already ran on ipopt.
 - [FIXED] the architecture diagram drew the Mode C arrow, from `resolve.py` back to `SettingUpVariables.py`, outside
   the page background, which stopped 45 px short of the canvas. The arrow is routed inside it and its rotated label is
   gone, because it repeated the sweep-modes panel word for word. Its two corners are now the same shape: each was a

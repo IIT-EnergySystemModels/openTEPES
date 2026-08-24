@@ -832,8 +832,11 @@ def test_restoration_makes_the_relaxation_exact(tmp_path):
     """
     from openTEPES.openTEPES import openTEPES_run
 
+    # ipopt, not gurobi: the outer solve is the cone, which is convex, so an NLP solver reaches the same optimum, and it
+    # is the solver a runner actually has. Asking for gurobi skipped this on every runner, which left the restoration
+    # pass with no CI coverage at all even though the pass itself already runs on ipopt.
     dir_name, case = _tiny_ac_case(tmp_path, "9n_restore")
-    mTEPES = _run_or_skip(str(dir_name), case, "gurobi", 0, 0)
+    mTEPES = _run_or_skip(str(dir_name), case, "ipopt", 0, 0)
 
     pSBase = mTEPES.pSBase
     pWorst = 0.0
