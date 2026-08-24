@@ -1216,6 +1216,9 @@ def test_incompatible_options_are_reported_together(tmp_path):
 
 @pytest.mark.parametrize("pf, mt, cyc, solver", [
     (1, 0, 0, "gurobi"),   # branch flow, second-order cone
+    (1, 0, 0, "ipopt"),    # the same cone under ipopt, which is what CI can run: the relaxation is convex, so a local
+                           # optimum is the global one. This is the default formulation, so without this row the path
+                           # carrying every validation number is never solved on a runner.
     (1, 1, 0, "gurobi"),   # branch flow, piecewise linear
     (1, 2, 0, "ipopt"),    # branch flow, exact
     (2, 0, 0, "ipopt"),    # bus injection in W space

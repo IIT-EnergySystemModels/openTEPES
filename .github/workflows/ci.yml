@@ -93,13 +93,32 @@ jobs:
           enable-cache: true
           cache-dependency-glob: requirements.lock
 
+      # ipopt goes in the same conda transaction as the test tools, so it costs one
+      # solve rather than two. It is added on Linux only. HiGHS cannot express a
+      # nonlinear constraint at all, so without ipopt the second-order cone, the
+      # exact non-linear model and the AC restoration pass are all skipped here,
+      # and the cone is the default. The cone is convex, so ipopt reaching a local
+      # optimum reaches the global one; this tests that those paths still build and
+      # solve, and does not stand in for a conic solver certifying the bound.
+      # Linux only for now because ipopt's convergence depends on how MUMPS was
+      # built, and a platform-dependent NLP is a flaky test waiting to happen.
       - name: Install dependencies
         shell: bash -l {0}
         run: |
-          conda install -y -c conda-forge flake8 pytest pytest-timeout
+          if [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
+            conda install -y -c conda-forge flake8 pytest pytest-timeout ipopt
+          else
+            conda install -y -c conda-forge flake8 pytest pytest-timeout
+          fi
           uv pip install --system -r requirements.lock
           uv pip install --system "highspy==1.15.1"
           pip install -e .
+
+      - name: Report which solvers this runner has
+        shell: bash -l {0}
+        run: |
+          python -c "from pyomo.environ import SolverFactory; \
+          print({n: SolverFactory(n).available(exception_flag=False) for n in ('appsi_highs','ipopt','gurobi')})"
 
       - name: Run solve tests (per-test timeout guards a stuck solver)
         shell: bash -l {0}

@@ -2,6 +2,14 @@
 
 ## [4.18.18RC] - 2026-08-16 Unreleased in PyPI
 
+- [CHANGED] the Linux solve job in CI now installs ipopt, so the AC formulations it could not reach are tested. HiGHS
+  cannot express a nonlinear constraint at all, which left the second-order cone, the exact non-linear model and the AC
+  restoration pass skipped on every runner, and the cone is the default. A conic solver is not needed for this: the
+  relaxation is convex, so ipopt reaching a local optimum reaches the global one. On the 9n case the two agree to
+  3e-07 relative. The formulation matrix gains a branch-flow cone row under ipopt, because the existing cone row asks
+  for gurobi and CI has no licence for it, so the default formulation was never solved on a runner. Linux only, since
+  ipopt's convergence depends on how MUMPS was built and a platform-dependent solver makes for flaky tests. This tests
+  that the paths build and solve; it does not stand in for a conic solver certifying the bound.
 - [FIXED] the architecture diagram drew the Mode C arrow, from `resolve.py` back to `SettingUpVariables.py`, outside
   the page background, which stopped 45 px short of the canvas. The arrow is routed inside it and its rotated label is
   gone, because it repeated the sweep-modes panel word for word. Its two corners are now the same shape: each was a
