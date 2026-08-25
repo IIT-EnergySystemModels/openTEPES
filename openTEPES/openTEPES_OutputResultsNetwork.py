@@ -15,8 +15,15 @@ import math
 import pandas            as     pd
 import plotly.io         as     pio
 import plotly.graph_objs as     go
-import openTEPES.openTEPES_DataConfiguration as NM
 from   collections       import defaultdict
+
+# Support running this file directly, where __package__ is empty and the relative import has no parent package.
+try:
+    from . import openTEPES_DataConfiguration as NM
+except ImportError:
+    import sys
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    import openTEPES.openTEPES_DataConfiguration as NM
 from   colour            import Color
 
 try:
@@ -415,7 +422,11 @@ def ACNetworkOperationResults(DirName, CaseName, OptModel, mTEPES):
     # ---------------------------------------------------------------------------------------------------------------------------------------------
     sNode = list(mTEPES.psnnd)
     _pivot_node(sNode, [math.sqrt(max(pW[k], 0.0))               for k in sNode], 'p.u.', _path, CaseName, 'NetworkVoltageMagnitude')
-    _pivot_node(sNode, [OptModel.vTheta[k]() * 180.0 / math.pi   for k in sNode], 'deg',  _path, CaseName, 'NetworkVoltageAngle')
+    # Only when a phasor exists. In W space without the loop condition vTheta is in no constraint, the solver leaves nodes unset, and multiplying
+    # None by 180/pi raises. ACRelaxationDiagnostic already guards this way; this writer did not.
+    pFirstPsn = next(iter(mTEPES.psn), None)
+    if pFirstPsn is not None and NM.angles_available(mTEPES, OptModel, *pFirstPsn):
+        _pivot_node(sNode, [OptModel.vTheta[k]() * 180.0 / math.pi   for k in sNode], 'deg',  _path, CaseName, 'NetworkVoltageAngle')
 
     # The reactive slack, reported as a signed net value: positive where the node is short of reactive power, negative where it cannot absorb what the
     # line charging delivers. Without this the slack does its job in the solve and leaves no trace anywhere — a case whose reactive demand cannot be

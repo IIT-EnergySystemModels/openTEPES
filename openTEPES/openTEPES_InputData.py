@@ -330,7 +330,10 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole, option_overrides=None):
     # RTS-GMLC 1e-4 and pglib case118 1e-6 — a thousandfold spread. Too small and the relaxation buys voltage with current
     # that is not there; too large and it distorts the dispatch, by 16% on RTS-GMLC at 1e-3. IndACRestore is the way to a
     # physical operating point that costs nothing in the objective, so this can be kept small.
-    from openTEPES.openTEPES_ModelFormulationObjective import AC_CURRENT_PENALTY as pDefaultEps
+    try:
+        from .openTEPES_ModelFormulationObjective          import AC_CURRENT_PENALTY as pDefaultEps
+    except ImportError:
+        from openTEPES.openTEPES_ModelFormulationObjective import AC_CURRENT_PENALTY as pDefaultEps
     par.setdefault('pEpsilonCurrent', pDefaultEps)
     if float(par['pEpsilonCurrent']) < 0.0:
         raise ValueError(f"EpsilonCurrent = {par['pEpsilonCurrent']} is negative; it prices the branch current and must be at least 0")
@@ -1085,8 +1088,10 @@ def ConfigureACData(mTEPES, dfs, par):
         pSynchBin = pGenTable['BinaryInvestment'].astype(float).fillna(0.0) if 'BinaryInvestment' in pGenTable.columns else None
         sqcList   = list(mTEPES.sqc)
         mTEPES.pSynchLoInvest      = Param(mTEPES.sqc, initialize={sq: (pSynchLo [sq] if pSynchLo  is not None else 0.0) for sq in sqcList}, within=NonNegativeReals, doc='Lower bound of the condenser investment decision [p.u.]')
-        # an InvestmentUp of 0 in the data means "not buildable"; a MISSING column means "no limit", which is 1
-        mTEPES.pSynchUpInvest      = Param(mTEPES.sqc, initialize={sq: (pSynchUp [sq] if pSynchUp  is not None else 1.0) for sq in sqcList}, within=NonNegativeReals, doc='Upper bound of the condenser investment decision [p.u.]')
+        # An InvestmentUp of 0 means "no limit", which is 1, the same reading generators, network, H2 pipes, heat pipes and bus shunts all use.
+        # A MISSING column also means "no limit". Reading 0 as "not buildable" here made the same column mean opposite things for a shunt and
+        # for a condenser.
+        mTEPES.pSynchUpInvest      = Param(mTEPES.sqc, initialize={sq: ((pSynchUp[sq] if pSynchUp[sq] > 0.0 else 1.0) if pSynchUp is not None else 1.0) for sq in sqcList}, within=NonNegativeReals, doc='Upper bound of the condenser investment decision [p.u.]')
         mTEPES.pSynchBinUnitInvest = Param(mTEPES.sqc, initialize={sq: (pSynchBin[sq] if pSynchBin is not None else 0.0) for sq in sqcList}, within=NonNegativeReals, doc='Binary condenser investment decision')
 
     mTEPES.pLineG            = Param(mTEPES.la,    initialize=par['pLineG'].to_dict()           , within=Reals,            doc='Series conductance [p.u.]'                            )

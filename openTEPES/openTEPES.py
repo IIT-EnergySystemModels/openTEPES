@@ -143,6 +143,16 @@ def ValidateConfiguration(mTEPES, pIndCycleFlow):
 
     # A PTDF matrix belongs to ONE topology. Computing it fixes that topology at build time, so a case that can change it invalidates the factors the
     # moment a decision differs from the assumption. Generation, storage and DC-link candidates are fine: none of them enter the susceptance matrix.
+    # eBIMSLimit gates the cone on vLineCommit, and for a line that is neither a candidate nor switchable that variable is fixed at 1, so the
+    # right-hand side is linear in vW and the constraint is a cone. For a candidate or switchable AC line it is a product of two variables inside a
+    # quadratic inequality, which is not convex, and the solve would be silently unreliable rather than refused. Splitting the gate into a cone on vW
+    # plus a linear big-M on the flows would lift this; until then the combination is refused, as the PTDF one below is.
+    if mTEPES.pIndACPowerFlow() in (2, 3) and mTEPES.lca:
+        pOffenders = ', '.join('-'.join(la) for la in list(mTEPES.lca)[:5])
+        pProblems.append(f'IndACPowerFlow = {mTEPES.pIndACPowerFlow()} gates the apparent power limit on the line state, and that is a product of '
+                         f'two variables when the line state is free: {len(mTEPES.lca)} AC line(s) are candidates or switchable ({pOffenders}'
+                         f'{", ..." if len(mTEPES.lca) > 5 else ""}). Use IndACPowerFlow = 1, or remove the candidate and switchable AC lines.')
+
     if mTEPES.pIndPTDF() == 2 and mTEPES.lca:
         pOffenders = ', '.join('-'.join(la) for la in list(mTEPES.lca)[:5])
         pProblems.append(f'IndPTDF = 2 computes the factors for one fixed topology, and this case can change it: '

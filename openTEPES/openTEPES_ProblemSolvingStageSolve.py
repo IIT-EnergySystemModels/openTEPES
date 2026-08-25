@@ -18,7 +18,7 @@ from   pyomo.common.timing import HierarchicalTimer
 try:
     from          .openTEPES_ModelFormulationInvestment  import GenerationOperationElecModelFormulationInvestment, GenerationOperationHeatModelFormulationInvestment
     from          .openTEPES_ModelFormulationElectricity import GenerationOperationModelFormulationDemand, GenerationOperationModelFormulationStorage, GenerationOperationModelFormulationCommitment, GenerationOperationModelFormulationRampMinTime, NetworkSwitchingModelFormulation, NetworkOperationModelFormulation, NetworkCycles, CycleConstraints
-    from           .openTEPES_ModelFormulationElectricity import NetworkACOperationModelFormulation, NetworkACCurrentModelFormulation
+    from           .openTEPES_ModelFormulationElectricity import NetworkACOperationModelFormulation, NetworkACCurrentModelFormulation, NetworkBIMOperationModelFormulation
     from          .openTEPES_ModelFormulationHydro       import GenerationOperationModelFormulationReservoir
     from          .openTEPES_ModelFormulationHydrogen    import NetworkH2OperationModelFormulation
     from          .openTEPES_ModelFormulationHeat        import NetworkHeatOperationModelFormulation
@@ -27,7 +27,7 @@ except ImportError:
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     from openTEPES.openTEPES_ModelFormulationInvestment  import GenerationOperationElecModelFormulationInvestment, GenerationOperationHeatModelFormulationInvestment
     from openTEPES.openTEPES_ModelFormulationElectricity import GenerationOperationModelFormulationDemand, GenerationOperationModelFormulationStorage, GenerationOperationModelFormulationCommitment, GenerationOperationModelFormulationRampMinTime, NetworkSwitchingModelFormulation, NetworkOperationModelFormulation, NetworkCycles, CycleConstraints
-    from openTEPES.openTEPES_ModelFormulationElectricity import NetworkACOperationModelFormulation, NetworkACCurrentModelFormulation
+    from openTEPES.openTEPES_ModelFormulationElectricity import NetworkACOperationModelFormulation, NetworkACCurrentModelFormulation, NetworkBIMOperationModelFormulation
     from openTEPES.openTEPES_ModelFormulationHydro       import GenerationOperationModelFormulationReservoir
     from openTEPES.openTEPES_ModelFormulationHydrogen    import NetworkH2OperationModelFormulation
     from openTEPES.openTEPES_ModelFormulationHeat        import NetworkHeatOperationModelFormulation
@@ -160,6 +160,10 @@ def StageSolve(OptModel, mTEPES, DirName, CaseName, SolverName, pIndLogConsole, 
                         vTotalOCost += sum(pScenFactor[p,sc] * OptModel.vTotalRH2Cost  [p,sc,n] for p,sc,n in mTEPES.psn)
                     if mTEPES.pIndHeat():
                         vTotalOCost += sum(pScenFactor[p,sc] * OptModel.vTotalRHeatCost[p,sc,n] for p,sc,n in mTEPES.psn)
+                    # The price on the branch current, exactly as the global objective carries it. Without it vCurr is unpriced on this path and the
+                    # relaxation buys voltage with current that does not exist: a branch sits at its thermal limit carrying a fifth of the current.
+                    if mTEPES.pIndACPowerFlow() == 1:
+                        vTotalOCost += sum(pScenFactor[p,sc] * OptModel.vTotalNPenalty [p,sc,n] for p,sc,n in mTEPES.psn)
                     return vTotalOCost
                 setattr(OptModel, f'eTotalOCost_{p}_{sc}_{st}', Objective(rule=eTotalOCost, sense=minimize, doc='total system operation cost [MEUR]'))
 
@@ -186,6 +190,12 @@ def StageSolve(OptModel, mTEPES, DirName, CaseName, SolverName, pIndLogConsole, 
                     if mTEPES.pIndACPowerFlow():
                         NetworkACOperationModelFormulation               (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
                         NetworkACCurrentModelFormulation                 (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
+                    # The registry builds THREE AC blocks, not two. NetworkACCurrent returns without doing anything outside mode 1, so in bus injection
+                    # this is the only place the flow equations, the cone, the apparent power limit and the angle bands come from. Leaving it out gave
+                    # modes 2 and 3 a free transport network here: the balances were built, nothing tied the flows to the voltages, and the cost came
+                    # out lower with no message.
+                    if mTEPES.pIndACPowerFlow() in (2, 3):
+                        NetworkBIMOperationModelFormulation              (mTEPES, mTEPES, pIndLogConsole, p, sc, st)
 
                     # introduce cycle flow formulations
                     if pIndCycleFlow == 1:

@@ -1327,7 +1327,6 @@ def NetworkBIMOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc,
     def _flows(OptModel, n, ni, nf, cc):
         """(P_ij, Q_ij, P_ji, Q_ji) in per unit, from whichever voltage representation is active."""
         g, b   = _y((ni,nf,cc))
-        bsh    = mTEPES.pLineBsh[ni,nf,cc]() / 2.0
         a      = _tap(mTEPES, (ni,nf,cc))
         if pMode == 2:
             Wii, Wjj = OptModel.vW[p,sc,n,ni], OptModel.vW[p,sc,n,nf]
@@ -1385,10 +1384,6 @@ def NetworkBIMOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc,
                     + OptModel.vWdif[p,sc,n,ni,nf,cc] ** 2 <= OptModel.vWsum[p,sc,n,ni,nf,cc] ** 2)
         setattr(OptModel, f'eBIMCone_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.laa, rule=eBIMCone, doc='SOC relaxation of the rank-one condition'))
 
-    # Plain Smax, which is NOT what branch flow admits: there the limit is on the current, so apparent power up to Smax Vmax / Vmin gets through. The
-    # matched version was tried and is left out, because widening this limit by that 1.5% was on its own enough to turn a model that solved into one
-    # where barrier reports numerical trouble. That fragility is worth knowing about and is recorded in the module header; it also means the two
-    # formulations do not yet have the same feasible set.
     def eBIMSLimit(OptModel, n, ni, nf, cc):
         if not _live((ni,nf,cc)):
             return Constraint.Skip
@@ -2288,7 +2283,9 @@ def ACRestorationPass(OptModel, mTEPES, SolverName='ipopt', pIndLogConsole=0):
         print('### WARNING: AC restoration found no relaxed current constraints to replace; nothing was done.')
         return None
 
-    # Exactly one objective may be active for the solve.
+    # Exactly one objective may be active for the solve. If that one is a per-stage eTotalOCost, which is the state the Benders path can leave behind,
+    # the restoration would minimise the stage objective rather than the system one. The default path arrives with eTotalSCost active, so this does not
+    # bite today; it has to be handled before restoration is combined with the decomposition.
     pObjectives = [o for o in OptModel.component_objects(Objective) if o.active]
     if len(pObjectives) != 1:
         for o in pObjectives:

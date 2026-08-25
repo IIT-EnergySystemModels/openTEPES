@@ -1426,6 +1426,26 @@ def test_the_two_converter_models_push_the_cost_in_opposite_directions(tmp_path)
     assert pCost[2] < pCost[0], f"a VSC station supplies reactive power, so it cannot cost more: {pCost[2]} vs {pCost[0]}"
 
 
+def test_the_stage_solve_path_builds_every_ac_block_the_registry_does():
+    """The Benders path writes its own call list instead of walking FORMULATION_REGISTRY, so the two drift apart
+    silently. They did: the bus injection block was missing, and NetworkACCurrent returns without doing anything
+    outside mode 1, so modes 2 and 3 got their balances with nothing tying the flows to the voltages. The cost came out
+    lower with no message.
+
+    Comparing the sources catches the drift without needing a Benders solve, which is why it went unnoticed.
+    """
+    import inspect
+    from openTEPES import openTEPES_ProblemSolvingStageIter as SI
+    from openTEPES import openTEPES_ProblemSolvingStageSolve as SS
+
+    pRegistryAC = {fn.__name__ for _, fn, _ in SI.FORMULATION_REGISTRY if "AC" in fn.__name__ or "BIM" in fn.__name__}
+    assert pRegistryAC, "the registry should name the AC formulation builders"
+
+    pSource = inspect.getsource(SS)
+    pMissing = sorted(n for n in pRegistryAC if n not in pSource)
+    assert not pMissing, f"the stage-solve path never calls {pMissing}, so those constraints are absent on that path"
+
+
 @pytest.mark.solve
 def test_the_angle_guard_looks_at_every_node_not_just_the_first(tmp_path):
     """In W space without the loop condition vTheta is in no constraint, so the solver sets some nodes and leaves
