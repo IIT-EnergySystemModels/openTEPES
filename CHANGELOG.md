@@ -2,6 +2,11 @@
 
 ## [4.18.18RC] - 2026-08-23 Unreleased in PyPI
 
+- [ADDED] three single-line diagrams in the AC section of the mathematical formulation, drawn in the style of the
+  existing hand-drawn figures: one AC branch with its tap, series impedance and charging susceptance; an HVDC link
+  under both converter models with the reactive power and station losses at each terminal; and the capability disc of
+  one terminal with the twelve tangent lines that stand in for it. Symbols follow the notation table, with parameters
+  drawn in blue and variables in red.
 - [CHANGED] the AC work adds no new files. Everything it introduced now sits in the module that already owned that
   concern: reading and bound tightening in `openTEPES_InputData.py`, the network matrices and the AC set-up in
   `openTEPES_DataConfiguration.py`, the AC variables in `openTEPES_SettingUpVariables.py`, the branch flow and bus

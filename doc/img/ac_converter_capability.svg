@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 520" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif">
+  <style>
+    .ax   { stroke:#1a1a1a; stroke-width:1.4; }
+    .disc { fill:#d9e8f5; stroke:#2e5d8a; stroke-width:2; }
+    .poly { fill:none; stroke:#b03030; stroke-width:1.8; stroke-dasharray:6 3; }
+    .locus{ stroke:#7a4a8a; stroke-width:2.2; }
+    .lim  { stroke:#7a4a8a; stroke-width:1.4; stroke-dasharray:4 3; }
+    .lbl  { font-size:13px; fill:#1a1a1a; font-weight:600; }
+    .var  { font-size:12.5px; fill:#b03030; font-style:italic; }
+    .par  { font-size:12.5px; fill:#2e5d8a; font-style:italic; }
+    .pur  { font-size:12.5px; fill:#7a4a8a; font-style:italic; }
+    .note { font-size:11.5px; fill:#555; }
+  </style>
+  <rect width="900" height="520" fill="#fafafa"/>
+  <text class="lbl" x="40" y="40">Converter capability at one terminal</text>
+
+  <polygon class="poly" points="595.0,205.8 550.8,129.2 474.2,85.0 385.8,85.0 309.2,129.2 265.0,205.8 265.0,294.2 309.2,370.8 385.8,415.0 474.2,415.0 550.8,370.8 595.0,294.2"/>
+  <circle class="disc" cx="430" cy="250" r="165" fill-opacity="0.55"/>
+
+  <line class="ax" x1="200" y1="250" x2="660" y2="250"/>
+  <line class="ax" x1="430" y1="35" x2="430" y2="465"/>
+  <text class="lbl" x="670" y="255">f_ijc</text>
+  <text class="lbl" x="436" y="28">qc_ijc</text>
+
+  <text class="par" x="500" y="180">F̄_ijc</text>
+  <line class="ax" x1="430" y1="250" x2="547" y2="133" stroke-dasharray="3 3"/>
+
+  <line class="locus" x1="290" y1="337" x2="570" y2="163"/>
+  <line class="lim" x1="570" y1="250" x2="570" y2="149"/>
+  <line class="lim" x1="290" y1="250" x2="290" y2="351"/>
+  <text class="pur" x="578" y="146">LCC locus: qc = T^conv f</text>
+  <text class="pur" x="564" y="268" text-anchor="middle">F̄·PF</text>
+
+  <text class="var" x="196" y="112" text-anchor="start">12 tangent lines</text>
+
+  <text class="note" x="450" y="452" text-anchor="middle">The disc f² + qc² ≤ F̄² is imposed as twelve tangent lines, so the piecewise variant of IndACModelType stays mixed-integer linear.</text>
+  <text class="note" x="450" y="472" text-anchor="middle">The bound is therefore loose by 1/cos(π/12) = 3.5%, shown as the gap between the circle and the dashed polygon.</text>
+  <text class="note" x="450" y="492" text-anchor="middle">An LCC holds qc at a fixed ratio of f, so it moves along the purple locus and the same limit collapses to a bound on f_ijc alone, F̄·PF, which is exact.</text>
+  <text class="note" x="450" y="512" text-anchor="middle" fill="#2e5d8a">parameters in blue · variables in red · line-commutated case in purple</text>
+</svg>

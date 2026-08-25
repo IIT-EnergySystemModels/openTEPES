@@ -1091,6 +1091,13 @@ f^p_{\omega nijc} = \frac{X_{ijc'}}{X_{ijc}} f^p_{\omega nijc'} \quad \forall p 
 **AC optimal power flow**. Replaces the DC branch flow equation when `IndACPowerFlow` is different from 0. The value
 selects the formulation: 1 branch flow, 2 bus injection in :math:`W` space, 3 bus injection in rectangular coordinates.
 
+
+```{image} ../img/ac_branch_model.png
+:alt: Single-line diagram of one AC branch. Two busbars carry the squared voltage magnitude and the angle; between them a tap changer, the series resistance and reactance, and half the charging susceptance to ground at each end. Sending and receiving flows are marked at their own ends.
+:width: 100%
+:align: center
+```
+
 Reactive power balance [Gvar] «`eBalanceReact`»
 
 ```{math}
@@ -1234,6 +1241,13 @@ us^p_{\omega n s_{k+1}} \leq us^p_{\omega n s_k} \quad \forall p \omega n k
 Each terminal of a DC link then exchanges reactive power with the AC node it sits on, and that term enters the reactive
 balance above. :math:`PF^{conv}` is the converter power factor and :math:`T^{conv} = \tan(\arccos(PF^{conv}))`.
 
+
+```{image} ../img/ac_hvdc_converter.png
+:alt: Single-line diagram of an HVDC link under both converter models. The line-commutated case draws reactive power at both terminals; the voltage-source case supplies or absorbs it independently at each. Station losses are marked at both terminals.
+:width: 100%
+:align: center
+```
+
 A line-commutated converter draws reactive power at BOTH terminals, in proportion to the active power it carries
 «`eDCFlowSplit`» «`eDCFlowDirPos`» «`eDCFlowDirNeg`»
 
@@ -1263,6 +1277,13 @@ It is imposed as a ring of tangent lines rather than as the disc itself, so that
 :math:`1/\cos(\pi/n)` for :math:`n` lines, which is 3.5% at the twelve used. For a line-commutated converter the
 reactive power is a fixed ratio of the active power, so the same limit reduces to
 :math:`|f^p_{\omega nijc}| \leq \overline{F}_{ijc} PF^{conv}` and is exact.
+
+
+```{image} ../img/ac_converter_capability.png
+:alt: Capability chart of one converter terminal. The disc of radius equal to the rating is approximated from outside by twelve tangent lines, and a line-commutated station moves along a straight locus through the origin.
+:width: 85%
+:align: center
+```
 
 Each terminal also carries a station loss, set by `ConverterNoLoadLoss` :math:`(L^{nl})` and `ConverterMarginalLoss`
 :math:`(L^{mg})`. The no-load part is drawn while the link is in service and the marginal part on the power the station
