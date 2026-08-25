@@ -18,7 +18,7 @@
   <circle class="disc" cx="430" cy="250" r="165" fill-opacity="0.55"/>
 
   <line class="ax" x1="200" y1="250" x2="660" y2="250"/>
-  <line class="ax" x1="430" y1="35" x2="430" y2="465"/>
+  <line class="ax" x1="430" y1="35" x2="430" y2="434"/>
   <text class="lbl" x="670" y="255">f_ijc</text>
   <text class="lbl" x="436" y="28">qc_ijc</text>
 
