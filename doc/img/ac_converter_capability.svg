@@ -33,8 +33,8 @@
 
   <text class="var" x="196" y="112" text-anchor="start">12 tangent lines</text>
 
-  <text class="note" x="450" y="452" text-anchor="middle">The disc f² + qc² ≤ F̄² is imposed as twelve tangent lines, so the piecewise variant of IndACModelType stays mixed-integer linear.</text>
-  <text class="note" x="450" y="472" text-anchor="middle">The bound is therefore loose by 1/cos(π/12) = 3.5%, shown as the gap between the circle and the dashed polygon.</text>
-  <text class="note" x="450" y="492" text-anchor="middle">An LCC holds qc at a fixed ratio of f, so it moves along the purple locus and the same limit collapses to a bound on f_ijc alone, F̄·PF, which is exact.</text>
-  <text class="note" x="450" y="512" text-anchor="middle" fill="#2e5d8a">parameters in blue · variables in red · line-commutated case in purple</text>
+  <text class="note" x="450" y="452" text-anchor="middle">The disc f² + qc² ≤ F̄² is imposed as twelve tangent lines, so the piecewise model type stays mixed-integer linear.</text>
+  <text class="note" x="450" y="472" text-anchor="middle">The bound is loose by 1/cos(π/12) = 3.5%: the gap between the circle and the dashed polygon.</text>
+  <text class="note" x="450" y="492" text-anchor="middle">A line-commutated station holds qc at a fixed ratio of f. The limit becomes F̄·PF on f_ijc alone, and is exact.</text>
+  <text class="note" x="450" y="512" text-anchor="middle" fill="#2e5d8a">parameters blue · variables red · line-commutated case purple</text>
 </svg>

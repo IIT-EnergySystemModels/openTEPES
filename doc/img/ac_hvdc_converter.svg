@@ -36,12 +36,12 @@
   <text class="lbl" x="580" y="116" font-size="11">~</text>
   <line class="wire" x1="600" y1="125" x2="780" y2="125"/>
   <text class="var" x="450" y="115" text-anchor="middle">f_ijc  =  f+ − f−</text>
-  <!-- reactive DRAWN at both terminals, arrows point out of the AC system -->
+  <!-- reactive drawn at both terminals, arrows point out of the AC system -->
   <line class="q" x1="200" y1="100" x2="290" y2="100" marker-end="url(#qa)"/>
   <text class="var" x="245" y="92" text-anchor="middle">T^conv (f+ + f−)</text>
   <line class="q" x1="700" y1="100" x2="610" y2="100" marker-end="url(#qa)"/>
   <text class="var" x="655" y="92" text-anchor="middle">T^conv (f+ + f−)</text>
-  <text class="note" x="450" y="172" text-anchor="middle">Both stations DRAW reactive power from the AC system, in proportion to the active power carried, either direction.</text>
+  <text class="note" x="450" y="172" text-anchor="middle">Both stations draw reactive power in proportion to the active power carried, either direction.</text>
 
   <!-- ================= VSC ================= -->
   <text class="ttl" x="40" y="240">IndACConverter = 2 · voltage-source</text>
@@ -72,8 +72,8 @@
   <!-- losses, common to both -->
   <line class="loss" x1="326" y1="424" x2="326" y2="356" marker-end="url(#la)"/>
   <line class="loss" x1="574" y1="424" x2="574" y2="356" marker-end="url(#la)"/>
-  <text class="par" x="450" y="442" text-anchor="middle">station loss at EACH terminal:  L^nl · F̄_ijc · swt  +  L^mg (f+ + f−)</text>
-  <text class="note" x="450" y="472" text-anchor="middle">A line-commutated station DRAWS reactive power; a voltage-source station SUPPLIES or ABSORBS it, independently at each terminal.</text>
-  <text class="note" x="450" y="490" text-anchor="middle">They enter the reactive balance with OPPOSITE signs, which is why one loss factor cannot stand in for either.</text>
-  <text class="note" x="450" y="508" text-anchor="middle" fill="#2e5d8a">f+ and f− are the two non-negative halves of the link flow · parameters blue, variables red, losses purple</text>
+  <text class="par" x="450" y="442" text-anchor="middle">station loss at each terminal:  L^nl · F̄_ijc · swt  +  L^mg (f+ + f−)</text>
+  <text class="note" x="450" y="472" text-anchor="middle">Line-commutated draws reactive power. Voltage-source supplies or absorbs it, independently at each terminal.</text>
+  <text class="note" x="450" y="490" text-anchor="middle">The two enter the reactive balance with opposite signs.</text>
+  <text class="note" x="450" y="508" text-anchor="middle" fill="#2e5d8a">f+ and f− are the non-negative halves of the link flow · parameters blue, variables red, losses purple</text>
 </svg>

@@ -57,8 +57,8 @@
   <text class="var" x="745" y="112" text-anchor="middle">f'_ijc , q'_ijc</text>
   <text class="var" x="640" y="140" text-anchor="middle">cu_ijc</text>
 
-  <text class="note" x="450" y="300" text-anchor="middle">The series impedance sees T_ijc times the sending voltage. Both ends are counted, so f_ijc + f'_ijc is the ohmic loss.</text>
-  <text class="note" x="450" y="320" text-anchor="middle">Sending and receiving flows are separate variables, which is why a loss factor is not needed.</text>
-  <text class="note" x="450" y="344" text-anchor="middle">V_i V_j sin(θ_i − θ_j) = X_ijc f_ijc − R_ijc q_ijc      (the relation that ties the angle to the flow)</text>
-  <text class="note" x="450" y="372" text-anchor="middle" fill="#2e5d8a">w is the squared voltage magnitude, cu the squared current magnitude · parameters in blue, variables in red</text>
+  <text class="note" x="450" y="300" text-anchor="middle">The series impedance sees T_ijc times the sending voltage.</text>
+  <text class="note" x="450" y="320" text-anchor="middle">Sending and receiving flows are separate variables. Their sum is the ohmic loss.</text>
+  <text class="note" x="450" y="344" text-anchor="middle">V_i V_j sin(θ_i − θ_j) = X_ijc f_ijc − R_ijc q_ijc</text>
+  <text class="note" x="450" y="372" text-anchor="middle" fill="#2e5d8a">w squared voltage magnitude · cu squared current magnitude · parameters blue, variables red</text>
 </svg>
