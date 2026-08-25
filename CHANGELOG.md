@@ -2,6 +2,10 @@
 
 ## [4.18.18RC] - 2026-08-23 Unreleased in PyPI
 
+- [CHANGED] the README described the network model as DC power flow and the ohmic losses as proportional to the flow.
+  Both are now conditional: an AC power flow is named as an alternative that is off by default, the losses follow the
+  exact relation under it, and the result topics list the voltage magnitudes, reactive flows, shunt injections and the
+  reactive-power marginal that come with it.
 - [ADDED] three single-line diagrams in the AC section of the mathematical formulation, drawn in the style of the
   existing hand-drawn figures: one AC branch with its tap, series impedance and charging susceptance; an HVDC link
   under both converter models with the reactive power and station losses at each terminal; and the capability disc of
