@@ -978,7 +978,7 @@ def test_vsc_converter_can_supply_reactive_power(tmp_path):
     from openTEPES.openTEPES import openTEPES_run
 
     dir_name, case = _case_with_built_dc(tmp_path, "9n_vsc", converter=2)
-    mTEPES = _run_or_skip(str(dir_name), case, "gurobi", 0, 0)
+    mTEPES = _run_or_skip(str(dir_name), case, "ipopt", 0, 0)
 
     assert hasattr(mTEPES, "vQConvFrw"), "the VSC model must give each terminal a reactive variable"
     assert not hasattr(mTEPES, "vDCFlowPos"), "the VSC model has no need of the |P| split"
@@ -1564,7 +1564,9 @@ def test_a_synchronous_condenser_is_modelled_and_supplies_reactive_power(tmp_pat
     reactive one is recognised, and its reactive output is bounded by what the data declares.
     """
     dir_name, case = _condenser_case(tmp_path, "9n_sqe", pChargeRate=0.0)      # zero charge rate: existing, not candidate
-    mTEPES = _run_or_skip(dir_name, case, "gurobi", 0, 0)
+    # ipopt, not gurobi: the case is the cone, which is convex, and it is the solver a runner has. Asking for gurobi
+    # skipped this everywhere, so the condenser path had no CI coverage at all.
+    mTEPES = _run_or_skip(dir_name, case, "ipopt", 0, 0)
 
     assert "SynCond1" in set(mTEPES.sq), "a zero-MW unit with reactive capability should be a synchronous condenser"
     assert not mTEPES.sqc, "with no investment cost it is an existing condenser, not a candidate"
@@ -1582,7 +1584,7 @@ def test_a_candidate_condenser_reads_investmentup_zero_as_no_limit(tmp_path):
     condenser whose upper bound is 0 in the data has to come out buildable.
     """
     dir_name, case = _condenser_case(tmp_path, "9n_sqc", pInvestmentUp=0.0)
-    mTEPES = _run_or_skip(dir_name, case, "gurobi", 0, 0)
+    mTEPES = _run_or_skip(dir_name, case, "ipopt", 0, 0)
 
     assert "SynCond1" in set(mTEPES.sqc), "a positive investment cost should make it a candidate"
     # not mutable, so no call parentheses
@@ -1624,7 +1626,7 @@ def test_the_angle_guard_looks_at_every_node_not_just_the_first(tmp_path):
     dir_name, case = _tiny_ac_case(tmp_path, "9n_angleguard", hours=2, model_type=0, restore=0)
     _edit_csv(dir_name, case, "Option", lambda df: (df.__setitem__("IndACPowerFlow", 2),
                                                     df.__setitem__("IndACCycle", 0)), index_col=None)
-    mTEPES = _run_or_skip(dir_name, case, "gurobi", 0, 0)
+    mTEPES = _run_or_skip(dir_name, case, "ipopt", 0, 0)
 
     p, sc, n = next(iter(mTEPES.psnnd))[:3]
     sNodes = [nd for nd in mTEPES.nd if (p, sc, n, nd) in mTEPES.psnnd]

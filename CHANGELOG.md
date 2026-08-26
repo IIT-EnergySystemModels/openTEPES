@@ -2,6 +2,11 @@
 
 ## [4.18.18RC] - 2026-08-23 Unreleased in PyPI
 
+- [CHANGED] four AC tests asked for gurobi and so skipped on every runner, because the bundled licence is size
+  limited. They use ipopt now, which a runner has: the condenser pair, the voltage-source converter, and the angle
+  guard. Five converter tests still ask for gurobi because they need the flow-direction binary, which an NLP solver
+  relaxes; those have no runner coverage, and closing that needs either a mixed-integer variant of each on the
+  piecewise model type with HiGHS, or a solver licence in CI.
 - [ADDED] tests for the synchronous condenser, which no shipped case has, so nothing exercised it. One builds an
   existing condenser and checks it supplies reactive power inside its declared band; the other builds a candidate whose
   `InvestmentUp` is 0 and checks it comes out buildable, which is the reading every other device family uses. A unit
