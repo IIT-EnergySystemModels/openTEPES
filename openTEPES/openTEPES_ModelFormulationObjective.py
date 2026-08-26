@@ -28,6 +28,8 @@ def TotalObjectiveFunction(OptModel, mTEPES, pIndLogConsole):
     # RTS-GMLC window it came to 14.43 MEUR of a 60.00 MEUR reported total, a quarter of the figure, and it reached the reported prices through the
     # eBalanceElec duals. Keeping it out of vTotalSCost keeps it out of every writer and every cost summary without changing what the solver does.
     def eTotalSCost(OptModel):
+        if mTEPES.pIndACPowerFlow() != 1:                      # no vCurr to price, and no vTotalNPenalty declared
+            return OptModel.vTotalSCost
         return OptModel.vTotalSCost + sum(pScenFactor[p,sc] * OptModel.vTotalNPenalty[p,sc,n] for p,sc,n in mTEPES.psn)
     OptModel.eTotalSCost = Objective(rule=eTotalSCost, sense=minimize, doc='total system cost plus the AC current penalty [MEUR]')
 
@@ -137,7 +139,7 @@ def GenerationOperationModelFormulationObjFunct(OptModel, mTEPES, pIndLogConsole
     # cost. Note the units: pEpsilonLosses multiplies a loss in GW, this multiplies a dimensionless per-unit current, so the two are not comparable and
     # this one's size relative to the loss it stands in for depends on pSBase.
     def eTotalNPenalty(OptModel,n):
-        if mTEPES.pIndACPowerFlow() != 1:                      # vCurr exists only under branch flow
+        if mTEPES.pIndACPowerFlow() != 1:                      # vCurr exists only under branch flow, and so does vTotalNPenalty
             return Constraint.Skip
         return OptModel.vTotalNPenalty[p,sc,n] == pEpsilonCurrent * mTEPES.pLoadLevelDuration[p,sc,n]() * sum(OptModel.vCurr[p,sc,n,ni,nf,cc] for ni,nf,cc in mTEPES.laa if (p,ni,nf,cc) in mTEPES.pla)
     setattr(OptModel, f'eTotalNPenalty_{p}_{sc}_{st}', Constraint(mTEPES.n, rule=eTotalNPenalty, doc='AC current penalty, objective only [MEUR]'))

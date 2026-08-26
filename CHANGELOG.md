@@ -2,6 +2,14 @@
 
 ## [4.18.18RC] - 2026-08-23 Unreleased in PyPI
 
+- [FIXED] a case with no AC power flow carried the AC current penalty variable anyway. `vTotalNPenalty` was declared
+  for every case and added to the objective unconditionally, while the constraint that defines it is skipped when AC is
+  off, so a DC model held one unconstrained column per load level priced in the objective. They optimise to zero, so
+  the reported cost was always right, but they are dead columns and they change what the solver presolves. The variable
+  and the objective term now exist only under `IndACPowerFlow = 1`.
+- [FIXED] the cost summary gained two AC rows, `Investment Cost Reactive` and `AC Current Penalty (not in total)`, on
+  every case including those with no AC power flow, where both were zero. A file that every case writes changed shape.
+  The rows are written only when AC is on.
 - [CHANGED] the README described the network model as DC power flow and the ohmic losses as proportional to the flow.
   Both are now conditional: an AC power flow is named as an alternative that is off by default, the losses follow the
   exact relation under it, and the result topics list the voltage magnitudes, reactive flows, shunt injections and the

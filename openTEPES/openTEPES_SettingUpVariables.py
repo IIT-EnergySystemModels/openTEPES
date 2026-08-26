@@ -53,7 +53,11 @@ def SettingUpVariables(OptModel, mTEPES):
         OptModel.vTotalNCost               = Var(mTEPES.psn,   within=NonNegativeReals, doc='total network loss penalty operation cost      [MEUR]')
         # The AC current penalty is carried apart from the network cost so that it can be priced into the OBJECTIVE, which is what makes it work,
         # without entering vTotalSCost, which is what everything reports. It is a numerical device, not money.
-        OptModel.vTotalNPenalty            = Var(mTEPES.psn,   within=NonNegativeReals, doc='AC current penalty, steers the solve, not a cost [MEUR]')
+        # Only under branch flow, which is the only formulation with a vCurr to price. Declared for every case it added one unconstrained column per
+        # load level to a DC model, priced in the objective. Those columns optimise to zero, so the objective was right, but they changed presolve and
+        # branching and a degenerate case then settled on a different dispatch at the same cost.
+        if mTEPES.pIndACPowerFlow() == 1:
+            OptModel.vTotalNPenalty        = Var(mTEPES.psn,   within=NonNegativeReals, doc='AC current penalty, steers the solve, not a cost [MEUR]')
         OptModel.vTotalEmissionArea        = Var(mTEPES.psnar, within=NonNegativeReals, doc='total   area emission                         [MtCO2]')
         OptModel.vTotalECostArea           = Var(mTEPES.psnar, within=NonNegativeReals, doc='total   area emission                cost      [MEUR]')
         OptModel.vTotalRESEnergyArea       = Var(mTEPES.psnar, within=NonNegativeReals, doc='        RES energy                              [GWh]')

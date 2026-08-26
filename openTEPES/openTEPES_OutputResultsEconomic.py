@@ -306,7 +306,9 @@ def CostSummaryResults(DirName, CaseName, OptModel, mTEPES):
         HeatRelCost = pd.Series(data=[sum(pScenFactor[p,sc] * OptModel.vTotalRHeatCost[p,sc,n]() for sc,n in pSNofP[p]) for p in mTEPES.p], index=mTEPES.p).to_frame(name='Reliability Cost Heat'     ).stack()
     else:
         HeatRelCost = pd.Series(data=[0.0                                                                               for p in mTEPES.p], index=mTEPES.p).to_frame(name='Reliability Cost Heat'     ).stack()
-    CostSummary    = pd.concat([GenInvCost, GenRetCost, NetInvCost, ReactInvCost, RsrInvCost, H2InvCost, HeatInvCost, GenCost, ConCost, EmiCost, NetCost, CurrPen, ElecRelCost, H2RelCost, HeatRelCost]).reset_index().rename(columns={'level_0': 'Period', 'level_1': 'Cost', 0: 'MEUR'})
+    # The two AC rows are added only on an AC case. Emitting them as zeros everywhere changed the shape of a file every existing case writes.
+    pRows          = [GenInvCost, GenRetCost, NetInvCost] + ([ReactInvCost] if mTEPES.pIndACPowerFlow() else []) + [RsrInvCost, H2InvCost, HeatInvCost, GenCost, ConCost, EmiCost, NetCost] + ([CurrPen] if mTEPES.pIndACPowerFlow() == 1 else []) + [ElecRelCost, H2RelCost, HeatRelCost]
+    CostSummary    = pd.concat(pRows).reset_index().rename(columns={'level_0': 'Period', 'level_1': 'Cost', 0: 'MEUR'})
 
     CostSummary['MEUR/year'] = CostSummary['MEUR']
     for p in mTEPES.p:
