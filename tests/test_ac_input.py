@@ -1426,6 +1426,101 @@ def test_the_two_converter_models_push_the_cost_in_opposite_directions(tmp_path)
     assert pCost[2] < pCost[0], f"a VSC station supplies reactive power, so it cannot cost more: {pCost[2]} vs {pCost[0]}"
 
 
+class _Stub(list):
+    """Enough of a Pyomo Set for TightenACBounds: iterable, with first() and last()."""
+    def first(self): return self[0]
+    def last(self):  return self[-1]
+
+
+def _triangle(pTap=1.0, pCandidate=(), pSmax=25.0):
+    """Three nodes in a ring, Node_1 the reference. Returns (mTEPES, par) for TightenACBounds."""
+    import types
+    sBr = [("Node_1", "Node_2", "ac1"), ("Node_2", "Node_3", "ac1"), ("Node_1", "Node_3", "ac1")]
+    mTEPES = types.SimpleNamespace(
+        laa=_Stub(sBr), nd=_Stub(["Node_1", "Node_2", "Node_3"]), rf=_Stub(["Node_1"]),
+        p=_Stub([2030]), lc=_Stub(list(pCandidate)), ls=_Stub([]))
+    par = {
+        "pVMin": 0.95, "pVMax": 1.05, "pVNom": 1.00, "pSBase": 100.0,
+        "pLineR":         {la: 0.010 for la in sBr},
+        "pLineX":         {la: 0.100 for la in sBr},
+        "pLineSmax":      {la: pSmax for la in sBr},
+        # the tap sits on the first branch only, so its effect is visible against the other two
+        "pLineTapFactor": {la: (pTap if la == sBr[0] else 1.0) for la in sBr},
+        "pAngMin":        {la: -math.pi / 2 for la in sBr},
+        "pAngMax":        {la:  math.pi / 2 for la in sBr},
+        "pElecNetPeriodIni": {la: 2030 for la in sBr},
+        "pElecNetPeriodFin": {la: 2030 for la in sBr},
+    }
+    return mTEPES, par
+
+
+def test_the_angle_tightening_matches_the_closed_form_on_a_three_node_triangle():
+    """The angle bound is asin(Smax z / (Vmin tau Vmin)) with Smax already widened by Vmax/Vmin, because the limit is
+    on the current. The review that asked for this test noted the arithmetic had been read but never reproduced.
+
+    The tap belongs to the SENDING voltage only, so a tapped branch and an untapped one with the same impedance and
+    rating must come out with different bounds, and only in the tapped branch's own row.
+    """
+    from openTEPES.openTEPES_InputData import TightenACBounds
+
+    pTap = 1.03
+    mTEPES, par = _triangle(pTap=pTap)
+    TightenACBounds(mTEPES, par)
+
+    pVmin, pVmax = par["pVMin"], par["pVMax"]
+    pZ    = math.hypot(par["pLineR"][("Node_1","Node_2","ac1")], par["pLineX"][("Node_1","Node_2","ac1")])
+    pSmax = par["pLineSmax"][("Node_1","Node_2","ac1")] / par["pSBase"] * pVmax / pVmin
+
+    for la, pTapLa in ((("Node_1","Node_2","ac1"), pTap), (("Node_2","Node_3","ac1"), 1.0)):
+        pWant = math.asin(min(1.0, pSmax * pZ / (pVmin * pTapLa * pVmin)))
+        assert abs(par["pMaxAngleDiff"][la] - pWant) < 1e-12, f"{la} upper bound {par['pMaxAngleDiff'][la]} against {pWant}"
+        assert abs(par["pMinAngleDiff"][la] + pWant) < 1e-12, f"{la} lower bound is not the negative of the upper"
+
+    assert par["pMaxAngleDiff"][("Node_1","Node_2","ac1")] < par["pMaxAngleDiff"][("Node_2","Node_3","ac1")], (
+        "a tap above 1 raises the sending voltage the impedance sees, so its angle bound must be the tighter one")
+
+
+def test_the_angle_tightening_never_widens_the_band_the_case_declared():
+    """It may only use inequalities the model already implies. A declared band narrower than the implied one has to
+    survive untouched, and a one-sided band must keep its own two sides rather than be made symmetric.
+    """
+    from openTEPES.openTEPES_InputData import TightenACBounds
+
+    mTEPES, par = _triangle()
+    la = ("Node_2", "Node_3", "ac1")
+    # a band far narrower than anything the thermal limit implies: it has to survive untouched
+    par["pAngMin"][la], par["pAngMax"][la] = math.radians(-0.4), math.radians(1.1)
+    TightenACBounds(mTEPES, par)
+
+    assert par["pMinAngleDiff"][la] == pytest.approx(math.radians(-0.4)), "the declared lower side was not kept"
+    assert par["pMaxAngleDiff"][la] == pytest.approx(math.radians( 1.1)), "the declared upper side was not kept"
+    assert par["pMaxAngleDiff"][la] != -par["pMinAngleDiff"][la], "a one-sided band was made symmetric"
+
+
+def test_a_candidate_branch_does_not_propagate_a_voltage_bound():
+    """The drop equation of a candidate branch is released through a big-M when it is out of service, so it is not
+    something the model always implies. Propagating across it can cut off the do-not-build plan.
+    """
+    from openTEPES.openTEPES_InputData import TightenACBounds
+
+    mTEPES, par = _triangle()
+    TightenACBounds(mTEPES, par)
+    pFirm = {nd: (par["pVMinBus"][nd], par["pVMaxBus"][nd]) for nd in mTEPES.nd}
+
+    # the same ring with every branch a candidate: nothing may propagate, so the buses keep the raw band
+    sBr = list(_triangle()[0].laa)
+    mTEPES2, par2 = _triangle(pCandidate=sBr)
+    TightenACBounds(mTEPES2, par2)
+
+    for nd in mTEPES2.nd:
+        if nd == mTEPES2.rf.first():
+            continue
+        assert par2["pVMinBus"][nd] == pytest.approx(par2["pVMin"]), f"{nd} was tightened across a candidate branch"
+        assert par2["pVMaxBus"][nd] == pytest.approx(par2["pVMax"]), f"{nd} was tightened across a candidate branch"
+    assert pFirm != {nd: (par2["pVMinBus"][nd], par2["pVMaxBus"][nd]) for nd in mTEPES2.nd}, (
+        "the firm ring should tighten something, or this test proves nothing")
+
+
 def test_the_stage_solve_path_builds_every_ac_block_the_registry_does():
     """The Benders path writes its own call list instead of walking FORMULATION_REGISTRY, so the two drift apart
     silently. They did: the bus injection block was missing, and NetworkACCurrent returns without doing anything
