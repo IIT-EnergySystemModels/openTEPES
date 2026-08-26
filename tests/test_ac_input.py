@@ -1521,6 +1521,77 @@ def test_a_candidate_branch_does_not_propagate_a_voltage_bound():
         "the firm ring should tighten something, or this test proves nothing")
 
 
+def _condenser_case(tmp_path, name, pInvestmentUp=0.0, pChargeRate=0.08):
+    """9n_AC with one synchronous condenser at Node_5. No shipped case has one, so any test of that path builds it.
+
+    A unit has to be declared in oT_Dict_Generation and its technology in oT_Dict_Technology, not only added to the
+    data table, or it never enters mTEPES.gg. Candidacy is FixedInvestmentCost times FixedChargeRate above zero.
+    """
+    import pandas as pd
+    dir_name, case = _clone(tmp_path, "9n_AC", name)
+    pDir = os.path.join(dir_name, case)
+
+    for pFile, pCol, pVal in ((f"oT_Dict_Generation_{case}.csv", "Generator",  "SynCond1"),
+                              (f"oT_Dict_Technology_{case}.csv", "Technology", "SynchronousCondenser")):
+        pPath = os.path.join(pDir, pFile)
+        df = pd.read_csv(pPath)
+        if pVal not in df[pCol].values:
+            pd.concat([df, pd.DataFrame({pCol: [pVal]})], ignore_index=True).to_csv(pPath, index=False)
+
+    pPath = os.path.join(pDir, f"oT_Data_Generation_{case}.csv")
+    df = pd.read_csv(pPath)
+    row = df.iloc[0].copy()                      # keep the commissioning window and the structural columns
+    row["Generator"], row["Node"], row["Technology"] = "SynCond1", "Node_5", "SynchronousCondenser"
+    for c in ("MaximumPower", "MinimumPower", "MaximumPowerHeat", "MaximumCharge", "MaximumStorage",
+              "MinimumStorage", "LinearTerm", "ConstantTerm", "StartUpCost", "ShutDownCost",
+              "RampUp", "RampDown", "UpTime", "DownTime"):
+        if c in df.columns:
+            row[c] = 0.0
+    row["MaximumReactivePower"], row["MinimumReactivePower"] = 60.0, -60.0
+    row["FixedInvestmentCost"], row["FixedChargeRate"] = 0.5, pChargeRate
+    row["InvestmentLo"], row["InvestmentUp"] = 0.0, pInvestmentUp
+    row["BinaryInvestment"] = 0
+    pd.concat([df, row.to_frame().T], ignore_index=True).to_csv(pPath, index=False)
+
+    _edit_csv(dir_name, case, "Duration",  lambda d: d.__setitem__("Duration", [1] * 4 + [0] * (len(d) - 4)), index_col=None)
+    _edit_csv(dir_name, case, "RESEnergy", lambda d: [d.__setitem__(c, 0.0) for c in d.columns[2:]], index_col=None)
+    return dir_name, case
+
+
+@pytest.mark.solve
+def test_a_synchronous_condenser_is_modelled_and_supplies_reactive_power(tmp_path):
+    """No shipped case has a condenser, so nothing exercised this path. A unit with no active capability and a
+    reactive one is recognised, and its reactive output is bounded by what the data declares.
+    """
+    dir_name, case = _condenser_case(tmp_path, "9n_sqe", pChargeRate=0.0)      # zero charge rate: existing, not candidate
+    mTEPES = _run_or_skip(dir_name, case, "gurobi", 0, 0)
+
+    assert "SynCond1" in set(mTEPES.sq), "a zero-MW unit with reactive capability should be a synchronous condenser"
+    assert not mTEPES.sqc, "with no investment cost it is an existing condenser, not a candidate"
+
+    pQ = [mTEPES.vReactiveTotalOutput[k]() * 1e3 for k in mTEPES.psngq if k[-1] == "SynCond1"]
+    assert pQ, "the condenser has no reactive output variable"
+    assert min(pQ) >= -60.0 - 1e-6 and max(pQ) <= 60.0 + 1e-6, f"reactive output {min(pQ)}..{max(pQ)} outside the declared band"
+    assert min(pQ) < -1e-3, "the condenser absorbed nothing, so this test would pass for the wrong reason"
+
+
+@pytest.mark.solve
+def test_a_candidate_condenser_reads_investmentup_zero_as_no_limit(tmp_path):
+    """Generators, network, H2 pipes, heat pipes and bus shunts all read InvestmentUp = 0 as "no limit". The condenser
+    read it as "not buildable", so the same column meant opposite things for two AC devices in the same case. A
+    condenser whose upper bound is 0 in the data has to come out buildable.
+    """
+    dir_name, case = _condenser_case(tmp_path, "9n_sqc", pInvestmentUp=0.0)
+    mTEPES = _run_or_skip(dir_name, case, "gurobi", 0, 0)
+
+    assert "SynCond1" in set(mTEPES.sqc), "a positive investment cost should make it a candidate"
+    # not mutable, so no call parentheses
+    assert mTEPES.pSynchUpInvest["SynCond1"] == pytest.approx(1.0), (
+        "InvestmentUp = 0 should mean no limit, as it does for every other device family")
+    assert mTEPES.vSynchInvest[mTEPES.p.first(), "SynCond1"].ub == pytest.approx(1.0), (
+        "the investment variable is capped at 0, so the condenser cannot be built at all")
+
+
 def test_the_stage_solve_path_builds_every_ac_block_the_registry_does():
     """The Benders path writes its own call list instead of walking FORMULATION_REGISTRY, so the two drift apart
     silently. They did: the bus injection block was missing, and NetworkACCurrent returns without doing anything

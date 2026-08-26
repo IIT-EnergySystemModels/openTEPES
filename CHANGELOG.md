@@ -2,6 +2,11 @@
 
 ## [4.18.18RC] - 2026-08-23 Unreleased in PyPI
 
+- [ADDED] tests for the synchronous condenser, which no shipped case has, so nothing exercised it. One builds an
+  existing condenser and checks it supplies reactive power inside its declared band; the other builds a candidate whose
+  `InvestmentUp` is 0 and checks it comes out buildable, which is the reading every other device family uses. A unit
+  has to be declared in `oT_Dict_Generation` and its technology in `oT_Dict_Technology`, not only added to the data
+  table, or it never reaches the model at all.
 - [FIXED] a case with no AC power flow carried the AC current penalty variable anyway. `vTotalNPenalty` was declared
   for every case and added to the objective unconditionally, while the constraint that defines it is skipped when AC is
   off, so a DC model held one unconstrained column per load level priced in the objective. They optimise to zero, so
