@@ -843,3 +843,33 @@ def test_runner_output_format_and_aggregate(case_7d_system, tmp_path):
     finally:
         con.close()
     assert labels == ["c1", "c2"]
+
+
+@pytest.mark.parametrize("case_7d_system", ["9n"], indirect=["case_7d_system"])
+def test_apply_investment_bounds_is_reusable_after_build(case_7d_system):
+    """Mutating an investment-bound Param and re-applying it must move the variable bounds.
+
+    Before ``apply_investment_bounds`` existed these Params were read only while the model was
+    being built, so excluding a candidate from a portfolio sweep meant rebuilding the whole model.
+    """
+    from openTEPES.openTEPES_SettingUpVariables import apply_investment_bounds
+
+    mTEPES = openTEPES_run(**case_7d_system)
+
+    lc = list(mTEPES.plc)
+    if not lc:
+        pytest.skip("case has no candidate lines")
+    key = lc[0]
+    _, ni, nf, cc = key
+
+    assert mTEPES.vNetworkInvest[key].ub > 0.0, "candidate should start available"
+
+    # exclude the candidate the way a portfolio sweep would, then re-apply the bounds
+    mTEPES.pNetUpInvest[ni, nf, cc] = 0
+    apply_investment_bounds(mTEPES, mTEPES)
+    assert mTEPES.vNetworkInvest[key].ub == 0.0, "bound not re-applied after mutating pNetUpInvest"
+
+    # and it can be restored
+    mTEPES.pNetUpInvest[ni, nf, cc] = 1
+    apply_investment_bounds(mTEPES, mTEPES)
+    assert mTEPES.vNetworkInvest[key].ub == 1.0
