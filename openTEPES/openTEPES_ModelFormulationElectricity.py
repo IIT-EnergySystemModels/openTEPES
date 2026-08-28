@@ -7,6 +7,7 @@ a caller can pick which to build (e.g. with or without unit commitment).
 """
 from __future__ import annotations
 
+import os
 import time
 import math
 import networkx as nx
@@ -310,6 +311,28 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
         else:
             return Constraint.Skip
     setattr(OptModel, f'eESSInventory_{p}_{sc}_{st}', Constraint(mTEPES.nesc, rule=eESSInventory, doc='ESS inventory balance [GWh]'))
+
+    # Daily energy neutrality for demand-side management, as written in the manuscript
+    # (eq. DSM:neutral): over each block of OTEPES_DSM_NEUTRAL hours the net of discharge and
+    # charge is zero, so shifted demand is recovered within the block rather than across the week.
+    # openTEPES otherwise enforces only the rolling inventory balance and its bounds, which lets a
+    # DSM unit end a day away from where it started. Off unless the variable is set; the value is
+    # the block length in hours (24 reproduces the manuscript).
+    if os.environ.get('OTEPES_DSM_NEUTRAL'):
+        _win = int(os.environ['OTEPES_DSM_NEUTRAL'])
+        _dsm = [es for es in mTEPES.es if str(es).endswith('_DSM')]
+
+        def eDSMNeutrality(OptModel, n, es):
+            i = mTEPES.n.ord(n)
+            if i % _win != 0 or (p, es) not in mTEPES.pes or (p, sc, st, n) not in mTEPES.s2n:
+                return Constraint.Skip
+            return sum(mTEPES.pDuration[p, sc, n2]() * (OptModel.vTotalOutput[p, sc, n2, es]
+                       - OptModel.vESSTotalCharge[p, sc, n2, es]) for n2 in n2list[i - _win:i]) == 0.0
+
+        setattr(OptModel, f'eDSMNeutrality_{p}_{sc}_{st}',
+                Constraint(mTEPES.n, _dsm, rule=eDSMNeutrality, doc='DSM daily energy neutrality [GWh]'))
+        if pIndLogConsole:
+            print('eDSMNeutrality            ... ', len(getattr(OptModel, f'eDSMNeutrality_{p}_{sc}_{st}')), ' rows')
 
     if pIndLogConsole:
         print('eESSInventory             ... ', len(getattr(OptModel, f'eESSInventory_{p}_{sc}_{st}')), ' rows')
