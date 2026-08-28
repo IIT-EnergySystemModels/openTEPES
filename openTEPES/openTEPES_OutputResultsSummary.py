@@ -57,7 +57,10 @@ def OperationSummaryResults(DirName, CaseName, OptModel, mTEPES):
     TotalGeneration       = sum(OptModel.vTotalOutput[p,sc,n,g]()*mTEPES.pLoadLevelDuration[p,sc,n]() for p,sc,n,g in mTEPES.psng )
     FossilFuelGeneration  = sum(OptModel.vTotalOutput[p,sc,n,g]()*mTEPES.pLoadLevelDuration[p,sc,n]() for p,sc,n,g in mTEPES.psntr)
     # Ratio Total Investments [%]
-    TotalInvestmentCost   = (sum(mTEPES.pDiscountedWeight[p] *                                       OptModel.vTotalFElecCost  [p   ]()     for p          in mTEPES.p if len(mTEPES.gc) + len(mTEPES.gd) + len(mTEPES.lc)) +
+    # vTotalFElecCost now also carries the AC reactive-compensation investments, so the gate has to admit a case whose only candidate is a shunt or a
+    # synchronous condenser. Without this the reported total investment cost silently omits them.
+    pElecInvest = len(mTEPES.gc) + len(mTEPES.gd) + len(mTEPES.lc) > 0 or (mTEPES.pIndACPowerFlow() and len(mTEPES.shc) + len(mTEPES.sqc) > 0)
+    TotalInvestmentCost   = (sum(mTEPES.pDiscountedWeight[p] *                                       OptModel.vTotalFElecCost  [p   ]()     for p          in mTEPES.p if pElecInvest) +
                              sum(mTEPES.pDiscountedWeight[p] *                                       OptModel.vTotalFHydroCost [p   ]()     for p          in mTEPES.p if mTEPES.rn) +
                              sum(mTEPES.pDiscountedWeight[p] *                                       OptModel.vTotalFH2Cost    [p   ]()     for p          in mTEPES.p if mTEPES.pc) +
                              sum(mTEPES.pDiscountedWeight[p] *                                       OptModel.vTotalFHeatCost  [p   ]()     for p          in mTEPES.p if mTEPES.hc))
@@ -76,6 +79,11 @@ def OperationSummaryResults(DirName, CaseName, OptModel, mTEPES):
     else:
         HeatInvestmentCost  = 0.0
     NetInvestmentCost      = sum(mTEPES.pDiscountedWeight[p] * mTEPES.pNetFixedCost [ni,nf,cc]     * OptModel.vNetworkInvest [p,ni,nf,cc]() for p,ni,nf,cc in mTEPES.plc)
+    if mTEPES.pIndACPowerFlow() and (mTEPES.shc or mTEPES.sqc):
+        ReactiveInvestmentCost = (sum(mTEPES.pDiscountedWeight[p] * mTEPES.pShuntFixedCost[sh] * OptModel.vShuntInvest[p,sh]() for p,sh in mTEPES.pshc) +
+                                  sum(mTEPES.pDiscountedWeight[p] * mTEPES.pSynchFixedCost[sq] * OptModel.vSynchInvest[p,sq]() for p,sq in mTEPES.psqc))
+    else:
+        ReactiveInvestmentCost = 0.0
     # Ratio Generation Investment cost/ Generation Installed Capacity [MEUR-MW]
     GenInvCostCapacity     = sum(mTEPES.pDiscountedWeight[p] * mTEPES.pGenInvestCost[gc] * OptModel.vGenerationInvest[p,gc]()/mTEPES.pRatedMaxPowerElec[gc] for p,gc in mTEPES.pgc if mTEPES.pRatedMaxPowerElec[gc])
     # Ratio Additional Transmission Capacity-Length [MWkm]
@@ -107,6 +115,9 @@ def OperationSummaryResults(DirName, CaseName, OptModel, mTEPES):
         K03 = pd.Series(data={'Ratio Generation Retirement Cost/Total Investment Cost [%]'              : GenRetirementCost    / TotalInvestmentCost*1e2}).to_frame(name='Value')
     else:
         K03 = pd.Series(data={'Ratio Generation Retirement Cost/Total Investment Cost [%]'              : 0.0                                           }).to_frame(name='Value')
+    K05b = pd.DataFrame()
+    if ReactiveInvestmentCost:
+        K05b = pd.Series(data={'Ratio Reactive Compensation Investment Cost/Total Investment Cost [%]'    : ReactiveInvestmentCost / TotalInvestmentCost*1e2}).to_frame(name='Value')
     if NetInvestmentCost:
         K05 = pd.Series(data={'Ratio Network Investment Cost/Total Investment Cost [%]'                 : NetInvestmentCost    / TotalInvestmentCost*1e2}).to_frame(name='Value')
     else:
@@ -140,7 +151,7 @@ def OperationSummaryResults(DirName, CaseName, OptModel, mTEPES):
     else:
         K09 = pd.Series(data={'Rate of return for VRE technologies [%]'                                 : 0.0                                           }).to_frame(name='Value')
 
-    OutputResults = pd.concat([K01, K02, K03, K05, K04, K10, K11, K06, K07, K08, K09], axis=0)
+    OutputResults = pd.concat([K01, K02, K03, K05, K05b, K04, K10, K11, K06, K07, K08, K09], axis=0)
     OutputResults.oT.write(f'{_path}/oT_Result_SummaryKPIs_{CaseName}.csv', sep=',', index=True)
 
     # LCOE per technology
@@ -226,14 +237,34 @@ def OperationSummaryResults(DirName, CaseName, OptModel, mTEPES):
     OutputResults3     = pd.Series(data=[     OptModel.vENS       [p,sc,n,nd      ]()                                                      *mTEPES.pLoadLevelDuration[p,sc,n]() for p,sc,n,nd in sPSNND], index=pd.Index(sPSNND)).to_frame(name='ENS [GWh]'          )
     OutputResults4     = pd.Series(data=[-  mTEPES.pDemandElec    [p,sc,n,nd      ]()                                                        *mTEPES.pLoadLevelDuration[p,sc,n]() for p,sc,n,nd in sPSNND], index=pd.Index(sPSNND)).to_frame(name='PowerDemand [GWh]'  )
     OutputResults5     = pd.Series(data=[-sum(OptModel.vFlowElec  [p,sc,n,nd,nf,cc]() for nf,cc in lout [nd] if (p,nd,nf,cc) in mTEPES.pla)*mTEPES.pLoadLevelDuration[p,sc,n]() for p,sc,n,nd in sPSNND], index=pd.Index(sPSNND)).to_frame(name='PowerFlowOut [GWh]' )
-    OutputResults6     = pd.Series(data=[ sum(OptModel.vFlowElec  [p,sc,n,ni,nd,cc]() for ni,cc in lin  [nd] if (p,ni,nd,cc) in mTEPES.pla)*mTEPES.pLoadLevelDuration[p,sc,n]() for p,sc,n,nd in sPSNND], index=pd.Index(sPSNND)).to_frame(name='PowerFlowIn [GWh]'  )
+    # Under DC the flow variable is lossless, so the power leaving ni and the power arriving at nd are the same number and the sending-end value is the
+    # only one available. Under AC they differ by the branch loss, and the arriving power is the negative of what leaves nd into the branch, which the
+    # model carries exactly as vFlowElecBck. Using the sending-end value there would overstate every node's inflow by its share of the losses.
+    if mTEPES.pIndACPowerFlow():
+        # AC branches use the receiving end; HVDC links have no vFlowElecBck and enter the AC balance with the sending-end flow exactly as they
+        # do under DC, so they need their own term or a node fed by HVDC reports no inflow at all.
+        OutputResults6 = pd.Series(data=[(-sum(OptModel.vFlowElecBck[p,sc,n,ni,nd,cc]() for ni,cc in lin[nd] if (p,ni,nd,cc) in mTEPES.pla and (ni,nd,cc) in mTEPES.laa)
+                                          +sum(OptModel.vFlowElec   [p,sc,n,ni,nd,cc]() for ni,cc in lin[nd] if (p,ni,nd,cc) in mTEPES.pla and (ni,nd,cc) in mTEPES.lad))*mTEPES.pLoadLevelDuration[p,sc,n]() for p,sc,n,nd in sPSNND], index=pd.Index(sPSNND)).to_frame(name='PowerFlowIn [GWh]'  )
+    else:
+        OutputResults6 = pd.Series(data=[ sum(OptModel.vFlowElec  [p,sc,n,ni,nd,cc]() for ni,cc in lin  [nd] if (p,ni,nd,cc) in mTEPES.pla)*mTEPES.pLoadLevelDuration[p,sc,n]() for p,sc,n,nd in sPSNND], index=pd.Index(sPSNND)).to_frame(name='PowerFlowIn [GWh]'  )
     if mTEPES.ll:
-        OutputResults7 = pd.Series(data=[-sum(OptModel.vLineLosses[p,sc,n,nd,nf,cc]() for nf,cc in loutl[nd] if (p,nd,nf,cc) in mTEPES.pll)*mTEPES.pLoadLevelDuration[p,sc,n]() for p,sc,n,nd in sPSNND], index=pd.Index(sPSNND)).to_frame(name='LineLossesOut [GWh]')
-        OutputResults8 = pd.Series(data=[-sum(OptModel.vLineLosses[p,sc,n,ni,nd,cc]() for ni,cc in linl [nd] if (p,ni,nd,cc) in mTEPES.pll)*mTEPES.pLoadLevelDuration[p,sc,n]() for p,sc,n,nd in sPSNND], index=pd.Index(sPSNND)).to_frame(name='LineLossesIn [GWh]' )
+        # under AC the loss is inside the flows already, so only DC branches contribute here
+        _lossOK = (lambda la: la in mTEPES.lad) if mTEPES.pIndACPowerFlow() else (lambda la: True)
+        OutputResults7 = pd.Series(data=[-sum(OptModel.vLineLosses[p,sc,n,nd,nf,cc]() for nf,cc in loutl[nd] if (p,nd,nf,cc) in mTEPES.pll and _lossOK((nd,nf,cc)))*mTEPES.pLoadLevelDuration[p,sc,n]() for p,sc,n,nd in sPSNND], index=pd.Index(sPSNND)).to_frame(name='LineLossesOut [GWh]')
+        OutputResults8 = pd.Series(data=[-sum(OptModel.vLineLosses[p,sc,n,ni,nd,cc]() for ni,cc in linl [nd] if (p,ni,nd,cc) in mTEPES.pll and _lossOK((ni,nd,cc)))*mTEPES.pLoadLevelDuration[p,sc,n]() for p,sc,n,nd in sPSNND], index=pd.Index(sPSNND)).to_frame(name='LineLossesIn [GWh]' )
 
         OutputResults  = pd.concat([OutputResults1, OutputResults2, OutputResults3, OutputResults4, OutputResults5, OutputResults6, OutputResults7, OutputResults8], axis=1)
     else:
         OutputResults  = pd.concat([OutputResults1, OutputResults2, OutputResults3, OutputResults4, OutputResults5, OutputResults6                                ], axis=1)
+
+    # eBalanceElecAC carries the active draw of a conducting shunt, so this frame needs it too or its rows sum to that draw instead of to zero. The
+    # variable exists only when some device has a non-zero Gshb.
+    if mTEPES.pIndACPowerFlow() and hasattr(OptModel, 'vPShunt'):
+        pShuntAt = defaultdict(list)
+        for nd, sh in mTEPES.n2sh:
+            pShuntAt[nd].append(sh)
+        OutputResults9 = pd.Series(data=[sum(OptModel.vPShunt[p,sc,n,sh]() for sh in pShuntAt[nd] if (p,sc,n,sh) in mTEPES.psnsh)*mTEPES.pLoadLevelDuration[p,sc,n]() for p,sc,n,nd in sPSNND], index=pd.Index(sPSNND)).to_frame(name='ShuntDraw [GWh]')
+        OutputResults  = pd.concat([OutputResults, OutputResults9], axis=1)
 
     # OutputResults.rename_axis(['Period', 'Scenario', 'LoadLevel', 'Node'], axis=0).to_csv    (f'{_path}/oT_Result_SummaryNetwork_{CaseName}.csv',     sep=',')
     # OutputResults.rename_axis(['Period', 'Scenario', 'LoadLevel', 'Node'], axis=0).to_parquet(f'{_path}/oT_Result_SummaryNetwork_{CaseName}.parquet', engine='pyarrow')

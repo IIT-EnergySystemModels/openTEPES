@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 520" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif">
+  <style>
+    .bus  { stroke:#1a1a1a; stroke-width:7; }
+    .wire { stroke:#1a1a1a; stroke-width:1.6; fill:none; }
+    .dcw  { stroke:#1a1a1a; stroke-width:1.6; fill:none; stroke-dasharray:7 4; }
+    .sym  { stroke:#1a1a1a; stroke-width:1.6; fill:#fff; }
+    .var  { font-size:12.5px; fill:#b03030; font-style:italic; }
+    .par  { font-size:12.5px; fill:#2e5d8a; font-style:italic; }
+    .lbl  { font-size:13px; fill:#1a1a1a; font-weight:600; }
+    .ttl  { font-size:13.5px; fill:#1a1a1a; font-weight:700; }
+    .note { font-size:11.5px; fill:#555; }
+    .q    { stroke:#b03030; stroke-width:1.6; fill:none; }
+    .loss { stroke:#7a4a8a; stroke-width:1.6; fill:none; }
+  </style>
+  <defs>
+    <marker id="qa" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#b03030"/></marker>
+    <marker id="la" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#7a4a8a"/></marker>
+  </defs>
+  <rect width="900" height="520" fill="#fafafa"/>
+
+  <!-- ================= LCC ================= -->
+  <text class="ttl" x="40" y="40">IndACConverter = 1 · line-commutated</text>
+  <line class="bus" x1="120" y1="70" x2="120" y2="180"/>
+  <line class="bus" x1="780" y1="70" x2="780" y2="180"/>
+  <text class="lbl" x="120" y="60" text-anchor="middle">node i</text>
+  <text class="lbl" x="780" y="60" text-anchor="middle">node j</text>
+  <line class="wire" x1="120" y1="125" x2="300" y2="125"/>
+  <rect class="sym" x="300" y="100" width="52" height="50" rx="3"/>
+  <line class="wire" x1="304" y1="146" x2="348" y2="104"/>
+  <text class="lbl" x="311" y="116" font-size="11">~</text>
+  <text class="lbl" x="333" y="145" font-size="11">=</text>
+  <line class="dcw" x1="352" y1="125" x2="548" y2="125"/>
+  <rect class="sym" x="548" y="100" width="52" height="50" rx="3"/>
+  <line class="wire" x1="552" y1="104" x2="596" y2="146"/>
+  <text class="lbl" x="556" y="145" font-size="11">=</text>
+  <text class="lbl" x="580" y="116" font-size="11">~</text>
+  <line class="wire" x1="600" y1="125" x2="780" y2="125"/>
+  <text class="var" x="450" y="115" text-anchor="middle">f_ijc  =  f+ − f−</text>
+  <!-- reactive drawn at both terminals, arrows point out of the AC system -->
+  <line class="q" x1="200" y1="100" x2="290" y2="100" marker-end="url(#qa)"/>
+  <text class="var" x="245" y="92" text-anchor="middle">T^conv (f+ + f−)</text>
+  <line class="q" x1="700" y1="100" x2="610" y2="100" marker-end="url(#qa)"/>
+  <text class="var" x="655" y="92" text-anchor="middle">T^conv (f+ + f−)</text>
+  <text class="note" x="450" y="172" text-anchor="middle">Both stations draw reactive power in proportion to the active power carried, either direction.</text>
+
+  <!-- ================= VSC ================= -->
+  <text class="ttl" x="40" y="240">IndACConverter = 2 · voltage-source</text>
+  <line class="bus" x1="120" y1="270" x2="120" y2="380"/>
+  <line class="bus" x1="780" y1="270" x2="780" y2="380"/>
+  <text class="lbl" x="120" y="260" text-anchor="middle">node i</text>
+  <text class="lbl" x="780" y="260" text-anchor="middle">node j</text>
+  <line class="wire" x1="120" y1="325" x2="300" y2="325"/>
+  <rect class="sym" x="300" y="300" width="52" height="50" rx="3"/>
+  <line class="wire" x1="304" y1="346" x2="348" y2="304"/>
+  <text class="lbl" x="311" y="316" font-size="11">~</text>
+  <text class="lbl" x="333" y="345" font-size="11">=</text>
+  <line class="dcw" x1="352" y1="325" x2="548" y2="325"/>
+  <rect class="sym" x="548" y="300" width="52" height="50" rx="3"/>
+  <line class="wire" x1="552" y1="304" x2="596" y2="346"/>
+  <text class="lbl" x="556" y="345" font-size="11">=</text>
+  <text class="lbl" x="580" y="316" font-size="11">~</text>
+  <line class="wire" x1="600" y1="325" x2="780" y2="325"/>
+  <text class="var" x="450" y="315" text-anchor="middle">f_ijc</text>
+  <!-- reactive is a free source or sink: arrows both ways -->
+  <line class="q" x1="290" y1="300" x2="200" y2="300" marker-end="url(#qa)"/>
+  <line class="q" x1="200" y1="288" x2="290" y2="288" marker-end="url(#qa)"/>
+  <text class="var" x="245" y="280" text-anchor="middle">qc_ijc</text>
+  <line class="q" x1="610" y1="300" x2="700" y2="300" marker-end="url(#qa)"/>
+  <line class="q" x1="700" y1="288" x2="610" y2="288" marker-end="url(#qa)"/>
+  <text class="var" x="655" y="280" text-anchor="middle">qc'_ijc</text>
+
+  <!-- losses, common to both -->
+  <line class="loss" x1="326" y1="424" x2="326" y2="356" marker-end="url(#la)"/>
+  <line class="loss" x1="574" y1="424" x2="574" y2="356" marker-end="url(#la)"/>
+  <text class="par" x="450" y="442" text-anchor="middle">station loss at each terminal:  L^nl · F̄_ijc · swt  +  L^mg (f+ + f−)</text>
+  <text class="note" x="450" y="472" text-anchor="middle">Line-commutated draws reactive power. Voltage-source supplies or absorbs it, independently at each terminal.</text>
+  <text class="note" x="450" y="490" text-anchor="middle">The two enter the reactive balance with opposite signs.</text>
+  <text class="note" x="450" y="508" text-anchor="middle" fill="#2e5d8a">f+ and f− are the non-negative halves of the link flow · parameters blue, variables red, losses purple</text>
+</svg>

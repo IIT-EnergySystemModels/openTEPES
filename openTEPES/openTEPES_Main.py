@@ -708,6 +708,10 @@ parser.add_argument('--solver',        type=str, default=None)
 parser.add_argument('--log',           type=str, default=None)
 parser.add_argument('--result',        type=str, default=None,  help="Yes/No — coarse-grained output toggle (kept for backward compatibility).")
 parser.add_argument('--results',       type=str, default=None,  help=("Comma-separated list of output categories: " + ", ".join(OUTPUT_CATEGORIES) + ". Aliases: 'min', 'full'. Overrides --result. Example: --results=cost,investment,economic,plots"))
+parser.add_argument('--option',        type=str, default=None,  action='append',
+                    help=("Override an entry of oT_Data_Option or oT_Data_Parameter for this run, as Key=Value. Repeatable, "
+                          "and comma-separated values are accepted. Lets one case be run under several formulations "
+                          "without copying it: --option IndACPowerFlow=0 for DC, =1 for branch flow, =3 for rectangular."))
 parser.add_argument('--no-plots',                default=False, help="Disable HTML plot output (overrides 'plots' in --results).", action="store_true")
 parser.add_argument('--out',           type=str, default=None,  help="Output directory for oT_Result_*.csv and oT_Plot_*.html. Default: <dir>/<case>.")
 parser.add_argument('--gzip-large-csvs',         default=False, help="After writing results, gzip every oT_Result_*.csv whose name starts with one of the prefixes given by --gzip-patterns. Default: off (CSVs written plain). NOTE: .csv.gz files cannot be opened directly in Excel; pandas reads them natively.", action="store_true")
@@ -813,9 +817,21 @@ def main():
             gzip_patterns = tuple(s.strip() for s in args.gzip_patterns.split(",") if s.strip())
         else:
             gzip_patterns = DEFAULT_GZIP_PATTERNS
+    # --option Key=Value, repeatable and comma-separated. Parsed here so a malformed pair is refused before a case is
+    # read rather than after it has been built.
+    pOverrides = {}
+    for pItem in (args.option or []):
+        for pPair in pItem.split(','):
+            if not pPair.strip():
+                continue
+            if '=' not in pPair:
+                raise SystemExit(f"--option expects Key=Value, got {pPair!r}")
+            pK, pV = pPair.split('=', 1)
+            pOverrides[pK.strip()] = pV.strip()
+
     model = openTEPES_run(args.dir, args.case, args.solver, args.result, args.log,
                           output_spec=output_spec, out_path=args.out,
-                          gzip_patterns=gzip_patterns)
+                          gzip_patterns=gzip_patterns, option_overrides=pOverrides or None)
     # Computing the elapsed time
     ElapsedTime = round(time.time() - StartTime)
     print('Total time                             ...  {} s'.format(ElapsedTime))

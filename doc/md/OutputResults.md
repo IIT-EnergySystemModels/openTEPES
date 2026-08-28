@@ -1,4 +1,4 @@
-﻿---
+---
 openTEPES documentation master file, created by Andres Ramos
 ---
 
@@ -1091,6 +1091,42 @@ Identifier                            Header   Description
 Period        Scenario    Load level  Node     Network output (to be used as a pivot table)
 ============  ==========  ==========  =======  ==============================================
 ```
+
+## AC network operation (only when IndACPowerFlow is different from 0)
+
+These files are written only for an AC run. Powers are in MW and MVAr, voltages in per unit and angles in radians.
+
+| File | Description |
+|:-----|:------------|
+| oT_Result_NetworkVoltageMagnitude   | Voltage magnitude of every node at every load level |
+| oT_Result_NetworkVoltageAngle       | Voltage angle of every node at every load level |
+| oT_Result_NetworkFlowReactiveFrw    | Reactive power flow of every branch, sending end |
+| oT_Result_NetworkFlowReactiveBck    | Reactive power flow of every branch, receiving end |
+| oT_Result_NetworkCurrent            | Current magnitude of every branch |
+| oT_Result_NetworkLossesAC           | Ohmic losses of every branch, from the exact relation rather than the linear loss factor |
+| oT_Result_NetworkElecUtilizationAC  | Apparent power of every branch as a percentage of its rating |
+| oT_Result_NetworkQNS                | Reactive power not served, split into the part missing and the part that could not be absorbed |
+| oT_Result_ShuntReactivePower        | Reactive power injected by every bus shunt device |
+| oT_Result_ShuntCommitment           | In-service state of every switchable shunt, per load level |
+| oT_Result_MarginalReactive          | Marginal price of reactive power at every node, the dual of the reactive balance |
+
+### Diagnostics
+
+Three files describe how far the reported operating point is from the exact AC equations. They measure different things.
+
+| File | Description |
+|:-----|:------------|
+| oT_Result_ACRelaxationGap        | Gap of the second-order cone on every branch and load level, per unit of the squared rating |
+| oT_Result_ACRelaxationGapSummary | The worst gap per branch, sorted in decreasing order |
+| oT_Result_NetworkConverterLosses | Active power lost in the HVDC converter stations of each link, both terminals summed. Written only when a converter model and a loss are both on |
+| oT_Result_ACPowerFlowResidual    | Worst mismatch, in MW and MVAr, between the reported branch flows and the ones the bus voltages imply |
+
+The relaxation gap measures the second-order cone. The residual recomputes each branch flow from the bus voltages through
+the series relation and compares it with the reported flow, so it measures the operating point rather than the cone. The two
+are independent: a tight cone can accompany a large residual.
+
+A relaxed solve is not expected to satisfy the series relation exactly, and the residual is reported without a threshold. On
+the bundled `9n_AC` case the relaxed solution is about 68 MW off; with `IndACRestore = 1` the same case returns 0.00001 MW.
 
 ## Hydrogen balance and network operation
 

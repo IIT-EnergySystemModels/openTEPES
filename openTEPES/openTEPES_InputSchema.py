@@ -137,6 +137,13 @@ TABLE_SPECS: list[tuple[str, str, str, dict]] = [
     ("oT_Data_ReserveMarginHeat", "reserve_margin_heat",  PASSTHROUGH,  dict(pk_cols=["Period", "Area"])),
 
     # =====================================================================
+    # AC optimal power flow. ReactiveDemand mirrors Demand (Node-keyed wide). BusShunt carries one row per shunt device and needs no oT_Dict_ file:
+    # shunts appear in no relation table, so the data table's own index is the set of shunt names.
+    # =====================================================================
+    ("oT_Data_ReactiveDemand",  "reactive_demand",  WIDE_TO_LONG, dict(entity="Node", value="Demand")),
+    ("oT_Data_BusShunt",        "bus_shunt_config", PASSTHROUGH,  dict(pk_cols=["Shunt"])),
+
+    # =====================================================================
     # Multi-level-header wide tables (9n_PTDF).
     #   VariableTTCFrw/Bck  -> (InitialNode, FinalNode, Circuit)        N=3
     #   VariablePTDF        -> (InitialNode, FinalNode, Circuit, Node)  N=4
@@ -161,4 +168,5 @@ _SPEC_BY_CSV_STEM: dict[str, tuple[str, str, dict]] = {s[0]: (s[1], s[2], s[3]) 
 
 DEFAULT_IDX_COLS: list[str] = [
     "Period", "Scenario", "LoadLevel", "Area", "Generator", "InitialNode", "FinalNode", "Circuit", "Node", "Stage", "Reservoir",  # Optional hydro tables key on this.
+    "Shunt",  # AC optimal power flow: oT_Data_BusShunt keys on this.
 ]

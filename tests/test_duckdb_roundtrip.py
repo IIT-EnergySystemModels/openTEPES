@@ -19,7 +19,7 @@ from openTEPES._input_parity_test import compare_snapshots, snapshot
 CASES_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "openTEPES", "cases"))
 
 
-@pytest.mark.parametrize("case_name", ["9n", "9n_PTDF", "sSEP"])
+@pytest.mark.parametrize("case_name", ["9n", "9n_PTDF", "sSEP", "9n_AC"])
 def test_csv_duckdb_csv_roundtrip(case_name, tmp_path):
     case_dir = os.path.join(CASES_DIR, case_name)
     base = snapshot(case_dir)

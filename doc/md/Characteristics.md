@@ -28,6 +28,16 @@ openTEPES documentation master file, created by Andres Ramos
   > DC power flow (DCPF): a linear approximation of the electric network that models active power flows using voltage angle differences, typically assuming fixed voltage magnitudes and small angle differences, and neglecting reactive power.
   > The formulation can be extended by adding line-loss terms, usually approximated in a linear or piecewise-linear form, so that transmitted power is reduced by the resistive losses of the lines while preserving the tractability of the model.
 
+- **AC optimal power flow (ACOPF)** representation of the electric network, off by default and switched on with `IndACPowerFlow`
+
+  > AC optimal power flow: models voltage magnitudes and reactive power as well as active power, so the network is
+  > represented by the full AC equations rather than a linear approximation. openTEPES offers three formulations of it,
+  > a branch flow model and two bus-injection models, and writes the branch current definition as a second-order cone, a
+  > piecewise-linear staircase or the exact non-linear equation. Adds reactive demand, generator reactive capability,
+  > synchronous condensers, bus shunts including switchable and stepped banks, and HVDC converter models.
+  > See the AC sections of [Input Data](InputData.md) and [Mathematical Formulation](MathematicalFormulation.md), and
+  > the bundled `9n_AC`, `RTS-GMLC_AC` and `RTS-GMLC_AC_Oper` cases.
+
 - **Energy storage systems (ESS)**, including pumped-hydro storage, batteries, demand response, electric vehicles, solar thermal, and electrolyzers
 
   > They are technologies that store energy in one form and release it later when needed. In electric power systems, ESS help balance supply and demand, improve reliability, provide flexibility, and support the integration of variable renewable energy sources. Common examples include batteries, pumped-hydro storage, and hydrogen-based storage.

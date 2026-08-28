@@ -126,9 +126,10 @@ decisions.
 Capacity expansion considers the system adequacy reserve margin, maximum CO2 emissions, and minimum and maximum energy constraints.
 
 The highly detailed operational model is an electric network-constrained unit commitment (NCUC) based on a tight, compact formulation that includes operating
-reserves and electric line-switching decisions via DC power flow (DCPF).
-**Ohmic losses** in the electrical network are assumed to be proportional to the electrical line flow. It considers various **energy storage systems (ESS)**,
-including pumped-hydro storage, batteries, demand response, electric vehicles, solar thermal, and electrolyzers.
+reserves and electric line-switching decisions via DC power flow (DCPF). An **AC power flow (ACPF)** is available as an alternative, off by default.
+**Ohmic losses** in the electrical network are assumed to be proportional to the electrical line flow under DCPF, and follow the exact relation under ACPF.
+It considers various **energy storage systems (ESS)**, including pumped-hydro storage, batteries, demand response, electric vehicles, solar thermal, and
+electrolyzers.
 
 The model also allows a representation of the **hydro system** based on volume and water inflow data, considering the water stream topology (**hydro cascade
 basins**). If these data are unavailable, it runs using an energy-based representation of the hydro system.
@@ -142,10 +143,11 @@ The main results of the model can be structured into these topics:
 
 - **Investment**: investment decisions and costs for generation, storage, hydro reservoirs, electric lines, hydrogen pipelines, and heat pipes
 - **Operation**: unit commitment, startup, and shutdown of non-renewable units; unit output and aggregation by technologies (thermal, storage hydro,
-  pumped-hydro storage, RES); RES curtailment; electric line, hydrogen pipeline, and heat pipe flows; line ohmic losses; node voltage angles; upward and
-  downward operating reserves; upward and downward ramp reserves; ESS inventory levels; hydro reservoir volumes; and power, hydrogen, and heat not served
+  pumped-hydro storage, RES); RES curtailment; electric line, hydrogen pipeline, and heat pipe flows; line ohmic losses; node voltage angles, and under ACPF
+  voltage magnitudes, reactive flows and shunt injections; upward and downward operating reserves; upward and downward ramp reserves; ESS inventory levels;
+  hydro reservoir volumes; and power, hydrogen, and heat not served
 - **Emissions**: CO2 emissions by unit
-- **Marginal**: Locational Short-Run Marginal Costs (LSRMC), stored energy value, water volume value
+- **Marginal**: Locational Short-Run Marginal Costs (LSRMC), stored energy value, water volume value, and the reactive-power marginal under ACPF
 - **Economic**: operation, emission, and reliability costs and revenues from operation, operating reserves, and ramp reserves
 - **Flexibility**: flexibility provided by demand, by the different generation and consumption technologies, and by power not served
 

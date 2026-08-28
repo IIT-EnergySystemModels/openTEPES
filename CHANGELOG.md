@@ -2,6 +2,166 @@
 
 ## [4.18.18RC] - 2026-08-23 Unreleased in PyPI
 
+- [CHANGED] four AC tests asked for gurobi and so skipped on every runner, because the bundled licence is size
+  limited. They use ipopt now, which a runner has: the condenser pair, the voltage-source converter, and the angle
+  guard. Five converter tests still ask for gurobi because they need the flow-direction binary, which an NLP solver
+  relaxes; those have no runner coverage, and closing that needs either a mixed-integer variant of each on the
+  piecewise model type with HiGHS, or a solver licence in CI.
+- [ADDED] tests for the synchronous condenser, which no shipped case has, so nothing exercised it. One builds an
+  existing condenser and checks it supplies reactive power inside its declared band; the other builds a candidate whose
+  `InvestmentUp` is 0 and checks it comes out buildable, which is the reading every other device family uses. A unit
+  has to be declared in `oT_Dict_Generation` and its technology in `oT_Dict_Technology`, not only added to the data
+  table, or it never reaches the model at all.
+- [FIXED] a case with no AC power flow carried the AC current penalty variable anyway. `vTotalNPenalty` was declared
+  for every case and added to the objective unconditionally, while the constraint that defines it is skipped when AC is
+  off, so a DC model held one unconstrained column per load level priced in the objective. They optimise to zero, so
+  the reported cost was always right, but they are dead columns and they change what the solver presolves. The variable
+  and the objective term now exist only under `IndACPowerFlow = 1`.
+- [FIXED] the cost summary gained two AC rows, `Investment Cost Reactive` and `AC Current Penalty (not in total)`, on
+  every case including those with no AC power flow, where both were zero. A file that every case writes changed shape.
+  The rows are written only when AC is on.
+- [CHANGED] the README described the network model as DC power flow and the ohmic losses as proportional to the flow.
+  Both are now conditional: an AC power flow is named as an alternative that is off by default, the losses follow the
+  exact relation under it, and the result topics list the voltage magnitudes, reactive flows, shunt injections and the
+  reactive-power marginal that come with it.
+- [ADDED] three single-line diagrams in the AC section of the mathematical formulation, drawn in the style of the
+  existing hand-drawn figures: one AC branch with its tap, series impedance and charging susceptance; an HVDC link
+  under both converter models with the reactive power and station losses at each terminal; and the capability disc of
+  one terminal with the twelve tangent lines that stand in for it. Symbols follow the notation table, with parameters
+  drawn in blue and variables in red.
+- [CHANGED] the AC work adds no new files. Everything it introduced now sits in the module that already owned that
+  concern: reading and bound tightening in `openTEPES_InputData.py`, the network matrices and the AC set-up in
+  `openTEPES_DataConfiguration.py`, the AC variables in `openTEPES_SettingUpVariables.py`, the branch flow and bus
+  injection formulations, the converter models and the restoration pass in `openTEPES_ModelFormulationElectricity.py`,
+  and the AC results in `openTEPES_OutputResultsNetwork.py`. Seven modules became none. No behaviour changes: the
+  function names and their callers are the same, only the file they live in moved.
+- [CHANGED] two AC result files are renamed to match the families they belong to. `NetworkReactiveNotServed` is
+  `NetworkQNS`, which is what the rest of the not-served family looks like (`NetworkENS`, `NetworkPNS`, `NetworkHNS`)
+  and what the variable behind it has always been called (`vQNSPos`, `vQNSNeg`). `NetworkUtilizationAC` is
+  `NetworkElecUtilizationAC`, so the carrier comes before the word as in `NetworkElecUtilization` and
+  `NetworkHeatUtilization`. Neither name has been released, so nothing downstream depends on them.
+- [CHANGED] the Linux solve job in CI now installs ipopt, so the AC formulations it could not reach are tested. HiGHS
+  cannot express a nonlinear constraint at all, which left the second-order cone, the exact non-linear model and the AC
+  restoration pass skipped on every runner, and the cone is the default. A conic solver is not needed for this: the
+  relaxation is convex, so ipopt reaching a local optimum reaches the global one. On the 9n case the two agree to
+  3e-07 relative. The formulation matrix gains a branch-flow cone row under ipopt, because the existing cone row asks
+  for gurobi and CI has no licence for it, so the default formulation was never solved on a runner. Linux only, since
+  ipopt's convergence depends on how MUMPS was built and a platform-dependent solver makes for flaky tests. This tests
+  that the paths build and solve; it does not stand in for a conic solver certifying the bound.
+- [CHANGED] the test that checks the restoration pass closes the cone asked for gurobi, which no runner has a licence
+  for, so it was skipped everywhere and the pass had no CI coverage even after ipopt arrived. It uses ipopt now: the
+  outer solve is the cone, which is convex, and the pass itself already ran on ipopt.
+- [FIXED] the architecture diagram drew the Mode C arrow, from `resolve.py` back to `SettingUpVariables.py`, outside
+  the page background, which stopped 45 px short of the canvas. The arrow is routed inside it and its rotated label is
+  gone, because it repeated the sweep-modes panel word for word. Its two corners are now the same shape: each was a
+  single quadratic curve spanning the whole segment, so one bend swept over 435 px and the other over 27 px and they
+  did not look like a pair. They are quarter turns of equal radius with straight runs between. The footer no longer
+  runs off both edges.
+- [CHANGED] the wording in the architecture diagram is plainer. Claims about the design gave way to descriptions of it:
+  "single source of truth" is now "column and type specs", "drop-in backend" is "same InputSource interface", and
+  "cost: solve only (cheapest)" drops the judgement. The planned boxes were checked against the code and all five are
+  still planned: `parquet_source.py`, `mcda.py`, the district cooling and CCUS sector files, the sets-against-params
+  split in `InputData`, and the `cli.py` / `run.py` split, whose work is done today by `openTEPES_Main.py` and
+  `openTEPES.py` in one piece each.
+- [FIXED] the bus injection formulation in W space failed intermittently when the loop condition was off. `vTheta`
+  appears in no constraint there, so the solver sets some nodes and leaves others unset, and which ones varies between
+  runs. The guard that decides whether a nodal voltage phasor can be formed returned on the FIRST node it found, so
+  whenever that node happened to carry a value it reported the angles available and the residual check then built a
+  phasor from `None` at a later node and raised `TypeError`. It now tests every node. This is what made
+  `IndACPowerFlow = 2` with `IndACCycle = 0` fail once in every few runs of the test suite.
+- [ADDED] HVDC converter station losses, set per case with `ConverterNoLoadLoss` and `ConverterMarginalLoss` in
+  `oT_Data_Parameter`. Each terminal of a DC link carries a station, and each station is charged separately: the
+  no-load part is drawn while the link is in service, as a fraction of the link rating, and the marginal part is drawn
+  on the power the station carries, either direction. Both default to zero, so a case that does not ask for them gets
+  the results it got before. Reported per link in `oT_Result_NetworkConverterLosses`. Only read when `IndACConverter`
+  selects a converter model. Switching a loss on also brings in the flow-direction binary the line-commutated model
+  already uses, including under the voltage-source model, because without it the model can inflate both halves of the
+  link flow and discard surplus energy into a loss that does not exist.
+- [CHANGED] update the architecture diagram (`doc/img/openTEPES_architecture.svg` and the rendered `.png`) so it
+  matches the code after the AC work. Layer 4 said "six files, one per concern" and now says eight, with a new
+  `ELECTRICITY NETWORK — pick one` bracket under `…Electricity.py` holding the three interchangeable network models:
+  DC, branch flow and bus injection, all three inside `…Electricity.py`. The three are labelled DC, BF and BIM: the
+  middle box used to read AC, which is wrong beside BIM because bus injection is an AC model too. The functions keep
+  their `AC` names, and correctly so — `NetworkACOperationModelFormulation` and `NetworkACCurrentModelFormulation` run
+  for every AC mode and only their interior is gated on branch flow, which is why BIM alone needs a distinguishing name. The box that used to plan `dc_opf / ac_opf`
+  as selectable builders is what this replaces, so a planned item becomes an implemented one. Layer 6 names the AC
+  results inside `…Network.py`, and Layer 3 says which of its modules gain AC code when `IndACPowerFlow > 0`.
+  The AC files sit under electricity rather than beside Hydro, Hydrogen and Heat, because they are a choice of network
+  model and not a new energy carrier. No other layer changes.
+- [ADDED] AC optimal power flow, on with `IndACPowerFlow`. Branch flow model; the current definition is a second-order
+  cone, a piecewise staircase or the exact non-linear equation (`IndACModelType`). Adds voltage and angle bound
+  tightening, bus shunts, generator reactive capability and synchronous condensers. `IndACRestore` re-solves the network
+  at the exact equations on ipopt to recover a physical operating point. New cases `9n_AC`, `RTS-GMLC_AC`,
+  `RTS-GMLC_AC_Oper`, `RTS-GMLC_Oper`. Refused with cycle flow, single node, variable TTC and PTDF. Off by default.
+- [FIXED] an HVDC converter was bounded separately in active and reactive power, so a station could hold both at their
+  limits at once and deliver more apparent power than its rating: 17.6% more at the default power factor of 0.85. The
+  rating now bounds the apparent power, as a ring of tangent lines so that `IndACModelType = 1` stays a mixed-integer
+  linear problem. The bound is loose by 3.5% for a voltage-source converter and exact for a line-commutated one.
+- [ADDED] HVDC converter models, `IndACConverter`: line-commutated draws reactive power at both terminals,
+  voltage-source supplies or absorbs it within the converter rating. `ConverterPF` sets the power factor.
+- [FIXED] the AC angle-to-flow relation used `x*P + r*Q`; it is `x*P - r*Q`. Branch flows were wrong by up to 38 MW and
+  the recovered angles did not close around network loops.
+- [FIXED] `IndACPowerFlow` is now read from `oT_Data_Parameter` as well as `oT_Data_Option`. A case that put the flag in
+  the wrong table built an AC model but skipped the reactive demand and shunt tables, and reported the result as solved.
+- [ADDED] hourly on/off state for bus shunts, with a `Switchable` column in `oT_Data_BusShunt`. A bank can be opened at
+  light load instead of wired in all year. `IndBinShuntSwitch` picks a discrete state, the default, or a relaxed one.
+  Devices stay fixed unless marked, so existing cases are unchanged.
+- [ADDED] stepped shunt banks, with a `Units` column in `oT_Data_BusShunt`. `Units = N` gives a bank of N identical
+  units, so the model chooses how many are in service. Follows the VAR source model of Alvarez, Paredes and Rider, IET
+  Generation, Transmission and Distribution 13(13), 2019. Units are chained to remove equivalent permutations. One unit
+  by default.
+- [ADDED] `--option Key=Value` on the command line overrides an entry of `oT_Data_Option` or `oT_Data_Parameter` for a
+  single run. Repeatable and comma-separated. One case can then be run under several formulations without copying it;
+  the bundled `9n` and `9n_AC` differ by two cells and are otherwise the same 34 MB. Switching the AC model on this way
+  also pulls in the AC-only input files, so an overridden run reads what a case with the flag set would.
+- [ADDED] `IndCycleFlow`, `IndCompleteProblem`, `IndSectorDecomposition` and `IndSequentialSolving` can now be set from
+  `oT_Data_Option`. They were fixed in the code, so no case could select them, and the four stage-solving strategies the
+  model implements were all unreachable. `IndSequentialSolving` was also declared binary while its own code branches on
+  four values. The defaults are the values that used to be in force.
+- [FIXED] the AC design notes did not record what the price on the branch current does to the locational prices. It is
+  in the objective, so it is in the duals of the nodal balance, and the distortion is not a level shift: it moves prices
+  relative to one another. Section 17 measures it. At the value the code carried before it became case data the worst
+  nodal price moved by 140 EUR/MWh against a spread of 200; at the value the RTS cases now carry it is 1.53.
+- [ADDED] `EpsilonCurrent` in `oT_Data_Parameter` sets the price on the AC branch current per case. It was a constant in
+  the code, and the value it needs turns out to depend on the case: 1e-3 for `9n_AC` and 1e-6 for the RTS-GMLC cases and
+  for pglib case118, a thousandfold spread. At 1e-3 the RTS cases were paying a 16%
+  dispatch distortion and reporting a relaxed cost above the exact optimum. The bundled cases now carry calibrated
+  values; a case that says nothing keeps the previous default.
+- [CHANGED] the AC current penalty is priced into the objective but is no longer part of the reported system cost. It is
+  a numerical device that stops the relaxation buying voltage with current that is not there, not money, and on a 168
+  hour RTS-GMLC window it came to 14.43 MEUR of a 60.00 MEUR reported total, a quarter of the figure. The solve is
+  unchanged; `vTotalSCost` now reports 45.56 MEUR for that case and the penalty is reported beside it.
+- [FIXED] the AC design notes measured the RTS-GMLC network against DC on a system with no reactive compensation. The
+  comparison, the horizon table and the relaxation tightness are measured again with the reactors: the DC model is
+  unchanged to the digit, as it should be, and the AC one grows by exactly 3 rows per hour.
+- [FIXED] the AC design notes reported that the exact model could not be solved on RTS-GMLC from a cold start. It can;
+  the earlier attempt was made on a system with no reactive compensation. Sections 13 and 14 have been re-measured with
+  the reactors in place and now record the case definition, and a new section shows that the current penalty is what
+  made the second-order cone appear tight.
+- [CHANGED] the checks on incompatible options are made in one pass and reported together, instead of one at a time.
+- [ADDED] `IndPTDF` is now an explicit three-valued option: 0 off, 1 reads the factors from `oT_Data_VariablePTDF`, and
+  2 computes them from the reactances, so a case no longer has to produce them in another tool and paste in a table that
+  openTEPES cannot check against its own network. The flag used to be implied by the presence of the table, which stays
+  the default when a case says nothing. Mode 2 is refused when the case has candidate or switchable AC lines, because
+  the factors belong to one topology. On `9n` the computed factors reproduce the angle formulation's flows exactly.
+- [ADDED] an AC power flow residual check, written to `oT_Result_ACPowerFlowResidual` and reported on the console. It
+  recomputes each branch flow from the bus voltages and compares it with the flow the model reports, so a user can tell
+  whether a solved case is physical. This was only possible before with pandapower, which openTEPES does not ship. The
+  relaxation gap answers a different question: it says whether the cone is tight, not whether the operating point is
+  physical. On `9n_AC` the relaxed solution is about 68 MW off the series relation and the restored one is within
+  0.00001 MW.
+- [ADDED] the network matrices in `openTEPES_DataConfiguration.py`, which turn the branch data into the objects that
+  need a view of the whole network: the susceptance matrices, the DC power transfer distribution factors, and the
+  residual check above. DC links are excluded from all of them.
+- [ADDED] the resolved configuration is printed at the start of every run: the network model in force, the AC settings,
+  the reactive demand and shunt counts that reached the model, and the other active features. A case whose flags do not
+  say what the author intended now shows it before the solve rather than after.
+- [FIXED] the angle-difference band was built for the W-space formulation only, so `IndACPowerFlow = 3` ran with no band
+  at all.
+- [FIXED] the RTS-GMLC AC cases carried no shunt table, so the three 100 Mvar reactors on buses 106, 206 and 306 were
+  missing and both ran with no reactive compensation. `RTS-GMLC_AC_Oper` falls from 61.65 to 60.00 MEUR; `RTS-GMLC_AC` is
+  a full year and was not re-solved.
+
 - [FIXED] plot of network maps
 - [CHANGED] improve performance in some modules
 - [CHANGED] modify OutputResultsGeneration to improve performance 
