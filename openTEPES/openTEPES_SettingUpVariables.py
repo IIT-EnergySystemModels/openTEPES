@@ -6,6 +6,7 @@ zeroes out epsilon values, and screens for infeasibilities. Runs after DataConfi
 """
 from __future__ import annotations
 
+import os
 import time
 import math
 import pandas        as pd
@@ -137,6 +138,12 @@ def SettingUpVariables(OptModel, mTEPES):
         OptModel.vESSReserveUp             = Var(mTEPES.psneh, within=NonNegativeReals, doc='ESS up   operating reserve                       [GW]')
         OptModel.vESSReserveDown           = Var(mTEPES.psneh, within=NonNegativeReals, doc='ESS down operating reserve                       [GW]')
         OptModel.vENS                      = Var(mTEPES.psnnd, within=NonNegativeReals, doc='energy not served in node                        [GW]')
+
+        # R1.8: impose zero energy not served as a hard constraint instead of screening solutions
+        # after the fact. Off unless OTEPES_ZERO_ENS is set in the environment.
+        if os.environ.get('OTEPES_ZERO_ENS'):
+            for _idx in OptModel.vENS:
+                OptModel.vENS[_idx].fix(0.0)
 
         if mTEPES.pIndReserveActivation():
             OptModel.vESSReserveUpEnergy   = Var(mTEPES.psneh, within=NonNegativeReals, doc='ESS up   reserve activation of the unit          [GW]')
