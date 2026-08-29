@@ -17,31 +17,20 @@ def apply_investment_bounds(mTEPES, OptModel, pEpsilon: float = 1e-6) -> None:
     """Apply the investment- and retirement-bound Params to their variables.
 
     ``pGenLoInvest`` / ``pGenUpInvest``, ``pGenLoRetire`` / ``pGenUpRetire`` and
-    ``pNetLoInvest`` / ``pNetUpInvest`` are declared ``mutable=True``, but until now they
-    were consumed only while the model was being built, inside ``SetToZero``. Changing one
-    on a built model therefore had no effect on the next solve, which makes portfolio
-    sweeps (transmission-only, storage-only, and so on) pay for a full rebuild per variant.
+    ``pNetLoInvest`` / ``pNetUpInvest`` are ``mutable=True`` but were read only during model
+    construction, inside ``SetToZero``. Call this after mutating any of them to re-apply them to
+    ``vGenerationInvest``, ``vGenerationRetire`` and ``vNetworkInvest``.
 
-    Calling this after mutating any of those Params re-applies them to
-    ``vGenerationInvest``, ``vGenerationRetire`` and ``vNetworkInvest``, so a sweep can vary
-    the candidate portfolio between solves the same way it already varies ``pDemandElec``.
-
-    Values within ``pEpsilon`` of 0 or 1 are snapped, and a lower bound above its upper bound
-    is pulled down to it — the same conditioning applied at build time.
+    Values within ``pEpsilon`` of 0 or 1 are snapped, and a lower bound above its upper bound is
+    pulled down to it. The snapping is idempotent, so repeated calls are safe. Build-time behaviour
+    is unchanged: ``SetToZero`` calls this instead of carrying its own copy.
 
     .. warning::
-       **Zero means the opposite thing in the input data and here.** When a case is read,
-       ``openTEPES_InputData`` replaces an ``InvestmentUp`` of 0 with 1.0, so a 0 in the CSV means
-       *unrestricted*, not *excluded* — to exclude a candidate through the data you have to write a
-       small positive epsilon, which then snaps to 0 here. On a **built** model there is no such
-       conversion, so setting the Param to 0 and calling this function does exclude the candidate.
-       Both behaviours are deliberate; they are simply not the same, and a sweep that assumes the
-       data convention will silently leave every candidate available.
-
-    Calling this repeatedly is safe: the snapping is idempotent.
-
-    Build-time behaviour is unchanged: ``SetToZero`` now calls this function instead of
-    carrying its own copy of the logic.
+       Zero means opposite things in the two paths. ``openTEPES_InputData`` replaces an
+       ``InvestmentUp`` of 0 with 1.0, so 0 in the CSV means unrestricted, and excluding a
+       candidate through the data needs a small positive epsilon, which snaps to 0 here. On a
+       built model there is no such conversion, so 0 excludes the candidate. A sweep that
+       assumes the data convention leaves every candidate available and nothing fails.
 
     Parameters:
         mTEPES:   the model instance holding the Params.
