@@ -5,6 +5,7 @@ openTEPES.openTEPES_DataConfiguration — builds the derived sets and parameters
 """
 from __future__ import annotations
 
+import os
 import time
 import math
 import pandas        as pd
@@ -939,7 +940,11 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
         par['pBigMFlowBck'].loc[lea] = par['pLineNTCBck'][lea]
         par['pBigMFlowFrw'].loc[lea] = par['pLineNTCFrw'][lea]
     for lca in mTEPES.lca:
-        M_angle_lca = (1.0 + pMBigMEpsilon) * max(par['pLineNTCBck'][lca], math.pi * par['pSBase'] / par['pLineX'][lca])
+        # Delta-theta is bounded by twice the nodal bound, so derive the angle side from pMaxTheta
+        # rather than hardcoding pi. Writing the literal silently invalidates the Big-M if the
+        # nodal bound is ever changed, because the two are coupled in the reasoning above.
+        pDeltaThetaMax = 2.0 * float(os.environ.get('OTEPES_MAX_THETA', math.pi / 2))
+        M_angle_lca = (1.0 + pMBigMEpsilon) * max(par['pLineNTCBck'][lca], pDeltaThetaMax * par['pSBase'] / par['pLineX'][lca])
         par['pBigMFlowBck'].loc[lca] = M_angle_lca
         par['pBigMFlowFrw'].loc[lca] = M_angle_lca
 
@@ -947,8 +952,10 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     par['pBigMFlowBck'] = par['pBigMFlowBck'].where(par['pBigMFlowBck'] != 0.0, 1.0)
     par['pBigMFlowFrw'] = par['pBigMFlowFrw'].where(par['pBigMFlowFrw'] != 0.0, 1.0)
 
-    # maximum voltage angle
-    par['pMaxTheta'] = par['pDemandElec']*0.0 + math.pi/2
+    # maximum voltage angle. The bound is on the *nodal* angle, not the angle difference across a
+    # line, so in a wide network with one reference node it caps accumulated angle at the periphery
+    # rather than any physical quantity. OTEPES_MAX_THETA raises it to test whether that binds.
+    par['pMaxTheta'] = par['pDemandElec']*0.0 + float(os.environ.get('OTEPES_MAX_THETA', math.pi/2))
     par['pMaxTheta'] = par['pMaxTheta'].loc[mTEPES.psn]
 
     # this option avoids a warning in the following assignments
