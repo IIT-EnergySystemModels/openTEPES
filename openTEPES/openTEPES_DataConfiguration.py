@@ -938,8 +938,11 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     for lea in mTEPES.lea:
         par['pBigMFlowBck'].loc[lea] = par['pLineNTCBck'][lea]
         par['pBigMFlowFrw'].loc[lea] = par['pLineNTCFrw'][lea]
+    # Delta-theta across a line is bounded by twice the nodal angle bound, so the angle side of the
+    # Big-M follows from pMaxTheta rather than from an independent literal.
+    pMaxThetaValue = math.pi / 2
     for lca in mTEPES.lca:
-        M_angle_lca = (1.0 + pMBigMEpsilon) * max(par['pLineNTCBck'][lca], math.pi * par['pSBase'] / par['pLineX'][lca])
+        M_angle_lca = (1.0 + pMBigMEpsilon) * max(par['pLineNTCBck'][lca], 2.0 * pMaxThetaValue * par['pSBase'] / par['pLineX'][lca])
         par['pBigMFlowBck'].loc[lca] = M_angle_lca
         par['pBigMFlowFrw'].loc[lca] = M_angle_lca
 
@@ -948,7 +951,7 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     par['pBigMFlowFrw'] = par['pBigMFlowFrw'].where(par['pBigMFlowFrw'] != 0.0, 1.0)
 
     # maximum voltage angle
-    par['pMaxTheta'] = par['pDemandElec']*0.0 + math.pi/2
+    par['pMaxTheta'] = par['pDemandElec']*0.0 + pMaxThetaValue
     par['pMaxTheta'] = par['pMaxTheta'].loc[mTEPES.psn]
 
     # this option avoids a warning in the following assignments
