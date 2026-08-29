@@ -13,6 +13,74 @@ from   collections   import defaultdict
 from   pyomo.environ import Set, Param, Var, Binary, NonNegativeReals, NonNegativeIntegers, Reals, UnitInterval, Block, Boolean
 
 
+def apply_investment_bounds(mTEPES, OptModel, pEpsilon: float = 1e-6) -> None:
+    """Apply the investment- and retirement-bound Params to their variables.
+
+    ``pGenLoInvest`` / ``pGenUpInvest``, ``pGenLoRetire`` / ``pGenUpRetire`` and
+    ``pNetLoInvest`` / ``pNetUpInvest`` are ``mutable=True`` but were read only during model
+    construction, inside ``SetToZero``. Call this after mutating any of them to re-apply them to
+    ``vGenerationInvest``, ``vGenerationRetire`` and ``vNetworkInvest``.
+
+    Values within ``pEpsilon`` of 0 or 1 are snapped, and a lower bound above its upper bound is
+    pulled down to it. The snapping is idempotent, so repeated calls are safe. Build-time behaviour
+    is unchanged: ``SetToZero`` calls this instead of carrying its own copy.
+
+    .. warning::
+       Zero means opposite things in the two paths. ``openTEPES_InputData`` replaces an
+       ``InvestmentUp`` of 0 with 1.0, so 0 in the CSV means unrestricted, and excluding a
+       candidate through the data needs a small positive epsilon, which snaps to 0 here. On a
+       built model there is no such conversion, so 0 excludes the candidate. A sweep that
+       assumes the data convention leaves every candidate available and nothing fails.
+
+    Parameters:
+        mTEPES:   the model instance holding the Params.
+        OptModel: the model carrying the investment variables (usually the same object).
+        pEpsilon: threshold for snapping a value to 0 or 1.
+
+    Returns:
+        None: bounds are set directly on the variables.
+    """
+    for eb in mTEPES.eb:
+        if  mTEPES.pGenLoInvest[  eb]() <       pEpsilon:
+            mTEPES.pGenLoInvest[  eb]   = 0
+        if  mTEPES.pGenUpInvest[  eb]() <       pEpsilon:
+            mTEPES.pGenUpInvest[  eb]   = 0
+        if  mTEPES.pGenLoInvest[  eb]() > 1.0 - pEpsilon:
+            mTEPES.pGenLoInvest[  eb]   = 1
+        if  mTEPES.pGenUpInvest[  eb]() > 1.0 - pEpsilon:
+            mTEPES.pGenUpInvest[  eb]   = 1
+        if  mTEPES.pGenLoInvest[  eb]() >   mTEPES.pGenUpInvest[eb]():
+            mTEPES.pGenLoInvest[  eb]   =   mTEPES.pGenUpInvest[eb]()
+    [OptModel.vGenerationInvest[p,eb].setlb(mTEPES.pGenLoInvest[eb]()) for p,eb in mTEPES.peb]
+    [OptModel.vGenerationInvest[p,eb].setub(mTEPES.pGenUpInvest[eb]()) for p,eb in mTEPES.peb]
+    for gd in mTEPES.gd:
+        if  mTEPES.pGenLoRetire[  gd]() <       pEpsilon:
+            mTEPES.pGenLoRetire[  gd]   = 0
+        if  mTEPES.pGenUpRetire[  gd]() <       pEpsilon:
+            mTEPES.pGenUpRetire[  gd]   = 0
+        if  mTEPES.pGenLoRetire[  gd]() > 1.0 - pEpsilon:
+            mTEPES.pGenLoRetire[  gd]   = 1
+        if  mTEPES.pGenUpRetire[  gd]() > 1.0 - pEpsilon:
+            mTEPES.pGenUpRetire[  gd]   = 1
+        if  mTEPES.pGenLoRetire[  gd]() >   mTEPES.pGenUpRetire[gd]():
+            mTEPES.pGenLoRetire[  gd]   =   mTEPES.pGenUpRetire[gd]()
+    [OptModel.vGenerationRetire[p,gd].setlb(mTEPES.pGenLoRetire[gd]()) for p,gd in mTEPES.pgd]
+    [OptModel.vGenerationRetire[p,gd].setub(mTEPES.pGenUpRetire[gd]()) for p,gd in mTEPES.pgd]
+    for ni,nf,cc in mTEPES.lc:
+        if  mTEPES.pNetLoInvest[  ni,nf,cc]() <       pEpsilon:
+            mTEPES.pNetLoInvest[  ni,nf,cc]   = 0
+        if  mTEPES.pNetUpInvest[  ni,nf,cc]() <       pEpsilon:
+            mTEPES.pNetUpInvest[  ni,nf,cc]   = 0
+        if  mTEPES.pNetLoInvest[  ni,nf,cc]() > 1.0 - pEpsilon:
+            mTEPES.pNetLoInvest[  ni,nf,cc]   = 1
+        if  mTEPES.pNetUpInvest[  ni,nf,cc]() > 1.0 - pEpsilon:
+            mTEPES.pNetUpInvest[  ni,nf,cc]   = 1
+        if  mTEPES.pNetLoInvest[  ni,nf,cc]() >   mTEPES.pNetUpInvest[ni,nf,cc]():
+            mTEPES.pNetLoInvest[  ni,nf,cc]   =   mTEPES.pNetUpInvest[ni,nf,cc]()
+    [OptModel.vNetworkInvest   [p,ni,nf,cc].setlb(mTEPES.pNetLoInvest[ni,nf,cc]()) for p,ni,nf,cc in mTEPES.plc]
+    [OptModel.vNetworkInvest   [p,ni,nf,cc].setub(mTEPES.pNetUpInvest[ni,nf,cc]()) for p,ni,nf,cc in mTEPES.plc]
+
+
 # @profile
 def SettingUpVariables(OptModel, mTEPES):
 
@@ -1005,45 +1073,7 @@ def SettingUpVariables(OptModel, mTEPES):
         Returns:
             None: Changes are performed directly onto the model object.
         '''
-        for eb in mTEPES.eb:
-            if  mTEPES.pGenLoInvest[  eb]() <       pEpsilon:
-                mTEPES.pGenLoInvest[  eb]   = 0
-            if  mTEPES.pGenUpInvest[  eb]() <       pEpsilon:
-                mTEPES.pGenUpInvest[  eb]   = 0
-            if  mTEPES.pGenLoInvest[  eb]() > 1.0 - pEpsilon:
-                mTEPES.pGenLoInvest[  eb]   = 1
-            if  mTEPES.pGenUpInvest[  eb]() > 1.0 - pEpsilon:
-                mTEPES.pGenUpInvest[  eb]   = 1
-            if  mTEPES.pGenLoInvest[  eb]() >   mTEPES.pGenUpInvest[eb]():
-                mTEPES.pGenLoInvest[  eb]   =   mTEPES.pGenUpInvest[eb]()
-        [OptModel.vGenerationInvest[p,eb].setlb(mTEPES.pGenLoInvest[eb]()) for p,eb in mTEPES.peb]
-        [OptModel.vGenerationInvest[p,eb].setub(mTEPES.pGenUpInvest[eb]()) for p,eb in mTEPES.peb]
-        for gd in mTEPES.gd:
-            if  mTEPES.pGenLoRetire[  gd]() <       pEpsilon:
-                mTEPES.pGenLoRetire[  gd]   = 0
-            if  mTEPES.pGenUpRetire[  gd]() <       pEpsilon:
-                mTEPES.pGenUpRetire[  gd]   = 0
-            if  mTEPES.pGenLoRetire[  gd]() > 1.0 - pEpsilon:
-                mTEPES.pGenLoRetire[  gd]   = 1
-            if  mTEPES.pGenUpRetire[  gd]() > 1.0 - pEpsilon:
-                mTEPES.pGenUpRetire[  gd]   = 1
-            if  mTEPES.pGenLoRetire[  gd]() >   mTEPES.pGenUpRetire[gd]():
-                mTEPES.pGenLoRetire[  gd]   =   mTEPES.pGenUpRetire[gd]()
-        [OptModel.vGenerationRetire[p,gd].setlb(mTEPES.pGenLoRetire[gd]()) for p,gd in mTEPES.pgd]
-        [OptModel.vGenerationRetire[p,gd].setub(mTEPES.pGenUpRetire[gd]()) for p,gd in mTEPES.pgd]
-        for ni,nf,cc in mTEPES.lc:
-            if  mTEPES.pNetLoInvest[  ni,nf,cc]() <       pEpsilon:
-                mTEPES.pNetLoInvest[  ni,nf,cc]   = 0
-            if  mTEPES.pNetUpInvest[  ni,nf,cc]() <       pEpsilon:
-                mTEPES.pNetUpInvest[  ni,nf,cc]   = 0
-            if  mTEPES.pNetLoInvest[  ni,nf,cc]() > 1.0 - pEpsilon:
-                mTEPES.pNetLoInvest[  ni,nf,cc]   = 1
-            if  mTEPES.pNetUpInvest[  ni,nf,cc]() > 1.0 - pEpsilon:
-                mTEPES.pNetUpInvest[  ni,nf,cc]   = 1
-            if  mTEPES.pNetLoInvest[  ni,nf,cc]() >   mTEPES.pNetUpInvest[ni,nf,cc]():
-                mTEPES.pNetLoInvest[  ni,nf,cc]   =   mTEPES.pNetUpInvest[ni,nf,cc]()
-        [OptModel.vNetworkInvest   [p,ni,nf,cc].setlb(mTEPES.pNetLoInvest[ni,nf,cc]()) for p,ni,nf,cc in mTEPES.plc]
-        [OptModel.vNetworkInvest   [p,ni,nf,cc].setub(mTEPES.pNetUpInvest[ni,nf,cc]()) for p,ni,nf,cc in mTEPES.plc]
+        apply_investment_bounds(mTEPES, OptModel, pEpsilon)
 
         # Reservoir investment bounds: pRsrLoInvest / pRsrUpInvest are read here but never created — openTEPES_DataConfiguration does not
         # declare them and there is no plan to. The whole block therefore raised AttributeError on line 1 of the loop for any case with

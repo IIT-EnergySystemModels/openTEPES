@@ -843,3 +843,67 @@ def test_runner_output_format_and_aggregate(case_7d_system, tmp_path):
     finally:
         con.close()
     assert labels == ["c1", "c2"]
+
+
+@pytest.mark.solve
+@pytest.mark.parametrize("case_7d_system", ["9n"], indirect=["case_7d_system"])
+def test_apply_investment_bounds_is_reusable_after_build(case_7d_system):
+    """Mutating an investment-bound Param and re-applying it must move the variable bounds.
+
+    Before ``apply_investment_bounds`` existed these Params were read only while the model was
+    being built, so excluding a candidate from a portfolio sweep meant rebuilding the whole model.
+    """
+    from openTEPES.openTEPES_SettingUpVariables import apply_investment_bounds
+
+    mTEPES = openTEPES_run(**case_7d_system)
+
+    lc = list(mTEPES.plc)
+    if not lc:
+        pytest.skip("case has no candidate lines")
+    key = lc[0]
+    _, ni, nf, cc = key
+
+    assert mTEPES.vNetworkInvest[key].ub > 0.0, "candidate should start available"
+
+    # exclude the candidate the way a portfolio sweep would, then re-apply the bounds
+    mTEPES.pNetUpInvest[ni, nf, cc] = 0
+    apply_investment_bounds(mTEPES, mTEPES)
+    assert mTEPES.vNetworkInvest[key].ub == 0.0, "bound not re-applied after mutating pNetUpInvest"
+
+    # and it can be restored
+    mTEPES.pNetUpInvest[ni, nf, cc] = 1
+    apply_investment_bounds(mTEPES, mTEPES)
+    assert mTEPES.vNetworkInvest[key].ub == 1.0
+
+
+@pytest.mark.solve
+@pytest.mark.parametrize("case_7d_system", ["9n"], indirect=["case_7d_system"])
+def test_investment_bound_epsilon_excludes_and_zero_is_not_the_data_convention(case_7d_system):
+    """A value below pEpsilon must exclude the candidate, and 0 must mean the same on a built model.
+
+    This locks the asymmetry documented on ``apply_investment_bounds``: reading a case turns an
+    ``InvestmentUp`` of 0 into 1.0, so 0 in the CSV means unrestricted, while 0 set on a built model
+    means excluded. A sweep that carried the data convention across would silently leave every
+    candidate available, and nothing would fail.
+    """
+    from openTEPES.openTEPES_SettingUpVariables import apply_investment_bounds
+
+    mTEPES = openTEPES_run(**case_7d_system)
+    lc = list(mTEPES.plc)
+    if not lc:
+        pytest.skip("case has no candidate lines")
+    key = lc[0]
+    _, ni, nf, cc = key
+
+    # a value below pEpsilon snaps to zero, which excludes the candidate
+    mTEPES.pNetUpInvest[ni, nf, cc] = 1e-9
+    apply_investment_bounds(mTEPES, mTEPES)
+    assert mTEPES.vNetworkInvest[key].ub == 0.0, "an epsilon upper bound should exclude the candidate"
+
+    # and the snapping is idempotent, so a sweep may call this as often as it likes
+    apply_investment_bounds(mTEPES, mTEPES)
+    assert mTEPES.vNetworkInvest[key].ub == 0.0
+
+    mTEPES.pNetUpInvest[ni, nf, cc] = 1
+    apply_investment_bounds(mTEPES, mTEPES)
+    assert mTEPES.vNetworkInvest[key].ub == 1.0
