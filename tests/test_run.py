@@ -845,6 +845,7 @@ def test_runner_output_format_and_aggregate(case_7d_system, tmp_path):
     assert labels == ["c1", "c2"]
 
 
+@pytest.mark.solve
 @pytest.mark.parametrize("case_7d_system", ["9n"], indirect=["case_7d_system"])
 def test_apply_investment_bounds_is_reusable_after_build(case_7d_system):
     """Mutating an investment-bound Param and re-applying it must move the variable bounds.
@@ -875,6 +876,7 @@ def test_apply_investment_bounds_is_reusable_after_build(case_7d_system):
     assert mTEPES.vNetworkInvest[key].ub == 1.0
 
 
+@pytest.mark.solve
 @pytest.mark.parametrize("case_7d_system", ["9n"], indirect=["case_7d_system"])
 def test_investment_bound_epsilon_excludes_and_zero_is_not_the_data_convention(case_7d_system):
     """A value below pEpsilon must exclude the candidate, and 0 must mean the same on a built model.
