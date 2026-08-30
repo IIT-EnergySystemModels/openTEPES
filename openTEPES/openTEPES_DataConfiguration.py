@@ -59,6 +59,7 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     mTEPES.ch     = Set(doc='CHP       & fuel boiler units'    , initialize=[g      for g    in mTEPES.g   if                                            par['pRatedMaxPowerHeat'][g ] > 0.0 and par['pProductionFunctionHeat'    ][g ] == 0.0])
     mTEPES.bo     = Set(doc='            fuel boiler units'    , initialize=[ch     for ch   in mTEPES.ch  if par['pRatedMaxPowerElec']  [ch] == 0.0 and par['pRatedMaxPowerHeat'][ch] > 0.0 and par['pProductionFunctionHeat'    ][ch] == 0.0])
     mTEPES.hh     = Set(doc='        hydrogen boiler units'    , initialize=[bo     for bo   in mTEPES.bo                                                                                     if par['pProductionFunctionH2ToHeat'][bo] >  0.0])
+    mTEPES.hg     = Set(doc='hydrogen-fired gen      units'    , initialize=[g      for g    in mTEPES.g   if par['pProductionFunctionH2ToPower'][g ] >  0.0])
     mTEPES.gc     = Set(doc='candidate               units'    , initialize=[g      for g    in mTEPES.g   if par['pGenInvestCost']      [g ] >  0.0])
     mTEPES.gd     = Set(doc='retirement              units'    , initialize=[g      for g    in mTEPES.g   if par['pGenRetireCost']      [g ] >  0.0])
     mTEPES.ec     = Set(doc='candidate ESS           units'    , initialize=[es     for es   in mTEPES.es  if par['pGenInvestCost']      [es] >  0.0])
@@ -888,6 +889,8 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
         par['pDemandH2Peak']         = par['pDemandH2Peak'].loc        [mTEPES.par]
         # drop generators not el
         par['pProductionFunctionH2'] = par['pProductionFunctionH2'].loc[mTEPES.el]
+        # drop generators not hg
+        par['pProductionFunctionH2ToPower'] = par['pProductionFunctionH2ToPower'].loc[mTEPES.hg]
         # drop pipelines not pc
         par['pH2PipeFixedCost']      = par['pH2PipeFixedCost'].loc     [mTEPES.pc]
         par['pH2PipeLoInvest']       = par['pH2PipeLoInvest'].loc      [mTEPES.pc]
@@ -1128,6 +1131,7 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
 
     if par['pIndHydrogen']:
         mTEPES.pProductionFunctionH2 = Param(mTEPES.el, initialize=par['pProductionFunctionH2'].to_dict()    , within=NonNegativeReals,    doc='Production function of an electrolyzer plant'        )
+        mTEPES.pProductionFunctionH2ToPower = Param(mTEPES.hg, initialize=par['pProductionFunctionH2ToPower'].to_dict(), within=NonNegativeReals, doc='Production function of a hydrogen-fired generator')
 
     if par['pIndHeat']:
         par['pMinPowerHeat'] = filter_rows(par['pMinPowerHeat'], mTEPES.psnch)
