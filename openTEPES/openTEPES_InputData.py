@@ -383,6 +383,17 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     par['pProductionFunctionH2ToPower'] = (dfs['dfGeneration']['ProductionFunctionH2ToPower']
                                            if 'ProductionFunctionH2ToPower' in dfs['dfGeneration'].columns
                                            else pd.Series(0.0, index=dfs['dfGeneration'].index)).fillna(0.0) * 1e-3                                                      # production function of a boiler using H2     [gH2/kWh]
+
+    # Hydrogen storage. A cavern buffers what the electrolysers make against what the turbines and
+    # the hydrogen demand take, so the hydrogen balance no longer has to clear within the hour.
+    # All three columns are optional; without MaximumStorageH2 the hs set is empty and nothing changes.
+    def _optional_gen_col(name, default=0.0):
+        return (dfs['dfGeneration'][name] if name in dfs['dfGeneration'].columns
+                else pd.Series(default, index=dfs['dfGeneration'].index))
+    par['pMaxStorageH2']  = _optional_gen_col('MaximumStorageH2').fillna(0.0)
+    par['pMaxChargeH2']   = _optional_gen_col('MaximumChargeH2' ).fillna(0.0)
+    par['pIniStorageH2']  = _optional_gen_col('InitialStorageH2').fillna(0.0)
+    par['pStorageTypeH2'] = _optional_gen_col('StorageTypeH2', 'Weekly').fillna('Weekly')
     par['pEfficiency']                 = dfs['dfGeneration']  ['Efficiency'                ]                                                             #               ESS round-trip efficiency      [p.u.]
     par['pStorageType']                = dfs['dfGeneration']  ['StorageType'               ]                                                             #               ESS storage  type
     par['pOutflowsType']               = dfs['dfGeneration']  ['OutflowsType'              ]                                                             #               ESS outflows type

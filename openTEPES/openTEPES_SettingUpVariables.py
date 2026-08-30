@@ -473,6 +473,14 @@ def SettingUpVariables(OptModel, mTEPES):
             [OptModel.vFlowH2  [p,sc,n,ni,nf,cc].setub( mTEPES.pH2PipeNTCFrw[ni,nf,cc])                           for p,sc,n,ni,nf,cc in mTEPES.psnpa]
             [OptModel.vH2NS    [p,sc,n,nd      ].setub(mTEPES.pDuration[p,sc,n]()*mTEPES.pDemandH2Pos[p,sc,n,nd]) for p,sc,n,nd       in mTEPES.psnnd]
 
+            # hydrogen storage: injection, withdrawal and inventory
+            OptModel.vH2StorCharge    = Var(mTEPES.psn*mTEPES.hs, within=NonNegativeReals, doc='hydrogen into  storage [tH2]')
+            OptModel.vH2StorDischarge = Var(mTEPES.psn*mTEPES.hs, within=NonNegativeReals, doc='hydrogen out of storage [tH2]')
+            OptModel.vH2Inventory     = Var(mTEPES.psn*mTEPES.hs, within=NonNegativeReals, doc='hydrogen inventory      [tH2]')
+            [OptModel.vH2StorCharge   [p,sc,n,hs].setub(mTEPES.pDuration[p,sc,n]()*mTEPES.pMaxChargeH2[hs]) for p,sc,n,hs in mTEPES.psn*mTEPES.hs]
+            [OptModel.vH2StorDischarge[p,sc,n,hs].setub(mTEPES.pDuration[p,sc,n]()*mTEPES.pMaxChargeH2[hs]) for p,sc,n,hs in mTEPES.psn*mTEPES.hs]
+            [OptModel.vH2Inventory    [p,sc,n,hs].setub(                           mTEPES.pMaxStorageH2[hs]) for p,sc,n,hs in mTEPES.psn*mTEPES.hs]
+
         if mTEPES.pIndHeat():
             OptModel.vFlowHeat = Var(mTEPES.psnha, within=Reals,            doc='heat pipe flow          [GW]')
             OptModel.vHeatNS   = Var(mTEPES.psnnd, within=NonNegativeReals, doc='heat not served in node [GW]')
