@@ -377,7 +377,12 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     par['pProductionFunctionHydro']    = dfs['dfGeneration']  ['ProductionFunctionHydro'   ]                                                             # production function of a hydropower plant    [kWh/m3]
     par['pProductionFunctionH2']       = dfs['dfGeneration']  ['ProductionFunctionH2'      ] * 1e-3                                                      # production function of an electrolyzer       [kWh/gH2]
     par['pProductionFunctionHeat']     = dfs['dfGeneration']  ['ProductionFunctionHeat'    ]                                                             # production function of a heat pump           [kWh/kWh]
-    par['pProductionFunctionH2ToHeat'] = dfs['dfGeneration']  ['ProductionFunctionH2ToHeat'] * 1e-3                                                      # production function of a boiler using H2     [gH2/kWh]
+    par['pProductionFunctionH2ToHeat'] = dfs['dfGeneration']  ['ProductionFunctionH2ToHeat'] * 1e-3
+    # Hydrogen-fired generation. Optional column, so a case without it keeps an empty hg set
+    # and an unchanged model.
+    par['pProductionFunctionH2ToPower'] = (dfs['dfGeneration']['ProductionFunctionH2ToPower']
+                                           if 'ProductionFunctionH2ToPower' in dfs['dfGeneration'].columns
+                                           else pd.Series(0.0, index=dfs['dfGeneration'].index)).fillna(0.0) * 1e-3                                                      # production function of a boiler using H2     [gH2/kWh]
     par['pEfficiency']                 = dfs['dfGeneration']  ['Efficiency'                ]                                                             #               ESS round-trip efficiency      [p.u.]
     par['pStorageType']                = dfs['dfGeneration']  ['StorageType'               ]                                                             #               ESS storage  type
     par['pOutflowsType']               = dfs['dfGeneration']  ['OutflowsType'              ]                                                             #               ESS outflows type

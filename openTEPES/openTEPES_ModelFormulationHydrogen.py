@@ -26,16 +26,20 @@ def NetworkH2OperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, 
     l2n = defaultdict(set)
     # nodes to fuel heaters using H2 (b2n)
     b2n = defaultdict(set)
+    # nodes to hydrogen-fired generators (g2n)
+    g2n = defaultdict(set)
     for nd,g in mTEPES.n2g:
         if g in mTEPES.el:
             l2n[nd].add(g)
         if g in mTEPES.hh:
             b2n[nd].add(g)
+        if g in mTEPES.hg:
+            g2n[nd].add(g)
 
     def eBalanceH2(OptModel,n,nd):
-        if len(l2n[nd]) + len(b2n[nd]) + len(lout[nd]) + len(lin[nd]) == 0:
+        if len(l2n[nd]) + len(b2n[nd]) + len(g2n[nd]) + len(lout[nd]) + len(lin[nd]) == 0:
             return Constraint.Skip
-        return (mTEPES.pDuration[p,sc,n]()*sum(OptModel.vESSTotalCharge[p,sc,n,el]/mTEPES.pProductionFunctionH2[el] for el in l2n[nd] if (p,el) in mTEPES.peh) - mTEPES.pDuration[p,sc,n]()*sum(OptModel.vTotalOutputHeat[p,sc,n,hh]*mTEPES.pProductionFunctionH2ToHeat[hh] for hh in b2n[nd] if (p,hh) in mTEPES.phh) + OptModel.vH2NS[p,sc,n,nd] - OptModel.vH2Exc[p,sc,n,nd] -
+        return (mTEPES.pDuration[p,sc,n]()*sum(OptModel.vESSTotalCharge[p,sc,n,el]/mTEPES.pProductionFunctionH2[el] for el in l2n[nd] if (p,el) in mTEPES.peh) - mTEPES.pDuration[p,sc,n]()*sum(OptModel.vTotalOutputHeat[p,sc,n,hh]*mTEPES.pProductionFunctionH2ToHeat[hh] for hh in b2n[nd] if (p,hh) in mTEPES.phh) - mTEPES.pDuration[p,sc,n]()*sum(OptModel.vTotalOutput[p,sc,n,hg]*mTEPES.pProductionFunctionH2ToPower[hg] for hg in g2n[nd] if (p,hg) in mTEPES.pg) + OptModel.vH2NS[p,sc,n,nd] - OptModel.vH2Exc[p,sc,n,nd] -
                 sum(OptModel.vFlowH2[p,sc,n,nd,nf,cc] for nf,cc in lout[nd] if (p,nd,nf,cc) in mTEPES.ppa) + sum(OptModel.vFlowH2[p,sc,n,ni,nd,cc] for ni,cc in lin[nd] if (p,ni,nd,cc) in mTEPES.ppa)) == mTEPES.pDemandH2[p,sc,n,nd]*mTEPES.pDuration[p,sc,n]()
     setattr(OptModel, f'eBalanceH2_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.nd, rule=eBalanceH2, doc='H2 load generation balance [tH2]'))
 
@@ -43,7 +47,7 @@ def NetworkH2OperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, 
         print('eBalanceH2                ... ', len(getattr(OptModel, f'eBalanceH2_{p}_{sc}_{st}')), ' rows')
 
     def eTotalRH2Cost(OptModel,n):
-        return OptModel.vTotalRH2Cost[p,sc,n] == sum(mTEPES.pH2NSCost * OptModel.vH2NS[p,sc,n,nd] + mTEPES.pH2ExcCost * OptModel.vH2Exc[p,sc,n,nd] for nd in mTEPES.nd if len(l2n[nd]) + len(b2n[nd]) + len(lout[nd]) + len(lin[nd]))
+        return OptModel.vTotalRH2Cost[p,sc,n] == sum(mTEPES.pH2NSCost * OptModel.vH2NS[p,sc,n,nd] + mTEPES.pH2ExcCost * OptModel.vH2Exc[p,sc,n,nd] for nd in mTEPES.nd if len(l2n[nd]) + len(b2n[nd]) + len(g2n[nd]) + len(lout[nd]) + len(lin[nd]))
     setattr(OptModel, f'eTotalRH2Cost_{p}_{sc}_{st}', Constraint(mTEPES.n, rule=eTotalRH2Cost, doc='H2 system reliability cost [MEUR]'))
 
     if pIndLogConsole:
