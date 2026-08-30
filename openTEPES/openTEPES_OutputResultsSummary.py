@@ -9,6 +9,7 @@ demand, and network (FlexibilityResults), and the reliability indexes -- net dem
 
 import time
 import os
+import math
 import pandas            as     pd
 from   collections       import defaultdict
 
@@ -54,8 +55,15 @@ def OperationSummaryResults(DirName, CaseName, OptModel, mTEPES):
     pNodeConnected = {nd for nd in mTEPES.nd if g2n[nd] or lout[nd] or lin[nd]}
 
     # Ratio Fossil Fuel Generation/Total Generation [%]
-    TotalGeneration       = sum(OptModel.vTotalOutput[p,sc,n,g]()*mTEPES.pLoadLevelDuration[p,sc,n]() for p,sc,n,g in mTEPES.psng )
-    FossilFuelGeneration  = sum(OptModel.vTotalOutput[p,sc,n,g]()*mTEPES.pLoadLevelDuration[p,sc,n]() for p,sc,n,g in mTEPES.psntr)
+    # Fossil units are those with a positive emission rate. mTEPES.tr, used before, is every unit
+    # with a non-zero operating cost, which also includes wind, solar, nuclear, hydro and storage.
+    TotalGeneration       = sum(OptModel.vTotalOutput[p,sc,n,g]()*mTEPES.pLoadLevelDuration[p,sc,n]() for p,sc,n,g in mTEPES.psng)
+    FossilFuelGeneration  = sum(OptModel.vTotalOutput[p,sc,n,g]()*mTEPES.pLoadLevelDuration[p,sc,n]() for p,sc,n,g in mTEPES.psng if mTEPES.pEmissionRate[g] > 0.0)
+    # CO2EmissionRate is optional and some cases leave it blank, including ones with fossil units.
+    # Reporting 0 % there would read as a clean system rather than as missing data.
+    pAnyEmissionData      = any(mTEPES.pEmissionRate[g] > 0.0 for g in mTEPES.g)
+    if not pAnyEmissionData:
+        print('WARNING: no unit has a positive CO2EmissionRate; the fossil-fuel generation ratio is reported as NaN.')
     # Ratio Total Investments [%]
     TotalInvestmentCost   = (sum(mTEPES.pDiscountedWeight[p] *                                       OptModel.vTotalFElecCost  [p   ]()     for p          in mTEPES.p if len(mTEPES.gc) + len(mTEPES.gd) + len(mTEPES.lc)) +
                              sum(mTEPES.pDiscountedWeight[p] *                                       OptModel.vTotalFHydroCost [p   ]()     for p          in mTEPES.p if mTEPES.rn) +
@@ -98,7 +106,7 @@ def OperationSummaryResults(DirName, CaseName, OptModel, mTEPES):
         VRETechRevenue = 0.0
     VREInvCostCapacity = sum(mTEPES.pDiscountedWeight[p]*mTEPES.pGenInvestCost[gc]*OptModel.vGenerationInvest[p,gc]() for p,gc in mTEPES.pgc if gc in mTEPES.re)
 
-    K01     = pd.Series(data={'Ratio Fossil Fuel Generation/Total Generation [%]'                       : FossilFuelGeneration / TotalGeneration    *1e2}).to_frame(name='Value')
+    K01     = pd.Series(data={'Ratio Fossil Fuel Generation/Total Generation [%]'                       : (FossilFuelGeneration / TotalGeneration   *1e2) if pAnyEmissionData else math.nan}).to_frame(name='Value')
     if GenInvestmentCost:
         K02 = pd.Series(data={'Ratio Generation Investment Cost/Total Investment Cost [%]'              : GenInvestmentCost    / TotalInvestmentCost*1e2}).to_frame(name='Value')
     else:
