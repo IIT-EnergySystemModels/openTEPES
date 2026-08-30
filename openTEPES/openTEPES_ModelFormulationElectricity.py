@@ -311,6 +311,25 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
             return Constraint.Skip
     setattr(OptModel, f'eESSInventory_{p}_{sc}_{st}', Constraint(mTEPES.nesc, rule=eESSInventory, doc='ESS inventory balance [GWh]'))
 
+    # eMinimumEnergy and eMaximumEnergy bound the energy a unit produces over an EnergyType period
+    # against an exogenous profile. This is the same period and the same window, but it ties output
+    # to charge rather than to a profile: over the block the two must net to zero. That cannot be
+    # written as a min/max pair, since the level they must agree on is decided by the optimisation.
+    ne = [es for es in mTEPES.es if mTEPES.pIndEnergyNeutrality[es]]
+    if ne:
+        def eEnergyNeutrality(OptModel,n,es):
+            win = mTEPES.pNeutralityTimeStep[es]
+            i   = mTEPES.n.ord(n)
+            if i % win != 0 or (p,es) not in mTEPES.pes or (p,sc,st,n) not in mTEPES.s2n:
+                return Constraint.Skip
+            return sum(mTEPES.pDuration[p,sc,n2]() * (OptModel.vTotalOutput[p,sc,n2,es]
+                       - OptModel.vESSTotalCharge[p,sc,n2,es]) for n2 in n2list[i-win:i]) == 0.0
+        setattr(OptModel, f'eEnergyNeutrality_{p}_{sc}_{st}',
+                Constraint(mTEPES.n, ne, rule=eEnergyNeutrality, doc='energy neutrality over the EnergyType period [GWh]'))
+
+        if pIndLogConsole:
+            print('eEnergyNeutrality         ... ', len(getattr(OptModel, f'eEnergyNeutrality_{p}_{sc}_{st}')), ' rows')
+
     if pIndLogConsole:
         print('eESSInventory             ... ', len(getattr(OptModel, f'eESSInventory_{p}_{sc}_{st}')), ' rows')
 
