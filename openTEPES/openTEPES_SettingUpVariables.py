@@ -138,6 +138,15 @@ def SettingUpVariables(OptModel, mTEPES):
         OptModel.vESSReserveDown           = Var(mTEPES.psneh, within=NonNegativeReals, doc='ESS down operating reserve                       [GW]')
         OptModel.vENS                      = Var(mTEPES.psnnd, within=NonNegativeReals, doc='energy not served in node                        [GW]')
 
+        # Energy not served is normally a free variable penalised at pENSCost, so a system that
+        # cannot serve its demand still returns a solution and has to be screened afterwards on the
+        # value of vENS. Fixing the variable at zero instead asks the question directly: the model
+        # is then infeasible exactly when the demand cannot be met, which is what an adequacy study
+        # wants to establish. Off by default.
+        if mTEPES.pIndHardZeroENS():
+            for idx in OptModel.vENS:
+                OptModel.vENS[idx].fix(0.0)
+
         if mTEPES.pIndReserveActivation():
             OptModel.vESSReserveUpEnergy   = Var(mTEPES.psneh, within=NonNegativeReals, doc='ESS up   reserve activation of the unit          [GW]')
             OptModel.vESSReserveDownEnergy = Var(mTEPES.psneh, within=NonNegativeReals, doc='ESS down reserve activation of the unit          [GW]')

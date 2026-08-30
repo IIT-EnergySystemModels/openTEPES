@@ -5,6 +5,7 @@ openTEPES.openTEPES_DataConfiguration — builds the derived sets and parameters
 """
 from __future__ import annotations
 
+import os
 import time
 import math
 import pandas        as pd
@@ -1015,6 +1016,9 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     mTEPES.pIndBinNetHeatInvest  = Param(initialize=par['pIndBinNetHeatInvest'] , within=NonNegativeIntegers, doc='Indicator of binary heat     network investment decisions', mutable=True)
     mTEPES.pIndBinGenOperat      = Param(initialize=par['pIndBinGenOperat']     , within=Binary,              doc='Indicator of binary generation operation  decisions',       mutable=True)
     mTEPES.pIndBinSingleNode     = Param(initialize=par['pIndBinSingleNode']    , within=Binary,              doc='Indicator of single node within a electric network case',   mutable=True)
+    # Optional: absent from cases written before it existed, so default it rather than require it.
+    # OTEPES_ZERO_ENS, set by --zero-ens, turns it on for a run without editing case data.
+    mTEPES.pIndHardZeroENS       = Param(initialize=1 if os.environ.get('OTEPES_ZERO_ENS') else par.get('pIndHardZeroENS', 0), within=Binary, doc='Indicator of energy not served forbidden rather than penalised', mutable=True)
     mTEPES.pIndBinGenRamps       = Param(initialize=par['pIndBinGenRamps']      , within=Binary,              doc='Indicator of using or not the ramp constraints',            mutable=True)
     mTEPES.pIndBinGenMinTime     = Param(initialize=par['pIndBinGenMinTime']    , within=Binary,              doc='Indicator of using or not the min up/dw time constraints',  mutable=True)
     mTEPES.pIndBinLineCommit     = Param(initialize=par['pIndBinLineCommit']    , within=Binary,              doc='Indicator of binary electric network switching  decisions', mutable=True)
