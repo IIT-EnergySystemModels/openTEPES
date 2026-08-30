@@ -518,6 +518,9 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     par['pStorageTimeStep']  = par['pStorageType' ].map(idxCycle   ).fillna(1)                                                                                          .astype('int')
     par['pOutflowsTimeStep'] = par['pOutflowsType'].map(idxOutflows).fillna(1).where(par['pEnergyOutflows'   ].sum()                                   > 0.0, other = 1).astype('int')
     par['pEnergyTimeStep']   = par['pEnergyType'  ].map(idxEnergy  ).fillna(1).where(par['pVariableMinEnergy'].sum() + par['pVariableMaxEnergy'].sum() > 0.0, other = 1).astype('int')
+    # Same period vocabulary, but not gated on the min/max energy profiles: neutrality needs a block
+    # length whether or not the unit also carries an energy bound.
+    par['pNeutralityTimeStep'] = par['pEnergyType'].map(idxEnergy).fillna(1).astype('int')
 
     par['pStorageTimeStep']  = pd.concat([par['pStorageTimeStep'], par['pOutflowsTimeStep'], par['pEnergyTimeStep']], axis=1).min(axis=1)
     # cycle time step can't exceed the stage duration
@@ -618,6 +621,8 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     par['pStorageTimeStep']     = par['pStorageTimeStep'].loc      [mTEPES.es   ]
     par['pOutflowsTimeStep']    = par['pOutflowsTimeStep'].loc     [mTEPES.es   ]
     par['pStorageType']         = par['pStorageType'].loc          [mTEPES.es   ]
+    par['pIndEnergyNeutrality'] = par['pIndEnergyNeutrality'].loc  [mTEPES.es   ]
+    par['pNeutralityTimeStep']  = par['pNeutralityTimeStep'].loc   [mTEPES.es   ]
 
     # separate positive and negative demands to avoid converting negative values to 0
     par['pDemandElecPos']  = par['pDemandElec'].where(par['pDemandElec'] >= 0.0, 0.0)
@@ -1113,6 +1118,8 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     mTEPES.pEnergyTimeStep       = Param(mTEPES.gg,    initialize=par['pEnergyTimeStep'].to_dict()           , within=PositiveIntegers,    doc='Unit energy cycle'                                   )
     mTEPES.pIniInventory         = Param(mTEPES.psnes, initialize=par['pIniInventory'].to_dict()             , within=NonNegativeReals,    doc='ESS Initial storage',                    mutable=True)
     mTEPES.pStorageType          = Param(mTEPES.es,    initialize=par['pStorageType'].to_dict()              , within=Any             ,    doc='ESS Storage type'                                    )
+    mTEPES.pIndEnergyNeutrality = Param(mTEPES.es, initialize=par['pIndEnergyNeutrality'].to_dict(), within=Binary, doc='Energy neutral over its EnergyType period')
+    mTEPES.pNeutralityTimeStep  = Param(mTEPES.es, initialize=par['pNeutralityTimeStep'].to_dict() , within=PositiveIntegers, doc='Energy neutrality period [load levels]')
     mTEPES.pGenLoInvest          = Param(mTEPES.eb,    initialize=par['pGenLoInvest'].to_dict()              , within=NonNegativeReals,    doc='Lower bound of the investment decision', mutable=True)
     mTEPES.pGenUpInvest          = Param(mTEPES.eb,    initialize=par['pGenUpInvest'].to_dict()              , within=NonNegativeReals,    doc='Upper bound of the investment decision', mutable=True)
     mTEPES.pGenLoRetire          = Param(mTEPES.gd,    initialize=par['pGenLoRetire'].to_dict()              , within=NonNegativeReals,    doc='Lower bound of the retirement decision', mutable=True)
