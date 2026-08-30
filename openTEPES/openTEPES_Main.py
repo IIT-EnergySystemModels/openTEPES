@@ -721,6 +721,10 @@ def _positive_int(value: str) -> int:
 
 parser.add_argument('--threads',          type=_positive_int, default=None,
                     help="Cap the solver thread count. Default: half of (logical + physical) cores. Also set by OTEPES_THREADS.")
+parser.add_argument('--crossover',         type=int, default=None, choices=[-1, 0, 1],
+                    help="Gurobi Crossover after the barrier: -1 automatic (default), 0 off, 1 on. Turning it off "
+                         "returns the interior-point solution, which is reproducible and worth being able to state. "
+                         "Also set by OTEPES_CROSSOVER.")
 parser.add_argument('--warm-resolve',         default=False, action="store_true",
                     help="Persistent re-solves (Mode C hot-swap sweep, or a gurobi_persistent stage loop) use warm dual "
                          "simplex with a barrier fallback. Gurobi only; no effect for Mode A/B or non-Gurobi solvers. Also set by OTEPES_WARM_RESOLVE.")
@@ -745,6 +749,9 @@ def main():
 
     if args.threads is not None:
         os.environ["OTEPES_THREADS"] = str(args.threads)   # _threads() reads it, so the flag wins over the variable
+
+    if args.crossover is not None:
+        os.environ["OTEPES_CROSSOVER"] = str(args.crossover)  # _crossover() reads it, so the flag wins over the variable
 
     if args.warm_resolve:
         os.environ["OTEPES_WARM_RESOLVE"] = "1"             # warm-resolve helpers read the env, so the flag wins
