@@ -11,11 +11,10 @@ The model has been used in these research projects:
   Ramos](https://www.iit.comillas.edu/people/aramos), [T. Gómez](https://www.iit.comillas.edu/people/tomas), [C.
   Mateo](https://www.iit.comillas.edu/people/cmateo), [M. Martínez](https://www.iit.comillas.edu/people/mmartinezv), [M.
   Troncia](https://www.iit.comillas.edu/people/mtroncia), [M.A. Ruiz](https://www.iit.comillas.edu/people/maruiz),  [J.F.
-  Gutiérrez](https://www.iit.comillas.edu/people/jgutierrez), [D. Scarfiello](https://www.iit.comillas.edu/people/dscarfiello),
-- [M.A. Ríos-Ocampo](https://www.iit.comillas.edu/people/marios), [E.C. Ormeño](https://www.iit.comillas.edu/people/eormeno)
+  Gutiérrez](https://www.iit.comillas.edu/people/jgutierrez), [D. Scarfiello](https://www.iit.comillas.edu/people/dscarfiello), [M.A. Ríos-Ocampo](https://www.iit.comillas.edu/people/marios), [E.C. Ormeño](https://www.iit.comillas.edu/people/eormeno)
 
-  > It aims to design, develop, and validate a robust, transparent, and fully explainable quantitative framework capable of forecasting Iberian day-ahead
-  > electricity prices and estimating the solar PV capture price for 2026–2027.
+  > The aim of this study is to demonstrate, with quantitative evidence, that it is possible to accelerate the decarbonization of the economy by increasing
+  > electricity demand, and it is expected to have a lower cost impact on consumers, through a more intensive use of existing grid assets via flexibility mechanisms. 
 
 - [Quantitative Framework for Forecasting PV Capture Prices and Evaluating Low-Price Risk in the Iberian Electricity
   Market](https://www.iit.comillas.edu/publicacion/proyecto/en/Everest2025/Quantitative_Framework_for_Forecasting_PV_Capture_Prices_and_Evaluating_Low-Price_Risk_in_the_Iberian_Electricity_Market),
