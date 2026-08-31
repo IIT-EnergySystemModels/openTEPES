@@ -384,6 +384,17 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     # vTotalOutput is in GW, so GWh x gH2/kWh already gives tonnes: 1e6 kWh x g/kWh = 1e6 g = 1 t.
     # Scaling by 1e-3 as the others do would make the term kilograms and understate the hydrogen a
     # turbine burns by a factor of a thousand.
+    # Hydrogen made without electricity: steam methane reforming, and imports landing at a node.
+    # openTEPES could only make hydrogen by electrolysis, so a case whose demand is met partly by
+    # reforming or import had no way to say so and booked the difference as hydrogen not served.
+    # MaximumProductionH2 is in tH2/h, the same unit the balance is written in, so that no scaling
+    # is applied on the way in. ProductionCostH2 is MEUR/tH2 and carries fuel, variable O&M and
+    # the carbon price together; the case prices carbon rather than capping it, so a single
+    # marginal cost is exact. ProductionEmissionH2, in tCO2/tH2, is carried for reporting.
+    for _c, _d in (('MaximumProductionH2', 0.0), ('ProductionCostH2', 0.0), ('ProductionEmissionH2', 0.0)):
+        par['p' + _c] = (dfs['dfGeneration'][_c] if _c in dfs['dfGeneration'].columns
+                         else pd.Series(_d, index=dfs['dfGeneration'].index)).fillna(_d)
+
     par['pProductionFunctionH2ToPower'] = (dfs['dfGeneration']['ProductionFunctionH2ToPower']
                                            if 'ProductionFunctionH2ToPower' in dfs['dfGeneration'].columns
                                            else pd.Series(0.0, index=dfs['dfGeneration'].index)).fillna(0.0)                                                      # production function of a boiler using H2     [gH2/kWh]

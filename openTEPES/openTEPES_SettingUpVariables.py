@@ -160,6 +160,7 @@ def SettingUpVariables(OptModel, mTEPES):
         if mTEPES.pIndHydrogen():
             OptModel.vTotalFH2Cost         = Var(mTEPES.p,     within=NonNegativeReals, doc='total system fixed H2                cost      [MEUR]')
             OptModel.vTotalRH2Cost         = Var(mTEPES.psn,   within=NonNegativeReals, doc='total system reliability H2          cost      [MEUR]')
+            OptModel.vTotalH2SrcCost       = Var(mTEPES.psn,   within=NonNegativeReals, doc='total hydrogen source              cost      [MEUR]')
 
         if mTEPES.pIndHeat():
             OptModel.vTotalFHeatCost       = Var(mTEPES.p,     within=NonNegativeReals, doc='total system fixed heat              cost      [MEUR]')
@@ -472,6 +473,10 @@ def SettingUpVariables(OptModel, mTEPES):
             [OptModel.vFlowH2  [p,sc,n,ni,nf,cc].setlb(-mTEPES.pH2PipeNTCBck[ni,nf,cc])                           for p,sc,n,ni,nf,cc in mTEPES.psnpa]
             [OptModel.vFlowH2  [p,sc,n,ni,nf,cc].setub( mTEPES.pH2PipeNTCFrw[ni,nf,cc])                           for p,sc,n,ni,nf,cc in mTEPES.psnpa]
             [OptModel.vH2NS    [p,sc,n,nd      ].setub(mTEPES.pDuration[p,sc,n]()*mTEPES.pDemandH2Pos[p,sc,n,nd]) for p,sc,n,nd       in mTEPES.psnnd]
+
+            # hydrogen made without electricity, in tH2 over the load level
+            OptModel.vH2Production = Var(mTEPES.psn*mTEPES.sr, within=NonNegativeReals, doc='hydrogen produced without electricity [tH2]')
+            [OptModel.vH2Production[p,sc,n,sr].setub(mTEPES.pDuration[p,sc,n]()*mTEPES.pMaximumProductionH2[sr]) for p,sc,n,sr in mTEPES.psn*mTEPES.sr]
 
             # hydrogen storage: injection, withdrawal and inventory
             OptModel.vH2StorCharge    = Var(mTEPES.psn*mTEPES.hs, within=NonNegativeReals, doc='hydrogen into  storage [tH2]')

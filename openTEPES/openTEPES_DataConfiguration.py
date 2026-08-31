@@ -64,6 +64,10 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     # so it never enters the generating set. n2hs gives it a node the same way n2g does.
     mTEPES.hs     = Set(doc='hydrogen storage        units'    , initialize=[gg     for gg   in mTEPES.gg  if par['pMaxStorageH2'][gg] >  0.0])
     mTEPES.n2hs   = Set(doc='node   to hydrogen store'         , initialize=[(par['pGenToNode'][hs], hs) for hs in mTEPES.hs])
+    # Scoped to gg for the same reason as hs: a reformer or an import terminal makes hydrogen and
+    # has no electrical rating, so it never enters the generating set.
+    mTEPES.sr     = Set(doc='hydrogen source         units'    , initialize=[gg     for gg   in mTEPES.gg  if par['pMaximumProductionH2'][gg] >  0.0])
+    mTEPES.n2sr   = Set(doc='node   to hydrogen source'        , initialize=[(par['pGenToNode'][sr], sr) for sr in mTEPES.sr])
     mTEPES.gc     = Set(doc='candidate               units'    , initialize=[g      for g    in mTEPES.g   if par['pGenInvestCost']      [g ] >  0.0])
     mTEPES.gd     = Set(doc='retirement              units'    , initialize=[g      for g    in mTEPES.g   if par['pGenRetireCost']      [g ] >  0.0])
     mTEPES.ec     = Set(doc='candidate ESS           units'    , initialize=[es     for es   in mTEPES.es  if par['pGenInvestCost']      [es] >  0.0])
@@ -899,6 +903,9 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
         # drop generators not hs
         for _k in ('pMaxStorageH2', 'pMaxChargeH2', 'pIniStorageH2', 'pStorageTimeStepH2'):
             par[_k] = par[_k].loc[mTEPES.hs]
+        # drop generators not sr
+        for _k in ('pMaximumProductionH2', 'pProductionCostH2', 'pProductionEmissionH2'):
+            par[_k] = par[_k].loc[mTEPES.sr]
         # drop pipelines not pc
         par['pH2PipeFixedCost']      = par['pH2PipeFixedCost'].loc     [mTEPES.pc]
         par['pH2PipeLoInvest']       = par['pH2PipeLoInvest'].loc      [mTEPES.pc]
@@ -1144,6 +1151,9 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
         mTEPES.pMaxChargeH2       = Param(mTEPES.hs, initialize=par['pMaxChargeH2'].to_dict()      , within=NonNegativeReals, doc='Maximum hydrogen in/out rate [tH2]')
         mTEPES.pIniStorageH2      = Param(mTEPES.hs, initialize=par['pIniStorageH2'].to_dict()     , within=NonNegativeReals, doc='Initial hydrogen storage    [tH2]')
         mTEPES.pStorageTimeStepH2 = Param(mTEPES.hs, initialize=par['pStorageTimeStepH2'].to_dict(), within=PositiveIntegers, doc='Hydrogen storage cycle       [h]')
+        mTEPES.pMaximumProductionH2  = Param(mTEPES.sr, initialize=par['pMaximumProductionH2'].to_dict() , within=NonNegativeReals, doc='Maximum hydrogen production without electricity [tH2/h]')
+        mTEPES.pProductionCostH2     = Param(mTEPES.sr, initialize=par['pProductionCostH2'].to_dict()    , within=NonNegativeReals, doc='Cost of that hydrogen, fuel + VOM + carbon    [MEUR/tH2]')
+        mTEPES.pProductionEmissionH2 = Param(mTEPES.sr, initialize=par['pProductionEmissionH2'].to_dict(), within=NonNegativeReals, doc='Carbon emitted making it, for reporting      [tCO2/tH2]')
 
     if par['pIndHeat']:
         par['pMinPowerHeat'] = filter_rows(par['pMinPowerHeat'], mTEPES.psnch)

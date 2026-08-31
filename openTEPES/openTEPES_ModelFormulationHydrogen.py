@@ -33,6 +33,11 @@ def NetworkH2OperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, 
     s2nd = defaultdict(set)
     for nd,hs in mTEPES.n2hs:
         s2nd[nd].add(hs)
+    # nodes to hydrogen sources (r2n): reformers and import terminals, which make hydrogen
+    # without drawing electricity. Built from n2sr for the same reason as s2nd.
+    r2n = defaultdict(set)
+    for nd,sr in mTEPES.n2sr:
+        r2n[nd].add(sr)
     for nd,g in mTEPES.n2g:
         if g in mTEPES.el:
             l2n[nd].add(g)
@@ -43,9 +48,9 @@ def NetworkH2OperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, 
 
 
     def eBalanceH2(OptModel,n,nd):
-        if len(l2n[nd]) + len(b2n[nd]) + len(g2n[nd]) + len(s2nd[nd]) + len(lout[nd]) + len(lin[nd]) == 0:
+        if len(l2n[nd]) + len(b2n[nd]) + len(g2n[nd]) + len(s2nd[nd]) + len(r2n[nd]) + len(lout[nd]) + len(lin[nd]) == 0:
             return Constraint.Skip
-        return (mTEPES.pDuration[p,sc,n]()*sum(OptModel.vESSTotalCharge[p,sc,n,el]/mTEPES.pProductionFunctionH2[el] for el in l2n[nd] if (p,el) in mTEPES.peh) - mTEPES.pDuration[p,sc,n]()*sum(OptModel.vTotalOutputHeat[p,sc,n,hh]*mTEPES.pProductionFunctionH2ToHeat[hh] for hh in b2n[nd] if (p,hh) in mTEPES.phh) - mTEPES.pDuration[p,sc,n]()*sum(OptModel.vTotalOutput[p,sc,n,h2p]*mTEPES.pProductionFunctionH2ToPower[h2p] for h2p in g2n[nd] if (p,h2p) in mTEPES.pg) - sum(OptModel.vH2StorCharge[p,sc,n,hs] - OptModel.vH2StorDischarge[p,sc,n,hs] for hs in s2nd[nd]) + OptModel.vH2NS[p,sc,n,nd] - OptModel.vH2Exc[p,sc,n,nd] -
+        return (sum(OptModel.vH2Production[p,sc,n,sr] for sr in r2n[nd]) + mTEPES.pDuration[p,sc,n]()*sum(OptModel.vESSTotalCharge[p,sc,n,el]/mTEPES.pProductionFunctionH2[el] for el in l2n[nd] if (p,el) in mTEPES.peh) - mTEPES.pDuration[p,sc,n]()*sum(OptModel.vTotalOutputHeat[p,sc,n,hh]*mTEPES.pProductionFunctionH2ToHeat[hh] for hh in b2n[nd] if (p,hh) in mTEPES.phh) - mTEPES.pDuration[p,sc,n]()*sum(OptModel.vTotalOutput[p,sc,n,h2p]*mTEPES.pProductionFunctionH2ToPower[h2p] for h2p in g2n[nd] if (p,h2p) in mTEPES.pg) - sum(OptModel.vH2StorCharge[p,sc,n,hs] - OptModel.vH2StorDischarge[p,sc,n,hs] for hs in s2nd[nd]) + OptModel.vH2NS[p,sc,n,nd] - OptModel.vH2Exc[p,sc,n,nd] -
                 sum(OptModel.vFlowH2[p,sc,n,nd,nf,cc] for nf,cc in lout[nd] if (p,nd,nf,cc) in mTEPES.ppa) + sum(OptModel.vFlowH2[p,sc,n,ni,nd,cc] for ni,cc in lin[nd] if (p,ni,nd,cc) in mTEPES.ppa)) == mTEPES.pDemandH2[p,sc,n,nd]*mTEPES.pDuration[p,sc,n]()
     setattr(OptModel, f'eBalanceH2_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.nd, rule=eBalanceH2, doc='H2 load generation balance [tH2]'))
 
@@ -85,8 +90,25 @@ def NetworkH2OperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, 
     if pIndLogConsole:
         print('eH2IniFinInventory        ... ', len(getattr(OptModel, f'eH2IniFinInventory_{p}_{sc}_{st}')), ' rows')
 
+    def eTotalH2SrcCost(OptModel,n):
+        # pProductionCostH2 already carries fuel, variable O&M and the carbon price, and
+        # vH2Production is tonnes over the load level, so the duration is not applied again.
+        return OptModel.vTotalH2SrcCost[p,sc,n] == sum(mTEPES.pProductionCostH2[sr] * OptModel.vH2Production[p,sc,n,sr] for sr in mTEPES.sr)
+    setattr(OptModel, f'eTotalH2SrcCost_{p}_{sc}_{st}', Constraint(mTEPES.n, rule=eTotalH2SrcCost, doc='hydrogen source cost [MEUR]'))
+
     def eTotalRH2Cost(OptModel,n):
-        return OptModel.vTotalRH2Cost[p,sc,n] == sum(mTEPES.pH2NSCost * OptModel.vH2NS[p,sc,n,nd] + mTEPES.pH2ExcCost * OptModel.vH2Exc[p,sc,n,nd] for nd in mTEPES.nd if len(l2n[nd]) + len(b2n[nd]) + len(g2n[nd]) + len(s2nd[nd]) + len(lout[nd]) + len(lin[nd]))
+        # This guard has to match the one on eBalanceH2 exactly. A node the balance covers but
+        # this sum leaves out would have an unserved variable that costs nothing, and the model
+        # would meet its demand by declaring it unserved, for free.
+        # The stage weight is what turns a representative period into an annual cost. Without it
+        # unserved hydrogen was priced at a fraction of its real cost and the model had little
+        # reason to build an electrolyser.
+        #
+        # The weight alone, not pLoadLevelDuration. That parameter is weight x duration, and the
+        # duration is already inside vH2NS: the balance reads ... + vH2NS == pDemandH2*pDuration,
+        # so vH2NS is tonnes over the load level rather than a rate. The electricity term does
+        # multiply by pLoadLevelDuration because vENS is a power and needs the hours as well.
+        return OptModel.vTotalRH2Cost[p,sc,n] == mTEPES.pLoadLevelWeight[p,sc,n]() * sum(mTEPES.pH2NSCost * OptModel.vH2NS[p,sc,n,nd] + mTEPES.pH2ExcCost * OptModel.vH2Exc[p,sc,n,nd] for nd in mTEPES.nd if len(l2n[nd]) + len(b2n[nd]) + len(g2n[nd]) + len(s2nd[nd]) + len(r2n[nd]) + len(lout[nd]) + len(lin[nd]))
     setattr(OptModel, f'eTotalRH2Cost_{p}_{sc}_{st}', Constraint(mTEPES.n, rule=eTotalRH2Cost, doc='H2 system reliability cost [MEUR]'))
 
     if pIndLogConsole:

@@ -88,7 +88,10 @@ OUTPUT_REGISTRY = (
     ("generation",  GenerationOperationHeatResults, ("tech", "area", "plot"), lambda m: bool(m.ch and m.pIndHeat)),
     ("ess",         ESSOperationResults,            ("tech", "area", "plot"), lambda m: bool(m.es)),
     ("reservoir",   ReservoirOperationResults,      ("tech", "plot"),         lambda m: bool(m.rs and m.pIndHydroTopology)),
-    ("h2",          NetworkH2OperationResults,      (),                       lambda m: bool(m.pa and m.pIndHydrogen)),
+    # Gated on hydrogen existing, not on hydrogen pipes existing. A system can have electrolysers,
+    # reformers, caverns and a balance at every node while carrying no pipeline at all, and the old
+    # condition wrote no hydrogen results whatsoever for exactly that case.
+    ("h2",          NetworkH2OperationResults,      (),                       lambda m: bool(m.pIndHydrogen and (m.pa or m.el or m.sr or m.hs))),
     ("heat",        NetworkHeatOperationResults,    (),                       lambda m: bool(m.ha and m.pIndHeat)),
     ("network",     NetworkOperationResults,        (),                       None),
     ("marginal",    MarginalResults,                ("plot",),                None),
