@@ -380,9 +380,13 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     par['pProductionFunctionH2ToHeat'] = dfs['dfGeneration']  ['ProductionFunctionH2ToHeat'] * 1e-3
     # Hydrogen-fired generation. Optional column, so a case without it keeps an empty hg set
     # and an unchanged model.
+    # No 1e-3 here, unlike the electrolyser and heat production functions. eBalanceH2 is in tH2 and
+    # vTotalOutput is in GW, so GWh x gH2/kWh already gives tonnes: 1e6 kWh x g/kWh = 1e6 g = 1 t.
+    # Scaling by 1e-3 as the others do would make the term kilograms and understate the hydrogen a
+    # turbine burns by a factor of a thousand.
     par['pProductionFunctionH2ToPower'] = (dfs['dfGeneration']['ProductionFunctionH2ToPower']
                                            if 'ProductionFunctionH2ToPower' in dfs['dfGeneration'].columns
-                                           else pd.Series(0.0, index=dfs['dfGeneration'].index)).fillna(0.0) * 1e-3                                                      # production function of a boiler using H2     [gH2/kWh]
+                                           else pd.Series(0.0, index=dfs['dfGeneration'].index)).fillna(0.0)                                                      # production function of a boiler using H2     [gH2/kWh]
 
     # Hydrogen storage. A cavern buffers what the electrolysers make against what the turbines and
     # the hydrogen demand take, so the hydrogen balance no longer has to clear within the hour.
