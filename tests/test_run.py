@@ -189,7 +189,11 @@ def case_7d_binary(request, tmp_path):
     # sSEP — small Spanish system. Exercises the hydrogen sector (DemandHydrogen + NetworkHydrogen + 9 H2-related
     # generators) AND water-reservoir hydropower (7 reservoirs, reservoir maps, inflows/outflows/MaxVolume, pumped
     # hydro). pIndHydrogen / pIndHydroSystem code paths live here.
-    ("sSEP",      38573.44601930286),
+    # 38573.44601930286 until the hydrogen reliability cost was given its stage weight. That term
+    # was the only cost in the objective that never annualised, so unserved hydrogen was priced at
+    # a fraction of the others and the model had little reason to avoid it. sSEP weights its week
+    # by 52, and 51 further weeks of the same 127.7 MEUR is the whole of the difference.
+    ("sSEP",      45085.415882683425),
     # 9n_PTDF exercises the multi-level-header tables (VariableTTCFrw/Bck, VariablePTDF).
     ("9n_PTDF",   500.1114692260149),
     # 9n_heat exercises the heat-sector code path (pIndHeat=1). Added in PR #121.

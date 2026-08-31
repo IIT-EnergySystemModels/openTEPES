@@ -30,6 +30,7 @@ def TotalObjectiveFunction(OptModel, mTEPES, pIndLogConsole):
                                                                       OptModel.vTotalRElecCost[p,sc,n]) for p,sc,n in mTEPES.psn)
         if mTEPES.pIndHydrogen():
             vTotalTCost += sum(pScenFactor[p,sc] * OptModel.vTotalRH2Cost  [p,sc,n] for p,sc,n in mTEPES.psn)
+            vTotalTCost += sum(pScenFactor[p,sc] * OptModel.vTotalH2SrcCost[p,sc,n] for p,sc,n in mTEPES.psn)
         if mTEPES.pIndHeat():
             vTotalTCost += sum(pScenFactor[p,sc] * OptModel.vTotalRHeatCost[p,sc,n] for p,sc,n in mTEPES.psn)
         return OptModel.vTotalSCost == vTotalTCost
