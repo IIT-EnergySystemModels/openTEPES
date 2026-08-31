@@ -124,10 +124,9 @@ concatenating CSVs.
 
 The CSV output files are briefly described in the following sections.
 
-The power is expressed in **MW**, energy or heat in **GWh**, marginal costs in **€/MWh**, and costs in millions of euros (**M€**). Hydrogen is expressed in **tH2**.
-Reservoir volume is expressed in hm{sup}`3`,
-and water flow in hm{sup}`3`/s. The energy transported in the electricity network is expressed in **GWh-Mkm**. In each file, the identifiers are described in
-the first columns, followed by the headers and the description of each variable.
+The power is expressed in **MW**, energy or heat in **GWh**, marginal costs in **€/MWh**, and costs in millions of euros (**M€**). Hydrogen is expressed in
+**tH2**. Reservoir volume is expressed in hm{sup}`3`, and water flow in hm{sup}`3`/s. The energy transported in the electricity network is expressed in
+**GWh-Mkm**. In each file, the identifiers are described in the first columns, followed by the headers and the description of each variable.
 
 ## Investment/Retirement
 
@@ -936,9 +935,9 @@ Period        Scenario    Technology  Area        Generation, consumption, flows
 ============  ==========  ==========  ==========  ========================================================
 ```
 
-Positive values represent generation, and negative values represent demand or consumption. The sum of the values per area (column) must be 0.
-EnergyFlowIn and EnergyFlowOut are the sum of the incoming and outgoing flows of the corresponding area nodes. These values represent the import/export of
-energy to/from other areas only if the network is radial (like an antenna).
+Positive values represent generation, and negative values represent demand or consumption. The sum of the values per area (column) must be 0. EnergyFlowIn and
+EnergyFlowOut are the sum of the incoming and outgoing flows of the corresponding area nodes. These values represent the import/export of energy to/from other
+areas only if the network is radial (like an antenna).
 
 File `oT_Result_BalanceEnergyPerNode.csv`
 
@@ -1629,8 +1628,7 @@ Period        Scenario    Load level  Node        Locational Short-Run Marginal 
 ```
 
 These short-run marginal costs (SRMC) are obtained after fixing the binary and continuous investment decisions and the binary operation decisions to their
-optimal values.
-Remember that binary decisions are not affected by marginal changes.
+optimal values. Remember that binary decisions are not affected by marginal changes.
 
 File `oT_Result_NetworkSRMCH2.csv`
 
@@ -1643,8 +1641,7 @@ Period        Scenario    Load level  Node        Locational Short-Run Marginal 
 ```
 
 These short-run marginal costs (SRMC) are obtained after fixing the binary and continuous investment decisions and the binary operation decisions to their
-optimal values.
-Remember that binary decisions are not affected by marginal changes.
+optimal values. Remember that binary decisions are not affected by marginal changes.
 
 File `oT_Result_NetworkSRMCHeat.csv`
 
@@ -1657,8 +1654,7 @@ Period        Scenario    Load level  Node        Locational Short-Run Marginal 
 ```
 
 These short-run marginal costs (SRMC) are obtained after fixing the binary and continuous investment decisions and the binary operation decisions to their
-optimal values.
-Remember that binary decisions are not affected by marginal changes.
+optimal values. Remember that binary decisions are not affected by marginal changes.
 
 File `oT_Result_MarginalEnergyValue.csv`
 

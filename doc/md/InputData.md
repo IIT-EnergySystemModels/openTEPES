@@ -209,14 +209,13 @@ A description of the system parameters included in the file `oT_Data_Parameter.c
 | EconomicBaseYear    | Base year for economic parameters affected by the discount rate                                                                                                                                                                                                 | year   |
 | AnnualDiscountRate  | Annual discount rate                                                                                                                                                                                                                                            | p.u.   |
 
-A time step greater than one hour is a convenient way to reduce the number of load levels in the time scope. The moving average of the demand,
-upward/downward operating reserves, variable generation/consumption/storage, and ESS energy inflows/outflows
-over the time step load levels is assigned to active load levels (e.g., the mean value of the three hours is associated with the third hour in a tri-hourly time
-step).
+A time step greater than one hour is a convenient way to reduce the number of load levels in the time scope. The moving average of the demand, upward/downward
+operating reserves, variable generation/consumption/storage, and ESS energy inflows/outflows over the time step load levels is assigned to active load levels
+(e.g., the mean value of the three hours is associated with the third hour in a tri-hourly time step).
 
 Generators can provide upward and downward operating reserves simultaneously. The upward and downward activation proportions define the amount of upward and
-downward operating reserves that will be deployed to produce energy.
-If a unit provides both upward and downward operating reserves, the activation of both may cancel out the energy produced.
+downward operating reserves that will be deployed to produce energy. If a unit provides both upward and downward operating reserves, the activation of both may
+cancel out the energy produced.
 
 ## Period
 
@@ -227,8 +226,8 @@ A description of the data included in the file `oT_Data_Period.csv` follows:
 | Period     | Weight | Weight of each period |
 
 This weight allows the definition of equivalent (representative) years (e.g., year 2030 with a weight of 5 would represent years 2030-2034). Periods are not
-mathematically connected to each other by operation constraints, i.e., no constraints link the operation
-at different periods. However, they are linked by the investment decisions, i.e., investments made in a year remain installed for the rest of the years.
+mathematically connected to each other by operation constraints, i.e., no constraints link the operation at different periods. However, they are linked by the
+investment decisions, i.e., investments made in a year remain installed for the rest of the years.
 
 ## Scenario
 
@@ -243,8 +242,8 @@ Period          Scenario        Probability   Probability of each scenario in ea
 ```
 
 For example, the scenarios can be used to obtain the IRP (GEP+SEP+TEP) considering the uncertainty of hydro energy/water inflows, represented using three
-scenarios (wet, dry, and average), or two VRES scenarios (windy/cloudy and calm/sunny).
-The sum of the probabilities of all the scenarios in each period must be 1.
+scenarios (wet, dry, and average), or two VRES scenarios (windy/cloudy and calm/sunny). The sum of the probabilities of all the scenarios in each period must be
+1.
 
 ## Stage
 
@@ -255,21 +254,17 @@ A description of the data included in the file `oT_Data_Stage.csv` follows:
 | Stage      | Weight | Weight of each stage |
 
 This weight defines equivalent (representative) periods (e.g., one representative week with a weight of 52 or four representative weeks, each with a weight of
-13).
-Stages are not mathematically connected, i.e., no constraints link the operation at different consecutive stages. Therefore, the storage type cannot exceed the
-duration of the stage (i.e., if the stage lasts for 168 hours, the storage type can only be hourly or daily).
-If there are no investment decisions or the investment decisions are ignored, all the periods, scenarios, and stages are solved independently.
+13). Stages are not mathematically connected, i.e., no constraints link the operation at different consecutive stages. Therefore, the storage type cannot exceed
+the duration of the stage (i.e., if the stage lasts for 168 hours, the storage type can only be hourly or daily). If there are no investment decisions or the
+investment decisions are ignored, all the periods, scenarios, and stages are solved independently.
 
 ## Adequacy reserve margin
 
-The adequacy reserve margin is the ratio between the available capacity and the maximum demand.
-According to ENTSO-E, adequacy is defined as the ability of the electric system to supply the aggregate electrical demand and energy requirements of the
-customers at all times,
-taking into account scheduled and reasonably expected unscheduled outages of system elements.
-To determine the available capacity, the model uses the availability of the generating units times their maximum power. The availability can be computed as the
-ratio between the firm and installed capacity. Firm capacity
-can be determined as the Firm Capacity Equivalent (FCE) or the Effective Load-Carrying Capability (ELCC).
-A description of the data included in the file `oT_Data_ReserveMargin.csv` follows:
+The adequacy reserve margin is the ratio between the available capacity and the maximum demand. According to ENTSO-E, adequacy is defined as the ability of the
+electric system to supply the aggregate electrical demand and energy requirements of the customers at all times, taking into account scheduled and reasonably
+expected unscheduled outages of system elements. To determine the available capacity, the model uses the availability of the generating units times their
+maximum power. The availability can be computed as the ratio between the firm and installed capacity. Firm capacity can be determined as the Firm Capacity
+Equivalent (FCE) or the Effective Load-Carrying Capability (ELCC). A description of the data included in the file `oT_Data_ReserveMargin.csv` follows:
 
 ```{eval-rst}
 ==============  ==============  =============  ==========================================================  ====
@@ -297,8 +292,7 @@ If no value is provided for an area, the CO2 emission limit is considered infini
 
 ## Minimum RES energy
 
-It is like a Renewable Portfolio Standard (RPS).
-A description of the data included in the file `oT_Data_RESEnergy.csv` follows:
+It is like a Renewable Portfolio Standard (RPS). A description of the data included in the file `oT_Data_RESEnergy.csv` follows:
 
 ```{eval-rst}
 ==============  ==============  =============  ===========================================================  =====
@@ -324,20 +318,17 @@ Period      Scenario        LoadLevel  Duration    Duration of the load level. L
 ```
 
 It is a simple way to use isolated snapshots, representative days, or just the first three months instead of all the hours of a year to simplify the
-optimization problem. **All the load levels whose duration is different from 0 must have the same duration.**
-The duration is not intended to change for the load levels of a stage. Usually, the duration is 1 hour (0.25 h if inputting data in quarters of an hour) or 0 if
-you do not want to use the load levels for some hours of the year. The parameter time step must be used to collapse consecutive load levels into one for the
-optimization problem.
+optimization problem. **All the load levels whose duration is different from 0 must have the same duration.** The duration is not intended to change for the
+load levels of a stage. Usually, the duration is 1 hour (0.25 h if inputting data in quarters of an hour) or 0 if you do not want to use the load levels for
+some hours of the year. The parameter time step must be used to collapse consecutive load levels into one for the optimization problem.
 
 The stage duration, as the sum of the duration of all the load levels, must be larger than or equal to the shortest duration of any storage type, any outflow
-type, or any energy type (all given in the generation data), and a multiple of it.
-Consecutive stages are not connected, i.e., no constraints link the operation at different stages. Consequently, the storage type cannot exceed the duration of
-the stage (i.e., if the stage lasts for 168 hours, the storage type can only be hourly or daily).
-Therefore, the objective function value with several stages will be slightly higher than in the case of a single stage.
+type, or any energy type (all given in the generation data), and a multiple of it. Consecutive stages are not connected, i.e., no constraints link the operation
+at different stages. Consequently, the storage type cannot exceed the duration of the stage (i.e., if the stage lasts for 168 hours, the storage type can only
+be hourly or daily). Therefore, the objective function value with several stages will be slightly higher than in the case of a single stage.
 
 The initial storage of the ESSs is also fixed at the beginning and end of each stage. For example, the initial storage level is set for hour 8736 in the case of
-a single stage or for hours 4368 and 4369
-(end of the first stage and beginning of the second stage) in the case of two stages, each with 4368 hours.
+a single stage or for hours 4368 and 4369 (end of the first stage and beginning of the second stage) in the case of two stages, each with 4368 hours.
 
 ## Electricity demand
 
@@ -352,9 +343,8 @@ Period      Scenario        LoadLevel   Node    Power demand of the node for eac
 ```
 
 The electricity demand can be negative for the (transmission) nodes with (renewable) generation at lower voltage levels. This negative demand is equivalent to
-generating that amount of power at this node.
-Internally, all the values below 1e-5 times the maximum system demand of each area (or above its negative, for negative demand) will be converted into 0 by the
-model.
+generating that amount of power at this node. Internally, all the values below 1e-5 times the maximum system demand of each area (or above its negative, for
+negative demand) will be converted into 0 by the model.
 
 ## System inertia
 
@@ -369,8 +359,8 @@ Period      Scenario        LoadLevel   Area    System inertia of the area for e
 ```
 
 Given that the system inertia depends on the area, defining an area as a country can be sensible. The system inertia can impose a minimum synchronous power and,
-consequently, force the commitment of at least some rotating units.
-Each generating unit can contribute to the system inertia. The system inertia is the sum of the inertia of all the committed units in the area.
+consequently, force the commitment of at least some rotating units. Each generating unit can contribute to the system inertia. The system inertia is the sum of
+the inertia of all the committed units in the area.
 
 Internally, all the values below 1e-5 times the maximum system electricity demand of each area will be converted into 0 by the model.
 
@@ -386,9 +376,9 @@ Period      Scenario        LoadLevel   Area    Upward/downward operating reserv
 ==========  ==============  ==========  ======  ===================================================================  ==
 ```
 
-Given that the operating reserves depend on the area, defining an area as a country can be sensible.
-These operating reserves must include Automatic Frequency Restoration Reserves (aFRR) (a.k.a. secondary reserve, deployed \<5 min) and Manual Frequency
-Restoration Reserves (mFRR) (a.k.a. tertiary reserve, deployed \<12.5 min) for electricity balancing from ENTSO-E.
+Given that the operating reserves depend on the area, defining an area as a country can be sensible. These operating reserves must include Automatic Frequency
+Restoration Reserves (aFRR) (a.k.a. secondary reserve, deployed \<5 min) and Manual Frequency Restoration Reserves (mFRR) (a.k.a. tertiary reserve, deployed
+\<12.5 min) for electricity balancing from ENTSO-E.
 
 Internally, all the values below 1e-5 times the maximum system demand of each area will be converted into 0 by the model.
 
@@ -404,9 +394,9 @@ Period      Scenario        LoadLevel   Area    Upward/downward operating reserv
 ==========  ==============  ==========  ======  =============================================================================  ==
 ```
 
-Given that the operating reserves depend on the area, defining an area as a country can be sensible.
-These operating reserves must include the activation of the Automatic Frequency Restoration Reserves (aFRR) (a.k.a. secondary reserve, deployed \<5 min) and
-Manual Frequency Restoration Reserves (mFRR) (a.k.a. tertiary reserve, deployed \<12.5 min) for electricity balancing from ENTSO-E.
+Given that the operating reserves depend on the area, defining an area as a country can be sensible. These operating reserves must include the activation of the
+Automatic Frequency Restoration Reserves (aFRR) (a.k.a. secondary reserve, deployed \<5 min) and Manual Frequency Restoration Reserves (mFRR) (a.k.a. tertiary
+reserve, deployed \<12.5 min) for electricity balancing from ENTSO-E.
 
 The values of the upward/downward operating reserve activation must be lower than or equal to the upward/downward operating reserve requirement; otherwise, the
 model lowers them. All the values below 1e-5 times the maximum system demand of each area are converted into 0 by the model.
@@ -427,8 +417,7 @@ Period      Scenario        LoadLevel   Area    Upward/downward ramp reserves of
 ```
 
 The ramp reserves are typically associated with a specific additional proportion of the net demand ramp. Ramp reserves protect the system against uncertainty in
-the VRES production.
-These files are optional. If not given, the ramp reserve constraints are not formulated.
+the VRES production. These files are optional. If not given, the ramp reserve constraints are not formulated.
 
 ## Generation
 
@@ -521,21 +510,18 @@ Daily *storage type* means the ESS inventory is assessed at every step. Daily st
 at the end of every day, monthly storage type is assessed at the end of every week, and the yearly storage type is evaluated at the end of every month.
 *Outflows type* represents when the energy extracted from the storage must be satisfied (for daily outflows type at the end of every day, i.e., the sum of the
 energy consumed must be equal to the sum of outflows daily). The contribution of EVs and electrolyzers to the system flexibility can be analyzed by changing the
-outflows type (from hourly to daily or weekly or monthly or yearly).
-*Energy type* represents when the minimum or maximum energy to be produced by a unit must be satisfied (for daily energy type at the end of every day, i.e., the
-sum of the energy generated by the unit must be lower/greater than the sum of max/min energy for every day).
-The *storage cycle* is the minimum between the inventory assessment period (defined by the storage type), the outflows period (defined by the outflows type),
-and the energy period (determined by the energy type) (only if outflows or energy power values have been introduced).
-It can be one time step, day, week, or month, but it cannot exceed the stage duration. For example, if the stage lasts 168 hours, the storage cycle can only be
-hourly or daily.
+outflows type (from hourly to daily or weekly or monthly or yearly). *Energy type* represents when the minimum or maximum energy to be produced by a unit must
+be satisfied (for daily energy type at the end of every day, i.e., the sum of the energy generated by the unit must be lower/greater than the sum of max/min
+energy for every day). The *storage cycle* is the minimum between the inventory assessment period (defined by the storage type), the outflows period (defined by
+the outflows type), and the energy period (determined by the energy type) (only if outflows or energy power values have been introduced). It can be one time
+step, day, week, or month, but it cannot exceed the stage duration. For example, if the stage lasts 168 hours, the storage cycle can only be hourly or daily.
 
 The initial storage of the ESSs is also fixed at the beginning and end of each stage, only if the initial inventory lies between the storage limits. For
-example, the initial storage level is set for hour 8736 in the case of a single stage or for hours 4368 and 4369
-(end of the first stage and beginning of the second stage) in the case of two stages, each with 4368 hours.
+example, the initial storage level is set for hour 8736 in the case of a single stage or for hours 4368 and 4369 (end of the first stage and beginning of the
+second stage) in the case of two stages, each with 4368 hours.
 
 A generator with operation cost (sum of the fuel and emission cost, excluding O&M cost) >0 is considered a non-renewable unit. If the unit has no operation cost
-and its maximum storage =0,
-it is considered a renewable unit. If its maximum storage is >0, with or without operation cost, it is regarded as an ESS.
+and its maximum storage =0, it is considered a renewable unit. If its maximum storage is >0, with or without operation cost, it is regarded as an ESS.
 
 A very small variable O&M cost for the ESS (not below 0.01 €/MWh; otherwise the model converts it to 0) can prevent it from pumping with avoided curtailment (at
 no cost) and then discharging as spillage.
@@ -558,8 +544,8 @@ investment, the dam investment is linked to this particular hydro and cannot be 
 
 A generator can belong to several mutually exclusive sets; their names must be separated by "|" when entered. For example, if Generator1 belongs to Set1 and
 Set2, the data entry should be "Set1|Set2". If any of the generators in a group are installation/retirement candidates, it is assumed that exclusivity is
-yearly, so only one can be committed during the whole period. When all mutually exclusive generators in a set are installed and functioning, it is assumed that the exclusivity
-is hourly, and which generator is committed can change at every load level.
+yearly, so only one can be committed during the whole period. When all mutually exclusive generators in a set are installed and functioning, it is assumed that
+the exclusivity is hourly, and which generator is committed can change at every load level.
 
 A generator can be restricted to providing reserves only while generating or only while consuming. The NoOperatingReserve entry accepts two inputs separated by
 a "|". The first value corresponds to operating reserves while generating, and the second is operating reserves while consuming power. If only one value is
@@ -599,9 +585,8 @@ Not all the generators need to be defined as columns of these files, only those 
 This information can be used to consider scheduled outages or weather-dependent operating capacity.
 
 To force a generator to produce 0, a small value (e.g., 0.1 MW) strictly >0, but not 0 (in which case the value will be ignored), must be entered. This is
-needed to limit the solar production at night, for example.
-It can also be used for upper-bounding and/or lower-bounding the output of any generator (e.g., run-of-the-river hydro, wind).
-If the user enters a minimum generation value greater than the maximum, the model lowers it to match the maximum.
+needed to limit the solar production at night, for example. It can also be used for upper-bounding and/or lower-bounding the output of any generator (e.g.,
+run-of-the-river hydro, wind). If the user enters a minimum generation value greater than the maximum, the model lowers it to match the maximum.
 
 If a thermal unit has a variable minimum generation > 0 in a certain load level, it is considered committed in that load level.
 
@@ -621,9 +606,9 @@ Period      Scenario        LoadLevel   Generator  Maximum (minimum) power consu
 
 Not all the generators need to be defined as columns of these files, only those with values different from 0.
 
-To force an ESS to consume 0, a value (e.g., 0.1 MW) strictly >0, but not 0 (in which case the value will be ignored), must be entered.
-It can also be used for upper-bounding and/or lower-bounding the consumption of any ESS (e.g., pumped-hydro storage, battery, DSM).
-If the user enters a maximum consumption value lower than the minimum, the model lowers the minimum to match the maximum.
+To force an ESS to consume 0, a value (e.g., 0.1 MW) strictly >0, but not 0 (in which case the value will be ignored), must be entered. It can also be used for
+upper-bounding and/or lower-bounding the consumption of any ESS (e.g., pumped-hydro storage, battery, DSM). If the user enters a maximum consumption value lower
+than the minimum, the model lowers the minimum to match the maximum.
 
 Internally, all the values below 1e-5 times the maximum system demand of each area will be converted into 0 by the model.
 
@@ -695,10 +680,9 @@ Period      Scenario        LoadLevel   Generator  Energy outflows by load level
 
 Not all the generators need to be defined as columns of this file, only those with values different from 0.
 
-These energy outflows can represent the electric energy extracted from an ESS to produce H2 from electrolyzers, move EVs, or produce heat, or the hydro
-outflows for irrigation.
-Using these outflows is incompatible with the charge of the ESS within the same time step (as the discharge of a battery is incompatible with the charge in the
-same hour).
+These energy outflows can represent the electric energy extracted from an ESS to produce H2 from electrolyzers, move EVs, or produce heat, or the hydro outflows
+for irrigation. Using these outflows is incompatible with the charge of the ESS within the same time step (as the discharge of a battery is incompatible with
+the charge in the same hour).
 
 If you have hourly/daily/weekly/monthly/yearly outflow data, you can just input the daily/weekly/monthly/yearly amount at the first hour of every
 day/week/month/year.
@@ -719,8 +703,8 @@ Period      Scenario        LoadLevel   Generator  Maximum (minimum) storage of 
 
 Not all the generators need to be defined as columns of these files, only those with values different from 0.
 
-It can also be used for upper-bounding and/or lower-bounding the storage of any generator (e.g., storage hydro).
-If the user enters a maximum storage value lower than the minimum, the model lowers the minimum to match the maximum.
+It can also be used for upper-bounding and/or lower-bounding the storage of any generator (e.g., storage hydro). If the user enters a maximum storage value
+lower than the minimum, the model lowers the minimum to match the maximum.
 
 For example, these data can define the operating guide (rule) curves for the ESS.
 
@@ -738,8 +722,8 @@ Period      Scenario        LoadLevel   Generator  Maximum (minimum) power of th
 
 Not all the generators need to be defined as columns of these files, only those with values different from 0.
 
-It can also be used for upper-bounding and/or lower-bounding the energy of any generator (e.g., storage hydro).
-If the user enters a maximum power value lower than the minimum, the model lowers the minimum to match the maximum.
+It can also be used for upper-bounding and/or lower-bounding the energy of any generator (e.g., storage hydro). If the user enters a maximum power value lower
+than the minimum, the model lowers the minimum to match the maximum.
 
 For example, these data can be used to define the minimum and/or maximum energy to be produced hourly, daily, weekly, monthly, or yearly (depending on the
 energy type).
@@ -816,8 +800,7 @@ Not all the electric transmission lines need to be defined as columns of these f
 This information can be used to consider the transmission line's weather-dependent maximum capacity.
 
 To force the flow of a transmission line to be 0, a small value (e.g., 0.1 MW) strictly >0, but not 0 (in which case the value will be ignored), must be
-entered.
-If the user enters a minimum transmission line capacity greater than the maximum, the model lowers the minimum to match the maximum.
+entered. If the user enters a minimum transmission line capacity greater than the maximum, the model lowers the minimum to match the maximum.
 
 If you want to force the flow of a transmission line to be equal to a value, enter the same value (with the opposite sign) in both files (e.g., 125 MW in
 `oT_Data_VariableTTCFrw.csv` and -125 MW in `oT_Data_VariableTTCBck.csv`) or vice versa.
@@ -852,8 +835,8 @@ The dictionaries include all the possible elements of the corresponding sets in 
 | ----------------------- | ----------- |
 | `oT_Dict_Reservoir.csv` | Reservoirs  |
 
-The information contained in these input files determines the topology of the hydro basins and how water flows through the different
-hydropower and pumped-hydro power plants and reservoirs. These relations follow the water downstream direction.
+The information contained in these input files determines the topology of the hydro basins and how water flows through the different hydropower and pumped-hydro
+power plants and reservoirs. These relations follow the water downstream direction.
 
 | File                                 | Dictionary             | Description                                                                                  |
 | ------------------------------------ | ---------------------- | -------------------------------------------------------------------------------------------- |
@@ -924,17 +907,15 @@ The model always considers a month of 672 hours, i.e., 4 weeks, not calendar mon
 
 Daily *storage type* means the ESS inventory is assessed every time step. For the daily storage type, it is evaluated at the end of every hour; for the weekly
 storage type, it is assessed at the end of every day; for the monthly storage type, it is evaluated at the end of every week; and the yearly storage type is
-assessed at the end of every month.
-*Outflows type* represents the interval when the energy extracted from the storage must be satisfied (for daily outflows type at the end of every day, i.e., the
-energy consumed must equal the sum of outflows for every day).
-The *storage cycle* is the minimum between the inventory assessment period (defined by the storage type), the outflows period (determined by the outflows type),
-and the energy period (defined by the energy type) (only if outflows or energy power values have been introduced).
-It can be one time step, day, week, or month, but it cannot exceed the stage duration. For example, if the stage lasts 168 hours, the storage cycle can only be
-hourly or daily.
+assessed at the end of every month. *Outflows type* represents the interval when the energy extracted from the storage must be satisfied (for daily outflows
+type at the end of every day, i.e., the energy consumed must equal the sum of outflows for every day). The *storage cycle* is the minimum between the inventory
+assessment period (defined by the storage type), the outflows period (determined by the outflows type), and the energy period (defined by the energy type) (only
+if outflows or energy power values have been introduced). It can be one time step, day, week, or month, but it cannot exceed the stage duration. For example, if
+the stage lasts 168 hours, the storage cycle can only be hourly or daily.
 
 The initial reservoir volume is also fixed at the beginning and end of each stage, only if the initial volume lies between the reservoir storage limits. For
-example, the initial volume is set for hour 8736 in the case of a single stage or for hours 4368 and 4369
-(end of the first stage and beginning of the second stage) in the case of two stages, each with 4368 hours.
+example, the initial volume is set for hour 8736 in the case of a single stage or for hours 4368 and 4369 (end of the first stage and beginning of the second
+stage) in the case of two stages, each with 4368 hours.
 
 ## Variable maximum and minimum reservoir volume
 
@@ -950,19 +931,17 @@ Period      Scenario        LoadLevel   Reservoir  Maximum (minimum) reservoir v
 
 Not all the reservoirs need to be defined as columns of these files, only those with values different from 0.
 
-It can also be used for upper-bounding and/or lower-bounding the volume of any reservoir.
-If the user enters a maximum volume value lower than the minimum, the model lowers the minimum to match the maximum.
+It can also be used for upper-bounding and/or lower-bounding the volume of any reservoir. If the user enters a maximum volume value lower than the minimum, the
+model lowers the minimum to match the maximum.
 
 For example, these data can be used to define the operating guide (rule) curves for the hydro reservoirs.
 
 # Hydrogen System Input Data
 
 These input files are specifically introduced to allow a representation of the hydrogen energy vector to supply the hydrogen demand with hydrogen produced from
-electricity or by any other means through the hydrogen network.
-The hydrogen data are expressed in tH2. However, they can easily be converted into MWh by multiplying the tH2 values by 33.33 MWh/tH2 (the lower heating value
-of hydrogen).
-To represent the hydrogen demand in MWh instead of tH2, input it in MWh in the file `oT_Data_DemandHydrogen.csv` and convert it into tH2 by dividing the MWh
-values by 33.33 MWh/tH2.
+electricity or by any other means through the hydrogen network. The hydrogen data are expressed in tH2. However, they can easily be converted into MWh by
+multiplying the tH2 values by 33.33 MWh/tH2 (the lower heating value of hydrogen). To represent the hydrogen demand in MWh instead of tH2, input it in MWh in
+the file `oT_Data_DemandHydrogen.csv` and convert it into tH2 by dividing the MWh values by 33.33 MWh/tH2.
 
 If hydrogen is produced only from electricity, with no hydrogen flows among nodes, the hydrogen demand can be represented by the energy outflows associated with
 the unit (i.e., electrolyzer), and these hydrogen demand and network files are not needed.
@@ -1019,9 +998,8 @@ interpreted as "no upper bound" (full `p.u.` allowed) and lets the candidate be 
 # Heat System Input Data
 
 These input files are specifically introduced to allow a representation of the heat energy vector to supply the heat demand with heat produced from electricity
-or from any fuel through the heat network.
-If heat is produced only from electricity, with no heat transfer among nodes, the heat demand can be represented by the energy outflows associated with the unit
-(i.e., heat pump or electric boiler).
+or from any fuel through the heat network. If heat is produced only from electricity, with no heat transfer among nodes, the heat demand can be represented by
+the energy outflows associated with the unit (i.e., heat pump or electric boiler).
 
 | File                            | Description                |
 | ------------------------------- | -------------------------- |
@@ -1032,8 +1010,8 @@ If heat is produced only from electricity, with no heat transfer among nodes, th
 ## Heat adequacy reserve margin
 
 The adequacy reserve margin for heating is the ratio between the available capacity and the maximum demand. It is modeled in the same way as the adequacy
-reserve margin for electricity, considering the units' heat demand and heat capacity.
-A description of the data included in the file `oT_Data_ReserveMarginHeat.csv` follows:
+reserve margin for electricity, considering the units' heat demand and heat capacity. A description of the data included in the file
+`oT_Data_ReserveMarginHeat.csv` follows:
 
 | Identifiers |      | Header        | Description                                                   |      |
 | ----------- | ---- | ------------- | ------------------------------------------------------------- | ---- |

@@ -69,5 +69,5 @@ The **openTEPES** model has been used in these publications:
   2021.
   ([Presentation_IEA_Wind](https://pascua.iit.comillas.edu/aramos/papers/AssessingESSFlexibility.pdf))
 - A. Ramos, S. Huclin, J.P. Chaves "Which role will play the pumped-storage hydro and the batteries in the future Spanish system: a case study" *IEEE
-  Sustainable Power & Energy Conference iSPEC 2020*.
-  Chengdu, Sichuan (China). November 2020. ([Presentation_IEEE_iSPEC](https://pascua.iit.comillas.edu/aramos/papers/Flexibility_iSPEC_China.pdf))
+  Sustainable Power & Energy Conference iSPEC 2020*. Chengdu, Sichuan (China). November 2020.
+  ([Presentation_IEEE_iSPEC](https://pascua.iit.comillas.edu/aramos/papers/Flexibility_iSPEC_China.pdf))

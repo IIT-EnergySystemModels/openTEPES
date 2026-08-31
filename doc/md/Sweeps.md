@@ -107,8 +107,8 @@ would raise), so anything that changes the model's structure needs Mode A or B.
 values on every `solve`, so `store_values` takes effect with no extra call. Pass a plain solver name (`"gurobi"`, `"highs"`), not a persistent one.
 
 **Overlays are independent, not cumulative.** `resolve` snapshots the baseline of every touched Param and resets to it before each overlay, so overlay *k* does
-not build on overlay *k−1*. An empty overlay `{}` re-solves the baseline; `restore=True` (default) restores the baseline at the end. `overlay_scaled(model,
-name, factor)` builds a scale-factor overlay for one Param.
+not build on overlay *k−1*. An empty overlay `{}` re-solves the baseline; `restore=True` (default) restores the baseline at the end.
+`overlay_scaled(model, name, factor)` builds a scale-factor overlay for one Param.
 
 `resolve` returns one dict per overlay with the solver termination condition and the total system cost (`None` if the solve was not optimal). It solves one
 overlay at a time; to run a large Monte-Carlo in parallel, wrap `resolve` in your own worker pool.
