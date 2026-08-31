@@ -112,7 +112,7 @@ def NetworkOperationResults(DirName, CaseName, OptModel, mTEPES):
         if pBindingTheta.any():
             nBinding = int(pBindingTheta.sum())
             maxAbs   = float(OutputToFile.abs().max())
-            print(f'WARNING: voltage angle bound pMaxTheta = pi/2 is (nearly) binding in {nBinding} (period, scenario, loadlevel, node) entries; max|theta| = {maxAbs:.6f} rad ({maxAbs/pMaxThetaVal*100:.2f} %% of pi/2).\nInspect oT_Result_NetworkAngle_{CaseName}.csv -- the bound may be clipping the DC-OPF solution.')
+            print(f'WARNING: voltage angle bound pMaxTheta = pi/2 is (nearly) binding in {nBinding} (period, scenario, loadlevel, node) entries; max|theta| = {maxAbs:.6f} rad ({maxAbs/pMaxThetaVal*100:.2f} % of pi/2).\nInspect oT_Result_NetworkAngle_{CaseName}.csv -- the bound may be clipping the DC-OPF solution.')
 
     # vENS feeds both the power (MW) and the energy (GWh) files, so evaluate it once. Dur already covers every load level, so it needs no completion here
     Ens = {Key: OptModel.vENS[Key]() for Key in mTEPES.psnnd}
