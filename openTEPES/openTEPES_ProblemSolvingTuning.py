@@ -35,6 +35,18 @@ def _threads() -> int:
     return int((psutil.cpu_count(logical=True) + psutil.cpu_count(logical=False)) / 2)
 
 
+def _crossover() -> int:
+    """Gurobi ``Crossover`` from ``OTEPES_CROSSOVER`` when set, else Gurobi's automatic ``-1``.
+    A deployment that reports an interior-point solution needs crossover off (``0``) reproducibly, and
+    that is a solver-configuration fact a paper has to be able to state.
+    """
+    env = os.environ.get("OTEPES_CROSSOVER", "").strip()
+    try:
+        return int(env)
+    except ValueError:
+        return -1
+
+
 def apply_solver_options(Solver, SolverName: str, FileName: str, ncall: int):
     """Apply initial-solve options to ``Solver`` based on ``SolverName``. Returns a GAMS ``solver_options`` set
     if applicable; ``None`` otherwise (for Gurobi/CPLEX/HiGHS the options are set on ``Solver.options``)."""
@@ -44,7 +56,7 @@ def apply_solver_options(Solver, SolverName: str, FileName: str, ncall: int):
         Solver.options["DisplayInterval"] = 100
         Solver.options["LPWarmStart"]     = 2
         Solver.options["Method"]          = 2 if ncall == 1 else -1
-        Solver.options["Crossover"]       = -1
+        Solver.options["Crossover"]       = _crossover()
         Solver.options["MIPGap"]          = 0.01
         Solver.options["Threads"]         = _threads()
         Solver.options["TimeLimit"]       = 36000
@@ -63,7 +75,7 @@ def apply_solver_options(Solver, SolverName: str, FileName: str, ncall: int):
         Solver.set_gurobi_param("DisplayInterval", 100)
         Solver.set_gurobi_param("LPWarmStart",     2)
         Solver.set_gurobi_param("Method",          2 if ncall == 1 else -1)
-        Solver.set_gurobi_param("Crossover",      -1)
+        Solver.set_gurobi_param("Crossover",      _crossover())
         Solver.set_gurobi_param("MIPGap",       0.01)
         Solver.set_gurobi_param("Threads",     _threads())
         Solver.set_gurobi_param("TimeLimit",      36000)

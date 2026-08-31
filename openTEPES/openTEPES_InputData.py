@@ -381,6 +381,10 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     par['pEfficiency']                 = dfs['dfGeneration']  ['Efficiency'                ]                                                             #               ESS round-trip efficiency      [p.u.]
     par['pStorageType']                = dfs['dfGeneration']  ['StorageType'               ]                                                             #               ESS storage  type
     par['pOutflowsType']               = dfs['dfGeneration']  ['OutflowsType'              ]                                                             #               ESS outflows type
+    # Optional opt-in to energy neutrality. The period is EnergyType, read just below.
+    par['pIndEnergyNeutrality']        = (dfs['dfGeneration']['EnergyNeutrality']
+                                          if 'EnergyNeutrality' in dfs['dfGeneration'].columns
+                                          else pd.Series(0, index=dfs['dfGeneration'].index)).fillna(0).astype('int')
     par['pEnergyType']                 = dfs['dfGeneration']  ['EnergyType'                ]                                                             #               unit  energy type
     par['pRMaxReactivePower']          = dfs['dfGeneration']  ['MaximumReactivePower'      ] * 1e-3                                                      # rated maximum reactive power                 [Gvar]
     par['pGenLoInvest']                = dfs['dfGeneration']  ['InvestmentLo'              ]                                                             # Lower bound of the investment decision       [p.u.]
