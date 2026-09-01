@@ -42,7 +42,8 @@ openTEPES documentation master file, created by Andres Ramos
 
   > They are technologies that store energy in one form and release it later when needed. In electric power systems, ESS help balance supply and demand, improve
   reliability, provide flexibility, and support the integration of variable renewable energy sources. Common examples include batteries, pumped-hydro storage,
-  and hydrogen-based storage.
+  and hydrogen-based storage. Long Duration Energy Storage (LDES) is a subset of ESS that can store energy for extended periods, typically from 8 hours to days
+  or even weeks or seasons.
 
 - **Hydro system basin**
 
