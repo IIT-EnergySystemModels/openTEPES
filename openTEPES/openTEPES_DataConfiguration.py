@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 09, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 03, 2026
 
 openTEPES.openTEPES_DataConfiguration — builds the derived sets and parameters on the model: instrumental sets, ESS/RES sets, and the flag-driven branches (hydro topology, hydrogen, heat, PTDF). Runs after InputData has read the raw sets and parameters.
 """
@@ -116,7 +116,7 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
         mTEPES.hc = Set(doc='candidate heat pipes'             , initialize=[])
         mTEPES.he = Set(doc='existing  heat pipes'             , initialize=[])
 
-    par['pIndBinLinePTDF'] = pd.Series(index=mTEPES.la, data=0.0)                                                              # indicate if the line has a PTDF or not
+    par['pIndBinLinePTDF'] = pd.Series(index=mTEPES.la, data=0.0)                                                                            # indicate if the line has a PTDF or not
     if par['pIndVarTTC']:
         par['pVariableNTCFrw'] = par['pVariableNTCFrw'].reindex(columns=mTEPES.la, fill_value=0.0) * dfs['dfNetwork']['SecurityFactor']      # variable NTC forward  direction because of the security factor
         par['pVariableNTCBck'] = par['pVariableNTCBck'].reindex(columns=mTEPES.la, fill_value=0.0) * dfs['dfNetwork']['SecurityFactor']      # variable NTC backward direction because of the security factor
@@ -657,10 +657,10 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
         par['pDemandHeatPeak'] = pd.Series([0.0 for p,ar in mTEPES.par], index=mTEPES.par)
 
     if par['pIndVarTTC']:
-        par['pVariableNTCFrw']  = par['pVariableNTCFrw'].loc  [mTEPES.psn]
-        par['pVariableNTCBck']  = par['pVariableNTCBck'].loc  [mTEPES.psn]
+        par['pVariableNTCFrw']  = par['pVariableNTCFrw'].loc[mTEPES.psn]
+        par['pVariableNTCBck']  = par['pVariableNTCBck'].loc[mTEPES.psn]
     if par['pIndPTDF']:
-        par['pVariablePTDF']    = par['pVariablePTDF'].loc    [mTEPES.psn]
+        par['pVariablePTDF']    = par['pVariablePTDF'].loc  [mTEPES.psn]
 
     # generators to area (g2a) (e2a) (n2a)
     g2a = defaultdict(set)
@@ -748,9 +748,20 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
             par['pMaxPower2ndBlock' ][par['pMaxPower2ndBlock' ][[g for g in g2a[ar]]] < par['pEpsilonElec']] = 0.0
             par['pMaxCharge2ndBlock'][par['pMaxCharge2ndBlock'][[g for g in g2a[ar]]] < par['pEpsilonElec']] = 0.0
 
-        par['pLineNTCFrw']  [par['pLineNTCFrw'] < par['pEpsilonElec']] = 0.0
-        par['pLineNTCBck']  [par['pLineNTCBck'] < par['pEpsilonElec']] = 0.0
-        par['pLineNTCMax'] = par['pLineNTCFrw'].where(par['pLineNTCFrw'] > par['pLineNTCBck'], par['pLineNTCBck'])
+        par['pLineNTCFrw'] = par['pLineNTCFrw'].where((par['pLineNTCFrw'] > par['pEpsilonElec']) | (par['pLineNTCFrw'] < -par['pEpsilonElec']), 0.0)
+        par['pLineNTCBck'] = par['pLineNTCBck'].where((par['pLineNTCBck'] > par['pEpsilonElec']) | (par['pLineNTCBck'] < -par['pEpsilonElec']), 0.0)
+        # par['pLineNTCMax'] = par['pLineNTCFrw'].where( par['pLineNTCFrw'] > par['pLineNTCBck'], par['pLineNTCBck'])
+        par['pLineNTCMax'] = par['pLineNTCFrw'].where( par['pLineNTCFrw'].abs() >= par['pLineNTCBck'].abs(), par['pLineNTCBck']).abs()
+
+        par['pMaxNTCFrw'] = pd.DataFrame([[par['pLineNTCFrw'][la] for la in mTEPES.la] for p,sc,n in mTEPES.psn], index=mTEPES.psn, columns=mTEPES.la)
+        par['pMaxNTCBck'] = pd.DataFrame([[par['pLineNTCBck'][la] for la in mTEPES.la] for p,sc,n in mTEPES.psn], index=mTEPES.psn, columns=mTEPES.la)
+        if par['pIndVarTTC']:
+            par['pMaxNTCFrw'] = par['pVariableNTCFrw'].replace(0.0, par['pLineNTCFrw'])
+            par['pMaxNTCBck'] = par['pVariableNTCBck'].replace(0.0, par['pLineNTCBck'])
+            par['pMaxNTCFrw'] = par['pMaxNTCFrw'].where((par['pMaxNTCFrw'] > par['pEpsilonElec']) | (par['pMaxNTCFrw'] < -par['pEpsilonElec']), 0.0)
+            par['pMaxNTCBck'] = par['pMaxNTCBck'].where((par['pMaxNTCBck'] > par['pEpsilonElec']) | (par['pMaxNTCBck'] < -par['pEpsilonElec']), 0.0)
+        # par['pMaxNTCMax']     = par['pMaxNTCFrw'].where( par['pMaxNTCFrw'] >= par['pMaxNTCBck'], par['pMaxNTCBck'])
+        par['pMaxNTCMax']     = par['pMaxNTCFrw'].where( par['pMaxNTCFrw'].abs() >= par['pMaxNTCBck'].abs(), par['pMaxNTCBck']).abs()
 
         if par['pIndHydrogen']:
             par['pDemandH2Peak'][p,ar] = par['pDemandH2Pos' ].loc[p,:,:][[nd for nd in d2a[ar]]].sum(axis=1).max()
@@ -819,66 +830,57 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     par['pMaxPowerHeat'].update(pd.DataFrame([[par['pMaxCharge'][hp][p,sc,n]/par['pProductionFunctionHeat'][hp]  for hp in mTEPES.hp] for p,sc,n in mTEPES.psn], index=mTEPES.psn, columns=mTEPES.hp))
 
     # drop values not par, p, or ps
-    par['pReserveMargin']      = par['pReserveMargin'].loc [mTEPES.par]
-    par['pEmission']           = par['pEmission'].loc      [mTEPES.par]
-    par['pRESEnergy']          = par['pRESEnergy'].loc     [mTEPES.par]
-    par['pDemandElecPeak']     = par['pDemandElecPeak'].loc[mTEPES.par]
-    par['pPeriodWeight']       = par['pPeriodWeight'].loc  [mTEPES.p  ]
-    par['pScenProb']           = par['pScenProb'].loc      [mTEPES.ps ]
+    par['pReserveMargin']    = par['pReserveMargin'].loc  [mTEPES.par]
+    par['pEmission']         = par['pEmission'].loc       [mTEPES.par]
+    par['pRESEnergy']        = par['pRESEnergy'].loc      [mTEPES.par]
+    par['pDemandElecPeak']   = par['pDemandElecPeak'].loc [mTEPES.par]
+    par['pPeriodWeight']     = par['pPeriodWeight'].loc   [mTEPES.p  ]
+    par['pScenProb']         = par['pScenProb'].loc       [mTEPES.ps ]
 
     # drop generators not gc or gd
-    par['pGenInvestCost']           = par['pGenInvestCost'].loc   [mTEPES.eb]
-    par['pGenRetireCost']           = par['pGenRetireCost'].loc   [mTEPES.gd]
-    par['pIndBinUnitInvest']        = par['pIndBinUnitInvest'].loc[mTEPES.eb]
-    par['pIndBinUnitRetire']        = par['pIndBinUnitRetire'].loc[mTEPES.gd]
-    par['pGenLoInvest']             = par['pGenLoInvest'].loc     [mTEPES.eb]
-    par['pGenLoRetire']             = par['pGenLoRetire'].loc     [mTEPES.gd]
-    par['pGenUpInvest']             = par['pGenUpInvest'].loc     [mTEPES.eb]
-    par['pGenUpRetire']             = par['pGenUpRetire'].loc     [mTEPES.gd]
+    par['pGenInvestCost']    = par['pGenInvestCost'].loc   [mTEPES.eb]
+    par['pGenRetireCost']    = par['pGenRetireCost'].loc   [mTEPES.gd]
+    par['pIndBinUnitInvest'] = par['pIndBinUnitInvest'].loc[mTEPES.eb]
+    par['pIndBinUnitRetire'] = par['pIndBinUnitRetire'].loc[mTEPES.gd]
+    par['pGenLoInvest']      = par['pGenLoInvest'].loc     [mTEPES.eb]
+    par['pGenLoRetire']      = par['pGenLoRetire'].loc     [mTEPES.gd]
+    par['pGenUpInvest']      = par['pGenUpInvest'].loc     [mTEPES.eb]
+    par['pGenUpRetire']      = par['pGenUpRetire'].loc     [mTEPES.gd]
 
     # drop generators not nr or ec
-    par['pStartUpCost']             = par['pStartUpCost'].loc     [mTEPES.nr]
-    par['pShutDownCost']            = par['pShutDownCost'].loc    [mTEPES.nr]
-    par['pIndBinUnitCommit']        = par['pIndBinUnitCommit'].loc[mTEPES.nr]
-    par['pIndBinStorInvest']        = par['pIndBinStorInvest'].loc[mTEPES.ec]
+    par['pStartUpCost']      = par['pStartUpCost'].loc     [mTEPES.nr]
+    par['pShutDownCost']     = par['pShutDownCost'].loc    [mTEPES.nr]
+    par['pIndBinUnitCommit'] = par['pIndBinUnitCommit'].loc[mTEPES.nr]
+    par['pIndBinStorInvest'] = par['pIndBinStorInvest'].loc[mTEPES.ec]
 
     # drop lines not la
-    par['pLineR']                   = par['pLineR'].loc           [mTEPES.la]
-    par['pLineX']                   = par['pLineX'].loc           [mTEPES.la]
-    par['pLineBsh']                 = par['pLineBsh'].loc         [mTEPES.la]
-    par['pLineTAP']                 = par['pLineTAP'].loc         [mTEPES.la]
-    par['pLineLength']              = par['pLineLength'].loc      [mTEPES.la]
-    par['pElecNetPeriodIni']        = par['pElecNetPeriodIni'].loc[mTEPES.la]
-    par['pElecNetPeriodFin']        = par['pElecNetPeriodFin'].loc[mTEPES.la]
-    par['pLineVoltage']             = par['pLineVoltage'].loc     [mTEPES.la]
-    par['pLineNTCFrw']              = par['pLineNTCFrw'].loc      [mTEPES.la]
-    par['pLineNTCBck']              = par['pLineNTCBck'].loc      [mTEPES.la]
-    par['pLineNTCMax']              = par['pLineNTCMax'].loc      [mTEPES.la]
-    par['pSwitchOnTime']            = par['pSwitchOnTime'].loc    [mTEPES.la]
-    par['pSwitchOffTime']           = par['pSwitchOffTime'].loc   [mTEPES.la]
-    par['pIndBinLineInvest']        = par['pIndBinLineInvest'].loc[mTEPES.la]
-    par['pIndBinLineSwitch']        = par['pIndBinLineSwitch'].loc[mTEPES.la]
-    par['pAngMin']                  = par['pAngMin'].loc          [mTEPES.la]
-    par['pAngMax']                  = par['pAngMax'].loc          [mTEPES.la]
+    par['pLineR']            = par['pLineR'].loc           [mTEPES.la]
+    par['pLineX']            = par['pLineX'].loc           [mTEPES.la]
+    par['pLineBsh']          = par['pLineBsh'].loc         [mTEPES.la]
+    par['pLineTAP']          = par['pLineTAP'].loc         [mTEPES.la]
+    par['pLineLength']       = par['pLineLength'].loc      [mTEPES.la]
+    par['pElecNetPeriodIni'] = par['pElecNetPeriodIni'].loc[mTEPES.la]
+    par['pElecNetPeriodFin'] = par['pElecNetPeriodFin'].loc[mTEPES.la]
+    par['pLineVoltage']      = par['pLineVoltage'].loc     [mTEPES.la]
+    par['pLineNTCFrw']       = par['pLineNTCFrw'].loc      [mTEPES.la]
+    par['pLineNTCBck']       = par['pLineNTCBck'].loc      [mTEPES.la]
+    par['pLineNTCMax']       = par['pLineNTCMax'].loc      [mTEPES.la]
+    par['pSwitchOnTime']     = par['pSwitchOnTime'].loc    [mTEPES.la]
+    par['pSwitchOffTime']    = par['pSwitchOffTime'].loc   [mTEPES.la]
+    par['pIndBinLineInvest'] = par['pIndBinLineInvest'].loc[mTEPES.la]
+    par['pIndBinLineSwitch'] = par['pIndBinLineSwitch'].loc[mTEPES.la]
+    par['pAngMin']           = par['pAngMin'].loc          [mTEPES.la]
+    par['pAngMax']           = par['pAngMax'].loc          [mTEPES.la]
 
     # drop lines not lc or ll
-    par['pNetFixedCost']            = par['pNetFixedCost'].loc    [mTEPES.lc]
-    par['pNetLoInvest']             = par['pNetLoInvest'].loc     [mTEPES.lc]
-    par['pNetUpInvest']             = par['pNetUpInvest'].loc     [mTEPES.lc]
-    par['pLineLossFactor']          = par['pLineLossFactor'].loc  [mTEPES.ll]
+    par['pNetFixedCost']     = par['pNetFixedCost'].loc    [mTEPES.lc]
+    par['pNetLoInvest']      = par['pNetLoInvest'].loc     [mTEPES.lc]
+    par['pNetUpInvest']      = par['pNetUpInvest'].loc     [mTEPES.lc]
+    par['pLineLossFactor']   = par['pLineLossFactor'].loc  [mTEPES.ll]
 
-    par['pMaxNTCFrw'] = pd.DataFrame([[par['pLineNTCFrw'][la] for la in mTEPES.la] for p,sc,n in mTEPES.psn], index=mTEPES.psn, columns=mTEPES.la)
-    par['pMaxNTCBck'] = pd.DataFrame([[par['pLineNTCBck'][la] for la in mTEPES.la] for p,sc,n in mTEPES.psn], index=mTEPES.psn, columns=mTEPES.la)
-    if par['pIndVarTTC']:
-        par['pMaxNTCFrw'] = par['pVariableNTCFrw'].replace(0.0, par['pLineNTCFrw'])
-        par['pMaxNTCBck'] = par['pVariableNTCBck'].replace(0.0, par['pLineNTCBck'])
-        par['pMaxNTCFrw']  [par['pMaxNTCFrw'] < par['pEpsilonElec']] = 0.0
-        par['pMaxNTCBck']  [par['pMaxNTCBck'] < par['pEpsilonElec']] = 0.0
-    par['pMaxNTCMax'] = par['pMaxNTCFrw'].where(par['pMaxNTCFrw'] > par['pMaxNTCBck'], par['pMaxNTCBck'])
-
-    par['pMaxNTCBck']                  = par['pMaxNTCBck'].loc             [:,mTEPES.la]
-    par['pMaxNTCFrw']                  = par['pMaxNTCFrw'].loc             [:,mTEPES.la]
-    par['pMaxNTCMax']                  = par['pMaxNTCMax'].loc             [:,mTEPES.la]
+    par['pMaxNTCBck']        = par['pMaxNTCBck'].loc     [:,mTEPES.la]
+    par['pMaxNTCFrw']        = par['pMaxNTCFrw'].loc     [:,mTEPES.la]
+    par['pMaxNTCMax']        = par['pMaxNTCMax'].loc     [:,mTEPES.la]
 
     if par['pIndHydroTopology']:
         # drop generators not h
