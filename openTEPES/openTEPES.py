@@ -367,6 +367,23 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
             _HueH   = round(_hue_h,   4)
     except Exception:
         pass
+    # The run status named the solver but not its version, so a result set could not be tied to the
+    # build that produced it. Resolved here rather than at import, so it reflects what actually ran.
+    _SolverVersion = None
+    try:
+        if SolverName.lower().startswith("gurobi"):
+            import gurobipy
+            _SolverVersion = ".".join(str(v) for v in gurobipy.gurobi.version())
+        elif SolverName.lower().startswith(("cbc", "glpk", "highs", "cplex", "appsi")):
+            from pyomo.environ import SolverFactory
+            _opt = SolverFactory(SolverName)
+            _v = getattr(_opt, "version", None)
+            _v = _v() if callable(_v) else _v
+            if _v:
+                _SolverVersion = ".".join(str(x) for x in _v)
+    except Exception:
+        _SolverVersion = None
+
     status = {
         "case":               CaseName,
         "dir":                DirName,
@@ -379,6 +396,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
         "output_seconds":     round(_OutputSeconds, 2),
         "total_seconds":      round(_TotalSeconds,  2),
         "solver":             SolverName,
+        "solver_version":     _SolverVersion,
         "backend":            getattr(mTEPES, "pOutputBackend", "csv"),
         "opentepes_version":  "4.18.18RC",
         "run_started_utc":    _RunStartedUtc,
