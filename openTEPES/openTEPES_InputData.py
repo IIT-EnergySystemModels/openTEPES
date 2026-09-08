@@ -378,19 +378,12 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     par['pProductionFunctionH2']       = dfs['dfGeneration']  ['ProductionFunctionH2'      ] * 1e-3                                                      # production function of an electrolyzer       [kWh/gH2]
     par['pProductionFunctionHeat']     = dfs['dfGeneration']  ['ProductionFunctionHeat'    ]                                                             # production function of a heat pump           [kWh/kWh]
     par['pProductionFunctionH2ToHeat'] = dfs['dfGeneration']  ['ProductionFunctionH2ToHeat'] * 1e-3
-    # Hydrogen-fired generation. Optional column, so a case without it keeps an empty hg set
-    # and an unchanged model.
-    # No 1e-3 here, unlike the electrolyser and heat production functions. eBalanceH2 is in tH2 and
-    # vTotalOutput is in GW, so GWh x gH2/kWh already gives tonnes: 1e6 kWh x g/kWh = 1e6 g = 1 t.
-    # Scaling by 1e-3 as the others do would make the term kilograms and understate the hydrogen a
-    # turbine burns by a factor of a thousand.
-    # Hydrogen made without electricity: steam methane reforming, and imports landing at a node.
-    # openTEPES could only make hydrogen by electrolysis, so a case whose demand is met partly by
-    # reforming or import had no way to say so and booked the difference as hydrogen not served.
-    # MaximumProductionH2 is in tH2/h, the same unit the balance is written in, so that no scaling
-    # is applied on the way in. ProductionCostH2 is MEUR/tH2 and carries fuel, variable O&M and
-    # the carbon price together; the case prices carbon rather than capping it, so a single
-    # marginal cost is exact. ProductionEmissionH2, in tCO2/tH2, is carried for reporting.
+    # hydrogen-fired generation. Optional column: without it the hg set is empty
+    # no 1e-3 here: GWh x gH2/kWh gives tonnes directly, so the term is already in tH2
+    # hydrogen made without electricity: reforming, and imports landing at a node.
+    # MaximumProductionH2 in tH2/h, as the balance is written, so no scaling on the way in.
+    # ProductionCostH2 in MEUR/tH2 carries fuel, variable O&M and the carbon price together.
+    # ProductionEmissionH2 in tCO2/tH2 is carried for reporting.
     for _c, _d in (('MaximumProductionH2', 0.0), ('ProductionCostH2', 0.0), ('ProductionEmissionH2', 0.0)):
         par['p' + _c] = (dfs['dfGeneration'][_c] if _c in dfs['dfGeneration'].columns
                          else pd.Series(_d, index=dfs['dfGeneration'].index)).fillna(_d)
@@ -399,9 +392,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
                                            if 'ProductionFunctionH2ToPower' in dfs['dfGeneration'].columns
                                            else pd.Series(0.0, index=dfs['dfGeneration'].index)).fillna(0.0)                                                      # production function of a boiler using H2     [gH2/kWh]
 
-    # Hydrogen storage. A cavern buffers what the electrolysers make against what the turbines and
-    # the hydrogen demand take, so the hydrogen balance no longer has to clear within the hour.
-    # All three columns are optional; without MaximumStorageH2 the hs set is empty and nothing changes.
+    # hydrogen storage, so the balance need not clear within the hour.
+    # All three columns are optional: without MaximumStorageH2 the hs set is empty
     def _optional_gen_col(name, default=0.0):
         return (dfs['dfGeneration'][name] if name in dfs['dfGeneration'].columns
                 else pd.Series(default, index=dfs['dfGeneration'].index))

@@ -88,9 +88,7 @@ OUTPUT_REGISTRY = (
     ("generation",  GenerationOperationHeatResults, ("tech", "area", "plot"), lambda m: bool(m.ch and m.pIndHeat)),
     ("ess",         ESSOperationResults,            ("tech", "area", "plot"), lambda m: bool(m.es)),
     ("reservoir",   ReservoirOperationResults,      ("tech", "plot"),         lambda m: bool(m.rs and m.pIndHydroTopology)),
-    # Gated on hydrogen existing, not on hydrogen pipes existing. A system can have electrolysers,
-    # reformers, caverns and a balance at every node while carrying no pipeline at all, and the old
-    # condition wrote no hydrogen results whatsoever for exactly that case.
+    # gated on hydrogen, not on hydrogen pipes: a system can carry a balance and no pipeline
     ("h2",          NetworkH2OperationResults,      (),                       lambda m: bool(m.pIndHydrogen and (m.pa or m.el or m.sr or m.hs))),
     ("heat",        NetworkHeatOperationResults,    (),                       lambda m: bool(m.ha and m.pIndHeat)),
     ("network",     NetworkOperationResults,        (),                       None),
@@ -367,8 +365,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
             _HueH   = round(_hue_h,   4)
     except Exception:
         pass
-    # The run status named the solver but not its version, so a result set could not be tied to the
-    # build that produced it. Resolved here rather than at import, so it reflects what actually ran.
+    # resolved here rather than at import, so it reflects the build that ran
     _SolverVersion = None
     try:
         if SolverName.lower().startswith("gurobi"):

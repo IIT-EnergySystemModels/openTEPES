@@ -60,12 +60,10 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     mTEPES.bo     = Set(doc='            fuel boiler units'    , initialize=[ch     for ch   in mTEPES.ch  if par['pRatedMaxPowerElec']  [ch] == 0.0 and par['pRatedMaxPowerHeat'][ch] > 0.0 and par['pProductionFunctionHeat'    ][ch] == 0.0])
     mTEPES.hh     = Set(doc='        hydrogen boiler units'    , initialize=[bo     for bo   in mTEPES.bo                                                                                     if par['pProductionFunctionH2ToHeat'][bo] >  0.0])
     mTEPES.h2p     = Set(doc='hydrogen-to-power       units'    , initialize=[g      for g    in mTEPES.g   if par['pProductionFunctionH2ToPower'][g ] >  0.0])
-    # Scoped to gg, not g: a cavern holds hydrogen and has no electrical rating of its own,
-    # so it never enters the generating set. n2hs gives it a node the same way n2g does.
+    # scoped to gg: a cavern has no electrical rating, so it is not in the generating set
     mTEPES.hs     = Set(doc='hydrogen storage        units'    , initialize=[gg     for gg   in mTEPES.gg  if par['pMaxStorageH2'][gg] >  0.0])
     mTEPES.n2hs   = Set(doc='node   to hydrogen store'         , initialize=[(par['pGenToNode'][hs], hs) for hs in mTEPES.hs])
-    # Scoped to gg for the same reason as hs: a reformer or an import terminal makes hydrogen and
-    # has no electrical rating, so it never enters the generating set.
+    # scoped to gg for the same reason as hs
     mTEPES.sr     = Set(doc='hydrogen source         units'    , initialize=[gg     for gg   in mTEPES.gg  if par['pMaximumProductionH2'][gg] >  0.0])
     mTEPES.n2sr   = Set(doc='node   to hydrogen source'        , initialize=[(par['pGenToNode'][sr], sr) for sr in mTEPES.sr])
     mTEPES.gc     = Set(doc='candidate               units'    , initialize=[g      for g    in mTEPES.g   if par['pGenInvestCost']      [g ] >  0.0])
