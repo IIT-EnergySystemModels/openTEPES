@@ -125,21 +125,31 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         if key not in par.keys():
             par[key] = 0
 
-    # The hydrogen carrier is switched on by oT_Data_DemandHydrogen or oT_Data_NetworkHydrogen.
-    # A hydrogen-fired generator needs more than that: its fuel is charged in eBalanceH2, which is
-    # built only when the carrier is on, so with neither file such a unit generated electricity
-    # burning nothing. Turbines therefore turn the carrier on by themselves.
+    # The hydrogen carrier is switched on by oT_Data_DemandHydrogen or oT_Data_NetworkHydrogen, as
+    # every other optional sector is switched on by its own files. Hydrogen consumers are the one
+    # exception in the model: their fuel is charged in eBalanceH2, built only with the carrier on, so
+    # with neither file they burn nothing. Two unit types consume hydrogen, a hydrogen-fired
+    # generator and a hydrogen boiler, and either turns the carrier on by itself.
     #
-    # Electrolysers deliberately do not. Without the carrier they are flexible loads whose hydrogen
-    # leaves the model boundary, which is a legitimate case and the one cases/9nH2 exercises.
+    # No other sector needs this. The heat balance carries producers alone, so heat off leaves a unit
+    # with nowhere to send its output rather than a free input, and its own fuel is charged on the
+    # electricity or the hydrogen balance. Hydro without the topology still runs through the ESS
+    # energy balance.
+    #
+    # Electrolysers deliberately do not switch it on. They produce hydrogen rather than consume it,
+    # and without the carrier they are flexible loads whose output leaves the model boundary, which
+    # cases/9n_H2 and cases/RTS24 both rely on.
     _gen = dfs.get('dfGeneration')
-    _h2p = int((_gen['ProductionFunctionH2ToPower'] > 0.0).sum()) if (
-        _gen is not None and 'ProductionFunctionH2ToPower' in _gen.columns) else 0
-    if not par['pIndHydrogen'] and _h2p:
+    def _units(col):
+        return int((_gen[col] > 0.0).sum()) if (_gen is not None and col in _gen.columns) else 0
+    _consumers = {'hydrogen-fired generator': _units('ProductionFunctionH2ToPower'),
+                  'hydrogen boiler'         : _units('ProductionFunctionH2ToHeat')}
+    if not par['pIndHydrogen'] and any(_consumers.values()):
         par['pIndHydrogen'] = 1
+        _named = ', '.join(f'{v} {k}(s)' for k, v in _consumers.items() if v)
         print(f'WARNING: neither oT_Data_DemandHydrogen nor oT_Data_NetworkHydrogen is present, but '
-              f'the Generation table defines {_h2p} hydrogen-fired generator(s). The hydrogen '
-              f'carrier is enabled so their fuel is charged; without it they burn nothing.')
+              f'the Generation table defines {_named}. The hydrogen carrier is enabled so their fuel '
+              f'is charged; without it they burn nothing.')
         # No demand table, so hydrogen produced beyond what the turbines burn leaves the model
         # boundary, exactly as it did with the carrier off. Excess is therefore free here unless
         # the case prices it: charging the usual half of HNSCost would take an electrolyser that
