@@ -10,9 +10,9 @@ solution methods are:
 ## Direct solution
 
 The optimization problem can be solved directly using a commercial solver (e.g., Gurobi, CPLEX) or an open-source solver (e.g., CBC, GLPK). This method is
-suitable for small to medium-sized problems.
-As a rule of thumb, a linear optimization problem requires **1 GB of memory for every 1 million rows**. For a mixed-integer linear optimization problem, the
-requirements are much higher, and they depend on the number of binary variables and the number of constraints that include them.
+suitable for small to medium-sized problems. As a rule of thumb, a linear optimization problem requires **1 GB of memory for every 1 million rows**. For a
+mixed-integer linear optimization problem, the requirements are much higher, and they depend on the number of binary variables and the number of constraints
+that include them.
 
 ## Solver interface: persistent vs non-persistent
 
@@ -58,15 +58,15 @@ multi-stage or Benders cases on Gurobi with the plain `gurobi` name, you re-expo
 See also some Benders decomposition publications applied to TEP:
 
 * S. Lumbreras, A. Ramos "How to Solve the Transmission Expansion Planning (TEP) Problem Faster: Acceleration Techniques Applied to Benders Decomposition" IET
-Generation, Transmission & Distribution 10: 2351-2359, Jul 2016 [10.1049/iet-gtd.2015.1075](https://dx.doi.org/10.1049/iet-gtd.2015.1075)
+  Generation, Transmission & Distribution 10: 2351-2359, Jul 2016 [10.1049/iet-gtd.2015.1075](https://dx.doi.org/10.1049/iet-gtd.2015.1075)
 
 * S. Lumbreras, A. Ramos "Transmission Expansion Planning using an Efficient Version of Benders’ Decomposition. A Case Study" IEEE PowerTech. Grenoble, France.
-June 2013 [10.1109/PTC.2013.6652091](https://dx.doi.org/10.1109/PTC.2013.6652091)
+  June 2013 [10.1109/PTC.2013.6652091](https://dx.doi.org/10.1109/PTC.2013.6652091)
 
 It solves the complete model, decomposed by the stage Benders decomposition method (file `openTEPES_ProblemSolvingStageDecomposition`). The master problem
-determines the investment decisions and the subproblem the operation decisions. The subproblem is solved by stages (e.g., weeks or months).
-The duration of the stage (weekly —168 h—, monthly —672 h—, or quarterly —2184 h—) is chosen based on what makes sense from a system operation point of view.
-This value must be larger than or equal to the shortest duration of any storage type (e.g., weekly).
+determines the investment decisions and the subproblem the operation decisions. The subproblem is solved by stages (e.g., weeks or months). The duration of the
+stage (weekly —168 h—, monthly —672 h—, or quarterly —2184 h—) is chosen based on what makes sense from a system operation point of view. This value must be
+larger than or equal to the shortest duration of any storage type (e.g., weekly).
 
 Inventory levels of ESS at the end of every stage are fixed for the decomposition, i.e., consecutive stages are not tied to each other.
 

@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 23, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 09, 2026
 """
 
 # import dill as pickle
@@ -94,7 +94,8 @@ OUTPUT_REGISTRY = (
     ("generation",  GenerationOperationHeatResults, ("tech", "area", "plot"), lambda m: bool(m.ch and m.pIndHeat)),
     ("ess",         ESSOperationResults,            ("tech", "area", "plot"), lambda m: bool(m.es)),
     ("reservoir",   ReservoirOperationResults,      ("tech", "plot"),         lambda m: bool(m.rs and m.pIndHydroTopology)),
-    ("h2",          NetworkH2OperationResults,      (),                       lambda m: bool(m.pa and m.pIndHydrogen)),
+    # gated on hydrogen, not on hydrogen pipes: a system can carry a balance and no pipeline
+    ("h2",          NetworkH2OperationResults,      (),                       lambda m: bool(m.pIndHydrogen and (m.pa or m.el or m.sr or m.hs))),
     ("heat",        NetworkHeatOperationResults,    (),                       lambda m: bool(m.ha and m.pIndHeat)),
     ("network",     NetworkOperationResults,        (),                       None),
     ("acdiag",      ACRelaxationDiagnostic,         (),                       lambda m: m.pIndACPowerFlow()),
@@ -303,10 +304,10 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     idxDict['y'  ] = 1
 
     #%% model declaration
-    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.18RC - August 07, 2026')
+    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.18RC - September 09, 2026')
     # In DuckDB-input mode _path may not exist on disk (the case lives in the DB, not in a directory). Ensure the version-log target exists.
     os.makedirs(_path, exist_ok=True)
-    print(                 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.18RC - August 07, 2026', file=open(f'{_path}/openTEPES_version_{CaseName}.log','w'))
+    print(                 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.18RC - September 09, 2026', file=open(f'{_path}/openTEPES_version_{CaseName}.log','w'))
     if _input_source is not None:
         mTEPES.pInputSource = _input_source
 
@@ -500,6 +501,22 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
             _HueH   = round(_hue_h,   4)
     except Exception:
         pass
+    # resolved here rather than at import, so it reflects the build that ran
+    _SolverVersion = None
+    try:
+        if SolverName.lower().startswith("gurobi"):
+            import gurobipy
+            _SolverVersion = ".".join(str(v) for v in gurobipy.gurobi.version())
+        elif SolverName.lower().startswith(("cbc", "glpk", "highs", "cplex", "appsi")):
+            from pyomo.environ import SolverFactory
+            _opt = SolverFactory(SolverName)
+            _v = getattr(_opt, "version", None)
+            _v = _v() if callable(_v) else _v
+            if _v:
+                _SolverVersion = ".".join(str(x) for x in _v)
+    except Exception:
+        _SolverVersion = None
+
     status = {
         "case":               CaseName,
         "dir":                DirName,
@@ -512,6 +529,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
         "output_seconds":     round(_OutputSeconds, 2),
         "total_seconds":      round(_TotalSeconds,  2),
         "solver":             SolverName,
+        "solver_version":     _SolverVersion,
         "backend":            getattr(mTEPES, "pOutputBackend", "csv"),
         "opentepes_version":  "4.18.18RC",
         "run_started_utc":    _RunStartedUtc,

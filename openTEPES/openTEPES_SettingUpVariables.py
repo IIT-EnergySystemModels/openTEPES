@@ -1,5 +1,5 @@
-"""
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 16, 2026
+﻿"""
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 09, 2026
 
 openTEPES.openTEPES_SettingUpVariables — creates the decision variables and their bounds, fixes the generators' commitment, relaxes or forbids investment conditions,
 zeroes out epsilon values, and screens for infeasibilities. Runs after DataConfiguration.
@@ -20,6 +20,74 @@ except ImportError:
     import os, sys
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     from openTEPES.openTEPES_ModelFormulationElectricity  import SettingUpVariablesBIM
+
+
+def apply_investment_bounds(mTEPES, OptModel, pEpsilon: float = 1e-6) -> None:
+    """Apply the investment- and retirement-bound Params to their variables.
+
+    ``pGenLoInvest`` / ``pGenUpInvest``, ``pGenLoRetire`` / ``pGenUpRetire`` and
+    ``pNetLoInvest`` / ``pNetUpInvest`` are ``mutable=True`` but were read only during model
+    construction, inside ``SetToZero``. Call this after mutating any of them to re-apply them to
+    ``vGenerationInvest``, ``vGenerationRetire`` and ``vNetworkInvest``.
+
+    Values within ``pEpsilon`` of 0 or 1 are snapped, and a lower bound above its upper bound is
+    pulled down to it. The snapping is idempotent, so repeated calls are safe. Build-time behaviour
+    is unchanged: ``SetToZero`` calls this instead of carrying its own copy.
+
+    .. warning::
+       Zero means opposite things in the two paths. ``openTEPES_InputData`` replaces an
+       ``InvestmentUp`` of 0 with 1.0, so 0 in the CSV means unrestricted, and excluding a
+       candidate through the data needs a small positive epsilon, which snaps to 0 here. On a
+       built model there is no such conversion, so 0 excludes the candidate. A sweep that
+       assumes the data convention leaves every candidate available and nothing fails.
+
+    Parameters:
+        mTEPES:   the model instance holding the Params.
+        OptModel: the model carrying the investment variables (usually the same object).
+        pEpsilon: threshold for snapping a value to 0 or 1.
+
+    Returns:
+        None: bounds are set directly on the variables.
+    """
+    for eb in mTEPES.eb:
+        if  mTEPES.pGenLoInvest[  eb]() <       pEpsilon:
+            mTEPES.pGenLoInvest[  eb]   = 0
+        if  mTEPES.pGenUpInvest[  eb]() <       pEpsilon:
+            mTEPES.pGenUpInvest[  eb]   = 0
+        if  mTEPES.pGenLoInvest[  eb]() > 1.0 - pEpsilon:
+            mTEPES.pGenLoInvest[  eb]   = 1
+        if  mTEPES.pGenUpInvest[  eb]() > 1.0 - pEpsilon:
+            mTEPES.pGenUpInvest[  eb]   = 1
+        if  mTEPES.pGenLoInvest[  eb]() >   mTEPES.pGenUpInvest[eb]():
+            mTEPES.pGenLoInvest[  eb]   =   mTEPES.pGenUpInvest[eb]()
+    [OptModel.vGenerationInvest[p,eb].setlb(mTEPES.pGenLoInvest[eb]()) for p,eb in mTEPES.peb]
+    [OptModel.vGenerationInvest[p,eb].setub(mTEPES.pGenUpInvest[eb]()) for p,eb in mTEPES.peb]
+    for gd in mTEPES.gd:
+        if  mTEPES.pGenLoRetire[  gd]() <       pEpsilon:
+            mTEPES.pGenLoRetire[  gd]   = 0
+        if  mTEPES.pGenUpRetire[  gd]() <       pEpsilon:
+            mTEPES.pGenUpRetire[  gd]   = 0
+        if  mTEPES.pGenLoRetire[  gd]() > 1.0 - pEpsilon:
+            mTEPES.pGenLoRetire[  gd]   = 1
+        if  mTEPES.pGenUpRetire[  gd]() > 1.0 - pEpsilon:
+            mTEPES.pGenUpRetire[  gd]   = 1
+        if  mTEPES.pGenLoRetire[  gd]() >   mTEPES.pGenUpRetire[gd]():
+            mTEPES.pGenLoRetire[  gd]   =   mTEPES.pGenUpRetire[gd]()
+    [OptModel.vGenerationRetire[p,gd].setlb(mTEPES.pGenLoRetire[gd]()) for p,gd in mTEPES.pgd]
+    [OptModel.vGenerationRetire[p,gd].setub(mTEPES.pGenUpRetire[gd]()) for p,gd in mTEPES.pgd]
+    for ni,nf,cc in mTEPES.lc:
+        if  mTEPES.pNetLoInvest[  ni,nf,cc]() <       pEpsilon:
+            mTEPES.pNetLoInvest[  ni,nf,cc]   = 0
+        if  mTEPES.pNetUpInvest[  ni,nf,cc]() <       pEpsilon:
+            mTEPES.pNetUpInvest[  ni,nf,cc]   = 0
+        if  mTEPES.pNetLoInvest[  ni,nf,cc]() > 1.0 - pEpsilon:
+            mTEPES.pNetLoInvest[  ni,nf,cc]   = 1
+        if  mTEPES.pNetUpInvest[  ni,nf,cc]() > 1.0 - pEpsilon:
+            mTEPES.pNetUpInvest[  ni,nf,cc]   = 1
+        if  mTEPES.pNetLoInvest[  ni,nf,cc]() >   mTEPES.pNetUpInvest[ni,nf,cc]():
+            mTEPES.pNetLoInvest[  ni,nf,cc]   =   mTEPES.pNetUpInvest[ni,nf,cc]()
+    [OptModel.vNetworkInvest   [p,ni,nf,cc].setlb(mTEPES.pNetLoInvest[ni,nf,cc]()) for p,ni,nf,cc in mTEPES.plc]
+    [OptModel.vNetworkInvest   [p,ni,nf,cc].setub(mTEPES.pNetUpInvest[ni,nf,cc]()) for p,ni,nf,cc in mTEPES.plc]
 
 
 # @profile
@@ -86,6 +154,15 @@ def SettingUpVariables(OptModel, mTEPES):
         OptModel.vESSReserveDown           = Var(mTEPES.psneh, within=NonNegativeReals, doc='ESS down operating reserve                       [GW]')
         OptModel.vENS                      = Var(mTEPES.psnnd, within=NonNegativeReals, doc='energy not served in node                        [GW]')
 
+        # Energy not served is normally a free variable penalised at pENSCost, so a system that
+        # cannot serve its demand still returns a solution and has to be screened afterwards on the
+        # value of vENS. Fixing the variable at zero instead asks the question directly: the model
+        # is then infeasible exactly when the demand cannot be met, which is what an adequacy study
+        # wants to establish. Off by default.
+        if mTEPES.pIndHardZeroENS():
+            for idx in OptModel.vENS:
+                OptModel.vENS[idx].fix(0.0)
+
         if mTEPES.pIndReserveActivation():
             OptModel.vESSReserveUpEnergy   = Var(mTEPES.psneh, within=NonNegativeReals, doc='ESS up   reserve activation of the unit          [GW]')
             OptModel.vESSReserveDownEnergy = Var(mTEPES.psneh, within=NonNegativeReals, doc='ESS down reserve activation of the unit          [GW]')
@@ -101,6 +178,7 @@ def SettingUpVariables(OptModel, mTEPES):
         if mTEPES.pIndHydrogen():
             OptModel.vTotalFH2Cost         = Var(mTEPES.p,     within=NonNegativeReals, doc='total system fixed H2                cost      [MEUR]')
             OptModel.vTotalRH2Cost         = Var(mTEPES.psn,   within=NonNegativeReals, doc='total system reliability H2          cost      [MEUR]')
+            OptModel.vTotalH2SrcCost       = Var(mTEPES.psn,   within=NonNegativeReals, doc='total hydrogen source              cost      [MEUR]')
 
         if mTEPES.pIndHeat():
             OptModel.vTotalFHeatCost       = Var(mTEPES.p,     within=NonNegativeReals, doc='total system fixed heat              cost      [MEUR]')
@@ -413,6 +491,18 @@ def SettingUpVariables(OptModel, mTEPES):
             [OptModel.vFlowH2  [p,sc,n,ni,nf,cc].setlb(-mTEPES.pH2PipeNTCBck[ni,nf,cc])                           for p,sc,n,ni,nf,cc in mTEPES.psnpa]
             [OptModel.vFlowH2  [p,sc,n,ni,nf,cc].setub( mTEPES.pH2PipeNTCFrw[ni,nf,cc])                           for p,sc,n,ni,nf,cc in mTEPES.psnpa]
             [OptModel.vH2NS    [p,sc,n,nd      ].setub(mTEPES.pDuration[p,sc,n]()*mTEPES.pDemandH2Pos[p,sc,n,nd]) for p,sc,n,nd       in mTEPES.psnnd]
+
+            # hydrogen made without electricity, in tH2 over the load level
+            OptModel.vH2Production = Var(mTEPES.psn*mTEPES.sr, within=NonNegativeReals, doc='hydrogen produced without electricity [tH2]')
+            [OptModel.vH2Production[p,sc,n,sr].setub(mTEPES.pDuration[p,sc,n]()*mTEPES.pMaximumProductionH2[sr]) for p,sc,n,sr in mTEPES.psn*mTEPES.sr]
+
+            # hydrogen storage: injection, withdrawal and inventory
+            OptModel.vH2StorCharge    = Var(mTEPES.psn*mTEPES.hs, within=NonNegativeReals, doc='hydrogen into  storage [tH2]')
+            OptModel.vH2StorDischarge = Var(mTEPES.psn*mTEPES.hs, within=NonNegativeReals, doc='hydrogen out of storage [tH2]')
+            OptModel.vH2Inventory     = Var(mTEPES.psn*mTEPES.hs, within=NonNegativeReals, doc='hydrogen inventory      [tH2]')
+            [OptModel.vH2StorCharge   [p,sc,n,hs].setub(mTEPES.pDuration[p,sc,n]()*mTEPES.pMaxChargeH2[hs]) for p,sc,n,hs in mTEPES.psn*mTEPES.hs]
+            [OptModel.vH2StorDischarge[p,sc,n,hs].setub(mTEPES.pDuration[p,sc,n]()*mTEPES.pMaxChargeH2[hs]) for p,sc,n,hs in mTEPES.psn*mTEPES.hs]
+            [OptModel.vH2Inventory    [p,sc,n,hs].setub(                           mTEPES.pMaxStorageH2[hs]) for p,sc,n,hs in mTEPES.psn*mTEPES.hs]
 
         if mTEPES.pIndHeat():
             OptModel.vFlowHeat = Var(mTEPES.psnha, within=Reals,            doc='heat pipe flow          [GW]')
@@ -1021,45 +1111,7 @@ def SettingUpVariables(OptModel, mTEPES):
         Returns:
             None: Changes are performed directly onto the model object.
         '''
-        for eb in mTEPES.eb:
-            if  mTEPES.pGenLoInvest[  eb]() <       pEpsilon:
-                mTEPES.pGenLoInvest[  eb]   = 0
-            if  mTEPES.pGenUpInvest[  eb]() <       pEpsilon:
-                mTEPES.pGenUpInvest[  eb]   = 0
-            if  mTEPES.pGenLoInvest[  eb]() > 1.0 - pEpsilon:
-                mTEPES.pGenLoInvest[  eb]   = 1
-            if  mTEPES.pGenUpInvest[  eb]() > 1.0 - pEpsilon:
-                mTEPES.pGenUpInvest[  eb]   = 1
-            if  mTEPES.pGenLoInvest[  eb]() >   mTEPES.pGenUpInvest[eb]():
-                mTEPES.pGenLoInvest[  eb]   =   mTEPES.pGenUpInvest[eb]()
-        [OptModel.vGenerationInvest[p,eb].setlb(mTEPES.pGenLoInvest[eb]()) for p,eb in mTEPES.peb]
-        [OptModel.vGenerationInvest[p,eb].setub(mTEPES.pGenUpInvest[eb]()) for p,eb in mTEPES.peb]
-        for gd in mTEPES.gd:
-            if  mTEPES.pGenLoRetire[  gd]() <       pEpsilon:
-                mTEPES.pGenLoRetire[  gd]   = 0
-            if  mTEPES.pGenUpRetire[  gd]() <       pEpsilon:
-                mTEPES.pGenUpRetire[  gd]   = 0
-            if  mTEPES.pGenLoRetire[  gd]() > 1.0 - pEpsilon:
-                mTEPES.pGenLoRetire[  gd]   = 1
-            if  mTEPES.pGenUpRetire[  gd]() > 1.0 - pEpsilon:
-                mTEPES.pGenUpRetire[  gd]   = 1
-            if  mTEPES.pGenLoRetire[  gd]() >   mTEPES.pGenUpRetire[gd]():
-                mTEPES.pGenLoRetire[  gd]   =   mTEPES.pGenUpRetire[gd]()
-        [OptModel.vGenerationRetire[p,gd].setlb(mTEPES.pGenLoRetire[gd]()) for p,gd in mTEPES.pgd]
-        [OptModel.vGenerationRetire[p,gd].setub(mTEPES.pGenUpRetire[gd]()) for p,gd in mTEPES.pgd]
-        for ni,nf,cc in mTEPES.lc:
-            if  mTEPES.pNetLoInvest[  ni,nf,cc]() <       pEpsilon:
-                mTEPES.pNetLoInvest[  ni,nf,cc]   = 0
-            if  mTEPES.pNetUpInvest[  ni,nf,cc]() <       pEpsilon:
-                mTEPES.pNetUpInvest[  ni,nf,cc]   = 0
-            if  mTEPES.pNetLoInvest[  ni,nf,cc]() > 1.0 - pEpsilon:
-                mTEPES.pNetLoInvest[  ni,nf,cc]   = 1
-            if  mTEPES.pNetUpInvest[  ni,nf,cc]() > 1.0 - pEpsilon:
-                mTEPES.pNetUpInvest[  ni,nf,cc]   = 1
-            if  mTEPES.pNetLoInvest[  ni,nf,cc]() >   mTEPES.pNetUpInvest[ni,nf,cc]():
-                mTEPES.pNetLoInvest[  ni,nf,cc]   =   mTEPES.pNetUpInvest[ni,nf,cc]()
-        [OptModel.vNetworkInvest   [p,ni,nf,cc].setlb(mTEPES.pNetLoInvest[ni,nf,cc]()) for p,ni,nf,cc in mTEPES.plc]
-        [OptModel.vNetworkInvest   [p,ni,nf,cc].setub(mTEPES.pNetUpInvest[ni,nf,cc]()) for p,ni,nf,cc in mTEPES.plc]
+        apply_investment_bounds(mTEPES, OptModel, pEpsilon)
 
         # Reservoir investment bounds: pRsrLoInvest / pRsrUpInvest are read here but never created — openTEPES_DataConfiguration does not
         # declare them and there is no plan to. The whole block therefore raised AttributeError on line 1 of the loop for any case with

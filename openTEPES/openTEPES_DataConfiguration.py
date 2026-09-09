@@ -1,10 +1,11 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 09, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 09, 2026
 
 openTEPES.openTEPES_DataConfiguration — builds the derived sets and parameters on the model: instrumental sets, ESS/RES sets, and the flag-driven branches (hydro topology, hydrogen, heat, PTDF). Runs after InputData has read the raw sets and parameters.
 """
 from __future__ import annotations
 
+import os
 import time
 import math
 import cmath
@@ -68,6 +69,13 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     mTEPES.ch     = Set(doc='CHP       & fuel boiler units'    , initialize=[g      for g    in mTEPES.g   if                                            par['pRatedMaxPowerHeat'][g ] > 0.0 and par['pProductionFunctionHeat'    ][g ] == 0.0])
     mTEPES.bo     = Set(doc='            fuel boiler units'    , initialize=[ch     for ch   in mTEPES.ch  if par['pRatedMaxPowerElec']  [ch] == 0.0 and par['pRatedMaxPowerHeat'][ch] > 0.0 and par['pProductionFunctionHeat'    ][ch] == 0.0])
     mTEPES.hh     = Set(doc='        hydrogen boiler units'    , initialize=[bo     for bo   in mTEPES.bo                                                                                     if par['pProductionFunctionH2ToHeat'][bo] >  0.0])
+    mTEPES.h2p     = Set(doc='hydrogen-to-power       units'    , initialize=[g      for g    in mTEPES.g   if par['pProductionFunctionH2ToPower'][g ] >  0.0])
+    # scoped to gg: a cavern has no electrical rating, so it is not in the generating set
+    mTEPES.hs     = Set(doc='hydrogen storage        units'    , initialize=[gg     for gg   in mTEPES.gg  if par['pMaxStorageH2'][gg] >  0.0])
+    mTEPES.n2hs   = Set(doc='node   to hydrogen store'         , initialize=[(par['pGenToNode'][hs], hs) for hs in mTEPES.hs])
+    # scoped to gg for the same reason as hs
+    mTEPES.sr     = Set(doc='hydrogen source         units'    , initialize=[gg     for gg   in mTEPES.gg  if par['pMaximumProductionH2'][gg] >  0.0])
+    mTEPES.n2sr   = Set(doc='node   to hydrogen source'        , initialize=[(par['pGenToNode'][sr], sr) for sr in mTEPES.sr])
     mTEPES.gc     = Set(doc='candidate               units'    , initialize=[g      for g    in mTEPES.g   if par['pGenInvestCost']      [g ] >  0.0])
     mTEPES.gd     = Set(doc='retirement              units'    , initialize=[g      for g    in mTEPES.g   if par['pGenRetireCost']      [g ] >  0.0])
     mTEPES.ec     = Set(doc='candidate ESS           units'    , initialize=[es     for es   in mTEPES.es  if par['pGenInvestCost']      [es] >  0.0])
@@ -143,7 +151,7 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
         mTEPES.hc = Set(doc='candidate heat pipes'             , initialize=[])
         mTEPES.he = Set(doc='existing  heat pipes'             , initialize=[])
 
-    par['pIndBinLinePTDF'] = pd.Series(index=mTEPES.la, data=0.0)                                                              # indicate if the line has a PTDF or not
+    par['pIndBinLinePTDF'] = pd.Series(index=mTEPES.la, data=0.0)                                                                            # indicate if the line has a PTDF or not
     if par['pIndVarTTC']:
         par['pVariableNTCFrw'] = par['pVariableNTCFrw'].reindex(columns=mTEPES.la, fill_value=0.0) * dfs['dfNetwork']['SecurityFactor']      # variable NTC forward  direction because of the security factor
         par['pVariableNTCBck'] = par['pVariableNTCBck'].reindex(columns=mTEPES.la, fill_value=0.0) * dfs['dfNetwork']['SecurityFactor']      # variable NTC backward direction because of the security factor
@@ -301,6 +309,21 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
 
 
     CreateInstrumentalSets(mTEPES, par['pIndHydroTopology'], par['pIndHydrogen'], par['pIndHeat'], par['pIndPTDF'])
+
+    if par['pIndHydrogen']:
+        # Inert elements are legal but usually a case-building mistake. Storage is neither source
+        # nor sink, since eH2IniFinInventory returns it to its start. System-wide, not per node.
+        _has_source = bool(mTEPES.el) or bool(mTEPES.sr) or bool(mTEPES.pa)
+        _has_sink   = bool(mTEPES.h2p) or bool(mTEPES.hh) or bool(mTEPES.pa) or float(par['pDemandH2'].sum().sum()) > 0.0
+        for _what, _present, _needs, _consequence in (
+            ('electrolysers', bool(mTEPES.el),  _has_sink,                'produce only into priced excess'),
+            ('H2 turbines',   bool(mTEPES.h2p), _has_source,              'run only on penalised unserved hydrogen'),
+            ('H2 storage',    bool(mTEPES.hs),  _has_source and _has_sink,'have nothing to buffer between'),
+        ):
+            if _present and not _needs:
+                print(f'WARNING: the case defines {_what}, but the hydrogen carrier has no '
+                      f'{"sink" if _what == "electrolysers" else "source" if _what == "H2 turbines" else "source or no sink"}, '
+                      f'so they can {_consequence}.')
 
     # replacing string values by numerical values
     idxDict = dict()
@@ -548,8 +571,12 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     idxEnergy['Yearly' ] = round(8736/mTEPES.pDurationNZMax)
 
     par['pStorageTimeStep']  = par['pStorageType' ].map(idxCycle   ).fillna(1)                                                                                          .astype('int')
+    par['pStorageTimeStepH2'] = par['pStorageTypeH2'].map(idxCycle).fillna(1).astype('int')
     par['pOutflowsTimeStep'] = par['pOutflowsType'].map(idxOutflows).fillna(1).where(par['pEnergyOutflows'   ].sum()                                   > 0.0, other = 1).astype('int')
     par['pEnergyTimeStep']   = par['pEnergyType'  ].map(idxEnergy  ).fillna(1).where(par['pVariableMinEnergy'].sum() + par['pVariableMaxEnergy'].sum() > 0.0, other = 1).astype('int')
+    # Same period vocabulary, but not gated on the min/max energy profiles: neutrality needs a block
+    # length whether or not the unit also carries an energy bound.
+    par['pNeutralityTimeStep'] = par['pEnergyType'].map(idxEnergy).fillna(1).astype('int')
 
     par['pStorageTimeStep']  = pd.concat([par['pStorageTimeStep'], par['pOutflowsTimeStep'], par['pEnergyTimeStep']], axis=1).min(axis=1)
     # cycle time step can't exceed the stage duration
@@ -650,6 +677,8 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     par['pStorageTimeStep']     = par['pStorageTimeStep'].loc      [mTEPES.es   ]
     par['pOutflowsTimeStep']    = par['pOutflowsTimeStep'].loc     [mTEPES.es   ]
     par['pStorageType']         = par['pStorageType'].loc          [mTEPES.es   ]
+    par['pIndEnergyNeutrality'] = par['pIndEnergyNeutrality'].loc  [mTEPES.es   ]
+    par['pNeutralityTimeStep']  = par['pNeutralityTimeStep'].loc   [mTEPES.es   ]
 
     # separate positive and negative demands to avoid converting negative values to 0
     par['pDemandElecPos']  = par['pDemandElec'].where(par['pDemandElec'] >= 0.0, 0.0)
@@ -684,10 +713,10 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
         par['pDemandHeatPeak'] = pd.Series([0.0 for p,ar in mTEPES.par], index=mTEPES.par)
 
     if par['pIndVarTTC']:
-        par['pVariableNTCFrw']  = par['pVariableNTCFrw'].loc  [mTEPES.psn]
-        par['pVariableNTCBck']  = par['pVariableNTCBck'].loc  [mTEPES.psn]
+        par['pVariableNTCFrw']  = par['pVariableNTCFrw'].loc[mTEPES.psn]
+        par['pVariableNTCBck']  = par['pVariableNTCBck'].loc[mTEPES.psn]
     if par['pIndPTDF'] == 1:
-        par['pVariablePTDF']    = par['pVariablePTDF'].loc    [mTEPES.psn]
+        par['pVariablePTDF']    = par['pVariablePTDF'].loc  [mTEPES.psn]
 
     # generators to area (g2a) (e2a) (n2a)
     g2a = defaultdict(set)
@@ -775,9 +804,20 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
             par['pMaxPower2ndBlock' ][par['pMaxPower2ndBlock' ][[g for g in g2a[ar]]] < par['pEpsilonElec']] = 0.0
             par['pMaxCharge2ndBlock'][par['pMaxCharge2ndBlock'][[g for g in g2a[ar]]] < par['pEpsilonElec']] = 0.0
 
-        par['pLineNTCFrw']  [par['pLineNTCFrw'] < par['pEpsilonElec']] = 0.0
-        par['pLineNTCBck']  [par['pLineNTCBck'] < par['pEpsilonElec']] = 0.0
-        par['pLineNTCMax'] = par['pLineNTCFrw'].where(par['pLineNTCFrw'] > par['pLineNTCBck'], par['pLineNTCBck'])
+        par['pLineNTCFrw'] = par['pLineNTCFrw'].where((par['pLineNTCFrw'] > par['pEpsilonElec']) | (par['pLineNTCFrw'] < -par['pEpsilonElec']), 0.0)
+        par['pLineNTCBck'] = par['pLineNTCBck'].where((par['pLineNTCBck'] > par['pEpsilonElec']) | (par['pLineNTCBck'] < -par['pEpsilonElec']), 0.0)
+        # par['pLineNTCMax'] = par['pLineNTCFrw'].where( par['pLineNTCFrw'] > par['pLineNTCBck'], par['pLineNTCBck'])
+        par['pLineNTCMax'] = par['pLineNTCFrw'].where( par['pLineNTCFrw'].abs() >= par['pLineNTCBck'].abs(), par['pLineNTCBck']).abs()
+
+        par['pMaxNTCFrw'] = pd.DataFrame([[par['pLineNTCFrw'][la] for la in mTEPES.la] for p,sc,n in mTEPES.psn], index=mTEPES.psn, columns=mTEPES.la)
+        par['pMaxNTCBck'] = pd.DataFrame([[par['pLineNTCBck'][la] for la in mTEPES.la] for p,sc,n in mTEPES.psn], index=mTEPES.psn, columns=mTEPES.la)
+        if par['pIndVarTTC']:
+            par['pMaxNTCFrw'] = par['pVariableNTCFrw'].replace(0.0, par['pLineNTCFrw'])
+            par['pMaxNTCBck'] = par['pVariableNTCBck'].replace(0.0, par['pLineNTCBck'])
+            par['pMaxNTCFrw'] = par['pMaxNTCFrw'].where((par['pMaxNTCFrw'] > par['pEpsilonElec']) | (par['pMaxNTCFrw'] < -par['pEpsilonElec']), 0.0)
+            par['pMaxNTCBck'] = par['pMaxNTCBck'].where((par['pMaxNTCBck'] > par['pEpsilonElec']) | (par['pMaxNTCBck'] < -par['pEpsilonElec']), 0.0)
+        # par['pMaxNTCMax']     = par['pMaxNTCFrw'].where( par['pMaxNTCFrw'] >= par['pMaxNTCBck'], par['pMaxNTCBck'])
+        par['pMaxNTCMax']     = par['pMaxNTCFrw'].where( par['pMaxNTCFrw'].abs() >= par['pMaxNTCBck'].abs(), par['pMaxNTCBck']).abs()
 
         if par['pIndHydrogen']:
             par['pDemandH2Peak'][p,ar] = par['pDemandH2Pos' ].loc[p,:,:][[nd for nd in d2a[ar]]].sum(axis=1).max()
@@ -846,66 +886,57 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     par['pMaxPowerHeat'].update(pd.DataFrame([[par['pMaxCharge'][hp][p,sc,n]/par['pProductionFunctionHeat'][hp]  for hp in mTEPES.hp] for p,sc,n in mTEPES.psn], index=mTEPES.psn, columns=mTEPES.hp))
 
     # drop values not par, p, or ps
-    par['pReserveMargin']      = par['pReserveMargin'].loc [mTEPES.par]
-    par['pEmission']           = par['pEmission'].loc      [mTEPES.par]
-    par['pRESEnergy']          = par['pRESEnergy'].loc     [mTEPES.par]
-    par['pDemandElecPeak']     = par['pDemandElecPeak'].loc[mTEPES.par]
-    par['pPeriodWeight']       = par['pPeriodWeight'].loc  [mTEPES.p  ]
-    par['pScenProb']           = par['pScenProb'].loc      [mTEPES.ps ]
+    par['pReserveMargin']    = par['pReserveMargin'].loc  [mTEPES.par]
+    par['pEmission']         = par['pEmission'].loc       [mTEPES.par]
+    par['pRESEnergy']        = par['pRESEnergy'].loc      [mTEPES.par]
+    par['pDemandElecPeak']   = par['pDemandElecPeak'].loc [mTEPES.par]
+    par['pPeriodWeight']     = par['pPeriodWeight'].loc   [mTEPES.p  ]
+    par['pScenProb']         = par['pScenProb'].loc       [mTEPES.ps ]
 
     # drop generators not gc or gd
-    par['pGenInvestCost']           = par['pGenInvestCost'].loc   [mTEPES.eb]
-    par['pGenRetireCost']           = par['pGenRetireCost'].loc   [mTEPES.gd]
-    par['pIndBinUnitInvest']        = par['pIndBinUnitInvest'].loc[mTEPES.eb]
-    par['pIndBinUnitRetire']        = par['pIndBinUnitRetire'].loc[mTEPES.gd]
-    par['pGenLoInvest']             = par['pGenLoInvest'].loc     [mTEPES.eb]
-    par['pGenLoRetire']             = par['pGenLoRetire'].loc     [mTEPES.gd]
-    par['pGenUpInvest']             = par['pGenUpInvest'].loc     [mTEPES.eb]
-    par['pGenUpRetire']             = par['pGenUpRetire'].loc     [mTEPES.gd]
+    par['pGenInvestCost']    = par['pGenInvestCost'].loc   [mTEPES.eb]
+    par['pGenRetireCost']    = par['pGenRetireCost'].loc   [mTEPES.gd]
+    par['pIndBinUnitInvest'] = par['pIndBinUnitInvest'].loc[mTEPES.eb]
+    par['pIndBinUnitRetire'] = par['pIndBinUnitRetire'].loc[mTEPES.gd]
+    par['pGenLoInvest']      = par['pGenLoInvest'].loc     [mTEPES.eb]
+    par['pGenLoRetire']      = par['pGenLoRetire'].loc     [mTEPES.gd]
+    par['pGenUpInvest']      = par['pGenUpInvest'].loc     [mTEPES.eb]
+    par['pGenUpRetire']      = par['pGenUpRetire'].loc     [mTEPES.gd]
 
     # drop generators not nr or ec
-    par['pStartUpCost']             = par['pStartUpCost'].loc     [mTEPES.nr]
-    par['pShutDownCost']            = par['pShutDownCost'].loc    [mTEPES.nr]
-    par['pIndBinUnitCommit']        = par['pIndBinUnitCommit'].loc[mTEPES.nr]
-    par['pIndBinStorInvest']        = par['pIndBinStorInvest'].loc[mTEPES.ec]
+    par['pStartUpCost']      = par['pStartUpCost'].loc     [mTEPES.nr]
+    par['pShutDownCost']     = par['pShutDownCost'].loc    [mTEPES.nr]
+    par['pIndBinUnitCommit'] = par['pIndBinUnitCommit'].loc[mTEPES.nr]
+    par['pIndBinStorInvest'] = par['pIndBinStorInvest'].loc[mTEPES.ec]
 
     # drop lines not la
-    par['pLineR']                   = par['pLineR'].loc           [mTEPES.la]
-    par['pLineX']                   = par['pLineX'].loc           [mTEPES.la]
-    par['pLineBsh']                 = par['pLineBsh'].loc         [mTEPES.la]
-    par['pLineTAP']                 = par['pLineTAP'].loc         [mTEPES.la]
-    par['pLineLength']              = par['pLineLength'].loc      [mTEPES.la]
-    par['pElecNetPeriodIni']        = par['pElecNetPeriodIni'].loc[mTEPES.la]
-    par['pElecNetPeriodFin']        = par['pElecNetPeriodFin'].loc[mTEPES.la]
-    par['pLineVoltage']             = par['pLineVoltage'].loc     [mTEPES.la]
-    par['pLineNTCFrw']              = par['pLineNTCFrw'].loc      [mTEPES.la]
-    par['pLineNTCBck']              = par['pLineNTCBck'].loc      [mTEPES.la]
-    par['pLineNTCMax']              = par['pLineNTCMax'].loc      [mTEPES.la]
-    par['pSwitchOnTime']            = par['pSwitchOnTime'].loc    [mTEPES.la]
-    par['pSwitchOffTime']           = par['pSwitchOffTime'].loc   [mTEPES.la]
-    par['pIndBinLineInvest']        = par['pIndBinLineInvest'].loc[mTEPES.la]
-    par['pIndBinLineSwitch']        = par['pIndBinLineSwitch'].loc[mTEPES.la]
-    par['pAngMin']                  = par['pAngMin'].loc          [mTEPES.la]
-    par['pAngMax']                  = par['pAngMax'].loc          [mTEPES.la]
+    par['pLineR']            = par['pLineR'].loc           [mTEPES.la]
+    par['pLineX']            = par['pLineX'].loc           [mTEPES.la]
+    par['pLineBsh']          = par['pLineBsh'].loc         [mTEPES.la]
+    par['pLineTAP']          = par['pLineTAP'].loc         [mTEPES.la]
+    par['pLineLength']       = par['pLineLength'].loc      [mTEPES.la]
+    par['pElecNetPeriodIni'] = par['pElecNetPeriodIni'].loc[mTEPES.la]
+    par['pElecNetPeriodFin'] = par['pElecNetPeriodFin'].loc[mTEPES.la]
+    par['pLineVoltage']      = par['pLineVoltage'].loc     [mTEPES.la]
+    par['pLineNTCFrw']       = par['pLineNTCFrw'].loc      [mTEPES.la]
+    par['pLineNTCBck']       = par['pLineNTCBck'].loc      [mTEPES.la]
+    par['pLineNTCMax']       = par['pLineNTCMax'].loc      [mTEPES.la]
+    par['pSwitchOnTime']     = par['pSwitchOnTime'].loc    [mTEPES.la]
+    par['pSwitchOffTime']    = par['pSwitchOffTime'].loc   [mTEPES.la]
+    par['pIndBinLineInvest'] = par['pIndBinLineInvest'].loc[mTEPES.la]
+    par['pIndBinLineSwitch'] = par['pIndBinLineSwitch'].loc[mTEPES.la]
+    par['pAngMin']           = par['pAngMin'].loc          [mTEPES.la]
+    par['pAngMax']           = par['pAngMax'].loc          [mTEPES.la]
 
     # drop lines not lc or ll
-    par['pNetFixedCost']            = par['pNetFixedCost'].loc    [mTEPES.lc]
-    par['pNetLoInvest']             = par['pNetLoInvest'].loc     [mTEPES.lc]
-    par['pNetUpInvest']             = par['pNetUpInvest'].loc     [mTEPES.lc]
-    par['pLineLossFactor']          = par['pLineLossFactor'].loc  [mTEPES.ll]
+    par['pNetFixedCost']     = par['pNetFixedCost'].loc    [mTEPES.lc]
+    par['pNetLoInvest']      = par['pNetLoInvest'].loc     [mTEPES.lc]
+    par['pNetUpInvest']      = par['pNetUpInvest'].loc     [mTEPES.lc]
+    par['pLineLossFactor']   = par['pLineLossFactor'].loc  [mTEPES.ll]
 
-    par['pMaxNTCFrw'] = pd.DataFrame([[par['pLineNTCFrw'][la] for la in mTEPES.la] for p,sc,n in mTEPES.psn], index=mTEPES.psn, columns=mTEPES.la)
-    par['pMaxNTCBck'] = pd.DataFrame([[par['pLineNTCBck'][la] for la in mTEPES.la] for p,sc,n in mTEPES.psn], index=mTEPES.psn, columns=mTEPES.la)
-    if par['pIndVarTTC']:
-        par['pMaxNTCFrw'] = par['pVariableNTCFrw'].replace(0.0, par['pLineNTCFrw'])
-        par['pMaxNTCBck'] = par['pVariableNTCBck'].replace(0.0, par['pLineNTCBck'])
-        par['pMaxNTCFrw']  [par['pMaxNTCFrw'] < par['pEpsilonElec']] = 0.0
-        par['pMaxNTCBck']  [par['pMaxNTCBck'] < par['pEpsilonElec']] = 0.0
-    par['pMaxNTCMax'] = par['pMaxNTCFrw'].where(par['pMaxNTCFrw'] > par['pMaxNTCBck'], par['pMaxNTCBck'])
-
-    par['pMaxNTCBck']                  = par['pMaxNTCBck'].loc             [:,mTEPES.la]
-    par['pMaxNTCFrw']                  = par['pMaxNTCFrw'].loc             [:,mTEPES.la]
-    par['pMaxNTCMax']                  = par['pMaxNTCMax'].loc             [:,mTEPES.la]
+    par['pMaxNTCBck']        = par['pMaxNTCBck'].loc     [:,mTEPES.la]
+    par['pMaxNTCFrw']        = par['pMaxNTCFrw'].loc     [:,mTEPES.la]
+    par['pMaxNTCMax']        = par['pMaxNTCMax'].loc     [:,mTEPES.la]
 
     if par['pIndHydroTopology']:
         # drop generators not h
@@ -920,6 +951,14 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
         par['pDemandH2Peak']         = par['pDemandH2Peak'].loc        [mTEPES.par]
         # drop generators not el
         par['pProductionFunctionH2'] = par['pProductionFunctionH2'].loc[mTEPES.el]
+        # drop generators not h2p
+        par['pProductionFunctionH2ToPower'] = par['pProductionFunctionH2ToPower'].loc[mTEPES.h2p]
+        # drop generators not hs
+        for _k in ('pMaxStorageH2', 'pMaxChargeH2', 'pIniStorageH2', 'pStorageTimeStepH2'):
+            par[_k] = par[_k].loc[mTEPES.hs]
+        # drop generators not sr
+        for _k in ('pMaximumProductionH2', 'pProductionCostH2', 'pProductionEmissionH2'):
+            par[_k] = par[_k].loc[mTEPES.sr]
         # drop pipelines not pc
         par['pH2PipeFixedCost']      = par['pH2PipeFixedCost'].loc     [mTEPES.pc]
         par['pH2PipeLoInvest']       = par['pH2PipeLoInvest'].loc      [mTEPES.pc]
@@ -971,8 +1010,11 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     for lea in mTEPES.lea:
         par['pBigMFlowBck'].loc[lea] = par['pLineNTCBck'][lea]
         par['pBigMFlowFrw'].loc[lea] = par['pLineNTCFrw'][lea]
+    # Delta-theta across a line is bounded by twice the nodal angle bound, so the angle side of the
+    # Big-M follows from pMaxTheta rather than from an independent literal.
+    pMaxThetaValue = math.pi / 2
     for lca in mTEPES.lca:
-        M_angle_lca = (1.0 + pMBigMEpsilon) * max(par['pLineNTCBck'][lca], math.pi * par['pSBase'] / par['pLineX'][lca])
+        M_angle_lca = (1.0 + pMBigMEpsilon) * max(par['pLineNTCBck'][lca], 2.0 * pMaxThetaValue * par['pSBase'] / par['pLineX'][lca])
         par['pBigMFlowBck'].loc[lca] = M_angle_lca
         par['pBigMFlowFrw'].loc[lca] = M_angle_lca
 
@@ -981,7 +1023,7 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     par['pBigMFlowFrw'] = par['pBigMFlowFrw'].where(par['pBigMFlowFrw'] != 0.0, 1.0)
 
     # maximum voltage angle
-    par['pMaxTheta'] = par['pDemandElec']*0.0 + math.pi/2
+    par['pMaxTheta'] = par['pDemandElec']*0.0 + pMaxThetaValue
     par['pMaxTheta'] = par['pMaxTheta'].loc[mTEPES.psn]
 
     # this option avoids a warning in the following assignments
@@ -1045,6 +1087,9 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     mTEPES.pIndBinNetHeatInvest  = Param(initialize=par['pIndBinNetHeatInvest'] , within=NonNegativeIntegers, doc='Indicator of binary heat     network investment decisions', mutable=True)
     mTEPES.pIndBinGenOperat      = Param(initialize=par['pIndBinGenOperat']     , within=Binary,              doc='Indicator of binary generation operation  decisions',       mutable=True)
     mTEPES.pIndBinSingleNode     = Param(initialize=par['pIndBinSingleNode']    , within=Binary,              doc='Indicator of single node within a electric network case',   mutable=True)
+    # Optional: absent from cases written before it existed, so default it rather than require it.
+    # OTEPES_ZERO_ENS, set by --zero-ens, turns it on for a run without editing case data.
+    mTEPES.pIndHardZeroENS       = Param(initialize=1 if os.environ.get('OTEPES_ZERO_ENS') else par.get('pIndHardZeroENS', 0), within=Binary, doc='Indicator of energy not served forbidden rather than penalised', mutable=True)
     mTEPES.pIndBinGenRamps       = Param(initialize=par['pIndBinGenRamps']      , within=Binary,              doc='Indicator of using or not the ramp constraints',            mutable=True)
     mTEPES.pIndBinGenMinTime     = Param(initialize=par['pIndBinGenMinTime']    , within=Binary,              doc='Indicator of using or not the min up/dw time constraints',  mutable=True)
     mTEPES.pIndBinLineCommit     = Param(initialize=par['pIndBinLineCommit']    , within=Binary,              doc='Indicator of binary electric network switching  decisions', mutable=True)
@@ -1066,7 +1111,11 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
 
     mTEPES.pENSCost              = Param(initialize=par['pENSCost']             , within=NonNegativeReals,    doc='ENS cost'                                           , mutable=True)
     mTEPES.pH2NSCost             = Param(initialize=par['pHNSCost']             , within=NonNegativeReals,    doc='HNS cost'                                           )
-    mTEPES.pH2ExcCost            = Param(initialize=par['pHNSCost']*0.5         , within=NonNegativeReals,    doc='H2 excess cost'                                     )
+    # Optional H2ExcCost. Absent, it stays at half the not-served cost, as every case had.
+    _h2_exc = par.get('pH2ExcCost')
+    if _h2_exc is None or _h2_exc != _h2_exc:            # absent, or the column present and the cell blank
+        _h2_exc = par['pHNSCost']*0.5
+    mTEPES.pH2ExcCost            = Param(initialize=_h2_exc                    , within=NonNegativeReals,    doc='H2 excess cost'                                     )
     mTEPES.pHeatNSCost           = Param(initialize=par['pHTNSCost']            , within=NonNegativeReals,    doc='HTNS cost'                                          )
     mTEPES.pCO2Cost              = Param(initialize=par['pCO2Cost']             , within=NonNegativeReals,    doc='CO2 emission cost'                                  )
     mTEPES.pAnnualDiscRate       = Param(initialize=par['pAnnualDiscountRate']  , within=UnitInterval,        doc='Annual discount rate'                               )
@@ -1146,6 +1195,8 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     mTEPES.pEnergyTimeStep       = Param(mTEPES.gg,    initialize=par['pEnergyTimeStep'].to_dict()           , within=PositiveIntegers,    doc='Unit energy cycle'                                   )
     mTEPES.pIniInventory         = Param(mTEPES.psnes, initialize=par['pIniInventory'].to_dict()             , within=NonNegativeReals,    doc='ESS Initial storage',                    mutable=True)
     mTEPES.pStorageType          = Param(mTEPES.es,    initialize=par['pStorageType'].to_dict()              , within=Any             ,    doc='ESS Storage type'                                    )
+    mTEPES.pIndEnergyNeutrality = Param(mTEPES.es, initialize=par['pIndEnergyNeutrality'].to_dict(), within=Binary, doc='Energy neutral over its EnergyType period')
+    mTEPES.pNeutralityTimeStep  = Param(mTEPES.es, initialize=par['pNeutralityTimeStep'].to_dict() , within=PositiveIntegers, doc='Energy neutrality period [load levels]')
     mTEPES.pGenLoInvest          = Param(mTEPES.eb,    initialize=par['pGenLoInvest'].to_dict()              , within=NonNegativeReals,    doc='Lower bound of the investment decision', mutable=True)
     mTEPES.pGenUpInvest          = Param(mTEPES.eb,    initialize=par['pGenUpInvest'].to_dict()              , within=NonNegativeReals,    doc='Upper bound of the investment decision', mutable=True)
     mTEPES.pGenLoRetire          = Param(mTEPES.gd,    initialize=par['pGenLoRetire'].to_dict()              , within=NonNegativeReals,    doc='Lower bound of the retirement decision', mutable=True)
@@ -1161,6 +1212,14 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
 
     if par['pIndHydrogen']:
         mTEPES.pProductionFunctionH2 = Param(mTEPES.el, initialize=par['pProductionFunctionH2'].to_dict()    , within=NonNegativeReals,    doc='Production function of an electrolyzer plant'        )
+        mTEPES.pProductionFunctionH2ToPower = Param(mTEPES.h2p, initialize=par['pProductionFunctionH2ToPower'].to_dict(), within=NonNegativeReals, doc='Production function of a hydrogen-fired generator')
+        mTEPES.pMaxStorageH2      = Param(mTEPES.hs, initialize=par['pMaxStorageH2'].to_dict()     , within=NonNegativeReals, doc='Maximum hydrogen storage    [tH2]')
+        mTEPES.pMaxChargeH2       = Param(mTEPES.hs, initialize=par['pMaxChargeH2'].to_dict()      , within=NonNegativeReals, doc='Maximum hydrogen in/out rate [tH2]')
+        mTEPES.pIniStorageH2      = Param(mTEPES.hs, initialize=par['pIniStorageH2'].to_dict()     , within=NonNegativeReals, doc='Initial hydrogen storage    [tH2]')
+        mTEPES.pStorageTimeStepH2 = Param(mTEPES.hs, initialize=par['pStorageTimeStepH2'].to_dict(), within=PositiveIntegers, doc='Hydrogen storage cycle       [h]')
+        mTEPES.pMaximumProductionH2  = Param(mTEPES.sr, initialize=par['pMaximumProductionH2'].to_dict() , within=NonNegativeReals, doc='Maximum hydrogen production without electricity [tH2/h]')
+        mTEPES.pProductionCostH2     = Param(mTEPES.sr, initialize=par['pProductionCostH2'].to_dict()    , within=NonNegativeReals, doc='Cost of that hydrogen, fuel + VOM + carbon    [MEUR/tH2]')
+        mTEPES.pProductionEmissionH2 = Param(mTEPES.sr, initialize=par['pProductionEmissionH2'].to_dict(), within=NonNegativeReals, doc='Carbon emitted making it, for reporting      [tCO2/tH2]')
 
     if par['pIndHeat']:
         par['pMinPowerHeat'] = filter_rows(par['pMinPowerHeat'], mTEPES.psnch)

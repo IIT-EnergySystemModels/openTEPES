@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 10, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 27, 2026
 
 Generation operation results, electricity and heat.
 
@@ -217,11 +217,13 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnolo
         return v() if callable(v) else v
 
     def RampSurplusCandidate(p,sc,n,nr,pRamp):
+        # the membership test must run first: pMaxPower2ndBlock is declared over the sparse psng, so indexing it with a unit not active in the period raises KeyError
+        if (p,sc,n,nr) not in mTEPES.psnnr:
+            return False
         pRampValue     = _num(pRamp[nr])
         pDurationValue = _num(mTEPES.pDuration[p,sc,n])
         pBlockValue    = _num(mTEPES.pMaxPower2ndBlock[p,sc,n,nr])
         return (mTEPES.pIndBinGenRamps() and pRampValue and pRampValue*pDurationValue < pBlockValue
-                and (p,sc,n,nr) in mTEPES.psnnr
                 and (nr not in mTEPES.es or _num(mTEPES.pTotalMaxCharge[nr]) or _num(mTEPES.pTotalEnergyInflows[nr])))
 
     sPSSTNNR      = [(p,sc,st,n,nr) for p,sc,st,n,nr in mTEPES.s2n*mTEPES.nr if                            RampSurplusCandidate(p,sc,n,nr,mTEPES.pRampUp) and abs(OptModel.vCommitment[p,sc,n,nr]()                - OptModel.vStartUp[p,sc,n,nr]()) > pEpsilon]

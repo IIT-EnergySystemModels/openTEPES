@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 01, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 09, 2026
 
 openTEPES.openTEPES_ModelFormulationObjective — total-cost objective and the per-stage operation-cost accumulation constraints.
 """
@@ -41,6 +41,7 @@ def TotalObjectiveFunction(OptModel, mTEPES, pIndLogConsole):
                                                                       OptModel.vTotalRElecCost[p,sc,n]) for p,sc,n in mTEPES.psn)
         if mTEPES.pIndHydrogen():
             vTotalTCost += sum(pScenFactor[p,sc] * OptModel.vTotalRH2Cost  [p,sc,n] for p,sc,n in mTEPES.psn)
+            vTotalTCost += sum(pScenFactor[p,sc] * OptModel.vTotalH2SrcCost[p,sc,n] for p,sc,n in mTEPES.psn)
         if mTEPES.pIndHeat():
             vTotalTCost += sum(pScenFactor[p,sc] * OptModel.vTotalRHeatCost[p,sc,n] for p,sc,n in mTEPES.psn)
         return OptModel.vTotalSCost == vTotalTCost

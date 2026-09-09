@@ -189,7 +189,11 @@ def case_7d_binary(request, tmp_path):
     # sSEP — small Spanish system. Exercises the hydrogen sector (DemandHydrogen + NetworkHydrogen + 9 H2-related
     # generators) AND water-reservoir hydropower (7 reservoirs, reservoir maps, inflows/outflows/MaxVolume, pumped
     # hydro). pIndHydrogen / pIndHydroSystem code paths live here.
-    ("sSEP",      38573.44601930286),
+    # 38573.44601930286 until the hydrogen reliability cost was given its stage weight. That term
+    # was the only cost in the objective that never annualised, so unserved hydrogen was priced at
+    # a fraction of the others and the model had little reason to avoid it. sSEP weights its week
+    # by 52, and 51 further weeks of the same 127.7 MEUR is the whole of the difference.
+    ("sSEP",      45085.415882683425),
     # 9n_PTDF exercises the multi-level-header tables (VariableTTCFrw/Bck, VariablePTDF).
     ("9n_PTDF",   500.1114692260149),
     # 9n_heat exercises the heat-sector code path (pIndHeat=1). Added in PR #121.
@@ -888,3 +892,112 @@ def test_ac_case_solves_and_writes_its_results(tmp_path):
     written = [f for f in os.listdir(case_dir) if f.startswith("oT_Result_")]
     for expected in ("NetworkVoltageMagnitude", "NetworkFlowReactiveFrw", "ACPowerFlowResidual"):
         assert any(expected in f for f in written), f"the AC writers did not produce {expected}"
+
+
+@pytest.mark.solve
+@pytest.mark.parametrize("case_7d_system", ["9n"], indirect=["case_7d_system"])
+def test_apply_investment_bounds_is_reusable_after_build(case_7d_system):
+    """Mutating an investment-bound Param and re-applying it must move the variable bounds.
+
+    Before ``apply_investment_bounds`` existed these Params were read only while the model was
+    being built, so excluding a candidate from a portfolio sweep meant rebuilding the whole model.
+    """
+    from openTEPES.openTEPES_SettingUpVariables import apply_investment_bounds
+
+    mTEPES = openTEPES_run(**case_7d_system)
+
+    lc = list(mTEPES.plc)
+    if not lc:
+        pytest.skip("case has no candidate lines")
+    key = lc[0]
+    _, ni, nf, cc = key
+
+    assert mTEPES.vNetworkInvest[key].ub > 0.0, "candidate should start available"
+
+    # exclude the candidate the way a portfolio sweep would, then re-apply the bounds
+    mTEPES.pNetUpInvest[ni, nf, cc] = 0
+    apply_investment_bounds(mTEPES, mTEPES)
+    assert mTEPES.vNetworkInvest[key].ub == 0.0, "bound not re-applied after mutating pNetUpInvest"
+
+    # and it can be restored
+    mTEPES.pNetUpInvest[ni, nf, cc] = 1
+    apply_investment_bounds(mTEPES, mTEPES)
+    assert mTEPES.vNetworkInvest[key].ub == 1.0
+
+
+@pytest.mark.solve
+@pytest.mark.parametrize("case_7d_system", ["9n"], indirect=["case_7d_system"])
+def test_investment_bound_epsilon_excludes_and_zero_is_not_the_data_convention(case_7d_system):
+    """A value below pEpsilon must exclude the candidate, and 0 must mean the same on a built model.
+
+    This locks the asymmetry documented on ``apply_investment_bounds``: reading a case turns an
+    ``InvestmentUp`` of 0 into 1.0, so 0 in the CSV means unrestricted, while 0 set on a built model
+    means excluded. A sweep that carried the data convention across would silently leave every
+    candidate available, and nothing would fail.
+    """
+    from openTEPES.openTEPES_SettingUpVariables import apply_investment_bounds
+
+    mTEPES = openTEPES_run(**case_7d_system)
+    lc = list(mTEPES.plc)
+    if not lc:
+        pytest.skip("case has no candidate lines")
+    key = lc[0]
+    _, ni, nf, cc = key
+
+    # a value below pEpsilon snaps to zero, which excludes the candidate
+    mTEPES.pNetUpInvest[ni, nf, cc] = 1e-9
+    apply_investment_bounds(mTEPES, mTEPES)
+    assert mTEPES.vNetworkInvest[key].ub == 0.0, "an epsilon upper bound should exclude the candidate"
+
+    # and the snapping is idempotent, so a sweep may call this as often as it likes
+    apply_investment_bounds(mTEPES, mTEPES)
+    assert mTEPES.vNetworkInvest[key].ub == 0.0
+
+    mTEPES.pNetUpInvest[ni, nf, cc] = 1
+    apply_investment_bounds(mTEPES, mTEPES)
+    assert mTEPES.vNetworkInvest[key].ub == 1.0
+
+
+@pytest.mark.solve
+@pytest.mark.parametrize("case_7d_system", ["9nH2"], indirect=["case_7d_system"])
+def test_9nH2_hydrogen_chain_is_complete(case_7d_system):
+    """
+    The electrolyser, store and hydrogen-fired generator solve together and all reach the balance.
+
+    cases/9nH2 is the only shipped case carrying all three, and each was absent from eBalanceH2 at some point: a
+    turbine burning nothing, and a store unconnected to supply and demand. Hydrogen supply without electricity has
+    no shipped reproduction; it is covered by the unit tests and by the balance terms exercised here.
+    """
+    mTEPES = openTEPES_run(**case_7d_system)
+
+    assert len(mTEPES.el),  "no electrolyser in 9nH2"
+    assert len(mTEPES.h2p), "no hydrogen-fired generator in 9nH2"
+    assert len(mTEPES.hs),  "no hydrogen storage in 9nH2"
+
+    balances = [c for c in mTEPES.component_objects(pyo.Constraint) if c.name.startswith("eBalanceH2")]
+    assert balances, "the hydrogen balance was not enforced"
+    assert sum(len(c) for c in balances), "the hydrogen balance is empty"
+
+    inventory = [c for c in mTEPES.component_objects(pyo.Constraint) if c.name.startswith("eH2Inventory")]
+    assert inventory, "the hydrogen store carries no inventory constraint"
+
+    final = [c for c in mTEPES.component_objects(pyo.Constraint) if c.name.startswith("eH2IniFinInventory")]
+    assert final, "the hydrogen store is not returned to its initial level"
+
+
+@pytest.mark.solve
+@pytest.mark.parametrize("case_7d_system", ["9nH2"], indirect=["case_7d_system"])
+def test_9nH2_turbine_is_charged_for_its_fuel(case_7d_system):
+    """
+    A hydrogen-fired generator must draw its fuel from the hydrogen balance.
+
+    The consumption term is the only place the fuel is charged. Without it the unit generated electricity burning
+    nothing, and the carrier balance held at any level of production.
+    """
+    mTEPES = openTEPES_run(**case_7d_system)
+
+    fuelled = [
+        h2p for h2p in mTEPES.h2p
+        if mTEPES.pProductionFunctionH2ToPower[h2p] > 0.0
+    ]
+    assert fuelled, "no hydrogen-fired generator carries a production function"

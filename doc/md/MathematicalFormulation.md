@@ -420,15 +420,15 @@ the electricity transmission system.
 ## Equations
 
 In this section, we replicate the mathematical formulation written in the code, which is specifically oriented toward numerical stability and efficiency, to
-make it easier to understand.
-The names in parentheses correspond to the names of the constraints in the code.
+make it easier to understand. The names in parentheses correspond to the names of the constraints in the code.
 
 **Objective function**: minimization of total (investment and operation) cost for the multi-period scope of the model
 
-Electricity, heat, and hydrogen generation, (energy and reservoir) storage, and (electricity, hydrogen, and heat) network investment cost plus retirement cost [M€]
+Electricity, heat, and hydrogen generation, (energy and reservoir) storage, and (electricity, hydrogen, and heat) network investment cost plus retirement cost
+[M€]
 
-System fixed costs by sector (investment and fixed operation costs):
-«`eTotalFElecCost`» (electricity), «`eTotalFHydroCost`» (hydro), «`eTotalFH2Cost`» (hydrogen), «`eTotalFHeatCost`» (heat); aggregated as «`eTotalICost`»
+System fixed costs by sector (investment and fixed operation costs): «`eTotalFElecCost`» (electricity), «`eTotalFHydroCost`» (hydro), «`eTotalFH2Cost`»
+(hydrogen), «`eTotalFHeatCost`» (heat); aggregated as «`eTotalICost`»
 
 ```{math}
 eTotalICost = \sum_{p} DF^p [\sum_{g} CFG_g icg^p_g + \sum_{g} CFR_g rcg^p_g + \sum_{e'} CFE_{e'} icr^p_{e'} + \sum_{ijc} CFT_{ijc} ict^p_{ijc} + \sum_{ijc} CFH_{ijc} ich^p_{ijc} + \sum_{ijc} CFP_{ijc} icp^p_{ijc}] +
@@ -460,16 +460,16 @@ Expected network operation cost [M€]. This cost penalizes with an {math}`\epsi
 
 Electricity, hydrogen, and heat expected reliability cost [M€] «`eTotalRElecCost`, `eTotalRH2Cost`, `eTotalRHeatCost`»
 
-The penalty for hydrogen surplus is `0.5 CHNS`, a common assumption reflecting that the cost of hydrogen surplus is much lower than the cost of
-hydrogen not served, and this is applied internally by the model.
+The penalty for hydrogen surplus is `0.5 CHNS`, a common assumption reflecting that the cost of hydrogen surplus is much lower than the cost of hydrogen not
+served, and this is applied internally by the model.
 
 ```{math}
 \sum_{p \omega ni}{DF^p P^p_{\omega} DUR^p_{\omega n} CENS \; ens^p_{\omega ni}} + \sum_{p \omega ni}{DF^p P^p_{\omega} CHNS (hns^p_{\omega ni}+0.5 hex^p_{\omega ni})} + \sum_{p \omega ni}{DF^p P^p_{\omega} DUR^p_{\omega n} CHtNS \; htns^p_{\omega ni}}
 ```
 
 All the periodic (annual) costs of a period {math}`p` are updated considering that the period (e.g., 2030) is replicated for a number of years defined by its
-weight {math}`WG^p` (e.g., 5 times) and discounted to the base year {math}`T` (e.g., 2020) with this discount factor {math}`DF^p =
-\frac{(1+\delta)^{WG^p}-1}{\delta(1+\delta)^{WG^p-1+p-T}}`.
+weight {math}`WG^p` (e.g., 5 times) and discounted to the base year {math}`T` (e.g., 2020) with this discount factor
+{math}`DF^p = \frac{(1+\delta)^{WG^p}-1}{\delta(1+\delta)^{WG^p-1+p-T}}`.
 
 **Constraints**
 
@@ -630,8 +630,8 @@ Upward and downward ramp reserves provided for the system by non-renewable gener
 It is assumed that the ramp reserves provided by the generators can be shared among areas of the system.
 
 Ratio between downward and upward operating reserves for each area provided by non-renewable generators (including ESS when generating) and ESS when charging
-[GW] «`eReserveMinRatioDwUp`» «`eReserveMaxRatioDwUp`» «`eRsrvMinRatioDwUpESS`» «`eRsrvMaxRatioDwUpESS`».
-The corresponding constraints are not formulated if {math}`\underline{DtUR}=0` and {math}`\overline{DtUR}=1`.
+[GW] «`eReserveMinRatioDwUp`» «`eReserveMaxRatioDwUp`» «`eRsrvMinRatioDwUpESS`» «`eRsrvMaxRatioDwUpESS`». The corresponding constraints are not formulated if
+{math}`\underline{DtUR}=0` and {math}`\overline{DtUR}=1`.
 
 ```{math}
 \underline{DtUR} \: ur^p_{\omega ng}  \leq dr^p_{\omega ng}  \leq \overline{DtUR} \: ur^p_{\omega ng}  \quad \forall p \omega ng
@@ -655,8 +655,8 @@ or if there is enough storage capacity left for charging [GWh] «`eESSReserveDwI
 (c^p_{\omega ne} + dr'^p_{\omega ne} + \underline{GC}^p_{\omega ne}) DUR^p_{\omega n} \sqrt{EF_e'} \leq \overline{I}^p_{\omega ne} - i^p_{\omega ne} \quad \forall p \omega ne
 ```
 
-Maximum and minimum relative inventory of ESS candidates (only for load levels that are multiples of 1, 24, 168, 8736 h depending on the ESS storage type, represented as
-{math}`n|\tau_e`) constrained by the ESS commitment decision times the maximum capacity [p.u.] «`eMaxInventory2Comm`» «`eMinInventory2Comm`»
+Maximum and minimum relative inventory of ESS candidates (only for load levels that are multiples of 1, 24, 168, 8736 h depending on the ESS storage type,
+represented as {math}`n|\tau_e`) constrained by the ESS commitment decision times the maximum capacity [p.u.] «`eMaxInventory2Comm`» «`eMinInventory2Comm`»
 
 ```{math}
 \frac{i^p_{\omega ne}}{\overline{I}^p_{\omega ne}}  \leq uc^p_{\omega ne} \quad \forall p \omega ne, n|\tau_e, e \in CE
@@ -666,14 +666,15 @@ Maximum and minimum relative inventory of ESS candidates (only for load levels t
 \frac{i^p_{\omega ne}}{\underline{I}^p_{\omega ne}} \geq uc^p_{\omega ne} \quad \forall p \omega ne, n|\tau_e, e \in CE
 ```
 
-Energy inflows of ESS candidates (only for load levels that are multiples of 1, 24, 168, 8736 h, depending on the ESS storage type, represented as {math}`n|\tau_e`)
-constrained by the ESS commitment decision times the energy inflows data [p.u.] «`eInflows2Comm`»
+Energy inflows of ESS candidates (only for load levels that are multiples of 1, 24, 168, 8736 h, depending on the ESS storage type, represented as
+{math}`n|\tau_e`) constrained by the ESS commitment decision times the energy inflows data [p.u.] «`eInflows2Comm`»
 
 ```{math}
 \frac{ei^p_{\omega ne}}{EI^p_{\omega ne}} \leq uc^p_{\omega ne} \quad \forall p \omega ne, n|\tau_e, e \in CE
 ```
 
-ESS energy inventory (only for load levels that are multiples of 1, 24, 168 h depending on the ESS storage type, represented as {math}`n|\tau_e`) [GWh] «`eESSInventory`»
+ESS energy inventory (only for load levels that are multiples of 1, 24, 168 h depending on the ESS storage type, represented as {math}`n|\tau_e`) [GWh]
+«`eESSInventory`»
 
 ```{math}
 i^p_{\omega,n-\frac{\tau_e}{\nu},e} + \sum_{n' = n-\frac{\tau_e}{\nu}}^n DUR^p_{\omega n'} (EI^p_{\omega n'e} - go^p_{\omega n'e} - \frac{1}{\sqrt{EF_e}} gp^p_{\omega n'e} + \sqrt{EF_e} gc^p_{\omega n'e}) = i^p_{\omega ne} + s^p_{\omega ne} \quad \forall p \omega ne, n|\tau_e, e \in EE
@@ -703,8 +704,8 @@ Maximum shift time of stored energy [GWh]. It is intended to be applied to deman
 DUR^p_{\omega n} EF_e gc^p_{\omega ne} \leq \sum_{n' = n}^{n+\frac{ST_e}{\nu}} DUR^p_{\omega n'} gp^p_{\omega n'e} \quad \forall p \omega ne
 ```
 
-ESS outflows (only for load levels that are multiples of 1, 24, 168, 672, and 8736 h, depending on the ESS outflow cycle, represented as {math}`n|\rho_e`) must be
-satisfied [GWh] «`eEnergyOutflows`»
+ESS outflows (only for load levels that are multiples of 1, 24, 168, 672, and 8736 h, depending on the ESS outflow cycle, represented as {math}`n|\rho_e`) must
+be satisfied [GWh] «`eEnergyOutflows`»
 
 ```{math}
 \sum_{n' = n-\frac{\rho_e}{\nu}}^n (go^p_{\omega n'e} - EO^p_{\omega n'e}) DUR^p_{\omega n'} = 0 \quad \forall p \omega ne, n|\rho_e
@@ -756,7 +757,8 @@ Maximum charge of a hydro unit [p.u.] «`eMaxCharge`»
 \frac{c^p_{\omega ne} + dr'^p_{\omega ne}}{\overline{GC}^p_{\omega ne} - \underline{GC}^p_{\omega ne}} \leq ucc^p_{\omega ng} \quad \forall p \omega ne
 ```
 
-Incompatibility between charge and discharge of a non-hydropower ESS, including the activation energy in the worst direction, and of a hydro unit [p.u.] «`eChargeDischarge`»
+Incompatibility between charge and discharge of a non-hydropower ESS, including the activation energy in the worst direction, and of a hydro unit [p.u.]
+«`eChargeDischarge`»
 
 ```{math}
 \frac{p^p_{\omega ne} + URA \: ur'^p_{\omega ne}}{\overline{GP}^p_{\omega ne} - \underline{GP}^p_{\omega ne}} + \frac{c^p_{\omega ne} + DRA \: dr'^p_{\omega ne}}{\overline{GC}^p_{\omega ne} - \underline{GC}^p_{\omega ne}} \leq 1 \quad \forall p \omega ne
@@ -895,8 +897,8 @@ Maximum ramp down and ramp up for the charge of an ESS [p.u.] «`eRampUpCharge`�
 ```
 
 Detection of ramp up and ramp down state for the second block of a non-renewable (thermal) unit with minimum stable time [p.u.] «`eRampUpState`»
-«`eRampDwState`».
-The parameter {math}`\epsilon` is added to detect whether the generator is ramping up/down. It is defined in the code as 1e-4 (of the ramp up/down limit).
+«`eRampDwState`». The parameter {math}`\epsilon` is added to detect whether the generator is ramping up/down. It is defined in the code as 1e-4 (of the ramp
+up/down limit).
 
 - F. Labora, A. Ramos “Tight and Compact Formulations for Nuclear Power Plant Flexible Operation” TechRxiv. February 2026.
   [10.36227/techrxiv.177004916.61674766/v1](https://doi.org/10.36227/techrxiv.177004916.61674766/v1)
@@ -933,9 +935,8 @@ Minimum up time and down time of a thermal unit [p.u.] «`eMinUpTime`» «`eMinD
 \sum_{n'=n+\nu-TD_t}^n sd^p_{\omega n't} \leq 1 - uc^p_{\omega nt} \quad \forall p \omega nt
 ```
 
-Minimum stable time of a thermal unit [p.u.] «`eMinStableTime`»
-In the code, you can select the simplified formulation (first) or the tight, computationally efficient formulation (second). With the simplified formulation,
-ramp-down maneuvers can no longer be split into several periods to avoid restrictions.
+Minimum stable time of a thermal unit [p.u.] «`eMinStableTime`» In the code, you can select the simplified formulation (first) or the tight, computationally
+efficient formulation (second). With the simplified formulation, ramp-down maneuvers can no longer be split into several periods to avoid restrictions.
 
 ```{math}
 rsu^p_{\omega nt} + \sum_{n'=n-TS_t}^{n-\nu} rsd^p_{\omega n't} \leq 1 \quad \forall p \omega nt
@@ -947,8 +948,8 @@ rsu^p_{\omega nt} + rsd^p_{\omega n't} \leq 1 \quad \forall p \omega nn't, n' \i
 
 **Reservoir operation**
 
-Maximum and minimum relative volume of reservoir candidates (only for load levels that are multiples of 1, 24, 168, 8736 h depending on the reservoir volume type,
-represented as {math}`n|\tau_{e'}`) constrained by the hydro commitment decision times the maximum capacity [p.u.] «`eMaxVolume2Comm`» «`eMinVolume2Comm`»
+Maximum and minimum relative volume of reservoir candidates (only for load levels that are multiples of 1, 24, 168, 8736 h depending on the reservoir volume
+type, represented as {math}`n|\tau_{e'}`) constrained by the hydro commitment decision times the maximum capacity [p.u.] «`eMaxVolume2Comm`» «`eMinVolume2Comm`»
 
 ```{math}
 \frac{i'^p_{\omega ne'}}{\overline{I'}^p_{\omega ne'}}  \leq \sum_{h \in dw(e')} uc^p_{\omega nh} \quad \forall p \omega ne', e' \in CR
@@ -1007,8 +1008,8 @@ The initial volume of the hydro reservoir divided by its initial volume {math}`I
 \frac{i'^p_{\omega,0,e'}}{I^p_{\omega e'}} = \frac{i'^p_{\omega,N,e'}}{I^p_{\omega e'}} \quad \forall p \omega e', e' \in CR
 ```
 
-Hydro outflows (only for load levels that are multiples of 1, 24, 168, 672, and 8736 h, depending on the ESS outflow cycle, represented as {math}`n|\rho_e`) must be
-satisfied \[m{sup}`3`/s\] «`eHydroOutflows`»
+Hydro outflows (only for load levels that are multiples of 1, 24, 168, 672, and 8736 h, depending on the ESS outflow cycle, represented as {math}`n|\rho_e`)
+must be satisfied \[m{sup}`3`/s\] «`eHydroOutflows`»
 
 ```{math}
 \sum_{n' = n-\frac{\rho_e'}{\nu}}^n (ho^p_{\omega n'e'} - HO^p_{\omega n'e'}) DUR^p_{\omega n'} = 0 \quad \forall p \omega ne', n|\rho_e'
@@ -1064,8 +1065,8 @@ l^p_{\omega nijc} \geq - \frac{L_{ijc}}{2} f^p_{\omega nijc}, \quad l^p_{\omega 
 ```
 
 **Cycle constraints** for AC existing lines with DC optimal power flow formulation [rad] «`eCycleKirchhoff2ndLawCnd1`» «`eCycleKirchhoff2ndLawCnd2`». To
-activate these constraints, you must set `pIndCycleFlow = 1` in the `openTEPES.py` module.
-It usually improves the computational performance of the model. See the cycle constraints for the AC power flow formulation in the following reference:
+activate these constraints, you must set `pIndCycleFlow = 1` in the `openTEPES.py` module. It usually improves the computational performance of the model. See
+the cycle constraints for the AC power flow formulation in the following reference:
 
 - E.F. Álvarez, J.C. López, L. Olmos, A. Ramos "An Optimal Expansion Planning of Power Systems Considering Cycle-Based AC Optimal Power Flow" Sustainable
   Energy, Grids and Networks, May 2024. [10.1016/j.segan.2024.101413](https://doi.org/10.1016/j.segan.2024.101413)
@@ -1324,12 +1325,20 @@ binary AC investment decisions.
 
 **Hydrogen network operation**
 
-Balance of hydrogen generation by electrolyzers, hydrogen consumption by the hydrogen heaters that use it, and demand at each node [tH2] «`eBalanceH2`». A
-transport model is used to model the hydrogen network.
+Balance at each node of hydrogen produced by electrolyzers and by sources that consume no electricity, against the hydrogen taken by the heaters and by the
+hydrogen-fired generators that burn it, the net change in hydrogen storage, and demand [tH2] «`eBalanceH2`». A transport model is used to model the hydrogen
+network. The balance is skipped at a node carrying none of these, so a node outside the hydrogen system adds no row.
 
 ```{math}
 \sum_{e \in i} \frac{DUR^p_{\omega n}}{PF'_e} gc^p_{\omega ne} - \sum_{g \in i} DUR^p_{\omega n} PF'''_e gh^p_{\omega ng} + hns^p_{\omega ni} - hex^p_{\omega ni} = DUR^p_{\omega n} DH^p_{\omega ni} + \sum_{jc} fh^p_{\omega nijc} - \sum_{jc} fh^p_{\omega njic} \quad \forall p \omega ni
 ```
+
+Inventory of a hydrogen store over its storage cycle, carrying forward what was injected less what was withdrawn [tH2] «`eH2Inventory`». Without it the
+balance clears within the hour and the electrolyzer-store-turbine chain reduces to an instantaneous converter.
+
+A hydrogen store ends the horizon at the level it started from [tH2] «`eH2IniFinInventory`», as candidate storage does on the electricity side. Without it
+the model can drain a full store and never refill it, which is hydrogen for nothing.
+
 
 **Heat network operation**
 

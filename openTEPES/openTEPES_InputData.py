@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 23, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 09, 2026
 """
 
 import time
@@ -166,6 +166,32 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole, option_overrides=None):
     for key in ['pIndRampReserves', 'pIndReserveActivation', 'pIndVarTTC', 'pIndPTDF', 'pIndHydroTopology', 'pIndHydrogen', 'pIndHeat']:
         if key not in par.keys():
             par[key] = 0
+
+    # A hydrogen consumer, a turbine or a boiler, is charged for fuel in eBalanceH2 alone, so
+    # either switches the carrier on. Electrolysers produce rather than consume and do not.
+    _gen = dfs.get('dfGeneration')
+    def _units(col):
+        return int((_gen[col] > 0.0).sum()) if (_gen is not None and col in _gen.columns) else 0
+    _consumers = {'hydrogen-fired generator': _units('ProductionFunctionH2ToPower'),
+                  'hydrogen boiler'         : _units('ProductionFunctionH2ToHeat')}
+    if not par['pIndHydrogen'] and any(_consumers.values()):
+        par['pIndHydrogen'] = 1
+        _named = ', '.join(f'{v} {k}(s)' for k, v in _consumers.items() if v)
+        print(f'WARNING: neither oT_Data_DemandHydrogen nor oT_Data_NetworkHydrogen is present, but '
+              f'the Generation table defines {_named}. The hydrogen carrier is enabled so their fuel '
+              f'is charged; without it they burn nothing.')
+        # Hydrogen past the consumers leaves the boundary, as before, so excess is free.
+        par.setdefault('pH2ExcCost', 0.0)
+        # Both tables are absent; the frames must still exist for the readers below.
+        if 'dfDemandHydrogen' not in dfs:
+            dfs['dfDemandHydrogen'] = pd.DataFrame(0.0, index=dfs['dfDemand'].index,
+                                                   columns=dfs['dfDemand'].columns)
+        if 'dfNetworkHydrogen' not in dfs:
+            dfs['dfNetworkHydrogen'] = pd.DataFrame(
+                columns=['Length', 'InitialPeriod', 'FinalPeriod', 'TTC', 'TTCBck',
+                         'SecurityFactor', 'FixedInvestmentCost', 'FixedChargeRate',
+                         'BinaryInvestment', 'InvestmentLo', 'InvestmentUp'],
+                index=pd.MultiIndex.from_tuples([], names=['InitialNode', 'FinalNode', 'Circuit']))
 
     # replace NaN with 0 (only on numeric columns to avoid dtype errors on string columns)
     for key,df in dfs.items():
@@ -359,7 +385,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole, option_overrides=None):
     # load parameters from dfParameter — single-row mixed scalars.
     for col in dfs['dfParameter'].columns:
         v = dfs['dfParameter'][col].iloc[0]
-        if col in ['ENSCost', 'HNSCost', 'HTNSCost', 'SBase']:
+        if col in ['ENSCost', 'HNSCost', 'H2ExcCost', 'HTNSCost', 'SBase']:
             par[f'p{col}'] = v * 1e-3
         elif col == 'TimeStep':
             par[f'p{col}'] = int(v)
@@ -537,10 +563,35 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole, option_overrides=None):
     par['pProductionFunctionHydro']    = dfs['dfGeneration']  ['ProductionFunctionHydro'   ]                                                             # production function of a hydropower plant    [kWh/m3]
     par['pProductionFunctionH2']       = dfs['dfGeneration']  ['ProductionFunctionH2'      ] * 1e-3                                                      # production function of an electrolyzer       [kWh/gH2]
     par['pProductionFunctionHeat']     = dfs['dfGeneration']  ['ProductionFunctionHeat'    ]                                                             # production function of a heat pump           [kWh/kWh]
-    par['pProductionFunctionH2ToHeat'] = dfs['dfGeneration']  ['ProductionFunctionH2ToHeat'] * 1e-3                                                      # production function of a boiler using H2     [gH2/kWh]
+    par['pProductionFunctionH2ToHeat'] = dfs['dfGeneration']  ['ProductionFunctionH2ToHeat'] * 1e-3
+    # hydrogen-fired generation. Optional column: without it the hg set is empty
+    # no 1e-3 here: GWh x gH2/kWh gives tonnes directly, so the term is already in tH2
+    # hydrogen without electricity: reforming and imports. tH2/h, MEUR/tH2, tCO2/tH2, unscaled.
+    # ProductionCostH2 carries fuel, O&M and carbon; ProductionEmissionH2 is reported only.
+    for _c, _d in (('MaximumProductionH2', 0.0), ('ProductionCostH2', 0.0), ('ProductionEmissionH2', 0.0)):
+        par['p' + _c] = (dfs['dfGeneration'][_c] if _c in dfs['dfGeneration'].columns
+                         else pd.Series(_d, index=dfs['dfGeneration'].index)).fillna(_d)
+
+    par['pProductionFunctionH2ToPower'] = (dfs['dfGeneration']['ProductionFunctionH2ToPower']
+                                           if 'ProductionFunctionH2ToPower' in dfs['dfGeneration'].columns
+                                           else pd.Series(0.0, index=dfs['dfGeneration'].index)).fillna(0.0)                                                      # production function of a boiler using H2     [gH2/kWh]
+
+    # hydrogen storage. Optional columns: without MaximumStorageH2 the hs set is empty
+    def _optional_gen_col(name, default=0.0):
+        return (dfs['dfGeneration'][name] if name in dfs['dfGeneration'].columns
+                else pd.Series(default, index=dfs['dfGeneration'].index))
+    par['pMaxStorageH2']  = _optional_gen_col('MaximumStorageH2').fillna(0.0)
+    par['pMaxChargeH2']   = _optional_gen_col('MaximumChargeH2' ).fillna(0.0)
+    par['pIniStorageH2']  = _optional_gen_col('InitialStorageH2').fillna(0.0)
+    par['pStorageTypeH2'] = _optional_gen_col('StorageTypeH2', 'Weekly').fillna('Weekly')
+
     par['pEfficiency']                 = dfs['dfGeneration']  ['Efficiency'                ]                                                             #               ESS round-trip efficiency      [p.u.]
     par['pStorageType']                = dfs['dfGeneration']  ['StorageType'               ]                                                             #               ESS storage  type
     par['pOutflowsType']               = dfs['dfGeneration']  ['OutflowsType'              ]                                                             #               ESS outflows type
+    # Optional opt-in to energy neutrality. The period is EnergyType, read just below.
+    par['pIndEnergyNeutrality']        = (dfs['dfGeneration']['EnergyNeutrality']
+                                          if 'EnergyNeutrality' in dfs['dfGeneration'].columns
+                                          else pd.Series(0, index=dfs['dfGeneration'].index)).fillna(0).astype('int')
     par['pEnergyType']                 = dfs['dfGeneration']  ['EnergyType'                ]                                                             #               unit  energy type
     par['pRMaxReactivePower']          = dfs['dfGeneration']  ['MaximumReactivePower'      ] * 1e-3                                                      # rated maximum reactive power                 [Gvar]
     par['pRMinReactivePower']          = dfs['dfGeneration']  ['MinimumReactivePower'      ] * 1e-3                                                      # rated minimum reactive power                 [Gvar]

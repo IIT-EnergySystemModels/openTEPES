@@ -660,7 +660,7 @@
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <https://www.gnu.org/licenses/>.
 
-# Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 23, 2026
+# Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 03, 2026
 # simplicity and transparency in power systems planning
 
 # Developed by
@@ -725,6 +725,13 @@ def _positive_int(value: str) -> int:
 
 parser.add_argument('--threads',          type=_positive_int, default=None,
                     help="Cap the solver thread count. Default: half of (logical + physical) cores. Also set by OTEPES_THREADS.")
+parser.add_argument('--crossover',         type=int, default=None, choices=[-1, 0, 1],
+                    help="Gurobi Crossover after the barrier: -1 automatic (default), 0 off, 1 on. Turning it off "
+                         "returns the interior-point solution, which is reproducible and worth being able to state. "
+                         "Also set by OTEPES_CROSSOVER.")
+parser.add_argument('--zero-ens',          default=False, action="store_true",
+                    help="Forbid energy not served instead of penalising it, so the model is infeasible when demand "
+                         "cannot be met. Overrides IndHardZeroENS in the option table for this run. Also set by OTEPES_ZERO_ENS.")
 parser.add_argument('--warm-resolve',         default=False, action="store_true",
                     help="Persistent re-solves (Mode C hot-swap sweep, or a gurobi_persistent stage loop) use warm dual "
                          "simplex with a barrier fallback. Gurobi only; no effect for Mode A/B or non-Gurobi solvers. Also set by OTEPES_WARM_RESOLVE.")
@@ -749,6 +756,12 @@ def main():
 
     if args.threads is not None:
         os.environ["OTEPES_THREADS"] = str(args.threads)   # _threads() reads it, so the flag wins over the variable
+
+    if args.crossover is not None:
+        os.environ["OTEPES_CROSSOVER"] = str(args.crossover)  # _crossover() reads it, so the flag wins over the variable
+
+    if args.zero_ens:
+        os.environ["OTEPES_ZERO_ENS"] = "1"                 # DataConfiguration reads it, so the flag wins over the case
 
     if args.warm_resolve:
         os.environ["OTEPES_WARM_RESOLVE"] = "1"             # warm-resolve helpers read the env, so the flag wins
@@ -858,6 +871,6 @@ def main():
     return model
 
 if __name__ == '__main__':
-    print(GREEN + 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.18RC - August 23, 2026' + RESET)
+    print(GREEN + 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.18RC - September 03, 2026' + RESET)
     print(BLUE  + '#### Academic research license - for non-commercial use only ####' + RESET + '\n')
     model = main()
