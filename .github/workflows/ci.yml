@@ -7,8 +7,7 @@ on:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  # Superseding a pull request's own run saves a lot of runner time. A run on master
-  # is the record of whether master is good, so it is left to finish.
+  # Supersede a pull request's own run; let a master run finish, it is the record for master.
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
@@ -45,10 +44,8 @@ jobs:
   # model maths is the same on every platform, so re-solving on all 9 combos
   # adds little. We solve once per operating system on a single Python version.
   # Cross-Python coverage is already provided by the fast tier above.
-  #
-  # HiGHS only. The formulations that need a non-linear solver are covered by
-  # solve-ipopt below, which is a separate job because ipopt comes from conda
-  # and conda is what these jobs no longer have to install.
+  # HiGHS only. The non-linear formulations are covered by solve-ipopt below, which is
+  # separate because ipopt comes from conda and nothing else here needs conda.
   solve:
     name: solve (full model suite) - ${{ matrix.os }} / py${{ matrix.python-version }}
     runs-on: ${{ matrix.os }}
@@ -76,16 +73,13 @@ jobs:
         shell: bash
         run: pytest -vv -m solve --timeout=1800 tests/
 
-  # The same suite on Linux, with ipopt. HiGHS cannot express a nonlinear
-  # constraint at all, so without ipopt the second-order cone, the exact
-  # non-linear model and the AC restoration pass are all skipped, and the cone
-  # is the default. The cone is convex, so ipopt reaching a local optimum
-  # reaches the global one; this tests that those paths still build and solve,
-  # and does not stand in for a conic solver certifying the bound.
+  # The same suite with ipopt. HiGHS cannot express a non-linear constraint, so without
+  # ipopt the second-order cone, the exact non-linear model and the AC restoration pass
+  # are all skipped. The cone is convex, so a local optimum is the global one; this checks
+  # those paths build and solve, and is not a conic solver certifying the bound.
   #
-  # Linux only because ipopt's convergence depends on how MUMPS was built, and
-  # a platform-dependent NLP is a flaky test waiting to happen. This is the one
-  # job that still needs conda, which is why it is on its own.
+  # Linux only: ipopt's convergence depends on how MUMPS was built, and a platform-dependent
+  # NLP is a flaky test waiting to happen. The only job needing conda, hence its own.
   solve-ipopt:
     name: solve (full model suite, with ipopt) - ubuntu-latest / py3.12
     runs-on: ubuntu-latest

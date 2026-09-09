@@ -1,7 +1,5 @@
 name: Set up Python and dependencies
-description: >
-  Python, uv, the locked dependencies and an editable install of openTEPES.
-  Used by every job that does not need a conda package.
+description: Python, uv, the locked dependencies and an editable install. For jobs needing no conda package.
 
 inputs:
   python-version:

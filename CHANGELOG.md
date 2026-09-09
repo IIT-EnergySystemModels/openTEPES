@@ -2,12 +2,10 @@
 
 ## [4.18.18RC] - 2026-09-09 Unreleased in PyPI
 
-- [CHANGED] the CI workflow installs conda in one job instead of thirteen. Only the Linux solve job needs it, for
-  ipopt; every other job wanted nothing from conda but `flake8` and `pytest`, both of which pip installs. A failed
-  conda setup had been failing jobs that never reached a test. The Linux solve job is now separate and named for what
-  makes it different, and the shared setup is one composite action rather than the same four steps in three places.
-- [CHANGED] an in-progress CI run is now superseded only on a pull request. A run on master is the record of whether
-  master is good, so it is left to finish.
+- [CHANGED] CI installs conda in one job instead of thirteen. Only the Linux solve job needs it, for ipopt; the rest
+  wanted only `flake8` and `pytest`, which pip provides, and a failed conda setup was failing jobs that never reached a
+  test. That job is now separate and named for it, and the shared setup is one composite action.
+- [CHANGED] an in-progress CI run is superseded only on a pull request. A master run is the record for master.
 
 - [ADDED] six missing cases to the bundled case list on the Download page. `9nH2` and `9nH2x` arrived with the hydrogen
   subsystem and neither was documented: `9nH2` carries the whole chain as separate units, an electrolyser, a storage
