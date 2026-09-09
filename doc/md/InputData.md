@@ -571,8 +571,8 @@ chosen by the optimization.
 A hydrogen source, a reformer or an import terminal, is a unit with MaximumProductionH2 above zero. It makes hydrogen at ProductionCostH2 without drawing
 electricity, so the earlier workaround of an isolated electricity network feeding an electrolyzer is no longer needed.
 
-The hydrogen subsystem is summarised in the following figure. The hydrogen balance is the only carrier balance holding consumers, the turbine and the boiler,
-so a case defining either without a hydrogen file would burn fuel charged nowhere; either unit therefore switches the carrier on by itself.
+The hydrogen subsystem is summarised below. A turbine and a boiler burn hydrogen, and they are charged for it in the hydrogen balance alone, so either one
+switches the carrier on by itself.
 
 ```{image} ../img/HydrogenSubsystem.png
 :alt: Hydrogen subsystem in openTEPES

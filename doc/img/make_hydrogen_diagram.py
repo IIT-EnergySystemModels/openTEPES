@@ -48,36 +48,36 @@ def elbow(pts, colour, label=None):
                 color=colour, va="center")
 
 band(58, 8, ELEC, "electricity", "always built")
-band(31, 8, H2,   "hydrogen   eBalanceH2", "only with the carrier on")
-band(2,  7, HEAT, "heat", "with the heat files")
+band(31, 8, H2,   "hydrogen", "built if the case has any hydrogen")
+band(2,  7, HEAT, "heat", "built if the case has heat")
 
 XS, W, H = (8, 32, 56, 80), 20, 9
-box(XS[0], 44, W, H, "electrolyser", "ProductionFunctionH2",        ELEC)
-box(XS[1], 44, W, H, "reformer",     "MaximumProductionH2",         H2)
-box(XS[2], 44, W, H, "turbine",      "ProductionFunctionH2ToPower", H2)
-box(XS[3], 44, W, H, "boiler",       "ProductionFunctionH2ToHeat",  H2)
+box(XS[0], 44, W, H, "electrolyser", "power to H$_2$", ELEC)
+box(XS[1], 44, W, H, "reformer",     "gas to H$_2$, or import", H2)
+box(XS[2], 44, W, H, "turbine",      "H$_2$ to power", H2)
+box(XS[3], 44, W, H, "boiler",       "H$_2$ to heat",  H2)
 
-arrow(18, 58, 53, ELEC, "power")            # grid  -> electrolyser
-arrow(18, 44, 39, H2,   "H$_2$")            # electrolyser -> balance
-arrow(42, 44, 39, H2,   "H$_2$")            # reformer -> balance
-arrow(66, 39, 44, H2,   "fuel")             # balance -> turbine
-arrow(66, 53, 58, ELEC, "power")            # turbine -> grid
-arrow(90, 39, 44, H2,   "fuel")             # balance -> boiler
+arrow(18, 58, 53, ELEC, "takes power")            # grid  -> electrolyser
+arrow(18, 44, 39, H2,   "makes H$_2$")            # electrolyser -> balance
+arrow(42, 44, 39, H2,   "makes H$_2$")            # reformer -> balance
+arrow(66, 39, 44, H2,   "burns H$_2$")             # balance -> turbine
+arrow(66, 53, 58, ELEC, "gives power")            # turbine -> grid
+arrow(90, 39, 44, H2,   "burns H$_2$")             # balance -> boiler
 elbow([(100 + PAD, 48.5), (107, 48.5), (107, 5.5), (102 + PAD, 5.5)], HEAT, "heat")
 
-box(XS[0], 17, W, H, "store",    "MaximumStorageH2", H2)
-box(XS[1], 17, W, H, "demand",   "DemandHydrogen",   H2)
-box(XS[2], 17, W, H, "slack",    "HNSCost, H2ExcCost", GREY)
-box(XS[3], 17, W, H, "pipeline", "NetworkHydrogen",  H2)
+box(XS[0], 17, W, H, "store",    "holds H$_2$ between hours", H2)
+box(XS[1], 17, W, H, "demand",   "industrial H$_2$ to serve", H2)
+box(XS[2], 17, W, H, "unserved / excess", "priced as a penalty", GREY)
+box(XS[3], 17, W, H, "pipeline", "moves H$_2$ between nodes", H2)
 
-arrow(14, 31, 26, H2, "charge", side=-1)
-arrow(22, 26, 31, H2, "discharge")
-arrow(42, 31, 26, H2)
-arrow(66, 31, 26, GREY, "in, out", dashed=True, both=True)
-arrow(90, 31, 26, H2, "other nodes", dashed=True, both=True)
+arrow(14, 31, 26, H2, "fill", side=-1)
+arrow(22, 26, 31, H2, "empty")
+arrow(42, 31, 26, H2, "serves")
+arrow(66, 31, 26, GREY, "too little, too much", dashed=True, both=True)
+arrow(90, 31, 26, H2, "to and from", dashed=True, both=True)
 
 ax.text(56, 71, "Hydrogen subsystem in openTEPES", ha="center", fontsize=12, weight="bold")
-ax.text(56, 67.6, "only the hydrogen balance holds consumers: omit it and their fuel is free",
+ax.text(56, 67.6, "Hydrogen is the only carrier with units that burn it. Leave this balance out and their fuel costs nothing.",
         ha="center", fontsize=7.2, style="italic", color=GREY)
 fig.savefig("doc/img/HydrogenSubsystem.png", dpi=200, bbox_inches="tight")
 print("wrote doc/img/HydrogenSubsystem.png")
