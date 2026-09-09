@@ -230,7 +230,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     # load parameters from dfParameter — single-row mixed scalars.
     for col in dfs['dfParameter'].columns:
         v = dfs['dfParameter'][col].iloc[0]
-        if col in ['ENSCost', 'HNSCost', 'HTNSCost', 'SBase']:
+        if col in ['ENSCost', 'HNSCost', 'H2ExcCost', 'HTNSCost', 'SBase']:
             par[f'p{col}'] = v * 1e-3
         elif col == 'TimeStep':
             par[f'p{col}'] = int(v)

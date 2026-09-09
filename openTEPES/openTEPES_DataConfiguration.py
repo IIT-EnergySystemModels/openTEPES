@@ -1075,7 +1075,12 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
 
     mTEPES.pENSCost              = Param(initialize=par['pENSCost']             , within=NonNegativeReals,    doc='ENS cost'                                           , mutable=True)
     mTEPES.pH2NSCost             = Param(initialize=par['pHNSCost']             , within=NonNegativeReals,    doc='HNS cost'                                           )
-    mTEPES.pH2ExcCost            = Param(initialize=par['pHNSCost']*0.5         , within=NonNegativeReals,    doc='H2 excess cost'                                     )
+    # Optional H2ExcCost in oT_Data_Parameter. Absent, it stays at half the not-served cost,
+    # which is the value every case carried before the column existed.
+    _h2_exc = par.get('pH2ExcCost')
+    if _h2_exc is None or _h2_exc != _h2_exc:            # absent, or the column present and the cell blank
+        _h2_exc = par['pHNSCost']*0.5
+    mTEPES.pH2ExcCost            = Param(initialize=_h2_exc                    , within=NonNegativeReals,    doc='H2 excess cost'                                     )
     mTEPES.pHeatNSCost           = Param(initialize=par['pHTNSCost']            , within=NonNegativeReals,    doc='HTNS cost'                                          )
     mTEPES.pCO2Cost              = Param(initialize=par['pCO2Cost']             , within=NonNegativeReals,    doc='CO2 emission cost'                                  )
     mTEPES.pAnnualDiscRate       = Param(initialize=par['pAnnualDiscountRate']  , within=UnitInterval,        doc='Annual discount rate'                               )
