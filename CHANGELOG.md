@@ -2,6 +2,10 @@
 
 ## [4.18.18RC] - 2026-09-09 Unreleased in PyPI
 
+- [ADDED] `9n_duckdb` to the bundled case list on the Download page, which completes it: every case under
+  `openTEPES/cases/` is now described there. It is listed next to `9n` and says what it is, the same case in a
+  different container rather than a different system, since the name alone suggests otherwise.
+
 - [ADDED] six missing cases to the bundled case list on the Download page. `9nH2` and `9nH2x` arrived with the hydrogen
   subsystem and neither was documented: `9nH2` carries the whole chain as separate units, an electrolyser, a storage
   cavern and a hydrogen-fired turbine, against a hydrogen demand at one node, while `9nH2x` keeps the units, removes the
