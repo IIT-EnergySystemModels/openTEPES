@@ -379,7 +379,7 @@ def ACRelaxationDiagnostic(DirName, CaseName, OptModel, mTEPES):
     # the bus VOLTAGES through the series relation and compares it with the flow the model reports. Deriving it from the flow variables instead
     # would compare the flow equations with themselves and pass whatever they said.
     #
-    # Until now this check lived in prototypes/ and needed pandapower, which openTEPES does not ship, so a user could not run it at all.
+    # This check began as a research script that needed pandapower, which openTEPES does not ship, so a user could not run it at all.
     pFirst = next(iter(mTEPES.psn), None)
     if pFirst is not None and NM.angles_available(mTEPES, OptModel, *pFirst):
         pRows = []

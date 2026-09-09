@@ -1257,11 +1257,7 @@ PGLIB_OPTIMUM = 97214.0          # pglib-opf BASELINE.md, case118_ieee under typ
 
 def _pglib_case(tmp_path, name, ind_ac_power_flow):
     """Convert the vendored MATPOWER file into a one hour openTEPES AC case under tmp_path."""
-    import importlib.util
-    pSpec = importlib.util.spec_from_file_location(
-        "pglib_conv", os.path.join(os.path.dirname(__file__), "..", "prototypes", "ac_formulations", "pglib.py"))
-    pglib = importlib.util.module_from_spec(pSpec)
-    pSpec.loader.exec_module(pglib)
+    import pglib
     pglib.write_case(pglib.read_matpower(PGLIB_CASE118), str(tmp_path), name, ind_ac_power_flow=ind_ac_power_flow)
     return str(tmp_path), name
 

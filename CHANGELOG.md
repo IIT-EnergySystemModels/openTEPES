@@ -2,6 +2,13 @@
 
 ## [4.18.18RC] - 2026-09-09 Unreleased in PyPI
 
+- [CHANGED] `prototypes/ac_formulations/` is no longer part of the repository. It held the formulation study that
+  decided the branch-flow cone against the piecewise-linear model: research apparatus, not model code, and
+  `reference.py` needed pandapower, which openTEPES does not depend on, so shipping it offered code the project could
+  not run. The one file the test suite uses, the MATPOWER reader behind the pglib-opf case118 benchmark, moves to
+  `tests/pglib.py`, where it is a plain import rather than a module loaded by file path from a sibling directory that
+  the wheel never contained. The study itself is kept with the AC design notes.
+
 - [CHANGED] the `9n_H2` case is now `9n_ELZ`. Master gained a `9nH2` case for the hydrogen subsystem, and two cases
   whose names differ only by an underscore is a trap for anyone picking a starting point. The old name was also
   inaccurate: this case carries no hydrogen demand and no hydrogen network, and the carrier is off. It models two
