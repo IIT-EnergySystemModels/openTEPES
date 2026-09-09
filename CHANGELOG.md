@@ -2,6 +2,14 @@
 
 ## [4.18.18RC] - 2026-09-09 Unreleased in PyPI
 
+- [FIXED] a portfolio sweep could not exclude a candidate shunt or synchronous condenser. `apply_investment_bounds`
+  re-applies the investment bounds to a built model, but it covered only generators, retirements and lines, and the
+  four reactive bound parameters were not declared mutable in the first place. So setting `pShuntUpInvest` to zero on a
+  built model raised, and anything that caught the error and carried on left the capacitor available with nothing to
+  say so. The parameters are mutable now and the function covers both reactive families, skipping them when their
+  variables do not exist, which is the case for a DC run and for the build-time call, which happens before
+  `SettingUpVariablesAC` creates them.
+
 - [CHANGED] four AC tests asked for gurobi and so skipped on every runner, because the bundled licence is size
   limited. They use ipopt now, which a runner has: the condenser pair, the voltage-source converter, and the angle
   guard. Five converter tests still ask for gurobi because they need the flow-direction binary, which an NLP solver

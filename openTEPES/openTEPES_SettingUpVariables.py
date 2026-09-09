@@ -25,10 +25,15 @@ except ImportError:
 def apply_investment_bounds(mTEPES, OptModel, pEpsilon: float = 1e-6) -> None:
     """Apply the investment- and retirement-bound Params to their variables.
 
-    ``pGenLoInvest`` / ``pGenUpInvest``, ``pGenLoRetire`` / ``pGenUpRetire`` and
-    ``pNetLoInvest`` / ``pNetUpInvest`` are ``mutable=True`` but were read only during model
+    ``pGenLoInvest`` / ``pGenUpInvest``, ``pGenLoRetire`` / ``pGenUpRetire``,
+    ``pNetLoInvest`` / ``pNetUpInvest``, ``pSynchLoInvest`` / ``pSynchUpInvest`` and
+    ``pShuntLoInvest`` / ``pShuntUpInvest`` are ``mutable=True`` but were read only during model
     construction, inside ``SetToZero``. Call this after mutating any of them to re-apply them to
-    ``vGenerationInvest``, ``vGenerationRetire`` and ``vNetworkInvest``.
+    ``vGenerationInvest``, ``vGenerationRetire``, ``vNetworkInvest``, ``vSynchInvest`` and
+    ``vShuntInvest``.
+
+    The two reactive families are skipped when their variables do not exist, which covers both a
+    case with no AC power flow and the build-time call, which happens before they are created.
 
     Values within ``pEpsilon`` of 0 or 1 are snapped, and a lower bound above its upper bound is
     pulled down to it. The snapping is idempotent, so repeated calls are safe. Build-time behaviour
@@ -88,6 +93,37 @@ def apply_investment_bounds(mTEPES, OptModel, pEpsilon: float = 1e-6) -> None:
             mTEPES.pNetLoInvest[  ni,nf,cc]   =   mTEPES.pNetUpInvest[ni,nf,cc]()
     [OptModel.vNetworkInvest   [p,ni,nf,cc].setlb(mTEPES.pNetLoInvest[ni,nf,cc]()) for p,ni,nf,cc in mTEPES.plc]
     [OptModel.vNetworkInvest   [p,ni,nf,cc].setub(mTEPES.pNetUpInvest[ni,nf,cc]()) for p,ni,nf,cc in mTEPES.plc]
+
+    # The reactive candidates are built in SettingUpVariablesAC, which runs after SetToZero, so at build time these
+    # variables do not exist yet and the AC code applies its own bounds. They exist by the time a sweep calls this.
+    if hasattr(OptModel, 'vSynchInvest'):
+        for sq in mTEPES.sqc:
+            if  mTEPES.pSynchLoInvest[  sq]() <       pEpsilon:
+                mTEPES.pSynchLoInvest[  sq]   = 0
+            if  mTEPES.pSynchUpInvest[  sq]() <       pEpsilon:
+                mTEPES.pSynchUpInvest[  sq]   = 0
+            if  mTEPES.pSynchLoInvest[  sq]() > 1.0 - pEpsilon:
+                mTEPES.pSynchLoInvest[  sq]   = 1
+            if  mTEPES.pSynchUpInvest[  sq]() > 1.0 - pEpsilon:
+                mTEPES.pSynchUpInvest[  sq]   = 1
+            if  mTEPES.pSynchLoInvest[  sq]() >   mTEPES.pSynchUpInvest[sq]():
+                mTEPES.pSynchLoInvest[  sq]   =   mTEPES.pSynchUpInvest[sq]()
+        [OptModel.vSynchInvest [p,sq].setlb(mTEPES.pSynchLoInvest[sq]()) for p,sq in mTEPES.psqc]
+        [OptModel.vSynchInvest [p,sq].setub(mTEPES.pSynchUpInvest[sq]()) for p,sq in mTEPES.psqc]
+    if hasattr(OptModel, 'vShuntInvest'):
+        for sh in mTEPES.shc:
+            if  mTEPES.pShuntLoInvest[  sh]() <       pEpsilon:
+                mTEPES.pShuntLoInvest[  sh]   = 0
+            if  mTEPES.pShuntUpInvest[  sh]() <       pEpsilon:
+                mTEPES.pShuntUpInvest[  sh]   = 0
+            if  mTEPES.pShuntLoInvest[  sh]() > 1.0 - pEpsilon:
+                mTEPES.pShuntLoInvest[  sh]   = 1
+            if  mTEPES.pShuntUpInvest[  sh]() > 1.0 - pEpsilon:
+                mTEPES.pShuntUpInvest[  sh]   = 1
+            if  mTEPES.pShuntLoInvest[  sh]() >   mTEPES.pShuntUpInvest[sh]():
+                mTEPES.pShuntLoInvest[  sh]   =   mTEPES.pShuntUpInvest[sh]()
+        [OptModel.vShuntInvest [p,sh].setlb(mTEPES.pShuntLoInvest[sh]()) for p,sh in mTEPES.pshc]
+        [OptModel.vShuntInvest [p,sh].setub(mTEPES.pShuntUpInvest[sh]()) for p,sh in mTEPES.pshc]
 
 
 # @profile
@@ -1413,8 +1449,8 @@ def SettingUpVariablesAC(OptModel, mTEPES):
         for p, sq in mTEPES.psqc:
             if mTEPES.pSynchBinUnitInvest[sq] == 0:
                 OptModel.vSynchInvest[p,sq].domain = UnitInterval
-            OptModel.vSynchInvest[p,sq].setlb(mTEPES.pSynchLoInvest[sq])
-            OptModel.vSynchInvest[p,sq].setub(mTEPES.pSynchUpInvest[sq])
+            OptModel.vSynchInvest[p,sq].setlb(mTEPES.pSynchLoInvest[sq]())
+            OptModel.vSynchInvest[p,sq].setub(mTEPES.pSynchUpInvest[sq]())
 
         # Flag value 2 means "no investment at all", and every other investment variable is FIXED to zero for it, not merely relaxed. Without this an
         # operation-only run pins generators and lines to zero and is still free to build condensers and pay for them.
@@ -1472,8 +1508,8 @@ def SettingUpVariablesAC(OptModel, mTEPES):
             for p, sh in mTEPES.pshc:
                 if mTEPES.pShuntBinUnitInvest[sh] == 0:
                     OptModel.vShuntInvest[p,sh].domain = UnitInterval
-                OptModel.vShuntInvest[p,sh].setlb(mTEPES.pShuntLoInvest[sh])
-                OptModel.vShuntInvest[p,sh].setub(mTEPES.pShuntUpInvest[sh])
+                OptModel.vShuntInvest[p,sh].setlb(mTEPES.pShuntLoInvest[sh]())
+                OptModel.vShuntInvest[p,sh].setub(mTEPES.pShuntUpInvest[sh]())
             # same as the condensers above: flag 2 is "no investment", so fix rather than only relax. The fix comes after the bounds so it overrides
             # a non-zero InvestmentLo.
             if mTEPES.pIndBinNetElecInvest() == 2:

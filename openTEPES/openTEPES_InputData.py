@@ -1138,11 +1138,11 @@ def ConfigureACData(mTEPES, dfs, par):
         pSynchUp  = pGenTable['InvestmentUp'    ].astype(float).fillna(1.0) if 'InvestmentUp'     in pGenTable.columns else None
         pSynchBin = pGenTable['BinaryInvestment'].astype(float).fillna(0.0) if 'BinaryInvestment' in pGenTable.columns else None
         sqcList   = list(mTEPES.sqc)
-        mTEPES.pSynchLoInvest      = Param(mTEPES.sqc, initialize={sq: (pSynchLo [sq] if pSynchLo  is not None else 0.0) for sq in sqcList}, within=NonNegativeReals, doc='Lower bound of the condenser investment decision [p.u.]')
+        mTEPES.pSynchLoInvest      = Param(mTEPES.sqc, initialize={sq: (pSynchLo [sq] if pSynchLo  is not None else 0.0) for sq in sqcList}, within=NonNegativeReals, doc='Lower bound of the condenser investment decision [p.u.]', mutable=True)
         # An InvestmentUp of 0 means "no limit", which is 1, the same reading generators, network, H2 pipes, heat pipes and bus shunts all use.
         # A MISSING column also means "no limit". Reading 0 as "not buildable" here made the same column mean opposite things for a shunt and
         # for a condenser.
-        mTEPES.pSynchUpInvest      = Param(mTEPES.sqc, initialize={sq: ((pSynchUp[sq] if pSynchUp[sq] > 0.0 else 1.0) if pSynchUp is not None else 1.0) for sq in sqcList}, within=NonNegativeReals, doc='Upper bound of the condenser investment decision [p.u.]')
+        mTEPES.pSynchUpInvest      = Param(mTEPES.sqc, initialize={sq: ((pSynchUp[sq] if pSynchUp[sq] > 0.0 else 1.0) if pSynchUp is not None else 1.0) for sq in sqcList}, within=NonNegativeReals, doc='Upper bound of the condenser investment decision [p.u.]', mutable=True)
         mTEPES.pSynchBinUnitInvest = Param(mTEPES.sqc, initialize={sq: (pSynchBin[sq] if pSynchBin is not None else 0.0) for sq in sqcList}, within=NonNegativeReals, doc='Binary condenser investment decision')
 
     mTEPES.pLineG            = Param(mTEPES.la,    initialize=par['pLineG'].to_dict()           , within=Reals,            doc='Series conductance [p.u.]'                            )
@@ -1174,7 +1174,7 @@ def ConfigureACData(mTEPES, dfs, par):
         mTEPES.pBusBshb            = Param(mTEPES.sh, initialize=par['pBusBshb'].loc[list(mTEPES.sh)].to_dict()           , within=Reals,            doc='Shunt susceptance [p.u.]'                  , mutable=True)
         mTEPES.pShuntFixedCost     = Param(mTEPES.sh, initialize=par['pShuntFixedCost'].loc[list(mTEPES.sh)].to_dict()    , within=NonNegativeReals, doc='Shunt fixed cost [MEUR]'                                )
         mTEPES.pShuntBinUnitInvest = Param(mTEPES.sh, initialize=par['pShuntBinUnitInvest'].loc[list(mTEPES.sh)].to_dict(), within=NonNegativeReals, doc='Binary shunt investment decision'                       )
-        mTEPES.pShuntLoInvest      = Param(mTEPES.sh, initialize=par['pShuntLoInvest'].loc[list(mTEPES.sh)].to_dict()     , within=NonNegativeReals, doc='Lower bound of the shunt investment decision [p.u.]'    )
-        mTEPES.pShuntUpInvest      = Param(mTEPES.sh, initialize=par['pShuntUpInvest'].loc[list(mTEPES.sh)].to_dict()     , within=NonNegativeReals, doc='Upper bound of the shunt investment decision [p.u.]'    )
+        mTEPES.pShuntLoInvest      = Param(mTEPES.sh, initialize=par['pShuntLoInvest'].loc[list(mTEPES.sh)].to_dict()     , within=NonNegativeReals, doc='Lower bound of the shunt investment decision [p.u.]'    , mutable=True)
+        mTEPES.pShuntUpInvest      = Param(mTEPES.sh, initialize=par['pShuntUpInvest'].loc[list(mTEPES.sh)].to_dict()     , within=NonNegativeReals, doc='Upper bound of the shunt investment decision [p.u.]'    , mutable=True)
 
     print('Setting up AC input data               ... ', round(time.time() - StartTime), 's')

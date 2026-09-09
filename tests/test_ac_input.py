@@ -1587,8 +1587,7 @@ def test_a_candidate_condenser_reads_investmentup_zero_as_no_limit(tmp_path):
     mTEPES = _run_or_skip(dir_name, case, "ipopt", 0, 0)
 
     assert "SynCond1" in set(mTEPES.sqc), "a positive investment cost should make it a candidate"
-    # not mutable, so no call parentheses
-    assert mTEPES.pSynchUpInvest["SynCond1"] == pytest.approx(1.0), (
+    assert mTEPES.pSynchUpInvest["SynCond1"]() == pytest.approx(1.0), (
         "InvestmentUp = 0 should mean no limit, as it does for every other device family")
     assert mTEPES.vSynchInvest[mTEPES.p.first(), "SynCond1"].ub == pytest.approx(1.0), (
         "the investment variable is capped at 0, so the condenser cannot be built at all")
@@ -1723,3 +1722,73 @@ def test_a_converter_stays_within_its_apparent_power_rating(tmp_path):
 
         assert pWorst > 0.9, "the link was not loaded enough for this test to mean anything"
         assert pWorst <= pBound, f"converter {pConv} reached {pWorst:.4f} of its rating, above {pBound:.4f}"
+
+
+# Re-applying the reactive investment bounds
+# --------------------------------------------------------------------------------------------------------------------
+
+def test_shunt_investment_bounds_can_be_re_applied_after_build():
+    """Mutating a shunt investment bound and re-applying it must move the variable bound.
+
+    apply_investment_bounds covered generators, retirements and lines, but not the two reactive
+    device families, and their bound Params were not even mutable. So a portfolio sweep that
+    excluded a candidate shunt changed nothing: the bound stayed where the build left it, the
+    capacitor stayed available, and no error said so. The same asymmetry as the other families
+    applies here -- 0 in the CSV means unrestricted, 0 on a built model means excluded.
+    """
+    from openTEPES.openTEPES_SettingUpVariables import apply_investment_bounds
+
+    mTEPES = _build_with_vars(CASES_DIR, "9n_AC")
+
+    assert "Capacitor_1" in set(mTEPES.shc), "9n_AC should carry one candidate shunt"
+    key = (mTEPES.p.first(), "Capacitor_1")
+    assert mTEPES.vShuntInvest[key].ub > 0.0, "the candidate should start available"
+
+    # exclude it the way a portfolio sweep would, then re-apply
+    mTEPES.pShuntUpInvest["Capacitor_1"] = 0
+    apply_investment_bounds(mTEPES, mTEPES)
+    assert mTEPES.vShuntInvest[key].ub == 0.0, "bound not re-applied after mutating pShuntUpInvest"
+
+    # a value below pEpsilon snaps to zero, and the snapping is idempotent
+    mTEPES.pShuntUpInvest["Capacitor_1"] = 1e-9
+    apply_investment_bounds(mTEPES, mTEPES)
+    apply_investment_bounds(mTEPES, mTEPES)
+    assert mTEPES.vShuntInvest[key].ub == 0.0, "an epsilon upper bound should exclude the candidate"
+
+    # and it can be restored
+    mTEPES.pShuntUpInvest["Capacitor_1"] = 1
+    apply_investment_bounds(mTEPES, mTEPES)
+    assert mTEPES.vShuntInvest[key].ub == 1.0
+
+
+def test_condenser_investment_bounds_can_be_re_applied_after_build(tmp_path):
+    """The same gap, for the other reactive family. No shipped case has a candidate condenser."""
+    from openTEPES.openTEPES_SettingUpVariables import apply_investment_bounds
+
+    dir_name, case = _condenser_case(tmp_path, "9n_sqc_bounds", pInvestmentUp=1.0)
+    mTEPES = _build_with_vars(dir_name, case)
+
+    assert "SynCond1" in set(mTEPES.sqc), "the helper should build a candidate condenser"
+    key = (mTEPES.p.first(), "SynCond1")
+    assert mTEPES.vSynchInvest[key].ub > 0.0, "the candidate should start available"
+
+    mTEPES.pSynchUpInvest["SynCond1"] = 0
+    apply_investment_bounds(mTEPES, mTEPES)
+    assert mTEPES.vSynchInvest[key].ub == 0.0, "bound not re-applied after mutating pSynchUpInvest"
+
+    mTEPES.pSynchUpInvest["SynCond1"] = 1
+    apply_investment_bounds(mTEPES, mTEPES)
+    assert mTEPES.vSynchInvest[key].ub == 1.0
+
+
+def test_re_applying_the_bounds_is_safe_without_ac():
+    """A DC case has no reactive investment variables at all, and the call must not raise.
+
+    apply_investment_bounds also runs at build time, before SettingUpVariablesAC has created them,
+    so the guard is exercised on every run rather than only on a DC case.
+    """
+    from openTEPES.openTEPES_SettingUpVariables import apply_investment_bounds
+
+    mTEPES = _build_with_vars(CASES_DIR, "9n")
+    assert not hasattr(mTEPES, "vShuntInvest"), "9n is a DC case and should carry no shunt variable"
+    apply_investment_bounds(mTEPES, mTEPES)
