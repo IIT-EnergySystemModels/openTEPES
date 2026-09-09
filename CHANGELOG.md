@@ -1,6 +1,6 @@
 # Change Log
 
-## [4.18.18RC] - 2026-09-03 Unreleased in PyPI
+## [4.18.18RC] - 2026-09-09 Unreleased in PyPI
 
 - [FIXED] error when fixing the line exchanges by assigning the same values with opposite signs in the variable TTC files
 - [FIXED] plot of network maps
