@@ -277,6 +277,25 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
 
     CreateInstrumentalSets(mTEPES, par['pIndHydroTopology'], par['pIndHydrogen'], par['pIndHeat'], par['pIndPTDF'])
 
+    if par['pIndHydrogen']:
+        # A hydrogen element that cannot act is not an error, and the excess and not-served prices
+        # already steer the solver away from it, but it is almost always a case-building mistake.
+        # Sources fill the carrier, sinks empty it; storage is neither, because eH2IniFinInventory
+        # returns the cavern to its starting level. System-wide, not per node: the balance is nodal
+        # and pipes join nodes, so a strict test would walk the connected components of the pipe
+        # network.
+        _has_source = bool(mTEPES.el) or bool(mTEPES.sr) or bool(mTEPES.pa)
+        _has_sink   = bool(mTEPES.h2p) or bool(mTEPES.hh) or bool(mTEPES.pa) or float(par['pDemandH2'].sum().sum()) > 0.0
+        for _what, _present, _needs, _consequence in (
+            ('electrolysers', bool(mTEPES.el),  _has_sink,                'produce only into priced excess'),
+            ('H2 turbines',   bool(mTEPES.h2p), _has_source,              'run only on penalised unserved hydrogen'),
+            ('H2 storage',    bool(mTEPES.hs),  _has_source and _has_sink,'have nothing to buffer between'),
+        ):
+            if _present and not _needs:
+                print(f'WARNING: the case defines {_what}, but the hydrogen carrier has no '
+                      f'{"sink" if _what == "electrolysers" else "source" if _what == "H2 turbines" else "source or no sink"}, '
+                      f'so they can {_consequence}.')
+
     # replacing string values by numerical values
     idxDict = dict()
     idxDict[0    ] = 0

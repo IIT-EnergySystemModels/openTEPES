@@ -125,6 +125,33 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         if key not in par.keys():
             par[key] = 0
 
+    # The hydrogen carrier is switched on by oT_Data_DemandHydrogen or oT_Data_NetworkHydrogen.
+    # A hydrogen-fired generator needs more than that: its fuel is charged in eBalanceH2, which is
+    # built only when the carrier is on, so with neither file such a unit generated electricity
+    # burning nothing. Turbines therefore turn the carrier on by themselves.
+    #
+    # Electrolysers deliberately do not. Without the carrier they are flexible loads whose hydrogen
+    # leaves the model boundary, which is a legitimate case and the one cases/9nH2 exercises.
+    _gen = dfs.get('dfGeneration')
+    _h2p = int((_gen['ProductionFunctionH2ToPower'] > 0.0).sum()) if (
+        _gen is not None and 'ProductionFunctionH2ToPower' in _gen.columns) else 0
+    if not par['pIndHydrogen'] and _h2p:
+        par['pIndHydrogen'] = 1
+        print(f'WARNING: neither oT_Data_DemandHydrogen nor oT_Data_NetworkHydrogen is present, but '
+              f'the Generation table defines {_h2p} hydrogen-fired generator(s). The hydrogen '
+              f'carrier is enabled so their fuel is charged; without it they burn nothing.')
+        # Both tables are absent, so the carrier carries no demand and no pipes. The frames still
+        # have to exist: the readers below index them unconditionally.
+        if 'dfDemandHydrogen' not in dfs:
+            dfs['dfDemandHydrogen'] = pd.DataFrame(0.0, index=dfs['dfDemand'].index,
+                                                   columns=dfs['dfDemand'].columns)
+        if 'dfNetworkHydrogen' not in dfs:
+            dfs['dfNetworkHydrogen'] = pd.DataFrame(
+                columns=['Length', 'InitialPeriod', 'FinalPeriod', 'TTC', 'TTCBck',
+                         'SecurityFactor', 'FixedInvestmentCost', 'FixedChargeRate',
+                         'BinaryInvestment', 'InvestmentLo', 'InvestmentUp'],
+                index=pd.MultiIndex.from_tuples([], names=['InitialNode', 'FinalNode', 'Circuit']))
+
     # replace NaN with 0 (only on numeric columns to avoid dtype errors on string columns)
     for key,df in dfs.items():
         num_cols = df.select_dtypes(include='number').columns
@@ -401,6 +428,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     par['pMaxChargeH2']   = _optional_gen_col('MaximumChargeH2' ).fillna(0.0)
     par['pIniStorageH2']  = _optional_gen_col('InitialStorageH2').fillna(0.0)
     par['pStorageTypeH2'] = _optional_gen_col('StorageTypeH2', 'Weekly').fillna('Weekly')
+
     par['pEfficiency']                 = dfs['dfGeneration']  ['Efficiency'                ]                                                             #               ESS round-trip efficiency      [p.u.]
     par['pStorageType']                = dfs['dfGeneration']  ['StorageType'               ]                                                             #               ESS storage  type
     par['pOutflowsType']               = dfs['dfGeneration']  ['OutflowsType'              ]                                                             #               ESS outflows type
