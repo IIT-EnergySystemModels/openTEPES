@@ -2,6 +2,14 @@
 
 ## [4.18.18RC] - 2026-09-09 Unreleased in PyPI
 
+- [CHANGED] the `9n_H2` case is now `9n_ELZ`. Master gained a `9nH2` case for the hydrogen subsystem, and two cases
+  whose names differ only by an underscore is a trap for anyone picking a starting point. The old name was also
+  inaccurate: this case carries no hydrogen demand and no hydrogen network, and the carrier is off. It models two
+  electrolyzers as the documented Electrolyzer (ELZ) unit type, storage with electric energy outflows, and expresses
+  the hydrogen demand as the electricity they must draw. Nothing about the case changes but its name. The entry on the
+  Download page said it added hydrogen demand and a pipeline network, which was never true of the case in this form,
+  and now says what it does.
+
 - [FIXED] `IndHardZeroENS` forbade unserved energy but not the reactive shortfall, so an AC adequacy run answered half
   the question: the model stayed feasible by buying reactive power it never sourced, at `pENSCost`, and reported
   itself adequate. `vQNSPos` is now fixed at zero alongside `vENS`. `vQNSNeg` is not. It is a surplus the system could

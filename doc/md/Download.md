@@ -45,8 +45,9 @@ Here are the input files for:
   uses power transfer distribution factors and total transfer capacities instead of the angle-based DC power flow,
 - the same [9-node case coupled with a heat network](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/9n_heat), which adds heat
   demand and a heat pipe network on top of the electricity system,
-- the same [9-node case coupled with a hydrogen network](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/9n_H2), which adds
-  electrolyzers, hydrogen demand, and a hydrogen pipeline network on top of the electricity system,
+- the same [9-node case with two electrolyzers](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/9n_ELZ), which models them as
+  the documented Electrolyzer (ELZ) unit type: storage with electric energy outflows, so the hydrogen demand is expressed as the electricity they must draw
+  and the hydrogen carrier itself stays off,
 - a [dynamic (multiyear) small case study of 9 nodes](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/9n7y) with 13
   representative weeks per year,
 - another case, a [small Spanish system](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/sSEP), which also includes a hydrogen
