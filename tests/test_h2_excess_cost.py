@@ -38,3 +38,25 @@ def test_excess_may_exceed_not_served():
 def test_blank_cell_falls_back():
     # the header is there and the cell empty, which arrives as NaN and means "not given"
     assert _exc_cost({'pHNSCost': 10.0, 'pH2ExcCost': float('nan')}) == 5.0
+
+
+def _auto_enabled_exc(par, demand_table_present):
+    """The rule InputData applies when a turbine switches the carrier on by itself."""
+    if not demand_table_present:
+        par.setdefault('pH2ExcCost', 0.0)
+    return _exc_cost(par)
+
+
+def test_auto_enabled_without_demand_vents_free():
+    # A turbine enables the carrier, no demand table exists, so hydrogen beyond what the turbines
+    # burn leaves the model boundary exactly as it did with the carrier off. Charging the usual half
+    # of HNSCost would make an electrolyser that was a plain flexible load pay to vent its output.
+    assert _auto_enabled_exc({'pHNSCost': 10.0}, demand_table_present=False) == 0.0
+
+
+def test_auto_enabled_still_honours_a_given_price():
+    assert _auto_enabled_exc({'pHNSCost': 10.0, 'pH2ExcCost': 0.4}, demand_table_present=False) == 0.4
+
+
+def test_demand_table_present_keeps_the_half():
+    assert _auto_enabled_exc({'pHNSCost': 10.0}, demand_table_present=True) == 5.0

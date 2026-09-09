@@ -140,6 +140,11 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         print(f'WARNING: neither oT_Data_DemandHydrogen nor oT_Data_NetworkHydrogen is present, but '
               f'the Generation table defines {_h2p} hydrogen-fired generator(s). The hydrogen '
               f'carrier is enabled so their fuel is charged; without it they burn nothing.')
+        # No demand table, so hydrogen produced beyond what the turbines burn leaves the model
+        # boundary, exactly as it did with the carrier off. Excess is therefore free here unless
+        # the case prices it: charging the usual half of HNSCost would take an electrolyser that
+        # was a plain flexible load and make its output cost 5 MEUR/t to vent.
+        par.setdefault('pH2ExcCost', 0.0)
         # Both tables are absent, so the carrier carries no demand and no pipes. The frames still
         # have to exist: the readers below index them unconditionally.
         if 'dfDemandHydrogen' not in dfs:
