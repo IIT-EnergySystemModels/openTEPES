@@ -8,12 +8,16 @@
   test checks the demand is served, which the existing structural tests could not.
 - [ADDED] a test that solves `9nH2x`, which nothing solved before. It checks the case solves and its hydrogen balance
   closes. The hydrogen side is idle at a 41 % round trip, but that is an economic outcome and is not pinned.
+- [CHANGED] CI installs conda in one job instead of thirteen. Only the Linux solve job needs it, for ipopt; the rest
+  wanted only `flake8` and `pytest`, which pip provides, and a failed conda setup was failing jobs that never reached a
+  test. That job is now separate and named for it, and the shared setup is one composite action.
+- [CHANGED] an in-progress CI run is superseded only on a pull request. A master run is the record for master.
 
 - [ADDED] six missing cases to the bundled case list on the Download page. `9nH2` and `9nH2x` arrived with the hydrogen
   subsystem and neither was documented: `9nH2` carries the whole chain as separate units, an electrolyser, a storage
   cavern and a hydrogen-fired turbine, against a hydrogen demand at one node, while `9nH2x` keeps the units, removes the
   demand and raises every thermal variable cost tenfold. The four this branch adds were undocumented for the same
-  reason: `9n_AC`, `RTS-GMLC_AC`, `RTS-GMLC_AC_Oper` and `RTS-GMLC_Oper`. `9n_duckdb` is still not listed.
+  reason: `9n_AC`, `RTS-GMLC_AC`, `RTS-GMLC_AC_Oper` and `RTS-GMLC_Oper`.
 
 - [CHANGED] `prototypes/ac_formulations/` is no longer part of the repository. It held the formulation study that
   decided the branch-flow cone against the piecewise-linear model: research apparatus, not model code, and
