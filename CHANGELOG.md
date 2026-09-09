@@ -8,6 +8,14 @@
 - [CHANGED] modify OutputResultsGeneration to improve performance 
 - [FIXED] protect input data modules against a missing `openTEPES/cases/` folder, which was causing a `FileNotFoundError` on a fresh clone. 
 - [FIXED] fix small errors and typos in input data modules
+- [FIXED] hydrogen-fired generators and hydrogen storage were absent from the hydrogen balance, so a turbine burned no fuel and a store was unconnected to supply and demand
+- [FIXED] a hydrogen turbine was not charged for its fuel, its consumption being taken from the electricity side alone
+- [ADDED] hydrogen supply without electricity, by reforming or import, through `MaximumProductionH2`, `ProductionCostH2` and `ProductionEmissionH2`
+- [ADDED] hydrogen storage, through `MaximumStorageH2`, `MaximumChargeH2`, `InitialStorageH2` and `StorageTypeH2`, with an inventory returning to its initial level
+- [CHANGED] a hydrogen-fired generator or a hydrogen boiler now brings the hydrogen carrier into the formulation, since either is charged for fuel in the hydrogen balance alone
+- [ADDED] `H2ExcCost` in the parameter file, to price hydrogen in excess apart from hydrogen not served
+- [ADDED] the solver version to the run status
+- [CHANGED] document the hydrogen subsystem, with a diagram of the three carrier balances
 
 ## [4.18.17] - 2026-08-05
 
