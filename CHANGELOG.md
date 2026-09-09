@@ -2,6 +2,12 @@
 
 ## [4.18.18RC] - 2026-09-09 Unreleased in PyPI
 
+- [FIXED] `9nH2` asked for 20 tH2/h at Node_1, five times what its 200 MW electrolyser can make at 49.02 kWh/kgH2.
+  Four fifths came back as hydrogen not served, so the HNS penalty was the whole objective: 26,753 MEUR over seven days
+  against 6.4 MEUR. Demand is now 2 tH2/h; a 20 tH2/h demand would need 980 MW, two thirds of the system peak. A new
+  test checks the demand is served, which the existing structural tests could not.
+- [ADDED] a test that solves `9nH2x`, which nothing solved before. It checks the case solves and its hydrogen balance
+  closes. The hydrogen side is idle at a 41 % round trip, but that is an economic outcome and is not pinned.
 - [CHANGED] CI installs conda in one job instead of thirteen. Only the Linux solve job needs it, for ipopt; the rest
   wanted only `flake8` and `pytest`, which pip provides, and a failed conda setup was failing jobs that never reached a
   test. That job is now separate and named for it, and the shared setup is one composite action.
