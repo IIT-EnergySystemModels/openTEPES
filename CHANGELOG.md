@@ -2,6 +2,14 @@
 
 ## [4.18.18RC] - 2026-09-09 Unreleased in PyPI
 
+- [ADDED] `RTS-GMLC_Oper` to the solve suite. It ships but no test solved it, so the operation-only path was covered on
+  no case carrying commitment binaries. About 30 s and 1.1 GB under the 7-day fixture.
+- [CHANGED] the note deferring `RTS-GMLC_6y` now carries the measurement it asked for. Reading and configuring the case
+  costs 5.3 GB and 85 s before the solve, and a solve peaked at 11.4 GB without finishing in seven minutes; runners have
+  16 GB, or 14 GB on macOS. The floor is reading six periods of full-year tables, not solving, so no shorter horizon
+  helps: at this horizon the model is already small, 546 load levels. Covering that layout at this scale needs a
+  smaller case shipped as data.
+
 - [FIXED] `9nH2` asked for 20 tH2/h at Node_1, five times what its 200 MW electrolyser can make at 49.02 kWh/kgH2.
   Four fifths came back as hydrogen not served, so the HNS penalty was the whole objective: 26,753 MEUR over seven days
   against 6.4 MEUR. Demand is now 2 tH2/h; a 20 tH2/h demand would need 980 MW, two thirds of the system peak. A new

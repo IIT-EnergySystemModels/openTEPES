@@ -177,6 +177,7 @@ def case_7d_binary(request, tmp_path):
 #   9n_ELZ       ✓ losses     ✓ (2 electrolyzers as ESS with energy outflows + storage; pIndHydrogen=0)
 #   NG2030      ✓ losses                                                                                ✓
 #   RTS-GMLC    ✓                                                                  ramps+min-time
+#   RTS-GMLC_Oper ✓                                                                ramps+min-time, no investment
 #
 # All single-stage cases use TimeStep ≥ 2 (rolling-mean time aggregation; openTEPES's representative-time-block
 # mechanism). The 7-day fixture truncates Duration globally to the first 168 h and forces StageWeight=52 so one
@@ -207,6 +208,9 @@ def case_7d_binary(request, tmp_path):
     ("NG2030",    1041.3415582681946),
     # RTS-GMLC — single-stage variant of the GMLC reference system; exercises ramp and min-up/down-time binaries.
     ("RTS-GMLC",  1091.0943444941825),
+    # RTS-GMLC_Oper — the same system with investment switched off, so the operation-only path is covered on a case
+    # with commitment binaries. About 30 s and 1.1 GB peak under this fixture, and reproducible across reruns.
+    ("RTS-GMLC_Oper", 1902.3351794278512),
     # RTS24 (single area of RTS-GMLC) shows HiGHS non-determinism — three identical runs returned 1107.185,
     # 1107.400, and 1110.174. Covered indirectly by RTS-GMLC; not parametrised here.
 ], indirect=["case_7d_system"])
@@ -387,8 +391,20 @@ def test_openTEPES_run_from_duckdb(case_7d_system, tmp_path):
     # 9n7y exercises the multi-stage rolling layout (13 stages × 4-week weight each = 52 weeks / period × 7 periods).
     # Cost reproducible to 13 significant figures across reruns under HiGHS.
     ("9n7y", 9047.829359499794),
-    # RTS-GMLC_6y is a candidate (6 periods × 13 stages); deferred until its full multi-stage solve time under HiGHS
-    # is characterised on CI hardware — the multi-stage fixture itself is verified correct via 9n7y.
+    # RTS-GMLC_6y stays out, and the measurement the earlier note asked for is why. Reading and configuring it costs
+    # 5.3 GB and 85 s BEFORE the solve, and a solve peaked at 11.4 GB without finishing in seven minutes on a 24 GB
+    # machine. Runners have 16 GB (14 GB on macOS), so it would sit near the ceiling or exceed it.
+    #
+    # No horizon trick fixes that, because the floor is reading the case, not solving it: the model is small at this
+    # horizon, 546 load levels and 3276 (period, scenario, level) combinations, while the input is six periods of
+    # full-year tables. Two further routes are closed. Dropping stages raises IndexError in openTEPES_InputData,
+    # which sizes pDuration from the sets and indexes it positionally, so the Duration table has to stay a complete
+    # Period x Scenario x LoadLevel grid; zeroing whole stages instead hits the pStorageTimeStep crash this fixture
+    # exists to avoid. Zeroing four periods through pPeriodWeight is supported and does not help either, since
+    # mTEPES.n keeps every load level any period still uses.
+    #
+    # Making this case run in CI needs a smaller case shipped as data, not a fixture. 9n7y covers the multi-stage
+    # rolling layout; what stays uncovered is that layout at RTS-GMLC scale.
 ], indirect=["case_multi_stage_7d_system"])
 def test_openTEPES_run_multi_stage(case_multi_stage_7d_system, expected_cost):
     """
