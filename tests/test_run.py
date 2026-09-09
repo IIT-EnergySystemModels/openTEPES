@@ -1008,11 +1008,9 @@ def test_9nH2_turbine_is_charged_for_its_fuel(case_7d_system):
 def test_9nH2_hydrogen_demand_is_actually_served(case_7d_system):
     """The case has to be able to make the hydrogen it asks for.
 
-    It could not. The electrolyser is 200 MW at 49.02 kWh/kgH2, so it produces at most 4.08 tH2/h,
-    against a demand of 20 tH2/h. Four fifths of the demand came back as hydrogen not served, and
-    since that carries the HNS penalty, the whole objective was the penalty: 26,753 MEUR over a
-    seven-day horizon against the 6.4 MEUR the system actually costs to run. Every other test on
-    this case is structural, so all of them passed while the numbers were meaningless.
+    It could not: a 200 MW electrolyser at 49.02 kWh/kgH2 makes 4.08 tH2/h against a 20 tH2/h
+    demand, so the HNS penalty was the whole objective. Every other test here is structural and
+    passed throughout.
     """
     mTEPES = openTEPES_run(**case_7d_system)
 
@@ -1028,13 +1026,10 @@ def test_9nH2_hydrogen_demand_is_actually_served(case_7d_system):
 @pytest.mark.solve
 @pytest.mark.parametrize("case_7d_system", ["9nH2x"], indirect=["case_7d_system"])
 def test_9nH2x_solves_and_closes_its_hydrogen_balance(case_7d_system):
-    """Nothing solved 9nH2x, so a case that ships could have been broken and nobody would know.
+    """Nothing solved 9nH2x, so it could have been broken with no sign of it.
 
-    It carries the same three units as 9nH2 with no hydrogen demand, so the hydrogen side is idle:
-    the round trip is 49.02 kWh/kgH2 in against 50 gH2/kWh out, about 41 per cent, which never pays
-    when the electrolyser buys from the same fleet the turbine sells back to. This does not pin that
-    idleness, which is an economic outcome and may change. It pins that the case solves and that its
-    hydrogen balance closes, production and storage against demand and the two slacks.
+    The hydrogen side is idle: no demand, and a 41 % round trip never pays. That is an economic
+    outcome and is not pinned. Pinned instead: the case solves and its hydrogen balance closes.
     """
     mTEPES = openTEPES_run(**case_7d_system)
 
