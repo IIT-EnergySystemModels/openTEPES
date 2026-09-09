@@ -1051,12 +1051,20 @@ binary AC investment decisions.
 
 **Hydrogen network operation**
 
-Balance of hydrogen generation by electrolyzers, hydrogen consumption by the hydrogen heaters that use it, and demand at each node [tH2] «`eBalanceH2`». A
-transport model is used to model the hydrogen network.
+Balance at each node of hydrogen produced by electrolyzers and by sources that consume no electricity, against the hydrogen taken by the heaters and by the
+hydrogen-fired generators that burn it, the net change in hydrogen storage, and demand [tH2] «`eBalanceH2`». A transport model is used to model the hydrogen
+network. The balance is skipped at a node carrying none of these, so a node outside the hydrogen system adds no row.
 
 ```{math}
 \sum_{e \in i} \frac{DUR^p_{\omega n}}{PF'_e} gc^p_{\omega ne} - \sum_{g \in i} DUR^p_{\omega n} PF'''_e gh^p_{\omega ng} + hns^p_{\omega ni} - hex^p_{\omega ni} = DUR^p_{\omega n} DH^p_{\omega ni} + \sum_{jc} fh^p_{\omega nijc} - \sum_{jc} fh^p_{\omega njic} \quad \forall p \omega ni
 ```
+
+Inventory of a hydrogen store over its storage cycle, carrying forward what was injected less what was withdrawn [tH2] «`eH2Inventory`». Without it the
+balance clears within the hour and the electrolyzer-store-turbine chain reduces to an instantaneous converter.
+
+A hydrogen store ends the horizon at the level it started from [tH2] «`eH2IniFinInventory`», as candidate storage does on the electricity side. Without it
+the model can drain a full store and never refill it, which is hydrogen for nothing.
+
 
 **Heat network operation**
 
