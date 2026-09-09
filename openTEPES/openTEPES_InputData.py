@@ -125,10 +125,22 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         if key not in par.keys():
             par[key] = 0
 
-    # The hydrogen carrier is switched on by oT_Data_DemandHydrogen or oT_Data_NetworkHydrogen, as
-    # every other optional sector is switched on by its own files. Hydrogen consumers are the one
-    # exception in the model: their fuel is charged in eBalanceH2, built only with the carrier on, so
-    # with neither file they burn nothing. Two unit types consume hydrogen, a hydrogen-fired
+    # Optional sectors are switched on by their own files. Hydrogen consumers are the exception:
+    # their fuel is charged in eBalanceH2 alone, so with no hydrogen file they burn nothing. Either
+    # consumer, a hydrogen-fired generator or a hydrogen boiler, switches the carrier on. The heat
+    # balance carries producers only, and hydro without the topology runs on the ESS balance, so
+    # neither needs this. Electrolysers produce rather than consume and do not switch it on.
+    _gen = dfs.get('dfGeneration')
+    def _units(col):
+        return int((_gen[col] > 0.0).sum()) if (_gen is not None and col in _gen.columns) else 0
+    _consumers = {'hydrogen-fired generator': _units('ProductionFunctionH2ToPower'),
+                  'hydrogen boiler'         : _units('ProductionFunctionH2ToHeat')}
+    if not par['pIndHydrogen'] and any(_consumers.values()):
+        par['pIndHydrogen'] = 1
+        _named = ', '.join(f'{v} {k}(s)' for k, v in _consumers.items() if v)
+        print(f'WARNING: neither oT_Data_DemandHydrogen nor oT_Data_NetworkHydrogen is present, but '
+              f'the Generation table defines {_named}. The hydrogen carrier is enabled so their fuel '
+              f'is charged; without it they burn nothing.')
     # generator and a hydrogen boiler, and either turns the carrier on by itself.
     #
     # No other sector needs this. The heat balance carries producers alone, so heat off leaves a unit
@@ -150,13 +162,10 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         print(f'WARNING: neither oT_Data_DemandHydrogen nor oT_Data_NetworkHydrogen is present, but '
               f'the Generation table defines {_named}. The hydrogen carrier is enabled so their fuel '
               f'is charged; without it they burn nothing.')
-        # No demand table, so hydrogen produced beyond what the turbines burn leaves the model
-        # boundary, exactly as it did with the carrier off. Excess is therefore free here unless
-        # the case prices it: charging the usual half of HNSCost would take an electrolyser that
-        # was a plain flexible load and make its output cost 5 MEUR/t to vent.
+        # Hydrogen beyond what the consumers burn leaves the model boundary, as it did with the
+        # carrier off, so excess is free unless the case prices it.
         par.setdefault('pH2ExcCost', 0.0)
-        # Both tables are absent, so the carrier carries no demand and no pipes. The frames still
-        # have to exist: the readers below index them unconditionally.
+        # Both tables are absent; the frames must still exist for the readers below.
         if 'dfDemandHydrogen' not in dfs:
             dfs['dfDemandHydrogen'] = pd.DataFrame(0.0, index=dfs['dfDemand'].index,
                                                    columns=dfs['dfDemand'].columns)

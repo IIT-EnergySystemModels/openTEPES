@@ -568,9 +568,17 @@ investment or retirement on a candidate, set the corresponding upper bound (`Inv
 is internally converted to 0. A blank cell or 0 in these columns is interpreted as "no upper bound" (full `p.u.` allowed) and lets the candidate be freely
 chosen by the optimization.
 
-A hydrogen import can be represented with an electric generator whose variable cost equals the import cost and an electrolyzer whose production function
-ProductionFunctionH2 equals 1. This generator must be located in an isolated electricity network (from the main one) and the electrolyzer must be located in a
-node linking this isolated electricity network and the hydrogen network.
+A hydrogen source, a reformer or an import terminal, is a unit with MaximumProductionH2 above zero. It makes hydrogen at ProductionCostH2 without drawing
+electricity, so the earlier workaround of an isolated electricity network feeding an electrolyzer is no longer needed.
+
+The hydrogen subsystem is summarised in the following figure. The hydrogen balance is the only carrier balance holding consumers, the turbine and the boiler,
+so a case defining either without a hydrogen file would burn fuel charged nowhere; either unit therefore switches the carrier on by itself.
+
+```{image} ../img/HydrogenSubsystem.png
+:alt: Hydrogen subsystem in openTEPES
+:align: center
+:scale: 55%
+```
 
 A summary of the main characteristics of the different types of hydro and ESS is shown in the following figure:
 

@@ -278,12 +278,9 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     CreateInstrumentalSets(mTEPES, par['pIndHydroTopology'], par['pIndHydrogen'], par['pIndHeat'], par['pIndPTDF'])
 
     if par['pIndHydrogen']:
-        # A hydrogen element that cannot act is not an error, and the excess and not-served prices
-        # already steer the solver away from it, but it is almost always a case-building mistake.
-        # Sources fill the carrier, sinks empty it; storage is neither, because eH2IniFinInventory
-        # returns the cavern to its starting level. System-wide, not per node: the balance is nodal
-        # and pipes join nodes, so a strict test would walk the connected components of the pipe
-        # network.
+        # An element that cannot act is not an error, but it is usually a case-building mistake.
+        # Storage is neither source nor sink: eH2IniFinInventory returns it to its starting level.
+        # System-wide, not per node, so a pipe-connected neighbour counts.
         _has_source = bool(mTEPES.el) or bool(mTEPES.sr) or bool(mTEPES.pa)
         _has_sink   = bool(mTEPES.h2p) or bool(mTEPES.hh) or bool(mTEPES.pa) or float(par['pDemandH2'].sum().sum()) > 0.0
         for _what, _present, _needs, _consequence in (

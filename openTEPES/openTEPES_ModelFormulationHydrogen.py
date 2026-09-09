@@ -28,7 +28,7 @@ def NetworkH2OperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, 
     b2n = defaultdict(set)
     # nodes to hydrogen-fired generators (g2n)
     g2n = defaultdict(set)
-    # nodes to hydrogen stores (s2nd), from n2hs: a cavern is not in the generating set
+    # nodes to hydrogen stores (s2nd), from n2hs: a store is not a generator
     s2nd = defaultdict(set)
     for nd,hs in mTEPES.n2hs:
         s2nd[nd].add(hs)
@@ -55,7 +55,7 @@ def NetworkH2OperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, 
     if pIndLogConsole:
         print('eBalanceH2                ... ', len(getattr(OptModel, f'eBalanceH2_{p}_{sc}_{st}')), ' rows')
 
-    # hydrogen inventory over each storage cycle, as eESSInventory does for electricity
+    # inventory over each storage cycle, as eESSInventory does for electricity
     n2list_h2 = list(mTEPES.n2)
 
     def eH2Inventory(OptModel,n,hs):
@@ -75,7 +75,7 @@ def NetworkH2OperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, 
     if pIndLogConsole:
         print('eH2Inventory              ... ', len(getattr(OptModel, f'eH2Inventory_{p}_{sc}_{st}')), ' rows')
 
-    # the cavern ends the horizon at its initial inventory, as eIniFinInventory does
+    # ends the horizon at its initial inventory, as eIniFinInventory does
     def eH2IniFinInventory(OptModel,hs):
         return OptModel.vH2Inventory[p,sc,mTEPES.n.last(),hs] == mTEPES.pIniStorageH2[hs]
     setattr(OptModel, f'eH2IniFinInventory_{p}_{sc}_{st}', Constraint(mTEPES.hs, rule=eH2IniFinInventory, doc='hydrogen inventory returns to its starting level [tH2]'))
@@ -89,9 +89,8 @@ def NetworkH2OperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, 
     setattr(OptModel, f'eTotalH2SrcCost_{p}_{sc}_{st}', Constraint(mTEPES.n, rule=eTotalH2SrcCost, doc='hydrogen source cost [MEUR]'))
 
     def eTotalRH2Cost(OptModel,n):
-        # guard matches eBalanceH2: a node outside this sum carries a cost-free unserved variable.
-        # Stage weight alone, not pLoadLevelDuration: vH2NS is tonnes over the load level, not a
-        # rate, so the duration is already in it. The electricity term needs both, vENS being a power
+        # guard matches eBalanceH2, else a node carries a cost-free unserved variable.
+        # Stage weight alone: vH2NS is already tonnes, unlike vENS which is a power.
         return OptModel.vTotalRH2Cost[p,sc,n] == mTEPES.pLoadLevelWeight[p,sc,n]() * sum(mTEPES.pH2NSCost * OptModel.vH2NS[p,sc,n,nd] + mTEPES.pH2ExcCost * OptModel.vH2Exc[p,sc,n,nd] for nd in mTEPES.nd if len(l2n[nd]) + len(b2n[nd]) + len(g2n[nd]) + len(s2nd[nd]) + len(r2n[nd]) + len(lout[nd]) + len(lin[nd]))
     setattr(OptModel, f'eTotalRH2Cost_{p}_{sc}_{st}', Constraint(mTEPES.n, rule=eTotalRH2Cost, doc='H2 system reliability cost [MEUR]'))
 

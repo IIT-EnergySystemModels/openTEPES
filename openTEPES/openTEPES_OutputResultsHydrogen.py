@@ -87,8 +87,7 @@ def NetworkH2OperationResults(DirName, CaseName, OptModel, mTEPES):
     OutputResults6 = pd.Series(data=[-      mTEPES.pDemandH2       [p,sc,n,nd      ]  *mTEPES.pLoadLevelDuration[p,sc,n]()                                                                                              for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='HydrogenDemand'     )
     OutputResults7 = pd.Series(data=[-sum(OptModel.vFlowH2         [p,sc,n,nd,nf,cc]()                                                                            for nf,cc in lout[nd] if (p,nd,nf,cc) in mTEPES.ppa)  for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='HydrogenFlowOut'    )
     OutputResults8 = pd.Series(data=[ sum(OptModel.vFlowH2         [p,sc,n,ni,nd,cc]()                                                                            for ni,cc in lin [nd] if (p,ni,nd,cc) in mTEPES.ppa)  for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='HydrogenFlowIn'     )
-    # every column is annual: tonne-valued variables take the stage weight, demand and the
-    # electrolyser terms are rates and take pLoadLevelDuration
+    # annual: tonne-valued variables take the stage weight, rates take pLoadLevelDuration
     OutputResults9 = pd.Series(data=[ sum(OptModel.vH2Production   [p,sc,n,sr      ]()*mTEPES.pLoadLevelWeight[p,sc,n]()          for sr in r2n[nd])                                                    for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='HydrogenProducedNoElec')
     OutputResults10= pd.Series(data=[ sum(OptModel.vH2Production   [p,sc,n,sr      ]()*mTEPES.pProductionEmissionH2[sr]*mTEPES.pLoadLevelWeight[p,sc,n]() for sr in r2n[nd])                                                    for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='HydrogenSourceEmission')
     OutputResults12= pd.Series(data=[-sum(OptModel.vTotalOutput      [p,sc,n,h2p     ]()*mTEPES.pProductionFunctionH2ToPower[h2p] for h2p in g2n[nd] if (p,h2p) in mTEPES.pg)*mTEPES.pLoadLevelDuration[p,sc,n]() for p,sc,n,ar,nd    in sPSNARND  ], index=pd.Index(sPSNARND  )).to_frame(name='ConsumptionH2ToPower'  )
@@ -103,7 +102,7 @@ def NetworkH2OperationResults(DirName, CaseName, OptModel, mTEPES):
     OutputResults.stack().reset_index().pivot_table(index=['level_0','level_1','level_2'          ,'level_5'], columns='level_4', values=0, aggfunc='sum').rename_axis(['Period', 'Scenario', 'LoadLevel', 'Technology'  ], axis=0).oT.write(f'{_path}/oT_Result_BalanceHydrogenPerNode_{CaseName}.csv', sep=',')
     OutputResults.stack().reset_index().pivot_table(index=['level_0','level_1'                    ,'level_5'], columns='level_3', values=0, aggfunc='sum').rename_axis(['Period', 'Scenario'             , 'Technology'  ], axis=0).oT.write(f'{_path}/oT_Result_BalanceHydrogenPerArea_{CaseName}.csv', sep=',')
 
-    # only with pipes: psnpa is empty otherwise and its index has a single level
+    # only with pipes: psnpa is empty otherwise, with a single index level
     if mTEPES.pa:
         OutputToFile = pd.Series(data=[OptModel.vFlowH2[p,sc,n,ni,nf,cc]() for p,sc,n,ni,nf,cc in mTEPES.psnpa], index=mTEPES.psnpa)
         OutputToFile.index.names = ['Period', 'Scenario', 'LoadLevel', 'InitialNode', 'FinalNode', 'Circuit']
@@ -123,7 +122,7 @@ def NetworkH2OperationResults(DirName, CaseName, OptModel, mTEPES):
     OutputToFile = pd.Series(data=[OptModel.vH2NS[p,sc,n,nd]() for p,sc,n,nd in sPSNND], index=pd.Index(sPSNND))
     OutputToFile.to_frame(name='tH2').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='tH2').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_NetworkHNS_{CaseName}.csv', sep=',')
 
-    # hydrogen storage output: a cavern is scoped to gg, so the generation writer never sees it
+    # hydrogen storage output: scoped to gg, so the generation writer never sees it
     if mTEPES.hs:
         for _var, _nm in ((OptModel.vH2Inventory, 'Inventory'), (OptModel.vH2StorCharge, 'Charge'),
                           (OptModel.vH2StorDischarge, 'Discharge')):
