@@ -2,6 +2,19 @@
 
 ## [4.18.18RC] - 2026-09-09 Unreleased in PyPI
 
+- [FIXED] the `9nH2` case asked for five times the hydrogen it can make. The electrolyser is 200 MW at 49.02 kWh/kgH2,
+  so it produces at most 4.08 tH2/h, against a demand of 20 tH2/h at Node_1. Four fifths came back as hydrogen not
+  served, and because that carries the HNS penalty the objective was the penalty rather than the system: 26,753 MEUR
+  over a seven-day horizon against the 6.4 MEUR the system costs to run. The demand is now 2 tH2/h, which the
+  electrolyser can meet while still filling the cavern, rather than raising the electrolyser to the 980 MW the old
+  demand implied, which is 64 % of this system's 1,531 MW peak and would have made the case about the electrolyser.
+  Every existing test on this case is structural, so all of them passed while the numbers were meaningless; a test now
+  checks that the demand is actually served.
+- [ADDED] a test that solves `9nH2x`. Nothing solved it, so a shipped case could have been broken with no sign of it.
+  The test checks that it solves and that its hydrogen balance closes, rather than pinning the hydrogen side's idleness,
+  which is an economic outcome: with no hydrogen demand and a round trip near 41 %, making hydrogen to burn it back
+  never pays while the electrolyser buys from the same fleet the turbine sells into.
+
 - [ADDED] six missing cases to the bundled case list on the Download page. `9nH2` and `9nH2x` arrived with the hydrogen
   subsystem and neither was documented: `9nH2` carries the whole chain as separate units, an electrolyser, a storage
   cavern and a hydrogen-fired turbine, against a hydrogen demand at one node, while `9nH2x` keeps the units, removes the
