@@ -8,7 +8,8 @@ on:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  # Same reasoning as the CI workflow: supersede a pull request's own run, let master finish.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   colab-test:
