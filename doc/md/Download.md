@@ -48,6 +48,13 @@ Here are the input files for:
 - the same [9-node case with two electrolyzers](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/9n_ELZ), which models them as
   the documented Electrolyzer (ELZ) unit type: storage with electric energy outflows, so the hydrogen demand is expressed as the electricity they must draw
   and the hydrogen carrier itself stays off,
+- the same [9-node case solved with AC power flow](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/9n_AC), which adds bus voltages, reactive demand and shunt devices, and solves the network exactly
+  instead of by the DC approximation,
+- the same [9-node case with the hydrogen carrier on](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/9nH2), which carries the
+  whole chain as separate units: an electrolyser, a storage cavern, and a hydrogen-fired turbine that draws its fuel from the hydrogen balance, against a
+  hydrogen demand at one node. Use this one to see the hydrogen balance itself, rather than the electricity a producer must draw,
+- the same [9-node hydrogen case with no hydrogen demand](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/9nH2x), which keeps
+  those three units and removes the demand, so hydrogen can only be stored and burned back for electricity, and raises every thermal variable cost tenfold,
 - a [dynamic (multiyear) small case study of 9 nodes](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/9n7y) with 13
   representative weeks per year,
 - another case, a [small Spanish system](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/sSEP), which also includes a hydrogen
@@ -55,6 +62,9 @@ Here are the input files for:
 - a [modified RTS24 case study](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/RTS24),
 - the [static Reliability Test System Grid Modernization Lab Consortium
   (RTS-GMLC)](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/RTS-GMLC),
+- the same [RTS-GMLC solved for operation only](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/RTS-GMLC_Oper), with the investment decisions switched off,
+- the [RTS-GMLC solved with AC power flow](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/RTS-GMLC_AC), a full year, and the same case [for operation only](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/RTS-GMLC_AC_Oper), which is the one to
+  start from: a year of AC is expensive to solve,
 - a [dynamic (multiyear) Reliability Test System Grid Modernization Lab Consortium
   (RTS-GMLC)](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/RTS-GMLC_6y) with 13 representative weeks per year, and
 - a [Nigeria 2030 case study](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/NG2030).

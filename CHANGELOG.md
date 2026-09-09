@@ -2,6 +2,12 @@
 
 ## [4.18.18RC] - 2026-09-09 Unreleased in PyPI
 
+- [ADDED] six missing cases to the bundled case list on the Download page. `9nH2` and `9nH2x` arrived with the hydrogen
+  subsystem and neither was documented: `9nH2` carries the whole chain as separate units, an electrolyser, a storage
+  cavern and a hydrogen-fired turbine, against a hydrogen demand at one node, while `9nH2x` keeps the units, removes the
+  demand and raises every thermal variable cost tenfold. The four this branch adds were undocumented for the same
+  reason: `9n_AC`, `RTS-GMLC_AC`, `RTS-GMLC_AC_Oper` and `RTS-GMLC_Oper`. `9n_duckdb` is still not listed.
+
 - [CHANGED] `prototypes/ac_formulations/` is no longer part of the repository. It held the formulation study that
   decided the branch-flow cone against the piecewise-linear model: research apparatus, not model code, and
   `reference.py` needed pandapower, which openTEPES does not depend on, so shipping it offered code the project could
