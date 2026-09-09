@@ -7,7 +7,8 @@ on:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  # Supersede a pull request's own run; let a master run finish, it is the record for master.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   # Fast tier: lint + tests that do NOT solve a model. Cheap, so it runs on
@@ -26,112 +27,61 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Conda (Miniforge) + Python ${{ matrix.python-version }}
-        uses: conda-incubator/setup-miniconda@v3
+      - uses: ./.github/actions/setup
         with:
-          miniforge-variant: Miniforge3
-          miniforge-version: latest
-          auto-update-conda: true
-          activate-environment: ci
           python-version: ${{ matrix.python-version }}
-          channels: conda-forge,defaults
-          channel-priority: strict
-
-      - name: Set up uv
-        uses: astral-sh/setup-uv@v3
-        with:
-          enable-cache: true
-          cache-dependency-glob: requirements.lock
-
-      - name: Install dependencies
-        shell: bash -l {0}
-        run: |
-          conda install -y -c conda-forge flake8 pytest
-          uv pip install --system -r requirements.lock
-          pip install -e .
+          extra: flake8
 
       - name: Lint with flake8 (syntax errors only)
-        shell: bash -l {0}
-        run: |
-          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        shell: bash
+        run: flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
 
       - name: Run unit tests (no solve)
-        shell: bash -l {0}
-        run: |
-          pytest -vv -m "not solve" tests/
+        shell: bash
+        run: pytest -vv -m "not solve" tests/
 
   # Solve tier: the full model suite (every case, multi-stage, Benders). The
   # model maths is the same on every platform, so re-solving on all 9 combos
   # adds little. We solve once per operating system on a single Python version.
   # Cross-Python coverage is already provided by the fast tier above.
+  # HiGHS only. The non-linear formulations are covered by solve-ipopt below, which is
+  # separate because ipopt comes from conda and nothing else here needs conda.
   solve:
     name: solve (full model suite) - ${{ matrix.os }} / py${{ matrix.python-version }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [macos-latest, windows-latest]
         python-version: ["3.12"]
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Conda (Miniforge) + Python ${{ matrix.python-version }}
-        uses: conda-incubator/setup-miniconda@v3
+      - uses: ./.github/actions/setup
         with:
-          miniforge-variant: Miniforge3
-          miniforge-version: latest
-          auto-update-conda: true
-          activate-environment: ci
           python-version: ${{ matrix.python-version }}
-          channels: conda-forge,defaults
-          channel-priority: strict
-
-      - name: Set up uv
-        uses: astral-sh/setup-uv@v3
-        with:
-          enable-cache: true
-          cache-dependency-glob: requirements.lock
-
-      # ipopt goes in the same conda transaction as the test tools, so it costs one
-      # solve rather than two. It is added on Linux only. HiGHS cannot express a
-      # nonlinear constraint at all, so without ipopt the second-order cone, the
-      # exact non-linear model and the AC restoration pass are all skipped here,
-      # and the cone is the default. The cone is convex, so ipopt reaching a local
-      # optimum reaches the global one; this tests that those paths still build and
-      # solve, and does not stand in for a conic solver certifying the bound.
-      # Linux only for now because ipopt's convergence depends on how MUMPS was
-      # built, and a platform-dependent NLP is a flaky test waiting to happen.
-      - name: Install dependencies
-        shell: bash -l {0}
-        run: |
-          if [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
-            conda install -y -c conda-forge flake8 pytest pytest-timeout ipopt
-          else
-            conda install -y -c conda-forge flake8 pytest pytest-timeout
-          fi
-          uv pip install --system -r requirements.lock
-          uv pip install --system "highspy==1.15.1"
-          pip install -e .
+          extra: pytest-timeout "highspy==1.15.1"
 
       - name: Report which solvers this runner has
-        shell: bash -l {0}
+        shell: bash
         run: |
           python -c "from pyomo.environ import SolverFactory; \
           print({n: SolverFactory(n).available(exception_flag=False) for n in ('appsi_highs','ipopt','gurobi')})"
 
       - name: Run solve tests (per-test timeout guards a stuck solver)
-        shell: bash -l {0}
-        run: |
-          pytest -vv -m solve --timeout=1800 tests/
+        shell: bash
+        run: pytest -vv -m solve --timeout=1800 tests/
 
-  # Pandas 2 floor: the lock pins pandas 3, but pyproject still supports pandas 2
-  # (>=2.2.2,<4), so nothing would exercise the older end of the range. This job
-  # installs the lock, pins pandas back to the 2.x floor, and runs the unit and
-  # solve tests. One combo is enough: the variable is the pandas version, not the
-  # platform.
-  pandas2:
-    name: pandas 2 floor (unit + solve) - ubuntu-latest / py3.12
+  # The same suite with ipopt. HiGHS cannot express a non-linear constraint, so without
+  # ipopt the second-order cone, the exact non-linear model and the AC restoration pass
+  # are all skipped. The cone is convex, so a local optimum is the global one; this checks
+  # those paths build and solve, and is not a conic solver certifying the bound.
+  #
+  # Linux only: ipopt's convergence depends on how MUMPS was built, and a platform-dependent
+  # NLP is a flaky test waiting to happen. The only job needing conda, hence its own.
+  solve-ipopt:
+    name: solve (full model suite, with ipopt) - ubuntu-latest / py3.12
     runs-on: ubuntu-latest
 
     steps:
@@ -154,17 +104,47 @@ jobs:
           enable-cache: true
           cache-dependency-glob: requirements.lock
 
-      - name: Install dependencies, then pin pandas to the 2.x floor
+      - name: Install dependencies
         shell: bash -l {0}
         run: |
-          conda install -y -c conda-forge flake8 pytest pytest-timeout
+          conda install -y -c conda-forge pytest pytest-timeout ipopt
           uv pip install --system -r requirements.lock
           uv pip install --system "highspy==1.15.1"
           pip install -e .
-          uv pip install --system "pandas>=2.2.2,<3"
+
+      - name: Report which solvers this runner has
+        shell: bash -l {0}
+        run: |
+          python -c "from pyomo.environ import SolverFactory; \
+          print({n: SolverFactory(n).available(exception_flag=False) for n in ('appsi_highs','ipopt','gurobi')})"
+
+      - name: Run solve tests (per-test timeout guards a stuck solver)
+        shell: bash -l {0}
+        run: pytest -vv -m solve --timeout=1800 tests/
+
+  # Pandas 2 floor: the lock pins pandas 3, but pyproject still supports pandas 2
+  # (>=2.2.2,<4), so nothing would exercise the older end of the range. This job
+  # installs the lock, pins pandas back to the 2.x floor, and runs the unit and
+  # solve tests. One combo is enough: the variable is the pandas version, not the
+  # platform.
+  pandas2:
+    name: pandas 2 floor (unit + solve) - ubuntu-latest / py3.12
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ./.github/actions/setup
+        with:
+          python-version: "3.12"
+          extra: pytest-timeout "highspy==1.15.1"
+
+      - name: Pin pandas to the 2.x floor
+        shell: bash
+        run: uv pip install --system "pandas>=2.2.2,<3"
 
       - name: Run unit and solve tests
-        shell: bash -l {0}
+        shell: bash
         run: |
           pytest -vv -m "not solve" tests/
           pytest -vv -m solve --timeout=1800 tests/
