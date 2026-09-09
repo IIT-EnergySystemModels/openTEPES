@@ -47,9 +47,9 @@ def elbow(pts, colour, label=None):
         ax.text(pts[1][0] + 1.5, (pts[1][1] + pts[2][1])/2, label, fontsize=6.3,
                 color=colour, va="center")
 
-band(58, 8, ELEC, "electricity", "always built")
-band(31, 8, H2,   "hydrogen", "built if the case has any hydrogen")
-band(2,  7, HEAT, "heat", "built if the case has heat")
+band(58, 8, ELEC, "electricity", "always enforced")
+band(31, 8, H2,   "hydrogen", "enforced if the case has hydrogen assets")
+band(2,  7, HEAT, "heat", "enforced if the case has heat assets")
 
 XS, W, H = (8, 32, 56, 80), 20, 9
 box(XS[0], 44, W, H, "electrolyser", "power to H$_2$", ELEC)
@@ -66,7 +66,7 @@ arrow(90, 39, 44, H2,   "burns H$_2$")             # balance -> boiler
 elbow([(100 + PAD, 48.5), (107, 48.5), (107, 5.5), (102 + PAD, 5.5)], HEAT, "heat")
 
 box(XS[0], 17, W, H, "store",    "holds H$_2$ between hours", H2)
-box(XS[1], 17, W, H, "demand",   "industrial H$_2$ to serve", H2)
+box(XS[1], 17, W, H, "demand",   "industrial H$_2$ demand", H2)
 box(XS[2], 17, W, H, "unserved / excess", "priced as a penalty", GREY)
 box(XS[3], 17, W, H, "pipeline", "moves H$_2$ between nodes", H2)
 
@@ -77,7 +77,7 @@ arrow(66, 31, 26, GREY, "too little, too much", dashed=True, both=True)
 arrow(90, 31, 26, H2, "to and from", dashed=True, both=True)
 
 ax.text(56, 71, "Hydrogen subsystem in openTEPES", ha="center", fontsize=12, weight="bold")
-ax.text(56, 67.6, "Hydrogen is the only carrier with units that burn it. Leave this balance out and their fuel costs nothing.",
+ax.text(56, 67.6, "Only the hydrogen balance includes consuming units; omitting it leaves their fuel unpriced.",
         ha="center", fontsize=7.2, style="italic", color=GREY)
 fig.savefig("doc/img/HydrogenSubsystem.png", dpi=200, bbox_inches="tight")
 print("wrote doc/img/HydrogenSubsystem.png")
