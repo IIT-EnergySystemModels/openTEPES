@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 400" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif">
+  <style>
+    .bus   { stroke:#1a1a1a; stroke-width:7; stroke-linecap:butt; }
+    .wire  { stroke:#1a1a1a; stroke-width:1.6; fill:none; }
+    .sym   { stroke:#1a1a1a; stroke-width:1.6; fill:#fff; }
+    .gnd   { stroke:#1a1a1a; stroke-width:1.6; }
+    .var   { font-size:13px; fill:#b03030; font-style:italic; }
+    .par   { font-size:13px; fill:#2e5d8a; font-style:italic; }
+    .lbl   { font-size:13px; fill:#1a1a1a; font-weight:600; }
+    .note  { font-size:11.5px; fill:#555; }
+    .flow  { stroke:#b03030; stroke-width:1.6; fill:none; }
+  </style>
+  <defs>
+    <marker id="fa" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#b03030"/>
+    </marker>
+  </defs>
+  <rect width="900" height="400" fill="#fafafa"/>
+
+  <!-- busbars -->
+  <line class="bus" x1="90"  y1="90" x2="90"  y2="230"/>
+  <line class="bus" x1="810" y1="90" x2="810" y2="230"/>
+  <text class="lbl" x="90"  y="76" text-anchor="middle">node i</text>
+  <text class="lbl" x="810" y="76" text-anchor="middle">node j</text>
+  <text class="var" x="90"  y="252" text-anchor="middle">w_i</text>
+  <text class="var" x="90"  y="269" text-anchor="middle">θ_i</text>
+  <text class="var" x="810" y="252" text-anchor="middle">w_j</text>
+  <text class="var" x="810" y="269" text-anchor="middle">θ_j</text>
+
+  <!-- tap changer, then series impedance -->
+  <line class="wire" x1="90" y1="150" x2="215" y2="150"/>
+  <circle class="sym" cx="245" cy="150" r="30"/>
+  <circle class="sym" cx="285" cy="150" r="30"/>
+  <line class="wire" x1="228" y1="120" x2="302" y2="176"/>
+  <text class="par" x="265" y="106" text-anchor="middle">T_ijc</text>
+  <line class="wire" x1="315" y1="150" x2="385" y2="150"/>
+  <rect class="sym" x="385" y="130" width="130" height="40" rx="3"/>
+  <text class="par" x="450" y="155" text-anchor="middle">R_ijc + j X_ijc</text>
+  <line class="wire" x1="515" y1="150" x2="810" y2="150"/>
+
+  <!-- charging susceptance, half at each end -->
+  <line class="gnd" x1="350" y1="150" x2="350" y2="205"/>
+  <line class="gnd" x1="336" y1="205" x2="364" y2="205"/>
+  <line class="gnd" x1="336" y1="213" x2="364" y2="213"/>
+  <line class="gnd" x1="342" y1="228" x2="358" y2="228"/>
+  <text class="par" x="350" y="252" text-anchor="middle">BC_ijc / 2</text>
+  <line class="gnd" x1="560" y1="150" x2="560" y2="205"/>
+  <line class="gnd" x1="546" y1="205" x2="574" y2="205"/>
+  <line class="gnd" x1="546" y1="213" x2="574" y2="213"/>
+  <line class="gnd" x1="552" y1="228" x2="568" y2="228"/>
+  <text class="par" x="560" y="252" text-anchor="middle">BC_ijc / 2</text>
+
+  <!-- flows: sending end into the branch, receiving end out of it -->
+  <line class="flow" x1="120" y1="120" x2="190" y2="120" marker-end="url(#fa)"/>
+  <text class="var" x="155" y="112" text-anchor="middle">f_ijc , q_ijc</text>
+  <line class="flow" x1="780" y1="120" x2="710" y2="120" marker-end="url(#fa)"/>
+  <text class="var" x="745" y="112" text-anchor="middle">f'_ijc , q'_ijc</text>
+  <text class="var" x="640" y="140" text-anchor="middle">cu_ijc</text>
+
+  <text class="note" x="450" y="300" text-anchor="middle">The series impedance sees T_ijc times the sending voltage.</text>
+  <text class="note" x="450" y="320" text-anchor="middle">Sending and receiving flows are separate variables. Their sum is the ohmic loss.</text>
+  <text class="note" x="450" y="344" text-anchor="middle">V_i V_j sin(θ_i − θ_j) = X_ijc f_ijc − R_ijc q_ijc</text>
+  <text class="note" x="450" y="372" text-anchor="middle" fill="#2e5d8a">w squared voltage magnitude · cu squared current magnitude · parameters blue, variables red</text>
+</svg>

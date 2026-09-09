@@ -1,0 +1,3 @@
+Shunt,Node,InitialPeriod,FinalPeriod,Gshb,Bshb,FixedInvestmentCost,FixedChargeRate,BinaryInvestment,InvestmentLo,InvestmentUp
+Reactor_1,Node_1,2020,2050,0.0,-0.15,0.0,0.0,0,0.0,0.0
+Capacitor_1,Node_2,2020,2050,0.0,0.3,2.0,0.06,1,0.0,1.0

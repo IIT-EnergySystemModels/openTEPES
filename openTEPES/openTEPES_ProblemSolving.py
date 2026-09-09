@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 16, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 09, 2026
 openTEPES.openTEPES_ProblemSolving — per-stage solve orchestrator.
 
 Composes the three Layer 5.a primitives:
@@ -49,7 +49,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
 
     # ---- Set up solver (persistent or one-shot) ----
     Solver = setup_solver(OptModel, SolverName, FileName, ncall, mTEPES)
-    solver_options = apply_solver_options(Solver, SolverName, FileName, ncall)
+    solver_options = apply_solver_options(Solver, SolverName, FileName, ncall, mTEPES)
 
     # ---- Decide whether to attach the dual Suffix before the initial solve ----
     # Only a pure-LP model can return duals from its first solve, so the Suffix is
@@ -146,6 +146,9 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
                 print('  Total heat pipe   investment cost [MEUR] ', mTEPES.pDiscountedWeight[pp] * sum(mTEPES.pHeatPipeFixedCost[ni,nf,cc]   * OptModel.vHeatPipeInvest  [pp,ni,nf,cc]() for ni,nf,cc in mTEPES.hc if (pp,ni,nf,cc) in mTEPES.phc))
             else:
                 print('  Total heat pipe   investment cost [MEUR] ', 0.0)
+            if mTEPES.pIndACPowerFlow() and (mTEPES.shc or mTEPES.sqc):
+                print('  Total reactive    investment cost [MEUR] ', mTEPES.pDiscountedWeight[pp] * (sum(mTEPES.pShuntFixedCost[sh] * OptModel.vShuntInvest[pp,sh]() for sh in mTEPES.shc if (pp,sh) in mTEPES.pshc) +
+                                                                                                    sum(mTEPES.pSynchFixedCost[sq] * OptModel.vSynchInvest[pp,sq]() for sq in mTEPES.sqc if (pp,sq) in mTEPES.psqc)))
             print    ('  Total generation  operation  cost [MEUR] ',                                       sum(pScenFactor         [pp,scc  ] * OptModel.vTotalGCost      [pp,scc,n    ]() for n        in mTEPES.n ))
             print    ('  Total consumption operation  cost [MEUR] ',                                       sum(pScenFactor         [pp,scc  ] * OptModel.vTotalCCost      [pp,scc,n    ]() for n        in mTEPES.n ))
             print    ('  Total emission               cost [MEUR] ',                                       sum(pScenFactor         [pp,scc  ] * OptModel.vTotalECost      [pp,scc,n    ]() for n        in mTEPES.n ))
@@ -175,6 +178,9 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
             print    ('  Total heat pipe   investment cost [MEUR] ', mTEPES.pDiscountedWeight[p]  * sum(mTEPES.pHeatPipeFixedCost[ni,nf,cc]   * OptModel.vHeatPipeInvest  [p,ni,nf,cc  ]() for ni,nf,cc in mTEPES.hc if (p,ni,nf,cc) in mTEPES.phc))
         else:
             print    ('  Total heat pipe   investment cost [MEUR] ', 0.0)
+        if mTEPES.pIndACPowerFlow() and (mTEPES.shc or mTEPES.sqc):
+            print    ('  Total reactive    investment cost [MEUR] ', mTEPES.pDiscountedWeight[p]  * (sum(mTEPES.pShuntFixedCost[sh] * OptModel.vShuntInvest[p,sh]() for sh in mTEPES.shc if (p,sh) in mTEPES.pshc) +
+                                                                                                    sum(mTEPES.pSynchFixedCost[sq] * OptModel.vSynchInvest[p,sq]() for sq in mTEPES.sqc if (p,sq) in mTEPES.psqc)))
         print        ('  Total generation  operation  cost [MEUR] ',                                       sum(pScenFactor         [p,sc    ] * OptModel.vTotalGCost      [p,sc,n      ]() for n        in mTEPES.n ))
         print        ('  Total consumption operation  cost [MEUR] ',                                       sum(pScenFactor         [p,sc    ] * OptModel.vTotalCCost      [p,sc,n      ]() for n        in mTEPES.n ))
         print        ('  Total emission               cost [MEUR] ',                                       sum(pScenFactor         [p,sc    ] * OptModel.vTotalECost      [p,sc,n      ]() for n        in mTEPES.n ))

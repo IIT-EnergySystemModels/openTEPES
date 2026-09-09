@@ -5,7 +5,7 @@ carrier is off, eBalanceH2 is never built, and a hydrogen-fired generator then p
 without its fuel being charged anywhere: the term that charges it lives inside that balance.
 
 An electrolyser is a different matter. Without the carrier it is a flexible load whose hydrogen
-leaves the model boundary, as cases/9n_H2 and cases/RTS24 rely on, so it must not bring the
+leaves the model boundary, as cases/9n_ELZ and cases/RTS24 rely on, so it must not bring the
 carrier in.
 """
 import pandas as pd

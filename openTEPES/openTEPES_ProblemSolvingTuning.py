@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - July 05, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 09, 2026
 
 openTEPES.openTEPES_ProblemSolvingTuning — per-solver option presets for the initial solve and the fix-and-resolve LP pass.
 
@@ -47,7 +47,7 @@ def _crossover() -> int:
         return -1
 
 
-def apply_solver_options(Solver, SolverName: str, FileName: str, ncall: int):
+def apply_solver_options(Solver, SolverName: str, FileName: str, ncall: int, mTEPES=None):
     """Apply initial-solve options to ``Solver`` based on ``SolverName``. Returns a GAMS ``solver_options`` set
     if applicable; ``None`` otherwise (for Gurobi/CPLEX/HiGHS the options are set on ``Solver.options``)."""
     if SolverName == "gurobi" or SolverName == "gurobi_direct" or SolverName == "appsi_gurobi":
@@ -60,6 +60,11 @@ def apply_solver_options(Solver, SolverName: str, FileName: str, ncall: int):
         Solver.options["MIPGap"]          = 0.01
         Solver.options["Threads"]         = _threads()
         Solver.options["TimeLimit"]       = 36000
+        # The bus-injection formulations carry a second-order cone per branch and load level, and Gurobi's dual reductions in presolve break them:
+        # barrier stops with "numerical trouble" or reports the model as possibly infeasible, on a model that is convex and feasible. Turning the
+        # reductions off costs a little presolve strength and makes the difference between a solve and no solve. Branch flow does not need it.
+        if mTEPES is not None and getattr(mTEPES, 'pIndACPowerFlow', None) is not None and mTEPES.pIndACPowerFlow() in (2, 3):
+            Solver.options["DualReductions"] = 0
         Solver.options["IterationLimit"]  = 36000000
         # Solver.options["SolutionTarget"] = 1                                                 # optimal solution with or without basic solutions
         # Solver.options["MIPFocus"]      = 3

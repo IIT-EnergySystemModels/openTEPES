@@ -46,8 +46,9 @@ def test_h2_reliability_does_not_count_the_hours_twice():
 def test_electricity_term_does_use_the_duration():
     # the contrast is the point: vENS is a power, so it needs the hours as well as the weight
     obj = (SRC.parent / "openTEPES_ModelFormulationObjective.py").read_text()
-    i = obj.index("vTotalRElecCost[p,sc,n] ==")
-    assert "pLoadLevelDuration" in obj[i:obj.index("\n", i)], (
+    i = obj.index("def eTotalRElecCost(")
+    body = obj[i:obj.index("setattr", i)]
+    assert "pLoadLevelDuration" in body, (
         "vENS is in MW, so the electricity reliability cost must carry pLoadLevelDuration"
     )
 

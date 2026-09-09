@@ -174,7 +174,7 @@ def case_7d_binary(request, tmp_path):
 #   sSEP        ✓             ✓ (H2 demand+network+9 H2 gens)  ✓ (7 reservoirs + pumped hydro)  ramps+min-time
 #   9n_PTDF     ✓ losses                                       ✓ (multi-level headers)
 #   9n_heat     ✓ losses                                              ✓ (pIndHeat=1)
-#   9n_H2       ✓ losses     ✓ (2 electrolyzers as ESS with energy outflows + storage; pIndHydrogen=0)
+#   9n_ELZ       ✓ losses     ✓ (2 electrolyzers as ESS with energy outflows + storage; pIndHydrogen=0)
 #   NG2030      ✓ losses                                                                                ✓
 #   RTS-GMLC    ✓                                                                  ramps+min-time
 #
@@ -198,11 +198,11 @@ def case_7d_binary(request, tmp_path):
     ("9n_PTDF",   500.1114692260149),
     # 9n_heat exercises the heat-sector code path (pIndHeat=1). Added in PR #121.
     ("9n_heat",   234.5040485349081),
-    # 9n_H2 exercises the documented electrolyzer archetype on the minimal 9-node system: an ESS with electric
+    # 9n_ELZ exercises the documented electrolyzer archetype on the minimal 9-node system: an ESS with electric
     # energy outflows, a storage buffer and a weekly outflow cycle. The hydrogen demand is expressed as the
     # electricity the electrolyzers must draw to make it, so the H2 network sector is off (pIndHydrogen=0) and
     # the hydrogen network path is covered by sSEP. Added in PR #128, changed to this archetype later.
-    ("9n_H2",     242.89492215294186),
+    ("9n_ELZ",     242.89492215294186),
     # NG2030 — Nigeria 2030 baseline, multi-area state-level network (~37 nodes). Single-node mode active.
     ("NG2030",    1041.3415582681946),
     # RTS-GMLC — single-stage variant of the GMLC reference system; exercises ramp and min-up/down-time binaries.
@@ -226,9 +226,9 @@ def test_openTEPES_run(case_7d_system, expected_cost):
     np.testing.assert_approx_equal(actual_cost, expected_cost)
 
 
-# === 9n_H2: the electrolyzer archetype ===
+# === 9n_ELZ: the electrolyzer archetype ===
 #
-# 9n_H2 models its two electrolyzers the way the documentation defines the "Electrolyzer (ELZ)" unit type: an ESS
+# 9n_ELZ models its two electrolyzers the way the documentation defines the "Electrolyzer (ELZ)" unit type: an ESS
 # with electric energy outflows, a storage buffer, and an outflow cycle longer than one hour. The hydrogen demand
 # is expressed as the electricity the electrolyzers must draw to make it, so the H2 network sector is off here and
 # the hydrogen network path is covered by sSEP instead.
@@ -244,8 +244,8 @@ def _electrolyzer_names(mTEPES):
 
 
 @pytest.mark.solve
-@pytest.mark.parametrize("case_7d_system", ["9n_H2"], indirect=["case_7d_system"])
-def test_9n_H2_outflow_constraint_is_built(case_7d_system):
+@pytest.mark.parametrize("case_7d_system", ["9n_ELZ"], indirect=["case_7d_system"])
+def test_9n_ELZ_outflow_constraint_is_built(case_7d_system):
     """
     The energy-outflow constraint must exist.
 
@@ -270,8 +270,8 @@ def test_9n_H2_outflow_constraint_is_built(case_7d_system):
 
 
 @pytest.mark.solve
-@pytest.mark.parametrize("case_7d_system", ["9n_H2"], indirect=["case_7d_system"])
-def test_9n_H2_energy_outflows_are_met(case_7d_system):
+@pytest.mark.parametrize("case_7d_system", ["9n_ELZ"], indirect=["case_7d_system"])
+def test_9n_ELZ_energy_outflows_are_met(case_7d_system):
     """Over the horizon, each electrolyzer withdraws exactly the energy the case asks it to withdraw."""
     mTEPES = openTEPES_run(**case_7d_system)
 
@@ -289,8 +289,8 @@ def test_9n_H2_energy_outflows_are_met(case_7d_system):
 
 
 @pytest.mark.solve
-@pytest.mark.parametrize("case_7d_system", ["9n_H2"], indirect=["case_7d_system"])
-def test_9n_H2_electrolyzer_consumption_is_flexible(case_7d_system):
+@pytest.mark.parametrize("case_7d_system", ["9n_ELZ"], indirect=["case_7d_system"])
+def test_9n_ELZ_electrolyzer_consumption_is_flexible(case_7d_system):
     """
     The electrolyzer must be free to choose when it draws its electricity, and must stay inside its buffer.
 
@@ -328,8 +328,8 @@ def test_9n_H2_electrolyzer_consumption_is_flexible(case_7d_system):
 
 
 @pytest.mark.solve
-@pytest.mark.parametrize("case_7d_system", ["9n_H2"], indirect=["case_7d_system"])
-def test_9n_H2_electrolyzers_do_not_spill(case_7d_system):
+@pytest.mark.parametrize("case_7d_system", ["9n_ELZ"], indirect=["case_7d_system"])
+def test_9n_ELZ_electrolyzers_do_not_spill(case_7d_system):
     """
     An electrolyzer must not spill the electricity it consumes.
 
@@ -847,6 +847,51 @@ def test_runner_output_format_and_aggregate(case_7d_system, tmp_path):
     finally:
         con.close()
     assert labels == ["c1", "c2"]
+
+
+@pytest.mark.solve
+def test_ac_case_solves_and_writes_its_results(tmp_path):
+    """One AC case end to end on the solver CI actually has.
+
+    Until this, no test in this file touched the AC model, so the whole end-to-end layer -- the writers, the output
+    formats, the economic summary -- had never seen an AC run. That is how a crash in the AC result writer reached a
+    pull request: the AC suite builds models and solves small ones, but nothing exercised this path.
+
+    The piecewise variant is the one HiGHS can take. IndACModelType 0 is a second-order cone and 2 is non-linear, and
+    HiGHS is an LP/MIP solver: it rejects both with 'does not support expressions of degree None'. A week of RTS-GMLC
+    was measured for this slot and takes 9189 s, two and a half hours, against a thirty minute per-test timeout and on a
+    machine faster than a runner. The nine-bus case at 24 hours takes about a second and covers the same writers.
+    """
+    case_name = "9n_AC"
+    case_dir  = _private_case_copy(case_name, tmp_path)
+
+    pDur = os.path.join(case_dir, f"oT_Data_Duration_{case_name}.csv")
+    dur = pd.read_csv(pDur)
+    dur.loc[24:, "Duration"] = 0
+    dur.to_csv(pDur, index=False)
+
+    # the annual RES energy target does not survive truncation: it would exceed the demand of the hours that remain
+    pRes = os.path.join(case_dir, f"oT_Data_RESEnergy_{case_name}.csv")
+    res = pd.read_csv(pRes)
+    for col in res.columns[2:]:
+        res[col] = 0.0
+    res.to_csv(pRes, index=False)
+
+    pOpt = os.path.join(case_dir, f"oT_Data_Option_{case_name}.csv")
+    opt = pd.read_csv(pOpt)
+    opt["IndACModelType"] = 1
+    opt.to_csv(pOpt, index=False)
+
+    # the fourth argument is pIndOutputResults: the writers are what this test is for, so they have to run
+    mTEPES = openTEPES_run(str(tmp_path), case_name, "highs", 1, 0)
+
+    assert mTEPES.pIndACPowerFlow() == 1
+    assert mTEPES.vTotalSCost() == pytest.approx(0.5297399465, rel=1e-6)
+
+    # the writers are the point of this test, so check they produced the AC results rather than only the cost
+    written = [f for f in os.listdir(case_dir) if f.startswith("oT_Result_")]
+    for expected in ("NetworkVoltageMagnitude", "NetworkFlowReactiveFrw", "ACPowerFlowResidual"):
+        assert any(expected in f for f in written), f"the AC writers did not produce {expected}"
 
 
 @pytest.mark.solve
