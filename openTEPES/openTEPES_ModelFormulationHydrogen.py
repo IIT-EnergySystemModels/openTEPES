@@ -89,8 +89,7 @@ def NetworkH2OperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, 
     setattr(OptModel, f'eTotalH2SrcCost_{p}_{sc}_{st}', Constraint(mTEPES.n, rule=eTotalH2SrcCost, doc='hydrogen source cost [MEUR]'))
 
     def eTotalRH2Cost(OptModel,n):
-        # guard matches eBalanceH2, else a node carries a cost-free unserved variable.
-        # Stage weight alone: vH2NS is already tonnes, unlike vENS which is a power.
+        # guard matches eBalanceH2. Stage weight alone: vH2NS is tonnes, vENS is a power.
         return OptModel.vTotalRH2Cost[p,sc,n] == mTEPES.pLoadLevelWeight[p,sc,n]() * sum(mTEPES.pH2NSCost * OptModel.vH2NS[p,sc,n,nd] + mTEPES.pH2ExcCost * OptModel.vH2Exc[p,sc,n,nd] for nd in mTEPES.nd if len(l2n[nd]) + len(b2n[nd]) + len(g2n[nd]) + len(s2nd[nd]) + len(r2n[nd]) + len(lout[nd]) + len(lin[nd]))
     setattr(OptModel, f'eTotalRH2Cost_{p}_{sc}_{st}', Constraint(mTEPES.n, rule=eTotalRH2Cost, doc='H2 system reliability cost [MEUR]'))
 

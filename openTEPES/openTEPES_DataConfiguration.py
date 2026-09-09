@@ -278,9 +278,8 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     CreateInstrumentalSets(mTEPES, par['pIndHydroTopology'], par['pIndHydrogen'], par['pIndHeat'], par['pIndPTDF'])
 
     if par['pIndHydrogen']:
-        # An element that cannot act is not an error, but it is usually a case-building mistake.
-        # Storage is neither source nor sink: eH2IniFinInventory returns it to its starting level.
-        # System-wide, not per node, so a pipe-connected neighbour counts.
+        # Inert elements are legal but usually a case-building mistake. Storage is neither source
+        # nor sink, since eH2IniFinInventory returns it to its start. System-wide, not per node.
         _has_source = bool(mTEPES.el) or bool(mTEPES.sr) or bool(mTEPES.pa)
         _has_sink   = bool(mTEPES.h2p) or bool(mTEPES.hh) or bool(mTEPES.pa) or float(par['pDemandH2'].sum().sum()) > 0.0
         for _what, _present, _needs, _consequence in (
@@ -1072,8 +1071,7 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
 
     mTEPES.pENSCost              = Param(initialize=par['pENSCost']             , within=NonNegativeReals,    doc='ENS cost'                                           , mutable=True)
     mTEPES.pH2NSCost             = Param(initialize=par['pHNSCost']             , within=NonNegativeReals,    doc='HNS cost'                                           )
-    # Optional H2ExcCost in oT_Data_Parameter. Absent, it stays at half the not-served cost,
-    # which is the value every case carried before the column existed.
+    # Optional H2ExcCost. Absent, it stays at half the not-served cost, as every case had.
     _h2_exc = par.get('pH2ExcCost')
     if _h2_exc is None or _h2_exc != _h2_exc:            # absent, or the column present and the cell blank
         _h2_exc = par['pHNSCost']*0.5

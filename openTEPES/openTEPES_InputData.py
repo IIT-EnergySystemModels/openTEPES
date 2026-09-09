@@ -125,11 +125,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         if key not in par.keys():
             par[key] = 0
 
-    # Optional sectors are switched on by their own files. Hydrogen consumers are the exception:
-    # their fuel is charged in eBalanceH2 alone, so with no hydrogen file they burn nothing. Either
-    # consumer, a hydrogen-fired generator or a hydrogen boiler, switches the carrier on. The heat
-    # balance carries producers only, and hydro without the topology runs on the ESS balance, so
-    # neither needs this. Electrolysers produce rather than consume and do not switch it on.
+    # A hydrogen consumer, a turbine or a boiler, is charged for fuel in eBalanceH2 alone, so
+    # either switches the carrier on. Electrolysers produce rather than consume and do not.
     _gen = dfs.get('dfGeneration')
     def _units(col):
         return int((_gen[col] > 0.0).sum()) if (_gen is not None and col in _gen.columns) else 0
@@ -141,29 +138,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
         print(f'WARNING: neither oT_Data_DemandHydrogen nor oT_Data_NetworkHydrogen is present, but '
               f'the Generation table defines {_named}. The hydrogen carrier is enabled so their fuel '
               f'is charged; without it they burn nothing.')
-    # generator and a hydrogen boiler, and either turns the carrier on by itself.
-    #
-    # No other sector needs this. The heat balance carries producers alone, so heat off leaves a unit
-    # with nowhere to send its output rather than a free input, and its own fuel is charged on the
-    # electricity or the hydrogen balance. Hydro without the topology still runs through the ESS
-    # energy balance.
-    #
-    # Electrolysers deliberately do not switch it on. They produce hydrogen rather than consume it,
-    # and without the carrier they are flexible loads whose output leaves the model boundary, which
-    # cases/9n_H2 and cases/RTS24 both rely on.
-    _gen = dfs.get('dfGeneration')
-    def _units(col):
-        return int((_gen[col] > 0.0).sum()) if (_gen is not None and col in _gen.columns) else 0
-    _consumers = {'hydrogen-fired generator': _units('ProductionFunctionH2ToPower'),
-                  'hydrogen boiler'         : _units('ProductionFunctionH2ToHeat')}
-    if not par['pIndHydrogen'] and any(_consumers.values()):
-        par['pIndHydrogen'] = 1
-        _named = ', '.join(f'{v} {k}(s)' for k, v in _consumers.items() if v)
-        print(f'WARNING: neither oT_Data_DemandHydrogen nor oT_Data_NetworkHydrogen is present, but '
-              f'the Generation table defines {_named}. The hydrogen carrier is enabled so their fuel '
-              f'is charged; without it they burn nothing.')
-        # Hydrogen beyond what the consumers burn leaves the model boundary, as it did with the
-        # carrier off, so excess is free unless the case prices it.
+        # Hydrogen past the consumers leaves the boundary, as before, so excess is free.
         par.setdefault('pH2ExcCost', 0.0)
         # Both tables are absent; the frames must still exist for the readers below.
         if 'dfDemandHydrogen' not in dfs:
@@ -431,10 +406,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
     par['pProductionFunctionH2ToHeat'] = dfs['dfGeneration']  ['ProductionFunctionH2ToHeat'] * 1e-3
     # hydrogen-fired generation. Optional column: without it the hg set is empty
     # no 1e-3 here: GWh x gH2/kWh gives tonnes directly, so the term is already in tH2
-    # hydrogen made without electricity: reforming, and imports landing at a node.
-    # MaximumProductionH2 in tH2/h, as the balance is written, so no scaling on the way in.
-    # ProductionCostH2 in MEUR/tH2 carries fuel, variable O&M and the carbon price together.
-    # ProductionEmissionH2 in tCO2/tH2 is carried for reporting.
+    # hydrogen without electricity: reforming and imports. tH2/h, MEUR/tH2, tCO2/tH2, unscaled.
+    # ProductionCostH2 carries fuel, O&M and carbon; ProductionEmissionH2 is reported only.
     for _c, _d in (('MaximumProductionH2', 0.0), ('ProductionCostH2', 0.0), ('ProductionEmissionH2', 0.0)):
         par['p' + _c] = (dfs['dfGeneration'][_c] if _c in dfs['dfGeneration'].columns
                          else pd.Series(_d, index=dfs['dfGeneration'].index)).fillna(_d)
@@ -443,8 +416,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole):
                                            if 'ProductionFunctionH2ToPower' in dfs['dfGeneration'].columns
                                            else pd.Series(0.0, index=dfs['dfGeneration'].index)).fillna(0.0)                                                      # production function of a boiler using H2     [gH2/kWh]
 
-    # hydrogen storage, so the balance need not clear within the hour.
-    # All three columns are optional: without MaximumStorageH2 the hs set is empty
+    # hydrogen storage. Optional columns: without MaximumStorageH2 the hs set is empty
     def _optional_gen_col(name, default=0.0):
         return (dfs['dfGeneration'][name] if name in dfs['dfGeneration'].columns
                 else pd.Series(default, index=dfs['dfGeneration'].index))
