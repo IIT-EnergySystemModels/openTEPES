@@ -1001,3 +1001,51 @@ def test_9nH2_turbine_is_charged_for_its_fuel(case_7d_system):
         if mTEPES.pProductionFunctionH2ToPower[h2p] > 0.0
     ]
     assert fuelled, "no hydrogen-fired generator carries a production function"
+
+
+@pytest.mark.solve
+@pytest.mark.parametrize("case_7d_system", ["9nH2"], indirect=["case_7d_system"])
+def test_9nH2_hydrogen_demand_is_actually_served(case_7d_system):
+    """The case has to be able to make the hydrogen it asks for.
+
+    It could not: a 200 MW electrolyser at 49.02 kWh/kgH2 makes 4.08 tH2/h against a 20 tH2/h
+    demand, so the HNS penalty was the whole objective. Every other test here is structural and
+    passed throughout.
+    """
+    mTEPES = openTEPES_run(**case_7d_system)
+
+    pDur = lambda p, sc, n: mTEPES.pDuration[p, sc, n]()
+    pDemand = sum(pDur(p, sc, n) * mTEPES.pDemandH2[p, sc, n, nd] for p, sc, n, nd in mTEPES.psnnd)
+    pNotServed = sum(mTEPES.vH2NS[k]() or 0.0 for k in mTEPES.vH2NS)
+
+    assert pDemand > 0.0, "9nH2 should carry a hydrogen demand"
+    assert pNotServed == pytest.approx(0.0, abs=1e-6), (
+        f"{pNotServed:.1f} of {pDemand:.1f} tH2 unserved; the electrolyser cannot meet the demand")
+
+
+@pytest.mark.solve
+@pytest.mark.parametrize("case_7d_system", ["9nH2x"], indirect=["case_7d_system"])
+def test_9nH2x_solves_and_closes_its_hydrogen_balance(case_7d_system):
+    """Nothing solved 9nH2x, so it could have been broken with no sign of it.
+
+    The hydrogen side is idle: no demand, and a 41 % round trip never pays. That is an economic
+    outcome and is not pinned. Pinned instead: the case solves and its hydrogen balance closes.
+    """
+    mTEPES = openTEPES_run(**case_7d_system)
+
+    pDur = lambda p, sc, n: mTEPES.pDuration[p, sc, n]()
+    pMade = sum(pDur(p, sc, n) * mTEPES.vESSTotalCharge[p, sc, n, el]() / mTEPES.pProductionFunctionH2[el]
+                for p, sc, n in mTEPES.psn for el in mTEPES.el if (p, el) in mTEPES.peh)
+    pBurnt = sum(pDur(p, sc, n) * mTEPES.vTotalOutput[p, sc, n, h2p]() * mTEPES.pProductionFunctionH2ToPower[h2p]
+                 for p, sc, n in mTEPES.psn for h2p in mTEPES.h2p if (p, h2p) in mTEPES.pg)
+    # a variable the solve never touched reports None rather than 0.0
+    pVal = lambda v, k: v[k]() or 0.0
+    pIn = sum(pVal(mTEPES.vH2StorCharge, k)    for k in mTEPES.vH2StorCharge)
+    pOut = sum(pVal(mTEPES.vH2StorDischarge, k) for k in mTEPES.vH2StorDischarge)
+    pDemand = sum(pDur(p, sc, n) * mTEPES.pDemandH2[p, sc, n, nd] for p, sc, n, nd in mTEPES.psnnd)
+    pNotServed = sum(pVal(mTEPES.vH2NS, k)  for k in mTEPES.vH2NS)
+    pExcess = sum(pVal(mTEPES.vH2Exc, k) for k in mTEPES.vH2Exc)
+
+    assert pMade - pBurnt - pIn + pOut + pNotServed - pExcess - pDemand == pytest.approx(0.0, abs=1e-6), (
+        "the hydrogen balance does not close over the horizon")
+    assert pIn == pytest.approx(pOut, abs=1e-6), "the store does not return to its initial level"
