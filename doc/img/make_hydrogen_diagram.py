@@ -11,7 +11,7 @@ ELEC, H2, HEAT, GREY, BAL = "#0072B2", "#009E73", "#D55E00", "#666666", "#F4F4F4
 PAD = 0.45
 
 fig, ax = plt.subplots(figsize=(9.6, 5.8))
-ax.set_xlim(0, 112); ax.set_ylim(0, 74); ax.axis("off")
+ax.set_xlim(0, 112); ax.set_ylim(0, 72); ax.axis("off")
 
 def band(y, h, colour, title, sub):
     ax.add_patch(FancyBboxPatch((2, y), 100, h, boxstyle=f"round,pad={PAD}",
@@ -70,14 +70,12 @@ box(XS[1], 17, W, H, "demand",   "industrial H$_2$ demand", H2)
 box(XS[2], 17, W, H, "unserved / excess", "priced as a penalty", GREY)
 box(XS[3], 17, W, H, "pipeline", "moves H$_2$ between nodes", H2)
 
-arrow(14, 31, 26, H2, "fill", side=-1)
-arrow(22, 26, 31, H2, "empty")
-arrow(42, 31, 26, H2, "serves")
+arrow(14, 31, 26, H2, "charge", side=-1)
+arrow(22, 26, 31, H2, "discharge")
+arrow(42, 31, 26, H2, "meets")
 arrow(66, 31, 26, GREY, "too little, too much", dashed=True, both=True)
 arrow(90, 31, 26, H2, "to and from", dashed=True, both=True)
 
-ax.text(56, 71, "Hydrogen subsystem in openTEPES", ha="center", fontsize=12, weight="bold")
-ax.text(56, 67.6, "Only the hydrogen balance includes consuming units; omitting it leaves their fuel unpriced.",
-        ha="center", fontsize=7.2, style="italic", color=GREY)
+ax.text(56, 69, "Hydrogen subsystem in openTEPES", ha="center", fontsize=12, weight="bold")
 fig.savefig("doc/img/HydrogenSubsystem.png", dpi=200, bbox_inches="tight")
 print("wrote doc/img/HydrogenSubsystem.png")
