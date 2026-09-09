@@ -196,7 +196,8 @@ A description of the system parameters included in the file `oT_Data_Parameter.c
 | Item                | Description                                                                                                                                                                                                                                                     |        |
 | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
 | ENSCost             | Cost of energy not served (ENS). Cost of load curtailment. Value of Lost Load (VoLL)                                                                                                                                                                            | €/MWh  |
-| HNSCost             | Cost of hydrogen not served (HNS). The cost of the H2 surplus is **half** of this value                                                                                                                                                                         | €/kgH2 |
+| HNSCost             | Cost of hydrogen not served (HNS)                                                                                                                                                                                                                               | €/kgH2 |
+| H2ExcCost           | Cost of hydrogen in excess of the balance. Optional; absent, it is half of HNSCost. Like HNSCost this is a penalty on a slack variable, not a disposal or export price, so the default is far above the cost of producing the hydrogen                            | €/kgH2 |
 | HTNSCost            | Cost of heat not served (HTNS)                                                                                                                                                                                                                                  | €/MWh  |
 | CO2Cost             | Cost of CO2 emissions                                                                                                                                                                                                                                           | €/tCO2 |
 | UpReserveActivation | Upward reserve activation (proportion of upward operating reserve deployed to produce energy, e.g., 0.15)                                                                                                                                                       | p.u.   |
@@ -454,6 +455,14 @@ A description of the data included for each (electricity and heat) generating un
 | ProductionFunctionH2       | Production function from electricity (numerator) to hydrogen (denominator) (only used for electrolyzers)                                                                                                                                                                                                               | kWh/kgH2                           |
 | ProductionFunctionHeat     | Production function from electricity (numerator) to heat (denominator) (only used for heat pumps or electric boilers)                                                                                                                                                                                                  | kWh/kWh                            |
 | ProductionFunctionH2ToHeat | Production function from hydrogen (numerator) to heat (denominator) (only used for hydrogen heater, which produces heat by burning hydrogen)                                                                                                                                                                           | kgH2/kWh                           |
+| ProductionFunctionH2ToPower | Production function from hydrogen (numerator) to power (denominator) (only used for a hydrogen-fired generator, which produces electricity by burning hydrogen) Note the unit: unlike ProductionFunctionH2ToHeat, which is read in kgH2/kWh, this one is read in grams and is not rescaled | gH2/kWh                            |
+| MaximumProductionH2        | Maximum hydrogen produced without consuming electricity, by a reformer or an import terminal. A unit with this >0 forms the hydrogen source set                                                                                            | tH2/h                              |
+| ProductionCostH2           | Cost of that hydrogen, carrying fuel, variable O&M and the carbon price together Note the unit: unlike HNSCost and H2ExcCost, which are read in €/kgH2, this one is read in M€/tH2 and is not rescaled                                    | M€/tH2                             |
+| ProductionEmissionH2       | CO2 released per tonne of that hydrogen. Reported only: it is not charged in the objective and enters no emission limit                                                                                                                    | tCO2/tH2                           |
+| MaximumStorageH2           | Maximum hydrogen a store can hold, e.g. a salt cavern. A unit with this >0 forms the hydrogen storage set                                                                                                                                  | tH2                                |
+| MaximumChargeH2            | Maximum rate at which that store can be filled                                                                                                                                                                                             | tH2/h                              |
+| InitialStorageH2           | Hydrogen held at the first load level. The store returns to this level at the end of the horizon                                                                                                                                           | tH2                                |
+| StorageTypeH2              | Storage cycle of the hydrogen store: hourly, daily, weekly, monthly or yearly                                                                                                                                                              |                                    |
 | Availability               | Unit availability for area adequacy reserve margin (also called de-rating factor or capacity credit (CC) or Firm Capacity Equivalent (FCE) or Effective Load-Carrying Capability (ELCC))                                                                                                                               | p.u.                               |
 | Inertia                    | Unit inertia constant                                                                                                                                                                                                                                                                                                  | s                                  |
 | EFOR                       | Equivalent Forced Outage Rate (probability that a generating unit will be unavailable due to forced outages during a given period)                                                                                                                                                                                     | p.u.                               |
@@ -497,6 +506,9 @@ The main characteristics that define each type of generator are the following:
 | Data center flexibility             | ESS with MaximumCharge >0 and MaximumStorage >0 (usually, StorageType daily)                                                   | *es*     |
 | Electric vehicle (EV)               | ESS with electric energy outflows                                                                                              | *es*     |
 | Electrolyzer (ELZ)                  | ESS with electric energy outflows and ProductionFunctionH2 >0 and ProductionFunctionHeat =0 and ProductionFunctionHydro =0     | *el*     |
+| Hydrogen-fired generator (H2P)       | It has ProductionFunctionH2ToPower >0                                                                                    | *h2p*    |
+| Hydrogen storage                     | It has MaximumStorageH2 >0. Scoped to any unit, not only generators                                                      | *hs*     |
+| Hydrogen source                      | It has MaximumProductionH2 >0. Scoped to any unit, not only generators                                                   | *sr*     |
 | Heat pump or electric boiler        | ESS with ProductionFunctionHeat >0 and ProductionFunctionH2 =0 and ProductionFunctionHydro =0                                  | *hp*     |
 | CHP or fuel heating unit            | It has RatedMaxPowerElec >0 and RatedMaxPowerHeat >0 and ProductionFunctionHeat =0                                             | *ch*     |
 | Fuel heating unit, fuel boiler      | It has RatedMaxPowerElec =0 and RatedMaxPowerHeat >0 and ProductionFunctionHeat =0                                             | *bo*     |
@@ -556,9 +568,17 @@ investment or retirement on a candidate, set the corresponding upper bound (`Inv
 is internally converted to 0. A blank cell or 0 in these columns is interpreted as "no upper bound" (full `p.u.` allowed) and lets the candidate be freely
 chosen by the optimization.
 
-A hydrogen import can be represented with an electric generator whose variable cost equals the import cost and an electrolyzer whose production function
-ProductionFunctionH2 equals 1. This generator must be located in an isolated electricity network (from the main one) and the electrolyzer must be located in a
-node linking this isolated electricity network and the hydrogen network.
+A hydrogen source, a reformer or an import terminal, is a unit with MaximumProductionH2 above zero. It makes hydrogen at ProductionCostH2 without drawing
+electricity, so the earlier workaround of an isolated electricity network feeding an electrolyzer is no longer needed.
+
+The hydrogen subsystem is summarised below. A turbine and a boiler burn hydrogen, and they are charged for it in the hydrogen balance alone, so either one
+switches the carrier on by itself.
+
+```{image} ../img/HydrogenSubsystem.png
+:alt: Hydrogen subsystem in openTEPES
+:align: center
+:scale: 55%
+```
 
 A summary of the main characteristics of the different types of hydro and ESS is shown in the following figure:
 

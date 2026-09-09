@@ -1,0 +1,1 @@
+InitialNode,FinalNode,Circuit,LineType,Switching,InitialPeriod,FinalPeriod,Voltage,Length,LossFactor,Reactance,TTC,TTCBck,SecurityFactor,FixedInvestmentCost,FixedChargeRate,BinaryInvestment,SwOnTime,SwOffTime,Resistance,Susceptance,Tap,AngMin,AngMax,InvestmentLo,InvestmentUp

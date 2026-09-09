@@ -1133,6 +1133,36 @@ Period        Scenario    Load level  Area        Node        Technology  Genera
 ============  ==========  ==========  ==========  ==========  ==========  ======================================
 ```
 
+File `oT_Result_HydrogenStorageCharge.csv`
+
+```{eval-rst}
+============  ==========  ==========  ==========  ======================================
+Identifier                                        Header      Description
+====================================  ==========  ======================================
+Period        Scenario    Load level  Unit        Hydrogen into a store [tH2]
+============  ==========  ==========  ==========  ======================================
+```
+
+File `oT_Result_HydrogenStorageDischarge.csv`
+
+```{eval-rst}
+============  ==========  ==========  ==========  ======================================
+Identifier                                        Header      Description
+====================================  ==========  ======================================
+Period        Scenario    Load level  Unit        Hydrogen out of a store [tH2]
+============  ==========  ==========  ==========  ======================================
+```
+
+File `oT_Result_HydrogenStorageInventory.csv`
+
+```{eval-rst}
+============  ==========  ==========  ==========  ======================================
+Identifier                                        Header      Description
+====================================  ==========  ======================================
+Period        Scenario    Load level  Unit        Hydrogen held in a store [tH2]
+============  ==========  ==========  ==========  ======================================
+```
+
 File `oT_Result_NetworkFlowH2PerNode.csv`
 
 ```{eval-rst}

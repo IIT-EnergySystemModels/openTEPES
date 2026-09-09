@@ -1,5 +1,5 @@
 ﻿"""
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 16, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 09, 2026
 
 openTEPES.openTEPES_SettingUpVariables — creates the decision variables and their bounds, fixes the generators' commitment, relaxes or forbids investment conditions,
 zeroes out epsilon values, and screens for infeasibilities. Runs after DataConfiguration.
@@ -162,6 +162,7 @@ def SettingUpVariables(OptModel, mTEPES):
         if mTEPES.pIndHydrogen():
             OptModel.vTotalFH2Cost         = Var(mTEPES.p,     within=NonNegativeReals, doc='total system fixed H2                cost      [MEUR]')
             OptModel.vTotalRH2Cost         = Var(mTEPES.psn,   within=NonNegativeReals, doc='total system reliability H2          cost      [MEUR]')
+            OptModel.vTotalH2SrcCost       = Var(mTEPES.psn,   within=NonNegativeReals, doc='total hydrogen source              cost      [MEUR]')
 
         if mTEPES.pIndHeat():
             OptModel.vTotalFHeatCost       = Var(mTEPES.p,     within=NonNegativeReals, doc='total system fixed heat              cost      [MEUR]')
@@ -474,6 +475,18 @@ def SettingUpVariables(OptModel, mTEPES):
             [OptModel.vFlowH2  [p,sc,n,ni,nf,cc].setlb(-mTEPES.pH2PipeNTCBck[ni,nf,cc])                           for p,sc,n,ni,nf,cc in mTEPES.psnpa]
             [OptModel.vFlowH2  [p,sc,n,ni,nf,cc].setub( mTEPES.pH2PipeNTCFrw[ni,nf,cc])                           for p,sc,n,ni,nf,cc in mTEPES.psnpa]
             [OptModel.vH2NS    [p,sc,n,nd      ].setub(mTEPES.pDuration[p,sc,n]()*mTEPES.pDemandH2Pos[p,sc,n,nd]) for p,sc,n,nd       in mTEPES.psnnd]
+
+            # hydrogen made without electricity, in tH2 over the load level
+            OptModel.vH2Production = Var(mTEPES.psn*mTEPES.sr, within=NonNegativeReals, doc='hydrogen produced without electricity [tH2]')
+            [OptModel.vH2Production[p,sc,n,sr].setub(mTEPES.pDuration[p,sc,n]()*mTEPES.pMaximumProductionH2[sr]) for p,sc,n,sr in mTEPES.psn*mTEPES.sr]
+
+            # hydrogen storage: injection, withdrawal and inventory
+            OptModel.vH2StorCharge    = Var(mTEPES.psn*mTEPES.hs, within=NonNegativeReals, doc='hydrogen into  storage [tH2]')
+            OptModel.vH2StorDischarge = Var(mTEPES.psn*mTEPES.hs, within=NonNegativeReals, doc='hydrogen out of storage [tH2]')
+            OptModel.vH2Inventory     = Var(mTEPES.psn*mTEPES.hs, within=NonNegativeReals, doc='hydrogen inventory      [tH2]')
+            [OptModel.vH2StorCharge   [p,sc,n,hs].setub(mTEPES.pDuration[p,sc,n]()*mTEPES.pMaxChargeH2[hs]) for p,sc,n,hs in mTEPES.psn*mTEPES.hs]
+            [OptModel.vH2StorDischarge[p,sc,n,hs].setub(mTEPES.pDuration[p,sc,n]()*mTEPES.pMaxChargeH2[hs]) for p,sc,n,hs in mTEPES.psn*mTEPES.hs]
+            [OptModel.vH2Inventory    [p,sc,n,hs].setub(                           mTEPES.pMaxStorageH2[hs]) for p,sc,n,hs in mTEPES.psn*mTEPES.hs]
 
         if mTEPES.pIndHeat():
             OptModel.vFlowHeat = Var(mTEPES.psnha, within=Reals,            doc='heat pipe flow          [GW]')
