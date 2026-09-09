@@ -2,6 +2,9 @@
 
 ## [4.18.18RC] - 2026-09-09 Unreleased in PyPI
 
+- [ADDED] a `.gitattributes` giving `CHANGELOG.md` the union merge driver. Two branches that each add an entry
+  conflicted on every merge, since both insert at the top of the same section while never overlapping, so the
+  resolution was always to keep both. `union` does that on its own and is built into git, so no clone needs setting up.
 - [ADDED] `RTS-GMLC_Oper` to the solve suite. It ships but no test solved it, so the operation-only path was covered on
   no case carrying commitment binaries. About 30 s and 1.1 GB under the 7-day fixture.
 - [CHANGED] the note deferring `RTS-GMLC_6y` now carries the measurement it asked for. Reading and configuring the case

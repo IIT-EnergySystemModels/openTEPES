@@ -1,0 +1,12 @@
+# Two branches that each add a changelog entry conflict on every merge, because both
+# insert at the top of the same unreleased section. The lines never overlap, so the
+# resolution is always "keep both". The union driver does that automatically.
+#
+# union is built into git, so it needs no per-clone configuration. It applies to merges
+# and to rebases. It appends both sides' lines rather than choosing between them, which
+# is right for a list and wrong for structured text, so keep it to this one file.
+#
+# Two things it will not do. Ordering across the two sides is not guaranteed, so read
+# the section after a merge if order matters. And if both sides add the SAME line, both
+# copies are kept; delete one.
+CHANGELOG.md merge=union
