@@ -2,6 +2,10 @@
 
 ## [4.18.18RC] - 2026-09-09 Unreleased in PyPI
 
+- [ADDED] a `.gitattributes` giving `CHANGELOG.md` the union merge driver. Two branches that each add an entry
+  conflicted on every merge, since both insert at the top of the same section while never overlapping, so the
+  resolution was always to keep both. `union` does that on its own and is built into git, so no clone needs setting up.
+
 - [FIXED] `9nH2` asked for 20 tH2/h at Node_1, five times what its 200 MW electrolyser can make at 49.02 kWh/kgH2.
   Four fifths came back as hydrogen not served, so the HNS penalty was the whole objective: 26,753 MEUR over seven days
   against 6.4 MEUR. Demand is now 2 tH2/h; a 20 tH2/h demand would need 980 MW, two thirds of the system peak. A new
