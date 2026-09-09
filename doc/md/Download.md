@@ -41,10 +41,9 @@ Here are the input files for:
 
 - a [static small case study of 9 nodes](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/9n), the minimal electricity example
   and the recommended starting point for building a new case,
-- the same 9-node case [stored as a DuckDB file](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/9n_duckdb) rather than as CSV folders, which is the worked example
-  for the DuckDB input backend and gives identical results. It is a different container for the same inputs, not a
-  different system, and it is the only `.duckdb` kept in the repository: generate any other from CSV with the converter
-  in `scripts/openTEPES_DuckDB/`,
+- the same 9-node case [stored as a DuckDB file](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/9n_duckdb) rather than as CSV folders, the worked
+  example for the DuckDB input backend. Same inputs, same results, different container. It is the only `.duckdb` kept
+  in the repository; generate any other from CSV with the converter in `scripts/openTEPES_DuckDB/`,
 - the same [9-node case solved with a PTDF network formulation](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/9n_PTDF), which
   uses power transfer distribution factors and total transfer capacities instead of the angle-based DC power flow,
 - the same [9-node case coupled with a heat network](https://github.com/IIT-EnergySystemModels/openTEPES/tree/master/openTEPES/cases/9n_heat), which adds heat
