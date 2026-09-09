@@ -2,6 +2,13 @@
 
 ## [4.18.18RC] - 2026-09-09 Unreleased in PyPI
 
+- [FIXED] `IndHardZeroENS` forbade unserved energy but not the reactive shortfall, so an AC adequacy run answered half
+  the question: the model stayed feasible by buying reactive power it never sourced, at `pENSCost`, and reported
+  itself adequate. `vQNSPos` is now fixed at zero alongside `vENS`. `vQNSNeg` is not. It is a surplus the system could
+  not absorb, which has no counterpart on the active side, where a surplus is dispatched down instead; forbidding it
+  would make the reactive balance a hard equality and turn light-load line charging into an infeasibility, which is a
+  different question from the one the flag asks.
+
 - [FIXED] a portfolio sweep could not exclude a candidate shunt or synchronous condenser. `apply_investment_bounds`
   re-applies the investment bounds to a built model, but it covered only generators, retirements and lines, and the
   four reactive bound parameters were not declared mutable in the first place. So setting `pShuntUpInvest` to zero on a

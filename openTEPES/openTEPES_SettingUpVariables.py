@@ -1419,6 +1419,18 @@ def SettingUpVariablesAC(OptModel, mTEPES):
     OptModel.vQNSPos = Var(mTEPES.psnnd, within=NonNegativeReals, initialize=0.0, doc='reactive power not served at the node [Gvar]')
     OptModel.vQNSNeg = Var(mTEPES.psnnd, within=NonNegativeReals, initialize=0.0, doc='reactive power not absorbed at the node [Gvar]')
 
+    # IndHardZeroENS asks the adequacy question directly: forbid the shortfall rather than price it, so the model is
+    # infeasible exactly when the demand cannot be met. It fixed vENS and stopped there, which left the reactive side
+    # answering the old question -- an AC run said "adequate" while paying for reactive power it never sourced.
+    # Only the POSITIVE part is fixed. vQNSPos is the reactive analogue of vENS, a shortfall the system failed to
+    # supply. vQNSNeg is a surplus it failed to absorb, which has no counterpart on the active side, where a surplus
+    # is dispatched down instead. Forbidding that too would make the reactive balance a hard equality and turn light-
+    # load line charging into an infeasibility, which is a different question from the one this flag asks.
+    if mTEPES.pIndHardZeroENS():
+        for idx in OptModel.vQNSPos:
+            OptModel.vQNSPos[idx].fix(0.0)
+            nFixedVariables += 1
+
     # --- the signed parts of the angle-envelope numerator ---------------------------------------------------------------------------------------
     # The envelope substitutes sin(theta_ij) = M / (Vi Vj) with M = (x P + r Q) / pSBase, and then has to bound M / (Vi Vj) over the voltage band. The
     # extreme is at the SMALL end of the band when M is positive and at the LARGE end when M is negative, so a single divisor cannot serve both signs:

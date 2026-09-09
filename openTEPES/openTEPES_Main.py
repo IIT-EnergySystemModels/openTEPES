@@ -731,7 +731,8 @@ parser.add_argument('--crossover',         type=int, default=None, choices=[-1, 
                          "Also set by OTEPES_CROSSOVER.")
 parser.add_argument('--zero-ens',          default=False, action="store_true",
                     help="Forbid energy not served instead of penalising it, so the model is infeasible when demand "
-                         "cannot be met. Overrides IndHardZeroENS in the option table for this run. Also set by OTEPES_ZERO_ENS.")
+                         "cannot be met. Under AC this covers the reactive shortfall as well, but not the reactive "
+                         "surplus. Overrides IndHardZeroENS in the option table for this run. Also set by OTEPES_ZERO_ENS.")
 parser.add_argument('--warm-resolve',         default=False, action="store_true",
                     help="Persistent re-solves (Mode C hot-swap sweep, or a gurobi_persistent stage loop) use warm dual "
                          "simplex with a barrier fallback. Gurobi only; no effect for Mode A/B or non-Gurobi solvers. Also set by OTEPES_WARM_RESOLVE.")

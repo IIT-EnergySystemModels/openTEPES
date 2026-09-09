@@ -1792,3 +1792,47 @@ def test_re_applying_the_bounds_is_safe_without_ac():
     mTEPES = _build_with_vars(CASES_DIR, "9n")
     assert not hasattr(mTEPES, "vShuntInvest"), "9n is a DC case and should carry no shunt variable"
     apply_investment_bounds(mTEPES, mTEPES)
+
+
+# Forbidding the shortfall rather than pricing it
+# --------------------------------------------------------------------------------------------------------------------
+
+def test_zero_ens_forbids_the_reactive_shortfall_too(monkeypatch):
+    """IndHardZeroENS has to reach the reactive side, or an AC adequacy run answers half the question.
+
+    The flag exists so that the model is infeasible exactly when the demand cannot be met, instead of
+    returning a solution to be screened on the value of vENS afterwards. It fixed vENS alone, so an AC
+    case could still buy its way out on the reactive side at pENSCost and come back "feasible" while
+    sourcing reactive power from nowhere.
+    """
+    monkeypatch.setenv("OTEPES_ZERO_ENS", "1")
+    mTEPES = _build_with_vars(CASES_DIR, "9n_AC")
+
+    assert mTEPES.pIndHardZeroENS(), "the environment variable should have switched the flag on"
+    assert all(mTEPES.vENS[k].fixed and mTEPES.vENS[k].value == 0.0 for k in mTEPES.vENS), (
+        "vENS should be fixed at zero, which is the behaviour this extends")
+    assert all(mTEPES.vQNSPos[k].fixed and mTEPES.vQNSPos[k].value == 0.0 for k in mTEPES.vQNSPos), (
+        "the reactive shortfall should be forbidden alongside the active one")
+
+
+def test_zero_ens_leaves_the_reactive_surplus_free(monkeypatch):
+    """The surplus is a different question and stays priced.
+
+    vQNSNeg is reactive power the system could not absorb, which has no counterpart on the active side,
+    where a surplus is dispatched down. Fixing it would make the reactive balance a hard equality and
+    turn light-load line charging into an infeasibility, which is not what the flag asks.
+    """
+    monkeypatch.setenv("OTEPES_ZERO_ENS", "1")
+    mTEPES = _build_with_vars(CASES_DIR, "9n_AC")
+
+    assert not any(mTEPES.vQNSNeg[k].fixed for k in mTEPES.vQNSNeg), (
+        "the reactive surplus should stay free, and priced")
+
+
+def test_ac_without_zero_ens_keeps_both_reactive_slacks_free():
+    """The default is unchanged: both parts are ordinary priced variables."""
+    mTEPES = _build_with_vars(CASES_DIR, "9n_AC")
+
+    assert not mTEPES.pIndHardZeroENS(), "9n_AC should not set the flag"
+    assert not any(mTEPES.vQNSPos[k].fixed for k in mTEPES.vQNSPos)
+    assert not any(mTEPES.vQNSNeg[k].fixed for k in mTEPES.vQNSNeg)
