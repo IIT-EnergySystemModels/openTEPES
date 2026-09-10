@@ -16,6 +16,8 @@
   wanted only `flake8` and `pytest`, which pip provides, and a failed conda setup was failing jobs that never reached a
   test. That job is now separate and named for it, and the shared setup is one composite action.
 - [CHANGED] an in-progress CI run is superseded only on a pull request. A master run is the record for master.
+- [ADDED] `9n_duckdb` to the bundled case list on the Download page, which completes it. Listed next to `9n`, and said
+  to be the same inputs in a different container rather than a different system, which the name alone suggests.
 
 - [ADDED] six missing cases to the bundled case list on the Download page. `9nH2` and `9nH2x` arrived with the hydrogen
   subsystem and neither was documented: `9nH2` carries the whole chain as separate units, an electrolyser, a storage
