@@ -1,6 +1,19 @@
 # Change Log
 
-## [4.18.18RC] - 2026-09-09 Unreleased in PyPI
+## [4.18.18RC] - 2026-09-10 Unreleased in PyPI
+
+- [FIXED] a cycle longer than its stage is now rejected, not dropped (issue #159). It is enforced where the load
+  level's position divides by the cycle length, so when none qualifies the constraint is built with no rows and the run
+  reports a cost below the true one, 10.4 % low on the energy limit the issue measured. The error names the unit, the
+  period, what a stage holds, and the two ways out. Seven cycles are covered, two more than the issue lists. Shortening
+  the cycle was the alternative and is worse, since a monthly cycle cut to a week is weekly storage, not an
+  approximation of monthly. No shipped case is affected: the fault needs a shortened horizon, as the fixtures use.
+  `InputData.md` now gives the shortest stage each period needs, and notes that `StorageType` records the state of
+  charge one period more often than its name, so Monthly storage needs a week, not a month.
+- [ADDED] a run now says when a unit's storage cycle is shorter than its own column asked for. The cycle is the
+  shortest of the storage, outflows and energy periods, so a setting made for one feature moves another. On `9n` every
+  unit comes out at one load level whatever `StorageType` says, that case having neither outflows nor energy bounds and
+  both defaulting to one. Behaviour unchanged, and until now invisible.
 
 - [ADDED] a `.gitattributes` giving `CHANGELOG.md` the union merge driver. Two branches that each add an entry
   conflicted on every merge, since both insert at the top of the same section while never overlapping, so the

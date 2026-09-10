@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 09, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 10, 2026
 
 openTEPES.openTEPES_DataConfiguration — builds the derived sets and parameters on the model: instrumental sets, ESS/RES sets, and the flag-driven branches (hydro topology, hydrogen, heat, PTDF). Runs after InputData has read the raw sets and parameters.
 """
@@ -10,7 +10,7 @@ import time
 import math
 import cmath
 import pandas        as pd
-from   collections   import defaultdict
+from   collections   import defaultdict, Counter
 from   pyomo.environ import Set, Param, Binary, NonNegativeReals, NonNegativeIntegers, PositiveReals, PositiveIntegers, Reals, UnitInterval, Any
 
 # Support running this file directly (e.g. VS Code "Run Python File"), where __package__ is empty and the relative import below has no parent package;
@@ -21,6 +21,61 @@ except ImportError:
     import os, sys
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     from openTEPES.openTEPES_InputData import ConfigureACData
+
+
+def CheckCycleFitsTheStage(pTypes, pCycles, pStageLevels: int, pColumn: str, pActive=None) -> None:
+    """Reject a cycle longer than the stage it has to close inside.
+
+    A cycle is enforced where the load level's position divides by the cycle length. When the cycle is longer than the
+    stage no level qualifies, so the constraint is built with no rows and the model solves without it, reporting a cost
+    below the true one. Nothing looks wrong, which is why this raises rather than warns.
+
+    Shortening the cycle was the other option and is worse, because a monthly cycle cut to a week is weekly storage
+    rather than an approximation of monthly storage, and the results would describe neither.
+
+    Parameters:
+        pTypes:       the declared period per unit, e.g. Daily or Weekly.
+        pCycles:      the same, as a count of load levels.
+        pStageLevels: load levels in one stage, for one period and scenario.
+        pColumn:      the column the value came from, so the message points at the data.
+        pActive:      units the column applies to. StorageTypeH2 is filled in for coal and nuclear alike, so without
+                      this a case with no hydrogen is refused.
+
+    Returns:
+        None: raises ValueError when a unit does not fit.
+    """
+    pCheck   = pCycles if pActive is None else pCycles[pActive.reindex(pCycles.index).fillna(False).astype(bool)]
+    pTooLong = [(g, pTypes.get(g, ''), int(pCheck[g])) for g in pCheck.index if int(pCheck[g]) > pStageLevels]
+    if not pTooLong:
+        return
+    pShown = ', '.join(f'{g} ({t or "unset"}, {c} load levels)' for g, t, c in pTooLong[:5])
+    pMore  = f' and {len(pTooLong)-5} more' if len(pTooLong) > 5 else ''
+    raise ValueError(
+        f'### {pColumn} asks for a cycle longer than a stage holds. A stage holds {pStageLevels} load levels, and '
+        f'these ask for more: {pShown}{pMore}. Such a cycle can never close, so its constraints would be built empty '
+        f'and the run would report a cost below the true one. Either give these units a shorter period in {pColumn}, '
+        f'or model a longer stage.')
+
+
+def ReportResolvedCycles(pRequested, pResolved, pWhat: str) -> None:
+    """Say when a unit's cycle ends up shorter than its own column asked for.
+
+    The storage cycle is the shortest of the storage, outflows and energy periods, so a setting made for one feature
+    moves another. On 9n every unit comes out at one load level whatever StorageType says, because that case has
+    neither outflows nor energy bounds and both default to one. Intended, and until now invisible.
+
+    Parameters:
+        pRequested: cycle in load levels, as the unit's own column asked.
+        pResolved:  cycle in load levels, after taking the shortest.
+        pWhat:      the family being reported, for the message.
+
+    Returns:
+        None: prints a line per distinct change.
+    """
+    pMoved = {(int(pRequested[g]), int(pResolved[g])) for g in pResolved.index if int(pResolved[g]) < int(pRequested[g])}
+    for pFrom, pTo in sorted(pMoved):
+        print(f'WARNING: {pWhat} cycle shortened from {pFrom} to {pTo} load levels, by an outflows or energy period '
+              f'on the same unit. The inventory now closes over {pTo} load levels.')
 
 
 # @profile
@@ -578,9 +633,25 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     # length whether or not the unit also carries an energy bound.
     par['pNeutralityTimeStep'] = par['pEnergyType'].map(idxEnergy).fillna(1).astype('int')
 
+    # Load levels in one stage, for one period and scenario. pStageDuration cannot serve: it sums durations, so it is
+    # in hours and adds up over periods and scenarios, while the cycles are counted in load levels. On 9n7y the two
+    # read 1176 and 42 for the same stage.
+    pStageLevels = min(Counter((p,sc,st) for p,sc,st,n in mTEPES.s2n).values())
+
+    # StorageType maps one period SHORTER than the other columns, because it sets how often the inventory is written
+    # down rather than the cycle itself, and a slow store needs that less often. So Monthly storage fits a week where
+    # Monthly energy does not, and both are right.
+    CheckCycleFitsTheStage(par['pStorageType' ], par['pStorageTimeStep' ], pStageLevels, 'StorageType' )
+    CheckCycleFitsTheStage(par['pOutflowsType'], par['pOutflowsTimeStep'], pStageLevels, 'OutflowsType')
+    CheckCycleFitsTheStage(par['pEnergyType'  ], par['pEnergyTimeStep'  ], pStageLevels, 'EnergyType'  )
+    CheckCycleFitsTheStage(par['pEnergyType'  ], par['pNeutralityTimeStep'], pStageLevels, 'EnergyType' )
+    CheckCycleFitsTheStage(par['pStorageTypeH2'], par['pStorageTimeStepH2'], pStageLevels, 'StorageTypeH2', par['pMaxStorageH2'] > 0.0)
+
+    # The storage cycle is shortened to the shortest of its three, so a setting made for outflows or an energy bound
+    # also moves the inventory cycle. Intended; the call below says so when it happens.
+    pRequestedStorage        = par['pStorageTimeStep'].copy()
     par['pStorageTimeStep']  = pd.concat([par['pStorageTimeStep'], par['pOutflowsTimeStep'], par['pEnergyTimeStep']], axis=1).min(axis=1)
-    # cycle time step can't exceed the stage duration
-    par['pStorageTimeStep']  = par['pStorageTimeStep'].where(par['pStorageTimeStep'] <= par['pStageDuration'].min(), par['pStageDuration'].min())
+    ReportResolvedCycles(pRequestedStorage, par['pStorageTimeStep'], 'storage')
 
     if par['pIndHydroTopology']:
         # %% definition of the time-step leap to observe the stored energy at a reservoir
@@ -605,9 +676,12 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
         par['pCycleRsrTimeStep'] = par['pReservoirType'].map(idxCycleRsr).fillna(1).astype('int')
         par['pWaterOutTimeStep'] = par['pWaterOutfType'].map(idxWaterOut).fillna(1).astype('int')
 
+        CheckCycleFitsTheStage(par['pReservoirType'], par['pCycleRsrTimeStep'], pStageLevels, 'ReservoirType')
+        CheckCycleFitsTheStage(par['pWaterOutfType'], par['pWaterOutTimeStep'], pStageLevels, 'WaterOutfType')
+
+        pRequestedRsr             = par['pCycleRsrTimeStep'].copy()
         par['pReservoirTimeStep'] = pd.concat([par['pCycleRsrTimeStep'], par['pWaterOutTimeStep']], axis=1).min(axis=1)
-        # cycle water step can't exceed the stage duration
-        par['pReservoirTimeStep'] = par['pReservoirTimeStep'].where(par['pReservoirTimeStep'] <= par['pStageDuration'].min(), par['pStageDuration'].min())
+        ReportResolvedCycles(pRequestedRsr, par['pReservoirTimeStep'], 'reservoir')
 
     # initial inventory must be between minimum and maximum
     par['pInitialInventory']  = par['pInitialInventory'].where(par['pInitialInventory'] > par['pRatedMinStorage'], par['pRatedMinStorage'])
