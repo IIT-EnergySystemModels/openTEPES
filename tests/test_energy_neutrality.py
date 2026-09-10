@@ -64,17 +64,17 @@ def _totals(mTEPES, es):
 
 @pytest.mark.solve
 def test_a_lossy_unit_still_cycles_under_neutrality(tmp_path):
-    """The defect this closes: a 90 % efficient unit was pinned idle by its own neutrality.
+    """The defect this closes: a 90 % efficient unit was pinned idle by its own constraint.
 
     Before the losses were carried, charge and discharge both came out at 0.0000 against 0.0629 and
-    0.0566 without the requirement, and the cost rose because the system lost the arbitrage.
+    0.0566 without the constraint, and the cost rose because the system lost the arbitrage.
     """
     mTEPES = _solve(tmp_path, neutral=True, efficiency=0.9)
 
     for es in mTEPES.es:
         pOut, pIn = _totals(mTEPES, es)
-        assert pIn  > 0.0, f"{es} charges nothing; neutrality has pinned it idle"
-        assert pOut > 0.0, f"{es} discharges nothing; neutrality has pinned it idle"
+        assert pIn  > 0.0, f"{es} charges nothing; the neutrality constraint has pinned it idle"
+        assert pOut > 0.0, f"{es} discharges nothing; the neutrality constraint has pinned it idle"
 
 
 @pytest.mark.solve
@@ -91,7 +91,7 @@ def test_neutrality_balances_after_losses(tmp_path):
 
 @pytest.mark.solve
 def test_a_lossless_unit_balances_one_for_one(tmp_path):
-    """At 100 % efficiency the requirement is output = charge, which is where it started."""
+    """At 100 % efficiency the constraint is output = charge, which is where it started."""
     mTEPES = _solve(tmp_path, neutral=True, efficiency=1.0)
 
     for es in mTEPES.es:

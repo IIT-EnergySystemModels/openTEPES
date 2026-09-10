@@ -336,7 +336,7 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
             # for output = charge is a second, contradictory condition, and for any unit with eff < 1 the only point
             # satisfying both is zero: the unit was pinned idle and the cost rose, with nothing to say why. On 9n, whose
             # ESS1 is 90 % efficient, charge and discharge both came out at 0.0000 against 0.0629 and 0.0566 without it.
-            # In this form the requirement is that the unit exchange no net electricity with the system over the period,
+            # In this form the constraint is that the unit exchange no net electricity with the system over the period,
             # after losses. Energy inflows and outflows are deliberately outside it: they are not grid exchanges.
             pRoot = math.sqrt(mTEPES.pEfficiency[es])
             return sum(mTEPES.pDuration[p,sc,n2]() * (pRoot * OptModel.vESSTotalCharge[p,sc,n2,es]

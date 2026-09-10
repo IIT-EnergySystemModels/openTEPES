@@ -5,8 +5,8 @@
 - [FIXED] energy neutrality pinned a lossy storage unit idle. `eESSInventory` stores `sqrt(Efficiency)` of what a unit
   takes and drains `output/sqrt(Efficiency)` to deliver, so a closed cycle gives output = Efficiency x charge, while
   neutrality asked for output = charge. Below 100 % efficiency the only point satisfying both is zero. On `9n`, whose
-  `ESS1` is 90 % efficient, charge and discharge came out at 0.0000 against 0.0629 and 0.0566 without the requirement,
-  and the cost rose because the system lost the arbitrage. The requirement now carries the losses, and a 90 % unit
+  `ESS1` is 90 % efficient, charge and discharge came out at 0.0000 against 0.0629 and 0.0566 without the constraint,
+  and the cost rose because the system lost the arbitrage. The constraint now carries the losses, and a 90 % unit
   cycles again at output = 0.9 x charge. `EnergyNeutrality` is documented in `InputData.md`, where it did not appear.
   No shipped case sets it, so nothing exercised this; four tests do now.
 
