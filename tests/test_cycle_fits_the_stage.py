@@ -1,9 +1,8 @@
 """A cycle longer than the stage it must close inside is refused, not dropped.
 
-Such a cycle is enforced where the load level's position divides by the cycle length. When no level
-qualifies the constraint is built with no rows, the model solves without it, and the cost comes out
-below the truth. Issue #159 measured 10.4 per cent on an energy limit. Nothing in the output says so,
-which is what makes it worth an error rather than a warning.
+When no load level qualifies the constraint is built with no rows and the model solves without it,
+reporting a cost below the truth: issue #159 measured 10.4 per cent low on an energy limit. Nothing
+says so, which is why this raises rather than warns.
 """
 import os
 import shutil
@@ -62,12 +61,12 @@ def _configure(tmp_path, hours, **columns):
 
 
 def test_a_case_whose_cycles_fit_is_untouched(tmp_path):
-    """The shipped case at its own horizon has to keep working; this is the guard on the guard."""
+    """The shipped case at its own horizon has to keep working."""
     assert _configure(tmp_path, 8736) is not None
 
 
 def test_the_seven_day_fixture_still_works(tmp_path):
-    """The horizon every regression test uses. Refusing this would fail the suite, not protect it."""
+    """The horizon every regression test uses. Refusing it would fail the suite, not protect it."""
     assert _configure(tmp_path, 168) is not None
 
 
@@ -82,7 +81,7 @@ def test_a_cycle_longer_than_the_stage_is_refused(tmp_path, hours, columns, expe
 
 
 def test_the_message_says_what_to_change(tmp_path):
-    """An error a user cannot act on is not much better than the silence it replaced."""
+    """An error a user cannot act on barely improves on the silence it replaced."""
     with pytest.raises(ValueError) as pErr:
         _configure(tmp_path, 168, EnergyType="Monthly")
     pText = str(pErr.value)
@@ -93,11 +92,11 @@ def test_the_message_says_what_to_change(tmp_path):
 
 
 def test_storage_tracking_is_measured_on_its_own_scale(tmp_path):
-    """StorageType maps one period shorter than the other columns, and that is deliberate.
+    """StorageType maps one period shorter than the other columns, deliberately.
 
     It sets how often the inventory is written down rather than the cycle itself, and a slow store
-    needs that less often. Monthly storage is 168 hours of tracking, which fits a week exactly, while
-    Monthly energy is 672 and does not. Pinning this stops the scales being "corrected" into one.
+    needs that less often. Monthly storage is 168 hours of tracking and fits a week exactly; Monthly
+    energy is 672 and does not. Pinned so the two scales are not "corrected" into one.
     """
     assert _configure(tmp_path, 168, StorageType="Monthly") is not None
     with pytest.raises(ValueError):
@@ -107,19 +106,19 @@ def test_storage_tracking_is_measured_on_its_own_scale(tmp_path):
 def test_hydrogen_cycles_are_checked_only_where_there_is_hydrogen(tmp_path):
     """StorageTypeH2 is filled in for every generator, coal and nuclear included.
 
-    Checking it unconditionally refused any case with no hydrogen at all, which is every case that
-    ships bar three. The check applies to units that actually carry hydrogen storage.
+    Checking it unconditionally refused every case with no hydrogen, which is all but three of those
+    that ship. The check applies only to units carrying hydrogen storage.
     """
     assert _configure(tmp_path, 168, StorageTypeH2="Yearly") is not None
 
 
 def test_a_shortened_storage_cycle_is_reported(tmp_path, capsys):
-    """A unit's storage cycle is set to the shortest of its three periods, so a setting made for
-    outflows or for an energy bound moves the inventory cycle too.
+    """The storage cycle is the shortest of its three periods, so a setting made for outflows or an
+    energy bound moves the inventory cycle too.
 
-    That is intended and it was invisible. On 9n every unit comes out at one load level whatever
-    StorageType says, because the case has neither outflows nor energy bounds and both default to
-    one. Reading the results, there is no way to tell the declared period was not the one used.
+    Intended, and invisible until now. On 9n every unit comes out at one load level whatever
+    StorageType says, because that case has neither outflows nor energy bounds and both default to
+    one, and the results give no sign the declared period was not the one used.
     """
     _configure(tmp_path, 168, StorageType="Monthly")
     pOut = capsys.readouterr().out
