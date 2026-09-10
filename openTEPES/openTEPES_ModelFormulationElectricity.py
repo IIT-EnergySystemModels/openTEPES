@@ -331,8 +331,16 @@ def GenerationOperationModelFormulationStorage(OptModel, mTEPES, pIndLogConsole,
             i   = mTEPES.n.ord(n)
             if i % win != 0 or (p,es) not in mTEPES.pes or (p,sc,st,n) not in mTEPES.s2n:
                 return Constraint.Skip
-            return sum(mTEPES.pDuration[p,sc,n2]() * (OptModel.vTotalOutput[p,sc,n2,es]
-                       - OptModel.vESSTotalCharge[p,sc,n2,es]) for n2 in n2list[i-win:i]) == 0.0
+            # The round-trip losses have to be here, and were not. eESSInventory charges the store sqrt(eff) of what it
+            # takes and drains output/sqrt(eff) to deliver, so a closed cycle gives output = eff x charge. Asking instead
+            # for output = charge is a second, contradictory condition, and for any unit with eff < 1 the only point
+            # satisfying both is zero: the unit was pinned idle and the cost rose, with nothing to say why. On 9n, whose
+            # ESS1 is 90 % efficient, charge and discharge both came out at 0.0000 against 0.0629 and 0.0566 without it.
+            # In this form the requirement is that the unit exchange no net electricity with the system over the period,
+            # after losses. Energy inflows and outflows are deliberately outside it: they are not grid exchanges.
+            pRoot = math.sqrt(mTEPES.pEfficiency[es])
+            return sum(mTEPES.pDuration[p,sc,n2]() * (pRoot * OptModel.vESSTotalCharge[p,sc,n2,es]
+                       - OptModel.vTotalOutput[p,sc,n2,es] / pRoot) for n2 in n2list[i-win:i]) == 0.0
         setattr(OptModel, f'eEnergyNeutrality_{p}_{sc}_{st}',
                 Constraint(mTEPES.n, ne, rule=eEnergyNeutrality, doc='energy neutrality over the EnergyType period [GWh]'))
 
