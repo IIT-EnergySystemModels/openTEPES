@@ -44,6 +44,9 @@ def _case(tmp_path, hours, **columns):
         gen = pd.read_csv(pGen)
         pEss = gen.index[pd.to_numeric(gen["MaximumCharge"], errors="coerce").fillna(0) > 0]
         for col, val in columns.items():
+            # A column nobody filled in is read as all-NaN and typed as a float, and pandas 3 refuses
+            # to put a string into it. 9n leaves EnergyType empty, so the cast is what makes this work.
+            gen[col] = gen[col].astype(object) if col in gen.columns else pd.Series(dtype=object)
             gen.loc[pEss, col] = val
         gen.to_csv(pGen, index=False)
 
