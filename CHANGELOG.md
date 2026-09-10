@@ -1,6 +1,6 @@
 # Change Log
 
-## [4.18.18RC] - 2026-09-09 Unreleased in PyPI
+## [4.18.18RC] - 2026-09-10 Unreleased in PyPI
 
 - [FIXED] a cycle longer than the stage it has to close inside is now rejected rather than dropped (issue #159). Such
   a cycle is enforced where the load level's position divides by the cycle length, so when none qualifies the
