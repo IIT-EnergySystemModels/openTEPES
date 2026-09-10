@@ -2,6 +2,19 @@
 
 ## [4.18.18RC] - 2026-09-09 Unreleased in PyPI
 
+- [FIXED] a cycle longer than the stage it has to close inside is now rejected rather than dropped (issue #159). Such
+  a cycle is enforced where the load level's position divides by the cycle length, so when none qualifies the
+  constraint is built with no rows and the run reports a cost below the true one: 10.4 % low on the energy limit the
+  issue measured. The error names the unit, the period asked for, what a stage holds, and the two ways out. All seven
+  cycles are covered, two more than the issue lists: hydrogen storage, and the energy neutrality period added later.
+  Shortening the cycle instead was the alternative and is worse, since a monthly cycle cut to a week is weekly storage
+  rather than an approximation of monthly storage. No shipped case is affected; the fault appears once a horizon is
+  shortened, which is what the test fixtures and most experiments do.
+- [ADDED] a run now says when a unit's storage cycle is shorter than its own column asked for. The cycle is set to the
+  shortest of the storage, outflows and energy periods, so a setting made for one feature moves another. On `9n` every
+  unit comes out at one load level whatever `StorageType` says, because that case has neither outflows nor energy
+  bounds and both default to one. The behaviour is unchanged and was previously invisible.
+
 - [ADDED] a `.gitattributes` giving `CHANGELOG.md` the union merge driver. Two branches that each add an entry
   conflicted on every merge, since both insert at the top of the same section while never overlapping, so the
   resolution was always to keep both. `union` does that on its own and is built into git, so no clone needs setting up.
