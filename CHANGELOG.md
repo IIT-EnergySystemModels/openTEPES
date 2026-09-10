@@ -7,9 +7,9 @@
   constraint is built with no rows and the run reports a cost below the true one: 10.4 % low on the energy limit the
   issue measured. The error names the unit, the period asked for, what a stage holds, and the two ways out. All seven
   cycles are covered, two more than the issue lists: hydrogen storage, and the energy neutrality period added later.
-  `InputData.md` now gives the shortest stage each period needs. `StorageType` sets how often the inventory is written down
-  rather than the cycle itself, so it tracks one period more often than its name suggests and Monthly storage needs a stage of a
-  week, not a month.
+  `InputData.md` now gives the shortest stage each period needs, for the two generation columns and the two reservoir ones.
+  `StorageType` sets how often the state of charge is recorded rather than the cycle itself, so it is recorded one period more
+  often than its name suggests and Monthly storage needs a stage of a week, not a month.
   Shortening the cycle instead was the alternative and is worse, since a monthly cycle cut to a week is weekly storage
   rather than an approximation of monthly storage. No shipped case is affected; the fault appears once a horizon is
   shortened, which is what the test fixtures and most experiments do.
