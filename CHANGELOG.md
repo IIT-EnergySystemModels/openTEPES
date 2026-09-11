@@ -2,6 +2,12 @@
 
 ## [4.18.18RC] - 2026-09-10 Unreleased in PyPI
 
+- [FIXED] the hydrogen source cost is annualised by the stage weight, as the reliability cost already was.
+  `eTotalH2SrcCost` was the second term with no scaling, so a tonne from a reformer cost a stage weight less than
+  the electricity to electrolyse the same tonne, and the model reformed in preference to building. The weight
+  alone: `vH2Production` is tonnes over the load level, so the hours are already inside it. No shipped case
+  defines a hydrogen source. On an 84-node case at a weekly stage it moved the plan, not only the cost: reforming
+  80 % of supply to 65 %, electrolyser +71 %, turbine down by half to all of it.
 - [FIXED] energy neutrality pinned a lossy storage unit idle. `eESSInventory` stores `sqrt(Efficiency)` of what a unit
   takes and drains `output/sqrt(Efficiency)` to deliver, so a closed cycle gives output = Efficiency x charge, while
   neutrality asked for output = charge. Below 100 % efficiency the only point satisfying both is zero. On `9n`, whose

@@ -84,8 +84,8 @@ def NetworkH2OperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, 
         print('eH2IniFinInventory        ... ', len(getattr(OptModel, f'eH2IniFinInventory_{p}_{sc}_{st}')), ' rows')
 
     def eTotalH2SrcCost(OptModel,n):
-        # pProductionCostH2 carries fuel, O&M and carbon; vH2Production is already tonnes
-        return OptModel.vTotalH2SrcCost[p,sc,n] == sum(mTEPES.pProductionCostH2[sr] * OptModel.vH2Production[p,sc,n,sr] for sr in mTEPES.sr)
+        # Stage weight alone, as eTotalRH2Cost: vH2Production is tonnes, not a rate.
+        return OptModel.vTotalH2SrcCost[p,sc,n] == mTEPES.pLoadLevelWeight[p,sc,n]() * sum(mTEPES.pProductionCostH2[sr] * OptModel.vH2Production[p,sc,n,sr] for sr in mTEPES.sr)
     setattr(OptModel, f'eTotalH2SrcCost_{p}_{sc}_{st}', Constraint(mTEPES.n, rule=eTotalH2SrcCost, doc='hydrogen source cost [MEUR]'))
 
     def eTotalRH2Cost(OptModel,n):
