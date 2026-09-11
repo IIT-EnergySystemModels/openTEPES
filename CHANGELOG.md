@@ -2,6 +2,16 @@
 
 ## [4.18.18RC] - 2026-09-10 Unreleased in PyPI
 
+- [FIXED] the hydrogen source cost is now annualised by the stage weight, as the hydrogen reliability cost
+  already was. `eTotalH2SrcCost` was the second term in the objective with no scaling at all, so a tonne bought
+  from a reformer or an import terminal cost a stage weight less than it should: a fifty-second of it on a week
+  weighted by 52. The electricity an electrolyser draws to make the same tonne is charged in full, through
+  `pLoadLevelDuration`, so the two routes were compared on different bases and the model reformed in preference
+  to building. On an 84-node European case at a weekly stage the error moved the plan, not just the cost:
+  reforming fell from 80 % of supply to 65 %, electrolyser investment rose 71 %, hydrogen storage 18 %, and the
+  hydrogen turbine fell by between 52 % and 100 % depending on what else the pathway could build. The weight
+  alone, not `pLoadLevelDuration`: `vH2Production` is tonnes over the load level, since the balance reads
+  `... == pDemandH2*pDuration` with it unmultiplied, so the hours are already inside it.
 - [FIXED] a cycle longer than its stage is now rejected, not dropped (issue #159). It is enforced where the load
   level's position divides by the cycle length, so when none qualifies the constraint is built with no rows and the run
   reports a cost below the true one, 10.4 % low on the energy limit the issue measured. The error names the unit, the
