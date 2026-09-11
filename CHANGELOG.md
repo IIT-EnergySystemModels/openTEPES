@@ -12,6 +12,14 @@
   hydrogen turbine fell by between 52 % and 100 % depending on what else the pathway could build. The weight
   alone, not `pLoadLevelDuration`: `vH2Production` is tonnes over the load level, since the balance reads
   `... == pDemandH2*pDuration` with it unmultiplied, so the hours are already inside it.
+- [FIXED] energy neutrality pinned a lossy storage unit idle. `eESSInventory` stores `sqrt(Efficiency)` of what a unit
+  takes and drains `output/sqrt(Efficiency)` to deliver, so a closed cycle gives output = Efficiency x charge, while
+  neutrality asked for output = charge. Below 100 % efficiency the only point satisfying both is zero. On `9n`, whose
+  `ESS1` is 90 % efficient, charge and discharge came out at 0.0000 against 0.0629 and 0.0566 without the constraint,
+  and the cost rose because the system lost the arbitrage. The constraint now carries the losses, and a 90 % unit
+  cycles again at output = 0.9 x charge. `EnergyNeutrality` is documented in `InputData.md`, where it did not appear.
+  No shipped case sets it, so nothing exercised this; four tests do now.
+
 - [FIXED] a cycle longer than its stage is now rejected, not dropped (issue #159). It is enforced where the load
   level's position divides by the cycle length, so when none qualifies the constraint is built with no rows and the run
   reports a cost below the true one, 10.4 % low on the energy limit the issue measured. The error names the unit, the
