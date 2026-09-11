@@ -2,8 +2,7 @@
 
 Every cost in the objective is written per load level and scaled up to a year. eTotalRH2Cost and
 eTotalH2SrcCost were the two terms with no scaling at all, so unserved hydrogen, and hydrogen
-bought from a source, were priced at a fraction of everything they compete with: on a week weighted
-by 52, a fifty-second of their real cost. Nothing about that
+bought from a source, were priced at a fifty-second of their real cost on a week weighted by 52. Nothing about that
 looks wrong from outside. The model still solves and the balance still holds; what changes is the
 trade-off, because an electrolyser is priced against a full-weight investment while the shortfall
 it would avoid is discounted.
@@ -75,17 +74,13 @@ def test_balance_and_cost_cover_the_same_nodes():
 def test_h2_source_cost_is_annualised():
     body = _body("eTotalH2SrcCost")
     assert re.search(r"pLoadLevelWeight\[p,sc,n\]\(\)\s*\*\s*sum\(", body), (
-        "eTotalH2SrcCost must scale the whole sum by pLoadLevelWeight. Without it a tonne bought "
-        "from a reformer or an import terminal costs the objective a stage weight less than the "
-        "electricity an electrolyser would draw to make the same tonne, which is charged in full "
-        "through pLoadLevelDuration, so the model reforms in preference to building"
+        "eTotalH2SrcCost must scale the sum by pLoadLevelWeight; without it a reformed tonne "
+        "costs a stage weight less than the electricity to electrolyse the same tonne"
     )
 
 
 def test_h2_source_cost_does_not_count_the_hours_twice():
     body = _body("eTotalH2SrcCost", code_only=True)
     assert "pLoadLevelDuration" not in body, (
-        "vH2Production is tonnes over the load level, not a rate: the balance reads "
-        "... == pDemandH2*pDuration with vH2Production unmultiplied, so the hours are already in "
-        "it and pLoadLevelDuration would count them twice"
+        "vH2Production is tonnes over the load level, so the hours are already in it"
     )
