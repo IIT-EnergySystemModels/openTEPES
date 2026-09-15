@@ -79,6 +79,27 @@ def ReportResolvedCycles(pRequested, pResolved, pWhat: str) -> None:
 
 
 # @profile
+def _max_theta() -> float:
+    """Nodal voltage angle bound in radians, from ``OTEPES_MAX_THETA`` when set, else ``pi/2``.
+
+    A value that is not a positive number is ignored, with a warning, instead of failing a run late:
+    a zero or negative bound pins every angle to the reference and makes the DC network infeasible for
+    any non-trivial flow, which is harder to read from the solver than from here.
+    """
+    env = os.environ.get('OTEPES_MAX_THETA', '').strip()
+    if not env:
+        return math.pi / 2
+    try:
+        value = float(env)
+    except ValueError:
+        print(f'WARNING: OTEPES_MAX_THETA={env!r} is not a number; using pi/2.')
+        return math.pi / 2
+    if value <= 0.0:
+        print(f'WARNING: OTEPES_MAX_THETA={value} is not positive; using pi/2.')
+        return math.pi / 2
+    return value
+
+
 def DataConfiguration(mTEPES, dfs=None, par=None):
     """Build the derived sets and parameters on ``mTEPES``.
 
@@ -1086,7 +1107,13 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
         par['pBigMFlowFrw'].loc[lea] = par['pLineNTCFrw'][lea]
     # Delta-theta across a line is bounded by twice the nodal angle bound, so the angle side of the
     # Big-M follows from pMaxTheta rather than from an independent literal.
-    pMaxThetaValue = math.pi / 2
+    # The bound is on the NODAL angle, not on the difference across a line. In a wide network with one
+    # reference node it therefore caps the angle accumulated out to the periphery, which is not a physical
+    # quantity, and it can bind on a large case while every line is well inside its own limit.
+    # OTEPES_MAX_THETA, set by --max-theta, raises it for a run so that this can be tested. The Big-M
+    # follows it, because the two are one piece of reasoning: raising the bound and leaving the Big-M at
+    # pi would make the candidate-line disjunction invalid.
+    pMaxThetaValue = _max_theta()
     for lca in mTEPES.lca:
         M_angle_lca = (1.0 + pMBigMEpsilon) * max(par['pLineNTCBck'][lca], 2.0 * pMaxThetaValue * par['pSBase'] / par['pLineX'][lca])
         par['pBigMFlowBck'].loc[lca] = M_angle_lca
