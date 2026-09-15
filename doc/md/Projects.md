@@ -21,7 +21,7 @@ The model has been used in these research projects:
   > The aim of this study is to demonstrate, with quantitative evidence, that it is possible to accelerate the decarbonization of the economy by increasing
   > electricity demand, and it is expected to have a lower cost impact on consumers, through a more intensive use of existing grid assets via flexibility mechanisms. 
 
-- [A Decision-Support Framework for No-Regret Investments](https://www.iit.comillas.edu/publicacion/proyecto/en/IBD_CBA_2026/Aplicaci%c3%b3n_de_la_metodolog%c3%ada_ENTSO-E_de_an%c3%a1lisis_de_coste-beneficio_a_los_proyectos_de_varias_centrales_de_bombeo),
+- [Application of the ENTSO-E cost-benefit analysis methodology to various storage hydro plant projects](https://www.iit.comillas.edu/publicacion/proyecto/en/IBD_CBA_2026/Aplicaci%c3%b3n_de_la_metodolog%c3%ada_ENTSO-E_de_an%c3%a1lisis_de_coste-beneficio_a_los_proyectos_de_varias_centrales_de_bombeo),
   developed for **Iberdrola**. September 2026 - December 2026. [A. Ramos](https://www.iit.comillas.edu/people/aramos), [L. Olmos](https://www.iit.comillas.edu/people/olmos), [F. Labora](https://www.iit.comillas.edu/people/flabora)
 
   > It aims to write a report on the application of a cost-benefit analysis of the project involving several storage hydropower plants, in accordance with the ENTSO-E cost-benefit analysis methodology for 2026.
