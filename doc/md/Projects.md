@@ -6,6 +6,12 @@ openTEPES documentation master file, created by Andres Ramos
 
 The model has been used in these research projects:
 
+- [ Software Open
+A Decision-Support Framework for No-Regret Investments under Uncertainties in the Nordic Resource Adequacy Assessment](https://zenodo.org/records/21475927),
+  developed for **Nordic Energy Systems Programme**. January 2026 - December 2026. [E.F. Alvarez](https://www.ri.se/en/person/erik-alvarez)
+
+  > It aims to build a decision-support framework to identify noregret investments that remain effective across 12 scenarios for 2035.
+
 - [Techno-Economic study on flexibility and electricity distribution networks in Spain](https://www.iit.comillas.edu/publicacion/proyecto/en/2026_Catalyse_Flex/Estudio_tecnoecon%c3%b3mico_sobre_flexibilidad_y_redes_de_distribuci%c3%b3n_el%c3%a9ctrica_en_Espa%c3%b1a),
   developed for **Catalyse Europe**. July 2026 - January 2027. [J.P. Chaves](https://www.iit.comillas.edu/people/jchaves), [A.
   Ramos](https://www.iit.comillas.edu/people/aramos), [T. Gómez](https://www.iit.comillas.edu/people/tomas), [C.
@@ -15,6 +21,11 @@ The model has been used in these research projects:
 
   > The aim of this study is to demonstrate, with quantitative evidence, that it is possible to accelerate the decarbonization of the economy by increasing
   > electricity demand, and it is expected to have a lower cost impact on consumers, through a more intensive use of existing grid assets via flexibility mechanisms. 
+
+- [A Decision-Support Framework for No-Regret Investments](https://www.iit.comillas.edu/publicacion/proyecto/en/IBD_CBA_2026/Aplicaci%c3%b3n_de_la_metodolog%c3%ada_ENTSO-E_de_an%c3%a1lisis_de_coste-beneficio_a_los_proyectos_de_varias_centrales_de_bombeo),
+  developed for **Iberdrola**. September 2026 - December 2026. [A. Ramos](https://www.iit.comillas.edu/people/aramos), [L. Olmos](https://www.iit.comillas.edu/people/olmos), [F. Labora](https://www.iit.comillas.edu/people/flabora)
+
+  > It aims to write a report on the application of a cost-benefit analysis of the project involving several storage hydropower plants, in accordance with the ENTSO-E cost-benefit analysis methodology for 2026.
 
 - [Quantitative Framework for Forecasting PV Capture Prices and Evaluating Low-Price Risk in the Iberian Electricity
   Market](https://www.iit.comillas.edu/publicacion/proyecto/en/Everest2025/Quantitative_Framework_for_Forecasting_PV_Capture_Prices_and_Evaluating_Low-Price_Risk_in_the_Iberian_Electricity_Market),
