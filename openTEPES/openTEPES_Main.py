@@ -762,7 +762,7 @@ def main():
     args = parser.parse_args()
 
     if args.threads is not None:
-        os.environ["OTEPES_THREADS"] = str(args.threads)   # _threads() reads it, so the flag wins over the variable
+        os.environ["OTEPES_THREADS"] = str(args.threads)      # _threads() reads it, so the flag wins over the variable
 
     if args.crossover is not None:
         os.environ["OTEPES_CROSSOVER"] = str(args.crossover)  # _crossover() reads it, so the flag wins over the variable
@@ -771,10 +771,10 @@ def main():
         os.environ["OTEPES_MAX_THETA"] = str(args.max_theta)  # DataConfiguration reads it, so the flag wins over the variable
 
     if args.zero_ens:
-        os.environ["OTEPES_ZERO_ENS"] = "1"                 # DataConfiguration reads it, so the flag wins over the case
+        os.environ["OTEPES_ZERO_ENS"] = "1"                   # DataConfiguration reads it, so the flag wins over the case
 
     if args.warm_resolve:
-        os.environ["OTEPES_WARM_RESOLVE"] = "1"             # warm-resolve helpers read the env, so the flag wins
+        os.environ["OTEPES_WARM_RESOLVE"] = "1"               # warm-resolve helpers read the env, so the flag wins
     if args.warm_resolve_cap is not None:
         os.environ["OTEPES_WARM_RESOLVE_CAP"] = str(args.warm_resolve_cap)
     if args.warm_resolve_simplex:
