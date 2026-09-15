@@ -2,6 +2,23 @@
 
 ## [4.18.18RC] - 2026-09-10 Unreleased in PyPI
 
+- [ADDED] the nodal voltage angle bound is configurable, through `--max-theta` or `OTEPES_MAX_THETA`, and the
+  candidate-line Big-M is derived from it. The bound was a hardcoded `pi/2`. It applies to the NODAL angle, not to
+  the difference across a line, so on a wide network with a single reference node it caps the angle accumulated out
+  to the periphery, which is not a physical quantity: it can bind while every line is well inside its own limit, and
+  it then clips the DC-OPF silently. On an 84-node European case the bound was at 100 % of `pi/2` in 2462
+  (period, scenario, load level, node) entries, which is what prompted this. Raising the bound alone used to be
+  unsafe: the Big-M in the candidate-line disjunction was a separate literal `pi`, valid only while the bound stayed
+  at `pi/2`, so the two were coupled in the reasoning and uncoupled in the code. They now come from one call. With
+  nothing set the bound is `pi/2` and the Big-M is `pi` as before, so no existing run moves; a value that is not a
+  positive number is ignored with a warning instead of making the network infeasible for any non-trivial flow.
+  The existing warning that the bound is nearly binding reads the same value, so it no longer reports against `pi/2`
+  when the run used something else; it now names the bound in radians, not as a percentage of `pi/2`. That warning is
+  also skipped under the cycle formulation: `CycleConstraints` deletes `eKirchhoff2ndLaw1` and `eKirchhoff2ndLaw2`,
+  the only constraints tying `vTheta` to a flow, so the angle keeps its bounds, enters no constraint, and a solver may
+  park it at one of them on a network with no angle problem at all. The bound has no effect on that formulation, whose
+  own Big-M, `pBigMTheta`, is built from the reactances and ratings around each cycle and needs no angle bound.
+
 - [FIXED] the hydrogen source cost is annualised by the stage weight, as the reliability cost already was.
   `eTotalH2SrcCost` was the second term with no scaling, so a tonne from a reformer cost a stage weight less than
   the electricity to electrolyse the same tonne, and the model reformed in preference to building. The weight

@@ -26,6 +26,8 @@ except ImportError:
     import openTEPES.openTEPES_DataConfiguration as NM
 from   colour            import Color
 
+from   openTEPES.openTEPES_DataConfiguration import _max_theta
+
 try:
     from          .openTEPES_OutputResultsCommon    import _outdir
     from          .openTEPES_OutputResultsMapCommon import make_flow_series, pick_snapshot
@@ -112,15 +114,24 @@ def NetworkOperationResults(DirName, CaseName, OptModel, mTEPES):
         OutputToFile = pd.Series(data=[OptModel.vTheta[p,sc,n,nd]()                                   for p,sc,n,nd in mTEPES.psnnd], index=mTEPES.psnnd)
         OutputToFile.to_frame(name='rad').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='rad').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_NetworkAngle_{CaseName}.csv', sep=',')
 
-        # warn if the voltage-angle bound (pMaxTheta = pi/2) is (nearly) binding -- this indicates either an undersized Big-M on AC candidate lines,
-        # an overconstrained network, or genuinely insufficient transmission. A binding pi/2 bound clips the DC-OPF solution non-physically and inflates costs.
+        # warn if the voltage-angle bound (pMaxTheta) is (nearly) binding -- this indicates either an undersized Big-M on AC candidate lines,
+        # an overconstrained network, or genuinely insufficient transmission. A binding bound clips the DC-OPF solution non-physically and inflates costs.
+        # Read the bound instead of repeating the default: --max-theta / OTEPES_MAX_THETA can raise it, and a warning
+        # reported against pi/2 while the run used another value would say the bound binds when it does not, or stay
+        # quiet when it does.
+        # Only meaningful while the nodal angle law is in force. CycleConstraints deletes eKirchhoff2ndLaw1
+        # and eKirchhoff2ndLaw2 and closes the loop on flows instead, and those two are the only place
+        # vTheta is tied to a flow. Under the cycle formulation vTheta keeps its bounds and enters no
+        # constraint, so the solver parks it anywhere inside them: a warning read off those values says
+        # nothing about the network, and it can fire on a case that has no angle problem at all.
+        pAngleLawInForce = any(c.name.startswith('eKirchhoff2ndLaw1_') for c in OptModel.component_objects(active=True))
         pMaxThetaTol = 1e-2
-        pMaxThetaVal = math.pi / 2
+        pMaxThetaVal = _max_theta()
         pBindingTheta = OutputToFile.abs().ge((1.0 - pMaxThetaTol) * pMaxThetaVal)
-        if pBindingTheta.any():
+        if pBindingTheta.any() and pAngleLawInForce:
             nBinding = int(pBindingTheta.sum())
             maxAbs   = float(OutputToFile.abs().max())
-            print(f'WARNING: voltage angle bound pMaxTheta = pi/2 is (nearly) binding in {nBinding} (period, scenario, loadlevel, node) entries; max|theta| = {maxAbs:.6f} rad ({maxAbs/pMaxThetaVal*100:.2f} % of pi/2).\nInspect oT_Result_NetworkAngle_{CaseName}.csv -- the bound may be clipping the DC-OPF solution.')
+            print(f'WARNING: voltage angle bound pMaxTheta = {pMaxThetaVal:.6f} rad is (nearly) binding in {nBinding} (period, scenario, loadlevel, node) entries; max|theta| = {maxAbs:.6f} rad ({maxAbs/pMaxThetaVal*100:.2f} % of the bound).\nInspect oT_Result_NetworkAngle_{CaseName}.csv -- the bound may be clipping the DC-OPF solution.')
 
     # vENS feeds both the power (MW) and the energy (GWh) files, so evaluate it once. Dur already covers every load level, so it needs no completion here
     Ens = {Key: OptModel.vENS[Key]() for Key in mTEPES.psnnd}

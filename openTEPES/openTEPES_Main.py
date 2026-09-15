@@ -729,6 +729,12 @@ parser.add_argument('--crossover',         type=int, default=None, choices=[-1, 
                     help="Gurobi Crossover after the barrier: -1 automatic (default), 0 off, 1 on. Turning it off "
                          "returns the interior-point solution, which is reproducible and worth being able to state. "
                          "Also set by OTEPES_CROSSOVER.")
+parser.add_argument('--max-theta',         type=float, default=None,
+                    help="Nodal voltage angle bound in radians. Default pi/2. The bound is on the nodal angle, not "
+                         "on the difference across a line, so on a wide network it can bind at the periphery while "
+                         "every line is inside its own limit; raise it to test whether that is happening. The "
+                         "candidate-line Big-M follows it. No effect under the cycle formulation (IndCycleFlow), which closes "
+                         "the loop on flows and leaves the nodal angle in no constraint. Also set by OTEPES_MAX_THETA.")
 parser.add_argument('--zero-ens',          default=False, action="store_true",
                     help="Forbid energy not served instead of penalising it, so the model is infeasible when demand "
                          "cannot be met. Under AC this covers the reactive shortfall as well, but not the reactive "
@@ -760,6 +766,9 @@ def main():
 
     if args.crossover is not None:
         os.environ["OTEPES_CROSSOVER"] = str(args.crossover)  # _crossover() reads it, so the flag wins over the variable
+
+    if args.max_theta is not None:
+        os.environ["OTEPES_MAX_THETA"] = str(args.max_theta)  # DataConfiguration reads it, so the flag wins over the variable
 
     if args.zero_ens:
         os.environ["OTEPES_ZERO_ENS"] = "1"                 # DataConfiguration reads it, so the flag wins over the case
