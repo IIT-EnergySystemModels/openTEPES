@@ -8,7 +8,7 @@ The model has been used in these research projects:
 
 - [ Software Open
 A Decision-Support Framework for No-Regret Investments under Uncertainties in the Nordic Resource Adequacy Assessment](https://zenodo.org/records/21475927),
-  developed for **Nordic Energy Systems Programme**. January 2026 - December 2026. [E.F. Alvarez](https://www.ri.se/en/person/erik-alvarez)
+  developed for **Nordic Energy Systems Programme**. October 2026 - July 2026. [E.F. Alvarez](https://www.ri.se/en/person/erik-alvarez)
 
   > It aims to build a decision-support framework to identify noregret investments that remain effective across 12 scenarios for 2035.
 
