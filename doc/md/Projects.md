@@ -10,7 +10,7 @@ The model has been used in these research projects:
 A Decision-Support Framework for No-Regret Investments under Uncertainties in the Nordic Resource Adequacy Assessment](https://zenodo.org/records/21475927),
   developed for **Nordic Energy Systems Programme**. October 2026 - July 2026. [E.F. Alvarez](https://www.ri.se/en/person/erik-alvarez)
 
-  > It aims to build a decision-support framework to identify noregret investments that remain effective across 12 scenarios for 2035.
+  > It aims to build a decision-support framework to identify no-regret investments that remain effective across 12 scenarios for 2035.
 
 - [Techno-Economic study on flexibility and electricity distribution networks in Spain](https://www.iit.comillas.edu/publicacion/proyecto/en/2026_Catalyse_Flex/Estudio_tecnoecon%c3%b3mico_sobre_flexibilidad_y_redes_de_distribuci%c3%b3n_el%c3%a9ctrica_en_Espa%c3%b1a),
   developed for **Catalyse Europe**. July 2026 - January 2027. [J.P. Chaves](https://www.iit.comillas.edu/people/jchaves), [A.
