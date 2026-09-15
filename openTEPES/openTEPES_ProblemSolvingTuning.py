@@ -3,7 +3,7 @@ Open Generation, Storage, and Transmission Operation and Expansion Planning Mode
 
 openTEPES.openTEPES_ProblemSolvingTuning — per-solver option presets for the initial solve and the fix-and-resolve LP pass.
 
-Each solver family (Gurobi, CPLEX, HiGHS, GAMS) has a distinct option-setting API; ``apply_solver_options()`` centralises the dispatch so
+Each solver family (Gurobi, CPLEX, HiGHS, GAMS) has a distinct option-setting API; ``apply_solver_options()`` centralizes the dispatch so
 ``ProblemSolving`` does not need to know which solver it is talking to. The function also picks the right barrier / simplex method depending on
 whether this is the first solve (``ncall == 1`` → barrier ``Method=2``) or a warm-restart (``ncall > 1`` → automatic ``Method=-1``).
 

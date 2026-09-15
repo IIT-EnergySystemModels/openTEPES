@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 09, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 15, 2026
 """
 
 # import dill as pickle
@@ -13,47 +13,47 @@ from   pyomo.environ import ConcreteModel, Param, Binary, NonNegativeIntegers
 # Support running this file directly (e.g. VS Code "Run Python File"), where __package__ is empty and the relative imports below have no parent package;
 # fall back to absolute package imports in that case.
 try:
-    from          .openTEPES_InputData                  import InputData
-    from          .openTEPES_DataConfiguration          import DataConfiguration
-    from          .openTEPES_SettingUpVariables         import SettingUpVariables
-    from          .openTEPES_InputSource                import open_source
-    from          .openTEPES_ModelFormulationObjective  import TotalObjectiveFunction
-    from          .openTEPES_ModelFormulationInvestment import InvestmentElecModelFormulation, InvestmentHydroModelFormulation, InvestmentH2ModelFormulation, InvestmentHeatModelFormulation
-    from          .openTEPES_ProblemSolvingStageIter    import StageIterativeSolving
-    from          .openTEPES_ModelFormulationElectricity        import ACRestorationPass
-    from          .openTEPES_OutputResultsRawDump       import OutputResultsParVarCon
-    from          .openTEPES_OutputResultsInvestment    import InvestmentResults
-    from          .openTEPES_OutputResultsGeneration    import GenerationOperationResults, GenerationOperationHeatResults
-    from          .openTEPES_OutputResultsStorage       import ESSOperationResults, ReservoirOperationResults
-    from          .openTEPES_OutputResultsHydrogen      import NetworkH2OperationResults
-    from          .openTEPES_OutputResultsHeat          import NetworkHeatOperationResults
-    from          .openTEPES_OutputResultsNetwork       import NetworkOperationResults, NetworkMapResults
-    from          .openTEPES_OutputResultsNetwork            import ACRelaxationDiagnostic, ACNetworkOperationResults, ACMarginalResults
-    from          .openTEPES_OutputResultsEconomic      import MarginalResults, CostSummaryResults, EconomicResults
-    from          .openTEPES_OutputResultsSummary       import OperationSummaryResults, FlexibilityResults, ReliabilityResults
-    from          .openTEPES_OutputResultsSink          import ResultSink, set_active_sink, clear_active_sink
+    from          .openTEPES_InputData                   import InputData
+    from          .openTEPES_DataConfiguration           import DataConfiguration
+    from          .openTEPES_SettingUpVariables          import SettingUpVariables
+    from          .openTEPES_InputSource                 import open_source
+    from          .openTEPES_ModelFormulationObjective   import TotalObjectiveFunction
+    from          .openTEPES_ModelFormulationInvestment  import InvestmentElecModelFormulation, InvestmentHydroModelFormulation, InvestmentH2ModelFormulation, InvestmentHeatModelFormulation
+    from          .openTEPES_ProblemSolvingStageIter     import StageIterativeSolving
+    from          .openTEPES_ModelFormulationElectricity import ACRestorationPass
+    from          .openTEPES_OutputResultsRawDump        import OutputResultsParVarCon
+    from          .openTEPES_OutputResultsInvestment     import InvestmentResults
+    from          .openTEPES_OutputResultsGeneration     import GenerationOperationResults, GenerationOperationHeatResults
+    from          .openTEPES_OutputResultsStorage        import ESSOperationResults, ReservoirOperationResults
+    from          .openTEPES_OutputResultsHydrogen       import NetworkH2OperationResults
+    from          .openTEPES_OutputResultsHeat           import NetworkHeatOperationResults
+    from          .openTEPES_OutputResultsNetwork        import NetworkOperationResults, NetworkMapResults
+    from          .openTEPES_OutputResultsNetwork        import ACRelaxationDiagnostic, ACNetworkOperationResults, ACMarginalResults
+    from          .openTEPES_OutputResultsEconomic       import MarginalResults, CostSummaryResults, EconomicResults
+    from          .openTEPES_OutputResultsSummary        import OperationSummaryResults, FlexibilityResults, ReliabilityResults
+    from          .openTEPES_OutputResultsSink           import ResultSink, set_active_sink, clear_active_sink
 except ImportError:
     import sys
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    from openTEPES.openTEPES_InputData                  import InputData
-    from openTEPES.openTEPES_DataConfiguration          import DataConfiguration
-    from openTEPES.openTEPES_SettingUpVariables         import SettingUpVariables
-    from openTEPES.openTEPES_InputSource                import open_source
-    from openTEPES.openTEPES_ModelFormulationObjective  import TotalObjectiveFunction
-    from openTEPES.openTEPES_ModelFormulationInvestment import InvestmentElecModelFormulation, InvestmentHydroModelFormulation, InvestmentH2ModelFormulation, InvestmentHeatModelFormulation
-    from openTEPES.openTEPES_ProblemSolvingStageIter    import StageIterativeSolving
-    from openTEPES.openTEPES_ModelFormulationElectricity        import ACRestorationPass
-    from openTEPES.openTEPES_OutputResultsRawDump       import OutputResultsParVarCon
-    from openTEPES.openTEPES_OutputResultsInvestment    import InvestmentResults
-    from openTEPES.openTEPES_OutputResultsGeneration    import GenerationOperationResults, GenerationOperationHeatResults
-    from openTEPES.openTEPES_OutputResultsStorage       import ESSOperationResults, ReservoirOperationResults
-    from openTEPES.openTEPES_OutputResultsHydrogen      import NetworkH2OperationResults
-    from openTEPES.openTEPES_OutputResultsHeat          import NetworkHeatOperationResults
-    from openTEPES.openTEPES_OutputResultsNetwork       import NetworkOperationResults, NetworkMapResults
-    from openTEPES.openTEPES_OutputResultsNetwork            import ACRelaxationDiagnostic, ACNetworkOperationResults, ACMarginalResults
-    from openTEPES.openTEPES_OutputResultsEconomic      import MarginalResults, CostSummaryResults, EconomicResults
-    from openTEPES.openTEPES_OutputResultsSummary       import OperationSummaryResults, FlexibilityResults, ReliabilityResults
-    from openTEPES.openTEPES_OutputResultsSink          import ResultSink, set_active_sink, clear_active_sink
+    from openTEPES.openTEPES_InputData                   import InputData
+    from openTEPES.openTEPES_DataConfiguration           import DataConfiguration
+    from openTEPES.openTEPES_SettingUpVariables          import SettingUpVariables
+    from openTEPES.openTEPES_InputSource                 import open_source
+    from openTEPES.openTEPES_ModelFormulationObjective   import TotalObjectiveFunction
+    from openTEPES.openTEPES_ModelFormulationInvestment  import InvestmentElecModelFormulation, InvestmentHydroModelFormulation, InvestmentH2ModelFormulation, InvestmentHeatModelFormulation
+    from openTEPES.openTEPES_ProblemSolvingStageIter     import StageIterativeSolving
+    from openTEPES.openTEPES_ModelFormulationElectricity import ACRestorationPass
+    from openTEPES.openTEPES_OutputResultsRawDump        import OutputResultsParVarCon
+    from openTEPES.openTEPES_OutputResultsInvestment     import InvestmentResults
+    from openTEPES.openTEPES_OutputResultsGeneration     import GenerationOperationResults, GenerationOperationHeatResults
+    from openTEPES.openTEPES_OutputResultsStorage        import ESSOperationResults, ReservoirOperationResults
+    from openTEPES.openTEPES_OutputResultsHydrogen       import NetworkH2OperationResults
+    from openTEPES.openTEPES_OutputResultsHeat           import NetworkHeatOperationResults
+    from openTEPES.openTEPES_OutputResultsNetwork        import NetworkOperationResults, NetworkMapResults
+    from openTEPES.openTEPES_OutputResultsNetwork        import ACRelaxationDiagnostic, ACNetworkOperationResults, ACMarginalResults
+    from openTEPES.openTEPES_OutputResultsEconomic       import MarginalResults, CostSummaryResults, EconomicResults
+    from openTEPES.openTEPES_OutputResultsSummary        import OperationSummaryResults, FlexibilityResults, ReliabilityResults
+    from openTEPES.openTEPES_OutputResultsSink           import ResultSink, set_active_sink, clear_active_sink
 
 
 # Output categories selectable via --results CLI flag. Keys map to the pIndXxxResults flags inside openTEPES_run.
@@ -304,10 +304,10 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     idxDict['y'  ] = 1
 
     #%% model declaration
-    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.18RC - September 09, 2026')
+    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.18RC - September 15, 2026')
     # In DuckDB-input mode _path may not exist on disk (the case lives in the DB, not in a directory). Ensure the version-log target exists.
     os.makedirs(_path, exist_ok=True)
-    print(                 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.18RC - September 09, 2026', file=open(f'{_path}/openTEPES_version_{CaseName}.log','w'))
+    print(                 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.18RC - September 15, 2026', file=open(f'{_path}/openTEPES_version_{CaseName}.log','w'))
     if _input_source is not None:
         mTEPES.pInputSource = _input_source
 

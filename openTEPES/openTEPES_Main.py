@@ -660,7 +660,7 @@
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <https://www.gnu.org/licenses/>.
 
-# Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 09, 2026
+# Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 15, 2026
 # simplicity and transparency in power systems planning
 
 # Developed by
@@ -709,9 +709,9 @@ parser.add_argument('--log',           type=str, default=None)
 parser.add_argument('--result',        type=str, default=None,  help="Yes/No — coarse-grained output toggle (kept for backward compatibility).")
 parser.add_argument('--results',       type=str, default=None,  help=("Comma-separated list of output categories: " + ", ".join(OUTPUT_CATEGORIES) + ". Aliases: 'min', 'full'. Overrides --result. Example: --results=cost,investment,economic,plots"))
 parser.add_argument('--option',        type=str, default=None,  action='append',
-                    help=("Override an entry of oT_Data_Option or oT_Data_Parameter for this run, as Key=Value. Repeatable, "
-                          "and comma-separated values are accepted. Lets one case be run under several formulations "
-                          "without copying it: --option IndACPowerFlow=0 for DC, =1 for branch flow, =3 for rectangular."))
+                                                                help=("Override an entry of oT_Data_Option or oT_Data_Parameter for this run, as Key=Value. Repeatable, "
+                                                                      "and comma-separated values are accepted. Lets one case be run under several formulations "
+                                                                      "without copying it: --option IndACPowerFlow=0 for DC, =1 for branch flow, =3 for rectangular."))
 parser.add_argument('--no-plots',                default=False, help="Disable HTML plot output (overrides 'plots' in --results).", action="store_true")
 parser.add_argument('--out',           type=str, default=None,  help="Output directory for oT_Result_*.csv and oT_Plot_*.html. Default: <dir>/<case>.")
 parser.add_argument('--gzip-large-csvs',         default=False, help="After writing results, gzip every oT_Result_*.csv whose name starts with one of the prefixes given by --gzip-patterns. Default: off (CSVs written plain). NOTE: .csv.gz files cannot be opened directly in Excel; pandas reads them natively.", action="store_true")
@@ -723,19 +723,19 @@ def _positive_int(value: str) -> int:
     return n
 
 
-parser.add_argument('--threads',          type=_positive_int, default=None,
+parser.add_argument('--threads',              type=_positive_int, default=None,
                     help="Cap the solver thread count. Default: half of (logical + physical) cores. Also set by OTEPES_THREADS.")
-parser.add_argument('--crossover',         type=int, default=None, choices=[-1, 0, 1],
+parser.add_argument('--crossover',            type=int, default=None, choices=[-1, 0, 1],
                     help="Gurobi Crossover after the barrier: -1 automatic (default), 0 off, 1 on. Turning it off "
                          "returns the interior-point solution, which is reproducible and worth being able to state. "
                          "Also set by OTEPES_CROSSOVER.")
-parser.add_argument('--max-theta',         type=float, default=None,
+parser.add_argument('--max-theta',            type=float, default=None,
                     help="Nodal voltage angle bound in radians. Default pi/2. The bound is on the nodal angle, not "
                          "on the difference across a line, so on a wide network it can bind at the periphery while "
                          "every line is inside its own limit; raise it to test whether that is happening. The "
                          "candidate-line Big-M follows it. No effect under the cycle formulation (IndCycleFlow), which closes "
                          "the loop on flows and leaves the nodal angle in no constraint. Also set by OTEPES_MAX_THETA.")
-parser.add_argument('--zero-ens',          default=False, action="store_true",
+parser.add_argument('--zero-ens',             default=False, action="store_true",
                     help="Forbid energy not served instead of penalising it, so the model is infeasible when demand "
                          "cannot be met. Under AC this covers the reactive shortfall as well, but not the reactive "
                          "surplus. Overrides IndHardZeroENS in the option table for this run. Also set by OTEPES_ZERO_ENS.")
@@ -881,6 +881,6 @@ def main():
     return model
 
 if __name__ == '__main__':
-    print(GREEN + 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.18RC - September 09, 2026' + RESET)
+    print(GREEN + 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.18RC - September 15, 2026' + RESET)
     print(BLUE  + '#### Academic research license - for non-commercial use only ####' + RESET + '\n')
     model = main()
