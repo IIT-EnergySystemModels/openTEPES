@@ -1,5 +1,4 @@
 """
-"""
 Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 16, 2026
 """
 
