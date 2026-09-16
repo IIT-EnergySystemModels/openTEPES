@@ -12,7 +12,7 @@ copyright = '2026, Universidad Pontificia Comillas'
 author = 'Andres Ramos'
 
 # The short X.Y version
-version = 'version 4.18.18'
+version = 'version 4.18.19'
 # The full version, including alpha/beta/rc tags
 release = ''
 
@@ -91,13 +91,13 @@ html_static_path = []
 #
 # html_sidebars = {}
 html_theme = 'alabaster'
-html_title = 'version 4.18.18'
+html_title = 'version 4.18.19'
 html_logo  = '../img/openTEPES.png'
 html_last_updated_fmt = ''
 html_show_sphinx = False
 html_theme_options = {
     'analytics_id': 'UA-515200-2',  #  Provided by Google in your dashboard
-    'description': 'version 4.18.18',
+    'description': 'version 4.18.19',
     'body_max_width': 'none',
     'page_width': 'auto',
     'font_family': 'Georgia',

@@ -1,6 +1,9 @@
 # Change Log
 
-## [4.18.19RC] - 2026-09-16 Unreleased in PyPI
+## [4.18.20RC] - 2026-09-16 Unreleased in PyPI
+
+## [4.18.19] - 2026-09-16
+- [FIXED] typo in openTEPES.py
 
 ## [4.18.18] - 2026-09-16
 
