@@ -1,10 +1,10 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 15, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 16, 2026
 
 Electric network operation results and network map.
 
 This module writes the electricity transmission operation: line commitment and switching, power flows per node and per area, transport, utilization, losses,
-voltage angles, and not-served power and energy. The map function draws a Plotly map of the power network coloured by line utilization. Both work on electric
+voltage angles, and not-served power and energy. The map function draws a Plotly map of the power network colored by line utilization. Both work on electric
 data only; the hydrogen and heat network maps live in the sector-coupling module. The ``oT_selecting_data`` helper stays nested in the map function because it
 builds the electric node and line frame (line set ``pla``). The shared flow-series and snapshot-selection helpers live in ``openTEPES_OutputResultsMapCommon``.
 """
@@ -419,7 +419,6 @@ def ACNetworkOperationResults(DirName, CaseName, OptModel, mTEPES):
 
     _path = _outdir(DirName, CaseName, mTEPES)
     StartTime = time.time()
-    pSBase = mTEPES.pSBase
 
     pW     = {k: OptModel.vW           [k]() for k in mTEPES.psnnd }
     # vCurr exists only under branch flow; bus injection reports the flows and voltages it does have

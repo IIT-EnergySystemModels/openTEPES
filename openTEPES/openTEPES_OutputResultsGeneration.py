@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 27, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 16, 2026
 
 Generation operation results, electricity and heat.
 
@@ -52,10 +52,8 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnolo
             r2r[gt].add(g)
 
     # generator -> technology, so the per-technology aggregations below are one vectorised groupby instead of a scalar lookup per pair
-    pGen2Tech = {g: gt for gt in mTEPES.gt for g in g2t[gt]}
     pNr2Tech  = {g: gt for gt in mTEPES.gt for g in n2n[gt]}
     pEh2Tech  = {g: gt for gt in mTEPES.gt for g in e2e[gt]}
-    pRe2Tech  = {g: gt for gt in mTEPES.gt for g in r2r[gt]}
 
     # same map restricted to the ESS units that can actually charge: pRatedMaxCharge does not depend on (p,sc,n), so fold
     # it into the map once instead of testing it inside every sum of the consumption-reserve aggregations below

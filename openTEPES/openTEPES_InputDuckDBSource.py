@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 07, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 16, 2026
 
 openTEPES.openTEPES_InputDuckDBSource — in-process ``.duckdb`` backend.
 
@@ -11,7 +11,6 @@ The DB is opened read-only. ``schema_metadata.source_case`` is consulted at conn
 """
 from __future__ import annotations
 
-from io import StringIO
 from pathlib import Path
 
 import pandas as pd
@@ -85,7 +84,7 @@ class DuckDBSource(InputSource):
 
     def list_data_stems(self) -> set[str]:
         stems: set[str] = set()
-        for csv_prefix, db_table, kind, _ in TABLE_SPECS:
+        for csv_prefix, db_table, _, _ in TABLE_SPECS:
             if not csv_prefix.startswith("oT_Data_"):
                 continue
             if self._table_present(db_table):
@@ -94,7 +93,7 @@ class DuckDBSource(InputSource):
 
     def list_dict_stems(self) -> set[str]:
         stems: set[str] = set()
-        for csv_prefix, db_table, kind, _ in TABLE_SPECS:
+        for csv_prefix, db_table, _, _ in TABLE_SPECS:
             if not csv_prefix.startswith("oT_Dict_"):
                 continue
             if self._table_present(db_table):
@@ -149,7 +148,7 @@ class DuckDBSource(InputSource):
 
     def _reconstruct_single_row(self, table_name: str, *, value_type: str) -> pd.DataFrame:
         df  = self._con.execute(f"SELECT * FROM {table_name}").df()
-        row = {str(name): (None if pd.isna(value) else value) for name, value in zip(df["Name"], df["Value"])}
+        row = {str(name): (None if pd.isna(value) else value) for name, value in zip(df["Name"], df["Value"], strict=True)}
         out = pd.DataFrame([row])
         # The DB stores Value as VARCHAR, so every parameter arrives as text. The CSV reader infers a column's dtype from its content,
         # and InputData relies on that (e.g. pENSCost is multiplied by 1e-3); recover it here, converting a column only when the whole

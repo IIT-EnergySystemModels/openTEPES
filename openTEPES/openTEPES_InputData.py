@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 09, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 16, 2026
 """
 
 import time
@@ -791,6 +791,7 @@ def TightenACBounds(mTEPES, par, pIndLogConsole=0):
     lo[ref] = hi[ref] = par['pVNom'] ** 2
 
     pSweeps = 0
+    # pSweeps deliberately survives the loop: the last sweep number is reported as voltage_sweeps in pStats below
     for pSweeps in range(1, MAX_SWEEPS + 1):
         pMoved = 0.0
         for nd in mTEPES.nd:
@@ -937,7 +938,7 @@ def ReadACInputData(dfs, par, mTEPES, pIndLogConsole):
                 pBank.index = pNames
                 pRows.append(pBank)
                 # consecutive pairs, so the ordering constraint can break the permutation symmetry between identical units
-                par['pShuntStepPairs'] += list(zip(pNames, pNames[1:]))
+                par['pShuntStepPairs'] += list(zip(pNames, pNames[1:], strict=False))
             dfShunt = pd.concat(pRows)
             dfs['dfBusShunt'] = dfShunt
 
@@ -1076,7 +1077,7 @@ def ConfigureACData(mTEPES, dfs, par):
                      initialize=[(a, b) for a, b in par.get('pShuntStepPairs', []) if a in sShunt and b in sShunt])
 
     # Synchronous condensers split into existing and candidate on their investment cost, read straight from the generation table rather than from
-    # par['pGenInvestCost']: that series is narrowed to mTEPES.eb at openTEPES_DataConfiguration.py:833, which runs before this function, and a
+    # par['pGenInvestCost']: that series is narrowed to mTEPES.eb at openTEPES_DataConfiguration.py, which runs before this function, and a
     # condenser is never in eb because eb is a subset of g and a zero-MW unit is not in g.
     pGenTable  = dfs['dfGeneration']
     pSynchCost = (pGenTable['FixedInvestmentCost'].astype(float) * pGenTable['FixedChargeRate'].astype(float)).fillna(0.0)
@@ -1094,7 +1095,7 @@ def ConfigureACData(mTEPES, dfs, par):
 
     # --- index sets ------------------------------------------------------------------------------------------------------------------------------
     # Availability of a reactive unit is its own period window, NOT membership of mTEPES.pg. A synchronous condenser has MaximumPower = 0, so it never
-    # enters mTEPES.g (openTEPES_DataConfiguration.py:60) and therefore never enters pg — filtering through pg would empty these sets for exactly the
+    # enters mTEPES.g (openTEPES_DataConfiguration.py) and therefore never enters pg — filtering through pg would empty these sets for exactly the
     # units they exist to hold. Widening the g filter instead would drag a zero-MW unit through commitment, ramps and the second-block machinery in
     # every case, including DC ones, for no benefit.
     pGenIn = pGenTable['InitialPeriod'].astype(float).fillna(0.0)

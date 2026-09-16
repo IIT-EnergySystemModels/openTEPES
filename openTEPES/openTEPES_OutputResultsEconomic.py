@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 09, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 16, 2026
 
 Marginal, cost-summary, and economic results.
 
@@ -64,9 +64,7 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES, pIndPlotOutput):
     # product. Answer them once here. pOperReserve* is declared without mutable=, so Param[idx] is a float and must NOT be called.
     pHasOperReserveUp = any(mTEPES.pOperReserveUp[idx] for idx in mTEPES.pOperReserveUp)
     pHasOperReserveDw = any(mTEPES.pOperReserveDw[idx] for idx in mTEPES.pOperReserveDw)
-    pHasRampReserveUp  = hasattr(mTEPES, 'pRampReserveUp') and any(mTEPES.pRampReserveUp[idx] for idx in mTEPES.pRampReserveUp)
-    pHasRampReserveDw  = hasattr(mTEPES, 'pRampReserveDw') and any(mTEPES.pRampReserveDw[idx] for idx in mTEPES.pRampReserveDw)
-    # eOperReserveUp / eOperReserveDw exist only where some unit can actually offer reserve in that period: mirror nr2aRsrv / eh2aRsrv of openTEPES_ModelFormulationElectricity.py:67-68, and note that eh = es | h, so hydro consumption counts too
+    # eOperReserveUp / eOperReserveDw exist only where some unit can actually offer reserve in that period: mirror nr2aRsrv / eh2aRsrv of openTEPES_ModelFormulationElectricity.py, and note that eh = es | h, so hydro consumption counts too
     pRsrvOfferArea    = {(p,ar): any(nr in g2a[ar] and mTEPES.pIndOperReserveGen[nr] == 0 and (p,nr) in mTEPES.pnr for nr in mTEPES.nr) or any(eh in g2a[ar] and mTEPES.pIndOperReserveCon[eh] == 0 and (p,eh) in mTEPES.peh for eh in mTEPES.eh) for p in mTEPES.p for ar in mTEPES.ar}
     pHasReserveOffer  = any(pRsrvOfferArea.values())
 
@@ -90,7 +88,7 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES, pIndPlotOutput):
 
     pHasDuals = hasattr(mTEPES, 'pDuals') and mTEPES.pDuals is not None and hasattr(mTEPES.pDuals, '__len__') and len(mTEPES.pDuals) > 0
 
-    # eBalanceElec is skipped at nodes with no line and no generator available in the period (openTEPES_ModelFormulationElectricity.py:241): counting every generator of the node asks for a dual that was never created
+    # eBalanceElec is skipped at nodes with no line and no generator available in the period (openTEPES_ModelFormulationElectricity.py): counting every generator of the node asks for a dual that was never created
     pNodeHasBalanceElec = {(p,nd): bool(lout[nd]) or bool(lin[nd]) or any((p,g) in mTEPES.pg for g in g2n[nd]) for p in mTEPES.p for nd in mTEPES.nd}
 
     #%% outputting the LSRMC of electricity
@@ -115,7 +113,7 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES, pIndPlotOutput):
             lin [nf].add((ni,cc))
             lout[ni].add((nf,cc))
 
-        # nodes to hydrogen boilers (b2n): eBalanceH2 also exists at a node that only hosts an H2 boiler (openTEPES_ModelFormulationHydrogen.py:36)
+        # nodes to hydrogen boilers (b2n): eBalanceH2 also exists at a node that only hosts an H2 boiler (openTEPES_ModelFormulationHydrogen.py)
         b2n = defaultdict(set)
         for nd,g in mTEPES.n2g:
             if g in mTEPES.hh:
@@ -157,7 +155,7 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES, pIndPlotOutput):
     if (mTEPES.gc or mTEPES.gd) and sum(mTEPES.pReserveMargin[:,:]()) and pHasDuals:
         # the firm-capacity sum per area does not depend on (period, scenario, stage); precompute it once per area instead of re-summing over all generators for every tuple
         pExistingFirmCapacity = {(p, ar): sum(mTEPES.pRatedMaxPowerElec[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]()) for g in g2a[ar] if (p,g) in mTEPES.pg and g not in mTEPES.gc and g not in mTEPES.gd) for p in mTEPES.p for ar in mTEPES.ar}
-        # eAdequacyReserveMarginElec is skipped in areas without a candidate unit available in the period (openTEPES_ModelFormulationInvestment.py:202): len(g2a[ar]) asks for a dual that was never created
+        # eAdequacyReserveMarginElec is skipped in areas without a candidate unit available in the period (openTEPES_ModelFormulationInvestment.py): len(g2a[ar]) asks for a dual that was never created
         pHasCandidateInArea   = {(p, ar): any(gc in g2a[ar] and (p,gc) in mTEPES.pgc for gc in mTEPES.gc) for p in mTEPES.p for ar in mTEPES.ar}
         sPSSTAR               = [(p,sc,st,ar) for p,sc,st,ar in mTEPES.ps*mTEPES.st*mTEPES.ar if mTEPES.pReserveMargin[p,ar]() and st == mTEPES.Last_st and pHasCandidateInArea[p,ar] and pExistingFirmCapacity[p,ar] <= mTEPES.pDemandElecPeak[p,ar] * mTEPES.pReserveMargin[p,ar]()]
         if sPSSTAR:
@@ -167,7 +165,7 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES, pIndPlotOutput):
     if mTEPES.pIndHeat() and (mTEPES.gc or mTEPES.gd) and sum(mTEPES.pReserveMarginHeat[:,:]) and pHasDuals:
         # the firm-capacity sum per area does not depend on (period, scenario, stage); precompute it once per area
         pExistingFirmCapacity = {(p,ar): sum(mTEPES.pRatedMaxPowerHeat[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]()) for g in g2a[ar] if (p,g) in mTEPES.pg and g not in mTEPES.gc and g not in mTEPES.gd) for p in mTEPES.p for ar in mTEPES.ar}
-        # same skip condition as eAdequacyReserveMarginHeat (openTEPES_ModelFormulationInvestment.py:261)
+        # same skip condition as eAdequacyReserveMarginHeat (openTEPES_ModelFormulationInvestment.py)
         pHasCandidateInArea   = {(p,ar): any(gc in g2a[ar] and (p,gc) in mTEPES.pgc for gc in mTEPES.gc) for p in mTEPES.p for ar in mTEPES.ar}
         sPSSTAR               = [(p,sc,st,ar) for p,sc,st,ar in mTEPES.ps*mTEPES.st*mTEPES.ar if mTEPES.pReserveMarginHeat[p,ar] and st == mTEPES.Last_st and pHasCandidateInArea[p,ar] and pExistingFirmCapacity[p,ar] <= mTEPES.pDemandHeatPeak[p,ar] * mTEPES.pReserveMarginHeat[p,ar]]
         if sPSSTAR:
@@ -175,9 +173,9 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES, pIndPlotOutput):
             OutputResults.to_frame(name='RM').reset_index().pivot_table(index=['level_0','level_1'], columns='level_3', values='RM').rename_axis(['Period', 'Scenario'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_MarginalReserveMarginHeat_{CaseName}.csv', sep=',')
 
     if pHasDuals:
-        # mirror the skip condition of eMaxSystemEmission (openTEPES_ModelFormulationInvestment.py:214): the constraint looks at the emission rate, not at the emission cost, and the rate does not depend on (sc,n)
-        pHasEmissionRate  = {ar: sum(mTEPES.pEmissionRate[g] for g in g2a[ar]) != 0.0 for ar in mTEPES.ar}
-        sPSSTAR           = [(p,sc,st,ar) for p,sc,st,ar in mTEPES.ps*mTEPES.st*mTEPES.ar if mTEPES.pEmission[p,ar] < math.inf and st == mTEPES.Last_st and pHasEmissionRate[ar]]
+        # mirror the skip condition of eMaxSystemEmission (openTEPES_ModelFormulationInvestment.py): same any() and same (p,g) in pg period filter as the constraint, or the dual lookup diverges from it
+        pHasEmissionRate  = {(p,ar): any(mTEPES.pEmissionRate[g] for g in g2a[ar] if (p,g) in mTEPES.pg) for p in mTEPES.p for ar in mTEPES.ar}
+        sPSSTAR           = [(p,sc,st,ar) for p,sc,st,ar in mTEPES.ps*mTEPES.st*mTEPES.ar if mTEPES.pEmission[p,ar] < math.inf and st == mTEPES.Last_st and pHasEmissionRate[p,ar]]
         if sPSSTAR:
             OutputResults = pd.Series(data=[mTEPES.pDuals[f'eMaxSystemEmission_{p}_{sc}_{st}{ar}'] for p,sc,st,ar in sPSSTAR], index=pd.Index(sPSSTAR))
             OutputResults.to_frame(name='EM').reset_index().pivot_table(index=['level_0','level_1'], columns='level_3', values='EM').rename_axis(['Period', 'Scenario'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_MarginalEmission_{CaseName}.csv', sep=',')
@@ -218,7 +216,7 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES, pIndPlotOutput):
 
     #%% outputting the water values
     if mTEPES.es and pHasDuals:
-        # eESSInventory is declared over mTEPES.nesc (openTEPES_ModelFormulationElectricity.py:312), i.e. only the load levels that close a storage cycle; mTEPES.nesc is a plain list, so test membership against a set built once
+        # eESSInventory is declared over mTEPES.nesc (openTEPES_ModelFormulationElectricity.py), i.e. only the load levels that close a storage cycle; mTEPES.nesc is a plain list, so test membership against a set built once
         pNESC         = set(mTEPES.nesc)
         sPSSTNES      = [(p,sc,st,n,es) for p,sc,st,n,es in mTEPES.s2n*mTEPES.es if (p,sc,n,es) in mTEPES.psnes and (n,es) in pNESC and (mTEPES.pTotalMaxCharge[es] or mTEPES.pTotalEnergyInflows[es])]
         OutputToFile  = pd.Series(data=[abs(mTEPES.pDuals[f"eESSInventory_{p}_{sc}_{st}('{n}', '{es}')"])*1e3 for p,sc,st,n,es in sPSSTNES], index=pd.Index(sPSSTNES))
@@ -364,12 +362,12 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput, pIndPlo
     pHasOperReserveUp = any(mTEPES.pOperReserveUp[idx] for idx in mTEPES.pOperReserveUp)
     pHasOperReserveDw = any(mTEPES.pOperReserveDw[idx] for idx in mTEPES.pOperReserveDw)
     # eOperReserveUp / eOperReserveDw exist only where some unit can actually offer reserve in that period: mirror nr2aRsrv / eh2aRsrv of
-    # openTEPES_ModelFormulationElectricity.py:67-68, and note that eh = es | h, so hydro consumption counts too. This function has no e2a,
+    # openTEPES_ModelFormulationElectricity.py, and note that eh = es | h, so hydro consumption counts too. This function has no e2a,
     # only g2a; testing membership there selects the same units because the comprehensions already iterate mTEPES.nr and mTEPES.eh.
     pRsrvOfferArea    = {(p,ar): any(nr in g2a[ar] and mTEPES.pIndOperReserveGen[nr] == 0 and (p,nr) in mTEPES.pnr for nr in mTEPES.nr) or any(eh in g2a[ar] and mTEPES.pIndOperReserveCon[eh] == 0 and (p,eh) in mTEPES.peh for eh in mTEPES.eh) for p in mTEPES.p for ar in mTEPES.ar}
     pHasReserveOffer  = any(pRsrvOfferArea.values())
 
-    # eBalanceElec is skipped at nodes with no line and no generator available in the period (openTEPES_ModelFormulationElectricity.py:241):
+    # eBalanceElec is skipped at nodes with no line and no generator available in the period (openTEPES_ModelFormulationElectricity.py):
     # counting every generator of the node asks for a dual that was never created. lin / lout are not reassigned in this function.
     pNodeHasBalanceElec = {(p,nd): bool(lout[nd]) or bool(lin[nd]) or any((p,g) in mTEPES.pg for g in g2n[nd]) for p in mTEPES.p for nd in mTEPES.nd}
 

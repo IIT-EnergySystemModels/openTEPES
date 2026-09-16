@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 09, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 16, 2026
 openTEPES.openTEPES_ProblemSolving — per-stage solve orchestrator.
 
 Composes the three Layer 5.a primitives:
@@ -129,7 +129,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
         for pp,scc in mTEPES.ps:
             print    (f'***** Period: {pp}, Scenario: {scc}, Stage: {st} ******')
             # the second addend over mTEPES.bc was dropped: OptModel.vGenerationInvestHeat does not exist, and it would double count in any
-            # case, because mTEPES.eb = mTEPES.gc | mTEPES.bc (openTEPES_DataConfiguration.py:141) and vGenerationInvest is indexed over peb,
+            # case, because mTEPES.eb = mTEPES.gc | mTEPES.bc (openTEPES_DataConfiguration.py) and vGenerationInvest is indexed over peb,
             # so the sum below already covers the candidate boilers
             print    ('  Total generation  investment cost [MEUR] ', mTEPES.pDiscountedWeight[pp] * sum(mTEPES.pGenInvestCost    [eb      ]   * OptModel.vGenerationInvest[pp,eb      ]() for eb       in mTEPES.eb if (pp,eb)       in mTEPES.peb))
             print    ('  Total generation  retirement cost [MEUR] ', mTEPES.pDiscountedWeight[pp] * sum(mTEPES.pGenRetireCost    [gd      ]   * OptModel.vGenerationRetire[pp,gd      ]() for gd       in mTEPES.gd if (pp,gd)       in mTEPES.pgd))

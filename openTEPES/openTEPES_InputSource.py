@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 09, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 16, 2026
 
 openTEPES.openTEPES_InputSource — ``InputSource`` ABC, ``open_source()`` factory, and post-read shape helpers shared by every backend.
 
@@ -72,8 +72,8 @@ class InputSource(abc.ABC):
         read a whole case once and hand forked workers a shared baseline.
         """
 
-    def close(self) -> None:  # default no-op
-        pass
+    def close(self) -> None:
+        """Deliberate no-op default: closing is optional, only sources holding OS resources (files, connections) override it."""
 
     def __enter__(self) -> "InputSource":
         return self

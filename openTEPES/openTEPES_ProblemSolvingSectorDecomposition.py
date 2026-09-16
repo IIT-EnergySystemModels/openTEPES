@@ -1,5 +1,5 @@
 ﻿"""
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 16, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 16, 2026
 """
 
 import math
@@ -464,12 +464,12 @@ def SectorDecomposition(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLog
     pDuals = {}
     pCutDualByIter = {}
     # eBd_Cuts is a ConstraintList indexed by iteration (1,2,...)
-    for iter in range(1,itBd):
+    for itCut in range(1,itBd):
         try:
-            pDuals[f'eBd_Cuts{iter}'] = mMaster.dual[mMaster.eBd_Cuts[iter]]
+            pDuals[f'eBd_Cuts{itCut}'] = mMaster.dual[mMaster.eBd_Cuts[itCut]]
         except KeyError:
-            pDuals[f'eBd_Cuts{iter}'] = None
-        pCutDualByIter[iter] = pDuals.get('eBd_Cuts'+str(iter), None)
+            pDuals[f'eBd_Cuts{itCut}'] = None
+        pCutDualByIter[itCut] = pDuals[f'eBd_Cuts{itCut}']
 
     # add one dual value per iteration row in BendersConvergence
     for row in pBdConvergenceRows:
@@ -491,7 +491,7 @@ def SectorDecomposition(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLog
 
     # period aggregation over all Scenario and LoadLevel values
     pSectorProxyPeriodSrc = pSectorProxyDF.copy()
-    pPeriodDur = pd.Series(data=[mTEPES.pLoadLevelDuration[p,sc,n]() for p,sc,n in zip(pSectorProxyPeriodSrc['Period'], pSectorProxyPeriodSrc['Scenario'], pSectorProxyPeriodSrc['LoadLevel'])], index=pSectorProxyPeriodSrc.index)
+    pPeriodDur = pd.Series(data=[mTEPES.pLoadLevelDuration[p,sc,n]() for p,sc,n in zip(pSectorProxyPeriodSrc['Period'], pSectorProxyPeriodSrc['Scenario'], pSectorProxyPeriodSrc['LoadLevel'], strict=True)], index=pSectorProxyPeriodSrc.index)
     if pConsCols:
         pSectorProxyPeriodSrc[pConsCols] = pSectorProxyPeriodSrc[pConsCols].mul(pPeriodDur, axis=0)*1e-3
     if pProdCols:

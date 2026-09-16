@@ -1,5 +1,6 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 15, 2026
+"""
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 16, 2026
 """
 
 # import dill as pickle
@@ -304,10 +305,10 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     idxDict['y'  ] = 1
 
     #%% model declaration
-    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.18RC - September 15, 2026')
+    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.18 - September 16, 2026')
     # In DuckDB-input mode _path may not exist on disk (the case lives in the DB, not in a directory). Ensure the version-log target exists.
     os.makedirs(_path, exist_ok=True)
-    print(                 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.18RC - September 15, 2026', file=open(f'{_path}/openTEPES_version_{CaseName}.log','w'))
+    print(                 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.18.18 - September 16, 2026', file=open(f'{_path}/openTEPES_version_{CaseName}.log','w'))
     if _input_source is not None:
         mTEPES.pInputSource = _input_source
 
@@ -499,7 +500,9 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
                     _hue_h += _dur
             _EnsMwh = round(_ens_mwh, 4)
             _HueH   = round(_hue_h,   4)
-    except Exception:
+    except (TypeError, ValueError, KeyError):
+        # banner-only totals: an unsolved/stale vENS evaluates to None (TypeError on float), Pyomo raises ValueError on
+        # uninitialized values, and a stage-trimmed index misses keys. The banner then shows NaN; anything else must surface.
         pass
     # resolved here rather than at import, so it reflects the build that ran
     _SolverVersion = None
@@ -531,7 +534,7 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
         "solver":             SolverName,
         "solver_version":     _SolverVersion,
         "backend":            getattr(mTEPES, "pOutputBackend", "csv"),
-        "opentepes_version":  "4.18.18RC",
+        "opentepes_version":  "4.18.18",
         "run_started_utc":    _RunStartedUtc,
         "run_finished_utc":   datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None).isoformat(timespec="seconds") + "Z",
         "outputs_enabled":    [k for k, v in _flags.items() if v],

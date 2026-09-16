@@ -1,7 +1,8 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 15, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 16, 2026
 
-openTEPES.openTEPES_DataConfiguration — builds the derived sets and parameters on the model: instrumental sets, ESS/RES sets, and the flag-driven branches (hydro topology, hydrogen, heat, PTDF). Runs after InputData has read the raw sets and parameters.
+openTEPES.openTEPES_DataConfiguration — builds the derived sets and parameters on the model: instrumental sets, ESS/RES sets, and the flag-driven branches
+(hydro topology, hydrogen, heat, PTDF). Runs after InputData has read the raw sets and parameters.
 """
 from __future__ import annotations
 
@@ -448,7 +449,7 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
             return pd.Series([mapped, mapped])
 
     # Split the columns in pIndOperReserve and group them in Generation and Consumption tuples
-    par['pIndOperReserveGen'], par['pIndOperReserveCon'] = zip(*par['pIndOperReserve'].map(split_and_map))
+    par['pIndOperReserveGen'], par['pIndOperReserveCon'] = zip(*par['pIndOperReserve'].map(split_and_map), strict=True)
 
     par['pIndOperReserveGen'] = pd.Series(par['pIndOperReserveGen'], index=par['pIndOperReserve'].index)
     par['pIndOperReserveCon'] = pd.Series(par['pIndOperReserveCon'], index=par['pIndOperReserve'].index)

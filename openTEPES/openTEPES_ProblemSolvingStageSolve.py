@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 09, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 16, 2026
 """
 
 import os
@@ -150,7 +150,8 @@ def StageSolve(OptModel, mTEPES, DirName, CaseName, SolverName, pIndLogConsole, 
                 pScenFactor = {(p,sc): mTEPES.pDiscountedWeight[p] * mTEPES.pScenProb[p,sc]() for p,sc in mTEPES.ps}
 
                 # operation model o.f. by stage; the H2/heat flags do not depend on the tuple, so they select the whole addend instead of being re-evaluated per tuple
-                def eTotalOCost(OptModel):
+                # pScenFactor is default-bound: the rule runs at the Objective construction below today, but binding costs nothing and survives a refactor that defers it
+                def eTotalOCost(OptModel, pScenFactor=pScenFactor):
                     vTotalOCost = sum(pScenFactor[p,sc] * (OptModel.vTotalGCost    [p,sc,n] +
                                                            OptModel.vTotalCCost    [p,sc,n] +
                                                            OptModel.vTotalECost    [p,sc,n] +
@@ -284,7 +285,7 @@ def StageSolve(OptModel, mTEPES, DirName, CaseName, SolverName, pIndLogConsole, 
 
                 # define and initialize all the parameters that depend on the current stage; pair the first-stage load levels with the
                 # current-stage ones by ordinal position (the diagonal n1<->n) instead of scanning the full n1*n product and filtering
-                StagePairs = list(zip(mTEPES.n1, mTEPES.n))
+                StagePairs = list(zip(mTEPES.n1, mTEPES.n, strict=True))
                 for n1,n in StagePairs:
                     mTEPES.pDuration         [     n1   ] = mTEPES.pDuration_Saved         [     n   ]
                     mTEPES.pLoadLevelDuration[     n1   ] = mTEPES.pLoadLevelDuration_Saved[     n   ]

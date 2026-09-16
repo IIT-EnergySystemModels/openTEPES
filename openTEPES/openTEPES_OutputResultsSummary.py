@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 09, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 16, 2026
 
 System summary, flexibility, and reliability results.
 
@@ -236,9 +236,6 @@ def OperationSummaryResults(DirName, CaseName, OptModel, mTEPES):
 
     ndzn = pd.DataFrame(mTEPES.ndzn).set_index(0)
     ndar = pd.DataFrame(mTEPES.ndar).set_index(0)
-    # comprehensions, NOT dict(mTEPES.ndzn): dict() on a Pyomo scalar Set goes through the component API and yields {None: <the Set>}, never the elements
-    pNode2Zone         = {nd: zn for nd,zn in mTEPES.ndzn}
-    pNode2Area         = {nd: ar for nd,ar in mTEPES.ndar}
     sPSNND             = [(p,sc,n,nd) for p,sc,n,nd in mTEPES.psnnd if nd in pNodeConnected]
     OutputResults1     = pd.Series(data=[ ndzn[1][nd]                                                                                                                           for p,sc,n,nd in sPSNND], index=pd.Index(sPSNND)).to_frame(name='Zone'               )
     OutputResults2     = pd.Series(data=[ ndar[1][nd]                                                                                                                           for p,sc,n,nd in sPSNND], index=pd.Index(sPSNND)).to_frame(name='Area'               )
