@@ -66,6 +66,13 @@ def apply_solver_options(Solver, SolverName: str, FileName: str, ncall: int, mTE
         if mTEPES is not None and getattr(mTEPES, 'pIndACPowerFlow', None) is not None and mTEPES.pIndACPowerFlow() in (2, 3):
             Solver.options["DualReductions"] = 0
         Solver.options["IterationLimit"]  = 36000000
+        # A quadratically constrained model returns no duals unless this is asked for, and every AC
+        # run is one: the branch current is a second-order cone. Without it a case with no integer
+        # variable -- an AC operating study, say -- attaches the dual Suffix, solves to optimality,
+        # and then dies retrieving Pi, with the solver log still reporting success. The locational
+        # prices an AC case exists to produce come from those duals, so this is not optional for it.
+        if getattr(mTEPES, "pIndACPowerFlow", None) is not None and mTEPES.pIndACPowerFlow():
+            Solver.options["QCPDual"] = 1
         # Solver.options["SolutionTarget"] = 1                                                 # optimal solution with or without basic solutions
         # Solver.options["MIPFocus"]      = 3
         # Solver.options["Seed"]          = 104729

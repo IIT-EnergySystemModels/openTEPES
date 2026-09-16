@@ -95,7 +95,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole, option_overrides=None):
 
     # Tables only the AC optimal power flow consumes. Unlike the hydrogen and heat tables, whose mere presence switches the sector on, these are driven
     # by an explicit option flag — so a case can carry AC data and still be run as DC. ReactiveDemand is a full time series, hence worth not reading.
-    AC_ONLY_STEMS = {'ReactiveDemand', 'BusShunt'}
+    AC_ONLY_STEMS = {'ReactiveDemand', 'BusShunt', 'BusVoltage'}
 
     def _peek_option(flag: str) -> int:
         """Read one flag out of oT_Data_Option, or out of oT_Data_Parameter when that is where the case put it.
@@ -723,7 +723,7 @@ MAX_SWEEPS = 20
 TOLERANCE  = 1e-6
 
 
-def TightenACBounds(mTEPES, par, pIndLogConsole=0):
+def TightenACBounds(mTEPES, par, pIndLogConsole=0, dfs=None):
     """Compute tightened per-branch angle bounds and per-bus voltage bounds, and store them on ``par``.
 
     Writes ``par['pMaxAngleDiff']`` and ``par['pMinAngleDiff']`` (radians, per branch), ``par['pVMinBus']`` and ``par['pVMaxBus']`` (per unit, per bus).
@@ -831,6 +831,11 @@ def TightenACBounds(mTEPES, par, pIndLogConsole=0):
     par['pMinAngleDiff'] = pMinAngleDiff
     par['pVMinBus'] = {nd: math.sqrt(max(lo[nd], 0.0)) for nd in mTEPES.nd}
     par['pVMaxBus'] = {nd: math.sqrt(max(hi[nd], 0.0)) for nd in mTEPES.nd}
+    # A case may name a band for individual buses. Applied here, after the propagation, so a recorded
+    # setpoint wins over the band the branches imply.
+    pPinned = _apply_bus_voltage_limits(dfs, par, mTEPES) if dfs is not None else 0
+    if pPinned:
+        print(f'Per-bus voltage limits                 ... {pPinned} bus(es) from oT_Data_BusVoltage')
 
     pStats = {
         'branches':          len(branches),
@@ -881,6 +886,36 @@ SHUNT_COLUMN_DEFAULTS = {
     'InvestmentLo':        0.0,
     'InvestmentUp':        0.0,
 }
+
+
+def _apply_bus_voltage_limits(dfs, par, mTEPES):
+    """Override the per-bus voltage band for the buses a case names.
+
+    pVMinBus and pVMaxBus are derived from the system-wide VMin/VMax and then tightened branch by
+    branch, so every bus ends up with the same band give or take the propagation. That is right for a
+    planning study and wrong for reproducing a recorded state: there, a voltage-regulating machine
+    holds its own bus at a setpoint, and the case has no way to say so. Equal VMin and VMax on a row
+    pins that bus, which is what a PV bus is.
+
+    The override is applied AFTER the tightening so it wins, and it is clipped into the tightened band
+    rather than replacing it blindly -- a setpoint outside what the branch limits admit would make the
+    case infeasible with nothing to say why.
+    """
+    df = dfs.get('dfBusVoltage')
+    if df is None or df.empty:
+        return 0
+    pApplied = 0
+    for nd in df.index:
+        if nd not in par['pVMinBus']:
+            continue
+        pLo = df.at[nd, 'VMin'] if 'VMin' in df.columns else None
+        pHi = df.at[nd, 'VMax'] if 'VMax' in df.columns else None
+        if pLo is None or pHi is None or pd.isna(pLo) or pd.isna(pHi):
+            continue
+        par['pVMinBus'][nd] = float(pLo)
+        par['pVMaxBus'][nd] = float(pHi)
+        pApplied += 1
+    return pApplied
 
 
 def ReadACInputData(dfs, par, mTEPES, pIndLogConsole):
@@ -1049,7 +1084,7 @@ def ConfigureACData(mTEPES, dfs, par):
 
     # --- bound tightening ------------------------------------------------------------------------------------------------------------------------
     # Runs here, before the variables are declared, because it is what makes the angle envelope tight enough to be worth anything.
-    TightenACBounds(mTEPES, par, pIndLogConsole=0)
+    TightenACBounds(mTEPES, par, pIndLogConsole=0, dfs=dfs)
 
     # --- shunt sets ------------------------------------------------------------------------------------------------------------------------------
     # sqc and shc are declared empty in DataConfiguration so the DC path can reference them; replace them here with the real contents.

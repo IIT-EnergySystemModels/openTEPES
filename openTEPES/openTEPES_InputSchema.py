@@ -142,6 +142,11 @@ TABLE_SPECS: list[tuple[str, str, str, dict]] = [
     # =====================================================================
     ("oT_Data_ReactiveDemand",  "reactive_demand",  WIDE_TO_LONG, dict(entity="Node", value="Demand")),
     ("oT_Data_BusShunt",        "bus_shunt_config", PASSTHROUGH,  dict(pk_cols=["Shunt"])),
+    # Per-bus voltage limits, for reproducing a recorded operating state. A voltage-regulating
+    # machine holds its bus at a setpoint, and nothing else in the case can say so: VMin and VMax are
+    # single numbers for the whole system, and only the reference bus is pinned. Without this a case
+    # can carry a state vector's injections and still not reproduce its voltages.
+    ("oT_Data_BusVoltage",      "bus_voltage_config", PASSTHROUGH, dict(pk_cols=["Node"])),
 
     # =====================================================================
     # Multi-level-header wide tables (9n_PTDF).
