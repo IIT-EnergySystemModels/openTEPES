@@ -1,9 +1,18 @@
 # Change Log
 
-## [4.18.20RC] - 2026-09-16 Unreleased in PyPI
+## [4.18.20rc] - 2026-09-16 Unreleased in PyPI
+
+- [FIXED] the AC power flow residual check was skipped on every case carrying an HVDC scheme. `angles_available` required an angle at each node, and a node no
+  AC branch touches has none; it now considers only the nodes an AC branch touches.
+- [FIXED] the voltage-angle writer put an HVDC pole on the reference. It writes a blank where a node has no angle, not a zero.
+- [FIXED] an AC run returned no duals. Gurobi withholds them on a quadratically constrained model unless `QCPDual` is set, so a case with no integer variable
+  solved to optimality and then failed retrieving `Pi`; it is now set whenever the AC model is on.
+- [ADDED] per-busbar voltage limits, through an optional `oT_Data_BusVoltage` table of `Node`, `VMin` and `VMax`, applied after the branch propagation so that a
+  recorded setpoint wins over the band the impedances imply. Equal limits pin a busbar. AC-only, so no DC case is affected.
 
 ## [4.18.19] - 2026-09-16
 - [FIXED] typo in openTEPES.py
+
 
 ## [4.18.18] - 2026-09-16
 

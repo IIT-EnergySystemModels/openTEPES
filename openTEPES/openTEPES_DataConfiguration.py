@@ -1665,11 +1665,20 @@ def angles_available(mTEPES, OptModel, p, sc, n):
     """
     if hasattr(OptModel, 'vVre'):
         return True
-    # EVERY node, not the first one. vTheta is unconstrained here, so the solver is free to leave some nodes set and others unset, and it does. Testing
-    # only the first node reports the angles available whenever that one happens to carry a value, and _voltage then builds a phasor from None at a
-    # later node. That is an intermittent crash, because which nodes come back set varies between solvers and between runs of the same solver.
+    # EVERY node that an AC branch touches, not the first one. vTheta is unconstrained here, so the solver is free to
+    # leave some nodes set and others unset, and it does. Testing only the first node reports the angles available
+    # whenever that one happens to carry a value, and _voltage then builds a phasor from None at a later node. That is
+    # an intermittent crash, because which nodes come back set varies between solvers and between runs of the same solver.
+    #
+    # Nodes that NO AC branch touches are skipped, because branch_residuals never asks for their angle: it walks the AC
+    # branches and reads the voltage at each end. An HVDC pole is such a node, and so is a border stub reached only by a
+    # link -- neither has an AC angle to carry, and the solver rightly leaves vTheta unset there. Requiring one anyway
+    # turned the check off for any case with an HVDC scheme in it, which on a Nordic network is every case.
+    pACNodes = {nd for la, _r, _x, _bsh, _tap in ac_branches(mTEPES, p) for nd in (la[0], la[1])}
     pAny = False
     for nd in mTEPES.nd:
+        if nd not in pACNodes:
+            continue
         if (p,sc,n,nd) in mTEPES.psnnd:
             pAny = True
             if OptModel.vTheta[p,sc,n,nd].value is None:

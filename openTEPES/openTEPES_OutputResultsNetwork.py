@@ -436,7 +436,12 @@ def ACNetworkOperationResults(DirName, CaseName, OptModel, mTEPES):
     # None by 180/pi raises. ACRelaxationDiagnostic already guards this way; this writer did not.
     pFirstPsn = next(iter(mTEPES.psn), None)
     if pFirstPsn is not None and NM.angles_available(mTEPES, OptModel, *pFirstPsn):
-        _pivot_node(sNode, [OptModel.vTheta[k]() * 180.0 / math.pi   for k in sNode], 'deg',  _path, CaseName, 'NetworkVoltageAngle')
+        # Blank, not zero, where a node has no angle: an HVDC pole and a border stub reached only by a link carry no AC
+        # angle at all, and angles_available now passes on a case that contains them. Writing 0 deg would put them on the
+        # reference, which is a statement about the network rather than the absence of one.
+        pTheta = [None if OptModel.vTheta[k].value is None else OptModel.vTheta[k]() * 180.0 / math.pi
+                  for k in sNode]
+        _pivot_node(sNode, pTheta, 'deg',  _path, CaseName, 'NetworkVoltageAngle')
 
     # The reactive slack, reported as a signed net value: positive where the node is short of reactive power, negative where it cannot absorb what the
     # line charging delivers. Without this the slack does its job in the solve and leaves no trace anywhere — a case whose reactive demand cannot be
