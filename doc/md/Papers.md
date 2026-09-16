@@ -7,7 +7,7 @@ openTEPES documentation master file, created by Andres Ramos
 The **openTEPES** model has been used in these publications:
 
 - H. Berriri, O. Fekih, M. Nouira, L. Olmos, A. Ramos, M.B. Chiekh, M. Sadok Guellouz, and I. Graabak "Network-Constrained Renewable Integration in Tunisia:
-  A Deterministic Assessment of Storage Flexibility and Transmission Deliverability" energies (2026), 19, 4113.
+  A Deterministic Assessment of Storage Flexibility and Transmission Deliverability" Energies (2026), 19, 4113.
   [10.3390/en19174113](https://doi.org/10.3390/en19174113)
 - F. Labora, A. Ramos "Tight and Compact Formulations for Nuclear Power Plant Flexible Operation" TechRxiv. February 2026.
   [10.36227/techrxiv.177004916.61674766/v1](https://doi.org/10.36227/techrxiv.177004916.61674766/v1)
