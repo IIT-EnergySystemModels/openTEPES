@@ -38,6 +38,44 @@ except ImportError:
     from openTEPES.openTEPES_OutputResultsMapCommon import make_flow_series, pick_snapshot
 
 
+
+
+def nodes_with_a_line(edges):
+    """The nodes some line acts on, given the lines whose angle law is in force.
+
+    A node outside this set has no angle at all, not merely an angle measured from somewhere else: an
+    HVDC pole, a border stub reached only by a link, or the far end of a candidate line the model did
+    not build. Distinct from ``tied_to_reference``, which asks the stronger question of whether the
+    angle can be read against the reference node.
+    """
+    return {nd for ni, nf in edges for nd in (ni, nf)}
+
+
+def tied_to_reference(edges, reference):
+    """The nodes an angle law ties to the reference node, given the lines in force.
+
+    ``edges`` are the node pairs whose angle difference some constraint fixes; ``reference`` is the
+    node whose angle the model holds at zero. A node outside the returned set has no constraint
+    acting on its angle at all, so the value the solver reports for it carries no information --
+    typically a bound, because that is where an unconstrained variable comes to rest.
+    """
+    parent = {}
+
+    def find(x):
+        parent.setdefault(x, x)
+        while parent[x] != x:
+            parent[x] = parent[parent[x]]
+            x = parent[x]
+        return x
+
+    for ni, nf in edges:
+        ri, rf = find(ni), find(nf)
+        if ri != rf:
+            parent[ri] = rf
+    root = find(reference)
+    return {nd for nd in parent if find(nd) == root}
+
+
 def NetworkOperationResults(DirName, CaseName, OptModel, mTEPES):
     # %% outputting the electric network operation
     _path = _outdir(DirName, CaseName, mTEPES)
@@ -112,7 +150,6 @@ def NetworkOperationResults(DirName, CaseName, OptModel, mTEPES):
 
     if mTEPES.pIndBinSingleNode() == 0 and mTEPES.pIndPTDF() == 0:
         OutputToFile = pd.Series(data=[OptModel.vTheta[p,sc,n,nd]()                                   for p,sc,n,nd in mTEPES.psnnd], index=mTEPES.psnnd)
-        OutputToFile.to_frame(name='rad').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='rad').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_NetworkAngle_{CaseName}.csv', sep=',')
 
         # warn if the voltage-angle bound (pMaxTheta) is (nearly) binding -- this indicates either an undersized Big-M on AC candidate lines,
         # an overconstrained network, or genuinely insufficient transmission. A binding bound clips the DC-OPF solution non-physically and inflates costs.
@@ -125,13 +162,72 @@ def NetworkOperationResults(DirName, CaseName, OptModel, mTEPES):
         # constraint, so the solver parks it anywhere inside them: a warning read off those values says
         # nothing about the network, and it can fire on a case that has no angle problem at all.
         pAngleLawInForce = any(c.name.startswith('eKirchhoff2ndLaw1_') for c in OptModel.component_objects(active=True))
+
+        # A node's angle means something only while something ties it to the reference node.
+        # A candidate line left unbuilt ties nothing: its Kirchhoff row is relaxed by the Big-M,
+        # so a node reached only through unbuilt candidates has its bounds as the sole constraint
+        # and the solver parks it at one end, usually -pMaxTheta. Reported as binding, that blames
+        # the network for an angle the model never determined. The same holds for a node cut off
+        # by zero line capacity, and for a whole island carrying no reference node.
+        def _angle_law_edges(p, sc, n):
+            """The node pairs an angle law ties together in this solution."""
+            for ni, nf, cc in mTEPES.laa:
+                if mTEPES.pMaxNTCFrw[p,sc,n,ni,nf,cc] + mTEPES.pMaxNTCBck[p,sc,n,ni,nf,cc] == 0.0:
+                    continue
+                if (ni,nf,cc) in mTEPES.lca and OptModel.vLineCommit[p,sc,n,ni,nf,cc]() < 0.5:
+                    continue
+                yield ni, nf
+
+        # Two different questions, and they need two different answers.
+        #
+        # The table: a node with no line acting on it at all has no angle to report. The solver leaves
+        # it wherever its bounds allow, usually at one of them, and -pi/2 read as an angle says the
+        # network holds that node 90 degrees from the reference. Those cells say N/A, which pandas
+        # reads back as a missing value and Excel shows as it stands, so the free angle is visible as
+        # such instead of looking like a number nobody wrote. The DuckDB table keeps a real null.
+        #
+        # The warning below asks more than that, because a whole island carrying no reference node has
+        # a free offset that can slide to a bound. Such an island keeps its angles in the table: the
+        # differences inside it are real, and only the offset is arbitrary. What those angles cannot
+        # do is speak for the bound, so the warning uses tied_to_reference instead.
+        #
+        # Neither set can be settled before the solve: a candidate line is what ties the node, and
+        # whether it exists is the model's own decision. Recomputing for every load level is wasted
+        # work unless something can differ between them, and only investment, switching and a variable
+        # TTC can.
+        pTopologyVaries = bool(mTEPES.lc) or bool(mTEPES.ls) or mTEPES.pIndVarTTC()
+        pUnlit, pEdgesOnce = set(), None
+        if pAngleLawInForce:
+            for p_, sc_, n_ in mTEPES.psn:
+                if pTopologyVaries or pEdgesOnce is None:
+                    pEdgesOnce = nodes_with_a_line(_angle_law_edges(p_, sc_, n_))
+                if len(pEdgesOnce) == len(mTEPES.nd):
+                    continue
+                pUnlit.update((p_, sc_, n_, nd) for nd in mTEPES.nd if nd not in pEdgesOnce)
+
+        pTheta = OutputToFile.mask(OutputToFile.index.isin(pUnlit)) if pUnlit else OutputToFile
+        pTheta.to_frame(name='rad').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='rad', dropna=False).rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_NetworkAngle_{CaseName}.csv', sep=',', na_rep='N/A')
+
         pMaxThetaTol = 1e-2
         pMaxThetaVal = _max_theta()
         pBindingTheta = OutputToFile.abs().ge((1.0 - pMaxThetaTol) * pMaxThetaVal)
         if pBindingTheta.any() and pAngleLawInForce:
-            nBinding = int(pBindingTheta.sum())
-            maxAbs   = float(OutputToFile.abs().max())
-            print(f'WARNING: voltage angle bound pMaxTheta = {pMaxThetaVal:.6f} rad is (nearly) binding in {nBinding} (period, scenario, loadlevel, node) entries; max|theta| = {maxAbs:.6f} rad ({maxAbs/pMaxThetaVal*100:.2f} % of the bound).\nInspect oT_Result_NetworkAngle_{CaseName}.csv -- the bound may be clipping the DC-OPF solution.')
+            pFlagged = OutputToFile.index[pBindingTheta]
+            pTiedNodes = {}
+            pAtBound   = []
+            for idx in pFlagged:
+                p_, sc_, n_, nd_ = idx
+                if (p_, sc_, n_) not in pTiedNodes:
+                    pTiedNodes[p_, sc_, n_] = tied_to_reference(_angle_law_edges(p_, sc_, n_), mTEPES.rf.first())
+                if nd_ in pTiedNodes[p_, sc_, n_]:
+                    pAtBound.append(idx)
+            nAdrift = len(pFlagged) - len(pAtBound)
+            if pAtBound:
+                nBinding = len(pAtBound)
+                maxAbs   = float(OutputToFile[pAtBound].abs().max())
+                print(f'WARNING: voltage angle bound pMaxTheta = {pMaxThetaVal:.6f} rad is (nearly) binding in {nBinding} (period, scenario, loadlevel, node) entries; max|theta| = {maxAbs:.6f} rad ({maxAbs/pMaxThetaVal*100:.2f} % of the bound).\nInspect oT_Result_NetworkAngle_{CaseName}.csv -- the bound may be clipping the DC-OPF solution.')
+            if nAdrift:
+                print(f'Note: {nAdrift} (period, scenario, loadlevel, node) entries sit at the angle bound with nothing tying them to the reference node. A line left unbuilt, or one with no capacity, leaves the node adrift and the solver parks its angle at one end. Those entries are not counted as binding and say nothing about the network. A node with no line acting on it at all is written N/A in the table.')
 
     # vENS feeds both the power (MW) and the energy (GWh) files, so evaluate it once. Dur already covers every load level, so it needs no completion here
     Ens = {Key: OptModel.vENS[Key]() for Key in mTEPES.psnnd}
