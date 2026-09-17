@@ -1,7 +1,7 @@
 """The hydrogen input units are not uniform, and two of them are easy to get wrong by a thousand.
 
 ProductionFunctionH2ToHeat and ProductionFunctionH2ToPower enter eBalanceH2 the same way, as
-pDuration x output x PF, so the term is in tonnes only if PF is in gH2/kWh. ToHeat is read in
+output x PF, so the term is in tonnes per hour only if PF is in gH2/kWh. ToHeat is read in
 kgH2/kWh and rescaled; ToPower is read in grams already and is not. Rescaling it too understates a
 turbine's fuel by a factor of a thousand.
 

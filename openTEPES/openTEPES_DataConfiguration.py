@@ -1316,9 +1316,9 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
         mTEPES.pProductionFunctionH2 = Param(mTEPES.el, initialize=par['pProductionFunctionH2'].to_dict()    , within=NonNegativeReals,    doc='Production function of an electrolyzer plant'        )
         mTEPES.pProductionFunctionH2ToPower = Param(mTEPES.h2p, initialize=par['pProductionFunctionH2ToPower'].to_dict(), within=NonNegativeReals, doc='Production function of a hydrogen-fired generator')
         mTEPES.pMaxStorageH2      = Param(mTEPES.hs, initialize=par['pMaxStorageH2'].to_dict()     , within=NonNegativeReals, doc='Maximum hydrogen storage    [tH2]')
-        mTEPES.pMaxChargeH2       = Param(mTEPES.hs, initialize=par['pMaxChargeH2'].to_dict()      , within=NonNegativeReals, doc='Maximum hydrogen in/out rate [tH2]')
+        mTEPES.pMaxChargeH2       = Param(mTEPES.hs, initialize=par['pMaxChargeH2'].to_dict()      , within=NonNegativeReals, doc='Maximum hydrogen in/out rate [tH2/h]')
         mTEPES.pIniStorageH2      = Param(mTEPES.hs, initialize=par['pIniStorageH2'].to_dict()     , within=NonNegativeReals, doc='Initial hydrogen storage    [tH2]')
-        mTEPES.pStorageTimeStepH2 = Param(mTEPES.hs, initialize=par['pStorageTimeStepH2'].to_dict(), within=PositiveIntegers, doc='Hydrogen storage cycle       [h]')
+        mTEPES.pStorageTimeStepH2 = Param(mTEPES.hs, initialize=par['pStorageTimeStepH2'].to_dict(), within=PositiveIntegers, doc='Hydrogen storage cycle [load levels]')
         mTEPES.pMaximumProductionH2  = Param(mTEPES.sr, initialize=par['pMaximumProductionH2'].to_dict() , within=NonNegativeReals, doc='Maximum hydrogen production without electricity [tH2/h]')
         mTEPES.pProductionCostH2     = Param(mTEPES.sr, initialize=par['pProductionCostH2'].to_dict()    , within=NonNegativeReals, doc='Cost of that hydrogen, fuel + VOM + carbon    [MEUR/tH2]')
         mTEPES.pProductionEmissionH2 = Param(mTEPES.sr, initialize=par['pProductionEmissionH2'].to_dict(), within=NonNegativeReals, doc='Carbon emitted making it, for reporting      [tCO2/tH2]')
@@ -1367,7 +1367,7 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
         par['pDemandH2Pos'] = filter_rows(par['pDemandH2Pos'], mTEPES.psnnd)
 
         mTEPES.pDemandH2Peak = Param(mTEPES.par,   initialize=par['pDemandH2Peak'].to_dict(), within=NonNegativeReals, doc='Peak hydrogen demand'    )
-        mTEPES.pDemandH2     = Param(mTEPES.psnnd, initialize=par['pDemandH2'    ].to_dict(), within=           Reals, doc='Hydrogen demand per hour')
+        mTEPES.pDemandH2     = Param(mTEPES.psnnd, initialize=par['pDemandH2'    ].to_dict(), within=           Reals, doc='Hydrogen demand                [tH2/h]')
         mTEPES.pDemandH2Pos  = Param(mTEPES.psnnd, initialize=par['pDemandH2Pos' ].to_dict(), within=NonNegativeReals, doc='Hydrogen demand positive')
 
     if par['pIndHeat']:
@@ -1426,8 +1426,8 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
         mTEPES.pH2PipeLength       = Param(mTEPES.pn,  initialize=par['pH2PipeLength'].to_dict()      , within=NonNegativeReals,    doc='Hydrogen pipeline length',                        mutable=True)
         mTEPES.pH2PipePeriodIni    = Param(mTEPES.pn,  initialize=par['pH2PipePeriodIni'].to_dict()   , within=PositiveIntegers,    doc='Installation period'                                          )
         mTEPES.pH2PipePeriodFin    = Param(mTEPES.pn,  initialize=par['pH2PipePeriodFin'].to_dict()   , within=PositiveIntegers,    doc='Retirement   period'                                          )
-        mTEPES.pH2PipeNTCFrw       = Param(mTEPES.pn,  initialize=par['pH2PipeNTCFrw'].to_dict()      , within=NonNegativeReals,    doc='Hydrogen pipeline NTC forward'                                )
-        mTEPES.pH2PipeNTCBck       = Param(mTEPES.pn,  initialize=par['pH2PipeNTCBck'].to_dict()      , within=NonNegativeReals,    doc='Hydrogen pipeline NTC backward'                               )
+        mTEPES.pH2PipeNTCFrw       = Param(mTEPES.pn,  initialize=par['pH2PipeNTCFrw'].to_dict()      , within=NonNegativeReals,    doc='Hydrogen pipeline NTC forward             [tH2/h]')
+        mTEPES.pH2PipeNTCBck       = Param(mTEPES.pn,  initialize=par['pH2PipeNTCBck'].to_dict()      , within=NonNegativeReals,    doc='Hydrogen pipeline NTC backward            [tH2/h]')
         mTEPES.pH2PipeFixedCost    = Param(mTEPES.pc,  initialize=par['pH2PipeFixedCost'].to_dict()   , within=NonNegativeReals,    doc='Hydrogen pipeline fixed cost'                                 )
         mTEPES.pIndBinH2PipeInvest = Param(mTEPES.pn,  initialize=par['pIndBinH2PipeInvest'].to_dict(), within=Binary          ,    doc='Binary   pipeline investment decision'                        )
         mTEPES.pH2PipeLoInvest     = Param(mTEPES.pc,  initialize=par['pH2PipeLoInvest'].to_dict()    , within=NonNegativeReals,    doc='Lower bound of the pipeline investment decision', mutable=True)

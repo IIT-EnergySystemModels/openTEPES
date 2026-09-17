@@ -3,6 +3,21 @@
 ## [4.19.0rc] - 2026-09-17 Unreleased in PyPI
 
 - [FIXED] change the H2 pipeline capacity and H2 flow from tH2 to tH2/h.
+- [CHANGED] the whole hydrogen module is now written in rates, as the electricity module is. Every hydrogen variable holds tH2/h at a load level -- pipeline
+  flow, not served, surplus, production without electricity, and the charge and discharge of a store -- and only the inventory stays a stock in tH2. `eBalanceH2`
+  is a rate balance with no `pDuration` in any term, and the duration enters in `eH2Inventory`, which turns the charge and discharge of each load level into
+  tonnes, and in the two cost terms, which now carry `pLoadLevelDuration` instead of the stage weight alone. Before this the hydrogen variables were amounts over
+  the load level while the hydrogen parameters were already rates, so the two were bridged by a `pDuration` factor at every bound and in every term of the
+  balance. Nothing moves on a case with one-hour load levels. On an aggregated case, `pDuration` above 1, the hydrogen results change: a flow is now the rate,
+  not the tonnes moved over the level. Three things that were wrong under the old convention come out right under this one. The hydrogen price came out
+  multiplied by the stage weight: the dual of `eBalanceH2` was divided by the period probability alone, and on `9nH2` aggregated to four-hour levels with a
+  stage weight of 13 the price was 26.74 EUR/kgH2 against the 2.06 EUR/kgH2 the marginal electricity and the electrolyser's production function imply. On a
+  week standing in for a year the factor is 52. The pipeline utilization on the network map compared an amount against a rate. And `vH2NS` at a node cut off
+  from the hydrogen system was fixed to the demand rate while the variable held tonnes. The two flow columns of the hydrogen
+  balance tables carried no stage weight at all, so on the 7-day `sSEP` a pipe at its rating entered the yearly table at 53.6 tH2 beside a demand column of
+  74.9 tH2 that did carry the weight: the flow was a fifty-second of its size against everything else in the same row. The rows still added up whenever the
+  inflow and the outflow cancelled, which is why nothing showed. Both columns now carry `pLoadLevelDuration` like every other column. Asked for by Andres
+  Ramos.
 - [FIXED] the AC power flow residual check was skipped on every case carrying an HVDC scheme. `angles_available` required an angle at each node, and a node no
   AC branch touches has none; it now considers only the nodes an AC branch touches.
 - [FIXED] the voltage-angle writer put an HVDC pole on the reference. It writes a blank where a node has no angle, not a zero.

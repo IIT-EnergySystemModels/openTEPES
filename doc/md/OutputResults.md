@@ -124,9 +124,11 @@ concatenating CSVs.
 
 The CSV output files are briefly described in the following sections.
 
-The power is expressed in **MW**, energy or heat in **GWh**, marginal costs in **€/MWh**, and costs in millions of euros (**M€**). Hydrogen is expressed in
-**tH2**. Reservoir volume is expressed in hm{sup}`3`, and water flow in hm{sup}`3`/s. The energy transported in the electricity network is expressed in
-**GWh-Mkm**. In each file, the identifiers are described in the first columns, followed by the headers and the description of each variable.
+The power is expressed in **MW**, energy or heat in **GWh**, marginal costs in **€/MWh**, and costs in millions of euros (**M€**). Hydrogen held in a store is
+expressed in **tH2**, and every hydrogen flow in **tH2/h**, as the electricity results hold energy in GWh and power in MW. The hydrogen balance tables are the
+one exception: they report tonnes over the load level, so their rows add up. Reservoir volume is expressed in hm{sup}`3`, and water flow in hm{sup}`3`/s. The
+energy transported in the electricity network is expressed in **GWh-Mkm**. In each file, the identifiers are described in the first columns, followed by the
+headers and the description of each variable.
 
 ## Investment/Retirement
 
@@ -1175,7 +1177,7 @@ File `oT_Result_HydrogenStorageCharge.csv`
 ============  ==========  ==========  ==========  ======================================
 Identifier                                        Header      Description
 ====================================  ==========  ======================================
-Period        Scenario    Load level  Unit        Hydrogen into a store [tH2]
+Period        Scenario    Load level  Unit        Hydrogen into a store [tH2/h]
 ============  ==========  ==========  ==========  ======================================
 ```
 
@@ -1185,7 +1187,7 @@ File `oT_Result_HydrogenStorageDischarge.csv`
 ============  ==========  ==========  ==========  ======================================
 Identifier                                        Header      Description
 ====================================  ==========  ======================================
-Period        Scenario    Load level  Unit        Hydrogen out of a store [tH2]
+Period        Scenario    Load level  Unit        Hydrogen out of a store [tH2/h]
 ============  ==========  ==========  ==========  ======================================
 ```
 
@@ -1202,11 +1204,11 @@ Period        Scenario    Load level  Unit        Hydrogen held in a store [tH2]
 File `oT_Result_NetworkFlowH2PerNode.csv`
 
 ```{eval-rst}
-============  ==========  ==========  ============  ==========  =========  ============================
+============  ==========  ==========  ============  ==========  =========  ==============================
 Identifier                            Header                               Description
-====================================  ===================================  ============================
-Period        Scenario    Load level  Initial node  Final node  Circuit    Hydrogen pipeline flow [tH2]
-============  ==========  ==========  ============  ==========  =========  ============================
+====================================  ===================================  ==============================
+Period        Scenario    Load level  Initial node  Final node  Circuit    Hydrogen pipeline flow [tH2/h]
+============  ==========  ==========  ============  ==========  =========  ==============================
 ```
 
 File `oT_Result_NetworkH2Utilization.csv`
@@ -1225,7 +1227,7 @@ File `oT_Result_NetworkHNS.csv`
 ============  ==========  ==========  ==========  ====================================
 Identifier                            Header      Description
 ====================================  ==========  ====================================
-Period        Scenario    Load level  Node        Hydrogen not served by node [tH2]
+Period        Scenario    Load level  Node        Hydrogen not served by node [tH2/h]
 ============  ==========  ==========  ==========  ====================================
 ```
 

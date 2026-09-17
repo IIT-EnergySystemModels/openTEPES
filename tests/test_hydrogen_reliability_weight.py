@@ -1,4 +1,4 @@
-"""The hydrogen cost terms have to be annualised, and by the weight alone.
+"""The hydrogen cost terms have to be annualised, and by the weight times the hours.
 
 Every cost in the objective is written per load level and scaled up to a year. eTotalRH2Cost and
 eTotalH2SrcCost were the two terms with no scaling at all, so unserved hydrogen, and hydrogen
@@ -7,10 +7,10 @@ looks wrong from outside. The model still solves and the balance still holds; wh
 trade-off, because an electrolyser is priced against a full-weight investment while the shortfall
 it would avoid is discounted.
 
-The scaling is pLoadLevelWeight, not pLoadLevelDuration. Those differ by pDuration, and the hours
-are already inside vH2NS: the balance reads ... + vH2NS == pDemandH2*pDuration, so vH2NS is tonnes
-over the load level, not a rate. Using pLoadLevelDuration counts the hours twice, which is invisible
-on any case with a one-hour step and wrong by a factor of four on sSEP.
+The scaling is pLoadLevelDuration, which is pLoadLevelWeight times pDuration. The hydrogen
+variables are rates in tH2/h, the same way vENS is a power, so the cost needs the hours as well as
+the weight. Scaling by the weight alone would charge one hour of shortfall on a load level that
+lasts four.
 """
 import re
 from pathlib import Path
@@ -22,29 +22,29 @@ def _body(name, code_only=False):
     src = SRC.read_text()
     i = src.index(f"def {name}(")
     body = src[i:src.index("setattr", i)]
-    if code_only:  # the comments discuss the wrong parameter on purpose; test the code
+    if code_only:  # the comments discuss the other parameter on purpose; test the code
         body = "\n".join(l for l in body.splitlines() if not l.lstrip().startswith("#"))
     return body
 
 
 def test_h2_reliability_cost_is_annualised():
     body = _body("eTotalRH2Cost")
-    assert re.search(r"pLoadLevelWeight\[p,sc,n\]\(\)\s*\*\s*sum\(", body), (
-        "eTotalRH2Cost must scale the whole sum by pLoadLevelWeight; without it unserved "
+    assert re.search(r"pLoadLevelDuration\[p,sc,n\]\(\)\s*\*\s*sum\(", body), (
+        "eTotalRH2Cost must scale the whole sum by pLoadLevelDuration; without it unserved "
         "hydrogen is under-priced by the stage weight against every other cost"
     )
 
 
-def test_h2_reliability_does_not_count_the_hours_twice():
+def test_h2_reliability_carries_the_hours():
     body = _body("eTotalRH2Cost", code_only=True)
-    assert "pLoadLevelDuration" not in body, (
-        "vH2NS is tonnes over the load level, so it already carries pDuration; scaling by "
-        "pLoadLevelDuration (= weight x duration) charges the hours a second time"
+    assert "pLoadLevelWeight" not in body, (
+        "vH2NS is a rate in tH2/h, so the stage weight alone leaves out the hours of the load "
+        "level and prices a four-hour shortfall as one hour"
     )
 
 
 def test_electricity_term_does_use_the_duration():
-    # the contrast is the point: vENS is a power, so it needs the hours as well as the weight
+    # the same shape on the electricity side: vENS is a power, so it needs the hours as well as the weight
     obj = (SRC.parent / "openTEPES_ModelFormulationObjective.py").read_text()
     i = obj.index("def eTotalRElecCost(")
     body = obj[i:obj.index("setattr", i)]
@@ -73,14 +73,28 @@ def test_balance_and_cost_cover_the_same_nodes():
 
 def test_h2_source_cost_is_annualised():
     body = _body("eTotalH2SrcCost")
-    assert re.search(r"pLoadLevelWeight\[p,sc,n\]\(\)\s*\*\s*sum\(", body), (
-        "eTotalH2SrcCost must scale the sum by pLoadLevelWeight; without it a reformed tonne "
+    assert re.search(r"pLoadLevelDuration\[p,sc,n\]\(\)\s*\*\s*sum\(", body), (
+        "eTotalH2SrcCost must scale the sum by pLoadLevelDuration; without it a reformed tonne "
         "costs a stage weight less than the electricity to electrolyse the same tonne"
     )
 
 
-def test_h2_source_cost_does_not_count_the_hours_twice():
+def test_h2_source_cost_carries_the_hours():
     body = _body("eTotalH2SrcCost", code_only=True)
-    assert "pLoadLevelDuration" not in body, (
-        "vH2Production is tonnes over the load level, so the hours are already in it"
+    assert "pLoadLevelWeight" not in body, (
+        "vH2Production is a rate in tH2/h, so the hours of the load level have to be in the cost"
+    )
+
+
+def test_the_balance_is_a_rate_balance():
+    """No term of eBalanceH2 may carry pDuration.
+
+    The whole hydrogen module is written in tH2/h, as the electricity module is written in GW. A
+    pDuration anywhere in the balance means one term is a quantity while the rest are rates, which
+    is the mistake the rate convention exists to make impossible.
+    """
+    body = _body("eBalanceH2", code_only=True)
+    assert "pDuration" not in body, (
+        "eBalanceH2 is a rate balance in tH2/h; a pDuration factor turns one of its terms into "
+        "tonnes and silently rescales that term by the length of the load level"
     )

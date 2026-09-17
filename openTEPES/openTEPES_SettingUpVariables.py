@@ -521,23 +521,25 @@ def SettingUpVariables(OptModel, mTEPES):
         [OptModel.vTheta         [p,sc,n,nd      ].setub( mTEPES.pMaxTheta [p,sc,n,nd      ]()                            ) for p,sc,n,nd       in mTEPES.psnnd]
 
         if mTEPES.pIndHydrogen():
-            OptModel.vFlowH2 = Var(mTEPES.psnpa, within=Reals,            doc='pipeline flow               [tH2]')
-            OptModel.vH2NS   = Var(mTEPES.psnnd, within=NonNegativeReals, doc='hydrogen not served in node [tH2]')
-            OptModel.vH2Exc  = Var(mTEPES.psnnd, within=NonNegativeReals, doc='hydrogen excess     in node [tH2]')
-            [OptModel.vFlowH2  [p,sc,n,ni,nf,cc].setlb(-mTEPES.pH2PipeNTCBck[ni,nf,cc]*mTEPES.pDuration[p,sc,n]())          for p,sc,n,ni,nf,cc in mTEPES.psnpa]
-            [OptModel.vFlowH2  [p,sc,n,ni,nf,cc].setub( mTEPES.pH2PipeNTCFrw[ni,nf,cc]*mTEPES.pDuration[p,sc,n]())          for p,sc,n,ni,nf,cc in mTEPES.psnpa]
-            [OptModel.vH2NS    [p,sc,n,nd      ].setub(mTEPES.pDuration[p,sc,n]()*mTEPES.pDemandH2Pos[p,sc,n,nd])           for p,sc,n,nd       in mTEPES.psnnd]
+            # every hydrogen flow is a rate, as every electricity flow is a power. Only the inventory below is a stock. eH2Inventory turns the rates into
+            # tonnes with pDuration, exactly as eESSInventory does for GW and GWh
+            OptModel.vFlowH2 = Var(mTEPES.psnpa, within=Reals,            doc='pipeline flow               [tH2/h]')
+            OptModel.vH2NS   = Var(mTEPES.psnnd, within=NonNegativeReals, doc='hydrogen not served in node [tH2/h]')
+            OptModel.vH2Exc  = Var(mTEPES.psnnd, within=NonNegativeReals, doc='hydrogen excess     in node [tH2/h]')
+            [OptModel.vFlowH2  [p,sc,n,ni,nf,cc].setlb(-mTEPES.pH2PipeNTCBck[ni,nf,cc])                                     for p,sc,n,ni,nf,cc in mTEPES.psnpa]
+            [OptModel.vFlowH2  [p,sc,n,ni,nf,cc].setub( mTEPES.pH2PipeNTCFrw[ni,nf,cc])                                     for p,sc,n,ni,nf,cc in mTEPES.psnpa]
+            [OptModel.vH2NS    [p,sc,n,nd      ].setub(                           mTEPES.pDemandH2Pos[p,sc,n,nd])           for p,sc,n,nd       in mTEPES.psnnd]
 
-            # hydrogen made without electricity, in tH2 over the load level
-            OptModel.vH2Production = Var(mTEPES.psn*mTEPES.sr, within=NonNegativeReals, doc='hydrogen produced without electricity [tH2]')
-            [OptModel.vH2Production[p,sc,n,sr].setub(mTEPES.pDuration[p,sc,n]()*mTEPES.pMaximumProductionH2[sr]) for p,sc,n,sr in mTEPES.psn*mTEPES.sr]
+            # hydrogen made without electricity
+            OptModel.vH2Production = Var(mTEPES.psn*mTEPES.sr, within=NonNegativeReals, doc='hydrogen produced without electricity [tH2/h]')
+            [OptModel.vH2Production[p,sc,n,sr].setub(                           mTEPES.pMaximumProductionH2[sr]) for p,sc,n,sr in mTEPES.psn*mTEPES.sr]
 
             # hydrogen storage: injection, withdrawal and inventory
-            OptModel.vH2StorCharge    = Var(mTEPES.psn*mTEPES.hs, within=NonNegativeReals, doc='hydrogen into  storage [tH2]')
-            OptModel.vH2StorDischarge = Var(mTEPES.psn*mTEPES.hs, within=NonNegativeReals, doc='hydrogen out of storage [tH2]')
-            OptModel.vH2Inventory     = Var(mTEPES.psn*mTEPES.hs, within=NonNegativeReals, doc='hydrogen inventory      [tH2]')
-            [OptModel.vH2StorCharge   [p,sc,n,hs].setub(mTEPES.pDuration[p,sc,n]()*mTEPES.pMaxChargeH2[hs]) for p,sc,n,hs in mTEPES.psn*mTEPES.hs]
-            [OptModel.vH2StorDischarge[p,sc,n,hs].setub(mTEPES.pDuration[p,sc,n]()*mTEPES.pMaxChargeH2[hs]) for p,sc,n,hs in mTEPES.psn*mTEPES.hs]
+            OptModel.vH2StorCharge    = Var(mTEPES.psn*mTEPES.hs, within=NonNegativeReals, doc='hydrogen into  storage [tH2/h]')
+            OptModel.vH2StorDischarge = Var(mTEPES.psn*mTEPES.hs, within=NonNegativeReals, doc='hydrogen out of storage [tH2/h]')
+            OptModel.vH2Inventory     = Var(mTEPES.psn*mTEPES.hs, within=NonNegativeReals, doc='hydrogen inventory      [tH2]'  )
+            [OptModel.vH2StorCharge   [p,sc,n,hs].setub(                           mTEPES.pMaxChargeH2[hs]) for p,sc,n,hs in mTEPES.psn*mTEPES.hs]
+            [OptModel.vH2StorDischarge[p,sc,n,hs].setub(                           mTEPES.pMaxChargeH2[hs]) for p,sc,n,hs in mTEPES.psn*mTEPES.hs]
             [OptModel.vH2Inventory    [p,sc,n,hs].setub(                           mTEPES.pMaxStorageH2[hs]) for p,sc,n,hs in mTEPES.psn*mTEPES.hs]
 
         if mTEPES.pIndHeat():
