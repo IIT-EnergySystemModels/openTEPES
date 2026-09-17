@@ -3,6 +3,13 @@
 ## [4.19.0rc] - 2026-09-17 Unreleased in PyPI
 
 - [FIXED] change the H2 pipeline capacity and H2 flow from tH2 to tH2/h.
+- [ADDED] a round trip on the hydrogen store, through an optional `EfficiencyH2` column in `oT_Data_Generation`. `eH2Inventory` added what went in and subtracted
+  what came out one for one, so a cavern was a perfect buffer while every other store in the model pays a round trip. The loss is split evenly between the two
+  directions, the same square root `eESSInventory` applies to `pEfficiency`: what reaches the inventory is the charge times the square root, and a tonne
+  withdrawn takes a tonne over the square root out of it. The loss sits in the inventory, not in `eBalanceH2`, because the balance is what the node sees and
+  putting it in both places would charge it twice. A value of 0.0 is read as not given and warned about, as `Efficiency` already is, since it divides. The
+  column is optional and defaults to 1.0, so no existing case moves. Note this is a loss of hydrogen: the electricity a compressor draws to fill the store is a
+  separate thing and is still not modelled.
 - [CHANGED] the whole hydrogen module is now written in rates, as the electricity module is. Every hydrogen variable holds tH2/h at a load level -- pipeline
   flow, not served, surplus, production without electricity, and the charge and discharge of a store -- and only the inventory stays a stock in tH2. `eBalanceH2`
   is a rate balance with no `pDuration` in any term, and the duration enters in `eH2Inventory`, which turns the charge and discharge of each load level into

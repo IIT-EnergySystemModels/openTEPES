@@ -1335,7 +1335,9 @@ balance, so the duration of the load level appears nowhere in it.
 ```
 
 Inventory of a hydrogen store over its storage cycle, carrying forward what was injected less what was withdrawn, each multiplied by the duration of its load
-level [tH2] «`eH2Inventory`». Without it the balance clears within the hour and the electrolyzer-store-turbine chain reduces to an instantaneous converter.
+level [tH2] «`eH2Inventory`». Without it the balance clears within the hour and the electrolyzer-store-turbine chain reduces to an instantaneous converter. The
+round trip of the store is split evenly between the two directions, the same square root the electricity inventory applies, so what reaches the inventory is
+the injection times the square root and a tonne withdrawn takes a tonne over the square root out of it. The efficiency defaults to one, a lossless store.
 
 A hydrogen store ends the horizon at the level it started from [tH2] «`eH2IniFinInventory`», as candidate storage does on the electricity side. Without it
 the model can drain a full store and never refill it, which is hydrogen for nothing.

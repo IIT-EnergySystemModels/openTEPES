@@ -5,6 +5,7 @@ openTEPES.openTEPES_ModelFormulationHydrogen — hydrogen network operation: H2 
 """
 from __future__ import annotations
 
+import math
 import time
 from collections import defaultdict
 from pyomo.environ import Constraint
@@ -57,7 +58,9 @@ def NetworkH2OperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, 
     if pIndLogConsole:
         print('eBalanceH2                ... ', len(getattr(OptModel, f'eBalanceH2_{p}_{sc}_{st}')), ' rows')
 
-    # inventory over each storage cycle, as eESSInventory does for electricity: a stock in tH2, so each load level's tH2/h is multiplied by its duration
+    # inventory over each storage cycle, as eESSInventory does for electricity: a stock in tH2, so each load level's tH2/h is multiplied by its duration.
+    # The round trip is split evenly between the two directions, the same square root eESSInventory applies, so a tonne withdrawn costs a tonne over the
+    # efficiency to have put in. pEfficiencyH2 is 1.0 unless the case gives EfficiencyH2, so a case written before this reads exactly as it did
     n2list_h2 = list(mTEPES.n2)
 
     def eH2Inventory(OptModel,n,hs):
@@ -65,7 +68,8 @@ def NetworkH2OperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, 
         if mTEPES.n.ord(n) % step != 0:
             return Constraint.Skip
         window = n2list_h2[mTEPES.n.ord(n)-step:mTEPES.n.ord(n)]
-        net = sum(mTEPES.pDuration[p,sc,n2]()*(OptModel.vH2StorCharge[p,sc,n2,hs] - OptModel.vH2StorDischarge[p,sc,n2,hs]) for n2 in window)
+        eta = math.sqrt(mTEPES.pEfficiencyH2[hs])
+        net = sum(mTEPES.pDuration[p,sc,n2]()*(eta*OptModel.vH2StorCharge[p,sc,n2,hs] - OptModel.vH2StorDischarge[p,sc,n2,hs]/eta) for n2 in window)
         if   mTEPES.n.ord(n) == step:
             return mTEPES.pIniStorageH2[hs] + net == OptModel.vH2Inventory[p,sc,n,hs]
         elif mTEPES.n.ord(n) >  step:

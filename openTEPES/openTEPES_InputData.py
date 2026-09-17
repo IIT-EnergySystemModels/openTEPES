@@ -203,8 +203,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole, option_overrides=None):
         if   key == 'dfEmission':
             df.fillna({col: math.inf for col in num_cols}, inplace=True)
         elif key == 'dfGeneration':
-            # build a dict that gives 1.0 for 'Efficiency', 0.0 for everything else
-            fill_values = {col: (1.0 if col == 'Efficiency' else 0.0) for col in num_cols}
+            # build a dict that gives 1.0 for the two efficiencies, 0.0 for everything else
+            fill_values = {col: (1.0 if col in ('Efficiency', 'EfficiencyH2') else 0.0) for col in num_cols}
             # one pass over the DataFrame
             df.fillna(fill_values, inplace=True)
         else:
@@ -240,6 +240,13 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole, option_overrides=None):
         print('WARNING: Efficiency values of 0.0 are not valid. They have been changed to 1.0.')
         print("If you want to disable charging, set 'MaximumCharge' to 0.0 or leave it empty.")
     dfs['dfGeneration']['Efficiency'] = dfs['dfGeneration']['Efficiency'].where(dfs['dfGeneration']['Efficiency'] != 0.0, 1.0)
+
+    # the same guard on the hydrogen store, whose column is optional
+    if 'EfficiencyH2' in dfs['dfGeneration'].columns:
+        if (dfs['dfGeneration']['EfficiencyH2'] == 0.0).any():
+            print('WARNING: EfficiencyH2 values of 0.0 are not valid. They have been changed to 1.0.')
+            print("If you want to disable the store, set 'MaximumChargeH2' to 0.0 or leave it empty.")
+        dfs['dfGeneration']['EfficiencyH2'] = dfs['dfGeneration']['EfficiencyH2'].where(dfs['dfGeneration']['EfficiencyH2'] != 0.0, 1.0)
 
     # show some statistics of the data
     for key, df in dfs.items():
@@ -584,6 +591,7 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole, option_overrides=None):
     par['pMaxChargeH2']   = _optional_gen_col('MaximumChargeH2' ).fillna(0.0)
     par['pIniStorageH2']  = _optional_gen_col('InitialStorageH2').fillna(0.0)
     par['pStorageTypeH2'] = _optional_gen_col('StorageTypeH2', 'Weekly').fillna('Weekly')
+    par['pEfficiencyH2']  = _optional_gen_col('EfficiencyH2' , 1.0).fillna(1.0)                                                                                   # hydrogen store round-trip efficiency         [p.u.]
 
     par['pEfficiency']                 = dfs['dfGeneration']  ['Efficiency'                ]                                                             #               ESS round-trip efficiency      [p.u.]
     par['pStorageType']                = dfs['dfGeneration']  ['StorageType'               ]                                                             #               ESS storage  type
