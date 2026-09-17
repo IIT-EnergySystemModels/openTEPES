@@ -12,8 +12,16 @@ would charge the same loss twice.
 `EfficiencyH2` is optional and defaults to 1.0, so a case written before this reads exactly as it
 did.
 """
+import os
 import re
+import shutil
 from pathlib import Path
+
+import numpy as np
+import pandas as pd
+import pytest
+
+from openTEPES.openTEPES import openTEPES_run
 
 SRC = Path(__file__).resolve().parents[1] / "openTEPES" / "openTEPES_ModelFormulationHydrogen.py"
 
@@ -73,3 +81,56 @@ def test_zero_is_not_a_store_that_swallows_everything():
 
 def test_blank_cell_falls_back():
     assert _efficiency_h2(cell_given=True, value=float("nan")) == 1.0
+
+
+@pytest.fixture
+def case_9nH2_lossy_store(tmp_path):
+    """9nH2 over a week, with a round trip of 0.9 on its cavern.
+
+    None of the bundled cases carries EfficiencyH2, so a solved check needs one written here. The
+    week is the truncation the other solve fixtures use, and the cavern cycles on it.
+    """
+    case = "9nH2"
+    src = Path(__file__).resolve().parents[1] / "openTEPES" / "cases" / case
+    dst = os.path.join(str(tmp_path), case)
+    shutil.copytree(src, dst, ignore=shutil.ignore_patterns("openTEPES_*", "oT_Result_*", "oT_Plot_*", "*.html"))
+
+    duration = os.path.join(dst, f"oT_Data_Duration_{case}.csv")
+    df = pd.read_csv(duration, index_col=[0, 1, 2])
+    df.iloc[168:, df.columns.get_loc("Duration")] = np.nan
+    df.to_csv(duration)
+
+    # the annual RES-energy requirement is written for a year and a week cannot meet it, as the other 7-day fixtures also find
+    res_energy = os.path.join(dst, f"oT_Data_RESEnergy_{case}.csv")
+    df = pd.read_csv(res_energy, index_col=[0, 1])
+    df["RESEnergy"] = np.nan
+    df.to_csv(res_energy)
+
+    generation = os.path.join(dst, f"oT_Data_Generation_{case}.csv")
+    df = pd.read_csv(generation, index_col=0)
+    df["EfficiencyH2"] = 1.0
+    df.loc[df["MaximumStorageH2"].fillna(0.0) > 0.0, "EfficiencyH2"] = 0.9
+    df.to_csv(generation)
+
+    return dict(DirName=str(tmp_path), CaseName=case, SolverName="highs", pIndLogConsole=0, pIndOutputResults=0)
+
+
+@pytest.mark.solve
+def test_a_lossy_store_gives_back_its_round_trip(case_9nH2_lossy_store):
+    """The round trip is the one the case asked for, measured on the solved model.
+
+    Without the efficiency the store gives back every tonne, and the ratio below is 1.0 whatever
+    EfficiencyH2 says.
+    """
+    mTEPES = openTEPES_run(**case_9nH2_lossy_store)
+
+    pDur = lambda p, sc, n: mTEPES.pDuration[p, sc, n]()
+    pIn = sum(pDur(p, sc, n) * (mTEPES.vH2StorCharge[p, sc, n, hs]() or 0.0)
+              for p, sc, n in mTEPES.psn for hs in mTEPES.hs)
+    pOut = sum(pDur(p, sc, n) * (mTEPES.vH2StorDischarge[p, sc, n, hs]() or 0.0)
+               for p, sc, n in mTEPES.psn for hs in mTEPES.hs)
+
+    assert all(mTEPES.pEfficiencyH2[hs] == 0.9 for hs in mTEPES.hs), "the case did not carry the efficiency"
+    assert pIn > 1.0, "the store never charged, so the round trip is not exercised"
+    assert pOut / pIn == pytest.approx(0.9, abs=1e-6), (
+        f"the store gave back {pOut / pIn:.4f} of what it took, against the 0.9 round trip asked for")
