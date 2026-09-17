@@ -1,5 +1,5 @@
 ﻿"""
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 09, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 17, 2026
 
 openTEPES.openTEPES_SettingUpVariables — creates the decision variables and their bounds, fixes the generators' commitment, relaxes or forbids investment conditions,
 zeroes out epsilon values, and screens for infeasibilities. Runs after DataConfiguration.
@@ -524,9 +524,9 @@ def SettingUpVariables(OptModel, mTEPES):
             OptModel.vFlowH2 = Var(mTEPES.psnpa, within=Reals,            doc='pipeline flow               [tH2]')
             OptModel.vH2NS   = Var(mTEPES.psnnd, within=NonNegativeReals, doc='hydrogen not served in node [tH2]')
             OptModel.vH2Exc  = Var(mTEPES.psnnd, within=NonNegativeReals, doc='hydrogen excess     in node [tH2]')
-            [OptModel.vFlowH2  [p,sc,n,ni,nf,cc].setlb(-mTEPES.pH2PipeNTCBck[ni,nf,cc])                           for p,sc,n,ni,nf,cc in mTEPES.psnpa]
-            [OptModel.vFlowH2  [p,sc,n,ni,nf,cc].setub( mTEPES.pH2PipeNTCFrw[ni,nf,cc])                           for p,sc,n,ni,nf,cc in mTEPES.psnpa]
-            [OptModel.vH2NS    [p,sc,n,nd      ].setub(mTEPES.pDuration[p,sc,n]()*mTEPES.pDemandH2Pos[p,sc,n,nd]) for p,sc,n,nd       in mTEPES.psnnd]
+            [OptModel.vFlowH2  [p,sc,n,ni,nf,cc].setlb(-mTEPES.pH2PipeNTCBck[ni,nf,cc]*mTEPES.pDuration[p,sc,n]())          for p,sc,n,ni,nf,cc in mTEPES.psnpa]
+            [OptModel.vFlowH2  [p,sc,n,ni,nf,cc].setub( mTEPES.pH2PipeNTCFrw[ni,nf,cc]*mTEPES.pDuration[p,sc,n]())          for p,sc,n,ni,nf,cc in mTEPES.psnpa]
+            [OptModel.vH2NS    [p,sc,n,nd      ].setub(mTEPES.pDuration[p,sc,n]()*mTEPES.pDemandH2Pos[p,sc,n,nd])           for p,sc,n,nd       in mTEPES.psnnd]
 
             # hydrogen made without electricity, in tH2 over the load level
             OptModel.vH2Production = Var(mTEPES.psn*mTEPES.sr, within=NonNegativeReals, doc='hydrogen produced without electricity [tH2]')

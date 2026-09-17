@@ -1142,19 +1142,19 @@ model.
 
 A description of the circuit (initial node, final node, circuit) data included in the file `oT_Data_NetworkHydrogen.csv` follows:
 
-| Header              | Description                                                                                                                                                    |        |
-| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
-| InitialPeriod       | Initial period (year) when the unit is installed or can be installed, if candidate                                                                             | Year   |
-| FinalPeriod         | Final period (year) when the unit is installed or can be installed, if candidate                                                                               | Year   |
-| Length              | Pipeline length (only used for reporting purposes). If not defined, computed as 1.1 times the geographical distance                                            | km     |
-| TTC                 | Total transfer capacity (maximum permissible hydrogen flow) in forward direction. Static pipeline rating                                                       | tH2    |
-| TTCBck              | Total transfer capacity (maximum permissible hydrogen flow) in backward direction. Static pipeline rating                                                      | tH2    |
+| Header              | Description                                                                                                                                                             |        |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------| ------ |
+| InitialPeriod       | Initial period (year) when the unit is installed or can be installed, if candidate                                                                                      | Year   |
+| FinalPeriod         | Final period (year) when the unit is installed or can be installed, if candidate                                                                                        | Year   |
+| Length              | Pipeline length (only used for reporting purposes). If not defined, computed as 1.1 times the geographical distance                                                     | km     |
+| TTC                 | Total transfer capacity (maximum permissible hydrogen flow) in forward  direction. Static pipeline rating                                                               | tH2/h  |
+| TTCBck              | Total transfer capacity (maximum permissible hydrogen flow) in backward direction. Static pipeline rating                                                               | tH2/h  |
 | SecurityFactor      | Security factor to consider approximately N-1 contingencies. NTC = TTC x SecurityFactor. The security factors cannot all be 0; otherwise, there is no network capacity. | p.u.   |
-| FixedInvestmentCost | Overnight investment (capital -CAPEX- and fixed O&M -FOM-) cost                                                                                                | M€     |
-| FixedChargeRate     | Fixed-charge rate to annualize the overnight investment cost                                                                                                   | p.u.   |
-| BinaryInvestment    | Binary pipeline investment decision                                                                                                                            | Yes/No |
-| InvestmentLo        | Lower bound of investment decision                                                                                                                             | p.u.   |
-| InvestmentUp        | Upper bound of investment decision                                                                                                                             | p.u.   |
+| FixedInvestmentCost | Overnight investment (capital -CAPEX- and fixed O&M -FOM-) cost                                                                                                         | M€     |
+| FixedChargeRate     | Fixed-charge rate to annualize the overnight investment cost                                                                                                            | p.u.   |
+| BinaryInvestment    | Binary pipeline investment decision                                                                                                                                     | Yes/No |
+| InvestmentLo        | Lower bound of investment decision                                                                                                                                      | p.u.   |
+| InvestmentUp        | Upper bound of investment decision                                                                                                                                      | p.u.   |
 
 The initial and final nodes are where the hydrogen pipeline starts and ends. They must be different.
 

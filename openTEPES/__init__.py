@@ -50,7 +50,7 @@ imported in the order the model is built:
 ``openTEPES_ResultAggregate``       aggregation across the tables
 ==================================  ===========================================================================
 """
-__version__ = "4.18.19"
+__version__ = "4.19.0rc"
 
 from .openTEPES_Main                              import main
 from .openTEPES                                   import *

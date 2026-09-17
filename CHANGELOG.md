@@ -1,7 +1,8 @@
 # Change Log
 
-## [4.18.20rc] - 2026-09-16 Unreleased in PyPI
+## [4.19.0rc] - 2026-09-17 Unreleased in PyPI
 
+- [FIXED] change the H2 pipeline capacity and H2 flow from tH2 to tH2/h.
 - [FIXED] the AC power flow residual check was skipped on every case carrying an HVDC scheme. `angles_available` required an angle at each node, and a node no
   AC branch touches has none; it now considers only the nodes an AC branch touches.
 - [FIXED] the voltage-angle writer put an HVDC pole on the reference. It writes a blank where a node has no angle, not a zero.
