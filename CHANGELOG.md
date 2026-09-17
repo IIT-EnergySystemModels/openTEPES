@@ -11,6 +11,8 @@
   recorded setpoint wins over the band the impedances imply. Equal limits pin a busbar. AC-only, so no DC case is affected.
 - [FIXED] the voltage-angle bound warning counted nodes whose angle nothing determines. A candidate line left unbuilt leaves its far node adrift and the
   solver parks its angle at a bound. Those nodes are now reported separately, not as a binding bound. Reported by Andres Ramos.
+- [FIXED] writing the results failed on a case where every unit sits at its upper bound. The generation surplus table pivoted an empty frame and
+  raised KeyError: 'level_0'. It is now skipped when there is no surplus, as the ramp surplus tables beside it already were.
 
 ## [4.18.19] - 2026-09-16
 - [FIXED] typo in openTEPES.py

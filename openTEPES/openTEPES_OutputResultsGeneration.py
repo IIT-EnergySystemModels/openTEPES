@@ -206,7 +206,11 @@ def GenerationOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnolo
     OutputToFile = pd.Series(data=pSurplus, index=pd.Index(sPSNG))
 
     OutputToFile *= 1e3
-    OutputToFile.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_GenerationSurplus_{CaseName}.csv', sep=',')
+    # Every unit can sit at its upper bound -- a case that fixes each unit to a recorded output has no
+    # surplus anywhere -- and an empty Series carries no level_0 to pivot on. The ramp surpluses below
+    # already guard for this; so does this one.
+    if len(OutputToFile):
+        OutputToFile.to_frame(name='MW').reset_index().pivot_table(index=['level_0','level_1','level_2'], columns='level_3', values='MW').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_GenerationSurplus_{CaseName}.csv', sep=',')
 
     # The three ramp-surplus filters below share this prefix. They differ only in the ramp parameter (pRampUp / pRampDw), in whether they take the
     # first load level or the rest, and in the commitment term compared against the start-up / shut-down decision; keeping the common part here makes
