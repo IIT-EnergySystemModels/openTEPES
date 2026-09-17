@@ -17,12 +17,12 @@ from   collections       import defaultdict
 from   colour            import Color
 
 try:
-    from          .openTEPES_OutputResultsCommon import _outdir
+    from          .openTEPES_OutputResultsCommon    import _outdir
     from          .openTEPES_OutputResultsMapCommon import make_flow_series, pick_snapshot
 except ImportError:
     import sys
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    from openTEPES.openTEPES_OutputResultsCommon import _outdir
+    from openTEPES.openTEPES_OutputResultsCommon    import _outdir
     from openTEPES.openTEPES_OutputResultsMapCommon import make_flow_series, pick_snapshot
 
 

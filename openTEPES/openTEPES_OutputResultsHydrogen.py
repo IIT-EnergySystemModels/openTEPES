@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 09, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 17, 2026
 
 Hydrogen network operation results.
 
@@ -17,12 +17,12 @@ from   collections       import defaultdict
 from   colour            import Color
 
 try:
-    from          .openTEPES_OutputResultsCommon import _outdir
+    from          .openTEPES_OutputResultsCommon    import _outdir
     from          .openTEPES_OutputResultsMapCommon import make_flow_series, pick_snapshot
 except ImportError:
     import sys
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    from openTEPES.openTEPES_OutputResultsCommon import _outdir
+    from openTEPES.openTEPES_OutputResultsCommon    import _outdir
     from openTEPES.openTEPES_OutputResultsMapCommon import make_flow_series, pick_snapshot
 
 
@@ -112,7 +112,7 @@ def NetworkH2OperationResults(DirName, CaseName, OptModel, mTEPES):
         # tolerance to avoid division by 0
         pEpsilon = 1e-6
 
-        OutputToFile = pd.Series(data=[max(OptModel.vFlowH2[p,sc,n,ni,nf,cc]()/(mTEPES.pH2PipeNTCFrw[ni,nf,cc]+pEpsilon),-OptModel.vFlowH2[p,sc,n,ni,nf,cc]()/(mTEPES.pH2PipeNTCBck[ni,nf,cc]+pEpsilon)) for p,sc,n,ni,nf,cc in mTEPES.psnpa], index=mTEPES.psnpa)
+        OutputToFile = pd.Series(data=[max(OptModel.vFlowH2[p,sc,n,ni,nf,cc]()/(mTEPES.pH2PipeNTCFrw[ni,nf,cc]*mTEPES.pDuration[p,sc,n]()+pEpsilon),-OptModel.vFlowH2[p,sc,n,ni,nf,cc]()/(mTEPES.pH2PipeNTCBck[ni,nf,cc]*mTEPES.pDuration[p,sc,n]()+pEpsilon)) for p,sc,n,ni,nf,cc in mTEPES.psnpa], index=mTEPES.psnpa)
         OutputToFile.index.names = ['Period', 'Scenario', 'LoadLevel', 'InitialNode', 'FinalNode', 'Circuit']
         OutputToFile = pd.pivot_table(OutputToFile.to_frame(name='p.u.'), values='p.u.', index=['Period', 'Scenario', 'LoadLevel'], columns=['InitialNode', 'FinalNode', 'Circuit'], fill_value=0.0).rename_axis([None, None, None], axis=1)
         OutputToFile.reset_index().oT.write(f'{_path}/oT_Result_NetworkH2Utilization_{CaseName}.csv', index=False, sep=',')
@@ -173,7 +173,7 @@ def NetworkH2OperationResults(DirName, CaseName, OptModel, mTEPES):
         colors = [x.hex_l for x in colors]
 
         # accumulate per node pair in plain dictionaries and write the columns once at the end. Reading and writing line_df.loc[(ni,nf),'col'] meant about
-        # fifteen scalar lookups on a MultiIndex per pipe. The sequence of updates is unchanged: utilization and colour come from the accumulated flow, so
+        # fifteen scalar lookups on a MultiIndex per pipe. The sequence of updates is unchanged: utilization and color come from the accumulated flow, so
         # only the last circuit of a pair leaves the correct value, exactly as before
         pTH2    = OutputToFile['tH2'].to_dict()
         pNTCFrw = line_df['NTCFrw' ].to_dict()
@@ -196,7 +196,7 @@ def NetworkH2OperationResults(DirName, CaseName, OptModel, mTEPES):
                 pColorIndex   = min(int(pUtil[ni,nf] // 10), ncolors-1)
                 pColor[ni,nf] = colors[max(pColorIndex, 0)]
 
-        # the defaults below are the ones the columns used to be initialised with, so node pairs left untouched by the loop keep exactly the same values
+        # the defaults below are the ones the columns used to be initialized with, so node pairs left untouched by the loop keep exactly the same values
         line_df['vFlowH2'    ] = [pFlow .get(pa, 0.0) for pa in line_df.index]
         line_df['utilization'] = [pUtil .get(pa, 0.0) for pa in line_df.index]
         line_df['color'      ] = [pColor.get(pa, '' ) for pa in line_df.index]
