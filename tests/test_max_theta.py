@@ -110,3 +110,23 @@ def test_the_reference_node_alone_is_still_tied():
     from openTEPES.openTEPES_OutputResultsNetwork import tied_to_reference
 
     assert tied_to_reference([], '1') == {'1'}
+
+
+def test_a_node_with_no_line_is_told_apart_from_an_island_with_no_reference():
+    """The table and the warning ask different questions, and only one of them blanks a value.
+
+    A node no line acts on has no angle to report, so its cell is blank. An island carrying no
+    reference node is different: the angles inside it are real and only their common offset is
+    arbitrary, so they are kept, and it is only the warning that has to leave them out.
+    """
+    from openTEPES.openTEPES_OutputResultsNetwork import nodes_with_a_line, tied_to_reference
+
+    # 1 -- 2 is the reference's island; 3 -- 4 is an island with no reference; 5 stands alone.
+    edges = [('1', '2'), ('3', '4')]
+
+    # only node 5 has no angle at all, so only node 5 is blanked
+    assert nodes_with_a_line(edges) == {'1', '2', '3', '4'}
+    assert '5' not in nodes_with_a_line(edges)
+
+    # the warning is stricter: nodes 3 and 4 keep their values but cannot speak for the bound
+    assert tied_to_reference(edges, '1') == {'1', '2'}

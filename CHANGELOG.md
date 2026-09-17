@@ -13,6 +13,9 @@
   solver parks its angle at a bound. Those nodes are now reported separately, not as a binding bound. Reported by Andres Ramos.
 - [FIXED] writing the results failed on a case where every unit sits at its upper bound. The generation surplus table pivoted an empty frame and
   raised KeyError: 'level_0'. It is now skipped when there is no surplus, as the ramp surplus tables beside it already were.
+- [FIXED] the voltage angle table gave a number for nodes that have no angle. A node no line acts on -- an HVDC pole, or the far end of a candidate
+  line left unbuilt -- is written `N/A`, not at whatever bound the solver left it. An island carrying no reference node keeps its angles, which are
+  real up to a common offset.
 
 ## [4.18.19] - 2026-09-16
 - [FIXED] typo in openTEPES.py
