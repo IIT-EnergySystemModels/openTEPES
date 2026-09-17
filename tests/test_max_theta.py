@@ -73,3 +73,40 @@ def test_the_warning_is_skipped_when_the_cycle_formulation_replaced_the_angle_la
 
     assert _in_force(_Model(['eKirchhoff2ndLaw1_2030_sc1_st1', 'eBalanceElec_2030_sc1_st1']))
     assert not _in_force(_Model(['eCycleKirchhoff2ndLawCnd1_2030_sc1_st1', 'eBalanceElec_2030_sc1_st1']))
+
+
+def test_a_node_left_adrift_is_not_reported_as_binding():
+    """An unbuilt radial candidate leaves its far node with no constraint on its angle.
+
+    Andres Ramos reported this: a candidate line in antenna that the model declines to build
+    leaves the node at its far end disconnected, its angle free to take any value, and the solver
+    sends it to the lower bound. Read naively that looks like the bound clipping the solution,
+    which is the one thing the warning is meant to tell you apart from.
+    """
+    from openTEPES.openTEPES_OutputResultsNetwork import tied_to_reference
+
+    # 1 -- 2 -- 3 is the built network; 3 -- 4 is the candidate that is not built.
+    built = [('1', '2'), ('2', '3')]
+    assert tied_to_reference(built, '1') == {'1', '2', '3'}
+    assert '4' not in tied_to_reference(built, '1')
+
+    # with the candidate built, node 4 has a determined angle and belongs in the warning
+    assert tied_to_reference(built + [('3', '4')], '1') == {'1', '2', '3', '4'}
+
+
+def test_an_island_carrying_no_reference_node_is_not_reported_as_binding():
+    """A component with no reference node has a free angle offset, bound or not.
+
+    Nothing fixes the offset of an island that does not contain the reference node, so every angle
+    in it can slide together until one of them reaches a bound.
+    """
+    from openTEPES.openTEPES_OutputResultsNetwork import tied_to_reference
+
+    two_islands = [('1', '2'), ('3', '4')]
+    assert tied_to_reference(two_islands, '1') == {'1', '2'}
+
+
+def test_the_reference_node_alone_is_still_tied():
+    from openTEPES.openTEPES_OutputResultsNetwork import tied_to_reference
+
+    assert tied_to_reference([], '1') == {'1'}
