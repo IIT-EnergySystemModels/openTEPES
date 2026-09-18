@@ -1,6 +1,6 @@
 # Change Log
 
-## [4.19.0rc] - 2026-09-17 Unreleased in PyPI
+## [4.19.0rc] - 2026-09-18 Unreleased in PyPI
 
 - [FIXED] change the H2 pipeline capacity and H2 flow from tH2 to tH2/h.
 - [CHANGED] the whole hydrogen module is now written in rates, as the electricity module is. Every hydrogen variable holds tH2/h at a load level -- pipeline
