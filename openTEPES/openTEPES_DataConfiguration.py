@@ -1050,7 +1050,7 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
         # drop generators not h2p
         par['pProductionFunctionH2ToPower'] = par['pProductionFunctionH2ToPower'].loc[mTEPES.h2p]
         # drop generators not hs
-        for _k in ('pMaxStorageH2', 'pMaxChargeH2', 'pIniStorageH2', 'pStorageTimeStepH2'):
+        for _k in ('pMaxStorageH2', 'pMaxChargeH2', 'pIniStorageH2', 'pStorageTimeStepH2', 'pEfficiencyH2'):
             par[_k] = par[_k].loc[mTEPES.hs]
         # drop generators not sr
         for _k in ('pMaximumProductionH2', 'pProductionCostH2', 'pProductionEmissionH2'):
@@ -1319,6 +1319,7 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
         mTEPES.pMaxChargeH2       = Param(mTEPES.hs, initialize=par['pMaxChargeH2'].to_dict()      , within=NonNegativeReals, doc='Maximum hydrogen in/out rate [tH2/h]')
         mTEPES.pIniStorageH2      = Param(mTEPES.hs, initialize=par['pIniStorageH2'].to_dict()     , within=NonNegativeReals, doc='Initial hydrogen storage    [tH2]')
         mTEPES.pStorageTimeStepH2 = Param(mTEPES.hs, initialize=par['pStorageTimeStepH2'].to_dict(), within=PositiveIntegers, doc='Hydrogen storage cycle [load levels]')
+        mTEPES.pEfficiencyH2      = Param(mTEPES.hs, initialize=par['pEfficiencyH2'].to_dict()     , within=UnitInterval    , doc='Hydrogen store round-trip efficiency [p.u.]')
         mTEPES.pMaximumProductionH2  = Param(mTEPES.sr, initialize=par['pMaximumProductionH2'].to_dict() , within=NonNegativeReals, doc='Maximum hydrogen production without electricity [tH2/h]')
         mTEPES.pProductionCostH2     = Param(mTEPES.sr, initialize=par['pProductionCostH2'].to_dict()    , within=NonNegativeReals, doc='Cost of that hydrogen, fuel + VOM + carbon    [MEUR/tH2]')
         mTEPES.pProductionEmissionH2 = Param(mTEPES.sr, initialize=par['pProductionEmissionH2'].to_dict(), within=NonNegativeReals, doc='Carbon emitted making it, for reporting      [tCO2/tH2]')

@@ -1,3 +1,4 @@
+import math
 import os
 import shutil
 import pytest
@@ -1066,4 +1067,11 @@ def test_9nH2x_solves_and_closes_its_hydrogen_balance(case_7d_system):
 
     assert pMade - pBurnt - pIn + pOut + pNotServed - pExcess - pDemand == pytest.approx(0.0, abs=1e-6), (
         "the hydrogen balance does not close over the horizon")
-    assert pIn == pytest.approx(pOut, abs=1e-6), "the store does not return to its initial level"
+    # the store ends where it started, so what reached the inventory equals what left it. The balance
+    # above sees the raw tonnes; the inventory sees them after the round trip, hence the two factors
+    pEta = {hs: math.sqrt(mTEPES.pEfficiencyH2[hs]) for hs in mTEPES.hs}
+    pStored = sum(pDur(p, sc, n) * pEta[hs] * (mTEPES.vH2StorCharge[p, sc, n, hs]() or 0.0)
+                  for p, sc, n in mTEPES.psn for hs in mTEPES.hs)
+    pDrawn = sum(pDur(p, sc, n) * (mTEPES.vH2StorDischarge[p, sc, n, hs]() or 0.0) / pEta[hs]
+                 for p, sc, n in mTEPES.psn for hs in mTEPES.hs)
+    assert pStored == pytest.approx(pDrawn, abs=1e-6), "the store does not return to its initial level"
