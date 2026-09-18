@@ -730,10 +730,9 @@ parser.add_argument('--crossover',            type=int, default=None, choices=[-
                          "returns the interior-point solution, which is reproducible and worth being able to state. "
                          "Also set by OTEPES_CROSSOVER.")
 parser.add_argument('--max-theta',            type=float, default=None,
-                    help="Nodal voltage angle bound in radians. Default pi/2. The bound is on the nodal angle, not "
-                         "on the difference across a line, so on a wide network it can bind at the periphery while "
-                         "every line is inside its own limit; raise it to test whether that is happening. The "
-                         "candidate-line Big-M follows it. No effect under the cycle formulation (IndCycleFlow), which closes "
+                    help="Nodal voltage angle bound in radians. Default pi/2. The bound is on the nodal angle, not on the difference across a line,"
+                         "so on a wide network it can bind at the periphery while every line is inside its own limit; raise it to test whether that is happening."
+                         "The candidate-line Big-M follows it. No effect under the cycle formulation (IndCycleFlow), which closes "
                          "the loop on flows and leaves the nodal angle in no constraint. Also set by OTEPES_MAX_THETA.")
 parser.add_argument('--zero-ens',             default=False, action="store_true",
                     help="Forbid energy not served instead of penalising it, so the model is infeasible when demand "
