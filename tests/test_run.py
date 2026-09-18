@@ -1032,7 +1032,8 @@ def test_9nH2_hydrogen_demand_is_actually_served(case_7d_system):
 
     pDur = lambda p, sc, n: mTEPES.pDuration[p, sc, n]()
     pDemand = sum(pDur(p, sc, n) * mTEPES.pDemandH2[p, sc, n, nd] for p, sc, n, nd in mTEPES.psnnd)
-    pNotServed = sum(mTEPES.vH2NS[k]() or 0.0 for k in mTEPES.vH2NS)
+    # the hydrogen variables are rates in tH2/h, so every one of them is turned into tonnes here
+    pNotServed = sum(pDur(p, sc, n) * (mTEPES.vH2NS[p, sc, n, nd]() or 0.0) for p, sc, n, nd in mTEPES.psnnd)
 
     assert pDemand > 0.0, "9nH2 should carry a hydrogen demand"
     assert pNotServed == pytest.approx(0.0, abs=1e-6), (
@@ -1054,13 +1055,14 @@ def test_9nH2x_solves_and_closes_its_hydrogen_balance(case_7d_system):
                 for p, sc, n in mTEPES.psn for el in mTEPES.el if (p, el) in mTEPES.peh)
     pBurnt = sum(pDur(p, sc, n) * mTEPES.vTotalOutput[p, sc, n, h2p]() * mTEPES.pProductionFunctionH2ToPower[h2p]
                  for p, sc, n in mTEPES.psn for h2p in mTEPES.h2p if (p, h2p) in mTEPES.pg)
-    # a variable the solve never touched reports None rather than 0.0
-    pVal = lambda v, k: v[k]() or 0.0
-    pIn = sum(pVal(mTEPES.vH2StorCharge, k)    for k in mTEPES.vH2StorCharge)
-    pOut = sum(pVal(mTEPES.vH2StorDischarge, k) for k in mTEPES.vH2StorDischarge)
+    # a variable the solve never touched reports None rather than 0.0. Every hydrogen variable is a
+    # rate in tH2/h, so the hours of the load level turn it into the tonnes the balance is closed on
+    pVal = lambda v, p, sc, n, k: pDur(p, sc, n) * (v[p, sc, n, k]() or 0.0)
+    pIn = sum(pVal(mTEPES.vH2StorCharge, p, sc, n, hs)     for p, sc, n in mTEPES.psn for hs in mTEPES.hs)
+    pOut = sum(pVal(mTEPES.vH2StorDischarge, p, sc, n, hs) for p, sc, n in mTEPES.psn for hs in mTEPES.hs)
     pDemand = sum(pDur(p, sc, n) * mTEPES.pDemandH2[p, sc, n, nd] for p, sc, n, nd in mTEPES.psnnd)
-    pNotServed = sum(pVal(mTEPES.vH2NS, k)  for k in mTEPES.vH2NS)
-    pExcess = sum(pVal(mTEPES.vH2Exc, k) for k in mTEPES.vH2Exc)
+    pNotServed = sum(pVal(mTEPES.vH2NS, p, sc, n, nd) for p, sc, n, nd in mTEPES.psnnd)
+    pExcess = sum(pVal(mTEPES.vH2Exc, p, sc, n, nd) for p, sc, n, nd in mTEPES.psnnd)
 
     assert pMade - pBurnt - pIn + pOut + pNotServed - pExcess - pDemand == pytest.approx(0.0, abs=1e-6), (
         "the hydrogen balance does not close over the horizon")

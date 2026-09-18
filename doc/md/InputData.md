@@ -1111,8 +1111,9 @@ For example, these data can be used to define the operating guide (rule) curves 
 # Hydrogen System Input Data
 
 These input files are specifically introduced to allow a representation of the hydrogen energy vector to supply the hydrogen demand with hydrogen produced from
-electricity or by any other means through the hydrogen network. The hydrogen data are expressed in tH2. However, they can easily be converted into MWh by
-multiplying the tH2 values by 33.33 MWh/tH2 (the lower heating value of hydrogen). To represent the hydrogen demand in MWh instead of tH2, input it in MWh in
+electricity or by any other means through the hydrogen network. The hydrogen data are expressed in tH2 for what a store holds and in tH2/h for everything that
+flows, the same split the electricity data make between GWh and MW. However, they can easily be converted into MWh by multiplying the tH2 values by
+33.33 MWh/tH2 (the lower heating value of hydrogen). To represent the hydrogen demand in MWh instead of tH2, input it in MWh in
 the file `oT_Data_DemandHydrogen.csv` and convert it into tH2 by dividing the MWh values by 33.33 MWh/tH2.
 
 If hydrogen is produced only from electricity, with no hydrogen flows among nodes, the hydrogen demand can be represented by the energy outflows associated with

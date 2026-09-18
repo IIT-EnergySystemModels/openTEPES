@@ -1,7 +1,7 @@
-"""The hydrogen balance is in tonnes. Check the two production functions agree with that.
+"""The hydrogen balance is in tonnes per hour. Check the two production functions agree with that.
 
-eBalanceH2 sums terms in tH2 while vTotalOutput and vESSTotalCharge are in GW, so the scaling
-applied when each production function is read decides whether its term lands in tonnes. The
+eBalanceH2 sums terms in tH2/h while vTotalOutput and vESSTotalCharge are in GW, so the scaling
+applied when each production function is read decides whether its term lands in tonnes per hour. The
 electrolyser divides and needs a 1e-3; the hydrogen-fired generator multiplies and must not have one.
 Copying the scaling from one to the other understates a turbine's fuel by a factor of a thousand,
 and the model still balances, so nothing looks wrong.

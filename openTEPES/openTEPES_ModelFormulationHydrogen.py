@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 14, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 18, 2026
 
 openTEPES.openTEPES_ModelFormulationHydrogen — hydrogen network operation: H2 balance and hydrogen-not-served cost.
 """
@@ -45,17 +45,19 @@ def NetworkH2OperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, 
             g2n[nd].add(g)
 
 
+    # a rate balance in tH2/h at every load level, the shape eBalanceElec has in GW. Every term is a rate, so no term carries pDuration: the electrolyser
+    # draws vESSTotalCharge GW and turns it into GW/(GWh/tH2) = tH2/h, and pDemandH2 is read per hour. Duration enters only in eH2Inventory and in the costs
     def eBalanceH2(OptModel,n,nd):
         if len(l2n[nd]) + len(b2n[nd]) + len(g2n[nd]) + len(s2nd[nd]) + len(r2n[nd]) + len(lout[nd]) + len(lin[nd]) == 0:
             return Constraint.Skip
-        return (sum(OptModel.vH2Production[p,sc,n,sr] for sr in r2n[nd]) + mTEPES.pDuration[p,sc,n]()*sum(OptModel.vESSTotalCharge[p,sc,n,el]/mTEPES.pProductionFunctionH2[el] for el in l2n[nd] if (p,el) in mTEPES.peh) - mTEPES.pDuration[p,sc,n]()*sum(OptModel.vTotalOutputHeat[p,sc,n,hh]*mTEPES.pProductionFunctionH2ToHeat[hh] for hh in b2n[nd] if (p,hh) in mTEPES.phh) - mTEPES.pDuration[p,sc,n]()*sum(OptModel.vTotalOutput[p,sc,n,h2p]*mTEPES.pProductionFunctionH2ToPower[h2p] for h2p in g2n[nd] if (p,h2p) in mTEPES.pg) - sum(OptModel.vH2StorCharge[p,sc,n,hs] - OptModel.vH2StorDischarge[p,sc,n,hs] for hs in s2nd[nd]) + OptModel.vH2NS[p,sc,n,nd] - OptModel.vH2Exc[p,sc,n,nd] -
-                sum(OptModel.vFlowH2[p,sc,n,nd,nf,cc] for nf,cc in lout[nd] if (p,nd,nf,cc) in mTEPES.ppa) + sum(OptModel.vFlowH2[p,sc,n,ni,nd,cc] for ni,cc in lin[nd] if (p,ni,nd,cc) in mTEPES.ppa)) == mTEPES.pDemandH2[p,sc,n,nd]*mTEPES.pDuration[p,sc,n]()
-    setattr(OptModel, f'eBalanceH2_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.nd, rule=eBalanceH2, doc='H2 load generation balance [tH2]'))
+        return (sum(OptModel.vH2Production[p,sc,n,sr] for sr in r2n[nd]) + sum(OptModel.vESSTotalCharge[p,sc,n,el]/mTEPES.pProductionFunctionH2[el] for el in l2n[nd] if (p,el) in mTEPES.peh) - sum(OptModel.vTotalOutputHeat[p,sc,n,hh]*mTEPES.pProductionFunctionH2ToHeat[hh] for hh in b2n[nd] if (p,hh) in mTEPES.phh) - sum(OptModel.vTotalOutput[p,sc,n,h2p]*mTEPES.pProductionFunctionH2ToPower[h2p] for h2p in g2n[nd] if (p,h2p) in mTEPES.pg) - sum(OptModel.vH2StorCharge[p,sc,n,hs] - OptModel.vH2StorDischarge[p,sc,n,hs] for hs in s2nd[nd]) + OptModel.vH2NS[p,sc,n,nd] - OptModel.vH2Exc[p,sc,n,nd] -
+                sum(OptModel.vFlowH2[p,sc,n,nd,nf,cc] for nf,cc in lout[nd] if (p,nd,nf,cc) in mTEPES.ppa) + sum(OptModel.vFlowH2[p,sc,n,ni,nd,cc] for ni,cc in lin[nd] if (p,ni,nd,cc) in mTEPES.ppa)) == mTEPES.pDemandH2[p,sc,n,nd]
+    setattr(OptModel, f'eBalanceH2_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.nd, rule=eBalanceH2, doc='H2 load generation balance [tH2/h]'))
 
     if pIndLogConsole:
         print('eBalanceH2                ... ', len(getattr(OptModel, f'eBalanceH2_{p}_{sc}_{st}')), ' rows')
 
-    # inventory over each storage cycle, as eESSInventory does for electricity
+    # inventory over each storage cycle, as eESSInventory does for electricity: a stock in tH2, so each load level's tH2/h is multiplied by its duration
     n2list_h2 = list(mTEPES.n2)
 
     def eH2Inventory(OptModel,n,hs):
@@ -63,7 +65,7 @@ def NetworkH2OperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, 
         if mTEPES.n.ord(n) % step != 0:
             return Constraint.Skip
         window = n2list_h2[mTEPES.n.ord(n)-step:mTEPES.n.ord(n)]
-        net = sum(OptModel.vH2StorCharge[p,sc,n2,hs] - OptModel.vH2StorDischarge[p,sc,n2,hs] for n2 in window)
+        net = sum(mTEPES.pDuration[p,sc,n2]()*(OptModel.vH2StorCharge[p,sc,n2,hs] - OptModel.vH2StorDischarge[p,sc,n2,hs]) for n2 in window)
         if   mTEPES.n.ord(n) == step:
             return mTEPES.pIniStorageH2[hs] + net == OptModel.vH2Inventory[p,sc,n,hs]
         elif mTEPES.n.ord(n) >  step:
@@ -84,13 +86,13 @@ def NetworkH2OperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, 
         print('eH2IniFinInventory        ... ', len(getattr(OptModel, f'eH2IniFinInventory_{p}_{sc}_{st}')), ' rows')
 
     def eTotalH2SrcCost(OptModel,n):
-        # Stage weight alone, as eTotalRH2Cost: vH2Production is tonnes, not a rate.
-        return OptModel.vTotalH2SrcCost[p,sc,n] == mTEPES.pLoadLevelWeight[p,sc,n]() * sum(mTEPES.pProductionCostH2[sr] * OptModel.vH2Production[p,sc,n,sr] for sr in mTEPES.sr)
+        # pLoadLevelDuration is the stage weight times the hours of the load level, which is what turns a tH2/h variable into the tonnes the cost is charged on
+        return OptModel.vTotalH2SrcCost[p,sc,n] == mTEPES.pLoadLevelDuration[p,sc,n]() * sum(mTEPES.pProductionCostH2[sr] * OptModel.vH2Production[p,sc,n,sr] for sr in mTEPES.sr)
     setattr(OptModel, f'eTotalH2SrcCost_{p}_{sc}_{st}', Constraint(mTEPES.n, rule=eTotalH2SrcCost, doc='hydrogen source cost [MEUR]'))
 
     def eTotalRH2Cost(OptModel,n):
-        # guard matches eBalanceH2. Stage weight alone: vH2NS is tonnes, vENS is a power.
-        return OptModel.vTotalRH2Cost[p,sc,n] == mTEPES.pLoadLevelWeight[p,sc,n]() * sum(mTEPES.pH2NSCost * OptModel.vH2NS[p,sc,n,nd] + mTEPES.pH2ExcCost * OptModel.vH2Exc[p,sc,n,nd] for nd in mTEPES.nd if len(l2n[nd]) + len(b2n[nd]) + len(g2n[nd]) + len(s2nd[nd]) + len(r2n[nd]) + len(lout[nd]) + len(lin[nd]))
+        # guard matches eBalanceH2. pLoadLevelDuration, as eTotalRHeatCost does for vHeatNS: vH2NS is a rate
+        return OptModel.vTotalRH2Cost[p,sc,n] == mTEPES.pLoadLevelDuration[p,sc,n]() * sum(mTEPES.pH2NSCost * OptModel.vH2NS[p,sc,n,nd] + mTEPES.pH2ExcCost * OptModel.vH2Exc[p,sc,n,nd] for nd in mTEPES.nd if len(l2n[nd]) + len(b2n[nd]) + len(g2n[nd]) + len(s2nd[nd]) + len(r2n[nd]) + len(lout[nd]) + len(lin[nd]))
     setattr(OptModel, f'eTotalRH2Cost_{p}_{sc}_{st}', Constraint(mTEPES.n, rule=eTotalRH2Cost, doc='H2 system reliability cost [MEUR]'))
 
     if pIndLogConsole:

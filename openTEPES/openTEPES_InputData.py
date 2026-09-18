@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 17, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 18, 2026
 """
 
 import time
@@ -663,8 +663,8 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole, option_overrides=None):
         par['pH2PipeLength']       = dfs['dfNetworkHydrogen']['Length'             ]                                                         # hydrogen line length                         [km]
         par['pH2PipePeriodIni']    = dfs['dfNetworkHydrogen']['InitialPeriod'      ]                                                         # initial period
         par['pH2PipePeriodFin']    = dfs['dfNetworkHydrogen']['FinalPeriod'        ]                                                         # final   period
-        par['pH2PipeNTCFrw']       = dfs['dfNetworkHydrogen']['TTC'                ] *      dfs['dfNetworkHydrogen']['SecurityFactor' ]      # net transfer capacity in forward  direction  [tH2]
-        par['pH2PipeNTCBck']       = dfs['dfNetworkHydrogen']['TTCBck'             ] *      dfs['dfNetworkHydrogen']['SecurityFactor' ]      # net transfer capacity in backward direction  [tH2]
+        par['pH2PipeNTCFrw']       = dfs['dfNetworkHydrogen']['TTC'                ] *      dfs['dfNetworkHydrogen']['SecurityFactor' ]      # net transfer capacity in forward  direction  [tH2/h]
+        par['pH2PipeNTCBck']       = dfs['dfNetworkHydrogen']['TTCBck'             ] *      dfs['dfNetworkHydrogen']['SecurityFactor' ]      # net transfer capacity in backward direction  [tH2/h]
         par['pH2PipeFixedCost']    = dfs['dfNetworkHydrogen']['FixedInvestmentCost'] *      dfs['dfNetworkHydrogen']['FixedChargeRate']      # hydrogen network    fixed cost               [MEUR]
         par['pIndBinH2PipeInvest'] = dfs['dfNetworkHydrogen']['BinaryInvestment'   ]                                                         # binary hydrogen pipeline investment decision [Yes]
         par['pH2PipeLoInvest']     = dfs['dfNetworkHydrogen']['InvestmentLo'       ]                                                         # Lower bound of the investment decision       [p.u.]

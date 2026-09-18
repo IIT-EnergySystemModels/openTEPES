@@ -94,7 +94,7 @@ They are written in **uppercase** letters.
 ========================  ==================================================================  =======
 **Hydrogen demand**
 -----------------------------------------------------------------------------------------------------
-:math:`DH^p_{\omega ni}`  Hydrogen demand in each node                                        tH2
+:math:`DH^p_{\omega ni}`  Hydrogen demand in each node                                        tH2/h
 :math:`CHNS`              Cost of hydrogen not served. The cost of H2 surplus is `0.5 CHNS`   €/tH2
 ========================  ==================================================================  =======
 ```
@@ -246,7 +246,7 @@ The net transfer capacity of an electric transmission line can be different in e
 **Hydrogen transmission system**
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------
 :math:`CFH_{ijc}`                          Annualized fixed cost of a candidate hydrogen transmission pipeline                                                M€/yr
-:math:`\overline{FH}_{ijc}`                Net transfer capacity (total transfer capacity multiplied by the security coefficient) of a pipeline               tH2
+:math:`\overline{FH}_{ijc}`                Net transfer capacity (total transfer capacity multiplied by the security coefficient) of a pipeline               tH2/h
 =========================================  =================================================================================================================  =====
 ```
 
@@ -304,8 +304,8 @@ They are written in **lowercase** letters.
 ==========================  ===================  ===
 **Hydrogen demand**
 ----------------------------------------------------
-:math:`hns^p_{\omega ni}`   Hydrogen not served  tH2
-:math:`hex^p_{\omega ni}`   Hydrogen surplus     tH2
+:math:`hns^p_{\omega ni}`   Hydrogen not served  tH2/h
+:math:`hex^p_{\omega ni}`   Hydrogen surplus     tH2/h
 ==========================  ===================  ===
 ```
 
@@ -381,7 +381,7 @@ They are written in **lowercase** letters.
 **Hydrogen transmission system**
 -----------------------------------------------------------------------------------------------------------------------------------------------
 :math:`ich^p_{ijc}`                                                       Candidate hydrogen pipeline installed or not                    {0,1}
-:math:`fh^p_{\omega nijc}`                                                Hydrogen flow through a hydrogen pipeline                       tH2
+:math:`fh^p_{\omega nijc}`                                                Hydrogen flow through a hydrogen pipeline                       tH2/h
 ========================================================================  ==============================================================  =====
 ```
 
@@ -1326,15 +1326,16 @@ binary AC investment decisions.
 **Hydrogen network operation**
 
 Balance at each node of hydrogen produced by electrolyzers and by sources that consume no electricity, against the hydrogen taken by the heaters and by the
-hydrogen-fired generators that burn it, the net change in hydrogen storage, and demand [tH2] «`eBalanceH2`». A transport model is used to model the hydrogen
-network. The balance is skipped at a node carrying none of these, so a node outside the hydrogen system adds no row.
+hydrogen-fired generators that burn it, the net change in hydrogen storage, and demand [tH2/h] «`eBalanceH2`». A transport model is used to model the hydrogen
+network. The balance is skipped at a node carrying none of these, so a node outside the hydrogen system adds no row. Every term is a rate, as in the electric
+balance, so the duration of the load level appears nowhere in it.
 
 ```{math}
-\sum_{e \in i} \frac{DUR^p_{\omega n}}{PF'_e} gc^p_{\omega ne} - \sum_{g \in i} DUR^p_{\omega n} PF'''_e gh^p_{\omega ng} + hns^p_{\omega ni} - hex^p_{\omega ni} = DUR^p_{\omega n} DH^p_{\omega ni} + \sum_{jc} fh^p_{\omega nijc} - \sum_{jc} fh^p_{\omega njic} \quad \forall p \omega ni
+\sum_{e \in i} \frac{gc^p_{\omega ne}}{PF'_e} - \sum_{g \in i} PF'''_e gh^p_{\omega ng} + hns^p_{\omega ni} - hex^p_{\omega ni} = DH^p_{\omega ni} + \sum_{jc} fh^p_{\omega nijc} - \sum_{jc} fh^p_{\omega njic} \quad \forall p \omega ni
 ```
 
-Inventory of a hydrogen store over its storage cycle, carrying forward what was injected less what was withdrawn [tH2] «`eH2Inventory`». Without it the
-balance clears within the hour and the electrolyzer-store-turbine chain reduces to an instantaneous converter.
+Inventory of a hydrogen store over its storage cycle, carrying forward what was injected less what was withdrawn, each multiplied by the duration of its load
+level [tH2] «`eH2Inventory`». Without it the balance clears within the hour and the electrolyzer-store-turbine chain reduces to an instantaneous converter.
 
 A hydrogen store ends the horizon at the level it started from [tH2] «`eH2IniFinInventory`», as candidate storage does on the electricity side. Without it
 the model can drain a full store and never refill it, which is hydrogen for nothing.
@@ -1464,7 +1465,7 @@ Voltage angle of the reference node fixed to 0 for each scenario, period, and lo
 \theta^p_{\omega n,node_{ref}} = 0
 ```
 
-**Bounds on hydrogen network variables** [tH2]
+**Bounds on hydrogen network variables** [tH2/h]
 
 ```{math}
 - \overline{FH}_{ijc} \leq fh^p_{\omega nijc} \leq \overline{FH}_{ijc} \quad \forall p \omega nijc, ijc \in EP
