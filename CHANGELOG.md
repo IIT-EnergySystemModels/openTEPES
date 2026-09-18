@@ -2,6 +2,11 @@
 
 ## [4.19.0rc] - 2026-09-18 Unreleased in PyPI
 
+- [CHANGED] the CI workflow runs its tests in parallel and stops repeating work. Every job now runs pytest with `-n auto` and one solver thread per
+  process, which on a ten-core machine takes the unit tier from 429 s to 193 s and the solve tier from 285 s to 114 s. flake8 moved to a job of its
+  own instead of running in all nine unit jobs. The unit matrix keeps all three Python versions on Linux and the ends of the range on macOS and
+  Windows, since a version problem shows on any platform and a platform problem shows on any version. The ipopt job asks conda for ipopt alone and
+  takes the rest from the cached lock. No test was removed.
 - [FIXED] change the H2 pipeline capacity and H2 flow from tH2 to tH2/h.
 - [FIXED] a candidate hydrogen pipeline or heat pipe now carries flow only once it is bought, closing issue #183. `vH2PipeInvest` reached the objective, through
   `eTotalFH2Cost`, and `eConsecutiveNetH2Invest`, and nothing else; `vHeatPipeInvest` reached the heat module not at all. The flow bounds come from the rating of
