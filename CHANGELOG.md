@@ -3,6 +3,13 @@
 ## [4.19.0rc] - 2026-09-17 Unreleased in PyPI
 
 - [FIXED] change the H2 pipeline capacity and H2 flow from tH2 to tH2/h.
+- [FIXED] a candidate hydrogen pipeline or heat pipe now carries flow only once it is bought, closing issue #183. `vH2PipeInvest` reached the objective, through
+  `eTotalFH2Cost`, and `eConsecutiveNetH2Invest`, and nothing else; `vHeatPipeInvest` reached the heat module not at all. The flow bounds come from the rating of
+  every real pipe, candidate or not, so the capacity of a candidate was available for nothing: buying it was pure cost against no benefit, a cost-minimising
+  model bought none of it, and used it in full. The investment cost then read 0.0, which looks like a plan that chose not to expand. Two constraints on the
+  candidate pipes alone now bound the flow by the capacity bought, in per unit of the rating, as `eNetCapacity1` and `eNetCapacity2` do for a candidate circuit.
+  On a one-week `sSEP` with its 15 hydrogen pipelines made candidates and the expansion declined, a pipeline carried 13.4 tH2/h, its full rating, and now carries
+  nothing. No case in the repository defines a candidate pipe, every `FixedInvestmentCost` being zero, so no shipped result moves. Reported by Erik Alvarez.
 - [CHANGED] the whole hydrogen module is now written in rates, as the electricity module is. Every hydrogen variable holds tH2/h at a load level -- pipeline
   flow, not served, surplus, production without electricity, and the charge and discharge of a store -- and only the inventory stays a stock in tH2. `eBalanceH2`
   is a rate balance with no `pDuration` in any term, and the duration enters in `eH2Inventory`, which turns the charge and discharge of each load level into

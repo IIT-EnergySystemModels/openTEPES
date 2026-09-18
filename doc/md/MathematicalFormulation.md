@@ -1340,6 +1340,13 @@ level [tH2] «`eH2Inventory`». Without it the balance clears within the hour an
 A hydrogen store ends the horizon at the level it started from [tH2] «`eH2IniFinInventory`», as candidate storage does on the electricity side. Without it
 the model can drain a full store and never refill it, which is hydrogen for nothing.
 
+Hydrogen flow limit in a candidate pipeline [p.u.] «`eH2PipeCapacity1`» «`eH2PipeCapacity2`». A candidate carries flow in proportion to the capacity bought for
+it, and none at all until it is bought. Existing pipelines are bounded by their rating instead.
+
+```{math}
+- ich^p_{ijc} \leq \frac{fh^p_{\omega nijc}}{\overline{FH}_{ijc}} \leq ich^p_{ijc} \quad \forall p \omega nijc, ijc \in CH
+```
+
 
 **Heat network operation**
 
@@ -1354,6 +1361,12 @@ network.
 
 ```{math}
 \sum_{g \in i} gh^p_{\omega ng} + htns^p_{\omega ni} = DUR^p_{\omega n} DHt^p_{\omega ni} + \sum_{jc} fp^p_{\omega nijc} - \sum_{jc} fp^p_{\omega njic} \quad \forall p \omega ni
+```
+
+Heat flow limit in a candidate pipe [p.u.] «`eHeatPipeCapacity1`» «`eHeatPipeCapacity2`», the same form the hydrogen network takes.
+
+```{math}
+- icp^p_{ijc} \leq \frac{fp^p_{\omega nijc}}{\overline{FP}_{ijc}} \leq icp^p_{ijc} \quad \forall p \omega nijc, ijc \in CP
 ```
 
 **Flow-based market coupling method**

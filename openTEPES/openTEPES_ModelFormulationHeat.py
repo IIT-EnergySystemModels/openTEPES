@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 03, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 18, 2026
 
 openTEPES.openTEPES_ModelFormulationHeat — heat network operation: power-to-heat conversion, heat balance and heat-not-served cost.
 """
@@ -49,6 +49,26 @@ def NetworkHeatOperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc
 
     if pIndLogConsole:
         print('eBalanceHeat              ... ', len(getattr(OptModel, f'eBalanceHeat_{p}_{sc}_{st}')), ' rows')
+
+    # a candidate pipe carries flow only once it is bought, as on the hydrogen side. vHeatPipeInvest appeared nowhere in this module at all, so the capacity of a
+    # candidate heat pipe was free. Existing pipes are not in hc and keep the bounds set in openTEPES_SettingUpVariables
+    def eHeatPipeCapacity1(OptModel,n,ni,nf,cc):
+        if (p,ni,nf,cc) not in mTEPES.phc:
+            return Constraint.Skip
+        return OptModel.vFlowHeat[p,sc,n,ni,nf,cc] / mTEPES.pHeatPipeNTCBck[ni,nf,cc] >= - OptModel.vHeatPipeInvest[p,ni,nf,cc]
+    setattr(OptModel, f'eHeatPipeCapacity1_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.hc, rule=eHeatPipeCapacity1, doc='maximum heat flow by candidate pipe capacity [p.u.]'))
+
+    if pIndLogConsole:
+        print('eHeatPipeCapacity1        ... ', len(getattr(OptModel, f'eHeatPipeCapacity1_{p}_{sc}_{st}')), ' rows')
+
+    def eHeatPipeCapacity2(OptModel,n,ni,nf,cc):
+        if (p,ni,nf,cc) not in mTEPES.phc:
+            return Constraint.Skip
+        return OptModel.vFlowHeat[p,sc,n,ni,nf,cc] / mTEPES.pHeatPipeNTCFrw[ni,nf,cc] <=   OptModel.vHeatPipeInvest[p,ni,nf,cc]
+    setattr(OptModel, f'eHeatPipeCapacity2_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.hc, rule=eHeatPipeCapacity2, doc='maximum heat flow by candidate pipe capacity [p.u.]'))
+
+    if pIndLogConsole:
+        print('eHeatPipeCapacity2        ... ', len(getattr(OptModel, f'eHeatPipeCapacity2_{p}_{sc}_{st}')), ' rows')
 
     def eTotalRHeatCost(OptModel,n):
         return OptModel.vTotalRHeatCost[p,sc,n] == mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pHeatNSCost * sum(OptModel.vHeatNS[p,sc,n,nd] for nd in mTEPES.nd if len(chp2n[nd]) + len(lout[nd]) + len(lin[nd]))

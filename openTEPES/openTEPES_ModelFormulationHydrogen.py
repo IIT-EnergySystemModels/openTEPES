@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 17, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 18, 2026
 
 openTEPES.openTEPES_ModelFormulationHydrogen — hydrogen network operation: H2 balance and hydrogen-not-served cost.
 """
@@ -56,6 +56,29 @@ def NetworkH2OperationModelFormulation(OptModel, mTEPES, pIndLogConsole, p, sc, 
 
     if pIndLogConsole:
         print('eBalanceH2                ... ', len(getattr(OptModel, f'eBalanceH2_{p}_{sc}_{st}')), ' rows')
+
+    # a candidate pipe carries flow only once it is bought. vH2PipeInvest reached the objective, through eTotalFH2Cost, and eConsecutiveNetH2Invest, and nothing
+    # else, so the capacity of a candidate was free: buying it was pure cost against no benefit, a cost-minimising model bought none, and the flow bounds in
+    # openTEPES_SettingUpVariables handed it the full rating anyway. The electricity side ties the flow to the investment through vLineCommit, which the
+    # hydrogen network has no equivalent of, so the bound goes straight onto the investment variable. Existing pipes are not in pc and keep their own bounds.
+    # Written in p.u. of the rating, as eNetCapacity1 and eNetCapacity2 are
+    def eH2PipeCapacity1(OptModel,n,ni,nf,cc):
+        if (p,ni,nf,cc) not in mTEPES.ppc:
+            return Constraint.Skip
+        return OptModel.vFlowH2[p,sc,n,ni,nf,cc] / mTEPES.pH2PipeNTCBck[ni,nf,cc] >= - OptModel.vH2PipeInvest[p,ni,nf,cc]
+    setattr(OptModel, f'eH2PipeCapacity1_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.pc, rule=eH2PipeCapacity1, doc='maximum hydrogen flow by candidate pipe capacity [p.u.]'))
+
+    if pIndLogConsole:
+        print('eH2PipeCapacity1          ... ', len(getattr(OptModel, f'eH2PipeCapacity1_{p}_{sc}_{st}')), ' rows')
+
+    def eH2PipeCapacity2(OptModel,n,ni,nf,cc):
+        if (p,ni,nf,cc) not in mTEPES.ppc:
+            return Constraint.Skip
+        return OptModel.vFlowH2[p,sc,n,ni,nf,cc] / mTEPES.pH2PipeNTCFrw[ni,nf,cc] <=   OptModel.vH2PipeInvest[p,ni,nf,cc]
+    setattr(OptModel, f'eH2PipeCapacity2_{p}_{sc}_{st}', Constraint(mTEPES.n*mTEPES.pc, rule=eH2PipeCapacity2, doc='maximum hydrogen flow by candidate pipe capacity [p.u.]'))
+
+    if pIndLogConsole:
+        print('eH2PipeCapacity2          ... ', len(getattr(OptModel, f'eH2PipeCapacity2_{p}_{sc}_{st}')), ' rows')
 
     # inventory over each storage cycle, as eESSInventory does for electricity: a stock in tH2, so each load level's tH2/h is multiplied by its duration
     n2list_h2 = list(mTEPES.n2)
