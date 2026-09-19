@@ -7,6 +7,13 @@
   own instead of running in all nine unit jobs. The unit matrix keeps all three Python versions on Linux and the ends of the range on macOS and
   Windows, since a version problem shows on any platform and a platform problem shows on any version. The ipopt job asks conda for ipopt alone and
   takes the rest from the cached lock. No test was removed.
+- [ADDED] tests for the four feature switches no shipped case turns on: line switching, operating reserve activation, ramp reserves and the
+  incompatibility between charging and energy outflows. Each one is switched on over a week of a bundled case and checked against what the
+  constraint promises. Two things came out of writing them. sSEP ships ramp reserve files, which is why the switch read as covered, but every cell
+  in them is empty, so the requirement is zero and the constraint is skipped at every hour. And sSEP serves none of its hydrogen: unserved
+  hydrogen is priced at 300 EUR/tH2 while a tonne costs about 50 MWh of electricity to make, so the cheapest answer is to leave all 425.6 tH2 of
+  the week unserved and run the electrolyzers at zero. The hydrogen coverage sSEP is credited with is therefore construction, not operation. A
+  test records that, and fails if the case is ever repriced. Raised in issue #177.
 - [FIXED] change the H2 pipeline capacity and H2 flow from tH2 to tH2/h.
 - [FIXED] a candidate hydrogen pipeline or heat pipe now carries flow only once it is bought, closing issue #183. `vH2PipeInvest` reached the objective, through
   `eTotalFH2Cost`, and `eConsecutiveNetH2Invest`, and nothing else; `vHeatPipeInvest` reached the heat module not at all. The flow bounds come from the rating of
