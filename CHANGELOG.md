@@ -2,6 +2,7 @@
 
 ## [4.19.0rc] - 2026-09-18 Unreleased in PyPI
 
+- [ADDED] write file of marginals of the system inertia constraint.
 - [CHANGED] the CI workflow runs its tests in parallel and stops repeating work. Every job now runs pytest with `-n auto` and one solver thread per
   process, which on a ten-core machine takes the unit tier from 429 s to 193 s and the solve tier from 285 s to 114 s. flake8 moved to a job of its
   own instead of running in all nine unit jobs. The unit matrix keeps all three Python versions on Linux and the ends of the range on macOS and
