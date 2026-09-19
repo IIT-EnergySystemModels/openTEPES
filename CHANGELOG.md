@@ -2,41 +2,29 @@
 
 ## [4.19.0rc] - 2026-09-18 Unreleased in PyPI
 
-- [CHANGED] the CI workflow runs its tests in parallel and stops repeating work. Every job now runs pytest with `-n auto` and one solver thread per
-  process, which on a ten-core machine takes the unit tier from 429 s to 193 s and the solve tier from 285 s to 114 s. flake8 moved to a job of its
-  own instead of running in all nine unit jobs. The unit matrix keeps all three Python versions on Linux and the ends of the range on macOS and
-  Windows, since a version problem shows on any platform and a platform problem shows on any version. The ipopt job asks conda for ipopt alone and
-  takes the rest from the cached lock. No test was removed.
-- [ADDED] tests for the four feature switches no shipped case turns on: line switching, operating reserve activation, ramp reserves and the
-  incompatibility between charging and energy outflows. Each one is switched on over a week of a bundled case and checked against what the
-  constraint promises. Two things came out of writing them. sSEP ships ramp reserve files, which is why the switch read as covered, but every cell
-  in them is empty, so the requirement is zero and the constraint is skipped at every hour. And sSEP serves none of its hydrogen: unserved
-  hydrogen is priced at 300 EUR/tH2 while a tonne costs about 50 MWh of electricity to make, so the cheapest answer is to leave all 425.6 tH2 of
-  the week unserved and run the electrolyzers at zero. The hydrogen coverage sSEP is credited with is therefore construction, not operation. A
-  test records that, and fails if the case is ever repriced. Raised in issue #177.
+- [CHANGED] the continuous-integration workflow executes its automated checks concurrently, `-n auto` with one solver thread per process: on a
+  ten-core machine the unit tier falls from 429 s to 193 s and the solve tier from 285 s to 114 s. flake8 moves to a job of its own, the unit matrix
+  falls from nine combinations to seven, and the ipopt job requests ipopt alone from conda. No check is removed.
+- [ADDED] automated checks for the four modelling options that no distributed case activates: line switching, operating reserve activation, ramp
+  reserves, and the incompatibility between charging and energy outflows (issue #177). Two findings came out of writing them. The ramp reserve tables
+  of sSEP are empty, so the requirement is zero at every load level and the constraint is skipped. And sSEP serves none of its hydrogen: at 300
+  EUR/tH2, below the cost of the 50 MWh of electricity a tonne requires, all 425.6 tH2 of the week are unserved and the electrolyzers consume nothing.
+  A check records that behaviour and fails once the case is repriced.
 - [FIXED] change the H2 pipeline capacity and H2 flow from tH2 to tH2/h.
-- [FIXED] a candidate hydrogen pipeline or heat pipe now carries flow only once it is bought, closing issue #183. `vH2PipeInvest` reached the objective, through
-  `eTotalFH2Cost`, and `eConsecutiveNetH2Invest`, and nothing else; `vHeatPipeInvest` reached the heat module not at all. The flow bounds come from the rating of
-  every real pipe, candidate or not, so the capacity of a candidate was available for nothing: buying it was pure cost against no benefit, a cost-minimising
-  model bought none of it, and used it in full. The investment cost then read 0.0, which looks like a plan that chose not to expand. Two constraints on the
-  candidate pipes alone now bound the flow by the capacity bought, in per unit of the rating, as `eNetCapacity1` and `eNetCapacity2` do for a candidate circuit.
-  On a one-week `sSEP` with its 15 hydrogen pipelines made candidates and the expansion declined, a pipeline carried 13.4 tH2/h, its full rating, and now carries
-  nothing. No case in the repository defines a candidate pipe, every `FixedInvestmentCost` being zero, so no shipped result moves. Reported by Erik Alvarez.
-- [CHANGED] the whole hydrogen module is now written in rates, as the electricity module is. Every hydrogen variable holds tH2/h at a load level -- pipeline
-  flow, not served, surplus, production without electricity, and the charge and discharge of a store -- and only the inventory stays a stock in tH2. `eBalanceH2`
-  is a rate balance with no `pDuration` in any term, and the duration enters in `eH2Inventory`, which turns the charge and discharge of each load level into
-  tonnes, and in the two cost terms, which now carry `pLoadLevelDuration` instead of the stage weight alone. Before this the hydrogen variables were amounts over
-  the load level while the hydrogen parameters were already rates, so the two were bridged by a `pDuration` factor at every bound and in every term of the
-  balance. Nothing moves on a case with one-hour load levels. On an aggregated case, `pDuration` above 1, the hydrogen results change: a flow is now the rate,
-  not the tonnes moved over the level. Three things that were wrong under the old convention come out right under this one. The hydrogen price came out
-  multiplied by the stage weight: the dual of `eBalanceH2` was divided by the period probability alone, and on `9nH2` aggregated to four-hour levels with a
-  stage weight of 13 the price was 26.74 EUR/kgH2 against the 2.06 EUR/kgH2 the marginal electricity and the electrolyser's production function imply. On a
-  week standing in for a year the factor is 52. The pipeline utilization on the network map compared an amount against a rate. And `vH2NS` at a node cut off
-  from the hydrogen system was fixed to the demand rate while the variable held tonnes. The two flow columns of the hydrogen
-  balance tables carried no stage weight at all, so on the 7-day `sSEP` a pipe at its rating entered the yearly table at 53.6 tH2 beside a demand column of
-  74.9 tH2 that did carry the weight: the flow was a fifty-second of its size against everything else in the same row. The rows still added up whenever the
-  inflow and the outflow cancelled, which is why nothing showed. Both columns now carry `pLoadLevelDuration` like every other column. Asked for by Andres
-  Ramos.
+- [FIXED] a candidate hydrogen pipeline or heat pipe carries flow only once it is built, closing issue #183. The flow bounds followed the rating of
+  every physical pipeline, candidate or not, so a cost-minimising model built none of it and used it in full, and the investment cost then read 0.0.
+  `eNetCapacity1` and `eNetCapacity2` now bound the candidate flow by the capacity built, in per unit of the rating, as for a candidate circuit. On a
+  one-week `sSEP` with its 15 hydrogen pipelines declared candidates and the expansion declined, a pipeline carried 13.4 tH2/h, its full rating, and
+  now carries none. No distributed case defines a candidate pipeline, so no published result moves. Reported by Erik Alvarez.
+- [CHANGED] the hydrogen module is written in rates, as the electricity module is. Every hydrogen variable holds tH2/h at a load level and only the
+  inventory remains a stock in tH2; `eBalanceH2` carries no `pDuration`, and the duration enters `eH2Inventory` and the two cost terms through
+  `pLoadLevelDuration`. Nothing moves on a case with one-hour load levels; on an aggregated case a flow is now the rate, not the tonnes moved over the
+  load level. Three defects are corrected. The hydrogen price was multiplied by the stage weight, the dual of `eBalanceH2` being divided by the period
+  probability alone: on `9nH2` aggregated to four-hour load levels at a stage weight of 13 it read 26.74 EUR/kgH2 against the 2.06 EUR/kgH2 the
+  marginal electricity and the electrolyzer production function imply. The pipeline utilization on the network map compared an amount against a rate.
+  And `vH2NS` at a busbar isolated from the hydrogen system was fixed to the demand rate while the variable held tonnes. The two flow columns of the
+  hydrogen balance tables carried no stage weight, so on the 7-day `sSEP` a pipeline at its rating entered the yearly table at 53.6 tH2 beside a
+  demand column of 74.9 tH2; both columns now carry `pLoadLevelDuration`. Asked for by Andres Ramos.
 - [FIXED] the AC power flow residual check was skipped on every case carrying an HVDC scheme. `angles_available` required an angle at each node, and a node no
   AC branch touches has none; it now considers only the nodes an AC branch touches.
 - [FIXED] the voltage-angle writer put an HVDC pole on the reference. It writes a blank where a node has no angle, not a zero.
@@ -48,9 +36,9 @@
   solver parks its angle at a bound. Those nodes are now reported separately, not as a binding bound. Reported by Andres Ramos.
 - [FIXED] writing the results failed on a case where every unit sits at its upper bound. The generation surplus table pivoted an empty frame and
   raised KeyError: 'level_0'. It is now skipped when there is no surplus, as the ramp surplus tables beside it already were.
-- [FIXED] the voltage angle table gave a number for nodes that have no angle. A node no line acts on -- an HVDC pole, or the far end of a candidate
-  line left unbuilt -- is written `N/A`, not at whatever bound the solver left it. An island carrying no reference node keeps its angles, which are
-  real up to a common offset.
+- [FIXED] the voltage angle table reported a number for busbars that have no angle. A busbar no circuit acts on, an HVDC pole or the far end of a
+  candidate circuit left unbuilt, is written `N/A`, not at whatever bound the solver left it. A synchronous area carrying no angle reference keeps its
+  angles, which are real up to a common offset.
 
 ## [4.18.19] - 2026-09-16
 - [FIXED] typo in openTEPES.py
@@ -58,55 +46,47 @@
 
 ## [4.18.18] - 2026-09-16
 
-- [ADDED] the nodal voltage angle bound is configurable, through `--max-theta` or `OTEPES_MAX_THETA`, and the candidate-line Big-M is derived from it. The bound
-  was a hardcoded `pi/2`. It applies to the NODAL angle, not to the difference across a line, so on a wide network with a single reference node it caps the
-  angle accumulated out to the periphery, which is not a physical quantity: it can bind while every line is well inside its own limit, and it then clips the
-  DC-OPF silently. On an 84-node European case the bound was at 100 % of `pi/2` in 2462 (period, scenario, load level, node) entries, which is what prompted
-  this. Raising the bound alone used to be unsafe: the Big-M in the candidate-line disjunction was a separate literal `pi`, valid only while the bound stayed at
-  `pi/2`, so the two were coupled in the reasoning and uncoupled in the code. They now come from one call. With nothing set the bound is `pi/2` and the Big-M is
-  `pi` as before, so no existing run moves; a value that is not a positive number is ignored with a warning instead of making the network infeasible for any
-  non-trivial flow. The existing warning that the bound is nearly binding reads the same value, so it no longer reports against `pi/2` when the run used
-  something else; it now names the bound in radians, not as a percentage of `pi/2`. That warning is also skipped under the cycle formulation: `CycleConstraints`
-  deletes `eKirchhoff2ndLaw1` and `eKirchhoff2ndLaw2`, the only constraints tying `vTheta` to a flow, so the angle keeps its bounds, enters no constraint, and a
-  solver may park it at one of them on a network with no angle problem at all. The bound has no effect on that formulation, whose own Big-M, `pBigMTheta`, is
-  built from the reactances and ratings around each cycle and needs no angle bound.
+- [ADDED] the nodal voltage angle bound is configurable, through `--max-theta` or a setting outside the case files, and the candidate-circuit Big-M is
+  derived from it. The bound was fixed in the code at `pi/2` and applies to the nodal angle, not to the difference across a circuit, so on a wide
+  network with one angle reference it caps the angle accumulated out to the periphery and can bind while every circuit is well inside its own limit,
+  clipping the DC optimal power flow silently. On an 84-busbar European case it was binding in 2462 (period, scenario, load level, busbar) entries.
+  The Big-M in the candidate-circuit disjunction was a separate literal `pi`, valid only at the former bound; both now come from one call. With
+  nothing set the behaviour is unchanged, and a value that is not a positive number is ignored with a warning. The near-binding warning reports the
+  bound in radians and is skipped under the cycle formulation, whose `pBigMTheta` is built from the reactances and ratings around each cycle and needs
+  no angle bound.
 
-- [FIXED] the hydrogen source cost is annualised by the stage weight, as the reliability cost already was. `eTotalH2SrcCost` was the second term with no
-  scaling, so a metric ton from a reformer cost a stage weight less than the electricity to electrolyze the same metric ton, and the model reformed in
-  preference to
-  building. The weight alone: `vH2Production` is metric tons over the load level, so the hours are already inside it. No shipped case defines a hydrogen source.
-  On
-  an 84-node case at a weekly stage it moved the plan, not only the cost: reforming 80 % of supply to 65 %, electrolyzer +71 %, turbine down by half to all of
-  it.
-- [FIXED] energy neutrality pinned a lossy storage unit idle. `eESSInventory` stores `sqrt(Efficiency)` of what a unit takes and drains
-  `output/sqrt(Efficiency)` to deliver, so a closed cycle gives output = Efficiency x charge, while neutrality asked for output = charge. Below 100 % efficiency
-  the only point satisfying both is zero. On `9n`, whose `ESS1` is 90 % efficient, charge and discharge came out at 0.0000 against 0.0629 and 0.0566 without the
-  constraint, and the cost rose because the system lost the arbitrage. The constraint now carries the losses, and a 90 % unit cycles again at output = 0.9 x
-  charge. `EnergyNeutrality` is documented in `InputData.md`, where it did not appear. No shipped case sets it, so nothing exercised this; four tests do now.
+- [FIXED] the hydrogen source cost is annualised by the stage weight, as the reliability cost already was. `eTotalH2SrcCost` was the second term with
+  no scaling, so a tonne from a reformer cost a stage weight less than the electricity to electrolyze the same tonne, and the model reformed in
+  preference to building. No distributed case defines a hydrogen source. On an 84-busbar case at a weekly stage the plan moved, not only the cost:
+  reforming from 80 % of supply to 65 %, electrolyzer capacity up 71 %, turbine halved.
+- [FIXED] energy neutrality pinned a lossy storage unit idle. `eESSInventory` stores `sqrt(Efficiency)` of the energy taken and drains
+  `output/sqrt(Efficiency)` to deliver, so a closed cycle gives output = Efficiency x charge, while neutrality required output = charge; below 100 %
+  efficiency the only feasible point is zero. On `9n`, whose `ESS1` is 90 % efficient, charge and discharge came out at 0.0000 against 0.0629 and
+  0.0566 without the constraint, and the cost rose because the system lost the arbitrage. The constraint now carries the losses, and a 90 % unit cycles again at output = 0.9 x charge. `EnergyNeutrality` is
+  documented in `InputData.md`, where it did not appear; four automated checks now exercise it.
 
-- [FIXED] a cycle longer than its stage is now rejected, not dropped (issue #159). It is enforced where the load level's position divides by the cycle length,
-  so when none qualifies the constraint is built with no rows and the run reports a cost below the true one, 10.4 % low on the energy limit the issue measured.
-  The error names the unit, the period, what a stage holds, and the two ways out. Seven cycles are covered, two more than the issue lists. Shortening the cycle
-  was the alternative and is worse, since a monthly cycle cut to a week is weekly storage, not an approximation of monthly. No shipped case is affected: the
-  fault needs a shortened horizon, as the fixtures use. `InputData.md` now gives the shortest stage each period needs, and notes that `StorageType` records the
-  state of charge one period more often than its name, so Monthly storage needs a week, not a month.
-- [ADDED] a run now says when a unit's storage cycle is shorter than its own column asked for. The cycle is the shortest of the storage, outflows and energy
-  periods, so a setting made for one feature moves another. On `9n` every unit comes out at one load level whatever `StorageType` says, that case having neither
-  outflows nor energy bounds and both defaulting to one. Behavior unchanged, and until now invisible.
+- [FIXED] a storage cycle longer than its stage is rejected, not dropped, closing issue #159. Enforcement requires the position of the load level to
+  divide by the cycle length, so when none qualifies the constraint is built with no rows and the reported cost falls below the true one, 10.4 % low
+  on the energy limit measured in the issue. The error names the unit, the period, the content of a stage and the two remedies. Seven cycles are
+  covered. No distributed case is affected, the fault requiring a shortened horizon. `InputData.md` gives the shortest stage each period requires, and
+  notes that `StorageType` records the state of charge one period more often than its name suggests.
+- [ADDED] openTEPES reports when the storage cycle of a unit is shorter than its own column requested. The cycle is the shortest of the storage,
+  outflows and energy periods, so a setting made for one feature moves another. On `9n` every unit resolves to one load level whatever `StorageType`
+  states, that case carrying neither outflows nor energy bounds. Behaviour unchanged, and until now invisible.
 
 - [ADDED] a `.gitattributes` giving `CHANGELOG.md` the union merge driver. Two branches that each add an entry conflicted on every merge, since both insert at
   the top of the same section while never overlapping, so the resolution was always to keep both. `union` does that on its own and is built into git, so no
   clone needs setting up.
 - [ADDED] `RTS-GMLC_Oper` to the solve suite. It ships but no test solved it, so the operation-only path was covered on no case carrying commitment binaries.
   About 30 s and 1.1 GB under the 7-day fixture.
-- [CHANGED] the note deferring `RTS-GMLC_6y` now carries the measurement it asked for. Reading and configuring the case costs 5.3 GB and 85 s before the solve,
-  and a solve peaked at 11.4 GB without finishing in seven minutes; runners have 16 GB, or 14 GB on macOS. The floor is reading six periods of full-year tables,
-  not solving, so no shorter horizon helps: at this horizon the model is already small, 546 load levels. Covering that layout at this scale needs a smaller case
-  shipped as data.
+- [CHANGED] the note deferring `RTS-GMLC_6y` carries the measurement it requested. Reading and configuring the case costs 5.3 GB and 85 s before the
+  solve, and solving it peaked at 11.4 GB without terminating in seven minutes; runners hold 16 GB, or 14 GB on macOS. The floor is reading six periods
+  of full-year tables, not solving, so no shorter horizon helps: at this horizon the model is already small, 546 load levels. Coverage of that layout
+  at this scale requires a smaller case distributed as data.
 
-- [FIXED] `9nH2` asked for 20 tH2/h at Node_1, five times what its 200 MW electrolyzer can make at 49.02 kWh/kgH2. Four fifths came back as hydrogen not served,
-  so the HNS penalty was the whole objective: 26,753 MEUR over seven days against 6.4 MEUR. Demand is now 2 tH2/h; a 20 tH2/h demand would need 980 MW, two
-  thirds of the system peak. A new test checks the demand is served, which the existing structural tests could not.
+- [FIXED] `9nH2` requested 20 tH2/h at Node_1, five times the output of its 200 MW electrolyzer at 49.02 kWh/kgH2. Four fifths returned as hydrogen
+  not served, so the penalty was the whole objective, 26,753 MEUR over seven days against 6.4 MEUR. Demand is now 2 tH2/h; 20 tH2/h would require 980
+  MW, two thirds of the system peak. A new check confirms the demand is served.
 - [ADDED] a test that solves `9nH2x`, which nothing solved before. It checks the case solves and its hydrogen balance closes. The hydrogen side is idle at a 41
   % round trip, but that is an economic outcome and is not pinned.
 - [CHANGED] CI installs conda in one job instead of thirteen. Only the Linux solve job needs it, for ipopt; the rest wanted only `flake8` and `pytest`, which
@@ -114,155 +94,148 @@
   composite action.
 - [CHANGED] an in-progress CI run is superseded only on a pull request. A master run is the record for master.
 - [ADDED] `9n_duckdb` to the bundled case list on the Download page, which completes it. Listed next to `9n`, and said to be the same inputs in a different
-  container rather than a different system, which the name alone suggests.
+  container instead of a different system, which the name alone suggests.
 
-- [ADDED] six missing cases to the bundled case list on the Download page. `9nH2` and `9nH2x` arrived with the hydrogen subsystem and neither was documented:
-  `9nH2` carries the whole chain as separate units, an electrolyzer, a storage cavern and a hydrogen-fired turbine, against a hydrogen demand at one node, while
-  `9nH2x` keeps the units, removes the demand and raises every thermal variable cost tenfold. The four this branch adds were undocumented for the same reason:
-  `9n_AC`, `RTS-GMLC_AC`, `RTS-GMLC_AC_Oper` and `RTS-GMLC_Oper`.
+- [ADDED] six missing cases to the distributed case list on the Download page. `9nH2` and `9nH2x` arrived with the hydrogen subsystem and neither was
+  documented: `9nH2` carries the whole chain as separate units, an electrolyzer, a storage cavern and a hydrogen-fired turbine, against a hydrogen
+  demand at one busbar, while `9nH2x` keeps the units, removes the demand and raises every thermal variable cost tenfold. The four this branch adds
+  are `9n_AC`, `RTS-GMLC_AC`, `RTS-GMLC_AC_Oper` and `RTS-GMLC_Oper`.
 
-- [CHANGED] `prototypes/ac_formulations/` is no longer part of the repository. It held the formulation study that decided the branch-flow cone against the
-  piecewise-linear model: research apparatus, not model code, and `reference.py` needed pandapower, which openTEPES does not depend on, so shipping it offered
-  code the project could not run. The one file the test suite uses, the MATPOWER reader behind the pglib-opf case118 benchmark, moves to `tests/pglib.py`, where
-  it is a plain import rather than a module loaded by file path from a sibling directory that the wheel never contained. The study itself is kept with the AC
-  design notes.
+- [CHANGED] `prototypes/ac_formulations/` is no longer part of the repository. It held the formulation study that selected the branch-flow cone over
+  the piecewise-linear model, research apparatus and not model code, and its `reference.py` required pandapower, which openTEPES does not depend on.
+  The one file the check suite uses, the MATPOWER reader behind the pglib-opf case118 benchmark, moves to `tests/pglib.py`, where it is a plain
+  import. The study is kept with the AC design notes.
 
-- [CHANGED] the `9n_H2` case is now `9n_ELZ`. Master gained a `9nH2` case for the hydrogen subsystem, and two cases whose names differ only by an underscore is
-  a trap for anyone picking a starting point. The old name was also inaccurate: this case carries no hydrogen demand and no hydrogen network, and the carrier is
-  off. It models two electrolyzers as the documented Electrolyzer (ELZ) unit type, storage with electric energy outflows, and expresses the hydrogen demand as
-  the electricity they must draw. Nothing about the case changes but its name. The entry on the Download page said it added hydrogen demand and a pipeline
-  network, which was never true of the case in this form, and now says what it does.
+- [CHANGED] the `9n_H2` case is now `9n_ELZ`. Master gained a `9nH2` case for the hydrogen subsystem, and two names differing only by an underscore
+  invite the wrong starting point. The old name was also inaccurate: the case carries no hydrogen demand and no hydrogen network, and the carrier is
+  inactive. It represents two electrolyzers as the documented Electrolyzer (ELZ) unit type, with storage, electric energy outflows, and the hydrogen
+  demand expressed as the electricity they must draw. Only the name changes, and the Download page entry now states what the case does.
 
-- [FIXED] `IndHardZeroENS` forbade unserved energy but not the reactive shortfall, so an AC adequacy run answered half the question: the model stayed feasible
-  by buying reactive power it never sourced, at `pENSCost`, and reported itself adequate. `vQNSPos` is now fixed at zero alongside `vENS`. `vQNSNeg` is not. It
-  is a surplus the system could not absorb, which has no counterpart on the active side, where a surplus is dispatched down instead; forbidding it would make
-  the reactive balance a hard equality and turn light-load line charging into an infeasibility, which is a different question from the one the flag asks.
+- [FIXED] `IndHardZeroENS` forbade unserved energy and not the reactive shortfall, so an AC adequacy assessment answered half the question: the model
+  remained feasible by purchasing reactive power it never sourced, at `pENSCost`, and reported itself adequate. `vQNSPos` is now fixed at zero
+  alongside `vENS`. `vQNSNeg` is not. It is a surplus the system could not absorb, with no counterpart on the active side, and forbidding it would
+  make the reactive balance a hard equality and turn light-load line charging into an infeasibility.
 
-- [FIXED] a portfolio sweep could not exclude a candidate shunt or synchronous condenser. `apply_investment_bounds` re-applies the investment bounds to a built
-  model, but it covered only generators, retirements and lines, and the four reactive bound parameters were not declared mutable in the first place. So setting
-  `pShuntUpInvest` to zero on a built model raised, and anything that caught the error and carried on left the capacitor available with nothing to say so. The
-  parameters are mutable now and the function covers both reactive families, skipping them when their variables do not exist, which is the case for a DC run and
-  for the build-time call, which happens before `SettingUpVariablesAC` creates them.
+- [FIXED] a portfolio study could not exclude a candidate shunt compensator or synchronous condenser. `apply_investment_bounds` re-applies the
+  investment bounds to a built model, but covered generating units, retirements and circuits alone, and the four reactive bound parameters were not
+  declared mutable, so setting `pShuntUpInvest` to zero on a built model raised, and anything catching the error left the capacitor available with
+  nothing to indicate it. The parameters are mutable and the function covers both reactive families, skipping them when their variables do not exist.
 
-- [CHANGED] four AC tests asked for gurobi and so skipped on every runner, because the bundled license is size limited. They use ipopt now, which a runner has:
-  the condenser pair, the voltage-source converter, and the angle guard. Five converter tests still ask for gurobi because they need the flow-direction binary,
-  which an NLP solver relaxes; those have no runner coverage, and closing that needs either a mixed-integer variant of each on the piecewise model type with
-  HiGHS, or a solver license in CI.
-- [ADDED] tests for the synchronous condenser, which no shipped case has, so nothing exercised it. One builds an existing condenser and checks it supplies
-  reactive power inside its declared band; the other builds a candidate whose `InvestmentUp` is 0 and checks it comes out buildable, which is the reading every
-  other device family uses. A unit has to be declared in `oT_Dict_Generation` and its technology in `oT_Dict_Technology`, not only added to the data table, or
-  it never reaches the model at all.
-- [FIXED] a case with no AC power flow carried the AC current penalty variable anyway. `vTotalNPenalty` was declared for every case and added to the objective
-  unconditionally, while the constraint that defines it is skipped when AC is off, so a DC model held one unconstrained column per load level priced in the
-  objective. They optimize to zero, so the reported cost was always right, but they are dead columns and they change what the solver presolves. The variable and
-  the objective term now exist only under `IndACPowerFlow = 1`.
+- [CHANGED] four AC checks requested gurobi and were skipped on every runner, the distributed licence being size limited. They use ipopt, which a
+  runner holds: the condenser pair, the voltage-source converter and the angle guard. Five converter checks still request gurobi for the
+  flow-direction binary, which a non-linear solver relaxes; those remain without runner coverage.
+- [ADDED] automated checks for the synchronous condenser, which no distributed case carries. One builds an existing condenser and confirms it supplies
+  reactive power inside its declared band; the other builds a candidate whose `InvestmentUp` is 0 and confirms it is buildable, the reading every
+  other device family uses. A unit must be declared in `oT_Dict_Generation` and its technology in `oT_Dict_Technology`, not only added to the data
+  table, or it never reaches the model.
+- [FIXED] a case without AC power flow carried the AC current penalty variable. `vTotalNPenalty` was declared for every case and added to the
+  objective unconditionally, while the constraint defining it is skipped when AC is inactive, so a DC model held one unconstrained column per load
+  level priced in the objective. They optimise to zero, so the reported cost was correct, but they alter what the solver presolves. Both now exist
+  only under `IndACPowerFlow = 1`.
 - [FIXED] the cost summary gained two AC rows, `Investment Cost Reactive` and `AC Current Penalty (not in total)`, on every case including those with no AC
   power flow, where both were zero. A file that every case writes changed shape. The rows are written only when AC is on.
-- [CHANGED] the README described the network model as DC power flow and the ohmic losses as proportional to the flow. Both are now conditional: an AC power flow
-  is named as an alternative that is off by default, the losses follow the exact relation under it, and the result topics list the voltage magnitudes, reactive
-  flows, shunt injections and the reactive-power marginal that come with it.
-- [ADDED] three single-line diagrams in the AC section of the mathematical formulation, drawn in the style of the existing hand-drawn figures: one AC branch
-  with its tap, series impedance and charging susceptance; an HVDC link under both converter models with the reactive power and station losses at each terminal;
-  and the capability disc of one terminal with the twelve tangent lines that stand in for it. Symbols follow the notation table, with parameters drawn in blue
-  and variables in red.
-- [CHANGED] the AC work adds no new files. Everything it introduced now sits in the module that already owned that concern: reading and bound tightening in
-  `openTEPES_InputData.py`, the network matrices and the AC set-up in `openTEPES_DataConfiguration.py`, the AC variables in `openTEPES_SettingUpVariables.py`,
-  the branch flow and bus injection formulations, the converter models and the restoration pass in `openTEPES_ModelFormulationElectricity.py`, and the AC
-  results in `openTEPES_OutputResultsNetwork.py`. Seven modules became none. No behavior changes: the function names and their callers are the same, only the
-  file they live in moved.
-- [CHANGED] two AC result files are renamed to match the families they belong to. `NetworkReactiveNotServed` is `NetworkQNS`, which is what the rest of the
-  not-served family looks like (`NetworkENS`, `NetworkPNS`, `NetworkHNS`) and what the variable behind it has always been called (`vQNSPos`, `vQNSNeg`).
-  `NetworkUtilizationAC` is `NetworkElecUtilizationAC`, so the carrier comes before the word as in `NetworkElecUtilization` and `NetworkHeatUtilization`.
-  Neither name has been released, so nothing downstream depends on them.
-- [CHANGED] the Linux solve job in CI now installs ipopt, so the AC formulations it could not reach are tested. HiGHS cannot express a nonlinear constraint at
-  all, which left the second-order cone, the exact non-linear model and the AC restoration pass skipped on every runner, and the cone is the default. A conic
-  solver is not needed for this: the relaxation is convex, so ipopt reaching a local optimum reaches the global one. On the 9n case the two agree to 3e-07
-  relative. The formulation matrix gains a branch-flow cone row under ipopt, because the existing cone row asks for gurobi and CI has no license for it, so the
-  default formulation was never solved on a runner. Linux only, since ipopt's convergence depends on how MUMPS was built and a platform-dependent solver makes
-  for flaky tests. This tests that the paths build and solve; it does not stand in for a conic solver certifying the bound.
+- [CHANGED] the README described the network model as DC power flow and the ohmic losses as proportional to the flow. Both are now conditional: an AC
+  power flow is named as an alternative, inactive by default, the losses follow the exact relation under it, and the result topics list the voltage
+  magnitudes, reactive flows, shunt injections and the reactive-power marginal.
+- [ADDED] three single-line diagrams in the AC section of the mathematical formulation, drawn in the style of the existing hand-drawn figures: one AC
+  branch with its tap, series impedance and charging susceptance; an HVDC link under both converter models with the reactive power and station losses
+  at each terminal; and the capability disc of one terminal with the twelve tangent lines representing it. Symbols follow the notation table,
+  parameters in blue and variables in red.
+- [CHANGED] the AC work adds no new files. Reading and bound tightening sit in `openTEPES_InputData.py`, the network matrices and AC set-up in
+  `openTEPES_DataConfiguration.py`, the AC variables in `openTEPES_SettingUpVariables.py`, the branch flow and bus injection formulations, the
+  converter models and the restoration pass in `openTEPES_ModelFormulationElectricity.py`, and the AC results in `openTEPES_OutputResultsNetwork.py`.
+  Seven modules became none. The function names and their callers are the same; only the file changes.
+- [CHANGED] two AC result files are renamed to match their families. `NetworkReactiveNotServed` is `NetworkQNS`, matching `NetworkENS`, `NetworkPNS`
+  and `NetworkHNS` and the variables `vQNSPos` and `vQNSNeg`. `NetworkUtilizationAC` is `NetworkElecUtilizationAC`, placing the carrier first as in
+  `NetworkElecUtilization` and `NetworkHeatUtilization`. Neither name has been released.
+- [CHANGED] the Linux solve job installs ipopt, so the AC formulations it could not reach are exercised. HiGHS cannot express a non-linear constraint,
+  which left the second-order cone, the exact non-linear model and the AC restoration pass skipped on every runner, the cone being the default. A
+  conic solver is not needed: the relaxation is convex, so a local optimum is the global one, and on the 9n case the two agree to 3e-07 relative.
+  Linux only, the convergence of ipopt depending on how MUMPS was built. This confirms the paths build and solve; it does not stand in for a conic
+  solver certifying the bound.
 - [CHANGED] the test that checks the restoration pass closes the cone asked for gurobi, which no runner has a license for, so it was skipped everywhere and the
   pass had no CI coverage even after ipopt arrived. It uses ipopt now: the outer solve is the cone, which is convex, and the pass itself already ran on ipopt.
-- [FIXED] the architecture diagram drew the Mode C arrow, from `resolve.py` back to `SettingUpVariables.py`, outside the page background, which stopped 45 px
-  short of the canvas. The arrow is routed inside it and its rotated label is gone, because it repeated the sweep-modes panel word for word. Its two corners are
-  now the same shape: each was a single quadratic curve spanning the whole segment, so one bend swept over 435 px and the other over 27 px and they did not look
-  like a pair. They are quarter turns of equal radius with straight runs between. The footer no longer runs off both edges.
-- [CHANGED] the wording in the architecture diagram is plainer. Claims about the design gave way to descriptions of it: "single source of truth" is now "column
-  and type specs", "drop-in backend" is "same InputSource interface", and "cost: solve only (cheapest)" drops the judgment. The planned boxes were checked
-  against the code and all five are still planned: `parquet_source.py`, `mcda.py`, the district cooling and CCUS sector files, the sets-against-params split in
-  `InputData`, and the `cli.py` / `run.py` split, whose work is done today by `openTEPES_Main.py` and `openTEPES.py` in one piece each.
-- [FIXED] the bus injection formulation in W space failed intermittently when the loop condition was off. `vTheta` appears in no constraint there, so the solver
-  sets some nodes and leaves others unset, and which ones varies between runs. The guard that decides whether a nodal voltage phasor can be formed returned on
-  the FIRST node it found, so whenever that node happened to carry a value it reported the angles available and the residual check then built a phasor from
-  `None` at a later node and raised `TypeError`. It now tests every node. This is what made `IndACPowerFlow = 2` with `IndACCycle = 0` fail once in every few
-  runs of the test suite.
-- [ADDED] HVDC converter station losses, set per case with `ConverterNoLoadLoss` and `ConverterMarginalLoss` in `oT_Data_Parameter`. Each terminal of a DC link
-  carries a station, and each station is charged separately: the no-load part is drawn while the link is in service, as a fraction of the link rating, and the
-  marginal part is drawn on the power the station carries, either direction. Both default to zero, so a case that does not ask for them gets the results it got
-  before. Reported per link in `oT_Result_NetworkConverterLosses`. Only read when `IndACConverter` selects a converter model. Switching a loss on also brings in
-  the flow-direction binary the line-commutated model already uses, including under the voltage-source model, because without it the model can inflate both
-  halves of the link flow and discard surplus energy into a loss that does not exist.
-- [CHANGED] update the architecture diagram (`doc/img/openTEPES_architecture.svg` and the rendered `.png`) so it matches the code after the AC work. Layer 4
-  said "six files, one per concern" and now says eight, with a new `ELECTRICITY NETWORK — pick one` bracket under `…Electricity.py` holding the three
-  interchangeable network models: DC, branch flow and bus injection, all three inside `…Electricity.py`. The three are labeled DC, BF and BIM: the middle box
-  used to read AC, which is wrong beside BIM because bus injection is an AC model too. The functions keep their `AC` names, and correctly so —
-  `NetworkACOperationModelFormulation` and `NetworkACCurrentModelFormulation` run for every AC mode and only their interior is gated on branch flow, which is
-  why BIM alone needs a distinguishing name. The box that used to plan `dc_opf / ac_opf` as selectable builders is what this replaces, so a planned item becomes
-  an implemented one. Layer 6 names the AC results inside `…Network.py`, and Layer 3 says which of its modules gain AC code when `IndACPowerFlow > 0`. The AC
-  files sit under electricity rather than beside Hydro, Hydrogen and Heat, because they are a choice of network model and not a new energy carrier. No other
-  layer changes.
-- [ADDED] AC optimal power flow, on with `IndACPowerFlow`. Branch flow model; the current definition is a second-order cone, a piecewise staircase or the exact
-  non-linear equation (`IndACModelType`). Adds voltage and angle bound tightening, bus shunts, generator reactive capability and synchronous condensers.
-  `IndACRestore` re-solves the network at the exact equations on ipopt to recover a physical operating point. New cases `9n_AC`, `RTS-GMLC_AC`,
-  `RTS-GMLC_AC_Oper`, `RTS-GMLC_Oper`. Refused with cycle flow, single node, variable TTC and PTDF. Off by default.
-- [FIXED] an HVDC converter was bounded separately in active and reactive power, so a station could hold both at their limits at once and deliver more apparent
-  power than its rating: 17.6% more at the default power factor of 0.85. The rating now bounds the apparent power, as a ring of tangent lines so that
-  `IndACModelType = 1` stays a mixed-integer linear problem. The bound is loose by 3.5% for a voltage-source converter and exact for a line-commutated one.
+- [FIXED] the architecture diagram drew the Mode C arrow, from `resolve.py` back to `SettingUpVariables.py`, outside the page background, which
+  stopped 45 px short of the canvas. The arrow is routed inside it and its rotated label removed, the sweep-modes panel carrying the same words. Its
+  two corners were single quadratic curves spanning the whole segment, one bend sweeping 435 px and the other 27 px; they are now quarter turns of
+  equal radius with straight runs between. The footer no longer runs off both edges.
+- [CHANGED] the wording in the architecture diagram describes the design instead of asserting it: "single source of truth" becomes "column and type
+  specs", "drop-in backend" becomes "same InputSource interface", and "cost: solve only (cheapest)" drops the judgement. The five planned boxes were
+  checked against the code and remain planned: `parquet_source.py`, `mcda.py`, the district cooling and CCUS sector files, the sets-against-params
+  split in `InputData`, and the `cli.py` / `run.py` split, whose work is done today by `openTEPES_Main.py` and `openTEPES.py`.
+- [FIXED] the bus injection formulation in W space failed intermittently with the loop condition inactive. `vTheta` appears in no constraint there, so
+  the solver sets some busbars and leaves others unset, and which ones varies between solves. The guard deciding whether a nodal voltage phasor can be
+  formed returned on the first busbar it found, so whenever that busbar carried a value it reported the angles available and the residual check then
+  built a phasor from `None` at a later busbar and raised `TypeError`. It now tests every busbar. This is what made `IndACPowerFlow = 2` with
+  `IndACCycle = 0` fail once in every few passes of the check suite.
+- [ADDED] HVDC converter station losses, set per case with `ConverterNoLoadLoss` and `ConverterMarginalLoss` in `oT_Data_Parameter`. Each terminal of
+  a DC link carries a station, and each station is charged separately: the no-load part while the link is in service, as a fraction of the link
+  rating, and the marginal part on the power the station carries in either direction. Both default to zero. Reported per link in
+  `oT_Result_NetworkConverterLosses`, and read only when `IndACConverter` selects a converter model. Activating a loss also brings in the
+  flow-direction binary the line-commutated model already uses, without which the model can inflate both halves of the link flow and discard surplus
+  energy into a loss that does not exist.
+- [CHANGED] the architecture diagram (`doc/img/openTEPES_architecture.svg` and the rendered `.png`) matches the code after the AC work. Layer 4 reads
+  eight files instead of six, with a new `ELECTRICITY NETWORK — pick one` bracket under `…Electricity.py` holding the three interchangeable network
+  models, labelled DC, BF and BIM; the middle box read AC, which is wrong beside BIM, bus injection being an AC model too. The functions keep their
+  `AC` names, `NetworkACOperationModelFormulation` and `NetworkACCurrentModelFormulation` running for every AC mode. Layer 6 names the AC results
+  inside `…Network.py`, and Layer 3 states which of its modules gain AC code when `IndACPowerFlow > 0`. No other layer changes.
+- [ADDED] AC optimal power flow, activated with `IndACPowerFlow`. Branch flow model; the current definition is a second-order cone, a piecewise
+  staircase or the exact non-linear equation (`IndACModelType`). Adds voltage and angle bound tightening, bus shunts, generating unit reactive
+  capability and synchronous condensers. `IndACRestore` re-solves the network at the exact equations on ipopt to recover a physical operating point.
+  New cases `9n_AC`, `RTS-GMLC_AC`, `RTS-GMLC_AC_Oper`, `RTS-GMLC_Oper`. Refused with cycle flow, single busbar, variable TTC and PTDF. Inactive by
+  default.
+- [FIXED] an HVDC converter was bounded separately in active and reactive power, so a station could hold both at their limits at once and deliver 17.6
+  % more apparent power than its rating at the default power factor of 0.85. The rating now bounds the apparent power through a ring of tangent lines,
+  so `IndACModelType = 1` remains a mixed-integer linear problem. The bound is loose by 3.5 % for a voltage-source converter and exact for a
+  line-commutated one.
 - [ADDED] HVDC converter models, `IndACConverter`: line-commutated draws reactive power at both terminals, voltage-source supplies or absorbs it within the
   converter rating. `ConverterPF` sets the power factor.
 - [FIXED] the AC angle-to-flow relation used `x*P + r*Q`; it is `x*P - r*Q`. Branch flows were wrong by up to 38 MW and the recovered angles did not close
   around network loops.
-- [FIXED] `IndACPowerFlow` is now read from `oT_Data_Parameter` as well as `oT_Data_Option`. A case that put the flag in the wrong table built an AC model but
+- [FIXED] `IndACPowerFlow` is now read from `oT_Data_Parameter` as well as `oT_Data_Option`. A case that put the indicator in the wrong table built an AC model but
   skipped the reactive demand and shunt tables, and reported the result as solved.
 - [ADDED] hourly on/off state for bus shunts, with a `Switchable` column in `oT_Data_BusShunt`. A bank can be opened at light load instead of wired in all year.
   `IndBinShuntSwitch` picks a discrete state, the default, or a relaxed one. Devices stay fixed unless marked, so existing cases are unchanged.
 - [ADDED] stepped shunt banks, with a `Units` column in `oT_Data_BusShunt`. `Units = N` gives a bank of N identical units, so the model chooses how many are in
   service. Follows the VAR source model of Alvarez, Paredes and Rider, IET Generation, Transmission and Distribution 13(13), 2019. Units are chained to remove
   equivalent permutations. One unit by default.
-- [ADDED] `--option Key=Value` on the command line overrides an entry of `oT_Data_Option` or `oT_Data_Parameter` for a single run. Repeatable and
-  comma-separated. One case can then be run under several formulations without copying it; the bundled `9n` and `9n_AC` differ by two cells and are otherwise
-  the same 34 MB. Switching the AC model on this way also pulls in the AC-only input files, so an overridden run reads what a case with the flag set would.
+- [ADDED] `--option Key=Value` overrides an entry of `oT_Data_Option` or `oT_Data_Parameter` for a single solve. Repeatable and comma-separated, so
+  one case can be solved under several formulations without copying it; the distributed `9n` and `9n_AC` differ by two cells and are otherwise the
+  same 34 MB. Activating the AC model this way also reads the AC-only input files, so an overridden solve reads what a case with the option set would.
 - [ADDED] `IndCycleFlow`, `IndCompleteProblem`, `IndSectorDecomposition` and `IndSequentialSolving` can now be set from `oT_Data_Option`. They were fixed in the
   code, so no case could select them, and the four stage-solving strategies the model implements were all unreachable. `IndSequentialSolving` was also declared
   binary while its own code branches on four values. The defaults are the values that used to be in force.
-- [FIXED] the AC design notes did not record what the price on the branch current does to the locational prices. It is in the objective, so it is in the duals
-  of the nodal balance, and the distortion is not a level shift: it moves prices relative to one another. Section 17 measures it. At the value the code carried
-  before it became case data the worst nodal price moved by 140 EUR/MWh against a spread of 200; at the value the RTS cases now carry it is 1.53.
-- [ADDED] `EpsilonCurrent` in `oT_Data_Parameter` sets the price on the AC branch current per case. It was a constant in the code, and the value it needs turns
-  out to depend on the case: 1e-3 for `9n_AC` and 1e-6 for the RTS-GMLC cases and for pglib case118, a thousandfold spread. At 1e-3 the RTS cases were paying a
-  16% dispatch distortion and reporting a relaxed cost above the exact optimum. The bundled cases now carry calibrated values; a case that says nothing keeps
-  the previous default.
-- [CHANGED] the AC current penalty is priced into the objective but is no longer part of the reported system cost. It is a numerical device that stops the
-  relaxation buying voltage with current that is not there, not money, and on a 168 hour RTS-GMLC window it came to 14.43 MEUR of a 60.00 MEUR reported total, a
-  quarter of the figure. The solve is unchanged; `vTotalSCost` now reports 45.56 MEUR for that case and the penalty is reported beside it.
+- [FIXED] the AC design notes did not record the effect of the price on the branch current on the locational prices. It enters the objective and
+  therefore the duals of the nodal balance, and the distortion moves prices relative to one another instead of shifting the level. Section 17 measures
+  it: at the value formerly fixed in the code the largest movement in a nodal price was 140 EUR/MWh against a spread of 200, and at the value the RTS
+  carry, by 1.53.
+- [ADDED] `EpsilonCurrent` in `oT_Data_Parameter` sets the price on the AC branch current per case. It was fixed in the code, and the value required
+  depends on the case: 1e-3 for `9n_AC` and 1e-6 for the RTS-GMLC cases and for pglib case118, a thousandfold spread. At 1e-3 the RTS cases carried a
+  16 % dispatch distortion and reported a relaxed cost above the exact optimum. The distributed cases now carry calibrated values; a case that states
+  nothing keeps the previous default.
+- [CHANGED] the AC current penalty is priced into the objective and is no longer part of the reported system cost. It is a numerical device preventing
+  the relaxation from purchasing voltage with current that is not present, not money, and on a 168-hour RTS-GMLC window it reached 14.43 MEUR of a
+  60.00 MEUR reported total, a quarter of the figure. The solution is unchanged; `vTotalSCost` reports 45.56 MEUR for that case and the penalty is
+  reported beside it.
 - [FIXED] the AC design notes measured the RTS-GMLC network against DC on a system with no reactive compensation. The comparison, the horizon table and the
   relaxation tightness are measured again with the reactors: the DC model is unchanged to the digit, as it should be, and the AC one grows by exactly 3 rows per
   hour.
-- [FIXED] the AC design notes reported that the exact model could not be solved on RTS-GMLC from a cold start. It can; the earlier attempt was made on a system
-  with no reactive compensation. Sections 13 and 14 have been re-measured with the reactors in place and now record the case definition, and a new section shows
-  that the current penalty is what made the second-order cone appear tight.
+- [FIXED] the AC design notes reported that the exact model could not be solved on RTS-GMLC from a cold start. It can; the earlier attempt was made on
+  a system without reactive compensation. Sections 13 and 14 are re-measured with the reactors in place and record the case definition, and a new
+  section shows that the current penalty made the second-order cone appear tight.
 - [CHANGED] the checks on incompatible options are made in one pass and reported together, instead of one at a time.
-- [ADDED] `IndPTDF` is now an explicit three-valued option: 0 off, 1 reads the factors from `oT_Data_VariablePTDF`, and 2 computes them from the reactances, so
-  a case no longer has to produce them in another tool and paste in a table that openTEPES cannot check against its own network. The flag used to be implied by
-  the presence of the table, which stays the default when a case says nothing. Mode 2 is refused when the case has candidate or switchable AC lines, because the
-  factors belong to one topology. On `9n` the computed factors reproduce the angle formulation's flows exactly.
-- [ADDED] an AC power flow residual check, written to `oT_Result_ACPowerFlowResidual` and reported on the console. It recomputes each branch flow from the bus
-  voltages and compares it with the flow the model reports, so a user can tell whether a solved case is physical. This was only possible before with pandapower,
-  which openTEPES does not ship. The relaxation gap answers a different question: it says whether the cone is tight, not whether the operating point is
-  physical. On `9n_AC` the relaxed solution is about 68 MW off the series relation and the restored one is within 0.00001 MW.
+- [ADDED] `IndPTDF` is an explicit three-valued option: 0 inactive, 1 reads the factors from `oT_Data_VariablePTDF`, and 2 computes them from the
+  reactances, so a case need no longer produce them in another tool and paste in a table openTEPES cannot check against its own network. The option
+  was formerly implied by the presence of the table, which remains the default. Mode 2 is refused when the case carries candidate or switchable AC
+  circuits, the factors belonging to one topology. On `9n` the computed factors reproduce the angle formulation flows exactly.
+- [ADDED] an AC power flow residual check, written to `oT_Result_ACPowerFlowResidual` and reported on the console. It recomputes each branch flow from
+  the busbar voltages and compares it with the flow the model reports, so a user can determine whether a solved case is physical, which formerly
+  required pandapower. The relaxation gap answers a different question, saying whether the cone is tight and not whether the operating point is
+  physical. On `9n_AC` the relaxed solution is about 68 MW from the series relation and the restored one within 0.00001 MW.
 - [ADDED] the network matrices in `openTEPES_DataConfiguration.py`, which turn the branch data into the objects that need a view of the whole network: the
   susceptance matrices, the DC power transfer distribution factors, and the residual check above. DC links are excluded from all of them.
 - [ADDED] the resolved configuration is printed at the start of every run: the network model in force, the AC settings, the reactive demand and shunt counts
-  that reached the model, and the other active features. A case whose flags do not say what the author intended now shows it before the solve rather than after.
+  that reached the model, and the other active features. A case whose indicators do not say what the author intended now shows it before the solve, not after.
 - [FIXED] the angle-difference band was built for the W-space formulation only, so `IndACPowerFlow = 3` ran with no band at all.
 - [FIXED] the RTS-GMLC AC cases carried no shunt table, so the three 100 Mvar reactors on buses 106, 206 and 306 were missing and both ran with no reactive
   compensation. `RTS-GMLC_AC_Oper` falls from 61.65 to 60.00 MEUR; `RTS-GMLC_AC` is a full year and was not re-solved.
@@ -289,35 +262,33 @@
 
 - [FIXED] many small errors detected with Claude Fable
 - [FIXED]  fix typo for skipping the eReserveUpIfEnergy constraint condition and substitute list(mTEPES.n2) by n2list for performance improvement
-- [CHANGED] the `9n_H2` example case now models its two electrolyzers the way the documentation defines the "Electrolyzer (ELZ)" unit type: an ESS with electric
-  energy outflows, a storage buffer of 1.512 GWh each, and a weekly outflow cycle. The hydrogen demand is expressed as the electricity the electrolyzers must
-  draw to produce it (0.3 tH2/h at 60 kWh/kgH2 gives 18 MW, split between the two units), so the hydrogen network sector is off in this case and the network
-  path stays covered by `sSEP`. Before this, the electrolyzers had no storage and no outflows, so their inventory was pinned at zero and every unit of
-  electricity they consumed was written off as ESS spillage, which carries no cost. Over a year the case now costs 168.342 MEUR instead of 170.532, because the
-  electrolyzers can choose when to draw their electricity instead of producing in lockstep with an hourly hydrogen demand. Four tests were added to pin the
-  behavior, and the expected cost of the 7-day regression run moves to 242.89492215294186.
+- [CHANGED] the `9n_H2` case represents its two electrolyzers as the documentation defines the Electrolyzer (ELZ) unit type: a storage unit with
+  electric energy outflows, a buffer of 1.512 GWh each, and a weekly outflow cycle. The hydrogen demand is expressed as the electricity the
+  electrolyzers must draw to produce it, 0.3 tH2/h at 60 kWh/kgH2 giving 18 MW across the two units, so the hydrogen network is inactive here and
+  `sSEP` retains that coverage. Formerly the electrolyzers had no storage and no outflows, so their inventory was pinned at zero and every unit of
+  electricity consumed was written off as spillage, which carries no cost. Over a year the case costs 168.342 MEUR instead of 170.532, the
+  electrolyzers being free to choose when to draw. Four automated checks added, and the 7-day expected cost moves to 242.89492215294186.
 - [FIXED] skip the ESS downward-reserve energy constraint for units with no storage, and keep `pDemandElec` live in the electric balance, unbreaking master CI.
 - [FIXED] fix some minor errors in model formulation
-- [ADDED] `--warm-resolve` runs a Mode C sweep through one persistent Gurobi instance instead of re-exporting the model per overlay: the model is set up once
-  and each overlay pushes only the constraints that read a swapped Param. Barrier by default, so costs match the non-persistent path (new parity test on 9n);
-  the saving is the avoided re-export and grows with the sweep length. `--warm-resolve-simplex` adds warm dual simplex, time-capped with a barrier fallback, for
-  small RHS/bound sweeps only — it is erratic on large or objective-side changes, so it stays off by default. Gurobi only; no effect for Mode A/B or non-Gurobi
-  solvers. Default off leaves every existing path unchanged.
+- [ADDED] `--warm-resolve` executes a Mode C study through one persistent Gurobi instance instead of re-exporting the model per overlay: the model is
+  set up once and each overlay pushes only the constraints reading a swapped Param. Barrier by default, so costs match the non-persistent path, with a
+  new parity check on 9n; the saving is the avoided re-export and grows with the length of the study. `--warm-resolve-simplex` adds warm dual simplex,
+  time-capped with a barrier fallback, for small right-hand-side and bound studies only, being erratic on large or objective-side changes. Gurobi
+  only, inactive by default.
 - [FIXED] allow negative values of H2 demand to consider imports
 - [FIXED] fix typo in technology consumption output
 - [CHANGED] remove the investment decisions per year, just keeping the cumulative investment variables.
 - [ADDED] a CI job that runs the tests with pandas pinned to the 2.x floor, since the lock pins pandas 3 and nothing else exercised the older end of
   `pandas>=2.2.2,<4` (issue #150).
-- [CHANGED] pin `highspy==1.15.1` in the CI and Colab workflows, so a solve result is reproducible from the lock and a HiGHS release cannot fail an unrelated PR
+- [CHANGED] pin `highspy==1.15.1` in the CI and Colab workflows, so a result is reproducible from the lock and a HiGHS release cannot fail an unrelated PR
   (issue #151).
 
-- [FIXED] a Mode C sweep now re-optimizes the investment plan (issue #148). The solve fixes the plan to read the duals, and resolve released that before, so a
-  demand rise was met with unserved energy instead of new build and the cost was too high. resolve now calls unfix_for_duals first. Adds a test that the line
-  investment moves under a demand overlay.
-- [ADDED] resolve now rejects an overlay the built model does not read live, instead of swapping it silently. A misspelt name raises, and so does a mutable
-  Param the built model does not reference — either captured as a constant with pX[...]() or read only by a constraint that was skipped for the case. On 9n the
-  adequacy and RES-energy constraints are skipped (no generation candidates), so pEFOR, pReserveMargin and pRESEnergy have no live effect and an overlay of them
-  raises.
+- [FIXED] a Mode C study re-optimises the investment plan, closing issue #148. The solve fixes the plan to read the duals, and resolve released that,
+  so a demand rise was met with unserved energy instead of new capacity and the cost was too high. resolve now calls unfix_for_duals first, with a
+  check that the circuit investment moves under a demand overlay.
+- [ADDED] resolve rejects an overlay the built model does not read live instead of swapping it silently. A misspelt name raises, as does a mutable
+  Param the built model does not reference, whether captured as a constant or read only by a constraint skipped for the case. On 9n the adequacy and
+  RES-energy constraints are skipped, no generation candidates being present, so an overlay of `pEFOR`, `pReserveMargin` or `pRESEnergy` raises.
 - [FIXED] the output parity check now compares text labels correctly on pandas 3. pandas 2 turned a blank label into the text "None", but pandas 3 keeps it
   missing, and a missing value never equals itself, so two identical runs were reported as different.
 - [CHANGED] allow pandas 3 and refresh the pinned dependencies. openTEPES now accepts `pandas>=2.2.2,<4`, and `requirements.lock` moves to pandas 3.0.3.
@@ -336,10 +307,10 @@
 - [FIXED] fix vNetworkInvPer at the same time that vNetworkInvest to avoid having vNetworkInvPer as binary variables when there are relaxed investments
 - [ADDED] two figures on the multiple-runs page: a concept diagram of the three modes as a reuse matrix over the pipeline, and a Mode B flow diagram drawn
   against the shipped `openTEPES_Runner` / `openTEPES_Cases` API. Static images in `doc/img/`; no code change.
-- [CHANGED] retitled the sweep page to "Multiple runs" (the code still calls a related set of runs a sweep) and expanded each mode with its mechanics — backends
-  and the status-JSON round-trip for Modes A/B, the mutable-Param `store_values` hot-swap and non-persistent-solver requirement for Mode C. Fixed the Mode C
-  note: the shipped `resolve` loop is serial and cross-platform, not Unix-only (fork copy-on-write belongs to Mode B's multiprocessing backend).
-- [ADDED] a "Solver interface: persistent vs non-persistent" section in SolutionMethods: which solver names use the persistent Gurobi path (`appsi_gurobi` /
+- [CHANGED] the sweep page is retitled "Multiple runs" and each mode gains its mechanics: backends and the status-JSON round trip for Modes A and B,
+  the mutable-Param `store_values` hot swap and the non-persistent-solver requirement for Mode C. The Mode C note is corrected: the distributed
+  `resolve` loop is serial and cross-platform, the fork copy-on-write belonging to the multiprocessing backend of Mode B.
+- [ADDED] a "Solver interface: persistent vs non-persistent" section in SolutionMethods: the solver names taking the persistent Gurobi path (`appsi_gurobi` /
   `gurobi_persistent`) versus the non-persistent default, where reuse pays off (the stage loop and the Benders / dual re-solves), why Mode C must stay
   non-persistent, and examples.
 - [ADDED] DuckDB data-management examples: querying a per-case `oT_Results_<case>.duckdb` and the swept `oT_Sweep.duckdb` in OutputResults, and inspecting a
@@ -347,259 +318,179 @@
 - [ADDED] CSV<->DuckDB input converter tools (`scripts/openTEPES_DuckDB/`): `Tool_CSV_to_DuckDB` writes a CSV case to a `.duckdb`, `Tool_DuckDB_to_CSV` exports
   it back. Both are driven by `openTEPES_InputSchema` and reuse the DuckDB reader, so they cannot drift.
 - [CHANGED] documentation: new Read the Docs page for parameter sweeps (Modes A/B/C via `openTEPES_Runner` + `openTEPES_Cases` and `resolve`). Document the
-  `output_format` DuckDB result output and the `aggregate` sweep merger in OutputResults, the `.duckdb` input option and the integer form of the Yes/No flags in
+  `output_format` DuckDB result output and the `aggregate` sweep merger in OutputResults, the `.duckdb` input option and the integer form of the Yes/No indicators in
   InputData, and Benders decomposition in Characteristics. No model or behavior change.
 - [ADDED] a CI `docs` job builds the Read the Docs site with warnings treated as errors, so a broken cross-reference or a missing toctree entry fails the PR;
   `conf.py` silences only the project's front-matter convention warning.
-- [FIXED] CI on the sector/stage Benders commit. `openTEPES_ProblemSolvingStageSolve.py` called the cycle-flow builders through an undefined `oTM` alias with
-  undefined flags; it now calls `NetworkCycles` and `CycleConstraints` directly, like the stage iterator (DC cycle path).
-  `openTEPES_ProblemSolvingSectorDecomposition.py` and `openTEPES_ProblemSolvingStageDecomposition.py` now use the same relative-import guard as the other split
-  modules, so they import both when installed and when run as a script.
+- [FIXED] continuous integration on the sector and stage Benders commit. `openTEPES_ProblemSolvingStageSolve.py` called the cycle-flow builders
+  through an undefined `oTM` alias with undefined indicators, and now calls `NetworkCycles` and `CycleConstraints` directly, as the stage iterator
+  does. `openTEPES_ProblemSolvingSectorDecomposition.py` and `openTEPES_ProblemSolvingStageDecomposition.py` use the same relative-import guard as the
+  other split modules.
 - [ADDED] added sector and stage Benders decomposition
 - [CHANGED] if a thermal unit has a variable minimum generation > 0 in a load level it is considered committed in this load level
 - [CHANGED] fix the energy activation variables if no operating reserve activation constraint is formulated in a time step
-- [ADDED] Mode B in-memory overlay sweep (RFC §4.2): `openTEPES_Runner.run(mode="in-memory")` reads the baseline case once into a new `openTEPES_InMemorySource`
-  and re-uses it per case through an overlay (a data-table stem mapped to a scale factor, a `df->df` callable, or a replacement frame), so a parameter sweep
-  pays the input I/O once and only rebuilds + solves per case (forked workers share the baseline copy-on-write). `openTEPES_run` gains `input_source=` to read
-  from an already-open `InputSource`; `InputSource` gains `list_dict_stems()` (implemented in `CSVSource` and `DuckDBSource`). Additive only — an identity
-  overlay reproduces a direct run (9n parity). New tests in `tests/test_run.py`. The architecture diagram's sweep-modes panel now marks all three modes (A, B,
-  C) implemented.
+- [ADDED] Mode B in-memory overlay study (RFC §4.2): `openTEPES_Runner.run(mode="in-memory")` reads the baseline case once into a new
+  `openTEPES_InMemorySource` and reuses it per case through an overlay, a data-table stem mapped to a scale factor, a callable or a replacement frame,
+  so a parameter study pays the input reading once and rebuilds and solves per case. `openTEPES_run` gains `input_source=`; `InputSource` gains
+  `list_dict_stems()`, implemented in `CSVSource` and `DuckDBSource`. Additive only: an identity overlay reproduces a direct solve on 9n.
 - [FIXED] the twelve technology- and consumption-level operating-reserve result writers in `openTEPES_OutputResultsGeneration.py` used plain `to_csv`, so they
   bypassed the result sink and were missing from the DuckDB output. They now use `.oT.write` like every other writer, so the DuckDB file has one table per
   result CSV again (fixes `test_output_format_both_csv_parity`).
 - [CHANGED] change names of the operating reserve file results
-- [ADDED] DuckDB result output and a sweep merger (`openTEPES_OutputResultsSink.py` + `openTEPES_ResultAggregate.py`), the output-side mirror of the DuckDB
-  input source. `openTEPES_run` gains `output_format` (`"csv"` default / `"duckdb"` / `"both"`); with DuckDB on, each case also writes one
-  `oT_Results_<case>.duckdb` (one table per result) straight from the in-memory frame. A pandas `oT` accessor routes every writer's `.oT.write(path, ...)`
-  through the sink; with no sink it is plain `to_csv`, so a `"csv"` run is byte-identical (output parity on 9n / 9n_heat / 9n_H2). One DuckDB per case keeps a
-  sweep single-writer-safe. `aggregate(sources, out_path, to=...)` stacks a sweep's cases into one long table per result with a leading `case` column, reading
-  the per-case DuckDBs or CSV folders, and writes `oT_Sweep_<Table>.csv` and/or one `oT_Sweep.duckdb`. `openTEPES_Runner.run` exposes both as opt-in
-  `output_format` / `aggregate_to`. New tests in `tests/test_run.py`.
+- [ADDED] DuckDB result output and a study merger (`openTEPES_OutputResultsSink.py` and `openTEPES_ResultAggregate.py`), the output-side counterpart
+  of the DuckDB input source. `openTEPES_run` gains `output_format` (`"csv"` default, `"duckdb"`, `"both"`); with DuckDB active each case also writes
+  one `oT_Results_<case>.duckdb`, one table per result, straight from the in-memory frame. A pandas `oT` accessor routes every writer through the
+  sink, so a `"csv"` solve is byte-identical, verified on 9n, 9n_heat and 9n_H2. `aggregate(sources, out_path, to=...)` stacks the cases of a study
+  into one long table per result with a leading `case` column.
 - [FIXED] formulation of eOperReserveUpEnergy and eOperReserveDwEnergy constraints
 - [FIXED] failure in plotting up and down operating reserve marginals when the constraint has not been formulated
-- [ADDED] Mode A pre-build sweep runner (`openTEPES_Runner.py` + `openTEPES_Cases.py`): `run(cases, solver_name, backend=...)` runs many cases through
-  `openTEPES_run`, one independent build-and-solve per case, over a `serial` (default), `multiprocessing`, or `joblib` backend. A `Case` names one input source
-  (a CSV directory or a `.duckdb` file) plus an optional output directory and label. The runner reads back each case's `openTEPES_run_status_*.json` and returns
-  one summary dict per case in input order, so nothing has to pickle the Pyomo model across workers; a case that raises is captured as `status="error"` instead
-  of aborting the sweep. Additive only — no existing module changes, and a single-case serial sweep reproduces a direct `openTEPES_run`. Mode B (in-memory
-  overlay) and Mode C (`openTEPES_ProblemSolvingResolve`) are separate. New tests in `tests/test_run.py`. The architecture diagram
-  (`doc/img/openTEPES_architecture.svg` and the rendered `.png`) marks the `runner.py` and `cases.py` boxes implemented, and also the `resolve.py` box now that
-  Mode C has merged.
+- [ADDED] Mode A pre-build study runner (`openTEPES_Runner.py` and `openTEPES_Cases.py`): `run(cases, solver_name, backend=...)` solves many cases
+  through `openTEPES_run`, one independent build and solve per case, over a `serial` (default), `multiprocessing` or `joblib` backend. A `Case` names
+  one input source, a CSV directory or a `.duckdb` file, plus an optional output directory and label. The runner reads each
+  `openTEPES_run_status_*.json` and returns one summary per case in input order, so nothing pickles the Pyomo model across workers; a case that raises
+  is captured as `status="error"` instead of aborting the study. Additive only.
 - [ADDED] add CSV output file TechnologyInvestment per area
 - [CHANGED] change eOperReserveUpEnergy and eOperReserveDwEnergy to system-wide constraints, instead of area constraints
 - [CHANGED] fix some errors in writing H2 and heat network output results
 - [FIXED] `setup_solver` no longer crashes on Windows when an earlier in-process solve still holds the stale log file open.
 - [FIXED] deprecated `datetime.utcnow()` replaced with timezone-aware UTC; emitted timestamp unchanged.
-- [ADDED] Mode C post-build hot-swap re-solve (`openTEPES_ProblemSolvingResolve.py`): `resolve(OptModel, SolverName, overlays)` re-solves a built model once per
-  parameter overlay without rebuilding, so a sweep reuses the single slow build; `overlay_scaled` makes a scale-factor overlay. Overlays apply relative to the
-  baseline, which is restored at the end. Only `mutable=True` Params hot-swap, so the operational set (`pDemandElec`, `pENSCost`, `pLinearVarCost`, `pEFOR`,
-  `pReserveMargin`, `pRESEnergy`) is promoted to mutable and read by call in the build-time guards; structural and topology Params stay immutable. No behavior
-  change: 9n solves bit-identical (164.382043867 MEUR, `PYTHONHASHSEED=0`). New test `test_mode_c_resolve_demand_hot_swap`.
-- [CHANGED] split the ~2900-line `openTEPES_InputData.py` into three modules at the package root, one per model-build step — the input-side counterpart of the
-  earlier Formulation, Solver and Output splits, and the last of the three mega-file splits. `openTEPES_InputData.py` keeps `InputData`, which reads the raw
-  sets and parameters from the case source (a CSV directory or a DuckDB file). The new `openTEPES_DataConfiguration.py` holds `DataConfiguration`, which builds
-  the derived and instrumental sets and the flag-driven branches (hydro topology, hydrogen, heat, PTDF). The new `openTEPES_SettingUpVariables.py` holds
-  `SettingUpVariables`, which creates the decision variables and their bounds, fixes the generators' commitment, relaxes or forbids investment conditions,
-  zeroes out epsilon values, and screens for infeasibilities. `openTEPES.py` imports each function from its own module, and `__init__.py` re-exports all three,
-  so a user who imported `DataConfiguration` or `SettingUpVariables` from `openTEPES.openTEPES_InputData` moves to the matching module (e.g.
-  `...DataConfiguration`). This is a pure move — the three functions are byte-identical to before, checked function by function, and none of them calls another
-  — so results do not change: the whole solve test suite passes with the same locked costs. The two new modules import only pandas and Pyomo (no sibling
-  `openTEPES` modules), so they need no relative-import guard; `tests/test_direct_run.py` still runs them as scripts like every other module. This finishes the
-  Layer-3 model-build split from the architecture RFC. Separating set construction from parameter construction inside `InputData` (groundwork for the planned
-  overlay and mutable-parameter work) is function surgery rather than a pure move and is left for its own later change.
-- [CHANGED] document every bundled case on the Download & Installation page (`doc/md/Download.md`). The list now covers all ten cases under `openTEPES/cases/`,
-  not just seven: the three 9-node variants that were missing are added — `9n_PTDF` (the 9-node case solved with the PTDF network formulation instead of the
-  angle-based DC power flow), `9n_heat` (the 9-node case coupled with a heat network), and `9n_H2` (the 9-node case coupled with a hydrogen network) — and the
-  `sSEP` entry now notes it also includes a hydrogen network. Each entry says in one line what makes the case different, so a new user can pick the right
-  starting point.
-- [CHANGED] split the ~1770-line `openTEPES_ModelFormulation.py` into six per-concern modules at the package root — the formulation-side counterpart of the
-  earlier Input, Solver and Output splits. The two cross-sector concerns are `openTEPES_ModelFormulationObjective.py` (the total-cost objective and the
-  per-stage operation-cost accumulation) and `openTEPES_ModelFormulationInvestment.py` (the four investment builders plus the installed-capacity,
-  adequacy-reserve-margin and emission / RES-energy limits). Each energy sector then gets its own module: `openTEPES_ModelFormulationElectricity.py` (demand
-  balance, operating reserves and inertia, storage, unit commitment, ramping, line switching, DC network operation and the cycle constraints),
-  `openTEPES_ModelFormulationHydro.py` (reservoir water balance), `openTEPES_ModelFormulationHydrogen.py` (H2 network) and `openTEPES_ModelFormulationHeat.py`
-  (heat network). The old `openTEPES_ModelFormulation.py` is removed: `openTEPES.py` imports the objective and investment builders from their modules,
-  `openTEPES_ProblemSolvingStageIter.py` imports the per-stage operation builders, and `__init__.py` re-exports all six (so
-  `from openTEPES.openTEPES_ModelFormulation import ...` users move to the concern module — e.g. `...Investment`). This is a pure move — the 19 builder
-  functions are byte-identical to before, checked function by function — so results do not change: the whole solve test suite passes with the same locked costs.
-  Keeping each sector in one file, with its existing granular per-constraint functions inside, is the groundwork for selectable formulations later (for example
-  a DC vs AC network build, or unit commitment on or off) chosen by which functions the stage driver calls. The new modules use the descriptive-docstring
-  convention of the other split modules; the standalone test `tests/test_heat_investment_typo.py` now imports `InvestmentHeatModelFormulation` from
-  `...Investment`.
+- [ADDED] Mode C post-build hot-swap re-solve (`openTEPES_ProblemSolvingResolve.py`): `resolve(OptModel, SolverName, overlays)` re-solves a built
+  model once per parameter overlay without rebuilding, so a study reuses the single slow build, and `overlay_scaled` makes a scale-factor overlay.
+  Overlays apply relative to the baseline, restored at the end. Only mutable Params hot-swap, so the operational set `pDemandElec`, `pENSCost`,
+  `pLinearVarCost`, `pEFOR`, `pReserveMargin` and `pRESEnergy` is promoted to mutable; structural and topology Params stay immutable. No behaviour
+  change: 9n solves bit-identical at 164.382043867 MEUR.
+- [CHANGED] the 2900-line `openTEPES_InputData.py` is split into three modules at the package root, one per model-build step, the last of the three
+  large-file splits. `openTEPES_InputData.py` keeps `InputData`, which reads the raw sets and parameters from the case source; the new
+  `openTEPES_DataConfiguration.py` holds `DataConfiguration`, which builds the derived and instrumental sets and the option-driven branches; the new
+  `openTEPES_SettingUpVariables.py` holds `SettingUpVariables`, which creates the decision variables and their bounds. `__init__.py` re-exports all
+  three. A pure move, the three functions byte-identical and none calling another, so the whole solve suite passes at the same locked costs.
+  Separating set construction from parameter construction inside `InputData` is function surgery and is left for its own change.
+- [CHANGED] every distributed case is documented on the Download and Installation page (`doc/md/Download.md`). The list covers all ten cases under
+  `openTEPES/cases/` instead of seven, adding `9n_PTDF` (the 9-busbar case solved with the PTDF network formulation instead of the angle-based DC
+  power flow), `9n_heat` (coupled with a heat network) and `9n_H2` (coupled with a hydrogen network), and the `sSEP` entry notes its hydrogen network.
+  Each entry states in one line what distinguishes the case.
+- [CHANGED] the 1770-line `openTEPES_ModelFormulation.py` is split into six per-concern modules at the package root. The two cross-sector concerns are
+  `openTEPES_ModelFormulationObjective.py` (the total-cost objective and the per-stage operation-cost accumulation) and
+  `openTEPES_ModelFormulationInvestment.py` (the four investment builders plus the installed-capacity, adequacy-reserve-margin and emission limits).
+  Each energy carrier then has its own module: `…Electricity.py` (demand balance, operating reserves and inertia, storage, unit commitment, ramping,
+  line switching, DC network operation and the cycle constraints), `…Hydro.py`, `…Hydrogen.py` and `…Heat.py`. `__init__.py` re-exports all six. A
+  pure move, the 19 builder functions byte-identical, so the whole solve suite passes at the same locked costs. Keeping each carrier in one file is
+  the groundwork for selectable formulations chosen by which functions the stage driver calls.
 - [CHANGED] update the architecture diagram (`doc/img/openTEPES_architecture.svg` and the rendered `.png`) to show the new
   `openTEPES_ProblemSolvingStageIter.py` as an implemented (green) box in the solver layer, alongside `ProblemSolving`, `Tuning`, `DualExtraction`, `Persistent`
   and `Benders`; `resolve.py` stays white as the one solver module still planned. The seven boxes are re-spaced to fit the layer's existing width — no other
   layer changes.
-- [ADDED] a test (`tests/test_direct_run.py`) that runs every `openTEPES_*.py` module as a script (via `runpy`, with `__name__ == "__main__"`) to check that
-  each one still imports cleanly that way — i.e. the `try`/`except ImportError` relative-import guard's fallback works. A normal `import openTEPES` only ever
-  takes the relative-import path, so until now nothing checked the fallback; a broken guard, a missing import, or a circular import in any module would only
-  surface when a user runs the file directly (VS Code "Run Python File"). The test solves no model, so it runs in the fast CI job; it excludes
-  `openTEPES_Main.py`, which has a real `__main__` block that would launch the command-line interface.
-- [CHANGED] move the per-stage solve loop out of `openTEPES_run` into a new module `openTEPES_ProblemSolvingStageIter.py`. The `(period, scenario, stage)` loop
-  — which activates one stage's load levels, builds that stage's operation constraints, and calls `ProblemSolving` — now lives in a function
-  `StageIterativeSolving`, together with the post-loop work that rebuilds the full stage and load-level sets, reactivates every constraint, and restores the
-  scenario probabilities. `openTEPES.py` still builds the objective and the investment constraints, sets `First_st` / `Last_st` and the empty `pDuals`, and then
-  calls the new driver. The two solve paths are unchanged: a deterministic solve per scenario when there are no expansion decisions and no system emission or
-  RES-energy limit, and one joint stochastic solve at the last period-scenario otherwise. This is a pure move — the loop body is copied unchanged — so results
-  do not change: the whole solve test suite passes with the same locked costs, and a full-output run of case 9n gives the same total cost (252.20132998 MEUR,
-  matching to 13 significant figures; only the per-unit dispatch tables move, by the amount HiGHS already varies run-to-run when it picks among equally optimal
-  storage schedules). The new module uses the same `try`/`except ImportError` relative-import guard as the other split modules, so "Run Python File" still works
-  on it. This continues the solver-layer split (after the Persistent, Tuning and DualExtraction modules) and gives the later re-solve and decomposition drivers
-  a single place to call the stage loop from.
-- [CHANGED] split the ~2800-line `openTEPES_OutputResults.py` into per-concern modules at the package root — the output-side counterpart of the earlier
-  `openTEPES_Input*` and `openTEPES_ProblemSolving*` splits. The result writers now live in `openTEPES_OutputResultsInvestment.py`, `...Generation.py`,
-  `...Storage.py`, `...Hydrogen.py` (hydrogen network), `...Heat.py` (heat network), `...Network.py` (electricity network and map), `...Economic.py` (marginal,
-  cost-summary, economic), `...Summary.py` (system summary, flexibility, reliability), and `...RawDump.py` (the raw parameter/variable/constraint DuckDB dump).
-  Shared pieces sit in `openTEPES_OutputResultsCommon.py` (the output-directory helper and the three Altair plot builders) and
-  `openTEPES_OutputResultsMapCommon.py` (the flow-series and snapshot-period helpers the three network maps had each copied). The old
-  `openTEPES_OutputResults.py` is removed: `__init__.py` and `openTEPES.py` import the result functions from the concern modules directly, the same way the
-  Input and ProblemSolving splits are wired (no re-export facade). Functions are grouped by topic; the dispatch order is still controlled by `OUTPUT_REGISTRY`
-  in `openTEPES.py` and is unchanged. Every cross-module import uses the same `try`/`except ImportError` relative-import guard as the other split modules, so
-  "Run Python File" works. Verified bit-identical with the output parity tool on case 9n (`PYTHONHASHSEED=0`, all 87 result tables; total cost 164.382043867
-  MEUR). Two small cleanups made while moving the code: removed 34 no-op `"".join([f"..."])` wrappers (each is just the f-string) and stopped
-  `ESSOperationResults` from writing its inventory-utilization scaling back into `mTEPES.pMaxStorage` (the denominator is now computed locally, so the scaled
-  value no longer leaks to later reads of the parameter).
-- [ADDED] a `9n_H2` example case (the hydrogen counterpart of `9n_heat`): the minimal 9-node electricity system plus two electrolyzers, hydrogen demand at three
-  nodes, and a hydrogen pipe network. Added to the single-stage CI solve suite in `tests/test_run.py` (expected cost 259.547 MEUR under the 7-day HiGHS fixture,
-  verified deterministic across reruns), so CI exercises the hydrogen result writer (`NetworkH2OperationResults`) directly on a small fast case rather than only
-  through `sSEP`. Output verified bit-identical before and after the sector-coupling module split, for both CSV and DuckDB inputs.
-- [FIXED] two operating-reserve guards in the marginal and economic results read a leaked loop variable. The down-reserve-marginal guard and the
-  up-reserve-revenue guard loop over storage units (`for ar,es in mTEPES.ar*mTEPES.es`) but checked `pIndOperReserveGen[nr]` / `pIndOperReserveCon[nr]` — `nr`
-  only existed as a leftover from the earlier `for ar,nr ...` loop that builds the area-to-generator map. They now check the loop's own `es`, matching the two
-  sibling guards (up-reserve-marginal, down-reserve-revenue) that were already correct. The down-reserve-revenue guard also read `pIndOperReserveGen[nr]` twice
-  (`Gen ... or ... Gen`) where its siblings read `Gen ... or ... Con`; the second is now `Con`. On case 9n the result is unchanged; on a case where the leftover
-  unit's reserve flags differ from the storage units' these guards now correctly decide which operating-reserve-revenue tables are written.
-- [CHANGED] update the architecture diagram (`doc/img/openTEPES_architecture.svg`) so it matches the code. The old picture used the planned folder names (`io/`,
-  `schema.py`, `solver/`, `solve.py`); it now shows the real flat module names (`openTEPES_InputSchema.py`, `openTEPES_ProblemSolving.py`, and so on), with the
-  five real solver modules. Implemented modules are shaded green and planned ones are left white, with a small legend. Also commit a rendered
-  `doc/img/openTEPES_architecture.png` and point the `README.md` at the PNG instead of the SVG, so the diagram shows on pages that do not display SVG (such as
-  the PyPI project page). Added a short `doc/img/README.md` explaining the SVG is the hand-drawn source (there is no generator script), that the PNG is rendered
-  from it, and how to regenerate the PNG on Windows, macOS and Linux.
-- [FIXED] a binary investment problem (for example `IndBinNetInvest=1`) crashed under the HiGHS solver with `NoDualsError` on the first solve. `ProblemSolving`
-  attaches the `dual` Suffix before the first solve only for a pure-LP model, because a mixed-integer problem has no duals; it then recovers the duals later by
-  fixing the integer variables and re-solving as an LP. The check that decided "is this a pure LP" also required each variable to already have a value, but
-  before the first solve no variable has a value yet, so a model with binary *investment* variables was wrongly treated as an LP, got the Suffix, and crashed
-  when HiGHS was asked for duals it does not have. The check now looks only at whether a variable is integer/binary and unfixed, not at its value.
-  Unit-commitment models did not hit this because their binary variables are given starting values. No change for any model that already worked.
-- [ADDED] a test (`test_binary_investment` in `tests/test_run.py`) for a binary (integer) investment decision, which no other test covered — every other case
-  solves the investment variables as a continuous relaxation. It switches on `IndBinNetInvest` for the `9n` case so the single candidate line becomes a {0,1}
-  build-or-not decision; the cost (254.337 MEUR) differs from the continuous result (252.201 MEUR) because the binary decision forces a full line build. The
-  test also guards the fix above. A companion fixture `case_7d_binary` runs the case from a private temporary copy (so its solver log files do not clash with
-  the other 9n tests on Windows, where a log file can stay open after a solve), applies the 7-day truncation, and overrides one or more columns of the Option
-  file.
-- [CHANGED] split the CI workflow (`.github/workflows/ci.yml`) into two jobs to save time. A `fast` job runs the linter and the tests that do not solve a model,
-  on all three operating systems and all three Python versions (3.11, 3.12, 3.13) — this is where import, packaging and Python-version problems show up. A
-  `solve` job runs the full model test suite (every case, the multi-stage case, and Benders) once per operating system on Python 3.12, since the model results
-  are the same on every Python version. Tests that solve a model are now marked with `@pytest.mark.solve` (registered in `pyproject.toml`); the `fast` job runs
-  `-m "not solve"` and the `solve` job runs `-m solve`. Also added a per-test timeout on the solve job so a stuck solver fails quickly instead of using up the
-  whole job, and turned on dependency caching for `uv`. No test was removed; the same tests still run, just spread across the two jobs.
-- [ADDED] a tool to check that two runs produce the same result files: `openTEPES/_output_parity_test.py` (with tests in `tests/test_output_parity.py`). It is
-  the output-side version of the existing `_input_parity_test.py`. You take a snapshot of all the `oT_Result_*.csv` files a run writes, then compare two
-  snapshots: numbers are compared with a small tolerance, text labels exactly. Run it from the command line with
-  `python -m openTEPES._output_parity_test snapshot <output_folder> <file.pkl>` and then `diff <a.pkl> <b.pkl>`. The purpose is to safely refactor the output
-  code: a future change that reorganises `openTEPES_OutputResults.py` should still write identical result files, and this tool proves it. This change adds the
-  tool only and does not affect any existing run.
+- [ADDED] an automated check (`tests/test_direct_run.py`) executing every `openTEPES_*.py` module as a script, through `runpy`, to confirm each still
+  imports cleanly that way, which exercises the fallback of the relative-import guard. A normal `import openTEPES` only ever takes the relative path,
+  so nothing checked the fallback, and a broken guard, a missing import or a circular import would surface only when a user executes the file
+  directly. The check solves no model and excludes `openTEPES_Main.py`, which carries a real `__main__` block.
+- [CHANGED] the per-stage solve loop moves out of `openTEPES_run` into a new module `openTEPES_ProblemSolvingStageIter.py`. The (period, scenario,
+  stage) loop, which activates the load levels of one stage, builds that stage's operation constraints and calls `ProblemSolving`, now lives in
+  `StageIterativeSolving`, together with the post-loop work restoring the sets, the constraints and the scenario probabilities. The two solve paths
+  are unchanged. A pure move: the whole solve suite passes at the same locked costs, and case 9n gives 252.20132998 MEUR, matching to 13 significant
+  figures, only the per-unit dispatch tables moving by the amount HiGHS already varies when it chooses among equally optimal storage schedules.
+- [CHANGED] the 2800-line `openTEPES_OutputResults.py` is split into per-concern modules at the package root: `…Investment.py`, `…Generation.py`,
+  `…Storage.py`, `…Hydrogen.py`, `…Heat.py`, `…Network.py`, `…Economic.py`, `…Summary.py` and `…RawDump.py`, with the shared pieces in `…Common.py`
+  and `…MapCommon.py`. The dispatch order is still controlled by `OUTPUT_REGISTRY` in `openTEPES.py` and is unchanged. Verified bit-identical on case
+  9n across all 87 result tables at 164.382043867 MEUR. Two cleanups made while moving: 34 no-op `"".join([f"..."])` wrappers removed, and
+  `ESSOperationResults` no longer writes its inventory-utilization scaling back into `mTEPES.pMaxStorage`.
+- [ADDED] a `9n_H2` example case, the hydrogen counterpart of `9n_heat`: the minimal 9-busbar electricity system plus two electrolyzers, hydrogen
+  demand at three busbars and a hydrogen pipeline network. Added to the single-stage solve suite at an expected cost of 259.547 MEUR under the 7-day
+  HiGHS fixture, verified deterministic across repeated solves, so the hydrogen result writer is exercised on a small case instead of only through
+  `sSEP`. Output verified bit-identical for both CSV and DuckDB inputs.
+- [FIXED] two operating-reserve guards in the marginal and economic results read a leaked loop variable. The down-reserve-marginal and
+  up-reserve-revenue guards loop over storage units but checked `pIndOperReserveGen[nr]` and `pIndOperReserveCon[nr]`, `nr` surviving from the earlier
+  loop that builds the area-to-unit map; they now check the loop's own `es`, matching the two sibling guards that were already correct. The
+  down-reserve-revenue guard also read `pIndOperReserveGen[nr]` twice where its siblings read `Con`. On case 9n the result is unchanged.
+- [CHANGED] the architecture diagram (`doc/img/openTEPES_architecture.svg`) matches the code. The former picture used the planned folder names (`io/`,
+  `schema.py`, `solver/`, `solve.py`) and now shows the real flat module names with the five real solver modules, implemented modules shaded green and
+  planned ones white, with a small legend. A rendered `doc/img/openTEPES_architecture.png` is committed and `README.md` points at it, so the diagram
+  displays where SVG does not, such as the PyPI page. A short `doc/img/README.md` explains that the SVG is the hand-drawn source and how to regenerate
+  the PNG.
+- [FIXED] a binary investment problem, for example `IndBinNetInvest=1`, failed under HiGHS with `NoDualsError` on the first solve. `ProblemSolving`
+  attaches the `dual` Suffix before the first solve only for a pure linear model, a mixed-integer problem having no duals, and recovers them later by
+  fixing the integer variables and re-solving. The test deciding whether the model is linear also required each variable to hold a value, which none
+  does before the first solve, so a model with binary investment variables was treated as linear, received the Suffix and failed. The test now
+  considers only whether a variable is integer and unfixed. Unit commitment models were unaffected, their binaries holding starting values.
+- [ADDED] an automated check (`test_binary_investment` in `tests/test_run.py`) for a binary investment decision, which no other check covered, every
+  other case solving the investment variables as a continuous relaxation. It activates `IndBinNetInvest` for `9n`, so the single candidate circuit
+  becomes a build-or-not decision; the cost, 254.337 MEUR, differs from the continuous 252.201 MEUR because the binary decision forces a full circuit.
+  A companion fixture `case_7d_binary` solves the case from a private temporary copy, so its solver log files do not clash on Windows, applies the
+  7-day truncation and overrides columns of the Option file.
+- [CHANGED] the continuous-integration workflow is split into two jobs. A `fast` job executes the linter and the checks that solve no model, on all
+  three operating systems and Python 3.11, 3.12 and 3.13, where import, packaging and version problems appear. A `solve` job executes the full model
+  suite once per operating system on Python 3.12, the results being the same on every version. Checks that solve a model carry `@pytest.mark.solve`,
+  registered in `pyproject.toml`. A per-check timeout and dependency caching for `uv` are added. No check is removed.
+- [ADDED] a tool confirming that two solves produce the same result files: `openTEPES/_output_parity_test.py`, with checks in
+  `tests/test_output_parity.py`, the output-side counterpart of `_input_parity_test.py`. A snapshot is taken of every `oT_Result_*.csv` written
+  and two snapshots are compared, numbers within a small tolerance and text labels exactly. Its purpose is safe refactoring of the output code: a
+  change reorganising it should still write identical result files, and this tool proves it.
 - [CHANGED] allow finding the case in the same folder or in the cases folder
-- [FIXED] allow running `openTEPES_Main.py` directly (e.g. VS Code "Run Python File"). Executed as a script the file is `__main__` with an empty `__package__`,
-  so the top-level `from .openTEPES import ...` relative import fails with `attempted relative import with no known parent package`. The import is now wrapped
-  in a `try`/`except ImportError` that puts the repository root on `sys.path` and retries as an absolute package import. The relative import — the correct form
-  for the PyPI-distributed package, used by the `openTEPES_Main` console script and `python -m openTEPES.openTEPES_Main` — stays the primary path and is
-  unchanged, so installed / `-m` behavior is byte-for-byte identical; the fallback only triggers on direct-script execution. The same module-level
-  relative-import guard is applied to every other module that imports from sibling package modules at load time — `openTEPES.py`, `openTEPES_InputData.py`,
-  `openTEPES_InputSource.py`, `openTEPES_InputCSVSource.py`, `openTEPES_InputDuckDBSource.py`, and `openTEPES_ProblemSolving.py` — so "Run Python File" on any
-  of them no longer raises `attempted relative import with no known parent package`. The lazy backend imports inside `open_source()` and the package
-  `__init__.py` are intentionally left as plain relative imports (they never execute at direct-run module-load time, and `__init__.py` only ever runs as part of
-  the package).
+- [FIXED] `openTEPES_Main.py` can be executed directly. As a script the file is `__main__` with an empty `__package__`, so the top-level relative
+  import fails with `attempted relative import with no known parent package`. The import is wrapped in a `try`/`except ImportError` that puts the
+  repository root on `sys.path` and retries as an absolute package import; the relative import remains the primary path, so installed behaviour is
+  byte-for-byte identical and the fallback triggers only on direct execution. The same guard is applied to `openTEPES.py`, `openTEPES_InputData.py`,
+  `openTEPES_InputSource.py`, `openTEPES_InputCSVSource.py`, `openTEPES_InputDuckDBSource.py` and `openTEPES_ProblemSolving.py`.
 - [CHANGED] untrack accidentally committed per-run status sentinels (`openTEPES/cases/{9n,9n_heat,sSEP}/openTEPES_[Rr]un_[Ss]tatus_*.json`, test-case workspace
   pollution; removed from the index, kept on disk) and extend `.gitignore` with the `openTEPES_[Rr]un_[Ss]tatus_*.json` pattern — the existing
   `oT_Run_Status_*.json` rule matched neither the `openTEPES_` prefix nor the lower-case `run_status` variant.
-- [ADDED] architecture diagram in `README.md` (`doc/img/openTEPES_architecture.svg`) — visual summary of the six-layer package structure that PR #120
-  (`InputSource`), this PR (the flat `openTEPES_Input*` I/O modules + `openTEPES_ProblemSolving*` solver modules at the package root), and the planned RFC
-  follow-on PRs (`Model`, `Formulation`, `Results`) build toward. Inserted before the "How to Cite" section under a new "Architecture" heading. Source diagram
-  lives in the architecture RFC under `Docs/architecture/opentepes_architecture_proposal.md` (parent repo); the README embeds the rendered SVG only.
-- [CHANGED] **BREAKING**: move every bundled case study from `openTEPES/<case>/` to `openTEPES/cases/<case>/`. The 9 cases (`9n`, `9n7y`, `9n_PTDF`, `9n_heat`,
-  `NG2030`, `RTS-GMLC`, `RTS-GMLC_6y`, `RTS24`, `sSEP`) all live under the new `cases/` subfolder — the set packaged and distributed on PyPI. The Python package
-  directory `openTEPES/` now holds all source modules at the top level (`openTEPES_*.py`, including the split-out `openTEPES_Input*` I/O and
-  `openTEPES_ProblemSolving*` solver modules) plus the `cases/` data folder. The repository-root `cases/` folder (the larger paper/study cases
-  `Optimal-Power-Grid-Design`, `TSO-DSO_coordination`, not packaged) is renamed to `case_studies/` so the two no longer collide on the name `cases`. CLI default
-  in `openTEPES_Main.py` updated; `tests/test_run.py` fixture path updated; case URLs in `README.md` and `doc/md/Download.md` rewritten. **External users
-  running `openTEPES_run(DirName="<path>/openTEPES", CaseName="9n")` or the CLI with `--dir <pkg>` must update their path to `<path>/openTEPES/cases`.** No
-  backwards-compat shim — clean break, documented here.
-- [CHANGED] split the input-source layer of `openTEPES_InputSource.py` into four single-responsibility modules at the package root — pure-pandas I/O, no Pyomo
-  dependency. The module becomes `openTEPES_InputSchema.py` (TABLE_SPECS catalog + transform-kind constants + DEFAULT_IDX_COLS, single source of truth used by
-  every backend, the C2 ingest migrator, and the case-management CLI), `openTEPES_InputSource.py` (`InputSource` ABC + `open_source()` factory + post-read shape
-  helpers `_apply_index` / `df_to_set_values`), `openTEPES_InputCSVSource.py` (`CSVSource`), and `openTEPES_InputDuckDBSource.py` (`DuckDBSource`; `duckdb` is
-  lazily imported by `open_source()` only when a `.duckdb` path is opened, so CSV-only environments do not need the dependency). The split-out modules sit flat
-  alongside the other `openTEPES_*.py` modules; the layer is encoded in the file name (`openTEPES_Input*` for the input-source layer), keeping the
-  `openTEPES_<Layer>_<Concern>` convention of the rest of the package without a nested folder tree. The `open_source()` / `InputSource` / `CSVSource` /
-  `DuckDBSource` / `TABLE_SPECS` names remain re-exported from the package top level (`from openTEPES import open_source`). Internal modules
-  (`openTEPES.openTEPES_InputData`, `openTEPES.openTEPES`, `openTEPES._input_parity_test`) import from the specific flat modules. No behavior change to
-  existing pipelines. First step of the layered-architecture restructure.
-- [CHANGED] extend the CI matrix in `tests/test_run.py`. Single-stage 7-day fixture now covers 6 cases (was 3): adds `9n_heat` (heat-sector code path,
-  `pIndHeat=1`; expected cost 247.196 MEUR), `NG2030` (Nigeria 2030 baseline, multi-area state-level network; 1041.342 MEUR), `RTS-GMLC` (single-stage GMLC
-  reference system; 1091.094 MEUR). A new multi-stage 7-day-per-stage fixture (`case_multi_stage_7d_system`) keeps the first 168 hours of *each*
-  `(Period, Scenario, Stage)` group — leaving `StageWeight` as authored — and covers `9n7y` (13 stages × 4-week weight × 7 periods; 9019.299 MEUR), enabling the
-  multi-stage rolling layout to receive CI coverage for the first time. A third test under the same single-stage fixture validates classical L-shaped Benders
-  convergence on `9n` against the joint LP (relative error 5.78e-08, ~5 s under HiGHS). Expected costs locked at 7 significant figures; HiGHS reproducibility
-  verified to ≥13 sig figs across multiple reruns for every case. `RTS24` was evaluated but excluded — three identical runs returned 1107.185, 1107.400, and
-  1110.174 (HiGHS non-determinism); coverage preserved indirectly through `RTS-GMLC`. `RTS-GMLC_6y` not yet parametrized — its multi-stage solve under HiGHS
-  runs >10 minutes locally and needs CI-hardware profiling before merging; multi-stage fixture itself verified correct via `9n7y`. Hydrogen sector (sSEP:
-  DemandHydrogen + NetworkHydrogen + 9 H2-related generators), water-reservoir hydropower (sSEP: 7 reservoirs + reservoir maps + inflows/outflows/MaxVolume +
-  pumped hydro), and the rolling-mean time aggregation `pTimeStep ≥ 2` (every case) are now documented as already-covered code paths via an inline
-  feature-coverage matrix in `test_run.py`. Full matrix wall-clock: single-stage block ~40 s, multi-stage block ~90 s, Benders block ~6 s.
-- [CHANGED] split `openTEPES_ProblemSolving.py` into four single-responsibility modules at the package root per RFC §3 Layer 5.a:
-  `openTEPES_ProblemSolvingPersistent.py` (the `appsi_gurobi` / `gurobi_persistent` lifecycle with the `ncall` state machine + `set_instance` / `update_config`
-  toggles), `openTEPES_ProblemSolvingTuning.py` (per-solver option presets for Gurobi / CPLEX / HiGHS / GAMS; both initial-solve and fix-and-resolve LP-pass
-  tunings), `openTEPES_ProblemSolvingDualExtraction.py` (fix-integers + fix-continuous-investments → re-solve as LP → walk every active constraint to copy duals
-  into `mTEPES.pDuals`), and `openTEPES_ProblemSolving.py` (slim orchestrator that composes the three primitives + keeps the cost-summary print block for now —
-  that moves to Layer 6 results in a follow-on PR). `from openTEPES import ProblemSolving` (or `from openTEPES.openTEPES_ProblemSolving import ProblemSolving`)
-  continues to work. Internal imports updated. No behavior change — all 10 CI tests pass bit-identical to pre-split. The split sets up the contract that future
-  orchestration drivers (RFC PR #6 `openTEPES_ProblemSolvingStageIter.py`, PR #8 `openTEPES_ProblemSolvingResolve.py`, PR #9
-  `openTEPES_ProblemSolvingDecompositionBenders.py`) will use to access solver tuning and persistent-solver lifecycle uniformly; the existing
-  `openTEPES_ProblemSolvingBenders.py` driver does NOT yet consume these primitives — it uses `SolverFactory` directly to keep the minimal-driver scope (RFC PR
-  #9 will wire up the full coupling).
-- [ADDED] solver layer (Layer 5 of the RFC restructure) with `openTEPES_ProblemSolvingBenders.py` at the package root — a classical L-shaped decomposition
-  driver for transmission expansion. Master = `vNetworkInvest` decisions for every candidate line (`mTEPES.plc`); subproblem = the full openTEPES model with
-  each candidate `vNetworkInvest` pinned to the master decision via an explicit equality `vNetworkInvest[k] == benders_x[k]` (mutable `Param`). The dual on each
-  fixing constraint, read through `mTEPES.dual` Suffix, gives the Benders cut coefficient; master objective is `min theta` so the investment-cost term is
-  captured implicitly through the cut. Validates on the bundled `9n` case under the 7-day fixture: joint LP returns 252.201330 MEUR, L-shaped converges in 8
-  iterations to 252.201345 MEUR (relative error 5.78e-08), wall-clock ~5 s under HiGHS. Acts as a **compatibility guard** for the layered-architecture
-  restructure: every future refactor must keep `vNetworkInvest` cleanly separable as a master decision and the rest of the model usable as an LP subproblem with
-  valid duals on the fixing constraint. Scope deliberately minimal — single deterministic case, no multi-cut, no trust region, no binary investments. The full
-  driver with stochastic L-shaped and sector decomposition is RFC PR #9 (`openTEPES_ProblemSolvingDecomposition*`); this PR ships the infrastructure (the
-  `openTEPES_ProblemSolving*` solver layer + dual-extraction pattern + Suffix wiring) that PR #9 will build on. Implementation note: `Var.fix()` + `rc` Suffix
-  is not portable (HiGHS leaves `rc` empty); always use an explicit equality constraint with a mutable `Param` and read duals via the `dual` Suffix.
-- [ADDED] `InputSource` abstraction (`openTEPES_InputSource.py`) so `openTEPES_run` accepts either a CSV case directory (historical default — byte-identical
-  behavior) or a `.duckdb` file produced by an external ingest script. DuckDB reads stream via SQL straight into DataFrames; no tempfiles. Selection sniffs the
-  path: a directory routes through `CSVSource`, a `.duckdb` file routes through `DuckDBSource`. DuckDB is an optional dependency; the import is lazy. A
-  `TABLE_SPECS` catalog (67 entries) declares each input table once with its CSV stem, DB table name, transform kind, and key columns — covering single-level
-  wide time series, the new multi-level-header tables (`VariableTTCFrw`/`Bck`, `VariablePTDF`), entity-config, and single-row global parameters. Verified
-  bit-identical end-to-end (total objective rel err ≤ 1e-15) across 9n, sSEP, and 9n_PTDF.
-- [CHANGED] drop `pyomo.environ.DataPortal` from `InputData`. The 22 `dictSets.load(format='set')` sites collapse to
-  `Set(initialize=df_to_set_values(source.read_dict(stem)))` — pandas is the only CSV parser in the path. `set_definitions` gains an explicit per-entry
-  `ordered` flag (replaces a hardcoded membership check); `SPECIAL_IDX_COLS` is removed in favor of declarative `pk_cols` in `TABLE_SPECS`; the
-  reservoir/hydrogen/heat conditional loaders are a small declarative loop with the silent-skip semantics preserved (absent tables → empty Sets / unset feature
-  flags; malformed tables now raise instead of being swallowed). `DataConfiguration` signature becomes `DataConfiguration(mTEPES, dfs=None, par=None)` with
-  fallback to `mTEPES.dFrame` / `mTEPES.dPar` for backward compatibility; 639 `mTEPES.dPar[...]` / `mTEPES.dFrame[...]` reach-into-model sites swept to local
-  `par[...]` / `dfs[...]`. CSV-mode behavior is invariant.
-- [FIXED] heat investment constraint `eTotalFHeatCost` referenced an undefined variable `vTotalHeatFCost` (typo); the variable is `vTotalFHeatCost`. Dormant
-  because no in-tree case has a candidate heat pipe (`mTEPES.hc` always empty) — the `InvestmentHeatModelFormulation` call at `openTEPES.py:207-208` is gated by
-  `mTEPES.pIndHeat and mTEPES.hc`. Adds a self-contained regression test in `tests/test_heat_investment_typo.py` that builds the minimum Pyomo state to exercise
-  the formulation (no case directory, no solver call).
-- [ADDED] `9n_heat` test case — the first in-tree case exercising the heat-sector code path (`pIndHeat=1`). Three heat units (air-source heat pump COP 3.0, gas
-  boiler 92 % efficiency, backpressure gas CHP power-to-heat ≈ 0.71) and two heat pipes between Node_2 / Node_3 / Node_4 overlaid on the existing `9n`
-  electricity topology. Parameter values inspired by ECEMF / NECP / ERAA reference scenarios — not real-system calibration. Smoke-tested under the existing
-  7-day CI fixture pattern: HiGHS terminates optimal in 0.4 s, `total_cost = 247.19623713906074 MEUR`, heat reliability cost = 0, 10 503 constraints / 14 504
-  variables. Closes the most severe gap identified in the heat-sector CI coverage audit.
-- [ADDED] opt-in `--gzip-large-csvs` / `--gzip-patterns` CLI flags. After writing, every `oT_Result_*.csv` whose name (after the leading `oT_Result_`) starts
+- [ADDED] an architecture diagram in `README.md` (`doc/img/openTEPES_architecture.svg`), a visual summary of the six-layer package structure that PR
+  #120, this pull request and the planned follow-on work build toward. Inserted before the "How to Cite" section under a new "Architecture" heading.
+  The source diagram lives in the architecture RFC in the parent repository; the README embeds the rendered SVG only.
+- [CHANGED] **BREAKING**: every distributed case study moves from `openTEPES/<case>/` to `openTEPES/cases/<case>/`. The nine cases `9n`, `9n7y`,
+  `9n_PTDF`, `9n_heat`, `NG2030`, `RTS-GMLC`, `RTS-GMLC_6y`, `RTS24` and `sSEP` live under the new `cases/` folder, the set distributed on PyPI. The
+  repository-root `cases/` folder, holding the larger study cases, is renamed `case_studies/` so the two no longer collide. **External users must
+  update `openTEPES_run(DirName="<path>/openTEPES", CaseName="9n")` or `--dir <pkg>` to `<path>/openTEPES/cases`.** No compatibility shim.
+- [CHANGED] the input-source layer of `openTEPES_InputSource.py` is split into four modules at the package root, pure pandas with no Pyomo dependency:
+  `openTEPES_InputSchema.py` (the TABLE_SPECS catalog, the transform-kind constants and DEFAULT_IDX_COLS, used by every backend),
+  `openTEPES_InputSource.py` (the `InputSource` interface, the `open_source()` factory and the post-read shape helpers), `openTEPES_InputCSVSource.py`
+  and `openTEPES_InputDuckDBSource.py`, `duckdb` being imported lazily so CSV-only environments do not need it. The public names remain re-exported
+  from the package top level. No behaviour change.
+- [CHANGED] the solve suite in `tests/test_run.py` is extended. The single-stage 7-day fixture covers six cases instead of three, adding `9n_heat`
+  (247.196 MEUR), `NG2030` (1041.342 MEUR) and `RTS-GMLC` (1091.094 MEUR). A new multi-stage fixture keeps the first 168 hours of each (Period,
+  Scenario, Stage) group, leaving `StageWeight` as authored, and covers `9n7y` (9019.299 MEUR), giving the multi-stage rolling layout its first
+  coverage. A third check validates classical L-shaped Benders on `9n` against the joint linear problem, relative error 5.78e-08. Costs are locked at
+  7 significant figures and reproducibility verified to 13. `RTS24` is excluded, three identical solves having returned 1107.185, 1107.400 and
+  1110.174. `RTS-GMLC_6y` is not yet parametrised, its multi-stage solve exceeding 10 minutes locally. Wall-clock over the whole matrix: single-stage block about 40 s, multi-stage 90 s, Benders 6 s.
+- [CHANGED] `openTEPES_ProblemSolving.py` is split into four modules at the package root per RFC §3 Layer 5.a: `…Persistent.py` (the `appsi_gurobi`
+  and `gurobi_persistent` lifecycle with the `ncall` state machine), `…Tuning.py` (per-solver option presets for Gurobi, CPLEX, HiGHS and GAMS),
+  `…DualExtraction.py` (fix the integers and the continuous investments, re-solve as a linear problem, copy the duals into `mTEPES.pDuals`), and a
+  slim `openTEPES_ProblemSolving.py` orchestrator composing the three. The public imports continue to work. No behaviour change; all 10 checks pass
+  bit-identical to the state before the split.
+- [ADDED] the solver layer of the RFC restructure, with `openTEPES_ProblemSolvingBenders.py`, a classical L-shaped decomposition driver for
+  transmission expansion. The master holds the `vNetworkInvest` decisions for every candidate circuit; the subproblem is the full model with each
+  decision pinned through an explicit equality against a mutable Param, whose dual gives the cut coefficient. On the distributed `9n` under the 7-day
+  fixture the joint linear problem returns 252.201330 MEUR and the L-shaped method converges in 8 iterations to 252.201345 MEUR, relative error
+  5.78e-08, in about 5 s under HiGHS. It also acts as a compatibility guard: every future refactor must keep `vNetworkInvest` separable as a master
+  decision and the remainder usable as a linear subproblem with valid duals. Scope is deliberately minimal, one deterministic case, no multi-cut, no
+  trust region, no binary investments. Implementation note: `Var.fix()` with the `rc` Suffix is not portable, HiGHS leaving `rc` empty.
+- [ADDED] the `InputSource` abstraction (`openTEPES_InputSource.py`), so `openTEPES_run` accepts either a CSV case directory, the historical default
+  with byte-identical behaviour, or a `.duckdb` file produced by an external ingest script. DuckDB reads stream through SQL straight into DataFrames,
+  with no temporary files. The path selects the backend, and DuckDB is an optional, lazily imported dependency. A `TABLE_SPECS` catalog of 67 entries
+  declares each input table once with its CSV stem, table name, transform kind and key columns. Verified bit-identical end to end, relative error
+  below 1e-15, on 9n, sSEP and 9n_PTDF.
+- [CHANGED] `pyomo.environ.DataPortal` is dropped from `InputData`. The 22 `dictSets.load(format='set')` sites collapse to
+  `Set(initialize=df_to_set_values(source.read_dict(stem)))`, leaving pandas the only CSV parser in the path. `set_definitions` gains an explicit
+  `ordered` entry, `SPECIAL_IDX_COLS` gives way to declarative `pk_cols` in `TABLE_SPECS`, and the conditional loaders become a declarative loop,
+  absent tables still skipped silently and malformed ones now raising. `DataConfiguration` becomes `DataConfiguration(mTEPES, dfs=None, par=None)`
+  with a fallback for compatibility, and 639 reach-into-model sites are swept to local `par[...]` and `dfs[...]`. CSV behaviour is invariant.
+- [FIXED] the heat investment constraint `eTotalFHeatCost` referenced an undefined `vTotalHeatFCost`; the variable is `vTotalFHeatCost`. Dormant, no
+  case in the tree carrying a candidate heat pipe, so `mTEPES.hc` is always empty and the `InvestmentHeatModelFormulation` call is gated. A
+  self-contained regression check in `tests/test_heat_investment_typo.py` builds the minimum Pyomo state to exercise the formulation, with no case
+  directory and no solver call.
+- [ADDED] the `9n_heat` test case, the first in the tree exercising the heat carrier (`pIndHeat=1`). Three heat units, an air-source heat pump at COP
+  3.0, a gas boiler at 92 % efficiency and a backpressure gas CHP at a power-to-heat ratio near 0.71, with two heat pipes across Node_2, Node_3 and
+  Node_4 overlaid on the existing `9n` topology. Parameter values follow ECEMF, NECP and ERAA reference scenarios and are not a calibration. Under the
+  7-day fixture HiGHS terminates optimal in 0.4 s at 247.19623713906074 MEUR, heat reliability cost zero, 10 503 constraints and 14 504 variables.
+- [ADDED] opt-in `--gzip-large-csvs` / `--gzip-patterns` command-line options. After writing, every `oT_Result_*.csv` whose name (after the leading `oT_Result_`) starts
   with one of the configured prefixes is rewritten as `.csv.gz`. Default prefix set: `Generation, Consumption, Balance, MarketResults, Network`. Pandas reads
   `.csv.gz` transparently; Excel does not. Sentinel JSON gains `gzip_patterns`, `gzip_files`, `gzip_mb_saved`. Default behavior unchanged.
 - [CHANGED] reorder output writers in `openTEPES_run` so small KPI/structural tables (`InvestmentResults`, `CostSummaryResults`, `OperationSummaryResults`,
   `ReliabilityResults`, `FlexibilityResults`) are written before bulky hourly tables (Generation, ESS, Network, Marginal, Economic). HTML map plots run last.
   Resilient to mid-output interruptions: headline numbers from every solved case survive a kill/timeout/disk-full. No behavioral change beyond write order.
-- [CHANGED] replace the 14 hardcoded `if pIndXxxResults: XxxResults(...)` dispatch blocks in `openTEPES_run` with a single `OUTPUT_REGISTRY` tuple at module
-  top. Each entry is `(category_key, writer_fn, extra_args_keys, guard_fn)`; the dispatch is a 5-line loop. Registry order = dispatch order, preserving the
-  previous (headline → bulky → plots) sequence. Pure refactor — no behavioral, signature, or argument change. Sets up future pluggable-backend work.
+- [CHANGED] the 14 dispatch blocks fixed in the code in `openTEPES_run` give way to a single `OUTPUT_REGISTRY` tuple at module top, each entry
+  `(category_key, writer_fn, extra_args_keys, guard_fn)`, with a five-line dispatch loop. Registry order is dispatch order, preserving the previous
+  headline, bulky and plot sequence. A pure refactor, with no behavioural, signature or argument change.
 - [CHANGED] introduction of new optional files for the operating reserve activation as an alternative to the UpReserveActivation and DwReserveActivation
   parameters in Data_Parameter file
 - [CHANGED] modify the change of the scenario probabilities to 1.0 if there are no investment decisions
@@ -799,7 +690,7 @@
 
 - [CHANGED] in this version no need to introduce all the generators as headings of the variable max/min data files
 - [FIXED] all the cases have been updated to this new version
-- [FIXED] to improve model robustness the first cells of the heading row of all the Data files are filled with sensible headers. These changes are mandatory for
+- [FIXED] to improve model robustness the first cells of the heading row of all the Data files are filled with correct headers. These changes are mandatory for
   this new version.
 - [FIXED] first column of Parameter and Option files dropped
 - [FIXED] minor changes in output results
@@ -1143,7 +1034,7 @@
 
 ## [4.11.3] - 2023-04-11
 
-- [CHANGED] change boolean to binary parameters
+- [CHANGED] change the logical parameters to binary parameters
 - [CHANGED] get dual variables for each solved problem
 
 ## [4.11.2] - 2023-04-07
@@ -1434,7 +1325,7 @@
 
 ## [3.1.0] - 2021-07-07
 
-- [CHANGED] definition of switching stages with dict and data files to allow less granularity in switching decisions
+- [CHANGED] definition of switching stages with dictionary and data files to allow less granularity in switching decisions
 
 ## [2.6.5] - 2021-07-04
 
