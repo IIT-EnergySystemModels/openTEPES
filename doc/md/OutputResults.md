@@ -1754,6 +1754,16 @@ Period        Scenario    Load level  Area        Marginal of the downward opera
 ============  ==========  ==========  ==========  =================================================
 ```
 
+File `oT_Result_MarginalSystemInertia.csv`
+
+```{eval-rst}
+============  ==========  ==========  ==========  ================================================
+Identifier                            Header      Description
+====================================  ==========  ================================================
+Period        Scenario    Load level  Area        Marginal of the system inertia [€/s]
+============  ==========  ==========  ==========  ================================================
+```
+
 ## Operational flexibility
 
 File `oT_Result_FlexibilityDemand.csv`

@@ -2,6 +2,7 @@
 
 ## [4.19.0rc] - 2026-09-18 Unreleased in PyPI
 
+- [ADDED] write file of marginals of the system inertia constraint.
 - [CHANGED] the continuous-integration workflow executes its automated checks concurrently, `-n auto` with one solver thread per process: on a
   ten-core machine the unit tier falls from 429 s to 193 s and the solve tier from 285 s to 114 s. flake8 moves to a job of its own, the unit matrix
   falls from nine combinations to seven, and the ipopt job requests ipopt alone from conda. No check is removed.

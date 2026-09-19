@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 18, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 19, 2026
 
 Marginal, cost-summary, and economic results.
 
@@ -68,6 +68,9 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES, pIndPlotOutput):
     pRsrvOfferArea    = {(p,ar): any(nr in g2a[ar] and mTEPES.pIndOperReserveGen[nr] == 0 and (p,nr) in mTEPES.pnr for nr in mTEPES.nr) or any(eh in g2a[ar] and mTEPES.pIndOperReserveCon[eh] == 0 and (p,eh) in mTEPES.peh for eh in mTEPES.eh) for p in mTEPES.p for ar in mTEPES.ar}
     pHasReserveOffer  = any(pRsrvOfferArea.values())
 
+    # detect if the system has inertia constraints
+    pHasSystemInertia = any(mTEPES.pSystemInertia[idx] for idx in mTEPES.pSystemInertia)
+
     # tolerance to treat a number as 0
     pSlackTolerance = 1e-6
 
@@ -104,145 +107,159 @@ def MarginalResults(DirName, CaseName, OptModel, mTEPES, pIndPlotOutput):
                 chart = LinePlots(p, sc, OptModel.LSRMC, 'Node', 'LoadLevel', 'EUR/MWh')
                 chart.save(f'{_path}/oT_Plot_NetworkSRMC_{CaseName}_{p}_{sc}.html', embed_options={'renderer': 'svg'})
 
-    if mTEPES.pIndHydrogen() and pHasDuals:
+        if mTEPES.pIndHydrogen():
 
-        # incoming and outgoing lines (lin) (lout)
-        lin  = defaultdict(set)
-        lout = defaultdict(set)
-        for ni,nf,cc in mTEPES.pa:
-            lin [nf].add((ni,cc))
-            lout[ni].add((nf,cc))
+            # incoming and outgoing lines (lin) (lout)
+            lin  = defaultdict(set)
+            lout = defaultdict(set)
+            for ni,nf,cc in mTEPES.pa:
+                lin [nf].add((ni,cc))
+                lout[ni].add((nf,cc))
 
-        # nodes to hydrogen boilers (b2n): eBalanceH2 also exists at a node that only hosts an H2 boiler (openTEPES_ModelFormulationHydrogen.py)
-        b2n = defaultdict(set)
-        for nd,g in mTEPES.n2g:
-            if g in mTEPES.hh:
-                b2n[nd].add(g)
+            # nodes to hydrogen boilers (b2n): eBalanceH2 also exists at a node that only hosts an H2 boiler (openTEPES_ModelFormulationHydrogen.py)
+            b2n = defaultdict(set)
+            for nd,g in mTEPES.n2g:
+                if g in mTEPES.hh:
+                    b2n[nd].add(g)
 
-        #%% outputting the LSRMC of H2
-        sPSSTNND      = [(p,sc,st,n,nd) for p,sc,st,n,nd in mTEPES.s2n*mTEPES.nd if len(e2n[nd]) + len(b2n[nd]) + len(lout[nd]) + len(lin[nd]) and (p,sc,n) in mTEPES.psn]
-        # eBalanceH2 is a rate balance, so its dual is divided by pLoadLevelDuration as the electricity price is, to come out in EUR/tH2
-        OutputResults = pd.Series(data=[mTEPES.pDuals[f"eBalanceH2_{p}_{sc}_{st}('{n}', '{nd}')"]/mTEPES.pPeriodProb[p,sc]()/mTEPES.pLoadLevelDuration[p,sc,n]() for p,sc,st,n,nd in sPSSTNND], index=pd.Index(sPSSTNND))
-        OutputResults *= 1e3
-        OutputResults.to_frame(name='LSRMCH2').reset_index().pivot_table(index=['level_0','level_1','level_3'], columns='level_4', values='LSRMCH2').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_NetworkSRMCH2_{CaseName}.csv', sep=',')
-        OptModel.LSRMCH2 = OutputResults.to_frame(name='LSRMCH2').reset_index().pivot_table(index=['level_0','level_1','level_3','level_4'], values='LSRMCH2').rename_axis(['level_0','level_1','level_2','level_3'], axis=0)
+            #%% outputting the LSRMC of H2
+            sPSSTNND      = [(p,sc,st,n,nd) for p,sc,st,n,nd in mTEPES.s2n*mTEPES.nd if len(e2n[nd]) + len(b2n[nd]) + len(lout[nd]) + len(lin[nd]) and (p,sc,n) in mTEPES.psn]
+            # eBalanceH2 is a rate balance, so its dual is divided by pLoadLevelDuration as the electricity price is, to come out in EUR/tH2
+            OutputResults = pd.Series(data=[mTEPES.pDuals[f"eBalanceH2_{p}_{sc}_{st}('{n}', '{nd}')"]/mTEPES.pPeriodProb[p,sc]()/mTEPES.pLoadLevelDuration[p,sc,n]() for p,sc,st,n,nd in sPSSTNND], index=pd.Index(sPSSTNND))
+            OutputResults *= 1e3
+            OutputResults.to_frame(name='LSRMCH2').reset_index().pivot_table(index=['level_0','level_1','level_3'], columns='level_4', values='LSRMCH2').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_NetworkSRMCH2_{CaseName}.csv', sep=',')
+            OptModel.LSRMCH2 = OutputResults.to_frame(name='LSRMCH2').reset_index().pivot_table(index=['level_0','level_1','level_3','level_4'], values='LSRMCH2').rename_axis(['level_0','level_1','level_2','level_3'], axis=0)
 
-        if pIndPlotOutput:
-            for p,sc in mTEPES.ps:
-                chart = LinePlots(p, sc, OptModel.LSRMCH2, 'Node', 'LoadLevel', 'EUR/tH2')
-                chart.save(f'{_path}/oT_Plot_NetworkSRMCH2_{CaseName}_{p}_{sc}.html', embed_options={'renderer': 'svg'})
+            if pIndPlotOutput:
+                for p,sc in mTEPES.ps:
+                    chart = LinePlots(p, sc, OptModel.LSRMCH2, 'Node', 'LoadLevel', 'EUR/tH2')
+                    chart.save(f'{_path}/oT_Plot_NetworkSRMCH2_{CaseName}_{p}_{sc}.html', embed_options={'renderer': 'svg'})
 
-    if mTEPES.pIndHeat() and pHasDuals:
-        # incoming and outgoing lines (lin) (lout)
-        lin  = defaultdict(set)
-        lout = defaultdict(set)
-        for ni,nf,cc in mTEPES.ha:
-            lin [nf].add((ni,cc))
-            lout[ni].add((nf,cc))
+        if mTEPES.pIndHeat():
+            # incoming and outgoing lines (lin) (lout)
+            lin  = defaultdict(set)
+            lout = defaultdict(set)
+            for ni,nf,cc in mTEPES.ha:
+                lin [nf].add((ni,cc))
+                lout[ni].add((nf,cc))
 
-        #%% outputting the LSRMC of heat
-        sPSSTNND      = [(p,sc,st,n,nd) for p,sc,st,n,nd in mTEPES.s2n*mTEPES.nd if len(c2n[nd]) + len(h2n[nd]) + len(lout[nd]) + len(lin[nd]) and (p,sc,n) in mTEPES.psn]
-        OutputResults = pd.Series(data=[mTEPES.pDuals[f"eBalanceHeat_{p}_{sc}_{st}('{n}', '{nd}')"]/mTEPES.pPeriodProb[p,sc]()/mTEPES.pLoadLevelDuration[p,sc,n]() for p,sc,st,n,nd in sPSSTNND], index=pd.Index(sPSSTNND))
-        OutputResults *= 1e3
-        OutputResults.to_frame(name='LSRMCHeat').reset_index().pivot_table(index=['level_0','level_1','level_3'], columns='level_4', values='LSRMCHeat').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_NetworkSRMCHeat_{CaseName}.csv', sep=',')
+            #%% outputting the LSRMC of heat
+            sPSSTNND      = [(p,sc,st,n,nd) for p,sc,st,n,nd in mTEPES.s2n*mTEPES.nd if len(c2n[nd]) + len(h2n[nd]) + len(lout[nd]) + len(lin[nd]) and (p,sc,n) in mTEPES.psn]
+            OutputResults = pd.Series(data=[mTEPES.pDuals[f"eBalanceHeat_{p}_{sc}_{st}('{n}', '{nd}')"]/mTEPES.pPeriodProb[p,sc]()/mTEPES.pLoadLevelDuration[p,sc,n]() for p,sc,st,n,nd in sPSSTNND], index=pd.Index(sPSSTNND))
+            OutputResults *= 1e3
+            OutputResults.to_frame(name='LSRMCHeat').reset_index().pivot_table(index=['level_0','level_1','level_3'], columns='level_4', values='LSRMCHeat').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_NetworkSRMCHeat_{CaseName}.csv', sep=',')
 
-        OptModel.LSRMCHeat = OutputResults.to_frame(name='LSRMCHeat').reset_index().pivot_table(index=['level_0','level_1','level_3','level_4'], values='LSRMCHeat').rename_axis(['level_0','level_1','level_2','level_3'], axis=0)
+            OptModel.LSRMCHeat = OutputResults.to_frame(name='LSRMCHeat').reset_index().pivot_table(index=['level_0','level_1','level_3','level_4'], values='LSRMCHeat').rename_axis(['level_0','level_1','level_2','level_3'], axis=0)
 
-        if pIndPlotOutput:
-            for p,sc in mTEPES.ps:
-                chart = LinePlots(p, sc, OptModel.LSRMCHeat, 'Node', 'LoadLevel', 'EUR/GJ')
-                chart.save(f'{_path}/oT_Plot_NetworkSRMCHeat_{CaseName}_{p}_{sc}.html', embed_options={'renderer': 'svg'})
+            if pIndPlotOutput:
+                for p,sc in mTEPES.ps:
+                    chart = LinePlots(p, sc, OptModel.LSRMCHeat, 'Node', 'LoadLevel', 'EUR/GJ')
+                    chart.save(f'{_path}/oT_Plot_NetworkSRMCHeat_{CaseName}_{p}_{sc}.html', embed_options={'renderer': 'svg'})
 
-    if (mTEPES.gc or mTEPES.gd) and sum(mTEPES.pReserveMargin[:,:]()) and pHasDuals:
-        # the firm-capacity sum per area does not depend on (period, scenario, stage); precompute it once per area instead of re-summing over all generators for every tuple
-        pExistingFirmCapacity = {(p, ar): sum(mTEPES.pRatedMaxPowerElec[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]()) for g in g2a[ar] if (p,g) in mTEPES.pg and g not in mTEPES.gc and g not in mTEPES.gd) for p in mTEPES.p for ar in mTEPES.ar}
-        # eAdequacyReserveMarginElec is skipped in areas without a candidate unit available in the period (openTEPES_ModelFormulationInvestment.py): len(g2a[ar]) asks for a dual that was never created
-        pHasCandidateInArea   = {(p, ar): any(gc in g2a[ar] and (p,gc) in mTEPES.pgc for gc in mTEPES.gc) for p in mTEPES.p for ar in mTEPES.ar}
-        sPSSTAR               = [(p,sc,st,ar) for p,sc,st,ar in mTEPES.ps*mTEPES.st*mTEPES.ar if mTEPES.pReserveMargin[p,ar]() and st == mTEPES.Last_st and pHasCandidateInArea[p,ar] and pExistingFirmCapacity[p,ar] <= mTEPES.pDemandElecPeak[p,ar] * mTEPES.pReserveMargin[p,ar]()]
-        if sPSSTAR:
-            OutputResults = pd.Series(data=[mTEPES.pDuals[f'eAdequacyReserveMarginElec_{p}_{sc}_{st}{ar}'] for p,sc,st,ar in sPSSTAR], index=pd.Index(sPSSTAR))
-            OutputResults.to_frame(name='RM').reset_index().pivot_table(index=['level_0','level_1'], columns='level_3', values='RM').rename_axis(['Period', 'Scenario'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_MarginalReserveMargin_{CaseName}.csv', sep=',')
+        if (mTEPES.gc or mTEPES.gd) and sum(mTEPES.pReserveMargin[:,:]()):
+            # the firm-capacity sum per area does not depend on (period, scenario, stage); precompute it once per area instead of re-summing over all generators for every tuple
+            pExistingFirmCapacity = {(p, ar): sum(mTEPES.pRatedMaxPowerElec[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]()) for g in g2a[ar] if (p,g) in mTEPES.pg and g not in mTEPES.gc and g not in mTEPES.gd) for p in mTEPES.p for ar in mTEPES.ar}
+            # eAdequacyReserveMarginElec is skipped in areas without a candidate unit available in the period (openTEPES_ModelFormulationInvestment.py): len(g2a[ar]) asks for a dual that was never created
+            pHasCandidateInArea   = {(p, ar): any(gc in g2a[ar] and (p,gc) in mTEPES.pgc for gc in mTEPES.gc) for p in mTEPES.p for ar in mTEPES.ar}
+            sPSSTAR               = [(p,sc,st,ar) for p,sc,st,ar in mTEPES.ps*mTEPES.st*mTEPES.ar if mTEPES.pReserveMargin[p,ar]() and st == mTEPES.Last_st and pHasCandidateInArea[p,ar] and pExistingFirmCapacity[p,ar] <= mTEPES.pDemandElecPeak[p,ar] * mTEPES.pReserveMargin[p,ar]()]
+            if sPSSTAR:
+                OutputResults = pd.Series(data=[mTEPES.pDuals[f'eAdequacyReserveMarginElec_{p}_{sc}_{st}{ar}'] for p,sc,st,ar in sPSSTAR], index=pd.Index(sPSSTAR))
+                OutputResults.to_frame(name='RsrMrg').reset_index().pivot_table(index=['level_0','level_1'], columns='level_3', values='RsrMrg').rename_axis(['Period', 'Scenario'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_MarginalReserveMargin_{CaseName}.csv', sep=',')
 
-    if mTEPES.pIndHeat() and (mTEPES.gc or mTEPES.gd) and sum(mTEPES.pReserveMarginHeat[:,:]) and pHasDuals:
-        # the firm-capacity sum per area does not depend on (period, scenario, stage); precompute it once per area
-        pExistingFirmCapacity = {(p,ar): sum(mTEPES.pRatedMaxPowerHeat[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]()) for g in g2a[ar] if (p,g) in mTEPES.pg and g not in mTEPES.gc and g not in mTEPES.gd) for p in mTEPES.p for ar in mTEPES.ar}
-        # same skip condition as eAdequacyReserveMarginHeat (openTEPES_ModelFormulationInvestment.py)
-        pHasCandidateInArea   = {(p,ar): any(gc in g2a[ar] and (p,gc) in mTEPES.pgc for gc in mTEPES.gc) for p in mTEPES.p for ar in mTEPES.ar}
-        sPSSTAR               = [(p,sc,st,ar) for p,sc,st,ar in mTEPES.ps*mTEPES.st*mTEPES.ar if mTEPES.pReserveMarginHeat[p,ar] and st == mTEPES.Last_st and pHasCandidateInArea[p,ar] and pExistingFirmCapacity[p,ar] <= mTEPES.pDemandHeatPeak[p,ar] * mTEPES.pReserveMarginHeat[p,ar]]
-        if sPSSTAR:
-            OutputResults = pd.Series(data=[mTEPES.pDuals[f'eAdequacyReserveMarginHeat_{p}_{sc}_{st}{ar}'] for p,sc,st,ar in sPSSTAR], index=pd.Index(sPSSTAR))
-            OutputResults.to_frame(name='RM').reset_index().pivot_table(index=['level_0','level_1'], columns='level_3', values='RM').rename_axis(['Period', 'Scenario'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_MarginalReserveMarginHeat_{CaseName}.csv', sep=',')
+        if mTEPES.pIndHeat() and (mTEPES.gc or mTEPES.gd) and sum(mTEPES.pReserveMarginHeat[:,:]):
+            # the firm-capacity sum per area does not depend on (period, scenario, stage); precompute it once per area
+            pExistingFirmCapacity = {(p,ar): sum(mTEPES.pRatedMaxPowerHeat[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]()) for g in g2a[ar] if (p,g) in mTEPES.pg and g not in mTEPES.gc and g not in mTEPES.gd) for p in mTEPES.p for ar in mTEPES.ar}
+            # same skip condition as eAdequacyReserveMarginHeat (openTEPES_ModelFormulationInvestment.py)
+            pHasCandidateInArea   = {(p,ar): any(gc in g2a[ar] and (p,gc) in mTEPES.pgc for gc in mTEPES.gc) for p in mTEPES.p for ar in mTEPES.ar}
+            sPSSTAR               = [(p,sc,st,ar) for p,sc,st,ar in mTEPES.ps*mTEPES.st*mTEPES.ar if mTEPES.pReserveMarginHeat[p,ar] and st == mTEPES.Last_st and pHasCandidateInArea[p,ar] and pExistingFirmCapacity[p,ar] <= mTEPES.pDemandHeatPeak[p,ar] * mTEPES.pReserveMarginHeat[p,ar]]
+            if sPSSTAR:
+                OutputResults = pd.Series(data=[mTEPES.pDuals[f'eAdequacyReserveMarginHeat_{p}_{sc}_{st}{ar}'] for p,sc,st,ar in sPSSTAR], index=pd.Index(sPSSTAR))
+                OutputResults.to_frame(name='RsrMrg').reset_index().pivot_table(index=['level_0','level_1'], columns='level_3', values='RsrMrg').rename_axis(['Period', 'Scenario'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_MarginalReserveMarginHeat_{CaseName}.csv', sep=',')
 
-    if pHasDuals:
-        # mirror the skip condition of eMaxSystemEmission (openTEPES_ModelFormulationInvestment.py): same any() and same (p,g) in pg period filter as the constraint, or the dual lookup diverges from it
-        pHasEmissionRate  = {(p,ar): any(mTEPES.pEmissionRate[g] for g in g2a[ar] if (p,g) in mTEPES.pg) for p in mTEPES.p for ar in mTEPES.ar}
-        sPSSTAR           = [(p,sc,st,ar) for p,sc,st,ar in mTEPES.ps*mTEPES.st*mTEPES.ar if mTEPES.pEmission[p,ar] < math.inf and st == mTEPES.Last_st and pHasEmissionRate[p,ar]]
-        if sPSSTAR:
-            OutputResults = pd.Series(data=[mTEPES.pDuals[f'eMaxSystemEmission_{p}_{sc}_{st}{ar}'] for p,sc,st,ar in sPSSTAR], index=pd.Index(sPSSTAR))
-            OutputResults.to_frame(name='EM').reset_index().pivot_table(index=['level_0','level_1'], columns='level_3', values='EM').rename_axis(['Period', 'Scenario'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_MarginalEmission_{CaseName}.csv', sep=',')
+        if pHasDuals:
+            # mirror the skip condition of eMaxSystemEmission (openTEPES_ModelFormulationInvestment.py): same any() and same (p,g) in pg period filter as the constraint, or the dual lookup diverges from it
+            pHasEmissionRate  = {(p,ar): any(mTEPES.pEmissionRate[g] for g in g2a[ar] if (p,g) in mTEPES.pg) for p in mTEPES.p for ar in mTEPES.ar}
+            sPSSTAR           = [(p,sc,st,ar) for p,sc,st,ar in mTEPES.ps*mTEPES.st*mTEPES.ar if mTEPES.pEmission[p,ar] < math.inf and st == mTEPES.Last_st and pHasEmissionRate[p,ar]]
+            if sPSSTAR:
+                OutputResults = pd.Series(data=[mTEPES.pDuals[f'eMaxSystemEmission_{p}_{sc}_{st}{ar}'] for p,sc,st,ar in sPSSTAR], index=pd.Index(sPSSTAR))
+                OutputResults.to_frame(name='EM').reset_index().pivot_table(index=['level_0','level_1'], columns='level_3', values='EM').rename_axis(['Period', 'Scenario'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_MarginalEmission_{CaseName}.csv', sep=',')
 
-        sPSSTAR           = [(p,sc,st,ar) for p,sc,st,ar in mTEPES.ps*mTEPES.st*mTEPES.ar if mTEPES.pRESEnergy[p,ar]() and st == mTEPES.Last_st]
-        if sPSSTAR:
-            pTotalDuration = {(p,sc): sum(mTEPES.pLoadLevelDuration[p,sc,na]() for na in mTEPES.na) for p,sc in mTEPES.ps}
-            OutputResults  = pd.Series(data=[mTEPES.pDuals[f'eMinSystemRESEnergy_{p}_{sc}_{st}{ar}']*1e-3*pTotalDuration[p,sc] for p,sc,st,ar in sPSSTAR], index=pd.Index(sPSSTAR))
-            OutputResults.to_frame(name='RES').reset_index().pivot_table(index=['level_0','level_1'], columns='level_3', values='RES').rename_axis(['Period', 'Scenario'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_MarginalRESEnergy_{CaseName}.csv', sep=',')
+            sPSSTAR           = [(p,sc,st,ar) for p,sc,st,ar in mTEPES.ps*mTEPES.st*mTEPES.ar if mTEPES.pRESEnergy[p,ar]() and st == mTEPES.Last_st]
+            if sPSSTAR:
+                pTotalDuration = {(p,sc): sum(mTEPES.pLoadLevelDuration[p,sc,na]() for na in mTEPES.na) for p,sc in mTEPES.ps}
+                OutputResults  = pd.Series(data=[mTEPES.pDuals[f'eMinSystemRESEnergy_{p}_{sc}_{st}{ar}']*1e-3*pTotalDuration[p,sc] for p,sc,st,ar in sPSSTAR], index=pd.Index(sPSSTAR))
+                OutputResults.to_frame(name='RES').reset_index().pivot_table(index=['level_0','level_1'], columns='level_3', values='RES').rename_axis(['Period', 'Scenario'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_MarginalRESEnergy_{CaseName}.csv', sep=',')
 
-    #%% outputting the up operating reserve marginal
-    if pHasOperReserveUp and pHasReserveOffer and pHasDuals:
-        sPSSTNAR      = [(p,sc,st,n,ar) for p,sc,st,n,ar in mTEPES.s2n*mTEPES.ar if mTEPES.pOperReserveUp[p,sc,n,ar] and pRsrvOfferArea[p,ar] and (p,sc,n) in mTEPES.psn]
-        OutputResults = pd.Series(data=[mTEPES.pDuals[f"eOperReserveUp_{p}_{sc}_{st}('{n}', '{ar}')"] for p,sc,st,n,ar in sPSSTNAR], index=pd.Index(sPSSTNAR))
-        OutputResults *= 1e3
-        OutputResults.to_frame(name='UORM').reset_index().pivot_table(index=['level_0','level_1','level_3'], columns='level_4', values='UORM').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_MarginalOperatingReserveUp_{CaseName}.csv', sep=',')
-        if pIndPlotOutput:
-            MarginalUpOperatingReserve = OutputResults.to_frame(name='UORM').reset_index().pivot_table(index=['level_0','level_1','level_3','level_4'], values='UORM').rename_axis(['level_0','level_1','level_2','level_3'], axis=0)
-            available_period_scenario = set(MarginalUpOperatingReserve.index.droplevel([2,3]).unique().tolist())
-            for p,sc in mTEPES.ps:
-                if (p,sc) in available_period_scenario:
-                    chart = LinePlots(p, sc, MarginalUpOperatingReserve, 'Area', 'LoadLevel', 'EUR/MW')
-                    chart.save(f'{_path}/oT_Plot_MarginalOperatingReserveUp_{CaseName}_{p}_{sc}.html', embed_options={'renderer': 'svg'})
+        #%% outputting the up operating reserve marginal
+        if pHasOperReserveUp and pHasReserveOffer:
+            sPSSTNAR      = [(p,sc,st,n,ar) for p,sc,st,n,ar in mTEPES.s2n*mTEPES.ar if mTEPES.pOperReserveUp[p,sc,n,ar] and pRsrvOfferArea[p,ar] and (p,sc,n) in mTEPES.psn]
+            OutputResults = pd.Series(data=[mTEPES.pDuals[f"eOperReserveUp_{p}_{sc}_{st}('{n}', '{ar}')"]/mTEPES.pLoadLevelDuration[p,sc,n]() for p,sc,st,n,ar in sPSSTNAR], index=pd.Index(sPSSTNAR))
+            OutputResults *= 1e3
+            OutputResults.to_frame(name='UpOpRs').reset_index().pivot_table(index=['level_0','level_1','level_3'], columns='level_4', values='UpOpRs').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_MarginalOperatingReserveUp_{CaseName}.csv', sep=',')
+            if pIndPlotOutput:
+                MarginalUpOperatingReserve = OutputResults.to_frame(name='UpOpRs').reset_index().pivot_table(index=['level_0','level_1','level_3','level_4'], values='UpOpRs').rename_axis(['level_0','level_1','level_2','level_3'], axis=0)
+                available_period_scenario = set(MarginalUpOperatingReserve.index.droplevel([2,3]).unique().tolist())
+                for p,sc in mTEPES.ps:
+                    if (p,sc) in available_period_scenario:
+                        chart = LinePlots(p, sc, MarginalUpOperatingReserve, 'Area', 'LoadLevel', 'EUR/MWh')
+                        chart.save(f'{_path}/oT_Plot_MarginalOperatingReserveUp_{CaseName}_{p}_{sc}.html', embed_options={'renderer': 'svg'})
 
-    #%% outputting the down operating reserve marginal
-    if pHasOperReserveDw and pHasReserveOffer and pHasDuals:
-        sPSSTNAR      = [(p,sc,st,n,ar) for p,sc,st,n,ar in mTEPES.s2n*mTEPES.ar if mTEPES.pOperReserveDw[p,sc,n,ar] and pRsrvOfferArea[p,ar] and (p,sc,n) in mTEPES.psn]
-        OutputResults = pd.Series(data=[mTEPES.pDuals[f"eOperReserveDw_{p}_{sc}_{st}('{n}', '{ar}')"] for p,sc,st,n,ar in sPSSTNAR], index=pd.Index(sPSSTNAR))
-        OutputResults *= 1e3
-        OutputResults.to_frame(name='DORM').reset_index().pivot_table(index=['level_0','level_1','level_3'], columns='level_4', values='DORM').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_MarginalOperatingReserveDown_{CaseName}.csv', sep=',')
-        if pIndPlotOutput:
-            MarginalDwOperatingReserve = OutputResults.to_frame(name='DORM').reset_index().pivot_table(index=['level_0','level_1','level_3','level_4'], values='DORM').rename_axis(['level_0','level_1','level_2','level_3'], axis=0)
-            available_period_scenario = set(MarginalDwOperatingReserve.index.droplevel([2,3]).unique().tolist())
-            for p,sc in mTEPES.ps:
-                if (p,sc) in available_period_scenario:
-                    chart = LinePlots(p, sc, MarginalDwOperatingReserve, 'Area', 'LoadLevel', 'EUR/MW')
-                    chart.save(f'{_path}/oT_Plot_MarginalOperatingReserveDown_{CaseName}_{p}_{sc}.html', embed_options={'renderer': 'svg'})
+        #%% outputting the down operating reserve marginal
+        if pHasOperReserveDw and pHasReserveOffer:
+            sPSSTNAR      = [(p,sc,st,n,ar) for p,sc,st,n,ar in mTEPES.s2n*mTEPES.ar if mTEPES.pOperReserveDw[p,sc,n,ar] and pRsrvOfferArea[p,ar] and (p,sc,n) in mTEPES.psn]
+            OutputResults = pd.Series(data=[mTEPES.pDuals[f"eOperReserveDw_{p}_{sc}_{st}('{n}', '{ar}')"]/mTEPES.pLoadLevelDuration[p,sc,n]() for p,sc,st,n,ar in sPSSTNAR], index=pd.Index(sPSSTNAR))
+            OutputResults *= 1e3
+            OutputResults.to_frame(name='DwOpRs').reset_index().pivot_table(index=['level_0','level_1','level_3'], columns='level_4', values='DwOpRs').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_MarginalOperatingReserveDown_{CaseName}.csv', sep=',')
+            if pIndPlotOutput:
+                MarginalDwOperatingReserve = OutputResults.to_frame(name='DwOpRs').reset_index().pivot_table(index=['level_0','level_1','level_3','level_4'], values='DwOpRs').rename_axis(['level_0','level_1','level_2','level_3'], axis=0)
+                available_period_scenario = set(MarginalDwOperatingReserve.index.droplevel([2,3]).unique().tolist())
+                for p,sc in mTEPES.ps:
+                    if (p,sc) in available_period_scenario:
+                        chart = LinePlots(p, sc, MarginalDwOperatingReserve, 'Area', 'LoadLevel', 'EUR/MWh')
+                        chart.save(f'{_path}/oT_Plot_MarginalOperatingReserveDown_{CaseName}_{p}_{sc}.html', embed_options={'renderer': 'svg'})
 
-    #%% outputting the water values
-    if mTEPES.es and pHasDuals:
-        # eESSInventory is declared over mTEPES.nesc (openTEPES_ModelFormulationElectricity.py), i.e. only the load levels that close a storage cycle; mTEPES.nesc is a plain list, so test membership against a set built once
-        pNESC         = set(mTEPES.nesc)
-        sPSSTNES      = [(p,sc,st,n,es) for p,sc,st,n,es in mTEPES.s2n*mTEPES.es if (p,sc,n,es) in mTEPES.psnes and (n,es) in pNESC and (mTEPES.pTotalMaxCharge[es] or mTEPES.pTotalEnergyInflows[es])]
-        OutputToFile  = pd.Series(data=[abs(mTEPES.pDuals[f"eESSInventory_{p}_{sc}_{st}('{n}', '{es}')"])*1e3 for p,sc,st,n,es in sPSSTNES], index=pd.Index(sPSSTNES))
-        if len(OutputToFile):
-            OutputToFile.to_frame(name='WaterValue').reset_index().pivot_table(index=['level_0','level_1','level_3'], columns='level_4', values='WaterValue').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_MarginalEnergyValue_{CaseName}.csv', sep=',')
-        if pIndPlotOutput and len(OutputToFile):
-            WaterValue = OutputToFile.to_frame(name='WaterValue').reset_index().pivot_table(index=['level_0','level_1','level_3','level_4'], values='WaterValue').rename_axis(['level_0','level_1','level_2','level_3'], axis=0)
-            for p,sc in mTEPES.ps:
-                chart = LinePlots(p, sc, WaterValue, 'Generator', 'LoadLevel', 'EUR/MWh')
-                chart.save(f'{_path}/oT_Plot_MarginalEnergyValue_{CaseName}_{p}_{sc}.html', embed_options={'renderer': 'svg'})
+        #%% outputting the system inertia marginal
+        if pHasSystemInertia:
+            sPSSTNAR      = [(p,sc,st,n,ar) for p,sc,st,n,ar in mTEPES.s2n*mTEPES.ar if mTEPES.pSystemInertia[p,sc,n,ar] and (p,sc,n) in mTEPES.psn]
+            OutputResults = pd.Series(data=[mTEPES.pDuals[f"eSystemInertia_{p}_{sc}_{st}('{n}', '{ar}')"]/mTEPES.pLoadLevelDuration[p,sc,n]() for p,sc,st,n,ar in sPSSTNAR], index=pd.Index(sPSSTNAR))
+            OutputResults *= 1e6
+            OutputResults.to_frame(name='SyInr').reset_index().pivot_table(index=['level_0','level_1','level_3'], columns='level_4', values='SyInr').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_MarginalSystemInertia_{CaseName}.csv', sep=',')
+            if pIndPlotOutput:
+                MarginalSystemInertia = OutputResults.to_frame(name='SyInr').reset_index().pivot_table(index=['level_0','level_1','level_3','level_4'], values='SyInr').rename_axis(['level_0','level_1','level_2','level_3'], axis=0)
+                available_period_scenario = set(MarginalSystemInertia.index.droplevel([2,3]).unique().tolist())
+                for p,sc in mTEPES.ps:
+                    if (p,sc) in available_period_scenario:
+                        chart = LinePlots(p, sc, MarginalSystemInertia, 'Area', 'LoadLevel', 'EUR/s')
+                        chart.save(f'{_path}/oT_Plot_MarginalSystemInertia_{CaseName}_{p}_{sc}.html', embed_options={'renderer': 'svg'})
 
-    # #%% Reduced cost for NetworkInvestment
-    # ReducedCostActivation = mTEPES.pIndBinGenInvest()*len(mTEPES.gc) + mTEPES.pIndBinNetElecInvest()*len(mTEPES.lc) + mTEPES.pIndBinGenOperat()*len(mTEPES.nr) + mTEPES.pIndBinLineCommit()*len(mTEPES.la)
-    # if mTEPES.lc and not ReducedCostActivation and OptModel.vNetworkInvest.is_variable_type():
-    #     OutputToFile = pd.Series(data=[OptModel.rc[OptModel.vNetworkInvest[p,ni,nf,cc]] for p,ni,nf,cc in mTEPES.plc], index=mTEPES.plc)
-    #     OutputToFile.index.names = ['Period', 'InitialNode', 'FinalNode', 'Circuit']
-    #     OutputToFile.to_frame(name='MEUR').to_csv(f'{_path}/oT_Result_NetworkInvestment_ReducedCost_{CaseName}.csv', sep=',')
-    #
-    # #%% Reduced cost for NetworkCommitment
-    # if mTEPES.ls and not ReducedCostActivation and OptModel.vLineCommit.is_variable_type():
-    #     OutputResults = pd.Series(data=[OptModel.rc[OptModel.vLineCommit[p,sc,n,ni,nf,cc]] for p,sc,n,ni,nf,cc in mTEPES.psnls], index=mTEPES.psnlas)
-    #     OutputResults.index.names = ['Period', 'Scenario', 'LoadLevel', 'InitialNode', 'FinalNode', 'Circuit']
-    #     OutputResults = pd.pivot_table(OutputResults.to_frame(name='p.u.'), values='p.u.', index=['Period', 'Scenario', 'LoadLevel'], columns=['InitialNode', 'FinalNode', 'Circuit'], fill_value=0.0)
-    #     OutputResults.index.names = [None] * len(OutputResults.index.names)
-    #     OutputResults.to_csv(f'{_path}/oT_Result_NetworkCommitment_ReducedCost_{CaseName}.csv', sep=',')
+        #%% outputting the water values
+        if mTEPES.es:
+            # eESSInventory is declared over mTEPES.nesc (openTEPES_ModelFormulationElectricity.py), i.e. only the load levels that close a storage cycle; mTEPES.nesc is a plain list, so test membership against a set built once
+            pNESC         = set(mTEPES.nesc)
+            sPSSTNES      = [(p,sc,st,n,es) for p,sc,st,n,es in mTEPES.s2n*mTEPES.es if (p,sc,n,es) in mTEPES.psnes and (n,es) in pNESC and (mTEPES.pTotalMaxCharge[es] or mTEPES.pTotalEnergyInflows[es])]
+            OutputToFile  = pd.Series(data=[abs(mTEPES.pDuals[f"eESSInventory_{p}_{sc}_{st}('{n}', '{es}')"])*1e3 for p,sc,st,n,es in sPSSTNES], index=pd.Index(sPSSTNES))
+            if len(OutputToFile):
+                OutputToFile.to_frame(name='WaterValue').reset_index().pivot_table(index=['level_0','level_1','level_3'], columns='level_4', values='WaterValue').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_MarginalEnergyValue_{CaseName}.csv', sep=',')
+            if pIndPlotOutput and len(OutputToFile):
+                WaterValue = OutputToFile.to_frame(name='WaterValue').reset_index().pivot_table(index=['level_0','level_1','level_3','level_4'], values='WaterValue').rename_axis(['level_0','level_1','level_2','level_3'], axis=0)
+                for p,sc in mTEPES.ps:
+                    chart = LinePlots(p, sc, WaterValue, 'Generator', 'LoadLevel', 'EUR/MWh')
+                    chart.save(f'{_path}/oT_Plot_MarginalEnergyValue_{CaseName}_{p}_{sc}.html', embed_options={'renderer': 'svg'})
+
+        # #%% Reduced cost for NetworkInvestment
+        # ReducedCostActivation = mTEPES.pIndBinGenInvest()*len(mTEPES.gc) + mTEPES.pIndBinNetElecInvest()*len(mTEPES.lc) + mTEPES.pIndBinGenOperat()*len(mTEPES.nr) + mTEPES.pIndBinLineCommit()*len(mTEPES.la)
+        # if mTEPES.lc and not ReducedCostActivation and OptModel.vNetworkInvest.is_variable_type():
+        #     OutputToFile = pd.Series(data=[OptModel.rc[OptModel.vNetworkInvest[p,ni,nf,cc]] for p,ni,nf,cc in mTEPES.plc], index=mTEPES.plc)
+        #     OutputToFile.index.names = ['Period', 'InitialNode', 'FinalNode', 'Circuit']
+        #     OutputToFile.to_frame(name='MEUR').to_csv(f'{_path}/oT_Result_NetworkInvestment_ReducedCost_{CaseName}.csv', sep=',')
+        #
+        # #%% Reduced cost for NetworkCommitment
+        # if mTEPES.ls and not ReducedCostActivation and OptModel.vLineCommit.is_variable_type():
+        #     OutputResults = pd.Series(data=[OptModel.rc[OptModel.vLineCommit[p,sc,n,ni,nf,cc]] for p,sc,n,ni,nf,cc in mTEPES.psnls], index=mTEPES.psnlas)
+        #     OutputResults.index.names = ['Period', 'Scenario', 'LoadLevel', 'InitialNode', 'FinalNode', 'Circuit']
+        #     OutputResults = pd.pivot_table(OutputResults.to_frame(name='p.u.'), values='p.u.', index=['Period', 'Scenario', 'LoadLevel'], columns=['InitialNode', 'FinalNode', 'Circuit'], fill_value=0.0)
+        #     OutputResults.index.names = [None] * len(OutputResults.index.names)
+        #     OutputResults.to_csv(f'{_path}/oT_Result_NetworkCommitment_ReducedCost_{CaseName}.csv', sep=',')
 
     WritingResultsTime = time.time() - StartTime
     StartTime = time.time()
@@ -482,9 +499,10 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput, pIndPlo
     #%% outputting the demand and the LSRMC of electricity
     sPSSTNARND    = [(p,sc,st,n,ar,nd) for p,sc,st,n,ar,nd in mTEPES.s2n*mTEPES.arnd if pNodeHasBalanceElec[p,nd] and (p,sc,n) in mTEPES.psn]
 
-    pHasDuals = hasattr(mTEPES, 'pDuals') and mTEPES.pDuals is not None and hasattr(mTEPES.pDuals, '__len__') and len(mTEPES.pDuals) > 0
     pHasRampReserveUp = hasattr(mTEPES, 'pRampReserveUp') and any(mTEPES.pRampReserveUp[idx] for idx in mTEPES.pRampReserveUp)
     pHasRampReserveDw = hasattr(mTEPES, 'pRampReserveDw') and any(mTEPES.pRampReserveDw[idx] for idx in mTEPES.pRampReserveDw)
+
+    pHasDuals = hasattr(mTEPES, 'pDuals') and mTEPES.pDuals is not None and hasattr(mTEPES.pDuals, '__len__') and len(mTEPES.pDuals) > 0
 
     if pHasDuals:
         # keep the LSRMC under its own name: OutputResults still holds the energy balance built above, and concatenating that by mistake writes GWh into a price file
@@ -735,7 +753,7 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput, pIndPlo
             else:
                 ChargeRev     = pd.Series(data=[0.0 for gc in mTEPES.gc], index=mTEPES.gc, dtype='float64')
 
-    if (mTEPES.gc or mTEPES.gd) and sum(mTEPES.pReserveMargin[:,:]()) and pHasDuals:
+    if (mTEPES.gc or mTEPES.gd) and sum(mTEPES.pReserveMargin[:,:]()):
         pExistingFirmCapacity = {(p, ar): sum(mTEPES.pRatedMaxPowerElec[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]()) for g in g2a[ar] if (p,g) in mTEPES.pg and g not in mTEPES.gc and g not in mTEPES.gd) for p in mTEPES.p for ar in mTEPES.ar}
         sPSSTARGC             = [(p,sc,st,ar,gc) for p,sc,st,ar,gc in mTEPES.ps*mTEPES.st*mTEPES.ar*mTEPES.gc if gc in g2a[ar] and (p,gc) in mTEPES.pgc and mTEPES.pReserveMargin[p,ar]() and st == mTEPES.Last_st and sum(1 for gc in mTEPES.gc if gc in g2a[ar]) and pExistingFirmCapacity[p,ar] <= mTEPES.pDemandElecPeak[p,ar] * mTEPES.pReserveMargin[p,ar]()]
         OutputToResRev        = pd.Series(data=[mTEPES.pDuals[f'eAdequacyReserveMarginElec_{p}_{sc}_{st}{ar}']*mTEPES.pRatedMaxPowerElec[gc]*mTEPES.pAvailability[gc]() for p,sc,st,ar,gc in sPSSTARGC], index=pd.Index(sPSSTARGC))
@@ -748,7 +766,7 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput, pIndPlo
     else:
         ResRev = pd.Series(data=[0.0 for gc in mTEPES.gc], index=mTEPES.gc, dtype='float64')
 
-    if pHasOperReserveUp and pHasReserveOffer and pHasDuals:
+    if pHasOperReserveUp and pHasReserveOffer:
         sPSSTNARNR        = [(p,sc,st,n,ar,nr) for p,sc,st,n,ar,nr in mTEPES.s2n*mTEPES.ar*mTEPES.nr if nr in g2a[ar] and mTEPES.pOperReserveUp[p,sc,n,ar] and pRsrvOfferArea[p,ar] and (p,sc,n,nr) in mTEPES.psnnr]
         if sPSSTNARNR:
             OutputResults = pd.Series(data=[mTEPES.pDuals[f"eOperReserveUp_{p}_{sc}_{st}('{n}', '{ar}')"]/mTEPES.pPeriodProb[p,sc]()*OptModel.vReserveUp   [p,sc,n,nr]() for p,sc,st,n,ar,nr in sPSSTNARNR], index=pd.Index(sPSSTNARNR))
@@ -771,7 +789,7 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput, pIndPlo
     else:
         UpRev             = pd.Series(data=[0.0 for gc in mTEPES.gc], index=mTEPES.gc, dtype='float64')
 
-    if pHasOperReserveDw and pHasReserveOffer and pHasDuals:
+    if pHasOperReserveDw and pHasReserveOffer:
         sPSSTNARNR        = [(p,sc,st,n,ar,nr) for p,sc,st,n,ar,nr in mTEPES.s2n*mTEPES.ar*mTEPES.nr if nr in g2a[ar] and mTEPES.pOperReserveDw[p,sc,n,ar] and pRsrvOfferArea[p,ar] and (p,sc,n,nr) in mTEPES.psnnr]
         if sPSSTNARNR:
             OutputResults = pd.Series(data=[mTEPES.pDuals[f"eOperReserveDw_{p}_{sc}_{st}('{n}', '{ar}')"]/mTEPES.pPeriodProb[p,sc]()*OptModel.vReserveDown   [p,sc,n,nr]() for p,sc,st,n,ar,nr in sPSSTNARNR], index=pd.Index(sPSSTNARNR))
@@ -795,7 +813,7 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput, pIndPlo
         DwRev             = pd.Series(data=[0.0 for gc in mTEPES.gc], index=mTEPES.gc, dtype='float64')
 
     # the ramp reserve requirement depends on (p,sc,n) only: summing it again for every unit costs |nr| (or |ec|) times more than it should
-    if mTEPES.pIndRampReserves() and pHasRampReserveUp and pHasDuals:
+    if mTEPES.pIndRampReserves() and pHasRampReserveUp:
         pRampReserveUpPSN = {(p,sc,n): sum(mTEPES.pRampReserveUp[p,sc,n,ar] for ar in mTEPES.ar) for p,sc,n in mTEPES.psn}
         sPSSTNNR          = [(p,sc,st,n,nr) for p,sc,st,n,nr in mTEPES.s2n*mTEPES.nr if pRampReserveUpPSN[p,sc,n] and (p,sc,n,nr) in mTEPES.psnnr]
         if sPSSTNNR:
@@ -823,7 +841,7 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput, pIndPlo
     else:
         RampUpRev             = pd.Series(data=[0.0 for gc in mTEPES.gc], index=mTEPES.gc, dtype='float64')
 
-    if mTEPES.pIndRampReserves() and pHasRampReserveDw and pHasDuals:
+    if mTEPES.pIndRampReserves() and pHasRampReserveDw:
         pRampReserveDwPSN = {(p,sc,n): sum(mTEPES.pRampReserveDw[p,sc,n,ar] for ar in mTEPES.ar) for p,sc,n in mTEPES.psn}
         sPSSTNNR          = [(p,sc,st,n,nr) for p,sc,st,n,nr in mTEPES.s2n*mTEPES.nr if pRampReserveDwPSN[p,sc,n] and (p,sc,n,nr) in mTEPES.psnnr]
         if sPSSTNNR:
