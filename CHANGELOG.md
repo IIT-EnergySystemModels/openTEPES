@@ -2,6 +2,11 @@
 
 ## [4.19.0rc] - 2026-09-18 Unreleased in PyPI
 
+- [CHANGED] the CI workflow runs its tests in parallel and stops repeating work. Every job now runs pytest with `-n auto` and one solver thread per
+  process, which on a ten-core machine takes the unit tier from 429 s to 193 s and the solve tier from 285 s to 114 s. flake8 moved to a job of its
+  own instead of running in all nine unit jobs. The unit matrix keeps all three Python versions on Linux and the ends of the range on macOS and
+  Windows, since a version problem shows on any platform and a platform problem shows on any version. The ipopt job asks conda for ipopt alone and
+  takes the rest from the cached lock. No test was removed.
 - [ADDED] tests for the four feature switches no shipped case turns on: line switching, operating reserve activation, ramp reserves and the
   incompatibility between charging and energy outflows. Each one is switched on over a week of a bundled case and checked against what the
   constraint promises. Two things came out of writing them. sSEP ships ramp reserve files, which is why the switch read as covered, but every cell

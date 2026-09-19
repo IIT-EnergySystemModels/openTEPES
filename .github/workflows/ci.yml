@@ -10,19 +10,55 @@ concurrency:
   # Supersede a pull request's own run; let a master run finish, it is the record for master.
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
+env:
+  # One solver thread per process, so that the workers below share the runner's cores instead of each
+  # asking for half of them. openTEPES reads this in openTEPES_ProblemSolvingTuning._threads.
+  OTEPES_THREADS: 1
+
 jobs:
-  # Fast tier: lint + tests that do NOT solve a model. Cheap, so it runs on
-  # every operating system and every supported Python version. This is where
-  # cross-platform and cross-Python problems (imports, packaging, syntax that
-  # needs a newer Python) are caught.
+  # Lint. The check is on the source, not on the interpreter running it, so once is enough.
+  lint:
+    name: lint (flake8)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ./.github/actions/setup
+        with:
+          python-version: "3.12"
+          extra: flake8
+
+      - name: Lint with flake8 (syntax errors only)
+        run: flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+
+  # Fast tier: the tests that do NOT solve a model. Cheap, so it runs on every operating system and
+  # every supported Python version. This is where cross-platform and cross-Python problems (imports,
+  # packaging, syntax that needs a newer Python) are caught.
+  #
+  # All three Pythons on Linux; the ends of the range on macOS and Windows. A version problem is a
+  # packaging or syntax problem and shows on any platform, and a platform problem shows on any
+  # version, so the two middle combinations were only repeating what their neighbours already said.
+  #
+  # This tier is not as cheap as its name suggests. It holds the slowest single test in the suite,
+  # reading the RTS-GMLC_AC case at 90 s, and runs 429 s serially. On four workers it is 193 s.
   fast:
-    name: fast (lint + unit) - ${{ matrix.os }} / py${{ matrix.python-version }}
+    name: fast (unit) - ${{ matrix.os }} / py${{ matrix.python-version }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest]
         python-version: ["3.11", "3.12", "3.13"]
+        include:
+          - os: macos-latest
+            python-version: "3.11"
+          - os: macos-latest
+            python-version: "3.13"
+          - os: windows-latest
+            python-version: "3.11"
+          - os: windows-latest
+            python-version: "3.13"
 
     steps:
       - uses: actions/checkout@v4
@@ -30,22 +66,22 @@ jobs:
       - uses: ./.github/actions/setup
         with:
           python-version: ${{ matrix.python-version }}
-          extra: flake8
-
-      - name: Lint with flake8 (syntax errors only)
-        shell: bash
-        run: flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          extra: pytest-xdist
 
       - name: Run unit tests (no solve)
         shell: bash
-        run: pytest -vv -m "not solve" tests/
+        run: pytest -vv -m "not solve" -n auto tests/
 
-  # Solve tier: the full model suite (every case, multi-stage, Benders). The
-  # model maths is the same on every platform, so re-solving on all 9 combos
-  # adds little. We solve once per operating system on a single Python version.
-  # Cross-Python coverage is already provided by the fast tier above.
-  # HiGHS only. The non-linear formulations are covered by solve-ipopt below, which is
-  # separate because ipopt comes from conda and nothing else here needs conda.
+  # Solve tier: the full model suite (every case, multi-stage, Benders). The model maths is the same
+  # on every platform, so re-solving on all combinations adds little. We solve once per operating
+  # system on a single Python version. Cross-Python coverage is already provided by the fast tier.
+  # HiGHS only. The non-linear formulations are covered by solve-ipopt below, which is separate
+  # because ipopt comes from conda and nothing else here needs conda.
+  #
+  # The tests are independent -- each works in its own temporary folder -- so they run in parallel, one
+  # solver thread each. Measured on a ten-core machine: 285 s serially with the solver taking half the
+  # cores, 114 s on four workers with one thread each. The 9n7y multi-stage solve is 77 s of that and
+  # sets the floor.
   solve:
     name: solve (full model suite) - ${{ matrix.os }} / py${{ matrix.python-version }}
     runs-on: ${{ matrix.os }}
@@ -61,7 +97,7 @@ jobs:
       - uses: ./.github/actions/setup
         with:
           python-version: ${{ matrix.python-version }}
-          extra: pytest-timeout "highspy==1.15.1"
+          extra: pytest-timeout pytest-xdist "highspy==1.15.1"
 
       - name: Report which solvers this runner has
         shell: bash
@@ -71,15 +107,16 @@ jobs:
 
       - name: Run solve tests (per-test timeout guards a stuck solver)
         shell: bash
-        run: pytest -vv -m solve --timeout=1800 tests/
+        run: pytest -vv -m solve -n auto --timeout=1800 tests/
 
-  # The same suite with ipopt. HiGHS cannot express a non-linear constraint, so without
-  # ipopt the second-order cone, the exact non-linear model and the AC restoration pass
-  # are all skipped. The cone is convex, so a local optimum is the global one; this checks
-  # those paths build and solve, and is not a conic solver certifying the bound.
+  # The same suite with ipopt. HiGHS cannot express a non-linear constraint, so without ipopt the
+  # second-order cone, the exact non-linear model and the AC restoration pass are all skipped. The
+  # cone is convex, so a local optimum is the global one; this checks those paths build and solve,
+  # and is not a conic solver certifying the bound.
   #
-  # Linux only: ipopt's convergence depends on how MUMPS was built, and a platform-dependent
-  # NLP is a flaky test waiting to happen. The only job needing conda, hence its own.
+  # Linux only: ipopt's convergence depends on how MUMPS was built, and a platform-dependent NLP is a
+  # flaky test waiting to happen. ipopt is the only package here that has to come from conda, so it is
+  # the only one asked of conda; everything else installs from the lock, which is cached.
   solve-ipopt:
     name: solve (full model suite, with ipopt) - ubuntu-latest / py3.12
     runs-on: ubuntu-latest
@@ -107,9 +144,9 @@ jobs:
       - name: Install dependencies
         shell: bash -l {0}
         run: |
-          conda install -y -c conda-forge pytest pytest-timeout ipopt
+          conda install -y -c conda-forge ipopt
           uv pip install --system -r requirements.lock
-          uv pip install --system "highspy==1.15.1"
+          uv pip install --system pytest pytest-timeout pytest-xdist "highspy==1.15.1"
           pip install -e .
 
       - name: Report which solvers this runner has
@@ -120,13 +157,16 @@ jobs:
 
       - name: Run solve tests (per-test timeout guards a stuck solver)
         shell: bash -l {0}
-        run: pytest -vv -m solve --timeout=1800 tests/
+        run: pytest -vv -m solve -n auto --timeout=1800 tests/
 
-  # Pandas 2 floor: the lock pins pandas 3, but pyproject still supports pandas 2
-  # (>=2.2.2,<4), so nothing would exercise the older end of the range. This job
-  # installs the lock, pins pandas back to the 2.x floor, and runs the unit and
-  # solve tests. One combo is enough: the variable is the pandas version, not the
-  # platform.
+  # Pandas 2 floor: the lock pins pandas 3, but pyproject still supports pandas 2 (>=2.2.2,<4), so
+  # nothing would exercise the older end of the range. This job installs the lock, pins pandas back to
+  # the 2.x floor, and runs the unit and solve tests. One combination is enough: the variable is the
+  # pandas version, not the platform.
+  #
+  # Cutting this down to the solves that read a case or write results was tried and dropped. In
+  # parallel the whole solve suite is 114 s against 97 s for that subset, because one multi-stage test
+  # sets the floor either way, so the narrower run bought 17 s and gave up coverage.
   pandas2:
     name: pandas 2 floor (unit + solve) - ubuntu-latest / py3.12
     runs-on: ubuntu-latest
@@ -137,7 +177,7 @@ jobs:
       - uses: ./.github/actions/setup
         with:
           python-version: "3.12"
-          extra: pytest-timeout "highspy==1.15.1"
+          extra: pytest-timeout pytest-xdist "highspy==1.15.1"
 
       - name: Pin pandas to the 2.x floor
         shell: bash
@@ -146,12 +186,12 @@ jobs:
       - name: Run unit and solve tests
         shell: bash
         run: |
-          pytest -vv -m "not solve" tests/
-          pytest -vv -m solve --timeout=1800 tests/
+          pytest -vv -m "not solve" -n auto tests/
+          pytest -vv -m solve -n auto --timeout=1800 tests/
 
-  # Docs tier: build the Read the Docs site with warnings treated as errors, so
-  # a broken cross-reference, a missing toctree entry, or a bad directive fails
-  # the PR. No solver or model dependency, so it runs once on Linux.
+  # Docs tier: build the Read the Docs site with warnings treated as errors, so a broken
+  # cross-reference, a missing toctree entry, or a bad directive fails the PR. No solver or model
+  # dependency, so it runs once on Linux.
   docs:
     name: docs (sphinx build)
     runs-on: ubuntu-latest
