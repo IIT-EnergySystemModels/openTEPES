@@ -2,14 +2,11 @@
 
 ## [4.19.0rc] - 2026-09-21 Unreleased in PyPI
 
-- [FIXED] a storage unit keeps the inventory cycle its own `StorageType` asks for, unless something reads that inventory. The cycle is the shortest
-  of the storage, outflows and energy periods, and the last two were set to one load level for a unit carrying neither, so every storage unit of
-  every distributed case wrote its inventory at every load level whatever its column said: the ten weekly units of sSEP and the twenty of
-  RTS-GMLC among them. Those two terms are now left out of the shortest where they mean nothing. The coupling stays where a unit combines the
-  features, which an electric vehicle fleet does, holding a charge and owing driving energy, and which the 9n_ELZ electrolyzers do today at 84
-  load levels. Four units of sSEP move to six load levels and nineteen of RTS-GMLC to twenty-four. One cost moves: RTS-GMLC_Oper from
-  1902.3351794278512 to 1902.1380580752227, a fall of 0.010 %, the coarser cycle being a relaxation. The two expansion cases do not move, the
-  balance being slack there. Raised in issue #194, and the reading of the three columns is from Andres Ramos.
+- [FIXED] a storage unit keeps the inventory cycle its `StorageType` asks for, unless an outflow or an energy bound reads that inventory. Both of
+  those periods are 1 for a unit carrying neither and went into the shortest, so every storage unit of every case wrote its inventory at every load
+  level, sSEP's ten weekly units and RTS-GMLC's twenty among them. The coupling stays where a unit has both, as an EV fleet and the 9n_ELZ
+  electrolyzers do. Four sSEP units move to 6 load levels and nineteen RTS-GMLC ones to 24; one cost moves, RTS-GMLC_Oper 1902.3351794278512 to
+  1902.1380580752227, a fall of 0.010 %, a coarser cycle being a relaxation. Issue #194; the three columns explained by Andres Ramos.
 - [FIXED] modify some computations in the economic results by considering the scenario probability and load level duration.
 - [CHANGED] sSEP gains a candidate solar farm and prices unserved hydrogen above the cost of producing it. The case offered no generating unit to
   build and no unit to retire, and the ten candidate circuits it does carry move energy and cannot create it, so over the representative week the
