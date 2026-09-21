@@ -92,7 +92,7 @@ def test_the_electricity_demand_is_served_as_well(solved):
 
 @pytest.mark.solve
 def test_the_candidate_solar_farm_is_built(solved):
-    """sSEP is the only distributed case with a candidate generating unit, and the optimum is interior."""
+    """The candidate is built, and the optimum sits inside its bounds instead of on one."""
     assert len(solved.gc) > 0, "no candidate generating unit was read"
 
     pBuilt = {gc: solved.vGenerationInvest[p, gc]() for p in solved.p for gc in solved.gc if (p, gc) in solved.pgc}

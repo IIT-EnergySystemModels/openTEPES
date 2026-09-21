@@ -9,7 +9,8 @@
   inside the cap, with no unserved electricity and no unserved hydrogen. `HNSCost` moves from 300 to 6000 EUR/tH2: a tonne takes 60 MWh to produce,
   so at 300 the cheapest response to any scarcity was to abandon the hydrogen demand, while unserved electricity was priced at 10000 EUR/MWh. The
   expected cost of the case moves from 1457.889993652516 to 1256.097034021233, reproducible to 16 significant figures, and now pins an investment
-  decision as well as a dispatch. Generation investment is exercised by no other distributed case.
+  decision as well as a dispatch. Generation investment itself is not new to the suite: 9n7y offers five candidate units and builds two of them in
+  every one of its seven periods. sSEP had no unit to build at all, which is why its cap could be met only by shedding.
 - [FIXED] the 7-day fixtures blank the annual CO2 cap, as they already blank the annual RES-energy requirement, closing issue #193. A year of
   emissions held against one representative week is decided by the week chosen: on sSEP, the only distributed case that sets a cap, it binds at
   4.6 MtCO2 in the January, August and December weeks and not in the April, June or October ones, and the April week emits nothing at all. On the
