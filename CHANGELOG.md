@@ -2,6 +2,13 @@
 
 ## [4.19.0rc] - 2026-09-21 Unreleased in PyPI
 
+- [FIXED] the technology, node and circuit dictionaries are read into ordered sets, so the model is generated in the order of its input
+  files rather than in the interpreter's per-process hash order. Nine sets carried `ordered=False` -- `gt`, `nd`, `ni`, `nf`, `cc`, `c2`,
+  `ndzn`, `znar`, `arrg` -- and Pyomo backs an unordered set with a Python set, whose iteration order over strings is randomised per
+  process. On a 695-busbar AC case with every unit pinned to a recorded dispatch, four runs of byte-identical input returned reactive
+  slack between 19233.8 and 20932.3 Mvar, a spread of 4 %, each reported optimal, and the AC restoration stopped at its iteration limit
+  on every one. Two runs now agree to every digit of the objective, 44.6853928621652. No ordering method is called on any of the nine, so
+  the sets gain order without any caller depending on it. Restores the fix agreed in issue #63, which `ordered=False` undid.
 - [FIXED] a storage unit keeps the inventory cycle its `StorageType` asks for, unless an outflow or an energy bound reads that inventory. Both of
   those periods are 1 for a unit carrying neither and went into the shortest, so every storage unit of every case wrote its inventory at every load
   level, sSEP's ten weekly units and RTS-GMLC's twenty among them. The coupling stays where a unit has both, as an EV fleet and the 9n_ELZ
