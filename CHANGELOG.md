@@ -2,6 +2,12 @@
 
 ## [4.19.0rc] - 2026-09-21 Unreleased in PyPI
 
+- [FIXED] the AC restoration pass no longer leaves a rejected iterate in the results. Pyomo loads a solver's solution into the model as it
+  returns, so an Ipopt iterate from a solve that stopped at its iteration limit replaced the relaxed values before the termination condition
+  was read, and the reported flows, voltages, nodal slack and costs came from a point that converged to nothing while the warning stated the
+  relaxed solution was unchanged. On a 695-busbar AC case whose restoration stops at maxIterations, the reactive slack in the results read
+  11851.8 Mvar at an AC power flow residual of 0.021 MW where the relaxation carries 2664.8 Mvar at 1274.67 MW, and the reliability cost the
+  cost summary reported, 118.520 MEUR, disagreed with the 30.646 the solve logged. Both now read 30.646, matching the pass switched off.
 - [FIXED] a storage unit keeps the inventory cycle its `StorageType` asks for, unless an outflow or an energy bound reads that inventory. Both of
   those periods are 1 for a unit carrying neither and went into the shortest, so every storage unit of every case wrote its inventory at every load
   level, sSEP's ten weekly units and RTS-GMLC's twenty among them. The coupling stays where a unit has both, as an EV fleet and the 9n_ELZ
