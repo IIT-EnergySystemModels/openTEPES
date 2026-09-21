@@ -20,8 +20,8 @@ def week_of_case(case_name, dest_root):
     """Copy a shipped case under ``dest_root`` and cut it to its first 168 hours.
 
     Duration is truncated to one week, the stage weight is set to 52 so that week still stands for a
-    year, and the annual RES-energy requirement is blanked, exactly as the 7-day fixtures in
-    ``test_run.py`` do. Returns ``(case_dir, run_kwargs)``; the caller may edit any file in
+    year, and the two annual limits are blanked -- the RES-energy requirement and the CO2 cap -- exactly as
+    the 7-day fixtures in ``test_run.py`` do. Returns ``(case_dir, run_kwargs)``; the caller may edit any file in
     ``case_dir`` before passing ``run_kwargs`` to ``openTEPES_run``.
 
     Single-stage cases only. A case with several stages needs the per-stage truncation in
@@ -42,6 +42,14 @@ def week_of_case(case_name, dest_root):
     df["RESEnergy"] = df["RESEnergy"].astype(float)
     df["RESEnergy"] = np.nan
     df.to_csv(res_energy_csv)
+
+    # The annual CO2 cap goes the same way, and for the same reason: a year of emissions held against one
+    # week is decided by which week is chosen. sSEP is the only bundled case that sets one.
+    emission_csv = os.path.join(case_dir, f"oT_Data_Emission_{case_name}.csv")
+    df = pd.read_csv(emission_csv, index_col=[0, 1])
+    df["CO2Emission"] = df["CO2Emission"].astype(float)
+    df["CO2Emission"] = np.nan
+    df.to_csv(emission_csv)
 
     stage_csv = os.path.join(case_dir, f"oT_Data_Stage_{case_name}.csv")
     df = pd.read_csv(stage_csv, index_col=[0])
