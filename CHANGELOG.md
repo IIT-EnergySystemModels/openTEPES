@@ -1,7 +1,8 @@
 # Change Log
 
-## [4.19.0rc] - 2026-09-18 Unreleased in PyPI
+## [4.19.0rc] - 2026-09-21 Unreleased in PyPI
 
+- [FIXED] modify some computations in the economic results by considering the scenario probability and load level duration.
 - [CHANGED] sSEP gains a candidate solar farm and prices unserved hydrogen above the cost of producing it. The case offered no generating unit to
   build and no unit to retire, and the ten candidate circuits it does carry move energy and cannot create it, so over the representative week the
   suite solves, its annual CO2 cap of 4.6 MtCO2 could be met only by curtailing gas and shedding load. Over the full year the case meets that cap
