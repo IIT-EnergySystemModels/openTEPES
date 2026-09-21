@@ -208,7 +208,7 @@ def case_7d_binary(request, tmp_path):
 #   case        electricity   hydrogen   reservoir   heat   PTDF   UC binaries   single-node
 #   9n          ✓ losses
 #   sSEP        ✓             ✓ (H2 demand+network+9 H2 gens)  ✓ (7 reservoirs + pumped hydro)  ramps+min-time
-#               and the only case with a candidate generating unit: 8000 MW of solar, 5614.9 MW of it built
+#               and a candidate solar farm, 8000 MW offered and 5614.9 MW built; 9n7y carries candidate units too
 #   9n_PTDF     ✓ losses                                       ✓ (multi-level headers)
 #   9n_heat     ✓ losses                                              ✓ (pIndHeat=1)
 #   9n_ELZ       ✓ losses     ✓ (2 electrolyzers as ESS with energy outflows + storage; pIndHydrogen=0)
@@ -226,8 +226,8 @@ def case_7d_binary(request, tmp_path):
     ("9n",        238.5141906543151),
     # sSEP — small Spanish system. Exercises the hydrogen sector (DemandHydrogen + NetworkHydrogen + 9 H2-related
     # generators) AND water-reservoir hydropower (7 reservoirs, reservoir maps, inflows/outflows/MaxVolume, pumped
-    # hydro). pIndHydrogen / pIndHydroSystem code paths live here. It is also the only case offering a candidate
-    # generating unit, so generation investment is decided here and nowhere else.
+    # hydro). pIndHydrogen / pIndHydroSystem code paths live here. It also offers a candidate solar farm, so a
+    # binding CO2 cap is met by building rather than by shedding; 9n7y is the other case with candidate units.
     # 1457.889993652516 until sSEP gained a candidate solar farm and a hydrogen penalty above the cost of
     # producing hydrogen. The case now builds 5614.9 MW of the 8000 MW offered, 70.19 % of it, so this
     # number pins an investment decision as well as a dispatch. Before the candidate it was

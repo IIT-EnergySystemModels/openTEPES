@@ -3,13 +3,16 @@
 ## [4.19.0rc] - 2026-09-18 Unreleased in PyPI
 
 - [CHANGED] sSEP gains a candidate solar farm and prices unserved hydrogen above the cost of producing it. The case offered no generating unit to
-  build and no unit to retire, so its annual CO2 cap of 4.6 MtCO2 could be met only by curtailing gas and shedding load; the ten candidate circuits
-  it does carry move energy and cannot create it. `SolarPV_New` at Madrid offers 8000 MW at 0.70 MEUR/MW and a fixed charge rate of 0.08, on the
+  build and no unit to retire, and the ten candidate circuits it does carry move energy and cannot create it, so over the representative week the
+  suite solves, its annual CO2 cap of 4.6 MtCO2 could be met only by curtailing gas and shedding load. Over the full year the case meets that cap
+  with room to spare: solved at 8736 load levels it leaves none of its 36454 GWh of electricity demand and none of its 22783.73 tH2 unserved, at the
+  penalty of 300 EUR/tH2 it carried before this change. The shortfall belonged to the representative week and not to the case. `SolarPV_New` at Madrid offers 8000 MW at 0.70 MEUR/MW and a fixed charge rate of 0.08, on the
   generation profile of `SolarPV1` scaled to its rating. The optimum builds 5614.9 MW, 70.19 % of the offer, which takes emissions to 3.9775 MtCO2,
   inside the cap, with no unserved electricity and no unserved hydrogen. `HNSCost` moves from 300 to 6000 EUR/tH2: a tonne takes 60 MWh to produce,
   so at 300 the cheapest response to any scarcity was to abandon the hydrogen demand, while unserved electricity was priced at 10000 EUR/MWh. The
   expected cost of the case moves from 1457.889993652516 to 1256.097034021233, reproducible to 16 significant figures, and now pins an investment
-  decision as well as a dispatch. Generation investment is exercised by no other distributed case.
+  decision as well as a dispatch. Generation investment itself is not new to the suite: 9n7y offers five candidate units and builds two of them in
+  every one of its seven periods. sSEP is the one case that offered nothing to build.
 - [FIXED] the 7-day fixtures blank the annual CO2 cap, as they already blank the annual RES-energy requirement, closing issue #193. A year of
   emissions held against one representative week is decided by the week chosen: on sSEP, the only distributed case that sets a cap, it binds at
   4.6 MtCO2 in the January, August and December weeks and not in the April, June or October ones, and the April week emits nothing at all. On the

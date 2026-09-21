@@ -10,8 +10,10 @@ cap of sSEP applied to the representative week, the case served none of its 425.
 electrolyzers at zero, and that looked like a question of how unserved hydrogen is priced. It was not.
 The cap was binding at 4.6 MtCO2, no unit in the case could be built, and 10.57 % of the electricity
 demand went unserved, so electricity stood at its scarcity value and no hydrogen penalty below it
-could compete. Two things followed: the fixtures stopped applying an annual limit to one week, and the
-case gained a candidate solar farm, so that a binding cap is met by building rather than by shedding.
+could compete. The shortfall belonged to the week and not to the case: solved over all 8736 load
+levels, sSEP meets the same cap and leaves nothing unserved, electricity or hydrogen. Two things
+followed. The fixtures stopped applying an annual limit to one week, and the case gained a candidate
+solar farm, so that a cap binding on any horizon is met by building instead of by shedding.
 """
 import pytest
 
@@ -92,7 +94,7 @@ def test_the_electricity_demand_is_served_as_well(solved):
 
 @pytest.mark.solve
 def test_the_candidate_solar_farm_is_built(solved):
-    """sSEP is the only distributed case with a candidate generating unit, and the optimum is interior."""
+    """The candidate is built, and the optimum sits inside its bounds instead of on one."""
     assert len(solved.gc) > 0, "no candidate generating unit was read"
 
     pBuilt = {gc: solved.vGenerationInvest[p, gc]() for p in solved.p for gc in solved.gc if (p, gc) in solved.pgc}
