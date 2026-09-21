@@ -10,10 +10,11 @@ cap of sSEP applied to the representative week, the case served none of its 425.
 electrolyzers at zero, and that looked like a question of how unserved hydrogen is priced. It was not.
 The cap was binding at 4.6 MtCO2, no unit in the case could be built, and 10.57 % of the electricity
 demand went unserved, so electricity stood at its scarcity value and no hydrogen penalty below it
-could compete. The shortfall belonged to the week and not to the case: solved over all 8736 load
-levels, sSEP meets the same cap and leaves nothing unserved, electricity or hydrogen. Two things
-followed. The fixtures stopped applying an annual limit to one week, and the case gained a candidate
-solar farm, so that a cap binding on any horizon is met by building instead of by shedding.
+could compete. The shortfall belonged to the week and not to the case: solved over its full year,
+8736 hours at the four-hour resolution of the case and so 2184 load levels, sSEP meets the same cap
+and leaves nothing unserved, electricity or hydrogen. Two things followed. The fixtures stopped
+applying an annual limit to one week, and the case gained a candidate solar farm, so that a cap
+binding on any horizon is met by building instead of by shedding.
 """
 import pytest
 
