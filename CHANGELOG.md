@@ -6,7 +6,7 @@
   those periods are 1 for a unit carrying neither and went into the shortest, so every storage unit of every case wrote its inventory at every load
   level, sSEP's ten weekly units and RTS-GMLC's twenty among them. The coupling stays where a unit has both, as an EV fleet and the 9n_ELZ
   electrolyzers do. Four sSEP units move to 6 load levels and nineteen RTS-GMLC ones to 24; one cost moves, RTS-GMLC_Oper 1902.3351794278512 to
-  1902.1380580752227, a fall of 0.010 %, a coarser cycle being a relaxation. Issue #194; the three columns explained by Andres Ramos.
+  1902.1380580752227, a fall of 0.010 %, a coarser cycle being a relaxation. Issue #194.
 - [FIXED] modify some computations in the economic results by considering the scenario probability and load level duration.
 - [CHANGED] sSEP gains a candidate solar farm and prices unserved hydrogen above the cost of producing it. The case offered no generating unit to
   build and no unit to retire, and the ten candidate circuits it does carry move energy and cannot create it, so over the representative week the
