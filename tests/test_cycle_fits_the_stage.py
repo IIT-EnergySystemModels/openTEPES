@@ -21,8 +21,9 @@ CASES_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "openT
 _pCopies = [0]
 
 
-def _case(tmp_path, hours, **columns):
-    """Copy 9n, truncate it to `hours`, and set generation columns on its storage unit.
+def _case(tmp_path, hours, outflow=None, **columns):
+    """Copy 9n, truncate it to `hours`, set generation columns on its storage unit, and optionally
+    give it an hourly energy outflow, which is what makes something read its inventory.
 
     Each call gets its own directory, so one test can configure the case more than once.
     """
@@ -49,11 +50,17 @@ def _case(tmp_path, hours, **columns):
             gen.loc[pEss, col] = val
         gen.to_csv(pGen, index=False)
 
+    if outflow is not None:
+        pOut = case_dir / "oT_Data_EnergyOutflows_9n.csv"
+        df = pd.read_csv(pOut)
+        df["ESS1"] = outflow
+        df.to_csv(pOut, index=False)
+
     return str(root), "9n"
 
 
-def _configure(tmp_path, hours, **columns):
-    pDir, pCase = _case(tmp_path, hours, **columns)
+def _configure(tmp_path, hours, outflow=None, **columns):
+    pDir, pCase = _case(tmp_path, hours, outflow=outflow, **columns)
     mTEPES = ConcreteModel(pCase)
     dfs, par = InputData(pDir, pCase, mTEPES, 0)
     DataConfiguration(mTEPES, dfs, par)
@@ -113,14 +120,15 @@ def test_hydrogen_cycles_are_checked_only_where_there_is_hydrogen(tmp_path):
 
 
 def test_a_shortened_storage_cycle_is_reported(tmp_path, capsys):
-    """The storage cycle is the shortest of its three periods, so a setting made for outflows or an
-    energy bound moves the inventory cycle too.
-
-    Intended, and invisible until now. On 9n every unit comes out at one load level whatever
-    StorageType says, because that case has neither outflows nor energy bounds and both default to
-    one, and the results give no sign the declared period was not the one used.
-    """
-    _configure(tmp_path, 168, StorageType="Monthly")
+    """An outflow reads the inventory, so it shortens the cycle and the run says so."""
+    _configure(tmp_path, 168, outflow=1.0, StorageType="Monthly", OutflowsType="Daily")
     pOut = capsys.readouterr().out
-    assert "storage cycle shortened from 84 to 1" in pOut, (
+    assert "storage cycle shortened from 84 to 12" in pOut, (
         "the run should say the declared cycle was not the one used")
+
+
+def test_a_cycle_with_nothing_reading_it_is_left_alone(tmp_path, capsys):
+    """9n carries no outflow and no energy bound, so its storage unit keeps its own period."""
+    mTEPES = _configure(tmp_path, 168, StorageType="Monthly")
+    assert [mTEPES.pStorageTimeStep[es] for es in mTEPES.es] == [84]
+    assert "storage cycle shortened" not in capsys.readouterr().out

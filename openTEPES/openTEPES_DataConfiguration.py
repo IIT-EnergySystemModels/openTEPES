@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 18, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 21, 2026
 
 openTEPES.openTEPES_DataConfiguration — builds the derived sets and parameters on the model: instrumental sets, ESS/RES sets, and the flag-driven branches
 (hydro topology, hydrogen, heat, PTDF). Runs after InputData has read the raw sets and parameters.
@@ -669,10 +669,14 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     CheckCycleFitsTheStage(par['pEnergyType'  ], par['pNeutralityTimeStep'], pStageLevels, 'EnergyType' )
     CheckCycleFitsTheStage(par['pStorageTypeH2'], par['pStorageTimeStepH2'], pStageLevels, 'StorageTypeH2', par['pMaxStorageH2'] > 0.0)
 
-    # The storage cycle is shortened to the shortest of its three, so a setting made for outflows or an energy bound
-    # also moves the inventory cycle. Intended; the call below says so when it happens.
+    # The inventory is written at least as often as anything that reads it, so the storage cycle is shortened by the
+    # outflows and energy cycles of the same unit. An EV fleet needs that, holding a charge and owing driving energy;
+    # so do the 9n_ELZ electrolyzers. Both cycles are 1 for a unit carrying neither, which used to pull every
+    # inventory to one load level, so they are masked out where they mean nothing.
     pRequestedStorage        = par['pStorageTimeStep'].copy()
-    par['pStorageTimeStep']  = pd.concat([par['pStorageTimeStep'], par['pOutflowsTimeStep'], par['pEnergyTimeStep']], axis=1).min(axis=1)
+    pOutflowsCycle           = par['pOutflowsTimeStep'].where(par['pEnergyOutflows'   ].sum()                                   > 0.0)
+    pEnergyCycle             = par['pEnergyTimeStep'  ].where(par['pVariableMinEnergy'].sum() + par['pVariableMaxEnergy'].sum() > 0.0)
+    par['pStorageTimeStep']  = pd.concat([par['pStorageTimeStep'], pOutflowsCycle, pEnergyCycle], axis=1).min(axis=1).astype('int')
     ReportResolvedCycles(pRequestedStorage, par['pStorageTimeStep'], 'storage')
 
     if par['pIndHydroTopology']:
