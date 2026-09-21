@@ -250,7 +250,9 @@ def case_7d_binary(request, tmp_path):
     ("RTS-GMLC",  1091.0943444941825),
     # RTS-GMLC_Oper — the same system with investment switched off, so the operation-only path is covered on a case
     # with commitment binaries. About 30 s and 1.1 GB peak under this fixture, and reproducible across reruns.
-    ("RTS-GMLC_Oper", 1902.3351794278512),
+    # 1902.3351794278512 until its 19 weekly hydro units kept their own inventory interval, 24 load levels instead of
+    # one. A relaxation, so the cost falls 0.010 %. The two expansion cases do not move; the balance is slack there.
+    ("RTS-GMLC_Oper", 1902.1380580752227),
     # RTS24 (single area of RTS-GMLC) shows HiGHS non-determinism — three identical runs returned 1107.185,
     # 1107.400, and 1110.174. Covered indirectly by RTS-GMLC; not parametrised here.
 ], indirect=["case_7d_system"])
