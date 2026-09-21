@@ -753,7 +753,7 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput, pIndPlo
             else:
                 ChargeRev     = pd.Series(data=[0.0 for gc in mTEPES.gc], index=mTEPES.gc, dtype='float64')
 
-    if (mTEPES.gc or mTEPES.gd) and sum(mTEPES.pReserveMargin[:,:]()):
+    if (mTEPES.gc or mTEPES.gd) and sum(mTEPES.pReserveMargin[:,:]()) and pHasDuals:
         pExistingFirmCapacity = {(p, ar): sum(mTEPES.pRatedMaxPowerElec[g] * mTEPES.pAvailability[g]() / (1.0-mTEPES.pEFOR[g]()) for g in g2a[ar] if (p,g) in mTEPES.pg and g not in mTEPES.gc and g not in mTEPES.gd) for p in mTEPES.p for ar in mTEPES.ar}
         sPSSTARGC             = [(p,sc,st,ar,gc) for p,sc,st,ar,gc in mTEPES.ps*mTEPES.st*mTEPES.ar*mTEPES.gc if gc in g2a[ar] and (p,gc) in mTEPES.pgc and mTEPES.pReserveMargin[p,ar]() and st == mTEPES.Last_st and sum(1 for gc in mTEPES.gc if gc in g2a[ar]) and pExistingFirmCapacity[p,ar] <= mTEPES.pDemandElecPeak[p,ar] * mTEPES.pReserveMargin[p,ar]()]
         OutputToResRev        = pd.Series(data=[mTEPES.pDuals[f'eAdequacyReserveMarginElec_{p}_{sc}_{st}{ar}']*mTEPES.pRatedMaxPowerElec[gc]*mTEPES.pAvailability[gc]() for p,sc,st,ar,gc in sPSSTARGC], index=pd.Index(sPSSTARGC))
@@ -766,7 +766,7 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput, pIndPlo
     else:
         ResRev = pd.Series(data=[0.0 for gc in mTEPES.gc], index=mTEPES.gc, dtype='float64')
 
-    if pHasOperReserveUp and pHasReserveOffer:
+    if pHasOperReserveUp and pHasReserveOffer and pHasDuals:
         sPSSTNARNR        = [(p,sc,st,n,ar,nr) for p,sc,st,n,ar,nr in mTEPES.s2n*mTEPES.ar*mTEPES.nr if nr in g2a[ar] and mTEPES.pOperReserveUp[p,sc,n,ar] and pRsrvOfferArea[p,ar] and (p,sc,n,nr) in mTEPES.psnnr]
         if sPSSTNARNR:
             OutputResults = pd.Series(data=[mTEPES.pDuals[f"eOperReserveUp_{p}_{sc}_{st}('{n}', '{ar}')"]/mTEPES.pPeriodProb[p,sc]()*OptModel.vReserveUp   [p,sc,n,nr]() for p,sc,st,n,ar,nr in sPSSTNARNR], index=pd.Index(sPSSTNARNR))
@@ -789,7 +789,7 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput, pIndPlo
     else:
         UpRev             = pd.Series(data=[0.0 for gc in mTEPES.gc], index=mTEPES.gc, dtype='float64')
 
-    if pHasOperReserveDw and pHasReserveOffer:
+    if pHasOperReserveDw and pHasReserveOffer and pHasDuals:
         sPSSTNARNR        = [(p,sc,st,n,ar,nr) for p,sc,st,n,ar,nr in mTEPES.s2n*mTEPES.ar*mTEPES.nr if nr in g2a[ar] and mTEPES.pOperReserveDw[p,sc,n,ar] and pRsrvOfferArea[p,ar] and (p,sc,n,nr) in mTEPES.psnnr]
         if sPSSTNARNR:
             OutputResults = pd.Series(data=[mTEPES.pDuals[f"eOperReserveDw_{p}_{sc}_{st}('{n}', '{ar}')"]/mTEPES.pPeriodProb[p,sc]()*OptModel.vReserveDown   [p,sc,n,nr]() for p,sc,st,n,ar,nr in sPSSTNARNR], index=pd.Index(sPSSTNARNR))
@@ -813,7 +813,7 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput, pIndPlo
         DwRev             = pd.Series(data=[0.0 for gc in mTEPES.gc], index=mTEPES.gc, dtype='float64')
 
     # the ramp reserve requirement depends on (p,sc,n) only: summing it again for every unit costs |nr| (or |ec|) times more than it should
-    if mTEPES.pIndRampReserves() and pHasRampReserveUp:
+    if mTEPES.pIndRampReserves() and pHasRampReserveUp and pHasDuals:
         pRampReserveUpPSN = {(p,sc,n): sum(mTEPES.pRampReserveUp[p,sc,n,ar] for ar in mTEPES.ar) for p,sc,n in mTEPES.psn}
         sPSSTNNR          = [(p,sc,st,n,nr) for p,sc,st,n,nr in mTEPES.s2n*mTEPES.nr if pRampReserveUpPSN[p,sc,n] and (p,sc,n,nr) in mTEPES.psnnr]
         if sPSSTNNR:
@@ -841,7 +841,7 @@ def EconomicResults(DirName, CaseName, OptModel, mTEPES, pIndAreaOutput, pIndPlo
     else:
         RampUpRev             = pd.Series(data=[0.0 for gc in mTEPES.gc], index=mTEPES.gc, dtype='float64')
 
-    if mTEPES.pIndRampReserves() and pHasRampReserveDw:
+    if mTEPES.pIndRampReserves() and pHasRampReserveDw and pHasDuals:
         pRampReserveDwPSN = {(p,sc,n): sum(mTEPES.pRampReserveDw[p,sc,n,ar] for ar in mTEPES.ar) for p,sc,n in mTEPES.psn}
         sPSSTNNR          = [(p,sc,st,n,nr) for p,sc,st,n,nr in mTEPES.s2n*mTEPES.nr if pRampReserveDwPSN[p,sc,n] and (p,sc,n,nr) in mTEPES.psnnr]
         if sPSSTNNR:

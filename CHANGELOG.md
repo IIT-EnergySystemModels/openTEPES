@@ -2,6 +2,12 @@
 
 ## [4.19.0rc] - 2026-09-18 Unreleased in PyPI
 
+- [FIXED] the economic results read a marginal price with no guard on five blocks, so a case ending with no duals raised `KeyError` instead of
+  writing zero revenue. The AC restoration pass is one such case, re-solving the network at the exact equations on a non-linear solver, and
+  `test_restoration_makes_the_relaxation_exact` failed on `eOperReserveUp_2030_sc01_st1('01-01 01:00:00+01:00', 'Area1')`. The five conditions,
+  covering the adequacy reserve margin, the upward and downward operating reserve revenues and the two ramp reserve revenues, carry `pHasDuals`
+  again, and each block already had the fallback to zero. An automated check reads the module and confirms that no subscript of `pDuals` sits
+  outside a condition on `pHasDuals`; it finds 11 on the previous revision and none now.
 - [ADDED] write file of marginals of the system inertia constraint.
 - [CHANGED] the continuous-integration workflow executes its automated checks concurrently, `-n auto` with one solver thread per process: on a
   ten-core machine the unit tier falls from 429 s to 193 s and the solve tier from 285 s to 114 s. flake8 moves to a job of its own, the unit matrix
