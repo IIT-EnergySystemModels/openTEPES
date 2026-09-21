@@ -2,6 +2,13 @@
 
 ## [4.19.0rc] - 2026-09-18 Unreleased in PyPI
 
+- [FIXED] the 7-day fixtures blank the annual CO2 cap, as they already blank the annual RES-energy requirement, closing issue #193. A year of
+  emissions held against one representative week is decided by the week chosen: on sSEP, the only distributed case that sets a cap, it binds at
+  4.6 MtCO2 in the January, August and December weeks and not in the April, June or October ones, and the April week emits nothing at all. On the
+  January week the fixture uses, the cap left 10.57 % of the electricity demand unserved and all 425.62 tH2 of the hydrogen demand with it, so the
+  hydrogen chain was built and never operated and 97 % of the expected cost of the case was the reliability penalty. The expected cost moves from
+  45085.415882683425 to 1457.889993652516, reproducible to 16 significant figures, and the dispatch it pins now serves both carriers. No case data
+  changes, so the cap still applies to a solve over the full year.
 - [FIXED] the economic results read a marginal price with no guard on five blocks, so a case ending with no duals raised `KeyError` instead of
   writing zero revenue. The AC restoration pass is one such case, re-solving the network at the exact equations on a non-linear solver, and
   `test_restoration_makes_the_relaxation_exact` failed on `eOperReserveUp_2030_sc01_st1('01-01 01:00:00+01:00', 'Area1')`. The five conditions,

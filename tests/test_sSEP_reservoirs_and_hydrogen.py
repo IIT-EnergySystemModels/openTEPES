@@ -1,21 +1,17 @@
 """sSEP carries reservoirs and a hydrogen network, and this says what each of them actually does.
 
-sSEP is solved by the parametrised suite, but only its total cost is checked. The reservoir system is
-the only one of its kind among the shipped cases, and a change that stopped it being built would show
-up as a shift in one number, and only if the shift were large enough to notice.
+sSEP is solved by the parametrised suite, but only its total cost is checked. The reservoir system and
+the hydrogen chain are the only ones of their kind among the distributed cases, and a change that
+stopped either being built would show up as a shift in one number, and only if the shift were large
+enough to notice.
 
-The hydrogen side turned out to be a different matter, and the last test records it. sSEP prices
-unserved hydrogen at 300 EUR/tH2, while a tonne takes on the order of 50 MWh of electricity to make.
-Not serving is therefore the cheaper answer everywhere, and the solve leaves all 425.6 tH2 of the
-week's demand unserved and runs the electrolyzers at zero. The pipelines still carry flow, up to their 13.4 tH2/h
-rating in most (pipe, hour) pairs, but with nothing produced and nothing delivered those are loop
-flows that cancel at every node and cost nothing. Being free, they land wherever the solver leaves
-them: the count of pipe-hours carrying flow moves from one run to the next, which is why it is not
-asserted.
-
-So the hydrogen coverage sSEP is credited with is construction only, not operation. Closing that
-needs a data decision on the case: a penalty above the cost of making hydrogen, or a hydrogen source
-unit. The test below fails the day that is done, which is the point of it.
+The hydrogen chain reached this state by a detour worth recording. Solved with the annual CO2 cap of
+sSEP applied to the representative week, the case served none of its 425.62 tH2 and ran its
+electrolyzers at zero, and that looked like a question of how unserved hydrogen is priced. It was not.
+The cap was binding at 4.6 MtCO2 and 10.57 % of the electricity demand went unserved with it, so
+electricity stood at its scarcity value and no penalty on hydrogen below that could compete. With the
+cap blanked, as the fixture already blanks the annual RES-energy requirement, the chain runs at the
+distributed penalty of 300 EUR/tH2 and every tonne is served.
 """
 import pytest
 
@@ -66,8 +62,8 @@ def test_the_hydro_units_generate(solved):
 
 
 @pytest.mark.solve
-def test_the_hydrogen_sector_is_built_but_makes_nothing(solved):
-    """A gap written down, not a behaviour defended. Invert this test when the case is repriced."""
+def test_the_hydrogen_chain_runs_and_serves_its_demand(solved):
+    """Electrolyzers draw electricity, the pipelines are there, and no tonne goes unserved."""
     assert solved.pIndHydrogen() == 1, "sSEP is the case that carries the hydrogen network"
     assert len(solved.pa) > 0, "no hydrogen pipeline was read"
 
@@ -79,7 +75,16 @@ def test_the_hydrogen_sector_is_built_but_makes_nothing(solved):
                     for p, sc, n in solved.psn for nd in solved.nd)
 
     assert pDemand > 0.0, "sSEP carries no hydrogen demand at all"
-    assert pConsumed == pytest.approx(0.0, abs=1e-6), (
-        f"the electrolyzers drew {pConsumed:.4f} GWh, so hydrogen is being made and this test is out of date")
-    assert pUnserved == pytest.approx(pDemand, rel=1e-6), (
-        f"{pDemand - pUnserved:.4f} tH2 of {pDemand:.4f} tH2 is now served, so this test is out of date")
+    assert pUnserved <= 1e-6 * pDemand, f"{pUnserved:.4f} tH2 of {pDemand:.4f} tH2 went unserved"
+    assert pConsumed > 0.0, "the electrolyzers drew nothing, so the demand was met from somewhere else"
+
+
+@pytest.mark.solve
+def test_the_electricity_demand_is_served_as_well(solved):
+    """The hydrogen is not bought with unserved electricity, which is how the cap used to pay for it."""
+    pUnserved = sum(solved.pDuration[p, sc, n]() * solved.vENS[p, sc, n, nd]()
+                    for p, sc, n in solved.psn for nd in solved.nd)
+    pDemand   = sum(solved.pDuration[p, sc, n]() * solved.pDemandElec[p, sc, n, nd]()
+                    for p, sc, n in solved.psn for nd in solved.nd)
+    assert pUnserved <= 1e-6 * pDemand, (
+        f"{pUnserved:.4f} GWh of {pDemand:.4f} GWh went unserved, and sSEP has capacity to spare")

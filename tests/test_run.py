@@ -48,6 +48,7 @@ def case_7d_system(request, tmp_path):
 
     duration_csv  = os.path.join(case_dir, f"oT_Data_Duration_{case_name}.csv")
     RESEnergy_csv = os.path.join(case_dir, f"oT_Data_RESEnergy_{case_name}.csv")
+    emission_csv  = os.path.join(case_dir, f"oT_Data_Emission_{case_name}.csv")
     stage_csv     = os.path.join(case_dir, f"oT_Data_Stage_{case_name}.csv")
 
     df = pd.read_csv(duration_csv, index_col=[0, 1, 2])
@@ -58,6 +59,17 @@ def case_7d_system(request, tmp_path):
     df["RESEnergy"] = df["RESEnergy"].astype(float)
     df["RESEnergy"] = np.nan
     df.to_csv(RESEnergy_csv)
+
+    # The annual CO2 cap goes the same way, and for the same reason. sSEP is the only bundled case that
+    # sets one, 4.6 MtCO2 for 2030, and holding a whole year of emissions against a single week decides the
+    # result by which week is chosen: the cap binds in the January, August and December weeks and not in the
+    # April, June or October ones, and April emits nothing at all. Left in place it cost the January week
+    # 10.57 % of its electricity demand as unserved energy and every tonne of its hydrogen, and 97 % of the
+    # expected cost of sSEP was the reliability penalty rather than the dispatch.
+    df = pd.read_csv(emission_csv, index_col=[0, 1])
+    df["CO2Emission"] = df["CO2Emission"].astype(float)
+    df["CO2Emission"] = np.nan
+    df.to_csv(emission_csv)
 
     df = pd.read_csv(stage_csv, index_col=[0])
     df.iloc[:, df.columns.get_loc("Weight")] = 52
@@ -83,6 +95,7 @@ def case_multi_stage_7d_system(request, tmp_path):
 
     duration_csv  = os.path.join(case_dir, f"oT_Data_Duration_{case_name}.csv")
     RESEnergy_csv = os.path.join(case_dir, f"oT_Data_RESEnergy_{case_name}.csv")
+    emission_csv  = os.path.join(case_dir, f"oT_Data_Emission_{case_name}.csv")
 
     # Per-stage truncation: keep first 168 rows of each (Period, Scenario, Stage) group; NaN the rest.
     df = pd.read_csv(duration_csv, index_col=[0, 1, 2]).reset_index()
@@ -94,6 +107,17 @@ def case_multi_stage_7d_system(request, tmp_path):
     df["RESEnergy"] = df["RESEnergy"].astype(float)
     df["RESEnergy"] = np.nan
     df.to_csv(RESEnergy_csv)
+
+    # The annual CO2 cap goes the same way, and for the same reason. sSEP is the only bundled case that
+    # sets one, 4.6 MtCO2 for 2030, and holding a whole year of emissions against a single week decides the
+    # result by which week is chosen: the cap binds in the January, August and December weeks and not in the
+    # April, June or October ones, and April emits nothing at all. Left in place it cost the January week
+    # 10.57 % of its electricity demand as unserved energy and every tonne of its hydrogen, and 97 % of the
+    # expected cost of sSEP was the reliability penalty rather than the dispatch.
+    df = pd.read_csv(emission_csv, index_col=[0, 1])
+    df["CO2Emission"] = df["CO2Emission"].astype(float)
+    df["CO2Emission"] = np.nan
+    df.to_csv(emission_csv)
 
     yield data
 
@@ -128,6 +152,7 @@ def case_7d_binary(request, tmp_path):
 
     duration_csv = os.path.join(case_dir, f"oT_Data_Duration_{case_name}.csv")
     RESEnergy_csv = os.path.join(case_dir, f"oT_Data_RESEnergy_{case_name}.csv")
+    emission_csv  = os.path.join(case_dir, f"oT_Data_Emission_{case_name}.csv")
     stage_csv = os.path.join(case_dir, f"oT_Data_Stage_{case_name}.csv")
     option_csv = os.path.join(case_dir, f"oT_Data_Option_{case_name}.csv")
 
@@ -145,6 +170,17 @@ def case_7d_binary(request, tmp_path):
     df["RESEnergy"] = df["RESEnergy"].astype(float)
     df["RESEnergy"] = np.nan
     df.to_csv(RESEnergy_csv)
+
+    # The annual CO2 cap goes the same way, and for the same reason. sSEP is the only bundled case that
+    # sets one, 4.6 MtCO2 for 2030, and holding a whole year of emissions against a single week decides the
+    # result by which week is chosen: the cap binds in the January, August and December weeks and not in the
+    # April, June or October ones, and April emits nothing at all. Left in place it cost the January week
+    # 10.57 % of its electricity demand as unserved energy and every tonne of its hydrogen, and 97 % of the
+    # expected cost of sSEP was the reliability penalty rather than the dispatch.
+    df = pd.read_csv(emission_csv, index_col=[0, 1])
+    df["CO2Emission"] = df["CO2Emission"].astype(float)
+    df["CO2Emission"] = np.nan
+    df.to_csv(emission_csv)
 
     if not multi:
         df = pd.read_csv(stage_csv, index_col=[0])
@@ -190,11 +226,12 @@ def case_7d_binary(request, tmp_path):
     # sSEP — small Spanish system. Exercises the hydrogen sector (DemandHydrogen + NetworkHydrogen + 9 H2-related
     # generators) AND water-reservoir hydropower (7 reservoirs, reservoir maps, inflows/outflows/MaxVolume, pumped
     # hydro). pIndHydrogen / pIndHydroSystem code paths live here.
-    # 38573.44601930286 until the hydrogen reliability cost was given its stage weight. That term
-    # was the only cost in the objective that never annualised, so unserved hydrogen was priced at
-    # a fraction of the others and the model had little reason to avoid it. sSEP weights its week
-    # by 52, and 51 further weeks of the same 127.7 MEUR is the whole of the difference.
-    ("sSEP",      45085.415882683425),
+    # 45085.415882683425 until the annual CO2 cap stopped being applied to a single week. Held against
+    # one week the cap left 10.57 % of the electricity demand unserved and every tonne of the hydrogen
+    # demand with it, so the number pinned here was 97 % reliability penalty. The dispatch it now pins
+    # serves both. Before that it was 38573.44601930286, until the hydrogen reliability cost was given
+    # its stage weight: that term was the only cost in the objective that never annualised.
+    ("sSEP",      1457.889993652516),
     # 9n_PTDF exercises the multi-level-header tables (VariableTTCFrw/Bck, VariablePTDF).
     ("9n_PTDF",   500.1114692260149),
     # 9n_heat exercises the heat-sector code path (pIndHeat=1). Added in PR #121.
