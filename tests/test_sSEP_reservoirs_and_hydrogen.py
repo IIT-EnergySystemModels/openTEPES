@@ -1,17 +1,17 @@
-"""sSEP carries reservoirs and a hydrogen network, and this says what each of them actually does.
+"""sSEP carries reservoirs, a hydrogen network and a candidate solar farm, and this checks all three.
 
 sSEP is solved by the parametrised suite, but only its total cost is checked. The reservoir system and
 the hydrogen chain are the only ones of their kind among the distributed cases, and a change that
 stopped either being built would show up as a shift in one number, and only if the shift were large
 enough to notice.
 
-The hydrogen chain reached this state by a detour worth recording. Solved with the annual CO2 cap of
-sSEP applied to the representative week, the case served none of its 425.62 tH2 and ran its
+The hydrogen chain reached its present state by a detour worth recording. Solved with the annual CO2
+cap of sSEP applied to the representative week, the case served none of its 425.62 tH2 and ran its
 electrolyzers at zero, and that looked like a question of how unserved hydrogen is priced. It was not.
-The cap was binding at 4.6 MtCO2 and 10.57 % of the electricity demand went unserved with it, so
-electricity stood at its scarcity value and no penalty on hydrogen below that could compete. With the
-cap blanked, as the fixture already blanks the annual RES-energy requirement, the chain runs at the
-distributed penalty of 300 EUR/tH2 and every tonne is served.
+The cap was binding at 4.6 MtCO2, no unit in the case could be built, and 10.57 % of the electricity
+demand went unserved, so electricity stood at its scarcity value and no hydrogen penalty below it
+could compete. Two things followed: the fixtures stopped applying an annual limit to one week, and the
+case gained a candidate solar farm, so that a binding cap is met by building rather than by shedding.
 """
 import pytest
 
@@ -88,3 +88,16 @@ def test_the_electricity_demand_is_served_as_well(solved):
                     for p, sc, n in solved.psn for nd in solved.nd)
     assert pUnserved <= 1e-6 * pDemand, (
         f"{pUnserved:.4f} GWh of {pDemand:.4f} GWh went unserved, and sSEP has capacity to spare")
+
+
+@pytest.mark.solve
+def test_the_candidate_solar_farm_is_built(solved):
+    """sSEP is the only distributed case with a candidate generating unit, and the optimum is interior."""
+    assert len(solved.gc) > 0, "no candidate generating unit was read"
+
+    pBuilt = {gc: solved.vGenerationInvest[p, gc]() for p in solved.p for gc in solved.gc if (p, gc) in solved.pgc}
+    assert pBuilt, "the candidate reached no period"
+    for gc, pShare in pBuilt.items():
+        assert 0.0 < pShare < 1.0, (
+            f"{gc} is built at {pShare:.4f} of its rating, so the decision sits on a bound and the case "
+            "pins the bound instead of an optimum")

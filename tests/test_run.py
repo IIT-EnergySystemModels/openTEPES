@@ -208,6 +208,7 @@ def case_7d_binary(request, tmp_path):
 #   case        electricity   hydrogen   reservoir   heat   PTDF   UC binaries   single-node
 #   9n          ✓ losses
 #   sSEP        ✓             ✓ (H2 demand+network+9 H2 gens)  ✓ (7 reservoirs + pumped hydro)  ramps+min-time
+#               and the only case with a candidate generating unit: 8000 MW of solar, 5614.9 MW of it built
 #   9n_PTDF     ✓ losses                                       ✓ (multi-level headers)
 #   9n_heat     ✓ losses                                              ✓ (pIndHeat=1)
 #   9n_ELZ       ✓ losses     ✓ (2 electrolyzers as ESS with energy outflows + storage; pIndHydrogen=0)
@@ -225,13 +226,15 @@ def case_7d_binary(request, tmp_path):
     ("9n",        238.5141906543151),
     # sSEP — small Spanish system. Exercises the hydrogen sector (DemandHydrogen + NetworkHydrogen + 9 H2-related
     # generators) AND water-reservoir hydropower (7 reservoirs, reservoir maps, inflows/outflows/MaxVolume, pumped
-    # hydro). pIndHydrogen / pIndHydroSystem code paths live here.
-    # 45085.415882683425 until the annual CO2 cap stopped being applied to a single week. Held against
-    # one week the cap left 10.57 % of the electricity demand unserved and every tonne of the hydrogen
-    # demand with it, so the number pinned here was 97 % reliability penalty. The dispatch it now pins
-    # serves both. Before that it was 38573.44601930286, until the hydrogen reliability cost was given
-    # its stage weight: that term was the only cost in the objective that never annualised.
-    ("sSEP",      1457.889993652516),
+    # hydro). pIndHydrogen / pIndHydroSystem code paths live here. It is also the only case offering a candidate
+    # generating unit, so generation investment is decided here and nowhere else.
+    # 1457.889993652516 until sSEP gained a candidate solar farm and a hydrogen penalty above the cost of
+    # producing hydrogen. The case now builds 5614.9 MW of the 8000 MW offered, 70.19 % of it, so this
+    # number pins an investment decision as well as a dispatch. Before the candidate it was
+    # 45085.415882683425, when the annual CO2 cap was still applied to a single week and 97 % of the
+    # figure was the penalty on unserved energy, and 38573.44601930286 before the hydrogen reliability
+    # cost was given its stage weight.
+    ("sSEP",      1256.097034021233),
     # 9n_PTDF exercises the multi-level-header tables (VariableTTCFrw/Bck, VariablePTDF).
     ("9n_PTDF",   500.1114692260149),
     # 9n_heat exercises the heat-sector code path (pIndHeat=1). Added in PR #121.
