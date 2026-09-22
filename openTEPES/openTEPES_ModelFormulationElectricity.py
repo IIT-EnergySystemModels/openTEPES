@@ -2323,8 +2323,8 @@ def ACRestorationPass(OptModel, mTEPES, SolverName='ipopt', pIndLogConsole=0):
 
     Solver  = SolverFactory(SolverName)
     # Pyomo loads a solver's solution into the model as it returns, so an iterate from a solve that is about to be rejected would replace the relaxed
-    # values before the termination condition below is read, and every result written afterwards would come from a point that converged to nothing.
-    # Holding the solution back keeps the promise the warning makes.
+    # values before the termination condition below is read, and every result written afterwards would describe a point that did not converge. Holding
+    # the solution back until the condition has been read is what makes the warning below true.
     Results = Solver.solve(OptModel, load_solutions=False, tee=bool(pIndLogConsole))
     pStatus = str(Results.solver.termination_condition)
 

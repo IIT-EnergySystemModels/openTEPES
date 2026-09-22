@@ -2,12 +2,12 @@
 
 ## [4.19.0rc] - 2026-09-21 Unreleased in PyPI
 
-- [FIXED] the AC restoration pass no longer leaves a rejected iterate in the results. Pyomo loads a solver's solution as it returns, so an
-  iterate from a solve that stopped at its iteration limit replaced the relaxed values before the termination condition was read, and the
-  results then described a point that did not converge, while the warning stated the relaxed solution was unchanged. On a 695-busbar AC case
-  whose restoration stops at maxIterations, the results read 11851.8 Mvar of reactive power not served at an AC power flow residual of
-  0.021 MW, where the relaxation carries 2664.8 Mvar at 1274.67 MW, and the cost summary reported 118.520 MEUR of reliability cost against
-  the 30.646 the solve logged. Both now read 30.646, as with the pass disabled.
+- [FIXED] the AC restoration pass no longer leaves a rejected iterate in the results. Pyomo loads a solver's solution as it returns,
+  `load_solutions` defaulting to true, so an iterate from a solve that stopped at its iteration limit replaced the relaxed values before the
+  termination condition was read and the results described a point that did not converge, while the warning stated the relaxed solution was
+  unchanged. On a 695-busbar AC case whose restoration stops at maxIterations, the results read 11851.8 Mvar of reactive power not served at an AC
+  power flow residual of 0.021 MW, where the relaxation carries 2664.8 Mvar at 1274.67 MW, and the cost summary reported 118.520 MEUR of reliability
+  cost against the 30.646 the solve logged. Both now read 30.646, as with the pass disabled.
 - [FIXED] the technology, busbar and circuit dictionaries are read into ordered sets, so the model is generated in input-file order and not
   in the interpreter's per-process hash order. Pyomo represents an unordered set with a Python set, whose iteration order is randomised per
   process, and nine carried `ordered=False`: `gt`, `nd`, `ni`, `nf`, `cc`, `c2`, `ndzn`, `znar`, `arrg`. On a 695-busbar AC case with every
