@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 16, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 21, 2026
 
 openTEPES.openTEPES_ModelFormulationElectricity — electricity-sector formulation: demand balance, operating reserves and inertia, storage (ESS),
 unit commitment and ramping, line switching, DC network operation, and the cycle-based network constraints. Granular per-concern functions so
@@ -2322,13 +2322,18 @@ def ACRestorationPass(OptModel, mTEPES, SolverName='ipopt', pIndLogConsole=0):
           f'{nWoken} constraints reactivated')
 
     Solver  = SolverFactory(SolverName)
-    Results = Solver.solve(OptModel, tee=bool(pIndLogConsole))
+    # Pyomo loads a solver's solution into the model as it returns, so an iterate from a solve that is about to be rejected would replace the relaxed
+    # values before the termination condition below is read, and every result written afterwards would describe a point that did not converge. Holding
+    # the solution back until the condition has been read is what makes the warning below true.
+    Results = Solver.solve(OptModel, load_solutions=False, tee=bool(pIndLogConsole))
     pStatus = str(Results.solver.termination_condition)
 
     if pStatus not in ('optimal', 'locallyOptimal', 'feasible'):
         print(f'### WARNING: the AC restoration did not converge ({pStatus}). The relaxed solution is unchanged in the results, and it is a LOWER '
               f'bound on the true cost, not the true cost.')
         return {'status': pStatus, 'before': pBefore, 'after': None, 'seconds': time.time() - StartTime}
+
+    OptModel.solutions.load_from(Results)
 
     pAfter = OptModel.vTotalSCost()
     pGap   = 100.0 * (pAfter - pBefore) / abs(pAfter) if pAfter else 0.0
