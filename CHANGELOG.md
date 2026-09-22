@@ -2,12 +2,12 @@
 
 ## [4.19.0rc] - 2026-09-21 Unreleased in PyPI
 
-- [FIXED] the AC restoration pass no longer leaves a rejected iterate in the results. Pyomo loads a solver's solution into the model as it
-  returns, so an Ipopt iterate from a solve that stopped at its iteration limit replaced the relaxed values before the termination condition
-  was read, and the reported flows, voltages, nodal slack and costs came from a point that converged to nothing while the warning stated the
-  relaxed solution was unchanged. On a 695-busbar AC case whose restoration stops at maxIterations, the reactive slack in the results read
-  11851.8 Mvar at an AC power flow residual of 0.021 MW where the relaxation carries 2664.8 Mvar at 1274.67 MW, and the reliability cost the
-  cost summary reported, 118.520 MEUR, disagreed with the 30.646 the solve logged. Both now read 30.646, matching the pass switched off.
+- [FIXED] the AC restoration pass no longer leaves a rejected iterate in the results. Pyomo loads a solver's solution as it returns, so an
+  iterate from a solve that stopped at its iteration limit replaced the relaxed values before the termination condition was read, and the
+  results then described a point that did not converge, while the warning stated the relaxed solution was unchanged. On a 695-busbar AC case
+  whose restoration stops at maxIterations, the results read 11851.8 Mvar of reactive power not served at an AC power flow residual of
+  0.021 MW, where the relaxation carries 2664.8 Mvar at 1274.67 MW, and the cost summary reported 118.520 MEUR of reliability cost against
+  the 30.646 the solve logged. Both now read 30.646, as with the pass disabled.
 - [FIXED] the shipped-case cost test runs again, and none of the three costs it pins was still right. `tests/oT_local_test.py` was collected
   by nothing, `python_files = ["test_*.py"]` not matching its name, and it had drifted three further ways: the case directory read
   `openTEPES` where the cases moved under `openTEPES/cases`, the solver read `gurobi` where CI carries HiGHS, and the test went unmarked, so
