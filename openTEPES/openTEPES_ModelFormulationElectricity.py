@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 21, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 22, 2026
 
 openTEPES.openTEPES_ModelFormulationElectricity — electricity-sector formulation: demand balance, operating reserves and inertia, storage (ESS),
 unit commitment and ramping, line switching, DC network operation, and the cycle-based network constraints. Granular per-concern functions so
@@ -2322,6 +2322,11 @@ def ACRestorationPass(OptModel, mTEPES, SolverName='ipopt', pIndLogConsole=0):
           f'{nWoken} constraints reactivated')
 
     Solver  = SolverFactory(SolverName)
+    # ipopt stops at 3000 iterations by default, and this pass is an interior-point solve of the whole network at the exact equality. A 695-busbar
+    # case needed 3137 of them, so it gave up 137 short and left the relaxation standing, at an AC power flow residual of 809.68 MW instead of
+    # 0.0375. A limit of 10000 leaves room for a case three times harder while still bounding a case that never converges: 3137 iterations took 66 s
+    # on that one, so the ceiling costs about three and a half minutes.
+    Solver.options['max_iter'] = 10000
     # Pyomo loads a solver's solution into the model as it returns, so an iterate from a solve that is about to be rejected would replace the relaxed
     # values before the termination condition below is read, and every result written afterwards would describe a point that did not converge. Holding
     # the solution back until the condition has been read is what makes the warning below true.
