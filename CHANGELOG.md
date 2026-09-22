@@ -8,6 +8,12 @@
   relaxed solution was unchanged. On a 695-busbar AC case whose restoration stops at maxIterations, the reactive slack in the results read
   11851.8 Mvar at an AC power flow residual of 0.021 MW where the relaxation carries 2664.8 Mvar at 1274.67 MW, and the reliability cost the
   cost summary reported, 118.520 MEUR, disagreed with the 30.646 the solve logged. Both now read 30.646, matching the pass switched off.
+- [FIXED] the shipped-case cost test runs again, and none of the three costs it pins was still right. `tests/oT_local_test.py` was collected
+  by nothing, `python_files = ["test_*.py"]` not matching its name, and it had drifted three further ways: the case directory read
+  `openTEPES` where the cases moved under `openTEPES/cases`, the solver read `gurobi` where CI carries HiGHS, and the test went unmarked, so
+  it would have joined the fast job rather than the solving one. Renamed `test_shipped_case_costs.py`, marked `solve`, and re-recorded under
+  HiGHS 1.15.1: 9n 252.201329983352 -> 238.51419065431514, sSEP 38581.335524272574 -> 1256.0970340212316, 9n_PTDF 447.3850166556059 ->
+  502.22274721010905. Gurobi 12 returns the same three to twelve significant digits, so the fixtures are not solver-specific.
 - [FIXED] a storage unit keeps the inventory cycle its `StorageType` asks for, unless an outflow or an energy bound reads that inventory. Both of
   those periods are 1 for a unit carrying neither and went into the shortest, so every storage unit of every case wrote its inventory at every load
   level, sSEP's ten weekly units and RTS-GMLC's twenty among them. The coupling stays where a unit has both, as an EV fleet and the 9n_ELZ
