@@ -8,6 +8,13 @@
   whose restoration stops at maxIterations, the results read 11851.8 Mvar of reactive power not served at an AC power flow residual of
   0.021 MW, where the relaxation carries 2664.8 Mvar at 1274.67 MW, and the cost summary reported 118.520 MEUR of reliability cost against
   the 30.646 the solve logged. Both now read 30.646, as with the pass disabled.
+- [FIXED] the technology, busbar and circuit dictionaries are read into ordered sets, so the model is generated in input-file order and not
+  in the interpreter's per-process hash order. Pyomo represents an unordered set with a Python set, whose iteration order is randomised per
+  process, and nine carried `ordered=False`: `gt`, `nd`, `ni`, `nf`, `cc`, `c2`, `ndzn`, `znar`, `arrg`. On a 695-busbar AC case with every
+  generating unit fixed at its recorded dispatch, four solves of byte-identical input returned reactive power not served between 19233.8 and
+  20932.3 Mvar, a spread of 4 %, each reporting optimal termination, and the AC restoration stopped at its iteration limit on every one. Two
+  solves now agree on the objective, 44.6853928621652. No ordering method addresses any of the nine. Restores the correction agreed in
+  issue #63.
 - [FIXED] the shipped-case cost test runs again, and none of the three costs it pins was still right. `tests/oT_local_test.py` was collected
   by nothing, `python_files = ["test_*.py"]` not matching its name, and it had drifted three further ways: the case directory read
   `openTEPES` where the cases moved under `openTEPES/cases`, the solver read `gurobi` where CI carries HiGHS, and the test went unmarked, so

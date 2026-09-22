@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 18, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 21, 2026
 """
 
 import time
@@ -39,19 +39,19 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole, option_overrides=None):
         'stt':   ('Stage',        True ),
         'nn':    ('LoadLevel',    True ),
         'gg':    ('Generation',   True ),
-        'gt':    ('Technology',   False),
-        'nd':    ('Node',         False),
-        'ni':    ('Node',         False),
-        'nf':    ('Node',         False),
+        'gt':    ('Technology',   True ),
+        'nd':    ('Node',         True ),
+        'ni':    ('Node',         True ),
+        'nf':    ('Node',         True ),
         'zn':    ('Zone',         True ),
         'ar':    ('Area',         True ),
         'rg':    ('Region',       True ),
-        'cc':    ('Circuit',      False),
-        'c2':    ('Circuit',      False),
+        'cc':    ('Circuit',      True ),
+        'c2':    ('Circuit',      True ),
         'lt':    ('Line',         True ),
-        'ndzn':  ('NodeToZone',   False),
-        'znar':  ('ZoneToArea',   False),
-        'arrg':  ('AreaToRegion', False),
+        'ndzn':  ('NodeToZone',   True ),
+        'znar':  ('ZoneToArea',   True ),
+        'arrg':  ('AreaToRegion', True ),
     }
 
     # Source resolution: prefer mTEPES.pInputSource if openTEPES_run set one (DuckDB or CSV); otherwise build a CSVSource from (DirName,
