@@ -2,6 +2,11 @@
 
 ## [4.19.0rc] - 2026-09-21 Unreleased in PyPI
 
+- [FIXED] the AC restoration pass raises ipopt's iteration limit from its default of 3000 to 10000. The pass is an interior-point solve of the whole
+  network at the exact equality, and a 695-busbar AC case needed 3137 iterations: it gave up 137 short, and the relaxation then standing, the
+  reported point carried an AC power flow residual of 809.68 MW in place of 0.0375 and 3834.965 Mvar of reactive power not served in place of
+  19609.694. With the limit raised the pass converges in 66 s and takes the cost from 44.6854 to 198.5829 MEUR, the relaxation having understated it
+  by 77.50 %.
 - [FIXED] the AC restoration pass no longer leaves a rejected iterate in the results. Pyomo loads a solver's solution as it returns,
   `load_solutions` defaulting to true, so an iterate from a solve that stopped at its iteration limit replaced the relaxed values before the
   termination condition was read and the results described a point that did not converge, while the warning stated the relaxed solution was
