@@ -2,6 +2,15 @@
 
 ## [4.19.0rc] - 2026-09-21 Unreleased in PyPI
 
+- [ADDED] a price on the distance of a bus voltage from its setpoint. `VSet` in `oT_Data_BusVoltage` names the setpoint per bus
+  and `VoltageDeviationCost` in `oT_Data_Parameter` prices the distance, in EUR per p.u. per hour; zero, the default, builds the
+  model unchanged. The band says where a voltage may be and nothing in the objective said where in it the voltage should be, so on
+  a case with its injections fixed the solve returned any point of the band, and the current price pushed every voltage to the
+  top. The distance is taken on the squared voltage and scaled to read as |V - VSet| near the setpoint; both parts are linear, so
+  the relaxation stays a cone program. It enters the objective and not the system cost, and is reported beside it as `AC Voltage
+  Penalty (not in total)`. On a 695-busbar case held at its recorded dispatch, with `EpsilonCurrent` at zero, setpoints at 427
+  regulated busbars at 1000 EUR/p.u./h took the median voltage difference from the recorded state from 2.45 kV to 0.01 kV, with no
+  reactive power not served. `oT_Data_BusVoltage` itself is documented for the first time.
 - [FIXED] the AC restoration pass raises ipopt's iteration limit from its default of 3000 to 10000. The pass is an interior-point solve of the whole
   network at the exact equality, and a 695-busbar AC case needed 3137 iterations: it gave up 137 short, and the relaxation then standing, the
   reported point carried an AC power flow residual of 809.68 MW in place of 0.0375 and 3834.965 Mvar of reactive power not served in place of

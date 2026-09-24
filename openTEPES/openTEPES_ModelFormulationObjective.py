@@ -10,6 +10,11 @@ import math
 from collections import defaultdict
 from pyomo.environ import Constraint, Objective, minimize
 
+try:
+    from .openTEPES_SettingUpVariables          import VoltagePenaltyOn
+except ImportError:
+    from openTEPES.openTEPES_SettingUpVariables import VoltagePenaltyOn
+
 
 # Module level so that CostSummaryResults reports exactly the penalty the objective charged. Two hard-coded copies would drift, and the cost
 # summary would stop adding up to the reported total — which is the failure the AC Current Penalty row exists to prevent.
@@ -27,11 +32,15 @@ def TotalObjectiveFunction(OptModel, mTEPES, pIndLogConsole):
     # which is to stop the relaxation buying voltage with current that is not there, but it is a numerical device and not money: on a 168 hour
     # RTS-GMLC window it came to 14.43 MEUR of a 60.00 MEUR reported total, a quarter of the figure, and it reached the reported prices through the
     # eBalanceElec duals. Keeping it out of vTotalSCost keeps it out of every writer and every cost summary without changing what the solver does.
+    # The voltage setpoint penalty is carried the same way as the current penalty: in the objective, out of vTotalSCost. Unlike it, it exists under
+    # every AC formulation, since every one of them has vW.
+    pVoltagePenalty = sum(pScenFactor[p,sc] * OptModel.vTotalVPenalty[p,sc,n] for p,sc,n in mTEPES.psn) if VoltagePenaltyOn(mTEPES) else 0.0
+
     def eTotalSCost(OptModel):
         if mTEPES.pIndACPowerFlow() != 1:                      # no vCurr to price, and no vTotalNPenalty declared
-            return OptModel.vTotalSCost
-        return OptModel.vTotalSCost + sum(pScenFactor[p,sc] * OptModel.vTotalNPenalty[p,sc,n] for p,sc,n in mTEPES.psn)
-    OptModel.eTotalSCost = Objective(rule=eTotalSCost, sense=minimize, doc='total system cost plus the AC current penalty [MEUR]')
+            return OptModel.vTotalSCost + pVoltagePenalty
+        return OptModel.vTotalSCost + sum(pScenFactor[p,sc] * OptModel.vTotalNPenalty[p,sc,n] for p,sc,n in mTEPES.psn) + pVoltagePenalty
+    OptModel.eTotalSCost = Objective(rule=eTotalSCost, sense=minimize, doc='total system cost plus the AC current and voltage setpoint penalties [MEUR]')
 
     def eTotalTCost(OptModel):
         vTotalTCost = OptModel.vTotalICost + sum(pScenFactor[p,sc] * (OptModel.vTotalGCost    [p,sc,n] +
@@ -144,6 +153,21 @@ def GenerationOperationModelFormulationObjFunct(OptModel, mTEPES, pIndLogConsole
             return Constraint.Skip
         return OptModel.vTotalNPenalty[p,sc,n] == pEpsilonCurrent * mTEPES.pLoadLevelDuration[p,sc,n]() * sum(OptModel.vCurr[p,sc,n,ni,nf,cc] for ni,nf,cc in mTEPES.laa if (p,ni,nf,cc) in mTEPES.pla)
     setattr(OptModel, f'eTotalNPenalty_{p}_{sc}_{st}', Constraint(mTEPES.n, rule=eTotalNPenalty, doc='AC current penalty, objective only [MEUR]'))
+
+    # A bus voltage's distance from its setpoint, priced. The band in oT_Data_BusVoltage says where a voltage may be; nothing in the objective said
+    # where inside the band it should be, so with the injections fixed the solve returned any point of the band, and the current price above pushed
+    # every voltage to its top. The distance is measured on vW, the squared voltage the model carries, and divided by 2 VSet, so that near the
+    # setpoint it reads as |V - VSet| in p.u. Both parts are linear, so the relaxation stays a cone program.
+    if VoltagePenaltyOn(mTEPES):
+        def eVoltageDeviation(OptModel, n, nd):
+            return (OptModel.vW[p,sc,n,nd] - mTEPES.pVSetBus[nd] ** 2
+                    == OptModel.vVoltageDevUp[p,sc,n,nd] - OptModel.vVoltageDevDw[p,sc,n,nd])
+        setattr(OptModel, f'eVoltageDeviation_{p}_{sc}_{st}', Constraint(mTEPES.n, mTEPES.ndv, rule=eVoltageDeviation, doc='squared voltage against its setpoint [p.u.]'))
+
+        def eTotalVPenalty(OptModel, n):
+            return OptModel.vTotalVPenalty[p,sc,n] == mTEPES.pVoltageDeviationCost() * mTEPES.pLoadLevelDuration[p,sc,n]() * sum(
+                (OptModel.vVoltageDevUp[p,sc,n,nd] + OptModel.vVoltageDevDw[p,sc,n,nd]) / (2.0 * mTEPES.pVSetBus[nd]) for nd in mTEPES.ndv)
+        setattr(OptModel, f'eTotalVPenalty_{p}_{sc}_{st}', Constraint(mTEPES.n, rule=eTotalVPenalty, doc='voltage setpoint penalty, objective only [MEUR]'))
 
     def eTotalRElecCost(OptModel,n):
         pCost = mTEPES.pLoadLevelDuration[p,sc,n]() * mTEPES.pENSCost * sum(OptModel.vENS[p,sc,n,nd] for nd in mTEPES.nd)
