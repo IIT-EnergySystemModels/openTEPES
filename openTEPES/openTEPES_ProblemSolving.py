@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import logging
 import os
+import re
 import time
 
 import pyomo.environ as pyo
@@ -38,6 +39,31 @@ except ImportError:
     from openTEPES.openTEPES_ProblemSolvingPersistent import prepare_for_resolve, setup_solver
     from openTEPES.openTEPES_ProblemSolvingTuning import apply_resolve_options, apply_solver_options
     from openTEPES.openTEPES_ProblemSolvingWarmSweep import fallback_if_stalled  # opt-in (default OFF)
+
+
+_DUALS_UNAVAILABLE = re.compile(r"Unable to retrieve attribute '(Pi|QCPi)'")
+
+
+def _solve_without_duals_if_unavailable(Solver, OptModel, **kwargs):
+    """Solve, and if the solver finds an optimum but cannot return its duals, solve again without asking for them.
+
+    Gurobi solves a quadratically constrained model with the barrier method and then computes the duals from the KKT
+    system (QCPDual). When the barrier solution is not accurate enough for that it says so -- "failed to compute QCP
+    dual solution due to inaccurate barrier solution" -- and still reports the optimum. Pyomo then asks for the duals
+    because the model carries a dual Suffix, gurobipy raises "Unable to retrieve attribute 'Pi'", and the run ended
+    there with an optimal solution in hand. Only that error is caught, and only when a dual Suffix was attached: the
+    Suffix is removed, the model is solved again, and the stage continues with no marginal prices, which every results
+    writer already handles because the AC restoration pass and an unresolved MIP end the same way.
+    """
+    try:
+        return Solver.solve(OptModel, **kwargs)
+    except Exception as e:
+        if not (_DUALS_UNAVAILABLE.search(str(e)) and hasattr(OptModel, 'dual')):
+            raise
+        OptModel.del_component(OptModel.dual)
+        print(f'### WARNING: the solver found an optimum but could not return its duals ({e}). Solving again without '
+              f'them; the marginal prices of this stage are not reported.')
+        return Solver.solve(OptModel, **kwargs)
 
 
 def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConsole, p, sc, st, ncall):
@@ -79,7 +105,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
         SolverResults = fallback_if_stalled(Solver, OptModel, SolverName, ncall, SolverResults, _solve_kwargs)
     else:
         _solve_kwargs = dict(tee=True, report_timing=True)
-        SolverResults = Solver.solve(OptModel, **_solve_kwargs)
+        SolverResults = _solve_without_duals_if_unavailable(Solver, OptModel, **_solve_kwargs)
         SolverResults = fallback_if_stalled(Solver, OptModel, SolverName, ncall, SolverResults, _solve_kwargs)
 
     print("Termination condition: ", SolverResults.solver.termination_condition)
@@ -104,7 +130,7 @@ def ProblemSolving(DirName, CaseName, SolverName, OptModel, mTEPES, pIndLogConso
             SolverResults = Solver.solve(OptModel, tee=True, report_timing=True, warmstart=True,
                                          keepfiles=False, load_solutions=True, save_results=False)
         else:
-            SolverResults = Solver.solve(OptModel, tee=True, report_timing=True)
+            SolverResults = _solve_without_duals_if_unavailable(Solver, OptModel, tee=True, report_timing=True)
 
     # ---- Collect duals into mTEPES.pDuals (used by MarginalResults / EconomicResults) ----
     collect_duals(OptModel, mTEPES)

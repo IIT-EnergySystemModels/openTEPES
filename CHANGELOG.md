@@ -2,6 +2,11 @@
 
 ## [4.19.0rc] - 2026-09-21 Unreleased in PyPI
 
+- [FIXED] a stage whose optimum is found without its duals continues without marginal prices instead of stopping. When the
+  barrier solution of a quadratically constrained model is too inaccurate for Gurobi to compute the QCP duals, gurobipy raises
+  "Unable to retrieve attribute 'Pi'" as Pyomo reads them, and on a 695-busbar AC case the run stopped with the relaxation
+  solved to optimality at 31.7285768 MEUR. The dual Suffix is now removed and the stage solved again, to the same objective in
+  0.42 s, and `collect_duals` returns when no Suffix is attached. Only that error is caught, and only when duals were requested.
 - [FIXED] the AC restoration pass raises ipopt's iteration limit from its default of 3000 to 10000. The pass is an interior-point solve of the whole
   network at the exact equality, and a 695-busbar AC case needed 3137 iterations: it gave up 137 short, and the relaxation then standing, the
   reported point carried an AC power flow residual of 809.68 MW in place of 0.0375 and 3834.965 Mvar of reactive power not served in place of
