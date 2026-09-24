@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 21, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 22, 2026
 """
 
 # import dill as pickle
@@ -304,10 +304,10 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     idxDict['y'  ] = 1
 
     #%% model declaration
-    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.19.0rc - September 21, 2026')
+    mTEPES = ConcreteModel('Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.19.0rc - September 22, 2026')
     # In DuckDB-input mode _path may not exist on disk (the case lives in the DB, not in a directory). Ensure the version-log target exists.
     os.makedirs(_path, exist_ok=True)
-    print(                 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.19.0rc - September 21, 2026', file=open(f'{_path}/openTEPES_version_{CaseName}.log','w'))
+    print(                 'Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - Version 4.19.0rc - September 22, 2026', file=open(f'{_path}/openTEPES_version_{CaseName}.log','w'))
     if _input_source is not None:
         mTEPES.pInputSource = _input_source
 
@@ -324,14 +324,14 @@ def openTEPES_run(DirName, CaseName, SolverName, pIndOutputResults, pIndLogConso
     # but DataConfiguration takes them explicitly to avoid that coupling.
     dfs, par = InputData(DirName, CaseName, mTEPES, pIndLogConsole, option_overrides=option_overrides)
 
-    # How the problem is SOLVED, as opposed to what is modelled. These four were literals in this file until now, so a
+    # How the problem is SOLVED, as opposed to what is modeled. These four were literals in this file until now, so a
     # case could not select any of them: the four stage-solving strategies below were all implemented and none reachable.
     # The defaults are the values that used to be hard-coded, so a case that says nothing behaves exactly as before.
     pIndCycleFlow           = par['pIndCycleFlow']
     pIndSectorDecomposition = par['pIndSectorDecomposition']
     pIndCompleteProblem     = par['pIndCompleteProblem']
     pIndSequentialSolving   = par['pIndSequentialSolving']
-    mTEPES.pIndSectorDecomposition = Param(initialize=pIndSectorDecomposition, within=Binary,             doc='Sector Benders decomposition: 0 complete problem, 1 by sector', mutable=True)
+    mTEPES.pIndSectorDecomposition = Param(initialize=pIndSectorDecomposition, within=Binary,             doc='Sector Benders decomposition: 0 complete problem, 1 by sector',   mutable=True)
     mTEPES.pIndCompleteProblem     = Param(initialize=pIndCompleteProblem,     within=Binary,             doc='Solve the complete problem: 0 by time decomposition, 1 complete', mutable=True)
     # NOT Binary: StageSolve branches on 0 parallel, 1 sequential with an LP file, 2 sequential in memory and
     # 3 sensitivity analysis. Declaring it Binary made two of its own strategies impossible to select.

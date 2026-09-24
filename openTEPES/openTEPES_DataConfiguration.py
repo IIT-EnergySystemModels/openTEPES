@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 21, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 22, 2026
 
 openTEPES.openTEPES_DataConfiguration — builds the derived sets and parameters on the model: instrumental sets, ESS/RES sets, and the flag-driven branches
 (hydro topology, hydrogen, heat, PTDF). Runs after InputData has read the raw sets and parameters.
@@ -146,7 +146,7 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     mTEPES.ch     = Set(doc='CHP       & fuel boiler units'    , initialize=[g      for g    in mTEPES.g   if                                            par['pRatedMaxPowerHeat'][g ] > 0.0 and par['pProductionFunctionHeat'    ][g ] == 0.0])
     mTEPES.bo     = Set(doc='            fuel boiler units'    , initialize=[ch     for ch   in mTEPES.ch  if par['pRatedMaxPowerElec']  [ch] == 0.0 and par['pRatedMaxPowerHeat'][ch] > 0.0 and par['pProductionFunctionHeat'    ][ch] == 0.0])
     mTEPES.hh     = Set(doc='        hydrogen boiler units'    , initialize=[bo     for bo   in mTEPES.bo                                                                                     if par['pProductionFunctionH2ToHeat'][bo] >  0.0])
-    mTEPES.h2p     = Set(doc='hydrogen-to-power       units'    , initialize=[g      for g    in mTEPES.g   if par['pProductionFunctionH2ToPower'][g ] >  0.0])
+    mTEPES.h2p     = Set(doc='hydrogen-to-power       units'    , initialize=[g      for g    in mTEPES.g  if par['pProductionFunctionH2ToPower'][g ] >  0.0])
     # scoped to gg: a cavern has no electrical rating, so it is not in the generating set
     mTEPES.hs     = Set(doc='hydrogen storage        units'    , initialize=[gg     for gg   in mTEPES.gg  if par['pMaxStorageH2'][gg] >  0.0])
     mTEPES.n2hs   = Set(doc='node   to hydrogen store'         , initialize=[(par['pGenToNode'][hs], hs) for hs in mTEPES.hs])
@@ -483,7 +483,7 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
     mTEPES.pLineType = Set(initialize=par['pLineType'].index, doc='line type')
 
     if par['pAnnualDiscountRate'] == 0.0:
-        par['pDiscountedWeight'] = pd.Series([                                           par['pPeriodWeight'][p]                                                                                                                                                              for p in mTEPES.p], index=mTEPES.p)
+        par['pDiscountedWeight'] = pd.Series([                                   par['pPeriodWeight'][p]                                                                                                                                                              for p in mTEPES.p], index=mTEPES.p)
     else:
         par['pDiscountedWeight'] = pd.Series([((1.0+par['pAnnualDiscountRate'])**par['pPeriodWeight'][p]-1.0) / (par['pAnnualDiscountRate']*(1.0+par['pAnnualDiscountRate'])**(par['pPeriodWeight'][p]-1+p-par['pEconomicBaseYear'])) for p in mTEPES.p], index=mTEPES.p)
 
@@ -1382,11 +1382,11 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
         mTEPES.pDemandHeat     = Param(mTEPES.psnnd, initialize=par['pDemandHeat'    ].to_dict(), within=           Reals, doc='Heat demand per hour')
         mTEPES.pDemandHeatPos  = Param(mTEPES.psnnd, initialize=par['pDemandHeatPos' ].to_dict(), within=NonNegativeReals, doc='Heat demand positive')
 
-    mTEPES.pLoadLevelDuration = Param(mTEPES.psn,   initialize=0.0                                     ,  within=NonNegativeReals,    doc='Load level duration', mutable=True)
+    mTEPES.pLoadLevelDuration = Param(mTEPES.psn, initialize=0.0, within=NonNegativeReals, doc='Load level duration', mutable=True)
     for p,sc,n in mTEPES.psn:
         mTEPES.pLoadLevelDuration[p,sc,n] = float(mTEPES.pLoadLevelWeight[p,sc,n]() * mTEPES.pDuration[p,sc,n]())
 
-    mTEPES.pPeriodProb         = Param(mTEPES.ps,    initialize=0.0                                    ,  within=NonNegativeReals,   doc='Period probability',  mutable=True)
+    mTEPES.pPeriodProb         = Param(mTEPES.ps, initialize=0.0, within=NonNegativeReals, doc='Period probability',  mutable=True)
     for p,sc in mTEPES.ps:
         # periods and scenarios are going to be solved together with their weight and probability
         mTEPES.pPeriodProb[p,sc] = mTEPES.pPeriodWeight[p] * mTEPES.pScenProb[p,sc]
@@ -1430,8 +1430,8 @@ def DataConfiguration(mTEPES, dfs=None, par=None):
         mTEPES.pH2PipeLength       = Param(mTEPES.pn,  initialize=par['pH2PipeLength'].to_dict()      , within=NonNegativeReals,    doc='Hydrogen pipeline length',                        mutable=True)
         mTEPES.pH2PipePeriodIni    = Param(mTEPES.pn,  initialize=par['pH2PipePeriodIni'].to_dict()   , within=PositiveIntegers,    doc='Installation period'                                          )
         mTEPES.pH2PipePeriodFin    = Param(mTEPES.pn,  initialize=par['pH2PipePeriodFin'].to_dict()   , within=PositiveIntegers,    doc='Retirement   period'                                          )
-        mTEPES.pH2PipeNTCFrw       = Param(mTEPES.pn,  initialize=par['pH2PipeNTCFrw'].to_dict()      , within=NonNegativeReals,    doc='Hydrogen pipeline NTC forward             [tH2/h]')
-        mTEPES.pH2PipeNTCBck       = Param(mTEPES.pn,  initialize=par['pH2PipeNTCBck'].to_dict()      , within=NonNegativeReals,    doc='Hydrogen pipeline NTC backward            [tH2/h]')
+        mTEPES.pH2PipeNTCFrw       = Param(mTEPES.pn,  initialize=par['pH2PipeNTCFrw'].to_dict()      , within=NonNegativeReals,    doc='Hydrogen pipeline NTC forward  [tH2/h]'                       )
+        mTEPES.pH2PipeNTCBck       = Param(mTEPES.pn,  initialize=par['pH2PipeNTCBck'].to_dict()      , within=NonNegativeReals,    doc='Hydrogen pipeline NTC backward [tH2/h]'                       )
         mTEPES.pH2PipeFixedCost    = Param(mTEPES.pc,  initialize=par['pH2PipeFixedCost'].to_dict()   , within=NonNegativeReals,    doc='Hydrogen pipeline fixed cost'                                 )
         mTEPES.pIndBinH2PipeInvest = Param(mTEPES.pn,  initialize=par['pIndBinH2PipeInvest'].to_dict(), within=Binary          ,    doc='Binary   pipeline investment decision'                        )
         mTEPES.pH2PipeLoInvest     = Param(mTEPES.pc,  initialize=par['pH2PipeLoInvest'].to_dict()    , within=NonNegativeReals,    doc='Lower bound of the pipeline investment decision', mutable=True)
