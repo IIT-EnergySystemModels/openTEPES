@@ -1,5 +1,5 @@
 """
-Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - August 13, 2026
+Open Generation, Storage, and Transmission Operation and Expansion Planning Model with RES and ESS (openTEPES) - September 25, 2026
 
 Energy-storage and reservoir operation results.
 
@@ -236,7 +236,7 @@ def ReservoirOperationResults(DirName, CaseName, OptModel, mTEPES, pIndTechnolog
 
     #%% outputting the water volume values
     sPSSTNES      = [(p,sc,st,n,rs) for p,sc,st,n,rs in mTEPES.s2n*mTEPES.rs if (p,sc,n,rs) in mTEPES.psnrs]
-    OutputToFile = pd.Series(data=[abs(mTEPES.pDuals[f"eHydroInventory_{p}_{sc}_{st}('{n}', '{rs}')"])*1e3 for p,sc,st,n,rs in sPSSTNES], index=pd.Index(sPSSTNES))
+    OutputToFile = pd.Series(data=[abs(mTEPES.pDuals[f"eHydroInventory_{p}_{sc}_{st}('{n}', '{rs}')"])/mTEPES.pPeriodProb[p,sc]()/mTEPES.pLoadLevelDuration[p,sc,n]()*1e3 for p,sc,st,n,rs in sPSSTNES], index=pd.Index(sPSSTNES))
     if len(OutputToFile):
         OutputToFile.to_frame(name='WaterValue').reset_index().pivot_table(index=['level_0','level_1','level_3'], columns='level_4', values='WaterValue').rename_axis(['Period', 'Scenario', 'LoadLevel'], axis=0).rename_axis([None], axis=1).oT.write(f'{_path}/oT_Result_MarginalWaterValue_{CaseName}.csv', sep=',')
 

@@ -2,6 +2,7 @@
 
 ## [4.19.0rc] - 2026-09-25 Unreleased in PyPI
 
+- [FIXED] computation of dual variable in OutputResultsStorage
 - [FIXED] considering the period availability of the generating units in the objective function
 - [FIXED] a stage whose optimum is found without its duals continues without marginal prices instead of stopping. When the
   barrier solution of a quadratically constrained model is too inaccurate for Gurobi to compute the QCP duals, gurobipy raises
