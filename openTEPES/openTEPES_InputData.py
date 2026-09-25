@@ -392,12 +392,12 @@ def InputData(DirName, CaseName, mTEPES, pIndLogConsole, option_overrides=None):
         else:
             par[f'p{col}'] = v
 
-    # The price on a bus voltage's distance from its setpoint (VSet in oT_Data_BusVoltage), in EUR per p.u. per hour. Zero, the default,
-    # leaves the model as it was. See "The price on the voltage setpoint" in doc/md/InputData.md.
+    # The penalty on the deviation of a bus voltage from its setpoint (VSet in oT_Data_BusVoltage), in EUR per p.u. per hour. Zero,
+    # the default, leaves the model as it was. See "The penalty on the voltage setpoint deviation" in doc/md/InputData.md.
     # Checked here, after the scalars are read, so the check sees the case's own value and not only the default.
     par.setdefault('pVoltageDeviationCost', 0.0)
     if float(par['pVoltageDeviationCost']) < 0.0:
-        raise ValueError(f"VoltageDeviationCost = {par['pVoltageDeviationCost']} is negative; it prices a distance and must be at least 0")
+        raise ValueError(f"VoltageDeviationCost = {par['pVoltageDeviationCost']} is negative; it penalizes a deviation and must be at least 0")
 
     par['pPeriodWeight']         = dfs['dfPeriod']       ['Weight'        ].astype('int')                            # weights of periods                        [p.u.]
     par['pScenProb']             = dfs['dfScenario']     ['Probability'   ].astype('float64')                        # probabilities of scenarios                [p.u.]
@@ -916,7 +916,7 @@ def _apply_bus_voltage_limits(dfs, par, mTEPES):
     for nd in df.index:
         if nd not in par['pVMinBus']:
             continue
-        # A setpoint is optional and independent of the band: a bus may carry one without the other. It is priced only when
+        # A setpoint is optional and independent of the band: a bus may carry one without the other. It is penalized only when
         # VoltageDeviationCost is positive.
         pSet = df.at[nd, 'VSet'] if 'VSet' in df.columns else None
         if pSet is not None and not pd.isna(pSet) and float(pSet) > 0.0:
@@ -1208,9 +1208,9 @@ def ConfigureACData(mTEPES, dfs, par):
     mTEPES.pMinAngleDiff     = Param(mTEPES.laa,   initialize=par['pMinAngleDiff']              , within=Reals,            doc='Tightened angle-difference limit, lower [rad]'       )
     mTEPES.pVMinBus          = Param(mTEPES.nd,    initialize=par['pVMinBus']                   , within=NonNegativeReals, doc='Tightened minimum voltage magnitude [p.u.]'           )
     mTEPES.pVMaxBus          = Param(mTEPES.nd,    initialize=par['pVMaxBus']                   , within=NonNegativeReals, doc='Tightened maximum voltage magnitude [p.u.]'           )
-    # The buses with a voltage setpoint to price. The reference bus is left out: its voltage is fixed at VNom, so its distance from a setpoint is a
+    # The buses whose deviation from a voltage setpoint is penalized. The reference bus is left out: its voltage is fixed at VNom, so its distance from a setpoint is a
     # constant and pricing it adds a column the solver can do nothing with.
-    mTEPES.ndv               = Set(doc='bus with a priced voltage setpoint', initialize=[nd for nd in mTEPES.nd if nd in par['pVSetBus'] and nd != mTEPES.rf.first()])
+    mTEPES.ndv               = Set(doc='bus with a penalized voltage setpoint deviation', initialize=[nd for nd in mTEPES.nd if nd in par['pVSetBus'] and nd != mTEPES.rf.first()])
     mTEPES.pVSetBus          = Param(mTEPES.ndv,   initialize={nd: par['pVSetBus'][nd] for nd in mTEPES.ndv}, within=NonNegativeReals, doc='Voltage setpoint [p.u.]'       )
 
     mTEPES.pVMin             = Param(initialize=par['pVMin']        , within=NonNegativeReals, doc='Minimum voltage magnitude [p.u.]')

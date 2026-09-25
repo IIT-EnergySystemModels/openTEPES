@@ -154,7 +154,7 @@ def GenerationOperationModelFormulationObjFunct(OptModel, mTEPES, pIndLogConsole
         return OptModel.vTotalNPenalty[p,sc,n] == pEpsilonCurrent * mTEPES.pLoadLevelDuration[p,sc,n]() * sum(OptModel.vCurr[p,sc,n,ni,nf,cc] for ni,nf,cc in mTEPES.laa if (p,ni,nf,cc) in mTEPES.pla)
     setattr(OptModel, f'eTotalNPenalty_{p}_{sc}_{st}', Constraint(mTEPES.n, rule=eTotalNPenalty, doc='AC current penalty, objective only [MEUR]'))
 
-    # A bus voltage's distance from its setpoint, priced. The band in oT_Data_BusVoltage says where a voltage may be; nothing in the objective said
+    # A penalty on the deviation of a bus voltage from its setpoint. The band in oT_Data_BusVoltage says where a voltage may be; nothing in the objective said
     # where inside the band it should be, so with the injections fixed the solve returned any point of the band, and the current price above pushed
     # every voltage to its top. The distance is measured on vW, the squared voltage the model carries, and divided by 2 VSet, so that near the
     # setpoint it reads as |V - VSet| in p.u. Both parts are linear, so the relaxation stays a cone program.

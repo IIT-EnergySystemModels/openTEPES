@@ -1346,7 +1346,7 @@ def SettingUpVariables(OptModel, mTEPES):
 # ======================================================================================================================
 
 def VoltagePenaltyOn(mTEPES) -> bool:
-    """True when an AC case prices at least one bus voltage's distance from its setpoint."""
+    """True when an AC case penalizes the deviation of at least one bus voltage from its setpoint."""
     return bool(mTEPES.pIndACPowerFlow()) and hasattr(mTEPES, 'ndv') and len(mTEPES.ndv) > 0 and mTEPES.pVoltageDeviationCost() > 0.0
 
 
@@ -1376,7 +1376,7 @@ def SettingUpVariablesAC(OptModel, mTEPES):
         nFixedVariables += 1
 
     # --- distance from the voltage setpoint --------------------------------------------------------------------------------------------------------
-    # Declared only when a setpoint is priced, so a case that sets none builds exactly the model it did before. The two parts carry the distance
+    # Declared only when a setpoint deviation is penalized, so a case that sets none builds exactly the model it did before. The two parts carry the distance
     # above and below the setpoint in squared voltage, the quantity the model has, and eVoltageDeviation ties them to vW.
     if VoltagePenaltyOn(mTEPES):
         pSet = [(p,sc,n,nd) for p,sc,n in mTEPES.psn for nd in mTEPES.ndv]
