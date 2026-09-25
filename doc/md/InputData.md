@@ -908,13 +908,6 @@ piecewise-linear current (`IndACModelType = 1`), the circle is replaced by an in
 stays linear and never admits more than the rating; between the vertices it admits up to 3.4% less. The current limit is
 kept in both settings, because it also removes the flows of a branch that is out of service.
 
-On `9n_AC`, 618 of 52416 branch-hours are above their rating with the current limit only, the largest at 105.8%. With the
-apparent power limit none is, and the generation cost increases by 0.14%.
-
-With fixed generation, a branch that the known solution loads above its rating makes the problem infeasible under the
-apparent power limit, because the flows can move only slightly. Gurobi may report such a model as numerical trouble, not
-as infeasible.
-
 ### The penalty on the voltage setpoint deviation
 
 The voltage limits of a bus, VMin and VMax, are given globally or per bus in `oT_Data_BusVoltage.csv`. They state where
