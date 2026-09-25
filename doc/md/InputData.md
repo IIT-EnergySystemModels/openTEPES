@@ -235,6 +235,7 @@ A description of the system parameters included in the file `oT_Data_Parameter.c
 | ConverterNoLoadLoss   | No-load loss of one HVDC converter station, as a fraction of the link rating. Paid at each terminal while the link is in service. Used only when IndACConverter is different from 0. A modern station is about 0.001                                                       | p.u.   |
 | ConverterMarginalLoss | Marginal loss of one HVDC converter station, as a fraction of the power it carries. Paid at each terminal, either direction. Used only when IndACConverter is different from 0. A voltage-source station is about 0.010, a line-commutated one about 0.007                | p.u.   |
 | EpsilonCurrent      | Price on the AC branch current. See "The price on the branch current" below. Used only when IndACPowerFlow is 1                                                                                                                                                  | p.u.   |
+| VoltageDeviationCost| Penalty on the deviation of a bus voltage from its setpoint, VSet in oT_Data_BusVoltage. See "The penalty on the voltage setpoint deviation" below. Zero, the default, adds no penalty. Used only when IndACPowerFlow is different from 0                        | EUR/p.u./h |
 
 A time step greater than one hour is a convenient way to reduce the number of load levels in the time scope. The moving average of the demand, upward/downward
 operating reserves, variable generation/consumption/storage, and ESS energy inflows/outflows over the time step load levels is assigned to active load levels
@@ -892,6 +893,37 @@ nothing keeps the previous default.
 
 The price steers the solve and is not part of the reported system cost; it is reported beside it.
 
+### The penalty on the voltage setpoint deviation
+
+The voltage limits of a bus, VMin and VMax, are given globally or per bus in `oT_Data_BusVoltage.csv`. They state where
+the voltage may lie, but no term in the objective states where inside the limits it should lie. With a free dispatch, the
+generation cost determines the voltages. With fixed generation, as when a known power flow solution is reproduced, all
+voltage profiles within the limits have the same cost, and the solver returns one of them. The price on the branch current
+(see "The price on the branch current" above) then determines the voltages: a higher voltage carries the same power with a
+lower current, so that penalty drives every voltage to its upper limit.
+
+A voltage setpoint gives the objective a target. `VSet` in `oT_Data_BusVoltage.csv` gives the setpoint of a bus, and
+`VoltageDeviationCost` in `oT_Data_Parameter.csv` gives the penalty on the deviation from it, in EUR per p.u. of voltage per
+hour. The deviation is taken on the squared voltage that the model uses, and scaled so that near the setpoint it equals
+`|V - VSet|`. All terms are linear, so the relaxation remains a cone program. Like the current penalty, the deviation
+penalty affects the solution but is not part of the reported system cost; it is reported beside it as
+`AC Voltage Penalty (not in total)`.
+
+The penalty is a soft target, and it competes with the other terms of the objective:
+
+- **The current penalty.** Moving a voltage away from where the current penalty would put it requires reactive power flow,
+  which increases the current. With both penalties positive the result lies between the two: on `9n_AC` a bus with a
+  setpoint of 1.02 p.u. reaches 1.006 p.u. on average. With `EpsilonCurrent` at zero the setpoint alone determines the
+  voltage.
+- **Reactive power slack.** The slack should never be used to hold a setpoint. Keep the penalty well below the cost of the
+  reactive power a bus would need: at 1000 EUR/p.u./h a deviation of 0.01 p.u. costs 10 EUR/h, against 10000 EUR for one
+  Mvar of slack at the usual `ENSCost`.
+
+On a 695-bus Nordic transmission case with all generator outputs fixed at a reference power flow solution and
+`EpsilonCurrent` at zero, setpoints at 427 regulated buses with a penalty of 1000 EUR/p.u./h reduced the median voltage
+difference from the reference solution from 2.45 kV to 0.01 kV, with no reactive power slack. A penalty one hundred times
+higher gave the same result.
+
 ## Reactive power demand (optional file, AC only)
 
 The file `oT_Data_ReactiveDemand.csv` gives the reactive power demand of every node at every load level, in MVAr, with the same
@@ -934,6 +966,24 @@ device of -1.0 p.u. on a 100 MVA base is therefore a 100 MVAr reactor.
 
 Each unit of a bank carries the full susceptance of one unit, not a share of the bank. `Units = 4` with `Bshb = 0.075` on a
 1000 MVA base is four 75 MVAr steps, not four 18.75 MVAr steps.
+
+## Bus voltage limits and setpoints (optional file, AC only)
+
+The file `oT_Data_BusVoltage.csv` names a band and a setpoint for individual buses. It is read only when IndACPowerFlow is
+different from 0; a bus the file does not name keeps the band derived from VMin and VMax in `oT_Data_Parameter.csv`.
+
+| Identifier | Description |
+|:-----------|:------------|
+| Node | Bus the row applies to |
+
+| Parameter | Description | Unit |
+|:----------|:------------|:-----|
+| VMin | Minimum voltage magnitude of the bus. Given with VMax; equal values hold the bus at one voltage | p.u. |
+| VMax | Maximum voltage magnitude of the bus | p.u. |
+| VSet | Voltage setpoint of the bus, with the deviation penalized by `VoltageDeviationCost`. Optional, and independent of the band | p.u. |
+
+The band is applied after the bound tightening, so it replaces the band the branches imply. The reference bus is fixed at
+VNom whatever the file says, and a setpoint on it is not penalized.
 
 ## Variable electric transmission line TTC forward and backward (optional files)
 

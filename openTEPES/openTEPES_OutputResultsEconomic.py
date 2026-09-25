@@ -16,10 +16,12 @@ from   collections       import defaultdict
 
 try:
     from          .openTEPES_OutputResultsCommon import _outdir, PiePlots, LinePlots
+    from          .openTEPES_SettingUpVariables  import VoltagePenaltyOn
 except ImportError:
     import sys
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     from openTEPES.openTEPES_OutputResultsCommon import _outdir, PiePlots, LinePlots
+    from openTEPES.openTEPES_SettingUpVariables  import VoltagePenaltyOn
 
 
 def MarginalResults(DirName, CaseName, OptModel, mTEPES, pIndPlotOutput):
@@ -314,6 +316,11 @@ def CostSummaryResults(DirName, CaseName, OptModel, mTEPES):
         CurrPen  = pd.Series(data=[sum(pScenFactor[p,sc] * pEpsCurr * mTEPES.pLoadLevelDuration[p,sc,n]() * sum(OptModel.vCurr[p,sc,n,ni,nf,cc]() for ni,nf,cc in mTEPES.laa if (p,ni,nf,cc) in mTEPES.pla) for sc,n in pSNofP[p]) for p in mTEPES.p], index=mTEPES.p).to_frame(name='AC Current Penalty (not in total)').stack()
     else:
         CurrPen  = pd.Series(data=[0.0                                                                                                                                               for p in mTEPES.p], index=mTEPES.p).to_frame(name='AC Current Penalty (not in total)').stack()
+    # The voltage setpoint penalty, reported beside the current penalty and for the same reason: it steers the solve and is not money.
+    if VoltagePenaltyOn(mTEPES):
+        VoltPen  = pd.Series(data=[sum(pScenFactor[p,sc] * OptModel.vTotalVPenalty[p,sc,n]() for sc,n in pSNofP[p]) for p in mTEPES.p], index=mTEPES.p).to_frame(name='AC Voltage Penalty (not in total)').stack()
+    else:
+        VoltPen  = pd.Series(data=[0.0 for p in mTEPES.p], index=mTEPES.p).to_frame(name='AC Voltage Penalty (not in total)').stack()
     ElecRelCost     = pd.Series(data=[sum(pScenFactor[p,sc] * OptModel.vTotalRElecCost[p,sc,n]() for sc,n in pSNofP[p]) for p in mTEPES.p], index=mTEPES.p).to_frame(name='Reliability Cost'          ).stack()
     if mTEPES.pIndHydrogen():
         H2RelCost   = pd.Series(data=[sum(pScenFactor[p,sc] * OptModel.vTotalRH2Cost  [p,sc,n]() for sc,n in pSNofP[p]) for p in mTEPES.p], index=mTEPES.p).to_frame(name='Reliability Cost Hydrogen' ).stack()
@@ -324,7 +331,7 @@ def CostSummaryResults(DirName, CaseName, OptModel, mTEPES):
     else:
         HeatRelCost = pd.Series(data=[0.0                                                                               for p in mTEPES.p], index=mTEPES.p).to_frame(name='Reliability Cost Heat'     ).stack()
     # The two AC rows are added only on an AC case. Emitting them as zeros everywhere changed the shape of a file every existing case writes.
-    pRows          = [GenInvCost, GenRetCost, NetInvCost] + ([ReactInvCost] if mTEPES.pIndACPowerFlow() else []) + [RsrInvCost, H2InvCost, HeatInvCost, GenCost, ConCost, EmiCost, NetCost] + ([CurrPen] if mTEPES.pIndACPowerFlow() == 1 else []) + [ElecRelCost, H2RelCost, HeatRelCost]
+    pRows          = [GenInvCost, GenRetCost, NetInvCost] + ([ReactInvCost] if mTEPES.pIndACPowerFlow() else []) + [RsrInvCost, H2InvCost, HeatInvCost, GenCost, ConCost, EmiCost, NetCost] + ([CurrPen] if mTEPES.pIndACPowerFlow() == 1 else []) + ([VoltPen] if VoltagePenaltyOn(mTEPES) else []) + [ElecRelCost, H2RelCost, HeatRelCost]
     CostSummary    = pd.concat(pRows).reset_index().rename(columns={'level_0': 'Period', 'level_1': 'Cost', 0: 'MEUR'})
 
     CostSummary['MEUR/year'] = CostSummary['MEUR']

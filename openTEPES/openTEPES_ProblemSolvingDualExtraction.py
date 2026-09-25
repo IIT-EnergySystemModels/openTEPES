@@ -134,6 +134,10 @@ def collect_duals(OptModel, mTEPES) -> None:
     ``MarginalResults`` / ``EconomicResults`` rely on. The ``dual`` Suffix is deleted from ``OptModel`` once
     the duals have been collected so the next iteration of the stage loop starts with a clean slate.
     """
+    # No Suffix means the solve returned no duals: the model was a MIP never re-solved as an LP, or the solver could not
+    # compute them. There is nothing to collect, and nothing to delete.
+    if not hasattr(OptModel, 'dual'):
+        return
     pDuals = {}
     for con in OptModel.component_objects(pyo.Constraint, active=True):
         if con.is_indexed():
