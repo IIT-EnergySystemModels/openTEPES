@@ -22,6 +22,7 @@ try:
     from          .openTEPES_ModelFormulationHydro       import GenerationOperationModelFormulationReservoir
     from          .openTEPES_ModelFormulationHydrogen    import NetworkH2OperationModelFormulation
     from          .openTEPES_ModelFormulationHeat        import NetworkHeatOperationModelFormulation
+    from          .openTEPES_SettingUpVariables          import VoltagePenaltyOn
 except ImportError:
     import sys
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -31,6 +32,7 @@ except ImportError:
     from openTEPES.openTEPES_ModelFormulationHydro       import GenerationOperationModelFormulationReservoir
     from openTEPES.openTEPES_ModelFormulationHydrogen    import NetworkH2OperationModelFormulation
     from openTEPES.openTEPES_ModelFormulationHeat        import NetworkHeatOperationModelFormulation
+    from openTEPES.openTEPES_SettingUpVariables          import VoltagePenaltyOn
 
 timer = HierarchicalTimer()
 
@@ -165,6 +167,9 @@ def StageSolve(OptModel, mTEPES, DirName, CaseName, SolverName, pIndLogConsole, 
                     # relaxation buys voltage with current that does not exist: a branch sits at its thermal limit carrying a fifth of the current.
                     if mTEPES.pIndACPowerFlow() == 1:
                         vTotalOCost += sum(pScenFactor[p,sc] * OptModel.vTotalNPenalty [p,sc,n] for p,sc,n in mTEPES.psn)
+                    # The voltage setpoint penalty, likewise as the global objective carries it.
+                    if VoltagePenaltyOn(mTEPES):
+                        vTotalOCost += sum(pScenFactor[p,sc] * OptModel.vTotalVPenalty [p,sc,n] for p,sc,n in mTEPES.psn)
                     return vTotalOCost
                 setattr(OptModel, f'eTotalOCost_{p}_{sc}_{st}', Objective(rule=eTotalOCost, sense=minimize, doc='total system operation cost [MEUR]'))
 

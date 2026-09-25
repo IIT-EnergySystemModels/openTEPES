@@ -164,6 +164,72 @@ def test_bus_voltage_table_is_ignored_on_a_dc_run(tmp_path):
     assert "pVMinBus" not in par
 
 
+def _with_setpoint(tmp_path, name, cost, vset=1.0):
+    """9n_AC with one busbar given a voltage setpoint, and a price on its distance from it."""
+    d, n = _clone(tmp_path, "9n_AC", name)
+    nodes = pd.read_csv(os.path.join(d, n, f"oT_Dict_Node_{n}.csv")).iloc[:, 0].astype(str).tolist()
+    ref = pd.read_csv(os.path.join(d, n, f"oT_Data_Parameter_{n}.csv"))["ReferenceNode"].iloc[0]
+    bus = next(nd for nd in nodes if nd != ref)
+    _write(os.path.join(d), n, "BusVoltage", pd.DataFrame({"Node": [bus], "VSet": [vset]}))
+    param = pd.read_csv(os.path.join(d, n, f"oT_Data_Parameter_{n}.csv"))
+    param["VoltageDeviationCost"] = cost
+    _write(os.path.join(d), n, "Parameter", param)
+    return d, n, bus
+
+
+def test_a_voltage_setpoint_is_read_with_its_price(tmp_path):
+    """VSet reaches the model as a setpoint, and the price arrives in MEUR per p.u. per hour."""
+    d, n, bus = _with_setpoint(tmp_path, "9n_AC_vset", cost=1000.0, vset=1.01)
+    mTEPES, _, par = _build(d, n, with_vars=True)
+    assert list(mTEPES.ndv) == [bus]
+    assert mTEPES.pVSetBus[bus] == pytest.approx(1.01)
+    assert mTEPES.pVoltageDeviationCost() == pytest.approx(1000.0 * 1e-6)
+    assert hasattr(mTEPES, "vVoltageDevUp") and hasattr(mTEPES, "vTotalVPenalty")
+    assert par["pVMinBus"][bus] < par["pVMaxBus"][bus], "a setpoint alone leaves the band as it was"
+
+
+def test_a_setpoint_without_a_price_builds_the_same_model(tmp_path):
+    """No price, no columns: a case that names setpoints but does not price them is unchanged."""
+    d, n, _ = _with_setpoint(tmp_path, "9n_AC_vset_free", cost=0.0)
+    mTEPES, _, _ = _build(d, n, with_vars=True)
+    assert not hasattr(mTEPES, "vVoltageDevUp")
+    assert not hasattr(mTEPES, "vTotalVPenalty")
+
+
+def test_a_negative_voltage_price_is_refused(tmp_path):
+    """The price is checked after the case's scalars are read, so the case's own value is what gets checked."""
+    d, n, _ = _with_setpoint(tmp_path, "9n_AC_vset_negative", cost=-1.0)
+    with pytest.raises(ValueError, match="VoltageDeviationCost"):
+        _build(d, n)
+
+
+@pytest.mark.solve
+def test_a_priced_setpoint_holds_its_busbar(tmp_path):
+    """With the price on, the busbar keeps to its setpoint; without it, the same busbar sits elsewhere in its band.
+
+    The setpoint is 1.0 p.u., which the busbar holds. Given 1.02 instead, with the default current price, it settles at
+    1.006 on average: the price is a soft target, weighed against the rest of the objective, and a setpoint it only
+    partly reaches would make this test about that trade-off rather than about the term.
+    """
+    from openTEPES.openTEPES import openTEPES_run
+    if not SolverFactory("gurobi").available(exception_flag=False):
+        pytest.skip("gurobi is not available")
+
+    def distance(cost):
+        d, n, bus = _with_setpoint(tmp_path / f"c{int(cost)}", "9n_AC_vset_solve", cost=cost, vset=1.0)
+        try:
+            openTEPES_run(d, n, "gurobi", pIndOutputResults=1, pIndLogConsole=0)
+        except Exception as e:
+            if "size-limited" in str(e) or "too large" in str(e).lower():
+                pytest.skip("gurobi licence cannot take a model this size")
+            raise
+        v = pd.read_csv(os.path.join(d, n, f"oT_Result_NetworkVoltageMagnitude_{n}.csv"))
+        return float((v[bus] - 1.0).abs().mean())
+
+    assert distance(1e6) < 1e-4, "a priced busbar should keep to its setpoint"
+    assert distance(0.0) > 1e-3, "without the price the busbar should sit elsewhere, or the test says nothing"
+
+
 # --------------------------------------------------------------------------------------------------------------------
 # Duals on a quadratically constrained model
 # --------------------------------------------------------------------------------------------------------------------
