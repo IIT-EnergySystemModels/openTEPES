@@ -12,7 +12,7 @@ import math
 import networkx as nx
 import pandas   as pd
 from collections   import defaultdict
-from pyomo.environ import Constraint, Set, RangeSet, Param, Reals, Var, tan, NonNegativeReals, Objective, SolverFactory, sin, sqrt
+from pyomo.environ import Constraint, Set, RangeSet, Param, Reals, Var, tan, NonNegativeReals, Objective, SolverFactory, Suffix, sin, sqrt
 
 
 def GenerationOperationModelFormulationDemand(OptModel, mTEPES, pIndLogConsole, p, sc, st):
@@ -2377,12 +2377,18 @@ def ACRestorationPass(OptModel, mTEPES, SolverName='ipopt', pIndLogConsole=0):
     # Pyomo loads a solver's solution into the model as it returns, so an iterate from a solve that is about to be rejected would replace the relaxed
     # values before the termination condition below is read, and every result written afterwards would describe a point that did not converge. Holding
     # the solution back until the condition has been read is what makes the warning below true.
+    # Duals of this solve, only if the relaxed solve reported them.
+    pWantDuals = bool(getattr(mTEPES, 'pDuals', None))
+    if pWantDuals and not hasattr(OptModel, 'dual'):
+        OptModel.dual = Suffix(direction=Suffix.IMPORT)
     Results = Solver.solve(OptModel, load_solutions=False, tee=bool(pIndLogConsole))
     pStatus = str(Results.solver.termination_condition)
 
     if pStatus not in ('optimal', 'locallyOptimal', 'feasible'):
         print(f'### WARNING: the AC restoration did not converge ({pStatus}). The relaxed solution is unchanged in the results, and it is a LOWER '
               f'bound on the true cost, not the true cost.')
+        if hasattr(OptModel, 'dual'):
+            OptModel.del_component(OptModel.dual)
         return {'status': pStatus, 'before': pBefore, 'after': None, 'seconds': time.time() - StartTime}
 
     OptModel.solutions.load_from(Results)
@@ -2390,14 +2396,20 @@ def ACRestorationPass(OptModel, mTEPES, SolverName='ipopt', pIndLogConsole=0):
     pAfter = OptModel.vTotalSCost()
     pGap   = 100.0 * (pAfter - pBefore) / abs(pAfter) if pAfter else 0.0
 
-    # The duals in mTEPES.pDuals belong to the relaxed solve and describe a solution that no longer exists. Reporting them beside the restored primal
-    # values would publish locational prices from one operating point and voltages, flows and costs from another, differing by exactly the amount this
-    # pass just moved. Clearing them makes the marginal writers skip: OutputResultsEconomic guards on pHasDuals and ACMarginalResults on key presence,
-    # so an absent price is reported as absent rather than as a wrong number.
-    if getattr(mTEPES, 'pDuals', None):
-        mTEPES.pDuals = {}
-        print('AC restoration                         ...  marginal prices dropped: the duals were the relaxed solve\'s and do not describe the '
-              'restored operating point. Re-run with IndACRestore = 0 if you need them.')
+    # The relaxed duals describe another point; the duals of the restored point replace them.
+    if pWantDuals:
+        pDuals = {}
+        if hasattr(OptModel, 'dual'):
+            for con in OptModel.component_objects(Constraint, active=True):
+                if con.is_indexed():
+                    for index in con:
+                        pValue = OptModel.dual.get(con[index])
+                        if pValue is not None:
+                            pDuals[str(con.name) + str(index)] = pValue
+            OptModel.del_component(OptModel.dual)
+        mTEPES.pDuals = pDuals
+        pSource = 'from the restored point' if pDuals else 'not reported: the solver returned no duals'
+        print(f'AC restoration                         ...  marginal prices {pSource}')
     print(f'AC restoration                         ...  {pStatus}, total cost {pBefore:.4f} -> {pAfter:.4f} MEUR '
           f'({pGap:+.2f}% the relaxation was understating), {round(time.time() - StartTime)} s')
     return {'status': pStatus, 'before': pBefore, 'after': pAfter, 'gap_percent': pGap, 'rows': nRows,

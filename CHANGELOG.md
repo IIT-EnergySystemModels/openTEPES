@@ -3,6 +3,7 @@
 ## [4.19.0rc] - 2026-09-25 Unreleased in PyPI
 
 - [FIXED] computation of dual variable in OutputResultsStorage
+- [FIXED] with `IndACRestore = 1`, the locational marginal prices are the duals of the AC recovery step instead of none.
 - [FIXED] considering the period availability of the generating units in the objective function
 - [ADDED] `IndACApparentPowerLimit` in `oT_Data_Option` limits the apparent power at both ends of each AC branch to its rating.
   The current limit alone admits `TTC * V / Vmin`, 5% above the rating at 1.0 p.u. The SOCP and piecewise-linear models use
