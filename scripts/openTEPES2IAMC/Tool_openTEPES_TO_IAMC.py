@@ -127,13 +127,13 @@ def Converter_Type1(X0,X1,X2,X4,X5,X6):
         requires_zone_sum = (a['node'] != a['region']).any()
         a[PeriodName] = a[PeriodName] * 1e-3
     else:
-        a.loc[a['model'] == PeriodName, 'model'] = str(X4)
+        a.loc[a['model']    == PeriodName, 'model'] = str(X4)
         a.loc[a['scenario'] == ScenarioName, 'scenario'] = X5 + '|' + ScenarioName
         for k in dfGeneration.index:
             a.loc[a['region']   == k, 'region']   = dfGeneration['Node'][k]
             a.loc[a['variable'] == k, 'variable'] = var_PowerGeneration.loc[X0]['Variable'] + '|' + dfGeneration['Technology'][k]
         for k in NodeName:
-            a.loc[a['region'] == k, 'region'] = dfNodeToZone['Zone'][k]
+            a.loc[a['region']   == k, 'region']   = dfNodeToZone['Zone'][k]
 
     a['subannual'] = a['subannual'].str[:11]
     # a['subannual'] = a['subannual'].str[5:]
@@ -183,7 +183,7 @@ def Converter_Type3(X1):
     a = a.rename(columns={"Model": "model", "Scenario": "scenario", "Region": "region", "Variable": "variable", "Unit": "unit", "Subannual": "subannual", X1: PeriodName})
     # Changing Values in Model and Scenario columns
     a.loc[a['variable'] == ScenarioName, 'variable'] = var_PowerTransmission.loc[X1]['Variable']
-    a.loc[a['unit'] == ScenarioName, 'unit'] = var_PowerTransmission.loc[X1]['Unit']
+    a.loc[a['unit']     == ScenarioName, 'unit']     = var_PowerTransmission.loc[X1]['Unit']
     a = a[['model', 'scenario', 'region', 'variable', 'unit', PeriodName]]
 
     return a
@@ -289,6 +289,7 @@ pNetwork                                                      = pNetwork.assign(
 InputLossFactor                                                    = Converter_Type3('LossFactor')
 InputReactance                                                     = Converter_Type3('Reactance')
 InputTTC                                                           = Converter_Type3('TTC')
+InputTTC[PeriodName]                                               = pd.to_numeric(InputTTC[PeriodName]) / 1e3
 # InputTTCBck                                                        = Converter_Type3('TTCBck')
 InputSecurityFactor                                                = Converter_Type3('SecurityFactor')
 # InputFxCost                                                        = Converter_Type3('FixedCost')
