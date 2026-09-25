@@ -861,6 +861,17 @@ def test_restoration_makes_the_relaxation_exact(tmp_path):
     assert pP < 1e-3 and pQ < 1e-3, f"the restored flows do not match the bus voltages: {pP:.5f} MW, {pQ:.5f} Mvar"
 
 
+@pytest.mark.solve
+def test_restoration_reports_the_prices_of_the_restored_point(tmp_path):
+    """The prices after the recovery step are the duals of that solve, not dropped and not the relaxed ones."""
+    dir_name, case = _tiny_ac_case(tmp_path, "9n_restore_prices")
+    mTEPES = _run_or_skip(str(dir_name), case, "ipopt", 1, 0)
+    pBalance = [k for k in mTEPES.pDuals if k.startswith("eBalanceElec")]
+    assert pBalance, "the recovery step should leave the nodal balance duals in pDuals"
+    srmc = pd.read_csv(os.path.join(dir_name, case, f"oT_Result_NetworkSRMC_{case}.csv"), index_col=[0, 1, 2])
+    assert srmc.notna().all().all() and (srmc.abs() < 1e4).all().all()
+
+
 def test_the_b_matrix_leaves_out_the_dc_links():
     """The susceptance matrix is a Kirchhoff object. A point-to-point DC link carries what its converters are told to
     carry, so putting it in the matrix would make the model believe power splits across it by impedance."""

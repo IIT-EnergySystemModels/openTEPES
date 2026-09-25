@@ -1129,6 +1129,9 @@ are independent: a tight cone can accompany a large residual.
 A relaxed solve is not expected to satisfy the series relation exactly, and the residual is reported without a threshold. On
 the bundled `9n_AC` case the relaxed solution is about 68 MW off; with `IndACRestore = 1` the same case returns 0.00001 MW.
 
+With `IndACRestore = 1`, the marginal prices are the duals of the recovery step, the prices of the restored operating point.
+The duals of the relaxed solve describe a different point and are not reported.
+
 ## Hydrogen balance and network operation
 
 File `oT_Result_BalanceHydrogen.csv`
