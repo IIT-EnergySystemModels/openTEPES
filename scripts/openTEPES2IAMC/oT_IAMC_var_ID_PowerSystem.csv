@@ -4,7 +4,7 @@ ZoneToArea,,,Location of zones at areas
 AreaToRegion,,,Location of areas at regions
 OperatingReserveUp,Network|Electricity|Reserve|Requirement|Operating Reserve|Up,MW,Upward   operating reserves for each load level
 OperatingReserveDown,Network|Electricity|Reserve|Requirement|Operating Reserve|Down,MW,Downward operating reserves for each load level
-PowerDemand,Final Energy|Electricity,EJ/yr,Demand of the node in the load level
+PowerDemand,Final Energy|Electricity,GWh,Demand of the node in the load level
 ENSCost,Energy Not Serve Cost|Electricity,EUR/MWh,Cost of energy not served. Cost of load curtailment. Value of Lost Load (VoLL)
 CO2Cost,Price|Carbon,EUR/t CO2,Cost of CO2 emissions
 Sbase,,MW,Base power used in the DCLF

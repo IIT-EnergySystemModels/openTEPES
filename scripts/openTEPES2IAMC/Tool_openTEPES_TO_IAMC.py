@@ -8,7 +8,7 @@ StartTime = time.time()
 ModelName = 'openTEPES 4.18.17'
 # DirName   = Path('C:/Users/Erik/Documents/GitHub/openTEPES_PRO/openTEPES')
 DirName   = Path('C:/Users/aramos/OneDrive - Universidad Pontificia Comillas/Andres/openTEPES')
-CaseName  = 'EAPP'                              # To select the case
+CaseName  = 'KE2030'                              # To select the case
 Folder = '_IAMC'
 _path = os.path.join(DirName, CaseName)
 
@@ -25,12 +25,12 @@ var_PowerSystem        = pd.read_csv(os.path.join(DirName, Folder, 'oT_IAMC_var_
 var_PowerTransmission  = pd.read_csv(os.path.join(DirName, Folder, 'oT_IAMC_var_ID_PowerTransmission.csv'), index_col=[0])
 var_PowerGeneration    = pd.read_csv(os.path.join(DirName, Folder, 'oT_IAMC_var_ID_PowerGeneration.csv'  ), index_col=[0])
 
-print('Dictionary                            status: OK')
+print('Dictionary                        status: OK')
 
 #%% reading data from CSV
 dfOption             = pd.read_csv(f'{_path}/oT_Data_Option_'               f'{CaseName}.csv', index_col=[0    ])
 dfParameter          = pd.read_csv(f'{_path}/oT_Data_Parameter_'            f'{CaseName}.csv', index_col=[0    ])
-dfDuration           = pd.read_csv(f'{_path}/oT_Data_Duration_'             f'{CaseName}.csv', index_col=[0]    )
+dfDuration           = pd.read_csv(f'{_path}/oT_Data_Duration_'             f'{CaseName}.csv', index_col=[0    ])
 dfScenario           = pd.read_csv(f'{_path}/oT_Data_Scenario_'             f'{CaseName}.csv', index_col=[0    ])
 dfNodeLocation       = pd.read_csv(f'{_path}/oT_Data_NodeLocation_'         f'{CaseName}.csv', index_col=[0    ])
 dfDuration           = pd.read_csv(f'{_path}/oT_Data_Duration_'             f'{CaseName}.csv', index_col=[0    ])
@@ -44,24 +44,31 @@ dfVariableMinStorage = pd.read_csv(f'{_path}/oT_Data_VariableMinStorage_'   f'{C
 dfVariableMaxStorage = pd.read_csv(f'{_path}/oT_Data_VariableMaxStorage_'   f'{CaseName}.csv', index_col=[0,1,2])
 dfESSEnergyInflows   = pd.read_csv(f'{_path}/oT_Data_EnergyInflows_'        f'{CaseName}.csv', index_col=[0,1,2])
 dfNetwork            = pd.read_csv(f'{_path}/oT_Data_Network_'              f'{CaseName}.csv', index_col=[0,1,2])
-dfNodeToZone         = pd.read_csv(f'{_path}/oT_Dict_NodeToZone_'           f'{CaseName}.csv', index_col=[0 ])
-# substitute NaN by 0
-dfOption.fillna              (0, inplace=True)
-dfParameter.fillna           (0, inplace=True)
-dfDuration.fillna            (0, inplace=True)
-dfScenario.fillna            (0, inplace=True)
-dfNodeLocation.fillna        (0, inplace=True)
-dfDuration.fillna            (0, inplace=True)
-dfDemand.fillna              (0, inplace=True)
-dfDwOperatingReserve.fillna  (0, inplace=True)
-dfUpOperatingReserve.fillna  (0, inplace=True)
-dfGeneration.fillna          (0, inplace=True)
-dfVariableMaxPower.fillna    (0, inplace=True)
-dfVariableMinPower.fillna    (0, inplace=True)
-dfVariableMinStorage.fillna  (0, inplace=True)
-dfVariableMaxStorage.fillna  (0, inplace=True)
-dfESSEnergyInflows.fillna    (0, inplace=True)
-dfNetwork.fillna             (0, inplace=True)
+dfNodeToZone         = pd.read_csv(f'{_path}/oT_Dict_NodeToZone_'           f'{CaseName}.csv', index_col=[0    ])
+# substitute NaN by 0 only in numeric columns
+def fillna_numeric(df, value=0.0):
+    numeric_cols = df.select_dtypes(include='number').columns
+    if len(numeric_cols):
+        df[numeric_cols] = df[numeric_cols].fillna(value)
+
+for df in (
+    dfOption,
+    dfParameter,
+    dfDuration,
+    dfScenario,
+    dfNodeLocation,
+    dfDemand,
+    dfDwOperatingReserve,
+    dfUpOperatingReserve,
+    dfGeneration,
+    dfVariableMaxPower,
+    dfVariableMinPower,
+    dfVariableMinStorage,
+    dfVariableMaxStorage,
+    dfESSEnergyInflows,
+    dfNetwork,
+):
+    fillna_numeric(df)
 
 dfESSEnergyInflows = dfESSEnergyInflows/1000
 
@@ -74,7 +81,7 @@ def Converter_Type1(X0,X1,X2,X4,X5,X6):
     VariableType = X1['Variable'][X0]
     UnitType     = X1['Unit'][X0]
     NodeName    = dfDemand.columns
-    # From multiple columns to one colums
+    # From multiple columns to one column
     a = X2.stack()
     # To set index
     a.index.names = ['Period', 'Scenario', 'LoadLevel', 'Node']
@@ -83,7 +90,7 @@ def Converter_Type1(X0,X1,X2,X4,X5,X6):
     # Getting scenario and period names
     ScenarioName = a['Scenario'][0]
     # ScenarioName = "TF"
-    PeriodName   = a['Period'][0]
+    PeriodName   = str(a['Period'][0])
     # YearName   = PeriodName.split("y")[1]
     if X6 == 2:
         array = pGeneration1['index']
@@ -107,14 +114,18 @@ def Converter_Type1(X0,X1,X2,X4,X5,X6):
     # Reorder columns
     a = a[['Scenario', 'Period', 'Node', 'Variable', 'Unit', 'LoadLevel', 0]]
     # Changing column names
-    a = a.rename(columns={"Period": "model", "Scenario": "scenario", "Node": "region", "Variable": "variable", "Unit": "unit", "LoadLevel": "subannual", 0: 2030})
+    a = a.rename(columns={"Period": "model", "Scenario": "scenario", "Node": "region", "Variable": "variable", "Unit": "unit", "LoadLevel": "subannual", 0: PeriodName})
+    a['model'] = a['model'].astype(str)
+    a['scenario'] = a['scenario'].astype(str)
+    requires_zone_sum = False
     # Changing Values in Model and Scenario columns
     if X6 == 0:
         a.loc[a['model'] == PeriodName, 'model'] = str(X4)
         a.loc[a['scenario'] == ScenarioName, 'scenario'] = X5 + '|' + ScenarioName
-        for k in NodeName:
-            a.loc[a['region'] == k, 'region'] = dfNodeToZone['Zone'][k]
-        a[2030] = a[2030] * 3.6e-9
+        a['node'] = a['region']
+        a['region'] = a['region'].map(dfNodeToZone['Zone']).fillna(a['region'])
+        requires_zone_sum = (a['node'] != a['region']).any()
+        a[PeriodName] = a[PeriodName] * 1e-3
     else:
         a.loc[a['model'] == PeriodName, 'model'] = str(X4)
         a.loc[a['scenario'] == ScenarioName, 'scenario'] = X5 + '|' + ScenarioName
@@ -130,6 +141,13 @@ def Converter_Type1(X0,X1,X2,X4,X5,X6):
     # a['time'] = pd.to_datetime(a['time'], utc=True)
     a['subannual'] = pd.to_datetime(a['subannual'])
     a['subannual'] = a['subannual'].dt.strftime("%m-%d %H:%M+01:00")
+    if X6 == 0 and requires_zone_sum:
+        a = a.groupby(
+            by=['model', 'scenario', 'region', 'variable', 'unit', 'subannual'],
+            as_index=False,
+            sort=False
+        )[PeriodName].sum()
+    a = a[['model', 'scenario', 'region', 'variable', 'unit', 'subannual', PeriodName]]
     return a
 
 #%% Function Type 2
@@ -141,19 +159,19 @@ def Converter_Type2(X1):
         # Selecting Columns
         a = pGeneration0[['Model', 'Scenario', 'Node', 'Variable', 'Unit', 'Subannual', X1]]
         # Changing column names
-        a = a.rename(columns={"Model": "model", "Scenario": "scenario", "Node": "region", "Variable": "variable", "Unit": "unit", "Subannual": "subannual", X1: 2030})
+        a = a.rename(columns={"Model": "model", "Scenario": "scenario", "Node": "region", "Variable": "variable", "Unit": "unit", "Subannual": "subannual", X1: PeriodName})
         # Changing Values in Model and Scenario columns
         a.loc[a['variable'] == ScenarioName, 'variable'] = var_PowerGeneration.loc[X1]['Variable'] + '|' + pGeneration0['Technology']
     elif var_PowerGeneration.loc[X1]['idx'] == 1:
         # Selecting Columns
         a = pGeneration1[['Model', 'Scenario', 'Node', 'Variable', 'Unit', 'Subannual', X1]]
         # Changing column names
-        a = a.rename(columns={"Model": "model", "Scenario": "scenario", "Node": "region", "Variable": "variable", "Unit": "unit", "Subannual": "subannual", X1: 2030})
+        a = a.rename(columns={"Model": "model", "Scenario": "scenario", "Node": "region", "Variable": "variable", "Unit": "unit", "Subannual": "subannual", X1: PeriodName})
         a.loc[a['variable'] == ScenarioName, 'variable'] = var_PowerGeneration.loc[X1]['Variable'] + '|' + pGeneration1['Technology']
     a.loc[a['unit'] == ScenarioName, 'unit'] = var_PowerGeneration.loc[X1]['Unit']
     for i in NodeName:
         a.loc[a['region'] == i, 'region'] = dfNodeToZone['Zone'][i]
-    a = a[['model', 'scenario', 'region', 'variable', 'unit', 2030]]
+    a = a[['model', 'scenario', 'region', 'variable', 'unit', PeriodName]]
 
     return a
 
@@ -162,11 +180,11 @@ def Converter_Type3(X1):
     # Selecting Columns
     a = pNetwork[['Model', 'Scenario', 'Region', 'Variable', 'Unit', 'Subannual', X1]]
     # Changing column names
-    a = a.rename(columns={"Model": "model", "Scenario": "scenario", "Region": "region", "Variable": "variable", "Unit": "unit", "Subannual": "subannual", X1: 2030})
+    a = a.rename(columns={"Model": "model", "Scenario": "scenario", "Region": "region", "Variable": "variable", "Unit": "unit", "Subannual": "subannual", X1: PeriodName})
     # Changing Values in Model and Scenario columns
     a.loc[a['variable'] == ScenarioName, 'variable'] = var_PowerTransmission.loc[X1]['Variable']
     a.loc[a['unit'] == ScenarioName, 'unit'] = var_PowerTransmission.loc[X1]['Unit']
-    a = a[['model', 'scenario', 'region', 'variable', 'unit', 2030]]
+    a = a[['model', 'scenario', 'region', 'variable', 'unit', PeriodName]]
 
     return a
 #%% Power Demand - Dataframe
@@ -177,7 +195,7 @@ PowerDemandDataTime = time.time() - StartTime
 StartTime           = time.time()
 print('PowerDemand       input data                ... ', round(PowerDemandDataTime), 's')
 InputDemand.to_csv(f'{Folder}/oT_IAMC_PowerDemand_'f'{ModelName}_{CaseName}.csv', index=False, sep=',')
-print('Transforming PowerDemand data         status: OK')
+print('Transforming PowerDemand data     status: OK')
 
 PowerSystemDataTime = time.time() - StartTime
 StartTime           = time.time()
@@ -249,7 +267,7 @@ InputVariableCost                                                  = Converter_T
 PowerGenerationDataTime   = time.time() - StartTime
 StartTime                 = time.time()
 print('PowerGeneration   input data                ... ', round(PowerGenerationDataTime), 's')
-print('Transforming PowerGeneration data     status: OK')
+print('Transforming PowerGeneration data status: OK')
 
 #%% Power Network - Main Dataframe
 # Changing indexes
@@ -277,13 +295,13 @@ InputSecurityFactor                                                = Converter_T
 # InputFxChargeRate                                                  = Converter_Type3('FixedChargeRate')
 # InputInvestment                                                    = Converter_Type3('BinaryInvestment')
 
-InputVariableCost[2030] = InputFuelCost[2030] * InputLinearVarCost[2030]
+InputVariableCost[PeriodName] = InputFuelCost[PeriodName] * InputLinearVarCost[PeriodName]
 InputVariableCost['unit'] = var_PowerGeneration.loc['VariableCost']['Unit']
 
-InputEfficiency      = InputEfficiency.groupby(by=["model", "scenario", "region", "variable", "unit"]).mean().reset_index().sort_values(by = ["variable", "region"])
-InputVariableCost    = InputVariableCost.groupby(by=["model", "scenario", "region", "variable", "unit"]).mean().reset_index().sort_values(by = ["variable", "region"])
+InputEfficiency      = InputEfficiency.groupby(     by=["model", "scenario", "region", "variable", "unit"]).mean().reset_index().sort_values(by = ["variable", "region"])
+InputVariableCost    = InputVariableCost.groupby   (by=["model", "scenario", "region", "variable", "unit"]).mean().reset_index().sort_values(by = ["variable", "region"])
 InputConstantVarCost = InputConstantVarCost.groupby(by=["model", "scenario", "region", "variable", "unit"]).mean().reset_index().sort_values(by = ["variable", "region"])
-InputOMVarCost       = InputOMVarCost.groupby(by=["model", "scenario", "region", "variable", "unit"]).mean().reset_index().sort_values(by = ["variable", "region"])
+InputOMVarCost       = InputOMVarCost.groupby(      by=["model", "scenario", "region", "variable", "unit"]).mean().reset_index().sort_values(by = ["variable", "region"])
 # InputLossFactor.fillna              ("", inplace=True)
 # InputReactance.fillna              ("", inplace=True)
 # InputSecurityFactor.fillna              ("", inplace=True)
@@ -320,14 +338,14 @@ PowerTransmissionDataTime = time.time() - StartTime
 StartTime                 = time.time()
 print('PowerGeneration   input data                ... ', round(PowerTransmissionDataTime), 's')
 
-InputLossFactor = InputLossFactor.groupby(by=["model", "scenario", "region", "variable", "unit"]).mean().reset_index().sort_values(by = ["variable", "region"])
-InputReactance = InputReactance.groupby(by=["model", "scenario", "region", "variable", "unit"]).mean().reset_index().sort_values(by = ["variable", "region"])
+InputLossFactor = InputLossFactor.groupby(        by=["model", "scenario", "region", "variable", "unit"]).mean().reset_index().sort_values(by = ["variable", "region"])
+InputReactance = InputReactance.groupby(          by=["model", "scenario", "region", "variable", "unit"]).mean().reset_index().sort_values(by = ["variable", "region"])
 InputSecurityFactor = InputSecurityFactor.groupby(by=["model", "scenario", "region", "variable", "unit"]).mean().reset_index().sort_values(by = ["variable", "region"])
 
 trans_frames = [
-          InputLossFactor.sort_values(by ='region' ),
-          InputReactance.sort_values(by ='region' ),
-          InputTTC.sort_values(by ='region' ),
+          InputLossFactor.sort_values(    by ='region' ),
+          InputReactance.sort_values(     by ='region' ),
+          InputTTC.sort_values(           by ='region' ),
           InputSecurityFactor.sort_values(by ='region' )
     ]
 
@@ -340,19 +358,25 @@ PowerTransmissionDataTime = time.time() - StartTime
 StartTime                 = time.time()
 print('PowerTransmission input data                ... ', round(PowerTransmissionDataTime), 's')
 
-# Dictionary of DataFrames and their corresponding sheet names
-dataframes = {
-    'PowerDemand': InputDemand,
-    'PowerGeneration': InputGen,
-    'PowerTransmission': InputTran
-}
-
-# Save DataFrames to an Excel file
+#%% Saving merged XLSX (Demand + Generation + Transmission)
+InputAll = pd.concat([InputDemand, InputGen, InputTran], ignore_index=True, sort=False)
 output_path = os.path.join(DirName, Folder, 'oT_IAMC_'f'{ModelName}_{CaseName}.xlsx')
-
 with pd.ExcelWriter(output_path, engine='xlsxwriter') as writer:
-    for sheet_name, df in dataframes.items():
-        df.to_excel(writer, sheet_name=sheet_name, index=False)
+    InputAll.to_excel(writer, sheet_name='All', index=False)
+
+# Dictionary of DataFrames and their corresponding sheet names
+# dataframes = {
+#     'PowerDemand': InputDemand,
+#     'PowerGeneration': InputGen,
+#     'PowerTransmission': InputTran
+# }
+#
+# # Save DataFrames to an Excel file
+# output_path = os.path.join(DirName, Folder, 'oT_IAMC_'f'{ModelName}_{CaseName}.xlsx')
+#
+# with pd.ExcelWriter(output_path, engine='xlsxwriter') as writer:
+#     for sheet_name, df in dataframes.items():
+#         df.to_excel(writer, sheet_name=sheet_name, index=False)
 
 print(f"DataFrames have been saved to {output_path}")
 
