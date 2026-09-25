@@ -2,6 +2,11 @@
 
 ## [4.19.0rc] - 2026-09-21 Unreleased in PyPI
 
+- [FIXED] a stage whose optimum is found without its duals continues without marginal prices instead of stopping. When the
+  barrier solution of a quadratically constrained model is too inaccurate for Gurobi to compute the QCP duals, gurobipy raises
+  "Unable to retrieve attribute 'Pi'" as Pyomo reads them, and on a 695-busbar AC case the run stopped with the relaxation
+  solved to optimality at 31.7285768 MEUR. The dual Suffix is now removed and the stage solved again, to the same objective in
+  0.42 s, and `collect_duals` returns when no Suffix is attached. Only that error is caught, and only when duals were requested.
 - [ADDED] a penalty on the deviation of a bus voltage from its setpoint. `VSet` in `oT_Data_BusVoltage` gives the setpoint of
   a bus and `VoltageDeviationCost` in `oT_Data_Parameter` the penalty, in EUR per p.u. per hour; zero, the default, leaves the
   model unchanged. The voltage limits state where a voltage may lie but not where it should lie, so with fixed generation all
