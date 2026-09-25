@@ -863,11 +863,11 @@ def test_restoration_makes_the_relaxation_exact(tmp_path):
 
 @pytest.mark.solve
 def test_restoration_reports_the_prices_of_the_restored_point(tmp_path):
-    """The prices after the recovery step are the duals of that solve, not dropped and not the relaxed ones."""
+    """After the AC recovery step, the prices are the duals of that step."""
     dir_name, case = _tiny_ac_case(tmp_path, "9n_restore_prices")
     mTEPES = _run_or_skip(str(dir_name), case, "ipopt", 1, 0)
     pBalance = [k for k in mTEPES.pDuals if k.startswith("eBalanceElec")]
-    assert pBalance, "the recovery step should leave the nodal balance duals in pDuals"
+    assert pBalance, "no nodal balance duals after the AC recovery step"
     srmc = pd.read_csv(os.path.join(dir_name, case, f"oT_Result_NetworkSRMC_{case}.csv"), index_col=[0, 1, 2])
     assert srmc.notna().all().all() and (srmc.abs() < 1e4).all().all()
 

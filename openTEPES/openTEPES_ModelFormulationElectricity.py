@@ -2377,7 +2377,7 @@ def ACRestorationPass(OptModel, mTEPES, SolverName='ipopt', pIndLogConsole=0):
     # Pyomo loads a solver's solution into the model as it returns, so an iterate from a solve that is about to be rejected would replace the relaxed
     # values before the termination condition below is read, and every result written afterwards would describe a point that did not converge. Holding
     # the solution back until the condition has been read is what makes the warning below true.
-    # The prices of the restored point are the duals of this solve. Ask for them only if the relaxed solve reported prices.
+    # Duals of this solve, only if the relaxed solve reported them.
     pWantDuals = bool(getattr(mTEPES, 'pDuals', None))
     if pWantDuals and not hasattr(OptModel, 'dual'):
         OptModel.dual = Suffix(direction=Suffix.IMPORT)
@@ -2396,9 +2396,7 @@ def ACRestorationPass(OptModel, mTEPES, SolverName='ipopt', pIndLogConsole=0):
     pAfter = OptModel.vTotalSCost()
     pGap   = 100.0 * (pAfter - pBefore) / abs(pAfter) if pAfter else 0.0
 
-    # The duals of the relaxed solve describe a point that no longer exists, so they are replaced by the duals of this solve: the prices of the
-    # restored operating point, a local optimum of the exact AC problem. A constraint without a dual is left out, and a price that is absent is
-    # reported as absent, not as a wrong number.
+    # The relaxed duals describe another point; the duals of the restored point replace them.
     if pWantDuals:
         pDuals = {}
         if hasattr(OptModel, 'dual'):
@@ -2410,7 +2408,8 @@ def ACRestorationPass(OptModel, mTEPES, SolverName='ipopt', pIndLogConsole=0):
                             pDuals[str(con.name) + str(index)] = pValue
             OptModel.del_component(OptModel.dual)
         mTEPES.pDuals = pDuals
-        print(f'AC restoration                         ...  marginal prices {"taken from the restored point" if pDuals else "dropped: the solver returned no duals"}')
+        pSource = 'from the restored point' if pDuals else 'not reported: the solver returned no duals'
+        print(f'AC restoration                         ...  marginal prices {pSource}')
     print(f'AC restoration                         ...  {pStatus}, total cost {pBefore:.4f} -> {pAfter:.4f} MEUR '
           f'({pGap:+.2f}% the relaxation was understating), {round(time.time() - StartTime)} s')
     return {'status': pStatus, 'before': pBefore, 'after': pAfter, 'gap_percent': pGap, 'rows': nRows,
